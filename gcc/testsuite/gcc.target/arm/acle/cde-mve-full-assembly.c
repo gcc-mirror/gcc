@@ -567,80 +567,80 @@
    contain back references).  */
 /*
 ** test_cde_vcx1q_mfloat16x8_tintint:
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
 ** 	vpst
 ** 	vcx1t	p0, q0, #32
 ** 	bx	lr
 */
 /*
 ** test_cde_vcx1q_mfloat32x4_tintint:
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
 ** 	vpst
 ** 	vcx1t	p0, q0, #32
 ** 	bx	lr
 */
 /*
 ** test_cde_vcx1q_muint8x16_tintint:
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
 ** 	vpst
 ** 	vcx1t	p0, q0, #32
 ** 	bx	lr
 */
 /*
 ** test_cde_vcx1q_muint16x8_tintint:
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
 ** 	vpst
 ** 	vcx1t	p0, q0, #32
 ** 	bx	lr
 */
 /*
 ** test_cde_vcx1q_muint32x4_tintint:
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
 ** 	vpst
 ** 	vcx1t	p0, q0, #32
 ** 	bx	lr
 */
 /*
 ** test_cde_vcx1q_muint64x2_tintint:
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
 ** 	vpst
 ** 	vcx1t	p0, q0, #32
 ** 	bx	lr
 */
 /*
 ** test_cde_vcx1q_mint8x16_tintint:
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
 ** 	vpst
 ** 	vcx1t	p0, q0, #32
 ** 	bx	lr
 */
 /*
 ** test_cde_vcx1q_mint16x8_tintint:
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
 ** 	vpst
 ** 	vcx1t	p0, q0, #32
 ** 	bx	lr
 */
 /*
 ** test_cde_vcx1q_mint32x4_tintint:
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
 ** 	vpst
 ** 	vcx1t	p0, q0, #32
 ** 	bx	lr
 */
 /*
 ** test_cde_vcx1q_mint64x2_tintint:
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
 ** 	vpst
 ** 	vcx1t	p0, q0, #32
 ** 	bx	lr
@@ -649,80 +649,80 @@
 
 /*
 ** test_cde_vcx1qa_mfloat16x8_tintint:
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
 ** 	vpst
 ** 	vcx1at	p0, q0, #32
 ** 	bx	lr
 */
 /*
 ** test_cde_vcx1qa_mfloat32x4_tintint:
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
 ** 	vpst
 ** 	vcx1at	p0, q0, #32
 ** 	bx	lr
 */
 /*
 ** test_cde_vcx1qa_muint8x16_tintint:
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
 ** 	vpst
 ** 	vcx1at	p0, q0, #32
 ** 	bx	lr
 */
 /*
 ** test_cde_vcx1qa_muint16x8_tintint:
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
 ** 	vpst
 ** 	vcx1at	p0, q0, #32
 ** 	bx	lr
 */
 /*
 ** test_cde_vcx1qa_muint32x4_tintint:
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
 ** 	vpst
 ** 	vcx1at	p0, q0, #32
 ** 	bx	lr
 */
 /*
 ** test_cde_vcx1qa_muint64x2_tintint:
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
 ** 	vpst
 ** 	vcx1at	p0, q0, #32
 ** 	bx	lr
 */
 /*
 ** test_cde_vcx1qa_mint8x16_tintint:
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
 ** 	vpst
 ** 	vcx1at	p0, q0, #32
 ** 	bx	lr
 */
 /*
 ** test_cde_vcx1qa_mint16x8_tintint:
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
 ** 	vpst
 ** 	vcx1at	p0, q0, #32
 ** 	bx	lr
 */
 /*
 ** test_cde_vcx1qa_mint32x4_tintint:
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
 ** 	vpst
 ** 	vcx1at	p0, q0, #32
 ** 	bx	lr
 */
 /*
 ** test_cde_vcx1qa_mint64x2_tintint:
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
-** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	 P0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
+** 	(?:vldr\.64	d0, \.L[0-9]*\n\tvldr\.64	d1, \.L[0-9]*\+8|vmsr	p0, r2	@ movhi)
 ** 	vpst
 ** 	vcx1at	p0, q0, #32
 ** 	bx	lr
@@ -731,8 +731,8 @@
 
 /*
 ** test_cde_vcx2q_mfloat16x8_tuint16x8_tint:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
 ** 	vpst
 ** 	vcx2t	p0, (q[0-7]), q0, #32
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -740,8 +740,8 @@
 */
 /*
 ** test_cde_vcx2q_mfloat16x8_tfloat32x4_tint:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
 ** 	vpst
 ** 	vcx2t	p0, (q[0-7]), q0, #32
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -749,8 +749,8 @@
 */
 /*
 ** test_cde_vcx2q_mfloat32x4_tuint8x16_tint:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
 ** 	vpst
 ** 	vcx2t	p0, (q[0-7]), q0, #32
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -758,8 +758,8 @@
 */
 /*
 ** test_cde_vcx2q_mint64x2_tuint8x16_tint:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
 ** 	vpst
 ** 	vcx2t	p0, (q[0-7]), q0, #32
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -767,8 +767,8 @@
 */
 /*
 ** test_cde_vcx2q_mint8x16_tuint8x16_tint:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
 ** 	vpst
 ** 	vcx2t	p0, (q[0-7]), q0, #32
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -776,8 +776,8 @@
 */
 /*
 ** test_cde_vcx2q_muint16x8_tuint8x16_tint:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
 ** 	vpst
 ** 	vcx2t	p0, (q[0-7]), q0, #32
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -785,8 +785,8 @@
 */
 /*
 ** test_cde_vcx2q_muint8x16_tint64x2_tint:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
 ** 	vpst
 ** 	vcx2t	p0, (q[0-7]), q0, #32
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -794,8 +794,8 @@
 */
 /*
 ** test_cde_vcx2q_muint8x16_tint8x16_tint:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
 ** 	vpst
 ** 	vcx2t	p0, (q[0-7]), q0, #32
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -803,8 +803,8 @@
 */
 /*
 ** test_cde_vcx2q_muint8x16_tuint16x8_tint:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
 ** 	vpst
 ** 	vcx2t	p0, (q[0-7]), q0, #32
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -812,8 +812,8 @@
 */
 /*
 ** test_cde_vcx2q_muint8x16_tuint8x16_tint:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
 ** 	vpst
 ** 	vcx2t	p0, (q[0-7]), q0, #32
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -823,8 +823,8 @@
 
 /*
 ** test_cde_vcx2qa_mfloat16x8_tuint16x8_tint:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
 ** 	vpst
 ** 	vcx2at	p0, (q[0-7]), q0, #32
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -832,8 +832,8 @@
 */
 /*
 ** test_cde_vcx2qa_mfloat16x8_tfloat32x4_tint:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
 ** 	vpst
 ** 	vcx2at	p0, (q[0-7]), q0, #32
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -841,8 +841,8 @@
 */
 /*
 ** test_cde_vcx2qa_mfloat32x4_tuint8x16_tint:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
 ** 	vpst
 ** 	vcx2at	p0, (q[0-7]), q0, #32
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -850,8 +850,8 @@
 */
 /*
 ** test_cde_vcx2qa_mint64x2_tuint8x16_tint:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
 ** 	vpst
 ** 	vcx2at	p0, (q[0-7]), q0, #32
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -859,8 +859,8 @@
 */
 /*
 ** test_cde_vcx2qa_mint8x16_tuint8x16_tint:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
 ** 	vpst
 ** 	vcx2at	p0, (q[0-7]), q0, #32
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -868,8 +868,8 @@
 */
 /*
 ** test_cde_vcx2qa_muint16x8_tuint8x16_tint:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
 ** 	vpst
 ** 	vcx2at	p0, (q[0-7]), q0, #32
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -877,8 +877,8 @@
 */
 /*
 ** test_cde_vcx2qa_muint8x16_tint64x2_tint:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
 ** 	vpst
 ** 	vcx2at	p0, (q[0-7]), q0, #32
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -886,8 +886,8 @@
 */
 /*
 ** test_cde_vcx2qa_muint8x16_tint8x16_tint:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
 ** 	vpst
 ** 	vcx2at	p0, (q[0-7]), q0, #32
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -895,8 +895,8 @@
 */
 /*
 ** test_cde_vcx2qa_muint8x16_tuint16x8_tint:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
 ** 	vpst
 ** 	vcx2at	p0, (q[0-7]), q0, #32
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -904,8 +904,8 @@
 */
 /*
 ** test_cde_vcx2qa_muint8x16_tuint8x16_tint:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r1	@ movhi)
 ** 	vpst
 ** 	vcx2at	p0, (q[0-7]), q0, #32
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -915,8 +915,8 @@
 
 /*
 ** test_cde_vcx3q_muint8x16_tuint8x16_tuint8x16_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3t	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -924,8 +924,8 @@
 */
 /*
 ** test_cde_vcx3q_mfloat16x8_tfloat16x8_tfloat16x8_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3t	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -933,8 +933,8 @@
 */
 /*
 ** test_cde_vcx3q_mfloat32x4_tuint64x2_tfloat16x8_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3t	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -942,8 +942,8 @@
 */
 /*
 ** test_cde_vcx3q_muint16x8_tuint8x16_tuint8x16_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3t	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -951,8 +951,8 @@
 */
 /*
 ** test_cde_vcx3q_muint8x16_tuint16x8_tuint8x16_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3t	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -960,8 +960,8 @@
 */
 /*
 ** test_cde_vcx3q_muint8x16_tuint8x16_tuint16x8_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3t	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -969,8 +969,8 @@
 */
 /*
 ** test_cde_vcx3q_mint8x16_tuint8x16_tuint8x16_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3t	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -978,8 +978,8 @@
 */
 /*
 ** test_cde_vcx3q_muint8x16_tint8x16_tuint8x16_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3t	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -987,8 +987,8 @@
 */
 /*
 ** test_cde_vcx3q_muint8x16_tuint8x16_tint8x16_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3t	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -996,8 +996,8 @@
 */
 /*
 ** test_cde_vcx3q_mint64x2_tuint8x16_tuint8x16_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3t	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -1005,8 +1005,8 @@
 */
 /*
 ** test_cde_vcx3q_muint8x16_tint64x2_tuint8x16_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3t	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -1014,8 +1014,8 @@
 */
 /*
 ** test_cde_vcx3q_muint8x16_tuint8x16_tint64x2_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3t	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -1023,8 +1023,8 @@
 */
 /*
 ** test_cde_vcx3q_muint8x16_tint64x2_tint64x2_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3t	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -1034,8 +1034,8 @@
 
 /*
 ** test_cde_vcx3qa_muint8x16_tuint8x16_tuint8x16_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3at	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -1043,8 +1043,8 @@
 */
 /*
 ** test_cde_vcx3qa_mfloat16x8_tfloat16x8_tfloat16x8_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3at	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -1052,8 +1052,8 @@
 */
 /*
 ** test_cde_vcx3qa_mfloat32x4_tuint64x2_tfloat16x8_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3at	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -1061,8 +1061,8 @@
 */
 /*
 ** test_cde_vcx3qa_muint16x8_tuint8x16_tuint8x16_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3at	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -1070,8 +1070,8 @@
 */
 /*
 ** test_cde_vcx3qa_muint8x16_tuint16x8_tuint8x16_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3at	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -1079,8 +1079,8 @@
 */
 /*
 ** test_cde_vcx3qa_muint8x16_tuint8x16_tuint16x8_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3at	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -1088,8 +1088,8 @@
 */
 /*
 ** test_cde_vcx3qa_mint8x16_tuint8x16_tuint8x16_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3at	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -1097,8 +1097,8 @@
 */
 /*
 ** test_cde_vcx3qa_muint8x16_tint8x16_tuint8x16_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3at	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -1106,8 +1106,8 @@
 */
 /*
 ** test_cde_vcx3qa_muint8x16_tuint8x16_tint8x16_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3at	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -1115,8 +1115,8 @@
 */
 /*
 ** test_cde_vcx3qa_mint64x2_tuint8x16_tuint8x16_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3at	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -1124,8 +1124,8 @@
 */
 /*
 ** test_cde_vcx3qa_muint8x16_tint64x2_tuint8x16_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3at	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -1133,8 +1133,8 @@
 */
 /*
 ** test_cde_vcx3qa_muint8x16_tuint8x16_tint64x2_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3at	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
@@ -1142,8 +1142,8 @@
 */
 /*
 ** test_cde_vcx3qa_muint8x16_tint64x2_tint64x2_t:
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
-** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	 P0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
+** 	(?:vldr\.64	d(?:[02468]|1[024]), \.L[0-9]*\n\tvldr\.64	d(?:[13579]|1[135]), \.L[0-9]*\+8|vmsr	p0, r0	@ movhi)
 ** 	vpst
 ** 	vcx3at	p0, (q[0-7]), q0, q1, #15
 ** 	vmov	q0, \1([[:space:]]+@ [^\n]*)?
