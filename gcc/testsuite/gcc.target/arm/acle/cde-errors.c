@@ -47,19 +47,19 @@ uint64_t test_cde (uint32_t n, uint32_t m)
   accum += __arm_cx3da (7, accum, n, m,           0); /* { dg-error {coprocessor 7 is not enabled with \+cdecp7} } */
 
   /* `coproc` out of range.  */
-  accum += __arm_cx1   (8,                        0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
-  accum += __arm_cx1a  (8, (uint32_t)accum,       0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
-  accum += __arm_cx2   (8, n,                     0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
-  accum += __arm_cx2a  (8, (uint32_t)accum, n,    0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
-  accum += __arm_cx3   (8, n, m,                  0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
-  accum += __arm_cx3a  (8, (uint32_t)accum, n, m, 0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
+  accum += __arm_cx1   (8,                        0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
+  accum += __arm_cx1a  (8, (uint32_t)accum,       0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
+  accum += __arm_cx2   (8, n,                     0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
+  accum += __arm_cx2a  (8, (uint32_t)accum, n,    0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
+  accum += __arm_cx3   (8, n, m,                  0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
+  accum += __arm_cx3a  (8, (uint32_t)accum, n, m, 0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
 
-  accum += __arm_cx1d  (8,                        0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
-  accum += __arm_cx1da (8, accum,                 0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
-  accum += __arm_cx2d  (8, n,                     0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
-  accum += __arm_cx2da (8, accum, n,              0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
-  accum += __arm_cx3d  (8, n, m,                  0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
-  accum += __arm_cx3da (8, accum, n, m,           0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
+  accum += __arm_cx1d  (8,                        0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
+  accum += __arm_cx1da (8, accum,                 0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
+  accum += __arm_cx2d  (8, n,                     0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
+  accum += __arm_cx2da (8, accum, n,              0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
+  accum += __arm_cx3d  (8, n, m,                  0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
+  accum += __arm_cx3da (8, accum, n, m,           0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
 
   /* `imm` out of range.  */
   accum += __arm_cx1   (0,                        8192); /* { dg-error {argument 2 to '__builtin_arm_cx1si' must be a constant immediate in range \[0-8191\]} } */
@@ -92,19 +92,19 @@ uint64_t test_cde (uint32_t n, uint32_t m)
   accum += __arm_cx3da (0, accum, n, m,           n);    /* { dg-error {argument 5 to '__builtin_arm_cx3adi' must be a constant immediate in range \[0-63\]} } */
 
   /* `coproc` is not an immediate.  */
-  accum += __arm_cx1   ((int)m,                        0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
-  accum += __arm_cx1a  ((int)m, (uint32_t)accum,       0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
-  accum += __arm_cx2   ((int)m, n,                     0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
-  accum += __arm_cx2a  ((int)m, (uint32_t)accum, n,    0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
-  accum += __arm_cx3   ((int)m, n, m,                  0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
-  accum += __arm_cx3a  ((int)m, (uint32_t)accum, n, m, 0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
+  accum += __arm_cx1   ((int)m,                        0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
+  accum += __arm_cx1a  ((int)m, (uint32_t)accum,       0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
+  accum += __arm_cx2   ((int)m, n,                     0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
+  accum += __arm_cx2a  ((int)m, (uint32_t)accum, n,    0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
+  accum += __arm_cx3   ((int)m, n, m,                  0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
+  accum += __arm_cx3a  ((int)m, (uint32_t)accum, n, m, 0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
 
-  accum += __arm_cx1d  ((int)m,                        0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
-  accum += __arm_cx1da ((int)m, accum,                 0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
-  accum += __arm_cx2d  ((int)m, n,                     0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
-  accum += __arm_cx2da ((int)m, accum, n,              0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
-  accum += __arm_cx3d  ((int)m, n, m,                  0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
-  accum += __arm_cx3da ((int)m, accum, n, m,           0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with \+cdecp<N>} } */
+  accum += __arm_cx1d  ((int)m,                        0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
+  accum += __arm_cx1da ((int)m, accum,                 0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
+  accum += __arm_cx2d  ((int)m, n,                     0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
+  accum += __arm_cx2da ((int)m, accum, n,              0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
+  accum += __arm_cx3d  ((int)m, n, m,                  0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
+  accum += __arm_cx3da ((int)m, accum, n, m,           0); /* { dg-error {coproc must be a constant immediate in range \[0-7\] enabled with .\+cdecp<N>.} } */
 
   return accum;
 }
