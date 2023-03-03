@@ -2844,6 +2844,9 @@ Target supports named sections.
 Target uses natural alignment (aligned to type size) for types of
 32 bits or less.
 
+@item tail_call
+Target supports tail-call optimizations.
+
 @item target_natural_alignment_64
 Target uses natural alignment (aligned to type size) for types of
 64 bits or less.
