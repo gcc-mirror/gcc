@@ -390,9 +390,7 @@ package body Sem_Ch6 is
          --  function to the proper body when the expression function acts
          --  as a completion.
 
-         if Has_Aspects (N) then
-            Move_Aspects (N, To => New_Body);
-         end if;
+         Move_Aspects (N, To => New_Body);
 
          Relocate_Pragmas_To_Body (New_Body);
 
@@ -2875,9 +2873,7 @@ package body Sem_Ch6 is
 
                   --  Move aspects to the new spec
 
-                  if Has_Aspects (N) then
-                     Move_Aspects (N, To => Decl);
-                  end if;
+                  Move_Aspects (N, To => Decl);
 
                   Insert_Before (N, Decl);
                   Analyze (Decl);
