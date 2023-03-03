@@ -12422,14 +12422,14 @@ package body Exp_Ch3 is
       if Stream_Operation_OK (Tag_Typ, TSS_Stream_Read)
         and then No (TSS (Tag_Typ, TSS_Stream_Read))
       then
-         Build_Record_Read_Procedure (Loc, Tag_Typ, Decl, Ent);
+         Build_Record_Read_Procedure (Tag_Typ, Decl, Ent);
          Append_To (Res, Decl);
       end if;
 
       if Stream_Operation_OK (Tag_Typ, TSS_Stream_Write)
         and then No (TSS (Tag_Typ, TSS_Stream_Write))
       then
-         Build_Record_Write_Procedure (Loc, Tag_Typ, Decl, Ent);
+         Build_Record_Write_Procedure (Tag_Typ, Decl, Ent);
          Append_To (Res, Decl);
       end if;
 
@@ -12441,14 +12441,14 @@ package body Exp_Ch3 is
         and then No (TSS (Tag_Typ, TSS_Stream_Input))
       then
          Build_Record_Or_Elementary_Input_Function
-           (Loc, Tag_Typ, Decl, Ent);
+           (Tag_Typ, Decl, Ent);
          Append_To (Res, Decl);
       end if;
 
       if Stream_Operation_OK (Tag_Typ, TSS_Stream_Output)
         and then No (TSS (Tag_Typ, TSS_Stream_Output))
       then
-         Build_Record_Or_Elementary_Output_Procedure (Loc, Tag_Typ, Decl, Ent);
+         Build_Record_Or_Elementary_Output_Procedure (Tag_Typ, Decl, Ent);
          Append_To (Res, Decl);
       end if;
 
