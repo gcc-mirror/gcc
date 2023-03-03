@@ -12927,6 +12927,8 @@ public:
   tsubst_flags_t complain;
   /* True iff we don't want to walk into unevaluated contexts.  */
   bool skip_unevaluated_operands = false;
+  /* The unevaluated contexts that we avoided walking.  */
+  auto_vec<tree> skipped_trees;
 
   el_data (tsubst_flags_t c)
     : extra (NULL_TREE), complain (c) {}
@@ -12941,6 +12943,7 @@ extract_locals_r (tree *tp, int *walk_subtrees, void *data_)
   if (data.skip_unevaluated_operands
       && unevaluated_p (TREE_CODE (*tp)))
     {
+      data.skipped_trees.safe_push (*tp);
       *walk_subtrees = 0;
       return NULL_TREE;
     }
@@ -13043,8 +13046,13 @@ extract_local_specs (tree pattern, tsubst_flags_t complain)
      context).  */
   data.skip_unevaluated_operands = true;
   cp_walk_tree (&pattern, extract_locals_r, &data, &data.visited);
+  /* Now walk the unevaluated contexts we skipped the first time around.  */
   data.skip_unevaluated_operands = false;
-  cp_walk_tree (&pattern, extract_locals_r, &data, &data.visited);
+  for (tree t : data.skipped_trees)
+    {
+      data.visited.remove (t);
+      cp_walk_tree (&t, extract_locals_r, &data, &data.visited);
+    }
   return data.extra;
 }
 
