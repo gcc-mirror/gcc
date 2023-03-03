@@ -19,16 +19,10 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-system.h"
-
 // This has to be included outside of extern "C", so we have to
 // include it here before tree.h includes it later.
-#include <gmp.h>
 
-#include "tree.h"
 #include "rust-location.h"
-
-// TODO: this will have to be significantly modified to work with Rust
 
 // Bvariable is a bit more complicated, because of zero-sized types.
 // The GNU linker does not permit dynamic variables with zero size.
