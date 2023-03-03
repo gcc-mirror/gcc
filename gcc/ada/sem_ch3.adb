@@ -15994,7 +15994,7 @@ package body Sem_Ch3 is
             --  of the parent, and we can also use it rather than its base,
             --  which can lead to more efficient code.
 
-            if Etype (Id) = Parent_Type then
+            if Id_Type = Parent_Type then
                if Is_Scalar_Type (Parent_Type)
                  and then
                    Subtypes_Statically_Compatible (Parent_Type, Derived_Type)
@@ -16019,7 +16019,7 @@ package body Sem_Ch3 is
             end if;
 
          else
-            Set_Etype (New_Id, Etype (Id));
+            Set_Etype (New_Id, Id_Type);
          end if;
       end Replace_Type;
 
