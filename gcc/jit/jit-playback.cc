@@ -344,7 +344,7 @@ playback::type *
 playback::context::
 new_array_type (playback::location *loc,
 		playback::type *element_type,
-		int num_elements)
+		uint64_t num_elements)
 {
   gcc_assert (element_type);
 

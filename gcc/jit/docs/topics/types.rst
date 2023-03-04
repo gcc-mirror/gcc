@@ -163,6 +163,24 @@ Pointers, `const`, and `volatile`
    Given non-`void` type "T", get type "T[N]" (for a constant N).
 
 .. function::  gcc_jit_type *\
+               gcc_jit_context_new_array_type_u64 (gcc_jit_context *ctxt, \
+                                                   gcc_jit_location *loc, \
+                                                   gcc_jit_type *element_type, \
+                                                   uint64_t num_elements)
+
+   Given non-`void` type "T", get type "T[N]" (for a constant N).
+
+   This is the same as gcc_jit_context_new_array_type, but the type of
+   ``num_elements` different and thus allows creating bigger array types.
+
+   This API entrypoint was added in :ref:`LIBGCCJIT_ABI_37`; you can test
+   for its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_context_new_array_type_u64
+
+.. function::  gcc_jit_type *\
                gcc_jit_type_get_aligned (gcc_jit_type *type, \
                                          size_t alignment_in_bytes)
 

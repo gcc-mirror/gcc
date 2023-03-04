@@ -106,7 +106,7 @@ public:
   type *
   new_array_type (location *loc,
 		  type *element_type,
-		  int num_elements);
+		  uint64_t num_elements);
 
   field *
   new_field (location *loc,
@@ -1045,7 +1045,7 @@ class array_type : public type
   array_type (context *ctxt,
 	      location *loc,
 	      type *element_type,
-	      int num_elements)
+	      uint64_t num_elements)
   : type (ctxt),
     m_loc (loc),
     m_element_type (element_type),
@@ -1078,7 +1078,7 @@ class array_type : public type
   bool is_bool () const final override { return false; }
   type *is_pointer () final override { return NULL; }
   type *is_array () final override { return m_element_type; }
-  int num_elements () { return m_num_elements; }
+  uint64_t num_elements () { return m_num_elements; }
   bool is_signed () const final override { return false; }
 
   void replay_into (replayer *) final override;
@@ -1090,7 +1090,7 @@ class array_type : public type
  private:
   location *m_loc;
   type *m_element_type;
-  int m_num_elements;
+  uint64_t m_num_elements;
 };
 
 class function_type : public type

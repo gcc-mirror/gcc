@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef LIBGCCJIT_H
 #define LIBGCCJIT_H
 
+#include <stdint.h>
 #include <stdio.h>
 #ifdef __has_include
 #if __has_include (<sys/types.h>)
@@ -675,6 +676,20 @@ gcc_jit_context_new_array_type (gcc_jit_context *ctxt,
 				gcc_jit_location *loc,
 				gcc_jit_type *element_type,
 				int num_elements);
+
+/* Given type "T", get type "T[N]" (for a constant N).
+
+   This API entrypoint was added in LIBGCCJIT_ABI_37; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_gcc_jit_context_new_array_type_u64
+*/
+extern gcc_jit_type *
+gcc_jit_context_new_array_type_u64 (gcc_jit_context *ctxt,
+				    gcc_jit_location *loc,
+				    gcc_jit_type *element_type,
+				    uint64_t num_elements);
+
+#define LIBGCCJIT_HAVE_gcc_jit_context_new_array_type_u64
 
 /* Struct-handling.  */
 

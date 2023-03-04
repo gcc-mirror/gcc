@@ -784,11 +784,21 @@ gcc_jit_context_new_array_type (gcc_jit_context *ctxt,
 				gcc_jit_type *element_type,
 				int num_elements)
 {
+  RETURN_NULL_IF_FAIL (num_elements >= 0, ctxt, NULL, "negative size");
+  return gcc_jit_context_new_array_type_u64 (ctxt, loc, element_type,
+    (uint64_t) num_elements);
+}
+
+gcc_jit_type *
+gcc_jit_context_new_array_type_u64 (gcc_jit_context *ctxt,
+					      gcc_jit_location *loc,
+					      gcc_jit_type *element_type,
+					      uint64_t num_elements)
+{
   RETURN_NULL_IF_FAIL (ctxt, NULL, loc, "NULL context");
   JIT_LOG_FUNC (ctxt->get_logger ());
   /* LOC can be NULL.  */
   RETURN_NULL_IF_FAIL (element_type, ctxt, loc, "NULL type");
-  RETURN_NULL_IF_FAIL (num_elements >= 0, ctxt, NULL, "negative size");
   RETURN_NULL_IF_FAIL (!element_type->is_void (), ctxt, loc,
 		       "void type for elements");
 

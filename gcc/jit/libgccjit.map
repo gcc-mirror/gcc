@@ -339,3 +339,8 @@ LIBGCCJIT_ABI_36 {
   global:
     gcc_jit_context_set_abort_on_unsupported_target_builtin;
 } LIBGCCJIT_ABI_35;
+
+LIBGCCJIT_ABI_37 {
+  global:
+    gcc_jit_context_new_array_type_u64;
+} LIBGCCJIT_ABI_36;

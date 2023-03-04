@@ -474,3 +474,10 @@ information:
 ``LIBGCCJIT_ABI_36`` covers the addition of
 
  * :func:`gcc_jit_context_set_abort_on_unsupported_target_builtin`
+
+.. _LIBGCCJIT_ABI_37:
+
+``LIBGCCJIT_ABI_37``
+--------------------
+``LIBGCCJIT_ABI_37`` covers the addition of
+:func:`gcc_jit_context_new_array_type_u64`
