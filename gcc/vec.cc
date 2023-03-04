@@ -568,7 +568,7 @@ test_auto_delete_vec ()
   ASSERT_EQ (dtor_count, 2);
 }
 
-/* Verify accesses to m_vecdata are done indirectly.  */
+/* Verify accesses to vector elements are done indirectly.  */
 
 static void
 test_auto_alias ()

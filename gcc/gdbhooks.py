@@ -133,10 +133,10 @@ vector: attempting to do so instead gives you the vec itself (for vec[0]),
 or a (probably) invalid cast to vec<> for the memory after the vec (for
 vec[1] onwards).
 
-Instead (for now) you must access m_vecdata:
-  (gdb) p bb->preds->m_vecdata[0]
+Instead (for now) you must access the payload directly:
+  (gdb) p ((edge_def**)(bb->preds+1))[0]
   $20 = <edge 0x7ffff044d380 (3 -> 5)>
-  (gdb) p bb->preds->m_vecdata[1]
+  (gdb) p ((edge_def**)(bb->preds+1))[1]
   $21 = <edge 0x7ffff044d3b8 (4 -> 5)>
 """
 import os.path
