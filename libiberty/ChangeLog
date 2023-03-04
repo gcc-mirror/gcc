@@ -1,3 +1,9 @@
+2023-03-03  Costas Argyris  <costas.argyris@gmail.com>
+
+	* pex-win32.c (win32_spawn): Fix memory leak of cmdline
+	buffer and refactor to have cleanup code appear once
+	for all exit cases.
+
 2023-02-11  niXman  <i.nixman@autistici.org>
 
 	* lrealpath.c (lrealpath): try to resolve symlink and

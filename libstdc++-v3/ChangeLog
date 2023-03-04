@@ -1,3 +1,35 @@
+2023-03-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/30_threads/async/async.cc (test04): Initialize
+	steady_start, renamed from steady_begin, next to slow_start.
+	Increase tolerance for final wait.
+
+2023-03-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/libstdc++-prettyprinters/80276.cc: Add
+	std::string to debug info.
+	* testsuite/libstdc++-prettyprinters/libfundts.cc: Likewise.
+
+2023-03-03  Alexandre Oliva  <oliva@adacore.com>
+
+	PR libstdc++/104852
+	PR libstdc++/95989
+	PR libstdc++/52590
+	* include/bits/std_thread.h (thread::_M_thread_deps): New
+	static implicitly-inline member function.
+	(std::thread template ctor): Pass it to _M_start_thread.
+	* src/c++11/thread.cc (thread::_M_start_thread): Name depend
+	parameter, force it live on entry.
+
+2023-03-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/abi/post/i386-solaris/baseline_symbols.txt: Regenerate.
+	* config/abi/post/i386-solaris/amd64/baseline_symbols.txt:
+	Likewise.
+	* config/abi/post/sparc-solaris/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris/sparcv9/baseline_symbols.txt:
+	Likewise.
+
 2023-03-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/cow_string.h: Fix typo in comment.

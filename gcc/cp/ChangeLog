@@ -1,3 +1,17 @@
+2023-03-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108998
+	* pt.cc (el_data::skipped_trees): New data member.
+	(extract_locals_r): Push to skipped_trees any unevaluated
+	contexts that we skipped over.
+	(extract_local_specs): For the second walk, start from each
+	tree in skipped_trees.
+
+2023-03-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* typeck.cc (cp_build_binary_op): Suppress redundant warning
+	for pfn null test in pmfn test with vbit-in-delta.
+
 2023-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/108883

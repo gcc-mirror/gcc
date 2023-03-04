@@ -1,3 +1,132 @@
+2023-03-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109016
+	* gcc.dg/analyzer/omp-parallel-for-1.c: New test.
+	* gcc.dg/analyzer/omp-parallel-for-get-min.c: New test.
+
+2023-03-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/doom-d_main-IdentifyVersion.c: New test.
+	* gcc.dg/analyzer/sprintf-1.c: New test.
+	* gcc.dg/analyzer/sprintf-concat.c: New test.
+
+2023-03-03  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/108988
+	* gcc.dg/analyzer/pr99716-1.c (test_2): Remove xfail.
+
+2023-03-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/warn/Wdangling-pointer.C (warn_init_ref_member): Add
+	two new variants, one fixed, one xfailed.
+	* c-c++-common/Wdangling-pointer-5.c
+	(nowarn_store_arg_store_arg): Add now-expected warnings.
+
+2023-03-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/arm/acle/cde-errors.c: Adjust messages for quote
+	around +cdecp<N>.
+	* gcc.target/arm/acle/cde-mve-error-2.c: Likewise.
+
+2023-03-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/arm/armv8_2-fp16-move-1.c: Combine vcmp and vcmpe
+	expected counts into a single pattern.
+	* gcc.target/arm/armv8_2-fp16-move-2.c: Accept conditional
+	return and reversed conditions.
+
+2023-03-03  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/51534
+	* gcc.target/arm/pr51534.c: Split softfp variant into...
+	* gcc.target/arm/pr51534s.c: ... this, and support ARM too.
+
+2023-03-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/arm/acle/cde-mve-full-assembly.c: Drop blank
+	after tab after vmsr, and lower the case of P0.
+
+2023-03-03  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/104882
+	* gcc.target/arm/simd/pr104882.c: Require mve hardware.
+
+2023-03-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108998
+	* g++.dg/cpp2a/lambda-generic11.C: New test.
+
+2023-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/108986
+	* gcc.dg/Wnonnull-8.c: New test.
+
+2023-03-03  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/ifcvt-two-insns-bool.c: Allow "high" and
+	"not low or equal" load on condition variant.
+	* gcc.target/s390/ifcvt-two-insns-int.c: Dito.
+	* gcc.target/s390/ifcvt-two-insns-long.c: Dito.
+
+2023-03-03  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.dg/vect/slp-3.c: Adapt test expectation.
+	* gcc.dg/vect/slp-multitypes-11.c: Likewise.
+	* gcc.dg/vect/slp-perm-8.c: Likewise.
+
+2023-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109002
+	* gcc.dg/torture/pr109002.c: New testcase.
+
+2023-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR debug/108772
+	* g++.dg/lto/pr108772_0.C: New testcase.
+
+2023-03-03  Alexandre Oliva  <oliva@adacore.com>
+
+	PR c++/100127
+	* g++.dg/coroutines/pr100127.C: Test for header rather than
+	compiler macro.
+	* g++.dg/coroutines/pr100772-a.C: Likewise.
+	* g++.dg/coroutines/pr100772-b.C: Likewise.
+
+2023-03-03  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/attr-aligned.c: Adjust comment for ALIGN_MAX_STATIC.
+	(ALIGN_MAX_STATIC): Set to 512 for CRIS.
+
+2023-03-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/108946
+	* gdc.dg/simd2a.d: Update test.
+	* gdc.dg/simd2b.d: Likewise.
+	* gdc.dg/simd2c.d: Likewise.
+	* gdc.dg/simd2d.d: Likewise.
+	* gdc.dg/simd2e.d: Likewise.
+	* gdc.dg/simd2f.d: Likewise.
+	* gdc.dg/simd2g.d: Likewise.
+	* gdc.dg/simd2h.d: Likewise.
+	* gdc.dg/simd2i.d: Likewise.
+	* gdc.dg/simd2j.d: Likewise.
+
+2023-03-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/108877
+	* gdc.dg/imports/pr108877a.d: New test.
+	* gdc.dg/pr108877.d: New test.
+
+2023-03-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/108167
+	* gdc.dg/pr108167.d: New test.
+
+2023-03-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/108945
+	* gdc.dg/pr108945.d: New test.
+
 2023-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/108991

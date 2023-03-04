@@ -1,3 +1,8 @@
+2023-03-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* kf.cc (class kf_sprintf): New.
+	(register_known_functions): Register it.
+
 2023-03-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/108968

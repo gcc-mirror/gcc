@@ -1,3 +1,93 @@
+2023-03-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* gimple-ssa-warn-access.cc
+	(pass_waccess::check_dangling_stores): Skip non-stores.
+
+2023-03-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/arm/vfp.md (*thumb2_movsi_vfp): Drop blank after tab
+	after vmsr and vmrs, and lower the case of P0.
+
+2023-03-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR middle-end/109006
+	* gdbhooks.py (VecPrinter): Handle vec<T> as well as vec<T>*.
+
+2023-03-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR middle-end/109006
+	* gdbhooks.py (VecPrinter): Adjust for new vec layout.
+
+2023-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/108986
+	* gimple-ssa-warn-access.cc (pass_waccess::maybe_check_access_sizes):
+	Return immediately if OPT_Wnonnull or OPT_Wstringop_overflow_ is
+	suppressed on stmt.  For [static %E] warning, print access_nelts
+	rather than access_size.  Fix up comment wording.
+
+2023-03-03  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/driver-native.cc (s390_host_detect_local_cpu): Use
+	arch14 instead of z16.
+
+2023-03-03  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/moxie.cc (TARGET_LRA_P): Remove.
+
+2023-03-03  Anthony Green  <green@moxielogic.com>
+
+	* config/moxie/constraints.md (A, B, W): Change
+	define_constraint to define_memory_constraint.
+
+2023-03-03  Xi Ruoyao  <xry111@xry111.site>
+
+	* toplev.cc (process_options): Fix the spelling of
+	"-fstack-clash-protection".
+
+2023-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109002
+	* tree-ssa-pre.cc (compute_partial_antic_aux): Properly
+	PHI-translate ANTIC_IN.
+
+2023-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108988
+	* gimple-fold.cc (gimple_fold_builtin_fputs): Fold len to
+	size_type_node before passing it as argument to fwrite.  Formatting
+	fixes.
+
+2023-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR target/108738
+	* config/i386/i386.opt (--param x86-stv-max-visits): New param.
+	* doc/invoke.texi (--param x86-stv-max-visits): Document it.
+	* config/i386/i386-features.h (scalar_chain::max_visits): New.
+	(scalar_chain::build): Add bitmap parameter, return boolean.
+	(scalar_chain::add_insn): Likewise.
+	(scalar_chain::analyze_register_chain): Likewise.
+	* config/i386/i386-features.cc (scalar_chain::scalar_chain):
+	Initialize max_visits.
+	(scalar_chain::analyze_register_chain): When we exhaust
+	max_visits, abort.  Also abort when running into any
+	disallowed insn.
+	(scalar_chain::add_insn): Propagate abort.
+	(scalar_chain::build): Likewise.  When aborting amend
+	the set of disallowed insn with the insns set.
+	(convert_scalars_to_vector): Adjust.  Do not convert aborted
+	chains.
+
+2023-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR debug/108772
+	* dwarf2out.cc (dwarf2out_late_global_decl): Do not
+	generate a DIE for a function scope static.
+
+2023-03-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/vx-common.h (WINT_TYPE): Alias to "wchar_t".
+
 2023-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/108883

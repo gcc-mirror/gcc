@@ -1,3 +1,12 @@
+2023-03-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-common.cc (c_common_nodes_and_builtins): Take
+	wchar_type_node for wint_type_node when aliased.
+	(c_stddef_cpp_builtins): Define __WINT_TYPE__, when aliased to
+	wchar_t, to the underlying type rather than wchar_t in
+	non-C++.
+	* c-cppbuiltin.cc (type_suffix): Handle wchar_type_node.
+
 2023-02-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/107938
