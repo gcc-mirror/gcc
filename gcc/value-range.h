@@ -886,8 +886,24 @@ irange::upper_bound () const
 inline void
 irange::set_nonzero (tree type)
 {
-  wide_int zero = wi::zero (TYPE_PRECISION (type));
-  set (type, zero, zero, VR_ANTI_RANGE);
+  unsigned prec = TYPE_PRECISION (type);
+
+  if (TYPE_UNSIGNED (type))
+    {
+      m_type = type;
+      m_kind = VR_RANGE;
+      m_base[0] = wi::one (prec);
+      m_base[1] = m_nonzero_mask = wi::minus_one (prec);
+      m_num_ranges = 1;
+
+      if (flag_checking)
+	verify_range ();
+    }
+  else
+    {
+      wide_int zero = wi::zero (prec);
+      set (type, zero, zero, VR_ANTI_RANGE);
+    }
 }
 
 // Set value range VR to a ZERO range of type TYPE.
