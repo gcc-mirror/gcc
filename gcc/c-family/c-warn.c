@@ -2340,13 +2340,33 @@ warn_for_sign_compare (location_t location,
      have all bits set that are set in the ~ operand when it is
      extended.  */
 
+  /* bits0 is the bit index of op0 extended to result_type, which will
+     be always 0 and so all bits above it.  If there is a BIT_NOT_EXPR
+     in that operand possibly sign or zero extended to op0 and then
+     possibly further sign or zero extended to result_type, bits0 will
+     be the precision of result type if all the extensions involved
+     if any are sign extensions, and will be the place of the innermost
+     zero extension otherwise.  We warn only if BIT_NOT_EXPR's operand is
+     zero extended from some even smaller precision, in that case after
+     BIT_NOT_EXPR some bits below bits0 will be guaranteed to be set.
+     Similarly for bits1.  */
+  int bits0 = TYPE_PRECISION (result_type);
+  if (TYPE_UNSIGNED (TREE_TYPE (op0)))
+    bits0 = TYPE_PRECISION (TREE_TYPE (op0));
   tree arg0 = c_common_get_narrower (op0, &unsignedp0);
   if (TYPE_PRECISION (TREE_TYPE (arg0)) == TYPE_PRECISION (TREE_TYPE (op0)))
     unsignedp0 = TYPE_UNSIGNED (TREE_TYPE (op0));
+  else if (unsignedp0)
+    bits0 = TYPE_PRECISION (TREE_TYPE (arg0));
   op0 = arg0;
+  int bits1 = TYPE_PRECISION (result_type);
+  if (TYPE_UNSIGNED (TREE_TYPE (op1)))
+    bits1 = TYPE_PRECISION (TREE_TYPE (op1));
   tree arg1 = c_common_get_narrower (op1, &unsignedp1);
   if (TYPE_PRECISION (TREE_TYPE (arg1)) == TYPE_PRECISION (TREE_TYPE (op1)))
     unsignedp1 = TYPE_UNSIGNED (TREE_TYPE (op1));
+  else if (unsignedp1)
+    bits1 = TYPE_PRECISION (TREE_TYPE (arg1));
   op1 = arg1;
 
   if ((TREE_CODE (op0) == BIT_NOT_EXPR)
@@ -2356,6 +2376,7 @@ warn_for_sign_compare (location_t location,
 	{
 	  std::swap (op0, op1);
 	  std::swap (unsignedp0, unsignedp1);
+	  std::swap (bits0, bits1);
 	}
 
       int unsignedp;
@@ -2374,16 +2395,8 @@ warn_for_sign_compare (location_t location,
 	      && bits < HOST_BITS_PER_WIDE_INT)
 	    {
 	      HOST_WIDE_INT mask = HOST_WIDE_INT_M1U << bits;
-	      if (unsignedp0)
-		{
-		  bits = TYPE_PRECISION (TREE_TYPE (op0));
-		  if (bits < TYPE_PRECISION (result_type)
-		      && bits < HOST_BITS_PER_WIDE_INT)
-		    mask &= ~(HOST_WIDE_INT_M1U << bits);
-		}
-	      bits = TYPE_PRECISION (result_type);
-	      if (bits < HOST_BITS_PER_WIDE_INT)
-		mask &= ~(HOST_WIDE_INT_M1U << bits);
+	      if (bits0 < HOST_BITS_PER_WIDE_INT)
+		mask &= ~(HOST_WIDE_INT_M1U << bits0);
 	      if ((mask & constant) != mask)
 		{
 		  if (constant == 0)
@@ -2401,24 +2414,7 @@ warn_for_sign_compare (location_t location,
 		< TYPE_PRECISION (TREE_TYPE (op0)))
 	       && unsignedp
 	       && unsignedp1
-	       /* If unsignedp0, the BIT_NOT_EXPR result is
-		  zero extended, so say if op0 is unsigned char
-		  variable, BIT_NOT_EXPR is unsigned short and
-		  result type int and op0 has value 0x55, the
-		  int value will be 0xffaa, or for op0 0xaa it
-		  will be 0xff55.  In these cases, warn if
-		  op1 is unsigned and narrower than unsigned short.
-		  While if unsignedp0 is false, the BIT_NOT_EXPR
-		  result is sign extended and because of the
-		  above TYPE_PRECISION comparison we know the
-		  MSB of BIT_NOT_EXPR is set (perhaps with some
-		  further bits below it).  The sign extension will
-		  then ensure all bits above BIT_NOT_EXPR up to
-		  result_type's precision are set.  */
-	       && (TYPE_PRECISION (TREE_TYPE (op1))
-		   < TYPE_PRECISION (unsignedp0
-				     ? TREE_TYPE (op0)
-				     : result_type)))
+	       && TYPE_PRECISION (TREE_TYPE (op1)) < bits0)
 	warning_at (location, OPT_Wsign_compare,
 		    "comparison of promoted bitwise complement "
 		    "of an unsigned value with unsigned");
