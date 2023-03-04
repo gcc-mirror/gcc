@@ -12650,6 +12650,13 @@ Parser<ManagedTokenSource>::parse_expr (int right_binding_power,
 	  || id == RIGHT_SQUARE)
 	return nullptr;
     }
+
+  if (current_token->get_id () == LEFT_SHIFT)
+    {
+      lexer.split_current_token (LEFT_ANGLE, LEFT_ANGLE);
+      current_token = lexer.peek_token ();
+    }
+
   lexer.skip_token ();
 
   // parse null denotation (unary part of expression)
