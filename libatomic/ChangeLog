@@ -1,3 +1,12 @@
+2023-03-03  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	Backported from master:
+	2023-03-03  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/cas_n.c: New file.
+	* config/s390/load_n.c: New file.
+	* config/s390/store_n.c: New file.
+
 2022-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
