@@ -326,7 +326,8 @@ EarlyNameResolver::visit (AST::ClosureExprInner &expr)
   expr.get_definition_expr ()->accept_vis (*this);
 
   for (auto &param : expr.get_params ())
-    param.get_type ()->accept_vis (*this);
+    if (param.has_type_given ())
+      param.get_type ()->accept_vis (*this);
 }
 
 void
