@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "calls.h"
 #include "stor-layout.h"
 #include "tree-pretty-print.h"
+#include "langhooks.h"
 
 /* Print a warning if a constant expression had overflow in folding.
    Invoke this function on every expression that the language
@@ -2615,14 +2616,19 @@ maybe_warn_shift_overflow (location_t loc, tree op0, tree op1)
       || TREE_CODE (op1) != INTEGER_CST)
     return false;
 
-  tree type0 = TREE_TYPE (op0);
+  /* match.pd could have narrowed the left shift already,
+     take type promotion into account.  */
+  tree type0 = lang_hooks.types.type_promotes_to (TREE_TYPE (op0));
   unsigned int prec0 = TYPE_PRECISION (type0);
 
   /* Left-hand operand must be signed.  */
   if (TYPE_OVERFLOW_WRAPS (type0) || cxx_dialect >= cxx20)
     return false;
 
-  unsigned int min_prec = (wi::min_precision (wi::to_wide (op0), SIGNED)
+  signop sign = SIGNED;
+  if (TYPE_PRECISION (TREE_TYPE (op0)) < TYPE_PRECISION (type0))
+    sign = TYPE_SIGN (TREE_TYPE (op0));
+  unsigned int min_prec = (wi::min_precision (wi::to_wide (op0), sign)
 			   + TREE_INT_CST_LOW (op1));
   /* Handle the case of left-shifting 1 into the sign bit.
    * However, shifting 1 _out_ of the sign bit, as in
@@ -2645,7 +2651,8 @@ maybe_warn_shift_overflow (location_t loc, tree op0, tree op1)
     warning_at (loc, OPT_Wshift_overflow_,
 		"result of %qE requires %u bits to represent, "
 		"but %qT only has %u bits",
-		build2_loc (loc, LSHIFT_EXPR, type0, op0, op1),
+		build2_loc (loc, LSHIFT_EXPR, type0,
+			    fold_convert (type0, op0), op1),
 		min_prec, type0, prec0);
 
   return overflowed;
