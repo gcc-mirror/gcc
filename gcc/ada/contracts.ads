@@ -45,6 +45,7 @@ package Contracts is
    --    Depends
    --    Effective_Reads
    --    Effective_Writes
+   --    Exceptional_Cases
    --    Extensions_Visible
    --    Global
    --    Initial_Condition
@@ -58,6 +59,7 @@ package Contracts is
    --    Refined_Global
    --    Refined_Post
    --    Refined_States
+   --    Subprogram_Variant
    --    Test_Case
    --    Volatile_Function
 
@@ -173,12 +175,14 @@ package Contracts is
    --
    --    Contract_Cases
    --    Depends
+   --    Exceptional_Cases
    --    Global
    --    Postcondition
    --    Precondition
    --    Refined_Depends
    --    Refined_Global
    --    Refined_Post
+   --    Subprogram_Variant
    --    Test_Case
 
    procedure Analyze_Task_Contract (Task_Id : Entity_Id);

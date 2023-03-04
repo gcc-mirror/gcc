@@ -447,6 +447,7 @@ package Sem_Prag is
    --  Subsidiary to the analysis of pragmas
    --    Contract_Cases
    --    Depends
+   --    Exceptional_Cases
    --    Extensions_Visible
    --    Global
    --    Initializes
@@ -463,6 +464,7 @@ package Sem_Prag is
    --    Refined_Global
    --    Refined_Post
    --    Refined_State
+   --    Subprogram_Variant
    --    Test_Case
    --    Volatile_Function
    --  as well as attributes 'Old and 'Result. Find the declaration of the

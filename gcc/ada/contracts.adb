@@ -223,11 +223,13 @@ package body Contracts is
       --    Attach_Handler
       --    Contract_Cases
       --    Depends
+      --    Exceptional_Cases
       --    Extensions_Visible
       --    Global
       --    Interrupt_Handler
       --    Postcondition
       --    Precondition
+      --    Subprogram_Variant
       --    Test_Case
       --    Volatile_Function
 
