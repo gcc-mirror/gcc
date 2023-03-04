@@ -104,3 +104,9 @@ f17 (unsigned char x, unsigned short y)
 {
   return (unsigned short) (~(unsigned short) x) == y;		/* { dg-bogus "comparison of promoted bitwise complement of an unsigned value with unsigned" } */
 }
+
+int
+f18 (unsigned char x)
+{
+  return (unsigned int) (short) (~(unsigned short) x) == 0xffffff05ULL;	/* { dg-bogus "comparison of promoted bitwise complement of an unsigned value with constant" } */
+}
