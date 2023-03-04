@@ -3501,6 +3501,11 @@ package body Sem_Util is
                     ("internal call cannot appear in default for formal of "
                      & "protected operation", N);
                   return;
+
+               --  Prevent the search from going too far
+
+               elsif Is_Body_Or_Package_Declaration (P) then
+                  exit;
                end if;
 
                P := Parent (P);
