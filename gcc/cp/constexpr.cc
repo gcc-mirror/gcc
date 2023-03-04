@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "fold-const.h"
 #include "intl.h"
+#include "toplev.h"
 
 static bool verify_constant (tree, bool, bool *, bool *);
 #define VERIFY_CONSTANT(X)						\
@@ -7125,6 +7126,24 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	      }
 	    *non_constant_p = true;
 	    break;
+	  }
+
+	/* make_rtl_for_nonlocal_decl could have deferred emission of
+	   a local static var, but if it appears in a statement expression
+	   which is constant expression evaluated to e.g. just the address
+	   of the variable, its DECL_EXPR will never be seen during
+	   gimple lowering's record_vars_into as the statement expression
+	   will not be in the IL at all.  */
+	if (VAR_P (r)
+	    && TREE_STATIC (r)
+	    && !DECL_REALLY_EXTERN (r)
+	    && DECL_FUNCTION_SCOPE_P (r)
+	    && !var_in_maybe_constexpr_fn (r)
+	    && decl_constant_var_p (r))
+	  {
+	    varpool_node *node = varpool_node::get (r);
+	    if (node == NULL || !node->definition)
+	      rest_of_decl_compilation (r, 0, at_eof);
 	  }
 
 	if (AGGREGATE_TYPE_P (TREE_TYPE (r))

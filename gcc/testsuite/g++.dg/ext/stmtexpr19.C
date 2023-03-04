@@ -1,6 +1,6 @@
 // PR c++/81073
 // { dg-options "" }
-// { dg-do compile { target c++11 } }
+// { dg-do link { target c++11 } }
 
 struct test { const int *addr; };
 
