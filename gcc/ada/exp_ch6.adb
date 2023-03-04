@@ -1969,21 +1969,12 @@ package body Exp_Ch6 is
             F_Typ := Non_Limited_View (F_Typ);
          end if;
 
-         --  Use the actual designated subtype for a dereference, if any
-
-         if Nkind (Actual) = N_Explicit_Dereference
-           and then Present (Actual_Designated_Subtype (Actual))
-         then
-            Indic :=
-              New_Occurrence_Of (Actual_Designated_Subtype (Actual), Loc);
-
          --  Use formal type for temp, unless formal type is an unconstrained
-         --  array, in which case we don't have to worry about bounds checks,
-         --  and we use the actual type, since that has appropriate bounds.
+         --  composite, in which case we don't have to worry about checks and
+         --  we can use the actual type, since that has appropriate bounds.
 
-         elsif Is_Array_Type (F_Typ) and then not Is_Constrained (F_Typ) then
-            Indic := New_Occurrence_Of (Etype (Actual), Loc);
-
+         if Is_Composite_Type (F_Typ) and then not Is_Constrained (F_Typ) then
+            Indic := New_Occurrence_Of (Get_Actual_Subtype (Actual), Loc);
          else
             Indic := New_Occurrence_Of (F_Typ, Loc);
          end if;
@@ -1999,20 +1990,8 @@ package body Exp_Ch6 is
          --  with the input parameter unless we have an OUT formal or
          --  this is an initialization call.
 
-         --  If the formal is an out parameter with discriminants, the
-         --  discriminants must be captured even if the rest of the object
-         --  is in principle uninitialized, because the discriminants may
-         --  be read by the called subprogram.
-
          if Ekind (Formal) = E_Out_Parameter then
             Incod := Empty;
-
-            if Has_Discriminants (F_Typ)
-              and then (Nkind (Actual) /= N_Explicit_Dereference
-                         or else No (Actual_Designated_Subtype (Actual)))
-            then
-               Indic := New_Occurrence_Of (Etype (Actual), Loc);
-            end if;
 
          elsif Inside_Init_Proc then
 
