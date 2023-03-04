@@ -1224,7 +1224,7 @@ MC-LIB-MODS = \
    SysStorage.mod \
    TimeString.mod \
 
-MC-LIB-BOOT-C = $(MC-LIB-MODS:%.mod=%.c)
+MC-LIB-BOOT-CC = $(MC-LIB-MODS:%.mod=%.cc)
 
 # Definition modules for the modula-2 to C++ translator found in mc.
 
@@ -1300,7 +1300,7 @@ MC-AUTO-MODS = \
    mcp4.mod \
    mcp5.mod
 
-MC-BOOT-C = $(MC-MODS:%.mod=%.c) $(MC-AUTO-MODS:%.mod=%.c)
+MC-BOOT-CC = $(MC-MODS:%.mod=%.cc) $(MC-AUTO-MODS:%.mod=%.cc)
 
 # C interface files for mc.
 
@@ -1326,13 +1326,13 @@ MC-INTERFACE-CC = \
 BUILD-MC-BOOT-H =  $(MC-LIB-DEFS:%.def=m2/mc-boot-gen/$(SRC_PREFIX)%.h) \
                    $(MC-DEFS:%.def=m2/mc-boot-gen/$(SRC_PREFIX)%.h)
 
-BUILD-MC-BOOT-C =  $(MC-LIB-MODS:%.mod=m2/mc-boot-gen/$(SRC_PREFIX)%.c) \
-                   $(MC-MODS:%.mod=m2/mc-boot-gen/$(SRC_PREFIX)%.c)
+BUILD-MC-BOOT-CC =  $(MC-LIB-MODS:%.mod=m2/mc-boot-gen/$(SRC_PREFIX)%.cc) \
+                    $(MC-MODS:%.mod=m2/mc-boot-gen/$(SRC_PREFIX)%.cc)
 
-BUILD-MC-BOOT-AUTO-C = $(MC-AUTO-MODS:%.mod=m2/mc-boot-gen/$(SRC_PREFIX)%.c)
+BUILD-MC-BOOT-AUTO-CC = $(MC-AUTO-MODS:%.mod=m2/mc-boot-gen/$(SRC_PREFIX)%.cc)
 
-BUILD-MC-BOOT-O =  $(MC-LIB-BOOT-C:%.c=m2/mc-boot/$(SRC_PREFIX)%.o) \
-                   $(MC-BOOT-C:%.c=m2/mc-boot/$(SRC_PREFIX)%.o)
+BUILD-MC-BOOT-O =  $(MC-LIB-BOOT-CC:%.cc=m2/mc-boot/$(SRC_PREFIX)%.o) \
+                   $(MC-BOOT-CC:%.cc=m2/mc-boot/$(SRC_PREFIX)%.o)
 
 BUILD-MC-INTERFACE-O = $(MC-INTERFACE-C:%.c=m2/mc-boot-ch/$(SRC_PREFIX)%.o) \
                        $(MC-INTERFACE-CC:%.cc=m2/mc-boot-ch/$(SRC_PREFIX)%.o)
@@ -1350,7 +1350,7 @@ m2/boot-bin/mc$(exeext): $(BUILD-MC-BOOT-O) $(BUILD-MC-INTERFACE-O) \
          $(BUILD-MC-INTERFACE-O) m2/mc-boot/main.o \
          mcflex.o m2/gm2-libs-boot/RTcodummy.o -lm
 
-m2/mc-boot/$(SRC_PREFIX)%.o: m2/mc-boot/$(SRC_PREFIX)%.c m2/gm2-libs/gm2-libs-host.h
+m2/mc-boot/$(SRC_PREFIX)%.o: m2/mc-boot/$(SRC_PREFIX)%.cc m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
 	$(CXX) -g -c -I. -I$(srcdir)/m2/mc-boot-ch -I$(srcdir)/m2/mc-boot -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) $< -o $@
 
@@ -1364,8 +1364,8 @@ m2/mc-boot-ch/$(SRC_PREFIX)%.o: m2/mc-boot-ch/$(SRC_PREFIX)%.cc m2/gm2-libs/gm2-
 
 m2/mc-boot/main.o: $(M2LINK) $(srcdir)/m2/init/mcinit
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	unset CC ; $(M2LINK) -s --langc++ --exit --name m2/mc-boot/main.c $(srcdir)/m2/init/mcinit
-	$(CXX) -g -c -I. -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) m2/mc-boot/main.c -o $@
+	unset CC ; $(M2LINK) -s --langc++ --exit --name m2/mc-boot/main.cc $(srcdir)/m2/init/mcinit
+	$(CXX) -g -c -I. -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) m2/mc-boot/main.cc -o $@
 
 mcflex.o: mcflex.c m2/gm2-libs/gm2-libs-host.h
 	$(CC) -I$(srcdir)/m2/mc -g -c $< -o $@   # remember that mcReserved.h is copied into m2/mc
