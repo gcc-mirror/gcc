@@ -10982,6 +10982,9 @@ package body Sem_Attr is
       --  Returns True if Declared_Entity is declared within the declarative
       --  region of Generic_Unit; otherwise returns False.
 
+      function Is_Thin_Pointer_To_Unc_Array (T : Entity_Id) return Boolean;
+      --  Return True if T is a thin pointer to an unconstrained array type
+
       ----------------------------------
       -- Declared_Within_Generic_Unit --
       ----------------------------------
@@ -11008,6 +11011,28 @@ package body Sem_Attr is
 
          return False;
       end Declared_Within_Generic_Unit;
+
+      ----------------------------------
+      -- Is_Thin_Pointer_To_Unc_Array --
+      ----------------------------------
+
+      function Is_Thin_Pointer_To_Unc_Array (T : Entity_Id) return Boolean is
+      begin
+         if Is_Access_Type (T)
+           and then Has_Size_Clause (T)
+           and then RM_Size (T) = System_Address_Size
+         then
+            declare
+               DT : constant Entity_Id := Designated_Type (T);
+
+            begin
+               return Is_Array_Type (DT) and then not Is_Constrained (DT);
+            end;
+
+         else
+            return False;
+         end if;
+      end Is_Thin_Pointer_To_Unc_Array;
 
    --  Start of processing for Resolve_Attribute
 
@@ -11484,9 +11509,7 @@ package body Sem_Attr is
                end if;
             end if;
 
-            if Attr_Id in Attribute_Access | Attribute_Unchecked_Access
-              and then (Ekind (Btyp) = E_General_Access_Type
-                         or else Ekind (Btyp) = E_Anonymous_Access_Type)
+            if Ekind (Btyp) in E_General_Access_Type | E_Anonymous_Access_Type
             then
                --  Ada 2005 (AI-230): Check the accessibility of anonymous
                --  access types for stand-alone objects, record and array
@@ -11494,6 +11517,7 @@ package body Sem_Attr is
                --  the level is the same of the enclosing composite type.
 
                if Ada_Version >= Ada_2005
+                 and then Attr_Id = Attribute_Access
                  and then (Is_Local_Anonymous_Access (Btyp)
 
                             --  Handle cases where Btyp is the anonymous access
@@ -11501,7 +11525,6 @@ package body Sem_Attr is
 
                             or else Nkind (Associated_Node_For_Itype (Btyp)) =
                                                         N_Object_Declaration)
-                 and then Attr_Id = Attribute_Access
 
                  --  Verify that static checking is OK (namely that we aren't
                  --  in a specific context requiring dynamic checks on
@@ -11540,7 +11563,9 @@ package body Sem_Attr is
                   end if;
                end if;
 
-               if Is_Dependent_Component_Of_Mutable_Object (P) then
+               if Attr_Id /= Attribute_Unrestricted_Access
+                 and then Is_Dependent_Component_Of_Mutable_Object (P)
+               then
                   Error_Msg_F
                     ("illegal attribute for discriminant-dependent component",
                      P);
@@ -11555,7 +11580,19 @@ package body Sem_Attr is
                   Nom_Subt := Base_Type (Nom_Subt);
                end if;
 
-               if Is_Tagged_Type (Designated_Type (Typ)) then
+               --  We do not enforce static matching for Unrestricted_Access
+               --  except for a thin pointer to an unconstrained array type,
+               --  because, in this case, the designated object must contain
+               --  its bounds, which means that it must have an unconstrained
+               --  nominal subtype (and be aliased, as will be checked below).
+
+               if Attr_Id = Attribute_Unrestricted_Access
+                 and then not (Is_Thin_Pointer_To_Unc_Array (Typ)
+                                and then Is_Aliased_View (Original_Node (P)))
+               then
+                  null;
+
+               elsif Is_Tagged_Type (Designated_Type (Typ)) then
 
                   --  If the attribute is in the context of an access
                   --  parameter, then the prefix is allowed to be of
@@ -11665,8 +11702,9 @@ package body Sem_Attr is
 
                   Compatible_Alt_Checks : constant Boolean :=
                     No_Dynamic_Acc_Checks and then not Debug_Flag_Underscore_B;
+
                begin
-                  if Attr_Id /= Attribute_Unchecked_Access
+                  if Attr_Id = Attribute_Access
                     and then (Ekind (Btyp) = E_General_Access_Type
                                or else No_Dynamic_Acc_Checks)
 
@@ -11856,22 +11894,12 @@ package body Sem_Attr is
                --  Check for unrestricted access where expected type is a thin
                --  pointer to an unconstrained array.
 
-               elsif Has_Size_Clause (Typ)
-                 and then RM_Size (Typ) = System_Address_Size
-               then
-                  declare
-                     DT : constant Entity_Id := Designated_Type (Typ);
-                  begin
-                     if Is_Array_Type (DT)
-                       and then not Is_Constrained (DT)
-                     then
-                        Error_Msg_N
-                          ("illegal use of Unrestricted_Access attribute", P);
-                        Error_Msg_N
-                          ("\attempt to generate thin pointer to unaliased "
-                           & "object", P);
-                     end if;
-                  end;
+               elsif Is_Thin_Pointer_To_Unc_Array (Typ) then
+                  Error_Msg_N
+                    ("illegal use of Unrestricted_Access attribute", P);
+                  Error_Msg_N
+                    ("\attempt to generate thin pointer to unaliased "
+                     & "object", P);
                end if;
             end if;
 
