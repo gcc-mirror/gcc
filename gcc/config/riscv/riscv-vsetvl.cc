@@ -1528,7 +1528,7 @@ static bool
 reg_available_p (const bb_info *bb, const vector_insn_info &info)
 {
   if (!info.get_avl_source ())
-    return true;
+    return false;
   insn_info *insn = info.get_avl_source ()->insn ();
   if (insn->bb () == bb)
     return before_p (insn, info.get_insn ());
@@ -3039,6 +3039,12 @@ pass_vsetvl::backward_demand_fusion (void)
 	  if (e->flags & EDGE_COMPLEX)
 	    continue;
 	  if (e->src->index == ENTRY_BLOCK_PTR_FOR_FN (cfun)->index)
+	    continue;
+	  /* If prop is demand of vsetvl instruction and reaching doesn't demand
+	     AVL. We don't backward propagate since vsetvl instruction has no
+	     side effects.  */
+	  if (vsetvl_insn_p (prop.get_insn ()->rtl ())
+	      && propagate_avl_across_demands_p (prop, block_info.reaching_out))
 	    continue;
 
 	  if (block_info.reaching_out.unknown_p ())
