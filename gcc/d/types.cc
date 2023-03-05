@@ -381,9 +381,9 @@ layout_aggregate_members (Dsymbols *members, tree context, bool inherited_p)
 	    continue;
 
 	  /* If this variable was really a tuple, add all tuple fields.  */
-	  if (var->aliassym)
+	  if (var->aliasTuple)
 	    {
-	      TupleDeclaration *td = var->aliassym->isTupleDeclaration ();
+	      TupleDeclaration *td = var->aliasTuple;
 	      Dsymbols tmembers;
 	      /* No other way to coerce the underlying type out of the tuple.
 		 Frontend should have already validated this.  */

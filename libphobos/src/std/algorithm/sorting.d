@@ -1922,14 +1922,8 @@ See_Also:
     $(REF binaryFun, std,functional)
 */
 SortedRange!(Range, less)
-sort(alias less = "a < b", SwapStrategy ss = SwapStrategy.unstable,
-        Range)(Range r)
-if (((ss == SwapStrategy.unstable && (hasSwappableElements!Range ||
-    hasAssignableElements!Range)) ||
-    (ss != SwapStrategy.unstable && hasAssignableElements!Range)) &&
-    isRandomAccessRange!Range &&
-    hasSlicing!Range &&
-    hasLength!Range)
+sort(alias less = "a < b", SwapStrategy ss = SwapStrategy.unstable, Range)
+(Range r)
     /+ Unstable sorting uses the quicksort algorithm, which uses swapAt,
        which either uses swap(...), requiring swappable elements, or just
        swaps using assignment.
@@ -1937,21 +1931,46 @@ if (((ss == SwapStrategy.unstable && (hasSwappableElements!Range ||
        requiring assignable elements. +/
 {
     import std.range : assumeSorted;
-    alias lessFun = binaryFun!(less);
-    alias LessRet = typeof(lessFun(r.front, r.front));    // instantiate lessFun
-    static if (is(LessRet == bool))
+    static if (ss == SwapStrategy.unstable)
     {
-        static if (ss == SwapStrategy.unstable)
-            quickSortImpl!(lessFun)(r, r.length);
-        else //use Tim Sort for semistable & stable
-            TimSortImpl!(lessFun, Range).sort(r, null);
-
-        assert(isSorted!lessFun(r), "Failed to sort range of type " ~ Range.stringof);
+        static assert(hasSwappableElements!Range || hasAssignableElements!Range,
+                  "When using SwapStrategy.unstable, the passed Range '"
+                ~ Range.stringof ~ "' must"
+                ~ " either fulfill hasSwappableElements, or"
+                ~ " hasAssignableElements, both were not the case");
     }
     else
     {
-        static assert(false, "Invalid predicate passed to sort: " ~ less.stringof);
+        static assert(hasAssignableElements!Range, "When using a SwapStrategy"
+                ~ " != unstable, the"
+                ~ " passed Range '" ~ Range.stringof ~ "' must fulfill"
+                ~ " hasAssignableElements, which it did not");
     }
+
+    static assert(isRandomAccessRange!Range, "The passed Range '"
+            ~ Range.stringof ~ "' must be a Random AccessRange "
+            ~ "(isRandomAccessRange)");
+
+    static assert(hasSlicing!Range, "The passed Range '"
+            ~ Range.stringof ~ "' must allow Slicing (hasSlicing)");
+
+    static assert(hasLength!Range, "The passed Range '"
+            ~ Range.stringof ~ "' must have a length (hasLength)");
+
+    alias lessFun = binaryFun!(less);
+    alias LessRet = typeof(lessFun(r.front, r.front));    // instantiate lessFun
+
+    static assert(is(LessRet == bool), "The return type of the template"
+            ~ " argument 'less' when used with the binaryFun!less template"
+            ~ " must be a bool. This is not the case, the returned type is '"
+            ~ LessRet.stringof ~ "'");
+
+    static if (ss == SwapStrategy.unstable)
+        quickSortImpl!(lessFun)(r, r.length);
+    else //use Tim Sort for semistable & stable
+        TimSortImpl!(lessFun, Range).sort(r, null);
+
+    assert(isSorted!lessFun(r), "Failed to sort range of type " ~ Range.stringof);
     return assumeSorted!less(r);
 }
 
@@ -2599,8 +2618,16 @@ private template TimSortImpl(alias pred, R)
             //Test for overflow
             if (newSize < minCapacity) newSize = minCapacity;
 
-            if (__ctfe) temp.length = newSize;
-            else temp = () @trusted { return uninitializedArray!(T[])(newSize); }();
+            // can't use `temp.length` if there's no default constructor
+            static if (__traits(compiles, { T defaultConstructed; cast(void) defaultConstructed; }))
+            {
+                if (__ctfe) temp.length = newSize;
+                else temp = () @trusted { return uninitializedArray!(T[])(newSize); }();
+            }
+            else
+            {
+                temp = () @trusted { return uninitializedArray!(T[])(newSize); }();
+            }
         }
         return temp;
     }
@@ -3035,6 +3062,18 @@ private template TimSortImpl(alias pred, R)
     sort!(cmp, SwapStrategy.unstable)(makeArray(20));
     sort!(cmp, SwapStrategy.stable)(makeArray(minMerge - 5));
     sort!(cmp, SwapStrategy.stable)(makeArray(minMerge + 5));
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=23668
+@safe unittest
+{
+    static struct S
+    {
+        int opCmp(const S) const { return 1; }
+        @disable this();
+    }
+    S[] array;
+    array.sort!("a < b", SwapStrategy.stable);
 }
 
 // schwartzSort

@@ -7,10 +7,11 @@ fail_compilation/fail15616a.d(17):                        `fail15616a.foo(int a,
 fail_compilation/fail15616a.d(26):                        `fail15616a.foo(int a, int b, int c)`
 fail_compilation/fail15616a.d(29):                        `fail15616a.foo(string a)`
 fail_compilation/fail15616a.d(32):                        `fail15616a.foo(string a, string b)`
-fail_compilation/fail15616a.d(41):        ... (3 more, -v to show) ...
+fail_compilation\fail15616a.d(35):                        `fail15616a.foo(string a, string b, string c)`
+fail_compilation/fail15616a.d(41):        ... (2 more, -v to show) ...
 ---
 */
-
+#line 14
 void foo(int a)
 {}
 

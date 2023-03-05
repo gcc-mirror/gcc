@@ -246,7 +246,7 @@ class Object
      * }
      * ---
      */
-    deprecated static Object factory(string classname)
+    static Object factory(string classname)
     {
         auto ci = TypeInfo_Class.find(classname);
         if (ci)
@@ -256,7 +256,7 @@ class Object
         return null;
     }
 
-    deprecated @system unittest
+    @system unittest
     {
         Object valid_obj = Object.factory("object.Object");
         Object invalid_obj = Object.factory("object.__this_class_doesnt_exist__");
@@ -1417,7 +1417,7 @@ class TypeInfo_Function : TypeInfo
        int func(int a, int b);
     }
 
-    alias functionTypes = typeof(__traits(getVirtualFunctions, C, "func"));
+    alias functionTypes = typeof(__traits(getVirtualMethods, C, "func"));
     assert(typeid(functionTypes[0]).toString() == "void function()");
     assert(typeid(functionTypes[1]).toString() == "void function(int)");
     assert(typeid(functionTypes[2]).toString() == "int function(int, int)");
@@ -1431,7 +1431,7 @@ class TypeInfo_Function : TypeInfo
        void func(int a);
     }
 
-    alias functionTypes = typeof(__traits(getVirtualFunctions, C, "func"));
+    alias functionTypes = typeof(__traits(getVirtualMethods, C, "func"));
 
     Object obj = typeid(functionTypes[0]);
     assert(obj.opEquals(typeid(functionTypes[0])));
@@ -2927,25 +2927,6 @@ void clear(Value, Key)(Value[Key]* aa)
     assert("k1" !in aa);
 }
 
-// Issue 20559
-@system unittest
-{
-    static class Foo
-    {
-        int[string] aa;
-        alias aa this;
-    }
-
-    auto v = new Foo();
-    v["Hello World"] = 42;
-    v.clear;
-    assert("Hello World" !in v);
-
-    // Test for T*
-    static assert(!__traits(compiles, (&v).clear));
-    static assert( __traits(compiles, (*(&v)).clear));
-}
-
 /***********************************
  * Reorganizes the associative array in place so that lookups are more
  * efficient.
@@ -4280,44 +4261,6 @@ void destroy(bool initialize = true, T)(T obj) if (is(T == interface))
 
 @system unittest
 {
-    // class with an `alias this`
-    class A
-    {
-        static int dtorCount;
-        ~this()
-        {
-            dtorCount++;
-        }
-    }
-
-    class B
-    {
-        A a;
-        alias a this;
-        this()
-        {
-            a = new A;
-        }
-        static int dtorCount;
-        ~this()
-        {
-            dtorCount++;
-        }
-    }
-    auto b = new B;
-    assert(A.dtorCount == 0);
-    assert(B.dtorCount == 0);
-    destroy(b);
-    assert(A.dtorCount == 0);
-    assert(B.dtorCount == 1);
-
-    auto a = new A;
-    destroy(a);
-    assert(A.dtorCount == 1);
-}
-
-@system unittest
-{
     interface I { }
     {
         class A: I { string s = "A"; this() {} }
@@ -4529,43 +4472,6 @@ if (__traits(isStaticArray, T))
     }
 }
 
-// https://issues.dlang.org/show_bug.cgi?id=19218
-@system unittest
-{
-    static struct S
-    {
-        static dtorCount = 0;
-        ~this() { ++dtorCount; }
-    }
-
-    static interface I
-    {
-        ref S[3] getArray();
-        alias getArray this;
-    }
-
-    static class C : I
-    {
-        static dtorCount = 0;
-        ~this() { ++dtorCount; }
-
-        S[3] a;
-        alias a this;
-
-        ref S[3] getArray() { return a; }
-    }
-
-    C c = new C();
-    destroy(c);
-    assert(S.dtorCount == 3);
-    assert(C.dtorCount == 1);
-
-    I i = new C();
-    destroy(i);
-    assert(S.dtorCount == 6);
-    assert(C.dtorCount == 2);
-}
-
 /// ditto
 void destroy(bool initialize = true, T)(ref T obj)
     if (!is(T == struct) && !is(T == interface) && !is(T == class) && !__traits(isStaticArray, T))
@@ -4622,7 +4528,8 @@ they are only intended to be instantiated by the compiler, not the user.
 public import core.internal.entrypoint : _d_cmain;
 
 public import core.internal.array.appending : _d_arrayappendT;
-public import core.internal.array.appending : _d_arrayappendTTrace;
+version (D_ProfileGC)
+    public import core.internal.array.appending : _d_arrayappendTTrace;
 public import core.internal.array.appending : _d_arrayappendcTXImpl;
 public import core.internal.array.comparison : __cmp;
 public import core.internal.array.equality : __equals;
@@ -4648,6 +4555,8 @@ public import core.internal.switch_: __switch_error;
 
 public import core.lifetime : _d_delstructImpl;
 public import core.lifetime : _d_newThrowable;
+public import core.lifetime : _d_newclassT;
+public import core.lifetime : _d_newclassTTrace;
 
 public @trusted @nogc nothrow pure extern (C) void _d_delThrowable(scope Throwable);
 

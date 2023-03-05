@@ -1524,10 +1524,12 @@ get_cpp_typeinfo_decl (ClassDeclaration *decl)
   return decl->cpp_type_info_ptr_sym;
 }
 
-/* Get the exact TypeInfo for TYPE, if it doesn't exist, create it.  */
+/* Get the exact TypeInfo for TYPE, if it doesn't exist, create it.
+   When GENERATE is true, push the TypeInfo as a member of MOD so that it will
+   get code generation. */
 
 void
-create_typeinfo (Type *type, Module *mod)
+create_typeinfo (Type *type, Module *mod, bool generate)
 {
   if (!Type::dtypeinfo)
     create_frontend_tinfo_types ();
@@ -1685,7 +1687,7 @@ create_typeinfo (Type *type, Module *mod)
 
       /* If this has a custom implementation in rt/typeinfo, then
 	 do not generate a COMDAT for it.  */
-      if (!builtin_typeinfo_p (t))
+      if (generate && !builtin_typeinfo_p (t))
 	{
 	  /* Find module that will go all the way to an object file.  */
 	  if (mod)

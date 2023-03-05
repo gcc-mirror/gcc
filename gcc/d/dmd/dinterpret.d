@@ -747,7 +747,7 @@ public:
     Expression result;
     UnionExp* pue;              // storage for `result`
 
-    extern (D) this(UnionExp* pue, InterState* istate, CTFEGoal goal)
+    extern (D) this(UnionExp* pue, InterState* istate, CTFEGoal goal) scope
     {
         this.pue = pue;
         this.istate = istate;

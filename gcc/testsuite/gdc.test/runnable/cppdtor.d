@@ -38,12 +38,12 @@ extern (C) int printf(scope const char*, ...);
 extern (C++) class CppA
 {
 	int num;
-	this(int num)
+	this(int num) scope
 	{
 		this.num = num;
 	}
 
-	~this()
+	~this() scope
 	{
 		printf("%d: CppA.~this\n", num);
 	}
@@ -51,12 +51,12 @@ extern (C++) class CppA
 
 extern (C++) class CppB : CppA
 {
-	this(int num)
+	this(int num) scope
 	{
 		super(num);
 	}
 
-	~this()
+	~this() scope
 	{
 		printf("%d: CppB.~this\n", num);
 	}
@@ -64,12 +64,12 @@ extern (C++) class CppB : CppA
 
 extern (C++) class CppC : CppB
 {
-	this(int num)
+	this(int num) scope
 	{
 		super(num);
 	}
 
-	~this()
+	~this() scope
 	{
 		printf("%d: CppC.~this\n", num);
 	}
@@ -78,12 +78,12 @@ extern (C++) class CppC : CppB
 extern (D) class DA
 {
 	int num;
-	this(int num)
+	this(int num) scope
 	{
 		this.num = num;
 	}
 
-	~this()
+	~this() scope
 	{
 		printf("%d: DA.~this\n", num);
 	}
@@ -91,12 +91,12 @@ extern (D) class DA
 
 extern (D) class DB : DA
 {
-	this(int num)
+	this(int num) scope
 	{
 		super(num);
 	}
 
-	~this()
+	~this() scope
 	{
 		printf("%d: DB.~this\n", num);
 	}
@@ -104,12 +104,12 @@ extern (D) class DB : DA
 
 extern (D) class DC : DB
 {
-	this(int num)
+	this(int num) scope
 	{
 		super(num);
 	}
 
-	~this()
+	~this() scope
 	{
 		printf("%d: DC.~this\n", num);
 	}
@@ -118,7 +118,7 @@ extern (D) class DC : DB
 extern (C++) class CppNoDestruct
 {
 	int num;
-	this(int num)
+	this(int num) scope
 	{
 		this.num = num;
 	}

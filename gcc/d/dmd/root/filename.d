@@ -85,6 +85,12 @@ nothrow:
         this.str = str.xarraydup;
     }
 
+    ///
+    extern (C++) static FileName create(const(char)* name) pure
+    {
+        return FileName(name.toDString);
+    }
+
     /// Compare two name according to the platform's rules (case sensitive or not)
     extern (C++) static bool equals(const(char)* name1, const(char)* name2) pure @nogc
     {

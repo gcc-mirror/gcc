@@ -2277,8 +2277,7 @@ public:
 	else
 	  {
 	    /* Generate: _d_newclass()  */
-	    tree arg = build_address (get_classinfo_decl (cd));
-	    new_call = build_libcall (LIBCALL_NEWCLASS, tb, 1, arg);
+	    new_call = build_expr (e->lowering);
 	  }
 
 	/* Set the context pointer for nested classes.  */

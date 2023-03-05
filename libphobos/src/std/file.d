@@ -1575,7 +1575,7 @@ private void setTimesImpl(scope const(char)[] names, scope const(FSChar)* namez,
         const ta = SysTimeToFILETIME(accessTime);
         const tm = SysTimeToFILETIME(modificationTime);
         alias defaults =
-            AliasSeq!(GENERIC_WRITE,
+            AliasSeq!(FILE_WRITE_ATTRIBUTES,
                       0,
                       null,
                       OPEN_EXISTING,
@@ -1662,6 +1662,16 @@ private void setTimesImpl(scope const(char)[] names, scope const(FSChar)* namez,
         testTimes(123_456_7);
 
     rmdirRecurse(newdir);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=23683
+@safe unittest
+{
+    scope(exit) deleteme.remove;
+    import std.stdio : File;
+    auto f = File(deleteme, "wb");
+    SysTime time = SysTime(DateTime(2018, 10, 4, 0, 0, 30));
+    setTimes(deleteme, time, time);
 }
 
 /++
@@ -4930,7 +4940,10 @@ alias DirIterator = _DirIterator!dip1000Enabled;
         $(LREF DirEntry).
 
     Throws:
-        $(LREF FileException) if the directory does not exist.
+        $(UL
+        $(LI $(LREF FileException) if the $(B path) directory does not exist or read permission is denied.)
+        $(LI $(LREF FileException) if $(B mode) is not `shallow` and a subdirectory cannot be read.)
+        )
 
 Example:
 --------------------
@@ -4971,7 +4984,25 @@ auto dFiles = dirEntries("","*.{d,di}",SpanMode.depth);
 foreach (d; dFiles)
     writeln(d.name);
 --------------------
- +/
+To handle subdirectories with denied read permission, use `SpanMode.shallow`:
+---
+void scan(string path)
+{
+    foreach (DirEntry entry; dirEntries(path, SpanMode.shallow))
+    {
+        try
+        {
+            writeln(entry.name);
+            if (entry.isDir)
+                scan(entry.name);
+        }
+        catch (FileException fe) { continue; } // ignore
+    }
+}
+
+scan("");
+---
++/
 
 // For some reason, doing the same alias-to-a-template trick as with DirIterator
 // does not work here.

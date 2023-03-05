@@ -19,6 +19,7 @@ struct FileName
 private:
     DString str;
 public:
+    static FileName create(const char *name);
     static bool equals(const char *name1, const char *name2);
     static bool absolute(const char *name);
     static const char *toAbsolute(const char *name, const char *base = NULL);

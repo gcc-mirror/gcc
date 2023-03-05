@@ -1,5 +1,3 @@
-// REQUIRED_ARGS: -d
-
 module test34;
 
 import core.exception;

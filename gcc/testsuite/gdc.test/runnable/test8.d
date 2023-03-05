@@ -786,8 +786,8 @@ void test42()
 int x44;
 
 class A44 {
-     this() { printf("A44 ctor\n"); x44 += 1; }
-     ~this() { printf("A44 dtor\n"); x44 += 0x100; }
+     this() scope { printf("A44 ctor\n"); x44 += 1; }
+     ~this() scope { printf("A44 dtor\n"); x44 += 0x100; }
 }
 class B44 : A44 { }
 

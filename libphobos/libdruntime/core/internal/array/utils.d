@@ -34,76 +34,79 @@ ulong accumulatePure(string file, int line, string funcname, string name, ulong 
     return func(file, line, funcname, name, size);
 }
 
-/**
- * TraceGC wrapper generator around the runtime hook `Hook`.
- * Params:
- *   Type = The type of hook to report to accumulate
- *   Hook = The name hook to wrap
- */
-template TraceHook(string Type, string Hook)
+version (D_ProfileGC)
 {
-    const char[] TraceHook = q{
-        import core.internal.array.utils : gcStatsPure, accumulatePure;
-
-        pragma(inline, false);
-        string name = } ~ "`" ~ Type ~ "`;" ~ q{
-
-        // FIXME: use rt.tracegc.accumulator when it is accessable in the future.
-        version (tracegc)
-    } ~ "{\n" ~ q{
-            import core.stdc.stdio;
-
-            printf("%sTrace file = '%.*s' line = %d function = '%.*s' type = %.*s\n",
-            } ~ "\"" ~ Hook ~ "\".ptr," ~ q{
-                file.length, file.ptr,
-                line,
-                funcname.length, funcname.ptr,
-                name.length, name.ptr
-            );
-        } ~ "}\n" ~ q{
-        ulong currentlyAllocated = gcStatsPure().allocatedInCurrentThread;
-
-        scope(exit)
-        {
-            ulong size = gcStatsPure().allocatedInCurrentThread - currentlyAllocated;
-            if (size > 0)
-                if (!accumulatePure(file, line, funcname, name, size)) {
-                    // This 'if' and 'assert' is needed to force the compiler to not remove the call to
-                    // `accumulatePure`. It really want to do that while optimizing as the function is
-                    // `pure` and it does not influence the result of this hook.
-
-                    // `accumulatePure` returns the value of `size`, which can never be zero due to the
-                    // previous 'if'. So this assert will never be triggered.
-                    assert(0);
-                }
-        }
-    };
-}
-
-/**
- * TraceGC wrapper around runtime hook `Hook`.
- * Params:
- *  T = Type of hook to report to accumulate
- *  Hook = The hook to wrap
- *  errorMessage = The error message incase `version != D_TypeInfo`
- *  file = File that called `_d_HookTraceImpl`
- *  line = Line inside of `file` that called `_d_HookTraceImpl`
- *  funcname = Function that called `_d_HookTraceImpl`
- *  parameters = Parameters that will be used to call `Hook`
- * Bugs:
- *  This function template needs be between the compiler and a much older runtime hook that bypassed safety,
- *  purity, and throwabilty checks. To prevent breaking existing code, this function template
- *  is temporarily declared `@trusted pure` until the implementation can be brought up to modern D expectations.
-*/
-auto _d_HookTraceImpl(T, alias Hook, string errorMessage)(string file, int line, string funcname, Parameters!Hook parameters) @trusted pure
-{
-    version (D_TypeInfo)
+    /**
+     * TraceGC wrapper generator around the runtime hook `Hook`.
+     * Params:
+     *   Type = The type of hook to report to accumulate
+     *   Hook = The name hook to wrap
+     */
+    template TraceHook(string Type, string Hook)
     {
-        mixin(TraceHook!(T.stringof, __traits(identifier, Hook)));
-        return Hook(parameters);
+        const char[] TraceHook = q{
+            import core.internal.array.utils : gcStatsPure, accumulatePure;
+
+            pragma(inline, false);
+            string name = } ~ "`" ~ Type ~ "`;" ~ q{
+
+            // FIXME: use rt.tracegc.accumulator when it is accessable in the future.
+            version (tracegc)
+        } ~ "{\n" ~ q{
+                import core.stdc.stdio;
+
+                printf("%sTrace file = '%.*s' line = %d function = '%.*s' type = %.*s\n",
+                } ~ "\"" ~ Hook ~ "\".ptr," ~ q{
+                    file.length, file.ptr,
+                    line,
+                    funcname.length, funcname.ptr,
+                    name.length, name.ptr
+                );
+            } ~ "}\n" ~ q{
+            ulong currentlyAllocated = gcStatsPure().allocatedInCurrentThread;
+
+            scope(exit)
+            {
+                ulong size = gcStatsPure().allocatedInCurrentThread - currentlyAllocated;
+                if (size > 0)
+                    if (!accumulatePure(file, line, funcname, name, size)) {
+                        // This 'if' and 'assert' is needed to force the compiler to not remove the call to
+                        // `accumulatePure`. It really want to do that while optimizing as the function is
+                        // `pure` and it does not influence the result of this hook.
+
+                        // `accumulatePure` returns the value of `size`, which can never be zero due to the
+                        // previous 'if'. So this assert will never be triggered.
+                        assert(0);
+                    }
+            }
+        };
     }
-    else
-        assert(0, errorMessage);
+
+    /**
+     * TraceGC wrapper around runtime hook `Hook`.
+     * Params:
+     *  T = Type of hook to report to accumulate
+     *  Hook = The hook to wrap
+     *  errorMessage = The error message incase `version != D_TypeInfo`
+     *  file = File that called `_d_HookTraceImpl`
+     *  line = Line inside of `file` that called `_d_HookTraceImpl`
+     *  funcname = Function that called `_d_HookTraceImpl`
+     *  parameters = Parameters that will be used to call `Hook`
+     * Bugs:
+     *  This function template needs be between the compiler and a much older runtime hook that bypassed safety,
+     *  purity, and throwabilty checks. To prevent breaking existing code, this function template
+     *  is temporarily declared `@trusted pure` until the implementation can be brought up to modern D expectations.
+    */
+    auto _d_HookTraceImpl(T, alias Hook, string errorMessage)(string file, int line, string funcname, Parameters!Hook parameters) @trusted pure
+    {
+        version (D_TypeInfo)
+        {
+            mixin(TraceHook!(T.stringof, __traits(identifier, Hook)));
+            return Hook(parameters);
+        }
+        else
+            assert(0, errorMessage);
+    }
 }
 
 /**

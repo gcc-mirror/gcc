@@ -120,7 +120,7 @@ public:
     OutBuffer buf;
     alias visit = SemanticTimeTransitiveVisitor.visit;
 
-    this(Scope* sc)
+    this(Scope* sc) scope
     {
         this.sc = sc;
     }

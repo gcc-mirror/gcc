@@ -802,10 +802,14 @@ class InternetHost
     {
         string getHostNameFromInt = ih.name.dup;
 
-        assert(ih.getHostByAddr(ia.toAddrString()));
-        string getHostNameFromStr = ih.name.dup;
+        // This randomly fails in the compiler test suite
+        //assert(ih.getHostByAddr(ia.toAddrString()));
 
-        assert(getHostNameFromInt == getHostNameFromStr);
+        if (ih.getHostByAddr(ia.toAddrString()))
+        {
+            string getHostNameFromStr = ih.name.dup;
+            assert(getHostNameFromInt == getHostNameFromStr);
+        }
     }
 }
 

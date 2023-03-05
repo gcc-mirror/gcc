@@ -12,10 +12,62 @@
 module dmd.errors;
 
 import core.stdc.stdarg;
+import dmd.errorsink;
 import dmd.globals;
 import dmd.location;
 
 nothrow:
+
+/***************************
+ * Error message sink for D compiler.
+ */
+class ErrorSinkCompiler : ErrorSink
+{
+  nothrow:
+  extern (C++):
+  override:
+
+    void error(const ref Loc loc, const(char)* format, ...)
+    {
+        va_list ap;
+        va_start(ap, format);
+        verror(loc, format, ap);
+        va_end(ap);
+    }
+
+    void errorSupplemental(const ref Loc loc, const(char)* format, ...)
+    {
+        va_list ap;
+        va_start(ap, format);
+        verrorSupplemental(loc, format, ap);
+        va_end(ap);
+    }
+
+    void warning(const ref Loc loc, const(char)* format, ...)
+    {
+        va_list ap;
+        va_start(ap, format);
+        vwarning(loc, format, ap);
+        va_end(ap);
+    }
+
+    void deprecation(const ref Loc loc, const(char)* format, ...)
+    {
+        va_list ap;
+        va_start(ap, format);
+        vdeprecation(loc, format, ap);
+        va_end(ap);
+    }
+
+    void deprecationSupplemental(const ref Loc loc, const(char)* format, ...)
+    {
+        va_list ap;
+        va_start(ap, format);
+        vdeprecationSupplemental(loc, format, ap);
+        va_end(ap);
+    }
+}
+
 
 /**
  * Color highlighting to classify messages

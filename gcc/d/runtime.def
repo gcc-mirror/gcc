@@ -59,9 +59,6 @@ DEF_D_RUNTIME (ARRAYBOUNDS_SLICEP, "_d_arraybounds_slicep", RT(VOID),
 DEF_D_RUNTIME (ARRAYBOUNDS_INDEXP, "_d_arraybounds_indexp", RT(VOID),
 	       P4(IMMUTABLE_CHARPTR, UINT, SIZE_T, SIZE_T), ECF_NORETURN)
 
-/* Used when calling new on a class.  */
-DEF_D_RUNTIME (NEWCLASS, "_d_newclass", RT(OBJECT), P1(CONST_CLASSINFO), 0)
-
 /* Used when calling delete on a stack-allocated class or interface.  */
 DEF_D_RUNTIME (CALLFINALIZER, "_d_callfinalizer", RT(VOID), P1(VOIDPTR), 0)
 DEF_D_RUNTIME (CALLINTERFACEFINALIZER, "_d_callinterfacefinalizer", RT(VOID),

@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail14406.d-mixin-20(20): Error: variable `fail14406.CFrop.bar_obj` cannot be further field because it will change the determined CFrop size
-fail_compilation/fail14406.d-mixin-25(25): Error: variable `fail14406.IFrop.bar_obj` field not allowed in interface
+fail_compilation/fail14406.d-mixin-20(20): Error: cannot declare field `bar_obj` because it will change the determined size of `CFrop`
+fail_compilation/fail14406.d-mixin-25(25): Error: field `bar_obj` not allowed in interface
 ---
 */
 

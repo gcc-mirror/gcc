@@ -2,10 +2,16 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice23569.d(18): Error: cannot compare classes for equality because `object.Object` was not declared
+fail_compilation/ice23569.d(24): Error: cannot compare classes for equality because `object.Object` was not declared
 ---
 */
 module object;
+
+T _d_newclassT(T)()
+if (is(T == class))
+{
+    return null;
+}
 
 @safe unittest1()
 {

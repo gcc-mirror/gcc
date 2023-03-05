@@ -39,6 +39,7 @@ import dmd.dsymbol;
 import dmd.dsymbolsem;
 import dmd.dtemplate;
 import dmd.errors;
+import dmd.errorsink;
 import dmd.escape;
 import dmd.expression;
 import dmd.expressionsem;
@@ -160,7 +161,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
     Statement result;
     Scope* sc;
 
-    this(Scope* sc)
+    this(Scope* sc) scope
     {
         this.sc = sc;
     }
@@ -1276,7 +1277,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                 else if (auto td = sfront.isTemplateDeclaration())
                 {
                     Expressions a;
-                    if (auto f = resolveFuncCall(loc, sc, td, null, tab, &a, FuncResolveFlag.quiet))
+                    if (auto f = resolveFuncCall(loc, sc, td, null, tab, ArgumentList(&a), FuncResolveFlag.quiet))
                         tfront = f.type;
                 }
                 else if (auto d = sfront.toAlias().isDeclaration())
@@ -1491,7 +1492,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                 assert(0);
         }
         const(char)* r = (fs.op == TOK.foreach_reverse_) ? "R" : "";
-        int j = sprintf(fdname.ptr, "_aApply%s%.*s%llu", r, 2, fntab[flag].ptr, cast(ulong)dim);
+        int j = snprintf(fdname.ptr, BUFFER_LEN,  "_aApply%s%.*s%llu", r, 2, fntab[flag].ptr, cast(ulong)dim);
         assert(j < BUFFER_LEN);
 
         FuncDeclaration fdapply;
@@ -1955,7 +1956,17 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         // Save 'root' of two branches (then and else) at the point where it forks
         CtorFlow ctorflow_root = scd.ctorflow.clone();
 
-        ifs.ifbody = ifs.ifbody.semanticNoScope(scd);
+        /* Detect `if (__ctfe)`
+         */
+        if (ifs.isIfCtfeBlock())
+        {
+            Scope* scd2 = scd.push();
+            scd2.flags |= SCOPE.ctfeBlock;
+            ifs.ifbody = ifs.ifbody.semanticNoScope(scd2);
+            scd2.pop();
+        }
+        else
+            ifs.ifbody = ifs.ifbody.semanticNoScope(scd);
         scd.pop();
 
         CtorFlow ctorflow_then = sc.ctorflow;   // move flow results
@@ -2222,7 +2233,9 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             if (ed && ss.cases.length < ed.members.length)
             {
                 int missingMembers = 0;
-                const maxShown = !global.params.verbose ? 6 : int.max;
+                const maxShown = !global.params.verbose ?
+                                    (global.params.errorSupplementLimit ? global.params.errorSupplementLimit : int.max)
+                                    : int.max;
             Lmembers:
                 foreach (es; *ed.members)
                 {
@@ -2256,7 +2269,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         }
 
         if (!sc.sw.sdefault &&
-            (!ss.isFinal || needswitcherror || global.params.useAssert == CHECKENABLE.on))
+            (!ss.isFinal || needswitcherror || global.params.useAssert == CHECKENABLE.on || sc.func.isSafe))
         {
             ss.hasNoDefault = 1;
 
@@ -2485,7 +2498,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                 cs.exp = se;
             else if (!cs.exp.isIntegerExp() && !cs.exp.isErrorExp())
             {
-                cs.error("`case` must be a `string` or an integral constant, not `%s`", cs.exp.toChars());
+                cs.error("`case` expression must be a compile-time `string` or an integral constant, not `%s`", cs.exp.toChars());
                 errors = true;
             }
 
@@ -3798,6 +3811,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         gs.tf = sc.tf;
         gs.os = sc.os;
         gs.lastVar = sc.lastVar;
+        gs.inCtfeBlock = (sc.flags & SCOPE.ctfeBlock) != 0;
 
         if (!gs.label.statement && sc.fes)
         {
@@ -3837,6 +3851,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         ls.tf = sc.tf;
         ls.os = sc.os;
         ls.lastVar = sc.lastVar;
+        ls.inCtfeBlock = (sc.flags & SCOPE.ctfeBlock) != 0;
 
         LabelDsymbol ls2 = fd.searchLabel(ls.ident, ls.loc);
         if (ls2.statement)
@@ -4730,7 +4745,7 @@ private Statements* flatten(Statement statement, Scope* sc)
             const len = buf.length;
             buf.writeByte(0);
             const str = buf.extractSlice()[0 .. len];
-            scope p = new Parser!ASTCodegen(cs.loc, sc._module, str, false);
+            scope p = new Parser!ASTCodegen(cs.loc, sc._module, str, false, global.errorSink);
             p.nextToken();
 
             auto a = new Statements();

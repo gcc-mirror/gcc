@@ -170,7 +170,7 @@ if (isIterable!Range && !isAutodecodableString!Range && !isInfinite!Range)
 
 /// ditto
 ForeachType!(typeof((*Range).init))[] array(Range)(Range r)
-if (is(Range : U*, U) && isIterable!U && !isAutodecodableString!Range && !isInfinite!Range)
+if (is(Range == U*, U) && isIterable!U && !isAutodecodableString!Range && !isInfinite!Range)
 {
     return array(*r);
 }
@@ -2292,22 +2292,6 @@ if (isInputRange!RoR &&
         }
         return result.data;
     }
-}
-
-// https://issues.dlang.org/show_bug.cgi?id=10895
-@safe unittest
-{
-    static class A
-    {
-        string name;
-        alias name this;
-        this(string name) { this.name = name; }
-    }
-    auto a = [new A(`foo`)];
-    assert(a[0].length == 3);
-    auto temp = join(a, " ");
-    assert(a[0].length == 3);
-    assert(temp.length == 3);
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=14230

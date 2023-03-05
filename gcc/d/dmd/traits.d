@@ -122,7 +122,7 @@ ulong getTypePointerBitmap(Loc loc, Type t, Array!(ulong)* data)
     {
         alias visit = Visitor.visit;
     public:
-        extern (D) this(Array!(ulong)* _data, ulong _sz_size_t)
+        extern (D) this(Array!(ulong)* _data, ulong _sz_size_t) scope
         {
             this.data = _data;
             this.sz_size_t = _sz_size_t;
@@ -634,6 +634,10 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
     }
     if (e.ident == Id.isVirtualFunction)
     {
+        // @@@DEPRECATED2.121@@@
+        // Deprecated in 2.101 - Can be removed from 2.121
+        e.deprecation("`traits(isVirtualFunction)` is deprecated. Use `traits(isVirtualMethod)` instead");
+
         if (dim != 1)
             return dimError(1);
 
@@ -738,6 +742,42 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
 
         auto se = new StringExp(e.loc, id.toString());
         return se.expressionSemantic(sc);
+    }
+    if (e.ident == Id.fullyQualifiedName) // https://dlang.org/spec/traits.html#fullyQualifiedName
+    {
+        if (dim != 1)
+            return dimError(1);
+
+        Scope* sc2 = sc.push();
+        sc2.flags = sc.flags | SCOPE.noaccesscheck | SCOPE.ignoresymbolvisibility;
+        bool ok = TemplateInstance.semanticTiargs(e.loc, sc2, e.args, 1);
+        sc2.pop();
+        if (!ok)
+            return ErrorExp.get();
+
+        const(char)[] fqn;
+        auto o = (*e.args)[0];
+        if (auto s = getDsymbolWithoutExpCtx(o))
+        {
+            if (s.semanticRun == PASS.initial)
+                s.dsymbolSemantic(null);
+
+            fqn = s.toPrettyChars().toDString();
+        }
+        else if (auto t = getType(o))
+        {
+            fqn = t.toPrettyChars(true).toDString();
+        }
+        else
+        {
+            if (!isError(o))
+                e.error("argument `%s` has no identifier", o.toChars());
+            return ErrorExp.get();
+        }
+        assert(fqn);
+        auto se = new StringExp(e.loc, fqn);
+        return se.expressionSemantic(sc);
+
     }
     if (e.ident == Id.getProtection || e.ident == Id.getVisibility)
     {
@@ -994,6 +1034,13 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
             ex = ex.expressionSemantic(scx);
             if (errors < global.errors)
                 e.error("`%s` cannot be resolved", eorig.toChars());
+
+            if (e.ident == Id.getVirtualFunctions)
+            {
+                // @@@DEPRECATED2.121@@@
+                // Deprecated in 2.101 - Can be removed from 2.121
+                e.deprecation("`traits(getVirtualFunctions)` is deprecated. Use `traits(getVirtualMethods)` instead");
+            }
 
             /* Create tuple of functions of ex
              */
@@ -1676,7 +1723,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
             uint errors = global.startGagging();
             Scope* sc2 = sc.push();
             sc2.tinst = null;
-            sc2.minst = null;
+            sc2.minst = null;   // this is why code for these are not emitted to object file
             sc2.flags = (sc.flags & ~(SCOPE.ctfe | SCOPE.condition)) | SCOPE.compile | SCOPE.fullinst;
 
             bool err = false;
@@ -2197,7 +2244,7 @@ private void traitNotFound(TraitsExp e)
         initialized = true;     // lazy initialization
 
         // All possible traits
-        __gshared Identifier*[58] idents =
+        __gshared Identifier*[59] idents =
         [
             &Id.isAbstractClass,
             &Id.isArithmetic,
@@ -2227,6 +2274,7 @@ private void traitNotFound(TraitsExp e)
             &Id.isReturnOnStack,
             &Id.hasMember,
             &Id.identifier,
+            &Id.fullyQualifiedName,
             &Id.getProtection,
             &Id.getVisibility,
             &Id.parent,

@@ -563,8 +563,8 @@ public:
 	    if (fd2->isFuture ())
 	      continue;
 
-	    if (fd->leastAsSpecialized (fd2) != MATCH::nomatch
-		|| fd2->leastAsSpecialized (fd) != MATCH::nomatch)
+	    if (fd->leastAsSpecialized (fd2, NULL) != MATCH::nomatch
+		|| fd2->leastAsSpecialized (fd, NULL) != MATCH::nomatch)
 	      {
 		error_at (make_location_t (fd->loc), "use of %qs",
 			  fd->toPrettyChars ());
@@ -772,7 +772,7 @@ public:
 	return;
       }
 
-    if (d->aliassym)
+    if (d->aliasTuple)
       {
 	this->build_dsymbol (d->toAlias ());
 	return;
@@ -821,7 +821,7 @@ public:
 		DECL_INITIAL (decl) = build_expr (e, true);
 	      }
 	  }
-	else
+	else if (!d->type->isZeroInit ())
 	  {
 	    /* Use default initializer for the type.  */
 	    if (TypeStruct *ts = d->type->isTypeStruct ())
@@ -901,6 +901,10 @@ public:
 
     /* Don't emit any symbols from gcc.attributes module.  */
     if (gcc_attribute_p (d))
+      return;
+
+    /* Front-end decided this function doesn't require code generation.  */
+    if (d->skipCodegen ())
       return;
 
     /* Not emitting unittest functions.  */

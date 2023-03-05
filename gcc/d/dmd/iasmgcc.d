@@ -17,6 +17,7 @@ import dmd.arraytypes;
 import dmd.astcodegen;
 import dmd.dscope;
 import dmd.errors;
+import dmd.errorsink;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.identifier;
@@ -72,7 +73,7 @@ int parseExtAsmOperands(Parser)(Parser p, GccAsmStatement s)
                 }
                 else
                 {
-                    p.error(s.loc, "expected identifier after `[`");
+                    p.eSink.error(s.loc, "expected identifier after `[`");
                     goto Lerror;
                 }
                 // Look for closing `]`
@@ -116,7 +117,7 @@ int parseExtAsmOperands(Parser)(Parser p, GccAsmStatement s)
                 break;
 
             default:
-                p.error("expected constant string constraint for operand, not `%s`",
+                p.eSink.error(p.token.loc, "expected constant string constraint for operand, not `%s`",
                         p.token.toChars());
                 goto Lerror;
         }
@@ -167,7 +168,7 @@ Expressions *parseExtAsmClobbers(Parser)(Parser p)
                 break;
 
             default:
-                p.error("expected constant string constraint for clobber name, not `%s`",
+                p.eSink.error(p.token.loc, "expected constant string constraint for clobber name, not `%s`",
                         p.token.toChars());
                 goto Lerror;
         }
@@ -214,7 +215,7 @@ Identifiers *parseExtAsmGotoLabels(Parser)(Parser p)
                 break;
 
             default:
-                p.error("expected identifier for goto label name, not `%s`",
+                p.eSink.error(p.token.loc, "expected identifier for goto label name, not `%s`",
                         p.token.toChars());
                 goto Lerror;
         }
@@ -301,7 +302,7 @@ Ldone:
 extern (C++) public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
 {
     //printf("GccAsmStatement.semantic()\n");
-    scope p = new Parser!ASTCodegen(sc._module, ";", false);
+    scope p = new Parser!ASTCodegen(sc._module, ";", false, global.errorSink);
 
     // Make a safe copy of the token list before parsing.
     Token *toklist = null;
@@ -384,6 +385,9 @@ unittest
 {
     import dmd.mtype : TypeBasic;
 
+    if (!global.errorSink)
+        global.errorSink = new ErrorSinkCompiler;
+
     uint errors = global.startGagging();
     scope(exit) global.endGagging(errors);
 
@@ -406,7 +410,7 @@ unittest
     {
         const errors = global.errors;
         scope gas = new GccAsmStatement(Loc.initial, tokens);
-        scope p = new Parser!ASTCodegen(null, ";", false);
+        scope p = new Parser!ASTCodegen(null, ";", false, global.errorSink);
         p.token = *tokens;
         p.parseGccAsm(gas);
         return global.errors - errors;
@@ -416,7 +420,7 @@ unittest
     static void parseAsm(string input, bool expectError)
     {
         // Generate tokens from input test.
-        scope p = new Parser!ASTCodegen(null, input, false);
+        scope p = new Parser!ASTCodegen(null, input, false, global.errorSink);
         p.nextToken();
 
         Token* toklist = null;

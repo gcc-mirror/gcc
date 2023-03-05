@@ -56,7 +56,7 @@ void foreachVar(Expression e, void delegate(VarDeclaration) dgVar)
         alias visit = typeof(super).visit;
         extern (D) void delegate(VarDeclaration) dgVar;
 
-        extern (D) this(void delegate(VarDeclaration) dgVar)
+        extern (D) this(void delegate(VarDeclaration) dgVar) scope
         {
             this.dgVar = dgVar;
         }

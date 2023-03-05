@@ -89,22 +89,21 @@ private template createAccessors(
     }
     else
     {
-        enum ulong
-            maskAllElse = ((~0uL) >> (64 - len)) << offset,
-            signBitCheck = 1uL << (len - 1);
+        enum ulong maskAllElse = ((~0uL) >> (64 - len)) << offset;
+        enum TSize = 8 * T.sizeof;
+        enum SignShift = TSize - len;
 
         static if (T.min < 0)
         {
             enum long minVal = -(1uL << (len - 1));
             enum ulong maxVal = (1uL << (len - 1)) - 1;
-            alias UT = Unsigned!(T);
-            enum UT extendSign = cast(UT)~((~0uL) >> (64 - len));
+            enum RightShiftOp = ">>=";
         }
         else
         {
             enum ulong minVal = 0;
             enum ulong maxVal = (~0uL) >> (64 - len);
-            enum extendSign = 0;
+            enum RightShiftOp = ">>>=";
         }
 
         static if (is(T == bool))
@@ -121,15 +120,11 @@ private template createAccessors(
         else
         {
             // getter
-            enum createAccessors = "@property "~T.stringof~" "~name~"() @safe pure nothrow @nogc const { auto result = "
-                ~"("~store~" & "
-                ~ myToString(maskAllElse) ~ ") >>"
-                ~ myToString(offset) ~ ";"
-                ~ (T.min < 0
-                   ? "if (result >= " ~ myToString(signBitCheck)
-                   ~ ") result |= " ~ myToString(extendSign) ~ ";"
-                   : "")
-                ~ " return cast("~T.stringof~") result;}\n"
+            enum createAccessors = "@property "~T.stringof~" "~name~"() @safe pure nothrow @nogc const {"
+                ~ "auto result = cast("~T.stringof~") (" ~ store ~ " >>" ~ myToString(offset) ~ ");"
+                ~ "result <<= " ~ myToString(SignShift) ~ ";"
+                ~ "result " ~ RightShiftOp ~ myToString(SignShift) ~ ";"
+                ~ " return result;}\n"
             // setter
                 ~"@property void "~name~"("~T.stringof~" v) @safe pure nothrow @nogc { "
                 ~"assert(v >= "~name~`_min, "Value is smaller than the minimum value of bitfield '`~name~`'"); `

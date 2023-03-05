@@ -2969,10 +2969,24 @@ iterated from the back to the front, the separator will still be consumed from
 front to back, even if it is a bidirectional range too.
  */
 auto joiner(RoR, Separator)(RoR r, Separator sep)
-if (isInputRange!RoR && isInputRange!(ElementType!RoR)
-        && isForwardRange!Separator
-        && is(ElementType!Separator : ElementType!(ElementType!RoR)))
 {
+    static assert(isInputRange!RoR, "The type of RoR '", RoR.stringof
+            , " must be an InputRange (isInputRange!", RoR.stringof, ").");
+    static assert(isInputRange!(ElementType!RoR), "The ElementyType of RoR '"
+            , ElementType!(RoR).stringof, "' must be an InputRange "
+            , "(isInputRange!(ElementType!(", RoR.stringof , "))).");
+    static assert(isForwardRange!Separator, "The type of the Seperator '"
+            , Seperator.stringof, "' must be a ForwardRange (isForwardRange!("
+            , Seperator.stringof, ")).");
+    static assert(is(ElementType!Separator : ElementType!(ElementType!RoR))
+            , "The type of the elements of the separator range does not match "
+            , "the type of the elements that are joined. Separator type '"
+            , ElementType!(Separator).stringof, "' is not implicitly"
+            , "convertible to range element type '"
+            , ElementType!(ElementType!RoR).stringof, "' (is(ElementType!"
+            , Separator.stringof, " : ElementType!(ElementType!", RoR.stringof
+            , "))).");
+
     static struct Result
     {
         private RoR _items;

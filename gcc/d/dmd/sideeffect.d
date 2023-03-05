@@ -37,7 +37,7 @@ extern (C++) bool isTrivialExp(Expression e)
     {
         alias visit = typeof(super).visit;
     public:
-        extern (D) this()
+        extern (D) this() scope
         {
         }
 
@@ -75,7 +75,7 @@ extern (C++) bool hasSideEffect(Expression e, bool assumeImpureCalls = false)
     {
         alias visit = typeof(super).visit;
     public:
-        extern (D) this()
+        extern (D) this() scope
         {
         }
 

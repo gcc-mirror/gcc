@@ -558,7 +558,6 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_fpreview_all:
       global.params.ehnogc = value;
-      global.params.useDIP25 = FeatureState::enabled;
       global.params.useDIP1000 = FeatureState::enabled;
       global.params.useDIP1021 = value;
       global.params.bitfields = value;
@@ -588,10 +587,6 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_fpreview_dip1021:
       global.params.useDIP1021 = value;
-      break;
-
-    case OPT_fpreview_dip25:
-      global.params.useDIP25 = FeatureState::enabled;
       break;
 
     case OPT_fpreview_dtorfields:
@@ -636,17 +631,12 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_frevert_all:
       global.params.useDIP1000 = FeatureState::disabled;
-      global.params.useDIP25 = FeatureState::disabled;
       global.params.dtorFields = FeatureState::disabled;
       global.params.fix16997 = !value;
       break;
 
     case OPT_frevert_dip1000:
       global.params.useDIP1000 = FeatureState::disabled;
-      break;
-
-    case OPT_frevert_dip25:
-      global.params.useDIP25 = FeatureState::disabled;
       break;
 
     case OPT_frevert_dtorfields:
@@ -910,10 +900,6 @@ d_post_options (const char ** fn)
   /* Enabling DIP1021 implies DIP1000.  */
   if (global.params.useDIP1021)
     global.params.useDIP1000 = FeatureState::enabled;
-
-  /* Enabling DIP1000 implies DIP25.  */
-  if (global.params.useDIP1000 == FeatureState::enabled)
-    global.params.useDIP25 = FeatureState::enabled;
 
   /* Keep in sync with existing -fbounds-check flag.  */
   flag_bounds_check = (global.params.useArrayBounds == CHECKENABLEon);

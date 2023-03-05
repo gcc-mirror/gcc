@@ -312,3 +312,28 @@ alias c_complex_float = __c_complex_float;
 alias c_complex_double = __c_complex_double;
 alias c_complex_real = __c_complex_real;
 }
+
+
+// Returns the mangled name for the 64-bit time_t versions of
+// functions affected by musl's transition to 64-bit time_t.
+// https://musl.libc.org/time64.html
+version (CRuntime_Musl)
+{
+    version (CRuntime_Musl_Pre_Time64)
+        enum muslRedirTime64 = false;
+    else
+    {
+        // time_t was defined as a C long in older Musl versions.
+        enum muslRedirTime64 = (c_long.sizeof == 4);
+    }
+}
+else
+    enum muslRedirTime64 = false;
+
+package(core) template muslRedirTime64Mangle(string name, string redirectedName)
+{
+    static if (muslRedirTime64)
+        enum muslRedirTime64Mangle = redirectedName;
+    else
+        enum muslRedirTime64Mangle = name;
+}

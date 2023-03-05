@@ -86,7 +86,7 @@ fail_compilation/shared.d(2148): Error: direct access to shared `*c` is not allo
 fail_compilation/shared.d(2154): Error: direct access to shared `*c.c1` is not allowed, see `core.atomic`
 fail_compilation/shared.d(2160): Error: direct access to shared `*c.c1.c1` is not allowed, see `core.atomic`
 fail_compilation/shared.d(2181): Error: direct access to shared `k` is not allowed, see `core.atomic`
-fail_compilation/shared.d(2187): Error: direct access to shared `k.k2.k1` is not allowed, see `core.atomic`
+fail_compilation/shared.d(2187): Error: direct access to shared `k.k2.k1.value` is not allowed, see `core.atomic`
 fail_compilation/shared.d(2194): Error: direct access to shared `(new shared(K2)).k1` is not allowed, see `core.atomic`
 fail_compilation/shared.d(2202): Error: direct access to shared `c` is not allowed, see `core.atomic`
 fail_compilation/shared.d(2206): Error: function `shared.test_inference_2` function returns `shared` but cannot be inferred `ref`
@@ -235,4 +235,27 @@ struct BitRange
     {
         this.bits++;
     }
+}
+
+/*
+TEST_OUTPUT:
+---
+fail_compilation/shared.d(3004): Error: cast from `void*` to `shared(int*)` not allowed in safe code
+fail_compilation/shared.d(3005): Error: cast from `void*` to `shared(const(int*))` not allowed in safe code
+fail_compilation/shared.d(3008): Error: cast from `shared(void*)` to `int*` not allowed in safe code
+fail_compilation/shared.d(3009): Error: cast from `shared(void*)` to `shared(const(int*))` not allowed in safe code
+---
+*/
+
+#line 3000
+
+void test_casting_safe() @safe
+{
+    void *p;
+    auto t1 = cast(shared(int*))p;
+    auto t2 = cast(const(shared(int*)))p;
+
+    shared void* s;
+    auto x1 = cast(int*)s;
+    auto x2 = cast(const(shared(int*)))s;
 }

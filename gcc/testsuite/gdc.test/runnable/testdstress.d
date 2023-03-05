@@ -494,7 +494,7 @@ void test23()
 int status24;
 
 class C24{
-        this(){
+        this() scope {
                 assert(status24==0);
                 status24+=2;
         }

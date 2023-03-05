@@ -38,7 +38,8 @@ Note that these groups have no strict meaning, the category assignments are a bi
 | [dinifile.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/dinifile.d)   | Parse settings from .ini file (`sc.ini` / `dmd.conf`)                 |
 | [vsoptions.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/vsoptions.d) | Detect the Microsoft Visual Studio toolchain for linking              |
 | [frontend.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/frontend.d)   | An interface for using DMD as a library                               |
-| [errors.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/errors.d)       | Error reporting functionality                                         |
+| [errors.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/errors.d)       | Error reporting implementation                                        |
+| [errorsink.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/errorsink.d) | Error reporting interface                                             |
 | [target.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/target.d)       | Manage target-specific parameters for cross-compiling (for LDC/GDC)   |
 | [compiler.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/compiler.d)   | Describe a back-end compiler and implements compiler-specific actions |
 

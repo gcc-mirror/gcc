@@ -36,8 +36,7 @@ public:
     bool hasPointers() override final;
     bool hasStaticCtorOrDtor() override final;
     void checkCtorConstInit() override final;
-    void addLocalClass(ClassDeclarations *) override final;
-    AttribDeclaration *isAttribDeclaration() override final { return this; }
+    AttribDeclaration *isAttribDeclaration() override { return this; }
 
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -184,6 +183,7 @@ public:
     void addMember(Scope *sc, ScopeDsymbol *sds) override;
     void setScope(Scope *sc) override;
     void importAll(Scope *sc) override;
+    StaticIfDeclaration *isStaticIfDeclaration() override { return this; }
     const char *kind() const override;
     void accept(Visitor *v) override { v->visit(this); }
 };

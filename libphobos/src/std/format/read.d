@@ -303,8 +303,23 @@ uint formattedRead(alias fmt, Range, Args...)(auto ref Range r, auto ref Args ar
 if (isSomeString!(typeof(fmt)))
 {
     import std.format : checkFormatException;
+    import std.meta : staticMap;
+    import std.typecons : Tuple;
 
-    alias e = checkFormatException!(fmt, Args);
+
+    // formattedRead supports std.typecons.Tuple
+    // however, checkFormatException does not
+    // this means that all std.typecons.Tuple's types in Args must be unwrapped
+    // and passed to checkFormatException
+    template Flatten(T)
+    {
+        static if (is(T : Tuple!Args, Args...))
+            alias Flatten = Args;
+        else
+            alias Flatten = T;
+    }
+
+    alias e = checkFormatException!(fmt, staticMap!(Flatten, Args));
     static assert(!e, e);
     return .formattedRead(r, fmt, args);
 }
@@ -359,6 +374,20 @@ if (isSomeString!(typeof(fmt)))
     char[] line = "1 7643 2.125".dup;
     formattedRead(line, "%s %*u %s", t);
     assert(t[0] == 1 && t[1] == 2.125);
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=23600
+@safe pure unittest
+{
+    import std.typecons : Tuple, tuple;
+
+    string h, w;
+    Tuple!(int, float) t;
+
+    assert("hello 1 2.34 world".formattedRead!"%s %d %f %s"(h, t, w) == 3);
+    assert(h == "hello");
+    assert(t == tuple(1, 2.34f));
+    assert(w == "world");
 }
 
 @safe unittest

@@ -149,7 +149,7 @@ private struct AARange(K,V)
     size_t bIndex;
     aaA* current;
 
-    this(AA* aa) pure nothrow @nogc
+    this(AA* aa) pure nothrow @nogc scope
     {
         if (aa)
         {

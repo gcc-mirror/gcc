@@ -291,9 +291,23 @@ public:
 
     /// Informations about the current context in the AST
     Context context;
-    alias context this;
 
-    this(OutBuffer* fwdbuf, OutBuffer* donebuf, OutBuffer* buf)
+    // Generates getter-setter methods to replace the use of alias this
+    // This should be replaced by a `static foreach` once the gdc tester
+    // gets upgraded to version 10 (to support `static foreach`).
+    private extern(D) static string generateMembers()
+    {
+        string result = "";
+        foreach(member; __traits(allMembers, Context))
+        {
+            result ~= "ref auto " ~ member ~ "() { return context." ~ member ~ "; }\n";
+        }
+        return result;
+    }
+
+    mixin(generateMembers());
+
+    this(OutBuffer* fwdbuf, OutBuffer* donebuf, OutBuffer* buf) scope
     {
         this.fwdbuf = fwdbuf;
         this.donebuf = donebuf;
@@ -875,7 +889,7 @@ public:
         // (we'll visit them later)
         if (vd.type && vd.type.isTypeTuple())
         {
-            assert(vd.aliassym);
+            assert(vd.aliasTuple);
             vd.toAlias().accept(this);
             return;
         }

@@ -82,13 +82,13 @@ int x5;
 
 class Foo5
 {
-        this ()
+        this () scope
         {
                 printf ("Constructor\n");
                 assert(x5 == 0);
                 x5++;
         }
-        ~this ()
+        ~this () scope
         {
                 printf ("Destructor\n");
                 assert(x5 == 2);

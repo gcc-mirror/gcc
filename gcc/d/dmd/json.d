@@ -54,7 +54,7 @@ public:
     int indentLevel;
     const(char)[] filename;
 
-    extern (D) this(OutBuffer* buf)
+    extern (D) this(OutBuffer* buf) scope
     {
         this.buf = buf;
     }

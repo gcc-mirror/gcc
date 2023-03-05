@@ -689,7 +689,7 @@ extern tree get_classinfo_decl (ClassDeclaration *);
 extern void check_typeinfo_type (const Loc &, Scope *, Expression * = NULL);
 extern tree build_typeinfo (const Loc &, Type *, Expression * = NULL);
 extern tree build_typeinfo (Expression *, Type *);
-extern void create_typeinfo (Type *, Module *);
+extern void create_typeinfo (Type *, Module *, bool = true);
 extern void create_tinfo_types (Module *);
 extern void layout_cpp_typeinfo (ClassDeclaration *);
 extern tree get_cpp_typeinfo_decl (ClassDeclaration *);

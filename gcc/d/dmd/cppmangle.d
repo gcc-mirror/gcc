@@ -173,7 +173,7 @@ private final class CppMangleVisitor : Visitor
      *   buf = `OutBuffer` to write the mangling to
      *   loc = `Loc` of the symbol being mangled
      */
-    this(OutBuffer* buf, Loc loc)
+    this(OutBuffer* buf, Loc loc) scope
     {
         this.buf = buf;
         this.loc = loc;

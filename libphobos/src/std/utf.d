@@ -3136,7 +3136,7 @@ private T toUTFImpl(T, S)(scope S s)
     collection cycle and cause a nasty bug when the C code tries to use it.
   +/
 template toUTFz(P)
-if (is(P : C*, C) && isSomeChar!C)
+if (is(P == C*, C) && isSomeChar!C)
 {
     P toUTFz(S)(S str) @safe pure
     if (isSomeString!S)

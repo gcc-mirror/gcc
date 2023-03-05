@@ -1,5 +1,5 @@
 struct BugInt
 {
-    uint[] data = ZEROX;  
+    uint[] data = ZEROX;
 }
 enum uint [] ZEROX = [0];

@@ -14,6 +14,7 @@ module dmd.printast;
 import core.stdc.stdio;
 
 import dmd.expression;
+import dmd.ctfeexpr;
 import dmd.tokens;
 import dmd.visitor;
 import dmd.hdrgen;
@@ -38,7 +39,7 @@ extern (C++) final class PrintASTVisitor : Visitor
 
     int indent;
 
-    extern (D) this(int indent)
+    extern (D) this(int indent) scope
     {
         this.indent = indent;
     }
@@ -208,6 +209,14 @@ extern (C++) final class PrintASTVisitor : Visitor
         visit(cast(Expression)e);
         printIndent(indent + 2);
         printf(".init: %s\n", e.initializer ? e.initializer.toChars() : "");
+    }
+
+    override void visit(ClassReferenceExp e)
+    {
+        visit(cast(Expression)e);
+        printIndent(indent + 2);
+        printf(".value: %s\n", e.value ? e.value.toChars() : "");
+        printAST(e.value, indent + 2);
     }
 
     static void printIndent(int indent)

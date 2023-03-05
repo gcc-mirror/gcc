@@ -103,6 +103,7 @@ $(TR
         $(SUBREF sorting, multiSort)
         $(SUBREF sorting, nextEvenPermutation)
         $(SUBREF sorting, nextPermutation)
+        $(SUBREF sorting, nthPermutation)
         $(SUBREF sorting, partialSort)
         $(SUBREF sorting, partition)
         $(SUBREF sorting, partition3)

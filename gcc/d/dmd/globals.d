@@ -15,6 +15,8 @@ import core.stdc.stdint;
 import dmd.root.array;
 import dmd.root.filename;
 import dmd.common.outbuffer;
+import dmd.errorsink;
+import dmd.errors;
 import dmd.file_manager;
 import dmd.identifier;
 import dmd.location;
@@ -143,7 +145,7 @@ extern (C++) struct Param
     bool logo;              // print compiler logo
 
     // Options for `-preview=/-revert=`
-    FeatureState useDIP25;       // implement https://wiki.dlang.org/DIP25
+    FeatureState useDIP25 = FeatureState.enabled; // implement https://wiki.dlang.org/DIP25
     FeatureState useDIP1000;     // implement https://dlang.org/spec/memory-safe-d.html#scope-return-params
     bool ehnogc;                 // use @nogc exception handling
     bool useDIP1021;             // implement https://github.com/dlang/DIPs/blob/master/DIPs/accepted/DIP1021.md
@@ -176,6 +178,7 @@ extern (C++) struct Param
     CHECKACTION checkAction = CHECKACTION.D; // action to take when bounds, asserts or switch defaults are violated
 
     uint errorLimit = 20;
+    uint errorSupplementLimit = 6;      // Limit the number of supplemental messages for each error (0 means unlimited)
 
     const(char)[] argv0;                // program name
     Array!(const(char)*) modFileAliasStrings; // array of char*'s of -I module filename alias strings
@@ -291,6 +294,8 @@ extern (C++) struct Global
 
     enum recursionLimit = 500; /// number of recursive template expansions before abort
 
+    ErrorSink errorSink;       /// where the error messages go
+
     extern (C++) FileName function(FileName, ref const Loc, out bool, OutBuffer*) preprocess;
 
   nothrow:
@@ -345,6 +350,8 @@ extern (C++) struct Global
 
     extern (C++) void _init()
     {
+        global.errorSink = new ErrorSinkCompiler;
+
         this.fileManager = new FileManager();
         version (MARS)
         {

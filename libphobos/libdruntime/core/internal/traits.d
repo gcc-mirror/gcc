@@ -654,7 +654,7 @@ if (func.length == 1 /*&& isCallable!func*/)
         int  test(int);
         int  test() @property;
     }
-    alias ov = __traits(getVirtualFunctions, Overloads, "test");
+    alias ov = __traits(getVirtualMethods, Overloads, "test");
     alias F_ov0 = FunctionTypeOf!(ov[0]);
     alias F_ov1 = FunctionTypeOf!(ov[1]);
     alias F_ov2 = FunctionTypeOf!(ov[2]);
