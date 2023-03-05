@@ -1,3 +1,68 @@
+2023-03-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-02-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108937
+	* gfortran.dg/ibits_2.f90: New test.
+
+2023-03-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-02-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/96024
+	* gfortran.dg/pr96024.f90: New test.
+
+2023-03-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-02-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/96025
+	* gfortran.dg/pr96025.f90: New test.
+
+2023-03-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/108550
+	* g++.dg/cpp1y/var-templ70.C: New test.
+	* g++.dg/cpp1y/var-templ71.C: New test.
+	* g++.dg/cpp1y/var-templ72.C: New test.
+
+2023-03-04  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-02-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c/108880
+	* c-c++-common/ubsan/pr108880.c: New test.
+
+2023-03-04  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-03-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106259
+	* g++.dg/warn/Wmismatched-tags-11.C: New test.
+
+2023-03-04  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-03-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107574
+	* g++.dg/cpp0x/ptrmem-cst1.C: New test.
+
+2023-03-04  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-02-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107938
+	* g++.dg/cpp1y/var-templ73.C: New test.
+	* g++.dg/cpp1y/var-templ74.C: New test.
+	* g++.dg/warn/Waddress-of-packed-member3.C: New test.
+
 2023-03-03  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

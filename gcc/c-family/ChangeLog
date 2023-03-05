@@ -1,3 +1,22 @@
+2023-03-04  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-02-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c/108880
+	* c-gimplify.cc (c_genericize_control_stmt) <case STATEMENT_LIST>: Pass
+	pset to walk_tree_1.
+	(c_genericize): Call walk_tree with an explicit pset.
+
+2023-03-04  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-02-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107938
+	* c-warn.cc (check_address_or_pointer_of_packed_member): Check
+	POINTER_TYPE_P.
+
 2023-02-10  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
