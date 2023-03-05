@@ -1,3 +1,30 @@
+2023-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107465
+	* c-warn.cc (warn_for_sign_compare): Don't warn for unset bits
+	above innermost zero extension of BIT_NOT_EXPR result.
+
+2023-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107465
+	* c-warn.cc (warn_for_sign_compare): If c_common_get_narrower
+	doesn't return a narrower result, use TYPE_UNSIGNED to set unsignedp0
+	and unsignedp1.  For the one BIT_NOT_EXPR case vs. one without,
+	only check for constant in the non-BIT_NOT_EXPR operand, use std::swap
+	to simplify the code, only warn if BIT_NOT_EXPR operand is extended
+	from narrower unsigned, fix up computation of mask for the constant
+	cases and for unsigned other operand case handle differently
+	BIT_NOT_EXPR result being sign vs. zero extended.
+
+2023-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107846
+	* c-warn.cc: Include langhooks.h.
+	(maybe_warn_shift_overflow): Set type0 to what TREE_TYPE (op0)
+	promotes to rather than TREE_TYPE (op0) itself, if TREE_TYPE (op0)
+	is narrower than type0 and unsigned, use wi::min_precision with
+	UNSIGNED and fold_convert op0 to type0 before emitting the warning.
+
 2023-03-03  Alexandre Oliva  <oliva@adacore.com>
 
 	* c-common.cc (c_common_nodes_and_builtins): Take

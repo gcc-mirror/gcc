@@ -1,3 +1,44 @@
+2023-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vect/slp-3.c: Fix up syntax errors in scan-tree-dump-times
+	target selectors.
+	* gcc.dg/vect/slp-multitypes-11.c: Likewise.
+
+2023-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107465
+	* c-c++-common/Wsign-compare-2.c (f18): New test.
+
+2023-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107465
+	* c-c++-common/Wsign-compare-2.c: New test.
+	* c-c++-common/pr107465.c: New test.
+
+2023-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107846
+	* gcc.dg/pr107846.c: New test.
+
+2023-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108702
+	* g++.dg/ext/stmtexpr19.C: Use dg-do link rather than dg-do compile.
+
+2023-03-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/ipa/pr77653.c: Skip for cris-*-*.
+
+2023-03-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/ifcvt-4.c: Add cris-*-* to skip list.
+
+2023-03-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* g++.dg/cpp0x/pr84497.C: Handle USER_LABEL_PREFIX == "_" on
+	scan-assembler identifiers.
+	* gcc.dg/debug/btf/btf-enum64-1.c, gcc.dg/ipa/symver1.c: Ditto.
+
 2023-03-03  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/109016

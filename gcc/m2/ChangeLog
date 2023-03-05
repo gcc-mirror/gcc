@@ -1,3 +1,257 @@
+2023-03-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* mc-boot-ch/GBuiltins.cc: New file.
+	* mc-boot-ch/Gdtoa.cc: New file.
+	* mc-boot-ch/Gerrno.cc: New file.
+	* mc-boot-ch/Gldtoa.cc: New file.
+	* mc-boot-ch/Gm2rtsdummy.cc: New file.
+	* mc-boot/GASCII.cc: New file.
+	* mc-boot/GArgs.cc: New file.
+	* mc-boot/GAssertion.cc: New file.
+	* mc-boot/GBreak.cc: New file.
+	* mc-boot/GCmdArgs.cc: New file.
+	* mc-boot/GDebug.cc: New file.
+	* mc-boot/GDynamicStrings.cc: New file.
+	* mc-boot/GEnvironment.cc: New file.
+	* mc-boot/GFIO.cc: New file.
+	* mc-boot/GFormatStrings.cc: New file.
+	* mc-boot/GFpuIO.cc: New file.
+	* mc-boot/GIO.cc: New file.
+	* mc-boot/GIndexing.cc: New file.
+	* mc-boot/GM2Dependent.cc: New file.
+	* mc-boot/GM2EXCEPTION.cc: New file.
+	* mc-boot/GM2RTS.cc: New file.
+	* mc-boot/GMemUtils.cc: New file.
+	* mc-boot/GNumberIO.cc: New file.
+	* mc-boot/GPushBackInput.cc: New file.
+	* mc-boot/GRTExceptions.cc: New file.
+	* mc-boot/GRTint.cc: New file.
+	* mc-boot/GSArgs.cc: New file.
+	* mc-boot/GSFIO.cc: New file.
+	* mc-boot/GStdIO.cc: New file.
+	* mc-boot/GStorage.cc: New file.
+	* mc-boot/GStrCase.cc: New file.
+	* mc-boot/GStrIO.cc: New file.
+	* mc-boot/GStrLib.cc: New file.
+	* mc-boot/GStringConvert.cc: New file.
+	* mc-boot/GSysStorage.cc: New file.
+	* mc-boot/GTimeString.cc: New file.
+	* mc-boot/Galists.cc: New file.
+	* mc-boot/Gdecl.cc: New file.
+	* mc-boot/Gkeyc.cc: New file.
+	* mc-boot/Glists.cc: New file.
+	* mc-boot/GmcComment.cc: New file.
+	* mc-boot/GmcComp.cc: New file.
+	* mc-boot/GmcDebug.cc: New file.
+	* mc-boot/GmcError.cc: New file.
+	* mc-boot/GmcFileName.cc: New file.
+	* mc-boot/GmcLexBuf.cc: New file.
+	* mc-boot/GmcMetaError.cc: New file.
+	* mc-boot/GmcOptions.cc: New file.
+	* mc-boot/GmcPreprocess.cc: New file.
+	* mc-boot/GmcPretty.cc: New file.
+	* mc-boot/GmcPrintf.cc: New file.
+	* mc-boot/GmcQuiet.cc: New file.
+	* mc-boot/GmcReserved.cc: New file.
+	* mc-boot/GmcSearch.cc: New file.
+	* mc-boot/GmcStack.cc: New file.
+	* mc-boot/GmcStream.cc: New file.
+	* mc-boot/Gmcp1.cc: New file.
+	* mc-boot/Gmcp2.cc: New file.
+	* mc-boot/Gmcp3.cc: New file.
+	* mc-boot/Gmcp4.cc: New file.
+	* mc-boot/Gmcp5.cc: New file.
+	* mc-boot/GnameKey.cc: New file.
+	* mc-boot/GsymbolKey.cc: New file.
+	* mc-boot/Gtop.cc: New file.
+	* mc-boot/Gvarargs.cc: New file.
+	* mc-boot/Gwlists.cc: New file.
+	* pge-boot/GASCII.cc: New file.
+	* pge-boot/GArgs.cc: New file.
+	* pge-boot/GAssertion.cc: New file.
+	* pge-boot/GBuiltins.cc: New file.
+	* pge-boot/GDebug.cc: New file.
+	* pge-boot/GDynamicStrings.cc: New file.
+	* pge-boot/GFIO.cc: New file.
+	* pge-boot/GIO.cc: New file.
+	* pge-boot/GIndexing.cc: New file.
+	* pge-boot/GLists.cc: New file.
+	* pge-boot/GM2Dependent.cc: New file.
+	* pge-boot/GM2EXCEPTION.cc: New file.
+	* pge-boot/GM2LINK.cc: New file.
+	* pge-boot/GM2RTS.cc: New file.
+	* pge-boot/GNameKey.cc: New file.
+	* pge-boot/GNumberIO.cc: New file.
+	* pge-boot/GOutput.cc: New file.
+	* pge-boot/GPushBackInput.cc: New file.
+	* pge-boot/GRTExceptions.cc: New file.
+	* pge-boot/GRTco.cc: New file.
+	* pge-boot/GSFIO.cc: New file.
+	* pge-boot/GSYSTEM.cc: New file.
+	* pge-boot/GSelective.cc: New file.
+	* pge-boot/GStdIO.cc: New file.
+	* pge-boot/GStorage.cc: New file.
+	* pge-boot/GStrCase.cc: New file.
+	* pge-boot/GStrIO.cc: New file.
+	* pge-boot/GStrLib.cc: New file.
+	* pge-boot/GSymbolKey.cc: New file.
+	* pge-boot/GSysExceptions.cc: New file.
+	* pge-boot/GSysStorage.cc: New file.
+	* pge-boot/Gabort.cc: New file.
+	* pge-boot/Gbnflex.cc: New file.
+	* pge-boot/Gcbuiltin.cc: New file.
+	* pge-boot/Gdtoa.cc: New file.
+	* pge-boot/Gerrno.cc: New file.
+	* pge-boot/Gldtoa.cc: New file.
+	* pge-boot/Glibc.cc: New file.
+	* pge-boot/Glibm.cc: New file.
+	* pge-boot/Gmcrts.cc: New file.
+	* pge-boot/Gpge.cc: New file.
+	* pge-boot/Gwrapc.cc: New file.
+	* pge-boot/main.cc: New file.
+	* pge-boot/network.cc: New file.
+
+2023-03-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (MC-LIB-BOOT-C): Rename to MC-LIB-BOOT-CC.
+	(MC-BOOT-C): Rename to MC-BOOT-CC.
+	(BUILD-MC-BOOT-C): Rename to BUILD-MC-BOOT-CC.
+	(BUILD-MC-BOOT-AUTO-C): Rename to BUILD-MC-BOOT-AUTO-CC.
+	(m2/mc-boot/$(SRC_PREFIX)%.o): Change source file extension to .cc.
+	(m2/mc-boot-ch/$(SRC_PREFIX)%.o): Ditto.
+	* Make-maintainer.in (m2/gm2-ppg-boot/$(SRC_PREFIX)%.o): Change
+	source file extension to .cc.
+	(m2/gm2-ppg-boot/main.o): Ditto.
+	(m2/gm2-ppg-boot/$(SRC_PREFIX)%.o): Ditto.
+	to .cc.
+	(m2/gm2-pg-boot/main.o): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)ldtoa.o): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)dtoa.o): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)errno.o): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)M2RTS.o): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)%.o): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)%.o): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)pge.o): Ditto.
+	(m2/gm2-pge-boot/main.o): Ditto.
+	(mc-push): Ditto.
+	(mc-clean): Ditto.
+	(mc-stage2): Ditto.
+	((objdir)/m2/mc-boot-gen): Ditto.
+	(m2/mc-boot-gen/$(SRC_PREFIX)decl.c): Ditto.
+	(m2/mc-boot-gen/$(SRC_PREFIX)%.c): Ditto.
+	* mc-boot-ch/GBuiltins.c: Correct comment and rename.
+	* mc-boot-ch/Gdtoa.c: Correct comment and rename.
+	* mc-boot-ch/Gldtoa.c: Correct comment and rename
+	* mc-boot-ch/Gtermios.cc: Rename from Gtermios.c.
+	* mc-boot-ch/Gerrno.c: Rename.
+	* mc-boot-ch/GRTco.c: Removed.
+	* mc-boot/GASCII.c: Rename to mc-boot/GASCII.cc.
+	* mc-boot/GArgs.c: Rename to mc-boot/GArgs.cc.
+	* mc-boot/GAssertion.c: Rename to mc-boot/GAssertion.cc.
+	* mc-boot/GBreak.c: Rename to mc-boot/GBreak.cc.
+	* mc-boot/GCmdArgs.c: Rename to mc-boot/GCmdArgs.cc.
+	* mc-boot/GDebug.c: Rename to mc-boot/GDebug.cc.
+	* mc-boot/GDynamicStrings.c: Rename to mc-boot/GDynamicStrings.cc.
+	* mc-boot/GEnvironment.c: Rename to mc-boot/GEnvironment.cc.
+	* mc-boot/GFIO.c: Rename to mc-boot/GFIO.cc.
+	* mc-boot/GFormatStrings.c: Rename to mc-boot/GFormatStrings.cc.
+	* mc-boot/GFpuIO.c: Rename to mc-boot/GFpuIO.cc.
+	* mc-boot/GIO.c: Rename to mc-boot/GIO.cc.
+	* mc-boot/GIndexing.c: Rename to mc-boot/GIndexing.cc.
+	* mc-boot/GM2Dependent.c: Rename to mc-boot/GM2Dependent.cc.
+	* mc-boot/GM2EXCEPTION.c: Rename to mc-boot/GM2EXCEPTION.cc.
+	* mc-boot/GM2RTS.c: Rename to mc-boot/GM2RTS.cc.
+	* mc-boot/GMemUtils.c: Rename to mc-boot/GMemUtils.cc.
+	* mc-boot/GNumberIO.c: Rename to mc-boot/GNumberIO.cc.
+	* mc-boot/GPushBackInput.c: Rename to mc-boot/GPushBackInput.cc.
+	* mc-boot/GRTExceptions.c: Rename to mc-boot/GRTExceptions.cc.
+	* mc-boot/GRTint.c: Rename to mc-boot/GRTint.cc.
+	* mc-boot/GSArgs.c: Rename to mc-boot/GSArgs.cc.
+	* mc-boot/GSFIO.c: Rename to mc-boot/GSFIO.cc.
+	* mc-boot/GStdIO.c: Rename to mc-boot/GStdIO.cc.
+	* mc-boot/GStorage.c: Rename to mc-boot/GStorage.cc.
+	* mc-boot/GStrCase.c: Rename to mc-boot/GStrCase.cc.
+	* mc-boot/GStrIO.c: Rename to mc-boot/GStrIO.cc.
+	* mc-boot/GStrLib.c: Rename to mc-boot/GStrLib.cc.
+	* mc-boot/GStringConvert.c: Rename to mc-boot/GStringConvert.cc.
+	* mc-boot/GSysStorage.c: Rename to mc-boot/GSysStorage.cc.
+	* mc-boot/GTimeString.c: Rename to mc-boot/GTimeString.cc.
+	* mc-boot/Galists.c: Rename to mc-boot/Galists.cc.
+	* mc-boot/Gdecl.c: Rename to mc-boot/Gdecl.cc.
+	* mc-boot/Gkeyc.c: Rename to mc-boot/Gkeyc.cc.
+	* mc-boot/Glists.c: Rename to mc-boot/Glists.cc.
+	* mc-boot/GmcComment.c: Rename to mc-boot/GmcComment.cc.
+	* mc-boot/GmcComp.c: Rename to mc-boot/GmcComp.cc.
+	* mc-boot/GmcDebug.c: Rename to mc-boot/GmcDebug.cc.
+	* mc-boot/GmcError.c: Rename to mc-boot/GmcError.cc.
+	* mc-boot/GmcFileName.c: Rename to mc-boot/GmcFileName.cc.
+	* mc-boot/GmcLexBuf.c: Rename to mc-boot/GmcLexBuf.cc.
+	* mc-boot/GmcMetaError.c: Rename to mc-boot/GmcMetaError.cc.
+	* mc-boot/GmcOptions.c: Rename to mc-boot/GmcOptions.cc.
+	* mc-boot/GmcPreprocess.c: Rename to mc-boot/GmcPreprocess.cc.
+	* mc-boot/GmcPretty.c: Rename to mc-boot/GmcPretty.cc.
+	* mc-boot/GmcPrintf.c: Rename to mc-boot/GmcPrintf.cc.
+	* mc-boot/GmcQuiet.c: Rename to mc-boot/GmcQuiet.cc.
+	* mc-boot/GmcReserved.c: Rename to mc-boot/GmcReserved.cc.
+	* mc-boot/GmcSearch.c: Rename to mc-boot/GmcSearch.cc.
+	* mc-boot/GmcStack.c: Rename to mc-boot/GmcStack.cc.
+	* mc-boot/GmcStream.c: Rename to mc-boot/GmcStream.cc.
+	* mc-boot/Gmcp1.c: Rename to mc-boot/Gmcp1.cc.
+	* mc-boot/Gmcp2.c: Rename to mc-boot/Gmcp2.cc.
+	* mc-boot/Gmcp3.c: Rename to mc-boot/Gmcp3.cc.
+	* mc-boot/Gmcp4.c: Rename to mc-boot/Gmcp4.cc.
+	* mc-boot/Gmcp5.c: Rename to mc-boot/Gmcp5.cc.
+	* mc-boot/GnameKey.c: Rename to mc-boot/GnameKey.cc.
+	* mc-boot/GsymbolKey.c: Rename to mc-boot/GsymbolKey.cc.
+	* mc-boot/Gtop.c: Rename to mc-boot/Gtop.cc.
+	* mc-boot/Gvarargs.c: Rename to mc-boot/Gvarargs.cc.
+	* mc-boot/Gwlists.c: Rename to mc-boot/Gwlists.cc.
+	* pge-boot/GASCII.c: Rename to pge-boot/GASCII.cc.
+	* pge-boot/GArgs.c: Rename to pge-boot/GArgs.cc.
+	* pge-boot/GAssertion.c: Rename to pge-boot/GAssertion.cc.
+	* pge-boot/GBuiltins.c: Rename to pge-boot/GBuiltins.cc.
+	* pge-boot/GDebug.c: Rename to pge-boot/GDebug.cc.
+	* pge-boot/GDynamicStrings.c: Rename to pge-boot/GDynamicStrings.cc.
+	* pge-boot/GFIO.c: Rename to pge-boot/GFIO.cc.
+	* pge-boot/GIO.c: Rename to pge-boot/GIO.cc.
+	* pge-boot/GIndexing.c: Rename to pge-boot/GIndexing.cc.
+	* pge-boot/GLists.c: Rename to pge-boot/GLists.cc.
+	* pge-boot/GM2Dependent.c: Rename to pge-boot/GM2Dependent.cc.
+	* pge-boot/GM2EXCEPTION.c: Rename to pge-boot/GM2EXCEPTION.cc.
+	* pge-boot/GM2LINK.c: Rename to pge-boot/GM2LINK.cc.
+	* pge-boot/GM2RTS.c: Rename to pge-boot/GM2RTS.cc.
+	* pge-boot/GNameKey.c: Rename to pge-boot/GNameKey.cc.
+	* pge-boot/GNumberIO.c: Rename to pge-boot/GNumberIO.cc.
+	* pge-boot/GOutput.c: Rename to pge-boot/GOutput.cc.
+	* pge-boot/GPushBackInput.c: Rename to pge-boot/GPushBackInput.cc.
+	* pge-boot/GRTExceptions.c: Rename to pge-boot/GRTExceptions.cc.
+	* pge-boot/GRTco.c: Rename to pge-boot/GRTco.cc.
+	* pge-boot/GSFIO.c: Rename to pge-boot/GSFIO.cc.
+	* pge-boot/GSYSTEM.c: Rename to pge-boot/GSYSTEM.cc.
+	* pge-boot/GSelective.c: Rename to pge-boot/GSelective.cc.
+	* pge-boot/GStdIO.c: Rename to pge-boot/GStdIO.cc.
+	* pge-boot/GStorage.c: Rename to pge-boot/GStorage.cc.
+	* pge-boot/GStrCase.c: Rename to pge-boot/GStrCase.cc.
+	* pge-boot/GStrIO.c: Rename to pge-boot/GStrIO.cc.
+	* pge-boot/GStrLib.c: Rename to pge-boot/GStrLib.cc.
+	* pge-boot/GSymbolKey.c: Rename to pge-boot/GSymbolKey.cc.
+	* pge-boot/GSysExceptions.c: Rename to pge-boot/GSysExceptions.cc.
+	* pge-boot/GSysStorage.c: Rename to pge-boot/GSysStorage.cc.
+	* pge-boot/Gabort.c: Rename to pge-boot/Gabort.cc.
+	* pge-boot/Gbnflex.c: Rename to pge-boot/Gbnflex.cc.
+	* pge-boot/Gcbuiltin.c: Rename to pge-boot/Gcbuiltin.cc.
+	* pge-boot/Gdtoa.c: Rename to pge-boot/Gdtoa.cc.
+	* pge-boot/Gerrno.c: Rename to pge-boot/Gerrno.cc.
+	* pge-boot/Gldtoa.c: Rename to pge-boot/Gldtoa.cc.
+	* pge-boot/Glibc.c: Rename to pge-boot/Glibc.cc.
+	* pge-boot/Glibm.c: Rename to pge-boot/Glibm.cc.
+	* pge-boot/Gmcrts.c: Rename to pge-boot/Gmcrts.cc.
+	* pge-boot/Gpge.c: Rename to pge-boot/Gpge.cc.
+	* pge-boot/Gwrapc.c: Rename to pge-boot/Gwrapc.cc.
+	* pge-boot/README: Correct description.
+	* pge-boot/main.c: Rename to pge-boot/main.cc.
+	* pge-boot/network.c: Rename to pge-boot/network.cc.
+
 2023-02-28  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/108956

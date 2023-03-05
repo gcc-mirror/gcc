@@ -1,3 +1,18 @@
+2023-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/109006
+	* vec.cc (test_auto_alias): Adjust comment for removal of
+	m_vecdata.
+	* read-rtl-function.cc (function_reader::parse_block): Likewise.
+	* gdbhooks.py: Likewise.
+
+2023-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/108973
+	* selftest-diagnostic.cc
+	(test_diagnostic_context::test_diagnostic_context): Set
+	caret_max_width to 80.
+
 2023-03-03  Alexandre Oliva  <oliva@adacore.com>
 
 	* gimple-ssa-warn-access.cc
