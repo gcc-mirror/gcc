@@ -961,6 +961,34 @@
 ;;
 ;; TODO: implement combined gather and zero_extend, but only for -msram-ecc=on
 
+(define_expand "gather_load<mode><vndi>"
+  [(match_operand:V_ALL 0 "register_operand")
+   (match_operand:DI 1 "register_operand")
+   (match_operand:<VnDI> 2 "register_operand")
+   (match_operand 3 "immediate_operand")
+   (match_operand:SI 4 "gcn_alu_operand")]
+  ""
+  {
+    rtx vec_base = gen_reg_rtx (<VnDI>mode);
+    rtx addr = gen_reg_rtx (<VnDI>mode);
+    rtx multiplier = gen_reg_rtx (<VnDI>mode);
+    rtx offsets = gen_reg_rtx (<VnDI>mode);
+
+    if (CONST_INT_P (operands[4]) && INTVAL (operands[4]) != 1)
+      {
+	emit_insn (gen_vec_duplicate<vndi> (multiplier, operands[4]));
+	emit_insn (gen_mul<vndi>3 (offsets, operands[2], multiplier));
+      }
+    else
+      offsets = operands[2];
+    emit_insn (gen_vec_duplicate<vndi> (vec_base, operands[1]));
+    emit_insn (gen_add<vndi>3 (addr, vec_base, offsets));
+
+    emit_insn (gen_gather<mode>_insn_1offset (operands[0], addr, const0_rtx,
+					      const0_rtx, const0_rtx));
+    DONE;
+  })
+
 (define_expand "gather_load<mode><vnsi>"
   [(match_operand:V_ALL 0 "register_operand")
    (match_operand:DI 1 "register_operand")
@@ -1090,6 +1118,34 @@
   [(set_attr "type" "flat")
    (set_attr "length" "12")
    (set_attr "xnack" "off,on")])
+
+(define_expand "scatter_store<mode><vndi>"
+  [(match_operand:DI 0 "register_operand")
+   (match_operand:<VnDI> 1 "register_operand")
+   (match_operand 2 "immediate_operand")
+   (match_operand:SI 3 "gcn_alu_operand")
+   (match_operand:V_ALL 4 "register_operand")]
+  ""
+  {
+    rtx vec_base = gen_reg_rtx (<VnDI>mode);
+    rtx addr = gen_reg_rtx (<VnDI>mode);
+    rtx multiplier = gen_reg_rtx (<VnDI>mode);
+    rtx offsets = gen_reg_rtx (<VnDI>mode);
+
+    if (CONST_INT_P (operands[3]) && INTVAL (operands[3]) != 1)
+      {
+	emit_insn (gen_vec_duplicate<vndi> (multiplier, operands[3]));
+	emit_insn (gen_mul<vndi>3 (offsets, operands[1], multiplier));
+      }
+    else
+      offsets = operands[1];
+    emit_insn (gen_vec_duplicate<vndi> (vec_base, operands[0]));
+    emit_insn (gen_add<vndi>3 (addr, vec_base, offsets));
+
+    emit_insn (gen_scatter<mode>_insn_1offset (addr, const0_rtx, operands[4],
+					       const0_rtx, const0_rtx));
+    DONE;
+  })
 
 (define_expand "scatter_store<mode><vnsi>"
   [(match_operand:DI 0 "register_operand")
@@ -3808,6 +3864,41 @@
     DONE;
   })
 
+(define_expand "mask_gather_load<mode><vndi>"
+  [(match_operand:V_ALL 0 "register_operand")
+   (match_operand:DI 1 "register_operand")
+   (match_operand:<VnDI> 2 "register_operand")
+   (match_operand 3 "immediate_operand")
+   (match_operand:SI 4 "gcn_alu_operand")
+   (match_operand:DI 5 "")]
+  ""
+  {
+    rtx vec_base = gen_reg_rtx (<VnDI>mode);
+    rtx addr = gen_reg_rtx (<VnDI>mode);
+    rtx multiplier = gen_reg_rtx (<VnDI>mode);
+    rtx offsets = gen_reg_rtx (<VnDI>mode);
+    rtx exec = force_reg (DImode, operands[5]);
+
+    if (CONST_INT_P (operands[4]) && INTVAL (operands[4]) != 1)
+      {
+	emit_insn (gen_vec_duplicate<vndi> (multiplier, operands[4]));
+	emit_insn (gen_mul<vndi>3 (offsets, operands[2], multiplier));
+      }
+    else
+      offsets = operands[2];
+    emit_insn (gen_vec_duplicate<vndi> (vec_base, operands[1]));
+    emit_insn (gen_add<vndi>3 (addr, vec_base, offsets));
+
+    /* Masked lanes are required to hold zero.  */
+    emit_move_insn (operands[0], gcn_vec_constant (<MODE>mode, 0));
+
+    emit_insn (gen_gather<mode>_insn_1offset_exec (operands[0], addr,
+						   const0_rtx, const0_rtx,
+						   const0_rtx, operands[0],
+						   exec));
+    DONE;
+  })
+
 (define_expand "mask_gather_load<mode><vnsi>"
   [(match_operand:V_ALL 0 "register_operand")
    (match_operand:DI 1 "register_operand")
@@ -3836,6 +3927,38 @@
 						      addr, const0_rtx,
 						      const0_rtx, const0_rtx,
 						      operands[0], exec));
+    DONE;
+  })
+
+(define_expand "mask_scatter_store<mode><vndi>"
+  [(match_operand:DI 0 "register_operand")
+   (match_operand:<VnDI> 1 "register_operand")
+   (match_operand 2 "immediate_operand")
+   (match_operand:DI 3 "gcn_alu_operand")
+   (match_operand:V_ALL 4 "register_operand")
+   (match_operand:DI 5 "")]
+  ""
+  {
+    rtx vec_base = gen_reg_rtx (<VnDI>mode);
+    rtx addr = gen_reg_rtx (<VnDI>mode);
+    rtx multiplier = gen_reg_rtx (<VnDI>mode);
+    rtx offsets = gen_reg_rtx (<VnDI>mode);
+    rtx exec = force_reg (DImode, operands[5]);
+ 
+    if (CONST_INT_P (operands[3]) && INTVAL (operands[3]) != 1)
+      {
+	emit_insn (gen_vec_duplicate<vndi> (multiplier, operands[3]));
+	emit_insn (gen_mul<vndi>3 (offsets, operands[1], multiplier));
+      }
+    else
+      offsets = operands[1];
+    emit_insn (gen_vec_duplicate<vndi> (vec_base, operands[0]));
+    emit_insn (gen_add<vndi>3 (addr, vec_base, offsets));
+
+    emit_insn (gen_scatter<mode>_insn_1offset_exec (addr, const0_rtx,
+						    operands[4], const0_rtx,
+						    const0_rtx,
+						    exec));
     DONE;
   })
 
