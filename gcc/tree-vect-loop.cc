@@ -3894,6 +3894,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
           return NULL;
         }
 
+      /* Verify there is an inner cycle composed of the PHI phi_use_stmt
+	 and the latch definition op1.  */
       gimple *def1 = SSA_NAME_DEF_STMT (op1);
       if (gimple_bb (def1)
 	  && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
@@ -3901,7 +3903,9 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 	  && flow_bb_inside_loop_p (loop->inner, gimple_bb (def1))
 	  && (is_gimple_assign (def1) || is_gimple_call (def1))
 	  && is_a <gphi *> (phi_use_stmt)
-	  && flow_bb_inside_loop_p (loop->inner, gimple_bb (phi_use_stmt)))
+	  && flow_bb_inside_loop_p (loop->inner, gimple_bb (phi_use_stmt))
+	  && (op1 == PHI_ARG_DEF_FROM_EDGE (phi_use_stmt,
+					    loop_latch_edge (loop->inner))))
         {
           if (dump_enabled_p ())
             report_vect_op (MSG_NOTE, def_stmt,
