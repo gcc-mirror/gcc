@@ -130,14 +130,12 @@ do_mpfr_arg1 (real_value *result,
 
   int prec = format->p;
   mpfr_rnd_t rnd = format->round_towards_zero ? MPFR_RNDZ : MPFR_RNDN;
-  mpfr_t m;
 
-  mpfr_init2 (m, prec);
+  auto_mpfr m (prec);
   mpfr_from_real (m, arg, MPFR_RNDN);
   mpfr_clear_flags ();
   bool inexact = func (m, m, rnd);
   bool ok = do_mpfr_ckconv (result, m, inexact, format);
-  mpfr_clear (m);
 
   return ok;
 }
@@ -224,14 +222,12 @@ do_mpfr_arg2 (real_value *result,
 
   int prec = format->p;
   mpfr_rnd_t rnd = format->round_towards_zero ? MPFR_RNDZ : MPFR_RNDN;
-  mpfr_t m;
 
-  mpfr_init2 (m, prec);
+  auto_mpfr m (prec);
   mpfr_from_real (m, arg1, MPFR_RNDN);
   mpfr_clear_flags ();
   bool inexact = func (m, arg0.to_shwi (), m, rnd);
   bool ok = do_mpfr_ckconv (result, m, inexact, format);
-  mpfr_clear (m);
 
   return ok;
 }

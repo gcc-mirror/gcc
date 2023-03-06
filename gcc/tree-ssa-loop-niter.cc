@@ -722,7 +722,6 @@ bound_difference (class loop *loop, tree x, tree y, bounds *bnds)
   tree type = TREE_TYPE (x);
   tree varx, vary;
   mpz_t offx, offy;
-  mpz_t minx, maxx, miny, maxy;
   int cnt = 0;
   edge e;
   basic_block bb;
@@ -754,19 +753,12 @@ bound_difference (class loop *loop, tree x, tree y, bounds *bnds)
     {
       /* Otherwise, use the value ranges to determine the initial
 	 estimates on below and up.  */
-      mpz_init (minx);
-      mpz_init (maxx);
-      mpz_init (miny);
-      mpz_init (maxy);
+      auto_mpz minx, maxx, miny, maxy;
       determine_value_range (loop, type, varx, offx, minx, maxx);
       determine_value_range (loop, type, vary, offy, miny, maxy);
 
       mpz_sub (bnds->below, minx, maxy);
       mpz_sub (bnds->up, maxx, miny);
-      mpz_clear (minx);
-      mpz_clear (maxx);
-      mpz_clear (miny);
-      mpz_clear (maxy);
     }
 
   /* If both X and Y are constants, we cannot get any more precise.  */
