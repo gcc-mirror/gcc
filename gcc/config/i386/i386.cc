@@ -6473,6 +6473,26 @@ gen_pop (rtx arg)
 						     stack_pointer_rtx)));
 }
 
+/* Generate a "push2" pattern for input ARG.  */
+rtx
+gen_push2 (rtx mem, rtx reg1, rtx reg2)
+{
+  struct machine_function *m = cfun->machine;
+  const int offset = UNITS_PER_WORD * 2;
+
+  if (m->fs.cfa_reg == stack_pointer_rtx)
+    m->fs.cfa_offset += offset;
+  m->fs.sp_offset += offset;
+
+  if (REG_P (reg1) && GET_MODE (reg1) != word_mode)
+    reg1 = gen_rtx_REG (word_mode, REGNO (reg1));
+
+  if (REG_P (reg2) && GET_MODE (reg2) != word_mode)
+    reg2 = gen_rtx_REG (word_mode, REGNO (reg2));
+
+  return gen_push2_di (mem, reg1, reg2);
+}
+
 /* Return >= 0 if there is an unused call-clobbered register available
    for the entire function.  */
 
@@ -6714,6 +6734,18 @@ get_probe_interval (void)
 
 #define SPLIT_STACK_AVAILABLE 256
 
+/* Helper function to determine whether push2/pop2 can be used in prologue or
+   epilogue for register save/restore.  */
+static bool
+ix86_pro_and_epilogue_can_use_push2pop2 (int nregs)
+{
+  int aligned = cfun->machine->fs.sp_offset % 16 == 0;
+  return TARGET_APX_PUSH2POP2
+	 && !cfun->machine->frame.save_regs_using_mov
+	 && cfun->machine->func_type == TYPE_NORMAL
+	 && (nregs + aligned) >= 3;
+}
+
 /* Fill structure ix86_frame about frame of currently computed function.  */
 
 static void
@@ -6771,16 +6803,20 @@ ix86_compute_frame_layout (void)
 
      Darwin's ABI specifies 128b alignment for both 32 and  64 bit variants
      at call sites, including profile function calls.
- */
-  if (((TARGET_64BIT_MS_ABI || TARGET_MACHO)
-        && crtl->preferred_stack_boundary < 128)
-      && (!crtl->is_leaf || cfun->calls_alloca != 0
-	  || ix86_current_function_calls_tls_descriptor
-	  || (TARGET_MACHO && crtl->profile)
-	  || ix86_incoming_stack_boundary < 128))
+
+     For APX push2/pop2, the stack also requires 128b alignment.  */
+  if ((ix86_pro_and_epilogue_can_use_push2pop2 (frame->nregs)
+       && crtl->preferred_stack_boundary < 128)
+      || (((TARGET_64BIT_MS_ABI || TARGET_MACHO)
+	   && crtl->preferred_stack_boundary < 128)
+	  && (!crtl->is_leaf || cfun->calls_alloca != 0
+	      || ix86_current_function_calls_tls_descriptor
+	      || (TARGET_MACHO && crtl->profile)
+	      || ix86_incoming_stack_boundary < 128)))
     {
       crtl->preferred_stack_boundary = 128;
-      crtl->stack_alignment_needed = 128;
+      if (crtl->stack_alignment_needed < 128)
+	crtl->stack_alignment_needed = 128;
     }
 
   stack_alignment_needed = crtl->stack_alignment_needed / BITS_PER_UNIT;
@@ -7291,12 +7327,85 @@ ix86_emit_save_regs (void)
   int regno;
   rtx_insn *insn;
 
-  for (regno = FIRST_PSEUDO_REGISTER - 1; regno >= 0; regno--)
-    if (GENERAL_REGNO_P (regno) && ix86_save_reg (regno, true, true))
-      {
-	insn = emit_insn (gen_push (gen_rtx_REG (word_mode, regno)));
-	RTX_FRAME_RELATED_P (insn) = 1;
-      }
+  if (!TARGET_APX_PUSH2POP2 || cfun->machine->func_type != TYPE_NORMAL)
+    {
+      for (regno = FIRST_PSEUDO_REGISTER - 1; regno >= 0; regno--)
+	if (GENERAL_REGNO_P (regno) && ix86_save_reg (regno, true, true))
+	  {
+	    insn = emit_insn (gen_push (gen_rtx_REG (word_mode, regno)));
+	    RTX_FRAME_RELATED_P (insn) = 1;
+	  }
+    }
+  else
+    {
+      int regno_list[2];
+      regno_list[0] = regno_list[1] = -1;
+      int loaded_regnum = 0;
+      bool aligned = cfun->machine->fs.sp_offset % 16 == 0;
+
+      for (regno = FIRST_PSEUDO_REGISTER - 1; regno >= 0; regno--)
+	if (GENERAL_REGNO_P (regno) && ix86_save_reg (regno, true, true))
+	  {
+	    if (aligned)
+	      {
+		regno_list[loaded_regnum++] = regno;
+		if (loaded_regnum == 2)
+		  {
+		    gcc_assert (regno_list[0] != -1
+				&& regno_list[1] != -1
+				&& regno_list[0] != regno_list[1]);
+		    const int offset = UNITS_PER_WORD * 2;
+		    rtx mem = gen_rtx_MEM (TImode,
+					   gen_rtx_PRE_DEC (Pmode,
+							    stack_pointer_rtx));
+		    insn = emit_insn (gen_push2 (mem,
+						 gen_rtx_REG (word_mode,
+							      regno_list[0]),
+						 gen_rtx_REG (word_mode,
+							      regno_list[1])));
+		    RTX_FRAME_RELATED_P (insn) = 1;
+		    rtx dwarf = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (3));
+
+		    for (int i = 0; i < 2; i++)
+		      {
+			rtx dwarf_reg = gen_rtx_REG (word_mode,
+						     regno_list[i]);
+			rtx sp_offset = plus_constant (Pmode,
+						       stack_pointer_rtx,
+						       + UNITS_PER_WORD
+							 * (1 - i));
+			rtx tmp = gen_rtx_SET (gen_frame_mem (DImode,
+							      sp_offset),
+					       dwarf_reg);
+			RTX_FRAME_RELATED_P (tmp) = 1;
+			XVECEXP (dwarf, 0, i + 1) = tmp;
+		      }
+		    rtx sp_tmp = gen_rtx_SET (stack_pointer_rtx,
+					      plus_constant (Pmode,
+							     stack_pointer_rtx,
+							     -offset));
+		    RTX_FRAME_RELATED_P (sp_tmp) = 1;
+		    XVECEXP (dwarf, 0, 0) = sp_tmp;
+		    add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
+
+		    loaded_regnum = 0;
+		    regno_list[0] = regno_list[1] = -1;
+		  }
+	      }
+	    else
+	      {
+		insn = emit_insn (gen_push (gen_rtx_REG (word_mode, regno)));
+		RTX_FRAME_RELATED_P (insn) = 1;
+		aligned = true;
+	      }
+	  }
+      if (loaded_regnum == 1)
+	{
+	  insn = emit_insn (gen_push (gen_rtx_REG (word_mode,
+						   regno_list[0])));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+    }
 }
 
 /* Emit a single register save at CFA - CFA_OFFSET.  */
@@ -9180,6 +9289,74 @@ ix86_emit_restore_reg_using_pop (rtx reg)
     }
 }
 
+/* Emit code to restore REG using a POP2 insn.  */
+static void
+ix86_emit_restore_reg_using_pop2 (rtx reg1, rtx reg2)
+{
+  struct machine_function *m = cfun->machine;
+  const int offset = UNITS_PER_WORD * 2;
+
+  rtx mem = gen_rtx_MEM (TImode, gen_rtx_POST_INC (Pmode,
+						   stack_pointer_rtx));
+  rtx_insn *insn = emit_insn (gen_pop2_di (reg1, mem, reg2));
+
+  RTX_FRAME_RELATED_P (insn) = 1;
+
+  rtx dwarf = NULL_RTX;
+  dwarf = alloc_reg_note (REG_CFA_RESTORE, reg1, dwarf);
+  dwarf = alloc_reg_note (REG_CFA_RESTORE, reg2, dwarf);
+  REG_NOTES (insn) = dwarf;
+  m->fs.sp_offset -= offset;
+
+  if (m->fs.cfa_reg == crtl->drap_reg
+      && (REGNO (reg1) == REGNO (crtl->drap_reg)
+	  || REGNO (reg2) == REGNO (crtl->drap_reg)))
+    {
+      /* Previously we'd represented the CFA as an expression
+	 like *(%ebp - 8).  We've just popped that value from
+	 the stack, which means we need to reset the CFA to
+	 the drap register.  This will remain until we restore
+	 the stack pointer.  */
+      add_reg_note (insn, REG_CFA_DEF_CFA,
+		    REGNO (reg1) == REGNO (crtl->drap_reg) ? reg1 : reg2);
+      RTX_FRAME_RELATED_P (insn) = 1;
+
+      /* This means that the DRAP register is valid for addressing too.  */
+      m->fs.drap_valid = true;
+      return;
+    }
+
+  if (m->fs.cfa_reg == stack_pointer_rtx)
+    {
+      rtx x = plus_constant (Pmode, stack_pointer_rtx, offset);
+      x = gen_rtx_SET (stack_pointer_rtx, x);
+      add_reg_note (insn, REG_CFA_ADJUST_CFA, x);
+      RTX_FRAME_RELATED_P (insn) = 1;
+
+      m->fs.cfa_offset -= offset;
+    }
+
+  /* When the frame pointer is the CFA, and we pop it, we are
+     swapping back to the stack pointer as the CFA.  This happens
+     for stack frames that don't allocate other data, so we assume
+     the stack pointer is now pointing at the return address, i.e.
+     the function entry state, which makes the offset be 1 word.  */
+  if (reg1 == hard_frame_pointer_rtx || reg2 == hard_frame_pointer_rtx)
+    {
+      m->fs.fp_valid = false;
+      if (m->fs.cfa_reg == hard_frame_pointer_rtx)
+	{
+	  m->fs.cfa_reg = stack_pointer_rtx;
+	  m->fs.cfa_offset -= offset;
+
+	  add_reg_note (insn, REG_CFA_DEF_CFA,
+			plus_constant (Pmode, stack_pointer_rtx,
+				       m->fs.cfa_offset));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+    }
+}
+
 /* Emit code to restore saved registers using POP insns.  */
 
 static void
@@ -9190,6 +9367,48 @@ ix86_emit_restore_regs_using_pop (void)
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (GENERAL_REGNO_P (regno) && ix86_save_reg (regno, false, true))
       ix86_emit_restore_reg_using_pop (gen_rtx_REG (word_mode, regno));
+}
+
+/* Emit code to restore saved registers using POP2 insns.  */
+
+static void
+ix86_emit_restore_regs_using_pop2 (void)
+{
+  int regno;
+  int regno_list[2];
+  regno_list[0] = regno_list[1] = -1;
+  int loaded_regnum = 0;
+  bool aligned = cfun->machine->fs.sp_offset % 16 == 0;
+
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if (GENERAL_REGNO_P (regno) && ix86_save_reg (regno, false, true))
+      {
+	if (aligned)
+	  {
+	    regno_list[loaded_regnum++] = regno;
+	    if (loaded_regnum == 2)
+	      {
+		gcc_assert (regno_list[0] != -1
+			    && regno_list[1] != -1
+			    && regno_list[0] != regno_list[1]);
+
+		ix86_emit_restore_reg_using_pop2 (gen_rtx_REG (word_mode,
+							       regno_list[0]),
+						  gen_rtx_REG (word_mode,
+							       regno_list[1]));
+		loaded_regnum = 0;
+		regno_list[0] = regno_list[1] = -1;
+	      }
+	  }
+	else
+	  {
+	    ix86_emit_restore_reg_using_pop (gen_rtx_REG (word_mode, regno));
+	    aligned = true;
+	  }
+      }
+
+  if (loaded_regnum == 1)
+    ix86_emit_restore_reg_using_pop (gen_rtx_REG (word_mode, regno_list[0]));
 }
 
 /* Emit code and notes for the LEAVE instruction.  If insn is non-null,
@@ -9731,7 +9950,10 @@ ix86_expand_epilogue (int style)
 				     m->fs.cfa_reg == stack_pointer_rtx);
 	}
 
-      ix86_emit_restore_regs_using_pop ();
+      if (TARGET_APX_PUSH2POP2 && m->func_type == TYPE_NORMAL)
+	ix86_emit_restore_regs_using_pop2 ();
+      else
+	ix86_emit_restore_regs_using_pop ();
     }
 
   /* If we used a stack pointer and haven't already got rid of it,
