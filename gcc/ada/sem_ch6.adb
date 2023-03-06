@@ -3836,6 +3836,21 @@ package body Sem_Ch6 is
          Spec_Decl := Unit_Declaration_Node (Spec_Id);
          Verify_Overriding_Indicator;
 
+         --  For functions with separate spec, if their return type was visible
+         --  through a limited-with context clause, their extra formals were
+         --  not added when the spec was frozen. Now the full view must be
+         --  available, and the extra formals can be created and Returns_By_Ref
+         --  computed (required to generate its return statements).
+
+         if Ekind (Spec_Id) = E_Function
+           and then From_Limited_With (Etype (Spec_Id))
+           and then Is_Build_In_Place_Function (Spec_Id)
+           and then not Has_BIP_Formals (Spec_Id)
+         then
+            Create_Extra_Formals (Spec_Id);
+            Compute_Returns_By_Ref (Spec_Id);
+         end if;
+
          --  In general, the spec will be frozen when we start analyzing the
          --  body. However, for internally generated operations, such as
          --  wrapper functions for inherited operations with controlling
