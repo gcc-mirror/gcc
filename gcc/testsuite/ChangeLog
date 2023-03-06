@@ -1,3 +1,119 @@
+2023-03-05  Harald Anlauf  <anlauf@gmx.de>
+	    Tobias Burnus   <tobias@codesourcery.com>
+
+	PR fortran/106856
+	* gfortran.dg/interface_41.f90: Remove dg-pattern from valid testcase.
+	* gfortran.dg/class_74.f90: New test.
+	* gfortran.dg/class_75.f90: New test.
+
+2023-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/vect/slp-perm-8.c: Fix up syntax error in
+	scan-tree-dump-times target selector.
+
+2023-03-05  Liao Shihua  <shihua@iscas.ac.cn>
+	    SiYu Wu  <siyu@isrc.iscas.ac.cn>
+
+	* gcc.target/riscv/zksed32.c: New test.
+	* gcc.target/riscv/zksed64.c: New test.
+	* gcc.target/riscv/zksh32.c: New test.
+	* gcc.target/riscv/zksh64.c: New test.
+
+2023-03-05  Liao Shihua  <shihua@iscas.ac.cn>
+	    SiYu Wu  <siyu@isrc.iscas.ac.cn>
+
+	* gcc.target/riscv/zknh-sha256.c: New test.
+	* gcc.target/riscv/zknh-sha512-32.c: New test.
+	* gcc.target/riscv/zknh-sha512-64.c: New test.
+
+2023-03-05  Liao Shihua  <shihua@iscas.ac.cn>
+	    SiYu Wu  <siyu@isrc.iscas.ac.cn>
+
+	* gcc.target/riscv/zknd32.c: New test.
+	* gcc.target/riscv/zknd64.c: New test.
+	* gcc.target/riscv/zkne32.c: New test.
+	* gcc.target/riscv/zkne64.c: New test.
+
+2023-03-05  Liao Shihua  <shihua@iscas.ac.cn>
+	    SiYu Wu  <siyu@isrc.iscas.ac.cn>
+
+	* gcc.target/riscv/zbkb32.c: New test.
+	* gcc.target/riscv/zbkb64.c: New test.
+	* gcc.target/riscv/zbkc32.c: New test.
+	* gcc.target/riscv/zbkc64.c: New test.
+	* gcc.target/riscv/zbkx32.c: New test.
+	* gcc.target/riscv/zbkx64.c: New test.
+
+2023-03-05  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* gcc.target/riscv/zba-shNadd-07.c: f2(i*783) now generates MUL vs.
+	5 insn sh1add+slli+add+slli+sub.
+	* gcc.target/riscv/pr108987.c: New test.
+
+2023-03-05  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+	    kito-cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/base/vlmul_v.c: New test.
+
+2023-03-05  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-167.c: New test.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-168.c: New test.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-169.c: New test.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-170.c: New test.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-171.c: New test.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-172.c: New test.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-173.c: New test.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-174.c: New test.
+
+2023-03-05  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/scalar_move-1.c: New test.
+	* gcc.target/riscv/rvv/base/scalar_move-2.c: New test.
+	* gcc.target/riscv/rvv/base/scalar_move-3.c: New test.
+	* gcc.target/riscv/rvv/base/scalar_move-4.c: New test.
+	* gcc.target/riscv/rvv/base/scalar_move-5.c: New test.
+	* gcc.target/riscv/rvv/base/scalar_move-6.c: New test.
+	* gcc.target/riscv/rvv/base/scalar_move-7.c: New test.
+	* gcc.target/riscv/rvv/base/scalar_move-8.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-100.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-101.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-78.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-79.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-80.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-81.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-82.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-83.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-84.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-85.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-86.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-87.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-88.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-89.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-90.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-91.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-92.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-93.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-94.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-95.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-96.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-97.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-98.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-99.c: New test.
+
+2023-03-05  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-10.c: Adjust test.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-11.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-12.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-15.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-18.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvlmax-9.c: Ditto.
+
+2023-03-05  Lin Sinan  <sinan.lin@linux.alibaba.com>
+
+	* gcc.target/riscv/zbb-min-max-03.c: New test.
+
 2023-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/vect/slp-3.c: Fix up syntax errors in scan-tree-dump-times
