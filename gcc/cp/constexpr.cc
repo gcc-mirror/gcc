@@ -2869,7 +2869,11 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 
   /* We used to shortcut trivial constructor/op= here, but nowadays
      we can only get a trivial function here with -fno-elide-constructors.  */
-  gcc_checking_assert (!trivial_fn_p (fun) || !flag_elide_constructors);
+  gcc_checking_assert (!trivial_fn_p (fun)
+		       || !flag_elide_constructors
+		       /* We don't elide constructors when processing
+			  a noexcept-expression.  */
+		       || cp_noexcept_operand);
 
   bool non_constant_args = false;
   new_call.bindings
