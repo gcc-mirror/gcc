@@ -108,11 +108,8 @@ ASTLowerTypePath::visit (AST::TypePath &path)
     {
       translated_segment = nullptr;
       seg->accept_vis (*this);
-      if (translated_segment == nullptr)
-	{
-	  rust_fatal_error (seg->get_locus (),
-			    "failed to translate AST TypePathSegment");
-	}
+      rust_assert (translated_segment != nullptr);
+
       translated_segments.push_back (
 	std::unique_ptr<HIR::TypePathSegment> (translated_segment));
     }
@@ -158,12 +155,8 @@ ASTLowerQualifiedPathInType::visit (AST::QualifiedPathInType &path)
 
   translated_segment = nullptr;
   path.get_associated_segment ()->accept_vis (*this);
-  if (translated_segment == nullptr)
-    {
-      rust_fatal_error (path.get_associated_segment ()->get_locus (),
-			"failed to translate AST TypePathSegment");
-      return;
-    }
+  rust_assert (translated_segment != nullptr);
+
   std::unique_ptr<HIR::TypePathSegment> associated_segment (translated_segment);
 
   std::vector<std::unique_ptr<HIR::TypePathSegment>> translated_segments;
@@ -171,11 +164,8 @@ ASTLowerQualifiedPathInType::visit (AST::QualifiedPathInType &path)
     {
       translated_segment = nullptr;
       seg->accept_vis (*this);
-      if (translated_segment == nullptr)
-	{
-	  rust_fatal_error (seg->get_locus (),
-			    "failed to translte AST TypePathSegment");
-	}
+      rust_assert (translated_segment != nullptr);
+
       translated_segments.push_back (
 	std::unique_ptr<HIR::TypePathSegment> (translated_segment));
     }
