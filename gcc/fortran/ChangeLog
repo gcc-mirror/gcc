@@ -1,3 +1,33 @@
+2023-03-05  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-02-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108937
+	* trans-intrinsic.c (gfc_conv_intrinsic_ibits): Handle corner case
+	LEN argument of IBITS equal to BITSIZE(I).
+
+2023-03-05  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-02-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/96024
+	* resolve.c (resolve_component): The type of a CHARACTER length
+	expression must be INTEGER.
+
+2023-03-05  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-02-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/96025
+	* parse.c (check_function_result_typed): Improve type check of
+	specification expression for character length and return status.
+	(parse_spec): Use status from above.
+	* resolve.c (resolve_fntype): Prevent use of invalid specification
+	expression for character length.
+
 2023-02-11  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
