@@ -477,6 +477,12 @@ public:
     return PatternType::REFERENCE;
   }
 
+  std::unique_ptr<Pattern> &get_referenced_pattern ()
+  {
+    rust_assert (pattern != nullptr);
+    return pattern;
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */

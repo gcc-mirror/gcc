@@ -410,8 +410,13 @@ TypeCheckPattern::visit (HIR::QualifiedPathInExpression &pattern)
 void
 TypeCheckPattern::visit (HIR::ReferencePattern &pattern)
 {
-  rust_sorry_at (pattern.get_locus (),
-		 "type checking qualified path patterns not supported");
+  if (parent->get_kind () != TyTy::TypeKind::REF)
+    rust_error_at (pattern.get_locus (), "expected %s, found reference",
+		   parent->as_string ().c_str ());
+
+  TyTy::ReferenceType *ref_ty_ty = static_cast<TyTy::ReferenceType *> (parent);
+  TypeCheckPattern::Resolve (pattern.get_referenced_pattern ().get (),
+			     ref_ty_ty->get_base ());
 }
 
 void
