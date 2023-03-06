@@ -51,6 +51,7 @@
 # include <ext/stdio_filebuf.h>
 # ifdef _GLIBCXX_USE_SENDFILE
 #  include <sys/sendfile.h> // sendfile
+#  include <unistd.h> // lseek
 # endif
 #endif
 
@@ -358,6 +359,34 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
   }
 
 #ifdef NEED_DO_COPY_FILE
+#if defined _GLIBCXX_USE_SENDFILE && ! defined _GLIBCXX_FILESYSTEM_IS_WINDOWS
+  bool
+  copy_file_sendfile(int fd_in, int fd_out, size_t length) noexcept
+  {
+    // a zero-length file is either empty, or not copyable by this syscall
+    // return early to avoid the syscall cost
+    if (length == 0)
+      {
+	errno = EINVAL;
+	return false;
+      }
+    size_t bytes_left = length;
+    off_t offset = 0;
+    ssize_t bytes_copied;
+    do
+      {
+	bytes_copied = ::sendfile(fd_out, fd_in, &offset, bytes_left);
+	bytes_left -= bytes_copied;
+      }
+    while (bytes_left > 0 && bytes_copied > 0);
+    if (bytes_copied < 0)
+      {
+	::lseek(fd_out, 0, SEEK_SET);
+	return false;
+      }
+    return true;
+  }
+#endif
   bool
   do_copy_file(const char_type* from, const char_type* to,
 	       std::filesystem::copy_options_existing_file options,
@@ -498,16 +527,22 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
 	return false;
       }
 
-    size_t count = from_st->st_size;
+    bool has_copied = false;
+
 #if defined _GLIBCXX_USE_SENDFILE && ! defined _GLIBCXX_FILESYSTEM_IS_WINDOWS
-    off_t offset = 0;
-    ssize_t n = ::sendfile(out.fd, in.fd, &offset, count);
-    if (n < 0 && errno != ENOSYS && errno != EINVAL)
+    if (!has_copied)
+      has_copied = copy_file_sendfile(in.fd, out.fd, from_st->st_size);
+    if (!has_copied)
       {
-	ec.assign(errno, std::generic_category());
-	return false;
+	if (errno != ENOSYS && errno != EINVAL)
+	  {
+	    ec.assign(errno, std::generic_category());
+	    return false;
+	  }
       }
-    if ((size_t)n == count)
+#endif
+
+    if (has_copied)
       {
 	if (!out.close() || !in.close())
 	  {
@@ -517,9 +552,6 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
 	ec.clear();
 	return true;
       }
-    else if (n > 0)
-      count -= n;
-#endif // _GLIBCXX_USE_SENDFILE
 
     using std::ios;
     __gnu_cxx::stdio_filebuf<char> sbin(in.fd, ios::in|ios::binary);
@@ -530,29 +562,12 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
     if (sbout.is_open())
       out.fd = -1;
 
-#ifdef _GLIBCXX_USE_SENDFILE
-    if (n != 0)
-      {
-	if (n < 0)
-	  n = 0;
-
-	const auto p1 = sbin.pubseekoff(n, ios::beg, ios::in);
-	const auto p2 = sbout.pubseekoff(n, ios::beg, ios::out);
-
-	const std::streampos errpos(std::streamoff(-1));
-	if (p1 == errpos || p2 == errpos)
-	  {
-	    ec = std::make_error_code(std::errc::io_error);
-	    return false;
-	  }
-      }
-#endif
-
-    if (count && !(std::ostream(&sbout) << &sbin))
+    if (from_st->st_size && !(std::ostream(&sbout) << &sbin))
       {
 	ec = std::make_error_code(std::errc::io_error);
 	return false;
       }
+
     if (!sbout.close() || !sbin.close())
       {
 	ec.assign(errno, std::generic_category());

@@ -254,6 +254,9 @@
 /* Define to 1 if you have the `logl' function. */
 #undef HAVE_LOGL
 
+/* Define if lseek is available in <unistd.h>. */
+#undef HAVE_LSEEK
+
 /* Define to 1 if you have the <machine/endian.h> header file. */
 #undef HAVE_MACHINE_ENDIAN_H
 

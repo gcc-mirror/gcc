@@ -4956,6 +4956,7 @@ dnl  _GLIBCXX_USE_FCHMOD
 dnl  _GLIBCXX_USE_FCHMODAT
 dnl  _GLIBCXX_USE_SENDFILE
 dnl  HAVE_LINK
+dnl  HAVE_LSEEK
 dnl  HAVE_READLINK
 dnl  HAVE_SYMLINK
 dnl
@@ -5092,25 +5093,6 @@ dnl
     AC_DEFINE(_GLIBCXX_USE_FCHMODAT, 1, [Define if fchmodat is available in <sys/stat.h>.])
   fi
 dnl
-  AC_CACHE_CHECK([for sendfile that can copy files],
-    glibcxx_cv_sendfile, [dnl
-    case "${target_os}" in
-      gnu* | linux* | solaris* | uclinux*)
-	GCC_TRY_COMPILE_OR_LINK(
-	  [#include <sys/sendfile.h>],
-	  [sendfile(1, 2, (off_t*)0, sizeof 1);],
-	  [glibcxx_cv_sendfile=yes],
-	  [glibcxx_cv_sendfile=no])
-	;;
-      *)
-	glibcxx_cv_sendfile=no
-	;;
-    esac
-  ])
-  if test $glibcxx_cv_sendfile = yes; then
-    AC_DEFINE(_GLIBCXX_USE_SENDFILE, 1, [Define if sendfile is available in <sys/sendfile.h>.])
-  fi
-dnl
   AC_CACHE_CHECK([for link],
     glibcxx_cv_link, [dnl
     GCC_TRY_COMPILE_OR_LINK(
@@ -5121,6 +5103,18 @@ dnl
   ])
   if test $glibcxx_cv_link = yes; then
     AC_DEFINE(HAVE_LINK, 1, [Define if link is available in <unistd.h>.])
+  fi
+dnl
+  AC_CACHE_CHECK([for lseek],
+    glibcxx_cv_lseek, [dnl
+    GCC_TRY_COMPILE_OR_LINK(
+      [#include <unistd.h>],
+      [lseek(1, 0, SEEK_SET);],
+      [glibcxx_cv_lseek=yes],
+      [glibcxx_cv_lseek=no])
+  ])
+  if test $glibcxx_cv_lseek = yes; then
+    AC_DEFINE(HAVE_LSEEK, 1, [Define if lseek is available in <unistd.h>.])
   fi
 dnl
   AC_CACHE_CHECK([for readlink],
@@ -5157,6 +5151,25 @@ dnl
   ])
   if test $glibcxx_cv_truncate = yes; then
     AC_DEFINE(HAVE_TRUNCATE, 1, [Define if truncate is available in <unistd.h>.])
+  fi
+dnl
+  AC_CACHE_CHECK([for sendfile that can copy files],
+    glibcxx_cv_sendfile, [dnl
+    case "${target_os}" in
+      gnu* | linux* | solaris* | uclinux*)
+	GCC_TRY_COMPILE_OR_LINK(
+	  [#include <sys/sendfile.h>],
+	  [sendfile(1, 2, (off_t*)0, sizeof 1);],
+	  [glibcxx_cv_sendfile=yes],
+	  [glibcxx_cv_sendfile=no])
+	;;
+      *)
+	glibcxx_cv_sendfile=no
+	;;
+    esac
+  ])
+  if test $glibcxx_cv_sendfile = yes && test $glibcxx_cv_lseek = yes; then
+    AC_DEFINE(_GLIBCXX_USE_SENDFILE, 1, [Define if sendfile is available in <sys/sendfile.h>.])
   fi
 dnl
   AC_CACHE_CHECK([for fdopendir],
