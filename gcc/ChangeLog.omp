@@ -1,5 +1,12 @@
 2023-03-17  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/gcn/gcn-valu.md (gather_load<mode><vndi>): New.
+	(scatter_store<mode><vndi>): New.
+	(mask_gather_load<mode><vndi>): New.
+	(mask_scatter_store<mode><vndi>): New.
+
+2023-03-17  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/gcn-protos.h (gcn_stepped_zero_int_parallel_p): New.
 	* config/gcn/gcn-valu.md (V_1REG_ALT): New.
 	(V_2REG_ALT): New.
