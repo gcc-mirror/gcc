@@ -7832,6 +7832,9 @@ package body Sem_Res is
       --  Determine whether Expr is part of an N_Attribute_Reference
       --  expression.
 
+      function In_Attribute_Old (Expr : Node_Id) return Boolean;
+      --  Determine whether Expr is in attribute Old
+
       function Within_Exceptional_Cases_Consequence
         (Expr : Node_Id)
          return Boolean;
@@ -7877,6 +7880,31 @@ package body Sem_Res is
             return False;
          end if;
       end Is_Assignment_Or_Object_Expression;
+
+      ----------------------
+      -- In_Attribute_Old --
+      ----------------------
+
+      function In_Attribute_Old (Expr : Node_Id) return Boolean is
+         N : Node_Id := Expr;
+      begin
+         while Present (N) loop
+            if Nkind (N) = N_Attribute_Reference
+              and then Attribute_Name (N) = Name_Old
+            then
+               return True;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (N) then
+               return False;
+            end if;
+
+            N := Parent (N);
+         end loop;
+
+         return False;
+      end In_Attribute_Old;
 
       -----------------------------
       -- Is_Attribute_Expression --
@@ -8080,12 +8108,12 @@ package body Sem_Res is
 
             --  Parameters of modes OUT or IN OUT of the subprogram shall not
             --  occur in the consequences of an exceptional contract unless
-            --  they either are of a by-reference type or occur in the prefix
+            --  they are either passed by reference or occur in the prefix
             --  of a reference to the 'Old attribute.
 
             if Ekind (E) in E_Out_Parameter | E_In_Out_Parameter
               and then Within_Exceptional_Cases_Consequence (N)
-              and then not Is_Attribute_Old (Parent (N))
+              and then not In_Attribute_Old (N)
               and then not Is_By_Reference_Type (Etype (E))
               and then not Is_Aliased (E)
             then
