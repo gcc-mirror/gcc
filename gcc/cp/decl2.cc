@@ -4742,15 +4742,24 @@ record_mangling (tree decl, bool need_warning)
     = mangled_decls->find_slot_with_hash (id, IDENTIFIER_HASH_VALUE (id),
 					  INSERT);
 
-  /* If this is already an alias, remove the alias, because the real
+  /* If this is already an alias, cancel the alias, because the real
      decl takes precedence.  */
   if (*slot && DECL_ARTIFICIAL (*slot) && DECL_IGNORED_P (*slot))
-    if (symtab_node *n = symtab_node::get (*slot))
-      if (n->cpp_implicit_alias)
+    {
+      if (symtab_node *n = symtab_node::get (*slot))
 	{
-	  n->remove ();
-	  *slot = NULL_TREE;
+	  if (n->cpp_implicit_alias)
+	    /* Actually removing the node isn't safe if other code is already
+	       holding a pointer to it, so just neutralize it.  */
+	    n->reset ();
 	}
+      else
+	/* analyze_functions might have already removed the alias from the
+	   symbol table if it's internal.  */
+	gcc_checking_assert (!TREE_PUBLIC (*slot));
+
+      *slot = NULL_TREE;
+    }
 
   if (!*slot)
     *slot = decl;
