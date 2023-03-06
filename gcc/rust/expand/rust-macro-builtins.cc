@@ -58,6 +58,9 @@ make_macro_path_str (AST::BuiltinMacro kind)
     case AST::BuiltinMacro::IncludeStr:
       path_str = "include_str";
       break;
+    case AST::BuiltinMacro::Stringify:
+      path_str = "stringify";
+      break;
     case AST::BuiltinMacro::CompileError:
       path_str = "compile_error";
       break;
@@ -844,5 +847,35 @@ MacroBuiltin::line_handler (Location invoc_locus, AST::MacroInvocData &)
   // FIXME: Do not return an empty token vector here
   return AST::Fragment ({line_no}, std::move (tok));
 }
+
+AST::Fragment
+MacroBuiltin::stringify_handler (Location invoc_locus,
+				 AST::MacroInvocData &invoc)
+{
+  std::string content;
+  auto invoc_token_tree = invoc.get_delim_tok_tree ();
+  auto tokens = invoc_token_tree.to_token_stream ();
+
+  // Tokens stream includes the first and last delimiter
+  // which we need to skip.
+  for (auto token = tokens.cbegin () + 1; token < tokens.cend () - 1; token++)
+    {
+      // Rust stringify format has no garantees but the reference compiler
+      // removes spaces before some tokens depending on the lexer's behavior,
+      // let's mimick some of those behaviors.
+      auto token_id = (*token)->get_id ();
+      if (token_id != RIGHT_PAREN && token_id != EXCLAM
+	  && token != tokens.cbegin () + 1)
+	{
+	  content.push_back (' ');
+	}
+      content += (*token)->as_string ();
+    }
+
+  auto node = AST::SingleASTNode (make_string (invoc_locus, content));
+  auto token
+    = make_token (Token::make_string (invoc_locus, std::move (content)));
+  return AST::Fragment ({node}, std::move (token));
+} // namespace Rust
 
 } // namespace Rust

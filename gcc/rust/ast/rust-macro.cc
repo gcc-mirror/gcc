@@ -42,6 +42,9 @@ builtin_macro_from_string (const std::string &identifier)
   if (identifier == "include_str")
     return BuiltinMacro::IncludeStr;
 
+  if (identifier == "stringify")
+    return BuiltinMacro::Stringify;
+
   if (identifier == "compile_error")
     return BuiltinMacro::CompileError;
 
