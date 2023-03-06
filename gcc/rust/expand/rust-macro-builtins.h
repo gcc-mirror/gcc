@@ -79,6 +79,9 @@ public:
   static AST::Fragment include_str_handler (Location invoc_locus,
 					    AST::MacroInvocData &invoc);
 
+  static AST::Fragment stringify_handler (Location invoc_locus,
+					  AST::MacroInvocData &invoc);
+
   static AST::Fragment compile_error_handler (Location invoc_locus,
 					      AST::MacroInvocData &invoc);
 

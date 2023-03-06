@@ -589,6 +589,7 @@ enum class BuiltinMacro
   Column,
   IncludeBytes,
   IncludeStr,
+  Stringify,
   CompileError,
   Concat,
   Env,
