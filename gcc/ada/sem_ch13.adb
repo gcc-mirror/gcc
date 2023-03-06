@@ -4203,11 +4203,8 @@ package body Sem_Ch13 is
                   Aitem := Empty;
 
                when Aspect_Aggregate =>
-                  if Is_Array_Type (E) then
-                     Error_Msg_N
-                       ("aspect% can only be applied to non-array type", Id);
-                     goto Continue;
-                  end if;
+                  --  We will be checking that the aspect is not specified on a
+                  --  non-array type in Check_Aspect_At_Freeze_Point
 
                   Validate_Aspect_Aggregate (Expr);
                   Record_Rep_Item (E, Aspect);
@@ -11225,6 +11222,11 @@ package body Sem_Ch13 is
             return;
 
          when Aspect_Aggregate =>
+            if Is_Array_Type (Entity (ASN)) then
+               Error_Msg_N
+                 ("aspect% can only be applied to non-array type",
+                  Identifier (ASN));
+            end if;
             Resolve_Aspect_Aggregate (Entity (ASN), Expression (ASN));
             return;
 
