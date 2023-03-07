@@ -1396,12 +1396,7 @@ package body Atree is
 
             E := First (List);
             while Present (E) loop
-               if Is_Entity (E) then
-                  Append (Copy_Entity (E), NL);
-               else
-                  Append (Copy_Separate_Tree (E), NL);
-               end if;
-
+               Append (Copy_Separate_Tree (E), NL);
                Next (E);
             end loop;
 
