@@ -2046,7 +2046,7 @@ package body Sem_Ch6 is
 
    procedure Analyze_Return_Type (N : Node_Id) is
       Designator : constant Entity_Id := Defining_Entity (N);
-      Typ        : Entity_Id := Empty;
+      Typ        : Entity_Id;
 
    begin
       --  Normal case where result definition does not indicate an error
