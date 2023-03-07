@@ -2484,7 +2484,8 @@ GLIBCXX_3.4.31 {
     _ZSt8to_charsPcS_DF128_St12chars_formati;
     _ZSt10from_charsPKcS0_RDF128_St12chars_format;
 
-    _ZSt15__try_use_facet*;
+    _ZSt15__try_use_facetISt*;
+    _ZSt15__try_use_facetINSt7__cxx11*;
 
     _ZNSt6chrono11reload_tzdbEv;
     _ZNSt6chrono8get_tzdbEv;
