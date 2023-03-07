@@ -1,3 +1,19 @@
+2023-03-06  Javier Miranda  <miranda@adacore.com>
+
+	PR ada/108858
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): For functions with
+	separate spec, if their return type was visible through a limited-
+	with context clause, their extra formals were not added when the
+	spec was analyzed.  Now the full view must be available, and the
+	extra formals can be created and Returns_By_Ref computed.
+
+2023-03-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/108909
+	PR ada/108983
+	* Make-generated.in: Do not use GNATMAKE.
+	* gcc-interface/Makefile.in: Ditto.
+
 2023-02-26  Peter Foley  <pefoley2@pefoley.com>
 
 	PR ada/108909

@@ -1,3 +1,19 @@
+2023-03-06   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/107299
+	* config/rs6000/_divkc3.c (COPYSIGN): Use the correct built-in based on
+	whether long double is IBM or IEEE.
+	(INFINITY): Likewise.
+	(FABS): Likewise.
+	* config/rs6000/_mulkc3.c (COPYSIGN): Likewise.
+	(INFINITY): Likewise.
+	* config/rs6000/quad-float128.h (TF): Remove definition.
+	(TFtype): Define to be long double or _Float128.
+	(TCtype): Define to be _Complex long double or _Complex _Float128.
+	* libgcc2.h (TFtype): Allow machine config files to override this.
+	(TCtype): Likewise.
+	* soft-fp/quad.h (TFtype): Likewise.
+
 2023-02-13  Kito Cheng  <kito.cheng@sifive.com>
 
 	* config.host (riscv*-*-*): Add config/riscv/value-unwind.h.

@@ -1,3 +1,87 @@
+2023-03-07  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/analyzer/allocation-size-multiline-3.c: Handle
+	int32_t being "long int".
+
+2023-03-07  Hans-Peter Nilsson  <hp@axis.com>
+
+	* lib/multiline.exp (_build_multiline_regex): Map
+	"{re:" to "(", similarly ")?" from ":re?}" and the
+	same without question mark.
+
+2023-03-06  Paul-Antoine Arras  <pa@codesourcery.com>
+
+	* gcc.target/gcn/cond_fmaxnm_1.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_1_run.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_2.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_2_run.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_3.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_3_run.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_4.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_4_run.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_5.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_5_run.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_6.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_6_run.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_7.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_7_run.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_8.c: New test.
+	* gcc.target/gcn/cond_fmaxnm_8_run.c: New test.
+	* gcc.target/gcn/cond_fminnm_1.c: New test.
+	* gcc.target/gcn/cond_fminnm_1_run.c: New test.
+	* gcc.target/gcn/cond_fminnm_2.c: New test.
+	* gcc.target/gcn/cond_fminnm_2_run.c: New test.
+	* gcc.target/gcn/cond_fminnm_3.c: New test.
+	* gcc.target/gcn/cond_fminnm_3_run.c: New test.
+	* gcc.target/gcn/cond_fminnm_4.c: New test.
+	* gcc.target/gcn/cond_fminnm_4_run.c: New test.
+	* gcc.target/gcn/cond_fminnm_5.c: New test.
+	* gcc.target/gcn/cond_fminnm_5_run.c: New test.
+	* gcc.target/gcn/cond_fminnm_6.c: New test.
+	* gcc.target/gcn/cond_fminnm_6_run.c: New test.
+	* gcc.target/gcn/cond_fminnm_7.c: New test.
+	* gcc.target/gcn/cond_fminnm_7_run.c: New test.
+	* gcc.target/gcn/cond_fminnm_8.c: New test.
+	* gcc.target/gcn/cond_fminnm_8_run.c: New test.
+	* gcc.target/gcn/cond_smax_1.c: New test.
+	* gcc.target/gcn/cond_smax_1_run.c: New test.
+	* gcc.target/gcn/cond_smin_1.c: New test.
+	* gcc.target/gcn/cond_smin_1_run.c: New test.
+	* gcc.target/gcn/cond_umax_1.c: New test.
+	* gcc.target/gcn/cond_umax_1_run.c: New test.
+	* gcc.target/gcn/cond_umin_1.c: New test.
+	* gcc.target/gcn/cond_umin_1_run.c: New test.
+	* gcc.target/gcn/smax_1.c: New test.
+	* gcc.target/gcn/smax_1_run.c: New test.
+	* gcc.target/gcn/smin_1.c: New test.
+	* gcc.target/gcn/smin_1_run.c: New test.
+	* gcc.target/gcn/umax_1.c: New test.
+	* gcc.target/gcn/umax_1_run.c: New test.
+	* gcc.target/gcn/umin_1.c: New test.
+	* gcc.target/gcn/umin_1_run.c: New test.
+
+2023-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109025
+	* gcc.dg/vect/pr109025.c: New testcase.
+
+2023-03-06  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/prolog-opt.c (dg-options): Add
+	-fno-stack-protector.
+	* gcc.target/loongarch/stack-check-cfa-1.c (dg-options):
+	Likewise.
+	* gcc.target/loongarch/stack-check-cfa-2.c (dg-options):
+	Likewise.
+
+2023-03-06  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/109000
+	* gcc.target/loongarch/flt-abi-isa-1.c: New test.
+	* gcc.target/loongarch/flt-abi-isa-2.c: New test.
+	* gcc.target/loongarch/flt-abi-isa-3.c: New test.
+	* gcc.target/loongarch/flt-abi-isa-4.c: New test.
+
 2023-03-05  Harald Anlauf  <anlauf@gmx.de>
 	    Tobias Burnus   <tobias@codesourcery.com>
 

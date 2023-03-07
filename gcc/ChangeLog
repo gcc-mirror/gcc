@@ -1,3 +1,35 @@
+2023-03-06  Paul-Antoine Arras  <pa@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (<expander><mode>3_exec): Add patterns for
+	{s|u}{max|min} in QI, HI and DI modes.
+	(<expander><mode>3): Add pattern for {s|u}{max|min} in DI mode.
+	(cond_<fexpander><mode>): Add pattern for cond_f{max|min}.
+	(cond_<expander><mode>): Add pattern for cond_{s|u}{max|min}.
+	* config/gcn/gcn.cc (gcn_spill_class): Allow the exec register to be
+	saved in SGPRs.
+
+2023-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109025
+	* tree-vect-loop.cc (vect_is_simple_reduction): Verify
+	the inner LC PHI use is the inner loop PHI latch definition
+	before classifying an outer PHI as double reduction.
+
+2023-03-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/108429
+	* config/i386/x86-tune.def (X86_TUNE_USE_SCATTER_2PARTS): Enable for
+	generic.
+	(X86_TUNE_USE_SCATTER_4PARTS): Likewise.
+	(X86_TUNE_USE_SCATTER): Likewise.
+
+2023-03-06  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/109000
+	* config/loongarch/loongarch.h (FP_RETURN): Use
+	TARGET_*_FLOAT_ABI instead of TARGET_*_FLOAT.
+	(UNITS_PER_FP_ARG): Likewise.
+
 2023-03-05  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
 
 	* config/riscv/riscv-vsetvl.cc (reg_available_p): Fix bug.
