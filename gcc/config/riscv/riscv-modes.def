@@ -72,6 +72,14 @@ ADJUST_BYTESIZE (VNx16BI, riscv_vector_chunks * riscv_bytes_per_vector_chunk);
 ADJUST_BYTESIZE (VNx32BI, riscv_vector_chunks * riscv_bytes_per_vector_chunk);
 ADJUST_BYTESIZE (VNx64BI, riscv_v_adjust_nunits (VNx64BImode, 8));
 
+ADJUST_PRECISION (VNx1BI, riscv_v_adjust_precision (VNx1BImode, 1));
+ADJUST_PRECISION (VNx2BI, riscv_v_adjust_precision (VNx2BImode, 2));
+ADJUST_PRECISION (VNx4BI, riscv_v_adjust_precision (VNx4BImode, 4));
+ADJUST_PRECISION (VNx8BI, riscv_v_adjust_precision (VNx8BImode, 8));
+ADJUST_PRECISION (VNx16BI, riscv_v_adjust_precision (VNx16BImode, 16));
+ADJUST_PRECISION (VNx32BI, riscv_v_adjust_precision (VNx32BImode, 32));
+ADJUST_PRECISION (VNx64BI, riscv_v_adjust_precision (VNx64BImode, 64));
+
 /*
    | Mode        | MIN_VLEN=32 | MIN_VLEN=32 | MIN_VLEN=64 | MIN_VLEN=64 |
    |             | LMUL        | SEW/LMUL    | LMUL        | SEW/LMUL    |

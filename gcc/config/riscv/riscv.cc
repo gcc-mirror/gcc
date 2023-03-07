@@ -1003,6 +1003,18 @@ riscv_v_adjust_nunits (machine_mode mode, int scale)
   return scale;
 }
 
+/* Call from ADJUST_PRECISION in riscv-modes.def.  Return the correct
+   PRECISION size for corresponding machine_mode.  */
+
+poly_int64
+riscv_v_adjust_precision (machine_mode mode, int scale)
+{
+  if (riscv_v_ext_vector_mode_p (mode))
+    return riscv_vector_chunks * scale;
+
+  return scale;
+}
+
 /* Return true if X is a valid address for machine mode MODE.  If it is,
    fill in INFO appropriately.  STRICT_P is true if REG_OK_STRICT is in
    effect.  */
