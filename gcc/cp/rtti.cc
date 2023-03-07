@@ -1581,10 +1581,19 @@ emit_support_tinfo_1 (tree bltn)
       /* Emit it right away if not emitted already.  */
       if (DECL_INITIAL (tinfo) == NULL_TREE)
 	{
-	  gcc_assert (unemitted_tinfo_decls->last () == tinfo);
 	  bool ok = emit_tinfo_decl (tinfo);
 	  gcc_assert (ok);
-	  unemitted_tinfo_decls->pop ();
+	  /* When compiling libsupc++.a (fundamental_type_info.o),
+	     unemitted_tinfo_decls->last () will be tinfo, so pop it
+	     from the vector as it is emitted now.  If one uses typeid
+	     etc. in the same TU as the definition of
+	     ~fundamental_type_info (), the tinfo might be emitted
+	     already earlier, in such case keep it in the vector
+	     (as otherwise we'd need to walk the whole vector) and
+	     let c_parse_final_cleanups ignore it when it will have
+	     non-NULL DECL_INITIAL.  */
+	  if (unemitted_tinfo_decls->last () == tinfo)
+	    unemitted_tinfo_decls->pop ();
 	}
     }
 }

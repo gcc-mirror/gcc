@@ -4982,7 +4982,7 @@ c_parse_final_cleanups (void)
 	 get emitted.  */
       for (i = unemitted_tinfo_decls->length ();
 	   unemitted_tinfo_decls->iterate (--i, &t);)
-	if (emit_tinfo_decl (t))
+	if (DECL_INITIAL (t) || emit_tinfo_decl (t))
 	  {
 	    reconsider = true;
 	    unemitted_tinfo_decls->unordered_remove (i);
