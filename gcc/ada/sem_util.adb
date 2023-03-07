@@ -23858,9 +23858,7 @@ package body Sem_Util is
             --  ??? Is there a better way of distinguishing those?
 
             while Present (Old_Id) and then Present (New_Id) loop
-               if not (Present (Entity_Map)
-                        and then In_Entity_Map (Old_Id, Entity_Map))
-               then
+               if not In_Entity_Map (Old_Id, Entity_Map) then
                   Update_Semantic_Fields (New_Id);
                end if;
 
