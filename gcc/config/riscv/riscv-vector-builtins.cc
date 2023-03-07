@@ -45,6 +45,9 @@
 #include "targhooks.h"
 #include "regs.h"
 #include "emit-rtl.h"
+#include "basic-block.h"
+#include "gimple.h"
+#include "gimple-iterator.h"
 #include "riscv-vector-builtins.h"
 #include "riscv-vector-builtins-shapes.h"
 #include "riscv-vector-builtins-bases.h"
@@ -117,6 +120,9 @@ const char *const predication_suffixes[NUM_PRED_TYPES] = {
 #define DEF_RVV_PRED_TYPE(NAME) "_" # NAME,
 #include "riscv-vector-builtins.def"
 };
+
+/* A list of all signed integer will be registered for intrinsic functions.  */
+static const rvv_type_info none_ops[] = {{NUM_VECTOR_TYPES, 0}};
 
 /* A list of all signed integer will be registered for intrinsic functions.  */
 static const rvv_type_info i_ops[] = {
@@ -383,6 +389,12 @@ static CONSTEXPR const rvv_arg_type_info size_args[]
 /* A list of args for vector_type func (const scalar_type *) function.  */
 static CONSTEXPR const rvv_arg_type_info scalar_const_ptr_args[]
   = {rvv_arg_type_info (RVV_BASE_scalar_const_ptr), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (const scalar_type *, size_t *) function.
+ */
+static CONSTEXPR const rvv_arg_type_info scalar_const_ptr_size_ptr_args[]
+  = {rvv_arg_type_info (RVV_BASE_scalar_const_ptr),
+     rvv_arg_type_info (RVV_BASE_size_ptr), rvv_arg_type_info_end};
 
 /* A list of args for void func (scalar_type *, vector_type) function.  */
 static CONSTEXPR const rvv_arg_type_info scalar_ptr_args[]
@@ -796,6 +808,14 @@ static CONSTEXPR const rvv_op_info all_v_scalar_const_ptr_ops
      OP_TYPE_v,				  /* Suffix */
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      scalar_const_ptr_args /* Args */};
+
+/* A static operand information for vector_type func (const scalar_type *)
+ * function registration. */
+static CONSTEXPR const rvv_op_info all_v_scalar_const_ptr_size_ptr_ops
+  = {all_ops,				  /* Types */
+     OP_TYPE_v,				  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     scalar_const_ptr_size_ptr_args /* Args */};
 
 /* A static operand information for void func (scalar_type *, vector_type)
  * function registration. */
@@ -2103,6 +2123,13 @@ static CONSTEXPR const rvv_op_info all_v_vget_lmul4_x2_ops
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      ext_x2_vget_args /* Args */};
 
+/* A static operand information for size_t func () function registration. */
+static CONSTEXPR const rvv_op_info p_none_void_ops
+  = {none_ops,				/* Types */
+     OP_TYPE_none,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_size), /* Return type */
+     void_args /* Args */};
+
 /* A list of all RVV base function types.  */
 static CONSTEXPR const function_type_info function_types[] = {
 #define DEF_RVV_TYPE_INDEX(VECTOR, MASK, SIGNED, UNSIGNED, EEW8_INDEX, EEW16_INDEX, \
@@ -2155,6 +2182,7 @@ static CONSTEXPR const function_type_info function_types[] = {
     VECTOR_TYPE_##X16_VLMUL_EXT,                                               \
     VECTOR_TYPE_##X32_VLMUL_EXT,                                               \
     VECTOR_TYPE_##X64_VLMUL_EXT,                                               \
+    VECTOR_TYPE_INVALID,                                                       \
   },
 #include "riscv-vector-builtins.def"
 }; // namespace riscv_vector
@@ -2504,7 +2532,7 @@ rvv_arg_type_info::get_tree_type (vector_type_index type_idx) const
      satisfy the require extension of the type. For example,
      vfloat32m1_t require floating-point extension. In this case,
      just return NULL_TREE.  */
-  if (!builtin_types[type_idx].vector)
+  if (type_idx != VECTOR_TYPE_INVALID && !builtin_types[type_idx].vector)
     return NULL_TREE;
 
   switch (base_type)
@@ -2856,6 +2884,32 @@ function_call_info::function_call_info (location_t location_in,
 					tree fndecl_in)
   : function_instance (instance_in), location (location_in), fndecl (fndecl_in)
 {}
+
+gimple_folder::gimple_folder (const function_instance &instance, tree fndecl,
+			      gimple_stmt_iterator *gsi_in, gcall *call_in)
+  : function_call_info (gimple_location (call_in), instance, fndecl),
+    gsi (gsi_in), call (call_in), lhs (gimple_call_lhs (call_in))
+{
+}
+
+/* Try to fold the call.  Return the new statement on success and null
+   on failure.  */
+gimple *
+gimple_folder::fold ()
+{
+  /* Don't fold anything when RVV is disabled; emit an error during
+     expansion instead.  */
+  if (!TARGET_VECTOR)
+    return NULL;
+
+  /* Punt if the function has a return type and no result location is
+     provided.  The attributes should allow target-independent code to
+     remove the calls if appropriate.  */
+  if (!lhs && TREE_TYPE (gimple_call_fntype (call)) != void_type_node)
+    return NULL;
+
+  return base->fold (*this);
+}
 
 function_expander::function_expander (const function_instance &instance,
 				      tree fndecl_in, tree exp_in,
@@ -3409,6 +3463,16 @@ builtin_decl (unsigned int code, bool)
   return (*registered_functions)[code]->decl;
 }
 
+/* Attempt to fold STMT, given that it's a call to the SVE function
+   with subcode CODE.  Return the new statement on success and null
+   on failure.  Insert any other new statements at GSI.  */
+gimple *
+gimple_fold_builtin (unsigned int code, gimple_stmt_iterator *gsi, gcall *stmt)
+{
+  registered_function &rfn = *(*registered_functions)[code];
+  return gimple_folder (rfn.instance, rfn.decl, gsi, stmt).fold ();
+}
+
 /* Expand a call to the RVV function with subcode CODE.  EXP is the call
    expression and TARGET is the preferred location for the result.
    Return the value of the lhs.  */
@@ -3433,6 +3497,23 @@ check_builtin_call (location_t location, vec<location_t>, unsigned int code,
   const registered_function &rfn = *(*registered_functions)[code];
   return function_checker (location, rfn.instance, fndecl,
 			   TREE_TYPE (rfn.decl), nargs, args).check ();
+}
+
+function_instance
+get_read_vl_instance (void)
+{
+  return function_instance ("read_vl", bases::read_vl, shapes::read_vl,
+			    none_ops[0], PRED_TYPE_none, &p_none_void_ops);
+}
+
+tree
+get_read_vl_decl (void)
+{
+  function_instance instance = get_read_vl_instance ();
+  hashval_t hash = instance.hash ();
+  registered_function *rfn = function_table->find_with_hash (instance, hash);
+  gcc_assert (rfn);
+  return rfn->decl;
 }
 
 } // end namespace riscv_vector

@@ -1577,10 +1577,90 @@ public:
   {
     rtx src = expand_normal (CALL_EXPR_ARG (e.exp, 0));
     rtx index = expand_normal (CALL_EXPR_ARG (e.exp, 1));
-    poly_int64 offset = INTVAL (index) * GET_MODE_SIZE (GET_MODE (src));
+    poly_int64 offset = INTVAL (index) * GET_MODE_SIZE (GET_MODE (e.target));
     rtx subreg
       = simplify_gen_subreg (GET_MODE (e.target), src, GET_MODE (src), offset);
     return subreg;
+  }
+};
+
+class read_vl : public function_base
+{
+public:
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_READ_CSR;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    if (Pmode == SImode)
+      emit_insn (gen_read_vlsi (e.target));
+    else
+      emit_insn (gen_read_vldi_zero_extend (e.target));
+    return e.target;
+  }
+};
+
+class vleff : public function_base
+{
+public:
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_READ_MEMORY | CP_WRITE_CSR;
+  }
+
+  gimple *fold (gimple_folder &f) const override
+  {
+    /* fold vleff (const *base, size_t *new_vl, size_t vl)
+
+       ====> vleff (const *base, size_t vl)
+	     new_vl = MEM_REF[read_vl ()].  */
+
+    auto_vec<tree> vargs (gimple_call_num_args (f.call) - 1);
+
+    for (unsigned i = 0; i < gimple_call_num_args (f.call); i++)
+      {
+	/* Exclude size_t *new_vl argument.  */
+	if (i == gimple_call_num_args (f.call) - 2)
+	  continue;
+
+	vargs.quick_push (gimple_call_arg (f.call, i));
+      }
+
+    gimple *repl = gimple_build_call_vec (gimple_call_fn (f.call), vargs);
+    gimple_call_set_lhs (repl, f.lhs);
+
+    /* Handle size_t *new_vl by read_vl.  */
+    tree new_vl = gimple_call_arg (f.call, gimple_call_num_args (f.call) - 2);
+    if (integer_zerop (new_vl))
+      {
+	/* This case happens when user passes the nullptr to new_vl argument.
+	   In this case, we just need to ignore the new_vl argument and return
+	   vleff instruction directly. */
+	return repl;
+      }
+
+    tree tmp_var = create_tmp_var (size_type_node, "new_vl");
+    tree decl = get_read_vl_decl ();
+    gimple *g = gimple_build_call (decl, 0);
+    gimple_call_set_lhs (g, tmp_var);
+    tree indirect
+      = fold_build2 (MEM_REF, size_type_node,
+		     gimple_call_arg (f.call,
+				      gimple_call_num_args (f.call) - 2),
+		     build_int_cst (build_pointer_type (size_type_node), 0));
+    gassign *assign = gimple_build_assign (indirect, tmp_var);
+
+    gsi_insert_after (f.gsi, assign, GSI_SAME_STMT);
+    gsi_insert_after (f.gsi, g, GSI_SAME_STMT);
+    return repl;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_contiguous_load_insn (
+      code_for_pred_fault_load (e.vector_mode ()));
   }
 };
 
@@ -1792,6 +1872,8 @@ static CONSTEXPR const vlmul_ext vlmul_ext_obj;
 static CONSTEXPR const vlmul_trunc vlmul_trunc_obj;
 static CONSTEXPR const vset vset_obj;
 static CONSTEXPR const vget vget_obj;
+static CONSTEXPR const read_vl read_vl_obj;
+static CONSTEXPR const vleff vleff_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -2006,5 +2088,7 @@ BASE (vlmul_ext)
 BASE (vlmul_trunc)
 BASE (vset)
 BASE (vget)
+BASE (read_vl)
+BASE (vleff)
 
 } // end namespace riscv_vector

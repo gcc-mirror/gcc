@@ -106,8 +106,6 @@ using namespace riscv_vector;
 static CONSTEXPR const unsigned ALL_SEW[] = {8, 16, 32, 64};
 static CONSTEXPR const vlmul_type ALL_LMUL[]
   = {LMUL_1, LMUL_2, LMUL_4, LMUL_8, LMUL_F8, LMUL_F4, LMUL_F2};
-static CONSTEXPR const demand_type SEW_LMUL_RELATED_DEMAND[]
-  = {DEMAND_SEW, DEMAND_LMUL, DEMAND_RATIO, DEMAND_GE_SEW};
 
 DEBUG_FUNCTION void
 debug (const vector_insn_info *info)
@@ -196,6 +194,20 @@ scalar_move_insn_p (rtx_insn *rinsn)
 {
   return get_attr_type (rinsn) == TYPE_VIMOVXV
 	 || get_attr_type (rinsn) == TYPE_VFMOVFV;
+}
+
+/* Return true if the instruction is fault first load instruction.  */
+static bool
+fault_first_load_p (rtx_insn *rinsn)
+{
+  return recog_memoized (rinsn) >= 0 && get_attr_type (rinsn) == TYPE_VLDFF;
+}
+
+/* Return true if the instruction is read vl instruction.  */
+static bool
+read_vl_insn_p (rtx_insn *rinsn)
+{
+  return recog_memoized (rinsn) >= 0 && get_attr_type (rinsn) == TYPE_RDVL;
 }
 
 /* Return true if it is a vsetvl instruction.  */
@@ -386,6 +398,8 @@ available_occurrence_p (const bb_info *bb, const vector_insn_info dem)
 	  for (const insn_info *i = insn; real_insn_and_same_bb_p (i, bb);
 	       i = i->next_nondebug_insn ())
 	    {
+	      if (read_vl_insn_p (i->rtl ()))
+		continue;
 	      /* rs1 (avl) are not modified by following statements in
 		 the basic block.  */
 	      if (find_access (i->defs (), REGNO (dem.get_avl ())))
@@ -397,72 +411,6 @@ available_occurrence_p (const bb_info *bb, const vector_insn_info dem)
 	    }
 	}
     }
-  return true;
-}
-
-/* Return true if the block is worthwhile backward propagation.  */
-static bool
-backward_propagate_worthwhile_p (const basic_block cfg_bb,
-				 const vector_block_info block_info)
-{
-  if (loop_basic_block_p (cfg_bb))
-    {
-      if (block_info.reaching_out.valid_or_dirty_p ())
-	{
-	  if (block_info.local_dem.compatible_p (block_info.reaching_out))
-	    {
-	      /* Case 1 (Can backward propagate):
-		 ....
-		 bb0:
-		 ...
-		 for (int i = 0; i < n; i++)
-		   {
-		     vint16mf4_t v = __riscv_vle16_v_i16mf4 (in + i + 5, 7);
-		     __riscv_vse16_v_i16mf4 (out + i + 5, v, 7);
-		   }
-		 The local_dem is compatible with reaching_out. Such case is
-		 worthwhile backward propagation.  */
-	      return true;
-	    }
-	  else
-	    {
-	      /* Case 2 (Don't backward propagate):
-		    ....
-		    bb0:
-		    ...
-		    for (int i = 0; i < n; i++)
-		      {
-			vint16mf4_t v = __riscv_vle16_v_i16mf4 (in + i + 5, 7);
-			__riscv_vse16_v_i16mf4 (out + i + 5, v, 7);
-			vint16mf2_t v2 = __riscv_vle16_v_i16mf2 (in + i + 6, 8);
-			__riscv_vse16_v_i16mf2 (out + i + 6, v, 8);
-		      }
-		 The local_dem is incompatible with reaching_out.
-		 It makes no sense to backward propagate the local_dem since we
-		 can't avoid VSETVL inside the loop.  */
-	      return false;
-	    }
-	}
-      else
-	{
-	  gcc_assert (block_info.reaching_out.unknown_p ());
-	  /* Case 3 (Don't backward propagate):
-		....
-		bb0:
-		...
-		for (int i = 0; i < n; i++)
-		  {
-		    vint16mf4_t v = __riscv_vle16_v_i16mf4 (in + i + 5, 7);
-		    __riscv_vse16_v_i16mf4 (out + i + 5, v, 7);
-		    fn3 ();
-		  }
-	    The local_dem is VALID, but the reaching_out is UNKNOWN.
-	    It makes no sense to backward propagate the local_dem since we
-	    can't avoid VSETVL inside the loop.  */
-	  return false;
-	}
-    }
-
   return true;
 }
 
@@ -688,15 +636,20 @@ static rtx
 gen_vsetvl_pat (rtx_insn *rinsn, const vector_insn_info &info)
 {
   rtx new_pat;
+  vl_vtype_info new_info = info;
+  if (info.get_insn () && info.get_insn ()->rtl ()
+      && fault_first_load_p (info.get_insn ()->rtl ()))
+    new_info.set_avl_info (
+      avl_info (get_avl (info.get_insn ()->rtl ()), nullptr));
   if (vsetvl_insn_p (rinsn) || vlmax_avl_p (info.get_avl ()))
     {
       rtx dest = get_vl (rinsn);
-      new_pat = gen_vsetvl_pat (VSETVL_NORMAL, info, dest);
+      new_pat = gen_vsetvl_pat (VSETVL_NORMAL, new_info, dest);
     }
   else if (INSN_CODE (rinsn) == CODE_FOR_vsetvl_vtype_change_only)
-    new_pat = gen_vsetvl_pat (VSETVL_VTYPE_CHANGE_ONLY, info, NULL_RTX);
+    new_pat = gen_vsetvl_pat (VSETVL_VTYPE_CHANGE_ONLY, new_info, NULL_RTX);
   else
-    new_pat = gen_vsetvl_pat (VSETVL_DISCARD_RESULT, info, NULL_RTX);
+    new_pat = gen_vsetvl_pat (VSETVL_DISCARD_RESULT, new_info, NULL_RTX);
   return new_pat;
 }
 
@@ -978,6 +931,36 @@ change_insn (rtx_insn *rinsn, rtx new_pat)
     }
 }
 
+static const insn_info *
+get_forward_read_vl_insn (const insn_info *insn)
+{
+  const bb_info *bb = insn->bb ();
+  for (const insn_info *i = insn->next_nondebug_insn ();
+       real_insn_and_same_bb_p (i, bb); i = i->next_nondebug_insn ())
+    {
+      if (find_access (i->defs (), VL_REGNUM))
+	return nullptr;
+      if (read_vl_insn_p (i->rtl ()))
+	return i;
+    }
+  return nullptr;
+}
+
+static const insn_info *
+get_backward_fault_first_load_insn (const insn_info *insn)
+{
+  const bb_info *bb = insn->bb ();
+  for (const insn_info *i = insn->prev_nondebug_insn ();
+       real_insn_and_same_bb_p (i, bb); i = i->prev_nondebug_insn ())
+    {
+      if (fault_first_load_p (i->rtl ()))
+	return i;
+      if (find_access (i->defs (), VL_REGNUM))
+	return nullptr;
+    }
+  return nullptr;
+}
+
 static bool
 change_insn (function_info *ssa, insn_change change, insn_info *insn,
 	     rtx new_pat)
@@ -1083,6 +1066,12 @@ source_equal_p (insn_info *insn1, insn_info *insn2)
   rtx note2 = find_reg_equal_equiv_note (rinsn2);
   rtx single_set1 = single_set (rinsn1);
   rtx single_set2 = single_set (rinsn2);
+  if (read_vl_insn_p (rinsn1) && read_vl_insn_p (rinsn2))
+    {
+      const insn_info *load1 = get_backward_fault_first_load_insn (insn1);
+      const insn_info *load2 = get_backward_fault_first_load_insn (insn2);
+      return load1 && load2 && load1 == load2;
+    }
 
   if (note1 && note2 && rtx_equal_p (note1, note2))
     return true;
@@ -1217,21 +1206,6 @@ possible_zero_avl_p (const vector_insn_info &info1,
 }
 
 static bool
-first_ratio_invalid_for_second_sew_p (const vector_insn_info &info1,
-				      const vector_insn_info &info2)
-{
-  return calculate_vlmul (info2.get_sew (), info1.get_ratio ())
-	 == LMUL_RESERVED;
-}
-
-static bool
-first_ratio_invalid_for_second_lmul_p (const vector_insn_info &info1,
-				       const vector_insn_info &info2)
-{
-  return calculate_sew (info2.get_vlmul (), info1.get_ratio ()) == 0;
-}
-
-static bool
 second_ratio_invalid_for_first_sew_p (const vector_insn_info &info1,
 				      const vector_insn_info &info2)
 {
@@ -1312,20 +1286,6 @@ second_lmul_less_than_first_lmul_p (const vector_insn_info &info1,
 				    const vector_insn_info &info2)
 {
   return compare_lmul (info2.get_vlmul (), info1.get_vlmul ()) == -1;
-}
-
-static bool
-first_lmul_less_than_second_lmul_p (const vector_insn_info &info1,
-				    const vector_insn_info &info2)
-{
-  return compare_lmul (info1.get_vlmul (), info2.get_vlmul ()) == -1;
-}
-
-static bool
-first_ratio_less_than_second_ratio_p (const vector_insn_info &info1,
-				      const vector_insn_info &info2)
-{
-  return info1.get_ratio () < info2.get_ratio ();
 }
 
 static bool
@@ -1537,6 +1497,100 @@ reg_available_p (const bb_info *bb, const vector_insn_info &info)
 			   insn->bb ()->cfg_bb ());
 }
 
+/* Return true if the instruction support relaxed compatible check.  */
+static bool
+support_relaxed_compatible_p (const vector_insn_info &info1,
+			      const vector_insn_info &info2)
+{
+  if (fault_first_load_p (info1.get_insn ()->rtl ())
+      && info2.demand_p (DEMAND_AVL) && info2.has_avl_reg ()
+      && info2.get_avl_source () && info2.get_avl_source ()->insn ()->is_phi ())
+    {
+      hash_set<set_info *> sets
+	= get_all_sets (info2.get_avl_source (), true, false, false);
+      for (set_info *set : sets)
+	{
+	  if (read_vl_insn_p (set->insn ()->rtl ()))
+	    {
+	      const insn_info *insn
+		= get_backward_fault_first_load_insn (set->insn ());
+	      if (insn == info1.get_insn ())
+		return info2.compatible_vtype_p (info1);
+	    }
+	}
+    }
+  return false;
+}
+
+/* Return true if the block is worthwhile backward propagation.  */
+static bool
+backward_propagate_worthwhile_p (const basic_block cfg_bb,
+				 const vector_block_info block_info)
+{
+  if (loop_basic_block_p (cfg_bb))
+    {
+      if (block_info.reaching_out.valid_or_dirty_p ())
+	{
+	  if (block_info.local_dem.compatible_p (block_info.reaching_out))
+	    {
+	      /* Case 1 (Can backward propagate):
+		 ....
+		 bb0:
+		 ...
+		 for (int i = 0; i < n; i++)
+		   {
+		     vint16mf4_t v = __riscv_vle16_v_i16mf4 (in + i + 5, 7);
+		     __riscv_vse16_v_i16mf4 (out + i + 5, v, 7);
+		   }
+		 The local_dem is compatible with reaching_out. Such case is
+		 worthwhile backward propagation.  */
+	      return true;
+	    }
+	  else
+	    {
+	      if (support_relaxed_compatible_p (block_info.reaching_out,
+						block_info.local_dem))
+		return true;
+	      /* Case 2 (Don't backward propagate):
+		    ....
+		    bb0:
+		    ...
+		    for (int i = 0; i < n; i++)
+		      {
+			vint16mf4_t v = __riscv_vle16_v_i16mf4 (in + i + 5, 7);
+			__riscv_vse16_v_i16mf4 (out + i + 5, v, 7);
+			vint16mf2_t v2 = __riscv_vle16_v_i16mf2 (in + i + 6, 8);
+			__riscv_vse16_v_i16mf2 (out + i + 6, v, 8);
+		      }
+		 The local_dem is incompatible with reaching_out.
+		 It makes no sense to backward propagate the local_dem since we
+		 can't avoid VSETVL inside the loop.  */
+	      return false;
+	    }
+	}
+      else
+	{
+	  gcc_assert (block_info.reaching_out.unknown_p ());
+	  /* Case 3 (Don't backward propagate):
+		....
+		bb0:
+		...
+		for (int i = 0; i < n; i++)
+		  {
+		    vint16mf4_t v = __riscv_vle16_v_i16mf4 (in + i + 5, 7);
+		    __riscv_vse16_v_i16mf4 (out + i + 5, v, 7);
+		    fn3 ();
+		  }
+	    The local_dem is VALID, but the reaching_out is UNKNOWN.
+	    It makes no sense to backward propagate the local_dem since we
+	    can't avoid VSETVL inside the loop.  */
+	  return false;
+	}
+    }
+
+  return true;
+}
+
 avl_info::avl_info (const avl_info &other)
 {
   m_value = other.get_value ();
@@ -1739,25 +1793,27 @@ vl_vtype_info::same_vlmax_p (const vl_vtype_info &other) const
    or Dem2 is stricter than Dem1.
    For example, Dem1 (demand SEW + LMUL) > Dem2 (demand RATIO).  */
 bool
-vector_insn_info::operator> (const vector_insn_info &other) const
-{
-  if (other.compatible_p (static_cast<const vl_vtype_info &> (*this))
-      && !this->compatible_p (static_cast<const vl_vtype_info &> (other)))
-    return true;
-  return false;
-}
-
-bool
 vector_insn_info::operator>= (const vector_insn_info &other) const
 {
-  if (*this > other)
+  if (support_relaxed_compatible_p (*this, other))
+    {
+      unsigned array_size = sizeof (unavailable_conds) / sizeof (demands_cond);
+      /* Bypass AVL unavailable cases.  */
+      for (unsigned i = 2; i < array_size; i++)
+	if (unavailable_conds[i].pair.match_cond_p (this->get_demands (),
+						    other.get_demands ())
+	    && unavailable_conds[i].incompatible_p (*this, other))
+	  return false;
+      return true;
+    }
+
+  if (!other.compatible_p (static_cast<const vl_vtype_info &> (*this)))
+    return false;
+  if (!this->compatible_p (static_cast<const vl_vtype_info &> (other)))
     return true;
 
   if (*this == other)
     return true;
-
-  if (!compatible_p (other))
-    return false;
 
   for (const auto &cond : unavailable_conds)
     if (cond.pair.match_cond_p (this->get_demands (), other.get_demands ())
@@ -1837,7 +1893,7 @@ vector_insn_info::parse_insn (insn_info *insn)
 
   /* If this is something that updates VL/VTYPE that we don't know about, set
      the state to unknown.  */
-  if (!vector_config_insn_p (insn->rtl ())
+  if (!vector_config_insn_p (insn->rtl ()) && !has_vtype_op (insn->rtl ())
       && (find_access (insn->defs (), VL_REGNUM)
 	  || find_access (insn->defs (), VTYPE_REGNUM)))
     {
@@ -1922,8 +1978,7 @@ vector_insn_info::compatible_p (const vector_insn_info &other) const
 	      && "Can't compare invalid demanded infos");
 
   for (const auto &cond : incompatible_conds)
-    if (cond.pair.match_cond_p (this->get_demands (), other.get_demands ())
-	&& cond.incompatible_p (*this, other))
+    if (cond.dual_incompatible_p (*this, other))
       return false;
   return true;
 }
@@ -2152,6 +2207,23 @@ vector_insn_info::merge (const vector_insn_info &merge_info,
   new_info.fuse_tail_policy (*this, merge_info);
   new_info.fuse_mask_policy (*this, merge_info);
   return new_info;
+}
+
+bool
+vector_insn_info::update_fault_first_load_avl (insn_info *insn)
+{
+  // Update AVL to vl-output of the fault first load.
+  const insn_info *read_vl = get_forward_read_vl_insn (insn);
+  if (read_vl)
+    {
+      rtx vl = SET_DEST (PATTERN (read_vl->rtl ()));
+      def_info *def = find_access (read_vl->defs (), REGNO (vl));
+      set_info *set = safe_dyn_cast<set_info *> (def);
+      set_avl_info (avl_info (vl, set));
+      set_insn (insn);
+      return true;
+    }
+  return false;
 }
 
 void
@@ -2524,6 +2596,7 @@ private:
   bool hard_empty_block_p (const bb_info *, const vector_insn_info &) const;
   bool backward_demand_fusion (void);
   bool forward_demand_fusion (void);
+  // bool local_demand_fusion (void);
   bool cleanup_illegal_dirty_blocks (void);
   void demand_fusion (void);
 
@@ -2664,7 +2737,9 @@ pass_vsetvl::transfer_after (vector_insn_info &info, insn_info *insn) const
       return;
     }
 
-  /* TODO: Support fault first load info update VL in the future.  */
+  if (fault_first_load_p (insn->rtl ())
+      && info.update_fault_first_load_avl (insn))
+    return;
 
   /* If this is something that updates VL/VTYPE that we don't know about, set
      the state to unknown.  */
@@ -3303,6 +3378,7 @@ pass_vsetvl::demand_fusion (void)
 	help for such cases.  */
       changed_p |= backward_demand_fusion ();
       changed_p |= forward_demand_fusion ();
+      // chanded_p |= local_demand_fusion ();
     }
 
   changed_p = true;
@@ -3840,9 +3916,16 @@ pass_vsetvl::cleanup_insns (void) const
 	      use_array new_uses = use_array (uses_builder.finish ());
 	      change.new_uses = new_uses;
 	      change.move_range = insn->ebb ()->insn_range ();
-	      rtx set = single_set (rinsn);
-	      rtx src = simplify_replace_rtx (SET_SRC (set), avl, const0_rtx);
-	      rtx pat = gen_rtx_SET (SET_DEST (set), src);
+	      rtx pat;
+	      if (fault_first_load_p (rinsn))
+		pat = simplify_replace_rtx (PATTERN (rinsn), avl, const0_rtx);
+	      else
+		{
+		  rtx set = single_set (rinsn);
+		  rtx src
+		    = simplify_replace_rtx (SET_SRC (set), avl, const0_rtx);
+		  pat = gen_rtx_SET (SET_DEST (set), src);
+		}
 	      gcc_assert (change_insn (crtl->ssa, change, insn, pat));
 	    }
 	}

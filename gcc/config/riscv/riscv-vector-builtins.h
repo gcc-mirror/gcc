@@ -315,6 +315,25 @@ function_call_info::function_returns_void_p ()
   return TREE_TYPE (TREE_TYPE (fndecl)) == void_type_node;
 }
 
+/* A class for folding a gimple function call.  */
+class gimple_folder : public function_call_info
+{
+public:
+  gimple_folder (const function_instance &, tree, gimple_stmt_iterator *,
+		 gcall *);
+
+  gimple *fold ();
+
+  /* Where to insert extra statements that feed the final replacement.  */
+  gimple_stmt_iterator *gsi;
+
+  /* The call we're folding.  */
+  gcall *call;
+
+  /* The result of the call, or null if none.  */
+  tree lhs;
+};
+
 /* A class for expanding a function call into RTL.  */
 class function_expander : public function_call_info
 {
@@ -390,6 +409,10 @@ public:
   /* Return true if intrinsics has merge operand.  */
   virtual bool has_merge_operand_p () const;
 
+  /* Try to fold the given gimple call.  Return the new gimple statement
+     on success, otherwise return null.  */
+  virtual gimple *fold (gimple_folder &) const { return NULL; }
+
   /* Expand the given call into rtl.  Return the result of the function,
      or an arbitrary value if the function doesn't return a result.  */
   virtual rtx expand (function_expander &) const = 0;
@@ -456,6 +479,8 @@ extern const char *const operand_suffixes[NUM_OP_TYPES];
 extern const rvv_builtin_suffixes type_suffixes[NUM_VECTOR_TYPES + 1];
 extern const char *const predication_suffixes[NUM_PRED_TYPES];
 extern rvv_builtin_types_t builtin_types[NUM_VECTOR_TYPES + 1];
+extern function_instance get_read_vl_instance (void);
+extern tree get_read_vl_decl (void);
 
 inline tree
 rvv_arg_type_info::get_scalar_type (vector_type_index type_idx) const

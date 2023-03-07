@@ -36,6 +36,9 @@ along with GCC; see the file COPYING3. If not see
 #define DEF_RVV_FUNCTION(NAME, SHAPE, PREDS, OPS_INFO)
 #endif
 
+/* Internal helper functions for gimple fold use.  */
+DEF_RVV_FUNCTION (read_vl, read_vl, none_preds, p_none_void_ops)
+
 /* 6. Configuration-Setting Instructions.  */
 
 DEF_RVV_FUNCTION (vsetvl, vsetvl, none_preds, i_none_size_size_ops)
@@ -71,7 +74,9 @@ DEF_RVV_FUNCTION (vsoxei16, indexed_loadstore, none_m_preds, all_v_scalar_ptr_ee
 DEF_RVV_FUNCTION (vsoxei32, indexed_loadstore, none_m_preds, all_v_scalar_ptr_eew32_index_ops)
 DEF_RVV_FUNCTION (vsoxei64, indexed_loadstore, none_m_preds, all_v_scalar_ptr_eew64_index_ops)
 
-// TODO: 7.7. Unit-stride Fault-Only-First Loads
+// 7.7. Unit-stride Fault-Only-First Loads
+DEF_RVV_FUNCTION (vleff, fault_load, full_preds, all_v_scalar_const_ptr_size_ptr_ops)
+
 // TODO: 7.8. Vector Load/Store Segment Instructions
 
 /* 11. Vector Integer Arithmetic Instructions.  */

@@ -7081,6 +7081,9 @@ riscv_shamt_matches_mask_p (int shamt, HOST_WIDE_INT mask)
 #undef TARGET_BUILTIN_DECL
 #define TARGET_BUILTIN_DECL riscv_builtin_decl
 
+#undef TARGET_GIMPLE_FOLD_BUILTIN
+#define TARGET_GIMPLE_FOLD_BUILTIN riscv_gimple_fold_builtin
+
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN riscv_expand_builtin
 

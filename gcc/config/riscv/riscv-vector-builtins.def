@@ -375,6 +375,7 @@ DEF_RVV_BASE_TYPE (vlmul_ext_x8, get_vector_type (type_idx))
 DEF_RVV_BASE_TYPE (vlmul_ext_x16, get_vector_type (type_idx))
 DEF_RVV_BASE_TYPE (vlmul_ext_x32, get_vector_type (type_idx))
 DEF_RVV_BASE_TYPE (vlmul_ext_x64, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (size_ptr, build_pointer_type (size_type_node))
 
 #include "riscv-vector-type-indexer.gen.def"
 

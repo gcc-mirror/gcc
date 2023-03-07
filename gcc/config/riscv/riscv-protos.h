@@ -85,6 +85,7 @@ void riscv_register_pragmas (void);
 
 /* Routines implemented in riscv-builtins.cc.  */
 extern void riscv_atomic_assign_expand_fenv (tree *, tree *, tree *);
+extern bool riscv_gimple_fold_builtin (gimple_stmt_iterator *);
 extern rtx riscv_expand_builtin (tree, rtx, rtx, machine_mode, int);
 extern tree riscv_builtin_decl (unsigned int, bool);
 extern void riscv_init_builtins (void);
@@ -150,6 +151,7 @@ bool verify_type_context (location_t, type_context_kind, const_tree, bool);
 #endif
 void handle_pragma_vector (void);
 tree builtin_decl (unsigned, bool);
+gimple *gimple_fold_builtin (unsigned int, gimple_stmt_iterator *, gcall *);
 rtx expand_builtin (unsigned int, tree, rtx);
 bool check_builtin_call (location_t, vec<location_t>, unsigned int,
 			   tree, unsigned int, tree *);

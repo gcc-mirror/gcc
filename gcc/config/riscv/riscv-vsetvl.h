@@ -308,7 +308,6 @@ public:
      We use RTL_SSA framework to initialize the insn_info.  */
   void parse_insn (rtl_ssa::insn_info *);
 
-  bool operator> (const vector_insn_info &) const;
   bool operator>= (const vector_insn_info &) const;
   bool operator== (const vector_insn_info &) const;
 
@@ -392,6 +391,7 @@ public:
   {
     return gen_rtx_REG (Pmode, get_avl_source ()->regno ());
   }
+  bool update_fault_first_load_avl (rtl_ssa::insn_info *);
 
   void dump (FILE *) const;
 };
@@ -479,6 +479,14 @@ struct demands_cond
   using CONDITION_TYPE
     = bool (*) (const vector_insn_info &, const vector_insn_info &);
   CONDITION_TYPE incompatible_p;
+  bool dual_incompatible_p (const vector_insn_info &info1,
+			    const vector_insn_info &info2) const
+  {
+    return ((pair.match_cond_p (info1.get_demands (), info2.get_demands ())
+	     && incompatible_p (info1, info2))
+	    || (pair.match_cond_p (info2.get_demands (), info1.get_demands ())
+		&& incompatible_p (info2, info1)));
+  }
 };
 
 struct demands_fuse_rule

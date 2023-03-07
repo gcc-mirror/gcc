@@ -215,7 +215,7 @@
 				vfwcvtftoi,vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,vfclass,\
 				vired,viwred,vfredu,vfredo,vfwredu,vfwredo,vimovxv,vfmovfv,\
 				vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,\
-				vgather")
+				vgather,vldff")
 	       (const_int 2)
 
 	       (eq_attr "type" "vimerge,vfmerge,vcompress")
@@ -228,7 +228,7 @@
 ;; The index of operand[] to get the avl op.
 (define_attr "vl_op_idx" ""
   (cond [(eq_attr "type" "vlde,vste,vimov,vfmov,vldm,vstm,vmalu,vsts,vstux,\
-			  vstox,vext,vmsfs,vmiota,vfsqrt,vfrecp,vfcvtitof,\
+			  vstox,vext,vmsfs,vmiota,vfsqrt,vfrecp,vfcvtitof,vldff,\
 			  vfcvtftoi,vfwcvtitof,vfwcvtftoi,vfwcvtftof,vfncvtitof,\
 			  vfncvtftoi,vfncvtftof,vfclass,vimovxv,vfmovfv,vcompress")
 	   (const_int 4)
@@ -260,7 +260,7 @@
   (cond [(eq_attr "type" "vlde,vimov,vfmov,vext,vmiota,vfsqrt,vfrecp,\
 			  vfcvtitof,vfcvtftoi,vfwcvtitof,vfwcvtftoi,vfwcvtftof,\
 			  vfncvtitof,vfncvtftoi,vfncvtftof,vfclass,vimovxv,vfmovfv,\
-			  vcompress")
+			  vcompress,vldff")
 	   (symbol_ref "riscv_vector::get_ta(operands[5])")
 
 	 ;; If operands[3] of "vlds" is not vector mode, it is pred_broadcast.
@@ -289,7 +289,7 @@
 (define_attr "ma" ""
   (cond [(eq_attr "type" "vlde,vext,vmiota,vfsqrt,vfrecp,vfcvtitof,vfcvtftoi,\
 			  vfwcvtitof,vfwcvtftoi,vfwcvtftof,vfncvtitof,vfncvtftoi,\
-			  vfncvtftof,vfclass")
+			  vfncvtftof,vfclass,vldff")
 	   (symbol_ref "riscv_vector::get_ma(operands[6])")
 
 	 ;; If operands[3] of "vlds" is not vector mode, it is pred_broadcast.
@@ -315,7 +315,7 @@
 
 ;; The avl type value.
 (define_attr "avl_type" ""
-  (cond [(eq_attr "type" "vlde,vlde,vste,vimov,vimov,vimov,vfmov,vext,vimerge,\
+  (cond [(eq_attr "type" "vlde,vldff,vste,vimov,vimov,vimov,vfmov,vext,vimerge,\
 			  vfsqrt,vfrecp,vfmerge,vfcvtitof,vfcvtftoi,vfwcvtitof,\
 			  vfwcvtftoi,vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,\
 			  vfclass,vired,viwred,vfredu,vfredo,vfwredu,vfwredo,\
@@ -6944,4 +6944,47 @@
   "TARGET_VECTOR"
   "vcompress.vm\t%0,%2,%3"
   [(set_attr "type" "vcompress")
+   (set_attr "mode" "<MODE>")])
+
+;; -------------------------------------------------------------------------------
+;; ---- Predicated Fault-Only-First loads
+;; -------------------------------------------------------------------------------
+;; Includes:
+;; - 7.7. Unit-stride Fault-Only-First Loads
+;; -------------------------------------------------------------------------------
+
+(define_insn "read_vlsi"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(reg:SI VL_REGNUM))]
+  "TARGET_VECTOR"
+  "csrr\t%0,vl"
+  [(set_attr "type" "rdvl")
+   (set_attr "mode" "SI")])
+
+(define_insn "read_vldi_zero_extend"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI (reg:SI VL_REGNUM)))]
+  "TARGET_VECTOR && TARGET_64BIT"
+  "csrr\t%0,vl"
+  [(set_attr "type" "rdvl")
+   (set_attr "mode" "DI")])
+
+(define_insn "@pred_fault_load<mode>"
+  [(set (match_operand:V 0 "register_operand"              "=vd,    vr")
+	(if_then_else:V
+	  (unspec:<VM>
+	    [(match_operand:<VM> 1 "vector_mask_operand" "   vm,   Wc1")
+	     (match_operand 4 "vector_length_operand"    "   rK,    rK")
+	     (match_operand 5 "const_int_operand"        "    i,     i")
+	     (match_operand 6 "const_int_operand"        "    i,     i")
+	     (match_operand 7 "const_int_operand"        "    i,     i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (unspec:V
+	    [(match_operand:V 3 "memory_operand"         "    m,     m")] UNSPEC_VLEFF)
+	  (match_operand:V 2 "vector_merge_operand"      "  0vu,   0vu")))
+   (set (reg:SI VL_REGNUM) (unspec:SI [(match_dup 0)] UNSPEC_VLEFF))]
+  "TARGET_VECTOR"
+  "vle<sew>ff.v\t%0,%3%p1"
+  [(set_attr "type" "vldff")
    (set_attr "mode" "<MODE>")])

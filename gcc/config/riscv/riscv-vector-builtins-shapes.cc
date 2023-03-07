@@ -497,6 +497,62 @@ struct vget_def : public misc_def
   }
 };
 
+/* read_vl_def class.  */
+struct read_vl_def : public function_shape
+{
+  void build (function_builder &b,
+	      const function_group_info &group) const override
+  {
+    auto_vec<tree> argument_types;
+    b.add_unique_function (get_read_vl_instance (), (*group.shape),
+			   size_type_node, argument_types);
+  }
+
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    if (overloaded_p)
+      return nullptr;
+    b.append_base_name (instance.base_name);
+    return b.finish_name ();
+  }
+};
+
+/* fault_load_def class.  */
+struct fault_load_def : public build_base
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    if (overloaded_p)
+      if (instance.pred == PRED_TYPE_none || instance.pred == PRED_TYPE_mu)
+	return nullptr;
+    tree type = builtin_types[instance.type.index].vector;
+    machine_mode mode = TYPE_MODE (type);
+    int sew = GET_MODE_BITSIZE (GET_MODE_INNER (mode));
+    b.append_name ("__riscv_");
+    b.append_name ("vle");
+    b.append_sew (sew);
+    b.append_name ("ff");
+
+    /* vop<sew>_v --> vop<sew>_v_<type>.  */
+    if (!overloaded_p)
+      {
+	/* vop<sew> --> vop<sew>_v.  */
+	b.append_name (operand_suffixes[instance.op_info->op]);
+	/* vop<sew>_v --> vop<sew>_v_<type>.  */
+	b.append_name (type_suffixes[instance.type.index].vector);
+      }
+
+    /* According to rvv-intrinsic-doc, it does not add "_m" suffix
+       for vop_m C++ overloaded API.  */
+    if (overloaded_p && instance.pred == PRED_TYPE_m)
+      return b.finish_name ();
+    b.append_name (predication_suffixes[instance.pred]);
+    return b.finish_name ();
+  }
+};
+
 SHAPE(vsetvl, vsetvl)
 SHAPE(vsetvl, vsetvlmax)
 SHAPE(loadstore, loadstore)
@@ -514,5 +570,7 @@ SHAPE(vundefined, vundefined)
 SHAPE(misc, misc)
 SHAPE(vset, vset)
 SHAPE(vget, vget)
+SHAPE(read_vl, read_vl)
+SHAPE(fault_load, fault_load)
 
 } // end namespace riscv_vector
