@@ -1,3 +1,14 @@
+2023-03-06  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2023-03-06  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/109000
+	* gcc.target/loongarch/flt-abi-isa-1.c: New test.
+	* gcc.target/loongarch/flt-abi-isa-2.c: New test.
+	* gcc.target/loongarch/flt-abi-isa-3.c: New test.
+	* gcc.target/loongarch/flt-abi-isa-4.c: New test.
+
 2023-03-04  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
