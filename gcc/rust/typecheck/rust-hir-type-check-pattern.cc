@@ -321,73 +321,13 @@ TypeCheckPattern::visit (HIR::RangePattern &pattern)
   // Resolve the upper and lower bounds, and ensure they are compatible types
   TyTy::BaseType *upper = nullptr, *lower = nullptr;
 
-  // TODO: It would be nice to factor this out into a helper since the logic for
-  // both bounds is exactly the same...
-  switch (pattern.get_upper_bound ()->get_bound_type ())
-    {
-      case HIR::RangePatternBound::RangePatternBoundType::LITERAL: {
-	HIR::RangePatternBoundLiteral &ref
-	  = *static_cast<HIR::RangePatternBoundLiteral *> (
-	    pattern.get_upper_bound ().get ());
+  upper = typecheck_range_pattern_bound (pattern.get_upper_bound (),
+					 pattern.get_pattern_mappings (),
+					 pattern.get_locus ());
 
-	HIR::Literal lit = ref.get_literal ();
-
-	upper = resolve_literal (pattern.get_pattern_mappings (), lit,
-				 pattern.get_locus ());
-      }
-      break;
-
-      case HIR::RangePatternBound::RangePatternBoundType::PATH: {
-	HIR::RangePatternBoundPath &ref
-	  = *static_cast<HIR::RangePatternBoundPath *> (
-	    pattern.get_upper_bound ().get ());
-
-	upper = TypeCheckExpr::Resolve (&ref.get_path ());
-      }
-      break;
-
-      case HIR::RangePatternBound::RangePatternBoundType::QUALPATH: {
-	HIR::RangePatternBoundQualPath &ref
-	  = *static_cast<HIR::RangePatternBoundQualPath *> (
-	    pattern.get_upper_bound ().get ());
-
-	upper = TypeCheckExpr::Resolve (&ref.get_qualified_path ());
-      }
-      break;
-    }
-
-  switch (pattern.get_lower_bound ()->get_bound_type ())
-    {
-      case HIR::RangePatternBound::RangePatternBoundType::LITERAL: {
-	HIR::RangePatternBoundLiteral &ref
-	  = *static_cast<HIR::RangePatternBoundLiteral *> (
-	    pattern.get_lower_bound ().get ());
-
-	HIR::Literal lit = ref.get_literal ();
-
-	lower = resolve_literal (pattern.get_pattern_mappings (), lit,
-				 pattern.get_locus ());
-      }
-      break;
-
-      case HIR::RangePatternBound::RangePatternBoundType::PATH: {
-	HIR::RangePatternBoundPath &ref
-	  = *static_cast<HIR::RangePatternBoundPath *> (
-	    pattern.get_lower_bound ().get ());
-
-	lower = TypeCheckExpr::Resolve (&ref.get_path ());
-      }
-      break;
-
-      case HIR::RangePatternBound::RangePatternBoundType::QUALPATH: {
-	HIR::RangePatternBoundQualPath &ref
-	  = *static_cast<HIR::RangePatternBoundQualPath *> (
-	    pattern.get_lower_bound ().get ());
-
-	lower = TypeCheckExpr::Resolve (&ref.get_qualified_path ());
-      }
-      break;
-    }
+  lower = typecheck_range_pattern_bound (pattern.get_lower_bound (),
+					 pattern.get_pattern_mappings (),
+					 pattern.get_locus ());
 
   infered = unify_site (pattern.get_pattern_mappings ().get_hirid (),
 			TyTy::TyWithLocation (upper),
@@ -440,6 +380,44 @@ TypeCheckPattern::emit_pattern_size_error (const HIR::Pattern &pattern,
 		 expected_field_count == 1 ? "element" : "elements",
 		 (unsigned long) got_field_count,
 		 got_field_count == 1 ? "element" : "elements");
+}
+
+TyTy::BaseType *
+TypeCheckPattern::typecheck_range_pattern_bound (
+  std::unique_ptr<Rust::HIR::RangePatternBound> &bound,
+  Analysis::NodeMapping mappings, Location locus)
+{
+  TyTy::BaseType *resolved_bound = nullptr;
+  switch (bound->get_bound_type ())
+    {
+      case HIR::RangePatternBound::RangePatternBoundType::LITERAL: {
+	HIR::RangePatternBoundLiteral &ref
+	  = *static_cast<HIR::RangePatternBoundLiteral *> (bound.get ());
+
+	HIR::Literal lit = ref.get_literal ();
+
+	resolved_bound = resolve_literal (mappings, lit, locus);
+      }
+      break;
+
+      case HIR::RangePatternBound::RangePatternBoundType::PATH: {
+	HIR::RangePatternBoundPath &ref
+	  = *static_cast<HIR::RangePatternBoundPath *> (bound.get ());
+
+	resolved_bound = TypeCheckExpr::Resolve (&ref.get_path ());
+      }
+      break;
+
+      case HIR::RangePatternBound::RangePatternBoundType::QUALPATH: {
+	HIR::RangePatternBoundQualPath &ref
+	  = *static_cast<HIR::RangePatternBoundQualPath *> (bound.get ());
+
+	resolved_bound = TypeCheckExpr::Resolve (&ref.get_qualified_path ());
+      }
+      break;
+    }
+
+  return resolved_bound;
 }
 
 void
