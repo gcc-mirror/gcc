@@ -27,7 +27,7 @@ localedata/unicode-gen/unicode_utils.py
 localedata/unicode-gen/utf8_gen.py
 
 And the most recent versions added to GCC are from glibc git commit:
-f6032247061fb37d59565f2e9667e242c8a98e76
+4c721f24fc190d1dc935eb0bab283de7cf13182e
 
 The script gen_wcwidth.py found here contains the GCC-specific code to
 map glibc's output to the lookup tables we require.  This script should not need
