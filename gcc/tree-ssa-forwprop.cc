@@ -3669,7 +3669,8 @@ pass_forwprop::execute (function *fun)
 	      /* Rewrite stores of a single-use complex build expression
 	         to component-wise stores.  */
 	      use_operand_p use_p;
-	      gimple *use_stmt;
+	      gimple *use_stmt, *def1, *def2;
+	      tree rhs2;
 	      if (single_imm_use (lhs, &use_p, &use_stmt)
 		  && gimple_store_p (use_stmt)
 		  && !gimple_has_volatile_ops (use_stmt)
@@ -3702,6 +3703,36 @@ pass_forwprop::execute (function *fun)
 
 		  release_defs (stmt);
 		  gsi_remove (&gsi, true);
+		}
+	      /* Rewrite a component-wise load of a complex to a complex
+		 load if the components are not used separately.  */
+	      else if (TREE_CODE (rhs) == SSA_NAME
+		       && has_single_use (rhs)
+		       && ((rhs2 = gimple_assign_rhs2 (stmt)), true)
+		       && TREE_CODE (rhs2) == SSA_NAME
+		       && has_single_use (rhs2)
+		       && (def1 = SSA_NAME_DEF_STMT (rhs),
+			   gimple_assign_load_p (def1))
+		       && (def2 = SSA_NAME_DEF_STMT (rhs2),
+			   gimple_assign_load_p (def2))
+		       && (gimple_vuse (def1) == gimple_vuse (def2))
+		       && !gimple_has_volatile_ops (def1)
+		       && !gimple_has_volatile_ops (def2)
+		       && gimple_assign_rhs_code (def1) == REALPART_EXPR
+		       && gimple_assign_rhs_code (def2) == IMAGPART_EXPR
+		       && operand_equal_p (TREE_OPERAND (gimple_assign_rhs1
+								 (def1), 0),
+					   TREE_OPERAND (gimple_assign_rhs1
+								 (def2), 0)))
+		{
+		  tree cl = TREE_OPERAND (gimple_assign_rhs1 (def1), 0);
+		  gimple_assign_set_rhs_from_tree (&gsi, unshare_expr (cl));
+		  gcc_assert (gsi_stmt (gsi) == stmt);
+		  gimple_set_vuse (stmt, gimple_vuse (def1));
+		  gimple_set_modified (stmt, true);
+		  gimple_stmt_iterator gsi2 = gsi_for_stmt (def1);
+		  gsi_remove (&gsi, false);
+		  gsi_insert_after (&gsi2, stmt, GSI_SAME_STMT);
 		}
 	      else
 		gsi_next (&gsi);
