@@ -4330,8 +4330,54 @@ find_temps_r (tree *tp, int *walk_subtrees, void *data)
   return NULL_TREE;
 }
 
+/* walk_tree callback to collect temporaries in an expression that
+   are allocator arguments to standard library classes.  */
+
+static tree
+find_allocator_temps_r (tree *tp, int *walk_subtrees, void *data)
+{
+  vec<tree*> &temps = *static_cast<auto_vec<tree*> *>(data);
+  tree t = *tp;
+  if (TYPE_P (t))
+    {
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+
+  /* If this is a call to a constructor for a std:: class, look for
+     a reference-to-allocator argument.  */
+  tree fn = cp_get_callee_fndecl_nofold (t);
+  if (fn && DECL_CONSTRUCTOR_P (fn)
+      && decl_in_std_namespace_p (TYPE_NAME (DECL_CONTEXT (fn))))
+    {
+      int nargs = call_expr_nargs (t);
+      for (int i = 1; i < nargs; ++i)
+	{
+	  tree arg = get_nth_callarg (t, i);
+	  tree atype = TREE_TYPE (arg);
+	  if (TREE_CODE (atype) == REFERENCE_TYPE
+	      && is_std_allocator (TREE_TYPE (atype)))
+	    {
+	      STRIP_NOPS (arg);
+	      if (TREE_CODE (arg) == ADDR_EXPR)
+		{
+		  tree *ap = &TREE_OPERAND (arg, 0);
+		  if (TREE_CODE (*ap) == TARGET_EXPR)
+		    temps.safe_push (ap);
+		}
+	    }
+	}
+    }
+
+  return NULL_TREE;
+}
+
 /* If INIT initializes a standard library class, and involves a temporary
-   std::allocator<T>, return a pointer to the temp.
+   std::allocator<T>, use ALLOC_OBJ for all such temporaries.
+
+   Note that this can clobber the input to build_vec_init; no unsharing is
+   done.  To make this safe we use the TARGET_EXPR in all places rather than
+   pulling out the TARGET_EXPR_SLOT.
 
    Used by build_vec_init when initializing an array of e.g. strings to reuse
    the same temporary allocator for all of the strings.  We can do this because
@@ -4341,22 +4387,18 @@ find_temps_r (tree *tp, int *walk_subtrees, void *data)
    ??? Add an attribute to allow users to assert the same property for other
    classes, i.e. one object of the type is interchangeable with any other?  */
 
-static tree*
-find_allocator_temp (tree init)
+static void
+combine_allocator_temps (tree &init, tree &alloc_obj)
 {
-  if (TREE_CODE (init) == EXPR_STMT)
-    init = EXPR_STMT_EXPR (init);
-  if (TREE_CODE (init) == CONVERT_EXPR)
-    init = TREE_OPERAND (init, 0);
-  tree type = TREE_TYPE (init);
-  if (!CLASS_TYPE_P (type) || !decl_in_std_namespace_p (TYPE_NAME (type)))
-    return NULL;
   auto_vec<tree*> temps;
-  cp_walk_tree_without_duplicates (&init, find_temps_r, &temps);
+  cp_walk_tree_without_duplicates (&init, find_allocator_temps_r, &temps);
   for (tree *p : temps)
-    if (is_std_allocator (TREE_TYPE (*p)))
-      return p;
-  return NULL;
+    {
+      if (!alloc_obj)
+	alloc_obj = *p;
+      else
+	*p = alloc_obj;
+    }
 }
 
 /* `build_vec_init' returns tree structure that performs
@@ -4694,13 +4736,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 	  if (one_init)
 	    {
 	      /* Only create one std::allocator temporary.  */
-	      if (tree *this_alloc = find_allocator_temp (one_init))
-		{
-		  if (alloc_obj)
-		    *this_alloc = alloc_obj;
-		  else
-		    alloc_obj = TARGET_EXPR_SLOT (*this_alloc);
-		}
+	      combine_allocator_temps (one_init, alloc_obj);
 	      finish_expr_stmt (one_init);
 	    }
 
