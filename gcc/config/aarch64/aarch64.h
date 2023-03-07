@@ -292,7 +292,7 @@ enum class aarch64_feature : unsigned char {
 #define TARGET_RNG (AARCH64_ISA_RNG)
 
 /* Memory Tagging instructions optional to Armv8.5 enabled through +memtag.  */
-#define TARGET_MEMTAG (AARCH64_ISA_V8_5A && AARCH64_ISA_MEMTAG)
+#define TARGET_MEMTAG (AARCH64_ISA_MEMTAG)
 
 /* I8MM instructions are enabled through +i8mm.  */
 #define TARGET_I8MM (AARCH64_ISA_I8MM)
