@@ -396,7 +396,8 @@ install the libraries.
 @table @asis
 @item GNU Multiple Precision Library (GMP) version 4.3.2 (or later)
 
-Necessary to build GCC@.  If a GMP source distribution is found in a
+Necessary to build GCC@.  It can be downloaded from
+@uref{https://gmplib.org/}.  If a GMP source distribution is found in a
 subdirectory of your GCC sources named @file{gmp}, it will be built
 together with GCC.  Alternatively, if GMP is already installed but it
 is not in your library search path, you will have to configure with the
