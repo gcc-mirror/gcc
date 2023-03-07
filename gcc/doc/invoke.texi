@@ -16750,8 +16750,8 @@ operating on invalid memory addresses with non-call exceptions
 @opindex fsanitize=leak
 @item -fsanitize=leak
 Enable LeakSanitizer, a memory leak detector.
-This option only matters for linking of executables and
-the executable is linked against a library that overrides @code{malloc}
+This option only matters for linking of executables.
+The executable is linked against a library that overrides @code{malloc}
 and other allocator functions.  See
 @uref{https://github.com/google/sanitizers/wiki/AddressSanitizerLeakSanitizer} for more
 details.  The run-time behavior can be influenced using the
