@@ -72,35 +72,22 @@ CompileFnParam::visit (HIR::WildcardPattern &pattern)
 void
 CompileFnParam::visit (HIR::StructPattern &pattern)
 {
-  // generate the anon param
-  tree tmp_ident = create_tmp_var_name ("RSTPRM");
-  std::string cpp_str_identifier = std::string (IDENTIFIER_POINTER (tmp_ident));
-
-  decl_type = ctx->get_backend ()->immutable_type (decl_type);
-  compiled_param
-    = ctx->get_backend ()->parameter_variable (fndecl, cpp_str_identifier,
-					       decl_type, locus);
-
-  // setup the pattern bindings
-  tree anon_param = ctx->get_backend ()->var_expression (compiled_param, locus);
-  CompilePatternBindings::Compile (&pattern, anon_param, ctx);
+  tree tmp_param_var = create_tmp_param_var (decl_type);
+  CompilePatternBindings::Compile (&pattern, tmp_param_var, ctx);
 }
 
 void
 CompileFnParam::visit (HIR::TupleStructPattern &pattern)
 {
-  // generate the anon param
-  tree tmp_ident = create_tmp_var_name ("RSTPRM");
-  std::string cpp_str_identifier = std::string (IDENTIFIER_POINTER (tmp_ident));
+  tree tmp_param_var = create_tmp_param_var (decl_type);
+  CompilePatternBindings::Compile (&pattern, tmp_param_var, ctx);
+}
 
-  decl_type = ctx->get_backend ()->immutable_type (decl_type);
-  compiled_param
-    = ctx->get_backend ()->parameter_variable (fndecl, cpp_str_identifier,
-					       decl_type, locus);
-
-  // setup the pattern bindings
-  tree anon_param = ctx->get_backend ()->var_expression (compiled_param, locus);
-  CompilePatternBindings::Compile (&pattern, anon_param, ctx);
+void
+CompileFnParam::visit (HIR::ReferencePattern &pattern)
+{
+  tree tmp_param_var = create_tmp_param_var (decl_type);
+  CompilePatternBindings::Compile (&pattern, tmp_param_var, ctx);
 }
 
 Bvariable *
@@ -115,6 +102,21 @@ CompileSelfParam::compile (Context *ctx, tree fndecl, HIR::SelfParam &self,
 
   return ctx->get_backend ()->parameter_variable (fndecl, "self", decl_type,
 						  locus);
+}
+
+tree
+CompileFnParam::create_tmp_param_var (tree decl_type)
+{
+  // generate the anon param
+  tree tmp_ident = create_tmp_var_name ("RSTPRM");
+  std::string cpp_str_identifier = std::string (IDENTIFIER_POINTER (tmp_ident));
+
+  decl_type = ctx->get_backend ()->immutable_type (decl_type);
+  compiled_param
+    = ctx->get_backend ()->parameter_variable (fndecl, cpp_str_identifier,
+					       decl_type, locus);
+
+  return ctx->get_backend ()->var_expression (compiled_param, locus);
 }
 
 } // namespace Compile

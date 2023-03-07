@@ -330,6 +330,23 @@ CompilePatternBindings::visit (HIR::StructPattern &pattern)
 }
 
 void
+CompilePatternBindings::visit (HIR::ReferencePattern &pattern)
+{
+  tree derefed
+    = indirect_expression (match_scrutinee_expr, pattern.get_locus ());
+
+  CompilePatternBindings::Compile (pattern.get_referenced_pattern ().get (),
+				   derefed, ctx);
+}
+
+void
+CompilePatternBindings::visit (HIR::IdentifierPattern &pattern)
+{
+  ctx->insert_pattern_binding (pattern.get_pattern_mappings ().get_hirid (),
+			       match_scrutinee_expr);
+}
+
+void
 CompilePatternLet::visit (HIR::IdentifierPattern &pattern)
 {
   Bvariable *var = nullptr;

@@ -37,6 +37,7 @@ public:
   void visit (HIR::WildcardPattern &pattern) override;
   void visit (HIR::StructPattern &) override;
   void visit (HIR::TupleStructPattern &) override;
+  void visit (HIR::ReferencePattern &) override;
 
   // Empty visit for unused Pattern HIR nodes.
   void visit (HIR::AltPattern &) override {}
@@ -44,12 +45,13 @@ public:
   void visit (HIR::PathInExpression &) override {}
   void visit (HIR::QualifiedPathInExpression &) override {}
   void visit (HIR::RangePattern &) override {}
-  void visit (HIR::ReferencePattern &) override {}
   void visit (HIR::SlicePattern &) override {}
   void visit (HIR::TuplePattern &) override {}
 
 private:
   CompileFnParam (Context *ctx, tree fndecl, tree decl_type, Location locus);
+
+  tree create_tmp_param_var (tree decl_type);
 
   tree fndecl;
   tree decl_type;
