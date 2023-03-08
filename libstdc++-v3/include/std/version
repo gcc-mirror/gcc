@@ -30,7 +30,10 @@
 #ifndef _GLIBCXX_VERSION_INCLUDED
 #define _GLIBCXX_VERSION_INCLUDED
 
-#pragma GCC system_header
+// To facilitate testsuite/17_intro/versionconflict.cc
+#ifndef _GLIBCXX_TESTING_SYSHDR
+# pragma GCC system_header
+#endif
 
 #include <bits/c++config.h>
 
