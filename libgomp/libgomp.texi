@@ -4461,6 +4461,8 @@ The implementation remark:
 @item OpenMP code that has a requires directive with @code{unified_address} or
       @code{unified_shared_memory} will remove any GCN device from the list of
       available devices (``host fallback'').
+@item The available stack size can be changed using the @code{GCN_STACK_SIZE}
+      environment variable; the default is 32 kiB per thread.
 @end itemize
 
 
