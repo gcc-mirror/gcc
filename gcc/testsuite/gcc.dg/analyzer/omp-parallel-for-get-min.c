@@ -1,5 +1,6 @@
 /* Reduced from ImageMagick-7.1.0-57's MagickCore/attribute.c: GetEdgeBackgroundColor */
 
+/* { dg-require-effective-target fopenmp } */
 /* { dg-additional-options "-fopenmp -Wall" } */
 
 extern double get_census (void);
