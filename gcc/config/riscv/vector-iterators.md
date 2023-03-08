@@ -98,6 +98,65 @@
   (VNx8DF "TARGET_VECTOR_ELEN_FP_64")
 ])
 
+(define_mode_iterator VEEWEXT2 [
+  VNx1HI VNx2HI VNx4HI VNx8HI VNx16HI (VNx32HI "TARGET_MIN_VLEN > 32")
+  VNx1SI VNx2SI VNx4SI VNx8SI (VNx16SI "TARGET_MIN_VLEN > 32")
+  (VNx1DI "TARGET_MIN_VLEN > 32") (VNx2DI "TARGET_MIN_VLEN > 32")
+  (VNx4DI "TARGET_MIN_VLEN > 32") (VNx8DI "TARGET_MIN_VLEN > 32")
+  (VNx1SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx2SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx4SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx8SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx16SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN > 32")
+  (VNx1DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx2DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx4DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx8DF "TARGET_VECTOR_ELEN_FP_64")
+])
+
+(define_mode_iterator VEEWEXT4 [
+  VNx1SI VNx2SI VNx4SI VNx8SI (VNx16SI "TARGET_MIN_VLEN > 32")
+  (VNx1DI "TARGET_MIN_VLEN > 32") (VNx2DI "TARGET_MIN_VLEN > 32")
+  (VNx4DI "TARGET_MIN_VLEN > 32") (VNx8DI "TARGET_MIN_VLEN > 32")
+  (VNx1SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx2SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx4SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx8SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx16SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_MIN_VLEN > 32")
+  (VNx1DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx2DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx4DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx8DF "TARGET_VECTOR_ELEN_FP_64")
+])
+
+(define_mode_iterator VEEWEXT8 [
+  (VNx1DI "TARGET_MIN_VLEN > 32") (VNx2DI "TARGET_MIN_VLEN > 32")
+  (VNx4DI "TARGET_MIN_VLEN > 32") (VNx8DI "TARGET_MIN_VLEN > 32")
+  (VNx1DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx2DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx4DF "TARGET_VECTOR_ELEN_FP_64")
+  (VNx8DF "TARGET_VECTOR_ELEN_FP_64")
+])
+
+(define_mode_iterator VEEWTRUNC2 [
+  VNx1QI VNx2QI VNx4QI VNx8QI VNx16QI VNx32QI
+  VNx1HI VNx2HI VNx4HI VNx8HI VNx16HI
+  VNx1SI VNx2SI VNx4SI VNx8SI
+  (VNx1SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx2SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx4SF "TARGET_VECTOR_ELEN_FP_32")
+  (VNx8SF "TARGET_VECTOR_ELEN_FP_32")
+])
+
+(define_mode_iterator VEEWTRUNC4 [
+  VNx1QI VNx2QI VNx4QI VNx8QI VNx16QI
+  VNx1HI VNx2HI VNx4HI VNx8HI
+])
+
+(define_mode_iterator VEEWTRUNC8 [
+  VNx1QI VNx2QI VNx4QI VNx8QI
+])
+
 (define_mode_iterator VLMULEXT2 [
   VNx1QI VNx2QI VNx4QI VNx8QI VNx16QI VNx32QI
   VNx1HI VNx2HI VNx4HI VNx8HI VNx16HI
@@ -483,6 +542,42 @@
   (VNx1DF "64") (VNx2DF "64") (VNx4DF "64") (VNx8DF "64")
 ])
 
+(define_mode_attr double_trunc_sew [
+  (VNx1HI "8") (VNx2HI "8") (VNx4HI "8") (VNx8HI "8") (VNx16HI "8") (VNx32HI "8")
+  (VNx1SI "16") (VNx2SI "16") (VNx4SI "16") (VNx8SI "16") (VNx16SI "16")
+  (VNx1DI "32") (VNx2DI "32") (VNx4DI "32") (VNx8DI "32")
+  (VNx1SF "16") (VNx2SF "16") (VNx4SF "16") (VNx8SF "16") (VNx16SF "16")
+  (VNx1DF "32") (VNx2DF "32") (VNx4DF "32") (VNx8DF "32")
+])
+
+(define_mode_attr quad_trunc_sew [
+  (VNx1SI "8") (VNx2SI "8") (VNx4SI "8") (VNx8SI "8") (VNx16SI "8")
+  (VNx1DI "16") (VNx2DI "16") (VNx4DI "16") (VNx8DI "16")
+  (VNx1SF "8") (VNx2SF "8") (VNx4SF "8") (VNx8SF "8") (VNx16SF "8")
+  (VNx1DF "16") (VNx2DF "16") (VNx4DF "16") (VNx8DF "16")
+])
+
+(define_mode_attr oct_trunc_sew [
+  (VNx1DI "8") (VNx2DI "8") (VNx4DI "8") (VNx8DI "8")
+  (VNx1DF "8") (VNx2DF "8") (VNx4DF "8") (VNx8DF "8")
+])
+
+(define_mode_attr double_ext_sew [
+  (VNx1QI "16") (VNx2QI "16") (VNx4QI "16") (VNx8QI "16") (VNx16QI "16") (VNx32QI "16")
+  (VNx1HI "32") (VNx2HI "32") (VNx4HI "32") (VNx8HI "32") (VNx16HI "32")
+  (VNx1SI "64") (VNx2SI "64") (VNx4SI "64") (VNx8SI "64")
+  (VNx1SF "64") (VNx2SF "64") (VNx4SF "64") (VNx8SF "64")
+])
+
+(define_mode_attr quad_ext_sew [
+  (VNx1QI "32") (VNx2QI "32") (VNx4QI "32") (VNx8QI "32") (VNx16QI "32")
+  (VNx1HI "64") (VNx2HI "64") (VNx4HI "64") (VNx8HI "64")
+])
+
+(define_mode_attr oct_ext_sew [
+  (VNx1QI "64") (VNx2QI "64") (VNx4QI "64") (VNx8QI "64")
+])
+
 (define_mode_attr V_DOUBLE_TRUNC [
   (VNx1HI "VNx1QI") (VNx2HI "VNx2QI")  (VNx4HI "VNx4QI")  (VNx8HI "VNx8QI")
   (VNx16HI "VNx16QI") (VNx32HI "VNx32QI")
@@ -501,6 +596,49 @@
 
 (define_mode_attr V_OCT_TRUNC [
   (VNx1DI "VNx1QI") (VNx2DI "VNx2QI") (VNx4DI "VNx4QI") (VNx8DI "VNx8QI")
+])
+
+(define_mode_attr VINDEX_DOUBLE_TRUNC [
+  (VNx1HI "VNx1QI") (VNx2HI "VNx2QI")  (VNx4HI "VNx4QI")  (VNx8HI "VNx8QI")
+  (VNx16HI "VNx16QI") (VNx32HI "VNx32QI")
+  (VNx1SI "VNx1HI") (VNx2SI "VNx2HI") (VNx4SI "VNx4HI") (VNx8SI "VNx8HI")
+  (VNx16SI "VNx16HI")
+  (VNx1SF "VNx1HI") (VNx2SF "VNx2HI") (VNx4SF "VNx4HI") (VNx8SF "VNx8HI")
+  (VNx16SF "VNx16HI")
+  (VNx1DI "VNx1SI") (VNx2DI "VNx2SI") (VNx4DI "VNx4SI") (VNx8DI "VNx8SI")
+  (VNx1DF "VNx1SI") (VNx2DF "VNx2SI") (VNx4DF "VNx4SI") (VNx8DF "VNx8SI")
+])
+
+(define_mode_attr VINDEX_QUAD_TRUNC [
+  (VNx1SI "VNx1QI") (VNx2SI "VNx2QI") (VNx4SI "VNx4QI") (VNx8SI "VNx8QI")
+  (VNx16SI "VNx16QI")
+  (VNx1DI "VNx1HI") (VNx2DI "VNx2HI")
+  (VNx4DI "VNx4HI") (VNx8DI "VNx8HI")
+  (VNx1SF "VNx1QI") (VNx2SF "VNx2QI") (VNx4SF "VNx4QI") (VNx8SF "VNx8QI")
+  (VNx16SF "VNx16QI")
+  (VNx1DF "VNx1HI") (VNx2DF "VNx2HI")
+  (VNx4DF "VNx4HI") (VNx8DF "VNx8HI")
+])
+
+(define_mode_attr VINDEX_OCT_TRUNC [
+  (VNx1DI "VNx1QI") (VNx2DI "VNx2QI") (VNx4DI "VNx4QI") (VNx8DI "VNx8QI")
+  (VNx1DF "VNx1QI") (VNx2DF "VNx2QI") (VNx4DF "VNx4QI") (VNx8DF "VNx8QI")
+])
+
+(define_mode_attr VINDEX_DOUBLE_EXT [
+  (VNx1QI "VNx1HI") (VNx2QI "VNx2HI") (VNx4QI "VNx4HI") (VNx8QI "VNx8HI") (VNx16QI "VNx16HI") (VNx32QI "VNx32HI")
+  (VNx1HI "VNx1SI") (VNx2HI "VNx2SI") (VNx4HI "VNx4SI") (VNx8HI "VNx8SI") (VNx16HI "VNx16SI")
+  (VNx1SI "VNx1DI") (VNx2SI "VNx2DI") (VNx4SI "VNx4DI") (VNx8SI "VNx8DI")
+  (VNx1SF "VNx1DI") (VNx2SF "VNx2DI") (VNx4SF "VNx4DI") (VNx8SF "VNx8DI")
+])
+
+(define_mode_attr VINDEX_QUAD_EXT [
+  (VNx1QI "VNx1SI") (VNx2QI "VNx2SI") (VNx4QI "VNx4SI") (VNx8QI "VNx8SI") (VNx16QI "VNx16SI")
+  (VNx1HI "VNx1DI") (VNx2HI "VNx2DI") (VNx4HI "VNx4DI") (VNx8HI "VNx8DI")
+])
+
+(define_mode_attr VINDEX_OCT_EXT [
+  (VNx1QI "VNx1DI") (VNx2QI "VNx2DI") (VNx4QI "VNx4DI") (VNx8QI "VNx8DI")
 ])
 
 (define_mode_attr VCONVERT [
@@ -771,46 +909,46 @@
 			(us_minus "register_operand")])
 
 (define_code_attr binop_rhs1_constraint [
-			(plus "vr,vr,vr,vr,vr,vr")
-			(minus "vr,vr,vr,vr,vi,vi")
-			(ior "vr,vr,vr,vr,vr,vr")
-			(xor "vr,vr,vr,vr,vr,vr")
-			(and "vr,vr,vr,vr,vr,vr")
-			(ashift "vr,vr,vr,vr,vr,vr")
-			(ashiftrt "vr,vr,vr,vr,vr,vr")
-			(lshiftrt "vr,vr,vr,vr,vr,vr")
-			(smin "vr,vr,vr,vr,vr,vr")
-			(smax "vr,vr,vr,vr,vr,vr")
-			(umin "vr,vr,vr,vr,vr,vr")
-			(umax "vr,vr,vr,vr,vr,vr")
-			(mult "vr,vr,vr,vr,vr,vr")
-			(div "vr,vr,vr,vr,vr,vr")
-			(mod "vr,vr,vr,vr,vr,vr")
-			(udiv "vr,vr,vr,vr,vr,vr")
-			(umod "vr,vr,vr,vr,vr,vr")])
+			(plus "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(minus "vr,vr,vr,vr,vr,vr,vr,vr,vi,vi,vi,vi")
+			(ior "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(xor "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(and "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(ashift "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(ashiftrt "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(lshiftrt "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(smin "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(smax "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(umin "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(umax "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(mult "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(div "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(mod "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(udiv "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(umod "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")])
 
 (define_code_attr binop_rhs2_constraint [
-			(plus "vr,vr,vi,vi,vr,vr")
-			(minus "vr,vr,vj,vj,vr,vr")
-			(ior "vr,vr,vi,vi,vr,vr")
-			(xor "vr,vr,vi,vi,vr,vr")
-			(and "vr,vr,vi,vi,vr,vr")
-			(ashift "vr,vr,vk,vk,vr,vr")
-			(ashiftrt "vr,vr,vk,vk,vr,vr")
-			(lshiftrt "vr,vr,vk,vk,vr,vr")
-			(smin "vr,vr,vr,vr,vr,vr")
-			(smax "vr,vr,vr,vr,vr,vr")
-			(umin "vr,vr,vr,vr,vr,vr")
-			(umax "vr,vr,vr,vr,vr,vr")
-			(mult "vr,vr,vr,vr,vr,vr")
-			(div "vr,vr,vr,vr,vr,vr")
-			(mod "vr,vr,vr,vr,vr,vr")
-			(udiv "vr,vr,vr,vr,vr,vr")
-			(umod "vr,vr,vr,vr,vr,vr")
-			(ss_plus "vr,vr,vi,vi")
-			(us_plus "vr,vr,vi,vi")
-			(ss_minus "vr,vr,vj,vj")
-			(us_minus "vr,vr,vr,vr")])
+			(plus "vr,vr,vr,vr,vi,vi,vi,vi,vr,vr,vr,vr")
+			(minus "vr,vr,vr,vr,vj,vj,vj,vj,vr,vr,vr,vr")
+			(ior "vr,vr,vr,vr,vi,vi,vi,vi,vr,vr,vr,vr")
+			(xor "vr,vr,vr,vr,vi,vi,vi,vi,vr,vr,vr,vr")
+			(and "vr,vr,vr,vr,vi,vi,vi,vi,vr,vr,vr,vr")
+			(ashift "vr,vr,vr,vr,vk,vk,vk,vk,vr,vr,vr,vr")
+			(ashiftrt "vr,vr,vr,vr,vk,vk,vk,vk,vr,vr,vr,vr")
+			(lshiftrt "vr,vr,vr,vr,vk,vk,vk,vk,vr,vr,vr,vr")
+			(smin "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(smax "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(umin "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(umax "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(mult "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(div "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(mod "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(udiv "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(umod "vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr,vr")
+			(ss_plus "vr,vr,vr,vr,vi,vi,vi,vi")
+			(us_plus "vr,vr,vr,vr,vi,vi,vi,vi")
+			(ss_minus "vr,vr,vr,vr,vj,vj,vj,vj")
+			(us_minus "vr,vr,vr,vr,vr,vr,vr,vr")])
 
 (define_code_attr int_binop_insn_type [
 			(plus "vialu")

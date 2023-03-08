@@ -129,9 +129,57 @@ public:
 	    code_for_pred_indexed_store (unspec, e.vector_mode (),
 					 e.index_mode ()));
 	else
-	  return e.use_exact_insn (
-	    code_for_pred_indexed_load (unspec, e.vector_mode (),
-					e.index_mode ()));
+	  {
+	    unsigned src_eew_bitsize
+	      = GET_MODE_BITSIZE (GET_MODE_INNER (e.index_mode ()));
+	    unsigned dst_eew_bitsize
+	      = GET_MODE_BITSIZE (GET_MODE_INNER (e.vector_mode ()));
+	    if (dst_eew_bitsize == src_eew_bitsize)
+	      return e.use_exact_insn (
+		code_for_pred_indexed_load_same_eew (unspec, e.vector_mode ()));
+	    else if (dst_eew_bitsize > src_eew_bitsize)
+	      {
+		unsigned factor = dst_eew_bitsize / src_eew_bitsize;
+		switch (factor)
+		  {
+		  case 2:
+		    return e.use_exact_insn (
+		      code_for_pred_indexed_load_x2_greater_eew (
+			unspec, e.vector_mode ()));
+		  case 4:
+		    return e.use_exact_insn (
+		      code_for_pred_indexed_load_x4_greater_eew (
+			unspec, e.vector_mode ()));
+		  case 8:
+		    return e.use_exact_insn (
+		      code_for_pred_indexed_load_x8_greater_eew (
+			unspec, e.vector_mode ()));
+		  default:
+		    gcc_unreachable ();
+		  }
+	      }
+	    else
+	      {
+		unsigned factor = src_eew_bitsize / dst_eew_bitsize;
+		switch (factor)
+		  {
+		  case 2:
+		    return e.use_exact_insn (
+		      code_for_pred_indexed_load_x2_smaller_eew (
+			unspec, e.vector_mode ()));
+		  case 4:
+		    return e.use_exact_insn (
+		      code_for_pred_indexed_load_x4_smaller_eew (
+			unspec, e.vector_mode ()));
+		  case 8:
+		    return e.use_exact_insn (
+		      code_for_pred_indexed_load_x8_smaller_eew (
+			unspec, e.vector_mode ()));
+		  default:
+		    gcc_unreachable ();
+		  }
+	      }
+	  }
       }
     else if (LST_TYPE == LST_STRIDED)
       {
