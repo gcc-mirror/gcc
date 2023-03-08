@@ -1,4 +1,5 @@
 /* { dg-do run { target { powerpc*-*-* } } } */
+/* { dg-require-effective-target int128 } */
 /* { dg-require-effective-target p9vector_hw } */
 /* { dg-options "-mdejagnu-cpu=power9" } */
 
