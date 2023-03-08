@@ -813,9 +813,9 @@
 		     (UNSPEC_VSLIDE1UP "1up") (UNSPEC_VSLIDE1DOWN "1down")
 		     (UNSPEC_VFSLIDE1UP "1up") (UNSPEC_VFSLIDE1DOWN "1down")])
 
-(define_int_attr ud_constraint [(UNSPEC_VSLIDEUP "=&vr,&vr") (UNSPEC_VSLIDEDOWN "=vd,vr")
-				(UNSPEC_VSLIDE1UP "=&vr,&vr") (UNSPEC_VSLIDE1DOWN "=vd,vr")
-				(UNSPEC_VFSLIDE1UP "=&vr,&vr") (UNSPEC_VFSLIDE1DOWN "=vd,vr")])
+(define_int_attr ud_constraint [(UNSPEC_VSLIDEUP "=&vr,&vr,&vr,&vr") (UNSPEC_VSLIDEDOWN "=vd,vd,vr,vr")
+				(UNSPEC_VSLIDE1UP "=&vr,&vr,&vr,&vr") (UNSPEC_VSLIDE1DOWN "=vd,vd,vr,vr")
+				(UNSPEC_VFSLIDE1UP "=&vr,&vr,&vr,&vr") (UNSPEC_VFSLIDE1DOWN "=vd,vd,vr,vr")])
 
 (define_int_attr UNSPEC [(UNSPEC_VSLIDE1UP "UNSPEC_VSLIDE1UP")
 			 (UNSPEC_VSLIDE1DOWN "UNSPEC_VSLIDE1DOWN")])
