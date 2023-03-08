@@ -971,6 +971,9 @@
 /* Defined if clock_gettime has realtime clock support. */
 #undef _GLIBCXX_USE_CLOCK_REALTIME
 
+/* Define if copy_file_range is available in <unistd.h>. */
+#undef _GLIBCXX_USE_COPY_FILE_RANGE
+
 /* Define if ISO/IEC TR 24733 decimal floating point types are supported on
    this host. */
 #undef _GLIBCXX_USE_DECIMAL_FLOAT

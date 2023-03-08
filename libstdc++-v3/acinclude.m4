@@ -4954,6 +4954,7 @@ dnl  _GLIBCXX_USE_UTIMENSAT
 dnl  _GLIBCXX_USE_ST_MTIM
 dnl  _GLIBCXX_USE_FCHMOD
 dnl  _GLIBCXX_USE_FCHMODAT
+dnl  _GLIBCXX_USE_COPY_FILE_RANGE
 dnl  _GLIBCXX_USE_SENDFILE
 dnl  HAVE_LINK
 dnl  HAVE_LSEEK
@@ -5151,6 +5152,25 @@ dnl
   ])
   if test $glibcxx_cv_truncate = yes; then
     AC_DEFINE(HAVE_TRUNCATE, 1, [Define if truncate is available in <unistd.h>.])
+  fi
+dnl
+  AC_CACHE_CHECK([for copy_file_range that can copy files],
+    glibcxx_cv_copy_file_range, [dnl
+    case "${target_os}" in
+      linux*)
+	GCC_TRY_COMPILE_OR_LINK(
+	  [#include <unistd.h>],
+	  [copy_file_range(1, nullptr, 2, nullptr, 1, 0);],
+	  [glibcxx_cv_copy_file_range=yes],
+	  [glibcxx_cv_copy_file_range=no])
+	;;
+      *)
+	glibcxx_cv_copy_file_range=no
+	;;
+    esac
+  ])
+  if test $glibcxx_cv_copy_file_range = yes; then
+    AC_DEFINE(_GLIBCXX_USE_COPY_FILE_RANGE, 1, [Define if copy_file_range is available in <unistd.h>.])
   fi
 dnl
   AC_CACHE_CHECK([for sendfile that can copy files],

@@ -49,6 +49,9 @@
 #ifdef NEED_DO_COPY_FILE
 # include <filesystem>
 # include <ext/stdio_filebuf.h>
+# ifdef _GLIBCXX_USE_COPY_FILE_RANGE
+#  include <unistd.h> // copy_file_range
+# endif
 # ifdef _GLIBCXX_USE_SENDFILE
 #  include <sys/sendfile.h> // sendfile
 #  include <unistd.h> // lseek
@@ -359,6 +362,32 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
   }
 
 #ifdef NEED_DO_COPY_FILE
+#ifdef _GLIBCXX_USE_COPY_FILE_RANGE
+  bool
+  copy_file_copy_file_range(int fd_in, int fd_out, size_t length) noexcept
+  {
+    // a zero-length file is either empty, or not copyable by this syscall
+    // return early to avoid the syscall cost
+    if (length == 0)
+      {
+	errno = EINVAL;
+	return false;
+      }
+    size_t bytes_left = length;
+    off64_t off_in = 0, off_out = 0;
+    ssize_t bytes_copied;
+    do
+      {
+	bytes_copied = ::copy_file_range(fd_in, &off_in, fd_out, &off_out,
+					 bytes_left, 0);
+	bytes_left -= bytes_copied;
+      }
+    while (bytes_left > 0 && bytes_copied > 0);
+    if (bytes_copied < 0)
+      return false;
+    return true;
+  }
+#endif
 #if defined _GLIBCXX_USE_SENDFILE && ! defined _GLIBCXX_FILESYSTEM_IS_WINDOWS
   bool
   copy_file_sendfile(int fd_in, int fd_out, size_t length) noexcept
@@ -528,6 +557,33 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
       }
 
     bool has_copied = false;
+
+#ifdef _GLIBCXX_USE_COPY_FILE_RANGE
+    if (!has_copied)
+      has_copied = copy_file_copy_file_range(in.fd, out.fd, from_st->st_size);
+    if (!has_copied)
+      {
+	// EINVAL: src and dst are the same file (this is not cheaply
+	// detectable from userspace)
+	// EINVAL: copy_file_range is unsupported for this file type by the
+	// underlying filesystem
+	// ENOTSUP: undocumented, can arise with old kernels and NFS
+	// EOPNOTSUPP: filesystem does not implement copy_file_range
+	// ETXTBSY: src or dst is an active swapfile (nonsensical, but allowed
+	// with normal copying)
+	// EXDEV: src and dst are on different filesystems that do not support
+	// cross-fs copy_file_range
+	// ENOENT: undocumented, can arise with CIFS
+	// ENOSYS: unsupported by kernel or blocked by seccomp
+	if (errno != EINVAL && errno != ENOTSUP && errno != EOPNOTSUPP
+	      && errno != ETXTBSY && errno != EXDEV && errno != ENOENT
+	      && errno != ENOSYS)
+	  {
+	    ec.assign(errno, std::generic_category());
+	    return false;
+	  }
+      }
+#endif
 
 #if defined _GLIBCXX_USE_SENDFILE && ! defined _GLIBCXX_FILESYSTEM_IS_WINDOWS
     if (!has_copied)

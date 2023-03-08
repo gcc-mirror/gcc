@@ -71280,6 +71280,68 @@ $as_echo "$glibcxx_cv_truncate" >&6; }
 $as_echo "#define HAVE_TRUNCATE 1" >>confdefs.h
 
   fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for copy_file_range that can copy files" >&5
+$as_echo_n "checking for copy_file_range that can copy files... " >&6; }
+if ${glibcxx_cv_copy_file_range+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+      case "${target_os}" in
+      linux*)
+	if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <unistd.h>
+int
+main ()
+{
+copy_file_range(1, nullptr, 2, nullptr, 1, 0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_copy_file_range=yes
+else
+  glibcxx_cv_copy_file_range=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <unistd.h>
+int
+main ()
+{
+copy_file_range(1, nullptr, 2, nullptr, 1, 0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  glibcxx_cv_copy_file_range=yes
+else
+  glibcxx_cv_copy_file_range=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+	;;
+      *)
+	glibcxx_cv_copy_file_range=no
+	;;
+    esac
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_copy_file_range" >&5
+$as_echo "$glibcxx_cv_copy_file_range" >&6; }
+  if test $glibcxx_cv_copy_file_range = yes; then
+
+$as_echo "#define _GLIBCXX_USE_COPY_FILE_RANGE 1" >>confdefs.h
+
+  fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sendfile that can copy files" >&5
 $as_echo_n "checking for sendfile that can copy files... " >&6; }
 if ${glibcxx_cv_sendfile+:} false; then :
