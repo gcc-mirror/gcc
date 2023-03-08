@@ -205,12 +205,12 @@ ENTRY0(__morestack)
 	bl JUMP_TARGET(__generic_morestack)
 
 # Start using new stack
-	stdu %r29,-32(%r3)		# back-chain
+	stdu %r29,-PARAMS(%r3)		# back-chain
 	mr %r1,%r3
 
 # Set __private_ss stack guard for the new stack.
 	ld %r12,NEWSTACKSIZE_SAVE(%r29)	# modified size
-	addi %r3,%r3,BACKOFF-32
+	addi %r3,%r3,BACKOFF-PARAMS
 	sub %r3,%r3,%r12
 # Note that a signal frame has $pc pointing at the instruction
 # where the signal occurred.  For something like a timer
