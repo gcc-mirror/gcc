@@ -106,6 +106,18 @@ ubsan_walk_array_refs_r (tree *tp, int *walk_subtrees, void *data)
     }
   else if (TREE_CODE (*tp) == ARRAY_REF)
     ubsan_maybe_instrument_array_ref (tp, false);
+  else if (TREE_CODE (*tp) == MODIFY_EXPR)
+    {
+      /* Since r7-1900, we gimplify RHS before LHS.  Consider
+	   a[b] |= c;
+	 wherein we can have a single shared tree a[b] in both LHS and RHS.
+	 If we only instrument the LHS and the access is invalid, the program
+	 could crash before emitting a UBSan error.  So instrument the RHS
+	 first.  */
+      *walk_subtrees = 0;
+      walk_tree (&TREE_OPERAND (*tp, 1), ubsan_walk_array_refs_r, pset, pset);
+      walk_tree (&TREE_OPERAND (*tp, 0), ubsan_walk_array_refs_r, pset, pset);
+    }
   return NULL_TREE;
 }
 
