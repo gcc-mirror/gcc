@@ -1,3 +1,79 @@
+2023-03-07  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-02-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107079
+	* call.cc (set_up_extended_ref_temp): Pass var to maybe_constant_init.
+
+2023-03-07  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-03-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107939
+	* constexpr.cc (potential_constant_expression_1) <case CALL_EXPR>: Pass
+	'any' when recursing on a VAR_DECL and not a pointer to function.
+
+2023-03-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-03-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108998
+	* pt.cc (el_data::skipped_trees): New data member.
+	(extract_locals_r): Push to skipped_trees any unevaluated
+	contexts that we skipped over.
+	(extract_local_specs): For the second walk, start from each
+	tree in skipped_trees.
+
+2023-03-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-12-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108116
+	* constexpr.cc (maybe_constant_value): Clear
+	processing_template_decl before calling break_out_target_exprs.
+	* init.cc (get_nsdmi): Likewise.
+	* tree.cc (break_out_target_exprs): Assert processing_template_decl
+	is cleared.
+
+2023-03-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-12-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107853
+	* constraint.cc (maybe_substitute_reqs_for): Substitute into
+	the template-head requirements of a template friend using only
+	its outer arguments via outer_template_args.
+	* cp-tree.h (outer_template_args): Declare.
+	* pt.cc (outer_template_args): Define, factored out and
+	generalized from ...
+	(ctor_deduction_guides_for): ... here.
+
+2023-03-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-11-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107864
+	* decl.cc (function_requirements_equivalent_p): Don't check
+	DECL_TEMPLATE_SPECIALIZATION.
+	* pt.cc (determine_specialization): Propagate constraints when
+	specializing a function template too.  Simplify by using
+	add_outermost_template_args.
+
+2023-03-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-11-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107179
+	* constraint.cc (tsubst_requires_expr): Make sure we're not
+	deferring access checks.
+
 2023-03-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/108550

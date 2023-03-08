@@ -1,3 +1,61 @@
+2023-03-07  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-02-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107079
+	* g++.dg/cpp0x/constexpr-nsdmi2.C: New test.
+
+2023-03-07  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-03-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107939
+	* g++.dg/cpp1y/var-templ74.C: Remove dg-error.
+	* g++.dg/cpp1y/var-templ77.C: New test.
+
+2023-03-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-03-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108998
+	* g++.dg/cpp2a/lambda-generic11.C: New test.
+
+2023-03-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-12-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108116
+	* g++.dg/cpp0x/nsdmi-template24.C: New test.
+
+2023-03-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-12-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107853
+	* g++.dg/cpp2a/concepts-friend12.C: New test.
+	* g++.dg/cpp2a/concepts-friend13.C: New test.
+
+2023-03-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-11-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107864
+	* g++.dg/concepts/explicit-spec1a.C: New test.
+
+2023-03-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2022-11-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107179
+	* g++.dg/cpp2a/concepts-requires31.C: New test.
+
 2023-03-06  Xi Ruoyao  <xry111@xry111.site>
 
 	Backported from master:
