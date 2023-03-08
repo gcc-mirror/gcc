@@ -284,7 +284,7 @@ frange::flush_denormals_to_zero ()
 void
 frange::set (tree type,
 	     const REAL_VALUE_TYPE &min, const REAL_VALUE_TYPE &max,
-	     value_range_kind kind)
+	     const nan_state &nan, value_range_kind kind)
 {
   switch (kind)
     {
@@ -316,8 +316,8 @@ frange::set (tree type,
   m_max = max;
   if (HONOR_NANS (m_type))
     {
-      m_pos_nan = true;
-      m_neg_nan = true;
+      m_pos_nan = nan.pos_p ();
+      m_neg_nan = nan.neg_p ();
     }
   else
     {
@@ -365,6 +365,18 @@ frange::set (tree type,
 
   if (flag_checking)
     verify_range ();
+}
+
+// Setter for an frange defaulting the NAN possibility to +-NAN when
+// HONOR_NANS.
+
+void
+frange::set (tree type,
+	     const REAL_VALUE_TYPE &min, const REAL_VALUE_TYPE &max,
+	     value_range_kind kind)
+{
+  nan_state nan;
+  set (type, min, max, nan, kind);
 }
 
 void

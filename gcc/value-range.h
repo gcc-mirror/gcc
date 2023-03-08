@@ -268,6 +268,56 @@ public:
   virtual void accept (const vrange_visitor &v) const override;
 };
 
+// The NAN state as an opaque object.  The default constructor is +-NAN.
+
+class nan_state
+{
+public:
+  nan_state ();
+  nan_state (bool pos_nan, bool neg_nan);
+  bool neg_p () const;
+  bool pos_p () const;
+private:
+  bool m_pos_nan;
+  bool m_neg_nan;
+};
+
+// Default constructor initializing the object to +-NAN.
+
+inline
+nan_state::nan_state ()
+{
+  m_pos_nan = true;
+  m_neg_nan = true;
+}
+
+// Constructor initializing the object to +NAN if POS_NAN is set, -NAN
+// if NEG_NAN is set, or +-NAN if both are set.  Otherwise POS_NAN and
+// NEG_NAN are clear, and the object cannot be a NAN.
+
+inline
+nan_state::nan_state (bool pos_nan, bool neg_nan)
+{
+  m_pos_nan = pos_nan;
+  m_neg_nan = neg_nan;
+}
+
+// Return if +NAN is possible.
+
+inline bool
+nan_state::pos_p () const
+{
+  return m_pos_nan;
+}
+
+// Return if -NAN is possible.
+
+inline bool
+nan_state::neg_p () const
+{
+  return m_neg_nan;
+}
+
 // A floating point range.
 //
 // The representation is a type with a couple of endpoints, unioned
@@ -295,6 +345,8 @@ public:
   virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
   void set (tree type, const REAL_VALUE_TYPE &, const REAL_VALUE_TYPE &,
 	    value_range_kind = VR_RANGE);
+  void set (tree type, const REAL_VALUE_TYPE &, const REAL_VALUE_TYPE &,
+	    const nan_state &, value_range_kind = VR_RANGE);
   void set_nan (tree type);
   void set_nan (tree type, bool sign);
   virtual void set_varying (tree type) override;
@@ -315,9 +367,11 @@ public:
   bool operator!= (const frange &r) const { return !(*this == r); }
   const REAL_VALUE_TYPE &lower_bound () const;
   const REAL_VALUE_TYPE &upper_bound () const;
+  nan_state get_nan_state () const;
   void update_nan ();
   void update_nan (bool sign);
   void update_nan (tree) = delete; // Disallow silent conversion to bool.
+  void update_nan (const nan_state &);
   void clear_nan ();
 
   // fpclassify like API
@@ -356,6 +410,14 @@ frange::upper_bound () const
 {
   gcc_checking_assert (!undefined_p () && !known_isnan ());
   return m_max;
+}
+
+// Return the NAN state.
+
+inline nan_state
+frange::get_nan_state () const
+{
+  return nan_state (m_pos_nan, m_neg_nan);
 }
 
 // is_a<> and as_a<> implementation for vrange.
