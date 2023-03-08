@@ -11224,8 +11224,8 @@ package body Sem_Ch13 is
          when Aspect_Aggregate =>
             if Is_Array_Type (Entity (ASN)) then
                Error_Msg_N
-                 ("aspect% can only be applied to non-array type",
-                  Identifier (ASN));
+                 ("aspect& can only be applied to non-array type",
+                  Ident);
             end if;
             Resolve_Aspect_Aggregate (Entity (ASN), Expression (ASN));
             return;
