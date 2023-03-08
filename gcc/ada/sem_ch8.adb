@@ -536,6 +536,11 @@ package body Sem_Ch8 is
    procedure Premature_Usage (N : Node_Id);
    --  Diagnose usage of an entity before it is visible
 
+   function Is_Self_Hidden (E : Entity_Id) return Boolean;
+   --  True within a declaration if it is hidden from all visibility by itself
+   --  (see RM-8.3(16-18)). This is mostly just "not Is_Not_Self_Hidden", but
+   --  we need to check for E_Void in case of errors.
+
    procedure Use_One_Package
      (N         : Node_Id;
       Pack_Name : Entity_Id := Empty;
@@ -5455,6 +5460,19 @@ package body Sem_Ch8 is
       end case;
    end Error_Missing_With_Of_Known_Unit;
 
+   --------------------
+   -- Is_Self_Hidden --
+   --------------------
+
+   function Is_Self_Hidden (E : Entity_Id) return Boolean is
+   begin
+      if Is_Not_Self_Hidden (E) then
+         return Ekind (E) = E_Void;
+      else
+         return True;
+      end if;
+   end Is_Self_Hidden;
+
    ----------------------
    -- Find_Direct_Name --
    ----------------------
@@ -6443,14 +6461,7 @@ package body Sem_Ch8 is
             Write_Entity_Info (E, "      ");
          end if;
 
-         --  If the Ekind of the entity is Void, it means that all homonyms
-         --  are hidden from all visibility (RM 8.3(5,14-20)). However, this
-         --  test is skipped if the current scope is a record and the name is
-         --  a pragma argument expression (case of Atomic and Volatile pragmas
-         --  and possibly other similar pragmas added later, which are allowed
-         --  to reference components in the current record).
-
-         if Ekind (E) = E_Void
+         if Is_Self_Hidden (E)
            and then
              (not Is_Record_Type (Current_Scope)
                or else Nkind (Parent (N)) /= N_Pragma_Argument_Association)
@@ -7202,10 +7213,7 @@ package body Sem_Ch8 is
 
       Check_Wide_Character_Restriction (Id, N);
 
-      --  If the Ekind of the entity is Void, it means that all homonyms are
-      --  hidden from all visibility (RM 8.3(5,14-20)).
-
-      if Ekind (Id) = E_Void then
+      if Is_Self_Hidden (Id) then
          Premature_Usage (N);
 
       elsif Is_Overloadable (Id) and then Present (Homonym (Id)) then
@@ -8148,7 +8156,7 @@ package body Sem_Ch8 is
                   end loop;
                end;
 
-            elsif Ekind (P_Name) = E_Void then
+            elsif Is_Self_Hidden (P_Name) then
                Premature_Usage (P);
 
             elsif Ekind (P_Name) = E_Generic_Package then

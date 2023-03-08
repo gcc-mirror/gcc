@@ -8220,12 +8220,8 @@ package body Sem_Util is
       elsif Present (Etype (Def_Id)) then
          null;
 
-      --  Otherwise, the kind E_Void insures that premature uses of the entity
-      --  will be detected. Any_Type insures that no cascaded errors will occur
-
       else
-         Mutate_Ekind (Def_Id, E_Void);
-         Set_Etype (Def_Id, Any_Type);
+         Set_Etype (Def_Id, Any_Type); -- avoid cascaded errors
       end if;
 
       --  All entities except Itypes are immediately visible

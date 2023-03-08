@@ -2181,14 +2181,16 @@ package body Sem_Ch9 is
          Set_Has_Controlled_Component (T, True);
       end if;
 
-      --  The Ekind of components is E_Void during analysis to detect illegal
-      --  uses. Now it can be set correctly.
+      --  The Ekind of components is E_Void during analysis for historical
+      --  reasons. Now it can be set correctly.
 
       E := First_Entity (Current_Scope);
       while Present (E) loop
          if Ekind (E) = E_Void then
-            Mutate_Ekind (E, E_Component);
-            Reinit_Component_Location (E);
+            if not Is_Itype (E) then
+               Mutate_Ekind (E, E_Component);
+               Reinit_Component_Location (E);
+            end if;
          end if;
 
          Next_Entity (E);

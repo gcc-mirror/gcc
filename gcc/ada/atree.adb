@@ -25,10 +25,10 @@
 
 with Ada.Unchecked_Conversion;
 with Aspects;        use Aspects;
-with Debug;          use Debug;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Opt;            use Opt;
+with Osint;
 with Output;         use Output;
 with Sinfo.Utils;    use Sinfo.Utils;
 with System.Storage_Elements;
@@ -975,8 +975,6 @@ package body Atree is
       end loop;
    end Check_Vanishing_Fields;
 
-   Check_Vanishing_Fields_Failed : Boolean := False;
-
    procedure Check_Vanishing_Fields
      (Old_N : Entity_Id; New_Kind : Entity_Kind)
    is
@@ -1012,16 +1010,9 @@ package body Atree is
          when others => return False; -- ignore the exception
       end Same_Node_To_Fetch_From;
 
+   --  Start of processing for Check_Vanishing_Fields
+
    begin
-      --  Disable these checks in the case of converting to or from E_Void,
-      --  because we have many cases where we convert something to E_Void and
-      --  then back (or then to something else), and Reinit_Field_To_Zero
-      --  wouldn't work because we expect the fields to retain their values.
-
-      if New_Kind = E_Void or else Old_Kind = E_Void then
-         return;
-      end if;
-
       for J in Entity_Field_Table (Old_Kind)'Range loop
          declare
             F : constant Entity_Field := Entity_Field_Table (Old_Kind) (J);
@@ -1030,8 +1021,9 @@ package body Atree is
                null; -- no check in this case
             elsif not Field_Checking.Field_Present (New_Kind, F) then
                if not Field_Is_Initial_Zero (Old_N, F) then
-                  Check_Vanishing_Fields_Failed := True;
                   Write_Str ("# ");
+                  Write_Str (Osint.Get_First_Main_File_Name);
+                  Write_Str (": ");
                   Write_Str (Old_Kind'Img);
                   Write_Str (" --> ");
                   Write_Str (New_Kind'Img);
@@ -1048,14 +1040,11 @@ package body Atree is
                   Write_Str ("    ...mutating node ");
                   Write_Int (Nat (Old_N));
                   Write_Line ("");
+                  raise Program_Error;
                end if;
             end if;
          end;
       end loop;
-
-      if Check_Vanishing_Fields_Failed then
-         raise Program_Error;
-      end if;
    end Check_Vanishing_Fields;
 
    Nkind_Offset : constant Field_Offset := Field_Descriptors (F_Nkind).Offset;
@@ -1080,6 +1069,8 @@ package body Atree is
       All_Node_Offsets : Node_Offsets.Table_Type renames
         Node_Offsets.Table (Node_Offsets.First .. Node_Offsets.Last);
    begin
+      pragma Assert (Nkind (N) /= Val);
+
       pragma Debug (Check_Vanishing_Fields (N, Val));
 
       --  Grow the slots if necessary
@@ -1131,23 +1122,20 @@ package body Atree is
    procedure Set_Entity_Kind_Type is new Set_8_Bit_Field (Entity_Kind)
      with Inline;
 
-   procedure Mutate_Ekind
-     (N : Entity_Id; Val : Entity_Kind)
-   is
+   procedure Mutate_Ekind (N : Entity_Id; Val : Entity_Kind) is
    begin
       if Ekind (N) = Val then
          return;
       end if;
 
-      if Debug_Flag_Underscore_V then
-         pragma Debug (Check_Vanishing_Fields (N, Val));
-      end if;
+      pragma Assert (Val /= E_Void);
+      pragma Debug (Check_Vanishing_Fields (N, Val));
 
       --  For now, we are allocating all entities with the same size, so we
       --  don't need to reallocate slots here.
 
       if Atree_Statistics_Enabled then
-         Set_Count (F_Nkind) := Set_Count (F_Ekind) + 1;
+         Set_Count (F_Ekind) := Set_Count (F_Ekind) + 1;
       end if;
 
       Set_Entity_Kind_Type (N, Ekind_Offset, Val);
