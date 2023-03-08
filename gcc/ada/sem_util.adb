@@ -24383,7 +24383,10 @@ package body Sem_Util is
          then
             EWA_Inner_Scope_Level := EWA_Inner_Scope_Level - 1;
 
-         elsif Nkind (N) = N_Expression_With_Actions then
+         elsif Nkind (N) = N_Expression_With_Actions
+           or else
+             (Nkind (N) = N_Quantified_Expression and then Expander_Active)
+         then
             EWA_Level := EWA_Level - 1;
          end if;
       end Visit_Node;
