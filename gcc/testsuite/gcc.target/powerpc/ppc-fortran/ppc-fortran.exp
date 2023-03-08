@@ -58,6 +58,11 @@ proc dg-compile-aux-modules { args } {
     }
 }
 
+# Override gcc_{warning,error}_prefix with Fortran specific prefixes used
+# in gfortran_init to support dg-{warning,error} checks.
+set gcc_warning_prefix "\[Ww\]arning:"
+set gcc_error_prefix "(Fatal )?\[Ee\]rror:"
+
 # Main loop.
 gfortran-dg-runtest [lsort \
        [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ] ] "" $DEFAULT_FFLAGS
