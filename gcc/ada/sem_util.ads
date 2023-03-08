@@ -2630,11 +2630,10 @@ package Sem_Util is
    --  names to facilitate debugging the tree copy.
 
    function New_Copy_Tree
-     (Source           : Node_Id;
-      Map              : Elist_Id   := No_Elist;
-      New_Sloc         : Source_Ptr := No_Location;
-      New_Scope        : Entity_Id  := Empty;
-      Scopes_In_EWA_OK : Boolean    := False) return Node_Id;
+     (Source    : Node_Id;
+      Map       : Elist_Id   := No_Elist;
+      New_Sloc  : Source_Ptr := No_Location;
+      New_Scope : Entity_Id  := Empty) return Node_Id;
    --  Perform a deep copy of the subtree rooted at Source. Entities, itypes,
    --  and nodes are handled separately as follows:
    --
@@ -2704,10 +2703,6 @@ package Sem_Util is
    --
    --  Parameter New_Scope may be used to specify a new scope for all copied
    --  entities and itypes.
-   --
-   --  Parameter Scopes_In_EWA_OK may be used to force the replication of both
-   --  scoping entities and non-scoping entities found within expression with
-   --  actions nodes.
 
    function New_External_Entity
      (Kind         : Entity_Kind;

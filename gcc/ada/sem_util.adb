@@ -23067,11 +23067,10 @@ package body Sem_Util is
    -------------------
 
    function New_Copy_Tree
-     (Source           : Node_Id;
-      Map              : Elist_Id   := No_Elist;
-      New_Sloc         : Source_Ptr := No_Location;
-      New_Scope        : Entity_Id  := Empty;
-      Scopes_In_EWA_OK : Boolean    := False) return Node_Id
+     (Source    : Node_Id;
+      Map       : Elist_Id   := No_Elist;
+      New_Sloc  : Source_Ptr := No_Location;
+      New_Scope : Entity_Id  := Empty) return Node_Id
    is
       --  This routine performs low-level tree manipulations and needs access
       --  to the internals of the tree.
@@ -24030,12 +24029,9 @@ package body Sem_Util is
             return;
 
          --  Nothing to do when the entity is defined in a scoping construct
-         --  within an N_Expression_With_Actions node, unless the caller has
-         --  requested their replication.
+         --  within an N_Expression_With_Actions node.
 
-         --  ??? should this restriction be eliminated?
-
-         elsif EWA_Inner_Scope_Level > 0 and then not Scopes_In_EWA_OK then
+         elsif EWA_Inner_Scope_Level > 0 then
             return;
 
          --  Nothing to do when the entity does not denote a construct that
