@@ -64,13 +64,13 @@ ADJUST_ALIGNMENT (VNx16BI, 1);
 ADJUST_ALIGNMENT (VNx32BI, 1);
 ADJUST_ALIGNMENT (VNx64BI, 1);
 
-ADJUST_BYTESIZE (VNx1BI, riscv_vector_chunks * riscv_bytes_per_vector_chunk);
-ADJUST_BYTESIZE (VNx2BI, riscv_vector_chunks * riscv_bytes_per_vector_chunk);
-ADJUST_BYTESIZE (VNx4BI, riscv_vector_chunks * riscv_bytes_per_vector_chunk);
-ADJUST_BYTESIZE (VNx8BI, riscv_vector_chunks * riscv_bytes_per_vector_chunk);
-ADJUST_BYTESIZE (VNx16BI, riscv_vector_chunks * riscv_bytes_per_vector_chunk);
-ADJUST_BYTESIZE (VNx32BI, riscv_vector_chunks * riscv_bytes_per_vector_chunk);
-ADJUST_BYTESIZE (VNx64BI, riscv_v_adjust_nunits (VNx64BImode, 8));
+ADJUST_BYTESIZE (VNx1BI, riscv_v_adjust_bytesize (VNx1BImode, 1));
+ADJUST_BYTESIZE (VNx2BI, riscv_v_adjust_bytesize (VNx2BImode, 1));
+ADJUST_BYTESIZE (VNx4BI, riscv_v_adjust_bytesize (VNx4BImode, 1));
+ADJUST_BYTESIZE (VNx8BI, riscv_v_adjust_bytesize (VNx8BImode, 1));
+ADJUST_BYTESIZE (VNx16BI, riscv_v_adjust_bytesize (VNx16BImode, 2));
+ADJUST_BYTESIZE (VNx32BI, riscv_v_adjust_bytesize (VNx32BImode, 4));
+ADJUST_BYTESIZE (VNx64BI, riscv_v_adjust_bytesize (VNx64BImode, 8));
 
 ADJUST_PRECISION (VNx1BI, riscv_v_adjust_precision (VNx1BImode, 1));
 ADJUST_PRECISION (VNx2BI, riscv_v_adjust_precision (VNx2BImode, 2));

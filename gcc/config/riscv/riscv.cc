@@ -1003,6 +1003,28 @@ riscv_v_adjust_nunits (machine_mode mode, int scale)
   return scale;
 }
 
+/* Call from ADJUST_BYTESIZE in riscv-modes.def.  Return the correct
+   BYTE size for corresponding machine_mode.  */
+
+poly_int64
+riscv_v_adjust_bytesize (machine_mode mode, int scale)
+{
+  if (riscv_v_ext_vector_mode_p (mode))
+  {
+    poly_uint16 mode_size = GET_MODE_SIZE (mode);
+
+    if (maybe_eq (mode_size, (uint16_t)-1))
+      mode_size = riscv_vector_chunks * scale;
+
+    if (known_gt (mode_size, BYTES_PER_RISCV_VECTOR))
+      mode_size = BYTES_PER_RISCV_VECTOR;
+
+    return mode_size;
+  }
+
+  return scale;
+}
+
 /* Call from ADJUST_PRECISION in riscv-modes.def.  Return the correct
    PRECISION size for corresponding machine_mode.  */
 
