@@ -297,5 +297,25 @@ ASTLoweringPattern::visit (AST::SlicePattern &pattern)
     = new HIR::SlicePattern (mapping, std::move (items), pattern.get_locus ());
 }
 
+void
+ASTLoweringPattern::visit (AST::AltPattern &pattern)
+{
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  std::vector<std::unique_ptr<HIR::Pattern>> alts;
+
+  for (auto &alt : pattern.get_alts ())
+    {
+      alts.push_back (std::unique_ptr<HIR::Pattern> (
+	ASTLoweringPattern::translate (alt.get ())));
+    }
+
+  translated
+    = new HIR::AltPattern (mapping, std::move (alts), pattern.get_locus ());
+}
+
 } // namespace HIR
 } // namespace Rust
