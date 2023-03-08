@@ -1,3 +1,30 @@
+2023-03-07  Jonathan Grant  <jg@jguk.org>
+
+	PR sanitizer/81649
+	* doc/invoke.texi (Instrumentation Options):  Clarify
+	LeakSanitizer behavior.
+
+2023-03-07  Benson Muite  <benson_muite@emailplus.org>
+
+	* doc/install.texi (Prerequisites): Add link to gmplib.org.
+
+2023-03-07  Pan Li  <pan2.li@intel.com>
+	    Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/108185
+	PR target/108654
+	* config/riscv/riscv-modes.def (ADJUST_PRECISION): Adjust VNx*BI
+	modes.
+	* config/riscv/riscv.cc (riscv_v_adjust_precision): New.
+	* config/riscv/riscv.h (riscv_v_adjust_precision): New.
+	* genmodes.cc (adj_precision): New.
+	(ADJUST_PRECISION): New.
+	(emit_mode_adjustments): Handle ADJUST_PRECISION.
+
+2023-03-07  Hans-Peter Nilsson  <hp@axis.com>
+
+	* doc/sourcebuild.texi: Document check_effective_target_tail_call.
+
 2023-03-06  Paul-Antoine Arras  <pa@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (<expander><mode>3_exec): Add patterns for

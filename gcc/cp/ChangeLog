@@ -1,3 +1,37 @@
+2023-03-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108526
+	PR c++/106651
+	* pt.cc (tsubst_function_decl): Don't replace the closure
+	parameter if DECL_STATIC_FUNCTION_P.
+
+2023-03-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107532
+	* call.cc (reference_like_class_p): New.
+	(do_warn_dangling_reference): Add new bool parameter.  See through
+	reference_like_class_p.
+
+2023-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109042
+	* rtti.cc (emit_support_tinfo_1): Don't assert that last
+	unemitted_tinfo_decls element is tinfo, instead pop from it only in
+	that case.
+	* decl2.cc (c_parse_final_cleanups): Don't call emit_tinfo_decl
+	for unemitted_tinfO_decls which have already non-NULL DECL_INITIAL.
+
+2023-03-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109030
+	* constexpr.cc (cxx_eval_call_expression): Relax assert.
+
+2023-03-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107939
+	* constexpr.cc (potential_constant_expression_1) <case CALL_EXPR>: Pass
+	'any' when recursing on a VAR_DECL and not a pointer to function.
+
 2023-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/108702
