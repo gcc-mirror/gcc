@@ -91,6 +91,12 @@
 #  include <bits/uses_allocator_args.h>
 #endif
 
+/* As a hack, we declare __cpp_lib_atomic_value_initialization here even though
+   we don't include the bit that actually declares it, for consistency.  */
+#if !defined(__cpp_lib_atomic_value_initialization) && __cplusplus >= 202002L
+# define __cpp_lib_atomic_value_initialization 201911L
+#endif
+
 #if __cplusplus >= 201103L && __cplusplus <= 202002L && _GLIBCXX_HOSTED
 namespace std _GLIBCXX_VISIBILITY(default)
 {
