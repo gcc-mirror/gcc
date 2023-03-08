@@ -39,8 +39,8 @@ with System;
 package GNAT.Debug_Utilities is
    pragma Pure;
 
-   Address_64 : constant Boolean := Standard'Address_Size = 64;
-   --  Set true if 64 bit addresses (assumes only 32 and 64 are possible)
+   Address_64 : constant Boolean := System.Memory_Size = 2**64;
+   --  Set true if 64-bit addresses (assumes only 32 and 64 are possible)
 
    Address_Image_Length : constant := 13 + 10 * Boolean'Pos (Address_64);
    --  Length of string returned by Image function for an address

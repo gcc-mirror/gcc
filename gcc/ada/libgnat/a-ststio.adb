@@ -367,11 +367,13 @@ package body Ada.Streams.Stream_IO is
       FIO.Append_Set (AP (File));
 
       if File.Mode = FCB.Append_File then
-         if Standard'Address_Size = 64 then
+         pragma Warnings (Off, "condition is always *");
+         if Memory_Size = 2**64 then
             File.Index := Count (ftell64 (File.Stream)) + 1;
          else
             File.Index := Count (ftell (File.Stream)) + 1;
          end if;
+         pragma Warnings (On);
       end if;
 
       File.Last_Op := Op_Other;

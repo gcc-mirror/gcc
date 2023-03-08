@@ -24,6 +24,7 @@ pragma Assertion_Policy (Pre            => Ignore,
                          Contract_Cases => Ignore,
                          Ghost          => Ignore);
 
+with System;
 with System.Parameters;
 
 package Interfaces.C
@@ -82,10 +83,9 @@ is
    --  a non-private system.address type.
 
    type ptrdiff_t is
-     range -(2 ** (System.Parameters.ptr_bits - Integer'(1))) ..
-           +(2 ** (System.Parameters.ptr_bits - Integer'(1)) - 1);
+     range -System.Memory_Size / 2 .. System.Memory_Size / 2 - 1;
 
-   type size_t is mod 2 ** System.Parameters.ptr_bits;
+   type size_t is mod System.Memory_Size;
 
    --  Boolean type
 

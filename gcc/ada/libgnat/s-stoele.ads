@@ -45,12 +45,7 @@ package System.Storage_Elements is
 
    pragma Annotate (GNATprove, Always_Return, Storage_Elements);
 
-   type Storage_Offset is range
-     -(2 ** (Integer'(Standard'Address_Size) - 1)) ..
-     +(2 ** (Integer'(Standard'Address_Size) - 1)) - Long_Long_Integer'(1);
-   --  Note: the reason for the Long_Long_Integer qualification here is to
-   --  avoid a bogus ambiguity when this unit is analyzed in an rtsfind
-   --  context.
+   type Storage_Offset is range -Memory_Size / 2 .. Memory_Size / 2 - 1;
 
    subtype Storage_Count is Storage_Offset range 0 .. Storage_Offset'Last;
 

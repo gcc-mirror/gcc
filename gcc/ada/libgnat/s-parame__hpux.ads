@@ -53,9 +53,7 @@ package System.Parameters is
    -- Task And Stack Allocation Control --
    ---------------------------------------
 
-   type Size_Type is range
-     -(2 ** (Integer'(Standard'Address_Size) - 1)) ..
-     +(2 ** (Integer'(Standard'Address_Size) - 1)) - 1;
+   type Size_Type is range -Memory_Size / 2 .. Memory_Size / 2 - 1;
    --  Type used to provide task stack sizes to the runtime. Sized to permit
    --  stack sizes of up to half the total addressable memory space. This may
    --  seem excessively large (even for 32-bit systems), however there are many
