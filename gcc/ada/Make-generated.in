@@ -46,7 +46,7 @@ ada/stamp-snames : ada/snames.ads-tmpl ada/snames.adb-tmpl ada/snames.h-tmpl ada
 	-$(MKDIR) ada/bldtools/snamest
 	$(RM) $(addprefix ada/bldtools/snamest/,$(notdir $^))
 	$(CP) $^ ada/bldtools/snamest
-	cd ada/bldtools/snamest; gnatmake -q xsnamest ; ./xsnamest
+	cd ada/bldtools/snamest && gnatmake -q xsnamest && ./xsnamest
 	$(fsrcdir)/../move-if-change ada/bldtools/snamest/snames.ns ada/snames.ads
 	$(fsrcdir)/../move-if-change ada/bldtools/snamest/snames.nb ada/snames.adb
 	$(fsrcdir)/../move-if-change ada/bldtools/snamest/snames.nh ada/snames.h
