@@ -3100,17 +3100,7 @@ function_expander::use_ternop_insn (bool vd_accum_p, insn_code icode)
   add_input_operand (Pmode, get_tail_policy_for_pred (pred));
   add_input_operand (Pmode, get_mask_policy_for_pred (pred));
   add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
-
-  /* See optabs.cc, the maximum nops is 9 for using 'maybe_gen_insn'.
-     We temporarily use GCN directly. We will change it back it we
-     can support nops >= 10.  */
-  gcc_assert (maybe_legitimize_operands (icode, 0, opno, m_ops));
-  rtx_insn *pat = GEN_FCN (
-    icode) (m_ops[0].value, m_ops[1].value, m_ops[2].value, m_ops[3].value,
-	    m_ops[4].value, m_ops[5].value, m_ops[6].value, m_ops[7].value,
-	    m_ops[8].value, m_ops[9].value);
-  emit_insn (pat);
-  return m_ops[0].value;
+  return generate_insn (icode);
 }
 
 /* Implement the call using instruction ICODE, with a 1:1 mapping between
@@ -3142,17 +3132,7 @@ function_expander::use_widen_ternop_insn (insn_code icode)
   add_input_operand (Pmode, get_tail_policy_for_pred (pred));
   add_input_operand (Pmode, get_mask_policy_for_pred (pred));
   add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
-
-  /* See optabs.cc, the maximum nops is 9 for using 'maybe_gen_insn'.
-     We temporarily use GCN directly. We will change it back it we
-     can support nops >= 10.  */
-  gcc_assert (maybe_legitimize_operands (icode, 0, opno, m_ops));
-  rtx_insn *pat = GEN_FCN (
-    icode) (m_ops[0].value, m_ops[1].value, m_ops[2].value, m_ops[3].value,
-	    m_ops[4].value, m_ops[5].value, m_ops[6].value, m_ops[7].value,
-	    m_ops[8].value, m_ops[9].value);
-  emit_insn (pat);
-  return m_ops[0].value;
+  return generate_insn (icode);
 }
 
 /* Implement the call using instruction ICODE, with a 1:1 mapping between
