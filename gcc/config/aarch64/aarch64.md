@@ -949,8 +949,8 @@
 
 (define_expand "tbranch_<code><mode>3"
   [(set (pc) (if_then_else
-              (EQL (match_operand:ALLI 0 "register_operand")
-                   (match_operand 1 "aarch64_simd_shift_imm_<mode>"))
+              (EQL (match_operand:SHORT 0 "register_operand")
+                   (match_operand 1 "const0_operand"))
               (label_ref (match_operand 2 ""))
               (pc)))]
   ""
