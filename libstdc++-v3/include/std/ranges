@@ -6735,7 +6735,7 @@ namespace views::__adaptor
   class chunk_by_view : public view_interface<chunk_by_view<_Vp, _Pred>>
   {
     _Vp _M_base = _Vp();
-    __detail::__box<_Pred> _M_pred = _Pred();
+    __detail::__box<_Pred> _M_pred;
     __detail::_CachedPosition<_Vp> _M_cached_begin;
 
     constexpr iterator_t<_Vp>
@@ -7411,7 +7411,7 @@ namespace views::__adaptor
       && (__detail::__is_integer_like<_Bound> || same_as<_Bound, unreachable_sentinel_t>))
   class repeat_view : public view_interface<repeat_view<_Tp, _Bound>>
   {
-    __detail::__box<_Tp> _M_value = _Tp();
+    __detail::__box<_Tp> _M_value;
     [[no_unique_address]] _Bound _M_bound = _Bound();
 
     struct _Iterator;
