@@ -1010,7 +1010,7 @@ determine_exit_conditions (class loop *loop, class tree_niter_desc *desc,
       /* Convert the latch count to an iteration count.  */
       tree niter = fold_build2 (PLUS_EXPR, type, desc->niter,
 				build_one_cst (type));
-      if (multiple_of_p (type, niter, bigstep))
+      if (multiple_of_p (type, niter, build_int_cst (type, factor)))
 	return;
     }
 
