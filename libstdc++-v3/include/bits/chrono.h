@@ -244,7 +244,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __disable_if_is_duration
 	= typename enable_if<!__is_duration<_Tp>::value, _Tp>::type;
 
-#if __cpp_variable_templates
+#if __cplusplus >= 201703L
     template<typename _Tp>
       inline constexpr bool __is_duration_v = false;
     template<typename _Rep, typename _Period>
