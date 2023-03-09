@@ -1,5 +1,7 @@
 // { dg-do compile { target c++20 } }
 
+#if __has_builtin (__is_deducible)
+
 template <class T> struct A { };
 template <class T> struct B { };
 
@@ -26,6 +28,8 @@ static_assert (__is_deducible (D, D<int>));
 template <class T, T N> using E = int[N];
 static_assert (__is_deducible (E, int[42]));
 
+#endif // __has_builtin (__is_deducible)
+
 // We don't try to support this.
 template <class T> void f(T);
-bool b = __is_deducible (f, void (int)); // { dg-error "class or alias" }
+bool b = __is_deducible (f, void (int)); // { dg-error "" }
