@@ -3723,13 +3723,15 @@ expand_crc_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
     tree rhs1 = gimple_call_arg (stmt, 0); // crc
     tree rhs2 = gimple_call_arg (stmt, 1); // data
     tree rhs3 = gimple_call_arg (stmt, 2); // polynomial
+
     tree result_type = TREE_TYPE (lhs);
     tree data_type = TREE_TYPE (rhs2);
 
     rtx dest = expand_expr (lhs, NULL_RTX, SImode, EXPAND_WRITE);
     rtx op1 = expand_normal (rhs1);
     rtx op2 = expand_normal (rhs2);
-    rtx op3 = expand_normal (rhs3);
+    rtx op3 = gen_rtx_CONST_INT (TYPE_MODE (result_type),
+				 TREE_INT_CST_LOW (rhs3));
 
     class expand_operand ops[4];
     create_output_operand (&ops[0], dest, TYPE_MODE (result_type));

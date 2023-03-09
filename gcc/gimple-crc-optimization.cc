@@ -206,7 +206,10 @@ class crc_optimization {
   /* Replaces function body with CRC_IFN call.
    Returns true if replacement is succeeded, otherwise false.  */
   bool
-  faster_crc_code_generation (function *fun, unsigned HOST_WIDE_INT quotient);
+  faster_crc_code_generation (function *fun, value *polynomial);
+
+  /* Build tree for the polynomial without leading 1.  */
+  tree build_polynomial_without_1 (tree crc_arg, value *polynomial);
 
  public:
   unsigned int execute (function *fun);
@@ -1048,11 +1051,30 @@ remove_stmts_besides_return (function *fun, class loop *crc_loop)
   return return_stmt;
 }
 
+
+tree
+crc_optimization::build_polynomial_without_1 (tree crc_arg, value * polynomial)
+{
+  unsigned HOST_WIDE_INT cst_polynomial = 0;
+  for (size_t i = 0; i < (*polynomial).length (); i++)
+    {
+      value_bit *const_bit;
+      if (is_left_shift)
+	const_bit = (*polynomial)[(*polynomial).length () - 1 - i];
+      else
+	const_bit = (*polynomial)[i];
+      cst_polynomial <<= 1;
+      cst_polynomial ^= (as_a<bit *> (const_bit))->get_val () ? 1 : 0;
+    }
+  return build_int_cstu (TREE_TYPE (crc_arg), cst_polynomial);
+}
+
+
 /* Replaces function body with CRC_IFN call.
    Returns true if replacement is succeeded, otherwise false.  */
 bool
 crc_optimization::faster_crc_code_generation (function *fun,
-					      unsigned HOST_WIDE_INT quotient)
+					      value *polynomial)
 {
   if (!(data && first_phi_for_crc))
    return false;
@@ -1060,7 +1082,7 @@ crc_optimization::faster_crc_code_generation (function *fun,
   // work correctly in case when data is xor-ed with crc before the loop.
   tree crc_arg = PHI_ARG_DEF (first_phi_for_crc, 1);
   tree data_arg = PHI_ARG_DEF (data, 1);
-  tree quotient_arg = build_int_cst (TREE_TYPE (crc_arg), quotient);
+  tree polynomial_arg = build_polynomial_without_1 (crc_arg, polynomial);
 
   if (!direct_internal_fn_supported_p
       (IFN_CRC, tree_pair (TREE_TYPE (data_arg), TREE_TYPE (crc_arg)),
@@ -1078,7 +1100,7 @@ crc_optimization::faster_crc_code_generation (function *fun,
       = gimple_build_call_internal (IFN_CRC, 3,
 				    crc_arg,
 				    data_arg,
-				    quotient_arg);
+				    polynomial_arg);
 
   tree result = make_ssa_name (TREE_TYPE (DECL_RESULT (fun->decl)));
   gimple_call_set_lhs (call, result);
@@ -1106,54 +1128,6 @@ crc_optimization::faster_crc_code_generation (function *fun,
   return true;
 }
 
-/* Calculate the quotient of polynomial long division of x^2n by the polynomial
-   in GF (2^n).  */
-unsigned HOST_WIDE_INT
-gf2n_poly_long_div_quotient (value *polynomial, bool is_left_shift)
-{
-  vec<int> x2n, pol, q;
-  size_t n = (*polynomial).length () + 1;
-  x2n.create ((*polynomial).length () * 2 + 1);
-  pol.create (n);
-
-  for (size_t i = 0; i < (*polynomial).length (); i++)
-    {
-      value_bit *const_bit;
-      if (is_left_shift)
-	const_bit = (*polynomial)[i];
-      else
-	const_bit = (*polynomial)[(*polynomial).length () - 1 - i];
-      pol.quick_push ((int) (as_a<bit *> (const_bit))->get_val ());
-    }
-
-  pol.quick_push (1);
-
-  for (size_t i = 0; i < (*polynomial).length () * 2; i++)
-    x2n.quick_push (0);
-  x2n.quick_push (1);
-
-  q.create (n);
-  for (size_t i = 0; i < n; i++)
-    q.quick_push (0);
-
-  for (int i = n - 1; i >= 0; i--)
-    {
-      int d = x2n[i + n - 1];
-      if (d == 0)
-	continue;
-      for (int j = i + n - 1; j >= i; j--)
-	x2n[j] = x2n[j] ^ (pol[j - i] * d);
-      q[i] = d;
-    }
-  unsigned HOST_WIDE_INT quotient = 0;
-  for (size_t i = 0; i < q.length (); i++)
-    {
-      quotient <<= 1;
-      quotient = quotient | q[q.length () - i - 1];
-    }
-
-  return quotient;
-}
 
 unsigned int
 crc_optimization::execute (function *fun)
@@ -1178,9 +1152,6 @@ crc_optimization::execute (function *fun)
       if (!calc_polynom.second)
 	return 0;
 
-      unsigned HOST_WIDE_INT
-      quotient = gf2n_poly_long_div_quotient (calc_polynom.second,
-					      is_left_shift);
 
       value *lfsr
 	= state::create_lfsr (calc_polynom.first,
@@ -1205,7 +1176,7 @@ crc_optimization::execute (function *fun)
 	  if (dump_file)
 	    fprintf (dump_file, "%s function calculates CRC!\n",
 		     function_name (fun));
-	  if (!faster_crc_code_generation (fun, quotient))
+	  if (!faster_crc_code_generation (fun, calc_polynom.second))
 	    {
 	      if (dump_file)
 		fprintf (dump_file, "Couldn't generate faster CRC code.\n");

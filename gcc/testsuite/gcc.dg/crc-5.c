@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-crc-details" } */
-
+#include <stdio.h>
 typedef unsigned short ee_u16;
 typedef unsigned char ee_u8;
 
@@ -21,6 +21,16 @@ ee_u16 crcu8(ee_u8 data, ee_u16 crc) {
             crc &= 0x7fff;
     }
     return crc;
+}
+int main ()
+{
+  ee_u16 crc = 0;
+
+  crc = crcu8(0x12, crc);
+  printf("%04X\n", crc);  // 0D80
+
+  crc = crcu8(0x34, crc);
+  printf("%04X\n", crc);  // 770D
 }
 /* { dg-final { scan-tree-dump "crcu8 function maybe calculates CRC and returns it." "crc"} } */
 /* { dg-final { scan-tree-dump "Return size is 16" "crc"} } */

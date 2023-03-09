@@ -6902,6 +6902,55 @@ riscv_shamt_matches_mask_p (int shamt, HOST_WIDE_INT mask)
   return shamt == ctz_hwi (mask);
 }
 
+/* Calculate the quotient of polynomial long division of x^2n by the polynomial
+   in GF (2^n).  */
+
+unsigned HOST_WIDE_INT
+gf2n_poly_long_div_quotient (unsigned HOST_WIDE_INT polynomial)
+{
+  vec<short> x2n, pol, q;
+  // Create vector of bits, for the polynomial.
+  pol.create (sizeof (polynomial) * BITS_PER_UNIT + 1);
+  size_t n = 1;
+  for ( ; polynomial; n++)
+    {
+      pol.quick_push (polynomial&1);
+      polynomial >>= 1;
+    }
+  pol.quick_push (1);
+
+  // Create vector for x^2n polynomial.
+  x2n.create (2 * n - 1);
+  for (size_t i = 0; i < 2 * (n - 1); i++)
+    x2n.safe_push (0);
+  x2n.safe_push (1);
+
+  q.create (n);
+  for (size_t i = 0; i < n; i++)
+    q.quick_push (0);
+
+  // Calculate the quotient of x^2n/polynomial.
+  for (int i = n - 1; i >= 0; i--)
+    {
+      int d = x2n[i + n - 1];
+      if (d == 0)
+	continue;
+      for (int j = i + n - 1; j >= i; j--)
+	x2n[j] = x2n[j] ^ (pol[j - i] * d);
+      q[i] = d;
+    }
+
+  // Get the number from the vector of 0/1s.
+  unsigned HOST_WIDE_INT quotient = 0;
+  for (size_t i = 0; i < q.length (); i++)
+    {
+      quotient <<= 1;
+      quotient = quotient | q[q.length () - i - 1];
+    }
+
+  return quotient;
+}
+
 /* Calculates CRC for initial CRC and given polynomial.  */
 static uint16_t
 generate_crc (uint16_t crc,
@@ -6934,8 +6983,14 @@ generate_crc16_table (uint16_t polynom)
     return gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (id));
   id = get_identifier (buf);
   rtx lab = gen_rtx_SYMBOL_REF (Pmode, IDENTIFIER_POINTER (id));
-  asm_fprintf (out, "\t%s:\n\t", buf);
   unsigned table_size = 256;
+  asm_fprintf (out, "\t.type\t%s, @object\n", buf);
+  asm_fprintf (out, "\t.size\t%s, %d\n", buf,
+	       table_size * (16 / BITS_PER_UNIT));
+  asm_fprintf (out, "%s:\n\t.half ", buf);
+
+  /* Generate CRC for each value from 1 to table_size.
+     These are CRC table's values.  */
   for (unsigned i = 0; i < table_size; i++)
     {
       unsigned HOST_WIDE_INT crc = generate_crc (i, polynom);
@@ -6943,22 +6998,32 @@ generate_crc16_table (uint16_t polynom)
       if (i % 8 != 7)
 	asm_fprintf (out, ", ");
       else if (i < table_size - 1)
-	asm_fprintf (out, ",\n\t");
+	asm_fprintf (out, "\n\t.half ");
       else
 	asm_fprintf (out, "\n");
     }
   return lab;
 }
 
-/* Generate table based CRC.  */
+/* Generate table based CRC code.  */
 void
-expand_crc_table_based (rtx *operands)
+expand_crc_table_based (rtx *operands,  machine_mode data_mode)
 {
-  rtx tab = generate_crc16_table (INTVAL (operands[3]));
-
   machine_mode mode = GET_MODE (operands[0]);
-  tab = gen_rtx_MEM (mode, tab);
-  rtx crc = force_reg (mode, gen_rtx_XOR (mode, tab, operands[1]));
+
+  rtx in = force_reg (mode, gen_rtx_XOR (mode, operands[1], operands[2]));
+  rtx ix = gen_rtx_AND (mode, in, GEN_INT (GET_MODE_MASK (data_mode)));
+  if (mode != Pmode)
+    ix = gen_rtx_SUBREG (Pmode, ix, 0);
+  ix = gen_rtx_ASHIFT (Pmode, ix, GEN_INT (exact_log2 (GET_MODE_SIZE (mode)
+							   .to_constant ())));
+  ix = force_reg (Pmode, ix);
+  rtx tab = generate_crc16_table (UINTVAL (operands[3]));
+  tab = gen_rtx_MEM (mode, gen_rtx_PLUS (Pmode, ix, tab));
+
+  rtx high = gen_rtx_LSHIFTRT (mode, operands[1],
+			       GEN_INT (data_mode));
+  rtx crc = force_reg (mode, gen_rtx_XOR (mode, tab, high));
   riscv_emit_move (operands[0], gen_rtx_SUBREG (mode, crc, 0));
 }
 

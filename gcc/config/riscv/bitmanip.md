@@ -690,22 +690,24 @@
 {
 if (TARGET_ZBC)
   {
-     // FIXME: Note correct instruction sequence.
-     rtx data = force_reg (SImode, gen_rtx_ASHIFT (SImode, operands[1],
-						   GEN_INT (32)));
-
-     rtx op3 = simplify_gen_subreg (SImode, operands[3], HImode, 0);
-     rtx t2 = force_reg (SImode, gen_rtx_CLMULH (SImode, data, op3));
-     t2 = force_reg (SImode, gen_rtx_ASHIFT (SImode, t2, GEN_INT (16+1)));
-     t2 = force_reg (SImode, gen_rtx_LSHIFTRT (SImode, t2, GEN_INT (48-1)));
-     t2 = force_reg (SImode, gen_rtx_CLMULH (SImode, data, t2));
+     // Instruction sequence from slides.  Sizes need to be fixed.
+     rtx a0 = operands[0], a1 = operands[1];
+     unsigned HOST_WIDE_INT
+       q = gf2n_poly_long_div_quotient (UINTVAL (operands[3]));
+     rtx t0 = gen_rtx_CONST (SImode, GEN_INT (q));
+     rtx t1 = gen_rtx_CONST (SImode, operands[3]);
+     a0 = force_reg (SImode, gen_rtx_XOR (SImode, a0, a1));
+     a0 = force_reg (SImode, gen_rtx_CLMUL (SImode, a0, t0));
+     a0= force_reg (SImode, gen_rtx_ASHIFT (SImode, a0, GEN_INT (16)));
+     a0 = force_reg (SImode, gen_rtx_CLMUL (SImode, a0, t1));
+     a0 = force_reg (SImode, gen_rtx_LSHIFTRT (SImode, a0, GEN_INT (24)));
+     a0= force_reg (SImode, gen_rtx_ASHIFT (SImode, a0, GEN_INT (24)));
      rtx tgt = simplify_gen_subreg (SImode, operands[0], HImode, 0);
-     rtx crc = simplify_gen_subreg (SImode, operands[2], QImode, 0);
-     emit_move_insn (tgt, gen_rtx_XOR (SImode, crc, t2));
+     emit_move_insn (tgt, a0);
   }
 else
   {
-    expand_crc_table_based (operands);
+    expand_crc_table_based (operands, QImode);
   }
 DONE;
 })
