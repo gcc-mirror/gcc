@@ -15933,8 +15933,8 @@ resolve_symbol (gfc_symbol *sym)
 
       /* First, make sure the variable is declared at the
 	 module-level scope (J3/04-007, Section 15.3).	*/
-      if (sym->ns->proc_name->attr.flavor != FL_MODULE &&
-          sym->attr.in_common == 0)
+      if (!(sym->ns->proc_name && sym->ns->proc_name->attr.flavor == FL_MODULE)
+	  && !sym->attr.in_common)
 	{
 	  gfc_error ("Variable %qs at %L cannot be BIND(C) because it "
 		     "is neither a COMMON block nor declared at the "
