@@ -8224,7 +8224,7 @@ namespace views::__adaptor
 				    range_reference_t<__maybe_const_t<_Const, _Vs>>...>;
     using difference_type = decltype(cartesian_product_view::_S_difference_type());
 
-    _Iterator() requires forward_range<__maybe_const_t<_Const, _First>> = default;
+    _Iterator() = default;
 
     constexpr
     _Iterator(_Iterator<!_Const> __i)
@@ -8389,12 +8389,12 @@ namespace views::__adaptor
     _M_prev()
     {
       auto& __it = std::get<_Nm>(_M_current);
-      if (__it == ranges::begin(std::get<_Nm>(_M_parent->_M_bases)))
-	{
-	  __it = __detail::__cartesian_common_arg_end(std::get<_Nm>(_M_parent->_M_bases));
-	  if constexpr (_Nm > 0)
+      if constexpr (_Nm > 0)
+	if (__it == ranges::begin(std::get<_Nm>(_M_parent->_M_bases)))
+	  {
+	    __it = __detail::__cartesian_common_arg_end(std::get<_Nm>(_M_parent->_M_bases));
 	    _M_prev<_Nm - 1>();
-	}
+	  }
       --__it;
     }
 
@@ -8415,10 +8415,13 @@ namespace views::__adaptor
 	  if constexpr (_Nm == 0)
 	    {
 #ifdef _GLIBCXX_ASSERTIONS
-	      auto __size = ranges::ssize(__r);
-	      auto __begin = ranges::begin(__r);
-	      auto __offset = __it - __begin;
-	      __glibcxx_assert(__offset + __x >= 0 && __offset + __x <= __size);
+	      if constexpr (sized_range<__maybe_const_t<_Const, _First>>)
+		{
+		  auto __size = ranges::ssize(__r);
+		  auto __begin = ranges::begin(__r);
+		  auto __offset = __it - __begin;
+		  __glibcxx_assert(__offset + __x >= 0 && __offset + __x <= __size);
+		}
 #endif
 	      __it += __x;
 	    }

@@ -201,6 +201,14 @@ test07()
   VERIFY( i == 5 );
 }
 
+void
+test08()
+{
+  // LWG 3820
+  auto r = views::cartesian_product(views::iota(0));
+  r.begin() += 3;
+}
+
 int
 main()
 {
@@ -211,4 +219,5 @@ main()
   test05();
   static_assert(test06());
   test07();
+  test08();
 }
