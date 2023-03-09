@@ -1,3 +1,12 @@
+2023-03-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-03-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/108546
+	* trans-openmp.cc (gfc_trans_omp_clauses): Fix mapping of
+	type(C_ptr) variables.
+
 2023-03-04  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
