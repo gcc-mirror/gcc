@@ -8728,6 +8728,8 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t complain)
 
   complain &= ~tf_ptrmem_ok;
 
+  STRIP_ANY_LOCATION_WRAPPER (rhs);
+
   if (lhstype == unknown_type_node)
     {
       if (complain & tf_error)
