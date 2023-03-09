@@ -14,23 +14,8 @@
 
 @SET_MAKE@
 
-# Makefile for libm2pim.
-#   Copyright 2013-2022  Free Software Foundation, Inc.
-#
-# This file is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; see the file COPYING3.  If not see
-# <http://www.gnu.org/licenses/>.
 
+VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
     false; \
@@ -105,22 +90,21 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-subdir = libm2pim
+subdir = libproc_macro
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
-	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../config/override.m4 \
+	$(top_srcdir)/../config/toolexeclibdir.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
 	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
 	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-DIST_COMMON = $(srcdir)/Makefile.am
+DIST_COMMON = $(srcdir)/Makefile.am $(include_HEADERS)
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
-CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -150,29 +134,16 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
+am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
+	"$(DESTDIR)$(includedir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
-libm2pim_la_LIBADD =
-@BUILD_PIMLIB_TRUE@am__objects_1 = ASCII.lo IO.lo Args.lo M2RTS.lo \
-@BUILD_PIMLIB_TRUE@	M2Dependent.lo Assertion.lo NumberIO.lo \
-@BUILD_PIMLIB_TRUE@	Break.lo SYSTEM.lo CmdArgs.lo Scan.lo \
-@BUILD_PIMLIB_TRUE@	StrCase.lo FIO.lo StrIO.lo StrLib.lo \
-@BUILD_PIMLIB_TRUE@	TimeString.lo Environment.lo FpuIO.lo \
-@BUILD_PIMLIB_TRUE@	Debug.lo SysStorage.lo Storage.lo StdIO.lo \
-@BUILD_PIMLIB_TRUE@	SEnvironment.lo DynamicStrings.lo SFIO.lo \
-@BUILD_PIMLIB_TRUE@	SArgs.lo SCmdArgs.lo PushBackInput.lo \
-@BUILD_PIMLIB_TRUE@	StringConvert.lo FormatStrings.lo \
-@BUILD_PIMLIB_TRUE@	Builtins.lo MathLib0.lo M2EXCEPTION.lo \
-@BUILD_PIMLIB_TRUE@	RTExceptions.lo SMathLib0.lo RTint.lo \
-@BUILD_PIMLIB_TRUE@	Indexing.lo LMathLib0.lo LegacyReal.lo \
-@BUILD_PIMLIB_TRUE@	MemUtils.lo gdbif.lo GetOpt.lo OptLib.lo
-@BUILD_PIMLIB_TRUE@am_libm2pim_la_OBJECTS = $(am__objects_1) \
-@BUILD_PIMLIB_TRUE@	UnixArgs.lo Selective.lo sckt.lo errno.lo \
-@BUILD_PIMLIB_TRUE@	dtoa.lo ldtoa.lo termios.lo \
-@BUILD_PIMLIB_TRUE@	SysExceptions.lo libm2pim_la-target.lo \
-@BUILD_PIMLIB_TRUE@	libm2pim_la-wrapc.lo cgetopt.lo
-libm2pim_la_OBJECTS = $(am_libm2pim_la_OBJECTS)
-@BUILD_PIMLIB_TRUE@am_libm2pim_la_rpath = -rpath $(toolexeclibdir)
+libproc_macro_la_LIBADD =
+am_libproc_macro_la_OBJECTS = proc_macro.lo
+libproc_macro_la_OBJECTS = $(am_libproc_macro_la_OBJECTS)
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -185,32 +156,10 @@ AM_V_at = $(am__v_at_@AM_V@)
 am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
 am__v_at_1 = 
-DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
+DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
-COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
-	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) \
-	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
-	$(AM_CFLAGS) $(CFLAGS)
-AM_V_CC = $(am__v_CC_@AM_V@)
-am__v_CC_ = $(am__v_CC_@AM_DEFAULT_V@)
-am__v_CC_0 = @echo "  CC      " $@;
-am__v_CC_1 = 
-CCLD = $(CC)
-LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(AM_LDFLAGS) $(LDFLAGS) -o $@
-AM_V_CCLD = $(am__v_CCLD_@AM_V@)
-am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
-am__v_CCLD_0 = @echo "  CCLD    " $@;
-am__v_CCLD_1 = 
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
@@ -229,12 +178,13 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(libm2pim_la_SOURCES)
+SOURCES = $(libproc_macro_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+HEADERS = $(include_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -254,7 +204,6 @@ am__define_uniq_tagged_files = \
   done | $(am__uniquify_input)`
 ETAGS = etags
 CTAGS = ctags
-VPATH = . @srcdir@ @srcdir@/../../gcc/m2/gm2-libs
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
@@ -268,7 +217,6 @@ CCAS = @CCAS@
 CCASDEPMODE = @CCASDEPMODE@
 CCASFLAGS = @CCASFLAGS@
 CCDEPMODE = @CCDEPMODE@
-CC_FOR_BUILD = @CC_FOR_BUILD@
 CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
@@ -287,7 +235,6 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
-GM2_FOR_TARGET = @GM2_FOR_TARGET@
 GREP = @GREP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -319,7 +266,6 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PERL = @PERL@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -330,6 +276,7 @@ abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
+ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
@@ -351,10 +298,7 @@ datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
-enable_shared = @enable_shared@
-enable_static = @enable_static@
 exec_prefix = @exec_prefix@
-get_gcc_base_ver = @get_gcc_base_ver@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -368,12 +312,10 @@ infodir = @infodir@
 install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
-libtool_VERSION = @libtool_VERSION@
 localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
-multi_basedir = @multi_basedir@
 oldincludedir = @oldincludedir@
 pdfdir = @pdfdir@
 prefix = @prefix@
@@ -381,8 +323,6 @@ program_transform_name = @program_transform_name@
 psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
-# Used to install the shared libgcc.
-slibdir = @slibdir@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
 target = @target@
@@ -397,31 +337,16 @@ toolexeclibdir = @toolexeclibdir@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-SUFFIXES = .c .mod .def .o .obj .lo .a .la
-ACLOCAL_AMFLAGS = -I . -I .. -I ../config
-
-# Multilib support.
-MAKEOVERRIDES = 
-gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
-
-# Directory in which the compiler finds libraries etc.
-libsubdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)
-MULTIDIR := $(shell $(CC) $(CFLAGS) -print-multi-directory)
-MULTIOSDIR := $(shell $(CC) $(CFLAGS) -print-multi-os-directory)
-MULTIOSSUBDIR := $(shell if test x$(MULTIOSDIR) != x.; then echo /$(MULTIOSDIR); fi)
-inst_libdir = $(libsubdir)$(MULTISUBDIR)
-inst_slibdir = $(slibdir)$(MULTIOSSUBDIR)
+SUFFIXES = .cc .o .a .lo .la
+ACLOCAL_AMFLAGS = -I .. -I ../../config
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
 # friends when we are called from the top level Makefile.
 AM_MAKEFLAGS = \
-        "GCC_DIR=$(GCC_DIR)" \
-        "GM2_SRC=$(GM2_SRC)" \
 	"AR_FLAGS=$(AR_FLAGS)" \
 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" \
-	"GM2_FOR_TARGET=$(GM2_FOR_TARGET)" \
 	"CFLAGS=$(CFLAGS)" \
 	"CXXFLAGS=$(CXXFLAGS)" \
 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
@@ -435,10 +360,6 @@ AM_MAKEFLAGS = \
 	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" \
 	"MAKE=$(MAKE)" \
 	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" \
-        "MULTISUBDIR=$(MULTISUBDIR)" \
-        "MULTIOSDIR=$(MULTIOSDIR)" \
-        "MULTIBUILDTOP=$(MULTIBUILDTOP)" \
-        "MULTIFLAGS=$(MULTIFLAGS)" \
 	"PICFLAG=$(PICFLAG)" \
 	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" \
 	"SHELL=$(SHELL)" \
@@ -449,6 +370,7 @@ AM_MAKEFLAGS = \
 	"includedir=$(includedir)" \
 	"prefix=$(prefix)" \
 	"tooldir=$(tooldir)" \
+	"gxx_include_dir=$(gxx_include_dir)" \
 	"AR=$(AR)" \
 	"AS=$(AS)" \
 	"LD=$(LD)" \
@@ -458,94 +380,20 @@ AM_MAKEFLAGS = \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" \
+        "TARGET_LIB_PATH=$(TARGET_LIB_PATH)" \
         "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)"
 
+toolexeclib_LTLIBRARIES = libproc_macro.la
+libproc_macro_la_SOURCES = \
+	proc_macro.cc
 
-# Subdir rules rely on $(FLAGS_TO_PASS)
-FLAGS_TO_PASS = $(AM_MAKEFLAGS)
-@BUILD_PIMLIB_TRUE@toolexeclib_LTLIBRARIES = libm2pim.la
-@BUILD_PIMLIB_TRUE@M2MODS = ASCII.mod IO.mod \
-@BUILD_PIMLIB_TRUE@       Args.mod M2RTS.mod \
-@BUILD_PIMLIB_TRUE@       M2Dependent.mod \
-@BUILD_PIMLIB_TRUE@       Assertion.mod NumberIO.mod \
-@BUILD_PIMLIB_TRUE@       Break.mod SYSTEM.mod \
-@BUILD_PIMLIB_TRUE@       CmdArgs.mod Scan.mod \
-@BUILD_PIMLIB_TRUE@       StrCase.mod FIO.mod \
-@BUILD_PIMLIB_TRUE@       StrIO.mod StrLib.mod \
-@BUILD_PIMLIB_TRUE@       TimeString.mod Environment.mod \
-@BUILD_PIMLIB_TRUE@       FpuIO.mod Debug.mod \
-@BUILD_PIMLIB_TRUE@       SysStorage.mod Storage.mod \
-@BUILD_PIMLIB_TRUE@       StdIO.mod SEnvironment.mod \
-@BUILD_PIMLIB_TRUE@       DynamicStrings.mod SFIO.mod \
-@BUILD_PIMLIB_TRUE@       SArgs.mod SCmdArgs.mod \
-@BUILD_PIMLIB_TRUE@       PushBackInput.mod \
-@BUILD_PIMLIB_TRUE@       StringConvert.mod FormatStrings.mod \
-@BUILD_PIMLIB_TRUE@       Builtins.mod MathLib0.mod \
-@BUILD_PIMLIB_TRUE@       M2EXCEPTION.mod RTExceptions.mod \
-@BUILD_PIMLIB_TRUE@       SMathLib0.mod RTint.mod \
-@BUILD_PIMLIB_TRUE@       Indexing.mod \
-@BUILD_PIMLIB_TRUE@       LMathLib0.mod LegacyReal.mod \
-@BUILD_PIMLIB_TRUE@       MemUtils.mod gdbif.mod \
-@BUILD_PIMLIB_TRUE@       GetOpt.mod OptLib.mod
+include_HEADERS = \
+	proc_macro.h
 
-
-# COROUTINES.mod has been removed as it is implemented in ../libm2iso.
-@BUILD_PIMLIB_TRUE@M2DEFS = Args.def   ASCII.def \
-@BUILD_PIMLIB_TRUE@         Assertion.def  Break.def \
-@BUILD_PIMLIB_TRUE@         Builtins.def  cbuiltin.def \
-@BUILD_PIMLIB_TRUE@         CmdArgs.def COROUTINES.def \
-@BUILD_PIMLIB_TRUE@         cxxabi.def  Debug.def \
-@BUILD_PIMLIB_TRUE@         dtoa.def  DynamicStrings.def \
-@BUILD_PIMLIB_TRUE@         Environment.def  errno.def \
-@BUILD_PIMLIB_TRUE@         FIO.def  FormatStrings.def \
-@BUILD_PIMLIB_TRUE@         FpuIO.def  gdbif.def \
-@BUILD_PIMLIB_TRUE@         Indexing.def \
-@BUILD_PIMLIB_TRUE@         IO.def  ldtoa.def \
-@BUILD_PIMLIB_TRUE@         LegacyReal.def  libc.def \
-@BUILD_PIMLIB_TRUE@         libm.def  LMathLib0.def \
-@BUILD_PIMLIB_TRUE@         M2Dependent.def \
-@BUILD_PIMLIB_TRUE@         M2EXCEPTION.def  M2LINK.def \
-@BUILD_PIMLIB_TRUE@         M2RTS.def \
-@BUILD_PIMLIB_TRUE@         MathLib0.def  MemUtils.def \
-@BUILD_PIMLIB_TRUE@         NumberIO.def  PushBackInput.def \
-@BUILD_PIMLIB_TRUE@         RTExceptions.def  RTint.def \
-@BUILD_PIMLIB_TRUE@         SArgs.def  SCmdArgs.def \
-@BUILD_PIMLIB_TRUE@         Scan.def \
-@BUILD_PIMLIB_TRUE@         sckt.def  Selective.def \
-@BUILD_PIMLIB_TRUE@         SEnvironment.def  SFIO.def \
-@BUILD_PIMLIB_TRUE@         SMathLib0.def  StdIO.def \
-@BUILD_PIMLIB_TRUE@         Storage.def  StrCase.def \
-@BUILD_PIMLIB_TRUE@         StringConvert.def  StrIO.def \
-@BUILD_PIMLIB_TRUE@         StrLib.def  SysExceptions.def \
-@BUILD_PIMLIB_TRUE@         SysStorage.def  SYSTEM.def \
-@BUILD_PIMLIB_TRUE@         termios.def  TimeString.def \
-@BUILD_PIMLIB_TRUE@         UnixArgs.def  wrapc.def  \
-@BUILD_PIMLIB_TRUE@         GetOpt.def OptLib.def \
-@BUILD_PIMLIB_TRUE@         cgetopt.def
-
-@BUILD_PIMLIB_TRUE@libm2pim_la_SOURCES = $(M2MODS) \
-@BUILD_PIMLIB_TRUE@                      UnixArgs.cc \
-@BUILD_PIMLIB_TRUE@                      Selective.cc sckt.cc \
-@BUILD_PIMLIB_TRUE@                      errno.cc dtoa.cc \
-@BUILD_PIMLIB_TRUE@                      ldtoa.cc termios.cc \
-@BUILD_PIMLIB_TRUE@                      SysExceptions.cc target.c \
-@BUILD_PIMLIB_TRUE@                      wrapc.c cgetopt.cc
-
-@BUILD_PIMLIB_TRUE@libm2pimdir = libm2pim
-@BUILD_PIMLIB_TRUE@libm2pim_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2pim_la_SOURCES)))
-@BUILD_PIMLIB_TRUE@libm2pim_la_CFLAGS = -I. -I.. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -DBUILD_GM2_LIBS -I@srcdir@/../  -I@srcdir@/../libm2iso
-@BUILD_PIMLIB_TRUE@libm2pim_la_M2FLAGS = -I. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso -fm2-g -g -Wreturn-type -fcase
-@BUILD_PIMLIB_TRUE@@TARGET_DARWIN_FALSE@libm2pim_la_link_flags = 
-@BUILD_PIMLIB_TRUE@@TARGET_DARWIN_TRUE@libm2pim_la_link_flags = -Wl,-undefined,dynamic_lookup
-@BUILD_PIMLIB_TRUE@libm2pim_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2pim_la_link_flags)
-@BUILD_PIMLIB_TRUE@BUILT_SOURCES = SYSTEM.def
-@BUILD_PIMLIB_TRUE@CLEANFILES = SYSTEM.def
-@BUILD_PIMLIB_TRUE@M2LIBDIR = /m2/m2pim/
-all: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) all-am
+all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .mod .def .o .obj .lo .a .la .cc
+.SUFFIXES: .cc .o .a .lo .la .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -555,9 +403,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign libm2pim/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign libproc_macro/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign libm2pim/Makefile
+	  $(AUTOMAKE) --foreign libproc_macro/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -611,8 +459,8 @@ clean-toolexeclibLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
-libm2pim.la: $(libm2pim_la_OBJECTS) $(libm2pim_la_DEPENDENCIES) $(EXTRA_libm2pim_la_DEPENDENCIES) 
-	$(AM_V_GEN)$(libm2pim_la_LINK) $(am_libm2pim_la_rpath) $(libm2pim_la_OBJECTS) $(libm2pim_la_LIBADD) $(LIBS)
+libproc_macro.la: $(libproc_macro_la_OBJECTS) $(libproc_macro_la_DEPENDENCIES) $(EXTRA_libproc_macro_la_DEPENDENCIES) 
+	$(AM_V_CXXLD)$(CXXLINK) -rpath $(toolexeclibdir) $(libproc_macro_la_OBJECTS) $(libproc_macro_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -620,52 +468,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Selective.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SysExceptions.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/UnixArgs.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cgetopt.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dtoa.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/errno.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ldtoa.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-target.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libm2pim_la-wrapc.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sckt.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/termios.Plo@am__quote@
-
-.c.o:
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ $<
-
-.c.obj:
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
-
-.c.lo:
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LTCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
-
-libm2pim_la-target.lo: target.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -MT libm2pim_la-target.lo -MD -MP -MF $(DEPDIR)/libm2pim_la-target.Tpo -c -o libm2pim_la-target.lo `test -f 'target.c' || echo '$(srcdir)/'`target.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libm2pim_la-target.Tpo $(DEPDIR)/libm2pim_la-target.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='target.c' object='libm2pim_la-target.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -c -o libm2pim_la-target.lo `test -f 'target.c' || echo '$(srcdir)/'`target.c
-
-libm2pim_la-wrapc.lo: wrapc.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -MT libm2pim_la-wrapc.lo -MD -MP -MF $(DEPDIR)/libm2pim_la-wrapc.Tpo -c -o libm2pim_la-wrapc.lo `test -f 'wrapc.c' || echo '$(srcdir)/'`wrapc.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libm2pim_la-wrapc.Tpo $(DEPDIR)/libm2pim_la-wrapc.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='wrapc.c' object='libm2pim_la-wrapc.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libm2pim_la_CFLAGS) $(CFLAGS) -c -o libm2pim_la-wrapc.lo `test -f 'wrapc.c' || echo '$(srcdir)/'`wrapc.c
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/proc_macro.Plo@am__quote@
 
 .cc.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -681,7 +484,7 @@ libm2pim_la-wrapc.lo: wrapc.c
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
-@BUILD_PIMLIB_FALSE@.cc.lo:
+.cc.lo:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
@@ -693,6 +496,27 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
+install-includeHEADERS: $(include_HEADERS)
+	@$(NORMAL_INSTALL)
+	@list='$(include_HEADERS)'; test -n "$(includedir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(includedir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(includedir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(includedir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(includedir)" || exit $$?; \
+	done
+
+uninstall-includeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(include_HEADERS)'; test -n "$(includedir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(includedir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -746,15 +570,13 @@ cscopelist-am: $(am__tagged_files)
 distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 check-am: all-am
-check: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) check-am
-all-am: Makefile $(LTLIBRARIES)
+check: check-am
+all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(toolexeclibdir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) install-am
+install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -776,7 +598,6 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
-	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -785,8 +606,6 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
-@BUILD_PIMLIB_FALSE@install-data-local:
 clean: clean-am
 
 clean-am: clean-generic clean-libtool clean-toolexeclibLTLIBRARIES \
@@ -810,7 +629,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-data-local
+install-data-am: install-includeHEADERS
 
 install-dvi: install-dvi-am
 
@@ -856,55 +675,29 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-toolexeclibLTLIBRARIES
+uninstall-am: uninstall-includeHEADERS \
+	uninstall-toolexeclibLTLIBRARIES
 
-.MAKE: all check install install-am install-strip
+.MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am check check-am clean clean-generic \
 	clean-libtool clean-toolexeclibLTLIBRARIES cscopelist-am ctags \
 	ctags-am distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags dvi dvi-am html html-am info \
 	info-am install install-am install-data install-data-am \
-	install-data-local install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip \
+	install-dvi install-dvi-am install-exec install-exec-am \
+	install-html install-html-am install-includeHEADERS \
+	install-info install-info-am install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
 	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
 	installdirs maintainer-clean maintainer-clean-generic \
 	mostlyclean mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-toolexeclibLTLIBRARIES
+	uninstall-am uninstall-includeHEADERS \
+	uninstall-toolexeclibLTLIBRARIES
 
 .PRECIOUS: Makefile
 
-
-@BUILD_PIMLIB_TRUE@SYSTEM.def: Makefile
-@BUILD_PIMLIB_TRUE@	bash $(GM2_SRC)/tools-src/makeSystem -fpim \
-@BUILD_PIMLIB_TRUE@             $(GM2_SRC)/gm2-libs/SYSTEM.def \
-@BUILD_PIMLIB_TRUE@             $(GM2_SRC)/gm2-libs/SYSTEM.mod \
-@BUILD_PIMLIB_TRUE@             -I$(GM2_SRC)/gm2-libs \
-@BUILD_PIMLIB_TRUE@             "$(GM2_FOR_TARGET)" $@
-
-@BUILD_PIMLIB_TRUE@.mod.lo: SYSTEM.def
-@BUILD_PIMLIB_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(GM2_FOR_TARGET) -c $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2pim_la_M2FLAGS) $< -o $@
-
-@BUILD_PIMLIB_TRUE@.cc.lo:
-@BUILD_PIMLIB_TRUE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) -c -I$(srcdir) $(CXXFLAGS) $(LIBCFLAGS) $(libm2pim_la_CFLAGS) $< -o $@
-
-@BUILD_PIMLIB_TRUE@install-data-local: force
-@BUILD_PIMLIB_TRUE@	mkdir -p $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)
-@BUILD_PIMLIB_TRUE@	for i in $(M2DEFS) $(M2MODS) ; do \
-@BUILD_PIMLIB_TRUE@           if [ -f $$i ] ; then \
-@BUILD_PIMLIB_TRUE@              $(INSTALL_DATA) $$i '$(DESTDIR)$(inst_libdir)/$(M2LIBDIR)'; \
-@BUILD_PIMLIB_TRUE@           elif [ -f @srcdir@/../../gcc/m2/gm2-libs/$$i ] ; then \
-@BUILD_PIMLIB_TRUE@              $(INSTALL_DATA) @srcdir@/../../gcc/m2/gm2-libs/$$i '$(DESTDIR)$(inst_libdir)/$(M2LIBDIR)'; \
-@BUILD_PIMLIB_TRUE@           else \
-@BUILD_PIMLIB_TRUE@              echo "cannot find $$i" ; exit 1 ; \
-@BUILD_PIMLIB_TRUE@           fi ; \
-@BUILD_PIMLIB_TRUE@           chmod 644 $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)$$i ; \
-@BUILD_PIMLIB_TRUE@	done
-
-@BUILD_PIMLIB_TRUE@force:
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
