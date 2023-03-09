@@ -111,6 +111,18 @@ test06()
   auto y = std::views::single(std::move(obj));
 }
 
+template<auto single = std::views::single>
+void
+test07()
+{
+  // Verify SFINAE behavior.
+  struct uncopyable {
+    uncopyable();
+    uncopyable(const uncopyable&) = delete;
+  };
+  static_assert(!requires { single(uncopyable{}); });
+}
+
 int main()
 {
   test01();
@@ -119,4 +131,5 @@ int main()
   test04();
   test05();
   test06();
+  test07();
 }

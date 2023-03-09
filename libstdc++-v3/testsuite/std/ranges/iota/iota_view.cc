@@ -110,6 +110,15 @@ test06()
   VERIFY( std::ranges::equal(v3, w3) );
 }
 
+template<auto iota = std::views::iota>
+void
+test07()
+{
+  // Verify SFINAE behavior.
+  static_assert(!requires { iota(nullptr); });
+  static_assert(!requires { iota(nullptr, nullptr); });
+}
+
 int
 main()
 {
@@ -119,4 +128,5 @@ main()
   test04();
   test05();
   test06();
+  test07();
 }

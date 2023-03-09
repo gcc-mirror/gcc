@@ -38,3 +38,4 @@ test01()
 // { dg-prune-output "no match" }
 // { dg-prune-output "deduction failed" }
 // { dg-prune-output "constraint failure" }
+// { dg-prune-output "in requirements" }

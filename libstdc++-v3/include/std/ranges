@@ -671,30 +671,41 @@ namespace views
   template<typename _Tp>
     inline constexpr empty_view<_Tp> empty{};
 
-  struct _Single
+  namespace __detail
   {
     template<typename _Tp>
-      [[nodiscard]]
+      concept __can_single_view
+	= requires { single_view<decay_t<_Tp>>(std::declval<_Tp>()); };
+  } // namespace __detail
+
+  struct _Single
+  {
+    template<__detail::__can_single_view _Tp>
       constexpr auto
-      operator()(_Tp&& __e) const
+      operator() [[nodiscard]] (_Tp&& __e) const
       noexcept(noexcept(single_view<decay_t<_Tp>>(std::forward<_Tp>(__e))))
       { return single_view<decay_t<_Tp>>(std::forward<_Tp>(__e)); }
   };
 
   inline constexpr _Single single{};
 
+  namespace __detail
+  {
+    template<typename... _Args>
+      concept __can_iota_view = requires { iota_view(std::declval<_Args>()...); };
+  } // namespace __detail
+
   struct _Iota
   {
-    template<typename _Tp>
-      [[nodiscard]]
+    template<__detail::__can_iota_view _Tp>
       constexpr auto
-      operator()(_Tp&& __e) const
+      operator() [[nodiscard]] (_Tp&& __e) const
       { return iota_view(std::forward<_Tp>(__e)); }
 
     template<typename _Tp, typename _Up>
-      [[nodiscard]]
+      requires __detail::__can_iota_view<_Tp, _Up>
       constexpr auto
-      operator()(_Tp&& __e, _Up&& __f) const
+      operator() [[nodiscard]] (_Tp&& __e, _Up&& __f) const
       { return iota_view(std::forward<_Tp>(__e), std::forward<_Up>(__f)); }
   };
 
@@ -791,13 +802,21 @@ namespace views
 
 namespace views
 {
+  namespace __detail
+  {
+    template<typename _Tp, typename _Up>
+    concept __can_istream_view = requires (_Up __e) {
+      basic_istream_view<_Tp, typename _Up::char_type, typename _Up::traits_type>(__e);
+    };
+  } // namespace __detail
+
   template<typename _Tp>
     struct _Istream
     {
       template<typename _CharT, typename _Traits>
-	[[nodiscard]]
 	constexpr auto
-	operator()(basic_istream<_CharT, _Traits>& __e) const
+	operator() [[nodiscard]] (basic_istream<_CharT, _Traits>& __e) const
+	requires __detail::__can_istream_view<_Tp, remove_reference_t<decltype(__e)>>
 	{ return basic_istream_view<_Tp, _CharT, _Traits>(__e); }
     };
 
