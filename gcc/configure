@@ -810,6 +810,7 @@ PYTHON
 BISON
 FLEX
 GENERATED_MANPAGES
+MAKEINFO_TOC_INLINE_FLAG
 BUILD_INFO
 MAKEINFO
 have_mktemp_command
@@ -8792,6 +8793,36 @@ $as_echo "$as_me: WARNING:
   BUILD_INFO=
 else
   BUILD_INFO=info
+fi
+
+
+# Determine whether makeinfo supports the CONTENTS_OUTPUT_LOCATION variable.
+# If it does, we want to pass it to makeinfo in order to restore the old
+# behaviour of @{summary,}contents placement.
+MAKEINFO_TOC_INLINE_FLAG=
+if test x"$MAKEINFO" != x; then :
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for CONTENTS_OUTPUT_LOCATION support in $MAKEINFO" >&5
+$as_echo_n "checking for CONTENTS_OUTPUT_LOCATION support in $MAKEINFO... " >&6; }
+if ${gcc_cv_texi_add_toc_inline_flags+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    # Detect the unknown variable CONTENTS_OUTPUT_LOCATION warning
+    if "$MAKEINFO" -c CONTENTS_OUTPUT_LOCATION=inline </dev/null 2>&1 \
+       | grep CONTENTS_OUTPUT_LOCATION >/dev/null; then
+      gcc_cv_texi_add_toc_inline_flags=no
+    else
+      gcc_cv_texi_add_toc_inline_flags=yes
+    fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_texi_add_toc_inline_flags" >&5
+$as_echo "$gcc_cv_texi_add_toc_inline_flags" >&6; }
+  if test x"$gcc_cv_texi_add_toc_inline_flags" = xyes; then
+    MAKEINFO_TOC_INLINE_FLAG='-c CONTENTS_OUTPUT_LOCATION=inline'
+  fi
+
 fi
 
 
@@ -19792,7 +19823,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19795 "configure"
+#line 19826 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19898,7 +19929,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19901 "configure"
+#line 19932 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
