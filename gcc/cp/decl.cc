@@ -12440,10 +12440,15 @@ grokdeclarator (const cp_declarator *declarator,
 	{
 	  if (typedef_decl)
 	    {
-	      pedwarn (loc, OPT_Wpedantic, "%qs specified with %qT",
-		       key, type);
+	      pedwarn (loc, OPT_Wpedantic, "%qs specified with %qD",
+		       key, typedef_decl);
 	      ok = !flag_pedantic_errors;
-	      type = DECL_ORIGINAL_TYPE (typedef_decl);
+	      if (is_typedef_decl (typedef_decl))
+		type = DECL_ORIGINAL_TYPE (typedef_decl);
+	      else
+		/* PR108099: __int128_t comes from c_common_nodes_and_builtins,
+		   and is not built as a typedef.  */
+		type = TREE_TYPE (typedef_decl);
 	      typedef_decl = NULL_TREE;
 	    }
 	  else if (declspecs->decltype_p)
