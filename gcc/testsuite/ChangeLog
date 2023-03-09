@@ -1,3 +1,48 @@
+2023-03-08  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/ppc-fortran/ppc-fortran.exp: Override
+	gcc_{warning,error}_prefix with Fortran specific one used in
+	gfortran_init.
+
+2023-03-08  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/bfp/scalar-test-data-class-14.c: Adjust with
+	int128 effective target requirement.
+	* gcc.target/powerpc/bfp/scalar-test-data-class-15.c: Likewise.
+
+2023-03-08  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/108729
+	* gcc.target/powerpc/bfp/scalar-test-data-class-12.c: Adjust with
+	has_arch_ppc64 effective target.
+	* gcc.target/powerpc/bfp/vec-test-data-class-9.c: Likewise.
+
+2023-03-08  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/108730
+	* gcc.target/powerpc/bfp/scalar-test-neg-8.c: Adjust with lp64
+	effective target requirement.
+
+2023-03-08  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/108813
+	* gcc.target/powerpc/pr101384-2.c: Adjust with xxspltib.
+
+2023-03-08  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/108810
+	* gcc.target/powerpc/fold-vec-extract-double.p9.c (testd_cst): Adjust
+	the extracted index for BE.
+
+2023-03-08  Jeff Law  <jlaw@ventanamicro>
+
+	* gcc.target/mips/msa-ds.c: Fix over eager pattern matching.
+
+2023-03-08  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/analyzer/omp-parallel-for-get-min.c,
+	gcc.dg/analyzer/omp-parallel-for-1.c: Require effective target fopenmp.
+
 2023-03-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/108526
