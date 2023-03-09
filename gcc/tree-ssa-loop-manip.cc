@@ -1297,6 +1297,12 @@ tree_transform_and_unroll_loop (class loop *loop, unsigned factor,
 	}
 
       remove_path (exit);
+
+      /* The epilog loop latch executes at most factor - 1 times.
+	 Since the epilog is entered unconditionally it will need to handle
+	 up to factor executions of its body.  */
+      new_loop->any_upper_bound = 1;
+      new_loop->nb_iterations_upper_bound = factor - 1;
     }
   else
     new_exit = single_dom_exit (loop);
