@@ -1537,6 +1537,8 @@ compare_lambda_template_head (tree tmpl_a, tree tmpl_b)
 	  if (parm_a == error_mark_node)
 	    return false;
 	  parm_a = TREE_VALUE (parm_a);
+	  if (parm_a == error_mark_node)
+	    return false;
 	  if (DECL_VIRTUAL_P (parm_a))
 	    parm_a = NULL_TREE;
 	}
@@ -1548,6 +1550,8 @@ compare_lambda_template_head (tree tmpl_a, tree tmpl_b)
 	  if (parm_b == error_mark_node)
 	    return false;
 	  parm_b = TREE_VALUE (parm_b);
+	  if (parm_b == error_mark_node)
+	    return false;
 	  if (DECL_VIRTUAL_P (parm_b))
 	    parm_b = NULL_TREE;
 	}
