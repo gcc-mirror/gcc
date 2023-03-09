@@ -3,4 +3,4 @@
 
 #include "pr89229-5a.c"
 
-/* { dg-final { scan-assembler-times "vmovdqa32\[^\n\r]*zmm1\[67]\[^\n\r]*zmm1\[67]" 1 } } */
+/* { dg-final { scan-assembler-times "vmovsd\[^\n\r]*xmm1\[67]\[^\n\r]*xmm1\[67]\[^\n\r]*xmm1\[67]" 1 } } */

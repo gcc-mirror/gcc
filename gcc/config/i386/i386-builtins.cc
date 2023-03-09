@@ -1675,6 +1675,10 @@ ix86_vectorize_builtin_gather (const_tree mem_vectype,
 {
   bool si;
   enum ix86_builtins code;
+  const machine_mode mode = TYPE_MODE (TREE_TYPE (mem_vectype));
+
+  if ((!TARGET_AVX512F || !TARGET_EVEX512) && GET_MODE_SIZE (mode) == 64)
+    return NULL_TREE;
 
   if (! TARGET_AVX2
       || (known_eq (TYPE_VECTOR_SUBPARTS (mem_vectype), 2u)
@@ -1755,28 +1759,16 @@ ix86_vectorize_builtin_gather (const_tree mem_vectype,
 	code = si ? IX86_BUILTIN_GATHERSIV8SI : IX86_BUILTIN_GATHERALTDIV8SI;
       break;
     case E_V8DFmode:
-      if (TARGET_AVX512F)
-	code = si ? IX86_BUILTIN_GATHER3ALTSIV8DF : IX86_BUILTIN_GATHER3DIV8DF;
-      else
-	return NULL_TREE;
+      code = si ? IX86_BUILTIN_GATHER3ALTSIV8DF : IX86_BUILTIN_GATHER3DIV8DF;
       break;
     case E_V8DImode:
-      if (TARGET_AVX512F)
-	code = si ? IX86_BUILTIN_GATHER3ALTSIV8DI : IX86_BUILTIN_GATHER3DIV8DI;
-      else
-	return NULL_TREE;
+      code = si ? IX86_BUILTIN_GATHER3ALTSIV8DI : IX86_BUILTIN_GATHER3DIV8DI;
       break;
     case E_V16SFmode:
-      if (TARGET_AVX512F)
-	code = si ? IX86_BUILTIN_GATHER3SIV16SF : IX86_BUILTIN_GATHER3ALTDIV16SF;
-      else
-	return NULL_TREE;
+      code = si ? IX86_BUILTIN_GATHER3SIV16SF : IX86_BUILTIN_GATHER3ALTDIV16SF;
       break;
     case E_V16SImode:
-      if (TARGET_AVX512F)
-	code = si ? IX86_BUILTIN_GATHER3SIV16SI : IX86_BUILTIN_GATHER3ALTDIV16SI;
-      else
-	return NULL_TREE;
+      code = si ? IX86_BUILTIN_GATHER3SIV16SI : IX86_BUILTIN_GATHER3ALTDIV16SI;
       break;
     default:
       return NULL_TREE;
