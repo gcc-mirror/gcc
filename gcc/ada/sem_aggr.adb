@@ -464,8 +464,8 @@ package body Sem_Aggr is
          This_Range : constant Node_Id := Aggregate_Bounds (N);
          --  The aggregate range node of this specific sub-aggregate
 
-         This_Low  : constant Node_Id := Low_Bound  (Aggregate_Bounds (N));
-         This_High : constant Node_Id := High_Bound (Aggregate_Bounds (N));
+         This_Low  : constant Node_Id := Low_Bound  (This_Range);
+         This_High : constant Node_Id := High_Bound (This_Range);
          --  The aggregate bounds of this specific sub-aggregate
 
          Assoc : Node_Id;
@@ -4175,7 +4175,7 @@ package body Sem_Aggr is
          Append (Make_Range (Loc, New_Copy_Tree (Lo), Hi), Constr);
          Analyze_And_Resolve (Last (Constr), Etype (Index));
 
-         Index := Next_Index (Index);
+         Next_Index (Index);
       end loop;
 
       Set_Compile_Time_Known_Aggregate (N);

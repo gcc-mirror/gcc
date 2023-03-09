@@ -3171,7 +3171,7 @@ package body Einfo.Utils is
                Index := First_Index (Id);
                while Present (Index) loop
                   Write_Attribute (" ", Etype (Index));
-                  Index := Next_Index (Index);
+                  Next_Index (Index);
                end loop;
 
                Write_Eol;
