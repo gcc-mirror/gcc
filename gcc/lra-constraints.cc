@@ -3108,7 +3108,8 @@ process_alt_operands (int only_alternative)
 	  lra_assert (operand_reg[i] != NULL_RTX);
 	  clobbered_hard_regno = hard_regno[i];
 	  CLEAR_HARD_REG_SET (temp_set);
-	  add_to_hard_reg_set (&temp_set, biggest_mode[i], clobbered_hard_regno);
+	  add_to_hard_reg_set (&temp_set, GET_MODE (*curr_id->operand_loc[i]),
+			       clobbered_hard_regno);
 	  first_conflict_j = last_conflict_j = -1;
 	  for (j = 0; j < n_operands; j++)
 	    if (j == i
