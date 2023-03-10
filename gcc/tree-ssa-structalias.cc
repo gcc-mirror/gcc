@@ -7137,33 +7137,33 @@ pt_solutions_intersect (struct pt_solution *pt1, struct pt_solution *pt2)
   return res;
 }
 
+/* Dump stats information to OUTFILE.  */
+
+static void
+dump_sa_stats (FILE *outfile)
+{
+  fprintf (outfile, "Points-to Stats:\n");
+  fprintf (outfile, "Total vars:               %d\n", stats.total_vars);
+  fprintf (outfile, "Non-pointer vars:          %d\n",
+	   stats.nonpointer_vars);
+  fprintf (outfile, "Statically unified vars:  %d\n",
+	   stats.unified_vars_static);
+  fprintf (outfile, "Dynamically unified vars: %d\n",
+	   stats.unified_vars_dynamic);
+  fprintf (outfile, "Iterations:               %d\n", stats.iterations);
+  fprintf (outfile, "Number of edges:          %d\n", stats.num_edges);
+  fprintf (outfile, "Number of implicit edges: %d\n",
+	   stats.num_implicit_edges);
+}
 
 /* Dump points-to information to OUTFILE.  */
 
 static void
 dump_sa_points_to_info (FILE *outfile)
 {
-  unsigned int i;
-
   fprintf (outfile, "\nPoints-to sets\n\n");
 
-  if (dump_flags & TDF_STATS)
-    {
-      fprintf (outfile, "Stats:\n");
-      fprintf (outfile, "Total vars:               %d\n", stats.total_vars);
-      fprintf (outfile, "Non-pointer vars:          %d\n",
-	       stats.nonpointer_vars);
-      fprintf (outfile, "Statically unified vars:  %d\n",
-	       stats.unified_vars_static);
-      fprintf (outfile, "Dynamically unified vars: %d\n",
-	       stats.unified_vars_dynamic);
-      fprintf (outfile, "Iterations:               %d\n", stats.iterations);
-      fprintf (outfile, "Number of edges:          %d\n", stats.num_edges);
-      fprintf (outfile, "Number of implicit edges: %d\n",
-	       stats.num_implicit_edges);
-    }
-
-  for (i = 1; i < varmap.length (); i++)
+  for (unsigned i = 1; i < varmap.length (); i++)
     {
       varinfo_t vi = get_varinfo (i);
       if (!vi->may_have_pointers)
@@ -7544,7 +7544,7 @@ compute_points_to_sets (void)
 	}
     }
 
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Points-to analysis\n\nConstraints:\n\n");
       dump_constraints (dump_file, 0);
@@ -7617,7 +7617,10 @@ compute_points_to_sets (void)
 	BITMAP_FREE (new_delta);
       }
 
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_STATS))
+    dump_sa_stats (dump_file);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
     dump_sa_points_to_info (dump_file);
 
   /* Compute the points-to set for ESCAPED used for call-clobber analysis.  */
@@ -8039,7 +8042,8 @@ compute_may_aliases (void)
 		   "because IPA points-to information is available.\n\n");
 
 	  /* But still dump what we have remaining it.  */
-	  dump_alias_info (dump_file);
+	  if (dump_flags & (TDF_DETAILS|TDF_ALIAS))
+	    dump_alias_info (dump_file);
 	}
 
       return 0;
@@ -8051,7 +8055,7 @@ compute_may_aliases (void)
   compute_points_to_sets ();
 
   /* Debugging dumps.  */
-  if (dump_file)
+  if (dump_file && (dump_flags & (TDF_DETAILS|TDF_ALIAS)))
     dump_alias_info (dump_file);
 
   /* Compute restrict-based memory disambiguations.  */
@@ -8312,7 +8316,7 @@ ipa_pta_execute (void)
       fprintf (dump_file, "\n");
     }
 
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Generating generic constraints\n\n");
       dump_constraints (dump_file, from);
@@ -8351,7 +8355,7 @@ ipa_pta_execute (void)
       vi = create_function_info_for (node->decl,
 				     alias_get_name (node->decl), false,
 				     nonlocal_p);
-      if (dump_file
+      if (dump_file && (dump_flags & TDF_DETAILS)
 	  && from != constraints.length ())
 	{
 	  fprintf (dump_file,
@@ -8392,7 +8396,7 @@ ipa_pta_execute (void)
 	vi->is_ipa_escape_point = true;
     }
 
-  if (dump_file
+  if (dump_file && (dump_flags & TDF_DETAILS)
       && from != constraints.length ())
     {
       fprintf (dump_file,
@@ -8449,7 +8453,7 @@ ipa_pta_execute (void)
 	    }
 	}
 
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "\n");
 	  dump_constraints (dump_file, from);
@@ -8461,7 +8465,10 @@ ipa_pta_execute (void)
   /* From the constraints compute the points-to sets.  */
   solve_constraints ();
 
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_STATS))
+    dump_sa_stats (dump_file);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
     dump_sa_points_to_info (dump_file);
 
   /* Now post-process solutions to handle locals from different

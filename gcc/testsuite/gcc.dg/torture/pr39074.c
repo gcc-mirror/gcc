@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-fdump-tree-alias" } */
+/* { dg-options "-fdump-tree-alias-details" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-fno-fat-lto-objects" } { "" } } */
 
 typedef __INTPTR_TYPE__ intptr_t;
