@@ -110,7 +110,7 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
   // turbo-fish segment path::<ty>
   if (item_seg.has_generic_args ())
     {
-      if (!infered->can_substitute ())
+      if (!infered->has_subsititions_defined ())
 	{
 	  rust_error_at (item_seg.get_locus (),
 			 "substitutions not supported for %s",
@@ -269,7 +269,7 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
       // turbo-fish segment path::<ty>
       if (seg.has_generic_args ())
 	{
-	  if (!lookup->can_substitute ())
+	  if (!lookup->has_subsititions_defined ())
 	    {
 	      rust_error_at (expr.get_locus (),
 			     "substitutions not supported for %s",
@@ -437,7 +437,7 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 
       if (seg.has_generic_args ())
 	{
-	  if (!tyseg->can_substitute ())
+	  if (!tyseg->has_subsititions_defined ())
 	    {
 	      rust_error_at (expr_locus, "substitutions not supported for %s",
 			     tyseg->as_string ().c_str ());

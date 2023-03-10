@@ -137,17 +137,10 @@ public:
 
   // get_combined_refs returns the chain of node refs involved in unification
   std::set<HirId> get_combined_refs () const;
-
   void append_reference (HirId id);
 
-  bool can_substitute () const;
-
-  bool contains_type_parameters () const;
-
   std::string mappings_str () const;
-
   std::string debug_str () const;
-
   void debug () const;
 
   // FIXME this will eventually go away
@@ -159,14 +152,11 @@ public:
   const BaseType *destructure () const;
 
   const RustIdent &get_ident () const;
-
   Location get_locus () const;
 
   /* Returns a pointer to a clone of this. The caller is responsible for
    * releasing the memory of the returned ty. */
   virtual BaseType *clone () const = 0;
-
-  virtual bool supports_substitutions () const;
 
   virtual bool has_subsititions_defined () const;
 
@@ -577,8 +567,6 @@ public:
     return needs_substitution ();
   }
 
-  bool supports_substitutions () const override final { return true; }
-
   bool has_subsititions_defined () const override final
   {
     return has_substitutions ();
@@ -735,8 +723,6 @@ public:
     return needs_substitution ();
   }
 
-  bool supports_substitutions () const override final { return true; }
-
   bool has_subsititions_defined () const override final
   {
     return has_substitutions ();
@@ -857,8 +843,6 @@ public:
   {
     return needs_substitution ();
   }
-
-  bool supports_substitutions () const override final { return true; }
 
   bool has_subsititions_defined () const override final
   {
@@ -1329,8 +1313,6 @@ public:
   std::string get_name () const override final;
 
   bool needs_generic_substitutions () const override final;
-
-  bool supports_substitutions () const override final;
 
   bool has_subsititions_defined () const override final;
 

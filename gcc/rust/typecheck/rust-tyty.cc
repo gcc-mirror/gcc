@@ -258,33 +258,15 @@ BaseType::append_reference (HirId id)
 }
 
 bool
-BaseType::supports_substitutions () const
-{
-  return false;
-}
-
-bool
 BaseType::has_subsititions_defined () const
 {
   return false;
 }
 
 bool
-BaseType::can_substitute () const
-{
-  return supports_substitutions () && has_subsititions_defined ();
-}
-
-bool
 BaseType::needs_generic_substitutions () const
 {
   return false;
-}
-
-bool
-BaseType::contains_type_parameters () const
-{
-  return !is_concrete ();
 }
 
 const RustIdent &
@@ -1446,7 +1428,7 @@ handle_substitions (SubstitutionArgumentMappings &subst_mappings,
 	    }
 	}
     }
-  else if (fty->has_subsititions_defined () || fty->contains_type_parameters ())
+  else if (fty->has_subsititions_defined () || !fty->is_concrete ())
     {
       BaseType *concrete
 	= Resolver::SubstMapperInternal::Resolve (fty, subst_mappings);
@@ -1629,7 +1611,7 @@ TupleType::handle_substitions (SubstitutionArgumentMappings &mappings)
   for (size_t i = 0; i < tuple->fields.size (); i++)
     {
       TyVar &field = fields.at (i);
-      if (field.get_tyty ()->contains_type_parameters ())
+      if (!field.get_tyty ()->is_concrete ())
 	{
 	  BaseType *concrete
 	    = Resolver::SubstMapperInternal::Resolve (field.get_tyty (),
@@ -1783,8 +1765,7 @@ FnType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
 	    }
 	}
     }
-  else if (fty->needs_generic_substitutions ()
-	   || fty->contains_type_parameters ())
+  else if (fty->needs_generic_substitutions () || !fty->is_concrete ())
     {
       BaseType *concrete
 	= Resolver::SubstMapperInternal::Resolve (fty, subst_mappings);
@@ -1831,8 +1812,7 @@ FnType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
 		}
 	    }
 	}
-      else if (fty->has_subsititions_defined ()
-	       || fty->contains_type_parameters ())
+      else if (fty->has_subsititions_defined () || !fty->is_concrete ())
 	{
 	  BaseType *concrete
 	    = Resolver::SubstMapperInternal::Resolve (fty, subst_mappings);
@@ -3379,12 +3359,6 @@ ProjectionType::needs_generic_substitutions () const
 }
 
 bool
-ProjectionType::supports_substitutions () const
-{
-  return true;
-}
-
-bool
 ProjectionType::has_subsititions_defined () const
 {
   return has_substitutions ();
@@ -3486,8 +3460,7 @@ ProjectionType::handle_substitions (
 	    }
 	}
     }
-  else if (fty->needs_generic_substitutions ()
-	   || fty->contains_type_parameters ())
+  else if (fty->needs_generic_substitutions () || !fty->is_concrete ())
     {
       BaseType *concrete
 	= Resolver::SubstMapperInternal::Resolve (fty, subst_mappings);
