@@ -131,10 +131,6 @@ public:
   // return the type-kind
   TypeKind get_kind () const;
 
-  /* Returns a pointer to a clone of this. The caller is responsible for
-   * releasing the memory of the returned ty. */
-  virtual BaseType *clone () const = 0;
-
   // monomorphized clone is a clone which destructures the types to get rid of
   // generics
   BaseType *monomorphized_clone () const;
@@ -144,13 +140,7 @@ public:
 
   void append_reference (HirId id);
 
-  virtual bool supports_substitutions () const;
-
-  virtual bool has_subsititions_defined () const;
-
-  virtual bool can_substitute () const;
-
-  virtual bool needs_generic_substitutions () const;
+  bool can_substitute () const;
 
   bool contains_type_parameters () const;
 
@@ -171,6 +161,16 @@ public:
   const RustIdent &get_ident () const;
 
   Location get_locus () const;
+
+  /* Returns a pointer to a clone of this. The caller is responsible for
+   * releasing the memory of the returned ty. */
+  virtual BaseType *clone () const = 0;
+
+  virtual bool supports_substitutions () const;
+
+  virtual bool has_subsititions_defined () const;
+
+  virtual bool needs_generic_substitutions () const;
 
 protected:
   BaseType (HirId ref, HirId ty_ref, TypeKind kind, RustIdent ident,
