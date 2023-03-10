@@ -274,8 +274,6 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
   va_list ap;
   struct goacc_thread *thr;
   struct gomp_device_descr *acc_dev;
-  struct target_mem_desc *tgt;
-  void **devaddrs;
   unsigned int i;
   struct splay_tree_key_s k;
   splay_tree_key tgt_fn_key;
@@ -468,8 +466,10 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
 
   goacc_aq aq = get_goacc_asyncqueue (async);
 
-  tgt = goacc_map_vars (acc_dev, aq, mapnum, hostaddrs, NULL, sizes, kinds,
-			nca_info, true, 0);
+  struct target_mem_desc *tgt
+    = goacc_map_vars (acc_dev, aq, mapnum, hostaddrs, NULL, sizes, kinds,
+		      nca_info, true, GOMP_MAP_VARS_TARGET);
+
   free (nca_info);
 
   if (profiling_p)
@@ -481,10 +481,7 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
 				&api_info);
     }
 
-  devaddrs = gomp_alloca (sizeof (void *) * mapnum);
-  for (i = 0; i < mapnum; i++)
-    devaddrs[i] = (void *) gomp_map_val (tgt, hostaddrs, i);
-
+  void **devaddrs = (void **) tgt->tgt_start;
   if (aq == NULL)
     acc_dev->openacc.exec_func (tgt_fn, mapnum, hostaddrs, devaddrs, dims,
 				tgt);

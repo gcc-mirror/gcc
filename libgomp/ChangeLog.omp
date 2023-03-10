@@ -3,6 +3,24 @@
 	Backported from master:
 	2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR libgomp/90596
+	* target.c (gomp_map_vars_internal): Allow for
+	'param_kind == GOMP_MAP_VARS_OPENACC | GOMP_MAP_VARS_TARGET'.
+	* oacc-parallel.c (GOACC_parallel_keyed): Pass
+	'GOMP_MAP_VARS_TARGET' to 'goacc_map_vars'.
+	* plugin/plugin-gcn.c (alloc_by_agent, gcn_exec)
+	(GOMP_OFFLOAD_openacc_exec, GOMP_OFFLOAD_openacc_async_exec):
+	Adjust, simplify.
+	(gomp_offload_free): Remove.
+	* plugin/plugin-nvptx.c (nvptx_exec, GOMP_OFFLOAD_openacc_exec)
+	(GOMP_OFFLOAD_openacc_async_exec): Adjust, simplify.
+	(cuda_free_argmem): Remove.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-parallel-1.c:
+	Adjust.
+
+	Backported from master:
+	2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
 	* target.c (gomp_copy_host2dev, gomp_map_vars_internal): Allow
 	libgomp 'cbuf' buffering with OpenACC 'async' for 'ephemeral'
 	data.

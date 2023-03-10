@@ -1874,13 +1874,6 @@ alloc_by_agent (struct agent_info *agent, size_t size)
 {
   GCN_DEBUG ("Allocating %zu bytes on device %d\n", size, agent->device_id);
 
-  /* Zero-size allocations are invalid, so in order to return a valid pointer
-     we need to pass a valid size.  One source of zero-size allocations is
-     kernargs for kernels that have no inputs or outputs (the kernel may
-     only use console output, for example).  */
-  if (size == 0)
-    size = 4;
-
   void *ptr;
   hsa_status_t status = hsa_fns.hsa_memory_allocate_fn (agent->data_region,
 							size, &ptr);
@@ -3048,15 +3041,6 @@ copy_data (void *data_)
   free (data);
 }
 
-/* Free device data.  This is intended for use as an async callback event.  */
-
-static void
-gomp_offload_free (void *ptr)
-{
-  GCN_DEBUG ("Async thread ?:?: Freeing %p\n", ptr);
-  GOMP_OFFLOAD_free (0, ptr);
-}
-
 /* Request an asynchronous data copy, to or from a device, on a given queue.
    The event will be registered as a callback.  */
 
@@ -3219,7 +3203,7 @@ usm_heap_create (size_t size)
 /* Execute an OpenACC kernel, synchronously or asynchronously.  */
 
 static void
-gcn_exec (struct kernel_info *kernel, size_t mapnum,
+gcn_exec (struct kernel_info *kernel,
 	  void **devaddrs, unsigned *dims, void *targ_mem_desc, bool async,
 	  struct goacc_asyncqueue *aq)
 {
@@ -3228,11 +3212,6 @@ gcn_exec (struct kernel_info *kernel, size_t mapnum,
 
   /* If we get here then this must be an OpenACC kernel.  */
   kernel->kind = KIND_OPENACC;
-
-  /* devaddrs must be double-indirect on the target.  */
-  void **ind_da = alloc_by_agent (kernel->agent, sizeof (void*) * mapnum);
-  for (size_t i = 0; i < mapnum; i++)
-    hsa_fns.hsa_memory_copy_fn (&ind_da[i], &devaddrs[i], sizeof (void *));
 
   struct hsa_kernel_description *hsa_kernel_desc = NULL;
   for (unsigned i = 0; i < kernel->module->image_desc->kernel_count; i++)
@@ -3345,9 +3324,9 @@ gcn_exec (struct kernel_info *kernel, size_t mapnum,
     }
 
   if (!async)
-    run_kernel (kernel, ind_da, &kla, NULL, false);
+    run_kernel (kernel, devaddrs, &kla, NULL, false);
   else
-    queue_push_launch (aq, kernel, ind_da, &kla);
+    queue_push_launch (aq, kernel, devaddrs, &kla);
 
   if (profiling_dispatch_p)
     {
@@ -3356,16 +3335,6 @@ gcn_exec (struct kernel_info *kernel, size_t mapnum,
       GOMP_PLUGIN_goacc_profiling_dispatch (prof_info,
 					    &enqueue_launch_event_info,
 					    api_info);
-    }
-
-  if (!async)
-    gomp_offload_free (ind_da);
-  else
-    {
-      if (DEBUG_QUEUES)
-	GCN_DEBUG ("queue_push_callback %d:%d gomp_offload_free, %p\n",
-		   aq->agent->device_id, aq->id, ind_da);
-      queue_push_callback (aq, gomp_offload_free, ind_da);
     }
 }
 
@@ -4095,14 +4064,15 @@ GOMP_OFFLOAD_is_usm_ptr (void *ptr)
    already-loaded KERNEL.  */
 
 void
-GOMP_OFFLOAD_openacc_exec (void (*fn_ptr) (void *), size_t mapnum,
+GOMP_OFFLOAD_openacc_exec (void (*fn_ptr) (void *),
+			   size_t mapnum __attribute__((unused)),
 			   void **hostaddrs __attribute__((unused)),
 			   void **devaddrs, unsigned *dims,
 			   void *targ_mem_desc)
 {
   struct kernel_info *kernel = (struct kernel_info *) fn_ptr;
 
-  gcn_exec (kernel, mapnum, devaddrs, dims, targ_mem_desc, false, NULL);
+  gcn_exec (kernel, devaddrs, dims, targ_mem_desc, false, NULL);
 }
 
 /* Run an asynchronous OpenACC kernel on the specified queue.  */
@@ -4116,7 +4086,8 @@ GOMP_OFFLOAD_openacc_exec_params (void (*fn_ptr) (void *), size_t mapnum,
 }
 
 void
-GOMP_OFFLOAD_openacc_async_exec (void (*fn_ptr) (void *), size_t mapnum,
+GOMP_OFFLOAD_openacc_async_exec (void (*fn_ptr) (void *),
+				 size_t mapnum __attribute__((unused)),
 				 void **hostaddrs __attribute__((unused)),
 				 void **devaddrs,
 				 unsigned *dims, void *targ_mem_desc,
@@ -4124,7 +4095,7 @@ GOMP_OFFLOAD_openacc_async_exec (void (*fn_ptr) (void *), size_t mapnum,
 {
   struct kernel_info *kernel = (struct kernel_info *) fn_ptr;
 
-  gcn_exec (kernel, mapnum, devaddrs, dims, targ_mem_desc, true, aq);
+  gcn_exec (kernel, devaddrs, dims, targ_mem_desc, true, aq);
 }
 
 /* Create a new asynchronous thread and queue for running future kernels.  */
