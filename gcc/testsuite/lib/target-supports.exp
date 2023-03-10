@@ -2880,6 +2880,12 @@ proc check_fork_available {} {
 	# tell as we're doing partial links for kernel modules.
 	return 0
      }    
+    if { [istarget cris-*-*] } {
+	# Compiling and linking works, and an executable running e.g.
+	# gcc.dg/torture/ftrapv-1.c works on now-historical hardware,
+	# but the GNU simulator emits an error for the fork syscall.
+	return [check_effective_target_hw]
+    }
     return [check_function_available "fork"]
 }
 
