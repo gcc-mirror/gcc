@@ -25,10 +25,8 @@
 
 #include "rust-substitution-mapper.h"
 #include "rust-hir-trait-reference.h"
-#include "rust-hir-type-bounds.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-tyty-cmp.h"
-#include "rust-type-util.h"
 
 #include "options.h"
 
@@ -572,6 +570,122 @@ BaseType::destructure () const
   return x;
 }
 
+BaseType *
+BaseType::monomorphized_clone () const
+{
+  const TyTy::BaseType *x = destructure ();
+  switch (x->get_kind ())
+    {
+    case PARAM:
+    case PROJECTION:
+    case PLACEHOLDER:
+    case INFER:
+    case BOOL:
+    case CHAR:
+    case INT:
+    case UINT:
+    case FLOAT:
+    case USIZE:
+    case ISIZE:
+    case NEVER:
+    case STR:
+    case DYNAMIC:
+    case CLOSURE:
+    case ERROR:
+      return x->clone ();
+
+      case ARRAY: {
+	const ArrayType &arr = *static_cast<const ArrayType *> (x);
+	TyVar elm = arr.get_var_element_type ().monomorphized_clone ();
+	return new ArrayType (arr.get_ref (), arr.get_ty_ref (), ident.locus,
+			      arr.get_capacity_expr (), elm,
+			      arr.get_combined_refs ());
+      }
+      break;
+
+      case SLICE: {
+	const SliceType &slice = *static_cast<const SliceType *> (x);
+	TyVar elm = slice.get_var_element_type ().monomorphized_clone ();
+	return new SliceType (slice.get_ref (), slice.get_ty_ref (),
+			      ident.locus, elm, slice.get_combined_refs ());
+      }
+      break;
+
+      case POINTER: {
+	const PointerType &ptr = *static_cast<const PointerType *> (x);
+	TyVar elm = ptr.get_var_element_type ().monomorphized_clone ();
+	return new PointerType (ptr.get_ref (), ptr.get_ty_ref (), elm,
+				ptr.mutability (), ptr.get_combined_refs ());
+      }
+      break;
+
+      case REF: {
+	const ReferenceType &ref = *static_cast<const ReferenceType *> (x);
+	TyVar elm = ref.get_var_element_type ().monomorphized_clone ();
+	return new ReferenceType (ref.get_ref (), ref.get_ty_ref (), elm,
+				  ref.mutability (), ref.get_combined_refs ());
+      }
+      break;
+
+      case TUPLE: {
+	const TupleType &tuple = *static_cast<const TupleType *> (x);
+	std::vector<TyVar> cloned_fields;
+	for (const auto &f : tuple.get_fields ())
+	  cloned_fields.push_back (f.monomorphized_clone ());
+
+	return new TupleType (tuple.get_ref (), tuple.get_ty_ref (),
+			      tuple.get_ident ().locus, cloned_fields,
+			      tuple.get_combined_refs ());
+      }
+      break;
+
+      case FNDEF: {
+	const FnType &fn = *static_cast<const FnType *> (x);
+	std::vector<std::pair<HIR::Pattern *, BaseType *>> cloned_params;
+	for (auto &p : fn.get_params ())
+	  cloned_params.push_back ({p.first, p.second->monomorphized_clone ()});
+
+	BaseType *retty = fn.get_return_type ()->monomorphized_clone ();
+	return new FnType (fn.get_ref (), fn.get_ty_ref (), fn.get_id (),
+			   fn.get_identifier (), fn.ident, fn.get_flags (),
+			   fn.get_abi (), std::move (cloned_params), retty,
+			   fn.clone_substs (), fn.get_combined_refs ());
+      }
+      break;
+
+      case FNPTR: {
+	const FnPtr &fn = *static_cast<const FnPtr *> (x);
+	std::vector<TyVar> cloned_params;
+	for (auto &p : fn.get_params ())
+	  cloned_params.push_back (p.monomorphized_clone ());
+
+	TyVar retty = fn.get_var_return_type ().monomorphized_clone ();
+	return new FnPtr (fn.get_ref (), fn.get_ty_ref (), fn.ident.locus,
+			  std::move (cloned_params), retty,
+			  fn.get_combined_refs ());
+      }
+      break;
+
+      case ADT: {
+	const ADTType &adt = *static_cast<const ADTType *> (x);
+	std::vector<VariantDef *> cloned_variants;
+	for (auto &variant : adt.get_variants ())
+	  cloned_variants.push_back (variant->monomorphized_clone ());
+
+	return new ADTType (adt.get_ref (), adt.get_ty_ref (),
+			    adt.get_identifier (), adt.ident,
+			    adt.get_adt_kind (), cloned_variants,
+			    adt.clone_substs (), adt.get_repr_options (),
+			    adt.get_used_arguments (),
+			    adt.get_combined_refs ());
+      }
+      break;
+    }
+
+  gcc_unreachable ();
+  return nullptr;
+}
+
 std::string
 BaseType::mappings_str () const
 {
@@ -820,12 +934,6 @@ InferType::clone () const
   return clone;
 }
 
-BaseType *
-InferType::monomorphized_clone () const
-{
-  return clone ();
-}
-
 bool
 InferType::default_type (BaseType **type) const
 {
@@ -897,12 +1005,6 @@ BaseType *
 ErrorType::clone () const
 {
   return new ErrorType (get_ref (), get_ty_ref (), get_combined_refs ());
-}
-
-BaseType *
-ErrorType::monomorphized_clone () const
-{
-  return clone ();
 }
 
 // Struct Field type
@@ -1314,19 +1416,6 @@ ADTType::clone () const
 		      get_combined_refs ());
 }
 
-BaseType *
-ADTType::monomorphized_clone () const
-{
-  std::vector<VariantDef *> cloned_variants;
-  for (auto &variant : variants)
-    cloned_variants.push_back (variant->monomorphized_clone ());
-
-  return new ADTType (get_ref (), get_ty_ref (), identifier, ident,
-		      get_adt_kind (), cloned_variants, clone_substs (),
-		      get_repr_options (), used_arguments,
-		      get_combined_refs ());
-}
-
 static bool
 handle_substitions (SubstitutionArgumentMappings &subst_mappings,
 		    StructFieldType *field)
@@ -1528,17 +1617,6 @@ TupleType::clone () const
 			cloned_fields, get_combined_refs ());
 }
 
-BaseType *
-TupleType::monomorphized_clone () const
-{
-  std::vector<TyVar> cloned_fields;
-  for (const auto &f : fields)
-    cloned_fields.push_back (f.monomorphized_clone ());
-
-  return new TupleType (get_ref (), get_ty_ref (), get_ident ().locus,
-			cloned_fields, get_combined_refs ());
-}
-
 TupleType *
 TupleType::handle_substitions (SubstitutionArgumentMappings &mappings)
 {
@@ -1653,19 +1731,6 @@ FnType::clone () const
   std::vector<std::pair<HIR::Pattern *, BaseType *>> cloned_params;
   for (auto &p : params)
     cloned_params.push_back ({p.first, p.second->clone ()});
-
-  return new FnType (get_ref (), get_ty_ref (), get_id (), get_identifier (),
-		     ident, flags, abi, std::move (cloned_params),
-		     get_return_type ()->clone (), clone_substs (),
-		     get_combined_refs ());
-}
-
-BaseType *
-FnType::monomorphized_clone () const
-{
-  std::vector<std::pair<HIR::Pattern *, BaseType *>> cloned_params;
-  for (auto &p : params)
-    cloned_params.push_back ({p.first, p.second->monomorphized_clone ()});
 
   return new FnType (get_ref (), get_ty_ref (), get_id (), get_identifier (),
 		     ident, flags, abi, std::move (cloned_params),
@@ -1858,18 +1923,6 @@ FnPtr::clone () const
 		    get_combined_refs ());
 }
 
-BaseType *
-FnPtr::monomorphized_clone () const
-{
-  std::vector<TyVar> cloned_params;
-  for (auto &p : params)
-    cloned_params.push_back (p.monomorphized_clone ());
-
-  return new FnPtr (get_ref (), get_ty_ref (), ident.locus,
-		    std::move (cloned_params), result_type,
-		    get_combined_refs ());
-}
-
 void
 ClosureType::accept_vis (TyVisitor &vis)
 {
@@ -1919,12 +1972,6 @@ ClosureType::clone () const
 			  (TyTy::TupleType *) parameters->clone (), result_type,
 			  clone_substs (), captures, get_combined_refs (),
 			  specified_bounds);
-}
-
-BaseType *
-ClosureType::monomorphized_clone () const
-{
-  return clone ();
 }
 
 ClosureType *
@@ -2025,19 +2072,17 @@ ArrayType::get_element_type () const
   return element_type.get_tyty ();
 }
 
+const TyVar &
+ArrayType::get_var_element_type () const
+{
+  return element_type;
+}
+
 BaseType *
 ArrayType::clone () const
 {
   return new ArrayType (get_ref (), get_ty_ref (), ident.locus, capacity_expr,
 			element_type, get_combined_refs ());
-}
-
-BaseType *
-ArrayType::monomorphized_clone () const
-{
-  return new ArrayType (get_ref (), get_ty_ref (), ident.locus, capacity_expr,
-			element_type.monomorphized_clone (),
-			get_combined_refs ());
 }
 
 ArrayType *
@@ -2101,19 +2146,17 @@ SliceType::get_element_type () const
   return element_type.get_tyty ();
 }
 
+const TyVar &
+SliceType::get_var_element_type () const
+{
+  return element_type;
+}
+
 BaseType *
 SliceType::clone () const
 {
   return new SliceType (get_ref (), get_ty_ref (), ident.locus,
 			element_type.clone (), get_combined_refs ());
-}
-
-BaseType *
-SliceType::monomorphized_clone () const
-{
-  return new SliceType (get_ref (), get_ty_ref (), ident.locus,
-			element_type.monomorphized_clone (),
-			get_combined_refs ());
 }
 
 SliceType *
@@ -2183,12 +2226,6 @@ BaseType *
 BoolType::clone () const
 {
   return new BoolType (get_ref (), get_ty_ref (), get_combined_refs ());
-}
-
-BaseType *
-BoolType::monomorphized_clone () const
-{
-  return clone ();
 }
 
 // IntType
@@ -2265,12 +2302,6 @@ IntType::clone () const
 {
   return new IntType (get_ref (), get_ty_ref (), get_int_kind (),
 		      get_combined_refs ());
-}
-
-BaseType *
-IntType::monomorphized_clone () const
-{
-  return clone ();
 }
 
 bool
@@ -2360,12 +2391,6 @@ UintType::clone () const
 		       get_combined_refs ());
 }
 
-BaseType *
-UintType::monomorphized_clone () const
-{
-  return clone ();
-}
-
 bool
 UintType::is_equal (const BaseType &other) const
 {
@@ -2447,12 +2472,6 @@ FloatType::clone () const
 			get_combined_refs ());
 }
 
-BaseType *
-FloatType::monomorphized_clone () const
-{
-  return clone ();
-}
-
 bool
 FloatType::is_equal (const BaseType &other) const
 {
@@ -2516,12 +2535,6 @@ USizeType::clone () const
   return new USizeType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
 
-BaseType *
-USizeType::monomorphized_clone () const
-{
-  return clone ();
-}
-
 // ISizeType
 
 ISizeType::ISizeType (HirId ref, std::set<HirId> refs)
@@ -2575,12 +2588,6 @@ ISizeType::clone () const
   return new ISizeType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
 
-BaseType *
-ISizeType::monomorphized_clone () const
-{
-  return clone ();
-}
-
 // Char Type
 
 CharType::CharType (HirId ref, std::set<HirId> refs)
@@ -2632,12 +2639,6 @@ BaseType *
 CharType::clone () const
 {
   return new CharType (get_ref (), get_ty_ref (), get_combined_refs ());
-}
-
-BaseType *
-CharType::monomorphized_clone () const
-{
-  return clone ();
 }
 
 // Reference Type
@@ -2756,18 +2757,16 @@ ReferenceType::get_base () const
   return base.get_tyty ();
 }
 
+const TyVar &
+ReferenceType::get_var_element_type () const
+{
+  return base;
+}
+
 BaseType *
 ReferenceType::clone () const
 {
   return new ReferenceType (get_ref (), get_ty_ref (), base, mutability (),
-			    get_combined_refs ());
-}
-
-BaseType *
-ReferenceType::monomorphized_clone () const
-{
-  return new ReferenceType (get_ref (), get_ty_ref (),
-			    base.monomorphized_clone (), mutability (),
 			    get_combined_refs ());
 }
 
@@ -2909,18 +2908,16 @@ PointerType::get_base () const
   return base.get_tyty ();
 }
 
+const TyVar &
+PointerType::get_var_element_type () const
+{
+  return base;
+}
+
 BaseType *
 PointerType::clone () const
 {
   return new PointerType (get_ref (), get_ty_ref (), base, mutability (),
-			  get_combined_refs ());
-}
-
-BaseType *
-PointerType::monomorphized_clone () const
-{
-  return new PointerType (get_ref (), get_ty_ref (),
-			  base.monomorphized_clone (), mutability (),
 			  get_combined_refs ());
 }
 
@@ -3022,12 +3019,6 @@ ParamType::clone () const
   return new ParamType (is_trait_self, get_symbol (), ident.locus, get_ref (),
 			get_ty_ref (), param, get_specified_bounds (),
 			get_combined_refs ());
-}
-
-BaseType *
-ParamType::monomorphized_clone () const
-{
-  return resolve ()->clone ();
 }
 
 std::string
@@ -3151,12 +3142,6 @@ StrType::clone () const
   return new StrType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
 
-BaseType *
-StrType::monomorphized_clone () const
-{
-  return clone ();
-}
-
 void
 StrType::accept_vis (TyVisitor &vis)
 {
@@ -3241,12 +3226,6 @@ NeverType::clone () const
   return new NeverType (get_ref (), get_ty_ref (), get_combined_refs ());
 }
 
-BaseType *
-NeverType::monomorphized_clone () const
-{
-  return clone ();
-}
-
 // placeholder type
 
 PlaceholderType::PlaceholderType (std::string symbol, HirId ref,
@@ -3310,15 +3289,6 @@ PlaceholderType::clone () const
 {
   return new PlaceholderType (get_symbol (), get_ref (), get_ty_ref (),
 			      get_combined_refs ());
-}
-
-BaseType *
-PlaceholderType::monomorphized_clone () const
-{
-  if (can_resolve ())
-    return resolve ()->monomorphized_clone ();
-
-  return clone ();
 }
 
 void
@@ -3463,12 +3433,6 @@ ProjectionType::clone () const
 			     get_combined_refs ());
 }
 
-BaseType *
-ProjectionType::monomorphized_clone () const
-{
-  return get ()->monomorphized_clone ();
-}
-
 ProjectionType *
 ProjectionType::handle_substitions (
   SubstitutionArgumentMappings &subst_mappings)
@@ -3586,12 +3550,6 @@ DynamicObjectType::clone () const
 {
   return new DynamicObjectType (get_ref (), get_ty_ref (), ident,
 				specified_bounds, get_combined_refs ());
-}
-
-BaseType *
-DynamicObjectType::monomorphized_clone () const
-{
-  return clone ();
 }
 
 std::string

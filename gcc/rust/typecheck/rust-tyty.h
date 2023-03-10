@@ -135,8 +135,9 @@ public:
    * releasing the memory of the returned ty. */
   virtual BaseType *clone () const = 0;
 
-  // TODO
-  virtual BaseType *monomorphized_clone () const = 0;
+  // monomorphized clone is a clone which destructures the types to get rid of
+  // generics
+  BaseType *monomorphized_clone () const;
 
   // get_combined_refs returns the chain of node refs involved in unification
   std::set<HirId> get_combined_refs () const;
@@ -212,7 +213,6 @@ public:
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 
   InferTypeKind get_infer_kind () const;
 
@@ -240,7 +240,6 @@ public:
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 
   std::string get_name () const override final;
 };
@@ -266,7 +265,6 @@ public:
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 
   std::string get_symbol () const;
 
@@ -346,7 +344,6 @@ public:
   BaseType *get_field (size_t index) const;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 
   const std::vector<TyVar> &get_fields () const;
 
@@ -574,7 +571,6 @@ public:
   }
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 
   bool needs_generic_substitutions () const override final
   {
@@ -733,7 +729,6 @@ public:
   BaseType *get_return_type () const { return type; }
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 
   bool needs_generic_substitutions () const override final
   {
@@ -751,6 +746,7 @@ public:
   handle_substitions (SubstitutionArgumentMappings &mappings) override final;
 
   ABI get_abi () const { return abi; }
+  uint8_t get_flags () const { return flags; }
 
 private:
   std::vector<std::pair<HIR::Pattern *, BaseType *>> params;
@@ -781,6 +777,7 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *get_return_type () const { return result_type.get_tyty (); }
+  const TyVar &get_var_return_type () const { return result_type; }
 
   size_t num_params () const { return params.size (); }
 
@@ -796,7 +793,6 @@ public:
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 
   std::vector<TyVar> &get_params () { return params; }
   const std::vector<TyVar> &get_params () const { return params; }
@@ -856,7 +852,6 @@ public:
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 
   bool needs_generic_substitutions () const override final
   {
@@ -918,9 +913,9 @@ public:
   bool is_equal (const BaseType &other) const override;
 
   BaseType *get_element_type () const;
+  const TyVar &get_var_element_type () const;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 
   HIR::Expr &get_capacity_expr () const { return capacity_expr; }
 
@@ -960,9 +955,9 @@ public:
   bool is_equal (const BaseType &other) const override;
 
   BaseType *get_element_type () const;
+  const TyVar &get_var_element_type () const;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 
   SliceType *handle_substitions (SubstitutionArgumentMappings &mappings);
 
@@ -986,7 +981,6 @@ public:
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 };
 
 class IntType : public BaseType
@@ -1017,7 +1011,6 @@ public:
   IntKind get_int_kind () const;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -1054,7 +1047,6 @@ public:
   UintKind get_uint_kind () const;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -1087,7 +1079,6 @@ public:
   FloatKind get_float_kind () const;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -1111,7 +1102,6 @@ public:
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 };
 
 class ISizeType : public BaseType
@@ -1130,7 +1120,6 @@ public:
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 };
 
 class CharType : public BaseType
@@ -1148,7 +1137,6 @@ public:
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 };
 
 class StrType : public BaseType
@@ -1169,7 +1157,6 @@ public:
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 };
 
 class ReferenceType : public BaseType
@@ -1181,6 +1168,7 @@ public:
 		 std::set<HirId> refs = std::set<HirId> ());
 
   BaseType *get_base () const;
+  const TyVar &get_var_element_type () const;
 
   void accept_vis (TyVisitor &vis) override;
   void accept_vis (TyConstVisitor &vis) const override;
@@ -1194,18 +1182,14 @@ public:
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 
   ReferenceType *handle_substitions (SubstitutionArgumentMappings &mappings);
 
   Mutability mutability () const;
-
   bool is_mutable () const;
 
   bool is_dyn_object () const;
-
   bool is_dyn_slice_type (const TyTy::SliceType **slice = nullptr) const;
-
   bool is_dyn_str_type (const TyTy::StrType **str = nullptr) const;
 
 private:
@@ -1222,6 +1206,7 @@ public:
 	       std::set<HirId> refs = std::set<HirId> ());
 
   BaseType *get_base () const;
+  const TyVar &get_var_element_type () const;
 
   void accept_vis (TyVisitor &vis) override;
   void accept_vis (TyConstVisitor &vis) const override;
@@ -1234,7 +1219,6 @@ public:
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 
   PointerType *handle_substitions (SubstitutionArgumentMappings &mappings);
 
@@ -1242,7 +1226,6 @@ public:
   bool is_mutable () const;
   bool is_const () const;
   bool is_dyn_object () const;
-
   bool is_dyn_slice_type (const TyTy::SliceType **slice = nullptr) const;
   bool is_dyn_str_type (const TyTy::StrType **str = nullptr) const;
 
@@ -1276,7 +1259,6 @@ public:
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 
   std::string get_name () const override final;
 };
@@ -1299,7 +1281,6 @@ public:
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 
   std::string get_name () const override final;
 
@@ -1344,7 +1325,6 @@ public:
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 
   std::string get_name () const override final;
 
@@ -1387,7 +1367,6 @@ public:
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () const final override;
-  BaseType *monomorphized_clone () const final override;
 
   std::string get_name () const override final;
 
