@@ -25196,20 +25196,21 @@
    (set_attr "mode" "TI")])
 
 (define_insn "pclmulqdq"
-  [(set (match_operand:V2DI 0 "register_operand" "=x,x")
-	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "0,x")
-		      (match_operand:V2DI 2 "vector_operand" "xBm,xm")
+  [(set (match_operand:V2DI 0 "register_operand" "=x,x,v")
+	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "0,x,v")
+		      (match_operand:V2DI 2 "vector_operand" "xBm,xm,vm")
 		      (match_operand:SI 3 "const_0_to_255_operand")]
 		     UNSPEC_PCLMUL))]
   "TARGET_PCLMUL"
   "@
    pclmulqdq\t{%3, %2, %0|%0, %2, %3}
+   vpclmulqdq\t{%3, %2, %1, %0|%0, %1, %2, %3}
    vpclmulqdq\t{%3, %2, %1, %0|%0, %1, %2, %3}"
-  [(set_attr "isa" "noavx,avx")
+  [(set_attr "isa" "noavx,avx,vpclmulqdqvl")
    (set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
-   (set_attr "prefix" "orig,vex")
+   (set_attr "prefix" "orig,vex,evex")
    (set_attr "mode" "TI")])
 
 (define_expand "avx_vzeroall"
