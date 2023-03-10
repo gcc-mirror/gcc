@@ -18423,19 +18423,21 @@ package body Sem_Ch3 is
             Analyze (Subtype_Mark (Obj_Def));
 
             declare
-               Base_T : constant Entity_Id := Entity (Subtype_Mark (Obj_Def));
-               Decl   : constant Node_Id :=
+               Base_T  : constant Entity_Id := Entity (Subtype_Mark (Obj_Def));
+               New_Def : constant Node_Id   := New_Copy_Tree (Obj_Def);
+               Decl    : constant Node_Id   :=
                  Make_Subtype_Declaration (Sloc (P),
                    Defining_Identifier => T,
-                   Subtype_Indication  => Relocate_Node (Obj_Def));
+                   Subtype_Indication  => New_Def);
+
             begin
                Set_Etype  (T, Base_T);
                Mutate_Ekind  (T, Subtype_Kind (Ekind (Base_T)));
-               Set_Parent (T, Obj_Def);
+               Set_Parent (T, Decl);
                Set_Scope (T, Current_Scope);
 
                if Ekind (T) = E_Array_Subtype then
-                  Constrain_Array (T, Obj_Def, Related_Nod, T, 'P');
+                  Constrain_Array (T, New_Def, Related_Nod, T, 'P');
 
                elsif Ekind (T) = E_Record_Subtype then
                   Set_First_Entity (T, First_Entity (Base_T));
