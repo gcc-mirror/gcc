@@ -25108,67 +25108,71 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_insn "aesenc"
-  [(set (match_operand:V2DI 0 "register_operand" "=x,x")
-	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "0,x")
-		       (match_operand:V2DI 2 "vector_operand" "xBm,xm")]
+  [(set (match_operand:V2DI 0 "register_operand" "=x,x,v")
+	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "0,x,v")
+		       (match_operand:V2DI 2 "vector_operand" "xBm,xm,vm")]
 		      UNSPEC_AESENC))]
-  "TARGET_AES"
+  "TARGET_AES || (TARGET_VAES && TARGET_AVX512VL)"
   "@
    aesenc\t{%2, %0|%0, %2}
+   vaesenc\t{%2, %1, %0|%0, %1, %2}
    vaesenc\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "noavx,avx")
+  [(set_attr "isa" "noavx,aes,avx512vl")
    (set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "orig,vex")
-   (set_attr "btver2_decode" "double,double")
+   (set_attr "prefix" "orig,vex,evex")
+   (set_attr "btver2_decode" "double,double,double")
    (set_attr "mode" "TI")])
 
 (define_insn "aesenclast"
-  [(set (match_operand:V2DI 0 "register_operand" "=x,x")
-	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "0,x")
-		       (match_operand:V2DI 2 "vector_operand" "xBm,xm")]
+  [(set (match_operand:V2DI 0 "register_operand" "=x,x,v")
+	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "0,x,v")
+		       (match_operand:V2DI 2 "vector_operand" "xBm,xm,vm")]
 		      UNSPEC_AESENCLAST))]
-  "TARGET_AES"
+  "TARGET_AES || (TARGET_VAES && TARGET_AVX512VL)"
   "@
    aesenclast\t{%2, %0|%0, %2}
+   vaesenclast\t{%2, %1, %0|%0, %1, %2}
    vaesenclast\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "noavx,avx")
+  [(set_attr "isa" "noavx,aes,avx512vl")
    (set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "orig,vex")
-   (set_attr "btver2_decode" "double,double") 
+   (set_attr "prefix" "orig,vex,evex")
+   (set_attr "btver2_decode" "double,double,double") 
    (set_attr "mode" "TI")])
 
 (define_insn "aesdec"
-  [(set (match_operand:V2DI 0 "register_operand" "=x,x")
-	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "0,x")
-		       (match_operand:V2DI 2 "vector_operand" "xBm,xm")]
+  [(set (match_operand:V2DI 0 "register_operand" "=x,x,v")
+	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "0,x,v")
+		       (match_operand:V2DI 2 "vector_operand" "xBm,xm,vm")]
 		      UNSPEC_AESDEC))]
-  "TARGET_AES"
+  "TARGET_AES || (TARGET_VAES && TARGET_AVX512VL)"
   "@
    aesdec\t{%2, %0|%0, %2}
+   vaesdec\t{%2, %1, %0|%0, %1, %2}
    vaesdec\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "noavx,avx")
+  [(set_attr "isa" "noavx,aes,avx512vl")
    (set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "orig,vex")
-   (set_attr "btver2_decode" "double,double") 
+   (set_attr "prefix" "orig,vex,evex")
+   (set_attr "btver2_decode" "double,double,double") 
    (set_attr "mode" "TI")])
 
 (define_insn "aesdeclast"
-  [(set (match_operand:V2DI 0 "register_operand" "=x,x")
-	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "0,x")
-		       (match_operand:V2DI 2 "vector_operand" "xBm,xm")]
+  [(set (match_operand:V2DI 0 "register_operand" "=x,x,v")
+	(unspec:V2DI [(match_operand:V2DI 1 "register_operand" "0,x,v")
+		       (match_operand:V2DI 2 "vector_operand" "xBm,xm,vm")]
 		      UNSPEC_AESDECLAST))]
-  "TARGET_AES"
+  "TARGET_AES || (TARGET_VAES && TARGET_AVX512VL)"
   "@
    aesdeclast\t{%2, %0|%0, %2}
+   vaesdeclast\t{%2, %1, %0|%0, %1, %2}
    vaesdeclast\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "noavx,avx")
+  [(set_attr "isa" "noavx,aes,avx512vl")
    (set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
-   (set_attr "prefix" "orig,vex")
-   (set_attr "btver2_decode" "double,double")
+   (set_attr "prefix" "orig,vex,evex")
+   (set_attr "btver2_decode" "double,double,double")
    (set_attr "mode" "TI")])
 
 (define_insn "aesimc"
