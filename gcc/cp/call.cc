@@ -13800,6 +13800,7 @@ reference_like_class_p (tree ctype)
       tree name = DECL_NAME (tdecl);
       return (name
 	      && (id_equal (name, "reference_wrapper")
+		  || id_equal (name, "span")
 		  || id_equal (name, "ref_view")));
     }
   for (tree fields = TYPE_FIELDS (ctype);
