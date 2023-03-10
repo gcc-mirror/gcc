@@ -30,7 +30,7 @@ static const std::string RUST_ENUM_DISR_FIELD_NAME = "RUST$ENUM$DISR";
 
 TyTyResolveCompile::TyTyResolveCompile (Context *ctx, bool trait_object_mode)
   : ctx (ctx), trait_object_mode (trait_object_mode),
-    translated (error_mark_node), recurisve_ops (0)
+    translated (error_mark_node)
 {}
 
 tree
@@ -38,7 +38,8 @@ TyTyResolveCompile::compile (Context *ctx, const TyTy::BaseType *ty,
 			     bool trait_object_mode)
 {
   TyTyResolveCompile compiler (ctx, trait_object_mode);
-  ty->accept_vis (compiler);
+  const TyTy::BaseType *destructured = ty->destructure ();
+  destructured->accept_vis (compiler);
 
   if (compiler.translated != error_mark_node
       && TYPE_NAME (compiler.translated) != NULL)
@@ -98,6 +99,24 @@ TyTyResolveCompile::visit (const TyTy::InferType &)
 }
 
 void
+TyTyResolveCompile::visit (const TyTy::ParamType &)
+{
+  translated = error_mark_node;
+}
+
+void
+TyTyResolveCompile::visit (const TyTy::ProjectionType &type)
+{
+  translated = error_mark_node;
+}
+
+void
+TyTyResolveCompile::visit (const TyTy::PlaceholderType &type)
+{
+  translated = error_mark_node;
+}
+
+void
 TyTyResolveCompile::visit (const TyTy::ClosureType &type)
 {
   auto mappings = ctx->get_mappings ();
@@ -135,34 +154,6 @@ TyTyResolveCompile::visit (const TyTy::ClosureType &type)
     = type.get_ident ().path.get () + "::{{closure}}";
   translated = ctx->get_backend ()->named_type (named_struct_str, type_record,
 						type.get_ident ().locus);
-}
-
-void
-TyTyResolveCompile::visit (const TyTy::ProjectionType &type)
-{
-  type.get ()->accept_vis (*this);
-}
-
-void
-TyTyResolveCompile::visit (const TyTy::PlaceholderType &type)
-{
-  type.resolve ()->accept_vis (*this);
-}
-
-void
-TyTyResolveCompile::visit (const TyTy::ParamType &param)
-{
-  if (recurisve_ops++ >= rust_max_recursion_depth)
-    {
-      rust_error_at (Location (),
-		     "%<recursion depth%> count exceeds limit of %i (use "
-		     "%<frust-max-recursion-depth=%> to increase the limit)",
-		     rust_max_recursion_depth);
-      translated = error_mark_node;
-      return;
-    }
-
-  param.resolve ()->accept_vis (*this);
 }
 
 void
