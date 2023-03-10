@@ -730,13 +730,16 @@ class SharedPtrUseCountWorker(gdb.xmethod.XMethodWorker):
     "Implements std::shared_ptr<T>::use_count()"
 
     def __init__(self, elem_type):
-        SharedPtrUseCountWorker.__init__(self, elem_type)
+        pass
 
     def get_arg_types(self):
         return None
 
     def get_result_type(self, obj):
         return gdb.lookup_type('long')
+
+    def _supports(self, method_name):
+        return True
 
     def __call__(self, obj):
         refcounts = obj['_M_refcount']['_M_pi']
