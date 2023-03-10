@@ -549,6 +549,132 @@ BaseType::debug () const
 	      debug_str ().c_str ());
 }
 
+bool
+BaseType::is_concrete () const
+{
+  const TyTy::BaseType *x = destructure ();
+  switch (x->get_kind ())
+    {
+    case PARAM:
+    case PROJECTION:
+      return false;
+
+      // placeholder is a special case for this case when it is not resolvable
+      // it means we its just an empty placeholder associated type which is
+      // concrete
+    case PLACEHOLDER:
+      return true;
+
+      case FNDEF: {
+	const FnType &fn = *static_cast<const FnType *> (x);
+	for (const auto &param : fn.get_params ())
+	  {
+	    const BaseType *p = param.second;
+	    if (!p->is_concrete ())
+	      return false;
+	  }
+	return fn.get_return_type ()->is_concrete ();
+      }
+      break;
+
+      case FNPTR: {
+	const FnPtr &fn = *static_cast<const FnPtr *> (x);
+	for (const auto &param : fn.get_params ())
+	  {
+	    const BaseType *p = param.get_tyty ();
+	    if (!p->is_concrete ())
+	      return false;
+	  }
+	return fn.get_return_type ()->is_concrete ();
+      }
+      break;
+
+      case ADT: {
+	const ADTType &adt = *static_cast<const ADTType *> (x);
+	if (adt.is_unit ())
+	  {
+	    return !adt.needs_substitution ();
+	  }
+
+	for (auto &variant : adt.get_variants ())
+	  {
+	    bool is_num_variant
+	      = variant->get_variant_type () == VariantDef::VariantType::NUM;
+	    if (is_num_variant)
+	      continue;
+
+	    for (auto &field : variant->get_fields ())
+	      {
+		const BaseType *field_type = field->get_field_type ();
+		if (!field_type->is_concrete ())
+		  return false;
+	      }
+	  }
+	return true;
+      }
+      break;
+
+      case ARRAY: {
+	const ArrayType &arr = *static_cast<const ArrayType *> (x);
+	return arr.get_element_type ()->is_concrete ();
+      }
+      break;
+
+      case SLICE: {
+	const SliceType &slice = *static_cast<const SliceType *> (x);
+	return slice.get_element_type ()->is_concrete ();
+      }
+      break;
+
+      case POINTER: {
+	const PointerType &ptr = *static_cast<const PointerType *> (x);
+	return ptr.get_base ()->is_concrete ();
+      }
+      break;
+
+      case REF: {
+	const ReferenceType &ref = *static_cast<const ReferenceType *> (x);
+	return ref.get_base ()->is_concrete ();
+      }
+      break;
+
+      case TUPLE: {
+	const TupleType &tuple = *static_cast<const TupleType *> (x);
+	for (size_t i = 0; i < tuple.num_fields (); i++)
+	  {
+	    if (!tuple.get_field (i)->is_concrete ())
+	      return false;
+	  }
+	return true;
+      }
+      break;
+
+      case CLOSURE: {
+	const ClosureType &closure = *static_cast<const ClosureType *> (x);
+	if (closure.get_parameters ().is_concrete ())
+	  return false;
+	return closure.get_result_type ().is_concrete ();
+      }
+      break;
+
+    case INFER:
+    case BOOL:
+    case CHAR:
+    case INT:
+    case UINT:
+    case FLOAT:
+    case USIZE:
+    case ISIZE:
+    case NEVER:
+    case STR:
+    case DYNAMIC:
+    case ERROR:
+      return true;
+    }
+
+  return false;
+}
+
 // InferType
 
 InferType::InferType (HirId ref, InferTypeKind infer_kind, Location locus,
@@ -575,12 +701,6 @@ std::string
 InferType::get_name () const
 {
   return as_string ();
-}
-
-bool
-InferType::is_concrete () const
-{
-  return true;
 }
 
 void
@@ -698,11 +818,6 @@ ErrorType::is_unit () const
 {
   return true;
 }
-bool
-ErrorType::is_concrete () const
-{
-  return false;
-}
 
 std::string
 ErrorType::get_name () const
@@ -775,12 +890,6 @@ void
 StructFieldType::set_field_type (BaseType *fty)
 {
   ty = fty;
-}
-
-bool
-StructFieldType::is_concrete () const
-{
-  return ty->is_concrete ();
 }
 
 void
@@ -1095,30 +1204,6 @@ ADTType::as_string () const
 }
 
 bool
-ADTType::is_concrete () const
-{
-  if (is_unit ())
-    {
-      return !needs_substitution ();
-    }
-
-  for (auto &variant : variants)
-    {
-      bool is_num_variant
-	= variant->get_variant_type () == VariantDef::VariantType::NUM;
-      if (is_num_variant)
-	continue;
-
-      for (auto &field : variant->get_fields ())
-	{
-	  if (!field->is_concrete ())
-	    return false;
-	}
-    }
-  return true;
-}
-
-bool
 ADTType::can_eq (const BaseType *other, bool emit_errors) const
 {
   ADTCmp r (this, emit_errors);
@@ -1313,17 +1398,6 @@ size_t
 TupleType::num_fields () const
 {
   return fields.size ();
-}
-
-bool
-TupleType::is_concrete () const
-{
-  for (size_t i = 0; i < num_fields (); i++)
-    {
-      if (!get_field (i)->is_concrete ())
-	return false;
-    }
-  return true;
 }
 
 const std::vector<TyVar> &
@@ -2042,12 +2116,6 @@ BoolType::get_name () const
   return as_string ();
 }
 
-bool
-BoolType::is_concrete () const
-{
-  return true;
-}
-
 void
 BoolType::accept_vis (TyVisitor &vis)
 {
@@ -2177,12 +2245,6 @@ IntType::is_equal (const BaseType &other) const
   return get_int_kind () == o.get_int_kind ();
 }
 
-bool
-IntType::is_concrete () const
-{
-  return true;
-}
-
 // UintType
 
 UintType::UintType (HirId ref, UintKind kind, std::set<HirId> refs)
@@ -2276,12 +2338,6 @@ UintType::is_equal (const BaseType &other) const
   return get_uint_kind () == o.get_uint_kind ();
 }
 
-bool
-UintType::is_concrete () const
-{
-  return true;
-}
-
 // FloatType
 
 FloatType::FloatType (HirId ref, FloatKind kind, std::set<HirId> refs)
@@ -2311,12 +2367,6 @@ FloatType::FloatKind
 FloatType::get_float_kind () const
 {
   return float_kind;
-}
-
-bool
-FloatType::is_concrete () const
-{
-  return true;
 }
 
 void
@@ -2397,12 +2447,6 @@ USizeType::get_name () const
   return as_string ();
 }
 
-bool
-USizeType::is_concrete () const
-{
-  return true;
-}
-
 void
 USizeType::accept_vis (TyVisitor &vis)
 {
@@ -2462,12 +2506,6 @@ ISizeType::get_name () const
   return as_string ();
 }
 
-bool
-ISizeType::is_concrete () const
-{
-  return true;
-}
-
 void
 ISizeType::accept_vis (TyVisitor &vis)
 {
@@ -2520,12 +2558,6 @@ CharType::CharType (HirId ref, HirId ty_ref, std::set<HirId> refs)
 	       Linemap::predeclared_location ()},
 	      refs)
 {}
-
-bool
-CharType::is_concrete () const
-{
-  return true;
-}
 
 std::string
 CharType::get_name () const
@@ -2589,12 +2621,6 @@ ReferenceType::ReferenceType (HirId ref, HirId ty_ref, TyVar base,
 	      refs),
     base (base), mut (mut)
 {}
-
-bool
-ReferenceType::is_concrete () const
-{
-  return get_base ()->is_concrete ();
-}
 
 Mutability
 ReferenceType::mutability () const
@@ -2742,12 +2768,6 @@ PointerType::PointerType (HirId ref, HirId ty_ref, TyVar base, Mutability mut,
 	      refs),
     base (base), mut (mut)
 {}
-
-bool
-PointerType::is_concrete () const
-{
-  return get_base ()->is_concrete ();
-}
 
 Mutability
 PointerType::mutability () const
@@ -2916,16 +2936,6 @@ bool
 ParamType::can_resolve () const
 {
   return get_ref () != get_ty_ref ();
-}
-
-bool
-ParamType::is_concrete () const
-{
-  auto r = resolve ();
-  if (r == this)
-    return false;
-
-  return r->is_concrete ();
 }
 
 void
@@ -3097,12 +3107,6 @@ StrType::get_name () const
   return as_string ();
 }
 
-bool
-StrType::is_concrete () const
-{
-  return true;
-}
-
 BaseType *
 StrType::clone () const
 {
@@ -3170,12 +3174,6 @@ NeverType::get_name () const
 
 bool
 NeverType::is_unit () const
-{
-  return true;
-}
-
-bool
-NeverType::is_concrete () const
 {
   return true;
 }
@@ -3254,15 +3252,6 @@ std::string
 PlaceholderType::get_symbol () const
 {
   return symbol;
-}
-
-bool
-PlaceholderType::is_concrete () const
-{
-  if (!can_resolve ())
-    return true;
-
-  return resolve ()->is_concrete ();
 }
 
 void
@@ -3423,12 +3412,6 @@ ProjectionType::get ()
   return base;
 }
 
-bool
-ProjectionType::is_concrete () const
-{
-  return base->is_concrete ();
-}
-
 void
 ProjectionType::accept_vis (TyVisitor &vis)
 {
@@ -3553,12 +3536,6 @@ DynamicObjectType::DynamicObjectType (
   std::vector<TypeBoundPredicate> specified_bounds, std::set<HirId> refs)
   : BaseType (ref, ty_ref, TypeKind::DYNAMIC, ident, specified_bounds, refs)
 {}
-
-bool
-DynamicObjectType::is_concrete () const
-{
-  return true;
-}
 
 void
 DynamicObjectType::accept_vis (TyVisitor &vis)

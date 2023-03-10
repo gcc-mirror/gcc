@@ -130,7 +130,7 @@ public:
 
   virtual bool is_unit () const;
 
-  virtual bool is_concrete () const = 0;
+  bool is_concrete () const;
 
   TypeKind get_kind () const;
 
@@ -223,8 +223,6 @@ public:
 
   bool default_type (BaseType **type) const;
 
-  bool is_concrete () const final override;
-
 private:
   InferTypeKind infer_kind;
 };
@@ -250,8 +248,6 @@ public:
   BaseType *monomorphized_clone () const final override;
 
   std::string get_name () const override final;
-
-  bool is_concrete () const final override;
 };
 
 class ParamType : public BaseType
@@ -289,8 +285,6 @@ public:
 
   bool is_equal (const BaseType &other) const override;
 
-  bool is_concrete () const override final;
-
   ParamType *handle_substitions (SubstitutionArgumentMappings &mappings);
 
   void set_implicit_self_trait ();
@@ -318,8 +312,6 @@ public:
 
   StructFieldType *clone () const;
   StructFieldType *monomorphized_clone () const;
-
-  bool is_concrete () const;
 
   void debug () const;
   Location get_locus () const;
@@ -362,8 +354,6 @@ public:
 
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
-
-  bool is_concrete () const override final;
 
   const std::vector<TyVar> &get_fields () const;
 
@@ -601,8 +591,6 @@ public:
     return identifier + subst_as_string ();
   }
 
-  bool is_concrete () const override final;
-
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
 
@@ -740,17 +728,6 @@ public:
     return param_at (0).second;
   }
 
-  bool is_concrete () const override final
-  {
-    for (const auto &param : params)
-      {
-	const BaseType *p = param.second;
-	if (!p->is_concrete ())
-	  return false;
-      }
-    return get_return_type ()->is_concrete ();
-  }
-
   std::vector<std::pair<HIR::Pattern *, BaseType *>> &get_params ()
   {
     return params;
@@ -839,27 +816,8 @@ public:
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
 
-  void iterate_params (std::function<bool (BaseType *)> cb) const
-  {
-    for (auto &p : params)
-      {
-	if (!cb (p.get_tyty ()))
-	  return;
-      }
-  }
-
   std::vector<TyVar> &get_params () { return params; }
   const std::vector<TyVar> &get_params () const { return params; }
-
-  bool is_concrete () const override final
-  {
-    for (auto &p : params)
-      {
-	if (!p.get_tyty ()->is_concrete ())
-	  return false;
-      }
-    return result_type.get_tyty ()->is_concrete ();
-  }
 
 private:
   std::vector<TyVar> params;
@@ -917,12 +875,6 @@ public:
 
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
-
-  bool is_concrete () const override final
-  {
-    return parameters->is_concrete ()
-	   && result_type.get_tyty ()->is_concrete ();
-  }
 
   bool needs_generic_substitutions () const override final
   {
@@ -988,11 +940,6 @@ public:
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
 
-  bool is_concrete () const final override
-  {
-    return get_element_type ()->is_concrete ();
-  }
-
   HIR::Expr &get_capacity_expr () const { return capacity_expr; }
 
   ArrayType *handle_substitions (SubstitutionArgumentMappings &mappings);
@@ -1035,11 +982,6 @@ public:
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
 
-  bool is_concrete () const final override
-  {
-    return get_element_type ()->is_concrete ();
-  }
-
   SliceType *handle_substitions (SubstitutionArgumentMappings &mappings);
 
 private:
@@ -1063,7 +1005,6 @@ public:
 
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
-  bool is_concrete () const override final;
 };
 
 class IntType : public BaseType
@@ -1097,7 +1038,6 @@ public:
   BaseType *monomorphized_clone () const final override;
 
   bool is_equal (const BaseType &other) const override;
-  bool is_concrete () const override final;
 
 private:
   IntKind int_kind;
@@ -1135,7 +1075,6 @@ public:
   BaseType *monomorphized_clone () const final override;
 
   bool is_equal (const BaseType &other) const override;
-  bool is_concrete () const override final;
 
 private:
   UintKind uint_kind;
@@ -1169,7 +1108,6 @@ public:
   BaseType *monomorphized_clone () const final override;
 
   bool is_equal (const BaseType &other) const override;
-  bool is_concrete () const override final;
 
 private:
   FloatKind float_kind;
@@ -1192,7 +1130,6 @@ public:
 
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
-  bool is_concrete () const override final;
 };
 
 class ISizeType : public BaseType
@@ -1212,7 +1149,6 @@ public:
 
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
-  bool is_concrete () const override final;
 };
 
 class CharType : public BaseType
@@ -1231,7 +1167,6 @@ public:
 
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
-  bool is_concrete () const override final;
 };
 
 class StrType : public BaseType
@@ -1253,7 +1188,6 @@ public:
 
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
-  bool is_concrete () const override final;
 };
 
 class ReferenceType : public BaseType
@@ -1279,8 +1213,6 @@ public:
 
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
-
-  bool is_concrete () const override final;
 
   ReferenceType *handle_substitions (SubstitutionArgumentMappings &mappings);
 
@@ -1321,8 +1253,6 @@ public:
 
   BaseType *clone () const final override;
   BaseType *monomorphized_clone () const final override;
-
-  bool is_concrete () const override final;
 
   PointerType *handle_substitions (SubstitutionArgumentMappings &mappings);
 
@@ -1369,7 +1299,6 @@ public:
   std::string get_name () const override final;
 
   bool is_unit () const override;
-  bool is_concrete () const override final;
 };
 
 // used at the type in associated types in traits
@@ -1407,8 +1336,6 @@ public:
   BaseType *resolve () const;
 
   bool is_equal (const BaseType &other) const override;
-
-  bool is_concrete () const override final;
 
 private:
   std::string symbol;
@@ -1454,8 +1381,6 @@ public:
   const BaseType *get () const;
   BaseType *get ();
 
-  bool is_concrete () const override final;
-
   ProjectionType *
   handle_substitions (SubstitutionArgumentMappings &mappings) override final;
 
@@ -1489,8 +1414,6 @@ public:
   BaseType *monomorphized_clone () const final override;
 
   std::string get_name () const override final;
-
-  bool is_concrete () const override final;
 
   // this returns a flat list of items including super trait bounds
   const std::vector<
