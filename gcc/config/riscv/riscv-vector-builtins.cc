@@ -3084,6 +3084,15 @@ function_expander::use_compare_insn (rtx_code rcode, insn_code icode)
 
   rtx op1 = expand_normal (CALL_EXPR_ARG (exp, arg_offset++));
   rtx op2 = expand_normal (CALL_EXPR_ARG (exp, arg_offset++));
+  if (!insn_operand_matches (icode, opno + 1, op1))
+    op1 = force_reg (mode, op1);
+  if (!insn_operand_matches (icode, opno + 2, op2))
+    {
+      if (VECTOR_MODE_P (GET_MODE (op2)))
+	op2 = force_reg (mode, op2);
+      else
+	op2 = force_reg (GET_MODE_INNER (mode), op2);
+    }
   rtx comparison = gen_rtx_fmt_ee (rcode, mask_mode, op1, op2);
   if (!VECTOR_MODE_P (GET_MODE (op2)))
     comparison = gen_rtx_fmt_ee (rcode, mask_mode, op1,
