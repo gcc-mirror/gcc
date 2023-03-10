@@ -1,4 +1,4 @@
-c Copyright (C) 1988-2023 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2023 Free Software Foundation, Inc.
 
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -12995,6 +12995,7 @@ int __builtin___vsprintf_chk (char *s, int flag, size_t os, const char *fmt,
 int __builtin___vsnprintf_chk (char *s, size_t maxlen, int flag, size_t os,
                                const char *fmt, va_list ap);
 @end smallexample
+@subsubsection Formatted Output Function Checking
 
 The added @var{flag} argument is passed unchanged to @code{__sprintf_chk}
 etc.@: functions and can contain implementation specific flags on what
