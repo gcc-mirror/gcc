@@ -191,7 +191,7 @@ in the following sections.
 -dumpdir @var{dumppfx}  -x @var{language}  @gol
 -v  -###  --help@r{[}=@var{class}@r{[},@dots{}@r{]]}  --target-help  --version @gol
 -pass-exit-codes  -pipe  -specs=@var{file}  -wrapper  @gol
-@@@var{file}  -ffile-prefix-map=@var{old}=@var{new}  @gol
+@@@var{file}  -ffile-prefix-map=@var{old}=@var{new}  -fcanon-prefix-map  @gol
 -fplugin=@var{file}  -fplugin-arg-@var{name}=@var{arg}  @gol
 -fdump-ada-spec@r{[}-slim@r{]}  -fada-spec-parent=@var{unit}  -fdump-go-spec=@var{file}}
 
@@ -2207,9 +2207,20 @@ files resided in directory @file{@var{new}} instead.  Specifying this
 option is equivalent to specifying all the individual
 @option{-f*-prefix-map} options.  This can be used to make reproducible
 builds that are location independent.  Directories referenced by
-directives are not affected by these options. See also
-@option{-fmacro-prefix-map}, @option{-fdebug-prefix-map} and
-@option{-fprofile-prefix-map}.
+directives are not affected by these options.  See also
+@option{-fmacro-prefix-map}, @option{-fdebug-prefix-map},
+@option{-fprofile-prefix-map} and @option{-fcanon-prefix-map}.
+
+@item -fcanon-prefix-map
+@opindex fcanon-prefix-map
+For the @option{-f*-prefix-map} options normally comparison
+of @file{@var{old}} prefix against the filename that would be normally
+referenced in the result of the compilation is done using textual
+comparison of the prefixes, or ignoring character case for case insensitive
+filesystems and considering slashes and backslashes as equal on DOS based
+filesystems.  The @option{-fcanon-prefix-map} causes such comparisons
+to be done on canonicalized paths of @file{@var{old}}
+and the referenced filename.
 
 @opindex fplugin
 @item -fplugin=@var{name}.so
@@ -11362,7 +11373,8 @@ build-time path with an install-time path in the debug info.  It can
 also be used to change an absolute path to a relative path by using
 @file{.} for @var{new}.  This can give more reproducible builds, which
 are location independent, but may require an extra command to tell GDB
-where to find the source files. See also @option{-ffile-prefix-map}.
+where to find the source files. See also @option{-ffile-prefix-map}
+and @option{-fcanon-prefix-map}.
 
 @opindex fvar-tracking
 @item -fvar-tracking
@@ -16550,7 +16562,7 @@ When compiling files residing in directory @file{@var{old}}, record
 profiling information (with @option{--coverage})
 describing them as if the files resided in
 directory @file{@var{new}} instead.
-See also @option{-ffile-prefix-map}.
+See also @option{-ffile-prefix-map} and @option{-fcanon-prefix-map}.
 
 @opindex fprofile-update
 @item -fprofile-update=@var{method}

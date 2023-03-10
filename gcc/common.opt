@@ -1208,6 +1208,10 @@ fchecking=
 Common Joined RejectNegative UInteger Var(flag_checking)
 Perform internal consistency checkings.
 
+fcanon-prefix-map
+Common Var(common_deferred_options) Defer
+For -f*-prefix-map= options compare canonicalized pathnames rather than just strings.
+
 fcode-hoisting
 Common Var(flag_code_hoisting) Optimization
 Enable code hoisting.

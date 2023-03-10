@@ -305,7 +305,7 @@ to change an absolute path to a relative path by using @file{.} for
 @var{new} which can result in more reproducible builds that are
 location independent.  This option also affects
 @code{__builtin_FILE()} during compilation.  See also
-@option{-ffile-prefix-map}.
+@option{-ffile-prefix-map} and @option{-fcanon-prefix-map}.
 
 @opindex fexec-charset
 @cindex character set, execution
