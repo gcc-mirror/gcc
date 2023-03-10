@@ -242,7 +242,7 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
       // turbo-fish segment path::<ty>
       if (generic_seg.has_generic_args ())
 	{
-	  if (!translated->can_substitute ())
+	  if (!translated->has_subsititions_defined ())
 	    {
 	      rust_error_at (item_seg->get_locus (),
 			     "substitutions not supported for %s",
@@ -386,7 +386,7 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 	  HIR::TypePathSegmentGeneric *generic_segment
 	    = static_cast<HIR::TypePathSegmentGeneric *> (seg.get ());
 
-	  if (!lookup->can_substitute ())
+	  if (!lookup->has_subsititions_defined ())
 	    {
 	      rust_error_at (path.get_locus (),
 			     "TypePath %s declares generic arguments but the "
@@ -482,7 +482,7 @@ TypeCheckType::resolve_segments (
 	  HIR::TypePathSegmentGeneric *generic_segment
 	    = static_cast<HIR::TypePathSegmentGeneric *> (seg.get ());
 
-	  if (!tyseg->can_substitute ())
+	  if (!tyseg->has_subsititions_defined ())
 	    {
 	      rust_error_at (expr_locus, "substitutions not supported for %s",
 			     tyseg->as_string ().c_str ());

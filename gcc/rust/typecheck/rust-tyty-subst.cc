@@ -648,7 +648,7 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
 	    return SubstitutionArgumentMappings::error ();
 
 	  // this resolved default might already contain default parameters
-	  if (resolved->contains_type_parameters ())
+	  if (!resolved->is_concrete ())
 	    {
 	      SubstitutionArgumentMappings intermediate (mappings,
 							 binding_arguments,
