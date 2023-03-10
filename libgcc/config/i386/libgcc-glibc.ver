@@ -218,6 +218,8 @@ GCC_12.0.0 {
 %inherit GCC_13.0.0 GCC_12.0.0
 GCC_13.0.0 {
   __extendbfsf2
+  __floattibf
+  __floatuntibf
   __truncdfbf2
   __truncsfbf2
   __trunctfbf2
