@@ -71,3 +71,19 @@
 @c forced to the bottom of the page.
 @vskip 0pt plus 1filll
 @end macro
+
+@c Convenience macro for defining builtins, in similar spirit
+@c to @deftypefun for functions.  These macros provide syntax similar
+@c to @deftypefun, except all arguments are passed as a single
+@c argument, by being wrapped in curly braces.
+@macro defbuiltin {rest}
+@deftypefn {Built-in Function} \rest\
+@end macro
+
+@macro defbuiltinx {rest}
+@deftypefnx {Built-in Function} \rest\
+@end macro
+
+@macro enddefbuiltin
+@end deftypefn
+@end macro

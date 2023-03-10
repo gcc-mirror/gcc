@@ -585,14 +585,14 @@ built-in functions as:
 intptr_t @var{buf}[5];
 @end smallexample
 
-@deftypefn {Built-in Function} {int} __builtin_setjmp (intptr_t *@var{buf})
+@defbuiltin{{int} __builtin_setjmp (intptr_t *@var{buf})}
 This function saves the current stack context in @var{buf}.  
 @code{__builtin_setjmp} returns 0 when returning directly,
 and 1 when returning from @code{__builtin_longjmp} using the same
 @var{buf}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {void} __builtin_longjmp (intptr_t *@var{buf}, int @var{val})
+@defbuiltin{{void} __builtin_longjmp (intptr_t *@var{buf}, int @var{val})}
 This function restores the stack context in @var{buf}, 
 saved by a previous call to @code{__builtin_setjmp}.  After
 @code{__builtin_longjmp} is finished, the program resumes execution as
@@ -604,7 +604,7 @@ mechanism to restore the stack context, it cannot be called
 from the same function calling @code{__builtin_setjmp} to
 initialize @var{buf}.  It can only be called from a function called
 (directly or indirectly) from the function calling @code{__builtin_setjmp}.
-@end deftypefn
+@enddefbuiltin
 
 @node Constructing Calls
 @section Constructing Function Calls
@@ -626,7 +626,7 @@ sophisticated features or other extensions of the language.  It
 is, therefore, not recommended to use them outside very simple
 functions acting as mere forwarders for their arguments.
 
-@deftypefn {Built-in Function} {void *} __builtin_apply_args ()
+@defbuiltin{{void *} __builtin_apply_args ()}
 This built-in function returns a pointer to data
 describing how to perform a call with the same arguments as are passed
 to the current function.
@@ -635,9 +635,9 @@ The function saves the arg pointer register, structure value address,
 and all registers that might be used to pass arguments to a function
 into a block of memory allocated on the stack.  Then it returns the
 address of that block.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {void *} __builtin_apply (void (*@var{function})(), void *@var{arguments}, size_t @var{size})
+@defbuiltin{{void *} __builtin_apply (void (*@var{function})(), void *@var{arguments}, size_t @var{size})}
 This built-in function invokes @var{function}
 with a copy of the parameters described by @var{arguments}
 and @var{size}.
@@ -654,15 +654,15 @@ It is not always simple to compute the proper value for @var{size}.  The
 value is used by @code{__builtin_apply} to compute the amount of data
 that should be pushed on the stack and copied from the incoming argument
 area.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {void} __builtin_return (void *@var{result})
+@defbuiltin{{void} __builtin_return (void *@var{result})}
 This built-in function returns the value described by @var{result} from
 the containing function.  You should specify, for @var{result}, a value
 returned by @code{__builtin_apply}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {} __builtin_va_arg_pack ()
+@defbuiltin{{} __builtin_va_arg_pack ()}
 This built-in function represents all anonymous arguments of an inline
 function.  It can be used only in inline functions that are always
 inlined, never compiled as a separate function, such as those using
@@ -686,9 +686,9 @@ myprintf (FILE *f, const char *format, ...)
   return r + s;
 @}
 @end smallexample
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {int} __builtin_va_arg_pack_len ()
+@defbuiltin{int __builtin_va_arg_pack_len ()}
 This built-in function returns the number of anonymous arguments of
 an inline function.  It can be used only in inline functions that
 are always inlined, never compiled as a separate function, such
@@ -721,7 +721,7 @@ myopen (const char *path, int oflag, ...)
 @}
 #endif
 @end smallexample
-@end deftypefn
+@enddefbuiltin
 
 @node Typeof
 @section Referring to a Type with @code{typeof}
@@ -1048,7 +1048,7 @@ If the variable's actual name is @code{foo}, the two fictitious
 variables are named @code{foo$real} and @code{foo$imag}.  You can
 examine and set these two fictitious variables with your debugger.
 
-@deftypefn {Built-in Function} @var{type} __builtin_complex (@var{real}, @var{imag})
+@defbuiltin{@var{type} __builtin_complex (@var{real}, @var{imag})}
 
 The built-in function @code{__builtin_complex} is provided for use in
 implementing the ISO C11 macros @code{CMPLXF}, @code{CMPLX} and
@@ -1058,7 +1058,7 @@ complex type with real and imaginary parts @var{real} and @var{imag}.
 Unlike @samp{@var{real} + I * @var{imag}}, this works even when
 infinities, NaNs and negative zeros are involved.
 
-@end deftypefn
+@enddefbuiltin
 
 @node Floating Types
 @section Additional Floating Types
@@ -11869,7 +11869,7 @@ literals.
 These functions may be used to get information about the callers of a
 function.
 
-@deftypefn {Built-in Function} {void *} __builtin_return_address (unsigned int @var{level})
+@defbuiltin{{void *} __builtin_return_address (unsigned int @var{level})}
 This function returns the return address of the current function, or of
 one of its callers.  The @var{level} argument is number of frames to
 scan up the call stack.  A value of @code{0} yields the return address
@@ -11908,9 +11908,9 @@ void *addr = __builtin_extract_return_addr (__builtin_return_address (0));
 gives the code address where the current function would return.  For example,
 such an address may be used with @code{dladdr} or other interfaces that work
 with code addresses.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {void *} __builtin_extract_return_addr (void *@var{addr})
+@defbuiltin{{void *} __builtin_extract_return_addr (void *@var{addr})}
 The address as returned by @code{__builtin_return_address} may have to be fed
 through this function to get the actual encoded address.  For example, on the
 31-bit S/390 platform the highest bit has to be masked out, or on SPARC
@@ -11918,13 +11918,13 @@ platforms an offset has to be added for the true next instruction to be
 executed.
 
 If no fixup is needed, this function simply passes through @var{addr}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {void *} __builtin_frob_return_addr (void *@var{addr})
+@defbuiltin{{void *} __builtin_frob_return_addr (void *@var{addr})}
 This function does the reverse of @code{__builtin_extract_return_addr}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {void *} __builtin_frame_address (unsigned int @var{level})
+@defbuiltin{{void *} __builtin_frame_address (unsigned int @var{level})}
 This function is similar to @code{__builtin_return_address}, but it
 returns the address of the function frame rather than the return address
 of the function.  Calling @code{__builtin_frame_address} with a value of
@@ -11950,7 +11950,7 @@ effects, including crashing the calling program.  As a result, calls
 that are considered unsafe are diagnosed when the @option{-Wframe-address}
 option is in effect.  Such calls should only be made in debugging
 situations.
-@end deftypefn
+@enddefbuiltin
 
 @node Vector Extensions
 @section Using Vector Instructions through Built-in Functions
@@ -12303,19 +12303,12 @@ variables to be protected.  The list is ignored by GCC which treats it as
 empty.  GCC interprets an empty list as meaning that all globally
 accessible variables should be protected.
 
-@table @code
-@item @var{type} __sync_fetch_and_add (@var{type} *ptr, @var{type} value, ...)
-@itemx @var{type} __sync_fetch_and_sub (@var{type} *ptr, @var{type} value, ...)
-@itemx @var{type} __sync_fetch_and_or (@var{type} *ptr, @var{type} value, ...)
-@itemx @var{type} __sync_fetch_and_and (@var{type} *ptr, @var{type} value, ...)
-@itemx @var{type} __sync_fetch_and_xor (@var{type} *ptr, @var{type} value, ...)
-@itemx @var{type} __sync_fetch_and_nand (@var{type} *ptr, @var{type} value, ...)
-@findex __sync_fetch_and_add
-@findex __sync_fetch_and_sub
-@findex __sync_fetch_and_or
-@findex __sync_fetch_and_and
-@findex __sync_fetch_and_xor
-@findex __sync_fetch_and_nand
+@defbuiltin{@var{type} __sync_fetch_and_add (@var{type} *ptr, @var{type} value, ...)}
+@defbuiltinx{@var{type} __sync_fetch_and_sub (@var{type} *ptr, @var{type} value, ...)}
+@defbuiltinx{@var{type} __sync_fetch_and_or (@var{type} *ptr, @var{type} value, ...)}
+@defbuiltinx{@var{type} __sync_fetch_and_and (@var{type} *ptr, @var{type} value, ...)}
+@defbuiltinx{@var{type} __sync_fetch_and_xor (@var{type} *ptr, @var{type} value, ...)}
+@defbuiltinx{@var{type} __sync_fetch_and_nand (@var{type} *ptr, @var{type} value, ...)}
 These built-in functions perform the operation suggested by the name, and
 returns the value that had previously been in memory.  That is, operations
 on integer operands have the following semantics.  Operations on pointer
@@ -12333,19 +12326,15 @@ type.  It must not be a boolean type.
 
 @emph{Note:} GCC 4.4 and later implement @code{__sync_fetch_and_nand}
 as @code{*ptr = ~(tmp & value)} instead of @code{*ptr = ~tmp & value}.
+@enddefbuiltin
 
-@item @var{type} __sync_add_and_fetch (@var{type} *ptr, @var{type} value, ...)
-@itemx @var{type} __sync_sub_and_fetch (@var{type} *ptr, @var{type} value, ...)
-@itemx @var{type} __sync_or_and_fetch (@var{type} *ptr, @var{type} value, ...)
-@itemx @var{type} __sync_and_and_fetch (@var{type} *ptr, @var{type} value, ...)
-@itemx @var{type} __sync_xor_and_fetch (@var{type} *ptr, @var{type} value, ...)
-@itemx @var{type} __sync_nand_and_fetch (@var{type} *ptr, @var{type} value, ...)
-@findex __sync_add_and_fetch
-@findex __sync_sub_and_fetch
-@findex __sync_or_and_fetch
-@findex __sync_and_and_fetch
-@findex __sync_xor_and_fetch
-@findex __sync_nand_and_fetch
+@defbuiltin{@var{type} __sync_add_and_fetch (@var{type} *ptr, @
+                                             @var{type} value, ...)}
+@defbuiltinx{@var{type} __sync_sub_and_fetch (@var{type} *ptr, @var{type} value, ...)}
+@defbuiltinx{@var{type} __sync_or_and_fetch (@var{type} *ptr, @var{type} value, ...)}
+@defbuiltinx{@var{type} __sync_and_and_fetch (@var{type} *ptr, @var{type} value, ...)}
+@defbuiltinx{@var{type} __sync_xor_and_fetch (@var{type} *ptr, @var{type} value, ...)}
+@defbuiltinx{@var{type} __sync_nand_and_fetch (@var{type} *ptr, @var{type} value, ...)}
 These built-in functions perform the operation suggested by the name, and
 return the new value.  That is, operations on integer operands have
 the following semantics.  Operations on pointer operands are performed as
@@ -12362,11 +12351,10 @@ The same constraints on arguments apply as for the corresponding
 @emph{Note:} GCC 4.4 and later implement @code{__sync_nand_and_fetch}
 as @code{*ptr = ~(*ptr & value)} instead of
 @code{*ptr = ~*ptr & value}.
+@enddefbuiltin
 
-@item bool __sync_bool_compare_and_swap (@var{type} *ptr, @var{type} oldval, @var{type} newval, ...)
-@itemx @var{type} __sync_val_compare_and_swap (@var{type} *ptr, @var{type} oldval, @var{type} newval, ...)
-@findex __sync_bool_compare_and_swap
-@findex __sync_val_compare_and_swap
+@defbuiltin{bool __sync_bool_compare_and_swap (@var{type} *ptr, @var{type} oldval, @var{type} newval, ...)}
+@defbuiltinx{@var{type} __sync_val_compare_and_swap (@var{type} *ptr, @var{type} oldval, @var{type} newval, ...)}
 These built-in functions perform an atomic compare and swap.
 That is, if the current
 value of @code{*@var{ptr}} is @var{oldval}, then write @var{newval} into
@@ -12375,13 +12363,13 @@ value of @code{*@var{ptr}} is @var{oldval}, then write @var{newval} into
 The ``bool'' version returns @code{true} if the comparison is successful and
 @var{newval} is written.  The ``val'' version returns the contents
 of @code{*@var{ptr}} before the operation.
+@enddefbuiltin
 
-@item __sync_synchronize (...)
-@findex __sync_synchronize
+@defbuiltin{void __sync_synchronize (...)}
 This built-in function issues a full memory barrier.
+@enddefbuiltin
 
-@item @var{type} __sync_lock_test_and_set (@var{type} *ptr, @var{type} value, ...)
-@findex __sync_lock_test_and_set
+@defbuiltin{@var{type} __sync_lock_test_and_set (@var{type} *ptr, @var{type} value, ...)}
 This built-in function, as described by Intel, is not a traditional test-and-set
 operation, but rather an atomic exchange operation.  It writes @var{value}
 into @code{*@var{ptr}}, and returns the previous contents of
@@ -12399,9 +12387,9 @@ This means that references after the operation cannot move to (or be
 speculated to) before the operation, but previous memory stores may not
 be globally visible yet, and previous memory loads may not yet be
 satisfied.
+@enddefbuiltin
 
-@item void __sync_lock_release (@var{type} *ptr, ...)
-@findex __sync_lock_release
+@defbuiltin{void __sync_lock_release (@var{type} *ptr, ...)}
 This built-in function releases the lock acquired by
 @code{__sync_lock_test_and_set}.
 Normally this means writing the constant 0 to @code{*@var{ptr}}.
@@ -12411,7 +12399,7 @@ but rather a @dfn{release barrier}.
 This means that all previous memory stores are globally visible, and all
 previous memory loads have been satisfied, but following memory reads
 are not prevented from being speculated to before the barrier.
-@end table
+@enddefbuiltin
 
 @node __atomic Builtins
 @section Built-in Functions for Memory Model Aware Atomic Operations
@@ -12518,7 +12506,7 @@ reserved for the memory order.  The remainder of the signed int is reserved
 for target use and should be 0.  Use of the predefined atomic values
 ensures proper usage.
 
-@deftypefn {Built-in Function} @var{type} __atomic_load_n (@var{type} *ptr, int memorder)
+@defbuiltin{@var{type} __atomic_load_n (@var{type} *ptr, int memorder)}
 This built-in function implements an atomic load operation.  It returns the
 contents of @code{*@var{ptr}}.
 
@@ -12526,46 +12514,46 @@ The valid memory order variants are
 @code{__ATOMIC_RELAXED}, @code{__ATOMIC_SEQ_CST}, @code{__ATOMIC_ACQUIRE},
 and @code{__ATOMIC_CONSUME}.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __atomic_load (@var{type} *ptr, @var{type} *ret, int memorder)
+@defbuiltin{void __atomic_load (@var{type} *ptr, @var{type} *ret, int memorder)}
 This is the generic version of an atomic load.  It returns the
 contents of @code{*@var{ptr}} in @code{*@var{ret}}.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __atomic_store_n (@var{type} *ptr, @var{type} val, int memorder)
+@defbuiltin{void __atomic_store_n (@var{type} *ptr, @var{type} val, int memorder)}
 This built-in function implements an atomic store operation.  It writes 
 @code{@var{val}} into @code{*@var{ptr}}.  
 
 The valid memory order variants are
 @code{__ATOMIC_RELAXED}, @code{__ATOMIC_SEQ_CST}, and @code{__ATOMIC_RELEASE}.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __atomic_store (@var{type} *ptr, @var{type} *val, int memorder)
+@defbuiltin{void __atomic_store (@var{type} *ptr, @var{type} *val, int memorder)}
 This is the generic version of an atomic store.  It stores the value
 of @code{*@var{val}} into @code{*@var{ptr}}.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} @var{type} __atomic_exchange_n (@var{type} *ptr, @var{type} val, int memorder)
+@defbuiltin{@var{type} __atomic_exchange_n (@var{type} *ptr, @var{type} val, int memorder)}
 This built-in function implements an atomic exchange operation.  It writes
 @var{val} into @code{*@var{ptr}}, and returns the previous contents of
 @code{*@var{ptr}}.
 
 All memory order variants are valid.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __atomic_exchange (@var{type} *ptr, @var{type} *val, @var{type} *ret, int memorder)
+@defbuiltin{void __atomic_exchange (@var{type} *ptr, @var{type} *val, @var{type} *ret, int memorder)}
 This is the generic version of an atomic exchange.  It stores the
 contents of @code{*@var{val}} into @code{*@var{ptr}}. The original value
 of @code{*@var{ptr}} is copied into @code{*@var{ret}}.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} bool __atomic_compare_exchange_n (@var{type} *ptr, @var{type} *expected, @var{type} desired, bool weak, int success_memorder, int failure_memorder)
+@defbuiltin{bool __atomic_compare_exchange_n (@var{type} *ptr, @var{type} *expected, @var{type} desired, bool weak, int success_memorder, int failure_memorder)}
 This built-in function implements an atomic compare and exchange operation.
 This compares the contents of @code{*@var{ptr}} with the contents of
 @code{*@var{expected}}. If equal, the operation is a @emph{read-modify-write}
@@ -12587,22 +12575,22 @@ to @var{failure_memorder}. This memory order cannot be
 @code{__ATOMIC_RELEASE} nor @code{__ATOMIC_ACQ_REL}.  It also cannot be a
 stronger order than that specified by @var{success_memorder}.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} bool __atomic_compare_exchange (@var{type} *ptr, @var{type} *expected, @var{type} *desired, bool weak, int success_memorder, int failure_memorder)
+@defbuiltin{bool __atomic_compare_exchange (@var{type} *ptr, @var{type} *expected, @var{type} *desired, bool weak, int success_memorder, int failure_memorder)}
 This built-in function implements the generic version of
 @code{__atomic_compare_exchange}.  The function is virtually identical to
 @code{__atomic_compare_exchange_n}, except the desired value is also a
 pointer.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} @var{type} __atomic_add_fetch (@var{type} *ptr, @var{type} val, int memorder)
-@deftypefnx {Built-in Function} @var{type} __atomic_sub_fetch (@var{type} *ptr, @var{type} val, int memorder)
-@deftypefnx {Built-in Function} @var{type} __atomic_and_fetch (@var{type} *ptr, @var{type} val, int memorder)
-@deftypefnx {Built-in Function} @var{type} __atomic_xor_fetch (@var{type} *ptr, @var{type} val, int memorder)
-@deftypefnx {Built-in Function} @var{type} __atomic_or_fetch (@var{type} *ptr, @var{type} val, int memorder)
-@deftypefnx {Built-in Function} @var{type} __atomic_nand_fetch (@var{type} *ptr, @var{type} val, int memorder)
+@defbuiltin{@var{type} __atomic_add_fetch (@var{type} *ptr, @var{type} val, int memorder)}
+@defbuiltinx{@var{type} __atomic_sub_fetch (@var{type} *ptr, @var{type} val, int memorder)}
+@defbuiltinx{@var{type} __atomic_and_fetch (@var{type} *ptr, @var{type} val, int memorder)}
+@defbuiltinx{@var{type} __atomic_xor_fetch (@var{type} *ptr, @var{type} val, int memorder)}
+@defbuiltinx{@var{type} __atomic_or_fetch (@var{type} *ptr, @var{type} val, int memorder)}
+@defbuiltinx{@var{type} __atomic_nand_fetch (@var{type} *ptr, @var{type} val, int memorder)}
 These built-in functions perform the operation suggested by the name, and
 return the result of the operation.  Operations on pointer arguments are
 performed as if the operands were of the @code{uintptr_t} type.  That is,
@@ -12616,14 +12604,14 @@ they are not scaled by the size of the type to which the pointer points.
 The object pointed to by the first argument must be of integer or pointer
 type.  It must not be a boolean type.  All memory orders are valid.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} @var{type} __atomic_fetch_add (@var{type} *ptr, @var{type} val, int memorder)
-@deftypefnx {Built-in Function} @var{type} __atomic_fetch_sub (@var{type} *ptr, @var{type} val, int memorder)
-@deftypefnx {Built-in Function} @var{type} __atomic_fetch_and (@var{type} *ptr, @var{type} val, int memorder)
-@deftypefnx {Built-in Function} @var{type} __atomic_fetch_xor (@var{type} *ptr, @var{type} val, int memorder)
-@deftypefnx {Built-in Function} @var{type} __atomic_fetch_or (@var{type} *ptr, @var{type} val, int memorder)
-@deftypefnx {Built-in Function} @var{type} __atomic_fetch_nand (@var{type} *ptr, @var{type} val, int memorder)
+@defbuiltin{@var{type} __atomic_fetch_add (@var{type} *ptr, @var{type} val, int memorder)}
+@defbuiltinx{@var{type} __atomic_fetch_sub (@var{type} *ptr, @var{type} val, int memorder)}
+@defbuiltinx{@var{type} __atomic_fetch_and (@var{type} *ptr, @var{type} val, int memorder)}
+@defbuiltinx{@var{type} __atomic_fetch_xor (@var{type} *ptr, @var{type} val, int memorder)}
+@defbuiltinx{@var{type} __atomic_fetch_or (@var{type} *ptr, @var{type} val, int memorder)}
+@defbuiltinx{@var{type} __atomic_fetch_nand (@var{type} *ptr, @var{type} val, int memorder)}
 These built-in functions perform the operation suggested by the name, and
 return the value that had previously been in @code{*@var{ptr}}.  Operations
 on pointer arguments are performed as if the operands were of
@@ -12638,9 +12626,9 @@ the type to which the pointer points.
 The same constraints on arguments apply as for the corresponding
 @code{__atomic_op_fetch} built-in functions.  All memory orders are valid.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} bool __atomic_test_and_set (void *ptr, int memorder)
+@defbuiltin{bool __atomic_test_and_set (void *ptr, int memorder)}
 
 This built-in function performs an atomic test-and-set operation on
 the byte at @code{*@var{ptr}}.  The byte is set to some implementation
@@ -12651,9 +12639,9 @@ other types only part of the value may be set.
 
 All memory orders are valid.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __atomic_clear (bool *ptr, int memorder)
+@defbuiltin{void __atomic_clear (bool *ptr, int memorder)}
 
 This built-in function performs an atomic clear operation on
 @code{*@var{ptr}}.  After the operation, @code{*@var{ptr}} contains 0.
@@ -12666,27 +12654,27 @@ The valid memory order variants are
 @code{__ATOMIC_RELAXED}, @code{__ATOMIC_SEQ_CST}, and
 @code{__ATOMIC_RELEASE}.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __atomic_thread_fence (int memorder)
+@defbuiltin{void __atomic_thread_fence (int memorder)}
 
 This built-in function acts as a synchronization fence between threads
 based on the specified memory order.
 
 All memory orders are valid.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __atomic_signal_fence (int memorder)
+@defbuiltin{void __atomic_signal_fence (int memorder)}
 
 This built-in function acts as a synchronization fence between a thread
 and signal handlers based in the same thread.
 
 All memory orders are valid.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} bool __atomic_always_lock_free (size_t size,  void *ptr)
+@defbuiltin{bool __atomic_always_lock_free (size_t size,  void *ptr)}
 
 This built-in function returns @code{true} if objects of @var{size} bytes always
 generate lock-free atomic instructions for the target architecture.
@@ -12701,9 +12689,9 @@ compiler may also ignore this parameter.
 if (__atomic_always_lock_free (sizeof (long long), 0))
 @end smallexample
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} bool __atomic_is_lock_free (size_t size, void *ptr)
+@defbuiltin{bool __atomic_is_lock_free (size_t size, void *ptr)}
 
 This built-in function returns @code{true} if objects of @var{size} bytes always
 generate lock-free atomic instructions for the target architecture.  If
@@ -12713,7 +12701,7 @@ runtime routine named @code{__atomic_is_lock_free}.
 @var{ptr} is an optional pointer to the object that may be used to determine
 alignment.  A value of 0 indicates typical alignment should be used.  The 
 compiler may also ignore this parameter.
-@end deftypefn
+@enddefbuiltin
 
 @node Integer Overflow Builtins
 @section Built-in Functions to Perform Arithmetic with Overflow Checking
@@ -12721,13 +12709,13 @@ compiler may also ignore this parameter.
 The following built-in functions allow performing simple arithmetic operations
 together with checking whether the operations overflowed.
 
-@deftypefn {Built-in Function} bool __builtin_add_overflow (@var{type1} a, @var{type2} b, @var{type3} *res)
-@deftypefnx {Built-in Function} bool __builtin_sadd_overflow (int a, int b, int *res)
-@deftypefnx {Built-in Function} bool __builtin_saddl_overflow (long int a, long int b, long int *res)
-@deftypefnx {Built-in Function} bool __builtin_saddll_overflow (long long int a, long long int b, long long int *res)
-@deftypefnx {Built-in Function} bool __builtin_uadd_overflow (unsigned int a, unsigned int b, unsigned int *res)
-@deftypefnx {Built-in Function} bool __builtin_uaddl_overflow (unsigned long int a, unsigned long int b, unsigned long int *res)
-@deftypefnx {Built-in Function} bool __builtin_uaddll_overflow (unsigned long long int a, unsigned long long int b, unsigned long long int *res)
+@defbuiltin{bool __builtin_add_overflow (@var{type1} a, @var{type2} b, @var{type3} *res)}
+@defbuiltinx{bool __builtin_sadd_overflow (int a, int b, int *res)}
+@defbuiltinx{bool __builtin_saddl_overflow (long int a, long int b, long int *res)}
+@defbuiltinx{bool __builtin_saddll_overflow (long long int a, long long int b, long long int *res)}
+@defbuiltinx{bool __builtin_uadd_overflow (unsigned int a, unsigned int b, unsigned int *res)}
+@defbuiltinx{bool __builtin_uaddl_overflow (unsigned long int a, unsigned long int b, unsigned long int *res)}
+@defbuiltinx{bool __builtin_uaddll_overflow (unsigned long long int a, unsigned long long int b, unsigned long long int *res)}
 
 These built-in functions promote the first two operands into infinite precision signed
 type and perform addition on those promoted operands.  The result is then
@@ -12745,41 +12733,41 @@ The compiler will attempt to use hardware instructions to implement
 these built-in functions where possible, like conditional jump on overflow
 after addition, conditional jump on carry etc.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} bool __builtin_sub_overflow (@var{type1} a, @var{type2} b, @var{type3} *res)
-@deftypefnx {Built-in Function} bool __builtin_ssub_overflow (int a, int b, int *res)
-@deftypefnx {Built-in Function} bool __builtin_ssubl_overflow (long int a, long int b, long int *res)
-@deftypefnx {Built-in Function} bool __builtin_ssubll_overflow (long long int a, long long int b, long long int *res)
-@deftypefnx {Built-in Function} bool __builtin_usub_overflow (unsigned int a, unsigned int b, unsigned int *res)
-@deftypefnx {Built-in Function} bool __builtin_usubl_overflow (unsigned long int a, unsigned long int b, unsigned long int *res)
-@deftypefnx {Built-in Function} bool __builtin_usubll_overflow (unsigned long long int a, unsigned long long int b, unsigned long long int *res)
+@defbuiltin{bool __builtin_sub_overflow (@var{type1} a, @var{type2} b, @var{type3} *res)}
+@defbuiltinx{bool __builtin_ssub_overflow (int a, int b, int *res)}
+@defbuiltinx{bool __builtin_ssubl_overflow (long int a, long int b, long int *res)}
+@defbuiltinx{bool __builtin_ssubll_overflow (long long int a, long long int b, long long int *res)}
+@defbuiltinx{bool __builtin_usub_overflow (unsigned int a, unsigned int b, unsigned int *res)}
+@defbuiltinx{bool __builtin_usubl_overflow (unsigned long int a, unsigned long int b, unsigned long int *res)}
+@defbuiltinx{bool __builtin_usubll_overflow (unsigned long long int a, unsigned long long int b, unsigned long long int *res)}
 
 These built-in functions are similar to the add overflow checking built-in
 functions above, except they perform subtraction, subtract the second argument
 from the first one, instead of addition.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} bool __builtin_mul_overflow (@var{type1} a, @var{type2} b, @var{type3} *res)
-@deftypefnx {Built-in Function} bool __builtin_smul_overflow (int a, int b, int *res)
-@deftypefnx {Built-in Function} bool __builtin_smull_overflow (long int a, long int b, long int *res)
-@deftypefnx {Built-in Function} bool __builtin_smulll_overflow (long long int a, long long int b, long long int *res)
-@deftypefnx {Built-in Function} bool __builtin_umul_overflow (unsigned int a, unsigned int b, unsigned int *res)
-@deftypefnx {Built-in Function} bool __builtin_umull_overflow (unsigned long int a, unsigned long int b, unsigned long int *res)
-@deftypefnx {Built-in Function} bool __builtin_umulll_overflow (unsigned long long int a, unsigned long long int b, unsigned long long int *res)
+@defbuiltin{bool __builtin_mul_overflow (@var{type1} a, @var{type2} b, @var{type3} *res)}
+@defbuiltinx{bool __builtin_smul_overflow (int a, int b, int *res)}
+@defbuiltinx{bool __builtin_smull_overflow (long int a, long int b, long int *res)}
+@defbuiltinx{bool __builtin_smulll_overflow (long long int a, long long int b, long long int *res)}
+@defbuiltinx{bool __builtin_umul_overflow (unsigned int a, unsigned int b, unsigned int *res)}
+@defbuiltinx{bool __builtin_umull_overflow (unsigned long int a, unsigned long int b, unsigned long int *res)}
+@defbuiltinx{bool __builtin_umulll_overflow (unsigned long long int a, unsigned long long int b, unsigned long long int *res)}
 
 These built-in functions are similar to the add overflow checking built-in
 functions above, except they perform multiplication, instead of addition.
 
-@end deftypefn
+@enddefbuiltin
 
 The following built-in functions allow checking if simple arithmetic operation
 would overflow.
 
-@deftypefn {Built-in Function} bool __builtin_add_overflow_p (@var{type1} a, @var{type2} b, @var{type3} c)
-@deftypefnx {Built-in Function} bool __builtin_sub_overflow_p (@var{type1} a, @var{type2} b, @var{type3} c)
-@deftypefnx {Built-in Function} bool __builtin_mul_overflow_p (@var{type1} a, @var{type2} b, @var{type3} c)
+@defbuiltin{bool __builtin_add_overflow_p (@var{type1} a, @var{type2} b, @var{type3} c)}
+@defbuiltinx{bool __builtin_sub_overflow_p (@var{type1} a, @var{type2} b, @var{type3} c)}
+@defbuiltinx{bool __builtin_mul_overflow_p (@var{type1} a, @var{type2} b, @var{type3} c)}
 
 These built-in functions are similar to @code{__builtin_add_overflow},
 @code{__builtin_sub_overflow}, or @code{__builtin_mul_overflow}, except that
@@ -12817,7 +12805,7 @@ The compiler will attempt to use hardware instructions to implement
 these built-in functions where possible, like conditional jump on overflow
 after addition, conditional jump on carry etc.
  
-@end deftypefn
+@enddefbuiltin
 
 @node x86 specific memory model extensions for transactional memory
 @section x86-Specific Memory Model Extensions for Transactional Memory
@@ -12856,8 +12844,6 @@ __atomic_store_n(&lockvar, 0, __ATOMIC_RELEASE|__ATOMIC_HLE_RELEASE);
 @section Object Size Checking
 
 @subsection Object Size Checking Built-in Functions
-@findex __builtin_object_size
-@findex __builtin_dynamic_object_size
 @findex __builtin___memcpy_chk
 @findex __builtin___mempcpy_chk
 @findex __builtin___memmove_chk
@@ -12867,14 +12853,6 @@ __atomic_store_n(&lockvar, 0, __ATOMIC_RELEASE|__ATOMIC_HLE_RELEASE);
 @findex __builtin___strncpy_chk
 @findex __builtin___strcat_chk
 @findex __builtin___strncat_chk
-@findex __builtin___sprintf_chk
-@findex __builtin___snprintf_chk
-@findex __builtin___vsprintf_chk
-@findex __builtin___vsnprintf_chk
-@findex __builtin___printf_chk
-@findex __builtin___vprintf_chk
-@findex __builtin___fprintf_chk
-@findex __builtin___vfprintf_chk
 
 GCC implements a limited buffer overflow protection mechanism that can
 prevent some buffer overflow attacks by determining the sizes of objects
@@ -12886,7 +12864,7 @@ follow pointer assignments through non-trivial control flow they rely
 on various optimization passes enabled with @option{-O2}.  However, to
 a limited extent, they can be used without optimization as well.
 
-@deftypefn {Built-in Function} {size_t} __builtin_object_size (const void * @var{ptr}, int @var{type})
+@defbuiltin{size_t __builtin_object_size (const void * @var{ptr}, int @var{type})}
 is a built-in construct that returns a constant number of bytes from
 @var{ptr} to the end of the object @var{ptr} pointer points to
 (if known at compile time).  To determine the sizes of dynamically allocated
@@ -12923,9 +12901,9 @@ assert (__builtin_object_size (q, 0)
 /* The subobject q points to is var.b.  */
 assert (__builtin_object_size (q, 1) == sizeof (var.b));
 @end smallexample
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {size_t} __builtin_dynamic_object_size (const void * @var{ptr}, int @var{type})
+@defbuiltin{{size_t} __builtin_dynamic_object_size (const void * @var{ptr}, int @var{type})}
 is similar to @code{__builtin_object_size} in that it returns a number of bytes
 from @var{ptr} to the end of the object @var{ptr} pointer points to, except
 that the size returned may not be a constant.  This results in successful
@@ -12935,7 +12913,7 @@ penalty since it may add a runtime overhead on size computation.  Semantics of
 @var{type} as well as return values in case it is not possible to determine
 which objects @var{ptr} points to at compile time are the same as in the case
 of @code{__builtin_object_size}.
-@end deftypefn
+@enddefbuiltin
 
 @subsection Object Size Checking and Source Fortification
 
@@ -12985,17 +12963,20 @@ Such built-in functions are provided for @code{memcpy}, @code{mempcpy},
 @code{memmove}, @code{memset}, @code{strcpy}, @code{stpcpy}, @code{strncpy},
 @code{strcat} and @code{strncat}.
 
-There are also checking built-in functions for formatted output functions.
-@smallexample
-int __builtin___sprintf_chk (char *s, int flag, size_t os, const char *fmt, ...);
-int __builtin___snprintf_chk (char *s, size_t maxlen, int flag, size_t os,
-                              const char *fmt, ...);
-int __builtin___vsprintf_chk (char *s, int flag, size_t os, const char *fmt,
-                              va_list ap);
-int __builtin___vsnprintf_chk (char *s, size_t maxlen, int flag, size_t os,
-                               const char *fmt, va_list ap);
-@end smallexample
 @subsubsection Formatted Output Function Checking
+@defbuiltin{int __builtin___sprintf_chk @
+            (char *@var{s}, int @var{flag}, size_t @var{os}, @
+            const char *@var{fmt}, ...)}
+@defbuiltinx{int __builtin___snprintf_chk @
+             (char *@var{s}, size_t @var{maxlen}, int @var{flag}, @
+             size_t @var{os}, const char *@var{fmt}, ...)}
+@defbuiltinx{int __builtin___vsprintf_chk @
+             (char *@var{s}, int @var{flag}, size_t @var{os}, @
+             const char *@var{fmt}, va_list @var{ap})}
+@defbuiltinx{int __builtin___vsnprintf_chk @
+             (char *@var{s}, size_t @var{maxlen}, int @var{flag}, @
+             size_t @var{os}, const char *@var{fmt}, @
+             va_list @var{ap})}
 
 The added @var{flag} argument is passed unchanged to @code{__sprintf_chk}
 etc.@: functions and can contain implementation specific flags on what
@@ -13016,31 +12997,16 @@ These have just one additional argument, @var{flag}, right before
 format string @var{fmt}.  If the compiler is able to optimize them to
 @code{fputc} etc.@: functions, it does, otherwise the checking function
 is called and the @var{flag} argument passed to it.
+@enddefbuiltin
 
 @node Other Builtins
 @section Other Built-in Functions Provided by GCC
 @cindex built-in functions
-@findex __builtin_alloca
-@findex __builtin_alloca_with_align
-@findex __builtin_alloca_with_align_and_max
-@findex __builtin_call_with_static_chain
-@findex __builtin_extend_pointer
-@findex __builtin_fpclassify
-@findex __builtin_has_attribute
 @findex __builtin_isfinite
 @findex __builtin_isnormal
 @findex __builtin_isgreater
 @findex __builtin_isgreaterequal
-@findex __builtin_isinf_sign
-@findex __builtin_isless
-@findex __builtin_islessequal
-@findex __builtin_islessgreater
-@findex __builtin_issignaling
 @findex __builtin_isunordered
-@findex __builtin_object_size
-@findex __builtin_powi
-@findex __builtin_powif
-@findex __builtin_powil
 @findex __builtin_speculation_safe_value
 @findex _Exit
 @findex _exit
@@ -13602,7 +13568,7 @@ for all target libcs, but in all cases they will gracefully fallback to libc
 calls.  These built-in functions appear both with and without the
 @code{__builtin_} prefix.
 
-@deftypefn {Built-in Function} void *__builtin_alloca (size_t size)
+@defbuiltin{{void *} __builtin_alloca (size_t size)}
 The @code{__builtin_alloca} function must be called at block scope.
 The function allocates an object @var{size} bytes large on the stack
 of the calling function.  The object is aligned on the default stack
@@ -13640,9 +13606,9 @@ interface they are recommended instead, in both C99 and C++ programs
 where GCC provides them as an extension.
 @xref{Variable Length}, for details.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void *__builtin_alloca_with_align (size_t size, size_t alignment)
+@defbuiltin{{void *} __builtin_alloca_with_align (size_t size, size_t alignment)}
 The @code{__builtin_alloca_with_align} function must be called at block
 scope.  The function allocates an object @var{size} bytes large on
 the stack of the calling function.  The allocated object is aligned on
@@ -13687,9 +13653,9 @@ a portable, more convenient, and safer interface they are recommended
 instead, in both C99 and C++ programs where GCC provides them as
 an extension.  @xref{Variable Length}, for details.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void *__builtin_alloca_with_align_and_max (size_t size, size_t alignment, size_t max_size)
+@defbuiltin{{void *}__builtin_alloca_with_align_and_max (size_t size, size_t alignment, size_t max_size)}
 Similar to @code{__builtin_alloca_with_align} but takes an extra argument
 specifying an upper bound for @var{size} in case its value cannot be computed
 at compile time, for use by @option{-fstack-usage}, @option{-Wstack-usage}
@@ -13697,9 +13663,9 @@ and @option{-Walloca-larger-than}.  @var{max_size} must be a constant integer
 expression, it has no effect on code generation and no attempt is made to
 check its compatibility with @var{size}.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} bool __builtin_has_attribute (@var{type-or-expression}, @var{attribute})
+@defbuiltin{bool __builtin_has_attribute (@var{type-or-expression}, @var{attribute})}
 The @code{__builtin_has_attribute} function evaluates to an integer constant
 expression equal to @code{true} if the symbol or type referenced by
 the @var{type-or-expression} argument has been declared with
@@ -13740,9 +13706,9 @@ is suitable for use in @code{#if} preprocessing directives
 @code{__builtin_has_attribute} is an intrinsic function that is not
 recognized in such contexts.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} @var{type} __builtin_speculation_safe_value (@var{type} val, @var{type} failval)
+@defbuiltin{@var{type} __builtin_speculation_safe_value (@var{type} val, @var{type} failval)}
 
 This built-in function can be used to help mitigate against unsafe
 speculative execution.  @var{type} may be any integral type or any
@@ -13830,9 +13796,9 @@ int f (unsigned untrusted_index)
 
 which will cause a @code{NULL} pointer to be used for the unsafe case.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_types_compatible_p (@var{type1}, @var{type2})
+@defbuiltin{int __builtin_types_compatible_p (@var{type1}, @var{type2})}
 
 You can use the built-in function @code{__builtin_types_compatible_p} to
 determine whether two types are the same.
@@ -13881,9 +13847,9 @@ depending on the arguments' types.  For example:
 
 @emph{Note:} This construct is only available for C@.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} @var{type} __builtin_call_with_static_chain (@var{call_exp}, @var{pointer_exp})
+@defbuiltin{@var{type} __builtin_call_with_static_chain (@var{call_exp}, @var{pointer_exp})}
 
 The @var{call_exp} expression must be a function call, and the
 @var{pointer_exp} expression must be a pointer.  The @var{pointer_exp}
@@ -13893,9 +13859,9 @@ The result of builtin is the result of the function call.
 @emph{Note:} This builtin is only available for C@.
 This builtin can be used to call Go closures from C.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} @var{type} __builtin_choose_expr (@var{const_exp}, @var{exp1}, @var{exp2})
+@defbuiltin{@var{type} __builtin_choose_expr (@var{const_exp}, @var{exp1}, @var{exp2})}
 
 You can use the built-in function @code{__builtin_choose_expr} to
 evaluate code depending on the value of a constant expression.  This
@@ -13935,9 +13901,9 @@ unused expression (@var{exp1} or @var{exp2} depending on the value of
 @var{const_exp}) may still generate syntax errors.  This may change in
 future revisions.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} @var{type} __builtin_tgmath (@var{functions}, @var{arguments})
+@defbuiltin{@var{type} __builtin_tgmath (@var{functions}, @var{arguments})}
 
 The built-in function @code{__builtin_tgmath}, available only for C
 and Objective-C, calls a function determined according to the rules of
@@ -13993,9 +13959,9 @@ called, and otherwise the first function, if any, for which @var{t}
 has at least the range and precision of @var{u} is called, and it is
 an error if there is no such function.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_constant_p (@var{exp})
+@defbuiltin{int __builtin_constant_p (@var{exp})}
 You can use the built-in function @code{__builtin_constant_p} to
 determine if a value is known to be constant at compile time and hence
 that GCC can perform constant-folding on expressions involving that
@@ -14044,9 +14010,9 @@ not otherwise permitted in a static initializer (for example,
 @code{0 && foo ()}).  GCC must be more conservative about evaluating the
 built-in in this case, because it has no opportunity to perform
 optimization.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} bool __builtin_is_constant_evaluated (void)
+@defbuiltin{bool __builtin_is_constant_evaluated (void)}
 The @code{__builtin_is_constant_evaluated} function is available only
 in C++.  The built-in is intended to be used by implementations of
 the @code{std::is_constant_evaluated} C++ function.  Programs should make
@@ -14061,9 +14027,9 @@ standard.  Manifestly constant-evaluated contexts include constant-expressions,
 the conditions of @code{constexpr if} statements, constraint-expressions, and
 initializers of variables usable in constant expressions.   For more details
 refer to the latest revision of the C++ standard.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __builtin_clear_padding (@var{ptr})
+@defbuiltin{void __builtin_clear_padding (@var{ptr})}
 The built-in function @code{__builtin_clear_padding} function clears
 padding bits inside of the object representation of object pointed by
 @var{ptr}, which has to be a pointer.  The value representation of the
@@ -14079,9 +14045,9 @@ For C++, @var{ptr} argument type should be pointer to trivially-copyable
 type, unless the argument is address of a variable or parameter, because
 otherwise it isn't known if the type isn't just a base class whose padding
 bits are reused or laid out differently in a derived class.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} @var{type} __builtin_bit_cast (@var{type}, @var{arg})
+@defbuiltin{@var{type} __builtin_bit_cast (@var{type}, @var{arg})}
 The @code{__builtin_bit_cast} function is available only
 in C++.  The built-in is intended to be used by implementations of
 the @code{std::bit_cast} C++ template function.  Programs should make
@@ -14094,9 +14060,9 @@ When manifestly constant-evaluated, it performs extra diagnostics required
 for @code{std::bit_cast} and returns a constant expression if @var{arg}
 is a constant expression.  For more details
 refer to the latest revision of the C++ standard.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} long __builtin_expect (long @var{exp}, long @var{c})
+@defbuiltin{long __builtin_expect (long @var{exp}, long @var{c})}
 @opindex fprofile-arcs
 You may use @code{__builtin_expect} to provide the compiler with
 branch prediction information.  In general, you should prefer to
@@ -14135,9 +14101,9 @@ You can also use @code{__builtin_expect_with_probability} to explicitly
 assign a probability value to individual expressions.  If the built-in
 is used in a loop construct, the provided probability will influence
 the expected number of iterations made by loop optimizations.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} long __builtin_expect_with_probability
+@defbuiltin{long __builtin_expect_with_probability}
 (long @var{exp}, long @var{c}, double @var{probability})
 
 This function has the same semantics as @code{__builtin_expect},
@@ -14145,17 +14111,17 @@ but the caller provides the expected probability that @var{exp} == @var{c}.
 The last argument, @var{probability}, is a floating-point value in the
 range 0.0 to 1.0, inclusive.  The @var{probability} argument must be
 constant floating-point expression.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __builtin_trap (void)
+@defbuiltin{void __builtin_trap (void)}
 This function causes the program to exit abnormally.  GCC implements
 this function by using a target-dependent mechanism (such as
 intentionally executing an illegal instruction) or by calling
 @code{abort}.  The mechanism used may vary from release to release so
 you should not rely on any particular implementation.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __builtin_unreachable (void)
+@defbuiltin{void __builtin_unreachable (void)}
 If control flow reaches the point of the @code{__builtin_unreachable},
 the program is undefined.  It is useful in situations where the
 compiler cannot deduce the unreachability of the code.
@@ -14209,9 +14175,9 @@ int g (int c)
 @}
 @end smallexample
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} @var{type} __builtin_assoc_barrier (@var{type} @var{expr})
+@defbuiltin{@var{type} __builtin_assoc_barrier (@var{type} @var{expr})}
 This built-in inhibits re-association of the floating-point expression
 @var{expr} with expressions consuming the return value of the built-in. The
 expression @var{expr} itself can be reordered, and the whole expression
@@ -14227,9 +14193,9 @@ float x1 = __builtin_assoc_barrier(a + b) - b;
 @noindent
 means that, with @code{-fassociative-math}, @code{x0} can be optimized to
 @code{x0 = a} but @code{x1} cannot.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {void *} __builtin_assume_aligned (const void *@var{exp}, size_t @var{align}, ...)
+@defbuiltin{{void *} __builtin_assume_aligned (const void *@var{exp}, size_t @var{align}, ...)}
 This function returns its first argument, and allows the compiler
 to assume that the returned pointer is at least @var{align} bytes
 aligned.  This built-in can have either two or three arguments,
@@ -14251,17 +14217,17 @@ void *x = __builtin_assume_aligned (arg, 32, 8);
 @noindent
 means that the compiler can assume for @code{x}, set to @code{arg}, that
 @code{(char *) x - 8} is 32-byte aligned.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_LINE ()
+@defbuiltin{int __builtin_LINE ()}
 This function is the equivalent of the preprocessor @code{__LINE__}
 macro and returns a constant integer expression that evaluates to
 the line number of the invocation of the built-in.  When used as a C++
 default argument for a function @var{F}, it returns the line number
 of the call to @var{F}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {const char *} __builtin_FUNCTION ()
+@defbuiltin{{const char *} __builtin_FUNCTION ()}
 This function is the equivalent of the @code{__FUNCTION__} symbol
 and returns an address constant pointing to the name of the function
 from which the built-in was invoked, or the empty string if
@@ -14269,9 +14235,9 @@ the invocation is not at function scope.  When used as a C++ default
 argument for a function @var{F}, it returns the name of @var{F}'s
 caller or the empty string if the call was not made at function
 scope.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {const char *} __builtin_FILE ()
+@defbuiltin{{const char *} __builtin_FILE ()}
 This function is the equivalent of the preprocessor @code{__FILE__}
 macro and returns an address constant pointing to the file name
 containing the invocation of the built-in, or the empty string if
@@ -14298,9 +14264,9 @@ void foo (void)
 @}
 @end smallexample
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __builtin___clear_cache (void *@var{begin}, void *@var{end})
+@defbuiltin{void __builtin___clear_cache (void *@var{begin}, void *@var{end})}
 This function is used to flush the processor's instruction cache for
 the region of memory between @var{begin} inclusive and @var{end}
 exclusive.  Some targets require that the instruction cache be
@@ -14311,9 +14277,9 @@ If the target does not require instruction cache flushes,
 @code{__builtin___clear_cache} has no effect.  Otherwise either
 instructions are emitted in-line to clear the instruction cache or a
 call to the @code{__clear_cache} function in libgcc is made.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __builtin_prefetch (const void *@var{addr}, ...)
+@defbuiltin{void __builtin_prefetch (const void *@var{addr}, ...)}
 This function is used to minimize cache-miss latency by moving data into
 a cache before it is accessed.
 You can insert calls to @code{__builtin_prefetch} into code for which
@@ -14353,45 +14319,45 @@ address, but evaluation faults if @code{p} is not a valid address.
 If the target does not support data prefetch, the address expression
 is evaluated if it includes side effects but no other code is generated
 and GCC does not issue a warning.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}{size_t} __builtin_object_size (const void * @var{ptr}, int @var{type})
+@defbuiltin{{size_t} __builtin_object_size (const void * @var{ptr}, int @var{type})}
 Returns a constant size estimate of an object pointed to by @var{ptr}.
 @xref{Object Size Checking}, for a detailed description of the function.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}{size_t} __builtin_dynamic_object_size (const void * @var{ptr}, int @var{type})
+@defbuiltin{{size_t} __builtin_dynamic_object_size (const void * @var{ptr}, int @var{type})}
 Similar to @code{__builtin_object_size} except that the return value
 need not be a constant.  @xref{Object Size Checking}, for a detailed
 description of the function.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} double __builtin_huge_val (void)
+@defbuiltin{double __builtin_huge_val (void)}
 Returns a positive infinity, if supported by the floating-point format,
 else @code{DBL_MAX}.  This function is suitable for implementing the
 ISO C macro @code{HUGE_VAL}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} float __builtin_huge_valf (void)
+@defbuiltin{float __builtin_huge_valf (void)}
 Similar to @code{__builtin_huge_val}, except the return type is @code{float}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {long double} __builtin_huge_vall (void)
+@defbuiltin{{long double} __builtin_huge_vall (void)}
 Similar to @code{__builtin_huge_val}, except the return
 type is @code{long double}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} _Float@var{n} __builtin_huge_valf@var{n} (void)
+@defbuiltin{_Float@var{n} __builtin_huge_valf@var{n} (void)}
 Similar to @code{__builtin_huge_val}, except the return type is
 @code{_Float@var{n}}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} _Float@var{n}x __builtin_huge_valf@var{n}x (void)
+@defbuiltin{_Float@var{n}x __builtin_huge_valf@var{n}x (void)}
 Similar to @code{__builtin_huge_val}, except the return type is
 @code{_Float@var{n}x}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_fpclassify (int, int, int, int, int, ...)
+@defbuiltin{int __builtin_fpclassify (int, int, int, int, int, ...)}
 This built-in implements the C99 fpclassify functionality.  The first
 five int arguments should be the target library's notion of the
 possible FP classes and are used for return values.  They must be
@@ -14400,55 +14366,55 @@ constant values and they must appear in this order: @code{FP_NAN},
 @code{FP_ZERO}.  The ellipsis is for exactly one floating-point value
 to classify.  GCC treats the last argument as type-generic, which
 means it does not do default promotion from float to double.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} double __builtin_inf (void)
+@defbuiltin{double __builtin_inf (void)}
 Similar to @code{__builtin_huge_val}, except a warning is generated
 if the target floating-point format does not support infinities.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} _Decimal32 __builtin_infd32 (void)
+@defbuiltin{_Decimal32 __builtin_infd32 (void)}
 Similar to @code{__builtin_inf}, except the return type is @code{_Decimal32}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} _Decimal64 __builtin_infd64 (void)
+@defbuiltin{_Decimal64 __builtin_infd64 (void)}
 Similar to @code{__builtin_inf}, except the return type is @code{_Decimal64}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} _Decimal128 __builtin_infd128 (void)
+@defbuiltin{_Decimal128 __builtin_infd128 (void)}
 Similar to @code{__builtin_inf}, except the return type is @code{_Decimal128}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} float __builtin_inff (void)
+@defbuiltin{float __builtin_inff (void)}
 Similar to @code{__builtin_inf}, except the return type is @code{float}.
 This function is suitable for implementing the ISO C99 macro @code{INFINITY}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {long double} __builtin_infl (void)
+@defbuiltin{{long double} __builtin_infl (void)}
 Similar to @code{__builtin_inf}, except the return
 type is @code{long double}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} _Float@var{n} __builtin_inff@var{n} (void)
+@defbuiltin{_Float@var{n} __builtin_inff@var{n} (void)}
 Similar to @code{__builtin_inf}, except the return
 type is @code{_Float@var{n}}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} _Float@var{n} __builtin_inff@var{n}x (void)
+@defbuiltin{_Float@var{n} __builtin_inff@var{n}x (void)}
 Similar to @code{__builtin_inf}, except the return
 type is @code{_Float@var{n}x}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_isinf_sign (...)
+@defbuiltin{int __builtin_isinf_sign (...)}
 Similar to @code{isinf}, except the return value is -1 for
 an argument of @code{-Inf} and 1 for an argument of @code{+Inf}.
 Note while the parameter list is an
 ellipsis, this function only accepts exactly one floating-point
 argument.  GCC treats this parameter as type-generic, which means it
 does not do default promotion from float to double.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} double __builtin_nan (const char *str)
+@defbuiltin{double __builtin_nan (const char *str)}
 This is an implementation of the ISO C99 function @code{nan}.
 
 Since ISO C99 defines this function in terms of @code{strtod}, which we
@@ -14463,75 +14429,75 @@ forced to be a quiet NaN@.
 This function, if given a string literal all of which would have been
 consumed by @code{strtol}, is evaluated early enough that it is considered a
 compile-time constant.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} _Decimal32 __builtin_nand32 (const char *str)
+@defbuiltin{_Decimal32 __builtin_nand32 (const char *str)}
 Similar to @code{__builtin_nan}, except the return type is @code{_Decimal32}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} _Decimal64 __builtin_nand64 (const char *str)
+@defbuiltin{_Decimal64 __builtin_nand64 (const char *str)}
 Similar to @code{__builtin_nan}, except the return type is @code{_Decimal64}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} _Decimal128 __builtin_nand128 (const char *str)
+@defbuiltin{_Decimal128 __builtin_nand128 (const char *str)}
 Similar to @code{__builtin_nan}, except the return type is @code{_Decimal128}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} float __builtin_nanf (const char *str)
+@defbuiltin{float __builtin_nanf (const char *str)}
 Similar to @code{__builtin_nan}, except the return type is @code{float}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {long double} __builtin_nanl (const char *str)
+@defbuiltin{{long double} __builtin_nanl (const char *str)}
 Similar to @code{__builtin_nan}, except the return type is @code{long double}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} _Float@var{n} __builtin_nanf@var{n} (const char *str)
+@defbuiltin{_Float@var{n} __builtin_nanf@var{n} (const char *str)}
 Similar to @code{__builtin_nan}, except the return type is
 @code{_Float@var{n}}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} _Float@var{n}x __builtin_nanf@var{n}x (const char *str)
+@defbuiltin{_Float@var{n}x __builtin_nanf@var{n}x (const char *str)}
 Similar to @code{__builtin_nan}, except the return type is
 @code{_Float@var{n}x}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} double __builtin_nans (const char *str)
+@defbuiltin{double __builtin_nans (const char *str)}
 Similar to @code{__builtin_nan}, except the significand is forced
 to be a signaling NaN@.  The @code{nans} function is proposed by
 @uref{https://www.open-std.org/jtc1/sc22/wg14/www/docs/n965.htm,,WG14 N965}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} _Decimal32 __builtin_nansd32 (const char *str)
+@defbuiltin{_Decimal32 __builtin_nansd32 (const char *str)}
 Similar to @code{__builtin_nans}, except the return type is @code{_Decimal32}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} _Decimal64 __builtin_nansd64 (const char *str)
+@defbuiltin{_Decimal64 __builtin_nansd64 (const char *str)}
 Similar to @code{__builtin_nans}, except the return type is @code{_Decimal64}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} _Decimal128 __builtin_nansd128 (const char *str)
+@defbuiltin{_Decimal128 __builtin_nansd128 (const char *str)}
 Similar to @code{__builtin_nans}, except the return type is @code{_Decimal128}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} float __builtin_nansf (const char *str)
+@defbuiltin{float __builtin_nansf (const char *str)}
 Similar to @code{__builtin_nans}, except the return type is @code{float}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {long double} __builtin_nansl (const char *str)
+@defbuiltin{{long double} __builtin_nansl (const char *str)}
 Similar to @code{__builtin_nans}, except the return type is @code{long double}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} _Float@var{n} __builtin_nansf@var{n} (const char *str)
+@defbuiltin{_Float@var{n} __builtin_nansf@var{n} (const char *str)}
 Similar to @code{__builtin_nans}, except the return type is
 @code{_Float@var{n}}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} _Float@var{n}x __builtin_nansf@var{n}x (const char *str)
+@defbuiltin{_Float@var{n}x __builtin_nansf@var{n}x (const char *str)}
 Similar to @code{__builtin_nans}, except the return type is
 @code{_Float@var{n}x}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_issignaling (...)
+@defbuiltin{int __builtin_issignaling (...)}
 Return non-zero if the argument is a signaling NaN and zero otherwise.
 Note while the parameter list is an
 ellipsis, this function only accepts exactly one floating-point
@@ -14543,152 +14509,144 @@ stored or passed as argument to some function other than this built-in
 in the current translation unit, it is safer to use @code{-fsignaling-nans}.
 With @code{-ffinite-math-only} option this built-in function will always
 return 0.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_ffs (int x)
+@defbuiltin{int __builtin_ffs (int x)}
 Returns one plus the index of the least significant 1-bit of @var{x}, or
 if @var{x} is zero, returns zero.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_clz (unsigned int x)
+@defbuiltin{int __builtin_clz (unsigned int x)}
 Returns the number of leading 0-bits in @var{x}, starting at the most
 significant bit position.  If @var{x} is 0, the result is undefined.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_ctz (unsigned int x)
+@defbuiltin{int __builtin_ctz (unsigned int x)}
 Returns the number of trailing 0-bits in @var{x}, starting at the least
 significant bit position.  If @var{x} is 0, the result is undefined.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_clrsb (int x)
+@defbuiltin{int __builtin_clrsb (int x)}
 Returns the number of leading redundant sign bits in @var{x}, i.e.@: the
 number of bits following the most significant bit that are identical
 to it.  There are no special cases for 0 or other values. 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_popcount (unsigned int x)
+@defbuiltin{int __builtin_popcount (unsigned int x)}
 Returns the number of 1-bits in @var{x}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_parity (unsigned int x)
+@defbuiltin{int __builtin_parity (unsigned int x)}
 Returns the parity of @var{x}, i.e.@: the number of 1-bits in @var{x}
 modulo 2.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_ffsl (long)
+@defbuiltin{int __builtin_ffsl (long)}
 Similar to @code{__builtin_ffs}, except the argument type is
 @code{long}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_clzl (unsigned long)
+@defbuiltin{int __builtin_clzl (unsigned long)}
 Similar to @code{__builtin_clz}, except the argument type is
 @code{unsigned long}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_ctzl (unsigned long)
+@defbuiltin{int __builtin_ctzl (unsigned long)}
 Similar to @code{__builtin_ctz}, except the argument type is
 @code{unsigned long}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_clrsbl (long)
+@defbuiltin{int __builtin_clrsbl (long)}
 Similar to @code{__builtin_clrsb}, except the argument type is
 @code{long}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_popcountl (unsigned long)
+@defbuiltin{int __builtin_popcountl (unsigned long)}
 Similar to @code{__builtin_popcount}, except the argument type is
 @code{unsigned long}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_parityl (unsigned long)
+@defbuiltin{int __builtin_parityl (unsigned long)}
 Similar to @code{__builtin_parity}, except the argument type is
 @code{unsigned long}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_ffsll (long long)
+@defbuiltin{int __builtin_ffsll (long long)}
 Similar to @code{__builtin_ffs}, except the argument type is
 @code{long long}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_clzll (unsigned long long)
+@defbuiltin{int __builtin_clzll (unsigned long long)}
 Similar to @code{__builtin_clz}, except the argument type is
 @code{unsigned long long}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_ctzll (unsigned long long)
+@defbuiltin{int __builtin_ctzll (unsigned long long)}
 Similar to @code{__builtin_ctz}, except the argument type is
 @code{unsigned long long}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_clrsbll (long long)
+@defbuiltin{int __builtin_clrsbll (long long)}
 Similar to @code{__builtin_clrsb}, except the argument type is
 @code{long long}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_popcountll (unsigned long long)
+@defbuiltin{int __builtin_popcountll (unsigned long long)}
 Similar to @code{__builtin_popcount}, except the argument type is
 @code{unsigned long long}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_parityll (unsigned long long)
+@defbuiltin{int __builtin_parityll (unsigned long long)}
 Similar to @code{__builtin_parity}, except the argument type is
 @code{unsigned long long}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} double __builtin_powi (double, int)
+@defbuiltin{double __builtin_powi (double, int)}
+@defbuiltinx{float __builtin_powif (float, int)}
+@defbuiltinx{{long double} __builtin_powil (long double, int)}
 Returns the first argument raised to the power of the second.  Unlike the
 @code{pow} function no guarantees about precision and rounding are made.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} float __builtin_powif (float, int)
-Similar to @code{__builtin_powi}, except the argument and return types
-are @code{float}.
-@end deftypefn
-
-@deftypefn {Built-in Function} {long double} __builtin_powil (long double, int)
-Similar to @code{__builtin_powi}, except the argument and return types
-are @code{long double}.
-@end deftypefn
-
-@deftypefn {Built-in Function} uint16_t __builtin_bswap16 (uint16_t x)
+@defbuiltin{uint16_t __builtin_bswap16 (uint16_t x)}
 Returns @var{x} with the order of the bytes reversed; for example,
 @code{0xaabb} becomes @code{0xbbaa}.  Byte here always means
 exactly 8 bits.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} uint32_t __builtin_bswap32 (uint32_t x)
+@defbuiltin{uint32_t __builtin_bswap32 (uint32_t x)}
 Similar to @code{__builtin_bswap16}, except the argument and return types
 are 32-bit.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} uint64_t __builtin_bswap64 (uint64_t x)
+@defbuiltin{uint64_t __builtin_bswap64 (uint64_t x)}
 Similar to @code{__builtin_bswap32}, except the argument and return types
 are 64-bit.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} uint128_t __builtin_bswap128 (uint128_t x)
+@defbuiltin{uint128_t __builtin_bswap128 (uint128_t x)}
 Similar to @code{__builtin_bswap64}, except the argument and return types
 are 128-bit.  Only supported on targets when 128-bit types are supported.
-@end deftypefn
+@enddefbuiltin
 
 
-@deftypefn {Built-in Function} Pmode __builtin_extend_pointer (void * x)
+@defbuiltin{Pmode __builtin_extend_pointer (void * x)}
 On targets where the user visible pointer size is smaller than the size
 of an actual hardware address this function returns the extended user
 pointer.  Targets where this is true included ILP32 mode on x86_64 or
 Aarch64.  This function is mainly useful when writing inline assembly
 code.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_goacc_parlevel_id (int x)
+@defbuiltin{int __builtin_goacc_parlevel_id (int x)}
 Returns the openacc gang, worker or vector id depending on whether @var{x} is
 0, 1 or 2.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_goacc_parlevel_size (int x)
+@defbuiltin{int __builtin_goacc_parlevel_size (int x)}
 Returns the openacc gang, worker or vector size depending on whether @var{x} is
 0, 1 or 2.
-@end deftypefn
+@enddefbuiltin
 
 @node Target Builtins
 @section Built-in Functions Specific to Particular Target Machines
@@ -14962,7 +14920,7 @@ by a target may cause problems. At present the compiler is not
 guaranteed to detect such misuse, and as a result an internal compiler
 error may be generated.
 
-@deftypefn {Built-in Function} int __builtin_arc_aligned (void *@var{val}, int @var{alignval})
+@defbuiltin{int __builtin_arc_aligned (void *@var{val}, int @var{alignval})}
 Return 1 if @var{val} is known to have the byte alignment given
 by @var{alignval}, otherwise return 0.
 Note that this is different from
@@ -14973,34 +14931,34 @@ because __alignof__ sees only the type of the dereference, whereas
 __builtin_arc_align uses alignment information from the pointer
 as well as from the pointed-to type.
 The information available will depend on optimization level.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __builtin_arc_brk (void)
+@defbuiltin{void __builtin_arc_brk (void)}
 Generates
 @example
 brk
 @end example
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {unsigned int} __builtin_arc_core_read (unsigned int @var{regno})
+@defbuiltin{{unsigned int} __builtin_arc_core_read (unsigned int @var{regno})}
 The operand is the number of a register to be read.  Generates:
 @example
 mov  @var{dest}, r@var{regno}
 @end example
 where the value in @var{dest} will be the result returned from the
 built-in.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __builtin_arc_core_write (unsigned int @var{regno}, unsigned int @var{val})
+@defbuiltin{void __builtin_arc_core_write (unsigned int @var{regno}, unsigned int @var{val})}
 The first operand is the number of a register to be written, the
 second operand is a compile time constant to write into that
 register.  Generates:
 @example
 mov  r@var{regno}, @var{val}
 @end example
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_arc_divaw (int @var{a}, int @var{b})
+@defbuiltin{int __builtin_arc_divaw (int @var{a}, int @var{b})}
 Only available if either @option{-mcpu=ARC700} or @option{-meA} is set.
 Generates:
 @example
@@ -15008,16 +14966,16 @@ divaw  @var{dest}, @var{a}, @var{b}
 @end example
 where the value in @var{dest} will be the result returned from the
 built-in.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __builtin_arc_flag (unsigned int @var{a})
+@defbuiltin{void __builtin_arc_flag (unsigned int @var{a})}
 Generates
 @example
 flag  @var{a}
 @end example
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {unsigned int} __builtin_arc_lr (unsigned int @var{auxr})
+@defbuiltin{{unsigned int} __builtin_arc_lr (unsigned int @var{auxr})}
 The operand, @var{auxv}, is the address of an auxiliary register and
 must be a compile time constant.  Generates:
 @example
@@ -15025,30 +14983,30 @@ lr  @var{dest}, [@var{auxr}]
 @end example
 Where the value in @var{dest} will be the result returned from the
 built-in.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __builtin_arc_mul64 (int @var{a}, int @var{b})
+@defbuiltin{void __builtin_arc_mul64 (int @var{a}, int @var{b})}
 Only available with @option{-mmul64}.  Generates:
 @example
 mul64  @var{a}, @var{b}
 @end example
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __builtin_arc_mulu64 (unsigned int @var{a}, unsigned int @var{b})
+@defbuiltin{void __builtin_arc_mulu64 (unsigned int @var{a}, unsigned int @var{b})}
 Only available with @option{-mmul64}.  Generates:
 @example
 mulu64  @var{a}, @var{b}
 @end example
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __builtin_arc_nop (void)
+@defbuiltin{void __builtin_arc_nop (void)}
 Generates:
 @example
 nop
 @end example
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_arc_norm (int @var{src})
+@defbuiltin{int __builtin_arc_norm (int @var{src})}
 Only valid if the @samp{norm} instruction is available through the
 @option{-mnorm} option or by default with @option{-mcpu=ARC700}.
 Generates:
@@ -15057,9 +15015,9 @@ norm  @var{dest}, @var{src}
 @end example
 Where the value in @var{dest} will be the result returned from the
 built-in.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  {short int} __builtin_arc_normw (short int @var{src})
+@defbuiltin{{short int} __builtin_arc_normw (short int @var{src})}
 Only valid if the @samp{normw} instruction is available through the
 @option{-mnorm} option or by default with @option{-mcpu=ARC700}.
 Generates:
@@ -15068,67 +15026,67 @@ normw  @var{dest}, @var{src}
 @end example
 Where the value in @var{dest} will be the result returned from the
 built-in.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_arc_rtie (void)
+@defbuiltin{void __builtin_arc_rtie (void)}
 Generates:
 @example
 rtie
 @end example
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_arc_sleep (int @var{a}
+@defbuiltin{void __builtin_arc_sleep (int @var{a}}
 Generates:
 @example
 sleep  @var{a}
 @end example
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_arc_sr (unsigned int @var{val}, unsigned int @var{auxr})
+@defbuiltin{void __builtin_arc_sr (unsigned int @var{val}, unsigned int @var{auxr})}
 The first argument, @var{val}, is a compile time constant to be
 written to the register, the second argument, @var{auxr}, is the
 address of an auxiliary register.  Generates:
 @example
 sr  @var{val}, [@var{auxr}]
 @end example
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  int __builtin_arc_swap (int @var{src})
+@defbuiltin{int __builtin_arc_swap (int @var{src})}
 Only valid with @option{-mswap}.  Generates:
 @example
 swap  @var{dest}, @var{src}
 @end example
 Where the value in @var{dest} will be the result returned from the
 built-in.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_arc_swi (void)
+@defbuiltin{void __builtin_arc_swi (void)}
 Generates:
 @example
 swi
 @end example
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_arc_sync (void)
+@defbuiltin{void __builtin_arc_sync (void)}
 Only available with @option{-mcpu=ARC700}.  Generates:
 @example
 sync
 @end example
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_arc_trap_s (unsigned int @var{c})
+@defbuiltin{void __builtin_arc_trap_s (unsigned int @var{c})}
 Only available with @option{-mcpu=ARC700}.  Generates:
 @example
 trap_s  @var{c}
 @end example
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_arc_unimp_s (void)
+@defbuiltin{void __builtin_arc_unimp_s (void)}
 Only available with @option{-mcpu=ARC700}.  Generates:
 @example
 unimp_s
 @end example
-@end deftypefn
+@enddefbuiltin
 
 The instructions generated by the following builtins are not
 considered as candidates for scheduling.  They are not moved around by
@@ -15716,23 +15674,23 @@ void __builtin_bfin_ssync (void);
 
 The following built-in functions are available for eBPF targets.
 
-@deftypefn {Built-in Function} {unsigned long long} __builtin_bpf_load_byte (unsigned long long @var{offset})
+@defbuiltin{{unsigned long long} __builtin_bpf_load_byte (unsigned long long @var{offset})}
 Load a byte from the @code{struct sk_buff} packet data pointed by the register @code{%r6} and return it.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {unsigned long long} __builtin_bpf_load_half (unsigned long long @var{offset})
+@defbuiltin{{unsigned long long} __builtin_bpf_load_half (unsigned long long @var{offset})}
 Load 16 bits from the @code{struct sk_buff} packet data pointed by the register @code{%r6} and return it.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {unsigned long long} __builtin_bpf_load_word (unsigned long long @var{offset})
+@defbuiltin{{unsigned long long} __builtin_bpf_load_word (unsigned long long @var{offset})}
 Load 32 bits from the @code{struct sk_buff} packet data pointed by the register @code{%r6} and return it.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {void *} __builtin_preserve_access_index (@var{expr})
+@defbuiltin{{void *} __builtin_preserve_access_index (@var{expr})}
 BPF Compile Once-Run Everywhere (CO-RE) support. Instruct GCC to generate CO-RE relocation records for any accesses to aggregate data structures (struct, union, array types) in @var{expr}. This builtin is otherwise transparent, the return value is whatever @var{expr} evaluates to. It is also overloaded: @var{expr} may be of any type (not necessarily a pointer), the return type is the same. Has no effect if @code{-mco-re} is not in effect (either specified or implied).
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {unsigned int} __builtin_preserve_field_info (@var{expr}, unsigned int @var{kind})
+@defbuiltin{{unsigned int} __builtin_preserve_field_info (@var{expr}, unsigned int @var{kind})}
 BPF Compile Once-Run Everywhere (CO-RE) support. This builtin is used to
 extract information to aid in struct/union relocations.  @var{expr} is
 an access to a field of a struct or union. Depending on @var{kind}, different
@@ -15811,7 +15769,7 @@ read_y (struct S *arg)
 @}
 
 @end smallexample
-@end deftypefn
+@enddefbuiltin
 
 @node FR-V Built-in Functions
 @subsection FR-V Built-in Functions
@@ -17815,38 +17773,38 @@ builtin is exact.
 
 These built-in functions are available for the NDS32 target:
 
-@deftypefn {Built-in Function} void __builtin_nds32_isync (int *@var{addr})
+@defbuiltin{void __builtin_nds32_isync (int *@var{addr})}
 Insert an ISYNC instruction into the instruction stream where
 @var{addr} is an instruction address for serialization.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __builtin_nds32_isb (void)
+@defbuiltin{void __builtin_nds32_isb (void)}
 Insert an ISB instruction into the instruction stream.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_nds32_mfsr (int @var{sr})
+@defbuiltin{int __builtin_nds32_mfsr (int @var{sr})}
 Return the content of a system register which is mapped by @var{sr}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_nds32_mfusr (int @var{usr})
+@defbuiltin{int __builtin_nds32_mfusr (int @var{usr})}
 Return the content of a user space register which is mapped by @var{usr}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __builtin_nds32_mtsr (int @var{value}, int @var{sr})
+@defbuiltin{void __builtin_nds32_mtsr (int @var{value}, int @var{sr})}
 Move the @var{value} to a system register which is mapped by @var{sr}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __builtin_nds32_mtusr (int @var{value}, int @var{usr})
+@defbuiltin{void __builtin_nds32_mtusr (int @var{value}, int @var{usr})}
 Move the @var{value} to a user space register which is mapped by @var{usr}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __builtin_nds32_setgie_en (void)
+@defbuiltin{void __builtin_nds32_setgie_en (void)}
 Enable global interrupt.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __builtin_nds32_setgie_dis (void)
+@defbuiltin{void __builtin_nds32_setgie_dis (void)}
 Disable global interrupt.
-@end deftypefn
+@enddefbuiltin
 
 @node Basic PowerPC Built-in Functions
 @subsection Basic PowerPC Built-in Functions
@@ -17868,12 +17826,12 @@ additional PowerPC built-in functions.
 @node Basic PowerPC Built-in Functions Available on all Configurations
 @subsubsection Basic PowerPC Built-in Functions Available on all Configurations
 
-@deftypefn {Built-in Function} void __builtin_cpu_init (void)
+@defbuiltin{void __builtin_cpu_init (void)}
 This function is a @code{nop} on the PowerPC platform and is included solely
 to maintain API compatibility with the x86 builtins.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_cpu_is (const char *@var{cpuname})
+@defbuiltin{int __builtin_cpu_is (const char *@var{cpuname})}
 This function returns a value of @code{1} if the run-time CPU is of type
 @var{cpuname} and returns @code{0} otherwise
 
@@ -17936,9 +17894,9 @@ Here is an example:
        do_generic (); // Generic implementation.
     @}
 @end smallexample
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_cpu_supports (const char *@var{feature})
+@defbuiltin{int __builtin_cpu_supports (const char *@var{feature})}
 This function returns a value of @code{1} if the run-time CPU supports the HWCAP
 feature @var{feature} and returns @code{0} otherwise.
 
@@ -18057,7 +18015,7 @@ Here is an example:
        dst = __fadd (src1, src2); // Software FP addition function.
     @}
 @end smallexample
-@end deftypefn
+@enddefbuiltin
 
 The following built-in functions are also available on all PowerPC
 processors:
@@ -18278,51 +18236,48 @@ addition to the @option{-misel} option.
 The following built-in functions are available on Linux 64-bit systems
 that use the ISA 3.0 instruction set (@option{-mcpu=power9}):
 
-@table @code
-@item __float128 __builtin_addf128_round_to_odd (__float128, __float128)
+@defbuiltin{__float128 __builtin_addf128_round_to_odd (__float128, __float128)}
 Perform a 128-bit IEEE floating point add using round to odd as the
 rounding mode.
-@findex __builtin_addf128_round_to_odd
+@enddefbuiltin
 
-@item __float128 __builtin_subf128_round_to_odd (__float128, __float128)
+@defbuiltin{__float128 __builtin_subf128_round_to_odd (__float128, __float128)}
 Perform a 128-bit IEEE floating point subtract using round to odd as
 the rounding mode.
-@findex __builtin_subf128_round_to_odd
+@enddefbuiltin
 
-@item __float128 __builtin_mulf128_round_to_odd (__float128, __float128)
+@defbuiltin{__float128 __builtin_mulf128_round_to_odd (__float128, __float128)}
 Perform a 128-bit IEEE floating point multiply using round to odd as
 the rounding mode.
-@findex __builtin_mulf128_round_to_odd
+@enddefbuiltin
 
-@item __float128 __builtin_divf128_round_to_odd (__float128, __float128)
+@defbuiltin{__float128 __builtin_divf128_round_to_odd (__float128, __float128)}
 Perform a 128-bit IEEE floating point divide using round to odd as
 the rounding mode.
-@findex __builtin_divf128_round_to_odd
+@enddefbuiltin
 
-@item __float128 __builtin_sqrtf128_round_to_odd (__float128)
+@defbuiltin{__float128 __builtin_sqrtf128_round_to_odd (__float128)}
 Perform a 128-bit IEEE floating point square root using round to odd
 as the rounding mode.
-@findex __builtin_sqrtf128_round_to_odd
+@enddefbuiltin
 
-@item __float128 __builtin_fmaf128_round_to_odd (__float128, __float128, __float128)
+@defbuiltin{__float128 __builtin_fmaf128_round_to_odd (__float128, __float128, __float128)}
 Perform a 128-bit IEEE floating point fused multiply and add operation
 using round to odd as the rounding mode.
-@findex __builtin_fmaf128_round_to_odd
+@enddefbuiltin
 
-@item double __builtin_truncf128_round_to_odd (__float128)
+@defbuiltin{double __builtin_truncf128_round_to_odd (__float128)}
 Convert a 128-bit IEEE floating point value to @code{double} using
 round to odd as the rounding mode.
-@findex __builtin_truncf128_round_to_odd
-@end table
+@enddefbuiltin
+
 
 The following additional built-in functions are also available for the
 PowerPC family of processors, starting with ISA 3.0 or later:
-@smallexample
-long long __builtin_darn (void);
-long long __builtin_darn_raw (void);
-int __builtin_darn_32 (void);
-@end smallexample
 
+@defbuiltin{long long __builtin_darn (void)}
+@defbuiltinx{long long __builtin_darn_raw (void)}
+@defbuiltinx{int __builtin_darn_32 (void)}
 The @code{__builtin_darn} and @code{__builtin_darn_raw}
 functions require a
 64-bit environment supporting ISA 3.0 or later.
@@ -18330,6 +18285,7 @@ The @code{__builtin_darn} function provides a 64-bit conditioned
 random number.  The @code{__builtin_darn_raw} function provides a
 64-bit raw random number.  The @code{__builtin_darn_32} function
 provides a 32-bit conditioned random number.
+@enddefbuiltin
 
 The following additional built-in functions are also available for the
 PowerPC family of processors, starting with ISA 3.0 or later:
@@ -18429,91 +18385,63 @@ enabling all the same options as for @option{-mcpu=power9}.
 The following built-in functions are available on Linux 64-bit systems
 that use a future architecture instruction set (@option{-mcpu=power10}):
 
-@smallexample
-@exdent unsigned long long
-@exdent __builtin_cfuged (unsigned long long, unsigned long long)
-@end smallexample
+@defbuiltin{{unsigned long long} @
+            __builtin_cfuged (unsigned long long, unsigned long long)}
 Perform a 64-bit centrifuge operation, as if implemented by the
 @code{cfuged} instruction.
-@findex __builtin_cfuged
+@enddefbuiltin
 
-@smallexample
-@exdent unsigned long long
-@exdent __builtin_cntlzdm (unsigned long long, unsigned long long)
-@end smallexample
+@defbuiltin{{unsigned long long} @
+            __builtin_cntlzdm (unsigned long long, unsigned long long)}
 Perform a 64-bit count leading zeros operation under mask, as if
 implemented by the @code{cntlzdm} instruction.
-@findex __builtin_cntlzdm
+@enddefbuiltin
 
-@smallexample
-@exdent unsigned long long
-@exdent __builtin_cnttzdm (unsigned long long, unsigned long long)
-@end smallexample
+@defbuiltin{{unsigned long long} @
+            __builtin_cnttzdm (unsigned long long, unsigned long long)}
 Perform a 64-bit count trailing zeros operation under mask, as if
 implemented by the @code{cnttzdm} instruction.
-@findex __builtin_cnttzdm
+@enddefbuiltin
 
-@smallexample
-@exdent unsigned long long
-@exdent __builtin_pdepd (unsigned long long, unsigned long long)
-@end smallexample
+@defbuiltin{{unsigned long long} @
+            __builtin_pdepd (unsigned long long, unsigned long long)}
 Perform a 64-bit parallel bits deposit operation, as if implemented by the
 @code{pdepd} instruction.
-@findex __builtin_pdepd
+@enddefbuiltin
 
-@smallexample
-@exdent unsigned long long
-@exdent __builtin_pextd (unsigned long long, unsigned long long)
-@end smallexample
+@defbuiltin{{unsigned long long} @
+            __builtin_pextd (unsigned long long, unsigned long long)}
 Perform a 64-bit parallel bits extract operation, as if implemented by the
 @code{pextd} instruction.
-@findex __builtin_pextd
+@enddefbuiltin
 
-@smallexample
-@exdent vector signed __int128 vsx_xl_sext (signed long long, signed char *)
-
-@exdent vector signed __int128 vsx_xl_sext (signed long long, signed short *)
-
-@exdent vector signed __int128 vsx_xl_sext (signed long long, signed int *)
-
-@exdent vector signed __int128 vsx_xl_sext (signed long long, signed long long *)
-
-@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned char *)
-
-@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned short *)
-
-@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned int *)
-
-@exdent vector unsigned __int128 vsx_xl_zext (signed long long, unsigned long long *)
-@end smallexample
+@defbuiltin{{vector signed __int128} vsx_xl_sext (signed long long, signed char *)}
+@defbuiltinx{{vector signed __int128} vsx_xl_sext (signed long long, signed short *)}
+@defbuiltinx{{vector signed __int128} vsx_xl_sext (signed long long, signed int *)}
+@defbuiltinx{{vector signed __int128} vsx_xl_sext (signed long long, signed long long *)}
+@defbuiltinx{{vector unsigned __int128} vsx_xl_zext (signed long long, unsigned char *)}
+@defbuiltinx{{vector unsigned __int128} vsx_xl_zext (signed long long, unsigned short *)}
+@defbuiltinx{{vector unsigned __int128} vsx_xl_zext (signed long long, unsigned int *)}
+@defbuiltinx{{vector unsigned __int128} vsx_xl_zext (signed long long, unsigned long long *)}
 
 Load (and sign extend) to an __int128 vector, as if implemented by the ISA 3.1
-@code{lxvrbx}, @code{lxvrhx}, @code{lxvrwx}, and  @code{lxvrdx} instructions.
-@findex vsx_xl_sext
-@findex vsx_xl_zext
+@code{lxvrbx}, @code{lxvrhx}, @code{lxvrwx}, and  @code{lxvrdx}
+instructions.
+@enddefbuiltin
 
-@smallexample
-@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed char *)
-
-@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed short *)
-
-@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed int *)
-
-@exdent void vec_xst_trunc (vector signed __int128, signed long long, signed long long *)
-
-@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned char *)
-
-@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned short *)
-
-@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned int *)
-
-@exdent void vec_xst_trunc (vector unsigned __int128, signed long long, unsigned long long *)
-@end smallexample
+@defbuiltin{{void} vec_xst_trunc (vector signed __int128, signed long long, signed char *)}
+@defbuiltinx{{void} vec_xst_trunc (vector signed __int128, signed long long, signed short *)}
+@defbuiltinx{{void} vec_xst_trunc (vector signed __int128, signed long long, signed int *)}
+@defbuiltinx{{void} vec_xst_trunc (vector signed __int128, signed long long, signed long long *)}
+@defbuiltinx{{void} vec_xst_trunc (vector unsigned __int128, signed long long, unsigned char *)}
+@defbuiltinx{{void} vec_xst_trunc (vector unsigned __int128, signed long long, unsigned short *)}
+@defbuiltinx{{void} vec_xst_trunc (vector unsigned __int128, signed long long, unsigned int *)}
+@defbuiltinx{{void} vec_xst_trunc (vector unsigned __int128, signed long long, unsigned long long *)}
 
 Truncate and store the rightmost element of a vector, as if implemented by the
 ISA 3.1 @code{stxvrbx}, @code{stxvrhx}, @code{stxvrwx}, and @code{stxvrdx}
 instructions.
-@findex vec_xst_trunc
+@enddefbuiltin
 
 @node PowerPC AltiVec/VSX Built-in Functions
 @subsection PowerPC AltiVec/VSX Built-in Functions
@@ -21148,8 +21076,7 @@ special PRU instructions.
 
 The built-in functions supported are:
 
-@table @code
-@item __delay_cycles (long long @var{cycles})
+@defbuiltin{void __delay_cycles (constant long long @var{cycles})}
 This inserts an instruction sequence that takes exactly @var{cycles}
 cycles (between 0 and 0xffffffff) to complete.  The inserted sequence
 may use jumps, loops, or no-ops, and does not interfere with any other
@@ -21157,15 +21084,19 @@ instructions.  Note that @var{cycles} must be a compile-time constant
 integer - that is, you must pass a number, not a variable that may be
 optimized to a constant later.  The number of cycles delayed by this
 builtin is exact.
+@enddefbuiltin
 
-@item __halt (void)
+@defbuiltin{void __halt (void)}
 This inserts a HALT instruction to stop processor execution.
+@enddefbuiltin
 
-@item unsigned int __lmbd (unsigned int @var{wordval}, unsigned int @var{bitval})
+@defbuiltin{{unsigned int} @
+            __lmbd (unsigned int @var{wordval}, @
+                    unsigned int @var{bitval})}
 This inserts LMBD instruction to calculate the left-most bit with value
 @var{bitval} in value @var{wordval}.  Only the least significant bit
 of @var{bitval} is taken into account.
-@end table
+@enddefbuiltin
 
 @node RISC-V Built-in Functions
 @subsection RISC-V Built-in Functions
@@ -21173,15 +21104,15 @@ of @var{bitval} is taken into account.
 These built-in functions are available for the RISC-V family of
 processors.
 
-@deftypefn {Built-in Function} {void *} __builtin_thread_pointer (void)
+@defbuiltin{{void *} __builtin_thread_pointer (void)}
 Returns the value that is currently set in the @samp{tp} register.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_riscv_pause (void)
+@defbuiltin{void __builtin_riscv_pause (void)}
 Generates the @code{pause} (hint) machine instruction.  This implies the
 Xgnuzihintpausestate extension, which redefines the @code{pause} instruction to
 change architectural state.
-@end deftypefn
+@enddefbuiltin
 
 @node RX Built-in Functions
 @subsection RX Built-in Functions
@@ -21189,118 +21120,118 @@ GCC supports some of the RX instructions which cannot be expressed in
 the C programming language via the use of built-in functions.  The
 following functions are supported:
 
-@deftypefn {Built-in Function}  void __builtin_rx_brk (void)
+@defbuiltin{void __builtin_rx_brk (void)}
 Generates the @code{brk} machine instruction.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_rx_clrpsw (int)
+@defbuiltin{void __builtin_rx_clrpsw (int)}
 Generates the @code{clrpsw} machine instruction to clear the specified
 bit in the processor status word.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_rx_int (int)
+@defbuiltin{void __builtin_rx_int (int)}
 Generates the @code{int} machine instruction to generate an interrupt
 with the specified value.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_rx_machi (int, int)
+@defbuiltin{void __builtin_rx_machi (int, int)}
 Generates the @code{machi} machine instruction to add the result of
 multiplying the top 16 bits of the two arguments into the
 accumulator.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_rx_maclo (int, int)
+@defbuiltin{void __builtin_rx_maclo (int, int)}
 Generates the @code{maclo} machine instruction to add the result of
 multiplying the bottom 16 bits of the two arguments into the
 accumulator.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_rx_mulhi (int, int)
+@defbuiltin{void __builtin_rx_mulhi (int, int)}
 Generates the @code{mulhi} machine instruction to place the result of
 multiplying the top 16 bits of the two arguments into the
 accumulator.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_rx_mullo (int, int)
+@defbuiltin{void __builtin_rx_mullo (int, int)}
 Generates the @code{mullo} machine instruction to place the result of
 multiplying the bottom 16 bits of the two arguments into the
 accumulator.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  int  __builtin_rx_mvfachi (void)
+@defbuiltin{int  __builtin_rx_mvfachi (void)}
 Generates the @code{mvfachi} machine instruction to read the top
 32 bits of the accumulator.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  int  __builtin_rx_mvfacmi (void)
+@defbuiltin{int  __builtin_rx_mvfacmi (void)}
 Generates the @code{mvfacmi} machine instruction to read the middle
 32 bits of the accumulator.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  int __builtin_rx_mvfc (int)
+@defbuiltin{int __builtin_rx_mvfc (int)}
 Generates the @code{mvfc} machine instruction which reads the control
 register specified in its argument and returns its value.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_rx_mvtachi (int)
+@defbuiltin{void __builtin_rx_mvtachi (int)}
 Generates the @code{mvtachi} machine instruction to set the top
 32 bits of the accumulator.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_rx_mvtaclo (int)
+@defbuiltin{void __builtin_rx_mvtaclo (int)}
 Generates the @code{mvtaclo} machine instruction to set the bottom
 32 bits of the accumulator.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_rx_mvtc (int reg, int val)
+@defbuiltin{void __builtin_rx_mvtc (int reg, int val)}
 Generates the @code{mvtc} machine instruction which sets control
 register number @code{reg} to @code{val}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_rx_mvtipl (int)
+@defbuiltin{void __builtin_rx_mvtipl (int)}
 Generates the @code{mvtipl} machine instruction set the interrupt
 priority level.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_rx_racw (int)
+@defbuiltin{void __builtin_rx_racw (int)}
 Generates the @code{racw} machine instruction to round the accumulator
 according to the specified mode.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  int __builtin_rx_revw (int)
+@defbuiltin{int __builtin_rx_revw (int)}
 Generates the @code{revw} machine instruction which swaps the bytes in
 the argument so that bits 0--7 now occupy bits 8--15 and vice versa,
 and also bits 16--23 occupy bits 24--31 and vice versa.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_rx_rmpa (void)
+@defbuiltin{void __builtin_rx_rmpa (void)}
 Generates the @code{rmpa} machine instruction which initiates a
 repeated multiply and accumulate sequence.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_rx_round (float)
+@defbuiltin{void __builtin_rx_round (float)}
 Generates the @code{round} machine instruction which returns the
 floating-point argument rounded according to the current rounding mode
 set in the floating-point status word register.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  int __builtin_rx_sat (int)
+@defbuiltin{int __builtin_rx_sat (int)}
 Generates the @code{sat} machine instruction which returns the
 saturated value of the argument.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_rx_setpsw (int)
+@defbuiltin{void __builtin_rx_setpsw (int)}
 Generates the @code{setpsw} machine instruction to set the specified
 bit in the processor status word.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function}  void __builtin_rx_wait (void)
+@defbuiltin{void __builtin_rx_wait (void)}
 Generates the @code{wait} machine instruction.
-@end deftypefn
+@enddefbuiltin
 
 @node S/390 System z Built-in Functions
 @subsection S/390 System z Built-in Functions
-@deftypefn {Built-in Function} int __builtin_tbegin (void*)
+@defbuiltin{int __builtin_tbegin (void*)}
 Generates the @code{tbegin} machine instruction starting a
 non-constrained hardware transaction.  If the parameter is non-NULL the
 memory area is used to store the transaction diagnostic buffer and
@@ -21321,25 +21252,30 @@ access registers inside the transaction will not trigger an
 transaction abort it is not supported to actually modify them.  Access
 registers do not get saved when entering a transaction. They will have
 undefined state when reaching the abort code.
-@end deftypefn
+@enddefbuiltin
 
 Macros for the possible return codes of tbegin are defined in the
 @code{htmintrin.h} header file:
 
-@table @code
-@item _HTM_TBEGIN_STARTED
+@defmac _HTM_TBEGIN_STARTED
 @code{tbegin} has been executed as part of normal processing.  The
 transaction body is supposed to be executed.
-@item _HTM_TBEGIN_INDETERMINATE
+@end defmac
+
+@defmac _HTM_TBEGIN_INDETERMINATE
 The transaction was aborted due to an indeterminate condition which
 might be persistent.
-@item _HTM_TBEGIN_TRANSIENT
+@end defmac
+
+@defmac _HTM_TBEGIN_TRANSIENT
 The transaction aborted due to a transient failure.  The transaction
 should be re-executed in that case.
-@item _HTM_TBEGIN_PERSISTENT
+@end defmac
+
+@defmac _HTM_TBEGIN_PERSISTENT
 The transaction aborted due to a persistent failure.  Re-execution
 under same circumstances will not be productive.
-@end table
+@end defmac
 
 @defmac _HTM_FIRST_USER_ABORT_CODE
 The @code{_HTM_FIRST_USER_ABORT_CODE} defined in @code{htmintrin.h}
@@ -21354,70 +21290,70 @@ the structure of the transaction diagnostic block as specified in the
 Principles of Operation manual chapter 5-91.
 @end deftp
 
-@deftypefn {Built-in Function} int __builtin_tbegin_nofloat (void*)
+@defbuiltin{int __builtin_tbegin_nofloat (void*)}
 Same as @code{__builtin_tbegin} but without FPR saves and restores.
 Using this variant in code making use of FPRs will leave the FPRs in
 undefined state when entering the transaction abort handler code.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_tbegin_retry (void*, int)
+@defbuiltin{int __builtin_tbegin_retry (void*, int)}
 In addition to @code{__builtin_tbegin} a loop for transient failures
 is generated.  If tbegin returns a condition code of 2 the transaction
 will be retried as often as specified in the second argument.  The
 perform processor assist instruction is used to tell the CPU about the
 number of fails so far.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_tbegin_retry_nofloat (void*, int)
+@defbuiltin{int __builtin_tbegin_retry_nofloat (void*, int)}
 Same as @code{__builtin_tbegin_retry} but without FPR saves and
 restores.  Using this variant in code making use of FPRs will leave
 the FPRs in undefined state when entering the transaction abort
 handler code.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __builtin_tbeginc (void)
+@defbuiltin{void __builtin_tbeginc (void)}
 Generates the @code{tbeginc} machine instruction starting a constrained
 hardware transaction.  The second operand is set to @code{0xff08}.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_tend (void)
+@defbuiltin{int __builtin_tend (void)}
 Generates the @code{tend} machine instruction finishing a transaction
 and making the changes visible to other threads.  The condition code
 generated by tend is returned as integer value.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __builtin_tabort (int)
+@defbuiltin{void __builtin_tabort (int)}
 Generates the @code{tabort} machine instruction with the specified
 abort code.  Abort codes from 0 through 255 are reserved and will
 result in an error message.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __builtin_tx_assist (int)
+@defbuiltin{void __builtin_tx_assist (int)}
 Generates the @code{ppa rX,rY,1} machine instruction.  Where the
 integer parameter is loaded into rX and a value of zero is loaded into
 rY.  The integer parameter specifies the number of times the
 transaction repeatedly aborted.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_tx_nesting_depth (void)
+@defbuiltin{int __builtin_tx_nesting_depth (void)}
 Generates the @code{etnd} machine instruction.  The current nesting
 depth is returned as integer value.  For a nesting depth of 0 the code
 is not executed as part of an transaction.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} void __builtin_non_tx_store (uint64_t *, uint64_t)
+@defbuiltin{void __builtin_non_tx_store (uint64_t *, uint64_t)}
 
 Generates the @code{ntstg} machine instruction.  The second argument
 is written to the first arguments location.  The store operation will
 not be rolled-back in case of an transaction abort.
-@end deftypefn
+@enddefbuiltin
 
 @node SH Built-in Functions
 @subsection SH Built-in Functions
 The following built-in functions are supported on the SH1, SH2, SH3 and SH4
 families of processors:
 
-@deftypefn {Built-in Function} {void} __builtin_set_thread_pointer (void *@var{ptr})
+@defbuiltin{{void} __builtin_set_thread_pointer (void *@var{ptr})}
 Sets the @samp{GBR} register to the specified value @var{ptr}.  This is usually
 used by system code that manages threads and execution contexts.  The compiler
 normally does not generate code that modifies the contents of @samp{GBR} and
@@ -21425,9 +21361,9 @@ thus the value is preserved across function calls.  Changing the @samp{GBR}
 value in user code must be done with caution, since the compiler might use
 @samp{GBR} in order to access thread local variables.
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {void *} __builtin_thread_pointer (void)
+@defbuiltin{{void *} __builtin_thread_pointer (void)}
 Returns the value that is currently set in the @samp{GBR} register.
 Memory loads and stores that use the thread pointer as a base address are
 turned into @samp{GBR} based displacement loads and stores, if possible.
@@ -21445,16 +21381,16 @@ int get_tcb_value (void)
 @}
 
 @end smallexample
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {unsigned int} __builtin_sh_get_fpscr (void)
+@defbuiltin{{unsigned int} __builtin_sh_get_fpscr (void)}
 Returns the value that is currently set in the @samp{FPSCR} register.
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} {void} __builtin_sh_set_fpscr (unsigned int @var{val})
+@defbuiltin{{void} __builtin_sh_set_fpscr (unsigned int @var{val})}
 Sets the @samp{FPSCR} register to the specified value @var{val}, while
 preserving the current values of the FR, SZ and PR bits.
-@end deftypefn
+@enddefbuiltin
 
 @node SPARC VIS Built-in Functions
 @subsection SPARC VIS Built-in Functions
@@ -21746,46 +21682,45 @@ The x86-32 and x86-64 family of processors use additional built-in
 functions for efficient use of @code{TF} (@code{__float128}) 128-bit
 floating point and @code{TC} 128-bit complex floating-point values.
 
-The following floating-point built-in functions are always available.  All
-of them implement the function that is part of the name.
+The following floating-point built-in functions are always available:
 
-@smallexample
-__float128 __builtin_fabsq (__float128)
-__float128 __builtin_copysignq (__float128, __float128)
-@end smallexample
+@defbuiltin{__float128 __builtin_fabsq (__float128 @var{x}))}
+Computes the absolute value of @var{x}.
+@enddefbuiltin
 
-The following built-in functions are always available.
+@defbuiltin{__float128 __builtin_copysignq (__float128 @var{x}, @
+                                            __float128 @var{y})}
+Copies the sign of @var{y} into @var{x} and returns the new value of
+@var{x}.
+@enddefbuiltin
 
-@table @code
-@item __float128 __builtin_infq (void)
+@defbuiltin{__float128 __builtin_infq (void)}
 Similar to @code{__builtin_inf}, except the return type is @code{__float128}.
-@findex __builtin_infq
+@enddefbuiltin
 
-@item __float128 __builtin_huge_valq (void)
+@defbuiltin{__float128 __builtin_huge_valq (void)}
 Similar to @code{__builtin_huge_val}, except the return type is @code{__float128}.
-@findex __builtin_huge_valq
+@enddefbuiltin
 
-@item __float128 __builtin_nanq (void)
+@defbuiltin{__float128 __builtin_nanq (void)}
 Similar to @code{__builtin_nan}, except the return type is @code{__float128}.
-@findex __builtin_nanq
+@enddefbuiltin
 
-@item __float128 __builtin_nansq (void)
+@defbuiltin{__float128 __builtin_nansq (void)}
 Similar to @code{__builtin_nans}, except the return type is @code{__float128}.
-@findex __builtin_nansq
-@end table
+@enddefbuiltin
 
 The following built-in function is always available.
 
-@table @code
-@item void __builtin_ia32_pause (void)
+@defbuiltin{void __builtin_ia32_pause (void)}
 Generates the @code{pause} machine instruction with a compiler memory
 barrier.
-@end table
+@enddefbuiltin
 
 The following built-in functions are always available and can be used to
 check the target platform type.
 
-@deftypefn {Built-in Function} void __builtin_cpu_init (void)
+@defbuiltin{void __builtin_cpu_init (void)}
 This function runs the CPU detection code to check the type of CPU and the
 features supported.  This built-in function needs to be invoked along with the built-in functions
 to check CPU type and features, @code{__builtin_cpu_is} and
@@ -21814,9 +21749,9 @@ void *memcpy (void *, const void *, size_t)
      __attribute__ ((ifunc ("resolve_memcpy")));
 @end smallexample
 
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_cpu_is (const char *@var{cpuname})
+@defbuiltin{int __builtin_cpu_is (const char *@var{cpuname})}
 This function returns a positive integer if the run-time CPU
 is of type @var{cpuname}
 and returns @code{0} otherwise. The following CPU names can be detected:
@@ -21987,9 +21922,9 @@ else
      do_generic (); // Generic implementation.
   @}
 @end smallexample
-@end deftypefn
+@enddefbuiltin
 
-@deftypefn {Built-in Function} int __builtin_cpu_supports (const char *@var{feature})
+@defbuiltin{int __builtin_cpu_supports (const char *@var{feature})}
 This function returns a positive integer if the run-time CPU
 supports @var{feature}
 and returns @code{0} otherwise. The following features can be detected:
@@ -22090,7 +22025,7 @@ else
      count = generic_countbits (n); //generic implementation.
   @}
 @end smallexample
-@end deftypefn
+@enddefbuiltin
 
 The following built-in functions are made available by @option{-mmmx}.
 All of them generate the machine instruction that is part of the name.
@@ -22245,22 +22180,33 @@ int __builtin_ia32_movmskps (v4sf);
 
 The following built-in functions are available when @option{-msse} is used.
 
-@table @code
-@item v4sf __builtin_ia32_loadups (float *)
+@defbuiltin{v4sf __builtin_ia32_loadups (float *)}
 Generates the @code{movups} machine instruction as a load from memory.
-@item void __builtin_ia32_storeups (float *, v4sf)
+@enddefbuiltin
+
+@defbuiltin{void __builtin_ia32_storeups (float *, v4sf)}
 Generates the @code{movups} machine instruction as a store to memory.
-@item v4sf __builtin_ia32_loadss (float *)
+@enddefbuiltin
+
+@defbuiltin{v4sf __builtin_ia32_loadss (float *)}
 Generates the @code{movss} machine instruction as a load from memory.
-@item v4sf __builtin_ia32_loadhps (v4sf, const v2sf *)
+@enddefbuiltin
+
+@defbuiltin{v4sf __builtin_ia32_loadhps (v4sf, const v2sf *)}
 Generates the @code{movhps} machine instruction as a load from memory.
-@item v4sf __builtin_ia32_loadlps (v4sf, const v2sf *)
+@enddefbuiltin
+
+@defbuiltin{v4sf __builtin_ia32_loadlps (v4sf, const v2sf *)}
 Generates the @code{movlps} machine instruction as a load from memory
-@item void __builtin_ia32_storehps (v2sf *, v4sf)
+@enddefbuiltin
+
+@defbuiltin{void __builtin_ia32_storehps (v2sf *, v4sf)}
 Generates the @code{movhps} machine instruction as a store to memory.
-@item void __builtin_ia32_storelps (v2sf *, v4sf)
+@enddefbuiltin
+
+@defbuiltin{void __builtin_ia32_storelps (v2sf *, v4sf)}
 Generates the @code{movlps} machine instruction as a store to memory.
-@end table
+@enddefbuiltin
 
 The following built-in functions are available when @option{-msse2} is used.
 All of them generate the machine instruction that is part of the name.
@@ -22537,30 +22483,40 @@ v4sf __builtin_ia32_roundss (v4sf, v4sf, const int);
 The following built-in functions are available when @option{-msse4.1} is
 used.
 
-@table @code
-@item v4sf __builtin_ia32_vec_set_v4sf (v4sf, float, const int)
+@defbuiltin{v4sf __builtin_ia32_vec_set_v4sf (v4sf, float, const int)}
 Generates the @code{insertps} machine instruction.
-@item int __builtin_ia32_vec_ext_v16qi (v16qi, const int)
+@enddefbuiltin
+
+@defbuiltin{int __builtin_ia32_vec_ext_v16qi (v16qi, const int)}
 Generates the @code{pextrb} machine instruction.
-@item v16qi __builtin_ia32_vec_set_v16qi (v16qi, int, const int)
+@enddefbuiltin
+
+@defbuiltin{v16qi __builtin_ia32_vec_set_v16qi (v16qi, int, const int)}
 Generates the @code{pinsrb} machine instruction.
-@item v4si __builtin_ia32_vec_set_v4si (v4si, int, const int)
+@enddefbuiltin
+
+@defbuiltin{v4si __builtin_ia32_vec_set_v4si (v4si, int, const int)}
 Generates the @code{pinsrd} machine instruction.
-@item v2di __builtin_ia32_vec_set_v2di (v2di, long long, const int)
+@enddefbuiltin
+
+@defbuiltin{v2di __builtin_ia32_vec_set_v2di (v2di, long long, const int)}
 Generates the @code{pinsrq} machine instruction in 64bit mode.
-@end table
+@enddefbuiltin
 
 The following built-in functions are changed to generate new SSE4.1
 instructions when @option{-msse4.1} is used.
 
-@table @code
-@item float __builtin_ia32_vec_ext_v4sf (v4sf, const int)
+@defbuiltin{float __builtin_ia32_vec_ext_v4sf (v4sf, const int)}
 Generates the @code{extractps} machine instruction.
-@item int __builtin_ia32_vec_ext_v4si (v4si, const int)
+@enddefbuiltin
+
+@defbuiltin{int __builtin_ia32_vec_ext_v4si (v4si, const int)}
 Generates the @code{pextrd} machine instruction.
-@item long long __builtin_ia32_vec_ext_v2di (v2di, const int)
+@enddefbuiltin
+
+@defbuiltin{long long __builtin_ia32_vec_ext_v2di (v2di, const int)}
 Generates the @code{pextrq} machine instruction in 64bit mode.
-@end table
+@enddefbuiltin
 
 The following built-in functions are available when @option{-msse4.2} is
 used.  All of them generate the machine instruction that is part of the
@@ -22587,29 +22543,37 @@ v2di __builtin_ia32_pcmpgtq (v2di, v2di);
 The following built-in functions are available when @option{-msse4.2} is
 used.
 
-@table @code
-@item unsigned int __builtin_ia32_crc32qi (unsigned int, unsigned char)
+@defbuiltin{unsigned int __builtin_ia32_crc32qi (unsigned int, unsigned char)}
 Generates the @code{crc32b} machine instruction.
-@item unsigned int __builtin_ia32_crc32hi (unsigned int, unsigned short)
+@enddefbuiltin
+
+@defbuiltin{unsigned int __builtin_ia32_crc32hi (unsigned int, unsigned short)}
 Generates the @code{crc32w} machine instruction.
-@item unsigned int __builtin_ia32_crc32si (unsigned int, unsigned int)
+@enddefbuiltin
+
+@defbuiltin{unsigned int __builtin_ia32_crc32si (unsigned int, unsigned int)}
 Generates the @code{crc32l} machine instruction.
-@item unsigned long long __builtin_ia32_crc32di (unsigned long long, unsigned long long)
+@enddefbuiltin
+
+@defbuiltin{unsigned long long __builtin_ia32_crc32di (unsigned long long, unsigned long long)}
 Generates the @code{crc32q} machine instruction.
-@end table
+@enddefbuiltin
 
 The following built-in functions are changed to generate new SSE4.2
 instructions when @option{-msse4.2} is used.
 
-@table @code
-@item int __builtin_popcount (unsigned int)
+@defbuiltin{int __builtin_popcount (unsigned int)}
 Generates the @code{popcntl} machine instruction.
-@item int __builtin_popcountl (unsigned long)
+@enddefbuiltin
+
+@defbuiltin{int __builtin_popcountl (unsigned long)}
 Generates the @code{popcntl} or @code{popcntq} machine instruction,
 depending on the size of @code{unsigned long}.
-@item int __builtin_popcountll (unsigned long long)
+@enddefbuiltin
+
+@defbuiltin{int __builtin_popcountll (unsigned long long)}
 Generates the @code{popcntq} machine instruction.
-@end table
+@enddefbuiltin
 
 The following built-in functions are available when @option{-mavx} is
 used. All of them generate the machine instruction that is part of the
@@ -22940,10 +22904,9 @@ v2di __builtin_ia32_aesimc128 (v2di);
 The following built-in function is available when @option{-mpclmul} is
 used.
 
-@table @code
-@item v2di __builtin_ia32_pclmulqdq128 (v2di, v2di, const int)
+@defbuiltin{v2di __builtin_ia32_pclmulqdq128 (v2di, v2di, const int)}
 Generates the @code{pclmulqdq} machine instruction.
-@end table
+@enddefbuiltin
 
 The following built-in function is available when @option{-mfsgsbase} is
 used.  All of them generate the machine instruction that is part of the
@@ -23354,21 +23317,30 @@ If the transaction aborts, all side effects
 are undone and an abort code encoded as a bit mask is returned.
 The following macros are defined:
 
-@table @code
-@item _XABORT_EXPLICIT
+@defmac{_XABORT_EXPLICIT}
 Transaction was explicitly aborted with @code{_xabort}.  The parameter passed
 to @code{_xabort} is available with @code{_XABORT_CODE(status)}.
-@item _XABORT_RETRY
+@end defmac
+
+@defmac{_XABORT_RETRY}
 Transaction retry is possible.
-@item _XABORT_CONFLICT
+@end defmac
+
+@defmac{_XABORT_CONFLICT}
 Transaction abort due to a memory conflict with another thread.
-@item _XABORT_CAPACITY
+@end defmac
+
+@defmac{_XABORT_CAPACITY}
 Transaction abort due to the transaction using too much memory.
-@item _XABORT_DEBUG
+@end defmac
+
+@defmac{_XABORT_DEBUG}
 Transaction abort due to a debug trap.
-@item _XABORT_NESTED
+@end defmac
+
+@defmac{_XABORT_NESTED}
 Transaction abort in an inner nested transaction.
-@end table
+@end defmac
 
 There is no guarantee
 any transaction ever succeeds, so there always needs to be a valid
@@ -23560,16 +23532,16 @@ The ARM target defines pragmas for controlling the default addition of
 attributes.
 
 @table @code
-@item long_calls
 @cindex pragma, long_calls
+@item long_calls
 Set all subsequent functions to have the @code{long_call} attribute.
 
-@item no_long_calls
 @cindex pragma, no_long_calls
+@item no_long_calls
 Set all subsequent functions to have the @code{short_call} attribute.
 
-@item long_calls_off
 @cindex pragma, long_calls_off
+@item long_calls_off
 Do not affect the @code{long_call} or @code{short_call} attributes of
 subsequent functions.
 @end table
@@ -23578,8 +23550,8 @@ subsequent functions.
 @subsection M32C Pragmas
 
 @table @code
-@item GCC memregs @var{number}
 @cindex pragma, memregs
+@item GCC memregs @var{number}
 Overrides the command-line option @code{-memregs=} for the current
 file.  Use with care!  This pragma must be before any function in the
 file, and mixing different memregs values in different objects may
@@ -23587,8 +23559,8 @@ make them incompatible.  This pragma is useful when a
 performance-critical function uses a memreg for temporary values,
 as it may allow you to reduce the number of memregs used.
 
-@item ADDRESS @var{name} @var{address}
 @cindex pragma, address
+@item ADDRESS @var{name} @var{address}
 For any declared symbols matching @var{name}, this does three things
 to that symbol: it forces the symbol to be located at the given
 address (a number), it forces the symbol to be volatile, and it
@@ -23609,8 +23581,8 @@ char port3;
 
 @table @code
 
-@item ctable_entry @var{index} @var{constant_address}
 @cindex pragma, ctable_entry
+@item ctable_entry @var{index} @var{constant_address}
 Specifies that the PRU CTABLE entry given by @var{index} has the value
 @var{constant_address}.  This enables GCC to emit LBCO/SBCO instructions
 when the load/store address is known and can be addressed with some CTABLE
@@ -23635,8 +23607,8 @@ option, but not the @code{longcall} and @code{shortcall} attributes.
 calls are and are not necessary.
 
 @table @code
-@item longcall (1)
 @cindex pragma, longcall
+@item longcall (1)
 Apply the @code{longcall} attribute to all subsequent function
 declarations.
 
@@ -23677,24 +23649,24 @@ Darwin operating system.  These are useful for compatibility with other
 Mac OS compilers.
 
 @table @code
-@item mark @var{tokens}@dots{}
 @cindex pragma, mark
+@item mark @var{tokens}@dots{}
 This pragma is accepted, but has no effect.
 
-@item options align=@var{alignment}
 @cindex pragma, options align
+@item options align=@var{alignment}
 This pragma sets the alignment of fields in structures.  The values of
 @var{alignment} may be @code{mac68k}, to emulate m68k alignment, or
 @code{power}, to emulate PowerPC alignment.  Uses of this pragma nest
 properly; to restore the previous setting, use @code{reset} for the
 @var{alignment}.
 
-@item segment @var{tokens}@dots{}
 @cindex pragma, segment
+@item segment @var{tokens}@dots{}
 This pragma is accepted, but has no effect.
 
-@item unused (@var{var} [, @var{var}]@dots{})
 @cindex pragma, unused
+@item unused (@var{var} [, @var{var}]@dots{})
 This pragma declares variables to be possibly unused.  GCC does not
 produce warnings for the listed variables.  The effect is similar to
 that of the @code{unused} attribute, except that this pragma may appear
@@ -23709,8 +23681,8 @@ The Solaris target supports @code{#pragma redefine_extname}
 @code{#pragma} directives for compatibility with the system compiler.
 
 @table @code
-@item align @var{alignment} (@var{variable} [, @var{variable}]...)
 @cindex pragma, align
+@item align @var{alignment} (@var{variable} [, @var{variable}]...)
 
 Increase the minimum alignment of each @var{variable} to @var{alignment}.
 This is the same as GCC's @code{aligned} attribute @pxref{Variable
@@ -23719,15 +23691,15 @@ when compiling C and Objective-C@.  It does not currently occur when
 compiling C++, but this is a bug which may be fixed in a future
 release.
 
-@item fini (@var{function} [, @var{function}]...)
 @cindex pragma, fini
+@item fini (@var{function} [, @var{function}]...)
 
 This pragma causes each listed @var{function} to be called after
 main, or during shared module unloading, by adding a call to the
 @code{.fini} section.
 
-@item init (@var{function} [, @var{function}]...)
 @cindex pragma, init
+@item init (@var{function} [, @var{function}]...)
 
 This pragma causes each listed @var{function} to be called during
 initialization (before @code{main}) or during shared module loading, by
@@ -23745,8 +23717,8 @@ Solaris system headers. This effect can also be achieved using the asm
 labels extension (@pxref{Asm Labels}).
 
 @table @code
-@item redefine_extname @var{oldname} @var{newname}
 @cindex pragma, redefine_extname
+@item redefine_extname @var{oldname} @var{newname}
 
 This pragma gives the C function @var{oldname} the assembly symbol
 @var{newname}.  The preprocessor macro @code{__PRAGMA_REDEFINE_EXTNAME}
@@ -23855,8 +23827,8 @@ diagnostics and treat them as errors depending on which preprocessor
 macros are defined.
 
 @table @code
-@item #pragma GCC diagnostic @var{kind} @var{option}
 @cindex pragma, diagnostic
+@item #pragma GCC diagnostic @var{kind} @var{option}
 
 Modifies the disposition of a diagnostic.  Note that not all
 diagnostics are modifiable; at the moment only warnings (normally
@@ -23926,8 +23898,8 @@ GCC also offers a simple mechanism for printing messages during
 compilation.
 
 @table @code
-@item #pragma message @var{string}
 @cindex pragma, diagnostic
+@item #pragma message @var{string}
 
 Prints @var{string} as a compiler message on compilation.  The message
 is informational only, and is neither a compilation warning nor an
@@ -23952,8 +23924,8 @@ TODO(Remember to fix this)
 prints @samp{/tmp/file.c:4: note: #pragma message:
 TODO - Remember to fix this}.
 
-@item #pragma GCC error @var{message}
 @cindex pragma, diagnostic
+@item #pragma GCC error @var{message}
 Generates an error message.  This pragma @emph{is} considered to
 indicate an error in the compilation, and it will be treated as such.
 
@@ -23976,8 +23948,8 @@ void foo (void)
 @}
 @end smallexample
 
-@item #pragma GCC warning @var{message}
 @cindex pragma, diagnostic
+@item #pragma GCC warning @var{message}
 This is just like @samp{pragma GCC error} except that a warning
 message is issued instead of an error message.  Unless
 @option{-Werror} is in effect, in which case this pragma will generate
@@ -23989,9 +23961,9 @@ an error as well.
 @subsection Visibility Pragmas
 
 @table @code
+@cindex pragma, visibility
 @item #pragma GCC visibility push(@var{visibility})
 @itemx #pragma GCC visibility pop
-@cindex pragma, visibility
 
 This pragma allows the user to set the visibility for multiple
 declarations without having to give each a visibility attribute
@@ -24013,13 +23985,13 @@ For compatibility with Microsoft Windows compilers, GCC supports
 and @samp{#pragma pop_macro(@var{"macro_name"})}.
 
 @table @code
-@item #pragma push_macro(@var{"macro_name"})
 @cindex pragma, push_macro
+@item #pragma push_macro(@var{"macro_name"})
 This pragma saves the value of the macro named as @var{macro_name} to
 the top of the stack for this macro.
 
-@item #pragma pop_macro(@var{"macro_name"})
 @cindex pragma, pop_macro
+@item #pragma pop_macro(@var{"macro_name"})
 This pragma sets the value of the macro named as @var{macro_name} to
 the value on top of the stack for this macro. If the stack for
 @var{macro_name} is empty, the value of the macro remains unchanged.
@@ -24044,8 +24016,8 @@ push_macro} and restored by @code{#pragma pop_macro}.
 @subsection Function Specific Option Pragmas
 
 @table @code
-@item #pragma GCC target (@var{string}, @dots{})
 @cindex pragma GCC target
+@item #pragma GCC target (@var{string}, @dots{})
 
 This pragma allows you to set target-specific options for functions
 defined later in the source file.  One or more strings can be
@@ -24059,8 +24031,8 @@ syntax.
 The @code{#pragma GCC target} pragma is presently implemented for
 x86, ARM, AArch64, PowerPC, S/390, and Nios II targets only.
 
-@item #pragma GCC optimize (@var{string}, @dots{})
 @cindex pragma GCC optimize
+@item #pragma GCC optimize (@var{string}, @dots{})
 
 This pragma allows you to set global optimization options for functions
 defined later in the source file.  One or more strings can be
@@ -24071,10 +24043,10 @@ the strings in the pragma are optional.  @xref{Function Attributes},
 for more information about the @code{optimize} attribute and the attribute
 syntax.
 
-@item #pragma GCC push_options
-@itemx #pragma GCC pop_options
 @cindex pragma GCC push_options
 @cindex pragma GCC pop_options
+@item #pragma GCC push_options
+@itemx #pragma GCC pop_options
 
 These pragmas maintain a stack of the current target and optimization
 options.  It is intended for include files where you temporarily want
@@ -24082,8 +24054,8 @@ to switch to using a different @samp{#pragma GCC target} or
 @samp{#pragma GCC optimize} and then to pop back to the previous
 options.
 
-@item #pragma GCC reset_options
 @cindex pragma GCC reset_options
+@item #pragma GCC reset_options
 
 This pragma clears the current @code{#pragma GCC target} and
 @code{#pragma GCC optimize} to use the default switches as specified
@@ -24095,8 +24067,8 @@ on the command line.
 @subsection Loop-Specific Pragmas
 
 @table @code
-@item #pragma GCC ivdep
 @cindex pragma GCC ivdep
+@item #pragma GCC ivdep
 
 With this pragma, the programmer asserts that there are no loop-carried
 dependencies which would prevent consecutive iterations of
@@ -24131,8 +24103,8 @@ void ignore_vec_dep (int *a, int k, int c, int m)
 @}
 @end smallexample
 
-@item #pragma GCC unroll @var{n}
 @cindex pragma GCC unroll @var{n}
+@item #pragma GCC unroll @var{n}
 
 You can use this pragma to control how many times a loop should be unrolled.
 It must be placed immediately before a @code{for}, @code{while} or @code{do}
@@ -24664,8 +24636,8 @@ Local static variables and string constants used in an inline function
 are also considered to have vague linkage, since they must be shared
 between all inlined and out-of-line instances of the function.
 
-@item VTables
 @cindex vtable
+@item VTables
 C++ virtual functions are implemented in most compilers using a lookup
 table, known as a vtable.  The vtable contains pointers to the virtual
 functions provided by a class, and each object of the class contains a
@@ -24680,9 +24652,9 @@ vtable is still emitted in every translation unit that defines it.
 Make sure that any inline virtuals are declared inline in the class
 body, even if they are not defined there.
 
-@item @code{type_info} objects
 @cindex @code{type_info}
 @cindex RTTI
+@item @code{type_info} objects
 C++ requires information about types to be written out in order to
 implement @samp{dynamic_cast}, @samp{typeid} and exception handling.
 For polymorphic classes (classes with virtual functions), the @samp{type_info}
@@ -24736,9 +24708,9 @@ program to grow due to unnecessary out-of-line copies of inline
 functions.
 
 @table @code
+@kindex #pragma interface
 @item #pragma interface
 @itemx #pragma interface "@var{subdir}/@var{objects}.h"
-@kindex #pragma interface
 Use this directive in @emph{header files} that define object classes, to save
 space in most of the object files that use those classes.  Normally,
 local copies of certain information (backup copies of inline member
@@ -24756,9 +24728,9 @@ multiple headers with the same name in different directories.  If you
 use this form, you must specify the same string to @samp{#pragma
 implementation}.
 
+@kindex #pragma implementation
 @item #pragma implementation
 @itemx #pragma implementation "@var{objects}.h"
-@kindex #pragma implementation
 Use this pragma in a @emph{main input file}, when you want full output from
 included header files to be generated (and made globally visible).  The
 included header file, in turn, should use @samp{#pragma interface}.
@@ -24985,10 +24957,10 @@ You must specify @option{-Wno-pmf-conversions} to use this extension.
 Some attributes only make sense for C++ programs.
 
 @table @code
-@item abi_tag ("@var{tag}", ...)
 @cindex @code{abi_tag} function attribute
 @cindex @code{abi_tag} variable attribute
 @cindex @code{abi_tag} type attribute
+@item abi_tag ("@var{tag}", ...)
 The @code{abi_tag} attribute can be applied to a function, variable, or class
 declaration.  It modifies the mangled name of the entity to
 incorporate the tag name, in order to distinguish the function or
@@ -25027,8 +24999,8 @@ variable or function.  @option{-Wabi-tag} also warns about this
 situation; this warning can be avoided by explicitly tagging the
 variable or function or moving it into a tagged inline namespace.
 
-@item init_priority (@var{priority})
 @cindex @code{init_priority} variable attribute
+@item init_priority (@var{priority})
 
 In Standard C++, objects defined at namespace scope are guaranteed to be
 initialized in an order in strict accordance with that of their definitions
@@ -25051,8 +25023,8 @@ Some_Class  B  __attribute__ ((init_priority (543)));
 Note that the particular values of @var{priority} do not matter; only their
 relative ordering.
 
-@item warn_unused
 @cindex @code{warn_unused} type attribute
+@item warn_unused
 
 For C++ types with non-trivial constructors and/or destructors it is
 impossible for the compiler to determine whether a variable of this
@@ -25136,164 +25108,185 @@ compile-time determination of
 various characteristics of a type (or of a
 pair of types).
 
-@table @code
-@item __has_nothrow_assign (type)
-If @code{type} is @code{const}-qualified or is a reference type then
+@defbuiltin{bool __has_nothrow_assign (@var{type})}
+If @var{type} is @code{const}-qualified or is a reference type then
 the trait is @code{false}.  Otherwise if @code{__has_trivial_assign (type)}
-is @code{true} then the trait is @code{true}, else if @code{type} is
+is @code{true} then the trait is @code{true}, else if @var{type} is
 a cv-qualified class or union type with copy assignment operators that are
 known not to throw an exception then the trait is @code{true}, else it is
 @code{false}.
-Requires: @code{type} shall be a complete type, (possibly cv-qualified)
+Requires: @var{type} shall be a complete type, (possibly cv-qualified)
 @code{void}, or an array of unknown bound.
+@enddefbuiltin
 
-@item __has_nothrow_copy (type)
+@defbuiltin{bool __has_nothrow_copy (@var{type})}
 If @code{__has_trivial_copy (type)} is @code{true} then the trait is
-@code{true}, else if @code{type} is a cv-qualified class or union type
+@code{true}, else if @var{type} is a cv-qualified class or union type
 with copy constructors that are known not to throw an exception then
 the trait is @code{true}, else it is @code{false}.
-Requires: @code{type} shall be a complete type, (possibly cv-qualified)
+Requires: @var{type} shall be a complete type, (possibly cv-qualified)
 @code{void}, or an array of unknown bound.
+@enddefbuiltin
 
-@item __has_nothrow_constructor (type)
+@defbuiltin{bool __has_nothrow_constructor (@var{type})}
 If @code{__has_trivial_constructor (type)} is @code{true} then the trait
-is @code{true}, else if @code{type} is a cv class or union type (or array
+is @code{true}, else if @var{type} is a cv class or union type (or array
 thereof) with a default constructor that is known not to throw an
 exception then the trait is @code{true}, else it is @code{false}.
-Requires: @code{type} shall be a complete type, (possibly cv-qualified)
+Requires: @var{type} shall be a complete type, (possibly cv-qualified)
 @code{void}, or an array of unknown bound.
+@enddefbuiltin
 
-@item __has_trivial_assign (type)
-If @code{type} is @code{const}- qualified or is a reference type then
+@defbuiltin{bool __has_trivial_assign (@var{type})}
+If @var{type} is @code{const}- qualified or is a reference type then
 the trait is @code{false}.  Otherwise if @code{__is_trivial (type)} is
-@code{true} then the trait is @code{true}, else if @code{type} is
+@code{true} then the trait is @code{true}, else if @var{type} is
 a cv-qualified class or union type with a trivial copy assignment
 ([class.copy]) then the trait is @code{true}, else it is @code{false}.
-Requires: @code{type} shall be a complete type, (possibly cv-qualified)
+Requires: @var{type} shall be a complete type, (possibly cv-qualified)
 @code{void}, or an array of unknown bound.
+@enddefbuiltin
 
-@item __has_trivial_copy (type)
-If @code{__is_trivial (type)} is @code{true} or @code{type} is a reference
-type then the trait is @code{true}, else if @code{type} is a cv class
+@defbuiltin{bool __has_trivial_copy (@var{type})}
+If @code{__is_trivial (type)} is @code{true} or @var{type} is a reference
+type then the trait is @code{true}, else if @var{type} is a cv class
 or union type with a trivial copy constructor ([class.copy]) then the trait
-is @code{true}, else it is @code{false}.  Requires: @code{type} shall be
+is @code{true}, else it is @code{false}.  Requires: @var{type} shall be
 a complete type, (possibly cv-qualified) @code{void}, or an array of unknown
 bound.
+@enddefbuiltin
 
-@item __has_trivial_constructor (type)
+@defbuiltin{bool __has_trivial_constructor (@var{type})}
 If @code{__is_trivial (type)} is @code{true} then the trait is @code{true},
-else if @code{type} is a cv-qualified class or union type (or array thereof)
+else if @var{type} is a cv-qualified class or union type (or array thereof)
 with a trivial default constructor ([class.ctor]) then the trait is @code{true},
 else it is @code{false}.
-Requires: @code{type} shall be a complete type, (possibly cv-qualified)
+Requires: @var{type} shall be a complete type, (possibly cv-qualified)
 @code{void}, or an array of unknown bound.
+@enddefbuiltin
 
-@item __has_trivial_destructor (type)
-If @code{__is_trivial (type)} is @code{true} or @code{type} is a reference type
-then the trait is @code{true}, else if @code{type} is a cv class or union
+@defbuiltin{bool __has_trivial_destructor (@var{type})}
+If @code{__is_trivial (type)} is @code{true} or @var{type} is a reference type
+then the trait is @code{true}, else if @var{type} is a cv class or union
 type (or array thereof) with a trivial destructor ([class.dtor]) then
 the trait is @code{true}, else it is @code{false}.
-Requires: @code{type} shall be a complete type, (possibly cv-qualified)
+Requires: @var{type} shall be a complete type, (possibly cv-qualified)
 @code{void}, or an array of unknown bound.
+@enddefbuiltin
 
-@item __has_virtual_destructor (type)
-If @code{type} is a class type with a virtual destructor
+@defbuiltin{bool __has_virtual_destructor (@var{type})}
+If @var{type} is a class type with a virtual destructor
 ([class.dtor]) then the trait is @code{true}, else it is @code{false}.
-Requires: If @code{type} is a non-union class type, it shall be a complete type.
+Requires: If @var{type} is a non-union class type, it shall be a complete type.
+@enddefbuiltin
 
-@item __is_abstract (type)
-If @code{type} is an abstract class ([class.abstract]) then the trait
+@defbuiltin{bool __is_abstract (@var{type})}
+If @var{type} is an abstract class ([class.abstract]) then the trait
 is @code{true}, else it is @code{false}.
-Requires: If @code{type} is a non-union class type, it shall be a complete type.
+Requires: If @var{type} is a non-union class type, it shall be a complete type.
+@enddefbuiltin
 
-@item __is_aggregate (type)
-If @code{type} is an aggregate type ([dcl.init.aggr]) the trait is
+@defbuiltin{bool __is_aggregate (@var{type})}
+If @var{type} is an aggregate type ([dcl.init.aggr]) the trait is
 @code{true}, else it is @code{false}.
-Requires: If @code{type} is a class type, it shall be a complete type.
+Requires: If @var{type} is a class type, it shall be a complete type.
+@enddefbuiltin
 
-@item __is_base_of (base_type, derived_type)
-If @code{base_type} is a base class of @code{derived_type}
+@defbuiltin{bool __is_base_of (@var{base_type}, @var{derived_type})}
+If @var{base_type} is a base class of @var{derived_type}
 ([class.derived]) then the trait is @code{true}, otherwise it is @code{false}.
-Top-level cv-qualifications of @code{base_type} and
-@code{derived_type} are ignored.  For the purposes of this trait, a
+Top-level cv-qualifications of @var{base_type} and
+@var{derived_type} are ignored.  For the purposes of this trait, a
 class type is considered is own base.
 Requires: if @code{__is_class (base_type)} and @code{__is_class (derived_type)}
-are @code{true} and @code{base_type} and @code{derived_type} are not the same
-type (disregarding cv-qualifiers), @code{derived_type} shall be a complete
+are @code{true} and @var{base_type} and @var{derived_type} are not the same
+type (disregarding cv-qualifiers), @var{derived_type} shall be a complete
 type.  A diagnostic is produced if this requirement is not met.
+@enddefbuiltin
 
-@item __is_class (type)
-If @code{type} is a cv-qualified class type, and not a union type
+@defbuiltin{bool __is_class (@var{type})}
+If @var{type} is a cv-qualified class type, and not a union type
 ([basic.compound]) the trait is @code{true}, else it is @code{false}.
+@enddefbuiltin
 
 @c FIXME Commented out for GCC 13, discuss user interface for GCC 14.
-@c @item __is_deducible (template, type)
+@c @defbuiltin{bool __is_deducible (@var{template}, @var{type})}
 @c If template arguments for @code{template} can be deduced from
 @c @code{type} or obtained from default template arguments.
+@c @enddefbuiltin
 
-@item __is_empty (type)
+@defbuiltin{bool __is_empty (@var{type})}
 If @code{__is_class (type)} is @code{false} then the trait is @code{false}.
-Otherwise @code{type} is considered empty if and only if: @code{type}
+Otherwise @var{type} is considered empty if and only if: @var{type}
 has no non-static data members, or all non-static data members, if
-any, are bit-fields of length 0, and @code{type} has no virtual
-members, and @code{type} has no virtual base classes, and @code{type}
-has no base classes @code{base_type} for which
+any, are bit-fields of length 0, and @var{type} has no virtual
+members, and @var{type} has no virtual base classes, and @var{type}
+has no base classes @var{base_type} for which
 @code{__is_empty (base_type)} is @code{false}.
-Requires: If @code{type} is a non-union class type, it shall be a complete type.
+Requires: If @var{type} is a non-union class type, it shall be a complete type.
+@enddefbuiltin
 
-@item __is_enum (type)
-If @code{type} is a cv enumeration type ([basic.compound]) the trait is
+@defbuiltin{bool __is_enum (@var{type})}
+If @var{type} is a cv enumeration type ([basic.compound]) the trait is
 @code{true}, else it is @code{false}.
+@enddefbuiltin
 
-@item __is_final (type)
-If @code{type} is a class or union type marked @code{final}, then the trait
+@defbuiltin{bool __is_final (@var{type})}
+If @var{type} is a class or union type marked @code{final}, then the trait
 is @code{true}, else it is @code{false}.
-Requires: If @code{type} is a class type, it shall be a complete type.
+Requires: If @var{type} is a class type, it shall be a complete type.
+@enddefbuiltin
 
-@item __is_literal_type (type)
-If @code{type} is a literal type ([basic.types]) the trait is
+@defbuiltin{bool __is_literal_type (@var{type})}
+If @var{type} is a literal type ([basic.types]) the trait is
 @code{true}, else it is @code{false}.
-Requires: @code{type} shall be a complete type, (possibly cv-qualified)
+Requires: @var{type} shall be a complete type, (possibly cv-qualified)
 @code{void}, or an array of unknown bound.
+@enddefbuiltin
 
-@item __is_pod (type)
-If @code{type} is a cv POD type ([basic.types]) then the trait is @code{true},
+@defbuiltin{bool __is_pod (@var{type})}
+If @var{type} is a cv POD type ([basic.types]) then the trait is @code{true},
 else it is @code{false}.
-Requires: @code{type} shall be a complete type, (possibly cv-qualified)
+Requires: @var{type} shall be a complete type, (possibly cv-qualified)
 @code{void}, or an array of unknown bound.
+@enddefbuiltin
 
-@item __is_polymorphic (type)
-If @code{type} is a polymorphic class ([class.virtual]) then the trait
+@defbuiltin{bool __is_polymorphic (@var{type})}
+If @var{type} is a polymorphic class ([class.virtual]) then the trait
 is @code{true}, else it is @code{false}.
-Requires: If @code{type} is a non-union class type, it shall be a complete type.
+Requires: If @var{type} is a non-union class type, it shall be a complete type.
+@enddefbuiltin
 
-@item __is_standard_layout (type)
-If @code{type} is a standard-layout type ([basic.types]) the trait is
+@defbuiltin{bool __is_standard_layout (@var{type})}
+If @var{type} is a standard-layout type ([basic.types]) the trait is
 @code{true}, else it is @code{false}.
-Requires: @code{type} shall be a complete type, an array of complete types,
+Requires: @var{type} shall be a complete type, an array of complete types,
 or (possibly cv-qualified) @code{void}.
+@enddefbuiltin
 
-@item __is_trivial (type)
-If @code{type} is a trivial type ([basic.types]) the trait is
+@defbuiltin{bool __is_trivial (@var{type})}
+If @var{type} is a trivial type ([basic.types]) the trait is
 @code{true}, else it is @code{false}.
-Requires: @code{type} shall be a complete type, an array of complete types,
+Requires: @var{type} shall be a complete type, an array of complete types,
 or (possibly cv-qualified) @code{void}.
+@enddefbuiltin
 
-@item __is_union (type)
-If @code{type} is a cv union type ([basic.compound]) the trait is
+@defbuiltin{bool __is_union (@var{type})}
+If @var{type} is a cv union type ([basic.compound]) the trait is
 @code{true}, else it is @code{false}.
+@enddefbuiltin
 
-@item __underlying_type (type)
-The underlying type of @code{type}.
-Requires: @code{type} shall be an enumeration type ([dcl.enum]).
+@defbuiltin{bool __underlying_type (@var{type})}
+The underlying type of @var{type}.
+Requires: @var{type} shall be an enumeration type ([dcl.enum]).
+@enddefbuiltin
 
-@item __integer_pack (length)
+@defbuiltin{bool __integer_pack (@var{length})}
 When used as the pattern of a pack expansion within a template
 definition, expands to a template argument pack containing integers
-from @code{0} to @code{length-1}.  This is provided for efficient
-implementation of @code{std::make_integer_sequence}.
-
-@end table
+from @code{0} to @code{@var{length}-1}.  This is provided for
+efficient implementation of @code{std::make_integer_sequence}.
+@enddefbuiltin
 
 
 @node C++ Concepts
@@ -25309,36 +25302,39 @@ type names.
 The following keywords are reserved for concepts.
 
 @table @code
+@kindex assumes
 @item assumes
 States an expression as an assumption, and if possible, verifies that the
 assumption is valid. For example, @code{assume(n > 0)}.
 
+@kindex axiom
 @item axiom
 Introduces an axiom definition. Axioms introduce requirements on values.
 
+@kindex axiom
 @item forall
 Introduces a universally quantified object in an axiom. For example,
 @code{forall (int n) n + 0 == n}).
 
+@kindex axiom
 @item concept
 Introduces a concept definition. Concepts are sets of syntactic and semantic
 requirements on types and their values.
 
+@kindex requires
 @item requires
 Introduces constraints on template arguments or requirements for a member
 function of a class template.
-
 @end table
 
 The front end also exposes a number of internal mechanism that can be used
 to simplify the writing of type traits. Note that some of these traits are
 likely to be removed in the future.
 
-@table @code
-@item __is_same (type1, type2)
-A binary type trait: @code{true} whenever the type arguments are the same.
-
-@end table
+@defbuiltin{bool __is_same (@var{type1}, @var{type2})}
+A binary type trait: @code{true} whenever the @var{type1} and
+@var{type2} refer to the same type.
+@enddefbuiltin
 
 
 @node Deprecated Features
