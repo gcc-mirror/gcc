@@ -177,7 +177,12 @@ code_helper::is_builtin_fn () const
 #define TREE_CODE_CLASS_STRING(CLASS)\
         tree_code_class_strings[(int) (CLASS)]
 
+#if __cpp_inline_variables < 201606L
+#define TREE_CODE_CLASS(CODE)	\
+  tree_code_type_tmpl <0>::tree_code_type[(int) (CODE)]
+#else
 #define TREE_CODE_CLASS(CODE)	tree_code_type[(int) (CODE)]
+#endif
 
 /* Nonzero if NODE represents an exceptional code.  */
 
@@ -271,7 +276,12 @@ code_helper::is_builtin_fn () const
 
 #define EXPR_P(NODE) IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (NODE)))
 
+#if __cpp_inline_variables < 201606L
+#define TREE_CODE_LENGTH(CODE)	\
+  tree_code_length_tmpl <0>::tree_code_length[(int) (CODE)]
+#else
 #define TREE_CODE_LENGTH(CODE)	tree_code_length[(int) (CODE)]
+#endif
 
 
 /* Helper macros for math builtins.  */
