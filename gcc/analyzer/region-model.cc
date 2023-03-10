@@ -3296,8 +3296,10 @@ void
 region_model::mark_region_as_unknown (const region *reg,
 				      uncertainty_t *uncertainty)
 {
+  svalue_set maybe_live_values;
   m_store.mark_region_as_unknown (m_mgr->get_store_manager(), reg,
-				  uncertainty);
+				  uncertainty, &maybe_live_values);
+  m_store.on_maybe_live_values (maybe_live_values);
 }
 
 /* Determine what is known about the condition "LHS_SVAL OP RHS_SVAL" within
