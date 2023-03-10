@@ -2921,7 +2921,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
       if (new_var_p)
 	{
 	  value_range vr (type,
-			  wi::to_wide (build_int_cst (type, vf)),
+			  wi::to_wide (build_int_cst (type, lowest_vf)),
 			  wi::to_wide (TYPE_MAX_VALUE (type)));
 	  set_range_info (niters, vr);
 	}
