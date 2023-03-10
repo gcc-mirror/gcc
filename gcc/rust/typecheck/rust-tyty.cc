@@ -188,6 +188,56 @@ BaseType::is_equal (const BaseType &other) const
 bool
 BaseType::is_unit () const
 {
+  const TyTy::BaseType *x = destructure ();
+  switch (x->get_kind ())
+    {
+    case PARAM:
+    case PROJECTION:
+    case PLACEHOLDER:
+    case FNPTR:
+    case FNDEF:
+    case ARRAY:
+    case SLICE:
+    case POINTER:
+    case REF:
+    case CLOSURE:
+    case INFER:
+    case BOOL:
+    case CHAR:
+    case INT:
+    case UINT:
+    case FLOAT:
+    case USIZE:
+    case ISIZE:
+
+    case STR:
+    case DYNAMIC:
+    case ERROR:
+      return false;
+
+      // FIXME ! is coerceable to () so we need to fix that
+    case NEVER:
+      return true;
+
+      case TUPLE: {
+	const TupleType &tuple = *static_cast<const TupleType *> (x);
+	return tuple.num_fields () == 0;
+      }
+
+      case ADT: {
+	const ADTType &adt = *static_cast<const ADTType *> (x);
+	if (adt.is_enum ())
+	  return false;
+
+	for (const auto &variant : adt.get_variants ())
+	  {
+	    if (variant->num_fields () > 0)
+	      return false;
+	  }
+
+	return true;
+      }
+    }
   return false;
 }
 
@@ -813,12 +863,6 @@ ErrorType::ErrorType (HirId ref, HirId ty_ref, std::set<HirId> refs)
 	      {Resolver::CanonicalPath::create_empty (), Location ()}, refs)
 {}
 
-bool
-ErrorType::is_unit () const
-{
-  return true;
-}
-
 std::string
 ErrorType::get_name () const
 {
@@ -1386,12 +1430,6 @@ TupleType *
 TupleType::get_unit_type (HirId ref)
 {
   return new TupleType (ref, Linemap::predeclared_location ());
-}
-
-bool
-TupleType::is_unit () const
-{
-  return this->fields.empty ();
 }
 
 size_t
@@ -3172,12 +3210,6 @@ NeverType::get_name () const
   return as_string ();
 }
 
-bool
-NeverType::is_unit () const
-{
-  return true;
-}
-
 void
 NeverType::accept_vis (TyVisitor &vis)
 {
@@ -3239,13 +3271,6 @@ std::string
 PlaceholderType::get_name () const
 {
   return as_string ();
-}
-
-bool
-PlaceholderType::is_unit () const
-{
-  rust_assert (can_resolve ());
-  return resolve ()->is_unit ();
 }
 
 std::string
@@ -3370,12 +3395,6 @@ ProjectionType::ProjectionType (
     SubstitutionRef (std::move (subst_refs), std::move (generic_arguments)),
     base (base), trait (trait), item (item)
 {}
-
-bool
-ProjectionType::is_unit () const
-{
-  return false;
-}
 
 std::string
 ProjectionType::get_name () const

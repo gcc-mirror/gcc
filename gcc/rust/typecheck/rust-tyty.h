@@ -85,19 +85,15 @@ public:
   virtual ~BaseType ();
 
   HirId get_ref () const;
-
   void set_ref (HirId id);
 
   HirId get_ty_ref () const;
-
   void set_ty_ref (HirId id);
 
   virtual void accept_vis (TyVisitor &vis) = 0;
-
   virtual void accept_vis (TyConstVisitor &vis) const = 0;
 
   virtual std::string as_string () const = 0;
-
   virtual std::string get_name () const = 0;
 
   // similar to unify but does not actually perform type unification but
@@ -119,19 +115,20 @@ public:
   virtual bool is_equal (const BaseType &other) const;
 
   bool satisfies_bound (const TypeBoundPredicate &predicate) const;
-
   bool bounds_compatible (const BaseType &other, Location locus,
 			  bool emit_error) const;
-
   void inherit_bounds (const BaseType &other);
-
   void inherit_bounds (
     const std::vector<TyTy::TypeBoundPredicate> &specified_bounds);
 
-  virtual bool is_unit () const;
+  // is_unit returns whether this is just a unit-struct
+  bool is_unit () const;
 
+  // is_concrete returns true if the type is fully resolved to concrete
+  // primitives
   bool is_concrete () const;
 
+  // return the type-kind
   TypeKind get_kind () const;
 
   /* Returns a pointer to a clone of this. The caller is responsible for
@@ -238,8 +235,6 @@ public:
   void accept_vis (TyVisitor &vis) override;
   void accept_vis (TyConstVisitor &vis) const override;
 
-  bool is_unit () const override;
-
   std::string as_string () const override;
 
   bool can_eq (const BaseType *other, bool emit_errors) const override final;
@@ -339,8 +334,6 @@ public:
 
   void accept_vis (TyVisitor &vis) override;
   void accept_vis (TyConstVisitor &vis) const override;
-
-  bool is_unit () const override;
 
   std::string as_string () const override;
 
@@ -563,17 +556,6 @@ public:
   bool is_tuple_struct () const { return adt_kind == TUPLE_STRUCT; }
   bool is_union () const { return adt_kind == UNION; }
   bool is_enum () const { return adt_kind == ENUM; }
-
-  bool is_unit () const override
-  {
-    if (number_of_variants () == 0)
-      return true;
-
-    if (number_of_variants () == 1)
-      return variants.at (0)->num_fields () == 0;
-
-    return false;
-  }
 
   void accept_vis (TyVisitor &vis) override;
   void accept_vis (TyConstVisitor &vis) const override;
@@ -1297,8 +1279,6 @@ public:
   BaseType *monomorphized_clone () const final override;
 
   std::string get_name () const override final;
-
-  bool is_unit () const override;
 };
 
 // used at the type in associated types in traits
@@ -1322,8 +1302,6 @@ public:
   BaseType *monomorphized_clone () const final override;
 
   std::string get_name () const override final;
-
-  bool is_unit () const override;
 
   std::string get_symbol () const;
 
@@ -1369,8 +1347,6 @@ public:
   BaseType *monomorphized_clone () const final override;
 
   std::string get_name () const override final;
-
-  bool is_unit () const override;
 
   bool needs_generic_substitutions () const override final;
 
