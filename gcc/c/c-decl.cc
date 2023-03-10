@@ -1310,7 +1310,10 @@ pop_scope (void)
 	      && scope != external_scope)
 	    {
 	      if (!TREE_USED (p))
-		warning (OPT_Wunused_variable, "unused variable %q+D", p);
+		{
+		  warning (OPT_Wunused_variable, "unused variable %q+D", p);
+		  suppress_warning (p, OPT_Wunused_variable);
+		}
 	      else if (DECL_CONTEXT (p) == current_function_decl)
 		warning_at (DECL_SOURCE_LOCATION (p),
 			    OPT_Wunused_but_set_variable,

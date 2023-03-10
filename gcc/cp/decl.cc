@@ -693,6 +693,7 @@ poplevel (int keep, int reverse, int functionbody)
 		else
 		  warning_at (DECL_SOURCE_LOCATION (decl),
 			      OPT_Wunused_variable, "unused variable %qD", decl);
+		suppress_warning (decl, OPT_Wunused_variable);
 	      }
 	    else if (DECL_CONTEXT (decl) == current_function_decl
 		     // For -Wunused-but-set-variable leave references alone.

@@ -1120,6 +1120,7 @@ check_global_declaration (symtab_node *snode)
       && (TREE_CODE (decl) != FUNCTION_DECL
 	  || (!DECL_STATIC_CONSTRUCTOR (decl)
 	      && !DECL_STATIC_DESTRUCTOR (decl)))
+      && (! VAR_P (decl) || !warning_suppressed_p (decl, OPT_Wunused_variable))
       /* Otherwise, ask the language.  */
       && lang_hooks.decls.warn_unused_global (decl))
     warning_at (DECL_SOURCE_LOCATION (decl),
