@@ -2217,12 +2217,42 @@ float_widen_lhs_range (tree type, const frange &lhs)
   REAL_VALUE_TYPE lb = lhs.lower_bound ();
   REAL_VALUE_TYPE ub = lhs.upper_bound ();
   if (real_isfinite (&lb))
-    frange_nextafter (TYPE_MODE (type), lb, dconstninf);
+    {
+      frange_nextafter (TYPE_MODE (type), lb, dconstninf);
+      if (real_isinf (&lb))
+	{
+	  /* For -DBL_MAX, instead of -Inf use
+	     nexttoward (-DBL_MAX, -LDBL_MAX) in a hypothetical
+	     wider type with the same mantissa precision but larger
+	     exponent range; it is outside of range of double values,
+	     but makes it clear it is just one ulp larger rather than
+	     infinite amount larger.  */
+	  lb = dconstm1;
+	  SET_REAL_EXP (&lb, FLOAT_MODE_FORMAT (TYPE_MODE (type))->emax + 1);
+	}
+    }
   if (real_isfinite (&ub))
-    frange_nextafter (TYPE_MODE (type), ub, dconstinf);
+    {
+      frange_nextafter (TYPE_MODE (type), ub, dconstinf);
+      if (real_isinf (&ub))
+	{
+	  /* For DBL_MAX similarly.  */
+	  ub = dconst1;
+	  SET_REAL_EXP (&ub, FLOAT_MODE_FORMAT (TYPE_MODE (type))->emax + 1);
+	}
+    }
+  /* Temporarily disable -ffinite-math-only, so that frange::set doesn't
+     reduce the range back to real_min_representable (type) as lower bound
+     or real_max_representable (type) as upper bound.  */
+  bool save_flag_finite_math_only = flag_finite_math_only;
+  flag_finite_math_only = false;
   ret.set (type, lb, ub);
-  ret.clear_nan ();
-  ret.union_ (lhs);
+  if (lhs.kind () != VR_VARYING)
+    {
+      ret.clear_nan ();
+      ret.union_ (lhs);
+    }
+  flag_finite_math_only = save_flag_finite_math_only;
   return ret;
 }
 
