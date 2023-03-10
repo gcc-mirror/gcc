@@ -1,3 +1,47 @@
+2023-03-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108773
+	* init.cc (find_allocator_temps_r): New.
+	(combine_allocator_temps): Replace find_allocator_temp.
+	(build_vec_init): Adjust.
+
+2023-03-09  Jason Merrill  <jason@redhat.com>
+
+	DR 2664
+	PR c++/102529
+	* pt.cc (alias_ctad_tweaks): Continue after deduction failure.
+
+2023-03-09  Jason Merrill  <jason@redhat.com>
+	    Michael Spertus  <mike@spertus.com>
+
+	PR c++/105841
+	* pt.cc	(corresponding_template_parameter_list): Split out...
+	(corresponding_template_parameter): ...from here.
+	(find_template_parameters): Factor out...
+	(find_template_parameter_info::find_in): ...this function.
+	(find_template_parameter_info::find_in_recursive): New.
+	(find_template_parameter_info::found): New.
+	(alias_ctad_tweaks): Only add parms used in the deduced args.
+
+2023-03-09  Jason Merrill  <jason@redhat.com>
+
+	* cp-trait.def (IS_DEDUCIBLE): Add space to name.
+
+2023-03-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105841
+	* cp-trait.def (IS_DEDUCIBLE): New.
+	* cxx-pretty-print.cc (pp_cxx_trait): Handle non-type.
+	* parser.cc (cp_parser_trait): Likewise.
+	* tree.cc (cp_tree_equal): Likewise.
+	* pt.cc (tsubst_copy_and_build): Likewise.
+	(type_targs_deducible_from): New.
+	(alias_ctad_tweaks): Use it.
+	* semantics.cc (trait_expr_value): Handle CPTK_IS_DEDUCIBLE.
+	(finish_trait_expr): Likewise.
+	* constraint.cc (diagnose_trait_expr): Likewise.
+	* cp-tree.h (type_targs_deducible_from): Declare.
+
 2023-03-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/108526

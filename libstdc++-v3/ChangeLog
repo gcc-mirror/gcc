@@ -1,3 +1,53 @@
+2023-03-09  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges
+	(cartesian_product_view::_Iterator::_Iterator): Remove
+	constraint on default constructor as per LWG 3849.
+	(cartesian_product_view::_Iterator::_M_prev): Adjust position
+	of _Nm > 0 test as per LWG 3820.
+	(cartesian_product_view::_Iterator::_M_advance): Perform bounds
+	checking only on sized cartesian products.
+	* testsuite/std/ranges/cartesian_product/1.cc (test08): New test.
+
+2023-03-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/109024
+	* include/std/ranges (chunk_by_view::_M_pred): Remove DMI as per
+	LWG 3796.
+	(repeat_view::_M_pred): Likewise.
+	* testsuite/std/ranges/adaptors/chunk_by/1.cc (test03): New test.
+	* testsuite/std/ranges/repeat/1.cc (test05): New test.
+
+2023-03-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/108362
+	* include/std/ranges (__detail::__can_single_view): New concept.
+	(_Single::operator()): Constrain it.  Move [[nodiscard]] to the
+	end of the function declarator.
+	(__detail::__can_iota_view): New concept.
+	(_Iota::operator()): Constrain it.  Move [[nodiscard]] to the
+	end of the function declarator.
+	(__detail::__can_istream_view): New concept.
+	(_Istream::operator()): Constrain it.  Move [[nodiscard]] to the
+	end of the function declarator.
+	* testsuite/std/ranges/iota/iota_view.cc (test07): New test.
+	* testsuite/std/ranges/istream_view.cc (test08): New test.
+	* testsuite/std/ranges/single_view.cc (test07): New test.
+
+2023-03-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/107572
+	* include/std/ranges (cartesian_product_view::end): When
+	building the tuple of iterators, avoid calling ranges::begin on
+	the first range if __empty_tail is false.
+	* testsuite/std/ranges/cartesian_product/1.cc (test07): New test.
+
+2023-03-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108882
+	* config/os/gnu-linux/ldbl-ieee128-extra.ver: Fix incorrect
+	patterns.
+
 2023-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Update.

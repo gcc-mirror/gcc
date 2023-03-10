@@ -1,3 +1,62 @@
+2023-03-09  Tamar Christina  <tamar.christina@arm.com>
+
+	* passes.cc (emergency_dump_function): Finish graph generation.
+
+2023-03-09  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.md (tbranch_<code><mode>3): Restrict to SHORT
+	and bottom bit only.
+
+2023-03-09  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/108980
+	* gimple-array-bounds.cc (array_bounds_checker::check_array_ref):
+	Reorgnize the call to warning for not strict flexible arrays
+	to be before the check of warned.
+
+2023-03-09  Jason Merrill  <jason@redhat.com>
+
+	* doc/extend.texi: Comment out __is_deducible docs.
+
+2023-03-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105841
+	* doc/extend.texi (Type Traits):: Document __is_deducible.
+
+2023-03-09  Costas Argyris  <costas.argyris@gmail.com>
+
+	PR driver/108865
+	* config.host: add object for x86_64-*-mingw*.
+	* config/i386/sym-mingw32.cc: dummy file to attach
+	symbol.
+	* config/i386/utf8-mingw32.rc: windres resource file.
+	* config/i386/winnt-utf8.manifest: XML manifest to
+	enable UTF-8.
+	* config/i386/x-mingw32: reference to x-mingw32-utf8.
+	* config/i386/x-mingw32-utf8: Makefile fragment to
+	embed UTF-8 manifest.
+
+2023-03-09  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.cc (process_alt_operands): Use operand modes for
+	clobbered regs instead of the biggest access mode.
+
+2023-03-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/108995
+	* fold-const.cc (extract_muldiv_1): Avoid folding
+	(CST * b) / CST2 when sanitizing overflow and we rely on
+	overflow being undefined.
+
+2023-03-09  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109008
+	* range-op-float.cc (float_widen_lhs_range): New function.
+	(foperator_plus::op1_range, foperator_minus::op1_range,
+	foperator_minus::op2_range, foperator_mult::op1_range,
+	foperator_div::op1_range, foperator_div::op2_range): Use it.
+
 2023-03-07  Jonathan Grant  <jg@jguk.org>
 
 	PR sanitizer/81649

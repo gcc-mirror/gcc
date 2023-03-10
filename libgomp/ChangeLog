@@ -1,3 +1,10 @@
+2023-03-09  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR libgomp/109062
+	* env.c (wait_policy): Initialize to -1.
+	(initialize_icvs): Initialize icvs->wait_policy to -1.
+	* testsuite/libgomp.c-c++-common/pr109062.c: New test.
+
 2023-03-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (Offload-Target Specifics): Mention GCN_STACK_SIZE.
