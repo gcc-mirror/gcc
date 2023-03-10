@@ -1,3 +1,12 @@
+2023-03-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-03-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/108546
+	* testsuite/libgomp.fortran/is_device_ptr-3.f90: New test.
+	* testsuite/libgomp.fortran/use_device_ptr-optional-4.f90: New test.
+
 2022-11-04  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
