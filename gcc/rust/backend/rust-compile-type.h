@@ -70,7 +70,6 @@ private:
   Context *ctx;
   bool trait_object_mode;
   tree translated;
-  int recurisve_ops;
 };
 
 } // namespace Compile
