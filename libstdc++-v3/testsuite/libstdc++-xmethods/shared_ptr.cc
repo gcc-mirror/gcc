@@ -37,6 +37,8 @@ main ()
 
   std::shared_ptr<x_struct[3]> s(new x_struct[2]{ {92}, {115} });
 
+  auto qq = q;
+
 // { dg-final { note-test *p 10 } }
 // { dg-final { regexp-test p.get() 0x.* } }
 
@@ -66,6 +68,11 @@ main ()
 // { dg-final { whatis-test s\[1] x_struct } }
 // { dg-final { whatis-test s.get() "x_struct \*" } }
 // { dg-final { whatis-test s\[1].y int } }
+
+// { dg-final { note-test p.use_count() 1 } }
+// { dg-final { note-test p.unique() true } }
+// { dg-final { note-test q.use_count() 2 } }
+// { dg-final { note-test q.unique() false } }
 
   return 0;  // Mark SPOT
 }
