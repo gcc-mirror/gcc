@@ -91,6 +91,22 @@ jobs:
             fi
           done;
 
-          exit $retval;
+          ## check no Signed-off-by in the middle.
+          while read -r f; do
+            echo -n "$f : "
+               if awk 'BEGIN { in_footer = 0; error = 0;}
+                       { DEFAULT = 1; }
+                       /^Signed-off-by/ { in_footer = 1; DEFAULT = 0;}
+                       /^Co-authored-by/ { in_footer = 1; DEFAULT = 0;}
+                       /^Reviewed-by/  { in_footer = 1; DEFAULT = 0;}
+                       /^\s*$/  { DEFAULT = 0; }
+                       DEFAULT { if (in_footer == 1) { printf $0 " appears after some Signed-off-by/Co-authored-by line "; error = 1; exit (1);} }';
+               then
+                   echo OK
+               else
+                   echo KO
+                   retval=1
+               fi < <(git log "$f" -1 --format="%B")
+          done < <(git rev-list --reverse "$rev_list" )
 
-  
+          exit $retval;
