@@ -1,3 +1,16 @@
+2023-03-10  Thomas W Rodgers  <rodgert@twrodgers.com>
+
+	Backported from master:
+	2023-02-14  Thomas W Rodgers  <rodgert@twrodgers.com>
+
+	PR libstdc++/103934
+	* include/std/atomic (atomic_flag_wait): Add.
+	(atomic_flag_wait_explicit): Add.
+	(atomic_flag_notify): Add.
+	(atomic_flag_notify_explicit): Add.
+	* testsuite/29_atomics/atomic_flag/wait_notify/1.cc:
+	Add test case to cover missing atomic_flag free functions.
+
 2023-02-23  Matthias Kretz  <m.kretz@gsi.de>
 
 	Backported from master:
