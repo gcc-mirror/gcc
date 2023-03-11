@@ -1,3 +1,14 @@
+2023-03-10  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-02-10  Andrew Pinski  <apinski@marvell.com>
+		    Andrew Macleod   <amacleod@redhat.com>
+
+	PR tree-optimization/108684
+	* gcc.c-torture/compile/dce-inline-asm-1.c: New test.
+	* gcc.c-torture/compile/dce-inline-asm-2.c: New test.
+	* gcc.dg/tree-ssa/pr108684-1.c: New test.
+
 2023-03-07  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

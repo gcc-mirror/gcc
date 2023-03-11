@@ -1,3 +1,16 @@
+2023-03-10  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-02-10  Andrew Pinski  <apinski@marvell.com>
+		    Andrew Macleod   <amacleod@redhat.com>
+
+	PR tree-optimization/108684
+	* tree-ssa-dce.cc (simple_dce_from_worklist):
+	Check all ssa names and not just non-vdef ones
+	before accepting the inline-asm.
+	Call unlink_stmt_vdef on the statement before
+	removing it.
+
 2023-03-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
