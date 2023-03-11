@@ -9196,7 +9196,7 @@ have to optimize it to just @code{return 42 + 42;}.
 This section describes the syntax with which @code{__attribute__} may be
 used, and the constructs to which attribute specifiers bind, for the C
 language.  Some details may vary for C++ and Objective-C@.  Because of
-infelicities in the grammar for attributes, some forms described here
+limitations in the grammar for attributes, some forms described here
 may not be successfully parsed in all cases.
 
 There are some problems with the semantics of attributes in C++.  For
