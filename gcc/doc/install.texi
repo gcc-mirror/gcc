@@ -543,13 +543,21 @@ They are included in releases.
 Necessary for running @command{makeinfo} when modifying @file{*.texi}
 files to test your changes.
 
-Necessary for running @command{make dvi} or @command{make pdf} to
-create printable documentation in DVI or PDF format.  Texinfo version
+Necessary for running @command{make dvi}, @command{make pdf},
+or @command{make html} to create formatted documentation.  Texinfo version
 4.8 or later is required for @command{make pdf}.
 
-Necessary to build GCC documentation during development because the
-generated output files are not included in the repository.  They are
-included in releases.
+Necessary to build GCC documentation in info format during development
+because the generated output files are not included in the repository.
+(They are included in release tarballs.)
+
+Note that the minimum requirement is for a very old version of
+Texinfo, but recent versions of Texinfo produce better-quality output,
+especially for HTML format.  The version of Texinfo packaged with any
+current operating system distribution is likely to be adequate for
+building the documentation without error, but you may still want to
+install a newer release to get the best appearance and usability of
+the generated manuals.
 
 @item @TeX{} (any working version)
 
@@ -3429,6 +3437,31 @@ You can install stripped programs and libraries with
 make install-strip
 @end smallexample
 
+By default, only the man pages and info-format GCC documentation
+are built and installed.  If you want to generate the GCC manuals in
+other formats, use commands like
+
+@smallexample
+make dvi
+make pdf
+make html
+@end smallexample
+
+@noindent
+to build the manuals in the corresponding formats, and
+
+@smallexample
+make install-dvi
+make install-pdf
+make install-html
+@end smallexample
+
+@noindent
+to install them.
+Alternatively, there are prebuilt online versions of the manuals for
+released versions of GCC on
+@uref{https://gcc.gnu.org/onlinedocs/,,the GCC web site}.
+
 If you are bootstrapping a released version of GCC then please
 quickly review the build status page for your release, available from
 @uref{https://gcc.gnu.org/buildstat.html}.
@@ -3493,22 +3526,6 @@ incomplete or out of date.  Send a note to
 
 If you find a bug, please report it following the
 @uref{../bugs/,,bug reporting guidelines}.
-
-If you want to print the GCC manuals, do @samp{cd @var{objdir}; make
-dvi}.  You will need to have @command{texi2dvi} (version at least 4.7)
-and @TeX{} installed.  This creates a number of @file{.dvi} files in
-subdirectories of @file{@var{objdir}}; these may be converted for
-printing with programs such as @command{dvips}.  Alternately, by using
-@samp{make pdf} in place of @samp{make dvi}, you can create documentation
-in the form of @file{.pdf} files; this requires @command{texi2pdf}, which
-is included with Texinfo version 4.8 and later.  You can also
-@uref{https://shop.fsf.org/,,buy printed manuals from the
-Free Software Foundation}, though such manuals may not be for the most
-recent version of GCC@.
-
-If you would like to generate online HTML documentation, do @samp{cd
-@var{objdir}; make html} and HTML will be generated for the gcc manuals in
-@file{@var{objdir}/gcc/HTML}.
 
 @html
 <hr />
