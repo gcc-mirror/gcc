@@ -21,7 +21,7 @@
 namespace Rust {
 namespace HIR {
 
-Dump::Dump (std::ostream &stream) : stream (stream), indent (0) {}
+Dump::Dump (std::ostream &stream) : stream (stream) {}
 
 void
 Dump::go (HIR::Crate &crate)
@@ -30,37 +30,37 @@ Dump::go (HIR::Crate &crate)
   // inner attributes
   if (!crate.inner_attrs.empty ())
     {
-      indent++;
-      stream << std::string (indent, indent_char);
+      indentation.increment();
+      stream << indentation;
       stream << "inner_attrs: [";
       for (auto &attr : crate.inner_attrs)
 	stream << attr.as_string ();
       stream << "]," << std::endl;
-      indent--;
+      indentation.decrement();
     }
 
-  indent++;
-  stream << std::string (indent, indent_char);
+  indentation.increment();
+  stream << indentation;
   //
 
   stream << "items: [";
 
-  stream << std::string (indent, indent_char);
+  stream << indentation;
   for (const auto &item : crate.items)
     {
       stream << std::endl;
       item->accept_vis (*this);
     }
-  stream << std::string (indent, indent_char);
+  stream << indentation;
   stream << "]," << std::endl;
-  indent--;
+  indentation.decrement();
   //
 
-  indent++;
-  stream << std::string (indent, indent_char);
+  indentation.increment();
+  stream << indentation;
   stream << "node_mappings: ";
   stream << crate.get_mappings ().as_string ();
-  indent--;
+  indentation.decrement();
 
   stream << "\n}" << std::endl;
 }
@@ -157,9 +157,9 @@ Dump::visit (ArithmeticOrLogicalExpr &aole)
 
   aole.visit_lhs (*this);
   stream << "\n";
-  stream << std::string (indent, indent_char);
+  stream << indentation;
   stream << operator_str << "\n";
-  stream << std::string (indent, indent_char);
+  stream << indentation;
   aole.visit_rhs (*this);
 }
 void
@@ -236,7 +236,7 @@ void
 Dump::visit (BlockExpr &block_expr)
 {
   stream << "BlockExpr: [";
-  indent++;
+  indentation.increment();
   stream << std::endl;
   // TODO: inner attributes
 
@@ -246,20 +246,20 @@ Dump::visit (BlockExpr &block_expr)
       auto &stmts = block_expr.get_statements ();
       for (auto &stmt : stmts)
 	{
-	  stream << std::string (indent, indent_char);
+	  stream << indentation;
 	  stream << "Stmt: {\n";
-	  // stream << std::string (indent, indent_char);
+	  // stream << indentation;
 	  stmt->accept_vis (*this);
 	  stream << "\n";
-	  stream << std::string (indent, indent_char);
+	  stream << indentation;
 	  stream << "}\n";
 	}
     }
 
   // // TODO: print tail expression if exists
 
-  indent--;
-  stream << std::string (indent, indent_char);
+  indentation.decrement();
+  stream << indentation;
   stream << "]";
 }
 
@@ -376,20 +376,20 @@ Dump::visit (UseDeclaration &)
 void
 Dump::visit (Function &func)
 {
-  indent++;
-  stream << std::string (indent, indent_char);
+  indentation.increment();
+  stream << indentation;
   stream << "Function {" << std::endl;
-  indent++;
+  indentation.increment();
 
   // function name
-  stream << std::string (indent, indent_char);
+  stream << indentation;
   stream << "func_name: ";
   auto func_name = func.get_function_name ();
   stream << func_name;
   stream << ",\n";
 
   // return type
-  stream << std::string (indent, indent_char);
+  stream << indentation;
   stream << "return_type: ";
   if (func.has_return_type ())
     {
@@ -405,57 +405,57 @@ Dump::visit (Function &func)
   // function params
   if (func.has_function_params ())
     {
-      stream << std::string (indent, indent_char);
+      stream << indentation;
       stream << "params: [\n";
-      indent++;
+      indentation.increment();
       auto &func_params = func.get_function_params ();
       for (const auto &item : func_params)
 	{
-	  stream << std::string (indent, indent_char);
+	  stream << indentation;
 	  stream << item.as_string ();
 	  stream << ",\n";
 	}
 
       // parameter node mappings
-      stream << std::string (indent, indent_char);
+      stream << indentation;
       stream << "node_mappings: [\n";
       for (const auto &item : func_params)
 	{
 	  auto nmap = item.get_mappings ();
-	  indent++;
-	  stream << std::string (indent, indent_char);
+	  indentation.increment();
+	  stream << indentation;
 	  auto pname = item.param_name->as_string ();
 	  stream << pname << ": ";
 	  stream << nmap.as_string () << ",\n";
-	  indent--;
+	  indentation.decrement();
 	}
-      stream << std::string (indent, indent_char);
+      stream << indentation;
       stream << "],";
-      indent--;
+      indentation.decrement();
       stream << "\n";
-      stream << std::string (indent, indent_char);
+      stream << indentation;
       stream << "],";
       stream << "\n";
     }
 
   // function body
-  stream << std::string (indent, indent_char);
+  stream << indentation;
   auto &func_body = func.get_definition ();
   func_body->accept_vis (*this);
 
   // func node mappings
   stream << "\n";
-  stream << std::string (indent, indent_char);
+  stream << indentation;
   stream << "node_mappings: ";
   stream << func.get_impl_mappings ().as_string ();
-  indent--;
+  indentation.decrement();
   stream << "\n";
-  stream << std::string (indent, indent_char);
+  stream << indentation;
   stream << "}" << std::endl;
   // TODO: get function definition and visit block
 
   // stream << std::endl;
-  indent--;
+  indentation.decrement();
 }
 void
 Dump::visit (TypeAlias &)
@@ -590,12 +590,12 @@ Dump::visit (EmptyStmt &)
 void
 Dump::visit (LetStmt &let_stmt)
 {
-  indent++;
+  indentation.increment();
   // TODO: outer attributes
-  stream << std::string (indent, indent_char);
+  stream << indentation;
   stream << "LetStmt: {\n";
-  indent++;
-  stream << std::string (indent, indent_char);
+  indentation.increment();
+  stream << indentation;
 
   auto var_pattern = let_stmt.get_pattern ();
   stream << var_pattern->as_string ();
@@ -610,20 +610,20 @@ Dump::visit (LetStmt &let_stmt)
   if (let_stmt.has_init_expr ())
     {
       stream << " = Expr: {\n ";
-      indent++;
-      stream << std::string (indent, indent_char);
+      indentation.increment();
+      stream << indentation;
       auto expr = let_stmt.get_init_expr ();
       expr->accept_vis (*this);
       stream << "\n";
-      stream << std::string (indent, indent_char);
-      indent--;
+      stream << indentation;
+      indentation.decrement();
       stream << "}\n";
     }
-  indent--;
-  stream << std::string (indent, indent_char);
+  indentation.decrement();
+  stream << indentation;
   stream << "}\n";
 
-  indent--;
+  indentation.decrement();
 }
 void
 Dump::visit (ExprStmtWithoutBlock &expr_stmt)

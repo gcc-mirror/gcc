@@ -21,27 +21,6 @@
 namespace Rust {
 namespace AST {
 
-Indent::Indent () : tabs (0) {}
-
-std::ostream &
-operator<< (std::ostream &stream, const Indent &indent)
-{
-  return stream << std::string (indent.tabs, '\t');
-}
-
-void
-Indent::increment ()
-{
-  tabs++;
-}
-
-void
-Indent::decrement ()
-{
-  rust_assert (tabs != 0);
-  tabs--;
-}
-
 Dump::Dump (std::ostream &stream) : stream (stream), indentation (Indent ()) {}
 
 void
