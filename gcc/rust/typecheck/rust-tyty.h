@@ -154,13 +154,12 @@ public:
   const RustIdent &get_ident () const;
   Location get_locus () const;
 
+  bool has_subsititions_defined () const;
+  bool needs_generic_substitutions () const;
+
   /* Returns a pointer to a clone of this. The caller is responsible for
    * releasing the memory of the returned ty. */
   virtual BaseType *clone () const = 0;
-
-  virtual bool has_subsititions_defined () const;
-
-  virtual bool needs_generic_substitutions () const;
 
 protected:
   BaseType (HirId ref, HirId ty_ref, TypeKind kind, RustIdent ident,
@@ -562,16 +561,6 @@ public:
 
   BaseType *clone () const final override;
 
-  bool needs_generic_substitutions () const override final
-  {
-    return needs_substitution ();
-  }
-
-  bool has_subsititions_defined () const override final
-  {
-    return has_substitutions ();
-  }
-
   size_t number_of_variants () const { return variants.size (); }
 
   std::vector<VariantDef *> &get_variants () { return variants; }
@@ -718,16 +707,6 @@ public:
 
   BaseType *clone () const final override;
 
-  bool needs_generic_substitutions () const override final
-  {
-    return needs_substitution ();
-  }
-
-  bool has_subsititions_defined () const override final
-  {
-    return has_substitutions ();
-  }
-
   FnType *
   handle_substitions (SubstitutionArgumentMappings &mappings) override final;
 
@@ -838,16 +817,6 @@ public:
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () const final override;
-
-  bool needs_generic_substitutions () const override final
-  {
-    return needs_substitution ();
-  }
-
-  bool has_subsititions_defined () const override final
-  {
-    return has_substitutions ();
-  }
 
   ClosureType *
   handle_substitions (SubstitutionArgumentMappings &mappings) override final;
@@ -1311,10 +1280,6 @@ public:
   BaseType *clone () const final override;
 
   std::string get_name () const override final;
-
-  bool needs_generic_substitutions () const override final;
-
-  bool has_subsititions_defined () const override final;
 
   const BaseType *get () const;
   BaseType *get ();

@@ -257,18 +257,6 @@ BaseType::append_reference (HirId id)
   combined.insert (id);
 }
 
-bool
-BaseType::has_subsititions_defined () const
-{
-  return false;
-}
-
-bool
-BaseType::needs_generic_substitutions () const
-{
-  return false;
-}
-
 const RustIdent &
 BaseType::get_ident () const
 {
@@ -816,6 +804,128 @@ BaseType::is_concrete () const
     case DYNAMIC:
     case ERROR:
       return true;
+    }
+
+  return false;
+}
+
+bool
+BaseType::has_subsititions_defined () const
+{
+  const TyTy::BaseType *x = destructure ();
+  switch (x->get_kind ())
+    {
+    case INFER:
+    case BOOL:
+    case CHAR:
+    case INT:
+    case UINT:
+    case FLOAT:
+    case USIZE:
+    case ISIZE:
+    case NEVER:
+    case STR:
+    case DYNAMIC:
+    case ERROR:
+    case FNPTR:
+    case ARRAY:
+    case SLICE:
+    case POINTER:
+    case REF:
+    case TUPLE:
+    case PARAM:
+    case PLACEHOLDER:
+      return false;
+
+      case PROJECTION: {
+	const ProjectionType &p = *static_cast<const ProjectionType *> (x);
+	const SubstitutionRef &ref = static_cast<const SubstitutionRef &> (p);
+	return ref.has_substitutions ();
+      }
+      break;
+
+      case FNDEF: {
+	const FnType &fn = *static_cast<const FnType *> (x);
+	const SubstitutionRef &ref = static_cast<const SubstitutionRef &> (fn);
+	return ref.has_substitutions ();
+      }
+      break;
+
+      case ADT: {
+	const ADTType &adt = *static_cast<const ADTType *> (x);
+	const SubstitutionRef &ref = static_cast<const SubstitutionRef &> (adt);
+	return ref.has_substitutions ();
+      }
+      break;
+
+      case CLOSURE: {
+	const ClosureType &closure = *static_cast<const ClosureType *> (x);
+	const SubstitutionRef &ref
+	  = static_cast<const SubstitutionRef &> (closure);
+	return ref.has_substitutions ();
+      }
+      break;
+    }
+
+  return false;
+}
+
+bool
+BaseType::needs_generic_substitutions () const
+{
+  const TyTy::BaseType *x = destructure ();
+  switch (x->get_kind ())
+    {
+    case INFER:
+    case BOOL:
+    case CHAR:
+    case INT:
+    case UINT:
+    case FLOAT:
+    case USIZE:
+    case ISIZE:
+    case NEVER:
+    case STR:
+    case DYNAMIC:
+    case ERROR:
+    case FNPTR:
+    case ARRAY:
+    case SLICE:
+    case POINTER:
+    case REF:
+    case TUPLE:
+    case PARAM:
+    case PLACEHOLDER:
+      return false;
+
+      case PROJECTION: {
+	const ProjectionType &p = *static_cast<const ProjectionType *> (x);
+	const SubstitutionRef &ref = static_cast<const SubstitutionRef &> (p);
+	return ref.needs_substitution ();
+      }
+      break;
+
+      case FNDEF: {
+	const FnType &fn = *static_cast<const FnType *> (x);
+	const SubstitutionRef &ref = static_cast<const SubstitutionRef &> (fn);
+	return ref.needs_substitution ();
+      }
+      break;
+
+      case ADT: {
+	const ADTType &adt = *static_cast<const ADTType *> (x);
+	const SubstitutionRef &ref = static_cast<const SubstitutionRef &> (adt);
+	return ref.needs_substitution ();
+      }
+      break;
+
+      case CLOSURE: {
+	const ClosureType &closure = *static_cast<const ClosureType *> (x);
+	const SubstitutionRef &ref
+	  = static_cast<const SubstitutionRef &> (closure);
+	return ref.needs_substitution ();
+      }
+      break;
     }
 
   return false;
@@ -3352,23 +3462,12 @@ ProjectionType::get_name () const
   return as_string ();
 }
 
-bool
-ProjectionType::needs_generic_substitutions () const
-{
-  return needs_substitution ();
-}
-
-bool
-ProjectionType::has_subsititions_defined () const
-{
-  return has_substitutions ();
-}
-
 const BaseType *
 ProjectionType::get () const
 {
   return base;
 }
+
 BaseType *
 ProjectionType::get ()
 {
