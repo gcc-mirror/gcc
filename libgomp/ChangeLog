@@ -1,3 +1,55 @@
+2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/90596
+	* target.c (gomp_map_vars_internal): Allow for
+	'param_kind == GOMP_MAP_VARS_OPENACC | GOMP_MAP_VARS_TARGET'.
+	* oacc-parallel.c (GOACC_parallel_keyed): Pass
+	'GOMP_MAP_VARS_TARGET' to 'goacc_map_vars'.
+	* plugin/plugin-gcn.c (alloc_by_agent, gcn_exec)
+	(GOMP_OFFLOAD_openacc_exec, GOMP_OFFLOAD_openacc_async_exec):
+	Adjust, simplify.
+	(gomp_offload_free): Remove.
+	* plugin/plugin-nvptx.c (nvptx_exec, GOMP_OFFLOAD_openacc_exec)
+	(GOMP_OFFLOAD_openacc_async_exec): Adjust, simplify.
+	(cuda_free_argmem): Remove.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-parallel-1.c:
+	Adjust.
+
+2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (gomp_copy_host2dev, gomp_map_vars_internal): Allow
+	libgomp 'cbuf' buffering with OpenACC 'async' for 'ephemeral'
+	data.
+
+2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (gomp_map_vars_internal): Use 'OFFSET_INLINED' for
+	'GOMP_MAP_IF_PRESENT'.
+	* plugin/plugin-gcn.c (gcn_exec, GOMP_OFFLOAD_openacc_exec)
+	(GOMP_OFFLOAD_openacc_async_exec): Adjust.
+	* plugin/plugin-nvptx.c (nvptx_exec, GOMP_OFFLOAD_openacc_exec)
+	(GOMP_OFFLOAD_openacc_async_exec): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/no_create-1.c: Add 'async'
+	testing.
+	* testsuite/libgomp.oacc-c-c++-common/no_create-2.c: Likewise.
+
+2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-async.c (goacc_wait): Remove 'acc_async_test' -> skip
+	shortcut.
+
+2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/data-3.c: Document/verify
+	another aspect of OpenACC 'async' semantics.
+
+2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/plugin-gcn.c (gcn_exec): Fix 'acc_ev_enqueue_launch_end'
+	position.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-parallel-1.c:
+	Verify 'acc_ev_alloc', 'acc_ev_free'.
+
 2023-03-09  Hongyu Wang  <hongyu.wang@intel.com>
 
 	PR libgomp/109062

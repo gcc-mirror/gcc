@@ -1,3 +1,46 @@
+2023-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107558
+	* decl.cc (cp_finish_decl): Don't clear TREE_READONLY on
+	automatic non-aggregate variables just because of
+	-fmerge-all-constants.
+
+2023-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109039
+	* class.cc (end_of_class): For bit-fields, instead of computing
+	offset as sum of byte_position (field) and DECL_SIZE_UNIT (field),
+	compute it as sum of bit_position (field) and DECL_SIZE (field)
+	divided by BITS_PER_UNIT rounded up.
+
+2023-03-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108972
+	* lambda.cc (compare_lambda_template_head): Check more
+	for error_mark_node.
+
+2023-03-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108566
+	* mangle.cc (anon_aggr_naming_decl): New.
+	(write_unqualified_name): Use it.
+
+2023-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/108079
+	* decl.cc (poplevel): Suppress OPT_Wunused_variable warning
+	after diagnosing it.
+
+2023-03-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108099
+	* decl.cc (grokdeclarator): Handle non-typedef typedef_decl.
+
+2023-03-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108542
+	* class.cc (instantiate_type): Strip location wrapper.
+
 2023-03-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/108773

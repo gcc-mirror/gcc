@@ -1,3 +1,51 @@
+2023-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109059
+	* region-model.cc (region_model::mark_region_as_unknown): Gather a
+	set of maybe-live svalues and call on_maybe_live_values with it.
+	* store.cc (binding_map::remove_overlapping_bindings): Add new
+	"maybe_live_values" param; add any removed svalues to it.
+	(binding_cluster::clobber_region): Add NULL as new param of
+	remove_overlapping_bindings.
+	(binding_cluster::mark_region_as_unknown): Add "maybe_live_values"
+	param and pass it to remove_overlapping_bindings.
+	(binding_cluster::maybe_get_compound_binding): Add NULL for new
+	param of binding_map::remove_overlapping_bindings.
+	(binding_cluster::remove_overlapping_bindings): Add
+	"maybe_live_values" param and pass to
+	binding_map::remove_overlapping_bindings.
+	(store::set_value): Capture a set of maybe-live svalues, and call
+	on_maybe_live_values with it.
+	(store::on_maybe_live_values): New.
+	(store::mark_region_as_unknown): Add "maybe_live_values" param
+	and pass it to binding_cluster::mark_region_as_unknown.
+	(store::remove_overlapping_bindings): Pass NULL for new param of
+	binding_cluster::remove_overlapping_bindings.
+	* store.h (binding_map::remove_overlapping_bindings): Add
+	"maybe_live_values" param.
+	(binding_cluster::mark_region_as_unknown): Likewise.
+	(binding_cluster::remove_overlapping_bindings): Likewise.
+	(store::mark_region_as_unknown): Likewise.
+	(store::on_maybe_live_values): New decl.
+
+2023-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108475
+	PR analyzer/109060
+	* sm-malloc.cc (deref_before_check::deref_before_check):
+	Initialize new field m_deref_expr.  Assert that arg is non-NULL.
+	(deref_before_check::emit): Reject cases where the spelling of the
+	thing that was dereferenced differs from that of what is checked,
+	or if the dereference expression was not found.  Remove code to
+	handle NULL m_arg.
+	(deref_before_check::describe_state_change): Remove code to handle
+	NULL m_arg.
+	(deref_before_check::describe_final_event): Likewise.
+	(deref_before_check::sufficiently_similar_p): New.
+	(deref_before_check::m_deref_expr): New field.
+	(malloc_state_machine::maybe_complain_about_deref_before_check):
+	Don't warn if the diag_ptr is NULL.
+
 2023-03-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* kf.cc (class kf_sprintf): New.

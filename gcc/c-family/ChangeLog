@@ -1,3 +1,10 @@
+2023-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/108060
+	PR sanitizer/109050
+	* c-gimplify.cc (ubsan_walk_array_refs_r): For a MODIFY_EXPR, instrument
+	the RHS before the LHS.
+
 2023-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/107465

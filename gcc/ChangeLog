@@ -1,3 +1,179 @@
+2023-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107703
+	* optabs.cc (expand_fix): For conversions from BFmode to integral,
+	use shifts to convert it to SFmode first and then convert SFmode
+	to integral.
+
+2023-03-10  Andrew Pinski  <apinski@marvell.com>
+
+	* config/aarch64/aarch64.md: Add a new define_split
+	to help combine.
+
+2023-03-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.cc (solve_graph): Immediately
+	iterate self-cycles.
+
+2023-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109008
+	* range-op-float.cc (float_widen_lhs_range): If not
+	-frounding-math and not IBM double double format, extend lhs
+	range just by 0.5ulp rather than 1ulp in each direction.
+
+2023-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107998
+	* config.gcc (x86_64-*-cygwin*): Don't add i386/t-cygwin-w64 into
+	$tmake_file.
+	* config/i386/t-cygwin-w64: Remove.
+
+2023-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR plugins/108634
+	* tree-core.h (tree_code_type, tree_code_length): For C++11 or
+	C++14, don't declare as extern const arrays.
+	(tree_code_type_tmpl, tree_code_length_tmpl): New types with
+	static constexpr member arrays for C++11 or C++14.
+	* tree.h (TREE_CODE_CLASS): For C++11 or C++14 use
+	tree_code_type_tmpl <0>::tree_code_type instead of tree_code_type.
+	(TREE_CODE_LENGTH): For C++11 or C++14 use
+	tree_code_length_tmpl <0>::tree_code_length instead of
+	tree_code_length.
+	* tree.cc (tree_code_type, tree_code_length): Remove.
+
+2023-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/108464
+	* common.opt (fcanon-prefix-map): New option.
+	* opts.cc: Include file-prefix-map.h.
+	(flag_canon_prefix_map): New variable.
+	(common_handle_option): Handle OPT_fcanon_prefix_map.
+	(gen_command_line_string): Ignore OPT_fcanon_prefix_map.
+	* file-prefix-map.h (flag_canon_prefix_map): Declare.
+	* file-prefix-map.cc (struct file_prefix_map): Add canonicalize
+	member.
+	(add_prefix_map): Initialize canonicalize member from
+	flag_canon_prefix_map, and if true canonicalize it using lrealpath.
+	(remap_filename): Revert 2022-11-01 and 2022-11-07 changes,
+	use lrealpath result only for map->canonicalize map entries.
+	* lto-opts.cc (lto_write_options): Ignore OPT_fcanon_prefix_map.
+	* opts-global.cc (handle_common_deferred_options): Clear
+	flag_canon_prefix_map at the start and handle OPT_fcanon_prefix_map.
+	* doc/invoke.texi (-fcanon-prefix-map): Document.
+	(-ffile-prefix-map, -fdebug-prefix-map, -fprofile-prefix-map): Add
+	see also for -fcanon-prefix-map.
+	* doc/cppopts.texi (-fmacro-prefix-map): Likewise.
+
+2023-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/108079
+	* cgraphunit.cc (check_global_declaration): Don't warn for unused
+	variables which have OPT_Wunused_variable warning suppressed.
+
+2023-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109008
+	* range-op-float.cc (float_widen_lhs_range): If lb is
+	minimum representable finite number or ub is maximum
+	representable finite number, instead of widening it to
+	-inf or inf widen it to negative or positive 0x0.8p+(EMAX+1).
+	Temporarily clear flag_finite_math_only when canonicalizing
+	the widened range.
+
+2023-03-10  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-builtins.cc (riscv_gimple_fold_builtin): New function.
+	* config/riscv/riscv-protos.h (riscv_gimple_fold_builtin): Ditto.
+	(gimple_fold_builtin):  Ditto.
+	* config/riscv/riscv-vector-builtins-bases.cc (class read_vl): New class.
+	(class vleff): Ditto.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (read_vl): Ditto.
+	(vleff): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct read_vl_def): Ditto.
+	(struct fault_load_def): Ditto.
+	(SHAPE): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.h: Ditto.
+	* config/riscv/riscv-vector-builtins.cc
+	(rvv_arg_type_info::get_tree_type): Add size_ptr.
+	(gimple_folder::gimple_folder): New class.
+	(gimple_folder::fold): Ditto.
+	(gimple_fold_builtin): New function.
+	(get_read_vl_instance): Ditto.
+	(get_read_vl_decl): Ditto.
+	* config/riscv/riscv-vector-builtins.def (size_ptr): Add size_ptr.
+	* config/riscv/riscv-vector-builtins.h (class gimple_folder): New class.
+	(get_read_vl_instance): New function.
+	(get_read_vl_decl):  Ditto.
+	* config/riscv/riscv-vsetvl.cc (fault_first_load_p): Ditto.
+	(read_vl_insn_p): Ditto.
+	(available_occurrence_p): Ditto.
+	(backward_propagate_worthwhile_p): Ditto.
+	(gen_vsetvl_pat): Adapt for vleff support.
+	(get_forward_read_vl_insn): New function.
+	(get_backward_fault_first_load_insn): Ditto.
+	(source_equal_p): Adapt for vleff support.
+	(first_ratio_invalid_for_second_sew_p): Remove.
+	(first_ratio_invalid_for_second_lmul_p): Ditto.
+	(first_lmul_less_than_second_lmul_p): Ditto.
+	(first_ratio_less_than_second_ratio_p): Ditto.
+	(support_relaxed_compatible_p): New function.
+	(vector_insn_info::operator>): Remove.
+	(vector_insn_info::operator>=): Refine.
+	(vector_insn_info::parse_insn): Adapt for vleff support.
+	(vector_insn_info::compatible_p): Ditto.
+	(vector_insn_info::update_fault_first_load_avl): New function.
+	(pass_vsetvl::transfer_after): Adapt for vleff support.
+	(pass_vsetvl::demand_fusion): Ditto.
+	(pass_vsetvl::cleanup_insns): Ditto.
+	* config/riscv/riscv-vsetvl.def (DEF_INCOMPATIBLE_COND): Remove
+	redundant condtions.
+	* config/riscv/riscv-vsetvl.h (struct demands_cond): New function.
+	* config/riscv/riscv.cc (TARGET_GIMPLE_FOLD_BUILTIN): New target hook.
+	* config/riscv/riscv.md: Adapt for vleff support.
+	* config/riscv/t-riscv: Ditto.
+	* config/riscv/vector-iterators.md: New iterator.
+	* config/riscv/vector.md (read_vlsi): New pattern.
+	(read_vldi_zero_extend): Ditto.
+	(@pred_fault_load<mode>): Ditto.
+
+2023-03-10  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins.cc
+	(function_expander::use_ternop_insn): Use maybe_gen_insn instead.
+	(function_expander::use_widen_ternop_insn): Ditto.
+	* optabs.cc (maybe_gen_insn): Extend nops handling.
+
+2023-03-10  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins-bases.cc: Split indexed load
+	patterns according to RVV ISA.
+	* config/riscv/vector-iterators.md: New iterators.
+	* config/riscv/vector.md
+	(@pred_indexed_<order>load<VNX1_QHSD:mode><VNX1_QHSDI:mode>): Remove.
+	(@pred_indexed_<order>load<mode>_same_eew): New pattern.
+	(@pred_indexed_<order>load<mode>_x2_greater_eew): Ditto.
+	(@pred_indexed_<order>load<mode>_x4_greater_eew): Ditto.
+	(@pred_indexed_<order>load<mode>_x8_greater_eew): Ditto.
+	(@pred_indexed_<order>load<mode>_x2_smaller_eew): Ditto.
+	(@pred_indexed_<order>load<mode>_x4_smaller_eew): Ditto.
+	(@pred_indexed_<order>load<mode>_x8_smaller_eew): Ditto.
+	(@pred_indexed_<order>load<VNX2_QHSD:mode><VNX2_QHSDI:mode>): Remove.
+	(@pred_indexed_<order>load<VNX4_QHSD:mode><VNX4_QHSDI:mode>): Ditto.
+	(@pred_indexed_<order>load<VNX8_QHSD:mode><VNX8_QHSDI:mode>): Ditto.
+	(@pred_indexed_<order>load<VNX16_QHS:mode><VNX16_QHSI:mode>): Ditto.
+	(@pred_indexed_<order>load<VNX32_QH:mode><VNX32_QHI:mode>): Ditto.
+	(@pred_indexed_<order>load<VNX64_Q:mode><VNX64_Q:mode>): Ditto.
+
+2023-03-10  Michael Collison  <collison@rivosinc.com>
+
+	* tree-vect-loop-manip.cc (vect_do_peeling): Use
+	result of constant_lower_bound instead of vf for the lower
+	bound of the epilog loop trip count.
+
 2023-03-09  Tamar Christina  <tamar.christina@arm.com>
 
 	* passes.cc (emergency_dump_function): Finish graph generation.

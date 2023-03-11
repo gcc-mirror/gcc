@@ -1,3 +1,9 @@
+2023-03-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104332
+	* resolve.cc (resolve_symbol): Avoid NULL pointer dereference while
+	checking a symbol with the BIND(C) attribute.
+
 2023-03-05  Harald Anlauf  <anlauf@gmx.de>
 	    Tobias Burnus   <tobias@codesourcery.com>
 

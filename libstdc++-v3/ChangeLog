@@ -1,3 +1,11 @@
+2023-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109064
+	* python/libstdcxx/v6/xmethods.py (SharedPtrUseCountWorker):
+	Remove self-recursion in __init__. Add missing _supports.
+	* testsuite/libstdc++-xmethods/shared_ptr.cc: Check use_count()
+	and unique().
+
 2023-03-09  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges

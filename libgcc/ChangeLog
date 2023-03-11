@@ -1,3 +1,13 @@
+2023-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107703
+	* soft-fp/floattibf.c: New file.
+	* soft-fp/floatuntibf.c: New file.
+	* config/i386/libgcc-glibc.ver: Export __float{,un}tibf @ GCC_13.0.0.
+	* config/i386/64/t-softfp (softfp_extras): Add floattibf and
+	floatuntibf.
+	(CFLAGS-floattibf.c, CFLAGS-floatunstibf.c): Add -msse2.
+
 2023-03-08  Kewen Lin  <linkw@linux.ibm.com>
 
 	PR libgcc/108727

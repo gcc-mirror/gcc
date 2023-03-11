@@ -1,3 +1,107 @@
+2023-03-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	* lib/target-supports.exp (check_fork_available): Don't signal
+	true for CRIS running on a simulator.
+
+2023-03-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/pr108117.c: Require effective-target scheduling.
+
+2023-03-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/pr106397.c: Add -w to options.
+
+2023-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/107703
+	* g++.dg/cpp23/ext-floating.h (__STDCPP_BFLOAT16_T__): Don't undefine
+	it.
+	(std::bfloat16_t): Use decltype (0.0bf16) like libstdc++, rather than
+	__bf16.
+	* g++.dg/cpp23/ext-floating14.C: New test.
+
+2023-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107558
+	* g++.dg/gomp/pr107558.C: New test.
+
+2023-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109039
+	* g++.dg/abi/no_unique_address7.C: New test.
+
+2023-03-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108972
+	* g++.dg/cpp2a/concepts-lambda3.C: Run at lower std levels,
+	but expect errors.
+
+2023-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/108060
+	PR sanitizer/109050
+	* c-c++-common/ubsan/bounds-17.c: New test.
+	* c-c++-common/ubsan/bounds-18.c: New test.
+	* c-c++-common/ubsan/bounds-19.c: New test.
+	* c-c++-common/ubsan/bounds-20.c: New test.
+	* c-c++-common/ubsan/bounds-21.c: New test.
+
+2023-03-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104332
+	* gfortran.dg/bind_c_usage_34.f90: New test.
+
+2023-03-10  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.target/aarch64/rev16_2.c: New test.
+	* gcc.target/aarch64/shift_and_operator-1.c: New test.
+
+2023-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109059
+	* gcc.dg/analyzer/flex-with-call-summaries.c: Remove xfail.
+	* gcc.dg/analyzer/leak-pr109059-1.c: New test.
+	* gcc.dg/analyzer/leak-pr109059-2.c: New test.
+
+2023-03-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108566
+	* g++.dg/abi/anon6.C: New test.
+
+2023-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108475
+	PR analyzer/109060
+	* gcc.dg/analyzer/deref-before-check-pr108475-1.c: New test.
+	* gcc.dg/analyzer/deref-before-check-pr108475-haproxy-tcpcheck.c:
+	New test.
+	* gcc.dg/analyzer/deref-before-check-pr109060-haproxy-cfgparse.c:
+	New test.
+
+2023-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/108079
+	* c-c++-common/Wunused-var-18.c: New test.
+
+2023-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109008
+	* gcc.dg/pr109008.c: New test.
+
+2023-03-10  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/merge_constraint-1.c: New test.
+
+2023-03-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108099
+	* g++.dg/ext/int128-7.C: New test.
+
+2023-03-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108542
+	* g++.dg/contracts/contracts-err1.C: New test.
+
 2023-03-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/108773

@@ -1,3 +1,9 @@
+2023-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/108079
+	* c-decl.cc (pop_scope): Suppress OPT_Wunused_variable warning
+	after diagnosing it.
+
 2023-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/108894
