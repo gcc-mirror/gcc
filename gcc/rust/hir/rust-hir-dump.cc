@@ -238,7 +238,22 @@ Dump::visit (BlockExpr &block_expr)
   stream << "BlockExpr: [";
   indentation.increment ();
   stream << std::endl;
+
   // TODO: inner attributes
+  stream << std::string (indent, indent_char);
+  stream << "inner attributes: ";
+  if (!block_expr.inner_attrs.empty ())
+    {
+      for (const auto &attr : block_expr.inner_attrs)
+	{
+	  stream << std::endl;
+	  stream << std::string (indent, indent_char);
+	  stream << attr.as_string ();
+	  // stream << attr.accept_vis(*self);
+	}
+    }
+
+  stream << std::endl;
 
   // statements
   if (block_expr.has_statements ())
