@@ -7906,7 +7906,7 @@ of the data but not how this data is accessed.
 In order to read data located with the @code{progmem} attribute
 (inline) assembler must be used.
 @smallexample
-/* Use custom macros from @w{@uref{http://nongnu.org/avr-libc/user-manual/,AVR-LibC}} */
+/* Use custom macros from AVR-LibC */
 #include <avr/pgmspace.h> 
 
 /* Locate var in flash memory */
