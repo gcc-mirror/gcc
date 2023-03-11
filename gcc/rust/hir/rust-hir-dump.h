@@ -22,6 +22,7 @@
 #include "rust-hir-visitor.h"
 #include "rust-hir.h"
 #include "rust-hir-full.h"
+#include "rust-dump.h"
 
 namespace Rust {
 namespace HIR {
@@ -33,9 +34,8 @@ public:
   void go (HIR::Crate &crate);
 
 private:
+  Indent indentation;
   std::ostream &stream;
-  std::size_t indent; // current indentation level
-  char indent_char = '\t';
 
   virtual void visit (Lifetime &) override;
   virtual void visit (LifetimeParam &) override;
