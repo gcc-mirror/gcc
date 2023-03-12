@@ -20,6 +20,7 @@
 #include "rust-compile-expr.h"
 #include "rust-compile-resolve-path.h"
 #include "rust-constexpr.h"
+#include "rust-compile-type.h"
 
 namespace Rust {
 namespace Compile {

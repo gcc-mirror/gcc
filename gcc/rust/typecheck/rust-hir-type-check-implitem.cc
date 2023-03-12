@@ -18,10 +18,10 @@
 
 #include "rust-hir-type-check-implitem.h"
 #include "rust-hir-type-check-base.h"
-#include "rust-hir-full.h"
 #include "rust-hir-type-check-type.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-pattern.h"
+#include "rust-type-util.h"
 #include "rust-tyty.h"
 
 namespace Rust {

@@ -18,21 +18,19 @@
 
 #include "rust-compile-expr.h"
 #include "rust-compile-struct-field-expr.h"
-#include "rust-hir-trait-resolve.h"
 #include "rust-hir-path-probe.h"
-#include "rust-hir-type-bounds.h"
 #include "rust-compile-pattern.h"
 #include "rust-compile-resolve-path.h"
 #include "rust-compile-block.h"
 #include "rust-compile-implitem.h"
 #include "rust-constexpr.h"
 #include "rust-type-util.h"
+#include "rust-compile-type.h"
 #include "rust-gcc.h"
 
 #include "fold-const.h"
 #include "realmpfr.h"
 #include "convert.h"
-#include "print-tree.h"
 
 namespace Rust {
 namespace Compile {

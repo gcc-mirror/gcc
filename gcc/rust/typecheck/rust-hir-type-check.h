@@ -19,8 +19,6 @@
 #ifndef RUST_HIR_TYPE_CHECK
 #define RUST_HIR_TYPE_CHECK
 
-#include "rust-type-util.h"
-#include "rust-hir-full-decls.h"
 #include "rust-hir-map.h"
 #include "rust-tyty.h"
 #include "rust-hir-trait-reference.h"

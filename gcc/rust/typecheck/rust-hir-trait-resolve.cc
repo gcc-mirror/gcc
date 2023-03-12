@@ -18,6 +18,8 @@
 
 #include "rust-hir-trait-resolve.h"
 #include "rust-hir-type-check-expr.h"
+#include "rust-substitution-mapper.h"
+#include "rust-type-util.h"
 
 namespace Rust {
 namespace Resolver {

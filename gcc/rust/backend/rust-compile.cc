@@ -19,14 +19,8 @@
 #include "rust-compile.h"
 #include "rust-compile-item.h"
 #include "rust-compile-implitem.h"
-#include "rust-compile-expr.h"
-#include "rust-compile-struct-field-expr.h"
-#include "rust-compile-stmt.h"
-#include "rust-hir-trait-resolve.h"
-#include "rust-hir-path-probe.h"
 #include "rust-hir-type-bounds.h"
-#include "rust-hir-dot-operator.h"
-#include "rust-compile-block.h"
+#include "rust-compile-type.h"
 
 namespace Rust {
 namespace Compile {

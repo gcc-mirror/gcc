@@ -19,10 +19,8 @@
 #ifndef RUST_HIR_TYPE_CHECK_BASE
 #define RUST_HIR_TYPE_CHECK_BASE
 
-#include "rust-diagnostics.h"
 #include "rust-hir-map.h"
 #include "rust-hir-type-check.h"
-#include "rust-hir-visitor.h"
 #include "rust-name-resolver.h"
 
 namespace Rust {

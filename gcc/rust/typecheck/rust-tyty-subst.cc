@@ -17,11 +17,11 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-tyty-subst.h"
-#include "rust-hir-full.h"
 #include "rust-tyty.h"
 #include "rust-hir-type-check.h"
 #include "rust-substitution-mapper.h"
 #include "rust-hir-type-check-type.h"
+#include "rust-hir-type-bounds.h"
 
 namespace Rust {
 namespace TyTy {

@@ -20,9 +20,6 @@
 #define RUST_COMPILE_BASE
 
 #include "rust-compile-context.h"
-#include "rust-compile-type.h"
-#include "rust-hir-visitor.h"
-#include "rust-hir-full.h"
 
 namespace Rust {
 namespace Compile {
