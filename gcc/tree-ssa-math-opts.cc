@@ -3346,6 +3346,20 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 		    param_avoid_fma_max_bits));
   bool defer = check_defer;
   bool seen_negate_p = false;
+
+  /* There is no numerical difference between fused and unfused integer FMAs,
+     and the assumption below that FMA is as cheap as addition is unlikely
+     to be true, especially if the multiplication occurs multiple times on
+     the same chain.  E.g., for something like:
+
+	 (((a * b) + c) >> 1) + (a * b)
+
+     we do not want to duplicate the a * b into two additions, not least
+     because the result is not a natural FMA chain.  */
+  if (ANY_INTEGRAL_TYPE_P (type)
+      && !has_single_use (mul_result))
+    return false;
+
   /* Make sure that the multiplication statement becomes dead after
      the transformation, thus that all uses are transformed to FMAs.
      This means we assume that an FMA operation has the same cost
