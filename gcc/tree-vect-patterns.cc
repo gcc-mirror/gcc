@@ -3933,14 +3933,6 @@ vect_recog_divmod_pattern (vec_info *vinfo,
 
       return pattern_stmt;
     }
-  else if ((cst = uniform_integer_cst_p (oprnd1))
-	   && targetm.vectorize.can_special_div_by_const (rhs_code, vectype,
-							  wi::to_wide (cst),
-							  NULL, NULL_RTX,
-							  NULL_RTX))
-    {
-      return NULL;
-    }
 
   if (prec > HOST_BITS_PER_WIDE_INT
       || integer_zerop (oprnd1))

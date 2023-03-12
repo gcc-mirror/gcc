@@ -1042,7 +1042,7 @@ round_push (rtx size)
      TRUNC_DIV_EXPR.  */
   size = expand_binop (Pmode, add_optab, size, alignm1_rtx,
 		       NULL_RTX, 1, OPTAB_LIB_WIDEN);
-  size = expand_divmod (0, TRUNC_DIV_EXPR, Pmode, NULL, NULL, size, align_rtx,
+  size = expand_divmod (0, TRUNC_DIV_EXPR, Pmode, size, align_rtx,
 			NULL_RTX, 1);
   size = expand_mult (Pmode, size, align_rtx, NULL_RTX, 1);
 
@@ -1208,7 +1208,7 @@ align_dynamic_address (rtx target, unsigned required_align)
 			 gen_int_mode (required_align / BITS_PER_UNIT - 1,
 				       Pmode),
 			 NULL_RTX, 1, OPTAB_LIB_WIDEN);
-  target = expand_divmod (0, TRUNC_DIV_EXPR, Pmode, NULL, NULL, target,
+  target = expand_divmod (0, TRUNC_DIV_EXPR, Pmode, target,
 			  gen_int_mode (required_align / BITS_PER_UNIT,
 					Pmode),
 			  NULL_RTX, 1);

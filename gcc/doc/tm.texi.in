@@ -4175,7 +4175,6 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_VECTORIZE_VEC_PERM_CONST
 
-@hook TARGET_VECTORIZE_CAN_SPECIAL_DIV_BY_CONST
 
 @hook TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
 
