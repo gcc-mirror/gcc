@@ -17,6 +17,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -212,25 +213,25 @@ static DynamicStrings_String x (DynamicStrings_String a, DynamicStrings_String b
    isWhite - returns TRUE if, ch, is a space.
 */
 
-static unsigned int isWhite (char ch);
+static bool isWhite (char ch);
 
 /*
    then := [ ':' ebnf ] =:
 */
 
-static void then (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, DynamicStrings_String o, unsigned int positive);
+static void then (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, DynamicStrings_String o, bool positive);
 
 /*
    doNumber -
 */
 
-static DynamicStrings_String doNumber (unsigned int bol, varargs_vararg sym, DynamicStrings_String o, unsigned int *quotes);
+static DynamicStrings_String doNumber (unsigned int bol, varargs_vararg sym, DynamicStrings_String o, bool *quotes);
 
 /*
    doCount -
 */
 
-static DynamicStrings_String doCount (unsigned int bol, varargs_vararg sym, DynamicStrings_String o, unsigned int *quotes);
+static DynamicStrings_String doCount (unsigned int bol, varargs_vararg sym, DynamicStrings_String o, bool *quotes);
 
 /*
    doCount -
@@ -242,7 +243,7 @@ static DynamicStrings_String doAscii (unsigned int bol, varargs_vararg sym, Dyna
    doCount -
 */
 
-static DynamicStrings_String doName (unsigned int bol, varargs_vararg sym, DynamicStrings_String o, unsigned int *quotes);
+static DynamicStrings_String doName (unsigned int bol, varargs_vararg sym, DynamicStrings_String o, bool *quotes);
 
 /*
    doCount -
@@ -312,19 +313,19 @@ static DynamicStrings_String symDesc (decl_node n, DynamicStrings_String o);
    doDesc -
 */
 
-static DynamicStrings_String doDesc (unsigned int bol, varargs_vararg sym, DynamicStrings_String o, unsigned int *quotes);
+static DynamicStrings_String doDesc (unsigned int bol, varargs_vararg sym, DynamicStrings_String o, bool *quotes);
 
 /*
    addQuoted - if, o, is not empty then add it to, r.
 */
 
-static DynamicStrings_String addQuoted (DynamicStrings_String r, DynamicStrings_String o, unsigned int quotes);
+static DynamicStrings_String addQuoted (DynamicStrings_String r, DynamicStrings_String o, bool quotes);
 
 /*
    op := {'a'|'q'|'t'|'d'|'k'|'n'|'s'|'D'|'I'|'U'|'E'|'W'} then =:
 */
 
-static void op (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, unsigned int bol, unsigned int positive);
+static void op (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, unsigned int bol, bool positive);
 
 /*
    percenttoken := '%' (
@@ -340,7 +341,7 @@ static void op (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_Strin
                        } =:
 */
 
-static void percenttoken (mcError_error *e, mcMetaError_errorType t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, unsigned int positive);
+static void percenttoken (mcError_error *e, mcMetaError_errorType t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, bool positive);
 
 /*
    percent := '%' anych           % copy anych %
@@ -432,7 +433,7 @@ static DynamicStrings_String x (DynamicStrings_String a, DynamicStrings_String b
    isWhite - returns TRUE if, ch, is a space.
 */
 
-static unsigned int isWhite (char ch)
+static bool isWhite (char ch)
 {
   return ch == ' ';
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -444,7 +445,7 @@ static unsigned int isWhite (char ch)
    then := [ ':' ebnf ] =:
 */
 
-static void then (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, DynamicStrings_String o, unsigned int positive)
+static void then (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, DynamicStrings_String o, bool positive)
 {
   if ((DynamicStrings_char (s, (*i))) == ':')
     {
@@ -462,7 +463,7 @@ static void then (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_Str
    doNumber -
 */
 
-static DynamicStrings_String doNumber (unsigned int bol, varargs_vararg sym, DynamicStrings_String o, unsigned int *quotes)
+static DynamicStrings_String doNumber (unsigned int bol, varargs_vararg sym, DynamicStrings_String o, bool *quotes)
 {
   unsigned int c;
 
@@ -472,7 +473,7 @@ static DynamicStrings_String doNumber (unsigned int bol, varargs_vararg sym, Dyn
     }
   else
     {
-      (*quotes) = FALSE;
+      (*quotes) = false;
       varargs_next (sym, bol);
       varargs_arg (sym, (unsigned char *) &c, (sizeof (c)-1));
       return DynamicStrings_ConCat (o, StringConvert_ctos (c, 0, ' '));
@@ -486,7 +487,7 @@ static DynamicStrings_String doNumber (unsigned int bol, varargs_vararg sym, Dyn
    doCount -
 */
 
-static DynamicStrings_String doCount (unsigned int bol, varargs_vararg sym, DynamicStrings_String o, unsigned int *quotes)
+static DynamicStrings_String doCount (unsigned int bol, varargs_vararg sym, DynamicStrings_String o, bool *quotes)
 {
   unsigned int c;
 
@@ -496,7 +497,7 @@ static DynamicStrings_String doCount (unsigned int bol, varargs_vararg sym, Dyna
     }
   else
     {
-      (*quotes) = FALSE;
+      (*quotes) = false;
       varargs_next (sym, bol);
       varargs_arg (sym, (unsigned char *) &c, (sizeof (c)-1));
       o = DynamicStrings_ConCat (o, StringConvert_ctos (c, 0, ' '));
@@ -560,7 +561,7 @@ static DynamicStrings_String doAscii (unsigned int bol, varargs_vararg sym, Dyna
    doCount -
 */
 
-static DynamicStrings_String doName (unsigned int bol, varargs_vararg sym, DynamicStrings_String o, unsigned int *quotes)
+static DynamicStrings_String doName (unsigned int bol, varargs_vararg sym, DynamicStrings_String o, bool *quotes)
 {
   decl_node n;
 
@@ -574,13 +575,13 @@ static DynamicStrings_String doName (unsigned int bol, varargs_vararg sym, Dynam
     {
       if (decl_isZtype (n))
         {
-          (*quotes) = FALSE;
+          (*quotes) = false;
           return DynamicStrings_ConCat (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "the ZType", 9)));
         }
       else if (decl_isRtype (n))
         {
           /* avoid dangling else.  */
-          (*quotes) = FALSE;
+          (*quotes) = false;
           return DynamicStrings_ConCat (o, DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "the RType", 9)));
         }
       else if ((decl_getSymName (n)) != nameKey_NulName)
@@ -988,7 +989,7 @@ static DynamicStrings_String symDesc (decl_node n, DynamicStrings_String o)
    doDesc -
 */
 
-static DynamicStrings_String doDesc (unsigned int bol, varargs_vararg sym, DynamicStrings_String o, unsigned int *quotes)
+static DynamicStrings_String doDesc (unsigned int bol, varargs_vararg sym, DynamicStrings_String o, bool *quotes)
 {
   decl_node n;
 
@@ -999,7 +1000,7 @@ static DynamicStrings_String doDesc (unsigned int bol, varargs_vararg sym, Dynam
       o = symDesc (n, o);
       if ((DynamicStrings_Length (o)) > 0)
         {
-          (*quotes) = FALSE;
+          (*quotes) = false;
         }
     }
   return o;
@@ -1012,7 +1013,7 @@ static DynamicStrings_String doDesc (unsigned int bol, varargs_vararg sym, Dynam
    addQuoted - if, o, is not empty then add it to, r.
 */
 
-static DynamicStrings_String addQuoted (DynamicStrings_String r, DynamicStrings_String o, unsigned int quotes)
+static DynamicStrings_String addQuoted (DynamicStrings_String r, DynamicStrings_String o, bool quotes)
 {
   if ((DynamicStrings_Length (o)) > 0)
     {
@@ -1040,15 +1041,15 @@ static DynamicStrings_String addQuoted (DynamicStrings_String r, DynamicStrings_
    op := {'a'|'q'|'t'|'d'|'k'|'n'|'s'|'D'|'I'|'U'|'E'|'W'} then =:
 */
 
-static void op (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, unsigned int bol, unsigned int positive)
+static void op (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, unsigned int bol, bool positive)
 {
   DynamicStrings_String o;
   varargs_vararg c;
-  unsigned int quotes;
+  bool quotes;
 
   c = varargs_copy (sym);
   o = DynamicStrings_InitString ((const char *) "", 0);
-  quotes = TRUE;
+  quotes = true;
   while (((*i) < l) && ((DynamicStrings_char (s, (*i))) != '}'))
     {
       switch (DynamicStrings_char (s, (*i)))
@@ -1144,7 +1145,7 @@ static void op (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_Strin
                        } =:
 */
 
-static void percenttoken (mcError_error *e, mcMetaError_errorType t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, unsigned int positive)
+static void percenttoken (mcError_error *e, mcMetaError_errorType t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l, bool positive)
 {
   if ((DynamicStrings_char (s, (*i))) == '%')
     {
@@ -1209,15 +1210,15 @@ static void percent (DynamicStrings_String *r, DynamicStrings_String s, varargs_
 
 static void lbra (mcError_error *e, mcMetaError_errorType *t, DynamicStrings_String *r, DynamicStrings_String s, varargs_vararg sym, int *i, int l)
 {
-  unsigned int positive;
+  bool positive;
 
   if ((DynamicStrings_char (s, (*i))) == '{')
     {
-      positive = TRUE;
+      positive = true;
       (*i) += 1;
       if ((DynamicStrings_char (s, (*i))) == '!')
         {
-          positive = FALSE;
+          positive = false;
           (*i) += 1;
         }
       if ((DynamicStrings_char (s, (*i))) != '%')

@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -68,7 +69,7 @@ static unsigned int ExitStatus;
 static unsigned int Column;
 static unsigned int StackPtr;
 static unsigned int LineNo;
-static unsigned int Debugging;
+static bool Debugging;
 
 /*
    Open - opens a file for reading.
@@ -141,7 +142,7 @@ extern "C" unsigned int PushBackInput_GetExitStatus (void);
    SetDebug - sets the debug flag on or off.
 */
 
-extern "C" void PushBackInput_SetDebug (unsigned int d);
+extern "C" void PushBackInput_SetDebug (bool d);
 
 /*
    GetColumnPosition - returns the column position of the current character.
@@ -441,7 +442,7 @@ extern "C" unsigned int PushBackInput_GetExitStatus (void)
    SetDebug - sets the debug flag on or off.
 */
 
-extern "C" void PushBackInput_SetDebug (unsigned int d)
+extern "C" void PushBackInput_SetDebug (bool d)
 {
   Debugging = d;
 }
@@ -479,7 +480,7 @@ extern "C" unsigned int PushBackInput_GetCurrentLine (void)
 
 extern "C" void _M2_PushBackInput_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
-  PushBackInput_SetDebug (FALSE);
+  PushBackInput_SetDebug (false);
   Init ();
 }
 

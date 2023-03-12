@@ -22,6 +22,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -130,7 +131,7 @@ extern "C" void wlists_replaceItemInList (wlists_wlist l, unsigned int n, unsign
    isItemInList - returns true if a WORD, c, was found in wlist, l.
 */
 
-extern "C" unsigned int wlists_isItemInList (wlists_wlist l, unsigned int c);
+extern "C" bool wlists_isItemInList (wlists_wlist l, unsigned int c);
 
 /*
    foreachItemInListDo - calls procedure, P, foreach item in wlist, l.
@@ -338,11 +339,11 @@ extern "C" void wlists_removeItemFromList (wlists_wlist l, unsigned int c)
 {
   wlists_wlist p;
   unsigned int i;
-  unsigned int found;
+  bool found;
 
   if (l != NULL)
     {
-      found = FALSE;
+      found = false;
       p = NULL;
       do {
         i = 1;
@@ -352,7 +353,7 @@ extern "C" void wlists_removeItemFromList (wlists_wlist l, unsigned int c)
           }
         if ((i <= l->noOfElements) && (l->elements.array[i-1] == c))
           {
-            found = TRUE;
+            found = true;
           }
         else
           {
@@ -395,7 +396,7 @@ extern "C" void wlists_replaceItemInList (wlists_wlist l, unsigned int n, unsign
    isItemInList - returns true if a WORD, c, was found in wlist, l.
 */
 
-extern "C" unsigned int wlists_isItemInList (wlists_wlist l, unsigned int c)
+extern "C" bool wlists_isItemInList (wlists_wlist l, unsigned int c)
 {
   unsigned int i;
 
@@ -405,7 +406,7 @@ extern "C" unsigned int wlists_isItemInList (wlists_wlist l, unsigned int c)
       {
         if (l->elements.array[i-1] == c)
           {
-            return TRUE;
+            return true;
           }
         else
           {
@@ -414,7 +415,7 @@ extern "C" unsigned int wlists_isItemInList (wlists_wlist l, unsigned int c)
       }
     l = l->next;
   } while (! (l == NULL));
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }

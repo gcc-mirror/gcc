@@ -22,6 +22,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -61,7 +62,7 @@ typedef FIO_File *mcStream_ptrToFile;
 static alists_alist listOfFiles;
 static Indexing_Index frag;
 static FIO_File destFile;
-static unsigned int seenDest;
+static bool seenDest;
 
 /*
    openFrag - create and open fragment, id, and return the file.
@@ -217,7 +218,7 @@ extern "C" FIO_File mcStream_openFrag (unsigned int id)
 
 extern "C" void mcStream_setDest (FIO_File f)
 {
-  seenDest = TRUE;
+  seenDest = true;
   destFile = f;
 }
 
@@ -257,7 +258,7 @@ extern "C" void mcStream_removeFiles (void)
 extern "C" void _M2_mcStream_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
   listOfFiles = alists_initList ();
-  seenDest = FALSE;
+  seenDest = false;
   frag = Indexing_InitIndex (1);
 }
 

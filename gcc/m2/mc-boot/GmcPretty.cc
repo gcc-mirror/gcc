@@ -18,6 +18,7 @@ Boston, MA 02110-1301, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -60,8 +61,8 @@ struct mcPretty_writeLnProc_p { mcPretty_writeLnProc_t proc; };
 struct mcPretty__T1_r {
                         mcPretty_writeProc write_;
                         mcPretty_writeLnProc writeln;
-                        unsigned int needsSpace;
-                        unsigned int needsIndent;
+                        bool needsSpace;
+                        bool needsIndent;
                         unsigned int seekPos;
                         unsigned int curLine;
                         unsigned int curPos;
@@ -179,7 +180,7 @@ static void flushSpace (mcPretty_pretty p)
   if (p->needsSpace)
     {
       (*p->write_.proc) (' ');
-      p->needsSpace = FALSE;
+      p->needsSpace = false;
       p->curPos += 1;
       p->seekPos += 1;
     }
@@ -203,7 +204,7 @@ static void flushIndent (mcPretty_pretty p)
           p->curPos += 1;
           p->seekPos += 1;
         }
-      p->needsIndent = FALSE;
+      p->needsIndent = false;
     }
 }
 
@@ -219,8 +220,8 @@ extern "C" mcPretty_pretty mcPretty_initPretty (mcPretty_writeProc w, mcPretty_w
   Storage_ALLOCATE ((void **) &p, sizeof (mcPretty__T1));
   p->write_ = w;
   p->writeln = l;
-  p->needsSpace = FALSE;
-  p->needsIndent = FALSE;
+  p->needsSpace = false;
+  p->needsIndent = false;
   p->curPos = 0;
   p->curLine = 0;
   p->seekPos = 0;
@@ -368,7 +369,7 @@ extern "C" void mcPretty_setNeedSpace (mcPretty_pretty s)
   /* 
    setneedSpace - sets needSpace flag to TRUE.
   */
-  s->needsSpace = TRUE;
+  s->needsSpace = true;
 }
 
 
@@ -378,7 +379,7 @@ extern "C" void mcPretty_setNeedSpace (mcPretty_pretty s)
 
 extern "C" void mcPretty_noSpace (mcPretty_pretty s)
 {
-  s->needsSpace = FALSE;
+  s->needsSpace = false;
 }
 
 
@@ -416,8 +417,8 @@ extern "C" void mcPretty_prints (mcPretty_pretty p, DynamicStrings_String s)
     {
       if ((((i+2) <= l) && ((DynamicStrings_char (s, static_cast<int> (i))) == '\\')) && ((DynamicStrings_char (s, static_cast<int> (i+1))) == 'n'))
         {
-          p->needsIndent = TRUE;
-          p->needsSpace = FALSE;
+          p->needsIndent = true;
+          p->needsSpace = false;
           p->curPos = 0;
           (*p->writeln.proc) ();
           p->seekPos += 1;

@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -74,9 +75,9 @@ struct M2Dependent_ArgCVEnvP_p { M2Dependent_ArgCVEnvP_t proc; };
 
 struct M2Dependent_DependencyList_r {
                                       PROC proc;
-                                      unsigned int forced;
-                                      unsigned int forc;
-                                      unsigned int appl;
+                                      bool forced;
+                                      bool forc;
+                                      bool appl;
                                       M2Dependent_DependencyState state;
                                     };
 
@@ -92,14 +93,14 @@ struct M2Dependent__T2_r {
                          };
 
 static M2Dependent__T3 Modules;
-static unsigned int Initialized;
-static unsigned int WarningTrace;
-static unsigned int ModuleTrace;
-static unsigned int HexTrace;
-static unsigned int DependencyTrace;
-static unsigned int PreTrace;
-static unsigned int PostTrace;
-static unsigned int ForceTrace;
+static bool Initialized;
+static bool WarningTrace;
+static bool ModuleTrace;
+static bool HexTrace;
+static bool DependencyTrace;
+static bool PreTrace;
+static bool PostTrace;
+static bool ForceTrace;
 
 /*
    ConstructModules - resolve dependencies and then call each
@@ -154,7 +155,7 @@ static void RemoveModule (M2Dependent_ModuleChain *head, M2Dependent_ModuleChain
    onChain - returns TRUE if mptr is on the Modules[state] list.
 */
 
-static unsigned int onChain (M2Dependent_DependencyState state, M2Dependent_ModuleChain mptr);
+static bool onChain (M2Dependent_DependencyState state, M2Dependent_ModuleChain mptr);
 
 /*
    max -
@@ -213,19 +214,19 @@ static int strlen_ (M2LINK_PtrToChar string);
    traceprintf - wrap printf with a boolean flag.
 */
 
-static void traceprintf (unsigned int flag, const char *str_, unsigned int _str_high);
+static void traceprintf (bool flag, const char *str_, unsigned int _str_high);
 
 /*
    traceprintf2 - wrap printf with a boolean flag.
 */
 
-static void traceprintf2 (unsigned int flag, const char *str_, unsigned int _str_high, void * arg);
+static void traceprintf2 (bool flag, const char *str_, unsigned int _str_high, void * arg);
 
 /*
    traceprintf3 - wrap printf with a boolean flag.
 */
 
-static void traceprintf3 (unsigned int flag, const char *str_, unsigned int _str_high, void * arg1, void * arg2);
+static void traceprintf3 (bool flag, const char *str_, unsigned int _str_high, void * arg1, void * arg2);
 
 /*
    moveTo - moves mptr to the new list determined by newstate.
@@ -265,7 +266,7 @@ static void DisplayModuleInfo (M2Dependent_DependencyState state, const char *de
    DumpModuleData -
 */
 
-static void DumpModuleData (unsigned int flag);
+static void DumpModuleData (bool flag);
 
 /*
    combine - dest := src + dest.  Places src at the front of list dest.
@@ -280,7 +281,7 @@ static void combine (M2Dependent_DependencyState src, M2Dependent_DependencyStat
    tracemodule -
 */
 
-static void tracemodule (unsigned int flag, void * modname, unsigned int modlen, void * libname, unsigned int liblen);
+static void tracemodule (bool flag, void * modname, unsigned int modlen, void * libname, unsigned int liblen);
 
 /*
    ForceModule -
@@ -312,7 +313,7 @@ static void warning3 (const char *format_, unsigned int _format_high, void * arg
    equal - return TRUE if C string cstr is equal to str.
 */
 
-static unsigned int equal (void * cstr, const char *str_, unsigned int _str_high);
+static bool equal (void * cstr, const char *str_, unsigned int _str_high);
 
 /*
    SetupDebugFlags - By default assigns ModuleTrace, DependencyTrace,
@@ -430,7 +431,7 @@ static void RemoveModule (M2Dependent_ModuleChain *head, M2Dependent_ModuleChain
    onChain - returns TRUE if mptr is on the Modules[state] list.
 */
 
-static unsigned int onChain (M2Dependent_DependencyState state, M2Dependent_ModuleChain mptr)
+static bool onChain (M2Dependent_DependencyState state, M2Dependent_ModuleChain mptr)
 {
   M2Dependent_ModuleChain ptr;
 
@@ -440,12 +441,12 @@ static unsigned int onChain (M2Dependent_DependencyState state, M2Dependent_Modu
       do {
         if (ptr == mptr)
           {
-            return TRUE;
+            return true;
           }
         ptr = ptr->next;
       } while (! (ptr == Modules.array[state-M2Dependent_unregistered]));
     }
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -663,7 +664,7 @@ static int strlen_ (M2LINK_PtrToChar string)
    traceprintf - wrap printf with a boolean flag.
 */
 
-static void traceprintf (unsigned int flag, const char *str_, unsigned int _str_high)
+static void traceprintf (bool flag, const char *str_, unsigned int _str_high)
 {
   char str[_str_high+1];
 
@@ -682,7 +683,7 @@ static void traceprintf (unsigned int flag, const char *str_, unsigned int _str_
    traceprintf2 - wrap printf with a boolean flag.
 */
 
-static void traceprintf2 (unsigned int flag, const char *str_, unsigned int _str_high, void * arg)
+static void traceprintf2 (bool flag, const char *str_, unsigned int _str_high, void * arg)
 {
   char ch;
   char str[_str_high+1];
@@ -707,7 +708,7 @@ static void traceprintf2 (unsigned int flag, const char *str_, unsigned int _str
    traceprintf3 - wrap printf with a boolean flag.
 */
 
-static void traceprintf3 (unsigned int flag, const char *str_, unsigned int _str_high, void * arg1, void * arg2)
+static void traceprintf3 (bool flag, const char *str_, unsigned int _str_high, void * arg1, void * arg2)
 {
   char ch;
   char str[_str_high+1];
@@ -907,7 +908,7 @@ static void DisplayModuleInfo (M2Dependent_DependencyState state, const char *de
    DumpModuleData -
 */
 
-static void DumpModuleData (unsigned int flag)
+static void DumpModuleData (bool flag)
 {
   M2Dependent_ModuleChain mptr;
 
@@ -945,7 +946,7 @@ static void combine (M2Dependent_DependencyState src, M2Dependent_DependencyStat
    tracemodule -
 */
 
-static void tracemodule (unsigned int flag, void * modname, unsigned int modlen, void * libname, unsigned int liblen)
+static void tracemodule (bool flag, void * modname, unsigned int modlen, void * libname, unsigned int liblen)
 {
   typedef struct tracemodule__T4_a tracemodule__T4;
 
@@ -981,7 +982,7 @@ static void ForceModule (void * modname, unsigned int modlen, void * libname, un
   mptr = LookupModuleN (M2Dependent_ordered, modname, modlen, libname, liblen);
   if (mptr != NULL)
     {
-      mptr->dependency.forced = TRUE;
+      mptr->dependency.forced = true;
       moveTo (M2Dependent_user, mptr);
     }
 }
@@ -1115,7 +1116,7 @@ static void warning3 (const char *format_, unsigned int _format_high, void * arg
    equal - return TRUE if C string cstr is equal to str.
 */
 
-static unsigned int equal (void * cstr, const char *str_, unsigned int _str_high)
+static bool equal (void * cstr, const char *str_, unsigned int _str_high)
 {
   char str[_str_high+1];
 
@@ -1153,67 +1154,67 @@ static void SetupDebugFlags (void)
 
   SetupDebugFlags__T1 pc;
 
-  ModuleTrace = FALSE;
-  DependencyTrace = FALSE;
-  PostTrace = FALSE;
-  PreTrace = FALSE;
-  ForceTrace = FALSE;
-  HexTrace = FALSE;
-  WarningTrace = FALSE;
+  ModuleTrace = false;
+  DependencyTrace = false;
+  PostTrace = false;
+  PreTrace = false;
+  ForceTrace = false;
+  HexTrace = false;
+  WarningTrace = false;
   pc = static_cast<SetupDebugFlags__T1> (libc_getenv (const_cast<void*> (reinterpret_cast<const void*>("GCC_M2LINK_RTFLAG"))));
   while ((pc != NULL) && ((*pc) != ASCII_nul))
     {
       if (equal (reinterpret_cast<void *> (pc), (const char *) "all", 3))
         {
-          ModuleTrace = TRUE;
-          DependencyTrace = TRUE;
-          PreTrace = TRUE;
-          PostTrace = TRUE;
-          ForceTrace = TRUE;
-          HexTrace = TRUE;
-          WarningTrace = TRUE;
+          ModuleTrace = true;
+          DependencyTrace = true;
+          PreTrace = true;
+          PostTrace = true;
+          ForceTrace = true;
+          HexTrace = true;
+          WarningTrace = true;
           pc += 3;
         }
       else if (equal (reinterpret_cast<void *> (pc), (const char *) "module", 6))
         {
           /* avoid dangling else.  */
-          ModuleTrace = TRUE;
+          ModuleTrace = true;
           pc += 6;
         }
       else if (equal (reinterpret_cast<void *> (pc), (const char *) "warning", 7))
         {
           /* avoid dangling else.  */
-          WarningTrace = TRUE;
+          WarningTrace = true;
           pc += 7;
         }
       else if (equal (reinterpret_cast<void *> (pc), (const char *) "hex", 3))
         {
           /* avoid dangling else.  */
-          HexTrace = TRUE;
+          HexTrace = true;
           pc += 3;
         }
       else if (equal (reinterpret_cast<void *> (pc), (const char *) "dep", 3))
         {
           /* avoid dangling else.  */
-          DependencyTrace = TRUE;
+          DependencyTrace = true;
           pc += 3;
         }
       else if (equal (reinterpret_cast<void *> (pc), (const char *) "pre", 3))
         {
           /* avoid dangling else.  */
-          PreTrace = TRUE;
+          PreTrace = true;
           pc += 3;
         }
       else if (equal (reinterpret_cast<void *> (pc), (const char *) "post", 4))
         {
           /* avoid dangling else.  */
-          PostTrace = TRUE;
+          PostTrace = true;
           pc += 4;
         }
       else if (equal (reinterpret_cast<void *> (pc), (const char *) "force", 5))
         {
           /* avoid dangling else.  */
-          ForceTrace = TRUE;
+          ForceTrace = true;
           pc += 5;
         }
       else
@@ -1252,7 +1253,7 @@ static void CheckInitialized (void)
 {
   if (! Initialized)
     {
-      Initialized = TRUE;
+      Initialized = true;
       Init ();
     }
 }
@@ -1273,7 +1274,7 @@ extern "C" void M2Dependent_ConstructModules (void * applicationmodule, void * l
   mptr = LookupModule (M2Dependent_unordered, applicationmodule, libname);
   if (mptr != NULL)
     {
-      mptr->dependency.appl = TRUE;
+      mptr->dependency.appl = true;
     }
   traceprintf (PreTrace, (const char *) "Pre resolving dependents\\n", 26);
   DumpModuleData (PreTrace);

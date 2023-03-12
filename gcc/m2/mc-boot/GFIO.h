@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -58,19 +59,19 @@ EXTERN FIO_File FIO_StdErr;
    IsNoError - returns a TRUE if no error has occured on file, f.
 */
 
-EXTERN unsigned int FIO_IsNoError (FIO_File f);
+EXTERN bool FIO_IsNoError (FIO_File f);
 
 /*
    IsActive - returns TRUE if the file, f, is still active.
 */
 
-EXTERN unsigned int FIO_IsActive (FIO_File f);
+EXTERN bool FIO_IsActive (FIO_File f);
 
 /*
    Exists - returns TRUE if a file named, fname exists for reading.
 */
 
-EXTERN unsigned int FIO_Exists (const char *fname_, unsigned int _fname_high);
+EXTERN bool FIO_Exists (const char *fname_, unsigned int _fname_high);
 
 /*
    OpenToRead - attempts to open a file, fname, for reading and
@@ -104,7 +105,7 @@ EXTERN FIO_File FIO_OpenToWrite (const char *fname_, unsigned int _fname_high);
                    and modify an existing file.
 */
 
-EXTERN FIO_File FIO_OpenForRandom (const char *fname_, unsigned int _fname_high, unsigned int towrite, unsigned int newfile);
+EXTERN FIO_File FIO_OpenForRandom (const char *fname_, unsigned int _fname_high, bool towrite, bool newfile);
 
 /*
    Close - close a file which has been previously opened using:
@@ -113,10 +114,10 @@ EXTERN FIO_File FIO_OpenForRandom (const char *fname_, unsigned int _fname_high,
 */
 
 EXTERN void FIO_Close (FIO_File f);
-EXTERN unsigned int FIO_exists (void * fname, unsigned int flength);
+EXTERN bool FIO_exists (void * fname, unsigned int flength);
 EXTERN FIO_File FIO_openToRead (void * fname, unsigned int flength);
 EXTERN FIO_File FIO_openToWrite (void * fname, unsigned int flength);
-EXTERN FIO_File FIO_openForRandom (void * fname, unsigned int flength, unsigned int towrite, unsigned int newfile);
+EXTERN FIO_File FIO_openForRandom (void * fname, unsigned int flength, bool towrite, bool newfile);
 
 /*
    FlushBuffer - flush contents of the FIO file, f, to libc.
@@ -169,7 +170,7 @@ EXTERN void FIO_WriteChar (FIO_File f, char ch);
    EOF - tests to see whether a file, f, has reached end of file.
 */
 
-EXTERN unsigned int FIO_EOF (FIO_File f);
+EXTERN bool FIO_EOF (FIO_File f);
 
 /*
    EOLN - tests to see whether a file, f, is about to read a newline.
@@ -177,14 +178,14 @@ EXTERN unsigned int FIO_EOF (FIO_File f);
           and then immediately unreads the character.
 */
 
-EXTERN unsigned int FIO_EOLN (FIO_File f);
+EXTERN bool FIO_EOLN (FIO_File f);
 
 /*
    WasEOLN - tests to see whether a file, f, has just read a newline
              character.
 */
 
-EXTERN unsigned int FIO_WasEOLN (FIO_File f);
+EXTERN bool FIO_WasEOLN (FIO_File f);
 
 /*
    ReadChar - returns a character read from file, f.

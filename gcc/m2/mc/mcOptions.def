@@ -148,4 +148,11 @@ PROCEDURE setSuppressNoReturn (value: BOOLEAN) ;
 PROCEDURE getSuppressNoReturn () : BOOLEAN ;
 
 
+(*
+   useBool - should mc use the bool type instead of int.
+*)
+
+PROCEDURE useBool () : BOOLEAN ;
+
+
 END mcOptions.

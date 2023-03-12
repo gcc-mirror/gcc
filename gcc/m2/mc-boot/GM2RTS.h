@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -79,7 +80,7 @@ EXTERN void M2RTS_RequestDependant (void * modulename, void * libname, void * de
                                  procedure is installed.
 */
 
-EXTERN unsigned int M2RTS_InstallTerminationProcedure (PROC p);
+EXTERN bool M2RTS_InstallTerminationProcedure (PROC p);
 
 /*
    ExecuteInitialProcedures - executes the initial procedures installed
@@ -94,7 +95,7 @@ EXTERN void M2RTS_ExecuteInitialProcedures (void);
                              program module.
 */
 
-EXTERN unsigned int M2RTS_InstallInitialProcedure (PROC p);
+EXTERN bool M2RTS_InstallInitialProcedure (PROC p);
 
 /*
    ExecuteTerminationProcedures - calls each installed termination procedure

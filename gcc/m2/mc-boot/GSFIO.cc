@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -49,7 +50,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    Exists - returns TRUE if a file named, fname exists for reading.
 */
 
-extern "C" unsigned int SFIO_Exists (DynamicStrings_String fname);
+extern "C" bool SFIO_Exists (DynamicStrings_String fname);
 
 /*
    OpenToRead - attempts to open a file, fname, for reading and
@@ -81,7 +82,7 @@ extern "C" FIO_File SFIO_OpenToWrite (DynamicStrings_String fname);
                    and modify an existing file.
 */
 
-extern "C" FIO_File SFIO_OpenForRandom (DynamicStrings_String fname, unsigned int towrite, unsigned int newfile);
+extern "C" FIO_File SFIO_OpenForRandom (DynamicStrings_String fname, bool towrite, bool newfile);
 
 /*
    WriteS - writes a string, s, to, file. It returns the String, s.
@@ -103,7 +104,7 @@ extern "C" DynamicStrings_String SFIO_ReadS (FIO_File file);
    Exists - returns TRUE if a file named, fname exists for reading.
 */
 
-extern "C" unsigned int SFIO_Exists (DynamicStrings_String fname)
+extern "C" bool SFIO_Exists (DynamicStrings_String fname)
 {
   return FIO_exists (DynamicStrings_string (fname), DynamicStrings_Length (fname));
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -153,7 +154,7 @@ extern "C" FIO_File SFIO_OpenToWrite (DynamicStrings_String fname)
                    and modify an existing file.
 */
 
-extern "C" FIO_File SFIO_OpenForRandom (DynamicStrings_String fname, unsigned int towrite, unsigned int newfile)
+extern "C" FIO_File SFIO_OpenForRandom (DynamicStrings_String fname, bool towrite, bool newfile)
 {
   return FIO_openForRandom (DynamicStrings_string (fname), DynamicStrings_Length (fname), towrite, newfile);
   /* static analysis guarentees a RETURN statement will be used before here.  */

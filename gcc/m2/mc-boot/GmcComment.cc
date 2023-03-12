@@ -22,6 +22,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -62,7 +63,7 @@ struct mcComment__T1_r {
                          mcComment_commentType type;
                          DynamicStrings_String content;
                          nameKey_Name procName;
-                         unsigned int used;
+                         bool used;
                        };
 
 
@@ -73,7 +74,7 @@ struct mcComment__T1_r {
                  spaces on this line.
 */
 
-extern "C" mcComment_commentDesc mcComment_initComment (unsigned int onlySpaces);
+extern "C" mcComment_commentDesc mcComment_initComment (bool onlySpaces);
 
 /*
    addText - cs is a C string (null terminated) which contains comment text.
@@ -124,19 +125,19 @@ extern "C" DynamicStrings_String mcComment_getInbodyStatementComment (mcComment_
    isProcedureComment - returns TRUE if, cd, is a procedure comment.
 */
 
-extern "C" unsigned int mcComment_isProcedureComment (mcComment_commentDesc cd);
+extern "C" bool mcComment_isProcedureComment (mcComment_commentDesc cd);
 
 /*
    isBodyComment - returns TRUE if, cd, is a body comment.
 */
 
-extern "C" unsigned int mcComment_isBodyComment (mcComment_commentDesc cd);
+extern "C" bool mcComment_isBodyComment (mcComment_commentDesc cd);
 
 /*
    isAfterComment - returns TRUE if, cd, is an after comment.
 */
 
-extern "C" unsigned int mcComment_isAfterComment (mcComment_commentDesc cd);
+extern "C" bool mcComment_isAfterComment (mcComment_commentDesc cd);
 
 /*
    Min - returns the lower of, a, and, b.
@@ -155,7 +156,7 @@ static DynamicStrings_String RemoveNewlines (DynamicStrings_String s);
                    in the comment.
 */
 
-static unsigned int seenProcedure (mcComment_commentDesc cd, nameKey_Name procName);
+static bool seenProcedure (mcComment_commentDesc cd, nameKey_Name procName);
 
 /*
    dumpComment -
@@ -211,13 +212,13 @@ static DynamicStrings_String RemoveNewlines (DynamicStrings_String s)
                    in the comment.
 */
 
-static unsigned int seenProcedure (mcComment_commentDesc cd, nameKey_Name procName)
+static bool seenProcedure (mcComment_commentDesc cd, nameKey_Name procName)
 {
   DynamicStrings_String s;
   void * a;
   unsigned int i;
   unsigned int h;
-  unsigned int res;
+  bool res;
 
   a = nameKey_keyToCharStar (procName);
   s = RemoveNewlines (cd->content);
@@ -279,7 +280,7 @@ static void dumpComment (mcComment_commentDesc cd)
                  spaces on this line.
 */
 
-extern "C" mcComment_commentDesc mcComment_initComment (unsigned int onlySpaces)
+extern "C" mcComment_commentDesc mcComment_initComment (bool onlySpaces)
 {
   mcComment_commentDesc cd;
 
@@ -295,7 +296,7 @@ extern "C" mcComment_commentDesc mcComment_initComment (unsigned int onlySpaces)
     }
   cd->content = DynamicStrings_InitString ((const char *) "", 0);
   cd->procName = nameKey_NulName;
-  cd->used = FALSE;
+  cd->used = false;
   return cd;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -381,7 +382,7 @@ extern "C" DynamicStrings_String mcComment_getProcedureComment (mcComment_commen
 {
   if ((cd->type == mcComment_procedureHeading) && ! cd->used)
     {
-      cd->used = TRUE;
+      cd->used = true;
       return cd->content;
     }
   return static_cast<DynamicStrings_String> (NULL);
@@ -398,7 +399,7 @@ extern "C" DynamicStrings_String mcComment_getAfterStatementComment (mcComment_c
 {
   if ((cd->type == mcComment_afterStatement) && ! cd->used)
     {
-      cd->used = TRUE;
+      cd->used = true;
       return cd->content;
     }
   return static_cast<DynamicStrings_String> (NULL);
@@ -415,7 +416,7 @@ extern "C" DynamicStrings_String mcComment_getInbodyStatementComment (mcComment_
 {
   if ((cd->type == mcComment_inBody) && ! cd->used)
     {
-      cd->used = TRUE;
+      cd->used = true;
       return cd->content;
     }
   return static_cast<DynamicStrings_String> (NULL);
@@ -428,7 +429,7 @@ extern "C" DynamicStrings_String mcComment_getInbodyStatementComment (mcComment_
    isProcedureComment - returns TRUE if, cd, is a procedure comment.
 */
 
-extern "C" unsigned int mcComment_isProcedureComment (mcComment_commentDesc cd)
+extern "C" bool mcComment_isProcedureComment (mcComment_commentDesc cd)
 {
   return (cd != NULL) && (cd->type == mcComment_procedureHeading);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -440,7 +441,7 @@ extern "C" unsigned int mcComment_isProcedureComment (mcComment_commentDesc cd)
    isBodyComment - returns TRUE if, cd, is a body comment.
 */
 
-extern "C" unsigned int mcComment_isBodyComment (mcComment_commentDesc cd)
+extern "C" bool mcComment_isBodyComment (mcComment_commentDesc cd)
 {
   return (cd != NULL) && (cd->type == mcComment_inBody);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -452,7 +453,7 @@ extern "C" unsigned int mcComment_isBodyComment (mcComment_commentDesc cd)
    isAfterComment - returns TRUE if, cd, is an after comment.
 */
 
-extern "C" unsigned int mcComment_isAfterComment (mcComment_commentDesc cd)
+extern "C" bool mcComment_isAfterComment (mcComment_commentDesc cd)
 {
   return (cd != NULL) && (cd->type == mcComment_afterStatement);
   /* static analysis guarentees a RETURN statement will be used before here.  */

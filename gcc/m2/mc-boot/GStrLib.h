@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -59,13 +60,13 @@ EXTERN void StrLib_StrConCat (const char *a_, unsigned int _a_high, const char *
              string, b.
 */
 
-EXTERN unsigned int StrLib_StrLess (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high);
+EXTERN bool StrLib_StrLess (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high);
 
 /*
    StrEqual - performs a = b on two strings.
 */
 
-EXTERN unsigned int StrLib_StrEqual (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high);
+EXTERN bool StrLib_StrEqual (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high);
 
 /*
    StrLen - returns the length of string, a.
@@ -85,7 +86,7 @@ EXTERN void StrLib_StrCopy (const char *src_, unsigned int _src_high, char *dest
    IsSubString - returns true if b is a subcomponent of a.
 */
 
-EXTERN unsigned int StrLib_IsSubString (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high);
+EXTERN bool StrLib_IsSubString (const char *a_, unsigned int _a_high, const char *b_, unsigned int _b_high);
 
 /*
    StrRemoveWhitePrefix - copies string, into string, b, excluding any white

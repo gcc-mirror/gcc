@@ -29,6 +29,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -106,7 +107,7 @@ EXTERN void lists_removeItemFromList (lists_list l, void * c);
    isItemInList - returns true if a ADDRESS, c, was found in list, l.
 */
 
-EXTERN unsigned int lists_isItemInList (lists_list l, void * c);
+EXTERN bool lists_isItemInList (lists_list l, void * c);
 
 /*
    foreachItemInListDo - calls procedure, P, foreach item in list, l.

@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -53,7 +54,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
                     the processes environment.
 */
 
-extern "C" unsigned int Environment_GetEnvironment (const char *Env_, unsigned int _Env_high, char *dest, unsigned int _dest_high);
+extern "C" bool Environment_GetEnvironment (const char *Env_, unsigned int _Env_high, char *dest, unsigned int _dest_high);
 
 /*
    PutEnvironment - change or add an environment variable definition EnvDef.
@@ -61,7 +62,7 @@ extern "C" unsigned int Environment_GetEnvironment (const char *Env_, unsigned i
                     set or changed successfully.
 */
 
-extern "C" unsigned int Environment_PutEnvironment (const char *EnvDef_, unsigned int _EnvDef_high);
+extern "C" bool Environment_PutEnvironment (const char *EnvDef_, unsigned int _EnvDef_high);
 
 
 /*
@@ -71,7 +72,7 @@ extern "C" unsigned int Environment_PutEnvironment (const char *EnvDef_, unsigne
                     the processes environment.
 */
 
-extern "C" unsigned int Environment_GetEnvironment (const char *Env_, unsigned int _Env_high, char *dest, unsigned int _dest_high)
+extern "C" bool Environment_GetEnvironment (const char *Env_, unsigned int _Env_high, char *dest, unsigned int _dest_high)
 {
   typedef char *GetEnvironment__T1;
 
@@ -108,7 +109,7 @@ extern "C" unsigned int Environment_GetEnvironment (const char *Env_, unsigned i
                     set or changed successfully.
 */
 
-extern "C" unsigned int Environment_PutEnvironment (const char *EnvDef_, unsigned int _EnvDef_high)
+extern "C" bool Environment_PutEnvironment (const char *EnvDef_, unsigned int _EnvDef_high)
 {
   char EnvDef[_EnvDef_high+1];
 

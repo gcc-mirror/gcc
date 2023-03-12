@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -52,12 +53,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   include "GDebug.h"
 #   include "GSYSTEM.h"
 
-#   define enableDeallocation TRUE
-#   define enableZero FALSE
-#   define enableTrace FALSE
+#   define enableDeallocation true
+#   define enableZero false
+#   define enableTrace false
 static unsigned int callno;
-static unsigned int zero;
-static unsigned int trace;
+static bool zero;
+static bool trace;
 extern "C" void SysStorage_ALLOCATE (void * *a, unsigned int size);
 extern "C" void SysStorage_DEALLOCATE (void * *a, unsigned int size);
 
@@ -79,7 +80,7 @@ extern "C" void SysStorage_REALLOCATE (void * *a, unsigned int size);
                 is resized accordingly.
 */
 
-extern "C" unsigned int SysStorage_Available (unsigned int size);
+extern "C" bool SysStorage_Available (unsigned int size);
 
 /*
    Init - initializes the heap.  This does nothing on a GNU/Linux system.
@@ -182,7 +183,7 @@ extern "C" void SysStorage_REALLOCATE (void * *a, unsigned int size)
                 is resized accordingly.
 */
 
-extern "C" unsigned int SysStorage_Available (unsigned int size)
+extern "C" bool SysStorage_Available (unsigned int size)
 {
   void * a;
 
@@ -198,7 +199,7 @@ extern "C" unsigned int SysStorage_Available (unsigned int size)
         {
           libc_printf ((const char *) "   no\\n", 7, size);
         }
-      return FALSE;
+      return false;
     }
   else
     {
@@ -207,7 +208,7 @@ extern "C" unsigned int SysStorage_Available (unsigned int size)
           libc_printf ((const char *) "   yes\\n", 8, size);
         }
       libc_free (a);
-      return TRUE;
+      return true;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -232,7 +233,7 @@ extern "C" void _M2_SysStorage_init (__attribute__((unused)) int argc,__attribut
     }
   else
     {
-      trace = FALSE;
+      trace = false;
     }
   if (enableZero)
     {
@@ -240,7 +241,7 @@ extern "C" void _M2_SysStorage_init (__attribute__((unused)) int argc,__attribut
     }
   else
     {
-      zero = FALSE;
+      zero = false;
     }
 }
 

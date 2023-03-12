@@ -22,6 +22,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -55,7 +56,7 @@ typedef struct symbolKey__T1_r symbolKey__T1;
 
 typedef symbolKey__T1 *symbolKey_symbolTree;
 
-typedef unsigned int (*symbolKey_isSymbol_t) (void *);
+typedef bool (*symbolKey_isSymbol_t) (void *);
 struct symbolKey_isSymbol_p { symbolKey_isSymbol_t proc; };
 
 typedef void (*symbolKey_performOperation_t) (void *);
@@ -86,7 +87,7 @@ extern "C" void symbolKey_delSymKey (symbolKey_symbolTree t, nameKey_Name name);
    isEmptyTree - returns true if symbolTree, t, is empty.
 */
 
-extern "C" unsigned int symbolKey_isEmptyTree (symbolKey_symbolTree t);
+extern "C" bool symbolKey_isEmptyTree (symbolKey_symbolTree t);
 
 /*
    doesTreeContainAny - returns true if symbolTree, t, contains any
@@ -96,7 +97,7 @@ extern "C" unsigned int symbolKey_isEmptyTree (symbolKey_symbolTree t);
                         left, hence we need two procedures.
 */
 
-extern "C" unsigned int symbolKey_doesTreeContainAny (symbolKey_symbolTree t, symbolKey_isSymbol p);
+extern "C" bool symbolKey_doesTreeContainAny (symbolKey_symbolTree t, symbolKey_isSymbol p);
 
 /*
    foreachNodeDo - for each node in symbolTree, t, a procedure, p,
@@ -120,7 +121,7 @@ static void findNodeAndParentInTree (symbolKey_symbolTree t, nameKey_Name n, sym
                   therefore we must skip over it.
 */
 
-static unsigned int searchForAny (symbolKey_symbolTree t, symbolKey_isSymbol p);
+static bool searchForAny (symbolKey_symbolTree t, symbolKey_isSymbol p);
 
 /*
    searchAndDo - searches all the nodes in symbolTree, t, and
@@ -170,11 +171,11 @@ static void findNodeAndParentInTree (symbolKey_symbolTree t, nameKey_Name n, sym
                   therefore we must skip over it.
 */
 
-static unsigned int searchForAny (symbolKey_symbolTree t, symbolKey_isSymbol p)
+static bool searchForAny (symbolKey_symbolTree t, symbolKey_isSymbol p)
 {
   if (t == NULL)
     {
-      return FALSE;
+      return false;
     }
   else
     {
@@ -361,7 +362,7 @@ extern "C" void symbolKey_delSymKey (symbolKey_symbolTree t, nameKey_Name name)
    isEmptyTree - returns true if symbolTree, t, is empty.
 */
 
-extern "C" unsigned int symbolKey_isEmptyTree (symbolKey_symbolTree t)
+extern "C" bool symbolKey_isEmptyTree (symbolKey_symbolTree t)
 {
   return t->left == NULL;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -377,7 +378,7 @@ extern "C" unsigned int symbolKey_isEmptyTree (symbolKey_symbolTree t)
                         left, hence we need two procedures.
 */
 
-extern "C" unsigned int symbolKey_doesTreeContainAny (symbolKey_symbolTree t, symbolKey_isSymbol p)
+extern "C" bool symbolKey_doesTreeContainAny (symbolKey_symbolTree t, symbolKey_isSymbol p)
 {
   return searchForAny (t->left, p);
   /* static analysis guarentees a RETURN statement will be used before here.  */

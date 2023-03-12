@@ -21,6 +21,7 @@ Boston, MA 02110-1301, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -71,42 +72,42 @@ static keyc_scope stack;
 static keyc_scope freeList;
 static symbolKey_symbolTree keywords;
 static symbolKey_symbolTree macros;
-static unsigned int initializedCP;
-static unsigned int initializedGCC;
-static unsigned int seenIntMin;
-static unsigned int seenUIntMin;
-static unsigned int seenLongMin;
-static unsigned int seenULongMin;
-static unsigned int seenCharMin;
-static unsigned int seenUCharMin;
-static unsigned int seenIntMax;
-static unsigned int seenUIntMax;
-static unsigned int seenLongMax;
-static unsigned int seenULongMax;
-static unsigned int seenCharMax;
-static unsigned int seenUCharMax;
-static unsigned int seenLabs;
-static unsigned int seenAbs;
-static unsigned int seenFabs;
-static unsigned int seenFabsl;
-static unsigned int seenSize_t;
-static unsigned int seenSSize_t;
-static unsigned int seenUnistd;
-static unsigned int seenSysTypes;
-static unsigned int seenThrow;
-static unsigned int seenFree;
-static unsigned int seenMalloc;
-static unsigned int seenStorage;
-static unsigned int seenProc;
-static unsigned int seenTrue;
-static unsigned int seenFalse;
-static unsigned int seenNull;
-static unsigned int seenMemcpy;
-static unsigned int seenException;
-static unsigned int seenComplex;
-static unsigned int seenM2RTS;
-static unsigned int seenStrlen;
-static unsigned int seenCtype;
+static bool initializedCP;
+static bool initializedGCC;
+static bool seenIntMin;
+static bool seenUIntMin;
+static bool seenLongMin;
+static bool seenULongMin;
+static bool seenCharMin;
+static bool seenUCharMin;
+static bool seenIntMax;
+static bool seenUIntMax;
+static bool seenLongMax;
+static bool seenULongMax;
+static bool seenCharMax;
+static bool seenUCharMax;
+static bool seenLabs;
+static bool seenAbs;
+static bool seenFabs;
+static bool seenFabsl;
+static bool seenSize_t;
+static bool seenSSize_t;
+static bool seenUnistd;
+static bool seenSysTypes;
+static bool seenThrow;
+static bool seenFree;
+static bool seenMalloc;
+static bool seenStorage;
+static bool seenProc;
+static bool seenTrue;
+static bool seenFalse;
+static bool seenNull;
+static bool seenMemcpy;
+static bool seenException;
+static bool seenComplex;
+static bool seenM2RTS;
+static bool seenStrlen;
+static bool seenCtype;
 
 /*
    useUnistd - need to use unistd.h call using open/close/read/write require this header.
@@ -342,7 +343,7 @@ extern "C" void keyc_leaveScope (decl_node n);
            is ignored).
 */
 
-extern "C" DynamicStrings_String keyc_cname (nameKey_Name n, unsigned int scopes);
+extern "C" DynamicStrings_String keyc_cname (nameKey_Name n, bool scopes);
 
 /*
    cnamen - attempts to declare a symbol with name, n, in the
@@ -354,7 +355,7 @@ extern "C" DynamicStrings_String keyc_cname (nameKey_Name n, unsigned int scopes
             is ignored).
 */
 
-extern "C" nameKey_Name keyc_cnamen (nameKey_Name n, unsigned int scopes);
+extern "C" nameKey_Name keyc_cnamen (nameKey_Name n, bool scopes);
 
 /*
    cp - include C++ keywords and standard declarations to avoid.
@@ -472,6 +473,12 @@ static void checkSysTypes (mcPretty_pretty p);
 static void fixNullPointerConst (mcPretty_pretty p);
 
 /*
+   genBool -
+*/
+
+static void genBool (mcPretty_pretty p);
+
+/*
    new -
 */
 
@@ -482,28 +489,28 @@ static keyc_scope new_ (decl_node n);
              to its end.
 */
 
-static unsigned int mangle1 (nameKey_Name n, DynamicStrings_String *m, unsigned int scopes);
+static bool mangle1 (nameKey_Name n, DynamicStrings_String *m, bool scopes);
 
 /*
    mangle2 - returns TRUE if name is unique if we prepend _
              to, n.
 */
 
-static unsigned int mangle2 (nameKey_Name n, DynamicStrings_String *m, unsigned int scopes);
+static bool mangle2 (nameKey_Name n, DynamicStrings_String *m, bool scopes);
 
 /*
    mangleN - keep adding '_' to the end of n until it
              no longer clashes.
 */
 
-static unsigned int mangleN (nameKey_Name n, DynamicStrings_String *m, unsigned int scopes);
+static bool mangleN (nameKey_Name n, DynamicStrings_String *m, bool scopes);
 
 /*
    clash - returns TRUE if there is a clash with name, n,
            in the current scope or C keywords or C macros.
 */
 
-static unsigned int clash (nameKey_Name n, unsigned int scopes);
+static bool clash (nameKey_Name n, bool scopes);
 
 /*
    initCP - add the extra keywords and standard definitions used by C++.
@@ -547,7 +554,7 @@ static void checkGccConfigSystem (mcPretty_pretty p)
     {
       if (! initializedGCC)
         {
-          initializedGCC = TRUE;
+          initializedGCC = true;
           mcPretty_print (p, (const char *) "#include \"config.h\"\\n", 21);
           mcPretty_print (p, (const char *) "#include \"system.h\"\\n", 21);
         }
@@ -837,6 +844,19 @@ static void fixNullPointerConst (mcPretty_pretty p)
 
 
 /*
+   genBool -
+*/
+
+static void genBool (mcPretty_pretty p)
+{
+  if (mcOptions_useBool ())
+    {
+      mcPretty_print (p, (const char *) "#include <stdbool.h>\\n", 22);
+    }
+}
+
+
+/*
    new -
 */
 
@@ -864,7 +884,7 @@ static keyc_scope new_ (decl_node n)
              to its end.
 */
 
-static unsigned int mangle1 (nameKey_Name n, DynamicStrings_String *m, unsigned int scopes)
+static bool mangle1 (nameKey_Name n, DynamicStrings_String *m, bool scopes)
 {
   (*m) = DynamicStrings_KillString ((*m));
   (*m) = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n));
@@ -880,7 +900,7 @@ static unsigned int mangle1 (nameKey_Name n, DynamicStrings_String *m, unsigned 
              to, n.
 */
 
-static unsigned int mangle2 (nameKey_Name n, DynamicStrings_String *m, unsigned int scopes)
+static bool mangle2 (nameKey_Name n, DynamicStrings_String *m, bool scopes)
 {
   (*m) = DynamicStrings_KillString ((*m));
   (*m) = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n));
@@ -896,7 +916,7 @@ static unsigned int mangle2 (nameKey_Name n, DynamicStrings_String *m, unsigned 
              no longer clashes.
 */
 
-static unsigned int mangleN (nameKey_Name n, DynamicStrings_String *m, unsigned int scopes)
+static bool mangleN (nameKey_Name n, DynamicStrings_String *m, bool scopes)
 {
   (*m) = DynamicStrings_KillString ((*m));
   (*m) = DynamicStrings_InitStringCharStar (nameKey_keyToCharStar (n));
@@ -905,7 +925,7 @@ static unsigned int mangleN (nameKey_Name n, DynamicStrings_String *m, unsigned 
     (*m) = DynamicStrings_ConCatChar ((*m), '_');
     if (! (clash (nameKey_makekey (DynamicStrings_string ((*m))), scopes)))
       {
-        return TRUE;
+        return true;
       }
   }
   ReturnException ("../../gcc-read-write/gcc/m2/mc/keyc.def", 20, 1);
@@ -918,11 +938,11 @@ static unsigned int mangleN (nameKey_Name n, DynamicStrings_String *m, unsigned 
            in the current scope or C keywords or C macros.
 */
 
-static unsigned int clash (nameKey_Name n, unsigned int scopes)
+static bool clash (nameKey_Name n, bool scopes)
 {
   if (((symbolKey_getSymKey (macros, n)) != NULL) || ((symbolKey_getSymKey (keywords, n)) != NULL))
     {
-      return TRUE;
+      return true;
     }
   return scopes && ((symbolKey_getSymKey (stack->symbols, n)) != NULL);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1051,42 +1071,42 @@ static void initKeywords (void)
 
 static void init (void)
 {
-  seenUnistd = FALSE;
-  seenThrow = FALSE;
-  seenFree = FALSE;
-  seenMalloc = FALSE;
-  seenStorage = FALSE;
-  seenProc = FALSE;
-  seenTrue = FALSE;
-  seenFalse = FALSE;
-  seenNull = FALSE;
-  seenMemcpy = FALSE;
-  seenIntMin = FALSE;
-  seenUIntMin = FALSE;
-  seenLongMin = FALSE;
-  seenULongMin = FALSE;
-  seenCharMin = FALSE;
-  seenUCharMin = FALSE;
-  seenIntMax = FALSE;
-  seenUIntMax = FALSE;
-  seenLongMax = FALSE;
-  seenULongMax = FALSE;
-  seenCharMax = FALSE;
-  seenUCharMax = FALSE;
-  seenLabs = FALSE;
-  seenAbs = FALSE;
-  seenFabs = FALSE;
-  seenFabsl = FALSE;
-  seenException = FALSE;
-  seenComplex = FALSE;
-  seenM2RTS = FALSE;
-  seenStrlen = FALSE;
-  seenCtype = FALSE;
-  seenSize_t = FALSE;
-  seenSSize_t = FALSE;
-  seenSysTypes = FALSE;
-  initializedCP = FALSE;
-  initializedGCC = FALSE;
+  seenUnistd = false;
+  seenThrow = false;
+  seenFree = false;
+  seenMalloc = false;
+  seenStorage = false;
+  seenProc = false;
+  seenTrue = false;
+  seenFalse = false;
+  seenNull = false;
+  seenMemcpy = false;
+  seenIntMin = false;
+  seenUIntMin = false;
+  seenLongMin = false;
+  seenULongMin = false;
+  seenCharMin = false;
+  seenUCharMin = false;
+  seenIntMax = false;
+  seenUIntMax = false;
+  seenLongMax = false;
+  seenULongMax = false;
+  seenCharMax = false;
+  seenUCharMax = false;
+  seenLabs = false;
+  seenAbs = false;
+  seenFabs = false;
+  seenFabsl = false;
+  seenException = false;
+  seenComplex = false;
+  seenM2RTS = false;
+  seenStrlen = false;
+  seenCtype = false;
+  seenSize_t = false;
+  seenSSize_t = false;
+  seenSysTypes = false;
+  initializedCP = false;
+  initializedGCC = false;
   stack = NULL;
   freeList = NULL;
   initKeywords ();
@@ -1100,7 +1120,7 @@ static void init (void)
 
 extern "C" void keyc_useUnistd (void)
 {
-  seenUnistd = TRUE;
+  seenUnistd = true;
 }
 
 
@@ -1110,7 +1130,7 @@ extern "C" void keyc_useUnistd (void)
 
 extern "C" void keyc_useThrow (void)
 {
-  seenThrow = TRUE;
+  seenThrow = true;
 }
 
 
@@ -1120,7 +1140,7 @@ extern "C" void keyc_useThrow (void)
 
 extern "C" void keyc_useStorage (void)
 {
-  seenStorage = TRUE;
+  seenStorage = true;
 }
 
 
@@ -1130,7 +1150,7 @@ extern "C" void keyc_useStorage (void)
 
 extern "C" void keyc_useFree (void)
 {
-  seenFree = TRUE;
+  seenFree = true;
 }
 
 
@@ -1140,7 +1160,7 @@ extern "C" void keyc_useFree (void)
 
 extern "C" void keyc_useMalloc (void)
 {
-  seenMalloc = TRUE;
+  seenMalloc = true;
 }
 
 
@@ -1150,7 +1170,7 @@ extern "C" void keyc_useMalloc (void)
 
 extern "C" void keyc_useProc (void)
 {
-  seenProc = TRUE;
+  seenProc = true;
 }
 
 
@@ -1160,7 +1180,7 @@ extern "C" void keyc_useProc (void)
 
 extern "C" void keyc_useTrue (void)
 {
-  seenTrue = TRUE;
+  seenTrue = true;
 }
 
 
@@ -1170,7 +1190,7 @@ extern "C" void keyc_useTrue (void)
 
 extern "C" void keyc_useFalse (void)
 {
-  seenFalse = TRUE;
+  seenFalse = true;
 }
 
 
@@ -1180,7 +1200,7 @@ extern "C" void keyc_useFalse (void)
 
 extern "C" void keyc_useNull (void)
 {
-  seenNull = TRUE;
+  seenNull = true;
 }
 
 
@@ -1190,7 +1210,7 @@ extern "C" void keyc_useNull (void)
 
 extern "C" void keyc_useMemcpy (void)
 {
-  seenMemcpy = TRUE;
+  seenMemcpy = true;
 }
 
 
@@ -1200,7 +1220,7 @@ extern "C" void keyc_useMemcpy (void)
 
 extern "C" void keyc_useIntMin (void)
 {
-  seenIntMin = TRUE;
+  seenIntMin = true;
 }
 
 
@@ -1210,7 +1230,7 @@ extern "C" void keyc_useIntMin (void)
 
 extern "C" void keyc_useUIntMin (void)
 {
-  seenUIntMin = TRUE;
+  seenUIntMin = true;
 }
 
 
@@ -1220,7 +1240,7 @@ extern "C" void keyc_useUIntMin (void)
 
 extern "C" void keyc_useLongMin (void)
 {
-  seenLongMin = TRUE;
+  seenLongMin = true;
 }
 
 
@@ -1230,7 +1250,7 @@ extern "C" void keyc_useLongMin (void)
 
 extern "C" void keyc_useULongMin (void)
 {
-  seenULongMin = TRUE;
+  seenULongMin = true;
 }
 
 
@@ -1240,7 +1260,7 @@ extern "C" void keyc_useULongMin (void)
 
 extern "C" void keyc_useCharMin (void)
 {
-  seenCharMin = TRUE;
+  seenCharMin = true;
 }
 
 
@@ -1250,7 +1270,7 @@ extern "C" void keyc_useCharMin (void)
 
 extern "C" void keyc_useUCharMin (void)
 {
-  seenUCharMin = TRUE;
+  seenUCharMin = true;
 }
 
 
@@ -1260,7 +1280,7 @@ extern "C" void keyc_useUCharMin (void)
 
 extern "C" void keyc_useIntMax (void)
 {
-  seenIntMax = TRUE;
+  seenIntMax = true;
 }
 
 
@@ -1270,7 +1290,7 @@ extern "C" void keyc_useIntMax (void)
 
 extern "C" void keyc_useUIntMax (void)
 {
-  seenUIntMax = TRUE;
+  seenUIntMax = true;
 }
 
 
@@ -1280,7 +1300,7 @@ extern "C" void keyc_useUIntMax (void)
 
 extern "C" void keyc_useLongMax (void)
 {
-  seenLongMax = TRUE;
+  seenLongMax = true;
 }
 
 
@@ -1290,7 +1310,7 @@ extern "C" void keyc_useLongMax (void)
 
 extern "C" void keyc_useULongMax (void)
 {
-  seenULongMax = TRUE;
+  seenULongMax = true;
 }
 
 
@@ -1300,7 +1320,7 @@ extern "C" void keyc_useULongMax (void)
 
 extern "C" void keyc_useCharMax (void)
 {
-  seenCharMax = TRUE;
+  seenCharMax = true;
 }
 
 
@@ -1310,7 +1330,7 @@ extern "C" void keyc_useCharMax (void)
 
 extern "C" void keyc_useUCharMax (void)
 {
-  seenUCharMax = TRUE;
+  seenUCharMax = true;
 }
 
 
@@ -1320,7 +1340,7 @@ extern "C" void keyc_useUCharMax (void)
 
 extern "C" void keyc_useSize_t (void)
 {
-  seenSize_t = TRUE;
+  seenSize_t = true;
 }
 
 
@@ -1330,8 +1350,8 @@ extern "C" void keyc_useSize_t (void)
 
 extern "C" void keyc_useSSize_t (void)
 {
-  seenSSize_t = TRUE;
-  seenSysTypes = TRUE;
+  seenSSize_t = true;
+  seenSysTypes = true;
 }
 
 
@@ -1341,7 +1361,7 @@ extern "C" void keyc_useSSize_t (void)
 
 extern "C" void keyc_useLabs (void)
 {
-  seenLabs = TRUE;
+  seenLabs = true;
 }
 
 
@@ -1351,7 +1371,7 @@ extern "C" void keyc_useLabs (void)
 
 extern "C" void keyc_useAbs (void)
 {
-  seenAbs = TRUE;
+  seenAbs = true;
 }
 
 
@@ -1361,7 +1381,7 @@ extern "C" void keyc_useAbs (void)
 
 extern "C" void keyc_useFabs (void)
 {
-  seenFabs = TRUE;
+  seenFabs = true;
 }
 
 
@@ -1371,7 +1391,7 @@ extern "C" void keyc_useFabs (void)
 
 extern "C" void keyc_useFabsl (void)
 {
-  seenFabsl = TRUE;
+  seenFabsl = true;
 }
 
 
@@ -1381,7 +1401,7 @@ extern "C" void keyc_useFabsl (void)
 
 extern "C" void keyc_useException (void)
 {
-  seenException = TRUE;
+  seenException = true;
 }
 
 
@@ -1391,7 +1411,7 @@ extern "C" void keyc_useException (void)
 
 extern "C" void keyc_useComplex (void)
 {
-  seenComplex = TRUE;
+  seenComplex = true;
 }
 
 
@@ -1401,7 +1421,7 @@ extern "C" void keyc_useComplex (void)
 
 extern "C" void keyc_useM2RTS (void)
 {
-  seenM2RTS = TRUE;
+  seenM2RTS = true;
 }
 
 
@@ -1411,7 +1431,7 @@ extern "C" void keyc_useM2RTS (void)
 
 extern "C" void keyc_useStrlen (void)
 {
-  seenStrlen = TRUE;
+  seenStrlen = true;
 }
 
 
@@ -1421,7 +1441,7 @@ extern "C" void keyc_useStrlen (void)
 
 extern "C" void keyc_useCtype (void)
 {
-  seenCtype = TRUE;
+  seenCtype = true;
 }
 
 
@@ -1432,6 +1452,7 @@ extern "C" void keyc_useCtype (void)
 
 extern "C" void keyc_genDefs (mcPretty_pretty p)
 {
+  genBool (p);
   checkFreeMalloc (p);
   checkProc (p);
   checkTrue (p);
@@ -1513,7 +1534,7 @@ extern "C" void keyc_leaveScope (decl_node n)
            is ignored).
 */
 
-extern "C" DynamicStrings_String keyc_cname (nameKey_Name n, unsigned int scopes)
+extern "C" DynamicStrings_String keyc_cname (nameKey_Name n, bool scopes)
 {
   DynamicStrings_String m;
 
@@ -1559,7 +1580,7 @@ extern "C" DynamicStrings_String keyc_cname (nameKey_Name n, unsigned int scopes
             is ignored).
 */
 
-extern "C" nameKey_Name keyc_cnamen (nameKey_Name n, unsigned int scopes)
+extern "C" nameKey_Name keyc_cnamen (nameKey_Name n, bool scopes)
 {
   DynamicStrings_String m;
 
@@ -1604,7 +1625,7 @@ extern "C" void keyc_cp (void)
 {
   if (! initializedCP)
     {
-      initializedCP = TRUE;
+      initializedCP = true;
       initCP ();
     }
 }

@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -62,7 +63,7 @@ EXTERN Selective_SetOfFd Selective_KillSet (Selective_SetOfFd s);
 EXTERN void Selective_FdZero (Selective_SetOfFd s);
 EXTERN void Selective_FdSet (int fd, Selective_SetOfFd s);
 EXTERN void Selective_FdClr (int fd, Selective_SetOfFd s);
-EXTERN unsigned int Selective_FdIsSet (int fd, Selective_SetOfFd s);
+EXTERN bool Selective_FdIsSet (int fd, Selective_SetOfFd s);
 EXTERN int Selective_MaxFdsPlusOne (int a, int b);
 EXTERN void Selective_WriteCharRaw (int fd, char ch);
 EXTERN char Selective_ReadCharRaw (int fd);

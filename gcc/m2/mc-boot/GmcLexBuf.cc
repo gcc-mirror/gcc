@@ -22,6 +22,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -64,7 +65,7 @@ unsigned int mcLexBuf_currentcolumn;
 void * mcLexBuf_currentstring;
 mcReserved_toktype mcLexBuf_currenttoken;
 #   define MaxBucketSize 100
-#   define Debugging FALSE
+#   define Debugging false
 typedef struct mcLexBuf_tokenDesc_r mcLexBuf_tokenDesc;
 
 typedef struct mcLexBuf_listDesc_r mcLexBuf_listDesc;
@@ -114,8 +115,8 @@ static mcComment_commentDesc procedureComment;
 static mcComment_commentDesc bodyComment;
 static mcComment_commentDesc afterComment;
 static mcLexBuf_sourceList currentSource;
-static unsigned int useBufferedTokens;
-static unsigned int currentUsed;
+static bool useBufferedTokens;
+static bool currentUsed;
 static mcLexBuf_listDesc listOfTokens;
 static unsigned int nextTokNo;
 
@@ -147,7 +148,7 @@ extern "C" mcComment_commentDesc mcLexBuf_getAfterComment (void);
                 The success of the operation is returned.
 */
 
-extern "C" unsigned int mcLexBuf_openSource (DynamicStrings_String s);
+extern "C" bool mcLexBuf_openSource (DynamicStrings_String s);
 
 /*
    closeSource - closes the current open file.
@@ -411,7 +412,7 @@ static void addTokToList (mcReserved_toktype t, nameKey_Name n, int i, mcComment
    isLastTokenEof - returns TRUE if the last token was an eoftok
 */
 
-static unsigned int isLastTokenEof (void);
+static bool isLastTokenEof (void);
 
 
 /*
@@ -556,20 +557,20 @@ static void peepAfterComment (void)
   unsigned int nextline;
   unsigned int curline;
   mcLexBuf_tokenBucket b;
-  unsigned int finished;
+  bool finished;
 
   oldTokNo = nextTokNo;
   cno = mcLexBuf_getTokenNo ();
   curline = mcLexBuf_tokenToLineNo (cno, 0);
   nextline = curline;
   peep = 0;
-  finished = FALSE;
+  finished = false;
   do {
     t = cno+peep;
     b = peeptokenBucket (&t);
     if ((b == NULL) || (mcLexBuf_currenttoken == mcReserved_eoftok))
       {
-        finished = TRUE;
+        finished = true;
       }
     else
       {
@@ -580,7 +581,7 @@ static void peepAfterComment (void)
               {
                 case mcReserved_eoftok:
                 case mcReserved_endtok:
-                  finished = TRUE;
+                  finished = true;
                   break;
 
                 case mcReserved_commenttok:
@@ -597,7 +598,7 @@ static void peepAfterComment (void)
           }
         else
           {
-            finished = TRUE;
+            finished = true;
           }
       }
     peep += 1;
@@ -617,7 +618,7 @@ static void init (void)
   currentSource = NULL;
   listOfTokens.head = NULL;
   listOfTokens.tail = NULL;
-  useBufferedTokens = FALSE;
+  useBufferedTokens = false;
   procedureComment = static_cast<mcComment_commentDesc> (NULL);
   bodyComment = static_cast<mcComment_commentDesc> (NULL);
   afterComment = static_cast<mcComment_commentDesc> (NULL);
@@ -1272,7 +1273,7 @@ static void addTokToList (mcReserved_toktype t, nameKey_Name n, int i, mcComment
    isLastTokenEof - returns TRUE if the last token was an eoftok
 */
 
-static unsigned int isLastTokenEof (void)
+static bool isLastTokenEof (void)
 {
   unsigned int t;
   mcLexBuf_tokenBucket b;
@@ -1284,7 +1285,7 @@ static unsigned int isLastTokenEof (void)
           b = listOfTokens.head;
           if (b == listOfTokens.tail)
             {
-              return FALSE;
+              return false;
             }
           while (b->next != listOfTokens.tail)
             {
@@ -1298,7 +1299,7 @@ static unsigned int isLastTokenEof (void)
       mcDebug_assert (b->len > 0);  /* len should always be >0  */
       return b->buf.array[b->len-1].token == mcReserved_eoftok;  /* len should always be >0  */
     }
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1359,12 +1360,12 @@ extern "C" mcComment_commentDesc mcLexBuf_getAfterComment (void)
                 The success of the operation is returned.
 */
 
-extern "C" unsigned int mcLexBuf_openSource (DynamicStrings_String s)
+extern "C" bool mcLexBuf_openSource (DynamicStrings_String s)
 {
   if (useBufferedTokens)
     {
       mcLexBuf_getToken ();
-      return TRUE;
+      return true;
     }
   else
     {
@@ -1373,11 +1374,11 @@ extern "C" unsigned int mcLexBuf_openSource (DynamicStrings_String s)
           mcLexBuf_setFile (DynamicStrings_string (s));
           syncOpenWithBuffer ();
           mcLexBuf_getToken ();
-          return TRUE;
+          return true;
         }
       else
         {
-          return FALSE;
+          return false;
         }
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1419,7 +1420,7 @@ extern "C" void mcLexBuf_reInitialize (void)
         t = t->next;
         Storage_DEALLOCATE ((void **) &s, sizeof (mcLexBuf__T2));
       } while (! (t == NULL));
-      currentUsed = FALSE;
+      currentUsed = false;
       killList ();
     }
   init ();
@@ -1434,7 +1435,7 @@ extern "C" void mcLexBuf_reInitialize (void)
 extern "C" void mcLexBuf_resetForNewPass (void)
 {
   nextTokNo = 0;
-  useBufferedTokens = TRUE;
+  useBufferedTokens = true;
 }
 
 
@@ -1728,7 +1729,7 @@ extern "C" void mcLexBuf_addTok (mcReserved_toktype t)
   if (! ((t == mcReserved_eoftok) && (isLastTokenEof ())))
     {
       addTokToList (t, nameKey_NulName, 0, static_cast<mcComment_commentDesc> (NULL), mcflex_getLineNo (), mcflex_getColumnNo (), currentSource);
-      currentUsed = TRUE;
+      currentUsed = true;
     }
 }
 
@@ -1745,7 +1746,7 @@ extern "C" void mcLexBuf_addTokCharStar (mcReserved_toktype t, void * s)
       stop ();
     }
   addTokToList (t, nameKey_makekey (s), 0, static_cast<mcComment_commentDesc> (NULL), mcflex_getLineNo (), mcflex_getColumnNo (), currentSource);
-  currentUsed = TRUE;
+  currentUsed = true;
 }
 
 
@@ -1764,7 +1765,7 @@ extern "C" void mcLexBuf_addTokInteger (mcReserved_toktype t, int i)
   s = FormatStrings_Sprintf1 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "%d", 2)), (const unsigned char *) &i, (sizeof (i)-1));
   addTokToList (t, nameKey_makekey (DynamicStrings_string (s)), i, static_cast<mcComment_commentDesc> (NULL), l, c, currentSource);
   s = DynamicStrings_KillString (s);
-  currentUsed = TRUE;
+  currentUsed = true;
 }
 
 
@@ -1775,7 +1776,7 @@ extern "C" void mcLexBuf_addTokInteger (mcReserved_toktype t, int i)
 extern "C" void mcLexBuf_addTokComment (mcReserved_toktype t, mcComment_commentDesc com)
 {
   addTokToList (t, nameKey_NulName, 0, com, mcflex_getLineNo (), mcflex_getColumnNo (), currentSource);
-  currentUsed = TRUE;
+  currentUsed = true;
 }
 
 
@@ -1786,7 +1787,7 @@ extern "C" void mcLexBuf_addTokComment (mcReserved_toktype t, mcComment_commentD
 extern "C" void mcLexBuf_setFile (void * filename)
 {
   killList ();
-  currentUsed = FALSE;
+  currentUsed = false;
   currentSource = newList ();
   addTo (newElement (filename));
 }

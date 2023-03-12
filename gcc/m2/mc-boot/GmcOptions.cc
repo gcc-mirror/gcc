@@ -18,6 +18,7 @@ Boston, MA 02110-1301, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -50,26 +51,27 @@ Boston, MA 02110-1301, USA.  */
 #   include "GFIO.h"
 #   include "GSFIO.h"
 
-static unsigned int langC;
-static unsigned int langCPP;
-static unsigned int langM2;
-static unsigned int gplHeader;
-static unsigned int glplHeader;
-static unsigned int summary;
-static unsigned int contributed;
-static unsigned int scaffoldMain;
-static unsigned int scaffoldDynamic;
-static unsigned int caseRuntime;
-static unsigned int arrayRuntime;
-static unsigned int returnRuntime;
-static unsigned int suppressNoReturn;
-static unsigned int gccConfigSystem;
-static unsigned int ignoreFQ;
-static unsigned int debugTopological;
-static unsigned int extendedOpaque;
-static unsigned int internalDebugging;
-static unsigned int verbose;
-static unsigned int quiet;
+static bool langC;
+static bool langCPP;
+static bool langM2;
+static bool gplHeader;
+static bool glplHeader;
+static bool summary;
+static bool contributed;
+static bool scaffoldMain;
+static bool scaffoldDynamic;
+static bool caseRuntime;
+static bool arrayRuntime;
+static bool returnRuntime;
+static bool suppressNoReturn;
+static bool useBoolType;
+static bool gccConfigSystem;
+static bool ignoreFQ;
+static bool debugTopological;
+static bool extendedOpaque;
+static bool internalDebugging;
+static bool verbose;
+static bool quiet;
 static DynamicStrings_String projectContents;
 static DynamicStrings_String summaryContents;
 static DynamicStrings_String contributedContents;
@@ -90,19 +92,19 @@ extern "C" DynamicStrings_String mcOptions_handleOptions (void);
    getQuiet - return the value of quiet.
 */
 
-extern "C" unsigned int mcOptions_getQuiet (void);
+extern "C" bool mcOptions_getQuiet (void);
 
 /*
    getVerbose - return the value of verbose.
 */
 
-extern "C" unsigned int mcOptions_getVerbose (void);
+extern "C" bool mcOptions_getVerbose (void);
 
 /*
    getInternalDebugging - return the value of internalDebugging.
 */
 
-extern "C" unsigned int mcOptions_getInternalDebugging (void);
+extern "C" bool mcOptions_getInternalDebugging (void);
 
 /*
    getCppCommandLine - returns the Cpp command line and all arguments.
@@ -120,20 +122,20 @@ extern "C" DynamicStrings_String mcOptions_getOutputFile (void);
    getExtendedOpaque - return the extendedOpaque value.
 */
 
-extern "C" unsigned int mcOptions_getExtendedOpaque (void);
+extern "C" bool mcOptions_getExtendedOpaque (void);
 
 /*
    setDebugTopological - sets the flag debugTopological to value.
 */
 
-extern "C" void mcOptions_setDebugTopological (unsigned int value);
+extern "C" void mcOptions_setDebugTopological (bool value);
 
 /*
    getDebugTopological - returns the flag value of the command
                          line option --debug-top.
 */
 
-extern "C" unsigned int mcOptions_getDebugTopological (void);
+extern "C" bool mcOptions_getDebugTopological (void);
 
 /*
    getHPrefix - saves the H file prefix.
@@ -145,25 +147,25 @@ extern "C" DynamicStrings_String mcOptions_getHPrefix (void);
    getIgnoreFQ - returns the ignorefq flag.
 */
 
-extern "C" unsigned int mcOptions_getIgnoreFQ (void);
+extern "C" bool mcOptions_getIgnoreFQ (void);
 
 /*
    getGccConfigSystem - return the value of the gccConfigSystem flag.
 */
 
-extern "C" unsigned int mcOptions_getGccConfigSystem (void);
+extern "C" bool mcOptions_getGccConfigSystem (void);
 
 /*
    getScaffoldDynamic - return true if the --scaffold-dynamic option was present.
 */
 
-extern "C" unsigned int mcOptions_getScaffoldDynamic (void);
+extern "C" bool mcOptions_getScaffoldDynamic (void);
 
 /*
    getScaffoldMain - return true if the --scaffold-main option was present.
 */
 
-extern "C" unsigned int mcOptions_getScaffoldMain (void);
+extern "C" bool mcOptions_getScaffoldMain (void);
 
 /*
    writeGPLheader - writes out the GPL or the LGPL as a comment.
@@ -175,13 +177,19 @@ extern "C" void mcOptions_writeGPLheader (FIO_File f);
    setSuppressNoReturn - set suppressNoReturn to value.
 */
 
-extern "C" void mcOptions_setSuppressNoReturn (unsigned int value);
+extern "C" void mcOptions_setSuppressNoReturn (bool value);
 
 /*
    getSuppressNoReturn - return the suppressNoReturn value.
 */
 
-extern "C" unsigned int mcOptions_getSuppressNoReturn (void);
+extern "C" bool mcOptions_getSuppressNoReturn (void);
+
+/*
+   useBool - should mc use the bool type instead of int.
+*/
+
+extern "C" bool mcOptions_useBool (void);
 
 /*
    getYear - return the year.
@@ -193,7 +201,7 @@ static unsigned int getYear (void);
    displayVersion - displays the version of the compiler.
 */
 
-static void displayVersion (unsigned int mustExit);
+static void displayVersion (bool mustExit);
 
 /*
    displayHelp - display the mc help summary.
@@ -253,19 +261,19 @@ static void setOutputFile (DynamicStrings_String output);
    setQuiet - sets the quiet flag to, value.
 */
 
-static void setQuiet (unsigned int value);
+static void setQuiet (bool value);
 
 /*
    setVerbose - sets the verbose flag to, value.
 */
 
-static void setVerbose (unsigned int value);
+static void setVerbose (bool value);
 
 /*
    setExtendedOpaque - set extendedOpaque to value.
 */
 
-static void setExtendedOpaque (unsigned int value);
+static void setExtendedOpaque (bool value);
 
 /*
    setSearchPath - set the search path for the module sources.
@@ -277,7 +285,7 @@ static void setSearchPath (DynamicStrings_String arg);
    setInternalDebugging - turn on/off internal debugging.
 */
 
-static void setInternalDebugging (unsigned int value);
+static void setInternalDebugging (bool value);
 
 /*
    setHPrefix - saves the H file prefix.
@@ -289,14 +297,14 @@ static void setHPrefix (DynamicStrings_String s);
    setIgnoreFQ - sets the ignorefq flag.
 */
 
-static void setIgnoreFQ (unsigned int value);
+static void setIgnoreFQ (bool value);
 
 /*
    optionIs - returns TRUE if the first len (right) characters
               match left.
 */
 
-static unsigned int optionIs (const char *left_, unsigned int _left_high, DynamicStrings_String right);
+static bool optionIs (const char *left_, unsigned int _left_high, DynamicStrings_String right);
 
 /*
    setLang - set the appropriate output language.
@@ -332,7 +340,7 @@ static unsigned int getYear (void)
    displayVersion - displays the version of the compiler.
 */
 
-static void displayVersion (unsigned int mustExit)
+static void displayVersion (bool mustExit)
 {
   unsigned int year;
 
@@ -600,7 +608,7 @@ static void setOutputFile (DynamicStrings_String output)
    setQuiet - sets the quiet flag to, value.
 */
 
-static void setQuiet (unsigned int value)
+static void setQuiet (bool value)
 {
   quiet = value;
 }
@@ -610,7 +618,7 @@ static void setQuiet (unsigned int value)
    setVerbose - sets the verbose flag to, value.
 */
 
-static void setVerbose (unsigned int value)
+static void setVerbose (bool value)
 {
   verbose = value;
 }
@@ -620,7 +628,7 @@ static void setVerbose (unsigned int value)
    setExtendedOpaque - set extendedOpaque to value.
 */
 
-static void setExtendedOpaque (unsigned int value)
+static void setExtendedOpaque (bool value)
 {
   extendedOpaque = value;
 }
@@ -640,7 +648,7 @@ static void setSearchPath (DynamicStrings_String arg)
    setInternalDebugging - turn on/off internal debugging.
 */
 
-static void setInternalDebugging (unsigned int value)
+static void setInternalDebugging (bool value)
 {
   internalDebugging = value;
 }
@@ -660,7 +668,7 @@ static void setHPrefix (DynamicStrings_String s)
    setIgnoreFQ - sets the ignorefq flag.
 */
 
-static void setIgnoreFQ (unsigned int value)
+static void setIgnoreFQ (bool value)
 {
   ignoreFQ = value;
 }
@@ -671,7 +679,7 @@ static void setIgnoreFQ (unsigned int value)
               match left.
 */
 
-static unsigned int optionIs (const char *left_, unsigned int _left_high, DynamicStrings_String right)
+static bool optionIs (const char *left_, unsigned int _left_high, DynamicStrings_String right)
 {
   DynamicStrings_String s;
   char left[_left_high+1];
@@ -692,7 +700,7 @@ static unsigned int optionIs (const char *left_, unsigned int _left_high, Dynami
   else
     {
       /* avoid dangling else.  */
-      return FALSE;
+      return false;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -709,19 +717,19 @@ static void setLang (DynamicStrings_String arg)
   if (optionIs ((const char *) "c++", 3, arg))
     {
       decl_setLangCP ();
-      langCPP = TRUE;
+      langCPP = true;
     }
   else if (optionIs ((const char *) "c", 1, arg))
     {
       /* avoid dangling else.  */
       decl_setLangC ();
-      langC = TRUE;
+      langC = true;
     }
   else if (optionIs ((const char *) "m2", 2, arg))
     {
       /* avoid dangling else.  */
       decl_setLangM2 ();
-      langM2 = TRUE;
+      langM2 = true;
     }
   else
     {
@@ -739,17 +747,17 @@ static void handleOption (DynamicStrings_String arg)
 {
   if ((optionIs ((const char *) "--quiet", 7, arg)) || (optionIs ((const char *) "-q", 2, arg)))
     {
-      setQuiet (TRUE);
+      setQuiet (true);
     }
   else if ((optionIs ((const char *) "--verbose", 9, arg)) || (optionIs ((const char *) "-v", 2, arg)))
     {
       /* avoid dangling else.  */
-      setVerbose (TRUE);
+      setVerbose (true);
     }
   else if (optionIs ((const char *) "--version", 9, arg))
     {
       /* avoid dangling else.  */
-      displayVersion (TRUE);
+      displayVersion (true);
     }
   else if (optionIs ((const char *) "--olang=", 8, arg))
     {
@@ -779,12 +787,12 @@ static void handleOption (DynamicStrings_String arg)
   else if (optionIs ((const char *) "--extended-opaque", 17, arg))
     {
       /* avoid dangling else.  */
-      setExtendedOpaque (TRUE);
+      setExtendedOpaque (true);
     }
   else if (optionIs ((const char *) "--debug-top", 11, arg))
     {
       /* avoid dangling else.  */
-      mcOptions_setDebugTopological (TRUE);
+      mcOptions_setDebugTopological (true);
     }
   else if (optionIs ((const char *) "--h-file-prefix=", 16, arg))
     {
@@ -794,28 +802,28 @@ static void handleOption (DynamicStrings_String arg)
   else if (optionIs ((const char *) "--ignore-fq", 11, arg))
     {
       /* avoid dangling else.  */
-      setIgnoreFQ (TRUE);
+      setIgnoreFQ (true);
     }
   else if (optionIs ((const char *) "--gpl-header", 12, arg))
     {
       /* avoid dangling else.  */
-      gplHeader = TRUE;
+      gplHeader = true;
     }
   else if (optionIs ((const char *) "--glpl-header", 13, arg))
     {
       /* avoid dangling else.  */
-      glplHeader = TRUE;
+      glplHeader = true;
     }
   else if (optionIs ((const char *) "--summary=\"", 11, arg))
     {
       /* avoid dangling else.  */
-      summary = TRUE;
+      summary = true;
       summaryContents = DynamicStrings_Slice (arg, 11, -1);
     }
   else if (optionIs ((const char *) "--contributed=\"", 15, arg))
     {
       /* avoid dangling else.  */
-      contributed = TRUE;
+      contributed = true;
       contributedContents = DynamicStrings_Slice (arg, 13, -1);
     }
   else if (optionIs ((const char *) "--project=\"", 11, arg))
@@ -826,22 +834,22 @@ static void handleOption (DynamicStrings_String arg)
   else if (optionIs ((const char *) "--gcc-config-system", 19, arg))
     {
       /* avoid dangling else.  */
-      gccConfigSystem = TRUE;
+      gccConfigSystem = true;
     }
   else if (optionIs ((const char *) "--scaffold-main", 15, arg))
     {
       /* avoid dangling else.  */
-      scaffoldMain = TRUE;
+      scaffoldMain = true;
     }
   else if (optionIs ((const char *) "--scaffold-dynamic", 18, arg))
     {
       /* avoid dangling else.  */
-      scaffoldDynamic = TRUE;
+      scaffoldDynamic = true;
     }
   else if (optionIs ((const char *) "--suppress-noreturn", 19, arg))
     {
       /* avoid dangling else.  */
-      suppressNoReturn = TRUE;
+      suppressNoReturn = true;
     }
 }
 
@@ -872,7 +880,7 @@ extern "C" DynamicStrings_String mcOptions_handleOptions (void)
               if (! summary)
                 {
                   summaryContents = DynamicStrings_ConCatChar (DynamicStrings_ConCat (DynamicStrings_InitString ((const char *) "automatically created by mc from ", 33), arg), '.');
-                  summary = FALSE;
+                  summary = false;
                 }
               return arg;
             }
@@ -889,7 +897,7 @@ extern "C" DynamicStrings_String mcOptions_handleOptions (void)
    getQuiet - return the value of quiet.
 */
 
-extern "C" unsigned int mcOptions_getQuiet (void)
+extern "C" bool mcOptions_getQuiet (void)
 {
   return quiet;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -901,7 +909,7 @@ extern "C" unsigned int mcOptions_getQuiet (void)
    getVerbose - return the value of verbose.
 */
 
-extern "C" unsigned int mcOptions_getVerbose (void)
+extern "C" bool mcOptions_getVerbose (void)
 {
   return verbose;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -913,7 +921,7 @@ extern "C" unsigned int mcOptions_getVerbose (void)
    getInternalDebugging - return the value of internalDebugging.
 */
 
-extern "C" unsigned int mcOptions_getInternalDebugging (void)
+extern "C" bool mcOptions_getInternalDebugging (void)
 {
   return internalDebugging;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -964,7 +972,7 @@ extern "C" DynamicStrings_String mcOptions_getOutputFile (void)
    getExtendedOpaque - return the extendedOpaque value.
 */
 
-extern "C" unsigned int mcOptions_getExtendedOpaque (void)
+extern "C" bool mcOptions_getExtendedOpaque (void)
 {
   return extendedOpaque;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -976,7 +984,7 @@ extern "C" unsigned int mcOptions_getExtendedOpaque (void)
    setDebugTopological - sets the flag debugTopological to value.
 */
 
-extern "C" void mcOptions_setDebugTopological (unsigned int value)
+extern "C" void mcOptions_setDebugTopological (bool value)
 {
   debugTopological = value;
 }
@@ -987,7 +995,7 @@ extern "C" void mcOptions_setDebugTopological (unsigned int value)
                          line option --debug-top.
 */
 
-extern "C" unsigned int mcOptions_getDebugTopological (void)
+extern "C" bool mcOptions_getDebugTopological (void)
 {
   return debugTopological;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1011,7 +1019,7 @@ extern "C" DynamicStrings_String mcOptions_getHPrefix (void)
    getIgnoreFQ - returns the ignorefq flag.
 */
 
-extern "C" unsigned int mcOptions_getIgnoreFQ (void)
+extern "C" bool mcOptions_getIgnoreFQ (void)
 {
   return ignoreFQ;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1023,7 +1031,7 @@ extern "C" unsigned int mcOptions_getIgnoreFQ (void)
    getGccConfigSystem - return the value of the gccConfigSystem flag.
 */
 
-extern "C" unsigned int mcOptions_getGccConfigSystem (void)
+extern "C" bool mcOptions_getGccConfigSystem (void)
 {
   return gccConfigSystem;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1035,7 +1043,7 @@ extern "C" unsigned int mcOptions_getGccConfigSystem (void)
    getScaffoldDynamic - return true if the --scaffold-dynamic option was present.
 */
 
-extern "C" unsigned int mcOptions_getScaffoldDynamic (void)
+extern "C" bool mcOptions_getScaffoldDynamic (void)
 {
   return scaffoldDynamic;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1047,7 +1055,7 @@ extern "C" unsigned int mcOptions_getScaffoldDynamic (void)
    getScaffoldMain - return true if the --scaffold-main option was present.
 */
 
-extern "C" unsigned int mcOptions_getScaffoldMain (void)
+extern "C" bool mcOptions_getScaffoldMain (void)
 {
   return scaffoldMain;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1069,7 +1077,7 @@ extern "C" void mcOptions_writeGPLheader (FIO_File f)
    setSuppressNoReturn - set suppressNoReturn to value.
 */
 
-extern "C" void mcOptions_setSuppressNoReturn (unsigned int value)
+extern "C" void mcOptions_setSuppressNoReturn (bool value)
 {
   suppressNoReturn = value;
 }
@@ -1079,35 +1087,48 @@ extern "C" void mcOptions_setSuppressNoReturn (unsigned int value)
    getSuppressNoReturn - return the suppressNoReturn value.
 */
 
-extern "C" unsigned int mcOptions_getSuppressNoReturn (void)
+extern "C" bool mcOptions_getSuppressNoReturn (void)
 {
   return suppressNoReturn;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
 
+
+/*
+   useBool - should mc use the bool type instead of int.
+*/
+
+extern "C" bool mcOptions_useBool (void)
+{
+  return useBoolType;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
 extern "C" void _M2_mcOptions_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
-  langC = TRUE;
-  langCPP = FALSE;
-  langM2 = FALSE;
-  gplHeader = FALSE;
-  glplHeader = FALSE;
-  summary = FALSE;
-  contributed = FALSE;
-  caseRuntime = FALSE;
-  arrayRuntime = FALSE;
-  returnRuntime = FALSE;
-  internalDebugging = FALSE;
-  quiet = FALSE;
-  verbose = FALSE;
-  extendedOpaque = FALSE;
-  debugTopological = FALSE;
-  ignoreFQ = FALSE;
-  gccConfigSystem = FALSE;
-  scaffoldMain = FALSE;
-  scaffoldDynamic = FALSE;
-  suppressNoReturn = FALSE;
+  langC = true;
+  langCPP = false;
+  langM2 = false;
+  gplHeader = false;
+  glplHeader = false;
+  summary = false;
+  contributed = false;
+  caseRuntime = false;
+  arrayRuntime = false;
+  returnRuntime = false;
+  internalDebugging = false;
+  quiet = false;
+  verbose = false;
+  extendedOpaque = false;
+  debugTopological = false;
+  ignoreFQ = false;
+  gccConfigSystem = false;
+  scaffoldMain = false;
+  scaffoldDynamic = false;
+  suppressNoReturn = false;
+  useBoolType = true;
   hPrefix = DynamicStrings_InitString ((const char *) "", 0);
   cppArgs = DynamicStrings_InitString ((const char *) "", 0);
   cppProgram = DynamicStrings_InitString ((const char *) "", 0);

@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -51,7 +52,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
             The result of the operation is returned.
 */
 
-extern "C" unsigned int CmdArgs_GetArg (const char *CmdLine_, unsigned int _CmdLine_high, unsigned int n, char *Argi, unsigned int _Argi_high);
+extern "C" bool CmdArgs_GetArg (const char *CmdLine_, unsigned int _CmdLine_high, unsigned int n, char *Argi, unsigned int _Argi_high);
 
 /*
    Narg - returns the number of arguments available from
@@ -66,7 +67,7 @@ extern "C" unsigned int CmdArgs_Narg (const char *CmdLine_, unsigned int _CmdLin
                 Arg is filled with the found argument.
 */
 
-static unsigned int GetNextArg (const char *CmdLine_, unsigned int _CmdLine_high, unsigned int *CmdIndex, char *Arg, unsigned int _Arg_high);
+static bool GetNextArg (const char *CmdLine_, unsigned int _CmdLine_high, unsigned int *CmdIndex, char *Arg, unsigned int _Arg_high);
 
 /*
    CopyUntilSpace - copies characters until a Space character is found.
@@ -87,10 +88,10 @@ static void CopyUntil (const char *From_, unsigned int _From_high, unsigned int 
 */
 
 static void CopyChar (const char *From_, unsigned int _From_high, unsigned int *FromIndex, unsigned int FromHigh, char *To, unsigned int _To_high, unsigned int *ToIndex, unsigned int ToHigh);
-static unsigned int Escape (char ch);
-static unsigned int Space (char ch);
-static unsigned int DoubleQuote (char ch);
-static unsigned int SingleQuote (char ch);
+static bool Escape (char ch);
+static bool Space (char ch);
+static bool DoubleQuote (char ch);
+static bool SingleQuote (char ch);
 
 
 /*
@@ -99,7 +100,7 @@ static unsigned int SingleQuote (char ch);
                 Arg is filled with the found argument.
 */
 
-static unsigned int GetNextArg (const char *CmdLine_, unsigned int _CmdLine_high, unsigned int *CmdIndex, char *Arg, unsigned int _Arg_high)
+static bool GetNextArg (const char *CmdLine_, unsigned int _CmdLine_high, unsigned int *CmdIndex, char *Arg, unsigned int _Arg_high)
 {
   unsigned int ArgIndex;
   unsigned int HighA;
@@ -222,28 +223,28 @@ static void CopyChar (const char *From_, unsigned int _From_high, unsigned int *
     }
 }
 
-static unsigned int Escape (char ch)
+static bool Escape (char ch)
 {
   return ch == esc;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
 
-static unsigned int Space (char ch)
+static bool Space (char ch)
 {
   return (ch == space) || (ch == tab);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
 
-static unsigned int DoubleQuote (char ch)
+static bool DoubleQuote (char ch)
 {
   return ch == dquote;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
 
-static unsigned int SingleQuote (char ch)
+static bool SingleQuote (char ch)
 {
   return ch == squote;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -257,11 +258,11 @@ static unsigned int SingleQuote (char ch)
             The result of the operation is returned.
 */
 
-extern "C" unsigned int CmdArgs_GetArg (const char *CmdLine_, unsigned int _CmdLine_high, unsigned int n, char *Argi, unsigned int _Argi_high)
+extern "C" bool CmdArgs_GetArg (const char *CmdLine_, unsigned int _CmdLine_high, unsigned int n, char *Argi, unsigned int _Argi_high)
 {
   unsigned int Index;
   unsigned int i;
-  unsigned int Another;
+  bool Another;
   char CmdLine[_CmdLine_high+1];
 
   /* make a local copy of each unbounded array.  */

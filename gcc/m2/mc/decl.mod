@@ -33,7 +33,8 @@ FROM StringConvert IMPORT CardinalToString, ostoc ;
 
 FROM mcOptions IMPORT getOutputFile, getDebugTopological, getHPrefix, getIgnoreFQ,
                       getExtendedOpaque, writeGPLheader, getGccConfigSystem,
-                      getScaffoldDynamic, getScaffoldMain, getSuppressNoReturn ;
+                      getScaffoldDynamic, getScaffoldMain, getSuppressNoReturn,
+                      useBool ;
 
 FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2, Sprintf3 ;
 FROM libc IMPORT printf, memset ;
@@ -6306,7 +6307,12 @@ END outNull ;
 PROCEDURE outTrue (p: pretty) ;
 BEGIN
    keyc.useTrue ;
-   outText (p, 'TRUE')
+   IF useBool () AND (lang = ansiCP)
+   THEN
+      outText (p, 'true')
+   ELSE
+      outText (p, 'TRUE')
+   END
 END outTrue ;
 
 
@@ -6317,7 +6323,12 @@ END outTrue ;
 PROCEDURE outFalse (p: pretty) ;
 BEGIN
    keyc.useFalse ;
-   outText (p, 'FALSE')
+   IF useBool () AND (lang = ansiCP)
+   THEN
+      outText (p, 'false')
+   ELSE
+      outText (p, 'FALSE')
+   END
 END outFalse ;
 
 
@@ -7835,6 +7846,21 @@ END isBase ;
 
 
 (*
+   doBoolC -
+*)
+
+PROCEDURE doBoolC (p: pretty) ;
+BEGIN
+   IF useBool ()
+   THEN
+      outText (p, 'bool')
+   ELSE
+      outText (p, 'unsigned int')
+   END
+END doBoolC ;
+
+
+(*
    doBaseC -
 *)
 
@@ -7856,7 +7882,7 @@ BEGIN
    longreal    :  outText (p, 'long double') |
    shortreal   :  outText (p, 'float') |
    bitset      :  outText (p, 'unsigned int') |
-   boolean     :  outText (p, 'unsigned int') |
+   boolean     :  doBoolC (p) |
    proc        :  outText (p, 'PROC')
 
    END ;

@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -64,7 +65,7 @@ typedef SArgs_PtrToChar *SArgs_PtrToPtrToChar;
             new string, otherwise s is set to NIL.
 */
 
-extern "C" unsigned int SArgs_GetArg (DynamicStrings_String *s, unsigned int n);
+extern "C" bool SArgs_GetArg (DynamicStrings_String *s, unsigned int n);
 
 /*
    Narg - returns the number of arguments available from
@@ -81,7 +82,7 @@ extern "C" unsigned int SArgs_Narg (void);
             new string, otherwise s is set to NIL.
 */
 
-extern "C" unsigned int SArgs_GetArg (DynamicStrings_String *s, unsigned int n)
+extern "C" bool SArgs_GetArg (DynamicStrings_String *s, unsigned int n)
 {
   int i;
   SArgs_PtrToPtrToChar ppc;
@@ -92,12 +93,12 @@ extern "C" unsigned int SArgs_GetArg (DynamicStrings_String *s, unsigned int n)
       /* ppc := ADDRESS (VAL (PtrToPtrToChar, ArgV) + (i * CARDINAL (TSIZE(PtrToChar)))) ;  */
       ppc = static_cast<SArgs_PtrToPtrToChar> ((void *) (((SArgs_PtrToChar) (UnixArgs_GetArgV ()))+(n*sizeof (SArgs_PtrToChar))));
       (*s) = DynamicStrings_InitStringCharStar (reinterpret_cast<void *> ((*ppc)));
-      return TRUE;
+      return true;
     }
   else
     {
       (*s) = static_cast<DynamicStrings_String> (NULL);
-      return FALSE;
+      return false;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();

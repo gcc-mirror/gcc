@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -87,9 +88,9 @@ struct M2RTS__T1_r {
 static M2RTS_ProcedureList InitialProc;
 static M2RTS_ProcedureList TerminateProc;
 static int ExitValue;
-static unsigned int isHalting;
-static unsigned int CallExit;
-static unsigned int Initialized;
+static bool isHalting;
+static bool CallExit;
+static bool Initialized;
 
 /*
    ConstructModules - resolve dependencies and then call each
@@ -128,7 +129,7 @@ extern "C" void M2RTS_RequestDependant (void * modulename, void * libname, void 
                                  procedure is installed.
 */
 
-extern "C" unsigned int M2RTS_InstallTerminationProcedure (PROC p);
+extern "C" bool M2RTS_InstallTerminationProcedure (PROC p);
 
 /*
    ExecuteInitialProcedures - executes the initial procedures installed by
@@ -143,7 +144,7 @@ extern "C" void M2RTS_ExecuteInitialProcedures (void);
                              main program module.
 */
 
-extern "C" unsigned int M2RTS_InstallInitialProcedure (PROC p);
+extern "C" bool M2RTS_InstallInitialProcedure (PROC p);
 
 /*
    ExecuteTerminationProcedures - calls each installed termination procedure
@@ -247,7 +248,7 @@ static void ExecuteReverse (M2RTS_ProcedureChain procptr);
                 defined by proclist.
 */
 
-static unsigned int AppendProc (M2RTS_ProcedureList *proclist, PROC proc);
+static bool AppendProc (M2RTS_ProcedureList *proclist, PROC proc);
 
 /*
    ErrorString - writes a string to stderr.
@@ -310,7 +311,7 @@ static void ExecuteReverse (M2RTS_ProcedureChain procptr)
                 defined by proclist.
 */
 
-static unsigned int AppendProc (M2RTS_ProcedureList *proclist, PROC proc)
+static bool AppendProc (M2RTS_ProcedureList *proclist, PROC proc)
 {
   M2RTS_ProcedureChain pdes;
 
@@ -323,7 +324,7 @@ static unsigned int AppendProc (M2RTS_ProcedureList *proclist, PROC proc)
       (*proclist).head = pdes;
     }
   (*proclist).tail = pdes;
-  return TRUE;
+  return true;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -407,8 +408,8 @@ static void Init (void)
   InitProcList (&InitialProc);
   InitProcList (&TerminateProc);
   ExitValue = 0;
-  isHalting = FALSE;
-  CallExit = FALSE;  /* default by calling abort  */
+  isHalting = false;
+  CallExit = false;  /* default by calling abort  */
 }
 
 
@@ -423,7 +424,7 @@ static void CheckInitialized (void)
 {
   if (! Initialized)
     {
-      Initialized = TRUE;
+      Initialized = true;
       Init ();
     }
 }
@@ -482,7 +483,7 @@ extern "C" void M2RTS_RequestDependant (void * modulename, void * libname, void 
                                  procedure is installed.
 */
 
-extern "C" unsigned int M2RTS_InstallTerminationProcedure (PROC p)
+extern "C" bool M2RTS_InstallTerminationProcedure (PROC p)
 {
   return AppendProc (&TerminateProc, p);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -507,7 +508,7 @@ extern "C" void M2RTS_ExecuteInitialProcedures (void)
                              main program module.
 */
 
-extern "C" unsigned int M2RTS_InstallInitialProcedure (PROC p)
+extern "C" bool M2RTS_InstallInitialProcedure (PROC p)
 {
   return AppendProc (&InitialProc, p);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -554,7 +555,7 @@ extern "C" void M2RTS_HALT (int exitcode)
 {
   if (exitcode != -1)
     {
-      CallExit = TRUE;
+      CallExit = true;
       ExitValue = exitcode;
     }
   if (isHalting)
@@ -564,7 +565,7 @@ extern "C" void M2RTS_HALT (int exitcode)
     }
   else
     {
-      isHalting = TRUE;
+      isHalting = true;
       M2RTS_ExecuteTerminationProcedures ();
     }
   if (CallExit)
@@ -618,7 +619,7 @@ extern "C" void M2RTS_HaltC (void * filename, unsigned int line, void * function
 extern "C" void M2RTS_ExitOnHalt (int e)
 {
   ExitValue = e;
-  CallExit = TRUE;
+  CallExit = true;
 }
 
 

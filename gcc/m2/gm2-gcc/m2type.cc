@@ -38,8 +38,8 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "m2type.h"
 #include "m2options.h"
 
-#undef USE_BOOLEAN
-static int broken_set_debugging_info = TRUE;
+#define USE_BOOLEAN
+static int broken_set_debugging_info = true;
 
 
 struct GTY (()) struct_constructor
@@ -191,7 +191,7 @@ m2type_GetArrayNoOfElements (location_t location, tree arraytype)
   tree max = TYPE_MAX_VALUE (index_type);
 
   m2assert_AssertLocation (location);
-  return m2expr_FoldAndStrip (m2expr_BuildSub (location, max, min, FALSE));
+  return m2expr_FoldAndStrip (m2expr_BuildSub (location, max, min, false));
 }
 
 /* gm2_finish_build_array_type complete building the partially
@@ -255,10 +255,10 @@ gm2_build_array_type (tree elementtype, tree indextype, int fetype)
   return m2type_BuildEndArrayType (arrayType, elementtype, indextype, fetype);
 }
 
-/* ValueInTypeRange returns TRUE if the constant, value, lies within
+/* ValueInTypeRange returns true if the constant, value, lies within
    the range of type.  */
 
-int
+bool
 m2type_ValueInTypeRange (tree type, tree value)
 {
   tree low_type = m2tree_skip_type_decl (type);
@@ -270,29 +270,29 @@ m2type_ValueInTypeRange (tree type, tree value)
           && (tree_int_cst_compare (value, max_value) <= 0));
 }
 
-/* ValueOutOfTypeRange returns TRUE if the constant, value, exceeds
+/* ValueOutOfTypeRange returns true if the constant, value, exceeds
    the range of type.  */
 
-int
+bool
 m2type_ValueOutOfTypeRange (tree type, tree value)
 {
   return (!m2type_ValueInTypeRange (type, value));
 }
 
-/* ExceedsTypeRange return TRUE if low or high exceed the range of
+/* ExceedsTypeRange return true if low or high exceed the range of
    type.  */
 
-int
+bool
 m2type_ExceedsTypeRange (tree type, tree low, tree high)
 {
   return (m2type_ValueOutOfTypeRange (type, low)
           || m2type_ValueOutOfTypeRange (type, high));
 }
 
-/* WithinTypeRange return TRUE if low and high are within the range
+/* WithinTypeRange return true if low and high are within the range
    of type.  */
 
-int
+bool
 m2type_WithinTypeRange (tree type, tree low, tree high)
 {
   return (m2type_ValueInTypeRange (type, low)
@@ -847,7 +847,7 @@ m2type_GetPackedBooleanType (void)
   return m2_packed_boolean_type_node;
 }
 
-/* GetBooleanTrue return modula-2 TRUE.  */
+/* GetBooleanTrue return modula-2 true.  */
 
 tree
 m2type_GetBooleanTrue (void)
@@ -1004,7 +1004,7 @@ build_bitset_type (location_t location)
 
   return m2type_BuildSetTypeFromSubrange (
       location, NULL, bitnum_type_node, m2decl_BuildIntegerConstant (0),
-      m2decl_BuildIntegerConstant (m2decl_GetBitsPerBitset () - 1), FALSE);
+      m2decl_BuildIntegerConstant (m2decl_GetBitsPerBitset () - 1), false);
 }
 
 /* BuildSetTypeFromSubrange constructs a set type from a
@@ -1014,7 +1014,7 @@ tree
 m2type_BuildSetTypeFromSubrange (location_t location,
 				 char *name __attribute__ ((unused)),
                                  tree subrangeType __attribute__ ((unused)),
-				 tree lowval, tree highval, int ispacked)
+				 tree lowval, tree highval, bool ispacked)
 {
   m2assert_AssertLocation (location);
   lowval = m2expr_FoldAndStrip (lowval);
@@ -1028,12 +1028,12 @@ m2type_BuildSetTypeFromSubrange (location_t location,
     if (ispacked)
     {
       tree noelements = m2expr_BuildAdd (
-	  location, m2expr_BuildSub (location, highval, lowval, FALSE),
-          integer_one_node, FALSE);
+	  location, m2expr_BuildSub (location, highval, lowval, false),
+          integer_one_node, false);
       highval = m2expr_FoldAndStrip (m2expr_BuildSub (
             location, m2expr_BuildLSL (location, m2expr_GetWordOne (location),
-                                       noelements, FALSE),
-            m2expr_GetIntegerOne (location), FALSE));
+                                       noelements, false),
+            m2expr_GetIntegerOne (location), false));
       lowval = m2expr_GetIntegerZero (location);
       return m2type_BuildSmallestTypeRange (location, lowval, highval);
     }
@@ -1061,7 +1061,7 @@ build_m2_size_set_type (location_t location, int precision)
 
   return m2type_BuildSetTypeFromSubrange (
       location, NULL, bitnum_type_node, m2decl_BuildIntegerConstant (0),
-      m2decl_BuildIntegerConstant (precision - 1), FALSE);
+      m2decl_BuildIntegerConstant (precision - 1), false);
 }
 
 /* build_m2_specific_size_type build a specific data type matching
@@ -1095,12 +1095,12 @@ build_m2_specific_size_type (location_t location, enum tree_code base,
       if (is_signed)
         {
           fixup_signed_type (c);
-          TYPE_UNSIGNED (c) = FALSE;
+          TYPE_UNSIGNED (c) = false;
         }
       else
         {
           fixup_unsigned_type (c);
-          TYPE_UNSIGNED (c) = TRUE;
+          TYPE_UNSIGNED (c) = true;
         }
     }
 
@@ -1119,8 +1119,8 @@ m2type_BuildSmallestTypeRange (location_t location, tree low, tree high)
   low = fold (low);
   high = fold (high);
   bits = fold (noBitsRequired (
-      m2expr_BuildAdd (location, m2expr_BuildSub (location, high, low, FALSE),
-                       m2expr_GetIntegerOne (location), FALSE)));
+      m2expr_BuildAdd (location, m2expr_BuildSub (location, high, low, false),
+                       m2expr_GetIntegerOne (location), false)));
   return build_m2_specific_size_type (location, INTEGER_TYPE,
                                       TREE_INT_CST_LOW (bits),
                                       tree_int_cst_sgn (low) < 0);
@@ -1162,7 +1162,7 @@ finish_build_pointer_type (tree t, tree to_type, enum machine_mode mode,
 
 tree
 m2type_BuildProcTypeParameterDeclaration (location_t location, tree type,
-                                          int isreference)
+                                          bool isreference)
 {
   m2assert_AssertLocation (location);
   ASSERT_BOOL (isreference);
@@ -1332,11 +1332,11 @@ m2type_BuildVariableArrayAndDeclare (location_t location, tree elementtype,
   m2assert_AssertLocation (location);
   decl = build_decl (location, VAR_DECL, id, arraytype);
 
-  DECL_EXTERNAL (decl) = FALSE;
-  TREE_PUBLIC (decl) = TRUE;
+  DECL_EXTERNAL (decl) = false;
+  TREE_PUBLIC (decl) = true;
   DECL_CONTEXT (decl) = scope;
-  TREE_USED (arraytype) = TRUE;
-  TREE_USED (decl) = TRUE;
+  TREE_USED (arraytype) = true;
+  TREE_USED (decl) = true;
 
   m2block_pushDecl (decl);
 
@@ -1367,7 +1367,7 @@ build_m2_iso_word_node (location_t location, int loc)
             (m2expr_BuildSub (location,
                               m2decl_BuildIntegerConstant (
                                   m2decl_GetBitsPerInt () / BITS_PER_UNIT),
-                              m2expr_GetIntegerOne (location), FALSE))),
+                              m2expr_GetIntegerOne (location), false))),
         loc);
   return c;
 }
@@ -1547,56 +1547,56 @@ static tree
 build_m2_integer8_type_node (location_t location)
 {
   m2assert_AssertLocation (location);
-  return build_m2_specific_size_type (location, INTEGER_TYPE, 8, TRUE);
+  return build_m2_specific_size_type (location, INTEGER_TYPE, 8, true);
 }
 
 static tree
 build_m2_integer16_type_node (location_t location)
 {
   m2assert_AssertLocation (location);
-  return build_m2_specific_size_type (location, INTEGER_TYPE, 16, TRUE);
+  return build_m2_specific_size_type (location, INTEGER_TYPE, 16, true);
 }
 
 static tree
 build_m2_integer32_type_node (location_t location)
 {
   m2assert_AssertLocation (location);
-  return build_m2_specific_size_type (location, INTEGER_TYPE, 32, TRUE);
+  return build_m2_specific_size_type (location, INTEGER_TYPE, 32, true);
 }
 
 static tree
 build_m2_integer64_type_node (location_t location)
 {
   m2assert_AssertLocation (location);
-  return build_m2_specific_size_type (location, INTEGER_TYPE, 64, TRUE);
+  return build_m2_specific_size_type (location, INTEGER_TYPE, 64, true);
 }
 
 static tree
 build_m2_cardinal8_type_node (location_t location)
 {
   m2assert_AssertLocation (location);
-  return build_m2_specific_size_type (location, INTEGER_TYPE, 8, FALSE);
+  return build_m2_specific_size_type (location, INTEGER_TYPE, 8, false);
 }
 
 static tree
 build_m2_cardinal16_type_node (location_t location)
 {
   m2assert_AssertLocation (location);
-  return build_m2_specific_size_type (location, INTEGER_TYPE, 16, FALSE);
+  return build_m2_specific_size_type (location, INTEGER_TYPE, 16, false);
 }
 
 static tree
 build_m2_cardinal32_type_node (location_t location)
 {
   m2assert_AssertLocation (location);
-  return build_m2_specific_size_type (location, INTEGER_TYPE, 32, FALSE);
+  return build_m2_specific_size_type (location, INTEGER_TYPE, 32, false);
 }
 
 static tree
 build_m2_cardinal64_type_node (location_t location)
 {
   m2assert_AssertLocation (location);
-  return build_m2_specific_size_type (location, INTEGER_TYPE, 64, FALSE);
+  return build_m2_specific_size_type (location, INTEGER_TYPE, 64, false);
 }
 
 static tree
@@ -1604,9 +1604,9 @@ build_m2_bitset8_type_node (location_t location)
 {
   m2assert_AssertLocation (location);
   if (broken_set_debugging_info)
-    return build_m2_specific_size_type (location, INTEGER_TYPE, 8, FALSE);
+    return build_m2_specific_size_type (location, INTEGER_TYPE, 8, false);
   else
-    return build_m2_specific_size_type (location, SET_TYPE, 8, FALSE);
+    return build_m2_specific_size_type (location, SET_TYPE, 8, false);
 }
 
 static tree
@@ -1614,9 +1614,9 @@ build_m2_bitset16_type_node (location_t location)
 {
   m2assert_AssertLocation (location);
   if (broken_set_debugging_info)
-    return build_m2_specific_size_type (location, INTEGER_TYPE, 16, FALSE);
+    return build_m2_specific_size_type (location, INTEGER_TYPE, 16, false);
   else
-    return build_m2_specific_size_type (location, SET_TYPE, 16, FALSE);
+    return build_m2_specific_size_type (location, SET_TYPE, 16, false);
 }
 
 static tree
@@ -1624,37 +1624,37 @@ build_m2_bitset32_type_node (location_t location)
 {
   m2assert_AssertLocation (location);
   if (broken_set_debugging_info)
-    return build_m2_specific_size_type (location, INTEGER_TYPE, 32, FALSE);
+    return build_m2_specific_size_type (location, INTEGER_TYPE, 32, false);
   else
-    return build_m2_specific_size_type (location, SET_TYPE, 32, FALSE);
+    return build_m2_specific_size_type (location, SET_TYPE, 32, false);
 }
 
 static tree
 build_m2_real32_type_node (location_t location)
 {
   m2assert_AssertLocation (location);
-  return build_m2_specific_size_type (location, REAL_TYPE, 32, TRUE);
+  return build_m2_specific_size_type (location, REAL_TYPE, 32, true);
 }
 
 static tree
 build_m2_real64_type_node (location_t location)
 {
   m2assert_AssertLocation (location);
-  return build_m2_specific_size_type (location, REAL_TYPE, 64, TRUE);
+  return build_m2_specific_size_type (location, REAL_TYPE, 64, true);
 }
 
 static tree
 build_m2_real96_type_node (location_t location)
 {
   m2assert_AssertLocation (location);
-  return build_m2_specific_size_type (location, REAL_TYPE, 96, TRUE);
+  return build_m2_specific_size_type (location, REAL_TYPE, 96, true);
 }
 
 static tree
 build_m2_real128_type_node (location_t location)
 {
   m2assert_AssertLocation (location);
-  return build_m2_specific_size_type (location, REAL_TYPE, 128, TRUE);
+  return build_m2_specific_size_type (location, REAL_TYPE, 128, true);
 }
 
 static tree
@@ -1725,7 +1725,16 @@ build_m2_cardinal_address_type_node (location_t location)
   tree size = size_in_bytes (ptr_type_node);
   int bits = TREE_INT_CST_LOW (size) * BITS_PER_UNIT;
 
-  return build_m2_specific_size_type (location, INTEGER_TYPE, bits, FALSE);
+  return build_m2_specific_size_type (location, INTEGER_TYPE, bits, false);
+}
+
+static void
+build_m2_boolean (location_t location)
+{
+  tree tname = get_identifier ("BOOLEAN");
+  tree typedecl = build_decl (location, TYPE_DECL, tname, boolean_type_node);
+  DECL_ARTIFICIAL (typedecl) = 1;
+  TYPE_NAME (boolean_type_node) = typedecl;
 }
 
 /* InitBaseTypes create the Modula-2 base types.  */
@@ -1781,7 +1790,8 @@ m2type_InitBaseTypes (location_t location)
   m2_cardinal_address_type_node
       = build_m2_cardinal_address_type_node (location);
 
-  m2_packed_boolean_type_node = build_nonstandard_integer_type (1, TRUE);
+  m2_packed_boolean_type_node = build_nonstandard_integer_type (1, true);
+  build_m2_boolean (location);
 
   if (M2Options_GetPPOnly ())
     return;
@@ -1932,7 +1942,7 @@ m2type_GetMaxFrom (location_t location, tree type)
     return do_max_real (type);
   if (type == ptr_type_node)
     return fold (m2expr_BuildSub (location, m2expr_GetPointerZero (location),
-                                  m2expr_GetPointerOne (location), FALSE));
+                                  m2expr_GetPointerOne (location), false));
 
   return TYPE_MAX_VALUE (m2tree_skip_type_decl (type));
 }
@@ -2118,7 +2128,7 @@ gm2_finish_enum (location_t location, tree enumtype, tree values)
 /* BuildStartEnumeration create an enumerated type in gcc.  */
 
 tree
-m2type_BuildStartEnumeration (location_t location, char *name, int ispacked)
+m2type_BuildStartEnumeration (location_t location, char *name, bool ispacked)
 {
   tree id;
 
@@ -2201,7 +2211,7 @@ tree
 m2type_BuildConstPointerType (tree totype)
 {
   tree t = build_pointer_type (m2tree_skip_type_decl (totype));
-  TYPE_READONLY (t) = TRUE;
+  TYPE_READONLY (t) = true;
   return t;
 }
 
@@ -2209,7 +2219,7 @@ m2type_BuildConstPointerType (tree totype)
 
 tree
 m2type_BuildSetType (location_t location, char *name, tree type, tree lowval,
-                     tree highval, int ispacked)
+                     tree highval, bool ispacked)
 {
   tree range = build_range_type (m2tree_skip_type_decl (type),
                                  m2expr_FoldAndStrip (lowval),
@@ -2386,8 +2396,8 @@ m2type_BuildEndArrayConstructor (void *p)
 
   constructor
       = build_constructor (c->constructor_type, c->constructor_elements);
-  TREE_CONSTANT (constructor) = TRUE;
-  TREE_STATIC (constructor) = TRUE;
+  TREE_CONSTANT (constructor) = true;
+  TREE_STATIC (constructor) = true;
 
   pop_constructor (c);
 
@@ -2454,13 +2464,13 @@ m2type_BuildArrayStringConstructor (location_t location, tree arrayType,
     {
       if (i < len)
         val = m2convert_BuildConvert (
-            location, type, m2type_BuildCharConstant (location, &p[i]), FALSE);
+            location, type, m2type_BuildCharConstant (location, &p[i]), false);
       else
         val = m2type_BuildCharConstant (location, &nul[0]);
       m2type_BuildArrayConstructorElement (c, val, n);
       i += 1;
       n = m2expr_BuildAdd (location, n, m2expr_GetIntegerOne (location),
-                           FALSE);
+                           false);
     }
   return m2type_BuildEndArrayConstructor (c);
 }
@@ -2512,7 +2522,7 @@ tree
 m2type_BuildCharConstantChar (location_t location, char ch)
 {
   tree id = build_int_cst (char_type_node, (int) ch);
-  id = m2convert_BuildConvert (location, m2type_GetM2CharType (), id, FALSE);
+  id = m2convert_BuildConvert (location, m2type_GetM2CharType (), id, false);
   return m2block_RememberConstant (id);
 }
 
@@ -2548,7 +2558,7 @@ gm2_start_struct (location_t location, enum tree_code code, char *name)
   else
     id = get_identifier (name);
 
-  TYPE_PACKED (s) = FALSE; /* This maybe set TRUE later if necessary.  */
+  TYPE_PACKED (s) = false; /* This maybe set true later if necessary.  */
 
   m2block_pushDecl (build_decl (location, TYPE_DECL, id, s));
   return s;
@@ -2590,7 +2600,7 @@ m2type_BuildStartVarient (location_t location, char *name)
 
 tree
 m2type_BuildEndVarient (location_t location, tree varientField,
-                        tree varientList, int isPacked)
+                        tree varientList, bool isPacked)
 {
   tree varient = TREE_TYPE (varientField);
   m2assert_AssertLocation (location);
@@ -2618,7 +2628,7 @@ m2type_BuildStartFieldVarient (location_t location, char *name)
 
 tree
 m2type_BuildEndRecord (location_t location, tree record, tree fieldlist,
-                       int isPacked)
+                       bool isPacked)
 {
   tree x, d;
 
@@ -2682,7 +2692,7 @@ m2type_BuildEndRecord (location_t location, tree record, tree fieldlist,
 
 tree
 m2type_BuildEndFieldVarient (location_t location, tree varientField,
-                             tree varientList, int isPacked)
+                             tree varientList, bool isPacked)
 {
   tree record = TREE_TYPE (varientField);
 
@@ -2764,7 +2774,7 @@ m2type_SetAlignment (tree node, tree align)
 {
   tree type = NULL_TREE;
   tree decl = NULL_TREE;
-  int is_type = FALSE;
+  bool is_type = false;
   int i;
 
   if (DECL_P (node))
@@ -2775,7 +2785,7 @@ m2type_SetAlignment (tree node, tree align)
     }
   else if (TYPE_P (node))
     {
-      is_type = 1;
+      is_type = true;
       type = node;
     }
 
@@ -2874,8 +2884,8 @@ m2type_BuildNumberOfArrayElements (location_t location, tree arrayType)
   tree high = TYPE_MAX_VALUE (index);
   tree low = TYPE_MIN_VALUE (index);
   tree elements = m2expr_BuildAdd (
-      location, m2expr_BuildSub (location, high, low, FALSE),
-      m2expr_GetIntegerOne (location), FALSE);
+      location, m2expr_BuildSub (location, high, low, false),
+      m2expr_GetIntegerOne (location), false);
   m2assert_AssertLocation (location);
   return elements;
 }
@@ -2912,7 +2922,7 @@ m2type_GarbageCollect (void)
    signed.  */
 
 tree
-m2type_gm2_type_for_size (unsigned int bits, int unsignedp)
+m2type_gm2_type_for_size (unsigned int bits, bool unsignedp)
 {
   if (bits == TYPE_PRECISION (integer_type_node))
     return unsignedp ? unsigned_type_node : integer_type_node;
@@ -2976,7 +2986,7 @@ m2type_gm2_unsigned_type (tree type)
   if (type1 == intQI_type_node)
     return unsigned_intQI_type_node;
 
-  return m2type_gm2_signed_or_unsigned_type (TRUE, type);
+  return m2type_gm2_signed_or_unsigned_type (true, type);
 }
 
 /* gm2_signed_type return a signed type the same as TYPE in other
@@ -3010,7 +3020,7 @@ m2type_gm2_signed_type (tree type)
   if (type1 == unsigned_intQI_type_node)
     return intQI_type_node;
 
-  return m2type_gm2_signed_or_unsigned_type (FALSE, type);
+  return m2type_gm2_signed_or_unsigned_type (false, type);
 }
 
 /* check_type if the precision of baseType and type are the same
@@ -3027,9 +3037,9 @@ check_type (tree baseType, tree type, int unsignedp, tree baseu, tree bases,
         *result = baseu;
       else
         *result = bases;
-      return TRUE;
+      return true;
     }
-  return FALSE;
+  return false;
 }
 
 /* gm2_signed_or_unsigned_type return a type the same as TYPE
@@ -3085,7 +3095,7 @@ m2type_gm2_signed_or_unsigned_type (int unsignedp, tree type)
   return type;
 }
 
-/* IsAddress returns TRUE if the type is an ADDRESS.  */
+/* IsAddress returns true if the type is an ADDRESS.  */
 
 int
 m2type_IsAddress (tree type)

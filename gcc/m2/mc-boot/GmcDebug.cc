@@ -17,6 +17,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -36,7 +37,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
             and the execution is terminated.
 */
 
-extern "C" void mcDebug_assert (unsigned int q);
+extern "C" void mcDebug_assert (bool q);
 
 /*
    writeDebug - only writes a string if internal debugging is on.
@@ -50,7 +51,7 @@ extern "C" void mcDebug_writeDebug (const char *a_, unsigned int _a_high);
             and the execution is terminated.
 */
 
-extern "C" void mcDebug_assert (unsigned int q)
+extern "C" void mcDebug_assert (bool q)
 {
   if (! q)
     {

@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -55,13 +56,13 @@ EXTERN void IO_Error (char ch);
    UnBufferedMode - places file descriptor, fd, into an unbuffered mode.
 */
 
-EXTERN void IO_UnBufferedMode (int fd, unsigned int input);
+EXTERN void IO_UnBufferedMode (int fd, bool input);
 
 /*
    BufferedMode - places file descriptor, fd, into a buffered mode.
 */
 
-EXTERN void IO_BufferedMode (int fd, unsigned int input);
+EXTERN void IO_BufferedMode (int fd, bool input);
 
 /*
    EchoOn - turns on echoing for file descriptor, fd.  This
@@ -70,7 +71,7 @@ EXTERN void IO_BufferedMode (int fd, unsigned int input);
             which is attached to a particular piece of hardware.
 */
 
-EXTERN void IO_EchoOn (int fd, unsigned int input);
+EXTERN void IO_EchoOn (int fd, bool input);
 
 /*
    EchoOff - turns off echoing for file descriptor, fd.  This
@@ -79,7 +80,7 @@ EXTERN void IO_EchoOn (int fd, unsigned int input);
              which is attached to a particular piece of hardware.
 */
 
-EXTERN void IO_EchoOff (int fd, unsigned int input);
+EXTERN void IO_EchoOff (int fd, bool input);
 #   ifdef __cplusplus
 }
 #   endif

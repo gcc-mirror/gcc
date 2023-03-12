@@ -17,6 +17,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -82,7 +83,7 @@ extern "C" void mcSearch_prependSearchPath (DynamicStrings_String path);
                     The string, FileName, is not altered.
 */
 
-extern "C" unsigned int mcSearch_findSourceFile (DynamicStrings_String FileName, DynamicStrings_String *fullPath);
+extern "C" bool mcSearch_findSourceFile (DynamicStrings_String FileName, DynamicStrings_String *fullPath);
 
 /*
    findSourceDefFile - attempts to find the definition module for
@@ -91,7 +92,7 @@ extern "C" unsigned int mcSearch_findSourceFile (DynamicStrings_String FileName,
                        then FALSE is returned and fullPath is set to NIL.
 */
 
-extern "C" unsigned int mcSearch_findSourceDefFile (DynamicStrings_String stem, DynamicStrings_String *fullPath);
+extern "C" bool mcSearch_findSourceDefFile (DynamicStrings_String stem, DynamicStrings_String *fullPath);
 
 /*
    findSourceModFile - attempts to find the implementation module for
@@ -100,7 +101,7 @@ extern "C" unsigned int mcSearch_findSourceDefFile (DynamicStrings_String stem, 
                        then FALSE is returned and fullPath is set to NIL.
 */
 
-extern "C" unsigned int mcSearch_findSourceModFile (DynamicStrings_String stem, DynamicStrings_String *fullPath);
+extern "C" bool mcSearch_findSourceModFile (DynamicStrings_String stem, DynamicStrings_String *fullPath);
 
 /*
    setDefExtension - sets the default extension for definition modules to, ext.
@@ -165,7 +166,7 @@ static void doDSdbEnter (void)
 
 static void doDSdbExit (DynamicStrings_String s)
 {
-  s = DynamicStrings_PopAllocationExemption (TRUE, s);
+  s = DynamicStrings_PopAllocationExemption (true, s);
 }
 
 
@@ -256,7 +257,7 @@ extern "C" void mcSearch_prependSearchPath (DynamicStrings_String path)
                     The string, FileName, is not altered.
 */
 
-extern "C" unsigned int mcSearch_findSourceFile (DynamicStrings_String FileName, DynamicStrings_String *fullPath)
+extern "C" bool mcSearch_findSourceFile (DynamicStrings_String FileName, DynamicStrings_String *fullPath)
 {
   DynamicStrings_String completeSearchPath;
   int start;
@@ -299,7 +300,7 @@ extern "C" unsigned int mcSearch_findSourceFile (DynamicStrings_String FileName,
       {
         (*fullPath) = newpath;
         completeSearchPath = DynamicStrings_KillString (completeSearchPath);
-        return TRUE;
+        return true;
       }
     newpath = DynamicStrings_KillString (newpath);
     if (end != 0)
@@ -311,7 +312,7 @@ extern "C" unsigned int mcSearch_findSourceFile (DynamicStrings_String FileName,
   (*fullPath) = static_cast<DynamicStrings_String> (NULL);
   newpath = DynamicStrings_KillString (newpath);
   completeSearchPath = DynamicStrings_KillString (completeSearchPath);
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -324,7 +325,7 @@ extern "C" unsigned int mcSearch_findSourceFile (DynamicStrings_String FileName,
                        then FALSE is returned and fullPath is set to NIL.
 */
 
-extern "C" unsigned int mcSearch_findSourceDefFile (DynamicStrings_String stem, DynamicStrings_String *fullPath)
+extern "C" bool mcSearch_findSourceDefFile (DynamicStrings_String stem, DynamicStrings_String *fullPath)
 {
   DynamicStrings_String f;
 
@@ -333,7 +334,7 @@ extern "C" unsigned int mcSearch_findSourceDefFile (DynamicStrings_String stem, 
       f = mcFileName_calculateFileName (stem, Def);
       if (mcSearch_findSourceFile (f, fullPath))
         {
-          return TRUE;
+          return true;
         }
       f = DynamicStrings_KillString (f);
     }
@@ -352,7 +353,7 @@ extern "C" unsigned int mcSearch_findSourceDefFile (DynamicStrings_String stem, 
                        then FALSE is returned and fullPath is set to NIL.
 */
 
-extern "C" unsigned int mcSearch_findSourceModFile (DynamicStrings_String stem, DynamicStrings_String *fullPath)
+extern "C" bool mcSearch_findSourceModFile (DynamicStrings_String stem, DynamicStrings_String *fullPath)
 {
   DynamicStrings_String f;
 
@@ -361,7 +362,7 @@ extern "C" unsigned int mcSearch_findSourceModFile (DynamicStrings_String stem, 
       f = mcFileName_calculateFileName (stem, Mod);
       if (mcSearch_findSourceFile (f, fullPath))
         {
-          return TRUE;
+          return true;
         }
       f = DynamicStrings_KillString (f);
     }

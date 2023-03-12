@@ -814,7 +814,7 @@ SHORTINT                  short int
 CARDINAL                  unsigned int
 LONGCARD                  long long unsigned int
 SHORTCARD                 short unsigned int
-BOOLEAN                   int
+BOOLEAN                   bool
 REAL                      double
 LONGREAL                  long double
 SHORTREAL                 float

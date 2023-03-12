@@ -179,7 +179,7 @@ FROM m2type IMPORT MarkFunctionReferenced, BuildStartRecord, BuildStartVarient, 
                    SetRecordFieldOffset, ChainOn, BuildEndRecord, BuildFieldRecord,
                    BuildEndFieldVarient, BuildArrayIndexType, BuildEndFunctionType,
                    BuildSetType, BuildEndVarient, BuildEndArrayType, InitFunctionTypeParameters,
-                   BuildProcTypeParameterDeclaration,
+                   BuildProcTypeParameterDeclaration, DeclareKnownType,
                    ValueOutOfTypeRange, ExceedsTypeRange ;
 
 FROM m2convert IMPORT BuildConvert ;

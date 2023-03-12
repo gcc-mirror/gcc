@@ -22,6 +22,7 @@ see <https://www.gnu.org/licenses/>.  */
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -54,8 +55,8 @@ see <https://www.gnu.org/licenses/>.  */
 #   include "GmcLexBuf.h"
 #   include "Gdecl.h"
 
-#   define Pass1 FALSE
-#   define Debugging FALSE
+#   define Pass1 false
+#   define Debugging false
 typedef unsigned int mcp3_stop0;
 
 typedef unsigned int mcp3_SetOfStop0;
@@ -68,8 +69,8 @@ typedef unsigned int mcp3_stop2;
 
 typedef unsigned int mcp3_SetOfStop2;
 
-static unsigned int WasNoError;
-static unsigned int curisused;
+static bool WasNoError;
+static bool curisused;
 static nameKey_Name curstring;
 static nameKey_Name curident;
 static decl_node curproc;
@@ -84,7 +85,7 @@ static mcStack_stack stk;
                      in future passes.
 */
 
-extern "C" unsigned int mcp3_CompilationUnit (void);
+extern "C" bool mcp3_CompilationUnit (void);
 
 /*
    push -
@@ -120,7 +121,7 @@ static unsigned int depth (void);
    checkDuplicate -
 */
 
-static void checkDuplicate (unsigned int b);
+static void checkDuplicate (bool b);
 
 /*
    checkDuplicate -
@@ -214,13 +215,13 @@ static void MissingToken (mcReserved_toktype t);
    CheckAndInsert -
 */
 
-static unsigned int CheckAndInsert (mcReserved_toktype t, mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
+static bool CheckAndInsert (mcReserved_toktype t, mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
    InStopSet
 */
 
-static unsigned int InStopSet (mcReserved_toktype t, mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
+static bool InStopSet (mcReserved_toktype t, mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2);
 
 /*
    PeepToken - peep token checks to see whether the stopset is satisfied by currenttoken
@@ -2288,7 +2289,7 @@ static unsigned int depth (void)
    checkDuplicate -
 */
 
-static void checkDuplicate (unsigned int b)
+static void checkDuplicate (bool b)
 {
 }
 
@@ -2300,7 +2301,7 @@ static void checkDuplicate (unsigned int b)
 static void ErrorString (DynamicStrings_String s)
 {
   mcError_errorStringAt (s, mcLexBuf_getTokenNo ());
-  WasNoError = FALSE;
+  WasNoError = false;
 }
 
 
@@ -3399,17 +3400,17 @@ static void MissingToken (mcReserved_toktype t)
    CheckAndInsert -
 */
 
-static unsigned int CheckAndInsert (mcReserved_toktype t, mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2)
+static bool CheckAndInsert (mcReserved_toktype t, mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2)
 {
   if (((( ((unsigned int) (t)) < 32) && ((((1 << (t-mcReserved_eoftok)) & (stopset0)) != 0))) || ((( ((unsigned int) (t)) >= 32) && ( ((unsigned int) (t)) < 64)) && ((((1 << (t-mcReserved_arraytok)) & (stopset1)) != 0)))) || (( ((unsigned int) (t)) >= 64) && ((((1 << (t-mcReserved_recordtok)) & (stopset2)) != 0))))
     {
       WarnMissingToken (t);
       mcLexBuf_insertTokenAndRewind (t);
-      return TRUE;
+      return true;
     }
   else
     {
-      return FALSE;
+      return false;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -3420,15 +3421,15 @@ static unsigned int CheckAndInsert (mcReserved_toktype t, mcp3_SetOfStop0 stopse
    InStopSet
 */
 
-static unsigned int InStopSet (mcReserved_toktype t, mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2)
+static bool InStopSet (mcReserved_toktype t, mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_SetOfStop2 stopset2)
 {
   if (((( ((unsigned int) (t)) < 32) && ((((1 << (t-mcReserved_eoftok)) & (stopset0)) != 0))) || ((( ((unsigned int) (t)) >= 32) && ( ((unsigned int) (t)) < 64)) && ((((1 << (t-mcReserved_arraytok)) & (stopset1)) != 0)))) || (( ((unsigned int) (t)) >= 64) && ((((1 << (t-mcReserved_recordtok)) & (stopset2)) != 0))))
     {
-      return TRUE;
+      return true;
     }
   else
     {
-      return FALSE;
+      return false;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -5287,13 +5288,13 @@ static void ProcedureParameter (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopse
       /* avoid dangling else.  */
       Expect (mcReserved_vartok, stopset0, stopset1|(mcp3_SetOfStop1) ((1 << (mcReserved_arraytok-mcReserved_arraytok))), stopset2|(mcp3_SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
       FormalType (stopset0, stopset1, stopset2);
-      n = push (decl_makeVarParameter (static_cast<decl_node> (NULL), pop (), curproc, TRUE));
+      n = push (decl_makeVarParameter (static_cast<decl_node> (NULL), pop (), curproc, true));
     }
   else if ((mcLexBuf_currenttoken == mcReserved_arraytok) || (mcLexBuf_currenttoken == mcReserved_identtok))
     {
       /* avoid dangling else.  */
       FormalType (stopset0, stopset1, stopset2);
-      n = push (decl_makeNonVarParameter (static_cast<decl_node> (NULL), pop (), curproc, TRUE));
+      n = push (decl_makeNonVarParameter (static_cast<decl_node> (NULL), pop (), curproc, true));
     }
   else
     {
@@ -6691,7 +6692,7 @@ static void AttributeNoReturn (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset
         }
       else
         {
-          decl_setNoReturn (curproc, FALSE);
+          decl_setNoReturn (curproc, false);
         }
     }
   /* end of optional [ | ] expression  */
@@ -6710,7 +6711,7 @@ static void NoReturn (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_S
 {
   Expect (mcReserved_ldirectivetok, stopset0, stopset1, stopset2|(mcp3_SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
   Ident (stopset0|(mcp3_SetOfStop0) ((1 << (mcReserved_rdirectivetok-mcReserved_eoftok))), stopset1, stopset2);
-  decl_setNoReturn (curproc, TRUE);
+  decl_setNoReturn (curproc, true);
   checkReturnAttribute ();
   Expect (mcReserved_rdirectivetok, stopset0, stopset1, stopset2);
 }
@@ -6745,7 +6746,7 @@ static void Unused (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_Set
 {
   Expect (mcReserved_ldirectivetok, stopset0, stopset1, stopset2|(mcp3_SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
   Ident (stopset0|(mcp3_SetOfStop0) ((1 << (mcReserved_rdirectivetok-mcReserved_eoftok))), stopset1, stopset2);
-  curisused = FALSE;
+  curisused = false;
   checkParameterAttribute ();
   Expect (mcReserved_rdirectivetok, stopset0, stopset1, stopset2);
 }
@@ -6898,7 +6899,7 @@ static void VarFPSection (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mc
   FormalType (stopset0|(mcp3_SetOfStop0) ((1 << (mcReserved_ldirectivetok-mcReserved_eoftok))), stopset1, stopset2);
   t = pop ();
   l = pop ();
-  curisused = TRUE;
+  curisused = true;
   if (mcLexBuf_currenttoken == mcReserved_ldirectivetok)
     {
       AttributeUnused (stopset0, stopset1, stopset2);
@@ -6935,7 +6936,7 @@ static void NonVarFPSection (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1,
   FormalType (stopset0|(mcp3_SetOfStop0) ((1 << (mcReserved_ldirectivetok-mcReserved_eoftok))), stopset1, stopset2);
   t = pop ();
   l = pop ();
-  curisused = TRUE;
+  curisused = true;
   if (mcLexBuf_currenttoken == mcReserved_ldirectivetok)
     {
       AttributeUnused (stopset0, stopset1, stopset2);
@@ -7834,10 +7835,10 @@ static void TrashList (mcp3_SetOfStop0 stopset0, mcp3_SetOfStop1 stopset1, mcp3_
                      in future passes.
 */
 
-extern "C" unsigned int mcp3_CompilationUnit (void)
+extern "C" bool mcp3_CompilationUnit (void)
 {
   stk = mcStack_init ();
-  WasNoError = TRUE;
+  WasNoError = true;
   FileUnit ((mcp3_SetOfStop0) ((1 << (mcReserved_eoftok-mcReserved_eoftok))), (mcp3_SetOfStop1) 0, (mcp3_SetOfStop2) 0);
   mcStack_kill (&stk);
   return WasNoError;

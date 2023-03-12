@@ -17,6 +17,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -121,7 +122,7 @@ extern "C" void mcPrintf_fprintf4 (FIO_File file, const char *a_, unsigned int _
    isDigit - returns TRUE if, ch, is a character 0..9
 */
 
-static unsigned int isDigit (char ch);
+static bool isDigit (char ch);
 
 /*
    cast - casts a := b
@@ -135,14 +136,14 @@ static void cast (unsigned char *a, unsigned int _a_high, const unsigned char *b
                              into a String and %a is replaced by %s.
 */
 
-static unsigned int TranslateNameToCharStar (char *a, unsigned int _a_high, unsigned int n);
+static bool TranslateNameToCharStar (char *a, unsigned int _a_high, unsigned int n);
 
 
 /*
    isDigit - returns TRUE if, ch, is a character 0..9
 */
 
-static unsigned int isDigit (char ch)
+static bool isDigit (char ch)
 {
   return (ch >= '0') && (ch <= '9');
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -183,7 +184,7 @@ static void cast (unsigned char *a, unsigned int _a_high, const unsigned char *b
                              into a String and %a is replaced by %s.
 */
 
-static unsigned int TranslateNameToCharStar (char *a, unsigned int _a_high, unsigned int n)
+static bool TranslateNameToCharStar (char *a, unsigned int _a_high, unsigned int n)
 {
   unsigned int argno;
   unsigned int i;
@@ -199,18 +200,18 @@ static unsigned int TranslateNameToCharStar (char *a, unsigned int _a_high, unsi
           if ((a[i+1] == 'a') && (argno == n))
             {
               a[i+1] = 's';
-              return TRUE;
+              return true;
             }
           argno += 1;
           if (argno > n)
             {
               /* all done  */
-              return FALSE;
+              return false;
             }
         }
       i += 1;
     }
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }

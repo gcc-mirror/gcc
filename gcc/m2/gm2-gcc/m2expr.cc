@@ -96,24 +96,24 @@ CheckAddressToCardinal (location_t location, tree op)
 {
   if (m2type_IsAddress (TREE_TYPE (op)))
     return m2convert_BuildConvert (location, m2type_GetCardinalAddressType (),
-                                   op, FALSE);
+                                   op, false);
   return op;
 }
 
-/* BuildTruthAndIf return TRUE if a && b.  Retain order left to right.  */
+/* BuildTruthAndIf return true if a && b.  Retain order left to right.  */
 
 static tree
 m2expr_BuildTruthAndIf (location_t location, tree a, tree b)
 {
-  return m2expr_build_binary_op (location, TRUTH_ANDIF_EXPR, a, b, FALSE);
+  return m2expr_build_binary_op (location, TRUTH_ANDIF_EXPR, a, b, false);
 }
 
-/* BuildTruthOrIf return TRUE if a || b.  Retain order left to right.  */
+/* BuildTruthOrIf return true if a || b.  Retain order left to right.  */
 
 static tree
 m2expr_BuildTruthOrIf (location_t location, tree a, tree b)
 {
-  return m2expr_build_binary_op (location, TRUTH_ORIF_EXPR, a, b, FALSE);
+  return m2expr_build_binary_op (location, TRUTH_ORIF_EXPR, a, b, false);
 }
 
 /* BuildTruthNotIf inverts the boolean value of expr and returns the result.  */
@@ -121,7 +121,7 @@ m2expr_BuildTruthOrIf (location_t location, tree a, tree b)
 static tree
 m2expr_BuildTruthNot (location_t location, tree expr)
 {
-  return m2expr_build_unary_op (location, TRUTH_NOT_EXPR, expr, FALSE);
+  return m2expr_build_unary_op (location, TRUTH_NOT_EXPR, expr, false);
 }
 
 /* BuildPostInc builds a post increment tree, the second operand is
@@ -130,7 +130,7 @@ m2expr_BuildTruthNot (location_t location, tree expr)
 static tree
 m2expr_BuildPostInc (location_t location, tree op)
 {
-  return m2expr_BuildAdd (location, op, build_int_cst (TREE_TYPE (op), 1), FALSE);
+  return m2expr_BuildAdd (location, op, build_int_cst (TREE_TYPE (op), 1), false);
 }
 
 /* BuildPostDec builds a post decrement tree, the second operand is
@@ -139,7 +139,7 @@ m2expr_BuildPostInc (location_t location, tree op)
 static tree
 m2expr_BuildPostDec (location_t location, tree op)
 {
-  return m2expr_BuildSub (location, op, build_int_cst (TREE_TYPE (op), 1), FALSE);
+  return m2expr_BuildSub (location, op, build_int_cst (TREE_TYPE (op), 1), false);
 }
 
 /* BuildAddCheck builds an addition tree.  */
@@ -158,7 +158,7 @@ m2expr_BuildAddCheck (location_t location, tree op1, tree op2, tree lowest,
   op1 = CheckAddressToCardinal (location, op1);
   op2 = CheckAddressToCardinal (location, op2);
 
-  t = m2expr_build_binary_op_check (location, PLUS_EXPR, op1, op2, FALSE,
+  t = m2expr_build_binary_op_check (location, PLUS_EXPR, op1, op2, false,
                                     lowest, min, max);
   return m2expr_FoldAndStrip (t);
 }
@@ -166,7 +166,7 @@ m2expr_BuildAddCheck (location_t location, tree op1, tree op2, tree lowest,
 /* BuildAdd builds an addition tree.  */
 
 tree
-m2expr_BuildAdd (location_t location, tree op1, tree op2, int needconvert)
+m2expr_BuildAdd (location_t location, tree op1, tree op2, bool needconvert)
 {
   tree t;
 
@@ -198,7 +198,7 @@ m2expr_BuildSubCheck (location_t location, tree op1, tree op2, tree lowest,
   op1 = CheckAddressToCardinal (location, op1);
   op2 = CheckAddressToCardinal (location, op2);
 
-  t = m2expr_build_binary_op_check (location, MINUS_EXPR, op1, op2, FALSE,
+  t = m2expr_build_binary_op_check (location, MINUS_EXPR, op1, op2, false,
                                     lowest, min, max);
   return m2expr_FoldAndStrip (t);
 }
@@ -206,7 +206,7 @@ m2expr_BuildSubCheck (location_t location, tree op1, tree op2, tree lowest,
 /* BuildSub builds a subtraction tree.  */
 
 tree
-m2expr_BuildSub (location_t location, tree op1, tree op2, int needconvert)
+m2expr_BuildSub (location_t location, tree op1, tree op2, bool needconvert)
 {
   tree t;
 
@@ -225,7 +225,7 @@ m2expr_BuildSub (location_t location, tree op1, tree op2, int needconvert)
 /* BuildDivTrunc builds a trunc division tree.  */
 
 tree
-m2expr_BuildDivTrunc (location_t location, tree op1, tree op2, int needconvert)
+m2expr_BuildDivTrunc (location_t location, tree op1, tree op2, bool needconvert)
 {
   tree t;
 
@@ -257,7 +257,7 @@ m2expr_BuildDivTruncCheck (location_t location, tree op1, tree op2, tree lowest,
   op1 = CheckAddressToCardinal (location, op1);
   op2 = CheckAddressToCardinal (location, op2);
 
-  t = m2expr_build_binary_op_check (location, TRUNC_DIV_EXPR, op1, op2, FALSE,
+  t = m2expr_build_binary_op_check (location, TRUNC_DIV_EXPR, op1, op2, false,
 				    lowest, min, max);
   return m2expr_FoldAndStrip (t);
 }
@@ -278,7 +278,7 @@ m2expr_BuildModTruncCheck (location_t location, tree op1, tree op2, tree lowest,
   op1 = CheckAddressToCardinal (location, op1);
   op2 = CheckAddressToCardinal (location, op2);
 
-  t = m2expr_build_binary_op_check (location, TRUNC_MOD_EXPR, op1, op2, FALSE,
+  t = m2expr_build_binary_op_check (location, TRUNC_MOD_EXPR, op1, op2, false,
 				    lowest, min, max);
   return m2expr_FoldAndStrip (t);
 }
@@ -286,7 +286,7 @@ m2expr_BuildModTruncCheck (location_t location, tree op1, tree op2, tree lowest,
 /* BuildModTrunc builds a trunc modulus tree.  */
 
 tree
-m2expr_BuildModTrunc (location_t location, tree op1, tree op2, int needconvert)
+m2expr_BuildModTrunc (location_t location, tree op1, tree op2, bool needconvert)
 {
   tree t;
 
@@ -318,7 +318,7 @@ m2expr_BuildModCeilCheck (location_t location, tree op1, tree op2, tree lowest,
   op1 = CheckAddressToCardinal (location, op1);
   op2 = CheckAddressToCardinal (location, op2);
 
-  t = m2expr_build_binary_op_check (location, CEIL_MOD_EXPR, op1, op2, FALSE,
+  t = m2expr_build_binary_op_check (location, CEIL_MOD_EXPR, op1, op2, false,
 				    lowest, min, max);
   return m2expr_FoldAndStrip (t);
 }
@@ -339,7 +339,7 @@ m2expr_BuildModFloorCheck (location_t location, tree op1, tree op2, tree lowest,
   op1 = CheckAddressToCardinal (location, op1);
   op2 = CheckAddressToCardinal (location, op2);
 
-  t = m2expr_build_binary_op_check (location, FLOOR_MOD_EXPR, op1, op2, FALSE,
+  t = m2expr_build_binary_op_check (location, FLOOR_MOD_EXPR, op1, op2, false,
 				    lowest, min, max);
   return m2expr_FoldAndStrip (t);
 }
@@ -347,7 +347,7 @@ m2expr_BuildModFloorCheck (location_t location, tree op1, tree op2, tree lowest,
 /* BuildDivCeil builds a ceil division tree.  */
 
 tree
-m2expr_BuildDivCeil (location_t location, tree op1, tree op2, int needconvert)
+m2expr_BuildDivCeil (location_t location, tree op1, tree op2, bool needconvert)
 {
   tree t;
 
@@ -379,7 +379,7 @@ m2expr_BuildDivCeilCheck (location_t location, tree op1, tree op2, tree lowest,
   op1 = CheckAddressToCardinal (location, op1);
   op2 = CheckAddressToCardinal (location, op2);
 
-  t = m2expr_build_binary_op_check (location, CEIL_DIV_EXPR, op1, op2, FALSE,
+  t = m2expr_build_binary_op_check (location, CEIL_DIV_EXPR, op1, op2, false,
 				    lowest, min, max);
   return m2expr_FoldAndStrip (t);
 }
@@ -387,7 +387,7 @@ m2expr_BuildDivCeilCheck (location_t location, tree op1, tree op2, tree lowest,
 /* BuildModCeil builds a ceil modulus tree.  */
 
 tree
-m2expr_BuildModCeil (location_t location, tree op1, tree op2, int needconvert)
+m2expr_BuildModCeil (location_t location, tree op1, tree op2, bool needconvert)
 {
   tree t;
 
@@ -406,7 +406,7 @@ m2expr_BuildModCeil (location_t location, tree op1, tree op2, int needconvert)
 /* BuildDivFloor builds a floor division tree.  */
 
 tree
-m2expr_BuildDivFloor (location_t location, tree op1, tree op2, int needconvert)
+m2expr_BuildDivFloor (location_t location, tree op1, tree op2, bool needconvert)
 {
   tree t;
 
@@ -438,7 +438,7 @@ m2expr_BuildDivFloorCheck (location_t location, tree op1, tree op2, tree lowest,
   op1 = CheckAddressToCardinal (location, op1);
   op2 = CheckAddressToCardinal (location, op2);
 
-  t = m2expr_build_binary_op_check (location, FLOOR_DIV_EXPR, op1, op2, FALSE,
+  t = m2expr_build_binary_op_check (location, FLOOR_DIV_EXPR, op1, op2, false,
 				    lowest, min, max);
   return m2expr_FoldAndStrip (t);
 }
@@ -447,7 +447,7 @@ m2expr_BuildDivFloorCheck (location_t location, tree op1, tree op2, tree lowest,
    REAL and COMPLEX types and NEVER for integer based types).  */
 
 tree
-m2expr_BuildRDiv (location_t location, tree op1, tree op2, int needconvert)
+m2expr_BuildRDiv (location_t location, tree op1, tree op2, bool needconvert)
 {
   tree t;
 
@@ -463,7 +463,7 @@ m2expr_BuildRDiv (location_t location, tree op1, tree op2, int needconvert)
 /* BuildModFloor builds a modulus tree.  */
 
 tree
-m2expr_BuildModFloor (location_t location, tree op1, tree op2, int needconvert)
+m2expr_BuildModFloor (location_t location, tree op1, tree op2, bool needconvert)
 {
   tree t;
 
@@ -482,7 +482,7 @@ m2expr_BuildModFloor (location_t location, tree op1, tree op2, int needconvert)
 /* BuildLSL builds and returns tree (op1 << op2).  */
 
 tree
-m2expr_BuildLSL (location_t location, tree op1, tree op2, int needconvert)
+m2expr_BuildLSL (location_t location, tree op1, tree op2, bool needconvert)
 {
   tree t;
 
@@ -498,7 +498,7 @@ m2expr_BuildLSL (location_t location, tree op1, tree op2, int needconvert)
 /* BuildLSR builds and returns tree (op1 >> op2).  */
 
 tree
-m2expr_BuildLSR (location_t location, tree op1, tree op2, int needconvert)
+m2expr_BuildLSR (location_t location, tree op1, tree op2, bool needconvert)
 {
   tree t;
 
@@ -537,7 +537,7 @@ createUniqueLabel (void)
 
 void
 m2expr_BuildLogicalShift (location_t location, tree op1, tree op2, tree op3,
-                          tree nBits ATTRIBUTE_UNUSED, int needconvert)
+                          tree nBits ATTRIBUTE_UNUSED, bool needconvert)
 {
   tree res;
 
@@ -557,7 +557,7 @@ m2expr_BuildLogicalShift (location_t location, tree op1, tree op2, tree op3,
         res = m2expr_BuildLSL (location, op2, m2convert_ToWord (location, op3),
                                needconvert);
       res = m2convert_BuildConvert (
-          location, m2tree_skip_type_decl (TREE_TYPE (op1)), res, FALSE);
+          location, m2tree_skip_type_decl (TREE_TYPE (op1)), res, false);
       m2statement_BuildAssignmentTree (location, op1, res);
     }
   else
@@ -573,7 +573,7 @@ m2expr_BuildLogicalShift (location_t location, tree op1, tree op2, tree op3,
       op3 = m2convert_ToWord (location, op3);
       res = m2expr_BuildLSL (location, op2, op3, needconvert);
       res = m2convert_BuildConvert (
-          location, m2tree_skip_type_decl (TREE_TYPE (op1)), res, FALSE);
+          location, m2tree_skip_type_decl (TREE_TYPE (op1)), res, false);
       m2statement_BuildAssignmentTree (location, op1, res);
       m2statement_BuildGoto (location, labelEndName);
       m2statement_DeclareLabel (location, labelElseName);
@@ -581,7 +581,7 @@ m2expr_BuildLogicalShift (location_t location, tree op1, tree op2, tree op3,
                              m2expr_BuildNegate (location, op3, needconvert),
                              needconvert);
       res = m2convert_BuildConvert (
-          location, m2tree_skip_type_decl (TREE_TYPE (op1)), res, FALSE);
+          location, m2tree_skip_type_decl (TREE_TYPE (op1)), res, false);
       m2statement_BuildAssignmentTree (location, op1, res);
       m2statement_DeclareLabel (location, labelEndName);
     }
@@ -590,7 +590,7 @@ m2expr_BuildLogicalShift (location_t location, tree op1, tree op2, tree op3,
 /* BuildLRL builds and returns tree (op1 rotate left by op2 bits).  */
 
 tree
-m2expr_BuildLRL (location_t location, tree op1, tree op2, int needconvert)
+m2expr_BuildLRL (location_t location, tree op1, tree op2, bool needconvert)
 {
   tree t;
 
@@ -606,7 +606,7 @@ m2expr_BuildLRL (location_t location, tree op1, tree op2, int needconvert)
 /* BuildLRR builds and returns tree (op1 rotate right by op2 bits).  */
 
 tree
-m2expr_BuildLRR (location_t location, tree op1, tree op2, int needconvert)
+m2expr_BuildLRR (location_t location, tree op1, tree op2, bool needconvert)
 {
   tree t;
 
@@ -623,7 +623,7 @@ m2expr_BuildLRR (location_t location, tree op1, tree op2, int needconvert)
    It assumes nBits is <= TSIZE (WORD).  */
 
 tree
-m2expr_BuildMask (location_t location, tree nBits, int needconvert)
+m2expr_BuildMask (location_t location, tree nBits, bool needconvert)
 {
   tree mask = m2expr_BuildLSL (location, m2expr_GetIntegerOne (location),
                                nBits, needconvert);
@@ -637,7 +637,7 @@ m2expr_BuildMask (location_t location, tree nBits, int needconvert)
 
 tree
 m2expr_BuildLRotate (location_t location, tree op1, tree nBits,
-                     int needconvert)
+                     bool needconvert)
 {
   tree t;
 
@@ -652,7 +652,7 @@ m2expr_BuildLRotate (location_t location, tree op1, tree nBits,
 
 tree
 m2expr_BuildRRotate (location_t location, tree op1, tree nBits,
-                     int needconvert)
+                     bool needconvert)
 {
   tree t;
 
@@ -667,7 +667,7 @@ m2expr_BuildRRotate (location_t location, tree op1, tree nBits,
 
 tree
 m2expr_BuildLRLn (location_t location, tree op1, tree op2, tree nBits,
-                  int needconvert)
+                  bool needconvert)
 {
   tree op2min;
 
@@ -709,7 +709,7 @@ m2expr_BuildLRLn (location_t location, tree op1, tree op2, tree nBits,
 
 tree
 m2expr_BuildLRRn (location_t location, tree op1, tree op2, tree nBits,
-                  int needconvert)
+                  bool needconvert)
 {
   tree op2min;
 
@@ -750,7 +750,7 @@ m2expr_BuildLRRn (location_t location, tree op1, tree op2, tree nBits,
 
 void
 m2expr_BuildLogicalRotate (location_t location, tree op1, tree op2, tree op3,
-                           tree nBits, int needconvert)
+                           tree nBits, bool needconvert)
 {
   tree res;
 
@@ -817,14 +817,14 @@ buildUnboundedArrayOf (tree unbounded, tree contentsPtr, tree high)
 void
 m2expr_BuildBinarySetDo (location_t location, tree settype, tree op1, tree op2,
                          tree op3, void (*binop) (location_t, tree, tree, tree,
-                                                  tree, int),
-                         int is_op1lvalue, int is_op2lvalue, int is_op3lvalue,
+                                                  tree, bool),
+                         bool is_op1lvalue, bool is_op2lvalue, bool is_op3lvalue,
                          tree nBits, tree unbounded, tree varproc,
                          tree leftproc, tree rightproc)
 {
   tree size = m2expr_GetSizeOf (location, settype);
-  int is_const = FALSE;
-  int is_left = FALSE;
+  int is_const = false;
+  int is_left = false;
 
   m2assert_AssertLocation (location);
 
@@ -840,7 +840,7 @@ m2expr_BuildBinarySetDo (location_t location, tree settype, tree op1, tree op2,
               m2treelib_get_rvalue (location, op1, settype, is_op1lvalue),
               m2treelib_get_rvalue (location, op2, settype, is_op2lvalue),
               m2treelib_get_rvalue (location, op3, settype, is_op3lvalue),
-              nBits, FALSE);
+              nBits, false);
   else
     {
       tree result;
@@ -851,8 +851,8 @@ m2expr_BuildBinarySetDo (location_t location, tree settype, tree op1, tree op2,
               m2expr_BuildDivTrunc (
                   location, size,
                   m2expr_GetSizeOf (location, m2type_GetBitsetType ()),
-                  FALSE)),
-          m2expr_GetCardinalOne (location), FALSE);
+                  false)),
+          m2expr_GetCardinalOne (location), false);
 
       /* If op3 is constant then make op3 positive and remember which
       direction we are shifting.  */
@@ -860,13 +860,13 @@ m2expr_BuildBinarySetDo (location_t location, tree settype, tree op1, tree op2,
       op3 = m2tree_skip_const_decl (op3);
       if (TREE_CODE (op3) == INTEGER_CST)
         {
-          is_const = TRUE;
+          is_const = true;
           if (tree_int_cst_sgn (op3) < 0)
-            op3 = m2expr_BuildNegate (location, op3, FALSE);
+            op3 = m2expr_BuildNegate (location, op3, false);
           else
-            is_left = TRUE;
+            is_left = true;
           op3 = m2convert_BuildConvert (location, m2type_GetM2CardinalType (),
-                                        op3, FALSE);
+                                        op3, false);
         }
 
       /* These parameters must match the prototypes of the procedures:
@@ -883,13 +883,13 @@ m2expr_BuildBinarySetDo (location_t location, tree settype, tree op1, tree op2,
               m2treelib_get_rvalue (location, op3,
                                     m2tree_skip_type_decl (TREE_TYPE (op3)),
                                     is_op3lvalue),
-              FALSE));
+              false));
 
       /* Parameter 3 nBits.  */
       m2statement_BuildParam (
           location,
           m2convert_BuildConvert (location, m2type_GetM2CardinalType (),
-                                  m2expr_FoldAndStrip (nBits), FALSE));
+                                  m2expr_FoldAndStrip (nBits), false));
 
       /* Parameter 2 destination set.  */
       m2statement_BuildParam (
@@ -934,7 +934,7 @@ m2expr_ConstantExpressionWarning (tree value)
     pedwarn (input_location, OPT_Woverflow, "overflow in constant expression");
 }
 
-/* TreeOverflow return TRUE if the contant expression, t, has caused
+/* TreeOverflow return true if the contant expression, t, has caused
    an overflow.  No error message or warning is emitted and no
    modification is made to, t.  */
 
@@ -945,14 +945,14 @@ m2expr_TreeOverflow (tree t)
        || (TREE_CODE (t) == COMPLEX_CST
            && TREE_CODE (TREE_REALPART (t)) == INTEGER_CST))
       && TREE_OVERFLOW (t))
-    return TRUE;
+    return true;
   else if ((TREE_CODE (t) == REAL_CST
             || (TREE_CODE (t) == COMPLEX_CST
                 && TREE_CODE (TREE_REALPART (t)) == REAL_CST))
            && TREE_OVERFLOW (t))
-    return TRUE;
+    return true;
   else
-    return FALSE;
+    return false;
 }
 
 /* RemoveOverflow if tree, t, is a constant expression it removes any
@@ -1101,10 +1101,10 @@ m2expr_BuildLessThanZero (location_t location, tree value, tree type, tree min,
   if (m2expr_CompareTrees (min, m2expr_GetIntegerZero (location)) >= 0)
     /* min is greater than or equal to zero therefore value will always
        be >= 0.  */
-    return m2expr_GetIntegerZero (location);
+    return m2type_GetBooleanFalse ();
   else if (m2expr_CompareTrees (max, m2expr_GetIntegerZero (location)) == -1)
     /* max is less than zero therefore value will always be < 0.  */
-    return m2expr_GetIntegerOne (location);
+    return m2type_GetBooleanTrue ();
   /* We now know 0 lies in the range min..max so we can safely cast
      zero to type.  */
   return m2expr_BuildLessThan (
@@ -1122,11 +1122,11 @@ m2expr_BuildGreaterThanZero (location_t location, tree value, tree type,
 {
   if (m2expr_CompareTrees (min, m2expr_GetIntegerZero (location)) == 1)
     /* min is greater than zero therefore value will always be > 0.  */
-    return m2expr_GetIntegerOne (location);
+    return m2type_GetBooleanTrue ();
   else if (m2expr_CompareTrees (max, m2expr_GetIntegerZero (location)) <= 0)
     /* max is less than or equal to zero therefore value will always be
        <= 0.  */
-    return m2expr_GetIntegerZero (location);
+    return m2type_GetBooleanFalse ();
   /* We now know 0 lies in the range min..max so we can safely cast
      zero to type.  */
   return m2expr_BuildGreaterThan (
@@ -1144,11 +1144,11 @@ m2expr_BuildEqualToZero (location_t location, tree value, tree type, tree min,
 {
   if (m2expr_CompareTrees (min, m2expr_GetIntegerZero (location)) == 1)
     /* min is greater than zero therefore value will always be > 0.  */
-    return m2expr_GetIntegerZero (location);
+    return m2type_GetBooleanFalse ();
   else if (m2expr_CompareTrees (max, m2expr_GetIntegerZero (location)) < 0)
     /* max is less than or equal to zero therefore value will always be <
        0.  */
-    return m2expr_GetIntegerZero (location);
+    return m2type_GetBooleanFalse ();
   /* We now know 0 lies in the range min..max so we can safely cast
      zero to type.  */
   return m2expr_BuildEqualTo (
@@ -1166,11 +1166,11 @@ m2expr_BuildNotEqualToZero (location_t location, tree value, tree type,
 {
   if (m2expr_CompareTrees (min, m2expr_GetIntegerZero (location)) == 1)
     /* min is greater than zero therefore value will always be true.  */
-    return m2expr_GetIntegerOne (location);
+    return m2type_GetBooleanTrue ();
   else if (m2expr_CompareTrees (max, m2expr_GetIntegerZero (location)) < 0)
     /* max is less than or equal to zero therefore value will always be
        true.  */
-    return m2expr_GetIntegerOne (location);
+    return m2type_GetBooleanTrue ();
   /* We now know 0 lies in the range min..max so we can safely cast
      zero to type.  */
   return m2expr_BuildNotEqualTo (
@@ -1189,10 +1189,10 @@ m2expr_BuildGreaterThanOrEqualZero (location_t location, tree value, tree type,
 {
   if (m2expr_CompareTrees (min, m2expr_GetIntegerZero (location)) >= 0)
     /* min is greater than or equal to zero therefore value will always be >= 0.  */
-    return m2expr_GetIntegerOne (location);
+    return m2type_GetBooleanTrue ();
   else if (m2expr_CompareTrees (max, m2expr_GetIntegerZero (location)) < 0)
     /* max is less than zero therefore value will always be < 0.  */
-    return m2expr_GetIntegerZero (location);
+    return m2type_GetBooleanFalse ();
   /* We now know 0 lies in the range min..max so we can safely cast
      zero to type.  */
   return m2expr_BuildGreaterThan (
@@ -1211,10 +1211,10 @@ m2expr_BuildLessThanOrEqualZero (location_t location, tree value, tree type,
 {
   if (m2expr_CompareTrees (min, m2expr_GetIntegerZero (location)) > 0)
     /* min is greater than zero therefore value will always be > 0.  */
-    return m2expr_GetIntegerZero (location);
+    return m2type_GetBooleanFalse ();
   else if (m2expr_CompareTrees (max, m2expr_GetIntegerZero (location)) <= 0)
     /* max is less than or equal to zero therefore value will always be <= 0.  */
-    return m2expr_GetIntegerOne (location);
+    return m2type_GetBooleanTrue ();
   /* We now know 0 lies in the range min..max so we can safely cast
      zero to type.  */
   return m2expr_BuildLessThanOrEqual (
@@ -1289,15 +1289,15 @@ checkWholeNegateOverflow (location_t location,
   tree c8 = m2expr_BuildGreaterThanZero (location, max, type, min,
                                          max); /* max > 0.  */
   tree c9 = m2expr_BuildGreaterThanZero (
-      location, m2expr_BuildAdd (location, min, max, FALSE), type, min,
+      location, m2expr_BuildAdd (location, min, max, false), type, min,
       max); /* min + max > 0.  */
   tree c10 = m2expr_BuildGreaterThan (
-      location, i, m2expr_BuildNegate (location, min, FALSE)); /* i > -min.  */
+      location, i, m2expr_BuildNegate (location, min, false)); /* i > -min.  */
   tree c11 = m2expr_BuildLessThanZero (
-      location, m2expr_BuildAdd (location, min, max, FALSE), type, min,
+      location, m2expr_BuildAdd (location, min, max, false), type, min,
       max); /* min + max < 0.  */
   tree c12 = m2expr_BuildLessThan (
-      location, i, m2expr_BuildNegate (location, max, FALSE)); /* i < -max.  */
+      location, i, m2expr_BuildNegate (location, max, false)); /* i < -max.  */
 
   tree b1 = m2expr_BuildTruthOrIf (location, c1, c2);
   tree b2 = m2expr_BuildTruthOrIf (location, c8, c5);
@@ -1337,10 +1337,10 @@ checkWholeAddOverflow (location_t location, tree i, tree j, tree lowest,
 {
   tree j_gt_zero = m2expr_BuildGreaterThanZero (location, j, lowest, min, max);
   tree i_gt_max_sub_j = m2expr_BuildGreaterThan (
-      location, i, m2expr_BuildSub (location, max, j, FALSE));
+      location, i, m2expr_BuildSub (location, max, j, false));
   tree j_lt_zero = m2expr_BuildLessThanZero (location, j, lowest, min, max);
   tree i_lt_min_sub_j = m2expr_BuildLessThan (location, i,
-					      m2expr_BuildSub (location, min, j, FALSE));
+					      m2expr_BuildSub (location, min, j, false));
   tree lhs_or = m2expr_FoldAndStrip (m2expr_BuildTruthAndIf (location, j_gt_zero, i_gt_max_sub_j));
   tree rhs_or = m2expr_FoldAndStrip (m2expr_BuildTruthAndIf (location, j_lt_zero, i_lt_min_sub_j));
   tree condition
@@ -1368,10 +1368,10 @@ checkWholeSubOverflow (location_t location, tree i, tree j, tree lowest,
 {
   tree c1 = m2expr_BuildGreaterThanZero (location, j, lowest, min, max);
   tree c2 = m2expr_BuildLessThan (location, i,
-                                  m2expr_BuildAdd (location, min, j, FALSE));
+                                  m2expr_BuildAdd (location, min, j, false));
   tree c3 = m2expr_BuildLessThanZero (location, j, lowest, min, max);
   tree c4 = m2expr_BuildGreaterThan (location, i,
-				     m2expr_BuildAdd (location, max, j, FALSE));
+				     m2expr_BuildAdd (location, max, j, false));
   tree c5 = m2expr_FoldAndStrip (m2expr_BuildTruthAndIf (location, c1, c2));
   tree c6 = m2expr_FoldAndStrip (m2expr_BuildTruthAndIf (location, c3, c4));
   tree condition
@@ -1382,7 +1382,7 @@ checkWholeSubOverflow (location_t location, tree i, tree j, tree lowest,
   return t;
 }
 
-/* Build4TruthAndIf - return TRUE if a && b && c && d.  Retain order left to
+/* Build4TruthAndIf - return true if a && b && c && d.  Retain order left to
  * right.  */
 
 static tree
@@ -1393,7 +1393,7 @@ m2expr_Build4TruthAndIf (location_t location, tree a, tree b, tree c, tree d)
   return m2expr_FoldAndStrip (m2expr_BuildTruthAndIf (location, t2, d));
 }
 
-/* Build3TruthAndIf - return TRUE if a && b && c.  Retain order left to right.
+/* Build3TruthAndIf - return true if a && b && c.  Retain order left to right.
  */
 
 static tree
@@ -1403,7 +1403,7 @@ m2expr_Build3TruthAndIf (location_t location, tree op1, tree op2, tree op3)
   return m2expr_FoldAndStrip (m2expr_BuildTruthAndIf (location, t, op3));
 }
 
-/* Build3TruthOrIf - return TRUE if a || b || c.  Retain order left to right.
+/* Build3TruthOrIf - return true if a || b || c.  Retain order left to right.
  */
 
 static tree
@@ -1413,7 +1413,7 @@ m2expr_Build3TruthOrIf (location_t location, tree op1, tree op2, tree op3)
   return m2expr_FoldAndStrip (m2expr_BuildTruthOrIf (location, t, op3));
 }
 
-/* Build4TruthOrIf - return TRUE if op1 || op2 || op3 || op4.  Retain order
+/* Build4TruthOrIf - return true if op1 || op2 || op3 || op4.  Retain order
    left to right.  */
 
 static tree
@@ -1425,18 +1425,18 @@ m2expr_Build4TruthOrIf (location_t location, tree op1, tree op2, tree op3,
   return m2expr_FoldAndStrip (m2expr_BuildTruthOrIf (location, t2, op4));
 }
 
-/* Build4LogicalOr - return TRUE if op1 || op2 || op3 || op4.  */
+/* Build4LogicalOr - return true if op1 || op2 || op3 || op4.  */
 
 static tree
 m2expr_Build4LogicalOr (location_t location, tree op1, tree op2, tree op3,
                         tree op4)
 {
   tree t1 = m2expr_FoldAndStrip (
-      m2expr_BuildLogicalOr (location, op1, op2, FALSE));
+      m2expr_BuildLogicalOr (location, op1, op2, false));
   tree t2
-      = m2expr_FoldAndStrip (m2expr_BuildLogicalOr (location, t1, op3, FALSE));
+      = m2expr_FoldAndStrip (m2expr_BuildLogicalOr (location, t1, op3, false));
   return m2expr_FoldAndStrip (
-      m2expr_BuildLogicalOr (location, t2, op4, FALSE));
+      m2expr_BuildLogicalOr (location, t2, op4, false));
 }
 
 /* checkWholeMultOverflow - check to see whether i * j will overflow
@@ -1468,15 +1468,15 @@ testWholeMultOverflow (location_t location, tree lhs, tree rhs,
 
   tree c3 = m2expr_BuildGreaterThanZero (location, rhs, lowest, min, max);
   tree c4 = m2expr_BuildGreaterThan (
-      location, lhs, m2expr_BuildDivTrunc (location, max, rhs, FALSE));
+      location, lhs, m2expr_BuildDivTrunc (location, max, rhs, false));
 
   tree c5 = m2expr_BuildLessThanZero (location, rhs, lowest, min, max);
   tree c6 = m2expr_BuildLessThan (
-      location, rhs, m2expr_BuildDivTrunc (location, min, lhs, FALSE));
+      location, rhs, m2expr_BuildDivTrunc (location, min, lhs, false));
   tree c7 = m2expr_BuildLessThan (
-      location, lhs, m2expr_BuildDivTrunc (location, min, rhs, FALSE));
+      location, lhs, m2expr_BuildDivTrunc (location, min, rhs, false));
   tree c8 = m2expr_BuildLessThan (
-      location, lhs, m2expr_BuildDivTrunc (location, max, rhs, FALSE));
+      location, lhs, m2expr_BuildDivTrunc (location, max, rhs, false));
 
   tree c9 = m2expr_Build3TruthAndIf (location, c1, c3, c4);
   tree c10 = m2expr_Build3TruthAndIf (location, c1, c5, c6);
@@ -1503,7 +1503,7 @@ checkWholeMultOverflow (location_t location, tree i, tree j, tree lowest,
 static tree
 divMinUnderflow (location_t location, tree value, tree lowest, tree min, tree max)
 {
-  tree min2 = m2expr_BuildMult (location, min, min, FALSE);
+  tree min2 = m2expr_BuildMult (location, min, min, false);
   tree rhs = m2expr_BuildGreaterThanOrEqual (location, value, min2);
   tree lhs = testWholeMultOverflow (location, min, min, lowest, min, max);
   return m2expr_BuildTruthAndIf (location, lhs, rhs);
@@ -1575,13 +1575,13 @@ checkWholeDivTruncOverflow (location_t location, tree i, tree j, tree lowest,
   tree b5 = m2expr_BuildTruthAndIf (location, b5a, b4b);
   tree c1 = m2expr_BuildEqualToZero (location, j, lowest, min, max);
   tree c2 = m2expr_BuildLessThanZero (location, max, lowest, min, max);
-  tree i_lt_j_mult_min = m2expr_BuildLessThan (location, i, m2expr_BuildMult (location, j, min, FALSE));
+  tree i_lt_j_mult_min = m2expr_BuildLessThan (location, i, m2expr_BuildMult (location, j, min, false));
   tree j_mult_min_overflow = testWholeMultOverflow (location, j, min, lowest, min, max);
   tree b6 = m2expr_BuildTruthOrIf (location, j_mult_min_overflow, i_lt_j_mult_min);
   tree c3 = m2expr_BuildTruthAndIf (location, b4, b6);
-  tree s1 = m2expr_BuildDivTrunc (location, i, min, FALSE);
-  tree s2 = m2expr_BuildDivTrunc (location, i, max, FALSE);
-  tree s3 = m2expr_BuildDivTrunc (location, i, j, FALSE);
+  tree s1 = m2expr_BuildDivTrunc (location, i, min, false);
+  tree s2 = m2expr_BuildDivTrunc (location, i, max, false);
+  tree s3 = m2expr_BuildDivTrunc (location, i, j, false);
 
   tree j_gt_s1 = m2expr_BuildGreaterThan (location, j, s1);
   tree i_div_min_overflow = divMinUnderflow (location, i, lowest, min, max);
@@ -1626,7 +1626,7 @@ END divceilexpr ;
 
 (*
    divCeilOverflowCases - precondition:  i, j are in range values.
-                          postcondition:  TRUE is returned if i divceil will
+                          postcondition:  true is returned if i divceil will
                                           result in an overflow/underflow.
 *)
 
@@ -1641,7 +1641,7 @@ END divCeilOverflowCases ;
 
 (*
    divCeilOverflowPosPos - precondition:  i, j are legal and are both >= 0.
-                           postcondition:  TRUE is returned if i divceil will
+                           postcondition:  true is returned if i divceil will
                                            result in an overflow/underflow.
 *)
 
@@ -1654,7 +1654,7 @@ END divCeilOverflowPosPos ;
 
 (*
    divCeilOverflowNegNeg - precondition:  i, j are in range values and both < 0.
-                           postcondition:  TRUE is returned if i divceil will
+                           postcondition:  true is returned if i divceil will
                                            result in an overflow/underflow.
 *)
 
@@ -1672,7 +1672,7 @@ END divCeilOverflowNegNeg ;
 
 (*
    divCeilOverflowNegPos - precondition:  i, j are in range values.  i < 0, j >= 0.
-                           postcondition:  TRUE is returned if i divceil will
+                           postcondition:  true is returned if i divceil will
                                            result in an overflow/underflow.
 *)
 
@@ -1688,7 +1688,7 @@ END divCeilOverflowNegPos ;
 
 (*
    divCeilOverflowPosNeg - precondition:  i, j are in range values.  i >= 0, j < 0.
-                           postcondition:  TRUE is returned if i divceil will
+                           postcondition:  true is returned if i divceil will
                                            result in an overflow/underflow.
 *)
 
@@ -1722,11 +1722,11 @@ static tree
 divCeilOverflowPosPos (location_t location, tree i, tree j, tree lowest,
 		       tree min, tree max)
 {
-  tree i_mod_j = m2expr_BuildModTrunc (location, i, j, FALSE);
+  tree i_mod_j = m2expr_BuildModTrunc (location, i, j, false);
   tree i_mod_j_eq_zero = m2expr_BuildEqualToZero (location, i_mod_j, lowest, min, max);
   tree i_mod_j_ne_zero = m2expr_BuildNotEqualToZero (location, i_mod_j, lowest, min, max);
-  tree j_min = m2expr_BuildMult (location, j, min, FALSE);
-  tree j_min_1 = m2expr_BuildAdd (location, j_min, m2expr_GetIntegerOne (location), FALSE);
+  tree j_min = m2expr_BuildMult (location, j, min, false);
+  tree j_min_1 = m2expr_BuildAdd (location, j_min, m2expr_GetIntegerOne (location), false);
   tree i_lt_j_min = m2expr_BuildLessThan (location, i, j_min);
   tree i_lt_j_min_1 = m2expr_BuildLessThan (location, i, j_min_1);
   tree a = m2expr_BuildTruthAndIf (location, i_mod_j_eq_zero, i_lt_j_min);
@@ -1760,10 +1760,10 @@ static tree
 divCeilOverflowPosNeg (location_t location, tree i, tree j, tree lowest, tree min, tree max)
 {
   tree abs_j = m2expr_BuildAbs (location, j);
-  tree i_mod_abs_j = m2expr_BuildModFloor (location, i, abs_j, FALSE);
+  tree i_mod_abs_j = m2expr_BuildModFloor (location, i, abs_j, false);
   tree i_mod_abs_j_eq_0 = m2expr_BuildEqualToZero (location, i_mod_abs_j, lowest, min, max);
   tree i_mod_abs_j_ne_0 = m2expr_BuildNotEqualToZero (location, i_mod_abs_j, lowest, min, max);
-  tree j_mult_min = m2expr_BuildMult (location, j, min, FALSE);
+  tree j_mult_min = m2expr_BuildMult (location, j, min, false);
   tree j_mult_min_1 = m2expr_BuildPostDec (location, j_mult_min);
   tree i_gt_j_mult_min = m2expr_BuildGreaterThan (location, i, j_mult_min);
   tree i_gt_j_mult_min_1 = m2expr_BuildGreaterThan (location, i, j_mult_min_1);
@@ -1799,10 +1799,10 @@ static tree
 divCeilOverflowNegPos (location_t location, tree i, tree j, tree lowest, tree min, tree max)
 {
   tree abs_i = m2expr_BuildAbs (location, i);
-  tree abs_i_mod_j = m2expr_BuildModFloor (location, abs_i, j, FALSE);
+  tree abs_i_mod_j = m2expr_BuildModFloor (location, abs_i, j, false);
   tree abs_i_mod_j_eq_0 = m2expr_BuildEqualToZero (location, abs_i_mod_j, lowest, min, max);
   tree abs_i_mod_j_ne_0 = m2expr_BuildNotEqualToZero (location, abs_i_mod_j, lowest, min, max);
-  tree j_mult_min = m2expr_BuildMult (location, j, min, FALSE);
+  tree j_mult_min = m2expr_BuildMult (location, j, min, false);
   tree j_mult_min_1 = m2expr_BuildPostDec (location, j_mult_min);
   tree i_lt_j_mult_min = m2expr_BuildLessThan (location, i, j_mult_min);
   tree i_lt_j_mult_min_1 = m2expr_BuildLessThan (location, i, j_mult_min_1);
@@ -1859,17 +1859,17 @@ divCeilOverflowNegNeg (location_t location, tree i, tree j, tree lowest,
   tree max_lte_0 = m2expr_BuildLessThanOrEqualZero (location, max, lowest, min, max);
   tree abs_i = m2expr_BuildAbs (location, i);
   tree abs_j = m2expr_BuildAbs (location, j);
-  tree abs_i_mod_abs_j = m2expr_BuildModFloor (location, abs_i, abs_j, FALSE);
+  tree abs_i_mod_abs_j = m2expr_BuildModFloor (location, abs_i, abs_j, false);
   tree abs_i_mod_abs_j_eq_0 = m2expr_BuildEqualToZero (location, abs_i_mod_abs_j,
 						       lowest, min, max);
   tree abs_i_mod_abs_j_ne_0 = m2expr_BuildNotEqualToZero (location, abs_i_mod_abs_j,
 							  lowest, min, max);
-  tree j_mult_min = m2expr_BuildMult (location, j, min, FALSE);
+  tree j_mult_min = m2expr_BuildMult (location, j, min, false);
   tree j_mult_min_1 = m2expr_BuildPostDec (location, j_mult_min);
   tree i_ge_j_mult_min = m2expr_BuildGreaterThanOrEqual (location, i, j_mult_min);
   tree i_ge_j_mult_min_1 = m2expr_BuildGreaterThanOrEqual (location, i, j_mult_min_1);
-  tree abs_i_mod_max = m2expr_BuildModFloor (location, abs_i, max, FALSE);
-  tree abs_i_div_max = m2expr_BuildDivFloor (location, abs_i, max, FALSE);
+  tree abs_i_mod_max = m2expr_BuildModFloor (location, abs_i, max, false);
+  tree abs_i_div_max = m2expr_BuildDivFloor (location, abs_i, max, false);
   tree abs_j_1 = m2expr_BuildPostInc (location, abs_j);
   tree abs_i_mod_max_eq_0 = m2expr_BuildEqualToZero (location, abs_i_mod_max, lowest, min, max);
   tree abs_i_mod_max_ne_0 = m2expr_BuildNotEqualToZero (location, abs_i_mod_max, lowest, min, max);
@@ -2026,8 +2026,8 @@ checkWholeModTruncOverflow (location_t location, tree i, tree j, tree lowest,
   tree c2 = m2expr_BuildLessThanZero (location, j, lowest, min, max);
   tree c3 = m2expr_BuildNotEqualToZero (location, i, lowest, min, max);
   tree c4 = m2expr_BuildLessThanOrEqual (location, j, i);
-  tree c6 = m2expr_BuildDivTrunc (location, i, j, FALSE);
-  tree c7 = m2expr_BuildSub (location, i, m2expr_BuildMult (location, c6, j, FALSE), FALSE);
+  tree c6 = m2expr_BuildDivTrunc (location, i, j, false);
+  tree c7 = m2expr_BuildSub (location, i, m2expr_BuildMult (location, c6, j, false), false);
   tree c5 = m2expr_BuildLessThan (location, c7, min);
   tree c8 = m2expr_Build3TruthAndIf (location, c3, c4, c5);
   tree condition = m2expr_Build3TruthOrIf (location, c1, c2, c8);
@@ -2076,9 +2076,9 @@ checkWholeModCeilOverflow (location_t location,
 			   tree min, tree max)
 {
   tree c1 = m2expr_BuildEqualToZero (location, j, lowest, min, max);
-  tree c2 = m2expr_BuildSub (location, i, j, FALSE);
-  tree c3 = m2expr_BuildDivCeil (location, i, j, FALSE);
-  tree t  = m2expr_BuildMult (location, c2, c3, FALSE);
+  tree c2 = m2expr_BuildSub (location, i, j, false);
+  tree c3 = m2expr_BuildDivCeil (location, i, j, false);
+  tree t  = m2expr_BuildMult (location, c2, c3, false);
   tree c4 = m2expr_BuildGreaterThanOrEqual (location, t, min);
   tree c5 = m2expr_BuildLessThanOrEqual (location, t, max);
   tree c6 = m2expr_BuildTruthAndIf (location, c4, c5);
@@ -2129,9 +2129,9 @@ checkWholeModFloorOverflow (location_t location,
 			    tree min, tree max)
 {
   tree c1 = m2expr_BuildEqualToZero (location, j, lowest, min, max);
-  tree c2 = m2expr_BuildSub (location, i, j, FALSE);
-  tree c3 = m2expr_BuildDivFloor (location, i, j, FALSE);
-  tree t  = m2expr_BuildMult (location, c2, c3, FALSE);
+  tree c2 = m2expr_BuildSub (location, i, j, false);
+  tree c3 = m2expr_BuildDivFloor (location, i, j, false);
+  tree t  = m2expr_BuildMult (location, c2, c3, false);
   tree c4 = m2expr_BuildGreaterThanOrEqual (location, t, min);
   tree c5 = m2expr_BuildLessThanOrEqual (location, t, max);
   tree c6 = m2expr_BuildTruthAndIf (location, c4, c5);
@@ -2149,7 +2149,7 @@ checkWholeModFloorOverflow (location_t location,
     this code has been hand translated into GCC trees.  */
 
 (*
-   divFloorOverflow2 - returns TRUE if an overflow will occur
+   divFloorOverflow2 - returns true if an overflow will occur
                        if i divfloor j is performed.
 *)
 
@@ -2169,7 +2169,7 @@ END divFloorOverflow ;
 
 (*
    divFloorOverflowCases - precondition:  i, j are in range values.
-                           postcondition:  TRUE is returned if i divfloor will
+                           postcondition:  true is returned if i divfloor will
                                            result in an overflow/underflow.
 *)
 
@@ -2184,7 +2184,7 @@ END divFloorOverflowCases ;
 
 (*
    divFloorOverflowPosPos - precondition:  lhs, rhs are legal and are both >= 0.
-                            postcondition:  TRUE is returned if lhs divfloor rhs will
+                            postcondition:  true is returned if lhs divfloor rhs will
                                             result in an overflow/underflow.
 *)
 
@@ -2196,7 +2196,7 @@ END divFloorOverflowPosPos ;
 
 (*
    divFloorOverflowNegNeg - precondition:  i, j are in range values and both < 0.
-                            postcondition:  TRUE is returned if i divfloor will
+                            postcondition:  true is returned if i divfloor will
                                             result in an overflow/underflow.
 *)
 
@@ -2212,7 +2212,7 @@ END divFloorOverflowNegNeg ;
 
 (*
    divFloorOverflowNegPos - precondition:  i, j are in range values.  i < 0, j >= 0.
-                            postcondition:  TRUE is returned if i divfloor will
+                            postcondition:  true is returned if i divfloor will
                                             result in an overflow/underflow.
 *)
 
@@ -2227,7 +2227,7 @@ END divFloorOverflowNegPos ;
 
 (*
    divFloorOverflowPosNeg - precondition:  i, j are in range values.  i >= 0, j < 0.
-                           postcondition:  TRUE is returned if i divfloor will
+                           postcondition:  true is returned if i divfloor will
                                            result in an overflow/underflow.
 *)
 
@@ -2242,7 +2242,7 @@ END divFloorOverflowPosNeg ;
 
 
 /* divFloorOverflowPosPos, precondition:  i, j are legal and are both >= 0.
-   Postcondition:  TRUE is returned if i divfloor will result in an overflow/underflow.
+   Postcondition:  true is returned if i divfloor will result in an overflow/underflow.
 
    A handbuilt expression of trees implementing:
 
@@ -2254,14 +2254,14 @@ END divFloorOverflowPosNeg ;
 static tree
 divFloorOverflowPosPos (location_t location, tree i, tree j, tree min)
 {
-  tree j_mult_min = m2expr_BuildMult (location, j, min, FALSE);
+  tree j_mult_min = m2expr_BuildMult (location, j, min, false);
   tree i_lt_j_mult_min = m2expr_BuildLessThan (location, i, j_mult_min);
   return i_lt_j_mult_min;
 }
 
 
 /* divFloorOverflowNegNeg precondition:  i, j are in range values and both < 0.
-   Postcondition:  TRUE is returned if i divfloor j will result in an
+   Postcondition:  true is returned if i divfloor j will result in an
    overflow/underflow.
 
    A handbuilt expression of trees implementing:
@@ -2291,9 +2291,9 @@ divFloorOverflowNegNeg (location_t location, tree i, tree j, tree lowest,
   tree max_lte_0 = m2expr_BuildLessThanOrEqualZero (location, max, lowest, min, max);
   tree abs_i = m2expr_BuildAbs (location, i);
   tree abs_j = m2expr_BuildAbs (location, j);
-  tree j_mult_min = m2expr_BuildMult (location, j, min, FALSE);
+  tree j_mult_min = m2expr_BuildMult (location, j, min, false);
   tree i_ge_j_mult_min = m2expr_BuildGreaterThanOrEqual (location, i, j_mult_min);
-  tree abs_i_div_max = m2expr_BuildDivFloor (location, abs_i, max, FALSE);
+  tree abs_i_div_max = m2expr_BuildDivFloor (location, abs_i, max, false);
   tree abs_i_div_max_gt_abs_j = m2expr_BuildGreaterThan (location,  abs_i_div_max, abs_j);
 
   return m2expr_Build3TruthOrIf (location, max_lte_0, i_ge_j_mult_min, abs_i_div_max_gt_abs_j);
@@ -2301,7 +2301,7 @@ divFloorOverflowNegNeg (location_t location, tree i, tree j, tree lowest,
 
 
 /* divFloorOverflowPosNeg precondition:  i, j are in range values and i >=0, j < 0.
-   Postcondition:  TRUE is returned if i divfloor j will result in an
+   Postcondition:  true is returned if i divfloor j will result in an
    overflow/underflow.
 
    A handbuilt expression of trees implementing:
@@ -2317,15 +2317,15 @@ divFloorOverflowNegNeg (location_t location, tree i, tree j, tree lowest,
 static tree
 divFloorOverflowPosNeg (location_t location, tree i, tree j, tree min)
 {
-  tree j_mult_min = m2expr_BuildMult (location, j, min, FALSE);
-  tree j_mult_min_sub_j = m2expr_BuildSub (location, j_mult_min, j, FALSE);
+  tree j_mult_min = m2expr_BuildMult (location, j, min, false);
+  tree j_mult_min_sub_j = m2expr_BuildSub (location, j_mult_min, j, false);
   tree i_ge_j_mult_min_sub_j = m2expr_BuildGreaterThanOrEqual (location, i, j_mult_min_sub_j);
   return i_ge_j_mult_min_sub_j;
 }
 
 
 /* divFloorOverflowNegPos precondition:  i, j are in range values and i < 0, j > 0.
-   Postcondition:  TRUE is returned if i divfloor j will result in an
+   Postcondition:  true is returned if i divfloor j will result in an
    overflow/underflow.
 
    A handbuilt expression of trees implementing:
@@ -2338,14 +2338,14 @@ divFloorOverflowPosNeg (location_t location, tree i, tree j, tree min)
 static tree
 divFloorOverflowNegPos (location_t location, tree i, tree j, tree min)
 {
-  tree j_mult_min = m2expr_BuildMult (location, j, min, FALSE);
+  tree j_mult_min = m2expr_BuildMult (location, j, min, false);
   tree i_lt_j_mult_min = m2expr_BuildLessThan (location, i, j_mult_min);
   return i_lt_j_mult_min;
 }
 
 
 /* divFloorOverflowCases, precondition:  i, j are in range values.
-   Postcondition:  TRUE is returned if i divfloor will result in an
+   Postcondition:  true is returned if i divfloor will result in an
    overflow/underflow.
 
    A handbuilt expression of trees implementing:
@@ -2533,7 +2533,7 @@ m2expr_checkRealOverflow (location_t location, enum tree_code code,
 
 tree
 m2expr_build_binary_op_check (location_t location, enum tree_code code,
-                              tree op1, tree op2, int needconvert, tree lowest,
+                              tree op1, tree op2, bool needconvert, tree lowest,
                               tree min, tree max)
 {
   tree type1, type2, result;
@@ -2654,7 +2654,7 @@ m2expr_BuildNegateCheck (location_t location, tree arg, tree lowest, tree min,
 /* BuildNegate build a negate expression and returns the tree.  */
 
 tree
-m2expr_BuildNegate (location_t location, tree op1, int needconvert)
+m2expr_BuildNegate (location_t location, tree op1, bool needconvert)
 {
   m2assert_AssertLocation (location);
   op1 = m2expr_FoldAndStrip (op1);
@@ -2666,21 +2666,21 @@ m2expr_BuildNegate (location_t location, tree op1, int needconvert)
 /* BuildSetNegate build a set negate expression and returns the tree.  */
 
 tree
-m2expr_BuildSetNegate (location_t location, tree op1, int needconvert)
+m2expr_BuildSetNegate (location_t location, tree op1, bool needconvert)
 {
   m2assert_AssertLocation (location);
 
   return m2expr_build_binary_op (
       location, BIT_XOR_EXPR,
       m2convert_BuildConvert (location, m2type_GetWordType (),
-                              m2expr_FoldAndStrip (op1), FALSE),
+                              m2expr_FoldAndStrip (op1), false),
       set_full_complement, needconvert);
 }
 
 /* BuildMult build a multiplication tree.  */
 
 tree
-m2expr_BuildMult (location_t location, tree op1, tree op2, int needconvert)
+m2expr_BuildMult (location_t location, tree op1, tree op2, bool needconvert)
 {
   op1 = m2expr_FoldAndStrip (op1);
   op2 = m2expr_FoldAndStrip (op2);
@@ -2709,7 +2709,7 @@ m2expr_BuildMultCheck (location_t location, tree op1, tree op2, tree lowest,
   op1 = CheckAddressToCardinal (location, op1);
   op2 = CheckAddressToCardinal (location, op2);
 
-  t = m2expr_build_binary_op_check (location, MULT_EXPR, op1, op2, FALSE,
+  t = m2expr_build_binary_op_check (location, MULT_EXPR, op1, op2, false,
                                     lowest, min, max);
   return m2expr_FoldAndStrip (t);
 }
@@ -2726,7 +2726,7 @@ testLimits (location_t location, tree type, tree min, tree max)
       && (m2expr_CompareTrees (TYPE_MIN_VALUE (type), min) == 0))
     return m2expr_BuildMult (location, m2expr_GetSizeOf (location, type),
                              m2decl_BuildIntegerConstant (BITS_PER_UNIT),
-                             FALSE);
+                             false);
   return NULL_TREE;
 }
 
@@ -2760,7 +2760,7 @@ getMax (tree a, tree b)
 static tree
 calcNbits (location_t location, tree min, tree max)
 {
-  int negative = FALSE;
+  int negative = false;
   tree t = testLimits (location, m2type_GetIntegerType (), min, max);
 
   m2assert_AssertLocation (location);
@@ -2773,19 +2773,19 @@ calcNbits (location_t location, tree min, tree max)
       if (m2expr_CompareTrees (min, m2expr_GetIntegerZero (location)) < 0)
         {
           min = m2expr_BuildAdd (location, min,
-                                 m2expr_GetIntegerOne (location), FALSE);
-          min = fold (m2expr_BuildNegate (location, min, FALSE));
-          negative = TRUE;
+                                 m2expr_GetIntegerOne (location), false);
+          min = fold (m2expr_BuildNegate (location, min, false));
+          negative = true;
         }
       if (m2expr_CompareTrees (max, m2expr_GetIntegerZero (location)) < 0)
         {
-          max = fold (m2expr_BuildNegate (location, max, FALSE));
-          negative = TRUE;
+          max = fold (m2expr_BuildNegate (location, max, false));
+          negative = true;
         }
       t = noBitsRequired (getMax (min, max));
       if (negative)
         t = m2expr_BuildAdd (location, t, m2expr_GetIntegerOne (location),
-                             FALSE);
+                             false);
     }
   return t;
 }
@@ -2808,16 +2808,16 @@ m2expr_BuildTBitSize (location_t location, tree type)
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
       max = m2convert_BuildConvert (location, m2type_GetIntegerType (),
-                                    TYPE_MAX_VALUE (type), FALSE);
+                                    TYPE_MAX_VALUE (type), false);
       min = m2convert_BuildConvert (location, m2type_GetIntegerType (),
-                                    TYPE_MIN_VALUE (type), FALSE);
+                                    TYPE_MIN_VALUE (type), false);
       return calcNbits (location, min, max);
     case BOOLEAN_TYPE:
       return m2expr_GetIntegerOne (location);
     default:
       return m2expr_BuildMult (location, m2expr_GetSizeOf (location, type),
                                m2decl_BuildIntegerConstant (BITS_PER_UNIT),
-                               FALSE);
+                               false);
     }
 }
 
@@ -2825,18 +2825,18 @@ m2expr_BuildTBitSize (location_t location, tree type)
 
 tree
 m2expr_BuildSize (location_t location, tree op1,
-                  int needconvert ATTRIBUTE_UNUSED)
+                  bool needconvert ATTRIBUTE_UNUSED)
 {
   m2assert_AssertLocation (location);
   return m2expr_GetSizeOf (location, op1);
 }
 
 /* BuildAddr return an expression which calculates the address of op1
-   and returns the tree.  If use_generic is TRUE then create a generic
+   and returns the tree.  If use_generic is true then create a generic
    pointer type.  */
 
 tree
-m2expr_BuildAddr (location_t location, tree op1, int use_generic)
+m2expr_BuildAddr (location_t location, tree op1, bool use_generic)
 {
   tree type = m2tree_skip_type_decl (TREE_TYPE (op1));
   tree ptrType = build_pointer_type (type);
@@ -2862,7 +2862,7 @@ m2expr_BuildAddr (location_t location, tree op1, int use_generic)
 
 tree
 m2expr_BuildOffset1 (location_t location, tree field,
-                     int needconvert ATTRIBUTE_UNUSED)
+                     bool needconvert ATTRIBUTE_UNUSED)
 {
   m2assert_AssertLocation (location);
   return m2expr_BuildOffset (location, DECL_CONTEXT (field), field,
@@ -2911,7 +2911,7 @@ expression is returned.  */
 
 tree
 m2expr_BuildOffset (location_t location, tree record, tree field,
-                    int needconvert ATTRIBUTE_UNUSED)
+                    bool needconvert ATTRIBUTE_UNUSED)
 {
   m2assert_AssertLocation (location);
 
@@ -2922,9 +2922,9 @@ m2expr_BuildOffset (location_t location, tree record, tree field,
             location, DECL_FIELD_OFFSET (field),
             m2expr_BuildDivTrunc (location, DECL_FIELD_BIT_OFFSET (field),
                                   m2decl_BuildIntegerConstant (BITS_PER_UNIT),
-                                  FALSE),
-            FALSE),
-        FALSE);
+                                  false),
+            false),
+        false);
   else
     {
       tree r1 = DECL_CONTEXT (field);
@@ -2933,8 +2933,8 @@ m2expr_BuildOffset (location_t location, tree record, tree field,
           location, m2type_GetIntegerType (),
           m2expr_BuildAdd (
               location, m2expr_BuildOffset (location, r1, field, needconvert),
-              m2expr_BuildOffset (location, record, r2, needconvert), FALSE),
-          FALSE);
+              m2expr_BuildOffset (location, record, r2, needconvert), false),
+          false);
     }
 }
 
@@ -2942,7 +2942,7 @@ m2expr_BuildOffset (location_t location, tree record, tree field,
 
 tree
 m2expr_BuildLogicalOrAddress (location_t location, tree op1, tree op2,
-                              int needconvert)
+                              bool needconvert)
 {
   m2assert_AssertLocation (location);
   return m2expr_build_binary_op (location, BIT_IOR_EXPR, op1, op2,
@@ -2953,13 +2953,13 @@ m2expr_BuildLogicalOrAddress (location_t location, tree op1, tree op2,
 
 tree
 m2expr_BuildLogicalOr (location_t location, tree op1, tree op2,
-                       int needconvert)
+                       bool needconvert)
 {
   m2assert_AssertLocation (location);
   return m2expr_build_binary_op (
       location, BIT_IOR_EXPR,
-      m2convert_BuildConvert (location, m2type_GetWordType (), op1, FALSE),
-      m2convert_BuildConvert (location, m2type_GetWordType (), op2, FALSE),
+      m2convert_BuildConvert (location, m2type_GetWordType (), op1, false),
+      m2convert_BuildConvert (location, m2type_GetWordType (), op2, false),
       needconvert);
 }
 
@@ -2967,13 +2967,13 @@ m2expr_BuildLogicalOr (location_t location, tree op1, tree op2,
 
 tree
 m2expr_BuildLogicalAnd (location_t location, tree op1, tree op2,
-                        int needconvert)
+                        bool needconvert)
 {
   m2assert_AssertLocation (location);
   return m2expr_build_binary_op (
       location, BIT_AND_EXPR,
-      m2convert_BuildConvert (location, m2type_GetWordType (), op1, FALSE),
-      m2convert_BuildConvert (location, m2type_GetWordType (), op2, FALSE),
+      m2convert_BuildConvert (location, m2type_GetWordType (), op1, false),
+      m2convert_BuildConvert (location, m2type_GetWordType (), op2, false),
       needconvert);
 }
 
@@ -2982,13 +2982,13 @@ m2expr_BuildLogicalAnd (location_t location, tree op1, tree op2,
 
 tree
 m2expr_BuildSymmetricDifference (location_t location, tree op1, tree op2,
-                                 int needconvert)
+                                 bool needconvert)
 {
   m2assert_AssertLocation (location);
   return m2expr_build_binary_op (
       location, BIT_XOR_EXPR,
-      m2convert_BuildConvert (location, m2type_GetWordType (), op1, FALSE),
-      m2convert_BuildConvert (location, m2type_GetWordType (), op2, FALSE),
+      m2convert_BuildConvert (location, m2type_GetWordType (), op1, false),
+      m2convert_BuildConvert (location, m2type_GetWordType (), op2, false),
       needconvert);
 }
 
@@ -2997,12 +2997,12 @@ return the tree.  (op1 and (not op2)).  */
 
 tree
 m2expr_BuildLogicalDifference (location_t location, tree op1, tree op2,
-                               int needconvert)
+                               bool needconvert)
 {
   m2assert_AssertLocation (location);
   return m2expr_build_binary_op (
       location, BIT_AND_EXPR,
-      m2convert_BuildConvert (location, m2type_GetWordType (), op1, FALSE),
+      m2convert_BuildConvert (location, m2type_GetWordType (), op1, false),
       m2expr_BuildSetNegate (location, op2, needconvert), needconvert);
 }
 
@@ -3030,9 +3030,9 @@ boolean_enum_to_unsigned (location_t location, tree t)
   tree type = TREE_TYPE (t);
 
   if (TREE_CODE (base_type (type)) == BOOLEAN_TYPE)
-    return m2convert_BuildConvert (location, unsigned_type_node, t, FALSE);
+    return m2convert_BuildConvert (location, unsigned_type_node, t, false);
   else if (TREE_CODE (base_type (type)) == ENUMERAL_TYPE)
-    return m2convert_BuildConvert (location, unsigned_type_node, t, FALSE);
+    return m2convert_BuildConvert (location, unsigned_type_node, t, false);
   else
     return t;
 }
@@ -3049,7 +3049,7 @@ check_for_comparison (location_t location, tree op, tree badType,
   if (m2tree_skip_type_decl (TREE_TYPE (op)) == badType)
     /* Cannot compare array contents in m2expr_build_binary_op.  */
     return m2expr_BuildIndirect (
-        location, m2expr_BuildAddr (location, op, FALSE), goodType);
+        location, m2expr_BuildAddr (location, op, false), goodType);
   return op;
 }
 
@@ -3082,7 +3082,7 @@ m2expr_BuildLessThan (location_t location, tree op1, tree op2)
   m2assert_AssertLocation (location);
   return m2expr_build_binary_op (
       location, LT_EXPR, boolean_enum_to_unsigned (location, op1),
-      boolean_enum_to_unsigned (location, op2), TRUE);
+      boolean_enum_to_unsigned (location, op2), true);
 }
 
 /* BuildGreaterThan return a tree which computes >.  */
@@ -3093,7 +3093,7 @@ m2expr_BuildGreaterThan (location_t location, tree op1, tree op2)
   m2assert_AssertLocation (location);
   return m2expr_build_binary_op (
       location, GT_EXPR, boolean_enum_to_unsigned (location, op1),
-      boolean_enum_to_unsigned (location, op2), TRUE);
+      boolean_enum_to_unsigned (location, op2), true);
 }
 
 /* BuildLessThanOrEqual return a tree which computes <.  */
@@ -3104,7 +3104,7 @@ m2expr_BuildLessThanOrEqual (location_t location, tree op1, tree op2)
   m2assert_AssertLocation (location);
   return m2expr_build_binary_op (
       location, LE_EXPR, boolean_enum_to_unsigned (location, op1),
-      boolean_enum_to_unsigned (location, op2), TRUE);
+      boolean_enum_to_unsigned (location, op2), true);
 }
 
 /* BuildGreaterThanOrEqual return a tree which computes >=.  */
@@ -3115,7 +3115,7 @@ m2expr_BuildGreaterThanOrEqual (location_t location, tree op1, tree op2)
   m2assert_AssertLocation (location);
   return m2expr_build_binary_op (
       location, GE_EXPR, boolean_enum_to_unsigned (location, op1),
-      boolean_enum_to_unsigned (location, op2), TRUE);
+      boolean_enum_to_unsigned (location, op2), true);
 }
 
 /* BuildEqualTo return a tree which computes =.  */
@@ -3126,7 +3126,7 @@ m2expr_BuildEqualTo (location_t location, tree op1, tree op2)
   m2assert_AssertLocation (location);
   return m2expr_build_binary_op (location, EQ_EXPR,
                                  convert_for_comparison (location, op1),
-                                 convert_for_comparison (location, op2), TRUE);
+                                 convert_for_comparison (location, op2), true);
 }
 
 /* BuildEqualNotTo return a tree which computes #.  */
@@ -3137,7 +3137,7 @@ m2expr_BuildNotEqualTo (location_t location, tree op1, tree op2)
   m2assert_AssertLocation (location);
   return m2expr_build_binary_op (location, NE_EXPR,
                                  convert_for_comparison (location, op1),
-                                 convert_for_comparison (location, op2), TRUE);
+                                 convert_for_comparison (location, op2), true);
 }
 
 /* BuildIsSuperset return a tree which computes:  op1 & op2 == op2.  */
@@ -3147,7 +3147,7 @@ m2expr_BuildIsSuperset (location_t location, tree op1, tree op2)
 {
   m2assert_AssertLocation (location);
   return m2expr_BuildEqualTo (
-      location, op2, m2expr_BuildLogicalAnd (location, op1, op2, FALSE));
+      location, op2, m2expr_BuildLogicalAnd (location, op1, op2, false));
 }
 
 /* BuildIsNotSuperset return a tree which computes: op1 & op2 != op2.  */
@@ -3157,7 +3157,7 @@ m2expr_BuildIsNotSuperset (location_t location, tree op1, tree op2)
 {
   m2assert_AssertLocation (location);
   return m2expr_BuildNotEqualTo (
-      location, op2, m2expr_BuildLogicalAnd (location, op1, op2, FALSE));
+      location, op2, m2expr_BuildLogicalAnd (location, op1, op2, false));
 }
 
 /* BuildIsSubset return a tree which computes:  op1 & op2 == op1.  */
@@ -3167,7 +3167,7 @@ m2expr_BuildIsSubset (location_t location, tree op1, tree op2)
 {
   m2assert_AssertLocation (location);
   return m2expr_BuildEqualTo (
-      location, op1, m2expr_BuildLogicalAnd (location, op1, op2, FALSE));
+      location, op1, m2expr_BuildLogicalAnd (location, op1, op2, false));
 }
 
 /* BuildIsNotSubset return a tree which computes: op1 & op2 != op1.  */
@@ -3177,7 +3177,7 @@ m2expr_BuildIsNotSubset (location_t location, tree op1, tree op2)
 {
   m2assert_AssertLocation (location);
   return m2expr_BuildNotEqualTo (
-      location, op1, m2expr_BuildLogicalAnd (location, op1, op2, FALSE));
+      location, op1, m2expr_BuildLogicalAnd (location, op1, op2, false));
 }
 
 /* BuildIfConstInVar generates: if constel in varset then goto label.  */
@@ -3262,9 +3262,9 @@ m2expr_BuildIfVarInVar (location_t location, tree type, tree varset,
   /* Calculate the index from the first bit, ie bit 0 represents low value.  */
   tree index = m2expr_BuildSub (
       location, m2convert_BuildConvert (location, m2type_GetIntegerType (),
-                                        varel, FALSE),
-      m2convert_BuildConvert (location, m2type_GetIntegerType (), low, FALSE),
-      FALSE);
+                                        varel, false),
+      m2convert_BuildConvert (location, m2type_GetIntegerType (), low, false),
+      false);
 
   m2assert_AssertLocation (location);
 
@@ -3282,14 +3282,14 @@ m2expr_BuildIfVarInVar (location_t location, tree type, tree varset,
       /* Which word do we need to fetch?  */
       tree word_index = m2expr_FoldAndStrip (m2expr_BuildDivTrunc (
           location, index, m2decl_BuildIntegerConstant (SET_WORD_SIZE),
-          FALSE));
+          false));
       /* Calculate the bit in this word.  */
       tree offset_into_word = m2expr_FoldAndStrip (m2expr_BuildModTrunc (
           location, index, m2decl_BuildIntegerConstant (SET_WORD_SIZE),
-          FALSE));
+          false));
       tree p2 = m2expr_FoldAndStrip (m2expr_BuildMult (
           location, word_index,
-          m2decl_BuildIntegerConstant (SET_WORD_SIZE / BITS_PER_UNIT), FALSE));
+          m2decl_BuildIntegerConstant (SET_WORD_SIZE / BITS_PER_UNIT), false));
 
       /* Calculate the address of the word we are interested in.  */
       p1 = m2expr_BuildAddAddress (location,
@@ -3314,10 +3314,10 @@ m2expr_BuildIfNotVarInVar (location_t location, tree type, tree varset,
   /* Calculate the index from the first bit, ie bit 0 represents low value.  */
   tree index = m2expr_BuildSub (
       location, m2convert_BuildConvert (location, m2type_GetIntegerType (),
-                                        m2expr_FoldAndStrip (varel), FALSE),
+                                        m2expr_FoldAndStrip (varel), false),
       m2convert_BuildConvert (location, m2type_GetIntegerType (),
-                              m2expr_FoldAndStrip (low), FALSE),
-      FALSE);
+                              m2expr_FoldAndStrip (low), false),
+      false);
 
   index = m2expr_FoldAndStrip (index);
   m2assert_AssertLocation (location);
@@ -3338,14 +3338,14 @@ m2expr_BuildIfNotVarInVar (location_t location, tree type, tree varset,
       /* Which word do we need to fetch?  */
       tree word_index = m2expr_FoldAndStrip (m2expr_BuildDivTrunc (
           location, index, m2decl_BuildIntegerConstant (SET_WORD_SIZE),
-          FALSE));
+          false));
       /* Calculate the bit in this word.  */
       tree offset_into_word = m2expr_FoldAndStrip (m2expr_BuildModTrunc (
           location, index, m2decl_BuildIntegerConstant (SET_WORD_SIZE),
-          FALSE));
+          false));
       tree p2 = m2expr_FoldAndStrip (m2expr_BuildMult (
           location, word_index,
-          m2decl_BuildIntegerConstant (SET_WORD_SIZE / BITS_PER_UNIT), FALSE));
+          m2decl_BuildIntegerConstant (SET_WORD_SIZE / BITS_PER_UNIT), false));
 
       /* Calculate the address of the word we are interested in.  */
       p1 = m2expr_BuildAddAddress (location, p1, p2);
@@ -3415,7 +3415,7 @@ m2expr_BuildIfInRangeGoto (location_t location, tree var, tree low, tree high,
         m2expr_build_binary_op (
             location, TRUTH_ANDIF_EXPR,
             m2expr_BuildGreaterThanOrEqual (location, var, low),
-            m2expr_BuildLessThanOrEqual (location, var, high), FALSE),
+            m2expr_BuildLessThanOrEqual (location, var, high), false),
         NULL, label);
 }
 
@@ -3436,7 +3436,7 @@ m2expr_BuildIfNotInRangeGoto (location_t location, tree var, tree low,
         location, m2expr_build_binary_op (
                       location, TRUTH_ORIF_EXPR,
                       m2expr_BuildLessThan (location, var, low),
-                      m2expr_BuildGreaterThan (location, var, high), FALSE),
+                      m2expr_BuildGreaterThan (location, var, high), false),
         NULL, label);
 }
 
@@ -3453,7 +3453,7 @@ m2expr_BuildArray (location_t location, tree type, tree array, tree index,
 // ASSERT_CONDITION (low_indice == TYPE_MIN_VALUE (index_type));
 
   low_indice
-      = m2convert_BuildConvert (location, index_type, low_indice, FALSE);
+      = m2convert_BuildConvert (location, index_type, low_indice, false);
   return build4_loc (location, ARRAY_REF, type, array, index, low_indice,
                      NULL_TREE);
 }
@@ -3499,10 +3499,10 @@ m2expr_BuildIndirect (location_t location ATTRIBUTE_UNUSED, tree target,
   m2assert_AssertLocation (location);
 
   return build1 (INDIRECT_REF, t1,
-                 m2convert_BuildConvert (location, t2, target, FALSE));
+                 m2convert_BuildConvert (location, t2, target, false));
 }
 
-/* IsTrue - returns TRUE if, t, is known to be TRUE.  */
+/* IsTrue - returns true if, t, is known to be true.  */
 
 int
 m2expr_IsTrue (tree t)
@@ -3510,7 +3510,7 @@ m2expr_IsTrue (tree t)
   return (m2expr_FoldAndStrip (t) == m2type_GetBooleanTrue ());
 }
 
-/* IsFalse - returns FALSE if, t, is known to be FALSE.  */
+/* IsFalse - returns false if, t, is known to be false.  */
 
 int
 m2expr_IsFalse (tree t)
@@ -3519,7 +3519,7 @@ m2expr_IsFalse (tree t)
 }
 
 /* AreConstantsEqual - maps onto tree.cc (tree_int_cst_equal).  It
-   returns TRUE if the value of e1 is the same as e2.  */
+   returns true if the value of e1 is the same as e2.  */
 
 int
 m2expr_AreConstantsEqual (tree e1, tree e2)
@@ -3527,7 +3527,7 @@ m2expr_AreConstantsEqual (tree e1, tree e2)
   return tree_int_cst_equal (e1, e2) != 0;
 }
 
-/* AreRealOrComplexConstantsEqual - returns TRUE if constants, e1 and
+/* AreRealOrComplexConstantsEqual - returns true if constants, e1 and
    e2 are equal according to IEEE rules.  This does not perform bit
    equivalence for example IEEE states that -0 == 0 and NaN != NaN.  */
 
@@ -3621,7 +3621,7 @@ m2expr_BuildCap (location_t location, tree t)
 
 tree
 m2expr_BuildDivM2 (location_t location, tree op1, tree op2,
-                   unsigned int needsconvert)
+                   bool needsconvert)
 {
   op1 = m2expr_FoldAndStrip (op1);
   op2 = m2expr_FoldAndStrip (op2);
@@ -3633,7 +3633,7 @@ m2expr_BuildDivM2 (location_t location, tree op1, tree op2,
         m2expr_BuildLessThan (
             location, op2,
             m2convert_BuildConvert (location, TREE_TYPE (op2),
-                                    m2expr_GetIntegerZero (location), FALSE)),
+                                    m2expr_GetIntegerZero (location), false)),
         m2expr_BuildDivCeil (location, op1, op2, needsconvert),
         m2expr_BuildDivFloor (location, op1, op2, needsconvert));
   else
@@ -3659,7 +3659,7 @@ m2expr_BuildDivM2Check (location_t location, tree op1, tree op2,
         m2expr_BuildLessThan (
             location, op2,
             m2convert_BuildConvert (location, TREE_TYPE (op2),
-                                    m2expr_GetIntegerZero (location), FALSE)),
+                                    m2expr_GetIntegerZero (location), false)),
         m2expr_BuildDivCeilCheck (location, op1, op2, lowest, min, max),
         m2expr_BuildDivFloorCheck (location, op1, op2, lowest, min, max));
   else
@@ -3673,7 +3673,7 @@ m2expr_BuildISOModM2Check (location_t location,
 {
   tree cond = m2expr_BuildLessThan (location, op2,
 				    m2convert_BuildConvert (location, TREE_TYPE (op2),
-							    m2expr_GetIntegerZero (location), FALSE));
+							    m2expr_GetIntegerZero (location), false));
 
   /* Return the result of the modulus.  */
   return fold_build3 (COND_EXPR, TREE_TYPE (op1), cond,
@@ -3707,7 +3707,7 @@ m2expr_BuildModM2Check (location_t location, tree op1, tree op2,
 
 tree
 m2expr_BuildModM2 (location_t location, tree op1, tree op2,
-                   unsigned int needsconvert)
+                   bool needsconvert)
 {
   op1 = m2expr_FoldAndStrip (op1);
   op2 = m2expr_FoldAndStrip (op2);
@@ -3719,7 +3719,7 @@ m2expr_BuildModM2 (location_t location, tree op1, tree op2,
         m2expr_BuildLessThan (
             location, op2,
             m2convert_BuildConvert (location, TREE_TYPE (op2),
-                                    m2expr_GetIntegerZero (location), FALSE)),
+                                    m2expr_GetIntegerZero (location), false)),
         m2expr_BuildModCeil (location, op1, op2, needsconvert),
         m2expr_BuildModFloor (location, op1, op2, needsconvert));
   else
@@ -3773,9 +3773,9 @@ m2expr_BuildCmplx (location_t location, tree type, tree real, tree imag)
   scalor = TREE_TYPE (type);
 
   if (scalor != TREE_TYPE (real))
-    real = m2convert_BuildConvert (location, scalor, real, FALSE);
+    real = m2convert_BuildConvert (location, scalor, real, false);
   if (scalor != TREE_TYPE (imag))
-    imag = m2convert_BuildConvert (location, scalor, imag, FALSE);
+    imag = m2convert_BuildConvert (location, scalor, imag, false);
 
   if ((TREE_CODE (real) == REAL_CST) && (TREE_CODE (imag) == REAL_CST))
     return build_complex (type, real, imag);
@@ -3790,10 +3790,10 @@ m2expr_BuildCmplx (location_t location, tree type, tree real, tree imag)
 void
 m2expr_BuildBinaryForeachWordDo (location_t location, tree type, tree op1,
                                  tree op2, tree op3,
-                                 tree (*binop) (location_t, tree, tree, int),
-                                 int is_op1lvalue, int is_op2lvalue,
-                                 int is_op3lvalue, int is_op1const,
-                                 int is_op2const, int is_op3const)
+                                 tree (*binop) (location_t, tree, tree, bool),
+                                 bool is_op1lvalue, bool is_op2lvalue,
+                                 bool is_op3lvalue, bool is_op1const,
+                                 bool is_op2const, bool is_op3const)
 {
   tree size = m2expr_GetSizeOf (location, type);
 
@@ -3813,7 +3813,7 @@ m2expr_BuildBinaryForeachWordDo (location_t location, tree type, tree op1,
         location, m2treelib_get_rvalue (location, op1, type, is_op1lvalue),
         (*binop) (
             location, m2treelib_get_rvalue (location, op2, type, is_op2lvalue),
-            m2treelib_get_rvalue (location, op3, type, is_op3lvalue), FALSE));
+            m2treelib_get_rvalue (location, op3, type, is_op3lvalue), false));
   else
     {
       /* Large set size > TSIZE(WORD).  */
@@ -3842,7 +3842,7 @@ m2expr_BuildBinaryForeachWordDo (location_t location, tree type, tree op1,
                                            is_op2lvalue, op2, fieldNo),
                   m2treelib_get_set_value (location, p3, field3, is_op3const,
                                            is_op3lvalue, op3, fieldNo),
-                  FALSE));
+                  false));
           fieldNo++;
           field1 = m2treelib_get_field_no (type, op1, is_op1const, fieldNo);
           field2 = m2treelib_get_field_no (type, op2, is_op2const, fieldNo);
@@ -3887,9 +3887,9 @@ append_digit (unsigned HOST_WIDE_INT *low, HOST_WIDE_INT *high,
   /* Multiply by 2, 8 or 16.  Catching this overflow here means we
      don't need to worry about add_high overflowing.  */
   if (((*high) >> (INT_TYPE_SIZE - shift)) == 0)
-    overflow = FALSE;
+    overflow = false;
   else
-    overflow = TRUE;
+    overflow = true;
 
   res_high = *high << shift;
   res_low = *low << shift;
@@ -3913,7 +3913,7 @@ append_digit (unsigned HOST_WIDE_INT *low, HOST_WIDE_INT *high,
     add_high++;
   test_high = res_high + add_high;
   if (test_high < res_high)
-    overflow = TRUE;
+    overflow = true;
 
   *low = res_low + add_low;
   *high = res_high + add_high;
@@ -3929,7 +3929,7 @@ m2expr_interpret_integer (const char *str, unsigned int base,
                           unsigned HOST_WIDE_INT *low, HOST_WIDE_INT *high)
 {
   unsigned const char *p, *end;
-  int overflow = FALSE;
+  int overflow = false;
   int len;
 
   *low = 0;
@@ -3978,10 +3978,10 @@ m2expr_interpret_integer (const char *str, unsigned int base,
 
 static int
 append_m2_digit (unsigned int *low, int *high, unsigned int digit,
-                 unsigned int base, int *needsUnsigned)
+                 unsigned int base, bool *needsUnsigned)
 {
   unsigned int shift;
-  int overflow;
+  bool overflow;
   int add_high, res_high, test_high;
   unsigned int add_low, res_low, test_low;
   unsigned int add_uhigh, res_uhigh, test_uhigh;
@@ -4010,9 +4010,9 @@ append_m2_digit (unsigned int *low, int *high, unsigned int digit,
   /* Multiply by 2, 8 or 16.  Catching this overflow here means we
      don't need to worry about add_high overflowing.  */
   if (((*high) >> (INT_TYPE_SIZE - shift)) == 0)
-    overflow = FALSE;
+    overflow = false;
   else
-    overflow = TRUE;
+    overflow = true;
 
   res_high = *high << shift;
   res_low = *low << shift;
@@ -4041,9 +4041,9 @@ append_m2_digit (unsigned int *low, int *high, unsigned int digit,
       add_uhigh = add_high;
       test_uhigh = res_uhigh + add_uhigh;
       if (test_uhigh < res_uhigh)
-	overflow = TRUE;
+	overflow = true;
       else
-	*needsUnsigned = TRUE;
+	*needsUnsigned = true;
     }
 
   *low = res_low + add_low;
@@ -4062,12 +4062,12 @@ append_m2_digit (unsigned int *low, int *high, unsigned int digit,
 int
 m2expr_interpret_m2_integer (const char *str, unsigned int base,
                              unsigned int *low, int *high,
-			     int *needsLong, int *needsUnsigned)
+			     bool *needsLong, bool *needsUnsigned)
 {
   const unsigned char *p, *end;
   int len;
-  *needsLong = FALSE;
-  *needsUnsigned = FALSE;
+  *needsLong = false;
+  *needsUnsigned = false;
 
   *low = 0;
   *high = 0;
@@ -4095,22 +4095,22 @@ m2expr_interpret_m2_integer (const char *str, unsigned int base,
           if (ISDIGIT (c) || (base == 16 && ISXDIGIT (c)))
             c = hex_value (c);
           else
-            return FALSE;  /* End of string and no overflow found.  */
+            return false;  /* End of string and no overflow found.  */
 
           /* Strict inequality for when max is set to zero.  */
           if (*low < max)
             *low = (*low) * base + c;
           else
             {
-	      *needsLong = TRUE;
+	      *needsLong = true;
 	      if (append_m2_digit (low, high, c, base,
 				   needsUnsigned))
-		return TRUE;  /* We have overflowed so bail out.  */
+		return true;  /* We have overflowed so bail out.  */
               max = 0;  /* From now on we always use append_digit.  */
             }
         }
     }
-  return FALSE;
+  return false;
 }
 
 /* GetSizeOfInBits return the number of bits used to contain, type.  */
@@ -4266,9 +4266,9 @@ build_set_full_complement (location_t location)
           m2expr_BuildLSL (
               location, m2expr_GetWordOne (location),
               m2convert_BuildConvert (location, m2type_GetWordType (),
-                                      m2decl_BuildIntegerConstant (i), FALSE),
-              FALSE),
-          FALSE);
+                                      m2decl_BuildIntegerConstant (i), false),
+              false),
+          false);
     }
   return value;
 }

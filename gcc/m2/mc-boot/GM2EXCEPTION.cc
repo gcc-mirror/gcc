@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -43,7 +44,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 typedef enum {M2EXCEPTION_indexException, M2EXCEPTION_rangeException, M2EXCEPTION_caseSelectException, M2EXCEPTION_invalidLocation, M2EXCEPTION_functionException, M2EXCEPTION_wholeValueException, M2EXCEPTION_wholeDivException, M2EXCEPTION_realValueException, M2EXCEPTION_realDivException, M2EXCEPTION_complexValueException, M2EXCEPTION_complexDivException, M2EXCEPTION_protException, M2EXCEPTION_sysException, M2EXCEPTION_coException, M2EXCEPTION_exException} M2EXCEPTION_M2Exceptions;
 
 extern "C" M2EXCEPTION_M2Exceptions M2EXCEPTION_M2Exception (void);
-extern "C" unsigned int M2EXCEPTION_IsM2Exception (void);
+extern "C" bool M2EXCEPTION_IsM2Exception (void);
 
 extern "C" M2EXCEPTION_M2Exceptions M2EXCEPTION_M2Exception (void)
 {
@@ -67,7 +68,7 @@ extern "C" M2EXCEPTION_M2Exceptions M2EXCEPTION_M2Exception (void)
   __builtin_unreachable ();
 }
 
-extern "C" unsigned int M2EXCEPTION_IsM2Exception (void)
+extern "C" bool M2EXCEPTION_IsM2Exception (void)
 {
   RTExceptions_EHBlock e;
 

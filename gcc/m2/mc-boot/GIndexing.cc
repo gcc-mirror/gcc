@@ -21,6 +21,7 @@ Boston, MA 02110-1301, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -70,7 +71,7 @@ struct Indexing__T2_r {
                         unsigned int Used;
                         unsigned int Low;
                         unsigned int High;
-                        unsigned int Debug;
+                        bool Debug;
                         unsigned int Map;
                       };
 
@@ -98,7 +99,7 @@ extern "C" Indexing_Index Indexing_DebugIndex (Indexing_Index i);
               of the dynamic array.
 */
 
-extern "C" unsigned int Indexing_InBounds (Indexing_Index i, unsigned int n);
+extern "C" bool Indexing_InBounds (Indexing_Index i, unsigned int n);
 
 /*
    HighIndice - returns the last legally accessible indice of this array.
@@ -128,7 +129,7 @@ extern "C" void * Indexing_GetIndice (Indexing_Index i, unsigned int n);
    IsIndiceInIndex - returns TRUE if, a, is in the index, i.
 */
 
-extern "C" unsigned int Indexing_IsIndiceInIndex (Indexing_Index i, void * a);
+extern "C" bool Indexing_IsIndiceInIndex (Indexing_Index i, void * a);
 
 /*
    RemoveIndiceFromIndex - removes, a, from Index, i.
@@ -170,7 +171,7 @@ extern "C" Indexing_Index Indexing_InitIndex (unsigned int low)
   i->ArraySize = MinSize;
   Storage_ALLOCATE (&i->ArrayStart, MinSize);
   i->ArrayStart = libc_memset (i->ArrayStart, 0, static_cast<size_t> (i->ArraySize));
-  i->Debug = FALSE;
+  i->Debug = false;
   i->Used = 0;
   i->Map = (unsigned int) 0;
   return i;
@@ -199,7 +200,7 @@ extern "C" Indexing_Index Indexing_KillIndex (Indexing_Index i)
 
 extern "C" Indexing_Index Indexing_DebugIndex (Indexing_Index i)
 {
-  i->Debug = TRUE;
+  i->Debug = true;
   return i;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -211,7 +212,7 @@ extern "C" Indexing_Index Indexing_DebugIndex (Indexing_Index i)
               of the dynamic array.
 */
 
-extern "C" unsigned int Indexing_InBounds (Indexing_Index i, unsigned int n)
+extern "C" bool Indexing_InBounds (Indexing_Index i, unsigned int n)
 {
   if (i == NULL)
     {
@@ -363,7 +364,7 @@ extern "C" void * Indexing_GetIndice (Indexing_Index i, unsigned int n)
    IsIndiceInIndex - returns TRUE if, a, is in the index, i.
 */
 
-extern "C" unsigned int Indexing_IsIndiceInIndex (Indexing_Index i, void * a)
+extern "C" bool Indexing_IsIndiceInIndex (Indexing_Index i, void * a)
 {
   unsigned int j;
   Indexing_PtrToByte b;
@@ -376,13 +377,13 @@ extern "C" unsigned int Indexing_IsIndiceInIndex (Indexing_Index i, void * a)
       p = (Indexing_PtrToAddress) (b);
       if ((*p) == a)
         {
-          return TRUE;
+          return true;
         }
       /* we must not INC(p, ..) as p2c gets confused  */
       b += sizeof (void *);
       j += 1;
     }
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }

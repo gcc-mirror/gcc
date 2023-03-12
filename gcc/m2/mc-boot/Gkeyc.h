@@ -29,6 +29,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -281,7 +282,7 @@ EXTERN void keyc_leaveScope (decl_node n);
            is ignored).
 */
 
-EXTERN DynamicStrings_String keyc_cname (nameKey_Name n, unsigned int scopes);
+EXTERN DynamicStrings_String keyc_cname (nameKey_Name n, bool scopes);
 
 /*
    cnamen - attempts to declare a symbol with name, n, in the
@@ -293,7 +294,7 @@ EXTERN DynamicStrings_String keyc_cname (nameKey_Name n, unsigned int scopes);
             is ignored).
 */
 
-EXTERN nameKey_Name keyc_cnamen (nameKey_Name n, unsigned int scopes);
+EXTERN nameKey_Name keyc_cnamen (nameKey_Name n, bool scopes);
 
 /*
    cp - include C++ keywords and standard declarations to avoid.

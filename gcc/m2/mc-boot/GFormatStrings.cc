@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -124,7 +125,7 @@ static void DSdbExit (DynamicStrings_String s);
    IsDigit - returns TRUE if ch lies in the range: 0..9
 */
 
-static unsigned int IsDigit (char ch);
+static bool IsDigit (char ch);
 
 /*
    Cast - casts a := b
@@ -136,7 +137,7 @@ static void Cast (unsigned char *a, unsigned int _a_high, const unsigned char *b
    isHex -
 */
 
-static unsigned int isHex (char ch);
+static bool isHex (char ch);
 
 /*
    toHex -
@@ -154,7 +155,7 @@ static unsigned int toOct (char ch);
    isOct -
 */
 
-static unsigned int isOct (char ch);
+static bool isOct (char ch);
 
 /*
    FormatString - returns a String containing, s, together with encapsulated
@@ -203,7 +204,7 @@ static void doDSdbEnter (void)
 
 static void doDSdbExit (DynamicStrings_String s)
 {
-  s = DynamicStrings_PopAllocationExemption (TRUE, s);
+  s = DynamicStrings_PopAllocationExemption (true, s);
 }
 
 
@@ -229,7 +230,7 @@ static void DSdbExit (DynamicStrings_String s)
    IsDigit - returns TRUE if ch lies in the range: 0..9
 */
 
-static unsigned int IsDigit (char ch)
+static bool IsDigit (char ch)
 {
   return (ch >= '0') && (ch <= '9');
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -268,7 +269,7 @@ static void Cast (unsigned char *a, unsigned int _a_high, const unsigned char *b
    isHex -
 */
 
-static unsigned int isHex (char ch)
+static bool isHex (char ch)
 {
   return (((ch >= '0') && (ch <= '9')) || ((ch >= 'A') && (ch <= 'F'))) || ((ch >= 'a') && (ch <= 'f'));
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -317,7 +318,7 @@ static unsigned int toOct (char ch)
    isOct -
 */
 
-static unsigned int isOct (char ch)
+static bool isOct (char ch)
 {
   return (ch >= '0') && (ch <= '8');
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -363,7 +364,7 @@ static DynamicStrings_String FormatString (DynamicStrings_String fmt, int *start
 
 static DynamicStrings_String PerformFormatString (DynamicStrings_String fmt, int *startpos, DynamicStrings_String in, const unsigned char *w_, unsigned int _w_high)
 {
-  unsigned int left;
+  bool left;
   unsigned int u;
   int c;
   int width;
@@ -388,12 +389,12 @@ static DynamicStrings_String PerformFormatString (DynamicStrings_String fmt, int
           afterperc += 1;
           if ((DynamicStrings_char (fmt, afterperc)) == '-')
             {
-              left = TRUE;
+              left = true;
               afterperc += 1;
             }
           else
             {
-              left = FALSE;
+              left = false;
             }
           ch = DynamicStrings_char (fmt, afterperc);
           if (ch == '0')
@@ -454,7 +455,7 @@ static DynamicStrings_String PerformFormatString (DynamicStrings_String fmt, int
               afterperc += 1;
               Cast ((unsigned char *) &c, (sizeof (c)-1), (const unsigned char *) w, _w_high);
               in = Copy (fmt, in, (*startpos), nextperc);
-              in = DynamicStrings_ConCat (in, StringConvert_IntegerToString (c, static_cast<unsigned int> (width), leader, FALSE, 10, FALSE));
+              in = DynamicStrings_ConCat (in, StringConvert_IntegerToString (c, static_cast<unsigned int> (width), leader, false, 10, false));
               (*startpos) = afterperc;
               DSdbExit (static_cast<DynamicStrings_String> (NULL));
               return in;
@@ -465,7 +466,7 @@ static DynamicStrings_String PerformFormatString (DynamicStrings_String fmt, int
               afterperc += 1;
               Cast ((unsigned char *) &u, (sizeof (u)-1), (const unsigned char *) w, _w_high);
               in = DynamicStrings_ConCat (in, DynamicStrings_Slice (fmt, (*startpos), nextperc));
-              in = DynamicStrings_ConCat (in, StringConvert_CardinalToString (u, static_cast<unsigned int> (width), leader, 16, TRUE));
+              in = DynamicStrings_ConCat (in, StringConvert_CardinalToString (u, static_cast<unsigned int> (width), leader, 16, true));
               (*startpos) = afterperc;
               DSdbExit (static_cast<DynamicStrings_String> (NULL));
               return in;
@@ -476,7 +477,7 @@ static DynamicStrings_String PerformFormatString (DynamicStrings_String fmt, int
               afterperc += 1;
               Cast ((unsigned char *) &u, (sizeof (u)-1), (const unsigned char *) w, _w_high);
               in = DynamicStrings_ConCat (in, DynamicStrings_Slice (fmt, (*startpos), nextperc));
-              in = DynamicStrings_ConCat (in, StringConvert_CardinalToString (u, static_cast<unsigned int> (width), leader, 10, FALSE));
+              in = DynamicStrings_ConCat (in, StringConvert_CardinalToString (u, static_cast<unsigned int> (width), leader, 10, false));
               (*startpos) = afterperc;
               DSdbExit (static_cast<DynamicStrings_String> (NULL));
               return in;

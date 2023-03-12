@@ -47,6 +47,7 @@ VAR
    arrayRuntime,
    returnRuntime,
    suppressNoReturn,
+   useBoolType,
    gccConfigSystem,
    ignoreFQ,
    debugTopological,
@@ -583,6 +584,16 @@ END getScaffoldMain ;
 
 
 (*
+   useBool - should mc use the bool type instead of int.
+*)
+
+PROCEDURE useBool () : BOOLEAN ;
+BEGIN
+   RETURN useBoolType
+END useBool ;
+
+
+(*
    optionIs - returns TRUE if the first len (right) characters
               match left.
 *)
@@ -759,6 +770,7 @@ BEGIN
    scaffoldMain := FALSE ;
    scaffoldDynamic := FALSE ;
    suppressNoReturn := FALSE ;
+   useBoolType := TRUE ;
    hPrefix := InitString ('') ;
    cppArgs := InitString ('') ;
    cppProgram := InitString ('') ;

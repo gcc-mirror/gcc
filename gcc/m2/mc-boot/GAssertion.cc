@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -44,14 +45,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    Assert - tests the boolean Condition, if it fails then HALT is called.
 */
 
-extern "C" void Assertion_Assert (unsigned int Condition);
+extern "C" void Assertion_Assert (bool Condition);
 
 
 /*
    Assert - tests the boolean Condition, if it fails then HALT is called.
 */
 
-extern "C" void Assertion_Assert (unsigned int Condition)
+extern "C" void Assertion_Assert (bool Condition)
 {
   if (! Condition)
     {

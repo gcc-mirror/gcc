@@ -22,6 +22,7 @@ see <https://www.gnu.org/licenses/>.  */
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -53,8 +54,8 @@ see <https://www.gnu.org/licenses/>.  */
 #   include "GmcLexBuf.h"
 #   include "Gdecl.h"
 
-#   define Pass1 TRUE
-#   define Debugging FALSE
+#   define Pass1 true
+#   define Debugging false
 typedef unsigned int mcp1_stop0;
 
 typedef unsigned int mcp1_SetOfStop0;
@@ -67,7 +68,7 @@ typedef unsigned int mcp1_stop2;
 
 typedef unsigned int mcp1_SetOfStop2;
 
-static unsigned int WasNoError;
+static bool WasNoError;
 static nameKey_Name curident;
 static decl_node curproc;
 static decl_node curmodule;
@@ -77,7 +78,7 @@ static decl_node curmodule;
                      in future passes.
 */
 
-extern "C" unsigned int mcp1_CompilationUnit (void);
+extern "C" bool mcp1_CompilationUnit (void);
 static void ErrorString (DynamicStrings_String s);
 static void ErrorArray (const char *a_, unsigned int _a_high);
 
@@ -128,13 +129,13 @@ static void MissingToken (mcReserved_toktype t);
    CheckAndInsert -
 */
 
-static unsigned int CheckAndInsert (mcReserved_toktype t, mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1_SetOfStop2 stopset2);
+static bool CheckAndInsert (mcReserved_toktype t, mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1_SetOfStop2 stopset2);
 
 /*
    InStopSet
 */
 
-static unsigned int InStopSet (mcReserved_toktype t, mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1_SetOfStop2 stopset2);
+static bool InStopSet (mcReserved_toktype t, mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1_SetOfStop2 stopset2);
 
 /*
    PeepToken - peep token checks to see whether the stopset is satisfied by currenttoken
@@ -181,7 +182,7 @@ static void Real (mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1_SetOf
                     current module import list.
 */
 
-static void registerImport (nameKey_Name ident, unsigned int scoped);
+static void registerImport (nameKey_Name ident, bool scoped);
 
 /*
    FileUnit := DefinitionModule  | 
@@ -1954,7 +1955,7 @@ static void TrashList (mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1_
 static void ErrorString (DynamicStrings_String s)
 {
   mcError_errorStringAt (s, mcLexBuf_getTokenNo ());
-  WasNoError = FALSE;
+  WasNoError = false;
 }
 
 static void ErrorArray (const char *a_, unsigned int _a_high)
@@ -2950,17 +2951,17 @@ static void MissingToken (mcReserved_toktype t)
    CheckAndInsert -
 */
 
-static unsigned int CheckAndInsert (mcReserved_toktype t, mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1_SetOfStop2 stopset2)
+static bool CheckAndInsert (mcReserved_toktype t, mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1_SetOfStop2 stopset2)
 {
   if (((( ((unsigned int) (t)) < 32) && ((((1 << (t-mcReserved_eoftok)) & (stopset0)) != 0))) || ((( ((unsigned int) (t)) >= 32) && ( ((unsigned int) (t)) < 64)) && ((((1 << (t-mcReserved_arraytok)) & (stopset1)) != 0)))) || (( ((unsigned int) (t)) >= 64) && ((((1 << (t-mcReserved_recordtok)) & (stopset2)) != 0))))
     {
       WarnMissingToken (t);
       mcLexBuf_insertTokenAndRewind (t);
-      return TRUE;
+      return true;
     }
   else
     {
-      return FALSE;
+      return false;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -2971,15 +2972,15 @@ static unsigned int CheckAndInsert (mcReserved_toktype t, mcp1_SetOfStop0 stopse
    InStopSet
 */
 
-static unsigned int InStopSet (mcReserved_toktype t, mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1_SetOfStop2 stopset2)
+static bool InStopSet (mcReserved_toktype t, mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1_SetOfStop2 stopset2)
 {
   if (((( ((unsigned int) (t)) < 32) && ((((1 << (t-mcReserved_eoftok)) & (stopset0)) != 0))) || ((( ((unsigned int) (t)) >= 32) && ( ((unsigned int) (t)) < 64)) && ((((1 << (t-mcReserved_arraytok)) & (stopset1)) != 0)))) || (( ((unsigned int) (t)) >= 64) && ((((1 << (t-mcReserved_recordtok)) & (stopset2)) != 0))))
     {
-      return TRUE;
+      return true;
     }
   else
     {
-      return FALSE;
+      return false;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -3092,7 +3093,7 @@ static void Real (mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1_SetOf
                     current module import list.
 */
 
-static void registerImport (nameKey_Name ident, unsigned int scoped)
+static void registerImport (nameKey_Name ident, bool scoped)
 {
   decl_node n;
 
@@ -6801,7 +6802,7 @@ static void FromImport (mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1
 {
   Expect (mcReserved_fromtok, stopset0, stopset1, stopset2|(mcp1_SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
   Ident (stopset0, stopset1|(mcp1_SetOfStop1) ((1 << (mcReserved_importtok-mcReserved_arraytok))), stopset2);
-  registerImport (curident, FALSE);
+  registerImport (curident, false);
   Expect (mcReserved_importtok, stopset0, stopset1, stopset2|(mcp1_SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
   IdentList (stopset0|(mcp1_SetOfStop0) ((1 << (mcReserved_semicolontok-mcReserved_eoftok))), stopset1, stopset2);
   Expect (mcReserved_semicolontok, stopset0, stopset1, stopset2);
@@ -6823,12 +6824,12 @@ static void FromImport (mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1
 static void ImportModuleList (mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1_SetOfStop2 stopset2)
 {
   Ident (stopset0|(mcp1_SetOfStop0) ((1 << (mcReserved_commatok-mcReserved_eoftok))), stopset1, stopset2);
-  registerImport (curident, TRUE);
+  registerImport (curident, true);
   while (mcLexBuf_currenttoken == mcReserved_commatok)
     {
       Expect (mcReserved_commatok, stopset0, stopset1, stopset2|(mcp1_SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
       Ident (stopset0|(mcp1_SetOfStop0) ((1 << (mcReserved_commatok-mcReserved_eoftok))), stopset1, stopset2);
-      registerImport (curident, TRUE);
+      registerImport (curident, true);
     }
    /* while  */
 }
@@ -6907,16 +6908,16 @@ static void Import (mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1_Set
 
 static void DefinitionModule (mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1_SetOfStop2 stopset2)
 {
-  unsigned int c;
+  bool c;
 
-  c = FALSE;
+  c = false;
   Expect (mcReserved_definitiontok, stopset0, stopset1|(mcp1_SetOfStop1) ((1 << (mcReserved_moduletok-mcReserved_arraytok))), stopset2);
   Expect (mcReserved_moduletok, stopset0, stopset1|(mcp1_SetOfStop1) ((1 << (mcReserved_fortok-mcReserved_arraytok))), stopset2|(mcp1_SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
   if (mcLexBuf_currenttoken == mcReserved_fortok)
     {
       Expect (mcReserved_fortok, stopset0, stopset1, stopset2|(mcp1_SetOfStop2) ((1 << (mcReserved_stringtok-mcReserved_recordtok))));
       string (stopset0, stopset1, stopset2|(mcp1_SetOfStop2) ((1 << (mcReserved_identtok-mcReserved_recordtok))));
-      c = TRUE;
+      c = true;
     }
   Ident (stopset0|(mcp1_SetOfStop0) ((1 << (mcReserved_semicolontok-mcReserved_eoftok))), stopset1, stopset2);
   Expect (mcReserved_semicolontok, stopset0, stopset1|(mcp1_SetOfStop1) ((1 << (mcReserved_importtok-mcReserved_arraytok)) | (1 << (mcReserved_fromtok-mcReserved_arraytok)) | (1 << (mcReserved_exporttok-mcReserved_arraytok)) | (1 << (mcReserved_endtok-mcReserved_arraytok)) | (1 << (mcReserved_proceduretok-mcReserved_arraytok)) | (1 << (mcReserved_consttok-mcReserved_arraytok))), stopset2|(mcp1_SetOfStop2) ((1 << (mcReserved_vartok-mcReserved_recordtok)) | (1 << (mcReserved_typetok-mcReserved_recordtok))));
@@ -7247,9 +7248,9 @@ static void TrashList (mcp1_SetOfStop0 stopset0, mcp1_SetOfStop1 stopset1, mcp1_
                      in future passes.
 */
 
-extern "C" unsigned int mcp1_CompilationUnit (void)
+extern "C" bool mcp1_CompilationUnit (void)
 {
-  WasNoError = TRUE;
+  WasNoError = true;
   FileUnit ((mcp1_SetOfStop0) ((1 << (mcReserved_eoftok-mcReserved_eoftok))), (mcp1_SetOfStop1) 0, (mcp1_SetOfStop2) 0);
   return WasNoError;
   /* static analysis guarentees a RETURN statement will be used before here.  */

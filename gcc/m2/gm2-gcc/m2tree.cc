@@ -26,19 +26,19 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #define m2tree_c
 #include "m2tree.h"
 
-int
+bool
 m2tree_is_var (tree var)
 {
   return TREE_CODE (var) == VAR_DECL;
 }
 
-int
+bool
 m2tree_is_array (tree array)
 {
   return TREE_CODE (array) == ARRAY_TYPE;
 }
 
-int
+bool
 m2tree_is_type (tree type)
 {
   switch (TREE_CODE (type))
@@ -105,7 +105,7 @@ m2tree_skip_reference_type (tree exp)
 /* m2tree_IsOrdinal - return TRUE if code is an INTEGER, BOOLEAN or
    ENUMERAL type.  */
 
-int
+bool
 m2tree_IsOrdinal (tree type)
 {
   enum tree_code code = TREE_CODE (type);
@@ -116,7 +116,7 @@ m2tree_IsOrdinal (tree type)
 
 /* is_a_constant - returns TRUE if tree, t, is a constant.  */
 
-int
+bool
 m2tree_IsAConstant (tree t)
 {
   return (TREE_CODE (t) == INTEGER_CST) || (TREE_CODE (t) == REAL_CST)

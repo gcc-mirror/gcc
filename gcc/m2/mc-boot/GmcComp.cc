@@ -18,6 +18,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -65,15 +66,15 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 #   include "GDynamicStrings.h"
 #   include "GmcOptions.h"
 
-#   define Debugging FALSE
+#   define Debugging false
 typedef struct mcComp_parserFunction_p mcComp_parserFunction;
 
 typedef struct mcComp_openFunction_p mcComp_openFunction;
 
-typedef unsigned int (*mcComp_parserFunction_t) (void);
+typedef bool (*mcComp_parserFunction_t) (void);
 struct mcComp_parserFunction_p { mcComp_parserFunction_t proc; };
 
-typedef unsigned int (*mcComp_openFunction_t) (decl_node, unsigned int);
+typedef bool (*mcComp_openFunction_t) (decl_node, bool);
 struct mcComp_openFunction_p { mcComp_openFunction_t proc; };
 
 static unsigned int currentPass;
@@ -149,7 +150,7 @@ static void p5 (decl_node n);
    doOpen -
 */
 
-static unsigned int doOpen (decl_node n, DynamicStrings_String symName, DynamicStrings_String fileName, unsigned int exitOnFailure);
+static bool doOpen (decl_node n, DynamicStrings_String symName, DynamicStrings_String fileName, bool exitOnFailure);
 
 /*
    openDef - try and open the definition module source file.
@@ -157,7 +158,7 @@ static unsigned int doOpen (decl_node n, DynamicStrings_String symName, DynamicS
              exitOnFailure.
 */
 
-static unsigned int openDef (decl_node n, unsigned int exitOnFailure);
+static bool openDef (decl_node n, bool exitOnFailure);
 
 /*
    openMod - try and open the implementation/program module source file.
@@ -165,7 +166,7 @@ static unsigned int openDef (decl_node n, unsigned int exitOnFailure);
              exitOnFailure.
 */
 
-static unsigned int openMod (decl_node n, unsigned int exitOnFailure);
+static bool openMod (decl_node n, bool exitOnFailure);
 
 /*
    pass -
@@ -177,7 +178,7 @@ static void pass (unsigned int no, decl_node n, mcComp_parserFunction f, decl_is
    doPass -
 */
 
-static void doPass (unsigned int parseDefs, unsigned int parseMain, unsigned int no, symbolKey_performOperation p, const char *desc_, unsigned int _desc_high);
+static void doPass (bool parseDefs, bool parseMain, unsigned int no, symbolKey_performOperation p, const char *desc_, unsigned int _desc_high);
 
 /*
    setToPassNo -
@@ -201,22 +202,22 @@ static void doCompile (DynamicStrings_String s)
   decl_node n;
 
   n = initParser (s);
-  doPass (TRUE, TRUE, 1, (symbolKey_performOperation) {(symbolKey_performOperation_t) p1}, (const char *) "lexical analysis, modules, root decls and C preprocessor", 56);
-  doPass (TRUE, TRUE, 2, (symbolKey_performOperation) {(symbolKey_performOperation_t) p2}, (const char *) "[all modules] type equivalence and enumeration types", 52);
-  doPass (TRUE, TRUE, 3, (symbolKey_performOperation) {(symbolKey_performOperation_t) p3}, (const char *) "[all modules] import lists, types, variables and procedure declarations", 71);
-  doPass (TRUE, TRUE, 4, (symbolKey_performOperation) {(symbolKey_performOperation_t) p4}, (const char *) "[all modules] constant expressions", 34);
+  doPass (true, true, 1, (symbolKey_performOperation) {(symbolKey_performOperation_t) p1}, (const char *) "lexical analysis, modules, root decls and C preprocessor", 56);
+  doPass (true, true, 2, (symbolKey_performOperation) {(symbolKey_performOperation_t) p2}, (const char *) "[all modules] type equivalence and enumeration types", 52);
+  doPass (true, true, 3, (symbolKey_performOperation) {(symbolKey_performOperation_t) p3}, (const char *) "[all modules] import lists, types, variables and procedure declarations", 71);
+  doPass (true, true, 4, (symbolKey_performOperation) {(symbolKey_performOperation_t) p4}, (const char *) "[all modules] constant expressions", 34);
   if (! (decl_isDef (n)))
     {
       /* avoid gcc warning by using compound statement even if not strictly necessary.  */
       if (decl_isImp (n))
         {
           mcQuiet_qprintf0 ((const char *) "Parse implementation module\\n", 29);
-          doPass (FALSE, TRUE, 5, (symbolKey_performOperation) {(symbolKey_performOperation_t) p5}, (const char *) "[implementation module] build code tree for all procedures and module initializations", 85);
+          doPass (false, true, 5, (symbolKey_performOperation) {(symbolKey_performOperation_t) p5}, (const char *) "[implementation module] build code tree for all procedures and module initializations", 85);
         }
       else
         {
           mcQuiet_qprintf0 ((const char *) "Parse program module\\n", 22);
-          doPass (FALSE, TRUE, 5, (symbolKey_performOperation) {(symbolKey_performOperation_t) p5}, (const char *) "[program module] build code tree for all procedures and module initializations", 78);
+          doPass (false, true, 5, (symbolKey_performOperation) {(symbolKey_performOperation_t) p5}, (const char *) "[program module] build code tree for all procedures and module initializations", 78);
         }
     }
   mcQuiet_qprintf0 ((const char *) "walk tree converting it to C/C++\\n", 34);
@@ -444,7 +445,7 @@ static void p5 (decl_node n)
    doOpen -
 */
 
-static unsigned int doOpen (decl_node n, DynamicStrings_String symName, DynamicStrings_String fileName, unsigned int exitOnFailure)
+static bool doOpen (decl_node n, DynamicStrings_String symName, DynamicStrings_String fileName, bool exitOnFailure)
 {
   DynamicStrings_String postProcessed;
 
@@ -454,14 +455,14 @@ static unsigned int doOpen (decl_node n, DynamicStrings_String symName, DynamicS
   decl_setCurrentModule (n);
   if (mcLexBuf_openSource (postProcessed))
     {
-      return TRUE;
+      return true;
     }
   mcPrintf_fprintf1 (FIO_StdErr, (const char *) "failed to open %s\\n", 19, (const unsigned char *) &fileName, (sizeof (fileName)-1));
   if (exitOnFailure)
     {
       libc_exit (1);
     }
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -473,7 +474,7 @@ static unsigned int doOpen (decl_node n, DynamicStrings_String symName, DynamicS
              exitOnFailure.
 */
 
-static unsigned int openDef (decl_node n, unsigned int exitOnFailure)
+static bool openDef (decl_node n, bool exitOnFailure)
 {
   nameKey_Name sourceName;
   DynamicStrings_String symName;
@@ -509,7 +510,7 @@ static unsigned int openDef (decl_node n, unsigned int exitOnFailure)
              exitOnFailure.
 */
 
-static unsigned int openMod (decl_node n, unsigned int exitOnFailure)
+static bool openMod (decl_node n, bool exitOnFailure)
 {
   nameKey_Name sourceName;
   DynamicStrings_String symName;
@@ -555,7 +556,7 @@ static void pass (unsigned int no, decl_node n, mcComp_parserFunction f, decl_is
   if (((*isnode.proc) (n)) && (! (decl_isVisited (n))))
     {
       decl_setVisited (n);
-      if ((*open.proc) (n, TRUE))
+      if ((*open.proc) (n, true))
         {
           if (! ((*f.proc) ()))
             {
@@ -573,7 +574,7 @@ static void pass (unsigned int no, decl_node n, mcComp_parserFunction f, decl_is
    doPass -
 */
 
-static void doPass (unsigned int parseDefs, unsigned int parseMain, unsigned int no, symbolKey_performOperation p, const char *desc_, unsigned int _desc_high)
+static void doPass (bool parseDefs, bool parseMain, unsigned int no, symbolKey_performOperation p, const char *desc_, unsigned int _desc_high)
 {
   DynamicStrings_String descs;
   char desc[_desc_high+1];

@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -67,7 +68,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
                      are used.
 */
 
-extern "C" DynamicStrings_String StringConvert_IntegerToString (int i, unsigned int width, char padding, unsigned int sign, unsigned int base, unsigned int lower);
+extern "C" DynamicStrings_String StringConvert_IntegerToString (int i, unsigned int width, char padding, bool sign, unsigned int base, bool lower);
 
 /*
    CardinalToString - converts CARDINAL, c, into a String. The field with can be specified
@@ -78,7 +79,7 @@ extern "C" DynamicStrings_String StringConvert_IntegerToString (int i, unsigned 
                       are used.
 */
 
-extern "C" DynamicStrings_String StringConvert_CardinalToString (unsigned int c, unsigned int width, char padding, unsigned int base, unsigned int lower);
+extern "C" DynamicStrings_String StringConvert_CardinalToString (unsigned int c, unsigned int width, char padding, unsigned int base, bool lower);
 
 /*
    StringToInteger - converts a string, s, of, base, into an INTEGER.
@@ -88,7 +89,7 @@ extern "C" DynamicStrings_String StringConvert_CardinalToString (unsigned int c,
                      The parameter found is set TRUE if a number was found.
 */
 
-extern "C" int StringConvert_StringToInteger (DynamicStrings_String s, unsigned int base, unsigned int *found);
+extern "C" int StringConvert_StringToInteger (DynamicStrings_String s, unsigned int base, bool *found);
 
 /*
    StringToCardinal - converts a string, s, of, base, into a CARDINAL.
@@ -98,7 +99,7 @@ extern "C" int StringConvert_StringToInteger (DynamicStrings_String s, unsigned 
                       The parameter found is set TRUE if a number was found.
 */
 
-extern "C" unsigned int StringConvert_StringToCardinal (DynamicStrings_String s, unsigned int base, unsigned int *found);
+extern "C" unsigned int StringConvert_StringToCardinal (DynamicStrings_String s, unsigned int base, bool *found);
 
 /*
    LongIntegerToString - converts LONGINT, i, into a String. The field with
@@ -112,7 +113,7 @@ extern "C" unsigned int StringConvert_StringToCardinal (DynamicStrings_String s,
                          abcdef are used, and if FALSE then ABCDEF are used.
 */
 
-extern "C" DynamicStrings_String StringConvert_LongIntegerToString (long int i, unsigned int width, char padding, unsigned int sign, unsigned int base, unsigned int lower);
+extern "C" DynamicStrings_String StringConvert_LongIntegerToString (long int i, unsigned int width, char padding, bool sign, unsigned int base, bool lower);
 
 /*
    StringToLongInteger - converts a string, s, of, base, into an LONGINT.
@@ -122,7 +123,7 @@ extern "C" DynamicStrings_String StringConvert_LongIntegerToString (long int i, 
                          The parameter found is set TRUE if a number was found.
 */
 
-extern "C" long int StringConvert_StringToLongInteger (DynamicStrings_String s, unsigned int base, unsigned int *found);
+extern "C" long int StringConvert_StringToLongInteger (DynamicStrings_String s, unsigned int base, bool *found);
 
 /*
    LongCardinalToString - converts LONGCARD, c, into a String. The field
@@ -135,7 +136,7 @@ extern "C" long int StringConvert_StringToLongInteger (DynamicStrings_String s, 
                           abcdef are used, and if FALSE then ABCDEF are used.
 */
 
-extern "C" DynamicStrings_String StringConvert_LongCardinalToString (long unsigned int c, unsigned int width, char padding, unsigned int base, unsigned int lower);
+extern "C" DynamicStrings_String StringConvert_LongCardinalToString (long unsigned int c, unsigned int width, char padding, unsigned int base, bool lower);
 
 /*
    StringToLongCardinal - converts a string, s, of, base, into a LONGCARD.
@@ -145,7 +146,7 @@ extern "C" DynamicStrings_String StringConvert_LongCardinalToString (long unsign
                           The parameter found is set TRUE if a number was found.
 */
 
-extern "C" long unsigned int StringConvert_StringToLongCardinal (DynamicStrings_String s, unsigned int base, unsigned int *found);
+extern "C" long unsigned int StringConvert_StringToLongCardinal (DynamicStrings_String s, unsigned int base, bool *found);
 
 /*
    ShortCardinalToString - converts SHORTCARD, c, into a String. The field
@@ -158,7 +159,7 @@ extern "C" long unsigned int StringConvert_StringToLongCardinal (DynamicStrings_
                           abcdef are used, and if FALSE then ABCDEF are used.
 */
 
-extern "C" DynamicStrings_String StringConvert_ShortCardinalToString (short unsigned int c, unsigned int width, char padding, unsigned int base, unsigned int lower);
+extern "C" DynamicStrings_String StringConvert_ShortCardinalToString (short unsigned int c, unsigned int width, char padding, unsigned int base, bool lower);
 
 /*
    StringToShortCardinal - converts a string, s, of, base, into a SHORTCARD.
@@ -168,7 +169,7 @@ extern "C" DynamicStrings_String StringConvert_ShortCardinalToString (short unsi
                            The parameter found is set TRUE if a number was found.
 */
 
-extern "C" short unsigned int StringConvert_StringToShortCardinal (DynamicStrings_String s, unsigned int base, unsigned int *found);
+extern "C" short unsigned int StringConvert_StringToShortCardinal (DynamicStrings_String s, unsigned int base, bool *found);
 
 /*
    stoi - decimal string to INTEGER
@@ -180,7 +181,7 @@ extern "C" int StringConvert_stoi (DynamicStrings_String s);
    itos - integer to decimal string.
 */
 
-extern "C" DynamicStrings_String StringConvert_itos (int i, unsigned int width, char padding, unsigned int sign);
+extern "C" DynamicStrings_String StringConvert_itos (int i, unsigned int width, char padding, bool sign);
 
 /*
    ctos - cardinal to decimal string.
@@ -234,7 +235,7 @@ extern "C" unsigned int StringConvert_bstoc (DynamicStrings_String s);
    StringToLongreal - returns a LONGREAL and sets found to TRUE if a legal number is seen.
 */
 
-extern "C" long double StringConvert_StringToLongreal (DynamicStrings_String s, unsigned int *found);
+extern "C" long double StringConvert_StringToLongreal (DynamicStrings_String s, bool *found);
 
 /*
    LongrealToString - converts a LONGREAL number, Real, which has,
@@ -319,7 +320,7 @@ extern "C" DynamicStrings_String StringConvert_ToDecimalPlaces (DynamicStrings_S
    Assert - implement a simple assert.
 */
 
-static void Assert (unsigned int b, const char *file_, unsigned int _file_high, unsigned int line, const char *func_, unsigned int _func_high);
+static void Assert (bool b, const char *file_, unsigned int _file_high, unsigned int line, const char *func_, unsigned int _func_high);
 
 /*
    Max -
@@ -343,49 +344,49 @@ static long unsigned int LongMin (long unsigned int a, long unsigned int b);
    IsDigit - returns TRUE if, ch, lies between '0'..'9'.
 */
 
-static unsigned int IsDigit (char ch);
+static bool IsDigit (char ch);
 
 /*
    IsDecimalDigitValid - returns the TRUE if, ch, is a base legal decimal digit.
                          If legal then the value is appended numerically onto, c.
 */
 
-static unsigned int IsDecimalDigitValid (char ch, unsigned int base, unsigned int *c);
+static bool IsDecimalDigitValid (char ch, unsigned int base, unsigned int *c);
 
 /*
    IsHexidecimalDigitValid - returns the TRUE if, ch, is a base legal hexidecimal digit.
                              If legal then the value is appended numerically onto, c.
 */
 
-static unsigned int IsHexidecimalDigitValid (char ch, unsigned int base, unsigned int *c);
+static bool IsHexidecimalDigitValid (char ch, unsigned int base, unsigned int *c);
 
 /*
    IsDecimalDigitValidLong - returns the TRUE if, ch, is a base legal decimal digit.
                              If legal then the value is appended numerically onto, c.
 */
 
-static unsigned int IsDecimalDigitValidLong (char ch, unsigned int base, long unsigned int *c);
+static bool IsDecimalDigitValidLong (char ch, unsigned int base, long unsigned int *c);
 
 /*
    IsHexidecimalDigitValidLong - returns the TRUE if, ch, is a base legal hexidecimal digit.
                                  If legal then the value is appended numerically onto, c.
 */
 
-static unsigned int IsHexidecimalDigitValidLong (char ch, unsigned int base, long unsigned int *c);
+static bool IsHexidecimalDigitValidLong (char ch, unsigned int base, long unsigned int *c);
 
 /*
    IsDecimalDigitValidShort - returns the TRUE if, ch, is a base legal decimal digit.
                               If legal then the value is appended numerically onto, c.
 */
 
-static unsigned int IsDecimalDigitValidShort (char ch, unsigned int base, short unsigned int *c);
+static bool IsDecimalDigitValidShort (char ch, unsigned int base, short unsigned int *c);
 
 /*
    IsHexidecimalDigitValidShort - returns the TRUE if, ch, is a base legal hexidecimal digit.
                                   If legal then the value is appended numerically onto, c.
 */
 
-static unsigned int IsHexidecimalDigitValidShort (char ch, unsigned int base, short unsigned int *c);
+static bool IsHexidecimalDigitValidShort (char ch, unsigned int base, short unsigned int *c);
 
 /*
    ToThePower10 - returns a LONGREAL containing the value of v * 10^power.
@@ -441,7 +442,7 @@ static DynamicStrings_String carryOne (DynamicStrings_String s, unsigned int i);
    Assert - implement a simple assert.
 */
 
-static void Assert (unsigned int b, const char *file_, unsigned int _file_high, unsigned int line, const char *func_, unsigned int _func_high)
+static void Assert (bool b, const char *file_, unsigned int _file_high, unsigned int line, const char *func_, unsigned int _func_high)
 {
   char file[_file_high+1];
   char func[_func_high+1];
@@ -518,7 +519,7 @@ static long unsigned int LongMin (long unsigned int a, long unsigned int b)
    IsDigit - returns TRUE if, ch, lies between '0'..'9'.
 */
 
-static unsigned int IsDigit (char ch)
+static bool IsDigit (char ch)
 {
   return (ch >= '0') && (ch <= '9');
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -531,16 +532,16 @@ static unsigned int IsDigit (char ch)
                          If legal then the value is appended numerically onto, c.
 */
 
-static unsigned int IsDecimalDigitValid (char ch, unsigned int base, unsigned int *c)
+static bool IsDecimalDigitValid (char ch, unsigned int base, unsigned int *c)
 {
   if ((IsDigit (ch)) && (( ((unsigned int) (ch))- ((unsigned int) ('0'))) < base))
     {
       (*c) = ((*c)*base)+( ((unsigned int) (ch))- ((unsigned int) ('0')));
-      return TRUE;
+      return true;
     }
   else
     {
-      return FALSE;
+      return false;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -552,23 +553,23 @@ static unsigned int IsDecimalDigitValid (char ch, unsigned int base, unsigned in
                              If legal then the value is appended numerically onto, c.
 */
 
-static unsigned int IsHexidecimalDigitValid (char ch, unsigned int base, unsigned int *c)
+static bool IsHexidecimalDigitValid (char ch, unsigned int base, unsigned int *c)
 {
   if (((ch >= 'a') && (ch <= 'f')) && ((( ((unsigned int) (ch))- ((unsigned int) ('a')))+10) < base))
     {
       (*c) = ((*c)*base)+(( ((unsigned int) (ch))- ((unsigned int) ('a')))+10);
-      return TRUE;
+      return true;
     }
   else if (((ch >= 'A') && (ch <= 'F')) && ((( ((unsigned int) (ch))- ((unsigned int) ('F')))+10) < base))
     {
       /* avoid dangling else.  */
       (*c) = ((*c)*base)+(( ((unsigned int) (ch))- ((unsigned int) ('A')))+10);
-      return TRUE;
+      return true;
     }
   else
     {
       /* avoid dangling else.  */
-      return FALSE;
+      return false;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -580,16 +581,16 @@ static unsigned int IsHexidecimalDigitValid (char ch, unsigned int base, unsigne
                              If legal then the value is appended numerically onto, c.
 */
 
-static unsigned int IsDecimalDigitValidLong (char ch, unsigned int base, long unsigned int *c)
+static bool IsDecimalDigitValidLong (char ch, unsigned int base, long unsigned int *c)
 {
   if ((IsDigit (ch)) && (( ((unsigned int) (ch))- ((unsigned int) ('0'))) < base))
     {
       (*c) = (*c)*((long unsigned int ) (base+( ((unsigned int) (ch))- ((unsigned int) ('0')))));
-      return TRUE;
+      return true;
     }
   else
     {
-      return FALSE;
+      return false;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -601,23 +602,23 @@ static unsigned int IsDecimalDigitValidLong (char ch, unsigned int base, long un
                                  If legal then the value is appended numerically onto, c.
 */
 
-static unsigned int IsHexidecimalDigitValidLong (char ch, unsigned int base, long unsigned int *c)
+static bool IsHexidecimalDigitValidLong (char ch, unsigned int base, long unsigned int *c)
 {
   if (((ch >= 'a') && (ch <= 'f')) && ((( ((unsigned int) (ch))- ((unsigned int) ('a')))+10) < base))
     {
       (*c) = (*c)*((long unsigned int ) (base+(( ((unsigned int) (ch))- ((unsigned int) ('a')))+10)));
-      return TRUE;
+      return true;
     }
   else if (((ch >= 'A') && (ch <= 'F')) && ((( ((unsigned int) (ch))- ((unsigned int) ('F')))+10) < base))
     {
       /* avoid dangling else.  */
       (*c) = (*c)*((long unsigned int ) (base+(( ((unsigned int) (ch))- ((unsigned int) ('A')))+10)));
-      return TRUE;
+      return true;
     }
   else
     {
       /* avoid dangling else.  */
-      return FALSE;
+      return false;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -629,16 +630,16 @@ static unsigned int IsHexidecimalDigitValidLong (char ch, unsigned int base, lon
                               If legal then the value is appended numerically onto, c.
 */
 
-static unsigned int IsDecimalDigitValidShort (char ch, unsigned int base, short unsigned int *c)
+static bool IsDecimalDigitValidShort (char ch, unsigned int base, short unsigned int *c)
 {
   if ((IsDigit (ch)) && (( ((unsigned int) (ch))- ((unsigned int) ('0'))) < base))
     {
       (*c) = (*c)*((short unsigned int ) (base+( ((unsigned int) (ch))- ((unsigned int) ('0')))));
-      return TRUE;
+      return true;
     }
   else
     {
-      return FALSE;
+      return false;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -650,23 +651,23 @@ static unsigned int IsDecimalDigitValidShort (char ch, unsigned int base, short 
                                   If legal then the value is appended numerically onto, c.
 */
 
-static unsigned int IsHexidecimalDigitValidShort (char ch, unsigned int base, short unsigned int *c)
+static bool IsHexidecimalDigitValidShort (char ch, unsigned int base, short unsigned int *c)
 {
   if (((ch >= 'a') && (ch <= 'f')) && ((( ((unsigned int) (ch))- ((unsigned int) ('a')))+10) < base))
     {
       (*c) = (*c)*((short unsigned int ) (base+(( ((unsigned int) (ch))- ((unsigned int) ('a')))+10)));
-      return TRUE;
+      return true;
     }
   else if (((ch >= 'A') && (ch <= 'F')) && ((( ((unsigned int) (ch))- ((unsigned int) ('F')))+10) < base))
     {
       /* avoid dangling else.  */
       (*c) = (*c)*((short unsigned int ) (base+(( ((unsigned int) (ch))- ((unsigned int) ('A')))+10)));
-      return TRUE;
+      return true;
     }
   else
     {
       /* avoid dangling else.  */
-      return FALSE;
+      return false;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -1073,7 +1074,7 @@ static DynamicStrings_String carryOne (DynamicStrings_String s, unsigned int i)
                      are used.
 */
 
-extern "C" DynamicStrings_String StringConvert_IntegerToString (int i, unsigned int width, char padding, unsigned int sign, unsigned int base, unsigned int lower)
+extern "C" DynamicStrings_String StringConvert_IntegerToString (int i, unsigned int width, char padding, bool sign, unsigned int base, bool lower)
 {
   DynamicStrings_String s;
   unsigned int c;
@@ -1086,11 +1087,11 @@ extern "C" DynamicStrings_String StringConvert_IntegerToString (int i, unsigned 
           c = ((unsigned int ) (abs (i+1)))+1;
           if (width > 0)
             {
-              return DynamicStrings_ConCat (StringConvert_IntegerToString (-((int ) (c / base)), width-1, padding, sign, base, lower), DynamicStrings_Mark (StringConvert_IntegerToString (static_cast<int> (c % base), 0, ' ', FALSE, base, lower)));
+              return DynamicStrings_ConCat (StringConvert_IntegerToString (-((int ) (c / base)), width-1, padding, sign, base, lower), DynamicStrings_Mark (StringConvert_IntegerToString (static_cast<int> (c % base), 0, ' ', false, base, lower)));
             }
           else
             {
-              return DynamicStrings_ConCat (StringConvert_IntegerToString (-((int ) (c / base)), 0, padding, sign, base, lower), DynamicStrings_Mark (StringConvert_IntegerToString (static_cast<int> (c % base), 0, ' ', FALSE, base, lower)));
+              return DynamicStrings_ConCat (StringConvert_IntegerToString (-((int ) (c / base)), 0, padding, sign, base, lower), DynamicStrings_Mark (StringConvert_IntegerToString (static_cast<int> (c % base), 0, ' ', false, base, lower)));
             }
         }
       else
@@ -1112,7 +1113,7 @@ extern "C" DynamicStrings_String StringConvert_IntegerToString (int i, unsigned 
     }
   if (i > (((int ) (base))-1))
     {
-      s = DynamicStrings_ConCat (DynamicStrings_ConCat (s, DynamicStrings_Mark (StringConvert_IntegerToString (static_cast<int> (((unsigned int ) (i)) / base), 0, ' ', FALSE, base, lower))), DynamicStrings_Mark (StringConvert_IntegerToString (static_cast<int> (((unsigned int ) (i)) % base), 0, ' ', FALSE, base, lower)));
+      s = DynamicStrings_ConCat (DynamicStrings_ConCat (s, DynamicStrings_Mark (StringConvert_IntegerToString (static_cast<int> (((unsigned int ) (i)) / base), 0, ' ', false, base, lower))), DynamicStrings_Mark (StringConvert_IntegerToString (static_cast<int> (((unsigned int ) (i)) % base), 0, ' ', false, base, lower)));
     }
   else
     {
@@ -1151,7 +1152,7 @@ extern "C" DynamicStrings_String StringConvert_IntegerToString (int i, unsigned 
                       are used.
 */
 
-extern "C" DynamicStrings_String StringConvert_CardinalToString (unsigned int c, unsigned int width, char padding, unsigned int base, unsigned int lower)
+extern "C" DynamicStrings_String StringConvert_CardinalToString (unsigned int c, unsigned int width, char padding, unsigned int base, bool lower)
 {
   DynamicStrings_String s;
 
@@ -1196,18 +1197,18 @@ extern "C" DynamicStrings_String StringConvert_CardinalToString (unsigned int c,
                      The parameter found is set TRUE if a number was found.
 */
 
-extern "C" int StringConvert_StringToInteger (DynamicStrings_String s, unsigned int base, unsigned int *found)
+extern "C" int StringConvert_StringToInteger (DynamicStrings_String s, unsigned int base, bool *found)
 {
   unsigned int n;
   unsigned int l;
   unsigned int c;
-  unsigned int negative;
+  bool negative;
 
   s = DynamicStrings_RemoveWhitePrefix (s);  /* returns a new string, s  */
   l = DynamicStrings_Length (s);  /* returns a new string, s  */
   c = 0;
   n = 0;
-  negative = FALSE;
+  negative = false;
   if (n < l)
     {
       /* parse leading + and -  */
@@ -1221,7 +1222,7 @@ extern "C" int StringConvert_StringToInteger (DynamicStrings_String s, unsigned 
         }
       while ((n < l) && ((IsDecimalDigitValid (DynamicStrings_char (s, static_cast<int> (n)), base, &c)) || (IsHexidecimalDigitValid (DynamicStrings_char (s, static_cast<int> (n)), base, &c))))
         {
-          (*found) = TRUE;
+          (*found) = true;
           n += 1;
         }
     }
@@ -1247,7 +1248,7 @@ extern "C" int StringConvert_StringToInteger (DynamicStrings_String s, unsigned 
                       The parameter found is set TRUE if a number was found.
 */
 
-extern "C" unsigned int StringConvert_StringToCardinal (DynamicStrings_String s, unsigned int base, unsigned int *found)
+extern "C" unsigned int StringConvert_StringToCardinal (DynamicStrings_String s, unsigned int base, bool *found)
 {
   unsigned int n;
   unsigned int l;
@@ -1266,7 +1267,7 @@ extern "C" unsigned int StringConvert_StringToCardinal (DynamicStrings_String s,
         }
       while ((n < l) && ((IsDecimalDigitValid (DynamicStrings_char (s, static_cast<int> (n)), base, &c)) || (IsHexidecimalDigitValid (DynamicStrings_char (s, static_cast<int> (n)), base, &c))))
         {
-          (*found) = TRUE;
+          (*found) = true;
           n += 1;
         }
     }
@@ -1289,7 +1290,7 @@ extern "C" unsigned int StringConvert_StringToCardinal (DynamicStrings_String s,
                          abcdef are used, and if FALSE then ABCDEF are used.
 */
 
-extern "C" DynamicStrings_String StringConvert_LongIntegerToString (long int i, unsigned int width, char padding, unsigned int sign, unsigned int base, unsigned int lower)
+extern "C" DynamicStrings_String StringConvert_LongIntegerToString (long int i, unsigned int width, char padding, bool sign, unsigned int base, bool lower)
 {
   DynamicStrings_String s;
   long unsigned int c;
@@ -1303,11 +1304,11 @@ extern "C" DynamicStrings_String StringConvert_LongIntegerToString (long int i, 
           c = ((long unsigned int ) (labs (i+1)))+1;
           if (width > 0)
             {
-              return DynamicStrings_ConCat (StringConvert_LongIntegerToString (-((long int ) (c / ((long unsigned int ) (base)))), width-1, padding, sign, base, lower), DynamicStrings_Mark (StringConvert_LongIntegerToString (static_cast<long int> (c % ((long unsigned int ) (base))), 0, ' ', FALSE, base, lower)));
+              return DynamicStrings_ConCat (StringConvert_LongIntegerToString (-((long int ) (c / ((long unsigned int ) (base)))), width-1, padding, sign, base, lower), DynamicStrings_Mark (StringConvert_LongIntegerToString (static_cast<long int> (c % ((long unsigned int ) (base))), 0, ' ', false, base, lower)));
             }
           else
             {
-              return DynamicStrings_ConCat (StringConvert_LongIntegerToString (-((long int ) (c / ((long unsigned int ) (base)))), 0, padding, sign, base, lower), DynamicStrings_Mark (StringConvert_LongIntegerToString (static_cast<long int> (c % ((long unsigned int ) (base))), 0, ' ', FALSE, base, lower)));
+              return DynamicStrings_ConCat (StringConvert_LongIntegerToString (-((long int ) (c / ((long unsigned int ) (base)))), 0, padding, sign, base, lower), DynamicStrings_Mark (StringConvert_LongIntegerToString (static_cast<long int> (c % ((long unsigned int ) (base))), 0, ' ', false, base, lower)));
             }
         }
       else
@@ -1329,7 +1330,7 @@ extern "C" DynamicStrings_String StringConvert_LongIntegerToString (long int i, 
     }
   if (i > ((long int ) (base-1)))
     {
-      s = DynamicStrings_ConCat (DynamicStrings_ConCat (s, DynamicStrings_Mark (StringConvert_LongIntegerToString (i / ((long int ) (base)), 0, ' ', FALSE, base, lower))), DynamicStrings_Mark (StringConvert_LongIntegerToString (i % ((long int ) (base)), 0, ' ', FALSE, base, lower)));
+      s = DynamicStrings_ConCat (DynamicStrings_ConCat (s, DynamicStrings_Mark (StringConvert_LongIntegerToString (i / ((long int ) (base)), 0, ' ', false, base, lower))), DynamicStrings_Mark (StringConvert_LongIntegerToString (i % ((long int ) (base)), 0, ' ', false, base, lower)));
     }
   else
     {
@@ -1367,18 +1368,18 @@ extern "C" DynamicStrings_String StringConvert_LongIntegerToString (long int i, 
                          The parameter found is set TRUE if a number was found.
 */
 
-extern "C" long int StringConvert_StringToLongInteger (DynamicStrings_String s, unsigned int base, unsigned int *found)
+extern "C" long int StringConvert_StringToLongInteger (DynamicStrings_String s, unsigned int base, bool *found)
 {
   unsigned int n;
   unsigned int l;
   long unsigned int c;
-  unsigned int negative;
+  bool negative;
 
   s = DynamicStrings_RemoveWhitePrefix (s);  /* returns a new string, s  */
   l = DynamicStrings_Length (s);  /* returns a new string, s  */
   c = 0;
   n = 0;
-  negative = FALSE;
+  negative = false;
   if (n < l)
     {
       /* parse leading + and -  */
@@ -1392,7 +1393,7 @@ extern "C" long int StringConvert_StringToLongInteger (DynamicStrings_String s, 
         }
       while ((n < l) && ((IsDecimalDigitValidLong (DynamicStrings_char (s, static_cast<int> (n)), base, &c)) || (IsHexidecimalDigitValidLong (DynamicStrings_char (s, static_cast<int> (n)), base, &c))))
         {
-          (*found) = TRUE;
+          (*found) = true;
           n += 1;
         }
     }
@@ -1421,7 +1422,7 @@ extern "C" long int StringConvert_StringToLongInteger (DynamicStrings_String s, 
                           abcdef are used, and if FALSE then ABCDEF are used.
 */
 
-extern "C" DynamicStrings_String StringConvert_LongCardinalToString (long unsigned int c, unsigned int width, char padding, unsigned int base, unsigned int lower)
+extern "C" DynamicStrings_String StringConvert_LongCardinalToString (long unsigned int c, unsigned int width, char padding, unsigned int base, bool lower)
 {
   DynamicStrings_String s;
 
@@ -1466,7 +1467,7 @@ extern "C" DynamicStrings_String StringConvert_LongCardinalToString (long unsign
                           The parameter found is set TRUE if a number was found.
 */
 
-extern "C" long unsigned int StringConvert_StringToLongCardinal (DynamicStrings_String s, unsigned int base, unsigned int *found)
+extern "C" long unsigned int StringConvert_StringToLongCardinal (DynamicStrings_String s, unsigned int base, bool *found)
 {
   unsigned int n;
   unsigned int l;
@@ -1485,7 +1486,7 @@ extern "C" long unsigned int StringConvert_StringToLongCardinal (DynamicStrings_
         }
       while ((n < l) && ((IsDecimalDigitValidLong (DynamicStrings_char (s, static_cast<int> (n)), base, &c)) || (IsHexidecimalDigitValidLong (DynamicStrings_char (s, static_cast<int> (n)), base, &c))))
         {
-          (*found) = TRUE;
+          (*found) = true;
           n += 1;
         }
     }
@@ -1507,7 +1508,7 @@ extern "C" long unsigned int StringConvert_StringToLongCardinal (DynamicStrings_
                           abcdef are used, and if FALSE then ABCDEF are used.
 */
 
-extern "C" DynamicStrings_String StringConvert_ShortCardinalToString (short unsigned int c, unsigned int width, char padding, unsigned int base, unsigned int lower)
+extern "C" DynamicStrings_String StringConvert_ShortCardinalToString (short unsigned int c, unsigned int width, char padding, unsigned int base, bool lower)
 {
   DynamicStrings_String s;
 
@@ -1552,7 +1553,7 @@ extern "C" DynamicStrings_String StringConvert_ShortCardinalToString (short unsi
                            The parameter found is set TRUE if a number was found.
 */
 
-extern "C" short unsigned int StringConvert_StringToShortCardinal (DynamicStrings_String s, unsigned int base, unsigned int *found)
+extern "C" short unsigned int StringConvert_StringToShortCardinal (DynamicStrings_String s, unsigned int base, bool *found)
 {
   unsigned int n;
   unsigned int l;
@@ -1571,7 +1572,7 @@ extern "C" short unsigned int StringConvert_StringToShortCardinal (DynamicString
         }
       while ((n < l) && ((IsDecimalDigitValidShort (DynamicStrings_char (s, static_cast<int> (n)), base, &c)) || (IsHexidecimalDigitValidShort (DynamicStrings_char (s, static_cast<int> (n)), base, &c))))
         {
-          (*found) = TRUE;
+          (*found) = true;
           n += 1;
         }
     }
@@ -1588,7 +1589,7 @@ extern "C" short unsigned int StringConvert_StringToShortCardinal (DynamicString
 
 extern "C" int StringConvert_stoi (DynamicStrings_String s)
 {
-  unsigned int found;
+  bool found;
 
   return StringConvert_StringToInteger (s, 10, &found);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1600,9 +1601,9 @@ extern "C" int StringConvert_stoi (DynamicStrings_String s)
    itos - integer to decimal string.
 */
 
-extern "C" DynamicStrings_String StringConvert_itos (int i, unsigned int width, char padding, unsigned int sign)
+extern "C" DynamicStrings_String StringConvert_itos (int i, unsigned int width, char padding, bool sign)
 {
-  return StringConvert_IntegerToString (i, width, padding, sign, 10, FALSE);
+  return StringConvert_IntegerToString (i, width, padding, sign, 10, false);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1614,7 +1615,7 @@ extern "C" DynamicStrings_String StringConvert_itos (int i, unsigned int width, 
 
 extern "C" DynamicStrings_String StringConvert_ctos (unsigned int c, unsigned int width, char padding)
 {
-  return StringConvert_CardinalToString (c, width, padding, 10, FALSE);
+  return StringConvert_CardinalToString (c, width, padding, 10, false);
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1626,7 +1627,7 @@ extern "C" DynamicStrings_String StringConvert_ctos (unsigned int c, unsigned in
 
 extern "C" unsigned int StringConvert_stoc (DynamicStrings_String s)
 {
-  unsigned int found;
+  bool found;
 
   return StringConvert_StringToCardinal (s, 10, &found);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1640,7 +1641,7 @@ extern "C" unsigned int StringConvert_stoc (DynamicStrings_String s)
 
 extern "C" int StringConvert_hstoi (DynamicStrings_String s)
 {
-  unsigned int found;
+  bool found;
 
   return StringConvert_StringToInteger (s, 16, &found);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1654,7 +1655,7 @@ extern "C" int StringConvert_hstoi (DynamicStrings_String s)
 
 extern "C" int StringConvert_ostoi (DynamicStrings_String s)
 {
-  unsigned int found;
+  bool found;
 
   return StringConvert_StringToInteger (s, 8, &found);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1668,7 +1669,7 @@ extern "C" int StringConvert_ostoi (DynamicStrings_String s)
 
 extern "C" int StringConvert_bstoi (DynamicStrings_String s)
 {
-  unsigned int found;
+  bool found;
 
   return StringConvert_StringToInteger (s, 2, &found);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1682,7 +1683,7 @@ extern "C" int StringConvert_bstoi (DynamicStrings_String s)
 
 extern "C" unsigned int StringConvert_hstoc (DynamicStrings_String s)
 {
-  unsigned int found;
+  bool found;
 
   return StringConvert_StringToCardinal (s, 16, &found);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1696,7 +1697,7 @@ extern "C" unsigned int StringConvert_hstoc (DynamicStrings_String s)
 
 extern "C" unsigned int StringConvert_ostoc (DynamicStrings_String s)
 {
-  unsigned int found;
+  bool found;
 
   return StringConvert_StringToCardinal (s, 8, &found);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1710,7 +1711,7 @@ extern "C" unsigned int StringConvert_ostoc (DynamicStrings_String s)
 
 extern "C" unsigned int StringConvert_bstoc (DynamicStrings_String s)
 {
-  unsigned int found;
+  bool found;
 
   return StringConvert_StringToCardinal (s, 2, &found);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1722,9 +1723,9 @@ extern "C" unsigned int StringConvert_bstoc (DynamicStrings_String s)
    StringToLongreal - returns a LONGREAL and sets found to TRUE if a legal number is seen.
 */
 
-extern "C" long double StringConvert_StringToLongreal (DynamicStrings_String s, unsigned int *found)
+extern "C" long double StringConvert_StringToLongreal (DynamicStrings_String s, bool *found)
 {
-  unsigned int error;
+  bool error;
   long double value;
 
   s = DynamicStrings_RemoveWhitePrefix (s);  /* new string is created  */
@@ -1763,16 +1764,16 @@ extern "C" long double StringConvert_StringToLongreal (DynamicStrings_String s, 
 
 extern "C" DynamicStrings_String StringConvert_LongrealToString (long double x, unsigned int TotalWidth, unsigned int FractionWidth)
 {
-  unsigned int maxprecision;
+  bool maxprecision;
   DynamicStrings_String s;
   void * r;
   int point;
-  unsigned int sign;
+  bool sign;
   int l;
 
   if (TotalWidth == 0)
     {
-      maxprecision = TRUE;
+      maxprecision = true;
       r = ldtoa_ldtoa (x, ldtoa_decimaldigits, 100, &point, &sign);
     }
   else
@@ -1832,7 +1833,7 @@ extern "C" DynamicStrings_String StringConvert_LongrealToString (long double x, 
             {
               s = DynamicStrings_Slice (DynamicStrings_Mark (StringConvert_ToDecimalPlaces (s, FractionWidth)), 0, static_cast<int> (TotalWidth-1));
               s = DynamicStrings_ConCat (DynamicStrings_InitStringChar ('-'), DynamicStrings_Mark (s));
-              sign = FALSE;
+              sign = false;
             }
           else
             {
@@ -1846,7 +1847,7 @@ extern "C" DynamicStrings_String StringConvert_LongrealToString (long double x, 
             {
               s = StringConvert_ToDecimalPlaces (s, FractionWidth);
               s = DynamicStrings_ConCat (DynamicStrings_InitStringChar ('-'), DynamicStrings_Mark (s));
-              sign = FALSE;
+              sign = false;
             }
           else
             {
@@ -1871,7 +1872,7 @@ extern "C" DynamicStrings_String StringConvert_LongrealToString (long double x, 
 
 extern "C" double StringConvert_stor (DynamicStrings_String s)
 {
-  unsigned int found;
+  bool found;
 
   return (double ) (StringConvert_StringToLongreal (s, &found));
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1885,7 +1886,7 @@ extern "C" double StringConvert_stor (DynamicStrings_String s)
 
 extern "C" long double StringConvert_stolr (DynamicStrings_String s)
 {
-  unsigned int found;
+  bool found;
 
   return StringConvert_StringToLongreal (s, &found);
   /* static analysis guarentees a RETURN statement will be used before here.  */

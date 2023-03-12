@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -92,7 +93,7 @@ struct RTExceptions__T3_r {
                             RTExceptions_Handler stack;
                           };
 
-static unsigned int inException;
+static bool inException;
 static RTExceptions_Handler freeHandler;
 static RTExceptions_EHBlock freeEHB;
 static RTExceptions_EHBlock currentEHB;
@@ -185,7 +186,7 @@ extern "C" void RTExceptions_BaseExceptionsThrow (void);
                         in the exception state.
 */
 
-extern "C" unsigned int RTExceptions_IsInExceptionState (void);
+extern "C" bool RTExceptions_IsInExceptionState (void);
 
 /*
    SetExceptionState - returns the current exception state and
@@ -193,7 +194,7 @@ extern "C" unsigned int RTExceptions_IsInExceptionState (void);
                        to.
 */
 
-extern "C" unsigned int RTExceptions_SetExceptionState (unsigned int to);
+extern "C" bool RTExceptions_SetExceptionState (bool to);
 
 /*
    SwitchExceptionState - assigns, from, with the current exception
@@ -201,7 +202,7 @@ extern "C" unsigned int RTExceptions_SetExceptionState (unsigned int to);
                           to, to.
 */
 
-extern "C" void RTExceptions_SwitchExceptionState (unsigned int *from, unsigned int to);
+extern "C" void RTExceptions_SwitchExceptionState (bool *from, bool to);
 
 /*
    GetBaseExceptionBlock - returns the initial language exception block
@@ -871,7 +872,7 @@ static void exception (void * a)
 
 static void Init (void)
 {
-  inException = FALSE;
+  inException = false;
   freeHandler = NULL;
   freeEHB = NULL;
   currentEHB = RTExceptions_InitExceptionBlock ();
@@ -1132,7 +1133,7 @@ extern "C" void RTExceptions_BaseExceptionsThrow (void)
                         in the exception state.
 */
 
-extern "C" unsigned int RTExceptions_IsInExceptionState (void)
+extern "C" bool RTExceptions_IsInExceptionState (void)
 {
   return inException;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1146,9 +1147,9 @@ extern "C" unsigned int RTExceptions_IsInExceptionState (void)
                        to.
 */
 
-extern "C" unsigned int RTExceptions_SetExceptionState (unsigned int to)
+extern "C" bool RTExceptions_SetExceptionState (bool to)
 {
-  unsigned int old;
+  bool old;
 
   old = inException;
   inException = to;
@@ -1164,7 +1165,7 @@ extern "C" unsigned int RTExceptions_SetExceptionState (unsigned int to)
                           to, to.
 */
 
-extern "C" void RTExceptions_SwitchExceptionState (unsigned int *from, unsigned int to)
+extern "C" void RTExceptions_SwitchExceptionState (bool *from, bool to)
 {
   (*from) = inException;
   inException = to;

@@ -22,6 +22,7 @@ see <https://www.gnu.org/licenses/>.  */
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -55,8 +56,8 @@ see <https://www.gnu.org/licenses/>.  */
 #   include "GmcLexBuf.h"
 #   include "Gdecl.h"
 
-#   define Pass1 FALSE
-#   define Debugging FALSE
+#   define Pass1 false
+#   define Debugging false
 typedef unsigned int mcp5_stop0;
 
 typedef unsigned int mcp5_SetOfStop0;
@@ -69,7 +70,7 @@ typedef unsigned int mcp5_stop2;
 
 typedef unsigned int mcp5_SetOfStop2;
 
-static unsigned int WasNoError;
+static bool WasNoError;
 static nameKey_Name curstring;
 static nameKey_Name curident;
 static decl_node curproc;
@@ -89,7 +90,7 @@ static mcStack_stack stk;
                      in future passes.
 */
 
-extern "C" unsigned int mcp5_CompilationUnit (void);
+extern "C" bool mcp5_CompilationUnit (void);
 
 /*
    followNode -
@@ -131,13 +132,13 @@ static unsigned int depth (void);
    checkDuplicate -
 */
 
-static void checkDuplicate (unsigned int b);
+static void checkDuplicate (bool b);
 
 /*
    isQualident - returns TRUE if, n, is a qualident.
 */
 
-static unsigned int isQualident (decl_node n);
+static bool isQualident (decl_node n);
 
 /*
    startWith -
@@ -277,13 +278,13 @@ static void MissingToken (mcReserved_toktype t);
    CheckAndInsert -
 */
 
-static unsigned int CheckAndInsert (mcReserved_toktype t, mcp5_SetOfStop0 stopset0, mcp5_SetOfStop1 stopset1, mcp5_SetOfStop2 stopset2);
+static bool CheckAndInsert (mcReserved_toktype t, mcp5_SetOfStop0 stopset0, mcp5_SetOfStop1 stopset1, mcp5_SetOfStop2 stopset2);
 
 /*
    InStopSet
 */
 
-static unsigned int InStopSet (mcReserved_toktype t, mcp5_SetOfStop0 stopset0, mcp5_SetOfStop1 stopset1, mcp5_SetOfStop2 stopset2);
+static bool InStopSet (mcReserved_toktype t, mcp5_SetOfStop0 stopset0, mcp5_SetOfStop1 stopset1, mcp5_SetOfStop2 stopset2);
 
 /*
    PeepToken - peep token checks to see whether the stopset is satisfied by currenttoken
@@ -2557,7 +2558,7 @@ static unsigned int depth (void)
    checkDuplicate -
 */
 
-static void checkDuplicate (unsigned int b)
+static void checkDuplicate (bool b)
 {
 }
 
@@ -2566,20 +2567,20 @@ static void checkDuplicate (unsigned int b)
    isQualident - returns TRUE if, n, is a qualident.
 */
 
-static unsigned int isQualident (decl_node n)
+static bool isQualident (decl_node n)
 {
   decl_node type;
 
   if (decl_isDef (n))
     {
-      return TRUE;
+      return true;
     }
   else
     {
       type = decl_skipType (decl_getType (n));
       return (type != NULL) && (decl_isRecord (type));
     }
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -2719,7 +2720,7 @@ static decl_node peepLoop (void)
 static void ErrorString (DynamicStrings_String s)
 {
   mcError_errorStringAt (s, mcLexBuf_getTokenNo ());
-  WasNoError = FALSE;
+  WasNoError = false;
 }
 
 
@@ -3793,17 +3794,17 @@ static void MissingToken (mcReserved_toktype t)
    CheckAndInsert -
 */
 
-static unsigned int CheckAndInsert (mcReserved_toktype t, mcp5_SetOfStop0 stopset0, mcp5_SetOfStop1 stopset1, mcp5_SetOfStop2 stopset2)
+static bool CheckAndInsert (mcReserved_toktype t, mcp5_SetOfStop0 stopset0, mcp5_SetOfStop1 stopset1, mcp5_SetOfStop2 stopset2)
 {
   if (((( ((unsigned int) (t)) < 32) && ((((1 << (t-mcReserved_eoftok)) & (stopset0)) != 0))) || ((( ((unsigned int) (t)) >= 32) && ( ((unsigned int) (t)) < 64)) && ((((1 << (t-mcReserved_arraytok)) & (stopset1)) != 0)))) || (( ((unsigned int) (t)) >= 64) && ((((1 << (t-mcReserved_recordtok)) & (stopset2)) != 0))))
     {
       WarnMissingToken (t);
       mcLexBuf_insertTokenAndRewind (t);
-      return TRUE;
+      return true;
     }
   else
     {
-      return FALSE;
+      return false;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -3814,15 +3815,15 @@ static unsigned int CheckAndInsert (mcReserved_toktype t, mcp5_SetOfStop0 stopse
    InStopSet
 */
 
-static unsigned int InStopSet (mcReserved_toktype t, mcp5_SetOfStop0 stopset0, mcp5_SetOfStop1 stopset1, mcp5_SetOfStop2 stopset2)
+static bool InStopSet (mcReserved_toktype t, mcp5_SetOfStop0 stopset0, mcp5_SetOfStop1 stopset1, mcp5_SetOfStop2 stopset2)
 {
   if (((( ((unsigned int) (t)) < 32) && ((((1 << (t-mcReserved_eoftok)) & (stopset0)) != 0))) || ((( ((unsigned int) (t)) >= 32) && ( ((unsigned int) (t)) < 64)) && ((((1 << (t-mcReserved_arraytok)) & (stopset1)) != 0)))) || (( ((unsigned int) (t)) >= 64) && ((((1 << (t-mcReserved_recordtok)) & (stopset2)) != 0))))
     {
-      return TRUE;
+      return true;
     }
   else
     {
-      return FALSE;
+      return false;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -8549,14 +8550,14 @@ static void TrashList (mcp5_SetOfStop0 stopset0, mcp5_SetOfStop1 stopset1, mcp5_
                      in future passes.
 */
 
-extern "C" unsigned int mcp5_CompilationUnit (void)
+extern "C" bool mcp5_CompilationUnit (void)
 {
   stk = mcStack_init ();
   withStk = mcStack_init ();
   stmtStk = mcStack_init ();
   loopStk = mcStack_init ();
   loopNo = 0;
-  WasNoError = TRUE;
+  WasNoError = true;
   FileUnit ((mcp5_SetOfStop0) ((1 << (mcReserved_eoftok-mcReserved_eoftok))), (mcp5_SetOfStop1) 0, (mcp5_SetOfStop2) 0);
   mcStack_kill (&stk);
   mcStack_kill (&withStk);

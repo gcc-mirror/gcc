@@ -22,6 +22,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -57,9 +58,9 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   include "GmcLexBuf.h"
 #   include "GmcPrintf.h"
 
-#   define Debugging TRUE
-#   define DebugTrace FALSE
-#   define Xcode TRUE
+#   define Debugging true
+#   define DebugTrace false
+#   define Xcode true
 typedef struct mcError__T2_r mcError__T2;
 
 typedef mcError__T2 *mcError_error;
@@ -68,13 +69,13 @@ struct mcError__T2_r {
                        mcError_error parent;
                        mcError_error child;
                        mcError_error next;
-                       unsigned int fatal;
+                       bool fatal;
                        DynamicStrings_String s;
                        unsigned int token;
                      };
 
 static mcError_error head;
-static unsigned int inInternal;
+static bool inInternal;
 
 /*
    internalError - displays an internal error message together with the compiler source
@@ -228,7 +229,7 @@ extern "C" void mcError_errorAbort0 (const char *a_, unsigned int _a_high);
 */
 
 static void cast (unsigned char *a, unsigned int _a_high, const unsigned char *b_, unsigned int _b_high);
-static unsigned int translateNameToCharStar (char *a, unsigned int _a_high, unsigned int n);
+static bool translateNameToCharStar (char *a, unsigned int _a_high, unsigned int n);
 
 /*
    outString - writes the contents of String to stdout.
@@ -281,7 +282,7 @@ static void checkIncludes (unsigned int token, unsigned int depth);
    flushAll - flushes all errors in list, e.
 */
 
-static unsigned int flushAll (mcError_error e, unsigned int FatalStatus);
+static bool flushAll (mcError_error e, bool FatalStatus);
 
 
 /*
@@ -305,7 +306,7 @@ static void cast (unsigned char *a, unsigned int _a_high, const unsigned char *b
     }
 }
 
-static unsigned int translateNameToCharStar (char *a, unsigned int _a_high, unsigned int n)
+static bool translateNameToCharStar (char *a, unsigned int _a_high, unsigned int n)
 {
   unsigned int argno;
   unsigned int i;
@@ -326,18 +327,18 @@ static unsigned int translateNameToCharStar (char *a, unsigned int _a_high, unsi
           if ((a[i+1] == 'a') && (argno == n))
             {
               a[i+1] = 's';
-              return TRUE;
+              return true;
             }
           argno += 1;
           if (argno > n)
             {
               /* all done  */
-              return FALSE;
+              return false;
             }
         }
       i += 1;
     }
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -355,8 +356,8 @@ static void outString (DynamicStrings_String file, unsigned int line, unsigned i
   DynamicStrings_String leader;
   outString__T1 p;
   outString__T1 q;
-  unsigned int space;
-  unsigned int newline;
+  bool space;
+  bool newline;
 
   col += 1;
   if (Xcode)
@@ -368,8 +369,8 @@ static void outString (DynamicStrings_String file, unsigned int line, unsigned i
       leader = FormatStrings_Sprintf3 (DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "%s:%d:%d:", 9)), (const unsigned char *) &file, (sizeof (file)-1), (const unsigned char *) &line, (sizeof (line)-1), (const unsigned char *) &col, (sizeof (col)-1));
     }
   p = static_cast<outString__T1> (DynamicStrings_string (s));
-  newline = TRUE;
-  space = FALSE;
+  newline = true;
+  space = false;
   while ((p != NULL) && ((*p) != ASCII_nul))
     {
       if (newline)
@@ -600,7 +601,7 @@ static DynamicStrings_String doFormat3 (const char *a_, unsigned int _a_high, co
 static void init (void)
 {
   head = NULL;
-  inInternal = FALSE;
+  inInternal = false;
 }
 
 
@@ -655,12 +656,12 @@ static void checkIncludes (unsigned int token, unsigned int depth)
    flushAll - flushes all errors in list, e.
 */
 
-static unsigned int flushAll (mcError_error e, unsigned int FatalStatus)
+static bool flushAll (mcError_error e, bool FatalStatus)
 {
   mcError_error f;
-  unsigned int written;
+  bool written;
 
-  written = FALSE;
+  written = false;
   if (e != NULL)
     {
       do {
@@ -679,7 +680,7 @@ static unsigned int flushAll (mcError_error e, unsigned int FatalStatus)
             if ((e->child != NULL) && (flushAll (e->child, FatalStatus)))
               {}  /* empty.  */
             e->s = static_cast<DynamicStrings_String> (NULL);
-            written = TRUE;
+            written = true;
           }
         f = e;
         e = e->next;
@@ -715,7 +716,7 @@ extern "C" void mcError_internalError (const char *a_, unsigned int _a_high, con
   M2RTS_ExitOnHalt (1);
   if (! inInternal)
     {
-      inInternal = TRUE;
+      inInternal = true;
       mcError_flushErrors ();
       outString (mcLexBuf_findFileNameFromToken (mcLexBuf_getTokenNo (), 0), mcLexBuf_tokenToLineNo (mcLexBuf_getTokenNo (), 0), mcLexBuf_tokenToColumnNo (mcLexBuf_getTokenNo (), 0), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "*** fatal error ***", 19)));
     }
@@ -828,7 +829,7 @@ extern "C" mcError_error mcError_newError (unsigned int atTokenNo)
   e->next = NULL;
   e->parent = NULL;
   e->child = NULL;
-  e->fatal = TRUE;
+  e->fatal = true;
   if ((head == NULL) || (head->token > atTokenNo))
     {
       e->next = head;
@@ -860,7 +861,7 @@ extern "C" mcError_error mcError_newWarning (unsigned int atTokenNo)
   mcError_error e;
 
   e = mcError_newError (atTokenNo);
-  e->fatal = FALSE;
+  e->fatal = false;
   return e;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -1136,7 +1137,7 @@ extern "C" void mcError_flushErrors (void)
       mcPrintf_printf0 ((const char *) "\\nFlushing all errors\\n", 23);
       mcPrintf_printf0 ((const char *) "===================\\n", 21);
     }
-  if (flushAll (head, TRUE))
+  if (flushAll (head, true))
     {
       M2RTS_ExitOnHalt (1);
       M2RTS_HALT (-1);
@@ -1155,7 +1156,7 @@ extern "C" void mcError_flushErrors (void)
 
 extern "C" void mcError_flushWarnings (void)
 {
-  if (flushAll (head, FALSE))
+  if (flushAll (head, false))
     {}  /* empty.  */
 }
 
@@ -1176,10 +1177,10 @@ extern "C" void mcError_errorAbort0 (const char *a_, unsigned int _a_high)
     {
       mcError_writeFormat0 ((const char *) a, _a_high);
     }
-  if (! (flushAll (head, TRUE)))
+  if (! (flushAll (head, true)))
     {
       mcError_writeFormat0 ((const char *) "unidentified error", 18);
-      if (flushAll (head, TRUE))
+      if (flushAll (head, true))
         {}  /* empty.  */
     }
   M2RTS_ExitOnHalt (1);

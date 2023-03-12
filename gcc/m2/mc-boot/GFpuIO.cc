@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -231,7 +232,7 @@ extern "C" void FpuIO_WriteLongReal (long double x, unsigned int TotalWidth, uns
 
 extern "C" void FpuIO_StrToLongReal (const char *a_, unsigned int _a_high, long double *x)
 {
-  unsigned int found;
+  bool found;
   DynamicStrings_String s;
   char a[_a_high+1];
 
@@ -301,7 +302,7 @@ extern "C" void FpuIO_WriteLongInt (long int x, unsigned int n)
 extern "C" void FpuIO_StrToLongInt (const char *a_, unsigned int _a_high, long int *x)
 {
   DynamicStrings_String s;
-  unsigned int found;
+  bool found;
   char a[_a_high+1];
 
   /* make a local copy of each unbounded array.  */
@@ -322,7 +323,7 @@ extern "C" void FpuIO_LongIntToStr (long int x, unsigned int n, char *a, unsigne
 {
   DynamicStrings_String s;
 
-  s = StringConvert_LongIntegerToString (x, n, ' ', FALSE, 10, TRUE);
+  s = StringConvert_LongIntegerToString (x, n, ' ', false, 10, true);
   DynamicStrings_CopyOut ((char *) a, _a_high, s);
   s = DynamicStrings_KillString (s);
 }

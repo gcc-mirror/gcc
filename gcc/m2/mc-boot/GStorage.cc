@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -41,7 +42,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 extern "C" void Storage_ALLOCATE (void * *a, unsigned int Size);
 extern "C" void Storage_DEALLOCATE (void * *a, unsigned int Size);
 extern "C" void Storage_REALLOCATE (void * *a, unsigned int Size);
-extern "C" unsigned int Storage_Available (unsigned int Size);
+extern "C" bool Storage_Available (unsigned int Size);
 
 extern "C" void Storage_ALLOCATE (void * *a, unsigned int Size)
 {
@@ -58,7 +59,7 @@ extern "C" void Storage_REALLOCATE (void * *a, unsigned int Size)
   SysStorage_REALLOCATE (a, Size);
 }
 
-extern "C" unsigned int Storage_Available (unsigned int Size)
+extern "C" bool Storage_Available (unsigned int Size)
 {
   return SysStorage_Available (Size);
   /* static analysis guarentees a RETURN statement will be used before here.  */

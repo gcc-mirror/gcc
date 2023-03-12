@@ -1033,7 +1033,7 @@ convert_loc (location_t location, tree type, tree expr)
     {
     case VOID_TYPE:
     case BOOLEAN_TYPE:
-      return fold_convert (type, expr);
+      return fold (convert_to_integer (type, expr));
     case INTEGER_TYPE:
       return fold (convert_to_integer (type, expr));
     case POINTER_TYPE:

@@ -22,6 +22,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 #include "config.h"
 #include "system.h"
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -122,7 +123,7 @@ extern "C" void alists_removeItemFromList (alists_alist l, void * c);
    isItemInList - returns true if a ADDRESS, c, was found in alist, l.
 */
 
-extern "C" unsigned int alists_isItemInList (alists_alist l, void * c);
+extern "C" bool alists_isItemInList (alists_alist l, void * c);
 
 /*
    foreachItemInListDo - calls procedure, P, foreach item in alist, l.
@@ -330,11 +331,11 @@ extern "C" void alists_removeItemFromList (alists_alist l, void * c)
 {
   alists_alist p;
   unsigned int i;
-  unsigned int found;
+  bool found;
 
   if (l != NULL)
     {
-      found = FALSE;
+      found = false;
       p = NULL;
       do {
         i = 1;
@@ -344,7 +345,7 @@ extern "C" void alists_removeItemFromList (alists_alist l, void * c)
           }
         if ((i <= l->noOfelements) && (l->elements.array[i-1] == c))
           {
-            found = TRUE;
+            found = true;
           }
         else
           {
@@ -364,7 +365,7 @@ extern "C" void alists_removeItemFromList (alists_alist l, void * c)
    isItemInList - returns true if a ADDRESS, c, was found in alist, l.
 */
 
-extern "C" unsigned int alists_isItemInList (alists_alist l, void * c)
+extern "C" bool alists_isItemInList (alists_alist l, void * c)
 {
   unsigned int i;
 
@@ -374,7 +375,7 @@ extern "C" unsigned int alists_isItemInList (alists_alist l, void * c)
       {
         if (l->elements.array[i-1] == c)
           {
-            return TRUE;
+            return true;
           }
         else
           {
@@ -383,7 +384,7 @@ extern "C" unsigned int alists_isItemInList (alists_alist l, void * c)
       }
     l = l->next;
   } while (! (l == NULL));
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }

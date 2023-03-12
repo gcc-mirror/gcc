@@ -29,6 +29,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -53,7 +54,7 @@ extern "C" {
 
 typedef struct decl_isNodeF_p decl_isNodeF;
 
-typedef unsigned int (*decl_isNodeF_t) (decl_node);
+typedef bool (*decl_isNodeF_t) (decl_node);
 struct decl_isNodeF_p { decl_isNodeF_t proc; };
 
 
@@ -82,25 +83,25 @@ EXTERN unsigned int decl_getFirstUsed (decl_node n);
    isDef - return TRUE if node, n, is a definition module.
 */
 
-EXTERN unsigned int decl_isDef (decl_node n);
+EXTERN bool decl_isDef (decl_node n);
 
 /*
    isImp - return TRUE if node, n, is an implementation module.
 */
 
-EXTERN unsigned int decl_isImp (decl_node n);
+EXTERN bool decl_isImp (decl_node n);
 
 /*
    isImpOrModule - returns TRUE if, n, is a program module or implementation module.
 */
 
-EXTERN unsigned int decl_isImpOrModule (decl_node n);
+EXTERN bool decl_isImpOrModule (decl_node n);
 
 /*
    isVisited - returns TRUE if the node was visited.
 */
 
-EXTERN unsigned int decl_isVisited (decl_node n);
+EXTERN bool decl_isVisited (decl_node n);
 
 /*
    unsetVisited - unset the visited flag on a def/imp/module node.
@@ -124,7 +125,7 @@ EXTERN void decl_setEnumsComplete (decl_node n);
    getEnumsComplete - gets the field from the def or imp or module, n.
 */
 
-EXTERN unsigned int decl_getEnumsComplete (decl_node n);
+EXTERN bool decl_getEnumsComplete (decl_node n);
 
 /*
    resetEnumPos - resets the index into the saved list of enums inside
@@ -143,7 +144,7 @@ EXTERN decl_node decl_getNextEnum (void);
    isModule - return TRUE if node, n, is a program module.
 */
 
-EXTERN unsigned int decl_isModule (decl_node n);
+EXTERN bool decl_isModule (decl_node n);
 
 /*
    isMainModule - return TRUE if node, n, is the main module specified
@@ -151,7 +152,7 @@ EXTERN unsigned int decl_isModule (decl_node n);
                   implementation or program module.
 */
 
-EXTERN unsigned int decl_isMainModule (decl_node n);
+EXTERN bool decl_isMainModule (decl_node n);
 
 /*
    setMainModule - sets node, n, as the main module to be compiled.
@@ -199,13 +200,13 @@ EXTERN decl_node decl_lookupInScope (decl_node scope, nameKey_Name n);
    isConst - returns TRUE if node, n, is a const.
 */
 
-EXTERN unsigned int decl_isConst (decl_node n);
+EXTERN bool decl_isConst (decl_node n);
 
 /*
    isType - returns TRUE if node, n, is a type.
 */
 
-EXTERN unsigned int decl_isType (decl_node n);
+EXTERN bool decl_isType (decl_node n);
 
 /*
    putType - places, exp, as the type alias to des.
@@ -237,32 +238,32 @@ EXTERN void decl_putTypeHidden (decl_node des);
    isTypeHidden - returns TRUE if type, n, is hidden.
 */
 
-EXTERN unsigned int decl_isTypeHidden (decl_node n);
+EXTERN bool decl_isTypeHidden (decl_node n);
 
 /*
    hasHidden - returns TRUE if module, n, has a hidden type.
 */
 
-EXTERN unsigned int decl_hasHidden (decl_node n);
+EXTERN bool decl_hasHidden (decl_node n);
 
 /*
    isVar - returns TRUE if node, n, is a type.
 */
 
-EXTERN unsigned int decl_isVar (decl_node n);
+EXTERN bool decl_isVar (decl_node n);
 
 /*
    isTemporary - returns TRUE if node, n, is a variable and temporary.
 */
 
-EXTERN unsigned int decl_isTemporary (decl_node n);
+EXTERN bool decl_isTemporary (decl_node n);
 
 /*
    isExported - returns TRUE if symbol, n, is exported from
                 the definition module.
 */
 
-EXTERN unsigned int decl_isExported (decl_node n);
+EXTERN bool decl_isExported (decl_node n);
 
 /*
    getDeclScope - returns the node representing the
@@ -281,55 +282,55 @@ EXTERN decl_node decl_getScope (decl_node n);
    isLiteral - returns TRUE if, n, is a literal.
 */
 
-EXTERN unsigned int decl_isLiteral (decl_node n);
+EXTERN bool decl_isLiteral (decl_node n);
 
 /*
    isConstSet - returns TRUE if, n, is a constant set.
 */
 
-EXTERN unsigned int decl_isConstSet (decl_node n);
+EXTERN bool decl_isConstSet (decl_node n);
 
 /*
    isEnumerationField - returns TRUE if, n, is an enumeration field.
 */
 
-EXTERN unsigned int decl_isEnumerationField (decl_node n);
+EXTERN bool decl_isEnumerationField (decl_node n);
 
 /*
    isEnumeration - returns TRUE if node, n, is an enumeration type.
 */
 
-EXTERN unsigned int decl_isEnumeration (decl_node n);
+EXTERN bool decl_isEnumeration (decl_node n);
 
 /*
    isUnbounded - returns TRUE if, n, is an unbounded array.
 */
 
-EXTERN unsigned int decl_isUnbounded (decl_node n);
+EXTERN bool decl_isUnbounded (decl_node n);
 
 /*
    isParameter - returns TRUE if, n, is a parameter.
 */
 
-EXTERN unsigned int decl_isParameter (decl_node n);
+EXTERN bool decl_isParameter (decl_node n);
 
 /*
    isVarParam - returns TRUE if, n, is a var parameter.
 */
 
-EXTERN unsigned int decl_isVarParam (decl_node n);
+EXTERN bool decl_isVarParam (decl_node n);
 
 /*
    isParam - returns TRUE if, n, is a non var parameter.
 */
 
-EXTERN unsigned int decl_isParam (decl_node n);
+EXTERN bool decl_isParam (decl_node n);
 
 /*
    isNonVarParam - is an alias to isParam.
 */
 
-EXTERN unsigned int decl_isNonVarParam (decl_node n);
+EXTERN bool decl_isNonVarParam (decl_node n);
 
 /*
    addOptParameter - returns an optarg which has been created and added to
@@ -343,79 +344,79 @@ EXTERN decl_node decl_addOptParameter (decl_node proc, nameKey_Name id, decl_nod
    isOptarg - returns TRUE if, n, is an optarg.
 */
 
-EXTERN unsigned int decl_isOptarg (decl_node n);
+EXTERN bool decl_isOptarg (decl_node n);
 
 /*
    isRecord - returns TRUE if, n, is a record.
 */
 
-EXTERN unsigned int decl_isRecord (decl_node n);
+EXTERN bool decl_isRecord (decl_node n);
 
 /*
    isRecordField - returns TRUE if, n, is a record field.
 */
 
-EXTERN unsigned int decl_isRecordField (decl_node n);
+EXTERN bool decl_isRecordField (decl_node n);
 
 /*
    isVarientField - returns TRUE if, n, is a varient field.
 */
 
-EXTERN unsigned int decl_isVarientField (decl_node n);
+EXTERN bool decl_isVarientField (decl_node n);
 
 /*
    isArray - returns TRUE if, n, is an array.
 */
 
-EXTERN unsigned int decl_isArray (decl_node n);
+EXTERN bool decl_isArray (decl_node n);
 
 /*
    isProcType - returns TRUE if, n, is a procedure type.
 */
 
-EXTERN unsigned int decl_isProcType (decl_node n);
+EXTERN bool decl_isProcType (decl_node n);
 
 /*
    isPointer - returns TRUE if, n, is a pointer.
 */
 
-EXTERN unsigned int decl_isPointer (decl_node n);
+EXTERN bool decl_isPointer (decl_node n);
 
 /*
    isProcedure - returns TRUE if, n, is a procedure.
 */
 
-EXTERN unsigned int decl_isProcedure (decl_node n);
+EXTERN bool decl_isProcedure (decl_node n);
 
 /*
    isVarient - returns TRUE if, n, is a varient record.
 */
 
-EXTERN unsigned int decl_isVarient (decl_node n);
+EXTERN bool decl_isVarient (decl_node n);
 
 /*
    isSet - returns TRUE if, n, is a set type.
 */
 
-EXTERN unsigned int decl_isSet (decl_node n);
+EXTERN bool decl_isSet (decl_node n);
 
 /*
    isSubrange - returns TRUE if, n, is a subrange type.
 */
 
-EXTERN unsigned int decl_isSubrange (decl_node n);
+EXTERN bool decl_isSubrange (decl_node n);
 
 /*
    isZtype - returns TRUE if, n, is the Z type.
 */
 
-EXTERN unsigned int decl_isZtype (decl_node n);
+EXTERN bool decl_isZtype (decl_node n);
 
 /*
    isRtype - returns TRUE if, n, is the R type.
 */
 
-EXTERN unsigned int decl_isRtype (decl_node n);
+EXTERN bool decl_isRtype (decl_node n);
 
 /*
    makeConst - create, initialise and return a const node.
@@ -577,7 +578,7 @@ EXTERN decl_node decl_lookupSym (nameKey_Name n);
                        module, m, scope.
 */
 
-EXTERN void decl_addImportedModule (decl_node m, decl_node i, unsigned int scoped);
+EXTERN void decl_addImportedModule (decl_node m, decl_node i, bool scoped);
 
 /*
    setSource - sets the source filename for module, n, to s.
@@ -674,14 +675,14 @@ EXTERN void decl_putOptReturn (decl_node proc);
                       Where the parameters are declared as l: type.
 */
 
-EXTERN decl_node decl_makeVarParameter (decl_node l, decl_node type, decl_node proc, unsigned int isused);
+EXTERN decl_node decl_makeVarParameter (decl_node l, decl_node type, decl_node proc, bool isused);
 
 /*
    makeNonVarParameter - returns a non var parameter node with namelist and type.
                          Where the parameters are declared as l: type.
 */
 
-EXTERN decl_node decl_makeNonVarParameter (decl_node l, decl_node type, decl_node proc, unsigned int isused);
+EXTERN decl_node decl_makeNonVarParameter (decl_node l, decl_node type, decl_node proc, bool isused);
 
 /*
    paramEnter - reset the parameter count.
@@ -705,21 +706,21 @@ EXTERN decl_node decl_makeIdentList (void);
    putIdent - places ident, i, into identlist, n.
 */
 
-EXTERN unsigned int decl_putIdent (decl_node n, nameKey_Name i);
+EXTERN bool decl_putIdent (decl_node n, nameKey_Name i);
 
 /*
    addVarParameters - adds the identlist, i, of, type, to be VAR parameters
                       in procedure, n.
 */
 
-EXTERN void decl_addVarParameters (decl_node n, decl_node i, decl_node type, unsigned int isused);
+EXTERN void decl_addVarParameters (decl_node n, decl_node i, decl_node type, bool isused);
 
 /*
    addNonVarParameters - adds the identlist, i, of, type, to be parameters
                          in procedure, n.
 */
 
-EXTERN void decl_addNonVarParameters (decl_node n, decl_node i, decl_node type, unsigned int isused);
+EXTERN void decl_addNonVarParameters (decl_node n, decl_node i, decl_node type, bool isused);
 
 /*
    makeVarargs - returns a varargs node.
@@ -731,7 +732,7 @@ EXTERN decl_node decl_makeVarargs (void);
    isVarargs - returns TRUE if, n, is a varargs node.
 */
 
-EXTERN unsigned int decl_isVarargs (decl_node n);
+EXTERN bool decl_isVarargs (decl_node n);
 
 /*
    addParameter - adds a parameter, param, to procedure or proctype, proc.
@@ -771,7 +772,7 @@ EXTERN decl_node decl_makePointerRef (decl_node ptr, decl_node field);
    isPointerRef - returns TRUE if, n, is a pointerref node.
 */
 
-EXTERN unsigned int decl_isPointerRef (decl_node n);
+EXTERN bool decl_isPointerRef (decl_node n);
 
 /*
    makeDeRef - dereferences the pointer defined by, n.
@@ -827,7 +828,7 @@ EXTERN decl_node decl_makeSetValue (void);
    isSetValue - returns TRUE if, n, is a setvalue node.
 */
 
-EXTERN unsigned int decl_isSetValue (decl_node n);
+EXTERN bool decl_isSetValue (decl_node n);
 
 /*
    putSetValue - assigns the type, t, to the set value, n.  The
@@ -861,7 +862,7 @@ EXTERN decl_node decl_makeExpList (void);
    isExpList - returns TRUE if, n, is an explist node.
 */
 
-EXTERN unsigned int decl_isExpList (decl_node n);
+EXTERN bool decl_isExpList (decl_node n);
 
 /*
    putExpList - places, expression, e, within the explist, n.
@@ -916,7 +917,7 @@ EXTERN decl_node decl_makeStatementSequence (void);
    isStatementSequence - returns TRUE if node, n, is a statement sequence.
 */
 
-EXTERN unsigned int decl_isStatementSequence (decl_node n);
+EXTERN bool decl_isStatementSequence (decl_node n);
 
 /*
    addStatement - adds node, n, as a statement to statememt sequence, s.
@@ -964,7 +965,7 @@ EXTERN decl_node decl_makeReturn (void);
    isReturn - returns TRUE if node, n, is a return.
 */
 
-EXTERN unsigned int decl_isReturn (decl_node n);
+EXTERN bool decl_isReturn (decl_node n);
 
 /*
    putReturn - assigns node, e, as the expression on the return node.
@@ -989,7 +990,7 @@ EXTERN void decl_putWhile (decl_node n, decl_node e, decl_node s);
    isWhile - returns TRUE if node, n, is a while.
 */
 
-EXTERN unsigned int decl_isWhile (decl_node n);
+EXTERN bool decl_isWhile (decl_node n);
 
 /*
    addWhileDoComment - adds body and after comments to while node, w.
@@ -1036,7 +1037,7 @@ EXTERN decl_node decl_makeExit (decl_node l, unsigned int n);
    isExit - returns TRUE if node, n, is an exit.
 */
 
-EXTERN unsigned int decl_isExit (decl_node n);
+EXTERN bool decl_isExit (decl_node n);
 
 /*
    makeLoop - creates and returns a loop node.
@@ -1048,7 +1049,7 @@ EXTERN decl_node decl_makeLoop (void);
    isLoop - returns TRUE if, n, is a loop node.
 */
 
-EXTERN unsigned int decl_isLoop (decl_node n);
+EXTERN bool decl_isLoop (decl_node n);
 
 /*
    putLoop - places statement sequence, s, into loop, l.
@@ -1080,7 +1081,7 @@ EXTERN decl_node decl_makeIf (decl_node e, decl_node s);
    isIf - returns TRUE if, n, is an if node.
 */
 
-EXTERN unsigned int decl_isIf (decl_node n);
+EXTERN bool decl_isIf (decl_node n);
 
 /*
    makeElsif - creates and returns an elsif node.
@@ -1094,7 +1095,7 @@ EXTERN decl_node decl_makeElsif (decl_node i, decl_node e, decl_node s);
    isElsif - returns TRUE if node, n, is an elsif node.
 */
 
-EXTERN unsigned int decl_isElsif (decl_node n);
+EXTERN bool decl_isElsif (decl_node n);
 
 /*
    putElse - the else is grafted onto the if/elsif node, i,
@@ -1113,7 +1114,7 @@ EXTERN decl_node decl_makeFor (void);
    isFor - returns TRUE if node, n, is a for node.
 */
 
-EXTERN unsigned int decl_isFor (decl_node n);
+EXTERN bool decl_isFor (decl_node n);
 
 /*
    putFor - assigns the fields of the for node with
@@ -1136,7 +1137,7 @@ EXTERN decl_node decl_makeRepeat (void);
    isRepeat - returns TRUE if node, n, is a repeat node.
 */
 
-EXTERN unsigned int decl_isRepeat (decl_node n);
+EXTERN bool decl_isRepeat (decl_node n);
 
 /*
    putRepeat - places statements, s, and expression, e, into
@@ -1167,7 +1168,7 @@ EXTERN decl_node decl_makeCase (void);
    isCase - returns TRUE if node, n, is a case statement.
 */
 
-EXTERN unsigned int decl_isCase (decl_node n);
+EXTERN bool decl_isCase (decl_node n);
 
 /*
    putCaseExpression - places expression, e, into case statement, n.
@@ -1201,7 +1202,7 @@ EXTERN decl_node decl_makeCaseLabelList (decl_node l, decl_node s);
    isCaseLabelList - returns TRUE if, n, is a caselabellist.
 */
 
-EXTERN unsigned int decl_isCaseLabelList (decl_node n);
+EXTERN bool decl_isCaseLabelList (decl_node n);
 
 /*
    makeCaseList - creates and returns a case statement node.
@@ -1213,7 +1214,7 @@ EXTERN decl_node decl_makeCaseList (void);
    isCaseList - returns TRUE if, n, is a case list.
 */
 
-EXTERN unsigned int decl_isCaseList (decl_node n);
+EXTERN bool decl_isCaseList (decl_node n);
 
 /*
    putCaseRange - places the case range lo..hi into caselist, n.
@@ -1231,13 +1232,13 @@ EXTERN decl_node decl_makeRange (decl_node lo, decl_node hi);
    isRange - returns TRUE if node, n, is a range.
 */
 
-EXTERN unsigned int decl_isRange (decl_node n);
+EXTERN bool decl_isRange (decl_node n);
 
 /*
    setNoReturn - sets noreturn field inside procedure.
 */
 
-EXTERN void decl_setNoReturn (decl_node n, unsigned int value);
+EXTERN void decl_setNoReturn (decl_node n, bool value);
 
 /*
    dupExpr - duplicate the expression nodes, it does not duplicate

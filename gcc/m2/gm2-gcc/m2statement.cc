@@ -46,7 +46,7 @@ static GTY (()) tree last_function = NULL_TREE;
 
 void
 m2statement_BuildStartFunctionCode (location_t location, tree fndecl,
-                                    int isexported, int isinline)
+                                    bool isexported, bool isinline)
 {
   tree param_decl;
 
@@ -87,7 +87,7 @@ m2statement_BuildStartFunctionCode (location_t location, tree fndecl,
 /* BuildEndFunctionCode - generates the function epilogue.  */
 
 void
-m2statement_BuildEndFunctionCode (location_t location, tree fndecl, int nested)
+m2statement_BuildEndFunctionCode (location_t location, tree fndecl, bool nested)
 {
   tree block = DECL_INITIAL (fndecl);
 
@@ -162,7 +162,7 @@ m2statement_BuildAssignmentTree (location_t location, tree des, tree expr)
 
   if (TREE_CODE (expr) == FUNCTION_DECL)
     result = build2 (MODIFY_EXPR, TREE_TYPE (des), des,
-                     m2expr_BuildAddr (location, expr, FALSE));
+                     m2expr_BuildAddr (location, expr, false));
   else
     {
       gcc_assert (TREE_CODE (TREE_TYPE (des)) != TYPE_DECL);
@@ -171,7 +171,7 @@ m2statement_BuildAssignmentTree (location_t location, tree des, tree expr)
       else
         result = build2 (
             MODIFY_EXPR, TREE_TYPE (des), des,
-            m2convert_BuildConvert (location, TREE_TYPE (des), expr, FALSE));
+            m2convert_BuildConvert (location, TREE_TYPE (des), expr, false));
     }
 
   TREE_SIDE_EFFECTS (result) = 1;
@@ -219,7 +219,7 @@ m2statement_BuildParam (location_t location, tree param)
   m2assert_AssertLocation (location);
 
   if (TREE_CODE (param) == FUNCTION_DECL)
-    param = m2expr_BuildAddr (location, param, FALSE);
+    param = m2expr_BuildAddr (location, param, false);
 
   param_list = chainon (build_tree_list (NULL_TREE, param), param_list);
 }
@@ -258,7 +258,7 @@ m2statement_BuildProcedureCallTree (location_t location, tree procedure,
   ASSERT_CONDITION (
       last_function
       == NULL_TREE); /* Previous function value has not been collected.  */
-  TREE_USED (procedure) = TRUE;
+  TREE_USED (procedure) = true;
 
   for (i = 0; i < n; i++)
     {
@@ -270,8 +270,8 @@ m2statement_BuildProcedureCallTree (location_t location, tree procedure,
     {
       rettype = void_type_node;
       call = build_call_array_loc (location, rettype, funcptr, n, argarray);
-      TREE_USED (call) = TRUE;
-      TREE_SIDE_EFFECTS (call) = TRUE;
+      TREE_USED (call) = true;
+      TREE_SIDE_EFFECTS (call) = true;
 
 #if defined(DEBUG_PROCEDURE_CALLS)
       fprintf (stderr, "built the modula-2 call, here is the tree\n");
@@ -288,8 +288,8 @@ m2statement_BuildProcedureCallTree (location_t location, tree procedure,
     {
       last_function = build_call_array_loc (
           location, m2tree_skip_type_decl (rettype), funcptr, n, argarray);
-      TREE_USED (last_function) = TRUE;
-      TREE_SIDE_EFFECTS (last_function) = TRUE;
+      TREE_USED (last_function) = true;
+      TREE_SIDE_EFFECTS (last_function) = true;
       param_list
           = NULL_TREE; /* Ready for the next time we call a procedure.  */
       return last_function;
@@ -310,8 +310,8 @@ m2statement_BuildIndirectProcedureCallTree (location_t location,
   int i;
 
   m2assert_AssertLocation (location);
-  TREE_USED (procedure) = TRUE;
-  TREE_SIDE_EFFECTS (procedure) = TRUE;
+  TREE_USED (procedure) = true;
+  TREE_SIDE_EFFECTS (procedure) = true;
 
   for (i = 0; i < n; i++)
     {
@@ -323,8 +323,8 @@ m2statement_BuildIndirectProcedureCallTree (location_t location,
     {
       rettype = void_type_node;
       call = build_call_array_loc (location, rettype, procedure, n, argarray);
-      TREE_USED (call) = TRUE;
-      TREE_SIDE_EFFECTS (call) = TRUE;
+      TREE_USED (call) = true;
+      TREE_SIDE_EFFECTS (call) = true;
 
 #if defined(DEBUG_PROCEDURE_CALLS)
       fprintf (stderr, "built the modula-2 call, here is the tree\n");
@@ -341,8 +341,8 @@ m2statement_BuildIndirectProcedureCallTree (location_t location,
     {
       last_function = build_call_array_loc (
           location, m2tree_skip_type_decl (rettype), procedure, n, argarray);
-      TREE_USED (last_function) = TRUE;
-      TREE_SIDE_EFFECTS (last_function) = TRUE;
+      TREE_USED (last_function) = true;
+      TREE_SIDE_EFFECTS (last_function) = true;
       param_list
           = NULL_TREE; /* Ready for the next time we call a procedure.  */
       return last_function;
@@ -363,8 +363,8 @@ m2statement_BuildFunctValue (location_t location, tree value)
       last_function
       != NULL_TREE); /* No value available, possible used before.  */
 
-  TREE_SIDE_EFFECTS (assign) = TRUE;
-  TREE_USED (assign) = TRUE;
+  TREE_SIDE_EFFECTS (assign) = true;
+  TREE_USED (assign) = true;
   last_function = NULL_TREE;
   return assign;
 }
@@ -483,8 +483,8 @@ m2statement_BuildCleanUp (tree param)
 /* BuildAsm - generates an inline assembler instruction.  */
 
 void
-m2statement_BuildAsm (location_t location, tree instr, int isVolatile,
-                      int isSimple, tree inputs, tree outputs, tree trash,
+m2statement_BuildAsm (location_t location, tree instr, bool isVolatile,
+                      bool isSimple, tree inputs, tree outputs, tree trash,
                       tree labels)
 {
   tree string = resolve_asm_operand_names (instr, outputs, inputs, labels);
@@ -508,9 +508,9 @@ m2statement_BuildAsm (location_t location, tree instr, int isVolatile,
 void
 m2statement_BuildUnaryForeachWordDo (location_t location, tree type, tree op1,
                                      tree op2,
-                                     tree (*unop) (location_t, tree, int),
-                                     int is_op1lvalue, int is_op2lvalue,
-                                     int is_op1const, int is_op2const)
+                                     tree (*unop) (location_t, tree, bool),
+                                     bool is_op1lvalue, bool is_op2lvalue,
+                                     bool is_op1const, bool is_op2const)
 {
   tree size = m2expr_GetSizeOf (location, type);
 
@@ -527,7 +527,7 @@ m2statement_BuildUnaryForeachWordDo (location_t location, tree type, tree op1,
         location, m2treelib_get_rvalue (location, op1, type, is_op1lvalue),
         (*unop) (location,
                  m2treelib_get_rvalue (location, op2, type, is_op2lvalue),
-                 FALSE));
+                 false));
   else
     {
       /* Large set size > TSIZE(WORD).  */
@@ -544,7 +544,7 @@ m2statement_BuildUnaryForeachWordDo (location_t location, tree type, tree op1,
               location, m2treelib_get_set_field_des (location, op1, field1),
               (*unop) (location,
                        m2treelib_get_set_field_rhs (location, op2, field2),
-                       FALSE));
+                       false));
           fieldNo++;
           field1 = m2treelib_get_field_no (type, op1, is_op1const, fieldNo);
           field2 = m2treelib_get_field_no (type, op2, is_op2const, fieldNo);
@@ -558,7 +558,7 @@ m2statement_BuildUnaryForeachWordDo (location_t location, tree type, tree op1,
 
 void
 m2statement_BuildExcludeVarConst (location_t location, tree type, tree op1,
-                                  tree op2, int is_lvalue, int fieldno)
+                                  tree op2, bool is_lvalue, int fieldno)
 {
   tree size = m2expr_GetSizeOf (location, type);
 
@@ -576,9 +576,9 @@ m2statement_BuildExcludeVarConst (location_t location, tree type, tree op1,
               m2expr_BuildSetNegate (
                   location,
                   m2expr_BuildLSL (location, m2expr_GetWordOne (location), op2,
-                                   FALSE),
-                  FALSE),
-              FALSE));
+                                   false),
+                  false),
+              false));
     }
   else
     {
@@ -596,9 +596,9 @@ m2statement_BuildExcludeVarConst (location_t location, tree type, tree op1,
               m2expr_BuildSetNegate (
                   location,
                   m2expr_BuildLSL (location, m2expr_GetWordOne (location), op2,
-                                   FALSE),
-                  FALSE),
-              FALSE));
+                                   false),
+                  false),
+              false));
     }
 }
 
@@ -607,7 +607,7 @@ m2statement_BuildExcludeVarConst (location_t location, tree type, tree op1,
 
 void
 m2statement_BuildExcludeVarVar (location_t location, tree type, tree varset,
-                                tree varel, int is_lvalue, tree low)
+                                tree varel, bool is_lvalue, tree low)
 {
   tree size = m2expr_GetSizeOf (location, type);
 
@@ -616,7 +616,7 @@ m2statement_BuildExcludeVarVar (location_t location, tree type, tree varset,
   /* Calculate the index from the first bit, ie bit 0 represents low value.  */
   tree index
       = m2expr_BuildSub (location, m2convert_ToInteger (location, varel),
-                         m2convert_ToInteger (location, low), FALSE);
+                         m2convert_ToInteger (location, low), false);
 
   if (m2expr_CompareTrees (
           size, m2decl_BuildIntegerConstant (SET_WORD_SIZE / BITS_PER_UNIT))
@@ -629,9 +629,9 @@ m2statement_BuildExcludeVarVar (location_t location, tree type, tree varset,
             m2expr_BuildSetNegate (
                 location,
                 m2expr_BuildLSL (location, m2expr_GetWordOne (location),
-                                 m2convert_ToWord (location, index), FALSE),
-                FALSE),
-            FALSE));
+                                 m2convert_ToWord (location, index), false),
+                false),
+            false));
   else
     {
       tree p1 = m2treelib_get_set_address (location, varset, is_lvalue);
@@ -639,10 +639,10 @@ m2statement_BuildExcludeVarVar (location_t location, tree type, tree varset,
 
       /* Which word do we need to fetch?  */
       tree word_index = m2expr_BuildDivTrunc (
-          location, index, m2decl_BuildIntegerConstant (SET_WORD_SIZE), FALSE);
+          location, index, m2decl_BuildIntegerConstant (SET_WORD_SIZE), false);
       /* Calculate the bit in this word.  */
       tree offset_into_word = m2expr_BuildModTrunc (
-          location, index, m2decl_BuildIntegerConstant (SET_WORD_SIZE), FALSE);
+          location, index, m2decl_BuildIntegerConstant (SET_WORD_SIZE), false);
 
       tree v1;
 
@@ -652,7 +652,7 @@ m2statement_BuildExcludeVarVar (location_t location, tree type, tree varset,
           m2expr_BuildMult (
               location, word_index,
               m2decl_BuildIntegerConstant (SET_WORD_SIZE / BITS_PER_UNIT),
-              FALSE));
+              false));
 
       v1 = m2expr_BuildLogicalAnd (
           location,
@@ -661,9 +661,9 @@ m2statement_BuildExcludeVarVar (location_t location, tree type, tree varset,
               location,
               m2expr_BuildLSL (location, m2expr_GetWordOne (location),
                                m2convert_ToWord (location, offset_into_word),
-                               FALSE),
-              FALSE),
-          FALSE);
+                               false),
+              false),
+          false);
 
       /* Set bit offset_into_word within the word pointer at by p1.  */
       m2statement_BuildAssignmentTree (
@@ -679,7 +679,7 @@ m2statement_BuildExcludeVarVar (location_t location, tree type, tree varset,
 
 void
 m2statement_BuildIncludeVarConst (location_t location, tree type, tree op1,
-                                  tree op2, int is_lvalue, int fieldno)
+                                  tree op2, bool is_lvalue, int fieldno)
 {
   tree size = m2expr_GetSizeOf (location, type);
 
@@ -695,8 +695,8 @@ m2statement_BuildIncludeVarConst (location_t location, tree type, tree op1,
           m2expr_BuildLogicalOr (
               location, m2treelib_get_rvalue (location, op1, type, is_lvalue),
               m2expr_BuildLSL (location, m2expr_GetWordOne (location),
-                               m2convert_ToWord (location, op2), FALSE),
-              FALSE));
+                               m2convert_ToWord (location, op2), false),
+              false));
     }
   else
     {
@@ -717,8 +717,8 @@ m2statement_BuildIncludeVarConst (location_t location, tree type, tree op1,
           m2expr_BuildLogicalOr (
               location, m2treelib_get_set_field_rhs (location, op1, field),
               m2expr_BuildLSL (location, m2expr_GetWordOne (location),
-                               m2convert_ToWord (location, op2), FALSE),
-              FALSE));
+                               m2convert_ToWord (location, op2), false),
+              false));
     }
 }
 
@@ -727,7 +727,7 @@ m2statement_BuildIncludeVarConst (location_t location, tree type, tree op1,
 
 void
 m2statement_BuildIncludeVarVar (location_t location, tree type, tree varset,
-                                tree varel, int is_lvalue, tree low)
+                                tree varel, bool is_lvalue, tree low)
 {
   tree size = m2expr_GetSizeOf (location, type);
 
@@ -736,7 +736,7 @@ m2statement_BuildIncludeVarVar (location_t location, tree type, tree varset,
   /* Calculate the index from the first bit, ie bit 0 represents low value.  */
   tree index
       = m2expr_BuildSub (location, m2convert_ToInteger (location, varel),
-                         m2convert_ToInteger (location, low), FALSE);
+                         m2convert_ToInteger (location, low), false);
   tree indexw = m2convert_ToWord (location, index);
 
   if (m2expr_CompareTrees (
@@ -751,21 +751,21 @@ m2statement_BuildIncludeVarVar (location_t location, tree type, tree varset,
                 location,
                 m2treelib_get_rvalue (location, varset, type, is_lvalue),
                 m2expr_BuildLSL (location, m2expr_GetWordOne (location),
-                                 indexw, FALSE),
-                FALSE)));
+                                 indexw, false),
+                false)));
   else
     {
       tree p1 = m2treelib_get_set_address (location, varset, is_lvalue);
       /* Which word do we need to fetch?  */
       tree word_index = m2expr_BuildDivTrunc (
-          location, index, m2decl_BuildIntegerConstant (SET_WORD_SIZE), FALSE);
+          location, index, m2decl_BuildIntegerConstant (SET_WORD_SIZE), false);
       /* Calculate the bit in this word.  */
       tree offset_into_word = m2convert_BuildConvert (
           location, m2type_GetWordType (),
           m2expr_BuildModTrunc (location, index,
                                 m2decl_BuildIntegerConstant (SET_WORD_SIZE),
-                                FALSE),
-          FALSE);
+                                false),
+          false);
       tree v1;
 
       /* Calculate the address of the word we are interested in.  */
@@ -774,15 +774,15 @@ m2statement_BuildIncludeVarVar (location_t location, tree type, tree varset,
           m2expr_BuildMult (
               location, word_index,
               m2decl_BuildIntegerConstant (SET_WORD_SIZE / BITS_PER_UNIT),
-              FALSE));
+              false));
       v1 = m2expr_BuildLogicalOr (
           location,
           m2expr_BuildIndirect (location, p1, m2type_GetBitsetType ()),
           m2convert_ToBitset (location,
                               m2expr_BuildLSL (location,
                                                m2expr_GetWordOne (location),
-                                               offset_into_word, FALSE)),
-          FALSE);
+                                               offset_into_word, false)),
+          false);
 
       /* Set bit offset_into_word within the word pointer at by p1.  */
       m2statement_BuildAssignmentTree (
@@ -798,7 +798,7 @@ m2statement_BuildIncludeVarVar (location_t location, tree type, tree varset,
    the initialization sequence for all modules.  */
 
 tree
-m2statement_BuildStart (location_t location, char *name, int inner_module)
+m2statement_BuildStart (location_t location, char *name, bool inner_module)
 {
   tree fntype;
   tree fndecl;
@@ -831,7 +831,7 @@ m2statement_BuildStart (location_t location, char *name, int inner_module)
 /* BuildEnd - complete the initialization function for this module.  */
 
 void
-m2statement_BuildEnd (location_t location, tree fndecl, int nested)
+m2statement_BuildEnd (location_t location, tree fndecl, bool nested)
 {
   m2statement_BuildEndFunctionCode (location, fndecl, nested);
   current_function_decl = NULL;
@@ -892,14 +892,14 @@ m2statement_BuildReturnValueCode (location_t location, tree fndecl, tree value)
       MODIFY_EXPR, TREE_TYPE (DECL_RESULT (fndecl)), DECL_RESULT (fndecl),
       m2convert_BuildConvert (
           location, m2tree_skip_type_decl (TREE_TYPE (DECL_RESULT (fndecl))),
-          value, FALSE));
+          value, false));
 
   ret_stmt = build_stmt (location, RETURN_EXPR, t);
   add_stmt (location, ret_stmt);
 }
 
 /* DoJump - jump to the appropriate label depending whether result of
-   the expression is TRUE or FALSE.  */
+   the expression is true or false.  */
 
 void
 m2statement_DoJump (location_t location, tree exp, char *falselabel,
