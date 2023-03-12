@@ -15871,8 +15871,10 @@ E.g. to disable inline code use
 @option{--param asan-instrumentation-with-call-threshold=0}.
 
 @item asan-kernel-mem-intrinsic-prefix
-Prefix calls to memcpy, memset and memmove with __asan_ or __hwasan_
-for -fsanitize=kernel-address or -fsanitize=kernel-hwaddress.
+If nonzero, prefix calls to @code{memcpy}, @code{memset} and @code{memmove}
+with @samp{__asan_} or @samp{__hwasan_}
+for @option{-fsanitize=kernel-address} or @samp{-fsanitize=kernel-hwaddress},
+respectively.
 
 @item hwasan-instrument-stack
 Enable hwasan instrumentation of statically sized stack-allocated variables.
