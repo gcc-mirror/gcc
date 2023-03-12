@@ -4061,7 +4061,9 @@ package body Exp_Aggr is
                         Decl  : Node_Id;
 
                      begin
-                        if Nkind (First (Choices (Assoc))) = N_Others_Choice
+                        if Present (Assoc)
+                          and then
+                            Nkind (First (Choices (Assoc))) = N_Others_Choice
                         then
                            Decl :=
                              Build_Actual_Subtype_Of_Component
