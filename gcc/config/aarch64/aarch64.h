@@ -1237,9 +1237,8 @@ extern const char *aarch64_rewrite_mcpu (int argc, const char **argv);
 extern GTY(()) tree aarch64_fp16_type_node;
 extern GTY(()) tree aarch64_fp16_ptr_type_node;
 
-/* This type is the user-visible __bf16, and a pointer to that type.  Defined
-   in aarch64-builtins.cc.  */
-extern GTY(()) tree aarch64_bf16_type_node;
+/* Pointer to the user-visible __bf16 type.  __bf16 itself is generic
+   bfloat16_type_node.  Defined in aarch64-builtins.cc.  */
 extern GTY(()) tree aarch64_bf16_ptr_type_node;
 
 /* The generic unwind code in libgcc does not initialize the frame pointer.

@@ -918,7 +918,6 @@ tree aarch64_fp16_type_node = NULL_TREE;
 tree aarch64_fp16_ptr_type_node = NULL_TREE;
 
 /* Back-end node type for brain float (bfloat) types.  */
-tree aarch64_bf16_type_node = NULL_TREE;
 tree aarch64_bf16_ptr_type_node = NULL_TREE;
 
 /* Wrapper around add_builtin_function.  NAME is the name of the built-in
@@ -1010,7 +1009,7 @@ aarch64_int_or_fp_type (machine_mode mode,
     case E_DFmode:
       return double_type_node;
     case E_BFmode:
-      return aarch64_bf16_type_node;
+      return bfloat16_type_node;
     default:
       gcc_unreachable ();
     }
@@ -1124,8 +1123,8 @@ aarch64_init_simd_builtin_types (void)
   aarch64_simd_types[Float64x2_t].eltype = double_type_node;
 
   /* Init Bfloat vector types with underlying __bf16 type.  */
-  aarch64_simd_types[Bfloat16x4_t].eltype = aarch64_bf16_type_node;
-  aarch64_simd_types[Bfloat16x8_t].eltype = aarch64_bf16_type_node;
+  aarch64_simd_types[Bfloat16x4_t].eltype = bfloat16_type_node;
+  aarch64_simd_types[Bfloat16x8_t].eltype = bfloat16_type_node;
 
   for (i = 0; i < nelts; i++)
     {
@@ -1197,7 +1196,7 @@ aarch64_init_simd_builtin_scalar_types (void)
 					     "__builtin_aarch64_simd_poly128");
   (*lang_hooks.types.register_builtin_type) (intTI_type_node,
 					     "__builtin_aarch64_simd_ti");
-  (*lang_hooks.types.register_builtin_type) (aarch64_bf16_type_node,
+  (*lang_hooks.types.register_builtin_type) (bfloat16_type_node,
 					     "__builtin_aarch64_simd_bf");
   /* Unsigned integer types for various mode sizes.  */
   (*lang_hooks.types.register_builtin_type) (unsigned_intQI_type_node,
@@ -1682,13 +1681,8 @@ aarch64_init_fp16_types (void)
 static void
 aarch64_init_bf16_types (void)
 {
-  aarch64_bf16_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (aarch64_bf16_type_node) = 16;
-  SET_TYPE_MODE (aarch64_bf16_type_node, BFmode);
-  layout_type (aarch64_bf16_type_node);
-
-  lang_hooks.types.register_builtin_type (aarch64_bf16_type_node, "__bf16");
-  aarch64_bf16_ptr_type_node = build_pointer_type (aarch64_bf16_type_node);
+  lang_hooks.types.register_builtin_type (bfloat16_type_node, "__bf16");
+  aarch64_bf16_ptr_type_node = build_pointer_type (bfloat16_type_node);
 }
 
 /* Pointer authentication builtins that will become NOP on legacy platform.

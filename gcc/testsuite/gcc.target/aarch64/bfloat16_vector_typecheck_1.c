@@ -52,20 +52,20 @@ bfloat16x4_t footest (bfloat16x4_t vector0)
   bfloat16x4_t vector2_1 = {};
   bfloat16x4_t vector2_2 = { glob_bfloat };
   bfloat16x4_t vector2_3 = { glob_bfloat, glob_bfloat, glob_bfloat, glob_bfloat };
-  bfloat16x4_t vector2_4 = { 0 }; /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
-  bfloat16x4_t vector2_5 = { 0.1 }; /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
-  bfloat16x4_t vector2_6 = { is_a_float16 }; /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
-  bfloat16x4_t vector2_7 = { is_a_float }; /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
-  bfloat16x4_t vector2_8 = { is_an_int }; /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
-  bfloat16x4_t vector2_9 = { is_a_short_int }; /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
-  bfloat16x4_t vector2_10 = { 0.0, 0, is_a_short_int, is_a_float }; /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
+  bfloat16x4_t vector2_4 = { 0 };
+  bfloat16x4_t vector2_5 = { 0.1 };
+  bfloat16x4_t vector2_6 = { is_a_float16 };
+  bfloat16x4_t vector2_7 = { is_a_float };
+  bfloat16x4_t vector2_8 = { is_an_int };
+  bfloat16x4_t vector2_9 = { is_a_short_int };
+  bfloat16x4_t vector2_10 = { 0.0, 0, is_a_short_int, is_a_float };
 
-  int32x4_t initi_2_1 = { glob_bfloat };   /* { dg-error {invalid conversion from type 'bfloat16_t'} } */
-  float32x4_t initi_2_2 = { glob_bfloat }; /* { dg-error {invalid conversion from type 'bfloat16_t'} } */
-  float16x4_t initi_2_3 = { glob_bfloat }; /* { dg-error {invalid conversion from type 'bfloat16_t'} } */
-  float32x2_t initi_2_4 = { glob_bfloat }; /* { dg-error {invalid conversion from type 'bfloat16_t'} } */
-  int32x2_t initi_2_5 = { glob_bfloat };   /* { dg-error {invalid conversion from type 'bfloat16_t'} } */
-  int16x4_t initi_2_6 = { glob_bfloat };   /* { dg-error {invalid conversion from type 'bfloat16_t'} } */
+  int32x4_t initi_2_1 = { glob_bfloat };
+  float32x4_t initi_2_2 = { glob_bfloat };
+  float16x4_t initi_2_3 = { glob_bfloat };
+  float32x2_t initi_2_4 = { glob_bfloat };
+  int32x2_t initi_2_5 = { glob_bfloat };
+  int16x4_t initi_2_6 = { glob_bfloat };
 
   /* Assignments to/from vectors.  */
 
@@ -89,25 +89,25 @@ bfloat16x4_t footest (bfloat16x4_t vector0)
   /* Assignments to/from elements.  */
 
   vector2_3[0] = glob_bfloat;
-  vector2_3[0] = is_an_int; /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
-  vector2_3[0] = is_a_short_int; /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
-  vector2_3[0] = is_a_float; /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
-  vector2_3[0] = is_a_float16; /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
-  vector2_3[0] = 0; /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
-  vector2_3[0] = 0.1; /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
+  vector2_3[0] = is_an_int;
+  vector2_3[0] = is_a_short_int;
+  vector2_3[0] = is_a_float;
+  vector2_3[0] = is_a_float16;
+  vector2_3[0] = 0;
+  vector2_3[0] = 0.1;
 
   glob_bfloat = vector2_3[0];
-  is_an_int = vector2_3[0]; /* { dg-error {invalid conversion from type 'bfloat16_t'} } */
-  is_a_short_int = vector2_3[0]; /* { dg-error {invalid conversion from type 'bfloat16_t'} } */
-  is_a_float = vector2_3[0]; /* { dg-error {invalid conversion from type 'bfloat16_t'} } */
-  is_a_float16 = vector2_3[0]; /* { dg-error {invalid conversion from type 'bfloat16_t'} } */
+  is_an_int = vector2_3[0];
+  is_a_short_int = vector2_3[0];
+  is_a_float = vector2_3[0];
+  is_a_float16 = vector2_3[0];
 
   /* Compound literals.  */
 
   (bfloat16x4_t) {};
 
-  (bfloat16x4_t) { 0 }; /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
-  (bfloat16x4_t) { 0.1 }; /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
+  (bfloat16x4_t) { 0 };
+  (bfloat16x4_t) { 0.1 };
   (bfloat16x4_t) { is_a_float_vec }; /* { dg-error {incompatible types when initializing type '__bf16' using type 'float32x4_t'} } */
   (bfloat16x4_t) { is_an_int_vec }; /* { dg-error {incompatible types when initializing type '__bf16' using type 'int32x4_t'} } */
   (bfloat16x4_t) { is_a_float_pair }; /* { dg-error {incompatible types when initializing type '__bf16' using type 'float32x2_t'} } */
@@ -190,16 +190,16 @@ bfloat16x4_t footest (bfloat16x4_t vector0)
   bfloat_ptr = &bfloat_ptr3[1];
 
   /* Simple comparison.  */
-  vector0 > glob_bfloat_vec; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
-  glob_bfloat_vec == vector0; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
-  vector0 > is_a_float_vec; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
-  is_a_float_vec == vector0; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
-  vector0 > 0; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
-  0 == vector0; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
-  vector0 > 0.1; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
-  0.1 == vector0; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
-  vector0 > is_an_int_vec; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
-  is_an_int_vec == vector0; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
+  vector0 > glob_bfloat_vec;
+  glob_bfloat_vec == vector0;
+  vector0 > is_a_float_vec; /* { dg-error {comparing vectors with different element types} } */
+  is_a_float_vec == vector0; /* { dg-error {comparing vectors with different element types} } */
+  vector0 > 0;
+  0 == vector0;
+  vector0 > 0.1; /* { dg-error {conversion of scalar 'double' to vector 'bfloat16x4_t' involves truncation} } */
+  0.1 == vector0; /* { dg-error {conversion of scalar 'double' to vector 'bfloat16x4_t' involves truncation} } */
+  vector0 > is_an_int_vec; /* { dg-error {comparing vectors with different element types} } */
+  is_an_int_vec == vector0; /* { dg-error {comparing vectors with different element types} } */
 
   /* Pointer comparison.  */
 
@@ -238,24 +238,24 @@ bfloat16x4_t footest (bfloat16x4_t vector0)
 
   /* Unary operators.  */
 
-  +vector0; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
-  -vector0; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
-  ~vector0; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
-  !vector0; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
+  +vector0;
+  -vector0;
+  ~vector0; /* { dg-error {wrong type argument to bit-complement} } */
+  !vector0; /* { dg-error {wrong type argument to unary exclamation mark} } */
   *vector0; /* { dg-error {invalid type argument of unary '\*'} } */
-  __real vector0; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
-  __imag vector0; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
-  ++vector0; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
-  --vector0; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
-  vector0++; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
-  vector0--; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
+  __real vector0; /* { dg-error {wrong type argument to __real} } */
+  __imag vector0; /* { dg-error {wrong type argument to __imag} } */
+  ++vector0;
+  --vector0;
+  vector0++;
+  vector0--;
 
   /* Binary arithmetic operations.  */
 
-  vector0 = glob_bfloat_vec + *bfloat_ptr; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
-  vector0 = glob_bfloat_vec + 0.1; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
-  vector0 = glob_bfloat_vec + 0; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
-  vector0 = glob_bfloat_vec + is_a_float_vec; /* { dg-error {operation not permitted on type 'bfloat16_t'} } */
+  vector0 = glob_bfloat_vec + *bfloat_ptr;
+  vector0 = glob_bfloat_vec + 0.1; /* { dg-error {conversion of scalar 'double' to vector 'bfloat16x4_t' involves truncation} } */
+  vector0 = glob_bfloat_vec + 0;
+  vector0 = glob_bfloat_vec + is_a_float_vec; /* { dg-error {invalid operands to binary \+} } */
 
   return vector0;
 }

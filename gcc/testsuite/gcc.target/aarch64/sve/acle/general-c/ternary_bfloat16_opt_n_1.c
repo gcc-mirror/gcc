@@ -18,7 +18,7 @@ f1 (svbool_t pg, svuint8_t u8, svuint16_t u16, svint32_t s32,
   svbfdot (f32, bf16, bf16);
   svbfdot (f32, 0, bf16); /* { dg-error {passing 'int' to argument 2 of 'svbfdot', which expects 'svbfloat16_t'} } */
   svbfdot (f32, f32, bf16); /* { dg-error {passing 'svfloat32_t' to argument 2 of 'svbfdot', which expects 'svbfloat16_t'} } */
-  svbfdot (f32, bf16, 0); /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
+  svbfdot (f32, bf16, 0);
   svbfdot (f32, bf16, f32); /* { dg-error {passing 'svfloat32_t' to argument 3 of 'svbfdot', which expects 'svbfloat16_t'} } */
   svbfdot (f32, bf16, bf);
 }

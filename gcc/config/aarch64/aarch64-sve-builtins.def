@@ -61,7 +61,7 @@ DEF_SVE_MODE (u64offset, none, svuint64_t, bytes)
 DEF_SVE_MODE (vnum, none, none, vectors)
 
 DEF_SVE_TYPE (svbool_t, 10, __SVBool_t, boolean_type_node)
-DEF_SVE_TYPE (svbfloat16_t, 14, __SVBfloat16_t, aarch64_bf16_type_node)
+DEF_SVE_TYPE (svbfloat16_t, 14, __SVBfloat16_t, bfloat16_type_node)
 DEF_SVE_TYPE (svfloat16_t, 13, __SVFloat16_t, aarch64_fp16_type_node)
 DEF_SVE_TYPE (svfloat32_t, 13, __SVFloat32_t, float_type_node)
 DEF_SVE_TYPE (svfloat64_t, 13, __SVFloat64_t, double_type_node)
