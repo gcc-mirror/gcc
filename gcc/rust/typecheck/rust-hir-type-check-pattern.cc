@@ -355,8 +355,14 @@ TypeCheckPattern::visit (HIR::ReferencePattern &pattern)
 		   parent->as_string ().c_str ());
 
   TyTy::ReferenceType *ref_ty_ty = static_cast<TyTy::ReferenceType *> (parent);
-  TypeCheckPattern::Resolve (pattern.get_referenced_pattern ().get (),
-			     ref_ty_ty->get_base ());
+  TyTy::BaseType *infered_base
+    = TypeCheckPattern::Resolve (pattern.get_referenced_pattern ().get (),
+				 ref_ty_ty->get_base ());
+  infered
+    = new TyTy::ReferenceType (pattern.get_pattern_mappings ().get_hirid (),
+			       TyTy::TyVar (infered_base->get_ref ()),
+			       pattern.is_mut () ? Mutability::Mut
+						 : Mutability::Imm);
 }
 
 void
