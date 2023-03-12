@@ -17,9 +17,9 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-type-check.h"
-#include "rust-hir-full.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-struct-field.h"
+#include "rust-type-util.h"
 
 namespace Rust {
 namespace Resolver {

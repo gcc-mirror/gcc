@@ -18,6 +18,7 @@
 
 #include "rust-hir-type-check-pattern.h"
 #include "rust-hir-type-check-expr.h"
+#include "rust-type-util.h"
 
 namespace Rust {
 namespace Resolver {

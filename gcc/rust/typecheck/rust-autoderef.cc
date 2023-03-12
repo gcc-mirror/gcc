@@ -20,6 +20,7 @@
 #include "rust-hir-path-probe.h"
 #include "rust-hir-dot-operator.h"
 #include "rust-hir-trait-resolve.h"
+#include "rust-type-util.h"
 
 namespace Rust {
 namespace Resolver {

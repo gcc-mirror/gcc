@@ -21,6 +21,7 @@
 
 #include "rust-compile-base.h"
 #include "rust-compile-intrinsic.h"
+#include "rust-compile-type.h"
 
 namespace Rust {
 namespace Compile {

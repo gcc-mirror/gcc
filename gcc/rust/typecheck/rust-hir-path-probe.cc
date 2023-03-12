@@ -17,8 +17,8 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-path-probe.h"
-#include "rust-hir-type-check-item.h"
 #include "rust-hir-trait-resolve.h"
+#include "rust-type-util.h"
 
 namespace Rust {
 namespace Resolver {

@@ -27,6 +27,8 @@
 #include "rust-hir-trait-reference.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-tyty-cmp.h"
+#include "rust-type-util.h"
+#include "rust-hir-type-bounds.h"
 
 #include "options.h"
 

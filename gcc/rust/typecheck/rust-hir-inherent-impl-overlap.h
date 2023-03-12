@@ -20,7 +20,7 @@
 #define RUST_HIR_INHERENT_IMPL_ITEM_OVERLAP_H
 
 #include "rust-hir-type-check-base.h"
-#include "rust-hir-full.h"
+#include "rust-type-util.h"
 
 namespace Rust {
 namespace Resolver {

@@ -20,9 +20,6 @@
 #define RUST_HIR_TYPE_CHECK_TYPE
 
 #include "rust-hir-type-check-base.h"
-#include "rust-hir-full.h"
-#include "rust-substitution-mapper.h"
-#include "rust-hir-path-probe.h"
 
 namespace Rust {
 namespace Resolver {

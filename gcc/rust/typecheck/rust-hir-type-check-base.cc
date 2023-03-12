@@ -18,9 +18,8 @@
 
 #include "rust-hir-type-check-base.h"
 #include "rust-hir-type-check-expr.h"
-#include "rust-hir-type-check-implitem.h"
-#include "rust-hir-type-check-item.h"
 #include "rust-hir-type-check-type.h"
+#include "rust-type-util.h"
 
 namespace Rust {
 namespace Resolver {
