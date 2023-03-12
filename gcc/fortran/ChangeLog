@@ -1,3 +1,9 @@
+2023-03-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106945
+	* trans-expr.cc (gfc_copy_class_to_class): Convert element counts in
+	bounds check to common type for comparison.
+
 2023-03-10  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/104332

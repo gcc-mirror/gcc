@@ -1,3 +1,22 @@
+2023-03-11  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/extend.texi (Named Address Spaces): Drop a redundant link
+	to AVR-LibC.
+
+2023-03-11  Jeff Law  <jlaw@ventanamicro>
+
+	PR web/88860
+	* doc/extend.texi: Clarify Attribute Syntax a bit.
+
+2023-03-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/install.texi (Prerequisites): Suggest using newer versions
+	of Texinfo.
+	(Final install): Clean up and modernize discussion of how to
+	build or obtain the GCC manuals.
+	* doc/install.texi2html: Update comment to point to the PR instead
+	of "makeinfo 4.7 brokenness" (it's not specific to that version).
+
 2023-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/107703
