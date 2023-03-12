@@ -1,3 +1,14 @@
+2023-03-11  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2022-12-21  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/105532
+	* match.pd (~(X >> Y) -> ~X >> Y): Check if it is an integral
+	type before calling tree_nonzero_bits.
+	(popcount(X) + popcount(Y)): Likewise.
+	(popcount(X&C1)): Likewise.
+
 2023-03-10  Andrew Pinski  <apinski@marvell.com>
 
 	Backported from master:
