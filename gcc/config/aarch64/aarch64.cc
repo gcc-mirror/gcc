@@ -3847,6 +3847,19 @@ aarch64_vectorize_related_mode (machine_mode vector_mode,
   return default_vectorize_related_mode (vector_mode, element_mode, nunits);
 }
 
+/* Implement TARGET_VECTORIZE_PREFERRED_DIV_AS_SHIFTS_OVER_MULT.  */
+
+static bool
+aarch64_vectorize_preferred_div_as_shifts_over_mult (const_tree type)
+{
+  machine_mode mode = TYPE_MODE (type);
+  unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+  bool sve_p = (vec_flags & VEC_ANY_SVE);
+  bool simd_p = (vec_flags & VEC_ADVSIMD);
+
+  return (sve_p && TARGET_SVE2) || (simd_p && TARGET_SIMD);
+}
+
 /* Implement TARGET_PREFERRED_ELSE_VALUE.  For binary operations,
    prefer to use the first arithmetic operand as the else value if
    the else value doesn't matter, since that exactly matches the SVE
@@ -24361,46 +24374,6 @@ aarch64_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
 
   return ret;
 }
-
-/* Implement TARGET_VECTORIZE_CAN_SPECIAL_DIV_BY_CONST.  */
-
-bool
-aarch64_vectorize_can_special_div_by_constant (enum tree_code code,
-					       tree vectype, wide_int cst,
-					       rtx *output, rtx in0, rtx in1)
-{
-  if (code != TRUNC_DIV_EXPR
-      || !TYPE_UNSIGNED (vectype))
-    return false;
-
-  machine_mode mode = TYPE_MODE (vectype);
-  unsigned int flags = aarch64_classify_vector_mode (mode);
-  if ((flags & VEC_ANY_SVE) && !TARGET_SVE2)
-    return false;
-
-  int pow = wi::exact_log2 (cst + 1);
-  auto insn_code = maybe_code_for_aarch64_bitmask_udiv3 (TYPE_MODE (vectype));
-  /* SVE actually has a div operator, we may have gotten here through
-     that route.  */
-  if (pow != (int) (element_precision (vectype) / 2)
-      || insn_code == CODE_FOR_nothing)
-    return false;
-
-  /* We can use the optimized pattern.  */
-  if (in0 == NULL_RTX && in1 == NULL_RTX)
-    return true;
-
-  gcc_assert (output);
-
-  expand_operand ops[3];
-  create_output_operand (&ops[0], *output, mode);
-  create_input_operand (&ops[1], in0, mode);
-  create_fixed_operand (&ops[2], in1);
-  expand_insn (insn_code, 3, ops);
-  *output = ops[0].value;
-  return true;
-}
-
 /* Generate a byte permute mask for a register of mode MODE,
    which has NUNITS units.  */
 
@@ -27902,12 +27875,12 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_MAX_ANCHOR_OFFSET
 #define TARGET_MAX_ANCHOR_OFFSET 4095
 
+#undef TARGET_VECTORIZE_PREFERRED_DIV_AS_SHIFTS_OVER_MULT
+#define TARGET_VECTORIZE_PREFERRED_DIV_AS_SHIFTS_OVER_MULT \
+  aarch64_vectorize_preferred_div_as_shifts_over_mult
+
 #undef TARGET_VECTOR_ALIGNMENT
 #define TARGET_VECTOR_ALIGNMENT aarch64_simd_vector_alignment
-
-#undef TARGET_VECTORIZE_CAN_SPECIAL_DIV_BY_CONST
-#define TARGET_VECTORIZE_CAN_SPECIAL_DIV_BY_CONST \
-  aarch64_vectorize_can_special_div_by_constant
 
 #undef TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT
 #define TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT \
