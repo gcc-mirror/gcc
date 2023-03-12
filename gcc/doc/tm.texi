@@ -6146,6 +6146,12 @@ instruction pattern.  There is no need for the hook to handle these two
 implementation approaches itself.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_VECTORIZE_PREFERRED_DIV_AS_SHIFTS_OVER_MULT (const_tree @var{type})
+Sometimes it is possible to implement a vector division using a sequence
+of two addition-shift pairs, giving four instructions in total.
+Return true if taking this approach for @var{vectype} is likely
+to be better than using a sequence involving highpart multiplication.
+Default is false if @code{can_mult_highpart_p}, otherwise true.
 @end deftypefn
 
 @deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION (unsigned @var{code}, tree @var{vec_type_out}, tree @var{vec_type_in})

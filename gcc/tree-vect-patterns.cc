@@ -3934,6 +3934,83 @@ vect_recog_divmod_pattern (vec_info *vinfo,
       return pattern_stmt;
     }
 
+  if ((cst = uniform_integer_cst_p (oprnd1))
+      && TYPE_UNSIGNED (itype)
+      && rhs_code == TRUNC_DIV_EXPR
+      && vectype
+      && targetm.vectorize.preferred_div_as_shifts_over_mult (vectype))
+    {
+      /* We can use the relationship:
+
+	   x // N == ((x+N+2) // (N+1) + x) // (N+1)  for 0 <= x < N(N+3)
+
+	 to optimize cases where N+1 is a power of 2, and where // (N+1)
+	 is therefore a shift right.  When operating in modes that are
+	 multiples of a byte in size, there are two cases:
+
+	 (1) N(N+3) is not representable, in which case the question
+	     becomes whether the replacement expression overflows.
+	     It is enough to test that x+N+2 does not overflow,
+	     i.e. that x < MAX-(N+1).
+
+	 (2) N(N+3) is representable, in which case it is the (only)
+	     bound that we need to check.
+
+	 ??? For now we just handle the case where // (N+1) is a shift
+	 right by half the precision, since some architectures can
+	 optimize the associated addition and shift combinations
+	 into single instructions.  */
+
+      auto wcst = wi::to_wide (cst);
+      int pow = wi::exact_log2 (wcst + 1);
+      if (pow == prec / 2)
+	{
+	  gimple *stmt = SSA_NAME_DEF_STMT (oprnd0);
+
+	  gimple_ranger ranger;
+	  int_range_max r;
+
+	  /* Check that no overflow will occur.  If we don't have range
+	     information we can't perform the optimization.  */
+
+	  if (ranger.range_of_expr (r, oprnd0, stmt))
+	    {
+	      wide_int max = r.upper_bound ();
+	      wide_int one = wi::shwi (1, prec);
+	      wide_int adder = wi::add (one, wi::lshift (one, pow));
+	      wi::overflow_type ovf;
+	      wi::add (max, adder, UNSIGNED, &ovf);
+	      if (ovf == wi::OVF_NONE)
+		{
+		  *type_out = vectype;
+		  tree tadder = wide_int_to_tree (itype, adder);
+		  tree rshift = wide_int_to_tree (itype, pow);
+
+		  tree new_lhs1 = vect_recog_temp_ssa_var (itype, NULL);
+		  gassign *patt1
+		    = gimple_build_assign (new_lhs1, PLUS_EXPR, oprnd0, tadder);
+		  append_pattern_def_seq (vinfo, stmt_vinfo, patt1, vectype);
+
+		  tree new_lhs2 = vect_recog_temp_ssa_var (itype, NULL);
+		  patt1 = gimple_build_assign (new_lhs2, RSHIFT_EXPR, new_lhs1,
+					       rshift);
+		  append_pattern_def_seq (vinfo, stmt_vinfo, patt1, vectype);
+
+		  tree new_lhs3 = vect_recog_temp_ssa_var (itype, NULL);
+		  patt1 = gimple_build_assign (new_lhs3, PLUS_EXPR, new_lhs2,
+					       oprnd0);
+		  append_pattern_def_seq (vinfo, stmt_vinfo, patt1, vectype);
+
+		  tree new_lhs4 = vect_recog_temp_ssa_var (itype, NULL);
+		  pattern_stmt = gimple_build_assign (new_lhs4, RSHIFT_EXPR,
+						      new_lhs3, rshift);
+
+		  return pattern_stmt;
+		}
+	    }
+	}
+    }
+
   if (prec > HOST_BITS_PER_WIDE_INT
       || integer_zerop (oprnd1))
     return NULL;

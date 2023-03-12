@@ -53,6 +53,8 @@ extern scalar_int_mode default_unwind_word_mode (void);
 extern unsigned HOST_WIDE_INT default_shift_truncation_mask
   (machine_mode);
 extern unsigned int default_min_divisions_for_recip_mul (machine_mode);
+extern bool default_preferred_div_as_shifts_over_mult
+  (const_tree);
 extern int default_mode_rep_extended (scalar_int_mode, scalar_int_mode);
 
 extern tree default_stack_protect_guard (void);

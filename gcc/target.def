@@ -1868,6 +1868,18 @@ correct for most targets.",
  poly_uint64, (const_tree type),
  default_preferred_vector_alignment)
 
+/* Returns whether the target has a preference for decomposing divisions using
+   shifts rather than multiplies.  */
+DEFHOOK
+(preferred_div_as_shifts_over_mult,
+ "Sometimes it is possible to implement a vector division using a sequence\n\
+of two addition-shift pairs, giving four instructions in total.\n\
+Return true if taking this approach for @var{vectype} is likely\n\
+to be better than using a sequence involving highpart multiplication.\n\
+Default is false if @code{can_mult_highpart_p}, otherwise true.",
+ bool, (const_tree type),
+ default_preferred_div_as_shifts_over_mult)
+
 /* Return true if vector alignment is reachable (by peeling N
    iterations) for the given scalar type.  */
 DEFHOOK
