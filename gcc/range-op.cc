@@ -1556,6 +1556,73 @@ operator_plus::op2_range (irange &r, tree type,
   return op1_range (r, type, lhs, op1, rel.swap_op1_op2 ());
 }
 
+class operator_widen_plus_signed : public range_operator
+{
+public:
+  virtual void wi_fold (irange &r, tree type,
+			const wide_int &lh_lb,
+			const wide_int &lh_ub,
+			const wide_int &rh_lb,
+			const wide_int &rh_ub) const;
+} op_widen_plus_signed;
+range_operator *ptr_op_widen_plus_signed = &op_widen_plus_signed;
+
+void
+operator_widen_plus_signed::wi_fold (irange &r, tree type,
+				     const wide_int &lh_lb,
+				     const wide_int &lh_ub,
+				     const wide_int &rh_lb,
+				     const wide_int &rh_ub) const
+{
+   wi::overflow_type ov_lb, ov_ub;
+   signop s = TYPE_SIGN (type);
+
+   wide_int lh_wlb
+     = wide_int::from (lh_lb, wi::get_precision (lh_lb) * 2, SIGNED);
+   wide_int lh_wub
+     = wide_int::from (lh_ub, wi::get_precision (lh_ub) * 2, SIGNED);
+   wide_int rh_wlb = wide_int::from (rh_lb, wi::get_precision (rh_lb) * 2, s);
+   wide_int rh_wub = wide_int::from (rh_ub, wi::get_precision (rh_ub) * 2, s);
+
+   wide_int new_lb = wi::add (lh_wlb, rh_wlb, s, &ov_lb);
+   wide_int new_ub = wi::add (lh_wub, rh_wub, s, &ov_ub);
+
+   r = int_range<2> (type, new_lb, new_ub);
+}
+
+class operator_widen_plus_unsigned : public range_operator
+{
+public:
+  virtual void wi_fold (irange &r, tree type,
+			const wide_int &lh_lb,
+			const wide_int &lh_ub,
+			const wide_int &rh_lb,
+			const wide_int &rh_ub) const;
+} op_widen_plus_unsigned;
+range_operator *ptr_op_widen_plus_unsigned = &op_widen_plus_unsigned;
+
+void
+operator_widen_plus_unsigned::wi_fold (irange &r, tree type,
+				       const wide_int &lh_lb,
+				       const wide_int &lh_ub,
+				       const wide_int &rh_lb,
+				       const wide_int &rh_ub) const
+{
+   wi::overflow_type ov_lb, ov_ub;
+   signop s = TYPE_SIGN (type);
+
+   wide_int lh_wlb
+     = wide_int::from (lh_lb, wi::get_precision (lh_lb) * 2, UNSIGNED);
+   wide_int lh_wub
+     = wide_int::from (lh_ub, wi::get_precision (lh_ub) * 2, UNSIGNED);
+   wide_int rh_wlb = wide_int::from (rh_lb, wi::get_precision (rh_lb) * 2, s);
+   wide_int rh_wub = wide_int::from (rh_ub, wi::get_precision (rh_ub) * 2, s);
+
+   wide_int new_lb = wi::add (lh_wlb, rh_wlb, s, &ov_lb);
+   wide_int new_ub = wi::add (lh_wub, rh_wub, s, &ov_ub);
+
+   r = int_range<2> (type, new_lb, new_ub);
+}
 
 class operator_minus : public range_operator
 {
@@ -2031,6 +2098,70 @@ operator_mult::wi_fold (irange &r, tree type,
     }
 }
 
+class operator_widen_mult_signed : public range_operator
+{
+public:
+  virtual void wi_fold (irange &r, tree type,
+			const wide_int &lh_lb,
+			const wide_int &lh_ub,
+			const wide_int &rh_lb,
+			const wide_int &rh_ub)
+    const;
+} op_widen_mult_signed;
+range_operator *ptr_op_widen_mult_signed = &op_widen_mult_signed;
+
+void
+operator_widen_mult_signed::wi_fold (irange &r, tree type,
+				     const wide_int &lh_lb,
+				     const wide_int &lh_ub,
+				     const wide_int &rh_lb,
+				     const wide_int &rh_ub) const
+{
+  signop s = TYPE_SIGN (type);
+
+  wide_int lh_wlb = wide_int::from (lh_lb, wi::get_precision (lh_lb) * 2, SIGNED);
+  wide_int lh_wub = wide_int::from (lh_ub, wi::get_precision (lh_ub) * 2, SIGNED);
+  wide_int rh_wlb = wide_int::from (rh_lb, wi::get_precision (rh_lb) * 2, s);
+  wide_int rh_wub = wide_int::from (rh_ub, wi::get_precision (rh_ub) * 2, s);
+
+  /* We don't expect a widening multiplication to be able to overflow but range
+     calculations for multiplications are complicated.  After widening the
+     operands lets call the base class.  */
+  return op_mult.wi_fold (r, type, lh_wlb, lh_wub, rh_wlb, rh_wub);
+}
+
+
+class operator_widen_mult_unsigned : public range_operator
+{
+public:
+  virtual void wi_fold (irange &r, tree type,
+			const wide_int &lh_lb,
+			const wide_int &lh_ub,
+			const wide_int &rh_lb,
+			const wide_int &rh_ub)
+    const;
+} op_widen_mult_unsigned;
+range_operator *ptr_op_widen_mult_unsigned = &op_widen_mult_unsigned;
+
+void
+operator_widen_mult_unsigned::wi_fold (irange &r, tree type,
+				       const wide_int &lh_lb,
+				       const wide_int &lh_ub,
+				       const wide_int &rh_lb,
+				       const wide_int &rh_ub) const
+{
+  signop s = TYPE_SIGN (type);
+
+  wide_int lh_wlb = wide_int::from (lh_lb, wi::get_precision (lh_lb) * 2, UNSIGNED);
+  wide_int lh_wub = wide_int::from (lh_ub, wi::get_precision (lh_ub) * 2, UNSIGNED);
+  wide_int rh_wlb = wide_int::from (rh_lb, wi::get_precision (rh_lb) * 2, s);
+  wide_int rh_wub = wide_int::from (rh_ub, wi::get_precision (rh_ub) * 2, s);
+
+  /* We don't expect a widening multiplication to be able to overflow but range
+     calculations for multiplications are complicated.  After widening the
+     operands lets call the base class.  */
+  return op_mult.wi_fold (r, type, lh_wlb, lh_wub, rh_wlb, rh_wub);
+}
 
 class operator_div : public cross_product_operator
 {

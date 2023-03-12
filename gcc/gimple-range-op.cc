@@ -179,6 +179,8 @@ gimple_range_op_handler::gimple_range_op_handler (gimple *s)
   // statements.
   if (is_a <gcall *> (m_stmt))
     maybe_builtin_call ();
+  else
+    maybe_non_standard ();
 }
 
 // Calculate what we can determine of the range of this unary
@@ -763,6 +765,57 @@ public:
     return true;
   }
 } op_cfn_parity;
+
+// Set up a gimple_range_op_handler for any nonstandard function which can be
+// supported via range-ops.
+
+void
+gimple_range_op_handler::maybe_non_standard ()
+{
+  range_operator *signed_op = ptr_op_widen_mult_signed;
+  range_operator *unsigned_op = ptr_op_widen_mult_unsigned;
+  if (gimple_code (m_stmt) == GIMPLE_ASSIGN)
+    switch (gimple_assign_rhs_code (m_stmt))
+      {
+	case WIDEN_PLUS_EXPR:
+	{
+	  signed_op = ptr_op_widen_plus_signed;
+	  unsigned_op = ptr_op_widen_plus_unsigned;
+	}
+	gcc_fallthrough ();
+	case WIDEN_MULT_EXPR:
+	{
+	  m_valid = false;
+	  m_op1 = gimple_assign_rhs1 (m_stmt);
+	  m_op2 = gimple_assign_rhs2 (m_stmt);
+	  tree ret = gimple_assign_lhs (m_stmt);
+	  bool signed1 = TYPE_SIGN (TREE_TYPE (m_op1)) == SIGNED;
+	  bool signed2 = TYPE_SIGN (TREE_TYPE (m_op2)) == SIGNED;
+	  bool signed_ret = TYPE_SIGN (TREE_TYPE (ret)) == SIGNED;
+
+	  /* Normally these operands should all have the same sign, but
+	     some passes and violate this by taking mismatched sign args.  At
+	     the moment the only one that's possible is mismatch inputs and
+	     unsigned output.  Once ranger supports signs for the operands we
+	     can properly fix it,  for now only accept the case we can do
+	     correctly.  */
+	  if ((signed1 ^ signed2) && signed_ret)
+	    return;
+
+	  m_valid = true;
+	  if (signed2 && !signed1)
+	    std::swap (m_op1, m_op2);
+
+	  if (signed1 || signed2)
+	    m_int = signed_op;
+	  else
+	    m_int = unsigned_op;
+	  break;
+	}
+	default:
+	  break;
+      }
+}
 
 // Set up a gimple_range_op_handler for any built in function which can be
 // supported via range-ops.
