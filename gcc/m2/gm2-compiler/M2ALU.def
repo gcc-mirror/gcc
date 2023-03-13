@@ -264,7 +264,7 @@ PROCEDURE PushChar (c: CHAR) ;
    PushString - pushes the numerical value of the string onto the stack.
 *)
 
-PROCEDURE PushString (tokenno: CARDINAL; s: Name) ;
+PROCEDURE PushString (tokenno: CARDINAL; s: Name; issueError: BOOLEAN) ;
 
 
 (*

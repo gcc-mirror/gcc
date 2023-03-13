@@ -28,12 +28,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 typedef void (*proc_con) (int, char **, char **);
 typedef void (*proc_dep) (void);
 
-extern "C" void M2RTS_RequestDependant (const char *modulename, const char *dependancy);
-extern "C" void M2RTS_RegisterModule (const char *modulename, const char *libname,
+extern "C" void M2RTS_RequestDependant (const void *modulename, const void *dependancy);
+extern "C" void M2RTS_RegisterModule (const void *modulename, const void *libname,
 				      proc_con init, proc_con fini, proc_dep dependencies);
 extern "C" void _M2_M2RTS_init (void);
 
-extern "C" void M2RTS_ConstructModules (const char *,
+extern "C" void M2RTS_ConstructModules (const void *,
 					int argc, char *argv[], char *envp[]);
 extern "C" void M2RTS_Terminate (void);
 extern "C" void M2RTS_DeconstructModules (void);

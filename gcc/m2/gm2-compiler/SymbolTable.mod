@@ -4758,12 +4758,17 @@ END MakeConstant ;
 
 PROCEDURE MakeConstLit (tok: CARDINAL; constName: Name; constType: CARDINAL) : CARDINAL ;
 VAR
-   pSym: PtrToSymbol ;
-   Sym : CARDINAL ;
+   pSym      : PtrToSymbol ;
+   Sym       : CARDINAL ;
+   issueError,
+   overflow  : BOOLEAN ;
 BEGIN
+   issueError := TRUE ;
+   overflow := FALSE ;
    IF constType=NulSym
    THEN
-      constType := GetConstLitType (tok, constName)
+      constType := GetConstLitType (tok, constName, overflow, issueError) ;
+      issueError := NOT overflow
    END ;
    NewSym (Sym) ;
    pSym := GetPsym (Sym) ;
@@ -4773,7 +4778,7 @@ BEGIN
 
       ConstLitSym : ConstLit.name := constName ;
                     ConstLit.Value := InitValue () ;
-                    PushString (tok, constName) ;
+                    PushString (tok, constName, issueError) ;
                     PopInto (ConstLit.Value) ;
                     ConstLit.Type := constType ;
                     ConstLit.IsSet := FALSE ;
@@ -6368,7 +6373,8 @@ END IsHiddenType ;
                      depending upon their value.
 *)
 
-PROCEDURE GetConstLitType (tok: CARDINAL; name: Name) : CARDINAL ;
+PROCEDURE GetConstLitType (tok: CARDINAL; name: Name;
+                           VAR overflow: BOOLEAN; issueError: BOOLEAN) : CARDINAL ;
 VAR
    loc          : location_t ;
    s            : String ;
@@ -6389,16 +6395,16 @@ BEGIN
       loc := TokenToLocation (tok) ;
       CASE char (s, -1) OF
 
-      'H':  DetermineSizeOfConstant (loc, string (s), 16,
-                                     needsLong, needsUnsigned) |
-      'B':  DetermineSizeOfConstant (loc, string (s), 8,
-                                     needsLong, needsUnsigned) |
-      'A':  DetermineSizeOfConstant (loc, string (s), 2,
-                                     needsLong, needsUnsigned)
+      'H':  overflow := DetermineSizeOfConstant (loc, string (s), 16,
+                                                 needsLong, needsUnsigned, issueError) |
+      'B':  overflow := DetermineSizeOfConstant (loc, string (s), 8,
+                                                 needsLong, needsUnsigned, issueError) |
+      'A':  overflow := DetermineSizeOfConstant (loc, string (s), 2,
+                                                 needsLong, needsUnsigned, issueError)
 
       ELSE
-         DetermineSizeOfConstant (loc, string (s), 10,
-                                  needsLong, needsUnsigned)
+         overflow := DetermineSizeOfConstant (loc, string (s), 10,
+                                              needsLong, needsUnsigned, issueError)
       END ;
       s := KillString (s) ;
 (*

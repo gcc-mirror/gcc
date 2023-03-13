@@ -47,10 +47,10 @@ EXTERN tree m2expr_BuildRe (tree op1);
 EXTERN tree m2expr_BuildAbs (location_t location, tree t);
 EXTERN tree m2expr_BuildCap (location_t location, tree t);
 EXTERN int m2expr_DetermineSign (tree e);
-EXTERN int m2expr_AreRealOrComplexConstantsEqual (tree e1, tree e2);
-EXTERN int m2expr_AreConstantsEqual (tree e1, tree e2);
-EXTERN int m2expr_IsFalse (tree t);
-EXTERN int m2expr_IsTrue (tree t);
+EXTERN bool m2expr_AreRealOrComplexConstantsEqual (tree e1, tree e2);
+EXTERN bool m2expr_AreConstantsEqual (tree e1, tree e2);
+EXTERN bool m2expr_IsFalse (tree t);
+EXTERN bool m2expr_IsTrue (tree t);
 EXTERN tree m2expr_BuildIndirect (location_t location, tree target, tree type);
 EXTERN tree m2expr_BuildComponentRef (location_t location, tree record,
                                       tree field);
@@ -124,10 +124,12 @@ EXTERN int m2expr_TreeOverflow (tree t);
 
 EXTERN unsigned int m2expr_StringLength (tree string);
 EXTERN tree m2expr_FoldAndStrip (tree t);
-EXTERN int m2expr_interpret_integer (const char *str, unsigned int base,
+EXTERN int m2expr_interpret_integer (location_t location,
+				     const char *str, unsigned int base,
                                      unsigned HOST_WIDE_INT *low,
                                      HOST_WIDE_INT *high);
-EXTERN int m2expr_interpret_m2_integer (const char *str, unsigned int base,
+EXTERN int m2expr_interpret_m2_integer (location_t location,
+					const char *str, unsigned int base,
                                         unsigned int *low, int *high,
 					bool *needsLong, bool *needsUnsigned);
 

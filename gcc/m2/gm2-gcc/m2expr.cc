@@ -39,6 +39,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "m2tree.h"
 #include "m2treelib.h"
 #include "m2type.h"
+#include "m2linemap.h"
 
 static void m2expr_checkRealOverflow (location_t location, enum tree_code code,
                                       tree result);
@@ -3504,7 +3505,7 @@ m2expr_BuildIndirect (location_t location ATTRIBUTE_UNUSED, tree target,
 
 /* IsTrue - returns true if, t, is known to be true.  */
 
-int
+bool
 m2expr_IsTrue (tree t)
 {
   return (m2expr_FoldAndStrip (t) == m2type_GetBooleanTrue ());
@@ -3512,7 +3513,7 @@ m2expr_IsTrue (tree t)
 
 /* IsFalse - returns false if, t, is known to be false.  */
 
-int
+bool
 m2expr_IsFalse (tree t)
 {
   return (m2expr_FoldAndStrip (t) == m2type_GetBooleanFalse ());
@@ -3521,7 +3522,7 @@ m2expr_IsFalse (tree t)
 /* AreConstantsEqual - maps onto tree.cc (tree_int_cst_equal).  It
    returns true if the value of e1 is the same as e2.  */
 
-int
+bool
 m2expr_AreConstantsEqual (tree e1, tree e2)
 {
   return tree_int_cst_equal (e1, e2) != 0;
@@ -3531,7 +3532,7 @@ m2expr_AreConstantsEqual (tree e1, tree e2)
    e2 are equal according to IEEE rules.  This does not perform bit
    equivalence for example IEEE states that -0 == 0 and NaN != NaN.  */
 
-int
+bool
 m2expr_AreRealOrComplexConstantsEqual (tree e1, tree e2)
 {
   if (TREE_CODE (e1) == COMPLEX_CST)
@@ -3828,9 +3829,9 @@ m2expr_BuildBinaryForeachWordDo (location_t location, tree type, tree op1,
       tree field3 = m2treelib_get_field_no (type, op3, is_op3const, fieldNo);
 
       if (is_op1const)
-        error_at (
+	m2linemap_internal_error_at (
             location,
-            "internal error: not expecting operand1 to be a constant set");
+            "not expecting operand1 to be a constant set");
 
       while (field1 != NULL && field2 != NULL && field3 != NULL)
         {
@@ -3855,7 +3856,8 @@ m2expr_BuildBinaryForeachWordDo (location_t location, tree type, tree op1,
    BASE.  */
 
 static int
-append_digit (unsigned HOST_WIDE_INT *low, HOST_WIDE_INT *high,
+append_digit (location_t location,
+	      unsigned HOST_WIDE_INT *low, HOST_WIDE_INT *high,
               unsigned int digit, unsigned int base)
 {
   unsigned int shift;
@@ -3881,7 +3883,8 @@ append_digit (unsigned HOST_WIDE_INT *low, HOST_WIDE_INT *high,
 
     default:
       shift = 3;
-      error ("internal error: not expecting this base value for a constant");
+      m2linemap_internal_error_at (location,
+				   "not expecting this base value for a constant");
     }
 
   /* Multiply by 2, 8 or 16.  Catching this overflow here means we
@@ -3925,7 +3928,7 @@ append_digit (unsigned HOST_WIDE_INT *low, HOST_WIDE_INT *high,
    constants.  Heavily borrowed from gcc/cppexp.cc.  */
 
 int
-m2expr_interpret_integer (const char *str, unsigned int base,
+m2expr_interpret_integer (location_t location, const char *str, unsigned int base,
                           unsigned HOST_WIDE_INT *low, HOST_WIDE_INT *high)
 {
   unsigned const char *p, *end;
@@ -3965,7 +3968,7 @@ m2expr_interpret_integer (const char *str, unsigned int base,
             *low = (*low) * base + c;
           else
             {
-              overflow = append_digit (low, high, c, base);
+              overflow = append_digit (location, low, high, c, base);
               max = 0;  /* From now on we always use append_digit.  */
             }
         }
@@ -3977,7 +3980,8 @@ m2expr_interpret_integer (const char *str, unsigned int base,
    BASE.  */
 
 static int
-append_m2_digit (unsigned int *low, int *high, unsigned int digit,
+append_m2_digit (location_t location,
+		 unsigned int *low, int *high, unsigned int digit,
                  unsigned int base, bool *needsUnsigned)
 {
   unsigned int shift;
@@ -4004,7 +4008,8 @@ append_m2_digit (unsigned int *low, int *high, unsigned int digit,
 
     default:
       shift = 3;
-      error ("internal error: not expecting this base value for a constant");
+      m2linemap_internal_error_at (location,
+				   "not expecting this base value for a constant");
     }
 
   /* Multiply by 2, 8 or 16.  Catching this overflow here means we
@@ -4060,7 +4065,8 @@ append_m2_digit (unsigned int *low, int *high, unsigned int digit,
    if an overflow can be avoided by using these techniques.  */
 
 int
-m2expr_interpret_m2_integer (const char *str, unsigned int base,
+m2expr_interpret_m2_integer (location_t location,
+			     const char *str, unsigned int base,
                              unsigned int *low, int *high,
 			     bool *needsLong, bool *needsUnsigned)
 {
@@ -4103,7 +4109,8 @@ m2expr_interpret_m2_integer (const char *str, unsigned int base,
           else
             {
 	      *needsLong = true;
-	      if (append_m2_digit (low, high, c, base,
+	      if (append_m2_digit (location,
+				   low, high, c, base,
 				   needsUnsigned))
 		return true;  /* We have overflowed so bail out.  */
               max = 0;  /* From now on we always use append_digit.  */
@@ -4190,7 +4197,7 @@ m2expr_GetSizeOf (location_t location, tree type)
 
   if (!COMPLETE_TYPE_P (type))
     {
-      error_at (location, "%qs applied to an incomplete type", "sizeof");
+      error_at (location, "%qs applied to an incomplete type", "SIZE");
       return size_zero_node;
     }
 
