@@ -66,6 +66,9 @@ MethodResolver::try_hook (const TyTy::BaseType &r)
 bool
 MethodResolver::select (TyTy::BaseType &receiver)
 {
+  rust_debug ("MethodResolver::select reciever=[%s]",
+	      receiver.debug_str ().c_str ());
+
   struct impl_item_candidate
   {
     HIR::Function *item;
