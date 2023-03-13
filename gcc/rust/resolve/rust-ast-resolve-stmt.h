@@ -344,13 +344,16 @@ public:
     if (function.has_return_type ())
       ResolveType::go (function.get_return_type ().get ());
 
+    std::vector<PatternBinding> bindings
+      = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
+
     // we make a new scope so the names of parameters are resolved and shadowed
     // correctly
     for (auto &param : function.get_function_params ())
       {
 	ResolveType::go (param.get_type ().get ());
 	PatternDeclaration::go (param.get_pattern ().get (),
-				Rib::ItemType::Param);
+				Rib::ItemType::Param, bindings);
       }
 
     // resolve the function body

@@ -25,6 +25,26 @@
 namespace Rust {
 namespace Resolver {
 
+// Specifies whether the set of already bound patterns are related by 'Or' or
+// 'Product'. Used to check for multiple bindings to the same identifier.
+enum PatternBoundCtx
+{
+  // A product pattern context (e.g. struct and tuple patterns)
+  Product,
+  // An or-pattern context (e.g. p_0 | p_1 | ...)
+  Or,
+};
+
+struct PatternBinding
+{
+  PatternBoundCtx ctx;
+  std::set<Identifier> idents;
+
+  PatternBinding (PatternBoundCtx ctx, std::set<Identifier> idents)
+    : ctx (ctx), idents (idents)
+  {}
+};
+
 class ResolvePattern : public ResolverBase
 {
   using Rust::Resolver::ResolverBase::visit;
@@ -55,45 +75,25 @@ class PatternDeclaration : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::Pattern *pattern, Rib::ItemType type)
-  {
-    PatternDeclaration resolver (type);
-    pattern->accept_vis (resolver);
-  };
+  static void go (AST::Pattern *pattern, Rib::ItemType type);
+  static void go (AST::Pattern *pattern, Rib::ItemType type,
+		  std::vector<PatternBinding> &bindings);
 
-  void visit (AST::IdentifierPattern &pattern) override
-  {
-    // if we have a duplicate id this then allows for shadowing correctly
-    // as new refs to this decl will match back here so it is ok to overwrite
-    resolver->get_name_scope ().insert (
-      CanonicalPath::new_seg (pattern.get_node_id (), pattern.get_ident ()),
-      pattern.get_node_id (), pattern.get_locus (), type);
-  }
-
-  void visit (AST::GroupedPattern &pattern) override
-  {
-    pattern.get_pattern_in_parens ()->accept_vis (*this);
-  }
-
-  void visit (AST::ReferencePattern &pattern) override
-  {
-    pattern.get_referenced_pattern ()->accept_vis (*this);
-  }
-
-  // cases in a match expression
+  void visit (AST::IdentifierPattern &pattern) override;
+  void visit (AST::GroupedPattern &pattern) override;
+  void visit (AST::ReferencePattern &pattern) override;
   void visit (AST::PathInExpression &pattern) override;
-
   void visit (AST::StructPattern &pattern) override;
-
   void visit (AST::TupleStructPattern &pattern) override;
-
   void visit (AST::TuplePattern &pattern) override;
-
   void visit (AST::RangePattern &pattern) override;
 
 private:
-  PatternDeclaration (Rib::ItemType type) : ResolverBase (), type (type) {}
+  PatternDeclaration (std::vector<PatternBinding> &bindings, Rib::ItemType type)
+    : ResolverBase (), bindings (bindings), type (type)
+  {}
 
+  std::vector<PatternBinding> &bindings;
   Rib::ItemType type;
 };
 
