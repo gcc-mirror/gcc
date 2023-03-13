@@ -1924,13 +1924,6 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
 				     Analysis::NodeMapping expr_mappings,
 				     Location expr_locus)
 {
-  // lookup compiled functions since it may have already been compiled
-  tree fn = NULL_TREE;
-  if (ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
-    {
-      return address_expression (fn, expr_locus);
-    }
-
   // Now we can try and resolve the address since this might be a forward
   // declared function, generic function which has not be compiled yet or
   // its an not yet trait bound function
@@ -1983,35 +1976,30 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
       return CompileTraitItem::Compile (trait_item_ref->get_hir_trait_item (),
 					ctx, fntype, true, expr_locus);
     }
-  else
+
+  // FIXME this will be a case to return error_mark_node, there is
+  // an error scenario where a Trait Foo has a method Bar, but this
+  // receiver does not implement this trait or has an incompatible
+  // implementation and we should just return error_mark_node
+
+  rust_assert (candidates.size () == 1);
+  auto &candidate = *candidates.begin ();
+  rust_assert (candidate.is_impl_candidate ());
+  rust_assert (candidate.ty->get_kind () == TyTy::TypeKind::FNDEF);
+  TyTy::FnType *candidate_call = static_cast<TyTy::FnType *> (candidate.ty);
+  HIR::ImplItem *impl_item = candidate.item.impl.impl_item;
+
+  TyTy::BaseType *monomorphized = candidate_call;
+  if (candidate_call->needs_generic_substitutions ())
     {
-      // FIXME this will be a case to return error_mark_node, there is
-      // an error scenario where a Trait Foo has a method Bar, but this
-      // receiver does not implement this trait or has an incompatible
-      // implementation and we should just return error_mark_node
-
-      rust_assert (candidates.size () == 1);
-      auto &candidate = *candidates.begin ();
-      rust_assert (candidate.is_impl_candidate ());
-      rust_assert (candidate.ty->get_kind () == TyTy::TypeKind::FNDEF);
-      TyTy::FnType *candidate_call = static_cast<TyTy::FnType *> (candidate.ty);
-
-      HIR::ImplItem *impl_item = candidate.item.impl.impl_item;
-      if (!candidate_call->has_subsititions_defined ())
-	return CompileInherentImplItem::Compile (impl_item, ctx);
-
-      TyTy::BaseType *monomorphized = candidate_call;
-      if (candidate_call->needs_generic_substitutions ())
-	{
-	  TyTy::BaseType *infer_impl_call
-	    = candidate_call->infer_substitions (expr_locus);
-	  monomorphized
-	    = Resolver::unify_site (ref, TyTy::TyWithLocation (infer_impl_call),
-				    TyTy::TyWithLocation (fntype), expr_locus);
-	}
-
-      return CompileInherentImplItem::Compile (impl_item, ctx, monomorphized);
+      TyTy::BaseType *infer_impl_call
+	= candidate_call->infer_substitions (expr_locus);
+      monomorphized
+	= Resolver::unify_site (ref, TyTy::TyWithLocation (infer_impl_call),
+				TyTy::TyWithLocation (fntype), expr_locus);
     }
+
+  return CompileInherentImplItem::Compile (impl_item, ctx, monomorphized);
 }
 
 tree
