@@ -1,3 +1,14 @@
+2023-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/pre/gnu.ver (CXXABI_1.3.14): Also export __bf16 tinfos
+	if it isn't mangled as DF16b but u6__bf16.
+
+2023-03-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/documentation_hacking.xml: Move www.graphviz.org
+	to https.
+	* doc/html/manual/documentation_hacking.html: Regenerate.
+
 2023-03-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/109064

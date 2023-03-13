@@ -1,3 +1,109 @@
+2023-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/aarch64/aarch64.h (aarch64_bf16_type_node): Remove.
+	(aarch64_bf16_ptr_type_node): Adjust comment.
+	* config/aarch64/aarch64.cc (aarch64_gimplify_va_arg_expr): Use
+	bfloat16_type_node rather than aarch64_bf16_type_node.
+	(aarch64_libgcc_floating_mode_supported_p,
+	aarch64_scalar_mode_supported_p): Also support BFmode.
+	(aarch64_invalid_conversion, aarch64_invalid_unary_op): Remove.
+	(aarch64_invalid_binary_op): Remove BFmode related rejections.
+	(TARGET_INVALID_CONVERSION, TARGET_INVALID_UNARY_OP): Don't redefine.
+	* config/aarch64/aarch64-builtins.cc (aarch64_bf16_type_node): Remove.
+	(aarch64_int_or_fp_type): Use bfloat16_type_node rather than
+	aarch64_bf16_type_node.
+	(aarch64_init_simd_builtin_types): Likewise.
+	(aarch64_init_bf16_types): Likewise.  Don't create bfloat16_type_node,
+	which is created in tree.cc already.
+	* config/aarch64/aarch64-sve-builtins.def (svbfloat16_t): Likewise.
+
+2023-03-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/109031
+	* tree-chrec.cc (chrec_apply): When folding "{a, +, a} (x-1)",
+	ensure that the type of x is as wide or wider than the type of a.
+
+2023-03-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/108583
+	* config/aarch64/aarch64-simd.md (@aarch64_bitmask_udiv<mode>3): Remove.
+	(*bitmask_shift_plus<mode>): New.
+	* config/aarch64/aarch64-sve2.md (*bitmask_shift_plus<mode>): New.
+	(@aarch64_bitmask_udiv<mode>3): Remove.
+	* config/aarch64/aarch64.cc
+	(aarch64_vectorize_can_special_div_by_constant,
+	TARGET_VECTORIZE_CAN_SPECIAL_DIV_BY_CONST): Removed.
+	(TARGET_VECTORIZE_PREFERRED_DIV_AS_SHIFTS_OVER_MULT,
+	aarch64_vectorize_preferred_div_as_shifts_over_mult): New.
+
+2023-03-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/108583
+	* target.def (preferred_div_as_shifts_over_mult): New.
+	* doc/tm.texi.in: Document it.
+	* doc/tm.texi: Regenerate.
+	* targhooks.cc (default_preferred_div_as_shifts_over_mult): New.
+	* targhooks.h (default_preferred_div_as_shifts_over_mult): New.
+	* tree-vect-patterns.cc (vect_recog_divmod_pattern): Use it.
+
+2023-03-12  Tamar Christina  <tamar.christina@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/108583
+	* tree-ssa-math-opts.cc (convert_mult_to_fma): Inhibit FMA in case not
+	single use.
+
+2023-03-12  Tamar Christina  <tamar.christina@arm.com>
+	    Andrew MacLeod  <amacleod@redhat.com>
+
+	PR target/108583
+	* gimple-range-op.h (gimple_range_op_handler): Add maybe_non_standard.
+	* gimple-range-op.cc (gimple_range_op_handler::gimple_range_op_handler):
+	Use it.
+	(gimple_range_op_handler::maybe_non_standard): New.
+	* range-op.cc (class operator_widen_plus_signed,
+	operator_widen_plus_signed::wi_fold, class operator_widen_plus_unsigned,
+	operator_widen_plus_unsigned::wi_fold, class operator_widen_mult_signed,
+	operator_widen_mult_signed::wi_fold, class operator_widen_mult_unsigned,
+	operator_widen_mult_unsigned::wi_fold,
+	ptr_op_widen_mult_signed, ptr_op_widen_mult_unsigned,
+	ptr_op_widen_plus_signed, ptr_op_widen_plus_unsigned): New.
+	* range-op.h (ptr_op_widen_mult_signed, ptr_op_widen_mult_unsigned,
+	ptr_op_widen_plus_signed, ptr_op_widen_plus_unsigned): New
+
+2023-03-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/108583
+	* doc/tm.texi (TARGET_VECTORIZE_CAN_SPECIAL_DIV_BY_CONST): Remove.
+	* doc/tm.texi.in: Likewise.
+	* explow.cc (round_push, align_dynamic_address): Revert previous patch.
+	* expmed.cc (expand_divmod): Likewise.
+	* expmed.h (expand_divmod): Likewise.
+	* expr.cc (force_operand, expand_expr_divmod): Likewise.
+	* optabs.cc (expand_doubleword_mod, expand_doubleword_divmod): Likewise.
+	* target.def (can_special_div_by_const): Remove.
+	* target.h: Remove tree-core.h include
+	* targhooks.cc (default_can_special_div_by_const): Remove.
+	* targhooks.h (default_can_special_div_by_const): Remove.
+	* tree-vect-generic.cc (expand_vector_operation): Remove hook.
+	* tree-vect-patterns.cc (vect_recog_divmod_pattern): Remove hook.
+	* tree-vect-stmts.cc (vectorizable_operation): Remove hook.
+
+2023-03-12  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/install.texi2html: Fix issue number typo in comment.
+
+2023-03-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* doc/gm2.texi (Elementary data types): Equivalence BOOLEAN with
+	bool.
+
+2023-03-12  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi (Optimize Options):  Add markup to
+	description of asan-kernel-mem-intrinsic-prefix, and clarify
+	wording slightly.
+
 2023-03-11  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/extend.texi (Named Address Spaces): Drop a redundant link

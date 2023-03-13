@@ -1,3 +1,186 @@
+2023-03-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109089
+	* gm2-compiler/M2GCCDeclare.mod (DeclareKnownType): Import.
+	* gm2-gcc/gcc-consolidation.h (stdbool.h): Include.
+	* gm2-gcc/init.h (defined): Change block start.
+	* gm2-gcc/m2block.cc: Change FALSE to false, change TRUE to true.
+	* gm2-gcc/m2block.h: Change int to bool.
+	* gm2-gcc/m2builtins.cc: Ditto.
+	* gm2-gcc/m2builtins.h: Ditto.
+	* gm2-gcc/m2convert.cc: Change FALSE to false, TRUE to true and
+	int to bool.
+	* gm2-gcc/m2convert.h: Change int to bool.
+	* gm2-gcc/m2decl.cc: Change int to bool.
+	* gm2-gcc/m2decl.h: Change int to bool.
+	* gm2-gcc/m2expr.cc: Change FALSE to false, TRUE to true and
+	int to bool.
+	* gm2-gcc/m2expr.h: Change int to bool.
+	* gm2-gcc/m2statement.cc: Change FALSE to false, TRUE to true and
+	int to bool.
+	* gm2-gcc/m2statement.h: Change int to bool.
+	* gm2-gcc/m2top.cc: Change int to bool.
+	* gm2-gcc/m2top.h: Change int to bool.
+	* gm2-gcc/m2tree.cc: Change int to bool.
+	* gm2-gcc/m2tree.h: Change int to bool.
+	* gm2-gcc/m2type.cc: Change int to bool.
+	* gm2-gcc/m2type.h: Change int to bool.
+	* gm2-lang.cc (convert_loc): Call convert_to_integer for BOOLEAN_TYPE.
+	* gm2-libs/Builtins.def (isfinitef): Change return value from
+	BOOLEAN to INTEGER.
+	(isfinite): Ditto.
+	(isfinitel): Ditto.
+	* gm2-libs/Builtins.mod (isfinitef): Change return value from
+	BOOLEAN to INTEGER.
+	(isfinite): Ditto.
+	(isfinitel): Ditto.
+	* mc-boot/GASCII.cc: Rebuild.
+	* mc-boot/GASCII.h: Rebuild.
+	* mc-boot/GArgs.cc: Rebuild.
+	* mc-boot/GArgs.h: Rebuild.
+	* mc-boot/GAssertion.cc: Rebuild.
+	* mc-boot/GAssertion.h: Rebuild.
+	* mc-boot/GBreak.cc: Rebuild.
+	* mc-boot/GBreak.h: Rebuild.
+	* mc-boot/GCOROUTINES.h: Rebuild.
+	* mc-boot/GCmdArgs.cc: Rebuild.
+	* mc-boot/GCmdArgs.h: Rebuild.
+	* mc-boot/GDebug.cc: Rebuild.
+	* mc-boot/GDebug.h: Rebuild.
+	* mc-boot/GDynamicStrings.cc: Rebuild.
+	* mc-boot/GDynamicStrings.h: Rebuild.
+	* mc-boot/GEnvironment.cc: Rebuild.
+	* mc-boot/GEnvironment.h: Rebuild.
+	* mc-boot/GFIO.cc: Rebuild.
+	* mc-boot/GFIO.h: Rebuild.
+	* mc-boot/GFormatStrings.cc: Rebuild.
+	* mc-boot/GFormatStrings.h: Rebuild.
+	* mc-boot/GFpuIO.cc: Rebuild.
+	* mc-boot/GFpuIO.h: Rebuild.
+	* mc-boot/GIO.cc: Rebuild.
+	* mc-boot/GIO.h: Rebuild.
+	* mc-boot/GIndexing.cc: Rebuild.
+	* mc-boot/GIndexing.h: Rebuild.
+	* mc-boot/GM2Dependent.cc: Rebuild.
+	* mc-boot/GM2Dependent.h: Rebuild.
+	* mc-boot/GM2EXCEPTION.cc: Rebuild.
+	* mc-boot/GM2EXCEPTION.h: Rebuild.
+	* mc-boot/GM2LINK.h: Rebuild.
+	* mc-boot/GM2RTS.cc: Rebuild.
+	* mc-boot/GM2RTS.h: Rebuild.
+	* mc-boot/GMemUtils.cc: Rebuild.
+	* mc-boot/GMemUtils.h: Rebuild.
+	* mc-boot/GNumberIO.cc: Rebuild.
+	* mc-boot/GNumberIO.h: Rebuild.
+	* mc-boot/GPushBackInput.cc: Rebuild.
+	* mc-boot/GPushBackInput.h: Rebuild.
+	* mc-boot/GRTExceptions.cc: Rebuild.
+	* mc-boot/GRTExceptions.h: Rebuild.
+	* mc-boot/GRTco.h: Rebuild.
+	* mc-boot/GRTentity.h: Rebuild.
+	* mc-boot/GRTint.cc: Rebuild.
+	* mc-boot/GRTint.h: Rebuild.
+	* mc-boot/GSArgs.cc: Rebuild.
+	* mc-boot/GSArgs.h: Rebuild.
+	* mc-boot/GSFIO.cc: Rebuild.
+	* mc-boot/GSFIO.h: Rebuild.
+	* mc-boot/GSYSTEM.h: Rebuild.
+	* mc-boot/GSelective.h: Rebuild.
+	* mc-boot/GStdIO.cc: Rebuild.
+	* mc-boot/GStdIO.h: Rebuild.
+	* mc-boot/GStorage.cc: Rebuild.
+	* mc-boot/GStorage.h: Rebuild.
+	* mc-boot/GStrCase.cc: Rebuild.
+	* mc-boot/GStrCase.h: Rebuild.
+	* mc-boot/GStrIO.cc: Rebuild.
+	* mc-boot/GStrIO.h: Rebuild.
+	* mc-boot/GStrLib.cc: Rebuild.
+	* mc-boot/GStrLib.h: Rebuild.
+	* mc-boot/GStringConvert.cc: Rebuild.
+	* mc-boot/GStringConvert.h: Rebuild.
+	* mc-boot/GSysExceptions.h: Rebuild.
+	* mc-boot/GSysStorage.cc: Rebuild.
+	* mc-boot/GSysStorage.h: Rebuild.
+	* mc-boot/GTimeString.cc: Rebuild.
+	* mc-boot/GTimeString.h: Rebuild.
+	* mc-boot/GUnixArgs.h: Rebuild.
+	* mc-boot/Galists.cc: Rebuild.
+	* mc-boot/Galists.h: Rebuild.
+	* mc-boot/Gdecl.cc: Rebuild.
+	* mc-boot/Gdecl.h: Rebuild.
+	* mc-boot/Gdtoa.h: Rebuild.
+	* mc-boot/Gerrno.h: Rebuild.
+	* mc-boot/Gkeyc.cc: Rebuild.
+	* mc-boot/Gkeyc.h: Rebuild.
+	* mc-boot/Gldtoa.h: Rebuild.
+	* mc-boot/Glibc.h: Rebuild.
+	* mc-boot/Glibm.h: Rebuild.
+	* mc-boot/Glists.cc: Rebuild.
+	* mc-boot/Glists.h: Rebuild.
+	* mc-boot/GmcComment.cc: Rebuild.
+	* mc-boot/GmcComment.h: Rebuild.
+	* mc-boot/GmcComp.cc: Rebuild.
+	* mc-boot/GmcComp.h: Rebuild.
+	* mc-boot/GmcDebug.cc: Rebuild.
+	* mc-boot/GmcDebug.h: Rebuild.
+	* mc-boot/GmcError.cc: Rebuild.
+	* mc-boot/GmcError.h: Rebuild.
+	* mc-boot/GmcFileName.cc: Rebuild.
+	* mc-boot/GmcFileName.h: Rebuild.
+	* mc-boot/GmcLexBuf.cc: Rebuild.
+	* mc-boot/GmcLexBuf.h: Rebuild.
+	* mc-boot/GmcMetaError.cc: Rebuild.
+	* mc-boot/GmcMetaError.h: Rebuild.
+	* mc-boot/GmcOptions.cc: Rebuild.
+	* mc-boot/GmcOptions.h: Rebuild.
+	* mc-boot/GmcPreprocess.cc: Rebuild.
+	* mc-boot/GmcPreprocess.h: Rebuild.
+	* mc-boot/GmcPretty.cc: Rebuild.
+	* mc-boot/GmcPretty.h: Rebuild.
+	* mc-boot/GmcPrintf.cc: Rebuild.
+	* mc-boot/GmcPrintf.h: Rebuild.
+	* mc-boot/GmcQuiet.cc: Rebuild.
+	* mc-boot/GmcQuiet.h: Rebuild.
+	* mc-boot/GmcReserved.cc: Rebuild.
+	* mc-boot/GmcReserved.h: Rebuild.
+	* mc-boot/GmcSearch.cc: Rebuild.
+	* mc-boot/GmcSearch.h: Rebuild.
+	* mc-boot/GmcStack.cc: Rebuild.
+	* mc-boot/GmcStack.h: Rebuild.
+	* mc-boot/GmcStream.cc: Rebuild.
+	* mc-boot/GmcStream.h: Rebuild.
+	* mc-boot/Gmcflex.h: Rebuild.
+	* mc-boot/Gmcp1.cc: Rebuild.
+	* mc-boot/Gmcp1.h: Rebuild.
+	* mc-boot/Gmcp2.cc: Rebuild.
+	* mc-boot/Gmcp2.h: Rebuild.
+	* mc-boot/Gmcp3.cc: Rebuild.
+	* mc-boot/Gmcp3.h: Rebuild.
+	* mc-boot/Gmcp4.cc: Rebuild.
+	* mc-boot/Gmcp4.h: Rebuild.
+	* mc-boot/Gmcp5.cc: Rebuild.
+	* mc-boot/Gmcp5.h: Rebuild.
+	* mc-boot/GnameKey.cc: Rebuild.
+	* mc-boot/GnameKey.h: Rebuild.
+	* mc-boot/GsymbolKey.cc: Rebuild.
+	* mc-boot/GsymbolKey.h: Rebuild.
+	* mc-boot/Gtermios.h: Rebuild.
+	* mc-boot/Gtop.cc: Rebuild.
+	* mc-boot/Gvarargs.cc: Rebuild.
+	* mc-boot/Gvarargs.h: Rebuild.
+	* mc-boot/Gwlists.cc: Rebuild.
+	* mc-boot/Gwlists.h: Rebuild.
+	* mc-boot/Gwrapc.h: Rebuild.
+	* mc/decl.mod (doBoolC): New procedure.
+	(doBaseC): Call doBoolC.
+	* mc/keyc.mod: Import useBool.
+	(genBool): New procedure.
+	(genDefs): Call genBool.
+	* mc/mcOptions.def (useBool): New procedure.
+	* mc/mcOptions.mod (useBool): New procedure.
+	(useBoolType): New variable.
+	(optionIs): Assign useBoolType to TRUE.
+
 2023-03-04  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* mc-boot-ch/GBuiltins.cc: New file.

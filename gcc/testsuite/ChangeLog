@@ -1,3 +1,48 @@
+2023-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/aarch64/sve/acle/general-c/ternary_bfloat16_opt_n_1.c:
+	Don't expect one __bf16 related error.
+	* gcc.target/aarch64/bfloat16_vector_typecheck_1.c: Adjust or remove
+	dg-error directives for __bf16 being an extended arithmetic type.
+	* gcc.target/aarch64/bfloat16_vector_typecheck_2.c: Likewise.
+	* gcc.target/aarch64/bfloat16_scalar_typecheck.c: Likewise.
+	* g++.target/aarch64/bfloat_cpp_typecheck.C: Don't expect two __bf16
+	related errors.
+
+2023-03-12  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/109031
+	* gcc.dg/tree-ssa/pr109031-1.c: New test case.
+	* gcc.dg/tree-ssa/pr109031-2.c: Likewise.
+
+2023-03-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/108583
+	* gcc.dg/vect/vect-div-bitmask-4.c: New test.
+	* gcc.dg/vect/vect-div-bitmask-5.c: New test.
+
+2023-03-12  Tamar Christina  <tamar.christina@arm.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/108583
+	* gcc.dg/mla_1.c: New test.
+
+2023-03-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109089
+	* gm2/pimlib/run/pass/limittests.mod: Rewritten to reflect
+	the external definitions of isfinite.
+
+2023-03-12  Jonathan Yong  <10walls@gmail.com>
+
+	* gcc.dg/builtins-69.c: Use (long )*regex pattern to
+	allow long long instead of just long.
+	* gcc.dg/pr80163.c: Use __INTPTR_TYPE__ for LLP64 tagets.
+
+2023-03-12  Jonathan Yong  <10walls@gmail.com>
+
+	* gcc.c-torture/compile/103818.c: Enable test for llp64.
+
 2023-03-11  Cupertino Miranda  <cupertino.miranda@oracle.com>
 
 	* gcc.dg/pr25521.c: Skip for !const_volatile_readonly_section

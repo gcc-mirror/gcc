@@ -1,3 +1,14 @@
+2023-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/aarch64/t-softfp (softfp_extensions): Add bfsf.
+	(softfp_truncations): Add tfbf dfbf sfbf hfbf.
+	(softfp_extras): Add floatdibf floatundibf floattibf floatuntibf.
+	* config/aarch64/libgcc-softfp.ver (GCC_13.0.0): Export
+	__extendbfsf2 and __trunc{s,d,t,h}fbf2.
+	* config/aarch64/sfp-machine.h (_FP_NANFRAC_B, _FP_NANSIGN_B): Define.
+	* soft-fp/floatundibf.c: New file.
+	* soft-fp/floatdibf.c: New file.
+
 2023-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/107703
