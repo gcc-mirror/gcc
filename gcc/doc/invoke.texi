@@ -8345,7 +8345,7 @@ conversions the warnings @option{-Wno-int-to-pointer-cast} and
 @item -Wzero-length-bounds
 Warn about accesses to elements of zero-length array members that might
 overlap other members of the same object.  Declaring interior zero-length
-arrays is discouraged because accesses to them are undefined.  See
+arrays is discouraged because accesses to them are undefined.
 @xref{Zero Length}.
 
 For example, the first two stores in function @code{bad} are diagnosed
