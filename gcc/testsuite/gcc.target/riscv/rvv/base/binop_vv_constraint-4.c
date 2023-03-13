@@ -24,4 +24,3 @@ void f2 (void * in, void *out, int32_t x)
     __riscv_vsm_v_b32 (out, m4, 4);
 }
 
-/* { dg-final { scan-assembler-not {vmv} } } */

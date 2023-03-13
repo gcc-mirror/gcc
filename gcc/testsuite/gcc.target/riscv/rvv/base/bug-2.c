@@ -1,0 +1,86 @@
+/* { dg-do compile } */
+/* { dg-options "-march=rv32gcv -mabi=ilp32d -O2" } */
+
+#include "riscv_vector.h"
+
+int f0() { 
+ float var_84[8]; 
+ float var_83[8]; 
+ float var_82[8]; 
+ uint32_t var_81[8]; 
+ float var_77[8]; 
+ uint32_t var_76[8]; 
+ uint32_t var_75[8]; 
+ uint32_t var_74[8]; 
+ uint32_t var_73[8]; 
+ uint64_t var_72[8]; 
+ double var_71[8]; 
+ double var_70[8]; 
+ double var_69[8]; 
+ double var_68[8]; 
+ double var_67[8]; 
+ double var_66[8]; 
+ int8_t var_65[8]; 
+ int8_t var_64[8]; 
+ float var_63[8]; 
+ double var_62[8]; 
+ uint8_t var_61[8]; 
+ uint8_t var_60[8]; 
+ double var_59[8]; 
+ double var_58[8]; 
+ double var_57[8]; 
+ double var_56[8]; 
+ float var_55[8]; 
+ float var_54[8]; 
+ size_t var_53 ; 
+ size_t var_52 ; 
+ size_t var_51 ; 
+ float var_50 = (3048723213u); 
+ uint32_t var_49 ; 
+ uint64_t var_48 ; 
+ vfloat32m4_t var_11 = __riscv_vle32_v_f32m4(var_84, 8); 
+ vfloat32m4_t var_12 = __riscv_vle32_v_f32m4(var_83, 8); 
+ vfloat32m4_t var_13 = __riscv_vle32_v_f32m4(var_82, 8); 
+ vuint32m4_t var_14 = __riscv_vle32_v_u32m4(var_81, 8); 
+ vfloat32m4_t var_19 = __riscv_vle32_v_f32m4(var_77, 8); 
+ vuint32m4_t var_20 = __riscv_vle32_v_u32m4(var_76, 8); 
+ vuint32m4_t var_21 = __riscv_vle32_v_u32m4(var_75, 8); 
+ vuint32m4_t var_23 = __riscv_vle32_v_u32m4(var_74, 18); 
+ vuint64m8_t var_25 = __riscv_vle64_v_u64m8(var_72, 18); 
+ vfloat64m8_t var_27 = __riscv_vle64_v_f64m8(var_71, 4); 
+ vfloat64m8_t var_28 = __riscv_vle64_v_f64m8(var_70, 4); 
+ vfloat64m8_t var_30 = __riscv_vle64_v_f64m8(var_68, 4); 
+ vfloat64m8_t var_31 = __riscv_vle64_v_f64m8(var_67, 4); 
+ vfloat64m8_t var_33 = __riscv_vle64_v_f64m8(var_66, 4); 
+ vint8m1_t var_34 = __riscv_vle8_v_i8m1(var_65, 4); 
+ vint8m1_t var_35 = __riscv_vle8_v_i8m1(var_64, 4); 
+ vfloat32m4_t var_37 = __riscv_vle32_v_f32m4(var_63, 8); 
+ vuint8m1_t var_39 = __riscv_vle8_v_u8m1(var_61, 8); 
+ vuint8m1_t var_40 = __riscv_vle8_v_u8m1(var_60, 8); 
+ vfloat64m8_t var_41 = __riscv_vle64_v_f64m8(var_59, 18); 
+ vfloat64m8_t var_42 = __riscv_vle64_v_f64m8(var_58, 18); 
+ vfloat64m8_t var_43 = __riscv_vle64_v_f64m8(var_57, 18); 
+ vfloat64m8_t var_45 = __riscv_vle64_v_f64m8(var_56, 18); 
+ vfloat32m4_t var_46 = __riscv_vle32_v_f32m4(var_55, 18); 
+ vfloat32m4_t var_47 = __riscv_vle32_v_f32m4(var_54, 18); 
+ vbool8_t var_10 = __riscv_vmsltu_vx_u32m4_b8(var_14, var_49, 8); 
+ vbool8_t var_18 = __riscv_vmsltu_vv_u32m4_b8(var_20, var_21, 8); 
+ vbool8_t var_22 = __riscv_vmsgeu_vx_u64m8_b8(var_25, var_48, 18); 
+ vbool8_t var_26 = __riscv_vmfne_vv_f64m8_b8(var_30, var_31, 4); 
+ vbool8_t var_32 = __riscv_vmsge_vv_i8m1_b8(var_34, var_35, 4); 
+ vbool8_t var_36 = __riscv_vmseq_vv_u8m1_b8(var_39, var_40, 8); 
+ vfloat64m8_t var_2 = __riscv_vslideup_vx_f64m8(var_41, var_42, var_52, 18); 
+ vbool8_t var_44 = __riscv_vmfne_vv_f32m4_b8(var_46, var_47, 18); 
+ vfloat32m4_t var_9 = __riscv_vfsgnj_vv_f32m4_mu(var_10, var_11, var_12, var_13, 8); 
+ vfloat64m8_t var_0 = __riscv_vfmin_vv_f64m8_mu(var_44, var_2, var_2, var_45, 18); 
+ vfloat32m4_t var_7 = __riscv_vfmax_vf_f32m4_mu(var_18, var_9, var_19, var_50, 8); 
+ vfloat64m8_t var_1 = __riscv_vslidedown_vx_f64m8_tu(var_0, var_43, var_53, 18); 
+ vfloat64m8_t var_4 = __riscv_vrgather_vx_f64m8_mu(var_32, var_0, var_33, var_51, 4); 
+ vfloat64m8_t var_3 = __riscv_vfwnmsac_vv_f64m8_mu(var_36, var_1, var_7, var_37, 4); 
+ vuint32m4_t var_6 = __riscv_vfncvt_xu_f_w_u32m4_mu(var_22, var_23, var_1, 4); 
+ vfloat64m8_t var_5 = __riscv_vfsgnjx_vv_f64m8_mu(var_26, var_4, var_27, var_28, 4); 
+ __riscv_vse64_v_f64m8(var_62, var_3, 4); 
+ __riscv_vse32_v_u32m4(var_73, var_6, 4); 
+ __riscv_vse64_v_f64m8(var_69, var_5, 4); 
+ return 0; 
+}
