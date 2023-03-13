@@ -302,6 +302,7 @@ CXXLINK = \
 	-o $@
 
 # Symbol versioning for shared libraries.
+# See configure.host and configure.ac for port_specific_symbol_files.
 if ENABLE_SYMVERS
 libstdc++-symbols.ver:  ${glibcxx_srcdir}/$(SYMVER_FILE) \
 		$(port_specific_symbol_files)
