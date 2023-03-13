@@ -2933,7 +2933,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        /* If the constant operation overflows we cannot do the transform
 	  directly as we would introduce undefined overflow, for example
 	  with (a - 1) + INT_MIN.  */
-       (if (types_match (type, @0))
+       (if (types_match (type, @0) && !TYPE_OVERFLOW_SANITIZED (type))
 	(with { tree cst = const_binop (outer_op == inner_op
 					? PLUS_EXPR : MINUS_EXPR,
 					type, @1, @2); }
@@ -2964,7 +2964,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (if (!ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
 	  || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
       (view_convert (minus (outer_op @1 (view_convert @2)) @0))
-      (if (types_match (type, @0))
+      (if (types_match (type, @0) && !TYPE_OVERFLOW_SANITIZED (type))
        (with { tree cst = const_binop (outer_op, type, @1, @2); }
 	(if (cst && !TREE_OVERFLOW (cst))
 	 (minus { cst; } @0))))))))
@@ -2983,7 +2983,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (if (!ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
 	 || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
      (view_convert (plus @0 (minus (view_convert @1) @2)))
-     (if (types_match (type, @0))
+     (if (types_match (type, @0) && !TYPE_OVERFLOW_SANITIZED (type))
       (with { tree cst = const_binop (MINUS_EXPR, type, @1, @2); }
        (if (cst && !TREE_OVERFLOW (cst))
 	(plus { cst; } @0)))))))

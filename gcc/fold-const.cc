@@ -11320,7 +11320,8 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 	 And, we need to make sure type is not saturating.  */
 
       if ((! FLOAT_TYPE_P (type) || flag_associative_math)
-	  && !TYPE_SATURATING (type))
+	  && !TYPE_SATURATING (type)
+	  && !TYPE_OVERFLOW_SANITIZED (type))
 	{
 	  tree var0, minus_var0, con0, minus_con0, lit0, minus_lit0;
 	  tree var1, minus_var1, con1, minus_con1, lit1, minus_lit1;
