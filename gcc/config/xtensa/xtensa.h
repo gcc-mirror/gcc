@@ -590,18 +590,9 @@ typedef struct xtensa_args
 /* C expressions that are nonzero if X (assumed to be a `reg' RTX) is
    valid for use as a base or index register.  */
 
-#ifdef REG_OK_STRICT
-#define REG_OK_STRICT_FLAG 1
-#else
-#define REG_OK_STRICT_FLAG 0
-#endif
-
 #define BASE_REG_P(X, STRICT)						\
-  ((!(STRICT) && REGNO (X) >= FIRST_PSEUDO_REGISTER)			\
+  ((!(STRICT) && ! HARD_REGISTER_P (X))					\
    || REGNO_OK_FOR_BASE_P (REGNO (X)))
-
-#define REG_OK_FOR_INDEX_P(X) 0
-#define REG_OK_FOR_BASE_P(X) BASE_REG_P (X, REG_OK_STRICT_FLAG)
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 #define MAX_REGS_PER_ADDRESS 1
