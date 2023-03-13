@@ -44,8 +44,23 @@ MethodResolver::Probe (TyTy::BaseType *receiver,
 void
 MethodResolver::try_hook (const TyTy::BaseType &r)
 {
+  rust_debug ("MethodResolver::try_hook get_predicate_items: [%s]",
+	      r.debug_str ().c_str ());
   const auto &specified_bounds = r.get_specified_bounds ();
   predicate_items = get_predicate_items (segment_name, r, specified_bounds);
+
+  if (predicate_items.size () > 0)
+    return;
+
+  if (r.get_kind () == TyTy::TypeKind::REF)
+    {
+      const auto &ref = static_cast<const TyTy::ReferenceType &> (r);
+      const auto &element = ref.get_var_element_type ();
+      const auto &element_ty = *element.get_tyty ();
+      const auto &specified_bounds = element_ty.get_specified_bounds ();
+      predicate_items
+	= get_predicate_items (segment_name, element_ty, specified_bounds);
+    }
 }
 
 bool
