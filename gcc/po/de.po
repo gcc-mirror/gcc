@@ -5,13 +5,13 @@
 # Roland Stigge <stigge@antcom.de>, 2003, 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012, 2013.
 # Mario Blättermann <mario.blaettermann@gmail.com>, 2015.
 # Philipp Thomas <pth@suse.de>, 1999, 2000, 2001, 2011, 2016.
-# Roland Illig <roland.illig@gmx.de>, 2015, 2017-2022.
+# Roland Illig <roland.illig@gmx.de>, 2015, 2017-2023.
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 12.2.0\n"
+"Project-Id-Version: gcc 13.1-b20230212\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2023-02-10 22:40+0000\n"
-"PO-Revision-Date: 2022-08-23 19:44+0200\n"
+"PO-Revision-Date: 2023-03-11 07:27+0100\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 3.1.1\n"
+"X-Generator: Poedit 3.2.2\n"
 "X-Poedit-Bookmarks: -1,-1,-1,6017,-1,-1,-1,-1,-1,-1\n"
 
 #: cif-code.def:39
@@ -194,37 +194,28 @@ msgid "-f%s ignored (not supported for DJGPP)\n"
 msgstr "-f%s ignoriert (nicht für DJGPP unterstützt)\n"
 
 #: config/xtensa/xtensa-dynconfig.c:63
-#, fuzzy
-#| msgid "Generate code for a DLL."
 msgid "Unable to load DLL."
-msgstr "Code für DLL erzeugen."
+msgstr "Fehler beim Laden der DLL."
 
 #: config/xtensa/xtensa-dynconfig.c:90
-#, fuzzy, c-format
-#| msgid "%qD is defined with tls model %s"
+#, c-format
 msgid "%qs is defined but could not be loaded: %s"
-msgstr "%qD ist mit TLS-Modell %s definiert"
+msgstr "%qs ist definiert, konnte aber nicht geladen werden: %s"
 
 #: config/xtensa/xtensa-dynconfig.c:97
-#, fuzzy, c-format
-#| msgid ""
-#| "plugin %s is not licensed under a GPL-compatible license\n"
-#| "%s"
+#, c-format
 msgid "%qs plugin is not licensed under a GPL-compatible license"
-msgstr ""
-"Plugin %s ist nicht unter einer GPL-kompatiblen Lizenz lizenziert\n"
-"%s"
+msgstr "Plugin %qs steht nicht unter einer GPL-kompatiblen Lizenz"
 
 #: config/xtensa/xtensa-dynconfig.c:114
-#, fuzzy, c-format
+#, c-format
 msgid "%qs is loaded but symbol %qs is not found: %s"
-msgstr "%qD ist außerhalb des Funktionsgültigkeitsbereiches nicht definiert"
+msgstr "%qs ist geladen, aber das Symbol %qs wurde nicht gefunden: %s"
 
 #: config/xtensa/xtensa-dynconfig.c:128
-#, fuzzy, c-format
-#| msgid "%qD defined but not used"
+#, c-format
 msgid "%qs is defined but plugin support is disabled"
-msgstr "%qD definiert, aber nicht verwendet"
+msgstr "%qs ist definiert, aber die Plugin-Unterstützung ist deaktiviert"
 
 #. The remainder are real diagnostic types.
 #: fortran/gfc-diagnostic.def:33
@@ -282,10 +273,8 @@ msgid "-gz is not supported in this configuration"
 msgstr "-gz wird in dieser Konfiguration nicht unterstützt"
 
 #: gcc.cc:845
-#, fuzzy
-#| msgid "-gz is not supported in this configuration"
 msgid "-gz=zstd is not supported in this configuration"
-msgstr "-gz wird in dieser Konfiguration nicht unterstützt"
+msgstr "-gz=zstd wird in dieser Konfiguration nicht unterstützt"
 
 #: gcc.cc:1079
 msgid "-fuse-linker-plugin is not supported in this configuration"
@@ -542,10 +531,8 @@ msgid "gfortran does not support -E without -cpp"
 msgstr "gfortran unterstützt nicht -E ohne -cpp"
 
 #: m2/lang-specs.h:48
-#, fuzzy
-#| msgid "to generate dependencies you must specify either %<-M%> or %<-MM%>"
 msgid "to generate dependencies you must specify '-fcpp' "
-msgstr "um Abhängigkeiten zu erzeugen, müssen Sie entweder %<-M%> oder %<-MM%> angeben"
+msgstr "um Abhängigkeiten zu erzeugen, müssen Sie %<-fcpp%> angeben"
 
 #: objc/lang-specs.h:30 objc/lang-specs.h:41
 msgid "GNU Objective C no longer supports traditional compilation"
@@ -1190,10 +1177,9 @@ msgid "Statically link the GNU Fortran helper library (libgfortran)."
 msgstr "GNU Fortran Hilfsbibliothek (libgfortran) statisch binden."
 
 #: fortran/lang.opt:868
-#, fuzzy, no-c-format
-#| msgid "Statically link the GNU Fortran helper library (libgfortran)."
+#, no-c-format
 msgid "Statically link the GCC Quad-Precision Math Library (libquadmath)."
-msgstr "GNU Fortran Hilfsbibliothek (libgfortran) statisch binden."
+msgstr "GCC Quad-Precision Math Library (libquadmath) statisch binden."
 
 #: fortran/lang.opt:872
 #, no-c-format
@@ -1243,59 +1229,57 @@ msgstr "Warnen, wenn der Rückgabewert der mit dem Attribut warn_unused_result d
 #: rust/lang.opt:59
 #, no-c-format
 msgid "-frust-crate=<name>             Set the crate name for the compilation"
-msgstr ""
+msgstr "-frust-crate=<Name>             Crate-Namen für die Übersetzung festlegen"
 
 #: rust/lang.opt:63
-#, fuzzy, no-c-format
-#| msgid "Dump various analyzer internals to stderr."
+#, no-c-format
 msgid "Dump various Rust front end internals."
-msgstr "Diverse Interna des Analysierers auf die Standardfehlerausgabe wegschreiben."
+msgstr "Diverse Interna des Rust-Frontends wegschreiben."
 
 #: rust/lang.opt:67
-#, fuzzy, no-c-format
-#| msgid "-fgo-dump-<type>\tDump Go frontend internal information."
+#, no-c-format
 msgid "-frust-dump-<type>\tDump Rust frontend internal information."
-msgstr "-fgo-dump-<Typ>\tInterne Information des Go-Frontends in Datei ausgeben."
+msgstr "-frust-dump-<type>\tInterna des Rust-Frontends wegschreiben."
 
 #: rust/lang.opt:71
 #, no-c-format
 msgid "Enable experimental compilation of Rust files at your own risk"
-msgstr ""
+msgstr "Experimentelle Übersetzung von Rust-Dateien einschalten, auf eigene Gefahr"
 
 #: rust/lang.opt:75
 #, no-c-format
 msgid "-frust-max-recursion-depth=integer"
-msgstr ""
+msgstr "-frust-max-recursion-depth=<Anzahl>"
 
 #: rust/lang.opt:79
 #, no-c-format
 msgid "-frust-mangling=[legacy|v0]     Choose which version to use for name mangling"
-msgstr ""
+msgstr "-frust-mangling=[legacy|v0]     Version der Namensmangelung auswählen"
 
 #: rust/lang.opt:92
 #, no-c-format
 msgid "-frust-cfg=<name>             Set a config expansion option"
-msgstr ""
+msgstr "-frust-cfg=<Name>             Option für Konfigurationsexpansion festlegen"
 
 #: rust/lang.opt:96
 #, no-c-format
 msgid "-frust-edition=[2015|2018|2021]             Choose which edition to use when compiling rust code"
-msgstr ""
+msgstr "-frust-edition=[2015|2018|2021]             Sprachversion zum Übersetzen auswählen"
 
 #: rust/lang.opt:112
 #, no-c-format
 msgid "Flag to enable embeding metadata directly into object files"
-msgstr ""
+msgstr "Metadaten direkt in Objektdateien einbetten"
 
 #: rust/lang.opt:116
 #, no-c-format
 msgid "-frust-metadata-output=<path.rox>  Path to output crate metadata"
-msgstr ""
+msgstr "-frust-metadata-output=<Pfad.rox>  Pfad, in den die Create-Metadaten geschrieben werden"
 
 #: rust/lang.opt:123
 #, no-c-format
 msgid "-frust-compile-until=[ast|attributecheck|expansion|nameresolution|lowering|typecheck|privacy|unsafety|const|copimlation|end]             When to stop in the pipeline when compiling Rust code"
-msgstr ""
+msgstr "-frust-compile-until=[ast|attributecheck|expansion|nameresolution|lowering|typecheck|privacy|unsafety|const|copimlation|end]             Bis zu welchem Schritt der Verarbeitungskette Rust-Code übersetzt wird"
 
 #: c-family/c.opt:182
 #, no-c-format
@@ -1610,7 +1594,7 @@ msgstr "Bei catch-Behandlern warnen, die nicht Referenztypen sind."
 #: c-family/c.opt:499
 #, no-c-format
 msgid "Complain about a name being declared as a class member after a previous use of the same name."
-msgstr ""
+msgstr "Meckern, wenn ein Name als Klassenmember deklariert wird, nachdem der Name bereits anderswo verwendet wird."
 
 #: c-family/c.opt:503
 #, no-c-format
@@ -1685,10 +1669,9 @@ msgid "Warn for uses of pointers to auto variables whose lifetime has ended."
 msgstr "Vor der Verwendung von Zeigern auf Auto-Variablen, deren Lebensdauer abgelaufen ist, warnen."
 
 #: c-family/c.opt:564
-#, fuzzy, no-c-format
-#| msgid "Warn for uses of pointers to auto variables whose lifetime has ended."
+#, no-c-format
 msgid "Warn when a reference is bound to a temporary whose lifetime has ended."
-msgstr "Vor der Verwendung von Zeigern auf Auto-Variablen, deren Lebensdauer abgelaufen ist, warnen."
+msgstr "Warnen, wenn eine Referenz an ein temporäres Objekt gebunden ist, dessen Lebenszeit abgelaufen ist."
 
 #: c-family/c.opt:568
 #, no-c-format
@@ -1786,10 +1769,9 @@ msgid "Warn about implicit conversion of enum types."
 msgstr "Bei impliziten Umwandlungen von enum-Typen warnen."
 
 #: c-family/c.opt:651
-#, fuzzy, no-c-format
-#| msgid "Warn about subscripts whose type is \"char\"."
+#, no-c-format
 msgid "Warn about enum/integer type mismatches."
-msgstr "Vor Indizes mit Typ »char« warnen."
+msgstr "Bei Vermischung von enum/integer-Typen warnen."
 
 #: c-family/c.opt:659
 #, no-c-format
@@ -1977,10 +1959,9 @@ msgid "Warn when there is a cast to a pointer from an integer of a different siz
 msgstr "Bei Typumwandlung in Zeiger von Ganzzahl anderer Größe warnen."
 
 #: c-family/c.opt:826
-#, fuzzy, no-c-format
-#| msgid "Warn about underflow of numerical constant expressions."
+#, no-c-format
 msgid "Warn when a function never produces a constant expression."
-msgstr "Bei Unterlauf numerischer Konstantenausdrücke warnen."
+msgstr "Warnen, wenn eine Funktion niemals einen konstanten Ausdruck liefert."
 
 #: c-family/c.opt:830
 #, no-c-format
@@ -1993,10 +1974,9 @@ msgid "Warn about PCH files that are found but not used."
 msgstr "Bei PCH-Dateien, die gefunden, aber nicht verwendet werden, warnen."
 
 #: c-family/c.opt:838
-#, fuzzy, no-c-format
-#| msgid "Warn about using variadic macros."
+#, no-c-format
 msgid "Warn about invalid UTF-8 characters."
-msgstr "Bei Verwendung variadischer Makros warnen."
+msgstr "Bei ungültigen UTF-8-Zeichen warnen."
 
 #: c-family/c.opt:842
 #, no-c-format
@@ -2167,7 +2147,7 @@ msgstr "Bei Abschneiden in Stringfunktionen wie strncat und strncpy warnen."
 #: c-family/c.opt:985
 #, no-c-format
 msgid "Warn about inproper usages of flexible array members according to the level of -fstrict-flex-arrays."
-msgstr ""
+msgstr "Warnen, wenn Member mit flexiblem Arraytyp falsch verwendet werden, gemäß der Stufe von »-fstrict-flex-arrays«."
 
 #: c-family/c.opt:990
 #, no-c-format
@@ -2435,10 +2415,9 @@ msgid "Warn if a selector has multiple methods."
 msgstr "Warnen, wenn ein Selektor mehrere Methoden hat."
 
 #: c-family/c.opt:1255
-#, fuzzy, no-c-format
-#| msgid "Warn when a variable is only set, otherwise unused."
+#, no-c-format
 msgid "Warn when a value is moved to itself with std::move."
-msgstr "Warnen, wenn eine Variable zwar gesetzt, aber nicht verwendet wird."
+msgstr "Warnen, wenn ein Wert mit »std::move« in sich selbst verschoben wird."
 
 #: c-family/c.opt:1259
 #, no-c-format
@@ -2553,7 +2532,7 @@ msgstr "Warnen, wenn ein undefiniertes Makro in einer #if-Anweisung verwendet wi
 #: c-family/c.opt:1367
 #, no-c-format
 msgid "Warn about invalid forms of delimited or named escape sequences."
-msgstr ""
+msgstr "Bei ungültigen Formen von begrenzten oder benannten Escapesequenzen warnen."
 
 #: c-family/c.opt:1379
 #, no-c-format
@@ -2638,7 +2617,7 @@ msgstr "In C++ bedeutet ungleich Null die Warnung vor veralteter Umwandlung von 
 #: c-family/c.opt:1473
 #, no-c-format
 msgid "Warn about xor operators where it appears the user meant exponentiation."
-msgstr ""
+msgstr "Bei xor-Operatoren warnen, die so aussehen, als sei Potenzieren gemeint."
 
 #: c-family/c.opt:1477
 #, no-c-format
@@ -2777,45 +2756,44 @@ msgid "-fconstexpr-ops-limit=<number>\tSpecify maximum number of constexpr opera
 msgstr "-fconstexpr-ops-limit=<Anzahl>\tHöchstzahl der constexpr-Operationen pro einzelner »constexpr« angeben."
 
 #: c-family/c.opt:1692
-#, fuzzy, no-c-format
-#| msgid "Enable certain features present in the Concepts TS."
+#, no-c-format
 msgid "Enable certain features present drafts of C++ Contracts."
-msgstr "Bestimmte Features, die im Concept-TS vorhanden sind, einschalten."
+msgstr "Bestimmte Features aus aktuellen Entwürfen von C++-Verträgen einschalten."
 
 #: c-family/c.opt:1705
 #, no-c-format
 msgid "-fcontract-assumption-mode=[on|off]\tEnable or disable treating axiom level contracts as assumptions (default on)."
-msgstr ""
+msgstr "-fcontract-assumption-mode=[on|off]\tAxiomatische Verträge als Annahmen zulassen oder nicht (Vorgabe: zulassen)."
 
 #: c-family/c.opt:1709
 #, no-c-format
 msgid "-fcontract-build-level=[off|default|audit]\tSpecify max contract level to generate runtime checks for."
-msgstr ""
+msgstr "-fcontract-build-level=[off|default|audit]\tMaximale Vertragsstufe, für die Laufzeitprüfungen generiert werden."
 
 #: c-family/c.opt:1713
 #, no-c-format
 msgid "-fcontract-strict-declarations=[on|off]\tEnable or disable warnings on generalized redeclaration of functions with contracts (default off)."
-msgstr ""
+msgstr "-fcontract-strict-declarations=[on|off]\tWarnungen bei generalisierten Neudeklarationen von Funktionen mit Verträgen ein- oder ausschalten (Vorgabe: aus)."
 
 #: c-family/c.opt:1717
 #, no-c-format
 msgid "-fcontract-mode=[on|off]\tEnable or disable all contract facilities (default on)."
-msgstr ""
+msgstr "-fcontract-mode=[on|off]\tVerträge komplett ein- oder ausschalten (Vorgabe: ein)."
 
 #: c-family/c.opt:1721
 #, no-c-format
 msgid "-fcontract-continuation-mode=[on|off]\tEnable or disable contract continuation mode (default off)."
-msgstr ""
+msgstr "-fcontract-continuation-mode=[on|off]\tVertragsfortsetzungsmodus ein- oder ausschalten (Vorgabe: aus)."
 
 #: c-family/c.opt:1725
 #, no-c-format
 msgid "-fcontract-role=<name>:<semantics>\tSpecify the semantics for all levels in a role (default, review), or a custom contract role with given semantics (ex: opt:assume,assume,assume)."
-msgstr ""
+msgstr "-fcontract-role=<Name>:<Semantik>\tSemantik für alle Stufen in einer Rolle angeben (default, review), oder eine selbstdefinierte Rolle mit der angegebenen Semantik (zum Beispiel: opt:assume,assume,assume)."
 
 #: c-family/c.opt:1729
 #, no-c-format
 msgid "-fcontract-semantic=<level>:<semantic>\tSpecify the concrete semantics for level."
-msgstr ""
+msgstr "-fcontract-semantic=<Stufe>:<Semantik>\tDie konkrete Semantik für die Stufe angeben."
 
 #: c-family/c.opt:1733
 #, no-c-format
@@ -3200,7 +3178,7 @@ msgstr "Unterstützung für Deallozierung mit Größenangabe aus C++14 einschalt
 #: c-family/c.opt:2142
 #, no-c-format
 msgid "-fstrict-flex-arrays=<level>    Control when to treat the trailing array of a structure as a flexible array member for the purposes of accessing the elements of such an array. The default is treating all trailing arrays of structures as flexible array members."
-msgstr ""
+msgstr "-fstrict-flex-arrays=<Stufe>    Steuern, wann ein Array am Ende einer Struktur als ein flexibles Arraymember angesehen wird, bezüglich des Zugriffs auf die Elemente dieses Arrays. Vorgabe ist, alle Arrays am Ende einer Struktur als flexible Arrays anzusehen."
 
 #: c-family/c.opt:2149
 #, no-c-format
@@ -3684,10 +3662,9 @@ msgid "Compile in debug code."
 msgstr "Debuggingcode mitcompilieren."
 
 #: d/lang.opt:252
-#, fuzzy, no-c-format
-#| msgid "-fdebug=<level|ident>\tCompile in debug code, code <= <level>, or code identified by <ident>."
+#, no-c-format
 msgid "-fdebug=<ident>\tCompile in debug code identified by <ident>."
-msgstr "-fdebug=<Stufe|Ident>\tDebugging-Code der Stufe <= <Stufe> eincompilieren, oder durch <Ident> gekennzeichneten Code."
+msgstr "-fdebug=<Bezeichner>\tDurch Bezeichner festgelegten Debugcode eincompilieren."
 
 #: d/lang.opt:256
 #, no-c-format
@@ -3782,7 +3759,7 @@ msgstr "Alle zukünftigen D-Sprachfunktionen einschalten."
 #: d/lang.opt:349
 #, no-c-format
 msgid "Implement D bit-fields."
-msgstr ""
+msgstr "D-Bitfelder implementieren."
 
 #: d/lang.opt:353
 #, no-c-format
@@ -3822,7 +3799,7 @@ msgstr "Wenn ein Symbol aufgelöst wird, den Gültigkeitsbereich »alias this« 
 #: d/lang.opt:381
 #, no-c-format
 msgid "Disallow unsound immutable conversions that were formerly incorrectly permitted."
-msgstr ""
+msgstr "Unvollständige unveränderliche Umwandlungen, die bislang fälschlicherweise erlaubt waren, verbieten."
 
 #: d/lang.opt:385
 #, no-c-format
@@ -3845,10 +3822,9 @@ msgid "Enable rvalue arguments to ref parameters."
 msgstr "rvalue-Argumente für ref-Parameter aktivieren."
 
 #: d/lang.opt:401
-#, fuzzy, no-c-format
-#| msgid "Disable access to shared memory objects."
+#, no-c-format
 msgid "Disable access to variables marked `@system' from @safe code."
-msgstr "Zugriff auf gemeinsamen Speicher ausschalten."
+msgstr ""
 
 #: d/lang.opt:405
 #, no-c-format
@@ -3955,52 +3931,52 @@ msgstr "Die D-Standardbibliothek dynamisch in das Compilat binden."
 #: m2/lang.opt:35
 #, no-c-format
 msgid "compiler checks to force definition module procedure parameter names with their implementation module counterpart"
-msgstr ""
+msgstr "zur Compilezeit sicherstellen, dass Parameternamen von Prozeduren im Definitionsmodul denen im Implementierungsmodul entsprechen"
 
 #: m2/lang.opt:39
 #, no-c-format
 msgid "compiler warns if a cast is being used on types of differing sizes"
-msgstr ""
+msgstr "warnen bei expliziter Typumwandlung zwischen Typen mit unterschiedlicher Größe"
 
 #: m2/lang.opt:43
 #, no-c-format
 msgid "inform user which parameters will be passed by reference"
-msgstr ""
+msgstr "Nutzer informieren, welche Parameter per Referenz übergeben werden"
 
 #: m2/lang.opt:47
 #, no-c-format
 msgid "extra compile time semantic checking, typically tries to catch poor programming style"
-msgstr ""
+msgstr "zusätzliche semantische Überprüfung zur Compilezeit, fängt üblicherweise schlechten Programmierstil ab"
 
 #: m2/lang.opt:51
 #, no-c-format
 msgid "automatically initializes all pointers to NIL"
-msgstr ""
+msgstr "Initialisiert alle Zeiger auf NIL"
 
 #: m2/lang.opt:55
 #, no-c-format
 msgid "turns on runtime subrange, array index and indirection via NIL pointer checking"
-msgstr ""
+msgstr "schaltet Laufzeitüberprüfung für Teilabschnitte, Arrayindizes und NIL-Zeiger-Indirektion ein"
 
 #: m2/lang.opt:59
 #, no-c-format
 msgid "turns on runtime checking to check whether a CASE statement requires an ELSE clause when on was not specified"
-msgstr ""
+msgstr "schaltet Laufzeitüberprüfung ein, ob eine CASE-Anweisung einen ELSE-Zweig benötigt, der jedoch nicht angegeben war"
 
 #: m2/lang.opt:63
 #, no-c-format
 msgid "use cpp to preprocess the module"
-msgstr ""
+msgstr "den C-Präprozessor verwenden, um das Modul vorzuverarbeiten"
 
 #: m2/lang.opt:67 m2/lang.opt:71
 #, no-c-format
 msgid "passed to the preprocessor if -fcpp is used (internal switch)"
-msgstr ""
+msgstr "wird an den Präprozessor weitergereicht, wenn -fcpp verwendet wird (interne Option)"
 
 #: m2/lang.opt:75
 #, no-c-format
 msgid "call a real function, rather than the builtin equivalent"
-msgstr ""
+msgstr "die echte Funktion statt des eingebauten Äquivalents aufrufen"
 
 #: m2/lang.opt:79
 #, fuzzy, no-c-format
@@ -4017,52 +3993,52 @@ msgstr "Namen der ALI-Ausgabedatei setzen (interner Schalter)."
 #: m2/lang.opt:87
 #, no-c-format
 msgid "turn on the Modula-2 api tracing (internal switch)"
-msgstr ""
+msgstr "Modula-2-API-Verfolgung einschalten (interne Option)"
 
 #: m2/lang.opt:91
 #, no-c-format
 msgid "turn on the Modula-2 function line number generation (internal switch)"
-msgstr ""
+msgstr "Zeilennummern in Modula-2-Funktionen generieren (interne Option)"
 
 #: m2/lang.opt:95
 #, no-c-format
 msgid "recognise the specified suffix as a definition module filename"
-msgstr ""
+msgstr "das angegebene Suffix als Dateiname des Definitionsmoduls erkennen"
 
 #: m2/lang.opt:99
 #, no-c-format
 msgid "display all inbuilt system items"
-msgstr ""
+msgstr "alle eingebauten Systemelemente anzeigen"
 
 #: m2/lang.opt:103
 #, no-c-format
 msgid "allows opaque types to be implemented as any type (a GNU Modula-2 extension)"
-msgstr ""
+msgstr "erlaubt, undurchlässige Typen durch beliebige Typen zu implementieren (eine GNU-Modula-2-Erweiterung)"
 
 #: m2/lang.opt:107
 #, no-c-format
 msgid "turns on runtime checking to check whether a floating point number is about to exceed range"
-msgstr ""
+msgstr "Laufzeitüberprüfung für Gleitkommazahlen, die den Gültigkeitsbereich verlassen, einschalten"
 
 #: m2/lang.opt:111
 #, no-c-format
 msgid "create a topologically sorted module list from all dependent modules used in the application"
-msgstr ""
+msgstr "topologisch sortierte Liste aller Module erzeugen, die in der Anwendung verwendet werden"
 
 #: m2/lang.opt:115 m2/lang.opt:191
 #, no-c-format
 msgid "turns on all range checking for numerical values"
-msgstr ""
+msgstr "alle Bereichsprüfungen für numerische Werte einschalten"
 
 #: m2/lang.opt:119
 #, no-c-format
 msgid "use ISO dialect of Modula-2"
-msgstr ""
+msgstr "ISO-Dialekt von Modula-2 verwenden"
 
 #: m2/lang.opt:123
 #, no-c-format
 msgid "specify the library order, currently legal entries include: log, min, pim, iso or their directory name equivalent m2log, m2min, m2pim, m2iso."
-msgstr ""
+msgstr "Reihenfolge der Bibliotheken angeben, derzeit erlaubte Einträge sind: log, min, pim, iso oder deren entsprechende Verzeichnisnamen m2log, m2min, m2pim, m2iso."
 
 #: m2/lang.opt:127
 #, fuzzy, no-c-format
@@ -4073,32 +4049,32 @@ msgstr "Namen der ALI-Ausgabedatei setzen (interner Schalter)."
 #: m2/lang.opt:131
 #, no-c-format
 msgid "generate extra nops to improve debugging, producing an instruction for every code related keyword"
-msgstr ""
+msgstr "zusätzliche NOPs generieren, um das Debuggen zu vereinfachen, dadurch bekommt jedes Schlüsselwort aus dem Code einen eigenen Befehl"
 
 #: m2/lang.opt:135
 #, no-c-format
 msgid "generate error messages which render keywords in lower case"
-msgstr ""
+msgstr "Fehlermeldungen erzeugen, die Schlüsselwörter in Kleinbuchstaben ausgeben"
 
 #: m2/lang.opt:139
 #, no-c-format
 msgid "insert plugin to identify runtime errors at compiletime (default on)"
-msgstr ""
+msgstr "Plugin aktivieren, das Laufzeitfehler bereits zur Compilezeit erkennt (Vorgabe: ein)"
 
 #: m2/lang.opt:143
 #, no-c-format
 msgid "display statistics about the amount of source lines compiled and symbols used"
-msgstr ""
+msgstr "Zusammenfassung der Anzahl der übersetzten Codezeilen und der verwendeten Symbole anzeigen"
 
 #: m2/lang.opt:147
 #, no-c-format
 msgid "experimental flag to turn on the new strict type checker"
-msgstr ""
+msgstr "experimentelle Option, um die neue strenge Typprüfung zu verwenden"
 
 #: m2/lang.opt:151
 #, no-c-format
 msgid "compile all implementation modules and program module at once"
-msgstr ""
+msgstr "alle Implementierungsmodule und Programmmodule auf einmal übersetzen"
 
 #: m2/lang.opt:155
 #, fuzzy, no-c-format
@@ -4109,67 +4085,67 @@ msgstr "für %q+D angegebenes Register ist ein GCC-internes Implementierungsdeta
 #: m2/lang.opt:159
 #, no-c-format
 msgid "turns on runtime checking to detect accessing data through a NIL value pointer"
-msgstr ""
+msgstr "Laufzeitüberprüfung für versuchten Datenzugriff über NIL-Zeiger einschalten"
 
 #: m2/lang.opt:163
 #, no-c-format
 msgid "use PIM [234] dialect of Modula-2"
-msgstr ""
+msgstr "PIM-[234]-Dialekt von Modula-2 verwenden"
 
 #: m2/lang.opt:167
 #, no-c-format
 msgid "use PIM 2 dialect of Modula-2"
-msgstr ""
+msgstr "PIM-2-Dialekt von Modula-2 verwenden"
 
 #: m2/lang.opt:171
 #, no-c-format
 msgid "use PIM 3 dialect of Modula-2"
-msgstr ""
+msgstr "PIM-3-Dialekt von Modula-2 verwenden"
 
 #: m2/lang.opt:175
 #, no-c-format
 msgid "use PIM 4 dialect of Modula-2"
-msgstr ""
+msgstr "PIM-4-Dialekt von Modula-2 verwenden"
 
 #: m2/lang.opt:179
 #, no-c-format
 msgid "force positive result from MOD and DIV result floor"
-msgstr ""
+msgstr "erzwingen, dass MOD stets positiv ist und DIV abrundet"
 
 #: m2/lang.opt:183
 #, no-c-format
 msgid "link against the pthread library (default on)"
-msgstr ""
+msgstr "mit der pthread-Bibliothek übersetzen (Vorgabe: ein)"
 
 #: m2/lang.opt:187
 #, no-c-format
 msgid "internal compiler debugging information, dump the list of quadruples"
-msgstr ""
+msgstr "interne Compiler-Debug-Informationen, Liste der Quadrupel wegschreiben"
 
 #: m2/lang.opt:195
 #, no-c-format
 msgid "turns on runtime checking for functions which finish without executing a RETURN statement"
-msgstr ""
+msgstr "Laufzeitüberprüfung für Funktionen einschalten, deren Ausführung nicht mit einer RETURN-Anweisung endet"
 
 #: m2/lang.opt:199
 #, no-c-format
 msgid "specify the list of runtime modules and their initialization order"
-msgstr ""
+msgstr "Liste der Laufzeitmodule und deren Initialisierungsreihenfolge angeben"
 
 #: m2/lang.opt:203
 #, no-c-format
 msgid "the modules initialization order is dynamically determined by M2RTS and application dependancies"
-msgstr ""
+msgstr "die Initialisierungsreihenfolge der Module wird dynamisch von M2RTS und den Anwendungsabhängigkeiten festgelegt"
 
 #: m2/lang.opt:207
 #, no-c-format
 msgid "generate a C source scaffold for the current module being compiled"
-msgstr ""
+msgstr "ein C-Quelltext-Gerüst für das Modul generieren, das gerade übersetzt wird"
 
 #: m2/lang.opt:211
 #, no-c-format
 msgid "generate a C++ source scaffold for the current module being compiled"
-msgstr ""
+msgstr "ein C++-Quelltext-Gerüst für das Modul generieren, das gerade übersetzt wird"
 
 #: m2/lang.opt:215
 #, fuzzy, no-c-format
@@ -4180,7 +4156,7 @@ msgstr "Bit-Befehle erzeugen."
 #: m2/lang.opt:219
 #, no-c-format
 msgid "generate static scaffold initialization and finalization for every module inside main"
-msgstr ""
+msgstr "statische Gerüst-Initialisierung und Finalisierung für jedes Modul innerhalb von main generieren"
 
 #: m2/lang.opt:223
 #, fuzzy, no-c-format
@@ -4191,7 +4167,7 @@ msgstr "Shared Library erzeugen."
 #: m2/lang.opt:227
 #, no-c-format
 msgid "turns on all software runtime checking (an abbreviation for -fnil -frange -findex -fwholediv -fcase -freturn -fwholevalue -ffloatvalue)"
-msgstr ""
+msgstr "alle Software-Laufzeitüberprüfungen einschalten (das ist die Abkürzung für -fnil -frange -findex -fwholediv -fcase -freturn -fwholevalue -ffloatvalue)"
 
 #: m2/lang.opt:231
 #, fuzzy, no-c-format
@@ -4202,27 +4178,27 @@ msgstr "Namen der Header-Dateien ausgeben, wie sie verwendet werden."
 #: m2/lang.opt:235
 #, no-c-format
 msgid "create a swig interface file for the module"
-msgstr ""
+msgstr "eine SWIG-Interface-Datei für das Modul erzeugen"
 
 #: m2/lang.opt:239
 #, no-c-format
 msgid "optimize non var unbounded parameters by passing it by reference, providing it is not written to within the callee procedure."
-msgstr ""
+msgstr "unbegrenzte Wertparameter optimieren, indem sie per Referenz übergeben werden, vorausgesetzt, die aufgerufene Prozedur verändert sie nicht."
 
 #: m2/lang.opt:243
 #, no-c-format
 msgid "orders the initialization/finalializations for scaffold-static or force linking of modules if scaffold-dynamic"
-msgstr ""
+msgstr "ordnet die Initialisierungen/Finalisierungen für scaffold-static, das Binden von Modulen erzwingen für scaffold-dynamic"
 
 #: m2/lang.opt:251
 #, no-c-format
 msgid "turns on all division and modulus by zero checking for ordinal values"
-msgstr ""
+msgstr "alle Überprüfungen für Division und Modulus durch 0 für ordinale Werte einschalten"
 
 #: m2/lang.opt:255
 #, no-c-format
 msgid "turns on runtime checking to check whether a whole number is about to exceed range"
-msgstr ""
+msgstr "Laufzeitüberprüfung einschalten für ganze Zahlen, die ihren Wertebereich verlassen"
 
 #: m2/lang.opt:259
 #, fuzzy, no-c-format
@@ -5732,10 +5708,11 @@ msgstr "%reloc()-Operatoren statt Assemblermakros verwenden, um Adressen zu lade
 msgid "Take advantage of linker relaxations to reduce the number of instructions required to materialize symbol addresses."
 msgstr "Linker-Lockerungen ausnutzen, um die Anzahl der Befehle zu reduzieren, die für das Materialisieren von Symboladressen verwendet werden."
 
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=109100
 #: config/riscv/riscv.opt:137
 #, no-c-format
 msgid "Enable the CSR checking for the ISA-dependent CRS and the read-only CSR. The ISA-dependent CSR are only valid when the specific ISA is set.  The read-only CSR can not be written by the CSR instructions."
-msgstr ""
+msgstr "CSR-Prüfung für die ISA-abhängigen CRS und das schreibgeschützte CSR einschalten. Die ISA-abhängigen CSR sind nur gültig, wenn die entsprechende ISA festgelegt ist. Das schreibgeschützte CSR kann nicht von den CSR-Befehlen geschrieben werden."
 
 #: config/riscv/riscv.opt:159
 #, no-c-format
@@ -6608,7 +6585,7 @@ msgstr "Indirekte CALLXn-Befehle für große Programme verwenden."
 #: config/xtensa/xtensa.opt:35
 #, no-c-format
 msgid "Set extra memory access cost for L32R instruction, in clock-cycle units."
-msgstr ""
+msgstr "Zusätzliche Kosten für Speicherzugriff durch den L32R-Befehl festlegen, in Taktzyklen."
 
 #: config/xtensa/xtensa.opt:39 config/sh/sh.opt:303
 #, no-c-format
@@ -6870,7 +6847,7 @@ msgstr "Gleitkommapräzision von 80387 auf 80 Bit setzen."
 #: config/i386/i386.opt:425
 #, no-c-format
 msgid "Set the FTZ and DAZ Flags."
-msgstr ""
+msgstr "Die Flags FTZ und DAZ festlegen."
 
 #: config/i386/i386.opt:433
 #, no-c-format
@@ -7713,12 +7690,12 @@ msgstr "Eingebaute Funktionen und Codeerzeugung für UINTR unterstützen."
 #: config/i386/i386.opt:1256
 #, no-c-format
 msgid "Enable conservative small loop unrolling."
-msgstr ""
+msgstr "Konservatives abrollen kleiner Schleifen einschalten."
 
 #: config/i386/i386.opt:1260
 #, no-c-format
 msgid "-mlam=[none|u48|u57] Instrument meta data position in user data pointers."
-msgstr ""
+msgstr "-mlam=[none|u48|u57] Position der Metadaten in Nutzer-Datenzeigern instrumentieren."
 
 #: config/pa/pa64-hpux.opt:23
 #, no-c-format
@@ -7764,7 +7741,7 @@ msgstr "PA2.0-Code erzeugen (erfordert binutils 2.10 oder neuer)."
 #: config/pa/pa.opt:42
 #, no-c-format
 msgid "Generate libcalls for atomic loads and stores when sync libcalls are disabled."
-msgstr ""
+msgstr "Bibliotheksaufrufe für atomare Lade- und Speicherbefehle generieren, wenn synchronisierte Bibliotheksaufrufe ausgeschaltet sind."
 
 #: config/pa/pa.opt:50
 #, no-c-format
@@ -8499,7 +8476,7 @@ msgstr "Verschmolzene multiply-add-Befehle für long double in Vektorregistern (
 #: config/s390/s390.opt:331
 #, no-c-format
 msgid "Store all argument registers on the stack."
-msgstr ""
+msgstr "Alle Argumentregister auf dem Stapelspeicher sichern."
 
 #: config/rl78/rl78.opt:27 config/rx/elf.opt:26 config/csky/csky.opt:198
 #, no-c-format
@@ -9511,7 +9488,7 @@ msgstr "Wie beim Parameter rs6000-density-load-pct-threshold wird auch hier gepr
 #: config/rs6000/rs6000.opt:670
 #, no-c-format
 msgid "Indicate how many non memory access vector instructions can be issued per cycle, it's used in unroll factor determination for autovectorizer.  The default value is 4."
-msgstr ""
+msgstr "Angeben, wie viele Vektorbefehle ohne Speicherzugriff pro Taktzyklus ausgeführt werden können; wird im Faktor für Schleifenabwicklungen des Autovektorisierers verwendet. Vorgabe ist 4."
 
 #: config/rs6000/rs6000.opt:676
 #, fuzzy, no-c-format
@@ -12031,7 +12008,7 @@ msgstr "Auslagern an OpenMP-GPU einschalten."
 #: config/gcn/gcn.opt:72
 #, no-c-format
 msgid "Obsolete; use GCN_STACK_SIZE at runtime."
-msgstr ""
+msgstr "Veraltet; verwenden Sie GCN_STACK_SIZE zur Laufzeit."
 
 #: config/gcn/gcn.opt:78
 #, no-c-format
@@ -14442,7 +14419,7 @@ msgstr "Speicheroperationen aus Schleifen herausverschieben."
 #: common.opt:2178
 #, no-c-format
 msgid "Building block for specs-based multilib-aware TFLAGS."
-msgstr ""
+msgstr "Baustein für specs-basierte multilib-bewusste TFLAGS."
 
 #: common.opt:2182
 #, no-c-format
@@ -15293,7 +15270,7 @@ msgstr "Ganze Übersetzungseinheit auf einmal übersetzen."
 #: common.opt:3048
 #, no-c-format
 msgid "Trap on __builtin_unreachable instead of using it for optimization."
-msgstr ""
+msgstr "Ausnahme bei __builtin_unreachable auslösten, statt es für die Optimierung zu verwenden."
 
 #: common.opt:3052
 #, no-c-format
@@ -16009,7 +15986,7 @@ msgstr "Maximale Anzahl der Grenzendpunkte der Fallbereiche der Switch-Anweisung
 #: params.opt:283
 #, no-c-format
 msgid "Minimum probability (in percent) of dereferencing of a function pointer parameter for it to be considered for replacement with simple values."
-msgstr ""
+msgstr "Minimale Wahrscheinlichkeit in Prozent, dass ein Funktionszeiger-Parameter dereferenziert wird, bevor erwogen wird, diesen Funktionszeiger durch einfache Werte zu ersetzen."
 
 #: params.opt:287
 #, no-c-format
@@ -16041,7 +16018,7 @@ msgstr "Maximale Größe der Konflikttabelle in MB."
 #: params.opt:307
 #, no-c-format
 msgid "Approximate function insn number in 1K units triggering simple local RA."
-msgstr ""
+msgstr "Ungefähre Anzahl der Befehle in der Funktion, in Einheiten von 1k, die zu einer einfachen lokalen RA führen."
 
 #: params.opt:311
 #, no-c-format
@@ -16386,7 +16363,7 @@ msgstr "Höchstzahl der in einem Block erlaubten Anweisungen, die für Sprungbeh
 #: params.opt:591
 #, no-c-format
 msgid "Search space limit for the backwards jump threader."
-msgstr ""
+msgstr "Begrenzung des Suchraums für den Rückwärtssprung-Threader."
 
 #: params.opt:595
 #, no-c-format
@@ -16988,7 +16965,7 @@ msgstr "Vektorisierung des Schleifen-Epilogs mit kleinerer Vektorgröße einscha
 #: params.opt:1150
 #, no-c-format
 msgid "Maximum number of possible vector layouts (such as permutations) to consider when optimizing to-be-vectorized code."
-msgstr ""
+msgstr "Maximale Anzahl der möglichen Vektorlayouts (zum Beispiel Permutationen), die beim Optimieren von möglicherweise vektorisierbarem Code probiert werden."
 
 #: params.opt:1154
 #, no-c-format
@@ -17690,7 +17667,7 @@ msgstr ""
 #: gcov-tool.cc:157 gcov-tool.cc:300
 #, c-format
 msgid "no profile files were merged\n"
-msgstr ""
+msgstr "es wurden keine Profildateien zusammengeführt\n"
 
 #: gcov-tool.cc:169
 #, c-format
@@ -22239,12 +22216,12 @@ msgstr "Datei kann nicht geöffnet werden"
 #: m2/gm2-gcc/m2assert.h:36 m2/gm2-gcc/m2assert.h:59
 #, gcc-internal-format, gfc-internal-format
 msgid "%s:%d:condition %s failed"
-msgstr ""
+msgstr "Interner Fehler: %s:%d:condition %s failed"
 
 #: m2/gm2-gcc/m2assert.h:48
 #, gcc-internal-format, gfc-internal-format
 msgid "%s:%d:the value %s is not a BOOLEAN as the value is %d"
-msgstr ""
+msgstr "Interner Fehler: %s:%d:the value %s is not a BOOLEAN as the value is %d"
 
 #: fortran/lang.opt:428
 #, gcc-internal-format
@@ -27065,7 +27042,7 @@ msgstr "ringförmige Zeigerdelegation erkannt"
 #: gimplify.cc:9975
 #, gcc-internal-format
 msgid "data movement for component %qE is not compatible with movement for struct %qE"
-msgstr ""
+msgstr "Datenverschiebung für Komponente %qE ist nicht kompatibel mit Verschiebung von Struktur %qE"
 
 #: gimplify.cc:10020
 #, gcc-internal-format
@@ -27186,7 +27163,7 @@ msgstr "%<mutexinoutset%>-Art in %<depend%>-Klausel bei einem %<taskwait%>-Konst
 #: gimplify.cc:13460
 #, gcc-internal-format
 msgid "%<taskwait%> construct with %<nowait%> clause but no %<depend%> clauses"
-msgstr ""
+msgstr "Konstrukt %<taskwait%> mit %<nowait%>-Klausel, aber ohne %<depend%>-Klauseln"
 
 #: gimplify.cc:13744 gimplify.cc:13748 gimplify.cc:13757 gimplify.cc:13769
 #: gimplify.cc:13774
@@ -27832,7 +27809,7 @@ msgstr "LTO-Abschnittsreferenzen können in %s nicht gefunden werden"
 #: lto-cgraph.cc:1917
 #, gcc-internal-format
 msgid "OpenMP %<requires%> directive with non-identical clauses in multiple compilation units: %qs vs. %qs"
-msgstr ""
+msgstr "OpenMP-%<requires%>-Direktive mit unterschiedlichen Klauseln in mehreren Übersetzungseinheiten: %qs gegenüber %qs"
 
 #: lto-cgraph.cc:1920 lto-cgraph.cc:1921 lto-cgraph.cc:1927
 #, fuzzy, gcc-internal-format
@@ -27843,7 +27820,7 @@ msgstr "%s %qs"
 #: lto-cgraph.cc:1925
 #, gcc-internal-format
 msgid "OpenMP %<requires%> directive with %qs specified only in some compilation units"
-msgstr ""
+msgstr "OpenMP-%<requires%>-Direktive mit %qs ist nur in einigen Übersetzungseinheiten angegeben"
 
 #: lto-cgraph.cc:1930
 #, fuzzy, gcc-internal-format
@@ -27858,7 +27835,7 @@ msgstr "ungültige offload-Tabelle in %s"
 #: lto-cgraph.cc:1949
 #, gcc-internal-format
 msgid "GCC_OFFLOAD_OMP_REQUIRES_FILE unset"
-msgstr ""
+msgstr "GCC_OFFLOAD_OMP_REQUIRES_FILE ist nicht gesetzt"
 
 #: lto-cgraph.cc:1952
 #, fuzzy, gcc-internal-format
@@ -28199,7 +28176,7 @@ msgstr "… ohne %qs-Klausel hier in der Nähe"
 #: omp-low.cc:1167
 #, gcc-internal-format
 msgid "%<allocate%> clause must specify an allocator here"
-msgstr ""
+msgstr "%<allocate%>-Klausel muss hier einen Allozierer angeben"
 
 #: omp-low.cc:2737 omp-offload.cc:1489
 #, gcc-internal-format
@@ -28485,7 +28462,7 @@ msgstr "ungültiger Zweig zu/von strukturiertem %s-Block"
 #: omp-oacc-kernels-decompose.cc:248
 #, gcc-internal-format
 msgid "PR100400"
-msgstr ""
+msgstr "Interner Fehler: PR100400"
 
 #: omp-oacc-kernels-decompose.cc:261
 #, gcc-internal-format
@@ -28895,7 +28872,7 @@ msgstr "var-tracking-assignments ändert selektive Planung"
 #: opts.cc:1419
 #, gcc-internal-format
 msgid "%<-Wstrict-flex-arrays%> is ignored when %<-fstrict-flex-arrays%> is not present"
-msgstr ""
+msgstr "%<-Wstrict-flex-arrays%> wird ignoriert, wenn %<-fstrict-flex-arrays%> nicht angegeben wurde"
 
 #: opts.cc:1449 config/darwin.cc:3361
 #, gcc-internal-format
@@ -30958,7 +30935,7 @@ msgstr "Interner Fehler: label %qD in the middle of basic block %d"
 #: tree-cfg.cc:5783
 #, gcc-internal-format, gfc-internal-format
 msgid "returns_twice call is %s in basic block %d"
-msgstr ""
+msgstr "Interner Fehler: returns_twice call is %s in basic block %d"
 
 #: tree-cfg.cc:5809
 #, gcc-internal-format, gfc-internal-format
@@ -31032,11 +31009,11 @@ msgstr "%<asm goto%> mit komplexen typisierten Ausgaben"
 
 #: tree-diagnostic-path.cc:473
 msgid "%@ %s (fndecl %qD, depth %i)"
-msgstr ""
+msgstr "%@ %s (fndecl %qD, depth %i)"
 
 #: tree-diagnostic-path.cc:478
 msgid "%@ %s (depth %i)"
-msgstr ""
+msgstr "%@ %s (depth %i)"
 
 #: tree-diagnostic-path.cc:484
 msgid "%@ %s"
@@ -36240,27 +36217,27 @@ msgstr "verwenden Sie %<&%D[0] %s &%D[0]%>, um die Adressen zu vergleichen"
 #: c-family/c-warn.cc:3844
 #, gcc-internal-format
 msgid "result of %<%wu^%wu%> is %wu; did you mean %<1 << %wu%> (%wu)?"
-msgstr ""
+msgstr "das Ergebnis von %<%wu ^ %wu%> ist %wu; meinten Sie %<1 << %wu%> (%wu)?"
 
 #: c-family/c-warn.cc:3854
 #, gcc-internal-format
 msgid "result of %<%wu^%wu%> is %wu; did you mean %<1LL << %wu%>?"
-msgstr ""
+msgstr "das Ergebnis von %<%wu ^ %wu%> ist %wu; meinten Sie %<1LL << %wu%>?"
 
 #: c-family/c-warn.cc:3861
 #, gcc-internal-format
 msgid "result of %<%wu^%wu%> is %wu; did you mean exponentiation?"
-msgstr ""
+msgstr "das Ergebnis von %<%wu ^ %wu%> ist %wu; meinten Sie Potenzbildung?"
 
 #: c-family/c-warn.cc:3872
 #, gcc-internal-format
 msgid "result of %<%wu^%wu%> is %wu; did you mean %<1e%wu%>?"
-msgstr ""
+msgstr "das Ergebnis von %<%wu ^ %wu%> ist %wu; meinten Sie %<1e%wu%>?"
 
 #: c-family/c-warn.cc:3889
 #, gcc-internal-format
 msgid "you can silence this warning by using a hexadecimal constant (%wx rather than %wd)"
-msgstr ""
+msgstr "Sie können diese Warnung unterdrücken, indem Sie eine hexadezimale Konstante verwenden (%wx statt %wd)"
 
 #: c-family/cppspec.cc:94
 #, gcc-internal-format
@@ -36537,7 +36514,7 @@ msgstr "%<-mcpu=%s%>: unbekannte CPU"
 #: common/config/riscv/riscv-common.cc:1406
 #, gcc-internal-format
 msgid "Cannot find suitable multilib set for %<-march=%s%>/%<-mabi=%s%>"
-msgstr ""
+msgstr "Keine Menge von geeigneten Multibibliotheken für %<-march=%s%>/%<-mabi=%s%> gefunden"
 
 #: common/config/rs6000/rs6000-common.cc:173 config/sparc/sparc.cc:1816
 #, gcc-internal-format
@@ -39389,7 +39366,7 @@ msgstr "ungültige Argumente"
 #: config/i386/i386-expand.cc:13191 config/i386/i386-expand.cc:13246
 #, gcc-internal-format
 msgid "instruction prefetch applies when in 64-bit mode with RIP-relative addressing and option %<-mprefetchi%>; they stay NOPs otherwise"
-msgstr ""
+msgstr "Vorausladen von Befehlen ist aktiv im 64-Bit-Modus mit RIP-relativer Adressierung und der Option %<-mprefetchi%>; sonst bleiben sie NOPs"
 
 #: config/i386/i386-expand.cc:13208
 #, fuzzy, gcc-internal-format
@@ -41448,7 +41425,7 @@ msgstr "kaputte PTX-Datei"
 #: config/nvptx/mkoffload.cc:329
 #, gcc-internal-format
 msgid "%<omp requires reverse_offload%> requires at least %<sm_35%> for %<-foffload-options=nvptx-none=-march=%> - disabling offload-code generation for this device type"
-msgstr ""
+msgstr "%<omp requires reverse_offload%> erfordert mindestens %<sm_35%> für %<-foffload-options=nvptx-none=-march=%> – für diesen Gerätetyp wird die Offload-Codegenerierung ausgeschaltet"
 
 #: config/nvptx/mkoffload.cc:399
 #, fuzzy, gcc-internal-format
@@ -41663,7 +41640,7 @@ msgstr "%<#pragma GCC arm%> erfordert eine Zeichenkette als Parameter"
 #: config/riscv/riscv-c.cc:176
 #, gcc-internal-format
 msgid "%<#pragma riscv intrinsic%> option %qs needs 'V' extension enabled"
-msgstr ""
+msgstr "%<#pragma riscv intrinsic%>-Option %qs erfordert, dass die Erweiterung 'V' eingeschaltet ist"
 
 #: config/riscv/riscv-c.cc:184
 #, fuzzy, gcc-internal-format
@@ -41776,7 +41753,7 @@ msgstr "rv32e erfordert die ilp32e-ABI"
 #: config/riscv/riscv.cc:6086
 #, gcc-internal-format
 msgid "z*inx requires ABI ilp32, ilp32e or lp64"
-msgstr ""
+msgstr "z*inx erfordert ABI ilp32, ilp32e oder lp64"
 
 #: config/riscv/riscv.cc:6090
 #, gcc-internal-format
@@ -43104,7 +43081,7 @@ msgstr "Umwandlung von %q#T nach %q#T"
 #: c/c-convert.cc:223
 #, gcc-internal-format
 msgid "only %qT or a null pointer constant can be converted to %qT"
-msgstr ""
+msgstr "nur %qT oder eine Nullzeigerkonstante kann nach %qT umgewandelt werden"
 
 #: c/c-convert.cc:227 d/d-convert.cc:323
 #, gcc-internal-format
@@ -44542,7 +44519,7 @@ msgstr "Redeklaration von %<enum %E%>"
 #: c/c-decl.cc:9601
 #, gcc-internal-format
 msgid "%<enum%> declared with but defined without fixed underlying type"
-msgstr ""
+msgstr "%<enum%> deklariert aber ohne festen zugrundeliegenden Typen definiert"
 
 #: c/c-decl.cc:9686 cp/decl.cc:16686 m2/gm2-gcc/m2type.cc:2060
 #, gcc-internal-format
@@ -45084,7 +45061,7 @@ msgstr "ISO-C verbietet eine leere Quelldatei"
 #: cp/parser.cc:47419 cp/semantics.cc:3399 cp/semantics.cc:3408
 #, gcc-internal-format
 msgid "%qs without corresponding %qs"
-msgstr ""
+msgstr "%qs ohne entsprechendes %qs"
 
 #: c/c-parser.cc:1901 c/c-parser.cc:11991
 #, gcc-internal-format
@@ -45312,12 +45289,12 @@ msgstr "ISO-C unterstützt %<[[]]%>-Attribute erst ab C2X"
 #: c/c-parser.cc:3494
 #, gcc-internal-format
 msgid "%<enum%> declared both with and without fixed underlying type"
-msgstr ""
+msgstr "%<enum%> wurde sowohl mit als auch ohne zugrundeliegendem festen Typ deklariert"
 
 #: c/c-parser.cc:3516
 #, gcc-internal-format
 msgid "no %<enum%> underlying type specified"
-msgstr ""
+msgstr "kein zugrundeliegender Typ für %<enum%> angegeben"
 
 #: c/c-parser.cc:3520
 #, fuzzy, gcc-internal-format
@@ -45921,7 +45898,7 @@ msgstr "falsche Anzahl der Argumente für %<__builtin_shuffle%>"
 #: c/c-parser.cc:10796 cp/parser.cc:5983
 #, gcc-internal-format
 msgid "%<omp_all_memory%> may only be used in OpenMP %<depend%> clause"
-msgstr ""
+msgstr "%<omp_all_memory%> darf nur in OpenMP-%<depend%>-Klausel verwendet werden"
 
 #: c/c-parser.cc:10806
 #, fuzzy, gcc-internal-format
@@ -47130,12 +47107,12 @@ msgstr "unbekannter OpenMP-Direktiven-Name im Argument des Attributs %<omp::dire
 #: c/c-parser.cc:24164 cp/parser.cc:46773
 #, gcc-internal-format
 msgid "%<%s%s%s%s%s%> directive mentioned in both %<absent%> and %<contains%> clauses"
-msgstr ""
+msgstr "%<%s%s%s%s%s%>-Direktive wird sowohl in %<absent%>- als auch %<contains%>-Klauseln erwähnt"
 
 #: c/c-parser.cc:24175 cp/parser.cc:46784
 #, gcc-internal-format
 msgid "%<%s%s%s%s%s%> directive mentioned multiple times in %qs clauses"
-msgstr ""
+msgstr "%<%s%s%s%s%s%>-Direktive wird mehrfach in %qs-Klauseln erwähnt"
 
 #: c/c-parser.cc:24198 cp/parser.cc:46811
 #, fuzzy, gcc-internal-format
@@ -48134,7 +48111,7 @@ msgstr "traditionelles C lehnt automatische Gesamt-Initialisierung ab"
 #: c/c-typeck.cc:8203
 #, gcc-internal-format
 msgid "%<constexpr%> pointer initializer is not null"
-msgstr ""
+msgstr "Initialisierer für %<constexpr%>-Zeiger ist nicht null"
 
 #: c/c-typeck.cc:8211
 #, fuzzy, gcc-internal-format
@@ -48145,7 +48122,7 @@ msgstr "Arrayindex in Initialisierung ist kein konstanter Ganzzahlausdruck"
 #: c/c-typeck.cc:8214 c/c-typeck.cc:8276 c/c-typeck.cc:8413
 #, gcc-internal-format
 msgid "%<constexpr%> initializer not representable in type of object"
-msgstr ""
+msgstr "%<constexpr%>-Initialisierer ist nicht im Typen des Objekts darstellbar"
 
 #: c/c-typeck.cc:8224
 #, fuzzy, gcc-internal-format
@@ -48156,12 +48133,12 @@ msgstr "Arrayindex in Initialisierung ist kein konstanter Ganzzahlausdruck"
 #: c/c-typeck.cc:8241
 #, gcc-internal-format
 msgid "%<constexpr%> initializer for a real type is of complex type"
-msgstr ""
+msgstr "%<constexpr%>-Initialisierer für einen reellen Typen hat komplexen Typ"
 
 #: c/c-typeck.cc:8250
 #, gcc-internal-format
 msgid "%<constexpr%> initializer for a binary floating-point type is of decimal type"
-msgstr ""
+msgstr "%<constexpr%>-Initialisierer für einen binären Gleitkommatypen hat dezimalen Typ"
 
 #: c/c-typeck.cc:8378 c/c-typeck.cc:9304 cp/typeck2.cc:1199
 #, gcc-internal-format
@@ -48905,7 +48882,7 @@ msgstr "%<depend%>-Klausel mit %<depobj%>-Abhängigkeitstyp auf Arrayabschnitt"
 #: c/c-typeck.cc:15288 cp/semantics.cc:7897
 #, gcc-internal-format
 msgid "%<omp_all_memory%> used with %<depend%> kind other than %<out%> or %<inout%>"
-msgstr ""
+msgstr "%<omp_all_memory%> wird mit %<depend%>-Art außer %<out%> oder %<inout%> verwendet"
 
 #: c/c-typeck.cc:15296 cp/semantics.cc:7915
 #, gcc-internal-format
@@ -50131,7 +50108,7 @@ msgstr "Referenz auf temporären Wert wird zurückgegeben"
 #: cp/call.cc:13925
 #, gcc-internal-format
 msgid "the temporary was destroyed at the end of the full expression %qE"
-msgstr ""
+msgstr "das temporäre Objekt wurde am Ende des vollständigen Ausdrucks %qE zerstört"
 
 #: cp/class.cc:321
 #, gcc-internal-format
@@ -50780,7 +50757,7 @@ msgstr "%qE wird zu »false« ausgewertet"
 #: cp/constexpr.cc:2068
 #, gcc-internal-format
 msgid "failed %<assume%> attribute assumption"
-msgstr ""
+msgstr "%<assume%>-Attribut-Annahme fehlgeschlagen"
 
 #: cp/constexpr.cc:2103 cp/constexpr.cc:9075
 #: rust/backend/rust-constexpr.cc:5766
@@ -51722,12 +51699,12 @@ msgstr "  %qT nicht per %<nothrow%> von %qE konstruiert werden kann"
 #: cp/constraint.cc:3794
 #, gcc-internal-format
 msgid "  %qT is not a reference that binds to a temporary object of type %qT (direct-initialization)"
-msgstr ""
+msgstr "  %qT ist keine Referenz, die mit einem temporären Objekt vom Typ %qT verbunden ist (direct-initialization)"
 
 #: cp/constraint.cc:3798
 #, gcc-internal-format
 msgid "  %qT is not a reference that binds to a temporary object of type %qT (copy-initialization)"
-msgstr ""
+msgstr "  %qT ist keine Referenz, die mit einem temporären Objekt vom Typ %qT verbunden ist (copy-initialization)"
 
 #: cp/constraint.cc:3826
 #, gcc-internal-format
@@ -51757,12 +51734,12 @@ msgstr "legen Sie %qs auf mindestens %d fest, um mehr Details zu sehen"
 #: cp/contracts.cc:182
 #, gcc-internal-format
 msgid "axiom contract semantic must be %<assume%> or %<ignore%>"
-msgstr ""
+msgstr "Axiom-Vertrags-Semantik muss %<assume%> oder %<ignore%> sein"
 
 #: cp/contracts.cc:185
 #, gcc-internal-format
 msgid "the %<audit%> semantic should be at least as strong as the %<default%> semantic"
-msgstr ""
+msgstr "die %<audit%>-Semantik sollte mindestens so stark die die %<default%>-Semantik sein"
 
 #: cp/contracts.cc:203
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -51773,73 +51750,73 @@ msgstr "%qs ist in %qs kein gültiger Offset"
 #: cp/contracts.cc:343
 #, gcc-internal-format
 msgid "%<-fcontract-build-level=%> cannot be mixed with p1332/p1429"
-msgstr ""
+msgstr "%<-fcontract-build-level=%> kann nicht mit p1332/p1429 gemischt werden"
 
 #: cp/contracts.cc:356
 #, gcc-internal-format
 msgid "%<-fcontract-build-level=%> must be off|default|audit"
-msgstr ""
+msgstr "%<-fcontract-build-level=%> muss off|default|audit sein"
 
 #: cp/contracts.cc:366
 #, gcc-internal-format
 msgid "%<-fcontract-assumption-mode=%> cannot be mixed with p1332/p1429"
-msgstr ""
+msgstr "%<-fcontract-assumption-mode=%> kann nicht mit p1332/p1429 gemischt werden"
 
 #: cp/contracts.cc:377
 #, gcc-internal-format
 msgid "%<-fcontract-assumption-mode=%> must be %<on%> or %<off%>"
-msgstr ""
+msgstr "%<-fcontract-assumption-mode=%> muss %<on%> oder %<off%> sein"
 
 #: cp/contracts.cc:387
 #, gcc-internal-format
 msgid "%<-fcontract-continuation-mode=%> cannot be mixed with p1332/p1429"
-msgstr ""
+msgstr "%<-fcontract-continuation-mode=%> kann nicht mit p1332/p1429 gemischt werden"
 
 #: cp/contracts.cc:398
 #, gcc-internal-format
 msgid "%<-fcontract-continuation-mode=%> must be %<on%> or %<off%>"
-msgstr ""
+msgstr "%<-fcontract-continuation-mode=%> muss %<on%> oder %<off%> sein"
 
 #: cp/contracts.cc:410
 #, gcc-internal-format
 msgid "%<-fcontract-role=%> must be in the form role:semantics"
-msgstr ""
+msgstr "%<-fcontract-role=%> muss die Form »Rolle:Semantik« haben"
 
 #: cp/contracts.cc:421 cp/contracts.cc:430
 #, gcc-internal-format
 msgid "%<-fcontract-role=%> semantics must include default,audit,axiom values"
-msgstr ""
+msgstr "%<-fcontract-role=%>-Semantik muss Werte für default,audit,axiom beinhalten"
 
 #: cp/contracts.cc:449
 #, gcc-internal-format
 msgid "%<-fcontract-role=%> cannot be mixed with std/p1429 contract flags"
-msgstr ""
+msgstr "%<-fcontract-role=%> kann nicht mit Vertragsoptionen aus std/p1429 gemischt werden"
 
 #. TODO: not enough space?
 #: cp/contracts.cc:463
 #, gcc-internal-format
 msgid "%<-fcontract-level=%> too many custom roles"
-msgstr ""
+msgstr "%<-fcontract-level=%> zu viele benutzerdefinierte Rollen"
 
 #: cp/contracts.cc:475
 #, gcc-internal-format
 msgid "%<-fcontract-semantic=%> must be in the form level:semantic"
-msgstr ""
+msgstr "%<-fcontract-semantic=%> muss die Form »Stufe:Semantik« haben"
 
 #: cp/contracts.cc:481
 #, gcc-internal-format
 msgid "%<-fcontract-semantic=%> cannot be mixed with std/p1332 contract flags"
-msgstr ""
+msgstr "%<-fcontract-semantic=%> kann nicht mit Vertragsoptionen aus std/p1332 gemischt werden"
 
 #: cp/contracts.cc:489
 #, gcc-internal-format
 msgid "%<-fcontract-semantic=%> cannot find default role"
-msgstr ""
+msgstr "%<-fcontract-semantic=%> kann die Standardrolle nicht finden"
 
 #: cp/contracts.cc:505
 #, gcc-internal-format
 msgid "%<-fcontract-semantic=%> level must be default, audit, or axiom"
-msgstr ""
+msgstr "%<-fcontract-semantic=%>-Stufe muss default, audit oder axiom sein"
 
 #: cp/contracts.cc:647
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -54780,7 +54757,7 @@ msgstr "Parameter kann nicht mit %<decltype(auto)%> deklariert werden"
 #: cp/decl.cc:14030
 #, gcc-internal-format
 msgid "missing template argument list after %qE; template placeholder not permitted in parameter"
-msgstr ""
+msgstr "fehlende Template-Argumentliste nach %qE; Template-Platzhalter ist in Parameter nicht erlaubt"
 
 #: cp/decl.cc:14033
 #, fuzzy, gcc-internal-format
@@ -58329,7 +58306,7 @@ msgstr "Parameterdeklaration vor Lambdadeklarationsangaben ist erst ab %<-std=c+
 #: cp/parser.cc:11638
 #, gcc-internal-format
 msgid "%<static%> lambda specifier with lambda capture"
-msgstr ""
+msgstr "Lambda-Spezifizierer %<static%> mit Lambda-Fang"
 
 #: cp/parser.cc:11650
 #, gcc-internal-format
@@ -69412,7 +69389,7 @@ msgstr "Fortran 2008: Effektives Nicht-Zeiger-Argument bei %L an Scheinzeiger %q
 #: fortran/interface.cc:3524
 #, gcc-internal-format
 msgid "Actual argument for %qs at %L must be a pointer or a valid target for the dummy pointer in a pointer assignment statement"
-msgstr ""
+msgstr "Tatsächliches Argument für %qs bei %L muss ein Zeiger oder ein gültiges Ziel für den Dummy-Zeiger in einer Anweisung für Zeiger-Zuweisung sein"
 
 #: fortran/interface.cc:3538
 #, gcc-internal-format
@@ -70652,7 +70629,7 @@ msgstr "identifier overflow: %d"
 #: fortran/iresolve.cc:102
 #, gcc-internal-format
 msgid "check_charlen_present(): length not set"
-msgstr ""
+msgstr "Interner Fehler: check_charlen_present(): length not set"
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79596
 #: fortran/match.cc:118
@@ -71436,7 +71413,7 @@ msgstr "Initialisiertes Symbol %qs bei %C kann nur COMMON in BLOCK DATA sein"
 #: fortran/match.cc:5353
 #, gcc-internal-format
 msgid "Symbol %qs at %C is USE associated from module %qs and cannot occur in COMMON"
-msgstr ""
+msgstr "Symbol %qs bei %C ist USE-verbunden von Modul %qs und kann daher nicht in COMMON vorkommen"
 
 #: fortran/match.cc:5368
 #, gcc-internal-format
@@ -72047,7 +72024,7 @@ msgstr "Syntaxfehler in OpenMP-detach-Klausel bei %C"
 #: fortran/openmp.cc:689
 #, gcc-internal-format
 msgid "%<omp_all_memory%> used with dependence-type other than OUT or INOUT at %C"
-msgstr ""
+msgstr "%<omp_all_memory%> wird mit Abhängigkeitsart außer OUT oder INOUT verwendet, bei %C"
 
 #: fortran/openmp.cc:742
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -72125,7 +72102,7 @@ msgstr "Ungültige Art für %s bei %L"
 #: fortran/openmp.cc:1539
 #, gcc-internal-format
 msgid "Invalid %qs directive at %L in %s clause: declarative, informational and meta directives not permitted"
-msgstr ""
+msgstr "Ungültige Direktive %qs bei %L in %s-Klausel: deklarative, informationelle und Metadirektiven sind nicht erlaubt"
 
 #: fortran/openmp.cc:1571
 #, fuzzy, gcc-internal-format
@@ -72142,7 +72119,7 @@ msgstr "Variable bei %L wird mehrfach in Klauseln derselben OMP-DECLARE-TARGET-D
 #: fortran/openmp.cc:1615
 #, gcc-internal-format
 msgid "%qs directive mentioned both times in ABSENT and CONTAINS clauses in %s directive at %L"
-msgstr ""
+msgstr "%qs-Direktive wird sowohl in ABSENT- als auch CONTAINS-Klauseln in %s-Direktive bei %L erwähnt"
 
 #: fortran/openmp.cc:1686
 #, gcc-internal-format
@@ -72228,12 +72205,12 @@ msgstr "ITERATOR bei %C kann nicht mit SOURCE kombiniert werden"
 #: fortran/openmp.cc:2243
 #, gcc-internal-format, gfc-internal-format
 msgid "SOURCE at %C not permitted as dependence-type for this directive"
-msgstr ""
+msgstr "SOURCE bei %C ist nicht als Abhängigkeitsart für diese Direktive erlaubt"
 
 #: fortran/openmp.cc:2249
 #, gcc-internal-format, gfc-internal-format
 msgid "Duplicated clause with SOURCE dependence-type at %C"
-msgstr ""
+msgstr "Doppelte Klausel mit Abhängigkeitsart SOURCE bei %C"
 
 #: fortran/openmp.cc:2264
 #, fuzzy, gcc-internal-format
@@ -72244,7 +72221,7 @@ msgstr "%<)%> oder %<,%> bei %C erwartet"
 #: fortran/openmp.cc:2276
 #, gcc-internal-format, gfc-internal-format
 msgid "SINK at %C not permitted as dependence-type for this directive"
-msgstr ""
+msgstr "SINK bei %C ist nicht als Abhängigkeitsart für diese Direktive erlaubt"
 
 #: fortran/openmp.cc:2287
 #, gcc-internal-format, gfc-internal-format
@@ -72260,7 +72237,7 @@ msgstr "Bezeichner bei %C erwartet"
 #: fortran/openmp.cc:2318
 #, gcc-internal-format
 msgid "%<omp_all_memory%> used with DEPEND kind other than OUT or INOUT at %C"
-msgstr ""
+msgstr "%<omp_all_memory%> wird bei %C mit DEPEND-Art außer OUT oder INOUT verwendet"
 
 #: fortran/openmp.cc:2356 fortran/openmp.cc:2391
 #, gcc-internal-format, gfc-internal-format
@@ -73162,7 +73139,7 @@ msgstr "SINK-Summand bei %L ist keine konstante Ganzzahl"
 #: fortran/openmp.cc:7645
 #, gcc-internal-format
 msgid "omp_cur_iteration at %L requires %<-1%> as logical offset"
-msgstr ""
+msgstr "omp_cur_iteration bei %L erfordert %<-1%> als logischen Offset"
 
 #: fortran/openmp.cc:7655
 #, gcc-internal-format
@@ -73564,7 +73541,7 @@ msgstr "%s-Iterationsvariable bei %L muss vom Typ integer sein"
 #: fortran/openmp.cc:9526
 #, gcc-internal-format, gfc-internal-format
 msgid "%s loop start expression not in canonical form at %L"
-msgstr ""
+msgstr "Schleifenstartausdruck %s bei %L hat nicht die kanonische Form"
 
 #: fortran/openmp.cc:9534
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -73581,7 +73558,7 @@ msgstr "Bedingungsausdruck verweist auf Iterationsvariable %qD"
 #: fortran/openmp.cc:9546
 #, gcc-internal-format, gfc-internal-format
 msgid "%s loop increment not in canonical form at %L"
-msgstr ""
+msgstr "Schleifeninkrement %s bei %L hat nicht die kanonische Form"
 
 #: fortran/openmp.cc:9556
 #, gcc-internal-format, gfc-internal-format
@@ -77045,7 +77022,7 @@ msgstr "Sorry, allozierbare/Zeiger-Komponenten in polymorphen (CLASS-)getypten K
 #: fortran/resolve.cc:15535
 #, gcc-internal-format
 msgid "%<omp_all_memory%>, declared at %L, may only be used in the OpenMP DEPEND clause"
-msgstr ""
+msgstr "%<omp_all_memory%>, bei %L deklariert, darf nur in der OpenMP-DEPEND-Klausel verwendet werden"
 
 #: fortran/resolve.cc:15593
 #, gcc-internal-format, gfc-internal-format
@@ -77476,7 +77453,7 @@ msgstr "!$OMP bei %C beginnt eine kommentierte Zeile, da es weder von Leerzeiche
 #: fortran/scanner.cc:1011
 #, gcc-internal-format, gfc-internal-format
 msgid "Ignoring '!$omx' vendor-extension sentinel at %C"
-msgstr ""
+msgstr "Herstellererweiterungsmarkierung »!$omx« bei %C wird ignoriert"
 
 #: fortran/scanner.cc:1323 fortran/scanner.cc:1526
 #, gcc-internal-format, gfc-internal-format
@@ -78628,7 +78605,7 @@ msgstr "unbehandelter Ausdruck"
 #: fortran/trans-openmp.cc:5152 fortran/trans-openmp.cc:5172
 #, gcc-internal-format
 msgid "non-rectangular loop nest with step other than constant 1 or -1 for %qs"
-msgstr ""
+msgstr "Nichtrechteckige Schleifenschachtelung mit Schrittweite ungleich 1 oder -1 für %qs"
 
 #: fortran/trans-openmp.cc:5174
 #, fuzzy, gcc-internal-format
@@ -79132,7 +79109,7 @@ msgstr "Ausdruck vom Typ %qs kann nicht in den Typ %qs umgewandelt werden"
 #: m2/gm2spec.cc:309
 #, gcc-internal-format
 msgid "%qs is not a valid Modula-2 system library name or abbreviation"
-msgstr ""
+msgstr "%qs ist weder ein gültiger Name einer Modula-2-Systembibliothek noch eine Abkürzung dafür"
 
 #: m2/gm2spec.cc:627 m2/gm2spec.cc:635
 #, fuzzy, gcc-internal-format
@@ -79149,7 +79126,7 @@ msgstr "Profildaten für Funktion %u sind beschädigt"
 #: m2/gm2-gcc/m2builtins.cc:43
 #, gcc-internal-format, gfc-internal-format
 msgid "%s:%d:assertion of condition `%s' failed"
-msgstr ""
+msgstr "Interner Fehler: %s:%d:assertion of condition `%s' failed"
 
 #: m2/gm2-gcc/m2builtins.cc:49
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -79228,12 +79205,12 @@ msgstr "Argument %qd ist keine Konstante"
 #: m2/gm2-gcc/m2expr.cc:3833 m2/gm2-gcc/m2statement.cc:539
 #, gcc-internal-format
 msgid "internal error: not expecting operand1 to be a constant set"
-msgstr ""
+msgstr "internal error: not expecting operand1 to be a constant set"
 
 #: m2/gm2-gcc/m2expr.cc:3884 m2/gm2-gcc/m2expr.cc:4007
 #, gcc-internal-format
 msgid "internal error: not expecting this base value for a constant"
-msgstr ""
+msgstr "internal error: not expecting this base value for a constant"
 
 #: m2/gm2-gcc/m2expr.cc:4128
 #, fuzzy, gcc-internal-format
@@ -79250,7 +79227,7 @@ msgstr "Modus %qs auf unpassenden Typen angewendet"
 #: m2/gm2-gcc/m2statement.cc:933
 #, gcc-internal-format
 msgid "expecting one and only one label to be declared"
-msgstr ""
+msgstr "es sollte genau 1 Sprungmarke deklariert sein"
 
 #: m2/gm2-gcc/m2treelib.cc:290
 #, fuzzy, gcc-internal-format
@@ -79273,12 +79250,12 @@ msgstr "Coarray-Deklaration bei %C"
 #: m2/gm2-gcc/m2type.cc:314
 #, gcc-internal-format
 msgid "low bound for the array is outside the ztype limits"
-msgstr ""
+msgstr "untere Grenze des Arrays liegt außerhalb der Grenzen von ztype"
 
 #: m2/gm2-gcc/m2type.cc:316
 #, gcc-internal-format
 msgid "high bound for the array is outside the ztype limits"
-msgstr ""
+msgstr "obere Grenze des Arrays liegt außerhalb der Grenzen von ztype"
 
 #: m2/gm2-gcc/m2type.cc:923
 #, fuzzy, gcc-internal-format
@@ -79337,17 +79314,17 @@ msgstr "Array als Initialisierung verwendet"
 #: m2/gm2-gcc/m2type.cc:2421
 #, gcc-internal-format
 msgid "array element value must be the same type as its declaration"
-msgstr ""
+msgstr "Wert des Arrayelements muss vom selben Typ sein wie seine Deklaration"
 
 #: m2/gm2-gcc/m2type.cc:2484
 #, gcc-internal-format
 msgid "low bound for the subrange has overflowed"
-msgstr ""
+msgstr "arithmetischer Überlauf in unterer Grenze des Teilbereichs"
 
 #: m2/gm2-gcc/m2type.cc:2486
 #, gcc-internal-format
 msgid "high bound for the subrange has overflowed"
-msgstr ""
+msgstr "arithmetischer Überlauf in oberer Grenze des Teilbereichs"
 
 #: m2/gm2-gcc/m2type.cc:2783
 #, fuzzy, gcc-internal-format
@@ -80349,7 +80326,7 @@ msgstr "»%s« kann nicht in den Speicher geladen werden"
 #: rust/rust-lang.cc:104
 #, gcc-internal-format
 msgid "TODO"
-msgstr ""
+msgstr "TODO"
 
 #: rust/backend/rust-constexpr.cc:1675
 #, fuzzy, gcc-internal-format
