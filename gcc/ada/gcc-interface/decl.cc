@@ -2241,9 +2241,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	     index += (convention_fortran_p ? - 1 : 1),
 	     gnat_index = Next_Index (gnat_index))
 	  {
+	    const Entity_Id gnat_index_type = Etype (gnat_index);
 	    const bool is_flb
-	      = Is_Fixed_Lower_Bound_Index_Subtype (Etype (gnat_index));
-	    tree gnu_index_type = get_unpadded_type (Etype (gnat_index));
+	      = Is_Fixed_Lower_Bound_Index_Subtype (gnat_index_type);
+	    tree gnu_index_type = get_unpadded_type (gnat_index_type);
 	    tree gnu_orig_min = TYPE_MIN_VALUE (gnu_index_type);
 	    tree gnu_orig_max = TYPE_MAX_VALUE (gnu_index_type);
 	    tree gnu_index_base_type = get_base_type (gnu_index_type);
@@ -2479,6 +2480,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  const int ndim = Number_Dimensions (gnat_entity);
 	  tree gnu_base_type = gnu_type;
 	  tree *gnu_index_types = XALLOCAVEC (tree, ndim);
+	  bool *gnu_null_ranges = XALLOCAVEC (bool, ndim);
 	  tree gnu_max_size = size_one_node;
 	  bool need_index_type_struct = false;
 	  int index;
@@ -2494,7 +2496,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	       gnat_index = Next_Index (gnat_index),
 	       gnat_base_index = Next_Index (gnat_base_index))
 	    {
-	      tree gnu_index_type = get_unpadded_type (Etype (gnat_index));
+	      const Entity_Id gnat_index_type = Etype (gnat_index);
+	      tree gnu_index_type = get_unpadded_type (gnat_index_type);
 	      tree gnu_orig_min = TYPE_MIN_VALUE (gnu_index_type);
 	      tree gnu_orig_max = TYPE_MAX_VALUE (gnu_index_type);
 	      tree gnu_index_base_type = get_base_type (gnu_index_type);
@@ -2671,6 +2674,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		= create_index_type (gnu_min, gnu_high, gnu_index_type,
 				     gnat_entity);
 
+	      /* Record whether the range is known to be null at compile time
+		 to disambiguate it from too large ranges.  */
+	      const Entity_Id gnat_ui_type = Underlying_Type (gnat_index_type);
+	      gnu_null_ranges[index]
+		= Is_Null_Range (Type_Low_Bound (gnat_ui_type),
+				 Type_High_Bound (gnat_ui_type));
+
 	      /* We need special types for debugging information to point to
 		 the index types if they have variable bounds, are not integer
 		 types, are biased or are wider than sizetype.  These are GNAT
@@ -2737,7 +2747,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      if (array_type_has_nonaliased_component (gnu_type, gnat_entity))
 		set_nonaliased_component_on_array_type (gnu_type);
 
-	      /* Kludge to remove the TREE_OVERFLOW flag for the sake of LTO
+	      /* Clear the TREE_OVERFLOW flag, if any, for null arrays.  */
+	      if (gnu_null_ranges[index])
+		{
+		  TYPE_SIZE (gnu_type) = bitsize_zero_node;
+		  TYPE_SIZE_UNIT (gnu_type) = size_zero_node;
+		}
+
+	      /* Kludge to clear the TREE_OVERFLOW flag for the sake of LTO
 		 on maximally-sized array types designed by access types.  */
 	      if (integer_zerop (TYPE_SIZE (gnu_type))
 		  && TREE_OVERFLOW (TYPE_SIZE (gnu_type))
