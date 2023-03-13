@@ -300,8 +300,10 @@ extern Boolean Is_Derived_Type			(Entity_Id);
 /* sem_eval: */
 
 #define Compile_Time_Known_Value	sem_eval__compile_time_known_value
+#define Is_Null_Range			sem_eval__is_null_range
 
 extern Boolean Compile_Time_Known_Value	(Node_Id);
+extern Boolean Is_Null_Range 		(Node_Id, Node_Id);
 
 /* sem_util: */
 

@@ -5416,8 +5416,9 @@ package body Sem_Eval is
                return Expr_Value_R (Lo) > Expr_Value_R (Hi);
             end if;
          end;
+
       else
-         return False;
+         return Compile_Time_Compare (Lo, Hi, Assume_Valid => False) = GT;
       end if;
    end Is_Null_Range;
 
@@ -6028,10 +6029,11 @@ package body Sem_Eval is
                return Expr_Value_R (Lo) <= Expr_Value_R (Hi);
             end if;
          end;
-      else
-         return False;
-      end if;
 
+      else
+         return
+           Compile_Time_Compare (Lo, Hi, Assume_Valid => False) in Compare_LE;
+      end if;
    end Not_Null_Range;
 
    -------------
