@@ -30651,9 +30651,9 @@ package body Sem_Util is
            (Expr : Node_Id; Expr_Trailer : Node_Id := Empty)
            return Determining_Expression_List
          is
-            Par           : Node_Id := Expr;
-            Trailer       : Node_Id := Expr_Trailer;
-            Next_Element  : Determining_Expr;
+            Par          : Node_Id := Expr;
+            Trailer      : Node_Id := Expr_Trailer;
+            Next_Element : Determining_Expr;
          begin
             --  We want to stop climbing up the tree when we reach the
             --  postcondition expression. An aspect_specification is
@@ -30761,9 +30761,13 @@ package body Sem_Util is
                         else
                            pragma Assert
                              (Get_Pragma_Id (Pragma_Name (Par)) in
-                                Pragma_Post | Pragma_Postcondition
-                                | Pragma_Post_Class | Pragma_Refined_Post
-                                | Pragma_Check | Pragma_Contract_Cases);
+                                Pragma_Check
+                              | Pragma_Contract_Cases
+                              | Pragma_Exceptional_Cases
+                              | Pragma_Post
+                              | Pragma_Postcondition
+                              | Pragma_Post_Class
+                              | Pragma_Refined_Post);
 
                            return (1 .. 0 => <>); -- recursion terminates here
                         end if;
