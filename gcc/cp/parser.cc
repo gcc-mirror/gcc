@@ -33452,10 +33452,12 @@ cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
      C++-safe.  */
   if (decl_spec_seq_has_spec_p (decl_specs, ds_typedef)
       && !type_definition_p
+      && TYPE_P (type_spec)
       && (type_spec == boolean_type_node
 	  || type_spec == char8_type_node
 	  || type_spec == char16_type_node
 	  || type_spec == char32_type_node
+	  || extended_float_type_p (type_spec)
 	  || type_spec == wchar_type_node)
       && (decl_specs->type
 	  || decl_spec_seq_has_spec_p (decl_specs, ds_long)
