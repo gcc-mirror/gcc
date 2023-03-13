@@ -16,7 +16,6 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-hir-type-check-base.h"
 #include "rust-coercion.h"
 #include "rust-type-util.h"
 
@@ -417,12 +416,18 @@ TypeCoercionRules::select (TyTy::BaseType &autoderefed)
   rust_debug (
     "autoderef type-coercion select autoderefed={%s} can_eq expected={%s}",
     autoderefed.debug_str ().c_str (), expected->debug_str ().c_str ());
-  if (expected->can_eq (&autoderefed, false))
-    {
-      try_result = CoercionResult{adjustments, autoderefed.clone ()};
-      return true;
-    }
-  return false;
+
+  TyTy::BaseType *result
+    = unify_site_and (autoderefed.get_ref (), TyTy::TyWithLocation (expected),
+		      TyTy::TyWithLocation (&autoderefed),
+		      Location () /* locus */, false /*emit_errors*/,
+		      false /*commit_if_ok*/, true /*infer*/, true /*cleanup*/);
+  bool ok = result->get_kind () != TyTy::TypeKind::ERROR;
+  if (!ok)
+    return false;
+
+  try_result = CoercionResult{adjustments, autoderefed.clone ()};
+  return true;
 }
 
 /// Coercing a mutable reference to an immutable works, while
