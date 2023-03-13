@@ -2305,7 +2305,7 @@ package body Exp_Aggr is
       Assoc  : Node_Id;
       Choice : Node_Id;
       Expr   : Node_Id;
-      Typ    : Entity_Id;
+      Typ    : constant Entity_Id := Etype (N);
 
       Bounds : Range_Nodes;
       Low    : Node_Id renames Bounds.First;
@@ -2323,11 +2323,9 @@ package body Exp_Aggr is
    --  Start of processing for Build_Array_Aggr_Code
 
    begin
-      --  First before we start, a special case. if we have a bit packed
+      --  First before we start, a special case. If we have a bit packed
       --  array represented as a modular type, then clear the value to
       --  zero first, to ensure that unused bits are properly cleared.
-
-      Typ := Etype (N);
 
       if Present (Typ)
         and then Is_Bit_Packed_Array (Typ)
@@ -6002,8 +6000,8 @@ package body Exp_Aggr is
       ----------------------------
 
       procedure Check_Same_Aggr_Bounds (Sub_Aggr : Node_Id; Dim : Pos) is
-         Sub_Bounds : constant Range_Nodes
-           := Get_Index_Bounds (Aggregate_Bounds (Sub_Aggr));
+         Sub_Bounds : constant Range_Nodes :=
+           Get_Index_Bounds (Aggregate_Bounds (Sub_Aggr));
          Sub_Lo : Node_Id renames Sub_Bounds.First;
          Sub_Hi : Node_Id renames Sub_Bounds.Last;
          --  The bounds of this specific subaggregate
@@ -6015,7 +6013,7 @@ package body Exp_Aggr is
          Ind_Typ : constant Entity_Id := Aggr_Index_Typ (Dim);
          --  The index type for this dimension.xxx
 
-         Cond  : Node_Id := Empty;
+         Cond  : Node_Id;
          Assoc : Node_Id;
          Expr  : Node_Id;
 
