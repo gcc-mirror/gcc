@@ -151,11 +151,6 @@ TypeCheckExpr::visit (HIR::PathInExpression &expr)
   if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
     return;
 
-  if (tyseg->needs_generic_substitutions ())
-    {
-      tyseg = SubstMapper::InferSubst (tyseg, expr.get_locus ());
-    }
-
   bool fully_resolved = offset == expr.get_segments ().size ();
   if (fully_resolved)
     {
@@ -284,6 +279,10 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 					 &seg.get_generic_args ());
 	  if (lookup->get_kind () == TyTy::TypeKind::ERROR)
 	    return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
+	}
+      else if (lookup->needs_generic_substitutions ())
+	{
+	  lookup = SubstMapper::InferSubst (lookup, expr.get_locus ());
 	}
 
       *root_resolved_node_id = ref_node_id;
