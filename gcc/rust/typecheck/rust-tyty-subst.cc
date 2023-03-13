@@ -821,57 +821,6 @@ SubstitutionRef::solve_mappings_from_receiver_for_self (
 				       mappings.get_locus ());
 }
 
-SubstitutionArgumentMappings
-SubstitutionRef::solve_missing_mappings_from_this (SubstitutionRef &ref,
-						   SubstitutionRef &to)
-{
-  rust_assert (!ref.needs_substitution ());
-  rust_assert (needs_substitution ());
-  rust_assert (get_num_substitutions () == ref.get_num_substitutions ());
-
-  Location locus = used_arguments.get_locus ();
-  std::vector<SubstitutionArg> resolved_mappings;
-
-  std::map<HirId, std::pair<ParamType *, BaseType *>> substs;
-  for (size_t i = 0; i < get_num_substitutions (); i++)
-    {
-      SubstitutionParamMapping &a = substitutions.at (i);
-      SubstitutionParamMapping &b = ref.substitutions.at (i);
-
-      if (a.need_substitution ())
-	{
-	  const BaseType *root = a.get_param_ty ()->resolve ()->get_root ();
-	  rust_assert (root->get_kind () == TyTy::TypeKind::PARAM);
-	  const ParamType *p = static_cast<const TyTy::ParamType *> (root);
-
-	  substs[p->get_ty_ref ()] = {static_cast<ParamType *> (p->clone ()),
-				      b.get_param_ty ()->resolve ()};
-	}
-    }
-
-  for (auto it = substs.begin (); it != substs.end (); it++)
-    {
-      HirId param_id = it->first;
-      BaseType *arg = it->second.second;
-
-      const SubstitutionParamMapping *associate_param = nullptr;
-      for (SubstitutionParamMapping &p : to.substitutions)
-	{
-	  if (p.get_param_ty ()->get_ty_ref () == param_id)
-	    {
-	      associate_param = &p;
-	      break;
-	    }
-	}
-
-      rust_assert (associate_param != nullptr);
-      SubstitutionArg argument (associate_param, arg);
-      resolved_mappings.push_back (std::move (argument));
-    }
-
-  return SubstitutionArgumentMappings (resolved_mappings, {}, locus);
-}
-
 Resolver::AssociatedImplTrait *
 SubstitutionRef::lookup_associated_impl (const SubstitutionParamMapping &subst,
 					 const TypeBoundPredicate &bound,

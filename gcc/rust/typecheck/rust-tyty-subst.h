@@ -291,11 +291,12 @@ public:
   SubstitutionArgumentMappings solve_mappings_from_receiver_for_self (
     SubstitutionArgumentMappings &mappings) const;
 
-  // TODO comment
-  SubstitutionArgumentMappings
-  solve_missing_mappings_from_this (SubstitutionRef &ref, SubstitutionRef &to);
-
-  // TODO comment
+  // Given a type such as:
+  //
+  //   fn<X,Y>(a:&X, b:Y) -> (...)
+  //
+  // This function will inject implicit inference variables for the type
+  // parameters X and Y
   BaseType *infer_substitions (Location locus);
 
   // this clears any possible projections from higher ranked trait bounds which

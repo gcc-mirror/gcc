@@ -21,6 +21,8 @@
 #include "rust-compile-implitem.h"
 #include "rust-hir-type-bounds.h"
 #include "rust-compile-type.h"
+#include "rust-substitution-mapper.h"
+#include "rust-type-util.h"
 
 namespace Rust {
 namespace Compile {
@@ -299,11 +301,6 @@ HIRCompileBase::compute_address_for_trait_item (
     = self_bound->lookup_associated_item (ref->get_identifier ());
   rust_assert (!associated_self_item.is_error ());
 
-  TyTy::BaseType *mono1 = associated_self_item.get_tyty_for_receiver (self);
-  rust_assert (mono1 != nullptr);
-  rust_assert (mono1->get_kind () == TyTy::TypeKind::FNDEF);
-  TyTy::FnType *assocated_item_ty1 = static_cast<TyTy::FnType *> (mono1);
-
   // Lookup the impl-block for the associated impl_item if it exists
   HIR::Function *associated_function = nullptr;
   for (auto &impl_item : associated_impl_block->get_impl_items ())
@@ -333,10 +330,14 @@ HIRCompileBase::compute_address_for_trait_item (
 
       if (lookup_fntype->needs_substitution ())
 	{
-	  TyTy::SubstitutionArgumentMappings mappings
-	    = assocated_item_ty1->solve_missing_mappings_from_this (
-	      *trait_item_fntype, *lookup_fntype);
-	  lookup_fntype = lookup_fntype->handle_substitions (mappings);
+	  TyTy::BaseType *infer
+	    = Resolver::SubstMapper::InferSubst (lookup_fntype, Location ());
+	  infer
+	    = Resolver::unify_site (infer->get_ref (),
+				    TyTy::TyWithLocation (trait_item_fntype),
+				    TyTy::TyWithLocation (infer), Location ());
+	  rust_assert (infer->get_kind () == TyTy::TypeKind::FNDEF);
+	  lookup_fntype = static_cast<TyTy::FnType *> (infer);
 	}
 
       return CompileInherentImplItem::Compile (associated_function, ctx,
