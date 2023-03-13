@@ -1858,6 +1858,7 @@ finish_thunk (tree thunk, tree function)
 
   TREE_ADDRESSABLE (function) = 1;
   TREE_USED (function) = 1;
+  DECL_EXTERNAL (thunk) = 0;
 
   if (flag_syntax_only)
     {
@@ -1929,21 +1930,14 @@ make_thunk (FuncDeclaration *decl, int offset)
 
   if (!DECL_ARGUMENTS (function) || !DECL_RESULT (function))
     {
-      /* Compile the function body before generating the thunk, this is done
-	 even if the decl is external to the current module.  */
-      if (decl->fbody)
-	build_decl_tree (decl);
-      else
-	{
-	  /* Build parameters for functions that are not being compiled,
-	     so that they can be correctly cloned in finish_thunk.  */
-	  tree function = get_symbol_decl (decl);
-	  DECL_ARGUMENTS (function) = get_fndecl_arguments (decl);
+      /* Build parameters for functions that are not being compiled,
+	 so that they can be correctly cloned in finish_thunk.  */
+      tree function = get_symbol_decl (decl);
+      DECL_ARGUMENTS (function) = get_fndecl_arguments (decl);
 
-	  /* Also build the result decl, which is needed when force creating
-	     the thunk in gimple inside cgraph_node::expand_thunk.  */
-	  DECL_RESULT (function) = get_fndecl_result (decl);
-	}
+      /* Also build the result decl, which is needed when force creating
+	 the thunk in gimple inside cgraph_node::expand_thunk.  */
+      DECL_RESULT (function) = get_fndecl_result (decl);
     }
 
   /* Don't build the thunk if the compilation step failed.  */
@@ -1969,11 +1963,10 @@ make_thunk (FuncDeclaration *decl, int offset)
 
   DECL_CONTEXT (thunk) = d_decl_context (decl);
 
-  /* Thunks inherit the public access of the function they are targeting.
-     Thunks are connected to the definitions of the functions, so thunks are
-     not produced for external functions.  */
+  /* Thunks inherit the public access of the function they are targeting.  */
   TREE_PUBLIC (thunk) = TREE_PUBLIC (function);
-  DECL_EXTERNAL (thunk) = DECL_EXTERNAL (function);
+  /* The thunk has not been defined -- yet.  */
+  DECL_EXTERNAL (thunk) = 1;
 
   /* Thunks are always addressable.  */
   TREE_ADDRESSABLE (thunk) = 1;
@@ -2013,6 +2006,8 @@ make_thunk (FuncDeclaration *decl, int offset)
   if (decl->resolvedLinkage () != LINK::cpp)
     free (CONST_CAST (char *, ident));
 
+  /* Thunks are connected to the definitions of the functions, so thunks are
+     not produced for external functions.  */
   if (!DECL_EXTERNAL (function))
     finish_thunk (thunk, function);
 
@@ -2121,6 +2116,10 @@ finish_function (tree old_context)
     }
 
   DECL_SAVED_TREE (fndecl) = bind;
+
+  /* Finish any forward referenced thunks for the function.  */
+  for (tree t = DECL_LANG_THUNKS (fndecl); t; t = DECL_CHAIN (t))
+    finish_thunk (t, fndecl);
 
   if (!errorcount && !global.errors)
     {
