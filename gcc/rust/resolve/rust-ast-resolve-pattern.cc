@@ -24,6 +24,78 @@ namespace Rust {
 namespace Resolver {
 
 void
+PatternDeclaration::go (AST::Pattern *pattern, Rib::ItemType type)
+{
+  std::vector<PatternBinding> bindings
+    = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
+  PatternDeclaration resolver (bindings, type);
+  pattern->accept_vis (resolver);
+};
+
+void
+PatternDeclaration::go (AST::Pattern *pattern, Rib::ItemType type,
+			std::vector<PatternBinding> &bindings)
+{
+  PatternDeclaration resolver (bindings, type);
+  pattern->accept_vis (resolver);
+}
+
+void
+PatternDeclaration::visit (AST::IdentifierPattern &pattern)
+{
+  bool has_binding_ctx = bindings.size () > 0;
+  rust_assert (has_binding_ctx);
+
+  auto &binding_idents = bindings.back ().idents;
+
+  bool current_ctx_is_product
+    = bindings.back ().ctx == PatternBoundCtx::Product;
+  bool identifier_is_product_bound
+    = current_ctx_is_product
+      && binding_idents.find (pattern.get_ident ()) != binding_idents.end ();
+
+  if (identifier_is_product_bound)
+    {
+      if (type == Rib::ItemType::Param)
+	{
+	  rust_error_at (pattern.get_locus (), ErrorCode ("E0415"),
+			 "identifier '%s' is bound more than once in the "
+			 "same parameter list",
+			 pattern.get_ident ().c_str ());
+	}
+      else
+	{
+	  rust_error_at (
+	    pattern.get_locus (), ErrorCode ("E0416"),
+	    "identifier '%s' is bound more than once in the same pattern",
+	    pattern.get_ident ().c_str ());
+	}
+
+      return;
+    }
+
+  // if we have a duplicate id this then allows for shadowing correctly
+  // as new refs to this decl will match back here so it is ok to overwrite
+  resolver->get_name_scope ().insert (
+    CanonicalPath::new_seg (pattern.get_node_id (), pattern.get_ident ()),
+    pattern.get_node_id (), pattern.get_locus (), type);
+
+  binding_idents.insert (pattern.get_ident ());
+}
+
+void
+PatternDeclaration::visit (AST::GroupedPattern &pattern)
+{
+  pattern.get_pattern_in_parens ()->accept_vis (*this);
+}
+
+void
+PatternDeclaration::visit (AST::ReferencePattern &pattern)
+{
+  pattern.get_referenced_pattern ()->accept_vis (*this);
+}
+
+void
 PatternDeclaration::visit (AST::PathInExpression &pattern)
 {
   ResolvePath::go (&pattern);
@@ -49,7 +121,7 @@ PatternDeclaration::visit (AST::TupleStructPattern &pattern)
 
 	for (auto &inner_pattern : items_no_range.get_patterns ())
 	  {
-	    PatternDeclaration::go (inner_pattern.get (), type);
+	    inner_pattern.get ()->accept_vis (*this);
 	  }
       }
       break;

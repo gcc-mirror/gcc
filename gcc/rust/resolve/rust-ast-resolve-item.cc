@@ -77,13 +77,16 @@ ResolveTraitItems::visit (AST::TraitItemFunc &func)
   if (function.has_return_type ())
     ResolveType::go (function.get_return_type ().get ());
 
+  std::vector<PatternBinding> bindings
+    = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
+
   // we make a new scope so the names of parameters are resolved and shadowed
   // correctly
   for (auto &param : function.get_function_params ())
     {
       ResolveType::go (param.get_type ().get ());
-      PatternDeclaration::go (param.get_pattern ().get (),
-			      Rib::ItemType::Param);
+      PatternDeclaration::go (param.get_pattern ().get (), Rib::ItemType::Param,
+			      bindings);
     }
 
   if (function.has_where_clause ())
@@ -141,13 +144,16 @@ ResolveTraitItems::visit (AST::TraitItemMethod &func)
   ResolveType::go (&self_type_path);
   PatternDeclaration::go (&self_pattern, Rib::ItemType::Param);
 
+  std::vector<PatternBinding> bindings
+    = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
+
   // we make a new scope so the names of parameters are resolved and shadowed
   // correctly
   for (auto &param : function.get_function_params ())
     {
       ResolveType::go (param.get_type ().get ());
-      PatternDeclaration::go (param.get_pattern ().get (),
-			      Rib::ItemType::Param);
+      PatternDeclaration::go (param.get_pattern ().get (), Rib::ItemType::Param,
+			      bindings);
     }
 
   if (function.has_where_clause ())
@@ -496,13 +502,16 @@ ResolveItem::visit (AST::Function &function)
   if (function.has_return_type ())
     ResolveType::go (function.get_return_type ().get ());
 
+  std::vector<PatternBinding> bindings
+    = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
+
   // we make a new scope so the names of parameters are resolved and shadowed
   // correctly
   for (auto &param : function.get_function_params ())
     {
       ResolveType::go (param.get_type ().get ());
-      PatternDeclaration::go (param.get_pattern ().get (),
-			      Rib::ItemType::Param);
+      PatternDeclaration::go (param.get_pattern ().get (), Rib::ItemType::Param,
+			      bindings);
     }
 
   // resolve the function body
@@ -633,13 +642,16 @@ ResolveItem::visit (AST::Method &method)
   ResolveType::go (&self_type_path);
   PatternDeclaration::go (&self_pattern, Rib::ItemType::Param);
 
+  std::vector<PatternBinding> bindings
+    = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
+
   // we make a new scope so the names of parameters are resolved and shadowed
   // correctly
   for (auto &param : method.get_function_params ())
     {
       ResolveType::go (param.get_type ().get ());
-      PatternDeclaration::go (param.get_pattern ().get (),
-			      Rib::ItemType::Param);
+      PatternDeclaration::go (param.get_pattern ().get (), Rib::ItemType::Param,
+			      bindings);
     }
 
   // resolve any where clause items

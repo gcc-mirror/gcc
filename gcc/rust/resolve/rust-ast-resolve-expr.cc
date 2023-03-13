@@ -207,9 +207,14 @@ ResolveExpr::visit (AST::IfLetExpr &expr)
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
   resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
 
+  // FIXME: this declaration should be removed after refactoring
+  // parse_match_arm_patterns output into an AltPattern
+  std::vector<PatternBinding> bindings
+    = {PatternBinding (PatternBoundCtx::Or, std::set<Identifier> ())};
+
   for (auto &pattern : expr.get_patterns ())
     {
-      PatternDeclaration::go (pattern.get (), Rib::ItemType::Var);
+      PatternDeclaration::go (pattern.get (), Rib::ItemType::Var, bindings);
     }
 
   ResolveExpr::go (expr.get_if_block ().get (), prefix, canonical_prefix);
@@ -517,10 +522,15 @@ ResolveExpr::visit (AST::MatchExpr &expr)
 	ResolveExpr::go (arm.get_guard_expr ().get (), prefix,
 			 canonical_prefix);
 
+      // FIXME: this declaration should be removed after refactoring
+      // parse_match_arms_patterns output into a single AltPattern
+      std::vector<PatternBinding> bindings
+	= {PatternBinding (PatternBoundCtx::Or, std::set<Identifier> ())};
+
       // insert any possible new patterns
       for (auto &pattern : arm.get_patterns ())
 	{
-	  PatternDeclaration::go (pattern.get (), Rib::ItemType::Var);
+	  PatternDeclaration::go (pattern.get (), Rib::ItemType::Var, bindings);
 	}
 
       // resolve the body
@@ -576,9 +586,12 @@ ResolveExpr::visit (AST::ClosureExprInner &expr)
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
   resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
 
+  std::vector<PatternBinding> bindings
+    = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
+
   for (auto &p : expr.get_params ())
     {
-      resolve_closure_param (p);
+      resolve_closure_param (p, bindings);
     }
 
   resolver->push_closure_context (expr.get_node_id ());
@@ -604,9 +617,12 @@ ResolveExpr::visit (AST::ClosureExprInnerTyped &expr)
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
   resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
 
+  std::vector<PatternBinding> bindings
+    = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
+
   for (auto &p : expr.get_params ())
     {
-      resolve_closure_param (p);
+      resolve_closure_param (p, bindings);
     }
 
   ResolveType::go (expr.get_return_type ().get ());
@@ -624,9 +640,11 @@ ResolveExpr::visit (AST::ClosureExprInnerTyped &expr)
 }
 
 void
-ResolveExpr::resolve_closure_param (AST::ClosureParam &param)
+ResolveExpr::resolve_closure_param (AST::ClosureParam &param,
+				    std::vector<PatternBinding> &bindings)
 {
-  PatternDeclaration::go (param.get_pattern ().get (), Rib::ItemType::Param);
+  PatternDeclaration::go (param.get_pattern ().get (), Rib::ItemType::Param,
+			  bindings);
 
   if (param.has_type_given ())
     ResolveType::go (param.get_type ().get ());
