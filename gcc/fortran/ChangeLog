@@ -1,3 +1,27 @@
+2023-03-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backported from master:
+	2023-02-25  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/108923
+	* intrinsic.cc (get_intrinsic_dummy_arg,
+	set_intrinsic_dummy_arg): Rename the former to the latter.
+	Remove the return value, add a reference to the lhs as argument,
+	and do the pointer assignment inside the function.  Don't do
+	it if the pointer is already non-NULL.
+	(sort_actual): Update caller.
+
+2023-03-12  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backported from master:
+	2023-02-24  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/108923
+	* expr.cc (gfc_free_actual_arglist): Free associated_dummy
+	memory.
+	(gfc_copy_actual_arglist): Make a copy of the associated_dummy
+	field if it is set in the original element.
+
 2023-03-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
