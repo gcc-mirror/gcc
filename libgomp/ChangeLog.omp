@@ -1,5 +1,8 @@
 2023-03-24  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* target.c (gomp_unmap_vars_internal): Queue splay-tree keys for
+	removal after main loop.
+
 	PR other/76739
 	* oacc-parallel.c (GOACC_parallel_keyed): Given OpenACC 'async',
 	defer 'free' of non-contiguous array support data structures.
