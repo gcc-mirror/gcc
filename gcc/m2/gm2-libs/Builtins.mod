@@ -59,7 +59,7 @@ END memcpy ;
 
 PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_isfinite)) isfinitef (x: SHORTREAL) : INTEGER ;
 BEGIN
-   RETURN wrapc.isfinitef
+   RETURN wrapc.isfinitef (x)
 END isfinitef ;
 
 PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_isfinite)) isfinite (x: REAL) : INTEGER ;

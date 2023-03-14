@@ -51,14 +51,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "limits.h"
 #endif
 
-#if !defined(TRUE)
-#define TRUE (1 == 1)
-#endif
-
-#if !defined(FALSE)
-#define FALSE (1 == 0)
-#endif
-
 #if !defined(NULL)
 #define NULL (void *)0
 #endif
@@ -322,16 +314,16 @@ EXPORT(GetSecond) (void *m)
 /* wraptime_GetSummerTime - returns true if summer time is in effect.  */
 
 #if defined(HAVE_STRUCT_TIMEZONE)
-extern "C" unsigned int
+extern "C" bool
 EXPORT(GetSummerTime) (struct timezone *tz)
 {
   return tz->tz_dsttime != 0;
 }
 #else
-extern "C" unsigned int
+extern "C" bool
 EXPORT(GetSummerTime) (void *tz)
 {
-  return FALSE;
+  return false;
 }
 #endif
 

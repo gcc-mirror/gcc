@@ -113,7 +113,7 @@ EXPORT(KillOptions) (cgetopt_Options *o)
 
 extern "C" void
 EXPORT(SetOption) (cgetopt_Options *o, unsigned int index, char *name,
- 		   unsigned int has_arg, int *flag, int val)
+ 		   bool has_arg, int *flag, int val)
 {
   if (index > o->high)
     {

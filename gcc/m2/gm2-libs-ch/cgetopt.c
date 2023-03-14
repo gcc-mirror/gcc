@@ -120,7 +120,7 @@ cgetopt_KillOptions (cgetopt_Options *o)
 
 void
 cgetopt_SetOption (cgetopt_Options *o, unsigned int index,
-		  char *name, unsigned int has_arg,
+		  char *name, bool has_arg,
 		  int *flag, int val)
 {
   if (index > o->high)

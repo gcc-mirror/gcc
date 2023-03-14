@@ -42,18 +42,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define M2LIBNAME "m2iso"
 
 
-#if !defined(FALSE)
-#define FALSE (1 == 0)
-#endif
-
-#if !defined(TRUE)
-#define TRUE (1 == 1)
-#endif
-
-/* IsErrnoHard - returns TRUE if the value of errno is associated
+/* IsErrnoHard returns true if the value of errno is associated
    with a hard device error.  */
 
-extern "C" int
+extern "C" bool
 EXPORT(IsErrnoHard) (int e)
 {
 #if defined(HAVE_ERRNO_H) || defined(HAVE_SYS_ERRNO_H)
@@ -61,14 +53,14 @@ EXPORT(IsErrnoHard) (int e)
           || (e == EACCES) || (e == ENOTBLK) || (e == ENODEV) || (e == EINVAL)
           || (e == ENFILE) || (e == EROFS) || (e == EMLINK));
 #else
-  return FALSE;
+  return false;
 #endif
 }
 
-/* IsErrnoSoft - returns TRUE if the value of errno is associated
+/* IsErrnoSoft returns true if the value of errno is associated
    with a soft device error.  */
 
-extern "C" int
+extern "C" bool
 EXPORT(IsErrnoSoft) (int e)
 {
 #if defined(HAVE_ERRNO_H) || defined(HAVE_SYS_ERRNO_H)
@@ -78,18 +70,18 @@ EXPORT(IsErrnoSoft) (int e)
           || (e == ENOTDIR) || (e == EISDIR) || (e == EMFILE) || (e == ENOTTY)
           || (e == ETXTBSY) || (e == EFBIG) || (e == ENOSPC) || (e == EPIPE));
 #else
-  return FALSE;
+  return false;
 #endif
 }
 
-extern "C" int
+extern "C" bool
 EXPORT(UnAvailable) (int e)
 {
 #if defined(HAVE_ERRNO_H) || defined(HAVE_SYS_ERRNO_H)
   return ((e == ENOENT) || (e == ESRCH) || (e == ENXIO) || (e == ECHILD)
           || (e == ENOTBLK) || (e == ENODEV) || (e == ENOTDIR));
 #else
-  return FALSE;
+  return false;
 #endif
 }
 

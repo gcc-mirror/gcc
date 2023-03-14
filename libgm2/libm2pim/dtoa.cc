@@ -198,20 +198,20 @@ EXPORT(calcdecimal) (char *p, int str_size, int ndigits)
   return x;
 }
 
-extern "C" int
+extern "C" bool
 EXPORT(calcsign) (char *p, int str_size)
 {
   if (p[0] == '-')
     {
       memmove (p, p + 1, str_size - 1);
-      return TRUE;
+      return true;
     }
   else
-    return FALSE;
+    return false;
 }
 
 extern "C" char *
-EXPORT(dtoa) (double d, int mode, int ndigits, int *decpt, int *sign)
+EXPORT(dtoa) (double d, int mode, int ndigits, int *decpt, bool *sign)
 {
   char format[50];
   char *p;

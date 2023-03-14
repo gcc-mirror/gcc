@@ -139,7 +139,7 @@ EXPORT(strtold) (const char *s, int *error)
 }
 
 extern "C" char *
-EXPORT(ldtoa) (long double d, int mode, int ndigits, int *decpt, int *sign)
+EXPORT(ldtoa) (long double d, int mode, int ndigits, int *decpt, bool *sign)
 {
   char format[50];
   char *p;

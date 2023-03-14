@@ -25,6 +25,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#include <stdbool.h>
 
 #define EXPORT(FUNC) m2iso ## _wrapsock_ ## FUNC
 #define IMPORT(MODULE,FUNC) m2iso ## _ ## MODULE ## _ ## FUNC
@@ -86,13 +87,6 @@ extern void m2iso_M2RTS_RegisterModule (const char *modulename, const char *libn
 
 #if defined(HAVE_STDLIB_H)
 #include "stdlib.h"
-#endif
-
-#if !defined(TRUE)
-#define TRUE (1 == 1)
-#endif
-#if !defined(FALSE)
-#define FALSE (1 == 0)
 #endif
 
 #include "ChanConsts.h"
@@ -213,32 +207,32 @@ EXPORT(getClientIP) (clientInfo *c)
   return c->sa.sin_addr.s_addr;
 }
 
-/* getPushBackChar - returns TRUE if a pushed back character is
+/* getPushBackChar returns true if a pushed back character is
    available.  */
 
-unsigned int
+bool
 EXPORT(getPushBackChar) (clientInfo *c, char *ch)
 {
   if (c->hasChar > 0)
     {
       c->hasChar--;
       *ch = c->pbChar[c->hasChar];
-      return TRUE;
+      return true;
     }
-  return FALSE;
+  return false;
 }
 
-/* setPushBackChar - returns TRUE if it is able to push back a
+/* setPushBackChar returns true if it is able to push back a
    character.  */
 
-unsigned int
+bool
 EXPORT(setPushBackChar) (clientInfo *c, char ch)
 {
   if (c->hasChar == MAXPBBUF)
-    return FALSE;
+    return false;
   c->pbChar[c->hasChar] = ch;
   c->hasChar++;
-  return TRUE;
+  return true;
 }
 
 /* getSizeOfClientInfo - returns the sizeof (opaque data type).  */
