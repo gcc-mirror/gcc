@@ -1518,11 +1518,11 @@
    (set_attr "prefix" "*,maybe_vex,orig")
    (set_attr "mode" "DI,V4SF,V4SF")])
 
-(define_insn "*mmx_movss"
-  [(set (match_operand:V2SF 0 "register_operand"   "=x,v")
-	(vec_merge:V2SF
-	  (match_operand:V2SF 2 "register_operand" " x,v")
-	  (match_operand:V2SF 1 "register_operand" " 0,v")
+(define_insn "*mmx_movss_<mode>"
+  [(set (match_operand:V2FI 0 "register_operand"   "=x,v")
+	(vec_merge:V2FI
+	  (match_operand:V2FI 2 "register_operand" " x,v")
+	  (match_operand:V2FI 1 "register_operand" " 0,v")
 	  (const_int 1)))]
   "TARGET_MMX_WITH_SSE"
   "@

@@ -18949,11 +18949,9 @@ expand_vec_perm_movs (struct expand_vec_perm_d *d)
   if (d->one_operand_p)
     return false;
 
-  if (!(TARGET_SSE && vmode == V4SFmode)
-      && !(TARGET_SSE && vmode == V4SImode)
-      && !(TARGET_MMX_WITH_SSE && vmode == V2SFmode)
-      && !(TARGET_SSE2 && vmode == V2DFmode)
-      && !(TARGET_SSE2 && vmode == V2DImode))
+  if (!(TARGET_SSE && (vmode == V4SFmode || vmode == V4SImode))
+      && !(TARGET_MMX_WITH_SSE && (vmode == V2SFmode || vmode == V2SImode))
+      && !(TARGET_SSE2 && (vmode == V2DFmode || vmode == V2DImode)))
     return false;
 
   /* Only the first element is changed.  */
