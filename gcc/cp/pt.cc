@@ -471,6 +471,8 @@ push_inline_template_parms_recursive (tree parmlist, int levels)
   current_template_parms
     = tree_cons (size_int (current_template_depth + 1),
 		 parms, current_template_parms);
+  TEMPLATE_PARMS_CONSTRAINTS (current_template_parms)
+    = TEMPLATE_PARMS_CONSTRAINTS (parmlist);
   TEMPLATE_PARMS_FOR_INLINE (current_template_parms) = 1;
 
   begin_scope (TREE_VEC_LENGTH (parms) ? sk_template_parms : sk_template_spec,
@@ -6133,6 +6135,30 @@ push_template_decl (tree decl, bool is_friend)
 	  /* Avoid crash in import_export_decl.  */
 	  DECL_INTERFACE_KNOWN (decl) = 1;
 	  return error_mark_node;
+	}
+
+      /* Check that the constraints for each enclosing template scope are
+	 consistent with the original declarations.  */
+      if (flag_concepts)
+	{
+	  tree decl_parms = DECL_TEMPLATE_PARMS (tmpl);
+	  tree scope_parms = current_template_parms;
+	  if (PRIMARY_TEMPLATE_P (tmpl))
+	    {
+	      decl_parms = TREE_CHAIN (decl_parms);
+	      scope_parms = TREE_CHAIN (scope_parms);
+	    }
+	  while (decl_parms)
+	    {
+	      if (!template_requirements_equivalent_p (decl_parms, scope_parms))
+		{
+		  error ("redeclaration of %qD with different constraints",
+			 TPARMS_PRIMARY_TEMPLATE (TREE_VALUE (decl_parms)));
+		  break;
+		}
+	      decl_parms = TREE_CHAIN (decl_parms);
+	      scope_parms = TREE_CHAIN (scope_parms);
+	    }
 	}
     }
 
