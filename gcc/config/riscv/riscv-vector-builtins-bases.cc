@@ -627,12 +627,11 @@ public:
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_vx)
-      return e.use_ternop_insn (true,
-				code_for_pred_mul_scalar (PLUS,
-							  e.vector_mode ()));
+      return e.use_ternop_insn (true, code_for_pred_mul_plus_scalar (
+					e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_ternop_insn (true,
-				code_for_pred_mul (PLUS, e.vector_mode ()));
+				code_for_pred_mul_plus (e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -645,12 +644,11 @@ public:
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_vx)
-      return e.use_ternop_insn (true,
-				code_for_pred_mul_scalar (MINUS,
-							  e.vector_mode ()));
+      return e.use_ternop_insn (true, code_for_pred_minus_mul_scalar (
+					e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_ternop_insn (true,
-				code_for_pred_mul (MINUS, e.vector_mode ()));
+				code_for_pred_minus_mul (e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -663,12 +661,11 @@ public:
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_vx)
-      return e.use_ternop_insn (false,
-				code_for_pred_mul_scalar (PLUS,
-							  e.vector_mode ()));
+      return e.use_ternop_insn (false, code_for_pred_mul_plus_scalar (
+					 e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_ternop_insn (false,
-				code_for_pred_mul (PLUS, e.vector_mode ()));
+				code_for_pred_mul_plus (e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -681,16 +678,14 @@ public:
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_vx)
-      return e.use_ternop_insn (false,
-				code_for_pred_mul_scalar (MINUS,
-							  e.vector_mode ()));
+      return e.use_ternop_insn (false, code_for_pred_minus_mul_scalar (
+					 e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_ternop_insn (false,
-				code_for_pred_mul (MINUS, e.vector_mode ()));
+				code_for_pred_minus_mul (e.vector_mode ()));
     gcc_unreachable ();
   }
 };
-
 
 /* Implements vwmacc<su><su>.  */
 class vwmacc : public function_base
@@ -973,12 +968,11 @@ public:
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_vf)
-      return e.use_ternop_insn (true,
-				code_for_pred_mul_scalar (MINUS,
-							  e.vector_mode ()));
+      return e.use_ternop_insn (
+	true, code_for_pred_mul_neg_scalar (PLUS, e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_ternop_insn (true,
-				code_for_pred_mul (MINUS, e.vector_mode ()));
+				code_for_pred_mul_neg (PLUS, e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -1009,12 +1003,11 @@ public:
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_vf)
-      return e.use_ternop_insn (false,
-				code_for_pred_mul_scalar (MINUS,
-							  e.vector_mode ()));
+      return e.use_ternop_insn (
+	false, code_for_pred_mul_neg_scalar (PLUS, e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_ternop_insn (false,
-				code_for_pred_mul (MINUS, e.vector_mode ()));
+				code_for_pred_mul_neg (PLUS, e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -1028,10 +1021,10 @@ public:
   {
     if (e.op_info->op == OP_TYPE_vf)
       return e.use_ternop_insn (
-	true, code_for_pred_neg_mul_scalar (PLUS, e.vector_mode ()));
+	true, code_for_pred_mul_neg_scalar (MINUS, e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_ternop_insn (true,
-				code_for_pred_neg_mul (PLUS, e.vector_mode ()));
+				code_for_pred_mul_neg (MINUS, e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -1044,11 +1037,12 @@ public:
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_vf)
-      return e.use_ternop_insn (
-	true, code_for_pred_neg_mul_scalar (MINUS, e.vector_mode ()));
+      return e.use_ternop_insn (true,
+				code_for_pred_mul_scalar (MINUS,
+							  e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
-      return e.use_ternop_insn (true, code_for_pred_neg_mul (MINUS,
-							     e.vector_mode ()));
+      return e.use_ternop_insn (true,
+				code_for_pred_mul (MINUS, e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -1062,10 +1056,10 @@ public:
   {
     if (e.op_info->op == OP_TYPE_vf)
       return e.use_ternop_insn (
-	false, code_for_pred_neg_mul_scalar (PLUS, e.vector_mode ()));
+	false, code_for_pred_mul_neg_scalar (MINUS, e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_ternop_insn (false,
-				code_for_pred_neg_mul (PLUS, e.vector_mode ()));
+				code_for_pred_mul_neg (MINUS, e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -1078,12 +1072,12 @@ public:
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_vf)
-      return e.use_ternop_insn (
-	false, code_for_pred_neg_mul_scalar (MINUS, e.vector_mode ()));
+      return e.use_ternop_insn (false,
+				code_for_pred_mul_scalar (MINUS,
+							  e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_ternop_insn (false,
-				code_for_pred_neg_mul (MINUS,
-						       e.vector_mode ()));
+				code_for_pred_mul (MINUS, e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -1114,10 +1108,10 @@ public:
   {
     if (e.op_info->op == OP_TYPE_vf)
       return e.use_widen_ternop_insn (
-	code_for_pred_widen_neg_mul_scalar (PLUS, e.vector_mode ()));
+	code_for_pred_widen_mul_neg_scalar (MINUS, e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_widen_ternop_insn (
-	code_for_pred_widen_neg_mul (PLUS, e.vector_mode ()));
+	code_for_pred_widen_mul_neg (MINUS, e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -1131,10 +1125,10 @@ public:
   {
     if (e.op_info->op == OP_TYPE_vf)
       return e.use_widen_ternop_insn (
-	code_for_pred_widen_neg_mul_scalar (MINUS, e.vector_mode ()));
+	code_for_pred_widen_mul_scalar (MINUS, e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_widen_ternop_insn (
-	code_for_pred_widen_neg_mul (MINUS, e.vector_mode ()));
+	code_for_pred_widen_mul (MINUS, e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -1148,10 +1142,10 @@ public:
   {
     if (e.op_info->op == OP_TYPE_vf)
       return e.use_widen_ternop_insn (
-	code_for_pred_widen_mul_scalar (MINUS, e.vector_mode ()));
+	code_for_pred_widen_mul_neg_scalar (PLUS, e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_widen_ternop_insn (
-	code_for_pred_widen_mul (MINUS, e.vector_mode ()));
+	code_for_pred_widen_mul_neg (PLUS, e.vector_mode ()));
     gcc_unreachable ();
   }
 };

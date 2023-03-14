@@ -839,10 +839,10 @@
 (define_code_iterator any_widen_binop [plus minus mult])
 (define_code_iterator plus_minus [plus minus])
 
-(define_code_attr macc_nmsac [(plus "macc") (minus "nmsac")])
-(define_code_attr madd_nmsub [(plus "madd") (minus "nmsub")])
-(define_code_attr nmacc_msac [(plus "nmacc") (minus "msac")])
-(define_code_attr nmadd_msub [(plus "nmadd") (minus "msub")])
+(define_code_attr madd_msub [(plus "madd") (minus "msub")])
+(define_code_attr macc_msac [(plus "macc") (minus "msac")])
+(define_code_attr nmsub_nmadd [(plus "nmsub") (minus "nmadd")])
+(define_code_attr nmsac_nmacc [(plus "nmsac") (minus "nmacc")])
 
 (define_code_iterator and_ior [and ior])
 
