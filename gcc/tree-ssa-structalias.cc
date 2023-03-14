@@ -1767,11 +1767,8 @@ do_ds_constraint (constraint_t c, bitmap delta, bitmap *expanded_delta)
   if (bitmap_bit_p (delta, anything_id))
     {
       unsigned t = find (storedanything_id);
-      if (add_graph_edge (graph, t, rhs))
-	{
-	  if (bitmap_ior_into (get_varinfo (t)->solution, sol))
-	    bitmap_set_bit (changed, t);
-	}
+      if (solve_add_graph_edge (graph, t, rhs))
+	bitmap_set_bit (changed, t);
       return;
     }
 
@@ -1825,8 +1822,8 @@ do_ds_constraint (constraint_t c, bitmap delta, bitmap *expanded_delta)
 		break;
 
 	      t = find (v->id);
-	      if (add_graph_edge (graph, t, rhs)
-		  && bitmap_ior_into (get_varinfo (t)->solution, sol))
+
+	      if (solve_add_graph_edge  (graph, t, rhs))
 		bitmap_set_bit (changed, t);
 	    }
 
