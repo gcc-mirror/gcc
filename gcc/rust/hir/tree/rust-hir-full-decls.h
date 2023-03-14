@@ -45,17 +45,17 @@ class PathExpr;
 
 // rust-path.h
 class PathIdentSegment;
-struct GenericArgsBinding;
+class GenericArgsBinding;
 class GenericArgs;
 class PathExprSegment;
 class PathPattern;
 class PathInExpression;
 class TypePathSegment;
 class TypePathSegmentGeneric;
-struct TypePathFunction;
+class TypePathFunction;
 class TypePathSegmentFunction;
 class TypePath;
-struct QualifiedPathType;
+class QualifiedPathType;
 class QualifiedPathInExpression;
 class QualifiedPathInType;
 
