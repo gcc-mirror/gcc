@@ -24148,6 +24148,8 @@ unify_pack_expansion (tree tparms, tree targs, tree packed_parms,
 	     arguments if it is not otherwise deduced.  */
 	  if (cxx_dialect >= cxx20
 	      && TREE_VEC_LENGTH (new_args) < TREE_VEC_LENGTH (old_args)
+	      /* FIXME This isn't set properly for partial instantiations.  */
+	      && TPARMS_PRIMARY_TEMPLATE (tparms)
 	      && builtin_guide_p (TPARMS_PRIMARY_TEMPLATE (tparms)))
 	    TREE_VEC_LENGTH (old_args) = TREE_VEC_LENGTH (new_args);
 	  if (!comp_template_args (old_args, new_args,
