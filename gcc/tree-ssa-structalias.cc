@@ -1632,8 +1632,9 @@ topo_visit (constraint_graph_t graph, struct topo_info *ti,
   if (graph->succs[n])
     EXECUTE_IF_SET_IN_BITMAP (graph->succs[n], 0, j, bi)
       {
-	if (!bitmap_bit_p (ti->visited, j))
-	  topo_visit (graph, ti, j);
+	unsigned k = find (j);
+	if (!bitmap_bit_p (ti->visited, k))
+	  topo_visit (graph, ti, k);
       }
 
   ti->topo_order.safe_push (n);
