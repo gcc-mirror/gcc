@@ -2902,16 +2902,14 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
 	dst = gen_reg_rtx (outer);
 
       /* Make life a bit easier for combine: if the first element of the
-	 vector is the word (or larger) low part of the destination mode,
-	 use a paradoxical subreg to initialize the destination.  */
+	 vector is the low part of the destination mode, use a paradoxical
+	 subreg to initialize the destination.  */
       if (start < finish)
 	{
 	  inner = GET_MODE (tmps[start]);
 	  bytepos = subreg_lowpart_offset (inner, outer);
-	  if (known_ge (GET_MODE_BITSIZE (inner), BITS_PER_WORD)
-	      && known_eq (rtx_to_poly_int64 (XEXP (XVECEXP (src, 0,
-							     start), 1)),
-			   bytepos))
+	  if (known_eq (rtx_to_poly_int64 (XEXP (XVECEXP (src, 0, start), 1)),
+			bytepos))
 	    {
 	      temp = simplify_gen_subreg (outer, tmps[start], inner, 0);
 	      if (temp)
@@ -2929,10 +2927,9 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED,
 	{
 	  inner = GET_MODE (tmps[finish - 1]);
 	  bytepos = subreg_lowpart_offset (inner, outer);
-	  if (known_ge (GET_MODE_BITSIZE (inner), BITS_PER_WORD)
-	      && known_eq (rtx_to_poly_int64 (XEXP (XVECEXP (src, 0,
-							     finish - 1), 1)),
-			   bytepos))
+	  if (known_eq (rtx_to_poly_int64 (XEXP (XVECEXP (src, 0,
+							  finish - 1), 1)),
+			bytepos))
 	    {
 	      temp = simplify_gen_subreg (outer, tmps[finish - 1], inner, 0);
 	      if (temp)
