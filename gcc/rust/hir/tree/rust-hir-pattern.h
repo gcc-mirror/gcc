@@ -1314,7 +1314,6 @@ class AltPattern : public Pattern
   Analysis::NodeMapping mappings;
 
 public:
-public:
   std::string as_string () const override;
 
   AltPattern (Analysis::NodeMapping mappings,
@@ -1348,6 +1347,12 @@ public:
   // move constructors
   AltPattern (AltPattern &&other) = default;
   AltPattern &operator= (AltPattern &&other) = default;
+
+  std::vector<std::unique_ptr<Pattern>> &get_alts () { return alts; }
+  const std::vector<std::unique_ptr<Pattern>> &get_alts () const
+  {
+    return alts;
+  }
 
   Location get_locus () const override { return locus; }
 
