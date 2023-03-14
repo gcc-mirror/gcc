@@ -1282,6 +1282,12 @@ public:
   SlicePattern (SlicePattern &&other) = default;
   SlicePattern &operator= (SlicePattern &&other) = default;
 
+  std::vector<std::unique_ptr<Pattern>> &get_items () { return items; }
+  const std::vector<std::unique_ptr<Pattern>> &get_items () const
+  {
+    return items;
+  }
+
   Location get_locus () const override { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
