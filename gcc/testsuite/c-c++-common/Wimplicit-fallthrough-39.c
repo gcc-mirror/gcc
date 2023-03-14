@@ -37,8 +37,8 @@ fn2 (int n)
   switch (n)
     {
     case 0:
-      if (1)	  /* { dg-warning "statement may fall through" "" { target c++ } } */
-       	n++;	  /* { dg-warning "statement may fall through" "" { target c } } */
+      if (1)
+       	n++;	  /* { dg-warning "statement may fall through" } */
     case 1:	  /* { dg-message "here" } */
       return -1;
     }

@@ -190,6 +190,12 @@ genericize_if_stmt (tree *stmt_p)
     }
   else if (IF_STMT_CONSTEXPR_P (stmt))
     stmt = integer_nonzerop (cond) ? then_ : else_;
+  /* ??? This optimization doesn't seem to belong here, but removing it
+     causes -Wreturn-type regressions (e.g. 107310).  */
+  else if (integer_nonzerop (cond) && !TREE_SIDE_EFFECTS (else_))
+    stmt = then_;
+  else if (integer_zerop (cond) && !TREE_SIDE_EFFECTS (then_))
+    stmt = else_;
   else
     stmt = build3 (COND_EXPR, void_type_node, cond, then_, else_);
   protected_set_expr_location_if_unset (stmt, locus);
