@@ -3317,9 +3317,9 @@ get_bitfield_rep (gassign *stmt, bool write, tree *bitpos,
   tree field_decl = TREE_OPERAND (comp_ref, 1);
   tree rep_decl = DECL_BIT_FIELD_REPRESENTATIVE (field_decl);
 
-  /* Bail out if the representative is BLKmode as we will not be able to
-     vectorize this.  */
-  if (TYPE_MODE (TREE_TYPE (rep_decl)) == E_BLKmode)
+  /* Bail out if the representative is not a suitable type for a scalar
+     register variable.  */
+  if (!is_gimple_reg_type (TREE_TYPE (rep_decl)))
     return NULL_TREE;
 
   /* Bail out if the DECL_SIZE of the field_decl isn't the same as the BF's
