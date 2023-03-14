@@ -1640,6 +1640,29 @@ topo_visit (constraint_graph_t graph, struct topo_info *ti,
   ti->topo_order.safe_push (n);
 }
 
+/* Add a copy edge FROM -> TO, optimizing special cases.  Returns TRUE
+   if the solution of TO changed.  */
+
+static bool
+solve_add_graph_edge (constraint_graph_t graph, unsigned int to,
+		      unsigned int from)
+{
+  /* Adding edges from the special vars is pointless.
+     They don't have sets that can change.  */
+  if (get_varinfo (from)->is_special_var)
+    return bitmap_ior_into (get_varinfo (to)->solution,
+			    get_varinfo (from)->solution);
+  /* Merging the solution from ESCAPED needlessly increases
+     the set.  Use ESCAPED as representative instead.  */
+  else if (from == find (escaped_id))
+    return bitmap_set_bit (get_varinfo (to)->solution, escaped_id);
+  else if (get_varinfo (from)->may_have_pointers
+	   && add_graph_edge (graph, to, from))
+    return bitmap_ior_into (get_varinfo (to)->solution,
+			    get_varinfo (from)->solution);
+  return false;
+}
+
 /* Process a constraint C that represents x = *(y + off), using DELTA as the
    starting solution for y.  */
 
@@ -1700,17 +1723,7 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
 	{
 	  t = find (v->id);
 
-	  /* Adding edges from the special vars is pointless.
-	     They don't have sets that can change.  */
-	  if (get_varinfo (t)->is_special_var)
-	    flag |= bitmap_ior_into (sol, get_varinfo (t)->solution);
-	  /* Merging the solution from ESCAPED needlessly increases
-	     the set.  Use ESCAPED as representative instead.  */
-	  else if (t == find (escaped_id))
-	    flag |= bitmap_set_bit (sol, escaped_id);
-	  else if (v->may_have_pointers
-		   && add_graph_edge (graph, lhs, t))
-	    flag |= bitmap_ior_into (sol, get_varinfo (t)->solution);
+	  flag |= solve_add_graph_edge (graph, lhs, t);
 
 	  if (v->is_full_var
 	      || v->next == 0)
