@@ -8466,6 +8466,107 @@ output_probe_stack_range (rtx reg, rtx end)
   return "";
 }
 
+/* Update the maximum stack slot alignment from memory alignment in
+   PAT.  */
+
+static void
+ix86_update_stack_alignment (rtx, const_rtx pat, void *data)
+{
+  /* This insn may reference stack slot.  Update the maximum stack slot
+     alignment.  */
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, pat, ALL)
+    if (MEM_P (*iter))
+      {
+	unsigned int alignment = MEM_ALIGN (*iter);
+	unsigned int *stack_alignment
+	  = (unsigned int *) data;
+	if (alignment > *stack_alignment)
+	  *stack_alignment = alignment;
+	break;
+      }
+}
+
+/* Helper function for ix86_find_all_reg_use.  */
+
+static void
+ix86_find_all_reg_use_1 (rtx set, HARD_REG_SET &stack_slot_access,
+			 auto_bitmap &worklist)
+{
+  rtx dest = SET_DEST (set);
+  if (!REG_P (dest))
+    return;
+
+  rtx src = SET_SRC (set);
+  if (MEM_P (src) || CONST_SCALAR_INT_P (src))
+    return;
+
+  if (TEST_HARD_REG_BIT (stack_slot_access, REGNO (dest)))
+    return;
+
+  /* Add this register to stack_slot_access.  */
+  add_to_hard_reg_set (&stack_slot_access, Pmode, REGNO (dest));
+  bitmap_set_bit (worklist, REGNO (dest));
+}
+
+/* Find all registers defined with REG.  */
+
+static void
+ix86_find_all_reg_use (HARD_REG_SET &stack_slot_access,
+		       unsigned int reg, auto_bitmap &worklist)
+{
+  for (df_ref ref = DF_REG_USE_CHAIN (reg);
+       ref != NULL;
+       ref = DF_REF_NEXT_REG (ref))
+    {
+      if (DF_REF_IS_ARTIFICIAL (ref))
+	continue;
+
+      rtx_insn *insn = DF_REF_INSN (ref);
+
+      if (!NONJUMP_INSN_P (insn))
+	continue;
+
+      rtx set = single_set (insn);
+      if (set)
+	ix86_find_all_reg_use_1 (set, stack_slot_access, worklist);
+
+      rtx pat = PATTERN (insn);
+      if (GET_CODE (pat) != PARALLEL)
+	continue;
+
+      for (int i = 0; i < XVECLEN (pat, 0); i++)
+	{
+	  rtx exp = XVECEXP (pat, 0, i);
+	  switch (GET_CODE (exp))
+	    {
+	    case ASM_OPERANDS:
+	    case CLOBBER:
+	    case PREFETCH:
+	    case USE:
+	      break;
+	    case UNSPEC:
+	    case UNSPEC_VOLATILE:
+	      for (int j = XVECLEN (exp, 0) - 1; j >= 0; j--)
+		{
+		  rtx x = XVECEXP (exp, 0, j);
+		  if (GET_CODE (x) == SET)
+		    ix86_find_all_reg_use_1 (x, stack_slot_access,
+					     worklist);
+		}
+	      break;
+	    case SET:
+	      ix86_find_all_reg_use_1 (exp, stack_slot_access,
+				       worklist);
+	      break;
+	    default:
+	      gcc_unreachable ();
+	      break;
+	    }
+	}
+    }
+}
+
 /* Set stack_frame_required to false if stack frame isn't required.
    Update STACK_ALIGNMENT to the largest alignment, in bits, of stack
    slot used if stack frame is required and CHECK_STACK_SLOT is true.  */
@@ -8484,10 +8585,6 @@ ix86_find_max_used_stack_alignment (unsigned int &stack_alignment,
   add_to_hard_reg_set (&set_up_by_prologue, Pmode,
 		       HARD_FRAME_POINTER_REGNUM);
 
-  /* The preferred stack alignment is the minimum stack alignment.  */
-  if (stack_alignment > crtl->preferred_stack_boundary)
-    stack_alignment = crtl->preferred_stack_boundary;
-
   bool require_stack_frame = false;
 
   FOR_EACH_BB_FN (bb, cfun)
@@ -8499,27 +8596,65 @@ ix86_find_max_used_stack_alignment (unsigned int &stack_alignment,
 				       set_up_by_prologue))
 	  {
 	    require_stack_frame = true;
-
-	    if (check_stack_slot)
-	      {
-		/* Find the maximum stack alignment.  */
-		subrtx_iterator::array_type array;
-		FOR_EACH_SUBRTX (iter, array, PATTERN (insn), ALL)
-		  if (MEM_P (*iter)
-		      && (reg_mentioned_p (stack_pointer_rtx,
-					   *iter)
-			  || reg_mentioned_p (frame_pointer_rtx,
-					      *iter)))
-		    {
-		      unsigned int alignment = MEM_ALIGN (*iter);
-		      if (alignment > stack_alignment)
-			stack_alignment = alignment;
-		    }
-	      }
+	    break;
 	  }
     }
 
   cfun->machine->stack_frame_required = require_stack_frame;
+
+  /* Stop if we don't need to check stack slot.  */
+  if (!check_stack_slot)
+    return;
+
+  /* The preferred stack alignment is the minimum stack alignment.  */
+  if (stack_alignment > crtl->preferred_stack_boundary)
+    stack_alignment = crtl->preferred_stack_boundary;
+
+  HARD_REG_SET stack_slot_access;
+  CLEAR_HARD_REG_SET (stack_slot_access);
+
+  /* Stack slot can be accessed by stack pointer, frame pointer or
+     registers defined by stack pointer or frame pointer.  */
+  auto_bitmap worklist;
+
+  add_to_hard_reg_set (&stack_slot_access, Pmode,
+		       STACK_POINTER_REGNUM);
+  bitmap_set_bit (worklist, STACK_POINTER_REGNUM);
+
+  if (frame_pointer_needed)
+    {
+      add_to_hard_reg_set (&stack_slot_access, Pmode,
+			   HARD_FRAME_POINTER_REGNUM);
+      bitmap_set_bit (worklist, HARD_FRAME_POINTER_REGNUM);
+    }
+
+  unsigned int reg;
+
+  do
+    {
+      reg = bitmap_clear_first_set_bit (worklist);
+      ix86_find_all_reg_use (stack_slot_access, reg, worklist);
+    }
+  while (!bitmap_empty_p (worklist));
+
+  hard_reg_set_iterator hrsi;
+
+  EXECUTE_IF_SET_IN_HARD_REG_SET (stack_slot_access, 0, reg, hrsi)
+    for (df_ref ref = DF_REG_USE_CHAIN (reg);
+	 ref != NULL;
+	 ref = DF_REF_NEXT_REG (ref))
+      {
+	if (DF_REF_IS_ARTIFICIAL (ref))
+	  continue;
+
+	rtx_insn *insn = DF_REF_INSN (ref);
+
+	if (!NONJUMP_INSN_P (insn))
+	  continue;
+
+	note_stores (insn, ix86_update_stack_alignment,
+		     &stack_alignment);
+      }
 }
 
 /* Finalize stack_realign_needed and frame_pointer_needed flags, which
