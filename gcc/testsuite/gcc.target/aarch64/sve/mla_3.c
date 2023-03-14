@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target vect_int } */
-/* { dg-options "-O2 -msve-vector-bits=256 -march=armv8.2-a+sve -fdump-tree-optimized" { target aarch64*-*-* } } */
+/* { dg-options "-O2 -msve-vector-bits=256 -march=armv8.2-a+sve -fdump-tree-optimized" } */
 
 unsigned int
 f1 (unsigned int a, unsigned int b, unsigned int c) {
@@ -37,4 +36,4 @@ g3 (vec a, vec b, vec c)
   return a * b + c;
 }
 
-/* { dg-final { scan-tree-dump-times {\.FMA } 1 "optimized" { target aarch64*-*-* } } } */
+/* { dg-final { scan-tree-dump-times {\.FMA } 1 "optimized" } } */
