@@ -8473,6 +8473,123 @@ output_probe_stack_range (rtx reg, rtx end)
   return "";
 }
 
+/* Data passed to ix86_update_stack_alignment.  */
+struct stack_access_data
+{
+  /* The stack access register.  */
+  const_rtx reg;
+  /* Pointer to stack alignment.  */
+  unsigned int *stack_alignment;
+};
+
+/* Update the maximum stack slot alignment from memory alignment in PAT.  */
+
+static void
+ix86_update_stack_alignment (rtx, const_rtx pat, void *data)
+{
+  /* This insn may reference stack slot.  Update the maximum stack slot
+     alignment if the memory is referenced by the stack access register. */
+  stack_access_data *p = (stack_access_data *) data;
+
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, pat, ALL)
+    {
+      auto op = *iter;
+      if (MEM_P (op) && reg_mentioned_p (p->reg, op))
+	{
+	  unsigned int alignment = MEM_ALIGN (op);
+
+	  if (alignment > *p->stack_alignment)
+	    *p->stack_alignment = alignment;
+	  break;
+	}
+    }
+}
+
+/* Helper function for ix86_find_all_reg_uses.  */
+
+static void
+ix86_find_all_reg_uses_1 (HARD_REG_SET &regset,
+			  rtx set, unsigned int regno,
+			  auto_bitmap &worklist)
+{
+  rtx dest = SET_DEST (set);
+
+  if (!REG_P (dest))
+    return;
+
+  /* Reject non-Pmode modes.  */
+  if (GET_MODE (dest) != Pmode)
+    return;
+
+  unsigned int dst_regno = REGNO (dest);
+
+  if (TEST_HARD_REG_BIT (regset, dst_regno))
+    return;
+
+  const_rtx src = SET_SRC (set);
+
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, src, ALL)
+    {
+      auto op = *iter;
+
+      if (MEM_P (op))
+	iter.skip_subrtxes ();
+
+      if (REG_P (op) && REGNO (op) == regno)
+	{
+	  /* Add this register to register set.  */
+	  add_to_hard_reg_set (&regset, Pmode, dst_regno);
+	  bitmap_set_bit (worklist, dst_regno);
+	  break;
+	}
+    }
+}
+
+/* Find all registers defined with register REGNO.  */
+
+static void
+ix86_find_all_reg_uses (HARD_REG_SET &regset,
+			unsigned int regno, auto_bitmap &worklist)
+{
+  for (df_ref ref = DF_REG_USE_CHAIN (regno);
+       ref != NULL;
+       ref = DF_REF_NEXT_REG (ref))
+    {
+      if (DF_REF_IS_ARTIFICIAL (ref))
+	continue;
+
+      rtx_insn *insn = DF_REF_INSN (ref);
+
+      if (!NONJUMP_INSN_P (insn))
+	continue;
+
+      unsigned int ref_regno = DF_REF_REGNO (ref);
+
+      rtx set = single_set (insn);
+      if (set)
+	{
+	  ix86_find_all_reg_uses_1 (regset, set,
+				    ref_regno, worklist);
+	  continue;
+	}
+
+      rtx pat = PATTERN (insn);
+      if (GET_CODE (pat) != PARALLEL)
+	continue;
+
+      for (int i = 0; i < XVECLEN (pat, 0); i++)
+	{
+	  rtx exp = XVECEXP (pat, 0, i);
+
+	  if (GET_CODE (exp) == SET)
+	    ix86_find_all_reg_uses_1 (regset, exp,
+				      ref_regno, worklist);
+	}
+    }
+}
+
 /* Set stack_frame_required to false if stack frame isn't required.
    Update STACK_ALIGNMENT to the largest alignment, in bits, of stack
    slot used if stack frame is required and CHECK_STACK_SLOT is true.  */
@@ -8491,10 +8608,6 @@ ix86_find_max_used_stack_alignment (unsigned int &stack_alignment,
   add_to_hard_reg_set (&set_up_by_prologue, Pmode,
 		       HARD_FRAME_POINTER_REGNUM);
 
-  /* The preferred stack alignment is the minimum stack alignment.  */
-  if (stack_alignment > crtl->preferred_stack_boundary)
-    stack_alignment = crtl->preferred_stack_boundary;
-
   bool require_stack_frame = false;
 
   FOR_EACH_BB_FN (bb, cfun)
@@ -8506,27 +8619,67 @@ ix86_find_max_used_stack_alignment (unsigned int &stack_alignment,
 				       set_up_by_prologue))
 	  {
 	    require_stack_frame = true;
-
-	    if (check_stack_slot)
-	      {
-		/* Find the maximum stack alignment.  */
-		subrtx_iterator::array_type array;
-		FOR_EACH_SUBRTX (iter, array, PATTERN (insn), ALL)
-		  if (MEM_P (*iter)
-		      && (reg_mentioned_p (stack_pointer_rtx,
-					   *iter)
-			  || reg_mentioned_p (frame_pointer_rtx,
-					      *iter)))
-		    {
-		      unsigned int alignment = MEM_ALIGN (*iter);
-		      if (alignment > stack_alignment)
-			stack_alignment = alignment;
-		    }
-	      }
+	    break;
 	  }
     }
 
   cfun->machine->stack_frame_required = require_stack_frame;
+
+  /* Stop if we don't need to check stack slot.  */
+  if (!check_stack_slot)
+    return;
+
+  /* The preferred stack alignment is the minimum stack alignment.  */
+  if (stack_alignment > crtl->preferred_stack_boundary)
+    stack_alignment = crtl->preferred_stack_boundary;
+
+  HARD_REG_SET stack_slot_access;
+  CLEAR_HARD_REG_SET (stack_slot_access);
+
+  /* Stack slot can be accessed by stack pointer, frame pointer or
+     registers defined by stack pointer or frame pointer.  */
+  auto_bitmap worklist;
+
+  add_to_hard_reg_set (&stack_slot_access, Pmode, STACK_POINTER_REGNUM);
+  bitmap_set_bit (worklist, STACK_POINTER_REGNUM);
+
+  if (frame_pointer_needed)
+    {
+      add_to_hard_reg_set (&stack_slot_access, Pmode,
+			   HARD_FRAME_POINTER_REGNUM);
+      bitmap_set_bit (worklist, HARD_FRAME_POINTER_REGNUM);
+    }
+
+  unsigned int regno;
+
+  do
+    {
+      regno = bitmap_clear_first_set_bit (worklist);
+      ix86_find_all_reg_uses (stack_slot_access, regno, worklist);
+    }
+  while (!bitmap_empty_p (worklist));
+
+  hard_reg_set_iterator hrsi;
+  stack_access_data data;
+
+  data.stack_alignment = &stack_alignment;
+
+  EXECUTE_IF_SET_IN_HARD_REG_SET (stack_slot_access, 0, regno, hrsi)
+    for (df_ref ref = DF_REG_USE_CHAIN (regno);
+	 ref != NULL;
+	 ref = DF_REF_NEXT_REG (ref))
+      {
+	if (DF_REF_IS_ARTIFICIAL (ref))
+	  continue;
+
+	rtx_insn *insn = DF_REF_INSN (ref);
+
+	if (!NONJUMP_INSN_P (insn))
+	  continue;
+
+	data.reg = DF_REF_REG (ref);
+	note_stores (insn, ix86_update_stack_alignment, &data);
+      }
 }
 
 /* Finalize stack_realign_needed and frame_pointer_needed flags, which
