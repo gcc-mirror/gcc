@@ -3973,7 +3973,7 @@ vect_recog_divmod_pattern (vec_info *vinfo,
 	  /* Check that no overflow will occur.  If we don't have range
 	     information we can't perform the optimization.  */
 
-	  if (ranger.range_of_expr (r, oprnd0, stmt))
+	  if (ranger.range_of_expr (r, oprnd0, stmt) && !r.undefined_p ())
 	    {
 	      wide_int max = r.upper_bound ();
 	      wide_int one = wi::shwi (1, prec);
