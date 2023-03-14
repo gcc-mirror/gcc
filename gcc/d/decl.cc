@@ -1090,25 +1090,6 @@ build_decl_tree (Dsymbol *d)
   input_location = saved_location;
 }
 
-/* Returns true if function FD, or any lexically enclosing scope function of FD
-   is defined or instantiated in a root module.  */
-
-static bool
-function_defined_in_root_p (FuncDeclaration *fd)
-{
-  Module *md = fd->getModule ();
-  if (md && md->isRoot ())
-    return true;
-
-  for (TemplateInstance *ti = fd->isInstantiated (); ti != NULL; ti = ti->tinst)
-    {
-      if (ti->minst && ti->minst->isRoot ())
-	return true;
-    }
-
-  return false;
-}
-
 /* Returns true if function FD always needs to be implicitly defined, such as
    it was declared `pragma(inline)'.  */
 
@@ -1473,6 +1454,12 @@ get_symbol_decl (Declaration *decl)
 	  insert_decl_attribute (decl->csym, "naked");
 	  DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl->csym) = 1;
 	}
+
+      /* In [expression/function_literals], function literals (aka lambdas)
+	 enable embedding anonymous functions and anonymous delegates directly
+	 into expressions.  They are defined in each referencing module.  */
+      if (fd->isFuncLiteralDeclaration ())
+	DECL_SET_LAMBDA_FUNCTION (decl->csym, true);
 
       /* Mark compiler generated functions as artificial.  */
       if (fd->isGenerated ())
@@ -2029,12 +2016,9 @@ start_function (FuncDeclaration *fd)
 {
   tree fndecl = get_symbol_decl (fd);
 
-  /* Function has been defined, check now whether we intend to send it to
-     object file, or it really is extern.  Such as inlinable functions from
-     modules not in this compilation, or thunk aliases.  */
-  if (function_defined_in_root_p (fd))
-    DECL_EXTERNAL (fndecl) = 0;
-
+  /* Function has been defined. Whether we intend to send it to object file, or
+     discard it has already been determined by set_linkage_for_decl.  */
+  DECL_EXTERNAL (fndecl) = 0;
   DECL_INITIAL (fndecl) = error_mark_node;
 
   /* Add this decl to the current binding level.  */
@@ -2550,9 +2534,10 @@ set_linkage_for_decl (tree decl)
   if (!TREE_PUBLIC (decl))
     return;
 
-  /* Functions declared as `pragma(inline, true)' can appear in multiple
-     translation units.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl))
+  /* Function literals and functions declared as `pragma(inline, true)' can
+     appear in multiple translation units.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && (DECL_DECLARED_INLINE_P (decl) || DECL_LAMBDA_FUNCTION_P (decl)))
     return d_comdat_linkage (decl);
 
   /* Don't need to give private or protected symbols a special linkage.  */
