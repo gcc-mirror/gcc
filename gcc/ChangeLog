@@ -1,3 +1,43 @@
+2023-03-13  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/linux.h (TARGET_ASM_FILE_END): New macro.
+
+2023-03-13  Sean Bright  <sean@seanbright.com>
+
+	* doc/invoke.texi (Warning Options): Remove errant 'See'
+	before @xref.
+
+2023-03-13  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.h (REG_OK_STRICT, REG_OK_FOR_INDEX_P,
+	REG_OK_FOR_BASE_P): Remove.
+
+2023-03-13  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector-iterators.md (=vd,vr): Fine tune.
+	(=vd,vd,vr,vr): Ditto.
+	* config/riscv/vector.md: Ditto.
+
+2023-03-13  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins.cc
+	(function_expander::use_compare_insn): Add operand predicate check.
+
+2023-03-13  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Fine tune RA constraints.
+
+2023-03-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* config/gcn/mkoffload.cc (main): Pass -save-temps on for the
+	hsaco assemble/link.
+
+2023-03-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109046
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Combine
+	piecewise complex loads.
+
 2023-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/aarch64/aarch64.h (aarch64_bf16_type_node): Remove.

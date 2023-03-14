@@ -1,3 +1,14 @@
+2023-03-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107128
+	* parser.cc (cp_parser_set_decl_spec_type): Use
+	redefined_builtin_type for extended_float_type_p.
+
+2023-03-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107532
+	* call.cc (reference_like_class_p): Check for std::span.
+
 2023-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/107558

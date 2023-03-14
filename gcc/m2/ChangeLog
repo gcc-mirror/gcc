@@ -1,3 +1,112 @@
+2023-03-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109103
+	* gm2-compiler/M2ALU.def (PushString): New parameter issueError.
+	* gm2-compiler/M2ALU.mod (PushString): New parameter issueError.
+	* gm2-compiler/SymbolTable.mod (PushString): New parameter issueError.
+	* gm2-gcc/m2decl.cc (m2decl_DetermineSizeOfConstant): Pass
+	location to interpret_m2_integer.
+	(m2decl_BuildConstLiteralNumber): New parameter issueError.
+	* gm2-gcc/m2expr.cc (m2expr_IsTrue): Replace int with bool.
+	(m2expr_IsFalse): Replace int with bool.
+	(m2expr_AreConstantsEqual): Replace int with bool.
+	(m2expr_BuildBinaryForeachWordDo): Call m2linemap_internal_error_at.
+	(append_digit): Ditto.
+	(m2expr_interpret_integer): Add location parameter.
+	(append_m2_digit): Call m2linemap_internal_error_at.
+	(m2expr_interpret_m2_integer): Add location parameter.
+	(m2expr_GetSizeOf): Replace sizeof with SIZE in error message.
+	* gm2-gcc/m2expr.h (m2expr_AreRealOrComplexConstantsEqual):
+	Replace int with bool.
+	(m2expr_AreConstantsEqual): Ditto.
+	(m2expr_IsFalse): Ditto.
+	(m2expr_IsTrue): Ditto.
+	(m2expr_interpret_integer): Add location parameter.
+	(m2expr_interpret_m2_integer): Add location parameter.
+	* gm2-gcc/m2linemap.cc (mformat_value): New function.
+	(expand_format): New function.
+	(expand_message): New function.
+	(gm2_internal_error_at): New function.
+	(m2linemap_internal_error_at): New function.
+	* gm2-gcc/m2linemap.h (m2linemap_internal_error_at): New function.
+	* gm2-gcc/m2options.h (M2Options_SetISO): Replace int with bool.
+	(M2Options_SetPIM): Ditto.
+	(M2Options_SetPIM2): Ditto.
+	(M2Options_SetPIM3): Ditto.
+	(M2Options_SetPIM4): Ditto.
+	(M2Options_SetFloatValueCheck): Ditto.
+	(M2Options_SetWholeValueCheck): Ditto.
+	(M2Options_GetISO): Ditto.
+	(M2Options_GetPIM): Ditto.
+	(M2Options_GetPIM2): Ditto.
+	(M2Options_GetPIM3): Ditto.
+	(M2Options_GetPIM4): Ditto.
+	(M2Options_GetPositiveModFloor): Ditto.
+	(M2Options_GetFloatValueCheck): Ditto.
+	(M2Options_GetWholeValueCheck): Ditto.
+	(M2Options_Setc): Ditto.
+	(M2Options_Getc): Ditto.
+	(M2Options_SetPPOnly): Ditto.
+	(M2Options_GetPPOnly): Ditto.
+	(M2Options_SetUselist): Ditto.
+	(M2Options_SetAutoInit): Ditto.
+	(M2Options_SetPositiveModFloor): Ditto.
+	(M2Options_SetNilCheck): Ditto.
+	(M2Options_SetWholeDiv): Ditto.
+	(M2Options_SetIndex): Ditto.
+	(M2Options_SetRange): Ditto.
+	(M2Options_SetReturnCheck): Ditto.
+	(M2Options_SetCaseCheck): Ditto.
+	(M2Options_SetCheckAll): Ditto.
+	(M2Options_SetExceptions): Ditto.
+	(M2Options_SetStyle): Ditto.
+	(M2Options_SetPedantic): Ditto.
+	(M2Options_SetPedanticParamNames): Ditto.
+	(M2Options_SetPedanticCast): Ditto.
+	(M2Options_SetExtendedOpaque): Ditto.
+	(M2Options_SetVerboseUnbounded): Ditto.
+	(M2Options_SetXCode): Ditto.
+	(M2Options_SetCompilerDebugging): Ditto.
+	(M2Options_SetQuadDebugging): Ditto.
+	(M2Options_SetDebugTraceQuad): Ditto.
+	(M2Options_SetDebugTraceAPI): Ditto.
+	(M2Options_SetSources): Ditto.
+	(M2Options_SetUnboundedByReference): Ditto.
+	(M2Options_SetDumpSystemExports): Ditto.
+	(M2Options_SetOptimizing): Ditto.
+	(M2Options_SetQuiet): Ditto.
+	(M2Options_SetCC1Quiet): Ditto.
+	(M2Options_SetCpp): Ditto.
+	(M2Options_SetSwig): Ditto.
+	(M2Options_SetWholeProgram): Ditto.
+	(M2Options_SetDebugFunctionLineNumbers): Ditto.
+	(M2Options_SetGenerateStatementNote): Ditto.
+	(M2Options_GetCpp): Ditto.
+	(M2Options_GetM2g): Ditto.
+	(M2Options_SetM2g): Ditto.
+	(M2Options_SetLowerCaseKeywords): Ditto.
+	(M2Options_SetVerbose): Ditto.
+	(M2Options_SetUnusedVariableChecking): Ditto.
+	(M2Options_SetUnusedParameterChecking): Ditto.
+	(M2Options_SetStrictTypeChecking): Ditto.
+	(M2Options_SetWall): Ditto.
+	(M2Options_SetSaveTemps): Ditto.
+	(M2Options_GetSaveTemps): Ditto.
+	(M2Options_SetScaffoldStatic): Ditto.
+	(M2Options_SetScaffoldDynamic): Ditto.
+	(M2Options_SetScaffoldMain): Ditto.
+	(M2Options_SetGenModuleList): Ditto.
+	(M2Options_SetShared): Ditto.
+	* gm2-libs-ch/M2LINK.c: Ditto.
+	* gm2-libs-ch/m2rts.h (M2RTS_RequestDependant): Replace
+	const char * with const void *.
+	(M2RTS_RegisterModule): Ditto.
+	(M2RTS_ConstructModules): Ditto.
+	* gm2-gcc/m2decl.def (DetermineSizeOfConstant): New parameter
+	issueError.
+	* gm2-gcc/m2decl.h (DetermineSizeOfConstant): New parameter
+	issueError.
+
 2023-03-12  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109089

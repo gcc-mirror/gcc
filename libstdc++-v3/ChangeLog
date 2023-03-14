@@ -1,3 +1,25 @@
+2023-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Update.
+
+2023-03-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/Makefile.am: Add comment referring to documentation.
+	* doc/Makefile.in: Regenerate.
+
+2023-03-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/html/*: Regenerate.
+
+2023-03-13  Jonny Grant  <jg@jguk.org>
+
+	* doc/xml/faq.xml: Update copyright year.
+
+2023-03-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/allocator.h: Fix typo in comment.
+
 2023-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/pre/gnu.ver (CXXABI_1.3.14): Also export __bf16 tinfos

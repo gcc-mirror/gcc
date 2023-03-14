@@ -1,3 +1,13 @@
+2023-03-13  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/67046
+	* directives.cc (_cpp_do__Pragma): Increment pfile->keep_tokens to
+	ensure the returned string token is valid.
+
+2023-03-13  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* generated_cpp_wcwidth.h: Regenerated for Unicode 15.
+
 2022-12-07  Joseph Myers  <joseph@codesourcery.com>
 
 	* init.cc (lang_defaults): Enable va_opt for STDC2X.
