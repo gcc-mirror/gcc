@@ -1219,9 +1219,9 @@ package body Exp_Ch9 is
       then
          declare
             Ins_Nod : Node_Id;
+            Par_Nod : Node_Id;
 
          begin
-            Set_Has_Master_Entity (Master_Scope);
             Master_Decl := Build_Master_Declaration (Loc);
 
             --  Ensure that the master declaration is placed before its use
@@ -1230,6 +1230,30 @@ package body Exp_Ch9 is
             while not Is_List_Member (Ins_Nod) loop
                Ins_Nod := Parent (Ins_Nod);
             end loop;
+
+            Par_Nod := Parent (List_Containing (Ins_Nod));
+
+            --  For internal blocks created by Wrap_Loop_Statement, Wrap_
+            --  Statements_In_Block, and Build_Abort_Undefer_Block, remember
+            --  that they have a task master entity declaration; required by
+            --  Build_Master_Entity to avoid creating another master entity,
+            --  and also ensures that subsequent calls to Find_Master_Scope
+            --  return this scope as the master scope of Typ.
+
+            if Is_Internal_Block (Par_Nod) then
+               Set_Has_Master_Entity (Entity (Identifier (Par_Nod)));
+
+            elsif Nkind (Par_Nod) = N_Handled_Sequence_Of_Statements
+              and then Is_Internal_Block (Parent (Par_Nod))
+            then
+               Set_Has_Master_Entity (Entity (Identifier (Parent (Par_Nod))));
+
+            --  Otherwise remember that this scope has an associated task
+            --  master entity declaration.
+
+            else
+               Set_Has_Master_Entity (Master_Scope);
+            end if;
 
             Insert_Before (First (List_Containing (Ins_Nod)), Master_Decl);
             Analyze (Master_Decl);
@@ -3167,28 +3191,6 @@ package body Exp_Ch9 is
          Par := Associated_Node_For_Itype (Obj_Or_Typ);
       else
          Par := Parent (Obj_Or_Typ);
-      end if;
-
-      --  For transient scopes check if the master entity is already defined
-
-      if Is_Type (Obj_Or_Typ)
-        and then Ekind (Scope (Obj_Or_Typ)) = E_Block
-        and then Is_Internal (Scope (Obj_Or_Typ))
-      then
-         declare
-            Master_Scope : constant Entity_Id :=
-                             Find_Master_Scope (Obj_Or_Typ);
-         begin
-            if Has_Master_Entity (Master_Scope)
-              or else Is_Finalizer (Master_Scope)
-            then
-               return;
-            end if;
-
-            if Present (Current_Entity_In_Scope (Name_uMaster)) then
-               return;
-            end if;
-         end;
       end if;
 
       --  When creating a master for a record component which is either a task

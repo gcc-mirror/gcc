@@ -2101,6 +2101,11 @@ package Sem_Util is
    --     9. Nominal subtype of the returned object statically compatible
    --        with the result subtype of the expression function.
 
+   function Is_Internal_Block (N : Node_Id) return Boolean;
+   pragma Inline (Is_Internal_Block);
+   --  Determine if N is an N_Block_Statement with an internal label. See
+   --  Add_Block_Identifier.
+
    function Is_Iterator (Typ : Entity_Id) return Boolean;
    --  AI05-0139-2: Check whether Typ is one of the predefined interfaces in
    --  Ada.Iterator_Interfaces, or it is derived from one.

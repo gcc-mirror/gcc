@@ -17640,6 +17640,16 @@ package body Sem_Util is
       return False;
    end Is_Inlinable_Expression_Function;
 
+   -----------------------
+   -- Is_Internal_Block --
+   -----------------------
+
+   function Is_Internal_Block (N : Node_Id) return Boolean is
+   begin
+      return Nkind (N) = N_Block_Statement
+        and then Is_Internal (Entity (Identifier (N)));
+   end Is_Internal_Block;
+
    -----------------
    -- Is_Iterator --
    -----------------
