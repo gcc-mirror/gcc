@@ -53,9 +53,8 @@ public:
 };
 
 // A binding of an identifier to a type used in generic arguments in paths
-struct GenericArgsBinding
+class GenericArgsBinding
 {
-private:
   Identifier identifier;
   std::unique_ptr<Type> type;
 
@@ -547,9 +546,8 @@ public:
 };
 
 // A function as represented in a type path
-struct TypePathFunction
+class TypePathFunction
 {
-private:
   std::vector<std::unique_ptr<Type> > inputs;
   std::unique_ptr<Type> return_type;
 
@@ -761,9 +759,8 @@ public:
   }
 };
 
-struct QualifiedPathType
+class QualifiedPathType
 {
-private:
   std::unique_ptr<Type> type;
   std::unique_ptr<TypePath> trait;
   Location locus;

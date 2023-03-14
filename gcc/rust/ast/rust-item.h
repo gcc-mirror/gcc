@@ -315,9 +315,8 @@ protected:
 };
 
 // A where clause
-struct WhereClause
+class WhereClause
 {
-private:
   std::vector<std::unique_ptr<WhereClauseItem>> where_clause_items;
   NodeId node_id;
 
@@ -376,9 +375,8 @@ public:
 };
 
 // A self parameter in a method
-struct SelfParam
+class SelfParam
 {
-private:
   bool has_ref;
   bool is_mut;
   // bool has_lifetime; // only possible if also ref
@@ -486,9 +484,8 @@ public:
 };
 
 // Qualifiers for function, i.e. const, unsafe, extern etc.
-struct FunctionQualifiers
+class FunctionQualifiers
 {
-private:
   AsyncConstStatus const_status;
   bool has_unsafe;
   bool has_extern;
@@ -522,9 +519,8 @@ public:
 };
 
 // A function parameter
-struct FunctionParam
+class FunctionParam
 {
-private:
   std::vector<Attribute> outer_attrs;
   Location locus;
   std::unique_ptr<Pattern> param_name;
@@ -1904,9 +1900,8 @@ protected:
 };
 
 // A single field in a struct
-struct StructField
+class StructField
 {
-private:
   // bool has_outer_attributes;
   std::vector<Attribute> outer_attrs;
 
@@ -2058,9 +2053,8 @@ protected:
 };
 
 // A single field in a tuple
-struct TupleField
+class TupleField
 {
-private:
   // bool has_outer_attributes;
   std::vector<Attribute> outer_attrs;
 
@@ -2788,9 +2782,8 @@ protected:
 };
 
 // Function declaration in traits
-struct TraitFunctionDecl
+class TraitFunctionDecl
 {
-private:
   // TODO: delete and replace with Function decl item? no as no body in this.
   FunctionQualifiers qualifiers;
   Identifier function_name;
@@ -2997,9 +2990,8 @@ protected:
 };
 
 // Method declaration within traits
-struct TraitMethodDecl
+class TraitMethodDecl
 {
-private:
   // TODO: delete and replace with Function decl item? no as no body.
   FunctionQualifiers qualifiers;
   Identifier function_name;
@@ -4094,9 +4086,8 @@ protected:
 };
 
 // A named function parameter used in external functions
-struct NamedFunctionParam
+class NamedFunctionParam
 {
-private:
   // bool has_name;   // otherwise is _
   std::string name;
 
