@@ -2918,9 +2918,8 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
       tree compiled_param_var = ctx->get_backend ()->struct_field_expression (
 	args_param_expr, i, closure_param.get_locus ());
 
-      const HIR::Pattern &param_pattern = *closure_param.get_pattern ();
-      ctx->insert_pattern_binding (
-	param_pattern.get_pattern_mappings ().get_hirid (), compiled_param_var);
+      CompilePatternBindings::Compile (closure_param.get_pattern ().get (),
+				       compiled_param_var, ctx);
       i++;
     }
 
