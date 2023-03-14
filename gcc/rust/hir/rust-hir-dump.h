@@ -37,6 +37,7 @@ private:
   Indent indentation;
   std::ostream &stream;
 
+  void visit (AST::Attribute &attribute);
   virtual void visit (Lifetime &) override;
   virtual void visit (LifetimeParam &) override;
   virtual void visit (PathInExpression &) override;
