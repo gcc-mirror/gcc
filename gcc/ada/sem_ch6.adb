@@ -3907,6 +3907,7 @@ package body Sem_Ch6 is
            and then Serious_Errors_Detected = 0
          then
             Set_Has_Delayed_Freeze (Spec_Id);
+            Create_Extra_Formals (Spec_Id);
             Freeze_Before (N, Spec_Id);
          end if;
       end if;
