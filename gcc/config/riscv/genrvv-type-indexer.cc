@@ -14,12 +14,12 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "bconfig.h"
+#define INCLUDE_SSTREAM
 #include "system.h"
 #include "errors.h"
 
 #include "coretypes.h"
 
-#include <sstream>
 #include <assert.h>
 #include <math.h>
 
