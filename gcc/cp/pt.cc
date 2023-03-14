@@ -6377,7 +6377,7 @@ redeclare_class_template (tree type, tree parms, tree cons)
   if (!cp_tree_equal (req1, req2))
     {
       auto_diagnostic_group d;
-      error_at (input_location, "redeclaration %q#D with different "
+      error_at (input_location, "redeclaration of %q#D with different "
                                 "constraints", tmpl);
       inform (DECL_SOURCE_LOCATION (tmpl),
               "original declaration appeared here");
@@ -11564,7 +11564,11 @@ tsubst_friend_class (tree friend_tmpl, tree args)
 						 tf_warning_or_error);
           location_t saved_input_location = input_location;
           input_location = DECL_SOURCE_LOCATION (friend_tmpl);
-          tree cons = get_constraints (tmpl);
+	  tree cons = get_constraints (friend_tmpl);
+	  ++processing_template_decl;
+	  cons = tsubst_constraint_info (cons, args, tf_warning_or_error,
+					 DECL_FRIEND_CONTEXT (friend_tmpl));
+	  --processing_template_decl;
           redeclare_class_template (TREE_TYPE (tmpl), parms, cons);
           input_location = saved_input_location;
 	}
