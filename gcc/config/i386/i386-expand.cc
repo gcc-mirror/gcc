@@ -197,9 +197,20 @@ split_double_concat (machine_mode mode, rtx dst, rtx lo, rtx hi)
     {
       /* In this case, code below would first emit_move_insn (dlo, lo)
 	 and then emit_move_insn (dhi, hi).  But the former would
-	 invalidate hi's address.  Load into dhi first.  */
-      emit_move_insn (dhi, hi);
-      hi = dhi;
+	 invalidate hi's address.  */
+      if (rtx_equal_p (dhi, lo))
+	{
+	  /* We can't load into dhi first, so load into dlo
+	     first and we'll swap.  */
+	  emit_move_insn (dlo, hi);
+	  hi = dlo;
+	}
+      else
+	{
+	  /* Load into dhi first.  */
+	  emit_move_insn (dhi, hi);
+	  hi = dhi;
+	}
     }
   if (!rtx_equal_p (dlo, hi))
     {
