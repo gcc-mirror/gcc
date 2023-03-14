@@ -1465,11 +1465,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    && convertible_to<const _Iter2&, _Iterator>;
 #endif
 
+#if __cplusplus > 201703L && __cpp_lib_concepts
+      static auto
+      _S_iter_concept()
+      {
+	if constexpr (random_access_iterator<_Iterator>)
+	  return random_access_iterator_tag{};
+	else if constexpr (bidirectional_iterator<_Iterator>)
+	  return bidirectional_iterator_tag{};
+	else if constexpr (forward_iterator<_Iterator>)
+	  return forward_iterator_tag{};
+	else
+	  return input_iterator_tag{};
+      }
+#endif
+
     public:
       using iterator_type = _Iterator;
 
 #if __cplusplus > 201703L && __cpp_lib_concepts
-      using iterator_concept = input_iterator_tag;
+      // This is P2520R0, a C++23 change, but we treat it as a DR against C++20.
+# define __cpp_lib_move_iterator_concept 202207L
+      using iterator_concept = decltype(_S_iter_concept());
+
       // iterator_category defined in __move_iter_cat
       using value_type = iter_value_t<_Iterator>;
       using difference_type = iter_difference_t<_Iterator>;
