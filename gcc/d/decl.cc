@@ -1320,6 +1320,12 @@ get_symbol_decl (Declaration *decl)
 	  DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl->csym) = 1;
 	}
 
+      /* In [expression/function_literals], function literals (aka lambdas)
+	 enable embedding anonymous functions and anonymous delegates directly
+	 into expressions.  They are defined in each referencing module.  */
+      if (fd->isFuncLiteralDeclaration ())
+	DECL_SET_LAMBDA_FUNCTION (decl->csym, true);
+
       /* Mark compiler generated functions as artificial.  */
       if (fd->generated)
 	DECL_ARTIFICIAL (decl->csym) = 1;
@@ -1873,9 +1879,10 @@ start_function (FuncDeclaration *fd)
 {
   tree fndecl = get_symbol_decl (fd);
 
-  /* Function has been defined, check now whether we intend to send it to
-     object file, or it really is extern.  Such as inlinable functions from
-     modules not in this compilation, or thunk aliases.  */
+  /* Function has been defined. Whether we intend to send it to object file, or
+     discard it has already been determined by set_linkage_for_decl.  */
+  DECL_EXTERNAL (fndecl) = 0;
+
   TemplateInstance *ti = fd->isInstantiated ();
   if (ti && ti->needsCodegen ())
     {
@@ -1885,14 +1892,6 @@ start_function (FuncDeclaration *fd)
 	  warning (OPT_Wtemplates, "%s %qs instantiated",
 		   ti->kind (), ti->toPrettyChars (false));
 	}
-
-      DECL_EXTERNAL (fndecl) = 0;
-    }
-  else
-    {
-      Module *md = fd->getModule ();
-      if (md && md->isRoot ())
-	DECL_EXTERNAL (fndecl) = 0;
     }
 
   DECL_INITIAL (fndecl) = error_mark_node;
@@ -2413,15 +2412,16 @@ set_linkage_for_decl (tree decl)
   if (!TREE_PUBLIC (decl))
     return;
 
+  /* Function literals and functions declared as `pragma(inline, true)' can
+     appear in multiple translation units.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && (DECL_DECLARED_INLINE_P (decl) || DECL_LAMBDA_FUNCTION_P (decl)))
+    return d_comdat_linkage (decl);
+
   /* Don't need to give private or protected symbols a special linkage.  */
   if ((TREE_PRIVATE (decl) || TREE_PROTECTED (decl))
       && !DECL_INSTANTIATED (decl))
     return;
-
-  /* Functions declared as `pragma(inline, true)' can appear in multiple
-     translation units.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl))
-    return d_comdat_linkage (decl);
 
   /* If all instantiations must go in COMDAT, give them that linkage.
      This also applies to other extern declarations, so that it is possible
