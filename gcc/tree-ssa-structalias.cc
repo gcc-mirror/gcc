@@ -1724,10 +1724,7 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
 done:
   /* If the LHS solution changed, mark the var as changed.  */
   if (flag)
-    {
-      get_varinfo (lhs)->solution = sol;
-      bitmap_set_bit (changed, lhs);
-    }
+    bitmap_set_bit (changed, lhs);
 }
 
 /* Process a constraint C that represents *(x + off) = y using DELTA
