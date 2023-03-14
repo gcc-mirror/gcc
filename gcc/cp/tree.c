@@ -4466,7 +4466,7 @@ record_has_unique_obj_representations (const_tree t, const_tree sz)
 						    DECL_SIZE (field)))
 	  return false;
       }
-    else if (DECL_C_BIT_FIELD (field))
+    else if (DECL_C_BIT_FIELD (field) && !DECL_UNNAMED_BIT_FIELD (field))
       {
 	tree btype = DECL_BIT_FIELD_TYPE (field);
 	if (!type_has_unique_obj_representations (btype))
@@ -4477,7 +4477,7 @@ record_has_unique_obj_representations (const_tree t, const_tree sz)
 
   offset_int cur = 0;
   for (tree field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
-    if (TREE_CODE (field) == FIELD_DECL)
+    if (TREE_CODE (field) == FIELD_DECL && !DECL_UNNAMED_BIT_FIELD (field))
       {
 	offset_int fld = wi::to_offset (DECL_FIELD_OFFSET (field));
 	offset_int bitpos = wi::to_offset (DECL_FIELD_BIT_OFFSET (field));
