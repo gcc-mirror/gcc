@@ -1,3 +1,9 @@
+2023-03-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/106188
+	PR c++/106713
+	* g++.dg/coroutines/pr106188.C: New test.
+
 2023-03-11  Andrew Pinski  <apinski@marvell.com>
 
 	Backported from master:
