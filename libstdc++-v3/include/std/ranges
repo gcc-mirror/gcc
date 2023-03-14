@@ -7407,8 +7407,8 @@ namespace views::__adaptor
 #define __cpp_lib_ranges_repeat 202207L
 
   template<copy_constructible _Tp, semiregular _Bound = unreachable_sentinel_t>
-    requires (is_object_v<_Tp> && same_as<_Tp, remove_cv_t<_Tp>>
-      && (__detail::__is_integer_like<_Bound> || same_as<_Bound, unreachable_sentinel_t>))
+    requires is_object_v<_Tp> && same_as<_Tp, remove_cv_t<_Tp>>
+      && (__detail::__is_integer_like<_Bound> || same_as<_Bound, unreachable_sentinel_t>)
   class repeat_view : public view_interface<repeat_view<_Tp, _Bound>>
   {
     __detail::__box<_Tp> _M_value;
@@ -7472,7 +7472,8 @@ namespace views::__adaptor
     repeat_view(_Tp, _Bound) -> repeat_view<_Tp, _Bound>;
 
   template<copy_constructible _Tp, semiregular _Bound>
-    requires __detail::__is_integer_like<_Bound> || same_as<_Bound, unreachable_sentinel_t>
+    requires is_object_v<_Tp> && same_as<_Tp, remove_cv_t<_Tp>>
+      && (__detail::__is_integer_like<_Bound> || same_as<_Bound, unreachable_sentinel_t>)
   class repeat_view<_Tp, _Bound>::_Iterator
   {
     using __index_type
