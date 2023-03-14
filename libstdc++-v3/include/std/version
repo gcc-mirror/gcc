@@ -276,6 +276,7 @@
 #define __cpp_lib_polymorphic_allocator 201902L
 #if __cpp_lib_concepts
 # define __cpp_lib_ranges 202110L
+# define __cpp_lib_move_iterator_concept 202207L
 #endif
 #if __cpp_lib_atomic_wait || _GLIBCXX_HAVE_POSIX_SEMAPHORE
 # define __cpp_lib_semaphore 201907L
