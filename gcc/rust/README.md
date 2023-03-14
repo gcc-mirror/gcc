@@ -79,7 +79,7 @@ $ make
 Running the compiler itself without make install we can simply invoke the compiler proper:
 
 ```bash
-$ ./gcc/rust1 test.rs -frust-debug -frust-dump-parse -Warray-bounds -dumpbase test.rs -mtune=generic -march=x86-64 -O0 -version -fdump-tree-gimple -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64
+$ ./gcc/crab1 test.rs -frust-debug -frust-dump-parse -Warray-bounds -dumpbase test.rs -mtune=generic -march=x86-64 -O0 -version -fdump-tree-gimple -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64 -frust-incomplete-and-experimental-compiler-do-not-use
 ```
 
 To invoke the compiler driver (gccrs) we need to:
@@ -146,20 +146,20 @@ $ ../gccrs/configure --prefix=$HOME/gccrs-install --disable-bootstrap --enable-m
 ```
 
 ### GDB
-You can directly invoke `gdb` on the `rust1` compiler process (you can find the
+You can directly invoke `gdb` on the `crab1` compiler process (you can find the
 exact command adding `--verbose` to your `gccrs` invocation):
 ```bash
 $ gccrs test.rs -O0 -S -o arithmetic_expressions1.s --verbose
 ...
- /some/path/../../rust1 test.rs -quiet -dumpbase arithmetic_expressions1.rs -dumpbase-ext .rs
+ /some/path/../../crab1 test.rs -quiet -dumpbase arithmetic_expressions1.rs -dumpbase-ext .rs
  -mtune=generic -march=x86-64 -O0 -w -version -fdiagnostics-color=never -fno-diagnostics-show-caret -fno-diagnostics-show-line-numbers -fdiagnostics-urls=never -fdiagnostics-path-format=separate-events -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu
 ...
-$ gdb --args  /some/path/../../rust1 test.rs -quiet -dumpbase arithmetic_expressions1.rs -dumpbase-ext .rs
+$ gdb --args  /some/path/../../crab1 test.rs -quiet -dumpbase arithmetic_expressions1.rs -dumpbase-ext .rs
  -mtune=generic -march=x86-64 -O0 -w -version -fdiagnostics-color=never -fno-diagnostics-show-caret -fno-diagnostics-show-line-numbers -fdiagnostics-urls=never -fdiagnostics-path-format=separate-events -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu
 ```
 
 Or simply add the `-wrapper gdb,--args` option.
-This will call each subcommand in `gdb` and you simply have to break/debug in `rust1`:
+This will call each subcommand in `gdb` and you simply have to break/debug in `crab1`:
 ```bash
 $ gccrs test.rs -O0 -S -o arithmetic_expressions1.s -wrapper gdb,--args
 ```

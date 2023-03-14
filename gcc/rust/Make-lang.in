@@ -33,9 +33,9 @@ GCCRS_INSTALL_NAME := $(shell echo gccrs|sed '$(program_transform_name)')
 GCCRS_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gccrs|sed '$(program_transform_name)')
 
 # Define the names for selecting rust in LANGUAGES.
-rust: rust1$(exeext)
+rust: crab1$(exeext)
 
-rust.serial = rust1$(exeext)
+rust.serial = crab1$(exeext)
 
 # Tell GNU make to ignore files by these names if they exist.
 .PHONY: rust
@@ -177,8 +177,8 @@ RUST_ALL_OBJS = $(GRS_OBJS) $(RUST_TARGET_OBJS)
 
 rust_OBJS = $(RUST_ALL_OBJS) rust/rustspec.o
 
-# The compiler itself is called rust1 (formerly grs1)
-rust1$(exeext): $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBDEPS) $(rust.prev)
+# The compiler itself is called crab1
+crab1$(exeext): $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBDEPS) $(rust.prev)
 	@$(call LINK_PROGRESS,$(INDEX.rust),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	      $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
@@ -285,7 +285,7 @@ rust.uninstall:
 selftest-rust: s-selftest-rust
 
 RUST_SELFTEST_FLAGS = -xrust -frust-incomplete-and-experimental-compiler-do-not-use $(SELFTEST_FLAGS)
-RUST_SELFTEST_DEPS = rust1$(exeext) $(SELFTEST_DEPS)
+RUST_SELFTEST_DEPS = crab1$(exeext) $(SELFTEST_DEPS)
 
 # Run the rust selftests
 s-selftest-rust: $(RUST_SELFTEST_DEPS)

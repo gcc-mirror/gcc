@@ -25,7 +25,7 @@
 # compilers	- value to add to $(COMPILERS)
 
 language="rust"
-compilers="rust1\$(exeext)"
+compilers="crab1\$(exeext)"
 
 build_by_default="no"
 
