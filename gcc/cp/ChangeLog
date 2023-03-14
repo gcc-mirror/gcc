@@ -1,3 +1,10 @@
+2023-03-13  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/106188
+	PR c++/106713
+	* coroutines.cc (coro_rewrite_function_body): Ensure we have a
+	BIND_EXPR wrapping the function body.
+
 2023-02-15  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
