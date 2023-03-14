@@ -8767,21 +8767,21 @@ insns that don't.  Instead, write two separate @code{define_split}
 definitions, one for the insns that are valid and one for the insns that
 are not valid.
 
-The splitter is allowed to split jump instructions into sequence of
-jumps or create new jumps in while splitting non-jump instructions.  As
-the control flow graph and branch prediction information needs to be updated,
-several restriction apply.
+The splitter is allowed to split jump instructions into a sequence of jumps or
+create new jumps while splitting non-jump instructions.  As the control flow
+graph and branch prediction information needs to be updated after the splitter
+runs, several restrictions apply.
 
-Splitting of jump instruction into sequence that over by another jump
-instruction is always valid, as compiler expect identical behavior of new
-jump.  When new sequence contains multiple jump instructions or new labels,
-more assistance is needed.  Splitter is required to create only unconditional
-jumps, or simple conditional jump instructions.  Additionally it must attach a
-@code{REG_BR_PROB} note to each conditional jump.  A global variable
-@code{split_branch_probability} holds the probability of the original branch in case
-it was a simple conditional jump, @minus{}1 otherwise.  To simplify
-recomputing of edge frequencies, the new sequence is required to have only
-forward jumps to the newly created labels.
+Splitting of a jump instruction into a sequence that has another jump
+instruction to the same label is always valid, as the compiler expects
+identical behavior of the new jump.  When the new sequence contains multiple
+jump instructions or new labels, more assistance is needed.  The splitter is
+permitted to create only unconditional jumps, or simple conditional jump
+instructions.  Additionally it must attach a @code{REG_BR_PROB} note to each
+conditional jump.  A global variable @code{split_branch_probability} holds the
+probability of the original branch in case it was a simple conditional jump,
+@minus{}1 otherwise.  To simplify recomputing of edge frequencies, the new
+sequence is permitted to have only forward jumps to the newly-created labels.
 
 @findex define_insn_and_split
 For the common case where the pattern of a define_split exactly matches the
