@@ -10815,6 +10815,8 @@ package body Checks is
 
                if not Check_Added
                  and then Is_Fixed_Lower_Bound_Index_Subtype (T_Typ)
+                 and then Known_LB
+                 and then Known_T_LB
                  and then Expr_Value (LB) /= Expr_Value (T_LB)
                then
                   Add_Check
