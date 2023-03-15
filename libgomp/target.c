@@ -1943,7 +1943,11 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		    (nca, target_ptrblock);
 		  gomp_copy_host2dev (devicep, aq, target_ptrblock, ptrblock,
 				      nca->ptrblock_size, false, cbufp);
-		  free (ptrblock);
+		  if (aq)
+		    /* Free once the transfer has completed.  */
+		    devicep->openacc.async.queue_callback_func (aq, free, ptrblock);
+		  else
+		    free (ptrblock);
 		}
 	    }
 	}

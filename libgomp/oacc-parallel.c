@@ -469,7 +469,10 @@ GOACC_parallel_keyed (int flags_m, void (*fn) (void *),
   struct target_mem_desc *tgt
       = goacc_map_vars (acc_dev, aq, mapnum, hostaddrs, NULL, sizes, kinds,
 			nca_info, true, GOMP_MAP_VARS_TARGET);
-  free (nca_info);
+  if (aq == NULL)
+    free (nca_info);
+  else
+    acc_dev->openacc.async.queue_callback_func (aq, free, nca_info);
 
   if (profiling_p)
     {
