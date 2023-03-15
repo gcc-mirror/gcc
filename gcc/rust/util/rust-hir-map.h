@@ -279,6 +279,9 @@ public:
   bool lookup_macro_invocation (AST::MacroInvocation &invoc,
 				AST::MacroRulesDefinition **def);
 
+  void insert_exported_macro (AST::MacroRulesDefinition &def);
+  std::vector<NodeId> &get_exported_macros ();
+
   void insert_visibility (NodeId id, Privacy::ModuleVisibility visibility);
   bool lookup_visibility (NodeId id, Privacy::ModuleVisibility &def);
 
@@ -350,6 +353,7 @@ private:
   // macros
   std::map<NodeId, AST::MacroRulesDefinition *> macroMappings;
   std::map<NodeId, AST::MacroRulesDefinition *> macroInvocations;
+  std::vector<NodeId> exportedMacros;
 
   // crate names
   std::map<CrateNum, std::string> crate_names;

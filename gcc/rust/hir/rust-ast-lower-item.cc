@@ -705,6 +705,14 @@ ASTLoweringItem::visit (AST::ExternBlock &extern_block)
   translated = lower_extern_block (extern_block);
 }
 
+void
+ASTLoweringItem::visit (AST::MacroRulesDefinition &def)
+{
+  for (const auto &attr : def.get_outer_attrs ())
+    if (attr.get_path ().as_string () == "macro_export")
+      mappings->insert_exported_macro (def);
+}
+
 HIR::SimplePath
 ASTLoweringSimplePath::translate (const AST::SimplePath &path)
 {

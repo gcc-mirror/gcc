@@ -942,6 +942,18 @@ Mappings::lookup_macro_invocation (AST::MacroInvocation &invoc,
 }
 
 void
+Mappings::insert_exported_macro (AST::MacroRulesDefinition &def)
+{
+  exportedMacros.emplace_back (def.get_node_id ());
+}
+
+std::vector<NodeId> &
+Mappings::get_exported_macros ()
+{
+  return exportedMacros;
+}
+
+void
 Mappings::insert_visibility (NodeId id, Privacy::ModuleVisibility visibility)
 {
   visibility_map.insert ({id, visibility});
