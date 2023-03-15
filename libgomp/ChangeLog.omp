@@ -1,5 +1,11 @@
 2023-04-03  Thomas Schwinge  <thomas@codesourcery.com>
 
+	PR other/76739
+	* target.c (gomp_map_vars_internal): Pass pre-allocated 'ptrblock'
+	to 'goacc_noncontig_array_create_ptrblock'.
+	* oacc-parallel.c (goacc_noncontig_array_create_ptrblock): Adjust.
+	* oacc-int.h (goacc_noncontig_array_create_ptrblock): Adjust.
+
 	* libgomp.texi (AMD Radeon, nvptx): Document OpenMP 'pinned'
 	memory.
 
