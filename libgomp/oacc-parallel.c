@@ -165,13 +165,13 @@ goacc_process_noncontiguous_arrays (size_t mapnum, void **hostaddrs,
   return nca_info;
 }
 
-void *
+void
 goacc_noncontig_array_create_ptrblock (struct goacc_ncarray *nca,
+				       void *ptrblock,
 				       void *tgt_ptrblock_addr)
 {
   struct goacc_ncarray_descr_type *descr = nca->descr;
   void **tgt_data_rows = nca->tgt_data_rows;
-  void *ptrblock = gomp_malloc (nca->ptrblock_size);
   void **curr_dim_ptrblock = (void **) ptrblock;
   size_t n = 1;
 
@@ -210,7 +210,6 @@ goacc_noncontig_array_create_ptrblock (struct goacc_ncarray *nca,
       curr_dim_ptrblock = next_dim_ptrblock;
     }
   assert (n == nca->data_row_num);
-  return ptrblock;
 }
 
 /* Handle the mapping pair that are presented when a

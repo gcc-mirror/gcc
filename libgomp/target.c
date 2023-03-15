@@ -1939,8 +1939,9 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		 accelerator side ptrblock and copy it in.  */
 	      if (nca->ptrblock_size)
 		{
-		  void *ptrblock = goacc_noncontig_array_create_ptrblock
-		    (nca, target_ptrblock);
+		  void *ptrblock = gomp_malloc (nca->ptrblock_size);
+		  goacc_noncontig_array_create_ptrblock
+		    (nca, ptrblock, target_ptrblock);
 		  gomp_copy_host2dev (devicep, aq, target_ptrblock, ptrblock,
 				      nca->ptrblock_size, false, cbufp);
 		  if (aq)
