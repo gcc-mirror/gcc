@@ -28,9 +28,8 @@ PatternDeclaration::go (AST::Pattern *pattern, Rib::ItemType type)
 {
   std::vector<PatternBinding> bindings
     = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
-  PatternDeclaration resolver (bindings, type);
-  pattern->accept_vis (resolver);
-};
+  PatternDeclaration::go (pattern, type, bindings);
+}
 
 void
 PatternDeclaration::go (AST::Pattern *pattern, Rib::ItemType type,
@@ -38,49 +37,36 @@ PatternDeclaration::go (AST::Pattern *pattern, Rib::ItemType type,
 {
   PatternDeclaration resolver (bindings, type);
   pattern->accept_vis (resolver);
+
+  for (auto &map_entry : resolver.missing_bindings)
+    {
+      auto ident = map_entry.first; // key
+      auto info = map_entry.second; // value
+
+      rust_error_at (info.get_locus (), ErrorCode ("E0408"),
+		     "variable '%s' is not bound in all patterns",
+		     ident.c_str ());
+    }
+
+  for (auto &map_entry : resolver.inconsistent_bindings)
+    {
+      auto ident = map_entry.first; // key
+      auto info = map_entry.second; // value
+
+      rust_error_at (
+	info.get_locus (), ErrorCode ("E0409"),
+	"variable '%s' is bound inconsistently across pattern alternatives",
+	ident.c_str ());
+    }
 }
 
 void
 PatternDeclaration::visit (AST::IdentifierPattern &pattern)
 {
-  bool has_binding_ctx = bindings.size () > 0;
-  rust_assert (has_binding_ctx);
-
-  auto &binding_idents = bindings.back ().idents;
-
-  bool current_ctx_is_product
-    = bindings.back ().ctx == PatternBoundCtx::Product;
-  bool identifier_is_product_bound
-    = current_ctx_is_product
-      && binding_idents.find (pattern.get_ident ()) != binding_idents.end ();
-
-  if (identifier_is_product_bound)
-    {
-      if (type == Rib::ItemType::Param)
-	{
-	  rust_error_at (pattern.get_locus (), ErrorCode ("E0415"),
-			 "identifier '%s' is bound more than once in the "
-			 "same parameter list",
-			 pattern.get_ident ().c_str ());
-	}
-      else
-	{
-	  rust_error_at (
-	    pattern.get_locus (), ErrorCode ("E0416"),
-	    "identifier '%s' is bound more than once in the same pattern",
-	    pattern.get_ident ().c_str ());
-	}
-
-      return;
-    }
-
-  // if we have a duplicate id this then allows for shadowing correctly
-  // as new refs to this decl will match back here so it is ok to overwrite
-  resolver->get_name_scope ().insert (
-    CanonicalPath::new_seg (pattern.get_node_id (), pattern.get_ident ()),
-    pattern.get_node_id (), pattern.get_locus (), type);
-
-  binding_idents.insert (pattern.get_ident ());
+  Mutability mut = pattern.get_is_mut () ? Mutability::Mut : Mutability::Imm;
+  add_new_binding (pattern.get_ident (), pattern.get_node_id (),
+		   BindingTypeInfo (mut, pattern.get_is_ref (),
+				    pattern.get_locus ()));
 }
 
 void
@@ -154,10 +140,12 @@ PatternDeclaration::visit (AST::StructPattern &pattern)
 	    AST::StructPatternFieldIdent &ident
 	      = static_cast<AST::StructPatternFieldIdent &> (*field.get ());
 
-	    resolver->get_name_scope ().insert (
-	      CanonicalPath::new_seg (ident.get_node_id (),
-				      ident.get_identifier ()),
-	      ident.get_node_id (), ident.get_locus ());
+	    Mutability mut
+	      = ident.is_mut () ? Mutability::Mut : Mutability::Imm;
+
+	    add_new_binding (ident.get_identifier (), ident.get_node_id (),
+			     BindingTypeInfo (mut, ident.is_ref (),
+					      ident.get_locus ()));
 	  }
 	  break;
 	}
@@ -194,6 +182,162 @@ PatternDeclaration::visit (AST::TuplePattern &pattern)
 	  p->accept_vis (*this);
       }
       break;
+    }
+}
+
+void
+PatternDeclaration::visit (AST::AltPattern &pattern)
+{
+  // push a new set of 'Or' bindings to the stack. Accounts for the
+  // alternatives. e.g. in `p_0 | p_1`, bindings to the same identifier between
+  // p_0 and p_1 shouldn't cause an error.
+  bindings_with_ctx.push_back (
+    PatternBinding (PatternBoundCtx::Or, std::set<Identifier> ()));
+
+  // This is a hack to avoid creating a separate visitor class for the
+  // consistency checks. We empty out the binding_info_map before each iteration
+  // to separate between the alts' binding_maps. And right after the alt
+  // visit...
+  auto tmp_binding_map = binding_info_map;
+  binding_info_map.clear ();
+
+  std::vector<BindingMap> alts_binding_maps;
+
+  for (auto &alt : pattern.get_alts ())
+    {
+      // before this visit, the binding_info_map is guaranteed to be empty
+      rust_assert (binding_info_map.empty ());
+
+      // push a new `Product` context to correctly reject multiple bindings
+      // within this single alt.
+      bindings_with_ctx.push_back (
+	PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ()));
+
+      alt->accept_vis (*this);
+
+      // ...the binding_info_map is (potentially) populated. We copy it to the
+      // vector, and empty it out to be ready for the next iteration. And after
+      // all the iterations are finished...
+      alts_binding_maps.push_back (binding_info_map);
+      binding_info_map.clear ();
+
+      // Remove the last (i.e. `Product`) context and add the bindings from the
+      // visited alt to the one before last (i.e. `Or`). Now (after checking
+      // with the alt internally), the bindings from this alt will reside in the
+      // `Or` context.
+      auto last_bound_idents = bindings_with_ctx.back ().idents;
+      bindings_with_ctx.pop_back ();
+
+      for (auto &ident : last_bound_idents)
+	{
+	  bindings_with_ctx.back ().idents.insert (ident);
+	}
+    }
+
+  // Now we can finally check for consistency.
+  check_bindings_consistency (alts_binding_maps);
+
+  // Now we remove the `Or` context we pushed earlier.
+  // e.g. in `(a, (p_0 | p_1), c)`: after finishing up inside the alt pattern,
+  // we return to the tuple (`Product`) context and push the new bindings.
+  auto idents = bindings_with_ctx.back ().idents;
+  bindings_with_ctx.pop_back ();
+  for (auto &ident : idents)
+    bindings_with_ctx.back ().idents.insert (ident);
+
+  // ...we repopulate the binding_info_map correctly (the initial bindings
+  // stored in the tmp_binding_map + all the bindings from all the alts)
+  binding_info_map = tmp_binding_map;
+  for (auto &alt_map : alts_binding_maps)
+    for (auto &map_entry : alt_map)
+      binding_info_map.insert (map_entry);
+}
+
+void
+PatternDeclaration::add_new_binding (Identifier ident, NodeId node_id,
+				     BindingTypeInfo info)
+{
+  bool has_binding_ctx = bindings_with_ctx.size () > 0;
+  rust_assert (has_binding_ctx);
+
+  bool identifier_or_bound = false, identifier_product_bound = false;
+
+  for (auto binding : bindings_with_ctx)
+    {
+      bool identifier_bound_here
+	= (binding.idents.find (ident) != binding.idents.end ());
+      if (identifier_bound_here)
+	{
+	  identifier_product_bound |= binding.ctx == PatternBoundCtx::Product;
+	  identifier_or_bound |= binding.ctx == PatternBoundCtx::Or;
+	}
+    }
+
+  if (identifier_product_bound)
+    {
+      if (type == Rib::ItemType::Param)
+	{
+	  rust_error_at (info.get_locus (), ErrorCode ("E0415"),
+			 "identifier '%s' is bound more than once in the "
+			 "same parameter list",
+			 ident.c_str ());
+	}
+      else
+	{
+	  rust_error_at (
+	    info.get_locus (), ErrorCode ("E0416"),
+	    "identifier '%s' is bound more than once in the same pattern",
+	    ident.c_str ());
+	}
+
+      return;
+    }
+
+  if (!identifier_or_bound)
+    {
+      bindings_with_ctx.back ().idents.insert (ident);
+      resolver->get_name_scope ().insert (CanonicalPath::new_seg (node_id,
+								  ident),
+					  node_id, info.get_locus (), type);
+    }
+
+  binding_info_map.insert ({ident, info});
+}
+
+// Verifies that all the alts in an AltPattern have the same set of bindings
+// with the same mutability and reference states.
+void
+PatternDeclaration::check_bindings_consistency (
+  std::vector<BindingMap> &binding_maps)
+{
+  for (size_t i = 0; i < binding_maps.size (); i++)
+    {
+      auto &outer_bindings_map = binding_maps[i];
+
+      for (size_t j = 0; j < binding_maps.size (); j++)
+	{
+	  // skip comparing the current outer map with itself.
+	  if (j == i)
+	    continue;
+
+	  auto &inner_bindings_map = binding_maps[j];
+
+	  // iterate over the inner map entries and check if they exist in outer
+	  // map
+	  for (auto map_entry : inner_bindings_map)
+	    {
+	      auto ident = map_entry.first;	  // key
+	      auto inner_info = map_entry.second; // value
+	      bool ident_is_outer_bound = outer_bindings_map.count (ident);
+
+	      if (!ident_is_outer_bound && !missing_bindings.count (ident))
+		missing_bindings.insert ({ident, inner_info});
+
+	      else if (outer_bindings_map[ident] != inner_info
+		       && !inconsistent_bindings.count (ident))
+		inconsistent_bindings.insert ({ident, inner_info});
+	    }
+	}
     }
 }
 
