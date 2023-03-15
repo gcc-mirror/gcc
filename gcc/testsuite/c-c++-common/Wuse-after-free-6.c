@@ -53,7 +53,7 @@ void* warn_cond_return_after_free (void *p, int c)
   free (p);
   // PHI handling not fully implemented.
   if (c)
-    return p;       // { dg-warning "pointer 'p' may be used" "pr??????" { xfail *-*-* } }
+    return p;       // { dg-warning "pointer 'p' may be used" }
   return 0;
 }
 

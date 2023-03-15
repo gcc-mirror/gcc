@@ -3907,7 +3907,8 @@ pass_waccess::warn_invalid_pointer (tree ref, gimple *use_stmt,
 
   if (is_gimple_call (inval_stmt))
     {
-      if ((equality && warn_use_after_free < 3)
+      if (!m_early_checks_p
+	  || (equality && warn_use_after_free < 3)
 	  || (maybe && warn_use_after_free < 2)
 	  || warning_suppressed_p (use_stmt, OPT_Wuse_after_free))
 	return;
@@ -4303,19 +4304,18 @@ pass_waccess::check_call (gcall *stmt)
   if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
     check_builtin (stmt);
 
-  if (!m_early_checks_p)
-    if (tree callee = gimple_call_fndecl (stmt))
-      {
-	/* Check for uses of the pointer passed to either a standard
-	   or a user-defined deallocation function.  */
-	unsigned argno = fndecl_dealloc_argno (callee);
-	if (argno < (unsigned) call_nargs (stmt))
-	  {
-	    tree arg = call_arg (stmt, argno);
-	    if (TREE_CODE (arg) == SSA_NAME)
-	      check_pointer_uses (stmt, arg);
-	  }
-      }
+  if (tree callee = gimple_call_fndecl (stmt))
+    {
+      /* Check for uses of the pointer passed to either a standard
+	 or a user-defined deallocation function.  */
+      unsigned argno = fndecl_dealloc_argno (callee);
+      if (argno < (unsigned) call_nargs (stmt))
+	{
+	  tree arg = call_arg (stmt, argno);
+	  if (TREE_CODE (arg) == SSA_NAME)
+	    check_pointer_uses (stmt, arg);
+	}
+    }
 
   check_call_access (stmt);
   check_call_dangling (stmt);
