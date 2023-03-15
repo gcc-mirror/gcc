@@ -1,3 +1,65 @@
+2023-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109109
+	* config/i386/i386-expand.cc (split_double_concat): Fix splitting
+	when lo is equal to dhi and hi is a MEM which uses dlo register.
+
+2023-03-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/107925
+	* ipa-cp.cc (update_profiling_info): Drop counts of orig_node to
+	global0 instead of zeroing when it does not have as many counts as
+	it should.
+
+2023-03-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/107925
+	* ipa-cp.cc (update_specialized_profile): Drop orig_node_count to
+	ipa count, remove assert, lenient_count_portion_handling, dump
+	also orig_node_count.
+
+2023-03-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.cc (expand_vec_perm_movs):
+	Handle V2SImode for TARGET_MMX_WITH_SSE.
+	* config/i386/mmx.md (*mmx_movss_<mode>): Rename from *mmx_movss
+	using V2FI mode iterator to handle both V2SI and V2SF modes.
+
+2023-03-14  Sam James  <sam@gentoo.org>
+
+	* config/riscv/genrvv-type-indexer.cc: Avoid calloc() poisoning on musl by
+	including <sstream> earlier.
+	* system.h: Add INCLUDE_SSTREAM.
+
+2023-03-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-live.cc (remove_unused_locals): Do not treat
+	the .DEFERRED_INIT of a variable as use, instead remove
+	that if it is the only use.
+
+2023-03-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/107762
+	* expr.cc (emit_group_store): Revert latest change.
+
+2023-03-14  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/109005
+	* tree-if-conv.cc (get_bitfield_rep): Replace BLKmode check with
+	aggregate type check.
+
+2023-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109115
+	* tree-vect-patterns.cc (vect_recog_divmod_pattern): Don't use
+	r.upper_bound () on r.undefined_p () range.
+
+2023-03-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/106896
+	* profile-count.cc (profile_count::to_sreal_scale): Synchronize
+	implementatoin with probability_in; avoid some asserts.
+
 2023-03-13  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/linux.h (TARGET_ASM_FILE_END): New macro.

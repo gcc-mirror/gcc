@@ -1,3 +1,11 @@
+2023-03-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/109108
+	* decl.cc (function_defined_in_root_p): Remove.
+	(get_symbol_decl): Set DECL_LAMBDA_FUNCTION_P on function literals.
+	(start_function): Unconditionally unset DECL_EXTERNAL
+	(set_linkage_for_decl): Give lambda functions one-only linkage.
+
 2023-03-13  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* decl.cc (finish_thunk): Unset DECL_EXTERNAL on thunk.

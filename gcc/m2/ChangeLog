@@ -1,3 +1,12 @@
+2023-03-14  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109125
+	* gm2-libs-ch/cgetopt.c (cgetopt_SetOption): Replace int
+	for bool.
+	* gm2-libs-ch/termios.c (doSetUnset): Replace int for bool.
+	* gm2-libs/Builtins.mod (isfinitef): Correct typo in return
+	statement.
+
 2023-03-13  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109103

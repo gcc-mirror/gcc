@@ -1,3 +1,54 @@
+2023-03-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/109111
+	* include/std/ranges (repeat_view): Remove redundant parentheses
+	in requires-clause.
+	(repeat_view::_Iterator): Correct the requires-clause.
+
+2023-03-14  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_iterator.h (move_iterator::_S_iter_concept):
+	Define.
+	(__cpp_lib_move_iterator_concept): Define for C++20.
+	(move_iterator::iterator_concept): Strengthen as per P2520R0.
+	* include/std/version (__cpp_lib_move_iterator_concept): Define
+	for C++20.
+	* testsuite/24_iterators/move_iterator/p2520r0.cc: New test.
+
+2023-03-14  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_util.h (view_interface::empty): Add
+	preferred overloads that use ranges::size when the range is
+	sized as per LWG 3715.
+	* testsuite/std/ranges/adaptors/lwg3715.cc: New test.
+
+2023-03-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono.h (__is_duration_v, __is_time_point_v):
+	Only define for C++17 and later.
+
+2023-03-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/Makefile.am: Add comment about linker script fragments.
+	* src/Makefile.in: Regenerate.
+
+2023-03-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/62196
+	* include/bits/mask_array.h (mask_array): Add assertions to
+	assignment operators.
+	* include/std/valarray (valarray::operator[](valarray<bool>)):
+	Add assertions.
+	* testsuite/26_numerics/valarray/mask-1_neg.cc: New test.
+	* testsuite/26_numerics/valarray/mask-2_neg.cc: New test.
+	* testsuite/26_numerics/valarray/mask-3_neg.cc: New test.
+	* testsuite/26_numerics/valarray/mask-4_neg.cc: New test.
+	* testsuite/26_numerics/valarray/mask-5_neg.cc: New test.
+	* testsuite/26_numerics/valarray/mask-6_neg.cc: New test.
+	* testsuite/26_numerics/valarray/mask-7_neg.cc: New test.
+	* testsuite/26_numerics/valarray/mask-8_neg.cc: New test.
+	* testsuite/26_numerics/valarray/mask.cc: New test.
+
 2023-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.

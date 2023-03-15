@@ -1,3 +1,19 @@
+2023-03-14  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109125
+	* libm2iso/ErrnoCategory.cc (FALSE): Remove.
+	(TRUE): Remove.
+	* libm2iso/wrapsock.c (TRUE): Remove.
+	(FALSE): Remove.
+	* libm2iso/wraptime.cc (TRUE): Remove.
+	(FALSE): Remove.
+	* libm2pim/cgetopt.cc: Replace int for bool for every BOOLEAN
+	parameter in the definition module.
+	* libm2pim/dtoa.cc: Ditto.
+	* libm2pim/ldtoa.cc: Ditto.
+	* libm2pim/termios.cc: Ditto.
+	(doSetUnset): Replace int for bool.
+
 2023-02-27  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/108944

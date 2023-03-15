@@ -1,3 +1,80 @@
+2023-03-15  Jonathan Yong  <10walls@gmail.com>
+
+	* gcc.dg/pic-2.c: Fix expected __PIC__ value.
+	* gcc.dg/pic-3.c: Ditto.
+	* gcc.dg/pic-4.c: Ditto.
+
+2023-03-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96830
+	* g++.dg/cpp2a/concepts-class5.C: New test.
+	* g++.dg/cpp2a/concepts-class5a.C: New test.
+
+2023-03-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96830
+	* g++.dg/cpp2a/concepts-friend14.C: New test.
+
+2023-03-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108468
+	* g++.dg/cpp1y/var-templ78.C: New test.
+
+2023-03-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107310
+	* c-c++-common/Wimplicit-fallthrough-39.c: Adjust warning.
+	* g++.dg/warn/Wreturn-6.C: New test.
+
+2023-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109109
+	* gcc.target/i386/pr109109-1.c: New test.
+	* gcc.target/i386/pr109109-2.c: New test.
+
+2023-03-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/109108
+	* gdc.dg/torture/imports/pr109108.d: New test.
+	* gdc.dg/torture/pr109108.d: New test.
+
+2023-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108972
+	PR testsuite/109129
+	* g++.dg/cpp2a/concepts-lambda3.C: Use dg-do run only for c++20,
+	for c++17_down dg-do compile.  Expect dg-excess-errors for c++17_down
+	rather than ! concepts.
+
+2023-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109096
+	* g++.dg/cpp1z/has-unique-obj-representations3.C: New test.
+
+2023-03-14  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/auto-init-unused-1.c: New testcase.
+
+2023-03-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/109005
+	* gnat.dg/specs/opt6.ads: New test.
+
+2023-03-14  Tamar Christina  <tamar.christina@arm.com>
+
+	PR testsuite/109118
+	* gcc.dg/mla_1.c: Moved to...
+	* gcc.target/aarch64/sve/mla_3.c: ...here.
+
+2023-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109115
+	* gcc.dg/pr109115.c: New test.
+
+2023-03-14  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/torture/20230313.C: New testcase.
+
 2023-03-13  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2/pim/fail/largeconst.mod: New test.

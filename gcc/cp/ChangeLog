@@ -1,3 +1,40 @@
+2023-03-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96830
+	* pt.cc (push_inline_template_parms_recursive): Set
+	TEMPLATE_PARMS_CONSTRAINTS.
+	(push_template_decl): For an out-of-line declaration, verify
+	constraints for each enclosing template scope match those of the
+	original template declaratation.
+
+2023-03-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96830
+	* pt.cc (redeclare_class_template): Add missing "of" in
+	constraint mismatch diagnostic.
+	(tsubst_friend_class): For an already declared class template,
+	substitute and pass the friend declaration's constraints to
+	redeclare_class_template instead of passing the existing
+	template's constraints.
+
+2023-03-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108468
+	* pt.cc (unify_pack_expansion): Check that TPARMS_PRIMARY_TEMPLATE
+	is non-null.
+
+2023-03-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107310
+	* cp-gimplify.cc (genericize_if_stmt): Restore folding
+	of constant conditions.
+
+2023-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109096
+	* tree.cc (record_has_unique_obj_representations): Ignore unnamed
+	bitfields.
+
 2023-03-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/107128
