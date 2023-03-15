@@ -41,8 +41,14 @@ public:
   const HIR::Module &pop_module_scope ();
 
   void emit_trait (const HIR::Trait &trait);
-
   void emit_function (const HIR::Function &fn);
+
+  /**
+   * Macros are a bit particular - they only live at the AST level, so we can
+   * directly refer to them using their NodeId. There's no need to keep an HIR
+   * node for them.
+   */
+  void emit_macro (NodeId macro);
 
   const std::string &get_interface_buffer () const;
 
