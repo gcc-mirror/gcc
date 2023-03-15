@@ -25,43 +25,6 @@
 namespace Rust {
 namespace Resolver {
 
-class ImplItemToName : private TypeCheckBase, private HIR::HIRImplVisitor
-{
-public:
-  static bool resolve (HIR::ImplItem *item, std::string &name_result)
-  {
-    ImplItemToName resolver (name_result);
-    item->accept_vis (resolver);
-    return resolver.ok;
-  }
-
-  void visit (HIR::TypeAlias &alias) override
-  {
-    ok = true;
-    result.assign (alias.get_new_type_name ());
-  }
-
-  void visit (HIR::Function &function) override
-  {
-    ok = true;
-    result.assign (function.get_function_name ());
-  }
-
-  void visit (HIR::ConstantItem &constant) override
-  {
-    ok = true;
-    result.assign (constant.get_identifier ());
-  }
-
-private:
-  ImplItemToName (std::string &result)
-    : TypeCheckBase (), ok (false), result (result)
-  {}
-
-  bool ok;
-  std::string &result;
-};
-
 class OverlappingImplItemPass : public TypeCheckBase
 {
 public:
@@ -97,10 +60,7 @@ public:
     if (!ok)
       return;
 
-    std::string impl_item_name;
-    ok = ImplItemToName::resolve (impl_item, impl_item_name);
-    rust_assert (ok);
-
+    std::string impl_item_name = impl_item->get_impl_item_name ();
     std::pair<HIR::ImplItem *, std::string> elem (impl_item, impl_item_name);
     impl_mappings[impl_type].insert (std::move (elem));
   }
