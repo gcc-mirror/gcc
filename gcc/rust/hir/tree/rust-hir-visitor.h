@@ -153,7 +153,6 @@ public:
   virtual void visit (SliceType &type) = 0;
   virtual void visit (InferredType &type) = 0;
   virtual void visit (BareFunctionType &type) = 0;
-  virtual void visit (ExportedMacro &macro) = 0;
 };
 
 class HIRFullVisitorBase : public HIRFullVisitor
@@ -304,7 +303,6 @@ public:
   virtual void visit (SliceType &) override {}
   virtual void visit (InferredType &) override {}
   virtual void visit (BareFunctionType &) override {}
-  virtual void visit (ExportedMacro &) override {}
 };
 
 class HIRExternalItemVisitor
@@ -339,7 +337,6 @@ public:
   virtual void visit (Trait &trait) = 0;
   virtual void visit (ImplBlock &impl) = 0;
   virtual void visit (ExternBlock &block) = 0;
-  virtual void visit (ExportedMacro &macro) = 0;
 };
 
 class HIRImplVisitor
@@ -399,7 +396,6 @@ public:
   virtual void visit (LetStmt &stmt) = 0;
   virtual void visit (ExprStmtWithoutBlock &stmt) = 0;
   virtual void visit (ExprStmtWithBlock &stmt) = 0;
-  virtual void visit (ExportedMacro &macro) = 0;
 };
 
 class HIRExpressionVisitor

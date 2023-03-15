@@ -705,28 +705,6 @@ ASTLoweringItem::visit (AST::ExternBlock &extern_block)
   translated = lower_extern_block (extern_block);
 }
 
-void
-ASTLoweringItem::visit (AST::MacroRulesDefinition &def)
-{
-  bool is_export = false;
-  for (const auto &attr : def.get_outer_attrs ())
-    if (attr.get_path ().as_string () == "macro_export")
-      is_export = true;
-
-  if (is_export)
-    {
-      auto crate_num = mappings->get_current_crate ();
-      Analysis::NodeMapping mapping (crate_num, def.get_node_id (),
-				     mappings->get_next_hir_id (crate_num),
-				     mappings->get_next_localdef_id (
-				       crate_num));
-      auto locus = def.get_locus ();
-
-      translated
-	= new HIR::ExportedMacro (mapping, def.get_outer_attrs (), locus);
-    }
-}
-
 HIR::SimplePath
 ASTLoweringSimplePath::translate (const AST::SimplePath &path)
 {

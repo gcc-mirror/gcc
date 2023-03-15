@@ -56,7 +56,6 @@ public:
   void visit (HIR::ImplBlock &) override {}
   void visit (HIR::ExternBlock &) override {}
   void visit (HIR::EmptyStmt &) override {}
-  void visit (HIR::ExportedMacro &) override {}
 
 private:
   CompileStmt (Context *ctx);
