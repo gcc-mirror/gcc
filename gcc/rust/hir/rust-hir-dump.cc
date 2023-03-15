@@ -309,12 +309,6 @@ void
 Dump::visit (IfExprConseqElse &)
 {}
 void
-Dump::visit (IfExprConseqIf &)
-{}
-void
-Dump::visit (IfExprConseqIfLet &)
-{}
-void
 Dump::visit (IfLetExpr &)
 {}
 void

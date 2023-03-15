@@ -470,29 +470,6 @@ TypeCheckExpr::visit (HIR::IfExprConseqElse &expr)
 }
 
 void
-TypeCheckExpr::visit (HIR::IfExprConseqIf &expr)
-{
-  TypeCheckExpr::Resolve (expr.get_if_condition ());
-  auto if_blk_resolved = TypeCheckExpr::Resolve (expr.get_if_block ());
-  auto else_blk_resolved = TypeCheckExpr::Resolve (expr.get_conseq_if_expr ());
-
-  if (if_blk_resolved->get_kind () == TyTy::NEVER)
-    infered = else_blk_resolved;
-  else if (else_blk_resolved->get_kind () == TyTy::NEVER)
-    infered = if_blk_resolved;
-  else
-    {
-      infered = unify_site (
-	expr.get_mappings ().get_hirid (),
-	TyTy::TyWithLocation (if_blk_resolved,
-			      expr.get_if_block ()->get_locus ()),
-	TyTy::TyWithLocation (else_blk_resolved,
-			      expr.get_conseq_if_expr ()->get_locus ()),
-	expr.get_locus ());
-    }
-}
-
-void
 TypeCheckExpr::visit (HIR::IfLetExpr &expr)
 {
   // this needs to perform a least upper bound coercion on the blocks and then

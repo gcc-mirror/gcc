@@ -547,23 +547,6 @@ PrivacyReporter::visit (HIR::IfExprConseqElse &expr)
 }
 
 void
-PrivacyReporter::visit (HIR::IfExprConseqIf &expr)
-{
-  expr.get_if_condition ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-  expr.get_conseq_if_expr ()->accept_vis (*this);
-}
-
-void
-PrivacyReporter::visit (HIR::IfExprConseqIfLet &expr)
-{
-  expr.get_if_condition ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-
-  // TODO: We need to visit the if_let_expr as well
-}
-
-void
 PrivacyReporter::visit (HIR::IfLetExpr &)
 {
   // TODO: We need to visit the if_let_expr

@@ -221,11 +221,10 @@ ASTLoweringIfBlock::visit (AST::IfExprConseqIf &expr)
 				 mappings->get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
-  translated
-    = new HIR::IfExprConseqIf (mapping, std::unique_ptr<HIR::Expr> (condition),
-			       std::unique_ptr<HIR::BlockExpr> (block),
-			       std::unique_ptr<HIR::IfExpr> (conseq_if_expr),
-			       expr.get_locus ());
+  translated = new HIR::IfExprConseqElse (
+    mapping, std::unique_ptr<HIR::Expr> (condition),
+    std::unique_ptr<HIR::BlockExpr> (block),
+    std::unique_ptr<HIR::ExprWithBlock> (conseq_if_expr), expr.get_locus ());
 }
 
 void

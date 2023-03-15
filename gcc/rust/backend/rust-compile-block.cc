@@ -118,33 +118,19 @@ CompileConditionalBlocks::visit (HIR::IfExprConseqElse &expr)
   tree fndecl = fnctx.fndecl;
   tree condition_expr = CompileExpr::Compile (expr.get_if_condition (), ctx);
   tree then_block = CompileBlock::compile (expr.get_if_block (), ctx, result);
-  tree else_block = CompileBlock::compile (expr.get_else_block (), ctx, result);
-
-  translated
-    = ctx->get_backend ()->if_statement (fndecl, condition_expr, then_block,
-					 else_block, expr.get_locus ());
-}
-
-void
-CompileConditionalBlocks::visit (HIR::IfExprConseqIf &expr)
-{
-  fncontext fnctx = ctx->peek_fn ();
-  tree fndecl = fnctx.fndecl;
-  tree condition_expr = CompileExpr::Compile (expr.get_if_condition (), ctx);
-  tree then_block = CompileBlock::compile (expr.get_if_block (), ctx, result);
 
   // else block
   std::vector<Bvariable *> locals;
-  Location start_location = expr.get_conseq_if_expr ()->get_locus ();
-  Location end_location = expr.get_conseq_if_expr ()->get_locus (); // FIXME
+  Location start_location = expr.get_else_block ()->get_locus ();
+  Location end_location = expr.get_else_block ()->get_locus (); // FIXME
   tree enclosing_scope = ctx->peek_enclosing_scope ();
   tree else_block = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
 						start_location, end_location);
   ctx->push_block (else_block);
 
   tree else_stmt_decl
-    = CompileConditionalBlocks::compile (expr.get_conseq_if_expr (), ctx,
-					 result);
+    = CompileExprWithBlock::compile (expr.get_else_block (), ctx, result);
+
   ctx->add_statement (else_stmt_decl);
 
   ctx->pop_block ();

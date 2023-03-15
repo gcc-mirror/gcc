@@ -96,8 +96,6 @@ private:
   virtual void visit (ForLoopExpr &) override;
   virtual void visit (IfExpr &) override;
   virtual void visit (IfExprConseqElse &) override;
-  virtual void visit (IfExprConseqIf &) override;
-  virtual void visit (IfExprConseqIfLet &) override;
   virtual void visit (IfLetExpr &) override;
   virtual void visit (IfLetExprConseqElse &) override;
   virtual void visit (IfLetExprConseqIf &) override;

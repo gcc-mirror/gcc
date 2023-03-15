@@ -45,7 +45,6 @@ public:
   void visit (HIR::NegationExpr &expr) override;
   void visit (HIR::TypeCastExpr &expr) override;
   void visit (HIR::IfExpr &expr) override;
-  void visit (HIR::IfExprConseqIf &expr) override;
   void visit (HIR::IfExprConseqElse &expr) override;
   void visit (HIR::BlockExpr &expr) override;
   void visit (HIR::UnsafeBlockExpr &expr) override;
@@ -77,7 +76,6 @@ public:
   // TODO
   // these need to be sugared in the HIR to if statements and a match
   void visit (HIR::WhileLetLoopExpr &) override {}
-  void visit (HIR::IfExprConseqIfLet &) override {}
   void visit (HIR::IfLetExpr &) override {}
   void visit (HIR::IfLetExprConseqElse &) override {}
   void visit (HIR::IfLetExprConseqIf &) override {}

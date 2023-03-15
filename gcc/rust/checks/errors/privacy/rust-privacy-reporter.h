@@ -122,8 +122,6 @@ types
   virtual void visit (HIR::ForLoopExpr &expr);
   virtual void visit (HIR::IfExpr &expr);
   virtual void visit (HIR::IfExprConseqElse &expr);
-  virtual void visit (HIR::IfExprConseqIf &expr);
-  virtual void visit (HIR::IfExprConseqIfLet &expr);
   virtual void visit (HIR::IfLetExpr &expr);
   virtual void visit (HIR::IfLetExprConseqElse &expr);
   virtual void visit (HIR::IfLetExprConseqIf &expr);
