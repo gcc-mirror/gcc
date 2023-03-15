@@ -3862,13 +3862,7 @@ pass_waccess::use_after_inval_p (gimple *inval_stmt, gimple *use_stmt,
        to consecutive statements in it.  Use the ids to determine which
        precedes which.  This avoids the linear traversal on subsequent
        visits to the same block.  */
-    for (auto si = gsi_start_bb (inval_bb); !gsi_end_p (si);
-	 gsi_next_nondebug (&si))
-      {
-	gimple *stmt = gsi_stmt (si);
-	unsigned uid = inc_gimple_stmt_max_uid (m_func);
-	gimple_set_uid (stmt, uid);
-      }
+    renumber_gimple_stmt_uids_in_block (m_func, inval_bb);
 
   return gimple_uid (inval_stmt) < gimple_uid (use_stmt);
 }
@@ -4239,27 +4233,26 @@ pass_waccess::check_pointer_uses (gimple *stmt, tree ptr,
 	      tree_code code = gimple_cond_code (cond);
 	      equality = code == EQ_EXPR || code == NE_EXPR;
 	    }
+	  else if (gimple_code (use_stmt) == GIMPLE_PHI)
+	    {
+	      /* Only add a PHI result to POINTERS if all its
+		 operands are related to PTR, otherwise continue.  */
+	      tree lhs = gimple_phi_result (use_stmt);
+	      if (!pointers_related_p (stmt, lhs, ptr, m_ptr_qry))
+		continue;
+
+	      if (TREE_CODE (lhs) == SSA_NAME)
+		{
+		  pointers.safe_push (lhs);
+		  continue;
+		}
+	    }
 
 	  /* Warn if USE_STMT is dominated by the deallocation STMT.
 	     Otherwise, add the pointer to POINTERS so that the uses
 	     of any other pointers derived from it can be checked.  */
 	  if (use_after_inval_p (stmt, use_stmt, check_dangling))
 	    {
-	      if (gimple_code (use_stmt) == GIMPLE_PHI)
-		{
-		  /* Only add a PHI result to POINTERS if all its
-		     operands are related to PTR, otherwise continue.  */
-		  tree lhs = gimple_phi_result (use_stmt);
-		  if (!pointers_related_p (stmt, lhs, ptr, m_ptr_qry))
-		    continue;
-
-		  if (TREE_CODE (lhs) == SSA_NAME)
-		    {
-		      pointers.safe_push (lhs);
-		      continue;
-		    }
-		}
-
 	      basic_block use_bb = gimple_bb (use_stmt);
 	      bool this_maybe
 		= (maybe
