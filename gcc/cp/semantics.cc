@@ -3468,8 +3468,13 @@ check_template_template_default_arg (tree argument)
       && TREE_CODE (argument) != UNBOUND_CLASS_TEMPLATE)
     {
       if (TREE_CODE (argument) == TYPE_DECL)
-	error ("invalid use of type %qT as a default value for a template "
-	       "template-parameter", TREE_TYPE (argument));
+	{
+	  if (tree t = maybe_get_template_decl_from_type_decl (argument))
+	    if (TREE_CODE (t) == TEMPLATE_DECL)
+	      return t;
+	  error ("invalid use of type %qT as a default value for a template "
+		 "template-parameter", TREE_TYPE (argument));
+	}
       else
 	error ("invalid default argument for a template template parameter");
       return error_mark_node;

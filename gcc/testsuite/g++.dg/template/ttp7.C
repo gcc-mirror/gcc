@@ -11,6 +11,6 @@ template<template<int> class = A<0> > struct B2 {};  // { dg-error "as a default
 
 template <typename T>
 struct S {
-  template <template <typename> class = S>   struct I1 {};  // { dg-error "as a default value" }
+  template <template <typename> class = S>   struct I1 {}; // PR c++/58538
   template <template <typename> class = ::S> struct I2 {};
 };
