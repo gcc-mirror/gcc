@@ -4194,6 +4194,10 @@ pass_waccess::check_pointer_uses (gimple *stmt, tree ptr,
 	  if (use_stmt == stmt || is_gimple_debug (use_stmt))
 	    continue;
 
+	  /* A clobber isn't a use.  */
+	  if (gimple_clobber_p (use_stmt))
+	    continue;
+
 	  if (realloc_lhs)
 	    {
 	      /* Check to see if USE_STMT is a mismatched deallocation
