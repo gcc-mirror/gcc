@@ -76,8 +76,6 @@ public:
   void visit (HIR::WhileLetLoopExpr &) override {}
   void visit (HIR::ForLoopExpr &) override {}
   void visit (HIR::IfLetExprConseqElse &) override {}
-  void visit (HIR::IfLetExprConseqIf &) override {}
-  void visit (HIR::IfLetExprConseqIfLet &) override {}
   void visit (HIR::AwaitExpr &) override {}
   void visit (HIR::AsyncBlockExpr &) override {}
 

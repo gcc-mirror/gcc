@@ -124,8 +124,6 @@ types
   virtual void visit (HIR::IfExprConseqElse &expr);
   virtual void visit (HIR::IfLetExpr &expr);
   virtual void visit (HIR::IfLetExprConseqElse &expr);
-  virtual void visit (HIR::IfLetExprConseqIf &expr);
-  virtual void visit (HIR::IfLetExprConseqIfLet &expr);
   virtual void visit (HIR::MatchExpr &expr);
   virtual void visit (HIR::AwaitExpr &expr);
   virtual void visit (HIR::AsyncBlockExpr &expr);
