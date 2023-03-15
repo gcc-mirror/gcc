@@ -1560,27 +1560,7 @@ IfLetExprConseqElse::as_string () const
 {
   std::string str = IfLetExpr::as_string ();
 
-  str += "\n Else block expr: " + else_block->as_string ();
-
-  return str;
-}
-
-std::string
-IfLetExprConseqIf::as_string () const
-{
-  std::string str = IfLetExpr::as_string ();
-
-  str += "\n Else if expr: \n  " + if_expr->as_string ();
-
-  return str;
-}
-
-std::string
-IfLetExprConseqIfLet::as_string () const
-{
-  std::string str = IfLetExpr::as_string ();
-
-  str += "\n Else if let expr: \n  " + if_let_expr->as_string ();
+  str += "\n Else expr: " + else_block->as_string ();
 
   return str;
 }
@@ -4130,18 +4110,6 @@ IfLetExprConseqElse::accept_vis (HIRFullVisitor &vis)
 }
 
 void
-IfLetExprConseqIf::accept_vis (HIRFullVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-IfLetExprConseqIfLet::accept_vis (HIRFullVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
 MatchExpr::accept_vis (HIRFullVisitor &vis)
 {
   vis.visit (*this);
@@ -4887,18 +4855,6 @@ CallExpr::accept_vis (HIRExpressionVisitor &vis)
 
 void
 RangeFromToInclExpr::accept_vis (HIRExpressionVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-IfLetExprConseqIfLet::accept_vis (HIRExpressionVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-IfLetExprConseqIf::accept_vis (HIRExpressionVisitor &vis)
 {
   vis.visit (*this);
 }

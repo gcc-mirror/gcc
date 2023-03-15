@@ -516,22 +516,6 @@ ConstChecker::visit (IfLetExprConseqElse &expr)
 }
 
 void
-ConstChecker::visit (IfLetExprConseqIf &expr)
-{
-  expr.get_scrutinee_expr ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-}
-
-void
-ConstChecker::visit (IfLetExprConseqIfLet &expr)
-{
-  expr.get_scrutinee_expr ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-
-  // TODO: Visit conseq if let expression
-}
-
-void
 ConstChecker::visit (MatchExpr &expr)
 {
   expr.get_scrutinee_expr ()->accept_vis (*this);

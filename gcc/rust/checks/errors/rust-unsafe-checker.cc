@@ -618,22 +618,6 @@ UnsafeChecker::visit (IfLetExprConseqElse &expr)
 }
 
 void
-UnsafeChecker::visit (IfLetExprConseqIf &expr)
-{
-  expr.get_scrutinee_expr ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-}
-
-void
-UnsafeChecker::visit (IfLetExprConseqIfLet &expr)
-{
-  expr.get_scrutinee_expr ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-
-  // TODO: Visit conseq if let expression
-}
-
-void
 UnsafeChecker::visit (MatchExpr &expr)
 {
   expr.get_scrutinee_expr ()->accept_vis (*this);

@@ -119,8 +119,6 @@ class IfExpr;
 class IfExprConseqElse;
 class IfLetExpr;
 class IfLetExprConseqElse;
-class IfLetExprConseqIf;
-class IfLetExprConseqIfLet;
 struct MatchArm;
 // class MatchCase;
 // class MatchCaseBlockExpr;
