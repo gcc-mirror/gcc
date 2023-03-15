@@ -48,7 +48,7 @@ typedef enum Mode { maxsignicant, decimaldigits } Mode;
    (ndigits may be negative).  */
 
 double
-dtoa_strtod (const char *s, int *error)
+dtoa_strtod (const char *s, bool *error)
 {
   char *endp;
   double d;
@@ -58,7 +58,7 @@ dtoa_strtod (const char *s, int *error)
   if (endp != NULL && (*endp == '\0'))
     *error = (errno != 0);
   else
-    *error = TRUE;
+    *error = true;
   return d;
 }
 

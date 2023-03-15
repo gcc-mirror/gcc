@@ -52,7 +52,7 @@ extern int dtoa_calcsign (char *p, int str_size);
    (ndigits may be negative).  */
 
 long double
-ldtoa_strtold (const char *s, int *error)
+ldtoa_strtold (const char *s, bool *error)
 {
   char *endp;
   long double d;
@@ -67,7 +67,7 @@ ldtoa_strtold (const char *s, int *error)
   if (endp != NULL && (*endp == '\0'))
     *error = (errno != 0);
   else
-    *error = TRUE;
+    *error = true;
   return d;
 }
 
