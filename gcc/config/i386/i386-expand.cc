@@ -19007,9 +19007,10 @@ expand_vec_perm_blend (struct expand_vec_perm_d *d)
     ;
   else if (TARGET_AVX && (vmode == V4DFmode || vmode == V8SFmode))
     ;
-  else if (TARGET_SSE4_1 && (GET_MODE_SIZE (vmode) == 16
-			     || GET_MODE_SIZE (vmode) == 8
-			     || GET_MODE_SIZE (vmode) == 4))
+  else if (TARGET_SSE4_1
+	   && (GET_MODE_SIZE (vmode) == 16
+	       || (TARGET_MMX_WITH_SSE && GET_MODE_SIZE (vmode) == 8)
+	       || GET_MODE_SIZE (vmode) == 4))
     ;
   else
     return false;
@@ -19042,6 +19043,8 @@ expand_vec_perm_blend (struct expand_vec_perm_d *d)
     case E_V8SFmode:
     case E_V2DFmode:
     case E_V4SFmode:
+    case E_V2SFmode:
+    case E_V2HImode:
     case E_V4HImode:
     case E_V8HImode:
     case E_V8SImode:
@@ -19897,11 +19900,15 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 	}
     }
 
+  /* Try the SSE4.1 blend variable merge instructions.  */
+  if (expand_vec_perm_blend (d))
+    return true;
+
   /* Try movss/movsd instructions.  */
   if (expand_vec_perm_movs (d))
     return true;
 
-  /* Finally, try the fully general two operand permute.  */
+  /* Try the fully general two operand permute.  */
   if (expand_vselect_vconcat (d->target, d->op0, d->op1, d->perm, nelt,
 			      d->testing_p))
     return true;
@@ -19923,10 +19930,6 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 				  d->testing_p))
 	return true;
     }
-
-  /* Try the SSE4.1 blend variable merge instructions.  */
-  if (expand_vec_perm_blend (d))
-    return true;
 
   /* Try one of the AVX vpermil variable permutations.  */
   if (expand_vec_perm_vpermil (d))

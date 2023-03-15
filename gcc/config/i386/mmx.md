@@ -1154,6 +1154,25 @@
   DONE;
 })
 
+(define_insn "*mmx_blendps"
+  [(set (match_operand:V2SF 0 "register_operand" "=Yr,*x,x")
+	(vec_merge:V2SF
+	  (match_operand:V2SF 2 "register_operand" "Yr,*x,x")
+	  (match_operand:V2SF 1 "register_operand" "0,0,x")
+	  (match_operand:SI 3 "const_0_to_3_operand")))]
+  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+  "@
+   blendps\t{%3, %2, %0|%0, %2, %3}
+   blendps\t{%3, %2, %0|%0, %2, %3}
+   vblendps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "ssemov")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix_data16" "1,1,*")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "mode" "V4SF")])
+
 (define_insn "mmx_blendvps"
   [(set (match_operand:V2SF 0 "register_operand" "=Yr,*x,x")
 	(unspec:V2SF
