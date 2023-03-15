@@ -1,3 +1,22 @@
+2023-03-14  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2023-03-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/108429
+	* config/i386/x86-tune.def (X86_TUNE_USE_SCATTER_2PARTS): Enable for
+	generic.
+	(X86_TUNE_USE_SCATTER_4PARTS): Likewise.
+	(X86_TUNE_USE_SCATTER): Likewise.
+
+2023-03-14  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2023-02-07  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/x86-tune.def (X86_TUNE_AVX256_OPTIMAL): Turn off
+	for znver4.
+
 2023-03-11  Andrew Pinski  <apinski@marvell.com>
 
 	Backported from master:
