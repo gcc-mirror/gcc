@@ -9630,6 +9630,8 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	}
 
       /* Allow array assignment in compiler-generated code.  */
+      else if (DECL_P (lhs) && DECL_ARTIFICIAL (lhs))
+	/* OK, used by coroutines (co-await-initlist1.C).  */;
       else if (!current_function_decl
 	       || !DECL_DEFAULTED_FN (current_function_decl))
 	{
