@@ -44,7 +44,6 @@ public:
   void visit (HIR::NegationExpr &expr) override;
   void visit (HIR::IfExpr &expr) override;
   void visit (HIR::IfExprConseqElse &expr) override;
-  void visit (HIR::IfExprConseqIf &expr) override;
   void visit (HIR::IfLetExpr &expr) override;
   void visit (HIR::BlockExpr &expr) override;
   void visit (HIR::UnsafeBlockExpr &expr) override;
@@ -76,7 +75,6 @@ public:
   void visit (HIR::RangeToInclExpr &) override {}
   void visit (HIR::WhileLetLoopExpr &) override {}
   void visit (HIR::ForLoopExpr &) override {}
-  void visit (HIR::IfExprConseqIfLet &) override {}
   void visit (HIR::IfLetExprConseqElse &) override {}
   void visit (HIR::IfLetExprConseqIf &) override {}
   void visit (HIR::IfLetExprConseqIfLet &) override {}

@@ -345,43 +345,6 @@ CompileExpr::visit (HIR::IfExprConseqElse &expr)
 }
 
 void
-CompileExpr::visit (HIR::IfExprConseqIf &expr)
-{
-  TyTy::BaseType *if_type = nullptr;
-  if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
-				       &if_type))
-    {
-      rust_error_at (expr.get_locus (),
-		     "failed to lookup type of IfExprConseqElse");
-      return;
-    }
-
-  Bvariable *tmp = NULL;
-  bool needs_temp = !if_type->is_unit ();
-  if (needs_temp)
-    {
-      fncontext fnctx = ctx->peek_fn ();
-      tree enclosing_scope = ctx->peek_enclosing_scope ();
-      tree block_type = TyTyResolveCompile::compile (ctx, if_type);
-
-      bool is_address_taken = false;
-      tree ret_var_stmt = nullptr;
-      tmp = ctx->get_backend ()->temporary_variable (
-	fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
-	expr.get_locus (), &ret_var_stmt);
-      ctx->add_statement (ret_var_stmt);
-    }
-
-  auto stmt = CompileConditionalBlocks::compile (&expr, ctx, tmp);
-  ctx->add_statement (stmt);
-
-  if (tmp != NULL)
-    {
-      translated = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
-    }
-}
-
-void
 CompileExpr::visit (HIR::BlockExpr &expr)
 {
   TyTy::BaseType *block_tyty = nullptr;

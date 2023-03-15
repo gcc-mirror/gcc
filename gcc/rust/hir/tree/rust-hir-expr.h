@@ -3276,7 +3276,7 @@ protected:
 // If expression with an ending "else" expression HIR node (trailing)
 class IfExprConseqElse : public IfExpr
 {
-  std::unique_ptr<BlockExpr> else_block;
+  std::unique_ptr<ExprWithBlock> else_block;
 
 public:
   std::string as_string () const override;
@@ -3284,7 +3284,7 @@ public:
   IfExprConseqElse (Analysis::NodeMapping mappings,
 		    std::unique_ptr<Expr> condition,
 		    std::unique_ptr<BlockExpr> if_block,
-		    std::unique_ptr<BlockExpr> else_block, Location locus)
+		    std::unique_ptr<ExprWithBlock> else_block, Location locus)
     : IfExpr (std::move (mappings), std::move (condition), std::move (if_block),
 	      locus),
       else_block (std::move (else_block))
@@ -3293,7 +3293,7 @@ public:
 
   // Copy constructor with clone
   IfExprConseqElse (IfExprConseqElse const &other)
-    : IfExpr (other), else_block (other.else_block->clone_block_expr ())
+    : IfExpr (other), else_block (other.else_block->clone_expr_with_block ())
   {}
 
   // Overloaded assignment operator with cloning
@@ -3302,7 +3302,7 @@ public:
     IfExpr::operator= (other);
     // condition = other.condition->clone_expr();
     // if_block = other.if_block->clone_block_expr();
-    else_block = other.else_block->clone_block_expr ();
+    else_block = other.else_block->clone_expr_with_block ();
 
     return *this;
   }
@@ -3316,7 +3316,7 @@ public:
 
   void vis_else_block (HIRFullVisitor &vis) { else_block->accept_vis (vis); }
 
-  BlockExpr *get_else_block () { return else_block.get (); }
+  ExprWithBlock *get_else_block () { return else_block.get (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -3338,77 +3338,6 @@ protected:
   IfExprConseqElse *clone_if_expr_impl () const override
   {
     return new IfExprConseqElse (*this);
-  }
-};
-
-// If expression with an ending "else if" expression HIR node
-class IfExprConseqIf : public IfExpr
-{
-  std::unique_ptr<IfExpr> conseq_if_expr;
-
-public:
-  std::string as_string () const override;
-
-  IfExprConseqIf (Analysis::NodeMapping mappings,
-		  std::unique_ptr<Expr> condition,
-		  std::unique_ptr<BlockExpr> if_block,
-		  std::unique_ptr<IfExpr> conseq_if_expr, Location locus)
-    : IfExpr (std::move (mappings), std::move (condition), std::move (if_block),
-	      locus),
-      conseq_if_expr (std::move (conseq_if_expr))
-  {}
-  // outer attributes not allowed
-
-  // Copy constructor with clone
-  IfExprConseqIf (IfExprConseqIf const &other)
-    : IfExpr (other), conseq_if_expr (other.conseq_if_expr->clone_if_expr ())
-  {}
-
-  // Overloaded assignment operator to use clone
-  IfExprConseqIf &operator= (IfExprConseqIf const &other)
-  {
-    IfExpr::operator= (other);
-    // condition = other.condition->clone_expr();
-    // if_block = other.if_block->clone_block_expr();
-    conseq_if_expr = other.conseq_if_expr->clone_if_expr ();
-
-    return *this;
-  }
-
-  // move constructors
-  IfExprConseqIf (IfExprConseqIf &&other) = default;
-  IfExprConseqIf &operator= (IfExprConseqIf &&other) = default;
-
-  void accept_vis (HIRFullVisitor &vis) override;
-  void accept_vis (HIRExpressionVisitor &vis) override;
-
-  void vis_conseq_if_expr (HIRFullVisitor &vis)
-  {
-    conseq_if_expr->accept_vis (vis);
-  }
-
-  IfExpr *get_conseq_if_expr () { return conseq_if_expr.get (); }
-
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfExprConseqIf *clone_expr_impl () const override
-  {
-    return new IfExprConseqIf (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfExprConseqIf *clone_expr_with_block_impl () const override
-  {
-    return new IfExprConseqIf (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfExprConseqIf *clone_if_expr_impl () const override
-  {
-    return new IfExprConseqIf (*this);
   }
 };
 
@@ -3512,71 +3441,6 @@ protected:
   virtual IfLetExpr *clone_if_let_expr_impl () const
   {
     return new IfLetExpr (*this);
-  }
-};
-
-// If expression with an ending "else if let" expression HIR node
-class IfExprConseqIfLet : public IfExpr
-{
-  std::unique_ptr<IfLetExpr> if_let_expr;
-
-public:
-  std::string as_string () const override;
-
-  IfExprConseqIfLet (Analysis::NodeMapping mappings,
-		     std::unique_ptr<Expr> condition,
-		     std::unique_ptr<BlockExpr> if_block,
-		     std::unique_ptr<IfLetExpr> conseq_if_let_expr,
-		     Location locus)
-    : IfExpr (std::move (mappings), std::move (condition), std::move (if_block),
-	      locus),
-      if_let_expr (std::move (conseq_if_let_expr))
-  {}
-  // outer attributes not allowed
-
-  // Copy constructor with clone
-  IfExprConseqIfLet (IfExprConseqIfLet const &other)
-    : IfExpr (other), if_let_expr (other.if_let_expr->clone_if_let_expr ())
-  {}
-
-  // Overloaded assignment operator to use clone
-  IfExprConseqIfLet &operator= (IfExprConseqIfLet const &other)
-  {
-    IfExpr::operator= (other);
-    // condition = other.condition->clone_expr();
-    // if_block = other.if_block->clone_block_expr();
-    if_let_expr = other.if_let_expr->clone_if_let_expr ();
-
-    return *this;
-  }
-
-  // move constructors
-  IfExprConseqIfLet (IfExprConseqIfLet &&other) = default;
-  IfExprConseqIfLet &operator= (IfExprConseqIfLet &&other) = default;
-
-  void accept_vis (HIRFullVisitor &vis) override;
-  void accept_vis (HIRExpressionVisitor &vis) override;
-
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfExprConseqIfLet *clone_expr_impl () const override
-  {
-    return new IfExprConseqIfLet (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfExprConseqIfLet *clone_expr_with_block_impl () const override
-  {
-    return new IfExprConseqIfLet (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  IfExprConseqIfLet *clone_if_expr_impl () const override
-  {
-    return new IfExprConseqIfLet (*this);
   }
 };
 
