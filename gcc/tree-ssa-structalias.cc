@@ -1706,7 +1706,7 @@ do_sd_constraint (constraint_graph_t graph, constraint_t c,
 	    flag |= bitmap_ior_into (sol, get_varinfo (t)->solution);
 	  /* Merging the solution from ESCAPED needlessly increases
 	     the set.  Use ESCAPED as representative instead.  */
-	  else if (v->id == escaped_id)
+	  else if (t == find (escaped_id))
 	    flag |= bitmap_set_bit (sol, escaped_id);
 	  else if (v->may_have_pointers
 		   && add_graph_edge (graph, lhs, t))
