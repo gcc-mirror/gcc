@@ -7142,8 +7142,16 @@ inline_string_cmp (rtx target, tree var_str, const char *const_str,
 
       op0 = convert_modes (mode, unit_mode, op0, 1);
       op1 = convert_modes (mode, unit_mode, op1, 1);
-      result = expand_simple_binop (mode, MINUS, op0, op1,
-				    result, 1, OPTAB_WIDEN);
+      rtx diff = expand_simple_binop (mode, MINUS, op0, op1,
+				      result, 1, OPTAB_WIDEN);
+
+      /* Force the difference into result register.  We cannot reassign
+	 result here ("result = diff") or we may end up returning
+	 uninitialized result when expand_simple_binop allocates a new
+	 pseudo-register for returning.  */
+      if (diff != result)
+	emit_move_insn (result, diff);
+
       if (i < length - 1)
 	emit_cmp_and_jump_insns (result, CONST0_RTX (mode), NE, NULL_RTX,
 	    			 mode, true, ne_label);
