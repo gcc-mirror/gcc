@@ -35,9 +35,6 @@ class Lifetime;
 class GenericParam;
 class LifetimeParam;
 
-// FIXME: ARTHUR: Move this somewhere else
-class ExportedMacro;
-
 class TraitItem;
 class ImplItem;
 struct Crate;

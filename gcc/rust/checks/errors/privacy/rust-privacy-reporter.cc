@@ -728,9 +728,5 @@ PrivacyReporter::visit (HIR::ExprStmtWithBlock &stmt)
   stmt.get_expr ()->accept_vis (*this);
 }
 
-void
-PrivacyReporter::visit (HIR::ExportedMacro &)
-{}
-
 } // namespace Privacy
 } // namespace Rust

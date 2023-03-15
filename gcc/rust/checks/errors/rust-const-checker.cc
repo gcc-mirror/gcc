@@ -894,9 +894,5 @@ void
 ConstChecker::visit (BareFunctionType &)
 {}
 
-void
-ConstChecker::visit (ExportedMacro &)
-{}
-
 } // namespace HIR
 } // namespace Rust

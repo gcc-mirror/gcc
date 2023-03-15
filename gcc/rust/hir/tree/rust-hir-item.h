@@ -3226,27 +3226,6 @@ protected:
   }*/
 };
 
-class ExportedMacro : public VisItem
-{
-  Location locus;
-
-public:
-  ExportedMacro (Analysis::NodeMapping mapping, AST::AttrVec outer_attrs,
-		 Location locus)
-    : VisItem (mapping, Visibility (Visibility::PUBLIC),
-	       std::move (outer_attrs)),
-      locus (locus)
-  {}
-
-  virtual Location get_locus () const override;
-  virtual ItemKind get_item_kind () const override;
-  virtual ExportedMacro *clone_item_impl () const override;
-
-  void accept_vis (HIRFullVisitor &vis) override;
-  void accept_vis (HIRStmtVisitor &vis) override;
-  void accept_vis (HIRVisItemVisitor &vis) override;
-};
-
 } // namespace HIR
 } // namespace Rust
 

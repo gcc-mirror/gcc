@@ -191,7 +191,6 @@ public:
     Trait,
     Impl,
     Module,
-    MacroExport,
   };
 
   virtual ItemKind get_item_kind () const = 0;

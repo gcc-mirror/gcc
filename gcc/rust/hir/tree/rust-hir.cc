@@ -5180,41 +5180,5 @@ void
 ConstGenericParam::accept_vis (HIRFullVisitor &)
 {}
 
-void
-ExportedMacro::accept_vis (HIRVisItemVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-ExportedMacro::accept_vis (HIRFullVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-ExportedMacro::accept_vis (HIRStmtVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-Location
-ExportedMacro::get_locus () const
-{
-  return locus;
-}
-
-Item::ItemKind
-ExportedMacro::get_item_kind () const
-{
-  return ItemKind::MacroExport;
-}
-
-ExportedMacro *
-ExportedMacro::clone_item_impl () const
-{
-  return new ExportedMacro (*this);
-}
-
 } // namespace HIR
 } // namespace Rust

@@ -697,8 +697,5 @@ Dump::visit (InferredType &)
 void
 Dump::visit (BareFunctionType &)
 {}
-void
-Dump::visit (ExportedMacro &)
-{}
 } // namespace HIR
 } // namespace Rust

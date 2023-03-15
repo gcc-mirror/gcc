@@ -230,10 +230,6 @@ void
 ReachabilityVisitor::visit (HIR::ExternBlock &)
 {}
 
-void
-ReachabilityVisitor::visit (HIR::ExportedMacro &macro)
-{}
-
 // FIXME: How can we visit Blocks in the current configuration? Have a full
 // visitor?
 } // namespace Privacy
