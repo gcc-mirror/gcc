@@ -2873,19 +2873,22 @@ solve_graph (constraint_graph_t graph)
 			}
 		      /* Don't try to propagate to ourselves.  */
 		      if (to == i)
-			continue;
-
-		      bitmap tmp = get_varinfo (to)->solution;
-		      bool flag = false;
-
-		      /* If we propagate from ESCAPED use ESCAPED as
-		         placeholder.  */
+			{
+			  to_remove = j;
+			  continue;
+			}
+		      /* Early node unification can lead to edges from
+			 escaped - remove them.  */
 		      if (i == eff_escaped_id)
-			flag = bitmap_set_bit (tmp, escaped_id);
-		      else
-			flag = bitmap_ior_into (tmp, pts);
+			{
+			  to_remove = j;
+			  if (bitmap_set_bit (get_varinfo (to)->solution,
+					      escaped_id))
+			    bitmap_set_bit (changed, to);
+			  continue;
+			}
 
-		      if (flag)
+		      if (bitmap_ior_into (get_varinfo (to)->solution, pts))
 			bitmap_set_bit (changed, to);
 		    }
 		  if (to_remove != ~0U)
