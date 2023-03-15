@@ -241,6 +241,7 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->begin_group_cb = NULL;
   context->end_group_cb = NULL;
   context->final_cb = default_diagnostic_final_cb;
+  context->ice_handler_cb = NULL;
   context->includes_seen = NULL;
   context->m_client_data_hooks = NULL;
 }
@@ -665,6 +666,18 @@ diagnostic_action_after_output (diagnostic_context *context,
     case DK_ICE:
     case DK_ICE_NOBT:
       {
+	/* Optional callback for attempting to handle ICEs gracefully.  */
+	if (void (*ice_handler_cb) (diagnostic_context *)
+	      = context->ice_handler_cb)
+	  {
+	    /* Clear the callback, to avoid potentially re-entering
+	       the routine if there's a crash within the handler.  */
+	    context->ice_handler_cb = NULL;
+	    ice_handler_cb (context);
+	  }
+	/* The context might have had diagnostic_finish called on
+	   it at this point.  */
+
 	struct backtrace_state *state = NULL;
 	if (diag_kind == DK_ICE)
 	  state = backtrace_create_state (NULL, 0, bt_err_callback, NULL);

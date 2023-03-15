@@ -69,6 +69,11 @@ set plugin_test_list [list \
     { poly-int-05_plugin.c poly-int-test-1.c } \
     { poly-int-06_plugin.c poly-int-test-1.c } \
     { poly-int-07_plugin.c poly-int-test-1.c } \
+    { crash_test_plugin.c \
+	  crash-test-ice-stderr.c \
+	  crash-test-write-though-null-stderr.c \
+	  crash-test-ice-sarif.c \
+	  crash-test-write-though-null-sarif.c } \
     { diagnostic_group_plugin.c \
 	  diagnostic-group-test-1.c } \
     { diagnostic_plugin_test_show_locus.c \
