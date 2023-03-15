@@ -45,6 +45,51 @@ struct PatternBinding
   {}
 };
 
+// Info that gets stored in the map. Helps us detect if two bindings to the same
+// identifier have different mutability or ref states.
+class BindingTypeInfo
+{
+  Mutability mut;
+  bool is_ref;
+  Location locus;
+
+public:
+  BindingTypeInfo (Mutability mut, bool is_ref, Location locus)
+    : mut (mut), is_ref (is_ref), locus (locus)
+  {}
+
+  BindingTypeInfo (BindingTypeInfo const &other)
+    : mut (other.mut), is_ref (other.is_ref), locus (other.get_locus ())
+  {}
+
+  BindingTypeInfo (){};
+
+  Location get_locus () const { return locus; }
+  Mutability get_mut () const { return mut; }
+  bool get_is_ref () const { return is_ref; }
+
+  BindingTypeInfo operator= (BindingTypeInfo const &other)
+  {
+    mut = other.mut;
+    is_ref = other.is_ref;
+    locus = other.get_locus ();
+
+    return *this;
+  }
+
+  bool operator== (BindingTypeInfo const &other)
+  {
+    return mut == other.mut && is_ref == other.is_ref;
+  }
+
+  bool operator!= (BindingTypeInfo const &other)
+  {
+    return !BindingTypeInfo::operator== (other);
+  }
+};
+
+typedef std::map<Identifier, BindingTypeInfo> BindingMap;
+
 class ResolvePattern : public ResolverBase
 {
   using Rust::Resolver::ResolverBase::visit;
@@ -87,13 +132,35 @@ public:
   void visit (AST::TupleStructPattern &pattern) override;
   void visit (AST::TuplePattern &pattern) override;
   void visit (AST::RangePattern &pattern) override;
+  void visit (AST::AltPattern &pattern) override;
+
+  void add_new_binding (Identifier ident, NodeId node_id, BindingTypeInfo info);
+  void check_bindings_consistency (std::vector<BindingMap> &binding_maps);
 
 private:
-  PatternDeclaration (std::vector<PatternBinding> &bindings, Rib::ItemType type)
-    : ResolverBase (), bindings (bindings), type (type)
+  PatternDeclaration (std::vector<PatternBinding> &bindings_with_ctx,
+		      Rib::ItemType type)
+    : ResolverBase (), bindings_with_ctx (bindings_with_ctx), type (type)
   {}
 
-  std::vector<PatternBinding> &bindings;
+  // To avoid having a separate visitor for consistency checks, we store
+  // bindings in two forms:
+
+  // 1) Bindings as a vector of context-related sets.
+  // Used for checking multiple bindings to the same identifier (i.e. E0415,
+  // E0416).
+  std::vector<PatternBinding> &bindings_with_ctx;
+
+  // 2) Bindings as a map between identifiers and binding info.
+  // Used for checking consistency between alt patterns (i.e. E0408, E0409).
+  BindingMap binding_info_map;
+
+  // we need to insert the missing and inconsistent bindings (found in
+  // check_bindings_consistency) into maps to avoid duplication of error
+  // messages.
+  BindingMap inconsistent_bindings;
+  BindingMap missing_bindings;
+
   Rib::ItemType type;
 };
 
