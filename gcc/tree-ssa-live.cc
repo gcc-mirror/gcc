@@ -897,7 +897,8 @@ remove_unused_locals (void)
 	    else if (gimple_call_internal_p (stmt, IFN_DEFERRED_INIT))
 	      {
 		tree lhs = gimple_call_lhs (stmt);
-		if (DECL_P (lhs) && !is_used_p (lhs))
+		tree base = get_base_address (lhs);
+		if (DECL_P (base) && !is_used_p (base))
 		  {
 		    unlink_stmt_vdef (stmt);
 		    gsi_remove (&gsi, true);
