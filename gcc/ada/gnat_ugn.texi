@@ -22302,12 +22302,12 @@ procedure Pooloc1 is
       for A'Storage_Pool use X;
       v : A;
    begin
-      for I in  1 .. 50 loop
+      for I in 1 .. 50 loop
          v := new Integer;
       end loop;
    end Internal;
 begin
-   for I in  1 .. 100 loop
+   for I in 1 .. 100 loop
       Internal;
    end loop;
 end Pooloc1;
@@ -29479,8 +29479,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{cf}@w{                              }
 @anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
+@anchor{cf}@w{                              }
 
 @c %**end of body
 @bye

@@ -828,7 +828,7 @@ package body Sem_Aggr is
 
    begin
       P := Loc + 1;
-      for J in  1 .. Strlen loop
+      for J in 1 .. Strlen loop
          C := Get_String_Char (Str, J);
          Set_Character_Literal_Name (C);
 
