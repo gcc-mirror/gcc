@@ -110,12 +110,15 @@ struct S6
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail_circular.d(123): Error: circular reference to variable `fail_circular.C.a1`
-fail_compilation/fail_circular.d(125): Error: circular reference to variable `fail_circular.C.b1`
-fail_compilation/fail_circular.d(127): Error: circular reference to variable `fail_circular.C.c1`
-fail_compilation/fail_circular.d(130): Error: circular reference to variable `fail_circular.C.a1a`
-fail_compilation/fail_circular.d(133): Error: circular reference to variable `fail_circular.C.b1a`
-fail_compilation/fail_circular.d(136): Error: circular reference to variable `fail_circular.C.c1a`
+fail_compilation/fail_circular.d(126): Error: circular reference to variable `fail_circular.C.a1`
+fail_compilation/fail_circular.d(128): Error: circular reference to variable `fail_circular.C.b1`
+fail_compilation/fail_circular.d(130): Error: circular reference to variable `fail_circular.C.c1`
+fail_compilation/fail_circular.d(133): Error: circular reference to variable `fail_circular.C.a1a`
+fail_compilation/fail_circular.d(132): Error: type of variable `fail_circular.C.a1b` has errors
+fail_compilation/fail_circular.d(136): Error: circular reference to variable `fail_circular.C.b1a`
+fail_compilation/fail_circular.d(135): Error: type of variable `fail_circular.C.b1b` has errors
+fail_compilation/fail_circular.d(139): Error: circular reference to variable `fail_circular.C.c1a`
+fail_compilation/fail_circular.d(138): Error: type of variable `fail_circular.C.c1b` has errors
 ---
 */
 class C

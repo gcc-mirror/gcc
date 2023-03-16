@@ -8812,6 +8812,30 @@ template getSymbolsByUDA(alias symbol, alias attribute)
     static assert(is(getSymbolsByUDA!(X, X) == AliasSeq!()));
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=23776
+@safe pure nothrow @nogc unittest
+{
+    struct T
+    {
+        struct Tag {}
+        @Tag struct MyStructA {}
+        @Tag struct MyStructB {}
+        @Tag struct MyStructC {}
+    }
+    alias tcomponents = getSymbolsByUDA!(T, T.Tag);
+    static assert(tcomponents.length > 0);
+
+    struct X
+    {
+        struct Tag {}
+        @Tag enum MyEnumA;
+        @Tag enum MyEnumB;
+        @Tag enum MyEnumC;
+    }
+    alias xcomponents = getSymbolsByUDA!(X, X.Tag);
+    static assert(xcomponents.length > 0);
+}
+
 // getSymbolsByUDA produces wrong result if one of the symbols having the UDA is a function
 // https://issues.dlang.org/show_bug.cgi?id=18624
 @safe unittest
@@ -8866,7 +8890,8 @@ private template getSymbolsByUDAImpl(alias symbol, alias attribute, names...)
             alias member = __traits(getMember, symbol, names[0]);
 
             // Filtering not compiled members such as alias of basic types.
-            static if (isAliasSeq!member || isType!member)
+            static if (isAliasSeq!member ||
+                       (isType!member && !isAggregateType!member && !is(member == enum)))
             {
                 alias getSymbolsByUDAImpl = tail;
             }

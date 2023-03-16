@@ -4176,6 +4176,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
             }
             if (v.type.ty == Terror)
             {
+                e.error("type of variable `%s` has errors", v.toPrettyChars);
                 return ErrorExp.get();
             }
 

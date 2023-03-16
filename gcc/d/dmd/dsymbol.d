@@ -2162,10 +2162,23 @@ extern (C++) final class ArrayScopeSymbol : ScopeDsymbol
                  * or a variable (in which case an expression is created in
                  * toir.c).
                  */
-                auto e = new VoidInitializer(Loc.initial);
-                e.type = Type.tsize_t;
-                v = new VarDeclaration(loc, Type.tsize_t, Id.dollar, e);
-                v.storage_class |= STC.temp | STC.ctfe; // it's never a true static variable
+
+                // https://issues.dlang.org/show_bug.cgi?id=16213
+                // For static arrays $ is known at compile time,
+                // so declare it as a manifest constant.
+                auto tsa = ce.type ? ce.type.isTypeSArray() : null;
+                if (tsa)
+                {
+                    auto e = new ExpInitializer(loc, tsa.dim);
+                    v = new VarDeclaration(loc, tsa.dim.type, Id.dollar, e, STC.manifest);
+                }
+                else
+                {
+                    auto e = new VoidInitializer(Loc.initial);
+                    e.type = Type.tsize_t;
+                    v = new VarDeclaration(loc, Type.tsize_t, Id.dollar, e);
+                    v.storage_class |= STC.temp | STC.ctfe; // it's never a true static variable
+                }
             }
             *pvar = v;
         }

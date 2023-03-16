@@ -34,8 +34,9 @@ import core.stdc.stdio;
  *      loc   = the location for reporting line numbers in errors
  *      torig = the type to generate the `TypeInfo` object for
  *      sc    = the scope
+ *      genObjCode = if true, object code will be generated for the obtained TypeInfo
  */
-extern (C++) void genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope* sc)
+extern (C++) void genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope* sc, bool genObjCode = true)
 {
     // printf("genTypeInfo() %s\n", torig.toChars());
 
@@ -80,7 +81,7 @@ extern (C++) void genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope
 
         // generate a COMDAT for other TypeInfos not available as builtins in
         // druntime
-        if (!isUnqualifiedClassInfo && !builtinTypeInfo(t))
+        if (!isUnqualifiedClassInfo && !builtinTypeInfo(t) && genObjCode)
         {
             if (sc) // if in semantic() pass
             {

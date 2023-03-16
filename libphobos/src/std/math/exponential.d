@@ -3033,13 +3033,13 @@ private
                 4.5270000862445199635215E-5,
             ];
             static immutable double[7] logp1Q = [
-                1.0000000000000000000000E0,
                 6.0118660497603843919306E1,
                 2.1642788614495947685003E2,
                 3.0909872225312059774938E2,
                 2.2176239823732856465394E2,
                 8.3047565967967209469434E1,
                 1.5062909083469192043167E1,
+                1.0000000000000000000000E0,
             ];
 
             static immutable double[7] log10P = [
@@ -3101,13 +3101,13 @@ private
                  4.5270000862E-5,
             ];
             static immutable float[7] logp1Q = [
-                1.00000000000E0,
                 6.01186604976E1,
                 2.16427886144E2,
                 3.09098722253E2,
                 2.21762398237E2,
                 8.30475659679E1,
                 1.50629090834E1,
+                1.00000000000E0,
             ];
 
             // log2 and log10 uses the same coefficients as log.
@@ -3323,7 +3323,7 @@ private T logImpl(T, bool LOG1P = false)(T x) @safe pure nothrow @nogc
     }
     static foreach (F; AliasSeq!(float, double, real))
     {{
-        F[2][24] vals = [
+        scope F[2][] vals = [
             [F(1), F(0x0p+0)], [F(2), F(0x1.62e42fefa39ef358p-1)],
             [F(4), F(0x1.62e42fefa39ef358p+0)], [F(8), F(0x1.0a2b23f3bab73682p+1)],
             [F(16), F(0x1.62e42fefa39ef358p+1)], [F(32), F(0x1.bb9d3beb8c86b02ep+1)],
@@ -3335,6 +3335,9 @@ private T logImpl(T, bool LOG1P = false)(T x) @safe pure nothrow @nogc
             [F(17), F(0x1.6aa6bc1fa7f79cfp+1)], [F(31), F(0x1.b78ce48912b59f12p+1)],
             [F(33), F(0x1.bf8d8f4d5b8d1038p+1)], [F(63), F(0x1.09291e8e3181b20ep+2)],
             [F(65), F(0x1.0b292939429755ap+2)], [F(-0), -F.infinity], [F(0), -F.infinity],
+            [F(0.1), F(-0x1.26bb1bbb5551582ep+1)], [F(0.25), F(-0x1.62e42fefa39ef358p+0)],
+            [F(0.75), F(-0x1.269621134db92784p-2)], [F(0.875), F(-0x1.1178e8227e47bde4p-3)],
+            [F(10), F(0x1.26bb1bbb5551582ep+1)], [F(100), F(0x1.26bb1bbb5551582ep+2)],
             [F(10000), F(0x1.26bb1bbb5551582ep+3)],
         ];
         testLog(vals);
@@ -3572,7 +3575,7 @@ Ldone:
     }
     static foreach (F; AliasSeq!(float, double, real))
     {{
-        F[2][24] vals = [
+        scope F[2][] vals = [
             [F(1), F(0x0p+0)], [F(2), F(0x1.34413509f79fef32p-2)],
             [F(4), F(0x1.34413509f79fef32p-1)], [F(8), F(0x1.ce61cf8ef36fe6cap-1)],
             [F(16), F(0x1.34413509f79fef32p+0)], [F(32), F(0x1.8151824c7587eafep+0)],
@@ -3584,7 +3587,9 @@ Ldone:
             [F(17), F(0x1.3afeb354b7d9731ap+0)], [F(31), F(0x1.7dc9e145867e62eap+0)],
             [F(33), F(0x1.84bd545e4baeddp+0)], [F(63), F(0x1.cca1950e4511e192p+0)],
             [F(65), F(0x1.d01b16f9433cf7b8p+0)], [F(-0), -F.infinity], [F(0), -F.infinity],
-            [F(10000), F(0x1p+2)],
+            [F(0.1), F(-0x1p+0)], [F(0.25), F(-0x1.34413509f79fef32p-1)],
+            [F(0.75), F(-0x1.ffbfc2bbc7803758p-4)], [F(0.875), F(-0x1.db11ed766abf432ep-5)],
+            [F(10), F(0x1p+0)], [F(100), F(0x1p+1)], [F(10000), F(0x1p+2)],
         ];
         testLog10(vals);
     }}
@@ -3758,7 +3763,7 @@ private T log1pImpl(T)(T x) @safe pure nothrow @nogc
     }
     static foreach (F; AliasSeq!(float, double, real))
     {{
-        F[2][24] vals = [
+        scope F[2][] vals = [
             [F(1), F(0x1.62e42fefa39ef358p-1)], [F(2), F(0x1.193ea7aad030a976p+0)],
             [F(4), F(0x1.9c041f7ed8d336bp+0)], [F(8), F(0x1.193ea7aad030a976p+1)],
             [F(16), F(0x1.6aa6bc1fa7f79cfp+1)], [F(32), F(0x1.bf8d8f4d5b8d1038p+1)],
@@ -3770,6 +3775,9 @@ private T log1pImpl(T)(T x) @safe pure nothrow @nogc
             [F(17), F(0x1.71f7b3a6b918664cp+1)], [F(31), F(0x1.bb9d3beb8c86b02ep+1)],
             [F(33), F(0x1.c35fc81b90df59c6p+1)], [F(63), F(0x1.0a2b23f3bab73682p+2)],
             [F(65), F(0x1.0c234da4a23a6686p+2)], [F(-0), F(-0x0p+0)], [F(0), F(0x0p+0)],
+            [F(0.1), F(0x1.8663f793c46c69cp-4)], [F(0.25), F(0x1.c8ff7c79a9a21ac4p-3)],
+            [F(0.75), F(0x1.1e85f5e7040d03ep-1)], [F(0.875), F(0x1.41d8fe84672ae646p-1)],
+            [F(10), F(0x1.32ee3b77f374bb7cp+1)], [F(100), F(0x1.275e2271bba30be4p+2)],
             [F(10000), F(0x1.26bbed6fbd84182ep+3)],
         ];
         testLog1p(vals);
@@ -3981,7 +3989,7 @@ Ldone:
     }
     static foreach (F; AliasSeq!(float, double, real))
     {{
-        F[2][24] vals = [
+        scope F[2][] vals = [
             [F(1), F(0x0p+0)], [F(2), F(0x1p+0)],
             [F(4), F(0x1p+1)], [F(8), F(0x1.8p+1)],
             [F(16), F(0x1p+2)], [F(32), F(0x1.4p+2)],
@@ -3993,6 +4001,9 @@ Ldone:
             [F(17), F(0x1.0598fdbeb244c5ap+2)], [F(31), F(0x1.3d118d66c4d4e554p+2)],
             [F(33), F(0x1.42d75a6eb1dfb0e6p+2)], [F(63), F(0x1.7e8bc1179e0caa9cp+2)],
             [F(65), F(0x1.816e79685c2d2298p+2)], [F(-0), -F.infinity], [F(0), -F.infinity],
+            [F(0.1), F(-0x1.a934f0979a3715fcp+1)], [F(0.25), F(-0x1p+1)],
+            [F(0.75), F(-0x1.a8ff971810a5e182p-2)], [F(0.875), F(-0x1.8a8980abfbd32668p-3)],
+            [F(10), F(0x1.a934f0979a3715fcp+1)], [F(100), F(0x1.a934f0979a3715fcp+2)],
             [F(10000), F(0x1.a934f0979a3715fcp+3)],
         ];
         testLog2(vals);
@@ -4178,7 +4189,7 @@ private T logbImpl(T)(T x) @trusted pure nothrow @nogc
     }
     static foreach (F; AliasSeq!(float, double, real))
     {{
-        F[2][24] vals = [
+        scope F[2][] vals = [
             [F(1), F(0x0p+0)], [F(2), F(0x1p+0)],
             [F(4), F(0x1p+1)], [F(8), F(0x1.8p+1)],
             [F(16), F(0x1p+2)], [F(32), F(0x1.4p+2)],
@@ -4190,6 +4201,9 @@ private T logbImpl(T)(T x) @trusted pure nothrow @nogc
             [F(17), F(0x1p+2)], [F(31), F(0x1p+2)],
             [F(33), F(0x1.4p+2)], [F(63), F(0x1.4p+2)],
             [F(65), F(0x1.8p+2)], [F(-0), -F.infinity], [F(0), -F.infinity],
+            [F(0.1), F(-0x1p+2)], [F(0.25), F(-0x1p+1)],
+            [F(0.75), F(-0x1p+0)], [F(0.875), F(-0x1p+0)],
+            [F(10), F(0x1.8p+1)], [F(100), F(0x1.8p+2)],
             [F(10000), F(0x1.ap+3)],
         ];
         testLogb(vals);
