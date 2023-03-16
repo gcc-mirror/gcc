@@ -3889,6 +3889,94 @@ private:
   Location locus;
 };
 
+class InlineAsmReg
+{
+  enum Kind
+  {
+    X86,
+    Arm,
+    AArch64,
+    RiscV,
+    Nvptx,
+    PowerPC,
+    Hexagon,
+    Mips,
+    S390x,
+    SpirV,
+    Wasm,
+    Bpf,
+    Avr,
+    Msp430,
+    // Placeholder for invalid register constraints for the current target
+    Err,
+  };
+
+  // this placeholder is to be removed when the definations
+  // of the above enums are made in a later PR/patch.
+  std::string placeholder;
+};
+
+class InlineAsmRegClass
+{
+  enum Type
+  {
+    X86,
+    Arm,
+    AArch64,
+    RiscV,
+    Nvptx,
+    PowerPC,
+    Hexagon,
+    Mips,
+    S390x,
+    SpirV,
+    Wasm,
+    Bpf,
+    Avr,
+    Msp430,
+    // Placeholder for invalid register constraints for the current target
+    Err,
+  };
+
+  // this placeholder is to be removed when the definations
+  // of the above enums are made in a later PR/patch.
+  std::string placeholder;
+};
+
+struct InlineAsmRegOrRegClass
+{
+  enum Type
+  {
+    Reg,      // links to struct Register
+    RegClass, // links to struct RegisterClass
+  };
+
+  struct Register
+  {
+    InlineAsmReg Reg;
+  };
+
+  struct RegisterClass
+  {
+    InlineAsmRegClass RegClass;
+  };
+
+  Identifier name;
+  Location locus;
+};
+
+// Inline Assembly Node
+class InlineAsm : public ExprWithoutBlock
+{
+  NodeId id;
+
+public:
+  std::vector<AST::InlineAsmTemplatePiece> template_;
+  std::vector<AST::TupleTemplateStr> template_strs;
+  std::vector<AST::InlineAsmOperand> operands;
+  AST::InlineAsmOptions options;
+  std::vector<Location> line_spans;
+};
 } // namespace HIR
 } // namespace Rust
 
