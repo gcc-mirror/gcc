@@ -19341,7 +19341,10 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
     case TAG_DEFN:
       tmp = tsubst (TREE_TYPE (t), args, complain, NULL_TREE);
-      if (CLASS_TYPE_P (tmp))
+      if (dependent_type_p (tmp))
+	/* This is a partial instantiation, try again when full.  */
+	add_stmt (build_min (TAG_DEFN, tmp));
+      else if (CLASS_TYPE_P (tmp))
 	{
 	  /* Local classes are not independent templates; they are
 	     instantiated along with their containing function.  And this
