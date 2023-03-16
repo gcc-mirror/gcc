@@ -83,6 +83,8 @@ static tree
 op_with_overflow_inner (Context *ctx, TyTy::FnType *fntype, tree_code op);
 static tree
 uninit_handler (Context *ctx, TyTy::FnType *fntype);
+static tree
+move_val_init_handler (Context *ctx, TyTy::FnType *fntype);
 
 enum class Prefetch
 {
@@ -205,6 +207,7 @@ static const std::map<std::string,
     {"unchecked_shl", unchecked_op_handler (LSHIFT_EXPR)},
     {"unchecked_shr", unchecked_op_handler (RSHIFT_EXPR)},
     {"uninit", uninit_handler},
+    {"move_val_init", move_val_init_handler},
 };
 
 Intrinsics::Intrinsics (Context *ctx) : ctx (ctx) {}
@@ -1001,7 +1004,7 @@ uninit_handler (Context *ctx, TyTy::FnType *fntype)
 
   auto fndecl = compile_intrinsic_function (ctx, fntype);
 
-  // get the template parameter type tree fn size_of<T>();
+  // get the template parameter type tree fn uninit<T>();
   rust_assert (fntype->get_num_substitutions () == 1);
   auto &param_mapping = fntype->get_substs ().at (0);
   const TyTy::ParamType *param_tyty = param_mapping.get_param_ty ();
@@ -1035,6 +1038,57 @@ uninit_handler (Context *ctx, TyTy::FnType *fntype)
     = ctx->get_backend ()->return_statement (fndecl, {DECL_RESULT (fndecl)},
 					     Location ());
   ctx->add_statement (return_statement);
+  // BUILTIN size_of FN BODY END
+
+  finalize_intrinsic_block (ctx, fndecl);
+
+  return fndecl;
+}
+
+static tree
+move_val_init_handler (Context *ctx, TyTy::FnType *fntype)
+{
+  rust_assert (fntype->get_params ().size () == 2);
+
+  tree lookup = NULL_TREE;
+  if (check_for_cached_intrinsic (ctx, fntype, &lookup))
+    return lookup;
+
+  auto fndecl = compile_intrinsic_function (ctx, fntype);
+
+  // get the template parameter type tree fn size_of<T>();
+  rust_assert (fntype->get_num_substitutions () == 1);
+  auto &param_mapping = fntype->get_substs ().at (0);
+  const TyTy::ParamType *param_tyty = param_mapping.get_param_ty ();
+  TyTy::BaseType *resolved_tyty = param_tyty->resolve ();
+  tree template_parameter_type
+    = TyTyResolveCompile::compile (ctx, resolved_tyty);
+
+  std::vector<Bvariable *> param_vars;
+  compile_fn_params (ctx, fntype, fndecl, &param_vars);
+
+  if (!ctx->get_backend ()->function_set_parameters (fndecl, param_vars))
+    return error_mark_node;
+
+  enter_intrinsic_block (ctx, fndecl);
+
+  // BUILTIN size_of FN BODY BEGIN
+
+  tree dst = ctx->get_backend ()->var_expression (param_vars[0], Location ());
+  tree src = ctx->get_backend ()->var_expression (param_vars[1], Location ());
+  tree size = TYPE_SIZE_UNIT (template_parameter_type);
+
+  tree memcpy_builtin = error_mark_node;
+  BuiltinsContext::get ().lookup_simple_builtin ("memcpy", &memcpy_builtin);
+  rust_assert (memcpy_builtin != error_mark_node);
+
+  src = build_fold_addr_expr_loc (BUILTINS_LOCATION, src);
+  tree memset_call = build_call_expr_loc (BUILTINS_LOCATION, memcpy_builtin, 3,
+					  dst, src, size);
+  TREE_READONLY (memset_call) = 0;
+  TREE_SIDE_EFFECTS (memset_call) = 1;
+
+  ctx->add_statement (memset_call);
   // BUILTIN size_of FN BODY END
 
   finalize_intrinsic_block (ctx, fndecl);
