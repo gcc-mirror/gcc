@@ -6999,7 +6999,7 @@
 	      (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	   (match_operand:VI_QHS 2 "vector_merge_operand" " vu,  0, vu,  0")
 	   (match_operand:VI_QHS 3 "register_operand"     " vr, vr, vr, vr")
-	   (match_operand:<VEL> 4 "reg_or_0_operand"      " rK, rK, rK, rK")] VSLIDES1))]
+	   (match_operand:<VEL> 4 "reg_or_0_operand"      " rJ, rJ, rJ, rJ")] VSLIDES1))]
   "TARGET_VECTOR"
   "vslide<ud>.vx\t%0,%3,%z4%p1"
   [(set_attr "type" "vislide<ud>")
@@ -7040,7 +7040,7 @@
 	      (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	   (match_operand:VI_D 2 "vector_merge_operand"   " vu,  0, vu,  0")
 	   (match_operand:VI_D 3 "register_operand"       " vr, vr, vr, vr")
-	   (match_operand:<VEL> 4 "reg_or_0_operand"      " rK, rK, rK, rK")] VSLIDES1))]
+	   (match_operand:<VEL> 4 "reg_or_0_operand"      " rJ, rJ, rJ, rJ")] VSLIDES1))]
   "TARGET_VECTOR"
   "vslide<ud>.vx\t%0,%3,%z4%p1"
   [(set_attr "type" "vislide<ud>")

@@ -686,7 +686,7 @@ eliminate_insn (rtx_insn *rinsn)
     delete_insn (rinsn);
 }
 
-static void
+static vsetvl_type
 insert_vsetvl (enum emit_type emit_type, rtx_insn *rinsn,
 	       const vector_insn_info &info, const vector_insn_info &prev_info)
 {
@@ -697,14 +697,14 @@ insert_vsetvl (enum emit_type emit_type, rtx_insn *rinsn,
     {
       emit_vsetvl_insn (VSETVL_VTYPE_CHANGE_ONLY, emit_type, info, NULL_RTX,
 			rinsn);
-      return;
+      return VSETVL_VTYPE_CHANGE_ONLY;
     }
 
   if (info.has_avl_imm ())
     {
       emit_vsetvl_insn (VSETVL_DISCARD_RESULT, emit_type, info, NULL_RTX,
 			rinsn);
-      return;
+      return VSETVL_DISCARD_RESULT;
     }
 
   if (info.has_avl_no_reg ())
@@ -716,14 +716,14 @@ insert_vsetvl (enum emit_type emit_type, rtx_insn *rinsn,
 	{
 	  emit_vsetvl_insn (VSETVL_VTYPE_CHANGE_ONLY, emit_type, info, NULL_RTX,
 			    rinsn);
-	  return;
+	  return VSETVL_VTYPE_CHANGE_ONLY;
 	}
       /* Otherwise use an AVL of 0 to avoid depending on previous vl.  */
       vl_vtype_info new_info = info;
       new_info.set_avl_info (avl_info (const0_rtx, nullptr));
       emit_vsetvl_insn (VSETVL_DISCARD_RESULT, emit_type, new_info, NULL_RTX,
 			rinsn);
-      return;
+      return VSETVL_DISCARD_RESULT;
     }
 
   /* Use X0 as the DestReg unless AVLReg is X0. We also need to change the
@@ -735,7 +735,7 @@ insert_vsetvl (enum emit_type emit_type, rtx_insn *rinsn,
       rtx vl_op = info.get_avl_reg_rtx ();
       gcc_assert (!vlmax_avl_p (vl_op));
       emit_vsetvl_insn (VSETVL_NORMAL, emit_type, info, vl_op, rinsn);
-      return;
+      return VSETVL_NORMAL;
     }
 
   emit_vsetvl_insn (VSETVL_DISCARD_RESULT, emit_type, info, NULL_RTX, rinsn);
@@ -745,6 +745,7 @@ insert_vsetvl (enum emit_type emit_type, rtx_insn *rinsn,
       fprintf (dump_file, "Update VL/VTYPE info, previous info=");
       prev_info.dump (dump_file);
     }
+  return VSETVL_DISCARD_RESULT;
 }
 
 /* If X contains any LABEL_REF's, add REG_LABEL_OPERAND notes for them
@@ -1485,16 +1486,16 @@ propagate_avl_across_demands_p (const vector_insn_info &info1,
 }
 
 static bool
-reg_available_p (const bb_info *bb, const vector_insn_info &info)
+reg_available_p (const insn_info *insn, const vector_insn_info &info)
 {
-  if (!info.get_avl_source ())
+  if (info.has_avl_reg () && !info.get_avl_source ())
     return false;
-  insn_info *insn = info.get_avl_source ()->insn ();
-  if (insn->bb () == bb)
-    return before_p (insn, info.get_insn ());
+  insn_info *def_insn = info.get_avl_source ()->insn ();
+  if (def_insn->bb () == insn->bb ())
+    return before_p (def_insn, insn);
   else
-    return dominated_by_p (CDI_DOMINATORS, bb->cfg_bb (),
-			   insn->bb ()->cfg_bb ());
+    return dominated_by_p (CDI_DOMINATORS, insn->bb ()->cfg_bb (),
+			   def_insn->bb ()->cfg_bb ());
 }
 
 /* Return true if the instruction support relaxed compatible check.  */
@@ -2596,7 +2597,6 @@ private:
   bool hard_empty_block_p (const bb_info *, const vector_insn_info &) const;
   bool backward_demand_fusion (void);
   bool forward_demand_fusion (void);
-  // bool local_demand_fusion (void);
   bool cleanup_illegal_dirty_blocks (void);
   void demand_fusion (void);
 
@@ -2680,8 +2680,8 @@ pass_vsetvl::compute_local_backward_infos (const bb_info *bb)
 	  gcc_assert (info.valid_p () && "Unexpected Invalid demanded info");
 	  if (change.valid_p ())
 	    {
-	      if (!(propagate_avl_across_demands_p (info, change)
-		    && !reg_available_p (bb, info))
+	      if (!(propagate_avl_across_demands_p (change, info)
+		    && !reg_available_p (insn, change))
 		  && change.compatible_p (info))
 		info = change.merge (info);
 	    }
@@ -2703,7 +2703,7 @@ pass_vsetvl::need_vsetvl (const vector_insn_info &require,
   if (!curr_info.valid_p () || curr_info.unknown_p () || curr_info.uninit_p ())
     return true;
 
-  if (require.compatible_p (curr_info))
+  if (require.compatible_p (static_cast<const vl_vtype_info &> (curr_info)))
     return false;
 
   return true;
@@ -2761,6 +2761,7 @@ pass_vsetvl::emit_local_forward_vsetvls (const bb_info *bb)
   for (insn_info *insn : bb->real_nondebug_insns ())
     {
       const vector_insn_info prev_info = curr_info;
+      enum vsetvl_type type = NUM_VSETVL_TYPE;
       transfer_before (curr_info, insn);
 
       if (has_vtype_op (insn->rtl ()))
@@ -2772,10 +2773,25 @@ pass_vsetvl::emit_local_forward_vsetvls (const bb_info *bb)
 		= m_vector_manager->vector_insn_infos[insn->uid ()];
 	      if (!require.compatible_p (
 		    static_cast<const vl_vtype_info &> (prev_info)))
-		insert_vsetvl (EMIT_BEFORE, insn->rtl (), require, prev_info);
+		type = insert_vsetvl (EMIT_BEFORE, insn->rtl (), require,
+				      prev_info);
 	    }
 	}
 
+      /* Fix the issue of following sequence:
+	 vsetivli zero, 5
+	 ....
+	 vsetvli zero, zero
+	 vmv.x.s (demand AVL = 8).
+	 ....
+	 incorrect: vsetvli zero, zero ===> Since the curr_info is AVL = 8.
+	 correct: vsetivli zero, 8
+	 vadd (demand AVL = 8).  */
+      if (type == VSETVL_VTYPE_CHANGE_ONLY)
+	{
+	  /* Update the curr_info to be real correct AVL.  */
+	  curr_info.set_avl_info (prev_info.get_avl_info ());
+	}
       transfer_after (curr_info, insn);
     }
 
@@ -3228,7 +3244,8 @@ pass_vsetvl::backward_demand_fusion (void)
 		block_info.probability = curr_block_info.probability;
 
 	      if (propagate_avl_across_demands_p (prop, block_info.reaching_out)
-		  && !reg_available_p (crtl->ssa->bb (e->src), new_info))
+		  && !reg_available_p (crtl->ssa->bb (e->src)->end_insn (),
+				       new_info))
 		continue;
 
 	      change_vsetvl_insn (new_info.get_insn (), new_info);
@@ -3378,7 +3395,6 @@ pass_vsetvl::demand_fusion (void)
 	help for such cases.  */
       changed_p |= backward_demand_fusion ();
       changed_p |= forward_demand_fusion ();
-      // chanded_p |= local_demand_fusion ();
     }
 
   changed_p = true;

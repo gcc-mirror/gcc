@@ -31,6 +31,7 @@ enum vsetvl_type
   VSETVL_NORMAL,
   VSETVL_VTYPE_CHANGE_ONLY,
   VSETVL_DISCARD_RESULT,
+  NUM_VSETVL_TYPE
 };
 
 enum emit_type
