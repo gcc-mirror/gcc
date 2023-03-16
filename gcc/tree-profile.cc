@@ -835,16 +835,36 @@ tree_profiling (void)
 
       push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 
-      FOR_EACH_BB_FN (bb, cfun)
-	{
-	  gimple_stmt_iterator gsi;
-	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	    {
-	      gimple *stmt = gsi_stmt (gsi);
-	      if (is_gimple_call (stmt))
-		update_stmt (stmt);
-	    }
-	}
+      if (profile_arc_flag || flag_test_coverage)
+	FOR_EACH_BB_FN (bb, cfun)
+	  {
+	    gimple_stmt_iterator gsi;
+	    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	      {
+		gcall *call = dyn_cast <gcall *> (gsi_stmt (gsi));
+		if (!call)
+		  continue;
+
+		/* We do not clear pure/const on decls without body.  */
+		tree fndecl = gimple_call_fndecl (call);
+		if (fndecl && !gimple_has_body_p (fndecl))
+		  continue;
+
+		/* Drop the const attribute from the call type (the pure
+		   attribute is not available on types).  */
+		tree fntype = gimple_call_fntype (call);
+		if (fntype && TYPE_READONLY (fntype))
+		  {
+		    int quals = TYPE_QUALS (fntype) & ~TYPE_QUAL_CONST;
+		    fntype = build_qualified_type (fntype, quals);
+		    gimple_call_set_fntype (call, fntype);
+		  }
+
+		/* Update virtual operands of calls to no longer const/pure
+		   functions.  */
+		update_stmt (call);
+	      }
+	  }
 
       /* re-merge split blocks.  */
       cleanup_tree_cfg ();
