@@ -2611,8 +2611,11 @@ the @code{puts} function, or the second and third arguments to
 the @code{memcpy} function.
 
 @smallexample
-__attribute__ ((access (read_only, 1))) int puts (const char*);
-__attribute__ ((access (read_only, 2, 3))) void* memcpy (void*, const void*, size_t);
+__attribute__ ((access (read_only, 1)))
+int puts (const char*);
+
+__attribute__ ((access (read_only, 2, 3)))
+void* memcpy (void*, const void*, size_t);
 @end smallexample
 
 The @code{read_write} access mode applies to arguments of pointer types
@@ -2624,7 +2627,8 @@ of the use of the @code{read_write} access mode is the first argument to
 the @code{strcat} function.
 
 @smallexample
-__attribute__ ((access (read_write, 1), access (read_only, 2))) char* strcat (char*, const char*);
+__attribute__ ((access (read_write, 1), access (read_only, 2)))
+char* strcat (char*, const char*);
 @end smallexample
 
 The @code{write_only} access mode applies to arguments of pointer types
@@ -2636,8 +2640,11 @@ the @code{strcpy} function, or the first two arguments to the @code{fgets}
 function.
 
 @smallexample
-__attribute__ ((access (write_only, 1), access (read_only, 2))) char* strcpy (char*, const char*);
-__attribute__ ((access (write_only, 1, 2), access (read_write, 3))) int fgets (char*, int, FILE*);
+__attribute__ ((access (write_only, 1), access (read_only, 2)))
+char* strcpy (char*, const char*);
+
+__attribute__ ((access (write_only, 1, 2), access (read_write, 3)))
+int fgets (char*, int, FILE*);
 @end smallexample
 
 The access mode @code{none} specifies that the pointer to which it applies
@@ -3444,22 +3451,23 @@ deallocation pairs marked with the @code{malloc}.  In particular:
 @itemize @bullet
 
 @item
-The analyzer will emit a @option{-Wanalyzer-mismatching-deallocation}
+The analyzer emits a @option{-Wanalyzer-mismatching-deallocation}
 diagnostic if there is an execution path in which the result of an
 allocation call is passed to a different deallocator.
 
 @item
-The analyzer will emit a @option{-Wanalyzer-double-free}
+The analyzer emits a @option{-Wanalyzer-double-free}
 diagnostic if there is an execution path in which a value is passed
 more than once to a deallocation call.
 
 @item
-The analyzer will consider the possibility that an allocation function
-could fail and return NULL.  It will emit
-@option{-Wanalyzer-possible-null-dereference} and
-@option{-Wanalyzer-possible-null-argument} diagnostics if there are
+The analyzer considers the possibility that an allocation function
+could fail and return null.  If there are
 execution paths in which an unchecked result of an allocation call is
-dereferenced or passed to a function requiring a non-null argument.
+dereferenced or passed to a function requiring a non-null argument,
+it emits
+@option{-Wanalyzer-possible-null-dereference} and
+@option{-Wanalyzer-possible-null-argument} diagnostics.
 If the allocator always returns non-null, use
 @code{__attribute__ ((returns_nonnull))} to suppress these warnings.
 For example:
@@ -3469,26 +3477,26 @@ char *xstrdup (const char *)
 @end smallexample
 
 @item
-The analyzer will emit a @option{-Wanalyzer-use-after-free}
+The analyzer emits a @option{-Wanalyzer-use-after-free}
 diagnostic if there is an execution path in which the memory passed
 by pointer to a deallocation call is used after the deallocation.
 
 @item
-The analyzer will emit a @option{-Wanalyzer-malloc-leak} diagnostic if
+The analyzer emits a @option{-Wanalyzer-malloc-leak} diagnostic if
 there is an execution path in which the result of an allocation call
 is leaked (without being passed to the deallocation function).
 
 @item
-The analyzer will emit a @option{-Wanalyzer-free-of-non-heap} diagnostic
+The analyzer emits a @option{-Wanalyzer-free-of-non-heap} diagnostic
 if a deallocation function is used on a global or on-stack variable.
 
 @end itemize
 
-The analyzer assumes that deallocators can gracefully handle the @code{NULL}
+The analyzer assumes that deallocators can gracefully handle the null
 pointer.  If this is not the case, the deallocator can be marked with
 @code{__attribute__((nonnull))} so that @option{-fanalyzer} can emit
 a @option{-Wanalyzer-possible-null-argument} diagnostic for code paths
-in which the deallocator is called with NULL.
+in which the deallocator is called with null.
 
 @cindex @code{no_icf} function attribute
 @item no_icf
@@ -11039,7 +11047,7 @@ lab:
 @noindent
 The following table shows the modifiers supported by all targets and their effects:
 
-@multitable {Modifier} {Description} {Example}
+@multitable @columnfractions 0.15 0.7 0.15
 @headitem Modifier @tab Description @tab Example
 @item @code{c}
 @tab Require a constant operand and print the constant expression with no punctuation.

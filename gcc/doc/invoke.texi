@@ -715,8 +715,8 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Developer Options,,GCC Developer Options}.
 @gccoptlist{-d@var{letters}  -dumpspecs  -dumpmachine  -dumpversion @gol
 -dumpfullversion  -fcallgraph-info@r{[}=su,da@r{]}
--fchecking  -fchecking=@var{n}
--fdbg-cnt-list @gol  -fdbg-cnt=@var{counter-value-list} @gol
+-fchecking  -fchecking=@var{n} @gol
+-fdbg-cnt-list  -fdbg-cnt=@var{counter-value-list} @gol
 -fdisable-ipa-@var{pass_name} @gol
 -fdisable-rtl-@var{pass_name} @gol
 -fdisable-rtl-@var{pass-name}=@var{range-list} @gol
@@ -3168,7 +3168,8 @@ into shape for a future C++ standard.
 On violation of a checked contract, the violation handler is called.
 Users can replace the violation handler by defining
 @smallexample
-void handle_contract_violation (const std::experimental::contract_violation&);
+void
+handle_contract_violation (const std::experimental::contract_violation&);
 @end smallexample
 
 There are different sets of additional flags that can be used together
@@ -3711,7 +3712,8 @@ struct allow_ctad_t; // any name works
 template <typename T> struct S @{
   S(T) @{ @}
 @};
-S(allow_ctad_t) -> S<void>; // guide with incomplete parameter type will never be considered
+// Guide with incomplete parameter type will never be considered.
+S(allow_ctad_t) -> S<void>;
 @end smallexample
 
 @opindex Wctor-dtor-privacy
@@ -3903,7 +3905,8 @@ void f (int& i);
 constexpr void
 g (int& i)
 @{
-  f(i); // warns by default in C++20, in C++23 only with -Winvalid-constexpr
+  // Warns by default in C++20, in C++23 only with -Winvalid-constexpr.
+  f(i);
 @}
 @end smallexample
 
@@ -9062,7 +9065,8 @@ For example
 int f (int c1, int c2, x)
 @{
   char *p = strchr ((char[])@{ c1, c2 @}, c3);
-  return p ? *p : 'x';   // warning: dangling pointer to a compound literal
+  // warning: dangling pointer to a compound literal
+  return p ? *p : 'x';
 @}
 @end smallexample
 In the following function the store of the address of the local variable
@@ -9071,7 +9075,8 @@ In the following function the store of the address of the local variable
 void g (int **p)
 @{
   int x = 7;
-  *p = &x;   // warning: storing the address of a local variable in *p
+  // warning: storing the address of a local variable in *p
+  *p = &x;
 @}
 @end smallexample
 
@@ -9091,7 +9096,8 @@ void f (char *s)
       char a[12] = "tmpname";
       s = a;
     @}
-  strcat (s, ".tmp");   // warning: dangling pointer to a may be used
+  // warning: dangling pointer to a may be used
+  strcat (s, ".tmp");
   ...
 @}
 @end smallexample
@@ -9840,8 +9846,10 @@ avoid false sharing in concurrent code:
 
 @smallexample
 struct independent_fields @{
-  alignas(std::hardware_destructive_interference_size) std::atomic<int> one;
-  alignas(std::hardware_destructive_interference_size) std::atomic<int> two;
+  alignas(std::hardware_destructive_interference_size)
+    std::atomic<int> one;
+  alignas(std::hardware_destructive_interference_size)
+    std::atomic<int> two;
 @};
 @end smallexample
 
@@ -9994,14 +10002,16 @@ parameter in excess of the actual VLA bound triggers a warning as well.
 
 @smallexample
 void f (int n, int[n]);
-void f (int, int[]);     // warning: argument 2 previously declared as a VLA
+// warning: argument 2 previously declared as a VLA
+void f (int, int[]);
 
 void g (int n)
 @{
     if (n > 4)
       return;
     int a[n];
-    f (sizeof a, a);     // warning: access to a by f may be out of bounds
+    // warning: access to a by f may be out of bounds
+    f (sizeof a, a);
   @dots{}
 @}
 
@@ -10190,9 +10200,8 @@ limit.  The @option{-Wanalyzer-too-complex} option warns if this occurs.
 @opindex Wanalyzer-allocation-size
 @opindex Wno-analyzer-allocation-size
 @item -Wno-analyzer-allocation-size
-This warning requires @option{-fanalyzer}, which enables it; use
-@option{-Wno-analyzer-allocation-size}
-to disable it.
+This warning requires @option{-fanalyzer}, which enables it;
+to disable it, use @option{-Wno-analyzer-allocation-size}.
 
 This diagnostic warns for paths through the code in which a pointer to
 a buffer is assigned to point at a buffer with a size that is not a
@@ -10473,10 +10482,10 @@ See @uref{https://cwe.mitre.org/data/definitions/762.html, CWE-762: Mismatched M
 @opindex Wanalyzer-out-of-bounds
 @opindex Wno-analyzer-out-of-bounds
 @item -Wno-analyzer-out-of-bounds
-This warning requires @option{-fanalyzer} to enable it; use
+This warning requires @option{-fanalyzer}, which enables it; use
 @option{-Wno-analyzer-out-of-bounds} to disable it.
 
-This diagnostic warns for path through the code in which a buffer is
+This diagnostic warns for paths through the code in which a buffer is
 definitely read or written out-of-bounds.  The diagnostic applies for
 cases where the analyzer is able to determine a constant offset and for
 accesses past the end of a buffer, also a constant capacity.  Further,
@@ -10870,6 +10879,7 @@ memory-management functions:
 @item @code{strndup}
 @end itemize
 
+@noindent
 of the following functions for working with file descriptors:
 
 @itemize @bullet
@@ -10884,6 +10894,7 @@ of the following functions for working with file descriptors:
 @item @code{socket}, @code{bind}, @code{listen}, @code{accept}, and @code{connect}
 @end itemize
 
+@noindent
 of the following functions for working with @code{<stdio.h>} streams:
 @itemize @bullet
 @item The built-in functions @code{__builtin_fprintf},
@@ -10910,6 +10921,7 @@ of the following functions for working with @code{<stdio.h>} streams:
 @item @code{fwrite}
 @end itemize
 
+@noindent
 and of the following functions:
 
 @itemize @bullet
@@ -10934,10 +10946,12 @@ In addition, various functions with an @code{__analyzer_} prefix have
 special meaning to the analyzer, described in the GCC Internals manual.
 
 Pertinent parameters for controlling the exploration are:
-@option{--param analyzer-bb-explosion-factor=@var{value}},
-@option{--param analyzer-max-enodes-per-program-point=@var{value}},
-@option{--param analyzer-max-recursion-depth=@var{value}}, and
-@option{--param analyzer-min-snodes-for-call-summary=@var{value}}.
+@itemize @bullet
+@item @option{--param analyzer-bb-explosion-factor=@var{value}}
+@item @option{--param analyzer-max-enodes-per-program-point=@var{value}}
+@item @option{--param analyzer-max-recursion-depth=@var{value}}
+@item @option{--param analyzer-min-snodes-for-call-summary=@var{value}}
+@end itemize
 
 The following options control the analyzer.
 
@@ -11140,7 +11154,7 @@ other events intended for debugging the analyzer.
 @item -fdump-analyzer
 Dump internal details about what the analyzer is doing to
 @file{@var{file}.analyzer.txt}.
-This option is overridden by @option{-fdump-analyzer-stderr}.
+@option{-fdump-analyzer-stderr} overrides this option.
 
 @opindex fdump-analyzer-stderr
 @item -fdump-analyzer-stderr
@@ -12953,7 +12967,8 @@ callers are impacted, therefore need to be patched as well.
 @option{-flive-patching=inline-clone} disables the following optimization flags:
 @gccoptlist{-fwhole-program  -fipa-pta  -fipa-reference  -fipa-ra @gol
 -fipa-icf  -fipa-icf-functions  -fipa-icf-variables @gol
--fipa-bit-cp  -fipa-vrp  -fipa-pure-const  -fipa-reference-addressable @gol
+-fipa-bit-cp  -fipa-vrp  -fipa-pure-const @gol
+-fipa-reference-addressable @gol
 -fipa-stack-alignment -fipa-modref}
 
 @item inline-only-static
@@ -16172,9 +16187,8 @@ constructs are handled by the @samp{parloops} pass, en bloc.
 This is the current default.
 
 @item openacc-privatization
-Specify mode of OpenACC privatization diagnostics for
-@option{-fopt-info-omp-note} and applicable
-@option{-fdump-tree-*-details}.
+Control whether the @option{-fopt-info-omp-note} and applicable
+@option{-fdump-tree-*-details} options emit OpenACC privatization diagnostics.
 With @option{--param=openacc-privatization=quiet}, don't diagnose.
 This is the current default.
 With @option{--param=openacc-privatization=noisy}, do diagnose.
