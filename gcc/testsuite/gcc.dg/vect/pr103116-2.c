@@ -31,7 +31,7 @@ loop (TYPE *restrict x, TYPE *restrict y)
     }
 }
 
-TYPE x[COUNT * 4];
+TYPE x[COUNT * 8];
 
 int
 main (void)
