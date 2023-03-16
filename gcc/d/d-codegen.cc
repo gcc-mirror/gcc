@@ -2706,6 +2706,11 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
       TREE_ADDRESSABLE (field) = TREE_ADDRESSABLE (vsym);
       DECL_NONADDRESSABLE_P (field) = !TREE_ADDRESSABLE (vsym);
       TREE_THIS_VOLATILE (field) = TREE_THIS_VOLATILE (vsym);
+      SET_DECL_ALIGN (field, DECL_ALIGN (vsym));
+
+      /* Update alignment for frame record type.  */
+      if (TYPE_ALIGN (frame_rec_type) < DECL_ALIGN (field))
+	SET_TYPE_ALIGN (frame_rec_type, DECL_ALIGN (field));
 
       if (DECL_LANG_NRVO (vsym))
 	{
