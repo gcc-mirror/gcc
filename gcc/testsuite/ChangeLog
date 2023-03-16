@@ -1,3 +1,131 @@
+2023-03-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103871
+	PR c++/98056
+	* g++.dg/coroutines/co-await-initlist1.C: New test.
+
+2023-03-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109097
+	* c-c++-common/diagnostic-format-sarif-file-1.c: Verify that we
+	have an invocation object marked as succeeding, with no
+	notifications.
+	* gcc.dg/plugin/crash-test-ice-sarif.c: New test.
+	* gcc.dg/plugin/crash-test-ice-stderr.c: New test.
+	* gcc.dg/plugin/crash-test-write-though-null-sarif.c: New test.
+	* gcc.dg/plugin/crash-test-write-though-null-stderr.c: New test.
+	* gcc.dg/plugin/crash_test_plugin.c: New plugin.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add the new plugin
+	and test cases.
+
+2023-03-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/merge-1.c (dg-options): Use -mno-sse4.
+	* gcc.target/i386/sse2-mmx-21.c (dg-options): Ditto.
+	* gcc.target/i386/sse-movss-4.c (dg-options):
+	Use -mno-sse4.  Simplify scan-assembler-not strings.
+	* gcc.target/i386/sse2-movsd-3.c (dg-options): Ditto.
+	* gcc.target/i386/sse2-mmx-movss-1.c: New test.
+
+2023-03-15  Harald Anlauf  <anlauf@gmx.de>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/58331
+	* gfortran.dg/class_dummy_10.f90: New test.
+
+2023-03-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107280
+	* g++.dg/cpp1z/constexpr-lambda28.C: New test.
+
+2023-03-15  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/warn/Wuse-after-free3.C: Remove expected duplicate
+	diagnostic.
+
+2023-03-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58538
+	* g++.dg/template/ttp7.C: Remove expected error.
+
+2023-03-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108179
+	PR c++/104107
+	PR c++/95036
+	* g++.dg/template/ttp35.C: New test.
+
+2023-03-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109139
+	* gcc.dg/torture/pr109139.c: New testcase.
+
+2023-03-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadmempair-1.c: New test.
+	* gcc.target/riscv/xtheadmempair-2.c: New test.
+	* gcc.target/riscv/xtheadmempair-3.c: New test.
+
+2023-03-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadfmv-fmv.c: New test.
+
+2023-03-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadmac-mula-muls.c: New test.
+
+2023-03-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadcondmov-mveqz-imm-eqz.c: New test.
+	* gcc.target/riscv/xtheadcondmov-mveqz-imm-not.c: New test.
+	* gcc.target/riscv/xtheadcondmov-mveqz-reg-eqz.c: New test.
+	* gcc.target/riscv/xtheadcondmov-mveqz-reg-not.c: New test.
+	* gcc.target/riscv/xtheadcondmov-mvnez-imm-cond.c: New test.
+	* gcc.target/riscv/xtheadcondmov-mvnez-imm-nez.c: New test.
+	* gcc.target/riscv/xtheadcondmov-mvnez-reg-cond.c: New test.
+	* gcc.target/riscv/xtheadcondmov-mvnez-reg-nez.c: New test.
+
+2023-03-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadbb-ext.c: New test.
+	* gcc.target/riscv/xtheadbb-extu-2.c: New test.
+	* gcc.target/riscv/xtheadbb-extu.c: New test.
+	* gcc.target/riscv/xtheadbb-ff1.c: New test.
+	* gcc.target/riscv/xtheadbb-rev.c: New test.
+	* gcc.target/riscv/xtheadbb-srri.c: New test.
+
+2023-03-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadbs-tst.c: New test.
+
+2023-03-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadba-addsl.c: New test.
+
+2023-03-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/mcpu-thead-c906.c: New test.
+
+2023-03-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* gcc.target/riscv/xtheadba.c: New test.
+	* gcc.target/riscv/xtheadbb.c: New test.
+	* gcc.target/riscv/xtheadbs.c: New test.
+	* gcc.target/riscv/xtheadcmo.c: New test.
+	* gcc.target/riscv/xtheadcondmov.c: New test.
+	* gcc.target/riscv/xtheadfmemidx.c: New test.
+	* gcc.target/riscv/xtheadfmv.c: New test.
+	* gcc.target/riscv/xtheadint.c: New test.
+	* gcc.target/riscv/xtheadmac.c: New test.
+	* gcc.target/riscv/xtheadmemidx.c: New test.
+	* gcc.target/riscv/xtheadmempair.c: New test.
+	* gcc.target/riscv/xtheadsync.c: New test.
+
+2023-03-15  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/109117
+	* gcc.target/i386/pr109117-1.c: New test.
+
 2023-03-15  Jonathan Yong  <10walls@gmail.com>
 
 	* gcc.dg/pic-2.c: Fix expected __PIC__ value.

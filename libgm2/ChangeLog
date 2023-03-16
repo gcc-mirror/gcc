@@ -1,3 +1,11 @@
+2023-03-15  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109125
+	* libm2pim/dtoa.cc (TRUE): Remove.
+	(FALSE): Remove.  Replace int with bool.
+	* libm2pim/ldtoa.cc (TRUE): Remove.
+	(FALSE): Remove.  Replace int with bool.
+
 2023-03-14  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109125

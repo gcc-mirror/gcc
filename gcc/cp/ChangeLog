@@ -1,3 +1,38 @@
+2023-03-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103871
+	PR c++/98056
+	* typeck.cc (cp_build_modify_expr): Allow array initialization of
+	DECL_ARTIFICIAL variable.
+
+2023-03-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107280
+	* constexpr.cc (cxx_eval_store_expression): Strip location wrappers.
+
+2023-03-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58538
+	* semantics.cc (check_template_template_default_arg): Check
+	maybe_get_template_decl_from_type_decl.
+
+2023-03-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108179
+	PR c++/104107
+	PR c++/95036
+	* pt.cc (coerce_template_template_parms): Use args from
+	DECL_CONTEXT (arg_tmpl) instead of outer_args.
+
+2023-03-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108179
+	* pt.cc	(coerce_template_template_parms): Take the arg and parm
+	templates directly.
+	(coerce_template_template_parm): Adjust.
+	(template_template_parm_bindings_ok_p): Adjust.
+	(convert_template_argument): Adjust.
+
 2023-03-14  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/96830

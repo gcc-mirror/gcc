@@ -1,3 +1,212 @@
+2023-03-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109097
+	* diagnostic-format-sarif.cc (class sarif_invocation): New.
+	(class sarif_ice_notification): New.
+	(sarif_builder::m_invocation_obj): New field.
+	(sarif_invocation::add_notification_for_ice): New.
+	(sarif_invocation::prepare_to_flush): New.
+	(sarif_ice_notification::sarif_ice_notification): New.
+	(sarif_builder::sarif_builder): Add m_invocation_obj.
+	(sarif_builder::end_diagnostic): Special-case DK_ICE and
+	DK_ICE_NOBT.
+	(sarif_builder::flush_to_file): Call prepare_to_flush on
+	m_invocation_obj.  Pass the latter to make_top_level_object.
+	(sarif_builder::make_result_object): Move creation of "locations"
+	array to...
+	(sarif_builder::make_locations_arr): ...this new function.
+	(sarif_builder::make_top_level_object): Add "invocation_obj" param
+	and pass it to make_run_object.
+	(sarif_builder::make_run_object): Add "invocation_obj" param and
+	use it.
+	(sarif_ice_handler): New callback.
+	(diagnostic_output_format_init_sarif): Wire up sarif_ice_handler.
+	* diagnostic.cc (diagnostic_initialize): Initialize new field
+	"ice_handler_cb".
+	(diagnostic_action_after_output): If it is set, make one attempt
+	to call ice_handler_cb.
+	* diagnostic.h (diagnostic_context::ice_handler_cb): New field.
+
+2023-03-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.cc (expand_vec_perm_blend):
+	Handle 8-byte modes only with TARGET_MMX_WITH_SSE. Handle V2SFmode
+	and fix V2HImode handling.
+	(expand_vec_perm_1): Try to emit BLEND instruction
+	before MOVSS/MOVSD.
+	* config/i386/mmx.md (*mmx_blendps): New insn pattern.
+
+2023-03-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-low.cc (omp_runtime_api_call): Add omp_in_explicit_task.
+
+2023-03-15  Richard Biener  <rguenther@suse.de>
+
+	* gimple-ssa-warn-access.cc (pass_waccess::check_pointer_uses):
+	Do not diagnose clobbers.
+
+2023-03-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109139
+	* tree-ssa-live.cc (remove_unused_locals): Look at the
+	base address for unused decls on the LHS of .DEFERRED_INIT.
+
+2023-03-15  Xi Ruoyao  <xry111@xry111.site>
+
+	PR other/109086
+	* builtins.cc (inline_string_cmp): Force the character
+	difference into "result" pseudo-register, instead of reassign
+	the pseudo-register.
+
+2023-03-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config.gcc: Add thead.o to RISC-V extra_objs.
+	* config/riscv/peephole.md: Add mempair peephole passes.
+	* config/riscv/riscv-protos.h (riscv_split_64bit_move_p): New
+	prototype.
+	(th_mempair_operands_p): Likewise.
+	(th_mempair_order_operands): Likewise.
+	(th_mempair_prepare_save_restore_operands): Likewise.
+	(th_mempair_save_restore_regs): Likewise.
+	(th_mempair_output_move): Likewise.
+	* config/riscv/riscv.cc (riscv_save_reg): Move code.
+	(riscv_restore_reg): Move code.
+	(riscv_for_each_saved_reg): Add code to emit mempair insns.
+	* config/riscv/t-riscv: Add thead.cc.
+	* config/riscv/thead.md (*th_mempair_load_<GPR:mode>2):
+	New insn.
+	(*th_mempair_store_<GPR:mode>2): Likewise.
+	(*th_mempair_load_extendsidi2): Likewise.
+	(*th_mempair_load_zero_extendsidi2): Likewise.
+	* config/riscv/thead.cc: New file.
+
+2023-03-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/constraints.md (TARGET_XTHEADFMV ? FP_REGS : NO_REGS)
+	New constraint "th_f_fmv".
+	(TARGET_XTHEADFMV ? GR_REGS : NO_REGS): New constraint
+	"th_r_fmv".
+	* config/riscv/riscv.cc (riscv_split_doubleword_move):
+	Add split code for XTheadFmv.
+	(riscv_secondary_memory_needed): XTheadFmv does not need
+	secondary memory.
+	* config/riscv/riscv.md: Add new UNSPEC_XTHEADFMV and
+	UNSPEC_XTHEADFMV_HW. Add support for XTheadFmv to
+	movdf_hardfloat_rv32.
+	* config/riscv/thead.md (th_fmv_hw_w_x): New INSN.
+	(th_fmv_x_w): New INSN.
+	(th_fmv_x_hw): New INSN.
+
+2023-03-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv.md (maddhisi4): New expand.
+	(msubhisi4): New expand.
+	* config/riscv/thead.md (*th_mula<mode>): New pattern.
+	(*th_mulawsi): New pattern.
+	(*th_mulawsi2): New pattern.
+	(*th_maddhisi4): New pattern.
+	(*th_sextw_maddhisi4): New pattern.
+	(*th_muls<mode>): New pattern.
+	(*th_mulswsi): New pattern.
+	(*th_mulswsi2): New pattern.
+	(*th_msubhisi4): New pattern.
+	(*th_sextw_msubhisi4): New pattern.
+
+2023-03-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/iterators.md (TARGET_64BIT): Add GPR2 iterator.
+	* config/riscv/riscv-protos.h (riscv_expand_conditional_move):
+	Add prototype.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Add costs for
+	XTheadCondMov.
+	(riscv_expand_conditional_move): New function.
+	(riscv_expand_conditional_move_onesided): New function.
+	* config/riscv/riscv.md: Add support for XTheadCondMov.
+	* config/riscv/thead.md (*th_cond_mov<GPR:mode><GPR2:mode>): Add
+	support for XTheadCondMov.
+	(*th_cond_gpr_mov<GPR:mode><GPR2:mode>): Likewise.
+
+2023-03-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/bitmanip.md (clzdi2): New expand.
+	(clzsi2): New expand.
+	(ctz<mode>2): New expand.
+	(popcount<mode>2): New expand.
+	(<bitmanip_optab>si2): Rename INSN.
+	(*<bitmanip_optab>si2): Hide INSN name.
+	(<bitmanip_optab>di2): Rename INSN.
+	(*<bitmanip_optab>di2): Hide INSN name.
+	(rotrsi3): Remove INSN.
+	(rotr<mode>3): Add expand.
+	(*rotrsi3): New INSN.
+	(rotrdi3): Rename INSN.
+	(*rotrdi3): Hide INSN name.
+	(rotrsi3_sext): Rename INSN.
+	(*rotrsi3_sext): Hide INSN name.
+	(bswap<mode>2): Remove INSN.
+	(bswapdi2): Add expand.
+	(bswapsi2): Add expand.
+	(*bswap<mode>2): Hide INSN name.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Add costs for sign
+	extraction.
+	* config/riscv/riscv.md (extv<mode>): New expand.
+	(extzv<mode>): New expand.
+	* config/riscv/thead.md (*th_srri<mode>3): New INSN.
+	(*th_ext<mode>): New INSN.
+	(*th_extu<mode>): New INSN.
+	(*th_clz<mode>2): New INSN.
+	(*th_rev<mode>2): New INSN.
+
+2023-03-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv.cc (riscv_rtx_costs): Add xthead:tst cost.
+	* config/riscv/thead.md (*th_tst<mode>3): New INSN.
+
+2023-03-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv.md: Include thead.md
+	* config/riscv/thead.md: New file.
+
+2023-03-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* config/riscv/riscv-cores.def (RISCV_CORE): Add "thead-c906".
+
+2023-03-15  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	* common/config/riscv/riscv-common.cc: Add xthead* extensions.
+	* config/riscv/riscv-opts.h (MASK_XTHEADBA): New.
+	(MASK_XTHEADBB): New.
+	(MASK_XTHEADBS): New.
+	(MASK_XTHEADCMO): New.
+	(MASK_XTHEADCONDMOV): New.
+	(MASK_XTHEADFMEMIDX): New.
+	(MASK_XTHEADFMV): New.
+	(MASK_XTHEADINT): New.
+	(MASK_XTHEADMAC): New.
+	(MASK_XTHEADMEMIDX): New.
+	(MASK_XTHEADMEMPAIR): New.
+	(MASK_XTHEADSYNC): New.
+	(TARGET_XTHEADBA): New.
+	(TARGET_XTHEADBB): New.
+	(TARGET_XTHEADBS): New.
+	(TARGET_XTHEADCMO): New.
+	(TARGET_XTHEADCONDMOV): New.
+	(TARGET_XTHEADFMEMIDX): New.
+	(TARGET_XTHEADFMV): New.
+	(TARGET_XTHEADINT): New.
+	(TARGET_XTHEADMAC): New.
+	(TARGET_XTHEADMEMIDX): New.
+	(TARGET_XTHEADMEMPAIR): new.
+	(TARGET_XTHEADSYNC): New.
+	* config/riscv/riscv.opt: Add riscv_xthead_subext.
+
+2023-03-15  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/109117
+	* config/i386/i386-builtin.def (__builtin_ia32_vaesdec_v16qi,
+	__builtin_ia32_vaesdeclast_v16qi,__builtin_ia32_vaesenc_v16qi,
+	__builtin_ia32_vaesenclast_v16qi): Require OPTION_MASK_ISA_AVX512VL.
+
 2023-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/109109

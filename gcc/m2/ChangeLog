@@ -1,3 +1,9 @@
+2023-03-15  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109125
+	* gm2-libs-ch/dtoa.cc (dtoa_strtod): Replace int with bool.
+	* gm2-libs-ch/ldtoa.cc (ldtoa_strtold): Replace int with bool.
+
 2023-03-14  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109125
