@@ -564,21 +564,19 @@ perform_target_ctor (tree init)
 /* Instantiate the default member initializer of MEMBER, if needed.
    Only get_nsdmi should use the return value of this function.  */
 
-static GTY((cache)) decl_tree_cache_map *nsdmi_inst;
-
 tree
 maybe_instantiate_nsdmi_init (tree member, tsubst_flags_t complain)
 {
   tree init = DECL_INITIAL (member);
-  if (init && DECL_LANG_SPECIFIC (member) && DECL_TEMPLATE_INFO (member))
+
+  /* tsubst_decl uses void_node to indicate an uninstantiated DMI.  */
+  if (init == void_node)
     {
       init = DECL_INITIAL (DECL_TI_TEMPLATE (member));
       location_t expr_loc
 	= cp_expr_loc_or_loc (init, DECL_SOURCE_LOCATION (member));
       if (TREE_CODE (init) == DEFERRED_PARSE)
 	/* Unparsed.  */;
-      else if (tree *slot = hash_map_safe_get (nsdmi_inst, member))
-	init = *slot;
       /* Check recursive instantiation.  */
       else if (DECL_INSTANTIATING_NSDMI_P (member))
 	{
@@ -639,7 +637,7 @@ maybe_instantiate_nsdmi_init (tree member, tsubst_flags_t complain)
 	  DECL_INSTANTIATING_NSDMI_P (member) = 0;
 
 	  if (init != error_mark_node)
-	    hash_map_safe_put<hm_ggc> (nsdmi_inst, member, init);
+	    DECL_INITIAL (member) = init;
 
 	  current_function_decl = cfd;
 	  current_binding_level = cbl;
