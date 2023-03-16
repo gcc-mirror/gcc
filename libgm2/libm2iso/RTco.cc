@@ -182,8 +182,8 @@ newSem (void)
       = (threadSem *)malloc (sizeof (threadSem));
   nSemaphores += 1;
   if (nSemaphores == SEM_POOL)
-    m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
-		       "too many semaphores created");
+    m2iso_M2RTS_HaltC ("too many semaphores created",
+		       __FILE__, __FUNCTION__, __LINE__);
 #else
   threadSem *sem
       = (threadSem *)malloc (sizeof (threadSem));
@@ -239,8 +239,8 @@ currentThread (void)
   for (tid = 0; tid < nThreads; tid++)
     if (pthread_self () == threadArray[tid].p)
       return tid;
-  m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
-		     "failed to find currentThread");
+  m2iso_M2RTS_HaltC ("failed to find currentThread",
+		     __FILE__, __FUNCTION__, __LINE__);
 }
 
 extern "C" int
@@ -290,8 +290,8 @@ EXPORT(turnInterrupts) (unsigned int newLevel)
 static void
 never (void)
 {
-  m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
-		     "the main thread should never call here");
+  m2iso_M2RTS_HaltC ("the main thread should never call here",
+		     __FILE__, __FUNCTION__, __LINE__);
 }
 
 static void *
@@ -327,8 +327,8 @@ execThread (void *t)
 #if 0
   m2iso_M2RTS_CoroutineException ( __FILE__, __LINE__, __COLUMN__, __FUNCTION__, "coroutine finishing");
 #endif
-  m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
-		     "execThread should never finish");
+  m2iso_M2RTS_HaltC ("execThread should never finish",
+		     __FILE__, __FUNCTION__, __LINE__);
   return NULL;
 }
 
@@ -338,8 +338,8 @@ newThread (void)
 #if defined(POOL)
   nThreads += 1;
   if (nThreads == THREAD_POOL)
-    m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
-		       "too many threads created");
+    m2iso_M2RTS_HaltC ("too many threads created",
+		       __FILE__, __FUNCTION__, __LINE__);
   return nThreads - 1;
 #else
   if (nThreads == 0)
@@ -376,15 +376,15 @@ initThread (void (*proc) (void), unsigned int stackSize,
   /* Set thread creation attributes.  */
   result = pthread_attr_init (&attr);
   if (result != 0)
-    m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
-		       "failed to create thread attribute");
+    m2iso_M2RTS_HaltC ("failed to create thread attribute",
+		       __FILE__, __FUNCTION__, __LINE__);
 
   if (stackSize > 0)
     {
       result = pthread_attr_setstacksize (&attr, stackSize);
       if (result != 0)
-        m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
-			   "failed to set stack size attribute");
+        m2iso_M2RTS_HaltC ("failed to set stack size attribute",
+			   __FILE__, __FUNCTION__, __LINE__);
     }
 
   tprintf ("initThread [%d]  function = 0x%p  (arg = 0x%p)\n", tid, proc,
@@ -392,7 +392,8 @@ initThread (void (*proc) (void), unsigned int stackSize,
   result = pthread_create (&threadArray[tid].p, &attr, execThread,
                            (void *)&threadArray[tid]);
   if (result != 0)
-    m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__, "thread_create failed");
+    m2iso_M2RTS_HaltC ("thread_create failed",
+		       __FILE__, __FUNCTION__, __LINE__);
   tprintf ("  created thread [%d]  function = 0x%p  0x%p\n", tid, proc,
            (void *)&threadArray[tid]);
   return tid;
@@ -422,13 +423,13 @@ EXPORT(transfer) (int *p1, int p2)
   {
     int current = currentThread ();
     if (!initialized)
-      m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
-			 "cannot transfer to a process before the process has been created");
+      m2iso_M2RTS_HaltC ("cannot transfer to a process before the process has been created",
+			 __FILE__, __FUNCTION__, __LINE__);
     if (current == p2)
       {
 	/* Error.  */
-	m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
-			   "attempting to transfer to ourself");
+	m2iso_M2RTS_HaltC ("attempting to transfer to ourself",
+			   __FILE__, __FUNCTION__, __LINE__);
     }
     else
       {
@@ -473,8 +474,8 @@ EXPORT(transfer) (int *p1, int p2)
 	  }
 	tprintf ("end, context back to %d\n", current);
 	if (current != old)
-	  m2iso_M2RTS_HaltC (__FILE__, __LINE__, __FUNCTION__,
-			     "wrong process id");
+	  m2iso_M2RTS_HaltC ("wrong process id",
+			     __FILE__, __FUNCTION__, __LINE__);
       }
   }
   __gthread_mutex_unlock (&lock);

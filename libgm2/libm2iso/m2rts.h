@@ -44,6 +44,5 @@ extern "C" void m2iso_M2RTS_ConstructModules (const char *modulename, const char
 extern "C" void m2iso_M2RTS_Terminate (void);
 extern "C" void m2iso_M2RTS_DeconstructModules (void);
 
-extern "C" void m2iso_M2RTS_HaltC (const char *filename, int line,
-				   const char *functionname, const char *desc)
-  __attribute__ ((noreturn));
+extern "C" void m2iso_M2RTS_HaltC (const char *desc, const char *filename,
+				   const char *functionname, int line) __attribute__ ((noreturn));

@@ -382,7 +382,7 @@ BEGIN
       3:  StrPoint('Eman', x, y)
 
       ELSE
-         Halt(__FILE__, __LINE__, __FUNCTION__, 'unexpected direction')
+         Halt ('unexpected direction', __FILE__, __FUNCTION__, __LINE__)
       END
    ELSE
       CASE dir OF
@@ -393,7 +393,7 @@ BEGIN
       3:  StrPoint('eman', x, y)
 
       ELSE
-         Halt(__FILE__, __LINE__, __FUNCTION__, 'unexpected direction')
+         Halt ('unexpected direction', __FILE__, __FUNCTION__, __LINE__)
       END
    END
 END DrawMan ;
@@ -409,7 +409,7 @@ BEGIN
    3:  StrPoint('ear', x, y)
 
    ELSE
-      Halt(__FILE__, __LINE__, __FUNCTION__, 'unexpected direction')
+      Halt ('unexpected direction', __FILE__, __FUNCTION__, __LINE__)
    END
 END DArrow ;
 

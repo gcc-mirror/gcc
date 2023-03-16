@@ -116,9 +116,8 @@ PROCEDURE HALT ([exitcode: INTEGER = -1]) <* noreturn *> ;
            to stderr and calls exit (1).
 *)
 
-PROCEDURE Halt (filename: ARRAY OF CHAR; line: CARDINAL;
-                function: ARRAY OF CHAR; description: ARRAY OF CHAR)
-                <* noreturn *> ;
+PROCEDURE Halt (description, filename, function: ARRAY OF CHAR;
+                line: CARDINAL) <* noreturn *> ;
 
 
 (*
@@ -127,8 +126,9 @@ PROCEDURE Halt (filename: ARRAY OF CHAR; line: CARDINAL;
            to stderr and calls exit (1).
 *)
 
-PROCEDURE HaltC (filename: ADDRESS; line: CARDINAL;
-                 function, description: ADDRESS) <* noreturn *> ;
+PROCEDURE HaltC (description, filename, function: ADDRESS;
+                 line: CARDINAL) <* noreturn *> ;
+
 
 
 (*

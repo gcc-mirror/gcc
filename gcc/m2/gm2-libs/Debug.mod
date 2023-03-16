@@ -34,20 +34,24 @@ FROM libc IMPORT exit ;
 
 (*
    Halt - writes a message in the format:
-          Module:Line:Message
+          Module:Function:Line:Message
 
           It then terminates by calling HALT.
 *)
 
-PROCEDURE Halt (Message: ARRAY OF CHAR;
-                LineNo: CARDINAL;
-                Module: ARRAY OF CHAR) ;
+PROCEDURE Halt (Message,
+                Module,
+                Function: ARRAY OF CHAR ;
+                LineNo  : CARDINAL) ;
 CONST
    MaxNoOfDigits = 12 ;  (* should be large enough for most source files.. *)
 VAR
    No               : ARRAY [0..MaxNoOfDigits] OF CHAR ;
 BEGIN
    DebugString(Module) ;
+   DebugString(':') ;
+   DebugString(Function) ;
+   DebugString(':') ;
    CardToStr(LineNo, 0, No) ;
    DebugString(':') ;
    DebugString(No) ;

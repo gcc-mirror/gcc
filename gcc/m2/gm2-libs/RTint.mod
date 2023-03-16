@@ -283,8 +283,8 @@ BEGIN
    vptr := FindVectorNo (vec) ;
    IF vptr = NIL
    THEN
-      Halt (__FILE__, __LINE__, __FUNCTION__,
-            'cannot find vector supplied')
+      Halt ('cannot find vector supplied',
+            __FILE__, __FUNCTION__, __LINE__)
    ELSE
       WITH vptr^ DO
          SetTime (rel, secs + DebugTime, micro)
@@ -309,8 +309,8 @@ BEGIN
    vptr := FindVectorNo (vec) ;
    IF vptr=NIL
    THEN
-      Halt (__FILE__, __LINE__, __FUNCTION__,
-            'cannot find vector supplied')
+      Halt ('cannot find vector supplied',
+            __FILE__, __FUNCTION__, __LINE__)
    ELSE
       WITH vptr^ DO
          GetTime (rel, secs, micro) ;
@@ -336,7 +336,8 @@ BEGIN
    vptr := FindVectorNo (vec) ;
    IF vptr = NIL
    THEN
-      Halt (__FILE__, __LINE__, __FUNCTION__, 'cannot find vector supplied')
+      Halt ( 'cannot find vector supplied',
+            __FILE__, __FUNCTION__, __LINE__)
    ELSE
       prevArg := vptr^.arg ;
       vptr^.arg := ptr ;
@@ -369,8 +370,8 @@ BEGIN
       vptr := FindVectorNo (vec) ;
       IF vptr = NIL
       THEN
-         Halt (__FILE__, __LINE__, __FUNCTION__,
-               'cannot find vector supplied') ;
+         Halt ('cannot find vector supplied',
+               __FILE__, __FUNCTION__, __LINE__)
       ELSE
          (* printf('including vector %d  (fd = %d)\n', vec, v^.File) ; *)
          vptr^.pending := Pending[vptr^.priority] ;
@@ -411,8 +412,8 @@ BEGIN
    vptr := FindPendingVector (vec) ;
    IF vptr = NIL
    THEN
-      Halt (__FILE__, __LINE__, __FUNCTION__,
-            'cannot find pending vector supplied')
+      Halt ('cannot find pending vector supplied',
+            __FILE__, __FUNCTION__, __LINE__)
    ELSE
       (* printf('excluding vector %d\n', vec) ; *)
       IF Pending[vptr^.priority] = vptr
@@ -727,8 +728,8 @@ BEGIN
       END ;
       IF untilInterrupt AND (inSet=NIL) AND (outSet=NIL) AND (NOT found)
       THEN
-         Halt (__FILE__, __LINE__, __FUNCTION__,
-               'deadlock found, no more processes to run and no interrupts active')
+         Halt ('deadlock found, no more processes to run and no interrupts active',
+               __FILE__, __FUNCTION__, __LINE__)
       END ;
       (* printf('timeval = 0x%x\n', timeval) ; *)
       (* printf('}\n') ; *)

@@ -337,8 +337,7 @@ END ErrorMessageC ;
            to stderr and calls exit (1).
 *)
 
-PROCEDURE HaltC (filename: ADDRESS; line: CARDINAL;
-                 function, description: ADDRESS) ;
+PROCEDURE HaltC (description, filename, function: ADDRESS; line: CARDINAL) ;
 BEGIN
    ErrorMessageC (description, filename, line, function)
 END HaltC ;
@@ -350,8 +349,7 @@ END HaltC ;
           to stderr and calls exit (1).
 *)
 
-PROCEDURE Halt (filename: ARRAY OF CHAR; line: CARDINAL;
-                function: ARRAY OF CHAR; description: ARRAY OF CHAR) ;
+PROCEDURE Halt (description, filename, function: ARRAY OF CHAR; line: CARDINAL) ;
 BEGIN
    ErrorMessage (description, filename, line, function)
 END Halt ;

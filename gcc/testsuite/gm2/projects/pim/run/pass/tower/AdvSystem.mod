@@ -67,7 +67,7 @@ BEGIN
       END ;
       INC(i)
    END ;
-   Halt(__FILE__, __LINE__, __FUNCTION__, 'increase MaxNoOfProcesses')
+   Halt ('increase MaxNoOfProcesses', __FILE__, __FUNCTION__, __LINE__)
 END AssignOutputTo ;
 
 
@@ -111,8 +111,8 @@ BEGIN
       END ;
       INC(i)
    END ;
-   Halt(__FILE__, __LINE__, __FUNCTION__,
-        'process has never has a player assigned to its output')
+   Halt ('process has never has a player assigned to its output',
+         __FILE__, __FUNCTION__, __LINE__)
 END ProcessToPlayer ;
 
 
@@ -259,8 +259,8 @@ BEGIN
          RETURN( i )
       END
    END ;
-   Halt(__FILE__, __LINE__, __FUNCTION__,
-        'process calling is not a player process')
+   Halt ('process calling is not a player process',
+         __FILE__, __FUNCTION__, __LINE__)
 END PlayerNo ;
 
 

@@ -153,7 +153,7 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 libm2cor_la_LIBADD =
-@BUILD_CORLIB_TRUE@am__objects_1 = Debug.lo Executive.lo SYSTEM.lo \
+@BUILD_CORLIB_TRUE@am__objects_1 = Executive.lo SYSTEM.lo \
 @BUILD_CORLIB_TRUE@	TimerHandler.lo
 @BUILD_CORLIB_TRUE@am_libm2cor_la_OBJECTS = $(am__objects_1) \
 @BUILD_CORLIB_TRUE@	KeyBoardLEDs.lo
@@ -450,11 +450,11 @@ AM_MAKEFLAGS = \
 
 # Subdir rules rely on $(FLAGS_TO_PASS)
 FLAGS_TO_PASS = $(AM_MAKEFLAGS)
-@BUILD_CORLIB_TRUE@M2DEFS = Debug.def  Executive.def \
+@BUILD_CORLIB_TRUE@M2DEFS = Executive.def \
 @BUILD_CORLIB_TRUE@         KeyBoardLEDs.def  SYSTEM.def \
 @BUILD_CORLIB_TRUE@         TimerHandler.def
 
-@BUILD_CORLIB_TRUE@M2MODS = Debug.mod  Executive.mod \
+@BUILD_CORLIB_TRUE@M2MODS = Executive.mod \
 @BUILD_CORLIB_TRUE@         SYSTEM.mod  TimerHandler.mod
 
 @BUILD_CORLIB_TRUE@toolexeclib_LTLIBRARIES = libm2cor.la

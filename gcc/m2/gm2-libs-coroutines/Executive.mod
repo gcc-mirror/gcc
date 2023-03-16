@@ -105,7 +105,7 @@ BEGIN
    IF NOT c
    THEN
       Ps ;
-      Halt(file, line, function, 'assert failed')
+      Halt ('assert failed', file, function, line)
    END
 END Assert ;
 
@@ -178,23 +178,21 @@ VAR
    ToOldState: PROTECTION ;
 BEGIN
 (* ToOldState := TurnInterrupts(MAX(PROTECTION)) ;                (* disable interrupts *) *)
-
-   (* your code needs to go here *)
-   WITH d^ DO                                                                  (* remove for student *)
-      IF Status=Suspended                                                      (* remove for student *)
-      THEN                                                                     (* remove for student *)
-         (* legal state transition *)                                          (* remove for student *)
-         Status := Runnable ;                         (* change status      *) (* remove for student *)
-         AddToReady(d) ;                              (* add to run queue   *) (* remove for student *)
-         RunQueue[RunPriority] := d ;                 (* make d at top of q *) (* remove for student *)
-         Reschedule (* check whether this process has a higher run priority *) (* remove for student *)
-      ELSE                                                                     (* remove for student *)
-         (* we are trying to Resume a process which is *)                      (* remove for student *)
-         Halt(__FILE__, __LINE__, __FUNCTION__,                                (* remove for student *)
-              'trying to resume a process which is not suspended') ;           (* remove for student *)
-         RETURN( NIL )        (* not held in a Suspended state - error      *) (* remove for student *)
-      END                                                                      (* remove for student *)
-   END ;                                                                       (* remove for student *)
+   WITH d^ DO
+      IF Status=Suspended
+      THEN
+         (* legal state transition *)
+         Status := Runnable ;                         (* change status      *)
+         AddToReady(d) ;                              (* add to run queue   *)
+         RunQueue[RunPriority] := d ;                 (* make d at top of q *)
+         Reschedule (* check whether this process has a higher run priority *)
+      ELSE
+         (* we are trying to Resume a process which is *)
+         Halt ('trying to resume a process which is not suspended',
+               __FILE__, __FUNCTION__, __LINE__) ;
+         RETURN( NIL )        (* not held in a Suspended state - error      *)
+      END
+   END ;
 (* ToOldState := TurnInterrupts(ToOldState) ;         (* restore interrupts *) *)
    RETURN( d )
 END Resume ;
@@ -255,25 +253,24 @@ VAR
    ToOldState: PROTECTION ;
 BEGIN
 (* ToOldState := TurnInterrupts(MAX(PROTECTION)) ;                (* disable interrupts *) *)
-
-   (* your code needs to go here *)
-   WITH s^ DO                                                                  (* remove for student *)
-      IF Value>0                                                               (* remove for student *)
-      THEN                                                                     (* remove for student *)
-         DEC( Value )                                                          (* remove for student *)
-      ELSE                                                                     (* remove for student *)
-         SubFromReady(CurrentProcess) ;               (* remove from run q  *) (* remove for student *)
+   WITH s^ DO
+      IF Value>0
+      THEN
+         DEC( Value )
+      ELSE
+         SubFromReady(CurrentProcess) ;               (* remove from run q  *)
          IF Who=CurrentProcess
          THEN
             Ps ;
-            Halt(__FILE__, __LINE__, __FUNCTION__, 'we are already on sem')
+            Halt ('we are already on sem',
+                  __FILE__, __FUNCTION__, __LINE__)
          END ;
-         AddToSemaphore(Who, CurrentProcess) ;        (* add to semaphore q *) (* remove for student *)
-         CurrentProcess^.Status := WaitOnSem ;        (* set new status     *) (* remove for student *)
-         CurrentProcess^.Which := s ;                 (* debugging aid      *) (* remove for student *)
-         Reschedule                                   (* find next process  *) (* remove for student *)
-      END                                                                      (* remove for student *)
-   END ;                                                                       (* remove for student *)
+         AddToSemaphore(Who, CurrentProcess) ;        (* add to semaphore q *)
+         CurrentProcess^.Status := WaitOnSem ;        (* set new status     *)
+         CurrentProcess^.Which := s ;                 (* debugging aid      *)
+         Reschedule                                   (* find next process  *)
+      END
+   END ;
 (* ToOldState := TurnInterrupts(ToOldState)           (* restore interrupts *) *)
 END Wait ;
 

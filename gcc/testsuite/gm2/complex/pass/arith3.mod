@@ -28,7 +28,7 @@ PROCEDURE Assert (b: BOOLEAN; l: CARDINAL) ;
 BEGIN
    IF NOT b
    THEN
-      Halt(__FILE__, l, __FUNCTION__, 'failed')
+      Halt ('failed', __FILE__, __FUNCTION__, __LINE__)
    END
 END Assert ;
 

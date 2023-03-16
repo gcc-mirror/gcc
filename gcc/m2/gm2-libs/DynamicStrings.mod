@@ -153,8 +153,8 @@ END stop ;
 
 (*
    PopAllocationExemption - test to see that all strings are deallocated, except
-                            string, e, since the last push.
-                            Then it pops to the previous allocation/deallocation
+                            string e since the last push.
+                            Post-condition: it pops to the previous allocation/deallocation
                             lists.
 
                             If halt is true then the application terminates
@@ -173,8 +173,8 @@ BEGIN
       IF frameHead = NIL
       THEN
          stop ;
-         Halt (__FILE__, __LINE__, __FUNCTION__,
-               "mismatched number of PopAllocation's compared to PushAllocation's")
+         Halt ("mismatched number of PopAllocation's compared to PushAllocation's",
+               __FILE__, __FUNCTION__, __LINE__) ;
          (* writeString ("mismatched number of PopAllocation's compared to PushAllocation's") *)
       ELSE
          IF frameHead^.alloc # NIL

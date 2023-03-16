@@ -97,11 +97,11 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 
 
 if BUILD_CORLIB
-M2DEFS = Debug.def  Executive.def \
+M2DEFS = Executive.def \
          KeyBoardLEDs.def  SYSTEM.def \
          TimerHandler.def
 
-M2MODS = Debug.mod  Executive.mod \
+M2MODS = Executive.mod \
          SYSTEM.mod  TimerHandler.mod
 
 toolexeclib_LTLIBRARIES = libm2cor.la

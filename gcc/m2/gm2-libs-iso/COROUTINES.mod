@@ -115,7 +115,7 @@ BEGIN
    tp := initThread (procBody, size, initProtection) ;
    IF tp = -1
    THEN
-      Halt (__FILE__, __LINE__, __FUNCTION__, 'unable to create a new thread')
+      Halt ('unable to create a new thread', __FILE__, __FUNCTION__, __LINE__)
    END ;
    NEW (cr) ;
    WITH cr^ DO
@@ -170,8 +170,8 @@ BEGIN
    from := currentCoRoutine ;
    IF to^.context = from^.context
    THEN
-      Halt (__FILE__, __LINE__, __FUNCTION__,
-            'error when attempting to context switch to the same process')
+      Halt ('error when attempting to context switch to the same process',
+            __FILE__, __FUNCTION__, __LINE__)
    END ;
    from^.inexcept := SetExceptionState (to^.inexcept) ;
    from^.source := GetExceptionSource () ;
@@ -225,8 +225,8 @@ BEGIN
       Init ;
       IF init () # 0
       THEN
-         Halt (__FILE__, __LINE__, __FUNCTION__,
-               'failed to initialize RTco')
+         Halt ('failed to initialize RTco',
+               __FILE__, __FUNCTION__, __LINE__)
       END ;
       RTint.Init ;
       initCo := TRUE
@@ -252,8 +252,8 @@ BEGIN
    old := TurnInterrupts (MAX (PROTECTION)) ;
    IF from = to
    THEN
-      Halt (__FILE__, __LINE__, __FUNCTION__,
-            "error IOTRANSFER cannot transfer control to the running COROUTINE")
+      Halt ("error IOTRANSFER cannot transfer control to the running COROUTINE",
+            __FILE__, __FUNCTION__, __LINE__)
    END ;
    wait (lock) ;
    l := currentCoRoutine^.attached ;
@@ -511,8 +511,8 @@ BEGIN
    localInit ;
    IF l = NIL
    THEN
-      Halt (__FILE__, __LINE__, __FUNCTION__,
-            'no coroutine attached to this interrupt vector which was initiated by IOTRANSFER')
+      Halt ('no coroutine attached to this interrupt vector which was initiated by IOTRANSFER',
+            __FILE__, __FUNCTION__, __LINE__)
    ELSE
       IF Debugging
       THEN
@@ -536,8 +536,8 @@ BEGIN
          ourself := AttachVector (InterruptNo, chain) ;
          IF ourself # l
          THEN
-            Halt (__FILE__, __LINE__, __FUNCTION__,
-                  'inconsistancy of return result')
+            Halt ('inconsistancy of return result',
+                  __FILE__, __FUNCTION__, __LINE__)
          END ;
          IF chain = NIL
          THEN

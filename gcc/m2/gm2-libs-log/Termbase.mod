@@ -106,7 +106,7 @@ PROCEDURE Read (VAR ch: CHAR) ;
 BEGIN
    IF rStack=NIL
    THEN
-      Halt(__FILE__, __LINE__, __FUNCTION__, 'no active read procedure')
+      Halt ('no active read procedure', __FILE__, __FUNCTION__, __LINE__)
    ELSE
       rStack^.r(ch)
    END
@@ -121,7 +121,7 @@ PROCEDURE KeyPressed () : BOOLEAN ;
 BEGIN
    IF rStack=NIL
    THEN
-      Halt(__FILE__, __LINE__, __FUNCTION__, 'no active status procedure')
+      Halt ('no active status procedure', __FILE__, __FUNCTION__, __LINE__)
    ELSE
       RETURN( rStack^.s() )
    END
@@ -185,7 +185,7 @@ PROCEDURE Write (VAR ch: CHAR) ;
 BEGIN
    IF wStack=NIL
    THEN
-      Halt(__FILE__, __LINE__, __FUNCTION__, 'no active write procedure')
+      Halt ('no active write procedure', __FILE__, __FUNCTION__, __LINE__)
    ELSE
       wStack^.w(ch)
    END
@@ -205,12 +205,12 @@ BEGIN
    AssignRead(Keyboard.Read, Keyboard.KeyPressed, Done) ;
    IF NOT Done
    THEN
-      Halt(__FILE__, __LINE__, __FUNCTION__, 'failed to assign read routines from module Keyboard')
+      Halt ('failed to assign read routines from module Keyboard', __FILE__, __FUNCTION__, __LINE__)
    END ;
    AssignWrite(Display.Write, Done) ;
    IF NOT Done
    THEN
-      Halt(__FILE__, __LINE__, __FUNCTION__, 'failed to assign write routine from module Display')
+      Halt ('failed to assign write routine from module Display', __FILE__, __FUNCTION__, __LINE__)
    END
 END Init ;
 
