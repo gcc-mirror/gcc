@@ -7086,6 +7086,7 @@ extern bool is_copy_initialization		(tree);
 extern tree build_zero_init			(tree, tree, bool);
 extern tree build_value_init			(tree, tsubst_flags_t);
 extern tree build_value_init_noctor		(tree, tsubst_flags_t);
+extern tree maybe_instantiate_nsdmi_init	(tree, tsubst_flags_t);
 extern tree get_nsdmi				(tree, bool, tsubst_flags_t);
 extern tree build_offset_ref			(tree, tree, bool,
 						 tsubst_flags_t);

@@ -561,18 +561,16 @@ perform_target_ctor (tree init)
   return init;
 }
 
-/* Return the non-static data initializer for FIELD_DECL MEMBER.  */
+/* Instantiate the default member initializer of MEMBER, if needed.
+   Only get_nsdmi should use the return value of this function.  */
 
 static GTY((cache)) decl_tree_cache_map *nsdmi_inst;
 
 tree
-get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
+maybe_instantiate_nsdmi_init (tree member, tsubst_flags_t complain)
 {
-  tree init;
-  tree save_ccp = current_class_ptr;
-  tree save_ccr = current_class_ref;
-  
-  if (DECL_LANG_SPECIFIC (member) && DECL_TEMPLATE_INFO (member))
+  tree init = DECL_INITIAL (member);
+  if (init && DECL_LANG_SPECIFIC (member) && DECL_TEMPLATE_INFO (member))
     {
       init = DECL_INITIAL (DECL_TI_TEMPLATE (member));
       location_t expr_loc
@@ -642,8 +640,19 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 	  input_location = sloc;
 	}
     }
-  else
-    init = DECL_INITIAL (member);
+
+  return init;
+}
+
+/* Return the non-static data initializer for FIELD_DECL MEMBER.  */
+
+tree
+get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
+{
+  tree save_ccp = current_class_ptr;
+  tree save_ccr = current_class_ref;
+
+  tree init = maybe_instantiate_nsdmi_init (member, complain);
 
   if (init && TREE_CODE (init) == DEFERRED_PARSE)
     {
