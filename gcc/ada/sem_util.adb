@@ -6110,7 +6110,7 @@ package body Sem_Util is
 
                      Conc_Typ : constant Entity_Id :=
                        (if Present (Init_Proc_Type)
-                          and then Init_Proc_Type in E_Record_Type_Id
+                          and then Ekind (Init_Proc_Type) = E_Record_Type
                         then Corresponding_Concurrent_Type (Init_Proc_Type)
                         else Empty);
 
