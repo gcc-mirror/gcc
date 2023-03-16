@@ -104,12 +104,6 @@ ASTLoweringExpr::visit (AST::IfExprConseqElse &expr)
 }
 
 void
-ASTLoweringExpr::visit (AST::IfExprConseqIf &expr)
-{
-  translated = ASTLoweringIfBlock::translate (&expr, &terminated);
-}
-
-void
 ASTLoweringExpr::visit (AST::BlockExpr &expr)
 {
   translated = ASTLoweringBlock::translate (&expr, &terminated);

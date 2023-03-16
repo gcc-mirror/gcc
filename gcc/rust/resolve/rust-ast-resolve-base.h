@@ -95,8 +95,6 @@ public:
   void visit (AST::ForLoopExpr &);
   void visit (AST::IfExpr &);
   void visit (AST::IfExprConseqElse &);
-  void visit (AST::IfExprConseqIf &);
-  void visit (AST::IfExprConseqIfLet &);
   void visit (AST::IfLetExpr &);
   void visit (AST::IfLetExprConseqElse &);
   void visit (AST::IfLetExprConseqIf &);

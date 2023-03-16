@@ -101,8 +101,6 @@ public:
 
   void visit (AST::IfExprConseqElse &expr) override;
 
-  void visit (AST::IfExprConseqIf &expr) override;
-
 private:
   ASTLoweringIfBlock ()
     : ASTLoweringBase (), translated (nullptr), terminated (false)
@@ -165,11 +163,6 @@ public:
   }
 
   void visit (AST::IfExprConseqElse &expr) override
-  {
-    translated = ASTLoweringIfBlock::translate (&expr, &terminated);
-  }
-
-  void visit (AST::IfExprConseqIf &expr) override
   {
     translated = ASTLoweringIfBlock::translate (&expr, &terminated);
   }

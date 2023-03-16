@@ -230,12 +230,6 @@ void
 ASTLoweringBase::visit (AST::IfExprConseqElse &)
 {}
 void
-ASTLoweringBase::visit (AST::IfExprConseqIf &)
-{}
-void
-ASTLoweringBase::visit (AST::IfExprConseqIfLet &)
-{}
-void
 ASTLoweringBase::visit (AST::IfLetExpr &)
 {}
 void

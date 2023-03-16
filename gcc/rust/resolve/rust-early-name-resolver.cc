@@ -457,22 +457,6 @@ EarlyNameResolver::visit (AST::IfExprConseqElse &expr)
 }
 
 void
-EarlyNameResolver::visit (AST::IfExprConseqIf &expr)
-{
-  expr.get_condition_expr ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-  expr.get_conseq_if_expr ()->accept_vis (*this);
-}
-
-void
-EarlyNameResolver::visit (AST::IfExprConseqIfLet &expr)
-{
-  expr.get_condition_expr ()->accept_vis (*this);
-  expr.get_if_block ()->accept_vis (*this);
-  expr.get_conseq_if_let_expr ()->accept_vis (*this);
-}
-
-void
 EarlyNameResolver::visit (AST::IfLetExpr &expr)
 {
   expr.get_value_expr ()->accept_vis (*this);

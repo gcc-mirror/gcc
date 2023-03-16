@@ -682,24 +682,6 @@ ExpandVisitor::visit (AST::IfExprConseqElse &expr)
 }
 
 void
-ExpandVisitor::visit (AST::IfExprConseqIf &expr)
-{
-  maybe_expand_expr (expr.get_condition_expr ());
-
-  visit (expr.get_if_block ());
-  visit (expr.get_conseq_if_expr ());
-}
-
-void
-ExpandVisitor::visit (AST::IfExprConseqIfLet &expr)
-{
-  maybe_expand_expr (expr.get_condition_expr ());
-
-  visit (expr.get_if_block ());
-  visit (expr.get_conseq_if_let_expr ());
-}
-
-void
 ExpandVisitor::visit (AST::IfLetExpr &expr)
 {
   visit_outer_attrs (expr);

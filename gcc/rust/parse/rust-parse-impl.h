@@ -8035,11 +8035,11 @@ Parser<ManagedTokenSource>::parse_if_expr (AST::AttrVec outer_attrs,
 		    return nullptr;
 		  }
 
-		return std::unique_ptr<AST::IfExprConseqIfLet> (
-		  new AST::IfExprConseqIfLet (std::move (condition),
-					      std::move (if_body),
-					      std::move (if_let_expr),
-					      std::move (outer_attrs), locus));
+		return std::unique_ptr<AST::IfExprConseqElse> (
+		  new AST::IfExprConseqElse (std::move (condition),
+					     std::move (if_body),
+					     std::move (if_let_expr),
+					     std::move (outer_attrs), locus));
 	      }
 	    else
 	      {
@@ -8056,11 +8056,11 @@ Parser<ManagedTokenSource>::parse_if_expr (AST::AttrVec outer_attrs,
 		    return nullptr;
 		  }
 
-		return std::unique_ptr<AST::IfExprConseqIf> (
-		  new AST::IfExprConseqIf (std::move (condition),
-					   std::move (if_body),
-					   std::move (if_expr),
-					   std::move (outer_attrs), locus));
+		return std::unique_ptr<AST::IfExprConseqElse> (
+		  new AST::IfExprConseqElse (std::move (condition),
+					     std::move (if_body),
+					     std::move (if_expr),
+					     std::move (outer_attrs), locus));
 	      }
 	  }
 	default:
