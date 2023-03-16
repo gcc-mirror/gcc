@@ -2705,7 +2705,7 @@ satisfaction_cache::get ()
   if (entry->evaluating)
     {
       /* If we get here, it means satisfaction is self-recursive.  */
-      gcc_checking_assert (!entry->result);
+      gcc_checking_assert (!entry->result || seen_error ());
       if (info.noisy ())
 	error_at (EXPR_LOCATION (ATOMIC_CONSTR_EXPR (entry->atom)),
 		  "satisfaction of atomic constraint %qE depends on itself",
