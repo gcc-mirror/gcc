@@ -58,7 +58,7 @@ add_search_path (const std::string &path)
 
 // When using a search path, we apply each of these transformations at
 // each entry on the search path before moving on to the next entry.
-// If the file exists, but does not contain any Go export data, we
+// If the file exists, but does not contain any Rust export data, we
 // stop; we do not keep looking for another file with the same name
 // later in the search path.
 
@@ -170,7 +170,8 @@ Import::try_package_in_directory (const std::string &filename,
 
   close (fd);
 
-  rust_error_at (location, "%s exists but does not contain any Go export data",
+  rust_error_at (location,
+		 "%s exists but does not contain any Rust export data",
 		 found_filename.c_str ());
 
   return NULL;
@@ -244,7 +245,7 @@ Import::find_export_data (const std::string &filename, int fd,
   if (c < len)
     return NULL;
 
-  // Check for a file containing nothing but Go export data.
+  // Check for a file containing nothing but Rust export data.
   // if (memcmp (buf, Export::cur_magic, Export::magic_len) == 0
   //     || memcmp (buf, Export::v1_magic, Export::magic_len) == 0
   //     || memcmp (buf, Export::v2_magic, Export::magic_len) == 0)
