@@ -235,12 +235,6 @@ ASTLoweringBase::visit (AST::IfLetExpr &)
 void
 ASTLoweringBase::visit (AST::IfLetExprConseqElse &)
 {}
-void
-ASTLoweringBase::visit (AST::IfLetExprConseqIf &)
-{}
-void
-ASTLoweringBase::visit (AST::IfLetExprConseqIfLet &)
-{}
 //  void ASTLoweringBase::visit(MatchCasematch_case) {}
 // void ASTLoweringBase:: (AST::MatchCaseBlockExpr &) {}
 // void ASTLoweringBase:: (AST::MatchCaseExpr &) {}

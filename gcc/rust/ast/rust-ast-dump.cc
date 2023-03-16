@@ -945,14 +945,6 @@ Dump::visit (IfLetExprConseqElse &)
 {}
 
 void
-Dump::visit (IfLetExprConseqIf &)
-{}
-
-void
-Dump::visit (IfLetExprConseqIfLet &)
-{}
-
-void
 Dump::visit (MatchExpr &)
 {}
 

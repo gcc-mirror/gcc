@@ -1673,27 +1673,7 @@ IfLetExprConseqElse::as_string () const
 {
   std::string str = IfLetExpr::as_string ();
 
-  str += "\n Else block expr: " + else_block->as_string ();
-
-  return str;
-}
-
-std::string
-IfLetExprConseqIf::as_string () const
-{
-  std::string str = IfLetExpr::as_string ();
-
-  str += "\n Else if expr: \n  " + if_expr->as_string ();
-
-  return str;
-}
-
-std::string
-IfLetExprConseqIfLet::as_string () const
-{
-  std::string str = IfLetExpr::as_string ();
-
-  str += "\n Else if let expr: \n  " + if_let_expr->as_string ();
+  str += "\n Else expr: " + else_block->as_string ();
 
   return str;
 }
@@ -4563,18 +4543,6 @@ IfLetExpr::accept_vis (ASTVisitor &vis)
 
 void
 IfLetExprConseqElse::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-IfLetExprConseqIf::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-IfLetExprConseqIfLet::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }

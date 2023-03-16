@@ -700,24 +700,6 @@ ExpandVisitor::visit (AST::IfLetExprConseqElse &expr)
 }
 
 void
-ExpandVisitor::visit (AST::IfLetExprConseqIf &expr)
-{
-  maybe_expand_expr (expr.get_value_expr ());
-
-  visit (expr.get_if_block ());
-  visit (expr.get_conseq_if_expr ());
-}
-
-void
-ExpandVisitor::visit (AST::IfLetExprConseqIfLet &expr)
-{
-  maybe_expand_expr (expr.get_value_expr ());
-
-  visit (expr.get_if_block ());
-  visit (expr.get_conseq_if_let_expr ());
-}
-
-void
 ExpandVisitor::visit (AST::MatchExpr &expr)
 {
   visit_outer_attrs (expr);

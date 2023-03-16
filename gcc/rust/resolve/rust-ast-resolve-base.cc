@@ -303,14 +303,6 @@ ResolverBase::visit (AST::IfLetExprConseqElse &)
 {}
 
 void
-ResolverBase::visit (AST::IfLetExprConseqIf &)
-{}
-
-void
-ResolverBase::visit (AST::IfLetExprConseqIfLet &)
-{}
-
-void
 ResolverBase::visit (AST::MatchExpr &)
 {}
 

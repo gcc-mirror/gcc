@@ -186,8 +186,6 @@ private:
   void visit (IfExprConseqElse &expr);
   void visit (IfLetExpr &expr);
   void visit (IfLetExprConseqElse &expr);
-  void visit (IfLetExprConseqIf &expr);
-  void visit (IfLetExprConseqIfLet &expr);
   void visit (MatchExpr &expr);
   void visit (AwaitExpr &expr);
   void visit (AsyncBlockExpr &expr);
