@@ -24,6 +24,7 @@ MANUALS="cpp
   gdc
   gfortran
   gfc-internals
+  gm2
   gnat_ugn
   gnat-style
   gnat_rm
@@ -167,7 +168,10 @@ for file in $MANUALS; do
   filename=`find . -name ${file}.texi`
   if [ "${filename}" ]; then
     includes="-I ${includedir} -I `dirname ${filename}`"
-    if [ "$file" = "gnat_ugn" ]; then
+    if [ "$file" = "gm2" ]; then
+      includes="$includes -I gcc/gcc/m2/target-independent"
+      includes="$includes -I gcc/gcc/m2/target-independent/m2"
+    elif [ "$file" = "gnat_ugn" ]; then
       includes="$includes -I gcc/gcc/ada -I gcc/gcc/ada/doc/gnat_ugn"
     fi
     makeinfo --html --css-ref $CSS $includes -o ${file} ${filename}
