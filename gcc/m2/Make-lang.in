@@ -200,7 +200,7 @@ gm2-libs.texi-check: m2/SYSTEM-pim.texi m2/SYSTEM-iso.texi m2/Builtins.texi \
 	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -t -uLibraries -s$(srcdir)/m2 -b$(objdir)/m2 -o $(objdir)/m2/gm2-libs.texi
 else
 gm2-libs.texi-check:
-	cp $(srcdir)/m2/target-independent/gm2-libs.texi $(objdir)/m2/gm2-libs.texi
+	cp $(srcdir)/m2/target-independent/m2/gm2-libs.texi $(objdir)/m2/gm2-libs.texi
 endif
 	$(STAMP) gm2-libs.texi-check
 
@@ -214,7 +214,7 @@ gm2-libs.rst-check: m2/SYSTEM-pim.texi m2/SYSTEM-iso.texi m2/Builtins.texi \
 	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -x -uLibraries -s$(srcdir)/m2 -b$(objdir)/m2 -o $(objdir)/m2/gm2-libs.rst
 else
 gm2-libs.rst-check:
-	cp $(srcdir)/m2/target-independent/gm2-libs.rst $(objdir)/m2/gm2-libs.rst
+	cp $(srcdir)/m2/target-independent/m2/gm2-libs.rst $(objdir)/m2/gm2-libs.rst
 endif
 	$(STAMP) gm2-libs.rst-check
 
@@ -243,7 +243,7 @@ SYSTEM-pim-texi-check: $(objdir)/m2/gm2-libs/SYSTEM.def
 	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -t -b$(objdir)/m2 -f$(objdir)/m2/gm2-libs/SYSTEM.def -o $(objdir)/m2/SYSTEM-pim.texi
 else
 SYSTEM-pim-texi-check: $(objdir)/m2/gm2-libs/SYSTEM.def
-	cp $(srcdir)/m2/target-independent/SYSTEM-pim.texi $(objdir)/m2/SYSTEM-pim.texi
+	cp $(srcdir)/m2/target-independent/m2/SYSTEM-pim.texi $(objdir)/m2/SYSTEM-pim.texi
 endif
 	$(STAMP) SYSTEM-pim-texi-check
 
@@ -256,7 +256,7 @@ SYSTEM-pim-rst-check: $(objdir)/m2/gm2-libs/SYSTEM.def
 	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -x -b$(objdir)/m2 -f$(objdir)/m2/gm2-libs/SYSTEM.def -o $(objdir)/m2/SYSTEM-pim.rst
 else
 SYSTEM-pim-rst-check: $(objdir)/m2/gm2-libs/SYSTEM.def
-	cp $(srcdir)/m2/target-independent/SYSTEM-pim.rst $(objdir)/m2/SYSTEM-pim.rst
+	cp $(srcdir)/m2/target-independent/m2/SYSTEM-pim.rst $(objdir)/m2/SYSTEM-pim.rst
 endif
 	$(STAMP) SYSTEM-pim-rst-check
 
@@ -269,7 +269,7 @@ SYSTEM-iso.texi-check:  $(objdir)/m2/gm2-libs-iso/SYSTEM.def
 	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -t -b$(objdir)/m2 -f$(objdir)/m2/gm2-libs-iso/SYSTEM.def -o $(objdir)/m2/SYSTEM-iso.texi
 else
 SYSTEM-iso.texi-check:  $(objdir)/m2/gm2-libs-iso/SYSTEM.def
-	cp $(srcdir)/m2/target-independent/SYSTEM-iso.texi $(objdir)/m2/SYSTEM-iso.texi
+	cp $(srcdir)/m2/target-independent/m2/SYSTEM-iso.texi $(objdir)/m2/SYSTEM-iso.texi
 endif
 	$(STAMP) SYSTEM-iso.texi-check
 
@@ -282,7 +282,7 @@ SYSTEM-iso.rst-check:  $(objdir)/m2/gm2-libs-iso/SYSTEM.def
 	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -x -b$(objdir)/m2 -f$(objdir)/m2/gm2-libs-iso/SYSTEM.def -o $(objdir)/m2/SYSTEM-iso.rst
 else
 SYSTEM-iso.rst-check:  $(objdir)/m2/gm2-libs-iso/SYSTEM.def
-	cp $(srcdir)/m2/target-independent/SYSTEM-iso.rst $(objdir)/m2/SYSTEM-iso.rst
+	cp $(srcdir)/m2/target-independent/m2/SYSTEM-iso.rst $(objdir)/m2/SYSTEM-iso.rst
 endif
 	$(STAMP) SYSTEM-iso.rst-check
 
@@ -296,7 +296,7 @@ Builtins.texi-check:  m2/gm2-libs/Builtins.def
 	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -t -b./ -f$(srcdir)/m2/gm2-libs/Builtins.def -o $(objdir)/m2/Builtins.texi
 else
 Builtins.texi-check:  m2/gm2-libs/Builtins.def
-	cp $(srcdir)/m2/target-independent/Builtins.texi $(objdir)/m2/Builtins.texi
+	cp $(srcdir)/m2/target-independent/m2/Builtins.texi $(objdir)/m2/Builtins.texi
 endif
 	$(STAMP) Builtins.texi-check
 
@@ -309,7 +309,7 @@ Builtins.rst-check:  m2/gm2-libs/Builtins.def
 	$(PYTHON) $(srcdir)/m2/tools-src/def2doc.py -x -b./ -f$(srcdir)/m2/gm2-libs/Builtins.def -o $(objdir)/m2/Builtins.rst
 else
 Builtins.rst-check:  m2/gm2-libs/Builtins.def
-	cp $(srcdir)/m2/target-independent/Builtins.rst $(objdir)/m2/Builtins.rst
+	cp $(srcdir)/m2/target-independent/m2/Builtins.rst $(objdir)/m2/Builtins.rst
 endif
 	$(STAMP) Builtins.rst-check
 
