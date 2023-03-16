@@ -124,6 +124,10 @@ struct MatchCase;
 class MatchExpr;
 class AwaitExpr;
 class AsyncBlockExpr;
+class InlineAsmReg;
+class InlineAsmRegClass;
+struct InlineAsmRegOrRegClass;
+class InlineAsm;
 
 // rust-stmt.h
 class EmptyStmt;

@@ -145,6 +145,14 @@ struct MatchCase;
 class MatchExpr;
 class AwaitExpr;
 class AsyncBlockExpr;
+enum class InlineAsmOptions;
+struct AnonConst;
+struct InlineAsmRegOrRegClass;
+struct InlineAsmOperand;
+struct InlineAsmPlaceHolder;
+struct InlineAsmTemplatePiece;
+struct TupleClobber;
+struct TupleTemplateStr;
 class InlineAsm;
 
 // rust-stmt.h
