@@ -20288,9 +20288,10 @@ expand_vec_perm_pblendv (struct expand_vec_perm_d *d)
     ;
   else if (TARGET_AVX && (vmode == V4DFmode || vmode == V8SFmode))
     ;
-  else if (TARGET_SSE4_1 && (GET_MODE_SIZE (vmode) == 4
-			     || GET_MODE_SIZE (vmode) == 8
-			     || GET_MODE_SIZE (vmode) == 16))
+  else if (TARGET_SSE4_1
+	   && (GET_MODE_SIZE (vmode) == 16
+	       || (TARGET_MMX_WITH_SSE && GET_MODE_SIZE (vmode) == 8)
+	       || GET_MODE_SIZE (vmode) == 4))
     ;
   else
     return false;
@@ -21154,9 +21155,10 @@ expand_vec_perm_2perm_pblendv (struct expand_vec_perm_d *d, bool two_insn)
     ;
   else if (TARGET_AVX && (vmode == V4DFmode || vmode == V8SFmode))
     ;
-  else if (TARGET_SSE4_1 && (GET_MODE_SIZE (vmode) == 16
-			     || GET_MODE_SIZE (vmode) == 8
-			     || GET_MODE_SIZE (vmode) == 4))
+  else if (TARGET_SSE4_1
+	   && (GET_MODE_SIZE (vmode) == 16
+	       || (TARGET_MMX_WITH_SSE && GET_MODE_SIZE (vmode) == 8)
+	       || GET_MODE_SIZE (vmode) == 4))
     ;
   else
     return false;
