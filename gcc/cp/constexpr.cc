@@ -8796,6 +8796,10 @@ maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant,
 			&& (TREE_STATIC (decl) || DECL_EXTERNAL (decl)));
       if (is_static)
 	manifestly_const_eval = true;
+
+      if (cp_unevaluated_operand && !manifestly_const_eval)
+	return fold_to_constant (t);
+
       t = cxx_eval_outermost_constant_expr (t, allow_non_constant, !is_static,
 					    mce_value (manifestly_const_eval),
 					    false, decl);
