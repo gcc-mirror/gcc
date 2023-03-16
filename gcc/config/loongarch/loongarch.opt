@@ -153,6 +153,10 @@ mbranch-cost=
 Target RejectNegative Joined UInteger Var(loongarch_branch_cost)
 -mbranch-cost=COST	Set the cost of branches to roughly COST instructions.
 
+mmemvec-cost=
+Target RejectNegative Joined UInteger Var(loongarch_vector_access_cost) IntegerRange(1, 5)
+mmemvec-cost=COST      Set the cost of vector memory access instructions.
+
 mcheck-zero-division
 Target Mask(CHECK_ZERO_DIV)
 Trap on integer divide by zero.

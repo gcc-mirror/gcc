@@ -158,11 +158,12 @@
    const,signext,pick_ins,logical,arith,sll0,andi,shift_shift"
   (const_string "unknown"))
 
-(define_attr "alu_type" "unknown,add,sub,not,nor,and,or,xor"
+(define_attr "alu_type" "unknown,add,sub,not,nor,and,or,xor,simd_add"
   (const_string "unknown"))
 
 ;; Main data type used by the insn
-(define_attr "mode" "unknown,none,QI,HI,SI,DI,TI,SF,DF,TF,FCC"
+(define_attr "mode" "unknown,none,QI,HI,SI,DI,TI,SF,DF,TF,FCC,
+  V2DI,V4SI,V8HI,V16QI,V2DF,V4SF"
   (const_string "unknown"))
 
 ;; True if the main data type is twice the size of a word.
@@ -234,7 +235,12 @@
    prefetch,prefetchx,condmove,mgtf,mftg,const,arith,logical,
    shift,slt,signext,clz,trap,imul,idiv,move,
    fmove,fadd,fmul,fmadd,fdiv,frdiv,fabs,flogb,fneg,fcmp,fcopysign,fcvt,
-   fscaleb,fsqrt,frsqrt,accext,accmod,multi,atomic,syncloop,nop,ghost"
+   fscaleb,fsqrt,frsqrt,accext,accmod,multi,atomic,syncloop,nop,ghost,
+   simd_div,simd_fclass,simd_flog2,simd_fadd,simd_fcvt,simd_fmul,simd_fmadd,
+   simd_fdiv,simd_bitins,simd_bitmov,simd_insert,simd_sld,simd_mul,simd_fcmp,
+   simd_fexp2,simd_int_arith,simd_bit,simd_shift,simd_splat,simd_fill,
+   simd_permute,simd_shf,simd_sat,simd_pcnt,simd_copy,simd_branch,simd_clsx,
+   simd_fminmax,simd_logic,simd_move,simd_load,simd_store"
   (cond [(eq_attr "jirl" "!unset") (const_string "call")
 	 (eq_attr "got" "load") (const_string "load")
 
@@ -414,11 +420,20 @@
 
 ;; This attribute gives the upper-case mode name for one unit of a
 ;; floating-point mode or vector mode.
-(define_mode_attr UNITMODE [(SF "SF") (DF "DF")])
+(define_mode_attr UNITMODE [(SF "SF") (DF "DF") (V2SF "SF") (V4SF "SF")
+			    (V16QI "QI") (V8HI "HI") (V4SI "SI") (V2DI "DI")
+			    (V2DF "DF")])
+
+;; As above, but in lower case.
+(define_mode_attr unitmode [(SF "sf") (DF "df") (V2SF "sf") (V4SF "sf")
+			    (V16QI "qi") (V8QI "qi") (V8HI "hi") (V4HI "hi")
+			    (V4SI "si") (V2SI "si") (V2DI "di") (V2DF "df")])
 
 ;; This attribute gives the integer mode that has half the size of
 ;; the controlling mode.
-(define_mode_attr HALFMODE [(DF "SI") (DI "SI") (TF "DI")])
+(define_mode_attr HALFMODE [(DF "SI") (DI "SI") (V2SF "SI")
+			    (V2SI "SI") (V4HI "SI") (V8QI "SI")
+			    (TF "DI")])
 
 ;; This attribute gives the integer mode that has the same size of a
 ;; floating-point mode.
@@ -444,6 +459,18 @@
 ;; This code iterator allows unsigned and signed division to be generated
 ;; from the same template.
 (define_code_iterator any_div [div udiv mod umod])
+
+;; This code iterator allows addition and subtraction to be generated
+;; from the same template.
+(define_code_iterator addsub [plus minus])
+
+;; This code iterator allows addition and multiplication to be generated
+;; from the same template.
+(define_code_iterator addmul [plus mult])
+
+;; This code iterator allows addition subtraction and multiplication to be
+;; generated from the same template
+(define_code_iterator addsubmul [plus minus mult])
 
 ;; This code iterator allows all native floating-point comparisons to be
 ;; generated from the same template.
@@ -683,7 +710,6 @@
   "sub.<d>\t%0,%z1,%2"
   [(set_attr "alu_type" "sub")
    (set_attr "mode" "<MODE>")])
-
 
 (define_insn "*subsi3_extended"
   [(set (match_operand:DI 0 "register_operand" "= r")
@@ -1228,7 +1254,7 @@
   "fmina.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmove")
    (set_attr "mode" "<MODE>")])
-
+
 ;;
 ;;  ....................
 ;;
@@ -2541,7 +2567,6 @@
   [(set_attr "type" "shift,shift")
    (set_attr "mode" "<MODE>")])
 
-
 ;; The following templates were added to generate "bstrpick.d + alsl.d"
 ;; instruction pairs.
 ;; It is required that the values of const_immalsl_operand and
@@ -3609,6 +3634,9 @@
 
 (include "generic.md")
 (include "la464.md")
+
+; The LoongArch SX Instructions.
+(include "lsx.md")
 
 (define_c_enum "unspec" [
   UNSPEC_ADDRESS_FIRST

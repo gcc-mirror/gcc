@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "expr.h"
 #include "langhooks.h"
+#include "emit-rtl.h"
 
 /* Macros to create an enumeration identifier for a function prototype.  */
 #define LARCH_FTYPE_NAME1(A, B) LARCH_##A##_FTYPE_##B
@@ -300,6 +301,15 @@ loongarch_prepare_builtin_arg (struct expand_operand *op, tree exp,
   arg = CALL_EXPR_ARG (exp, argno);
   value = expand_normal (arg);
   create_input_operand (op, value, TYPE_MODE (TREE_TYPE (arg)));
+}
+
+/* Return a const_int vector of VAL with mode MODE.  */
+
+rtx
+loongarch_gen_const_int_vector (machine_mode mode, HOST_WIDE_INT val)
+{
+  rtx c = gen_int_mode (val, GET_MODE_INNER (mode));
+  return gen_const_vec_duplicate (mode, c);
 }
 
 /* Expand instruction ICODE as part of a built-in function sequence.
