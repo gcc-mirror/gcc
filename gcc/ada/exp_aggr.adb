@@ -5837,7 +5837,6 @@ package body Exp_Aggr is
       procedure Build_Constrained_Type (Positional : Boolean) is
          Loc      : constant Source_Ptr := Sloc (N);
          Agg_Type : constant Entity_Id  := Make_Temporary (Loc, 'A');
-         Comp     : Node_Id;
          Decl     : Node_Id;
          Typ      : constant Entity_Id := Etype (N);
          Indexes  : constant List_Id   := New_List;
@@ -5853,19 +5852,14 @@ package body Exp_Aggr is
             Sub_Agg := N;
 
             for D in 1 .. Number_Dimensions (Typ) loop
-               Sub_Agg := First (Expressions (Sub_Agg));
-
-               Comp := Sub_Agg;
-               Num := 0;
-               while Present (Comp) loop
-                  Num := Num + 1;
-                  Next (Comp);
-               end loop;
+               Num := List_Length (Expressions (Sub_Agg));
 
                Append_To (Indexes,
                  Make_Range (Loc,
                    Low_Bound  => Make_Integer_Literal (Loc, 1),
                    High_Bound => Make_Integer_Literal (Loc, Num)));
+
+               Sub_Agg := First (Expressions (Sub_Agg));
             end loop;
 
          else
