@@ -97,8 +97,6 @@ public:
   void visit (AST::IfExprConseqElse &);
   void visit (AST::IfLetExpr &);
   void visit (AST::IfLetExprConseqElse &);
-  void visit (AST::IfLetExprConseqIf &);
-  void visit (AST::IfLetExprConseqIfLet &);
 
   void visit (AST::MatchExpr &);
   void visit (AST::AwaitExpr &);

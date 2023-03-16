@@ -179,8 +179,6 @@ private:
   virtual void visit (AST::IfExprConseqElse &expr);
   virtual void visit (AST::IfLetExpr &expr);
   virtual void visit (AST::IfLetExprConseqElse &expr);
-  virtual void visit (AST::IfLetExprConseqIf &expr);
-  virtual void visit (AST::IfLetExprConseqIfLet &expr);
   virtual void visit (AST::MatchExpr &expr);
   virtual void visit (AST::AwaitExpr &expr);
   virtual void visit (AST::AsyncBlockExpr &expr);

@@ -200,8 +200,6 @@ private:
   void visit (IfExprConseqElse &expr);
   void visit (IfLetExpr &expr);
   void visit (IfLetExprConseqElse &expr);
-  void visit (IfLetExprConseqIf &expr);
-  void visit (IfLetExprConseqIfLet &expr);
   void visit (MatchArm &arm);
   void visit (MatchCase &arm);
   void visit (MatchExpr &expr);

@@ -145,8 +145,6 @@ public:
   virtual void visit (AST::IfExprConseqElse &expr);
   virtual void visit (AST::IfLetExpr &expr);
   virtual void visit (AST::IfLetExprConseqElse &expr);
-  virtual void visit (AST::IfLetExprConseqIf &expr);
-  virtual void visit (AST::IfLetExprConseqIfLet &expr);
   //  virtual void visit(MatchCase& match_case);
   // virtual void visit (AST::MatchCaseBlockExpr &match_case);
   // virtual void visit (AST::MatchCaseExpr &match_case);
