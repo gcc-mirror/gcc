@@ -469,14 +469,6 @@ AttributeChecker::visit (AST::IfExprConseqElse &)
 {}
 
 void
-AttributeChecker::visit (AST::IfExprConseqIf &)
-{}
-
-void
-AttributeChecker::visit (AST::IfExprConseqIfLet &)
-{}
-
-void
 AttributeChecker::visit (AST::IfLetExpr &)
 {}
 

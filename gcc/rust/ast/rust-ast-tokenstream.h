@@ -198,8 +198,6 @@ private:
   void visit (ForLoopExpr &expr);
   void visit (IfExpr &expr);
   void visit (IfExprConseqElse &expr);
-  void visit (IfExprConseqIf &expr);
-  void visit (IfExprConseqIfLet &expr);
   void visit (IfLetExpr &expr);
   void visit (IfLetExprConseqElse &expr);
   void visit (IfLetExprConseqIf &expr);

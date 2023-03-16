@@ -187,14 +187,6 @@ ResolveExpr::visit (AST::IfExprConseqElse &expr)
 }
 
 void
-ResolveExpr::visit (AST::IfExprConseqIf &expr)
-{
-  ResolveExpr::go (expr.get_condition_expr ().get (), prefix, canonical_prefix);
-  ResolveExpr::go (expr.get_if_block ().get (), prefix, canonical_prefix);
-  ResolveExpr::go (expr.get_conseq_if_expr ().get (), prefix, canonical_prefix);
-}
-
-void
 ResolveExpr::visit (AST::IfLetExpr &expr)
 {
   ResolveExpr::go (expr.get_value_expr ().get (), prefix, canonical_prefix);

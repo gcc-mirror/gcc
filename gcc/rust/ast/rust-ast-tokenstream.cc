@@ -1428,25 +1428,6 @@ TokenStream::visit (IfExprConseqElse &expr)
 }
 
 void
-TokenStream::visit (IfExprConseqIf &expr)
-{
-  visit (static_cast<IfExpr &> (expr));
-  indentation ();
-  tokens.push_back (Rust::Token::make (ELSE, expr.get_locus ()));
-  // The "if" part of the "else if" is printed by the next visitor
-  visit (expr.get_conseq_if_expr ());
-}
-
-void
-TokenStream::visit (IfExprConseqIfLet &expr)
-{
-  visit (static_cast<IfExpr &> (expr));
-  indentation ();
-  tokens.push_back (Rust::Token::make (ELSE, expr.get_locus ()));
-  visit (expr.get_conseq_if_let_expr ());
-}
-
-void
 TokenStream::visit (IfLetExpr &expr)
 {
   tokens.push_back (Rust::Token::make (IF, expr.get_locus ()));

@@ -182,9 +182,9 @@ ASTLoweringIfBlock::visit (AST::IfExprConseqElse &expr)
   HIR::BlockExpr *if_block
     = ASTLoweringBlock::translate (expr.get_if_block ().get (),
 				   &if_block_terminated);
-  HIR::BlockExpr *else_block
-    = ASTLoweringBlock::translate (expr.get_else_block ().get (),
-				   &else_block_termianted);
+  HIR::ExprWithBlock *else_block
+    = ASTLoweringExprWithBlock::translate (expr.get_else_block ().get (),
+					   &else_block_termianted);
 
   terminated = if_block_terminated && else_block_termianted;
 
@@ -193,37 +193,10 @@ ASTLoweringIfBlock::visit (AST::IfExprConseqElse &expr)
 				 mappings->get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
-  translated
-    = new HIR::IfExprConseqElse (mapping,
-				 std::unique_ptr<HIR::Expr> (condition),
-				 std::unique_ptr<HIR::BlockExpr> (if_block),
-				 std::unique_ptr<HIR::BlockExpr> (else_block),
-				 expr.get_locus ());
-}
-
-void
-ASTLoweringIfBlock::visit (AST::IfExprConseqIf &expr)
-{
-  HIR::Expr *condition
-    = ASTLoweringExpr::translate (expr.get_condition_expr ().get ());
-
-  bool ignored_terminated = false;
-  HIR::BlockExpr *block
-    = ASTLoweringBlock::translate (expr.get_if_block ().get (),
-				   &ignored_terminated);
-  HIR::IfExpr *conseq_if_expr
-    = ASTLoweringIfBlock::translate (expr.get_conseq_if_expr ().get (),
-				     &ignored_terminated);
-
-  auto crate_num = mappings->get_current_crate ();
-  Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 UNKNOWN_LOCAL_DEFID);
-
   translated = new HIR::IfExprConseqElse (
     mapping, std::unique_ptr<HIR::Expr> (condition),
-    std::unique_ptr<HIR::BlockExpr> (block),
-    std::unique_ptr<HIR::ExprWithBlock> (conseq_if_expr), expr.get_locus ());
+    std::unique_ptr<HIR::BlockExpr> (if_block),
+    std::unique_ptr<HIR::ExprWithBlock> (else_block), expr.get_locus ());
 }
 
 void

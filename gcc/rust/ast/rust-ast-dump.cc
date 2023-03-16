@@ -937,22 +937,6 @@ Dump::visit (IfExprConseqElse &expr)
 }
 
 void
-Dump::visit (IfExprConseqIf &expr)
-{
-  stream << "if ";
-  visit (expr.get_condition_expr ());
-  stream << " ";
-  visit (expr.get_if_block ());
-  stream << indentation << "else ";
-  // The "if" part of the "else if" is printed by the next visitor
-  visit (expr.get_conseq_if_expr ());
-}
-
-void
-Dump::visit (IfExprConseqIfLet &)
-{}
-
-void
 Dump::visit (IfLetExpr &)
 {}
 
