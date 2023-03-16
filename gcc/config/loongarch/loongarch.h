@@ -186,6 +186,11 @@ along with GCC; see the file COPYING3.  If not see
 /* Width of a LSX vector register in bits.  */
 #define BITS_PER_LSX_REG (UNITS_PER_LSX_REG * BITS_PER_UNIT)
 
+/* Width of a LASX vector register in bytes.  */
+#define UNITS_PER_LASX_REG 32
+/* Width of a LASX vector register in bits.  */
+#define BITS_PER_LASX_REG (UNITS_PER_LASX_REG * BITS_PER_UNIT)
+
 /* For LARCH, width of a floating point register.  */
 #define UNITS_PER_FPREG (TARGET_DOUBLE_FLOAT ? 8 : 4)
 
@@ -248,10 +253,11 @@ along with GCC; see the file COPYING3.  If not see
 #define STRUCTURE_SIZE_BOUNDARY 8
 
 /* There is no point aligning anything to a rounder boundary than
-   LONG_DOUBLE_TYPE_SIZE, unless under LSX the bigggest alignment is
-   BITS_PER_LSX_REG/..  */
+   LONG_DOUBLE_TYPE_SIZE, unless under LSX/LASX the bigggest alignment is
+   BITS_PER_LSX_REG/BITS_PER_LASX_REG/..  */
 #define BIGGEST_ALIGNMENT \
-  (ISA_HAS_LSX ? BITS_PER_LSX_REG : LONG_DOUBLE_TYPE_SIZE)
+  (ISA_HAS_LASX? BITS_PER_LASX_REG \
+   : (ISA_HAS_LSX ? BITS_PER_LSX_REG : LONG_DOUBLE_TYPE_SIZE))
 
 /* All accesses must be aligned.  */
 #define STRICT_ALIGNMENT (TARGET_STRICT_ALIGN)
@@ -391,6 +397,10 @@ along with GCC; see the file COPYING3.  If not see
 #define LSX_REG_LAST  FP_REG_LAST
 #define LSX_REG_NUM   FP_REG_NUM
 
+#define LASX_REG_FIRST FP_REG_FIRST
+#define LASX_REG_LAST  FP_REG_LAST
+#define LASX_REG_NUM   FP_REG_NUM
+
 /* The DWARF 2 CFA column which tracks the return address from a
    signal handler context.  This means that to maintain backwards
    compatibility, no hard register can be assigned this column if it
@@ -409,9 +419,12 @@ along with GCC; see the file COPYING3.  If not see
   ((unsigned int) ((int) (REGNO) - FCC_REG_FIRST) < FCC_REG_NUM)
 #define LSX_REG_P(REGNO) \
   ((unsigned int) ((int) (REGNO) - LSX_REG_FIRST) < LSX_REG_NUM)
+#define LASX_REG_P(REGNO) \
+  ((unsigned int) ((int) (REGNO) - LASX_REG_FIRST) < LASX_REG_NUM)
 
 #define FP_REG_RTX_P(X) (REG_P (X) && FP_REG_P (REGNO (X)))
 #define LSX_REG_RTX_P(X) (REG_P (X) && LSX_REG_P (REGNO (X)))
+#define LASX_REG_RTX_P(X) (REG_P (X) && LASX_REG_P (REGNO (X)))
 
 /* Select a register mode required for caller save of hard regno REGNO.  */
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE) \
@@ -733,6 +746,13 @@ enum reg_class
    && (GET_MODE_CLASS (MODE) == MODE_VECTOR_INT		\
        || GET_MODE_CLASS (MODE) == MODE_VECTOR_FLOAT))
 
+#define LASX_SUPPORTED_MODE_P(MODE)			\
+  (ISA_HAS_LASX						\
+   && (GET_MODE_SIZE (MODE) == UNITS_PER_LSX_REG	\
+       ||GET_MODE_SIZE (MODE) == UNITS_PER_LASX_REG)	\
+   && (GET_MODE_CLASS (MODE) == MODE_VECTOR_INT		\
+       || GET_MODE_CLASS (MODE) == MODE_VECTOR_FLOAT))
+
 /* 1 if N is a possible register number for function argument passing.
    We have no FP argument registers when soft-float.  */
 
@@ -985,7 +1005,39 @@ typedef struct {
   { "vr28",	28 + FP_REG_FIRST },					\
   { "vr29",	29 + FP_REG_FIRST },					\
   { "vr30",	30 + FP_REG_FIRST },					\
-  { "vr31",	31 + FP_REG_FIRST }					\
+  { "vr31",	31 + FP_REG_FIRST },					\
+  { "xr0",	 0 + FP_REG_FIRST },					\
+  { "xr1",	 1 + FP_REG_FIRST },					\
+  { "xr2",	 2 + FP_REG_FIRST },					\
+  { "xr3",	 3 + FP_REG_FIRST },					\
+  { "xr4",	 4 + FP_REG_FIRST },					\
+  { "xr5",	 5 + FP_REG_FIRST },					\
+  { "xr6",	 6 + FP_REG_FIRST },					\
+  { "xr7",	 7 + FP_REG_FIRST },					\
+  { "xr8",	 8 + FP_REG_FIRST },					\
+  { "xr9",	 9 + FP_REG_FIRST },					\
+  { "xr10",	10 + FP_REG_FIRST },					\
+  { "xr11",	11 + FP_REG_FIRST },					\
+  { "xr12",	12 + FP_REG_FIRST },					\
+  { "xr13",	13 + FP_REG_FIRST },					\
+  { "xr14",	14 + FP_REG_FIRST },					\
+  { "xr15",	15 + FP_REG_FIRST },					\
+  { "xr16",	16 + FP_REG_FIRST },					\
+  { "xr17",	17 + FP_REG_FIRST },					\
+  { "xr18",	18 + FP_REG_FIRST },					\
+  { "xr19",	19 + FP_REG_FIRST },					\
+  { "xr20",	20 + FP_REG_FIRST },					\
+  { "xr21",	21 + FP_REG_FIRST },					\
+  { "xr22",	22 + FP_REG_FIRST },					\
+  { "xr23",	23 + FP_REG_FIRST },					\
+  { "xr24",	24 + FP_REG_FIRST },					\
+  { "xr25",	25 + FP_REG_FIRST },					\
+  { "xr26",	26 + FP_REG_FIRST },					\
+  { "xr27",	27 + FP_REG_FIRST },					\
+  { "xr28",	28 + FP_REG_FIRST },					\
+  { "xr29",	29 + FP_REG_FIRST },					\
+  { "xr30",	30 + FP_REG_FIRST },					\
+  { "xr31",	31 + FP_REG_FIRST }					\
 }
 
 /* Globalizing directive for a label.  */

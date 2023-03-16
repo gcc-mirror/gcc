@@ -89,6 +89,8 @@ extern bool loongarch_split_move_insn_p (rtx, rtx);
 extern void loongarch_split_move_insn (rtx, rtx, rtx);
 extern void loongarch_split_128bit_move (rtx, rtx);
 extern bool loongarch_split_128bit_move_p (rtx, rtx);
+extern void loongarch_split_256bit_move (rtx, rtx);
+extern bool loongarch_split_256bit_move_p (rtx, rtx);
 extern void loongarch_split_lsx_copy_d (rtx, rtx, rtx, rtx (*)(rtx, rtx, rtx));
 extern void loongarch_split_lsx_insert_d (rtx, rtx, rtx, rtx);
 extern void loongarch_split_lsx_fill_d (rtx, rtx);
@@ -174,9 +176,11 @@ union loongarch_gen_fn_ptrs
 extern void loongarch_expand_atomic_qihi (union loongarch_gen_fn_ptrs,
 					  rtx, rtx, rtx, rtx, rtx);
 
+extern void loongarch_expand_vector_group_init (rtx, rtx);
 extern void loongarch_expand_vector_init (rtx, rtx);
 extern void loongarch_expand_vec_unpack (rtx op[2], bool, bool);
 extern void loongarch_expand_vec_perm (rtx, rtx, rtx, rtx);
+extern void loongarch_expand_vec_perm_1 (rtx[]);
 extern void loongarch_expand_vector_extract (rtx, rtx, int);
 extern void loongarch_expand_vector_reduc (rtx (*)(rtx, rtx, rtx), rtx, rtx);
 

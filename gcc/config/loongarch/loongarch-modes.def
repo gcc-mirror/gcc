@@ -33,6 +33,7 @@ VECTOR_MODES (FLOAT, 8);      /*       V4HF V2SF */
 VECTOR_MODES (INT, 16);	      /* V16QI V8HI V4SI V2DI */
 VECTOR_MODES (FLOAT, 16);     /*	    V4SF V2DF */
 
+/* For LARCH LASX 256 bits.  */
 VECTOR_MODES (INT, 32);	      /* V32QI V16HI V8SI V4DI */
 VECTOR_MODES (FLOAT, 32);     /*	     V8SF V4DF */
 

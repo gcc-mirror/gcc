@@ -163,7 +163,7 @@
 
 ;; Main data type used by the insn
 (define_attr "mode" "unknown,none,QI,HI,SI,DI,TI,SF,DF,TF,FCC,
-  V2DI,V4SI,V8HI,V16QI,V2DF,V4SF"
+  V2DI,V4SI,V8HI,V16QI,V2DF,V4SF,V4DI,V8SI,V16HI,V32QI,V4DF,V8SF"
   (const_string "unknown"))
 
 ;; True if the main data type is twice the size of a word.
@@ -422,12 +422,14 @@
 ;; floating-point mode or vector mode.
 (define_mode_attr UNITMODE [(SF "SF") (DF "DF") (V2SF "SF") (V4SF "SF")
 			    (V16QI "QI") (V8HI "HI") (V4SI "SI") (V2DI "DI")
-			    (V2DF "DF")])
+			    (V2DF "DF")(V8SF "SF")(V32QI "QI")(V16HI "HI")(V8SI "SI")(V4DI "DI")(V4DF "DF")])
 
 ;; As above, but in lower case.
 (define_mode_attr unitmode [(SF "sf") (DF "df") (V2SF "sf") (V4SF "sf")
 			    (V16QI "qi") (V8QI "qi") (V8HI "hi") (V4HI "hi")
-			    (V4SI "si") (V2SI "si") (V2DI "di") (V2DF "df")])
+			    (V4SI "si") (V2SI "si") (V2DI "di") (V2DF "df")
+			    (V8SI "si") (V4DI "di") (V32QI "qi") (V16HI "hi")
+			    (V8SF "sf") (V4DF "df")])
 
 ;; This attribute gives the integer mode that has half the size of
 ;; the controlling mode.
@@ -711,16 +713,17 @@
   [(set_attr "alu_type" "sub")
    (set_attr "mode" "<MODE>")])
 
+
 (define_insn "*subsi3_extended"
-  [(set (match_operand:DI 0 "register_operand" "= r")
+  [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI
-	    (minus:SI (match_operand:SI 1 "reg_or_0_operand" " rJ")
-		      (match_operand:SI 2 "register_operand" "  r"))))]
+	    (minus:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
+		      (match_operand:SI 2 "register_operand" "r"))))]
   "TARGET_64BIT"
   "sub.w\t%0,%z1,%2"
   [(set_attr "type" "arith")
    (set_attr "mode" "SI")])
-
+
 ;;
 ;;  ....................
 ;;
@@ -3637,6 +3640,9 @@
 
 ; The LoongArch SX Instructions.
 (include "lsx.md")
+
+; The LoongArch ASX Instructions.
+(include "lasx.md")
 
 (define_c_enum "unspec" [
   UNSPEC_ADDRESS_FIRST
