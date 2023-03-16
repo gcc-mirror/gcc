@@ -1,3 +1,104 @@
+2023-03-15  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-03-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106945
+	* gfortran.dg/pr106945.f90: New test.
+
+2023-03-15  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-03-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104332
+	* gfortran.dg/bind_c_usage_34.f90: New test.
+
+2023-03-15  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/108060
+	PR sanitizer/109050
+	* c-c++-common/ubsan/bounds-17.c: New test.
+	* c-c++-common/ubsan/bounds-18.c: New test.
+	* c-c++-common/ubsan/bounds-19.c: New test.
+	* c-c++-common/ubsan/bounds-20.c: New test.
+	* c-c++-common/ubsan/bounds-21.c: New test.
+
+2023-03-15  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-03-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107280
+	* g++.dg/cpp1z/constexpr-lambda28.C: New test.
+
+2023-03-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108950
+	* gcc.dg/vect/pr108950.c: New testcase.
+
+2023-03-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-02-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108821
+	* gcc.dg/tree-ssa/ssa-lim-24.c: New testcase.
+
+2023-03-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-02-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108816
+	* gcc.dg/torture/pr108816.c: New testcase.
+
+2023-03-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-02-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108793
+	* gcc.dg/torture/pr108793.c: New testcase.
+
+2023-03-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108724
+	* gcc.target/i386/pr108724.c: New testcase.
+
+2023-03-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-02-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/108625
+	* gcc.dg/pr108625.c: New testcase.
+
+2023-03-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-12-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107451
+	* gcc.dg/torture/pr107451.c: New testcase.
+
+2023-03-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106904
+	* gcc.dg/Wstringop-overflow-pr106904.c: New testcase.
+
 2023-03-14  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

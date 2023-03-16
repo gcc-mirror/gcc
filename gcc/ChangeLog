@@ -1,3 +1,93 @@
+2023-03-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108950
+	* tree-vect-patterns.cc (vect_recog_widen_sum_pattern):
+	Check oprnd0 is defined in the loop.
+	* tree-vect-loop.cc (vectorizable_reduction): Record all
+	operands vector types, compute that of invariants and
+	properly update their SLP nodes.
+
+2023-03-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-02-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108821
+	* tree-ssa-loop-im.cc (sm_seq_valid_bb): We can also not
+	move volatile accesses.
+
+2023-03-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-02-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108816
+	* tree-vect-loop-manip.cc (vect_loop_versioning): Adjust
+	versioning condition split prerequesite, assert required
+	invariant.
+
+2023-03-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-02-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108793
+	* tree-ssa-loop-niter.cc (number_of_iterations_until_wrap):
+	Use convert operands to niter_type when computing num.
+
+2023-03-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-02-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108724
+	* tree-vect-stmts.cc (vectorizable_operation): Avoid
+	using word_mode vectors when vector lowering will
+	decompose them to elementwise operations.
+
+2023-03-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-02-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/108625
+	* genmatch.cc (expr::gen_transform): Also disallow resimplification
+	from pushing to lseq with force_leaf.
+	(dt_simplify::gen_1): Likewise.
+
+2023-03-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-02-01  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/108500
+	* dominance.cc (assign_dfs_numbers): Replace recursive DFS
+	with tree traversal algorithm.
+
+2023-03-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-12-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107451
+	* tree-vect-stmts.cc (vectorizable_load): Avoid loading
+	SLP group members from group numbers in excess of the
+	vectorization factor.
+
+2023-03-15  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-12-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106904
+	* tree.h (strip_zero_offset_components): Declare.
+	* tree.cc (strip_zero_offset_components): Define.
+	* tree-vect-data-refs.cc (vect_create_addr_base_for_vector_ref):
+	Strip zero offset components before building the address.
+
 2023-03-14  Jan Hubicka  <jh@suse.cz>
 
 	Backported from master:

@@ -1,3 +1,21 @@
+2023-03-15  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-03-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106945
+	* trans-expr.cc (gfc_copy_class_to_class): Convert element counts in
+	bounds check to common type for comparison.
+
+2023-03-15  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-03-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104332
+	* resolve.cc (resolve_symbol): Avoid NULL pointer dereference while
+	checking a symbol with the BIND(C) attribute.
+
 2023-03-12  Mikael Morin  <mikael@gcc.gnu.org>
 
 	Backported from master:
