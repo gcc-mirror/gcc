@@ -33,6 +33,7 @@ MANUALS="cpp
   libiberty
   porting"
 
+BUGURL="http://gcc.gnu.org/bugs/"
 CSS=/gcc.css
 
 WWWBASE=${WWWBASE:-"/www/gcc/htdocs"}
@@ -154,11 +155,11 @@ includedir=gcc/gcc/doc/include
    fi
    echo "@set srcdir $WORKDIR/gcc/gcc"
    echo "@set VERSION_PACKAGE (GCC)"
-   echo "@set BUGURL @uref{http://gcc.gnu.org/bugs/}"
+   echo "@set BUGURL @uref{$BUGURL}"
 ) > $includedir/gcc-vers.texi
 
 # Generate libquadmath-vers.texi.
-echo "@set BUGURL @uref{http://gcc.gnu.org/bugs/}" \
+echo "@set BUGURL @uref{$BUGURL}" \
   > $includedir/libquadmath-vers.texi
 
 # Now convert the relevant files from texi to HTML, PDF and PostScript.
