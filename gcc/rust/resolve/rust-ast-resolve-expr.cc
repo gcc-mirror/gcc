@@ -207,10 +207,10 @@ ResolveExpr::visit (AST::IfLetExpr &expr)
   resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
   resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
 
-  // FIXME: this declaration should be removed after refactoring
-  // parse_match_arm_patterns output into an AltPattern
+  // We know expr.get_patterns () has one pattern at most
+  // so there's no reason to handle it like an AltPattern.
   std::vector<PatternBinding> bindings
-    = {PatternBinding (PatternBoundCtx::Or, std::set<Identifier> ())};
+    = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
 
   for (auto &pattern : expr.get_patterns ())
     {
@@ -522,10 +522,10 @@ ResolveExpr::visit (AST::MatchExpr &expr)
 	ResolveExpr::go (arm.get_guard_expr ().get (), prefix,
 			 canonical_prefix);
 
-      // FIXME: this declaration should be removed after refactoring
-      // parse_match_arms_patterns output into a single AltPattern
+      // We know expr.get_patterns () has one pattern at most
+      // so there's no reason to handle it like an AltPattern.
       std::vector<PatternBinding> bindings
-	= {PatternBinding (PatternBoundCtx::Or, std::set<Identifier> ())};
+	= {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
 
       // insert any possible new patterns
       for (auto &pattern : arm.get_patterns ())
