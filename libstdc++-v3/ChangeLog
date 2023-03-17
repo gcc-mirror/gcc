@@ -1,3 +1,15 @@
+2023-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108636
+	* include/bits/fs_path.h (path::path(string_view, _Type))
+	(path::_Cmpt::_Cmpt(string_view, _Type, size_t)): Move inline
+	definitions to ...
+	* src/c++17/fs_path.cc: ... here.
+	* testsuite/27_io/filesystem/path/108636.cc: New test.
+
 2022-11-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
