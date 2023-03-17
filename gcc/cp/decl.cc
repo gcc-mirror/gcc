@@ -14393,7 +14393,8 @@ grokdeclarator (const cp_declarator *declarator,
 		cplus_decl_attributes (&decl, *attrlist, 0);
 		*attrlist = NULL_TREE;
 
-		decl = do_friend (ctype, unqualified_id, decl,
+		tree scope = ctype ? ctype : in_namespace;
+		decl = do_friend (scope, unqualified_id, decl,
 				  flags, funcdef_flag);
 		return decl;
 	      }
