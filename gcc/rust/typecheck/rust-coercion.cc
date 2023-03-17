@@ -413,9 +413,9 @@ TypeCoercionRules::coerce_unsized (TyTy::BaseType *source,
 bool
 TypeCoercionRules::select (TyTy::BaseType &autoderefed)
 {
-  rust_debug (
-    "autoderef type-coercion select autoderefed={%s} can_eq expected={%s}",
-    autoderefed.debug_str ().c_str (), expected->debug_str ().c_str ());
+  rust_debug ("TypeCoercionRules::select autoderefed={%s} can_eq expected={%s}",
+	      autoderefed.debug_str ().c_str (),
+	      expected->debug_str ().c_str ());
 
   TyTy::BaseType *result
     = unify_site_and (autoderefed.get_ref (), TyTy::TyWithLocation (expected),
@@ -426,7 +426,7 @@ TypeCoercionRules::select (TyTy::BaseType &autoderefed)
   if (!ok)
     return false;
 
-  try_result = CoercionResult{adjustments, autoderefed.clone ()};
+  try_result = CoercionResult{adjustments, result};
   return true;
 }
 
