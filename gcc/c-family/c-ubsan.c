@@ -53,7 +53,7 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
   op0 = unshare_expr (op0);
   op1 = unshare_expr (op1);
 
-  if (TREE_CODE (type) == INTEGER_TYPE
+  if (INTEGRAL_TYPE_P (type)
       && sanitize_flags_p (SANITIZE_DIVIDE))
     t = fold_build2 (EQ_EXPR, boolean_type_node,
 		     op1, build_int_cst (type, 0));
@@ -68,7 +68,7 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
     return NULL_TREE;
 
   /* We check INT_MIN / -1 only for signed types.  */
-  if (TREE_CODE (type) == INTEGER_TYPE
+  if (INTEGRAL_TYPE_P (type)
       && sanitize_flags_p (SANITIZE_DIVIDE)
       && !TYPE_UNSIGNED (type))
     {
