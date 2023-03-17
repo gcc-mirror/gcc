@@ -22,8 +22,6 @@
 #include "rust-hir-type-check-implitem.h"
 #include "rust-hir-type-check-item.h"
 #include "rust-hir-type-check.h"
-#include "rust-hir-visitor.h"
-#include "rust-name-resolver.h"
 #include "rust-casts.h"
 #include "rust-unify.h"
 #include "rust-coercion.h"
@@ -44,6 +42,23 @@ query_type (HirId reference, TyTy::BaseType **result)
     return true;
 
   context->insert_query (reference);
+
+  std::pair<HIR::Enum *, HIR::EnumItem *> enum_candidiate
+    = mappings->lookup_hir_enumitem (reference);
+  bool enum_candidiate_ok
+    = enum_candidiate.first != nullptr && enum_candidiate.second != nullptr;
+  if (enum_candidiate_ok)
+    {
+      HIR::Enum *parent = enum_candidiate.first;
+      HIR::EnumItem *enum_item = enum_candidiate.second;
+      rust_debug_loc (enum_item->get_locus (), "resolved item {%u} to",
+		      reference);
+
+      *result = TypeCheckItem::Resolve (*parent);
+
+      context->query_completed (reference);
+      return true;
+    }
 
   HIR::Item *item = mappings->lookup_hir_item (reference);
   if (item != nullptr)

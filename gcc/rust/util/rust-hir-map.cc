@@ -383,6 +383,27 @@ Mappings::lookup_hir_item (HirId id)
 }
 
 void
+Mappings::insert_hir_enumitem (HIR::Enum *parent, HIR::EnumItem *item)
+{
+  auto id = item->get_mappings ().get_hirid ();
+  auto result = lookup_hir_enumitem (id);
+  rust_assert (result.first == nullptr);
+
+  hirEnumItemMappings[id] = {parent, item};
+  insert_node_to_hir (item->get_mappings ().get_nodeid (), id);
+}
+
+std::pair<HIR::Enum *, HIR::EnumItem *>
+Mappings::lookup_hir_enumitem (HirId id)
+{
+  auto it = hirEnumItemMappings.find (id);
+  if (it == hirEnumItemMappings.end ())
+    return {nullptr, nullptr};
+
+  return it->second;
+}
+
+void
 Mappings::insert_hir_trait_item (HIR::TraitItem *item)
 {
   auto id = item->get_mappings ().get_hirid ();

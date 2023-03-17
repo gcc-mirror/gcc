@@ -274,11 +274,16 @@ ASTLoweringItem::visit (AST::Enum &enum_decl)
 				 mappings->get_next_hir_id (crate_num),
 				 mappings->get_next_localdef_id (crate_num));
 
-  translated = new HIR::Enum (mapping, enum_decl.get_identifier (), vis,
-			      std::move (generic_params),
-			      std::move (where_clause), /* is_unit, */
-			      std::move (items), enum_decl.get_outer_attrs (),
-			      enum_decl.get_locus ());
+  HIR::Enum *hir_enum
+    = new HIR::Enum (mapping, enum_decl.get_identifier (), vis,
+		     std::move (generic_params), std::move (where_clause),
+		     std::move (items), enum_decl.get_outer_attrs (),
+		     enum_decl.get_locus ());
+  translated = hir_enum;
+  for (auto &variant : hir_enum->get_variants ())
+    {
+      mappings->insert_hir_enumitem (hir_enum, variant.get ());
+    }
 }
 
 void

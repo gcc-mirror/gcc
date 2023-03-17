@@ -422,6 +422,11 @@ public:
   }
 
   std::vector<SimplePathSegment> &get_segments () { return segments; }
+
+  const SimplePathSegment &get_final_segment () const
+  {
+    return segments.back ();
+  }
 };
 
 // path-to-string inverse comparison operator

@@ -267,17 +267,20 @@ ResolvePath::resolve_path (AST::SimplePath *expr)
   NodeId crate_scope_id = resolver->peek_crate_module_scope ();
   NodeId module_scope_id = resolver->peek_current_module_scope ();
 
+  NodeId previous_resolved_node_id = UNKNOWN_NODEID;
   NodeId resolved_node_id = UNKNOWN_NODEID;
   for (size_t i = 0; i < expr->get_segments ().size (); i++)
     {
-      auto &segment = expr->get_segments ().at (i);
+      AST::SimplePathSegment &segment = expr->get_segments ().at (i);
       bool is_first_segment = i == 0;
+      bool is_final_segment = i >= (expr->get_segments ().size () - 1);
       resolved_node_id = UNKNOWN_NODEID;
 
       if (segment.is_crate_path_seg ())
 	{
 	  // what is the current crate scope node id?
 	  module_scope_id = crate_scope_id;
+	  previous_resolved_node_id = module_scope_id;
 	  resolver->insert_resolved_name (segment.get_node_id (),
 					  module_scope_id);
 	  continue;
@@ -292,6 +295,7 @@ ResolvePath::resolve_path (AST::SimplePath *expr)
 	    }
 
 	  module_scope_id = resolver->peek_parent_module_scope ();
+	  previous_resolved_node_id = module_scope_id;
 	  resolver->insert_resolved_name (segment.get_node_id (),
 					  module_scope_id);
 	  continue;
@@ -348,6 +352,25 @@ ResolvePath::resolve_path (AST::SimplePath *expr)
 	    }
 	}
 
+      // if we still have not resolved and this is the final segment and the
+      // final segment is self its likely the case: pub use
+      //
+      // result::Result::{self, Err, Ok};
+      //
+      // Then the resolved_node_id is just the previous one so long as it is a
+      // resolved node id
+      // rust_debug_loc (segment.get_locus (),
+      //   	      "trying to resolve seg: [%s] first [%s] last [%s]",
+      //   	      segment.get_segment_name ().c_str (),
+      //   	      is_first_segment ? "true" : "false",
+      //   	      is_final_segment ? "true" : "false");
+      if (resolved_node_id == UNKNOWN_NODEID && !is_first_segment
+	  && is_final_segment && segment.is_lower_self ())
+	{
+	  resolved_node_id = previous_resolved_node_id;
+	}
+
+      // final check
       if (resolved_node_id == UNKNOWN_NODEID)
 	{
 	  rust_error_at (segment.get_locus (),
@@ -360,6 +383,8 @@ ResolvePath::resolve_path (AST::SimplePath *expr)
 	{
 	  module_scope_id = resolved_node_id;
 	}
+
+      previous_resolved_node_id = resolved_node_id;
     }
 
   resolved_node = resolved_node_id;

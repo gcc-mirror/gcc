@@ -244,6 +244,19 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 	  return root_tyty;
 	}
 
+      // is it an enum item?
+      std::pair<HIR::Enum *, HIR::EnumItem *> enum_item_lookup
+	= mappings->lookup_hir_enumitem (ref);
+      bool is_enum_item = enum_item_lookup.first != nullptr
+			  && enum_item_lookup.second != nullptr;
+      if (is_enum_item)
+	{
+	  HirId expr_id = expr.get_mappings ().get_hirid ();
+	  HirId variant_id
+	    = enum_item_lookup.second->get_mappings ().get_hirid ();
+	  context->insert_variant_definition (expr_id, variant_id);
+	}
+
       // if we have a previous segment type
       if (root_tyty != nullptr)
 	{
@@ -349,9 +362,13 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	  const TyTy::VariantDef *variant = candidate.item.enum_field.variant;
 
 	  HirId variant_id = variant->get_id ();
-	  HIR::Item *enum_item = mappings->lookup_hir_item (variant_id);
-	  rust_assert (enum_item != nullptr);
+	  std::pair<HIR::Enum *, HIR::EnumItem *> enum_item_lookup
+	    = mappings->lookup_hir_enumitem (variant_id);
+	  bool enum_item_ok = enum_item_lookup.first != nullptr
+			      && enum_item_lookup.second != nullptr;
+	  rust_assert (enum_item_ok);
 
+	  HIR::EnumItem *enum_item = enum_item_lookup.second;
 	  resolved_node_id = enum_item->get_mappings ().get_nodeid ();
 
 	  // insert the id of the variant we are resolved to
