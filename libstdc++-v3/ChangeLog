@@ -1,3 +1,46 @@
+2023-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108636
+	* include/bits/fs_path.h (path::path(string_view, _Type))
+	(path::_Cmpt::_Cmpt(string_view, _Type, size_t)): Move inline
+	definitions to ...
+	* src/c++17/fs_path.cc: ... here.
+	* testsuite/27_io/filesystem/path/108636.cc: New test.
+
+2023-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_ops.cc [AVR] (not_supported): Define as a macro
+	for function_not_supported.
+	* src/filesystem/ops-common.h [AVR] (ENOTSUP): Define as a macro
+	for ENOSYS.
+
+2023-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/random.cc (random_device::_M_fini): Do not try to
+	close the file handle if the target doesn't support the
+	/dev/random and /dev/urandom files.
+
+2023-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-02-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/os/generic/error_constants.h (errc::value_too_large)
+	[__AVR__]: Define.
+	* src/c++11/system_error.cc
+	(system_category::default_error_condition) [__AVR__]: Only match
+	recognize values equal to EDOM, ERANGE, ENOSYS and EINTR.
+	* src/c++17/fs_ops.cc (fs::current_path) [__AVR__]: Do not use
+	getcwd.
+	* src/filesystem/ops-common.h [__AVR__]: Do not use POSIX open,
+	close etc.
+
 2023-03-10  Thomas W Rodgers  <rodgert@twrodgers.com>
 
 	Backported from master:
