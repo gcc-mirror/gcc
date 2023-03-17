@@ -25,28 +25,28 @@ namespace Resolver {
 
 ResolvePath::ResolvePath () : ResolverBase () {}
 
-void
+NodeId
 ResolvePath::go (AST::PathInExpression *expr)
 {
   ResolvePath resolver;
-  resolver.resolve_path (expr);
+  return resolver.resolve_path (expr);
 }
 
-void
+NodeId
 ResolvePath::go (AST::QualifiedPathInExpression *expr)
 {
   ResolvePath resolver;
-  resolver.resolve_path (expr);
+  return resolver.resolve_path (expr);
 }
 
-void
+NodeId
 ResolvePath::go (AST::SimplePath *expr)
 {
   ResolvePath resolver;
-  resolver.resolve_path (expr);
+  return resolver.resolve_path (expr);
 }
 
-void
+NodeId
 ResolvePath::resolve_path (AST::PathInExpression *expr)
 {
   NodeId resolved_node_id = UNKNOWN_NODEID;
@@ -68,7 +68,7 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
 			 "failed to resolve: %<%s%> in paths can only be used "
 			 "in start position",
 			 segment.as_string ().c_str ());
-	  return;
+	  return UNKNOWN_NODEID;
 	}
 
       NodeId crate_scope_id = resolver->peek_crate_module_scope ();
@@ -87,7 +87,7 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
 	    {
 	      rust_error_at (segment.get_locus (),
 			     "cannot use %<super%> at the crate scope");
-	      return;
+	      return UNKNOWN_NODEID;
 	    }
 
 	  module_scope_id = resolver->peek_parent_module_scope ();
@@ -191,7 +191,7 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
 		  rust_error_at (segment.get_locus (),
 				 "Cannot find path %<%s%> in this scope",
 				 segment.as_string ().c_str ());
-		  return;
+		  return UNKNOWN_NODEID;
 		}
 	    }
 	}
@@ -211,7 +211,7 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
 	  rust_error_at (segment.get_locus (),
 			 "Cannot find path %<%s%> in this scope",
 			 segment.as_string ().c_str ());
-	  return;
+	  return UNKNOWN_NODEID;
 	}
     }
 
@@ -236,9 +236,10 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
 	  gcc_unreachable ();
 	}
     }
+  return resolved_node_id;
 }
 
-void
+NodeId
 ResolvePath::resolve_path (AST::QualifiedPathInExpression *expr)
 {
   AST::QualifiedPathType &root_segment = expr->get_qualified_path_type ();
@@ -254,9 +255,13 @@ ResolvePath::resolve_path (AST::QualifiedPathInExpression *expr)
       if (segment.has_generic_args ())
 	ResolveGenericArgs::go (segment.get_generic_args ());
     }
+
+  // cannot fully resolve a qualified path as it is dependant on associated
+  // items
+  return UNKNOWN_NODEID;
 }
 
-void
+NodeId
 ResolvePath::resolve_path (AST::SimplePath *expr)
 {
   NodeId crate_scope_id = resolver->peek_crate_module_scope ();
@@ -283,7 +288,7 @@ ResolvePath::resolve_path (AST::SimplePath *expr)
 	    {
 	      rust_error_at (segment.get_locus (),
 			     "cannot use %<super%> at the crate scope");
-	      return;
+	      return UNKNOWN_NODEID;
 	    }
 
 	  module_scope_id = resolver->peek_parent_module_scope ();
@@ -317,7 +322,7 @@ ResolvePath::resolve_path (AST::SimplePath *expr)
 	      rust_error_at (segment.get_locus (),
 			     "Cannot find path %<%s%> in this scope",
 			     segment.as_string ().c_str ());
-	      return;
+	      return UNKNOWN_NODEID;
 	    }
 	}
 
@@ -348,7 +353,7 @@ ResolvePath::resolve_path (AST::SimplePath *expr)
 	  rust_error_at (segment.get_locus (),
 			 "cannot find simple path segment %<%s%> in this scope",
 			 segment.as_string ().c_str ());
-	  return;
+	  return UNKNOWN_NODEID;
 	}
 
       if (mappings->node_is_module (resolved_node_id))
@@ -378,6 +383,7 @@ ResolvePath::resolve_path (AST::SimplePath *expr)
 	  gcc_unreachable ();
 	}
     }
+  return resolved_node_id;
 }
 
 } // namespace Resolver
