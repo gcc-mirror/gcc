@@ -659,7 +659,7 @@
 (define_insn "clmul<mode>3"
 [(set (match_operand:X 0 "register_operand" "=r")
 (clmul:X (match_operand:X 1 "register_operand" "r")
-(match_operand:X 2 "arith_operand"  "r")))]
+(match_operand:X 2 "register_operand"  "r")))]
 "TARGET_ZBC"
 "clmul\t%0,%1,%2"
 [(set_attr "type" "bitmanip")])
@@ -668,7 +668,7 @@
 (define_insn "clmulh<mode>3"
 [(set (match_operand:X 0 "register_operand" "=r")
 (plus:X (match_operand:X 1 "register_operand" " r")
-(match_operand:X 2 "arith_operand"    " r")))]
+(match_operand:X 2 "register_operand" "r")))]
 "TARGET_ZBC"
 "clmulh\t%0,%1,%2"
 [(set_attr "type" "bitmanip")])
@@ -677,7 +677,7 @@
 (define_insn "clmulr<mode>3"
 [(set (match_operand:X 0 "register_operand" "=r")
 (clmulr:X (match_operand:X 1 "register_operand" "r")
-(match_operand:X 2 "arith_operand"  "r")))]
+(match_operand:X 2 "register_operand" "r")))]
 "TARGET_ZBC"
 "clmulr\t%0,%1,%2"
 [(set_attr "type" "bitmanip")])
@@ -691,7 +691,7 @@
 if (TARGET_ZBC)
   {
      // Instruction sequence from slides.  Sizes need to be fixed.
-     rtx a0 = operands[0], a1 = operands[1];
+     rtx a0 = operands[1], a1 = operands[2];
      unsigned HOST_WIDE_INT
        q = gf2n_poly_long_div_quotient (UINTVAL (operands[3]));
      rtx t0 = gen_rtx_CONST (SImode, GEN_INT (q));

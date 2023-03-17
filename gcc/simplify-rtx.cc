@@ -4289,6 +4289,7 @@ simplify_ashift:
 	return op0;
       return 0;
 
+    case  CLMUL:
     case SS_MULT:
     case US_MULT:
       /* Simplify x * 0 to 0, if possible.  */

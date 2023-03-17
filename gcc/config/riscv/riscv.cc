@@ -6951,21 +6951,32 @@ gf2n_poly_long_div_quotient (unsigned HOST_WIDE_INT polynomial)
   return quotient;
 }
 
+/* Calculates reciprocal CRC for initial CRC and given polynomial.  */
+static uint16_t
+generate_crc_reciprocal (uint16_t crc,
+			 uint16_t polynomial)
+{
+  for (int bits = 16; bits > 0; --bits)
+    {
+      int tmp = crc & 1;
+      crc >>= 1;
+      if (tmp)
+	crc ^= polynomial;
+    }
+  return crc;
+}
+
 /* Calculates CRC for initial CRC and given polynomial.  */
 static uint16_t
 generate_crc (uint16_t crc,
-	     uint16_t polynomial)
+	      uint16_t polynomial)
 {
   for (int bits = 16; bits > 0; --bits)
     {
       if (crc & 0x8000)
-	{
-	  crc = (crc << 1) ^ polynomial;
-	}
+	crc = (crc << 1) ^ polynomial;
       else
-	{
-	  crc <<= 1;
-	}
+	crc <<= 1;
     }
 
   return crc;
@@ -7005,12 +7016,25 @@ generate_crc16_table (uint16_t polynom)
   return lab;
 }
 
+void reflect (rtx op1, machine_mode mode)
+{
+  // Reflect the bits
+  op1 = gen_rtx_BSWAP (mode, op1);
+
+// Adjust the position of the reflected bits
+  if (mode != Pmode)
+    op1 = gen_rtx_SUBREG (Pmode, op1, 0);
+
+// Shift the reflected bits to the least significant end
+  rtx shift_amt = gen_rtx_CONST_INT (Pmode, 8);
+  op1 = gen_rtx_LSHIFTRT (Pmode, op1, shift_amt);
+}
+
 /* Generate table based CRC code.  */
 void
-expand_crc_table_based (rtx *operands,  machine_mode data_mode)
+expand_crc_table_based_reflected (rtx *operands,  machine_mode data_mode)
 {
   machine_mode mode = GET_MODE (operands[0]);
-
   rtx in = force_reg (mode, gen_rtx_XOR (mode, operands[1], operands[2]));
   rtx ix = gen_rtx_AND (mode, in, GEN_INT (GET_MODE_MASK (data_mode)));
   if (mode != Pmode)
@@ -7025,6 +7049,30 @@ expand_crc_table_based (rtx *operands,  machine_mode data_mode)
 			       GEN_INT (data_mode));
   rtx crc = force_reg (mode, gen_rtx_XOR (mode, tab, high));
   riscv_emit_move (operands[0], gen_rtx_SUBREG (mode, crc, 0));
+}
+
+/* Generate table based CRC code.  */
+void
+expand_crc_table_based (rtx *operands,  machine_mode data_mode)
+{
+  machine_mode mode = GET_MODE (operands[0]);
+  rtx op1 = gen_rtx_ASHIFTRT (mode, operands[1],
+			       GEN_INT (8));
+  rtx in = force_reg (mode, gen_rtx_XOR (mode, op1, operands[2]));
+  rtx ix = gen_rtx_AND (mode, in, GEN_INT (GET_MODE_MASK (data_mode)));
+  if (mode != Pmode)
+    ix = gen_rtx_SUBREG (Pmode, ix, 0);
+  ix = gen_rtx_ASHIFT (Pmode, ix, GEN_INT (exact_log2 (GET_MODE_SIZE (mode)
+							   .to_constant ())));
+  ix = force_reg (Pmode, ix);
+  rtx tab = generate_crc16_table (UINTVAL (operands[3]));
+  tab = gen_rtx_MEM (mode, gen_rtx_PLUS (Pmode, ix, tab));
+
+  rtx high = gen_rtx_ASHIFT (mode, operands[1],
+			       GEN_INT (8));
+  high = force_reg (mode, gen_rtx_AND (mode, high, GEN_INT (65535)));
+  rtx crc = force_reg (mode, gen_rtx_XOR (mode, tab, high));
+  riscv_emit_move (operands[0], crc);
 }
 
 /* Initialize the GCC target structure.  */
