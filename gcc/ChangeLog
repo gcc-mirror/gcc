@@ -1,3 +1,36 @@
+2023-03-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.cc (expand_vec_perm_pblendv):
+	Handle 8-byte modes only with TARGET_MMX_WITH_SSE.
+	(expand_vec_perm_2perm_pblendv): Ditto.
+
+2023-03-16  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/106133
+	* gcc.cc (driver_handle_option): Use x_main_input_basename
+	if x_dump_base_name is null.
+	* opts.cc (common_handle_option): Likewise.
+
+2023-03-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109123
+	* gimple-ssa-warn-access.cc (pass_waccess::warn_invalid_pointer):
+	Do not emit -Wuse-after-free late.
+	(pass_waccess::check_call): Always check call pointer uses.
+
+2023-03-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109141
+	* tree-dfa.h (renumber_gimple_stmt_uids_in_block): New.
+	* tree-dfa.cc (renumber_gimple_stmt_uids_in_block): Split
+	out from ...
+	(renumber_gimple_stmt_uids): ... here and
+	(renumber_gimple_stmt_uids_in_blocks): ... here.
+	* gimple-ssa-warn-access.cc (pass_waccess::use_after_inval_p):
+	Use renumber_gimple_stmt_uids_in_block to also assign UIDs
+	to PHIs.
+	(pass_waccess::check_pointer_uses): Process all PHIs.
+
 2023-03-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/109097

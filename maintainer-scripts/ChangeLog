@@ -1,3 +1,12 @@
+2023-03-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* update_web_docs_git (MANUALS): Add gm2.
+	Add include path for gm2 manual.
+
+2023-03-16  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update_web_docs_git (BUGURL): Introduce and use throughout.
+
 2022-11-30  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR web/107749

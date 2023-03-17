@@ -1,3 +1,11 @@
+2023-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* makeucnid.cc (write_copyright): Update Unicode copyright years
+	up to 2022.
+	* makeuname2c.cc (write_copyright): Likewise.
+	* ucnid.h: Regenerated.
+	* uname2c.h: Regenerated.
+
 2023-03-13  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/67046

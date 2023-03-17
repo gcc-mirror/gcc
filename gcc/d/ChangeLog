@@ -1,3 +1,40 @@
+2023-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 4ca4140e58.
+	* dmd/VERSION: Bump version to v2.103.0-beta.1.
+	* Make-lang.in (D_FRONTEND_OBJS): Add d/errorsink.o.
+	* d-ctfloat.cc (CTFloat::sprint): Update signature for new front-end
+	interface.
+	* d-frontend.cc (getTypeInfoType): Likewise.
+	* d-lang.cc (d_handle_option): Remove handling of -fpreview=dip25 and
+	-frevert=dip25.
+	(d_post_options): Remove enabling of sealed references language
+	feature when scoped pointers is enabled.
+	* d-tree.h (create_typeinfo): Update signature.
+	* decl.cc (DeclVisitor::finish_vtable): Update for new front-end
+	interface.
+	(DeclVisitor::visit (VarDeclaration *)): Likewise.
+	(DeclVisitor::visit (FuncDeclaration *)): Check skipCodegen to see if
+	front-end explicitly requested not to generate code.
+	* expr.cc (ExprVisitor::visit (NewExp *)): Update for new front-end
+	interface.
+	* lang.opt (fpreview=dip25): Remove.
+	(frevert=dip25): Remove.
+	* modules.cc (layout_moduleinfo_fields): Update for new front-end
+	interface.
+	(layout_moduleinfo): Likewise.
+	* runtime.def (NEWCLASS): Remove.
+	* toir.cc (IRVisitor::visit (IfStatement *)): Don't generate IR for if
+	statement list when condition is `__ctfe'.
+	* typeinfo.cc (create_typeinfo): Add generate parameter.
+	* types.cc (layout_aggregate_members): Update for new front-end
+	interface.
+
+2023-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/109144
+	* d-codegen.cc (build_frame_type): Set frame field and type alignment.
+
 2023-03-14  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/109108

@@ -1,3 +1,89 @@
+2023-03-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/SymbolKey.mod (PutSymKey): Halt parameters
+	reordered.
+	(DelSymKey): Ditto.
+	* gm2-compiler/ppg.mod (GetEpsilon): Ditto.
+	(GetReachEnd): Ditto.
+	(GetFollow): Ditto.
+	(CodeCondition): Ditto.
+	(CodeThenDo): Ditto.
+	(CodeEnd): Ditto.
+	(RecoverCondition): Ditto.
+	(ConditionIndent): Ditto.
+	* gm2-libs-ch/m2rts.h (M2RTS_Halt): Ditto.
+	* gm2-libs-coroutines/Executive.mod (Assert): Ditto.
+	(Resume): Remove redundant comments.
+	(Wait): Remove redundant comments.
+	* gm2-libs-coroutines/SYSTEM.mod (TRANSFER): Halt parameters
+	reordered.
+	(IOTransferHandler): Ditto.
+	(Finished): Ditto.
+	(localInit): Ditto.
+	* gm2-libs-coroutines/TimerHandler.mod (WaitOn): Halt parameters
+	reordered.
+	(Cancel): Ditto.
+	(ReArmEvent): Ditto.
+	(OnActiveQueue): Ditto.
+	* gm2-libs-iso/COROUTINES.mod (NEWCOROUTINE): Ditto.
+	(Transfer): Ditto.
+	(IOTRANSFER): Ditto.
+	* gm2-libs-iso/EXCEPTIONS.mod (RAISE): Correct Halt parameters.
+	* gm2-libs-iso/M2RTS.def (Halt): Halt parameters reordered.
+	(HaltC): Ditto.
+	* gm2-libs-iso/M2RTS.mod: Ditto.
+	* gm2-libs-iso/RTentity.mod (PutKey): Ditto.
+	(DelKey): Ditto.
+	(findChildAndParent): Ditto.
+	(assert): Ditto.
+	* gm2-libs-iso/Storage.mod (ALLOCATE): Add DebugTrace.
+	Add UseMallocFree test.
+	(DEALLOCATE): Add DebugTrace.  Add UseMallocFree test.
+	(assert): Halt parameters reordered.
+	* gm2-libs-log/Termbase.mod (Read): Ditto.
+	(KeyPressed): Ditto.
+	(Write): Ditto.
+	(Init): Ditto.
+	* gm2-libs/Debug.def (Halt): Halt parameters reordered.
+	* gm2-libs/Debug.mod (Halt): Ditto.
+	* gm2-libs/DynamicStrings.def (PopAllocation): Improve comment.
+	* gm2-libs/DynamicStrings.mod (PopAllocation): Improve comment.
+	Halt parameters reordered.
+	* gm2-libs/M2RTS.def (Halt): Ditto.
+	(HaltC): Ditto.
+	* gm2-libs/M2RTS.mod (Halt): Ditto.
+	(HaltC): Ditto.
+	* gm2-libs/PushBackInput.mod (PutStr): Ditto.
+	(PutString): Ditto.
+	(PutCh): Ditto.
+	* gm2-libs/RTExceptions.mod (GetBaseExceptionBlock): Ditto.
+	* gm2-libs/RTint.mod (ReArmTimeVector): Ditto.
+	(GetTimeVector): Ditto.
+	(AttachVector): Ditto.
+	(IncludeVector): Ditto.
+	(Listen): Ditto.
+	* gm2-libs/SysStorage.mod (ALLOCATE): Ditto.
+	(DEALLOCATE): Ditto.
+	(REALLOCATE): Ditto.
+	* gm2-libs-coroutines/Debug.def: Removed.
+	* gm2-libs-coroutines/Debug.mod: Removed.
+
+2023-03-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in: Rename target-independent to
+	target-independent/m2.
+	* target-independent/readme.txt: Update.
+	* target-independent/m2/gm2-ebnf.texi: New file.
+	* target-independent/m2/gpl_v3_without_node.texi: New file.
+	* target-independent/Builtins.texi: Rename ...
+	* target-independent/m2/Builtins.texi: ... to this.
+	* target-independent/SYSTEM-iso.texi: Rename ...
+	* target-independent/m2/SYSTEM-iso.texi: ... to this.
+	* target-independent/SYSTEM-pim.texi: Rename ...
+	* target-independent/m2/SYSTEM-pim.texi: ... to this.
+	* target-independent/gm2-libs.texi: Rename ...
+	* target-independent/m2/gm2-libs.texi: ... to this.
+
 2023-03-15  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109125

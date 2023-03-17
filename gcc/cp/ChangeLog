@@ -1,3 +1,40 @@
+2023-03-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105809
+	* init.cc (get_nsdmi): Split out...
+	(maybe_instantiate_nsdmi_init): ...this function.
+	* cp-tree.h: Declare it.
+	* pt.cc (tsubst_expr): Use it.
+
+2023-03-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108242
+	* pt.cc (tsubst_expr) [TAG_DEFN]: Handle partial instantiation.
+
+2023-03-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101869
+	* semantics.cc (finish_qualified_id_expr): Don't try to build a
+	pointer-to-member if the scope is an enumeration.
+
+2023-03-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109030
+	* constexpr.cc (maybe_constant_init_1): For an unevaluated
+	non-manifestly-constant operand, don't constant evaluate
+	and instead call fold_to_constant as in maybe_constant_value.
+
+2023-03-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100288
+	* constraint.cc (satisfaction_cache::get): Relax overly strict
+	checking assert in the constraint recursion case.
+
+2023-03-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105406
+	* coroutines.cc (build_co_await): Handle lvalue 'o'.
+
 2023-03-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/103871

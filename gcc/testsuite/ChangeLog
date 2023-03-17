@@ -1,3 +1,87 @@
+2023-03-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105809
+	* g++.dg/cpp0x/constexpr-__func__3.C: New test.
+
+2023-03-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108242
+	* g++.dg/cpp1y/lambda-generic-func2.C: New test.
+
+2023-03-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101869
+	* g++.dg/cpp0x/enum43.C: New test.
+
+2023-03-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/types/run/pass/d.c: Add missing include <stdbool.h>.
+
+2023-03-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109125
+	* gm2/types/run/pass/d.c: Convert data structure from
+	BOOLEAN int to bool and cast int to bool in test function.
+
+2023-03-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/complex/pass/arith3.mod: Halt parameters reordered.
+	* gm2/complex/run/pass/arith3.mod: Ditto.
+	* gm2/complex/run/pass/arith4.mod: Ditto.
+	* gm2/complex/run/pass/arith5.mod: Ditto.
+	* gm2/isolib/run/pass/real2.mod: Ditto.
+	* gm2/isolib/run/pass/real3.mod: Ditto.
+	* gm2/isolib/run/pass/realconv.mod: Ditto.
+	* gm2/isolib/run/pass/realconv2.mod: Ditto.
+	* gm2/pim/pass/testshort.mod: Ditto.
+	* gm2/projects/pim/run/pass/tower/AdvSystem.mod: Ditto.
+	* gm2/projects/pim/run/pass/tower/DrawL.mod: Ditto.
+	* gm2/warnings/returntype/pass/Termbase.mod: Ditto.
+	* gm2/warnings/returntype/pass/keypressedsimple.mod: Ditto.
+
+2023-03-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109030
+	* g++.dg/cpp2a/constexpr-inst2.C: New test.
+
+2023-03-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100288
+	* g++.dg/cpp2a/concepts-recursive-sat5.C: New test.
+
+2023-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/torture/simd23084.d: New test.
+	* gdc.dg/torture/simd23085.d: New test.
+	* gdc.dg/torture/simd23218.d: New test.
+
+2023-03-16  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/106133
+	* c-c++-common/pr106133.c: New test.
+
+2023-03-16  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/vect/pr103116-2.c (x): Fix array size.
+
+2023-03-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105406
+	* g++.dg/coroutines/co-await-moveonly1.C: New test.
+
+2023-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/109144
+	* gdc.dg/torture/pr109144.d: New test.
+
+2023-03-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109123
+	* gcc.dg/Wuse-after-free-pr109123.c: New testcase.
+	* gcc.dg/Wuse-after-free-2.c: Amend expected diagnostic with
+	the name of the pointer.
+	* c-c++-common/Wuse-after-free-6.c: Un-XFAIL case.
+
 2023-03-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/103871
