@@ -3617,8 +3617,9 @@ m2expr_BuildCap (location_t location, tree t)
   return error_mark_node;
 }
 
-/* BuildDivM2 if iso or pim4 then build and return ((op2 < 0) : (op1
-   divceil op2) ?  (op1 divfloor op2)) otherwise use divtrunc.  */
+/* BuildDivM2 if iso or pim4 then all modulus results are positive
+   and the results from the division are rounded to the floor otherwise
+   use BuildDivTrunc.  */
 
 tree
 m2expr_BuildDivM2 (location_t location, tree op1, tree op2,
@@ -3627,6 +3628,8 @@ m2expr_BuildDivM2 (location_t location, tree op1, tree op2,
   op1 = m2expr_FoldAndStrip (op1);
   op2 = m2expr_FoldAndStrip (op2);
   ASSERT_CONDITION (TREE_TYPE (op1) == TREE_TYPE (op2));
+  /* If iso or pim4 then build and return ((op2 < 0) ? (op1
+     divceil op2) : (op1 divfloor op2)) otherwise use divtrunc.  */
   if (M2Options_GetPIM4 () || M2Options_GetISO ()
       || M2Options_GetPositiveModFloor ())
     return fold_build3 (
@@ -3642,7 +3645,7 @@ m2expr_BuildDivM2 (location_t location, tree op1, tree op2,
 }
 
 /* BuildDivM2Check - build and
-   return ((op2 < 0) : (op1 divtrunc op2) ? (op1 divfloor op2))
+   return ((op2 < 0) ? (op1 divtrunc op2) : (op1 divfloor op2))
    when -fiso, -fpim4 or -fpositive-mod-floor-div is present else
    return op1 div trunc op2.  Use the checking div equivalents.  */
 
@@ -3685,8 +3688,8 @@ m2expr_BuildISOModM2Check (location_t location,
 }
 
 
-/* BuildModM2Check if iso or pim4 then build and return ((op2 < 0) : (op1
-   modceil op2) ?  (op1 modfloor op2)) otherwise use modtrunc.
+/* BuildModM2Check if iso or pim4 then build and return ((op2 < 0) ? (op1
+   modceil op2) :  (op1 modfloor op2)) otherwise use modtrunc.
    Use the checking mod equivalents.  */
 
 tree
@@ -3703,8 +3706,8 @@ m2expr_BuildModM2Check (location_t location, tree op1, tree op2,
     return m2expr_BuildModTruncCheck (location, op1, op2, lowest, min, max);
 }
 
-/* BuildModM2 if iso or pim4 then build and return ((op2 < 0) : (op1
-   modceil op2) ?  (op1 modfloor op2)) otherwise use modtrunc.  */
+/* BuildModM2 if iso or pim4 then build and return ((op2 < 0) ? (op1
+   modceil op2) : (op1 modfloor op2)) otherwise use modtrunc.  */
 
 tree
 m2expr_BuildModM2 (location_t location, tree op1, tree op2,

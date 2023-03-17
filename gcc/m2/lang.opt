@@ -56,7 +56,7 @@ turns on runtime subrange, array index and indirection via NIL pointer checking
 
 fcase
 Modula-2
-turns on runtime checking to check whether a CASE statement requires an ELSE clause when on was not specified
+turns on runtime checking to check whether a CASE statement requires an ELSE clause when one was not specified
 
 fcpp
 Modula-2
@@ -104,7 +104,7 @@ allows opaque types to be implemented as any type (a GNU Modula-2 extension)
 
 ffloatvalue
 Modula-2
-turns on runtime checking to check whether a floating point number is about to exceed range
+turns on runtime checking to check whether a floating point number will exceed range
 
 fgen-module-list=
 Modula-2 Joined
@@ -120,7 +120,7 @@ use ISO dialect of Modula-2
 
 flibs=
 Modula-2 Joined
-specify the library order, currently legal entries include: log, min, pim, iso or their directory name equivalent m2log, m2min, m2pim, m2iso.
+specify the library order, the libraries maybe specified by a comma separated abbreviation: log,min,pim,iso or by directory names: m2log,m2min,m2pim,m2iso.
 
 flocation=
 Modula-2 Joined
@@ -212,7 +212,7 @@ specify the list of runtime modules and their initialization order
 
 fscaffold-dynamic
 Modula-2
-the modules initialization order is dynamically determined by M2RTS and application dependancies
+the modules initialization order is dynamically determined by M2RTS and application dependencies
 
 fscaffold-c
 Modula-2
@@ -264,7 +264,7 @@ turns on all division and modulus by zero checking for ordinal values
 
 fwholevalue
 Modula-2
-turns on runtime checking to check whether a whole number is about to exceed range
+turns on runtime checking to check whether a whole number will exceed range
 
 static-libgm2
 Driver
