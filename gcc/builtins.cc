@@ -11718,6 +11718,8 @@ builtin_fnspec (tree callee)
       case BUILT_IN_RETURN_ADDRESS:
 	return ".c";
       case BUILT_IN_ASSUME_ALIGNED:
+      case BUILT_IN_EXPECT:
+      case BUILT_IN_EXPECT_WITH_PROBABILITY:
 	return "1cX ";
       /* But posix_memalign stores a pointer into the memory pointed to
 	 by its first argument.  */

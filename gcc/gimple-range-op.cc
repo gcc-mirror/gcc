@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "range.h"
 #include "value-query.h"
 #include "gimple-range.h"
+#include "attr-fnspec.h"
 
 // Given stmt S, fill VEC, up to VEC_SIZE elements, with relevant ssa-names
 // on the statement.  For efficiency, it is an error to not pass in enough
@@ -984,14 +985,16 @@ gimple_range_op_handler::maybe_builtin_call ()
       m_int = &op_cfn_parity;
       break;
 
-    case CFN_BUILT_IN_EXPECT:
-    case CFN_BUILT_IN_EXPECT_WITH_PROBABILITY:
-      m_valid = true;
-      m_op1 = gimple_call_arg (call, 0);
-      m_int = &op_cfn_pass_through_arg1;
-      break;
-
     default:
-      break;
+      {
+	unsigned arg;
+	if (gimple_call_fnspec (call).returns_arg (&arg) && arg == 0)
+	  {
+	    m_valid = true;
+	    m_op1 = gimple_call_arg (call, 0);
+	    m_int = &op_cfn_pass_through_arg1;
+	  }
+	break;
+      }
     }
 }
