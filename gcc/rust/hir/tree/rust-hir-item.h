@@ -1966,6 +1966,8 @@ public:
     return items;
   }
 
+  std::vector<std::unique_ptr<EnumItem>> &get_variants () { return items; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
