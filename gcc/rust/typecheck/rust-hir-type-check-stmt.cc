@@ -127,11 +127,11 @@ TypeCheckStmt::visit (HIR::LetStmt &stmt)
       // let x;
       else
 	{
-	  TypeCheckPattern::Resolve (
-	    &stmt_pattern,
-	    new TyTy::InferType (
-	      stmt_pattern.get_pattern_mappings ().get_hirid (),
-	      TyTy::InferType::InferTypeKind::GENERAL, stmt.get_locus ()));
+	  auto infer = new TyTy::InferType (
+	    stmt_pattern.get_pattern_mappings ().get_hirid (),
+	    TyTy::InferType::InferTypeKind::GENERAL,
+	    TyTy::InferType::TypeHint::Default (), stmt.get_locus ());
+	  TypeCheckPattern::Resolve (&stmt_pattern, infer);
 	}
     }
 }

@@ -635,6 +635,7 @@ TypeCheckType::visit (HIR::InferredType &type)
 {
   translated = new TyTy::InferType (type.get_mappings ().get_hirid (),
 				    TyTy::InferType::InferTypeKind::GENERAL,
+				    TyTy::InferType::TypeHint::Default (),
 				    type.get_locus ());
 }
 

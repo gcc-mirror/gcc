@@ -935,18 +935,18 @@ BaseType::needs_generic_substitutions () const
 
 // InferType
 
-InferType::InferType (HirId ref, InferTypeKind infer_kind, Location locus,
-		      std::set<HirId> refs)
+InferType::InferType (HirId ref, InferTypeKind infer_kind, TypeHint hint,
+		      Location locus, std::set<HirId> refs)
   : BaseType (ref, ref, TypeKind::INFER,
 	      {Resolver::CanonicalPath::create_empty (), locus}, refs),
-    infer_kind (infer_kind)
+    infer_kind (infer_kind), default_hint (hint)
 {}
 
 InferType::InferType (HirId ref, HirId ty_ref, InferTypeKind infer_kind,
-		      Location locus, std::set<HirId> refs)
+		      TypeHint hint, Location locus, std::set<HirId> refs)
   : BaseType (ref, ty_ref, TypeKind::INFER,
 	      {Resolver::CanonicalPath::create_empty (), locus}, refs),
-    infer_kind (infer_kind)
+    infer_kind (infer_kind), default_hint (hint)
 {}
 
 InferType::InferTypeKind
@@ -1012,7 +1012,7 @@ InferType::clone () const
 
   InferType *clone
     = new InferType (mappings->get_next_hir_id (), get_infer_kind (),
-		     get_ident ().locus, get_combined_refs ());
+		     default_hint, get_ident ().locus, get_combined_refs ());
 
   context->insert_type (Analysis::NodeMapping (mappings->get_current_crate (),
 					       UNKNOWN_NODEID,
@@ -1033,24 +1033,217 @@ InferType::default_type (BaseType **type) const
 {
   auto context = Resolver::TypeCheckContext::get ();
   bool ok = false;
-  switch (infer_kind)
+
+  if (default_hint.kind == TypeKind::ERROR)
     {
-    case GENERAL:
+      switch (infer_kind)
+	{
+	case GENERAL:
+	  return false;
+
+	  case INTEGRAL: {
+	    ok = context->lookup_builtin ("i32", type);
+	    rust_assert (ok);
+	    return ok;
+	  }
+
+	  case FLOAT: {
+	    ok = context->lookup_builtin ("f64", type);
+	    rust_assert (ok);
+	    return ok;
+	  }
+	}
       return false;
-
-      case INTEGRAL: {
-	ok = context->lookup_builtin ("i32", type);
-	rust_assert (ok);
-	return ok;
-      }
-
-      case FLOAT: {
-	ok = context->lookup_builtin ("f64", type);
-	rust_assert (ok);
-	return ok;
-      }
     }
+
+  switch (default_hint.kind)
+    {
+    case ISIZE:
+      ok = context->lookup_builtin ("isize", type);
+      rust_assert (ok);
+      return ok;
+
+    case USIZE:
+      ok = context->lookup_builtin ("usize", type);
+      rust_assert (ok);
+      return ok;
+
+    case INT:
+      switch (default_hint.szhint)
+	{
+	case TypeHint::SizeHint::S8:
+	  ok = context->lookup_builtin ("i8", type);
+	  rust_assert (ok);
+	  return ok;
+
+	case TypeHint::SizeHint::S16:
+	  ok = context->lookup_builtin ("i16", type);
+	  rust_assert (ok);
+	  return ok;
+
+	case TypeHint::SizeHint::S32:
+	  ok = context->lookup_builtin ("i32", type);
+	  rust_assert (ok);
+	  return ok;
+
+	case TypeHint::SizeHint::S64:
+	  ok = context->lookup_builtin ("i64", type);
+	  rust_assert (ok);
+	  return ok;
+
+	case TypeHint::SizeHint::S128:
+	  ok = context->lookup_builtin ("i128", type);
+	  rust_assert (ok);
+	  return ok;
+
+	default:
+	  return false;
+	}
+      break;
+
+    case UINT:
+      switch (default_hint.szhint)
+	{
+	case TypeHint::SizeHint::S8:
+	  ok = context->lookup_builtin ("u8", type);
+	  rust_assert (ok);
+	  return ok;
+
+	case TypeHint::SizeHint::S16:
+	  ok = context->lookup_builtin ("u16", type);
+	  rust_assert (ok);
+	  return ok;
+
+	case TypeHint::SizeHint::S32:
+	  ok = context->lookup_builtin ("u32", type);
+	  rust_assert (ok);
+	  return ok;
+
+	case TypeHint::SizeHint::S64:
+	  ok = context->lookup_builtin ("u64", type);
+	  rust_assert (ok);
+	  return ok;
+
+	case TypeHint::SizeHint::S128:
+	  ok = context->lookup_builtin ("u128", type);
+	  rust_assert (ok);
+	  return ok;
+
+	default:
+	  return false;
+	}
+      break;
+
+    case TypeKind::FLOAT:
+      switch (default_hint.szhint)
+	{
+	case TypeHint::SizeHint::S32:
+	  ok = context->lookup_builtin ("f32", type);
+	  rust_assert (ok);
+	  return ok;
+
+	case TypeHint::SizeHint::S64:
+	  ok = context->lookup_builtin ("f64", type);
+	  rust_assert (ok);
+	  return ok;
+
+	default:
+	  return false;
+	}
+      break;
+
+    default:
+      return false;
+    }
+
   return false;
+}
+
+void
+InferType::apply_primitive_type_hint (const BaseType &hint)
+{
+  switch (hint.get_kind ())
+    {
+    case ISIZE:
+    case USIZE:
+      infer_kind = INTEGRAL;
+      default_hint.kind = hint.get_kind ();
+      break;
+
+      case INT: {
+	infer_kind = INTEGRAL;
+	const IntType &i = static_cast<const IntType &> (hint);
+	default_hint.kind = hint.get_kind ();
+	default_hint.shint = TypeHint::SignedHint::SIGNED;
+	switch (i.get_int_kind ())
+	  {
+	  case IntType::I8:
+	    default_hint.szhint = TypeHint::SizeHint::S8;
+	    break;
+	  case IntType::I16:
+	    default_hint.szhint = TypeHint::SizeHint::S16;
+	    break;
+	  case IntType::I32:
+	    default_hint.szhint = TypeHint::SizeHint::S32;
+	    break;
+	  case IntType::I64:
+	    default_hint.szhint = TypeHint::SizeHint::S64;
+	    break;
+	  case IntType::I128:
+	    default_hint.szhint = TypeHint::SizeHint::S128;
+	    break;
+	  }
+      }
+      break;
+
+      case UINT: {
+	infer_kind = INTEGRAL;
+	const UintType &i = static_cast<const UintType &> (hint);
+	default_hint.kind = hint.get_kind ();
+	default_hint.shint = TypeHint::SignedHint::UNSIGNED;
+	switch (i.get_uint_kind ())
+	  {
+	  case UintType::U8:
+	    default_hint.szhint = TypeHint::SizeHint::S8;
+	    break;
+	  case UintType::U16:
+	    default_hint.szhint = TypeHint::SizeHint::S16;
+	    break;
+	  case UintType::U32:
+	    default_hint.szhint = TypeHint::SizeHint::S32;
+	    break;
+	  case UintType::U64:
+	    default_hint.szhint = TypeHint::SizeHint::S64;
+	    break;
+	  case UintType::U128:
+	    default_hint.szhint = TypeHint::SizeHint::S128;
+	    break;
+	  }
+      }
+      break;
+
+      case TypeKind::FLOAT: {
+	infer_kind = FLOAT;
+	default_hint.shint = TypeHint::SignedHint::SIGNED;
+	default_hint.kind = hint.get_kind ();
+	const FloatType &i = static_cast<const FloatType &> (hint);
+	switch (i.get_float_kind ())
+	  {
+	  case FloatType::F32:
+	    default_hint.szhint = TypeHint::SizeHint::S32;
+	    break;
+
+	  case FloatType::F64:
+	    default_hint.szhint = TypeHint::SizeHint::S64;
+	    break;
+	  }
+      }
+      break;
+
+    default:
+      // TODO bool, char, never??
+      break;
+    }
 }
 
 // ErrorType
