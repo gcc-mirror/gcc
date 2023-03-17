@@ -13871,6 +13871,16 @@ check_formal:
 	    }
 	}
     }
+
+  /* F2018:15.4.2.2 requires an explicit interface for procedures with the
+     BIND(C) attribute.  */
+  if (sym->attr.is_bind_c && sym->attr.if_source == IFSRC_UNKNOWN)
+    {
+      gfc_error ("Interface of %qs at %L must be explicit",
+		 sym->name, &sym->declared_at);
+      return false;
+    }
+
   return true;
 }
 
