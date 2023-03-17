@@ -687,7 +687,7 @@ extern void pop_cfun (void);
 extern int get_next_funcdef_no (void);
 extern int get_last_funcdef_no (void);
 extern void allocate_struct_function (tree, bool);
-extern void push_struct_function (tree fndecl);
+extern void push_struct_function (tree fndecl, bool = false);
 extern void push_dummy_function (bool);
 extern void pop_dummy_function (void);
 extern void init_dummy_function_start (void);
