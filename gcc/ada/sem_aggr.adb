@@ -5674,7 +5674,6 @@ package body Sem_Aggr is
 
       --  STEP 6: Find component Values
 
-      Component := Empty;
       Component_Elmt := First_Elmt (Components);
 
       --  First scan the remaining positional associations in the aggregate.

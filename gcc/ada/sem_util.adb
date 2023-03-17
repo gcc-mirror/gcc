@@ -9788,6 +9788,8 @@ package body Sem_Util is
       Assoc := First (Governed_By);
       Find_Constraint : loop
          Discrim := First (Choices (Assoc));
+         pragma Assert (No (Next (Discrim)));
+
          exit Find_Constraint when
            Chars (Discrim_Name) = Chars (Discrim)
              or else
@@ -9862,16 +9864,16 @@ package body Sem_Util is
             end if;
          end if;
 
-         if No (Next (Assoc)) then
+         Next (Assoc);
+
+         if No (Assoc) then
             Error_Msg_NE
-              (" missing value for discriminant&",
+              ("missing value for discriminant&",
                First (Governed_By), Discrim_Name);
 
             Report_Errors := True;
             return;
          end if;
-
-         Next (Assoc);
       end loop Find_Constraint;
 
       Discrim_Value := Expression (Assoc);
