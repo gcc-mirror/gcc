@@ -184,7 +184,8 @@ void
 TypeCheckContext::push_new_loop_context (HirId id, Location locus)
 {
   TyTy::BaseType *infer_var
-    = new TyTy::InferType (id, TyTy::InferType::InferTypeKind::GENERAL, locus);
+    = new TyTy::InferType (id, TyTy::InferType::InferTypeKind::GENERAL,
+			   TyTy::InferType::TypeHint::Default (), locus);
   loop_type_stack.push_back (infer_var);
 }
 

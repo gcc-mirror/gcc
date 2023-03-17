@@ -188,11 +188,40 @@ public:
     FLOAT
   };
 
-  InferType (HirId ref, InferTypeKind infer_kind, Location locus,
+  struct TypeHint
+  {
+    enum SignedHint
+    {
+      SIGNED,
+      UNSIGNED,
+
+      UNKNOWN
+    };
+    enum SizeHint
+    {
+      S8,
+      S16,
+      S32,
+      S64,
+      S128,
+      SUNKNOWN
+    };
+
+    TyTy::TypeKind kind;
+    SignedHint shint;
+    SizeHint szhint;
+
+    static TypeHint Default ()
+    {
+      return TypeHint{TypeKind::ERROR, UNKNOWN, SUNKNOWN};
+    }
+  };
+
+  InferType (HirId ref, InferTypeKind infer_kind, TypeHint hint, Location locus,
 	     std::set<HirId> refs = std::set<HirId> ());
 
-  InferType (HirId ref, HirId ty_ref, InferTypeKind infer_kind, Location locus,
-	     std::set<HirId> refs = std::set<HirId> ());
+  InferType (HirId ref, HirId ty_ref, InferTypeKind infer_kind, TypeHint hint,
+	     Location locus, std::set<HirId> refs = std::set<HirId> ());
 
   void accept_vis (TyVisitor &vis) override;
   void accept_vis (TyConstVisitor &vis) const override;
@@ -209,8 +238,11 @@ public:
 
   bool default_type (BaseType **type) const;
 
+  void apply_primitive_type_hint (const TyTy::BaseType &hint);
+
 private:
   InferTypeKind infer_kind;
+  TypeHint default_hint;
 };
 
 class ErrorType : public BaseType

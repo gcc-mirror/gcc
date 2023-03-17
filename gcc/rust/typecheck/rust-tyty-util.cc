@@ -48,7 +48,8 @@ TyVar::get_implicit_infer_var (Location locus)
   auto context = Resolver::TypeCheckContext::get ();
 
   InferType *infer = new InferType (mappings->get_next_hir_id (),
-				    InferType::InferTypeKind::GENERAL, locus);
+				    InferType::InferTypeKind::GENERAL,
+				    InferType::TypeHint::Default (), locus);
   context->insert_type (Analysis::NodeMapping (mappings->get_current_crate (),
 					       UNKNOWN_NODEID,
 					       infer->get_ref (),

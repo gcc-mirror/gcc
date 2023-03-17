@@ -165,6 +165,7 @@ TypeCheckBase::resolve_literal (const Analysis::NodeMapping &expr_mappings,
 	    infered
 	      = new TyTy::InferType (expr_mappings.get_hirid (),
 				     TyTy::InferType::InferTypeKind::INTEGRAL,
+				     TyTy::InferType::TypeHint::Default (),
 				     locus);
 	    break;
 	  }
@@ -189,6 +190,7 @@ TypeCheckBase::resolve_literal (const Analysis::NodeMapping &expr_mappings,
 	    infered
 	      = new TyTy::InferType (expr_mappings.get_hirid (),
 				     TyTy::InferType::InferTypeKind::FLOAT,
+				     TyTy::InferType::TypeHint::Default (),
 				     locus);
 	    break;
 	  }
