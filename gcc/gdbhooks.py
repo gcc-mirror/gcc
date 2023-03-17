@@ -220,13 +220,23 @@ class TreePrinter:
 
         val_TREE_CODE = self.node.TREE_CODE()
 
-        # extern const enum tree_code_class tree_code_type[];
+        # constexpr inline enum tree_code_class tree_code_type[] = { ... };
         # #define TREE_CODE_CLASS(CODE)	tree_code_type[(int) (CODE)]
+        # or
+        # template <int N>
+        # struct tree_code_type_tmpl {
+        # static constexpr enum tree_code_class tree_code_type[] = { ... };
+        # }; };
+        # #define TREE_CODE_CLASS(CODE) \
+        # tree_code_type_tmpl <0>::tree_code_type[(int) (CODE)]
 
         if val_TREE_CODE == 0xa5a5:
             return '<ggc_freed 0x%x>' % intptr(self.gdbval)
 
-        val_tree_code_type = gdb.parse_and_eval('tree_code_type')
+        try:
+            val_tree_code_type = gdb.parse_and_eval('tree_code_type')
+        except:
+            val_tree_code_type = gdb.parse_and_eval('tree_code_type_tmpl<0>::tree_code_type')
         val_tclass = val_tree_code_type[val_TREE_CODE]
 
         val_tree_code_name = gdb.parse_and_eval('tree_code_name')
