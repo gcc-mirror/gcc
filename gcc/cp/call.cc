@@ -13785,8 +13785,31 @@ std_pair_ref_ref_p (tree t)
 
 /* Return true if a class CTYPE is either std::reference_wrapper or
    std::ref_view, or a reference wrapper class.  We consider a class
-   a reference wrapper class if it has a reference member and a
-   constructor taking the same reference type.  */
+   a reference wrapper class if it has a reference member.  We no
+   longer check that it has a constructor taking the same reference type
+   since that approach still generated too many false positives.  */
+
+static bool
+class_has_reference_member_p (tree t)
+{
+  for (tree fields = TYPE_FIELDS (t);
+       fields;
+       fields = DECL_CHAIN (fields))
+    if (TREE_CODE (fields) == FIELD_DECL
+	&& !DECL_ARTIFICIAL (fields)
+	&& TYPE_REF_P (TREE_TYPE (fields)))
+      return true;
+  return false;
+}
+
+/* A wrapper for the above suitable as a callback for dfs_walk_once.  */
+
+static tree
+class_has_reference_member_p_r (tree binfo, void *)
+{
+  return (class_has_reference_member_p (BINFO_TYPE (binfo))
+	  ? integer_one_node : NULL_TREE);
+}
 
 static bool
 reference_like_class_p (tree ctype)
@@ -13802,31 +13825,19 @@ reference_like_class_p (tree ctype)
   if (decl_in_std_namespace_p (tdecl))
     {
       tree name = DECL_NAME (tdecl);
-      return (name
-	      && (id_equal (name, "reference_wrapper")
-		  || id_equal (name, "span")
-		  || id_equal (name, "ref_view")));
+      if (name
+	  && (id_equal (name, "reference_wrapper")
+	      || id_equal (name, "span")
+	      || id_equal (name, "ref_view")))
+	return true;
     }
-  for (tree fields = TYPE_FIELDS (ctype);
-       fields;
-       fields = DECL_CHAIN (fields))
-    {
-      if (TREE_CODE (fields) != FIELD_DECL || DECL_ARTIFICIAL (fields))
-	continue;
-      tree type = TREE_TYPE (fields);
-      if (!TYPE_REF_P (type))
-	continue;
-      /* OK, the field is a reference member.  Do we have a constructor
-	 taking its type?  */
-      for (tree fn : ovl_range (CLASSTYPE_CONSTRUCTORS (ctype)))
-	{
-	  tree args = FUNCTION_FIRST_USER_PARMTYPE (fn);
-	  if (args
-	      && same_type_p (TREE_VALUE (args), type)
-	      && TREE_CHAIN (args) == void_list_node)
-	    return true;
-	}
-    }
+
+  /* Some classes, such as std::tuple, have the reference member in its
+     (non-direct) base class.  */
+  if (dfs_walk_once (TYPE_BINFO (ctype), class_has_reference_member_p_r,
+		     nullptr, nullptr))
+    return true;
+
   return false;
 }
 
