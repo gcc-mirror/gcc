@@ -13888,7 +13888,8 @@ grokdeclarator (const cp_declarator *declarator,
 		      return error_mark_node;
 		  }
 
-		decl = do_friend (ctype, unqualified_id, decl,
+		tree scope = ctype ? ctype : in_namespace;
+		decl = do_friend (scope, unqualified_id, decl,
 				  *attrlist, flags,
 				  funcdef_flag);
 		return decl;
