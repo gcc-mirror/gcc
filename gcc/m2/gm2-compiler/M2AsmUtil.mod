@@ -40,7 +40,7 @@ FROM SymbolTable IMPORT NulSym,
                         IsProcedure,
                         IsModule,
                         IsDefImp,
-                        IsExportQualified,
+                        IsExportQualified, IsExportUnQualified,
                         IsExported, IsPublic, IsExtern, IsMonoName,
                         IsDefinitionForC ;
 
@@ -146,28 +146,26 @@ END GetFullSymName ;
 
 
 (*
-   SymNeedsModulePrefix -
+   SymNeedsModulePrefix - return TRUE if symbol mod is required to have a prefix.
 *)
 
 PROCEDURE SymNeedsModulePrefix (sym, mod: CARDINAL) : BOOLEAN ;
 BEGIN
-   IF IsDefImp(mod)
+   IF IsDefImp (mod)
    THEN
-      IF WholeProgram
+      IF IsExportUnQualified (sym)
       THEN
-         IF NOT IsDefinitionForC(mod)
-         THEN
-            RETURN( TRUE )
-         END
-      ELSIF IsExportQualified(sym)
-      THEN
-         RETURN( TRUE )
+         RETURN FALSE
+      ELSE
+         (* We need to force the prefix if whole program is used otherwise
+            local symbols from multipl modules might conflict.  *)
+         RETURN WholeProgram OR IsExportQualified (sym)
       END
-   ELSIF IsModule(mod)
+   ELSIF IsModule (mod)
    THEN
-      RETURN( WholeProgram )
+      RETURN WholeProgram
    END ;
-   RETURN( FALSE )
+   RETURN FALSE
 END SymNeedsModulePrefix ;
 
 
@@ -185,7 +183,7 @@ BEGIN
       THEN
          RETURN( ConCat(ConCatChar(InitStringCharStar(KeyToCharStar(GetSymName(ModSym))), '_'),
                         GetModulePrefix(Name, ModSym, GetScope(ModSym))) )
-      ELSIF SymNeedsModulePrefix(Sym, ModSym)
+      ELSIF SymNeedsModulePrefix (Sym, ModSym)
       THEN
          RETURN( ConCatChar(ConCat(InitStringCharStar(KeyToCharStar(GetSymName(ModSym))), Mark(Name)), '_') )
       END

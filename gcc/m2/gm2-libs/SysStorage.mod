@@ -34,7 +34,7 @@ FROM SYSTEM IMPORT ADR ;
 CONST
    enableDeallocation =  TRUE ;
    enableZero         =  TRUE ;
-   enableTrace        =  TRUE ;
+   enableTrace        =  FALSE ;
 
 VAR
    callno: CARDINAL ;
