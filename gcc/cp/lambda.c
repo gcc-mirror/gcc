@@ -1537,6 +1537,9 @@ prune_lambda_captures (tree body)
   if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lam) == CPLD_NONE)
     /* No default captures, and we don't prune explicit captures.  */
     return;
+  /* Don't bother pruning in a template, we'll prune at instantiation time.  */
+  if (dependent_type_p (TREE_TYPE (lam)))
+    return;
 
   hash_map<tree,tree*> const_vars;
 
