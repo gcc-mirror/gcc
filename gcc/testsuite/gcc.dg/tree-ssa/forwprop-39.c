@@ -1,14 +1,12 @@
 /* { dg-do compile } */
-/* { dg-options "-std=c11 -O2 -fdump-tree-forwprop1 -fdump-tree-optimized" } */
-
-#include <complex.h>
+/* { dg-options "-O2 -fdump-tree-forwprop1 -fdump-tree-optimized" } */
 
 extern void push1(void *p, float _Complex x);
 void foo (void *q, float _Complex *x)
 {
   float r = __real *x;
   float i = __imag *x;
-  push1 (q, CMPLXF (r, i));
+  push1 (q, __builtin_complex (r, i));
 }
 
 /* { dg-final { scan-tree-dump-not "COMPLEX_EXPR" "forwprop1" } } */
