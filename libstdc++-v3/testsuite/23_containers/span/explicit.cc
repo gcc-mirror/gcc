@@ -31,11 +31,11 @@ auto first = std::begin(r), last = std::end(r);
 
 // span(It, size_type)
 std::span<int> s1 = {first, 2};
-std::span<int, 2> s2 = {first, 2}; // { dg-error "could not convert" }
+std::span<int, 2> s2 = {first, 2}; // { dg-error "explicit constructor" }
 
 // span(It, End)
 std::span<int> s3 = {first, last};
-std::span<int, 2> s4 = {first, last}; // { dg-error "could not convert" }
+std::span<int, 2> s4 = {first, last}; // { dg-error "explicit constructor" }
 
 // span(R&&)
 std::span<int> s5 = r;
