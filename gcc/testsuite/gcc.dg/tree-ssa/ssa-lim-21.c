@@ -17,7 +17,7 @@ void
 func (int m, int n, int k, struct obj *a)
 {
   struct obj *q = a;
-  for (int j = 0; j < m; j++)
+  for (int j = 0; j < n; j++)
     if (__builtin_expect (m, 0))
       for (int i = 0; i < m; i++)
 	{
@@ -31,5 +31,6 @@ func (int m, int n, int k, struct obj *a)
 	}
 }
 
-/* { dg-final { scan-tree-dump-not "Executing store motion of" "lim2"  }  } */
-
+/* { dg-final { scan-tree-dump "Executing store motion of count from loop 2" "lim2"  }  } */
+/* { dg-final { scan-tree-dump "Executing store motion of \[^ \]*data1 from loop 2" "lim2"  }  } */
+/* { dg-final { scan-tree-dump-times "Executing store motion of" 2 "lim2"  }  } */
