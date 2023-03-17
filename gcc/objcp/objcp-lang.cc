@@ -85,6 +85,16 @@ objcp_tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 #undef RECURSE
 }
 
+/* Implement c-family hook to add language-specific features
+   for __has_{feature,extension}.  */
+
+void
+c_family_register_lang_features ()
+{
+  objc_common_register_features ();
+  cp_register_features ();
+}
+
 static void
 objcxx_init_ts (void)
 {

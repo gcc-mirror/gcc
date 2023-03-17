@@ -23,9 +23,153 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "cp-tree.h"
 #include "cp-objcp-common.h"
+#include "c-family/c-common.h"
 #include "dwarf2.h"
 #include "stringpool.h"
 #include "contracts.h"
+
+/* Class to determine whether a given C++ language feature is available.
+   Used to implement __has_{feature,extension}.  */
+
+struct cp_feature_selector
+{
+  enum
+  {
+    DIALECT,
+    FLAG
+  } kind;
+
+  enum class result
+  {
+    NONE,
+    EXT,
+    FEAT
+  };
+
+  union
+  {
+    const int *enable_flag;
+    struct {
+      enum cxx_dialect feat;
+      enum cxx_dialect ext;
+    } dialect;
+  };
+
+  constexpr cp_feature_selector (const int *flag)
+    : kind (FLAG), enable_flag (flag) {}
+  constexpr cp_feature_selector (enum cxx_dialect feat,
+				 enum cxx_dialect ext)
+    : kind (DIALECT), dialect{feat, ext} {}
+  constexpr cp_feature_selector (enum cxx_dialect feat)
+    : cp_feature_selector (feat, feat) {}
+
+  inline result has_feature () const;
+};
+
+/* Check whether this language feature is available as a feature,
+   extension, or not at all.  */
+
+cp_feature_selector::result
+cp_feature_selector::has_feature () const
+{
+  switch (kind)
+    {
+    case DIALECT:
+      if (cxx_dialect >= dialect.feat)
+	return result::FEAT;
+      else if (cxx_dialect >= dialect.ext)
+	return result::EXT;
+      else
+	return result::NONE;
+    case FLAG:
+      return *enable_flag ? result::FEAT : result::NONE;
+    }
+
+  gcc_unreachable ();
+}
+
+/* Information about a C++ language feature which can be queried
+   through __has_{feature,extension}.  IDENT is the name of the feature,
+   and SELECTOR encodes how to compute whether the feature is available.  */
+
+struct cp_feature_info
+{
+  const char *ident;
+  cp_feature_selector selector;
+};
+
+/* Table of features for __has_{feature,extension}.  */
+
+static constexpr cp_feature_info cp_feature_table[] =
+{
+  { "cxx_exceptions", &flag_exceptions },
+  { "cxx_rtti", &flag_rtti },
+  { "cxx_access_control_sfinae", { cxx11, cxx98 } },
+  { "cxx_alias_templates", cxx11 },
+  { "cxx_alignas", cxx11 },
+  { "cxx_alignof", cxx11 },
+  { "cxx_attributes", cxx11 },
+  { "cxx_constexpr", cxx11 },
+  { "cxx_constexpr_string_builtins", cxx11 },
+  { "cxx_decltype", cxx11 },
+  { "cxx_decltype_incomplete_return_types", cxx11 },
+  { "cxx_default_function_template_args", cxx11 },
+  { "cxx_defaulted_functions", cxx11 },
+  { "cxx_delegating_constructors", cxx11 },
+  { "cxx_deleted_functions", cxx11 },
+  { "cxx_explicit_conversions", cxx11 },
+  { "cxx_generalized_initializers", cxx11 },
+  { "cxx_implicit_moves", cxx11 },
+  { "cxx_inheriting_constructors", cxx11 },
+  { "cxx_inline_namespaces", { cxx11, cxx98 } },
+  { "cxx_lambdas", cxx11 },
+  { "cxx_local_type_template_args", cxx11 },
+  { "cxx_noexcept", cxx11 },
+  { "cxx_nonstatic_member_init", cxx11 },
+  { "cxx_nullptr", cxx11 },
+  { "cxx_override_control", cxx11 },
+  { "cxx_reference_qualified_functions", cxx11 },
+  { "cxx_range_for", cxx11 },
+  { "cxx_raw_string_literals", cxx11 },
+  { "cxx_rvalue_references", cxx11 },
+  { "cxx_static_assert", cxx11 },
+  { "cxx_thread_local", cxx11 },
+  { "cxx_auto_type", cxx11 },
+  { "cxx_strong_enums", cxx11 },
+  { "cxx_trailing_return", cxx11 },
+  { "cxx_unicode_literals", cxx11 },
+  { "cxx_unrestricted_unions", cxx11 },
+  { "cxx_user_literals", cxx11 },
+  { "cxx_variadic_templates", { cxx11, cxx98 } },
+  { "cxx_binary_literals", { cxx14, cxx98 } },
+  { "cxx_contextual_conversions", { cxx14, cxx98 } },
+  { "cxx_decltype_auto", cxx14 },
+  { "cxx_aggregate_nsdmi", cxx14 },
+  { "cxx_init_captures", cxx14 },
+  { "cxx_generic_lambdas", cxx14 },
+  { "cxx_relaxed_constexpr", cxx14 },
+  { "cxx_return_type_deduction", cxx14 },
+  { "cxx_variable_templates", cxx14 },
+  { "modules", &flag_modules },
+};
+
+/* Register C++ language features for __has_{feature,extension}.  */
+
+void
+cp_register_features ()
+{
+  using result = cp_feature_selector::result;
+
+  for (unsigned i = 0; i < ARRAY_SIZE (cp_feature_table); i++)
+    {
+      const cp_feature_info *info = cp_feature_table + i;
+      const auto res = info->selector.has_feature ();
+      if (res == result::NONE)
+	continue;
+
+      c_common_register_feature (info->ident, res == result::FEAT);
+    }
+}
 
 /* Special routine to get the alias set for C++.  */
 

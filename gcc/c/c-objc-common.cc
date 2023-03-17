@@ -34,6 +34,39 @@ along with GCC; see the file COPYING3.  If not see
 static bool c_tree_printer (pretty_printer *, text_info *, const char *,
 			    int, bool, bool, bool, bool *, const char **);
 
+/* Info for C language features which can be queried through
+   __has_{feature,extension}.  */
+
+struct c_feature_info
+{
+  const char *ident;
+  const int *enable_flag;
+};
+
+static const c_feature_info c_feature_table[] =
+{
+  { "c_alignas", &flag_isoc11 },
+  { "c_alignof", &flag_isoc11 },
+  { "c_atomic", &flag_isoc11 },
+  { "c_generic_selections", &flag_isoc11 },
+  { "c_static_assert", &flag_isoc11 },
+  { "c_thread_local", &flag_isoc11 },
+  { "cxx_binary_literals", &flag_isoc23 }
+};
+
+/* Register features specific to the C language.  */
+
+void
+c_register_features ()
+{
+  for (unsigned i = 0; i < ARRAY_SIZE (c_feature_table); i++)
+    {
+      const c_feature_info *info = c_feature_table + i;
+      const bool feat_p = !info->enable_flag || *info->enable_flag;
+      c_common_register_feature (info->ident, feat_p);
+    }
+}
+
 bool
 c_missing_noreturn_ok_p (tree decl)
 {

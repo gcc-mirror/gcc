@@ -1126,6 +1126,14 @@ extern bool c_cpp_diagnostic (cpp_reader *, enum cpp_diagnostic_level,
      ATTRIBUTE_GCC_DIAG(5,0);
 extern int c_common_has_attribute (cpp_reader *, bool);
 extern int c_common_has_builtin (cpp_reader *);
+extern int c_common_has_feature (cpp_reader *, bool);
+
+/* Implemented by each front end in *-lang.cc.  */
+extern void c_family_register_lang_features ();
+
+/* Implemented in c-family/c-common.cc.  */
+extern void c_common_register_feature (const char *, bool);
+extern bool has_feature_p (const char *, bool);
 
 extern bool parse_optimize_options (tree, bool);
 

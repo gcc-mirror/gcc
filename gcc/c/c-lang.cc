@@ -63,6 +63,15 @@ c_get_sarif_source_language (const char *)
   return "c";
 }
 
+/* Implement c-family hook to register language-specific features for
+   __has_{feature,extension}.  */
+
+void
+c_family_register_lang_features ()
+{
+  c_register_features ();
+}
+
 #if CHECKING_P
 
 namespace selftest {
