@@ -2762,16 +2762,12 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, profile_count count)
 {
   struct function *src_cfun = DECL_STRUCT_FUNCTION (callee_fndecl);
 
-  if (!DECL_ARGUMENTS (new_fndecl))
-    DECL_ARGUMENTS (new_fndecl) = DECL_ARGUMENTS (callee_fndecl);
-  if (!DECL_RESULT (new_fndecl))
-    DECL_RESULT (new_fndecl) = DECL_RESULT (callee_fndecl);
-
   /* Register specific tree functions.  */
   gimple_register_cfg_hooks ();
 
   /* Get clean struct function.  */
-  push_struct_function (new_fndecl);
+  push_struct_function (new_fndecl, true);
+  targetm.target_option.relayout_function (new_fndecl);
 
   /* We will rebuild these, so just sanity check that they are empty.  */
   gcc_assert (VALUE_HISTOGRAMS (cfun) == NULL);
@@ -6310,8 +6306,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
   id.transform_parameter = false;
   id.transform_lang_insert_block = NULL;
 
-  old_entry_block = ENTRY_BLOCK_PTR_FOR_FN
-    (DECL_STRUCT_FUNCTION (old_decl));
+  old_entry_block = ENTRY_BLOCK_PTR_FOR_FN (DECL_STRUCT_FUNCTION (old_decl));
   DECL_RESULT (new_decl) = DECL_RESULT (old_decl);
   DECL_ARGUMENTS (new_decl) = DECL_ARGUMENTS (old_decl);
   initialize_cfun (new_decl, old_decl,
