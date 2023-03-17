@@ -110,6 +110,7 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "hooks.h"
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
@@ -5001,6 +5002,96 @@ contains_reloaded_insn_p (int regno)
   return false;
 }
 
+/* Try combine secondary memory reload insn FROM for insn TO into TO insn.
+   FROM should be a load insn (usually a secondary memory reload insn).  Return
+   TRUE in case of success.  */
+static bool
+combine_reload_insn (rtx_insn *from, rtx_insn *to)
+{
+  bool ok_p;
+  rtx_insn *saved_insn;
+  rtx set, from_reg, to_reg, op;
+  enum reg_class to_class, from_class;
+  int n, nop;
+  signed char changed_nops[MAX_RECOG_OPERANDS + 1];
+  lra_insn_recog_data_t id = lra_get_insn_recog_data (to);
+  struct lra_static_insn_data *static_id = id->insn_static_data;
+  
+  /* Check conditions for second memory reload and original insn:  */
+  if ((targetm.secondary_memory_needed
+       == hook_bool_mode_reg_class_t_reg_class_t_false)
+      || NEXT_INSN (from) != to || CALL_P (to)
+      || id->used_insn_alternative == LRA_UNKNOWN_ALT
+      || (set = single_set (from)) == NULL_RTX)
+    return false;
+  from_reg = SET_DEST (set);
+  to_reg = SET_SRC (set);
+  /* Ignore optional reloads: */
+  if (! REG_P (from_reg) || ! REG_P (to_reg)
+      || bitmap_bit_p (&lra_optional_reload_pseudos, REGNO (from_reg)))
+    return false;
+  to_class = lra_get_allocno_class (REGNO (to_reg));
+  from_class = lra_get_allocno_class (REGNO (from_reg));
+  /* Check that reload insn is a load:  */
+  if (to_class != NO_REGS || from_class == NO_REGS)
+    return false;
+  for (n = nop = 0; nop < static_id->n_operands; nop++)
+    {
+      if (static_id->operand[nop].type != OP_IN)
+	continue;
+      op = *id->operand_loc[nop];
+      if (!REG_P (op) || REGNO (op) != REGNO (from_reg))
+	continue;
+      *id->operand_loc[nop] = to_reg;
+      changed_nops[n++] = nop;
+    }
+  changed_nops[n] = -1;
+  lra_update_dups (id, changed_nops);
+  lra_update_insn_regno_info (to);
+  ok_p = recog_memoized (to) >= 0;
+  if (ok_p)
+    {
+      /* Check that combined insn does not need any reloads: */
+      saved_insn = curr_insn;
+      curr_insn = to;
+      curr_id = lra_get_insn_recog_data (curr_insn);
+      curr_static_id = curr_id->insn_static_data;
+      ok_p = !curr_insn_transform (true);
+      curr_insn = saved_insn;
+      curr_id = lra_get_insn_recog_data (curr_insn);
+      curr_static_id = curr_id->insn_static_data;
+    }
+  if (ok_p)
+    {
+      id->used_insn_alternative = -1;
+      lra_push_insn_and_update_insn_regno_info (to);
+      if (lra_dump_file != NULL)
+	{
+	  fprintf (lra_dump_file, "    Use combined insn:\n");
+	  dump_insn_slim (lra_dump_file, to);
+	}
+      return true;
+    }
+  if (lra_dump_file != NULL)
+    {
+      fprintf (lra_dump_file, "    Failed combined insn:\n");
+      dump_insn_slim (lra_dump_file, to);
+    }
+  for (int i = 0; i < n; i++)
+    {
+      nop = changed_nops[i];
+      *id->operand_loc[nop] = from_reg;
+    }
+  lra_update_dups (id, changed_nops);
+  lra_update_insn_regno_info (to);
+  if (lra_dump_file != NULL)
+    {
+      fprintf (lra_dump_file, "    Restoring insn after failed combining:\n");
+      dump_insn_slim (lra_dump_file, to);
+    }
+  return false;
+}
+
 /* Entry function of LRA constraint pass.  Return true if the
    constraint pass did change the code.	 */
 bool
@@ -5010,6 +5101,7 @@ lra_constraints (bool first_p)
   int i, hard_regno, new_insns_num;
   unsigned int min_len, new_min_len, uid;
   rtx set, x, reg, dest_reg;
+  rtx_insn *original_insn;
   basic_block last_bb;
   bitmap_iterator bi;
 
@@ -5119,6 +5211,7 @@ lra_constraints (bool first_p)
   new_insns_num = 0;
   last_bb = NULL;
   changed_p = false;
+  original_insn = NULL;
   while ((new_min_len = lra_insn_stack_length ()) != 0)
     {
       curr_insn = lra_pop_insn ();
@@ -5133,7 +5226,12 @@ lra_constraints (bool first_p)
 	{
 	  min_len = new_min_len;
 	  new_insns_num = 0;
+	  original_insn = curr_insn;
 	}
+      else if (combine_reload_insn (curr_insn, original_insn))
+	{
+	  continue;
+        }
       if (new_insns_num > MAX_RELOAD_INSNS_NUMBER)
 	internal_error
 	  ("maximum number of generated reload insns per insn achieved (%d)",
