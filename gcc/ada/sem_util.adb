@@ -9748,14 +9748,9 @@ package body Sem_Util is
 
       if No (Comp_List) or else Null_Present (Comp_List) then
          return;
-
-      elsif Present (Component_Items (Comp_List)) then
-         Comp_Item := First (Component_Items (Comp_List));
-
-      else
-         Comp_Item := Empty;
       end if;
 
+      Comp_Item := First (Component_Items (Comp_List));
       while Present (Comp_Item) loop
 
          --  Skip the tag of a tagged record, as well as all items that are not
