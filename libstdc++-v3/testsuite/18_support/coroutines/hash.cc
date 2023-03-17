@@ -7,11 +7,12 @@
 void
 test01()
 {
+  auto coro = std::noop_coroutine();
   std::hash<std::noop_coroutine_handle> h;
-  std::size_t v = h(std::noop_coroutine());
+  std::size_t v = h(coro);
 
   const auto& ch = h;
-  std::size_t v2 = h(std::noop_coroutine()); // PR libstdc++/109165
+  std::size_t v2 = ch(coro); // PR libstdc++/109165
 
   VERIFY( v2 == v );
 }
