@@ -1,5 +1,10 @@
 2023-03-17  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/gcn/gcn.cc (gcn_class_max_nregs): Handle vectors in SGPRs.
+	(move_callee_saved_registers): Detect the bug condition early.
+
+2023-03-17  Andrew Stubbs  <ams@codesourcery.com>
+
 	* config/gcn/gcn-valu.md (gather_load<mode><vndi>): New.
 	(scatter_store<mode><vndi>): New.
 	(mask_gather_load<mode><vndi>): New.
