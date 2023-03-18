@@ -1,3 +1,22 @@
+2023-03-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109032
+	* gm2-gcc/m2expr.cc: Correct ? : order in comments.
+	(m2expr_BuildDivM2): Improve comment.
+	* lang.opt: Improve option descriptions.
+
+2023-03-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109102
+	* gm2-gcc/m2builtins.cc (ASSERT): Change format specifier to
+	use %qs rather than quotes.
+
+2023-03-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2AsmUtil.mod (SymNeedsModulePrefix):
+	Re-implemented.
+	* gm2-libs/SysStorage.mod (enableTrace): Disable tracing.
+
 2023-03-16  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-compiler/SymbolKey.mod (PutSymKey): Halt parameters

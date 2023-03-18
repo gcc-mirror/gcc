@@ -1,3 +1,94 @@
+2023-03-18  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/109179
+	* lra-constraints.cc (combine_reload_insn): Enforce TO is not a debug
+	insn or note.  Move the tests earlier to guard lra_get_insn_recog_data.
+
+2023-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105554
+	* function.h (push_struct_function): Add ABSTRACT_P argument defaulted
+	to false.
+	* function.cc (push_struct_function): Add ABSTRACT_P argument, pass it
+	to allocate_struct_function instead of false.
+	* tree-inline.cc (initialize_cfun): Don't copy DECL_ARGUMENTS
+	nor DECL_RESULT here.  Pass true as ABSTRACT_P to
+	push_struct_function.  Call targetm.target_option.relayout_function
+	after it.
+	(tree_function_versioning): Formatting fix.
+
+2023-03-17  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.cc: Include hooks.h.
+	(combine_reload_insn): New function.
+	(lra_constraints): Call it.
+
+2023-03-17  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+	    kito-cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-v.cc (legitimize_move): Allow undef value
+	as legitimate value.
+	* config/riscv/riscv-vector-builtins.cc
+	(function_expander::use_ternop_insn): Fix bugs of ternary intrinsic.
+	(function_expander::use_widen_ternop_insn): Ditto.
+	* config/riscv/vector.md (@vundefined<mode>): New pattern.
+	(pred_mul_<optab><mode>_undef_merge): Remove.
+	(*pred_mul_<optab><mode>_undef_merge_scalar): Ditto.
+	(*pred_mul_<optab><mode>_undef_merge_extended_scalar): Ditto.
+	(pred_neg_mul_<optab><mode>_undef_merge): Ditto.
+	(*pred_neg_mul_<optab><mode>_undef_merge_scalar): Ditto.
+
+2023-03-17  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109092
+	* config/riscv/riscv.md: Fix subreg bug.
+
+2023-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108685
+	* omp-expand.cc (expand_omp_for_ordered_loops): Add L0_BB argument,
+	use its loop_father rather than BODY_BB's loop_father.
+	(expand_omp_for_generic): Adjust expand_omp_for_ordered_loops caller.
+	If broken_loop with ordered > collapse and at least one of those
+	extra loops aren't guaranteed to have at least one iteration, change
+	l0_bb's loop_father to entry_bb's loop_father.  Set cont_bb's
+	loop_father to l0_bb's loop_father rather than l1_bb's.
+
+2023-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR plugins/108634
+	* gdbhooks.py (TreePrinter.to_string): Wrap
+	gdb.parse_and_eval('tree_code_type') in a try block, parse
+	and eval 'tree_code_type_tmpl<0>::tree_code_type' instead if it
+	raises exception.  Update comments for the recent tree_code_type
+	changes.
+
+2023-03-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi (BPF Built-in Functions): Fix numerous markup
+	issues.  Add more line breaks to example so it doesn't overflow
+	the margins.
+
+2023-03-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/extend.texi (Common Function Attributes) <access>: Fix bad
+	line breaks in examples.
+	<malloc>: Fix bad line breaks in running text, also copy-edit
+	for consistency.
+	(Extended Asm) <Generic Operand Modifiers>: Fix @multitable width.
+	* doc/invoke.texi (Option Summary) <Developer Options>: Fix misplaced
+	@gol.
+	(C++ Dialect Options) <-fcontracts>: Add line break in example.
+	<-Wctad-maybe-unsupported>: Likewise.
+	<-Winvalid-constexpr>: Likewise.
+	(Warning Options) <-Wdangling-pointer>: Likewise.
+	<-Winterference-size>: Likewise.
+	<-Wvla-parameter>: Likewise.
+	(Static Analyzer Options): Fix bad line breaks in running text,
+	plus add some missing markup.
+	(Optimize Options) <openacc-privatization>: Fix more bad line
+	breaks in running text.
+
 2023-03-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386-expand.cc (expand_vec_perm_pblendv):

@@ -1,3 +1,19 @@
+2023-03-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108975
+	* lambda.cc (prune_lambda_captures): Don't bother in a template.
+
+2023-03-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109172
+	* except.cc (build_throw): Check dtor access.
+
+2023-03-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69410
+	* friend.cc (do_friend): Handle namespace as scope argument.
+	* decl.cc (grokdeclarator): Pass down in_namespace.
+
 2023-03-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105809

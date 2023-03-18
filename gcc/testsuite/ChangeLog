@@ -1,3 +1,63 @@
+2023-03-17  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/plugin/infoleak-2.c,
+	gcc.dg/plugin/infoleak-CVE-2011-1078-1.c,
+	gcc.dg/plugin/infoleak-CVE-2011-1078-2.c,
+	gcc.dg/plugin/infoleak-CVE-2017-18549-1.c,
+	gcc.dg/plugin/infoleak-CVE-2017-18550-1.c,
+	gcc.dg/plugin/infoleak-antipatterns-1.c,
+	gcc.dg/plugin/infoleak-fixit-1.c: Skip for default_packed targets.
+
+2023-03-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108975
+	* g++.dg/cpp0x/lambda/lambda-const11.C: New test.
+
+2023-03-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109172
+	* g++.dg/eh/dtor4.C: New test.
+
+2023-03-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69410
+	* g++.dg/lookup/friend24.C: New test.
+
+2023-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105554
+	* gcc.target/i386/pr105554.c: New test.
+
+2023-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/109151
+	* c-c++-common/ubsan/div-by-zero-8.c: New test.
+
+2023-03-17  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/i386/pr109052.c: New.
+
+2023-03-17  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+	    kito-cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/base/binop_vv_constraint-4.c: Adapt the test.
+	* gcc.target/riscv/rvv/base/binop_vv_constraint-6.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-127.c: Ditto.
+	* g++.target/riscv/rvv/base/bug-1.C: New test.
+	* gcc.target/riscv/rvv/base/bug-2.c: New test.
+
+2023-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/109145
+	* gcc.dg/tree-ssa/forwprop-39.c: Remove -std=c11 from dg-options.
+	Don't include complex.h.
+	(foo): Use __builtin_complex rather than CMPLXF.
+
+2023-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108685
+	* c-c++-common/gomp/doacross-8.c: New test.
+
 2023-03-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105809
