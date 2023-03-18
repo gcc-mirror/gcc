@@ -5014,14 +5014,19 @@ combine_reload_insn (rtx_insn *from, rtx_insn *to)
   enum reg_class to_class, from_class;
   int n, nop;
   signed char changed_nops[MAX_RECOG_OPERANDS + 1];
-  lra_insn_recog_data_t id = lra_get_insn_recog_data (to);
-  struct lra_static_insn_data *static_id = id->insn_static_data;
   
   /* Check conditions for second memory reload and original insn:  */
   if ((targetm.secondary_memory_needed
        == hook_bool_mode_reg_class_t_reg_class_t_false)
-      || NEXT_INSN (from) != to || CALL_P (to)
-      || id->used_insn_alternative == LRA_UNKNOWN_ALT
+      || NEXT_INSN (from) != to
+      || !NONDEBUG_INSN_P (to)
+      || CALL_P (to))
+    return false;
+
+  lra_insn_recog_data_t id = lra_get_insn_recog_data (to);
+  struct lra_static_insn_data *static_id = id->insn_static_data;
+  
+  if (id->used_insn_alternative == LRA_UNKNOWN_ALT
       || (set = single_set (from)) == NULL_RTX)
     return false;
   from_reg = SET_DEST (set);
