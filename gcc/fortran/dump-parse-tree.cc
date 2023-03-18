@@ -3909,7 +3909,7 @@ write_proc (gfc_symbol *sym, bool bind_c)
       if (sym->formal)
 	fputs (", ", dumpfile);
     }
-      
+
   for (f = sym->formal; f; f = f->next)
     {
       gfc_symbol *s;

@@ -444,7 +444,8 @@ gfc_trans_call (gfc_code * code, bool dependency_check,
       else
 	gfc_add_expr_to_block (&se.pre, se.expr);
 
-      gfc_add_block_to_block (&se.pre, &se.post);
+      gfc_add_block_to_block (&se.finalblock, &se.post);
+      gfc_add_block_to_block (&se.pre, &se.finalblock);
     }
 
   else
@@ -543,6 +544,7 @@ gfc_trans_call (gfc_code * code, bool dependency_check,
       gfc_trans_scalarizing_loops (&loop, &body);
       gfc_add_block_to_block (&se.pre, &loop.pre);
       gfc_add_block_to_block (&se.pre, &loop.post);
+      gfc_add_block_to_block (&se.pre, &loopse.finalblock);
       gfc_add_block_to_block (&se.pre, &se.post);
       gfc_cleanup_loop (&loop);
     }
@@ -2189,6 +2191,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
       gfc_expr *lhs;
       tree res;
       gfc_se se;
+      stmtblock_t final_block;
 
       gfc_init_se (&se, NULL);
 
@@ -2196,6 +2199,15 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	 allocation can take place automatically in gfc_trans_assignment.
 	 The frontend prevents them from being either allocated,
 	 deallocated or reallocated.  */
+      if (sym->ts.type == BT_DERIVED
+	  && sym->ts.u.derived->attr.alloc_comp)
+	{
+	  tmp = sym->backend_decl;
+	  tmp = gfc_nullify_alloc_comp (sym->ts.u.derived, tmp,
+				sym->attr.dimension ? sym->as->rank : 0);
+	  gfc_add_expr_to_block (&se.pre, tmp);
+	}
+
       if (sym->attr.allocatable)
 	{
 	  tmp = sym->backend_decl;
@@ -2206,8 +2218,32 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	}
 
       lhs = gfc_lval_expr_from_sym (sym);
+      lhs->must_finalize = 0;
       res = gfc_trans_assignment (lhs, e, false, true);
       gfc_add_expr_to_block (&se.pre, res);
+
+      gfc_init_block (&final_block);
+
+      if (sym->attr.associate_var
+	  && sym->ts.type == BT_DERIVED
+	  && sym->ts.u.derived->attr.defined_assign_comp
+	  && gfc_may_be_finalized (sym->ts)
+	  && e->expr_type == EXPR_FUNCTION)
+	{
+	  gfc_expr *ef;
+	  ef = gfc_lval_expr_from_sym (sym);
+	  gfc_add_finalizer_call (&final_block, ef);
+	  gfc_free_expr (ef);
+	}
+
+      if (sym->ts.type == BT_DERIVED
+	  && sym->ts.u.derived->attr.alloc_comp)
+	{
+	  tmp = sym->backend_decl;
+	  tmp = gfc_deallocate_alloc_comp (sym->ts.u.derived,
+					   tmp, 0);
+	  gfc_add_expr_to_block (&final_block, tmp);
+	}
 
       tmp = sym->backend_decl;
       if (e->expr_type == EXPR_FUNCTION
@@ -2243,6 +2279,8 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
       else
 	tmp = NULL_TREE;
 
+      gfc_add_expr_to_block (&final_block, tmp);
+      tmp = gfc_finish_block (&final_block);
       res = gfc_finish_block (&se.pre);
       gfc_add_init_cleanup (block, res, tmp);
       gfc_free_expr (lhs);
@@ -6347,7 +6385,10 @@ gfc_trans_allocate (gfc_code * code)
 	}
       gfc_add_block_to_block (&block, &se.pre);
       if (code->expr3->must_finalize)
-	gfc_add_block_to_block (&final_block, &se.post);
+	{
+	  gfc_add_block_to_block (&final_block, &se.finalblock);
+	  gfc_add_block_to_block (&final_block, &se.post);
+	}
       else
 	gfc_add_block_to_block (&post, &se.post);
 
@@ -7007,8 +7048,13 @@ gfc_trans_allocate (gfc_code * code)
 	  gfc_expr *init_expr = gfc_expr_to_initialize (expr);
 	  gfc_expr *rhs = e3rhs ? e3rhs : gfc_copy_expr (code->expr3);
 	  flag_realloc_lhs = 0;
+
+	  /* Set the symbol to be artificial so that the result is not finalized.  */
+	  init_expr->symtree->n.sym->attr.artificial = 1;
 	  tmp = gfc_trans_assignment (init_expr, rhs, true, false, true,
 				      false);
+	  init_expr->symtree->n.sym->attr.artificial = 0;
+
 	  flag_realloc_lhs = realloc_lhs;
 	  /* Free the expression allocated for init_expr.  */
 	  gfc_free_expr (init_expr);

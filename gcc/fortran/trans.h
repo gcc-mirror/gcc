@@ -43,6 +43,10 @@ typedef struct gfc_se
   stmtblock_t pre;
   stmtblock_t post;
 
+  /* Carries finalization code that is required to be executed execution of the
+     innermost executable construct.  */
+  stmtblock_t finalblock;
+
   /* the result of the expression */
   tree expr;
 
@@ -55,7 +59,7 @@ typedef struct gfc_se
 
   /* Whether expr is a reference to an unlimited polymorphic object.  */
   unsigned unlimited_polymorphic:1;
-  
+
   /* If set gfc_conv_variable will return an expression for the array
      descriptor. When set, want_pointer should also be set.
      If not set scalarizing variables will be substituted.  */
@@ -450,6 +454,8 @@ tree gfc_get_vptr_from_expr (tree);
 tree gfc_copy_class_to_class (tree, tree, tree, bool);
 bool gfc_add_finalizer_call (stmtblock_t *, gfc_expr *);
 bool gfc_add_comp_finalizer_call (stmtblock_t *, tree, gfc_component *, bool);
+void gfc_finalize_tree_expr (gfc_se *, gfc_symbol *, symbol_attribute, int);
+bool gfc_assignment_finalizer_call (gfc_se *, gfc_expr *, bool);
 
 void gfc_conv_derived_to_class (gfc_se *, gfc_expr *, gfc_typespec, tree, bool,
 				bool, tree *derived_array = NULL);

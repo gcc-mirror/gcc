@@ -3931,6 +3931,7 @@ gfc_typebound_proc* gfc_find_typebound_intrinsic_op (gfc_symbol*, bool*,
 						     locus*);
 gfc_symtree* gfc_get_tbp_symtree (gfc_symtree**, const char*);
 bool gfc_is_finalizable (gfc_symbol *, gfc_expr **);
+bool gfc_may_be_finalized (gfc_typespec);
 
 #define CLASS_DATA(sym) sym->ts.u.derived->components
 #define UNLIMITED_POLY(sym) \

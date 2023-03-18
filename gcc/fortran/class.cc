@@ -909,7 +909,8 @@ has_finalizer_component (gfc_symbol *derived)
    gfc_component *c;
 
   for (c = derived->components; c; c = c->next)
-    if (c->ts.type == BT_DERIVED && !c->attr.pointer && !c->attr.allocatable)
+    if (c->ts.type == BT_DERIVED && !c->attr.pointer && !c->attr.allocatable
+	&& c->attr.flavor != FL_PROCEDURE)
       {
 	if (c->ts.u.derived->f2k_derived
 	    && c->ts.u.derived->f2k_derived->finalizers)
@@ -1072,7 +1073,8 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
     {
       /* Call FINAL_WRAPPER (comp);  */
       gfc_code *final_wrap;
-      gfc_symbol *vtab;
+      gfc_symbol *vtab, *byte_stride;
+      gfc_expr *scalar, *size_expr, *fini_coarray_expr;
       gfc_component *c;
 
       vtab = gfc_find_derived_vtab (comp->ts.u.derived);
@@ -1081,11 +1083,53 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
 	  break;
 
       gcc_assert (c);
+
+      /* Set scalar argument for storage_size.  */
+      gfc_get_symbol ("comp_byte_stride", sub_ns, &byte_stride);
+      byte_stride->ts = e->ts;
+      byte_stride->attr.flavor = FL_VARIABLE;
+      byte_stride->attr.value = 1;
+      byte_stride->attr.artificial = 1;
+      gfc_set_sym_referenced (byte_stride);
+      gfc_commit_symbol (byte_stride);
+      scalar = gfc_lval_expr_from_sym (byte_stride);
+
       final_wrap = gfc_get_code (EXEC_CALL);
       final_wrap->symtree = c->initializer->symtree;
       final_wrap->resolved_sym = c->initializer->symtree->n.sym;
       final_wrap->ext.actual = gfc_get_actual_arglist ();
       final_wrap->ext.actual->expr = e;
+
+      /* size_expr = STORAGE_SIZE (...) / NUMERIC_STORAGE_SIZE.  */
+      size_expr = gfc_get_expr ();
+      size_expr->where = gfc_current_locus;
+      size_expr->expr_type = EXPR_OP;
+      size_expr->value.op.op = INTRINSIC_DIVIDE;
+
+      /* STORAGE_SIZE (array,kind=c_intptr_t).  */
+      size_expr->value.op.op1
+	= gfc_build_intrinsic_call (sub_ns, GFC_ISYM_STORAGE_SIZE,
+				    "storage_size", gfc_current_locus, 2,
+				    scalar,
+				    gfc_get_int_expr (gfc_index_integer_kind,
+						      NULL, 0));
+
+      /* NUMERIC_STORAGE_SIZE.  */
+      size_expr->value.op.op2 = gfc_get_int_expr (gfc_index_integer_kind, NULL,
+						  gfc_character_storage_size);
+      size_expr->value.op.op1->ts = size_expr->value.op.op2->ts;
+      size_expr->ts = size_expr->value.op.op1->ts;
+
+      /* Which provides the argument 'byte_stride'.....  */
+      final_wrap->ext.actual->next = gfc_get_actual_arglist ();
+      final_wrap->ext.actual->next->expr = size_expr;
+
+      /* ...and last of all the 'fini_coarray' argument.  */
+      fini_coarray_expr = gfc_lval_expr_from_sym (fini_coarray);
+      final_wrap->ext.actual->next->next = gfc_get_actual_arglist ();
+      final_wrap->ext.actual->next->next->expr = fini_coarray_expr;
+
+
 
       if (*code)
 	{
@@ -1443,8 +1487,6 @@ finalizer_insert_packed_call (gfc_code *block, gfc_finalizer *fini,
   block->next->resolved_sym = fini->proc_tree->n.sym;
   block->next->ext.actual = gfc_get_actual_arglist ();
   block->next->ext.actual->expr = gfc_lval_expr_from_sym (array);
-  block->next->ext.actual->next = gfc_get_actual_arglist ();
-  block->next->ext.actual->next->expr = gfc_copy_expr (size_expr);
 
   /* ELSE.  */
 
@@ -2060,13 +2102,32 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
       gfc_set_sym_referenced (ptr);
       gfc_commit_symbol (ptr);
 
+      fini = derived->f2k_derived->finalizers;
+
+      /* Assumed rank finalizers can be called directly. The call takes care
+	 of setting up the descriptor.  resolve_finalizers has already checked
+	 that this is the only finalizer for this kind/type (F2018: C790).  */
+      if (fini->proc_tree && fini->proc_tree->n.sym->formal->sym->as
+	  && fini->proc_tree->n.sym->formal->sym->as->type == AS_ASSUMED_RANK)
+	{
+	  last_code->next = gfc_get_code (EXEC_CALL);
+	  last_code->next->symtree = fini->proc_tree;
+	  last_code->next->resolved_sym = fini->proc_tree->n.sym;
+	  last_code->next->ext.actual = gfc_get_actual_arglist ();
+	  last_code->next->ext.actual->expr = gfc_lval_expr_from_sym (array);
+
+	  last_code = last_code->next;
+	  goto finish_assumed_rank;
+	}
+
       /* SELECT CASE (RANK (array)).  */
       last_code->next = gfc_get_code (EXEC_SELECT);
       last_code = last_code->next;
       last_code->expr1 = gfc_copy_expr (rank);
       block = NULL;
 
-      for (fini = derived->f2k_derived->finalizers; fini; fini = fini->next)
+
+      for (; fini; fini = fini->next)
 	{
 	  gcc_assert (fini->proc_tree);   /* Should have been set in gfc_resolve_finalizers.  */
 	  if (fini->proc_tree->n.sym->attr.elemental)
@@ -2164,6 +2225,8 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
 	  block->ext.actual->expr = gfc_lval_expr_from_sym (ptr);
 	}
     }
+
+finish_assumed_rank:
 
   /* Finalize and deallocate allocatable components. The same manual
      scalarization is used as above.  */
@@ -2696,6 +2759,14 @@ yes:
       *final_expr = final->initializer;
     }
   return true;
+}
+
+
+bool
+gfc_may_be_finalized (gfc_typespec ts)
+{
+  return (ts.type == BT_CLASS || (ts.type == BT_DERIVED
+	  && ts.u.derived && gfc_is_finalizable (ts.u.derived, NULL)));
 }
 
 
