@@ -3457,7 +3457,7 @@ public:
     Analysis::NodeMapping mappings,
     std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
     std::unique_ptr<Expr> value, std::unique_ptr<BlockExpr> if_block,
-    std::unique_ptr<BlockExpr> else_block, Location locus)
+    std::unique_ptr<ExprWithBlock> else_block, Location locus)
     : IfLetExpr (std::move (mappings), std::move (match_arm_patterns),
 		 std::move (value), std::move (if_block), locus),
       else_block (std::move (else_block))
@@ -3488,6 +3488,10 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
+
+  void vis_else_block (HIRFullVisitor &vis) { else_block->accept_vis (vis); }
+
+  ExprWithBlock *get_else_block () { return else_block.get (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

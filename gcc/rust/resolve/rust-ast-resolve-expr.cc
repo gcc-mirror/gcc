@@ -217,6 +217,37 @@ ResolveExpr::visit (AST::IfLetExpr &expr)
 }
 
 void
+ResolveExpr::visit (AST::IfLetExprConseqElse &expr)
+{
+  ResolveExpr::go (expr.get_value_expr ().get (), prefix, canonical_prefix);
+
+  NodeId scope_node_id = expr.get_node_id ();
+  resolver->get_name_scope ().push (scope_node_id);
+  resolver->get_type_scope ().push (scope_node_id);
+  resolver->get_label_scope ().push (scope_node_id);
+  resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
+  resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+  resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+
+  // We know expr.get_patterns () has one pattern at most
+  // so there's no reason to handle it like an AltPattern.
+  std::vector<PatternBinding> bindings
+    = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
+
+  for (auto &pattern : expr.get_patterns ())
+    {
+      PatternDeclaration::go (pattern.get (), Rib::ItemType::Var, bindings);
+    }
+
+  ResolveExpr::go (expr.get_if_block ().get (), prefix, canonical_prefix);
+  ResolveExpr::go (expr.get_else_block ().get (), prefix, canonical_prefix);
+
+  resolver->get_name_scope ().pop ();
+  resolver->get_type_scope ().pop ();
+  resolver->get_label_scope ().pop ();
+}
+
+void
 ResolveExpr::visit (AST::BlockExpr &expr)
 {
   NodeId scope_node_id = expr.get_node_id ();

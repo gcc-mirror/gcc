@@ -78,6 +78,8 @@ public:
   void visit (AST::TupleExpr &expr) override;
   void visit (AST::IfExpr &expr) override;
   void visit (AST::IfExprConseqElse &expr) override;
+  void visit (AST::IfLetExpr &expr) override;
+  void visit (AST::IfLetExprConseqElse &expr) override;
   void visit (AST::BlockExpr &expr) override;
   void visit (AST::UnsafeBlockExpr &expr) override;
   void visit (AST::PathInExpression &expr) override;
