@@ -73,7 +73,6 @@ do {								\
 do {								\
   if (__builtin_expect (_fex, 0))				\
     {								\
-      _fpcsr &= ~FP_EX_ALL;					\
       _fpcsr |= _fex;						\
       __asm__ volatile ("l.mtspr r0,%0,20" : : "r" (_fpcsr));	\
     }								\
