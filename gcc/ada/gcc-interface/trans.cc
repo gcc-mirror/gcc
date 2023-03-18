@@ -290,11 +290,12 @@ gigi (Node_Id gnat_root,
       struct List_Header *list_headers_ptr,
       Nat number_file,
       struct File_Info_Type *file_info_ptr,
+      Entity_Id standard_address,
       Entity_Id standard_boolean,
-      Entity_Id standard_integer,
       Entity_Id standard_character,
-      Entity_Id standard_long_long_float,
       Entity_Id standard_exception_type,
+      Entity_Id standard_integer,
+      Entity_Id standard_long_long_float,
       Int gigi_operating_mode)
 {
   Node_Id gnat_iter;
@@ -375,14 +376,19 @@ gigi (Node_Id gnat_root,
   double_float_alignment = get_target_double_float_alignment ();
   double_scalar_alignment = get_target_double_scalar_alignment ();
 
-  /* Record the builtin types.  Define `integer' and `character' first so that
-     dbx will output them first.  */
+  /* Record the builtin types.  */
+  record_builtin_type ("address", pointer_sized_int_node, false);
   record_builtin_type ("integer", integer_type_node, false);
   record_builtin_type ("character", char_type_node, false);
   record_builtin_type ("boolean", boolean_type_node, false);
   record_builtin_type ("void", void_type_node, false);
 
-  /* Save the type we made for integer as the type for Standard.Integer.  */
+  /* Save the type we made for address as the type for Standard.Address.  */
+  save_gnu_tree (Base_Type (standard_address),
+		 TYPE_NAME (pointer_sized_int_node),
+		 false);
+
+  /* Likewise for integer as the type for Standard.Integer.  */
   save_gnu_tree (Base_Type (standard_integer),
 		 TYPE_NAME (integer_type_node),
 		 false);

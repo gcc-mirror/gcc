@@ -1370,11 +1370,9 @@ package body CStand is
 
       --  Standard_Address is not user visible, but is used internally. It is
       --  an unsigned type mod 2**System_Address_Size with System.Address size.
-      --  We flag it as Is_Descendant_Of_Address for code generation purposes.
 
       Standard_Address := New_Standard_Entity ("standard_address");
       Build_Unsigned_Integer_Type (Standard_Address, System_Address_Size);
-      Set_Is_Descendant_Of_Address (Standard_Address);
 
       --  Note: universal integer and universal real are constructed as fully
       --  formed signed numeric types, with parameters corresponding to the
