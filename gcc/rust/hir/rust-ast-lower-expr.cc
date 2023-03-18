@@ -104,6 +104,18 @@ ASTLoweringExpr::visit (AST::IfExprConseqElse &expr)
 }
 
 void
+ASTLoweringExpr::visit (AST::IfLetExpr &expr)
+{
+  translated = ASTLoweringIfLetBlock::translate (&expr);
+}
+
+void
+ASTLoweringExpr::visit (AST::IfLetExprConseqElse &expr)
+{
+  translated = ASTLoweringIfLetBlock::translate (&expr);
+}
+
+void
 ASTLoweringExpr::visit (AST::BlockExpr &expr)
 {
   translated = ASTLoweringBlock::translate (&expr, &terminated);

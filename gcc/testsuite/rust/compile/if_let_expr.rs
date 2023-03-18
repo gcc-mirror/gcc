@@ -1,12 +1,10 @@
-// { dg-options "-fsyntax-only" }
-
 pub enum Option<T> {
     None,
     Some(T),
 }
 
 fn main() {
-    let x = Option::Some(3);
+    let x = Option::Some(3); // { dg-warning "unused name" }
     let a = if let Option::Some(1) = x {
         1
     } else if x == Option::Some(2) {
