@@ -130,16 +130,16 @@ dtoa_calcdecimal (char *p, int str_size, int ndigits)
   return x;
 }
 
-int
+bool
 dtoa_calcsign (char *p, int str_size)
 {
   if (p[0] == '-')
     {
       memmove (p, p + 1, str_size - 1);
-      return TRUE;
+      return true;
     }
   else
-    return FALSE;
+    return false;
 }
 
 char *

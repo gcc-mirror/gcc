@@ -171,7 +171,7 @@ EXTERN tree m2type_DeclareKnownType (location_t location, char *name,
                                      tree type);
 EXTERN tree m2type_GetTreeType (tree type);
 EXTERN tree m2type_BuildEndFunctionType (tree func, tree type,
-                                         int uses_varargs);
+                                         bool uses_varargs);
 EXTERN tree m2type_BuildStartFunctionType (
     location_t location ATTRIBUTE_UNUSED, char *name ATTRIBUTE_UNUSED);
 EXTERN void m2type_InitFunctionTypeParameters (void);

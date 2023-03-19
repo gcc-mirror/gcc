@@ -420,6 +420,7 @@ END SetCheckAll ;
 
 (*
    SetAutoInit - -fauto-init turns on automatic initialization of pointers to NIL.
+                  TRUE is returned.
 *)
 
 PROCEDURE SetAutoInit (value: BOOLEAN) ;

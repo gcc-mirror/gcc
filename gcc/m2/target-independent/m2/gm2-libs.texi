@@ -244,11 +244,11 @@ FROM SYSTEM IMPORT ADDRESS ;
 (* floating point intrinsic procedure functions *)
 
 @findex isfinitef
-PROCEDURE __BUILTIN__ isfinitef (x: SHORTREAL) : BOOLEAN ;
+PROCEDURE __BUILTIN__ isfinitef (x: SHORTREAL) : INTEGER ;
 @findex isfinite
-PROCEDURE __BUILTIN__ isfinite (x: REAL) : BOOLEAN ;
+PROCEDURE __BUILTIN__ isfinite (x: REAL) : INTEGER ;
 @findex isfinitel
-PROCEDURE __BUILTIN__ isfinitel (x: LONGREAL) : BOOLEAN ;
+PROCEDURE __BUILTIN__ isfinitel (x: LONGREAL) : INTEGER ;
 
 @findex sinf
 PROCEDURE __BUILTIN__ sinf (x: SHORTREAL) : SHORTREAL ;
@@ -327,13 +327,6 @@ PROCEDURE __BUILTIN__ huge_valf () : SHORTREAL ;
 @findex huge_vall
 PROCEDURE __BUILTIN__ huge_vall () : LONGREAL ;
 
-@findex significand
-PROCEDURE __BUILTIN__ significand (r: REAL) : REAL ;
-@findex significandf
-PROCEDURE __BUILTIN__ significandf (s: SHORTREAL) : SHORTREAL ;
-@findex significandl
-PROCEDURE __BUILTIN__ significandl (l: LONGREAL) : LONGREAL ;
-
 @findex modf
 PROCEDURE __BUILTIN__ modf (x: REAL; VAR y: REAL) : REAL ;
 @findex modff
@@ -362,13 +355,6 @@ PROCEDURE __BUILTIN__ nexttoward (x, y: REAL) : LONGREAL ;
 PROCEDURE __BUILTIN__ nexttowardf (x, y: SHORTREAL) : LONGREAL ;
 @findex nexttowardl
 PROCEDURE __BUILTIN__ nexttowardl (x, y: LONGREAL) : LONGREAL ;
-
-@findex scalb
-PROCEDURE __BUILTIN__ scalb (x, n: REAL) : REAL ;
-@findex scalbf
-PROCEDURE __BUILTIN__ scalbf (x, n: SHORTREAL) : SHORTREAL ;
-@findex scalbl
-PROCEDURE __BUILTIN__ scalbl (x, n: LONGREAL) : LONGREAL ;
 
 @findex scalbln
 PROCEDURE __BUILTIN__ scalbln (x: REAL; n: LONGINT) : REAL ;
@@ -643,15 +629,16 @@ EXPORT QUALIFIED Halt, DebugString ;
 
 (*
    Halt - writes a message in the format:
-          Module:Line:Message
+          Module:Function:Line:Message
 
           It then terminates by calling HALT.
 *)
 
 @findex Halt
-PROCEDURE Halt (Message: ARRAY OF CHAR;
-                LineNo: CARDINAL;
-                Module: ARRAY OF CHAR) ;
+PROCEDURE Halt (Message,
+                Module,
+                Function: ARRAY OF CHAR ;
+                LineNo  : CARDINAL) ;
 
 
 (*
@@ -1044,9 +1031,9 @@ PROCEDURE PopAllocation (halt: BOOLEAN) ;
 
 (*
    PopAllocationExemption - test to see that all strings are
-                            deallocated, except string, e, since
+                            deallocated, except string e since
                             the last push.
-                            Then it pops to the previous
+                            Post-condition: it pops to the previous
                             allocation/deallocation lists.
 
                             If halt is true then the application
@@ -1957,11 +1944,11 @@ TYPE
 
 
 @findex ConstructModules
-PROCEDURE ConstructModules (applicationmodule: ADDRESS;
+PROCEDURE ConstructModules (applicationmodule, libname: ADDRESS;
                             argc: INTEGER; argv, envp: ADDRESS) ;
 
 @findex DeconstructModules
-PROCEDURE DeconstructModules (applicationmodule: ADDRESS;
+PROCEDURE DeconstructModules (applicationmodule, libname: ADDRESS;
                               argc: INTEGER; argv, envp: ADDRESS) ;
 
 
@@ -1972,18 +1959,20 @@ PROCEDURE DeconstructModules (applicationmodule: ADDRESS;
 *)
 
 @findex RegisterModule
-PROCEDURE RegisterModule (name: ADDRESS;
+PROCEDURE RegisterModule (modulename, libname: ADDRESS;
                           init, fini:  ArgCVEnvP;
                           dependencies: PROC) ;
 
 
 (*
-   RequestDependant - used to specify that modulename is dependant upon
-                      module dependantmodule.
+   RequestDependant - used to specify that modulename:libname
+                      is dependant upon
+                      module dependantmodule:dependantlibname
 *)
 
 @findex RequestDependant
-PROCEDURE RequestDependant (modulename, dependantmodule: ADDRESS) ;
+PROCEDURE RequestDependant (modulename, libname,
+                            dependantmodule, dependantlibname: ADDRESS) ;
 
 
 END M2Dependent.
@@ -2069,11 +2058,11 @@ TYPE
 
 
 @findex ConstructModules
-PROCEDURE ConstructModules (applicationmodule: ADDRESS;
+PROCEDURE ConstructModules (applicationmodule, libname: ADDRESS;
                             argc: INTEGER; argv, envp: ADDRESS) ;
 
 @findex DeconstructModules
-PROCEDURE DeconstructModules (applicationmodule: ADDRESS;
+PROCEDURE DeconstructModules (applicationmodule, libname: ADDRESS;
                               argc: INTEGER; argv, envp: ADDRESS) ;
 
 
@@ -2084,7 +2073,7 @@ PROCEDURE DeconstructModules (applicationmodule: ADDRESS;
 *)
 
 @findex RegisterModule
-PROCEDURE RegisterModule (name: ADDRESS;
+PROCEDURE RegisterModule (name, libname: ADDRESS;
                           init, fini:  ArgCVEnvP;
                           dependencies: PROC) ;
 
@@ -2095,7 +2084,8 @@ PROCEDURE RegisterModule (name: ADDRESS;
 *)
 
 @findex RequestDependant
-PROCEDURE RequestDependant (modulename, dependantmodule: ADDRESS) ;
+PROCEDURE RequestDependant (modulename, libname,
+                            dependantmodule, dependantlibname: ADDRESS) ;
 
 
 (*
@@ -2165,13 +2155,24 @@ PROCEDURE HALT ([exitcode: INTEGER = -1]) <* noreturn *> ;
 
 (*
    Halt - provides a more user friendly version of HALT, which takes
-          four parameters to aid debugging.
+           four parameters to aid debugging.  It writes an error message
+           to stderr and calls exit (1).
 *)
 
 @findex Halt
-PROCEDURE Halt (file: ARRAY OF CHAR; line: CARDINAL;
-                function: ARRAY OF CHAR; description: ARRAY OF CHAR)
-		<* noreturn *> ;
+PROCEDURE Halt (description, filename, function: ARRAY OF CHAR;
+                line: CARDINAL) <* noreturn *> ;
+
+
+(*
+   HaltC - provides a more user friendly version of HALT, which takes
+           four parameters to aid debugging.  It writes an error message
+           to stderr and calls exit (1).
+*)
+
+@findex HaltC
+PROCEDURE HaltC (description, filename, function: ADDRESS;
+                 line: CARDINAL) <* noreturn *> ;
 
 
 (*
@@ -2188,7 +2189,7 @@ PROCEDURE ExitOnHalt (e: INTEGER) ;
 
 @findex ErrorMessage
 PROCEDURE ErrorMessage (message: ARRAY OF CHAR;
-                        file: ARRAY OF CHAR;
+                        filename: ARRAY OF CHAR;
                         line: CARDINAL;
                         function: ARRAY OF CHAR) <* noreturn *> ;
 
@@ -2208,53 +2209,53 @@ PROCEDURE Length (a: ARRAY OF CHAR) : CARDINAL ;
 *)
 
 @findex AssignmentException
-PROCEDURE AssignmentException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE AssignmentException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex ReturnException
-PROCEDURE ReturnException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE ReturnException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex IncException
-PROCEDURE IncException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE IncException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex DecException
-PROCEDURE DecException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE DecException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex InclException
-PROCEDURE InclException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE InclException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex ExclException
-PROCEDURE ExclException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE ExclException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex ShiftException
-PROCEDURE ShiftException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE ShiftException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex RotateException
-PROCEDURE RotateException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE RotateException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex StaticArraySubscriptException
-PROCEDURE StaticArraySubscriptException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE StaticArraySubscriptException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex DynamicArraySubscriptException
-PROCEDURE DynamicArraySubscriptException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE DynamicArraySubscriptException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex ForLoopBeginException
-PROCEDURE ForLoopBeginException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE ForLoopBeginException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex ForLoopToException
-PROCEDURE ForLoopToException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE ForLoopToException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex ForLoopEndException
-PROCEDURE ForLoopEndException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE ForLoopEndException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex PointerNilException
-PROCEDURE PointerNilException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE PointerNilException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex NoReturnException
-PROCEDURE NoReturnException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE NoReturnException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex CaseException
-PROCEDURE CaseException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE CaseException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex WholeNonPosDivException
-PROCEDURE WholeNonPosDivException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE WholeNonPosDivException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex WholeNonPosModException
-PROCEDURE WholeNonPosModException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE WholeNonPosModException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex WholeZeroDivException
-PROCEDURE WholeZeroDivException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE WholeZeroDivException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex WholeZeroRemException
-PROCEDURE WholeZeroRemException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE WholeZeroRemException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex WholeValueException
-PROCEDURE WholeValueException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE WholeValueException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex RealValueException
-PROCEDURE RealValueException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE RealValueException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex ParameterException
-PROCEDURE ParameterException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE ParameterException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex NoException
-PROCEDURE NoException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE NoException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 
 
 END M2RTS.
@@ -2676,7 +2677,7 @@ TYPE
 PROCEDURE Raise (number: CARDINAL;
                  file: ADDRESS; line: CARDINAL;
                  column: CARDINAL; function: ADDRESS;
-                 message: ADDRESS) ;
+                 message: ADDRESS) <* noreturn *> ;
 
 
 (*
@@ -2904,7 +2905,7 @@ PROCEDURE GetTimeVector (vec: CARDINAL; VAR micro, secs: CARDINAL) ;
 *)
 
 @findex AttachVector
-PROCEDURE AttachVector (vec: CARDINAL; p: ADDRESS) : ADDRESS ;
+PROCEDURE AttachVector (vec: CARDINAL; ptr: ADDRESS) : ADDRESS ;
 
 
 (*
@@ -3249,7 +3250,7 @@ PROCEDURE SHIFT (val: <a set type>;
   *)
 
 @findex THROW
-PROCEDURE THROW (i: INTEGER) ;
+PROCEDURE THROW (i: INTEGER) <* noreturn *> ;
   (*
      THROW is a GNU extension and was not part of the PIM or ISO
      standards.  It throws an exception which will be caught by the
@@ -4907,7 +4908,8 @@ EXPORT UNQUALIFIED time_t, timeb, tm, ptrToTM,
                    memcpy, memset, memmove, printf, realloc,
                    rand, srand,
                    time, localtime, ftime,
-                   shutdown, rename, setjmp, longjmp, atexit,
+                   shutdown, snprintf,
+                   rename, setjmp, longjmp, atexit,
                    ttyname, sleep, execv ;
 
 
@@ -5263,6 +5265,14 @@ PROCEDURE printf (format: ARRAY OF CHAR; ...) : [ INTEGER ] ;
 
 
 (*
+   int snprintf(char *str, size_t size, const char *format, ...);
+*)
+
+@findex snprintf
+PROCEDURE snprintf (dest: ADDRESS; size: CSIZE_T;
+                    format: ARRAY OF CHAR; ...) : [ INTEGER ] ;
+
+(*
    setenv - sets environment variable, name, to value.
             It will overwrite an existing value if, overwrite,
             is true.  It returns 0 on success and -1 for an error.
@@ -5515,14 +5525,14 @@ END libm.
 DEFINITION MODULE sckt ;
 
 FROM SYSTEM IMPORT ADDRESS ;
-EXPORT UNQUALIFIED tcpServerState,
-                   tcpServerEstablish, tcpServerEstablishPort,
-                   tcpServerAccept, getLocalIP,
-                   tcpServerPortNo, tcpServerIP, tcpServerSocketFd,
-                   tcpServerClientIP, tcpServerClientPortNo,
-                   tcpClientState,
-                   tcpClientSocket, tcpClientSocketIP, tcpClientConnect,
-                   tcpClientPortNo, tcpClientIP, tcpClientSocketFd ;
+EXPORT QUALIFIED tcpServerState,
+                 tcpServerEstablish, tcpServerEstablishPort,
+                 tcpServerAccept, getLocalIP,
+                 tcpServerPortNo, tcpServerIP, tcpServerSocketFd,
+                 tcpServerClientIP, tcpServerClientPortNo,
+                 tcpClientState,
+                 tcpClientSocket, tcpClientSocketIP, tcpClientConnect,
+                 tcpClientPortNo, tcpClientIP, tcpClientSocketFd ;
 
 TYPE
 @findex tcpServerState (type)
@@ -6077,35 +6087,35 @@ PIM).
 The following libraries are Logitech-3.0 compatible but fall outside
 the base GNU Modula-2 libraries.
 @menu
-* gm2-libs-pim/BitBlockOps::BitBlockOps.def
-* gm2-libs-pim/BitByteOps::BitByteOps.def
-* gm2-libs-pim/BitWordOps::BitWordOps.def
-* gm2-libs-pim/BlockOps::BlockOps.def
-* gm2-libs-pim/Break::Break.def
-* gm2-libs-pim/CardinalIO::CardinalIO.def
-* gm2-libs-pim/Conversions::Conversions.def
-* gm2-libs-pim/DebugPMD::DebugPMD.def
-* gm2-libs-pim/DebugTrace::DebugTrace.def
-* gm2-libs-pim/Delay::Delay.def
-* gm2-libs-pim/Display::Display.def
-* gm2-libs-pim/ErrorCode::ErrorCode.def
-* gm2-libs-pim/FileSystem::FileSystem.def
-* gm2-libs-pim/FloatingUtilities::FloatingUtilities.def
-* gm2-libs-pim/InOut::InOut.def
-* gm2-libs-pim/Keyboard::Keyboard.def
-* gm2-libs-pim/LongIO::LongIO.def
-* gm2-libs-pim/NumberConversion::NumberConversion.def
-* gm2-libs-pim/Random::Random.def
-* gm2-libs-pim/RealConversions::RealConversions.def
-* gm2-libs-pim/RealInOut::RealInOut.def
-* gm2-libs-pim/Strings::Strings.def
-* gm2-libs-pim/Termbase::Termbase.def
-* gm2-libs-pim/Terminal::Terminal.def
-* gm2-libs-pim/TimeDate::TimeDate.def
+* gm2-libs-log/BitBlockOps::BitBlockOps.def
+* gm2-libs-log/BitByteOps::BitByteOps.def
+* gm2-libs-log/BitWordOps::BitWordOps.def
+* gm2-libs-log/BlockOps::BlockOps.def
+* gm2-libs-log/Break::Break.def
+* gm2-libs-log/CardinalIO::CardinalIO.def
+* gm2-libs-log/Conversions::Conversions.def
+* gm2-libs-log/DebugPMD::DebugPMD.def
+* gm2-libs-log/DebugTrace::DebugTrace.def
+* gm2-libs-log/Delay::Delay.def
+* gm2-libs-log/Display::Display.def
+* gm2-libs-log/ErrorCode::ErrorCode.def
+* gm2-libs-log/FileSystem::FileSystem.def
+* gm2-libs-log/FloatingUtilities::FloatingUtilities.def
+* gm2-libs-log/InOut::InOut.def
+* gm2-libs-log/Keyboard::Keyboard.def
+* gm2-libs-log/LongIO::LongIO.def
+* gm2-libs-log/NumberConversion::NumberConversion.def
+* gm2-libs-log/Random::Random.def
+* gm2-libs-log/RealConversions::RealConversions.def
+* gm2-libs-log/RealInOut::RealInOut.def
+* gm2-libs-log/Strings::Strings.def
+* gm2-libs-log/Termbase::Termbase.def
+* gm2-libs-log/Terminal::Terminal.def
+* gm2-libs-log/TimeDate::TimeDate.def
 @end menu
 
-@node gm2-libs-pim/BitBlockOps, gm2-libs-pim/BitByteOps, , PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/BitBlockOps
+@node gm2-libs-log/BitBlockOps, gm2-libs-log/BitByteOps, , PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/BitBlockOps
 
 @example
 DEFINITION MODULE BitBlockOps ;
@@ -6225,8 +6235,8 @@ END BitBlockOps.
 @end example
 @page
 
-@node gm2-libs-pim/BitByteOps, gm2-libs-pim/BitWordOps, gm2-libs-pim/BitBlockOps, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/BitByteOps
+@node gm2-libs-log/BitByteOps, gm2-libs-log/BitWordOps, gm2-libs-log/BitBlockOps, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/BitByteOps
 
 @example
 DEFINITION MODULE BitByteOps ;
@@ -6363,8 +6373,8 @@ END BitByteOps.
 @end example
 @page
 
-@node gm2-libs-pim/BitWordOps, gm2-libs-pim/BlockOps, gm2-libs-pim/BitByteOps, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/BitWordOps
+@node gm2-libs-log/BitWordOps, gm2-libs-log/BlockOps, gm2-libs-log/BitByteOps, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/BitWordOps
 
 @example
 DEFINITION MODULE BitWordOps ;
@@ -6501,8 +6511,8 @@ END BitWordOps.
 @end example
 @page
 
-@node gm2-libs-pim/BlockOps, gm2-libs-pim/Break, gm2-libs-pim/BitWordOps, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/BlockOps
+@node gm2-libs-log/BlockOps, gm2-libs-log/Break, gm2-libs-log/BitWordOps, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/BlockOps
 
 @example
 DEFINITION MODULE BlockOps ;
@@ -6578,8 +6588,8 @@ END BlockOps.
 @end example
 @page
 
-@node gm2-libs-pim/Break, gm2-libs-pim/CardinalIO, gm2-libs-pim/BlockOps, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/Break
+@node gm2-libs-log/Break, gm2-libs-log/CardinalIO, gm2-libs-log/BlockOps, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/Break
 
 @example
 DEFINITION MODULE Break ;
@@ -6628,8 +6638,8 @@ END Break.
 @end example
 @page
 
-@node gm2-libs-pim/CardinalIO, gm2-libs-pim/Conversions, gm2-libs-pim/Break, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/CardinalIO
+@node gm2-libs-log/CardinalIO, gm2-libs-log/Conversions, gm2-libs-log/Break, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/CardinalIO
 
 @example
 DEFINITION MODULE CardinalIO ;
@@ -6768,8 +6778,8 @@ END CardinalIO.
 @end example
 @page
 
-@node gm2-libs-pim/Conversions, gm2-libs-pim/DebugPMD, gm2-libs-pim/CardinalIO, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/Conversions
+@node gm2-libs-log/Conversions, gm2-libs-log/DebugPMD, gm2-libs-log/CardinalIO, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/Conversions
 
 @example
 DEFINITION MODULE Conversions ;
@@ -6810,8 +6820,8 @@ END Conversions.
 @end example
 @page
 
-@node gm2-libs-pim/DebugPMD, gm2-libs-pim/DebugTrace, gm2-libs-pim/Conversions, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/DebugPMD
+@node gm2-libs-log/DebugPMD, gm2-libs-log/DebugTrace, gm2-libs-log/Conversions, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/DebugPMD
 
 @example
 DEFINITION MODULE DebugPMD ;
@@ -6820,8 +6830,8 @@ END DebugPMD.
 @end example
 @page
 
-@node gm2-libs-pim/DebugTrace, gm2-libs-pim/Delay, gm2-libs-pim/DebugPMD, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/DebugTrace
+@node gm2-libs-log/DebugTrace, gm2-libs-log/Delay, gm2-libs-log/DebugPMD, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/DebugTrace
 
 @example
 DEFINITION MODULE DebugTrace ;
@@ -6830,8 +6840,8 @@ END DebugTrace.
 @end example
 @page
 
-@node gm2-libs-pim/Delay, gm2-libs-pim/Display, gm2-libs-pim/DebugTrace, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/Delay
+@node gm2-libs-log/Delay, gm2-libs-log/Display, gm2-libs-log/DebugTrace, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/Delay
 
 @example
 DEFINITION MODULE Delay ;
@@ -6851,8 +6861,8 @@ END Delay.
 @end example
 @page
 
-@node gm2-libs-pim/Display, gm2-libs-pim/ErrorCode, gm2-libs-pim/Delay, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/Display
+@node gm2-libs-log/Display, gm2-libs-log/ErrorCode, gm2-libs-log/Delay, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/Display
 
 @example
 DEFINITION MODULE Display ;
@@ -6874,8 +6884,8 @@ END Display.
 @end example
 @page
 
-@node gm2-libs-pim/ErrorCode, gm2-libs-pim/FileSystem, gm2-libs-pim/Display, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/ErrorCode
+@node gm2-libs-log/ErrorCode, gm2-libs-log/FileSystem, gm2-libs-log/Display, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/ErrorCode
 
 @example
 DEFINITION MODULE ErrorCode ;
@@ -6914,8 +6924,8 @@ END ErrorCode.
 @end example
 @page
 
-@node gm2-libs-pim/FileSystem, gm2-libs-pim/FloatingUtilities, gm2-libs-pim/ErrorCode, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/FileSystem
+@node gm2-libs-log/FileSystem, gm2-libs-log/FloatingUtilities, gm2-libs-log/ErrorCode, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/FileSystem
 
 @example
 DEFINITION MODULE FileSystem ;
@@ -7201,8 +7211,8 @@ END FileSystem.
 @end example
 @page
 
-@node gm2-libs-pim/FloatingUtilities, gm2-libs-pim/InOut, gm2-libs-pim/FileSystem, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/FloatingUtilities
+@node gm2-libs-log/FloatingUtilities, gm2-libs-log/InOut, gm2-libs-log/FileSystem, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/FloatingUtilities
 
 @example
 DEFINITION MODULE FloatingUtilities ;
@@ -7297,8 +7307,8 @@ END FloatingUtilities.
 @end example
 @page
 
-@node gm2-libs-pim/InOut, gm2-libs-pim/Keyboard, gm2-libs-pim/FloatingUtilities, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/InOut
+@node gm2-libs-log/InOut, gm2-libs-log/Keyboard, gm2-libs-log/FloatingUtilities, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/InOut
 
 @example
 DEFINITION MODULE InOut ;
@@ -7488,8 +7498,8 @@ END InOut.
 @end example
 @page
 
-@node gm2-libs-pim/Keyboard, gm2-libs-pim/LongIO, gm2-libs-pim/InOut, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/Keyboard
+@node gm2-libs-log/Keyboard, gm2-libs-log/LongIO, gm2-libs-log/InOut, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/Keyboard
 
 @example
 DEFINITION MODULE Keyboard ;
@@ -7519,8 +7529,8 @@ END Keyboard.
 @end example
 @page
 
-@node gm2-libs-pim/LongIO, gm2-libs-pim/NumberConversion, gm2-libs-pim/Keyboard, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/LongIO
+@node gm2-libs-log/LongIO, gm2-libs-log/NumberConversion, gm2-libs-log/Keyboard, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/LongIO
 
 @example
 DEFINITION MODULE LongIO ;
@@ -7541,8 +7551,8 @@ END LongIO.
 @end example
 @page
 
-@node gm2-libs-pim/NumberConversion, gm2-libs-pim/Random, gm2-libs-pim/LongIO, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/NumberConversion
+@node gm2-libs-log/NumberConversion, gm2-libs-log/Random, gm2-libs-log/LongIO, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/NumberConversion
 
 @example
 DEFINITION MODULE NumberConversion ;
@@ -7553,8 +7563,8 @@ END NumberConversion.
 @end example
 @page
 
-@node gm2-libs-pim/Random, gm2-libs-pim/RealConversions, gm2-libs-pim/NumberConversion, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/Random
+@node gm2-libs-log/Random, gm2-libs-log/RealConversions, gm2-libs-log/NumberConversion, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/Random
 
 @example
 DEFINITION MODULE Random ;
@@ -7624,8 +7634,8 @@ END Random.
 @end example
 @page
 
-@node gm2-libs-pim/RealConversions, gm2-libs-pim/RealInOut, gm2-libs-pim/Random, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/RealConversions
+@node gm2-libs-log/RealConversions, gm2-libs-log/RealInOut, gm2-libs-log/Random, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/RealConversions
 
 @example
 DEFINITION MODULE RealConversions ;
@@ -7745,8 +7755,8 @@ END RealConversions.
 @end example
 @page
 
-@node gm2-libs-pim/RealInOut, gm2-libs-pim/Strings, gm2-libs-pim/RealConversions, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/RealInOut
+@node gm2-libs-log/RealInOut, gm2-libs-log/Strings, gm2-libs-log/RealConversions, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/RealInOut
 
 @example
 DEFINITION MODULE RealInOut ;
@@ -7862,8 +7872,8 @@ END RealInOut.
 @end example
 @page
 
-@node gm2-libs-pim/Strings, gm2-libs-pim/Termbase, gm2-libs-pim/RealInOut, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/Strings
+@node gm2-libs-log/Strings, gm2-libs-log/Termbase, gm2-libs-log/RealInOut, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/Strings
 
 @example
 DEFINITION MODULE Strings ;
@@ -7943,8 +7953,8 @@ END Strings.
 @end example
 @page
 
-@node gm2-libs-pim/Termbase, gm2-libs-pim/Terminal, gm2-libs-pim/Strings, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/Termbase
+@node gm2-libs-log/Termbase, gm2-libs-log/Terminal, gm2-libs-log/Strings, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/Termbase
 
 @example
 DEFINITION MODULE Termbase ;
@@ -8041,8 +8051,8 @@ END Termbase.
 @end example
 @page
 
-@node gm2-libs-pim/Terminal, gm2-libs-pim/TimeDate, gm2-libs-pim/Termbase, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/Terminal
+@node gm2-libs-log/Terminal, gm2-libs-log/TimeDate, gm2-libs-log/Termbase, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/Terminal
 
 @example
 DEFINITION MODULE Terminal ;
@@ -8120,8 +8130,8 @@ END Terminal.
 @end example
 @page
 
-@node gm2-libs-pim/TimeDate, , gm2-libs-pim/Terminal, PIM and Logitech 3.0 Compatible
-@subsection gm2-libs-pim/TimeDate
+@node gm2-libs-log/TimeDate, , gm2-libs-log/Terminal, PIM and Logitech 3.0 Compatible
+@subsection gm2-libs-log/TimeDate
 
 @example
 DEFINITION MODULE TimeDate ;
@@ -8218,74 +8228,13 @@ END TimeDate.
 This directory contains a PIM @code{SYSTEM} containing the
 @code{PROCESS} primitives built on top of @code{gthread}s.
 @menu
-* gm2-libs-coroutines/Debug::Debug.def
 * gm2-libs-coroutines/Executive::Executive.def
 * gm2-libs-coroutines/KeyBoardLEDs::KeyBoardLEDs.def
 * gm2-libs-coroutines/SYSTEM::SYSTEM.def
 * gm2-libs-coroutines/TimerHandler::TimerHandler.def
 @end menu
 
-@node gm2-libs-coroutines/Debug, gm2-libs-coroutines/Executive, , PIM coroutine support
-@subsection gm2-libs-coroutines/Debug
-
-@example
-DEFINITION MODULE Debug ;
-
-(*
-    Description: provides some simple debugging routines.
-*)
-
-EXPORT QUALIFIED Halt, DebugString, PushOutput ;
-
-TYPE
-@findex WriteP (type)
-   WriteP = PROCEDURE (CHAR) ;
-
-
-(*
-   Halt - writes a message in the format:
-          Module:Line:Message
-
-          It then terminates by calling HALT.
-*)
-
-@findex Halt
-PROCEDURE Halt (File    : ARRAY OF CHAR;
-                LineNo  : CARDINAL;
-                Function,
-                Message : ARRAY OF CHAR) ;
-
-
-(*
-   DebugString - writes a string to the debugging device (Scn.Write).
-                 It interprets \n as carriage return, linefeed.
-*)
-
-@findex DebugString
-PROCEDURE DebugString (a: ARRAY OF CHAR) ;
-
-
-(*
-   PushOutput - pushes the output procedure, p, which is used Debug.
-*)
-
-@findex PushOutput
-PROCEDURE PushOutput (p: WriteP) ;
-
-
-(*
-   PopOutput - pops the current output procedure from the stack.
-*)
-
-@findex PopOutput
-PROCEDURE PopOutput ;
-
-
-END Debug.
-@end example
-@page
-
-@node gm2-libs-coroutines/Executive, gm2-libs-coroutines/KeyBoardLEDs, gm2-libs-coroutines/Debug, PIM coroutine support
+@node gm2-libs-coroutines/Executive, gm2-libs-coroutines/KeyBoardLEDs, , PIM coroutine support
 @subsection gm2-libs-coroutines/Executive
 
 @example
@@ -8647,7 +8596,7 @@ PROCEDURE SHIFT (val: <a set type>;
   *)
 
 @findex THROW
-PROCEDURE THROW (i: INTEGER) ;
+PROCEDURE THROW (i: INTEGER) <* noreturn *> ;
   (*
      THROW is a GNU extension and was not part of the PIM or ISO
      standards.  It throws an exception which will be caught by the EXCEPT
@@ -9523,7 +9472,8 @@ PROCEDURE AllocateSource(VAR newSource: ExceptionSource);
 
 @findex RAISE
 PROCEDURE RAISE (source: ExceptionSource;
-                 number: ExceptionNumber; message: ARRAY OF CHAR);
+                 number: ExceptionNumber; message: ARRAY OF CHAR)
+                 <* noreturn *> ;
   (* Associates the given values of source, number and message with
      the current context and raises an exception.
   *)
@@ -10011,7 +9961,7 @@ TYPE
 
 @findex RAISEdevException
 PROCEDURE RAISEdevException (cid: IOChan.ChanId; did: DeviceId;
-                             x: DevExceptionRange; s: ARRAY OF CHAR);
+                             x: DevExceptionRange; s: ARRAY OF CHAR) <* noreturn *> ;
 
   (* If the device module identified by did is not the module that made the channel
      identified by cid, the exception wrongDevice is raised; otherwise the given exception
@@ -10879,11 +10829,11 @@ TYPE
 
 
 @findex ConstructModules
-PROCEDURE ConstructModules (applicationmodule: ADDRESS;
+PROCEDURE ConstructModules (applicationmodule, libname: ADDRESS;
                             argc: INTEGER; argv, envp: ADDRESS) ;
 
 @findex DeconstructModules
-PROCEDURE DeconstructModules (applicationmodule: ADDRESS;
+PROCEDURE DeconstructModules (applicationmodule, libname: ADDRESS;
                               argc: INTEGER; argv, envp: ADDRESS) ;
 
 
@@ -10894,7 +10844,7 @@ PROCEDURE DeconstructModules (applicationmodule: ADDRESS;
 *)
 
 @findex RegisterModule
-PROCEDURE RegisterModule (name: ADDRESS;
+PROCEDURE RegisterModule (name, libname: ADDRESS;
                           init, fini:  ArgCVEnvP;
                           dependencies: PROC) ;
 
@@ -10905,7 +10855,8 @@ PROCEDURE RegisterModule (name: ADDRESS;
 *)
 
 @findex RequestDependant
-PROCEDURE RequestDependant (modulename, dependantmodule: ADDRESS) ;
+PROCEDURE RequestDependant (modulename, libname,
+                            dependantmodule, dependantlibname: ADDRESS) ;
 
 
 (*
@@ -10960,17 +10911,30 @@ PROCEDURE InstallInitialProcedure (p: PROC) : BOOLEAN ;
 *)
 
 @findex HALT
-PROCEDURE HALT ([exitcode: INTEGER = -1]) ;
+PROCEDURE HALT ([exitcode: INTEGER = -1]) <* noreturn *> ;
 
 
 (*
    Halt - provides a more user friendly version of HALT, which takes
-          four parameters to aid debugging.
+           four parameters to aid debugging.  It writes an error message
+           to stderr and calls exit (1).
 *)
 
 @findex Halt
-PROCEDURE Halt (file: ARRAY OF CHAR; line: CARDINAL;
-                function: ARRAY OF CHAR; description: ARRAY OF CHAR) ;
+PROCEDURE Halt (description, filename, function: ARRAY OF CHAR;
+                line: CARDINAL) <* noreturn *> ;
+
+
+(*
+   HaltC - provides a more user friendly version of HALT, which takes
+           four parameters to aid debugging.  It writes an error message
+           to stderr and calls exit (1).
+*)
+
+@findex HaltC
+PROCEDURE HaltC (description, filename, function: ADDRESS;
+                 line: CARDINAL) <* noreturn *> ;
+
 
 
 (*
@@ -10987,9 +10951,9 @@ PROCEDURE ExitOnHalt (e: INTEGER) ;
 
 @findex ErrorMessage
 PROCEDURE ErrorMessage (message: ARRAY OF CHAR;
-                        file: ARRAY OF CHAR;
+                        filename: ARRAY OF CHAR;
                         line: CARDINAL;
-                        function: ARRAY OF CHAR) ;
+                        function: ARRAY OF CHAR) <* noreturn *> ;
 
 
 (*
@@ -11025,53 +10989,53 @@ PROCEDURE Length (a: ARRAY OF CHAR) : CARDINAL ;
 *)
 
 @findex AssignmentException
-PROCEDURE AssignmentException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE AssignmentException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex ReturnException
-PROCEDURE ReturnException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE ReturnException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex IncException
-PROCEDURE IncException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE IncException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex DecException
-PROCEDURE DecException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE DecException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex InclException
-PROCEDURE InclException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE InclException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex ExclException
-PROCEDURE ExclException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE ExclException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex ShiftException
-PROCEDURE ShiftException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE ShiftException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex RotateException
-PROCEDURE RotateException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE RotateException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex StaticArraySubscriptException
-PROCEDURE StaticArraySubscriptException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE StaticArraySubscriptException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex DynamicArraySubscriptException
-PROCEDURE DynamicArraySubscriptException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE DynamicArraySubscriptException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex ForLoopBeginException
-PROCEDURE ForLoopBeginException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE ForLoopBeginException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex ForLoopToException
-PROCEDURE ForLoopToException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE ForLoopToException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex ForLoopEndException
-PROCEDURE ForLoopEndException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE ForLoopEndException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex PointerNilException
-PROCEDURE PointerNilException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE PointerNilException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex NoReturnException
-PROCEDURE NoReturnException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE NoReturnException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex CaseException
-PROCEDURE CaseException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE CaseException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex WholeNonPosDivException
-PROCEDURE WholeNonPosDivException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE WholeNonPosDivException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex WholeNonPosModException
-PROCEDURE WholeNonPosModException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE WholeNonPosModException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex WholeZeroDivException
-PROCEDURE WholeZeroDivException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE WholeZeroDivException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex WholeZeroRemException
-PROCEDURE WholeZeroRemException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE WholeZeroRemException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex WholeValueException
-PROCEDURE WholeValueException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE WholeValueException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex RealValueException
-PROCEDURE RealValueException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE RealValueException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex ParameterException
-PROCEDURE ParameterException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE ParameterException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 @findex NoException
-PROCEDURE NoException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) ;
+PROCEDURE NoException (filename: ADDRESS; line, column: CARDINAL; scope, message: ADDRESS) <* noreturn *> ;
 
 
 END M2RTS.
@@ -11422,10 +11386,12 @@ END ProgramArgs.
 @subsection gm2-libs-iso/RTco
 
 @example
-DEFINITION MODULE RTco ;
+DEFINITION MODULE FOR "C" RTco ;
 
 FROM SYSTEM IMPORT ADDRESS ;
 
+IMPORT RTentity ;  (* Imported so the initialization call graph
+                      understands that RTco.cc depends upon RTentity.  *)
 
 (* init initializes the module and allows the application to lazily invoke threads.  *)
 
@@ -13261,7 +13227,7 @@ PROCEDURE TSIZE (<type>; ... ): CARDINAL;
   *)
 
 @findex THROW
-PROCEDURE THROW (i: INTEGER) ;
+PROCEDURE THROW (i: INTEGER) <* noreturn *> ;
   (*
      THROW is a GNU extension and was not part of the PIM or ISO
      standards.  It throws an exception which will be caught by the

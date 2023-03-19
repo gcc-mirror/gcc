@@ -1179,7 +1179,7 @@ m2type_BuildProcTypeParameterDeclaration (location_t location, tree type,
    BuildParameterDeclaration.  */
 
 tree
-m2type_BuildEndFunctionType (tree func, tree return_type, int uses_varargs)
+m2type_BuildEndFunctionType (tree func, tree return_type, bool uses_varargs)
 {
   tree last;
 

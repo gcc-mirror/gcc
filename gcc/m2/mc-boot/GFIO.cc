@@ -727,7 +727,7 @@ static int ReadFromBuffer (FIO_File f, void * a, unsigned int nBytes)
                   (*p) = static_cast<unsigned char> ((*fd->buffer->contents).array[fd->buffer->position]);
                   fd->buffer->left -= 1;  /* remove consumed bytes  */
                   fd->buffer->position += 1;  /* move onwards n bytes  */
-                  nBytes = 0;
+                  nBytes = 0;  /* reduce the amount for future direct  */
                   /* read  */
                   return 1;
                 }

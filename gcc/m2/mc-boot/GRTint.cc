@@ -751,7 +751,7 @@ extern "C" void RTint_ReArmTimeVector (unsigned int vec, unsigned int micro, uns
   vptr = FindVectorNo (vec);
   if (vptr == NULL)
     {
-      M2RTS_Halt ((const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, 286, (const char *) "ReArmTimeVector", 15, (const char *) "cannot find vector supplied", 27);
+      M2RTS_Halt ((const char *) "cannot find vector supplied", 27, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, (const char *) "ReArmTimeVector", 15, 287);
     }
   else
     {
@@ -776,7 +776,7 @@ extern "C" void RTint_GetTimeVector (unsigned int vec, unsigned int *micro, unsi
   vptr = FindVectorNo (vec);
   if (vptr == NULL)
     {
-      M2RTS_Halt ((const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, 312, (const char *) "GetTimeVector", 13, (const char *) "cannot find vector supplied", 27);
+      M2RTS_Halt ((const char *) "cannot find vector supplied", 27, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, (const char *) "GetTimeVector", 13, 313);
     }
   else
     {
@@ -802,7 +802,7 @@ extern "C" void * RTint_AttachVector (unsigned int vec, void * ptr)
   vptr = FindVectorNo (vec);
   if (vptr == NULL)
     {
-      M2RTS_Halt ((const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, 339, (const char *) "AttachVector", 12, (const char *) "cannot find vector supplied", 27);
+      M2RTS_Halt ((const char *) "cannot find vector supplied", 27, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, (const char *) "AttachVector", 12, 340);
     }
   else
     {
@@ -841,7 +841,7 @@ extern "C" void RTint_IncludeVector (unsigned int vec)
       vptr = FindVectorNo (vec);
       if (vptr == NULL)
         {
-          M2RTS_Halt ((const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, 372, (const char *) "IncludeVector", 13, (const char *) "cannot find vector supplied", 27);
+          M2RTS_Halt ((const char *) "cannot find vector supplied", 27, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, (const char *) "IncludeVector", 13, 374);
         }
       else
         {
@@ -887,7 +887,7 @@ extern "C" void RTint_ExcludeVector (unsigned int vec)
   vptr = FindPendingVector (vec);
   if (vptr == NULL)
     {
-      M2RTS_Halt ((const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, 414, (const char *) "ExcludeVector", 13, (const char *) "cannot find pending vector supplied", 35);
+      M2RTS_Halt ((const char *) "cannot find pending vector supplied", 35, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, (const char *) "ExcludeVector", 13, 416);
     }
   else
     {
@@ -1001,7 +1001,7 @@ extern "C" void RTint_Listen (bool untilInterrupt, RTint_DispatchVector call, un
         }
       if (((untilInterrupt && (inSet == NULL)) && (outSet == NULL)) && ! found)
         {
-          M2RTS_Halt ((const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, 730, (const char *) "Listen", 6, (const char *) "deadlock found, no more processes to run and no interrupts active", 65);
+          M2RTS_Halt ((const char *) "deadlock found, no more processes to run and no interrupts active", 65, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/RTint.mod", 46, (const char *) "Listen", 6, 732);
         }
       /* printf('}
       ') ;  */

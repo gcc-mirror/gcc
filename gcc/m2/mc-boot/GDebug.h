@@ -51,12 +51,12 @@ extern "C" {
 
 /*
    Halt - writes a message in the format:
-          Module:Line:Message
+          Module:Function:Line:Message
 
           It then terminates by calling HALT.
 */
 
-EXTERN void Debug_Halt (const char *Message_, unsigned int _Message_high, unsigned int LineNo, const char *Module_, unsigned int _Module_high);
+EXTERN void Debug_Halt (const char *Message_, unsigned int _Message_high, const char *Module_, unsigned int _Module_high, const char *Function_, unsigned int _Function_high, unsigned int LineNo);
 
 /*
    DebugString - writes a string to the debugging device (Scn.Write).

@@ -194,7 +194,7 @@ m2decl_BuildParameterDeclaration (location_t location, char *name, tree type,
    for building a function.  */
 
 void
-m2decl_BuildStartFunctionDeclaration (int uses_varargs)
+m2decl_BuildStartFunctionDeclaration (bool uses_varargs)
 {
   if (uses_varargs)
     param_type_list = NULL_TREE;

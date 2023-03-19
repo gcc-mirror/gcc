@@ -315,9 +315,9 @@ EXTERN void DynamicStrings_PopAllocation (bool halt);
 
 /*
    PopAllocationExemption - test to see that all strings are
-                            deallocated, except string, e, since
+                            deallocated, except string e since
                             the last push.
-                            Then it pops to the previous
+                            Post-condition: it pops to the previous
                             allocation/deallocation lists.
 
                             If halt is true then the application

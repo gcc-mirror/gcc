@@ -381,7 +381,7 @@ BEGIN
    IF f=NIL
    THEN
       Halt('why is the follow info NIL?',
-           __FILE_, __FUNCTION__, __LINE__)
+           __FILE__, __FUNCTION__, __LINE__)
    ELSE
       RETURN( f^.epsilon )
    END
@@ -416,7 +416,7 @@ BEGIN
    IF f=NIL
    THEN
       Halt('why is the follow info NIL?',
-           __FILE_, __FUNCTION__, __LINE__)
+           __FILE__, __FUNCTION__, __LINE__)
    ELSE
       RETURN( f^.reachend )
    END
@@ -433,7 +433,7 @@ BEGIN
       IF calcfollow
       THEN
          Halt('why are we reassigning this follow set?',
-              __FILE_, __FUNCTION__, __LINE__)
+              __FILE__, __FUNCTION__, __LINE__)
       END ;
       follow     := s ;
       calcfollow := TRUE
@@ -450,7 +450,7 @@ BEGIN
    IF f=NIL
    THEN
       Halt ('why is the follow info NIL?',
-            __FILE_, __FUNCTION__, __LINE__)
+            __FILE__, __FUNCTION__, __LINE__)
    ELSE
       WITH f^ DO
          IF calcfollow
@@ -458,7 +458,7 @@ BEGIN
             RETURN( follow )
          ELSE
             Halt('not calculated the follow set yet..',
-                 __FILE_, __FUNCTION__, __LINE__)
+                 __FILE__, __FUNCTION__, __LINE__)
          END
       END
    END
@@ -2502,7 +2502,7 @@ BEGIN
 
    ELSE
       Halt('unrecognised m2condition',
-           __FILE_, __FUNCTION__, __LINE__)
+           __FILE__, __FUNCTION__, __LINE__)
    END
 END CodeCondition ;
 
@@ -2528,7 +2528,7 @@ BEGIN
 
    ELSE
       Halt('unrecognised m2condition',
-           __FILE_, __FUNCTION__, __LINE__)
+           __FILE__, __FUNCTION__, __LINE__)
    END ;
    OnLineStart := TRUE
 END CodeThenDo ;
@@ -2612,7 +2612,7 @@ BEGIN
 
    ELSE
       Halt('unrecognised m2condition',
-           __FILE_, __FUNCTION__, __LINE__)
+           __FILE__, __FUNCTION__, __LINE__)
    END ;
    OnLineStart := FALSE
 END CodeEnd ;
@@ -2870,7 +2870,7 @@ BEGIN
 
    ELSE
       Halt('unrecognised m2condition',
-           __FILE_, __FUNCTION__, __LINE__)
+           __FILE__, __FUNCTION__, __LINE__)
    END
 END RecoverCondition ;
 
@@ -2890,7 +2890,7 @@ BEGIN
 
    ELSE
       Halt('unrecognised m2condition',
-           __FILE_, __FUNCTION__, __LINE__)
+           __FILE__, __FUNCTION__, __LINE__)
    END
 END ConditionIndent ;
 
@@ -3949,7 +3949,7 @@ BEGIN
 
          ELSE
             Halt('unknown element in enumeration type',
-                 __FILE_, __FUNCTION__, __LINE__)
+                 __FILE__, __FUNCTION__, __LINE__)
          END
       END ;
       from := from^.next

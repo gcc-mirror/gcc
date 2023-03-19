@@ -824,8 +824,8 @@ m2expr_BuildBinarySetDo (location_t location, tree settype, tree op1, tree op2,
                          tree leftproc, tree rightproc)
 {
   tree size = m2expr_GetSizeOf (location, settype);
-  int is_const = false;
-  int is_left = false;
+  bool is_const = false;
+  bool is_left = false;
 
   m2assert_AssertLocation (location);
 
@@ -3185,7 +3185,7 @@ m2expr_BuildIsNotSubset (location_t location, tree op1, tree op2)
 
 void
 m2expr_BuildIfConstInVar (location_t location, tree type, tree varset,
-                          tree constel, int is_lvalue, int fieldno,
+                          tree constel, bool is_lvalue, int fieldno,
                           char *label)
 {
   tree size = m2expr_GetSizeOf (location, type);
@@ -3220,7 +3220,7 @@ m2expr_BuildIfConstInVar (location_t location, tree type, tree varset,
 
 void
 m2expr_BuildIfNotConstInVar (location_t location, tree type, tree varset,
-                             tree constel, int is_lvalue, int fieldno,
+                             tree constel, bool is_lvalue, int fieldno,
                              char *label)
 {
   tree size = m2expr_GetSizeOf (location, type);
@@ -3256,7 +3256,7 @@ m2expr_BuildIfNotConstInVar (location_t location, tree type, tree varset,
 
 void
 m2expr_BuildIfVarInVar (location_t location, tree type, tree varset,
-                        tree varel, int is_lvalue, tree low,
+                        tree varel, bool is_lvalue, tree low,
                         tree high ATTRIBUTE_UNUSED, char *label)
 {
   tree size = m2expr_GetSizeOf (location, type);
@@ -3308,7 +3308,7 @@ m2expr_BuildIfVarInVar (location_t location, tree type, tree varset,
 
 void
 m2expr_BuildIfNotVarInVar (location_t location, tree type, tree varset,
-                           tree varel, int is_lvalue, tree low,
+                           tree varel, bool is_lvalue, tree low,
                            tree high ATTRIBUTE_UNUSED, char *label)
 {
   tree size = m2expr_GetSizeOf (location, type);
@@ -3364,9 +3364,9 @@ m2expr_BuildIfNotVarInVar (location_t location, tree type, tree varset,
 
 void
 m2expr_BuildForeachWordInSetDoIfExpr (location_t location, tree type, tree op1,
-                                      tree op2, int is_op1lvalue,
-                                      int is_op2lvalue, int is_op1const,
-                                      int is_op2const,
+                                      tree op2, bool is_op1lvalue,
+                                      bool is_op2lvalue, bool is_op1const,
+                                      bool is_op2const,
                                       tree (*expr) (location_t, tree, tree),
                                       char *label)
 {

@@ -141,7 +141,7 @@ PROCEDURE TSIZE (<type>; ... ): CARDINAL;
   *)
 
 @findex THROW
-PROCEDURE THROW (i: INTEGER) ;
+PROCEDURE THROW (i: INTEGER) <* noreturn *> ;
   (*
      THROW is a GNU extension and was not part of the PIM or ISO
      standards.  It throws an exception which will be caught by the

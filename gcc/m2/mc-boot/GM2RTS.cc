@@ -181,7 +181,7 @@ extern "C" void M2RTS_HALT (int exitcode) __attribute__ ((noreturn));
           to stderr and calls exit (1).
 */
 
-extern "C" void M2RTS_Halt (const char *filename_, unsigned int _filename_high, unsigned int line, const char *function_, unsigned int _function_high, const char *description_, unsigned int _description_high) __attribute__ ((noreturn));
+extern "C" void M2RTS_Halt (const char *description_, unsigned int _description_high, const char *filename_, unsigned int _filename_high, const char *function_, unsigned int _function_high, unsigned int line) __attribute__ ((noreturn));
 
 /*
    HaltC - provides a more user friendly version of HALT, which takes
@@ -189,7 +189,7 @@ extern "C" void M2RTS_Halt (const char *filename_, unsigned int _filename_high, 
            to stderr and calls exit (1).
 */
 
-extern "C" void M2RTS_HaltC (void * filename, unsigned int line, void * function, void * description) __attribute__ ((noreturn));
+extern "C" void M2RTS_HaltC (void * description, void * filename, void * function, unsigned int line) __attribute__ ((noreturn));
 
 /*
    ExitOnHalt - if HALT is executed then call exit with the exit code, e.
@@ -585,16 +585,16 @@ extern "C" void M2RTS_HALT (int exitcode)
           to stderr and calls exit (1).
 */
 
-extern "C" void M2RTS_Halt (const char *filename_, unsigned int _filename_high, unsigned int line, const char *function_, unsigned int _function_high, const char *description_, unsigned int _description_high)
+extern "C" void M2RTS_Halt (const char *description_, unsigned int _description_high, const char *filename_, unsigned int _filename_high, const char *function_, unsigned int _function_high, unsigned int line)
 {
+  char description[_description_high+1];
   char filename[_filename_high+1];
   char function[_function_high+1];
-  char description[_description_high+1];
 
   /* make a local copy of each unbounded array.  */
+  memcpy (description, description_, _description_high+1);
   memcpy (filename, filename_, _filename_high+1);
   memcpy (function, function_, _function_high+1);
-  memcpy (description, description_, _description_high+1);
 
   M2RTS_ErrorMessage ((const char *) description, _description_high, (const char *) filename, _filename_high, line, (const char *) function, _function_high);
 }
@@ -606,7 +606,7 @@ extern "C" void M2RTS_Halt (const char *filename_, unsigned int _filename_high, 
            to stderr and calls exit (1).
 */
 
-extern "C" void M2RTS_HaltC (void * filename, unsigned int line, void * function, void * description)
+extern "C" void M2RTS_HaltC (void * description, void * filename, void * function, unsigned int line)
 {
   ErrorMessageC (description, filename, line, function);
 }

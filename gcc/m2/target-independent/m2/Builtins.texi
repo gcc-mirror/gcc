@@ -7,11 +7,11 @@ FROM SYSTEM IMPORT ADDRESS ;
 (* floating point intrinsic procedure functions *)
 
 @findex isfinitef
-PROCEDURE __BUILTIN__ isfinitef (x: SHORTREAL) : BOOLEAN ;
+PROCEDURE __BUILTIN__ isfinitef (x: SHORTREAL) : INTEGER ;
 @findex isfinite
-PROCEDURE __BUILTIN__ isfinite (x: REAL) : BOOLEAN ;
+PROCEDURE __BUILTIN__ isfinite (x: REAL) : INTEGER ;
 @findex isfinitel
-PROCEDURE __BUILTIN__ isfinitel (x: LONGREAL) : BOOLEAN ;
+PROCEDURE __BUILTIN__ isfinitel (x: LONGREAL) : INTEGER ;
 
 @findex sinf
 PROCEDURE __BUILTIN__ sinf (x: SHORTREAL) : SHORTREAL ;

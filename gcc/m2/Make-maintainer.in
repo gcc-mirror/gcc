@@ -698,28 +698,28 @@ gm2.maintainer-reconfigure: force
 	( cd $(srcdir)/m2/gm2-libs ; autoheader config-host.in )
 	( cd $(srcdir)/m2 ; autoconf configure.in > configure )
 
-gm2.maintainer-clean: force
-	-rm -f $(srcdir)/m2/gm2-auto/*
-	-rm -f $(srcdir)/m2/gm2-libs.texi
-	-rm -f $(srcdir)/m2/gm2-ebnf.texi
-	-rm -f $(srcdir)/m2/images/gnu.eps
-
 gm2.maintainer-help: force
 	@echo "make knows about:"
 	@echo " "
 	@echo "make gm2.maintainer-help           this command"
 	@echo "make gm2.maintainer-reconfigure    rebuild the configure scripts"
-	@echo "make gm2.maintainer-clean          clean pre-built images and texi files"
+	@echo "make gm2.maintainer-tools          rebuild mc and ppg bootstrap tools"
+	@echo "     note gm2.maintainer-tools     requires a working gm2 to be in your path"
+	@echo "make gm2.maintainer-doc            rebuild target independent documentation sections"
+	@echo "make pge-help                      sub commands to build pge"
+	@echo "make mc-help                       sub commands to build mc"
+
+gm2.maintainer-tools: mc-maintainer pge-maintainer
+
+gm2.maintainer-doc: m2-target-independent-doc
 
 
-#
 #  verify the compiler can be built across three generations of cc1gm2 diffing assembly output.
 #  m2/stage1/cc1gm2 built by translating all M2 sources into C++.
 #  m2/m2obj2/cc1gm2 built from m2/stage1/cc1gm2.
 #  m2/m2obj3/cc1gm2 built from m2/m2obj2/cc1gm2.
 #
 #  This test only makes sense if host = target = build
-#
 
 # GM2-VERIFY-MODS is a list of modules which have no __DATE__ stamp inside them
 #                 and thus they can be built by the different versions of gm2.
@@ -1004,20 +1004,20 @@ m2-target-independent-doc: m2-target-independent-doc-texi # m2-target-independen
 
 m2-target-independent-doc-texi: force
 ifeq ($(HAVE_PYTHON),yes)
-	python3 $(srcdir)/m2/tools-src/def2doc.py -t -b$(srcdir)/m2 -f$(srcdir)/m2/gm2-libs-iso/SYSTEM.def -o $(srcdir)/m2/target-independent/SYSTEM-iso.texi
-	python3 $(srcdir)/m2/tools-src/def2doc.py -t -b$(srcdir)/m2 -f$(srcdir)/m2/gm2-libs/SYSTEM.def -o $(srcdir)/m2/target-independent/SYSTEM-pim.texi
-	python3 $(srcdir)/m2/tools-src/def2doc.py -t -b$(srcdir)/m2 -f$(srcdir)/m2/gm2-libs/Builtins.def -o $(srcdir)/m2/target-independent/Builtins.texi
-	python3 $(srcdir)/m2/tools-src/def2doc.py -t -uLibraries -s$(srcdir)/m2 -b$(srcdir)/m2 -o $(srcdir)/m2/target-independent/gm2-libs.texi
+	python3 $(srcdir)/m2/tools-src/def2doc.py -t -b$(srcdir)/m2 -f$(srcdir)/m2/gm2-libs-iso/SYSTEM.def -o $(srcdir)/m2/target-independent/m2/SYSTEM-iso.texi
+	python3 $(srcdir)/m2/tools-src/def2doc.py -t -b$(srcdir)/m2 -f$(srcdir)/m2/gm2-libs/SYSTEM.def -o $(srcdir)/m2/target-independent/m2/SYSTEM-pim.texi
+	python3 $(srcdir)/m2/tools-src/def2doc.py -t -b$(srcdir)/m2 -f$(srcdir)/m2/gm2-libs/Builtins.def -o $(srcdir)/m2/target-independent/m2/Builtins.texi
+	python3 $(srcdir)/m2/tools-src/def2doc.py -t -uLibraries -s$(srcdir)/m2 -b$(srcdir)/m2 -o $(srcdir)/m2/target-independent/m2/gm2-libs.texi
 else
 	echo "m2-target-independent-doc-texi will only work if Python3 was detected during configure"
 endif
 
 m2-target-independent-doc-rst: force
 ifeq ($(HAVE_PYTHON),yes)
-	python3 $(srcdir)/m2/tools-src/def2doc.py -x -b$(srcdir)/m2 -f$(srcdir)/m2/gm2-libs-iso/SYSTEM.def -o $(srcdir)/m2/target-independent/SYSTEM-iso.rst
-	python3 $(srcdir)/m2/tools-src/def2doc.py -x -b$(srcdir)/m2 -f$(srcdir)/m2/gm2-libs/SYSTEM.def -o $(srcdir)/m2/target-independent/SYSTEM-pim.rst
-	python3 $(srcdir)/m2/tools-src/def2doc.py -x -b$(srcdir)/m2 -f$(srcdir)/m2/gm2-libs/Builtins.def -o $(srcdir)/m2/target-independent/Builtins.rst
-	python3 $(srcdir)/m2/tools-src/def2doc.py -x -uLibraries -s$(srcdir)/m2 -b$(srcdir)/m2 -o $(srcdir)/m2/target-independent/gm2-libs.rst
+	python3 $(srcdir)/m2/tools-src/def2doc.py -x -b$(srcdir)/m2 -f$(srcdir)/m2/gm2-libs-iso/SYSTEM.def -o $(srcdir)/m2/target-independent/m2/SYSTEM-iso.rst
+	python3 $(srcdir)/m2/tools-src/def2doc.py -x -b$(srcdir)/m2 -f$(srcdir)/m2/gm2-libs/SYSTEM.def -o $(srcdir)/m2/target-independent/m2/SYSTEM-pim.rst
+	python3 $(srcdir)/m2/tools-src/def2doc.py -x -b$(srcdir)/m2 -f$(srcdir)/m2/gm2-libs/Builtins.def -o $(srcdir)/m2/target-independent/m2/Builtins.rst
+	python3 $(srcdir)/m2/tools-src/def2doc.py -x -uLibraries -s$(srcdir)/m2 -b$(srcdir)/m2 -o $(srcdir)/m2/target-independent/m2/gm2-libs.rst
 else
 	echo "m2-target-independent-doc-rst will only work if Python3 was detected during configure"
 endif

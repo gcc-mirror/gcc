@@ -54,7 +54,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   include "GSYSTEM.h"
 
 #   define enableDeallocation true
-#   define enableZero false
+#   define enableZero true
 #   define enableTrace false
 static unsigned int callno;
 static bool zero;
@@ -94,7 +94,7 @@ extern "C" void SysStorage_ALLOCATE (void * *a, unsigned int size)
   (*a) = libc_malloc (static_cast<size_t> (size));
   if ((*a) == NULL)
     {
-      Debug_Halt ((const char *) "out of memory error", 19, 50, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/SysStorage.mod", 51);
+      Debug_Halt ((const char *) "out of memory error", 19, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/SysStorage.mod", 51, (const char *) "ALLOCATE", 8, 51);
     }
   if (enableTrace && trace)
     {
@@ -119,7 +119,7 @@ extern "C" void SysStorage_DEALLOCATE (void * *a, unsigned int size)
         }
       if ((libc_memset ((*a), 0, static_cast<size_t> (size))) != (*a))
         {
-          Debug_Halt ((const char *) "memset should have returned the first parameter", 47, 76, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/SysStorage.mod", 51);
+          Debug_Halt ((const char *) "memset should have returned the first parameter", 47, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/SysStorage.mod", 51, (const char *) "DEALLOCATE", 10, 78);
         }
     }
   if (enableDeallocation)
@@ -164,7 +164,7 @@ extern "C" void SysStorage_REALLOCATE (void * *a, unsigned int size)
       (*a) = libc_realloc ((*a), static_cast<size_t> (size));
       if ((*a) == NULL)
         {
-          Debug_Halt ((const char *) "out of memory error", 19, 119, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/SysStorage.mod", 51);
+          Debug_Halt ((const char *) "out of memory error", 19, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/SysStorage.mod", 51, (const char *) "REALLOCATE", 10, 122);
         }
       if (enableTrace && trace)
         {

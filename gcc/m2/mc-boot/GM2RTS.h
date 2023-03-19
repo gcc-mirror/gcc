@@ -131,7 +131,7 @@ EXTERN void M2RTS_HALT (int exitcode) __attribute__ ((noreturn));
            to stderr and calls exit (1).
 */
 
-EXTERN void M2RTS_Halt (const char *filename_, unsigned int _filename_high, unsigned int line, const char *function_, unsigned int _function_high, const char *description_, unsigned int _description_high) __attribute__ ((noreturn));
+EXTERN void M2RTS_Halt (const char *description_, unsigned int _description_high, const char *filename_, unsigned int _filename_high, const char *function_, unsigned int _function_high, unsigned int line) __attribute__ ((noreturn));
 
 /*
    HaltC - provides a more user friendly version of HALT, which takes
@@ -139,7 +139,7 @@ EXTERN void M2RTS_Halt (const char *filename_, unsigned int _filename_high, unsi
            to stderr and calls exit (1).
 */
 
-EXTERN void M2RTS_HaltC (void * filename, unsigned int line, void * function, void * description) __attribute__ ((noreturn));
+EXTERN void M2RTS_HaltC (void * description, void * filename, void * function, unsigned int line) __attribute__ ((noreturn));
 
 /*
    ExitOnHalt - if HALT is executed then call exit with the exit code, e.

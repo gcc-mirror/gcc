@@ -382,7 +382,7 @@ PROCEDURE SetWholeProgram (value: BOOLEAN) ;
 (*
    SetAutoInit - set the auto initialization flag to value.  If the value
                  is true then all pointers are automatically
-                 initialized to NIL.
+                 initialized to NIL.  TRUE is returned.
 *)
 
 PROCEDURE SetAutoInit (value: BOOLEAN) : BOOLEAN ;
@@ -390,7 +390,7 @@ PROCEDURE SetAutoInit (value: BOOLEAN) : BOOLEAN ;
 
 (*
    SetReturnCheck - set return statement checking in procedure functions
-                    to value.
+                    to value.  TRUE is returned.
 *)
 
 PROCEDURE SetReturnCheck (value: BOOLEAN) : BOOLEAN ;

@@ -237,7 +237,7 @@ m2treelib_DoCall3 (location_t location, tree rettype, tree funcptr, tree arg0,
    type to be copied upon indirection.  */
 
 tree
-m2treelib_get_rvalue (location_t location, tree t, tree type, int is_lvalue)
+m2treelib_get_rvalue (location_t location, tree t, tree type, bool is_lvalue)
 {
   if (is_lvalue)
     return m2expr_BuildIndirect (location, t, type);
@@ -252,7 +252,7 @@ m2treelib_get_rvalue (location_t location, tree t, tree type, int is_lvalue)
    field list and return the appropriate field number.  */
 
 tree
-m2treelib_get_field_no (tree type, tree op, int is_const, unsigned int fieldNo)
+m2treelib_get_field_no (tree type, tree op, bool is_const, unsigned int fieldNo)
 {
   ASSERT_BOOL (is_const);
   if (is_const)
@@ -273,8 +273,8 @@ m2treelib_get_field_no (tree type, tree op, int is_const, unsigned int fieldNo)
    Either p->field or the constant(op.fieldNo) is returned.  */
 
 tree
-m2treelib_get_set_value (location_t location, tree p, tree field, int is_const,
-                         int is_lvalue, tree op, unsigned int fieldNo)
+m2treelib_get_set_value (location_t location, tree p, tree field, bool is_const,
+                         bool is_lvalue, tree op, unsigned int fieldNo)
 {
   tree value;
   constructor_elt *ce;
@@ -323,7 +323,7 @@ m2treelib_get_set_value (location_t location, tree p, tree field, int is_const,
 /* get_set_address - returns the address of op1.  */
 
 tree
-m2treelib_get_set_address (location_t location, tree op1, int is_lvalue)
+m2treelib_get_set_address (location_t location, tree op1, bool is_lvalue)
 {
   if (is_lvalue)
     return op1;
@@ -368,8 +368,8 @@ m2treelib_get_set_field_des (location_t location, tree p, tree field)
    is not a constant.  NULL is returned if, op, is a constant.  */
 
 tree
-m2treelib_get_set_address_if_var (location_t location, tree op, int is_lvalue,
-                                  int is_const)
+m2treelib_get_set_address_if_var (location_t location, tree op, bool is_lvalue,
+                                  bool is_const)
 {
   if (is_const)
     return NULL;

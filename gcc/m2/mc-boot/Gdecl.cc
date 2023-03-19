@@ -1038,8 +1038,8 @@ extern "C" bool M2RTS_InstallInitialProcedure (PROC p);
 extern "C" void M2RTS_ExecuteTerminationProcedures (void);
 extern "C" void M2RTS_Terminate (void) __attribute__ ((noreturn));
 extern "C" void M2RTS_HALT (int exitcode) __attribute__ ((noreturn));
-extern "C" void M2RTS_Halt (const char *filename_, unsigned int _filename_high, unsigned int line, const char *function_, unsigned int _function_high, const char *description_, unsigned int _description_high) __attribute__ ((noreturn));
-extern "C" void M2RTS_HaltC (void * filename, unsigned int line, void * function, void * description) __attribute__ ((noreturn));
+extern "C" void M2RTS_Halt (const char *description_, unsigned int _description_high, const char *filename_, unsigned int _filename_high, const char *function_, unsigned int _function_high, unsigned int line) __attribute__ ((noreturn));
+extern "C" void M2RTS_HaltC (void * description, void * filename, void * function, unsigned int line) __attribute__ ((noreturn));
 extern "C" void M2RTS_ExitOnHalt (int e);
 extern "C" void M2RTS_ErrorMessage (const char *message_, unsigned int _message_high, const char *filename_, unsigned int _filename_high, unsigned int line, const char *function_, unsigned int _function_high) __attribute__ ((noreturn));
 extern "C" unsigned int M2RTS_Length (const char *a_, unsigned int _a_high);
@@ -2697,8 +2697,8 @@ extern "C" void DynamicStrings_PopAllocation (bool halt);
 
 /*
    PopAllocationExemption - test to see that all strings are deallocated, except
-                            string, e, since the last push.
-                            Then it pops to the previous allocation/deallocation
+                            string e since the last push.
+                            Post-condition: it pops to the previous allocation/deallocation
                             lists.
 
                             If halt is true then the application terminates
@@ -3389,7 +3389,7 @@ extern "C" void NumberIO_StrToBin (const char *a_, unsigned int _a_high, unsigne
 extern "C" void NumberIO_StrToBinInt (const char *a_, unsigned int _a_high, int *x);
 extern "C" void NumberIO_StrToHexInt (const char *a_, unsigned int _a_high, int *x);
 extern "C" void NumberIO_StrToOctInt (const char *a_, unsigned int _a_high, int *x);
-extern "C" void Debug_Halt (const char *Message_, unsigned int _Message_high, unsigned int LineNo, const char *Module_, unsigned int _Module_high);
+extern "C" void Debug_Halt (const char *Message_, unsigned int _Message_high, const char *Module_, unsigned int _Module_high, const char *Function_, unsigned int _Function_high, unsigned int LineNo);
 extern "C" void Debug_DebugString (const char *a_, unsigned int _a_high);
 extern "C" void Assertion_Assert (bool Condition);
 extern "C" void StdIO_Read (char *ch);

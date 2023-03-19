@@ -368,8 +368,8 @@ extern "C" void DynamicStrings_PopAllocation (bool halt);
 
 /*
    PopAllocationExemption - test to see that all strings are deallocated, except
-                            string, e, since the last push.
-                            Then it pops to the previous allocation/deallocation
+                            string e since the last push.
+                            Post-condition: it pops to the previous allocation/deallocation
                             lists.
 
                             If halt is true then the application terminates
@@ -2609,8 +2609,8 @@ extern "C" void DynamicStrings_PopAllocation (bool halt)
 
 /*
    PopAllocationExemption - test to see that all strings are deallocated, except
-                            string, e, since the last push.
-                            Then it pops to the previous allocation/deallocation
+                            string e since the last push.
+                            Post-condition: it pops to the previous allocation/deallocation
                             lists.
 
                             If halt is true then the application terminates
@@ -2630,11 +2630,11 @@ extern "C" DynamicStrings_String DynamicStrings_PopAllocationExemption (bool hal
       if (frameHead == NULL)
         {
           stop ();
-          /* writeString ("mismatched number of PopAllocation's compared to PushAllocation's")  */
-          M2RTS_Halt ((const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 176, (const char *) "PopAllocationExemption", 22, (const char *) "mismatched number of PopAllocation's compared to PushAllocation's", 65);
+          M2RTS_Halt ((const char *) "mismatched number of PopAllocation's compared to PushAllocation's", 65, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, (const char *) "PopAllocationExemption", 22, 177);
         }
       else
         {
+          /* writeString ("mismatched number of PopAllocation's compared to PushAllocation's")  */
           if (frameHead->alloc != NULL)
             {
               b = false;

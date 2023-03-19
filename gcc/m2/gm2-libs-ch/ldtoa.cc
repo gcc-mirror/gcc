@@ -43,7 +43,7 @@ typedef enum Mode { maxsignicant, decimaldigits } Mode;
 
 extern int dtoa_calcmaxsig (char *p, int ndigits);
 extern int dtoa_calcdecimal (char *p, int str_size, int ndigits);
-extern int dtoa_calcsign (char *p, int str_size);
+extern bool dtoa_calcsign (char *p, int str_size);
 
 /* maxsignicant: return a string containing max(1,ndigits)
    significant digits.  The return string contains the string
@@ -72,7 +72,7 @@ ldtoa_strtold (const char *s, bool *error)
 }
 
 char *
-ldtoa_ldtoa (long double d, int mode, int ndigits, int *decpt, int *sign)
+ldtoa_ldtoa (long double d, int mode, int ndigits, int *decpt, bool *sign)
 {
   char format[50];
   char *p;
