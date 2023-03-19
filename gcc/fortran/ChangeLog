@@ -1,3 +1,110 @@
+2023-03-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/103854
+	PR fortran/96122
+	PR fortran/37336
+	* class.cc (finalize_component): Include the missing arguments
+	in the call to the component's finalizer wrapper.
+	(has_finalizer_component): Do not return true for procedure
+	pointer components.
+	(finalizer_insert_packed_call): Remove the redundant argument
+	in the call to the final subroutine.
+	(generate_finalization_wrapper): Add support for assumed rank
+	finalizers.
+	(gfc_may_be_finalized): New helper function.
+	* dump-parse-tree.cc (write_proc): Whitespace.
+	* gfortran.h : Add prototype for gfc_may_be_finalized.
+	* resolve.cc (resolve_function): Correct derived types that
+	have an incomplete namespace.
+	(resolve_where, gfc_resolve_where_code_in_forall,
+	gfc_resolve_forall_body, gfc_resolve_code): Check that the op
+	code is still EXEC_ASSIGN. If it is set lhs to must finalize.
+	(is_finalizable_type): New function.
+	(generate_component_assignments): Set must_finalize if needed.
+	(gfc_resolve_finalizers): Error if assumed rank finalizer is
+	not the only one. Warning on lack of scalar finalizer modified
+	to account for assumed rank finalizers.
+	(generate_final_call): New function.
+	(generate_component_assignments): Enclose the outermost call in
+	a block to capture automatic deallocation and final calls.
+	Set must_finalize as required to satisfy the standards. Use an
+	explicit pointer assignment for pointer components to capture
+	finalization of the target. Likewise use explicit assignment
+	for allocatable components. Do not use the temporary copy of
+	the lhs in defined assignment if the component is allocatable.
+	Put the temporary in the same namespace as the lhs symbol if
+	the component may be finalized. Remove the leading assignment
+	from the expansion of assignment of components that have their
+	own defined assignment components. Suppress finalization of
+	assignment of temporary components to the lhs. Make an explicit
+	final call for the rhs function temporary if it exists.
+	(gfc_resolve_code): Set must_finalize for assignments with an
+	array constructor on the rhs.
+	(gfc_resolve_finalizers): Ensure that an assumed rank finalizer
+	is the only finalizer for that type and correct the surprising
+	warning for the lack of a scalar finalizer.
+	(check_defined_assignments): Handle allocatable components.
+	(resolve_fl_derived): Set referenced the vtab for use
+	associated symbols.
+	(resolve_symbol): Set referenced an unreferenced symbol that
+	will be finalized.
+	* trans-array.cc (gfc_trans_array_constructor_value): Add code
+	to finalize the constructor result. Warn that this feature was
+	removed in F2018 and that it is suppressed by -std=2018.
+	(trans_array_constructor): Add finalblock, pass to previous
+	and apply to loop->post if filled.
+	(gfc_add_loop_ss_code): Add se finalblock to outer loop post.
+	(gfc_trans_array_cobounds, gfc_trans_array_bounds): Add any
+	generated finalization code to the main block.
+	(structure_alloc_comps): Add boolean argument to suppress
+	finalization and use it for calls from
+	gfc_deallocate_alloc_comp_no_caf. Otherwise it defaults to
+	false.
+	(gfc_copy_alloc_comp_no_fini): New wrapper for
+	structure_alloc_comps.
+	(gfc_alloc_allocatable_for_assignment): Suppress finalization
+	by setting new arg in call to gfc_deallocate_alloc_comp_no_caf.
+	(gfc_trans_deferred_array): Use gfc_may_be_finalized and do not
+	deallocate the components of entities with a leading '_' in the
+	name that are also marked as artificial.
+	* trans-array.h : Add the new boolean argument to the prototype
+	of gfc_deallocate_alloc_comp_no_caf with a default of false.
+	Add prototype for gfc_copy_alloc_comp_no_fini.
+	* trans-decl.cc(init_intent_out_dt): Tidy up the code.
+	* trans-expr.cc (gfc_init_se): Initialize finalblock.
+	(gfc_conv_procedure_call): Use gfc_finalize_tree_expr to
+	finalize function results. Replace in-line block for class
+	results with call to new function.
+	(gfc_conv_expr): Finalize structure constructors for F2003 and
+	F2008. Warn that this feature was deleted in F2018 and, unlike
+	array constructors, is not default. Add array constructor
+	finalblock to the post block.
+	(gfc_trans_scalar_assign): Suppress finalization by setting new
+	argument in call to gfc_deallocate_alloc_comp_no_caf. Add the
+	finalization blocks to the main block.
+	(gfc_trans_arrayfunc_assign): Use gfc_assignment_finalizer_call
+	and ensure that finalization occurs after the evaluation of the
+	rhs but using the initial value for the lhs. Finalize rhs
+	function results using gfc_finalize_tree_expr.
+	(trans_class_assignment, gfc_trans_assignment_1): As previous
+	function, taking care to order evaluation, assignment and
+	finalization correctly.
+	* trans-io.cc (gfc_trans_transfer): Add the final block.
+	* trans-stmt.cc (gfc_trans_call, gfc_trans_allocate): likewise.
+	(trans_associate_var): Nullify derived allocatable components
+	and finalize function targets with defined assignment
+	components on leaving the block scope.
+	(trans_allocate): Finalize source expressions, if required,
+	and set init_expr artificial temporarily to suppress the
+	finalization in gfc_trans_assignment.
+	* trans.cc (gfc_add_finalizer_call): Do not finalize the
+	temporaries generated in type assignment with defined
+	assignment components.
+	(gfc_assignment_finalizer_call): New function.
+	(gfc_finalize_tree_expr): New function.
+	* trans.h: Add finalblock to gfc_se. Add the prototypes for
+	gfc_finalize_tree_expr and gfc_assignment_finalizer_call.
+
 2023-03-15  Harald Anlauf  <anlauf@gmx.de>
 	    Tobias Burnus  <tobias@codesourcery.com>
 

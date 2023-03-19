@@ -1,3 +1,47 @@
+2023-03-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109094
+	* gcc.dg/analyzer/setjmp-pr109094.c: New test.
+
+2023-03-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/64290
+	PR fortran/67444
+	PR fortran/67471
+	PR fortran/69298
+	PR fortran/70863
+	PR fortran/71798
+	PR fortran/80524
+	PR fortran/82996
+	PR fortran/84472
+	PR fortran/88735
+	PR fortran/93691
+	PR fortran/91316
+	PR fortran/106576
+	PR fortran/37336
+	* gfortran.dg/finalize_38.f90 : New test.
+	* gfortran.dg/finalize_38a.f90 : New test.
+	* gfortran.dg/allocate_with_source_25.f90 : The number of final
+	calls goes down from 6 to 4.
+	* gfortran.dg/associate_25.f90 : Remove the incorrect comment.
+	* gfortran.dg/auto_dealloc_2.f90 : Change the tree dump expr
+	but the final count remains the same.
+	* gfortran.dg/unlimited_polymorphic_8.f90 : Tree dump reveals
+	foo.1.x rather than foo.0.x
+	* gfortran.dg/finalize_39.f90 : New test.
+	* gfortran.dg/finalize_40.f90 : New test.
+	* gfortran.dg/finalize_41.f90 : New test.
+	* gfortran.dg/finalize_42.f90 : New test.
+	* gfortran.dg/finalize_43.f90 : New test.
+	* gfortran.dg/finalize_44.f90 : New test.
+	* gfortran.dg/finalize_45.f90 : New test.
+	* gfortran.dg/finalize_46.f90 : New test.
+	* gfortran.dg/finalize_47.f90 : New test.
+	* gfortran.dg/finalize_48.f90 : New test.
+	* gfortran.dg/finalize_49.f90 : New test.
+	* gfortran.dg/finalize_50.f90 : New test.
+	* gfortran.dg/finalize_51.f90 : New test.
+
 2023-03-17  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/plugin/infoleak-2.c,
