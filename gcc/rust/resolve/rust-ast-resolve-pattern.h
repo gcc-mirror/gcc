@@ -90,31 +90,6 @@ public:
 
 typedef std::map<Identifier, BindingTypeInfo> BindingMap;
 
-class ResolvePattern : public ResolverBase
-{
-  using Rust::Resolver::ResolverBase::visit;
-
-public:
-  static void go (AST::Pattern *pattern)
-  {
-    ResolvePattern resolver;
-    pattern->accept_vis (resolver);
-  }
-
-  void visit (AST::IdentifierPattern &pattern) override
-  {
-    if (resolver->get_name_scope ().lookup (
-	  CanonicalPath::new_seg (pattern.get_node_id (), pattern.get_ident ()),
-	  &resolved_node))
-      {
-	resolver->insert_resolved_name (pattern.get_node_id (), resolved_node);
-      }
-  }
-
-private:
-  ResolvePattern () : ResolverBase () {}
-};
-
 class PatternDeclaration : public ResolverBase
 {
   using Rust::Resolver::ResolverBase::visit;
