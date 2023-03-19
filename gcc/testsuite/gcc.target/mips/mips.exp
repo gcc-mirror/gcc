@@ -1467,6 +1467,7 @@ proc mips-dg-options { args } {
     mips_option_dependency options "-mfpxx" "-mno-paired-single"
     mips_option_dependency options "-msoft-float" "-mno-paired-single"
     mips_option_dependency options "-mno-paired-single" "-mno-mips3d"
+    mips_option_dependency options "-mmsa" "-mno-micromips"
     mips_option_dependency options "-mmsa" "-mno-mips16"
 
     # If the test requires an unsupported option, change run tests
