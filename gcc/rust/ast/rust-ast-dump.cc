@@ -1532,7 +1532,6 @@ Dump::visit (MacroRule &rule)
   visit (rule.get_matcher ());
   stream << " => ";
   visit (rule.get_transcriber ().get_token_tree ());
-  stream << ";";
 }
 
 void
