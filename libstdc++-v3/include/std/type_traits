@@ -2089,6 +2089,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Pointer modifications.
 
+  /// remove_pointer
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__remove_pointer)
+  template<typename _Tp>
+    struct remove_pointer
+    { using type = __remove_pointer(_Tp); };
+#else
   template<typename _Tp, typename>
     struct __remove_pointer_helper
     { using type = _Tp; };
@@ -2097,11 +2103,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __remove_pointer_helper<_Tp, _Up*>
     { using type = _Up; };
 
-  /// remove_pointer
   template<typename _Tp>
     struct remove_pointer
     : public __remove_pointer_helper<_Tp, __remove_cv_t<_Tp>>
     { };
+#endif
 
   template<typename _Tp, typename = void>
     struct __add_pointer_helper
