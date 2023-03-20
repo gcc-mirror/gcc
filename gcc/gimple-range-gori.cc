@@ -653,12 +653,38 @@ gori_compute::compute_operand_range (vrange &r, gimple *stmt,
   if (!op1_in_chain && !op2_in_chain)
     return false;
 
-  // If the lhs doesn't tell us anything and there are no relations, there
-  // is nothing to be learned.
-  if (lhs.varying_p () && !vrel_ptr)
-    return false;
+  bool res = false;
+  // If the lhs doesn't tell us anything only a relation can possibly enhance
+  // the result.
+  if (lhs.varying_p ())
+    {
+      if (!vrel_ptr)
+	return false;
+      // If there is a relation (ie: x != y) , it can only be relevant if
+      // a) both elements are in the defchain
+      //    c = x > y   // (x and y are in c's defchain)
+      if (op1_in_chain)
+	res = in_chain_p (vrel_ptr->op1 (), op1)
+	      && in_chain_p (vrel_ptr->op2 (), op1);
+      if (!res && op2_in_chain)
+	res = in_chain_p (vrel_ptr->op1 (), op2)
+	      || in_chain_p (vrel_ptr->op2 (), op2);
+      if (!res)
+	{
+	  // or b) one relation element is in the defchain of the other and the
+	  //       other is the LHS of this stmt.
+	  //  x = y + 2
+	  if (vrel_ptr->op1 () == handler.lhs ()
+	      && (vrel_ptr->op2 () == op1 || vrel_ptr->op2 () == op2))
+	    res = true;
+	  else if (vrel_ptr->op2 () == handler.lhs ()
+		   && (vrel_ptr->op1 () == op1 || vrel_ptr->op1 () == op2))
+	    res = true;
+	}
+      if (!res)
+	return false;
+    }
 
-  bool res;
   // Process logicals as they have special handling.
   if (is_gimple_logical_p (stmt))
     {

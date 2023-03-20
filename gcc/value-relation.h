@@ -445,7 +445,7 @@ value_relation::set_relation (relation_kind r, tree n1, tree n2)
 {
   gcc_checking_assert (TREE_CODE (n1) == SSA_NAME
 		       && TREE_CODE (n2) == SSA_NAME);
-  if (n1 == n2)
+  if (n1 == n2 && r != VREL_EQ)
     {
       related = VREL_VARYING;
       name1 = NULL_TREE;
