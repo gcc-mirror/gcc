@@ -285,102 +285,6 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc, bool has_semicolon)
   set_expanded_fragment (std::move (fragment));
 }
 
-/* Determines whether any cfg predicate is false and hence item with attributes
- * should be stripped. Note that attributes must be expanded before calling. */
-bool
-MacroExpander::fails_cfg (const AST::AttrVec &attrs) const
-{
-  for (const auto &attr : attrs)
-    {
-      if (attr.get_path () == "cfg" && !attr.check_cfg_predicate (session))
-	return true;
-    }
-  return false;
-}
-
-/* Determines whether any cfg predicate is false and hence item with attributes
- * should be stripped. Will expand attributes as well. */
-bool
-MacroExpander::fails_cfg_with_expand (AST::AttrVec &attrs) const
-{
-  // TODO: maybe have something that strips cfg attributes that evaluate true?
-  for (auto &attr : attrs)
-    {
-      if (attr.get_path () == "cfg")
-	{
-	  if (!attr.is_parsed_to_meta_item ())
-	    attr.parse_attr_to_meta_item ();
-
-	  // DEBUG
-	  if (!attr.is_parsed_to_meta_item ())
-	    rust_debug ("failed to parse attr to meta item, right before "
-			"cfg predicate check");
-	  else
-	    rust_debug ("attr has been successfully parsed to meta item, "
-			"right before cfg predicate check");
-
-	  if (!attr.check_cfg_predicate (session))
-	    {
-	      // DEBUG
-	      rust_debug (
-		"cfg predicate failed for attribute: \033[0;31m'%s'\033[0m",
-		attr.as_string ().c_str ());
-
-	      return true;
-	    }
-	  else
-	    {
-	      // DEBUG
-	      rust_debug ("cfg predicate succeeded for attribute: "
-			  "\033[0;31m'%s'\033[0m",
-			  attr.as_string ().c_str ());
-	    }
-	}
-    }
-  return false;
-}
-
-// Expands cfg_attr attributes.
-void
-MacroExpander::expand_cfg_attrs (AST::AttrVec &attrs)
-{
-  for (std::size_t i = 0; i < attrs.size (); i++)
-    {
-      auto &attr = attrs[i];
-      if (attr.get_path () == "cfg_attr")
-	{
-	  if (!attr.is_parsed_to_meta_item ())
-	    attr.parse_attr_to_meta_item ();
-
-	  if (attr.check_cfg_predicate (session))
-	    {
-	      // split off cfg_attr
-	      AST::AttrVec new_attrs = attr.separate_cfg_attrs ();
-
-	      // remove attr from vector
-	      attrs.erase (attrs.begin () + i);
-
-	      // add new attrs to vector
-	      attrs.insert (attrs.begin () + i,
-			    std::make_move_iterator (new_attrs.begin ()),
-			    std::make_move_iterator (new_attrs.end ()));
-	    }
-
-	  /* do something - if feature (first token in tree) is in fact enabled,
-	   * make tokens listed afterwards into attributes. i.e.: for
-	   * [cfg_attr(feature = "wow", wow1, wow2)], if "wow" is true, then add
-	   * attributes [wow1] and [wow2] to attribute list. This can also be
-	   * recursive, so check for expanded attributes being recursive and
-	   * possibly recursively call the expand_attrs? */
-	}
-      else
-	{
-	  i++;
-	}
-    }
-  attrs.shrink_to_fit ();
-}
-
 void
 MacroExpander::expand_crate ()
 {
@@ -392,17 +296,6 @@ MacroExpander::expand_crate ()
 
   // TODO: does cfg apply for inner attributes? research.
   // the apparent answer (from playground test) is yes
-
-  // expand crate cfg_attr attributes
-  expand_cfg_attrs (crate.inner_attrs);
-
-  if (fails_cfg_with_expand (crate.inner_attrs))
-    {
-      // basically, delete whole crate
-      crate.strip_crate ();
-      // TODO: maybe create warning here? probably not desired behaviour
-    }
-  // expand module attributes?
 
   push_context (ITEM);
 

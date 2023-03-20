@@ -21,6 +21,129 @@
 
 namespace Rust {
 
+/**
+ * Determines whether any cfg predicate is false and hence item with attributes
+ * should be stripped. Note that attributes must be expanded before calling.
+ */
+bool
+fails_cfg (const AST::AttrVec &attrs)
+{
+  auto &session = Session::get_instance ();
+
+  for (const auto &attr : attrs)
+    {
+      if (attr.get_path () == "cfg" && !attr.check_cfg_predicate (session))
+	return true;
+    }
+  return false;
+}
+
+/**
+ * Determines whether any cfg predicate is false and hence item with attributes
+ * should be stripped. Will expand attributes as well.
+ */
+bool
+fails_cfg_with_expand (AST::AttrVec &attrs)
+{
+  auto &session = Session::get_instance ();
+
+  // TODO: maybe have something that strips cfg attributes that evaluate true?
+  for (auto &attr : attrs)
+    {
+      if (attr.get_path () == "cfg")
+	{
+	  if (!attr.is_parsed_to_meta_item ())
+	    attr.parse_attr_to_meta_item ();
+
+	  // DEBUG
+	  if (!attr.is_parsed_to_meta_item ())
+	    rust_debug ("failed to parse attr to meta item, right before "
+			"cfg predicate check");
+	  else
+	    rust_debug ("attr has been successfully parsed to meta item, "
+			"right before cfg predicate check");
+
+	  if (!attr.check_cfg_predicate (session))
+	    {
+	      // DEBUG
+	      rust_debug (
+		"cfg predicate failed for attribute: \033[0;31m'%s'\033[0m",
+		attr.as_string ().c_str ());
+
+	      return true;
+	    }
+	  else
+	    {
+	      // DEBUG
+	      rust_debug ("cfg predicate succeeded for attribute: "
+			  "\033[0;31m'%s'\033[0m",
+			  attr.as_string ().c_str ());
+	    }
+	}
+    }
+  return false;
+}
+
+/**
+ * Expands cfg_attr attributes.
+ */
+void
+expand_cfg_attrs (AST::AttrVec &attrs)
+{
+  auto &session = Session::get_instance ();
+
+  for (std::size_t i = 0; i < attrs.size (); i++)
+    {
+      auto &attr = attrs[i];
+      if (attr.get_path () == "cfg_attr")
+	{
+	  if (!attr.is_parsed_to_meta_item ())
+	    attr.parse_attr_to_meta_item ();
+
+	  if (attr.check_cfg_predicate (session))
+	    {
+	      // split off cfg_attr
+	      AST::AttrVec new_attrs = attr.separate_cfg_attrs ();
+
+	      // remove attr from vector
+	      attrs.erase (attrs.begin () + i);
+
+	      // add new attrs to vector
+	      attrs.insert (attrs.begin () + i,
+			    std::make_move_iterator (new_attrs.begin ()),
+			    std::make_move_iterator (new_attrs.end ()));
+	    }
+
+	  /* do something - if feature (first token in tree) is in fact enabled,
+	   * make tokens listed afterwards into attributes. i.e.: for
+	   * [cfg_attr(feature = "wow", wow1, wow2)], if "wow" is true, then add
+	   * attributes [wow1] and [wow2] to attribute list. This can also be
+	   * recursive, so check for expanded attributes being recursive and
+	   * possibly recursively call the expand_attrs? */
+	}
+      else
+	{
+	  i++;
+	}
+    }
+  attrs.shrink_to_fit ();
+}
+
+void
+AttrVisitor::go (AST::Crate &crate)
+{
+  // expand crate cfg_attr attributes
+  expand_cfg_attrs (crate.inner_attrs);
+
+  if (fails_cfg_with_expand (crate.inner_attrs))
+    {
+      // basically, delete whole crate
+      crate.strip_crate ();
+      // TODO: maybe create warning here? probably not desired behaviour
+    }
+  // expand module attributes?
+}
+
 // Visitor used to expand attributes.
 void
 AttrVisitor::expand_struct_fields (std::vector<AST::StructField> &fields)
@@ -30,8 +153,8 @@ AttrVisitor::expand_struct_fields (std::vector<AST::StructField> &fields)
       auto &field = *it;
 
       auto &field_attrs = field.get_outer_attrs ();
-      expander.expand_cfg_attrs (field_attrs);
-      if (expander.fails_cfg_with_expand (field_attrs))
+      expand_cfg_attrs (field_attrs);
+      if (fails_cfg_with_expand (field_attrs))
 	{
 	  it = fields.erase (it);
 	  continue;
@@ -64,8 +187,8 @@ AttrVisitor::expand_tuple_fields (std::vector<AST::TupleField> &fields)
       auto &field = *it;
 
       auto &field_attrs = field.get_outer_attrs ();
-      expander.expand_cfg_attrs (field_attrs);
-      if (expander.fails_cfg_with_expand (field_attrs))
+      expand_cfg_attrs (field_attrs);
+      if (fails_cfg_with_expand (field_attrs))
 	{
 	  it = fields.erase (it);
 	  continue;
@@ -93,8 +216,8 @@ AttrVisitor::expand_function_params (std::vector<AST::FunctionParam> &params)
       auto &param = *it;
 
       auto &param_attrs = param.get_outer_attrs ();
-      expander.expand_cfg_attrs (param_attrs);
-      if (expander.fails_cfg_with_expand (param_attrs))
+      expand_cfg_attrs (param_attrs);
+      if (fails_cfg_with_expand (param_attrs))
 	{
 	  it = params.erase (it);
 	  continue;
@@ -215,8 +338,8 @@ AttrVisitor::AttrVisitor::expand_closure_params (
       auto &param = *it;
 
       auto &param_attrs = param.get_outer_attrs ();
-      expander.expand_cfg_attrs (param_attrs);
-      if (expander.fails_cfg_with_expand (param_attrs))
+      expand_cfg_attrs (param_attrs);
+      if (fails_cfg_with_expand (param_attrs))
 	{
 	  it = params.erase (it);
 	  continue;
@@ -363,8 +486,8 @@ void
 AttrVisitor::visit (AST::IdentifierExpr &ident_expr)
 {
   // strip test based on outer attrs
-  expander.expand_cfg_attrs (ident_expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (ident_expr.get_outer_attrs ()))
+  expand_cfg_attrs (ident_expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (ident_expr.get_outer_attrs ()))
     {
       ident_expr.mark_for_strip ();
       return;
@@ -390,8 +513,8 @@ void
 AttrVisitor::visit (AST::MacroInvocation &macro_invoc)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (macro_invoc.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (macro_invoc.get_outer_attrs ()))
+  expand_cfg_attrs (macro_invoc.get_outer_attrs ());
+  if (fails_cfg_with_expand (macro_invoc.get_outer_attrs ()))
     {
       macro_invoc.mark_for_strip ();
       return;
@@ -409,8 +532,8 @@ void
 AttrVisitor::visit (AST::PathInExpression &path)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (path.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (path.get_outer_attrs ()))
+  expand_cfg_attrs (path.get_outer_attrs ());
+  if (fails_cfg_with_expand (path.get_outer_attrs ()))
     {
       path.mark_for_strip ();
       return;
@@ -477,8 +600,8 @@ void
 AttrVisitor::visit (AST::QualifiedPathInExpression &path)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (path.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (path.get_outer_attrs ()))
+  expand_cfg_attrs (path.get_outer_attrs ());
+  if (fails_cfg_with_expand (path.get_outer_attrs ()))
     {
       path.mark_for_strip ();
       return;
@@ -506,8 +629,8 @@ void
 AttrVisitor::visit (AST::LiteralExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -532,8 +655,8 @@ void
 AttrVisitor::visit (AST::BorrowExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -553,8 +676,8 @@ void
 AttrVisitor::visit (AST::DereferenceExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -574,8 +697,8 @@ void
 AttrVisitor::visit (AST::ErrorPropagationExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -595,8 +718,8 @@ void
 AttrVisitor::visit (AST::NegationExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -725,8 +848,8 @@ AttrVisitor::visit (AST::TypeCastExpr &expr)
 void
 AttrVisitor::visit (AST::AssignmentExpr &expr)
 {
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -788,8 +911,8 @@ void
 AttrVisitor::visit (AST::GroupedExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -797,8 +920,8 @@ AttrVisitor::visit (AST::GroupedExpr &expr)
 
   /* strip test based on inner attrs - spec says these are inner
    * attributes, not outer attributes of inner expr */
-  expander.expand_cfg_attrs (expr.get_inner_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_inner_attrs ()))
+  expand_cfg_attrs (expr.get_inner_attrs ());
+  if (fails_cfg_with_expand (expr.get_inner_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -848,8 +971,8 @@ void
 AttrVisitor::visit (AST::ArrayExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -857,8 +980,8 @@ AttrVisitor::visit (AST::ArrayExpr &expr)
 
   /* strip test based on inner attrs - spec says there are separate
    * inner attributes, not just outer attributes of inner exprs */
-  expander.expand_cfg_attrs (expr.get_inner_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_inner_attrs ()))
+  expand_cfg_attrs (expr.get_inner_attrs ());
+  if (fails_cfg_with_expand (expr.get_inner_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -875,8 +998,8 @@ AttrVisitor::visit (AST::ArrayIndexExpr &expr)
    * allowed, but conceptually it wouldn't make much sense, but
    * having expansion code anyway. TODO */
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -906,8 +1029,8 @@ AttrVisitor::visit (AST::TupleExpr &expr)
    * tuple expressions" */
 
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -915,8 +1038,8 @@ AttrVisitor::visit (AST::TupleExpr &expr)
 
   /* strip test based on inner attrs - spec says these are inner
    * attributes, not outer attributes of inner expr */
-  expander.expand_cfg_attrs (expr.get_inner_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_inner_attrs ()))
+  expand_cfg_attrs (expr.get_inner_attrs ());
+  if (fails_cfg_with_expand (expr.get_inner_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -930,8 +1053,8 @@ void
 AttrVisitor::visit (AST::TupleIndexExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -951,8 +1074,8 @@ void
 AttrVisitor::visit (AST::StructExprStruct &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -960,8 +1083,8 @@ AttrVisitor::visit (AST::StructExprStruct &expr)
 
   /* strip test based on inner attrs - spec says these are inner
    * attributes, not outer attributes of inner expr */
-  expander.expand_cfg_attrs (expr.get_inner_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_inner_attrs ()))
+  expand_cfg_attrs (expr.get_inner_attrs ());
+  if (fails_cfg_with_expand (expr.get_inner_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1007,8 +1130,8 @@ void
 AttrVisitor::visit (AST::StructExprStructFields &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1016,8 +1139,8 @@ AttrVisitor::visit (AST::StructExprStructFields &expr)
 
   /* strip test based on inner attrs - spec says these are inner
    * attributes, not outer attributes of inner expr */
-  expander.expand_cfg_attrs (expr.get_inner_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_inner_attrs ()))
+  expand_cfg_attrs (expr.get_inner_attrs ());
+  if (fails_cfg_with_expand (expr.get_inner_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1056,8 +1179,8 @@ void
 AttrVisitor::visit (AST::StructExprStructBase &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1065,8 +1188,8 @@ AttrVisitor::visit (AST::StructExprStructBase &expr)
 
   /* strip test based on inner attrs - spec says these are inner
    * attributes, not outer attributes of inner expr */
-  expander.expand_cfg_attrs (expr.get_inner_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_inner_attrs ()))
+  expand_cfg_attrs (expr.get_inner_attrs ());
+  if (fails_cfg_with_expand (expr.get_inner_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1093,8 +1216,8 @@ void
 AttrVisitor::visit (AST::CallExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1143,8 +1266,8 @@ void
 AttrVisitor::visit (AST::MethodCallExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1172,8 +1295,8 @@ void
 AttrVisitor::visit (AST::FieldAccessExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1193,8 +1316,8 @@ void
 AttrVisitor::visit (AST::ClosureExprInner &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1217,8 +1340,8 @@ void
 AttrVisitor::visit (AST::BlockExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1226,8 +1349,8 @@ AttrVisitor::visit (AST::BlockExpr &expr)
 
   /* strip test based on inner attrs - spec says there are inner
    * attributes, not just outer attributes of inner stmts */
-  expander.expand_cfg_attrs (expr.get_inner_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_inner_attrs ()))
+  expand_cfg_attrs (expr.get_inner_attrs ());
+  if (fails_cfg_with_expand (expr.get_inner_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1236,10 +1359,10 @@ AttrVisitor::visit (AST::BlockExpr &expr)
   std::function<std::unique_ptr<AST::Stmt> (AST::SingleASTNode)> extractor
     = [] (AST::SingleASTNode node) { return node.take_stmt (); };
 
-  expand_macro_children (MacroExpander::BLOCK, expr.get_statements (),
-			 extractor);
+  expand_macro_children (MacroExpander::ContextType::BLOCK,
+			 expr.get_statements (), extractor);
 
-  expander.push_context (MacroExpander::BLOCK);
+  expander.push_context (MacroExpander::ContextType::BLOCK);
 
   // strip tail expression if exists - can actually fully remove it
   if (expr.has_tail_expr ())
@@ -1259,8 +1382,8 @@ void
 AttrVisitor::visit (AST::ClosureExprInnerTyped &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1295,8 +1418,8 @@ void
 AttrVisitor::visit (AST::ContinueExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1306,8 +1429,8 @@ void
 AttrVisitor::visit (AST::BreakExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1436,8 +1559,8 @@ void
 AttrVisitor::visit (AST::ReturnExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1467,8 +1590,8 @@ void
 AttrVisitor::visit (AST::UnsafeBlockExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1486,8 +1609,8 @@ void
 AttrVisitor::visit (AST::LoopExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1505,8 +1628,8 @@ void
 AttrVisitor::visit (AST::WhileLoopExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1532,8 +1655,8 @@ void
 AttrVisitor::visit (AST::WhileLetLoopExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1567,8 +1690,8 @@ void
 AttrVisitor::visit (AST::ForLoopExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1604,8 +1727,8 @@ AttrVisitor::visit (AST::IfExpr &expr)
   // when used as statement
 
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1632,8 +1755,8 @@ void
 AttrVisitor::visit (AST::IfExprConseqElse &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1668,8 +1791,8 @@ void
 AttrVisitor::visit (AST::IfExprConseqIf &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1704,8 +1827,8 @@ void
 AttrVisitor::visit (AST::IfExprConseqIfLet &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1741,8 +1864,8 @@ void
 AttrVisitor::visit (AST::IfLetExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1776,8 +1899,8 @@ void
 AttrVisitor::visit (AST::IfLetExprConseqElse &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1819,8 +1942,8 @@ void
 AttrVisitor::visit (AST::IfLetExprConseqIf &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1862,8 +1985,8 @@ void
 AttrVisitor::visit (AST::IfLetExprConseqIfLet &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1906,16 +2029,16 @@ void
 AttrVisitor::visit (AST::MatchExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
     }
 
   // inner attr strip test
-  expander.expand_cfg_attrs (expr.get_inner_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_inner_attrs ()))
+  expand_cfg_attrs (expr.get_inner_attrs ());
+  if (fails_cfg_with_expand (expr.get_inner_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -1937,8 +2060,8 @@ AttrVisitor::visit (AST::MatchExpr &expr)
 
       // strip match case based on outer attributes in match arm
       auto &match_arm = match_case.get_arm ();
-      expander.expand_cfg_attrs (match_arm.get_outer_attrs ());
-      if (expander.fails_cfg_with_expand (match_arm.get_outer_attrs ()))
+      expand_cfg_attrs (match_arm.get_outer_attrs ());
+      if (fails_cfg_with_expand (match_arm.get_outer_attrs ()))
 	{
 	  // strip match case
 	  it = match_cases.erase (it);
@@ -1983,8 +2106,8 @@ void
 AttrVisitor::visit (AST::AwaitExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -2003,8 +2126,8 @@ void
 AttrVisitor::visit (AST::AsyncBlockExpr &expr)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (expr.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (expr.get_outer_attrs ()))
+  expand_cfg_attrs (expr.get_outer_attrs ());
+  if (fails_cfg_with_expand (expr.get_outer_attrs ()))
     {
       expr.mark_for_strip ();
       return;
@@ -2076,8 +2199,8 @@ void
 AttrVisitor::visit (AST::Method &method)
 {
   // initial test based on outer attrs
-  expander.expand_cfg_attrs (method.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (method.get_outer_attrs ()))
+  expand_cfg_attrs (method.get_outer_attrs ());
+  if (fails_cfg_with_expand (method.get_outer_attrs ()))
     {
       method.mark_for_strip ();
       return;
@@ -2129,8 +2252,8 @@ void
 AttrVisitor::visit (AST::Module &module)
 {
   // strip test based on outer attrs
-  expander.expand_cfg_attrs (module.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (module.get_outer_attrs ()))
+  expand_cfg_attrs (module.get_outer_attrs ());
+  if (fails_cfg_with_expand (module.get_outer_attrs ()))
     {
       module.mark_for_strip ();
       return;
@@ -2140,8 +2263,8 @@ AttrVisitor::visit (AST::Module &module)
   if (module.get_kind () == AST::Module::ModuleKind::LOADED)
     {
       // strip test based on inner attrs
-      expander.expand_cfg_attrs (module.get_inner_attrs ());
-      if (expander.fails_cfg_with_expand (module.get_inner_attrs ()))
+      expand_cfg_attrs (module.get_inner_attrs ());
+      if (fails_cfg_with_expand (module.get_inner_attrs ()))
 	{
 	  module.mark_for_strip ();
 	  return;
@@ -2155,8 +2278,8 @@ void
 AttrVisitor::visit (AST::ExternCrate &extern_crate)
 {
   // strip test based on outer attrs
-  expander.expand_cfg_attrs (extern_crate.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (extern_crate.get_outer_attrs ()))
+  expand_cfg_attrs (extern_crate.get_outer_attrs ());
+  if (fails_cfg_with_expand (extern_crate.get_outer_attrs ()))
     {
       extern_crate.mark_for_strip ();
       return;
@@ -2188,8 +2311,8 @@ void
 AttrVisitor::visit (AST::UseDeclaration &use_decl)
 {
   // strip test based on outer attrs
-  expander.expand_cfg_attrs (use_decl.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (use_decl.get_outer_attrs ()))
+  expand_cfg_attrs (use_decl.get_outer_attrs ());
+  if (fails_cfg_with_expand (use_decl.get_outer_attrs ()))
     {
       use_decl.mark_for_strip ();
       return;
@@ -2199,8 +2322,8 @@ void
 AttrVisitor::visit (AST::Function &function)
 {
   // initial test based on outer attrs
-  expander.expand_cfg_attrs (function.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (function.get_outer_attrs ()))
+  expand_cfg_attrs (function.get_outer_attrs ());
+  if (fails_cfg_with_expand (function.get_outer_attrs ()))
     {
       function.mark_for_strip ();
       return;
@@ -2247,8 +2370,8 @@ void
 AttrVisitor::visit (AST::TypeAlias &type_alias)
 {
   // initial test based on outer attrs
-  expander.expand_cfg_attrs (type_alias.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (type_alias.get_outer_attrs ()))
+  expand_cfg_attrs (type_alias.get_outer_attrs ());
+  if (fails_cfg_with_expand (type_alias.get_outer_attrs ()))
     {
       type_alias.mark_for_strip ();
       return;
@@ -2270,8 +2393,8 @@ void
 AttrVisitor::visit (AST::StructStruct &struct_item)
 {
   // initial test based on outer attrs
-  expander.expand_cfg_attrs (struct_item.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (struct_item.get_outer_attrs ()))
+  expand_cfg_attrs (struct_item.get_outer_attrs ());
+  if (fails_cfg_with_expand (struct_item.get_outer_attrs ()))
     {
       struct_item.mark_for_strip ();
       return;
@@ -2292,8 +2415,8 @@ void
 AttrVisitor::visit (AST::TupleStruct &tuple_struct)
 {
   // initial test based on outer attrs
-  expander.expand_cfg_attrs (tuple_struct.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (tuple_struct.get_outer_attrs ()))
+  expand_cfg_attrs (tuple_struct.get_outer_attrs ());
+  if (fails_cfg_with_expand (tuple_struct.get_outer_attrs ()))
     {
       tuple_struct.mark_for_strip ();
       return;
@@ -2314,8 +2437,8 @@ void
 AttrVisitor::visit (AST::EnumItem &item)
 {
   // initial test based on outer attrs
-  expander.expand_cfg_attrs (item.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
+  expand_cfg_attrs (item.get_outer_attrs ());
+  if (fails_cfg_with_expand (item.get_outer_attrs ()))
     {
       item.mark_for_strip ();
       return;
@@ -2325,8 +2448,8 @@ void
 AttrVisitor::visit (AST::EnumItemTuple &item)
 {
   // initial test based on outer attrs
-  expander.expand_cfg_attrs (item.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
+  expand_cfg_attrs (item.get_outer_attrs ());
+  if (fails_cfg_with_expand (item.get_outer_attrs ()))
     {
       item.mark_for_strip ();
       return;
@@ -2340,8 +2463,8 @@ void
 AttrVisitor::visit (AST::EnumItemStruct &item)
 {
   // initial test based on outer attrs
-  expander.expand_cfg_attrs (item.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
+  expand_cfg_attrs (item.get_outer_attrs ());
+  if (fails_cfg_with_expand (item.get_outer_attrs ()))
     {
       item.mark_for_strip ();
       return;
@@ -2355,8 +2478,8 @@ void
 AttrVisitor::visit (AST::EnumItemDiscriminant &item)
 {
   // initial test based on outer attrs
-  expander.expand_cfg_attrs (item.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
+  expand_cfg_attrs (item.get_outer_attrs ());
+  if (fails_cfg_with_expand (item.get_outer_attrs ()))
     {
       item.mark_for_strip ();
       return;
@@ -2376,8 +2499,8 @@ void
 AttrVisitor::visit (AST::Enum &enum_item)
 {
   // initial test based on outer attrs
-  expander.expand_cfg_attrs (enum_item.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (enum_item.get_outer_attrs ()))
+  expand_cfg_attrs (enum_item.get_outer_attrs ());
+  if (fails_cfg_with_expand (enum_item.get_outer_attrs ()))
     {
       enum_item.mark_for_strip ();
       return;
@@ -2398,8 +2521,8 @@ void
 AttrVisitor::visit (AST::Union &union_item)
 {
   // initial test based on outer attrs
-  expander.expand_cfg_attrs (union_item.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (union_item.get_outer_attrs ()))
+  expand_cfg_attrs (union_item.get_outer_attrs ());
+  if (fails_cfg_with_expand (union_item.get_outer_attrs ()))
     {
       union_item.mark_for_strip ();
       return;
@@ -2420,8 +2543,8 @@ void
 AttrVisitor::visit (AST::ConstantItem &const_item)
 {
   // initial test based on outer attrs
-  expander.expand_cfg_attrs (const_item.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (const_item.get_outer_attrs ()))
+  expand_cfg_attrs (const_item.get_outer_attrs ());
+  if (fails_cfg_with_expand (const_item.get_outer_attrs ()))
     {
       const_item.mark_for_strip ();
       return;
@@ -2454,8 +2577,8 @@ void
 AttrVisitor::visit (AST::StaticItem &static_item)
 {
   // initial test based on outer attrs
-  expander.expand_cfg_attrs (static_item.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (static_item.get_outer_attrs ()))
+  expand_cfg_attrs (static_item.get_outer_attrs ());
+  if (fails_cfg_with_expand (static_item.get_outer_attrs ()))
     {
       static_item.mark_for_strip ();
       return;
@@ -2488,8 +2611,8 @@ void
 AttrVisitor::visit (AST::TraitItemFunc &item)
 {
   // initial test based on outer attrs
-  expander.expand_cfg_attrs (item.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
+  expand_cfg_attrs (item.get_outer_attrs ());
+  if (fails_cfg_with_expand (item.get_outer_attrs ()))
     {
       item.mark_for_strip ();
       return;
@@ -2514,8 +2637,8 @@ void
 AttrVisitor::visit (AST::TraitItemMethod &item)
 {
   // initial test based on outer attrs
-  expander.expand_cfg_attrs (item.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
+  expand_cfg_attrs (item.get_outer_attrs ());
+  if (fails_cfg_with_expand (item.get_outer_attrs ()))
     {
       item.mark_for_strip ();
       return;
@@ -2540,8 +2663,8 @@ void
 AttrVisitor::visit (AST::TraitItemConst &item)
 {
   // initial test based on outer attrs
-  expander.expand_cfg_attrs (item.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
+  expand_cfg_attrs (item.get_outer_attrs ());
+  if (fails_cfg_with_expand (item.get_outer_attrs ()))
     {
       item.mark_for_strip ();
       return;
@@ -2577,8 +2700,8 @@ void
 AttrVisitor::visit (AST::TraitItemType &item)
 {
   // initial test based on outer attrs
-  expander.expand_cfg_attrs (item.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
+  expand_cfg_attrs (item.get_outer_attrs ());
+  if (fails_cfg_with_expand (item.get_outer_attrs ()))
     {
       item.mark_for_strip ();
       return;
@@ -2595,16 +2718,16 @@ void
 AttrVisitor::visit (AST::Trait &trait)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (trait.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (trait.get_outer_attrs ()))
+  expand_cfg_attrs (trait.get_outer_attrs ());
+  if (fails_cfg_with_expand (trait.get_outer_attrs ()))
     {
       trait.mark_for_strip ();
       return;
     }
 
   // strip test based on inner attrs
-  expander.expand_cfg_attrs (trait.get_inner_attrs ());
-  if (expander.fails_cfg_with_expand (trait.get_inner_attrs ()))
+  expand_cfg_attrs (trait.get_inner_attrs ());
+  if (fails_cfg_with_expand (trait.get_inner_attrs ()))
     {
       trait.mark_for_strip ();
       return;
@@ -2627,23 +2750,23 @@ AttrVisitor::visit (AST::Trait &trait)
   std::function<std::unique_ptr<AST::TraitItem> (AST::SingleASTNode)> extractor
     = [] (AST::SingleASTNode node) { return node.take_trait_item (); };
 
-  expand_macro_children (MacroExpander::TRAIT, trait.get_trait_items (),
-			 extractor);
+  expand_macro_children (MacroExpander::ContextType::TRAIT,
+			 trait.get_trait_items (), extractor);
 }
 void
 AttrVisitor::visit (AST::InherentImpl &impl)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (impl.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (impl.get_outer_attrs ()))
+  expand_cfg_attrs (impl.get_outer_attrs ());
+  if (fails_cfg_with_expand (impl.get_outer_attrs ()))
     {
       impl.mark_for_strip ();
       return;
     }
 
   // strip test based on inner attrs
-  expander.expand_cfg_attrs (impl.get_inner_attrs ());
-  if (expander.fails_cfg_with_expand (impl.get_inner_attrs ()))
+  expand_cfg_attrs (impl.get_inner_attrs ());
+  if (fails_cfg_with_expand (impl.get_inner_attrs ()))
     {
       impl.mark_for_strip ();
       return;
@@ -2671,23 +2794,23 @@ AttrVisitor::visit (AST::InherentImpl &impl)
   std::function<std::unique_ptr<AST::InherentImplItem> (AST::SingleASTNode)>
     extractor = [] (AST::SingleASTNode node) { return node.take_impl_item (); };
 
-  expand_macro_children (MacroExpander::IMPL, impl.get_impl_items (),
-			 extractor);
+  expand_macro_children (MacroExpander::ContextType::IMPL,
+			 impl.get_impl_items (), extractor);
 }
 void
 AttrVisitor::visit (AST::TraitImpl &impl)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (impl.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (impl.get_outer_attrs ()))
+  expand_cfg_attrs (impl.get_outer_attrs ());
+  if (fails_cfg_with_expand (impl.get_outer_attrs ()))
     {
       impl.mark_for_strip ();
       return;
     }
 
   // strip test based on inner attrs
-  expander.expand_cfg_attrs (impl.get_inner_attrs ());
-  if (expander.fails_cfg_with_expand (impl.get_inner_attrs ()))
+  expand_cfg_attrs (impl.get_inner_attrs ());
+  if (fails_cfg_with_expand (impl.get_inner_attrs ()))
     {
       impl.mark_for_strip ();
       return;
@@ -2722,16 +2845,16 @@ AttrVisitor::visit (AST::TraitImpl &impl)
     extractor
     = [] (AST::SingleASTNode node) { return node.take_trait_impl_item (); };
 
-  expand_macro_children (MacroExpander::TRAIT_IMPL, impl.get_impl_items (),
-			 extractor);
+  expand_macro_children (MacroExpander::ContextType::TRAIT_IMPL,
+			 impl.get_impl_items (), extractor);
 }
 
 void
 AttrVisitor::visit (AST::ExternalTypeItem &item)
 {
-  expander.expand_cfg_attrs (item.get_outer_attrs ());
+  expand_cfg_attrs (item.get_outer_attrs ());
 
-  if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
+  if (fails_cfg_with_expand (item.get_outer_attrs ()))
     item.mark_for_strip ();
 
   // TODO: Can we do anything like expand a macro here?
@@ -2743,8 +2866,8 @@ void
 AttrVisitor::visit (AST::ExternalStaticItem &item)
 {
   // strip test based on outer attrs
-  expander.expand_cfg_attrs (item.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
+  expand_cfg_attrs (item.get_outer_attrs ());
+  if (fails_cfg_with_expand (item.get_outer_attrs ()))
     {
       item.mark_for_strip ();
       return;
@@ -2767,8 +2890,8 @@ void
 AttrVisitor::visit (AST::ExternalFunctionItem &item)
 {
   // strip test based on outer attrs
-  expander.expand_cfg_attrs (item.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (item.get_outer_attrs ()))
+  expand_cfg_attrs (item.get_outer_attrs ());
+  if (fails_cfg_with_expand (item.get_outer_attrs ()))
     {
       item.mark_for_strip ();
       return;
@@ -2786,8 +2909,8 @@ AttrVisitor::visit (AST::ExternalFunctionItem &item)
       auto &param = *it;
 
       auto &param_attrs = param.get_outer_attrs ();
-      expander.expand_cfg_attrs (param_attrs);
-      if (expander.fails_cfg_with_expand (param_attrs))
+      expand_cfg_attrs (param_attrs);
+      if (fails_cfg_with_expand (param_attrs))
 	{
 	  it = params.erase (it);
 	  continue;
@@ -2840,16 +2963,16 @@ void
 AttrVisitor::visit (AST::ExternBlock &block)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (block.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (block.get_outer_attrs ()))
+  expand_cfg_attrs (block.get_outer_attrs ());
+  if (fails_cfg_with_expand (block.get_outer_attrs ()))
     {
       block.mark_for_strip ();
       return;
     }
 
   // strip test based on inner attrs
-  expander.expand_cfg_attrs (block.get_inner_attrs ());
-  if (expander.fails_cfg_with_expand (block.get_inner_attrs ()))
+  expand_cfg_attrs (block.get_inner_attrs ());
+  if (fails_cfg_with_expand (block.get_inner_attrs ()))
     {
       block.mark_for_strip ();
       return;
@@ -2859,8 +2982,8 @@ AttrVisitor::visit (AST::ExternBlock &block)
     extractor
     = [] (AST::SingleASTNode node) { return node.take_external_item (); };
 
-  expand_macro_children (MacroExpander::EXTERN, block.get_extern_items (),
-			 extractor);
+  expand_macro_children (MacroExpander::ContextType::EXTERN,
+			 block.get_extern_items (), extractor);
 }
 
 // I don't think it would be possible to strip macros without expansion
@@ -2877,8 +3000,8 @@ void
 AttrVisitor::visit (AST::MacroRulesDefinition &rules_def)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (rules_def.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (rules_def.get_outer_attrs ()))
+  expand_cfg_attrs (rules_def.get_outer_attrs ());
+  if (fails_cfg_with_expand (rules_def.get_outer_attrs ()))
     {
       rules_def.mark_for_strip ();
       return;
@@ -2975,8 +3098,8 @@ void
 AttrVisitor::visit (AST::StructPatternFieldTuplePat &field)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (field.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (field.get_outer_attrs ()))
+  expand_cfg_attrs (field.get_outer_attrs ());
+  if (fails_cfg_with_expand (field.get_outer_attrs ()))
     {
       field.mark_for_strip ();
       return;
@@ -2993,8 +3116,8 @@ void
 AttrVisitor::visit (AST::StructPatternFieldIdentPat &field)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (field.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (field.get_outer_attrs ()))
+  expand_cfg_attrs (field.get_outer_attrs ());
+  if (fails_cfg_with_expand (field.get_outer_attrs ()))
     {
       field.mark_for_strip ();
       return;
@@ -3011,8 +3134,8 @@ void
 AttrVisitor::visit (AST::StructPatternFieldIdent &field)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (field.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (field.get_outer_attrs ()))
+  expand_cfg_attrs (field.get_outer_attrs ());
+  if (fails_cfg_with_expand (field.get_outer_attrs ()))
     {
       field.mark_for_strip ();
       return;
@@ -3040,8 +3163,8 @@ AttrVisitor::visit (AST::StructPattern &pattern)
   // assuming you can strip the ".." part
   if (elems.has_etc ())
     {
-      expander.expand_cfg_attrs (elems.get_etc_outer_attrs ());
-      if (expander.fails_cfg_with_expand (elems.get_etc_outer_attrs ()))
+      expand_cfg_attrs (elems.get_etc_outer_attrs ());
+      if (fails_cfg_with_expand (elems.get_etc_outer_attrs ()))
 	elems.strip_etc ();
     }
 }
@@ -3187,8 +3310,8 @@ void
 AttrVisitor::visit (AST::LetStmt &stmt)
 {
   // initial strip test based on outer attrs
-  expander.expand_cfg_attrs (stmt.get_outer_attrs ());
-  if (expander.fails_cfg_with_expand (stmt.get_outer_attrs ()))
+  expand_cfg_attrs (stmt.get_outer_attrs ());
+  if (fails_cfg_with_expand (stmt.get_outer_attrs ()))
     {
       stmt.mark_for_strip ();
       return;
@@ -3401,8 +3524,8 @@ AttrVisitor::visit (AST::BareFunctionType &type)
       auto &param = *it;
 
       auto &param_attrs = param.get_outer_attrs ();
-      expander.expand_cfg_attrs (param_attrs);
-      if (expander.fails_cfg_with_expand (param_attrs))
+      expand_cfg_attrs (param_attrs);
+      if (fails_cfg_with_expand (param_attrs))
 	{
 	  it = params.erase (it);
 	  continue;

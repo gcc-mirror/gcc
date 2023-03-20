@@ -32,6 +32,9 @@ private:
 public:
   AttrVisitor (MacroExpander &expander) : expander (expander) {}
 
+  /* Run the AttrVisitor on an entire crate */
+  void go (AST::Crate &crate);
+
   void expand_struct_fields (std::vector<AST::StructField> &fields);
   void expand_tuple_fields (std::vector<AST::TupleField> &fields);
   void expand_function_params (std::vector<AST::FunctionParam> &params);

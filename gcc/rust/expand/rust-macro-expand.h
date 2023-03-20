@@ -256,10 +256,6 @@ struct MacroExpander
 				   AST::MacroRulesDefinition &rules_def,
 				   bool semicolon);
 
-  void expand_cfg_attrs (AST::AttrVec &attrs);
-  bool fails_cfg (const AST::AttrVec &attr) const;
-  bool fails_cfg_with_expand (AST::AttrVec &attrs) const;
-
   bool depth_exceeds_recursion_limit () const;
 
   bool try_match_rule (AST::MacroRule &match_rule,
