@@ -1302,11 +1302,10 @@ namespace __expected
 	: _M_unex(std::move(__u).error()), _M_has_value(false)
 	{ }
 
-      template<typename... _Args>
-	constexpr explicit
-	expected(in_place_t) noexcept
-	: expected()
-	{ }
+      constexpr explicit
+      expected(in_place_t) noexcept
+      : expected()
+      { }
 
       template<typename... _Args>
 	requires is_constructible_v<_Er, _Args...>
