@@ -1573,7 +1573,7 @@ Do not transform names of entities specified in the Fortran
 source file by appending underscores to them.
 
 With @option{-funderscoring} in effect, GNU Fortran appends one
-underscore to external names with no underscores.  This is done to ensure
+underscore to external names.  This is done to ensure
 compatibility with code produced by many UNIX Fortran compilers.
 
 @emph{Caution}: The default behavior of GNU Fortran is
@@ -1596,7 +1596,7 @@ I = J() + MAX_COUNT (MY_VAR, LVAR)
 @noindent
 is implemented as something akin to:
 @smallexample
-i = j_() + max_count__(&my_var__, &lvar);
+i = j_() + max_count_(&my_var, &lvar);
 @end smallexample
 
 With @option{-fno-underscoring}, the same statement is implemented as:
