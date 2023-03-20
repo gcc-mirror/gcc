@@ -60,7 +60,7 @@ struct auto_vec : vec<T, va_heap>
     this->release ();
   }
   vec<T, va_heap, int> m_auto;
-  char m_data;
+  char m_data[2 * sizeof (int)];
 };
 template<typename T>
 struct vec<T, va_heap>
