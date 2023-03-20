@@ -20,7 +20,6 @@
 #define RUST_AST_RESOLVE_H
 
 #include "rust-name-resolver.h"
-#include "rust-ast-full.h"
 #include "rust-hir-map.h"
 
 namespace Rust {

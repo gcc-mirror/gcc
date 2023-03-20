@@ -20,7 +20,6 @@
 #define RUST_AST_RESOLVE_STMT_H
 
 #include "rust-ast-resolve-base.h"
-#include "rust-ast-full.h"
 #include "rust-ast-resolve-type.h"
 #include "rust-ast-resolve-pattern.h"
 #include "rust-ast-resolve-expr.h"

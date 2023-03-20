@@ -21,7 +21,6 @@
 
 #include "rust-ast-resolve-base.h"
 #include "rust-ast-resolve-pattern.h"
-#include "rust-ast-full.h"
 
 namespace Rust {
 namespace Resolver {

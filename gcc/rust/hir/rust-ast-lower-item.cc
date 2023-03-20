@@ -17,6 +17,15 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-lower-item.h"
+#include "rust-diagnostics.h"
+#include "rust-ast-lower.h"
+#include "rust-ast-lower-base.h"
+#include "rust-ast-lower-enumitem.h"
+#include "rust-ast-lower-type.h"
+#include "rust-ast-lower-implitem.h"
+#include "rust-ast-lower-expr.h"
+#include "rust-ast-lower-pattern.h"
+#include "rust-ast-lower-block.h"
 
 namespace Rust {
 namespace HIR {

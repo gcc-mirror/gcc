@@ -21,11 +21,7 @@
 
 #include "rust-ast-full-decls.h"
 #include "rust-ast-resolve-base.h"
-#include "rust-ast-full.h"
-#include "rust-ast-resolve-toplevel.h"
-#include "rust-ast-resolve-type.h"
-#include "rust-ast-resolve-pattern.h"
-#include "rust-ast-resolve-stmt.h"
+
 #include "config.h"
 
 namespace Rust {

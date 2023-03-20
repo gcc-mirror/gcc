@@ -20,11 +20,8 @@
 #define RUST_AST_RESOLVE_TOPLEVEL_H
 
 #include "rust-ast-resolve-base.h"
-#include "rust-ast-resolve-type.h"
 #include "rust-ast-resolve-implitem.h"
-#include "rust-ast-full.h"
 #include "rust-name-resolver.h"
-#include "rust-session-manager.h"
 
 namespace Rust {
 namespace Resolver {

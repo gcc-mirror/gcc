@@ -20,7 +20,6 @@
 #define RUST_AST_RESOLVE_STRUCT_EXPR_FIELD
 
 #include "rust-ast-resolve-base.h"
-#include "rust-ast-full.h"
 
 namespace Rust {
 namespace Resolver {

@@ -20,7 +20,6 @@
 #define RUST_AST_LOWER_TYPE
 
 #include "rust-ast-lower-base.h"
-#include "rust-diagnostics.h"
 #include "rust-ast-lower-expr.h"
 
 namespace Rust {

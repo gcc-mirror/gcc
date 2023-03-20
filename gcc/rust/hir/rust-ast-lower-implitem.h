@@ -19,9 +19,7 @@
 #ifndef RUST_AST_LOWER_IMPLITEM_H
 #define RUST_AST_LOWER_IMPLITEM_H
 
-#include "rust-diagnostics.h"
 #include "rust-ast-lower-type.h"
-#include "rust-ast-lower-stmt.h"
 #include "rust-ast-lower-expr.h"
 #include "rust-ast-lower-pattern.h"
 #include "rust-ast-lower-block.h"

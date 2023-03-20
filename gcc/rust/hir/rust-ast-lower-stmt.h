@@ -19,14 +19,7 @@
 #ifndef RUST_AST_LOWER_STMT
 #define RUST_AST_LOWER_STMT
 
-#include "rust-diagnostics.h"
-
 #include "rust-ast-lower-base.h"
-#include "rust-ast-lower-enumitem.h"
-#include "rust-ast-lower-type.h"
-#include "rust-ast-lower-block.h"
-#include "rust-ast-lower-expr.h"
-#include "rust-ast-lower-pattern.h"
 
 namespace Rust {
 namespace HIR {
