@@ -18699,19 +18699,17 @@ package body Sem_Util is
          return True;
       end if;
 
-      Item := First (Component_Items (Component_List (Record_Def)));
+      Item := First_Non_Pragma (Component_Items (Component_List (Record_Def)));
 
       while Present (Item) loop
          if Nkind (Item) = N_Component_Declaration
            and then Is_Internal_Name (Chars (Defining_Identifier (Item)))
          then
             null;
-         elsif Nkind (Item) = N_Pragma then
-            null;
          else
             return False;
          end if;
-         Item := Next (Item);
+         Next_Non_Pragma (Item);
       end loop;
 
       return True;
