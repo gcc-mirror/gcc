@@ -40,6 +40,8 @@
 #include "rust-extern-crate.h"
 #include "rust-attributes.h"
 #include "rust-early-name-resolver.h"
+#include "rust-attribute-visitor.h"
+#include "rust-expand-visitor.h"
 
 #include "diagnostic.h"
 #include "input.h"
@@ -846,10 +848,9 @@ Session::expansion (AST::Crate &crate)
 
   while (!fixed_point_reached && iterations < cfg.recursion_limit)
     {
-      /* We need to name resolve macros and imports here */
+      AttrVisitor ().go (crate);
       Resolver::EarlyNameResolver ().go (crate);
-
-      expander.expand_crate ();
+      ExpandVisitor (expander).go (crate);
 
       fixed_point_reached = !expander.has_changed ();
       expander.reset_changed_state ();

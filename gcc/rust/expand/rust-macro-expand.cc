@@ -26,6 +26,7 @@
 #include "rust-early-name-resolver.h"
 
 namespace Rust {
+
 AST::Fragment
 MacroExpander::expand_decl_macro (Location invoc_locus,
 				  AST::MacroInvocData &invoc,
@@ -297,17 +298,14 @@ MacroExpander::expand_crate ()
   // TODO: does cfg apply for inner attributes? research.
   // the apparent answer (from playground test) is yes
 
-  push_context (ITEM);
+  push_context (ContextType::ITEM);
 
   // expand attributes recursively and strip items if required
-  AttrVisitor attr_visitor (*this);
+  //  AttrVisitor attr_visitor (*this);
   auto &items = crate.items;
   for (auto it = items.begin (); it != items.end ();)
     {
       auto &item = *it;
-
-      // mark for stripping if required
-      item->accept_vis (attr_visitor);
 
       auto fragment = take_expanded_fragment ();
       if (fragment.should_expand ())

@@ -213,7 +213,7 @@ private:
 // Object used to store shared data (between functions) for macro expansion.
 struct MacroExpander
 {
-  enum ContextType
+  enum class ContextType
   {
     ITEM,
     BLOCK,
