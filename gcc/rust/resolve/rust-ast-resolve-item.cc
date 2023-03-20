@@ -17,7 +17,11 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-resolve-item.h"
+#include "rust-ast-resolve-toplevel.h"
+#include "rust-ast-resolve-type.h"
+#include "rust-ast-resolve-pattern.h"
 #include "rust-ast-resolve-path.h"
+
 #include "selftest.h"
 
 namespace Rust {

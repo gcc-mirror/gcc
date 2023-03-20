@@ -20,9 +20,8 @@
 #define RUST_HIR_LOWER
 
 #include "rust-system.h"
-#include "rust-ast-full.h"
-#include "rust-ast-visitor.h"
-#include "rust-hir-full.h"
+#include "rust-ast-full-decls.h"
+#include "rust-hir-full-decls.h"
 
 namespace Rust {
 namespace HIR {

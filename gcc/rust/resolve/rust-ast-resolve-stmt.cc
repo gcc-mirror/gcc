@@ -18,6 +18,7 @@
 
 #include "rust-ast-resolve-item.h"
 #include "rust-ast-resolve-stmt.h"
+#include "rust-ast-resolve-implitem.h"
 
 namespace Rust {
 namespace Resolver {
