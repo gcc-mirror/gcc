@@ -1,3 +1,13 @@
+2023-03-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85877
+	* gfortran.dg/pr85877.f90: New test.
+
+2023-03-19  Xin Liu  <xin.liu@oss.cipunited.com>
+
+	* gcc.target/mips/mips.exp (mips-dg-options): Disable micromips
+	for MSA tests.
+
 2023-03-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/109094

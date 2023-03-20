@@ -1,3 +1,8 @@
+2023-03-19  Jonny Grant  <jg@jguk.org>
+
+	* doc/extend.texi (Common Function Attributes) <nonnull>:
+	Correct typo.
+
 2023-03-18  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR rtl-optimization/109179

@@ -1,3 +1,85 @@
+2023-03-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-maintainer.in (gm2.maintainer-clean): Remove.
+	(gm2.maintainer-help): Add gm2.maintainer-tools,
+	gm2.maintainer-doc.  Remove gm2.maintainer-clean.
+	Change target-independent directory to target-independent/m2.
+	* gm2-compiler/ppg.mod: Correct __FILE_ typo to __FILE__.
+	* gm2-compiler/M2Options.def (SetAutoInit): Update comment.
+	* gm2-compiler/M2Options.mod (SetAutoInit): Update comment.
+	* gm2-gcc/m2color.cc (m2color_colorize_start): Rename name_len
+	to _name_high.
+	* gm2-gcc/m2color.def (colorize_start): change ARRAY OF CHAR to
+	ADDRESS and add _name_high.
+	* gm2-gcc/m2decl.cc (m2decl_BuildStartFunctionDeclaration): Change
+	int to bool.
+	* gm2-gcc/m2decl.h (m2decl_BuildStartFunctionDeclaration): Change
+	int to bool.
+	* gm2-gcc/m2expr.cc (m2expr_BuildBinarySetDo): Change int to bool.
+	(m2expr_BuildIfConstInVar): Change int to bool.
+	(m2expr_BuildIfNotConstInVar): Change int to bool.
+	(m2expr_BuildIfVarInVar): Change int to bool.
+	(m2expr_BuildIfNotVarInVar): Change int to bool.
+	(m2expr_BuildForeachWordInSetDoIfExpr): Change int to bool.
+	* gm2-gcc/m2expr.h (m2expr_BuildIfNotVarInVar): Change int to bool.
+	(m2expr_BuildIfVarInVar): Change int to bool.
+	(m2expr_BuildIfNotConstInVar): Change int to bool.
+	(m2expr_BuildIfConstInVar): Change int to bool.
+	* gm2-gcc/m2options.h (M2Options_SetAutoInit): Change int to bool.
+	(M2Options_SetNilCheck): Change int to bool.
+	(M2Options_SetReturnCheck): Change int to bool.
+	(M2Options_SetCaseCheck): Change int to bool.
+	(M2Options_SetCheckAll): Change int to bool.
+	(M2Options_SetVerboseUnbounded): Change int to bool.
+	(M2Options_SetUnboundedByReference): Change int to bool.
+	(M2Options_SetOptimizing): Change int to bool.
+	(M2Options_SetQuiet): Change int to bool.
+	(M2Options_SetCpp): Change int to bool.
+	(M2Options_SetM2g): Change int to bool.
+	(M2Options_SetLowerCaseKeywords): Change int to bool.
+	(M2Options_SetVerbose): Change int to bool.
+	* gm2-gcc/m2treelib.cc (m2treelib_get_rvalue): Change int to bool.
+	(m2treelib_get_field_no): Change int to bool.
+	(m2treelib_get_set_value): Change int to bool.
+	(m2treelib_get_set_address): Change int to bool.
+	(m2treelib_get_set_address_if_var): Change int to bool.
+	* gm2-gcc/m2treelib.def (get_set_address_if_var): Change int to bool.
+	(get_set_address): Change int to bool.
+	(get_set_value): Change int to bool.
+	(get_field_no): Change int to bool.
+	(get_rvalue): Change int to bool.
+	* gm2-gcc/m2treelib.h (m2treelib_get_field_no): Change int to bool.
+	(m2treelib_get_set_value): Change int to bool.
+	(m2treelib_get_set_address): Change int to bool.
+	(m2treelib_get_set_address_if_var): Change int to bool.
+	* gm2-gcc/m2type.cc (m2type_BuildEndFunctionType): Change int to bool.
+	* gm2-gcc/m2type.h (m2type_BuildEndFunctionType): Change int to bool.
+	* gm2-libs-ch/dtoa.cc (dtoa_calcsign): Change int to bool.
+	* gm2-libs-ch/ldtoa.cc (dtoa_calcsign): Change int to bool.
+	(ldtoa_ldtoa): Change int to bool.
+	* m2.flex (functionInfo): Change int to bool.
+	(pushFunction): Change parameter from int to bool.
+	* mc-boot/GDebug.cc (Debug_Halt): Rebuild.
+	* mc-boot/GDebug.h (Debug_Halt): Rebuild.
+	* mc-boot/GDynamicStrings.cc: Rebuild.
+	* mc-boot/GDynamicStrings.h: Rebuild.
+	* mc-boot/GFIO.cc: Rebuild.
+	* mc-boot/GM2RTS.cc: Rebuild.
+	* mc-boot/GM2RTS.h: Rebuild.
+	* mc-boot/GPushBackInput.cc: Rebuild.
+	* mc-boot/GRTExceptions.cc: Rebuild.
+	* mc-boot/GRTint.cc: Rebuild.
+	* mc-boot/GSysStorage.cc: Rebuild.
+	* mc-boot/Gdecl.cc: Rebuild.
+	* mc-boot/GsymbolKey.cc: Rebuild.
+	* mc/symbolKey.mod: Rebuild.
+	* target-independent/m2/Builtins.texi: Rebuild.
+	* target-independent/m2/SYSTEM-iso.texi: Rebuild.
+	* target-independent/m2/SYSTEM-pim.texi: Rebuild.
+	* target-independent/m2/gm2-libs.texi: Rebuild.
+	* tools-src/def2doc.py (PIM_Log): Change gm2-libs-pim to
+	gm2-lib-log.
+
 2023-03-17  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109032
