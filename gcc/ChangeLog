@@ -1,3 +1,132 @@
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105554
+	* function.h (push_struct_function): Add ABSTRACT_P argument defaulted
+	to false.
+	* function.cc (push_struct_function): Add ABSTRACT_P argument, pass it
+	to allocate_struct_function instead of false.
+	* tree-inline.cc (initialize_cfun): Don't copy DECL_ARGUMENTS
+	nor DECL_RESULT here.  Pass true as ABSTRACT_P to
+	push_struct_function.  Call targetm.target_option.relayout_function
+	after it.
+	(tree_function_versioning): Formatting fix.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108685
+	* omp-expand.cc (expand_omp_for_ordered_loops): Add L0_BB argument,
+	use its loop_father rather than BODY_BB's loop_father.
+	(expand_omp_for_generic): Adjust expand_omp_for_ordered_loops caller.
+	If broken_loop with ordered > collapse and at least one of those
+	extra loops aren't guaranteed to have at least one iteration, change
+	l0_bb's loop_father to entry_bb's loop_father.  Set cont_bb's
+	loop_father to l0_bb's loop_father rather than l1_bb's.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/108079
+	* cgraphunit.cc (check_global_declaration): Don't warn for unused
+	variables which have OPT_Wunused_variable warning suppressed.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/108973
+	* selftest-diagnostic.cc
+	(test_diagnostic_context::test_diagnostic_context): Set
+	caret_max_width to 80.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/108986
+	* gimple-ssa-warn-access.cc (pass_waccess::maybe_check_access_sizes):
+	Return immediately if OPT_Wnonnull or OPT_Wstringop_overflow_ is
+	suppressed on stmt.  For [static %E] warning, print access_nelts
+	rather than access_size.  Fix up comment wording.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108934
+	* fold-const.cc (native_interpret_expr) <case REAL_CST>: Before memcmp
+	comparison copy the bytes from ptr to a temporary buffer and clearing
+	padding bits in there.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/108967
+	* cfgexpand.cc (expand_debug_expr): Handle WIDEN_{PLUS,MINUS}_EXPR
+	and VEC_WIDEN_{PLUS,MINUS}_{HI,LO}_EXPR.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108854
+	* cgraphclones.cc (duplicate_thunk_for_node): If no parameter
+	changes are needed, copy at least DECL_ARGUMENTS PARM_DECL
+	nodes and adjust their DECL_CONTEXT.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108881
+	* config/i386/i386-builtin.def (__builtin_ia32_cvtne2ps2bf16_v16hi,
+	__builtin_ia32_cvtne2ps2bf16_v16hi_mask,
+	__builtin_ia32_cvtne2ps2bf16_v16hi_maskz,
+	__builtin_ia32_cvtne2ps2bf16_v8hi,
+	__builtin_ia32_cvtne2ps2bf16_v8hi_mask,
+	__builtin_ia32_cvtne2ps2bf16_v8hi_maskz,
+	__builtin_ia32_cvtneps2bf16_v8sf_mask,
+	__builtin_ia32_cvtneps2bf16_v8sf_maskz,
+	__builtin_ia32_cvtneps2bf16_v4sf_mask,
+	__builtin_ia32_cvtneps2bf16_v4sf_maskz,
+	__builtin_ia32_dpbf16ps_v8sf, __builtin_ia32_dpbf16ps_v8sf_mask,
+	__builtin_ia32_dpbf16ps_v8sf_maskz, __builtin_ia32_dpbf16ps_v4sf,
+	__builtin_ia32_dpbf16ps_v4sf_mask,
+	__builtin_ia32_dpbf16ps_v4sf_maskz): Require also
+	OPTION_MASK_ISA_AVX512VL.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108819
+	* tree-ssa-reassoc.cc (update_ops): Fold new stmt in place.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-02-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100758
+	* common/config/i386/cpuinfo.h (cpu_indicator_init): Call
+	get_available_features for all CPUs with max_level >= 1, rather
+	than just Intel or AMD.
+
 2023-03-15  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

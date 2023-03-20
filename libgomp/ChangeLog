@@ -1,3 +1,10 @@
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi: Fix typos - theads -> threads.
+
 2023-03-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

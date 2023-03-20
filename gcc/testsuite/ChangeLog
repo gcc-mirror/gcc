@@ -1,3 +1,133 @@
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/105554
+	* gcc.target/i386/pr105554.c: New test.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/109151
+	* c-c++-common/ubsan/div-by-zero-8.c: New test.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108685
+	* c-c++-common/gomp/doacross-8.c: New test.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109096
+	* g++.dg/cpp1z/has-unique-obj-representations3.C: New test.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/107558
+	* g++.dg/gomp/pr107558.C: New test.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109039
+	* g++.dg/abi/no_unique_address7.C: New test.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/108079
+	* c-c++-common/Wunused-var-18.c: New test.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107465
+	* c-c++-common/Wsign-compare-2.c (f18): New test.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107465
+	* c-c++-common/Wsign-compare-2.c: New test.
+	* c-c++-common/pr107465.c: New test.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/108986
+	* gcc.dg/Wnonnull-8.c: New test.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/108716
+	* g++.dg/debug/dwarf2/pr108716.C: New test.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108934
+	* gcc.target/i386/auto-init-4.c: Revert PR105259 change.
+	* g++.target/i386/pr108934.C: New test.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/108967
+	* g++.dg/debug/pr108967.C: New test.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108854
+	* g++.dg/opt/pr108854.C: New test.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108881
+	* gcc.target/i386/avx512bf16-pr108881.c: New test.
+
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/108819
+	* gcc.dg/pr108819.c: New test.
+
 2023-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

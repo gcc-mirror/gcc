@@ -1,3 +1,13 @@
+2023-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108910
+	* lto-common.cc (lto_fixup_prevailing_type): Don't add t to
+	TYPE_POINTER_TO or TYPE_REFERENCE_TO chain if it has
+	TYPE_ATTRIBUTES or is TYPE_REF_IS_RVALUE.
+
 2022-10-27  Martin Liska  <mliska@suse.cz>
 
 	Backported from master:
