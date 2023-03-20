@@ -2899,6 +2899,10 @@ package body Sem_Util is
                function Get_Record_Part (N : Node_Id) return Node_Id;
                --  Return the record part of this record type definition
 
+               ---------------------
+               -- Get_Record_Part --
+               ---------------------
+
                function Get_Record_Part (N : Node_Id) return Node_Id is
                   Type_Def : constant Node_Id := Type_Definition (N);
                begin
@@ -3293,9 +3297,7 @@ package body Sem_Util is
                               & "in unspecified order",
                               Node (Elmt_2));
 
-                        when N_In
-                           | N_Not_In
-                        =>
+                        when N_Membership_Test =>
                            Error_Msg_N
                              ("value may be affected by call in other "
                               & "alternative because they are evaluated "
@@ -3307,7 +3309,7 @@ package body Sem_Util is
                              ("value of actual may be affected by call in "
                               & "other actual because they are evaluated "
                               & "in unspecified order",
-                           Node (Elmt_2));
+                              Node (Elmt_2));
                      end case;
                   end if;
 
