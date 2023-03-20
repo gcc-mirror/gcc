@@ -2882,9 +2882,7 @@ package body Sem_Util is
                   Collect_Identifiers (Right_Opnd (N));
                end if;
 
-               if Nkind (N) in N_In | N_Not_In
-                 and then Present (Alternatives (N))
-               then
+               if Nkind (N) in N_Membership_Test then
                   Expr := First (Alternatives (N));
                   while Present (Expr) loop
                      Collect_Identifiers (Expr);
