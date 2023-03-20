@@ -17,25 +17,53 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-visitor.h"
-#include "rust-ast.h"
 #include "rust-macro-expand.h"
 
 namespace Rust {
-// Visitor used to expand attributes.
-class AttrVisitor : public AST::ASTVisitor
-{
-private:
-public:
-  AttrVisitor () {}
 
-  /* Run the AttrVisitor on an entire crate */
+class ExpandVisitor : public AST::ASTVisitor
+{
+public:
+  ExpandVisitor (MacroExpander &expander) : expander (expander) {}
+
+  /* Expand all of the macro invocations currently contained in a crate */
   void go (AST::Crate &crate);
 
+  /* Maybe expand a macro invocation in lieu of an expression */
+  void maybe_expand_expr (std::unique_ptr<AST::Expr> &expr);
+
+  /* Maybe expand a macro invocation in lieu of a type */
+  void maybe_expand_type (std::unique_ptr<AST::Type> &type);
+
+  /**
+   * Expand all macro invocations in lieu of types within a vector of struct
+   * fields
+   */
   void expand_struct_fields (std::vector<AST::StructField> &fields);
+
+  /**
+   * Expand all macro invocations in lieu of types within a vector of tuple
+   * fields
+   */
   void expand_tuple_fields (std::vector<AST::TupleField> &fields);
+
+  /**
+   * Expand all macro invocations in lieu of types within a list of function
+   * parameters
+   */
   void expand_function_params (std::vector<AST::FunctionParam> &params);
+
+  /**
+   * Expand all macro invocations in lieu of types within a list of generic
+   * arguments
+   */
   void expand_generic_args (AST::GenericArgs &args);
+
+  /**
+   * Expand a macro invocation in lieu of a qualified path type
+   */
   void expand_qualified_path_type (AST::QualifiedPathType &path_type);
+
   void expand_closure_params (std::vector<AST::ClosureParam> &params);
   void expand_self_param (AST::SelfParam &self_param);
   void expand_where_clause (AST::WhereClause &where_clause);
@@ -43,23 +71,79 @@ public:
   void expand_trait_method_decl (AST::TraitMethodDecl &decl);
 
   /**
-   * Expand a set of values, erasing them if they are marked for strip.
+   * Expand a set of values, erasing them if they are marked for strip, and
+   * replacing them with expanded macro nodes if necessary.
+   * This function is slightly different from `expand_pointer_allow_strip` as
+   * it can only be called in certain expansion contexts - where macro
+   * invocations are allowed.
    *
+   * @param ctx Context to use for macro expansion
    * @param values Iterable reference over values to replace or erase
+   * @param extractor Function to call when replacing values with the content
+   * 		of an expanded AST node
    */
-  template <typename T> void expand_pointer_allow_strip (T &values)
+  template <typename T, typename U>
+  void expand_macro_children (MacroExpander::ContextType ctx, T &values,
+			      std::function<U (AST::SingleASTNode)> extractor)
   {
+    expander.push_context (ctx);
+
     for (auto it = values.begin (); it != values.end ();)
       {
 	auto &value = *it;
 
-	// mark for stripping if required
+	// Perform expansion
 	value->accept_vis (*this);
-	if (value->is_marked_for_strip ())
-	  it = values.erase (it);
+
+	auto final_fragment = expander.take_expanded_fragment ();
+
+	// FIXME: Is that correct? It seems *extremely* dodgy
+	if (final_fragment.should_expand ())
+	  {
+	    it = values.erase (it);
+	    for (auto &node : final_fragment.get_nodes ())
+	      {
+		auto new_node = extractor (node);
+		if (new_node != nullptr)
+		  {
+		    it = values.insert (it, std::move (new_node));
+		    it++;
+		  }
+	      }
+	  }
 	else
-	  ++it;
+	  {
+	    ++it;
+	  }
       }
+
+    expander.pop_context ();
+  }
+
+  // TODO: See if possible to make more specialization for Impl items, Block
+  // stmts etc? This could allow us to remove expand_macro_children or at least
+  // its extractor parameter
+  /**
+   * These functions allow to easily visit `std::unique_ptr`s as well as
+   * _replace_ them when necessary, e.g when expanding macro invocations in a
+   * list of expressions or types. The most generic version of the function will
+   * simply call the visitor again on the pointer, but there are two
+   * specializations for `std::unique_ptr<Expr>` and `std::unique_ptr<Type>` to
+   * enable replacing as well.
+   */
+  template <typename T> void visit (std::unique_ptr<T> &value)
+  {
+    value->accept_vis (*this);
+  }
+
+  template <typename T> void visit (std::unique_ptr<AST::Expr> &expr)
+  {
+    maybe_expand_expr (expr);
+  }
+
+  template <typename T> void visit (std::unique_ptr<AST::Type> &type)
+  {
+    maybe_expand_type (type);
   }
 
   void visit (AST::Token &) override;
@@ -228,5 +312,9 @@ public:
   void visit (AST::SliceType &type) override;
   void visit (AST::InferredType &) override;
   void visit (AST::BareFunctionType &type) override;
+
+private:
+  MacroExpander &expander;
 };
+
 } // namespace Rust
