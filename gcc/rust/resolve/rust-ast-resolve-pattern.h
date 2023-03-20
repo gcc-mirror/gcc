@@ -108,6 +108,7 @@ public:
   void visit (AST::TuplePattern &pattern) override;
   void visit (AST::RangePattern &pattern) override;
   void visit (AST::AltPattern &pattern) override;
+  void visit (AST::SlicePattern &pattern) override;
 
   void add_new_binding (Identifier ident, NodeId node_id, BindingTypeInfo info);
   void check_bindings_consistency (std::vector<BindingMap> &binding_maps);
