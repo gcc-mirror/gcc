@@ -83,7 +83,7 @@ ASTLoweringPattern::visit (AST::TupleStructPattern &pattern)
 	AST::TupleStructItemsNoRange &items_no_range
 	  = static_cast<AST::TupleStructItemsNoRange &> (*items.get ());
 
-	std::vector<std::unique_ptr<HIR::Pattern> > patterns;
+	std::vector<std::unique_ptr<HIR::Pattern>> patterns;
 	for (auto &inner_pattern : items_no_range.get_patterns ())
 	  {
 	    HIR::Pattern *p
@@ -114,7 +114,7 @@ ASTLoweringPattern::visit (AST::StructPattern &pattern)
   auto &raw_elems = pattern.get_struct_pattern_elems ();
   rust_assert (!raw_elems.has_etc ());
 
-  std::vector<std::unique_ptr<HIR::StructPatternField> > fields;
+  std::vector<std::unique_ptr<HIR::StructPatternField>> fields;
   for (auto &field : raw_elems.get_struct_pattern_fields ())
     {
       HIR::StructPatternField *f = nullptr;
@@ -276,6 +276,25 @@ ASTLoweringPattern::visit (AST::ReferencePattern &pattern)
 				     std::unique_ptr<HIR::Pattern> (translated),
 				     Mutability::Imm, pattern.get_locus ());
     }
+}
+
+void
+ASTLoweringPattern::visit (AST::SlicePattern &pattern)
+{
+  std::vector<std::unique_ptr<HIR::Pattern>> items;
+  for (auto &p : pattern.get_items ())
+    {
+      HIR::Pattern *item = ASTLoweringPattern::translate (p.get ());
+      items.push_back (std::unique_ptr<HIR::Pattern> (item));
+    }
+
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 UNKNOWN_LOCAL_DEFID);
+
+  translated
+    = new HIR::SlicePattern (mapping, std::move (items), pattern.get_locus ());
 }
 
 } // namespace HIR

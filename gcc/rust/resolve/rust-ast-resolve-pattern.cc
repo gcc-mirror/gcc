@@ -375,5 +375,14 @@ PatternDeclaration::visit (AST::RangePattern &pattern)
   resolve_range_pattern_bound (pattern.get_lower_bound ().get ());
 }
 
+void
+PatternDeclaration::visit (AST::SlicePattern &pattern)
+{
+  for (auto &p : pattern.get_items ())
+    {
+      p->accept_vis (*this);
+    }
+}
+
 } // namespace Resolver
 } // namespace Rust
