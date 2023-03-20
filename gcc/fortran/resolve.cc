@@ -6079,11 +6079,14 @@ resolve_procedure:
 
 
 /* Checks to see that the correct symbol has been host associated.
-   The only situation where this arises is that in which a twice
-   contained function is parsed after the host association is made.
-   Therefore, on detecting this, change the symbol in the expression
-   and convert the array reference into an actual arglist if the old
-   symbol is a variable.  */
+   The only situations where this arises are:
+	(i)  That in which a twice contained function is parsed after
+	     the host association is made. On detecting this, change
+	     the symbol in the expression and convert the array reference
+	     into an actual arglist if the old symbol is a variable; or
+	(ii) That in which an external function is typed but not declared
+	     explcitly to be external. Here, the old symbol is changed
+	     from a variable to an external function.  */
 static bool
 check_host_association (gfc_expr *e)
 {
@@ -6184,6 +6187,27 @@ check_host_association (gfc_expr *e)
 
 	  gfc_resolve_expr (e);
 	  sym->refs++;
+	}
+      /* This case corresponds to a call, from a block or a contained
+	 procedure, to an external function, which has not been declared
+	 as being external in the main program but has been typed.  */
+      else if (sym && old_sym != sym
+	       && !e->ref
+	       && sym->ts.type == BT_UNKNOWN
+	       && old_sym->ts.type != BT_UNKNOWN
+	       && sym->attr.flavor == FL_PROCEDURE
+	       && old_sym->attr.flavor == FL_VARIABLE
+	       && sym->ns->parent == old_sym->ns
+	       && sym->ns->proc_name
+	       && sym->ns->proc_name->attr.proc != PROC_MODULE
+	       && (sym->ns->proc_name->attr.flavor == FL_LABEL
+		   || sym->ns->proc_name->attr.flavor == FL_PROCEDURE))
+	{
+	  old_sym->attr.flavor = FL_PROCEDURE;
+	  old_sym->attr.external = 1;
+	  old_sym->attr.function = 1;
+	  old_sym->result = old_sym;
+	  gfc_resolve_expr (e);
 	}
     }
   /* This might have changed!  */
