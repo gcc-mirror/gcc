@@ -624,7 +624,8 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
       {
 	buf.resize(len);
 	len = GetTempPathW(buf.size(), buf.data());
-      } while (len > buf.size());
+      }
+    while (len > buf.size());
 
     if (len == 0)
       ec = __last_system_error();
