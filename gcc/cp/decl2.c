@@ -3405,7 +3405,7 @@ var_defined_without_dynamic_init (tree var)
 /* Returns true iff VAR is a variable that needs uses to be
    wrapped for possible dynamic initialization.  */
 
-static bool
+bool
 var_needs_tls_wrapper (tree var)
 {
   return (!error_operand_p (var)
