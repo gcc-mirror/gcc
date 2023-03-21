@@ -80,8 +80,7 @@ main ()
   return 0;
 }
 
-/* Ensure the the in-branch simd clones are used on targets that support them.
-   Some targets use another call for the epilogue loops.  */
+/* Ensure the the in-branch simd clones are used on targets that support them.  */
 /* { dg-final { scan-tree-dump-times {[\n\r] [^\n]* = foo\.simdclone} 2 "vect" } } */
 
 /* The LTO test produces two dump files and we scan the wrong one.  */
