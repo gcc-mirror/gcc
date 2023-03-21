@@ -501,25 +501,29 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
 
     size_t count = from_st->st_size;
 #if defined _GLIBCXX_USE_SENDFILE && ! defined _GLIBCXX_FILESYSTEM_IS_WINDOWS
-    off_t offset = 0;
-    ssize_t n = ::sendfile(out.fd, in.fd, &offset, count);
-    if (n < 0 && errno != ENOSYS && errno != EINVAL)
+    ssize_t n = 0;
+    if (count != 0)
       {
-	ec.assign(errno, std::generic_category());
-	return false;
-      }
-    if ((size_t)n == count)
-      {
-	if (!out.close() || !in.close())
+	off_t offset = 0;
+	n = ::sendfile(out.fd, in.fd, &offset, count);
+	if (n < 0 && errno != ENOSYS && errno != EINVAL)
 	  {
 	    ec.assign(errno, std::generic_category());
 	    return false;
 	  }
-	ec.clear();
-	return true;
+	if ((size_t)n == count)
+	  {
+	    if (!out.close() || !in.close())
+	      {
+		ec.assign(errno, std::generic_category());
+		return false;
+	      }
+	    ec.clear();
+	    return true;
+	  }
+	else if (n > 0)
+	  count -= n;
       }
-    else if (n > 0)
-      count -= n;
 #endif // _GLIBCXX_USE_SENDFILE
 
     using std::ios;
@@ -549,11 +553,17 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
       }
 #endif
 
-    if (count && !(std::ostream(&sbout) << &sbin))
-      {
-	ec = std::make_error_code(std::errc::io_error);
-	return false;
-      }
+    // ostream::operator<<(streambuf*) fails if it extracts no characters,
+    // so don't try to use it for empty files. But from_st->st_size == 0 for
+    // some special files (e.g. procfs, see PR libstdc++/108178) so just try
+    // to read a character to decide whether there is anything to copy or not.
+    if (sbin.sgetc() != char_traits<char>::eof())
+      if (!(std::ostream(&sbout) << &sbin))
+	{
+	  ec = std::make_error_code(std::errc::io_error);
+	  return false;
+	}
+
     if (!sbout.close() || !sbin.close())
       {
 	ec.assign(errno, std::generic_category());
