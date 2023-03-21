@@ -1,3 +1,44 @@
+2023-03-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109159
+	* g++.dg/cpp0x/explicit16.C: New test.
+
+2023-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109164
+	* g++.dg/tls/thread_local13.C: New test.
+	* g++.dg/tls/thread_local13-aux.cc: New file.
+	* g++.dg/tls/thread_local14.C: New test.
+	* g++.dg/tls/thread_local14-aux.cc: New file.
+
+2023-03-20   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/109067
+	* gcc.target/powerpc/divic3-1.c: New test.
+	* gcc.target/powerpc/divic3-2.c: Likewise.
+	* gcc.target/powerpc/mulic3-1.c: Likewise.
+	* gcc.target/powerpc/mulic3-2.c: Likewise.
+
+2023-03-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/109186
+	* gfortran.dg/nearest_6.f90: New test.
+
+2023-03-20  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/109178
+	* gcc.target/powerpc/pr109178.c: New test.
+
+2023-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/torture/20230313.C (auto_vec): Change m_data type
+	from char to char [2 * sizeof (int)].
+
+2023-03-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87127
+	* gfortran.dg/external_procedures_4.f90: New test.
+
 2023-03-19  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/85877

@@ -1,3 +1,19 @@
+2023-03-20   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/109067
+	* config/rs6000/rs6000.cc (create_complex_muldiv): Delete.
+	(init_float128_ieee): Delete code to switch complex multiply and divide
+	for long double.
+	(complex_multiply_builtin_code): New helper function.
+	(complex_divide_builtin_code): Likewise.
+	(rs6000_mangle_decl_assembler_name): Add support for mangling the name
+	of complex 128-bit multiply and divide built-in functions.
+
+2023-03-20  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/109178
+	* config/rs6000/rs6000-builtin.cc (stv_expand_builtin): Use tmode.
+
 2023-03-19  Jonny Grant  <jg@jguk.org>
 
 	* doc/extend.texi (Common Function Attributes) <nonnull>:

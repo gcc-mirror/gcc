@@ -1,3 +1,22 @@
+2023-03-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/109216
+	* invoke.texi: Correct documentation of how underscores are appended
+	to external names.
+
+2023-03-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/109186
+	* simplify.cc (gfc_simplify_nearest): Fix off-by-one error in setting
+	up real kind-specific maximum exponent for mpfr.
+
+2023-03-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87127
+	* resolve.cc (check_host_association): If an external function
+	is typed but not declared explicitly to be external, change the
+	old symbol from a variable to an external function.
+
 2023-03-19  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/85877

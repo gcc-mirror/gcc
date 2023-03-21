@@ -1,3 +1,17 @@
+2023-03-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109159
+	* call.cc (add_template_candidate_real): Add explicit decls to the
+	set of candidates when the initializer is a braced-init-list.
+
+2023-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109164
+	* cp-tree.h (var_needs_tls_wrapper): Declare.
+	* decl2.cc (var_needs_tls_wrapper): No longer static.
+	* decl.cc (cp_finish_decl): Clear TREE_READONLY on TLS variables
+	for which a TLS wrapper will be needed.
+
 2023-03-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/108975
