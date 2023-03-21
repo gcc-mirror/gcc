@@ -11760,6 +11760,7 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 	 of all kinds and allocatable components.  */
       if (!gfc_bt_struct (comp1->ts.type)
 	  || comp1->attr.pointer
+	  || comp1->attr.allocatable
 	  || comp1->attr.proc_pointer_comp
 	  || comp1->attr.class_pointer
 	  || comp1->attr.proc_pointer)
