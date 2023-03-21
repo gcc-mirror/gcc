@@ -5631,6 +5631,28 @@ maybe_swap_commutative_operands (rtx x)
       SUBST (XEXP (x, 0), XEXP (x, 1));
       SUBST (XEXP (x, 1), temp);
     }
+
+  unsigned n_elts = 0;
+  if (GET_CODE (x) == VEC_MERGE
+      && CONST_INT_P (XEXP (x, 2))
+      && GET_MODE_NUNITS (GET_MODE (x)).is_constant (&n_elts)
+      && (swap_commutative_operands_p (XEXP (x, 0), XEXP (x, 1))
+	  /* Two operands have same precedence, then
+	     first bit of mask select first operand.  */
+	  || (!swap_commutative_operands_p (XEXP (x, 1), XEXP (x, 0))
+	      && !(UINTVAL (XEXP (x, 2)) & 1))))
+    {
+      rtx temp = XEXP (x, 0);
+      unsigned HOST_WIDE_INT sel = UINTVAL (XEXP (x, 2));
+      unsigned HOST_WIDE_INT mask = HOST_WIDE_INT_1U;
+      if (n_elts == HOST_BITS_PER_WIDE_INT)
+	mask = -1;
+      else
+	mask = (HOST_WIDE_INT_1U << n_elts) - 1;
+      SUBST (XEXP (x, 0), XEXP (x, 1));
+      SUBST (XEXP (x, 1), temp);
+      SUBST (XEXP (x, 2), GEN_INT (~sel & mask));
+    }
 }
 
 /* Simplify X, a piece of RTL.  We just operate on the expression at the

@@ -8224,6 +8224,13 @@ second operand.  If a machine only supports a constant as the second
 operand, only patterns that match a constant in the second operand need
 be supplied.
 
+@cindex @code{vec_merge}, canonicalization of
+@item
+For the @code{vec_merge} with constant mask(the third operand), the first
+and the second operand can be exchanged by inverting the mask. In such cases,
+a constant is always made the second operand, otherwise the least significant
+bit of the mask is always set(select the first operand first).
+
 @item
 For associative operators, a sequence of operators will always chain
 to the left; for instance, only the left operand of an integer @code{plus}
