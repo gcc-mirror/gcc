@@ -320,7 +320,9 @@
 #endif
 
 // integer division not optimized
+#ifndef __clang__
 #define _GLIBCXX_SIMD_WORKAROUND_PR90993 1
+#endif
 
 // very bad codegen for extraction and concatenation of 128/256 "subregisters"
 // with sizeof(element type) < 8: https://godbolt.org/g/mqUsgM
