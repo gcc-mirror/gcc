@@ -9995,9 +9995,10 @@ gfc_match_modproc (void)
   gfc_namespace *module_ns;
   gfc_interface *old_interface_head, *interface;
 
-  if ((gfc_state_stack->state != COMP_INTERFACE
-       && gfc_state_stack->state != COMP_CONTAINS)
-      || gfc_state_stack->previous == NULL
+  if (gfc_state_stack->previous == NULL
+      || (gfc_state_stack->state != COMP_INTERFACE
+	  && (gfc_state_stack->state != COMP_CONTAINS
+	      || gfc_state_stack->previous->state != COMP_INTERFACE))
       || current_interface.type == INTERFACE_NAMELESS
       || current_interface.type == INTERFACE_ABSTRACT)
     {
