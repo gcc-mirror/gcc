@@ -5579,8 +5579,8 @@ extern tree component_ref_field_offset (tree);
 enum struct special_array_member
   {
     none,	/* Not a special array member.  */
-    int_0,	/* Interior array member with size zero.  */
-    trail_0,	/* Trailing array member with size zero.  */
+    int_0,	/* Interior array member with zero elements.  */
+    trail_0,	/* Trailing array member with zero elements.  */
     trail_1,	/* Trailing array member with one element.  */
     trail_n,	/* Trailing array member with two or more elements.  */
     int_n	/* Interior array member with one or more elements.  */

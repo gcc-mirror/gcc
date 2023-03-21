@@ -13032,14 +13032,27 @@ component_ref_sam_type (tree ref)
 	return sam_type;
 
       bool trailing = false;
-      (void)array_ref_flexible_size_p (ref, &trailing);
-      bool zero_length = integer_zerop (memsize);
-      if (!trailing && !zero_length)
-	/* MEMBER is an interior array with
-	  more than one element.  */
+      (void) array_ref_flexible_size_p (ref, &trailing);
+      bool zero_elts = integer_zerop (memsize);
+      if (zero_elts && integer_zerop (TYPE_SIZE_UNIT (TREE_TYPE (memtype))))
+	{
+	  /* If array element has zero size, verify if it is a flexible
+	     array member or zero length array.  Clear zero_elts if
+	     it has one or more members or is a VLA member.  */
+	  if (tree dom = TYPE_DOMAIN (memtype))
+	    if (tree min = TYPE_MIN_VALUE (dom))
+	      if (tree max = TYPE_MAX_VALUE (dom))
+		if (TREE_CODE (min) != INTEGER_CST
+		    || TREE_CODE (max) != INTEGER_CST
+		    || !((integer_zerop (min) && integer_all_onesp (max))
+			 || tree_int_cst_lt (max, min)))
+		  zero_elts = false;
+	}
+      if (!trailing && !zero_elts)
+	/* MEMBER is an interior array with more than one element.  */
 	return special_array_member::int_n;
 
-      if (zero_length)
+      if (zero_elts)
 	{
 	  if (trailing)
 	    return special_array_member::trail_0;
@@ -13047,7 +13060,7 @@ component_ref_sam_type (tree ref)
 	    return special_array_member::int_0;
 	}
 
-      if (!zero_length)
+      if (!zero_elts)
 	if (tree dom = TYPE_DOMAIN (memtype))
 	  if (tree min = TYPE_MIN_VALUE (dom))
 	    if (tree max = TYPE_MAX_VALUE (dom))
@@ -13114,14 +13127,14 @@ component_ref_size (tree ref, special_array_member *sam /* = NULL */)
 
       tree afield_decl = TREE_OPERAND (ref, 1);
       gcc_assert (TREE_CODE (afield_decl) == FIELD_DECL);
-      /* if the trailing array is a not a flexible array member, treat it as
+      /* If the trailing array is a not a flexible array member, treat it as
 	 a normal array.  */
       if (DECL_NOT_FLEXARRAY (afield_decl)
 	  && *sam != special_array_member::int_0)
 	return memsize;
 
       if (*sam == special_array_member::int_0)
-	  memsize = NULL_TREE;
+	memsize = NULL_TREE;
 
       /* For a reference to a flexible array member of a union
 	 use the size of the union instead of the size of the member.  */
@@ -13129,7 +13142,7 @@ component_ref_size (tree ref, special_array_member *sam /* = NULL */)
 	memsize = TYPE_SIZE_UNIT (argtype);
     }
 
-  /* MEMBER is either a bona fide flexible array member, or a zero-length
+  /* MEMBER is either a bona fide flexible array member, or a zero-elements
      array member, or an array of length one treated as such.  */
 
   /* If the reference is to a declared object and the member a true
