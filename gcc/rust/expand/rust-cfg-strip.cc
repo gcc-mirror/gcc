@@ -16,7 +16,8 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-attribute-visitor.h"
+#include "rust-cfg-strip.h"
+#include "rust-ast-full.h"
 #include "rust-session-manager.h"
 
 namespace Rust {
@@ -130,7 +131,7 @@ expand_cfg_attrs (AST::AttrVec &attrs)
 }
 
 void
-AttrVisitor::go (AST::Crate &crate)
+CfgStrip::go (AST::Crate &crate)
 {
   // expand crate cfg_attr attributes
   expand_cfg_attrs (crate.inner_attrs);
@@ -160,7 +161,7 @@ AttrVisitor::go (AST::Crate &crate)
 
 // Visitor used to expand attributes.
 void
-AttrVisitor::expand_struct_fields (std::vector<AST::StructField> &fields)
+CfgStrip::maybe_strip_struct_fields (std::vector<AST::StructField> &fields)
 {
   for (auto it = fields.begin (); it != fields.end ();)
     {
@@ -188,7 +189,7 @@ AttrVisitor::expand_struct_fields (std::vector<AST::StructField> &fields)
 }
 
 void
-AttrVisitor::expand_tuple_fields (std::vector<AST::TupleField> &fields)
+CfgStrip::maybe_strip_tuple_fields (std::vector<AST::TupleField> &fields)
 {
   for (auto it = fields.begin (); it != fields.end ();)
     {
@@ -215,7 +216,7 @@ AttrVisitor::expand_tuple_fields (std::vector<AST::TupleField> &fields)
 }
 
 void
-AttrVisitor::expand_function_params (std::vector<AST::FunctionParam> &params)
+CfgStrip::maybe_strip_function_params (std::vector<AST::FunctionParam> &params)
 {
   for (auto it = params.begin (); it != params.end ();)
     {
@@ -249,7 +250,7 @@ AttrVisitor::expand_function_params (std::vector<AST::FunctionParam> &params)
 }
 
 void
-AttrVisitor::expand_generic_args (AST::GenericArgs &args)
+CfgStrip::maybe_strip_generic_args (AST::GenericArgs &args)
 {
   // lifetime args can't be expanded
   // FIXME: Can we have macro invocations for lifetimes?
@@ -301,7 +302,7 @@ AttrVisitor::expand_generic_args (AST::GenericArgs &args)
 }
 
 void
-AttrVisitor::expand_qualified_path_type (AST::QualifiedPathType &path_type)
+CfgStrip::maybe_strip_qualified_path_type (AST::QualifiedPathType &path_type)
 {
   auto &type = path_type.get_type ();
   type->accept_vis (*this);
@@ -320,7 +321,7 @@ AttrVisitor::expand_qualified_path_type (AST::QualifiedPathType &path_type)
 }
 
 void
-AttrVisitor::AttrVisitor::expand_closure_params (
+CfgStrip::CfgStrip::maybe_strip_closure_params (
   std::vector<AST::ClosureParam> &params)
 {
   for (auto it = params.begin (); it != params.end ();)
@@ -357,7 +358,7 @@ AttrVisitor::AttrVisitor::expand_closure_params (
 }
 
 void
-AttrVisitor::expand_self_param (AST::SelfParam &self_param)
+CfgStrip::maybe_strip_self_param (AST::SelfParam &self_param)
 {
   if (self_param.has_type ())
     {
@@ -373,7 +374,7 @@ AttrVisitor::expand_self_param (AST::SelfParam &self_param)
 }
 
 void
-AttrVisitor::expand_where_clause (AST::WhereClause &where_clause)
+CfgStrip::maybe_strip_where_clause (AST::WhereClause &where_clause)
 {
   // items cannot be stripped conceptually, so just accept visitor
   for (auto &item : where_clause.get_items ())
@@ -381,7 +382,7 @@ AttrVisitor::expand_where_clause (AST::WhereClause &where_clause)
 }
 
 void
-AttrVisitor::expand_trait_function_decl (AST::TraitFunctionDecl &decl)
+CfgStrip::maybe_strip_trait_function_decl (AST::TraitFunctionDecl &decl)
 {
   // just expand sub-stuff - can't actually strip generic params themselves
   for (auto &param : decl.get_generic_params ())
@@ -389,7 +390,7 @@ AttrVisitor::expand_trait_function_decl (AST::TraitFunctionDecl &decl)
 
   /* strip function parameters if required - this is specifically
    * allowed by spec */
-  expand_function_params (decl.get_function_params ());
+  maybe_strip_function_params (decl.get_function_params ());
 
   if (decl.has_return_type ())
     {
@@ -402,11 +403,11 @@ AttrVisitor::expand_trait_function_decl (AST::TraitFunctionDecl &decl)
     }
 
   if (decl.has_where_clause ())
-    expand_where_clause (decl.get_where_clause ());
+    maybe_strip_where_clause (decl.get_where_clause ());
 }
 
 void
-AttrVisitor::expand_trait_method_decl (AST::TraitMethodDecl &decl)
+CfgStrip::maybe_strip_trait_method_decl (AST::TraitMethodDecl &decl)
 {
   // just expand sub-stuff - can't actually strip generic params themselves
   for (auto &param : decl.get_generic_params ())
@@ -415,11 +416,11 @@ AttrVisitor::expand_trait_method_decl (AST::TraitMethodDecl &decl)
   /* assuming you can't strip self param - wouldn't be a method
    * anymore. spec allows outer attrs on self param, but doesn't
    * specify whether cfg is used. */
-  expand_self_param (decl.get_self_param ());
+  maybe_strip_self_param (decl.get_self_param ());
 
   /* strip function parameters if required - this is specifically
    * allowed by spec */
-  expand_function_params (decl.get_function_params ());
+  maybe_strip_function_params (decl.get_function_params ());
 
   if (decl.has_return_type ())
     {
@@ -432,26 +433,26 @@ AttrVisitor::expand_trait_method_decl (AST::TraitMethodDecl &decl)
     }
 
   if (decl.has_where_clause ())
-    expand_where_clause (decl.get_where_clause ());
+    maybe_strip_where_clause (decl.get_where_clause ());
 }
 
 void
-AttrVisitor::visit (AST::Token &)
+CfgStrip::visit (AST::Token &)
 {
   // shouldn't require?
 }
 void
-AttrVisitor::visit (AST::DelimTokenTree &)
+CfgStrip::visit (AST::DelimTokenTree &)
 {
   // shouldn't require?
 }
 void
-AttrVisitor::visit (AST::AttrInputMetaItemContainer &)
+CfgStrip::visit (AST::AttrInputMetaItemContainer &)
 {
   // shouldn't require?
 }
 void
-AttrVisitor::visit (AST::IdentifierExpr &ident_expr)
+CfgStrip::visit (AST::IdentifierExpr &ident_expr)
 {
   // strip test based on outer attrs
   expand_cfg_attrs (ident_expr.get_outer_attrs ());
@@ -462,23 +463,23 @@ AttrVisitor::visit (AST::IdentifierExpr &ident_expr)
     }
 }
 void
-AttrVisitor::visit (AST::Lifetime &)
+CfgStrip::visit (AST::Lifetime &)
 {
   // shouldn't require?
 }
 void
-AttrVisitor::visit (AST::LifetimeParam &)
+CfgStrip::visit (AST::LifetimeParam &)
 {
   // supposedly does not require - cfg does nothing
 }
 void
-AttrVisitor::visit (AST::ConstGenericParam &)
+CfgStrip::visit (AST::ConstGenericParam &)
 {
   // likewise
 }
 
 void
-AttrVisitor::visit (AST::MacroInvocation &macro_invoc)
+CfgStrip::visit (AST::MacroInvocation &macro_invoc)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (macro_invoc.get_outer_attrs ());
@@ -496,7 +497,7 @@ AttrVisitor::visit (AST::MacroInvocation &macro_invoc)
 }
 
 void
-AttrVisitor::visit (AST::PathInExpression &path)
+CfgStrip::visit (AST::PathInExpression &path)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (path.get_outer_attrs ());
@@ -509,26 +510,26 @@ AttrVisitor::visit (AST::PathInExpression &path)
   for (auto &segment : path.get_segments ())
     {
       if (segment.has_generic_args ())
-	expand_generic_args (segment.get_generic_args ());
+	maybe_strip_generic_args (segment.get_generic_args ());
     }
 }
 void
-AttrVisitor::visit (AST::TypePathSegment &)
+CfgStrip::visit (AST::TypePathSegment &)
 {
   // shouldn't require
 }
 void
-AttrVisitor::visit (AST::TypePathSegmentGeneric &segment)
+CfgStrip::visit (AST::TypePathSegmentGeneric &segment)
 {
   // TODO: strip inside generic args
 
   if (!segment.has_generic_args ())
     return;
 
-  expand_generic_args (segment.get_generic_args ());
+  maybe_strip_generic_args (segment.get_generic_args ());
 }
 void
-AttrVisitor::visit (AST::TypePathSegmentFunction &segment)
+CfgStrip::visit (AST::TypePathSegmentFunction &segment)
 {
   auto &type_path_function = segment.get_type_path_function ();
 
@@ -551,14 +552,14 @@ AttrVisitor::visit (AST::TypePathSegmentFunction &segment)
     }
 }
 void
-AttrVisitor::visit (AST::TypePath &path)
+CfgStrip::visit (AST::TypePath &path)
 {
   // this shouldn't strip any segments, but can strip inside them
   for (auto &segment : path.get_segments ())
     segment->accept_vis (*this);
 }
 void
-AttrVisitor::visit (AST::QualifiedPathInExpression &path)
+CfgStrip::visit (AST::QualifiedPathInExpression &path)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (path.get_outer_attrs ());
@@ -568,18 +569,18 @@ AttrVisitor::visit (AST::QualifiedPathInExpression &path)
       return;
     }
 
-  expand_qualified_path_type (path.get_qualified_path_type ());
+  maybe_strip_qualified_path_type (path.get_qualified_path_type ());
 
   for (auto &segment : path.get_segments ())
     {
       if (segment.has_generic_args ())
-	expand_generic_args (segment.get_generic_args ());
+	maybe_strip_generic_args (segment.get_generic_args ());
     }
 }
 void
-AttrVisitor::visit (AST::QualifiedPathInType &path)
+CfgStrip::visit (AST::QualifiedPathInType &path)
 {
-  expand_qualified_path_type (path.get_qualified_path_type ());
+  maybe_strip_qualified_path_type (path.get_qualified_path_type ());
 
   // this shouldn't strip any segments, but can strip inside them
   for (auto &segment : path.get_segments ())
@@ -587,7 +588,7 @@ AttrVisitor::visit (AST::QualifiedPathInType &path)
 }
 
 void
-AttrVisitor::visit (AST::LiteralExpr &expr)
+CfgStrip::visit (AST::LiteralExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -598,22 +599,22 @@ AttrVisitor::visit (AST::LiteralExpr &expr)
     }
 }
 void
-AttrVisitor::visit (AST::AttrInputLiteral &)
+CfgStrip::visit (AST::AttrInputLiteral &)
 {
   // shouldn't require?
 }
 void
-AttrVisitor::visit (AST::MetaItemLitExpr &)
+CfgStrip::visit (AST::MetaItemLitExpr &)
 {
   // shouldn't require?
 }
 void
-AttrVisitor::visit (AST::MetaItemPathLit &)
+CfgStrip::visit (AST::MetaItemPathLit &)
 {
   // shouldn't require?
 }
 void
-AttrVisitor::visit (AST::BorrowExpr &expr)
+CfgStrip::visit (AST::BorrowExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -634,7 +635,7 @@ AttrVisitor::visit (AST::BorrowExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::DereferenceExpr &expr)
+CfgStrip::visit (AST::DereferenceExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -655,7 +656,7 @@ AttrVisitor::visit (AST::DereferenceExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::ErrorPropagationExpr &expr)
+CfgStrip::visit (AST::ErrorPropagationExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -676,7 +677,7 @@ AttrVisitor::visit (AST::ErrorPropagationExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::NegationExpr &expr)
+CfgStrip::visit (AST::NegationExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -697,7 +698,7 @@ AttrVisitor::visit (AST::NegationExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::ArithmeticOrLogicalExpr &expr)
+CfgStrip::visit (AST::ArithmeticOrLogicalExpr &expr)
 {
   /* outer attributes never allowed before these. while cannot strip
    * two direct descendant expressions, can strip ones below that */
@@ -724,7 +725,7 @@ AttrVisitor::visit (AST::ArithmeticOrLogicalExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::ComparisonExpr &expr)
+CfgStrip::visit (AST::ComparisonExpr &expr)
 {
   /* outer attributes never allowed before these. while cannot strip
    * two direct descendant expressions, can strip ones below that */
@@ -751,7 +752,7 @@ AttrVisitor::visit (AST::ComparisonExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::LazyBooleanExpr &expr)
+CfgStrip::visit (AST::LazyBooleanExpr &expr)
 {
   /* outer attributes never allowed before these. while cannot strip
    * two direct descendant expressions, can strip ones below that */
@@ -778,7 +779,7 @@ AttrVisitor::visit (AST::LazyBooleanExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::TypeCastExpr &expr)
+CfgStrip::visit (AST::TypeCastExpr &expr)
 {
   /* outer attributes never allowed before these. while cannot strip
    * direct descendant expression, can strip ones below that */
@@ -801,7 +802,7 @@ AttrVisitor::visit (AST::TypeCastExpr &expr)
     rust_error_at (type->get_locus (), "cannot strip type in this position");
 }
 void
-AttrVisitor::visit (AST::AssignmentExpr &expr)
+CfgStrip::visit (AST::AssignmentExpr &expr)
 {
   expand_cfg_attrs (expr.get_outer_attrs ());
   if (fails_cfg_with_expand (expr.get_outer_attrs ()))
@@ -832,7 +833,7 @@ AttrVisitor::visit (AST::AssignmentExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::CompoundAssignmentExpr &expr)
+CfgStrip::visit (AST::CompoundAssignmentExpr &expr)
 {
   /* outer attributes never allowed before these. while cannot strip
    * two direct descendant expressions, can strip ones below that */
@@ -859,7 +860,7 @@ AttrVisitor::visit (AST::CompoundAssignmentExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::GroupedExpr &expr)
+CfgStrip::visit (AST::GroupedExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -889,14 +890,14 @@ AttrVisitor::visit (AST::GroupedExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::ArrayElemsValues &elems)
+CfgStrip::visit (AST::ArrayElemsValues &elems)
 {
   /* apparently outer attributes are allowed in "elements of array
    * expressions" according to spec */
-  expand_pointer_allow_strip (elems.get_values ());
+  maybe_strip_pointer_allow_strip (elems.get_values ());
 }
 void
-AttrVisitor::visit (AST::ArrayElemsCopied &elems)
+CfgStrip::visit (AST::ArrayElemsCopied &elems)
 {
   /* apparently outer attributes are allowed in "elements of array
    * expressions" according to spec. on the other hand, it would not
@@ -919,7 +920,7 @@ AttrVisitor::visit (AST::ArrayElemsCopied &elems)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::ArrayExpr &expr)
+CfgStrip::visit (AST::ArrayExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -943,7 +944,7 @@ AttrVisitor::visit (AST::ArrayExpr &expr)
   expr.get_array_elems ()->accept_vis (*this);
 }
 void
-AttrVisitor::visit (AST::ArrayIndexExpr &expr)
+CfgStrip::visit (AST::ArrayIndexExpr &expr)
 {
   /* it is unclear whether outer attributes are supposed to be
    * allowed, but conceptually it wouldn't make much sense, but
@@ -974,7 +975,7 @@ AttrVisitor::visit (AST::ArrayIndexExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::TupleExpr &expr)
+CfgStrip::visit (AST::TupleExpr &expr)
 {
   /* according to spec, outer attributes are allowed on "elements of
    * tuple expressions" */
@@ -998,10 +999,10 @@ AttrVisitor::visit (AST::TupleExpr &expr)
 
   /* apparently outer attributes are allowed in "elements of tuple
    * expressions" according to spec */
-  expand_pointer_allow_strip (expr.get_tuple_elems ());
+  maybe_strip_pointer_allow_strip (expr.get_tuple_elems ());
 }
 void
-AttrVisitor::visit (AST::TupleIndexExpr &expr)
+CfgStrip::visit (AST::TupleIndexExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1022,7 +1023,7 @@ AttrVisitor::visit (AST::TupleIndexExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::StructExprStruct &expr)
+CfgStrip::visit (AST::StructExprStruct &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1049,12 +1050,12 @@ AttrVisitor::visit (AST::StructExprStruct &expr)
 		   "cannot strip path in this position");
 }
 void
-AttrVisitor::visit (AST::StructExprFieldIdentifier &)
+CfgStrip::visit (AST::StructExprFieldIdentifier &)
 {
   // as no attrs (at moment, at least), no stripping possible
 }
 void
-AttrVisitor::visit (AST::StructExprFieldIdentifierValue &field)
+CfgStrip::visit (AST::StructExprFieldIdentifierValue &field)
 {
   /* as no attrs possible (at moment, at least), only sub-expression
    * stripping is possible */
@@ -1066,7 +1067,7 @@ AttrVisitor::visit (AST::StructExprFieldIdentifierValue &field)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::StructExprFieldIndexValue &field)
+CfgStrip::visit (AST::StructExprFieldIndexValue &field)
 {
   /* as no attrs possible (at moment, at least), only sub-expression
    * stripping is possible */
@@ -1078,7 +1079,7 @@ AttrVisitor::visit (AST::StructExprFieldIndexValue &field)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::StructExprStructFields &expr)
+CfgStrip::visit (AST::StructExprStructFields &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1127,7 +1128,7 @@ AttrVisitor::visit (AST::StructExprStructFields &expr)
     }
 }
 void
-AttrVisitor::visit (AST::StructExprStructBase &expr)
+CfgStrip::visit (AST::StructExprStructBase &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1164,7 +1165,7 @@ AttrVisitor::visit (AST::StructExprStructBase &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::CallExpr &expr)
+CfgStrip::visit (AST::CallExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1188,10 +1189,10 @@ AttrVisitor::visit (AST::CallExpr &expr)
    * of call expressions, so full stripping possible */
   // FIXME: Arthur: Figure out how to refactor this - This is similar to
   // expanding items in the crate or stmts in blocks
-  expand_pointer_allow_strip (expr.get_params ());
+  maybe_strip_pointer_allow_strip (expr.get_params ());
 }
 void
-AttrVisitor::visit (AST::MethodCallExpr &expr)
+CfgStrip::visit (AST::MethodCallExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1213,14 +1214,14 @@ AttrVisitor::visit (AST::MethodCallExpr &expr)
 
   auto &method_name = expr.get_method_name ();
   if (method_name.has_generic_args ())
-    expand_generic_args (method_name.get_generic_args ());
+    maybe_strip_generic_args (method_name.get_generic_args ());
 
   /* spec says outer attributes are specifically allowed for elements
    * of method call expressions, so full stripping possible */
-  expand_pointer_allow_strip (expr.get_params ());
+  maybe_strip_pointer_allow_strip (expr.get_params ());
 }
 void
-AttrVisitor::visit (AST::FieldAccessExpr &expr)
+CfgStrip::visit (AST::FieldAccessExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1241,7 +1242,7 @@ AttrVisitor::visit (AST::FieldAccessExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::ClosureExprInner &expr)
+CfgStrip::visit (AST::ClosureExprInner &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1253,7 +1254,7 @@ AttrVisitor::visit (AST::ClosureExprInner &expr)
 
   /* strip closure parameters if required - this is specifically
    * allowed by spec */
-  expand_closure_params (expr.get_params ());
+  maybe_strip_closure_params (expr.get_params ());
 
   // can't strip expression itself, but can strip sub-expressions
   auto &definition_expr = expr.get_definition_expr ();
@@ -1265,7 +1266,7 @@ AttrVisitor::visit (AST::ClosureExprInner &expr)
 }
 
 void
-AttrVisitor::visit (AST::BlockExpr &expr)
+CfgStrip::visit (AST::BlockExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1284,7 +1285,7 @@ AttrVisitor::visit (AST::BlockExpr &expr)
       return;
     }
 
-  expand_pointer_allow_strip (expr.get_statements ());
+  maybe_strip_pointer_allow_strip (expr.get_statements ());
 
   // strip tail expression if exists - can actually fully remove it
   if (expr.has_tail_expr ())
@@ -1299,7 +1300,7 @@ AttrVisitor::visit (AST::BlockExpr &expr)
 }
 
 void
-AttrVisitor::visit (AST::ClosureExprInnerTyped &expr)
+CfgStrip::visit (AST::ClosureExprInnerTyped &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1311,7 +1312,7 @@ AttrVisitor::visit (AST::ClosureExprInnerTyped &expr)
 
   /* strip closure parameters if required - this is specifically
    * allowed by spec */
-  expand_closure_params (expr.get_params ());
+  maybe_strip_closure_params (expr.get_params ());
 
   // can't strip return type, but can strip sub-types
   auto &type = expr.get_return_type ();
@@ -1329,7 +1330,7 @@ AttrVisitor::visit (AST::ClosureExprInnerTyped &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::ContinueExpr &expr)
+CfgStrip::visit (AST::ContinueExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1340,7 +1341,7 @@ AttrVisitor::visit (AST::ContinueExpr &expr)
     }
 }
 void
-AttrVisitor::visit (AST::BreakExpr &expr)
+CfgStrip::visit (AST::BreakExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1366,7 +1367,7 @@ AttrVisitor::visit (AST::BreakExpr &expr)
     }
 }
 void
-AttrVisitor::visit (AST::RangeFromToExpr &expr)
+CfgStrip::visit (AST::RangeFromToExpr &expr)
 {
   /* outer attributes never allowed before these. while cannot strip
    * two direct descendant expressions, can strip ones below that */
@@ -1390,7 +1391,7 @@ AttrVisitor::visit (AST::RangeFromToExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::RangeFromExpr &expr)
+CfgStrip::visit (AST::RangeFromExpr &expr)
 {
   /* outer attributes never allowed before these. while cannot strip
    * direct descendant expression, can strip ones below that */
@@ -1407,7 +1408,7 @@ AttrVisitor::visit (AST::RangeFromExpr &expr)
 		   "attributes are never allowed before range exprs");
 }
 void
-AttrVisitor::visit (AST::RangeToExpr &expr)
+CfgStrip::visit (AST::RangeToExpr &expr)
 {
   /* outer attributes never allowed before these. while cannot strip
    * direct descendant expression, can strip ones below that */
@@ -1424,12 +1425,12 @@ AttrVisitor::visit (AST::RangeToExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::RangeFullExpr &)
+CfgStrip::visit (AST::RangeFullExpr &)
 {
   // outer attributes never allowed before these, so no stripping
 }
 void
-AttrVisitor::visit (AST::RangeFromToInclExpr &expr)
+CfgStrip::visit (AST::RangeFromToInclExpr &expr)
 {
   /* outer attributes never allowed before these. while cannot strip
    * two direct descendant expressions, can strip ones below that */
@@ -1453,7 +1454,7 @@ AttrVisitor::visit (AST::RangeFromToInclExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::RangeToInclExpr &expr)
+CfgStrip::visit (AST::RangeToInclExpr &expr)
 {
   /* outer attributes never allowed before these. while cannot strip
    * direct descendant expression, can strip ones below that */
@@ -1470,7 +1471,7 @@ AttrVisitor::visit (AST::RangeToInclExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::ReturnExpr &expr)
+CfgStrip::visit (AST::ReturnExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1501,7 +1502,7 @@ AttrVisitor::visit (AST::ReturnExpr &expr)
    * can't do this either. */
 }
 void
-AttrVisitor::visit (AST::UnsafeBlockExpr &expr)
+CfgStrip::visit (AST::UnsafeBlockExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1520,7 +1521,7 @@ AttrVisitor::visit (AST::UnsafeBlockExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::LoopExpr &expr)
+CfgStrip::visit (AST::LoopExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1539,7 +1540,7 @@ AttrVisitor::visit (AST::LoopExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::WhileLoopExpr &expr)
+CfgStrip::visit (AST::WhileLoopExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1566,7 +1567,7 @@ AttrVisitor::visit (AST::WhileLoopExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::WhileLetLoopExpr &expr)
+CfgStrip::visit (AST::WhileLetLoopExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1601,7 +1602,7 @@ AttrVisitor::visit (AST::WhileLetLoopExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::ForLoopExpr &expr)
+CfgStrip::visit (AST::ForLoopExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1635,7 +1636,7 @@ AttrVisitor::visit (AST::ForLoopExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::IfExpr &expr)
+CfgStrip::visit (AST::IfExpr &expr)
 {
   // rust playground test shows that IfExpr does support outer attrs, at least
   // when used as statement
@@ -1665,7 +1666,7 @@ AttrVisitor::visit (AST::IfExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::IfExprConseqElse &expr)
+CfgStrip::visit (AST::IfExprConseqElse &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1700,7 +1701,7 @@ AttrVisitor::visit (AST::IfExprConseqElse &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::IfExprConseqIf &expr)
+CfgStrip::visit (AST::IfExprConseqIf &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1735,7 +1736,7 @@ AttrVisitor::visit (AST::IfExprConseqIf &expr)
 		   "position - outer attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::IfExprConseqIfLet &expr)
+CfgStrip::visit (AST::IfExprConseqIfLet &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1771,7 +1772,7 @@ AttrVisitor::visit (AST::IfExprConseqIfLet &expr)
 		   "allowed");
 }
 void
-AttrVisitor::visit (AST::IfLetExpr &expr)
+CfgStrip::visit (AST::IfLetExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1806,7 +1807,7 @@ AttrVisitor::visit (AST::IfLetExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::IfLetExprConseqElse &expr)
+CfgStrip::visit (AST::IfLetExprConseqElse &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1849,7 +1850,7 @@ AttrVisitor::visit (AST::IfLetExprConseqElse &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::IfLetExprConseqIf &expr)
+CfgStrip::visit (AST::IfLetExprConseqIf &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1892,7 +1893,7 @@ AttrVisitor::visit (AST::IfLetExprConseqIf &expr)
 		   "position - outer attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::IfLetExprConseqIfLet &expr)
+CfgStrip::visit (AST::IfLetExprConseqIfLet &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -1936,7 +1937,7 @@ AttrVisitor::visit (AST::IfLetExprConseqIfLet &expr)
 		   "allowed");
 }
 void
-AttrVisitor::visit (AST::MatchExpr &expr)
+CfgStrip::visit (AST::MatchExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -2013,7 +2014,7 @@ AttrVisitor::visit (AST::MatchExpr &expr)
     }
 }
 void
-AttrVisitor::visit (AST::AwaitExpr &expr)
+CfgStrip::visit (AST::AwaitExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -2033,7 +2034,7 @@ AttrVisitor::visit (AST::AwaitExpr &expr)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::AsyncBlockExpr &expr)
+CfgStrip::visit (AST::AsyncBlockExpr &expr)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (expr.get_outer_attrs ());
@@ -2053,7 +2054,7 @@ AttrVisitor::visit (AST::AsyncBlockExpr &expr)
 }
 
 void
-AttrVisitor::visit (AST::TypeParam &param)
+CfgStrip::visit (AST::TypeParam &param)
 {
   // outer attributes don't actually do anything, so ignore them
 
@@ -2075,12 +2076,12 @@ AttrVisitor::visit (AST::TypeParam &param)
     }
 }
 void
-AttrVisitor::visit (AST::LifetimeWhereClauseItem &)
+CfgStrip::visit (AST::LifetimeWhereClauseItem &)
 {
   // shouldn't require
 }
 void
-AttrVisitor::visit (AST::TypeBoundWhereClauseItem &item)
+CfgStrip::visit (AST::TypeBoundWhereClauseItem &item)
 {
   // for lifetimes shouldn't require
 
@@ -2095,7 +2096,7 @@ AttrVisitor::visit (AST::TypeBoundWhereClauseItem &item)
     bound->accept_vis (*this);
 }
 void
-AttrVisitor::visit (AST::Method &method)
+CfgStrip::visit (AST::Method &method)
 {
   // initial test based on outer attrs
   expand_cfg_attrs (method.get_outer_attrs ());
@@ -2112,11 +2113,11 @@ AttrVisitor::visit (AST::Method &method)
   /* assuming you can't strip self param - wouldn't be a method
    * anymore. spec allows outer attrs on self param, but doesn't
    * specify whether cfg is used. */
-  expand_self_param (method.get_self_param ());
+  maybe_strip_self_param (method.get_self_param ());
 
   /* strip method parameters if required - this is specifically
    * allowed by spec */
-  expand_function_params (method.get_function_params ());
+  maybe_strip_function_params (method.get_function_params ());
 
   if (method.has_return_type ())
     {
@@ -2129,7 +2130,7 @@ AttrVisitor::visit (AST::Method &method)
     }
 
   if (method.has_where_clause ())
-    expand_where_clause (method.get_where_clause ());
+    maybe_strip_where_clause (method.get_where_clause ());
 
   /* body should always exist - if error state, should have returned
    * before now */
@@ -2142,7 +2143,7 @@ AttrVisitor::visit (AST::Method &method)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::Module &module)
+CfgStrip::visit (AST::Module &module)
 {
   // strip test based on outer attrs
   expand_cfg_attrs (module.get_outer_attrs ());
@@ -2165,10 +2166,10 @@ AttrVisitor::visit (AST::Module &module)
     }
 
   // strip items if required
-  expand_pointer_allow_strip (module.get_items ());
+  maybe_strip_pointer_allow_strip (module.get_items ());
 }
 void
-AttrVisitor::visit (AST::ExternCrate &extern_crate)
+CfgStrip::visit (AST::ExternCrate &extern_crate)
 {
   // strip test based on outer attrs
   expand_cfg_attrs (extern_crate.get_outer_attrs ());
@@ -2186,22 +2187,22 @@ AttrVisitor::visit (AST::ExternCrate &extern_crate)
     }
 }
 void
-AttrVisitor::visit (AST::UseTreeGlob &)
+CfgStrip::visit (AST::UseTreeGlob &)
 {
   // shouldn't require?
 }
 void
-AttrVisitor::visit (AST::UseTreeList &)
+CfgStrip::visit (AST::UseTreeList &)
 {
   // shouldn't require?
 }
 void
-AttrVisitor::visit (AST::UseTreeRebind &)
+CfgStrip::visit (AST::UseTreeRebind &)
 {
   // shouldn't require?
 }
 void
-AttrVisitor::visit (AST::UseDeclaration &use_decl)
+CfgStrip::visit (AST::UseDeclaration &use_decl)
 {
   // strip test based on outer attrs
   expand_cfg_attrs (use_decl.get_outer_attrs ());
@@ -2212,7 +2213,7 @@ AttrVisitor::visit (AST::UseDeclaration &use_decl)
     }
 }
 void
-AttrVisitor::visit (AST::Function &function)
+CfgStrip::visit (AST::Function &function)
 {
   // initial test based on outer attrs
   expand_cfg_attrs (function.get_outer_attrs ());
@@ -2228,7 +2229,7 @@ AttrVisitor::visit (AST::Function &function)
 
   /* strip function parameters if required - this is specifically
    * allowed by spec */
-  expand_function_params (function.get_function_params ());
+  maybe_strip_function_params (function.get_function_params ());
 
   if (function.has_return_type ())
     {
@@ -2241,7 +2242,7 @@ AttrVisitor::visit (AST::Function &function)
     }
 
   if (function.has_where_clause ())
-    expand_where_clause (function.get_where_clause ());
+    maybe_strip_where_clause (function.get_where_clause ());
 
   /* body should always exist - if error state, should have returned
    * before now */
@@ -2254,7 +2255,7 @@ AttrVisitor::visit (AST::Function &function)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::TypeAlias &type_alias)
+CfgStrip::visit (AST::TypeAlias &type_alias)
 {
   // initial test based on outer attrs
   expand_cfg_attrs (type_alias.get_outer_attrs ());
@@ -2269,7 +2270,7 @@ AttrVisitor::visit (AST::TypeAlias &type_alias)
     param->accept_vis (*this);
 
   if (type_alias.has_where_clause ())
-    expand_where_clause (type_alias.get_where_clause ());
+    maybe_strip_where_clause (type_alias.get_where_clause ());
 
   auto &type = type_alias.get_type_aliased ();
   type->accept_vis (*this);
@@ -2277,7 +2278,7 @@ AttrVisitor::visit (AST::TypeAlias &type_alias)
     rust_error_at (type->get_locus (), "cannot strip type in this position");
 }
 void
-AttrVisitor::visit (AST::StructStruct &struct_item)
+CfgStrip::visit (AST::StructStruct &struct_item)
 {
   // initial test based on outer attrs
   expand_cfg_attrs (struct_item.get_outer_attrs ());
@@ -2292,10 +2293,10 @@ AttrVisitor::visit (AST::StructStruct &struct_item)
     param->accept_vis (*this);
 
   if (struct_item.has_where_clause ())
-    expand_where_clause (struct_item.get_where_clause ());
+    maybe_strip_where_clause (struct_item.get_where_clause ());
 }
 void
-AttrVisitor::visit (AST::TupleStruct &tuple_struct)
+CfgStrip::visit (AST::TupleStruct &tuple_struct)
 {
   // initial test based on outer attrs
   expand_cfg_attrs (tuple_struct.get_outer_attrs ());
@@ -2311,13 +2312,13 @@ AttrVisitor::visit (AST::TupleStruct &tuple_struct)
 
   /* strip struct fields if required - this is presumably
    * allowed by spec */
-  expand_tuple_fields (tuple_struct.get_fields ());
+  maybe_strip_tuple_fields (tuple_struct.get_fields ());
 
   if (tuple_struct.has_where_clause ())
-    expand_where_clause (tuple_struct.get_where_clause ());
+    maybe_strip_where_clause (tuple_struct.get_where_clause ());
 }
 void
-AttrVisitor::visit (AST::EnumItem &item)
+CfgStrip::visit (AST::EnumItem &item)
 {
   // initial test based on outer attrs
   expand_cfg_attrs (item.get_outer_attrs ());
@@ -2328,22 +2329,7 @@ AttrVisitor::visit (AST::EnumItem &item)
     }
 }
 void
-AttrVisitor::visit (AST::EnumItemTuple &item)
-{
-  // initial test based on outer attrs
-  expand_cfg_attrs (item.get_outer_attrs ());
-  if (fails_cfg_with_expand (item.get_outer_attrs ()))
-    {
-      item.mark_for_strip ();
-      return;
-    }
-
-  /* strip item fields if required - this is presumably
-   * allowed by spec */
-  expand_tuple_fields (item.get_tuple_fields ());
-}
-void
-AttrVisitor::visit (AST::EnumItemStruct &item)
+CfgStrip::visit (AST::EnumItemTuple &item)
 {
   // initial test based on outer attrs
   expand_cfg_attrs (item.get_outer_attrs ());
@@ -2355,10 +2341,25 @@ AttrVisitor::visit (AST::EnumItemStruct &item)
 
   /* strip item fields if required - this is presumably
    * allowed by spec */
-  expand_struct_fields (item.get_struct_fields ());
+  maybe_strip_tuple_fields (item.get_tuple_fields ());
 }
 void
-AttrVisitor::visit (AST::EnumItemDiscriminant &item)
+CfgStrip::visit (AST::EnumItemStruct &item)
+{
+  // initial test based on outer attrs
+  expand_cfg_attrs (item.get_outer_attrs ());
+  if (fails_cfg_with_expand (item.get_outer_attrs ()))
+    {
+      item.mark_for_strip ();
+      return;
+    }
+
+  /* strip item fields if required - this is presumably
+   * allowed by spec */
+  maybe_strip_struct_fields (item.get_struct_fields ());
+}
+void
+CfgStrip::visit (AST::EnumItemDiscriminant &item)
 {
   // initial test based on outer attrs
   expand_cfg_attrs (item.get_outer_attrs ());
@@ -2379,7 +2380,7 @@ AttrVisitor::visit (AST::EnumItemDiscriminant &item)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::Enum &enum_item)
+CfgStrip::visit (AST::Enum &enum_item)
 {
   // initial test based on outer attrs
   expand_cfg_attrs (enum_item.get_outer_attrs ());
@@ -2394,14 +2395,14 @@ AttrVisitor::visit (AST::Enum &enum_item)
     param->accept_vis (*this);
 
   if (enum_item.has_where_clause ())
-    expand_where_clause (enum_item.get_where_clause ());
+    maybe_strip_where_clause (enum_item.get_where_clause ());
 
   /* strip enum fields if required - this is presumably
    * allowed by spec */
-  expand_pointer_allow_strip (enum_item.get_variants ());
+  maybe_strip_pointer_allow_strip (enum_item.get_variants ());
 }
 void
-AttrVisitor::visit (AST::Union &union_item)
+CfgStrip::visit (AST::Union &union_item)
 {
   // initial test based on outer attrs
   expand_cfg_attrs (union_item.get_outer_attrs ());
@@ -2416,14 +2417,14 @@ AttrVisitor::visit (AST::Union &union_item)
     param->accept_vis (*this);
 
   if (union_item.has_where_clause ())
-    expand_where_clause (union_item.get_where_clause ());
+    maybe_strip_where_clause (union_item.get_where_clause ());
 
   /* strip union fields if required - this is presumably
    * allowed by spec */
-  expand_struct_fields (union_item.get_variants ());
+  maybe_strip_struct_fields (union_item.get_variants ());
 }
 void
-AttrVisitor::visit (AST::ConstantItem &const_item)
+CfgStrip::visit (AST::ConstantItem &const_item)
 {
   // initial test based on outer attrs
   expand_cfg_attrs (const_item.get_outer_attrs ());
@@ -2451,7 +2452,7 @@ AttrVisitor::visit (AST::ConstantItem &const_item)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::StaticItem &static_item)
+CfgStrip::visit (AST::StaticItem &static_item)
 {
   // initial test based on outer attrs
   expand_cfg_attrs (static_item.get_outer_attrs ());
@@ -2479,7 +2480,7 @@ AttrVisitor::visit (AST::StaticItem &static_item)
 		   "attributes not allowed");
 }
 void
-AttrVisitor::visit (AST::TraitItemFunc &item)
+CfgStrip::visit (AST::TraitItemFunc &item)
 {
   // initial test based on outer attrs
   expand_cfg_attrs (item.get_outer_attrs ());
@@ -2489,7 +2490,7 @@ AttrVisitor::visit (AST::TraitItemFunc &item)
       return;
     }
 
-  expand_trait_function_decl (item.get_trait_function_decl ());
+  maybe_strip_trait_function_decl (item.get_trait_function_decl ());
 
   if (item.has_definition ())
     {
@@ -2505,7 +2506,7 @@ AttrVisitor::visit (AST::TraitItemFunc &item)
     }
 }
 void
-AttrVisitor::visit (AST::TraitItemMethod &item)
+CfgStrip::visit (AST::TraitItemMethod &item)
 {
   // initial test based on outer attrs
   expand_cfg_attrs (item.get_outer_attrs ());
@@ -2515,7 +2516,7 @@ AttrVisitor::visit (AST::TraitItemMethod &item)
       return;
     }
 
-  expand_trait_method_decl (item.get_trait_method_decl ());
+  maybe_strip_trait_method_decl (item.get_trait_method_decl ());
 
   if (item.has_definition ())
     {
@@ -2531,7 +2532,7 @@ AttrVisitor::visit (AST::TraitItemMethod &item)
     }
 }
 void
-AttrVisitor::visit (AST::TraitItemConst &item)
+CfgStrip::visit (AST::TraitItemConst &item)
 {
   // initial test based on outer attrs
   expand_cfg_attrs (item.get_outer_attrs ());
@@ -2562,7 +2563,7 @@ AttrVisitor::visit (AST::TraitItemConst &item)
     }
 }
 void
-AttrVisitor::visit (AST::TraitItemType &item)
+CfgStrip::visit (AST::TraitItemType &item)
 {
   // initial test based on outer attrs
   expand_cfg_attrs (item.get_outer_attrs ());
@@ -2580,7 +2581,7 @@ AttrVisitor::visit (AST::TraitItemType &item)
     }
 }
 void
-AttrVisitor::visit (AST::Trait &trait)
+CfgStrip::visit (AST::Trait &trait)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (trait.get_outer_attrs ());
@@ -2610,12 +2611,12 @@ AttrVisitor::visit (AST::Trait &trait)
     }
 
   if (trait.has_where_clause ())
-    expand_where_clause (trait.get_where_clause ());
+    maybe_strip_where_clause (trait.get_where_clause ());
 
-  expand_pointer_allow_strip (trait.get_trait_items ());
+  maybe_strip_pointer_allow_strip (trait.get_trait_items ());
 }
 void
-AttrVisitor::visit (AST::InherentImpl &impl)
+CfgStrip::visit (AST::InherentImpl &impl)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (impl.get_outer_attrs ());
@@ -2644,12 +2645,12 @@ AttrVisitor::visit (AST::InherentImpl &impl)
     rust_error_at (type->get_locus (), "cannot strip type in this position");
 
   if (impl.has_where_clause ())
-    expand_where_clause (impl.get_where_clause ());
+    maybe_strip_where_clause (impl.get_where_clause ());
 
-  expand_pointer_allow_strip (impl.get_impl_items ());
+  maybe_strip_pointer_allow_strip (impl.get_impl_items ());
 }
 void
-AttrVisitor::visit (AST::TraitImpl &impl)
+CfgStrip::visit (AST::TraitImpl &impl)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (impl.get_outer_attrs ());
@@ -2684,13 +2685,13 @@ AttrVisitor::visit (AST::TraitImpl &impl)
 		   "cannot strip typepath in this position");
 
   if (impl.has_where_clause ())
-    expand_where_clause (impl.get_where_clause ());
+    maybe_strip_where_clause (impl.get_where_clause ());
 
-  expand_pointer_allow_strip (impl.get_impl_items ());
+  maybe_strip_pointer_allow_strip (impl.get_impl_items ());
 }
 
 void
-AttrVisitor::visit (AST::ExternalTypeItem &item)
+CfgStrip::visit (AST::ExternalTypeItem &item)
 {
   expand_cfg_attrs (item.get_outer_attrs ());
 
@@ -2703,7 +2704,7 @@ AttrVisitor::visit (AST::ExternalTypeItem &item)
 }
 
 void
-AttrVisitor::visit (AST::ExternalStaticItem &item)
+CfgStrip::visit (AST::ExternalStaticItem &item)
 {
   // strip test based on outer attrs
   expand_cfg_attrs (item.get_outer_attrs ());
@@ -2721,7 +2722,7 @@ AttrVisitor::visit (AST::ExternalStaticItem &item)
 }
 
 void
-AttrVisitor::visit (AST::ExternalFunctionItem &item)
+CfgStrip::visit (AST::ExternalFunctionItem &item)
 {
   // strip test based on outer attrs
   expand_cfg_attrs (item.get_outer_attrs ());
@@ -2778,11 +2779,11 @@ AttrVisitor::visit (AST::ExternalFunctionItem &item)
     }
 
   if (item.has_where_clause ())
-    expand_where_clause (item.get_where_clause ());
+    maybe_strip_where_clause (item.get_where_clause ());
 }
 
 void
-AttrVisitor::visit (AST::ExternBlock &block)
+CfgStrip::visit (AST::ExternBlock &block)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (block.get_outer_attrs ());
@@ -2800,21 +2801,21 @@ AttrVisitor::visit (AST::ExternBlock &block)
       return;
     }
 
-  expand_pointer_allow_strip (block.get_extern_items ());
+  maybe_strip_pointer_allow_strip (block.get_extern_items ());
 }
 
 // I don't think it would be possible to strip macros without expansion
 void
-AttrVisitor::visit (AST::MacroMatchFragment &)
+CfgStrip::visit (AST::MacroMatchFragment &)
 {}
 void
-AttrVisitor::visit (AST::MacroMatchRepetition &)
+CfgStrip::visit (AST::MacroMatchRepetition &)
 {}
 void
-AttrVisitor::visit (AST::MacroMatcher &)
+CfgStrip::visit (AST::MacroMatcher &)
 {}
 void
-AttrVisitor::visit (AST::MacroRulesDefinition &rules_def)
+CfgStrip::visit (AST::MacroRulesDefinition &rules_def)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (rules_def.get_outer_attrs ());
@@ -2826,31 +2827,31 @@ AttrVisitor::visit (AST::MacroRulesDefinition &rules_def)
 }
 
 void
-AttrVisitor::visit (AST::MetaItemPath &)
+CfgStrip::visit (AST::MetaItemPath &)
 {}
 void
-AttrVisitor::visit (AST::MetaItemSeq &)
+CfgStrip::visit (AST::MetaItemSeq &)
 {}
 void
-AttrVisitor::visit (AST::MetaWord &)
+CfgStrip::visit (AST::MetaWord &)
 {}
 void
-AttrVisitor::visit (AST::MetaNameValueStr &)
+CfgStrip::visit (AST::MetaNameValueStr &)
 {}
 void
-AttrVisitor::visit (AST::MetaListPaths &)
+CfgStrip::visit (AST::MetaListPaths &)
 {}
 void
-AttrVisitor::visit (AST::MetaListNameValueStr &)
+CfgStrip::visit (AST::MetaListNameValueStr &)
 {}
 
 void
-AttrVisitor::visit (AST::LiteralPattern &)
+CfgStrip::visit (AST::LiteralPattern &)
 {
   // not possible
 }
 void
-AttrVisitor::visit (AST::IdentifierPattern &pattern)
+CfgStrip::visit (AST::IdentifierPattern &pattern)
 {
   // can only strip sub-patterns of the inner pattern to bind
   if (!pattern.has_pattern_to_bind ())
@@ -2863,22 +2864,22 @@ AttrVisitor::visit (AST::IdentifierPattern &pattern)
 		   "cannot strip pattern in this position");
 }
 void
-AttrVisitor::visit (AST::WildcardPattern &)
+CfgStrip::visit (AST::WildcardPattern &)
 {
   // not possible
 }
 void
-AttrVisitor::visit (AST::RestPattern &)
+CfgStrip::visit (AST::RestPattern &)
 {
   // not possible
 }
 void
-AttrVisitor::visit (AST::RangePatternBoundLiteral &)
+CfgStrip::visit (AST::RangePatternBoundLiteral &)
 {
   // not possible
 }
 void
-AttrVisitor::visit (AST::RangePatternBoundPath &bound)
+CfgStrip::visit (AST::RangePatternBoundPath &bound)
 {
   // can expand path, but not strip it directly
   auto &path = bound.get_path ();
@@ -2887,7 +2888,7 @@ AttrVisitor::visit (AST::RangePatternBoundPath &bound)
     rust_error_at (path.get_locus (), "cannot strip path in this position");
 }
 void
-AttrVisitor::visit (AST::RangePatternBoundQualPath &bound)
+CfgStrip::visit (AST::RangePatternBoundQualPath &bound)
 {
   // can expand path, but not strip it directly
   auto &path = bound.get_qualified_path ();
@@ -2896,14 +2897,14 @@ AttrVisitor::visit (AST::RangePatternBoundQualPath &bound)
     rust_error_at (path.get_locus (), "cannot strip path in this position");
 }
 void
-AttrVisitor::visit (AST::RangePattern &pattern)
+CfgStrip::visit (AST::RangePattern &pattern)
 {
   // should have no capability to strip lower or upper bounds, only expand
   pattern.get_lower_bound ()->accept_vis (*this);
   pattern.get_upper_bound ()->accept_vis (*this);
 }
 void
-AttrVisitor::visit (AST::ReferencePattern &pattern)
+CfgStrip::visit (AST::ReferencePattern &pattern)
 {
   auto &sub_pattern = pattern.get_referenced_pattern ();
   sub_pattern->accept_vis (*this);
@@ -2912,7 +2913,7 @@ AttrVisitor::visit (AST::ReferencePattern &pattern)
 		   "cannot strip pattern in this position");
 }
 void
-AttrVisitor::visit (AST::StructPatternFieldTuplePat &field)
+CfgStrip::visit (AST::StructPatternFieldTuplePat &field)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (field.get_outer_attrs ());
@@ -2930,7 +2931,7 @@ AttrVisitor::visit (AST::StructPatternFieldTuplePat &field)
 		   "cannot strip pattern in this position");
 }
 void
-AttrVisitor::visit (AST::StructPatternFieldIdentPat &field)
+CfgStrip::visit (AST::StructPatternFieldIdentPat &field)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (field.get_outer_attrs ());
@@ -2948,7 +2949,7 @@ AttrVisitor::visit (AST::StructPatternFieldIdentPat &field)
 		   "cannot strip pattern in this position");
 }
 void
-AttrVisitor::visit (AST::StructPatternFieldIdent &field)
+CfgStrip::visit (AST::StructPatternFieldIdent &field)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (field.get_outer_attrs ());
@@ -2959,7 +2960,7 @@ AttrVisitor::visit (AST::StructPatternFieldIdent &field)
     }
 }
 void
-AttrVisitor::visit (AST::StructPattern &pattern)
+CfgStrip::visit (AST::StructPattern &pattern)
 {
   // expand (but don't strip) path
   auto &path = pattern.get_path ();
@@ -2975,7 +2976,7 @@ AttrVisitor::visit (AST::StructPattern &pattern)
   auto &elems = pattern.get_struct_pattern_elems ();
 
   // assuming you can strip struct pattern fields
-  expand_pointer_allow_strip (elems.get_struct_pattern_fields ());
+  maybe_strip_pointer_allow_strip (elems.get_struct_pattern_fields ());
 
   // assuming you can strip the ".." part
   if (elems.has_etc ())
@@ -2986,7 +2987,7 @@ AttrVisitor::visit (AST::StructPattern &pattern)
     }
 }
 void
-AttrVisitor::visit (AST::TupleStructItemsNoRange &tuple_items)
+CfgStrip::visit (AST::TupleStructItemsNoRange &tuple_items)
 {
   // can't strip individual patterns, only sub-patterns
   for (auto &pattern : tuple_items.get_patterns ())
@@ -3000,7 +3001,7 @@ AttrVisitor::visit (AST::TupleStructItemsNoRange &tuple_items)
     }
 }
 void
-AttrVisitor::visit (AST::TupleStructItemsRange &tuple_items)
+CfgStrip::visit (AST::TupleStructItemsRange &tuple_items)
 {
   // can't strip individual patterns, only sub-patterns
   for (auto &lower_pattern : tuple_items.get_lower_patterns ())
@@ -3023,7 +3024,7 @@ AttrVisitor::visit (AST::TupleStructItemsRange &tuple_items)
     }
 }
 void
-AttrVisitor::visit (AST::TupleStructPattern &pattern)
+CfgStrip::visit (AST::TupleStructPattern &pattern)
 {
   // expand (but don't strip) path
   auto &path = pattern.get_path ();
@@ -3035,7 +3036,7 @@ AttrVisitor::visit (AST::TupleStructPattern &pattern)
     pattern.get_items ()->accept_vis (*this);
 }
 void
-AttrVisitor::visit (AST::TuplePatternItemsMultiple &tuple_items)
+CfgStrip::visit (AST::TuplePatternItemsMultiple &tuple_items)
 {
   // can't strip individual patterns, only sub-patterns
   for (auto &pattern : tuple_items.get_patterns ())
@@ -3049,7 +3050,7 @@ AttrVisitor::visit (AST::TuplePatternItemsMultiple &tuple_items)
     }
 }
 void
-AttrVisitor::visit (AST::TuplePatternItemsRanged &tuple_items)
+CfgStrip::visit (AST::TuplePatternItemsRanged &tuple_items)
 {
   // can't strip individual patterns, only sub-patterns
   for (auto &lower_pattern : tuple_items.get_lower_patterns ())
@@ -3072,13 +3073,13 @@ AttrVisitor::visit (AST::TuplePatternItemsRanged &tuple_items)
     }
 }
 void
-AttrVisitor::visit (AST::TuplePattern &pattern)
+CfgStrip::visit (AST::TuplePattern &pattern)
 {
   if (pattern.has_tuple_pattern_items ())
     pattern.get_items ()->accept_vis (*this);
 }
 void
-AttrVisitor::visit (AST::GroupedPattern &pattern)
+CfgStrip::visit (AST::GroupedPattern &pattern)
 {
   // can't strip inner pattern, only sub-patterns
   auto &pattern_in_parens = pattern.get_pattern_in_parens ();
@@ -3090,7 +3091,7 @@ AttrVisitor::visit (AST::GroupedPattern &pattern)
 		   "cannot strip pattern in this position");
 }
 void
-AttrVisitor::visit (AST::SlicePattern &pattern)
+CfgStrip::visit (AST::SlicePattern &pattern)
 {
   // can't strip individual patterns, only sub-patterns
   for (auto &item : pattern.get_items ())
@@ -3104,7 +3105,7 @@ AttrVisitor::visit (AST::SlicePattern &pattern)
     }
 }
 void
-AttrVisitor::visit (AST::AltPattern &pattern)
+CfgStrip::visit (AST::AltPattern &pattern)
 {
   // can't strip individual patterns, only sub-patterns
   for (auto &alt : pattern.get_alts ())
@@ -3119,12 +3120,12 @@ AttrVisitor::visit (AST::AltPattern &pattern)
 }
 
 void
-AttrVisitor::visit (AST::EmptyStmt &)
+CfgStrip::visit (AST::EmptyStmt &)
 {
   // assuming no outer attributes, so nothing can happen
 }
 void
-AttrVisitor::visit (AST::LetStmt &stmt)
+CfgStrip::visit (AST::LetStmt &stmt)
 {
   // initial strip test based on outer attrs
   expand_cfg_attrs (stmt.get_outer_attrs ());
@@ -3167,7 +3168,7 @@ AttrVisitor::visit (AST::LetStmt &stmt)
     }
 }
 void
-AttrVisitor::visit (AST::ExprStmtWithoutBlock &stmt)
+CfgStrip::visit (AST::ExprStmtWithoutBlock &stmt)
 {
   // outer attributes associated with expr, so rely on expr
 
@@ -3185,7 +3186,7 @@ AttrVisitor::visit (AST::ExprStmtWithoutBlock &stmt)
     }
 }
 void
-AttrVisitor::visit (AST::ExprStmtWithBlock &stmt)
+CfgStrip::visit (AST::ExprStmtWithBlock &stmt)
 {
   // outer attributes associated with expr, so rely on expr
 
@@ -3204,7 +3205,7 @@ AttrVisitor::visit (AST::ExprStmtWithBlock &stmt)
 }
 
 void
-AttrVisitor::visit (AST::TraitBound &bound)
+CfgStrip::visit (AST::TraitBound &bound)
 {
   // nothing in for lifetimes to strip
 
@@ -3216,21 +3217,21 @@ AttrVisitor::visit (AST::TraitBound &bound)
 		   "cannot strip type path in this position");
 }
 void
-AttrVisitor::visit (AST::ImplTraitType &type)
+CfgStrip::visit (AST::ImplTraitType &type)
 {
   // don't strip directly, only components of bounds
   for (auto &bound : type.get_type_param_bounds ())
     bound->accept_vis (*this);
 }
 void
-AttrVisitor::visit (AST::TraitObjectType &type)
+CfgStrip::visit (AST::TraitObjectType &type)
 {
   // don't strip directly, only components of bounds
   for (auto &bound : type.get_type_param_bounds ())
     bound->accept_vis (*this);
 }
 void
-AttrVisitor::visit (AST::ParenthesisedType &type)
+CfgStrip::visit (AST::ParenthesisedType &type)
 {
   // expand but don't strip inner type
   auto &inner_type = type.get_type_in_parens ();
@@ -3240,19 +3241,19 @@ AttrVisitor::visit (AST::ParenthesisedType &type)
 		   "cannot strip type in this position");
 }
 void
-AttrVisitor::visit (AST::ImplTraitTypeOneBound &type)
+CfgStrip::visit (AST::ImplTraitTypeOneBound &type)
 {
   // no stripping possible
   visit (type.get_trait_bound ());
 }
 void
-AttrVisitor::visit (AST::TraitObjectTypeOneBound &type)
+CfgStrip::visit (AST::TraitObjectTypeOneBound &type)
 {
   // no stripping possible
   visit (type.get_trait_bound ());
 }
 void
-AttrVisitor::visit (AST::TupleType &type)
+CfgStrip::visit (AST::TupleType &type)
 {
   // TODO: assuming that types can't be stripped as types don't have outer
   // attributes
@@ -3265,12 +3266,12 @@ AttrVisitor::visit (AST::TupleType &type)
     }
 }
 void
-AttrVisitor::visit (AST::NeverType &)
+CfgStrip::visit (AST::NeverType &)
 {
   // no stripping possible
 }
 void
-AttrVisitor::visit (AST::RawPointerType &type)
+CfgStrip::visit (AST::RawPointerType &type)
 {
   // expand but don't strip type pointed to
   auto &pointed_type = type.get_type_pointed_to ();
@@ -3280,7 +3281,7 @@ AttrVisitor::visit (AST::RawPointerType &type)
 		   "cannot strip type in this position");
 }
 void
-AttrVisitor::visit (AST::ReferenceType &type)
+CfgStrip::visit (AST::ReferenceType &type)
 {
   // expand but don't strip type referenced
   auto &referenced_type = type.get_type_referenced ();
@@ -3290,7 +3291,7 @@ AttrVisitor::visit (AST::ReferenceType &type)
 		   "cannot strip type in this position");
 }
 void
-AttrVisitor::visit (AST::ArrayType &type)
+CfgStrip::visit (AST::ArrayType &type)
 {
   // expand but don't strip type referenced
   auto &base_type = type.get_elem_type ();
@@ -3307,7 +3308,7 @@ AttrVisitor::visit (AST::ArrayType &type)
 		   "cannot strip expression in this position");
 }
 void
-AttrVisitor::visit (AST::SliceType &type)
+CfgStrip::visit (AST::SliceType &type)
 {
   // expand but don't strip elem type
   auto &elem_type = type.get_elem_type ();
@@ -3317,12 +3318,12 @@ AttrVisitor::visit (AST::SliceType &type)
 		   "cannot strip type in this position");
 }
 void
-AttrVisitor::visit (AST::InferredType &)
+CfgStrip::visit (AST::InferredType &)
 {
   // none possible
 }
 void
-AttrVisitor::visit (AST::BareFunctionType &type)
+CfgStrip::visit (AST::BareFunctionType &type)
 {
   // seem to be no generics
 

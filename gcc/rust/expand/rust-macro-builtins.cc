@@ -20,7 +20,7 @@
 #include "rust-macro-builtins.h"
 #include "rust-ast-fragment.h"
 #include "rust-ast.h"
-#include "rust-attribute-visitor.h"
+#include "rust-cfg-strip.h"
 #include "rust-diagnostics.h"
 #include "rust-early-name-resolver.h"
 #include "rust-expr.h"
