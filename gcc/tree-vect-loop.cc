@@ -7424,7 +7424,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
     }
 
   /* Check extra constraints for variable-length unchained SLP reductions.  */
-  if (STMT_SLP_TYPE (stmt_info)
+  if (slp_node
       && !REDUC_GROUP_FIRST_ELEMENT (stmt_info)
       && !nunits_out.is_constant ())
     {
