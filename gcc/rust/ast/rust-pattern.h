@@ -413,6 +413,12 @@ public:
 
   Location get_locus () const override final { return locus; }
 
+  bool get_has_ellipsis_syntax () { return has_ellipsis_syntax; }
+
+  bool get_has_lower_bound () { return lower != nullptr; }
+
+  bool get_has_upper_bound () { return upper != nullptr; }
+
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? or is a "vis_bound" better?
@@ -644,6 +650,8 @@ public:
   {
     return tuple_pattern == nullptr;
   }
+
+  TupleIndex get_index () { return index; }
 
   // TODO: is this better? Or is a "vis_pattern" better?
   std::unique_ptr<Pattern> &get_index_pattern ()

@@ -2642,6 +2642,8 @@ public:
     return type == nullptr && const_expr == nullptr;
   }
 
+  bool has_expr () { return const_expr != nullptr; }
+
   // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<Expr> &get_expr ()
   {
@@ -2753,6 +2755,8 @@ public:
   {
     return type == nullptr && expr == nullptr;
   }
+
+  bool has_expr () { return expr != nullptr; }
 
   // TODO: is this better? Or is a "vis_block" better?
   std::unique_ptr<Expr> &get_expr ()
@@ -4114,6 +4118,8 @@ public:
   }
 
   std::string get_name () const { return name; }
+
+  Location get_locus () { return locus; }
 
   // Creates an error state named function parameter.
   static NamedFunctionParam create_error ()
