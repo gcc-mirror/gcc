@@ -8304,7 +8304,7 @@ package body Exp_Dist is
             CI := Component_Items (Clist);
             VP := Variant_Part (Clist);
 
-            Item := First (CI);
+            Item := First_Non_Pragma (CI);
             while Present (Item) loop
                Def := Defining_Identifier (Item);
 
@@ -8313,7 +8313,7 @@ package body Exp_Dist is
                     (Stmts, Container, Counter, Rec, Def);
                end if;
 
-               Next (Item);
+               Next_Non_Pragma (Item);
             end loop;
 
             if Present (VP) then
