@@ -81,7 +81,7 @@ GRS_OBJS = \
     rust/rust-mangle.o \
     rust/rust-compile-resolve-path.o \
     rust/rust-macro-expand.o \
-    rust/rust-attribute-visitor.o \
+    rust/rust-cfg-strip.o \
 	rust/rust-expand-visitor.o \
     rust/rust-macro-invoc-lexer.o \
     rust/rust-macro-substitute-ctx.o \

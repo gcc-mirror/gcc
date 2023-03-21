@@ -18,36 +18,35 @@
 
 #include "rust-ast-visitor.h"
 #include "rust-ast.h"
-#include "rust-macro-expand.h"
 
 namespace Rust {
-// Visitor used to expand attributes.
-class AttrVisitor : public AST::ASTVisitor
+// Visitor used to maybe_strip attributes.
+class CfgStrip : public AST::ASTVisitor
 {
 private:
 public:
-  AttrVisitor () {}
+  CfgStrip () {}
 
   /* Run the AttrVisitor on an entire crate */
   void go (AST::Crate &crate);
 
-  void expand_struct_fields (std::vector<AST::StructField> &fields);
-  void expand_tuple_fields (std::vector<AST::TupleField> &fields);
-  void expand_function_params (std::vector<AST::FunctionParam> &params);
-  void expand_generic_args (AST::GenericArgs &args);
-  void expand_qualified_path_type (AST::QualifiedPathType &path_type);
-  void expand_closure_params (std::vector<AST::ClosureParam> &params);
-  void expand_self_param (AST::SelfParam &self_param);
-  void expand_where_clause (AST::WhereClause &where_clause);
-  void expand_trait_function_decl (AST::TraitFunctionDecl &decl);
-  void expand_trait_method_decl (AST::TraitMethodDecl &decl);
+  void maybe_strip_struct_fields (std::vector<AST::StructField> &fields);
+  void maybe_strip_tuple_fields (std::vector<AST::TupleField> &fields);
+  void maybe_strip_function_params (std::vector<AST::FunctionParam> &params);
+  void maybe_strip_generic_args (AST::GenericArgs &args);
+  void maybe_strip_qualified_path_type (AST::QualifiedPathType &path_type);
+  void maybe_strip_closure_params (std::vector<AST::ClosureParam> &params);
+  void maybe_strip_self_param (AST::SelfParam &self_param);
+  void maybe_strip_where_clause (AST::WhereClause &where_clause);
+  void maybe_strip_trait_function_decl (AST::TraitFunctionDecl &decl);
+  void maybe_strip_trait_method_decl (AST::TraitMethodDecl &decl);
 
   /**
-   * Expand a set of values, erasing them if they are marked for strip.
+   * maybe_strip a set of values, erasing them if they are marked for strip.
    *
    * @param values Iterable reference over values to replace or erase
    */
-  template <typename T> void expand_pointer_allow_strip (T &values)
+  template <typename T> void maybe_strip_pointer_allow_strip (T &values)
   {
     for (auto it = values.begin (); it != values.end ();)
       {

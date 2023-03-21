@@ -22,7 +22,7 @@
 #include "rust-ast-visitor.h"
 #include "rust-diagnostics.h"
 #include "rust-parse.h"
-#include "rust-attribute-visitor.h"
+#include "rust-cfg-strip.h"
 #include "rust-early-name-resolver.h"
 
 namespace Rust {
