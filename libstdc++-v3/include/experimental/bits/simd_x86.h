@@ -1422,7 +1422,7 @@ template <typename _Abi, typename>
 		},
 		[&__xf,
 		 &__yf](auto __i) -> _SimdWrapper<_Float, __n_intermediate> {
-#if __GCC_IEC_559 == 0
+#if __RECIPROCAL_MATH__
 		  // If -freciprocal-math is active, using the `/` operator is
 		  // incorrect because it may be translated to an imprecise
 		  // multiplication with reciprocal. We need to use inline
