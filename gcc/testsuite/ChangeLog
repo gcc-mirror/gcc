@@ -1,3 +1,16 @@
+2023-03-20  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2023-03-20  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/109178
+	* gcc.target/powerpc/pr109178.c: New test.
+
+2023-03-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87127
+	* gfortran.dg/external_procedures_4.f90: New test.
+
 2023-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

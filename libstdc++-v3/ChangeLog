@@ -1,3 +1,69 @@
+2023-03-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	Backported from master:
+	2022-11-16  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (FilteringTypePrinter): Rename 'match' field
+	'template'. Add self.targ1 to specify the first template parameter of the instantiation
+	to match.
+	(add_one_type_printer): Add targ1 optional parameter, default to None.
+	Use gdb.types.get_basic_type to compare the type to recognize and the type
+	returned from the typedef lookup.
+	(register_type_printers): Adapt calls to add_one_type_printers.
+
+2023-03-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	Backported from master:
+	2022-10-03  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (Printer.add_version): Do not add version
+	namespace for __cxx11 symbols.
+	(add_one_template_type_printer): Likewise.
+	(add_one_type_printer): Likewise.
+	(FilteringTypePrinter._recognizer.recognize): Add a workaround for std::string & al
+	ambiguous typedef matching both std:: and std::__cxx11:: symbols.
+	* testsuite/libstdc++-prettyprinters/cxx17.cc: Remove obsolete
+	\#define _GLIBCXX_USE_CXX11_ABI 0.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Likewise. Adapt test to accept
+	std::__cxx11::list.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/whatis.cc: Likewise.
+	* testsuite/libstdc++-prettyprinters/80276.cc: Likewise and remove xfail for c++20
+	and debug mode.
+	* testsuite/libstdc++-prettyprinters/libfundts.cc: Likewise.
+
+2023-03-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	Backported from master:
+	2022-09-22  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py: Remove ptinter registration for non-existing
+	types std::__debug::unique_ptr, std::__debug::stack, std::__debug::queue,
+	std::__debug::priority_queue.
+
+2023-03-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109064
+	* python/libstdcxx/v6/xmethods.py (SharedPtrUseCountWorker):
+	Remove self-recursion in __init__. Add missing _supports.
+	* testsuite/libstdc++-xmethods/shared_ptr.cc: Check use_count()
+	and unique().
+
+2023-03-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109182
+	* include/std/expected (expected<void>::expected(in_place_t)):
+	Remove template-head.
+
+2023-03-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109165
+	* include/std/coroutine (hash<>::operator()): Add const.
+	* testsuite/18_support/coroutines/hash.cc: New test.
+
 2023-03-10  Thomas W Rodgers  <rodgert@twrodgers.com>
 
 	Backported from master:
