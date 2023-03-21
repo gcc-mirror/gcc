@@ -3299,9 +3299,7 @@ gomp_map_cdata_lookup (struct cpy_data *d, uint64_t *devaddrs,
 void
 gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 		 uint64_t sizes_ptr, uint64_t kinds_ptr, int dev_num,
-		 void (*dev_to_host_cpy) (void *, const void *, size_t, void*),
-		 void (*host_to_dev_cpy) (void *, const void *, size_t, void*),
-		 void *token)
+		 struct goacc_asyncqueue *aq)
 {
   /* Return early if there is no offload code.  */
   if (sizeof (OFFLOAD_PLUGINS) == sizeof (""))
@@ -3343,26 +3341,17 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
       devaddrs = (uint64_t *) gomp_malloc (mapnum * sizeof (uint64_t));
       sizes = (uint64_t *) gomp_malloc (mapnum * sizeof (uint64_t));
       kinds = (unsigned short *) gomp_malloc (mapnum * sizeof (unsigned short));
-      if (dev_to_host_cpy)
-	{
-	  dev_to_host_cpy (devaddrs, (const void *) (uintptr_t) devaddrs_ptr,
-			   mapnum * sizeof (uint64_t), token);
-	  dev_to_host_cpy (sizes, (const void *) (uintptr_t) sizes_ptr,
-			   mapnum * sizeof (uint64_t), token);
-	  dev_to_host_cpy (kinds, (const void *) (uintptr_t) kinds_ptr,
-			   mapnum * sizeof (unsigned short), token);
-	}
-      else
-	{
-	  gomp_copy_dev2host (devicep, NULL, devaddrs,
-			      (const void *) (uintptr_t) devaddrs_ptr,
-			      mapnum * sizeof (uint64_t));
-	  gomp_copy_dev2host (devicep, NULL, sizes,
-			      (const void *) (uintptr_t) sizes_ptr,
-			      mapnum * sizeof (uint64_t));
-	  gomp_copy_dev2host (devicep, NULL, kinds, (const void *) (uintptr_t) kinds_ptr,
-			      mapnum * sizeof (unsigned short));
-	}
+      gomp_copy_dev2host (devicep, aq, devaddrs,
+			  (const void *) (uintptr_t) devaddrs_ptr,
+			  mapnum * sizeof (uint64_t));
+      gomp_copy_dev2host (devicep, aq, sizes,
+			  (const void *) (uintptr_t) sizes_ptr,
+			  mapnum * sizeof (uint64_t));
+      gomp_copy_dev2host (devicep, aq, kinds,
+			  (const void *) (uintptr_t) kinds_ptr,
+			  mapnum * sizeof (unsigned short));
+      if (aq && !devicep->openacc.async.synchronize_func (aq))
+	exit (EXIT_FAILURE);
     }
 
   size_t tgt_align = 0, tgt_size = 0;
@@ -3389,13 +3378,14 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 	    if (devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
 	      memcpy (tgt + tgt_size, (void *) (uintptr_t) devaddrs[i],
 		      (size_t) sizes[i]);
-	    else if (dev_to_host_cpy)
-	      dev_to_host_cpy (tgt + tgt_size, (void *) (uintptr_t) devaddrs[i],
-			       (size_t) sizes[i], token);
 	    else
-	      gomp_copy_dev2host (devicep, NULL, tgt + tgt_size,
-				  (void *) (uintptr_t) devaddrs[i],
-				  (size_t) sizes[i]);
+	      {
+		gomp_copy_dev2host (devicep, aq, tgt + tgt_size,
+				    (void *) (uintptr_t) devaddrs[i],
+				    (size_t) sizes[i]);
+		if (aq && !devicep->openacc.async.synchronize_func (aq))
+		  exit (EXIT_FAILURE);
+	      }
 	    devaddrs[i] = (uint64_t) (uintptr_t) tgt + tgt_size;
 	    tgt_size = tgt_size + sizes[i];
 	    if ((devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
@@ -3485,15 +3475,15 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 		    || kind == GOMP_MAP_ALWAYS_TO
 		    || kind == GOMP_MAP_ALWAYS_TOFROM)
 		  {
-		    if (dev_to_host_cpy)
-		      dev_to_host_cpy ((void *) (uintptr_t) devaddrs[i],
-				       (void *) (uintptr_t) cdata[i].devaddr,
-				       sizes[i], token);
-		    else
-		      gomp_copy_dev2host (devicep, NULL,
-					  (void *) (uintptr_t) devaddrs[i],
-					  (void *) (uintptr_t) cdata[i].devaddr,
-					  sizes[i]);
+		    gomp_copy_dev2host (devicep, aq,
+					(void *) (uintptr_t) devaddrs[i],
+					(void *) (uintptr_t) cdata[i].devaddr,
+					sizes[i]);
+		    if (aq && !devicep->openacc.async.synchronize_func (aq))
+		      {
+			gomp_mutex_unlock (&devicep->lock);
+			exit (EXIT_FAILURE);
+		      }
 		  }
 		if (struct_cpy)
 		  struct_cpy--;
@@ -3560,15 +3550,15 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 		    devaddrs[i]
 		      = (uint64_t) (uintptr_t) gomp_aligned_alloc (align,
 								   sizes[i]);
-		    if (dev_to_host_cpy)
-		      dev_to_host_cpy ((void *) (uintptr_t) devaddrs[i],
-				       (void *) (uintptr_t) cdata[i].devaddr,
-				       sizes[i], token);
-		    else
-		      gomp_copy_dev2host (devicep, NULL,
-					  (void *) (uintptr_t) devaddrs[i],
-					  (void *) (uintptr_t) cdata[i].devaddr,
-					  sizes[i]);
+		    gomp_copy_dev2host (devicep, aq,
+					(void *) (uintptr_t) devaddrs[i],
+					(void *) (uintptr_t) cdata[i].devaddr,
+					sizes[i]);
+		    if (aq && !devicep->openacc.async.synchronize_func (aq))
+		      {
+			gomp_mutex_unlock (&devicep->lock);
+			exit (EXIT_FAILURE);
+		      }
 		  }
 		for (j = i + 1; j < mapnum; j++)
 		  {
@@ -3672,15 +3662,15 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 		/* FALLTHRU */
 	      case GOMP_MAP_FROM:
 	      case GOMP_MAP_TOFROM:
-		if (copy && host_to_dev_cpy)
-		  host_to_dev_cpy ((void *) (uintptr_t) cdata[i].devaddr,
-				   (void *) (uintptr_t) devaddrs[i],
-				   sizes[i], token);
-		else if (copy)
-		  gomp_copy_host2dev (devicep, NULL,
-				      (void *) (uintptr_t) cdata[i].devaddr,
-				      (void *) (uintptr_t) devaddrs[i],
-				      sizes[i], false, NULL);
+		if (copy)
+		  {
+		    gomp_copy_host2dev (devicep, aq,
+					(void *) (uintptr_t) cdata[i].devaddr,
+					(void *) (uintptr_t) devaddrs[i],
+					sizes[i], false, NULL);
+		    if (aq && !devicep->openacc.async.synchronize_func (aq))
+		      exit (EXIT_FAILURE);
+		  }
 	      default:
 		break;
 	    }

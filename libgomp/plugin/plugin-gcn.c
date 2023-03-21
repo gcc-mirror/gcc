@@ -1949,7 +1949,7 @@ process_reverse_offload (uint64_t fn, uint64_t mapnum, uint64_t hostaddrs,
 {
   int dev_num = dev_num64;
   GOMP_PLUGIN_target_rev (fn, mapnum, hostaddrs, sizes, kinds, dev_num,
-			  NULL, NULL, NULL);
+			  NULL);
 }
 
 /* Output any data written to console output from the kernel.  It is expected
