@@ -2046,6 +2046,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock,
   tree shadow_loopvar = NULL_TREE;
   gfc_saved_var saved_loopvar;
 
+  ts.type = BT_UNKNOWN;
   mpz_init (size);
   for (c = gfc_constructor_first (base); c; c = gfc_constructor_next (c))
     {
@@ -2204,7 +2205,9 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock,
               gfc_add_modify (&body, *offsetvar, *poffset);
               *poffset = *offsetvar;
             }
-	  ts = c->expr->ts;
+
+	  if (!c->iterator)
+	    ts = c->expr->ts;
 	}
 
       /* The frontend should already have done any expansions
