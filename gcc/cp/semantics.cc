@@ -12532,6 +12532,9 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_CLASS:
       return NON_UNION_CLASS_TYPE_P (type1);
 
+    case CPTK_IS_CONST:
+      return CP_TYPE_CONST_P (type1);
+
     case CPTK_IS_CONSTRUCTIBLE:
       return is_xible (INIT_EXPR, type1, type2);
 
@@ -12814,6 +12817,7 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_ARRAY:
     case CPTK_IS_BOUNDED_ARRAY:
     case CPTK_IS_CLASS:
+    case CPTK_IS_CONST:
     case CPTK_IS_ENUM:
     case CPTK_IS_FUNCTION:
     case CPTK_IS_MEMBER_FUNCTION_POINTER:
