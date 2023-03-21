@@ -338,7 +338,7 @@ ix86_convert_const_wide_int_to_broadcast (machine_mode mode, rtx op)
   machine_mode vector_mode;
   if (!mode_for_vector (broadcast_mode, nunits).exists (&vector_mode))
     gcc_unreachable ();
-  rtx target = ix86_gen_scratch_sse_rtx (vector_mode);
+  rtx target = gen_reg_rtx (vector_mode);
   bool ok = ix86_expand_vector_init_duplicate (false, vector_mode,
 					       target,
 					       GEN_INT (val_broadcast));
@@ -686,7 +686,7 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
       if (!register_operand (op0, mode)
 	  && !register_operand (op1, mode))
 	{
-	  rtx scratch = ix86_gen_scratch_sse_rtx (mode);
+	  rtx scratch = gen_reg_rtx (mode);
 	  emit_move_insn (scratch, op1);
 	  op1 = scratch;
 	}
@@ -728,7 +728,7 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
       && !register_operand (op0, mode)
       && !register_operand (op1, mode))
     {
-      rtx tmp = ix86_gen_scratch_sse_rtx (GET_MODE (op0));
+      rtx tmp = gen_reg_rtx (GET_MODE (op0));
       emit_move_insn (tmp, op1);
       emit_move_insn (op0, tmp);
       return;

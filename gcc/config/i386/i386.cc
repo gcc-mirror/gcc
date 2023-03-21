@@ -24197,15 +24197,6 @@ ix86_optab_supported_p (int op, machine_mode mode1, machine_mode,
     }
 }
 
-/* Implement the TARGET_GEN_MEMSET_SCRATCH_RTX hook.  Return a scratch
-   register in MODE for vector load and store.  */
-
-rtx
-ix86_gen_scratch_sse_rtx (machine_mode mode)
-{
-  return gen_reg_rtx (mode);
-}
-
 /* Address space support.
 
    This is not "far pointers" in the 16-bit sense, but an easy way
@@ -25252,9 +25243,6 @@ static bool ix86_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
 
 #undef TARGET_LIBC_HAS_FAST_FUNCTION
 #define TARGET_LIBC_HAS_FAST_FUNCTION ix86_libc_has_fast_function
-
-#undef TARGET_GEN_MEMSET_SCRATCH_RTX
-#define TARGET_GEN_MEMSET_SCRATCH_RTX ix86_gen_scratch_sse_rtx
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

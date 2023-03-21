@@ -4212,7 +4212,7 @@ builtin_memset_read_str (void *data, void *prev,
 	return const_vec;
 
       /* Use the move expander with CONST_VECTOR.  */
-      target = targetm.gen_memset_scratch_rtx (mode);
+      target = gen_reg_rtx (mode);
       emit_move_insn (target, const_vec);
       return target;
     }
@@ -4256,7 +4256,7 @@ builtin_memset_gen_str (void *data, void *prev,
 	 the memset expander.  */
       insn_code icode = optab_handler (vec_duplicate_optab, mode);
 
-      target = targetm.gen_memset_scratch_rtx (mode);
+      target = gen_reg_rtx (mode);
       class expand_operand ops[2];
       create_output_operand (&ops[0], target, mode);
       create_input_operand (&ops[1], (rtx) data, QImode);
