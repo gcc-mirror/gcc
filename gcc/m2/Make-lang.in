@@ -1352,20 +1352,20 @@ m2/boot-bin/mc$(exeext): $(BUILD-MC-BOOT-O) $(BUILD-MC-INTERFACE-O) \
 
 m2/mc-boot/$(SRC_PREFIX)%.o: m2/mc-boot/$(SRC_PREFIX)%.cc m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) -g -c -I. -I$(srcdir)/m2/mc-boot-ch -I$(srcdir)/m2/mc-boot -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) $< -o $@
+	$(CXX) $(CXX_FLAGS) -g -c -I. -I$(srcdir)/m2/mc-boot-ch -I$(srcdir)/m2/mc-boot -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) $< -o $@
 
 m2/mc-boot-ch/$(SRC_PREFIX)%.o: m2/mc-boot-ch/$(SRC_PREFIX)%.c m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) -DHAVE_CONFIG_H -g -c -I. -Im2/gm2-libs -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) -Im2/gm2-libs $< -o $@
+	$(CXX) $(CXX_FLAGS) -DHAVE_CONFIG_H -g -c -I. -Im2/gm2-libs -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) -Im2/gm2-libs $< -o $@
 
 m2/mc-boot-ch/$(SRC_PREFIX)%.o: m2/mc-boot-ch/$(SRC_PREFIX)%.cc m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) -DHAVE_CONFIG_H -g -c -I. -Im2/gm2-libs -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) -Im2/gm2-libs $< -o $@
+	$(CXX) $(CXX_FLAGS) -DHAVE_CONFIG_H -g -c -I. -Im2/gm2-libs -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) -Im2/gm2-libs $< -o $@
 
 m2/mc-boot/main.o: $(M2LINK) $(srcdir)/m2/init/mcinit
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
 	unset CC ; $(M2LINK) -s --langc++ --exit --name m2/mc-boot/main.cc $(srcdir)/m2/init/mcinit
-	$(CXX) -g -c -I. -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) m2/mc-boot/main.cc -o $@
+	$(CXX) $(CXX_FLAGS) -g -c -I. -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) m2/mc-boot/main.cc -o $@
 
 mcflex.o: mcflex.c m2/gm2-libs/gm2-libs-host.h
 	$(CC) -I$(srcdir)/m2/mc -g -c $< -o $@   # remember that mcReserved.h is copied into m2/mc
