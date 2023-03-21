@@ -1422,7 +1422,7 @@ template <typename _Abi, typename>
 		},
 		[&__xf,
 		 &__yf](auto __i) -> _SimdWrapper<_Float, __n_intermediate> {
-#if !defined __clang__ && __GCC_IEC_559 == 0
+#if __GCC_IEC_559 == 0
 		  // If -freciprocal-math is active, using the `/` operator is
 		  // incorrect because it may be translated to an imprecise
 		  // multiplication with reciprocal. We need to use inline
@@ -1477,7 +1477,7 @@ template <typename _Abi, typename>
 	  */
 	return _Base::_S_divides(__x, __y);
       }
-  #endif // _GLIBCXX_SIMD_WORKAROUND_PR90993
+#endif // _GLIBCXX_SIMD_WORKAROUND_PR90993
 
     // }}}
     // _S_modulus {{{
