@@ -618,11 +618,16 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
     if (sbout.is_open())
       out.fd = -1;
 
-    if (from_st->st_size && !(std::ostream(&sbout) << &sbin))
-      {
-	ec = std::make_error_code(std::errc::io_error);
-	return false;
-      }
+    // ostream::operator<<(streambuf*) fails if it extracts no characters,
+    // so don't try to use it for empty files. But from_st->st_size == 0 for
+    // some special files (e.g. procfs, see PR libstdc++/108178) so just try
+    // to read a character to decide whether there is anything to copy or not.
+    if (sbin.sgetc() != char_traits<char>::eof())
+      if (!(std::ostream(&sbout) << &sbin))
+	{
+	  ec = std::make_error_code(std::errc::io_error);
+	  return false;
+	}
 
     if (!sbout.close() || !sbin.close())
       {
