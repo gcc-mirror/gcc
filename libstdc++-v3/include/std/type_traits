@@ -523,6 +523,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   /// is_array
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_array)
+  template<typename _Tp>
+    struct is_array
+    : public __bool_constant<__is_array(_Tp)>
+    { };
+#else
   template<typename>
     struct is_array
     : public false_type { };
@@ -534,6 +540,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct is_array<_Tp[]>
     : public true_type { };
+#endif
 
   template<typename>
     struct __is_pointer_helper
@@ -3169,12 +3176,17 @@ template <typename _Tp>
 template <typename _Tp>
   inline constexpr bool is_floating_point_v = is_floating_point<_Tp>::value;
 
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_array)
+template <typename _Tp>
+  inline constexpr bool is_array_v = __is_array(_Tp);
+#else
 template <typename _Tp>
   inline constexpr bool is_array_v = false;
 template <typename _Tp>
   inline constexpr bool is_array_v<_Tp[]> = true;
 template <typename _Tp, size_t _Num>
   inline constexpr bool is_array_v<_Tp[_Num]> = true;
+#endif
 
 template <typename _Tp>
   inline constexpr bool is_pointer_v = is_pointer<_Tp>::value;
