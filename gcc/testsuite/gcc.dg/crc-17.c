@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-crc" } */
+/* { dg-options "-O2 -fdump-tree-crc -march=rv64gc_zbc" } */
 
 #include <stdint.h>
 //in one case is called shift left, in another shift right

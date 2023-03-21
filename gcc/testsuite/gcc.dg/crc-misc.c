@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-crc-details" } */
+/* { dg-options "-O2 -fdump-tree-crc-details -march=rv64gc_zbc" } */
 
 #include <stdint.h>
 uint32_t _crc32(uint32_t crc, uint32_t data) {

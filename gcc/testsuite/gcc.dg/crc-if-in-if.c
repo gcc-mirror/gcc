@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-crc" } */
+/* { dg-options "-O2 -fdump-tree-crc -march=rv64gc_zbc" } */
 #include <stdint.h>
 typedef uint8_t byte;
 byte Compute_CRC8_Simple_OneByte_ShiftReg (byte byteVal)

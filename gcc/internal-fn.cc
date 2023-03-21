@@ -3730,6 +3730,7 @@ expand_crc_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
     rtx dest = expand_expr (lhs, NULL_RTX, SImode, EXPAND_WRITE);
     rtx op1 = expand_normal (rhs1);
     rtx op2 = expand_normal (rhs2);
+    gcc_assert (TREE_CODE (rhs3) == INTEGER_CST);
     rtx op3 = gen_rtx_CONST_INT (TYPE_MODE (result_type),
 				 TREE_INT_CST_LOW (rhs3));
 

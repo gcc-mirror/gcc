@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-crc -fdisable-tree-phiopt2 -fdisable-tree-phiopt3" } */
+/* { dg-options "-O2 -fdump-tree-crc -fdisable-tree-phiopt2 -fdisable-tree-phiopt3 -march=rv64gc_zbc" } */
 
 #include <stdio.h>
 #include <stdint.h>

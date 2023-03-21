@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-crc" } */
+/* { dg-options "-O2 -fdump-tree-crc -march=rv64gc_zbc" } */
 
 typedef unsigned short ee_u16;
 typedef unsigned char ee_u8;

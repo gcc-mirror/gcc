@@ -682,10 +682,13 @@
 "clmulr\t%0,%1,%2"
 [(set_attr "type" "bitmanip")])
 
+;; This probably should end up as crc<mode>4 and the :DI should
+;; be :X
 (define_expand "crcqihi4"
-[(match_operand:HI 1)
- (match_operand:QI 2)
- (match_operand:HI 3)]
+[(match_operand:DI 0)
+ (match_operand:DI 1)
+ (match_operand:DI 2)
+ (match_operand:DI 3)]
 ""
 {
   if (TARGET_ZBC)
@@ -695,15 +698,21 @@
       rtx a1 = operands[2];
       unsigned HOST_WIDE_INT q
         = gf2n_poly_long_div_quotient (UINTVAL (operands[3]));
-      rtx t0 = gen_rtx_CONST (SImode, GEN_INT (q));
-      rtx t1 = gen_rtx_CONST (SImode, operands[3]);
-      a0 = force_reg (SImode, gen_rtx_XOR (SImode, a0, a1));
-      a0 = force_reg (SImode, gen_rtx_CLMUL (SImode, a0, t0));
-      a0 = force_reg (SImode, gen_rtx_ASHIFT (SImode, a0, GEN_INT (16)));
-      a0 = force_reg (SImode, gen_rtx_CLMUL (SImode, a0, t1));
-      a0 = force_reg (SImode, gen_rtx_LSHIFTRT (SImode, a0, GEN_INT (24)));
-      a0 = force_reg (SImode, gen_rtx_ASHIFT (SImode, a0, GEN_INT (24)));
-      rtx tgt = simplify_gen_subreg (SImode, operands[0], HImode, 0);
+      rtx q_reg = force_reg (word_mode, GEN_INT (q));
+      rtx t1 = force_reg (word_mode, operands[3]);
+      a0 = force_reg (word_mode, gen_rtx_XOR (word_mode, a0, a1));
+      a0 = force_reg (word_mode, gen_rtx_CLMUL (word_mode, a0, q_reg));
+      a0 = force_reg (word_mode, gen_rtx_ASHIFT (word_mode, a0, GEN_INT (16)));
+      a0 = force_reg (word_mode, gen_rtx_CLMUL (word_mode, a0, t1));
+      a0 = force_reg (word_mode, gen_rtx_LSHIFTRT (word_mode, a0, GEN_INT (24)));
+      a0 = force_reg (word_mode, gen_rtx_ASHIFT (word_mode, a0, GEN_INT (24)));
+
+      /* A0 is word mode.  So we can just copy it into OPERANDS[0] by
+         wrapping OPERANDS[0] with a suitable subreg.  Ideally we'll
+         fix the rest of the type issues with this expander and this
+         can be removed.  */
+      rtx tgt = simplify_gen_subreg (word_mode, operands[0],
+                                     GET_MODE (operands[0]), 0);
       emit_move_insn (tgt, a0);
     }
   else

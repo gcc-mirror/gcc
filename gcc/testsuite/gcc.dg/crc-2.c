@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-crc-details" } */
+/* { dg-options "-O2 -fdump-tree-crc-details -march=rv64gc_zbc" } */
 
 #define CRC16_CCITT     0x102
 #define POLYNOM         CRC16_CCITT

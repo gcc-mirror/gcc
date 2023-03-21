@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-crc-details" } */
+/* { dg-options "-O2 -fdump-tree-crc-details -march=rv64gc_zbc" } */
 
  #include <stdint.h>
  uint32_t crc24_reverse(uint32_t crc, const uint8_t *data, uint8_t len)
