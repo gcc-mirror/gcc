@@ -1129,10 +1129,7 @@ extern bool gomp_target_task_fn (void *);
 extern void * gomp_usm_alloc (size_t size);
 extern void gomp_usm_free (void *device_ptr);
 extern void gomp_target_rev (uint64_t, uint64_t, uint64_t, uint64_t, uint64_t,
-			     int,
-			     void (*) (void *, const void *, size_t, void *),
-			     void (*) (void *, const void *, size_t, void *),
-			     void *);
+			     int, struct goacc_asyncqueue *);
 extern bool gomp_page_locked_host_alloc (void **, size_t);
 extern void gomp_page_locked_host_free (void *);
 
