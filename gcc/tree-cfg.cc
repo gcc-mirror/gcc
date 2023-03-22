@@ -1960,12 +1960,6 @@ gimple_can_merge_blocks_p (basic_block a, basic_block b)
   if (stmt && stmt_ends_bb_p (stmt))
     return false;
 
-  /* Do not allow a block with only a non-local label to be merged.  */
-  if (stmt)
-    if (glabel *label_stmt = dyn_cast <glabel *> (stmt))
-      if (DECL_NONLOCAL (gimple_label_label (label_stmt)))
-	return false;
-
   /* Examine the labels at the beginning of B.  */
   for (gimple_stmt_iterator gsi = gsi_start_bb (b); !gsi_end_p (gsi);
        gsi_next (&gsi))
