@@ -121,11 +121,15 @@ private:
   void visit (ConstGenericParam &const_param);
 
   // rust-path.h
+  void visit (SimplePath &path);
+  void visit (PathExprSegment &segment);
+  void visit (PathIdentSegment &segment);
   void visit (PathInExpression &path);
   void visit (TypePathSegment &segment);
   void visit (TypePathSegmentGeneric &segment);
   void visit (TypePathSegmentFunction &segment);
   void visit (TypePath &path);
+  void visit (QualifiedPathType &path);
   void visit (QualifiedPathInExpression &path);
   void visit (QualifiedPathInType &path);
 

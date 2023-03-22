@@ -152,6 +152,8 @@ public:
 
   Location get_locus () const override { return lit_expr.get_locus (); }
 
+  LiteralExpr get_literal () const { return lit_expr; }
+
   void accept_vis (ASTVisitor &vis) override;
 
   bool check_cfg_predicate (const Session &session) const override;
@@ -174,6 +176,10 @@ public:
   MetaItemPathLit (SimplePath path, LiteralExpr lit_expr)
     : path (std::move (path)), lit (std::move (lit_expr))
   {}
+
+  SimplePath get_path () const { return path; }
+
+  LiteralExpr get_literal () const { return lit; }
 
   std::string as_string () const override
   {
