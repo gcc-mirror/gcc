@@ -516,13 +516,13 @@ cc1gm2$(exeext): m2/stage1/cc1gm2$(exeext) $(m2.prev)
 
 m2/stage2/cc1gm2$(exeext): m2/stage1/cc1gm2$(exeext) m2/gm2-compiler/m2flex.o $(P) \
                             $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) $(GM2_LIBS) \
-                            m2/gm2-gcc/rtegraph.o plugin/m2rte$(soext) m2/gm2-libs-boot/M2LINK.o
+                            m2/gm2-gcc/rtegraph.o plugin/m2rte$(soext)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
 	@$(call LINK_PROGRESS,$(INDEX.m2),start)
 	+$(LLINKER) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GM2_C_OBJS) m2/gm2-compiler/m2flex.o \
                             attribs.o \
                               $(GM2_LIBS) \
-                              $(BACKEND) $(LIBS) m2/gm2-gcc/rtegraph.o m2/gm2-libs-boot/M2LINK.o \
+                              $(BACKEND) $(LIBS) m2/gm2-gcc/rtegraph.o \
                               $(BACKENDLIBS) $(LIBSTDCXX) -lm
 	@$(call LINK_PROGRESS,$(INDEX.m2),end)
 
@@ -530,14 +530,13 @@ m2/stage1/cc1gm2$(exeext): gm2$(exeext) m2/gm2-compiler-boot/m2flex.o \
                             $(P) $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) \
                             $(GM2_LIBS_BOOT) $(MC_LIBS) \
                             m2/gm2-gcc/rtegraph.o plugin/m2rte$(soext) \
-                            m2/gm2-libs-boot/M2LINK.o \
                             $(m2.prev)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
 	@$(call LINK_PROGRESS,$(INDEX.m2),start)
 	+$(LLINKER) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(GM2_C_OBJS) m2/gm2-compiler-boot/m2flex.o \
                             attribs.o \
                              $(GM2_LIBS_BOOT) $(MC_LIBS) \
-                             m2/gm2-gcc/rtegraph.o m2/gm2-libs-boot/M2LINK.o \
+                             m2/gm2-gcc/rtegraph.o \
                              $(BACKEND) $(LIBS) $(BACKENDLIBS)
 	@$(call LINK_PROGRESS,$(INDEX.m2),end)
 
@@ -613,7 +612,6 @@ GM2-LIBS-BOOT-DEFS = \
    Indexing.def \
    M2Dependent.def \
    M2EXCEPTION.def \
-   M2LINK.def \
    M2RTS.def \
    NumberIO.def \
    PushBackInput.def \
@@ -878,7 +876,6 @@ GM2-LIBS-DEFS = \
    LegacyReal.def \
    M2Dependent.def \
    M2EXCEPTION.def \
-   M2LINK.def \
    M2RTS.def \
    MathLib0.def \
    MemUtils.def \
@@ -1352,23 +1349,23 @@ m2/boot-bin/mc$(exeext): $(BUILD-MC-BOOT-O) $(BUILD-MC-INTERFACE-O) \
 
 m2/mc-boot/$(SRC_PREFIX)%.o: m2/mc-boot/$(SRC_PREFIX)%.cc m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) $(CXX_FLAGS) -g -c -I. -I$(srcdir)/m2/mc-boot-ch -I$(srcdir)/m2/mc-boot -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) $< -o $@
+	$(CXX) $(CXXFLAGS) -g -c -I. -I$(srcdir)/m2/mc-boot-ch -I$(srcdir)/m2/mc-boot -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) $< -o $@
 
 m2/mc-boot-ch/$(SRC_PREFIX)%.o: m2/mc-boot-ch/$(SRC_PREFIX)%.c m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) $(CXX_FLAGS) -DHAVE_CONFIG_H -g -c -I. -Im2/gm2-libs -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) -Im2/gm2-libs $< -o $@
+	$(CXX) $(CXXFLAGS) -DHAVE_CONFIG_H -g -c -I. -Im2/gm2-libs -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) -Im2/gm2-libs $< -o $@
 
 m2/mc-boot-ch/$(SRC_PREFIX)%.o: m2/mc-boot-ch/$(SRC_PREFIX)%.cc m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) $(CXX_FLAGS) -DHAVE_CONFIG_H -g -c -I. -Im2/gm2-libs -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) -Im2/gm2-libs $< -o $@
+	$(CXX) $(CXXFLAGS) -DHAVE_CONFIG_H -g -c -I. -Im2/gm2-libs -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) -Im2/gm2-libs $< -o $@
 
 m2/mc-boot/main.o: $(M2LINK) $(srcdir)/m2/init/mcinit
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
 	unset CC ; $(M2LINK) -s --langc++ --exit --name m2/mc-boot/main.cc $(srcdir)/m2/init/mcinit
-	$(CXX) $(CXX_FLAGS) -g -c -I. -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) m2/mc-boot/main.cc -o $@
+	$(CXX) $(CXXFLAGS) -g -c -I. -I$(srcdir)/../include -I$(srcdir) $(INCLUDES) m2/mc-boot/main.cc -o $@
 
 mcflex.o: mcflex.c m2/gm2-libs/gm2-libs-host.h
-	$(CC) -I$(srcdir)/m2/mc -g -c $< -o $@   # remember that mcReserved.h is copied into m2/mc
+	$(CC) $(CFLAGS) -I$(srcdir)/m2/mc -g -c $< -o $@   # remember that mcReserved.h is copied into m2/mc
 
 mcflex.c: $(srcdir)/m2/mc/mc.flex
 	flex -t $< > $@
@@ -1401,10 +1398,6 @@ m2/gm2-libs-boot/RTintdummy.o: $(srcdir)/m2/gm2-libs-ch/RTintdummy.c m2/gm2-libs
 	$(CXX) -c -DIN_GCC $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
 
 m2/gm2-libs-boot/wrapc.o: $(srcdir)/m2/gm2-libs-ch/wrapc.c m2/gm2-libs-boot/$(SRC_PREFIX)wrapc.h m2/gm2-libs/gm2-libs-host.h
-	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) -c -DHAVE_CONFIG_H $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot -Im2/gm2-libs $(INCLUDES) $< -o $@
-
-m2/gm2-libs-boot/M2LINK.o: $(srcdir)/m2/gm2-libs-ch/M2LINK.c m2/gm2-libs-boot/$(SRC_PREFIX)M2LINK.h m2/gm2-libs/gm2-libs-host.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
 	$(CXX) -c -DHAVE_CONFIG_H $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot -Im2/gm2-libs $(INCLUDES) $< -o $@
 

@@ -87,7 +87,7 @@ VAR
 
 static void _M2_init (int argc, char *argv[], char *envp[])
 {
-  M2RTS_ConstructModules (module_name, libname, argc, argv, envp);
+  M2RTS_ConstructModules (module_name, libname, overrideliborder, argc, argv, envp);
 }
 
 

@@ -209,7 +209,8 @@ FROM M2Options IMPORT NilChecking,
                       GenerateLineDebug, Exceptions,
                       Profiling, Coding, Optimizing,
                       ScaffoldDynamic, ScaffoldStatic, cflag,
-                      ScaffoldMain, SharedFlag, WholeProgram ;
+                      ScaffoldMain, SharedFlag, WholeProgram,
+                      GetRuntimeModuleOverride ;
 
 FROM M2Pass IMPORT IsPassCodeGeneration, IsNoPass ;
 
@@ -2531,7 +2532,8 @@ BEGIN
       (* int
          _M2_init (int argc, char *argv[], char *envp[])
          {
-            M2RTS_ConstructModules (module_name, libname, argc, argv, envp);
+            M2RTS_ConstructModules (module_name, libname,
+                                    overrideliborder, argc, argv, envp);
          }  *)
       PushT (initFunction) ;
       BuildProcedureStart ;
@@ -2566,10 +2568,17 @@ BEGIN
             PushT(1) ;
             BuildAdrFunction ;
 
+            PushTF(Adr, Address) ;
+            PushTtok (MakeConstLitString (tok,
+                                          makekey (GetRuntimeModuleOverride ())),
+                      tok) ;
+            PushT(1) ;
+            BuildAdrFunction ;
+
             PushTtok (SafeRequestSym (tok, MakeKey ("argc")), tok) ;
             PushTtok (SafeRequestSym (tok, MakeKey ("argv")), tok) ;
             PushTtok (SafeRequestSym (tok, MakeKey ("envp")), tok) ;
-            PushT (5) ;
+            PushT (6) ;
             BuildProcedureCall (tok) ;
          END
       ELSIF ScaffoldStatic

@@ -29,7 +29,7 @@ IMPLEMENTATION MODULE M2Dependent ;
 
 FROM libc IMPORT abort, exit, write, getenv, printf, snprintf, strncpy ;
 (* FROM Builtins IMPORT strncmp, strcmp ;  not available during bootstrap.  *)
-FROM M2LINK IMPORT ForcedModuleInitOrder, StaticInitialization, PtrToChar ;
+(* FROM M2LINK IMPORT ForcedModuleInitOrder, StaticInitialization, PtrToChar ; *)
 FROM ASCII IMPORT nul, nl ;
 FROM SYSTEM IMPORT ADR, SIZE ;
 FROM Storage IMPORT ALLOCATE ;
@@ -39,6 +39,8 @@ IMPORT M2RTS ;
 
 
 TYPE
+   PtrToChar = POINTER TO CHAR ;
+
    DependencyState = (unregistered, unordered, started, ordered, user) ;
 
    DependencyList = RECORD
@@ -62,7 +64,8 @@ TYPE
                             END ;
 
 VAR
-   Modules        : ARRAY DependencyState OF ModuleChain ;
+   Modules              : ARRAY DependencyState OF ModuleChain ;
+   DynamicInitialization,
    Initialized,
    WarningTrace,
    ModuleTrace,
@@ -70,7 +73,7 @@ VAR
    DependencyTrace,
    PreTrace,
    PostTrace,
-   ForceTrace     : BOOLEAN ;
+   ForceTrace           : BOOLEAN ;
 
 
 (*
@@ -455,18 +458,15 @@ END ResolveDependant ;
 (*
    RequestDependant - used to specify that modulename is dependant upon
                       module dependantmodule.  It only takes effect
-                      if we are not using StaticInitialization.
+                      if we are using DynamicInitialization.
 *)
 
 PROCEDURE RequestDependant (modulename, libname,
                             dependantmodule, dependantlibname: ADDRESS) ;
 BEGIN
    CheckInitialized ;
-   IF NOT StaticInitialization
-   THEN
-      PerformRequestDependant (modulename, libname,
-                               dependantmodule, dependantlibname)
-   END
+   PerformRequestDependant (modulename, libname,
+                            dependantmodule, dependantlibname)
 END RequestDependant ;
 
 
@@ -676,7 +676,7 @@ END ForceModule ;
                        the dynamic ordering with the preference.
 *)
 
-PROCEDURE ForceDependencies ;
+PROCEDURE ForceDependencies (overrideliborder: ADDRESS) ;
 VAR
    len,
    modlen,
@@ -685,10 +685,10 @@ VAR
    libname,
    pc, start: PtrToChar ;
 BEGIN
-   IF ForcedModuleInitOrder # NIL
+   IF overrideliborder # NIL
    THEN
-      traceprintf2 (ForceTrace, "user forcing order: %s\n", ForcedModuleInitOrder) ;
-      pc := ForcedModuleInitOrder ;
+      traceprintf2 (ForceTrace, "user forcing order: %s\n", overrideliborder) ;
+      pc := overrideliborder ;
       start := pc ;
       len := 0 ;
       modname := NIL ;
@@ -762,13 +762,15 @@ END CheckApplication ;
                       module constructor in turn.
 *)
 
-PROCEDURE ConstructModules (applicationmodule, libname: ADDRESS;
+PROCEDURE ConstructModules (applicationmodule, libname,
+                            overrideliborder: ADDRESS;
                             argc: INTEGER; argv, envp: ADDRESS) ;
 VAR
    mptr: ModuleChain ;
    nulp: ArgCVEnvP ;
 BEGIN
    CheckInitialized ;
+   DynamicInitialization := TRUE ;  (* This procedure is only called if we desire dynamic initialization.  *)
    traceprintf3 (ModuleTrace, "application module: %s [%s]\n",
                  applicationmodule, libname);
    mptr := LookupModule (unordered, applicationmodule, libname) ;
@@ -781,7 +783,7 @@ BEGIN
    ResolveDependencies (applicationmodule, libname) ;
    traceprintf (PreTrace, "Post resolving dependents\n");
    DumpModuleData (PostTrace) ;
-   ForceDependencies ;
+   ForceDependencies (overrideliborder) ;
    traceprintf (ForceTrace, "After user forcing ordering\n");
    DumpModuleData (ForceTrace) ;
    CheckApplication ;
@@ -885,20 +887,17 @@ VAR
    mptr: ModuleChain ;
 BEGIN
    CheckInitialized ;
-   IF NOT StaticInitialization
+   mptr := LookupModule (unordered, modulename, libname) ;
+   IF mptr = NIL
    THEN
-      mptr := LookupModule (unordered, modulename, libname) ;
-      IF mptr = NIL
-      THEN
-         traceprintf3 (ModuleTrace, "module: %s [%s] registering",
-                       modulename, libname);
-         moveTo (unordered,
-                 CreateModule (modulename, libname, init, fini, dependencies)) ;
-         traceprintf (ModuleTrace, "\n") ;
-      ELSE
-         warning3 ("module: %s [%s] (ignoring duplicate registration)\n",
-                   modulename, libname)
-      END
+      traceprintf3 (ModuleTrace, "module: %s [%s] registering",
+                    modulename, libname);
+      moveTo (unordered,
+              CreateModule (modulename, libname, init, fini, dependencies)) ;
+      traceprintf (ModuleTrace, "\n") ;
+   ELSE
+      warning3 ("module: %s [%s] (ignoring duplicate registration)\n",
+                modulename, libname)
    END
 END RegisterModule ;
 
@@ -1001,7 +1000,8 @@ BEGIN
    SetupDebugFlags ;
    FOR state := MIN (DependencyState) TO MAX (DependencyState) DO
       Modules[state] := NIL
-   END
+   END ;
+   DynamicInitialization := FALSE
 END Init ;
 
 

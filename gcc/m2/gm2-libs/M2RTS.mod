@@ -71,9 +71,11 @@ VAR
 *)
 
 PROCEDURE ConstructModules (applicationmodule, libname: ADDRESS;
+                            overrideliborder: ADDRESS;
                             argc: INTEGER; argv, envp: ADDRESS) ;
 BEGIN
    M2Dependent.ConstructModules (applicationmodule, libname,
+                                 overrideliborder,
                                  argc, argv, envp)
 END ConstructModules ;
 

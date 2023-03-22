@@ -34,6 +34,7 @@ TYPE
 
 
 PROCEDURE ConstructModules (applicationmodule, libname: ADDRESS;
+                            overrideliborder: ADDRESS;
                             argc: INTEGER; argv, envp: ADDRESS) ;
 
 PROCEDURE DeconstructModules (applicationmodule, libname: ADDRESS;

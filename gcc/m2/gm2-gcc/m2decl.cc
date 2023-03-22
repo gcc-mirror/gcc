@@ -40,7 +40,7 @@ extern GTY (()) tree current_function_decl;
 static GTY (()) tree param_type_list;
 static GTY (()) tree param_list = NULL_TREE; /* Ready for the next time we
                                                 call/define a function.  */
-
+#if 0
 tree
 m2decl_DeclareM2linkStaticInitialization (location_t location,
 					  int ScaffoldStatic)
@@ -71,6 +71,7 @@ m2decl_DeclareM2linkForcedModuleInitOrder (location_t location,
   m2block_popGlobalScope ();
   return forced_order;
 }
+#endif
 
 
 /* DeclareKnownVariable declares a variable to GCC.  */

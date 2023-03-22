@@ -504,7 +504,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_PIMLIB_TRUE@         LegacyReal.def  libc.def \
 @BUILD_PIMLIB_TRUE@         libm.def  LMathLib0.def \
 @BUILD_PIMLIB_TRUE@         M2Dependent.def \
-@BUILD_PIMLIB_TRUE@         M2EXCEPTION.def  M2LINK.def \
+@BUILD_PIMLIB_TRUE@         M2EXCEPTION.def \
 @BUILD_PIMLIB_TRUE@         M2RTS.def \
 @BUILD_PIMLIB_TRUE@         MathLib0.def  MemUtils.def \
 @BUILD_PIMLIB_TRUE@         NumberIO.def  PushBackInput.def \

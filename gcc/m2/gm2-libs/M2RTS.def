@@ -33,7 +33,8 @@ TYPE
    ArgCVEnvP = PROCEDURE (INTEGER, ADDRESS, ADDRESS) ;
 
 
-PROCEDURE ConstructModules (applicationmodule, libname: ADDRESS;
+PROCEDURE ConstructModules (applicationmodule, libname,
+                            overrideliborder: ADDRESS;
                             argc: INTEGER; argv, envp: ADDRESS) ;
 
 PROCEDURE DeconstructModules (applicationmodule, libname: ADDRESS;
