@@ -835,6 +835,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Type properties.
 
   /// is_const
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_const)
+  template<typename _Tp>
+    struct is_const
+    : public __bool_constant<__is_const(_Tp)>
+    { };
+#else
   template<typename>
     struct is_const
     : public false_type { };
@@ -842,6 +848,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct is_const<_Tp const>
     : public true_type { };
+#endif
 
   /// is_volatile
   template<typename>
@@ -3331,10 +3338,15 @@ template <typename _Tp>
   inline constexpr bool is_member_pointer_v = is_member_pointer<_Tp>::value;
 #endif
 
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_const)
+template <typename _Tp>
+  inline constexpr bool is_const_v = __is_const(_Tp);
+#else
 template <typename _Tp>
   inline constexpr bool is_const_v = false;
 template <typename _Tp>
   inline constexpr bool is_const_v<const _Tp> = true;
+#endif
 
 #if _GLIBCXX_USE_BUILTIN_TRAIT(__is_function)
 template <typename _Tp>
