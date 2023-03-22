@@ -299,6 +299,9 @@ public:
 
   program_point get_next () const;
 
+  static bool effectively_intraprocedural_p (const program_point &point_a,
+					     const program_point &point_b);
+
  private:
   program_point (const function_point &fn_point)
   : m_function_point (fn_point),

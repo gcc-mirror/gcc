@@ -1520,10 +1520,11 @@ public:
     if (!m_check_enode)
       return false;
     /* Only emit the warning for intraprocedural cases.  */
-    if (m_deref_enode->get_function () != m_check_enode->get_function ())
-      return false;
-    if (&m_deref_enode->get_point ().get_call_string ()
-	!= &m_check_enode->get_point ().get_call_string ())
+    const program_point &deref_point = m_deref_enode->get_point ();
+    const program_point &check_point = m_check_enode->get_point ();
+
+    if (!program_point::effectively_intraprocedural_p (deref_point,
+						       check_point))
       return false;
 
     /* Reject the warning if the check occurs within a macro defintion.
