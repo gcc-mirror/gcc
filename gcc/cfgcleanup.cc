@@ -2608,14 +2608,14 @@ bb_is_just_return (basic_block bb, rtx_insn **ret, rtx_insn **use)
   if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return false;
 
-  FOR_BB_INSNS (bb, insn)
+  FOR_BB_INSNS_REVERSE (bb, insn)
     if (NONDEBUG_INSN_P (insn))
       {
 	rtx pat = PATTERN (insn);
 
 	if (!*ret && ANY_RETURN_P (pat))
 	  *ret = insn;
-	else if (!*ret && !*use && GET_CODE (pat) == USE
+	else if (*ret && !*use && GET_CODE (pat) == USE
 	    && REG_P (XEXP (pat, 0))
 	    && REG_FUNCTION_VALUE_P (XEXP (pat, 0)))
 	  *use = insn;
