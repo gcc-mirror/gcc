@@ -84,9 +84,11 @@ test03()
   VERIFY( s == std::string(42, 'a') );
   VERIFY( s[42] == '\0' );
 
-  s.resize_and_overwrite(0, [](auto&& p, auto&& n) {
-    static_assert( std::is_same_v<decltype(p), char*&> );
-    static_assert( std::is_same_v<decltype(n), std::string::size_type&> );
+  s.resize_and_overwrite(0, [](auto p, auto n) {
+    // N.B. these requirements were relaxed by LWG 3645:
+    // resize_and_overwrite is overspecified to call its callback with lvalues
+    static_assert( std::is_same_v<decltype(p), char*> );
+    static_assert( std::is_same_v<decltype(n), std::string::size_type> );
     return 0;
   });
 }
