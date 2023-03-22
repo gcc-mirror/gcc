@@ -94,6 +94,9 @@ private:
   void visit_function_common (std::unique_ptr<Type> &return_type,
 			      std::unique_ptr<BlockExpr> &block);
 
+  void visit_loop_common (BaseLoopExpr &expr);
+  void visit (LoopLabel &label);
+
   void visit (Literal &lit, Location locus = {});
 
   void visit (FunctionParam &param);
