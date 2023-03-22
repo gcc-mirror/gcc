@@ -2708,6 +2708,32 @@ template <typename _Tp>
 } // namespace simd_abi
 
 // traits {{{1
+template <typename _Tp>
+  struct is_simd_flag_type
+  : false_type
+  {};
+
+template <>
+  struct is_simd_flag_type<element_aligned_tag>
+  : true_type
+  {};
+
+template <>
+  struct is_simd_flag_type<vector_aligned_tag>
+  : true_type
+  {};
+
+template <size_t _Np>
+  struct is_simd_flag_type<overaligned_tag<_Np>>
+  : __bool_constant<(_Np > 0) and __has_single_bit(_Np)>
+  {};
+
+template <typename _Tp>
+  inline constexpr bool is_simd_flag_type_v = is_simd_flag_type<_Tp>::value;
+
+template <typename _Tp, typename = enable_if_t<is_simd_flag_type_v<_Tp>>>
+  using _IsSimdFlagType = _Tp;
+
 // is_abi_tag {{{2
 template <typename _Tp, typename = void_t<>>
   struct is_abi_tag : false_type {};
@@ -3127,7 +3153,7 @@ template <typename _M, typename _Tp>
 
     template <typename _Up, typename _Flags>
       [[nodiscard]] _GLIBCXX_SIMD_INTRINSIC _V
-      copy_from(const _LoadStorePtr<_Up, value_type>* __mem, _Flags) const&&
+      copy_from(const _LoadStorePtr<_Up, value_type>* __mem, _IsSimdFlagType<_Flags>) const&&
       {
 	return {__private_init,
 		_Impl::_S_masked_load(__data(_M_value), __data(_M_k),
@@ -3136,7 +3162,7 @@ template <typename _M, typename _Tp>
 
     template <typename _Up, typename _Flags>
       _GLIBCXX_SIMD_INTRINSIC void
-      copy_to(_LoadStorePtr<_Up, value_type>* __mem, _Flags) const&&
+      copy_to(_LoadStorePtr<_Up, value_type>* __mem, _IsSimdFlagType<_Flags>) const&&
       {
 	_Impl::_S_masked_store(__data(_M_value),
 			       _Flags::template _S_apply<_V>(__mem),
@@ -3182,12 +3208,12 @@ template <typename _Tp>
 
     template <typename _Up, typename _Flags>
       [[nodiscard]] _GLIBCXX_SIMD_INTRINSIC _V
-      copy_from(const _LoadStorePtr<_Up, value_type>* __mem, _Flags) const&&
+      copy_from(const _LoadStorePtr<_Up, value_type>* __mem, _IsSimdFlagType<_Flags>) const&&
       { return _M_k ? static_cast<_V>(__mem[0]) : _M_value; }
 
     template <typename _Up, typename _Flags>
       _GLIBCXX_SIMD_INTRINSIC void
-      copy_to(_LoadStorePtr<_Up, value_type>* __mem, _Flags) const&&
+      copy_to(_LoadStorePtr<_Up, value_type>* __mem, _IsSimdFlagType<_Flags>) const&&
       {
 	if (_M_k)
 	  __mem[0] = _M_value;
@@ -3285,7 +3311,7 @@ template <typename _M, typename _Tp>
     // intentionally hides const_where_expression::copy_from
     template <typename _Up, typename _Flags>
       _GLIBCXX_SIMD_INTRINSIC void
-      copy_from(const _LoadStorePtr<_Up, value_type>* __mem, _Flags) &&
+      copy_from(const _LoadStorePtr<_Up, value_type>* __mem, _IsSimdFlagType<_Flags>) &&
       {
 	__data(_M_value) = _Impl::_S_masked_load(__data(_M_value), __data(_M_k),
 						 _Flags::template _S_apply<_Tp>(__mem));
@@ -3348,7 +3374,7 @@ template <typename _Tp>
     // intentionally hides const_where_expression::copy_from
     template <typename _Up, typename _Flags>
       _GLIBCXX_SIMD_INTRINSIC void
-      copy_from(const _LoadStorePtr<_Up, value_type>* __mem, _Flags) &&
+      copy_from(const _LoadStorePtr<_Up, value_type>* __mem, _IsSimdFlagType<_Flags>) &&
       { if (_M_k) _M_value = __mem[0]; }
   };
 
@@ -4393,12 +4419,12 @@ template <typename _Tp, typename _Abi>
     // load constructor {{{
     template <typename _Flags>
       _GLIBCXX_SIMD_ALWAYS_INLINE
-      simd_mask(const value_type* __mem, _Flags)
+      simd_mask(const value_type* __mem, _IsSimdFlagType<_Flags>)
       : _M_data(_Impl::template _S_load<_Ip>(_Flags::template _S_apply<simd_mask>(__mem))) {}
 
     template <typename _Flags>
       _GLIBCXX_SIMD_ALWAYS_INLINE
-      simd_mask(const value_type* __mem, simd_mask __k, _Flags)
+      simd_mask(const value_type* __mem, simd_mask __k, _IsSimdFlagType<_Flags>)
       : _M_data{}
       {
 	_M_data = _Impl::_S_masked_load(_M_data, __k._M_data,
@@ -4409,14 +4435,14 @@ template <typename _Tp, typename _Abi>
     // loads [simd_mask.load] {{{
     template <typename _Flags>
       _GLIBCXX_SIMD_ALWAYS_INLINE void
-      copy_from(const value_type* __mem, _Flags)
+      copy_from(const value_type* __mem, _IsSimdFlagType<_Flags>)
       { _M_data = _Impl::template _S_load<_Ip>(_Flags::template _S_apply<simd_mask>(__mem)); }
 
     // }}}
     // stores [simd_mask.store] {{{
     template <typename _Flags>
       _GLIBCXX_SIMD_ALWAYS_INLINE void
-      copy_to(value_type* __mem, _Flags) const
+      copy_to(value_type* __mem, _IsSimdFlagType<_Flags>) const
       { _Impl::_S_store(_M_data, _Flags::template _S_apply<simd_mask>(__mem)); }
 
     // }}}
@@ -4996,7 +5022,7 @@ template <typename _Tp, typename _Abi>
     // load constructor
     template <typename _Up, typename _Flags>
       _GLIBCXX_SIMD_ALWAYS_INLINE
-      simd(const _Up* __mem, _Flags)
+      simd(const _Up* __mem, _IsSimdFlagType<_Flags>)
       : _M_data(
 	  _Impl::_S_load(_Flags::template _S_apply<simd>(__mem), _S_type_tag))
       {}
@@ -5004,7 +5030,7 @@ template <typename _Tp, typename _Abi>
     // loads [simd.load]
     template <typename _Up, typename _Flags>
       _GLIBCXX_SIMD_ALWAYS_INLINE void
-      copy_from(const _Vectorizable<_Up>* __mem, _Flags)
+      copy_from(const _Vectorizable<_Up>* __mem, _IsSimdFlagType<_Flags>)
       {
 	_M_data = static_cast<decltype(_M_data)>(
 	  _Impl::_S_load(_Flags::template _S_apply<simd>(__mem), _S_type_tag));
@@ -5013,7 +5039,7 @@ template <typename _Tp, typename _Abi>
     // stores [simd.store]
     template <typename _Up, typename _Flags>
       _GLIBCXX_SIMD_ALWAYS_INLINE void
-      copy_to(_Vectorizable<_Up>* __mem, _Flags) const
+      copy_to(_Vectorizable<_Up>* __mem, _IsSimdFlagType<_Flags>) const
       {
 	_Impl::_S_store(_M_data, _Flags::template _S_apply<simd>(__mem),
 			_S_type_tag);
