@@ -98,6 +98,15 @@ private:
   expand_operand m_ops[MAX_OPERANDS];
 };
 
+static unsigned
+get_sew (machine_mode mode)
+{
+  unsigned int sew = GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
+		       ? 8
+		       : GET_MODE_BITSIZE (GET_MODE_INNER (mode));
+  return sew;
+}
+
 /* Return true if X is a const_vector with all duplicate elements, which is in
    the range between MINVAL and MAXVAL.  */
 bool
@@ -109,13 +118,10 @@ const_vec_all_same_in_range_p (rtx x, HOST_WIDE_INT minval,
 	  && IN_RANGE (INTVAL (elt), minval, maxval));
 }
 
-static rtx
-emit_vlmax_vsetvl (machine_mode vmode)
+void
+emit_vlmax_vsetvl (machine_mode vmode, rtx vl)
 {
-  rtx vl = gen_reg_rtx (Pmode);
-  unsigned int sew = GET_MODE_CLASS (vmode) == MODE_VECTOR_BOOL
-		       ? 8
-		       : GET_MODE_BITSIZE (GET_MODE_INNER (vmode));
+  unsigned int sew = get_sew (vmode);
   enum vlmul_type vlmul = get_vlmul (vmode);
   unsigned int ratio = calculate_ratio (sew, vlmul);
 
@@ -125,8 +131,6 @@ emit_vlmax_vsetvl (machine_mode vmode)
 			   const0_rtx));
   else
     emit_insn (gen_vlmax_avl (Pmode, vl, gen_int_mode (ratio, Pmode)));
-
-  return vl;
 }
 
 /* Calculate SEW/LMUL ratio.  */
@@ -166,7 +170,7 @@ calculate_ratio (unsigned int sew, enum vlmul_type vlmul)
 /* Emit an RVV unmask && vl mov from SRC to DEST.  */
 static void
 emit_pred_op (unsigned icode, rtx mask, rtx dest, rtx src, rtx len,
-	      machine_mode mask_mode)
+	      machine_mode mask_mode, bool vlmax_p)
 {
   insn_expander<8> e;
   machine_mode mode = GET_MODE (dest);
@@ -186,17 +190,18 @@ emit_pred_op (unsigned icode, rtx mask, rtx dest, rtx src, rtx len,
     e.add_input_operand (len, Pmode);
   else
     {
-      rtx vlmax = emit_vlmax_vsetvl (mode);
+      rtx vlmax = gen_reg_rtx (Pmode);
+      emit_vlmax_vsetvl (mode, vlmax);
       e.add_input_operand (vlmax, Pmode);
     }
 
   if (GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
     e.add_policy_operand (get_prefer_tail_policy (), get_prefer_mask_policy ());
 
-  if (len)
-    e.add_avl_type_operand (avl_type::NONVLMAX);
-  else
+  if (vlmax_p)
     e.add_avl_type_operand (avl_type::VLMAX);
+  else
+    e.add_avl_type_operand (avl_type::NONVLMAX);
 
   e.expand ((enum insn_code) icode, MEM_P (dest) || MEM_P (src));
 }
@@ -204,14 +209,21 @@ emit_pred_op (unsigned icode, rtx mask, rtx dest, rtx src, rtx len,
 void
 emit_vlmax_op (unsigned icode, rtx dest, rtx src, machine_mode mask_mode)
 {
-  emit_pred_op (icode, NULL_RTX, dest, src, NULL_RTX, mask_mode);
+  emit_pred_op (icode, NULL_RTX, dest, src, NULL_RTX, mask_mode, true);
+}
+
+void
+emit_vlmax_op (unsigned icode, rtx dest, rtx src, rtx len,
+	       machine_mode mask_mode)
+{
+  emit_pred_op (icode, NULL_RTX, dest, src, len, mask_mode, true);
 }
 
 void
 emit_nonvlmax_op (unsigned icode, rtx dest, rtx src, rtx len,
 		  machine_mode mask_mode)
 {
-  emit_pred_op (icode, NULL_RTX, dest, src, len, mask_mode);
+  emit_pred_op (icode, NULL_RTX, dest, src, len, mask_mode, false);
 }
 
 static void
@@ -265,6 +277,20 @@ legitimize_move (rtx dest, rtx src, machine_mode mask_mode)
       expand_const_vector (dest, src, mask_mode);
       return true;
     }
+
+  /* In order to decrease the memory traffic, we don't use whole register
+   * load/store for the LMUL less than 1 and mask mode, so those case will
+   * require one extra general purpose register, but it's not allowed during LRA
+   * process, so we have a special move pattern used for LRA, which will defer
+   * the expansion after LRA.  */
+  if ((known_lt (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR)
+       || GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+      && lra_in_progress)
+    {
+      emit_insn (gen_mov_lra (mode, Pmode, dest, src));
+      return true;
+    }
+
   if (known_ge (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR)
       && GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
     {
@@ -274,6 +300,13 @@ legitimize_move (rtx dest, rtx src, machine_mode mask_mode)
 
       return false;
     }
+
+  if (register_operand (src, mode) && register_operand (dest, mode))
+    {
+      emit_insn (gen_rtx_SET (dest, src));
+      return true;
+    }
+
   if (!register_operand (src, mode) && !register_operand (dest, mode))
     {
       rtx tmp = gen_reg_rtx (mode);
@@ -540,9 +573,7 @@ force_vector_length_operand (rtx vl)
 static rtx
 gen_no_side_effects_vsetvl_rtx (machine_mode vmode, rtx vl, rtx avl)
 {
-  unsigned int sew = GET_MODE_CLASS (vmode) == MODE_VECTOR_BOOL
-		       ? 8
-		       : GET_MODE_BITSIZE (GET_MODE_INNER (vmode));
+  unsigned int sew = get_sew (vmode);
   return gen_vsetvl_no_side_effects (Pmode, vl, avl, gen_int_mode (sew, Pmode),
 				     gen_int_mode (get_vlmul (vmode), Pmode),
 				     const0_rtx, const0_rtx);

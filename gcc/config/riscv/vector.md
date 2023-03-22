@@ -635,6 +635,62 @@
   [(set_attr "type" "vmov")
    (set_attr "mode" "<MODE>")])
 
+(define_expand "@mov<V_FRACT:mode><P:mode>_lra"
+  [(parallel
+    [(set (match_operand:V_FRACT 0 "reg_or_mem_operand")
+	  (match_operand:V_FRACT 1 "reg_or_mem_operand"))
+   (clobber (match_scratch:P 2))])]
+  "TARGET_VECTOR && (lra_in_progress || reload_completed)"
+{})
+
+(define_expand "@mov<VB:mode><P:mode>_lra"
+  [(parallel
+    [(set (match_operand:VB 0 "reg_or_mem_operand")
+	  (match_operand:VB 1 "reg_or_mem_operand"))
+   (clobber (match_scratch:P 2))])]
+  "TARGET_VECTOR && (lra_in_progress || reload_completed)"
+{})
+
+(define_insn_and_split "*mov<V_FRACT:mode><P:mode>_lra"
+  [(set (match_operand:V_FRACT 0 "reg_or_mem_operand" "=vr, m,vr")
+	(match_operand:V_FRACT 1 "reg_or_mem_operand" "  m,vr,vr"))
+   (clobber (match_scratch:P 2 "=&r,&r,X"))]
+  "TARGET_VECTOR && (lra_in_progress || reload_completed)"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  if (REG_P (operands[0]) && REG_P (operands[1]))
+      emit_insn (gen_rtx_SET (operands[0], operands[1]));
+  else
+    {
+      riscv_vector::emit_vlmax_vsetvl (<V_FRACT:MODE>mode, operands[2]);
+      riscv_vector::emit_vlmax_op (code_for_pred_mov (<V_FRACT:MODE>mode),
+      		operands[0], operands[1], operands[2], <VM>mode);
+    }
+  DONE;
+})
+
+(define_insn_and_split "*mov<VB:mode><P:mode>_lra"
+  [(set (match_operand:VB 0 "reg_or_mem_operand" "=vr, m,vr")
+	(match_operand:VB 1 "reg_or_mem_operand" "  m,vr,vr"))
+   (clobber (match_scratch:P 2 "=&r,&r,X"))]
+  "TARGET_VECTOR && (lra_in_progress || reload_completed)"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  if (REG_P (operands[0]) && REG_P (operands[1]))
+      emit_insn (gen_rtx_SET (operands[0], operands[1]));
+  else
+    {
+      riscv_vector::emit_vlmax_vsetvl (<VB:MODE>mode, operands[2]);
+      riscv_vector::emit_vlmax_op (code_for_pred_mov (<VB:MODE>mode),
+      		operands[0], operands[1], operands[2], <VB:MODE>mode);
+    }
+  DONE;
+})
+
 ;; -----------------------------------------------------------------
 ;; ---- Duplicate Operations
 ;; -----------------------------------------------------------------
