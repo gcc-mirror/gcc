@@ -20,6 +20,12 @@
 
 #include <utility>
 
+#ifndef __cpp_lib_constexpr_algorithms
+# error "Feature test macro for constexpr std::exchange is missing in <utility>"
+#elif __cpp_lib_constexpr_algorithms < 201806L
+# error "Feature test macro for constexpr std::exchange has wrong value in <utility>"
+#endif
+
 constexpr bool
 test()
 {
