@@ -93,6 +93,15 @@ TokenStream::visit_items_as_block (T &collection,
 }
 
 void
+TokenStream::trailing_comma ()
+{
+  if (output_trailing_commas)
+    {
+      tokens.push_back (Rust::Token::make (COMMA, Location ()));
+    }
+}
+
+void
 TokenStream::visit (FunctionParam &param)
 {
   visit (param.get_pattern ());
