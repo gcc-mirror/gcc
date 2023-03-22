@@ -851,6 +851,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   /// is_volatile
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_volatile)
+  template<typename _Tp>
+    struct is_volatile
+    : public __bool_constant<__is_volatile(_Tp)>
+    { };
+#else
   template<typename>
     struct is_volatile
     : public false_type { };
@@ -858,6 +864,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct is_volatile<_Tp volatile>
     : public true_type { };
+#endif
 
   /// is_trivial
   template<typename _Tp>
@@ -3360,10 +3367,15 @@ template <typename _Tp>
   inline constexpr bool is_function_v<_Tp&&> = false;
 #endif
 
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__is_volatile)
+template <typename _Tp>
+  inline constexpr bool is_volatile_v = __is_volatile(_Tp);
+#else
 template <typename _Tp>
   inline constexpr bool is_volatile_v = false;
 template <typename _Tp>
   inline constexpr bool is_volatile_v<volatile _Tp> = true;
+#endif
 
 template <typename _Tp>
   inline constexpr bool is_trivial_v = __is_trivial(_Tp);
