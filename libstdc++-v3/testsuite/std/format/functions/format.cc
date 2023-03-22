@@ -2,6 +2,21 @@
 // { dg-do run { target c++20 } }
 
 #include <format>
+
+#ifndef __cpp_lib_format
+# error "Feature test macro for std::format is missing in <format>"
+#elif __cpp_lib_format < 202106L
+# error "Feature test macro for std::format has wrong value in <format>"
+#endif
+
+#undef __cpp_lib_format
+#include <version>
+#ifndef __cpp_lib_format
+# error "Feature test macro for std::format is missing in <version>"
+#elif __cpp_lib_format < 202106L
+# error "Feature test macro for std::format has wrong value in <version>"
+#endif
+
 #include <string>
 #include <limits>
 #include <cstdint>

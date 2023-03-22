@@ -277,6 +277,7 @@
 #define __cpp_lib_constexpr_utility 201811L
 #define __cpp_lib_constexpr_vector 201907L
 #define __cpp_lib_erase_if 202002L
+#define __cpp_lib_format 202106L
 #define __cpp_lib_generic_unordered_lookup 201811L
 #define __cpp_lib_interpolate 201902L
 #ifdef _GLIBCXX_HAS_GTHREADS
