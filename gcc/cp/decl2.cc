@@ -65,16 +65,19 @@ typedef struct priority_info_s {
   /* Nonzero if there have been any destructions at this priority
      throughout the translation unit.  */
   int destructions_p;
+  /* Again, but specifically for OpenMP "declare target" initializations.  */
+  int omp_tgt_initializations_p;
+  int omp_tgt_destructions_p;
 } *priority_info;
 
-static tree start_objects (int, int);
+static tree start_objects (int, int, bool);
 static void finish_objects (int, int, tree);
-static tree start_static_storage_duration_function (unsigned);
+static tree start_static_storage_duration_function (unsigned, bool);
 static void finish_static_storage_duration_function (tree);
 static priority_info get_priority_info (int);
-static void do_static_initialization_or_destruction (tree, bool);
-static void one_static_initialization_or_destruction (tree, tree, bool);
-static void generate_ctor_or_dtor_function (bool, int, location_t *);
+static void do_static_initialization_or_destruction (tree, bool, bool);
+static void one_static_initialization_or_destruction (tree, tree, bool, bool);
+static void generate_ctor_or_dtor_function (bool, int, location_t *, bool);
 static int generate_ctor_and_dtor_functions_for_priority (splay_tree_node,
 							  void *);
 static tree prune_vars_needing_no_initialization (tree *);
@@ -3791,7 +3794,7 @@ generate_tls_wrapper (tree fn)
    vtv_start_verification_constructor_init_function.  */
 
 static tree
-start_objects (int method_type, int initp)
+start_objects (int method_type, int initp, bool omp_target = false)
 {
   /* Make ctor or dtor function.  METHOD_TYPE may be 'I' or 'D'.  */
   int module_init = 0;
@@ -3806,7 +3809,16 @@ start_objects (int method_type, int initp)
     {
       char type[14];
 
-      unsigned len = sprintf (type, "sub_%c", method_type);
+      unsigned len;
+      if (omp_target)
+	/* Use "off_" signifying "offload" here.  The name must be distinct
+	   from the non-offload case.  The format of the name is scanned in
+	   tree.cc/get_file_function_name, so stick to the same length for
+	   both name variants.  */
+	len = sprintf (type, "off_%c", method_type);
+      else
+	len = sprintf (type, "sub_%c", method_type);
+
       if (initp != DEFAULT_INIT_PRIORITY)
 	{
 	  char joiner = '_';
@@ -3821,6 +3833,17 @@ start_objects (int method_type, int initp)
 
   tree fntype =	build_function_type (void_type_node, void_list_node);
   tree fndecl = build_lang_decl (FUNCTION_DECL, name, fntype);
+
+  if (omp_target)
+    {
+      DECL_ATTRIBUTES (fndecl)
+	= tree_cons (get_identifier ("omp declare target"), NULL_TREE,
+		     DECL_ATTRIBUTES (fndecl));
+      DECL_ATTRIBUTES (fndecl)
+	= tree_cons (get_identifier ("omp declare target nohost"), NULL_TREE,
+		     DECL_ATTRIBUTES (fndecl));
+    }
+
   DECL_CONTEXT (fndecl) = FROB_CONTEXT (global_namespace);
   if (module_init > 0)
     {
@@ -3911,6 +3934,7 @@ finish_objects (int method_type, int initp, tree body)
 /* The name of the function we create to handle initializations and
    destructions for objects with static storage duration.  */
 #define SSDF_IDENTIFIER "__static_initialization_and_destruction"
+#define OMP_SSDF_IDENTIFIER "__omp_target_static_init_and_destruction"
 
 /* The declaration for the __INITIALIZE_P argument.  */
 static GTY(()) tree initialize_p_decl;
@@ -3924,6 +3948,9 @@ static GTY(()) tree ssdf_decl;
 /* All the static storage duration functions created in this
    translation unit.  */
 static GTY(()) vec<tree, va_gc> *ssdf_decls;
+
+/* Same, but specifically for offloaded OpenMP "declare target" functions.  */
+static GTY(()) vec<tree, va_gc> *omp_tgt_ssdf_decls;
 
 /* A map from priority levels to information about that priority
    level.  There may be many such levels, so efficient lookup is
@@ -3943,24 +3970,37 @@ static splay_tree priority_info_map;
    translation unit.  */
 
 static tree
-start_static_storage_duration_function (unsigned count)
+start_static_storage_duration_function (unsigned count, bool omp_target)
 {
   tree type;
   tree body;
-  char id[sizeof (SSDF_IDENTIFIER) + 1 /* '\0' */ + 32];
+  tree name;
 
-  /* Create the identifier for this function.  It will be of the form
-     SSDF_IDENTIFIER_<number>.  */
-  sprintf (id, "%s_%u", SSDF_IDENTIFIER, count);
+  if (omp_target)
+    {
+      char id[sizeof (OMP_SSDF_IDENTIFIER) + 1 /* '\0' */ + 32];
+
+      /* Create the identifier for this function.  It will be of the form
+	 SSDF_IDENTIFIER_<number>.  */
+      sprintf (id, "%s_%u", OMP_SSDF_IDENTIFIER, count);
+      name = get_identifier (id);
+    }
+  else
+    {
+      char id[sizeof (SSDF_IDENTIFIER) + 1 /* '\0' */ + 32];
+
+      /* Create the identifier for this function.  It will be of the form
+	 SSDF_IDENTIFIER_<number>.  */
+      sprintf (id, "%s_%u", SSDF_IDENTIFIER, count);
+      name = get_identifier (id);
+    }
 
   type = build_function_type_list (void_type_node,
 				   integer_type_node, integer_type_node,
 				   NULL_TREE);
 
   /* Create the FUNCTION_DECL itself.  */
-  ssdf_decl = build_lang_decl (FUNCTION_DECL,
-			       get_identifier (id),
-			       type);
+  ssdf_decl = build_lang_decl (FUNCTION_DECL, name, type);
   TREE_PUBLIC (ssdf_decl) = 0;
   DECL_ARTIFICIAL (ssdf_decl) = 1;
 
@@ -3984,7 +4024,14 @@ start_static_storage_duration_function (unsigned count)
       get_priority_info (DEFAULT_INIT_PRIORITY);
     }
 
-  vec_safe_push (ssdf_decls, ssdf_decl);
+  if (omp_target && !omp_tgt_ssdf_decls)
+    /* Static constructors and destructors for "declare target" variables.  */
+    vec_alloc (omp_tgt_ssdf_decls, 32);
+
+  if (omp_target)
+    vec_safe_push (omp_tgt_ssdf_decls, ssdf_decl);
+  else
+    vec_safe_push (ssdf_decls, ssdf_decl);
 
   /* Create the argument list.  */
   initialize_p_decl = cp_build_parm_decl
@@ -3996,6 +4043,16 @@ start_static_storage_duration_function (unsigned count)
 
   DECL_CHAIN (initialize_p_decl) = priority_decl;
   DECL_ARGUMENTS (ssdf_decl) = initialize_p_decl;
+
+  if (omp_target)
+    {
+      DECL_ATTRIBUTES (ssdf_decl)
+	= tree_cons (get_identifier ("omp declare target"), NULL_TREE,
+		     DECL_ATTRIBUTES (ssdf_decl));
+      DECL_ATTRIBUTES (ssdf_decl)
+	= tree_cons (get_identifier ("omp declare target nohost"), NULL_TREE,
+		     DECL_ATTRIBUTES (ssdf_decl));
+    }
 
   /* Put the function in the global scope.  */
   pushdecl (ssdf_decl);
@@ -4048,6 +4105,8 @@ get_priority_info (int priority)
       pi = XNEW (struct priority_info_s);
       pi->initializations_p = 0;
       pi->destructions_p = 0;
+      pi->omp_tgt_initializations_p = 0;
+      pi->omp_tgt_destructions_p = 0;
       splay_tree_insert (priority_info_map,
 			 (splay_tree_key) priority,
 			 (splay_tree_value) pi);
@@ -4108,7 +4167,8 @@ fix_temporary_vars_context_r (tree *node,
    are destroying it.  */
 
 static void
-one_static_initialization_or_destruction (tree decl, tree init, bool initp)
+one_static_initialization_or_destruction (tree decl, tree init, bool initp,
+					  bool omp_target)
 {
   tree guard_if_stmt = NULL_TREE;
   tree guard;
@@ -4255,7 +4315,7 @@ one_static_initialization_or_destruction (tree decl, tree init, bool initp)
    Whether initialization or destruction is performed is specified by INITP.  */
 
 static void
-do_static_initialization_or_destruction (tree vars, bool initp)
+do_static_initialization_or_destruction (tree vars, bool initp, bool omp_target)
 {
   tree node, init_if_stmt, cond;
 
@@ -4298,10 +4358,14 @@ do_static_initialization_or_destruction (tree vars, bool initp)
        priority.  */
     priority = DECL_EFFECTIVE_INIT_PRIORITY (decl);
     pi = get_priority_info (priority);
-    if (initp)
+    if (initp && !omp_target)
       pi->initializations_p = 1;
-    else
+    else if (!omp_target)
       pi->destructions_p = 1;
+    else if (initp && omp_target)
+      pi->omp_tgt_initializations_p = 1;
+    else
+      pi->omp_tgt_destructions_p = 1;
 
     /* Conditionalize this initialization on being in the right priority
        and being initializing/finalizing appropriately.  */
@@ -4317,9 +4381,17 @@ do_static_initialization_or_destruction (tree vars, bool initp)
     for (; node
 	   && DECL_EFFECTIVE_INIT_PRIORITY (TREE_VALUE (node)) == priority;
 	 node = TREE_CHAIN (node))
-      /* Do one initialization or destruction.  */
-      one_static_initialization_or_destruction (TREE_VALUE (node),
-						TREE_PURPOSE (node), initp);
+      {
+	tree decl = TREE_VALUE (node);
+	tree init = TREE_PURPOSE (node);
+	/* We will emit 'init' twice, and it is modified in-place during
+	   gimplification.  Make a copy here.  */
+	if (omp_target)
+	  init = copy_node (init);
+	/* Do one initialization or destruction.  */
+	one_static_initialization_or_destruction (decl, init, initp,
+						  omp_target);
+      }
 
     /* Finish up the priority if-stmt body.  */
     finish_then_clause (priority_if_stmt);
@@ -4419,7 +4491,7 @@ write_out_vars (tree vars)
 
 static void
 generate_ctor_or_dtor_function (bool constructor_p, int priority,
-				location_t *locus)
+				location_t *locus, bool omp_target)
 {
   input_location = *locus;
 
@@ -4451,13 +4523,14 @@ generate_ctor_or_dtor_function (bool constructor_p, int priority,
      arguments.  */
   tree fndecl;
   size_t i;
-  FOR_EACH_VEC_SAFE_ELT (ssdf_decls, i, fndecl)
+  vec<tree, va_gc> *walk_decls = omp_target ? omp_tgt_ssdf_decls : ssdf_decls;
+  FOR_EACH_VEC_SAFE_ELT (walk_decls, i, fndecl)
     {
       /* Calls to pure or const functions will expand to nothing.  */
       if (! (flags_from_decl_or_type (fndecl) & (ECF_CONST | ECF_PURE)))
 	{
 	  if (! body)
-	    body = start_objects (function_key, priority);
+	    body = start_objects (function_key, priority, omp_target);
 
 	  tree call = cp_build_function_call_nary (fndecl, tf_warning_or_error,
 						   build_int_cst (NULL_TREE,
@@ -4487,9 +4560,17 @@ generate_ctor_and_dtor_functions_for_priority (splay_tree_node n, void * data)
   /* Generate the functions themselves, but only if they are really
      needed.  */
   if (pi->initializations_p)
-    generate_ctor_or_dtor_function (/*constructor_p=*/true, priority, locus);
+    generate_ctor_or_dtor_function (/*constructor_p=*/true, priority, locus,
+				    /*omp_target=*/false);
   if (pi->destructions_p)
-    generate_ctor_or_dtor_function (/*constructor_p=*/false, priority, locus);
+    generate_ctor_or_dtor_function (/*constructor_p=*/false, priority, locus,
+				    /*omp_target=*/false);
+  if (pi->omp_tgt_initializations_p)
+    generate_ctor_or_dtor_function (/*constructor_p=*/true, priority, locus,
+				    /*omp_target=*/true);
+  if (pi->omp_tgt_destructions_p)
+    generate_ctor_or_dtor_function (/*constructor_p=*/false, priority, locus,
+				    /*omp_target=*/true);
 
   /* Keep iterating.  */
   return 0;
@@ -4773,7 +4854,7 @@ handle_tls_init (void)
     {
       tree var = TREE_VALUE (vars);
       tree init = TREE_PURPOSE (vars);
-      one_static_initialization_or_destruction (var, init, true);
+      one_static_initialization_or_destruction (var, init, true, false);
 
       /* Output init aliases even with -fno-extern-tls-init.  */
       if (TARGET_SUPPORTS_ALIASES && TREE_PUBLIC (var))
@@ -5087,6 +5168,7 @@ c_parse_final_cleanups (void)
 
   int retries = 0;
   unsigned ssdf_count = 0;
+  unsigned omp_target_ssdf_count = 0;
   for (bool reconsider = true; reconsider; retries++)
     {
       reconsider = false;
@@ -5160,11 +5242,18 @@ c_parse_final_cleanups (void)
 	  /* Set the line and file, so that it is obviously not from
 	     the source file.  */
 	  input_location = locus_at_end_of_parsing;
-	  ssdf_body = start_static_storage_duration_function (ssdf_count);
+	  ssdf_body
+	    = start_static_storage_duration_function (ssdf_count, false);
 
 	  /* First generate code to do all the initializations.  */
 	  if (vars)
-	    do_static_initialization_or_destruction (vars, /*initp=*/true);
+	    do_static_initialization_or_destruction (vars, /*initp=*/true,
+						     /*omp_target=*/false);
+
+	  tree filtered_vars = NULL_TREE;
+
+	  if (flag_openmp)
+	    filtered_vars = copy_list (vars);
 
 	  /* Then, generate code to do all the destructions.  Do these
 	     in reverse order so that the most recently constructed
@@ -5175,7 +5264,8 @@ c_parse_final_cleanups (void)
 	  if (!flag_use_cxa_atexit && vars)
 	    {
 	      vars = nreverse (vars);
-	      do_static_initialization_or_destruction (vars, /*initp=*/false);
+	      do_static_initialization_or_destruction (vars, /*initp=*/false,
+						       /*omp_target=*/false);
 	    }
 	  else
 	    vars = NULL_TREE;
@@ -5184,6 +5274,74 @@ c_parse_final_cleanups (void)
 	     round.  */
 	  input_location = locus_at_end_of_parsing;
 	  finish_static_storage_duration_function (ssdf_body);
+
+	  if (flag_openmp)
+	    {
+	      /* Do all the above again for OpenMP "declare target" static
+		 storage duration decls.  */
+
+	      /* We're only interested in "declare target" variables now.  */
+	      tree *fvarsp = &filtered_vars;
+	      while (*fvarsp)
+		{
+		  tree decl = TREE_VALUE (*fvarsp);
+
+		  if (lookup_attribute ("omp declare target",
+					DECL_ATTRIBUTES (decl)))
+		    fvarsp = &OMP_CLAUSE_CHAIN (*fvarsp);
+		  else
+		    *fvarsp = OMP_CLAUSE_CHAIN (*fvarsp);
+		}
+
+	      input_location = locus_at_end_of_parsing;
+	      ssdf_body
+		= start_static_storage_duration_function (omp_target_ssdf_count,
+							  /*omp_target=*/true);
+
+	      /* As above, first generate code to do all the
+		 initializations.  */
+	      if (filtered_vars)
+		{
+		  tree nonhost_if_stmt = NULL_TREE;
+		  nonhost_if_stmt = begin_if_stmt ();
+
+		  /* We add an "omp declare target nohost" attribute, but (for
+		     now) we still get a copy of the constructor/destructor on
+		     the host.  Make sure it does nothing unless we're on the
+		     target device.  */
+		  tree fn
+		    = builtin_decl_explicit (BUILT_IN_OMP_IS_INITIAL_DEVICE);
+		  tree initial_dev = build_call_expr (fn, 0);
+		  tree target_dev_p
+		    = cp_build_binary_op (input_location, NE_EXPR, initial_dev,
+					  build_int_cst (NULL_TREE, 1),
+					  tf_warning_or_error);
+		  finish_if_stmt_cond (target_dev_p, nonhost_if_stmt);
+
+		  do_static_initialization_or_destruction (filtered_vars,
+							   /*initp=*/true,
+							   /*omp_target=*/true);
+		  if (!flag_use_cxa_atexit && filtered_vars)
+		    {
+		      filtered_vars = nreverse (filtered_vars);
+		      do_static_initialization_or_destruction (filtered_vars,
+							       /*initp=*/false,
+							       /*omp_target=*/
+							       false);
+		    }
+		  else
+		    filtered_vars = NULL_TREE;
+
+		  /* Finish up nonhost if-stmt body.  */
+		  finish_then_clause (nonhost_if_stmt);
+		  finish_if_stmt (nonhost_if_stmt);
+		}
+
+	      input_location = locus_at_end_of_parsing;
+	      finish_static_storage_duration_function (ssdf_body);
+
+	      omp_target_ssdf_count++;
+	    }
 
 	  /* All those initializations and finalizations might cause
 	     us to need more inline functions, more template
@@ -5365,7 +5523,8 @@ c_parse_final_cleanups (void)
 	   || module_initializer_kind ())
     generate_ctor_or_dtor_function (/*constructor_p=*/true,
 				    DEFAULT_INIT_PRIORITY,
-				    &locus_at_end_of_parsing);
+				    &locus_at_end_of_parsing,
+				    /*omp_target=*/false);
 
   /* We're done with the splay-tree now.  */
   if (priority_info_map)
