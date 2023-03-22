@@ -1882,28 +1882,6 @@ namespace __format
       __format::__formatter_str<_CharT> _M_f;
     };
 
-  template<__format::__char _CharT, size_t _Nm>
-    struct formatter<const _CharT[_Nm], _CharT>
-    {
-      formatter() = default;
-
-      [[__gnu__::__always_inline__]]
-      constexpr typename basic_format_parse_context<_CharT>::iterator
-      parse(basic_format_parse_context<_CharT>& __pc)
-      { return _M_f.parse(__pc); }
-
-      template<typename _Out>
-	typename basic_format_context<_Out, _CharT>::iterator
-	format(const _CharT (&__u)[_Nm],
-	       basic_format_context<_Out, _CharT>& __fc) const
-	{ return _M_f.format({__u, _Nm}, __fc); }
-
-      constexpr void set_debug_format() noexcept { _M_f.set_debug_format(); }
-
-    private:
-      __format::__formatter_str<_CharT> _M_f;
-    };
-
   template<typename _Traits, typename _Alloc>
     struct formatter<basic_string<char, _Traits, _Alloc>, char>
     {
