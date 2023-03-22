@@ -1,3 +1,13 @@
+2023-03-21  Arsen Arsenović  <arsen@aarsen.me>
+
+	* update_web_docs_git: Set CONTENTS_OUTPUT_LOCATION=inline in
+	order to put @shortcontents above contents.
+
+2023-03-21  Arsen Arsenović  <arsen@aarsen.me>
+
+	* update_web_docs_git (CSS): Update CSS reference to point to
+	/texinfo-manuals.css.
+
 2023-03-16  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* update_web_docs_git (MANUALS): Add gm2.

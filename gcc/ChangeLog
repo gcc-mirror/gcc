@@ -1,3 +1,96 @@
+2023-03-21  Joseph Myers  <joseph@codesourcery.com>
+
+	* stor-layout.cc (finalize_type_size): Copy TYPE_TYPELESS_STORAGE
+	to variants.
+
+2023-03-21  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109192
+	* gimple-range-gori.cc (gori_compute::compute_operand_range):
+	Terminate gori calculations if a relation is not relevant.
+	* value-relation.h (value_relation::set_relation): Allow
+	equality between op1 and op2 if they are the same.
+
+2023-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109219
+	* tree-vect-loop.cc (vectorizable_reduction): Check
+	slp_node, not STMT_SLP_TYPE.
+	* tree-vect-stmts.cc (vectorizable_condition): Likewise.
+	* tree-vect-slp.cc (vect_slp_analyze_node_operations_1):
+	Remove assertion on STMT_SLP_TYPE.
+
+2023-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109215
+	* tree.h (enum special_array_member): Adjust comments for int_0
+	and trail_0.
+	* tree.cc (component_ref_sam_type): Clear zero_elts if memtype
+	has zero sized element type and the array has variable number of
+	elements or constant one or more elements.
+	(component_ref_size): Adjust comments, formatting fix.
+
+2023-03-21  Arsen Arsenović  <arsen@aarsen.me>
+
+	* configure.ac: Add check for the Texinfo 6.8
+	CONTENTS_OUTPUT_LOCATION customization variable and set it if
+	supported.
+	* configure: Regenerate.
+	* Makefile.in (MAKEINFO_TOC_INLINE_FLAG): New variable.  Set by
+	configure.ac to -c CONTENTS_OUTPUT_LOCATION=inline if
+	CONTENTS_OUTPUT_LOCATION support is detected, empty otherwise.
+	($(build_htmldir)/%/index.html): Pass MAKEINFO_TOC_INLINE_FLAG.
+
+2023-03-21  Arsen Arsenović  <arsen@aarsen.me>
+
+	* doc/extend.texi: Associate use_hazard_barrier_return index
+	entry with its attribute.
+	* doc/invoke.texi: Associate -fcanon-prefix-map index entry with
+	its attribute
+
+2023-03-21  Arsen Arsenović  <arsen@aarsen.me>
+
+	* doc/implement-c.texi: Remove usage of @gol.
+	* doc/invoke.texi: Ditto.
+	* doc/sourcebuild.texi: Ditto.
+	* doc/include/gcc-common.texi: Remove @gol.  In new Makeinfo and
+	texinfo.tex versions, the bug it was working around appears to
+	be gone.
+
+2023-03-21  Arsen Arsenović  <arsen@aarsen.me>
+
+	* doc/include/texinfo.tex: Update to 2023-01-17.19.
+
+2023-03-21  Arsen Arsenović  <arsen@aarsen.me>
+
+	* doc/include/gcc-common.texi: Add @defbuiltin{,x} and
+	@enddefbuiltin for defining built-in functions.
+	* doc/extend.texi: Apply @defbuiltin{,x} to many, but not all,
+	places where it should be used.
+
+2023-03-21  Arsen Arsenović  <arsen@aarsen.me>
+
+	* doc/extend.texi (Formatted Output Function Checking): New
+	subsection for  grouping together printf et al.
+	(Exception handling) Fix missing @ sign before copyright
+	header, which lead to the copyright line leaking into
+	'(gcc)Exception handling'.
+	* doc/gcc.texi: Set document language to en_US.
+	(@copying): Wrap front cover texts in quotations, move in manual
+	description text.
+
+2023-03-21  Arsen Arsenović  <arsen@aarsen.me>
+
+	* doc/gcc.texi: Add the Indices appendix, to make texinfo
+	generate nice indices overview page.
+
+2023-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109170
+	* gimple-range-op.cc (cfn_pass_through_arg1): New.
+	(gimple_range_op_handler::maybe_builtin_call): Handle
+	__builtin_expect via cfn_pass_through_arg1.
+
 2023-03-20   Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/109067

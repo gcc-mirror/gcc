@@ -1,3 +1,10 @@
+2023-03-21  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (m2/mc-boot/$(SRC_PREFIX)%.o): Add $(CXXFLAGS).
+	(m2/mc-boot-ch/$(SRC_PREFIX)%.o): Add $(CXXFLAGS).
+	(m2/mc-boot-ch/$(SRC_PREFIX)%.o): Add $(CXXFLAGS).
+	(m2/mc-boot/main.o): Add $(CXXFLAGS).
+
 2023-03-19  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* Make-maintainer.in (gm2.maintainer-clean): Remove.

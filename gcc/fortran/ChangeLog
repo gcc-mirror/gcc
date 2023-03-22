@@ -1,3 +1,26 @@
+2023-03-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99036
+	* decl.cc (gfc_match_modproc): Reject MODULE PROCEDURE if not in a
+	generic module interface.
+
+2023-03-21  Arsen Arsenović  <arsen@aarsen.me>
+
+	* invoke.texi: Remove usages of @gol.
+	* intrinsic.texi: Ditto.
+
+2023-03-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/109206
+	* trans-array.cc (gfc_trans_array_constructor_value): Correct
+	incorrect setting of typespec.
+
+2023-03-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/109209
+	* resolve.cc (generate_component_assignments): Restore the
+	exclusion of allocatable components from the loop.
+
 2023-03-20  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/109216

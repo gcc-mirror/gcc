@@ -1,3 +1,32 @@
+2023-03-21  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_x86.h
+	(_SimdImplX86::_S_divides): Replace test for __GCC_IEC_559 == 0
+	with __RECIPROCAL_MATH__.
+
+2023-03-21  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_detail.h: Don't define
+	_GLIBCXX_SIMD_WORKAROUND_PR90993 for Clang.
+	* include/experimental/bits/simd_x86.h (_S_divides): Remove
+	check for __clang__.
+
+2023-03-21  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_detail.h: Don't declare the
+	simd API as constexpr with Clang.
+	* include/experimental/bits/simd_x86.h (__movm): New.
+	(_S_blend_avx512): Resolve FIXME. Implement blend using __movm
+	and ?:.
+	(_SimdImplX86::_S_masked_unary): Clang does not implement the
+	same builtins. Implement the function using __movm, ?:, and -
+	operators on vector_size types instead.
+
+2023-03-21  Matthias Kretz  <m.kretz@gsi.de>
+
+	* testsuite/experimental/simd/tests/operators.cc: Clang doesn't
+	define __GCC_IEC_559. Use __STDC_IEC_559__ instead.
+
 2023-03-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/filesystem/ops-common.h (get_temp_directory_from_env): Fix
