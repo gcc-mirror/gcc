@@ -388,7 +388,7 @@ add_m2_I_path (void)
       if (strcmp (np.name, "") == 0)
 	append_option (OPT_fm2_pathname_, safe_strdup ("-"), 1);
       else
-	  append_option (OPT_fm2_pathname_, safe_strdup (np.name), 1);
+	append_option (OPT_fm2_pathname_, safe_strdup (np.name), 1);
       for (auto *s : np.path)
 	append_option (OPT_fm2_pathnameI, safe_strdup (s), 1);
     }
@@ -460,6 +460,9 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
   /* Have we seen the -v flag?  */
   bool verbose = false;
+
+  /* Have we seen the -fm2-pathname flag?  */
+  bool seen_pathname = false;
 
   /* The number of libraries added in.  */
   int added_libraries;
@@ -569,6 +572,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  uselist = decoded_options[i].value;
 	  break;
 	case OPT_fm2_pathname_:
+	  seen_pathname = true;
 	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
 	  m2_path_name = decoded_options[i].arg;
 	  break;
@@ -677,6 +681,11 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   if (language != NULL && (strcmp (language, "modula-2") != 0))
     return;
 
+  if (! seen_pathname)
+    /* Not seen -fm2-pathname therefore make current working directory
+       the first place to look for modules.  */
+    push_back_Ipath (".");
+
   /* Override the default when the user specifies it.  */
   if (seen_scaffold_static && scaffold_static && !seen_scaffold_dynamic)
     scaffold_dynamic = false;
@@ -772,7 +781,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	    libraries = xstrdup ("m2iso,m2cor,m2pim,m2log");
 	  else
 	    /* Default to pim libraries otherwise.  */
-	    libraries = xstrdup ("m2pim,m2iso,m2cor,m2log");
+	    libraries = xstrdup ("m2cor,m2log,m2pim,m2iso");
 	}
       libraries = convert_abbreviations (libraries);
       append_option (OPT_flibs_, xstrdup (libraries), 1);

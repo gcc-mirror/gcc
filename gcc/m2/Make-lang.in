@@ -1694,11 +1694,11 @@ include m2/Make-maintainer
 else
 m2/pge-boot/%.o: m2/pge-boot/%.c m2/gm2-libs/gm2-libs-host.h m2/gm2config.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) $(INCLUDES) -I$(srcdir)/m2/pge-boot -Im2/gm2-libs -g -c $< -o $@
+	$(CXX) $(CFLAGS) $(INCLUDES) -I$(srcdir)/m2/pge-boot -Im2/gm2-libs -g -c $< -o $@
 
 m2/pge-boot/%.o: m2/pge-boot/%.cc m2/gm2-libs/gm2-libs-host.h m2/gm2config.h
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
-	$(CXX) $(INCLUDES) -I$(srcdir)/m2/pge-boot -Im2/gm2-libs -g -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -I$(srcdir)/m2/pge-boot -Im2/gm2-libs -g -c $< -o $@
 
 $(PGE): $(BUILD-PGE-O)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(BUILD-PGE-O) -lm
