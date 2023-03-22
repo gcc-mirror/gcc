@@ -43,6 +43,7 @@ extern const function_shape *const vset;
 extern const function_shape *const vget;
 extern const function_shape *const read_vl;
 extern const function_shape *const fault_load;
+extern const function_shape *const vlenb;
 }
 
 } // end namespace riscv_vector

@@ -553,6 +553,30 @@ struct fault_load_def : public build_base
   }
 };
 
+/* vlenb_def class.  */
+struct vlenb_def : public function_shape
+{
+  void build (function_builder &b,
+	      const function_group_info &group) const override
+  {
+    auto_vec<tree> argument_types;
+    function_instance function_instance (group.base_name, *group.base,
+					 *group.shape, group.ops_infos.types[0],
+					 group.preds[0], &group.ops_infos);
+    b.add_unique_function (function_instance, (*group.shape),
+			   long_unsigned_type_node, argument_types);
+  }
+
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    if (overloaded_p)
+      return nullptr;
+    b.append_base_name (instance.base_name);
+    return b.finish_name ();
+  }
+};
+
 SHAPE(vsetvl, vsetvl)
 SHAPE(vsetvl, vsetvlmax)
 SHAPE(loadstore, loadstore)
@@ -572,5 +596,6 @@ SHAPE(vset, vset)
 SHAPE(vget, vget)
 SHAPE(read_vl, read_vl)
 SHAPE(fault_load, fault_load)
+SHAPE(vlenb, vlenb)
 
 } // end namespace riscv_vector

@@ -2130,6 +2130,13 @@ static CONSTEXPR const rvv_op_info p_none_void_ops
      rvv_arg_type_info (RVV_BASE_size), /* Return type */
      void_args /* Args */};
 
+/* A static operand information for unsigned long func () function registration. */
+static CONSTEXPR const rvv_op_info ul_none_void_ops
+  = {none_ops,				/* Types */
+     OP_TYPE_none,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_unsigned_long), /* Return type */
+     void_args /* Args */};
+
 /* A list of all RVV base function types.  */
 static CONSTEXPR const function_type_info function_types[] = {
 #define DEF_RVV_TYPE_INDEX(VECTOR, MASK, SIGNED, UNSIGNED, EEW8_INDEX, EEW16_INDEX, \
