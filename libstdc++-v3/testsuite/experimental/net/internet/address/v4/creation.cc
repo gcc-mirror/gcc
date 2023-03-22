@@ -88,6 +88,14 @@ test03()
   VERIFY( ec == std::errc::invalid_argument );
 }
 
+constexpr bool
+test_constexpr()
+{
+  test01();
+  test02();
+  return true;
+}
+
 int
 main()
 {
@@ -95,9 +103,5 @@ main()
   test02();
   test03();
 
-  constexpr bool c = []{
-    test01();
-    test02();
-    return true;
-  };
+  static_assert( test_constexpr(), "valid in constant expressions" );
 }

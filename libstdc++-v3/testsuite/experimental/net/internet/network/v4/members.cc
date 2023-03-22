@@ -166,6 +166,17 @@ test_to_string()
   VERIFY( str2 == "87.65.43.21/4" );
 }
 
+constexpr bool
+test_constexpr()
+{
+  test_netmask();
+  test_network();
+  test_broadcast();
+  test_canonical();
+  test_is_host();
+  return true;
+}
+
 int main()
 {
   test_netmask();
@@ -175,12 +186,5 @@ int main()
   test_is_host();
   test_to_string();
 
-  constexpr bool c = []{
-    test_netmask();
-    test_network();
-    test_broadcast();
-    test_canonical();
-    test_is_host();
-    return true;
-  };
+  static_assert( test_constexpr(), "valid in constant expressions" );
 }

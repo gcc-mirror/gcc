@@ -21,7 +21,10 @@ test_default()
   VERIFY( t2.port() == 0 );
 }
 
-constexpr void
+#if __cplusplus >= 202002
+constexpr
+#endif
+void
 test_proto()
 {
   ip::tcp::endpoint t1(ip::tcp::v4(), 22);
@@ -35,7 +38,10 @@ test_proto()
   VERIFY( t2.port() == 80 );
 }
 
-constexpr void
+#if __cplusplus >= 202002
+constexpr
+#endif
+void
 test_addr()
 {
   ip::address_v4 a1(ip::address_v4::bytes_type(1, 2, 3, 4));
@@ -51,16 +57,23 @@ test_addr()
   VERIFY( t2.port() == 80 );
 }
 
+constexpr bool
+test_constexpr()
+{
+  test_default();
+#if __cplusplus >= 202002
+  // Non-default basic_endpoint constructors are only constexpr in C++20.
+  test_proto();
+  test_addr();
+#endif
+  return true;
+}
+
 int main()
 {
   test_default();
   test_proto();
   test_addr();
 
-  constexpr bool c = [] {
-    test_default();
-    test_proto();
-    test_addr();
-    return true;
-  };
+  static_assert( test_constexpr(), "valid in constant expressions" );
 }

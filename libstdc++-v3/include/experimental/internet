@@ -977,7 +977,8 @@ namespace ip
   { return make_address(__str, __throw_on_error{"make_address"}); }
 
   inline address
-  make_address(const string& __str, error_code& __ec) noexcept; // TODO
+  make_address(const string& __str, error_code& __ec) noexcept
+  { return make_address(__str.c_str(), __ec); }
 
   inline address
   make_address(const string& __str)
@@ -1275,7 +1276,12 @@ namespace ip
 
     constexpr address_v4
     broadcast() const noexcept
-    { return address_v4{_M_addr.to_uint() | (0xFFFFFFFFu >> _M_prefix_len)}; }
+    {
+      auto __b = _M_addr.to_uint();
+      if (_M_prefix_len < 32)
+	__b |= 0xFFFFFFFFu >> _M_prefix_len;
+      return address_v4{__b};
+    }
 
     address_v4_range
     hosts() const noexcept
@@ -1510,19 +1516,31 @@ namespace ip
       basic_endpoint() noexcept : _M_data()
       { _M_data._M_v4.sin_family = protocol_type::v4().family(); }
 
-      constexpr
+      _GLIBCXX20_CONSTEXPR
       basic_endpoint(const protocol_type& __proto,
 		     port_type __port_num) noexcept
       : _M_data()
       {
-	__glibcxx_assert(__proto == protocol_type::v4()
-			  || __proto == protocol_type::v6());
-
-	_M_data._M_v4.sin_family = __proto.family();
-	_M_data._M_v4.sin_port = address_v4::_S_hton_16(__port_num);
+	if (__proto == protocol_type::v4())
+	  {
+	    _M_data._M_v4.sin_family = __proto.family();
+	    _M_data._M_v4.sin_port = address_v4::_S_hton_16(__port_num);
+	  }
+	else if (__proto == protocol_type::v6())
+	  {
+	    std::_Construct(&_M_data._M_v6);
+	    _M_data._M_v6.sin6_family = __proto.family();
+	    _M_data._M_v6.sin6_port = address_v4::_S_hton_16(__port_num);
+	    _M_is_v6 = true;
+	  }
+	else
+	  {
+	    __glibcxx_assert(__proto == protocol_type::v4()
+			       || __proto == protocol_type::v6());
+	  }
       }
 
-      constexpr
+      _GLIBCXX20_CONSTEXPR
       basic_endpoint(const ip::address& __addr,
 		     port_type __port_num) noexcept
       : _M_data()
@@ -1535,37 +1553,42 @@ namespace ip
 	  }
 	else
 	  {
-	    _M_data._M_v6 = {};
+	    std::_Construct(&_M_data._M_v6);
 	    _M_data._M_v6.sin6_family = protocol_type::v6().family();
 	    _M_data._M_v6.sin6_port = address_v4::_S_hton_16(__port_num);
-	    __builtin_memcpy(_M_data._M_v6.sin6_addr.s6_addr,
-			     __addr._M_v6._M_bytes.data(), 16);
+	    uint8_t* __s6a = _M_data._M_v6.sin6_addr.s6_addr;
+	    for (int __i = 0; __i < 16; ++__i)
+	      __s6a[__i] = __addr._M_v6._M_bytes[__i];
 	    _M_data._M_v6.sin6_scope_id = __addr._M_v6._M_scope_id;
+	    _M_is_v6 = true;
 	  }
       }
 
       // members:
+
       constexpr protocol_type protocol() const noexcept
       {
-	return _M_is_v6() ? protocol_type::v6() : protocol_type::v4();
+	return _M_is_v6 ? protocol_type::v6() : protocol_type::v4();
       }
 
       constexpr ip::address
       address() const noexcept
       {
-	ip::address __addr;
-	if (_M_is_v6())
+	if (_M_is_v6)
 	  {
-	    __builtin_memcpy(&__addr._M_v6._M_bytes,
-			     _M_data._M_v6.sin6_addr.s6_addr, 16);
-	    __addr._M_is_v4 = false;
+	    address_v6 __v6;
+	    const uint8_t* __s6a = _M_data._M_v6.sin6_addr.s6_addr;
+	    for (int __i = 0; __i < 16; ++__i)
+	      __v6._M_bytes[__i] = __s6a[__i];
+	    __v6._M_scope_id = _M_data._M_v6.sin6_scope_id;
+	    return __v6;
 	  }
 	else
 	  {
-	    __builtin_memcpy(&__addr._M_v4._M_addr,
-			     &_M_data._M_v4.sin_addr.s_addr, 4);
+	    address_v4 __v4;
+	    __v4._M_addr = _M_data._M_v4.sin_addr.s_addr;
+	    return __v4;
 	  }
-	return __addr;
       }
 
       void
@@ -1573,37 +1596,62 @@ namespace ip
       {
 	if (__addr.is_v6())
 	  {
-	    _M_data._M_v6 = {};
+	    std::_Construct(&_M_data._M_v6);
 	    _M_data._M_v6.sin6_family = protocol_type::v6().family();
 	    __builtin_memcpy(_M_data._M_v6.sin6_addr.s6_addr,
 			     __addr._M_v6._M_bytes.data(), 16);
 	    _M_data._M_v6.sin6_scope_id = __addr._M_v6._M_scope_id;
+	    _M_is_v6 = true;
 	  }
 	else
 	  {
+	    std::_Construct(&_M_data._M_v4);
 	    _M_data._M_v4.sin_family = protocol_type::v4().family();
 	    _M_data._M_v4.sin_addr.s_addr = __addr._M_v4._M_addr;
+	    _M_is_v6 = false;
 	  }
       }
 
       constexpr port_type
       port() const noexcept
-      { return address_v4::_S_ntoh_16(_M_data._M_v4.sin_port); }
+      {
+	port_type __p = 0;
+	if (_M_is_v6)
+	  __p = _M_data._M_v6.sin6_port;
+	else
+	  __p = _M_data._M_v4.sin_port;
+	return address_v4::_S_ntoh_16(__p);
+      }
 
       void
       port(port_type __port_num) noexcept
-      { _M_data._M_v4.sin_port = address_v4::_S_hton_16(__port_num); }
+      {
+	__port_num = address_v4::_S_hton_16(__port_num);
+	if (_M_is_v6)
+	  _M_data._M_v6.sin6_port = __port_num;
+	else
+	  _M_data._M_v4.sin_port = __port_num;
+      }
 
       void* data() noexcept { return &_M_data; }
 
       const void* data() const noexcept { return &_M_data; }
 
-      constexpr size_t size() const noexcept
-      { return _M_is_v6() ? sizeof(sockaddr_in6) : sizeof(sockaddr_in); }
+      constexpr size_t
+      size() const noexcept
+      { return _M_is_v6 ? sizeof(sockaddr_in6) : sizeof(sockaddr_in); }
 
       void
       resize(size_t __s)
       {
+	__glibcxx_assert(__s >= 0);
+	static_assert(offsetof(sockaddr_in6, sin6_family)
+			== offsetof(sockaddr_in, sin_family),
+		      "sockaddr_in::sin_family and sockaddr_in6::sin6_family "
+		      "must be at the same offset");
+	const sa_family_t __in6 = AF_INET6;
+	const auto* __ptr = (char*)&_M_data + offsetof(sockaddr_in, sin_family);
+	_M_is_v6 = __builtin_memcmp(&__in6, __ptr, sizeof(__in6)) == 0;
 	if (__s != size())
 	  __throw_length_error("net::ip::basic_endpoint::resize");
       }
@@ -1617,8 +1665,7 @@ namespace ip
 	sockaddr_in6	_M_v6;
       } _M_data;
 
-      constexpr bool _M_is_v6() const noexcept
-      { return _M_data._M_v4.sin_family == AF_INET6; }
+      bool _M_is_v6 = false;
     };
 
   /** basic_endpoint comparisons
