@@ -119,7 +119,7 @@ https://github.com/AdaCore/ada-spark-rfcs/blob/master/prototyped/rfc-conditional
 Case pattern matching
 ---------------------
 
-The selector for a case statement may be of a composite type, subject to
+The selector for a case statement (but not yet for a case expression) may be of a composite type, subject to
 some restrictions (described below). Aggregate syntax is used for choices
 of such a case statement; however, in cases where a "normal" aggregate would
 require a discrete value, a discrete subtype may be used instead; box
