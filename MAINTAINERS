@@ -179,6 +179,7 @@ fp-bit			Ian Lance Taylor	<ian@airs.com>
 libgcc			Ian Lance Taylor	<ian@airs.com>
 libgo			Ian Lance Taylor	<ian@airs.com>
 libgomp			Jakub Jelinek		<jakub@redhat.com>
+libgomp			Tobias Burnus		<tobias@codesourcery.com>
 libgomp (OpenACC)	Thomas Schwinge		<thomas@codesourcery.com>
 libiberty		Ian Lance Taylor	<ian@airs.com>
 libitm			Torvald Riegel		<triegel@redhat.com>
@@ -253,6 +254,7 @@ loop optimizer		Bin Cheng		<bin.cheng@linux.alibaba.com>
 OpenACC			Thomas Schwinge		<thomas@codesourcery.com>
 OpenACC			Tobias Burnus		<tobias@codesourcery.com>
 OpenMP			Jakub Jelinek		<jakub@redhat.com>
+OpenMP			Tobias Burnus		<tobias@codesourcery.com>
 testsuite		Rainer Orth		<ro@CeBiTec.Uni-Bielefeld.DE>
 testsuite		Mike Stump		<mikestump@comcast.net>
 register allocation	Vladimir Makarov	<vmakarov@redhat.com>
