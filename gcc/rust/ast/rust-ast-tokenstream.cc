@@ -105,8 +105,7 @@ TokenStream::visit (Attribute &attrib)
 {
   tokens.push_back (Rust::Token::make (HASH, attrib.get_locus ()));
   tokens.push_back (Rust::Token::make (LEFT_SQUARE, Location ()));
-  visit_items_joined_by_separator (attrib.get_path ().get_segments (),
-				   SCOPE_RESOLUTION);
+  visit (attrib.get_path ());
 
   if (attrib.has_attr_input ())
     {
@@ -138,6 +137,17 @@ TokenStream::visit (Attribute &attrib)
 	}
     }
   tokens.push_back (Rust::Token::make (RIGHT_SQUARE, Location ()));
+}
+
+void
+TokenStream::visit (SimplePath &path)
+{
+  if (path.get_has_opening_scope_resolution ())
+    {
+      tokens.push_back (
+	Rust::Token::make (SCOPE_RESOLUTION, path.get_locus ()));
+    }
+  visit_items_joined_by_separator (path.get_segments (), SCOPE_RESOLUTION);
 }
 
 void
@@ -197,8 +207,7 @@ TokenStream::visit (Visibility &vis)
       tokens.push_back (Rust::Token::make (PUB, vis.get_locus ()));
       tokens.push_back (Rust::Token::make (LEFT_PAREN, Location ()));
       tokens.push_back (Rust::Token::make_identifier (Location (), "in"));
-      visit_items_joined_by_separator (vis.get_path ().get_segments (),
-				       SCOPE_RESOLUTION);
+      visit (vis.get_path ());
       tokens.push_back (Rust::Token::make (RIGHT_PAREN, Location ()));
       break;
     case Visibility::PRIV:
@@ -401,8 +410,58 @@ TokenStream::visit (LifetimeParam &lifetime_param)
 }
 
 void
-TokenStream::visit (ConstGenericParam &)
-{}
+TokenStream::visit (ConstGenericParam &param)
+{
+  // Syntax:
+  // const IDENTIFIER : Type ( = Block | IDENTIFIER | -?LITERAL )?
+
+  tokens.push_back (Rust::Token::make (CONST, param.get_locus ()));
+  auto id = param.get_name ();
+  tokens.push_back (Rust::Token::make_identifier (Location (), std::move (id)));
+  tokens.push_back (Rust::Token::make (COLON, Location ()));
+  visit (param.get_type ());
+  if (param.has_default_value ())
+    {
+      tokens.push_back (Rust::Token::make (EQUAL, Location ()));
+      visit (param.get_type ());
+    }
+}
+
+void
+TokenStream::visit (PathExprSegment &segment)
+{
+  visit (segment.get_ident_segment ());
+  if (segment.has_generic_args ())
+    {
+      auto generics = segment.get_generic_args ();
+      tokens.push_back (
+	Rust::Token::make (SCOPE_RESOLUTION, segment.get_locus ()));
+      tokens.push_back (Rust::Token::make (LEFT_ANGLE, generics.get_locus ()));
+
+      auto &lifetime_args = generics.get_lifetime_args ();
+      auto &generic_args = generics.get_generic_args ();
+      auto &binding_args = generics.get_binding_args ();
+
+      visit_items_joined_by_separator (generic_args, COMMA);
+
+      if (!lifetime_args.empty ()
+	  && (!generic_args.empty () || !binding_args.empty ()))
+	{
+	  tokens.push_back (Rust::Token::make (COMMA, Location ()));
+	}
+
+      visit_items_joined_by_separator (binding_args, COMMA);
+
+      if (!generic_args.empty () && !binding_args.empty ())
+	{
+	  tokens.push_back (Rust::Token::make (COMMA, Location ()));
+	}
+
+      visit_items_joined_by_separator (lifetime_args, COMMA);
+
+      tokens.push_back (Rust::Token::make (RIGHT_ANGLE, Location ()));
+    }
+}
 
 void
 TokenStream::visit (PathInExpression &path)
@@ -415,66 +474,7 @@ TokenStream::visit (PathInExpression &path)
 
   for (auto &segment : path.get_segments ())
     {
-      auto ident_segment = segment.get_ident_segment ();
-      // TODO: Add visitor pattern to PathIdentSegment ?
-      if (ident_segment.is_super_segment ())
-	{
-	  tokens.push_back (
-	    Rust::Token::make (SUPER, ident_segment.get_locus ()));
-	}
-      else if (ident_segment.is_crate_segment ())
-	{
-	  tokens.push_back (
-	    Rust::Token::make (CRATE, ident_segment.get_locus ()));
-	}
-      else if (ident_segment.is_lower_self ())
-	{
-	  tokens.push_back (
-	    Rust::Token::make (SELF, ident_segment.get_locus ()));
-	}
-      else if (ident_segment.is_big_self ())
-	{
-	  tokens.push_back (
-	    Rust::Token::make (SELF_ALIAS, ident_segment.get_locus ()));
-	}
-      else
-	{
-	  auto id = ident_segment.as_string ();
-	  tokens.push_back (
-	    Rust::Token::make_identifier (ident_segment.get_locus (),
-					  std::move (id)));
-	}
-      if (segment.has_generic_args ())
-	{
-	  auto generics = segment.get_generic_args ();
-	  tokens.push_back (
-	    Rust::Token::make (SCOPE_RESOLUTION, path.get_locus ()));
-	  tokens.push_back (
-	    Rust::Token::make (LEFT_ANGLE, generics.get_locus ()));
-
-	  auto &lifetime_args = generics.get_lifetime_args ();
-	  auto &generic_args = generics.get_generic_args ();
-	  auto &binding_args = generics.get_binding_args ();
-
-	  visit_items_joined_by_separator (generic_args, COMMA);
-
-	  if (!lifetime_args.empty ()
-	      && (!generic_args.empty () || !binding_args.empty ()))
-	    {
-	      tokens.push_back (Rust::Token::make (COMMA, Location ()));
-	    }
-
-	  visit_items_joined_by_separator (binding_args, COMMA);
-
-	  if (!generic_args.empty () && !binding_args.empty ())
-	    {
-	      tokens.push_back (Rust::Token::make (COMMA, Location ()));
-	    }
-
-	  visit_items_joined_by_separator (lifetime_args, COMMA);
-
-	  tokens.push_back (Rust::Token::make (RIGHT_ANGLE, Location ()));
-	}
+      visit (segment);
     }
 }
 
@@ -613,75 +613,67 @@ TokenStream::visit (TypePath &path)
 }
 
 void
-TokenStream::visit (QualifiedPathInExpression &path)
+TokenStream::visit (PathIdentSegment &segment)
 {
-  for (auto &segment : path.get_segments ())
+  if (segment.is_super_segment ())
     {
-      auto ident_segment = segment.get_ident_segment ();
-      if (ident_segment.is_super_segment ())
-	{
-	  tokens.push_back (
-	    Rust::Token::make (SUPER, ident_segment.get_locus ()));
-	}
-      else if (ident_segment.is_crate_segment ())
-	{
-	  tokens.push_back (
-	    Rust::Token::make (CRATE, ident_segment.get_locus ()));
-	}
-      else if (ident_segment.is_lower_self ())
-	{
-	  tokens.push_back (
-	    Rust::Token::make (SELF, ident_segment.get_locus ()));
-	}
-      else if (ident_segment.is_big_self ())
-	{
-	  tokens.push_back (
-	    Rust::Token::make (SELF_ALIAS, ident_segment.get_locus ()));
-	}
-      else
-	{
-	  auto id = ident_segment.as_string ();
-	  tokens.push_back (
-	    Rust::Token::make_identifier (ident_segment.get_locus (),
-					  std::move (id)));
-	}
-      if (segment.has_generic_args ())
-	{
-	  auto generics = segment.get_generic_args ();
-	  tokens.push_back (
-	    Rust::Token::make (SCOPE_RESOLUTION, path.get_locus ()));
-	  tokens.push_back (
-	    Rust::Token::make (LEFT_ANGLE, generics.get_locus ()));
-
-	  auto &lifetime_args = generics.get_lifetime_args ();
-	  auto &generic_args = generics.get_generic_args ();
-	  auto &binding_args = generics.get_binding_args ();
-
-	  visit_items_joined_by_separator (generic_args, COMMA);
-
-	  if (!lifetime_args.empty ()
-	      && (!generic_args.empty () || !binding_args.empty ()))
-	    {
-	      tokens.push_back (Rust::Token::make (COMMA, Location ()));
-	    }
-
-	  visit_items_joined_by_separator (binding_args, COMMA);
-
-	  if (!generic_args.empty () && !binding_args.empty ())
-	    {
-	      tokens.push_back (Rust::Token::make (COMMA, Location ()));
-	    }
-
-	  visit_items_joined_by_separator (lifetime_args, COMMA);
-
-	  tokens.push_back (Rust::Token::make (RIGHT_ANGLE, Location ()));
-	}
+      tokens.push_back (Rust::Token::make (SUPER, segment.get_locus ()));
+    }
+  else if (segment.is_crate_segment ())
+    {
+      tokens.push_back (Rust::Token::make (CRATE, segment.get_locus ()));
+    }
+  else if (segment.is_lower_self ())
+    {
+      tokens.push_back (Rust::Token::make (SELF, segment.get_locus ()));
+    }
+  else if (segment.is_big_self ())
+    {
+      tokens.push_back (Rust::Token::make (SELF_ALIAS, segment.get_locus ()));
+    }
+  else
+    {
+      auto id = segment.as_string ();
+      tokens.push_back (
+	Rust::Token::make_identifier (segment.get_locus (), std::move (id)));
     }
 }
 
 void
-TokenStream::visit (QualifiedPathInType &)
-{}
+TokenStream::visit (QualifiedPathInExpression &path)
+{
+  for (auto &segment : path.get_segments ())
+    {
+      visit (segment);
+    }
+}
+
+void
+TokenStream::visit (QualifiedPathType &path)
+{
+  tokens.push_back (Rust::Token::make (LEFT_ANGLE, path.get_locus ()));
+  visit (path.get_type ());
+  if (path.has_as_clause ())
+    {
+      tokens.push_back (Rust::Token::make (AS, Location ()));
+      visit (path.get_as_type_path ());
+    }
+  tokens.push_back (Rust::Token::make (RIGHT_ANGLE, Location ()));
+}
+
+void
+TokenStream::visit (QualifiedPathInType &path)
+{
+  visit (path.get_qualified_path_type ());
+
+  tokens.push_back (Rust::Token::make (COLON, Location ()));
+  visit (path.get_associated_segment ());
+  for (auto &segment : path.get_segments ())
+    {
+      tokens.push_back (Rust::Token::make (COLON, Location ()));
+      visit (segment);
+    }
+}
 
 void
 TokenStream::visit (Literal &lit, Location locus)

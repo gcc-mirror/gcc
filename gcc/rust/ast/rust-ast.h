@@ -393,6 +393,11 @@ public:
 
   std::string as_string () const;
 
+  bool get_has_opening_scope_resolution () const
+  {
+    return has_opening_scope_resolution;
+  }
+
   Location get_locus () const { return locus; }
   NodeId get_node_id () const { return node_id; }
 
