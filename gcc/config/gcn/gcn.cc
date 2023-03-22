@@ -5013,6 +5013,79 @@ gcn_vector_alignment_reachable (const_tree ARG_UNUSED (type), bool is_packed)
   return !is_packed;
 }
 
+/* Generate DPP pairwise swap instruction.
+   This instruction swaps the values in each even lane with the value in the
+   next one:
+     a, b, c, d -> b, a, d, c.
+   The opcode is given by INSN.  */
+
+char *
+gcn_expand_dpp_swap_pairs_insn (machine_mode mode, const char *insn,
+				int ARG_UNUSED (unspec))
+{
+  static char buf[128];
+  const char *dpp;
+
+  /* Add the DPP modifiers.  */
+  dpp = "quad_perm:[1,0,3,2]";
+
+  if (vgpr_2reg_mode_p (mode))
+    sprintf (buf, "%s\t%%L0, %%L1 %s\n\t%s\t%%H0, %%H1 %s",
+	     insn, dpp, insn, dpp);
+  else
+    sprintf (buf, "%s\t%%0, %%1 %s", insn, dpp);
+
+  return buf;
+}
+
+/* Generate DPP distribute even instruction.
+   This instruction copies the value in each even lane to the next one:
+     a, b, c, d -> a, a, c, c.
+   The opcode is given by INSN.  */
+
+char *
+gcn_expand_dpp_distribute_even_insn (machine_mode mode, const char *insn,
+				     int ARG_UNUSED (unspec))
+{
+  static char buf[128];
+  const char *dpp;
+
+  /* Add the DPP modifiers.  */
+  dpp = "quad_perm:[0,0,2,2]";
+
+  if (vgpr_2reg_mode_p (mode))
+    sprintf (buf, "%s\t%%L0, %%L1 %s\n\t%s\t%%H0, %%H1 %s",
+	     insn, dpp, insn, dpp);
+  else
+    sprintf (buf, "%s\t%%0, %%1 %s", insn, dpp);
+
+  return buf;
+}
+
+/* Generate DPP distribute odd instruction.
+   This isntruction copies the value in each odd lane to the previous one:
+     a, b, c, d -> b, b, d, d.
+   The opcode is given by INSN.  */
+
+char *
+gcn_expand_dpp_distribute_odd_insn (machine_mode mode, const char *insn,
+				    int ARG_UNUSED (unspec))
+{
+  static char buf[128];
+  const char *dpp;
+
+  /* Add the DPP modifiers.  */
+  dpp = "quad_perm:[1,1,3,3]";
+
+  if (vgpr_2reg_mode_p (mode))
+    sprintf (buf, "%s\t%%L0, %%L1 %s\n\t%s\t%%H0, %%H1 %s",
+	     insn, dpp, insn, dpp);
+  else
+    sprintf (buf, "%s\t%%0, %%1 %s", insn, dpp);
+
+  return buf;
+}
+
 /* Generate DPP instructions used for vector reductions.
 
    The opcode is given by INSN.
