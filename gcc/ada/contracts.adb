@@ -4954,7 +4954,8 @@ package body Contracts is
 
             begin
                if Par /= Parent_Node then
-                  pragma Assert (not Is_List_Member (Node));
+                  pragma Assert (not Is_List_Member (Node)
+                                   or else Nkind (Par) = N_Function_Call);
                   Set_Parent (Node, Parent_Node);
                end if;
 
