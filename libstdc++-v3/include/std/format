@@ -3119,6 +3119,8 @@ namespace __format
 	// 3721. Allow an arg-id with a value of zero for width
 	else if constexpr (sizeof(_Tp) <= sizeof(long long))
 	  {
+	    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	    // 3720. Restrict the valid types of arg-id for width and precision
 	    if constexpr (__is_unsigned_integer<_Tp>::value)
 	      return __arg;
 	    else if constexpr (__is_signed_integer<_Tp>::value)
