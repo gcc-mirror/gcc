@@ -31,6 +31,7 @@ class TokenStream : public ASTVisitor
 {
 public:
   TokenStream (std::vector<TokenPtr> &container);
+  bool output_trailing_commas = false;
 
   void go (AST::Crate &crate);
   void go (AST::Item &item);
@@ -86,6 +87,7 @@ private:
 			     TokenId left_brace = LEFT_CURLY,
 			     TokenId right_brace = RIGHT_CURLY);
 
+  void trailing_comma ();
   /**
    * Visit common items of functions: Parameters, return type, block
    */
