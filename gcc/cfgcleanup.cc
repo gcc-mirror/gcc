@@ -2608,7 +2608,7 @@ bb_is_just_return (basic_block bb, rtx_insn **ret, rtx_insn **use)
   if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return false;
 
-  FOR_BB_INSNS (bb, insn)
+  FOR_BB_INSNS_REVERSE (bb, insn)
     if (NONDEBUG_INSN_P (insn))
       {
 	rtx pat = PATTERN (insn);
