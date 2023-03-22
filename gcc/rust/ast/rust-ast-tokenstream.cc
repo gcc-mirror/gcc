@@ -349,7 +349,12 @@ TokenStream::visit (DelimTokenTree &delim_tok_tree)
 
 void
 TokenStream::visit (AttrInputMetaItemContainer &container)
-{}
+{
+  for (auto &item : container.get_items ())
+    {
+      visit (item);
+    }
+}
 
 void
 TokenStream::visit (IdentifierExpr &ident_expr)
@@ -724,16 +729,28 @@ TokenStream::visit (LiteralExpr &expr)
 }
 
 void
-TokenStream::visit (AttrInputLiteral &)
-{}
+TokenStream::visit (AttrInputLiteral &literal)
+{
+  tokens.push_back (Rust::Token::make (EQUAL, Location ()));
+  visit (literal.get_literal ());
+}
 
 void
-TokenStream::visit (MetaItemLitExpr &)
-{}
+TokenStream::visit (MetaItemLitExpr &item)
+{
+  auto lit = item.get_literal ();
+  visit (lit);
+}
 
 void
-TokenStream::visit (MetaItemPathLit &)
-{}
+TokenStream::visit (MetaItemPathLit &item)
+{
+  auto path = item.get_path ();
+  auto lit = item.get_literal ();
+  visit (path);
+  tokens.push_back (Rust::Token::make (COLON, item.get_locus ()));
+  visit (lit);
+}
 
 void
 TokenStream::visit (BorrowExpr &expr)
