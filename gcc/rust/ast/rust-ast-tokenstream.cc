@@ -998,36 +998,93 @@ TokenStream::visit (ArrayIndexExpr &expr)
 }
 
 void
-TokenStream::visit (TupleExpr &)
-{}
+TokenStream::visit (TupleExpr &expr)
+{
+  visit_items_as_lines (expr.get_outer_attrs ());
+  tokens.push_back (Rust::Token::make (LEFT_PAREN, expr.get_locus ()));
+  visit_items_joined_by_separator (expr.get_tuple_elems (), COMMA);
+  tokens.push_back (Rust::Token::make (RIGHT_PAREN, Location ()));
+}
 
 void
-TokenStream::visit (TupleIndexExpr &)
-{}
+TokenStream::visit (TupleIndexExpr &expr)
+{
+  visit (expr.get_tuple_expr ());
+  tokens.push_back (Rust::Token::make (DOT, expr.get_locus ()));
+  tokens.push_back (
+    Rust::Token::make_int (Location (),
+			   std::to_string (expr.get_tuple_index ())));
+}
 
 void
-TokenStream::visit (StructExprStruct &)
-{}
+TokenStream::visit (StructExprStruct &expr)
+{
+  visit (expr.get_struct_name ());
+  tokens.push_back (Rust::Token::make (LEFT_CURLY, expr.get_locus ()));
+  // FIXME: Reference says it should have fields but node doesn't have them for
+  // now. We need to disambiguate with StructExprUnit and visit fields.
+  gcc_unreachable ();
+  tokens.push_back (Rust::Token::make (RIGHT_CURLY, Location ()));
+}
 
 void
-TokenStream::visit (StructExprFieldIdentifier &)
-{}
+TokenStream::visit (StructExprFieldIdentifier &expr)
+{
+  // TODO: Add attributes
+  // visit_items_as_lines (expr.get_attrs ());
+  auto id = expr.get_field_name ();
+  tokens.push_back (
+    Rust::Token::make_identifier (expr.get_locus (), std::move (id)));
+}
 
 void
-TokenStream::visit (StructExprFieldIdentifierValue &)
-{}
+TokenStream::visit (StructExprFieldIdentifierValue &expr)
+{
+  // TODO: Add attributes
+  // visit_items_as_lines (expr.get_attrs ());
+  auto id = expr.get_field_name ();
+  tokens.push_back (
+    Rust::Token::make_identifier (expr.get_locus (), std::move (id)));
+  tokens.push_back (Rust::Token::make (COLON, Location ()));
+  visit (expr.get_value ());
+}
 
 void
-TokenStream::visit (StructExprFieldIndexValue &)
-{}
+TokenStream::visit (StructExprFieldIndexValue &expr)
+{
+  // TODO: Add attributes
+  // visit_items_as_lines (expr.get_attrs ());
+  tokens.push_back (Rust::Token::make_int (expr.get_locus (),
+					   std::to_string (expr.get_index ())));
+  tokens.push_back (Rust::Token::make (COLON, Location ()));
+  visit (expr.get_value ());
+}
 
 void
-TokenStream::visit (StructExprStructFields &)
-{}
+TokenStream::visit (StructBase &base)
+{
+  tokens.push_back (Rust::Token::make (DOT_DOT, Location ()));
+  visit (base.get_base_struct ());
+}
+
+void
+TokenStream::visit (StructExprStructFields &expr)
+{
+  visit_items_joined_by_separator (expr.get_fields (), COMMA);
+  if (expr.has_struct_base ())
+    {
+      tokens.push_back (Rust::Token::make (COMMA, Location ()));
+      visit (expr.get_struct_base ());
+      trailing_comma ();
+    }
+}
 
 void
 TokenStream::visit (StructExprStructBase &)
-{}
+{
+  // FIXME: Implement this node
+  gcc_unreachable ();
+}
 
 void
 TokenStream::visit (CallExpr &expr)

@@ -161,6 +161,7 @@ private:
   void visit (StructExprFieldIdentifier &field);
   void visit (StructExprFieldIdentifierValue &field);
   void visit (StructExprFieldIndexValue &field);
+  void visit (StructBase &base);
   void visit (StructExprStructFields &expr);
   void visit (StructExprStructBase &expr);
   void visit (CallExpr &expr);
