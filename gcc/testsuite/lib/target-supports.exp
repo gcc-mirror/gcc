@@ -1759,6 +1759,18 @@ proc check_linker_plugin_available { } {
   } "-flto -fuse-linker-plugin"]
 }
 
+# Return 1 if the target has RISC-V vector extension, 0 otherwise.
+# Cache the result.
+
+proc check_effective_target_riscv_vector { } {
+    # Check that we are compiling for v by checking the __riscv_v marco.
+    return [check_no_compiler_messages riscv_vector assembly {
+       #if !defined(__riscv_v)
+       #error "__riscv_v not defined!"
+       #endif
+    }]
+}
+
 # Return 1 if the target is RV32, 0 otherwise.  Cache the result.
 
 proc check_effective_target_rv32 { } {
