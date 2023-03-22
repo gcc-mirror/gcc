@@ -13986,6 +13986,13 @@ gfc_resolve_finalizers (gfc_symbol* derived, bool *finalizable)
 	}
       arg = dummy_args->sym;
 
+      if (!arg)
+	{
+	  gfc_error ("Argument of FINAL procedure at %L must be of type %qs",
+		     &list->proc_sym->declared_at, derived->name);
+	  goto error;
+	}
+
       if (arg->as && arg->as->type == AS_ASSUMED_RANK
 	  && ((list != derived->f2k_derived->finalizers) || list->next))
 	{
