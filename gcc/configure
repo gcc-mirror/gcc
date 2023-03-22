@@ -8798,7 +8798,7 @@ fi
 
 # Determine whether makeinfo supports the CONTENTS_OUTPUT_LOCATION variable.
 # If it does, we want to pass it to makeinfo in order to restore the old
-# behaviour of @{summary,}contents placement.
+# behavior of @{summary,}contents placement.
 MAKEINFO_TOC_INLINE_FLAG=
 if test x"$MAKEINFO" != x; then :
 
