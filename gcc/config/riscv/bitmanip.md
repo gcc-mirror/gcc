@@ -702,7 +702,19 @@
       rtx t1 = force_reg (word_mode, operands[3]);
       a0 = force_reg (word_mode, gen_rtx_XOR (word_mode, a0, a1));
       a0 = force_reg (word_mode, gen_rtx_CLMUL (word_mode, a0, q_reg));
+
+      /* XXX By adjusting Q we may be able to eliminate this shift.  The size
+         of this shift seems to be dependent on the size of the CRC
+         output (aka N in N-bit CRC).  */
       a0 = force_reg (word_mode, gen_rtx_ASHIFT (word_mode, a0, GEN_INT (16)));
+
+      /* CCC By adjusting operands[3] (which should be a constant) we may
+         be able to utilize CLMULH to get the bits in the right place and
+         avoid the shifts to extract the bitfield.   If that is not possible
+         the shifts will still be needed and are dependent on input/output
+         sizes as well.   Does adjusting the constant and shift counts
+         result in a constant that is more likely to bt synthesized in a
+         single instruction?  */
       a0 = force_reg (word_mode, gen_rtx_CLMUL (word_mode, a0, t1));
       a0 = force_reg (word_mode, gen_rtx_LSHIFTRT (word_mode, a0, GEN_INT (24)));
       a0 = force_reg (word_mode, gen_rtx_ASHIFT (word_mode, a0, GEN_INT (24)));
@@ -718,7 +730,13 @@
   else
     {
       /* If we do not have the ZBC extension (ie, no clmul), then
-         use a table based algorithm to implement the CRC.  */
+         use a table based algorithm to implement the CRC. 
+
+         XXX What is the size of each element in this table and
+         how many entries are in the table?  Does the element
+         size or number of elements vary based on the input or
+         output types for the CRC function?   If so, do we need
+         to restrict it to only be used for certain modes?  */
       expand_crc_table_based (operands, QImode);
     }
 

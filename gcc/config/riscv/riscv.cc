@@ -6902,19 +6902,21 @@ riscv_shamt_matches_mask_p (int shamt, HOST_WIDE_INT mask)
   return shamt == ctz_hwi (mask);
 }
 
-/* Calculate the quotient of polynomial long division of x^2n by the polynomial
+/* Return the quotient of polynomial long division of x^2n by POLYNOMIAL
    in GF (2^n).  */
 
 unsigned HOST_WIDE_INT
 gf2n_poly_long_div_quotient (unsigned HOST_WIDE_INT polynomial)
 {
-  vec<short> x2n, pol, q;
+  vec<bool>pol;
+  vec<short> x2n, q;
+
   // Create vector of bits, for the polynomial.
   pol.create (sizeof (polynomial) * BITS_PER_UNIT + 1);
   size_t n = 1;
   for ( ; polynomial; n++)
     {
-      pol.quick_push (polynomial&1);
+      pol.quick_push (polynomial & 1);
       polynomial >>= 1;
     }
   pol.quick_push (1);
@@ -6923,6 +6925,8 @@ gf2n_poly_long_div_quotient (unsigned HOST_WIDE_INT polynomial)
   x2n.create (2 * n - 1);
   for (size_t i = 0; i < 2 * (n - 1); i++)
     x2n.safe_push (0);
+
+  /* Is this the implicit bit on at the top of the poly?  */
   x2n.safe_push (1);
 
   q.create (n);
@@ -6952,6 +6956,9 @@ gf2n_poly_long_div_quotient (unsigned HOST_WIDE_INT polynomial)
 }
 
 /* Calculates reciprocal CRC for initial CRC and given polynomial.  */
+/* XXX Is this needed?  It's not referenced anywhere. 
+   If it is needed, it needs to be generalized rather than only
+   working on uint16_t.  */
 static uint16_t
 generate_crc_reciprocal (uint16_t crc,
 			 uint16_t polynomial)
@@ -6967,6 +6974,8 @@ generate_crc_reciprocal (uint16_t crc,
 }
 
 /* Calculates CRC for initial CRC and given polynomial.  */
+/* XXX This needs to be generalized rather than only working
+   on uint16_t.  */
 static uint16_t
 generate_crc (uint16_t crc,
 	      uint16_t polynomial)
@@ -6983,6 +6992,19 @@ generate_crc (uint16_t crc,
 }
 
 /* Generates 16-bit CRC table.  */
+/* XXX This needs to be generalized rather than only working
+   on uint16_t.
+
+   This looks like it tries to share tables which is good, but
+   don't we have to verify that the polynomial and sizes are the
+   same for sharing to be safe?  Doesn't that in turn argue that
+   the polynomial and size should be encoded into the table
+   name? 
+
+   Presumably the table should be going into a readonly data
+   section.  It doesn't look like we make any attempt to switch
+   sections.  Mixing code and data is exceedingly bad on
+   modern processors.  */
 rtx
 generate_crc16_table (uint16_t polynom)
 {
@@ -7016,27 +7038,43 @@ generate_crc16_table (uint16_t polynom)
   return lab;
 }
 
-void reflect (rtx op1, machine_mode mode)
+/* XXX Is this needed?  It's not referenced anywhere.   */
+void
+reflect (rtx op1, machine_mode mode)
 {
   // Reflect the bits
   op1 = gen_rtx_BSWAP (mode, op1);
 
-// Adjust the position of the reflected bits
+  // Adjust the position of the reflected bits
+  /* XXX I don't understand the comment.  Under what
+     conditions does mode != Pmode?  */
   if (mode != Pmode)
     op1 = gen_rtx_SUBREG (Pmode, op1, 0);
 
-// Shift the reflected bits to the least significant end
+  // Shift the reflected bits to the least significant end
+  /* XXX This seems to assume we're always dealing with
+     a 16bit quantity.  */
   rtx shift_amt = gen_rtx_CONST_INT (Pmode, 8);
   op1 = gen_rtx_LSHIFTRT (Pmode, op1, shift_amt);
+
+  /* XXX This routine is going to have no impact if it was
+     ever used.  Changing OP1 above isn't reflected into
+     the caller.  */
 }
 
 /* Generate table based CRC code.  */
+/* XXX This doesn't seem to be used.  Is it the case that we're
+   eventually going to need to distinguish between a bit-reflected
+   CRC and a normal CRC for table based variants?  If so, doesn't
+   that need to be in the operands for the .CRC IFN?  */
 void
-expand_crc_table_based_reflected (rtx *operands,  machine_mode data_mode)
+expand_crc_table_based_reflected (rtx *operands, machine_mode data_mode)
 {
   machine_mode mode = GET_MODE (operands[0]);
   rtx in = force_reg (mode, gen_rtx_XOR (mode, operands[1], operands[2]));
   rtx ix = gen_rtx_AND (mode, in, GEN_INT (GET_MODE_MASK (data_mode)));
+  /* XXX Under what conditions will mode != Pmode be true?  Is this an
+     artifact of having the modes wrong for the crc expander?  */
   if (mode != Pmode)
     ix = gen_rtx_SUBREG (Pmode, ix, 0);
   ix = gen_rtx_ASHIFT (Pmode, ix, GEN_INT (exact_log2 (GET_MODE_SIZE (mode)
@@ -7048,6 +7086,15 @@ expand_crc_table_based_reflected (rtx *operands,  machine_mode data_mode)
   rtx high = gen_rtx_LSHIFTRT (mode, operands[1],
 			       GEN_INT (data_mode));
   rtx crc = force_reg (mode, gen_rtx_XOR (mode, tab, high));
+
+  /* XXX In general we prefer to avoid SUBREGs, especially
+     paradoxical subregs (outer mode is wider than inner mode).
+
+     It should be possible to replace a paradoxical subreg with
+     a sign or zero extension.
+
+     If this is a narrowing subreg, then gen_lowpart might be
+     better.  */
   riscv_emit_move (operands[0], gen_rtx_SUBREG (mode, crc, 0));
 }
 
@@ -7060,6 +7107,8 @@ expand_crc_table_based (rtx *operands,  machine_mode data_mode)
 			       GEN_INT (8));
   rtx in = force_reg (mode, gen_rtx_XOR (mode, op1, operands[2]));
   rtx ix = gen_rtx_AND (mode, in, GEN_INT (GET_MODE_MASK (data_mode)));
+  /* XXX Under what conditions will mode != Pmode be true?  Is this an
+     artifact of having the modes wrong for the crc expander?  */
   if (mode != Pmode)
     ix = gen_rtx_SUBREG (Pmode, ix, 0);
   ix = gen_rtx_ASHIFT (Pmode, ix, GEN_INT (exact_log2 (GET_MODE_SIZE (mode)
@@ -7072,6 +7121,10 @@ expand_crc_table_based (rtx *operands,  machine_mode data_mode)
 			       GEN_INT (8));
   high = force_reg (mode, gen_rtx_AND (mode, high, GEN_INT (65535)));
   rtx crc = force_reg (mode, gen_rtx_XOR (mode, tab, high));
+
+  /* Why is this different than the reflected version above?  Doesn't
+     it have the same potential concers WRT mismatched modes between
+     these two objects?  */
   riscv_emit_move (operands[0], crc);
 }
 
