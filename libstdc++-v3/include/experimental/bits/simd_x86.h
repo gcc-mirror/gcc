@@ -1524,6 +1524,8 @@ template <typename _Abi>
 	  */
 	return _Base::_S_divides(__x, __y);
       }
+#else
+    using _Base::_S_divides;
 #endif // _GLIBCXX_SIMD_WORKAROUND_PR90993
 
     // }}}
