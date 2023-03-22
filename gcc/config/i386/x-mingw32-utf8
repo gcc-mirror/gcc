@@ -53,4 +53,4 @@ utf8-mingw32.o : utf8rc-mingw32.o sym-mingw32.o
 # This is expected because the resource object is not supposed
 # to have any symbols, it just has to be linked into the
 # executable in order for Windows to use the utf8 code page.
-$(COMPILERS) : override LDFLAGS += -Wl,--require-defined=HOST_EXTRA_OBJS_SYMBOL
+$(COMPILERS) : override LDFLAGS += -Wl,--undefined=HOST_EXTRA_OBJS_SYMBOL
