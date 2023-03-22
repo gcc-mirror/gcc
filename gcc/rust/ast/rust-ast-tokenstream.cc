@@ -1179,28 +1179,77 @@ TokenStream::visit (RangeToInclExpr &expr)
 }
 
 void
-TokenStream::visit (ReturnExpr &)
-{}
+TokenStream::visit (ReturnExpr &expr)
+{
+  tokens.push_back (Rust::Token::make (RETURN_TOK, expr.get_locus ()));
+  if (expr.has_returned_expr ())
+    visit (expr.get_returned_expr ());
+}
 
 void
-TokenStream::visit (UnsafeBlockExpr &)
-{}
+TokenStream::visit (UnsafeBlockExpr &expr)
+{
+  tokens.push_back (Rust::Token::make (UNSAFE, expr.get_locus ()));
+  visit (expr.get_block_expr ());
+}
 
 void
-TokenStream::visit (LoopExpr &)
-{}
+TokenStream::visit (LoopLabel &label)
+{
+  visit (label.get_lifetime ());
+  tokens.push_back (Rust::Token::make (COLON, label.get_locus ()));
+}
 
 void
-TokenStream::visit (WhileLoopExpr &)
-{}
+TokenStream::visit_loop_common (BaseLoopExpr &expr)
+{
+  if (expr.has_loop_label ())
+    visit (expr.get_loop_label ());
+}
 
 void
-TokenStream::visit (WhileLetLoopExpr &)
-{}
+TokenStream::visit (LoopExpr &expr)
+{
+  visit_loop_common (expr);
+  tokens.push_back (Rust::Token::make (LOOP, expr.get_locus ()));
+  visit (expr.get_loop_block ());
+}
 
 void
-TokenStream::visit (ForLoopExpr &)
-{}
+TokenStream::visit (WhileLoopExpr &expr)
+{
+  visit_loop_common (expr);
+  tokens.push_back (Rust::Token::make (WHILE, expr.get_locus ()));
+  visit (expr.get_predicate_expr ());
+  visit (expr.get_loop_block ());
+}
+
+void
+TokenStream::visit (WhileLetLoopExpr &expr)
+{
+  visit_loop_common (expr);
+  tokens.push_back (Rust::Token::make (WHILE, expr.get_locus ()));
+  tokens.push_back (Rust::Token::make (LET, Location ()));
+  // TODO: The reference mention only one Pattern
+  for (auto &item : expr.get_patterns ())
+    {
+      visit (item);
+    }
+  tokens.push_back (Rust::Token::make (EQUAL, Location ()));
+  visit (expr.get_scrutinee_expr ());
+  visit (expr.get_loop_block ());
+}
+
+void
+TokenStream::visit (ForLoopExpr &expr)
+{
+  visit_loop_common (expr);
+  tokens.push_back (Rust::Token::make (FOR, expr.get_locus ()));
+  visit (expr.get_pattern ());
+  tokens.push_back (Rust::Token::make (IN, Location ()));
+  visit (expr.get_iterator_expr ());
+  visit (expr.get_loop_block ());
+}
 
 void
 TokenStream::visit (IfExpr &expr)
