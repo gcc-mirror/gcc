@@ -6906,22 +6906,12 @@ insn_live_p (rtx_insn *insn, int *counts)
     }
   else if (DEBUG_INSN_P (insn))
     {
-      rtx_insn *next;
-
       if (DEBUG_MARKER_INSN_P (insn))
 	return true;
 
-      for (next = NEXT_INSN (insn); next; next = NEXT_INSN (next))
-	if (NOTE_P (next))
-	  continue;
-	else if (!DEBUG_INSN_P (next))
-	  return true;
-	/* If we find an inspection point, such as a debug begin stmt,
-	   we want to keep the earlier debug insn.  */
-	else if (DEBUG_MARKER_INSN_P (next))
-	  return true;
-	else if (INSN_VAR_LOCATION_DECL (insn) == INSN_VAR_LOCATION_DECL (next))
-	  return false;
+      if (DEBUG_BIND_INSN_P (insn)
+	  && TREE_VISITED (INSN_VAR_LOCATION_DECL (insn)))
+	return false;
 
       return true;
     }
@@ -7007,8 +6997,11 @@ delete_trivially_dead_insns (rtx_insn *insns, int nreg)
       counts = XCNEWVEC (int, nreg * 3);
       for (insn = insns; insn; insn = NEXT_INSN (insn))
 	if (DEBUG_BIND_INSN_P (insn))
-	  count_reg_usage (INSN_VAR_LOCATION_LOC (insn), counts + nreg,
-			   NULL_RTX, 1);
+	  {
+	    count_reg_usage (INSN_VAR_LOCATION_LOC (insn), counts + nreg,
+			     NULL_RTX, 1);
+	    TREE_VISITED (INSN_VAR_LOCATION_DECL (insn)) = 0;
+	  }
 	else if (INSN_P (insn))
 	  {
 	    count_reg_usage (insn, counts, NULL_RTX, 1);
@@ -7048,6 +7041,7 @@ delete_trivially_dead_insns (rtx_insn *insns, int nreg)
      the setter.  Then go through DEBUG_INSNs and if a DEBUG_EXPR
      has been created for the unused register, replace it with
      the DEBUG_EXPR, otherwise reset the DEBUG_INSN.  */
+  auto_vec<tree, 32> later_debug_set_vars;
   for (insn = get_last_insn (); insn; insn = prev)
     {
       int live_insn = 0;
@@ -7109,6 +7103,21 @@ delete_trivially_dead_insns (rtx_insn *insns, int nreg)
 	      ndead++;
 	    }
 	  cse_cfg_altered |= delete_insn_and_edges (insn);
+	}
+      else
+	{
+	  if (!DEBUG_INSN_P (insn) || DEBUG_MARKER_INSN_P (insn))
+	    {
+	      for (tree var : later_debug_set_vars)
+		TREE_VISITED (var) = 0;
+	      later_debug_set_vars.truncate (0);
+	    }
+	  else if (DEBUG_BIND_INSN_P (insn)
+		   && !TREE_VISITED (INSN_VAR_LOCATION_DECL (insn)))
+	    {
+	      later_debug_set_vars.safe_push (INSN_VAR_LOCATION_DECL (insn));
+	      TREE_VISITED (INSN_VAR_LOCATION_DECL (insn)) = 1;
+	    }
 	}
     }
 
