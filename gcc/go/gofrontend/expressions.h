@@ -4319,6 +4319,10 @@ class Slice_info_expression : public Expression
   { return this->slice_info_; }
 
  protected:
+  int
+  do_traverse(Traverse* traverse)
+  { return Expression::traverse(&this->slice_, traverse); }
+
   Type*
   do_type();
 
