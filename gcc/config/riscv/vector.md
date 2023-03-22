@@ -4141,6 +4141,7 @@
 {
   enum rtx_code code = GET_CODE (operands[3]);
   rtx undef = RVV_VUNDEF (<VM>mode);
+  rtx tmp = gen_reg_rtx (<VM>mode);
   if (code == GEU && rtx_equal_p (operands[5], const0_rtx))
     {
       /* If vmsgeu with 0 immediate, expand it to vmset.  */
@@ -4187,12 +4188,11 @@
 	    - pseudoinstruction: vmsge{u}.vx vd, va, x
 	    - expansion: vmslt{u}.vx vd, va, x; vmnand.mm vd, vd, vd.  */
 	  emit_insn (
-	    gen_pred_cmp<mode>_scalar (operands[0], operands[1], operands[2],
+	    gen_pred_cmp<mode>_scalar (tmp, operands[1], operands[2],
 					operands[3], operands[4], operands[5],
 					operands[6], operands[7], operands[8]));
 	  emit_insn (gen_pred_nand<vm> (operands[0], CONSTM1_RTX (<VM>mode),
-					undef, operands[0], operands[0],
-					operands[6], operands[8]));
+					undef, tmp, tmp, operands[6], operands[8]));
 	}
       else
 	{
@@ -4201,13 +4201,12 @@
 	      /* masked va >= x, vd == v0
 		- pseudoinstruction: vmsge{u}.vx vd, va, x, v0.t, vt
 		- expansion: vmslt{u}.vx vt, va, x;  vmandn.mm vd, vd, vt.  */
-	      rtx reg = gen_reg_rtx (<VM>mode);
 	      emit_insn (gen_pred_cmp<mode>_scalar (
-		reg, CONSTM1_RTX (<VM>mode), undef, operands[3], operands[4],
+		tmp, CONSTM1_RTX (<VM>mode), undef, operands[3], operands[4],
 		operands[5], operands[6], operands[7], operands[8]));
 	      emit_insn (
 		gen_pred_andnot<vm> (operands[0], CONSTM1_RTX (<VM>mode), undef,
-				   operands[1], reg, operands[6], operands[8]));
+				   operands[1], tmp, operands[6], operands[8]));
 	    }
 	  else
 	    {
@@ -4216,10 +4215,10 @@
 		- expansion: vmslt{u}.vx vd, va, x, v0.t; vmxor.mm vd, vd, v0.
 	      */
 	      emit_insn (gen_pred_cmp<mode>_scalar (
-		operands[0], operands[1], operands[2], operands[3], operands[4],
+		tmp, operands[1], operands[2], operands[3], operands[4],
 		operands[5], operands[6], operands[7], operands[8]));
 	      emit_insn (gen_pred (XOR, <VM>mode, operands[0],
-				   CONSTM1_RTX (<VM>mode), undef, operands[0],
+				   CONSTM1_RTX (<VM>mode), undef, tmp,
 				   operands[1], operands[6], operands[8]));
 	    }
 	}
