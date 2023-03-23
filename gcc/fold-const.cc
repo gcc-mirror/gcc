@@ -2646,6 +2646,7 @@ maybe_lvalue_p (const_tree x)
   case LABEL_DECL:
   case FUNCTION_DECL:
   case SSA_NAME:
+  case COMPOUND_LITERAL_EXPR:
 
   case COMPONENT_REF:
   case MEM_REF:
