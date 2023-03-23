@@ -1,3 +1,7 @@
+2023-03-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/map-10a.f90: New test.
+
 2023-02-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/goacc/finalize-1.f: Update scan-tree-dump-times for

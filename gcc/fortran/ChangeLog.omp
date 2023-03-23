@@ -1,3 +1,8 @@
+2023-03-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-openmp.cc (gfc_trans_omp_clauses): Fix unmapping of
+	GOMP_MAP_POINTER for scalar allocatables/pointers.
+
 2023-02-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-decl.cc (gfc_get_symbol_decl): Add attributes
