@@ -2693,6 +2693,9 @@ Target supports Newlib.
 GCC was configured with @code{--enable-newlib-nano-formatted-io}, which reduces
 the code size of Newlib formatted I/O functions.
 
+@item posix_memalign
+Target supports @code{posix_memalign}.
+
 @item pow10
 Target provides @code{pow10} function.
 
@@ -2755,6 +2758,9 @@ Target is a VxWorks RTP.
 
 @item wchar
 Target supports wide characters.
+
+@item weak_undefined
+Target supports weak undefined symbols
 @end table
 
 @subsubsection Other attributes
@@ -3126,6 +3132,9 @@ instructions, if any.
 
 @item tls
 Add the target-specific flags needed to use thread-local storage.
+
+@item weak_undefined
+Add the flags needed to enable support for weak undefined symbols.
 @end table
 
 @node Require Support
