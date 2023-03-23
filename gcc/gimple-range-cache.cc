@@ -1404,6 +1404,11 @@ ranger_cache::resolve_dom (vrange &r, tree name, basic_block bb)
   Value_Range er (TREE_TYPE (name));
   FOR_EACH_EDGE (e, ei, bb->preds)
     {
+      // If the predecessor is dominated by this block, then there is a back
+      // edge, and won't provide anything useful.  We'll actually end up with
+      // VARYING as we will not resolve this node.
+      if (dominated_by_p (CDI_DOMINATORS, e->src, bb))
+	continue;
       edge_range (er, e, name, RFD_READ_ONLY);
       r.union_ (er);
     }
