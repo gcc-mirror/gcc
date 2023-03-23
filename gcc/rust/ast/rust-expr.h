@@ -4609,6 +4609,7 @@ public:
 
   std::string as_string () const override;
 
+  bool get_has_move () { return has_move; }
   Location get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
