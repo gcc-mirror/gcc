@@ -94,6 +94,8 @@ private:
   void visit_function_common (std::unique_ptr<Type> &return_type,
 			      std::unique_ptr<BlockExpr> &block);
 
+  void visit_closure_common (ClosureExpr &expr);
+
   void visit_loop_common (BaseLoopExpr &expr);
   void visit (LoopLabel &label);
 
@@ -170,6 +172,7 @@ private:
   void visit (CallExpr &expr);
   void visit (MethodCallExpr &expr);
   void visit (FieldAccessExpr &expr);
+  void visit (ClosureParam &param);
   void visit (ClosureExprInner &expr);
   void visit (BlockExpr &expr);
   void visit (ClosureExprInnerTyped &expr);
@@ -195,6 +198,8 @@ private:
   void visit (IfLetExprConseqElse &expr);
   void visit (IfLetExprConseqIf &expr);
   void visit (IfLetExprConseqIfLet &expr);
+  void visit (MatchArm &arm);
+  void visit (MatchCase &arm);
   void visit (MatchExpr &expr);
   void visit (AwaitExpr &expr);
   void visit (AsyncBlockExpr &expr);

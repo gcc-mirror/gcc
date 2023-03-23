@@ -1099,16 +1099,57 @@ TokenStream::visit (CallExpr &expr)
 }
 
 void
-TokenStream::visit (MethodCallExpr &)
-{}
+TokenStream::visit (MethodCallExpr &expr)
+{
+  visit (expr.get_receiver_expr ());
+  tokens.push_back (Rust::Token::make (DOT, expr.get_locus ()));
+  visit (expr.get_method_name ());
+  tokens.push_back (Rust::Token::make (LEFT_PAREN, Location ()));
+  visit_items_joined_by_separator (expr.get_params (), COMMA);
+  trailing_comma ();
+  tokens.push_back (Rust::Token::make (RIGHT_PAREN, Location ()));
+}
 
 void
-TokenStream::visit (FieldAccessExpr &)
-{}
+TokenStream::visit (FieldAccessExpr &expr)
+{
+  visit (expr.get_receiver_expr ());
+  tokens.push_back (Rust::Token::make (DOT, expr.get_locus ()));
+  auto field_name = expr.get_field_name ();
+  tokens.push_back (
+    Rust::Token::make_identifier (Location (), std::move (field_name)));
+}
 
 void
-TokenStream::visit (ClosureExprInner &)
-{}
+TokenStream::visit (ClosureParam &param)
+{
+  visit_items_as_lines (param.get_outer_attrs ());
+  visit (param.get_pattern ());
+  if (param.has_type_given ())
+    {
+      tokens.push_back (Rust::Token::make (COLON, param.get_locus ()));
+      visit (param.get_type ());
+    }
+}
+
+void
+TokenStream::visit_closure_common (ClosureExpr &expr)
+{
+  if (expr.get_has_move ())
+    {
+      tokens.push_back (Rust::Token::make (MOVE, expr.get_locus ()));
+    }
+  tokens.push_back (Rust::Token::make (PIPE, Location ()));
+  visit_items_joined_by_separator (expr.get_params (), COMMA);
+  tokens.push_back (Rust::Token::make (PIPE, Location ()));
+}
+
+void
+TokenStream::visit (ClosureExprInner &expr)
+{
+  visit_closure_common (expr);
+  visit (expr.get_definition_expr ());
+}
 
 void
 TokenStream::visit (BlockExpr &expr)
@@ -1124,16 +1165,31 @@ TokenStream::visit (BlockExpr &expr)
 }
 
 void
-TokenStream::visit (ClosureExprInnerTyped &)
-{}
+TokenStream::visit (ClosureExprInnerTyped &expr)
+{
+  visit_closure_common (expr);
+  tokens.push_back (Rust::Token::make (RETURN_TYPE, expr.get_locus ()));
+  visit (expr.get_return_type ());
+  visit (expr.get_definition_block ());
+}
 
 void
-TokenStream::visit (ContinueExpr &)
-{}
+TokenStream::visit (ContinueExpr &expr)
+{
+  tokens.push_back (Rust::Token::make (CONTINUE, expr.get_locus ()));
+  if (expr.has_label ())
+    visit (expr.get_label ());
+}
 
 void
-TokenStream::visit (BreakExpr &)
-{}
+TokenStream::visit (BreakExpr &expr)
+{
+  tokens.push_back (Rust::Token::make (BREAK, expr.get_locus ()));
+  if (expr.has_label ())
+    visit (expr.get_label ());
+  if (expr.has_break_expr ())
+    visit (expr.get_break_expr ());
+}
 
 void
 TokenStream::visit (RangeFromToExpr &expr)
@@ -1262,9 +1318,7 @@ TokenStream::visit (IfExpr &expr)
 void
 TokenStream::visit (IfExprConseqElse &expr)
 {
-  tokens.push_back (Rust::Token::make (IF, expr.get_locus ()));
-  visit (expr.get_condition_expr ());
-  visit (expr.get_if_block ());
+  visit (static_cast<IfExpr &> (expr));
   tokens.push_back (Rust::Token::make (ELSE, expr.get_locus ()));
   visit (expr.get_else_block ());
 }
@@ -1272,45 +1326,113 @@ TokenStream::visit (IfExprConseqElse &expr)
 void
 TokenStream::visit (IfExprConseqIf &expr)
 {
-  tokens.push_back (Rust::Token::make (IF, expr.get_locus ()));
-  visit (expr.get_condition_expr ());
-  visit (expr.get_if_block ());
+  visit (static_cast<IfExpr &> (expr));
   tokens.push_back (Rust::Token::make (ELSE, expr.get_locus ()));
   // The "if" part of the "else if" is printed by the next visitor
   visit (expr.get_conseq_if_expr ());
 }
 
 void
-TokenStream::visit (IfExprConseqIfLet &)
-{}
+TokenStream::visit (IfExprConseqIfLet &expr)
+{
+  visit (static_cast<IfExpr &> (expr));
+  tokens.push_back (Rust::Token::make (ELSE, expr.get_locus ()));
+  visit (expr.get_conseq_if_let_expr ());
+}
 
 void
-TokenStream::visit (IfLetExpr &)
-{}
+TokenStream::visit (IfLetExpr &expr)
+{
+  tokens.push_back (Rust::Token::make (IF, expr.get_locus ()));
+  tokens.push_back (Rust::Token::make (LET, Location ()));
+  for (auto &pattern : expr.get_patterns ())
+    {
+      visit (pattern);
+    }
+  tokens.push_back (Rust::Token::make (EQUAL, Location ()));
+  visit (expr.get_value_expr ());
+  visit (expr.get_if_block ());
+}
 
 void
-TokenStream::visit (IfLetExprConseqElse &)
-{}
+TokenStream::visit (IfLetExprConseqElse &expr)
+{
+  visit (static_cast<IfLetExpr &> (expr));
+  tokens.push_back (Rust::Token::make (ELSE, expr.get_locus ()));
+  visit (expr.get_else_block ());
+}
 
 void
-TokenStream::visit (IfLetExprConseqIf &)
-{}
+TokenStream::visit (IfLetExprConseqIf &expr)
+{
+  visit (static_cast<IfLetExpr &> (expr));
+  tokens.push_back (Rust::Token::make (ELSE, expr.get_locus ()));
+  visit (expr.get_conseq_if_expr ());
+}
 
 void
-TokenStream::visit (IfLetExprConseqIfLet &)
-{}
+TokenStream::visit (IfLetExprConseqIfLet &expr)
+{
+  visit (static_cast<IfLetExpr &> (expr));
+  tokens.push_back (Rust::Token::make (ELSE, expr.get_locus ()));
+  visit (expr.get_conseq_if_let_expr ());
+}
 
 void
-TokenStream::visit (MatchExpr &)
-{}
+TokenStream::visit (MatchArm &arm)
+{
+  visit_items_as_lines (arm.get_outer_attrs ());
+  for (auto &pattern : arm.get_patterns ())
+    {
+      visit (pattern);
+    }
+  if (arm.has_match_arm_guard ())
+    {
+      tokens.push_back (Rust::Token::make (IF, Location ()));
+      visit (arm.get_guard_expr ());
+    }
+}
 
 void
-TokenStream::visit (AwaitExpr &)
-{}
+TokenStream::visit (MatchCase &match_case)
+{
+  visit (match_case.get_arm ());
+  tokens.push_back (Rust::Token::make (MATCH_ARROW, Location ()));
+  visit (match_case.get_expr ());
+  trailing_comma ();
+}
 
 void
-TokenStream::visit (AsyncBlockExpr &)
-{}
+TokenStream::visit (MatchExpr &expr)
+{
+  tokens.push_back (Rust::Token::make (MATCH_TOK, expr.get_locus ()));
+  visit (expr.get_scrutinee_expr ());
+  tokens.push_back (Rust::Token::make (LEFT_CURLY, Location ()));
+  visit_items_as_lines (expr.get_inner_attrs ());
+  for (auto &arm : expr.get_match_cases ())
+    {
+      visit (arm);
+    }
+  tokens.push_back (Rust::Token::make (RIGHT_CURLY, Location ()));
+}
+
+void
+TokenStream::visit (AwaitExpr &expr)
+{
+  visit (expr.get_awaited_expr ());
+  tokens.push_back (Rust::Token::make (DOT, expr.get_locus ()));
+  // TODO: Check status of await keyword (Context dependant ?)
+  tokens.push_back (Rust::Token::make_identifier (Location (), "await"));
+}
+
+void
+TokenStream::visit (AsyncBlockExpr &expr)
+{
+  tokens.push_back (Rust::Token::make (ASYNC, expr.get_locus ()));
+  if (expr.get_has_move ())
+    tokens.push_back (Rust::Token::make (MOVE, Location ()));
+  visit (expr.get_block_expr ());
+}
 
 // rust-item.h
 
