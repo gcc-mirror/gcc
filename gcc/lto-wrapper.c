@@ -1520,6 +1520,14 @@ run_gcc (unsigned argc, char *argv[])
 	  skip_debug = option->arg && !strcmp (option->arg, "0");
 	  break;
 
+	case OPT_gdwarf:
+	case OPT_gdwarf_:
+	case OPT_ggdb:
+	case OPT_gvms:
+	  /* Negative forms, if allowed, enable debug info as well.  */
+	  skip_debug = false;
+	  break;
+
 	case OPT_dumpdir:
 	  incoming_dumppfx = dumppfx = option->arg;
 	  break;
