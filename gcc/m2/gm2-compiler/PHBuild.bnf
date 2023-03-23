@@ -44,7 +44,9 @@ see <https://www.gnu.org/licenses/>.  *)
 
 IMPLEMENTATION MODULE PHBuild ;
 
-FROM M2LexBuf IMPORT currentstring, currenttoken, GetToken, InsertToken, InsertTokenAndRewind, GetTokenNo ;
+FROM M2LexBuf IMPORT currentstring, currenttoken, GetToken, InsertToken,
+                     InsertTokenAndRewind, GetTokenNo, MakeVirtualTok ;
+
 FROM M2Error IMPORT ErrorStringAt ;
 FROM NameKey IMPORT NulName, Name, makekey ;
 FROM M2Reserved IMPORT NulTok, ByTok, PeriodPeriodTok, tokToTok, toktype ;
@@ -55,6 +57,7 @@ FROM P2SymBuild IMPORT BuildString, BuildNumber ;
 
 FROM M2Quads IMPORT PushT, PopT, PushTF, PopTF, PopNothing, Annotate,
                     PushTtok, PushTFtok, PopTtok, PopTFtok, OperandTok,
+                    PushTFntok, Top,
                     StartBuildDefFile, StartBuildModFile,
                     BuildModuleStart,
                     EndBuildFile,
@@ -98,7 +101,8 @@ FROM M2Quads IMPORT PushT, PopT, PushTF, PopTF, PopNothing, Annotate,
                     BeginVarient, EndVarient, ElseVarient,
                     BeginVarientList, EndVarientList,
                     AddVarientRange, AddVarientEquality,
-                    CheckWithReference,
+                    BuildDefaultFieldAlignment, BuildPragmaField,
+                    CheckWithReference, DisplayStack, Annotate,
                     IsAutoPushOn, PushAutoOff, PushAutoOn, PopAuto ;
 
 FROM P3SymBuild IMPORT P3StartBuildProgModule,
@@ -120,6 +124,8 @@ FROM P3SymBuild IMPORT P3StartBuildProgModule,
                        BuildSubrange,
                        BuildNulName ;
 
+FROM P3SymBuild IMPORT CheckCanBeImported ;
+
 FROM SymbolTable IMPORT MakeGnuAsm, PutGnuAsmVolatile, PutGnuAsm, PutGnuAsmInput,
                         PutGnuAsmOutput, PutGnuAsmTrash, PutGnuAsmVolatile,
                         MakeRegInterface,
@@ -129,7 +135,7 @@ FROM SymbolTable IMPORT MakeGnuAsm, PutGnuAsmVolatile, PutGnuAsm, PutGnuAsmInput
                         StartScope, EndScope,
                         PutIncluded,
                         IsVarParam, IsProcedure, IsDefImp, IsModule,
-                        IsRecord,
+                        IsRecord, IsProcType,
                         RequestSym,
                         GetSym, GetLocalSym ;
 
@@ -140,19 +146,32 @@ FROM M2CaseList IMPORT BeginCaseList, EndCaseList, ElseCase ;
 FROM M2Reserved IMPORT NulTok, ImportTok, ExportTok, QualifiedTok, UnQualifiedTok,
                        EqualTok, HashTok, LessGreaterTok, LessTok, LessEqualTok,
                        GreaterTok, GreaterEqualTok, InTok, PlusTok, MinusTok,
-                       OrTok, TimesTok, DivTok, DivideTok, ModTok, RemTok, AndTok, AmbersandTok ;
+                       OrTok, TimesTok, DivTok, DivideTok, ModTok, RemTok, AndTok,
+                       AmbersandTok ;
 
 IMPORT M2Error ;
 
 
 CONST
    Debugging = FALSE ;
-   Pass1     = FALSE ;          (* permanently disabled for the time being *)
-   Pass2     = FALSE ;          (* permanently disabled for the time being *)
-   Pass3     = FALSE ;
 
 VAR
    WasNoError: BOOLEAN ;
+
+
+(*
+   BlockAssert - used when developing, if disabled the bug (incorrect stack level)
+                 will be caught by the block and a user error issued.
+                 This procedure useful to detect the failure earlier.
+*)
+
+PROCEDURE BlockAssert (value: BOOLEAN) ;
+BEGIN
+   IF Debugging
+   THEN
+      Assert (value)
+   END
+END BlockAssert ;
 
 
 PROCEDURE ErrorString (s: String) ;
@@ -167,6 +186,11 @@ BEGIN
    ErrorString(InitString(a))
 END ErrorArray ;
 
+
+PROCEDURE ErrorArrayAt (a: ARRAY OF CHAR; tok: CARDINAL) ;
+BEGIN
+   ErrorStringAt (InitString(a), tok)
+END ErrorArrayAt ;
 
 % declaration PHBuild begin
 
@@ -315,7 +339,8 @@ BEGIN
       (NOT InStopSet(identtok, stopset0, stopset1, stopset2))
    THEN
       (* SyntaxCheck would fail since currentoken is not part of the stopset
-         we check to see whether any of currenttoken might be a commonly omitted token *)
+         we check to see whether any of currenttoken might be a commonly
+         omitted token.  *)
       IF CheckAndInsert(semicolontok, stopset0, stopset1, stopset2) OR
          CheckAndInsert(rsbratok, stopset0, stopset1, stopset2) OR
          CheckAndInsert(rparatok, stopset0, stopset1, stopset2) OR
@@ -334,19 +359,16 @@ END PeepToken ;
    Expect -
 *)
 
-PROCEDURE Expect (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+PROCEDURE Expect (tok: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1;
+                  stopset2: SetOfStop2) ;
 BEGIN
-   IF currenttoken=t
+   IF currenttoken=tok
    THEN
-      GetToken ;
-      IF Pass1
-      THEN
-         PeepToken(stopset0, stopset1, stopset2)
-      END
+      GetToken
    ELSE
-      MissingToken(t)
+      MissingToken (tok)
    END ;
-   SyntaxCheck(stopset0, stopset1, stopset2)
+   SyntaxCheck (stopset0, stopset1, stopset2)
 END Expect ;
 
 
@@ -358,8 +380,8 @@ END Expect ;
 PROCEDURE CompilationUnit () : BOOLEAN ;
 BEGIN
    WasNoError := TRUE ;
-   FileUnit(SetOfStop0{eoftok}, SetOfStop1{}, SetOfStop2{}) ;
-   RETURN( WasNoError )
+   FileUnit (SetOfStop0{eoftok}, SetOfStop1{}, SetOfStop2{}) ;
+   RETURN WasNoError
 END CompilationUnit ;
 
 
@@ -369,11 +391,11 @@ END CompilationUnit ;
 
 PROCEDURE Ident (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
 BEGIN
-   IF IsAutoPushOn()
+   IF IsAutoPushOn ()
    THEN
-      PushTF(makekey(currentstring), identtok)
+      PushTF (makekey (currentstring), identtok)
    END ;
-   Expect(identtok, stopset0, stopset1, stopset2)
+   Expect (identtok, stopset0, stopset1, stopset2)
 END Ident ;
 
 
@@ -592,6 +614,7 @@ ImplementationOrProgramModule :=                                           % Pus
 
 Number := Integer | Real =:
 
+
 Qualident :=                                                               % VAR name: Name ;
                                                                                  Type, Sym, tok: CARDINAL ; %
              Ident
@@ -614,6 +637,71 @@ Qualident :=                                                               % VAR
                                                                                 END
                                                                              ELSE (* just parse qualident *) %
              { "." Ident }                                                 % END %
+           =:
+
+PushQualident :=                                                           % VAR name         : Name ;
+                                                                                 init, ip1    : CARDINAL ;
+                                                                                 tok, tokstart: CARDINAL ; %
+                                                                           % PushAutoOn %
+             Ident                                                         % IF IsAutoPushOn()
+                                                                             THEN
+                                                                                PopTtok (name, tokstart) ;
+                                                                                tok := tokstart ;
+                                                                                init := GetSym (name) ;
+                                                                                IF init=NulSym
+                                                                                THEN
+                                                                                   PushTFntok (NulSym, NulSym, name, tok)
+                                                                                ELSE
+                                                                                   WHILE IsDefImp (init) OR IsModule (init) DO
+                                                                                      IF currenttoken # periodtok
+                                                                                      THEN
+                                                                                         ErrorArrayAt ("expecting '.' after module in the construction of a qualident", tok) ;
+                                                                                         IF tok#tokstart
+                                                                                         THEN
+                                                                                            tok := MakeVirtualTok (tokstart, tokstart, tok)
+                                                                                         END ;
+                                                                                         PushTtok (init, tok) ;
+                                                                                         PopAuto ;
+                                                                                         RETURN
+                                                                                      ELSE
+                                                                                         Expect (periodtok, stopset0, stopset1, stopset2 + SetOfStop2{identtok}) ;
+                                                                                         StartScope (init) ;
+                                                                                         Ident (stopset0, stopset1, stopset2) ;
+                                                                                         PopTtok (name, tok) ;
+                                                                                         ip1 := GetSym (name) ;
+                                                                                         IF ip1 = NulSym
+                                                                                         THEN
+                                                                                            ErrorArrayAt ("unknown ident in the construction of a qualident", tok) ;
+                                                                                            EndScope ;
+                                                                                            IF tok#tokstart
+                                                                                            THEN
+                                                                                               tok := MakeVirtualTok (tokstart, tokstart, tok)
+                                                                                            END ;
+                                                                                            PushTFntok (NulSym, NulSym, name, tok) ;
+                                                                                            PopAuto ;
+                                                                                            RETURN
+                                                                                         ELSE
+                                                                                            PutIncluded (ip1)
+                                                                                         END ;
+                                                                                         EndScope ;
+                                                                                         CheckCanBeImported (init, ip1) ;
+                                                                                         init := ip1
+                                                                                      END
+                                                                                   END ;
+                                                                                   IF tok#tokstart
+                                                                                   THEN
+                                                                                      tok := MakeVirtualTok (tokstart, tokstart, tok)
+                                                                                   END ;
+                                                                                   IF IsProcedure (init) OR IsProcType (init)
+                                                                                   THEN
+                                                                                      PushTtok (init, tok)
+                                                                                   ELSE
+                                                                                      PushTFtok (init, GetType(init), tok)
+                                                                                   END
+                                                                                END
+                                                                             ELSE %
+             { "." Ident }                                                 % END %
+                                                                           % PopAuto %
            =:
 
 ConstantDeclaration :=                                                     % PushAutoOn %
@@ -709,11 +797,16 @@ Constructor := '{'                                                         % Bui
                   [ ArraySetRecordValue ]                                  % BuildConstructorEnd (GetTokenNo())  %
                '}' =:
 
-ConstSetOrQualidentOrFunction := Qualident
-                                 [ Constructor | ConstActualParameters     % BuildConstFunctionCall %
-                                                                       ]
-                                   |                                       % BuildTypeForConstructor %
-                                     Constructor =:
+ConstSetOrQualidentOrFunction :=                                            % PushAutoOn %
+                                 (
+                                    Qualident
+                                    [ Constructor |
+                                       ConstActualParameters               % BuildConstFunctionCall %
+                                                                          ]
+                                      |                                    % BuildTypeForConstructor %
+                                        Constructor
+                                 )                                          % PopAuto %
+                                =:
 
 ConstAttribute := "__ATTRIBUTE__" "__BUILTIN__" "(" "(" ConstAttributeExpression ")" ")" =:
 
@@ -730,7 +823,10 @@ ByteAlignment := '<*'                                                      % Pus
 
 Alignment := [ ByteAlignment ] =:
 
-TypeDeclaration := Ident "=" Type Alignment
+TypeDeclaration :=                                                         % VAR top: CARDINAL ; %
+                                                                           % top := Top () %
+                   Ident "=" Type Alignment
+                                                                           % BlockAssert (top = Top ()) %
                 =:
 
 Type :=
@@ -742,7 +838,11 @@ Type :=
           | ProcedureType )                                                % PopAuto %
       =:
 
-SimpleType := Qualident [ SubrangeType ] | Enumeration | SubrangeType =:
+SimpleType :=                                                              % VAR top: CARDINAL ; %
+                                                                           % top := Top () %
+              ( Qualident [ SubrangeType ] | Enumeration | SubrangeType )
+                                                                           % BlockAssert (top = Top ()) %
+            =:
 
 Enumeration := "("
                    ( IdentList
@@ -782,18 +882,24 @@ ArrayType := "ARRAY"
 
 RecordType := "RECORD" [ DefaultRecordAttributes ] FieldListSequence "END" =:
 
-DefaultRecordAttributes := '<*' AttributeExpression '*>' =:
+DefaultRecordAttributes := '<*'                                           % PushAutoOn %
+                                AttributeExpression                       % BuildDefaultFieldAlignment %
+                                                                          % PopAuto %
+                                                    '*>' =:
 
 RecordFieldPragma := [ '<*' FieldPragmaExpression
-                        { ',' FieldPragmaExpression } '*>' ] =:
+                            { ',' FieldPragmaExpression } '*>' ] =:
 
-FieldPragmaExpression :=                                                    % PushAutoOff %
-                         Ident [ '(' ConstExpression ')' ]                  % PopAuto %
+FieldPragmaExpression :=                                                   % PushAutoOn %
+                         Ident PragmaConstExpression                       % BuildPragmaField %
+                                                                           % PopAuto %
                                                            =:
 
-AttributeExpression :=                                                      % PushAutoOff %
-                       Ident '(' ConstExpression ')'                        % PopAuto %
-                                                      =:
+PragmaConstExpression := ( '(' ConstExpression ')' |                       % PushT(NulSym) %
+                                                                           % Annotate('NulSym||no pragma const') %
+                                                     )     =:
+
+AttributeExpression := Ident '(' ConstExpression ')' =:
 
 FieldListSequence := FieldListStatement { ";" FieldListStatement } =:
 
@@ -1002,12 +1108,21 @@ Term := Factor { SilentMulOperator Factor
 Factor := Number | string | SetOrDesignatorOrFunction |
           "(" Expression ")" | "NOT" Factor | ConstAttribute =:
 
--- again Set | Designator causes problems as both has a first symbol, ident or Qualident
+-- again Set | Designator causes problems as both have a first symbol, ident or Qualident
 
-SetOrDesignatorOrFunction := ( Qualident [ Constructor |
-                                           SimpleDes [ ActualParameters ]
-                                         ] | Constructor
+ParseConstructor := "{" [ SilentElement { "," SilentElement } ] "}" =:
+
+
+SetOrDesignatorOrFunction :=                                               % VAR n: CARDINAL ; %
+                                                                           % n := Top () %
+                                                                           % Assert (NOT IsAutoPushOn ()) %
+                             ( Qualident [ ParseConstructor
+                                                             |
+                                           SilentSimpleDes [ SilentActualParameters ]
+                                         ] |
+                                             ParseConstructor
                              )
+                                                                           % Assert (n = Top ()) %
                            =:
 
 -- SimpleDes := { "." Ident | "[" ExpList "]" | "^" } =:
@@ -1147,7 +1262,12 @@ AttributeUnused := [ "<*" Ident "*>" ] =:
 ProcedureBlock := { Declaration } [ "BEGIN" BlockBody ] "END"
                 =:
 
-Block := { Declaration } InitialBlock FinalBlock "END" =:
+Block :=                                                                   % VAR top: CARDINAL ; %
+                                                                           % top := Top () %
+         { Declaration }                                                   % BlockAssert (top = Top ()) %
+                         InitialBlock                                      % BlockAssert (top = Top ()) %
+                                      FinalBlock                           % BlockAssert (top = Top ()) %
+                                                 "END" =:
 
 InitialBlock := [ "BEGIN" BlockBody ] =:
 

@@ -120,7 +120,7 @@ EXTERN tree m2expr_BuildTrunc (tree op1);
 EXTERN tree m2expr_BuildCoerce (location_t location, tree des, tree type,
                                 tree expr);
 EXTERN tree m2expr_RemoveOverflow (tree t);
-EXTERN int m2expr_TreeOverflow (tree t);
+EXTERN bool m2expr_TreeOverflow (tree t);
 
 EXTERN unsigned int m2expr_StringLength (tree string);
 EXTERN tree m2expr_FoldAndStrip (tree t);
@@ -219,11 +219,6 @@ EXTERN tree m2expr_GetWordZero (location_t location);
 EXTERN tree m2expr_GetWordOne (location_t location);
 EXTERN tree m2expr_GetPointerZero (location_t location);
 EXTERN tree m2expr_GetPointerOne (location_t location);
-
-#if 0
-EXTERN tree m2expr_GetBooleanTrue (void);
-EXTERN tree m2expr_GetBooleanFalse (void);
-#endif
 
 EXTERN int m2expr_CompareTrees (tree e1, tree e2);
 EXTERN tree m2expr_build_unary_op (location_t location ATTRIBUTE_UNUSED,

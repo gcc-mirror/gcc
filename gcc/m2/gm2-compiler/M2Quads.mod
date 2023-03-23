@@ -34,7 +34,7 @@ FROM M2Scaffold IMPORT DeclareScaffold, mainFunction, initFunction,
 FROM M2MetaError IMPORT MetaError0, MetaError1, MetaError2, MetaError3,
                         MetaErrors1, MetaErrors2, MetaErrors3,
                         MetaErrorT0, MetaErrorT1, MetaErrorT2,
-                        MetaErrorsT1, MetaErrorsT2,
+                        MetaErrorsT1, MetaErrorsT2, MetaErrorT3,
                         MetaErrorStringT0, MetaErrorStringT1,
                         MetaErrorString1, MetaErrorString2,
                         MetaErrorN1, MetaErrorN2,
@@ -7492,7 +7492,7 @@ BEGIN
    IF CompilerDebugging
    THEN
       printf2 ('procsym = %d  token = %d\n', ProcSym, functok) ;
-      ErrorStringAt (InitString ('constant function'), functok)
+      (* ErrorStringAt (InitString ('constant function'), functok) *)
    END ;
    PushT (NoOfParam) ;
    IF (ProcSym # Convert) AND
@@ -12064,7 +12064,12 @@ VAR
 BEGIN
    PopT (type) ;   (* we ignore the type as we already have the constructor symbol from pass C *)
    GetConstructorFromFifoQueue (constValue) ;
-   Assert (type = GetSType (constValue)) ;
+   IF type # GetSType (constValue)
+   THEN
+      MetaErrorT3 (cbratokpos,
+                   '{%E}the constructor type is {%1ad} and this is different from the constant {%2ad} which has a type {%2tad}',
+                   type, constValue, constValue)
+   END ;
    PushTtok (constValue, cbratokpos) ;
    PushConstructor (type)
 END BuildConstructorStart ;

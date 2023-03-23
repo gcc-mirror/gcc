@@ -1154,7 +1154,7 @@ PROCEDURE InitFunction (m: constType; p, t: CARDINAL; f, s: exprNode; more: BOOL
 VAR
    n: exprNode ;
 BEGIN
-   NEW(n) ;
+   NEW (n) ;
    WITH n^ DO
       tag := function ;
       CASE tag OF
@@ -1170,7 +1170,7 @@ BEGIN
 
       END
    END ;
-   PushAddress(exprStack, n)
+   PushAddress (exprStack, n)
 END InitFunction ;
 
 
@@ -1342,21 +1342,21 @@ PROCEDURE TypeToMeta (type: CARDINAL) : constType ;
 BEGIN
    IF type=Char
    THEN
-      RETURN( char )
+      RETURN char
    ELSIF type=Boolean
    THEN
-      RETURN( boolean )
-   ELSIF IsRealType(type)
+      RETURN boolean
+   ELSIF IsRealType (type)
    THEN
-      RETURN( rtype )
-   ELSIF IsComplexType(type)
+      RETURN rtype
+   ELSIF IsComplexType (type)
    THEN
-      RETURN( ctype )
-   ELSIF IsOrdinalType(type)
+      RETURN ctype
+   ELSIF IsOrdinalType (type)
    THEN
-      RETURN( ztype )
+      RETURN ztype
    ELSE
-      RETURN( unknown )
+      RETURN unknown
    END
 END TypeToMeta ;
 
@@ -1371,33 +1371,35 @@ END TypeToMeta ;
 
 PROCEDURE buildConstFunction (func: CARDINAL; n: CARDINAL) ;
 VAR
-   i   : CARDINAL ;
-   f, s: exprNode ;
+   i     : CARDINAL ;
+   first,
+   second: exprNode ;
 BEGIN
-   f := NIL ;
-   s := NIL ;
+   first := NIL ;
+   second := NIL ;
    IF n=1
    THEN
-      f := PopAddress(exprStack)
+      first := PopAddress (exprStack)
    ELSIF n>=2
    THEN
       i := n ;
       WHILE i>2 DO
-         s := PopAddress(exprStack) ;
-         DISPOSE(s) ;
-         DEC(i)
+         second := PopAddress (exprStack) ;
+         DISPOSE (second) ;
+         DEC (i)
       END ;
-      s := PopAddress(exprStack) ;
-      f := PopAddress(exprStack)
+      second := PopAddress (exprStack) ;
+      first := PopAddress (exprStack)
    END ;
    IF func=Val
    THEN
-      InitConvert(cast, NulSym, f, s)
+      InitConvert (cast, NulSym, first, second)
    ELSIF (func=Max) OR (func=Min)
    THEN
-      InitFunction(unknown, func, NulSym, f, s, FALSE)
+      InitFunction (unknown, func, NulSym, first, second, FALSE)
    ELSE
-      InitFunction(TypeToMeta(GetSkippedType(func)), func, GetSkippedType(func), f, s, n>2)
+      InitFunction (TypeToMeta(GetSkippedType(func)), func, GetSkippedType(func),
+                    first, second, n>2)
    END
 END buildConstFunction ;
 
@@ -1788,7 +1790,7 @@ BEGIN
             THEN
                IF (func=Min) OR (func=Max)
                THEN
-                  IF IsEnumeration(sym) OR IsSet(sym)
+                  IF IsSet (sym)
                   THEN
                      type := SkipType(GetType(sym))
                   ELSE
@@ -1832,7 +1834,7 @@ BEGIN
                type := getEtype(first) ;
                RETURN( TRUE )
             END ;
-            RETURN( WalkFunctionParam(func, first) )
+            RETURN WalkFunctionParam (func, first)
          ELSE
             MetaError1('not expecting this function inside a constant expression {%1Dad}', func)
          END
@@ -2059,9 +2061,13 @@ PROCEDURE WalkDes (d: exprNode) : BOOLEAN ;
 BEGIN
    IF d=NIL
    THEN
-      RETURN( FALSE )
+      RETURN FALSE
    ELSE
-      RETURN( doWalkDes(d) )
+      IF Debugging
+      THEN
+         DebugDes (d)
+      END ;
+      RETURN doWalkDes (d)
    END
 END WalkDes ;
 

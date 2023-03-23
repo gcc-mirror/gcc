@@ -96,7 +96,7 @@ EXTERN bool M2Options_SetCpp (bool value);
 EXTERN void M2Options_SetSwig (bool value);
 EXTERN void M2Options_SetForcedLocation (location_t location);
 EXTERN location_t M2Options_OverrideLocation (location_t location);
-EXTERN void M2Options_SetStatistics (int on);
+EXTERN void M2Options_SetStatistics (bool on);
 EXTERN void M2Options_CppProg (const char *program);
 EXTERN void M2Options_CppArg (const char *opt, const char *arg, bool joined);
 EXTERN void M2Options_SetWholeProgram (bool value);

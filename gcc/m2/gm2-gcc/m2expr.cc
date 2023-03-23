@@ -939,7 +939,7 @@ m2expr_ConstantExpressionWarning (tree value)
    an overflow.  No error message or warning is emitted and no
    modification is made to, t.  */
 
-int
+bool
 m2expr_TreeOverflow (tree t)
 {
   if ((TREE_CODE (t) == INTEGER_CST
