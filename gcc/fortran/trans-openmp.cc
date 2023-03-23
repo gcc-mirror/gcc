@@ -4678,15 +4678,27 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 							     cond, tmp,
 							     NULL_TREE));
 			}
+		      /* For descriptor types, the unmapping happens below.  */
 		      if (op != EXEC_OMP_TARGET_EXIT_DATA
-			  && n->u.map_op != OMP_MAP_RELEASE
-			  && n->u.map_op != OMP_MAP_DELETE)
+			  || !GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
 			{
 			  node4 = build_omp_clause (input_location,
 						    OMP_CLAUSE_MAP);
+			  if (gmk == GOMP_MAP_POINTER
+			      && op == EXEC_OMP_TARGET_EXIT_DATA
+			      && n->u.map_op == OMP_MAP_DELETE)
+			    gmk = GOMP_MAP_DELETE;
+			  else if (gmk == GOMP_MAP_POINTER
+				   && op == EXEC_OMP_TARGET_EXIT_DATA)
+			    gmk = GOMP_MAP_RELEASE;
+			  tree size;
+			  if (gmk == GOMP_MAP_RELEASE || gmk == GOMP_MAP_DELETE)
+			    size = TYPE_SIZE_UNIT (TREE_TYPE (decl));
+			  else
+			    size = size_int (0);
 			  OMP_CLAUSE_SET_MAP_KIND (node4, gmk);
 			  OMP_CLAUSE_DECL (node4) = decl;
-			  OMP_CLAUSE_SIZE (node4) = size_int (0);
+			  OMP_CLAUSE_SIZE (node4) = size;
 			}
 		      decl = build_fold_indirect_ref (decl);
 		      if ((TREE_CODE (TREE_TYPE (orig_decl)) == REFERENCE_TYPE
@@ -4694,16 +4706,24 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			  && (GFC_DECL_GET_SCALAR_POINTER (orig_decl)
 			      || GFC_DECL_GET_SCALAR_ALLOCATABLE (orig_decl)))
 			{
-			  if (op != EXEC_OMP_TARGET_EXIT_DATA
-                             && n->u.map_op != OMP_MAP_RELEASE
-                             && n->u.map_op != OMP_MAP_DELETE)
-			    {
-			      node3 = build_omp_clause (input_location,
-							OMP_CLAUSE_MAP);
-			      OMP_CLAUSE_SET_MAP_KIND (node3, GOMP_MAP_POINTER);
-			      OMP_CLAUSE_DECL (node3) = decl;
-			      OMP_CLAUSE_SIZE (node3) = size_int (0);
-			    }
+
+			  if (op == EXEC_OMP_TARGET_EXIT_DATA
+			      && n->u.map_op == OMP_MAP_DELETE)
+			    gmk = GOMP_MAP_DELETE;
+			  else if (op == EXEC_OMP_TARGET_EXIT_DATA)
+			    gmk = GOMP_MAP_RELEASE;
+			  else
+			    gmk = GOMP_MAP_POINTER;
+			  tree size;
+			  if (gmk == GOMP_MAP_RELEASE || gmk == GOMP_MAP_DELETE)
+			    size = TYPE_SIZE_UNIT (TREE_TYPE (decl));
+			  else
+			    size = size_int (0);
+			  node3 = build_omp_clause (input_location,
+						    OMP_CLAUSE_MAP);
+			  OMP_CLAUSE_SET_MAP_KIND (node3, gmk);
+			  OMP_CLAUSE_DECL (node3) = decl;
+			  OMP_CLAUSE_SIZE (node3) = size;
 			  decl = build_fold_indirect_ref (decl);
 			}
 		    }
