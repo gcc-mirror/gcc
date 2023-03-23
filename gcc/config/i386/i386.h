@@ -1018,6 +1018,14 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define ADJUST_REG_ALLOC_ORDER x86_order_regs_for_local_alloc ()
 
+#define INSN_BASE_REG_CLASS(INSN) \
+  ix86_insn_base_reg_class (INSN)
+
+#define REGNO_OK_FOR_INSN_BASE_P(NUM, INSN) \
+  ix86_regno_ok_for_insn_base_p (NUM, INSN)
+
+#define INSN_INDEX_REG_CLASS(INSN) \
+  ix86_insn_index_reg_class (INSN)
 
 #define OVERRIDE_ABI_FORMAT(FNDECL) ix86_call_abi_override (FNDECL)
 
@@ -1297,6 +1305,8 @@ enum reg_class
 				   %r24 %r25 %r26 %r27 %r28 %r29 %r30 %r31 */
   GENERAL_GPR16,		/* %eax %ebx %ecx %edx %esi %edi %ebp %esp
 				   %r8 %r9 %r10 %r11 %r12 %r13 %r14 %r15 */
+  INDEX_GPR16,			/* %eax %ebx %ecx %edx %esi %edi %ebp
+				   %r8 %r9 %r10 %r11 %r12 %r13 %r14 %r15 */
   FP_TOP_REG, FP_SECOND_REG,	/* %st(0) %st(1) */
   FLOAT_REGS,
   SSE_FIRST_REG,
@@ -1360,6 +1370,7 @@ enum reg_class
    "LEGACY_REGS",			\
    "GENERAL_REGS",			\
    "GENERAL_GPR16",			\
+   "INDEX_GPR16",			\
    "FP_TOP_REG", "FP_SECOND_REG",	\
    "FLOAT_REGS",			\
    "SSE_FIRST_REG",			\
@@ -1395,10 +1406,11 @@ enum reg_class
       { 0x0f,        0x0,   0x0 },	/* Q_REGS */			\
    { 0x900f0,        0x0,   0x0 },	/* NON_Q_REGS */		\
       { 0x7e,      0xff0,   0x0 },	/* TLS_GOTBASE_REGS */		\
-      { 0x7f,      0xff0,   0x0 },	/* INDEX_REGS */		\
+      { 0x7f,      0xff0,   0xffff000 },	/* INDEX_REGS */		\
    { 0x900ff,        0x0,   0x0 },	/* LEGACY_REGS */		\
    { 0x900ff,      0xff0,   0xffff000 },	/* GENERAL_REGS */		\
    { 0x900ff,      0xff0,   0x0 },	/* GENERAL_GPR16 */		\
+   { 0x0007f,      0xff0,   0x0 },	/* INDEX_GPR16 */		\
      { 0x100,        0x0,   0x0 },	/* FP_TOP_REG */		\
      { 0x200,        0x0,   0x0 },	/* FP_SECOND_REG */		\
     { 0xff00,        0x0,   0x0 },	/* FLOAT_REGS */		\
@@ -1455,6 +1467,9 @@ enum reg_class
 #define INDEX_REG_P(X) (REG_P (X) && INDEX_REGNO_P (REGNO (X)))
 #define INDEX_REGNO_P(N) \
   (LEGACY_INDEX_REGNO_P (N) || REX_INT_REGNO_P (N) || REX2_INT_REGNO_P (N))
+
+#define GENERAL_GPR16_REGNO_P(N) \
+  (LEGACY_INT_REGNO_P (N) || REX_INT_REGNO_P (N))
 
 #define ANY_QI_REG_P(X) (REG_P (X) && ANY_QI_REGNO_P (REGNO (X)))
 #define ANY_QI_REGNO_P(N) \
