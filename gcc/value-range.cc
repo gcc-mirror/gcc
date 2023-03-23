@@ -2441,7 +2441,7 @@ irange::irange_union (const irange &r)
   // of each range is <= the beginning of the next range.  There may
   // be overlapping ranges at this point.  I.e. this would be valid
   // [-20, 10], [-10, 0], [0, 20], [40, 90] as it satisfies this
-  // contraint : -20 < -10 < 0 < 40.  When the range is rebuilt into r,
+  // constraint : -20 < -10 < 0 < 40.  When the range is rebuilt into r,
   // the merge is performed.
   //
   // [Xi,Yi]..[Xn,Yn]  U  [Xj,Yj]..[Xm,Ym]   -->  [Xk,Yk]..[Xp,Yp]
@@ -2710,7 +2710,7 @@ irange::intersect (const wide_int& lb, const wide_int& ub)
   gcc_checking_assert (TYPE_PRECISION (range_type) == wi::get_precision (lb));
   gcc_checking_assert (TYPE_PRECISION (range_type) == wi::get_precision (ub));
 
-  // If this range is fuly contained, then intersection will do nothing.
+  // If this range is fully contained, then intersection will do nothing.
   if (wi::ge_p (lower_bound (), lb, sign)
       && wi::le_p (upper_bound (), ub, sign))
     return false;

@@ -543,7 +543,7 @@ cfn_clz::fold_range (irange &r, tree type, const irange &lh,
   // argument is 0, but that is undefined behavior.
   //
   // For __builtin_c[lt]z* consider argument of 0 always undefined
-  // behavior, for internal fns depending on C?Z_DEFINED_ALUE_AT_ZERO.
+  // behavior, for internal fns depending on C?Z_DEFINED_VALUE_AT_ZERO.
   if (lh.undefined_p ())
     return false;
   int prec = TYPE_PRECISION (lh.type ());

@@ -514,7 +514,7 @@ public:
   void dump (FILE *) const;
   static bool supports_type_p (const_tree type);
 
-  // Convenience methods for vrange compatability.
+  // Convenience methods for vrange compatibility.
   void set (tree min, tree max, value_range_kind kind = VR_RANGE)
     { return m_vrange->set (min, max, kind); }
   tree type () { return m_vrange->type (); }
@@ -528,8 +528,8 @@ public:
   bool singleton_p (tree *result = NULL) const
     { return m_vrange->singleton_p (result); }
   bool zero_p () const { return m_vrange->zero_p (); }
-  wide_int lower_bound () const; // For irange/prange compatability.
-  wide_int upper_bound () const; // For irange/prange compatability.
+  wide_int lower_bound () const; // For irange/prange comparability.
+  wide_int upper_bound () const; // For irange/prange comparability.
   void accept (const vrange_visitor &v) const { m_vrange->accept (v); }
 private:
   void init (tree type);
@@ -1184,7 +1184,7 @@ frange::set_undefined ()
   m_type = NULL;
   m_pos_nan = false;
   m_neg_nan = false;
-  // m_min and m_min are unitialized as they are REAL_VALUE_TYPE ??.
+  // m_min and m_min are uninitialized as they are REAL_VALUE_TYPE ??.
   if (flag_checking)
     verify_range ();
 }

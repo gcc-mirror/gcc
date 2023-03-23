@@ -117,7 +117,7 @@ range_operator_float::fold_range (frange &r, tree type,
 
 // For a given operation, fold two sets of ranges into [lb, ub].
 // MAYBE_NAN is set to TRUE if, in addition to any result in LB or
-// UB, the final range has the possiblity of a NAN.
+// UB, the final range has the possibility of a NAN.
 void
 range_operator_float::rv_fold (REAL_VALUE_TYPE &lb,
 			       REAL_VALUE_TYPE &ub,
@@ -299,9 +299,9 @@ frange_nextafter (enum machine_mode mode,
 // -fexcess-precision=standard we perform most SF/DFmode arithmetic in
 // XFmode (long_double_type_node), so that case is OK.  But without
 // -mfpmath=sse, all the SF/DFmode computations are in XFmode
-// precision (64-bit mantissa) and only occassionally rounded to
+// precision (64-bit mantissa) and only occasionally rounded to
 // SF/DFmode (when storing into memory from the 387 stack).  Maybe
-// this is ok as well though it is just occassionally more precise. ??
+// this is ok as well though it is just occasionally more precise. ??
 
 static void
 frange_arithmetic (enum tree_code code, tree type,
@@ -2036,7 +2036,7 @@ foperator_unordered_equal::op1_range (frange &r, tree type,
       r = op2;
       // Add both zeros if there's the possibility of zero equality.
       frange_add_zeros (r, type);
-      // Add the posibility of a NAN.
+      // Add the possibility of a NAN.
       r.update_nan ();
       break;
 
@@ -2047,7 +2047,7 @@ foperator_unordered_equal::op1_range (frange &r, tree type,
 	r.set_undefined ();
       else
 	{
-	  // The false side indictates !NAN and not equal.  We can at least
+	  // The false side indicates !NAN and not equal.  We can at least
 	  // represent !NAN.
 	  r.set_varying (type);
 	  r.clear_nan ();
@@ -2674,7 +2674,7 @@ private:
     // result +0.0.  So, all we can say for that case is if the
     // signs of divisor and dividend are always the same we have
     // [+0.0, +INF], if they are always different we have
-    // [-INF, -0.0].  If they vary, VARING.
+    // [-INF, -0.0].  If they vary, VARYING.
     // If both may be +-INF, divisor could be INF and dividend FLT_MAX,
     // in which case result is going to INF or vice versa and
     // result +0.0.  So, all we can say for that case is if the

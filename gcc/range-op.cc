@@ -165,7 +165,7 @@ range_operator::wi_fold (irange &r, tree type,
 // For x + y,  when x == y with a range of [0,4] instead of [0, 8] produce
 // [0,0][2, 2][4,4][6, 6][8, 8]
 // LIMIT is the maximum number of elements in range allowed before we
-// do not processs them individually.
+// do not process them individually.
 
 void
 range_operator::wi_fold_in_parts_equiv (irange &r, tree type,
@@ -226,7 +226,7 @@ range_operator::wi_fold_in_parts (irange &r, tree type,
       wi_fold_in_parts (tmp, type, lh_lb, lh_ub, rh_ub, rh_ub);
       r.union_ (tmp);
     }
-  // Otherise check for 2, 3, or 4 values in the LH range and split them up.
+  // Otherwise check for 2, 3, or 4 values in the LH range and split them up.
   // The RH side has been checked, so no recursion needed.
   else if (lh_range > 0 && lh_range < 4)
     {
@@ -511,7 +511,7 @@ create_possibly_reversed_range (irange &r, tree type,
 				const wide_int &new_lb, const wide_int &new_ub)
 {
   signop s = TYPE_SIGN (type);
-  // If the bounds are swapped, treat the result as if an overflow occured.
+  // If the bounds are swapped, treat the result as if an overflow occurred.
   if (wi::gt_p (new_lb, new_ub, s))
     value_range_from_overflowed_bounds (r, type, new_lb, new_ub);
   else
@@ -1492,7 +1492,7 @@ plus_minus_ranges (irange &r_ov, irange &r_normal, const irange &offset,
 // a_2 = b_3 + 1  with a_2 < b_3 can refine the range of b_3 to [INF, INF]
 // and that further refines a_2 to [0, 0].
 // R is the value of op1, OP2 is the offset being added/subtracted, REL is the
-// relation between LHS relatoin OP1  and ADD_P is true for PLUS, false for
+// relation between LHS relation OP1  and ADD_P is true for PLUS, false for
 // MINUS.    IF any adjustment can be made, R will reflect it.
 
 static void
@@ -2025,7 +2025,7 @@ operator_mult::wi_fold (irange &r, tree type,
   // This test requires 2*prec bits if both operands are signed and
   // 2*prec + 2 bits if either is not.  Therefore, extend the values
   // using the sign of the result to PREC2.  From here on out,
-  // everthing is just signed math no matter what the input types
+  // everything is just signed math no matter what the input types
   // were.
 
   signop sign = TYPE_SIGN (type);
@@ -2288,7 +2288,7 @@ operator_exact_divide::op1_range (irange &r, tree type,
   // [2, 4] = op1 / [3,3]   since its exact divide, no need to worry about
   // remainders in the endpoints, so op1 = [2,4] * [3,3] = [6,12].
   // We wont bother trying to enumerate all the in between stuff :-P
-  // TRUE accuraacy is [6,6][9,9][12,12].  This is unlikely to matter most of
+  // TRUE accuracy is [6,6][9,9][12,12].  This is unlikely to matter most of
   // the time however.
   // If op2 is a multiple of 2, we would be able to set some non-zero bits.
   if (op2.singleton_p (&offset)
@@ -2709,7 +2709,7 @@ operator_cast::lhs_op1_relation (const irange &lhs,
   if (TYPE_SIGN (op1.type ()) == SIGNED && lhs_prec > op1_prec)
     {
       // If the result is sign extended, and the LHS is larger than op1,
-      // check if op1's range can be negative as the sign extention will
+      // check if op1's range can be negative as the sign extension will
       // cause the upper bits to be 1 instead of 0, invalidating the PE.
       int_range<3> negs = range_negatives (op1.type ());
       negs.intersect (op1);
@@ -2765,7 +2765,7 @@ operator_cast::fold_pair (irange &r, unsigned index,
   wide_int inner_ub = inner.upper_bound (index);
   if (truncating_cast_p (inner, outer))
     {
-      // We may be able to accomodate a truncating cast if the
+      // We may be able to accommodate a truncating cast if the
       // resulting range can be represented in the target type...
       if (wi::rshift (wi::sub (inner_ub, inner_lb),
 		      wi::uhwi (outer_prec, TYPE_PRECISION (inner.type ())),
@@ -2802,7 +2802,7 @@ operator_cast::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
   // Avoid a temporary by folding the first pair directly into the result.
   fold_pair (r, 0, inner, outer);
 
-  // Then process any additonal pairs by unioning with their results.
+  // Then process any additional pairs by unioning with their results.
   for (unsigned x = 1; x < inner.num_pairs (); ++x)
     {
       int_range_max tmp;
@@ -4159,7 +4159,7 @@ operator_abs::wi_fold (irange &r, tree type,
   if (wi::eq_p (lh_lb, min_value))
     {
       // ABS ([-MIN, -MIN]) isn't representable, but we have traditionally
-      // returned [-MIN,-MIN] so this preserves that behaviour.  PR37078
+      // returned [-MIN,-MIN] so this preserves that behavior.  PR37078
       if (wi::eq_p (lh_ub, min_value))
 	{
 	  r = int_range<1> (type, min_value, min_value);
@@ -4978,7 +4978,7 @@ range_op_cast_tests ()
   range_cast (r0, unsigned_char_type_node);
   ASSERT_TRUE (r0 == rold);
 
-  // Test casting a wider signed [-MIN,MAX] to a nar`rower unsigned.
+  // Test casting a wider signed [-MIN,MAX] to a narrower unsigned.
   r0 = int_range<1> (TYPE_MIN_VALUE (long_long_integer_type_node),
 	       TYPE_MAX_VALUE (long_long_integer_type_node));
   range_cast (r0, short_unsigned_type_node);
@@ -5061,7 +5061,7 @@ range_op_lshift_tests ()
   // signed VARYING = op1 << 1 should be VARYING.
   if (TYPE_PRECISION (integer_type_node) > 31)
     {
-      // unsigned VARYING = op1 << 1  hould be VARYING.
+      // unsigned VARYING = op1 << 1 should be VARYING.
       int_range<2> lhs (integer_type_node);
       int_range<2> shift (INT (1), INT (1));
       int_range_max op1;
@@ -5075,7 +5075,7 @@ range_op_lshift_tests ()
       // Remove the [0,0] range.
       op1.intersect (zero);
       ASSERT_TRUE (op1.num_pairs () == 1);
-      //  op1 << 1   shuould be [0x8000,0x8000] << 1,
+      //  op1 << 1   should be [0x8000,0x8000] << 1,
       //  which should result in [0,0].
       int_range_max result;
       op_lshift.fold_range (result, unsigned_type_node, op1, shift);

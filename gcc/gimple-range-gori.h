@@ -57,7 +57,7 @@ private:
 };
 
 // Return the first direct dependency for NAME, if there is one.
-// Direct dependencies are those which occur on the defintion statement.
+// Direct dependencies are those which occur on the definition statement.
 // Only the first 2 such names are cached.
 
 inline tree
@@ -99,7 +99,7 @@ public:
   void dump (FILE *f);
   void dump (FILE *f, basic_block bb, bool verbose = true);
 private:
-  vec<bitmap> m_outgoing;	// BB: Outgoing ranges calculatable on edges
+  vec<bitmap> m_outgoing;	// BB: Outgoing ranges calculable on edges
   vec<bitmap> m_incoming;	// BB: Incoming ranges which can affect exports.
   bitmap m_maybe_variant;	// Names which might have outgoing ranges.
   void maybe_add_gori (tree name, basic_block bb);
@@ -139,7 +139,7 @@ private:
 // A default value of VARYING provides the raw static info for the edge.
 //
 // If there is any known range for b_4 coming into this block, it can refine
-// the results.  This allows for cascading results to be propogated.
+// the results.  This allows for cascading results to be propagated.
 // if b_4 is [100, 200] on entry to the block, feeds into the calculation
 // of a_2 = [92, 192], and finally on the true edge the range would be 
 // an empty range [] because it is not possible for the true edge to be taken.

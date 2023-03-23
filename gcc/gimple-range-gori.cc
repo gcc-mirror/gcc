@@ -118,7 +118,7 @@ range_def_chain::in_chain_p (tree name, tree def)
   gcc_checking_assert (gimple_range_ssa_p (def));
   gcc_checking_assert (gimple_range_ssa_p (name));
 
-  // Get the defintion chain for DEF.
+  // Get the definition chain for DEF.
   bitmap chain = get_def_chain (def);
 
   if (chain == NULL)
@@ -341,7 +341,7 @@ range_def_chain::dump (FILE *f, basic_block bb, const char *prefix)
 
    GORI stands for "Generates Outgoing Range Information."
 
-   It utilizes the range_def_chain class to contruct def_chains.
+   It utilizes the range_def_chain class to construct def_chains.
    Information for a basic block is calculated once and stored.  It is
    only calculated the first time a query is made.  If no queries are
    made, there is little overhead.
@@ -469,7 +469,7 @@ gori_map::calculate_gori (basic_block bb)
   if (single_succ_p (bb))
     return;
 
-  // If this block's last statement may generate range informaiton, go
+  // If this block's last statement may generate range information, go
   // calculate it.
   gimple *stmt = gimple_outgoing_range_stmt_p (bb);
   if (!stmt)
@@ -588,7 +588,7 @@ gori_compute::compute_operand_range_switch (vrange &r, gswitch *s,
       return true;
     }
 
-  // If op1 is in the defintion chain, pass lhs back.
+  // If op1 is in the definition chain, pass lhs back.
   if (gimple_range_ssa_p (op1) && in_chain_p (name, op1))
     return compute_operand_range (r, SSA_NAME_DEF_STMT (op1), lhs, name, src);
 
@@ -878,14 +878,14 @@ gori_compute::logical_combine (vrange &r, enum tree_code code,
 	    r.union_ (ft);
 	  }
         break;
-      //  A logical OR combines ranges from 2 boolean conditons.
+      //  A logical OR combines ranges from 2 boolean conditions.
       // 	c_2 = b_1 || b_2
       case TRUTH_OR_EXPR:
       case BIT_IOR_EXPR:
         if (lhs.zero_p ())
 	  {
 	    // An OR operation will only take the FALSE path if both
-	    // operands are false simlulateously, which means they should
+	    // operands are false simultaneously, which means they should
 	    // be intersected.  !(x || y) == !x && !y
 	    r = op1_false;
 	    r.intersect (op2_false);
@@ -976,7 +976,7 @@ gori_compute::compute_logical_operands (vrange &true_range, vrange &false_range,
 // This routine will try to refine the ranges of OP1 and OP2 given a relation
 // K between them.  In order to perform this refinement, one of the operands
 // must be in the definition chain of the other.  The use is refined using
-// op1/op2_range on the statement, and the defintion is then recalculated
+// op1/op2_range on the statement, and the definition is then recalculated
 // using the relation.
 
 bool
@@ -1109,7 +1109,7 @@ gori_compute::compute_operand1_range (vrange &r,
   // Fetch the known range for op1 in this block.
   src.get_operand (op1_range, op1);
 
-  // Now range-op calcuate and put that result in r.
+  // Now range-op calculate and put that result in r.
   if (op2)
     {
       src.get_operand (op2_range, op2);
@@ -1122,7 +1122,7 @@ gori_compute::compute_operand1_range (vrange &r,
     }
   else
     {
-      // We pass op1_range to the unary operation.  Nomally it's a
+      // We pass op1_range to the unary operation.  Normally it's a
       // hidden range_for_type parameter, but sometimes having the
       // actual range can result in better information.
       if (!handler.calc_op1 (tmp, lhs, op1_range, trio))
@@ -1284,7 +1284,7 @@ gori_compute::compute_operand1_and_operand2_range (vrange &r,
 }
 
 // Return TRUE if NAME can be recomputed on any edge exiting BB.  If any
-// direct dependant is exported, it may also change the computed value of NAME.
+// direct dependent is exported, it may also change the computed value of NAME.
 
 bool
 gori_compute::may_recompute_p (tree name, basic_block bb)
@@ -1292,7 +1292,7 @@ gori_compute::may_recompute_p (tree name, basic_block bb)
   tree dep1 = depend1 (name);
   tree dep2 = depend2 (name);
 
-  // If the first dependency is not set, there is no recompuation.
+  // If the first dependency is not set, there is no recomputation.
   if (!dep1)
     return false;
 
@@ -1309,7 +1309,7 @@ gori_compute::may_recompute_p (tree name, basic_block bb)
   return (is_export_p (dep1)) || (dep2 && is_export_p (dep2));
 }
 
-// Return TRUE if NAME can be recomputed on edge E.  If any direct dependant
+// Return TRUE if NAME can be recomputed on edge E.  If any direct dependent
 // is exported on edge E, it may change the computed value of NAME.
 
 bool

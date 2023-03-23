@@ -357,7 +357,7 @@ block_range_cache::set_bb_range (tree name, const_basic_block bb,
 	}
       else
 	{
-	  // Otherwise use the default vector implemntation.
+	  // Otherwise use the default vector implementation.
 	  void *r = m_range_allocator->alloc (sizeof (sbr_vector));
 	  m_ssa_ranges[v] = new (r) sbr_vector (TREE_TYPE (name),
 						m_range_allocator);
@@ -423,7 +423,7 @@ block_range_cache::dump (FILE *f)
     }
 }
 
-// Print all known ranges on entry to blobk BB to file F.
+// Print all known ranges on entry to block BB to file F.
 
 void
 block_range_cache::dump (FILE *f, basic_block bb, bool print_varying)
@@ -525,7 +525,7 @@ ssa_global_cache::set_global_range (tree name, const vrange &r)
   return m != NULL;
 }
 
-// Set the range for NAME to R in the glonbal cache.
+// Set the range for NAME to R in the global cache.
 
 void
 ssa_global_cache::clear_global_range (tree name)
@@ -618,7 +618,7 @@ temporal_cache::~temporal_cache ()
   m_timestamp.release ();
 }
 
-// Return the timestamp value for SSA, or 0 if there isnt one.
+// Return the timestamp value for SSA, or 0 if there isn't one.
 
 inline unsigned
 temporal_cache::temporal_value (unsigned ssa) const
@@ -628,7 +628,7 @@ temporal_cache::temporal_value (unsigned ssa) const
   return m_timestamp[ssa];
 }
 
-// Return TRUE if the timestampe for NAME is newer than any of its dependents.
+// Return TRUE if the timestamp for NAME is newer than any of its dependents.
 // Up to 2 dependencies can be checked.
 
 bool
@@ -885,7 +885,7 @@ ranger_cache::set_global_range (tree name, const vrange &r)
 }
 
 //  Provide lookup for the gori-computes class to access the best known range
-//  of an ssa_name in any given basic block.  Note, this does no additonal
+//  of an ssa_name in any given basic block.  Note, this does no additional
 //  lookups, just accesses the data that is already known.
 
 // Get the range of NAME when the def occurs in block BB.  If BB is NULL
@@ -1138,7 +1138,7 @@ ranger_cache::propagate_cache (tree name)
 
 // Check to see if an update to the value for NAME in BB has any effect
 // on values already in the on-entry cache for successor blocks.
-// If it does, update them.  Don't visit any blocks which dont have a cache
+// If it does, update them.  Don't visit any blocks which don't have a cache
 // entry.
 
 void
@@ -1462,9 +1462,9 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
 	  // incoming edges.  If the first incoming edge to this block does
 	  // generate a range, calculate the ranges if all incoming edges
 	  // are also dominated by the dominator.  (Avoids backedges which
-	  // will break the rule of moving only upward in the domniator tree).
+	  // will break the rule of moving only upward in the dominator tree).
 	  // If the first pred does not generate a range, then we will be
-	  // using the dominator range anyway, so thats all the check needed.
+	  // using the dominator range anyway, so that's all the check needed.
 	  if (EDGE_COUNT (prev_bb->preds) > 1
 	      && m_gori.has_edge_range_p (name, EDGE_PRED (prev_bb, 0)->src))
 	    {
@@ -1502,14 +1502,14 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
 	fprintf (dump_file, " at function top\n");
     }
 
-  // Now process any blocks wit incoming edges that nay have adjustemnts.
+  // Now process any blocks wit incoming edges that nay have adjustments.
   while (m_workback.length () > start_limit)
     {
       Value_Range er (TREE_TYPE (name));
       prev_bb = m_workback.pop ();
       if (!single_pred_p (prev_bb))
 	{
-	  // Non single pred means we need to cache a vsalue in the dominator
+	  // Non single pred means we need to cache a value in the dominator
 	  // so we can cheaply calculate incoming edges to this block, and
 	  // then store the resulting value.  If processing mode is not
 	  // RFD_FILL, then the cache cant be stored to, so don't try.
@@ -1564,7 +1564,7 @@ ranger_cache::register_inferred_value (const vrange &ir, tree name,
   if (r.intersect (ir))
     {
       m_on_entry.set_bb_range (name, bb, r);
-      // If this range was invariant before, remove invariance.
+      // If this range was invariant before, remove invariant.
       if (!m_gori.has_edge_range_p (name))
 	m_gori.set_range_invariant (name, false);
     }
