@@ -1295,6 +1295,8 @@ enum reg_class
 				   %r8 %r9 %r10 %r11 %r12 %r13 %r14 %r15
 				   %r16 %r17 %r18 %r19 %r20 %r21 %r22 %r23
 				   %r24 %r25 %r26 %r27 %r28 %r29 %r30 %r31 */
+  GENERAL_GPR16,		/* %eax %ebx %ecx %edx %esi %edi %ebp %esp
+				   %r8 %r9 %r10 %r11 %r12 %r13 %r14 %r15 */
   FP_TOP_REG, FP_SECOND_REG,	/* %st(0) %st(1) */
   FLOAT_REGS,
   SSE_FIRST_REG,
@@ -1357,6 +1359,7 @@ enum reg_class
    "INDEX_REGS",			\
    "LEGACY_REGS",			\
    "GENERAL_REGS",			\
+   "GENERAL_GPR16",			\
    "FP_TOP_REG", "FP_SECOND_REG",	\
    "FLOAT_REGS",			\
    "SSE_FIRST_REG",			\
@@ -1395,6 +1398,7 @@ enum reg_class
       { 0x7f,      0xff0,   0x0 },	/* INDEX_REGS */		\
    { 0x900ff,        0x0,   0x0 },	/* LEGACY_REGS */		\
    { 0x900ff,      0xff0,   0xffff000 },	/* GENERAL_REGS */		\
+   { 0x900ff,      0xff0,   0x0 },	/* GENERAL_GPR16 */		\
      { 0x100,        0x0,   0x0 },	/* FP_TOP_REG */		\
      { 0x200,        0x0,   0x0 },	/* FP_SECOND_REG */		\
     { 0xff00,        0x0,   0x0 },	/* FLOAT_REGS */		\

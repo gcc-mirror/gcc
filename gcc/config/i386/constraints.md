@@ -19,7 +19,7 @@
 
 ;;; Unused letters:
 ;;;           H
-;;;           h j               z
+;;;           j               z
 
 ;; Integer register constraints.
 ;; It is not necessary to define 'r' here.
@@ -371,3 +371,60 @@
 (define_address_constraint "Ts"
   "Address operand without segment register"
   (match_operand 0 "address_no_seg_operand"))
+
+;; Constraint that force to use EGPR, can only adopt to register class.
+(define_register_constraint  "jR" "GENERAL_REGS")
+
+(define_register_constraint  "jr"
+ "TARGET_APX_EGPR ? GENERAL_GPR16 : GENERAL_REGS")
+
+(define_memory_constraint "jm"
+  "@internal memory operand without GPR32."
+  (and (match_operand 0 "memory_operand")
+       (not (and (match_test "TARGET_APX_EGPR")
+		 (match_test "x86_extended_rex2reg_mentioned_p (op)")))))
+
+(define_constraint "j<"
+  "@internal auto-dec memory operand without GPR32."
+  (and (and (match_code "mem")
+	    (ior (match_test "GET_CODE (XEXP (op, 0)) == PRE_DEC")
+	         (match_test "GET_CODE (XEXP (op, 0)) == POST_DEC")))
+       (not (and (match_test "TARGET_APX_EGPR")
+		 (match_test "x86_extended_rex2reg_mentioned_p (op)")))))
+
+(define_constraint "j>"
+  "@internal auto-dec memory operand without GPR32."
+  (and (and (match_code "mem")
+	    (ior (match_test "GET_CODE (XEXP (op, 0)) == PRE_INC")
+	         (match_test "GET_CODE (XEXP (op, 0)) == POST_INC")))
+       (not (and (match_test "TARGET_APX_EGPR")
+		 (match_test "x86_extended_rex2reg_mentioned_p (op)")))))
+
+(define_memory_constraint "jo"
+  "@internal offsetable memory operand without GPR32."
+  (and (and (match_code "mem")
+	    (match_test "offsettable_nonstrict_memref_p (op)"))
+       (not (and (match_test "TARGET_APX_EGPR")
+		 (match_test "x86_extended_rex2reg_mentioned_p (op)")))))
+
+(define_constraint "jV"
+  "@internal non-offsetable memory operand without GPR32."
+  (and (and (match_code "mem")
+	    (match_test "memory_address_addr_space_p (GET_MODE (op),
+						      XEXP (op, 0),
+						      MEM_ADDR_SPACE (op))")
+	    (not (match_test "offsettable_nonstrict_memref_p (op)")))
+       (not (and (match_test "TARGET_APX_EGPR")
+		 (match_test "x86_extended_rex2reg_mentioned_p (op)")))))
+
+(define_address_constraint "jp"
+  "@internal general address operand without GPR32"
+  (and (match_test "address_operand (op, VOIDmode)")
+       (not (and (match_test "TARGET_APX_EGPR")
+		 (match_test "x86_extended_rex2reg_mentioned_p (op)")))))
+
+(define_special_memory_constraint "ja"
+  "@internal vector memory operand without GPR32."
+  (and (match_operand 0 "vector_memory_operand")
+       (not (and (match_test "TARGET_APX_EGPR")
+		 (match_test "x86_extended_rex2reg_mentioned_p (op)")))))
