@@ -1586,20 +1586,81 @@ TokenStream::visit (ExternCrate &crate)
 }
 
 void
-TokenStream::visit (UseTreeGlob &)
-{}
+TokenStream::visit (UseTreeGlob &use_tree)
+{
+  switch (use_tree.get_glob_type ())
+    {
+      case UseTreeGlob::PathType::PATH_PREFIXED: {
+	auto path = use_tree.get_path ();
+	visit (path);
+	tokens.push_back (Rust::Token::make (SCOPE_RESOLUTION, Location ()));
+      }
+      break;
+    case UseTreeGlob::PathType::NO_PATH:
+      tokens.push_back (Rust::Token::make (SCOPE_RESOLUTION, Location ()));
+      break;
+    case UseTreeGlob::PathType::GLOBAL:
+      break;
+    }
+  tokens.push_back (Rust::Token::make (ASTERISK, Location ()));
+}
 
 void
-TokenStream::visit (UseTreeList &)
-{}
+TokenStream::visit (UseTreeList &use_tree)
+{
+  switch (use_tree.get_path_type ())
+    {
+      case UseTreeList::PathType::PATH_PREFIXED: {
+	auto path = use_tree.get_path ();
+	visit (path);
+	tokens.push_back (Rust::Token::make (SCOPE_RESOLUTION, Location ()));
+      }
+      break;
+    case UseTreeList::PathType::NO_PATH:
+      tokens.push_back (Rust::Token::make (SCOPE_RESOLUTION, Location ()));
+      break;
+    case UseTreeList::PathType::GLOBAL:
+      break;
+    }
+
+  tokens.push_back (Rust::Token::make (LEFT_CURLY, Location ()));
+  if (use_tree.has_trees ())
+    {
+      visit_items_joined_by_separator (use_tree.get_trees (), COMMA);
+    }
+  tokens.push_back (Rust::Token::make (RIGHT_CURLY, Location ()));
+}
 
 void
-TokenStream::visit (UseTreeRebind &)
-{}
+TokenStream::visit (UseTreeRebind &use_tree)
+{
+  auto path = use_tree.get_path ();
+  visit (path);
+  switch (use_tree.get_new_bind_type ())
+    {
+      case UseTreeRebind::NewBindType::IDENTIFIER: {
+	tokens.push_back (Rust::Token::make (AS, Location ()));
+	auto id = use_tree.get_identifier ();
+	tokens.push_back (
+	  Rust::Token::make_identifier (use_tree.get_locus (), std::move (id)));
+      }
+      break;
+    case UseTreeRebind::NewBindType::WILDCARD:
+      tokens.push_back (Rust::Token::make (AS, Location ()));
+      tokens.push_back (Rust::Token::make (UNDERSCORE, use_tree.get_locus ()));
+      break;
+    case UseTreeRebind::NewBindType::NONE:
+      break;
+    }
+}
 
 void
-TokenStream::visit (UseDeclaration &)
-{}
+TokenStream::visit (UseDeclaration &decl)
+{
+  tokens.push_back (Rust::Token::make (USE, decl.get_locus ()));
+  visit (*decl.get_tree ());
+  tokens.push_back (Rust::Token::make (SEMICOLON, Location ()));
+}
 
 void
 TokenStream::visit (Function &function)
