@@ -116,14 +116,17 @@ is
      Post => (if X = 0.0 then Tan'Result = 0.0);
 
    function Tan (X, Cycle : Float_Type'Base) return Float_Type'Base with
+     SPARK_Mode => Off,  --  Tan can overflow for some values of X and Cycle
      Pre  => Cycle > 0.0
        and then abs Float_Type'Base'Remainder (X, Cycle) /= 0.25 * Cycle,
      Post => (if X = 0.0 then Tan'Result = 0.0);
 
    function Cot (X : Float_Type'Base) return Float_Type'Base with
+     SPARK_Mode => Off,  --  Cot can overflow for some values of X
      Pre => X /= 0.0;
 
    function Cot (X, Cycle : Float_Type'Base) return Float_Type'Base with
+     SPARK_Mode => Off,  --  Cot can overflow for some values of X and Cycle
      Pre => Cycle > 0.0
        and then X /= 0.0
        and then Float_Type'Base'Remainder (X, Cycle) /= 0.0
@@ -176,9 +179,11 @@ is
      Post => (if X > 0.0 and then Y = 0.0 then Arccot'Result = 0.0);
 
    function Sinh (X : Float_Type'Base) return Float_Type'Base with
+     SPARK_Mode => Off,  --  Sinh can overflow for some values of X
      Post => (if X = 0.0 then Sinh'Result = 0.0);
 
    function Cosh (X : Float_Type'Base) return Float_Type'Base with
+     SPARK_Mode => Off,  --  Cosh can overflow for some values of X
      Post => Cosh'Result >= 1.0
        and then (if X = 0.0 then Cosh'Result = 1.0);
 
@@ -187,6 +192,7 @@ is
        and then (if X = 0.0 then Tanh'Result = 0.0);
 
    function Coth (X : Float_Type'Base) return Float_Type'Base with
+     SPARK_Mode => Off,  --  Coth can overflow for some values of X
      Pre  => X /= 0.0,
      Post => abs Coth'Result >= 1.0;
 
