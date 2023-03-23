@@ -346,14 +346,13 @@ package body Sem_Cat is
 
       if Null_Present (Recdef) then
          return;
-      else
-         Component_Decl := First (Component_Items (Component_List (Recdef)));
       end if;
 
-      while Present (Component_Decl)
-        and then Nkind (Component_Decl) = N_Component_Declaration
-      loop
-         if Present (Expression (Component_Decl))
+      Component_Decl := First (Component_Items (Component_List (Recdef)));
+
+      while Present (Component_Decl) loop
+         if Nkind (Component_Decl) = N_Component_Declaration
+           and then Present (Expression (Component_Decl))
            and then Nkind (Expression (Component_Decl)) /= N_Null
            and then not Is_OK_Static_Expression (Expression (Component_Decl))
 
