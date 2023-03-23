@@ -23304,14 +23304,24 @@ type_unification_real (tree tparms,
 	  return unify_parameter_deduction_failure (explain_p, tparm);
 	}
 
+      /* During partial ordering, we deduce dependent template args.  */
+      bool any_dependent_targs = false;
+
       /* Now substitute into the default template arguments.  */
       for (i = 0; i < ntparms; i++)
 	{
 	  tree targ = TREE_VEC_ELT (targs, i);
 	  tree tparm = TREE_VEC_ELT (tparms, i);
 
-	  if (targ || tparm == error_mark_node)
+	  if (targ)
+	    {
+	      if (!any_dependent_targs && dependent_template_arg_p (targ))
+		any_dependent_targs = true;
+	      continue;
+	    }
+	  if (tparm == error_mark_node)
 	    continue;
+
 	  tree parm = TREE_VALUE (tparm);
 	  tree arg = TREE_PURPOSE (tparm);
 	  reopen_deferring_access_checks (*checks);
@@ -23347,9 +23357,9 @@ type_unification_real (tree tparms,
 		 do this substitution without processing_template_decl.  This
 		 is important if the default argument contains something that
 		 might be instantiation-dependent like access (87480).  */
-	      processing_template_decl_sentinel s;
+	      processing_template_decl_sentinel s (!any_dependent_targs);
 	      tree substed = NULL_TREE;
-	      if (saw_undeduced == 1)
+	      if (saw_undeduced == 1 && !any_dependent_targs)
 		{
 		  /* First instatiate in template context, in case we still
 		     depend on undeduced template parameters.  */
@@ -23372,7 +23382,7 @@ type_unification_real (tree tparms,
 						 complain, i, NULL_TREE);
 	      else if (saw_undeduced == 1)
 		arg = NULL_TREE;
-	      else
+	      else if (!any_dependent_targs)
 		arg = error_mark_node;
 	    }
 
