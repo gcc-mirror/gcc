@@ -2626,6 +2626,9 @@ generate_callback_wrapper (gfc_symbol *vtab, gfc_symbol *derived,
 	 cb (token, comp->var(.data), size, 0, var's cb fn);  */
   for (gfc_component *comp = derived->components; comp; comp = comp->next)
     {
+      if (__builtin_expect (comp->ts.type == BT_CLASS
+			    && !comp->attr.class_ok, 0))
+	continue;
       bool pointer = (comp->ts.type == BT_CLASS
 		      ? CLASS_DATA (comp)->attr.pointer : comp->attr.pointer);
       bool proc_ptr = comp->attr.proc_pointer;
@@ -2666,7 +2669,7 @@ generate_callback_wrapper (gfc_symbol *vtab, gfc_symbol *derived,
 	  size->where = gfc_current_locus;
 	}
 
-      if (!proc_ptr && comp->ts.type == BT_CLASS)
+      if (!proc_ptr && comp->ts.type == BT_CLASS && comp->attr.class_ok)
 	{
 	  gfc_add_data_component (expr);
 	  if (comp->attr.dimension)

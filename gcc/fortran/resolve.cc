@@ -15525,7 +15525,8 @@ resolve_fl_derived (gfc_symbol *sym)
   gfc_component *c = (sym->attr.is_class
 		      ? CLASS_DATA (sym->components) : sym->components);
   for ( ; c; c = c->next)
-    if ((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
+    if ((c->ts.type == BT_DERIVED
+	|| (c->ts.type == BT_CLASS && c->attr.class_ok))
 	&& !c->ts.u.derived->resolve_symbol_called)
       {
 	if (c->ts.u.derived->components == NULL
