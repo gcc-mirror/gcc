@@ -4087,6 +4087,8 @@ public:
 
   Identifier get_identifier () const { return item_name; }
 
+  Visibility &get_visibility () { return visibility; }
+
   const Visibility &get_visibility () const { return visibility; }
 
   bool is_mut () const { return has_mut; }
