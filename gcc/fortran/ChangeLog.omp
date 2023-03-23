@@ -1,5 +1,15 @@
 2023-03-23  Tobias Burnus  <tobias@codesourcery.com>
 
+	* trans-openmp.cc (gfc_has_alloc_comps): Add 'bool
+	shallow_alloc_only=false' arg.
+	(gfc_omp_replace_alloc_by_to_mapping): New, call it.
+	(gfc_omp_deep_map_kind_p): Return 'true' also for '(present,)alloc'.
+	(gfc_omp_deep_mapping_item, gfc_omp_deep_mapping_do): On map entering,
+	replace shallowly 'alloc'/'from' by '(from)to' mapping if there are
+	allocatable components.
+
+2023-03-23  Tobias Burnus  <tobias@codesourcery.com>
+
 	* class.cc (generate_callback_wrapper): Add attr.class_ok check.
 	* resolve.cc (resolve_fl_derived): Likewise.
 
