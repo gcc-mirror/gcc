@@ -1745,7 +1745,7 @@ static const struct tune_params ampere1_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_NONE),		/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_NO_LDP_COMBINE),	/* tune_flags.  */
   &ampere1_prefetch_tune
 };
 
@@ -1776,7 +1776,7 @@ static const struct tune_params ampere1a_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_NONE),		/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_NO_LDP_COMBINE),	/* tune_flags.  */
   &ampere1_prefetch_tune
 };
 
@@ -24572,6 +24572,12 @@ aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
   HOST_WIDE_INT offval_1, offval_2, msize;
   enum reg_class rclass_1, rclass_2;
   rtx mem_1, mem_2, reg_1, reg_2, base_1, base_2, offset_1, offset_2;
+
+  /* Allow the tuning structure to disable LDP instruction formation
+     from combining instructions (e.g., in peephole2).  */
+  if (load && (aarch64_tune_params.extra_tuning_flags
+	       & AARCH64_EXTRA_TUNE_NO_LDP_COMBINE))
+    return false;
 
   if (load)
     {
