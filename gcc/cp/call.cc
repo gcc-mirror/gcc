@@ -8360,15 +8360,6 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 				   /*issue_conversion_warnings=*/false,
 				   /*c_cast_p=*/false, /*nested_p=*/true,
 				   complain);
-	      if (convs->kind == ck_ref_bind)
-		expr = convert_to_reference (totype, expr, CONV_IMPLICIT,
-					     LOOKUP_NORMAL, NULL_TREE,
-					     complain);
-	      else
-		expr = cp_convert (totype, expr, complain);
-	      if (complained)
-		maybe_inform_about_fndecl_for_bogus_argument_init (fn, argnum);
-	      return expr;
 	    }
 	  else if (t->kind == ck_user || !t->bad_p)
 	    {
@@ -8376,6 +8367,8 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 				   /*issue_conversion_warnings=*/false,
 				   /*c_cast_p=*/false, /*nested_p=*/true,
 				   complain);
+	      if (t->bad_p)
+		complained = 1;
 	      break;
 	    }
 	  else if (t->kind == ck_ambig)
@@ -8394,10 +8387,15 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 				  "invalid conversion from %qH to %qI",
 				  TREE_TYPE (expr), totype);
 	}
+      if (convs->kind == ck_ref_bind)
+	expr = convert_to_reference (totype, expr, CONV_IMPLICIT,
+				     LOOKUP_NORMAL, NULL_TREE,
+				     complain);
+      else
+	expr = cp_convert (totype, expr, complain);
       if (complained == 1)
 	maybe_inform_about_fndecl_for_bogus_argument_init (fn, argnum);
-
-      return cp_convert (totype, expr, complain);
+      return expr;
     }
 
   if (issue_conversion_warnings && (complain & tf_warning))
