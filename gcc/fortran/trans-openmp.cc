@@ -379,10 +379,13 @@ gfc_omp_report_decl (tree decl)
 }
 
 /* Return true if TYPE has any allocatable components;
-   if ptr_ok, the decl itself is permitted to have the POINTER attribute.  */
+   if ptr_ok, the decl itself is permitted to have the POINTER attribute.
+   if shallow_alloc_only, returns only true if any of the fields is an
+   allocatable; called with true by gfc_omp_replace_alloc_by_to_mapping.  */
 
 static bool
-gfc_has_alloc_comps (tree type, tree decl, bool ptr_ok)
+gfc_has_alloc_comps (tree type, tree decl, bool ptr_ok,
+		     bool shallow_alloc_only=false)
 {
   tree field, ftype;
 
@@ -415,10 +418,48 @@ gfc_has_alloc_comps (tree type, tree decl, bool ptr_ok)
       if (GFC_DESCRIPTOR_TYPE_P (ftype)
 	  && GFC_TYPE_ARRAY_AKIND (ftype) == GFC_ARRAY_ALLOCATABLE)
 	return true;
-      if (gfc_has_alloc_comps (ftype, field, false))
+      if (!shallow_alloc_only
+	  && gfc_has_alloc_comps (ftype, field, false))
 	return true;
     }
   return false;
+}
+
+/* gfc_omp_replace_alloc_by_to_mapping is used with gfc_omp_deep_mapping... to
+   handle the following:
+
+   For map(alloc: dt), the array descriptors of allocatable components should
+   be mapped as 'to'; this could be done by (A) adding 'map(to: dt%alloc_comp)'
+   for each component (and avoiding to increment the reference count).
+   Or (B) by just mapping all of 'dt' as 'to'.
+
+   If 'dt' contains several allocatable components and not much other data,
+   (A) is more efficient. If 'dt' contains a large const-size array, (A) will
+   copy it to the device instead of only 'alloc'ating it.
+
+   IMPLEMENTATION CHOICE: We do (A). It avoids the ref-count issue and it is
+   expected that, for real-world code, derived types with allocatable
+   components only have few other components and either no const-size arrays.
+   This copying is done irrespectively whether the allocatables are allocated.
+
+   If users wanted to save memory, they have to use 'map(alloc:dt%comp)' as
+   also with 'map(alloc:dt)' all components get copied.
+
+   For the copy to the device, only allocatable arrays are relevant as their
+   the bounds are required; the pointer is set separately (GOMP_MAP_ATTACH)
+   and the only setting required for scalars. However, when later copying out
+   of the device, an unallocated allocatable must remain unallocated/NULL on
+   the host; to achieve this we also must have it set to NULL on the device
+   to avoid issues with uninitialized memory being copied back for the pointer
+   address. If we could set the pointer to NULL, gfc_has_alloc_comps's
+   shallow_alloc_only could be restricted to return true only for arrays.
+
+   We only need to return true if there are allocatable-array components. */
+
+static bool
+gfc_omp_replace_alloc_by_to_mapping (tree type, tree decl, bool ptr_ok)
+{
+  return gfc_has_alloc_comps (type, decl, ptr_ok, true);
 }
 
 /* Return true if TYPE is polymorphic but not with pointer attribute.  */
@@ -2730,7 +2771,15 @@ gfc_omp_deep_mapping_item (bool is_cnt, bool do_copy, bool do_alloc_check,
 	  tmp = gfc_conv_descriptor_data_get (tmp);
 	}
 
-      gfc_omp_deep_mapping_map (tmp, bytesize, tkind, loc, data_array,
+      /* For polymorphic, a extended type may have allocatable components;
+	 see comment before gfc_omp_replace_alloc_by_to_mapping.  */
+      unsigned HOST_WIDE_INT tkind2 = tkind;
+      if (tkind == GOMP_MAP_ALLOC)
+	tkind2 = GOMP_MAP_TO;
+      else if (tkind == GOMP_MAP_FROM
+	       && gimple_omp_target_kind (ctx) != GF_OMP_TARGET_KIND_EXIT_DATA)
+	tkind2 = GOMP_MAP_TOFROM;
+      gfc_omp_deep_mapping_map (tmp, bytesize, tkind2, loc, data_array,
 				sizes_array, kinds_array, offset_data,
 				offset, seq, ctx);
     }
@@ -2755,7 +2804,16 @@ gfc_omp_deep_mapping_item (bool is_cnt, bool do_copy, bool do_alloc_check,
 	  tmp = decl;
 	  bytesize = TYPE_SIZE_UNIT (TREE_TYPE (decl));
 	}
-      gfc_omp_deep_mapping_map (tmp, bytesize, tkind, loc, data_array,
+      unsigned HOST_WIDE_INT tkind2 = tkind;
+      if (!is_cnt
+	  && (tkind == GOMP_MAP_ALLOC
+	      || (tkind == GOMP_MAP_FROM
+		  && (gimple_omp_target_kind (ctx)
+		      != GF_OMP_TARGET_KIND_EXIT_DATA)))
+	  && gfc_omp_replace_alloc_by_to_mapping (TREE_TYPE (decl), decl, true))
+	tkind2 = tkind == GOMP_MAP_ALLOC ? GOMP_MAP_TO : GOMP_MAP_TOFROM;
+
+      gfc_omp_deep_mapping_map (tmp, bytesize, tkind2, loc, data_array,
 				sizes_array, kinds_array, offset_data,
 				offset, seq, ctx);
     }
@@ -2889,9 +2947,9 @@ gfc_omp_deep_map_kind_p (tree clause)
     case GOMP_MAP_ALWAYS_PRESENT_FROM:
     case GOMP_MAP_ALWAYS_PRESENT_TOFROM:
     case GOMP_MAP_FIRSTPRIVATE:
-      return true;
     case GOMP_MAP_ALLOC:
     case GOMP_MAP_PRESENT_ALLOC:
+      return true;
     case GOMP_MAP_POINTER:
     case GOMP_MAP_TO_PSET:
     case GOMP_MAP_FORCE_PRESENT:
@@ -3004,6 +3062,21 @@ gfc_omp_deep_mapping_do (bool is_cnt, const gimple *ctx, tree clause,
   tree decl = gfc_omp_deep_mapping_int_p (ctx, clause);
   if (decl == NULL_TREE)
     return NULL_TREE;
+  /* Handle: map(alloc:dt%cmp [len: ptr_size]) map(tofrom: D.0123...),
+     where GFC_DECL_SAVED_DESCRIPTOR(D.0123) is the same (here: dt%cmp).  */
+  if (OMP_CLAUSE_MAP_KIND (clause) == GOMP_MAP_ALLOC
+      || OMP_CLAUSE_MAP_KIND (clause) == GOMP_MAP_PRESENT_ALLOC)
+    {
+      tree c = clause;
+      while ((c = OMP_CLAUSE_CHAIN (c)) != NULL_TREE)
+	{
+	  if (!gfc_omp_deep_map_kind_p (c))
+	    continue;
+	  tree d = gfc_omp_deep_mapping_int_p (ctx, c);
+	  if (d != NULL_TREE && operand_equal_p (decl, d, 0))
+	    return NULL_TREE;
+	}
+    }
   tree type = TREE_TYPE (decl);
   if (POINTER_TYPE_P (type))
     type = TREE_TYPE (type);
@@ -3044,6 +3117,15 @@ gfc_omp_deep_mapping_do (bool is_cnt, const gimple *ctx, tree clause,
 	      || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER_CONT)))
     do_alloc_check = true;
 
+  if (!is_cnt
+      && (tkind == GOMP_MAP_ALLOC
+	  || (tkind == GOMP_MAP_FROM
+	      && (gimple_omp_target_kind (ctx)
+		  != GF_OMP_TARGET_KIND_EXIT_DATA)))
+      && (poly || gfc_omp_replace_alloc_by_to_mapping (type, tmp, true)))
+    OMP_CLAUSE_SET_MAP_KIND (clause, tkind == GOMP_MAP_ALLOC ? GOMP_MAP_TO
+							     : GOMP_MAP_TOFROM);
+
   /* TODO: For map(a(:)), we know it is present & allocated.  */
 
   tree present = (DECL_P (decl) ? gfc_omp_check_optional_argument (decl, true)
@@ -3071,7 +3153,7 @@ gfc_omp_deep_mapping_do (bool is_cnt, const gimple *ctx, tree clause,
     gfc_omp_deep_mapping_item (is_cnt, do_copy, do_alloc_check, loc, decl,
 			       &token, tkind, data, sizes, kinds, offset_data,
 			       offset, num, seq, ctx);
-  /* Double: Map + pointer assign.  */
+  /* Multiply by 2 as there are two mappings: data + pointer assign.  */
   if (is_cnt)
     gimplify_assign (num,
 		     fold_build2_loc (input_location, MULT_EXPR,
