@@ -7197,10 +7197,14 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
     }
 
   /* Make new values available - for fully redundant LHS we
-     continue with the next stmt above and skip this.  */
-  def_operand_p defp;
-  FOR_EACH_SSA_DEF_OPERAND (defp, stmt, iter, SSA_OP_DEF)
-    eliminate_push_avail (b, DEF_FROM_PTR (defp));
+     continue with the next stmt above and skip this.
+     But avoid picking up dead defs.  */
+  tree def;
+  FOR_EACH_SSA_TREE_OPERAND (def, stmt, iter, SSA_OP_DEF)
+    if (! has_zero_uses (def)
+	|| (inserted_exprs
+	    && bitmap_bit_p (inserted_exprs, SSA_NAME_VERSION (def))))
+      eliminate_push_avail (b, def);
 }
 
 /* Perform elimination for the basic-block B during the domwalk.  */
@@ -8046,9 +8050,10 @@ process_bb (rpo_elim &avail, basic_block bb,
 	avail.eliminate_stmt (bb, &gsi);
       else
 	/* If not eliminating, make all not already available defs
-	   available.  */
+	   available.  But avoid picking up dead defs.  */
 	FOR_EACH_SSA_TREE_OPERAND (op, gsi_stmt (gsi), i, SSA_OP_DEF)
-	  if (! avail.eliminate_avail (bb, op))
+	  if (! has_zero_uses (op)
+	      && ! avail.eliminate_avail (bb, op))
 	    avail.eliminate_push_avail (bb, op);
     }
 
