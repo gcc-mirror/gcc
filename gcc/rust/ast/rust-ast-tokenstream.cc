@@ -2525,8 +2525,10 @@ TokenStream::visit (SlicePattern &pattern)
 }
 
 void
-TokenStream::visit (AltPattern &)
-{}
+TokenStream::visit (AltPattern &pattern)
+{
+  visit_items_as_lines (pattern.get_alts ());
+}
 
 // rust-stmt.h
 void
