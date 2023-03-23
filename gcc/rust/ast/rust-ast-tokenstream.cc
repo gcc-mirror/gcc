@@ -67,9 +67,11 @@ template <typename T>
 void
 TokenStream::visit_as_line (T &item, std::vector<TokenPtr> trailing)
 {
+  indentation ();
   visit (item);
   for (auto &token : trailing)
     tokens.push_back (token);
+  newline ();
 }
 
 template <typename T>
@@ -88,8 +90,21 @@ TokenStream::visit_items_as_block (T &collection,
 				   TokenId left_brace, TokenId right_brace)
 {
   tokens.push_back (Rust::Token::make (left_brace, Location ()));
-  visit_items_as_lines (collection);
-  tokens.push_back (Rust::Token::make (right_brace, Location ()));
+  if (collection.empty ())
+    {
+      tokens.push_back (Rust::Token::make (right_brace, Location ()));
+      newline ();
+    }
+  else
+    {
+      newline ();
+      increment_indentation ();
+      visit_items_as_lines (collection);
+      decrement_indentation ();
+      indentation ();
+      tokens.push_back (Rust::Token::make (right_brace, Location ()));
+      newline ();
+    }
 }
 
 void
@@ -100,6 +115,22 @@ TokenStream::trailing_comma ()
       tokens.push_back (Rust::Token::make (COMMA, Location ()));
     }
 }
+
+void
+TokenStream::newline ()
+{}
+
+void
+TokenStream::indentation ()
+{}
+
+void
+TokenStream::increment_indentation ()
+{}
+
+void
+TokenStream::decrement_indentation ()
+{}
 
 void
 TokenStream::visit (FunctionParam &param)
@@ -350,10 +381,16 @@ TokenStream::visit (Token &tok)
 void
 TokenStream::visit (DelimTokenTree &delim_tok_tree)
 {
+  increment_indentation ();
+  newline ();
+  indentation ();
   for (auto &token : delim_tok_tree.to_token_stream ())
     {
       visit (token);
     }
+  decrement_indentation ();
+  newline ();
+  indentation ();
 }
 
 void
@@ -1155,13 +1192,21 @@ void
 TokenStream::visit (BlockExpr &expr)
 {
   tokens.push_back (Rust::Token::make (LEFT_CURLY, expr.get_locus ()));
+  newline ();
+  increment_indentation ();
 
-  visit_items_joined_by_separator (expr.get_statements (), SEMICOLON);
+  visit_items_as_lines (expr.get_statements (),
+			{Rust::Token::make (SEMICOLON, Location ())});
 
   if (expr.has_tail_expr ())
-    visit (expr.get_tail_expr ());
+    {
+      visit (expr.get_tail_expr ());
+      newline ();
+    }
 
+  decrement_indentation ();
   tokens.push_back (Rust::Token::make (RIGHT_CURLY, expr.get_locus ()));
+  newline ();
 }
 
 void
@@ -1319,6 +1364,7 @@ void
 TokenStream::visit (IfExprConseqElse &expr)
 {
   visit (static_cast<IfExpr &> (expr));
+  indentation ();
   tokens.push_back (Rust::Token::make (ELSE, expr.get_locus ()));
   visit (expr.get_else_block ());
 }
@@ -1327,6 +1373,7 @@ void
 TokenStream::visit (IfExprConseqIf &expr)
 {
   visit (static_cast<IfExpr &> (expr));
+  indentation ();
   tokens.push_back (Rust::Token::make (ELSE, expr.get_locus ()));
   // The "if" part of the "else if" is printed by the next visitor
   visit (expr.get_conseq_if_expr ());
@@ -1336,6 +1383,7 @@ void
 TokenStream::visit (IfExprConseqIfLet &expr)
 {
   visit (static_cast<IfExpr &> (expr));
+  indentation ();
   tokens.push_back (Rust::Token::make (ELSE, expr.get_locus ()));
   visit (expr.get_conseq_if_let_expr ());
 }
@@ -1358,6 +1406,7 @@ void
 TokenStream::visit (IfLetExprConseqElse &expr)
 {
   visit (static_cast<IfLetExpr &> (expr));
+  indentation ();
   tokens.push_back (Rust::Token::make (ELSE, expr.get_locus ()));
   visit (expr.get_else_block ());
 }
@@ -1366,6 +1415,7 @@ void
 TokenStream::visit (IfLetExprConseqIf &expr)
 {
   visit (static_cast<IfLetExpr &> (expr));
+  indentation ();
   tokens.push_back (Rust::Token::make (ELSE, expr.get_locus ()));
   visit (expr.get_conseq_if_expr ());
 }
@@ -1374,6 +1424,7 @@ void
 TokenStream::visit (IfLetExprConseqIfLet &expr)
 {
   visit (static_cast<IfLetExpr &> (expr));
+  indentation ();
   tokens.push_back (Rust::Token::make (ELSE, expr.get_locus ()));
   visit (expr.get_conseq_if_let_expr ());
 }
@@ -1469,7 +1520,10 @@ TokenStream::visit (WhereClause &rule)
   //  	| TypeBoundWhereClauseItem
 
   tokens.push_back (Rust::Token::make (WHERE, Location ()));
+  newline ();
+  increment_indentation ();
   visit_items_joined_by_separator (rule.get_items (), COMMA);
+  decrement_indentation ();
 }
 
 void
@@ -1534,6 +1588,7 @@ TokenStream::visit (Method &method)
     tokens.push_back (Rust::Token::make (SEMICOLON, Location ()));
   else
     visit (block);
+  newline ();
 }
 
 void
@@ -1555,15 +1610,21 @@ TokenStream::visit (Module &module)
   if (module.get_kind () == Module::UNLOADED)
     {
       tokens.push_back (Rust::Token::make (SEMICOLON, Location ()));
+      newline ();
     }
   else /* Module::LOADED */
     {
       tokens.push_back (Rust::Token::make (LEFT_CURLY, Location ()));
+      newline ();
+      increment_indentation ();
 
       visit_items_as_lines (module.get_inner_attrs ());
       visit_items_as_lines (module.get_items ());
 
+      decrement_indentation ();
+
       tokens.push_back (Rust::Token::make (RIGHT_CURLY, Location ()));
+      newline ();
     }
 }
 
@@ -1583,6 +1644,7 @@ TokenStream::visit (ExternCrate &crate)
 	Rust::Token::make_identifier (Location (), std::move (as_clause)));
     }
   tokens.push_back (Rust::Token::make (SEMICOLON, Location ()));
+  newline ();
 }
 
 void
@@ -1660,6 +1722,7 @@ TokenStream::visit (UseDeclaration &decl)
   tokens.push_back (Rust::Token::make (USE, decl.get_locus ()));
   visit (*decl.get_tree ());
   tokens.push_back (Rust::Token::make (SEMICOLON, Location ()));
+  newline ();
 }
 
 void
@@ -1698,6 +1761,7 @@ TokenStream::visit (Function &function)
     tokens.push_back (Rust::Token::make (SEMICOLON, Location ()));
   else
     visit (block);
+  newline ();
 }
 
 void
@@ -1735,7 +1799,10 @@ TokenStream::visit (StructStruct &struct_item)
   if (struct_item.has_where_clause ())
     visit (struct_item.get_where_clause ());
   if (struct_item.is_unit_struct ())
-    tokens.push_back (Rust::Token::make (SEMICOLON, Location ()));
+    {
+      tokens.push_back (Rust::Token::make (SEMICOLON, Location ()));
+      newline ();
+    }
   else
     visit_items_as_block (struct_item.get_fields (),
 			  {Rust::Token::make (COMMA, Location ())});
@@ -1757,6 +1824,7 @@ TokenStream::visit (TupleStruct &tuple_struct)
   visit_items_joined_by_separator (tuple_struct.get_fields (), COMMA);
   tokens.push_back (Rust::Token::make (RIGHT_PAREN, Location ()));
   tokens.push_back (Rust::Token::make (SEMICOLON, Location ()));
+  newline ();
 }
 
 void
@@ -1893,7 +1961,10 @@ TokenStream::visit_function_common (std::unique_ptr<Type> &return_type,
 	}
     }
   else
-    tokens.push_back (Rust::Token::make (SEMICOLON, Location ()));
+    {
+      tokens.push_back (Rust::Token::make (SEMICOLON, Location ()));
+      newline ();
+    }
 }
 
 void
@@ -1960,20 +2031,24 @@ void
 TokenStream::visit (TraitItemConst &item)
 {
   auto id = item.get_identifier ();
+  indentation ();
   tokens.push_back (Rust::Token::make (CONST, item.get_locus ()));
   tokens.push_back (Rust::Token::make_identifier (Location (), std::move (id)));
   tokens.push_back (Rust::Token::make (COLON, Location ()));
   visit (item.get_type ());
   tokens.push_back (Rust::Token::make (SEMICOLON, Location ()));
+  newline ();
 }
 
 void
 TokenStream::visit (TraitItemType &item)
 {
   auto id = item.get_identifier ();
+  indentation ();
   tokens.push_back (Rust::Token::make (TYPE, item.get_locus ()));
   tokens.push_back (Rust::Token::make_identifier (Location (), std::move (id)));
   tokens.push_back (Rust::Token::make (SEMICOLON, Location ()));
+  newline ();
 }
 
 void
@@ -1982,6 +2057,8 @@ TokenStream::visit (Trait &trait)
   for (auto &attr : trait.get_outer_attrs ())
     {
       visit (attr);
+      newline ();
+      indentation ();
     }
 
   visit (trait.get_visibility ());
@@ -2026,13 +2103,21 @@ TokenStream::visit (TraitImpl &impl)
   tokens.push_back (Rust::Token::make (FOR, Location ()));
   visit (impl.get_type ());
   tokens.push_back (Rust::Token::make (LEFT_CURLY, Location ()));
+  newline ();
+
+  increment_indentation ();
 
   for (auto &item : impl.get_impl_items ())
     {
+      indentation ();
       visit (item);
     }
 
+  decrement_indentation ();
+  newline ();
+
   tokens.push_back (Rust::Token::make (RIGHT_CURLY, Location ()));
+  newline ();
 }
 
 void

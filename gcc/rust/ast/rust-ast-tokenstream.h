@@ -88,6 +88,10 @@ private:
 			     TokenId right_brace = RIGHT_CURLY);
 
   void trailing_comma ();
+  void newline ();
+  void indentation ();
+  void increment_indentation ();
+  void decrement_indentation ();
   /**
    * Visit common items of functions: Parameters, return type, block
    */
