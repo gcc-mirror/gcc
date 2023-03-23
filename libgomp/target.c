@@ -1396,6 +1396,11 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		  {
 		    uintptr_t target = (uintptr_t) hostaddrs[i];
 		    void *devptr = *(void**) hostaddrs[i+1] + sizes[i+1];
+		    /* Per
+		       <https://inbox.sourceware.org/gcc-patches/87o7pe12ke.fsf@euler.schwinge.homeip.net>
+		       "OpenMP: Handle descriptors in target's firstprivate [PR104949]"
+		       this probably needs revision for 'aq' usage.  */
+		    assert (!aq);
 		    gomp_copy_host2dev (devicep, aq, devptr, &target,
 					sizeof (void *), false, cbufp);
 		    ++i;
