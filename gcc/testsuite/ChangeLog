@@ -1,3 +1,27 @@
+2023-03-22  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-03-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99036
+	* gfortran.dg/pr99036.f90: New test.
+
+2023-03-22  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-03-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/109186
+	* gfortran.dg/nearest_6.f90: New test.
+
+2023-03-22  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-03-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85877
+	* gfortran.dg/pr85877.f90: New test.
+
 2023-03-20  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:
