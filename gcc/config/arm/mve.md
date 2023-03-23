@@ -5677,7 +5677,7 @@
 		[(match_operand:V4SI 1 "s_register_operand" "0")
 		 (match_operand:SI 2 "mve_vldrd_immediate" "Ri")
 		 (match_operand:V4SI 3 "s_register_operand" "w")
-		 (match_operand:V4BI 4 "vpr_register_operand")]
+		 (match_operand:V4BI 4 "vpr_register_operand" "Up")]
 	VSTRWSBWBQ))
    (set (match_operand:V4SI 0 "s_register_operand" "=w")
 	(unspec:V4SI [(match_dup 1) (match_dup 2)]
@@ -5726,9 +5726,9 @@
  [(set (mem:BLK (scratch))
        (unspec:BLK
 		[(match_operand:V4SI 1 "s_register_operand" "0")
-		 (match_operand:SI 2 "mve_vldrd_immediate" "Ri")
+		 (match_operand:SI 2 "mve_vstrw_immediate" "Rl")
 		 (match_operand:V4SF 3 "s_register_operand" "w")
-		 (match_operand:V4BI 4 "vpr_register_operand")]
+		 (match_operand:V4BI 4 "vpr_register_operand" "Up")]
 	VSTRWQSBWB_F))
    (set (match_operand:V4SI 0 "s_register_operand" "=w")
 	(unspec:V4SI [(match_dup 1) (match_dup 2)]
@@ -5740,7 +5740,7 @@
    ops[0] = operands[1];
    ops[1] = operands[2];
    ops[2] = operands[3];
-   output_asm_insn ("vpst\;\tvstrwt.u32\t%q2, [%q0, %1]!",ops);
+   output_asm_insn ("vpst\;vstrwt.u32\t%q2, [%q0, %1]!",ops);
    return "";
 }
   [(set_attr "length" "8")])
@@ -5779,7 +5779,7 @@
 		[(match_operand:V2DI 1 "s_register_operand" "0")
 		 (match_operand:SI 2 "mve_vldrd_immediate" "Ri")
 		 (match_operand:V2DI 3 "s_register_operand" "w")
-		 (match_operand:V2QI 4 "vpr_register_operand")]
+		 (match_operand:V2QI 4 "vpr_register_operand" "Up")]
 	 VSTRDSBWBQ))
    (set (match_operand:V2DI 0 "s_register_operand" "=w")
 	(unspec:V2DI [(match_dup 1) (match_dup 2)]
