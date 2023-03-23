@@ -245,6 +245,7 @@ private:
   void visit (MacroMatchRepetition &match);
   void visit (MacroMatcher &matcher);
   void visit (MacroRulesDefinition &rules_def);
+  void visit (MacroInvocData &invoc_data);
   void visit (MacroInvocation &macro_invoc);
   void visit (MetaItemPath &meta_item);
   void visit (MetaItemSeq &meta_item);

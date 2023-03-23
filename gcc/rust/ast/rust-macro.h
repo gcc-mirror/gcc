@@ -904,6 +904,10 @@ public:
 
   std::string as_string () const override;
 
+  SimplePath &get_path () { return path; }
+
+  std::vector<std::unique_ptr<MetaItemInner>> &get_seq () { return seq; }
+
   void accept_vis (ASTVisitor &vis) override;
 
   Location get_locus () const override { return path.get_locus (); }
@@ -934,6 +938,8 @@ public:
   std::string as_string () const override { return ident; }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  Identifier get_ident () const { return ident; }
 
   Location get_locus () const override { return ident_locus; }
 
@@ -1019,6 +1025,10 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  Identifier get_ident () const { return ident; }
+
+  std::vector<SimplePath> &get_paths () { return paths; };
+
   Location get_locus () const override { return ident_locus; }
 
   bool check_cfg_predicate (const Session &session) const override;
@@ -1054,6 +1064,10 @@ public:
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  Identifier get_ident () { return ident; }
+
+  std::vector<MetaNameValueStr> &get_values () { return strs; }
 
   Location get_locus () const override { return ident_locus; }
 

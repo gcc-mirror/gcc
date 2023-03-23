@@ -2047,8 +2047,22 @@ TokenStream::visit (ExternalTypeItem &type)
 }
 
 void
-TokenStream::visit (ExternalStaticItem &)
-{}
+TokenStream::visit (ExternalStaticItem &item)
+{
+  auto id = item.get_identifier ();
+  visit_items_as_lines (item.get_outer_attrs ());
+  if (item.has_visibility ())
+    visit (item.get_visibility ());
+  tokens.push_back (Rust::Token::make (STATIC_TOK, item.get_locus ()));
+  if (item.is_mut ())
+    tokens.push_back (Rust::Token::make (MUT, Location ()));
+  tokens.push_back (Rust::Token::make_identifier (Location (), std::move (id)));
+  tokens.push_back (Rust::Token::make (COLON, Location ()));
+  visit (item.get_type ());
+  // TODO: No expr ? The "(= Expression)?" part from the reference seems missing
+  // in the ast.
+  tokens.push_back (Rust::Token::make (SEMICOLON, Location ()));
+}
 
 void
 TokenStream::visit (ExternalFunctionItem &function)
@@ -2188,32 +2202,77 @@ TokenStream::visit (MacroRulesDefinition &rules_def)
 }
 
 void
-TokenStream::visit (MacroInvocation &)
-{}
+TokenStream::visit (MacroInvocation &invocation)
+{
+  auto data = invocation.get_invoc_data ();
+  visit (data.get_path ());
+  tokens.push_back (Rust::Token::make (EXCLAM, Location ()));
+  visit (data.get_delim_tok_tree ());
+  if (invocation.has_semicolon ())
+    tokens.push_back (Rust::Token::make (SEMICOLON, Location ()));
+}
 
 void
-TokenStream::visit (MetaItemPath &)
-{}
+TokenStream::visit (MetaItemPath &item)
+{
+  auto path = item.to_path_item ();
+  visit (path);
+}
 
 void
-TokenStream::visit (MetaItemSeq &)
-{}
+TokenStream::visit (MetaItemSeq &item)
+{
+  visit (item.get_path ());
+  // TODO: Double check this, there is probably a mistake.
+  tokens.push_back (Rust::Token::make (LEFT_PAREN, Location ()));
+  visit_items_joined_by_separator (item.get_seq (), COMMA);
+  tokens.push_back (Rust::Token::make (RIGHT_PAREN, Location ()));
+}
 
 void
-TokenStream::visit (MetaWord &)
-{}
+TokenStream::visit (MetaWord &word)
+{
+  auto id = word.get_ident ();
+  tokens.push_back (
+    Rust::Token::make_identifier (word.get_locus (), std::move (id)));
+}
 
 void
-TokenStream::visit (MetaNameValueStr &)
-{}
+TokenStream::visit (MetaNameValueStr &name)
+{
+  auto pair = name.get_name_value_pair ();
+  auto id = std::get<0> (pair);
+  auto value = std::get<1> (pair);
+  tokens.push_back (
+    Rust::Token::make_identifier (name.get_locus (), std::move (id)));
+  tokens.push_back (Rust::Token::make (EQUAL, name.get_locus ()));
+  tokens.push_back (Rust::Token::make (DOUBLE_QUOTE, Location ()));
+  tokens.push_back (
+    Rust::Token::make_identifier (name.get_locus (), std::move (value)));
+  tokens.push_back (Rust::Token::make (DOUBLE_QUOTE, Location ()));
+}
 
 void
-TokenStream::visit (MetaListPaths &)
-{}
+TokenStream::visit (MetaListPaths &list)
+{
+  auto id = list.get_ident ();
+  tokens.push_back (
+    Rust::Token::make_identifier (list.get_locus (), std::move (id)));
+  tokens.push_back (Rust::Token::make (LEFT_PAREN, Location ()));
+  visit_items_joined_by_separator (list.get_paths (), COMMA);
+  tokens.push_back (Rust::Token::make (RIGHT_PAREN, Location ()));
+}
 
 void
-TokenStream::visit (MetaListNameValueStr &)
-{}
+TokenStream::visit (MetaListNameValueStr &list)
+{
+  auto id = list.get_ident ();
+  tokens.push_back (
+    Rust::Token::make_identifier (list.get_locus (), std::move (id)));
+  tokens.push_back (Rust::Token::make (LEFT_PAREN, Location ()));
+  visit_items_joined_by_separator (list.get_values (), COMMA);
+  tokens.push_back (Rust::Token::make (RIGHT_PAREN, Location ()));
+}
 
 // rust-pattern.h
 void
