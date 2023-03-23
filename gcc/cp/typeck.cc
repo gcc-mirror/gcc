@@ -9960,18 +9960,15 @@ build_ptrmemfunc (tree type, tree pfn, int force, bool c_cast_p,
       if (n == error_mark_node)
 	return error_mark_node;
 
+      STRIP_ANY_LOCATION_WRAPPER (pfn);
+
       /* We don't have to do any conversion to convert a
 	 pointer-to-member to its own type.  But, we don't want to
 	 just return a PTRMEM_CST if there's an explicit cast; that
 	 cast should make the expression an invalid template argument.  */
-      if (TREE_CODE (pfn) != PTRMEM_CST)
-	{
-	  if (same_type_p (to_type, pfn_type))
-	    return pfn;
-	  else if (integer_zerop (n) && TREE_CODE (pfn) != CONSTRUCTOR)
-	    return build_reinterpret_cast (input_location, to_type, pfn, 
-                                           complain);
-	}
+      if (TREE_CODE (pfn) != PTRMEM_CST
+	  && same_type_p (to_type, pfn_type))
+	return pfn;
 
       if (TREE_SIDE_EFFECTS (pfn))
 	pfn = save_expr (pfn);
