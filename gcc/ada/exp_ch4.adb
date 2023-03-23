@@ -6492,34 +6492,16 @@ package body Exp_Ch4 is
          ----------------------------
 
          function Is_OK_Object_Reference (Nod : Node_Id) return Boolean is
-            Obj_Ref : Node_Id;
+            Obj_Ref : constant Node_Id := Original_Node (Nod);
+            --  The original operand
 
          begin
-            --  Inspect the original operand
-
-            Obj_Ref := Original_Node (Nod);
-
             --  The object reference must be a source construct, otherwise the
             --  codefix suggestion may refer to nonexistent code from a user
             --  perspective.
 
-            if Comes_From_Source (Obj_Ref) then
-               loop
-                  if Nkind (Obj_Ref) in
-                       N_Type_Conversion |
-                       N_Unchecked_Type_Conversion |
-                       N_Qualified_Expression
-                  then
-                     Obj_Ref := Expression (Obj_Ref);
-                  else
-                     exit;
-                  end if;
-               end loop;
-
-               return Is_Object_Reference (Obj_Ref);
-            end if;
-
-            return False;
+            return Comes_From_Source (Obj_Ref)
+              and then Is_Object_Reference (Unqual_Conv (Obj_Ref));
          end Is_OK_Object_Reference;
 
       --  Start of processing for Substitute_Valid_Test
