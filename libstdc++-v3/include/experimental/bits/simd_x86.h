@@ -510,12 +510,14 @@ struct _CommonImplX86 : _CommonImplBuiltin
   using _CommonImplBuiltin::_S_store;
 
   template <typename _Tp, size_t _Np>
-    _GLIBCXX_SIMD_INTRINSIC static void
+    _GLIBCXX_SIMD_INTRINSIC static constexpr void
     _S_store(_SimdWrapper<_Tp, _Np> __x, void* __addr)
     {
       constexpr size_t _Bytes = _Np * sizeof(_Tp);
 
-      if constexpr ((_Bytes & (_Bytes - 1)) != 0 && __have_avx512bw_vl)
+      if (__builtin_is_constant_evaluated())
+	_CommonImplBuiltin::_S_store(__x, __addr);
+      else if constexpr ((_Bytes & (_Bytes - 1)) != 0 && __have_avx512bw_vl)
 	{
 	  const auto __v = __to_intrin(__x);
 
@@ -581,7 +583,9 @@ struct _CommonImplX86 : _CommonImplBuiltin
     _GLIBCXX_SIMD_INTRINSIC static constexpr void
     _S_store_bool_array(const _BitMask<_Np, _Sanitized> __x, bool* __mem)
     {
-      if constexpr (__have_avx512bw_vl) // don't care for BW w/o VL
+      if (__builtin_is_constant_evaluated())
+	_CommonImplBuiltin::_S_store_bool_array(__x, __mem);
+      else if constexpr (__have_avx512bw_vl) // don't care for BW w/o VL
 	_S_store<_Np>(1 & __vector_bitcast<_UChar, _Np>(
 			    [=]() constexpr _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 			      if constexpr (_Np <= 16)
@@ -2319,14 +2323,14 @@ template <typename _Abi>
 	  } // }}}
 	else if (__builtin_is_constant_evaluated())
 	  return _Base::_S_equal_to(__x, __y);
-	else if constexpr (sizeof(__x) == 8) // {{{
+	else if constexpr (sizeof(__x) == 8)
 	  {
 	    const auto __r128 = __vector_bitcast<_Tp, 16 / sizeof(_Tp)>(__x)
 				== __vector_bitcast<_Tp, 16 / sizeof(_Tp)>(__y);
-	    _MaskMember<_Tp> __r64;
+	    _MaskMember<_Tp> __r64{};
 	    __builtin_memcpy(&__r64._M_data, &__r128, sizeof(__r64));
 	    return __r64;
-	  } // }}}
+	  }
 	else
 	  return _Base::_S_equal_to(__x, __y);
       }
@@ -2397,7 +2401,7 @@ template <typename _Abi>
 	  {
 	    const auto __r128 = __vector_bitcast<_Tp, 16 / sizeof(_Tp)>(__x)
 				!= __vector_bitcast<_Tp, 16 / sizeof(_Tp)>(__y);
-	    _MaskMember<_Tp> __r64;
+	    _MaskMember<_Tp> __r64{};
 	    __builtin_memcpy(&__r64._M_data, &__r128, sizeof(__r64));
 	    return __r64;
 	  }
@@ -2505,7 +2509,7 @@ template <typename _Abi>
 	  {
 	    const auto __r128 = __vector_bitcast<_Tp, 16 / sizeof(_Tp)>(__x)
 				< __vector_bitcast<_Tp, 16 / sizeof(_Tp)>(__y);
-	    _MaskMember<_Tp> __r64;
+	    _MaskMember<_Tp> __r64{};
 	    __builtin_memcpy(&__r64._M_data, &__r128, sizeof(__r64));
 	    return __r64;
 	  }
@@ -2613,7 +2617,7 @@ template <typename _Abi>
 	  {
 	    const auto __r128 = __vector_bitcast<_Tp, 16 / sizeof(_Tp)>(__x)
 				<= __vector_bitcast<_Tp, 16 / sizeof(_Tp)>(__y);
-	    _MaskMember<_Tp> __r64;
+	    _MaskMember<_Tp> __r64{};
 	    __builtin_memcpy(&__r64._M_data, &__r128, sizeof(__r64));
 	    return __r64;
 	  }
@@ -4408,7 +4412,19 @@ template <typename _Abi>
       _S_load(const bool* __mem)
       {
 	static_assert(is_same_v<_Tp, __int_for_sizeof_t<_Tp>>);
-	if constexpr (__have_avx512bw)
+	if (__builtin_is_constant_evaluated())
+	  {
+	    if constexpr (__is_avx512_abi<_Abi>())
+	      {
+		_MaskMember<_Tp> __r{};
+		for (size_t __i = 0; __i < _S_size<_Tp>; ++__i)
+		  __r._M_data |= _ULLong(__mem[__i]) << __i;
+		return __r;
+	      }
+	    else
+	      return _Base::template _S_load<_Tp>(__mem);
+	  }
+	else if constexpr (__have_avx512bw)
 	  {
 	    const auto __to_vec_or_bits
 	      = [](auto __bits) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA -> decltype(auto) {
@@ -4676,10 +4692,12 @@ template <typename _Abi>
 
     // _S_store {{{2
     template <typename _Tp, size_t _Np>
-      _GLIBCXX_SIMD_INTRINSIC static void
+      _GLIBCXX_SIMD_INTRINSIC static constexpr void
       _S_store(_SimdWrapper<_Tp, _Np> __v, bool* __mem) noexcept
       {
-	if constexpr (__is_avx512_abi<_Abi>())
+	if (__builtin_is_constant_evaluated())
+	  _Base::_S_store(__v, __mem);
+	else if constexpr (__is_avx512_abi<_Abi>())
 	  {
 	    if constexpr (__have_avx512bw_vl)
 	      _CommonImplX86::_S_store<_Np>(
@@ -4761,7 +4779,7 @@ template <typename _Abi>
 	    if constexpr (_Np <= 4 && sizeof(_Tp) == 8)
 	      {
 		auto __k = __intrin_bitcast<__m256i>(__to_intrin(__v));
-		int __bool4;
+		int __bool4{};
 		if constexpr (__have_avx2)
 		  __bool4 = _mm256_movemask_epi8(__k);
 		else
@@ -4845,7 +4863,9 @@ template <typename _Abi>
       {
 	if constexpr (is_same_v<_Tp, bool>)
 	  {
-	    if constexpr (__have_avx512dq && _Np <= 8)
+	    if (__builtin_is_constant_evaluated())
+	      return __x._M_data & __y._M_data;
+	    else if constexpr (__have_avx512dq && _Np <= 8)
 	      return _kand_mask8(__x._M_data, __y._M_data);
 	    else if constexpr (_Np <= 16)
 	      return _kand_mask16(__x._M_data, __y._M_data);
@@ -4866,7 +4886,9 @@ template <typename _Abi>
       {
 	if constexpr (is_same_v<_Tp, bool>)
 	  {
-	    if constexpr (__have_avx512dq && _Np <= 8)
+	    if (__builtin_is_constant_evaluated())
+	      return __x._M_data | __y._M_data;
+	    else if constexpr (__have_avx512dq && _Np <= 8)
 	      return _kor_mask8(__x._M_data, __y._M_data);
 	    else if constexpr (_Np <= 16)
 	      return _kor_mask16(__x._M_data, __y._M_data);
@@ -4887,7 +4909,9 @@ template <typename _Abi>
       {
 	if constexpr (is_same_v<_Tp, bool>)
 	  {
-	    if constexpr (__have_avx512dq && _Np <= 8)
+	    if (__builtin_is_constant_evaluated())
+	      return __x._M_data ^ _Abi::template __implicit_mask_n<_Np>();
+	    else if constexpr (__have_avx512dq && _Np <= 8)
 	      return _kandn_mask8(__x._M_data,
 				  _Abi::template __implicit_mask_n<_Np>());
 	    else if constexpr (_Np <= 16)
@@ -4912,7 +4936,9 @@ template <typename _Abi>
       {
 	if constexpr (is_same_v<_Tp, bool>)
 	  {
-	    if constexpr (__have_avx512dq && _Np <= 8)
+	    if (__builtin_is_constant_evaluated())
+	      return __x._M_data & __y._M_data;
+	    else if constexpr (__have_avx512dq && _Np <= 8)
 	      return _kand_mask8(__x._M_data, __y._M_data);
 	    else if constexpr (_Np <= 16)
 	      return _kand_mask16(__x._M_data, __y._M_data);
@@ -4933,7 +4959,9 @@ template <typename _Abi>
       {
 	if constexpr (is_same_v<_Tp, bool>)
 	  {
-	    if constexpr (__have_avx512dq && _Np <= 8)
+	    if (__builtin_is_constant_evaluated())
+	      return __x._M_data | __y._M_data;
+	    else if constexpr (__have_avx512dq && _Np <= 8)
 	      return _kor_mask8(__x._M_data, __y._M_data);
 	    else if constexpr (_Np <= 16)
 	      return _kor_mask16(__x._M_data, __y._M_data);
@@ -4954,7 +4982,9 @@ template <typename _Abi>
       {
 	if constexpr (is_same_v<_Tp, bool>)
 	  {
-	    if constexpr (__have_avx512dq && _Np <= 8)
+	    if (__builtin_is_constant_evaluated())
+	      return __x._M_data ^ __y._M_data;
+	    else if constexpr (__have_avx512dq && _Np <= 8)
 	      return _kxor_mask8(__x._M_data, __y._M_data);
 	    else if constexpr (_Np <= 16)
 	      return _kxor_mask16(__x._M_data, __y._M_data);
