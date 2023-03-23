@@ -3460,7 +3460,7 @@ pass_forwprop::execute (function *fun)
   lattice.create (num_ssa_names);
   lattice.quick_grow_cleared (num_ssa_names);
   int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (fun));
-  int postorder_num = pre_and_rev_post_order_compute_fn (cfun, NULL,
+  int postorder_num = pre_and_rev_post_order_compute_fn (fun, NULL,
 							 postorder, false);
   auto_vec<gimple *, 4> to_fixup;
   auto_vec<gimple *, 32> to_remove;
@@ -3594,7 +3594,7 @@ pass_forwprop::execute (function *fun)
 		   && !gimple_has_volatile_ops (stmt)
 		   && (TREE_CODE (gimple_assign_rhs1 (stmt))
 		       != TARGET_MEM_REF)
-		   && !stmt_can_throw_internal (cfun, stmt))
+		   && !stmt_can_throw_internal (fun, stmt))
 	    {
 	      /* Rewrite loads used only in real/imagpart extractions to
 	         component-wise loads.  */
@@ -3660,7 +3660,7 @@ pass_forwprop::execute (function *fun)
 		       || (fun->curr_properties & PROP_gimple_lvec))
 		   && gimple_assign_load_p (stmt)
 		   && !gimple_has_volatile_ops (stmt)
-		   && !stmt_can_throw_internal (cfun, stmt)
+		   && !stmt_can_throw_internal (fun, stmt)
 		   && (!VAR_P (rhs) || !DECL_HARD_REGISTER (rhs)))
 	    optimize_vector_load (&gsi);
 
@@ -3688,7 +3688,7 @@ pass_forwprop::execute (function *fun)
 		  location_t loc = gimple_location (use_stmt);
 		  gimple_set_location (new_stmt, loc);
 		  gimple_set_vuse (new_stmt, gimple_vuse (use_stmt));
-		  gimple_set_vdef (new_stmt, make_ssa_name (gimple_vop (cfun)));
+		  gimple_set_vdef (new_stmt, make_ssa_name (gimple_vop (fun)));
 		  SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
 		  gimple_set_vuse (use_stmt, gimple_vdef (new_stmt));
 		  gimple_stmt_iterator gsi2 = gsi_for_stmt (use_stmt);
@@ -3718,6 +3718,8 @@ pass_forwprop::execute (function *fun)
 		       && (gimple_vuse (def1) == gimple_vuse (def2))
 		       && !gimple_has_volatile_ops (def1)
 		       && !gimple_has_volatile_ops (def2)
+		       && !stmt_can_throw_internal (fun, def1)
+		       && !stmt_can_throw_internal (fun, def2)
 		       && gimple_assign_rhs_code (def1) == REALPART_EXPR
 		       && gimple_assign_rhs_code (def2) == IMAGPART_EXPR
 		       && operand_equal_p (TREE_OPERAND (gimple_assign_rhs1
@@ -3752,7 +3754,7 @@ pass_forwprop::execute (function *fun)
 	      if (single_imm_use (lhs, &use_p, &use_stmt)
 		  && gimple_store_p (use_stmt)
 		  && !gimple_has_volatile_ops (use_stmt)
-		  && !stmt_can_throw_internal (cfun, use_stmt)
+		  && !stmt_can_throw_internal (fun, use_stmt)
 		  && is_gimple_assign (use_stmt)
 		  && (TREE_CODE (gimple_assign_lhs (use_stmt))
 		      != TARGET_MEM_REF))
@@ -3783,7 +3785,7 @@ pass_forwprop::execute (function *fun)
 		      gimple_set_location (new_stmt, loc);
 		      gimple_set_vuse (new_stmt, gimple_vuse (use_stmt));
 		      gimple_set_vdef (new_stmt,
-				       make_ssa_name (gimple_vop (cfun)));
+				       make_ssa_name (gimple_vop (fun)));
 		      SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
 		      gimple_set_vuse (use_stmt, gimple_vdef (new_stmt));
 		      gimple_stmt_iterator gsi2 = gsi_for_stmt (use_stmt);
@@ -4042,8 +4044,8 @@ pass_forwprop::execute (function *fun)
   BITMAP_FREE (to_purge);
   BITMAP_FREE (need_ab_cleanup);
 
-  if (get_range_query (cfun) != get_global_range_query ())
-    disable_ranger (cfun);
+  if (get_range_query (fun) != get_global_range_query ())
+    disable_ranger (fun);
 
   if (cfg_changed)
     todoflags |= TODO_cleanup_cfg;
