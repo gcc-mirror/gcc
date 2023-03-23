@@ -1,5 +1,10 @@
 2023-03-23  Tobias Burnus  <tobias@codesourcery.com>
 
+	* class.cc (generate_callback_wrapper): Add attr.class_ok check.
+	* resolve.cc (resolve_fl_derived): Likewise.
+
+2023-03-23  Tobias Burnus  <tobias@codesourcery.com>
+
 	* trans-openmp.cc (gfc_trans_omp_clauses): Fix unmapping of
 	GOMP_MAP_POINTER for scalar allocatables/pointers.
 
