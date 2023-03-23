@@ -1280,6 +1280,8 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
+  PathType get_glob_type () { return glob_type; }
+
   Kind get_kind () const override { return Glob; }
 
   SimplePath get_path () const
@@ -1367,6 +1369,8 @@ public:
 
   std::string as_string () const override;
 
+  PathType get_path_type () { return path_type; }
+
   void accept_vis (ASTVisitor &vis) override;
 
   Kind get_kind () const override { return List; }
@@ -1375,6 +1379,8 @@ public:
     rust_assert (has_path ());
     return path;
   }
+
+  std::vector<std::unique_ptr<UseTree>> &get_trees () { return trees; }
 
   const std::vector<std::unique_ptr<UseTree>> &get_trees () const
   {
@@ -1423,6 +1429,8 @@ public:
   bool has_identifier () const { return bind_type == IDENTIFIER; }
 
   std::string as_string () const override;
+
+  NewBindType get_new_bind_type () { return bind_type; }
 
   void accept_vis (ASTVisitor &vis) override;
 
@@ -1497,6 +1505,9 @@ public:
   UseDeclaration &operator= (UseDeclaration &&other) = default;
 
   Location get_locus () const override final { return locus; }
+
+  std::unique_ptr<UseTree> &get_tree () { return use_tree; }
+
   const std::unique_ptr<UseTree> &get_tree () const { return use_tree; }
 
   void accept_vis (ASTVisitor &vis) override;
