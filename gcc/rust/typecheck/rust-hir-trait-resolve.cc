@@ -472,7 +472,7 @@ AssociatedImplTrait::setup_associated_types (
   TyTy::SubstitutionArgumentMappings infer_arguments (std::move (args), {},
 						      locus, param_subst_cb);
   TyTy::BaseType *impl_self_infer
-    = (associated_self->needs_generic_substitutions ())
+    = (!associated_self->is_concrete ())
 	? SubstMapperInternal::Resolve (associated_self, infer_arguments)
 	: associated_self;
 
@@ -495,19 +495,6 @@ AssociatedImplTrait::setup_associated_types (
       impl_trait_predicate_args.push_back (r);
     }
 
-  // we need to unify the receiver with the impl-block Self so that we compute
-  // the type correctly as our receiver may be generic and we are inferring its
-  // generic arguments and this Self might be the concrete version or vice
-  // versa.
-  auto result = unify_site_and (get_impl_block ()->get_mappings ().get_hirid (),
-				TyTy::TyWithLocation (receiver),
-				TyTy::TyWithLocation (impl_self_infer),
-				impl_predicate.get_locus (),
-				true /*emit-errors*/, true /*commit-if-ok*/,
-				true /*infer*/, true /*cleanup-on-fail*/);
-  rust_assert (result->get_kind () != TyTy::TypeKind::ERROR);
-  TyTy::BaseType *self_result = result;
-
   // unify the bounds arguments
   std::vector<TyTy::BaseType *> hrtb_bound_arguments;
   for (const auto &arg : bound.get_substs ())
@@ -520,21 +507,33 @@ AssociatedImplTrait::setup_associated_types (
       hrtb_bound_arguments.push_back (r);
     }
 
-  if (impl_trait_predicate_args.size () != hrtb_bound_arguments.size ())
-    return self_result;
-
+  rust_assert (impl_trait_predicate_args.size ()
+	       == hrtb_bound_arguments.size ());
   for (size_t i = 0; i < impl_trait_predicate_args.size (); i++)
     {
       TyTy::BaseType *a = impl_trait_predicate_args.at (i);
       TyTy::BaseType *b = hrtb_bound_arguments.at (i);
 
-      result
+      TyTy::BaseType *result
 	= unify_site_and (a->get_ref (), TyTy::TyWithLocation (a),
 			  TyTy::TyWithLocation (b), impl_predicate.get_locus (),
 			  true /*emit-errors*/, true /*commit-if-ok*/,
-			  true /*infer*/, true /*cleanup-on-fail*/);
+			  false /*infer*/, true /*cleanup-on-fail*/);
       rust_assert (result->get_kind () != TyTy::TypeKind::ERROR);
     }
+
+  // we need to unify the receiver with the impl-block Self so that we compute
+  // the type correctly as our receiver may be generic and we are inferring its
+  // generic arguments and this Self might be the concrete version or vice
+  // versa.
+  auto result = unify_site_and (get_impl_block ()->get_mappings ().get_hirid (),
+				TyTy::TyWithLocation (receiver),
+				TyTy::TyWithLocation (impl_self_infer),
+				impl_predicate.get_locus (),
+				true /*emit-errors*/, true /*commit-if-ok*/,
+				false /*infer*/, true /*cleanup-on-fail*/);
+  rust_assert (result->get_kind () != TyTy::TypeKind::ERROR);
+  TyTy::BaseType *self_result = result;
 
   // create the argument list
   std::vector<TyTy::SubstitutionArg> associated_arguments;
