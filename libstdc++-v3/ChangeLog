@@ -1,3 +1,53 @@
+2023-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_atomic.h (atomic::operator=(nullptr_t)):
+	Add overload, as per LWG 3893.
+	* testsuite/20_util/shared_ptr/atomic/atomic_shared_ptr.cc:
+	Check assignment from nullptr.
+
+2023-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (formatter<const charT[N], charT>): Do not
+	define partial speclialization, as per LWG 3833.
+	* testsuite/std/format/formatter/requirements.cc: Check it.
+
+2023-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/utility (__cpp_lib_constexpr_algorithms): Define,
+	as per LWG 3792.
+	* testsuite/20_util/exchange/constexpr.cc: Check for it.
+
+2023-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/version (__cpp_lib_format): Define.
+	* testsuite/std/format/functions/format.cc: Check it.
+
+2023-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.tcc (basic_string::resize_and_overwrite):
+	Pass rvalues to the callback, as now allowed by LWG 3645.
+	Enforce preconditions on the return value.
+	* testsuite/21_strings/basic_string/capacity/char/resize_and_overwrite.cc:
+	Adjust.
+
+2023-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format: Add a comment noting that the resolution
+	of LWG 3720 has been applied..
+
+2023-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (match_results): Add allocator-extended
+	copy and move constructors, as per LWG 2195.
+	* testsuite/28_regex/match_results/ctors/char/alloc.cc: New test.
+
+2023-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stream_iterator.h (istream_iterator): Add
+	constexpr to copy constructor, as per LWG 3600.
+	* testsuite/24_iterators/istream_iterator/cons/constexpr.cc:
+	Check copy construction.
+
 2023-03-21  Matthias Kretz  <m.kretz@gsi.de>
 
 	* include/experimental/bits/simd_x86.h

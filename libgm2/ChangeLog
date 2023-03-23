@@ -1,3 +1,8 @@
+2023-03-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* libm2pim/Makefile.am (M2DEFS): Remove M2LINK.def.
+	* libm2pim/Makefile.in: Rebuild.
+
 2023-03-16  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* libm2cor/Makefile.am: Remove

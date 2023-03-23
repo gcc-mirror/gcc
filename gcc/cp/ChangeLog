@@ -1,3 +1,21 @@
+2023-03-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108390
+	* pt.cc (unify): Use fold of build_nop instead of fold_convert.
+
+2023-03-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108795
+	* semantics.cc (finish_id_expression_1): Check scope before
+	returning id_expression.
+
+2023-03-22  Alex Coplan  <alex.coplan@arm.com>
+
+	PR c++/109177
+	* call.cc (build_over_call): Use make_temp_override to suppress
+	both unavailable and deprecated warnings when calling
+	build_addr_func.
+
 2023-03-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/106890

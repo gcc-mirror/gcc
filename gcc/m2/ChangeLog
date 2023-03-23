@@ -1,3 +1,56 @@
+2023-03-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109248
+	* Make-lang.in (m2/pge-boot/%.o): Add CFLAGS and CXXFLAGS for C
+	and C++ compiles.
+	* gm2spec.cc (add_m2_I_path): Indentation.
+	(lang_specific_driver): New variable seen_pathname.
+	Detect -fm2-pathname.  If not seen then push_back_Ipath (".").
+	Change non iso library path to "m2cor,m2log,m2pim,m2iso".
+
+2023-03-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/107630
+	* Make-lang.in (m2/stage2/cc1gm2$(exeext)): Remove
+	m2/gm2-libs-boot/M2LINK.o.
+	(m2/stage1/cc1gm2$(exeext)): Ditto.
+	(GM2-LIBS-BOOT-DEFS): Remove M2LINK.def.
+	(GM2-LIBS-DEFS): Ditto.
+	(m2/mc-boot/$(SRC_PREFIX)%.o): Replace CXX_FLAGS with CXXFLAGS.
+	(m2/mc-boot-ch/$(SRC_PREFIX)%.o): Ditto.
+	(m2/mc-boot/main.o): Ditto.
+	(mcflex.o): Add $(CFLAGS).
+	(m2/gm2-libs-boot/M2LINK.o): Remove rule.
+	* gm2-compiler/M2GCCDeclare.def (DeclareM2linkGlobals): Remove.
+	* gm2-compiler/M2GCCDeclare.mod: (M2LinkEntry): Remove.
+	(M2LinkIndex): Remove.
+	(DoVariableDeclaration): Remove initial and call to
+	AddEntryM2Link.
+	(AddEntryM2Link): Remove.
+	(GetEntryM2Link): Remove.
+	(DeclareM2linkGlobals): Remove.
+	(DetectM2LinkInitial): Remove.
+	(InitM2LinkModule): Remove.
+	* gm2-compiler/M2GenGCC.mod (CodeFinallyEnd): Remove call to
+	DeclareM2linkGlobals.
+	* gm2-compiler/M2Quads.mod (BuildM2InitFunction): Add extra
+	parameter containing runtime module override to ConstructModules.
+	* gm2-compiler/M2Scaffold.mod: Update comment describing
+	ConstructModules.
+	* gm2-gcc/m2decl.cc (m2decl_DeclareM2linkForcedModuleInitOrder):
+	Remove.
+	* gm2-libs-iso/M2RTS.def (ConstructModules): Add overrideliborder
+	parameter.
+	* gm2-libs-iso/M2RTS.mod: Add overrideliborder parameter.
+	* gm2-libs/M2Dependent.def (ConstructModules): Add overrideliborder
+	parameter.
+	* gm2-libs/M2Dependent.mod (ConstructModules): Add overrideliborder
+	parameter.
+	* gm2-libs/M2RTS.def (ConstructModules): Add overrideliborder parameter.
+	* gm2-libs/M2RTS.mod (ConstructModules): Add overrideliborder
+	parameter.
+	* gm2-libs/M2LINK.def: Removed.
+
 2023-03-21  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* Make-lang.in (m2/mc-boot/$(SRC_PREFIX)%.o): Add $(CXXFLAGS).

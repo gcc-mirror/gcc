@@ -1,3 +1,35 @@
+2023-03-22  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* lra.cc (lra): Do not repeat inheritance and live range splitting
+	when asm error is found.
+
+2023-03-22  Andrew Jenner  <andrew@codesourcery.com>
+
+	* config/gcn/gcn-protos.h (gcn_expand_dpp_swap_pairs_insn)
+	(gcn_expand_dpp_distribute_even_insn)
+	(gcn_expand_dpp_distribute_odd_insn): Declare.
+	* config/gcn/gcn-valu.md (@dpp_swap_pairs<mode>)
+	(@dpp_distribute_even<mode>, @dpp_distribute_odd<mode>)
+	(cmul<conj_op><mode>3, cml<addsub_as><mode>4, vec_addsub<mode>3)
+	(cadd<rot><mode>3, vec_fmaddsub<mode>4, vec_fmsubadd<mode>4)
+	(fms<mode>4<exec>, fms<mode>4_negop2<exec>, fms<mode>4)
+	(fms<mode>4_negop2): New patterns.
+	* config/gcn/gcn.cc (gcn_expand_dpp_swap_pairs_insn)
+	(gcn_expand_dpp_distribute_even_insn)
+	(gcn_expand_dpp_distribute_odd_insn): New functions.
+	* config/gcn/gcn.md: Add entries to unspec enum.
+
+2023-03-22  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/109008
+	* value-range.cc (frange::set): Add nan_state argument.
+	* value-range.h (class nan_state): New.
+	(frange::get_nan_state): New.
+
+2023-03-22  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
 2023-03-21  Joseph Myers  <joseph@codesourcery.com>
 
 	* stor-layout.cc (finalize_type_size): Copy TYPE_TYPELESS_STORAGE

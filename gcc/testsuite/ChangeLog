@@ -1,3 +1,50 @@
+2023-03-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR testsuite/105959
+	* gcc.dg-selftests/dg-final.exp
+	(dg_final_directive_check_num_args): Update expected maximum
+	number of args for the various directives using dg-scan.
+	* lib/scanasm.exp (append_encoding_arg): New procedure.
+	(dg-scan): Add optional 3rd argument: the encoding to use when
+	reading from the file.
+	* lib/scansarif.exp (scan-sarif-file): Treat the file as UTF-8
+	encoded when reading it.
+	(scan-sarif-file-not): Likewise.
+
+2023-03-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108390
+	* g++.dg/template/partial-order3.C: New test.
+
+2023-03-22  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/104572
+	* gfortran.dg/pr104572.f90: New test.
+
+2023-03-22  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/i386/pr109137.c: New.
+
+2023-03-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108795
+	* g++.dg/ext/attr-tsafe1.C: New test.
+
+2023-03-22  Alex Coplan  <alex.coplan@arm.com>
+
+	PR c++/109177
+	* g++.dg/ext/pr109177.C: New test.
+
+2023-03-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109239
+	* gcc.dg/analyzer/deref-before-check-pr109239-linux-bus.c: New test.
+
+2023-03-22  Andrew Jenner  <andrew@codesourcery.com>
+
+	* gcc.target/gcn/complex.c: New test.
+
 2023-03-21  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/99036
