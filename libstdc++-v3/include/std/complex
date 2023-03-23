@@ -80,7 +80,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     _GLIBCXX20_CONSTEXPR complex<_Tp> conj(const complex<_Tp>&);
   ///  Return complex with magnitude @a rho and angle @a theta.
-  template<typename _Tp> complex<_Tp> polar(const _Tp&, const _Tp& = 0);
+  template<typename _Tp> complex<_Tp> polar(const _Tp&, const _Tp& = _Tp(0));
 
   // Transcendentals:
   /// Return complex cosine of @a z.
@@ -961,7 +961,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline complex<_Tp>
     polar(const _Tp& __rho, const _Tp& __theta)
     {
-      __glibcxx_assert( __rho >= 0 );
+      __glibcxx_assert( __rho >= _Tp(0) );
       return complex<_Tp>(__rho * cos(__theta), __rho * sin(__theta));
     }
 
@@ -1161,13 +1161,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       if (__x == _Tp())
         {
-          _Tp __t = sqrt(abs(__y) / 2);
+          _Tp __t = sqrt(abs(__y) / _Tp(2));
           return complex<_Tp>(__t, __y < _Tp() ? -__t : __t);
         }
       else
         {
-          _Tp __t = sqrt(2 * (std::abs(__z) + abs(__x)));
-          _Tp __u = __t / 2;
+          _Tp __t = sqrt(_Tp(2) * (std::abs(__z) + abs(__x)));
+          _Tp __u = __t / _Tp(2);
           return __x > _Tp()
             ? complex<_Tp>(__u, __y / __t)
             : complex<_Tp>(abs(__y) / __t, __y < _Tp() ? -__u : __u);
@@ -1257,7 +1257,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     complex<_Tp>
     __complex_pow_unsigned(complex<_Tp> __x, unsigned __n)
     {
-      complex<_Tp> __y = __n % 2 ? __x : complex<_Tp>(1);
+      complex<_Tp> __y = __n % 2 ? __x : complex<_Tp>(_Tp(1));
 
       while (__n >>= 1)
         {
@@ -1280,7 +1280,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     pow(const complex<_Tp>& __z, int __n)
     {
       return __n < 0
-	? complex<_Tp>(1) / std::__complex_pow_unsigned(__z, -(unsigned)__n)
+	? complex<_Tp>(_Tp(1)) / std::__complex_pow_unsigned(__z, -(unsigned)__n)
         : std::__complex_pow_unsigned(__z, __n);
     }
 
@@ -2017,7 +2017,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __complex_acos(const std::complex<_Tp>& __z)
     {
       const std::complex<_Tp> __t = std::asin(__z);
-      const _Tp __pi_2 = 1.5707963267948966192313216916397514L;
+      const _Tp __pi_2 = _Tp(1.5707963267948966192313216916397514L);
       return std::complex<_Tp>(__pi_2 - __t.real(), -__t.imag());
     }
 
