@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_STRING
 #define IN_TARGET_CODE 1
 
 #include "config.h"
@@ -23168,6 +23169,93 @@ ix86_c_mode_for_suffix (char suffix)
   return VOIDmode;
 }
 
+/* Helper function to map common constraints to non-EGPR ones.
+   All related constraints have h prefix, and h plus Upper letter
+   means the constraint is strictly EGPR enabled, while h plus
+   lower letter indicates the constraint is strictly gpr16 only.
+
+   Specially for "g" constraint, split it to rmi as there is
+   no corresponding general constraint define for backend.
+
+   Here is the full list to map constraints that may involve
+   gpr to h prefixed.
+
+   "g" -> "jrjmi"
+   "r" -> "jr"
+   "m" -> "jm"
+   "<" -> "j<"
+   ">" -> "j>"
+   "o" -> "jo"
+   "V" -> "jV"
+   "p" -> "jp"
+   "Bm" -> "ja"
+*/
+
+static void map_egpr_constraints (vec<const char *> &constraints)
+{
+  for (size_t i = 0; i < constraints.length(); i++)
+    {
+      const char *cur = constraints[i];
+
+      if (startswith (cur, "=@cc"))
+	continue;
+
+      int len = strlen (cur);
+      auto_vec<char> buf;
+
+      for (int j = 0; j < len; j++)
+	{
+	  switch (cur[j])
+	    {
+	    case 'g':
+	      buf.safe_push ('j');
+	      buf.safe_push ('r');
+	      buf.safe_push ('j');
+	      buf.safe_push ('m');
+	      buf.safe_push ('i');
+	      break;
+	    case 'r':
+	    case 'm':
+	    case '<':
+	    case '>':
+	    case 'o':
+	    case 'V':
+	    case 'p':
+	      buf.safe_push ('j');
+	      buf.safe_push (cur[j]);
+	      break;
+	    case 'B':
+	      if (cur[j + 1] == 'm')
+		{
+		  buf.safe_push ('j');
+		  buf.safe_push ('a');
+		  j++;
+		}
+	      else
+		{
+		  buf.safe_push (cur[j]);
+		  buf.safe_push (cur[j + 1]);
+		  j++;
+		}
+	      break;
+	    case 'T':
+	    case 'Y':
+	    case 'W':
+	    case 'j':
+	      buf.safe_push (cur[j]);
+	      buf.safe_push (cur[j + 1]);
+	      j++;
+	      break;
+	    default:
+	      buf.safe_push (cur[j]);
+	      break;
+	    }
+	}
+      buf.safe_push ('\0');
+      constraints[i] = xstrdup (buf.address ());
+    }
+}
+
 /* Worker function for TARGET_MD_ASM_ADJUST.
 
    We implement asm flag outputs, and maintain source compatibility
@@ -23182,6 +23270,10 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
   bool saw_asm_flag = false;
 
   start_sequence ();
+
+  if (TARGET_APX_EGPR && !ix86_apx_inline_asm_use_gpr32)
+    map_egpr_constraints (constraints);
+
   for (unsigned i = 0, n = outputs.length (); i < n; ++i)
     {
       const char *con = constraints[i];

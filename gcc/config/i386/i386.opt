@@ -1335,3 +1335,8 @@ Enum(apx_features) String(ndd) Value(apx_ndd) Set(4)
 
 EnumValue
 Enum(apx_features) String(all) Value(apx_all) Set(1)
+
+mapx-inline-asm-use-gpr32
+Target Var(ix86_apx_inline_asm_use_gpr32) Init(0)
+Enable GPR32 in inline asm when APX_EGPR enabled, do not
+hook reg or mem constraint in inline asm to GPR16.
