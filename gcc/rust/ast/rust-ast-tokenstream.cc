@@ -1568,8 +1568,22 @@ TokenStream::visit (Module &module)
 }
 
 void
-TokenStream::visit (ExternCrate &)
-{}
+TokenStream::visit (ExternCrate &crate)
+{
+  tokens.push_back (Rust::Token::make (EXTERN_TOK, crate.get_locus ()));
+  tokens.push_back (Rust::Token::make (CRATE, Location ()));
+  auto ref = crate.get_referenced_crate ();
+  tokens.push_back (
+    Rust::Token::make_identifier (Location (), std::move (ref)));
+  if (crate.has_as_clause ())
+    {
+      auto as_clause = crate.get_as_clause ();
+      tokens.push_back (Rust::Token::make (AS, Location ()));
+      tokens.push_back (
+	Rust::Token::make_identifier (Location (), std::move (as_clause)));
+    }
+  tokens.push_back (Rust::Token::make (SEMICOLON, Location ()));
+}
 
 void
 TokenStream::visit (UseTreeGlob &)
