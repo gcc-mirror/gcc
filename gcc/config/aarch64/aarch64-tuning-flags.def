@@ -44,6 +44,9 @@ AARCH64_EXTRA_TUNING_OPTION ("cheap_shift_extend", CHEAP_SHIFT_EXTEND)
 /* Disallow load/store pair instructions on Q-registers.  */
 AARCH64_EXTRA_TUNING_OPTION ("no_ldp_stp_qregs", NO_LDP_STP_QREGS)
 
+/* Disallow load-pair instructions to be formed in combine/peephole.  */
+AARCH64_EXTRA_TUNING_OPTION ("no_ldp_combine", NO_LDP_COMBINE)
+
 AARCH64_EXTRA_TUNING_OPTION ("rename_load_regs", RENAME_LOAD_REGS)
 
 /* Prefer Advanced SIMD over SVE for auto-vectorization.  */
