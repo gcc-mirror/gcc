@@ -1,5 +1,12 @@
 2023-03-24  Thomas Schwinge  <thomas@codesourcery.com>
 
+	Backported from master:
+	2023-03-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/104949
+	* target.c (gomp_map_vars_internal) <GOMP_MAP_FIRSTPRIVATE>: Add
+	caveat/safeguard.
+
 	* target.c (gomp_target_rev): Instead of 'dev_to_host_cpy',
 	'host_to_dev_cpy', 'token', take a single 'goacc_asyncqueue'.
 	* libgomp.h (gomp_target_rev): Adjust.
