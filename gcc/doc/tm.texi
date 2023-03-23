@@ -2568,6 +2568,15 @@ of an address, @code{ADDRESS} for something that occurs in an
 index expression if @var{outer_code} is @code{PLUS}; @code{SCRATCH} otherwise.
 @end defmac
 
+@defmac INSN_BASE_REG_CLASS (@var{insn})
+A C expression whose value is the register class to which a valid
+base register for a specified @var{insn} must belong. This macro is
+used when some backend insns may have limited usage of base register
+compared with other insns. If you define this macro, the compiler will
+use it instead of all other defined macros that relate to
+BASE_REG_CLASS.
+@end defmac
+
 @defmac INDEX_REG_CLASS
 A macro whose definition is the name of the class to which a valid
 index register must belong.  An index register is one used in an
@@ -2616,6 +2625,15 @@ address, @code{ADDRESS} for something that occurs in an
 corresponding index expression if @var{outer_code} is @code{PLUS};
 @code{SCRATCH} otherwise.  The mode may be @code{VOIDmode} for addresses
 that appear outside a @code{MEM}, i.e., as an @code{address_operand}.
+@end defmac
+
+@defmac REGNO_OK_FOR_INSN_BASE_P (@var{num}, @var{insn})
+A C expression which is nonzero if register number @var{num} is
+suitable for use as a base register in operand addresses for a specified
+@var{insn}. This macro is used when some backend insn may have limited
+usage of base register compared with other insns. If you define this
+macro, the compiler will use it instead of all other defined macros
+that relate to REGNO_OK_FOR_BASE_P.
 @end defmac
 
 @defmac REGNO_OK_FOR_INDEX_P (@var{num})

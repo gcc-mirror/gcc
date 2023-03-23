@@ -3681,7 +3681,7 @@ process_address_1 (int nop, bool check_only_p,
 				     REGNO (*ad.base_term)) != NULL_RTX)
 	    ? after : NULL),
 	   base_reg_class (ad.mode, ad.as, ad.base_outer_code,
-			   get_index_code (&ad)))))
+			   get_index_code (&ad), curr_insn))))
     {
       change_p = true;
       if (ad.base_term2 != NULL)
@@ -3731,7 +3731,8 @@ process_address_1 (int nop, bool check_only_p,
 	  rtx_insn *last = get_last_insn ();
 	  int code = -1;
 	  enum reg_class cl = base_reg_class (ad.mode, ad.as,
-					      SCRATCH, SCRATCH);
+					      SCRATCH, SCRATCH,
+					      curr_insn);
 	  rtx addr = *ad.inner;
 
 	  new_reg = lra_create_new_reg (Pmode, NULL_RTX, cl, NULL, "addr");
@@ -3794,7 +3795,8 @@ process_address_1 (int nop, bool check_only_p,
 	  /* index * scale + disp => new base + index * scale,
 	     case (1) above.  */
 	  enum reg_class cl = base_reg_class (ad.mode, ad.as, PLUS,
-					      GET_CODE (*ad.index));
+					      GET_CODE (*ad.index),
+					      curr_insn);
 
 	  lra_assert (INDEX_REG_CLASS != NO_REGS);
 	  new_reg = lra_create_new_reg (Pmode, NULL_RTX, cl, NULL, "disp");
@@ -3855,7 +3857,7 @@ process_address_1 (int nop, bool check_only_p,
 	      *ad.base_term = XEXP (SET_SRC (set), 0);
 	      *ad.disp_term = XEXP (SET_SRC (set), 1);
 	      cl = base_reg_class (ad.mode, ad.as, ad.base_outer_code,
-				   get_index_code (&ad));
+				   get_index_code (&ad), curr_insn);
 	      regno = REGNO (*ad.base_term);
 	      if (regno >= FIRST_PSEUDO_REGISTER
 		  && cl != lra_get_allocno_class (regno))
@@ -3899,7 +3901,8 @@ process_address_1 (int nop, bool check_only_p,
   else
     {
       enum reg_class cl = base_reg_class (ad.mode, ad.as,
-					  SCRATCH, SCRATCH);
+					  SCRATCH, SCRATCH,
+					  curr_insn);
       rtx addr = *ad.inner;
       
       new_reg = lra_create_new_reg (Pmode, NULL_RTX, cl, NULL, "addr");
@@ -4649,7 +4652,7 @@ curr_insn_transform (bool check_only_p)
 
 	  push_to_sequence (before);
 	  rclass = base_reg_class (GET_MODE (op), MEM_ADDR_SPACE (op),
-				   MEM, SCRATCH);
+				   MEM, SCRATCH, curr_insn);
 	  if (GET_RTX_CLASS (code) == RTX_AUTOINC)
 	    new_reg = emit_inc (rclass, *loc, *loc,
 				/* This value does not matter for MODIFY.  */
