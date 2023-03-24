@@ -4454,7 +4454,7 @@ The implementation remark:
 @item I/O within OpenMP target regions and OpenACC parallel/kernels is supported
       using the C library @code{printf} functions and the Fortran
       @code{print}/@code{write} statements.
-@item Reverse offload (i.e. @code{target} regions with
+@item Reverse offload regions (i.e. @code{target} regions with
       @code{device(ancestor:1)}) are processed serially per @code{target} region
       such that the next reverse offload region is only executed after the previous
       one returned.
