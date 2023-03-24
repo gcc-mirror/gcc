@@ -16,7 +16,7 @@ end subroutine test1
 
 ! Loop should be unrolled 1 * 2 * 3 * 4 = 24 times
 
-! { dg-final { scan-tree-dump {#pragma omp for nowait collapse\(1\) unroll_partial\(4\) unroll_partial\(3\) unroll_partial\(2\) unroll_partial\(1\)} "original" } }
+! { dg-final { scan-tree-dump {#pragma omp for nowait collapse\(1\) unroll_partial\(4\).0 unroll_partial\(3\).0 unroll_partial\(2\).0 unroll_partial\(1\)} "original" } }
 ! { dg-final { scan-tree-dump-not "#pragma omp loop_transform" "omp_transform_loops" } }
 ! { dg-final { scan-tree-dump-times "dummy" 24 "omp_transform_loops" } }
 ! { dg-final { scan-tree-dump-times {#pragma omp for} 1 "omp_transform_loops" } }

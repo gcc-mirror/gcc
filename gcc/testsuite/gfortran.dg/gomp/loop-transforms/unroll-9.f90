@@ -13,6 +13,6 @@ subroutine test1
   end do
 end subroutine test1
 
-! { dg-final { scan-tree-dump {#pragma omp loop_transform unroll_full unroll_partial\(3\) unroll_partial\(2\) unroll_partial\(1\)} "original" } }
+! { dg-final { scan-tree-dump {#pragma omp loop_transform unroll_full.0 unroll_partial\(3\).0 unroll_partial\(2\).0 unroll_partial\(1\).0} "original" } }
 ! { dg-final { scan-tree-dump-not "#pragma omp unroll" "omp_transform_loops" } }
 ! { dg-final { scan-tree-dump-times "dummy" 100 "omp_transform_loops" } }

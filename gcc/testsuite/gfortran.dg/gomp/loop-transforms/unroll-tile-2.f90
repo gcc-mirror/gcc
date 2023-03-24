@@ -22,7 +22,7 @@ function mult (a, b) result (c)
   !$omp end target
 end function mult
 
-! { dg-final { scan-tree-dump-times {#pragma omp for nowait unroll_partial\(2\) tile sizes\(8, 8, 4\)} 1 "original" } }
+! { dg-final { scan-tree-dump-times {#pragma omp for nowait unroll_partial\(2\)@0 tile sizes\(8, 8, 4\)@0} 1 "original" } }
 ! { dg-final { scan-tree-dump-not "#pragma omp loop_transform unroll_partial" "omp_transform_loops" } }
 
 ! Check the number of loops
