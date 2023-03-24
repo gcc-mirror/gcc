@@ -466,6 +466,10 @@ free_expr0 (gfc_expr *e)
 	  mpc_clear (e->value.complex);
 	  break;
 
+	case BT_BOZ:
+	  free (e->boz.str);
+	  break;
+
 	default:
 	  break;
 	}
