@@ -19,14 +19,21 @@
 
 namespace Rust {
 namespace AST {
+
+std::vector<TokenPtr>
+TokenStream::collect_tokens () const
+{
+  return tokens;
+}
+
 void
-TokenStream::go (AST::Crate &crate)
+TokenStream::visit (AST::Crate &crate)
 {
   visit_items_as_lines (crate.items);
 }
 
 void
-TokenStream::go (AST::Item &item)
+TokenStream::visit (AST::Item &item)
 {
   item.accept_vis (*this);
 }

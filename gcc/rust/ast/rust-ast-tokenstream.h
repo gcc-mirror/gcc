@@ -33,8 +33,10 @@ public:
   TokenStream (std::vector<TokenPtr> &container);
   bool output_trailing_commas = false;
 
-  void go (AST::Crate &crate);
-  void go (AST::Item &item);
+  void visit (AST::Crate &crate);
+  void visit (AST::Item &item);
+
+  std::vector<TokenPtr> collect_tokens () const;
 
 private:
   std::vector<TokenPtr> &tokens;
