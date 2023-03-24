@@ -10150,6 +10150,16 @@ proc check_effective_target_sm4 { } {
     } "-msm4" ]
 }
 
+proc check_effective_target_apxf { } {
+    return [check_no_compiler_messages apxf object {
+	void
+	foo ()
+	{
+	  __asm__ volatile ("add\t%%r16, %%r31" ::);
+	}
+    } "-mapxf" ]
+}
+
 # Return 1 if sse instructions can be compiled.
 proc check_effective_target_sse { } {
     return [check_no_compiler_messages sse object {
