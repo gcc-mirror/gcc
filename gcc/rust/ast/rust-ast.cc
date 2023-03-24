@@ -272,7 +272,7 @@ std::string
 SimplePath::as_string () const
 {
   std::string path;
-  if (has_opening_scope_resolution)
+  if (opening_scope_resolution)
     path = "::";
 
   // crappy hack because doing proper for loop would be more code
