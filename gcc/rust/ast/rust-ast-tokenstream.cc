@@ -182,7 +182,7 @@ TokenStream::visit (Attribute &attrib)
 void
 TokenStream::visit (SimplePath &path)
 {
-  if (path.get_has_opening_scope_resolution ())
+  if (path.has_opening_scope_resolution ())
     {
       tokens.push_back (
 	Rust::Token::make (SCOPE_RESOLUTION, path.get_locus ()));
