@@ -1,3 +1,135 @@
+2023-03-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105996
+	* g++.dg/cpp0x/constexpr-pmf3.C: New test.
+
+2023-03-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/tree-ssa/ssa-fre-100.c: XFAIL for ! natural_alignment_32.
+
+2023-03-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.dg/tree-ssa/pr100359.c: Compile-only for ! natural_alignment_32.
+
+2023-03-23  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* gcc.target/powerpc/mod-no_copy.c: New.
+	* gcc.target/powerpc/mod-peephole.c: New.
+
+2023-03-23  Andrew Pinski  <apinski@marvell.com>
+
+	PR c/84900
+	* gcc.dg/compound-literal-cast-lvalue-1.c: New test.
+
+2023-03-23  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109264
+	* gm2/iso/extended-opaque/pass/iso-extended-opaque-pass.exp:
+	New test.
+	* gm2/iso/extended-opaque/pass/stressset.def: New test.
+	* gm2/iso/extended-opaque/pass/stressset.mod: New test.
+	* gm2/iso/extended-opaque/pass/testset.mod: New test.
+	* gm2/projects/iso/small/run/pass/iso-extended-opaque-run-pass.exp:
+	New test.
+	* gm2/projects/iso/small/run/pass/stressset.def: New test.
+	* gm2/projects/iso/small/run/pass/stressset.mod: New test.
+	* gm2/projects/iso/small/run/pass/test1.mod: New test.
+	* gm2/projects/iso/small/run/pass/testlib.def: New test.
+	* gm2/projects/iso/small/run/pass/testlib.mod: New test.
+	* gm2/projects/iso/small/run/pass/testset.mod: New test.
+
+2023-03-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107569
+	* g++.dg/opt/pr107569.C: New testcase.
+
+2023-03-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109262
+	* g++.dg/torture/pr109262.C: New testcase.
+
+2023-03-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/div_zero.adb: Skip for aarch64*-*-* targets.
+
+2023-03-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107532
+	* g++.dg/warn/Wdangling-reference11.C: New test.
+	* g++.dg/warn/Wdangling-reference12.C: New test.
+
+2023-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109176
+	* gcc.target/aarch64/sve/pr109176.c: New test.
+
+2023-03-23  Pan Li  <pan2.li@intel.com>
+	    Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/108654
+	PR target/108185
+	* gcc.target/riscv/rvv/base/pr108185-1.c: Update.
+	* gcc.target/riscv/rvv/base/pr108185-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr108185-3.c: Ditto.
+
+2023-03-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109241
+	* g++.dg/cpp1y/lambda-generic-local-class2.C: New test.
+
+2023-03-23  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109244
+	* g++.target/riscv/rvv/base/pr109244.C: New test.
+	* gcc.target/riscv/rvv/base/binop_vv_constraint-4.c: Adapt testcase.
+	* gcc.target/riscv/rvv/base/binop_vv_constraint-6.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-127.c: Ditto.
+	* gcc.target/riscv/rvv/base/spill-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/spill-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/spill-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/spill-5.c: Ditto.
+	* gcc.target/riscv/rvv/base/spill-7.c: Ditto.
+	* g++.target/riscv/rvv/base/bug-18.C: New test.
+	* gcc.target/riscv/rvv/base/merge_constraint-3.c: New test.
+	* gcc.target/riscv/rvv/base/merge_constraint-4.c: New test.
+
+2023-03-23  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109228
+	* gcc.target/riscv/rvv/base/vlenb-1.c: New test.
+
+2023-03-23  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+	    kito-cheng  <kito.cheng@sifive.com>
+
+	* g++.target/riscv/rvv/base/bug-10.C: New test.
+	* g++.target/riscv/rvv/base/bug-11.C: New test.
+	* g++.target/riscv/rvv/base/bug-12.C: New test.
+	* g++.target/riscv/rvv/base/bug-13.C: New test.
+	* g++.target/riscv/rvv/base/bug-14.C: New test.
+	* g++.target/riscv/rvv/base/bug-15.C: New test.
+	* g++.target/riscv/rvv/base/bug-16.C: New test.
+	* g++.target/riscv/rvv/base/bug-17.C: New test.
+	* g++.target/riscv/rvv/base/bug-2.C: New test.
+	* g++.target/riscv/rvv/base/bug-3.C: New test.
+	* g++.target/riscv/rvv/base/bug-4.C: New test.
+	* g++.target/riscv/rvv/base/bug-5.C: New test.
+	* g++.target/riscv/rvv/base/bug-6.C: New test.
+	* g++.target/riscv/rvv/base/bug-7.C: New test.
+	* g++.target/riscv/rvv/base/bug-8.C: New test.
+	* g++.target/riscv/rvv/base/bug-9.C: New test.
+
+2023-03-23  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+	    kito-cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/base/bug-3.c: New test.
+	* gcc.target/riscv/rvv/base/bug-4.c: New test.
+	* gcc.target/riscv/rvv/base/bug-5.c: New test.
+
+2023-03-23  Kito Cheng  <kito.cheng@sifive.com>
+
+	* lib/target-supports.exp (check_effective_target_riscv_vector):
+	New.
+
 2023-03-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR testsuite/105959

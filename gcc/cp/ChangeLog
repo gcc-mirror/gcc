@@ -1,3 +1,22 @@
+2023-03-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105996
+	* typeck.cc (build_ptrmemfunc): Drop 0-offset optimization
+	and location wrappers.
+
+2023-03-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107532
+	* call.cc (class_has_reference_member_p): New.
+	(class_has_reference_member_p_r): New.
+	(reference_like_class_p): Don't look for a specific constructor.
+	Use a DFS walk with class_has_reference_member_p_r.
+
+2023-03-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109241
+	* pt.cc (find_parameter_packs_r): Handle null TREE_BINFO.
+
 2023-03-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/108390

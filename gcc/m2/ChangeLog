@@ -1,3 +1,34 @@
+2023-03-23  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109264
+	* gm2-compiler/M2Quads.mod (BuildConstFunctionCall): Comment
+	out ErrorString in debugging block.
+	(BuildConstructorStart): Replace Assert with a call to
+	MetaErrorT3.  Import MetaErrorT3.
+	* gm2-compiler/PCSymBuild.mod (buildConstFunction): Rename
+	local variables.
+	(WalkFunctionParam): Remove test for IsEnumeration when
+	resolving MIN or MAX parameters.
+	* gm2-compiler/PHBuild.bnf (BlockAssert): New procedure.
+	(ErrorArrayat): New procedure.
+	(Expect): Renamed parameter t to tok.
+	(PushQualident): New rule.
+	(ConstSetOrQualidentOrFunction): Force AutoOn.
+	(TypeDeclaration): Add debugging assert.
+	(SimpleType): Add debugging assert.
+	(DefaultRecordAttributes): New rule (and bugfix).
+	(FieldPragmaExpression): New rule (and bugfix).
+	(PragmaConstExpression): New rule (and bugfix).
+	(SetOrDesignatorOrFunction): Add debugging assert.
+	(Block): Add debugging assert.
+	* gm2-gcc/m2expr.cc (m2expr_ConstantExpressionWarning): int
+	to bool.
+	* gm2-gcc/m2expr.h (m2expr_TreeOverflow): int to bool.
+	(m2expr_GetBooleanTrue): Remove.
+	(m2expr_GetBooleanFalse): Remove.
+	* gm2-gcc/m2options.h (M2Options_SetStatistics): Replace
+	int with bool.
+
 2023-03-22  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109248

@@ -1,3 +1,262 @@
+2023-03-23  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (*mod<mode>3, umod<mode>3): Add
+	non-earlyclobber alternative.
+
+2023-03-23  Andrew Pinski  <apinski@marvell.com>
+
+	PR c/84900
+	* fold-const.cc (maybe_lvalue_p): Treat COMPOUND_LITERAL_EXPR
+	as a lvalue.
+
+2023-03-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107569
+	* tree-ssa-sccvn.cc (eliminate_dom_walker::eliminate_stmt):
+	Do not push SSA names with zero uses as available leader.
+	(process_bb): Likewise.
+
+2023-03-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109262
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): When
+	combining a piecewise complex load avoid touching loads
+	that throw internally.  Use fun, not cfun throughout.
+
+2023-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* value-range.cc (irange::irange_union, irange::intersect): Fix
+	comment spelling bugs.
+	* gimple-range-trace.cc (range_tracer::do_header): Likewise.
+	* gimple-range-trace.h: Likewise.
+	* gimple-range-edge.cc: Likewise.
+	(gimple_outgoing_range_stmt_p,
+	gimple_outgoing_range::switch_edge_range,
+	gimple_outgoing_range::edge_range_p): Likewise.
+	* gimple-range.cc (gimple_ranger::prefill_stmt_dependencies,
+	gimple_ranger::fold_stmt, gimple_ranger::register_transitive_infer,
+	assume_query::assume_query, assume_query::calculate_phi): Likewise.
+	* gimple-range-edge.h: Likewise.
+	* value-range.h (Value_Range::set, Value_Range::lower_bound,
+	Value_Range::upper_bound, frange::set_undefined): Likewise.
+	* gimple-range-gori.h (range_def_chain::depend, gori_map::m_outgoing,
+	gori_compute): Likewise.
+	* gimple-range-fold.h (fold_using_range): Likewise.
+	* gimple-range-path.cc (path_range_query::compute_ranges_in_phis):
+	Likewise.
+	* gimple-range-gori.cc (range_def_chain::in_chain_p,
+	range_def_chain::dump, gori_map::calculate_gori,
+	gori_compute::compute_operand_range_switch,
+	gori_compute::logical_combine, gori_compute::refine_using_relation,
+	gori_compute::compute_operand1_range, gori_compute::may_recompute_p):
+	Likewise.
+	* gimple-range.h: Likewise.
+	(enable_ranger): Likewise.
+	* range-op.h (empty_range_varying): Likewise.
+	* value-query.h (value_query): Likewise.
+	* gimple-range-cache.cc (block_range_cache::set_bb_range,
+	block_range_cache::dump, ssa_global_cache::clear_global_range,
+	temporal_cache::temporal_value, temporal_cache::current_p,
+	ranger_cache::range_of_def, ranger_cache::propagate_updated_value,
+	ranger_cache::range_from_dom, ranger_cache::register_inferred_value):
+	Likewise.
+	* gimple-range-fold.cc (fur_edge::get_phi_operand,
+	fur_stmt::get_operand, gimple_range_adjustment,
+	fold_using_range::range_of_phi,
+	fold_using_range::relation_fold_and_or): Likewise.
+	* value-range-storage.h (irange_storage_slot::MAX_INTS): Likewise.
+	* value-query.cc (range_query::value_of_expr,
+	range_query::value_on_edge, range_query::query_relation): Likewise.
+	* tree-vrp.cc (remove_unreachable::remove_and_update_globals,
+	intersect_range_with_nonzero_bits): Likewise.
+	* gimple-range-infer.cc (gimple_infer_range::check_assume_func,
+	exit_range): Likewise.
+	* value-relation.h: Likewise.
+	(equiv_oracle, relation_trio::relation_trio, value_relation,
+	value_relation::value_relation, pe_min): Likewise.
+	* range-op-float.cc (range_operator_float::rv_fold,
+	frange_arithmetic, foperator_unordered_equal::op1_range,
+	foperator_div::rv_fold): Likewise.
+	* gimple-range-op.cc (cfn_clz::fold_range): Likewise.
+	* value-relation.cc (equiv_oracle::query_relation,
+	equiv_oracle::register_equiv, equiv_oracle::add_equiv_to_block,
+	value_relation::apply_transitive, relation_chain_head::find_relation,
+	dom_oracle::query_relation, dom_oracle::find_relation_block,
+	dom_oracle::find_relation_dom, path_oracle::register_equiv): Likewise.
+	* range-op.cc (range_operator::wi_fold_in_parts_equiv,
+	create_possibly_reversed_range, adjust_op1_for_overflow,
+	operator_mult::wi_fold, operator_exact_divide::op1_range,
+	operator_cast::lhs_op1_relation, operator_cast::fold_pair,
+	operator_cast::fold_range, operator_abs::wi_fold, range_op_cast_tests,
+	range_op_lshift_tests): Likewise.
+
+2023-03-23  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.cc (gcn_class_max_nregs): Handle vectors in SGPRs.
+	(move_callee_saved_registers): Detect the bug condition early.
+
+2023-03-23  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-protos.h (gcn_stepped_zero_int_parallel_p): New.
+	* config/gcn/gcn-valu.md (V_1REG_ALT): New.
+	(V_2REG_ALT): New.
+	(vec_extract<V_1REG:mode><V_1REG_ALT:mode>_nop): New.
+	(vec_extract<V_2REG:mode><V_2REG_ALT:mode>_nop): New.
+	(vec_extract<V_ALL:mode><V_ALL_ALT:mode>): Use new patterns.
+	* config/gcn/gcn.cc (gcn_stepped_zero_int_parallel_p): New.
+	* config/gcn/predicates.md (ascending_zero_int_parallel): New.
+
+2023-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109176
+	* tree-vect-generic.cc (expand_vector_condition): If a has
+	vector boolean type and is a comparison, also check if both
+	the comparison and VEC_COND_EXPR could be successfully expanded
+	individually.
+
+2023-03-23  Pan Li  <pan2.li@intel.com>
+	    Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/108654
+	PR target/108185
+	* config/riscv/riscv-modes.def (ADJUST_BYTESIZE): Adjust size
+	for vector mask modes.
+	* config/riscv/riscv.cc (riscv_v_adjust_bytesize): New.
+	* config/riscv/riscv.h (riscv_v_adjust_bytesize): New.
+
+2023-03-23  Songhe Zhu  <zhusonghe@eswincomputing.com>
+
+	* config/riscv/multilib-generator: Adjusting the loop of 'alt' in 'alts'.
+
+2023-03-23  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109244
+	* config/riscv/riscv-protos.h (emit_vlmax_vsetvl): Define as global.
+	(emit_vlmax_op): Ditto.
+	* config/riscv/riscv-v.cc (get_sew): New function.
+	(emit_vlmax_vsetvl): Adapt function.
+	(emit_pred_op): Ditto.
+	(emit_vlmax_op): Ditto.
+	(emit_nonvlmax_op): Ditto.
+	(legitimize_move): Fix LRA ICE.
+	(gen_no_side_effects_vsetvl_rtx): Adapt function.
+	* config/riscv/vector.md (@mov<V_FRACT:mode><P:mode>_lra): New pattern.
+	(@mov<VB:mode><P:mode>_lra): Ditto.
+	(*mov<V_FRACT:mode><P:mode>_lra): Ditto.
+	(*mov<VB:mode><P:mode>_lra): Ditto.
+
+2023-03-23  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109228
+	* config/riscv/riscv-vector-builtins-bases.cc (class vlenb): Add
+	__riscv_vlenb support.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (vlenb): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct vlenb_def): Ditto.
+	(SHAPE): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.h: Ditto.
+	* config/riscv/riscv-vector-builtins.cc: Ditto.
+
+2023-03-23  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+	    kito-cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-vsetvl.cc (reg_available_p): Fix bugs.
+	(pass_vsetvl::compute_local_backward_infos): Fix bugs.
+	(pass_vsetvl::need_vsetvl): Fix bugs.
+	(pass_vsetvl::backward_demand_fusion): Fix bugs.
+	(pass_vsetvl::demand_fusion): Fix bugs.
+	(eliminate_insn): Fix bugs.
+	(insert_vsetvl): Ditto.
+	(pass_vsetvl::emit_local_forward_vsetvls): Ditto.
+	* config/riscv/riscv-vsetvl.h (enum vsetvl_type): Ditto.
+	* config/riscv/vector.md: Ditto.
+
+2023-03-23  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+	    kito-cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-vector-builtins-bases.cc: Fix ternary bug.
+	* config/riscv/vector-iterators.md (nmsac): Ditto.
+	(nmsub): Ditto.
+	(msac): Ditto.
+	(msub): Ditto.
+	(nmadd): Ditto.
+	(nmacc): Ditto.
+	* config/riscv/vector.md (@pred_mul_<optab><mode>): Ditto.
+	(@pred_mul_plus<mode>): Ditto.
+	(*pred_madd<mode>): Ditto.
+	(*pred_macc<mode>): Ditto.
+	(*pred_mul_plus<mode>): Ditto.
+	(@pred_mul_plus<mode>_scalar): Ditto.
+	(*pred_madd<mode>_scalar): Ditto.
+	(*pred_macc<mode>_scalar): Ditto.
+	(*pred_mul_plus<mode>_scalar): Ditto.
+	(*pred_madd<mode>_extended_scalar): Ditto.
+	(*pred_macc<mode>_extended_scalar): Ditto.
+	(*pred_mul_plus<mode>_extended_scalar): Ditto.
+	(@pred_minus_mul<mode>): Ditto.
+	(*pred_<madd_nmsub><mode>): Ditto.
+	(*pred_nmsub<mode>): Ditto.
+	(*pred_<macc_nmsac><mode>): Ditto.
+	(*pred_nmsac<mode>): Ditto.
+	(*pred_mul_<optab><mode>): Ditto.
+	(*pred_minus_mul<mode>): Ditto.
+	(@pred_mul_<optab><mode>_scalar): Ditto.
+	(@pred_minus_mul<mode>_scalar): Ditto.
+	(*pred_<madd_nmsub><mode>_scalar): Ditto.
+	(*pred_nmsub<mode>_scalar): Ditto.
+	(*pred_<macc_nmsac><mode>_scalar): Ditto.
+	(*pred_nmsac<mode>_scalar): Ditto.
+	(*pred_mul_<optab><mode>_scalar): Ditto.
+	(*pred_minus_mul<mode>_scalar): Ditto.
+	(*pred_<madd_nmsub><mode>_extended_scalar): Ditto.
+	(*pred_nmsub<mode>_extended_scalar): Ditto.
+	(*pred_<macc_nmsac><mode>_extended_scalar): Ditto.
+	(*pred_nmsac<mode>_extended_scalar): Ditto.
+	(*pred_mul_<optab><mode>_extended_scalar): Ditto.
+	(*pred_minus_mul<mode>_extended_scalar): Ditto.
+	(*pred_<madd_msub><mode>): Ditto.
+	(*pred_<macc_msac><mode>): Ditto.
+	(*pred_<madd_msub><mode>_scalar): Ditto.
+	(*pred_<macc_msac><mode>_scalar): Ditto.
+	(@pred_neg_mul_<optab><mode>): Ditto.
+	(@pred_mul_neg_<optab><mode>): Ditto.
+	(*pred_<nmadd_msub><mode>): Ditto.
+	(*pred_<nmsub_nmadd><mode>): Ditto.
+	(*pred_<nmacc_msac><mode>): Ditto.
+	(*pred_<nmsac_nmacc><mode>): Ditto.
+	(*pred_neg_mul_<optab><mode>): Ditto.
+	(*pred_mul_neg_<optab><mode>): Ditto.
+	(@pred_neg_mul_<optab><mode>_scalar): Ditto.
+	(@pred_mul_neg_<optab><mode>_scalar): Ditto.
+	(*pred_<nmadd_msub><mode>_scalar): Ditto.
+	(*pred_<nmsub_nmadd><mode>_scalar): Ditto.
+	(*pred_<nmacc_msac><mode>_scalar): Ditto.
+	(*pred_<nmsac_nmacc><mode>_scalar): Ditto.
+	(*pred_neg_mul_<optab><mode>_scalar): Ditto.
+	(*pred_mul_neg_<optab><mode>_scalar): Ditto.
+	(@pred_widen_neg_mul_<optab><mode>): Ditto.
+	(@pred_widen_mul_neg_<optab><mode>): Ditto.
+	(@pred_widen_neg_mul_<optab><mode>_scalar): Ditto.
+	(@pred_widen_mul_neg_<optab><mode>_scalar): Ditto.
+
+2023-03-23  liuhongt  <hongtao.liu@intel.com>
+
+	* builtins.cc (builtin_memset_read_str): Replace
+	targetm.gen_memset_scratch_rtx with gen_reg_rtx.
+	(builtin_memset_gen_str): Ditto.
+	* config/i386/i386-expand.cc
+	(ix86_convert_const_wide_int_to_broadcast): Replace
+	ix86_gen_scratch_sse_rtx with gen_reg_rtx.
+	(ix86_expand_vector_move): Ditto.
+	* config/i386/i386-protos.h (ix86_gen_scratch_sse_rtx):
+	Removed.
+	* config/i386/i386.cc (ix86_gen_scratch_sse_rtx): Removed.
+	(TARGET_GEN_MEMSET_SCRATCH_RTX): Removed.
+	* doc/tm.texi: Remove TARGET_GEN_MEMSET_SCRATCH_RTX.
+	* doc/tm.texi.in: Ditto.
+	* target.def: Ditto.
+
 2023-03-22  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	* lra.cc (lra): Do not repeat inheritance and live range splitting
