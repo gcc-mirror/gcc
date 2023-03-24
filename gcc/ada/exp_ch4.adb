@@ -13198,8 +13198,6 @@ package body Exp_Ch4 is
 
    procedure Expand_Set_Membership (N : Node_Id) is
       Lop : constant Node_Id := Left_Opnd (N);
-      Alt : Node_Id;
-      Res : Node_Id;
 
       function Make_Cond (Alt : Node_Id) return Node_Id;
       --  If the alternative is a subtype mark, create a simple membership
@@ -13228,23 +13226,22 @@ package body Exp_Ch4 is
          return Cond;
       end Make_Cond;
 
+      --  Local variables
+
+      Alt : Node_Id;
+      Res : Node_Id := Empty;
+
    --  Start of processing for Expand_Set_Membership
 
    begin
       Remove_Side_Effects (Lop);
 
-      Alt := First (Alternatives (N));
-      Res := Make_Cond (Alt);
-      Next (Alt);
-
       --  We use left associativity as in the equivalent boolean case. This
       --  kind of canonicalization helps the optimizer of the code generator.
 
+      Alt := First (Alternatives (N));
       while Present (Alt) loop
-         Res :=
-           Make_Or_Else (Sloc (Alt),
-             Left_Opnd  => Res,
-             Right_Opnd => Make_Cond (Alt));
+         Evolve_Or_Else (Res, Make_Cond (Alt));
          Next (Alt);
       end loop;
 
