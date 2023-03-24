@@ -13,3 +13,5 @@ program p
   print *, unpack(a,mask,d) ! OK
   print *, unpack(a,mask,3) ! OK
 end
+
+! { dg-error "Cannot simplify expression" " " { target *-*-* } 12 }

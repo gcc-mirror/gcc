@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "gfortran.h"
 #include "intrinsic.h"
+#include "diagnostic.h" /* For errorcount.  */
 
 /* Namespace to hold the resolved symbols for intrinsic subroutines.  */
 static gfc_namespace *gfc_intrinsic_namespace;
@@ -4620,6 +4621,7 @@ do_simplify (gfc_intrinsic_sym *specific, gfc_expr *e)
 {
   gfc_expr *result, *a1, *a2, *a3, *a4, *a5, *a6;
   gfc_actual_arglist *arg;
+  int old_errorcount = errorcount;
 
   /* Max and min require special handling due to the variable number
      of args.  */
@@ -4708,7 +4710,12 @@ do_simplify (gfc_intrinsic_sym *specific, gfc_expr *e)
 
 finish:
   if (result == &gfc_bad_expr)
-    return false;
+    {
+      if (errorcount == old_errorcount
+	  && (!gfc_buffered_p () || !gfc_error_flag_test ()))
+       gfc_error ("Cannot simplify expression at %L", &e->where);
+      return false;
+    }
 
   if (result == NULL)
     resolve_intrinsic (specific, e);	/* Must call at run-time */

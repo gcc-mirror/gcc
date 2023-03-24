@@ -42,3 +42,5 @@ contains
   end subroutine foo
 
 end program assumed_size_test_2
+
+! { dg-error "Cannot simplify expression" " " { target *-*-* } 29 }

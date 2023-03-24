@@ -2753,10 +2753,12 @@ gfc_hollerith2real (gfc_expr *src, int kind)
   result = gfc_get_constant_expr (BT_REAL, kind, &src->where);
 
   hollerith2representation (result, src);
-  gfc_interpret_float (kind, (unsigned char *) result->representation.string,
-		       result->representation.length, result->value.real);
-
-  return result;
+  if (gfc_interpret_float (kind,
+			   (unsigned char *) result->representation.string,
+			   result->representation.length, result->value.real))
+    return result;
+  else
+    return NULL;
 }
 
 /* Convert character to real.  The constant will be padded or truncated.  */
