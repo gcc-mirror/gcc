@@ -6166,8 +6166,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       for (el = clauses->tile_list; el; el = el->next)
 	vec_safe_push (tvec, gfc_convert_expr_to_tree (block, el->expr));
 
-      c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_TILE);
-      OMP_CLAUSE_TILE_LIST (c) = build_tree_list_vec (tvec);
+      c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_OACC_TILE);
+      OMP_CLAUSE_OACC_TILE_LIST (c) = build_tree_list_vec (tvec);
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
       tvec->truncate (0);
     }

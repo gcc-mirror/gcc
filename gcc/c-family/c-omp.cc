@@ -1893,7 +1893,7 @@ c_oacc_split_loop_clauses (tree clauses, tree *not_loop_clauses,
         {
 	  /* Loop clauses.  */
 	case OMP_CLAUSE_COLLAPSE:
-	case OMP_CLAUSE_TILE:
+	case OMP_CLAUSE_OACC_TILE:
 	case OMP_CLAUSE_GANG:
 	case OMP_CLAUSE_WORKER:
 	case OMP_CLAUSE_VECTOR:
