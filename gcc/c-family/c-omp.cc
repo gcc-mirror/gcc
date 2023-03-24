@@ -4010,9 +4010,9 @@ const struct c_omp_directive c_omp_directives[] = {
   { "teams", nullptr, nullptr, PRAGMA_OMP_TEAMS,
     C_OMP_DIR_CONSTRUCT, true },
   { "threadprivate", nullptr, nullptr, PRAGMA_OMP_THREADPRIVATE,
-    C_OMP_DIR_DECLARATIVE, false }
-  /* { "unroll", nullptr, nullptr, PRAGMA_OMP_UNROLL,
-    C_OMP_DIR_CONSTRUCT, false },  */
+    C_OMP_DIR_DECLARATIVE, false },
+ { "unroll", nullptr, nullptr, PRAGMA_OMP_UNROLL,
+    C_OMP_DIR_CONSTRUCT, false },
 };
 
 /* Find (non-combined/composite) OpenMP directive (if any) which starts
