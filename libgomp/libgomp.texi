@@ -4456,6 +4456,9 @@ The implementation remark:
 @item OpenMP code that has a requires directive with @code{unified_address} or
       @code{unified_shared_memory} will remove any GCN device from the list of
       available devices (``host fallback'').
+@item OpenMP @emph{pinned} memory (@code{omp_atk_pinned},
+      @code{ompx_pinned_mem_alloc}, for example)
+      is allocated via @code{mmap}, @code{mlock}.
 @item The available stack size can be changed using the @code{GCN_STACK_SIZE}
       environment variable; the default is 32 kiB per thread.
 @end itemize
@@ -4520,6 +4523,11 @@ The implementation remark:
 @item OpenMP code that has a requires directive with @code{unified_address}
       or @code{unified_shared_memory} will remove any nvptx device from the
       list of available devices (``host fallback'').
+@item OpenMP @emph{pinned} memory (@code{omp_atk_pinned},
+      @code{ompx_pinned_mem_alloc}, for example)
+      is allocated via @code{cuMemHostAlloc} (CUDA Driver API).
+      This potentially helps optimization of host <-> device data
+      transfers.
 @end itemize
 
 
