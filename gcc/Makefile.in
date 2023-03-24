@@ -1543,6 +1543,7 @@ OBJS = \
 	omp-expand.o \
 	omp-general.o \
 	omp-low.o \
+	omp-transform-loops.o \
 	omp-oacc-kernels-decompose.o \
 	omp-oacc-neuter-broadcast.o \
 	omp-simd-clone.o \

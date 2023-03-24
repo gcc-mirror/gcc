@@ -1,3 +1,18 @@
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
+	* gfortran.dg/gomp/loop-transforms/unroll-1.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/unroll-2.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/unroll-3.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/unroll-4.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/unroll-5.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/unroll-6.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/unroll-7.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/unroll-9.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/unroll-no-clause-1.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/unroll-no-clause-2.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/unroll-no-clause-3.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/unroll-simd-1.f90: New test.
+
 2023-03-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/map-10a.f90: New test.

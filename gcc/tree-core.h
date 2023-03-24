@@ -533,6 +533,15 @@ enum omp_clause_code {
 
   /* OpenMP clause: uses_allocators.  */
   OMP_CLAUSE_USES_ALLOCATORS,
+
+  /* Internal representation for an "omp unroll full" directive. */
+  OMP_CLAUSE_UNROLL_FULL,
+
+  /* Internal representation for an "omp unroll" directive without a clause. */
+  OMP_CLAUSE_UNROLL_NONE,
+
+  /* Internal representation for an "omp unroll partial" directive. */
+  OMP_CLAUSE_UNROLL_PARTIAL,
 };
 
 #undef DEFTREESTRUCT

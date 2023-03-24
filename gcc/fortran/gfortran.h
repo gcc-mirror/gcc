@@ -320,7 +320,8 @@ enum gfc_statement
   ST_OMP_METADIRECTIVE, ST_OMP_BEGIN_METADIRECTIVE, ST_OMP_END_METADIRECTIVE,
   ST_OMP_ERROR, ST_OMP_ASSUME, ST_OMP_END_ASSUME, ST_OMP_ASSUMES,
   /* Note: gfc_match_omp_nothing returns ST_NONE. */
-  ST_OMP_NOTHING, ST_NONE
+  ST_OMP_NOTHING, ST_NONE,
+  ST_OMP_UNROLL, ST_OMP_END_UNROLL
 };
 
 /* Types of interfaces that we can have.  Assignment interfaces are
@@ -1582,6 +1583,8 @@ typedef struct gfc_omp_clauses
   unsigned order_unconstrained:1, order_reproducible:1, capture:1;
   unsigned grainsize_strict:1, num_tasks_strict:1, compare:1, weak:1;
   unsigned non_rectangular:1, order_concurrent:1;
+  unsigned unroll_full:1, unroll_none:1, unroll_partial:1;
+  unsigned unroll_partial_factor;
   ENUM_BITFIELD (gfc_omp_sched_kind) sched_kind:3;
   ENUM_BITFIELD (gfc_omp_device_type) device_type:2;
   ENUM_BITFIELD (gfc_omp_memorder) memorder:3;
@@ -3010,6 +3013,7 @@ enum gfc_exec_op
   EXEC_OMP_PARALLEL_MASKED_TASKLOOP, EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD,
   EXEC_OMP_MASKED_TASKLOOP, EXEC_OMP_MASKED_TASKLOOP_SIMD, EXEC_OMP_SCOPE,
   EXEC_OMP_METADIRECTIVE,
+  EXEC_OMP_UNROLL,
   EXEC_OMP_ERROR
 };
 
@@ -3910,6 +3914,9 @@ void gfc_generate_module_code (gfc_namespace *);
 
 /* trans-intrinsic.cc */
 bool gfc_inline_intrinsic_function_p (gfc_expr *);
+
+/* trans-openmp.cc */
+bool loop_transform_p (gfc_exec_op op);
 
 /* bbt.cc */
 typedef int (*compare_fn) (void *, void *);

@@ -1017,6 +1017,7 @@ decode_omp_directive (void)
 	      ST_OMP_END_TEAMS_DISTRIBUTE);
       matcho ("end teams loop", gfc_match_omp_eos_error, ST_OMP_END_TEAMS_LOOP);
       matcho ("end teams", gfc_match_omp_eos_error, ST_OMP_END_TEAMS);
+      matchs ("end unroll", gfc_match_omp_eos_error, ST_OMP_END_UNROLL);
       matcho ("end workshare", gfc_match_omp_end_nowait,
 	      ST_OMP_END_WORKSHARE);
       break;
@@ -1147,6 +1148,9 @@ decode_omp_directive (void)
       matcho ("teams", gfc_match_omp_teams, ST_OMP_TEAMS);
       matchdo ("threadprivate", gfc_match_omp_threadprivate,
 	       ST_OMP_THREADPRIVATE);
+      break;
+    case 'u':
+      matchs ("unroll", gfc_match_omp_unroll, ST_OMP_UNROLL);
       break;
     case 'w':
       matcho ("workshare", gfc_match_omp_workshare, ST_OMP_WORKSHARE);
@@ -1745,6 +1749,7 @@ next_statement (void)
   case ST_OMP_LOOP: case ST_OMP_PARALLEL_LOOP: case ST_OMP_TEAMS_LOOP: \
   case ST_OMP_TARGET_PARALLEL_LOOP: case ST_OMP_TARGET_TEAMS_LOOP: \
   case ST_OMP_ASSUME: \
+  case ST_OMP_UNROLL: \
   case ST_CRITICAL: \
   case ST_OACC_PARALLEL_LOOP: case ST_OACC_PARALLEL: case ST_OACC_KERNELS: \
   case ST_OACC_DATA: case ST_OACC_HOST_DATA: case ST_OACC_LOOP: \
@@ -1800,7 +1805,8 @@ next_statement (void)
   case ST_OMP_TASKLOOP: case ST_OMP_TASKLOOP_SIMD: \
   case ST_OMP_TEAMS_DISTRIBUTE: case ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO: \
   case ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD: \
-  case ST_OMP_TEAMS_DISTRIBUTE_SIMD: case ST_OMP_TEAMS_LOOP
+  case ST_OMP_TEAMS_DISTRIBUTE_SIMD: case ST_OMP_TEAMS_LOOP: \
+  case ST_OMP_UNROLL
 
 /* Block end statements.  Errors associated with interchanging these
    are detected in gfc_match_end().  */
@@ -2153,6 +2159,9 @@ gfc_ascii_statement (gfc_statement st, bool strip_sentinel)
       break;
     case ST_END_UNION:
       p = "END UNION";
+      break;
+    case ST_OMP_END_UNROLL:
+      p = "!$OMP END UNROLL";
       break;
     case ST_END_MAP:
       p = "END MAP";
@@ -2835,6 +2844,9 @@ gfc_ascii_statement (gfc_statement st, bool strip_sentinel)
       break;
     case ST_OMP_THREADPRIVATE:
       p = "!$OMP THREADPRIVATE";
+      break;
+    case ST_OMP_UNROLL:
+      p = "!$OMP UNROLL";
       break;
     case ST_OMP_WORKSHARE:
       p = "!$OMP WORKSHARE";
@@ -5313,6 +5325,8 @@ gfc_omp_end_stmt (gfc_statement omp_st,
 	  return ST_OMP_END_TEAMS_DISTRIBUTE_SIMD;
 	case ST_OMP_TEAMS_LOOP:
 	  return ST_OMP_END_TEAMS_LOOP;
+	case ST_OMP_UNROLL:
+	  return ST_OMP_END_UNROLL;
 	default:
 	  break;
 	}
@@ -5386,6 +5400,7 @@ parse_omp_do (gfc_statement omp_st)
   gfc_statement st;
   gfc_code *cp, *np;
   gfc_state_data s;
+  int num_unroll = 0;
 
   accept_statement (omp_st);
 
@@ -5402,6 +5417,12 @@ parse_omp_do (gfc_statement omp_st)
 	unexpected_eof ();
       else if (st == ST_DO)
 	break;
+      else if (st == ST_OMP_UNROLL)
+	{
+	  accept_statement (st);
+	  num_unroll++;
+	  continue;
+	}
       else
 	unexpected_statement (st);
     }
@@ -5436,6 +5457,17 @@ parse_omp_do (gfc_statement omp_st)
   if (st == ST_OMP_END_METADIRECTIVE
       && gfc_state_stack->state == COMP_OMP_BEGIN_METADIRECTIVE)
     st = omp_end_st;
+
+  for (; num_unroll > 0; num_unroll--)
+    {
+      if (st == ST_OMP_END_UNROLL)
+	{
+	  gfc_clear_new_st ();
+	  gfc_commit_symbols ();
+	  gfc_warning_check ();
+	  st = next_statement ();
+	}
+    }
 
   if (st == omp_end_st)
     {

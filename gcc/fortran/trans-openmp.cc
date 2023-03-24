@@ -5682,6 +5682,29 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
+  if (clauses->unroll_full)
+    {
+      c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_UNROLL_FULL);
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+    }
+
+  if (clauses->unroll_none)
+    {
+      c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_UNROLL_NONE);
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+    }
+
+  if (clauses->unroll_partial)
+    {
+      c = build_omp_clause (gfc_get_location (&where),
+			    OMP_CLAUSE_UNROLL_PARTIAL);
+      OMP_CLAUSE_UNROLL_PARTIAL_EXPR (c)
+	  = clauses->unroll_partial_factor ? build_int_cst (
+		integer_type_node, clauses->unroll_partial_factor)
+					   : NULL_TREE;
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+    }
+
   if (clauses->ordered)
     {
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_ORDERED);
@@ -6903,6 +6926,12 @@ gfc_trans_omp_cancel (gfc_code *code)
   return gfc_finish_block (&block);
 }
 
+bool
+loop_transform_p (gfc_exec_op op)
+{
+  return op == EXEC_OMP_UNROLL;
+}
+
 static tree
 gfc_trans_omp_cancellation_point (gfc_code *code)
 {
@@ -7081,7 +7110,7 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
 {
   gfc_se se;
   tree dovar, stmt, from, to, step, type, init, cond, incr, orig_decls;
-  tree local_dovar = NULL_TREE, cycle_label, tmp, omp_clauses;
+  tree local_dovar = NULL_TREE, cycle_label, tmp, omp_clauses, loop_transform_clauses;
   stmtblock_t block;
   stmtblock_t body;
   gfc_omp_clauses *clauses = code->ext.omp_clauses;
@@ -7092,6 +7121,7 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
   vec<tree, va_heap, vl_embed> *saved_doacross_steps = doacross_steps;
   gfc_expr_list *tile = do_clauses ? do_clauses->tile_list : clauses->tile_list;
   gfc_code *orig_code = code;
+  locus top_loc = code->loc;
 
   /* Both collapsed and tiled loops are lowered the same way.  In
      OpenACC, those clauses are not compatible, so prioritize the tile
@@ -7109,7 +7139,25 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
   if (collapse <= 0)
     collapse = 1;
 
+  if (pblock == NULL)
+    {
+      gfc_start_block (&block);
+      pblock = &block;
+    }
   code = code->block->next;
+  gcc_assert (code->op == EXEC_DO || code->op == EXEC_OMP_UNROLL);
+  /* Loop transformation directives surrounding the associated loop of an "omp
+     do" (or similar directive) are represented as clauses on the "omp do". */
+  loop_transform_clauses = NULL;
+  while (code->op == EXEC_OMP_UNROLL)
+    {
+      tree clauses = gfc_trans_omp_clauses (pblock, code->ext.omp_clauses,
+					    code->loc);
+      loop_transform_clauses = chainon (loop_transform_clauses, clauses);
+
+      code = code->block ? code->block->next : code->next;
+    }
+  gcc_checking_assert (code->op != EXEC_OMP_UNROLL);
   gcc_assert (code->op == EXEC_DO);
 
   init = make_tree_vec (collapse);
@@ -7117,18 +7165,21 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
   incr = make_tree_vec (collapse);
   orig_decls = clauses->ordered ? make_tree_vec (collapse) : NULL_TREE;
 
-  if (pblock == NULL)
-    {
-      gfc_start_block (&block);
-      pblock = &block;
-    }
-
   /* simd schedule modifier is only useful for composite do simd and other
      constructs including that, where gfc_trans_omp_do is only called
      on the simd construct and DO's clauses are translated elsewhere.  */
   do_clauses->sched_simd = false;
 
-  omp_clauses = gfc_trans_omp_clauses (pblock, do_clauses, code->loc);
+  if (op == EXEC_OMP_UNROLL)
+    {
+      /* This is a loop transformation on a loop which is not associated with
+	 any other directive. Use the directive location instead of the loop
+	 location for the clauses. */
+      omp_clauses = gfc_trans_omp_clauses (pblock, do_clauses, top_loc);
+    }
+  else
+    omp_clauses = gfc_trans_omp_clauses (pblock, do_clauses, code->loc);
+  omp_clauses = chainon (omp_clauses, loop_transform_clauses);
 
   for (i = 0; i < collapse; i++)
     {
@@ -7382,7 +7433,7 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
 	    }
 	  gcc_assert (local_dovar == dovar || c != NULL);
 	}
-      if (local_dovar != dovar)
+      if (local_dovar != dovar && op != EXEC_OMP_UNROLL)
 	{
 	  if (op != EXEC_OMP_SIMD || dovar_found == 1)
 	    tmp = build_omp_clause (input_location, OMP_CLAUSE_PRIVATE);
@@ -7471,6 +7522,7 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
       stmt = make_node (OACC_LOOP);
       OACC_LOOP_COMBINED (stmt) = combined;
       break;
+    case EXEC_OMP_UNROLL: stmt = make_node (OMP_LOOP_TRANS); break;
     default: gcc_unreachable ();
     }
 
@@ -9611,6 +9663,7 @@ gfc_trans_omp_directive (gfc_code *code)
     case EXEC_OMP_LOOP:
     case EXEC_OMP_SIMD:
     case EXEC_OMP_TASKLOOP:
+    case EXEC_OMP_UNROLL:
       return gfc_trans_omp_do (code, code->op, NULL, code->ext.omp_clauses,
 			       NULL, false);
     case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:

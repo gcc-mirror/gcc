@@ -1202,6 +1202,12 @@ DEFTREECODE (OMP_TASK, "omp_task", tcc_statement, 2)
 
 DEFTREECODE (OMP_FOR, "omp_for", tcc_statement, 7)
 
+/* OpenMP - A loop nest to which a loop transformation such as #pragma omp
+   unroll should be applied, but which is not associated with another directive
+   such as #pragma omp for. The kind of loop transformations to be applied are
+   internally represented by clauses.  Operands like for OMP_FOR.  */
+DEFTREECODE (OMP_LOOP_TRANS, "omp_loop_trans", tcc_statement, 7)
+
 /* OpenMP - #pragma omp simd [clause1 ... clauseN]
    Operands like for OMP_FOR.  */
 DEFTREECODE (OMP_SIMD, "omp_simd", tcc_statement, 7)

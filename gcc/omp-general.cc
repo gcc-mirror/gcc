@@ -2402,6 +2402,20 @@ omp_declare_variant_remove_hook (struct cgraph_node *node, void *)
     }
 }
 
+/* Return true if C is a clause that represents an OpenMP loop transformation
+   directive, false otherwise. */
+
+bool
+omp_loop_transform_clause_p (tree c)
+{
+  if (c == NULL)
+    return false;
+
+  enum omp_clause_code code = OMP_CLAUSE_CODE (c);
+  return (code == OMP_CLAUSE_UNROLL_FULL || code == OMP_CLAUSE_UNROLL_PARTIAL
+	  || code == OMP_CLAUSE_UNROLL_NONE);
+}
+
 /* Try to resolve declare variant, return the variant decl if it should
    be used instead of base, or base otherwise.  */
 

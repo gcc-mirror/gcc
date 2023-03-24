@@ -1,3 +1,38 @@
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
+	* dump-parse-tree.cc (show_omp_clauses): Handle "unroll full"
+	and "unroll partial".
+	(show_omp_node): Handle OMP_UNROLL.
+	(show_code_node): Handle EXEC_OMP_UNROLL.
+	* gfortran.h (enum gfc_statement): Add ST_OMP_UNROLL, ST_OMP_END_UNROLL.
+	(enum gfc_exec_op): Add EXEC_OMP_UNROLL.
+	* match.h (gfc_match_omp_unroll): Declare.
+	* openmp.cc (enum omp_mask2): Add OMP_CLAUSE_UNROLL_FULL,
+	OMP_CLAUSE_UNROLL_NONE, OMP_CLAUSE_UNROLL_PARTIAL.
+	(gfc_match_omp_clauses): Handle "omp unroll partial".
+	(OMP_UNROLL_CLAUSES): New macro definition.
+	(gfc_match_omp_unroll): Match "full" clause.
+	(omp_unroll_removes_loop_nest): New function.
+	(resolve_omp_unroll): New function.
+	(resolve_omp_do): Accept and verify "omp unroll"
+	directives between directive and loop.
+	(omp_code_to_statement): Handle EXEC_OMP_UNROLL.
+	(gfc_resolve_omp_directive): Likewise.
+	* parse.cc (decode_omp_directive): Handle "undroll" and "end unroll".
+	(next_statement): Handle ST_OMP_UNROLL.
+	(gfc_ascii_statement): Handle ST_OMP_UNROLL and ST_OMP_END_UNROLL.
+	(parse_omp_do): Accept ST_OMP_UNROLL and ST_OMP_END_UNROLL
+	before/after loop.
+	(parse_executable): Handle ST_OMP_UNROLL.
+	* resolve.cc (gfc_resolve_blocks): Handle EXEC_OMP_UNROLL.
+	(gfc_resolve_code): Likewise.
+	* st.cc (gfc_free_statement): Likewise.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Handle unroll clauses.
+	(gfc_trans_omp_do): Handle OMP_CLAUSE_UNROLL_FULL,
+	OMP_CLAUSE_UNROLL_PARTIAL, OMP_CLAUSE_UNROLL_NONE creation.
+	(gfc_trans_omp_directive): Handle EXEC_OMP_UNROLL.
+	* trans.cc (trans_code): Likewise.
+
 2023-03-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	* trans-openmp.cc (gfc_has_alloc_comps): Add 'bool

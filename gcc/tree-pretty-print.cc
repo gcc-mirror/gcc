@@ -505,6 +505,22 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
     case OMP_CLAUSE_EXCLUSIVE:
       name = "exclusive";
       goto print_remap;
+    case OMP_CLAUSE_UNROLL_FULL:
+      pp_string (pp, "unroll_full");
+      break;
+    case OMP_CLAUSE_UNROLL_NONE:
+      pp_string (pp, "unroll_none");
+      break;
+    case OMP_CLAUSE_UNROLL_PARTIAL:
+      pp_string (pp, "unroll_partial");
+      if (OMP_CLAUSE_UNROLL_PARTIAL_EXPR (clause))
+	{
+	  pp_left_paren (pp);
+	  dump_generic_node (pp, OMP_CLAUSE_UNROLL_PARTIAL_EXPR (clause), spc, flags,
+			     false);
+	  pp_right_paren (pp);
+	}
+      break;
     case OMP_CLAUSE__LOOPTEMP_:
       name = "_looptemp_";
       goto print_remap;
@@ -3695,6 +3711,10 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case OMP_DISTRIBUTE:
       pp_string (pp, "#pragma omp distribute");
+      goto dump_omp_loop;
+
+    case OMP_LOOP_TRANS:
+      pp_string (pp, "#pragma omp loop_transform");
       goto dump_omp_loop;
 
     case OMP_TASKLOOP:

@@ -1,3 +1,41 @@
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
+	* Makefile.in: Add omp_transform_loops.o.
+	* gimple-pretty-print.cc (dump_gimple_omp_for): Handle "full"
+	and "partial" clauses.
+	* gimple.h (enum gf_mask): Add GF_OMP_FOR_KIND_TRANSFORM_LOOP.
+	* gimplify.cc (is_gimple_stmt): Handle OMP_UNROLL.
+	(gimplify_scan_omp_clauses): Handle OMP_UNROLL_FULL,
+	OMP_UNROLL_NONE, and OMP_UNROLL_PARTIAL.
+	(gimplify_adjust_omp_clauses): Handle OMP_UNROLL_FULL,
+	OMP_UNROLL_NONE, and OMP_UNROLL_PARTIAL.
+	(gimplify_omp_for): Handle OMP_UNROLL.
+	(gimplify_expr): Likewise.
+	* params.opt: Add omp-unroll-full-max-iteration and
+	omp-unroll-default-factor.
+	* passes.def: Add pass_omp_transform_loop before
+	pass_lower_omp.
+	* tree-core.h (enum omp_clause_code): Add
+	OMP_CLAUSE_UNROLL_NONE, OMP_CLAUSE_UNROLL_FULL, and
+	OMP_CLAUSE_UNROLL_PARTIAL.
+	* tree-pass.h (make_pass_omp_transform_loops): Declare
+	pmake_pass_omp_transform_loops.
+	* tree-pretty-print.cc (dump_omp_clause): Handle
+	OMP_CLAUSE_UNROLL_NONE, OMP_CLAUSE_UNROLL_FULL, and
+	OMP_CLAUSE_UNROLL_PARTIAL.
+	(dump_generic_node): Handle OMP_UNROLL.
+	* tree.cc (omp_clause_num_ops): Add number of operators
+	for OMP_CLAUSE_UNROLL_FULL, OMP_CLAUSE_UNROLL_NONE, and
+	OMP_CLAUSE_UNROLL_PARTIAL.
+	(omp_clause_code_names): Add name strings for
+	OMP_CLAUSE_UNROLL_FULL, OMP_CLAUSE_UNROLL_NONE, and
+	OMP_CLAUSE_UNROLL_PARTIAL.
+	* tree.def (OMP_UNROLL): Define.
+	* tree.h (OMP_CLAUSE_UNROLL_PARTIAL_EXPR): Define.
+	* omp-transform-loops.cc: New file.
+	* omp-general.cc (omp_loop_transform_clause_p): New function.
+	* omp-general.h (omp_loop_transform_clause_p): New declaration.
+
 2023-03-17  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn.cc (gcn_class_max_nregs): Handle vectors in SGPRs.

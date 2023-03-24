@@ -5973,6 +5973,7 @@ is_gimple_stmt (tree t)
     case OACC_CACHE:
     case OMP_PARALLEL:
     case OMP_FOR:
+    case OMP_LOOP_TRANS:
     case OMP_SIMD:
     case OMP_DISTRIBUTE:
     case OMP_LOOP:
@@ -12282,6 +12283,10 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  }
 	  break;
 
+	case OMP_CLAUSE_UNROLL_FULL:
+	case OMP_CLAUSE_UNROLL_NONE:
+	case OMP_CLAUSE_UNROLL_PARTIAL:
+	  break;
 	case OMP_CLAUSE_NOHOST:
 	default:
 	  gcc_unreachable ();
@@ -13390,6 +13395,9 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_INCLUSIVE:
 	case OMP_CLAUSE_EXCLUSIVE:
+	case OMP_CLAUSE_UNROLL_FULL:
+	case OMP_CLAUSE_UNROLL_NONE:
+	case OMP_CLAUSE_UNROLL_PARTIAL:
 	  break;
 
 	case OMP_CLAUSE_NOHOST:
@@ -14206,6 +14214,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
     case OMP_SIMD:
       ort = ORT_SIMD;
       break;
+    case OMP_LOOP_TRANS:
+      break;
     default:
       gcc_unreachable ();
     }
@@ -14583,8 +14593,19 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		  n->value &= ~GOVD_LASTPRIVATE_CONDITIONAL;
 		}
 	}
-      else
-	omp_add_variable (gimplify_omp_ctxp, decl, GOVD_PRIVATE | GOVD_SEEN);
+      else {
+	  if (TREE_CODE(orig_for_stmt) == OMP_LOOP_TRANS)
+	    {
+	      /* This loop is not going to be associated with any
+		 directive after its transformation in
+		 pass-omp_transform_loops. It will be lowered there
+		 and the loop iteration variable will be used in the
+		 context. */
+	      omp_notice_variable(gimplify_omp_ctxp, decl, true);
+	    }
+	  else
+	    omp_add_variable(gimplify_omp_ctxp, decl, GOVD_PRIVATE | GOVD_SEEN);
+	}
 
       /* If DECL is not a gimple register, create a temporary variable to act
 	 as an iteration counter.  This is valid, since DECL cannot be
@@ -14625,7 +14646,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		  c2 = NULL_TREE;
 		}
 	    }
-	  else
+	  else if (TREE_CODE (orig_for_stmt) != OMP_LOOP_TRANS)
 	    omp_add_variable (gimplify_omp_ctxp, var,
 			      GOVD_PRIVATE | GOVD_SEEN);
 	}
@@ -14906,6 +14927,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
     case OMP_DISTRIBUTE: kind = GF_OMP_FOR_KIND_DISTRIBUTE; break;
     case OMP_TASKLOOP: kind = GF_OMP_FOR_KIND_TASKLOOP; break;
     case OACC_LOOP: kind = GF_OMP_FOR_KIND_OACC_LOOP; break;
+    case OMP_LOOP_TRANS: kind = GF_OMP_FOR_KIND_TRANSFORM_LOOP; break;
     default:
       gcc_unreachable ();
     }
@@ -15089,6 +15111,13 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		*gtask_clauses_ptr = c;
 		gtask_clauses_ptr = &OMP_CLAUSE_CHAIN (c);
 	      }
+	    break;
+	  /* Move loop transformations to inner loop */
+	  case OMP_CLAUSE_UNROLL_FULL:
+	  case OMP_CLAUSE_UNROLL_NONE:
+	  case OMP_CLAUSE_UNROLL_PARTIAL:
+	    *gfor_clauses_ptr = c;
+	    gfor_clauses_ptr = &OMP_CLAUSE_CHAIN (c);
 	    break;
 	  default:
 	    gcc_unreachable ();
@@ -15529,6 +15558,10 @@ gimplify_omp_loop (tree *expr_p, gimple_seq *pre_p)
 		  = unshare_expr (OMP_CLAUSE_REDUCTION_MERGE (c));
 	      }
 	    pc = &OMP_CLAUSE_CHAIN (*pc);
+	    break;
+	  case OMP_CLAUSE_UNROLL_PARTIAL:
+	  case OMP_CLAUSE_UNROLL_FULL:
+	  case OMP_CLAUSE_UNROLL_NONE:
 	    break;
 	  default:
 	    gcc_unreachable ();
@@ -17574,6 +17607,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	case OMP_FOR:
 	case OMP_DISTRIBUTE:
 	case OMP_TASKLOOP:
+	case OMP_LOOP_TRANS:
 	case OACC_LOOP:
 	  ret = gimplify_omp_for (expr_p, pre_p);
 	  break;

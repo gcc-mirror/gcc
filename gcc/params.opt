@@ -823,6 +823,15 @@ Enum(openacc_privatization) String(quiet) Value(OPENACC_PRIVATIZATION_QUIET)
 EnumValue
 Enum(openacc_privatization) String(noisy) Value(OPENACC_PRIVATIZATION_NOISY)
 
+-param=omp-unroll-full-max-iterations=
+Common Joined UInteger Var(param_omp_unroll_full_max_iterations) Init(5) Param Optimization
+The maximum number of iterations of a loop for which an 'omp unroll' directive on the loop without a
+clause will be turned into an 'omp unroll full'.
+
+-param=omp-unroll-default-factor=
+Common Joined UInteger Var(param_omp_unroll_default_factor) Init(0) Param Optimization
+The unroll factor that will be used for loops that have an 'omp unroll partial' directive without an explicit unroll factor.
+
 -param=parloops-chunk-size=
 Common Joined UInteger Var(param_parloops_chunk_size) Param Optimization
 Chunk size of omp schedule for loops parallelized by parloops.
