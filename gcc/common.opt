@@ -3349,7 +3349,7 @@ Common Driver RejectNegative JoinedOrMissing
 Generate BTF debug information at default level.
 
 gdwarf
-Common Driver JoinedOrMissing Negative(gdwarf-) RejectNegative
+Common Driver JoinedOrMissing RejectNegative
 Generate debug information in default version of DWARF format.
 
 gdwarf-
