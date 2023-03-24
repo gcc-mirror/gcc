@@ -4,8 +4,7 @@
 #error message
 
 /* Use dg-regexp to consume the JSON output starting with
-   the innermost values, and working outwards.
-   We can't rely on any ordering of the keys.  */
+   the innermost values, and working outwards.  */
 
 /* { dg-regexp "\"kind\": \"error\"" } */
 /* { dg-regexp "\"column-origin\": 1" } */
