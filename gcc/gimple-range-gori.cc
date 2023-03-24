@@ -623,21 +623,6 @@ gori_compute::compute_operand_range (vrange &r, gimple *stmt,
   tree op1 = gimple_range_ssa_p (handler.operand1 ());
   tree op2 = gimple_range_ssa_p (handler.operand2 ());
 
-  // If there is a relation, use it instead of any passed in.  This will allow
-  // multiple relations to be processed in compound logicals.
-  if (op1 && op2)
-    {
-      relation_kind k = handler.op1_op2_relation (lhs);
-      // If there is no relation, and op1 == op2, create a relation.
-      if (!vrel_ptr && k == VREL_VARYING && op1 == op2)
-	k = VREL_EQ;
-      if (k != VREL_VARYING)
-       {
-	 vrel.set_relation (k, op1, op2);
-	 vrel_ptr = &vrel;
-       }
-    }
-
   // Handle end of lookup first.
   if (op1 == name)
     return compute_operand1_range (r, handler, lhs, name, src, vrel_ptr);
@@ -1093,6 +1078,7 @@ gori_compute::compute_operand1_range (vrange &r,
 				      const vrange &lhs, tree name,
 				      fur_source &src, value_relation *rel)
 {
+  value_relation local_rel;
   gimple *stmt = handler.stmt ();
   tree op1 = handler.operand1 ();
   tree op2 = handler.operand2 ();
@@ -1101,6 +1087,7 @@ gori_compute::compute_operand1_range (vrange &r,
   relation_trio trio;
   if (rel)
     trio = rel->create_trio (lhs_name, op1, op2);
+  relation_kind op_op = trio.op1_op2 ();
 
   Value_Range op1_range (TREE_TYPE (op1));
   Value_Range tmp (TREE_TYPE (op1));
@@ -1113,10 +1100,26 @@ gori_compute::compute_operand1_range (vrange &r,
   if (op2)
     {
       src.get_operand (op2_range, op2);
-      relation_kind op_op = trio.op1_op2 ();
+
+      // If there is a relation betwen op1 and op2, use it instead.
+      // This allows multiple relations to be processed in compound logicals.
+      if (gimple_range_ssa_p (op1) && gimple_range_ssa_p (op2))
+	{
+	  relation_kind k = handler.op1_op2_relation (lhs);
+	  if (k != VREL_VARYING)
+	    {
+	      op_op = k;
+	      local_rel.set_relation (op_op, op1, op2);
+	      rel = &local_rel;
+	    }
+	}
+
       if (op_op != VREL_VARYING)
 	refine_using_relation (op1, op1_range, op2, op2_range, src, op_op);
 
+      // If op1 == op2, create a new trio for just this call.
+      if (op1 == op2 && gimple_range_ssa_p (op1))
+	trio = relation_trio (trio.lhs_op1 (), trio.lhs_op2 (), VREL_EQ);
       if (!handler.calc_op1 (tmp, lhs, op2_range, trio))
 	return false;
     }
@@ -1185,6 +1188,7 @@ gori_compute::compute_operand2_range (vrange &r,
 				      const vrange &lhs, tree name,
 				      fur_source &src, value_relation *rel)
 {
+  value_relation local_rel;
   gimple *stmt = handler.stmt ();
   tree op1 = handler.operand1 ();
   tree op2 = handler.operand2 ();
@@ -1201,9 +1205,26 @@ gori_compute::compute_operand2_range (vrange &r,
   if (rel)
     trio = rel->create_trio (lhs_name, op1, op2);
   relation_kind op_op = trio.op1_op2 ();
+
+  // If there is a relation betwen op1 and op2, use it instead.
+  // This allows multiple relations to be processed in compound logicals.
+  if (gimple_range_ssa_p (op1) && gimple_range_ssa_p (op2))
+    {
+      relation_kind k = handler.op1_op2_relation (lhs);
+      if (k != VREL_VARYING)
+	{
+	  op_op = k;
+	  local_rel.set_relation (op_op, op1, op2);
+	  rel = &local_rel;
+	}
+    }
+
   if (op_op != VREL_VARYING)
     refine_using_relation (op1, op1_range, op2, op2_range, src, op_op);
 
+  // If op1 == op2, create a new trio for this stmt.
+  if (op1 == op2 && gimple_range_ssa_p (op1))
+    trio = relation_trio (trio.lhs_op1 (), trio.lhs_op2 (), VREL_EQ);
   // Intersect with range for op2 based on lhs and op1.
   if (!handler.calc_op2 (tmp, lhs, op1_range, trio))
     return false;
