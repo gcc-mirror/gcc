@@ -229,6 +229,7 @@ match gfc_match_omp_teams_distribute_parallel_do_simd (void);
 match gfc_match_omp_teams_distribute_simd (void);
 match gfc_match_omp_teams_loop (void);
 match gfc_match_omp_threadprivate (void);
+match gfc_match_omp_tile (void);
 match gfc_match_omp_unroll (void);
 match gfc_match_omp_workshare (void);
 match gfc_match_omp_end_critical (void);

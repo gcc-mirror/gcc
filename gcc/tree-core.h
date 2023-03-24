@@ -542,6 +542,9 @@ enum omp_clause_code {
 
   /* Internal representation for an "omp unroll partial" directive. */
   OMP_CLAUSE_UNROLL_PARTIAL,
+
+  /* Represents a "tile" directive internally. */
+  OMP_CLAUSE_TILE
 };
 
 #undef DEFTREESTRUCT

@@ -2413,7 +2413,7 @@ omp_loop_transform_clause_p (tree c)
 
   enum omp_clause_code code = OMP_CLAUSE_CODE (c);
   return (code == OMP_CLAUSE_UNROLL_FULL || code == OMP_CLAUSE_UNROLL_PARTIAL
-	  || code == OMP_CLAUSE_UNROLL_NONE);
+	  || code == OMP_CLAUSE_UNROLL_NONE || code == OMP_CLAUSE_TILE);
 }
 
 /* Try to resolve declare variant, return the variant decl if it should
