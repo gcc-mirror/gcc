@@ -19859,7 +19859,7 @@ c_parser_omp_scan_loop_body (c_parser *parser, bool open_brace_parsed)
 }
 
 static int c_parser_omp_nested_loop_transform_clauses (c_parser *, tree &, int,
-						       const char *);
+						       int, const char *);
 
 /* Parse the restricted form of loop statements allowed by OpenACC and OpenMP.
    The real trick here is to determine the loop control variable early
@@ -19914,7 +19914,7 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
       ordered = collapse;
     }
 
-  c_parser_omp_nested_loop_transform_clauses (parser, clauses, collapse,
+  c_parser_omp_nested_loop_transform_clauses (parser, clauses, 0, collapse,
 					      "loop collapse");
 
   /* Find the depth of the loop nest affected by "omp tile"
@@ -20103,6 +20103,22 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
 	  else if (bracecount
 		   && c_parser_next_token_is (parser, CPP_SEMICOLON))
 	    c_parser_consume_token (parser);
+	  else if (c_parser_peek_token (parser)->pragma_kind
+		       == PRAGMA_OMP_UNROLL
+		   || c_parser_peek_token (parser)->pragma_kind
+			  == PRAGMA_OMP_TILE)
+	    {
+	      int depth = c_parser_omp_nested_loop_transform_clauses (
+		  parser, clauses, i + 1, count - i - 1, "loop collapse");
+	      if (i + 1 + depth > count)
+		{
+		  count = i + 1 + depth;
+		  declv = grow_tree_vec (declv, count);
+		  initv = grow_tree_vec (initv, count);
+		  condv = grow_tree_vec (condv, count);
+		  incrv = grow_tree_vec (incrv, count);
+		}
+	    }
 	  else
 	    {
 	      c_parser_error (parser, "not enough perfectly nested loops");
@@ -20114,7 +20130,7 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
 	      fail = true;
 	      count = 0;
 	      break;
-	    }
+	      }
 	}
       while (1);
 
@@ -23767,9 +23783,9 @@ c_parser_omp_loop_transform_clause (c_parser *parser)
 }
 
 /* Parse zero or more OpenMP loop transformation directives that
-   follow another directive that requires a canonical loop nest and
-   append all to CLAUSES.  Return the nesting depth
-   of the transformed loop nest.
+   follow another directive that requires a canonical loop nest,
+   append all to CLAUSES and record the LEVEL at which the clauses
+   appear in the loop nest in each clause.
 
    REQUIRED_DEPTH is the nesting depth of the loop nest required by
    the preceding directive.  OUTER_DESCR is a description of the
@@ -23779,7 +23795,7 @@ c_parser_omp_loop_transform_clause (c_parser *parser)
 
 static int
 c_parser_omp_nested_loop_transform_clauses (c_parser *parser, tree &clauses,
-					    int required_depth,
+					    int level, int required_depth,
 					    const char *outer_descr)
 {
   tree c = NULL_TREE;
@@ -23840,6 +23856,7 @@ c_parser_omp_nested_loop_transform_clauses (c_parser *parser, tree &clauses,
       if (!transformed_depth)
 	transformed_depth = last_depth;
 
+      OMP_CLAUSE_TRANSFORM_LEVEL (c) = build_int_cst (unsigned_type_node, level);
       if (!clauses)
 	clauses = c;
       else if (last_c)
@@ -23873,7 +23890,7 @@ c_parser_omp_tile (location_t loc, c_parser *parser, bool *if_p)
     return error_mark_node;
 
   int required_depth = list_length (OMP_CLAUSE_TILE_SIZES (clauses));
-  c_parser_omp_nested_loop_transform_clauses (parser, clauses, required_depth,
+  c_parser_omp_nested_loop_transform_clauses (parser, clauses, 0, required_depth,
 					      "outer transformation");
 
   block = c_begin_compound_stmt (true);
@@ -23893,7 +23910,7 @@ c_parser_omp_unroll (location_t loc, c_parser *parser, bool *if_p)
 
   tree clauses = c_parser_omp_all_clauses (parser, mask, p_name, false);
   int required_depth = 1;
-  c_parser_omp_nested_loop_transform_clauses (parser, clauses, required_depth,
+  c_parser_omp_nested_loop_transform_clauses (parser, clauses, 0, required_depth,
 					      "outer transformation");
 
   if (!clauses)
