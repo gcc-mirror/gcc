@@ -39530,6 +39530,7 @@ cp_parser_omp_clause_unroll_full (tree list, location_t loc)
     return list;
 
   tree c = build_omp_clause (loc, OMP_CLAUSE_UNROLL_FULL);
+  OMP_CLAUSE_TRANSFORM_LEVEL (c) = build_int_cst (unsigned_type_node, 0);
   OMP_CLAUSE_CHAIN (c) = list;
   return c;
 }
@@ -39548,6 +39549,7 @@ cp_parser_omp_clause_unroll_partial (cp_parser *parser, tree list,
   tree c, num = error_mark_node;
   c = build_omp_clause (loc, OMP_CLAUSE_UNROLL_PARTIAL);
   OMP_CLAUSE_UNROLL_PARTIAL_EXPR (c) = NULL_TREE;
+  OMP_CLAUSE_TRANSFORM_LEVEL (c) = build_int_cst (unsigned_type_node, 0);
   OMP_CLAUSE_CHAIN (c) = list;
 
   if (!cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
@@ -46126,6 +46128,8 @@ cp_parser_omp_tile_sizes (cp_parser *parser, location_t loc)
   gcc_assert (sizes);
   tree c  = build_omp_clause (loc, OMP_CLAUSE_TILE);
   OMP_CLAUSE_TILE_SIZES (c) = sizes;
+  OMP_CLAUSE_TRANSFORM_LEVEL (c)
+    = build_int_cst (unsigned_type_node, 0);
 
   return c;
 }
@@ -46186,7 +46190,11 @@ cp_parser_omp_loop_transform_clause (cp_parser *parser)
       if (!c)
 	{
 	  if (cp_lexer_next_token_is (lexer, CPP_PRAGMA_EOL))
-	    c = build_omp_clause (tok->location, OMP_CLAUSE_UNROLL_NONE);
+	    {
+	      c = build_omp_clause (tok->location, OMP_CLAUSE_UNROLL_NONE);
+	      OMP_CLAUSE_TRANSFORM_LEVEL (c)
+		= build_int_cst (unsigned_type_node, 0);
+	    }
 	  else
 	    c = error_mark_node;
 	}
@@ -46266,6 +46274,7 @@ cp_parser_omp_nested_loop_transform_clauses (cp_parser *parser, tree &clauses,
 	default:
 	  gcc_unreachable ();
 	}
+      OMP_CLAUSE_TRANSFORM_LEVEL (c) = build_int_cst (unsigned_type_node, 0);
 
       if (depth < last_depth)
 	{
@@ -46314,6 +46323,7 @@ cp_parser_omp_unroll (cp_parser *parser, cp_token *tok, bool *if_p)
   if (!clauses)
     {
       tree c = build_omp_clause (tok->location, OMP_CLAUSE_UNROLL_NONE);
+      OMP_CLAUSE_TRANSFORM_LEVEL (c) = build_int_cst (unsigned_type_node, 0);
       OMP_CLAUSE_CHAIN (c) = clauses;
       clauses = c;
     }

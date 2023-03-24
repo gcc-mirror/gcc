@@ -507,9 +507,21 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       goto print_remap;
     case OMP_CLAUSE_UNROLL_FULL:
       pp_string (pp, "unroll_full");
+      if (OMP_CLAUSE_TRANSFORM_LEVEL (clause))
+	{
+	  pp_string (pp, "@");
+	  dump_generic_node (pp, OMP_CLAUSE_TRANSFORM_LEVEL (clause),
+			     spc, flags, false);
+	}
       break;
     case OMP_CLAUSE_UNROLL_NONE:
       pp_string (pp, "unroll_none");
+      if (OMP_CLAUSE_TRANSFORM_LEVEL (clause))
+	{
+	  pp_string (pp, "@");
+	  dump_generic_node (pp, OMP_CLAUSE_TRANSFORM_LEVEL (clause),
+			     spc, flags, false);
+	}
       break;
     case OMP_CLAUSE_UNROLL_PARTIAL:
       pp_string (pp, "unroll_partial");
@@ -520,6 +532,12 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 			     false);
 	  pp_right_paren (pp);
 	}
+      if (OMP_CLAUSE_TRANSFORM_LEVEL (clause))
+	{
+	  pp_string (pp, "@");
+	  dump_generic_node (pp, OMP_CLAUSE_TRANSFORM_LEVEL (clause),
+			     spc, flags, false);
+	}
       break;
     case OMP_CLAUSE_TILE:
       pp_string (pp, "tile sizes");
@@ -528,6 +546,12 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       dump_generic_node (pp, OMP_CLAUSE_TILE_SIZES (clause), spc, flags,
 			 false);
       pp_right_paren (pp);
+      if (OMP_CLAUSE_TRANSFORM_LEVEL (clause))
+	{
+	  pp_string (pp, "@");
+	  dump_generic_node (pp, OMP_CLAUSE_TRANSFORM_LEVEL (clause),
+			     spc, flags, false);
+	}
       break;
     case OMP_CLAUSE__LOOPTEMP_:
       name = "_looptemp_";

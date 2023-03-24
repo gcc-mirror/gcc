@@ -10237,27 +10237,79 @@ gfc_resolve_omp_local_vars (gfc_namespace *ns)
     gfc_traverse_ns (ns, handle_local_var);
 }
 
+
+/* Forward declaration for mutually recursive functions.  */
+static gfc_code *
+find_nested_loop_in_block (gfc_code *block);
+
+/* Return the first nested DO loop in CHAIN, or NULL if there
+   isn't one.  Does no error checking on intervening code.  */
+
+static gfc_code *
+find_nested_loop_in_chain (gfc_code *chain)
+{
+  gfc_code *code;
+
+  if (!chain)
+    return NULL;
+
+  for (code = chain; code; code = code->next)
+    {
+      if (code->op == EXEC_DO)
+	return code;
+      else if (loop_transform_p (code->op) && code->block)
+	{
+	  code = code->block;
+	  continue;
+	}
+      else if (code->op == EXEC_BLOCK)
+	{
+	  gfc_code *c = find_nested_loop_in_block (code);
+	  if (c)
+	    return c;
+	}
+    }
+  return NULL;
+}
+
+/* Return the first nested DO loop in BLOCK, or NULL if there
+   isn't one.  Does no error checking on intervening code.  */
+static gfc_code *
+find_nested_loop_in_block (gfc_code *block)
+{
+  gfc_namespace *ns;
+  gcc_assert (block->op == EXEC_BLOCK);
+  ns = block->ext.block.ns;
+  gcc_assert (ns);
+  return find_nested_loop_in_chain (ns->code);
+}
 /* CODE is an OMP loop construct.  Return true if VAR matches an iteration
    variable outer to level DEPTH.  */
 static bool
 is_outer_iteration_variable (gfc_code *code, int depth, gfc_symbol *var)
 {
   int i;
-  gfc_code *do_code = code->block->next;
-  while (loop_transform_p (do_code->op)) {
-    if (do_code->block)
-      do_code = do_code->block->next;
-    else
-      do_code = do_code->next;
-  }
-  gcc_checking_assert (!loop_transform_p (do_code->op));
+  gfc_code *chain;
+  if (code->block)
+    chain = code->block->next;
+  else
+    {
+      gcc_assert (loop_transform_p (code->op));
+      chain = code;
+      while (loop_transform_p (chain->op))
+	chain = chain->next;
+    }
 
   for (i = 1; i < depth; i++)
     {
+      gfc_code *do_code = find_nested_loop_in_chain (chain);
+      gcc_assert (do_code != code);
+      gcc_assert (do_code && do_code->op == EXEC_DO);
       gfc_symbol *ivar = do_code->ext.iterator->var->symtree->n.sym;
       if (var == ivar)
 	return true;
-      do_code = do_code->block->next;
+
+      chain = do_code->block->next;
     }
   return false;
 }
@@ -10268,21 +10320,22 @@ static bool
 expr_is_invariant (gfc_code *code, int depth, gfc_expr *expr)
 {
   int i;
-  gfc_code *do_code = code->block->next;
-  while (loop_transform_p (do_code->op)) {
-    if (do_code->block)
-      do_code = do_code->block->next;
-    else
-      do_code = do_code->next;
-  }
-  gcc_checking_assert (!loop_transform_p (do_code->op));
+  gfc_code *do_code = code;
+
+  /* Move over loop transformations until the
+     loop is found. It may also be represented by a
+     transformation construct (but then with a block)
+     if it is not associated with any other construct. */
+  while (loop_transform_p (do_code->op) && !do_code->block)
+    do_code = do_code->next;
 
   for (i = 1; i < depth; i++)
     {
+      do_code = find_nested_loop_in_chain (do_code->block->next);
+      gcc_assert (do_code);
       gfc_symbol *ivar = do_code->ext.iterator->var->symtree->n.sym;
       if (gfc_find_sym_in_expr (ivar, expr))
 	return false;
-      do_code = do_code->block->next;
     }
   return true;
 }
@@ -10676,6 +10729,8 @@ resolve_omp_do (gfc_code *code)
       if (i == collapse || c)
 	break;
       do_code = do_code->block;
+      do_code = resolve_nested_loop_transforms (do_code, name, collapse - i,
+						&code->loc);
       if (do_code->op != EXEC_DO && do_code->op != EXEC_DO_WHILE)
 	{
 	  gfc_error ("not enough DO loops for collapsed %s at %L",
@@ -10683,6 +10738,8 @@ resolve_omp_do (gfc_code *code)
 	  break;
 	}
       do_code = do_code->next;
+      do_code = resolve_nested_loop_transforms (do_code, name, collapse - i,
+						&code->loc);
       if (do_code == NULL
 	  || (do_code->op != EXEC_DO && do_code->op != EXEC_DO_WHILE))
 	{
@@ -10696,7 +10753,7 @@ resolve_omp_do (gfc_code *code)
 static void
 resolve_omp_tile (gfc_code *code)
 {
-  gfc_code *do_code, *c;
+  gfc_code *do_code, *next;
   gfc_symbol *dovar;
   const char *name = "!$OMP TILE";
 
@@ -10710,65 +10767,78 @@ resolve_omp_tile (gfc_code *code)
 
   for (unsigned i = 1; i <= num_loops; i++)
     {
+
+      gfc_symbol *start_var = NULL, *end_var = NULL;
+
       if (do_code->op == EXEC_DO_WHILE)
 	{
 	  gfc_error ("%s cannot be a DO WHILE or DO without loop control "
 		     "at %L", name, &do_code->loc);
-	  break;
+	  return;
 	}
       if (do_code->op == EXEC_DO_CONCURRENT)
 	{
 	  gfc_error ("%s cannot be a DO CONCURRENT loop at %L", name,
 		     &do_code->loc);
-	  break;
+	  return;
 	}
       if (do_code->op != EXEC_DO)
 	{
 	  gfc_error ("%s must be DO loop at %L", name,
 		     &do_code->loc);
-	  break;
+	  return;
 	}
 
       gcc_assert (do_code->op != EXEC_OMP_UNROLL);
       gcc_assert (do_code->op == EXEC_DO);
       dovar = do_code->ext.iterator->var->symtree->n.sym;
-      if (i > 1)
+      if (is_outer_iteration_variable (code, i, dovar))
 	{
-	  gfc_code *do_code2 = code;
-	  while (loop_transform_p (do_code2->op))
-	    {
-	      if (do_code2->block)
-		do_code2 = do_code2->block->next;
-	      else
-		do_code2 = do_code2->next;
-	    }
-	  gcc_checking_assert (!loop_transform_p (do_code2->op));
-
-	  for (unsigned j = 1; j < i; j++)
-	    {
-	      gfc_symbol *ivar = do_code2->ext.iterator->var->symtree->n.sym;
-	      if (dovar == ivar
-		  || gfc_find_sym_in_expr (ivar, do_code->ext.iterator->start)
-		  || gfc_find_sym_in_expr (ivar, do_code->ext.iterator->end)
-		  || gfc_find_sym_in_expr (ivar, do_code->ext.iterator->step))
-		{
-		  gfc_error ("%s loops don't form rectangular "
-			     "iteration space at %L", name, &do_code->loc);
-		  break;
-		}
-	      do_code2 = do_code2->block->next;
-	    }
+	  gfc_error ("%s iteration variable used in more than one loop at %L (depth %d)",
+		     name, &do_code->loc, i);
+	  return;
 	}
-      for (c = do_code->next; c; c = c->next)
-	if (c->op != EXEC_NOP && c->op != EXEC_CONTINUE)
+      else if (!bound_expr_is_canonical (code, i,
+					 do_code->ext.iterator->start,
+					 &start_var))
+	{
+	  gfc_error ("%s loop start expression not in canonical form at %L",
+		     name, &do_code->loc);
+	  return;
+	}
+      else if (!bound_expr_is_canonical (code, i,
+					 do_code->ext.iterator->end,
+					 &end_var))
+	{
+	  gfc_error ("%s loop end expression not in canonical form at %L",
+		     name, &do_code->loc);
+	  return;
+	}
+      else if (start_var && end_var && start_var != end_var)
+	{
+	  gfc_error ("%s loop bounds reference different "
+		     "iteration variables at %L", name, &do_code->loc);
+	  return;
+	}
+      else if (!expr_is_invariant (code, i, do_code->ext.iterator->step))
+	{
+	  gfc_error ("%s loop increment not in canonical form at %L",
+		     name, &do_code->loc);
+	  return;
+	}
+      if (start_var || end_var)
+	code->ext.omp_clauses->non_rectangular = 1;
+      for (next = do_code->next; next; next = next->next)
+	if (next->op != EXEC_NOP && next->op != EXEC_CONTINUE)
 	  {
 	    gfc_error ("%s loops not perfectly nested at %L",
-		       name, &c->loc);
+		       name, &next->loc);
 	    break;
 	  }
-      if (i == num_loops || c)
+      if (i == num_loops || next)
 	break;
       do_code = do_code->block;
+      do_code = resolve_nested_loop_transforms (do_code, name, num_loops - i, &code->loc);
       if (do_code->op != EXEC_DO && do_code->op != EXEC_DO_WHILE)
 	{
 	  gfc_error ("not enough DO loops for %s at %L",
@@ -10776,6 +10846,7 @@ resolve_omp_tile (gfc_code *code)
 	  break;
 	}
       do_code = do_code->next;
+      do_code = resolve_nested_loop_transforms (do_code, name, num_loops - i, &code->loc);
       if (do_code == NULL
 	  || (do_code->op != EXEC_DO && do_code->op != EXEC_DO_WHILE))
 	{

@@ -1,5 +1,25 @@
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
+	* omp-transform-loops.cc (gimple_assign_rhs_to_tree): Fix type
+	in comment.
+	(gomp_for_uncollapse): Adjust "collapse" value after uncollapse.
+	(partial_unroll): Add argument for the loop nest level to be transformed.
+	(tile): Likewise.
+	(transform_gomp_for): Pass level to transformatoin functions.
+	(optimize_transformation_clauses): Handle transformation clauses for all
+	levels recursively.
+	* tree-pretty-print.cc (dump_omp_clause): Print
+	OMP_CLAUSE_TRANSFORM_LEVEL for OMP_CLAUSE_UNROLL_FULL,
+	OMP_CLAUSE_UNROLL_PARTIAL, and OMP_CLAUSE_TILE.
+	* tree.cc: Increase number of operands of OMP_CLAUSE_UNROLL_FULL,
+	OMP_CLAUSE_UNROLL_PARTIAL, and OMP_CLAUSE_TILE.
+	* tree.h (OMP_CLAUSE_TRANSFORM_LEVEL): New macro to access
+	clause operand 0.
+	(OMP_CLAUSE_UNROLL_PARTIAL_EXPR): Use operand 1 instead of 0.
+	(OMP_CLAUSE_TILE_SIZES): Likewise.
+
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
 	* gimplify.cc (omp_for_drop_tile_clauses): New function, ...
 	(gimplify_omp_for): ... used here.
 

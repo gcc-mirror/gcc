@@ -1,5 +1,17 @@
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
+	* parser.cc (cp_parser_omp_clause_unroll_full): Set new
+	OMP_CLAUSE_TRANSFORM_LEVEL operand to default value.
+	(cp_parser_omp_clause_unroll_partial): Likewise.
+	(cp_parser_omp_tile_sizes): Likewise.
+	(cp_parser_omp_loop_transform_clause): Likewise.
+	(cp_parser_omp_nested_loop_transform_clauses): Likewise.
+	(cp_parser_omp_unroll): Likewise.
+	* pt.cc (tsubst_omp_clauses): Adjust OMP_CLAUSE_UNROLL_PARTIAL
+	and OMP_CLAUSE_TILE handling to changed number of operands.
+
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
 	* parser.cc (cp_parser_omp_clause_unroll_partial): Adjust.
 	(cp_parser_nested_omp_unroll_clauses): Rename ...
 	(cp_parser_omp_nested_loop_transform_clauses): ... to this.

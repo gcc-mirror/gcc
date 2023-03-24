@@ -21,7 +21,7 @@ function mult (a, b) result (c)
   end do
 end function mult
 
-! { dg-final { scan-tree-dump-times {#pragma omp for nowait unroll_partial\(1\) tile sizes\(8, 8\)} 1 "original" } }
+! { dg-final { scan-tree-dump-times {#pragma omp for nowait unroll_partial\(1\)@0 tile sizes\(8, 8\)@0} 1 "original" } }
 ! { dg-final { scan-tree-dump-not "#pragma omp loop_transform unroll_partial" "omp_transform_loops" } }
 
 ! Tiling adds two floor and two tile loops.

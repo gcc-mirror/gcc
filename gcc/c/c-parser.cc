@@ -17755,6 +17755,7 @@ c_parser_omp_clause_unroll_full (c_parser *parser, tree list)
 
   location_t loc = c_parser_peek_token (parser)->location;
   tree c = build_omp_clause (loc, OMP_CLAUSE_UNROLL_FULL);
+  OMP_CLAUSE_TRANSFORM_LEVEL (c) = build_int_cst (unsigned_type_node, 0);
   OMP_CLAUSE_CHAIN (c) = list;
   return c;
 }
@@ -17775,6 +17776,7 @@ c_parser_omp_clause_unroll_partial (c_parser *parser, tree list)
   loc = c_parser_peek_token (parser)->location;
   c = build_omp_clause (loc, OMP_CLAUSE_UNROLL_PARTIAL);
   OMP_CLAUSE_UNROLL_PARTIAL_EXPR (c) = NULL_TREE;
+  OMP_CLAUSE_TRANSFORM_LEVEL (c) = build_int_cst (unsigned_type_node, 0);
   OMP_CLAUSE_CHAIN (c) = list;
 
   if (!c_parser_next_token_is (parser, CPP_OPEN_PAREN))
@@ -24396,6 +24398,7 @@ c_parser_omp_tile_sizes (c_parser *parser, location_t loc)
 
   gcc_assert (sizes);
   tree c  = build_omp_clause (loc, OMP_CLAUSE_TILE);
+  OMP_CLAUSE_TRANSFORM_LEVEL (c) = build_int_cst (unsigned_type_node, 0);
   OMP_CLAUSE_TILE_SIZES (c) = sizes;
 
   return c;
@@ -24421,7 +24424,11 @@ c_parser_omp_loop_transform_clause (c_parser *parser)
       if (!c)
 	{
 	  if (c_parser_next_token_is (parser, CPP_PRAGMA_EOL))
-	    c = build_omp_clause (tok->location, OMP_CLAUSE_UNROLL_NONE);
+	    {
+	      c = build_omp_clause (tok->location, OMP_CLAUSE_UNROLL_NONE);
+	      OMP_CLAUSE_TRANSFORM_LEVEL (c) =
+		build_int_cst (unsigned_type_node, 0);
+	    }
 	  else
 	    c = error_mark_node;
 	}
@@ -24576,6 +24583,7 @@ c_parser_omp_unroll (location_t loc, c_parser *parser, bool *if_p)
   if (!clauses)
     {
       tree c = build_omp_clause (loc, OMP_CLAUSE_UNROLL_NONE);
+      OMP_CLAUSE_TRANSFORM_LEVEL (c) = build_int_cst (unsigned_type_node, 0);
       OMP_CLAUSE_CHAIN (c) = clauses;
       clauses = c;
     }

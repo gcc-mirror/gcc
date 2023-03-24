@@ -1,5 +1,23 @@
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
+	* openmp.cc (omp_unroll_removes_loop_nest): Move down in file.
+	(resolve_loop_transform_generic): Remove, and ...
+	(resolve_omp_unroll): ... inline and adapt here. Move function.
+	Move functin.
+	(find_nested_loop_in_block): New function.
+	(find_nested_loop_in_chain): New function, used ...
+	(is_outer_iteration_variable): ... here, and ...
+	(expr_is_invariant): ... here.
+	(resolve_omp_do): Adjust code for resolving loop transformations.
+	(resolve_omp_tile): Likewise.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Set OMP_TRANSFROM_LEVEL
+	on new clause.
+	(compute_transformed_depth): New function to compute the depth
+	("collapse") of a transformed loop nest, used
+	(gfc_trans_omp_do): ... here.
+
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
 	* gfortran.h (enum gfc_statement): Add ST_OMP_TILE, ST_OMP_END_TILE.
 	(enum gfc_exec_op): Add EXEC_OMP_TILE.
 	(loop_transform_p): New declaration.

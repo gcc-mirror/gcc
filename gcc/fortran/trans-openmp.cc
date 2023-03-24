@@ -5685,12 +5685,14 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
   if (clauses->unroll_full)
     {
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_UNROLL_FULL);
+      OMP_CLAUSE_TRANSFORM_LEVEL (c) = build_int_cst (unsigned_type_node, 0);
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
   if (clauses->unroll_none)
     {
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_UNROLL_NONE);
+      OMP_CLAUSE_TRANSFORM_LEVEL (c) = build_int_cst (unsigned_type_node, 0);
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
@@ -5698,6 +5700,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
     {
       c = build_omp_clause (gfc_get_location (&where),
 			    OMP_CLAUSE_UNROLL_PARTIAL);
+      OMP_CLAUSE_TRANSFORM_LEVEL (c) = build_int_cst (unsigned_type_node, 0);
       OMP_CLAUSE_UNROLL_PARTIAL_EXPR (c)
 	  = clauses->unroll_partial_factor ? build_int_cst (
 		integer_type_node, clauses->unroll_partial_factor)
@@ -5718,6 +5721,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       c = build_omp_clause (gfc_get_location (&where),
 			    OMP_CLAUSE_TILE);
       OMP_CLAUSE_TILE_SIZES (c) = build_tree_list_vec (tvec);
+      OMP_CLAUSE_TRANSFORM_LEVEL (c) = build_int_cst (unsigned_type_node, 0);
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
 
       tvec->truncate (0);
@@ -7131,6 +7135,29 @@ gfc_expr_list_len (gfc_expr_list *list)
   return len;
 }
 
+/* Traverse the loops with nesting depth at most
+   COLLAPSE from CODE and determine the largest
+   loop nest depth required by the loop transformations
+   found on the loops. */
+int compute_transformed_depth (gfc_code *code, int collapse)
+{
+  int new_collapse = collapse;
+  for (int i = 0; i < new_collapse; i++)
+    {
+      gcc_assert (code->op == EXEC_DO || loop_transform_p (code->op));
+      while (loop_transform_p (code->op))
+	{
+	  int tile_depth
+	      = gfc_expr_list_len (code->ext.omp_clauses->tile_sizes);
+	  new_collapse = MAX (new_collapse, i + tile_depth);
+	  code = code->block ? code->block->next : code->next;
+	}
+      code = code->block->next;
+    }
+
+  return new_collapse;
+}
+
 static tree
 gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
 		  gfc_omp_clauses *do_clauses, tree par_clauses,
@@ -7167,6 +7194,7 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
      do" (or similar directive) are represented as clauses on the "omp do". */
   loop_transform_clauses = NULL;
   int omp_tile_depth = gfc_expr_list_len (omp_tile);
+  tree clauses_tail = NULL;
   while (loop_transform_p (code->op))
     {
       tree clauses = gfc_trans_omp_clauses (pblock, code->ext.omp_clauses,
@@ -7178,7 +7206,14 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
 	 directive, an error will be emitted in pass-omp_transform_loops. */
       omp_tile_depth = gfc_expr_list_len (code->ext.omp_clauses->tile_sizes);
 
-      loop_transform_clauses = chainon (loop_transform_clauses, clauses);
+      if (!loop_transform_clauses)
+	{
+	  loop_transform_clauses = clauses;
+	  clauses_tail = tree_last (clauses);
+	}
+      else
+	clauses_tail = chainon (clauses_tail, clauses);
+
       code = code->block ? code->block->next : code->next;
     }
   gcc_checking_assert (!loop_transform_p (code->op));
@@ -7195,9 +7230,12 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
     collapse = clauses->orderedc;
   if (collapse <= 0)
     collapse = 1;
-
   collapse = MAX (collapse, omp_tile_depth);
+  gfc_code *first_loop = loop_transform_p (orig_code->op) ?
+    orig_code : orig_code->block->next;
+  int transform_depth = compute_transformed_depth (first_loop, collapse);
 
+  collapse = transform_depth;
   init = make_tree_vec (collapse);
   cond = make_tree_vec (collapse);
   incr = make_tree_vec (collapse);
@@ -7208,15 +7246,8 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
      on the simd construct and DO's clauses are translated elsewhere.  */
   do_clauses->sched_simd = false;
 
-  if (loop_transform_p (op))
-    {
-      /* This is a loop transformation on a loop which is not associated with
-	 any other directive. Use the directive location instead of the loop
-	 location for the clauses. */
-      omp_clauses = gfc_trans_omp_clauses (pblock, do_clauses, top_loc);
-    }
-  else
-    omp_clauses = gfc_trans_omp_clauses (pblock, do_clauses, code->loc);
+  omp_clauses = NULL;
+  omp_clauses = gfc_trans_omp_clauses (pblock, do_clauses, top_loc);
   omp_clauses = chainon (omp_clauses, loop_transform_clauses);
 
   for (i = 0; i < collapse; i++)
@@ -7489,7 +7520,26 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
 	}
 
       if (i + 1 < collapse)
-	code = code->block->next;
+	{
+	  code = code->block->next;
+
+	  loop_transform_clauses = NULL;
+	  clauses_tail = omp_clauses;
+	  while (loop_transform_p (code->op))
+	    {
+	      loop_transform_clauses = gfc_trans_omp_clauses (
+		  pblock, code->ext.omp_clauses, code->loc);
+	      for (tree c = loop_transform_clauses; c;
+		   c = OMP_CLAUSE_CHAIN (c))
+		OMP_CLAUSE_TRANSFORM_LEVEL (c)
+		    = build_int_cst (unsigned_type_node, i + 1);
+
+	      clauses_tail = chainon (clauses_tail, loop_transform_clauses);
+	      clauses_tail = tree_last (loop_transform_clauses);
+
+	      code = code->block ? code->block->next : code->next;
+	    }
+	}
     }
 
   if (pblock != &block)

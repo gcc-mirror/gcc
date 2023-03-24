@@ -1,5 +1,25 @@
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
+	* gfortran.dg/gomp/loop-transforms/unroll-8.f90: Adjust.
+	* gfortran.dg/gomp/loop-transforms/unroll-9.f90: Adjust.
+	* gfortran.dg/gomp/loop-transforms/unroll-tile-1.f90: Adjust.
+	* gfortran.dg/gomp/loop-transforms/unroll-tile-2.f90: Adjust.
+	* gfortran.dg/gomp/loop-transforms/inner-loops.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/tile-imperfect-nest.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/tile-inner-loops-1.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/tile-inner-loops-2.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/tile-inner-loops-3.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/tile-inner-loops-3a.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/tile-inner-loops-4.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/tile-inner-loops-4a.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/tile-inner-loops-5.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/unroll-inner-loop.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/unroll-tile-inner-1.f90: New test.
+	* gfortran.dg/gomp/loop-transforms/tile-3.f90: Adapt to
+	changed diagnostic messages.
+
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
 	* c-c++-common/gomp/loop-transforms/tile-1.c: New test.
 	* c-c++-common/gomp/loop-transforms/tile-2.c: New test.
 	* c-c++-common/gomp/loop-transforms/tile-3.c: New test.
