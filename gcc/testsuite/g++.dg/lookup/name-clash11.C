@@ -7,7 +7,7 @@
 #  define ASSERT(e) static_assert (e, #e)
 #else
 #  define ASSERT(e)                                             \
-  do { struct S { bool: !!(e); } asrt; (void)&asrt; } while (0)
+  do { typedef int asrt[bool(e) ? 1 : -1]; } while (0)
 #endif
 
 
