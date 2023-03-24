@@ -1,5 +1,44 @@
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
+	* testsuite/libgomp.c++/loop-transforms/tile-1.C: Deleted, replaced by
+	matrix-* tests.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-1.h:
+	New header file for new tests.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-constant-iter.h:
+	Likewise.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-helper.h:
+	Likewise.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-no-directive-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-no-directive-unroll-full-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-omp-distribute-parallel-for-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-omp-for-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-omp-parallel-for-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-omp-parallel-masked-taskloop-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-omp-parallel-masked-taskloop-simd-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-omp-target-parallel-for-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-omp-target-teams-distribute-parallel-for-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-omp-taskloop-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-omp-teams-distribute-parallel-for-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-simd-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-transform-variants-1.h:
+	New test.
+	* testsuite/libgomp.c-c++-common/loop-transforms/unroll-non-rect-1.c:
+	New test.
+
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
 	* testsuite/libgomp.fortran/loop-transforms/inner-1.f90: New test.
 
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>

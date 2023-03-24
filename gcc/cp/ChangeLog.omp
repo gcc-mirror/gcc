@@ -1,5 +1,15 @@
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
+	* parser.cc (cp_parser_is_pragma): New function.
+	(cp_parser_omp_nested_loop_transform_clauses):
+	Add argument for the level of loop-nest at which the clauses
+	appear, ...
+	(cp_parser_omp_tile): ... adjust use here,
+	(cp_parser_omp_unroll): ... and here,
+	(cp_parser_omp_for_loop): ... and here.  Stop treating loop.
+
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
 	* parser.cc (cp_parser_omp_clause_unroll_full): Set new
 	OMP_CLAUSE_TRANSFORM_LEVEL operand to default value.
 	(cp_parser_omp_clause_unroll_partial): Likewise.

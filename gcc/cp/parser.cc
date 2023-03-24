@@ -43944,7 +43944,8 @@ cp_parser_omp_scan_loop_body (cp_parser *parser)
 }
 
 static int cp_parser_omp_nested_loop_transform_clauses (cp_parser *, tree &,
-							int, const char *);
+							int, int,
+							const char *);
 
 /* Parse the restricted form of the for statement allowed by OpenMP.  */
 
@@ -43996,7 +43997,7 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
   gcc_assert (oacc_tiling || (collapse >= 1 && ordered >= 0));
   count = ordered ? ordered : collapse;
 
-  cp_parser_omp_nested_loop_transform_clauses (parser, clauses, count,
+  cp_parser_omp_nested_loop_transform_clauses (parser, clauses, 0, count,
 					       "loop collapse");
 
   /* Find the depth of the loop nest affected by "omp tile"
@@ -44266,19 +44267,42 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
       cp_parser_parse_tentatively (parser);
       for (;;)
 	{
-	  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_FOR))
+	  cp_token *tok = cp_lexer_peek_token (parser->lexer);
+	  if (cp_parser_is_keyword (tok, RID_FOR))
 	    break;
-	  else if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+	  else if (tok->type == CPP_OPEN_BRACE)
 	    {
 	      cp_lexer_consume_token (parser->lexer);
 	      bracecount++;
 	    }
-	  else if (bracecount
-		   && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+	  else if (bracecount && tok->type == CPP_SEMICOLON)
 	    cp_lexer_consume_token (parser->lexer);
+	  else if (cp_parser_pragma_kind (tok) == PRAGMA_OMP_UNROLL
+		   || cp_parser_pragma_kind (tok) == PRAGMA_OMP_TILE)
+	    {
+	      int depth = cp_parser_omp_nested_loop_transform_clauses (
+		  parser, clauses, i + 1, count - i - 1, "loop collapse");
+
+	      /* Adjust the loop nest depth to the requirements of the
+		 loop transformations. The collapse will be reduced
+		 to value requested by the "collapse" and "ordered"
+		 clauses after the execution of the loop transformations
+		 in the middle end. */
+	      if (i + 1 + depth > count)
+		{
+		  count = i + 1 + depth;
+		  if (declv)
+		    declv = grow_tree_vec (declv, count);
+		  initv = grow_tree_vec (initv, count);
+		  condv = grow_tree_vec (condv, count);
+		  incrv = grow_tree_vec (incrv, count);
+		  if (orig_declv)
+		    declv = grow_tree_vec (orig_declv, count);
+		}
+	    }
 	  else
 	    {
-	      loc = cp_lexer_peek_token (parser->lexer)->location;
+	      loc = tok->location;
 	      error_at (loc, "not enough for loops to collapse");
 	      collapse_err = true;
 	      cp_parser_abort_tentative_parse (parser);
@@ -44337,6 +44361,27 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 	}
       else if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
 	cp_lexer_consume_token (parser->lexer);
+      else if (cp_parser_pragma_kind (cp_lexer_peek_token (parser->lexer))
+	       == PRAGMA_OMP_UNROLL
+	       || cp_parser_pragma_kind (cp_lexer_peek_token (parser->lexer))
+	       == PRAGMA_OMP_TILE)
+	{
+	  int depth =
+	    cp_parser_omp_nested_loop_transform_clauses (parser, clauses,
+							 i + 1, count - i -1,
+							 "loop collapse");
+	  if (i + 1 + depth > count)
+	    {
+	      count = i + 1 + depth;
+	      if (declv)
+		declv = grow_tree_vec (declv, count);
+	      initv = grow_tree_vec (initv, count);
+	      condv = grow_tree_vec (condv, count);
+	      incrv = grow_tree_vec (incrv, count);
+	      if (orig_declv)
+		declv = grow_tree_vec (orig_declv, count);
+	    }
+	}
       else
 	{
 	  if (!collapse_err)
@@ -46083,7 +46128,6 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
   return true;
 }
 
-
 /* OpenMP 5.1: Parse sizes list for "omp tile sizes"
    sizes ( size-expr-list ) */
 static tree
@@ -46127,6 +46171,7 @@ cp_parser_omp_tile_sizes (cp_parser *parser, location_t loc)
 
   gcc_assert (sizes);
   tree c  = build_omp_clause (loc, OMP_CLAUSE_TILE);
+  OMP_CLAUSE_TRANSFORM_LEVEL (c) = build_int_cst (unsigned_type_node, 0);
   OMP_CLAUSE_TILE_SIZES (c) = sizes;
   OMP_CLAUSE_TRANSFORM_LEVEL (c)
     = build_int_cst (unsigned_type_node, 0);
@@ -46150,8 +46195,9 @@ cp_parser_omp_tile (cp_parser *parser, cp_token *tok, bool *if_p)
     return error_mark_node;
 
   int required_depth = list_length (OMP_CLAUSE_TILE_SIZES (clauses));
-  cp_parser_omp_nested_loop_transform_clauses (
-      parser, clauses, required_depth, "outer transformation");
+  cp_parser_omp_nested_loop_transform_clauses (parser, clauses, 0,
+					       required_depth,
+					       "outer transformation");
 
   block = begin_omp_structured_block ();
   clauses = finish_omp_clauses (clauses, C_ORT_OMP);
@@ -46218,8 +46264,9 @@ cp_parser_omp_loop_transform_clause (cp_parser *parser)
 }
 
 /* Parse zero or more OpenMP loop transformation directives that
-   follow another directive that requires a canonical loop nest and
-   append all to CLAUSES.  Return the nesting depth
+   follow another directive that requires a canonical loop nest,
+   append all to CLAUSES, and require the level at which the clause
+   appears in the loop nest in each clause.  Return the nesting depth
    of the transformed loop nest.
 
    REQUIRED_DEPTH is the nesting depth of the loop nest required by
@@ -46230,7 +46277,7 @@ cp_parser_omp_loop_transform_clause (cp_parser *parser)
 
 static int
 cp_parser_omp_nested_loop_transform_clauses (cp_parser *parser, tree &clauses,
-					     int required_depth,
+					     int level, int required_depth,
 					     const char *outer_descr)
 {
   tree c = NULL_TREE;
@@ -46274,7 +46321,8 @@ cp_parser_omp_nested_loop_transform_clauses (cp_parser *parser, tree &clauses,
 	default:
 	  gcc_unreachable ();
 	}
-      OMP_CLAUSE_TRANSFORM_LEVEL (c) = build_int_cst (unsigned_type_node, 0);
+      OMP_CLAUSE_TRANSFORM_LEVEL (c)
+	  = build_int_cst (unsigned_type_node, level);
 
       if (depth < last_depth)
 	{
@@ -46329,8 +46377,9 @@ cp_parser_omp_unroll (cp_parser *parser, cp_token *tok, bool *if_p)
     }
 
   int required_depth = 1;
-  cp_parser_omp_nested_loop_transform_clauses (
-      parser, clauses, required_depth, "outer transformation");
+  cp_parser_omp_nested_loop_transform_clauses (parser, clauses, 0,
+					       required_depth,
+					       "outer transformation");
 
   block = begin_omp_structured_block ();
   ret = cp_parser_omp_for_loop (parser, OMP_LOOP_TRANS, clauses, NULL, if_p);

@@ -1,5 +1,16 @@
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
+	* c-parser.cc (c_parser_omp_nested_loop_transform_clauses):
+	Add argument for the level of loop-nest at which the clauses
+	appear, ...
+	(c_parser_omp_tile): ... adjust use here,
+	(c_parser_omp_unroll): ... and here,
+	(c_parser_omp_for_loop): ... and here.  Stop treating loop
+	transformations like intervening code, parse them, and adjust
+	the loop-nest depth if necessary for tiling.
+
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
 	* c-parser.cc (c_parser_omp_clause_unroll_full): Set new
 	OMP_CLAUSE_TRANSFORM_LEVEL operand to default value.
 	(c_parser_omp_clause_unroll_partial): Likewise.

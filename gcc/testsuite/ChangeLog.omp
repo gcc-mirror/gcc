@@ -1,5 +1,10 @@
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
+	* c-c++-common/gomp/loop-transforms/unroll-inner-1.c: New test.
+	* c-c++-common/gomp/loop-transforms/unroll-inner-2.c: New test.
+
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
 	* gfortran.dg/gomp/loop-transforms/unroll-8.f90: Adjust.
 	* gfortran.dg/gomp/loop-transforms/unroll-9.f90: Adjust.
 	* gfortran.dg/gomp/loop-transforms/unroll-tile-1.f90: Adjust.
