@@ -1,3 +1,35 @@
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
+	* cp-gimplify.cc (cp_gimplify_expr): Handle OMP_UNROLL.
+	(cp_fold_r): Likewise.
+	(cp_genericize_r): Likewise.
+	* parser.cc (cp_parser_omp_clause_name): Handle "full" clause.
+	(check_no_duplicate_clause): Change return type to bool and
+	return check result.
+	(cp_parser_omp_clause_unroll_full): New function for parsing
+	the "unroll clause".
+	(cp_parser_omp_clause_unroll_partial): New function for
+	parsing the "partial" clause.
+	(cp_parser_omp_all_clauses): Handle OMP_CLAUSE_UNROLL and
+	OMP_CLAUSE_FULL.
+	(cp_parser_nested_omp_unroll_clauses): New function for parsing
+	"omp unroll" directives following another directive.
+	(cp_parser_omp_for_loop): Handle "omp unroll" directives
+	between directive and loop.
+	(OMP_UNROLL_CLAUSE_MASK): New definition.
+	(cp_parser_omp_unroll): New function for parsing "omp unroll"
+	loops that are not associated with another directive.
+
+	(cp_parser_omp_construct): Handle PRAGMA_OMP_UNROLL.
+	(cp_parser_pragma): Handle PRAGMA_OMP_UNROLL.
+	* pt.cc (tsubst_omp_clauses): Handle
+	OMP_CLAUSE_UNROLL_PARTIAL, OMP_CLAUSE_UNROLL_FULL, and
+	OMP_CLAUSE_UNROLL_NONE.
+	(tsubst_expr): Handle OMP_UNROLL.
+	* semantics.cc (finish_omp_clauses): Handle
+	OMP_CLAUSE_UNROLL_FULL, OMP_CLAUSE_UNROLL_PARTIAL,
+	and OMP_CLAUSE_UNROLL_NONE.
+
 2023-02-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* parser.cc (cp_parser_omp_var_list_no_open): Add new parameter with

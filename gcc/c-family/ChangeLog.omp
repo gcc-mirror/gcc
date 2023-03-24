@@ -1,3 +1,13 @@
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
+	* c-gimplify.cc (c_genericize_control_stmt): Handle OMP_UNROLL.
+	* c-omp.cc: Add "unroll" to omp_directives[].
+	* c-pragma.cc: Add "unroll" to omp_pragmas_simd[].
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_UNROLL to
+	pragma_kind and adjust PRAGMA_OMP__LAST_.
+	(enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_FULL and
+	PRAGMA_OMP_CLAUSE_PARTIAL.
+
 2022-04-15  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	gcc/c-family/

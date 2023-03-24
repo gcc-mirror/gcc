@@ -18098,6 +18098,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	case OMP_CLAUSE_ASYNC:
 	case OMP_CLAUSE_WAIT:
 	case OMP_CLAUSE_DETACH:
+	case OMP_CLAUSE_UNROLL_PARTIAL:
 	  OMP_CLAUSE_OPERAND (nc, 0)
 	    = tsubst_expr (OMP_CLAUSE_OPERAND (oc, 0), args, complain, in_decl);
 	  break;
@@ -18181,6 +18182,8 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_NOHOST:
+	case OMP_CLAUSE_UNROLL_FULL:
+	case OMP_CLAUSE_UNROLL_NONE:
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -19449,6 +19452,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case OMP_SIMD:
     case OMP_DISTRIBUTE:
     case OMP_TASKLOOP:
+    case OMP_LOOP_TRANS:
     case OACC_LOOP:
       {
 	tree clauses, body, pre_body;

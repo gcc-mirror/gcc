@@ -6856,6 +6856,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   bool mergeable_seen = false;
   bool implicit_moved = false;
   bool target_in_reduction_seen = false;
+  bool unroll_full_seen = false;
 
   bitmap_obstack_initialize (NULL);
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
@@ -9006,6 +9007,60 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
+	  break;
+
+	case OMP_CLAUSE_UNROLL_FULL:
+	  if (unroll_full_seen)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<full%> appears more than once");
+	      remove = true;
+	    }
+	  unroll_full_seen = true;
+	  break;
+
+	case OMP_CLAUSE_UNROLL_PARTIAL:
+	  {
+	    tree t = OMP_CLAUSE_UNROLL_PARTIAL_EXPR (c);
+
+	    if (!t)
+	      break;
+
+	    if (t == error_mark_node)
+	      remove = true;
+	    else if (!type_dependent_expression_p (t)
+		     && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+	      {
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "partial argument needs integral type");
+		remove = true;
+	      }
+	    else
+	      {
+		t = mark_rvalue_use (t);
+		if (!processing_template_decl)
+		  {
+		    t = maybe_constant_value (t);
+
+		    int n;
+		    if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
+			|| !tree_fits_shwi_p (t)
+			|| (n = tree_to_shwi (t)) <= 0 || (int)n != n)
+		      {
+			error_at (OMP_CLAUSE_LOCATION (c),
+				  "partial argument needs positive constant "
+				  "integer expression");
+			remove = true;
+		      }
+		    t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+		  }
+	      }
+
+	    OMP_CLAUSE_UNROLL_PARTIAL_EXPR (c) = t;
+	  }
+	  break;
+
+	case OMP_CLAUSE_UNROLL_NONE:
 	  break;
 
 	default:

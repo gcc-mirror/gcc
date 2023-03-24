@@ -13490,6 +13490,8 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_FIRSTPRIVATE;
 	  else if (!strcmp ("from", p))
 	    result = PRAGMA_OMP_CLAUSE_FROM;
+	  else if (!strcmp ("full", p))
+	    result = PRAGMA_OMP_CLAUSE_FULL;
 	  break;
 	case 'g':
 	  if (!strcmp ("gang", p))
@@ -13564,6 +13566,8 @@ c_parser_omp_clause_name (c_parser *parser)
 	case 'p':
 	  if (!strcmp ("parallel", p))
 	    result = PRAGMA_OMP_CLAUSE_PARALLEL;
+	  else if (!strcmp ("partial", p))
+	    result = PRAGMA_OMP_CLAUSE_PARTIAL;
 	  else if (!strcmp ("present", p))
 	    result = PRAGMA_OACC_CLAUSE_PRESENT;
 	  /* As of OpenACC 2.5, these are now aliases of the non-present_or
@@ -13660,12 +13664,15 @@ c_parser_omp_clause_name (c_parser *parser)
 
 /* Validate that a clause of the given type does not already exist.  */
 
-static void
+static bool
 check_no_duplicate_clause (tree clauses, enum omp_clause_code code,
 			   const char *name)
 {
-  if (tree c = omp_find_clause (clauses, code))
+  tree c = omp_find_clause (clauses, code);
+  if (c)
     error_at (OMP_CLAUSE_LOCATION (c), "too many %qs clauses", name);
+
+  return c == NULL_TREE;
 }
 
 /* OpenACC 2.0
@@ -17737,6 +17744,65 @@ c_parser_omp_clause_uniform (c_parser *parser, tree list)
   return list;
 }
 
+/* OpenMP 5.1
+   full */
+
+static tree
+c_parser_omp_clause_unroll_full (c_parser *parser, tree list)
+{
+  if (!check_no_duplicate_clause (list, OMP_CLAUSE_UNROLL_FULL, "full"))
+    return list;
+
+  location_t loc = c_parser_peek_token (parser)->location;
+  tree c = build_omp_clause (loc, OMP_CLAUSE_UNROLL_FULL);
+  OMP_CLAUSE_CHAIN (c) = list;
+  return c;
+}
+
+/* OpenMP 5.1
+   partial ( constant-expression ) */
+
+static tree
+c_parser_omp_clause_unroll_partial (c_parser *parser, tree list)
+{
+  if (!check_no_duplicate_clause (list, OMP_CLAUSE_UNROLL_PARTIAL, "partial"))
+    return list;
+
+  tree c, num = error_mark_node;
+  HOST_WIDE_INT n;
+  location_t loc;
+
+  loc = c_parser_peek_token (parser)->location;
+  c = build_omp_clause (loc, OMP_CLAUSE_UNROLL_PARTIAL);
+  OMP_CLAUSE_UNROLL_PARTIAL_EXPR (c) = NULL_TREE;
+  OMP_CLAUSE_CHAIN (c) = list;
+
+  if (!c_parser_next_token_is (parser, CPP_OPEN_PAREN))
+    return c;
+
+  matching_parens parens;
+  parens.consume_open (parser);
+  num = c_parser_expr_no_commas (parser, NULL).value;
+  parens.skip_until_found_close (parser);
+
+  if (num == error_mark_node)
+    return list;
+
+  mark_exp_read (num);
+  num = c_fully_fold (num, false, NULL);
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (num)) || !tree_fits_shwi_p (num)
+      || (n = tree_to_shwi (num)) <= 0 || (int)n != n)
+    {
+      error_at (loc,
+		"partial argument needs positive constant integer expression");
+      return list;
+   }
+
+  OMP_CLAUSE_UNROLL_PARTIAL_EXPR (c) = num;
+
+  return c;
+}
+
 /* OpenMP 5.0:
    detach ( event-handle ) */
 
@@ -18334,6 +18400,14 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 	    = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_ENTER,
 					    clauses);
 	  c_name = "enter";
+	  break;
+	case PRAGMA_OMP_CLAUSE_FULL:
+	  c_name = "full";
+	  clauses = c_parser_omp_clause_unroll_full (parser, clauses);
+	  break;
+	case PRAGMA_OMP_CLAUSE_PARTIAL:
+	  c_name = "partial";
+	  clauses = c_parser_omp_clause_unroll_partial (parser, clauses);
 	  break;
 	default:
 	  c_parser_error (parser, "expected %<#pragma omp%> clause");
@@ -20466,6 +20540,8 @@ c_parser_omp_scan_loop_body (c_parser *parser, bool open_brace_parsed)
 			     "expected %<}%>");
 }
 
+static bool c_parser_nested_omp_unroll_clauses (c_parser *, tree &);
+
 /* Parse the restricted form of loop statements allowed by OpenACC and OpenMP.
    The real trick here is to determine the loop control variable early
    so that we can push a new decl if necessary to make it private.
@@ -20524,6 +20600,13 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
   initv = make_tree_vec (count);
   condv = make_tree_vec (count);
   incrv = make_tree_vec (count);
+
+  if (c_parser_nested_omp_unroll_clauses (parser, clauses)
+      && count > 1)
+    {
+      error_at (loc, "collapse cannot be larger than 1 on an unrolled loop");
+      return NULL;
+    }
 
   if (!c_parser_next_token_is_keyword (parser, RID_FOR))
     {
@@ -24243,6 +24326,76 @@ c_parser_omp_taskloop (location_t loc, c_parser *parser,
   return ret;
 }
 
+#define OMP_UNROLL_CLAUSE_MASK					\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PARTIAL)	\
+	  | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FULL) )
+
+/* Parse zero or more '#pragma omp unroll' that follow
+   another directive that requires a canonical loop nest. */
+
+static bool
+c_parser_nested_omp_unroll_clauses (c_parser *parser, tree &clauses)
+{
+  static const char *p_name = "#pragma omp unroll";
+  c_token *tok;
+  bool found_unroll = false;
+  while (c_parser_next_token_is (parser, CPP_PRAGMA)
+	 && (tok = c_parser_peek_token (parser),
+	     tok->pragma_kind == PRAGMA_OMP_UNROLL))
+    {
+      c_parser_consume_pragma (parser);
+      tree c = c_parser_omp_all_clauses (parser, OMP_UNROLL_CLAUSE_MASK,
+					 p_name, true);
+      if (c)
+	{
+	  gcc_assert (!TREE_CHAIN (c));
+	  found_unroll = true;
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_UNROLL_FULL)
+	    {
+	      error_at (tok->location, "%<full%> clause is invalid here; "
+			"turns loop into non-loop");
+	      continue;
+	    }
+	}
+      else
+	{
+	  error_at (tok->location, "%<#pragma omp unroll%> without "
+				   "%<partial%> clause is invalid here; "
+				   "turns loop into non-loop");
+	  continue;
+	}
+
+      clauses = chainon (clauses, c);
+    }
+
+  return found_unroll;
+}
+
+static tree
+c_parser_omp_unroll (location_t loc, c_parser *parser, bool *if_p)
+{
+  tree block, ret;
+  static const char *p_name = "#pragma omp unroll";
+  omp_clause_mask mask = OMP_UNROLL_CLAUSE_MASK;
+
+  tree clauses = c_parser_omp_all_clauses (parser, mask, p_name, false);
+  c_parser_nested_omp_unroll_clauses (parser, clauses);
+
+  if (!clauses)
+    {
+      tree c = build_omp_clause (loc, OMP_CLAUSE_UNROLL_NONE);
+      OMP_CLAUSE_CHAIN (c) = clauses;
+      clauses = c;
+    }
+
+  block = c_begin_compound_stmt (true);
+  ret = c_parser_omp_for_loop (loc, parser, OMP_LOOP_TRANS, clauses, NULL, if_p);
+  block = c_end_compound_stmt (loc, block, true);
+  add_stmt (block);
+
+  return ret;
+}
+
 /* OpenMP 5.1
    #pragma omp nothing new-line  */
 
@@ -24997,6 +25150,7 @@ c_parser_omp_construct (c_parser *parser, bool *if_p)
   p_kind = c_parser_peek_token (parser)->pragma_kind;
   c_parser_consume_pragma (parser);
 
+  gcc_assert (parser->in_pragma);
   switch (p_kind)
     {
     case PRAGMA_OACC_ATOMIC:
@@ -25090,6 +25244,9 @@ c_parser_omp_construct (c_parser *parser, bool *if_p)
     case PRAGMA_OMP_ASSUME:
       c_parser_omp_assume (parser, if_p);
       return;
+    case PRAGMA_OMP_UNROLL:
+      stmt = c_parser_omp_unroll (loc, parser, if_p);
+      break;
     default:
       gcc_unreachable ();
     }
