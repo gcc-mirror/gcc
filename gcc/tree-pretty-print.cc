@@ -521,6 +521,14 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	  pp_right_paren (pp);
 	}
       break;
+    case OMP_CLAUSE_TILE:
+      pp_string (pp, "tile sizes");
+      pp_left_paren (pp);
+      gcc_assert (OMP_CLAUSE_TILE_SIZES (clause));
+      dump_generic_node (pp, OMP_CLAUSE_TILE_SIZES (clause), spc, flags,
+			 false);
+      pp_right_paren (pp);
+      break;
     case OMP_CLAUSE__LOOPTEMP_:
       name = "_looptemp_";
       goto print_remap;

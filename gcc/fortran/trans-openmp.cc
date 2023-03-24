@@ -5705,6 +5705,24 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
+  if (clauses->tile_sizes)
+    {
+      vec<tree, va_gc> *tvec;
+      gfc_expr_list *el;
+
+      vec_alloc (tvec, 4);
+
+      for (el = clauses->tile_sizes; el; el = el->next)
+	vec_safe_push (tvec, gfc_convert_expr_to_tree (block, el->expr));
+
+      c = build_omp_clause (gfc_get_location (&where),
+			    OMP_CLAUSE_TILE);
+      OMP_CLAUSE_TILE_SIZES (c) = build_tree_list_vec (tvec);
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+
+      tvec->truncate (0);
+    }
+
   if (clauses->ordered)
     {
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_ORDERED);
@@ -6929,7 +6947,7 @@ gfc_trans_omp_cancel (gfc_code *code)
 bool
 loop_transform_p (gfc_exec_op op)
 {
-  return op == EXEC_OMP_UNROLL;
+  return op == EXEC_OMP_UNROLL || op == EXEC_OMP_TILE;
 }
 
 static tree
@@ -7103,6 +7121,16 @@ gfc_nonrect_loop_expr (stmtblock_t *pblock, gfc_se *sep, int loop_n,
   return true;
 }
 
+int
+gfc_expr_list_len (gfc_expr_list *list)
+{
+  unsigned len = 0;
+  for (; list; list = list->next)
+    len++;
+
+  return len;
+}
+
 static tree
 gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
 		  gfc_omp_clauses *do_clauses, tree par_clauses,
@@ -7119,25 +7147,14 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
   dovar_init *di;
   unsigned ix;
   vec<tree, va_heap, vl_embed> *saved_doacross_steps = doacross_steps;
-  gfc_expr_list *tile = do_clauses ? do_clauses->tile_list : clauses->tile_list;
   gfc_code *orig_code = code;
   locus top_loc = code->loc;
-
-  /* Both collapsed and tiled loops are lowered the same way.  In
-     OpenACC, those clauses are not compatible, so prioritize the tile
-     clause, if present.  */
-  if (tile)
-    {
-      collapse = 0;
-      for (gfc_expr_list *el = tile; el; el = el->next)
-	collapse++;
-    }
-
-  doacross_steps = NULL;
-  if (clauses->orderedc)
-    collapse = clauses->orderedc;
-  if (collapse <= 0)
-    collapse = 1;
+  gfc_expr_list *oacc_tile
+      = do_clauses ? do_clauses->tile_list : clauses->tile_list;
+  gfc_expr_list *omp_tile
+      = do_clauses ? do_clauses->tile_sizes : clauses->tile_sizes;
+  gcc_assert (!omp_tile || op == EXEC_OMP_TILE);
+  gcc_assert (!(oacc_tile && omp_tile));
 
   if (pblock == NULL)
     {
@@ -7145,20 +7162,41 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
       pblock = &block;
     }
   code = code->block->next;
-  gcc_assert (code->op == EXEC_DO || code->op == EXEC_OMP_UNROLL);
+  gcc_assert (code->op == EXEC_DO || loop_transform_p (code->op));
   /* Loop transformation directives surrounding the associated loop of an "omp
      do" (or similar directive) are represented as clauses on the "omp do". */
   loop_transform_clauses = NULL;
-  while (code->op == EXEC_OMP_UNROLL)
+  int omp_tile_depth = gfc_expr_list_len (omp_tile);
+  while (loop_transform_p (code->op))
     {
       tree clauses = gfc_trans_omp_clauses (pblock, code->ext.omp_clauses,
 					    code->loc);
-      loop_transform_clauses = chainon (loop_transform_clauses, clauses);
 
+      /* There might be several "!$omp tile" transformations surrounding the
+	 loop. Use the innermost one which must have the largest tiling depth.
+	 If an inner directive has a smaller tiling depth than an outer
+	 directive, an error will be emitted in pass-omp_transform_loops. */
+      omp_tile_depth = gfc_expr_list_len (code->ext.omp_clauses->tile_sizes);
+
+      loop_transform_clauses = chainon (loop_transform_clauses, clauses);
       code = code->block ? code->block->next : code->next;
     }
-  gcc_checking_assert (code->op != EXEC_OMP_UNROLL);
+  gcc_checking_assert (!loop_transform_p (code->op));
   gcc_assert (code->op == EXEC_DO);
+
+  /* Both collapsed and tiled loops are lowered the same way.  In
+     OpenACC, those clauses are not compatible, so prioritize the tile
+     clause, if present.  */
+  if (oacc_tile)
+    collapse = gfc_expr_list_len (oacc_tile);
+
+  doacross_steps = NULL;
+  if (clauses->orderedc)
+    collapse = clauses->orderedc;
+  if (collapse <= 0)
+    collapse = 1;
+
+  collapse = MAX (collapse, omp_tile_depth);
 
   init = make_tree_vec (collapse);
   cond = make_tree_vec (collapse);
@@ -7170,7 +7208,7 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
      on the simd construct and DO's clauses are translated elsewhere.  */
   do_clauses->sched_simd = false;
 
-  if (op == EXEC_OMP_UNROLL)
+  if (loop_transform_p (op))
     {
       /* This is a loop transformation on a loop which is not associated with
 	 any other directive. Use the directive location instead of the loop
@@ -7522,6 +7560,7 @@ gfc_trans_omp_do (gfc_code *code, gfc_exec_op op, stmtblock_t *pblock,
       stmt = make_node (OACC_LOOP);
       OACC_LOOP_COMBINED (stmt) = combined;
       break;
+    case EXEC_OMP_TILE: stmt = make_node (OMP_LOOP_TRANS); break;
     case EXEC_OMP_UNROLL: stmt = make_node (OMP_LOOP_TRANS); break;
     default: gcc_unreachable ();
     }
@@ -9663,6 +9702,7 @@ gfc_trans_omp_directive (gfc_code *code)
     case EXEC_OMP_LOOP:
     case EXEC_OMP_SIMD:
     case EXEC_OMP_TASKLOOP:
+    case EXEC_OMP_TILE:
     case EXEC_OMP_UNROLL:
       return gfc_trans_omp_do (code, code->op, NULL, code->ext.omp_clauses,
 			       NULL, false);

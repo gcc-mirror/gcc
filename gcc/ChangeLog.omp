@@ -1,5 +1,29 @@
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
+	* gimplify.cc (gimplify_scan_omp_clauses): Handle OMP_CLAUSE_TILE.
+	(gimplify_adjust_omp_clauses): Likewise.
+	(gimplify_omp_loop): Likewise.
+	* omp-transform-loops.cc (walk_omp_for_loops): New declaration.
+	(subst_var_in_op): New function.
+	(subst_var): New function.
+	(gomp_for_number_of_iterations): Adjust.
+	(gomp_for_iter_count_type): New function.
+	(gimple_assign_rhs_to_tree): New function.
+	(subst_defs): New function.
+	(gomp_for_uncollapse): Adjust.
+	(transformation_clause_p): Add OMP_CLAUSE_TILE.
+	(tile): New function.
+	(transform_gomp_for): Handle OMP_CLAUSE_TILE.
+	(optimize_transformation_clauses): Handle OMP_CLAUSE_TILE.
+	* omp-general.cc (omp_loop_transform_clause_p): Add
+	OMP_CLAUSE_TILE.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_TILE.
+	* tree-pretty-print.cc (dump_omp_clause): Handle OMP_CLAUSE_TILE.
+	* tree.cc: Add OMP_CLAUSE_TILE.
+	* tree.h (OMP_CLAUSE_TILE_SIZES): New macro.
+
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
 	* tree-core.h (enum omp_clause_code): Rename OMP_CLAUSE_TILE.
 	* tree.h (OMP_CLAUSE_TILE_LIST): Rename to ...
 	(OMP_CLAUSE_OACC_TILE_LIST): ... this.

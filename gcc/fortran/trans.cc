@@ -2522,6 +2522,7 @@ trans_code (gfc_code * code, tree cond)
 	case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
 	case EXEC_OMP_TEAMS_LOOP:
+	case EXEC_OMP_TILE:
 	case EXEC_OMP_UNROLL:
 	case EXEC_OMP_WORKSHARE:
 	  res = gfc_trans_omp_directive (code);

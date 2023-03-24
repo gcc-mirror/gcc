@@ -1,5 +1,39 @@
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
+	* gfortran.h (enum gfc_statement): Add ST_OMP_TILE, ST_OMP_END_TILE.
+	(enum gfc_exec_op): Add EXEC_OMP_TILE.
+	(loop_transform_p): New declaration.
+	(struct gfc_omp_clauses): Add "tile_sizes" field.
+	* dump-parse-tree.cc (show_omp_clauses): Handle "tile_sizes" dumping.
+	(show_omp_node): Handle EXEC_OMP_TILE.
+	(show_code_node): Likewise.
+	* match.h (gfc_match_omp_tile): New declaration.
+	* openmp.cc (gfc_free_omp_clauses): Free "tile_sizes" field.
+	(match_tile_sizes): New function.
+	(OMP_TILE_CLAUSES): New macro.
+	(gfc_match_omp_tile): New function.
+	(resolve_omp_do): Handle EXEC_OMP_TILE.
+	(resolve_omp_tile): New function.
+	(omp_code_to_statement): Handle EXEC_OMP_TILE.
+	(gfc_resolve_omp_directive): Likewise.
+	* parse.cc (decode_omp_directive): Handle ST_OMP_END_TILE
+	and ST_OMP_TILE.
+	(next_statement): Handle ST_OMP_TILE.
+	(gfc_ascii_statement): Likewise.
+	(parse_omp_do): Likewise.
+	(parse_executable): Likewise.
+	* resolve.cc (gfc_resolve_blocks): Handle EXEC_OMP_TILE.
+	(gfc_resolve_code): Likewise.
+	* st.cc (gfc_free_statement): Likewise.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Handle "tile_sizes" field.
+	(loop_transform_p): New function.
+	(gfc_expr_list_len): New function.
+	(gfc_trans_omp_do): Handle EXEC_OMP_TILE.
+	(gfc_trans_omp_directive): Likewise.
+	* trans.cc (trans_code): Likewise.
+
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
 	* openmp.cc (enum omp_mask2): Adjust to renamings.
 	(gfc_match_omp_clauses): Likewise.
 	* trans-openmp.cc (gfc_trans_omp_clauses): Likewise.

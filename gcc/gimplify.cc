@@ -12286,6 +12286,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_UNROLL_FULL:
 	case OMP_CLAUSE_UNROLL_NONE:
 	case OMP_CLAUSE_UNROLL_PARTIAL:
+	case OMP_CLAUSE_TILE:
 	  break;
 	case OMP_CLAUSE_NOHOST:
 	default:
@@ -13395,6 +13396,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_INCLUSIVE:
 	case OMP_CLAUSE_EXCLUSIVE:
+	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE_UNROLL_FULL:
 	case OMP_CLAUSE_UNROLL_NONE:
 	case OMP_CLAUSE_UNROLL_PARTIAL:
@@ -15559,6 +15561,7 @@ gimplify_omp_loop (tree *expr_p, gimple_seq *pre_p)
 	      }
 	    pc = &OMP_CLAUSE_CHAIN (*pc);
 	    break;
+	  case OMP_CLAUSE_TILE:
 	  case OMP_CLAUSE_UNROLL_PARTIAL:
 	  case OMP_CLAUSE_UNROLL_FULL:
 	  case OMP_CLAUSE_UNROLL_NONE:

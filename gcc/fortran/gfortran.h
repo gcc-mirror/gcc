@@ -321,7 +321,8 @@ enum gfc_statement
   ST_OMP_ERROR, ST_OMP_ASSUME, ST_OMP_END_ASSUME, ST_OMP_ASSUMES,
   /* Note: gfc_match_omp_nothing returns ST_NONE. */
   ST_OMP_NOTHING, ST_NONE,
-  ST_OMP_UNROLL, ST_OMP_END_UNROLL
+  ST_OMP_UNROLL, ST_OMP_END_UNROLL,
+  ST_OMP_TILE, ST_OMP_END_TILE
 };
 
 /* Types of interfaces that we can have.  Assignment interfaces are
@@ -1571,6 +1572,7 @@ typedef struct gfc_omp_clauses
   struct gfc_expr *dist_chunk_size;
   struct gfc_expr *message;
   struct gfc_omp_assumptions *assume;
+  struct gfc_expr_list *tile_sizes;
   const char *critical_name;
   enum gfc_omp_default_sharing default_sharing;
   enum gfc_omp_atomic_op atomic_op;
@@ -3012,9 +3014,7 @@ enum gfc_exec_op
   EXEC_OMP_TARGET_TEAMS_LOOP, EXEC_OMP_MASKED, EXEC_OMP_PARALLEL_MASKED,
   EXEC_OMP_PARALLEL_MASKED_TASKLOOP, EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD,
   EXEC_OMP_MASKED_TASKLOOP, EXEC_OMP_MASKED_TASKLOOP_SIMD, EXEC_OMP_SCOPE,
-  EXEC_OMP_METADIRECTIVE,
-  EXEC_OMP_UNROLL,
-  EXEC_OMP_ERROR
+  EXEC_OMP_METADIRECTIVE, EXEC_OMP_UNROLL, EXEC_OMP_TILE, EXEC_OMP_ERROR
 };
 
 typedef struct gfc_code
@@ -3917,6 +3917,7 @@ bool gfc_inline_intrinsic_function_p (gfc_expr *);
 
 /* trans-openmp.cc */
 bool loop_transform_p (gfc_exec_op op);
+int gfc_expr_list_len (gfc_expr_list *);
 
 /* bbt.cc */
 typedef int (*compare_fn) (void *, void *);

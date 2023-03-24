@@ -1,5 +1,16 @@
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
+	* testsuite/libgomp.fortran/loop-transforms/tile-1.f90: New test.
+	* testsuite/libgomp.fortran/loop-transforms/tile-2.f90: New test.
+	* testsuite/libgomp.fortran/loop-transforms/tile-unroll-1.f90: New test.
+	* testsuite/libgomp.fortran/loop-transforms/tile-unroll-2.f90: New test.
+	* testsuite/libgomp.fortran/loop-transforms/tile-unroll-3.f90: New test.
+	* testsuite/libgomp.fortran/loop-transforms/tile-unroll-4.f90: New test.
+	* testsuite/libgomp.fortran/loop-transforms/unroll-tile-1.f90: New test.
+	* testsuite/libgomp.fortran/loop-transforms/unroll-tile-2.f90: New test.
+
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
 	* testsuite/libgomp.c++/loop-transforms/unroll-1.C: New test.
 	* testsuite/libgomp.c++/loop-transforms/unroll-2.C: New test.
 	* testsuite/libgomp.c-c++-common/loop-transforms/unroll-1.c: New test.

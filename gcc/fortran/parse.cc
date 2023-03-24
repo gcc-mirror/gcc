@@ -1018,6 +1018,7 @@ decode_omp_directive (void)
       matcho ("end teams loop", gfc_match_omp_eos_error, ST_OMP_END_TEAMS_LOOP);
       matcho ("end teams", gfc_match_omp_eos_error, ST_OMP_END_TEAMS);
       matchs ("end unroll", gfc_match_omp_eos_error, ST_OMP_END_UNROLL);
+      matchs ("end tile", gfc_match_omp_eos_error, ST_OMP_END_TILE);
       matcho ("end workshare", gfc_match_omp_end_nowait,
 	      ST_OMP_END_WORKSHARE);
       break;
@@ -1148,6 +1149,7 @@ decode_omp_directive (void)
       matcho ("teams", gfc_match_omp_teams, ST_OMP_TEAMS);
       matchdo ("threadprivate", gfc_match_omp_threadprivate,
 	       ST_OMP_THREADPRIVATE);
+      matchs ("tile sizes", gfc_match_omp_tile, ST_OMP_TILE);
       break;
     case 'u':
       matchs ("unroll", gfc_match_omp_unroll, ST_OMP_UNROLL);
@@ -1750,6 +1752,7 @@ next_statement (void)
   case ST_OMP_TARGET_PARALLEL_LOOP: case ST_OMP_TARGET_TEAMS_LOOP: \
   case ST_OMP_ASSUME: \
   case ST_OMP_UNROLL: \
+  case ST_OMP_TILE: \
   case ST_CRITICAL: \
   case ST_OACC_PARALLEL_LOOP: case ST_OACC_PARALLEL: case ST_OACC_KERNELS: \
   case ST_OACC_DATA: case ST_OACC_HOST_DATA: case ST_OACC_LOOP: \
@@ -1806,7 +1809,7 @@ next_statement (void)
   case ST_OMP_TEAMS_DISTRIBUTE: case ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO: \
   case ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD: \
   case ST_OMP_TEAMS_DISTRIBUTE_SIMD: case ST_OMP_TEAMS_LOOP: \
-  case ST_OMP_UNROLL
+  case ST_OMP_TILE: case ST_OMP_UNROLL
 
 /* Block end statements.  Errors associated with interchanging these
    are detected in gfc_match_end().  */
@@ -2844,6 +2847,9 @@ gfc_ascii_statement (gfc_statement st, bool strip_sentinel)
       break;
     case ST_OMP_THREADPRIVATE:
       p = "!$OMP THREADPRIVATE";
+      break;
+    case ST_OMP_TILE:
+      p = "!$OMP TILE";
       break;
     case ST_OMP_UNROLL:
       p = "!$OMP UNROLL";
@@ -5325,6 +5331,8 @@ gfc_omp_end_stmt (gfc_statement omp_st,
 	  return ST_OMP_END_TEAMS_DISTRIBUTE_SIMD;
 	case ST_OMP_TEAMS_LOOP:
 	  return ST_OMP_END_TEAMS_LOOP;
+	case ST_OMP_TILE:
+	  return ST_OMP_END_TILE;
 	case ST_OMP_UNROLL:
 	  return ST_OMP_END_UNROLL;
 	default:
@@ -5421,6 +5429,11 @@ parse_omp_do (gfc_statement omp_st)
 	{
 	  accept_statement (st);
 	  num_unroll++;
+	  continue;
+	}
+      else if (st == ST_OMP_TILE)
+	{
+	  accept_statement (st);
 	  continue;
 	}
       else
