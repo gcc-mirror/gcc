@@ -19,7 +19,7 @@ test ()
 
 #pragma omp for
 #pragma omp unroll full /* { dg-error {'full' clause is invalid here; turns loop into non-loop} } */
-#pragma omp unroll full /* { dg-error {'full' clause is invalid here; turns loop into non-loop} } */
+#pragma omp unroll full
   for (int i = -300; i != 100; ++i)
     dummy (i);
 
@@ -45,13 +45,11 @@ test ()
   int i;
 #pragma omp for
 #pragma omp unroll( /* { dg-error {expected '#pragma omp' clause before '\(' token} } */
-  /* { dg-error {'#pragma omp unroll' without 'partial' clause is invalid here; turns loop into non-loop} "" { target *-*-* } .-1 } */
   for (int i = -300; i != 100; ++i)
     dummy (i);
 
 #pragma omp for
 #pragma omp unroll foo /* { dg-error {expected '#pragma omp' clause before 'foo'} } */
-  /* { dg-error {'#pragma omp unroll' without 'partial' clause is invalid here; turns loop into non-loop} "" { target *-*-* } .-1 } */
   for (int i = -300; i != 100; ++i)
     dummy (i);
 
@@ -67,7 +65,7 @@ test ()
 
 #pragma omp unroll partial(i)
  /* { dg-error {the value of 'i' is not usable in a constant expression} "" { target c++ } .-1 } */
- /* { dg-error {partial argument needs positive constant integer expression} "" { target c } .-2 } */
+ /* { dg-error {partial argument needs positive constant integer expression} "" { target *-*-* } .-2 } */
   for (int i = -300; i != 100; ++i)
     dummy (i);
 
@@ -78,20 +76,18 @@ test ()
 #pragma omp for
 #pragma omp unroll partial(1)
 #pragma omp unroll parti /* { dg-error {expected '#pragma omp' clause before 'parti'} } */
-  /* { dg-error {'#pragma omp unroll' without 'partial' clause is invalid here; turns loop into non-loop} "" { target *-*-* } .-1 } */
   for (int i = -300; i != 100; ++i)
     dummy (i);
 
 #pragma omp for
 #pragma omp unroll partial(1)
 #pragma omp unroll parti /* { dg-error {expected '#pragma omp' clause before 'parti'} } */
-  /* { dg-error {'#pragma omp unroll' without 'partial' clause is invalid here; turns loop into non-loop} "" { target *-*-* } .-1 } */
   for (int i = -300; i != 100; ++i)
     dummy (i);
 
 int sum = 0;
-#pragma omp parallel for reduction(+ : sum) collapse(2) /* { dg-error {collapse cannot be larger than 1 on an unrolled loop} "" { target c } } */
-#pragma omp unroll partial(1) /* { dg-error {collapse cannot be larger than 1 on an unrolled loop} "" { target c++ } } */
+#pragma omp parallel for reduction(+ : sum) collapse(2)
+#pragma omp unroll partial(1) /* { dg-error {nesting depth left after this transformation too low for loop collapse} } */
   for (int i = 3; i < 10; ++i)
     for (int j = -2; j < 7; ++j)
       sum++;
