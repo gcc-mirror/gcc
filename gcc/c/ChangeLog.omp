@@ -1,5 +1,17 @@
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
+	* c-parser.cc (c_parser_nested_omp_unroll_clauses): Rename and
+	generalize ...
+	(c_parser_omp_nested_loop_transform_clauses): ... to this.
+	(c_parser_omp_for_loop): Handle "omp tile" parsing in loop nests.
+	(c_parser_omp_tile_sizes): Parse single "sizes" clause.
+	(c_parser_omp_loop_transform_clause): New function.
+	(c_parser_omp_tile): New function for parsing "omp tile"
+	(c_parser_omp_unroll): Adjust to renaming.
+	(c_parser_omp_construct): Handle PRAGMA_OMP_TILE.
+
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
 	* c-parser.cc (c_parser_omp_clause_collapse): Adjust to renamings.
 	(c_parser_oacc_clause_tile): Likewise.
 	(c_parser_omp_for_loop): Likewise.

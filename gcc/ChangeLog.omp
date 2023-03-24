@@ -1,5 +1,10 @@
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
+	* gimplify.cc (omp_for_drop_tile_clauses): New function, ...
+	(gimplify_omp_for): ... used here.
+
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
 	* gimplify.cc (gimplify_scan_omp_clauses): Handle OMP_CLAUSE_TILE.
 	(gimplify_adjust_omp_clauses): Likewise.
 	(gimplify_omp_loop): Likewise.

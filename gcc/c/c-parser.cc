@@ -20540,7 +20540,8 @@ c_parser_omp_scan_loop_body (c_parser *parser, bool open_brace_parsed)
 			     "expected %<}%>");
 }
 
-static bool c_parser_nested_omp_unroll_clauses (c_parser *, tree &);
+static int c_parser_omp_nested_loop_transform_clauses (c_parser *, tree &, int,
+						       const char *);
 
 /* Parse the restricted form of loop statements allowed by OpenACC and OpenMP.
    The real trick here is to determine the loop control variable early
@@ -20560,17 +20561,19 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
   bool fail = false, open_brace_parsed = false;
   int i, collapse = 1, ordered = 0, count, nbraces = 0;
   location_t for_loc;
-  bool tiling = false;
+  bool oacc_tiling = false;
   bool inscan = false;
 
   vec<tree, va_gc> *for_block = make_tree_vector ();
 
   for (cl = clauses; cl; cl = OMP_CLAUSE_CHAIN (cl))
     if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_COLLAPSE)
-      collapse = tree_to_shwi (OMP_CLAUSE_COLLAPSE_EXPR (cl));
+      {
+	collapse = tree_to_shwi (OMP_CLAUSE_COLLAPSE_EXPR (cl));
+      }
     else if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_OACC_TILE)
       {
-	tiling = true;
+	oacc_tiling = true;
 	collapse = list_length (OMP_CLAUSE_OACC_TILE_LIST (cl));
       }
     else if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_ORDERED
@@ -20593,20 +20596,30 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
       ordered = collapse;
     }
 
-  gcc_assert (tiling || (collapse >= 1 && ordered >= 0));
+  c_parser_omp_nested_loop_transform_clauses (parser, clauses, collapse,
+					      "loop collapse");
+
+  /* Find the depth of the loop nest affected by "omp tile"
+     directives. There can be several such directives, but the tiling
+     depth of the outer ones may not be larger than the depth of the
+     innermost directive. */
+  int omp_tile_depth = 0;
+  for (tree c = clauses; c; c = TREE_CHAIN (c))
+    {
+      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_TILE)
+	continue;
+
+      omp_tile_depth = list_length (OMP_CLAUSE_TILE_SIZES (c));
+    }
+
+  gcc_assert (oacc_tiling || (collapse >= 1 && ordered >= 0));
   count = ordered ? ordered : collapse;
+  count = MAX (count, omp_tile_depth);
 
   declv = make_tree_vec (count);
   initv = make_tree_vec (count);
   condv = make_tree_vec (count);
   incrv = make_tree_vec (count);
-
-  if (c_parser_nested_omp_unroll_clauses (parser, clauses)
-      && count > 1)
-    {
-      error_at (loc, "collapse cannot be larger than 1 on an unrolled loop");
-      return NULL;
-    }
 
   if (!c_parser_next_token_is_keyword (parser, RID_FOR))
     {
@@ -24330,46 +24343,223 @@ c_parser_omp_taskloop (location_t loc, c_parser *parser,
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PARTIAL)	\
 	  | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FULL) )
 
-/* Parse zero or more '#pragma omp unroll' that follow
-   another directive that requires a canonical loop nest. */
-
-static bool
-c_parser_nested_omp_unroll_clauses (c_parser *parser, tree &clauses)
+/* OpenMP 5.1: Parse sizes list for "omp tile sizes"
+   sizes ( size-expr-list ) */
+static tree
+c_parser_omp_tile_sizes (c_parser *parser, location_t loc)
 {
-  static const char *p_name = "#pragma omp unroll";
-  c_token *tok;
-  bool found_unroll = false;
-  while (c_parser_next_token_is (parser, CPP_PRAGMA)
-	 && (tok = c_parser_peek_token (parser),
-	     tok->pragma_kind == PRAGMA_OMP_UNROLL))
+  tree sizes = NULL_TREE;
+
+  c_token *tok = c_parser_peek_token (parser);
+  if (tok->type != CPP_NAME
+      || strcmp ("sizes", IDENTIFIER_POINTER (tok->value)))
     {
-      c_parser_consume_pragma (parser);
-      tree c = c_parser_omp_all_clauses (parser, OMP_UNROLL_CLAUSE_MASK,
-					 p_name, true);
-      if (c)
+      c_parser_error (parser, "expected %<sizes%>");
+      return error_mark_node;
+    }
+  c_parser_consume_token (parser);
+
+  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+    return error_mark_node;
+
+  do
+    {
+      if (sizes && !c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
+	return error_mark_node;
+
+      location_t expr_loc = c_parser_peek_token (parser)->location;
+      c_expr cexpr = c_parser_expr_no_commas (parser, NULL);
+      cexpr = convert_lvalue_to_rvalue (expr_loc, cexpr, false, true);
+      tree expr = cexpr.value;
+
+      if (expr == error_mark_node)
 	{
-	  gcc_assert (!TREE_CHAIN (c));
-	  found_unroll = true;
-	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_UNROLL_FULL)
-	    {
-	      error_at (tok->location, "%<full%> clause is invalid here; "
-			"turns loop into non-loop");
-	      continue;
-	    }
-	}
-      else
-	{
-	  error_at (tok->location, "%<#pragma omp unroll%> without "
-				   "%<partial%> clause is invalid here; "
-				   "turns loop into non-loop");
-	  continue;
+	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+				     "expected %<)%>");
+	  return error_mark_node;
 	}
 
-      clauses = chainon (clauses, c);
+      expr = c_fully_fold (expr, false, NULL);
+
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (expr)) || !tree_fits_shwi_p (expr)
+	  || tree_to_shwi (expr) <= 0)
+	{
+	  c_parser_error (parser, "%<tile sizes%> argument needs positive"
+				  " integral constant");
+	  expr = integer_zero_node;
+	}
+
+      sizes = tree_cons (NULL_TREE, expr, sizes);
+    }
+  while (c_parser_next_token_is_not (parser, CPP_CLOSE_PAREN));
+  c_parser_consume_token (parser);
+
+  gcc_assert (sizes);
+  tree c  = build_omp_clause (loc, OMP_CLAUSE_TILE);
+  OMP_CLAUSE_TILE_SIZES (c) = sizes;
+
+  return c;
+}
+
+/* Parse a single OpenMP loop transformation directive and return the
+   clause that is used internally to represent the directive. */
+
+static tree
+c_parser_omp_loop_transform_clause (c_parser *parser)
+{
+  c_token *tok = c_parser_peek_token (parser);
+  if (tok->type != CPP_PRAGMA)
+    return NULL_TREE;
+
+  tree c;
+  switch (tok->pragma_kind)
+    {
+    case PRAGMA_OMP_UNROLL:
+      c_parser_consume_pragma (parser);
+      c = c_parser_omp_all_clauses (parser, OMP_UNROLL_CLAUSE_MASK,
+				    "#pragma omp unroll", false, true);
+      if (!c)
+	{
+	  if (c_parser_next_token_is (parser, CPP_PRAGMA_EOL))
+	    c = build_omp_clause (tok->location, OMP_CLAUSE_UNROLL_NONE);
+	  else
+	    c = error_mark_node;
+	}
+      c_parser_skip_to_pragma_eol (parser);
+      break;
+
+    case PRAGMA_OMP_TILE:
+      c_parser_consume_pragma (parser);
+      c = c_parser_omp_tile_sizes (parser, tok->location);
+      c_parser_skip_to_pragma_eol (parser);
+      break;
+
+    default:
+      c = NULL_TREE;
+      break;
     }
 
-  return found_unroll;
+  gcc_assert (!c || !TREE_CHAIN (c));
+  return c;
 }
+
+/* Parse zero or more OpenMP loop transformation directives that
+   follow another directive that requires a canonical loop nest and
+   append all to CLAUSES.  Return the nesting depth
+   of the transformed loop nest.
+
+   REQUIRED_DEPTH is the nesting depth of the loop nest required by
+   the preceding directive.  OUTER_DESCR is a description of the
+   language construct that requires the loop nest depth (e.g. "loop
+   collpase", "outer transformation") that is used for error
+   messages. */
+
+static int
+c_parser_omp_nested_loop_transform_clauses (c_parser *parser, tree &clauses,
+					    int required_depth,
+					    const char *outer_descr)
+{
+  tree c = NULL_TREE;
+  tree last_c = tree_last (clauses);
+
+  /* The depth of the loop nest, counting from LEVEL, after the
+     transformations. That is, the nesting depth left by the outermost
+     transformation which is the first to be parsed, but the last to be
+     executed. */
+  int transformed_depth = 0;
+
+  /* The minimum nesting depth required by the last parsed transformation. */
+  int last_depth = required_depth;
+  while ((c = c_parser_omp_loop_transform_clause (parser)))
+    {
+      /* The nesting depth left after the current transformation */
+      int depth = 1;
+      if (TREE_CODE (c) == ERROR_MARK)
+	goto error;
+
+      gcc_assert (!TREE_CHAIN (c));
+      switch (OMP_CLAUSE_CODE (c))
+	{
+	case OMP_CLAUSE_UNROLL_FULL:
+	  error_at (OMP_CLAUSE_LOCATION (c),
+		    "%<full%> clause is invalid here; "
+		    "turns loop into non-loop");
+	  goto error;
+	case OMP_CLAUSE_UNROLL_NONE:
+	  error_at (OMP_CLAUSE_LOCATION (c),
+		    "%<#pragma omp unroll%> without "
+		    "%<partial%> clause is invalid here; "
+		    "turns loop into non-loop");
+	  goto error;
+	case OMP_CLAUSE_UNROLL_PARTIAL:
+	  depth = 1;
+	  break;
+	case OMP_CLAUSE_TILE:
+	  depth = list_length (OMP_CLAUSE_TILE_SIZES (c));
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      if (depth < last_depth)
+	{
+	  bool is_outermost_clause = !transformed_depth;
+	  error_at (OMP_CLAUSE_LOCATION (c),
+		    "nesting depth left after this transformation too low "
+		    "for %s",
+		    is_outermost_clause ? outer_descr
+					: "outer transformation");
+	  goto error;
+	}
+
+      last_depth = depth;
+
+      if (!transformed_depth)
+	transformed_depth = last_depth;
+
+      if (!clauses)
+	clauses = c;
+      else if (last_c)
+	TREE_CHAIN (last_c) = c;
+
+      last_c = c;
+    }
+
+  return transformed_depth;
+
+error:
+  while (c_parser_omp_loop_transform_clause (parser))
+    ;
+  clauses = NULL_TREE;
+  return -1;
+}
+
+/* OpenMP 5.1:
+   tile sizes ( size-expr-list ) */
+
+static tree
+c_parser_omp_tile (location_t loc, c_parser *parser, bool *if_p)
+{
+  tree block;
+  tree ret = error_mark_node;
+
+  tree clauses = c_parser_omp_tile_sizes (parser, loc);
+  c_parser_skip_to_pragma_eol (parser);
+
+  if (!clauses || clauses == error_mark_node)
+    return error_mark_node;
+
+  int required_depth = list_length (OMP_CLAUSE_TILE_SIZES (clauses));
+  c_parser_omp_nested_loop_transform_clauses (parser, clauses, required_depth,
+					      "outer transformation");
+
+  block = c_begin_compound_stmt (true);
+  ret = c_parser_omp_for_loop (loc, parser, OMP_LOOP_TRANS, clauses, NULL, if_p);
+  block = c_end_compound_stmt (loc, block, true);
+  add_stmt (block);
+
+  return ret;
+ }
 
 static tree
 c_parser_omp_unroll (location_t loc, c_parser *parser, bool *if_p)
@@ -24379,7 +24569,9 @@ c_parser_omp_unroll (location_t loc, c_parser *parser, bool *if_p)
   omp_clause_mask mask = OMP_UNROLL_CLAUSE_MASK;
 
   tree clauses = c_parser_omp_all_clauses (parser, mask, p_name, false);
-  c_parser_nested_omp_unroll_clauses (parser, clauses);
+  int required_depth = 1;
+  c_parser_omp_nested_loop_transform_clauses (parser, clauses, required_depth,
+					      "outer transformation");
 
   if (!clauses)
     {
@@ -25244,6 +25436,9 @@ c_parser_omp_construct (c_parser *parser, bool *if_p)
     case PRAGMA_OMP_ASSUME:
       c_parser_omp_assume (parser, if_p);
       return;
+    case PRAGMA_OMP_TILE:
+      stmt = c_parser_omp_tile (loc, parser, if_p);
+      break;
     case PRAGMA_OMP_UNROLL:
       stmt = c_parser_omp_unroll (loc, parser, if_p);
       break;

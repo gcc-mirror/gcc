@@ -8955,6 +8955,46 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  break;
 
+	case OMP_CLAUSE_TILE:
+	  for (tree list = OMP_CLAUSE_TILE_SIZES (c); !remove && list;
+	       list = TREE_CHAIN (list))
+	    {
+	      t = TREE_VALUE (list);
+
+	      if (t == error_mark_node)
+		remove = true;
+	      else if (!type_dependent_expression_p (t)
+		       && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<tile sizes%> argument needs integral type");
+		  remove = true;
+		}
+	      else
+		{
+		  t = mark_rvalue_use (t);
+		  if (!processing_template_decl)
+		    {
+		      t = maybe_constant_value (t);
+		      int n;
+		      if (!tree_fits_shwi_p (t)
+			  || !INTEGRAL_TYPE_P (TREE_TYPE (t))
+			  || (n = tree_to_shwi (t)) <= 0 || (int)n != n)
+			{
+			  error_at (OMP_CLAUSE_LOCATION (c),
+				    "%<tile sizes%> argument needs positive "
+				    "integral constant");
+			  remove = true;
+			}
+		      t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+		    }
+		}
+
+	      /* Update list item.  */
+	      TREE_VALUE (list) = t;
+	    }
+	  break;
+
 	case OMP_CLAUSE_ORDERED:
 	  ordered_seen = true;
 	  break;

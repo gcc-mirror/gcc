@@ -4005,8 +4005,8 @@ const struct c_omp_directive c_omp_directives[] = {
     C_OMP_DIR_STANDALONE, false },
   { "taskyield", nullptr, nullptr, PRAGMA_OMP_TASKYIELD,
     C_OMP_DIR_STANDALONE, false },
-  /* { "tile", nullptr, nullptr, PRAGMA_OMP_TILE,
-    C_OMP_DIR_CONSTRUCT, false },  */
+  { "tile", nullptr, nullptr, PRAGMA_OMP_TILE,
+    C_OMP_DIR_CONSTRUCT, false },
   { "teams", nullptr, nullptr, PRAGMA_OMP_TEAMS,
     C_OMP_DIR_CONSTRUCT, true },
   { "threadprivate", nullptr, nullptr, PRAGMA_OMP_THREADPRIVATE,

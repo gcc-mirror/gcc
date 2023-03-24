@@ -1,5 +1,12 @@
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
+	* c-omp.cc (c_omp_directives): Add PRAGMA_OMP_TILE.
+	* c-pragma.cc (omp_pragmas_simd): Likewise.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_TILE.
+	(enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_TILE.
+
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
 	* c-omp.cc (c_oacc_split_loop_clauses): Adjust to renamings.
 
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>

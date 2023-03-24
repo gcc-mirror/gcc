@@ -13981,6 +13981,29 @@ localize_reductions (tree clauses, tree body)
 }
 
 
+static void omp_for_drop_tile_clauses (tree for_stmt)
+{
+  /* Drop erroneous loop transformation clauses to avoid follow up errors
+     in pass-omp_transform_loops. */
+  tree last_c = NULL_TREE;
+  for (tree c = OMP_FOR_CLAUSES (for_stmt); c;
+       c = OMP_CLAUSE_CHAIN (c))
+    {
+
+      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_TILE)
+	continue;
+
+      if (last_c)
+	TREE_CHAIN (last_c) = TREE_CHAIN (c);
+      else
+	OMP_FOR_CLAUSES (for_stmt) = TREE_CHAIN (c);
+
+      error_at (OMP_CLAUSE_LOCATION (c),
+		"'tile' loop transformation may not appear on "
+		"non-rectangular for");
+    }
+}
+
 /* Gimplify the gross structure of an OMP_FOR statement.  */
 
 static enum gimplify_status
@@ -14172,6 +14195,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
     case OMP_FOR:
       if (OMP_FOR_NON_RECTANGULAR (inner_for_stmt ? inner_for_stmt : for_stmt))
 	{
+	  omp_for_drop_tile_clauses (for_stmt);
+
 	  if (omp_find_clause (OMP_FOR_CLAUSES (for_stmt),
 			       OMP_CLAUSE_SCHEDULE))
 	    error_at (EXPR_LOCATION (for_stmt),
@@ -14217,6 +14242,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
       ort = ORT_SIMD;
       break;
     case OMP_LOOP_TRANS:
+      if (OMP_FOR_NON_RECTANGULAR (inner_for_stmt ? inner_for_stmt : for_stmt))
+	omp_for_drop_tile_clauses (for_stmt);
       break;
     default:
       gcc_unreachable ();
@@ -15118,6 +15145,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	  case OMP_CLAUSE_UNROLL_FULL:
 	  case OMP_CLAUSE_UNROLL_NONE:
 	  case OMP_CLAUSE_UNROLL_PARTIAL:
+	  case OMP_CLAUSE_TILE:
 	    *gfor_clauses_ptr = c;
 	    gfor_clauses_ptr = &OMP_CLAUSE_CHAIN (c);
 	    break;

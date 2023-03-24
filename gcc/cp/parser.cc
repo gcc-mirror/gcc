@@ -43941,7 +43941,8 @@ cp_parser_omp_scan_loop_body (cp_parser *parser)
   braces.require_close (parser);
 }
 
-static bool cp_parser_nested_omp_unroll_clauses (cp_parser *, tree &);
+static int cp_parser_omp_nested_loop_transform_clauses (cp_parser *, tree &,
+							int, const char *);
 
 /* Parse the restricted form of the for statement allowed by OpenMP.  */
 
@@ -43953,20 +43954,20 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
   tree orig_decl;
   tree real_decl, initv, condv, incrv, declv, orig_declv;
   tree this_pre_body, cl, ordered_cl = NULL_TREE;
-  location_t loc_first;
   bool collapse_err = false;
   int i, collapse = 1, ordered = 0, count, nbraces = 0;
   releasing_vec for_block;
   auto_vec<tree, 4> orig_inits;
-  bool tiling = false;
+  bool oacc_tiling = false;
   bool inscan = false;
+  location_t loc_first = cp_lexer_peek_token (parser->lexer)->location;
 
   for (cl = clauses; cl; cl = OMP_CLAUSE_CHAIN (cl))
     if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_COLLAPSE)
       collapse = tree_to_shwi (OMP_CLAUSE_COLLAPSE_EXPR (cl));
     else if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_OACC_TILE)
       {
-	tiling = true;
+	oacc_tiling = true;
 	collapse = list_length (OMP_CLAUSE_OACC_TILE_LIST (cl));
       }
     else if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_ORDERED
@@ -43989,25 +43990,32 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
       ordered = collapse;
     }
 
-  gcc_assert (tiling || (collapse >= 1 && ordered >= 0));
+
+  gcc_assert (oacc_tiling || (collapse >= 1 && ordered >= 0));
   count = ordered ? ordered : collapse;
+
+  cp_parser_omp_nested_loop_transform_clauses (parser, clauses, count,
+					       "loop collapse");
+
+  /* Find the depth of the loop nest affected by "omp tile"
+     directives. There can be several such directives, but the tiling
+     depth of the outer ones may not be larger than the depth of the
+     innermost directive. */
+  int omp_tile_depth = 0;
+  for (tree c = clauses; c; c = TREE_CHAIN (c))
+    {
+      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_TILE)
+	continue;
+
+      omp_tile_depth = list_length (OMP_CLAUSE_TILE_SIZES (c));
+    }
+  count = MAX (count, omp_tile_depth);
 
   declv = make_tree_vec (count);
   initv = make_tree_vec (count);
   condv = make_tree_vec (count);
   incrv = make_tree_vec (count);
   orig_declv = NULL_TREE;
-
-  loc_first = cp_lexer_peek_token (parser->lexer)->location;
-
-  if (cp_parser_nested_omp_unroll_clauses (parser, clauses)
-      && count > 1)
-    {
-      error_at (loc_first,
-		"collapse cannot be larger than 1 on an unrolled loop");
-      return NULL;
-    }
-
 
   for (i = 0; i < count; i++)
     {
@@ -46073,51 +46081,225 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
   return true;
 }
 
+
+/* OpenMP 5.1: Parse sizes list for "omp tile sizes"
+   sizes ( size-expr-list ) */
+static tree
+cp_parser_omp_tile_sizes (cp_parser *parser, location_t loc)
+{
+  tree sizes = NULL_TREE;
+  cp_lexer *lexer = parser->lexer;
+
+  cp_token *tok = cp_lexer_peek_token (lexer);
+  if (tok->type != CPP_NAME
+      || strcmp ("sizes", IDENTIFIER_POINTER (tok->u.value)))
+    {
+      cp_parser_error (parser, "expected %<sizes%>");
+      return error_mark_node;
+    }
+  cp_lexer_consume_token (lexer);
+
+  if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
+    return error_mark_node;
+
+  do
+    {
+      if (sizes && !cp_parser_require (parser, CPP_COMMA, RT_COMMA))
+	return error_mark_node;
+
+      tree expr = cp_parser_constant_expression (parser);
+      if (expr == error_mark_node)
+	{
+	  cp_parser_skip_to_closing_parenthesis (parser,
+						 /*recovering=*/true,
+						 /*or_comma=*/false,
+						 /*consume_paren=*/
+						 true);
+	  return error_mark_node;
+	}
+
+      sizes = tree_cons (NULL_TREE, expr, sizes);
+    }
+  while (cp_lexer_next_token_is_not (lexer, CPP_CLOSE_PAREN));
+  cp_lexer_consume_token (lexer);
+
+  gcc_assert (sizes);
+  tree c  = build_omp_clause (loc, OMP_CLAUSE_TILE);
+  OMP_CLAUSE_TILE_SIZES (c) = sizes;
+
+  return c;
+}
+
+/* OpenMP 5.1:
+   tile sizes ( size-expr-list ) */
+
+static tree
+cp_parser_omp_tile (cp_parser *parser, cp_token *tok, bool *if_p)
+{
+  tree block;
+  tree ret = error_mark_node;
+
+  tree clauses = cp_parser_omp_tile_sizes (parser, tok->location);
+  cp_parser_require_pragma_eol (parser, tok);
+
+  if (!clauses || clauses == error_mark_node)
+    return error_mark_node;
+
+  int required_depth = list_length (OMP_CLAUSE_TILE_SIZES (clauses));
+  cp_parser_omp_nested_loop_transform_clauses (
+      parser, clauses, required_depth, "outer transformation");
+
+  block = begin_omp_structured_block ();
+  clauses = finish_omp_clauses (clauses, C_ORT_OMP);
+
+  ret = cp_parser_omp_for_loop (parser, OMP_LOOP_TRANS, clauses, NULL, if_p);
+  block = finish_omp_structured_block (block);
+  add_stmt (block);
+
+  return ret;
+}
+
 #define OMP_UNROLL_CLAUSE_MASK					\
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PARTIAL)	\
 	  | (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FULL) )
 
-/* Parse zero or more '#pragma omp unroll' that follow
-   another directive that requires a canonical loop nest. */
+/* Parse a single OpenMP loop transformation directive and return the
+   clause that is used internally to represent the directive. */
 
-static bool
-cp_parser_nested_omp_unroll_clauses (cp_parser *parser, tree &clauses)
+static tree
+cp_parser_omp_loop_transform_clause (cp_parser *parser)
 {
-  static const char *p_name = "#pragma omp unroll";
-  cp_token *tok;
-  bool unroll_found = false;
-  while (cp_lexer_next_token_is (parser->lexer, CPP_PRAGMA)
-	 && (tok = cp_lexer_peek_token (parser->lexer),
-	     cp_parser_pragma_kind (tok) == PRAGMA_OMP_UNROLL))
-    {
-      cp_lexer_consume_token (parser->lexer);
-      gcc_assert (tok->type == CPP_PRAGMA);
-      parser->lexer->in_pragma = true;
-      tree c = cp_parser_omp_all_clauses (parser, OMP_UNROLL_CLAUSE_MASK,
-					  p_name, tok);
-      if (c)
-	{
-	  gcc_assert (!TREE_CHAIN (c));
-	  unroll_found = true;
-	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_UNROLL_FULL)
-	    {
-	      error_at (tok->location, "%<full%> clause is invalid here; "
-			"turns loop into non-loop");
-	      continue;
-	    }
+  cp_lexer *lexer = parser->lexer;
+  cp_token *tok = cp_lexer_peek_token (lexer);
+  if (tok->type != CPP_PRAGMA)
+    return NULL_TREE;
 
-	  c = finish_omp_clauses (c, C_ORT_OMP);
-	}
-      else
+  tree c;
+  switch (cp_parser_pragma_kind (tok))
+    {
+    case PRAGMA_OMP_UNROLL:
+      cp_lexer_consume_token (lexer);
+      lexer->in_pragma = true;
+      c = cp_parser_omp_all_clauses (parser, OMP_UNROLL_CLAUSE_MASK,
+				     "#pragma omp unroll", tok,
+				     false, true);
+      if (!c)
 	{
-	  error_at (tok->location, "%<#pragma omp unroll%> without "
-				   "%<partial%> clause is invalid here; "
-				   "turns loop into non-loop");
-	  continue;
+	  if (cp_lexer_next_token_is (lexer, CPP_PRAGMA_EOL))
+	    c = build_omp_clause (tok->location, OMP_CLAUSE_UNROLL_NONE);
+	  else
+	    c = error_mark_node;
 	}
-      clauses = chainon (clauses, c);
+      cp_parser_skip_to_pragma_eol (parser, tok);
+      break;
+
+    case PRAGMA_OMP_TILE:
+      cp_lexer_consume_token (lexer);
+      lexer->in_pragma = true;
+      c = cp_parser_omp_tile_sizes (parser, tok->location);
+      cp_parser_require_pragma_eol (parser, tok);
+      break;
+
+    default:
+      c = NULL_TREE;
+      break;
     }
-  return unroll_found;
+
+  gcc_assert (!c || !TREE_CHAIN (c));
+  return c;
+}
+
+/* Parse zero or more OpenMP loop transformation directives that
+   follow another directive that requires a canonical loop nest and
+   append all to CLAUSES.  Return the nesting depth
+   of the transformed loop nest.
+
+   REQUIRED_DEPTH is the nesting depth of the loop nest required by
+   the preceding directive.  OUTER_DESCR is a description of the
+   language construct that requires the loop nest depth (e.g. "loop
+   collpase", "outer transformation") that is used for error
+   messages. */
+
+static int
+cp_parser_omp_nested_loop_transform_clauses (cp_parser *parser, tree &clauses,
+					     int required_depth,
+					     const char *outer_descr)
+{
+  tree c = NULL_TREE;
+  tree last_c = tree_last (clauses);
+
+  /* The depth of the loop nest after the transformations. That is,
+     the nesting depth left by the outermost transformation which is
+     the first to be parsed, but the last to be executed. */
+  int transformed_depth = 0;
+
+  /* The minimum nesting depth required by the last parsed transformation. */
+  int last_depth = required_depth;
+
+  while ((c = cp_parser_omp_loop_transform_clause (parser)))
+    {
+      /* The nesting depth left after the current transformation */
+      int depth = 1;
+      if (TREE_CODE (c) == ERROR_MARK)
+	goto error;
+
+      gcc_assert (!TREE_CHAIN (c));
+      switch (OMP_CLAUSE_CODE (c))
+	{
+	case OMP_CLAUSE_UNROLL_FULL:
+	  error_at (OMP_CLAUSE_LOCATION (c),
+		    "%<full%> clause is invalid here; "
+		    "turns loop into non-loop");
+	  goto error;
+	case OMP_CLAUSE_UNROLL_NONE:
+	  error_at (OMP_CLAUSE_LOCATION (c),
+		    "%<#pragma omp unroll%> without "
+		    "%<partial%> clause is invalid here; "
+		    "turns loop into non-loop");
+	  goto error;
+	case OMP_CLAUSE_UNROLL_PARTIAL:
+	  depth = 1;
+	  break;
+	case OMP_CLAUSE_TILE:
+	  depth = list_length (OMP_CLAUSE_TILE_SIZES (c));
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
+      if (depth < last_depth)
+	{
+	  bool is_outermost_clause = !transformed_depth;
+	  error_at (OMP_CLAUSE_LOCATION (c),
+		    "nesting depth left after this transformation too low "
+		    "for %s",
+		    is_outermost_clause ? outer_descr
+					: "outer transformation");
+	  goto error;
+	}
+
+      last_depth = depth;
+
+      if (!transformed_depth)
+	transformed_depth = last_depth;
+
+      c = finish_omp_clauses (c, C_ORT_OMP);
+
+      if (!clauses)
+	clauses = c;
+      else if (last_c)
+	TREE_CHAIN (last_c) = c;
+
+      last_c = c;
+    }
+
+  return transformed_depth;
+
+error:
+  while (cp_parser_omp_loop_transform_clause (parser))
+    ;
+  clauses = NULL_TREE;
+  return -1;
 }
 
 static tree
@@ -46127,7 +46309,7 @@ cp_parser_omp_unroll (cp_parser *parser, cp_token *tok, bool *if_p)
   static const char *p_name = "#pragma omp unroll";
   omp_clause_mask mask = OMP_UNROLL_CLAUSE_MASK;
 
-  tree clauses = cp_parser_omp_all_clauses (parser, mask, p_name, tok, false);
+  tree clauses = cp_parser_omp_all_clauses (parser, mask, p_name, tok, true);
 
   if (!clauses)
     {
@@ -46136,7 +46318,9 @@ cp_parser_omp_unroll (cp_parser *parser, cp_token *tok, bool *if_p)
       clauses = c;
     }
 
-  cp_parser_nested_omp_unroll_clauses (parser, clauses);
+  int required_depth = 1;
+  cp_parser_omp_nested_loop_transform_clauses (
+      parser, clauses, required_depth, "outer transformation");
 
   block = begin_omp_structured_block ();
   ret = cp_parser_omp_for_loop (parser, OMP_LOOP_TRANS, clauses, NULL, if_p);
@@ -49664,6 +49848,9 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
     case PRAGMA_OMP_ASSUME:
       cp_parser_omp_assume (parser, pragma_tok, if_p);
       return;
+    case PRAGMA_OMP_TILE:
+      stmt = cp_parser_omp_tile (parser, pragma_tok, if_p);
+      break;
     case PRAGMA_OMP_UNROLL:
       stmt = cp_parser_omp_unroll (parser, pragma_tok, if_p);
       break;
@@ -50293,6 +50480,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
       cp_parser_omp_construct (parser, pragma_tok, if_p);
       pop_omp_privatization_clauses (stmt);
       return true;
+    case PRAGMA_OMP_TILE:
     case PRAGMA_OMP_UNROLL:
       if (context != pragma_stmt && context != pragma_compound)
 	goto bad_stmt;
