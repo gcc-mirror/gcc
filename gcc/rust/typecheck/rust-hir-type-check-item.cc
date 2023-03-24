@@ -456,7 +456,17 @@ TypeCheckItem::visit (HIR::Module &module)
 void
 TypeCheckItem::visit (HIR::Trait &trait)
 {
-  TraitResolver::Resolve (trait);
+  TraitReference *trait_ref = TraitResolver::Resolve (trait);
+  if (trait_ref->is_error ())
+    {
+      infered = new TyTy::ErrorType (trait.get_mappings ().get_hirid ());
+      return;
+    }
+
+  RustIdent ident{CanonicalPath::create_empty (), trait.get_locus ()};
+  infered = new TyTy::DynamicObjectType (
+    trait.get_mappings ().get_hirid (), ident,
+    {TyTy::TypeBoundPredicate (*trait_ref, trait.get_locus ())});
 }
 
 void
