@@ -272,12 +272,12 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	    collapse_count = &OMP_CLAUSE_COLLAPSE_COUNT (t);
 	  }
 	break;
-      case OMP_CLAUSE_TILE:
-	fd->tiling = OMP_CLAUSE_TILE_LIST (t);
+      case OMP_CLAUSE_OACC_TILE:
+	fd->tiling = OMP_CLAUSE_OACC_TILE_LIST (t);
 	fd->collapse = list_length (fd->tiling);
 	gcc_assert (fd->collapse);
-	collapse_iter = &OMP_CLAUSE_TILE_ITERVAR (t);
-	collapse_count = &OMP_CLAUSE_TILE_COUNT (t);
+	collapse_iter = &OMP_CLAUSE_OACC_TILE_ITERVAR (t);
+	collapse_count = &OMP_CLAUSE_OACC_TILE_COUNT (t);
 	break;
       case OMP_CLAUSE__REDUCTEMP_:
 	fd->have_reductemp = true;

@@ -1,5 +1,12 @@
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
+	* c-parser.cc (c_parser_omp_clause_collapse): Adjust to renamings.
+	(c_parser_oacc_clause_tile): Likewise.
+	(c_parser_omp_for_loop): Likewise.
+	* c-typeck.cc (c_finish_omp_clauses): Likewise.
+
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
 	* c-parser.cc (c_parser_omp_clause_name): Handle "full" and
 	"partial" clauses.
 	(check_no_duplicate_clause): Change return type to bool and

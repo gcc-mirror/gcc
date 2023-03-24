@@ -8915,8 +8915,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  mergeable_seen = true;
 	  break;
 
-	case OMP_CLAUSE_TILE:
-	  for (tree list = OMP_CLAUSE_TILE_LIST (c); !remove && list;
+	case OMP_CLAUSE_OACC_TILE:
+	  for (tree list = OMP_CLAUSE_OACC_TILE_LIST (c); !remove && list;
 	       list = TREE_CHAIN (list))
 	    {
 	      t = TREE_VALUE (list);
@@ -10690,9 +10690,9 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv,
     {
       tree c;
 
-      c = omp_find_clause (clauses, OMP_CLAUSE_TILE);
+      c = omp_find_clause (clauses, OMP_CLAUSE_OACC_TILE);
       if (c)
-	collapse = list_length (OMP_CLAUSE_TILE_LIST (c));
+	collapse = list_length (OMP_CLAUSE_OACC_TILE_LIST (c));
       else
 	{
 	  c = omp_find_clause (clauses, OMP_CLAUSE_COLLAPSE);

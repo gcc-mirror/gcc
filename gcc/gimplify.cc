@@ -12057,7 +12057,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_ORDERED:
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_COLLAPSE:
-	case OMP_CLAUSE_TILE:
+	case OMP_CLAUSE_OACC_TILE:
 	case OMP_CLAUSE_AUTO:
 	case OMP_CLAUSE_SEQ:
 	case OMP_CLAUSE_INDEPENDENT:
@@ -13390,7 +13390,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_VECTOR:
 	case OMP_CLAUSE_AUTO:
 	case OMP_CLAUSE_SEQ:
-	case OMP_CLAUSE_TILE:
+	case OMP_CLAUSE_OACC_TILE:
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_INCLUSIVE:
@@ -14395,9 +14395,9 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
   c = omp_find_clause (OMP_FOR_CLAUSES (for_stmt), OMP_CLAUSE_COLLAPSE);
   if (c)
     collapse = tree_to_shwi (OMP_CLAUSE_COLLAPSE_EXPR (c));
-  c = omp_find_clause (OMP_FOR_CLAUSES (for_stmt), OMP_CLAUSE_TILE);
+  c = omp_find_clause (OMP_FOR_CLAUSES (for_stmt), OMP_CLAUSE_OACC_TILE);
   if (c)
-    tile = list_length (OMP_CLAUSE_TILE_LIST (c));
+    tile = list_length (OMP_CLAUSE_OACC_TILE_LIST (c));
   c = omp_find_clause (OMP_FOR_CLAUSES (for_stmt), OMP_CLAUSE_ALLOCATE);
   hash_set<tree> *allocate_uids = NULL;
   if (c)

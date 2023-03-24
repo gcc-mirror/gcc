@@ -517,7 +517,7 @@ enum omp_clause_code {
   OMP_CLAUSE_VECTOR_LENGTH,
 
   /* OpenACC clause: tile ( size-expr-list ).  */
-  OMP_CLAUSE_TILE,
+  OMP_CLAUSE_OACC_TILE,
 
   /* OpenACC clause: if_present.  */
   OMP_CLAUSE_IF_PRESENT,

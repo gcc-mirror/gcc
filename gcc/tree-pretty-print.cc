@@ -1512,9 +1512,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
     case OMP_CLAUSE_INDEPENDENT:
       pp_string (pp, "independent");
       break;
-    case OMP_CLAUSE_TILE:
+    case OMP_CLAUSE_OACC_TILE:
       pp_string (pp, "tile(");
-      dump_generic_node (pp, OMP_CLAUSE_TILE_LIST (clause),
+      dump_generic_node (pp, OMP_CLAUSE_OACC_TILE_LIST (clause),
 			 spc, flags, false);
       pp_right_paren (pp);
       break;

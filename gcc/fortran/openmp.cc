@@ -1113,7 +1113,7 @@ enum omp_mask2
   OMP_CLAUSE_WAIT,
   OMP_CLAUSE_DELETE,
   OMP_CLAUSE_AUTO,
-  OMP_CLAUSE_TILE,
+  OMP_CLAUSE_OACC_TILE,
   OMP_CLAUSE_IF_PRESENT,
   OMP_CLAUSE_FINALIZE,
   OMP_CLAUSE_ATTACH,
@@ -4061,7 +4061,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      c->threads = needs_space = true;
 	      continue;
 	    }
-	  if ((mask & OMP_CLAUSE_TILE)
+	  if ((mask & OMP_CLAUSE_OACC_TILE)
 	      && !c->tile_list
 	      && match_oacc_expr_list ("tile (", &c->tile_list,
 				       true) == MATCH_YES)
@@ -4262,7 +4262,7 @@ error:
   (omp_mask (OMP_CLAUSE_COLLAPSE) | OMP_CLAUSE_GANG | OMP_CLAUSE_WORKER	      \
    | OMP_CLAUSE_VECTOR | OMP_CLAUSE_SEQ | OMP_CLAUSE_INDEPENDENT	      \
    | OMP_CLAUSE_PRIVATE | OMP_CLAUSE_REDUCTION | OMP_CLAUSE_AUTO	      \
-   | OMP_CLAUSE_TILE)
+   | OMP_CLAUSE_OACC_TILE)
 #define OACC_PARALLEL_LOOP_CLAUSES \
   (OACC_LOOP_CLAUSES | OACC_PARALLEL_CLAUSES)
 #define OACC_KERNELS_LOOP_CLAUSES \

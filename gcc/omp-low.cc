@@ -2034,7 +2034,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	case OMP_CLAUSE_INDEPENDENT:
 	case OMP_CLAUSE_AUTO:
 	case OMP_CLAUSE_SEQ:
-	case OMP_CLAUSE_TILE:
+	case OMP_CLAUSE_OACC_TILE:
 	case OMP_CLAUSE__SIMT_:
 	case OMP_CLAUSE_DEFAULT:
 	case OMP_CLAUSE_NONTEMPORAL:
@@ -2260,7 +2260,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	case OMP_CLAUSE_INDEPENDENT:
 	case OMP_CLAUSE_AUTO:
 	case OMP_CLAUSE_SEQ:
-	case OMP_CLAUSE_TILE:
+	case OMP_CLAUSE_OACC_TILE:
 	case OMP_CLAUSE__SIMT_:
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
@@ -8921,7 +8921,7 @@ lower_oacc_head_mark (location_t loc, tree ddvar, tree clauses,
 	  tag |= OLF_INDEPENDENT;
 	  break;
 
-	case OMP_CLAUSE_TILE:
+	case OMP_CLAUSE_OACC_TILE:
 	  tag |= OLF_TILE;
 	  break;
 

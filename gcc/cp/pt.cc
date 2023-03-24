@@ -18073,7 +18073,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	      = tsubst_expr (OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (oc), args,
 			     complain, in_decl);
 	  /* FALLTHRU */
-	case OMP_CLAUSE_TILE:
+	case OMP_CLAUSE_OACC_TILE:
 	case OMP_CLAUSE_IF:
 	case OMP_CLAUSE_NUM_THREADS:
 	case OMP_CLAUSE_SCHEDULE:

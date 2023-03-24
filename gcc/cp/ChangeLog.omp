@@ -1,5 +1,14 @@
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
+	* parser.cc (cp_parser_oacc_clause_tile): Adjust to renamings.
+	(cp_parser_omp_clause_collapse): Likewise.
+	(cp_parser_omp_for_loop): Likewise.
+	* pt.cc (tsubst_omp_clauses): Likewise.
+	* semantics.cc (finish_omp_clauses): Likewise.
+	(finish_omp_for): Likewise.
+
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
 	* cp-gimplify.cc (cp_gimplify_expr): Handle OMP_UNROLL.
 	(cp_fold_r): Likewise.
 	(cp_genericize_r): Likewise.

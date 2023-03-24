@@ -14233,7 +14233,7 @@ c_parser_omp_clause_collapse (c_parser *parser, tree list)
   location_t loc;
 
   check_no_duplicate_clause (list, OMP_CLAUSE_COLLAPSE, "collapse");
-  check_no_duplicate_clause (list, OMP_CLAUSE_TILE, "tile");
+  check_no_duplicate_clause (list, OMP_CLAUSE_OACC_TILE, "tile");
 
   loc = c_parser_peek_token (parser)->location;
   matching_parens parens;
@@ -15406,7 +15406,7 @@ c_parser_oacc_clause_tile (c_parser *parser, tree list)
   location_t loc;
   tree tile = NULL_TREE;
 
-  check_no_duplicate_clause (list, OMP_CLAUSE_TILE, "tile");
+  check_no_duplicate_clause (list, OMP_CLAUSE_OACC_TILE, "tile");
   check_no_duplicate_clause (list, OMP_CLAUSE_COLLAPSE, "collapse");
 
   loc = c_parser_peek_token (parser)->location;
@@ -15458,9 +15458,9 @@ c_parser_oacc_clause_tile (c_parser *parser, tree list)
   /* Consume the trailing ')'.  */
   c_parser_consume_token (parser);
 
-  c = build_omp_clause (loc, OMP_CLAUSE_TILE);
+  c = build_omp_clause (loc, OMP_CLAUSE_OACC_TILE);
   tile = nreverse (tile);
-  OMP_CLAUSE_TILE_LIST (c) = tile;
+  OMP_CLAUSE_OACC_TILE_LIST (c) = tile;
   OMP_CLAUSE_CHAIN (c) = list;
   return c;
 }
@@ -20568,10 +20568,10 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
   for (cl = clauses; cl; cl = OMP_CLAUSE_CHAIN (cl))
     if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_COLLAPSE)
       collapse = tree_to_shwi (OMP_CLAUSE_COLLAPSE_EXPR (cl));
-    else if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_TILE)
+    else if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_OACC_TILE)
       {
 	tiling = true;
-	collapse = list_length (OMP_CLAUSE_TILE_LIST (cl));
+	collapse = list_length (OMP_CLAUSE_OACC_TILE_LIST (cl));
       }
     else if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_ORDERED
 	     && OMP_CLAUSE_ORDERED_EXPR (cl))

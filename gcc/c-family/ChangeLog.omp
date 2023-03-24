@@ -1,5 +1,9 @@
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
+	* c-omp.cc (c_oacc_split_loop_clauses): Adjust to renamings.
+
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
 	* c-gimplify.cc (c_genericize_control_stmt): Handle OMP_UNROLL.
 	* c-omp.cc: Add "unroll" to omp_directives[].
 	* c-pragma.cc: Add "unroll" to omp_pragmas_simd[].

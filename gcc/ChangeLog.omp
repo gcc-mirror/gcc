@@ -1,5 +1,25 @@
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
+	* tree-core.h (enum omp_clause_code): Rename OMP_CLAUSE_TILE.
+	* tree.h (OMP_CLAUSE_TILE_LIST): Rename to ...
+	(OMP_CLAUSE_OACC_TILE_LIST): ... this.
+	(OMP_CLAUSE_TILE_ITERVAR): Rename to ...
+	(OMP_CLAUSE_OACC_TILE_ITERVAR): ... this.
+	(OMP_CLAUSE_TILE_COUNT): Rename to ...
+	(OMP_CLAUSE_OACC_TILE_COUNT): this.
+	* gimplify.cc (gimplify_scan_omp_clauses): Adjust to renamings.
+	(gimplify_adjust_omp_clauses): Likewise.
+	(gimplify_omp_for): Likewise.
+	* omp-general.cc (omp_extract_for_data): Likewise.
+	* omp-low.cc (scan_sharing_clauses): Likewise.
+	(lower_oacc_head_mark): Likewise.
+	* tree-nested.cc (convert_nonlocal_omp_clauses): Likewise.
+	(convert_local_omp_clauses): Likewise.
+	* tree-pretty-print.cc (dump_omp_clause): Likewise.
+	* tree.cc: Likewise.
+
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
 	* Makefile.in: Add omp_transform_loops.o.
 	* gimple-pretty-print.cc (dump_gimple_omp_for): Handle "full"
 	and "partial" clauses.

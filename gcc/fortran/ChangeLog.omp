@@ -1,5 +1,11 @@
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
+	* openmp.cc (enum omp_mask2): Adjust to renamings.
+	(gfc_match_omp_clauses): Likewise.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Likewise.
+
+2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
+
 	* dump-parse-tree.cc (show_omp_clauses): Handle "unroll full"
 	and "unroll partial".
 	(show_omp_node): Handle OMP_UNROLL.

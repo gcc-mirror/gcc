@@ -38029,7 +38029,7 @@ cp_parser_oacc_clause_tile (cp_parser *parser, location_t clause_loc, tree list)
      so, but the spec authors never considered such a case and have
      differing opinions on what it might mean, including 'not
      allowed'.)  */
-  check_no_duplicate_clause (list, OMP_CLAUSE_TILE, "tile", clause_loc);
+  check_no_duplicate_clause (list, OMP_CLAUSE_OACC_TILE, "tile", clause_loc);
   check_no_duplicate_clause (list, OMP_CLAUSE_COLLAPSE, "collapse",
 			     clause_loc);
 
@@ -38058,9 +38058,9 @@ cp_parser_oacc_clause_tile (cp_parser *parser, location_t clause_loc, tree list)
   /* Consume the trailing ')'.  */
   cp_lexer_consume_token (parser->lexer);
 
-  c = build_omp_clause (clause_loc, OMP_CLAUSE_TILE);
+  c = build_omp_clause (clause_loc, OMP_CLAUSE_OACC_TILE);
   tile = nreverse (tile);
-  OMP_CLAUSE_TILE_LIST (c) = tile;
+  OMP_CLAUSE_OACC_TILE_LIST (c) = tile;
   OMP_CLAUSE_CHAIN (c) = list;
   return c;
 }
@@ -38173,7 +38173,7 @@ cp_parser_omp_clause_collapse (cp_parser *parser, tree list, location_t location
     }
 
   check_no_duplicate_clause (list, OMP_CLAUSE_COLLAPSE, "collapse", location);
-  check_no_duplicate_clause (list, OMP_CLAUSE_TILE, "tile", location);
+  check_no_duplicate_clause (list, OMP_CLAUSE_OACC_TILE, "tile", location);
   c = build_omp_clause (loc, OMP_CLAUSE_COLLAPSE);
   OMP_CLAUSE_CHAIN (c) = list;
   OMP_CLAUSE_COLLAPSE_EXPR (c) = num;
@@ -43964,10 +43964,10 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
   for (cl = clauses; cl; cl = OMP_CLAUSE_CHAIN (cl))
     if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_COLLAPSE)
       collapse = tree_to_shwi (OMP_CLAUSE_COLLAPSE_EXPR (cl));
-    else if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_TILE)
+    else if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_OACC_TILE)
       {
 	tiling = true;
-	collapse = list_length (OMP_CLAUSE_TILE_LIST (cl));
+	collapse = list_length (OMP_CLAUSE_OACC_TILE_LIST (cl));
       }
     else if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_ORDERED
 	     && OMP_CLAUSE_ORDERED_EXPR (cl))
