@@ -1478,6 +1478,9 @@ dump_gimple_omp_for (pretty_printer *buffer, const gomp_for *gs, int spc,
 	case GF_OMP_FOR_KIND_SIMD:
 	  kind = " simd";
 	  break;
+	case GF_OMP_FOR_KIND_TRANSFORM_LOOP:
+	  kind = " unroll";
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -1514,6 +1517,9 @@ dump_gimple_omp_for (pretty_printer *buffer, const gomp_for *gs, int spc,
 	  break;
 	case GF_OMP_FOR_KIND_SIMD:
 	  pp_string (buffer, "#pragma omp simd");
+	  break;
+	case GF_OMP_FOR_KIND_TRANSFORM_LOOP:
+	  pp_string (buffer, "#pragma omp loop_transform");
 	  break;
 	default:
 	  gcc_unreachable ();

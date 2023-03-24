@@ -2082,6 +2082,16 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
     }
   if (omp_clauses->assume)
     show_omp_assumes (omp_clauses->assume);
+  if (omp_clauses->unroll_full)
+    {
+      fputs (" FULL", dumpfile);
+    }
+  if (omp_clauses->unroll_partial)
+    {
+      fputs (" PARTIAL", dumpfile);
+      if (omp_clauses->unroll_partial_factor > 0)
+	fprintf (dumpfile, "(%u)", omp_clauses->unroll_partial_factor);
+    }
 }
 
 /* Show a single OpenMP or OpenACC directive node and everything underneath it
@@ -2194,6 +2204,7 @@ show_omp_node (int level, gfc_code *c)
       name = "TEAMS DISTRIBUTE PARALLEL DO SIMD"; break;
     case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD: name = "TEAMS DISTRIBUTE SIMD"; break;
     case EXEC_OMP_TEAMS_LOOP: name = "TEAMS LOOP"; break;
+    case EXEC_OMP_UNROLL: name = "UNROLL"; break;
     case EXEC_OMP_WORKSHARE: name = "WORKSHARE"; break;
     default:
       gcc_unreachable ();
@@ -2270,6 +2281,7 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
     case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
     case EXEC_OMP_TEAMS_LOOP:
+    case EXEC_OMP_UNROLL:
     case EXEC_OMP_WORKSHARE:
       omp_clauses = c->ext.omp_clauses;
       break;
@@ -2350,6 +2362,8 @@ show_omp_node (int level, gfc_code *c)
 	  clause = clause->next;
 	}
     }
+  else if (c->op == EXEC_OMP_UNROLL)
+    show_code (level + 1, c->block != NULL ? c->block->next : c->next);
   else
     show_code (level + 1, c->block->next);
   if (c->op == EXEC_OMP_ATOMIC)
@@ -3530,6 +3544,7 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
     case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
     case EXEC_OMP_TEAMS_LOOP:
+    case EXEC_OMP_UNROLL:
     case EXEC_OMP_WORKSHARE:
       show_omp_node (level, c);
       break;
