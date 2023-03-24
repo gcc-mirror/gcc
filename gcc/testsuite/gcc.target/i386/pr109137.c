@@ -1,6 +1,8 @@
-/* { dg-do compile } */
-/* { dg-options "-m32 -O3 -march=znver1 -fPIC -mfpmath=sse -w" } */
-#include <string.h>
+/* PR target/109137 */
+/* { dg-do compile { target ia32 } } */
+/* { dg-options "-O3 -march=znver1 -mfpmath=sse -w" } */
+/* { dg-additional-options "-fPIC" { target fpic } } */
+
 typedef struct {
   char bytestream_end;
 } CABACContext;
@@ -12,7 +14,7 @@ typedef struct {
 } H264SliceContext;
 H264SliceContext ff_h264_decode_mb_cabac_sl;
 void ff_h264_decode_mb_cabac(void) {
-  memset((void*)ff_h264_decode_mb_cabac_h_0, 6, 48);
+  __builtin_memset((void*)ff_h264_decode_mb_cabac_h_0, 6, 48);
   int i;
   for (;; i++) {
     __asm__(""/* { dg-error "'asm' operand has impossible constraints" } */
@@ -25,4 +27,3 @@ void ff_h264_decode_mb_cabac(void) {
         decode_cabac_mb_intra4x4_pred_mode_mode;
   }
 }
-
