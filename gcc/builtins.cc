@@ -7178,8 +7178,8 @@ inline_expand_builtin_bytecmp (tree exp, rtx target)
   bool is_ncmp = (fcode == BUILT_IN_STRNCMP || fcode == BUILT_IN_MEMCMP);
 
   /* Do NOT apply this inlining expansion when optimizing for size or
-     optimization level below 2.  */
-  if (optimize < 2 || optimize_insn_for_size_p ())
+     optimization level below 2 or if unused *cmp hasn't been DCEd.  */
+  if (optimize < 2 || optimize_insn_for_size_p () || target == const0_rtx)
     return NULL_RTX;
 
   gcc_checking_assert (fcode == BUILT_IN_STRCMP
