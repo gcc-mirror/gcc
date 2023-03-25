@@ -1,3 +1,21 @@
+2023-03-24  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-03-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/109186
+	* simplify.c (gfc_simplify_nearest): Fix off-by-one error in setting
+	up real kind-specific maximum exponent for mpfr.
+
+2023-03-24  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-03-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85877
+	* resolve.c (resolve_fl_procedure): Check for an explicit interface
+	of procedures with the BIND(C) attribute (F2018:15.4.2.2).
+
 2023-03-17  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
