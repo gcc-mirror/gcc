@@ -11911,12 +11911,6 @@ package body Sem_Ch12 is
          return;
       end if;
 
-      --  The package being instantiated may be subject to pragma Ghost. Set
-      --  the mode now to ensure that any nodes generated during instantiation
-      --  are properly marked as Ghost.
-
-      Set_Ghost_Mode (Act_Decl_Id);
-
       Expander_Mode_Save_And_Set (Body_Info.Expander_Status);
 
       --  Re-establish the state of information on which checks are suppressed.
@@ -12028,6 +12022,12 @@ package body Sem_Ch12 is
       else
          Instantiation_Node := Inst_Node;
       end if;
+
+      --  The package being instantiated may be subject to pragma Ghost. Set
+      --  the mode now to ensure that any nodes generated during instantiation
+      --  are properly marked as Ghost.
+
+      Set_Ghost_Mode (Act_Decl_Id);
 
       if Present (Gen_Body_Id) then
          Save_Env (Gen_Unit, Act_Decl_Id);
@@ -12468,12 +12468,6 @@ package body Sem_Ch12 is
          return;
       end if;
 
-      --  The subprogram being instantiated may be subject to pragma Ghost. Set
-      --  the mode now to ensure that any nodes generated during instantiation
-      --  are properly marked as Ghost.
-
-      Set_Ghost_Mode (Act_Decl_Id);
-
       Expander_Mode_Save_And_Set (Body_Info.Expander_Status);
 
       --  Re-establish the state of information on which checks are suppressed.
@@ -12510,6 +12504,12 @@ package body Sem_Ch12 is
       end if;
 
       Instantiation_Node := Inst_Node;
+
+      --  The subprogram being instantiated may be subject to pragma Ghost. Set
+      --  the mode now to ensure that any nodes generated during instantiation
+      --  are properly marked as Ghost.
+
+      Set_Ghost_Mode (Act_Decl_Id);
 
       if Present (Gen_Body_Id) then
          Gen_Body := Unit_Declaration_Node (Gen_Body_Id);
