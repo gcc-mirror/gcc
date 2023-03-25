@@ -10,6 +10,8 @@ int test (void)
 }
 
 /* 
+   { dg-final { verify-sarif-file } }
+
        { dg-final { scan-sarif-file "\"level\": \"warning\"" } }
        { dg-final { scan-sarif-file "\"ruleId\": \"-Wmisleading-indentation\"" } }
          { dg-final { scan-sarif-file "\"text\": \"  if " } }

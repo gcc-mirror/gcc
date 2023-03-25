@@ -4,6 +4,7 @@
 #warning message
 
 /* Verify that some JSON was written to a file with the expected name.  */
+/* { dg-final { verify-sarif-file } } */
 
 /* We expect various properties.
    The indentation here reflects the expected hierarchy, though these tests

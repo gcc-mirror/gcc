@@ -1390,76 +1390,25 @@ sarif_builder::make_artifact_object (const char *filename)
   return artifact_obj;
 }
 
-/* Read all data from F_IN until EOF.
-   Return a NULL-terminated buffer containing the data, which must be
-   freed by the caller.
-   Return NULL on errors.  */
-
-static char *
-read_until_eof (FILE *f_in)
-{
-  /* Read content, allocating a buffer for it.  */
-  char *result = NULL;
-  size_t total_sz = 0;
-  size_t alloc_sz = 0;
-  char buf[4096];
-  size_t iter_sz_in;
-
-  while ( (iter_sz_in = fread (buf, 1, sizeof (buf), f_in)) )
-    {
-      gcc_assert (alloc_sz >= total_sz);
-      size_t old_total_sz = total_sz;
-      total_sz += iter_sz_in;
-      /* Allow 1 extra byte for 0-termination.  */
-      if (alloc_sz < (total_sz + 1))
-	{
-	  size_t new_alloc_sz = alloc_sz ? alloc_sz * 2: total_sz + 1;
-	  result = (char *)xrealloc (result, new_alloc_sz);
-	  alloc_sz = new_alloc_sz;
-	}
-      memcpy (result + old_total_sz, buf, iter_sz_in);
-    }
-
-  if (!feof (f_in))
-    return NULL;
-
-  /* 0-terminate the buffer.  */
-  gcc_assert (total_sz < alloc_sz);
-  result[total_sz] = '\0';
-
-  return result;
-}
-
-/* Read all data from FILENAME until EOF.
-   Return a NULL-terminated buffer containing the data, which must be
-   freed by the caller.
-   Return NULL on errors.  */
-
-static char *
-maybe_read_file (const char *filename)
-{
-  FILE *f_in = fopen (filename, "r");
-  if (!f_in)
-    return NULL;
-  char *result = read_until_eof (f_in);
-  fclose (f_in);
-  return result;
-}
-
 /* Make an artifactContent object (SARIF v2.1.0 section 3.3) for the
    full contents of FILENAME.  */
 
 json::object *
 sarif_builder::maybe_make_artifact_content_object (const char *filename) const
 {
-  char *text_utf8 = maybe_read_file (filename);
-  if (!text_utf8)
+  /* Let input.cc handle any charset conversion.  */
+  char_span utf8_content = get_source_file_content (filename);
+  if (!utf8_content)
+    return NULL;
+
+  /* Don't add it if it's not valid UTF-8.  */
+  if (!cpp_valid_utf8_p(utf8_content.get_buffer (), utf8_content.length ()))
     return NULL;
 
   json::object *artifact_content_obj = new json::object ();
-  artifact_content_obj->set ("text", new json::string (text_utf8));
-  free (text_utf8);
-
+  artifact_content_obj->set ("text",
+			     new json::string (utf8_content.get_buffer (),
+					       utf8_content.length ()));
   return artifact_content_obj;
 }
 
@@ -1500,6 +1449,13 @@ sarif_builder::maybe_make_artifact_content_object (const char *filename,
 
   if (!text_utf8)
     return NULL;
+
+  /* Don't add it if it's not valid UTF-8.  */
+  if (!cpp_valid_utf8_p(text_utf8, strlen(text_utf8)))
+    {
+      free (text_utf8);
+      return NULL;
+    }
 
   json::object *artifact_content_obj = new json::object ();
   artifact_content_obj->set ("text", new json::string (text_utf8));
