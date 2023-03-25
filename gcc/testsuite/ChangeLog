@@ -1,3 +1,80 @@
+2023-03-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106969
+	* g++.dg/lookup/name-clash11.C: Fix ASSERT macro definition in
+	C++98 mode.
+	* g++.dg/lookup/this2.C: New test.
+
+2023-03-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105481
+	* g++.dg/cpp0x/fntmpdefarg-partial1.C: New test.
+
+2023-03-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/109163
+	* c-c++-common/diagnostic-format-json-1.c: Update comment.
+	* c-c++-common/diagnostic-format-json-2.c: Likewise.
+	* c-c++-common/diagnostic-format-json-3.c: Likewise.
+	* c-c++-common/diagnostic-format-json-4.c: Likewise.
+	* c-c++-common/diagnostic-format-json-5.c: Rewrite regexps.
+	* c-c++-common/diagnostic-format-json-stderr-1.c: Update comment.
+
+2023-03-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109238
+	* gcc.dg/pr109238.c: New.
+
+2023-03-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106912
+	* gcc.dg/profile-generate-4.c: New testcase.
+
+2023-03-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/projects/iso/small/run/pass/iso-extended-opaque-run-pass.exp:
+	Compile object for stressset.mod and testlib.mod.  Add test so
+	that we only link these	objects with test application objects.
+
+2023-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109137
+	* gcc.target/i386/pr109137.c: Remove -m32 from dg-options, instead
+	require ia32 effective target.  Only add -fPIC for fpic effective
+	target.  Remove #include <string.h>, use __builtin_memset instead of
+	memset.
+
+2023-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99739
+	* gcc.dg/tree-ssa/pr99739.c: New test.
+
+2023-03-24  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/target-supports.exp (add_options_for_weak_undefined):
+	New.
+	(check_effective_target_weak_undefined): Use it.
+	(check_effective_target_posix_memalign): New.
+	* gcc.dg/torture/pr53922.c: Drop skips and custom options in
+	favor of effective target requirement and added options for
+	weak_undefined symbols.
+	* gcc.dg/torture/pr90020.c: Likewise.
+	* gcc.dg/addr_equal-1.c: Likewise.
+	* gcc.target/aarch64/aapcs64/aapcs64.exp: Likewise, for
+	abitest.S-using tests.
+	* gcc.dg/torture/pr60092.c: Likewise, but in favor of
+	posix_memalign tests.
+	* gcc.dg/vect/vect-tail-nomask-1.c: Likewise.
+
+2023-03-24  Haochen Gui  <guihaoc@gcc.gnu.org>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR target/103628
+	* gfortran.dg/assumed_size_refs_2.f90: Check "Cannot simplify
+	expression" error.
+	* gfortran.dg/unpack_field_1.f90: Likewise.
+	* gfortran.dg/pr103628.f90: New.
+
 2023-03-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105996

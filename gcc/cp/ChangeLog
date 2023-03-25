@@ -1,3 +1,14 @@
+2023-03-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106969
+	* parser.cc (cp_parser_class_specifier): Clear current_class_ptr
+	and current_class_ref sooner, before parsing a class definition.
+
+2023-03-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105481
+	* pt.cc (type_unification_real): Adjust for partial ordering.
+
 2023-03-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105996

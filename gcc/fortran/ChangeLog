@@ -1,3 +1,22 @@
+2023-03-24  Harald Anlauf  <anlauf@gmx.de>
+
+	* expr.cc (free_expr0): Free also BOZ strings as part of an expression.
+
+2023-03-24  Haochen Gui  <guihaoc@gcc.gnu.org>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	PR target/103628
+	* target-memory.cc (gfc_interpret_float): Return FAIL when
+	native_interpret_expr gets a NULL tree.
+	* arith.cc (gfc_hollerith2real): Return NULL when
+	gfc_interpret_float fails.
+	* error.cc (gfc_buffered_p): Define.
+	* gfortran.h (gfc_buffered_p): Declare.
+	* intrinsic.cc: Add diagnostic.h to include list.
+	(do_simplify): Save errorcount and check it at finish.  Report a
+	"Cannot simplify expression" error on a bad result if error count
+	doesn't change and no other errors buffered.
+
 2023-03-22  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

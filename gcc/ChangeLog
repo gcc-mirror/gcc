@@ -1,3 +1,52 @@
+2023-03-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/analyzer.texi (Debugging the Analyzer): Add notes on useful
+	debugging options.
+	(Special Functions for Debugging the Analyzer): Convert to a
+	table, and rewrite in places.
+	(Other Debugging Techniques): Add notes on how to compare two
+	different exploded graphs.
+
+2023-03-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/109163
+	* json.cc: Update comments to indicate that we now preserve
+	insertion order of keys within objects.
+	(object::print): Traverse keys in insertion order.
+	(object::set): Preserve insertion order of keys.
+	(selftest::test_writing_objects): Add an additional key to verify
+	that we preserve insertion order.
+	* json.h (object::m_keys): New field.
+
+2023-03-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109238
+	* gimple-range-cache.cc (ranger_cache::resolve_dom): Ignore
+	predecessors which this block dominates.
+
+2023-03-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106912
+	* tree-profile.cc (tree_profiling): Update stmts only when
+	profiling or testing coverage.  Make sure to update calls
+	fntype, stripping 'const' there.
+
+2023-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/109258
+	* builtins.cc (inline_expand_builtin_bytecmp): Return NULL_RTX early
+	if target == const0_rtx.
+
+2023-03-24  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/sourcebuild.texi (weak_undefined, posix_memalign):
+	Document options and effective targets.
+
+2023-03-24  Costas Argyris  <costas.argyris@gmail.com>
+
+	* config/i386/x-mingw32-utf8: Make HOST_EXTRA_OBJS_SYMBOL
+	optional.
+
 2023-03-23  Pat Haugen  <pthaugen@linux.ibm.com>
 
 	* config/rs6000/rs6000.md (*mod<mode>3, umod<mode>3): Add

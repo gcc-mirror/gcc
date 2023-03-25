@@ -1,3 +1,13 @@
+2023-03-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (Offload-Target Specifics): Grammar fix.
+
+2023-03-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/104949
+	* target.c (gomp_map_vars_internal) <GOMP_MAP_FIRSTPRIVATE>: Add
+	caveat/safeguard.
+
 2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR libgomp/90596

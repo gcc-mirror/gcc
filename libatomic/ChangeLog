@@ -1,3 +1,9 @@
+2023-03-24  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR libgcc/108891
+	* config/linux/aarch64/atomic_16.S: Fix libat_load_16_i1.
+	Add comments describing the memory order.
+
 2023-03-03  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
 	* config/s390/cas_n.c: New file.
