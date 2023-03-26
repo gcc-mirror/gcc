@@ -3482,13 +3482,6 @@ This tells us which version of GCC you built and the options you passed to
 configure.
 
 @item
-Whether you enabled all languages or a subset of them.  If you used a
-full distribution then this information is part of the configure
-options in the output of @samp{gcc -v}, but if you downloaded the
-``core'' compiler plus additional front ends then it isn't apparent
-which ones you built unless you tell us about it.
-
-@item
 If the build was for GNU/Linux, also include:
 @itemize @bullet
 @item
