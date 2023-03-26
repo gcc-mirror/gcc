@@ -4991,6 +4991,25 @@ package body Exp_Ch4 is
                         Expand_N_Full_Type_Declaration
                           (Parent (Base_Type (PtrT)));
 
+                     --  When the allocator has a subtype indication then a
+                     --  constraint is present and an itype has been added by
+                     --  Analyze_Allocator as the subtype of this allocator.
+
+                     --  If an allocator with constraints is called in the
+                     --  return statement of a function returning a general
+                     --  access type, then propagate to the itype the master
+                     --  of the general access type (since it is the master
+                     --  associated with the returned object).
+
+                     elsif Is_Itype (PtrT)
+                       and then Ekind (Current_Scope) = E_Function
+                       and then Ekind (Etype (Current_Scope))
+                                  = E_General_Access_Type
+                       and then In_Return_Value (N)
+                     then
+                        Set_Master_Id (PtrT,
+                          Master_Id (Etype (Current_Scope)));
+
                      --  The only other possibility is an itype. For this
                      --  case, the master must exist in the context. This is
                      --  the case when the allocator initializes an access
