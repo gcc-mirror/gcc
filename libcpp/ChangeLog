@@ -1,3 +1,9 @@
+2023-03-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109098
+	* charset.cc (cpp_valid_utf8_p): New function.
+	* include/cpplib.h (cpp_valid_utf8_p): New prototype.
+
 2023-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* makeucnid.cc (write_copyright): Update Unicode copyright years

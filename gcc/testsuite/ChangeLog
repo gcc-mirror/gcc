@@ -1,3 +1,28 @@
+2023-03-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109098
+	* c-c++-common/diagnostic-format-sarif-file-1.c: Add
+	verify-sarif-file directive.
+	* c-c++-common/diagnostic-format-sarif-file-2.c: Likewise.
+	* c-c++-common/diagnostic-format-sarif-file-3.c: Likewise.
+	* c-c++-common/diagnostic-format-sarif-file-4.c: Likewise.
+	* c-c++-common/diagnostic-format-sarif-file-Wbidi-chars.c: New
+	test case, adapted from Wbidi-chars-1.c.
+	* c-c++-common/diagnostic-format-sarif-file-bad-utf8-pr109098-1.c:
+	New test case.
+	* c-c++-common/diagnostic-format-sarif-file-bad-utf8-pr109098-2.c:
+	New test case.
+	* c-c++-common/diagnostic-format-sarif-file-bad-utf8-pr109098-3.c:
+	New test case, adapted from cpp/Winvalid-utf8-1.c.
+	* c-c++-common/diagnostic-format-sarif-file-valid-CP850.c: New
+	test case, adapted from gcc.dg/diagnostic-input-charset-1.c.
+	* gcc.dg/plugin/crash-test-ice-sarif.c: Add verify-sarif-file
+	directive.
+	* gcc.dg/plugin/crash-test-write-though-null-sarif.c: Likewise.
+	* gcc.dg/plugin/diagnostic-test-paths-5.c: Likewise.
+	* lib/scansarif.exp (verify-sarif-file): New procedure.
+	* lib/verify-sarif-file.py: New support script.
+
 2023-03-24  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/106969

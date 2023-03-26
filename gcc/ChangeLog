@@ -1,3 +1,18 @@
+2023-03-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109098
+	* diagnostic-format-sarif.cc (read_until_eof): Delete.
+	(maybe_read_file): Delete.
+	(sarif_builder::maybe_make_artifact_content_object): Use
+	get_source_file_content rather than maybe_read_file.
+	Reject it if it's not valid UTF-8.
+	* input.cc (file_cache_slot::get_full_file_content): New.
+	(get_source_file_content): New.
+	(selftest::check_cpp_valid_utf8_p): New.
+	(selftest::test_cpp_valid_utf8_p): New.
+	(selftest::input_cc_tests): Call selftest::test_cpp_valid_utf8_p.
+	* input.h (get_source_file_content): New prototype.
+
 2023-03-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/analyzer.texi (Debugging the Analyzer): Add notes on useful

@@ -1,3 +1,8 @@
+2023-03-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104321
+	* trans-decl.cc (gfc_conv_cfi_to_gfc): Remove dead code.
+
 2023-03-24  Harald Anlauf  <anlauf@gmx.de>
 
 	* expr.cc (free_expr0): Free also BOZ strings as part of an expression.
