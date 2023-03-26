@@ -27,7 +27,8 @@
 # The resulting .o file gets added to host_extra_gcc_objs in
 # config.host for x86_64-*-mingw* host and gets linked into
 # the driver as a .o file, so it's lack of symbols is OK.
-utf8rc-mingw32.o : $(srcdir)/config/i386/utf8-mingw32.rc
+utf8rc-mingw32.o : $(srcdir)/config/i386/utf8-mingw32.rc \
+  $(srcdir)/config/i386/winnt-utf8.manifest
 	$(WINDRES) $< $@
 
 # Create an object file that just exports the global symbol
