@@ -3941,7 +3941,9 @@ compute_function_frequency (void)
     }
 
   node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
-  warn_function_cold (current_function_decl);
+  if (lookup_attribute ("cold", DECL_ATTRIBUTES (current_function_decl))
+      == NULL)
+    warn_function_cold (current_function_decl);
   if (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.ipa() == profile_count::zero ())
     return;
   FOR_EACH_BB_FN (bb, cfun)
