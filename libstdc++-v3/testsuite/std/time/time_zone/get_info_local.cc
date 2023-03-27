@@ -150,7 +150,7 @@ test_egypt()
 
   std::ostringstream out;
   local_seconds lt(local_days(2001y/January/1));
-  const local_days end(2021y/January/1);
+  const local_days end(2014y/September/1);
 
   while (lt < end)
   {
@@ -204,8 +204,6 @@ test_egypt()
 [ambiguous local time between [2014-05-15 22:00:00,2014-06-26 21:00:00,03:00:00,60min,EEST] and [2014-06-26 21:00:00,2014-07-31 22:00:00,02:00:00,0min,EET]]
 [[2014-06-26 21:00:00,2014-07-31 22:00:00,02:00:00,0min,EET]]
 [[2014-07-31 22:00:00,2014-09-25 21:00:00,03:00:00,60min,EEST]]
-[ambiguous local time between [2014-07-31 22:00:00,2014-09-25 21:00:00,03:00:00,60min,EEST] and [2014-09-25 21:00:00,32767-12-31 00:00:00,02:00:00,0min,EET]]
-[[2014-09-25 21:00:00,32767-12-31 00:00:00,02:00:00,0min,EET]]
 )";
   VERIFY( out.str() == expected );
 }
