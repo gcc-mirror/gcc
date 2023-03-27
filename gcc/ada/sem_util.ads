@@ -1531,6 +1531,9 @@ package Sem_Util is
    --  integer for use in compile-time checking. Note: Level is restricted to
    --  be non-dynamic.
 
+   function Is_Container_Aggregate (Exp : Node_Id) return Boolean;
+   --  Is the given expression a container aggregate?
+
    function Is_Newly_Constructed
      (Exp : Node_Id; Context_Requires_NC : Boolean) return Boolean;
    --  Indicates whether a given expression is "newly constructed" (RM 4.4).
