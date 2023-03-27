@@ -3911,7 +3911,7 @@ match_deferred_characteristics (gfc_typespec * ts)
   m = gfc_match_prefix (ts);
   gfc_buffer_error (false);
 
-  if (ts->type == BT_DERIVED)
+  if (ts->type == BT_DERIVED || ts->type == BT_CLASS)
     {
       ts->kind = 0;
 
@@ -4195,7 +4195,7 @@ declSt:
   if (bad_characteristic)
     {
       ts = &gfc_current_block ()->result->ts;
-      if (ts->type != BT_DERIVED)
+      if (ts->type != BT_DERIVED && ts->type != BT_CLASS)
 	gfc_error ("Bad kind expression for function %qs at %L",
 		   gfc_current_block ()->name,
 		   &gfc_current_block ()->declared_at);
