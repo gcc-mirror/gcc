@@ -3462,6 +3462,17 @@ pass_forwprop::execute (function *fun)
   int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (fun));
   int postorder_num = pre_and_rev_post_order_compute_fn (fun, NULL,
 							 postorder, false);
+  int *bb_to_rpo = XNEWVEC (int, last_basic_block_for_fn (fun));
+  for (int i = 0; i < postorder_num; ++i)
+    {
+      bb_to_rpo[postorder[i]] = i;
+      edge_iterator ei;
+      edge e;
+      FOR_EACH_EDGE (e, ei, BASIC_BLOCK_FOR_FN (fun, postorder[i])->succs)
+	e->flags &= ~EDGE_EXECUTABLE;
+    }
+  single_succ_edge (BASIC_BLOCK_FOR_FN (fun, ENTRY_BLOCK))->flags
+    |= EDGE_EXECUTABLE;
   auto_vec<gimple *, 4> to_fixup;
   auto_vec<gimple *, 32> to_remove;
   to_purge = BITMAP_ALLOC (NULL);
@@ -3470,6 +3481,30 @@ pass_forwprop::execute (function *fun)
     {
       gimple_stmt_iterator gsi;
       basic_block bb = BASIC_BLOCK_FOR_FN (fun, postorder[i]);
+      edge_iterator ei;
+      edge e;
+
+      /* Skip processing not executable blocks.  We could improve
+	 single_use tracking by at least unlinking uses from unreachable
+	 blocks but since blocks with uses are not processed in a
+	 meaningful order this is probably not worth it.  */
+      bool any = false;
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+	  if ((e->flags & EDGE_EXECUTABLE)
+	      /* With dominators we could improve backedge handling
+		 when e->src is dominated by bb.  But for irreducible
+		 regions we have to take all backedges conservatively.
+		 We can handle single-block cycles as we know the
+		 dominator relationship here.  */
+	      || bb_to_rpo[e->src->index] > i)
+	    {
+	      any = true;
+	      break;
+	    }
+	}
+      if (!any)
+	continue;
 
       /* Record degenerate PHIs in the lattice.  */
       for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
@@ -3480,13 +3515,25 @@ pass_forwprop::execute (function *fun)
 	  if (virtual_operand_p (res))
 	    continue;
 
-	  use_operand_p use_p;
-	  ssa_op_iter it;
 	  tree first = NULL_TREE;
 	  bool all_same = true;
-	  FOR_EACH_PHI_ARG (use_p, phi, it, SSA_OP_USE)
+	  edge_iterator ei;
+	  edge e;
+	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    {
-	      tree use = USE_FROM_PTR (use_p);
+	      /* Ignore not executable forward edges.  */
+	      if (!(e->flags & EDGE_EXECUTABLE))
+		{
+		  if (bb_to_rpo[e->src->index] < i)
+		    continue;
+		  /* Avoid equivalences from backedges - while we might
+		     be able to make irreducible regions reducible and
+		     thus turning a back into a forward edge we do not
+		     want to deal with the intermediate SSA issues that
+		     exposes.  */
+		  all_same = false;
+		}
+	      tree use = PHI_ARG_DEF_FROM_EDGE (phi, e);
 	      if (use == res)
 		/* The PHI result can also appear on a backedge, if so
 		   we can ignore this case for the purpose of determining
@@ -3981,8 +4028,6 @@ pass_forwprop::execute (function *fun)
 	}
 
       /* Substitute in destination PHI arguments.  */
-      edge_iterator ei;
-      edge e;
       FOR_EACH_EDGE (e, ei, bb->succs)
 	for (gphi_iterator gsi = gsi_start_phis (e->dest);
 	     !gsi_end_p (gsi); gsi_next (&gsi))
@@ -3998,8 +4043,18 @@ pass_forwprop::execute (function *fun)
 		&& may_propagate_copy (arg, val))
 	      propagate_value (use_p, val);
 	  }
+
+      /* Mark outgoing exectuable edges.  */
+      if (edge e = find_taken_edge (bb, NULL))
+	e->flags |= EDGE_EXECUTABLE;
+      else
+	{
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    e->flags |= EDGE_EXECUTABLE;
+	}
     }
   free (postorder);
+  free (bb_to_rpo);
   lattice.release ();
 
   /* Remove stmts in reverse order to make debug stmt creation possible.  */
