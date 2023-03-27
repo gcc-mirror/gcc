@@ -20,6 +20,9 @@
 namespace Rust {
 namespace AST {
 
+TokenStream::TokenStream (std::vector<TokenPtr> &container) : tokens (container)
+{}
+
 std::vector<TokenPtr>
 TokenStream::collect_tokens () const
 {
