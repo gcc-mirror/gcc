@@ -22610,11 +22610,12 @@
 
 (define_insn "sse4_1_phminposuw"
   [(set (match_operand:V8HI 0 "register_operand" "=Yr,*x,x")
-	(unspec:V8HI [(match_operand:V8HI 1 "vector_operand" "YrBm,*xBm,xm")]
+	(unspec:V8HI [(match_operand:V8HI 1 "vector_operand" "Yrja,*xja,xjm")]
 		     UNSPEC_PHMINPOSUW))]
   "TARGET_SSE4_1"
   "%vphminposuw\t{%1, %0|%0, %1}"
   [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "gpr32" "0")
    (set_attr "type" "sselog1")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "orig,orig,vex")
@@ -23803,12 +23804,13 @@
 (define_insn "*<sse4_1>_ptest<mode>"
   [(set (reg FLAGS_REG)
 	(unspec [(match_operand:V_AVX 0 "register_operand" "Yr, *x, x")
-		 (match_operand:V_AVX 1 "vector_operand" "YrBm, *xBm, xm")]
+		 (match_operand:V_AVX 1 "vector_operand" "Yrja, *xja, xjm")]
 		UNSPEC_PTEST))]
   "TARGET_SSE4_1 && ix86_match_ptest_ccmode (insn)"
   "%vptest\t{%1, %0|%0, %1}"
   [(set_attr "isa" "noavx,noavx,avx")
    (set_attr "type" "ssecomi")
+   (set_attr "gpr32" "0")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "orig,orig,vex")
    (set (attr "btver2_decode")
@@ -23845,12 +23847,13 @@
 (define_insn "ptesttf2"
   [(set (reg:CC FLAGS_REG)
 	(unspec:CC [(match_operand:TF 0 "register_operand" "Yr, *x, x")
-		    (match_operand:TF 1 "vector_operand" "YrBm, *xBm, xm")]
+		    (match_operand:TF 1 "vector_operand" "Yrja, *xja, xjm")]
 		   UNSPEC_PTEST))]
   "TARGET_SSE4_1"
   "%vptest\t{%1, %0|%0, %1}"
   [(set_attr "isa" "noavx,noavx,avx")
    (set_attr "type" "ssecomi")
+   (set_attr "gpr32" "0")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "orig,orig,vex")
    (set_attr "mode" "TI")])
@@ -23961,13 +23964,14 @@
 (define_insn "<sse4_1>_round<ssemodesuffix><avxsizesuffix>"
   [(set (match_operand:VF_128_256 0 "register_operand" "=Yr,*x,x")
 	(unspec:VF_128_256
-	  [(match_operand:VF_128_256 1 "vector_operand" "YrBm,*xBm,xm")
+	  [(match_operand:VF_128_256 1 "vector_operand" "Yrja,*xja,xjm")
 	   (match_operand:SI 2 "const_0_to_15_operand")]
 	  UNSPEC_ROUND))]
   "TARGET_SSE4_1"
   "%vround<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,noavx,avx")
    (set_attr "type" "ssecvt")
+   (set_attr "gpr32" "0")
    (set_attr "prefix_data16" "1,1,*")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
@@ -24054,19 +24058,32 @@
   [(set (match_operand:VF_128 0 "register_operand" "=Yr,*x,x,v")
 	(vec_merge:VF_128
 	  (unspec:VF_128
-	    [(match_operand:VF_128 2 "nonimmediate_operand" "Yrm,*xm,xm,vm")
+	    [(match_operand:VF_128 2 "nonimmediate_operand" "Yrjm,*xjm,xjm,vm")
 	     (match_operand:SI 3 "const_0_to_15_operand")]
 	    UNSPEC_ROUND)
 	  (match_operand:VF_128 1 "register_operand" "0,0,x,v")
 	  (const_int 1)))]
   "TARGET_SSE4_1"
-  "@
-   round<ssescalarmodesuffix>\t{%3, %2, %0|%0, %<iptr>2, %3}
-   round<ssescalarmodesuffix>\t{%3, %2, %0|%0, %<iptr>2, %3}
-   vround<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %<iptr>2, %3}
-   vrndscale<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %<iptr>2, %3}"
-  [(set_attr "isa" "noavx,noavx,avx,avx512f")
+{
+  switch (which_alternative)
+    {
+      case 0:
+      case 1:
+	return "round<ssescalarmodesuffix>\t{%3, %2, %0|%0, %<iptr>2, %3}";
+      case 2:
+	return "vround<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %<iptr>2, %3}";
+      case 3:
+	if (x86_evex_reg_mentioned_p (operands, 3))
+	  return "vrndscale<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %<iptr>2, %3}";
+	else
+	  return "vround<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %<iptr>2, %3}";
+      default:
+	gcc_unreachable ();
+    }
+}
+  [(set_attr "isa" "noavx,noavx,noavx512f,avx512f")
    (set_attr "type" "ssecvt")
+   (set_attr "gpr32" "0,0,0,1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix_data16" "1,1,*,*")
    (set_attr "prefix_extra" "1")
@@ -24078,19 +24095,32 @@
 	(vec_merge:VFH_128
 	  (vec_duplicate:VFH_128
 	    (unspec:<ssescalarmode>
-	      [(match_operand:<ssescalarmode> 2 "nonimmediate_operand" "Yrm,*xm,xm,vm")
+	      [(match_operand:<ssescalarmode> 2 "nonimmediate_operand" "Yrjm,*xjm,xjm,vm")
 	       (match_operand:SI 3 "const_0_to_15_operand")]
 	      UNSPEC_ROUND))
 	  (match_operand:VFH_128 1 "register_operand" "0,0,x,v")
 	  (const_int 1)))]
   "TARGET_SSE4_1"
-  "@
-   round<ssescalarmodesuffix>\t{%3, %2, %0|%0, %2, %3}
-   round<ssescalarmodesuffix>\t{%3, %2, %0|%0, %2, %3}
-   vround<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}
-   vrndscale<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
-  [(set_attr "isa" "noavx,noavx,avx,avx512f")
+{
+  switch (which_alternative)
+    {
+      case 0:
+      case 1:
+	return "round<ssescalarmodesuffix>\t{%3, %2, %0|%0, %2, %3}";
+      case 2:
+	return "vround<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}";
+      case 3:
+	if (x86_evex_reg_mentioned_p (operands, 3) || <MODE>mode == V8HFmode)
+	  return "vrndscale<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}";
+	else
+	  return "vround<ssescalarmodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}";
+      default:
+	gcc_unreachable ();
+    }
+}
+  [(set_attr "isa" "noavx,noavx,noavx512f,avx512f")
    (set_attr "type" "ssecvt")
+   (set_attr "gpr32" "0,0,0,1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix_data16" "1,1,*,*")
    (set_attr "prefix_extra" "1")
@@ -24311,7 +24341,7 @@
 	(unspec:SI
 	  [(match_operand:V16QI 1 "register_operand" "x,x")
 	   (match_operand:SI 2 "register_operand" "a,a")
-	   (match_operand:V16QI 3 "nonimmediate_operand" "x,m")
+	   (match_operand:V16QI 3 "nonimmediate_operand" "x,jm")
 	   (match_operand:SI 4 "register_operand" "d,d")
 	   (match_operand:SI 5 "const_0_to_255_operand")]
 	  UNSPEC_PCMPESTR))
@@ -24326,6 +24356,7 @@
   "TARGET_SSE4_2"
   "%vpcmpestri\t{%5, %3, %1|%1, %3, %5}"
   [(set_attr "type" "sselog")
+   (set_attr "gpr32" "0")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "maybe_vex")
    (set_attr "length_immediate" "1")
@@ -24338,7 +24369,7 @@
 	(unspec:V16QI
 	  [(match_operand:V16QI 1 "register_operand" "x,x")
 	   (match_operand:SI 2 "register_operand" "a,a")
-	   (match_operand:V16QI 3 "nonimmediate_operand" "x,m")
+	   (match_operand:V16QI 3 "nonimmediate_operand" "x,jm")
 	   (match_operand:SI 4 "register_operand" "d,d")
 	   (match_operand:SI 5 "const_0_to_255_operand")]
 	  UNSPEC_PCMPESTR))
@@ -24353,6 +24384,7 @@
   "TARGET_SSE4_2"
   "%vpcmpestrm\t{%5, %3, %1|%1, %3, %5}"
   [(set_attr "type" "sselog")
+   (set_attr "gpr32" "0")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "maybe_vex")
@@ -24365,7 +24397,7 @@
 	(unspec:CC
 	  [(match_operand:V16QI 2 "register_operand" "x,x,x,x")
 	   (match_operand:SI 3 "register_operand" "a,a,a,a")
-	   (match_operand:V16QI 4 "nonimmediate_operand" "x,m,x,m")
+	   (match_operand:V16QI 4 "nonimmediate_operand" "x,jm,x,jm")
 	   (match_operand:SI 5 "register_operand" "d,d,d,d")
 	   (match_operand:SI 6 "const_0_to_255_operand")]
 	  UNSPEC_PCMPESTR))
@@ -24378,6 +24410,7 @@
    %vpcmpestri\t{%6, %4, %2|%2, %4, %6}
    %vpcmpestri\t{%6, %4, %2|%2, %4, %6}"
   [(set_attr "type" "sselog")
+   (set_attr "gpr32" "0")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "memory" "none,load,none,load")
@@ -24389,7 +24422,7 @@
   [(set (match_operand:SI 0 "register_operand" "=c,c")
 	(unspec:SI
 	  [(match_operand:V16QI 2 "register_operand" "x,x")
-	   (match_operand:V16QI 3 "nonimmediate_operand" "x,m")
+	   (match_operand:V16QI 3 "nonimmediate_operand" "x,jm")
 	   (match_operand:SI 4 "const_0_to_255_operand")]
 	  UNSPEC_PCMPISTR))
    (set (match_operand:V16QI 1 "register_operand" "=Yz,Yz")
@@ -24432,6 +24465,7 @@
   DONE;
 }
   [(set_attr "type" "sselog")
+   (set_attr "gpr32" "0")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "memory" "none,load")
@@ -24441,7 +24475,7 @@
   [(set (match_operand:SI 0 "register_operand" "=c,c")
 	(unspec:SI
 	  [(match_operand:V16QI 1 "register_operand" "x,x")
-	   (match_operand:V16QI 2 "nonimmediate_operand" "x,m")
+	   (match_operand:V16QI 2 "nonimmediate_operand" "x,jm")
 	   (match_operand:SI 3 "const_0_to_255_operand")]
 	  UNSPEC_PCMPISTR))
    (set (reg:CC FLAGS_REG)
@@ -24453,6 +24487,7 @@
   "TARGET_SSE4_2"
   "%vpcmpistri\t{%3, %2, %1|%1, %2, %3}"
   [(set_attr "type" "sselog")
+   (set_attr "gpr32" "0")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "maybe_vex")
@@ -24464,7 +24499,7 @@
   [(set (match_operand:V16QI 0 "register_operand" "=Yz,Yz")
 	(unspec:V16QI
 	  [(match_operand:V16QI 1 "register_operand" "x,x")
-	   (match_operand:V16QI 2 "nonimmediate_operand" "x,m")
+	   (match_operand:V16QI 2 "nonimmediate_operand" "x,jm")
 	   (match_operand:SI 3 "const_0_to_255_operand")]
 	  UNSPEC_PCMPISTR))
    (set (reg:CC FLAGS_REG)
@@ -24476,6 +24511,7 @@
   "TARGET_SSE4_2"
   "%vpcmpistrm\t{%3, %2, %1|%1, %2, %3}"
   [(set_attr "type" "sselog")
+   (set_attr "gpr32" "0")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "maybe_vex")
@@ -24487,7 +24523,7 @@
   [(set (reg:CC FLAGS_REG)
 	(unspec:CC
 	  [(match_operand:V16QI 2 "register_operand" "x,x,x,x")
-	   (match_operand:V16QI 3 "nonimmediate_operand" "x,m,x,m")
+	   (match_operand:V16QI 3 "nonimmediate_operand" "x,jm,x,jm")
 	   (match_operand:SI 4 "const_0_to_255_operand")]
 	  UNSPEC_PCMPISTR))
    (clobber (match_scratch:V16QI 0 "=Yz,Yz,X,X"))
@@ -24499,6 +24535,7 @@
    %vpcmpistri\t{%4, %3, %2|%2, %3, %4}
    %vpcmpistri\t{%4, %3, %2|%2, %3, %4}"
   [(set_attr "type" "sselog")
+   (set_attr "gpr32" "0")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "memory" "none,load,none,load")
@@ -25983,23 +26020,25 @@
 
 (define_insn "aesimc"
   [(set (match_operand:V2DI 0 "register_operand" "=x")
-	(unspec:V2DI [(match_operand:V2DI 1 "vector_operand" "xBm")]
+	(unspec:V2DI [(match_operand:V2DI 1 "vector_operand" "xja")]
 		      UNSPEC_AESIMC))]
   "TARGET_AES"
   "%vaesimc\t{%1, %0|%0, %1}"
   [(set_attr "type" "sselog1")
+   (set_attr "gpr32" "0")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "TI")])
 
 (define_insn "aeskeygenassist"
   [(set (match_operand:V2DI 0 "register_operand" "=x")
-	(unspec:V2DI [(match_operand:V2DI 1 "vector_operand" "xBm")
+	(unspec:V2DI [(match_operand:V2DI 1 "vector_operand" "xja")
 		      (match_operand:SI 2 "const_0_to_255_operand")]
 		     UNSPEC_AESKEYGENASSIST))]
   "TARGET_AES"
   "%vaeskeygenassist\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "type" "sselog1")
+   (set_attr "gpr32" "0")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "maybe_vex")

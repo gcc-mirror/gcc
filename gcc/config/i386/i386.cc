@@ -22944,6 +22944,19 @@ x86_extended_rex2reg_mentioned_p (rtx insn)
   return false;
 }
 
+/* Return true when rtx operands mentions register that must be encoded using
+   evex prefix.  */
+bool
+x86_evex_reg_mentioned_p (rtx operands[], int nops)
+{
+  int i;
+  for (i = 0; i < nops; i++)
+    if (EXT_REX_SSE_REG_P (operands[i])
+	|| x86_extended_rex2reg_mentioned_p (operands[i]))
+      return true;
+  return false;
+}
+
 /* If profitable, negate (without causing overflow) integer constant
    of mode MODE at location LOC.  Return true in this case.  */
 bool
