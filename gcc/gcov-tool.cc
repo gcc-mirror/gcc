@@ -185,7 +185,7 @@ static const struct option merge_options[] =
 static void ATTRIBUTE_NORETURN
 merge_usage (void)
 {
-  fnotice (stderr, "Merge subcomand usage:");
+  fnotice (stderr, "Merge subcommand usage:");
   print_merge_usage_message (true);
   exit (FATAL_EXIT_CODE);
 }
@@ -255,7 +255,7 @@ static const struct option merge_stream_options[] =
 static void ATTRIBUTE_NORETURN
 merge_stream_usage (void)
 {
-  fnotice (stderr, "Merge-stream subcomand usage:");
+  fnotice (stderr, "Merge-stream subcommand usage:");
   print_merge_stream_usage_message (true);
   exit (FATAL_EXIT_CODE);
 }
@@ -507,7 +507,7 @@ static const struct option overlap_options[] =
 static void ATTRIBUTE_NORETURN
 overlap_usage (void)
 {
-  fnotice (stderr, "Overlap subcomand usage:");
+  fnotice (stderr, "Overlap subcommand usage:");
   print_overlap_usage_message (true);
   exit (FATAL_EXIT_CODE);
 }
