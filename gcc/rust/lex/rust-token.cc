@@ -131,4 +131,17 @@ Token::get_str () const
     }
   return *str;
 }
+
+std::string
+Token::as_string () const
+{
+  if (should_have_str ())
+    {
+      return get_str ();
+    }
+  else
+    {
+      return get_token_description ();
+    }
+}
 } // namespace Rust

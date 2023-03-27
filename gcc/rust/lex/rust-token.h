@@ -443,6 +443,10 @@ return *str;
 
   // Returns whether the token is a pure decimal int literal
   bool is_pure_decimal () const { return type_hint == CORETYPE_PURE_DECIMAL; }
+
+  // Return the token representation as someone would find it in the original
+  // source code file.
+  std::string as_string () const;
 };
 } // namespace Rust
 
