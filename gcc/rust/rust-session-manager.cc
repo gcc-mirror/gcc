@@ -35,6 +35,7 @@
 #include "rust-lint-unused-var.h"
 #include "rust-hir-dump.h"
 #include "rust-ast-dump.h"
+#include "rust-ast-tokenstream.h"
 #include "rust-export-metadata.h"
 #include "rust-imports.h"
 #include "rust-extern-crate.h"
@@ -64,6 +65,7 @@ const char *kLexDumpFile = "gccrs.lex.dump";
 const char *kASTDumpFile = "gccrs.ast.dump";
 const char *kASTPrettyDumpFile = "gccrs.ast-pretty.dump";
 const char *kASTPrettyDumpFileExpanded = "gccrs.ast-pretty-expanded.dump";
+const char *kASTDumpTokenStream = "gccrs.ast-tokenstream.dump";
 const char *kASTExpandedDumpFile = "gccrs.ast-expanded.dump";
 const char *kHIRDumpFile = "gccrs.hir.dump";
 const char *kHIRPrettyDumpFile = "gccrs.hir-pretty.dump";
@@ -303,6 +305,10 @@ Session::enable_dump (std::string arg)
     {
       options.enable_dump_option (CompileOptions::AST_DUMP_PRETTY);
     }
+  else if (arg == "ast-tokenstream")
+    {
+      options.enable_dump_option (CompileOptions::AST_DUMP_TOKENSTREAM);
+    }
   else if (arg == "register_plugins")
     {
       options.enable_dump_option (CompileOptions::REGISTER_PLUGINS_DUMP);
@@ -492,6 +498,10 @@ Session::compile_crate (const char *filename)
   if (options.dump_option_enabled (CompileOptions::PARSER_AST_DUMP))
     {
       dump_ast (parser, *ast_crate.get ());
+    }
+  if (options.dump_option_enabled (CompileOptions::AST_DUMP_TOKENSTREAM))
+    {
+      dump_tokenstream (*ast_crate.get ());
     }
   if (options.dump_option_enabled (CompileOptions::AST_DUMP_PRETTY))
     {
@@ -918,6 +928,25 @@ Session::dump_ast_pretty (AST::Crate &crate, bool expanded) const
 
   AST::Dump (out).go (crate);
 
+  out.close ();
+}
+
+void
+Session::dump_tokenstream (AST::Crate &crate) const
+{
+  std::ofstream out;
+  out.open (kASTDumpTokenStream);
+  if (out.fail ())
+    {
+      rust_error_at (Linemap::unknown_location (), "cannot open %s:%m; ignored",
+		     kASTDumpTokenStream);
+    }
+  std::vector<TokenPtr> tokenstream;
+  AST::TokenStream (tokenstream).visit (crate);
+  for (auto &token : tokenstream)
+    {
+      out << token->as_string () << " ";
+    }
   out.close ();
 }
 
