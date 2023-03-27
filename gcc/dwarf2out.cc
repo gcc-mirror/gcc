@@ -5883,6 +5883,7 @@ lookup_type_die (tree type)
   if (die && die->removed)
     {
       TYPE_SYMTAB_DIE (type) = NULL;
+      TREE_ASM_WRITTEN (type) = 0;
       return NULL;
     }
   return die;
