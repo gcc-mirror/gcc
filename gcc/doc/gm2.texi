@@ -2761,7 +2761,7 @@ The mailing list contents can be viewed
 These exist and can be found on the frontends web page on the
 @uref{http://gcc.gnu.org/frontends.html, gcc web site}.
 
-@node License, , ,
+@node License, Copying, Using, Top
 @section License of GNU Modula-2
 
 GNU Modula-2 is free software, the compiler is held under the GPL v3
@@ -2781,10 +2781,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 More information on how these licenses work is available
 @uref{http://www.gnu.org/licenses/licenses.html} on the GNU web site.
 
-@node Copying, , ,
+@node Copying, Contributing, License, Top
 @include gpl_v3_without_node.texi
 
-@node Contributing, , ,
+@node Contributing, EBNF, Copying, Top
 @section Contributing to GNU Modula-2
 
 Please do and please read the GNU Emacs info under
@@ -2808,7 +2808,7 @@ Many thanks and enjoy your coding!
 @c This section is still being written.
 @c @include gm2-internals.texi
 
-@node EBNF, , ,
+@node EBNF, Libraries, Contributing, Top
 @chapter EBNF of GNU Modula-2
 
 This chapter contains the EBNF of GNU Modula-2.  This grammar currently
@@ -2822,14 +2822,14 @@ phase.
 
 @include m2/gm2-ebnf.texi
 
-@node Libraries, , ,
+@node Libraries, Indices, EBNF, Top
 @chapter PIM and ISO library definitions
 
 This chapter contains M2F, PIM and ISO libraries.
 
 @include m2/gm2-libs.texi
 
-@node Indices, , ,
+@node Indices, , Libraries, Top
 @section Indices
 
 @ifhtml
