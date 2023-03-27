@@ -5017,9 +5017,12 @@ package body Exp_Aggr is
 
       if
          --  Internal aggregate (transformed when expanding the parent)
+         --  excluding the Container aggregate as these are transformed to
+         --  procedure call later.
 
-         Parent_Kind in
-           N_Aggregate | N_Extension_Aggregate | N_Component_Association
+         (Parent_Kind in
+            N_Component_Association | N_Aggregate | N_Extension_Aggregate
+            and then not Is_Container_Aggregate (Parent_Node))
 
          --  Allocator (see Convert_Aggr_In_Allocator)
 

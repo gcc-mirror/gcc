@@ -132,9 +132,6 @@ package body Sem_Util is
    --  Determine whether arbitrary entity Id denotes an atomic object as per
    --  RM C.6(7).
 
-   function Is_Container_Aggregate (Exp : Node_Id) return Boolean;
-   --  Is the given expression a container aggregate?
-
    generic
       with function Is_Effectively_Volatile_Entity
         (Id : Entity_Id) return Boolean;
