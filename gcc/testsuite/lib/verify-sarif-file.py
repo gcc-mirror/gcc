@@ -7,5 +7,5 @@ import sys
 sys.tracebacklimit = 0
 
 fname = sys.argv[1]
-with open(fname, encoding="utf-8") as f:
+with open(fname, encoding='utf-8') as f:
     json.load(f)
