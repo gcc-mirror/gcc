@@ -321,10 +321,10 @@
 
 ;; MEMPAIR load DI extended signed SI
 (define_insn "*th_mempair_load_extendsidi2"
-  [(set (match_operand 0 "register_operand" "=r")
-	(sign_extend:DI (match_operand 1 "memory_operand" "m")))
-   (set (match_operand 2 "register_operand" "=r")
-	(sign_extend:DI (match_operand 3 "memory_operand" "m")))]
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI (match_operand:SI 1 "memory_operand" "m")))
+   (set (match_operand:DI 2 "register_operand" "=r")
+	(sign_extend:DI (match_operand:SI 3 "memory_operand" "m")))]
   "TARGET_XTHEADMEMPAIR && TARGET_64BIT && reload_completed
    && th_mempair_operands_p (operands, true, SImode)"
   { return th_mempair_output_move (operands, true, SImode, SIGN_EXTEND); }
@@ -334,10 +334,10 @@
 
 ;; MEMPAIR load DI extended unsigned SI
 (define_insn "*th_mempair_load_zero_extendsidi2"
-  [(set (match_operand 0 "register_operand" "=r")
-	(zero_extend:DI (match_operand 1 "memory_operand" "m")))
-   (set (match_operand 2 "register_operand" "=r")
-	(zero_extend:DI (match_operand 3 "memory_operand" "m")))]
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI (match_operand:SI 1 "memory_operand" "m")))
+   (set (match_operand:DI 2 "register_operand" "=r")
+	(zero_extend:DI (match_operand:SI 3 "memory_operand" "m")))]
   "TARGET_XTHEADMEMPAIR && TARGET_64BIT && reload_completed
    && th_mempair_operands_p (operands, true, SImode)"
   { return th_mempair_output_move (operands, true, SImode, ZERO_EXTEND); }
