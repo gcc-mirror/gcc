@@ -1643,7 +1643,7 @@ package Snames is
    subtype Internal_Attribute_Id is Attribute_Id
      range Attribute_CPU .. Attribute_Interrupt_Priority;
 
-   type Attribute_Class_Array is array (Attribute_Id) of Boolean;
+   type Attribute_Set is array (Attribute_Id) of Boolean;
    --  Type used to build attribute classification flag arrays
 
    ------------------------------------

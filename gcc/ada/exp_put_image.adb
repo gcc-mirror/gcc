@@ -1126,7 +1126,9 @@ package body Exp_Put_Image is
       --  Attribute names that will be mapped to the corresponding result types
       --  and functions.
 
-      Attribute_Name_Id : constant Name_Id := Attribute_Name (N);
+      Attribute_Name_Id : constant Name_Id :=
+        (if Attribute_Name (N) = Name_Img then Name_Image
+         else Attribute_Name (N));
 
       Result_Typ    : constant Entity_Id :=
         (case Image_Name_Id'(Attribute_Name_Id) is

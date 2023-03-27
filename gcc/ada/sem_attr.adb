@@ -104,8 +104,8 @@ package body Sem_Attr is
    --  In Ada 83 mode, these are the only recognized attributes. In other Ada
    --  modes all these attributes are recognized, even if removed in Ada 95.
 
-   Attribute_83 : constant Attribute_Class_Array := Attribute_Class_Array'(
-      Attribute_Address                      |
+   Attribute_83 : constant Attribute_Set :=
+     (Attribute_Address                      |
       Attribute_Aft                          |
       Attribute_Alignment                    |
       Attribute_Base                         |
@@ -153,8 +153,8 @@ package body Sem_Attr is
    --  RM which are not defined in Ada 95. These are recognized in Ada 95 mode,
    --  but in Ada 95 they are considered to be implementation defined.
 
-   Attribute_05 : constant Attribute_Class_Array := Attribute_Class_Array'(
-      Attribute_Machine_Rounding             |
+   Attribute_05 : constant Attribute_Set :=
+     (Attribute_Machine_Rounding             |
       Attribute_Mod                          |
       Attribute_Priority                     |
       Attribute_Stream_Size                  |
@@ -165,8 +165,8 @@ package body Sem_Attr is
    --  RM which are not defined in Ada 2005. These are recognized in Ada 95
    --  and Ada 2005 modes, but are considered to be implementation defined.
 
-   Attribute_12 : constant Attribute_Class_Array := Attribute_Class_Array'(
-      Attribute_First_Valid                  |
+   Attribute_12 : constant Attribute_Set :=
+     (Attribute_First_Valid                  |
       Attribute_Has_Same_Storage             |
       Attribute_Last_Valid                   |
       Attribute_Max_Alignment_For_Allocation => True,
@@ -176,10 +176,10 @@ package body Sem_Attr is
    --  RM which are not defined in Ada 2012. These are recognized in Ada
    --  95/2005/2012 modes, but are considered to be implementation defined.
 
-   Attribute_22 : constant Attribute_Class_Array := Attribute_Class_Array'(
-      Attribute_Enum_Rep                     |
-      Attribute_Enum_Val                     => True,
-      Attribute_Index                        => True,
+   Attribute_22 : constant Attribute_Set :=
+     (Attribute_Enum_Rep                     |
+      Attribute_Enum_Val                     |
+      Attribute_Index                        |
       Attribute_Preelaborable_Initialization => True,
       others                                 => False);
 
@@ -187,9 +187,8 @@ package body Sem_Attr is
    --  of their prefixes or result in an access value. Such prefixes can be
    --  considered as lvalues.
 
-   Attribute_Name_Implies_Lvalue_Prefix : constant Attribute_Class_Array :=
-      Attribute_Class_Array'(
-      Attribute_Access                       |
+   Attribute_Name_Implies_Lvalue_Prefix : constant Attribute_Set :=
+     (Attribute_Access                       |
       Attribute_Address                      |
       Attribute_Input                        |
       Attribute_Read                         |
