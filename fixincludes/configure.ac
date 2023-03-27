@@ -88,7 +88,7 @@ define(fixincludes_UNLOCKED_FUNCS, clearerr_unlocked feof_unlocked dnl
   fread_unlocked fwrite_unlocked getchar_unlocked getc_unlocked dnl
   putchar_unlocked putc_unlocked)
 AC_CHECK_FUNCS(fixincludes_UNLOCKED_FUNCS)
-AC_CHECK_DECLS([abort, asprintf, basename(char *), errno, vasprintf])
+AC_CHECK_DECLS([abort, asprintf, basename(char *), errno, vasprintf, memmem])
 AC_CHECK_DECLS(m4_split(m4_normalize(fixincludes_UNLOCKED_FUNCS)))
 
 # Checks for typedefs, structures, and compiler characteristics.
