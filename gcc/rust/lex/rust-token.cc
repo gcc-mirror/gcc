@@ -137,7 +137,31 @@ Token::as_string () const
 {
   if (should_have_str ())
     {
-      return get_str ();
+      switch (get_id ())
+	{
+	case STRING_LITERAL:
+	  return "\"" + get_str () + "\"";
+	case BYTE_STRING_LITERAL:
+	  return "b\"" + get_str () + "\"";
+	case CHAR_LITERAL:
+	  return "'" + get_str () + "'";
+	case BYTE_CHAR_LITERAL:
+	  return "b'" + get_str () + "'";
+	case LIFETIME:
+	  return "''" + get_str ();
+	case INT_LITERAL:
+	  if (get_type_hint () == CORETYPE_UNKNOWN)
+	    return get_str ();
+	  else
+	    return get_str () + get_type_hint_str ();
+	case FLOAT_LITERAL:
+	  if (get_type_hint () == CORETYPE_UNKNOWN)
+	    return get_str ();
+	  else
+	    return get_str () + get_type_hint_str ();
+	default:
+	  return get_str ();
+	}
     }
   else
     {
