@@ -1,3 +1,25 @@
+2023-03-26  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/106282
+	* gcc.target/m68k/tls-gd-off.c: New.
+	* gcc.target/m68k/tls-ie-off.c: New.
+	* gcc.target/m68k/tls-ld-off.c: New.
+	* gcc.target/m68k/tls-ld-xtls-off.c: New.
+	* gcc.target/m68k/tls-le-off.c: New.
+	* gcc.target/m68k/tls-le-xtls-off.c: New.
+	* gcc.target/m68k/tls-ld.c: Make pattern less strict.
+	* gcc.target/m68k/tls-le.c: Likewise.
+
+2023-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109230
+	* gcc.dg/pr109230.c: New test.
+
+2023-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/105685
+	* c-c++-common/cold-2.c: New test.
+
 2023-03-25  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/109098
