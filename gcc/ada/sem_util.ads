@@ -1475,6 +1475,9 @@ package Sem_Util is
    --  Return True if the loop has no side effect and can therefore be
    --  marked for removal. Return False if N is not a N_Loop_Statement.
 
+   function Is_Container_Aggregate (Exp : Node_Id) return Boolean;
+   --  Is the given expression a container aggregate?
+
    function Is_Newly_Constructed
      (Exp : Node_Id; Context_Requires_NC : Boolean) return Boolean;
    --  Indicates whether a given expression is "newly constructed" (RM 4.4).
