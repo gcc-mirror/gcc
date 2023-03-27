@@ -7449,9 +7449,6 @@ Parser<ManagedTokenSource>::parse_expr_without_block (
     case MOVE:
       // closure expr (though not all closure exprs require this)
       return parse_closure_expr (std::move (outer_attrs));
-    case LEFT_SQUARE:
-      // array expr (creation, not index)
-      return parse_array_expr (std::move (outer_attrs));
       default: {
 	/* HACK: piggyback on pratt parsed expr and abuse polymorphism to
 	 * essentially downcast */
