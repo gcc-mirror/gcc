@@ -1132,7 +1132,7 @@ static const struct cpu_vector_cost thunderx3t110_vector_cost =
 
 static const advsimd_vec_cost ampere1_advsimd_vector_cost =
 {
-  3, /* int_stmt_cost  */
+  1, /* int_stmt_cost  */
   3, /* fp_stmt_cost  */
   0, /* ld2_st2_permute_cost  */
   0, /* ld3_st3_permute_cost  */
@@ -1148,17 +1148,17 @@ static const advsimd_vec_cost ampere1_advsimd_vector_cost =
   8, /* store_elt_extra_cost  */
   6, /* vec_to_scalar_cost  */
   7, /* scalar_to_vec_cost  */
-  5, /* align_load_cost  */
-  5, /* unalign_load_cost  */
-  2, /* unalign_store_cost  */
-  2  /* store_cost  */
+  4, /* align_load_cost  */
+  4, /* unalign_load_cost  */
+  1, /* unalign_store_cost  */
+  1  /* store_cost  */
 };
 
 /* Ampere-1 costs for vector insn classes.  */
 static const struct cpu_vector_cost ampere1_vector_cost =
 {
   1, /* scalar_int_stmt_cost  */
-  1, /* scalar_fp_stmt_cost  */
+  3, /* scalar_fp_stmt_cost  */
   4, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
   1, /* cond_taken_branch_cost  */
