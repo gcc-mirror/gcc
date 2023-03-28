@@ -2262,12 +2262,7 @@ float_widen_lhs_range (tree type, const frange &lhs)
      or real_max_representable (type) as upper bound.  */
   bool save_flag_finite_math_only = flag_finite_math_only;
   flag_finite_math_only = false;
-  ret.set (type, lb, ub);
-  if (lhs.kind () != VR_VARYING)
-    {
-      ret.clear_nan ();
-      ret.union_ (lhs);
-    }
+  ret.set (type, lb, ub, lhs.get_nan_state ());
   flag_finite_math_only = save_flag_finite_math_only;
   return ret;
 }
