@@ -1873,11 +1873,12 @@ convert_scalar_cond_reduction (gimple *reduc, gimple_stmt_iterator *gsi,
   return rhs;
 }
 
-/* Produce condition for all occurrences of ARG in PHI node.  */
+/* Produce condition for all occurrences of ARG in PHI node.  Set *INVERT
+   as to whether the condition is inverted.  */
 
 static tree
 gen_phi_arg_condition (gphi *phi, vec<int> *occur,
-		       gimple_stmt_iterator *gsi)
+		       gimple_stmt_iterator *gsi, bool *invert)
 {
   int len;
   int i;
@@ -1885,6 +1886,7 @@ gen_phi_arg_condition (gphi *phi, vec<int> *occur,
   tree c;
   edge e;
 
+  *invert = false;
   len = occur->length ();
   gcc_assert (len > 0);
   for (i = 0; i < len; i++)
@@ -1895,6 +1897,13 @@ gen_phi_arg_condition (gphi *phi, vec<int> *occur,
 	{
 	  cond = c;
 	  break;
+	}
+      /* If we have just a single inverted predicate, signal that and
+	 instead invert the COND_EXPR arms.  */
+      if (len == 1 && TREE_CODE (c) == TRUTH_NOT_EXPR)
+	{
+	  c = TREE_OPERAND (c, 0);
+	  *invert = true;
 	}
       c = force_gimple_operand_gsi (gsi, unshare_expr (c),
 				    true, NULL_TREE, true, GSI_SAME_STMT);
@@ -2116,9 +2125,14 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
 	    lhs = make_temp_ssa_name (type, NULL, "_ifc_");
 	  else
 	    lhs = res;
-	  cond = gen_phi_arg_condition (phi, indexes, gsi);
-	  rhs = fold_build_cond_expr (type, unshare_expr (cond),
-				      arg0, arg1);
+	  bool invert;
+	  cond = gen_phi_arg_condition (phi, indexes, gsi, &invert);
+	  if (invert)
+	    rhs = fold_build_cond_expr (type, unshare_expr (cond),
+					arg1, arg0);
+	  else
+	    rhs = fold_build_cond_expr (type, unshare_expr (cond),
+					arg0, arg1);
 	  new_stmt = gimple_build_assign (lhs, rhs);
 	  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
 	  update_stmt (new_stmt);
