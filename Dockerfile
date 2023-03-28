@@ -64,11 +64,6 @@ RUN /bin/sh -c set -ex; \
     echo '/usr/local/lib64' > /etc/ld.so.conf.d/local-lib64.conf; \
     ldconfig -v
 
-RUN /bin/sh -c set -ex; \
-    dpkg-divert --divert /usr/bin/gcc.orig --rename /usr/bin/gcc; \
-    dpkg-divert --divert /usr/bin/g++.orig --rename /usr/bin/g++; \
-    update-alternatives --install /usr/bin/cc cc /usr/local/bin/gcc 999
-
 FROM rust:latest
 COPY --from=gcc-builder /usr/ /usr/
 COPY --from=gcc-builder /GCCRS_BUILD /GCCRS_BUILD
