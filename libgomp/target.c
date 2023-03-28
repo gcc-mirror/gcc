@@ -2604,8 +2604,8 @@ goacc_unmap_vars (struct target_mem_desc *tgt, bool do_copyfrom,
   gomp_unmap_vars_internal (tgt, do_copyfrom, NULL, aq);
 }
 
-static int omp_target_memcpy_rect_worker (void *, const void *, size_t, int,
-					  const size_t *, const size_t *,
+static int omp_target_memcpy_rect_worker (void *, const void *, size_t, size_t,
+					  int, const size_t *, const size_t *,
 					  const size_t *, const size_t *,
 					  const size_t *, const size_t *,
 					  struct gomp_device_descr *,
@@ -2640,9 +2640,9 @@ gomp_update (struct gomp_device_descr *devicep, size_t mapnum, void **hostaddrs,
 	{
 	  omp_noncontig_array_desc *desc
 	    = (omp_noncontig_array_desc *) hostaddrs[i + 1];
-	  cur_node.host_start = (uintptr_t) hostaddrs[i];
+	  size_t bias = sizes[i + 1];
+	  cur_node.host_start = (uintptr_t) hostaddrs[i] + bias;
 	  cur_node.host_end = cur_node.host_start + sizes[i];
-	  assert (sizes[i + 1] == sizeof (omp_noncontig_array_desc));
 	  splay_tree_key n = splay_tree_lookup (&devicep->mem_map, &cur_node);
 	  if (n)
 	    {
@@ -2654,21 +2654,23 @@ gomp_update (struct gomp_device_descr *devicep, size_t mapnum, void **hostaddrs,
 		}
 	      void *devaddr = (void *) (n->tgt->tgt_start + n->tgt_offset
 					+ cur_node.host_start
-					- n->host_start);
+					- n->host_start
+					- bias);
 	      if ((kind & typemask) == GOMP_MAP_TO_GRID)
 		omp_target_memcpy_rect_worker (devaddr, hostaddrs[i],
-					       desc->elemsize, desc->ndims,
-					       desc->length, desc->stride,
-					       desc->index, desc->index,
-					       desc->dim, desc->dim, devicep,
+					       desc->elemsize, desc->span,
+					       desc->ndims, desc->length,
+					       desc->stride, desc->index,
+					       desc->index, desc->dim,
+					       desc->dim, devicep,
 					       NULL);
 	      else
 		omp_target_memcpy_rect_worker (hostaddrs[i], devaddr,
-					       desc->elemsize, desc->ndims,
-					       desc->length, desc->stride,
-					       desc->index, desc->index,
-					       desc->dim, desc->dim, NULL,
-					       devicep);
+					       desc->elemsize, desc->span,
+					       desc->ndims, desc->length,
+					       desc->stride, desc->index,
+					       desc->index, desc->dim,
+					       desc->dim, NULL, devicep);
 	    }
 	  i++;
 	}
@@ -5686,7 +5688,7 @@ omp_target_memcpy_async (void *dst, const void *src, size_t length,
 
 static int
 omp_target_memcpy_rect_worker (void *dst, const void *src, size_t element_size,
-			       int num_dims, const size_t *volume,
+			       size_t span, int num_dims, const size_t *volume,
 			       const size_t *strides,
 			       const size_t *dst_offsets,
 			       const size_t *src_offsets,
@@ -5700,7 +5702,7 @@ omp_target_memcpy_rect_worker (void *dst, const void *src, size_t element_size,
   size_t j, dst_off, src_off, length;
   int i, ret;
 
-  if (num_dims == 1 && (!strides || strides[0] == 1))
+  if (num_dims == 1 && (!strides || (strides[0] == 1 && element_size == span)))
     {
       if (__builtin_mul_overflow (element_size, volume[0], &length)
 	  || __builtin_mul_overflow (element_size, dst_offsets[0], &dst_off)
@@ -5780,12 +5782,11 @@ omp_target_memcpy_rect_worker (void *dst, const void *src, size_t element_size,
       assert ((src_devicep == NULL || dst_devicep == NULL)
 	      && (src_devicep != NULL || dst_devicep != NULL));
 
-      if (__builtin_mul_overflow (element_size, dst_offsets[0], &dst_off)
-	  || __builtin_mul_overflow (element_size, src_offsets[0], &src_off))
+      if (__builtin_mul_overflow (span, dst_offsets[0], &dst_off)
+	  || __builtin_mul_overflow (span, src_offsets[0], &src_off))
 	return EINVAL;
 
-      if (strides
-	  && __builtin_mul_overflow (element_size, strides[0], &stride))
+      if (__builtin_mul_overflow (span, strides[0], &stride))
 	return EINVAL;
 
       for (i = 0, ret = 1; i < volume[0] && ret; i++)
@@ -5826,7 +5827,7 @@ omp_target_memcpy_rect_worker (void *dst, const void *src, size_t element_size,
     {
       ret = omp_target_memcpy_rect_worker ((char *) dst + dst_off,
 					   (const char *) src + src_off,
-					   element_size, num_dims - 1,
+					   element_size, span, num_dims - 1,
 					   volume + 1,
 					   strides ? strides + 1 : NULL,
 					   dst_offsets + 1, src_offsets + 1,
@@ -5875,8 +5876,8 @@ omp_target_memcpy_rect_copy (void *dst, const void *src,
     gomp_mutex_lock (&src_devicep->lock);
   else if (dst_devicep)
     gomp_mutex_lock (&dst_devicep->lock);
-  int ret = omp_target_memcpy_rect_worker (dst, src, element_size, num_dims,
-					   volume, NULL, dst_offsets,
+  int ret = omp_target_memcpy_rect_worker (dst, src, element_size, element_size,
+					   num_dims, volume, NULL, dst_offsets,
 					   src_offsets, dst_dimensions,
 					   src_dimensions, dst_devicep,
 					   src_devicep);

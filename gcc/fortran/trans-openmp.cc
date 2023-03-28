@@ -2991,6 +2991,10 @@ gfc_omp_deep_map_kind_p (tree clause)
     case GOMP_MAP_FIRSTPRIVATE_POINTER:
     case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
     case GOMP_MAP_ATTACH_DETACH:
+    case GOMP_MAP_TO_GRID:
+    case GOMP_MAP_FROM_GRID:
+    case GOMP_MAP_GRID_DIM:
+    case GOMP_MAP_GRID_STRIDE:
       break;
     default:
       gcc_unreachable ();
@@ -4256,6 +4260,346 @@ get_symbol_rooted_namelist (hash_map<gfc_symbol *,
     }
 
   return NULL;
+}
+
+/* We build an "un-Fortrannish" array-of-arrays here to pass our calculated
+   array bounds to the middle end for strided/rectangular OpenMP
+   "target update" operations.  */
+
+static tree
+gfc_trans_omp_arrayshape_type (tree type, vec<tree> *dims)
+{
+  gcc_assert (dims->length () > 0);
+
+  for (int i = dims->length () - 1; i >= 0; i--)
+    {
+      tree dim = fold_convert (sizetype, (*dims)[i]);
+      /* We need the index of the last element, not the array size.  */
+      dim = size_binop (MINUS_EXPR, dim, size_one_node);
+      tree idxtype = build_index_type (dim);
+      type = build_array_type (type, idxtype);
+    }
+
+  return type;
+}
+
+/* Emit code to find the greatest common divisor of two (gfc_array_index_type)
+   trees to BLOCK.  This is Euclid's algorithm:
+
+     int
+     gcd (int a, int b)
+     {
+       int tmp;
+       while (b != 0)
+	 {
+	   tmp = b;
+	   b = a % b;
+	   a = tmp;
+	 }
+       return a;
+     }
+*/
+
+static void
+gfc_omp_calculate_gcd (stmtblock_t *block, tree dst, tree a, tree b)
+{
+  tree tmp = gfc_create_var (gfc_array_index_type, "tmp");
+  tree avar = gfc_create_var (gfc_array_index_type, "a");
+  tree bvar = gfc_create_var (gfc_array_index_type, "b");
+
+  /* Avoid clobbering the inputs.  */
+  gfc_add_modify (block, avar, a);
+  gfc_add_modify (block, bvar, b);
+
+  tree label_cond = gfc_build_label_decl (NULL_TREE);
+  tree label_loop = gfc_build_label_decl (NULL_TREE);
+  TREE_USED (label_cond) = 1;
+  TREE_USED (label_loop) = 1;
+
+  gfc_add_expr_to_block (block, build1_v (GOTO_EXPR, label_cond));
+  gfc_add_expr_to_block (block, build1_v (LABEL_EXPR, label_loop));
+
+  gfc_add_modify (block, tmp, bvar);
+  gfc_add_modify (block, bvar,
+		  fold_build2_loc (input_location, TRUNC_MOD_EXPR,
+				   gfc_array_index_type, avar, bvar));
+  gfc_add_modify (block, avar, tmp);
+
+  gfc_add_expr_to_block (block, build1_v (LABEL_EXPR, label_cond));
+
+  tmp = fold_build2_loc (input_location, NE_EXPR, boolean_type_node, bvar,
+			 gfc_index_zero_node);
+  tmp = build3_v (COND_EXPR, tmp, build1_v (GOTO_EXPR, label_loop),
+		  build_empty_stmt (input_location));
+  gfc_add_expr_to_block (block, tmp);
+
+  gfc_add_modify (block, dst, avar);
+}
+
+/* Convert a gfortran array descriptor -- specifically the per-dimension
+   strides -- into a form that can be easily translated to a noncontiguous
+   OpenMP "target update" operation.  We emit a specialized version of a
+   function like this inline:
+
+     void
+     gfc_desc_to_omp_noncontig_array (int *dims, int *strides, int ndims,
+				      int *fstrides, int *flo, int *fhi)
+     {
+       dims[ndims - 1] = (fhi[ndims - 1] - flo[ndims - 1] + 1);
+       strides[0] = fstrides[0];
+       if (ndims > 1)
+	 strides[ndims - 1] = 1;
+       if (ndims == 2)
+	 dims[0] = fstrides[1];
+       else if (ndims > 2)
+	 {
+	   int grains[ndims - 2];
+
+	   int bigger_grain = fstrides[ndims - 1];
+	   for (int i = ndims - 2; i > 0; i--)
+	     {
+	       grains[i - 1] = gcd (fstrides[i], bigger_grain);
+	       bigger_grain = grains[i - 1];
+	     }
+
+	   int volume = 1;
+	   for (int i = 0; i < ndims - 2; i++)
+	     {
+	       int g = grains[i];
+	       dims[i] = g / volume;
+	       strides[i + 1] = fstrides[i + 1] / g;
+	       volume = volume * dims[i];
+	     }
+	   dims[ndims - 2] = fstrides[ndims - 1] / volume;
+	 }
+     }
+
+   where "fstrides", "flo" and "fhi" represent the stride, low bound and upper
+   bound of each dimension in the Fortran array descriptor.
+
+   (Note that most of the complexity only applies to arrays with more than two
+   dimensions, and the final stanza won't be emitted at all for lower-ranked
+   arrays.)
+
+   The output of the algorithm is a set of dimensions dims[] = { D, C, B, A }
+   "as if" the array was declared like this (in C):
+
+     type arr[A][B][C][D];
+
+   i.e. with the innermost dimension first, and a set of strides (in terms of
+   the step size along each dimension, without previous dimensions multiplied
+   in).
+
+   As an example, if we have an array:
+
+     allocate (arr(18,19,20,21,22))
+
+   and an update operation:
+
+     !$omp target update to(arr(1:3:2,1:4:3,1:5:4,1:6:5,1:7:6))
+
+   the strides we see in the Fortran array descriptor will be:
+
+     2 54 1368 34200 861840
+
+   as given by:
+
+     2 = stride0
+     54 = dim0 * stride1
+     1368 = dim0 * dim1 * stride2
+     34200 = dim0 * dim1 * dim2 * stride3
+     861840 = dim0 * dim1 * dim2 * dim3 * stride4
+
+   where "dimN" are the extents of each dimension (18,19,20,21,22), and
+   "strideN" are the strides in terms of step length along each dimension
+   (2,3,4,5,6).
+
+   We'd like to figure out what the original dimN, strideN were from the
+   Fortran array descriptor, but that's in general impossible.  Furthermore,
+   if we naively divide a stride by the preceding stride, the result isn't
+   necessarily an integer, as for e.g.:
+
+     861840/34200 = 25.2
+
+   What we can do though is figure out the greatest common divisor of
+   each stride and the preceding one, from the largest down, and use those as
+   units of granularity, i.e. the size of the corresponding dimension we pass
+   to the middle-end/runtime.  The stepwise stride is then the number of
+   times each "grain" fits into the Fortran array descriptor stride.
+
+   The output of the algorithm will be:
+
+     dims  strides
+     18    2
+     76    3
+     5     1
+     126   5
+     9     1
+
+   These numbers work fine for libgomp target.c:omp_target_memcpy_rect_worker.
+   Multiplying them through also gives the same numbers as the source Fortran
+   array strides, i.e. dim0*dim1*dim2*stride3 (18*76*5*5) = 34200.  */
+
+static void
+gfc_desc_to_omp_noncontig_array (stmtblock_t *block, tree *ompdimsp,
+				 tree *ompstridesp, tree desc, int ndims)
+{
+  tree lastdim = build_int_cst (gfc_array_index_type, ndims - 1);
+  tree dimrange = build_index_type (lastdim);
+  tree ndimarrtype = build_array_type (gfc_array_index_type, dimrange);
+  tree ompdims = gfc_create_var (ndimarrtype, "dims");
+  tree ompstrides = gfc_create_var (ndimarrtype, "strides");
+
+  *ompdimsp = ompdims;
+  *ompstridesp = ompstrides;
+
+  /* dims[ndims - 1] = (fhi[ndims - 1] - flo[ndims - 1] + 1);  */
+  tree lastlbound = gfc_conv_array_lbound (desc, ndims - 1);
+  tree lastubound = gfc_conv_array_ubound (desc, ndims - 1);
+  tree lastrange = fold_build2_loc (input_location, MINUS_EXPR,
+				    gfc_array_index_type, lastubound,
+				    lastlbound);
+  lastrange = fold_build2_loc (input_location, PLUS_EXPR, gfc_array_index_type,
+			       lastrange, gfc_index_one_node);
+
+  gfc_add_modify (block,
+		  gfc_build_array_ref (ompdims, lastdim, NULL_TREE, true),
+		  lastrange);
+
+  /* strides[0] = fstrides[0];  */
+  tree stride0 = gfc_conv_array_stride (desc, 0);
+  gfc_add_modify (block,
+		  gfc_build_array_ref (ompstrides, gfc_index_zero_node,
+				       NULL_TREE, true),
+		  stride0);
+
+  if (ndims > 1)
+    /* strides[ndims - 1] = 1;  */
+    gfc_add_modify (block,
+		    gfc_build_array_ref (ompstrides, lastdim, NULL_TREE, true),
+		    gfc_index_one_node);
+
+  if (ndims == 2)
+    /* dims[0] = fstrides[1];  */
+    gfc_add_modify (block,
+		    gfc_build_array_ref (ompdims, gfc_index_zero_node,
+					 NULL_TREE, true),
+		    gfc_conv_array_stride (desc, 1));
+  else if (ndims > 2)
+    {
+      /* int grains[ndims - 2];  */
+      tree lastgrain = build_int_cst (gfc_array_index_type, ndims - 3);
+      tree grainrange = build_index_type (lastgrain);
+      tree grainarrtype = build_array_type (gfc_array_index_type, grainrange);
+      tree grains = gfc_create_var (grainarrtype, "grains");
+
+      /* int bigger_grain = fstrides[ndims - 1];  */
+      tree bigger_grain = gfc_create_var (gfc_array_index_type, "bigger_grain");
+      tree fstridem1 = gfc_conv_array_stride (desc, ndims - 1);
+      gfc_add_modify (block, bigger_grain, fstridem1);
+
+      /*
+	for (int i = ndims - 2; i > 0; i--)
+	  {
+	    grains[i - 1] = gcd (fstrides[i], bigger_grain);
+	    bigger_grain = grains[i - 1];
+	  }
+      */
+      stmtblock_t loop_body;
+      gfc_init_block (&loop_body);
+
+      tree idx = gfc_create_var (gfc_array_index_type, "idx");
+
+      tree gcdtmp = gfc_create_var (gfc_array_index_type, "tmp");
+      gfc_omp_calculate_gcd (&loop_body, gcdtmp,
+			     gfc_conv_descriptor_stride_get (desc, idx),
+			     bigger_grain);
+      tree idxm1 = fold_build2_loc (input_location, MINUS_EXPR,
+				    gfc_array_index_type, idx,
+				    gfc_index_one_node);
+      gfc_add_modify (&loop_body,
+		      gfc_build_array_ref (grains, idxm1, NULL_TREE, true),
+		      gcdtmp);
+      gfc_add_modify (&loop_body, bigger_grain, gcdtmp);
+
+      gfc_simple_for_loop (block, idx,
+			   build_int_cst (gfc_array_index_type, ndims - 2),
+			   gfc_index_zero_node, GT_EXPR,
+			   build_int_cst (gfc_array_index_type, -1),
+			   gfc_finish_block (&loop_body));
+      /*
+	 int volume = 1;
+	 for (int i = 0; i < ndims - 2; i++)
+	   {
+	     int g = grains[i];
+	     dims[i] = g / volume;
+	     strides[i + 1] = fstrides[i + 1] / g;
+	     volume = volume * dims[i];
+	   }
+      */
+      tree volume = gfc_create_var (gfc_array_index_type, "volume");
+      gfc_add_modify (block, volume, gfc_index_one_node);
+
+      gfc_init_block (&loop_body);
+      tree grain = gfc_create_var (gfc_array_index_type, "grain");
+      gfc_add_modify (&loop_body, grain,
+		      gfc_build_array_ref (grains, idx, NULL_TREE, true));
+      tree dims_i = gfc_build_array_ref (ompdims, idx, NULL_TREE, true);
+      gfc_add_modify (&loop_body, dims_i,
+		      fold_build2_loc (input_location, TRUNC_DIV_EXPR,
+				       gfc_array_index_type, grain, volume));
+      tree nidx = fold_build2_loc (input_location, PLUS_EXPR,
+				   gfc_array_index_type, idx,
+				   gfc_index_one_node);
+      tree strides_ni = gfc_build_array_ref (ompstrides, nidx, NULL_TREE, true);
+      tree fstrides_ni = gfc_conv_descriptor_stride_get (desc, nidx);
+      gfc_add_modify (&loop_body, strides_ni,
+		      fold_build2_loc (input_location, TRUNC_DIV_EXPR,
+				       gfc_array_index_type, fstrides_ni,
+				       grain));
+      gfc_add_modify (&loop_body, volume,
+		      fold_build2_loc (input_location, MULT_EXPR,
+				       gfc_array_index_type, volume, dims_i));
+
+      gfc_simple_for_loop (block, idx, gfc_index_zero_node,
+			   build_int_cst (gfc_array_index_type, ndims - 2),
+			   LT_EXPR, gfc_index_one_node,
+			   gfc_finish_block (&loop_body));
+
+      /* dims[ndims - 2] = fstrides[ndims - 1] / volume;  */
+      tree dimsm2
+	= gfc_build_array_ref (ompdims,
+			       build_int_cst (gfc_array_index_type, ndims - 2),
+			       NULL_TREE, true);
+      gfc_add_modify (block, dimsm2,
+		      fold_build2_loc (input_location, TRUNC_DIV_EXPR,
+				       gfc_array_index_type, fstridem1,
+				       volume));
+    }
+}
+
+/* Return TRUE if update for N can definitely be done with a single contiguous
+   transfer.  If no or if we can't tell, return FALSE.  */
+
+static bool
+gfc_omp_contiguous_update_p (gfc_omp_namelist *n)
+{
+  gfc_expr *contig_expr = n->expr;
+
+  if (!n->expr)
+    {
+      if (n->sym->attr.contiguous)
+	return true;
+
+      tree desc = gfc_trans_omp_variable (n->sym, false);
+      tree type = TREE_TYPE (desc);
+      if (!GFC_ARRAY_TYPE_P (type) && !GFC_DESCRIPTOR_TYPE_P (type))
+	return true;
+
+      contig_expr = gfc_lval_expr_from_sym (n->sym);
+    }
+
+  return gfc_is_simply_contiguous (contig_expr, false, true);
 }
 
 static tree
@@ -5838,6 +6182,162 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		default:
 		  gcc_unreachable ();
 		}
+
+	      if ((list == OMP_LIST_TO || list == OMP_LIST_FROM)
+		  && (!n->expr
+		       || (n->expr
+			   && n->expr->ref
+			   && n->expr->ref->type == REF_ARRAY))
+		  && !gfc_omp_contiguous_update_p (n))
+		{
+		  int ndims;
+		  gfc_se se;
+		  gfc_init_se (&se, NULL);
+
+		  tree desc, span = NULL_TREE;
+
+		  if (n->expr)
+		    {
+		      if (n->expr->rank)
+			gfc_conv_expr_descriptor (&se, n->expr);
+		      else
+			gfc_conv_expr (&se, n->expr);
+
+		      desc = se.expr;
+		      /* The span is the distance between two array elements
+			 along the innermost dimension (there may be padding
+			 or other data between elements, e.g. of a derived-type
+			 array).  */
+		      span = gfc_get_array_span (desc, n->expr);
+		      ndims = n->expr->ref->u.ar.dimen;
+		    }
+		  else
+		    {
+		      desc = gfc_trans_omp_variable (n->sym, false);
+		      tree type = TREE_TYPE (desc);
+		      if (GFC_DESCRIPTOR_TYPE_P (type))
+			span = gfc_conv_descriptor_span_get (desc);
+		      ndims = GFC_TYPE_ARRAY_RANK (type);
+		    }
+
+		  gfc_add_block_to_block (block, &se.pre);
+
+		  tree ompdims, ompstrides;
+
+		  gfc_desc_to_omp_noncontig_array (block, &ompdims,
+						   &ompstrides, desc, ndims);
+
+		  tree type = TREE_TYPE (desc);
+		  tree etype = gfc_get_element_type (type);
+		  tree elsize = fold_convert (gfc_array_index_type,
+					      size_in_bytes (etype));
+
+		  tree ptr = gfc_conv_array_data (desc);
+		  tree offset = gfc_conv_array_offset (desc);
+
+		  if (!span)
+		    /* The span is the element size.  */
+		    span = elsize;
+
+		  tree node = build_omp_clause (input_location, OMP_CLAUSE_MAP);
+
+		  switch (list)
+		    {
+		    case OMP_LIST_TO:
+		      OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_TO_GRID);
+		      break;
+		    case OMP_LIST_FROM:
+		      OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_FROM_GRID);
+		      break;
+		    default:
+		      gcc_unreachable ();
+		    }
+
+		  gcc_assert (POINTER_TYPE_P (TREE_TYPE (ptr)));
+		  tree byte_offset = fold_convert (sizetype, offset);
+		  byte_offset = size_binop (MULT_EXPR, byte_offset,
+					    fold_convert (sizetype, span));
+		  tree origin
+		    = fold_build2_loc (input_location, POINTER_PLUS_EXPR,
+				       TREE_TYPE (ptr), ptr, byte_offset);
+
+		  OMP_CLAUSE_SIZE (node) = elsize;
+
+		  omp_clauses = gfc_trans_add_clause (node, omp_clauses);
+
+		  auto_vec<tree, 5> dims;
+
+		  for (int r = 0; r < ndims; r++)
+		    {
+		      tree d
+			= gfc_build_array_ref (ompdims,
+					       build_int_cst
+						 (gfc_array_index_type, r),
+					       NULL_TREE, true);
+		      d = gfc_evaluate_now (d, block);
+		      dims.safe_push (d);
+		    }
+
+		  for (int r = ndims - 1; r >= 0; r--)
+		    {
+		      tree stride_r, len_r, lowbound_r;
+
+		      tree rcst = build_int_cst (gfc_array_index_type, r);
+
+		      stride_r = gfc_build_array_ref (ompstrides, rcst,
+						      NULL_TREE, true);
+		      lowbound_r = gfc_conv_array_lbound (desc, r);
+		      len_r
+			= fold_build2_loc (input_location, MINUS_EXPR,
+					   gfc_array_index_type,
+					   gfc_conv_array_ubound (desc, r),
+					   lowbound_r);
+		      len_r
+			= fold_build2_loc (input_location, PLUS_EXPR,
+					   gfc_array_index_type,
+					   len_r, gfc_index_one_node);
+
+		      lowbound_r
+			= fold_build2_loc (input_location, MULT_EXPR,
+					   gfc_array_index_type, lowbound_r,
+					   stride_r);
+
+		      stride_r = gfc_evaluate_now (stride_r, block);
+		      lowbound_r = gfc_evaluate_now (lowbound_r, block);
+		      len_r = gfc_evaluate_now (len_r, block);
+
+		      tree dim = build_omp_clause (input_location,
+						   OMP_CLAUSE_MAP);
+		      OMP_CLAUSE_SET_MAP_KIND (dim, GOMP_MAP_GRID_DIM);
+		      OMP_CLAUSE_DECL (dim) = lowbound_r;
+		      OMP_CLAUSE_SIZE (dim) = len_r;
+
+		      omp_clauses = gfc_trans_add_clause (dim, omp_clauses);
+
+		      if (!integer_onep (stride_r)
+			  || (r == 0 && !operand_equal_p (span, elsize)))
+			{
+			  tree snode = build_omp_clause (input_location,
+							 OMP_CLAUSE_MAP);
+			  OMP_CLAUSE_SET_MAP_KIND (snode,
+						   GOMP_MAP_GRID_STRIDE);
+			  OMP_CLAUSE_DECL (snode) = stride_r;
+			  if (r == 0 && !operand_equal_p (span, elsize))
+			    OMP_CLAUSE_SIZE (snode) = span;
+			  omp_clauses = gfc_trans_add_clause (snode,
+							      omp_clauses);
+			}
+		    }
+		  origin = build_fold_indirect_ref (origin);
+		  tree eltype = gfc_get_element_type (TREE_TYPE (desc));
+		  tree arrtype
+		    = gfc_trans_omp_arrayshape_type (eltype, &dims);
+		  OMP_CLAUSE_DECL (node)
+		    = build1_loc (input_location, VIEW_CONVERT_EXPR,
+				  arrtype, origin);
+		  continue;
+		}
+
 	      tree node = build_omp_clause (input_location, clause_code);
 	      if (n->expr == NULL
 		  || (n->expr->ref->type == REF_ARRAY

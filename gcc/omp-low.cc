@@ -1409,6 +1409,11 @@ omp_noncontig_descriptor_type (location_t loc)
   TREE_CHAIN (field) = fields;
   fields = field;
 
+  field = build_decl (loc, FIELD_DECL, get_identifier ("__span"),
+		      size_type_node);
+  TREE_CHAIN (field) = fields;
+  fields = field;
+
   tree ptr_size_type = build_pointer_type (size_type_node);
 
   field = build_decl (loc, FIELD_DECL, get_identifier ("__dim"), ptr_size_type);
@@ -2044,7 +2049,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 					  OMP_CLAUSE_MAP);
 	      OMP_CLAUSE_SET_MAP_KIND (dn, GOMP_MAP_TO_PSET);
 	      OMP_CLAUSE_DECL (dn) = desc;
-	      OMP_CLAUSE_SIZE (dn) = TYPE_SIZE_UNIT (desc_type);
 
 	      OMP_CLAUSE_CHAIN (dn) = OMP_CLAUSE_CHAIN (c);
 	      OMP_CLAUSE_CHAIN (c) = dn;
@@ -13825,6 +13829,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 			&& OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_TO_PSET);
 	    c = nc;
 	    while ((nc = OMP_CLAUSE_CHAIN (c))
+		   && OMP_CLAUSE_CODE (nc) == OMP_CLAUSE_MAP
 		   && (OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_GRID_DIM
 		       || OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_GRID_STRIDE))
 	      c = nc;
@@ -14261,7 +14266,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		int i, dims = 0;
 		auto_vec<tree> tdims;
 		bool pointer_based = false, handled_pointer_section = false;
-		tree arrsize = fold_convert (sizetype, elsize);
+		tree arrsize = size_one_node;
 
 		/* Allow a single (maybe strided) array section if we have a
 		   pointer base.  */
@@ -14273,8 +14278,12 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		    dims = 1;
 		  }
 		else
+		  /* NOTE: Don't treat (e.g. Fortran, fixed-length) strings as
+		     array types here; array section syntax isn't applicable to
+		     strings.  */
 		  for (tree itype = type;
-		       TREE_CODE (itype) == ARRAY_TYPE;
+		       TREE_CODE (itype) == ARRAY_TYPE
+		       && !TYPE_STRING_FLAG (itype);
 		       itype = TREE_TYPE (itype))
 		    {
 		      tdims.safe_push (itype);
@@ -14315,13 +14324,16 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		oc = c;
 		c = dn;
 
+		tree span = NULL_TREE;
+
 		for (i = 0; i < dims; i++)
 		  {
 		    nc = OMP_CLAUSE_CHAIN (c);
 		    tree dim = NULL_TREE, index = NULL_TREE, len = NULL_TREE,
 			 stride = size_one_node;
 
-		    if (OMP_CLAUSE_CODE (nc) == OMP_CLAUSE_MAP
+		    if (nc
+			&& OMP_CLAUSE_CODE (nc) == OMP_CLAUSE_MAP
 			&& OMP_CLAUSE_MAP_KIND (nc) == GOMP_MAP_GRID_DIM)
 		      {
 			index = OMP_CLAUSE_DECL (nc);
@@ -14338,6 +14350,18 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 			  {
 			    stride = OMP_CLAUSE_DECL (nc2);
 			    stride = fold_convert (sizetype, stride);
+			    if (OMP_CLAUSE_SIZE (nc2))
+			      {
+				/* If the element size is not the same as the
+				   distance between two adjacent array
+				   elements (in the innermost dimension),
+				   retrieve the latter value ("span") from the
+				   size field of the stride.  We only expect to
+				   see one such field per array.  */
+				gcc_assert (!span);
+				span = OMP_CLAUSE_SIZE (nc2);
+				span = fold_convert (sizetype, span);
+			      }
 			    nc = nc2;
 			  }
 
@@ -14395,7 +14419,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 			dim = size_binop (MINUS_EXPR, maxval, minval);
 			dim = size_binop (PLUS_EXPR, dim, size_one_node);
 			len = dim;
-			index = size_zero_node;
+			index = minval;
+			nc = c;
 		      }
 
 		    if (TREE_CODE (dim) != INTEGER_CST)
@@ -14417,10 +14442,40 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		    CONSTRUCTOR_APPEND_ELT (vstride, cidx, stride);
 		  }
 
+		tree bias = size_zero_node;
+		tree volume = size_one_node;
+		for (i = dims - 1; i >= 0; i--)
+		  {
+		    tree dim = (*vdim)[i].value;
+		    tree index = (*vindex)[i].value;
+		    tree stride = (*vstride)[i].value;
+
+		    /* For the bias we want, e.g.:
+
+			   index[0] * stride[0] * dim[1] * dim[2]
+			 + index[1] * stride[1] * dim[2]
+			 + index[2] * stride[2]
+
+		       All multiplied by "span" (or "elsize").  */
+
+		    tree index_stride = size_binop (MULT_EXPR, index, stride);
+		    bias = size_binop (PLUS_EXPR, bias,
+				       size_binop (MULT_EXPR, volume,
+						   index_stride));
+		    volume = size_binop (MULT_EXPR, volume, dim);
+		  }
+
+		/* If we don't have a separate span size, use the element size
+		   instead.  */
+		if (!span)
+		  span = fold_convert (sizetype, elsize);
+
 		/* The size of the whole array -- to make sure we find any
 		   part of the array via splay-tree lookup that might be
 		   mapped on the target at runtime.  */
-		OMP_CLAUSE_SIZE (oc) = arrsize;
+		OMP_CLAUSE_SIZE (oc) = size_binop (MULT_EXPR, arrsize, span);
+		/* And the bias of the first element we will update.  */
+		OMP_CLAUSE_SIZE (dn) = size_binop (MULT_EXPR, bias, span);
 
 		tree cdim = build_constructor (size_arr_type, vdim);
 		tree cindex = build_constructor (size_arr_type, vindex);
@@ -14451,13 +14506,14 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
 		tree ndims_field = TYPE_FIELDS (desc_type);
 		tree elemsize_field = DECL_CHAIN (ndims_field);
-		tree dim_field = DECL_CHAIN (elemsize_field);
+		tree span_field = DECL_CHAIN (elemsize_field);
+		tree dim_field = DECL_CHAIN (span_field);
 		tree index_field = DECL_CHAIN (dim_field);
 		tree len_field = DECL_CHAIN (index_field);
 		tree stride_field = DECL_CHAIN (len_field);
 
 		vec<constructor_elt, va_gc> *v;
-		vec_alloc (v, 6);
+		vec_alloc (v, 7);
 
 		bool all_static = (TREE_STATIC (dim_tmp)
 				   && TREE_STATIC (index_tmp)
@@ -14487,6 +14543,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
 		CONSTRUCTOR_APPEND_ELT (v, ndims_field, ndims);
 		CONSTRUCTOR_APPEND_ELT (v, elemsize_field, elsize);
+		CONSTRUCTOR_APPEND_ELT (v, span_field, span);
 		CONSTRUCTOR_APPEND_ELT (v, dim_field, dim_tmp);
 		CONSTRUCTOR_APPEND_ELT (v, index_field, index_tmp);
 		CONSTRUCTOR_APPEND_ELT (v, len_field, len_tmp);

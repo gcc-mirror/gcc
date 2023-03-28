@@ -14601,6 +14601,16 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	      if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT)
 		break;
 
+	      /* If we have a non-contiguous (strided/rectangular) update
+		 operation with a VIEW_CONVERT_EXPR, we need to be careful not
+		 to gimplify the conversion away, because we need it during
+		 omp-low.cc in order to retrieve the array's dimensions.  Just
+		 gimplify partially instead.  */
+	      if ((OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_TO_GRID
+		   || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FROM_GRID)
+		  && TREE_CODE (*pd) == VIEW_CONVERT_EXPR)
+		pd = &TREE_OPERAND (*pd, 0);
+
 	      /* We've already partly gimplified this in
 		 gimplify_scan_omp_clauses.  Don't do any more.  */
 	      if (code == OMP_TARGET && OMP_CLAUSE_MAP_IN_REDUCTION (c))

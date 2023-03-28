@@ -1,5 +1,26 @@
 2023-07-03  Julian Brown  <julian@codesourcery.com>
 
+	* libgomp.h (omp_noncontig_array_desc): Add span field.
+	* target.c (omp_target_memcpy_rect_worker): Add span parameter. Update
+	forward declaration. Handle span != element_size.
+	(gomp_update): Handle bias in descriptor's size slot.  Update calls to
+	omp_target_memcpy_rect_worker.
+	* testsuite/libgomp.fortran/noncontig-updates-1.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-2.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-3.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-4.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-5.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-6.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-7.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-8.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-9.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-10.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-11.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-12.f90: New test.
+	* testsuite/libgomp.fortran/noncontig-updates-13.f90: New test.
+
+2023-07-03  Julian Brown  <julian@codesourcery.com>
+
 	* libgomp.h (omp_noncontig_array_desc): New struct.
 	* target.c (omp_target_memcpy_rect_worker): Add stride array
 	parameter.  Forward declare.  Add STRIDES parameter and strided

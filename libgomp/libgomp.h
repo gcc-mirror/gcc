@@ -1320,6 +1320,7 @@ struct target_mem_desc {
 typedef struct {
   size_t ndims;
   size_t elemsize;
+  size_t span;
   size_t *dim;
   size_t *index;
   size_t *length;

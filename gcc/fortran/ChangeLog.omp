@@ -1,3 +1,13 @@
+2023-07-03  Julian Brown  <julian@codesourcery.com>
+
+	* trans-openmp.cc (gfc_omp_deep_map_kind_p): Handle
+	GOMP_MAP_{TO,FROM}_GRID, GOMP_MAP_GRID_{DIM,STRIDE}.
+	(gfc_trans_omp_arrayshape_type, gfc_omp_calculate_gcd,
+	gfc_desc_to_omp_noncontig_array, gfc_omp_contiguous_update_p): New
+	functions.
+	(gfc_trans_omp_clauses): Handle noncontiguous to/from clauses for OMP
+	"target update" directives.
+
 2023-06-30  Julian Brown  <julian@codesourcery.com>
 
 	* dump-parse-tree.cc (show_attr): Show omp_udm_artificial_var flag.
