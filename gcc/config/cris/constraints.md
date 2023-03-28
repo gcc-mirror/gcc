@@ -100,16 +100,6 @@
 					       || reload_completed)")))
 
 ;; Extra constraints.
-(define_constraint "R"
-  "An operand to BDAP or BIAP."
-       ;; A BIAP; r.S?
-  (ior (match_test "cris_biap_index_p (op, reload_in_progress
-					   || reload_completed)")
-       ;; A [reg] or (int) [reg], maybe with post-increment.
-       (match_test "cris_bdap_index_p (op, reload_in_progress
-					   || reload_completed)")
-       (match_test "CONSTANT_P (op)")))
-
 (define_constraint "T"
   "Memory three-address operand."
   ;; All are indirect-memory:
