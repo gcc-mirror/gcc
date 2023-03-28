@@ -8,6 +8,7 @@
 /* { dg-additional-sources routine-nohost-2_2.c } */
 
 /* { dg-additional-options "-fno-inline" } for stable results regarding OpenACC 'routine'.  */
+/* { dg-add-options weak_undefined } */
 
 #include <assert.h>
 #include <openacc.h>
