@@ -100,7 +100,7 @@
 					       || reload_completed)")))
 
 ;; Extra constraints.
-(define_constraint "T"
+(define_memory_constraint "T"
   "Memory three-address operand."
   ;; All are indirect-memory:
   (and (match_code "mem")
