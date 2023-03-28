@@ -361,8 +361,6 @@ frange::set (tree type,
 
   normalize_kind ();
 
-  flush_denormals_to_zero ();
-
   if (flag_checking)
     verify_range ();
 }

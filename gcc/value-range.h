@@ -373,6 +373,7 @@ public:
   void update_nan (tree) = delete; // Disallow silent conversion to bool.
   void update_nan (const nan_state &);
   void clear_nan ();
+  void flush_denormals_to_zero ();
 
   // fpclassify like API
   bool known_isfinite () const;
@@ -389,7 +390,6 @@ private:
   bool union_nans (const frange &);
   bool intersect_nans (const frange &);
   bool combine_zeros (const frange &, bool union_p);
-  void flush_denormals_to_zero ();
 
   tree m_type;
   REAL_VALUE_TYPE m_min;

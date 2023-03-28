@@ -112,6 +112,8 @@ range_operator_float::fold_range (frange &r, tree type,
 	}
     }
 
+  r.flush_denormals_to_zero ();
+
   return true;
 }
 
