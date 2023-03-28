@@ -271,7 +271,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX20_CONSTEXPR
       bool
       _M_is_local() const
-      { return _M_data() == _M_local_data(); }
+      {
+	if (_M_data() == _M_local_data())
+	  {
+	    if (_M_string_length > _S_local_capacity)
+	      __builtin_unreachable();
+	    return true;
+	  }
+	return false;
+      }
 
       // Create & Destroy
       _GLIBCXX20_CONSTEXPR
