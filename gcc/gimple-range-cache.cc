@@ -530,27 +530,38 @@ block_range_cache::dump (FILE *f, basic_block bb, bool print_varying)
 
 // -------------------------------------------------------------------------
 
-// Initialize a global cache.
+// Initialize an ssa cache.
 
-ssa_global_cache::ssa_global_cache ()
+ssa_cache::ssa_cache ()
 {
   m_tab.create (0);
   m_range_allocator = new obstack_vrange_allocator;
 }
 
-// Deconstruct a global cache.
+// Deconstruct an ssa cache.
 
-ssa_global_cache::~ssa_global_cache ()
+ssa_cache::~ssa_cache ()
 {
   m_tab.release ();
   delete m_range_allocator;
+}
+
+// Return TRUE if the global range of NAME has a cache entry.
+
+bool
+ssa_cache::has_range (tree name) const
+{
+  unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_tab.length ())
+    return false;
+  return m_tab[v] != NULL;
 }
 
 // Retrieve the global range of NAME from cache memory if it exists. 
 // Return the value in R.
 
 bool
-ssa_global_cache::get_global_range (vrange &r, tree name) const
+ssa_cache::get_range (vrange &r, tree name) const
 {
   unsigned v = SSA_NAME_VERSION (name);
   if (v >= m_tab.length ())
@@ -563,11 +574,11 @@ ssa_global_cache::get_global_range (vrange &r, tree name) const
   return true;
 }
 
-// Set the range for NAME to R in the global cache.
+// Set the range for NAME to R in the ssa cache.
 // Return TRUE if there was already a range set, otherwise false.
 
 bool
-ssa_global_cache::set_global_range (tree name, const vrange &r)
+ssa_cache::set_range (tree name, const vrange &r)
 {
   unsigned v = SSA_NAME_VERSION (name);
   if (v >= m_tab.length ())
@@ -584,7 +595,7 @@ ssa_global_cache::set_global_range (tree name, const vrange &r)
 // Set the range for NAME to R in the global cache.
 
 void
-ssa_global_cache::clear_global_range (tree name)
+ssa_cache::clear_range (tree name)
 {
   unsigned v = SSA_NAME_VERSION (name);
   if (v >= m_tab.length ())
@@ -592,19 +603,19 @@ ssa_global_cache::clear_global_range (tree name)
   m_tab[v] = NULL;
 }
 
-// Clear the global cache.
+// Clear the ssa cache.
 
 void
-ssa_global_cache::clear ()
+ssa_cache::clear ()
 {
   if (m_tab.address ())
     memset (m_tab.address(), 0, m_tab.length () * sizeof (vrange *));
 }
 
-// Dump the contents of the global cache to F.
+// Dump the contents of the ssa cache to F.
 
 void
-ssa_global_cache::dump (FILE *f)
+ssa_cache::dump (FILE *f)
 {
   /* Cleared after the table header has been printed.  */
   bool print_header = true;
@@ -613,7 +624,7 @@ ssa_global_cache::dump (FILE *f)
       if (!gimple_range_ssa_p (ssa_name (x)))
 	continue;
       Value_Range r (TREE_TYPE (ssa_name (x)));
-      if (get_global_range (r, ssa_name (x)) && !r.varying_p ())
+      if (get_range (r, ssa_name (x)) && !r.varying_p ())
 	{
 	  if (print_header)
 	    {
@@ -877,7 +888,7 @@ ranger_cache::dump_bb (FILE *f, basic_block bb)
 bool
 ranger_cache::get_global_range (vrange &r, tree name) const
 {
-  if (m_globals.get_global_range (r, name))
+  if (m_globals.get_range (r, name))
     return true;
   gimple_range_global (r, name);
   return false;
@@ -902,7 +913,7 @@ ranger_cache::get_global_range (vrange &r, tree name, bool &current_p)
 		|| m_temporal->current_p (name, m_gori.depend1 (name),
 					  m_gori.depend2 (name));
   else
-    m_globals.set_global_range (name, r);
+    m_globals.set_range (name, r);
 
   // If the existing value was not current, mark it as always current.
   if (!current_p)
@@ -915,7 +926,7 @@ ranger_cache::get_global_range (vrange &r, tree name, bool &current_p)
 void
 ranger_cache::set_global_range (tree name, const vrange &r)
 {
-  if (m_globals.set_global_range (name, r))
+  if (m_globals.set_range (name, r))
     {
       // If there was already a range set, propagate the new value.
       basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (name));
@@ -954,7 +965,7 @@ ranger_cache::range_of_def (vrange &r, tree name, basic_block bb)
   gcc_checking_assert (!bb || bb == gimple_bb (SSA_NAME_DEF_STMT (name)));
 
   // Pick up the best global range available.
-  if (!m_globals.get_global_range (r, name))
+  if (!m_globals.get_range (r, name))
     {
       // If that fails, try to calculate the range using just global values.
       gimple *s = SSA_NAME_DEF_STMT (name);

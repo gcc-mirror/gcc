@@ -96,7 +96,7 @@ protected:
   void calculate_phi (gphi *phi, vrange &lhs_range, fur_source &src);
   void check_taken_edge (edge e, fur_source &src);
 
-  ssa_global_cache global;
+  ssa_cache global;
   gori_compute m_gori;
 };
 

@@ -40,7 +40,7 @@ path_range_query::path_range_query (gimple_ranger &ranger,
 				    const vec<basic_block> &path,
 				    const bitmap_head *dependencies,
 				    bool resolve)
-  : m_cache (new ssa_global_cache),
+  : m_cache (new ssa_cache),
     m_has_cache_entry (BITMAP_ALLOC (NULL)),
     m_ranger (ranger),
     m_resolve (resolve)
@@ -51,7 +51,7 @@ path_range_query::path_range_query (gimple_ranger &ranger,
 }
 
 path_range_query::path_range_query (gimple_ranger &ranger, bool resolve)
-  : m_cache (new ssa_global_cache),
+  : m_cache (new ssa_cache),
     m_has_cache_entry (BITMAP_ALLOC (NULL)),
     m_ranger (ranger),
     m_resolve (resolve)
@@ -94,7 +94,7 @@ path_range_query::get_cache (vrange &r, tree name)
 
   unsigned v = SSA_NAME_VERSION (name);
   if (bitmap_bit_p (m_has_cache_entry, v))
-    return m_cache->get_global_range (r, name);
+    return m_cache->get_range (r, name);
 
   return false;
 }
@@ -106,7 +106,7 @@ path_range_query::set_cache (const vrange &r, tree name)
 {
   unsigned v = SSA_NAME_VERSION (name);
   bitmap_set_bit (m_has_cache_entry, v);
-  m_cache->set_global_range (name, r);
+  m_cache->set_range (name, r);
 }
 
 void

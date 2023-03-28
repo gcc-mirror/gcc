@@ -52,14 +52,15 @@ private:
 // has been visited during this incarnation.  Once the ranger evaluates
 // a name, it is typically not re-evaluated again.
 
-class ssa_global_cache
+class ssa_cache
 {
 public:
-  ssa_global_cache ();
-  ~ssa_global_cache ();
-  bool get_global_range (vrange &r, tree name) const;
-  bool set_global_range (tree name, const vrange &r);
-  void clear_global_range (tree name);
+  ssa_cache ();
+  ~ssa_cache ();
+  bool has_range (tree name) const;
+  bool get_range (vrange &r, tree name) const;
+  bool set_range (tree name, const vrange &r);
+  void clear_range (tree name);
   void clear ();
   void dump (FILE *f = stderr);
 private:
@@ -95,7 +96,7 @@ public:
   void dump_bb (FILE *f, basic_block bb);
   virtual void dump (FILE *f) override;
 private:
-  ssa_global_cache m_globals;
+  ssa_cache m_globals;
   block_range_cache m_on_entry;
   class temporal_cache *m_temporal;
   void fill_block_cache (tree name, basic_block bb, basic_block def_bb);
