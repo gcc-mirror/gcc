@@ -1275,6 +1275,7 @@ pass_sanopt::execute (function *fun)
   basic_block bb;
   int asan_num_accesses = 0;
   bool contains_asan_mark = false;
+  int ret = 0;
 
   /* Try to remove redundant checks.  */
   if (optimize
@@ -1327,6 +1328,7 @@ pass_sanopt::execute (function *fun)
 	  if (gimple_call_internal_p (stmt))
 	    {
 	      enum internal_fn ifn = gimple_call_internal_fn (stmt);
+	      int this_ret = TODO_cleanup_cfg;
 	      switch (ifn)
 		{
 		case IFN_UBSAN_NULL:
@@ -1362,8 +1364,10 @@ pass_sanopt::execute (function *fun)
 		  no_next = hwasan_expand_mark_ifn (&gsi);
 		  break;
 		default:
+		  this_ret = 0;
 		  break;
 		}
+	      ret |= this_ret;
 	    }
 	  else if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
 	    {
@@ -1393,7 +1397,7 @@ pass_sanopt::execute (function *fun)
   if (need_commit_edge_insert)
     gsi_commit_edge_inserts ();
 
-  return 0;
+  return ret;
 }
 
 } // anon namespace
