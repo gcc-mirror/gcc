@@ -642,7 +642,7 @@ public:
   }
 
   // Returns whether a visibility has a path
-  bool has_path () const { return !(is_error ()) && vis_type == PUB_IN_PATH; }
+  bool has_path () const { return !is_error () && vis_type >= PUB_CRATE; }
 
   // Returns whether visibility is public or not.
   bool is_public () const { return vis_type != PRIV && !is_error (); }
