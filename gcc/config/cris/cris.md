@@ -1362,12 +1362,63 @@
 {
   rtx reg = operands[0];
   rtx_insn *i = next_nonnote_nondebug_insn_bb (curr_insn);
+  rtx x, src, dest;
 
   while (i != NULL_RTX && (!INSN_P (i) || DEBUG_INSN_P (i)))
     i = next_nonnote_nondebug_insn_bb (i);
 
-  if (i == NULL_RTX || reg_mentioned_p (reg, i) || BARRIER_P (i))
+  /* We don't want to strip the clobber if the next insn possibly uses the
+     zeroness of the result.  Preferably fail only if we see a compare insn
+     that looks eliminable and with the register "reg" compared.  With some
+     effort we could also check for an equality test (EQ, NE) in the post-split
+     user, just not for now.  */
+  if (i == NULL_RTX)
     FAIL;
+
+  x = single_set (i);
+
+  /* We explicitly need to bail on a BARRIER, but that's implied by a failing
+     single_set test.  */
+  if (x == NULL_RTX)
+    FAIL;
+
+  src = SET_SRC (x);
+  dest = SET_DEST (x);
+
+  /* Bail on (post-split) eliminable compares.  */
+  if (REG_P (dest) && REGNO (dest) == CRIS_CC0_REGNUM
+      && GET_CODE (src) == COMPARE)
+    {
+      rtx cop0 = XEXP (src, 0);
+
+      if (REG_P (cop0) && REGNO (cop0) == REGNO (reg)
+	  && XEXP (src, 1) == const0_rtx)
+	FAIL;
+    }
+
+  /* Bail out if we see a (pre-split) cbranch or cstore where the comparison
+     looks eliminable and uses the destination register in this addition.  We
+     don't need to look very deep: a single_set which is a parallel clobbers
+     something, and (one of) that something, is always CRIS_CC0_REGNUM here.
+     Also, the entities we're looking for are two-element parallels.  A
+     split-up cbranch or cstore doesn't clobber CRIS_CC0_REGNUM.  A cbranch has
+     if_then_else as its source with a comparison operator as the condition,
+     and a cstore has a source with the comparison operator directly.  That
+     also matches dstep, so look for pc as destination for the if_then_else.
+     We error on the safe side if we happen to catch other conditional entities
+     and FAIL, that just means the split won't happen.  */
+  if (GET_CODE (PATTERN (i)) == PARALLEL && XVECLEN (PATTERN (i), 0) == 2)
+    {
+      rtx cmp
+	= (GET_CODE (src) == IF_THEN_ELSE && dest == pc_rtx
+	   ? XEXP (src, 0)
+	   : (COMPARISON_P (src) ? src : NULL_RTX));
+      gcc_assert (cmp == NULL_RTX || COMPARISON_P (cmp));
+
+      if (cmp && REG_P (XEXP (cmp, 0)) && XEXP (cmp, 1) == const0_rtx
+	  && REGNO (XEXP (cmp, 0)) == REGNO (reg))
+	FAIL;
+    }
 })
 
 (define_insn "<u>mul<s><mode>3"
