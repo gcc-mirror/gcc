@@ -1,3 +1,24 @@
+2023-03-27  Frederik Harwath  <frederik@codesourcery.com>
+
+	* c-omp.cc (c_omp_directives): Add PRAGMA_OMP_TILE.
+	* c-pragma.cc (omp_pragmas_simd): Likewise.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_TILE.
+	(enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_TILE
+
+2023-03-27  Frederik Harwath  <frederik@codesourcery.com>
+
+	* c-omp.cc (c_oacc_split_loop_clauses): Adjust to renamings.
+
+2023-03-27  Frederik Harwath  <frederik@codesourcery.com>
+
+	* c-gimplify.cc (c_genericize_control_stmt): Handle OMP_UNROLL.
+	* c-omp.cc: Add "unroll" to omp_directives[].
+	* c-pragma.cc: Add "unroll" to omp_pragmas_simd[].
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_UNROLL to
+	pragma_kind and adjust PRAGMA_OMP__LAST_.
+	(enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_FULL and
+	PRAGMA_OMP_CLAUSE_PARTIAL.
+
 2022-10-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backport from mainline:
