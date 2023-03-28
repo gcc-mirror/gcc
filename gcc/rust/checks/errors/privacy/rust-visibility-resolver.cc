@@ -74,6 +74,16 @@ VisibilityResolver::resolve_module_path (const HIR::SimplePath &restriction,
   HirId ref;
   rust_assert (mappings.lookup_node_to_hir (ref_node_id, &ref));
 
+  auto crate = mappings.get_ast_crate (mappings.get_current_crate ());
+
+  // we may be dealing with pub(crate)
+  if (ref_node_id == crate.get_node_id ())
+    // FIXME: What do we do here? There isn't a DefId for the Crate, so can we
+    // actually do anything?
+    // We basically want to return true always but just when exporting export
+    // these items as private?
+    return true;
+
   auto module = mappings.lookup_module (ref);
   if (!module)
     {
