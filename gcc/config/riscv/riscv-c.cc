@@ -34,6 +34,12 @@ along with GCC; see the file COPYING3.  If not see
 
 #define builtin_define(TXT) cpp_define (pfile, TXT)
 
+static int
+riscv_ext_version_value (unsigned major, unsigned minor)
+{
+  return (major * 1000000) + (minor * 1000);
+}
+
 /* Implement TARGET_CPU_CPP_BUILTINS.  */
 
 void
@@ -118,7 +124,11 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
     builtin_define_with_int_value ("__riscv_v_elen_fp", 0);
 
   if (TARGET_MIN_VLEN)
-    builtin_define ("__riscv_vector");
+    {
+      builtin_define ("__riscv_vector");
+      builtin_define_with_int_value ("__riscv_v_intrinsic",
+				     riscv_ext_version_value (0, 11));
+    }
 
   /* Define architecture extension test macros.  */
   builtin_define_with_int_value ("__riscv_arch_test", 1);
@@ -141,13 +151,13 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
        subset != subset_list->end ();
        subset = subset->next)
     {
-      int version_value = (subset->major_version * 1000000)
-			   + (subset->minor_version * 1000);
+      int version_value = riscv_ext_version_value (subset->major_version,
+						   subset->minor_version);
       /* Special rule for zicsr and zifencei, it's used for ISA spec 2.2 or
 	 earlier.  */
       if ((subset->name == "zicsr" || subset->name == "zifencei")
 	  && version_value == 0)
-	version_value = 2000000;
+	version_value = riscv_ext_version_value (2, 0);
 
       sprintf (buf, "__riscv_%s", subset->name.c_str ());
       builtin_define_with_int_value (buf, version_value);
