@@ -30123,8 +30123,8 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	    for (unsigned i = 0; i < len; ++i)
 	      TREE_VEC_ELT (targs, i) = NULL_TREE;
 
-	  /* The number of parms for f' is the number of parms for A plus
-	     non-deduced parms of f.  */
+	  /* The number of parms for f' is the number of parms of A used in
+	     the deduced arguments plus non-deduced parms of f.  */
 	  unsigned ndlen = 0;
 	  unsigned j;
 	  for (unsigned i = 0; i < len; ++i)
@@ -30142,14 +30142,27 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	  TREE_VALUE (current_template_parms) = gtparms;
 
 	  j = 0;
-	  /* First copy over the parms of A.  */
+	  unsigned level = 1;
+
+	  /* First copy over the used parms of A.  */
+	  tree atargs = make_tree_vec (natparms);
 	  for (unsigned i = 0; i < natparms; ++i)
 	    {
 	      tree elt = TREE_VEC_ELT (atparms, i);
 	      if (ftpi.found (elt))
-		TREE_VEC_ELT (gtparms, j++) = elt;
+		{
+		  unsigned index = j++;
+		  tree nelt = rewrite_tparm_list (elt, index, level,
+						  atargs, i, complain);
+		  TREE_VEC_ELT (gtparms, index) = nelt;
+		}
 	    }
 	  gcc_checking_assert (j == nusedatparms);
+
+	  /* Adjust the deduced template args for f to refer to the A parms
+	     with their new indexes.  */
+	  if (nusedatparms && nusedatparms != natparms)
+	    targs = tsubst_template_args (targs, atargs, complain, in_decl);
 
 	  /* Now rewrite the non-deduced parms of f.  */
 	  for (unsigned i = 0; ndlen && i < len; ++i)
@@ -30157,7 +30170,6 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	      {
 		--ndlen;
 		unsigned index = j++;
-		unsigned level = 1;
 		tree oldlist = TREE_VEC_ELT (ftparms, i);
 		tree list = rewrite_tparm_list (oldlist, index, level,
 						targs, i, complain);
@@ -30261,15 +30273,37 @@ type_targs_deducible_from (tree tmpl, tree type)
 
   /* We don't fail on an undeduced targ the second time through (like
      get_partial_spec_bindings) because we're going to try defaults.  */
-  if (!tried_array_deduction)
-    for (int i =  0; i < len; ++i)
-      if (! TREE_VEC_ELT (targs, i))
-	{
-	  try_array_deduction (tparms, targs, TREE_TYPE (tmpl));
-	  tried_array_deduction = true;
-	  if (TREE_VEC_ELT (targs, i))
-	    goto again;
-	}
+  for (int i =  0; i < len; ++i)
+    if (! TREE_VEC_ELT (targs, i))
+      {
+	tree tparm = TREE_VEC_ELT (tparms, i);
+	tparm = TREE_VALUE (tparm);
+
+	if (!tried_array_deduction
+	    && TREE_CODE (tparm) == TYPE_DECL)
+	  {
+	    try_array_deduction (tparms, targs, TREE_TYPE (tmpl));
+	    tried_array_deduction = true;
+	    if (TREE_VEC_ELT (targs, i))
+	      goto again;
+	  }
+	/* If the type parameter is a parameter pack, then it will be deduced
+	   to an empty parameter pack.  This is another case that doesn't model
+	   well as partial specialization.  */
+	if (template_parameter_pack_p (tparm))
+	  {
+	    tree arg;
+	    if (TREE_CODE (tparm) == TEMPLATE_PARM_INDEX)
+	      {
+		arg = make_node (NONTYPE_ARGUMENT_PACK);
+		TREE_CONSTANT (arg) = 1;
+	      }
+	    else
+	      arg = cxx_make_type (TYPE_ARGUMENT_PACK);
+	    ARGUMENT_PACK_ARGS (arg) = make_tree_vec (0);
+	    TREE_VEC_ELT (targs, i) = arg;
+	  }
+      }
 
   /* Maybe add in default template args.  This seems like a flaw in the
      specification in terms of partial specialization, since it says the
