@@ -764,7 +764,9 @@ loongarch_setup_incoming_varargs (cumulative_args_t cum,
     loongarch_function_arg_advance (pack_cumulative_args (&local_cum), arg);
 
   /* Found out how many registers we need to save.  */
-  gp_saved = MAX_ARGS_IN_REGISTERS - local_cum.num_gprs;
+  gp_saved = cfun->va_list_gpr_size / UNITS_PER_WORD;
+  if (gp_saved > (int) (MAX_ARGS_IN_REGISTERS - local_cum.num_gprs))
+    gp_saved = MAX_ARGS_IN_REGISTERS - local_cum.num_gprs;
 
   if (!no_rtl && gp_saved > 0)
     {
