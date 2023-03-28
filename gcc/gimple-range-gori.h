@@ -172,8 +172,8 @@ private:
   bool refine_using_relation (tree op1, vrange &op1_range,
 			      tree op2, vrange &op2_range,
 			      fur_source &src, relation_kind k);
-  bool may_recompute_p (tree name, edge e);
-  bool may_recompute_p (tree name, basic_block bb = NULL);
+  bool may_recompute_p (tree name, edge e, int depth = -1);
+  bool may_recompute_p (tree name, basic_block bb = NULL, int depth = -1);
   bool compute_operand_range_switch (vrange &r, gswitch *s, const vrange &lhs,
 				     tree name, fur_source &src);
   bool compute_operand1_range (vrange &r, gimple_range_op_handler &handler,

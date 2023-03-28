@@ -1308,7 +1308,7 @@ gori_compute::compute_operand1_and_operand2_range (vrange &r,
 // direct dependent is exported, it may also change the computed value of NAME.
 
 bool
-gori_compute::may_recompute_p (tree name, basic_block bb)
+gori_compute::may_recompute_p (tree name, basic_block bb, int depth)
 {
   tree dep1 = depend1 (name);
   tree dep2 = depend2 (name);
@@ -1322,22 +1322,36 @@ gori_compute::may_recompute_p (tree name, basic_block bb)
   if (is_a<gphi *> (s) || gimple_has_side_effects (s))
     return false;
 
-  // If edge is specified, check if NAME can be recalculated on that edge.
-  if (bb)
-    return ((is_export_p (dep1, bb))
-	    || (dep2 && is_export_p (dep2, bb)));
+  if (!dep2)
+    {
+      // -1 indicates a default param, convert it to the real default.
+      if (depth == -1)
+	{
+	  depth = (int)param_ranger_recompute_depth;
+	  gcc_checking_assert (depth >= 1);
+	}
 
-  return (is_export_p (dep1)) || (dep2 && is_export_p (dep2));
+      bool res = (bb ? is_export_p (dep1, bb) : is_export_p (dep1));
+      if (res || depth <= 1)
+	return res;
+      // Check another level of recomputation.
+      return may_recompute_p (dep1, bb, --depth);
+    }
+  // Two dependencies terminate the depth of the search.
+  if (bb)
+    return is_export_p (dep1, bb) || is_export_p (dep2, bb);
+  else
+    return is_export_p (dep1) || is_export_p (dep2);
 }
 
 // Return TRUE if NAME can be recomputed on edge E.  If any direct dependent
 // is exported on edge E, it may change the computed value of NAME.
 
 bool
-gori_compute::may_recompute_p (tree name, edge e)
+gori_compute::may_recompute_p (tree name, edge e, int depth)
 {
   gcc_checking_assert (e);
-  return may_recompute_p (name, e->src);
+  return may_recompute_p (name, e->src, depth);
 }
 
 
