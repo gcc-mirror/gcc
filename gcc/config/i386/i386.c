@@ -16217,10 +16217,18 @@ assign_386_stack_local (machine_mode mode, enum ix86_stack_slot n)
     if (s->mode == mode && s->n == n)
       return validize_mem (copy_rtx (s->rtl));
 
+  int align = 0;
+  /* For DImode with SLOT_FLOATxFDI_387 use 32-bit
+     alignment with -m32 -mpreferred-stack-boundary=2.  */
+  if (mode == DImode
+      && !TARGET_64BIT
+      && n == SLOT_FLOATxFDI_387
+      && ix86_preferred_stack_boundary < GET_MODE_ALIGNMENT (DImode))
+    align = 32;
   s = ggc_alloc<stack_local_entry> ();
   s->n = n;
   s->mode = mode;
-  s->rtl = assign_stack_local (mode, GET_MODE_SIZE (mode), 0);
+  s->rtl = assign_stack_local (mode, GET_MODE_SIZE (mode), align);
 
   s->next = ix86_stack_locals;
   ix86_stack_locals = s;
