@@ -283,6 +283,8 @@ ResolvePath::resolve_path (AST::SimplePath *expr)
 	  previous_resolved_node_id = module_scope_id;
 	  resolver->insert_resolved_name (segment.get_node_id (),
 					  module_scope_id);
+	  resolved_node_id = module_scope_id;
+
 	  continue;
 	}
       else if (segment.is_super_path_seg ())
@@ -298,6 +300,8 @@ ResolvePath::resolve_path (AST::SimplePath *expr)
 	  previous_resolved_node_id = module_scope_id;
 	  resolver->insert_resolved_name (segment.get_node_id (),
 					  module_scope_id);
+	  resolved_node_id = module_scope_id;
+
 	  continue;
 	}
 
