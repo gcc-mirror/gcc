@@ -190,7 +190,7 @@ merge_usage (void)
   exit (FATAL_EXIT_CODE);
 }
 
-/* Driver for profile merge sub-command.  */
+/* Driver for profile merge subcommand.  */
 
 static int
 do_merge (int argc, char **argv)
@@ -260,7 +260,7 @@ merge_stream_usage (void)
   exit (FATAL_EXIT_CODE);
 }
 
-/* Driver for profile merge-stream sub-command.  */
+/* Driver for profile merge-stream subcommand.  */
 
 static int
 do_merge_stream (int argc, char **argv)
@@ -358,7 +358,7 @@ rewrite_usage (void)
   exit (FATAL_EXIT_CODE);
 }
 
-/* Driver for profile rewrite sub-command. */
+/* Driver for profile rewrite subcommand.  */
 
 static int
 do_rewrite (int argc, char **argv)
@@ -518,7 +518,7 @@ int overlap_hot_only;
 int overlap_use_fullname;
 double overlap_hot_threshold = 0.005;
 
-/* Driver for profile overlap sub-command.  */
+/* Driver for profile overlap subcommand.  */
 
 static int
 do_overlap (int argc, char **argv)
