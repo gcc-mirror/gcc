@@ -2232,13 +2232,18 @@ class column_range
 public:
   column_range (int start_, int finish_) : start (start_), finish (finish_)
   {
-    /* We must have either a range, or an insertion.  */
-    gcc_assert (start <= finish || finish == start - 1);
+    gcc_assert (valid_p (start, finish));
   }
 
   bool operator== (const column_range &other) const
   {
     return start == other.start && finish == other.finish;
+  }
+
+  static bool valid_p (int start, int finish)
+  {
+    /* We must have either a range, or an insertion.  */
+    return (start <= finish || finish == start - 1);
   }
 
   int start;
@@ -2470,7 +2475,9 @@ line_corrections::add_hint (const fixit_hint *hint)
       gcc_assert (printed_columns.start
 		  >= last_correction->m_printed_columns.start);
 
-      if (printed_columns.start <= last_correction->m_printed_columns.finish)
+      if (printed_columns.start <= last_correction->m_printed_columns.finish
+	  && column_range::valid_p (last_correction->m_affected_bytes.finish + 1,
+				    affected_bytes.start - 1))
 	{
 	  /* We have two hints for which the printed forms of the hints
 	     would touch or overlap, so we need to consolidate them to avoid

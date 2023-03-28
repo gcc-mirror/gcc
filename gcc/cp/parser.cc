@@ -10289,6 +10289,7 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	  (current.lhs.get_location (),
 	   tree_strip_any_location_wrapper (current.lhs),
 	   current.loc,
+	   rhs.get_location (),
 	   tree_strip_any_location_wrapper (rhs));
 
       overload = NULL;
