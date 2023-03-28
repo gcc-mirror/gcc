@@ -90,7 +90,7 @@ TokenStream::visit_items_as_lines (T &collection,
 				   std::vector<TokenPtr> trailing)
 {
   for (auto &item : collection)
-    visit_as_line (item);
+    visit_as_line (item, trailing);
 }
 
 template <typename T>
@@ -109,7 +109,7 @@ TokenStream::visit_items_as_block (T &collection,
     {
       newline ();
       increment_indentation ();
-      visit_items_as_lines (collection);
+      visit_items_as_lines (collection, trailing);
       decrement_indentation ();
       indentation ();
       tokens.push_back (Rust::Token::make (right_brace, Location ()));
@@ -385,7 +385,56 @@ TokenStream::visit (MaybeNamedParam &param)
 void
 TokenStream::visit (Token &tok)
 {
-  tokens.push_back (Rust::Token::make (tok.get_id (), tok.get_locus ()));
+  std::string data = tok.get_tok_ptr ()->has_str () ? tok.get_str () : "";
+  switch (tok.get_id ())
+    {
+    case IDENTIFIER:
+      tokens.push_back (
+	Rust::Token::make_identifier (tok.get_locus (), std::move (data)));
+      break;
+    case INT_LITERAL:
+      tokens.push_back (Rust::Token::make_int (tok.get_locus (),
+					       std::move (data),
+					       tok.get_type_hint ()));
+      break;
+    case FLOAT_LITERAL:
+      tokens.push_back (Rust::Token::make_float (tok.get_locus (),
+						 std::move (data),
+						 tok.get_type_hint ()));
+      break;
+    case STRING_LITERAL:
+      tokens.push_back (
+	Rust::Token::make_string (tok.get_locus (), std::move (data)));
+      break;
+    case CHAR_LITERAL:
+      tokens.push_back (Rust::Token::make_char (
+	tok.get_locus (),
+	// FIXME: This need to be fixed to properly support UTF-8
+	static_cast<uint32_t> (data[0])));
+      break;
+    case BYTE_CHAR_LITERAL:
+      tokens.push_back (
+	Rust::Token::make_byte_char (tok.get_locus (), data[0]));
+      break;
+    case BYTE_STRING_LITERAL:
+      tokens.push_back (
+	Rust::Token::make_byte_string (tok.get_locus (), std::move (data)));
+      break;
+    case INNER_DOC_COMMENT:
+      tokens.push_back (Rust::Token::make_inner_doc_comment (tok.get_locus (),
+							     std::move (data)));
+      break;
+    case OUTER_DOC_COMMENT:
+      tokens.push_back (Rust::Token::make_outer_doc_comment (tok.get_locus (),
+							     std::move (data)));
+      break;
+    case LIFETIME:
+      tokens.push_back (
+	Rust::Token::make_lifetime (tok.get_locus (), std::move (data)));
+      break;
+    default:
+      tokens.push_back (Rust::Token::make (tok.get_id (), tok.get_locus ()));
+    }
 }
 
 void
@@ -533,10 +582,7 @@ TokenStream::visit (PathInExpression &path)
 	Rust::Token::make (SCOPE_RESOLUTION, path.get_locus ()));
     }
 
-  for (auto &segment : path.get_segments ())
-    {
-      visit (segment);
-    }
+  visit_items_joined_by_separator (path.get_segments (), SCOPE_RESOLUTION);
 }
 
 void
@@ -1122,6 +1168,9 @@ TokenStream::visit (StructExprStructFields &expr)
     {
       tokens.push_back (Rust::Token::make (COMMA, Location ()));
       visit (expr.get_struct_base ());
+    }
+  else
+    {
       trailing_comma ();
     }
 }
@@ -1794,11 +1843,14 @@ TokenStream::visit (TypeAlias &type_alias)
     visit (type_alias.get_where_clause ());
   tokens.push_back (Rust::Token::make (EQUAL, Location ()));
   visit (type_alias.get_type_aliased ());
+  tokens.push_back (Rust::Token::make (SEMICOLON, Location ()));
 }
 
 void
 TokenStream::visit (StructStruct &struct_item)
 {
+  if (struct_item.has_visibility ())
+    visit (struct_item.get_visibility ());
   auto struct_name = struct_item.get_identifier ();
   tokens.push_back (Rust::Token::make (STRUCT_TOK, struct_item.get_locus ()));
   tokens.push_back (
@@ -1877,26 +1929,26 @@ TokenStream::visit (EnumItemDiscriminant &item)
 }
 
 void
-TokenStream::visit (Enum &enum_item)
+TokenStream::visit (Enum &enumeration)
 {
-  tokens.push_back (Rust::Token::make (ENUM_TOK, enum_item.get_locus ()));
-  auto id = enum_item.get_identifier ();
+  if (enumeration.has_visibility ())
+    visit (enumeration.get_visibility ());
+  tokens.push_back (Rust::Token::make (ENUM_TOK, enumeration.get_locus ()));
+  auto id = enumeration.get_identifier ();
   tokens.push_back (
-    Rust::Token::make_identifier (enum_item.get_locus (), std::move (id)));
-  if (enum_item.has_generics ())
-    visit (enum_item.get_generic_params ());
-  if (enum_item.has_where_clause ())
-    visit (enum_item.get_where_clause ());
+    Rust::Token::make_identifier (enumeration.get_locus (), std::move (id)));
+  if (enumeration.has_generics ())
+    visit (enumeration.get_generic_params ());
+  if (enumeration.has_where_clause ())
+    visit (enumeration.get_where_clause ());
 
-  visit_items_as_block (enum_item.get_variants (),
+  visit_items_as_block (enumeration.get_variants (),
 			{Rust::Token::make (COMMA, Location ())});
 }
 
 void
 TokenStream::visit (Union &union_item)
 {
-  // FIXME: "union" is a context dependent keyword
-  gcc_unreachable ();
   auto id = union_item.get_identifier ();
   tokens.push_back (
     Rust::Token::make_identifier (union_item.get_locus (), "union"));
@@ -2187,10 +2239,8 @@ TokenStream::visit (ExternBlock &block)
   if (block.has_abi ())
     {
       auto abi = block.get_abi ();
-      tokens.push_back (Rust::Token::make (DOUBLE_QUOTE, Location ()));
       tokens.push_back (
-	Rust::Token::make_identifier (Location (), std::move (abi)));
-      tokens.push_back (Rust::Token::make (DOUBLE_QUOTE, Location ()));
+	Rust::Token::make_string (Location (), std::move (abi)));
     }
 
   visit_items_as_block (block.get_extern_items (),
@@ -2614,15 +2664,15 @@ TokenStream::visit (GroupedPattern &pattern)
 void
 TokenStream::visit (SlicePattern &pattern)
 {
-  tokens.push_back (Rust::Token::make (LEFT_PAREN, pattern.get_locus ()));
+  tokens.push_back (Rust::Token::make (LEFT_SQUARE, pattern.get_locus ()));
   visit_items_joined_by_separator (pattern.get_items (), COMMA);
-  tokens.push_back (Rust::Token::make (RIGHT_PAREN, Location ()));
+  tokens.push_back (Rust::Token::make (RIGHT_SQUARE, Location ()));
 }
 
 void
 TokenStream::visit (AltPattern &pattern)
 {
-  visit_items_as_lines (pattern.get_alts ());
+  visit_items_joined_by_separator (pattern.get_alts (), PIPE);
 }
 
 // rust-stmt.h
