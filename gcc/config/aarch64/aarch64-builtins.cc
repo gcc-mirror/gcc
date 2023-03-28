@@ -2994,6 +2994,19 @@ get_mem_type_for_load_store (unsigned int fcode)
   }
 }
 
+/* We've seen a vector load from address ADDR.  Record it in
+   vector_load_decls, if appropriate.  */
+static void
+aarch64_record_vector_load_arg (tree addr)
+{
+  tree decl = aarch64_vector_load_decl (addr);
+  if (!decl)
+    return;
+  if (!cfun->machine->vector_load_decls)
+    cfun->machine->vector_load_decls = hash_set<tree>::create_ggc (31);
+  cfun->machine->vector_load_decls->add (decl);
+}
+
 /* Try to fold STMT, given that it's a call to the built-in function with
    subcode FCODE.  Return the new statement on success and null on
    failure.  */
@@ -3051,6 +3064,11 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
      BUILTIN_VALL_F16 (LOAD1, ld1, 0, LOAD)
      BUILTIN_VDQ_I (LOAD1_U, ld1, 0, LOAD)
      BUILTIN_VALLP_NO_DI (LOAD1_P, ld1, 0, LOAD)
+	/* Punt until after inlining, so that we stand more chance of
+	   recording something meaningful in vector_load_decls.  */
+	if (!cfun->after_inlining)
+	  break;
+	aarch64_record_vector_load_arg (args[0]);
 	if (!BYTES_BIG_ENDIAN)
 	  {
 	    enum aarch64_simd_type mem_type
@@ -3069,6 +3087,8 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
 				     fold_build2 (MEM_REF,
 						  access_type,
 						  args[0], zero));
+	    gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+	    gimple_set_vdef (new_stmt, gimple_vdef (stmt));
 	  }
 	break;
 
@@ -3092,6 +3112,8 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
 	      = gimple_build_assign (fold_build2 (MEM_REF, access_type,
 						  args[0], zero),
 				     args[1]);
+	    gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+	    gimple_set_vdef (new_stmt, gimple_vdef (stmt));
 	  }
 	break;
 

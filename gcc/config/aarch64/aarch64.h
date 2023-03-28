@@ -860,6 +860,7 @@ struct GTY (()) aarch64_frame
   bool is_scs_enabled;
 };
 
+#ifdef hash_set_h
 typedef struct GTY (()) machine_function
 {
   struct aarch64_frame frame;
@@ -868,7 +869,11 @@ typedef struct GTY (()) machine_function
   /* One entry for each general purpose register.  */
   rtx call_via[SP_REGNUM];
   bool label_is_assembled;
+  /* A set of all decls that have been passed to a vld1 intrinsic in the
+     current function.  This is used to help guide the vector cost model.  */
+  hash_set<tree> *vector_load_decls;
 } machine_function;
+#endif
 #endif
 
 /* Which ABI to use.  */
