@@ -348,6 +348,18 @@ proc check_weak_available { } {
     }
 }
 
+# return options to add to enable weak undefined symbols.
+
+proc add_options_for_weak_undefined { flags } {
+    if { [istarget *-*-darwin*] } {
+	lappend flags "-Wl,-undefined,dynamic_lookup"
+	if { [istarget *-*-darwin\[89\]*] } {
+	    lappend flags "-Wl,-flat_namespace"
+	}
+    }
+    return $flags
+}
+
 # return 1 if weak undefined symbols are supported.
 
 proc check_effective_target_weak_undefined { } {
