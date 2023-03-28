@@ -63,10 +63,43 @@ public:
   void clear_range (tree name);
   void clear ();
   void dump (FILE *f = stderr);
-private:
+protected:
+  virtual bool dump_range_query (vrange &r, tree name) const;
   vec<vrange *> m_tab;
   vrange_allocator *m_range_allocator;
 };
+
+// This is the same as global cache, except it maintains an active bitmap
+// rather than depending on a zero'd out vector of pointers.  This is better
+// for sparsely/lightly used caches.
+// It could be made a fully derived class, but at this point there doesnt seem
+// to be a need to take the performance hit for it.
+
+class ssa_lazy_cache : protected ssa_cache
+{
+public:
+  inline ssa_lazy_cache () { active_p = BITMAP_ALLOC (NULL); }
+  inline ~ssa_lazy_cache () { BITMAP_FREE (active_p); }
+  bool set_range (tree name, const vrange &r);
+  inline bool get_range (vrange &r, tree name) const;
+  inline void clear_range (tree name)
+    { bitmap_clear_bit (active_p, SSA_NAME_VERSION (name)); } ;
+  inline void clear () { bitmap_clear (active_p); }
+  inline void dump (FILE *f = stderr) { ssa_cache::dump (f); }
+protected:
+  virtual bool dump_range_query (vrange &r, tree name) const;
+  bitmap active_p;
+};
+
+// Return TRUE if NAME has a range, and return it in R.
+
+bool
+ssa_lazy_cache::get_range (vrange &r, tree name) const
+{
+  if (!bitmap_bit_p (active_p, SSA_NAME_VERSION (name)))
+    return false;
+  return ssa_cache::get_range (r, name);
+}
 
 // This class provides all the caches a global ranger may need, and makes 
 // them available for gori-computes to query so outgoing edges can be
