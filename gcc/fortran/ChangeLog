@@ -1,3 +1,47 @@
+2023-03-27  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-03-05  Harald Anlauf  <anlauf@gmx.de>
+		    Tobias Burnus   <tobias@codesourcery.com>
+
+	PR fortran/106856
+	* class.cc (gfc_build_class_symbol): Handle update of attributes of
+	existing class container.
+	(gfc_find_derived_vtab): Fix several memory leaks.
+	(find_intrinsic_vtab): Ditto.
+	* decl.cc (attr_decl1): Manage update of symbol attributes from
+	CLASS attributes.
+	* primary.cc (gfc_variable_attr): OPTIONAL shall not be taken or
+	updated from the class container.
+	* symbol.cc (free_old_symbol): Adjust management of symbol versions
+	to not prematurely free array specs while working on the declation
+	of CLASS variables.
+
+2023-03-27  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-12-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108025
+	* symbol.cc (gfc_add_contiguous): Diagnose and reject duplicate
+	CONTIGUOUS attribute.
+
+2023-03-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/102331
+	* decl.cc (attr_decl1): Guard against NULL pointer.
+	* parse.cc (match_deferred_characteristics): Include BT_CLASS in check
+	for derived being undefined.
+
+2023-03-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2023-01-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/103506
+	* parse.cc (parse_module): Remove use of a bool error value
+	that prevented proper setting of the namespace pointer.
+
 2023-03-22  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
