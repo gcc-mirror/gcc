@@ -413,7 +413,7 @@ public:
   {
     std::vector<AST::SimplePathSegment> single_segments
       = {AST::SimplePathSegment (std::move (str), locus)};
-    return SimplePath (std::move (single_segments));
+    return SimplePath (std::move (single_segments), false, locus);
   }
 
   const std::vector<SimplePathSegment> &get_segments () const
