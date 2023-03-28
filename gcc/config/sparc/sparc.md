@@ -9033,6 +9033,50 @@ visl")
   DONE;
 })
 
+(define_expand "vcondv8qiv8qi"
+  [(match_operand:V8QI 0 "register_operand" "")
+   (match_operand:V8QI 1 "register_operand" "")
+   (match_operand:V8QI 2 "register_operand" "")
+   (match_operator 3 ""
+     [(match_operand:V8QI 4 "register_operand" "")
+      (match_operand:V8QI 5 "register_operand" "")])]
+  "TARGET_VIS4"
+{
+  sparc_expand_vcond (V8QImode, operands, UNSPEC_CMASK8, UNSPEC_FCMP);
+  DONE;
+})
+
+(define_insn "fucmp<gcond:code>8<P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(unspec:P [(gcond:V8QI (match_operand:V8QI 1 "register_operand" "e")
+		               (match_operand:V8QI 2 "register_operand" "e"))]
+	 UNSPEC_FUCMP))]
+  "TARGET_VIS3"
+  "fucmp<gcond:code>8\t%1, %2, %0"
+  [(set_attr "type" "viscmp")])
+
+(define_insn "fpcmpu<gcond:code><GCM:gcm_name><P:mode>_vis"
+  [(set (match_operand:P 0 "register_operand" "=r")
+	(unspec:P [(gcond:GCM (match_operand:GCM 1 "register_operand" "e")
+		              (match_operand:GCM 2 "register_operand" "e"))]
+	 UNSPEC_FUCMP))]
+  "TARGET_VIS4"
+  "fpcmpu<gcond:code><GCM:gcm_name>\t%1, %2, %0"
+  [(set_attr "type" "viscmp")])
+
+(define_expand "vcondu<GCM:mode><GCM:mode>"
+  [(match_operand:GCM 0 "register_operand" "")
+   (match_operand:GCM 1 "register_operand" "")
+   (match_operand:GCM 2 "register_operand" "")
+   (match_operator 3 ""
+     [(match_operand:GCM 4 "register_operand" "")
+      (match_operand:GCM 5 "register_operand" "")])]
+  "TARGET_VIS4"
+{
+  sparc_expand_vcond (<MODE>mode, operands, UNSPEC_CMASK<gcm_name>, UNSPEC_FUCMP);
+  DONE;
+})
+
 (define_expand "vconduv8qiv8qi"
   [(match_operand:V8QI 0 "register_operand" "")
    (match_operand:V8QI 1 "register_operand" "")
@@ -9350,24 +9394,6 @@ visl")
  "<vis4_addsub_us_insn><vbits>\t%1, %2, %0"
  [(set_attr "type" "fga")
   (set_attr "subtype" "other")])
-
-(define_insn "fucmp<gcond:code>8<P:mode>_vis"
-  [(set (match_operand:P 0 "register_operand" "=r")
-	(unspec:P [(gcond:V8QI (match_operand:V8QI 1 "register_operand" "e")
-		               (match_operand:V8QI 2 "register_operand" "e"))]
-	 UNSPEC_FUCMP))]
-  "TARGET_VIS3"
-  "fucmp<gcond:code>8\t%1, %2, %0"
-  [(set_attr "type" "viscmp")])
-
-(define_insn "fpcmpu<gcond:code><GCM:gcm_name><P:mode>_vis"
-  [(set (match_operand:P 0 "register_operand" "=r")
-	(unspec:P [(gcond:GCM (match_operand:GCM 1 "register_operand" "e")
-		              (match_operand:GCM 2 "register_operand" "e"))]
-	 UNSPEC_FUCMP))]
-  "TARGET_VIS4"
-  "fpcmpu<gcond:code><GCM:gcm_name>\t%1, %2, %0"
-  [(set_attr "type" "viscmp")])
 
 (define_insn "*naddsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
