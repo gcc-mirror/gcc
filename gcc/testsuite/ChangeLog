@@ -1,3 +1,28 @@
+2023-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/54498
+	* g++.dg/torture/pr54498.C: New testcase.
+
+2023-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108357
+	* gcc.dg/tree-ssa/pr108357.c: New testcase.
+
+2023-03-27  Martin Liska  <mliska@suse.cz>
+
+	* lib/verify-sarif-file.py: Use apostrophes instead
+	of double quotes.
+
+2023-03-27  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/109167
+	* gcc.target/powerpc/pr109167.c: New test.
+
+2023-03-27  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/109082
+	* gcc.target/powerpc/pr109082.c: New test.
+
 2023-03-26  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR target/106282

@@ -1,3 +1,59 @@
+2023-03-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR gcov-profile/109297
+	* gcov-tool.cc (merge_usage): Fix "subcomand" typo.
+	(merge_stream_usage): Likewise.
+	(overlap_usage): Likewise.
+
+2023-03-27  Christoph Müllner  <christoph.muellner@vrull.eu>
+
+	PR target/109296
+	* config/riscv/thead.md: Add missing mode specifiers.
+
+2023-03-27  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+	    Jiangning Liu  <jiangning.liu@amperecomputing.com>
+	    Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	* config/aarch64/aarch64.cc: Update vector costs for ampere1.
+
+2023-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/109237
+	* cfgcleanup.cc (bb_is_just_return): Walk insns backwards.
+
+2023-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR lto/109263
+	* lto-wrapper.cc (run_gcc): Parse alternate debug options
+	as well, they always enable debug.
+
+2023-03-27  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/109167
+	* config/rs6000/emmintrin.h (_mm_bslli_si128): Move the implementation
+	from ...
+	(_mm_slli_si128): ... here.  Change to call _mm_bslli_si128 directly.
+
+2023-03-27  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/109082
+	* config/rs6000/emmintrin.h (_mm_bslli_si128): Check __N is not less
+	than zero when calling vec_sld.
+	(_mm_bsrli_si128): Return __A if __N is zero, check __N is bigger than
+	zero when calling vec_sld.
+	(_mm_slli_si128): Return __A if _imm5 is zero, check _imm5 is bigger
+	than zero when calling vec_sld.
+
+2023-03-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/generic.texi (OpenMP): Document OMP_SIMD, OMP_DISTRIBUTE,
+	OMP_TASKLOOP, and OMP_LOOP with OMP_FOR.  Document how collapsed
+	loops are represented and which fields are vectors.  Add
+	documentation for OMP_FOR_PRE_BODY field.  Document internal
+	form of non-rectangular loops and OMP_FOR_NON_RECTANGULAR.
+	* tree.def (OMP_FOR): Make documentation consistent with the
+	Texinfo manual, to fill some gaps and correct errors.
+
 2023-03-26  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR target/106282
