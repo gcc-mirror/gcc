@@ -1,3 +1,10 @@
+2023-03-27  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.c++/static-aggr-constructor-destructor-1.C: New
+	test.
+	* testsuite/libgomp.c++/static-aggr-constructor-destructor-2.C: New
+	test.
+
 2023-03-24  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.c/alloc-ompx_host_mem_alloc-1.c: New.

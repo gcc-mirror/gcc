@@ -1,3 +1,21 @@
+2023-03-27  Julian Brown  <julian@codesourcery.com>
+
+	* decl2.cc (priority_info): Add omp_tgt_initializations_p and
+	omp_tgt_destructions_p.
+	(start_objects, start_static_storage_duration_function,
+	do_static_initialization_or_destruction,
+	one_static_initialization_or_destruction,
+	generate_ctor_or_dtor_function): Add 'omp_target' parameter.  Support
+	"declare target" decls. Update forward declarations.
+	(OMP_SSDF_IDENTIFIER): New macro.
+	(omp_tgt_ssdf_decls): New vec.
+	(get_priority_info): Initialize omp_tgt_initializations_p and
+	omp_tgt_destructions_p fields.
+	(handle_tls_init): Update call to
+	omp_static_initialization_or_destruction.
+	(c_parse_final_cleanups): Support constructors/destructors on OpenMP
+	offload targets.
+
 2023-02-09  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* parser.cc (cp_parser_omp_var_list_no_open): Add new parameter with
