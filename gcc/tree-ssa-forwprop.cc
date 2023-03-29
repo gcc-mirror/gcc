@@ -4061,6 +4061,10 @@ pass_forwprop::execute (function *fun)
   while (!to_remove.is_empty())
     {
       gimple *stmt = to_remove.pop ();
+      /* For example remove_prop_source_from_use can remove stmts queued
+	 for removal.  Deal with this gracefully.  */
+      if (!gimple_bb (stmt))
+	continue;
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Removing dead stmt ");
