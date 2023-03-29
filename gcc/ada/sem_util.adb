@@ -6524,7 +6524,6 @@ package body Sem_Util is
       begin
          while Present (E) and then E /= Prim loop
             if not Is_Tagged_Type (E)
-              and then Present (Direct_Primitive_Operations (E))
               and then Contains (Direct_Primitive_Operations (E), Prim)
             then
                return E;

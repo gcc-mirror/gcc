@@ -32644,9 +32644,7 @@ package body Sem_Prag is
          if Nkind (Context) = N_Package_Body then
             Spec_Id := Corresponding_Spec (Context);
 
-            if Present (Abstract_States (Spec_Id))
-              and then Contains (Abstract_States (Spec_Id), State_Id)
-            then
+            if Contains (Abstract_States (Spec_Id), State_Id) then
                if No (Body_References (State_Id)) then
                   Set_Body_References (State_Id, New_Elmt_List);
                end if;
