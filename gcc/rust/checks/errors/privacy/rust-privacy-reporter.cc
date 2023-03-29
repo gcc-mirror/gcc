@@ -201,7 +201,7 @@ PrivacyReporter::check_base_type_privacy (Analysis::NodeMapping &node_mappings,
     case TyTy::INFER:
       return;
     case TyTy::ERROR:
-      rust_unreachable ();
+      return;
     }
 }
 
