@@ -138,15 +138,30 @@ ResolveTraitItems::visit (AST::TraitItemMethod &func)
 				       self_param.get_has_ref (),
 				       self_param.get_is_mut (),
 				       std::unique_ptr<AST::Pattern> (nullptr));
-
-  std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
-  segments.push_back (std::unique_ptr<AST::TypePathSegment> (
-    new AST::TypePathSegment ("Self", false, self_param.get_locus ())));
-
-  AST::TypePath self_type_path (std::move (segments), self_param.get_locus ());
-
-  ResolveType::go (&self_type_path);
   PatternDeclaration::go (&self_pattern, Rib::ItemType::Param);
+
+  if (self_param.has_type ())
+    {
+      if (self_param.get_has_ref ())
+	{
+	  // FIXME is this true?
+	  rust_error_at (
+	    self_param.get_locus (),
+	    "it is not possible to mark self as reference and specify type");
+	}
+      ResolveType::go (self_param.get_type ().get ());
+    }
+  else
+    {
+      // here we implicitly make self have a type path of Self
+      std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
+      segments.push_back (std::unique_ptr<AST::TypePathSegment> (
+	new AST::TypePathSegment ("Self", false, self_param.get_locus ())));
+
+      AST::TypePath self_type_path (std::move (segments),
+				    self_param.get_locus ());
+      ResolveType::go (&self_type_path);
+    }
 
   std::vector<PatternBinding> bindings
     = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
@@ -636,15 +651,30 @@ ResolveItem::visit (AST::Method &method)
 				       self_param.get_has_ref (),
 				       self_param.get_is_mut (),
 				       std::unique_ptr<AST::Pattern> (nullptr));
-
-  std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
-  segments.push_back (std::unique_ptr<AST::TypePathSegment> (
-    new AST::TypePathSegment ("Self", false, self_param.get_locus ())));
-
-  AST::TypePath self_type_path (std::move (segments), self_param.get_locus ());
-
-  ResolveType::go (&self_type_path);
   PatternDeclaration::go (&self_pattern, Rib::ItemType::Param);
+
+  if (self_param.has_type ())
+    {
+      if (self_param.get_has_ref ())
+	{
+	  // FIXME is this true?
+	  rust_error_at (
+	    self_param.get_locus (),
+	    "it is not possible to mark self as reference and specify type");
+	}
+      ResolveType::go (self_param.get_type ().get ());
+    }
+  else
+    {
+      // here we implicitly make self have a type path of Self
+      std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
+      segments.push_back (std::unique_ptr<AST::TypePathSegment> (
+	new AST::TypePathSegment ("Self", false, self_param.get_locus ())));
+
+      AST::TypePath self_type_path (std::move (segments),
+				    self_param.get_locus ());
+      ResolveType::go (&self_type_path);
+    }
 
   std::vector<PatternBinding> bindings
     = {PatternBinding (PatternBoundCtx::Product, std::set<Identifier> ())};
