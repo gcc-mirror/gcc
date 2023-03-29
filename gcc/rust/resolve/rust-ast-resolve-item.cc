@@ -142,13 +142,8 @@ ResolveTraitItems::visit (AST::TraitItemMethod &func)
 
   if (self_param.has_type ())
     {
-      if (self_param.get_has_ref ())
-	{
-	  // FIXME is this true?
-	  rust_error_at (
-	    self_param.get_locus (),
-	    "it is not possible to mark self as reference and specify type");
-	}
+      // This shouldn't happen the parser should already error for this
+      rust_assert (!self_param.get_has_ref ());
       ResolveType::go (self_param.get_type ().get ());
     }
   else
@@ -655,13 +650,8 @@ ResolveItem::visit (AST::Method &method)
 
   if (self_param.has_type ())
     {
-      if (self_param.get_has_ref ())
-	{
-	  // FIXME is this true?
-	  rust_error_at (
-	    self_param.get_locus (),
-	    "it is not possible to mark self as reference and specify type");
-	}
+      // This shouldn't happen the parser should already error for this
+      rust_assert (!self_param.get_has_ref ());
       ResolveType::go (self_param.get_type ().get ());
     }
   else
