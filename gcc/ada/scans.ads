@@ -482,6 +482,9 @@ package Scans is
    --  or aspect. Used to allow/require nonstandard style rules for =>+ with
    --  -gnatyt.
 
+   Inside_Interpolated_String_Expression : Boolean := False;
+   --  True while parsing an interpolated string expression
+
    Inside_Interpolated_String_Literal : Boolean := False;
    --  True while parsing an interpolated string literal
 

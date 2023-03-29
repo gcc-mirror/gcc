@@ -951,12 +951,20 @@ package body Scng is
             C3   : Character;
 
          begin
+            --  Skip processing operator symbols if we are scanning an
+            --  interpolated string literal.
+
+            if Inside_Interpolated_String_Literal
+              and then not Inside_Interpolated_String_Expression
+            then
+               null;
+
             --  Token_Name is currently set to Error_Name. The following
             --  section of code resets Token_Name to the proper Name_Op_xx
             --  value if the string is a valid operator symbol, otherwise it is
             --  left set to Error_Name.
 
-            if Slen = 1 then
+            elsif Slen = 1 then
                C1 := Source (Token_Ptr + 1);
 
                case C1 is
