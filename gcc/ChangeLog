@@ -1,3 +1,13 @@
+2023-03-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/109140
+	* config/sparc/sparc.cc (sparc_expand_vcond): Call signed_condition
+	on operand #3 to get the final condition code.  Use std::swap.
+	* config/sparc/sparc.md (vcondv8qiv8qi): New VIS 4 expander.
+	(fucmp<gcond:code>8<P:mode>_vis): Move around.
+	(fpcmpu<gcond:code><GCM:gcm_name><P:mode>_vis): Likewise.
+	(vcondu<GCM:mode><GCM:mode>): New VIS 4 expander.
+
 2023-03-22  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:

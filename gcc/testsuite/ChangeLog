@@ -1,3 +1,17 @@
+2023-03-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/20230328-1.c: New test.
+	* gcc.target/sparc/20230328-2.c: Likewise.
+	* gcc.target/sparc/20230328-3.c: Likewise.
+	* gcc.target/sparc/20230328-4.c: Likewise.
+
+2023-03-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/20230328-1.c: New test.
+	* gcc.target/sparc/20230328-2.c: Likewise.
+	* gcc.target/sparc/20230328-3.c: Likewise.
+	* gcc.target/sparc/20230328-4.c: Likewise.
+
 2023-03-27  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

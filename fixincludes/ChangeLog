@@ -1,3 +1,14 @@
+2023-03-28  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2023-03-28  Xi Ruoyao  <xry111@xry111.site>
+
+	PR other/109293
+	* configure.ac (AC_CHECK_DECLS): Add memmem.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* system.h (memmem): Declare if HAVE_DECL_MEMMEM is zero.
+
 2022-08-19  Release Manager
 
 	* GCC 12.2.0 released.

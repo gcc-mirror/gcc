@@ -1,3 +1,256 @@
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108118
+	* include/bits/shared_ptr_base.h (weak_ptr::operator=):
+	Implement as move-and-swap exactly as specified in the standard.
+	* testsuite/20_util/weak_ptr/cons/self_move.cc: New test.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algobase.h (__detail::__copy_or_move):
+	Move output iterator.
+	* testsuite/25_algorithms/copy/constrained.cc: Check copying to
+	move-only output iterator.
+
+2023-03-28  Björn Schäpers  <bjoern@hazardy.de>
+
+	Backported from master:
+	2023-01-14  Björn Schäpers  <bjoern@hazardy.de>
+
+	* include/std/stacktrace (stacktrace_entry::_S_demangle): Use
+	raw __name if __cxa_demangle could not demangle it.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace (operator<<): Only output to narrow
+	ostreams (LWG 3515).
+	* testsuite/19_diagnostics/stacktrace/synopsis.cc:
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono.h (duration_cast, floor, round, abs, ceil)
+	(time_point_cast): Add [[nodiscard]] attribute and doxygen
+	comments.
+	(treat_as_floating_point): Add doxygen commen.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono.h (duration, time_point): Change 'struct'
+	to 'class'.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108554
+	* include/bits/stl_tree.h (_Rb_tree_insert_and_rebalance): Add
+	nonnull attribute.
+	(_Rb_tree_rebalance_for_erase): Add nonnull and returns_nonnull
+	attributes.
+	* testsuite/23_containers/map/modifiers/108554.cc: New test.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bitset (bitset::_M_copy_to_string): Find set bits
+	instead of iterating over individual bits.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-09-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_atomic.h (_GLIBCXX_TSAN_MUTEX_PRE_LOCK):
+	Replace with ...
+	(_GLIBCXX_TSAN_MUTEX_TRY_LOCK): ... this, add try_lock flag.
+	(_GLIBCXX_TSAN_MUTEX_TRY_LOCK_FAILED): New macro using
+	try_lock_failed flag
+	(_GLIBCXX_TSAN_MUTEX_POST_LOCK): Rename to ...
+	(_GLIBCXX_TSAN_MUTEX_LOCKED): ... this.
+	(_GLIBCXX_TSAN_MUTEX_PRE_UNLOCK): Remove invalid flag.
+	(_GLIBCXX_TSAN_MUTEX_POST_UNLOCK): Remove invalid flag.
+	(_Sp_atomic::_Atomic_count::lock): Use new macros.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-09-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_atomic.h (_GLIBCXX_TSAN_MUTEX_DESTROY)
+	(_GLIBCXX_TSAN_MUTEX_PRE_LOCK, _GLIBCXX_TSAN_MUTEX_POST_LOCK)
+	(_GLIBCXX_TSAN_MUTEX_PRE_UNLOCK, _GLIBCXX_TSAN_MUTEX_POST_UNLOCK)
+	(_GLIBCXX_TSAN_MUTEX_PRE_SIGNAL, _GLIBCXX_TSAN_MUTEX_POST_SIGNAL):
+	Define macros for TSan annotation functions.
+	(_Sp_atomic::_Atomic_count): Add annotations.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/memory_resource (new_delete_resource): Add
+	nodiscard, returns_nonnull and const attributes.
+	(null_memory_resource): Likewise.
+	(set_default_resource, get_default_resource): Add returns_nonnull
+	attribute.
+	(memory_resource::is_equal): Add nodiscard attribute.
+	(operator==, operator!=): Likewise.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-09-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future
+	(_State_baseV2::__setter(exception_ptr&, promise&)): Add
+	assertion for LWG 2276 precondition.
+	* testsuite/30_threads/promise/members/set_exception_neg.cc:
+	New test.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_global/cstddef (byte): Add always_inline attribute
+	to all operator overloads.
+	(to_integer): Add always_inline attribute.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/system_error (__adl_only::make_error_code): Add
+	deleted function.
+	(__adl_only::make_error_condition): Likewise.
+	(error_code::error_code(ErrorCodeEnum)): Add using-declaration
+	for deleted function.
+	(error_condition::error_condition(ErrorConditionEnum)):
+	Likewise.
+	* testsuite/19_diagnostics/error_code/cons/lwg3629.cc: New test.
+	* testsuite/19_diagnostics/error_condition/cons/lwg3629.cc: New test.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ios_base.h (io_category): Add const and nodiscard
+	attributes.
+	(make_error_code, make_error_condition): Add nodiscard.
+	* include/std/future (future_category): Add const and nodiscard.
+	(make_error_code, make_error_condition): Add nodiscard.
+	* include/std/system_error (generic_category system_category):
+	Add nodiscard. Replace _GLIBCXX_CONST with C++11 attribute.
+	(error_code::value, error_code::category, error_code::operator bool)
+	(error_condition::value, error_condition::category)
+	(error_condition::operator bool, make_error_code)
+	(make_error_condition, operator==, operator!=, operator<=>): Add
+	nodiscard.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_thread.h (thread, thread::id): Improve
+	doxygen docs.
+	* include/std/future: Likewise.
+	* include/std/thread (jthread): Likewise.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-05-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/system_error: Improve doxygen comments.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/throw_allocator.h: Use reserved names for
+	parameters.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_UCHAR_H): Don't use AC_MSG_RESULT
+	unless the AC_MSG_CHECKING happened.
+	* configure: Regenerate.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-01-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml: Add latest library versions.
+	* doc/html/manual/abi.html: Regenerate.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/char_traits.h (char_traits::copy): Return without
+	using memcpy if n==0.
+	(char_traits::assign): Likewise for memset.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109299
+	* include/bits/basic_string.h (basic_string::_M_is_local()): Add
+	hint for compiler that local strings fit in the local buffer.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-03-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/cow_string.h: Fix typo in comment.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/optional: Fix header name in comment.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108413
+	* include/c_compatibility/stdatomic.h: Change copyright line to
+	be consistent with other headers contributed under DCO terms.
+	* include/std/expected: Add full stop to copyright line.
+
 2023-03-21  Matthias Kretz  <m.kretz@gsi.de>
 
 	Backported from master:
