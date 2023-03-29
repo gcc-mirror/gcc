@@ -1381,6 +1381,8 @@ TypeCheckExpr::visit (HIR::MatchExpr &expr)
 	{
 	  TyTy::BaseType *kase_arm_ty
 	    = TypeCheckPattern::Resolve (pattern.get (), scrutinee_tyty);
+	  if (kase_arm_ty->get_kind () == TyTy ::TypeKind::ERROR)
+	    return;
 
 	  TyTy::BaseType *checked_kase = unify_site (
 	    expr.get_mappings ().get_hirid (),
