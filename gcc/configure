@@ -31468,6 +31468,8 @@ $as_echo "$do_link_mutex" >&6; }
 
 if test "$do_link_mutex" = "yes"; then
    DO_LINK_MUTEX=true
+   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: --enable-link-mutex is deprecated and will be removed in the next release, use --enable-link-serialization instead" >&5
+$as_echo "$as_me: WARNING: --enable-link-mutex is deprecated and will be removed in the next release, use --enable-link-serialization instead" >&2;}
 else
    DO_LINK_MUTEX=false
 fi
