@@ -4546,13 +4546,12 @@ package body Sem_Util is
       --  Local variables
 
       Items        : constant Node_Id := Contract (Subp_Id);
-      Subp_Decl    : constant Node_Id := Unit_Declaration_Node (Subp_Id);
       Case_Prag    : Node_Id := Empty;
       Post_Prag    : Node_Id := Empty;
       Prag         : Node_Id;
       Seen_In_Case : Boolean := False;
       Seen_In_Post : Boolean := False;
-      Spec_Id      : Entity_Id;
+      Spec_Id      : constant Entity_Id := Unique_Entity (Subp_Id);
 
    --  Start of processing for Check_Result_And_Post_State
 
@@ -4568,25 +4567,6 @@ package body Sem_Util is
 
       elsif No (Items) then
          return;
-      end if;
-
-      --  Retrieve the entity of the subprogram spec (if any)
-
-      if Nkind (Subp_Decl) = N_Subprogram_Body
-        and then Present (Corresponding_Spec (Subp_Decl))
-      then
-         Spec_Id := Corresponding_Spec (Subp_Decl);
-
-      elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub
-        and then Present (Corresponding_Spec_Of_Stub (Subp_Decl))
-      then
-         Spec_Id := Corresponding_Spec_Of_Stub (Subp_Decl);
-
-      elsif Nkind (Subp_Decl) = N_Entry_Body then
-         Spec_Id := Corresponding_Spec (Subp_Decl);
-
-      else
-         Spec_Id := Subp_Id;
       end if;
 
       --  Examine all postconditions for attribute 'Result and a post-state
