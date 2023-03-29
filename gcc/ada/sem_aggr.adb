@@ -6004,6 +6004,7 @@ package body Sem_Aggr is
             end if;
 
             while Present (Selectr) loop
+               Component := Empty;
                New_Assoc := First (New_Assoc_List);
                while Present (New_Assoc) loop
                   Component := First (Choices (New_Assoc));
@@ -6018,6 +6019,11 @@ package body Sem_Aggr is
 
                   Next (New_Assoc);
                end loop;
+
+               --  If we found an association, then this is a legal component
+               --  of the type in question.
+
+               pragma Assert (if Present (New_Assoc) then Present (Component));
 
                --  If no association, this is not a legal component of the type
                --  in question, unless its association is provided with a box.
