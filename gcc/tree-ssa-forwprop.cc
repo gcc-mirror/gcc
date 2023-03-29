@@ -4046,7 +4046,11 @@ pass_forwprop::execute (function *fun)
 
       /* Mark outgoing exectuable edges.  */
       if (edge e = find_taken_edge (bb, NULL))
-	e->flags |= EDGE_EXECUTABLE;
+	{
+	  e->flags |= EDGE_EXECUTABLE;
+	  if (EDGE_COUNT (bb->succs) > 1)
+	    cfg_changed = true;
+	}
       else
 	{
 	  FOR_EACH_EDGE (e, ei, bb->succs)
