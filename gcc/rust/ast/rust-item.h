@@ -1000,6 +1000,8 @@ public:
 
   Identifier get_name () const { return module_name; }
 
+  Kind get_ast_kind () const override { return Kind::MODULE; }
+
 private:
   Identifier module_name;
   Location locus;
