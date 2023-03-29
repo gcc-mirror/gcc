@@ -9206,10 +9206,14 @@ package body Sem_Ch3 is
       then
          --  First, we must analyze the constraint (see comment in point 5.)
          --  The constraint may come from the subtype indication of the full
-         --  declaration.
+         --  declaration. Temporarily set the state of the Derived_Type to
+         --  "self-hidden" (see RM-8.3(17)).
 
          if Constraint_Present then
+            pragma Assert (Is_Not_Self_Hidden (Derived_Type));
+            Set_Is_Not_Self_Hidden (Derived_Type, False);
             New_Discrs := Build_Discriminant_Constraints (Parent_Type, Indic);
+            Set_Is_Not_Self_Hidden (Derived_Type);
 
          --  If there is no explicit constraint, there might be one that is
          --  inherited from a constrained parent type. In that case verify that
@@ -9507,11 +9511,19 @@ package body Sem_Ch3 is
       if Discriminant_Specs then
          Set_Has_Unknown_Discriminants (Derived_Type, False);
 
-         --  The following call initializes fields Has_Discriminants and
-         --  Discriminant_Constraint, unless we are processing the completion
-         --  of a private type declaration.
+         --  The following call to Check_Or_Process_Discriminants initializes
+         --  fields Has_Discriminants and Discriminant_Constraint, unless we
+         --  are processing the completion of a private type declaration.
+         --  Temporarily set the state of the Derived_Type to "self-hidden"
+         --  (see RM-8.3(17)), unless it is already the case.
 
-         Check_Or_Process_Discriminants (N, Derived_Type);
+         if Is_Not_Self_Hidden (Derived_Type) then
+            Set_Is_Not_Self_Hidden (Derived_Type, False);
+            Check_Or_Process_Discriminants (N, Derived_Type);
+            Set_Is_Not_Self_Hidden (Derived_Type);
+         else
+            Check_Or_Process_Discriminants (N, Derived_Type);
+         end if;
 
          --  For untagged types, the constraint on the Parent_Type must be
          --  present and is used to rename the discriminants.
