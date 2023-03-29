@@ -701,4 +701,27 @@ slide1_sew64_helper (int unspec, machine_mode mode, machine_mode demote_mode,
   return true;
 }
 
+rtx
+gen_avl_for_scalar_move (rtx avl)
+{
+  /* AVL for scalar move has different behavior between 0 and large than 0.  */
+  if (CONST_INT_P (avl))
+    {
+      /* So we could just set AVL to 1 for any constant other than 0.  */
+      if (rtx_equal_p (avl, const0_rtx))
+	return const0_rtx;
+      else
+	return const1_rtx;
+    }
+  else
+    {
+      /* For non-constant value, we set any non zero value to 1 by
+	 `sgtu new_avl,input_avl,zero` + `vsetvli`.  */
+      rtx tmp = gen_reg_rtx (Pmode);
+      emit_insn (
+	gen_rtx_SET (tmp, gen_rtx_fmt_ee (GTU, Pmode, avl, const0_rtx)));
+      return tmp;
+    }
+}
+
 } // namespace riscv_vector

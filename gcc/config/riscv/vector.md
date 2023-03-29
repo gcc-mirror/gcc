@@ -1229,9 +1229,7 @@
           else if (GET_MODE_BITSIZE (<VEL>mode) > GET_MODE_BITSIZE (Pmode))
             {
 	      // Case 2: vmv.s.x (TU) ==> andi vl + vlse.v (TU) in RV32 system.
-	      rtx tmp = gen_reg_rtx (Pmode);
-              emit_insn (gen_rtx_SET (tmp, gen_rtx_AND (Pmode, operands[4], const1_rtx)));
-	      operands[4] = tmp;
+	      operands[4] = riscv_vector::gen_avl_for_scalar_move (operands[4]);
 	      operands[1] = CONSTM1_RTX (<VM>mode);
 	    }
           else
@@ -1292,9 +1290,7 @@
        vlse64.v  */
     if (satisfies_constraint_Wb1 (operands[1]))
       {
-	rtx tmp = gen_reg_rtx (Pmode);
-        emit_insn (gen_rtx_SET (tmp, gen_rtx_AND (Pmode, operands[4], const1_rtx)));
-        operands[4] = tmp;
+	operands[4] = riscv_vector::gen_avl_for_scalar_move (operands[4]);
 	operands[1] = CONSTM1_RTX (<VM>mode);
       }
   }
