@@ -4582,6 +4582,9 @@ package body Sem_Util is
       then
          Spec_Id := Corresponding_Spec_Of_Stub (Subp_Decl);
 
+      elsif Nkind (Subp_Decl) = N_Entry_Body then
+         Spec_Id := Corresponding_Spec (Subp_Decl);
+
       else
          Spec_Id := Subp_Id;
       end if;
