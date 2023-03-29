@@ -1,3 +1,49 @@
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103387
+	* include/bits/istream.tcc (istream::_M_extract(ValueT&)): Use
+	std::use_facet instead of cached _M_num_get facet.
+	(istream::operator>>(short&)): Likewise.
+	(istream::operator>>(int&)): Likewise.
+	* include/bits/ostream.tcc (ostream::_M_insert(ValueT)): Use
+	std::use_facet instead of cached _M_num_put facet.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/char_traits.h (char_traits::copy): Return without
+	using memcpy if n==0.
+	(char_traits::assign): Likewise for memset.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109299
+	* include/bits/basic_string.h (basic_string::_M_is_local()): Add
+	hint for compiler that local strings fit in the local buffer.
+
+2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109288
+	* include/std/chrono (__detail::__get_leap_second_info): Update
+	expiry date of hardcoded leapseconds list.
+	* src/c++20/tzdb.cc (tzdb_list::_Node::_S_read_leap_seconds()):
+	Likewise.
+	* src/c++20/tzdata.zi: Import new file from 2023a release.
+	* testsuite/std/time/time_zone/get_info_local.cc: Only check
+	transitions for Egypt up to 2014.
+
+2023-03-28  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd.h (is_simd_flag_type): New.
+	(_IsSimdFlagType): New.
+	(copy_from, copy_to, load ctors): Constrain _Flags using
+	_IsSimdFlagType.
+
+2023-03-28  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/experimental/bits/simd_x86.h (_SimdImplX86): Use
+	_Base::_S_divides if the optimized _S_divides function is hidden
+	via the preprocessor.
+
 2023-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/experimental/net/timer/waitable/dest.cc: Avoid -Wformat

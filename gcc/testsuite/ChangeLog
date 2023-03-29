@@ -1,3 +1,78 @@
+2023-03-28  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gfortran.dg/weak-2.f90: Enable for nvptx target.
+
+2023-03-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/107002
+	* c-c++-common/Wxor-used-as-pow-1.c: Add macro test.
+	* c-c++-common/Wxor-used-as-pow-pr107002-0.c: New test.
+	* c-c++-common/Wxor-used-as-pow-pr107002-1.c: New test.
+	* c-c++-common/Wxor-used-as-pow-pr107002-2.c: New test.
+
+2023-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107163
+	* g++.dg/warn/Wsequence-point-5.C: New test.
+
+2023-03-28  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/109312
+	* gcc.target/riscv/predef-__riscv_v_intrinsic.c: New test.
+
+2023-03-28  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/109187
+	* gcc.dg/pr109187.c: New test.
+
+2023-03-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109265
+	PR tree-optimization/109274
+	* gcc.dg/pr109274.c: New.
+	* gfortran.dg/pr109265.f90: New.
+
+2023-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107087
+	* g++.dg/pr107087.C: New testcase.
+
+2023-03-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/109072
+	* gcc.target/aarch64/pr109072_1.c: New test.
+	* gcc.target/aarch64/pr109072_2.c: Likewise.
+
+2023-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106190
+	* gcc.dg/asan/pr106190.c: New test.
+
+2023-03-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/20230328-1.c: New test.
+	* gcc.target/sparc/20230328-2.c: Likewise.
+	* gcc.target/sparc/20230328-3.c: Likewise.
+	* gcc.target/sparc/20230328-4.c: Likewise.
+
+2023-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109276
+	* gcc.target/i386/pr109276.c: New test.
+
+2023-03-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/20230328-1.c: New test.
+	* gcc.target/sparc/20230328-2.c: Likewise.
+	* gcc.target/sparc/20230328-3.c: Likewise.
+	* gcc.target/sparc/20230328-4.c: Likewise.
+
+2023-03-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp (add_options_for_weak_undefined): Escape
+	brackets.
+	* gcc.dg/visibility-22.c: Add weak_undefined options.
+
 2023-03-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/54498

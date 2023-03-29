@@ -1,3 +1,9 @@
+2023-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/109314
+	* openmp.cc (gfc_omp_absent_contains_clause): Fix typo in diagnostics
+	- composit -> composite.
+
 2023-03-25  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/104321

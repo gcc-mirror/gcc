@@ -1,3 +1,16 @@
+2023-03-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/107002
+	* parser.cc (cp_parser_binary_expression): Update for new param of
+	check_for_xor_used_as_pow.
+
+2023-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109309
+	* contracts.cc: Include intl.h.
+	(check_postcondition_result): Don't form diagnostics from two halves
+	of an English message to allow translations.
+
 2023-03-24  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/106969

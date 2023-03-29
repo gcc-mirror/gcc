@@ -1,3 +1,16 @@
+2023-03-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/107002
+	* c-common.h (check_for_xor_used_as_pow): Add "rhs_loc" param.
+	* c-warn.cc (check_for_xor_used_as_pow): Add "rhs_loc" param.
+	Reject cases where involving macro expansions.
+
+2023-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107163
+	* c-common.cc (verify_tree): Don't use sequenced handling
+	for COMPONENT_REF.
+
 2023-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/109151

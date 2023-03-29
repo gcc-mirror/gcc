@@ -1,3 +1,8 @@
+2023-03-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/libgomp.oacc-c-c++-common/routine-nohost-2.c: Add
+	weak_undefined options.
+
 2023-03-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	* libgomp.texi (Offload-Target Specifics): Grammar fix.

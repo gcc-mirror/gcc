@@ -1,3 +1,12 @@
+2023-03-28  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_zstd_read_fse): Call elf_fetch_bits after reading
+	bits, not before.  Add unlikely for error case.
+	(elf_zstd_offset_table): Regenerate.
+	(elf_zstd_read_huff): Clear 13 entries in weight_mark, not 12.
+	(elf_zstd_read_literals): For a single stream adjust by
+	total_streams_size, not compressed_size.
+
 2023-01-20  Ian Lance Taylor  <iant@golang.org>
 
 	* dwarf.c (struct function_addrs): Change low and high fields to

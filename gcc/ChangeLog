@@ -1,3 +1,182 @@
+2023-03-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/107002
+	* diagnostic-show-locus.cc (column_range::column_range): Factor
+	out assertion conditional into...
+	(column_range::valid_p): ...this new function.
+	(line_corrections::add_hint): Don't attempt to consolidate hints
+	if it would lead to invalid column_range instances.
+
+2023-03-28  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/109312
+	* config/riscv/riscv-c.cc (riscv_ext_version_value): New.
+	(riscv_cpu_cpp_builtins): Define __riscv_v_intrinsic and
+	minor refactor.
+
+2023-03-28  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/109187
+	* haifa-sched.cc (autopref_rank_for_schedule): Avoid use of overflowing
+	subtraction in three-way comparison.
+
+2023-03-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109265
+	PR tree-optimization/109274
+	* gimple-range-gori.cc (gori_compute::compute_operand_range): Do
+	not create a relation record is op1 and op2 are the same symbol.
+	(gori_compute::compute_operand1_range): Pass op1 == op2 to the
+	handler for this stmt, but create a new record only if this statement
+	generates a relation based on the ranges.
+	(gori_compute::compute_operand2_range): Ditto.
+	* value-relation.h (value_relation::set_relation): Always create the
+	record that is requested.
+
+2023-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107087
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Track
+	executable regions to avoid useless work and to better
+	propagate degenerate PHIs.
+
+2023-03-28  Costas Argyris  <costas.argyris@gmail.com>
+
+	* config/i386/x-mingw32-utf8: update comments.
+
+2023-03-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/109072
+	* config/aarch64/aarch64-protos.h (aarch64_vector_load_decl): Declare.
+	* config/aarch64/aarch64.h (machine_function::vector_load_decls): New
+	variable.
+	* config/aarch64/aarch64-builtins.cc (aarch64_record_vector_load_arg):
+	New function.
+	(aarch64_general_gimple_fold_builtin): Delay folding of vld1 until
+	after inlining.  Record which decls are loaded from.  Fix handling
+	of vops for loads and stores.
+	* config/aarch64/aarch64.cc (aarch64_vector_load_decl): New function.
+	(aarch64_accesses_vector_load_decl_p): Likewise.
+	(aarch64_vector_costs::m_stores_to_vector_load_decl): New member
+	variable.
+	(aarch64_vector_costs::add_stmt_cost): If the function has a vld1
+	that loads from a decl, treat vector stores to those decls as
+	zero cost.
+	(aarch64_vector_costs::finish_cost): ...and in that case,
+	if the vector code does nothing more than a store, give the
+	prologue a zero cost as well.
+
+2023-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/84402
+	PR tree-optimization/108129
+	* genmatch.cc (lower_for): For (match ...) delay
+	substituting into the match operator if possible.
+	(dt_operand::gen_gimple_expr): For user_id look at the
+	first substitute for determining how to access operands.
+	(dt_operand::gen_generic_expr): Likewise.
+	(dt_node::gen_kids): Properly sort user_ids according
+	to their substitutes.
+	(dt_node::gen_kids_1): Code-generate user_id matching.
+
+2023-03-28  Jakub Jelinek  <jakub@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcov-tool.cc (do_merge, do_merge_stream, do_rewrite, do_overlap):
+	Use subcommand rather than sub-command in function comments.
+
+2023-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109154
+	* value-range.h (frange::flush_denormals_to_zero): Make it public
+	rather than private.
+	* value-range.cc (frange::set): Don't call flush_denormals_to_zero
+	here.
+	* range-op-float.cc (range_operator_float::fold_range): Call
+	flush_denormals_to_zero.
+
+2023-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106190
+	* sanopt.cc (pass_sanopt::execute): Return TODO_cleanup_cfg if any
+	of the IFN_{UB,HWA,A}SAN_* internal fns are lowered.
+
+2023-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* range-op-float.cc (float_widen_lhs_range): Use pass get_nan_state
+	as 4th argument to set to avoid clear_nan and union_ calls.
+
+2023-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109276
+	* config/i386/i386.cc (assign_386_stack_local): For DImode
+	with SLOT_FLOATxFDI_387 and -m32 -mpreferred-stack-boundary=2 pass
+	align 32 rather than 0 to assign_stack_local.
+
+2023-03-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/109140
+	* config/sparc/sparc.cc (sparc_expand_vcond): Call signed_condition
+	on operand #3 to get the final condition code.  Use std::swap.
+	* config/sparc/sparc.md (vcondv8qiv8qi): New VIS 4 expander.
+	(fucmp<gcond:code>8<P:mode>_vis): Move around.
+	(fpcmpu<gcond:code><GCM:gcm_name><P:mode>_vis): Likewise.
+	(vcondu<GCM:mode><GCM:mode>): New VIS 4 expander.
+
+2023-03-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gm2.texi: Add missing Next, Previous and Top fields to most
+	top-level sections.
+
+2023-03-28  Costas Argyris  <costas.argyris@gmail.com>
+
+	* config.host: Pull in i386/x-mingw32-utf8 Makefile
+	fragment and reference utf8rc-mingw32.o explicitly
+	for mingw hosts.
+	* config/i386/sym-mingw32.cc: prevent name mangling of
+	stub symbol.
+	* config/i386/x-mingw32-utf8: Make utf8rc-mingw32.o
+	depend on manifest file explicitly.
+
+2023-03-28  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2023-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/109237
+	* cfgcleanup.cc (bb_is_just_return): Walk insns backwards.
+
+2023-03-28  Richard Biener  <rguenther@suse.de>
+
+	* common.opt (gdwarf): Remove Negative(gdwarf-).
+
+2023-03-28  Richard Biener  <rguenther@suse.de>
+
+	* common.opt (gdwarf): Add RejectNegative.
+	(gdwarf-): Likewise.
+	(ggdb): Likewise.
+	(gvms): Likewise.
+
+2023-03-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/constraints.md ("T"): Correct to
+	define_memory_constraint.
+
+2023-03-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md (BW2): New mode-iterator.
+	(lra_szext_decomposed, lra_szext_decomposed_indirect_with_offset): New
+	peephole2s.
+
+2023-03-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md ("*add<mode>3_addi"): Improve to bail only
+	for possible eliminable compares.
+
+2023-03-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/constraints.md ("R"): Remove unused constraint.
+
 2023-03-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR gcov-profile/109297
