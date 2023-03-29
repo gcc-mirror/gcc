@@ -70,10 +70,18 @@ TypeCheckType::Resolve (HIR::Type *type)
 void
 TypeCheckType::visit (HIR::BareFunctionType &fntype)
 {
-  TyTy::BaseType *return_type
-    = fntype.has_return_type ()
-	? TypeCheckType::Resolve (fntype.get_return_type ().get ())
-	: TyTy::TupleType::get_unit_type (fntype.get_mappings ().get_hirid ());
+  TyTy::BaseType *return_type;
+  if (fntype.has_return_type ())
+    {
+      return_type = TypeCheckType::Resolve (fntype.get_return_type ().get ());
+    }
+  else
+    {
+      // needs a new implicit ID
+      HirId ref = mappings->get_next_hir_id ();
+      return_type = TyTy::TupleType::get_unit_type (ref);
+      context->insert_implicit_type (ref, return_type);
+    }
 
   std::vector<TyTy::TyVar> params;
   for (auto &param : fntype.get_function_params ())
