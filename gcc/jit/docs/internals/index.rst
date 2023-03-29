@@ -291,8 +291,7 @@ For example:
 Overview of code structure
 --------------------------
 
-The library is implemented in C++.  The source files have the ``.c``
-extension for legacy reasons.
+The library is implemented in C++.
 
 * ``libgccjit.cc`` implements the API entrypoints.  It performs error
   checking, then calls into classes of the gcc::jit::recording namespace
