@@ -3972,7 +3972,7 @@ package body Exp_Ch5 is
 
          Declarations : constant List_Id := New_List (Selector_Decl);
 
-      --  Start of processing for Expand_General_Case_Statment
+      --  Start of processing for Expand_General_Case_Statement
 
       begin
          if Present (Choice_Index_Decl) then

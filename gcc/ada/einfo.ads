@@ -4762,7 +4762,7 @@ package Einfo is
 
 --    Wrapped_Statements
 --       Defined in functions, procedures, entries, and entry families. Refers
---       to the entity of the _Wrapped_Statements procedure which gets
+--       to the entity of the _Wrapped_Statements procedure, which gets
 --       generated as part of the expansion of contracts and postconditions
 --       and contains its enclosing subprogram's original source declarations
 --       and statements.

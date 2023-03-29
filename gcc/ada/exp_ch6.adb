@@ -3090,7 +3090,7 @@ package body Exp_Ch6 is
          --  Start of processing for Insert_Level_Assign
 
          begin
-            --  Examine further nested condtionals
+            --  Examine further nested conditionals
 
             pragma Assert (Nkind (Branch) =
                             N_Expression_With_Actions);

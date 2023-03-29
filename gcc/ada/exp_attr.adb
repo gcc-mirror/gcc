@@ -5051,7 +5051,7 @@ package body Exp_Attr is
          if Present (Subp) then
             Ins_Nod := Subp;
 
-         --  General case where the postcondtion checks occur after the call
+         --  General case where the postcondition checks occur after the call
          --  to _Wrapped_Statements.
 
          else
