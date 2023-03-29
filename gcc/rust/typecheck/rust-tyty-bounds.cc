@@ -271,7 +271,7 @@ namespace TyTy {
 
 TypeBoundPredicate::TypeBoundPredicate (
   const Resolver::TraitReference &trait_reference, Location locus)
-  : SubstitutionRef ({}, SubstitutionArgumentMappings::error ()),
+  : SubstitutionRef ({}, SubstitutionArgumentMappings::empty ()),
     reference (trait_reference.get_mappings ().get_defid ()), locus (locus),
     error_flag (false)
 {
@@ -286,7 +286,7 @@ TypeBoundPredicate::TypeBoundPredicate (
 
 TypeBoundPredicate::TypeBoundPredicate (
   DefId reference, std::vector<SubstitutionParamMapping> subst, Location locus)
-  : SubstitutionRef ({}, SubstitutionArgumentMappings::error ()),
+  : SubstitutionRef ({}, SubstitutionArgumentMappings::empty ()),
     reference (reference), locus (locus), error_flag (false)
 {
   substitutions.clear ();
@@ -299,7 +299,7 @@ TypeBoundPredicate::TypeBoundPredicate (
 }
 
 TypeBoundPredicate::TypeBoundPredicate (const TypeBoundPredicate &other)
-  : SubstitutionRef ({}, SubstitutionArgumentMappings::error ()),
+  : SubstitutionRef ({}, SubstitutionArgumentMappings::empty ()),
     reference (other.reference), locus (other.locus),
     error_flag (other.error_flag)
 {
@@ -337,7 +337,7 @@ TypeBoundPredicate::operator= (const TypeBoundPredicate &other)
   reference = other.reference;
   locus = other.locus;
   error_flag = other.error_flag;
-  used_arguments = SubstitutionArgumentMappings::error ();
+  used_arguments = SubstitutionArgumentMappings::empty ();
 
   substitutions.clear ();
   for (const auto &p : other.get_substs ())
