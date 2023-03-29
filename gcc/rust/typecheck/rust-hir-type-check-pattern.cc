@@ -24,7 +24,7 @@ namespace Rust {
 namespace Resolver {
 
 TypeCheckPattern::TypeCheckPattern (TyTy::BaseType *parent)
-  : TypeCheckBase (), parent (parent), infered (nullptr)
+  : TypeCheckBase (), parent (parent), infered (new TyTy::ErrorType (0))
 {}
 
 TyTy::BaseType *
@@ -50,11 +50,16 @@ TypeCheckPattern::visit (HIR::PathInExpression &pattern)
 void
 TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
 {
-  infered = TypeCheckExpr::Resolve (&pattern.get_path ());
-  if (infered->get_kind () == TyTy::TypeKind::ERROR)
-    return;
+  TyTy::BaseType *pattern_ty = TypeCheckExpr::Resolve (&pattern.get_path ());
+  if (pattern_ty->get_kind () != TyTy::TypeKind::ADT)
+    {
+      rust_error_at (pattern.get_locus (),
+		     "expected tuple struct/variant, found: %s",
+		     pattern_ty->get_name ().c_str ());
+      return;
+    }
 
-  rust_assert (infered->get_kind () == TyTy::TypeKind::ADT);
+  infered = pattern_ty;
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (infered);
   rust_assert (adt->number_of_variants () > 0);
 
@@ -137,11 +142,16 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
 void
 TypeCheckPattern::visit (HIR::StructPattern &pattern)
 {
-  infered = TypeCheckExpr::Resolve (&pattern.get_path ());
-  if (infered->get_kind () == TyTy::TypeKind::ERROR)
-    return;
+  TyTy::BaseType *pattern_ty = TypeCheckExpr::Resolve (&pattern.get_path ());
+  if (pattern_ty->get_kind () != TyTy::TypeKind::ADT)
+    {
+      rust_error_at (pattern.get_locus (),
+		     "expected tuple struct/variant, found: %s",
+		     pattern_ty->get_name ().c_str ());
+      return;
+    }
 
-  rust_assert (infered->get_kind () == TyTy::TypeKind::ADT);
+  infered = pattern_ty;
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (infered);
   rust_assert (adt->number_of_variants () > 0);
 
