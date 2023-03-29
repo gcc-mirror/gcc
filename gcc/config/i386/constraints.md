@@ -428,3 +428,9 @@
   (and (match_operand 0 "vector_memory_operand")
        (not (and (match_test "TARGET_APX_EGPR")
 		 (match_test "x86_extended_rex2reg_mentioned_p (op)")))))
+
+(define_address_constraint "jb"
+  "VSIB address operand without EGPR"
+  (and (match_operand 0 "vsib_address_operand")
+       (not (and (match_test "TARGET_APX_EGPR")
+		 (match_test "x86_extended_rex2reg_mentioned_p (op)")))))

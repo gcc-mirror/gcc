@@ -5174,13 +5174,14 @@
 })
 
 (define_insn_and_split "mmx_pmovmskb"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(unspec:SI [(match_operand:V8QI 1 "register_operand" "y,x")]
+  [(set (match_operand:SI 0 "register_operand" "=r,r,jr")
+	(unspec:SI [(match_operand:V8QI 1 "register_operand" "y,x,x")]
 		   UNSPEC_MOVMSK))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && (TARGET_SSE || TARGET_3DNOW_A)"
   "@
    pmovmskb\t{%1, %0|%0, %1}
+   #
    #"
   "TARGET_SSE2 && reload_completed
    && SSE_REGNO_P (REGNO (operands[1]))"
@@ -5195,9 +5196,9 @@
   operands[2] = lowpart_subreg (QImode, operands[0],
 				GET_MODE (operands[0]));
 }
-  [(set_attr "mmx_isa" "native,sse")
-   (set_attr "type" "mmxcvt,ssemov")
-   (set_attr "mode" "DI,TI")])
+  [(set_attr "mmx_isa" "native,sse_noavx,avx")
+   (set_attr "type" "mmxcvt,ssemov,ssemov")
+   (set_attr "mode" "DI,TI,TI")])
 
 (define_expand "mmx_maskmovq"
   [(set (match_operand:V8QI 0 "memory_operand")
