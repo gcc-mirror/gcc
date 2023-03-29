@@ -139,6 +139,8 @@ package Contracts is
    --    Async_Writers
    --    Effective_Reads
    --    Effective_Writes
+   --    Postcondition
+   --    Precondition
    --
    --  In the case of a protected or task type, there will also be
    --  a call to Analyze_Protected_Contract or Analyze_Task_Contract.

@@ -311,10 +311,13 @@ package body Contracts is
       --  The four volatility refinement pragmas are ok for all types.
       --  Part_Of is ok for task types and protected types.
       --  Depends and Global are ok for task types.
+      --
+      --  Precondition and Postcondition are added separately; they are allowed
+      --  for access-to-subprogram types.
 
       elsif Is_Type (Id) then
          declare
-            Is_OK : constant Boolean :=
+            Is_OK_Classification : constant Boolean :=
               Prag_Nam in Name_Async_Readers
                         | Name_Async_Writers
                         | Name_Effective_Reads
@@ -326,9 +329,16 @@ package body Contracts is
                                        | Name_Global)
               or else (Ekind (Id) = E_Protected_Type
                          and Prag_Nam = Name_Part_Of);
+
          begin
-            if Is_OK then
+            if Is_OK_Classification then
                Add_Classification;
+
+            elsif Ekind (Id) in Access_Subprogram_Kind
+                and then Prag_Nam in Name_Precondition
+                                   | Name_Postcondition
+            then
+               Add_Pre_Post_Condition;
             else
 
                --  The pragma is not a proper contract item
@@ -1580,6 +1590,12 @@ package body Contracts is
    begin
       Check_Type_Or_Object_External_Properties
         (Type_Or_Obj_Id => Type_Id);
+
+      --  Analyze Pre/Post on access-to-subprogram type
+
+      if Is_Access_Subprogram_Type (Type_Id) then
+         Analyze_Entry_Or_Subprogram_Contract (Type_Id);
+      end if;
    end Analyze_Type_Contract;
 
    ---------------------------------------

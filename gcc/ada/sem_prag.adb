@@ -5235,9 +5235,19 @@ package body Sem_Prag is
          then
             null;
 
-         --  An access-to-subprogram type can have pre/postconditions, but
-         --  these are transferred to the generated subprogram wrapper and
-         --  analyzed there.
+         --  An access-to-subprogram type can have pre/postconditions, which
+         --  are both analyzed when attached to the type and copied to the
+         --  generated subprogram wrapper and analyzed there.
+
+         elsif Nkind (Subp_Decl) = N_Full_Type_Declaration
+           and then Nkind (Type_Definition (Subp_Decl)) in
+                      N_Access_To_Subprogram_Definition
+         then
+            if Ada_Version < Ada_2022 then
+               Error_Msg_Ada_2022_Feature
+                 ("pre/postcondition access-to-subprogram", Loc);
+               raise Pragma_Exit;
+            end if;
 
          --  Otherwise the placement of the pragma is illegal
 
@@ -26635,11 +26645,15 @@ package body Sem_Prag is
 
       if not In_Open_Scopes (Spec_Id) then
          Restore_Scope := True;
-         Push_Scope (Spec_Id);
 
          if Is_Generic_Subprogram (Spec_Id) then
+            Push_Scope (Spec_Id);
             Install_Generic_Formals (Spec_Id);
+         elsif Is_Access_Subprogram_Type (Spec_Id) then
+            Push_Scope (Designated_Type (Spec_Id));
+            Install_Formals (Designated_Type (Spec_Id));
          else
+            Push_Scope (Spec_Id);
             Install_Formals (Spec_Id);
          end if;
       end if;

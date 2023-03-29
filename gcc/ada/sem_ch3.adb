@@ -6848,25 +6848,16 @@ package body Sem_Ch3 is
       declare
          Asp  : Node_Id;
          A_Id : Aspect_Id;
-         Cond : Node_Id;
-         Expr : Node_Id;
 
       begin
          Asp := First (Aspect_Specifications (Decl));
          while Present (Asp) loop
             A_Id := Get_Aspect_Id (Chars (Identifier (Asp)));
             if A_Id = Aspect_Pre or else A_Id = Aspect_Post then
-               Cond := Asp;
-               Expr := Expression (Cond);
-               Replace_Type_Name (Expr);
-               Next (Asp);
-
-               Remove (Cond);
-               Append (Cond, Contracts);
-
-            else
-               Next (Asp);
+               Append (New_Copy_Tree (Asp), Contracts);
+               Replace_Type_Name (Expression (Last (Contracts)));
             end if;
+            Next (Asp);
          end loop;
       end;
 

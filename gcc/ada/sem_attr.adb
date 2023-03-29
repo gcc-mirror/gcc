@@ -1513,6 +1513,7 @@ package body Sem_Attr is
          elsif Nkind (Subp_Decl) not in N_Abstract_Subprogram_Declaration
                                       | N_Entry_Declaration
                                       | N_Expression_Function
+                                      | N_Full_Type_Declaration
                                       | N_Generic_Subprogram_Declaration
                                       | N_Subprogram_Body
                                       | N_Subprogram_Body_Stub
@@ -6003,6 +6004,18 @@ package body Sem_Attr is
 
                   --  Otherwise the prefix denotes some unrelated function
 
+                  else
+                     Error_Msg_Name_2 := Chars (Spec_Id);
+                     Error_Attr
+                       ("incorrect prefix for attribute %, expected %", P);
+                  end if;
+
+               --  If the prefix is an access-to-subprogram type, then it must
+               --  be the same as the annotated type.
+
+               elsif Is_Access_Subprogram_Type (Pref_Id) then
+                  if Pref_Id = Spec_Id then
+                     Set_Etype (N, Etype (Designated_Type (Spec_Id)));
                   else
                      Error_Msg_Name_2 := Chars (Spec_Id);
                      Error_Attr
