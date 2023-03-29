@@ -959,30 +959,32 @@ END SetSearchPath ;
 
 
 (*
-   setdefextension -
+   setdefextension - set the source file definition module extension to arg.
+                     This should include the . and by default it is set to .def.
 *)
 
 PROCEDURE setdefextension (arg: ADDRESS) ;
 VAR
    s: String ;
 BEGIN
-   s := InitStringCharStar(arg) ;
-   SetDefExtension(s) ;
-   s := KillString(s)
+   s := InitStringCharStar (arg) ;
+   SetDefExtension (s) ;
+   s := KillString (s)
 END setdefextension ;
 
 
 (*
-   setmodextension -
+   setmodextension - set the source file module extension to arg.
+                     This should include the . and by default it is set to .mod.
 *)
 
 PROCEDURE setmodextension (arg: ADDRESS) ;
 VAR
    s: String ;
 BEGIN
-   s := InitStringCharStar(arg) ;
-   SetModExtension(s) ;
-   s := KillString(s)
+   s := InitStringCharStar (arg) ;
+   SetModExtension (s) ;
+   s := KillString (s)
 END setmodextension ;
 
 

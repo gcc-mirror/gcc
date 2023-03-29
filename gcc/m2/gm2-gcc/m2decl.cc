@@ -122,7 +122,7 @@ m2decl_DeclareKnownVariable (location_t location, const char *name, tree type,
     error ("storage size of %qD has not been resolved", decl);
 
   if ((TREE_PUBLIC (decl) == 0) && DECL_EXTERNAL (decl))
-    internal_error ("inconsistant because %qs",
+    internal_error ("inconsistent because %qs",
 		    "PUBLIC_DECL(decl) == 0 && DECL_EXTERNAL(decl) == 1");
 
   m2block_addDeclExpr (build_stmt (location, DECL_EXPR, decl));

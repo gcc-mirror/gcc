@@ -730,14 +730,16 @@ PROCEDURE SetStrictTypeChecking (value: BOOLEAN) ;
 
 
 (*
-   setdefextension -
+   setdefextension - set the source file definition module extension to arg.
+                     This should include the . and by default it is set to .def.
 *)
 
 PROCEDURE setdefextension (arg: ADDRESS) ;
 
 
 (*
-   setmodextension -
+   setmodextension - set the source file module extension to arg.
+                     This should include the . and by default it is set to .mod.
 *)
 
 PROCEDURE setmodextension (arg: ADDRESS) ;
