@@ -280,14 +280,6 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
       // turbo-fish segment path::<ty>
       if (seg.has_generic_args ())
 	{
-	  if (!lookup->has_subsititions_defined ())
-	    {
-	      rust_error_at (expr.get_locus (),
-			     "substitutions not supported for %s",
-			     root_tyty->as_string ().c_str ());
-	      return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
-	    }
-
 	  lookup = SubstMapper::Resolve (lookup, expr.get_locus (),
 					 &seg.get_generic_args ());
 	  if (lookup->get_kind () == TyTy::TypeKind::ERROR)
@@ -456,13 +448,6 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 
       if (seg.has_generic_args ())
 	{
-	  if (!tyseg->has_subsititions_defined ())
-	    {
-	      rust_error_at (expr_locus, "substitutions not supported for %s",
-			     tyseg->as_string ().c_str ());
-	      return;
-	    }
-
 	  tyseg = SubstMapper::Resolve (tyseg, expr_locus,
 					&seg.get_generic_args ());
 	  if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
