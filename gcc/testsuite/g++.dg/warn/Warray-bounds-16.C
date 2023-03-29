@@ -20,7 +20,6 @@ struct S
 
     for (int i = 0; i < m; i++)
       new (p + i) int (); /* { dg-bogus "bounds" "pr102690" { xfail *-*-* } } */
-    // { dg-bogus "size 0 overflows" "pr107561" { xfail ilp32 } .-1 }
   }
 };
 
