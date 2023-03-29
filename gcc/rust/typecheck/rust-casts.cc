@@ -80,7 +80,6 @@ TypeCastRules::cast_rules ()
 	    switch (to.get_ty ()->get_kind ())
 	      {
 	      case TyTy::TypeKind::CHAR:
-	      case TyTy::TypeKind::BOOL:
 	      case TyTy::TypeKind::USIZE:
 	      case TyTy::TypeKind::ISIZE:
 	      case TyTy::TypeKind::UINT:
