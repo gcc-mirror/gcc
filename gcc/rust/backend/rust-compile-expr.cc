@@ -2880,20 +2880,25 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
 
   // lookup locals
   HIR::Expr *function_body = expr.get_expr ().get ();
-  auto body_mappings = function_body->get_mappings ();
-  Resolver::Rib *rib = nullptr;
-  bool ok
-    = ctx->get_resolver ()->find_name_rib (body_mappings.get_nodeid (), &rib);
-  rust_assert (ok);
+  bool is_block_expr
+    = function_body->get_expression_type () == HIR::Expr::ExprType::Block;
 
-  std::vector<Bvariable *> locals
-    = compile_locals_for_block (ctx, *rib, fndecl);
+  std::vector<Bvariable *> locals = {};
+  if (is_block_expr)
+    {
+      auto body_mappings = function_body->get_mappings ();
+      Resolver::Rib *rib = nullptr;
+      bool ok
+	= ctx->get_resolver ()->find_name_rib (body_mappings.get_nodeid (),
+					       &rib);
+      rust_assert (ok);
+
+      locals = compile_locals_for_block (ctx, *rib, fndecl);
+    }
 
   tree enclosing_scope = NULL_TREE;
   Location start_location = function_body->get_locus ();
   Location end_location = function_body->get_locus ();
-  bool is_block_expr
-    = function_body->get_expression_type () == HIR::Expr::ExprType::Block;
   if (is_block_expr)
     {
       HIR::BlockExpr *body = static_cast<HIR::BlockExpr *> (function_body);
