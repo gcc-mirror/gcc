@@ -432,16 +432,6 @@ For example, SSA names are printed to the user in ``raw'' form, rather
 than printing the underlying variable name.
 @end itemize
 
-Some ideas for other checkers
-@itemize @bullet
-@item
-File-descriptor-based APIs
-@item
-Linux kernel internal APIs
-@item
-Signal handling
-@end itemize
-
 @node Debugging the Analyzer
 @section Debugging the Analyzer
 @cindex analyzer, debugging
