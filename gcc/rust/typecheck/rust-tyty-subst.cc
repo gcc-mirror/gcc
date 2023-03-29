@@ -236,16 +236,17 @@ SubstitutionArg::as_string () const
 SubstitutionArgumentMappings::SubstitutionArgumentMappings (
   std::vector<SubstitutionArg> mappings,
   std::map<std::string, BaseType *> binding_args, Location locus,
-  ParamSubstCb param_subst_cb, bool trait_item_flag)
+  ParamSubstCb param_subst_cb, bool trait_item_flag, bool error_flag)
   : mappings (mappings), binding_args (binding_args), locus (locus),
-    param_subst_cb (param_subst_cb), trait_item_flag (trait_item_flag)
+    param_subst_cb (param_subst_cb), trait_item_flag (trait_item_flag),
+    error_flag (error_flag)
 {}
 
 SubstitutionArgumentMappings::SubstitutionArgumentMappings (
   const SubstitutionArgumentMappings &other)
   : mappings (other.mappings), binding_args (other.binding_args),
     locus (other.locus), param_subst_cb (nullptr),
-    trait_item_flag (other.trait_item_flag)
+    trait_item_flag (other.trait_item_flag), error_flag (other.error_flag)
 {}
 
 SubstitutionArgumentMappings &
@@ -257,6 +258,7 @@ SubstitutionArgumentMappings::operator= (
   locus = other.locus;
   param_subst_cb = nullptr;
   trait_item_flag = other.trait_item_flag;
+  error_flag = other.error_flag;
 
   return *this;
 }
@@ -264,13 +266,21 @@ SubstitutionArgumentMappings::operator= (
 SubstitutionArgumentMappings
 SubstitutionArgumentMappings::error ()
 {
-  return SubstitutionArgumentMappings ({}, {}, Location (), nullptr, false);
+  return SubstitutionArgumentMappings ({}, {}, Location (), nullptr, false,
+				       true);
+}
+
+SubstitutionArgumentMappings
+SubstitutionArgumentMappings::empty ()
+{
+  return SubstitutionArgumentMappings ({}, {}, Location (), nullptr, false,
+				       false);
 }
 
 bool
 SubstitutionArgumentMappings::is_error () const
 {
-  return mappings.size () == 0;
+  return error_flag;
 }
 
 bool
