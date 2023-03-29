@@ -1,6 +1,6 @@
 /* coreout.h - Declarations and definitions related to
    BPF Compile Once - Run Everywhere (CO-RE) support.
-   Copyright (C) 2021-2022 Free Software Foundation, Inc.
+   Copyright (C) 2021-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -103,7 +103,7 @@ extern void btf_ext_init (void);
 extern void btf_ext_output (void);
 
 extern void bpf_core_reloc_add (const tree, const char *, vec<unsigned int> *,
-				rtx_code_label *);
+				rtx_code_label *, enum btf_core_reloc_kind);
 extern int bpf_core_get_sou_member_index (ctf_container_ref, const tree);
 
 #ifdef	__cplusplus

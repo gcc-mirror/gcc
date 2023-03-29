@@ -10,7 +10,6 @@ module core.sys.linux.execinfo;
 version (linux):
 extern (C):
 nothrow:
-@system:
 @nogc:
 
 int backtrace(void** buffer, int size);

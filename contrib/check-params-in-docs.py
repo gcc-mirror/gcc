@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+# Copyright (C) 2018-2023 Free Software Foundation, Inc.
 #
 # Find missing and extra parameters in documentation compared to
 # output of: gcc --help=params.

@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Free Software Foundation, Inc.
+// Copyright (C) 2020-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,9 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // expensive: * [1-9] * *
-#include "bits/verify.h"
-#include "bits/metahelpers.h"
-#include "bits/test_values.h"
+#include "bits/main.h"
 #include <random>
 
 template <typename V>
@@ -114,6 +112,7 @@ template <typename V>
       T acc = x[0];
       for (size_t i = 1; i < V::size(); ++i)
 	acc += x[i];
-      ULP_COMPARE(reduce(x), acc, V::size() / 2).on_failure("x = ", x);
+      const T max_distance = std::is_integral_v<T> ? 0 : V::size() / 2;
+      ULP_COMPARE(reduce(x), acc, max_distance).on_failure("x = ", x);
     });
   }

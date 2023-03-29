@@ -1,0 +1,107 @@
+(* Termbase.def provides GNU Modula-2 with a PIM 234 compatible Termbase.
+
+Copyright (C) 2004-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE Termbase ;
+
+(*
+   Initially the read routines from Keyboard and the
+   write routine from Display is assigned to the Read,
+   KeyPressed and Write procedures.
+*)
+
+EXPORT QUALIFIED ReadProcedure, StatusProcedure, WriteProcedure,
+                 AssignRead, AssignWrite, UnAssignRead, UnAssignWrite,
+                 Read, KeyPressed, Write ;
+
+TYPE
+   ReadProcedure = PROCEDURE (VAR CHAR) ;
+   WriteProcedure = PROCEDURE (CHAR) ;
+   StatusProcedure = PROCEDURE () : BOOLEAN ;
+
+
+(*
+   AssignRead - assigns a read procedure and status procedure for terminal
+                input. Done is set to TRUE if successful. Subsequent
+                Read and KeyPressed calls are mapped onto the user supplied
+                procedures. The previous read and status procedures are
+                uncovered and reused after UnAssignRead is called.
+*)
+
+PROCEDURE AssignRead (rp: ReadProcedure; sp: StatusProcedure;
+                      VAR Done: BOOLEAN) ;
+
+
+(*
+   UnAssignRead - undo the last call to AssignRead and set Done to TRUE
+                  on success.
+*)
+
+PROCEDURE UnAssignRead (VAR Done: BOOLEAN) ;
+
+
+(*
+   Read - reads a single character using the currently active read
+          procedure.
+*)
+
+PROCEDURE Read (VAR ch: CHAR) ;
+
+
+(*
+   KeyPressed - returns TRUE if a character is available to be read.
+*)
+
+PROCEDURE KeyPressed () : BOOLEAN ;
+
+
+(*
+   AssignWrite - assigns a write procedure for terminal output.
+                 Done is set to TRUE if successful. Subsequent
+                 Write calls are mapped onto the user supplied
+                 procedure. The previous write procedure is
+                 uncovered and reused after UnAssignWrite is called.
+*)
+
+PROCEDURE AssignWrite (wp: WriteProcedure; VAR Done: BOOLEAN) ;
+
+
+(*
+   UnAssignWrite - undo the last call to AssignWrite and set Done to TRUE
+                   on success.
+*)
+
+PROCEDURE UnAssignWrite (VAR Done: BOOLEAN) ;
+
+
+(*
+   Write - writes a single character using the currently active write
+           procedure.
+*)
+
+PROCEDURE Write (VAR ch: CHAR) ;
+
+
+END Termbase.

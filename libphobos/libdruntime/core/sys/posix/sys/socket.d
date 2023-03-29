@@ -45,7 +45,6 @@ version (X86_64)  version = X86_Any;
 
 version (Posix):
 extern (C) nothrow @nogc:
-@system:
 
 //
 // Required

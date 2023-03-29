@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -198,6 +198,79 @@ package body Ch2 is
    --  or a single GRAPHIC_CHARACTER other than a quotation mark.
 
    --  Handled by scanner as part of string literal handling (see 2.4)
+
+   ---------------------------------------
+   --  2.6  Interpolated String Literal --
+   ---------------------------------------
+
+   --  INTERPOLATED_STRING_LITERAL ::=
+   --    'f' "{INTERPOLATED_STRING_ELEMENT}" {
+   --        "{INTERPOLATED_STRING_ELEMENT}" }
+
+   --  INTERPOLATED_STRING_ELEMENT ::=
+   --     ESCAPED_CHARACTER | INTERPOLATED_EXPRESSION
+   --   | non_quotation_mark_non_left_brace_GRAPHIC_CHARACTER
+
+   --  ESCAPED_CHARACTER ::= '\GRAPHIC_CHARACTER'
+
+   --  INTERPOLATED_EXPRESSION ::= '{' EXPRESSION '}'
+
+   --  Interpolated string element and escaped character rules are handled by
+   --  scanner as part of string literal handling.
+
+   -----------------------------------
+   -- P_Interpolated_String_Literal --
+   -----------------------------------
+
+   function P_Interpolated_String_Literal return Node_Id is
+      Elements_List : constant List_Id := New_List;
+      NL_Node       : Node_Id;
+      String_Node   : Node_Id;
+
+   begin
+      String_Node := New_Node (N_Interpolated_String_Literal, Token_Ptr);
+      Inside_Interpolated_String_Literal := True;
+
+      Scan;   --  past 'f'
+
+      if Token /= Tok_String_Literal then
+         Error_Msg_SC ("string literal expected");
+
+      else
+         Append_To (Elements_List, Token_Node);
+         Scan;  --  past string_literal
+
+         while Token in Tok_Left_Curly_Bracket | Tok_String_Literal loop
+
+            --  Interpolated expression
+
+            if Token = Tok_Left_Curly_Bracket then
+               Scan; --  past '{'
+               Append_To (Elements_List, P_Expression);
+               T_Right_Curly_Bracket;
+            else
+               if Prev_Token = Tok_String_Literal then
+                  NL_Node := New_Node (N_String_Literal, Token_Ptr);
+                  Set_Has_Wide_Character (NL_Node, False);
+                  Set_Has_Wide_Wide_Character (NL_Node, False);
+
+                  Start_String;
+                  Store_String_Char (Get_Char_Code (ASCII.LF));
+                  Set_Strval (NL_Node, End_String);
+                  Append_To (Elements_List, NL_Node);
+               end if;
+
+               Append_To (Elements_List, Token_Node);
+               Scan; --  past string_literal
+            end if;
+         end loop;
+      end if;
+
+      Inside_Interpolated_String_Literal := False;
+      Set_Expressions (String_Node, Elements_List);
+
+      return String_Node;
+   end P_Interpolated_String_Literal;
 
    ------------------
    -- 2.7  Comment --

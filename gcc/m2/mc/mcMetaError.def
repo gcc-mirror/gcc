@@ -1,0 +1,128 @@
+(* mcMetaError.def provides a set of high level error routines.
+
+Copyright (C) 2015-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE mcMetaError ;
+
+(* Provides a set of high level error routines.  These
+   routines utilise M2Error and provides the programmer
+   with an easier method to obtain useful symbol table
+   information.  *)
+
+FROM SYSTEM IMPORT BYTE ;
+FROM DynamicStrings IMPORT String ;
+
+
+(*
+    All the procedures below expect the n, n1, n2, n3, n4 to be nodes
+    or Name or Cardinal.
+    and m, m1, m2, m3 are error messages and format specifiers.
+    The format specifiers are:
+
+    {%1a}     symbol name for the first symbol.
+    {%1q}     qualified name for the first symbol.
+    {%1t}     type name for the first symbol.
+    {%1ts}    skips type pseudonyms.
+    {%1d}     symbol description
+    {%1td}    type symbol description.
+    {%1k}     operand is a Name not a symbol.
+    {%1N}     operand is a CARDINAL, generate english description of
+              the number (count), ie 1st, 2nd, 3rd, 4th, 19th.
+    {%1n}     operand is a CARDINAL, convert to a number.
+
+    {%1D}     sets the error message to where symbol 1 was declared.
+              The declaration will choose the definition module, then
+              implementation (or program) module.
+    {%1M}     sets the error message to where symbol 1 was declared.
+              The declaration will choose the implementation or program
+              module and if these do not exist then it falls back to
+              the definition module.
+    {%1U}     sets the error message to where symbol 1 was first used.
+    {%E}      error (default)
+    {%W}      message is a warning, not an error.
+    %%        %
+    %{        {
+    %}        }
+
+    the error messages may also embed optional strings such as:
+
+    {%1a:this string is emitted if the symbol name is non null}
+    {!%1a:this string is emitted if the symbol name is null}
+    {!%1a:{%1d}}
+           if the symbol name does not exist then print a description
+           of the symbol.
+    {%1atd} was incompatible with the return type of the procedure
+           means print the symbol name (if null then print the type name
+           if null then print out the description) followed by the
+           string "was incompatible with the return type of the procedure"
+
+    Note all replaced names or descriptions are enclosed in quotes, like:
+    'foo', which matches the behaviour of gcc.  Also note temporary names
+    are treated as null.  Finally the order of format specifiers does
+    matter, {%1td} means get type name and use it if non null, otherwise
+    describe the symbol.
+*)
+
+(*
+   ebnf := { percent | lbra | any } =:
+
+   percent := '%' anych =:
+
+   lbra := '{' [ '!' ] percenttoken '}' =:
+
+   percenttoken := '%' ( '1' op | '2' op | '3' op | '4' op ) =:
+
+   op := {'a'|'q'|'t'|'d'|'k'|'n'|'s'|'D'|'U'|'E'|'W'} then =:
+
+   then := [ ':' ebnf ] =:
+*)
+
+PROCEDURE metaError1 (m: ARRAY OF CHAR; s: ARRAY OF BYTE) ;
+PROCEDURE metaError2 (m: ARRAY OF CHAR; s1, s2: ARRAY OF BYTE) ;
+PROCEDURE metaError3 (m: ARRAY OF CHAR; s1, s2, s3: ARRAY OF BYTE) ;
+PROCEDURE metaError4 (m: ARRAY OF CHAR; s1, s2, s3, s4: ARRAY OF BYTE) ;
+
+PROCEDURE metaErrors1 (m1, m2: ARRAY OF CHAR; s: ARRAY OF BYTE) ;
+PROCEDURE metaErrors2 (m1, m2: ARRAY OF CHAR; s1, s2: ARRAY OF BYTE) ;
+PROCEDURE metaErrors3 (m1, m2: ARRAY OF CHAR; s1, s2, s3: ARRAY OF BYTE) ;
+PROCEDURE metaErrors4 (m1, m2: ARRAY OF CHAR; s1, s2, s3, s4: ARRAY OF BYTE) ;
+
+PROCEDURE metaErrorT1 (tok: CARDINAL; m: ARRAY OF CHAR; s: ARRAY OF BYTE) ;
+PROCEDURE metaErrorT2 (tok: CARDINAL; m: ARRAY OF CHAR; s1, s2: ARRAY OF BYTE) ;
+PROCEDURE metaErrorT3 (tok: CARDINAL; m: ARRAY OF CHAR; s1, s2, s3: ARRAY OF BYTE) ;
+PROCEDURE metaErrorT4 (tok: CARDINAL; m: ARRAY OF CHAR; s1, s2, s3, s4: ARRAY OF BYTE) ;
+
+PROCEDURE metaErrorsT1 (tok: CARDINAL; m1, m2: ARRAY OF CHAR; s: ARRAY OF BYTE) ;
+PROCEDURE metaErrorsT2 (tok: CARDINAL; m1, m2: ARRAY OF CHAR; s1, s2: ARRAY OF BYTE) ;
+PROCEDURE metaErrorsT3 (tok: CARDINAL; m1, m2: ARRAY OF CHAR; s1, s2, s3: ARRAY OF BYTE) ;
+PROCEDURE metaErrorsT4 (tok: CARDINAL; m1, m2: ARRAY OF CHAR; s1, s2, s3, s4: ARRAY OF BYTE) ;
+
+PROCEDURE metaErrorString1 (m: String; s: ARRAY OF BYTE) ;
+PROCEDURE metaErrorString2 (m: String; s1, s2: ARRAY OF BYTE) ;
+PROCEDURE metaErrorString3 (m: String; s1, s2, s3: ARRAY OF BYTE) ;
+PROCEDURE metaErrorString4 (m: String; s1, s2, s3, s4: ARRAY OF BYTE) ;
+
+PROCEDURE metaErrorStringT1 (tok: CARDINAL; m: String; s: ARRAY OF BYTE) ;
+PROCEDURE metaErrorStringT2 (tok: CARDINAL; m: String; s1, s2: ARRAY OF BYTE) ;
+PROCEDURE metaErrorStringT3 (tok: CARDINAL; m: String; s1, s2, s3: ARRAY OF BYTE) ;
+PROCEDURE metaErrorStringT4 (tok: CARDINAL; m: String; s1, s2, s3, s4: ARRAY OF BYTE) ;
+
+
+END mcMetaError.

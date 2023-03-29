@@ -1,6 +1,6 @@
 /* Communication between the Local Register Allocator (LRA) and
    the rest of the compiler.
-   Copyright (C) 2010-2022 Free Software Foundation, Inc.
+   Copyright (C) 2010-2023 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -27,7 +27,7 @@ extern bool lra_simple_p;
 /* Return the allocno reg class of REGNO.  If it is a reload pseudo,
    the pseudo should finally get hard register of the allocno
    class.  */
-static inline enum reg_class
+inline enum reg_class
 lra_get_allocno_class (int regno)
 {
   resize_reg_info ();

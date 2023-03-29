@@ -1,0 +1,44 @@
+@c README.texi describes the additional PIM libraries.
+@c Copyright @copyright{} 2000-2023 Free Software Foundation, Inc.
+@c
+@c This is part of the GM2 manual.
+@c For copying conditions, see the file gcc/doc/include/fdl.texi.
+
+These modules are provided to enable legacy Modula-2 applications to
+build with GNU Modula-2. It is advised that these module should not
+be used for new projects, maybe the ISO libraries or the native
+compiler PIM libraries (FIO) should be used instead.
+
+Here is an outline of the module layering:
+
+@example
+
+InOut  RealInOut  LongIO CardinalIO
+    \     |       |      /
+           Terminal
+-----------------------------------
+              |
+           Termbase
+           /      \
+    Keyboard      Display
+
+@end example
+
+Above the line are user level PIM [234] and Logitech 3.0 compatible
+modules.  Below the line Logitech 3.0 advised that these modules
+should be considered part of the runtime system. The libraries do
+not provide all the features found in the Logitech libraries as
+a number of these features were MS-DOS related. Essentially the
+basic input/output, file system, string manipulation and conversion
+routines are provided. Access to DOSCALL, graphics, time and date
+are not as these were constrained by the limitations of MS-DOS.
+
+The following libraries are contained within the base GNU Modula-2
+libraries and are also Logitech-3.0 compatible: @xref{gm2-libs/ASCII},
+@xref{gm2-libs/Storage} and @xref{gm2-libs/MathLib0}.  These libraries
+are always available for any dialect of the language (although their
+implementation and behaviour might differ, for example Storage ISO and
+PIM).
+
+The following libraries are Logitech-3.0 compatible but fall outside
+the base GNU Modula-2 libraries.

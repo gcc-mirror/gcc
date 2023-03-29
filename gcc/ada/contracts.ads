@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2015-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 2015-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -275,6 +275,10 @@ package Contracts is
    --  expressions are later installed by the expander in helper subprograms
    --  which are invoked from the caller side; they are also used to build
    --  the dispatch-table wrapper (DTW), if required.
+
+   procedure Preanalyze_Class_Conditions (Spec_Id : Entity_Id);
+   --  Preanalyze class-wide pre-/postconditions of the given subprogram
+   --  specification.
 
    procedure Process_Class_Conditions_At_Freeze_Point (Typ : Entity_Id);
    --  Merge, preanalyze, and check class-wide pre/postconditions of Typ

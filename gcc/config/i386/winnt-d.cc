@@ -1,5 +1,5 @@
 /* Windows support needed only by D front-end.
-   Copyright (C) 2021-2022 Free Software Foundation, Inc.
+   Copyright (C) 2021-2023 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free
@@ -31,12 +31,14 @@ static void
 winnt_d_os_builtins (void)
 {
   d_add_builtin_version ("Windows");
+  d_add_builtin_version ("MinGW");
 
-#define builtin_version(TXT) d_add_builtin_version (TXT)
+  if (TARGET_64BIT && ix86_abi == MS_ABI)
+    d_add_builtin_version ("Win64");
+  else if (!TARGET_64BIT)
+    d_add_builtin_version ("Win32");
 
-#ifdef EXTRA_TARGET_D_OS_VERSIONS
-  EXTRA_TARGET_D_OS_VERSIONS ();
-#endif
+  d_add_builtin_version ("CRuntime_Microsoft");
 }
 
 /* Handle a call to `__traits(getTargetInfo, "objectFormat")'.  */
@@ -66,17 +68,6 @@ winnt_d_register_target_info (void)
 
 #undef TARGET_D_REGISTER_OS_TARGET_INFO
 #define TARGET_D_REGISTER_OS_TARGET_INFO winnt_d_register_target_info
-
-/* Define TARGET_D_MINFO_SECTION for Windows targets.  */
-
-#undef TARGET_D_MINFO_SECTION
-#define TARGET_D_MINFO_SECTION "minfo"
-
-#undef TARGET_D_MINFO_START_NAME
-#define TARGET_D_MINFO_START_NAME "__start_minfo"
-
-#undef TARGET_D_MINFO_END_NAME
-#define TARGET_D_MINFO_END_NAME "__stop_minfo"
 
 /* Define TARGET_D_TEMPLATES_ALWAYS_COMDAT for Windows targets.  */
 

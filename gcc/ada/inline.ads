@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,7 +94,7 @@ package Inline is
       --  This means we have to capture this information from the current scope
       --  at the point of instantiation.
 
-      Warnings : Warning_Record;
+      Warnings : Warnings_State;
       --  Capture values of warning flags
    end record;
 

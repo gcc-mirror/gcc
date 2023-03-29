@@ -10,8 +10,7 @@ int test (void)
 }
 
 /* Use dg-regexp to consume the JSON output starting with
-   the innermost values, and working outwards.
-   We can't rely on any ordering of the keys.  */
+   the innermost values, and working outwards.  */
 
 /* Verify nested diagnostics.  */
 

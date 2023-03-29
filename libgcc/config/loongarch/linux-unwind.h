@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for LoongArch Linux.
-   Copyright (C) 2021-2022 Free Software Foundation, Inc.
+   Copyright (C) 2021-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -64,12 +64,12 @@ loongarch_fallback_frame_state (struct _Unwind_Context *context,
 
   for (i = 0; i < 32; i++)
     {
-      fs->regs.reg[i].how = REG_SAVED_OFFSET;
+      fs->regs.how[i] = REG_SAVED_OFFSET;
       fs->regs.reg[i].loc.offset = (_Unwind_Ptr) & (sc->sc_regs[i]) - new_cfa;
     }
 
   fs->signal_frame = 1;
-  fs->regs.reg[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__].how
+  fs->regs.how[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__]
     = REG_SAVED_VAL_OFFSET;
   fs->regs.reg[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__].loc.offset
     = (_Unwind_Ptr) (sc->sc_pc) - new_cfa;

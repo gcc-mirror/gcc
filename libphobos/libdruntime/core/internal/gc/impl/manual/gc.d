@@ -29,7 +29,12 @@ static import core.memory;
 extern (C) void onOutOfMemoryError(void* pretend_sideffect = null) @trusted pure nothrow @nogc; /* dmd @@@BUG11461@@@ */
 
 // register GC in C constructor (_STI_)
-extern(C) pragma(crt_constructor) void _d_register_manual_gc()
+private pragma(crt_constructor) void gc_manual_ctor()
+{
+    _d_register_manual_gc();
+}
+
+extern(C) void _d_register_manual_gc()
 {
     import core.gc.registry;
     registerGCFactory("manual", &initialize);

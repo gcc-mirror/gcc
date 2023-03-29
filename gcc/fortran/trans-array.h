@@ -1,5 +1,5 @@
 /* Header for array handling functions
-   Copyright (C) 2002-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2023 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -56,10 +56,13 @@ tree gfc_nullify_alloc_comp (gfc_symbol *, tree, int, int cm = 0);
 tree gfc_deallocate_alloc_comp (gfc_symbol *, tree, int, int cm = 0);
 tree gfc_bcast_alloc_comp (gfc_symbol *, gfc_expr *, int, tree,
 			   tree, tree, tree);
-tree gfc_deallocate_alloc_comp_no_caf (gfc_symbol *, tree, int);
+tree gfc_deallocate_alloc_comp_no_caf (gfc_symbol *, tree, int,
+				       bool no_finalization = false);
 tree gfc_reassign_alloc_comp_caf (gfc_symbol *, tree, tree);
 
 tree gfc_copy_alloc_comp (gfc_symbol *, tree, tree, int, int);
+
+tree gfc_copy_alloc_comp_no_fini (gfc_symbol *, tree, tree, int, int);
 
 tree gfc_copy_only_alloc_comp (gfc_symbol *, tree, tree, int);
 
@@ -69,6 +72,8 @@ tree gfc_check_pdt_dummy (gfc_symbol *, tree, int, gfc_actual_arglist *);
 
 tree gfc_alloc_allocatable_for_assignment (gfc_loopinfo*, gfc_expr*, gfc_expr*);
 
+/* Add initialization for class descriptors  */
+void gfc_trans_class_array (gfc_symbol *, gfc_wrapped_block *);
 /* Add initialization for deferred arrays.  */
 void gfc_trans_deferred_array (gfc_symbol *, gfc_wrapped_block *);
 /* Generate an initializer for a static pointer or allocatable array.  */

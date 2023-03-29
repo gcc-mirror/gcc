@@ -1,5 +1,5 @@
 /* Target Code for OpenRISC
-   Copyright (C) 2018-2022 Free Software Foundation, Inc.
+   Copyright (C) 2018-2023 Free Software Foundation, Inc.
    Contributed by Stafford Horne based on other ports.
 
    This file is part of GCC.
@@ -2206,8 +2206,10 @@ or1k_output_mi_thunk (FILE *file, tree thunk_fndecl,
 #undef  TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P or1k_legitimate_address_p
 
+#ifdef HAVE_AS_TLS
 #undef  TARGET_HAVE_TLS
 #define TARGET_HAVE_TLS true
+#endif
 
 #undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed

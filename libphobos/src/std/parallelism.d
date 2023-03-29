@@ -1508,7 +1508,7 @@ public:
 
         if (this.size == 0)
         {
-            return rangeLen;
+            return max(rangeLen, 1);
         }
 
         immutable size_t eightSize = 4 * (this.size + 1);
@@ -3644,6 +3644,15 @@ ParallelForeach!R parallel(R)(R range, size_t workUnitSize)
     assert(arrIndex.sum == 10.iota.sum);
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=22745
+@system unittest
+{
+    auto pool = new TaskPool(0);
+    int[] empty;
+    foreach (i; pool.parallel(empty)) {}
+    pool.finish();
+}
+
 // Thrown when a parallel foreach loop is broken from.
 class ParallelForeachError : Error
 {
@@ -4339,7 +4348,7 @@ version (StdUnittest)
 
     foreach (i, elem; logs)
     {
-        assert(isClose(elem, cast(double) log(i + 1)));
+        assert(isClose(elem, log(double(i + 1))));
     }
 
     assert(poolInstance.amap!"a * a"([1,2,3,4,5]) == [1,4,9,16,25]);

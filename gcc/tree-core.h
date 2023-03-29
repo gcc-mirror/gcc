@@ -1,5 +1,5 @@
 /* Core data structures for the 'tree' type.
-   Copyright (C) 1989-2022 Free Software Foundation, Inc.
+   Copyright (C) 1989-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -665,6 +665,9 @@ enum tree_index {
   TI_DOUBLE_TYPE,
   TI_LONG_DOUBLE_TYPE,
 
+  /* __bf16 type if supported (used in C++ as std::bfloat16_t).  */
+  TI_BFLOAT16_TYPE,
+
   /* The _FloatN and _FloatNx types must be consecutive, and in the
      same sequence as the corresponding complex types, which must also
      be consecutive; _FloatN must come before _FloatNx; the order must
@@ -689,6 +692,10 @@ enum tree_index {
 #define NUM_FLOATN_NX_TYPES (TI_FLOATN_NX_TYPE_LAST		\
 			     - TI_FLOATN_NX_TYPE_FIRST		\
 			     + 1)
+
+  /* Type used by certain backends for __float128, which in C++ should be
+     distinct type from _Float128 for backwards compatibility reasons.  */
+  TI_FLOAT128T_TYPE,
 
   /* Put the complex types after their component types, so that in (sequential)
      tree streaming we can assert that their component types have already been
@@ -1710,7 +1717,8 @@ struct GTY(()) tree_type_common {
   unsigned typeless_storage : 1;
   unsigned empty_flag : 1;
   unsigned indivisible_p : 1;
-  unsigned spare : 16;
+  unsigned no_named_args_stdarg_p : 1;
+  unsigned spare : 15;
 
   alias_set_type alias_set;
   tree pointer_to;
@@ -1823,7 +1831,10 @@ struct GTY(()) tree_decl_common {
      TYPE_WARN_IF_NOT_ALIGN.  */
   unsigned int warn_if_not_align : 6;
 
-  /* 14 bits unused.  */
+  /* In FIELD_DECL, this is DECL_NOT_FLEXARRAY.  */
+  unsigned int decl_not_flexarray : 1;
+
+  /* 13 bits unused.  */
 
   /* UID for points-to sets, stable over copying from inlining.  */
   unsigned int pt_uid;
@@ -2274,14 +2285,55 @@ struct floatn_type_info {
 extern bool tree_contains_struct[MAX_TREE_CODES][64];
 
 /* Class of tree given its code.  */
-extern const enum tree_code_class tree_code_type[];
+#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
+#define END_OF_BASE_TREE_CODES tcc_exceptional,
+
+#if __cpp_inline_variables < 201606L
+template <int N>
+struct tree_code_type_tmpl {
+  static constexpr enum tree_code_class tree_code_type[] = {
+#include "all-tree.def"
+  };
+};
+
+template <int N>
+constexpr enum tree_code_class tree_code_type_tmpl<N>::tree_code_type[];
+#else
+constexpr inline enum tree_code_class tree_code_type[] = {
+#include "all-tree.def"
+};
+#endif
+
+#undef DEFTREECODE
+#undef END_OF_BASE_TREE_CODES
 
 /* Each tree code class has an associated string representation.
    These must correspond to the tree_code_class entries.  */
 extern const char *const tree_code_class_strings[];
 
 /* Number of argument-words in each kind of tree-node.  */
-extern const unsigned char tree_code_length[];
+
+#define DEFTREECODE(SYM, NAME, TYPE, LENGTH) LENGTH,
+#define END_OF_BASE_TREE_CODES 0,
+
+#if __cpp_inline_variables < 201606L
+template <int N>
+struct tree_code_length_tmpl {
+  static constexpr unsigned char tree_code_length[] = {
+#include "all-tree.def"
+  };
+};
+
+template <int N>
+constexpr unsigned char tree_code_length_tmpl<N>::tree_code_length[];
+#else
+constexpr inline unsigned char tree_code_length[] = {
+#include "all-tree.def"
+};
+#endif
+
+#undef DEFTREECODE
+#undef END_OF_BASE_TREE_CODES
 
 /* Vector of all alias pairs for global symbols.  */
 extern GTY(()) vec<alias_pair, va_gc> *alias_pairs;

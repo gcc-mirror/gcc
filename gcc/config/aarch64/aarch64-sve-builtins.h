@@ -1,5 +1,5 @@
 /* ACLE support for AArch64 SVE
-   Copyright (C) 2018-2022 Free Software Foundation, Inc.
+   Copyright (C) 2018-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -263,7 +263,7 @@ struct function_group_info
 
   /* The architecture extensions that the functions require, as a set of
      AARCH64_FL_* flags.  */
-  uint64_t required_extensions;
+  aarch64_feature_flags required_extensions;
 };
 
 /* Describes a single fully-resolved function (i.e. one that has a
@@ -321,8 +321,9 @@ public:
   ~function_builder ();
 
   void add_unique_function (const function_instance &, tree,
-			    vec<tree> &, uint64_t, bool);
-  void add_overloaded_function (const function_instance &, uint64_t);
+			    vec<tree> &, aarch64_feature_flags, bool);
+  void add_overloaded_function (const function_instance &,
+				aarch64_feature_flags);
   void add_overloaded_functions (const function_group_info &,
 				 mode_suffix_index);
 
@@ -338,7 +339,7 @@ private:
 
   registered_function &add_function (const function_instance &,
 				     const char *, tree, tree,
-				     uint64_t, bool, bool);
+				     aarch64_feature_flags, bool, bool);
 
   /* The function type to use for functions that are resolved by
      function_resolver.  */
@@ -499,6 +500,7 @@ public:
   tree load_store_cookie (tree);
 
   gimple *redirect_call (const function_instance &);
+  gimple *fold_to_cstu (poly_uint64);
   gimple *fold_to_pfalse ();
   gimple *fold_to_ptrue ();
   gimple *fold_to_vl_pred (unsigned int);

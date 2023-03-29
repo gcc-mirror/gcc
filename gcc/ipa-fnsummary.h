@@ -1,5 +1,5 @@
 /* IPA function body analysis.
-   Copyright (C) 2003-2022 Free Software Foundation, Inc.
+   Copyright (C) 2003-2023 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -435,7 +435,7 @@ void ipa_remove_from_growth_caches (struct cgraph_edge *edge);
 
 /* Return true if EDGE is a cross module call.  */
 
-static inline bool
+inline bool
 cross_module_call_p (struct cgraph_edge *edge)
 {
   /* Here we do not want to walk to alias target becuase ICF may create

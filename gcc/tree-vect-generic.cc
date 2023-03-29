@@ -1,5 +1,5 @@
 /* Lower vector operations to scalar operations.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1062,6 +1062,15 @@ expand_vector_condition (gimple_stmt_iterator *gsi, bitmap dce_ssa_names)
       gcc_assert (TREE_CODE (a) == SSA_NAME || TREE_CODE (a) == VECTOR_CST);
       return true;
     }
+
+  /* If a has vector boolean type and is a comparison, above
+     expand_vec_cond_expr_p might fail, even if both the comparison and
+     VEC_COND_EXPR could be supported individually.  See PR109176.  */
+  if (a_is_comparison
+      && VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (a))
+      && expand_vec_cond_expr_p (type, TREE_TYPE (a), SSA_NAME)
+      && expand_vec_cmp_expr_p (TREE_TYPE (a1), TREE_TYPE (a), code))
+    return true;
 
   /* Handle vector boolean types with bitmasks.  If there is a comparison
      and we can expand the comparison into the vector boolean bitmask,
@@ -2387,6 +2396,14 @@ expand_vector_operations (void)
 	  if (maybe_clean_eh_stmt (gsi_stmt (gsi))
 	      && gimple_purge_dead_eh_edges (bb))
 	    cfg_changed = true;
+	  /* If a .LOOP_DIST_ALIAS call prevailed loops got elided
+	     before vectorization got a chance to get at them.  Simply
+	     fold as if loop distribution wasn't performed.  */
+	  if (gimple_call_internal_p (gsi_stmt (gsi), IFN_LOOP_DIST_ALIAS))
+	    {
+	      fold_loop_internal_call (gsi_stmt (gsi), boolean_false_node);
+	      cfg_changed = true;
+	    }
 	}
     }
 

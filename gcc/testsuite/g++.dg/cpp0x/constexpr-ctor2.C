@@ -7,5 +7,5 @@ struct A
 
 struct B : A
 {
-  constexpr B(): A() { }	// { dg-error "A::A" }
+  constexpr B(): A() { }	// { dg-error "A::A" "" { target c++20_down } }
 };

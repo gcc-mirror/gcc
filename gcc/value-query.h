@@ -1,5 +1,5 @@
 /* Support routines for value queries.
-   Copyright (C) 2020-2022 Free Software Foundation, Inc.
+   Copyright (C) 2020-2023 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com> and
    Andrew Macleod <amacleod@redhat.com>.
 
@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-relation.h"
 
 // The value_query class is used by optimization passes that require
-// valueizing SSA names in terms of a tree value, but have no neeed
+// valueizing SSA names in terms of a tree value, but have no need
 // for ranges.
 //
 // value_of_expr must be provided.  The default for value_on_edge and
@@ -93,6 +93,9 @@ public:
   virtual bool range_on_edge (vrange &r, edge, tree expr);
   virtual bool range_of_stmt (vrange &r, gimple *, tree name = NULL);
 
+  // When the IL in a stmt is changed, call this for better results.
+  virtual void update_stmt (gimple *) { }
+
   // Query if there is any relation between SSA1 and SSA2.
   relation_kind query_relation (gimple *s, tree ssa1, tree ssa2,
 				bool get_range = true);
@@ -103,13 +106,10 @@ public:
 
   // DEPRECATED: This method is used from vr-values.  The plan is to
   // rewrite all uses of it to the above API.
-  virtual const class value_range_equiv *get_value_range (const_tree,
-							  gimple * = NULL);
+  virtual const value_range *get_value_range (const_tree, gimple * = NULL);
   virtual void dump (FILE *);
 
 protected:
-  class value_range_equiv *allocate_value_range_equiv ();
-  void free_value_range_equiv (class value_range_equiv *);
   bool get_tree_range (vrange &v, tree expr, gimple *stmt);
   bool get_arith_expr_range (vrange &r, tree expr, gimple *stmt);
   relation_oracle *m_oracle;
@@ -140,9 +140,11 @@ get_global_range_query ()
 ATTRIBUTE_RETURNS_NONNULL inline range_query *
 get_range_query (const struct function *fun)
 {
-  return fun->x_range_query ? fun->x_range_query : &global_ranges;
+  return (fun && fun->x_range_query) ? fun->x_range_query : &global_ranges;
 }
 
-extern void gimple_range_global (vrange &v, tree name);
+// Query the global range of NAME in function F.  Default to cfun.
+extern void gimple_range_global (vrange &v, tree name,
+				 struct function *f = cfun);
 
 #endif // GCC_QUERY_H

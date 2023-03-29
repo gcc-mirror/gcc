@@ -704,7 +704,7 @@ abstract class Logger
     /** This template provides the log functions for the `Logger` `class`
     with the `LogLevel` encoded in the function name.
 
-    For further information see the the two functions defined inside of this
+    For further information see the two functions defined inside of this
     template.
 
     The aliases following this template create the public names of these log
@@ -1446,7 +1446,7 @@ that the returned reference is only a current snapshot and in the following
 code, you must make sure no other thread reassigns to it between reading and
 writing `sharedLog`.
 
-`sharedLog` is only thread-safe if the the used `Logger` is thread-safe.
+`sharedLog` is only thread-safe if the used `Logger` is thread-safe.
 The default `Logger` is thread-safe.
 -------------
 if (sharedLog !is myLogger)
@@ -1559,10 +1559,21 @@ class StdForwardLogger : Logger
         }
     }
 
+    auto oldSharedLog = sharedLog;
+
     sharedLog = new shared RaceLogger;
-    scope(exit) { sharedLog = null; }
-    () @trusted { new Thread(() { log("foo"); }).start(); }();
+    scope(exit)
+    {
+        sharedLog = oldSharedLog;
+    }
+    Thread toWaitFor;
+    () @trusted { toWaitFor = new Thread(() { log("foo"); }).start(); }();
     log("bar");
+
+    () @trusted
+    {
+        toWaitFor.join();
+    }();
 }
 
 /** This `LogLevel` is unqiue to every thread.
@@ -1897,7 +1908,7 @@ version (StdUnittest) private void testFuncNames(Logger logger) @safe
         assertThrown!Throwable(logf(LogLevel.fatal, msg, "Yet"));
     } ();
     lineNumber = __LINE__ - 2;
-    assert(l.msg == msg.format("Yet"));
+    assert(l.msg == msg.format("Yet"), l.msg);
     assert(l.line == lineNumber);
     assert(l.logLevel == LogLevel.all);
 

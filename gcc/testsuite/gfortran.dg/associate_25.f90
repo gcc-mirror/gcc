@@ -21,9 +21,7 @@ contains
     associate(X => T()) ! This was failing: Symbol 'x' at (1) has no IMPLICIT type
       final_flag = X%val
     end associate
-! This should now be 4 but the finalization is not happening.
-! TODO put it right!
-    if (final_flag .ne. 2) STOP 1
+    if (final_flag .ne. 2) stop 1
   end subroutine Testf
 end module
 

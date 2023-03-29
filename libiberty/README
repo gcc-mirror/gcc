@@ -15,7 +15,7 @@ The library must be configured from the top source directory.  Don't
 try to run configure in this directory.  Follow the configuration
 instructions in ../README.
 
-Please report bugs to "gcc-bugs@gcc.gnu.org" and send fixes to
+Please report bugs to https://gcc.gnu.org/bugzilla/ and send fixes to
 "gcc-patches@gcc.gnu.org".  Thank you.
 
 ADDING A NEW FILE

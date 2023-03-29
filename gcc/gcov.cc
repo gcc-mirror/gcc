@@ -1,6 +1,6 @@
 /* Gcov.c: prepend line execution counts and branch probabilities to a
    source file.
-   Copyright (C) 1990-2022 Free Software Foundation, Inc.
+   Copyright (C) 1990-2023 Free Software Foundation, Inc.
    Contributed by James E. Wilson of Cygnus Support.
    Mangled by Bob Manson of Cygnus Support.
    Mangled further by Nathan Sidwell <nathan@codesourcery.com>
@@ -964,7 +964,7 @@ static void
 print_version (void)
 {
   fnotice (stdout, "gcov %s%s\n", pkgversion_string, version_string);
-  fprintf (stdout, "Copyright %s 2022 Free Software Foundation, Inc.\n",
+  fprintf (stdout, "Copyright %s 2023 Free Software Foundation, Inc.\n",
 	   _("(C)"));
   fnotice (stdout,
 	   _("This is free software; see the source for copying conditions.  There is NO\n\
@@ -2893,7 +2893,9 @@ output_branch_count (FILE *gcov_file, int ix, const arc_info *arc)
 		 arc->fall_through ? " (fallthrough)"
 		 : arc->is_throw ? " (throw)" : "");
       else
-	fnotice (gcov_file, "branch %2d never executed", ix);
+	fnotice (gcov_file, "branch %2d never executed%s", ix,
+		 (arc->fall_through ? " (fallthrough)"
+		  : arc->is_throw ? " (throw)" : ""));
 
       if (flag_verbose)
 	fnotice (gcov_file, " (BB %d)", arc->dst->id);

@@ -9,7 +9,6 @@
  */
 module core.sys.windows.ntsecapi;
 version (Windows):
-@system:
 pragma(lib, "advapi32");
 
 version (ANSI) {} else version = Unicode;

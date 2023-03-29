@@ -6,7 +6,6 @@
 
 module core.sys.windows.winsock2;
 version (Windows):
-@system:
 
 pragma(lib, "ws2_32");
 
@@ -64,11 +63,11 @@ int getsockopt(SOCKET s, int level, int optname, void* optval, socklen_t* optlen
 int setsockopt(SOCKET s, int level, int optname, const(void)* optval, socklen_t optlen);
 uint inet_addr(const char* cp);
 int select(int nfds, fd_set* readfds, fd_set* writefds, fd_set* errorfds, const(timeval)* timeout);
-@trusted char* inet_ntoa(in_addr ina);
+char* inet_ntoa(in_addr ina);
 hostent* gethostbyname(const char* name);
 hostent* gethostbyaddr(const(void)* addr, int len, int type);
 protoent* getprotobyname(const char* name);
-@trusted protoent* getprotobynumber(int number);
+protoent* getprotobynumber(int number);
 servent* getservbyname(const char* name, const char* proto);
 servent* getservbyport(int port, const char* proto);
 }

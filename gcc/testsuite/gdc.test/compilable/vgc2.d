@@ -93,8 +93,7 @@ void testAssocArray()
 /*
 TEST_OUTPUT:
 ---
-compilable/vgc2.d(102): vgc: indexing an associative array may cause a GC allocation
-compilable/vgc2.d(103): vgc: indexing an associative array may cause a GC allocation
+compilable/vgc2.d(101): vgc: assigning an associative array element may cause a GC allocation
 ---
 */
 void testIndex(int[int] aa)

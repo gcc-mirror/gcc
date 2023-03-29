@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2022, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2023, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -5254,6 +5254,13 @@ maybe_unconstrained_array (tree exp)
 	      TREE_READONLY (exp) = read_only;
 	      TREE_THIS_NOTRAP (exp) = no_trap;
 	    }
+	}
+
+      else if (code == LOAD_EXPR)
+	{
+	  const Entity_Id gnat_smo = tree_to_shwi (TREE_OPERAND (exp, 1));
+	  tree t = maybe_unconstrained_array (TREE_OPERAND (exp, 0));
+	  exp = build_storage_model_load (gnat_smo, t);
 	}
 
       else if (code == NULL_EXPR)

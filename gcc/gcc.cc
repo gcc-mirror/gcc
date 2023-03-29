@@ -1,5 +1,5 @@
 /* Compiler driver program that can handle many languages.
-   Copyright (C) 1987-2022 Free Software Foundation, Inc.
+   Copyright (C) 1987-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -706,6 +706,13 @@ proper position among the other output files.  */
 #define CPP_SPEC ""
 #endif
 
+/* Operating systems can define OS_CC1_SPEC to provide extra args to cc1 and
+   cc1plus or extra switch-translations.  The OS_CC1_SPEC is appended
+   to CC1_SPEC in the initialization of cc1_spec.  */
+#ifndef OS_CC1_SPEC
+#define OS_CC1_SPEC ""
+#endif
+
 /* config.h can define CC1_SPEC to provide extra args to cc1 and cc1plus
    or extra switch-translations.  */
 #ifndef CC1_SPEC
@@ -835,6 +842,14 @@ proper position among the other output files.  */
 #define LINK_COMPRESS_DEBUG_SPEC \
 	" %{gz|gz=zlib:"  LD_COMPRESS_DEBUG_OPTION "=zlib}" \
 	" %{gz=none:"	  LD_COMPRESS_DEBUG_OPTION "=none}" \
+	" %{gz=zstd:%e-gz=zstd is not supported in this configuration} " \
+	" %{gz=zlib-gnu:}" /* Ignore silently zlib-gnu option value.  */
+#elif HAVE_LD_COMPRESS_DEBUG == 2
+/* ELF gABI style and ZSTD.  */
+#define LINK_COMPRESS_DEBUG_SPEC \
+	" %{gz|gz=zlib:"  LD_COMPRESS_DEBUG_OPTION "=zlib}" \
+	" %{gz=none:"	  LD_COMPRESS_DEBUG_OPTION "=none}" \
+	" %{gz=zstd:"	  LD_COMPRESS_DEBUG_OPTION "=zstd}" \
 	" %{gz=zlib-gnu:}" /* Ignore silently zlib-gnu option value.  */
 #else
 #error Unknown value for HAVE_LD_COMPRESS_DEBUG.
@@ -869,7 +884,7 @@ proper position among the other output files.  */
 #endif
 
 #ifdef HAVE_AS_DEBUG_PREFIX_MAP
-#define ASM_MAP " %{fdebug-prefix-map=*:--debug-prefix-map %*}"
+#define ASM_MAP " %{ffile-prefix-map=*:--debug-prefix-map %*} %{fdebug-prefix-map=*:--debug-prefix-map %*}"
 #else
 #define ASM_MAP ""
 #endif
@@ -889,6 +904,13 @@ proper position among the other output files.  */
 #define ASM_COMPRESS_DEBUG_SPEC \
 	" %{gz|gz=zlib:"  AS_COMPRESS_DEBUG_OPTION "=zlib}" \
 	" %{gz=none:"	  AS_COMPRESS_DEBUG_OPTION "=none}" \
+	" %{gz=zlib-gnu:}" /* Ignore silently zlib-gnu option value.  */
+#elif HAVE_AS_COMPRESS_DEBUG == 2
+/* ELF gABI style and ZSTD.  */
+#define ASM_COMPRESS_DEBUG_SPEC \
+	" %{gz|gz=zlib:"  AS_COMPRESS_DEBUG_OPTION "=zlib}" \
+	" %{gz=none:"	  AS_COMPRESS_DEBUG_OPTION "=none}" \
+	" %{gz=zstd:"	  AS_COMPRESS_DEBUG_OPTION "=zstd}" \
 	" %{gz=zlib-gnu:}" /* Ignore silently zlib-gnu option value.  */
 #else
 #error Unknown value for HAVE_AS_COMPRESS_DEBUG.
@@ -1159,7 +1181,7 @@ proper position among the other output files.  */
 static const char *asm_debug = ASM_DEBUG_SPEC;
 static const char *asm_debug_option = ASM_DEBUG_OPTION_SPEC;
 static const char *cpp_spec = CPP_SPEC;
-static const char *cc1_spec = CC1_SPEC;
+static const char *cc1_spec = CC1_SPEC OS_CC1_SPEC;
 static const char *cc1plus_spec = CC1PLUS_SPEC;
 static const char *link_gcc_c_sequence_spec = LINK_GCC_C_SEQUENCE_SPEC;
 static const char *link_ssp_spec = LINK_SSP_SPEC;
@@ -1312,7 +1334,11 @@ static const char *const multilib_defaults_raw[] = MULTILIB_DEFAULTS;
 
 static const char *const driver_self_specs[] = {
   "%{fdump-final-insns:-fdump-final-insns=.} %<fdump-final-insns",
-  DRIVER_SELF_SPECS, CONFIGURE_SPECS, GOMP_SELF_SPECS, GTM_SELF_SPECS
+  DRIVER_SELF_SPECS, CONFIGURE_SPECS, GOMP_SELF_SPECS, GTM_SELF_SPECS,
+  /* This discards -fmultiflags at the end of self specs processing in the
+     driver, so that it is effectively Ignored, without actually marking it as
+     Ignored, which would get it discarded before self specs could remap it.  */
+  "%<fmultiflags"
 };
 
 #ifndef OPTION_DEFAULT_SPECS
@@ -1397,6 +1423,7 @@ static const struct compiler default_compilers[] =
   {".r", "#Ratfor", 0, 0, 0},
   {".go", "#Go", 0, 1, 0},
   {".d", "#D", 0, 1, 0}, {".dd", "#D", 0, 1, 0}, {".di", "#D", 0, 1, 0},
+  {".mod", "#Modula-2", 0, 0, 0}, {".m2i", "#Modula-2", 0, 0, 0},
   /* Next come the entries for C.  */
   {".c", "@c", 0, 0, 1},
   {"@c",
@@ -4264,9 +4291,13 @@ driver_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fdiagnostics_format_:
-      diagnostic_output_format_init (dc, opts->x_dump_base_name,
-				     (enum diagnostics_output_format)value);
-      break;
+	{
+	  const char *basename = (opts->x_dump_base_name ? opts->x_dump_base_name
+				  : opts->x_main_input_basename);
+	  diagnostic_output_format_init (dc, basename,
+					 (enum diagnostics_output_format)value);
+	  break;
+	}
 
     case OPT_Wa_:
       {
@@ -4514,12 +4545,14 @@ driver_handle_option (struct gcc_options *opts,
     case OPT_static_libgfortran:
     case OPT_static_libquadmath:
     case OPT_static_libphobos:
+    case OPT_static_libgm2:
     case OPT_static_libstdc__:
-      /* These are always valid, since gcc.cc itself understands the
-	 first two, gfortranspec.cc understands -static-libgfortran,
-	 d-spec.cc understands -static-libphobos, g++spec.cc
-	 understands -static-libstdc++ and libgfortran.spec handles
-	 -static-libquadmath.  */
+      /* These are always valid; gcc.cc itself understands the first two
+	 gfortranspec.cc understands -static-libgfortran,
+	 libgfortran.spec handles -static-libquadmath,
+	 d-spec.cc understands -static-libphobos,
+	 gm2spec.cc understands -static-libgm2,
+	 and g++spec.cc understands -static-libstdc++.  */
       validated = true;
       break;
 
@@ -6400,6 +6433,18 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      if (*sysroot_hdrs_suffix_spec)
 		info.append = concat (info.append, dir_separator_str,
 				      multilib_dir, NULL);
+	      else if (multiarch_dir)
+		{
+		  /* For multiarch, search include-fixed/<multiarch-dir>
+		     before include-fixed.  */
+		  info.append = concat (info.append, dir_separator_str,
+					multiarch_dir, NULL);
+		  info.append_len = strlen (info.append);
+		  for_each_path (&include_prefixes, false, info.append_len,
+				 spec_path, &info);
+
+		  info.append = "include-fixed";
+		}
 	      info.append_len = strlen (info.append);
 	      for_each_path (&include_prefixes, false, info.append_len,
 			     spec_path, &info);
@@ -8711,7 +8756,7 @@ driver::maybe_print_and_exit () const
     {
       printf (_("%s %s%s\n"), progname, pkgversion_string,
 	      version_string);
-      printf ("Copyright %s 2022 Free Software Foundation, Inc.\n",
+      printf ("Copyright %s 2023 Free Software Foundation, Inc.\n",
 	      _("(C)"));
       fputs (_("This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"),
@@ -9261,12 +9306,15 @@ validate_switches (const char *start, bool user_spec, bool braced)
   const char *atom;
   size_t len;
   int i;
-  bool suffix = false;
-  bool starred = false;
+  bool suffix;
+  bool starred;
 
 #define SKIP_WHITE() do { while (*p == ' ' || *p == '\t') p++; } while (0)
 
 next_member:
+  suffix = false;
+  starred = false;
+
   SKIP_WHITE ();
 
   if (*p == '!')

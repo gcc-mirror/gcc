@@ -1,5 +1,5 @@
 /* Vector API for GNU compiler.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
    Contributed by Nathan Sidwell <nathan@codesourcery.com>
    Re-implemented in C++ by Diego Novillo <dnovillo@google.com>
 
@@ -568,6 +568,22 @@ test_auto_delete_vec ()
   ASSERT_EQ (dtor_count, 2);
 }
 
+/* Verify accesses to vector elements are done indirectly.  */
+
+static void
+test_auto_alias ()
+{
+  volatile int i = 1;
+  auto_vec<int, 8> v;
+  v.quick_grow (2);
+  v[0] = 1;
+  v[1] = 2;
+  int val;
+  for (int ix = i; v.iterate (ix, &val); ix++)
+    ASSERT_EQ (val, 2);
+  ASSERT_EQ (val, 0);
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -587,6 +603,7 @@ vec_cc_tests ()
   test_qsort ();
   test_reverse ();
   test_auto_delete_vec ();
+  test_auto_alias ();
 }
 
 } // namespace selftest

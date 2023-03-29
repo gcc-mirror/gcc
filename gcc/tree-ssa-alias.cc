@@ -1,5 +1,5 @@
 /* Alias analysis for trees.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -1073,7 +1073,7 @@ component_ref_to_zero_sized_trailing_array_p (tree ref)
 	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (ref, 1))) == ARRAY_TYPE
 	  && (!TYPE_SIZE (TREE_TYPE (TREE_OPERAND (ref, 1)))
 	      || integer_zerop (TYPE_SIZE (TREE_TYPE (TREE_OPERAND (ref, 1)))))
-	  && array_at_struct_end_p (ref));
+	  && array_ref_flexible_size_p (ref));
 }
 
 /* Worker for aliasing_component_refs_p. Most parameters match parameters of
@@ -3433,10 +3433,10 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 	    }
 	  /* Finally check if the lhs has the same address and size as the
 	     base candidate of the access.  Watch out if we have dropped
-	     an array-ref that was at struct end, this means ref->ref may
-	     be outside of the TYPE_SIZE of its base.  */
+	     an array-ref that might have flexible size, this means ref->ref
+	     may be outside of the TYPE_SIZE of its base.  */
 	  if ((! innermost_dropped_array_ref
-	       || ! array_at_struct_end_p (innermost_dropped_array_ref))
+	       || ! array_ref_flexible_size_p (innermost_dropped_array_ref))
 	      && (lhs == base
 		  || (((TYPE_SIZE (TREE_TYPE (lhs))
 			== TYPE_SIZE (TREE_TYPE (base)))
@@ -3522,6 +3522,7 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 			       "ipa-modref: call to %s kills ",
 			       node->dump_name ());
 		      print_generic_expr (dump_file, ref->base);
+		      fprintf (dump_file, "\n");
 		    }
 		    ++alias_stats.modref_kill_yes;
 		    return true;
@@ -3656,7 +3657,10 @@ maybe_skip_until (gimple *phi, tree &target, basic_block target_bb,
   basic_block bb = gimple_bb (phi);
 
   if (!*visited)
-    *visited = BITMAP_ALLOC (NULL);
+    {
+      *visited = BITMAP_ALLOC (NULL);
+      bitmap_tree_view (*visited);
+    }
 
   bitmap_set_bit (*visited, SSA_NAME_VERSION (PHI_RESULT (phi)));
 
@@ -3948,7 +3952,10 @@ walk_aliased_vdefs_1 (ao_ref *ref, tree vdef,
 	{
 	  unsigned i;
 	  if (!*visited)
-	    *visited = BITMAP_ALLOC (NULL);
+	    {
+	      *visited = BITMAP_ALLOC (NULL);
+	      bitmap_tree_view (*visited);
+	    }
 	  for (i = 0; i < gimple_phi_num_args (def_stmt); ++i)
 	    {
 	      int res = walk_aliased_vdefs_1 (ref,

@@ -1,3 +1,546 @@
+2023-03-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/107002
+	* c-common.h (check_for_xor_used_as_pow): Add "rhs_loc" param.
+	* c-warn.cc (check_for_xor_used_as_pow): Add "rhs_loc" param.
+	Reject cases where involving macro expansions.
+
+2023-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107163
+	* c-common.cc (verify_tree): Don't use sequenced handling
+	for COMPONENT_REF.
+
+2023-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/109151
+	* c-ubsan.cc (ubsan_instrument_division): Handle all scalar integral
+	types rather than just INTEGER_TYPE.
+
+2023-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/108060
+	PR sanitizer/109050
+	* c-gimplify.cc (ubsan_walk_array_refs_r): For a MODIFY_EXPR, instrument
+	the RHS before the LHS.
+
+2023-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107465
+	* c-warn.cc (warn_for_sign_compare): Don't warn for unset bits
+	above innermost zero extension of BIT_NOT_EXPR result.
+
+2023-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107465
+	* c-warn.cc (warn_for_sign_compare): If c_common_get_narrower
+	doesn't return a narrower result, use TYPE_UNSIGNED to set unsignedp0
+	and unsignedp1.  For the one BIT_NOT_EXPR case vs. one without,
+	only check for constant in the non-BIT_NOT_EXPR operand, use std::swap
+	to simplify the code, only warn if BIT_NOT_EXPR operand is extended
+	from narrower unsigned, fix up computation of mask for the constant
+	cases and for unsigned other operand case handle differently
+	BIT_NOT_EXPR result being sign vs. zero extended.
+
+2023-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107846
+	* c-warn.cc: Include langhooks.h.
+	(maybe_warn_shift_overflow): Set type0 to what TREE_TYPE (op0)
+	promotes to rather than TREE_TYPE (op0) itself, if TREE_TYPE (op0)
+	is narrower than type0 and unsigned, use wi::min_precision with
+	UNSIGNED and fold_convert op0 to type0 before emitting the warning.
+
+2023-03-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-common.cc (c_common_nodes_and_builtins): Take
+	wchar_type_node for wint_type_node when aliased.
+	(c_stddef_cpp_builtins): Define __WINT_TYPE__, when aliased to
+	wchar_t, to the underlying type rather than wchar_t in
+	non-C++.
+	* c-cppbuiltin.cc (type_suffix): Handle wchar_type_node.
+
+2023-02-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107938
+	* c-warn.cc (check_address_or_pointer_of_packed_member): Check
+	POINTER_TYPE_P.
+
+2023-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/108894
+	* c-common.h (c_strict_flex_array_level_of): Declare.
+	* c-common.cc (c_strict_flex_array_level_of): New function,
+	moved and renamed from c-decl.cc's strict_flex_array_level_of.
+	* c-ubsan.cc (ubsan_instrument_bounds): Fix comment typo.  For
+	C check c_strict_flex_array_level_of whether a trailing array
+	should be treated as flexible member like.  Handle C [0] arrays.
+	Add 1 + index_off_by_one rather than index_off_by_one to bounds
+	and use tree_int_cst_lt rather than tree_int_cst_le for idx vs.
+	bounds comparison.
+
+2023-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/108890
+	* c.opt (fcontracts): Fix description.
+
+2023-02-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c/108880
+	* c-gimplify.cc (c_genericize_control_stmt) <case STATEMENT_LIST>: Pass
+	pset to walk_tree_1.
+	(c_genericize): Call walk_tree with an explicit pset.
+
+2023-02-18  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/105660
+	* c-attribs.cc (append_access_attr): Use order of arguments when
+	construction string.
+	(append_access_attr_idxs): Rename and make static.
+	* c-warn.cc (warn_parm_array_mismatch): Add assertion.
+
+2023-02-16  Patrick Palka  <ppalka@redhat.com>
+
+	* c-common.h: Mechanically drop static from static inline
+	functions via s/^static inline/inline/g.
+
+2023-02-01  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add -Wno-changes-meaning.
+
+2023-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107593
+	PR c++/108597
+	* c-common.h (instantiation_dependent_expression_p): Declare.
+	* c-warn.cc (warn_duplicated_cond_add_or_warn): If the condition
+	is dependent, invalidate the chain.
+
+2023-01-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/105300
+	* c-pragma.cc (handle_pragma_message): Warn for CPP_STRING_USERDEF.
+
+2023-01-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c/108424
+	* c-common.cc (check_case_value): Check INTEGRAL_TYPE_P.
+
+2023-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108365
+	* c-common.h (may_shorten_divmod): New static inline function.
+
+2023-01-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.cc (is_float32): New function.
+	(is_float64): Likewise.
+	(is_float128): Tweak.
+	(dump_ada_node) <REAL_TYPE>: Call them to recognize more types.
+
+2023-01-12  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/108244
+	* c-pragma.cc (c_register_pragma_1): Don't attempt to register any
+	deferred pragmas if -fdirectives-only.
+	(init_pragma): Likewise.
+
+2023-01-09  Martin Liska  <mliska@suse.cz>
+
+	PR c/107993
+	* c-attribs.cc (handle_target_clones_attribute): Check for
+	string constant for all target_clone attribute values.
+
+2023-01-03  Florian Weimer  <fweimer@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Define
+	__LIBGCC_DWARF_CIE_DATA_ALIGNMENT__.
+
+2023-01-03  Florian Weimer  <fweimer@redhat.com>
+
+	Revert:
+	2023-01-03  Florian Weimer  <fweimer@redhat.com>
+
+	* c-cppbuiltin.cc (__LIBGCC_DWARF_REG_SIZES_CONSTANT__):
+	Define if constant is known.
+
+2023-01-03  Florian Weimer  <fweimer@redhat.com>
+
+	Revert:
+	2023-01-02  Florian Weimer  <fweimer@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Define
+	__LIBGCC_DWARF_CIE_DATA_ALIGNMENT__.
+
+2023-01-02  Florian Weimer  <fweimer@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Define
+	__LIBGCC_DWARF_CIE_DATA_ALIGNMENT__.
+
+2023-01-02  Florian Weimer  <fweimer@redhat.com>
+
+	* c-cppbuiltin.cc (__LIBGCC_DWARF_REG_SIZES_CONSTANT__):
+	Define if constant is known.
+
+2022-12-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c/98487
+	* c-format.cc (check_function_format): Use get_attribute_name.
+
+2022-12-16  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c.opt (Wstrict-flex-arrays): New option.
+
+2022-12-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* c-attribs.cc (handle_deprecated_attribute): Use type when
+	using TYPE_NAME.
+
+2022-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/84469
+	* c-omp.cc (c_omp_is_loop_iterator): For range for with structured
+	binding return TREE_VEC_LENGTH (d->declv) even if decl is equal
+	to any of the structured binding decls.
+
+2022-11-30  Iskander Shakirzyanov  <iskander@ispras.ru>
+	    Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	PR driver/107787
+	* c-common.cc (fold_offsetof,
+	convert_vector_to_array_for_subscript): Use OPT_Warray_bounds_
+	instead of OPT_Warray_bounds.
+
+2022-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (fcontract-role=, fcontract-semantic=): Terminate descriptions
+	with a dot.
+
+2022-11-23  Andrew Pinski  <apinski@marvell.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107127
+	* c-gimplify.cc (c_genericize): Use walk_tree_without_duplicates
+	instead of walk_tree for c_genericize_control_r.
+
+2022-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (fcontract-assumption-mode=, fcontract-continuation-mode=,
+	fcontract-role=, fcontract-semantic=): Add RejectNegative.
+	(fcontract-build-level=): Terminate description with dot.
+
+2022-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Bump __cpp_constexpr
+	value from 202207L to 202211L.
+
+2022-11-19  Jeff Chapman II  <jchapman@lock3software.com>
+	    Andrew Sutton   <asutton@lock3software.com>
+	    Andrew Marmaduke  <amarmaduke@lock3software.com>
+	    Michael Lopez  <mlopez@lock3software.com>
+	    Jason Merrill   <jason@redhat.com>
+
+	* c.opt: Add contracts flags.
+	* c-cppbuiltin.cc (c_cpp_builtins): Add contracts feature-test
+	macros.
+
+2022-11-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106649
+	* c-cppbuiltin.cc (c_cpp_builtins): Update value of __cpp_constexpr for
+	C++23.
+	* c-opts.cc (c_common_post_options): Set warn_invalid_constexpr
+	depending on cxx_dialect.
+	* c.opt (Winvalid-constexpr): New option.
+
+2022-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.def (CONCEPT_DECL): New tree, moved here from
+	cp-tree.def.
+	* c-common.cc (c_common_init_ts): Handle CONCEPT_DECL.
+	* c-attribs.cc (handle_deprecated_attribute): Allow deprecated
+	attribute on CONCEPT_DECL.
+
+2022-11-15  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* c-opts.cc (c_finish_options): Use special_fname_builtin () rather
+	than a hard-coded string.
+
+2022-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Bump C++23
+	__cpp_multidimensional_subscript macro value to 202211L.
+
+2022-11-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107638
+	* c-lex.cc (c_common_has_attribute): Return 1 for init_priority
+	iff SUPPORTS_INIT_PRIORITY.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* c-target.def: Port to RST.
+
+2022-11-12  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.cc (c_common_reswords): Use D_C2X instead of D_CXXONLY.
+
+2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c/85487
+	* c-pragma.cc (handle_pragma_ignore): New function.
+	(init_pragma): Register region and endregion pragmas.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* c-target.def: Port to RST.
+
+2022-11-05  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/55971
+	* c-ppoutput.cc (adjust_for_newlines): Update comment.
+
+2022-11-03  Jason Merrill  <jason@redhat.com>
+
+	* c-opts.cc (c_common_post_options): -fconcepts no longer implies
+	-fconcepts-ts before C++20.
+
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.cc (def_fn_type): Call build_function_type for
+	zero-argument variable-argument function.
+	(c_common_nodes_and_builtins): Build default_function_type with
+	build_function_type.
+	* c.opt (fallow-parameterless-variadic-functions): Mark as ignored
+	option.
+
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/61469
+	* c-common.h (ENUM_UNDERLYING_TYPE, ENUM_FIXED_UNDERLYING_TYPE_P):
+	New.  Moved from cp/cp-tree.h.
+	* c-warn.cc (warnings_for_convert_and_check): Do not consider
+	conversions to enum with underlying type bool to overflow.
+
+2022-10-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106393
+	* c.opt (Wdangling-reference): New.
+
+2022-10-19  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-format.h (enum format_lengths): Add FMT_LEN_w8, FMT_LEN_w16,
+	FMT_LEN_w32, FMT_LEN_w64, FMT_LEN_wf8, FMT_LEN_wf16, FMT_LEN_wf32
+	and FMT_LEN_wf64.
+	(NOARGUMENTS, NOLENGTHS): Update definitions.
+	(T_I8, T2X_I8, T_I16, T2X_I16, T_I32, T2X_I32, T_I64, T2X_I64)
+	(T_U8, T2X_U8, T_U16, T2X_U16, T_U32, T2X_U32, T_U64, T2X_U64)
+	(T_IF8, T2X_IF8, T_IF16, T2X_IF16, T_IF32, T2X_IF32, T_IF64)
+	(T2X_IF64, T_UF8, T2X_UF8, T_UF16, T2X_UF16, T_UF32, T2X_UF32)
+	(T_UF64, T2X_UF64): New macros.
+	* c-format.cc (printf_length_specs, scanf_length_specs): Add wN
+	and wfN length modifiers.
+	(print_char_table, scan_char_table): Add entries using wN and wfN
+	length modifiers.
+
+2022-10-18  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/36113
+	* c-common.cc (c_common_type_for_size): Add fallback to
+	widest_unsigned_literal_type_node or
+	widest_integer_literal_type_node for precision that may not
+	exactly match the precision of those types.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): If bfloat16_type_node,
+	predefine __BFLT16_*__ macros and for C++23 also
+	__STDCPP_BFLOAT16_T__.  Predefine bfloat16_type_node related
+	macros for -fbuilding-libgcc.
+	* c-lex.cc (interpret_float): Handle CPP_N_BFLOAT16.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/323
+	PR c++/107097
+	* c-common.def (EXCESS_PRECISION_EXPR): Remove comment part about
+	the tree being specific to C/ObjC.
+	* c-opts.cc (c_common_post_options): Handle flag_excess_precision
+	in C++ the same as in C.
+	* c-lex.cc (interpret_float): Set const_type to excess_precision ()
+	even for C++.
+
+2022-10-13  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.cc (builtin_define_float_constants): Do not use
+	value 2 for *_IS_IEC_60559.
+
+2022-10-12  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/60014
+	PR preprocessor/60723
+	* c-ppoutput.cc (class token_streamer): Remove member
+	line_marker_emitted to...
+	(token_streamer::stream): ...a local variable here. Set
+	print.prev_was_system_token on all code paths.
+
+2022-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	* c-opts.cc (c_common_post_options): Bump abi to 18.
+
+2022-10-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106937
+	* c-pretty-print.cc (pp_c_specifier_qualifier_list): Print only GNU
+	attributes here.
+	(c_pretty_printer::direct_abstract_declarator): Print the standard [[]]
+	attributes here.
+	(pp_c_attributes): Remove.
+	(pp_c_attributes_display): Print the [[]] form if appropriate.  Use
+	get_attribute_name.  Don't print a trailing space when printing the
+	[[]] form.
+	* c-pretty-print.h (pp_c_attributes): Remove.
+
+2022-10-07  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-attribs.cc (handle_strict_flex_array_attribute): New function.
+	(c_common_attribute_table): New item for strict_flex_array.
+	* c.opt: (fstrict-flex-arrays): New option.
+	(fstrict-flex-arrays=): New option.
+
+2022-10-07  Martin Liska  <mliska@suse.cz>
+
+	* name-hint.h: Use std::move.
+
+2022-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.cc (attribute_fallthrough_p): Lookup fallthrough attribute
+	only in gnu namespace or as standard attribute, treat fallthrough
+	attributes in other namespaces like any other unknown attribute.
+
+2022-10-06  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.cc (c_common_reswords): Mark typeof as D_EXT11.  Add
+	typeof_unqual.
+	* c-common.h (enum rid): Add RID_TYPEOF_UNQUAL.
+	(D_EXT11): New macro.  Values of subsequent macros updated.
+
+2022-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106654
+	* c-attribs.cc (handle_assume_attribute): New function.
+	(c_common_attribute_table): Add entry for assume attribute.
+	* c-lex.cc (c_common_has_attribute): Handle
+	__have_cpp_attribute (assume).
+
+2022-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.cc (c_omp_directives): Uncomment begin declare target
+	entry.
+
+2022-10-03  Patrick Palka  <ppalka@redhat.com>
+
+	* c-common.cc (c_common_reswords): Use RID_IS_SAME instead of
+	RID_IS_SAME_AS.
+
+2022-10-03  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-cppbuiltin.cc (builtin_define_float_constants): Do not
+	special-case __*_EPSILON__ setting for IBM long double for C2x.
+
+2022-09-30  Patrick Palka  <ppalka@redhat.com>
+
+	* c-common.cc (c_common_reswords): Use cp/cp-trait.def to handle
+	C++ traits.
+	* c-common.h (enum rid): Likewise.
+
+2022-09-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-lex.cc (c_common_has_attribute): Handle noreturn attribute for
+	C.
+
+2022-09-29  Patrick Palka  <ppalka@redhat.com>
+
+	* c-common.cc (c_common_reswords): Add __remove_cv,
+	__remove_reference and __remove_cvref.
+	* c-common.h (enum rid): Add RID_REMOVE_CV, RID_REMOVE_REFERENCE
+	and RID_REMOVE_CVREF.
+
+2022-09-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101165
+	PR c++/106882
+	* c-cppbuiltin.cc (c_cpp_builtins): Define __cpp_implicit_move.
+
+2022-09-27  Marek Polacek  <polacek@redhat.com>
+
+	* c-format.cc (c_keywords): Drop nothrow.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106651
+	* c-cppbuiltin.cc (c_cpp_builtins): Predefine
+	__cpp_static_call_operator=202207L for C++23.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_ASSUME,
+	PRAGMA_OMP_ASSUMES and PRAGMA_OMP_BEGIN.  Rename
+	PRAGMA_OMP_END_DECLARE_TARGET to PRAGMA_OMP_END.
+	* c-pragma.cc (omp_pragmas): Add assumes and begin.
+	For end rename PRAGMA_OMP_END_DECLARE_TARGET to PRAGMA_OMP_END.
+	(omp_pragmas_simd): Add assume.
+	* c-common.h (c_omp_directives): Declare.
+	* c-omp.cc (omp_directives): Rename to ...
+	(c_omp_directives): ... this.  No longer static.  Uncomment
+	assume, assumes, begin assumes and end assumes entries.
+	In end declare target entry rename PRAGMA_OMP_END_DECLARE_TARGET
+	to PRAGMA_OMP_END.
+	(c_omp_categorize_directive): Adjust for omp_directives to
+	c_omp_directives renaming.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	PR c++/85518
+	* c-common.cc (c_common_reswords): Change _Float{16,32,64,128} and
+	_Float{32,64,128}x flags from D_CONLY to 0.
+	(shorten_binary_op): Punt if common_type returns error_mark_node.
+	(shorten_compare): Likewise.
+	(c_common_nodes_and_builtins): For C++ record _Float{16,32,64,128}
+	and _Float{32,64,128}x builtin types if available.  For C++
+	clear float128t_type_node.
+	* c-cppbuiltin.cc (c_cpp_builtins): Predefine
+	__STDCPP_FLOAT{16,32,64,128}_T__ for C++23 if supported.
+	* c-lex.cc (interpret_float): For q/Q suffixes prefer
+	float128t_type_node over float128_type_node.  Allow
+	{f,F}{16,32,64,128} suffixes for C++ if supported with pedwarn
+	for C++20 and older.  Allow {f,F}{32,64,128}x suffixes for C++
+	with pedwarn.  Don't call excess_precision_type for C++.
+
+2022-09-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106656
+	* c-cppbuiltin.cc (c_cpp_builtins): Update value of __cpp_char8_t
+	for C++20.
+
+2022-09-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/106784
+	* c-common.cc (c_common_reswords): Add __is_convertible and
+	__is_nothrow_convertible.
+	* c-common.h (enum rid): Add RID_IS_CONVERTIBLE and
+	RID_IS_NOTHROW_CONVERTIBLE.
+
+2022-09-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/106830
+	* c-warn.cc (check_for_xor_used_as_pow): Don't try checking
+	values that don't fit in uhwi.
+
 2022-09-15  Richard Biener  <rguenther@suse.de>
 
 	* c-common.h (build_void_list_node): Remove.
@@ -941,8 +1484,8 @@
 
 	PR target/102552
 	* c-common.c (parse_optimize_options): decoded_options[0] is
-	  used for program name, so merged_decoded_options should also
-	  respect that.
+	used for program name, so merged_decoded_options should also
+	respect that.
 
 2021-10-01  Jakub Jelinek  <jakub@redhat.com>
 	    Richard Biener  <rguenther@suse.de>
@@ -970,7 +1513,7 @@
 2021-09-27  Martin Liska  <mliska@suse.cz>
 
 	* c-opts.c (c_common_init_options_struct): Set also
-	  x_flag_default_complex_method.
+	x_flag_default_complex_method.
 
 2021-09-22  Jakub Jelinek  <jakub@redhat.com>
 
@@ -1163,8 +1706,8 @@
 2021-07-06  Martin Sebor  <msebor@redhat.com>
 
 	* c-format.c (gcc_tdiag_char_table): Remove support for %G and %K.
-	 (gcc_cdiag_char_table): Same.
-	 (gcc_cxxdiag_char_table): Same.
+	(gcc_cdiag_char_table): Same.
+	(gcc_cxxdiag_char_table): Same.
 
 2021-07-02  Jakub Jelinek  <jakub@redhat.com>
 
@@ -13456,7 +13999,7 @@
 	* c-common.c: Include gt-c-family-c-common.h.
 	* c-pragma.c: Include gt-c-family-c-pragma.h.
 
-Copyright (C) 2010-2022 Free Software Foundation, Inc.
+Copyright (C) 2010-2023 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

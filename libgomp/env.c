@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2023 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -124,7 +124,7 @@ int goacc_default_dims[GOMP_DIM_MAX];
 
 #ifndef LIBGOMP_OFFLOADED_ONLY
 
-static int wait_policy;
+static int wait_policy = -1;
 static unsigned long stacksize = GOMP_DEFAULT_STACKSIZE;
 
 static void
@@ -283,7 +283,7 @@ parse_unsigned_long_1 (const char *env, const char *val, unsigned long *pvalue,
 static bool
 parse_unsigned_long (const char *env, const char *val, void *const params[])
 {
-  unsigned upper = (unsigned long) params[2];
+  unsigned long upper = (uintptr_t) params[2];
   unsigned long pvalue = 0;
   bool ret = parse_unsigned_long_1 (env, val, &pvalue, (bool) params[1]);
   if (!ret)
@@ -1981,7 +1981,7 @@ initialize_icvs (struct gomp_initial_icvs *icvs)
   icvs->bind_var = gomp_default_icv_values.bind_var;
   icvs->nteams_var = gomp_default_icv_values.nteams_var;
   icvs->teams_thread_limit_var = gomp_default_icv_values.teams_thread_limit_var;
-  icvs->wait_policy = 0;
+  icvs->wait_policy = -1;
 }
 
 /* Helper function for initialize_env to add a device specific ICV value

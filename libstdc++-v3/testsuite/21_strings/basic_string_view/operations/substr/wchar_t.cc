@@ -1,6 +1,6 @@
 // { dg-do run { target c++17 } }
 
-// Copyright (C) 2013-2022 Free Software Foundation, Inc.
+// Copyright (C) 2013-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,8 +20,11 @@
 // basic_string_view::substr
 
 #include <string_view>
-#include <stdexcept>
 #include <testsuite_hooks.h>
+
+#if __STDC_HOSTED__
+# include <stdexcept>
+#endif
 
 void
 test01()
@@ -43,6 +46,7 @@ test01()
   str02 = str01.substr(10);
   VERIFY( str02 == L"pacifica" );
 
+#if __STDC_HOSTED__
   try
   {
     str02 = str01.substr(csz01 + 1);
@@ -68,6 +72,7 @@ test01()
   {
     VERIFY( false );
   }
+#endif // HOSTED
 }
 
 int

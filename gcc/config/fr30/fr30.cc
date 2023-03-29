@@ -1,5 +1,5 @@
 /* FR30 specific functions.
-   Copyright (C) 1998-2022 Free Software Foundation, Inc.
+   Copyright (C) 1998-2023 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
    This file is part of GCC.
@@ -471,16 +471,19 @@ fr30_setup_incoming_varargs (cumulative_args_t arg_regs_used_so_far_v,
     = get_cumulative_args (arg_regs_used_so_far_v);
   int size;
 
-  /* All BLKmode values are passed by reference.  */
-  gcc_assert (arg.mode != BLKmode);
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    {
+      /* All BLKmode values are passed by reference.  */
+      gcc_assert (arg.mode != BLKmode);
 
-  /* ??? This run-time test as well as the code inside the if
-     statement is probably unnecessary.  */
-  if (targetm.calls.strict_argument_naming (arg_regs_used_so_far_v))
-    /* If TARGET_STRICT_ARGUMENT_NAMING returns true, then the last named
-       arg must not be treated as an anonymous arg.  */
-    /* ??? This is a pointer increment, which makes no sense.  */
-    arg_regs_used_so_far += fr30_num_arg_regs (arg);
+      /* ??? This run-time test as well as the code inside the if
+	 statement is probably unnecessary.  */
+      if (targetm.calls.strict_argument_naming (arg_regs_used_so_far_v))
+	/* If TARGET_STRICT_ARGUMENT_NAMING returns true, then the last named
+	   arg must not be treated as an anonymous arg.  */
+	/* ??? This is a pointer increment, which makes no sense.  */
+	arg_regs_used_so_far += fr30_num_arg_regs (arg);
+    }
 
   size = FR30_NUM_ARG_REGS - (* arg_regs_used_so_far);
 

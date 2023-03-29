@@ -1,5 +1,5 @@
 /* Declarations for interface to insn recognizer and insn-output.cc.
-   Copyright (C) 1987-2022 Free Software Foundation, Inc.
+   Copyright (C) 1987-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -76,7 +76,7 @@ struct operand_alternative
 /* Return the class for operand I of alternative ALT, taking matching
    constraints into account.  */
 
-static inline enum reg_class
+inline enum reg_class
 alternative_class (const operand_alternative *alt, int i)
 {
   return alt[i].matches >= 0 ? alt[alt[i].matches].cl : alt[i].cl;
@@ -229,7 +229,7 @@ extern bool mode_dependent_address_p (rtx, addr_space_t);
 
 extern int recog (rtx, rtx_insn *, int *);
 #ifndef GENERATOR_FILE
-static inline int recog_memoized (rtx_insn *insn);
+inline int recog_memoized (rtx_insn *insn);
 #endif
 extern void add_clobbers (rtx, int);
 extern int added_clobbers_hard_reg_p (int);
@@ -266,7 +266,7 @@ extern void copy_frame_info_to_split_insn (rtx_insn *, rtx_insn *);
    The automatically-generated function `recog' is normally called
    through this one.  */
 
-static inline int
+inline int
 recog_memoized (rtx_insn *insn)
 {
   if (INSN_CODE (insn) < 0)
@@ -277,7 +277,7 @@ recog_memoized (rtx_insn *insn)
 
 /* Skip chars until the next ',' or the end of the string.  This is
    useful to skip alternatives in a constraint string.  */
-static inline const char *
+inline const char *
 skip_alternative (const char *p)
 {
   const char *r = p;
@@ -382,7 +382,7 @@ extern const operand_alternative *recog_op_alt;
    on operand OP of the current instruction alternative (which_alternative).
    Only valid after calling preprocess_constraints and constrain_operands.  */
 
-inline static const operand_alternative *
+inline const operand_alternative *
 which_op_alt ()
 {
   gcc_checking_assert (IN_RANGE (which_alternative, 0,

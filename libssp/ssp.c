@@ -1,5 +1,5 @@
 /* Stack protector support.
-   Copyright (C) 2005-2022 Free Software Foundation, Inc.
+   Copyright (C) 2005-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -55,6 +55,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Native win32 apps don't know about /dev/tty but can print directly
    to the console using  "CONOUT$"   */
 #if defined (_WIN32) && !defined (__CYGWIN__)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <wincrypt.h>
 # define _PATH_TTY "CONOUT$"

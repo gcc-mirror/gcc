@@ -14,7 +14,6 @@
  */
 module core.sys.windows.threadaux;
 version (Windows):
-@system:
 
 import core.sys.windows.basetsd/+ : HANDLE+/;
 import core.sys.windows.winbase/+ : CloseHandle, GetCurrentThreadId, GetCurrentProcessId,

@@ -1,4 +1,4 @@
-/* Copyright (C) 2012-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2012-2023 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -21,23 +21,34 @@
 
    Before using #include to read this file, define a macro:
 
-      AARCH64_OPT_EXTENSION(EXT_NAME, FLAG_CANONICAL, FLAGS_ON, FLAGS_OFF,
-			    SYNTHETIC, FEATURE_STRING)
+      AARCH64_OPT_EXTENSION(NAME, IDENT, REQUIRES, EXPLICIT_ON,
+			    EXPLICIT_OFF, FEATURE_STRING)
 
-   - EXT_NAME is the name of the extension, represented as a string constant.
-   - FLAGS_CANONICAL is the canonical internal name for this flag.
-   - FLAGS_ON are the bitwise-or of the features that enabling the extension
-     adds, or zero if enabling this extension has no effect on other features.
-   - FLAGS_OFF are the bitwise-or of the features that disabling the extension
-     removes, or zero if disabling this extension has no effect on other
-     features.
-   - SYNTHETIC is a boolean to indicate whether the option is a purely synthetic
-     grouping of options and that the option itself has no feature bit (e.g.
-     crypto).  This is used to determine when sum of the individual options in
-     FLAGS_ON can be replaced by FLAG_CANONICAL in options minimization.  If the
-     group is synthetic then they can be replaced when all options in FLAGS_ON
-     are enabled, otherwise they can only be replaced when
-     FLAGS_ON | FLAG_CANONICAL are enabled.
+   - NAME is the name of the extension, represented as a string constant.
+
+   - IDENT is the canonical internal name for this flag.
+
+   - REQUIRES is a list of features that must be enabled whenever this
+     feature is enabled.  The relationship is implicitly transitive:
+     if A appears in B's REQUIRES and B appears in C's REQUIRES then
+     A and B must be enabled whenever C is.  Thus, turning on C also
+     turns on A and B, while turning off A or B also turns off C.
+
+   - EXPLICIT_ON is a list of features that are enabled by an explicit
+     +NAME specification, in addition to those listed in REQUIRES.
+     Usually this is an empty list; comments below explain the exceptions.
+     The list is implicitly transitively closed wrt REQUIRES (but *not*
+     to EXPLICIT_ON, since NAME is the only thing explicit in +NAME).
+     Thus if A is in B's REQUIRES and B is in C's EXPLICIT_ON, +C will
+     enable both B and A.  B's EXPLICIT_ON has no effect on +C.
+
+   - EXPLICIT_OFF is a list of features that are disabled by an explicit
+     +noNAME specification, in addition to the features that are transitively
+     dependent on NAME (according to REQUIRES).  As with EXPLICIT_ON,
+     this is usually an empty list; comments below explain the exceptions.
+     If a feature A appears in this list then the list implicitly includes
+     any features that are transitively dependent on A (according to REQUIRES).
+
    - FEAT_STRING is a string containing the entries in the 'Features' field of
      /proc/cpuinfo on a GNU/Linux system that correspond to this architecture
      extension being available.  Sometimes multiple entries are needed to enable
@@ -47,195 +58,97 @@
      that are required.  Their order is not important.  An empty string means
      do not detect this feature during auto detection.
 
-     NOTE: Any changes to the AARCH64_OPT_EXTENSION macro need to be mirrored in
-     config.gcc.  */
+   The list of features must follow topological order wrt REQUIRES
+   and EXPLICIT_ON.  For example, if A is in B's REQUIRES list, A must
+   come before B.  This is enforced by aarch64-feature-deps.h.
 
-/* Enabling "fp" just enables "fp".
-   Disabling "fp" also disables "simd", "crypto", "fp16", "aes", "sha2",
-   "sha3", sm3/sm4, "sve", "sve2", "sve2-aes", "sve2-sha3", "sve2-sm4",
-   "sve2-bitperm", "i8mm", "f32mm", "f64mm", and "bf16".  */
-AARCH64_OPT_EXTENSION("fp", AARCH64_FL_FP, 0, AARCH64_FL_SIMD | \
-		      AARCH64_FL_CRYPTO | AARCH64_FL_F16 | AARCH64_FL_AES | \
-		      AARCH64_FL_SHA2 | AARCH64_FL_SHA3 | AARCH64_FL_SM4 | \
-		      AARCH64_FL_SVE | AARCH64_FL_SVE2 | AARCH64_FL_SVE2_AES | \
-		      AARCH64_FL_SVE2_SHA3 | AARCH64_FL_SVE2_SM4 | \
-		      AARCH64_FL_SVE2_BITPERM | AARCH64_FL_I8MM | \
-		      AARCH64_FL_F32MM | AARCH64_FL_F64MM | AARCH64_FL_BF16,
-		       false, "fp")
+   NOTE: Any changes to the AARCH64_OPT_EXTENSION macro need to be mirrored in
+   config.gcc.  */
 
-/* Enabling "simd" also enables "fp".
-   Disabling "simd" also disables "crypto", "dotprod", "aes", "sha2", "sha3",
-   "sm3/sm4", "sve", "sve2", "sve2-aes", "sve2-sha3", "sve2-sm4",
-   "sve2-bitperm", "i8mm", "f32mm" and "f64mm".  */
-AARCH64_OPT_EXTENSION("simd", AARCH64_FL_SIMD, AARCH64_FL_FP, \
-		      AARCH64_FL_CRYPTO | AARCH64_FL_DOTPROD | \
-		      AARCH64_FL_AES | AARCH64_FL_SHA2 | AARCH64_FL_SHA3 | \
-		      AARCH64_FL_SM4 | AARCH64_FL_SVE | AARCH64_FL_SVE2 | \
-		      AARCH64_FL_SVE2_AES | AARCH64_FL_SVE2_SHA3 | \
-		      AARCH64_FL_SVE2_SM4 | AARCH64_FL_SVE2_BITPERM | \
-		      AARCH64_FL_I8MM | AARCH64_FL_F32MM | AARCH64_FL_F64MM, \
-		      false, "asimd")
+AARCH64_OPT_EXTENSION("fp", FP, (), (), (), "fp")
 
-/* Enabling "crypto" also enables "fp", "simd", "aes" and "sha2".
-   Disabling "crypto" disables "crypto", "aes", "sha2", "sha3" and "sm3/sm4",
-   "sve2-aes", "sve2-sha3", "sve2-sm4".  */
-AARCH64_OPT_EXTENSION("crypto", AARCH64_FL_CRYPTO, AARCH64_FL_FP | \
-		      AARCH64_FL_SIMD | AARCH64_FL_AES | AARCH64_FL_SHA2, \
-		      AARCH64_FL_AES | AARCH64_FL_SHA2 | AARCH64_FL_SHA3 | \
-		      AARCH64_FL_SM4 | AARCH64_FL_SVE2_AES | \
-		      AARCH64_FL_SVE2_SHA3 | AARCH64_FL_SVE2_SM4, true, \
+AARCH64_OPT_EXTENSION("simd", SIMD, (FP), (), (), "asimd")
+
+AARCH64_OPT_EXTENSION("crc", CRC, (), (), (), "crc32")
+
+AARCH64_OPT_EXTENSION("lse", LSE, (), (), (), "atomics")
+
+/* +nofp16 disables an implicit F16FML, even though an implicit F16FML
+   does not imply F16.  See F16FML for more details.  */
+AARCH64_OPT_EXTENSION("fp16", F16, (FP), (), (F16FML), "fphp asimdhp")
+
+AARCH64_OPT_EXTENSION("rcpc", RCPC, (), (), (), "lrcpc")
+
+/* An explicit +rdma implies +simd, but +rdma+nosimd still enables scalar
+   RDMA instructions.  */
+AARCH64_OPT_EXTENSION("rdma", RDMA, (), (SIMD), (), "asimdrdm")
+
+AARCH64_OPT_EXTENSION("dotprod", DOTPROD, (SIMD), (), (), "asimddp")
+
+AARCH64_OPT_EXTENSION("aes", AES, (SIMD), (), (), "aes")
+
+AARCH64_OPT_EXTENSION("sha2", SHA2, (SIMD), (), (), "sha1 sha2")
+
+/* +nocrypto disables AES, SHA2 and SM4, and anything that depends on them
+   (such as SHA3 and the SVE2 crypto extensions).  */
+AARCH64_OPT_EXTENSION("crypto", CRYPTO, (AES, SHA2), (), (AES, SHA2, SM4),
 		      "aes pmull sha1 sha2")
 
-/* Enabling or disabling "crc" only changes "crc".  */
-AARCH64_OPT_EXTENSION("crc", AARCH64_FL_CRC, 0, 0, false, "crc32")
+AARCH64_OPT_EXTENSION("sha3", SHA3, (SHA2), (), (), "sha3 sha512")
 
-/* Enabling or disabling "lse" only changes "lse".  */
-AARCH64_OPT_EXTENSION("lse", AARCH64_FL_LSE, 0, 0, false, "atomics")
+AARCH64_OPT_EXTENSION("sm4", SM4, (SIMD), (), (), "sm3 sm4")
 
-/* Enabling "fp16" also enables "fp".
-   Disabling "fp16" disables "fp16", "fp16fml", "sve", "sve2",
-   "sve2-aes", "sve2-sha3", "sve2-sm4", "sve2-bitperm", "f32mm" and
-    "f64mm".  */
-AARCH64_OPT_EXTENSION("fp16", AARCH64_FL_F16, AARCH64_FL_FP, \
-		      AARCH64_FL_F16FML | AARCH64_FL_SVE | AARCH64_FL_F32MM | \
-		      AARCH64_FL_F64MM | AARCH64_FL_SVE2 | \
-		      AARCH64_FL_SVE2_AES | AARCH64_FL_SVE2_SHA3 | \
-		      AARCH64_FL_SVE2_SM4 | AARCH64_FL_SVE2_BITPERM, false, \
-		      "fphp asimdhp")
+/* An explicit +fp16fml implies +fp16, but a dependence on it does not.
+   Thus -march=armv8.4-a implies F16FML but not F16.  -march=armv8.4-a+fp16
+   and -march=armv8.4-a+fp16fml are equivalent and enable both F16FML and F16.
+   -march=armv8.4-a+nofp16+fp16 enables F16 but not F16FML.  */
+AARCH64_OPT_EXTENSION("fp16fml", F16FML, (), (F16), (), "asimdfhm")
 
-/* Enabling or disabling "rcpc" only changes "rcpc".  */
-AARCH64_OPT_EXTENSION("rcpc", AARCH64_FL_RCPC, 0, 0, false, "lrcpc")
+AARCH64_OPT_EXTENSION("sve", SVE, (SIMD, F16), (), (), "sve")
 
-/* Enabling "rdma" also enables "fp", "simd".
-   Disabling "rdma" just disables "rdma".  */
-AARCH64_OPT_EXTENSION("rdma", AARCH64_FL_RDMA, \
-		      AARCH64_FL_FP | AARCH64_FL_SIMD, 0, false, "asimdrdm")
+AARCH64_OPT_EXTENSION("profile", PROFILE, (), (), (), "")
 
-/* Enabling "dotprod" also enables "simd".
-   Disabling "dotprod" only disables "dotprod".  */
-AARCH64_OPT_EXTENSION("dotprod", AARCH64_FL_DOTPROD, AARCH64_FL_SIMD, 0, \
-		      false, "asimddp")
+AARCH64_OPT_EXTENSION("rng", RNG, (), (), (), "rng")
 
-/* Enabling "aes" also enables "simd".
-   Disabling "aes" disables "aes" and "sve2-aes'.  */
-AARCH64_OPT_EXTENSION("aes", AARCH64_FL_AES, AARCH64_FL_SIMD, \
-		      AARCH64_FL_SVE2_AES, false, "aes")
+AARCH64_OPT_EXTENSION("memtag", MEMTAG, (), (), (), "")
 
-/* Enabling "sha2" also enables "simd".
-   Disabling "sha2" just disables "sha2".  */
-AARCH64_OPT_EXTENSION("sha2", AARCH64_FL_SHA2, AARCH64_FL_SIMD, 0, false, \
-		      "sha1 sha2")
+AARCH64_OPT_EXTENSION("sb", SB, (), (), (), "sb")
 
-/* Enabling "sha3" enables "simd" and "sha2".
-   Disabling "sha3" disables "sha3" and "sve2-sha3".  */
-AARCH64_OPT_EXTENSION("sha3", AARCH64_FL_SHA3, AARCH64_FL_SIMD | \
-		      AARCH64_FL_SHA2, AARCH64_FL_SVE2_SHA3, false, \
-		      "sha3 sha512")
+AARCH64_OPT_EXTENSION("ssbs", SSBS, (), (), (), "ssbs")
 
-/* Enabling "sm4" also enables "simd".
-   Disabling "sm4" disables "sm4" and "sve2-sm4".  */
-AARCH64_OPT_EXTENSION("sm4", AARCH64_FL_SM4, AARCH64_FL_SIMD, \
-		      AARCH64_FL_SVE2_SM4, false, "sm3 sm4")
+AARCH64_OPT_EXTENSION("predres", PREDRES, (), (), (), "")
 
-/* Enabling "fp16fml" also enables "fp" and "fp16".
-   Disabling "fp16fml" just disables "fp16fml".  */
-AARCH64_OPT_EXTENSION("fp16fml", AARCH64_FL_F16FML, \
-		      AARCH64_FL_FP | AARCH64_FL_F16, 0, false, "asimdfhm")
+AARCH64_OPT_EXTENSION("sve2", SVE2, (SVE), (), (), "sve2")
 
-/* Enabling "sve" also enables "fp16", "fp" and "simd".
-   Disabling "sve" disables "sve", "f32mm", "f64mm", "sve2", "sve2-aes",
-   "sve2-sha3", "sve2-sm4" and "sve2-bitperm".  */
-AARCH64_OPT_EXTENSION("sve", AARCH64_FL_SVE, AARCH64_FL_FP | AARCH64_FL_SIMD | \
-		      AARCH64_FL_F16, AARCH64_FL_F32MM | AARCH64_FL_F64MM | \
-		      AARCH64_FL_SVE2 | AARCH64_FL_SVE2_AES | \
-		      AARCH64_FL_SVE2_SHA3 | AARCH64_FL_SVE2_SM4 | \
-		      AARCH64_FL_SVE2_BITPERM, false, "sve")
+AARCH64_OPT_EXTENSION("sve2-sm4", SVE2_SM4, (SVE2, SM4), (), (), "svesm4")
 
-/* Enabling/Disabling "profile" does not enable/disable any other feature.  */
-AARCH64_OPT_EXTENSION("profile", AARCH64_FL_PROFILE, 0, 0, false, "")
+AARCH64_OPT_EXTENSION("sve2-aes", SVE2_AES, (SVE2, AES), (), (), "sveaes")
 
-/* Enabling/Disabling "rng" only changes "rng".  */
-AARCH64_OPT_EXTENSION("rng", AARCH64_FL_RNG, 0, 0, false, "rng")
+AARCH64_OPT_EXTENSION("sve2-sha3", SVE2_SHA3, (SVE2, SHA3), (), (), "svesha3")
 
-/* Enabling/Disabling "memtag" only changes "memtag".  */
-AARCH64_OPT_EXTENSION("memtag", AARCH64_FL_MEMTAG, 0, 0, false, "")
+AARCH64_OPT_EXTENSION("sve2-bitperm", SVE2_BITPERM, (SVE2), (), (),
+		      "svebitperm")
 
-/* Enabling/Disabling "sb" only changes "sb".  */
-AARCH64_OPT_EXTENSION("sb", AARCH64_FL_SB, 0, 0, false, "sb")
+AARCH64_OPT_EXTENSION("tme", TME, (), (), (), "")
 
-/* Enabling/Disabling "ssbs" only changes "ssbs".  */
-AARCH64_OPT_EXTENSION("ssbs", AARCH64_FL_SSBS, 0, 0, false, "ssbs")
+AARCH64_OPT_EXTENSION("i8mm", I8MM, (SIMD), (), (), "i8mm")
 
-/* Enabling/Disabling "predres" only changes "predres".  */
-AARCH64_OPT_EXTENSION("predres", AARCH64_FL_PREDRES, 0, 0, false, "")
+AARCH64_OPT_EXTENSION("f32mm", F32MM, (SVE), (), (), "f32mm")
 
-/* Enabling "sve2" also enables "sve", "fp16", "fp", and "simd".
-   Disabling "sve2" disables "sve2", "sve2-aes", "sve2-sha3", "sve2-sm4", and
-   "sve2-bitperm".  */
-AARCH64_OPT_EXTENSION("sve2", AARCH64_FL_SVE2, AARCH64_FL_SVE | \
-		      AARCH64_FL_FP | AARCH64_FL_SIMD | AARCH64_FL_F16, \
-		      AARCH64_FL_SVE2_AES | AARCH64_FL_SVE2_SHA3 | \
-		      AARCH64_FL_SVE2_SM4 | AARCH64_FL_SVE2_BITPERM, false, "sve2")
+AARCH64_OPT_EXTENSION("f64mm", F64MM, (SVE), (), (), "f64mm")
 
-/* Enabling "sve2-sm4" also enables "sm4", "simd", "fp16", "fp", "sve", and
-   "sve2". Disabling "sve2-sm4" just disables "sve2-sm4".  */
-AARCH64_OPT_EXTENSION("sve2-sm4", AARCH64_FL_SVE2_SM4, AARCH64_FL_SM4 | \
-		      AARCH64_FL_SIMD | AARCH64_FL_F16 | AARCH64_FL_FP | \
-		      AARCH64_FL_SVE | AARCH64_FL_SVE2, 0, false, "svesm4")
+/* An explicit +bf16 implies +simd, but +bf16+nosimd still enables scalar BF16
+   instructions.  */
+AARCH64_OPT_EXTENSION("bf16", BF16, (FP), (SIMD), (), "bf16")
 
-/* Enabling "sve2-aes" also enables "aes", "simd", "fp16", "fp", "sve", and
-   "sve2". Disabling "sve2-aes" just disables "sve2-aes".  */
-AARCH64_OPT_EXTENSION("sve2-aes", AARCH64_FL_SVE2_AES, AARCH64_FL_AES | \
-		      AARCH64_FL_SIMD | AARCH64_FL_F16 | AARCH64_FL_FP | \
-		      AARCH64_FL_SVE | AARCH64_FL_SVE2, 0, false, "sveaes")
+AARCH64_OPT_EXTENSION("flagm", FLAGM, (), (), (), "flagm")
 
-/* Enabling "sve2-sha3" also enables "sha3", "simd", "fp16", "fp", "sve", and
-   "sve2". Disabling "sve2-sha3" just disables "sve2-sha3".  */
-AARCH64_OPT_EXTENSION("sve2-sha3", AARCH64_FL_SVE2_SHA3, AARCH64_FL_SHA3 | \
-		      AARCH64_FL_SIMD | AARCH64_FL_F16 | AARCH64_FL_FP | \
-		      AARCH64_FL_SVE | AARCH64_FL_SVE2, 0, false, "svesha3")
+AARCH64_OPT_EXTENSION("pauth", PAUTH, (), (), (), "paca pacg")
 
-/* Enabling "sve2-bitperm" also enables "simd", "fp16", "fp", "sve", and
-   "sve2".  Disabling "sve2-bitperm" just disables "sve2-bitperm".  */
-AARCH64_OPT_EXTENSION("sve2-bitperm", AARCH64_FL_SVE2_BITPERM, AARCH64_FL_SIMD | \
-		      AARCH64_FL_F16 | AARCH64_FL_FP | AARCH64_FL_SVE | \
-		      AARCH64_FL_SVE2, 0, false, "svebitperm")
+AARCH64_OPT_EXTENSION("ls64", LS64, (), (), (), "")
 
-/* Enabling or disabling "tme" only changes "tme".  */
-AARCH64_OPT_EXTENSION("tme", AARCH64_FL_TME, 0, 0, false, "")
+AARCH64_OPT_EXTENSION("mops", MOPS, (), (), (), "")
 
-/* Enabling "i8mm" also enables "simd" and "fp".
-   Disabling "i8mm" only disables "i8mm".  */
-AARCH64_OPT_EXTENSION("i8mm", AARCH64_FL_I8MM, \
-		      AARCH64_FL_SIMD | AARCH64_FL_FP, 0, false, "i8mm")
-
-/* Enabling "f32mm" also enables "sve", "fp16", "fp", and "simd".
-   Disabling "f32mm" only disables "f32mm".  */
-AARCH64_OPT_EXTENSION("f32mm", AARCH64_FL_F32MM, \
-		      AARCH64_FL_SVE | AARCH64_FL_F16 | AARCH64_FL_FP | \
-		      AARCH64_FL_SIMD, 0, false, "f32mm")
-
-/* Enabling "f64mm" also enables "sve", "fp16", "fp", and "simd".
-   Disabling "f64mm" only disables "f64mm".  */
-AARCH64_OPT_EXTENSION("f64mm", AARCH64_FL_F64MM, \
-		      AARCH64_FL_SVE | AARCH64_FL_F16 | AARCH64_FL_FP | \
-		      AARCH64_FL_SIMD, 0, false, "f64mm")
-
-/* Enabling "bf16" also enables "simd" and "fp".
-   Disabling "bf16" only disables "bf16".  */
-AARCH64_OPT_EXTENSION("bf16", AARCH64_FL_BF16, \
-		      AARCH64_FL_SIMD | AARCH64_FL_FP, 0, false, "bf16")
-
-/* Enabling/Disabling "flagm" only changes "flagm".  */
-AARCH64_OPT_EXTENSION("flagm", AARCH64_FL_FLAGM, 0, 0, false, "flagm")
-
-/* Enabling/Disabling "pauth" only changes "pauth".  */
-AARCH64_OPT_EXTENSION("pauth", AARCH64_FL_PAUTH, 0, 0, false, "paca pacg")
-
-/* Enabling/Disabling "ls64" only changes "ls64".  */
-AARCH64_OPT_EXTENSION("ls64", AARCH64_FL_LS64, 0, 0, false, "")
-
-/* Enabling/disabling "mops" only changes "mops".  */
-AARCH64_OPT_EXTENSION("mops", AARCH64_FL_MOPS, 0, 0, false, "")
+AARCH64_OPT_EXTENSION("cssc", CSSC, (), (), (), "cssc")
 
 #undef AARCH64_OPT_EXTENSION

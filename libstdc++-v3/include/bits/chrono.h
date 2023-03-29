@@ -1,6 +1,6 @@
 // chrono::duration and chrono::time_point -*- C++ -*-
 
-// Copyright (C) 2008-2022 Free Software Foundation, Inc.
+// Copyright (C) 2008-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -59,11 +59,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     /// `chrono::duration` represents a distance between two points in time
     template<typename _Rep, typename _Period = ratio<1>>
-      struct duration;
+      class duration;
 
     /// `chrono::time_point` represents a point in time as measured by a clock
     template<typename _Clock, typename _Dur = typename _Clock::duration>
-      struct time_point;
+      class time_point;
     /// @}
   }
 
@@ -244,23 +244,61 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __disable_if_is_duration
 	= typename enable_if<!__is_duration<_Tp>::value, _Tp>::type;
 
+#if __cplusplus >= 201703L
+    template<typename _Tp>
+      inline constexpr bool __is_duration_v = false;
+    template<typename _Rep, typename _Period>
+      inline constexpr bool __is_duration_v<duration<_Rep, _Period>> = true;
+    template<typename _Tp>
+      inline constexpr bool __is_time_point_v = false;
+    template<typename _Clock, typename _Dur>
+      inline constexpr bool __is_time_point_v<time_point<_Clock, _Dur>> = true;
+#endif
+
     /// @endcond
 
-    /// duration_cast
+    /** Convert a `duration` to type `ToDur`.
+     *
+     * If the duration cannot be represented accurately in the result type,
+     * returns the result of integer truncation (i.e., rounded towards zero).
+     *
+     * @tparam _ToDur The result type must be a `duration`.
+     * @param __d A duration.
+     * @return The value of `__d` converted to type `_ToDur`.
+     * @since C++11
+     */
     template<typename _ToDur, typename _Rep, typename _Period>
+      _GLIBCXX_NODISCARD
       constexpr __enable_if_is_duration<_ToDur>
       duration_cast(const duration<_Rep, _Period>& __d)
       {
-	typedef typename _ToDur::period				__to_period;
-	typedef typename _ToDur::rep				__to_rep;
-	typedef ratio_divide<_Period, __to_period> 		__cf;
-	typedef typename common_type<__to_rep, _Rep, intmax_t>::type __cr;
-	typedef  __duration_cast_impl<_ToDur, __cf, __cr,
-				      __cf::num == 1, __cf::den == 1> __dc;
-	return __dc::__cast(__d);
+#if __cpp_inline_variables && __cpp_if_constexpr
+	if constexpr (is_same_v<_ToDur, duration<_Rep, _Period>>)
+	  return __d;
+	else
+#endif
+	{
+	  using __to_period = typename _ToDur::period;
+	  using __to_rep = typename _ToDur::rep;
+	  using __cf = ratio_divide<_Period, __to_period>;
+	  using __cr = typename common_type<__to_rep, _Rep, intmax_t>::type;
+	  using __dc = __duration_cast_impl<_ToDur, __cf, __cr,
+					    __cf::num == 1, __cf::den == 1>;
+	  return __dc::__cast(__d);
+	}
       }
 
-    /// treat_as_floating_point
+    /** Trait indicating whether to treat a type as a floating-point type.
+     *
+     * The chrono library uses this trait to tell whether a `duration` can
+     * represent fractional values of the given precision, or only integral
+     * values.
+     *
+     * You should specialize this trait for your own numeric types that are
+     * used with `duration` and can represent non-integral values.
+     *
+     * @since C++11
+     */
     template<typename _Rep>
       struct treat_as_floating_point
       : is_floating_point<_Rep>
@@ -270,6 +308,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template <typename _Rep>
       inline constexpr bool treat_as_floating_point_v =
 	treat_as_floating_point<_Rep>::value;
+
+    template<>
+      inline constexpr bool treat_as_floating_point_v<int> = false;
+    template<>
+      inline constexpr bool treat_as_floating_point_v<long> = false;
+    template<>
+      inline constexpr bool treat_as_floating_point_v<long long> = false;
+    template<>
+      inline constexpr bool treat_as_floating_point_v<float> = true;
+    template<>
+      inline constexpr bool treat_as_floating_point_v<double> = true;
+    template<>
+      inline constexpr bool treat_as_floating_point_v<long double> = true;
 #endif // C++17
 
 #if __cplusplus > 201703L
@@ -320,8 +371,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201703L
 # define __cpp_lib_chrono 201611L
 
+    /** Convert a `duration` to type `ToDur` and round down.
+     *
+     * If the duration cannot be represented exactly in the result type,
+     * returns the closest value that is less than the argument.
+     *
+     * @tparam _ToDur The result type must be a `duration`.
+     * @param __d A duration.
+     * @return The value of `__d` converted to type `_ToDur`.
+     * @since C++17
+     */
     template<typename _ToDur, typename _Rep, typename _Period>
-      constexpr __enable_if_is_duration<_ToDur>
+      [[nodiscard]] constexpr __enable_if_is_duration<_ToDur>
       floor(const duration<_Rep, _Period>& __d)
       {
 	auto __to = chrono::duration_cast<_ToDur>(__d);
@@ -330,8 +391,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __to;
       }
 
+    /** Convert a `duration` to type `ToDur` and round up.
+     *
+     * If the duration cannot be represented exactly in the result type,
+     * returns the closest value that is greater than the argument.
+     *
+     * @tparam _ToDur The result type must be a `duration`.
+     * @param __d A duration.
+     * @return The value of `__d` converted to type `_ToDur`.
+     * @since C++17
+     */
     template<typename _ToDur, typename _Rep, typename _Period>
-      constexpr __enable_if_is_duration<_ToDur>
+      [[nodiscard]] constexpr __enable_if_is_duration<_ToDur>
       ceil(const duration<_Rep, _Period>& __d)
       {
 	auto __to = chrono::duration_cast<_ToDur>(__d);
@@ -340,8 +411,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __to;
       }
 
+    /** Convert a `duration` to type `ToDur` and round to the closest value.
+     *
+     * If the duration cannot be represented exactly in the result type,
+     * returns the closest value, rounding ties to even.
+     *
+     * @tparam _ToDur The result type must be a `duration` with a
+     *                non-floating-point `rep` type.
+     * @param __d A duration.
+     * @return The value of `__d` converted to type `_ToDur`.
+     * @since C++17
+     */
     template <typename _ToDur, typename _Rep, typename _Period>
-      constexpr enable_if_t<
+      [[nodiscard]] constexpr
+      enable_if_t<
 	__and_<__is_duration<_ToDur>,
 	       __not_<treat_as_floating_point<typename _ToDur::rep>>>::value,
 	_ToDur>
@@ -352,18 +435,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	auto __diff0 = __d - __t0;
 	auto __diff1 = __t1 - __d;
 	if (__diff0 == __diff1)
-	{
+	  {
 	    if (__t0.count() & 1)
-		return __t1;
+	      return __t1;
 	    return __t0;
-	}
+	  }
 	else if (__diff0 < __diff1)
-	    return __t0;
+	  return __t0;
 	return __t1;
       }
 
+    /** The absolute (non-negative) value of a duration.
+     *
+     * @param __d A duration with a signed `rep` type.
+     * @return A duration of the same type as the argument, with value |d|.
+     * @since C++17
+     */
     template<typename _Rep, typename _Period>
-      constexpr
+      [[nodiscard]] constexpr
       enable_if_t<numeric_limits<_Rep>::is_signed, duration<_Rep, _Period>>
       abs(duration<_Rep, _Period> __d)
       {
@@ -431,9 +520,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// @endcond
 
     template<typename _Rep, typename _Period>
-      struct duration
+      class duration
       {
-      private:
+	static_assert(!__is_duration<_Rep>::value, "rep cannot be a duration");
+	static_assert(__is_ratio<_Period>::value,
+		      "period must be a specialization of ratio");
+	static_assert(_Period::num > 0, "period must be positive");
+
 	template<typename _Rep2>
 	  using __is_float = treat_as_floating_point<_Rep2>;
 
@@ -477,11 +570,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	using rep = _Rep;
 	using period = typename _Period::type;
-
-	static_assert(!__is_duration<_Rep>::value, "rep cannot be a duration");
-	static_assert(__is_ratio<_Period>::value,
-		      "period must be a specialization of ratio");
-	static_assert(_Period::num > 0, "period must be positive");
 
 	// 20.11.5.1 construction / copy / destroy
 	constexpr duration() = default;
@@ -575,8 +663,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// DR 934.
 	template<typename _Rep2 = rep>
 	  _GLIBCXX17_CONSTEXPR
-	  typename enable_if<!treat_as_floating_point<_Rep2>::value,
-			     duration&>::type
+	  __enable_if_t<!treat_as_floating_point<_Rep2>::value, duration&>
 	  operator%=(const rep& __rhs)
 	  {
 	    __r %= __rhs;
@@ -585,8 +672,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	template<typename _Rep2 = rep>
 	  _GLIBCXX17_CONSTEXPR
-	  typename enable_if<!treat_as_floating_point<_Rep2>::value,
-			     duration&>::type
+	  __enable_if_t<!treat_as_floating_point<_Rep2>::value, duration&>
 	  operator%=(const duration& __d)
 	  {
 	    __r %= __d.count();
@@ -844,11 +930,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #undef _GLIBCXX_CHRONO_INT64_T
 
     template<typename _Clock, typename _Dur>
-      struct time_point
+      class time_point
       {
 	static_assert(__is_duration<_Dur>::value,
 	    "duration must be a specialization of std::chrono::duration");
 
+      public:
 	typedef _Clock						clock;
 	typedef _Dur						duration;
 	typedef typename duration::rep				rep;
@@ -925,10 +1012,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	duration __d;
       };
 
-    /// time_point_cast
+    /** Convert a `time_point` to use `duration` type `ToDur`.
+     *
+     * The result is the same time point as measured by the same clock, but
+     * using the specified `duration` to represent the time.
+     * If the time point cannot be represented accurately in the result type,
+     * returns the result of integer truncation (i.e., rounded towards zero).
+     *
+     * @tparam _ToDur The `duration` type to use for the result.
+     * @param __t A time point.
+     * @return The value of `__t` converted to use type `_ToDur`.
+     * @since C++11
+     */
     template<typename _ToDur, typename _Clock, typename _Dur>
-      constexpr typename enable_if<__is_duration<_ToDur>::value,
-				   time_point<_Clock, _ToDur>>::type
+      _GLIBCXX_NODISCARD constexpr
+      __enable_if_t<__is_duration<_ToDur>::value, time_point<_Clock, _ToDur>>
       time_point_cast(const time_point<_Clock, _Dur>& __t)
       {
 	typedef time_point<_Clock, _ToDur>			__time_point;
@@ -936,29 +1034,66 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
 #if __cplusplus > 201402L
+    /** Convert a `time_point` to type `ToDur` and round down.
+     *
+     * The result is the same time point as measured by the same clock, but
+     * using the specified `duration` to represent the time.
+     * If the time point cannot be represented exactly in the result type,
+     * returns the closest value that is less than the argument.
+     *
+     * @tparam _ToDur The `duration` type to use for the result.
+     * @param __t A time point.
+     * @return The value of `__d` converted to type `_ToDur`.
+     * @since C++17
+     */
     template<typename _ToDur, typename _Clock, typename _Dur>
-      constexpr
-      enable_if_t<__is_duration<_ToDur>::value, time_point<_Clock, _ToDur>>
+      [[nodiscard]] constexpr
+      enable_if_t<__is_duration_v<_ToDur>, time_point<_Clock, _ToDur>>
       floor(const time_point<_Clock, _Dur>& __tp)
       {
 	return time_point<_Clock, _ToDur>{
 	    chrono::floor<_ToDur>(__tp.time_since_epoch())};
       }
 
+    /** Convert a `time_point` to type `ToDur` and round up.
+     *
+     * The result is the same time point as measured by the same clock, but
+     * using the specified `duration` to represent the time.
+     * If the time point cannot be represented exactly in the result type,
+     * returns the closest value that is greater than the argument.
+     *
+     * @tparam _ToDur The `duration` type to use for the result.
+     * @param __t A time point.
+     * @return The value of `__d` converted to type `_ToDur`.
+     * @since C++17
+     */
     template<typename _ToDur, typename _Clock, typename _Dur>
-      constexpr
-      enable_if_t<__is_duration<_ToDur>::value, time_point<_Clock, _ToDur>>
+      [[nodiscard]] constexpr
+      enable_if_t<__is_duration_v<_ToDur>, time_point<_Clock, _ToDur>>
       ceil(const time_point<_Clock, _Dur>& __tp)
       {
 	return time_point<_Clock, _ToDur>{
 	    chrono::ceil<_ToDur>(__tp.time_since_epoch())};
       }
 
+    /** Convert a `time_point` to type `ToDur` and round to the closest value.
+     *
+     * The result is the same time point as measured by the same clock, but
+     * using the specified `duration` to represent the time.
+     * If the time point cannot be represented exactly in the result type,
+     * returns the closest value, rounding ties to even.
+     *
+     * @tparam _ToDur The `duration` type to use for the result,
+     *                which must have a non-floating-point `rep` type.
+     * @param __t A time point.
+     * @return The value of `__d` converted to type `_ToDur`.
+     * @since C++17
+     */
     template<typename _ToDur, typename _Clock, typename _Dur>
-      constexpr enable_if_t<
-	__and_<__is_duration<_ToDur>,
-	       __not_<treat_as_floating_point<typename _ToDur::rep>>>::value,
-	time_point<_Clock, _ToDur>>
+      [[nodiscard]] constexpr
+      enable_if_t<__is_duration_v<_ToDur>
+		    && !treat_as_floating_point_v<typename _ToDur::rep>,
+		  time_point<_Clock, _ToDur>>
       round(const time_point<_Clock, _Dur>& __tp)
       {
 	return time_point<_Clock, _ToDur>{

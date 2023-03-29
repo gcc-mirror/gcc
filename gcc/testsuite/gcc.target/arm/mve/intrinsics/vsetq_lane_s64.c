@@ -1,16 +1,41 @@
-/* { dg-skip-if "Incompatible float ABI" { *-*-* } { "-mfloat-abi=soft" } {""} } */
-/* { dg-require-effective-target arm_hard_ok } */
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
-/* { dg-additional-options "-mfloat-abi=hard -O2" } */
+/* { dg-additional-options "-O2" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include "arm_mve.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*
+**foo:
+**	...
+**	vmov	d[0-9]+, (?:ip|fp|r[0-9]+), (?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+*/
 int64x2_t
 foo (int64_t a, int64x2_t b)
 {
-    return vsetq_lane_s64 (a, b, 0);
+  return vsetq_lane_s64 (a, b, 1);
 }
 
-/* { dg-final { scan-assembler {vmov\td0, r[1-9]*[0-9], r[1-9]*[0-9]}  }  } */
 
+/*
+**foo1:
+**	...
+**	vmov	d[0-9]+, (?:ip|fp|r[0-9]+), (?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+*/
+int64x2_t
+foo1 (int64_t a, int64x2_t b)
+{
+  return vsetq_lane (a, b, 1);
+}
+
+#ifdef __cplusplus
+}
+#endif
+
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

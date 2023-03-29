@@ -150,3 +150,14 @@ void noreturnImplicit()
         auto y = (throw new Exception("wow")) + value;
     }
 }
+
+// https://issues.dlang.org/show_bug.cgi?id=23549
+int foo(int g = assert(0)) {
+    return g;
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=22587
+int front(int param)
+{
+    return param ? 1 : assert(0);
+}

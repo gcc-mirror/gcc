@@ -104,7 +104,6 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../config/override.m4 \
-	$(top_srcdir)/../config/stdint.m4 \
 	$(top_srcdir)/../config/toolexeclibdir.m4 \
 	$(top_srcdir)/../config/unwind_ipinfo.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
@@ -145,7 +144,8 @@ am__objects_7 = bitmap_allocator.lo pool_allocator.lo mt_allocator.lo \
 	stdexcept.lo strstream.lo tree.lo istream.lo istream-string.lo \
 	streambuf.lo valarray.lo $(am__objects_1) $(am__objects_3) \
 	$(am__objects_6)
-am_libc__98convenience_la_OBJECTS = $(am__objects_7)
+@GLIBCXX_HOSTED_TRUE@am_libc__98convenience_la_OBJECTS =  \
+@GLIBCXX_HOSTED_TRUE@	$(am__objects_7)
 libc__98convenience_la_OBJECTS = $(am_libc__98convenience_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -261,6 +261,7 @@ ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
+EH_POOL_FLAGS = @EH_POOL_FLAGS@
 ERROR_CONSTANTS_SRCDIR = @ERROR_CONSTANTS_SRCDIR@
 EXEEXT = @EXEEXT@
 EXTRA_CFLAGS = @EXTRA_CFLAGS@
@@ -521,7 +522,8 @@ sources = \
 	${host_sources} \
 	${host_sources_extra}
 
-libc__98convenience_la_SOURCES = $(sources)
+@GLIBCXX_HOSTED_FALSE@libc__98convenience_la_SOURCES = 
+@GLIBCXX_HOSTED_TRUE@libc__98convenience_la_SOURCES = $(sources)
 @ENABLE_DUAL_ABI_TRUE@GLIBCXX_ABI_FLAGS = -D_GLIBCXX_USE_CXX11_ABI=@glibcxx_cxx98_abi@
 
 # Use special rules for the deprecated source files so that they find

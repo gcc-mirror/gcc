@@ -1,5 +1,5 @@
 ;; GCC machine description for MMX and 3dNOW! instructions
-;; Copyright (C) 2005-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2023 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -48,7 +48,7 @@
 (define_mode_iterator MMXMODEI8 [V8QI V4HI V2SI (V1DI "TARGET_SSE2")])
 
 ;; All 8-byte vector modes handled by MMX
-(define_mode_iterator MMXMODE [V8QI V4HI V2SI V1DI V2SF V4HF])
+(define_mode_iterator MMXMODE [V8QI V4HI V2SI V1DI V2SF V4HF V4BF])
 (define_mode_iterator MMXMODE124 [V8QI V4HI V2SI V2SF])
 
 ;; Mix-n-match
@@ -58,7 +58,7 @@
 (define_mode_iterator MMXMODE248 [V4HI V2SI V1DI])
 
 ;; All 4-byte integer/float16 vector modes
-(define_mode_iterator V_32 [V4QI V2HI V1SI V2HF])
+(define_mode_iterator V_32 [V4QI V2HI V1SI V2HF V2BF])
 
 ;; 4-byte integer vector modes
 (define_mode_iterator VI_32 [V4QI V2HI])
@@ -72,7 +72,8 @@
 ;; All 2-byte, 4-byte and 8-byte vector modes with more than 1 element
 (define_mode_iterator V_16_32_64
    [V2QI V4QI V2HI V2HF
-    (V8QI "TARGET_64BIT") (V4HI "TARGET_64BIT") (V4HF "TARGET_64BIT")
+    (V8QI "TARGET_64BIT") (V4HI "TARGET_64BIT")
+    (V4HF "TARGET_64BIT") (V4BF "TARGET_64BIT")
     (V2SI "TARGET_64BIT") (V2SF "TARGET_64BIT")])
 
 ;; V2S* modes
@@ -92,6 +93,7 @@
    (V4HI "DI") (V2HI "SI")
    (V2SI "DI")
    (V4HF "DI") (V2HF "SI")
+   (V4BF "DI") (V2BF "SI")
    (V2SF "DI")])
 
 (define_mode_attr mmxdoublemode
@@ -131,7 +133,8 @@
 	(match_operand:MMXMODE 1 "nonimm_or_0_operand"
     "rCo,rC,C,rm,rC,C  ,!y,m  ,?!y,?!y,r  ,C,v,m,v,v,r,*x,!y"))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
-   && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+   && !(MEM_P (operands[0]) && MEM_P (operands[1]))
+   && ix86_hardreg_mov_ok (operands[0], operands[1])"
 {
   switch (get_attr_type (insn))
     {
@@ -213,9 +216,9 @@
      (cond [(eq_attr "alternative" "2")
 	      (const_string "SI")
 	    (eq_attr "alternative" "11,12")
-	      (cond [(match_test "<MODE>mode == V2SFmode")
-		       (const_string "V4SF")
-		     (match_test "<MODE>mode == V4HFmode")
+	      (cond [(match_test "<MODE>mode == V2SFmode
+				  || <MODE>mode == V4HFmode
+				  || <MODE>mode == V4BFmode")
 		       (const_string "V4SF")
 		     (ior (not (match_test "TARGET_SSE2"))
 			  (match_test "optimize_function_for_size_p (cfun)"))
@@ -227,13 +230,15 @@
 		 (ior (ior (and (match_test "<MODE>mode == V2SFmode")
 				(not (match_test "TARGET_MMX_WITH_SSE")))
 			   (not (match_test "TARGET_SSE2")))
-		      (match_test "<MODE>mode == V4HFmode")))
+		      (match_test "<MODE>mode == V4HFmode
+				  || <MODE>mode == V4BFmode")))
 	      (const_string "V2SF")
 
 	    (and (eq_attr "alternative" "14")
 		 (ior (ior (match_test "<MODE>mode == V2SFmode")
 			   (not (match_test "TARGET_SSE2")))
-		      (match_test "<MODE>mode == V4HFmode")))
+		      (match_test "<MODE>mode == V4HFmode
+				  || <MODE>mode == V4BFmode")))
 	      (const_string "V2SF")
 	   ]
 	   (const_string "DI")))
@@ -282,7 +287,8 @@
     "=r ,m ,v,v,v,m,r,v")
 	(match_operand:V_32 1 "general_operand"
     "rmC,rC,C,v,m,v,v,r"))]
-  "!(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "!(MEM_P (operands[0]) && MEM_P (operands[1]))
+   && ix86_hardreg_mov_ok (operands[0], operands[1])"
 {
   switch (get_attr_type (insn))
     {
@@ -321,7 +327,8 @@
        (const_string "*")))
    (set (attr "mode")
      (cond [(eq_attr "alternative" "2,3")
-	      (cond [(match_test "<MODE>mode == V2HFmode")
+	      (cond [(match_test "<MODE>mode == V2HFmode
+				 || <MODE>mode == V2BFmode")
 		       (const_string "V4SF")
 		     (match_test "TARGET_AVX")
 		       (const_string "TI")
@@ -332,7 +339,8 @@
 		    (const_string "TI"))
 
 	    (and (eq_attr "alternative" "4,5")
-		 (ior (match_test "<MODE>mode == V2HFmode")
+		 (ior (match_test "<MODE>mode == V2HFmode
+				 || <MODE>mode == V2BFmode")
 		      (not (match_test "TARGET_SSE2"))))
 	      (const_string "SF")
 	   ]
@@ -1146,6 +1154,25 @@
   DONE;
 })
 
+(define_insn "*mmx_blendps"
+  [(set (match_operand:V2SF 0 "register_operand" "=Yr,*x,x")
+	(vec_merge:V2SF
+	  (match_operand:V2SF 2 "register_operand" "Yr,*x,x")
+	  (match_operand:V2SF 1 "register_operand" "0,0,x")
+	  (match_operand:SI 3 "const_0_to_3_operand")))]
+  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+  "@
+   blendps\t{%3, %2, %0|%0, %2, %3}
+   blendps\t{%3, %2, %0|%0, %2, %3}
+   vblendps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "ssemov")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix_data16" "1,1,*")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "mode" "V4SF")])
+
 (define_insn "mmx_blendvps"
   [(set (match_operand:V2SF 0 "register_operand" "=Yr,*x,x")
 	(unspec:V2SF
@@ -1510,11 +1537,11 @@
    (set_attr "prefix" "*,maybe_vex,orig")
    (set_attr "mode" "DI,V4SF,V4SF")])
 
-(define_insn "*mmx_movss"
-  [(set (match_operand:V2SF 0 "register_operand"   "=x,v")
-	(vec_merge:V2SF
-	  (match_operand:V2SF 2 "register_operand" " x,v")
-	  (match_operand:V2SF 1 "register_operand" " 0,v")
+(define_insn "*mmx_movss_<mode>"
+  [(set (match_operand:V2FI 0 "register_operand"   "=x,v")
+	(vec_merge:V2FI
+	  (match_operand:V2FI 2 "register_operand" " x,v")
+	  (match_operand:V2FI 1 "register_operand" " 0,v")
 	  (const_int 1)))]
   "TARGET_MMX_WITH_SSE"
   "@
@@ -1701,7 +1728,8 @@
 	  [(match_operand:V2SF 1 "register_operand")
 	   (match_dup 2)]
 	  UNSPEC_ROUND))]
-  "TARGET_SSE4_1 && !flag_trapping_math"
+  "TARGET_SSE4_1 && !flag_trapping_math
+  && TARGET_MMX_WITH_SSE"
   "operands[2] = GEN_INT (ROUND_TRUNC | ROUND_NO_EXC);")
 
 (define_insn "*mmx_roundv2sf2"

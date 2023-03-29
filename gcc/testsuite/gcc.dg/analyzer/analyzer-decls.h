@@ -31,6 +31,9 @@ extern void __analyzer_dump_escaped (void);
    will also dump all of the states within those nodes.  */
 extern void __analyzer_dump_exploded_nodes (int);
 
+/* Emit a warning describing what is known about the value of NAME.  */
+extern void __analyzer_dump_named_constant (const char *name);
+
 /* Emit a placeholder "note" diagnostic with a path to this call site,
    if the analyzer finds a feasible path to it.  */
 extern void __analyzer_dump_path (void);
@@ -46,5 +49,8 @@ extern void __analyzer_dump_state (const char *name, ...);
 /* Emit a warning with text "TRUE", FALSE" or "UNKNOWN" based on the
    truthfulness of the argument.  */
 extern void __analyzer_eval (int);
+
+/* Obtain an "unknown" void *.  */
+extern void *__analyzer_get_unknown_ptr (void);
 
 #endif /* #ifndef ANALYZER_DECLS_H.  */

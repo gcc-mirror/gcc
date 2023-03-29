@@ -1,5 +1,5 @@
 /* Driver of optimization process
-   Copyright (C) 2003-2022 Free Software Foundation, Inc.
+   Copyright (C) 2003-2023 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -1000,7 +1000,7 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
     = possible_polymorphic_call_targets
 	(edge, &final, &cache_token);
 
-  if (!reachable_call_targets->add (cache_token))
+  if (cache_token != NULL && !reachable_call_targets->add (cache_token))
     {
       if (symtab->dump_file)
 	dump_possible_polymorphic_call_targets 
@@ -1087,8 +1087,6 @@ check_global_declaration (symtab_node *snode)
       else
 	warning (OPT_Wunused_function, "%q+F declared %<static%> but never "
 				       "defined", decl);
-      /* This symbol is effectively an "extern" declaration now.  */
-      TREE_PUBLIC (decl) = 1;
     }
 
   /* Warn about static fns or vars defined but not used.  */
@@ -1122,6 +1120,7 @@ check_global_declaration (symtab_node *snode)
       && (TREE_CODE (decl) != FUNCTION_DECL
 	  || (!DECL_STATIC_CONSTRUCTOR (decl)
 	      && !DECL_STATIC_DESTRUCTOR (decl)))
+      && (! VAR_P (decl) || !warning_suppressed_p (decl, OPT_Wunused_variable))
       /* Otherwise, ask the language.  */
       && lang_hooks.decls.warn_unused_global (decl))
     warning_at (DECL_SOURCE_LOCATION (decl),
@@ -1882,6 +1881,16 @@ cgraph_node::expand (void)
   ggc_collect ();
   timevar_pop (TV_REST_OF_COMPILATION);
 
+  if (DECL_STRUCT_FUNCTION (decl)
+      && DECL_STRUCT_FUNCTION (decl)->assume_function)
+    {
+      /* Assume functions aren't expanded into RTL, on the other side
+	 we don't want to release their body.  */
+      if (cfun)
+	pop_cfun ();
+      return;
+    }
+
   /* Make sure that BE didn't give up on compiling.  */
   gcc_assert (TREE_ASM_WRITTEN (decl));
   if (cfun)
@@ -1986,18 +1995,51 @@ expand_all_functions (void)
 
   /* Output functions in RPO so callees get optimized before callers.  This
      makes ipa-ra and other propagators to work.
-     FIXME: This is far from optimal code layout.  */
-  for (i = new_order_pos - 1; i >= 0; i--)
-    {
-      node = order[i];
+     FIXME: This is far from optimal code layout.
+     Make multiple passes over the list to defer processing of gc
+     candidates until all potential uses are seen.  */
+  int gc_candidates = 0;
+  int prev_gc_candidates = 0;
 
-      if (node->process)
+  while (1)
+    {
+      for (i = new_order_pos - 1; i >= 0; i--)
 	{
-	  expanded_func_count++;
-	  node->process = 0;
-	  node->expand ();
+	  node = order[i];
+
+	  if (node->gc_candidate)
+	    gc_candidates++;
+	  else if (node->process)
+	    {
+	      expanded_func_count++;
+	      node->process = 0;
+	      node->expand ();
+	    }
 	}
+      if (!gc_candidates || gc_candidates == prev_gc_candidates)
+	break;
+      prev_gc_candidates = gc_candidates;
+      gc_candidates = 0;
     }
+
+  /* Free any unused gc_candidate functions.  */
+  if (gc_candidates)
+    for (i = new_order_pos - 1; i >= 0; i--)
+      {
+	node = order[i];
+	if (node->gc_candidate)
+	  {
+	    struct function *fn = DECL_STRUCT_FUNCTION (node->decl);
+	    if (symtab->dump_file)
+	      fprintf (symtab->dump_file,
+		       "Deleting unused function %s\n",
+		       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->decl)));
+	    node->process = false;
+	    free_dominance_info (fn, CDI_DOMINATORS);
+	    free_dominance_info (fn, CDI_POST_DOMINATORS);
+	    node->release_body (false);
+	  }
+      }
 
   if (dump_file)
     fprintf (dump_file, "Expanded functions with time profile (%s):%u/%u\n",
@@ -2373,6 +2415,10 @@ symbol_table::compile (void)
 	if (node->inlined_to
 	    || gimple_has_body_p (node->decl))
 	  {
+	    if (DECL_STRUCT_FUNCTION (node->decl)
+		&& (DECL_STRUCT_FUNCTION (node->decl)->curr_properties
+		    & PROP_assumptions_done) != 0)
+	      continue;
 	    error_found = true;
 	    node->debug ();
 	  }

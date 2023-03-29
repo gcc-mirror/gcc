@@ -1,5 +1,5 @@
 /* Common subexpression elimination library for GNU compiler.
-   Copyright (C) 1987-2022 Free Software Foundation, Inc.
+   Copyright (C) 1987-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -80,6 +80,10 @@ struct expand_value_data
 
 static rtx cselib_expand_value_rtx_1 (rtx, struct expand_value_data *, int);
 
+/* This is a global so we don't have to pass this through every function.
+   It is used in new_elt_loc_list to set SETTING_INSN.  */
+static rtx_insn *cselib_current_insn;
+
 /* There are three ways in which cselib can look up an rtx:
    - for a REG, the reg_values table (which is indexed by regno) is used
    - for a MEM, we recursively look up its address and then follow the
@@ -143,11 +147,25 @@ cselib_hasher::equal (const cselib_val *v, const key *x_arg)
   /* We don't guarantee that distinct rtx's have different hash values,
      so we need to do a comparison.  */
   for (l = v->locs; l; l = l->next)
-    if (rtx_equal_for_cselib_1 (l->loc, x, memmode, 0))
+    if (l->setting_insn && DEBUG_INSN_P (l->setting_insn)
+	&& (!cselib_current_insn || !DEBUG_INSN_P (cselib_current_insn)))
       {
-	promote_debug_loc (l);
-	return true;
+	rtx_insn *save_cselib_current_insn = cselib_current_insn;
+	/* If l is so far a debug only loc, without debug stmts it
+	   would never be compared to x at all, so temporarily pretend
+	   current instruction is that DEBUG_INSN so that we don't
+	   promote other debug locs even for unsuccessful comparison.  */
+	cselib_current_insn = l->setting_insn;
+	bool match = rtx_equal_for_cselib_1 (l->loc, x, memmode, 0);
+	cselib_current_insn = save_cselib_current_insn;
+	if (match)
+	  {
+	    promote_debug_loc (l);
+	    return true;
+	  }
       }
+    else if (rtx_equal_for_cselib_1 (l->loc, x, memmode, 0))
+      return true;
 
   return false;
 }
@@ -157,10 +175,6 @@ static hash_table<cselib_hasher> *cselib_hash_table;
 
 /* A table to hold preserved values.  */
 static hash_table<cselib_hasher> *cselib_preserved_hash_table;
-
-/* This is a global so we don't have to pass this through every function.
-   It is used in new_elt_loc_list to set SETTING_INSN.  */
-static rtx_insn *cselib_current_insn;
 
 /* The unique id that the next create value will take.  */
 static unsigned int next_uid;
@@ -1568,6 +1582,27 @@ new_cselib_val (unsigned int hash, machine_mode mode, rtx x)
   e->addr_list = 0;
   e->locs = 0;
   e->next_containing_mem = 0;
+
+  scalar_int_mode int_mode;
+  if (REG_P (x) && is_int_mode (mode, &int_mode)
+      && GET_MODE_SIZE (int_mode) > 1
+      && REG_VALUES (REGNO (x)) != NULL
+      && (!cselib_current_insn || !DEBUG_INSN_P (cselib_current_insn)))
+    {
+      rtx copy = shallow_copy_rtx (x);
+      scalar_int_mode narrow_mode_iter;
+      FOR_EACH_MODE_UNTIL (narrow_mode_iter, int_mode)
+	{
+	  PUT_MODE_RAW (copy, narrow_mode_iter);
+	  cselib_val *v = cselib_lookup (copy, narrow_mode_iter, 0, VOIDmode);
+	  if (v)
+	    {
+	      rtx sub = lowpart_subreg (narrow_mode_iter, e->val_rtx, int_mode);
+	      if (sub)
+		new_elt_loc_list (v, sub);
+	    }
+	}
+    }
 
   if (dump_file && (dump_flags & TDF_CSELIB))
     {

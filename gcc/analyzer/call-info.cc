@@ -1,5 +1,5 @@
 /* Subclasses of custom_edge_info for describing outcomes of function calls.
-   Copyright (C) 2021-2022 Free Software Foundation, Inc.
+   Copyright (C) 2021-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -30,11 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "cgraph.h"
 #include "tree-pretty-print.h"
-#include "tristate.h"
 #include "bitmap.h"
-#include "selftest.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "ordered-hash-map.h"
@@ -56,17 +53,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-path.h"
 #include "analyzer/checker-path.h"
 #include "analyzer/diagnostic-manager.h"
-#include "alloc-pool.h"
-#include "fibonacci_heap.h"
-#include "shortest-paths.h"
 #include "analyzer/exploded-graph.h"
+#include "analyzer/call-details.h"
 #include "analyzer/call-info.h"
+#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
 namespace ana {
 
-/* class call_info : public custom_eedge_info_t.  */
+/* class custom_edge_info.  */
+
+bool
+custom_edge_info::update_state (program_state *state,
+				const exploded_edge *eedge,
+				region_model_context *ctxt) const
+{
+  return update_model (state->m_region_model, eedge, ctxt);
+}
+
+/* class call_info : public custom_edge_info.  */
 
 /* Implementation of custom_edge_info::print vfunc for call_info:
    use get_desc to get a label_text, and print it to PP.  */
@@ -89,10 +95,10 @@ call_info::add_events_to_path (checker_path *emission_path,
   class call_event : public custom_event
   {
   public:
-    call_event (location_t loc, tree fndecl, int depth,
+    call_event (const event_loc_info &loc_info,
 		const call_info *call_info)
-      : custom_event (loc, fndecl, depth),
-	m_call_info (call_info)
+    : custom_event (loc_info),
+      m_call_info (call_info)
     {}
 
     label_text get_desc (bool can_colorize) const final override
@@ -109,10 +115,11 @@ call_info::add_events_to_path (checker_path *emission_path,
   tree caller_fndecl = src_point.get_fndecl ();
   const int stack_depth = src_point.get_stack_depth ();
 
-  emission_path->add_event (new call_event (get_call_stmt ()->location,
-					    caller_fndecl,
-					    stack_depth,
-					    this));
+  emission_path->add_event
+    (make_unique<call_event> (event_loc_info (get_call_stmt ()->location,
+					      caller_fndecl,
+					      stack_depth),
+			      this));
 }
 
 /* Recreate a call_details instance from this call_info.  */
@@ -136,24 +143,15 @@ call_info::call_info (const call_details &cd)
   gcc_assert (m_fndecl);
 }
 
-/* class success_call_info : public call_info.  */
-
-/* Implementation of call_info::get_desc vfunc for success_call_info.  */
+/* class succeed_or_fail_call_info : public call_info.  */
 
 label_text
-success_call_info::get_desc (bool can_colorize) const
+succeed_or_fail_call_info::get_desc (bool can_colorize) const
 {
-  return make_label_text (can_colorize, "when %qE succeeds", get_fndecl ());
-}
-
-/* class failed_call_info : public call_info.  */
-
-/* Implementation of call_info::get_desc vfunc for failed_call_info.  */
-
-label_text
-failed_call_info::get_desc (bool can_colorize) const
-{
-  return make_label_text (can_colorize, "when %qE fails", get_fndecl ());
+  if (m_success)
+    return make_label_text (can_colorize, "when %qE succeeds", get_fndecl ());
+  else
+    return make_label_text (can_colorize, "when %qE fails", get_fndecl ());
 }
 
 } // namespace ana

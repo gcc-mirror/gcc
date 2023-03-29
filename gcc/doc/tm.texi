@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2022 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2023 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -1009,7 +1009,7 @@ of the excess precision explicitly added.  For
 @code{EXCESS_PRECISION_TYPE_FLOAT16}, and
 @code{EXCESS_PRECISION_TYPE_FAST}, the target should return the
 explicit excess precision that should be added depending on the
-value set for @option{-fexcess-precision=@r{[}standard@r{|}fast@r{]}}.
+value set for @option{-fexcess-precision=@r{[}standard@r{|}fast@r{|}16@r{]}}.
 Note that unpredictable explicit excess precision does not make sense,
 so a target should never return @code{FLT_EVAL_METHOD_UNPREDICTABLE}
 when @var{type} is @code{EXCESS_PRECISION_TYPE_STANDARD},
@@ -1523,6 +1523,15 @@ before mangling.
 The default version of this hook always returns @code{NULL}, which is
 appropriate for a target that does not define any new fundamental
 types.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_EMIT_SUPPORT_TINFOS (emit_support_tinfos_callback @var{callback})
+If your target defines any fundamental types which depend on ISA flags,
+they might need C++ tinfo symbols in libsupc++/libstdc++ regardless of
+ISA flags the library is compiled with.
+This hook allows creating tinfo symbols even for those cases, by temporarily
+creating each corresponding fundamental type trees, calling the
+@var{callback} function on it and setting the type back to @code{nullptr}.
 @end deftypefn
 
 @node Type Layout
@@ -3294,6 +3303,12 @@ someone decided it was a good idea to use that register number to
 terminate the stack backtrace.  New ports should avoid this.
 @end defmac
 
+@defmac DWARF_VERSION_DEFAULT
+A C expression whose value is the default dwarf standard version we'll honor
+and advertise when generating dwarf debug information, in absence of
+an explicit @option{-gdwarf-@var{version}} option on the command line.
+@end defmac
+
 @deftypefn {Target Hook} void TARGET_DWARF_HANDLE_FRAME_UNSPEC (const char *@var{label}, rtx @var{pattern}, int @var{index})
 This target hook allows the backend to emit frame-related insns that
 contain UNSPECs or UNSPEC_VOLATILEs.  The DWARF 2 call frame debugging
@@ -4964,9 +4979,9 @@ function's arguments that this function should pop is available in
 @end deftypefn
 
 @itemize @bullet
-@item
 @findex pretend_args_size
 @findex crtl->args.pretend_args_size
+@item
 A region of @code{crtl->args.pretend_args_size} bytes of
 uninitialized space just underneath the first argument arriving on the
 stack.  (This may not be at the very start of the allocated stack region
@@ -4991,8 +5006,8 @@ boundary, to contain the local variables of the function.  On some machines,
 this region and the save area may occur in the opposite order, with the
 save area closer to the top of the stack.
 
-@item
 @cindex @code{ACCUMULATE_OUTGOING_ARGS} and stack frames
+@item
 Optionally, when @code{ACCUMULATE_OUTGOING_ARGS} is defined, a region of
 @code{crtl->outgoing_args_size} bytes to be used for outgoing
 argument lists of the function.  @xref{Stack Arguments}.
@@ -5372,7 +5387,9 @@ pass all their arguments on the stack.
 The argument @var{args_so_far} points to the @code{CUMULATIVE_ARGS} data
 structure, containing the values that are obtained after processing the
 named arguments.  The argument @var{arg} describes the last of these named
-arguments.
+arguments.  The argument @var{arg} should not be used if the function type
+satisfies @code{TYPE_NO_NAMED_ARGS_STDARG_P}, since in that case there are
+no named arguments and all arguments are accessed with @code{va_arg}.
 
 The target hook should do two things: first, push onto the stack all the
 argument registers @emph{not} used for the named arguments, and second,
@@ -6129,6 +6146,14 @@ instruction pattern.  There is no need for the hook to handle these two
 implementation approaches itself.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_VECTORIZE_PREFERRED_DIV_AS_SHIFTS_OVER_MULT (const_tree @var{type})
+Sometimes it is possible to implement a vector division using a sequence
+of two addition-shift pairs, giving four instructions in total.
+Return true if taking this approach for @var{vectype} is likely
+to be better than using a sequence involving highpart multiplication.
+Default is false if @code{can_mult_highpart_p}, otherwise true.
+@end deftypefn
+
 @deftypefn {Target Hook} tree TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION (unsigned @var{code}, tree @var{vec_type_out}, tree @var{vec_type_in})
 This hook should return the decl of a function that implements the
 vectorized variant of the function with the @code{combined_fn} code
@@ -6266,7 +6291,7 @@ The default is @code{NULL_TREE} which means to not vectorize scatter
 stores.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN (struct cgraph_node *@var{}, struct cgraph_simd_clone *@var{}, @var{tree}, @var{int})
+@deftypefn {Target Hook} int TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN (struct cgraph_node *@var{}, struct cgraph_simd_clone *@var{}, @var{tree}, @var{int}, @var{bool})
 This hook should set @var{vecsize_mangle}, @var{vecsize_int}, @var{vecsize_float}
 fields in @var{simd_clone} structure pointed by @var{clone_info} argument and also
 @var{simdlen} field if it was previously 0.
@@ -10842,19 +10867,23 @@ the target operating system.
 
 @deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_SECTION
 Contains the name of the section in which module info references should be
-placed.  This section is expected to be bracketed by two symbols to indicate
-the start and end address of the section, so that the runtime library can
-collect all modules for each loaded shared library and executable.  The
-default value of @code{NULL} disables the use of sections altogether.
+placed.  By default, the compiler puts all module info symbols in the
+@code{"minfo"} section.  Define this macro to override the string if a
+different section name should be used.  This section is expected to be
+bracketed by two symbols @code{TARGET_D_MINFO_SECTION_START} and 
+@code{TARGET_D_MINFO_SECTION_END} to indicate the start and end address of
+the section, so that the runtime library can collect all modules for each
+loaded shared library and executable.  Setting the value to @code{NULL}
+disables the use of sections for storing module info altogether.
 @end deftypevr
 
-@deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_START_NAME
+@deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_SECTION_START
 If @code{TARGET_D_MINFO_SECTION} is defined, then this must also be defined
 as the name of the symbol indicating the start address of the module info
 section
 @end deftypevr
 
-@deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_END_NAME
+@deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_SECTION_END
 If @code{TARGET_D_MINFO_SECTION} is defined, then this must also be defined
 as the name of the symbol indicating the end address of the module info
 section
@@ -11970,13 +11999,6 @@ This function prepares to emit a conditional comparison within a sequence
  be appropriate for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.
  @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.
  @var{bit_code} is @code{AND} or @code{IOR}, which is the op on the compares.
-@end deftypefn
-
-@deftypefn {Target Hook} rtx TARGET_GEN_MEMSET_SCRATCH_RTX (machine_mode @var{mode})
-This hook should return an rtx for a scratch register in @var{mode} to
-be used when expanding memset calls.  The backend can use a hard scratch
-register to avoid stack realignment when expanding memset.  The default
-is @code{gen_reg_rtx}.
 @end deftypefn
 
 @deftypefn {Target Hook} unsigned TARGET_LOOP_UNROLL_ADJUST (unsigned @var{nunroll}, class loop *@var{loop})

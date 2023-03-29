@@ -1,5 +1,5 @@
 ;; Constraint definitions for IA-32 and x86-64.
-;; Copyright (C) 2006-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2023 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -168,6 +168,9 @@
 ;;  z  Constant call address operand.
 ;;  C  Integer SSE constant with all bits set operand.
 ;;  F  Floating-point SSE constant with all bits set operand.
+;;  H  Integer SSE constant that is 128/256bit all ones
+;;     and zero-extand to 256/512bit, or 128bit all ones
+;;     and zero-extend to 512bit.
 ;;  M  x86-64 memory operand.
 
 (define_constraint "Bf"
@@ -232,6 +235,11 @@
   "@internal floating-point SSE constant with all bits set operand."
   (and (match_test "TARGET_SSE")
        (match_operand 0 "float_vector_all_ones_operand")))
+
+(define_constraint "BH"
+  "@internal integer constant with last half/quarter bits set operand."
+  (ior (match_operand 0 "vector_all_ones_zero_extend_half_operand")
+       (match_operand 0 "vector_all_ones_zero_extend_quarter_operand")))
 
 ;; NB: Similar to 'm', but don't use define_memory_constraint on x86-64
 ;; to prevent LRA from converting the operand to the form '(mem (reg X))'

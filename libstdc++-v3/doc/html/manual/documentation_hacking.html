@@ -122,9 +122,9 @@
       </p><p>
 	To generate the pretty pictures and hierarchy
 	graphs, the
-	<a class="link" href="http://www.graphviz.org" target="_top">Graphviz</a> package
+	<a class="link" href="https://www.graphviz.org" target="_top">Graphviz</a> package
 	will need to be installed. For PDF
-	output, <a class="link" href="http://www.tug.org/applications/pdftex/" target="_top">
+	output, <a class="link" href="https://tug.org/applications/pdftex/" target="_top">
 	pdflatex</a> is required as well as a number of TeX packages
 	such as <span class="package">texlive-xtab</span> and
 	<span class="package">texlive-tocloft</span>.
@@ -135,7 +135,9 @@
 	formatting system, and will require the expansion of TeX's memory
 	capacity. Specifically, the <code class="literal">pool_size</code>
 	variable in the configuration file <code class="filename">texmf.cnf</code> may
-	need to be increased by a minimum factor of two.
+	need to be increased by a minimum factor of two. Alternatively, using
+	<strong class="userinput"><code>LATEX_CMD=lualatex</code></strong> might allow the docs to be
+	build without running out of memory.
       </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="doxygen.rules"></a>Generating the Doxygen Files</h4></div></div></div><p>
 	The following Makefile rules run Doxygen to generate HTML
 	docs, XML docs, XML docs as a single file, PDF docs, and the
@@ -269,9 +271,12 @@
 	purpose. See <code class="filename">stl_iterator.h</code>
 	for a good example of the <span class="quote">“<span class="quote">other</span>”</span> kind of grouping.
       </p><p>
-	Please use markup tags like @p and @a when referring to things
-	such as the names of function parameters. Use @e for emphasis
-	when necessary. Use @c to refer to other standard names.
+	Markdown can be used for formatting text. Doxygen is configured to
+	support this, and it is a good compromise between readable comments
+	in the C++ source and nice formatting in the generated HTML.
+	Please format the names of function parameters in either code font
+	or italics. Use underscores or @e for emphasis when necessary.
+	Use backticks or @c to refer to other standard names.
 	(Examples of all these abound in the present code.)
       </p><p>
 	Complicated math functions should use the multi-line format.
@@ -322,8 +327,8 @@
 	writing Doxygen comments. Single and double quotes, and
 	separators in filenames are two common trouble spots. When in
 	doubt, consult the following table.
-      </p><div class="table"><a id="table.doxygen_cmp"></a><p class="title"><strong>Table B.2. HTML to Doxygen Markup Comparison</strong></p><div class="table-contents"><table class="table" summary="HTML to Doxygen Markup Comparison" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /></colgroup><thead><tr><th align="left">HTML</th><th align="left">Doxygen</th></tr></thead><tbody><tr><td align="left">\</td><td align="left">\\</td></tr><tr><td align="left">"</td><td align="left">\"</td></tr><tr><td align="left">'</td><td align="left">\'</td></tr><tr><td align="left">&lt;i&gt;</td><td align="left">@a word</td></tr><tr><td align="left">&lt;b&gt;</td><td align="left">@b word</td></tr><tr><td align="left">&lt;code&gt;</td><td align="left">@c word</td></tr><tr><td align="left">&lt;em&gt;</td><td align="left">@a word</td></tr><tr><td align="left">&lt;em&gt;</td><td align="left">&lt;em&gt;two words or more&lt;/em&gt;</td></tr></tbody></table></div></div><br class="table-break" /></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="doc.docbook"></a>Docbook</h3></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.prereq"></a>Prerequisites</h4></div></div></div><div class="table"><a id="table.docbook_prereq"></a><p class="title"><strong>Table B.3. Docbook Prerequisites</strong></p><div class="table-contents"><table class="table" summary="Docbook Prerequisites" border="1"><colgroup><col align="center" class="c1" /><col align="center" class="c2" /><col align="center" class="c3" /></colgroup><thead><tr><th align="center">Tool</th><th align="center">Version</th><th align="center">Required By</th></tr></thead><tbody><tr><td align="center">docbook5-style-xsl</td><td align="center">1.76.1</td><td align="center">all</td></tr><tr><td align="center">xsltproc</td><td align="center">1.1.26</td><td align="center">all</td></tr><tr><td align="center">xmllint</td><td align="center">2.7.7</td><td align="center">validation</td></tr><tr><td align="center">dblatex</td><td align="center">0.3</td><td align="center">pdf output</td></tr><tr><td align="center">pdflatex</td><td align="center">2007-59</td><td align="center">pdf output</td></tr><tr><td align="center">docbook2X</td><td align="center">0.8.8</td><td align="center">info output</td></tr><tr><td align="center">epub3 stylesheets</td><td align="center">b3</td><td align="center">epub output</td></tr></tbody></table></div></div><br class="table-break" /><p>
-	Editing the DocBook sources requires an XML editor. Many
+      </p><div class="table"><a id="table.doxygen_cmp"></a><p class="title"><strong>Table B.2. HTML to Doxygen Markup Comparison</strong></p><div class="table-contents"><table class="table" summary="HTML to Doxygen Markup Comparison" border="1"><colgroup><col align="left" class="c1" /><col align="left" class="c2" /></colgroup><thead><tr><th align="left">HTML</th><th align="left">Doxygen</th><th align="left">Markdown</th></tr></thead><tbody><tr><td align="left">\</td><td align="left">\\</td><td align="left">\\</td></tr><tr><td align="left">"</td><td align="left">\"</td><td align="left">\"</td></tr><tr><td align="left">'</td><td align="left">\'</td><td align="left">\'</td></tr><tr><td align="left">&lt;i&gt;</td><td align="left">@a word</td><td align="left">_word_ or *word*</td></tr><tr><td align="left">&lt;b&gt;</td><td align="left">@b word</td><td align="left">**word** or __word__</td></tr><tr><td align="left">&lt;code&gt;</td><td align="left">@c word</td><td align="left">`word`</td></tr><tr><td align="left">&lt;em&gt;</td><td align="left">@a word</td><td align="left">_word_ or *word*</td></tr><tr><td align="left">&lt;em&gt;</td><td align="left">&lt;em&gt;two words or more&lt;/em&gt;</td><td align="left">_two words or more_</td></tr></tbody></table></div></div><br class="table-break" /></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="doc.docbook"></a>Docbook</h3></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.prereq"></a>Prerequisites</h4></div></div></div><div class="table"><a id="table.docbook_prereq"></a><p class="title"><strong>Table B.3. Docbook Prerequisites</strong></p><div class="table-contents"><table class="table" summary="Docbook Prerequisites" border="1"><colgroup><col align="center" class="c1" /><col align="center" class="c2" /><col align="center" class="c3" /></colgroup><thead><tr><th align="center">Tool</th><th align="center">Version</th><th align="center">Required By</th></tr></thead><tbody><tr><td align="center">docbook5-style-xsl</td><td align="center">1.76.1</td><td align="center">all</td></tr><tr><td align="center">xsltproc</td><td align="center">1.1.26</td><td align="center">all</td></tr><tr><td align="center">xmllint</td><td align="center">2.7.7</td><td align="center">validation</td></tr><tr><td align="center">dblatex</td><td align="center">0.3</td><td align="center">pdf output</td></tr><tr><td align="center">pdflatex</td><td align="center">2007-59</td><td align="center">pdf output</td></tr><tr><td align="center">docbook2X</td><td align="center">0.8.8</td><td align="center">info output</td></tr><tr><td align="center">epub3 stylesheets</td><td align="center">b3</td><td align="center">epub output</td></tr></tbody></table></div></div><br class="table-break" /><p>
+	An XML editor is recommended for editing the DocBook sources. Many
 	exist: some notable options
 	include <span class="command"><strong>emacs</strong></span>, <span class="application">Kate</span>,
 	or <span class="application">Conglomerate</span>.
@@ -357,7 +362,7 @@
 	by a vendor package like <code class="filename">libxml2</code> and <code class="filename">docbook5-schemas-5.0-4</code>
       </p><p>
 	For PDF output, something that transforms valid Docbook XML to PDF is
-	required. Possible solutions include <a class="link" href="http://dblatex.sourceforge.net" target="_top">dblatex</a>,
+	required. Possible solutions include <a class="link" href="https://dblatex.sourceforge.net" target="_top">dblatex</a>,
 	<span class="command"><strong>xmlto</strong></span>, or <span class="command"><strong>prince</strong></span>. Of
 	these, <span class="command"><strong>dblatex</strong></span> is the default.
 	Please consult the <code class="email">&lt;<a class="email" href="mailto:libstdc++@gcc.gnu.org">libstdc++@gcc.gnu.org</a>&gt;</code> list when
@@ -365,7 +370,7 @@
 	suggestions.
       </p><p>
 	For Texinfo output, something that transforms valid Docbook
-	XML to Texinfo is required. The default choice is <a class="link" href="http://docbook2x.sourceforge.net/" target="_top">docbook2X</a>.
+	XML to Texinfo is required. The default choice is <a class="link" href="https://docbook2x.sourceforge.net/" target="_top">docbook2X</a>.
       </p><p>
 	For epub output, the <a class="link" href="https://sourceforge.net/projects/docbook/files/epub3/" target="_top">stylesheets</a> for EPUB3 are required. These stylesheets are still in development. To validate the created file, <a class="link" href="https://github.com/w3c/epubcheck" target="_top">epubcheck</a> is necessary.
       </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="docbook.rules"></a>Generating the DocBook Files</h4></div></div></div><p>
@@ -386,8 +391,8 @@
 	build directory, based on the output format. For instance, the
 	HTML docs will be in <code class="filename">doc/docbook/html</code>.
       </p><p>
-	The </p><pre class="screen">doc-html-docbook-regenerate</pre><p> target will generate
-	the HTML files and copy them back to the libstdc++ source tree.
+	The <strong class="userinput"><code>doc-html-docbook-regenerate</code></strong> target will
+	generate the HTML files and copy them back to the libstdc++ source tree.
 	This can be used to update the HTML files that are checked in to
 	version control.
       </p><p>

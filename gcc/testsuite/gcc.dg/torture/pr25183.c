@@ -3,10 +3,10 @@
 
 enum err {
   err_IO = 0x8a450000, /* { dg-warning "int" } */
-  err_NM,
-  err_EOF,
-  err_SE,
-  err_PT
+  err_NM, /* { dg-warning "int" } */
+  err_EOF, /* { dg-warning "int" } */
+  err_SE, /* { dg-warning "int" } */
+  err_PT /* { dg-warning "int" } */
 };
 static enum err E_;
 int error()

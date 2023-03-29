@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for SH Linux.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -99,24 +99,24 @@ sh_fallback_frame_state (struct _Unwind_Context *context,
 
   for (i = 0; i < 15; i++)
     {
-      fs->regs.reg[i].how = REG_SAVED_OFFSET;
+      fs->regs.how[i] = REG_SAVED_OFFSET;
       fs->regs.reg[i].loc.offset
 	= (long)&(sc->sc_regs[i]) - new_cfa;
     }
 
-  fs->regs.reg[SH_DWARF_FRAME_PR].how = REG_SAVED_OFFSET;
+  fs->regs.how[SH_DWARF_FRAME_PR] = REG_SAVED_OFFSET;
   fs->regs.reg[SH_DWARF_FRAME_PR].loc.offset
     = (long)&(sc->sc_pr) - new_cfa;
-  fs->regs.reg[SH_DWARF_FRAME_SR].how = REG_SAVED_OFFSET;
+  fs->regs.how[SH_DWARF_FRAME_SR] = REG_SAVED_OFFSET;
   fs->regs.reg[SH_DWARF_FRAME_SR].loc.offset
     = (long)&(sc->sc_sr) - new_cfa;
-  fs->regs.reg[SH_DWARF_FRAME_GBR].how = REG_SAVED_OFFSET;
+  fs->regs.how[SH_DWARF_FRAME_GBR] = REG_SAVED_OFFSET;
   fs->regs.reg[SH_DWARF_FRAME_GBR].loc.offset
     = (long)&(sc->sc_gbr) - new_cfa;
-  fs->regs.reg[SH_DWARF_FRAME_MACH].how = REG_SAVED_OFFSET;
+  fs->regs.how[SH_DWARF_FRAME_MACH] = REG_SAVED_OFFSET;
   fs->regs.reg[SH_DWARF_FRAME_MACH].loc.offset
     = (long)&(sc->sc_mach) - new_cfa;
-  fs->regs.reg[SH_DWARF_FRAME_MACL].how = REG_SAVED_OFFSET;
+  fs->regs.how[SH_DWARF_FRAME_MACL] = REG_SAVED_OFFSET;
   fs->regs.reg[SH_DWARF_FRAME_MACL].loc.offset
     = (long)&(sc->sc_macl) - new_cfa;
 
@@ -124,7 +124,7 @@ sh_fallback_frame_state (struct _Unwind_Context *context,
   r = SH_DWARF_FRAME_FP0;
   for (i = 0; i < 16; i++)
     {
-      fs->regs.reg[r+i].how = REG_SAVED_OFFSET;
+      fs->regs.how[r+i] = REG_SAVED_OFFSET;
       fs->regs.reg[r+i].loc.offset
 	= (long)&(sc->sc_fpregs[i]) - new_cfa;
     }
@@ -132,20 +132,20 @@ sh_fallback_frame_state (struct _Unwind_Context *context,
   r = SH_DWARF_FRAME_XD0;
   for (i = 0; i < 8; i++)
     {
-      fs->regs.reg[r+i].how = REG_SAVED_OFFSET;
+      fs->regs.how[r+i] = REG_SAVED_OFFSET;
       fs->regs.reg[r+i].loc.offset
 	= (long)&(sc->sc_xfpregs[2*i]) - new_cfa;
     }
 
-  fs->regs.reg[SH_DWARF_FRAME_FPUL].how = REG_SAVED_OFFSET;
+  fs->regs.how[SH_DWARF_FRAME_FPUL] = REG_SAVED_OFFSET;
   fs->regs.reg[SH_DWARF_FRAME_FPUL].loc.offset
     = (long)&(sc->sc_fpul) - new_cfa;
-  fs->regs.reg[SH_DWARF_FRAME_FPSCR].how = REG_SAVED_OFFSET;
+  fs->regs.how[SH_DWARF_FRAME_FPSCR] = REG_SAVED_OFFSET;
   fs->regs.reg[SH_DWARF_FRAME_FPSCR].loc.offset
     = (long)&(sc->sc_fpscr) - new_cfa;
 #endif
 
-  fs->regs.reg[SH_DWARF_FRAME_PC].how = REG_SAVED_OFFSET;
+  fs->regs.how[SH_DWARF_FRAME_PC] = REG_SAVED_OFFSET;
   fs->regs.reg[SH_DWARF_FRAME_PC].loc.offset
     = (long)&(sc->sc_pc) - new_cfa;
   fs->retaddr_column = SH_DWARF_FRAME_PC;

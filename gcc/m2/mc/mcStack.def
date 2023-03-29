@@ -1,0 +1,84 @@
+(* mcStack.def provides a stack data type and associated procedures.
+
+Copyright (C) 2015-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE mcStack ;
+
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+TYPE
+   stack ;
+
+
+(*
+   init - create and return a stack.
+*)
+
+PROCEDURE init () : stack ;
+
+
+(*
+   kill - deletes stack, s.
+*)
+
+PROCEDURE kill (VAR s: stack) ;
+
+
+(*
+   push - an address, a, onto the stack, s.
+          It returns, a.
+*)
+
+PROCEDURE push (s: stack; a: ADDRESS) : ADDRESS ;
+
+
+(*
+   pop - and return the top element from stack, s.
+*)
+
+PROCEDURE pop (s: stack) : ADDRESS ;
+
+
+(*
+   replace - performs a pop; push (a); return a.
+*)
+
+PROCEDURE replace (s: stack; a: ADDRESS) : ADDRESS ;
+
+
+(*
+   depth - returns the depth of the stack.
+*)
+
+PROCEDURE depth (s: stack) : CARDINAL ;
+
+
+(*
+   access - returns the, i, th stack element.
+            The top of stack is defined by:
+
+            access (s, depth (s)).
+*)
+
+PROCEDURE access (s: stack; i: CARDINAL) : ADDRESS ;
+
+
+END mcStack.

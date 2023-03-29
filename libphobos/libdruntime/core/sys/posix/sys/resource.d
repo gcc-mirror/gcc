@@ -23,7 +23,6 @@ else version (WatchOS)
     version = Darwin;
 
 nothrow @nogc extern(C):
-@system:
 
 //
 // XOpen (XSI)
@@ -548,6 +547,7 @@ else version (CRuntime_Musl)
     int setrlimit(int, const scope rlimit*);
     alias getrlimit getrlimit64;
     alias setrlimit setrlimit64;
+    pragma(mangle, muslRedirTime64Mangle!("getrusage", "__getrusage_time64"))
     int getrusage(int, rusage*);
 }
 else version (Solaris)

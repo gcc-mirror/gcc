@@ -7,7 +7,7 @@ int x;
 
 inline void foo (int i)
 {
-  a[i + 1] = 123;   /* { dg-warning "\\\[-Warray-bounds]" } */
+  a[i + 1] = 123;   /* { dg-warning "\\\[-Warray-bounds" } */
 }
 
 int bar (void)

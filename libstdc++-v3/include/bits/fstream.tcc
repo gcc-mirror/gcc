@@ -1,6 +1,6 @@
 // File based streams -*- C++ -*-
 
-// Copyright (C) 1997-2022 Free Software Foundation, Inc.
+// Copyright (C) 1997-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -86,8 +86,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_codecvt(0), _M_ext_buf(0), _M_ext_buf_size(0), _M_ext_next(0),
     _M_ext_end(0)
     {
-      if (has_facet<__codecvt_type>(this->_M_buf_locale))
-	_M_codecvt = &use_facet<__codecvt_type>(this->_M_buf_locale);
+      _M_codecvt = std::__try_use_facet<__codecvt_type>(this->_M_buf_locale);
     }
 
 #if __cplusplus >= 201103L
@@ -757,23 +756,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       streamsize __ret = 0;
       // Optimization in the always_noconv() case, to be generalized in the
-      // future: when __n is sufficiently large we write directly instead of
-      // using the buffer.
+      // future: when __n is larger than the available capacity we write
+      // directly instead of using the buffer.
       const bool __testout = (_M_mode & ios_base::out
 			      || _M_mode & ios_base::app);
       if (__check_facet(_M_codecvt).always_noconv()
 	  && __testout && !_M_reading)
 	{
-	  // Measurement would reveal the best choice.
-	  const streamsize __chunk = 1ul << 10;
 	  streamsize __bufavail = this->epptr() - this->pptr();
 
 	  // Don't mistake 'uncommitted' mode buffered with unbuffered.
 	  if (!_M_writing && _M_buf_size > 1)
 	    __bufavail = _M_buf_size - 1;
 
-	  const streamsize __limit = std::min(__chunk, __bufavail);
-	  if (__n >= __limit)
+	  if (__n >= __bufavail)
 	    {
 	      const streamsize __buffill = this->pptr() - this->pbase();
 	      const char* __buf = reinterpret_cast<const char*>(this->pbase());
@@ -1031,9 +1027,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       bool __testvalid = true;
 
-      const __codecvt_type* _M_codecvt_tmp = 0;
-      if (__builtin_expect(has_facet<__codecvt_type>(__loc), true))
-	_M_codecvt_tmp = &use_facet<__codecvt_type>(__loc);
+      const __codecvt_type* const _M_codecvt_tmp
+	= __try_use_facet<__codecvt_type>(__loc);
 
       if (this->is_open())
 	{

@@ -1,5 +1,5 @@
 /* Structure for saving state for a nested function.
-   Copyright (C) 1989-2022 Free Software Foundation, Inc.
+   Copyright (C) 1989-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -438,6 +438,10 @@ struct GTY(()) function {
 
   /* Set if there are any OMP_TARGET regions in the function.  */
   unsigned int has_omp_target : 1;
+
+  /* Set for artificial function created for [[assume (cond)]].
+     These should be GIMPLE optimized, but not expanded to RTL.  */
+  unsigned int assume_function : 1;
 };
 
 /* Add the decl D to the local_decls list of FUN.  */
@@ -683,7 +687,7 @@ extern void pop_cfun (void);
 extern int get_next_funcdef_no (void);
 extern int get_last_funcdef_no (void);
 extern void allocate_struct_function (tree, bool);
-extern void push_struct_function (tree fndecl);
+extern void push_struct_function (tree fndecl, bool = false);
 extern void push_dummy_function (bool);
 extern void pop_dummy_function (void);
 extern void init_dummy_function_start (void);
@@ -718,5 +722,7 @@ extern const char *function_name (struct function *);
 extern const char *current_function_name (void);
 
 extern void used_types_insert (tree);
+
+extern bool currently_expanding_function_start;
 
 #endif  /* GCC_FUNCTION_H */

@@ -1,0 +1,104 @@
+(* symbolKey.def provides binary tree operations for storing symbols.
+
+Copyright (C) 2015-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius@glam.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE symbolKey ;
+
+(* Provides binary tree operations for storing symbols.
+   Used by the decl module to provide scoping of symbols.  *)
+
+FROM SYSTEM IMPORT ADDRESS ;
+FROM nameKey IMPORT Name ;
+
+
+CONST
+   NulKey = NIL ;
+
+TYPE
+   symbolTree ;
+
+   isSymbol         = PROCEDURE (ADDRESS) : BOOLEAN ;
+   performOperation = PROCEDURE (ADDRESS) ;
+
+
+(*
+   initTree - initializes a symbolTree pointed to by t.
+*)
+
+PROCEDURE initTree () : symbolTree ;
+
+
+(*
+   killTree - destroys the symbolTree pointed to by t.
+*)
+
+PROCEDURE killTree (VAR t: symbolTree) ;
+
+
+(*
+   getSymKey - searches the symbolTree t for an entry name. If
+               found then the key is returned otherwise NulKey
+               is returned.
+*)
+
+PROCEDURE getSymKey (t: symbolTree; name: Name) : ADDRESS ;
+
+
+(*
+   putSymKey - puts an symbol entry, name, in the symbolTree t.
+               SymKey is the value stored with name.
+*)
+
+PROCEDURE putSymKey (t: symbolTree; name: Name; key: ADDRESS) ;
+
+
+(*
+   delSymKey - deletes a symbol entry name in the symbolTree, t.
+*)
+
+PROCEDURE delSymKey (t: symbolTree; name: Name) ;
+
+
+(*
+   isEmptyTree - returns true if symbolTree, t, is empty.
+*)
+
+PROCEDURE isEmptyTree (t: symbolTree) : BOOLEAN ;
+
+
+(*
+   doesTreeContainAny - returns true if symbolTree, t, contains any
+                        symbols which in turn return true when procedure,
+                        p, is called with a symbol as its parameter.
+*)
+
+PROCEDURE doesTreeContainAny (t: symbolTree; p: isSymbol) : BOOLEAN ;
+
+
+(*
+   foreachNodeDo - for each node in symbolTree, t, a procedure, p,
+                   is called with the node symbol as its parameter.
+                   It traverse the tree in order.
+*)
+
+PROCEDURE foreachNodeDo (t: symbolTree; p: performOperation) ;
+
+
+END symbolKey.

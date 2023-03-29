@@ -1,7 +1,7 @@
 /* Definitions for systems using, at least optionally, a GNU
    (glibc-based) userspace or other userspace with libc derived from
    glibc (e.g. uClibc) or for which similar specs are appropriate.
-   Copyright (C) 1995-2022 Free Software Foundation, Inc.
+   Copyright (C) 1995-2023 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu (hjl@lucon.org).
 
@@ -138,7 +138,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   LD_STATIC_OPTION " --whole-archive -lasan --no-whole-archive " \
   LD_DYNAMIC_OPTION "}}%{!static-libasan:-lasan}"
 #undef LIBHWASAN_EARLY_SPEC
-#define LIBHWASAN_EARLY_SPEC "%{static-libhwasan:%{!shared:" \
+#define LIBHWASAN_EARLY_SPEC "%{!shared:libhwasan_preinit%O%s} " \
+  "%{static-libhwasan:%{!shared:" \
   LD_STATIC_OPTION " --whole-archive -lhwasan --no-whole-archive " \
   LD_DYNAMIC_OPTION "}}%{!static-libhwasan:-lhwasan}"
 #undef LIBTSAN_EARLY_SPEC

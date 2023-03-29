@@ -1,5 +1,5 @@
-/* Gimple range edge functionaluity.
-   Copyright (C) 2020-2022 Free Software Foundation, Inc.
+/* Gimple range edge functionality.
+   Copyright (C) 2020-2023 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range.h"
 #include "value-range-storage.h"
 
-// If there is a range control statment at the end of block BB, return it.
+// If there is a range control statement at the end of block BB, return it.
 // Otherwise return NULL.
 
 gimple *
@@ -43,7 +43,7 @@ gimple_outgoing_range_stmt_p (basic_block bb)
   if (!gsi_end_p (gsi))
     {
       gimple *s = gsi_stmt (gsi);
-      if (is_a<gcond *> (s) && range_op_handler (s))
+      if (is_a<gcond *> (s) && gimple_range_op_handler::supported_p (s))
 	return gsi_stmt (gsi);
       if (is_a <gswitch *> (s))
 	return gsi_stmt (gsi);
@@ -90,7 +90,7 @@ gimple_outgoing_range::switch_edge_range (irange &r, gswitch *sw, edge e)
   // ADA currently has cases where the index is 64 bits and the case
   // arguments are 32 bit, causing a trap when we create a case_range.
   // Until this is resolved (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=87798)
-  // punt on switches where the labels dont match the argument.
+  // punt on switches where the labels don't match the argument.
   if (gimple_switch_num_labels (sw) > 1 && 
       TYPE_PRECISION (TREE_TYPE (CASE_LOW (gimple_switch_label (sw, 1)))) !=
       TYPE_PRECISION (TREE_TYPE (gimple_switch_index (sw))))
@@ -177,7 +177,7 @@ gimple_outgoing_range::calc_switch_ranges (gswitch *sw)
 
 
 // Calculate the range forced on on edge E by control flow, return it
-// in R.  Return the statment which defines the range, otherwise
+// in R.  Return the statement which defines the range, otherwise
 // return NULL
 
 gimple *

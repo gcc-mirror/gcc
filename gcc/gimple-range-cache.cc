@@ -1,5 +1,5 @@
 /* Gimple ranger SSA cache implementation.
-   Copyright (C) 2017-2022 Free Software Foundation, Inc.
+   Copyright (C) 2017-2023 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>.
 
 This file is part of GCC.
@@ -357,7 +357,7 @@ block_range_cache::set_bb_range (tree name, const_basic_block bb,
 	}
       else
 	{
-	  // Otherwise use the default vector implemntation.
+	  // Otherwise use the default vector implementation.
 	  void *r = m_range_allocator->alloc (sizeof (sbr_vector));
 	  m_ssa_ranges[v] = new (r) sbr_vector (TREE_TYPE (name),
 						m_range_allocator);
@@ -423,7 +423,7 @@ block_range_cache::dump (FILE *f)
     }
 }
 
-// Print all known ranges on entry to blobk BB to file F.
+// Print all known ranges on entry to block BB to file F.
 
 void
 block_range_cache::dump (FILE *f, basic_block bb, bool print_varying)
@@ -525,7 +525,7 @@ ssa_global_cache::set_global_range (tree name, const vrange &r)
   return m != NULL;
 }
 
-// Set the range for NAME to R in the glonbal cache.
+// Set the range for NAME to R in the global cache.
 
 void
 ssa_global_cache::clear_global_range (tree name)
@@ -618,7 +618,7 @@ temporal_cache::~temporal_cache ()
   m_timestamp.release ();
 }
 
-// Return the timestamp value for SSA, or 0 if there isnt one.
+// Return the timestamp value for SSA, or 0 if there isn't one.
 
 inline unsigned
 temporal_cache::temporal_value (unsigned ssa) const
@@ -628,7 +628,7 @@ temporal_cache::temporal_value (unsigned ssa) const
   return m_timestamp[ssa];
 }
 
-// Return TRUE if the timestampe for NAME is newer than any of its dependents.
+// Return TRUE if the timestamp for NAME is newer than any of its dependents.
 // Up to 2 dependencies can be checked.
 
 bool
@@ -885,7 +885,7 @@ ranger_cache::set_global_range (tree name, const vrange &r)
 }
 
 //  Provide lookup for the gori-computes class to access the best known range
-//  of an ssa_name in any given basic block.  Note, this does no additonal
+//  of an ssa_name in any given basic block.  Note, this does no additional
 //  lookups, just accesses the data that is already known.
 
 // Get the range of NAME when the def occurs in block BB.  If BB is NULL
@@ -1081,7 +1081,7 @@ ranger_cache::propagate_cache (tree name)
       new_range.set_undefined ();
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{
-	  range_on_edge (e_range, e, name);
+	  edge_range (e_range, e, name, RFD_READ_ONLY);
 	  if (DEBUG_RANGE_CACHE)
 	    {
 	      fprintf (dump_file, "   edge %d->%d :", e->src->index, bb->index);
@@ -1138,7 +1138,7 @@ ranger_cache::propagate_cache (tree name)
 
 // Check to see if an update to the value for NAME in BB has any effect
 // on values already in the on-entry cache for successor blocks.
-// If it does, update them.  Don't visit any blocks which dont have a cache
+// If it does, update them.  Don't visit any blocks which don't have a cache
 // entry.
 
 void
@@ -1189,12 +1189,12 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 {
   edge_iterator ei;
   edge e;
-  Value_Range block_result (TREE_TYPE (name));
-  Value_Range undefined (TREE_TYPE (name));
+  tree type = TREE_TYPE (name);
+  Value_Range block_result (type);
+  Value_Range undefined (type);
 
-  // At this point we shouldn't be looking at the def, entry or exit block.
-  gcc_checking_assert (bb != def_bb && bb != ENTRY_BLOCK_PTR_FOR_FN (cfun) &&
-		       bb != EXIT_BLOCK_PTR_FOR_FN (cfun));
+  // At this point we shouldn't be looking at the def, entry block.
+  gcc_checking_assert (bb != def_bb && bb != ENTRY_BLOCK_PTR_FOR_FN (cfun));
   gcc_checking_assert (m_workback.length () == 0);
 
   // If the block cache is set, then we've already visited this block.
@@ -1220,19 +1220,26 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
       // See if any equivalences can refine it.
       if (m_oracle)
 	{
-	  unsigned i;
-	  bitmap_iterator bi;
-	  // Query equivalences in read-only mode.
-	  const_bitmap equiv = m_oracle->equiv_set (name, bb);
-	  EXECUTE_IF_SET_IN_BITMAP (equiv, 0, i, bi)
+	  tree equiv_name;
+	  relation_kind rel;
+	  int prec = TYPE_PRECISION (type);
+	  FOR_EACH_PARTIAL_AND_FULL_EQUIV (m_oracle, bb, name, equiv_name, rel)
 	    {
-	      if (i == SSA_NAME_VERSION (name))
-		continue;
-	      tree equiv_name = ssa_name (i);
 	      basic_block equiv_bb = gimple_bb (SSA_NAME_DEF_STMT (equiv_name));
+
+	      // Ignore partial equivs that are smaller than this object.
+	      if (rel != VREL_EQ && prec > pe_to_bits (rel))
+		continue;
 
 	      // Check if the equiv has any ranges calculated.
 	      if (!m_gori.has_edge_range_p (equiv_name))
+		continue;
+
+	      // PR 108139. It is hazardous to assume an equivalence with
+	      // a PHI is the same value.  The PHI may be an equivalence
+	      // via UNDEFINED arguments which is really a one way equivalence.
+	      // PHIDEF == name, but name may not be == PHIDEF.
+	      if (is_a<gphi *> (SSA_NAME_DEF_STMT (equiv_name)))
 		continue;
 
 	      // Check if the equiv definition dominates this block
@@ -1240,16 +1247,32 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 		  (equiv_bb && !dominated_by_p (CDI_DOMINATORS, bb, equiv_bb)))
 		continue;
 
+	      if (DEBUG_RANGE_CACHE)
+		{
+		  if (rel == VREL_EQ)
+		    fprintf (dump_file, "Checking Equivalence (");
+		  else
+		    fprintf (dump_file, "Checking Partial equiv (");
+		  print_relation (dump_file, rel);
+		  fprintf (dump_file, ") ");
+		  print_generic_expr (dump_file, equiv_name, TDF_SLIM);
+		  fprintf (dump_file, "\n");
+		}
 	      Value_Range equiv_range (TREE_TYPE (equiv_name));
 	      if (range_from_dom (equiv_range, equiv_name, bb, RFD_READ_ONLY))
 		{
+		  if (rel != VREL_EQ)
+		    range_cast (equiv_range, type);
 		  if (block_result.intersect (equiv_range))
 		    {
 		      if (DEBUG_RANGE_CACHE)
 			{
-			  fprintf (dump_file, "Equivalence update! :  ");
+			  if (rel == VREL_EQ)
+			    fprintf (dump_file, "Equivalence update! :  ");
+			  else
+			    fprintf (dump_file, "Partial equiv update! :  ");
 			  print_generic_expr (dump_file, equiv_name, TDF_SLIM);
-			  fprintf (dump_file, "had range  :  ");
+			  fprintf (dump_file, " has range  :  ");
 			  equiv_range.dump (dump_file);
 			  fprintf (dump_file, " refining range to :");
 			  block_result.dump (dump_file);
@@ -1381,6 +1404,11 @@ ranger_cache::resolve_dom (vrange &r, tree name, basic_block bb)
   Value_Range er (TREE_TYPE (name));
   FOR_EACH_EDGE (e, ei, bb->preds)
     {
+      // If the predecessor is dominated by this block, then there is a back
+      // edge, and won't provide anything useful.  We'll actually end up with
+      // VARYING as we will not resolve this node.
+      if (dominated_by_p (CDI_DOMINATORS, e->src, bb))
+	continue;
       edge_range (er, e, name, RFD_READ_ONLY);
       r.union_ (er);
     }
@@ -1417,10 +1445,15 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
   // Default value is global range.
   get_global_range (r, name);
 
+  // The dominator of EXIT_BLOCK doesn't seem to be set, so at least handle
+  // the common single exit cases.
+  if (start_bb == EXIT_BLOCK_PTR_FOR_FN (cfun) && single_pred_p (start_bb))
+    bb = single_pred_edge (start_bb)->src;
+  else
+    bb = get_immediate_dominator (CDI_DOMINATORS, start_bb);
+
   // Search until a value is found, pushing blocks which may need calculating.
-  for (bb = get_immediate_dominator (CDI_DOMINATORS, start_bb);
-       bb;
-       prev_bb = bb, bb = get_immediate_dominator (CDI_DOMINATORS, bb))
+  for ( ; bb; prev_bb = bb, bb = get_immediate_dominator (CDI_DOMINATORS, bb))
     {
       // Accumulate any block exit inferred ranges.
       m_exit.maybe_adjust_range (infer, name, bb);
@@ -1434,9 +1467,9 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
 	  // incoming edges.  If the first incoming edge to this block does
 	  // generate a range, calculate the ranges if all incoming edges
 	  // are also dominated by the dominator.  (Avoids backedges which
-	  // will break the rule of moving only upward in the domniator tree).
+	  // will break the rule of moving only upward in the dominator tree).
 	  // If the first pred does not generate a range, then we will be
-	  // using the dominator range anyway, so thats all the check needed.
+	  // using the dominator range anyway, so that's all the check needed.
 	  if (EDGE_COUNT (prev_bb->preds) > 1
 	      && m_gori.has_edge_range_p (name, EDGE_PRED (prev_bb, 0)->src))
 	    {
@@ -1464,7 +1497,9 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
 
   if (DEBUG_RANGE_CACHE)
     {
-      fprintf (dump_file, "CACHE: BB %d DOM query, found ", start_bb->index);
+      fprintf (dump_file, "CACHE: BB %d DOM query for ", start_bb->index);
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, ", found ");
       r.dump (dump_file);
       if (bb)
 	fprintf (dump_file, " at BB%d\n", bb->index);
@@ -1472,14 +1507,14 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
 	fprintf (dump_file, " at function top\n");
     }
 
-  // Now process any blocks wit incoming edges that nay have adjustemnts.
+  // Now process any blocks wit incoming edges that nay have adjustments.
   while (m_workback.length () > start_limit)
     {
       Value_Range er (TREE_TYPE (name));
       prev_bb = m_workback.pop ();
       if (!single_pred_p (prev_bb))
 	{
-	  // Non single pred means we need to cache a vsalue in the dominator
+	  // Non single pred means we need to cache a value in the dominator
 	  // so we can cheaply calculate incoming edges to this block, and
 	  // then store the resulting value.  If processing mode is not
 	  // RFD_FILL, then the cache cant be stored to, so don't try.
@@ -1521,13 +1556,31 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
   return true;
 }
 
-// This routine is used during a block walk to move the state of non-null for
-// any operands on stmt S to nonnull.
+// This routine will register an inferred value in block BB, and possibly
+// update the on-entry cache if appropriate.
+
+void
+ranger_cache::register_inferred_value (const vrange &ir, tree name,
+				       basic_block bb)
+{
+  Value_Range r (TREE_TYPE (name));
+  if (!m_on_entry.get_bb_range (r, name, bb))
+    exit_range (r, name, bb, RFD_READ_ONLY);
+  if (r.intersect (ir))
+    {
+      m_on_entry.set_bb_range (name, bb, r);
+      // If this range was invariant before, remove invariant.
+      if (!m_gori.has_edge_range_p (name))
+	m_gori.set_range_invariant (name, false);
+    }
+}
+
+// This routine is used during a block walk to adjust any inferred ranges
+// of operands on stmt S.
 
 void
 ranger_cache::apply_inferred_ranges (gimple *s)
 {
-  int_range_max r;
   bool update = true;
 
   basic_block bb = gimple_bb (s);
@@ -1552,16 +1605,6 @@ ranger_cache::apply_inferred_ranges (gimple *s)
       tree name = infer.name (x);
       m_exit.add_range (name, bb, infer.range (x));
       if (update)
-	{
-	  if (!m_on_entry.get_bb_range (r, name, bb))
-	    exit_range (r, name, bb, RFD_READ_ONLY);
-	  if (r.intersect (infer.range (x)))
-	    {
-	      m_on_entry.set_bb_range (name, bb, r);
-	      // If this range was invariant before, remove invariance.
-	      if (!m_gori.has_edge_range_p (name))
-		m_gori.set_range_invariant (name, false);
-	    }
-	}
+	register_inferred_value (infer.range (x), name, bb);
     }
 }

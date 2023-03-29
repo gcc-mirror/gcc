@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for PA Linux.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -138,22 +138,22 @@ pa32_fallback_frame_state (struct _Unwind_Context *context,
   fs->regs.cfa_offset = new_cfa - (long) context->cfa;
   for (i = 1; i <= 31; i++)
     {
-      fs->regs.reg[i].how = REG_SAVED_OFFSET;
+      fs->regs.how[i] = REG_SAVED_OFFSET;
       fs->regs.reg[i].loc.offset = (long)&sc->sc_gr[i] - new_cfa;
     }
   for (i = 4; i <= 31; i++)
     {
       /* FP regs have left and right halves */
-      fs->regs.reg[2*i+24].how = REG_SAVED_OFFSET;
+      fs->regs.how[2*i+24] = REG_SAVED_OFFSET;
       fs->regs.reg[2*i+24].loc.offset
 	= (long)&sc->sc_fr[i] - new_cfa;
-      fs->regs.reg[2*i+24+1].how = REG_SAVED_OFFSET;
+      fs->regs.how[2*i+24+1] = REG_SAVED_OFFSET;
       fs->regs.reg[2*i+24+1].loc.offset
 	= (long)&sc->sc_fr[i] + 4 - new_cfa;
     }
-  fs->regs.reg[88].how = REG_SAVED_OFFSET;
+  fs->regs.how[88] = REG_SAVED_OFFSET;
   fs->regs.reg[88].loc.offset = (long) &sc->sc_sar - new_cfa;
-  fs->regs.reg[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__].how
+  fs->regs.how[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__]
     = REG_SAVED_OFFSET;
   fs->regs.reg[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__].loc.offset
     = (long) &sc->sc_iaoq[0] - new_cfa;

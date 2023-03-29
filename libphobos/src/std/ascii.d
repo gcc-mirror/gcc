@@ -187,7 +187,8 @@ else
   +/
 bool isAlphaNum(dchar c) @safe pure nothrow @nogc
 {
-    return c <= 'z' && c >= '0' && (c <= '9' || c >= 'a' || (c >= 'A' && c <= 'Z'));
+    const hc = c | 0x20;
+    return ('0' <= c && c <= '9') || ('a' <= hc && hc <= 'z');
 }
 
 ///
@@ -377,7 +378,8 @@ bool isOctalDigit(dchar c) @safe pure nothrow @nogc
   +/
 bool isHexDigit(dchar c) @safe pure nothrow @nogc
 {
-    return c <= 'f' && c >= '0' && (c <= '9' || c >= 'a' || (c >= 'A' && c <= 'F'));
+    const hc = c | 0x20;
+    return ('0' <= c && c <= '9') || ('a' <= hc && hc <= 'f');
 }
 
 ///

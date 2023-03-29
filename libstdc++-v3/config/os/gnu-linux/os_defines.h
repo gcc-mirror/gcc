@@ -1,6 +1,6 @@
 // Specific definitions for GNU/Linux  -*- C++ -*-
 
-// Copyright (C) 2000-2022 Free Software Foundation, Inc.
+// Copyright (C) 2000-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,22 +49,37 @@
 // version dynamically in case it has changed since libstdc++ was configured.
 #define _GLIBCXX_NO_OBSOLETE_ISINF_ISNAN_DYNAMIC __GLIBC_PREREQ(2,23)
 
-#if __GLIBC_PREREQ(2, 27)
+// Glibc 2.26 on i?86/x86-64/ia64/ppc64le added *f128 support.
+// Glibc 2.27 added it also on many other arches but those have IEEE quad
+// long double.
+#if __GLIBC_PREREQ(2, 26) \
+    && (defined(__i386__) || defined(__x86_64__) || defined (__ia64__) \
+	|| (defined(__powerpc__) && defined(_ARCH_PWR8) \
+	    && defined(__LITTLE_ENDIAN__) && (_CALL_ELF == 2) \
+	    && defined(__FLOAT128__)))
+# define _GLIBCXX_HAVE_FLOAT128_MATH 1
+#endif
+
+#ifdef __linux__
+// The following libpthread properties only apply to Linux, not GNU/Hurd.
+
+# if __GLIBC_PREREQ(2, 27)
 // Since glibc 2.27 pthread_self() is usable without linking to libpthread.
-# define _GLIBCXX_NATIVE_THREAD_ID pthread_self()
-#else
+#  define _GLIBCXX_NATIVE_THREAD_ID pthread_self()
+# else
 // Before then it was in libc.so.6 but not libc.a, and always returns 0,
 // which breaks the invariant this_thread::get_id() != thread::id{}.
 // So only use it if we know the libpthread version is available.
 // Otherwise use (__gthread_t)1 as the ID of the main (and only) thread.
-# define _GLIBCXX_NATIVE_THREAD_ID \
-  (__gthread_active_p() ? __gthread_self() : (__gthread_t)1)
-#endif
+#  define _GLIBCXX_NATIVE_THREAD_ID \
+   (__gthread_active_p() ? __gthread_self() : (__gthread_t)1)
+# endif
 
-#if __GLIBC_PREREQ(2, 34)
+# if __GLIBC_PREREQ(2, 34)
 // Since glibc 2.34 all pthreads functions are usable without linking to
 // libpthread.
-# define _GLIBCXX_GTHREAD_USE_WEAK 0
-#endif
+#  define _GLIBCXX_GTHREAD_USE_WEAK 0
+# endif
+#endif // __linux__
 
 #endif

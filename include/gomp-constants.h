@@ -1,6 +1,6 @@
 /* Communication between GCC and libgomp.
 
-   Copyright (C) 2014-2022 Free Software Foundation, Inc.
+   Copyright (C) 2014-2023 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -229,8 +229,8 @@ enum gomp_map_kind
 /* #define GOMP_DEVICE_HOST_NONSHM	3 removed.  */
 #define GOMP_DEVICE_NOT_HOST		4
 #define GOMP_DEVICE_NVIDIA_PTX		5
-#define GOMP_DEVICE_INTEL_MIC		6
-#define GOMP_DEVICE_HSA			7
+/* #define GOMP_DEVICE_INTEL_MIC	6 removed.  */
+/* #define GOMP_DEVICE_HSA		7 removed.  */
 #define GOMP_DEVICE_GCN			8
 
 /* We have a compatibility issue.  OpenMP 5.2 introduced
@@ -284,8 +284,7 @@ enum gomp_map_kind
    to the plugin interface defined in libgomp/libgomp.h.  */
 #define GOMP_VERSION	2
 #define GOMP_VERSION_NVIDIA_PTX 1
-#define GOMP_VERSION_INTEL_MIC 0
-#define GOMP_VERSION_GCN 2
+#define GOMP_VERSION_GCN 3
 
 #define GOMP_VERSION_PACK(LIB, DEV) (((LIB) << 16) | (DEV))
 #define GOMP_VERSION_LIB(PACK) (((PACK) >> 16) & 0xffff)

@@ -31,7 +31,6 @@ version (CRuntime_Glibc)
 else {}
 
 extern (C):
-@system:
 
 /* Placed outside `nothrow` and `@nogc` in order to not constrain what the callback does.
  */

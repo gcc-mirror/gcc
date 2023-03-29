@@ -1,6 +1,6 @@
 // PR c++/66712
 // { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts" }
+// { dg-options "-fconcepts-ts" }
 
 template <class T, class...Args>
 concept bool _Constructible_ =

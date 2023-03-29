@@ -1,5 +1,5 @@
 /* Exception Handling interface routines.
-   Copyright (C) 1996-2022 Free Software Foundation, Inc.
+   Copyright (C) 1996-2023 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GCC.
@@ -302,7 +302,7 @@ function_needs_eh_personality (struct function *);
 
 /* Pre-order iteration within the eh_region tree.  */
 
-static inline eh_region
+inline eh_region
 ehr_next (eh_region r, eh_region start)
 {
   if (r->inner)

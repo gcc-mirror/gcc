@@ -315,14 +315,14 @@ version (StdUnittest)
 version (StdUnittest)
 @system unittest
 {
-    import std.experimental.allocator.building_blocks.region : Region;
+    import std.experimental.allocator.building_blocks.region : BorrowedRegion;
     import std.typecons : Ternary;
 
-    alias MyAlloc = Quantizer!(Region!(),
+    alias MyAlloc = Quantizer!(BorrowedRegion!(),
         (size_t n) => n.roundUpToMultipleOf(64));
-    testAllocator!(() => MyAlloc(Region!()(new ubyte[1024 * 64])));
+    testAllocator!(() => MyAlloc(BorrowedRegion!()(new ubyte[1024 * 64])));
 
-    auto a = MyAlloc(Region!()(new ubyte[1024 * 64]));
+    auto a = MyAlloc(BorrowedRegion!()(new ubyte[1024 * 64]));
     // Check that empty inherits from parent
     assert((() pure nothrow @safe @nogc => a.empty)() == Ternary.yes);
     auto b = a.allocate(42);

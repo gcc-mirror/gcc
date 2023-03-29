@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2022 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -44,7 +44,11 @@ typedef __builtin_va_list __gnuc_va_list;
    if this invocation was from the user program.  */
 #ifdef _STDARG_H
 
+#if defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L
+#define va_start(v, ...)	__builtin_va_start(v, 0)
+#else
 #define va_start(v,l)	__builtin_va_start(v,l)
+#endif
 #define va_end(v)	__builtin_va_end(v)
 #define va_arg(v,l)	__builtin_va_arg(v,l)
 #if !defined(__STRICT_ANSI__) || __STDC_VERSION__ + 0 >= 199900L \
@@ -120,6 +124,10 @@ typedef __gnuc_va_list va_list;
 #endif /* not _VA_LIST_, except on certain systems */
 
 #endif /* not __svr4__ */
+
+#if defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L
+#define __STDC_VERSION_STDARG_H__	202311L
+#endif
 
 #endif /* _STDARG_H */
 

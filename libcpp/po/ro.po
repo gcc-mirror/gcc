@@ -1,0 +1,1242 @@
+# Mesajele în limba română pentru pachetul cpplib.
+# Copyright © 2022 Free Software Foundation, Inc.
+# This file is distributed under the same license as the gcc package.
+#
+# Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>, 2022 - 2023.
+#
+# Cronologia traducerii fișierului „cpplib”:
+# Traducerea inițială, făcută de R-GC, pentru versiunea cpplib 12.1-b20220213.
+# Actualizare a traducerii pentru versiunea 13.1-b20230212, făcută de R-GC, feb/2023.
+# Actualizare a traducerii pentru versiunea Y, făcută de X, Z(luna/anul).
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: cpplib 13.1-b20230212\n"
+"Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
+"POT-Creation-Date: 2023-02-10 22:39+0000\n"
+"PO-Revision-Date: 2023-02-22 18:53+0100\n"
+"Last-Translator: Remus-Gabriel Chelu <remusgabriel.chelu@disroot.org>\n"
+"Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
+"Language: ro\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : (n==0 || ((n%100) > 0 && (n%100) < 20)) ? 1 : 2);\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
+"X-Generator: Poedit 3.2.2\n"
+
+#: charset.cc:683
+#, c-format
+msgid "conversion from %s to %s not supported by iconv"
+msgstr "conversia de la %s la %s nu este acceptată de iconv"
+
+#: charset.cc:686
+msgid "iconv_open"
+msgstr "iconv_open"
+
+#: charset.cc:696
+#, c-format
+msgid "no iconv implementation, cannot convert from %s to %s"
+msgstr "nicio implementare iconv, nu se poate converti de la %s la %s"
+
+#: charset.cc:794
+#, c-format
+msgid "character 0x%lx is not in the basic source character set\n"
+msgstr "caracterul 0x%lx nu se află în setul de caractere sursă de bază\n"
+
+#: charset.cc:811 charset.cc:2420
+msgid "converting to execution character set"
+msgstr "se convertește în setul de caractere de execuție"
+
+#: charset.cc:817
+#, c-format
+msgid "character 0x%lx is not unibyte in execution character set"
+msgstr "caracterul 0x%lx nu este un octet unic în setul de caractere de execuție"
+
+#: charset.cc:1437
+msgid "universal character names are only valid in C++ and C99"
+msgstr "numele de caractere universale sunt valabile numai în C++ și C99"
+
+#: charset.cc:1441
+msgid "C99's universal character names are incompatible with C90"
+msgstr "numele de caractere universale ale lui C99 sunt incompatibile cu C90"
+
+#: charset.cc:1444
+#, c-format
+msgid "the meaning of '\\%c' is different in traditional C"
+msgstr "semnificația lui „\\%c” este diferită în limbajul C tradițional"
+
+#: charset.cc:1483
+msgid "'\\N' not followed by '{'"
+msgstr "„\\N” nu este urmat de „{”"
+
+#: charset.cc:1513
+msgid "empty named universal character escape sequence; treating it as separate tokens"
+msgstr "secvența de eludare de caracter universal numit este goală; se tratează ca elemente separate"
+
+#: charset.cc:1520
+msgid "empty named universal character escape sequence"
+msgstr "secvența de eludare de caracter universal numit este goală"
+
+#: charset.cc:1525
+msgid "named universal character escapes are only valid in C++23"
+msgstr "secvențele de eludare de caractere universale numite sunt valide numai în C++23"
+
+#: charset.cc:1545
+#, c-format
+msgid "\\N{%.*s} is not a valid universal character; treating it as separate tokens"
+msgstr "\\N{%.*s} nu este un caracter universal valid; se tratează ca elemente separate"
+
+#: charset.cc:1551
+#, c-format
+msgid "\\N{%.*s} is not a valid universal character"
+msgstr "\\N{%.*s} nu este un caracter universal valid"
+
+#: charset.cc:1561
+#, c-format
+msgid "did you mean \\N{%s}?"
+msgstr "ați vrut să spuneți \\N{%s}?"
+
+#: charset.cc:1579
+#, c-format
+msgid "'\\N{' not terminated with '}' after %.*s; treating it as separate tokens"
+msgstr "„\\N{” nu se termină cu „}” după %.*s; se tratează ca elemente separate"
+
+#: charset.cc:1588
+#, c-format
+msgid "'\\N{' not terminated with '}' after %.*s"
+msgstr "„\\N{” nu se termină cu „}” după %.*s"
+
+#: charset.cc:1596
+msgid "In _cpp_valid_ucn but not a UCN"
+msgstr "Este în _cpp_valid_ucn, dar nu este un UCN(NumedeCaracterUniversal)"
+
+#: charset.cc:1638
+msgid "empty delimited escape sequence; treating it as separate tokens"
+msgstr "secvență de eludare delimitată goală; se tratează ca elemente separate"
+
+#: charset.cc:1645 charset.cc:1978 charset.cc:2081
+msgid "empty delimited escape sequence"
+msgstr "secvență de evadare delimitată goală"
+
+#: charset.cc:1649 charset.cc:1984 charset.cc:2087
+msgid "delimited escape sequences are only valid in C++23"
+msgstr "secvențele de eludare delimitate sunt valide numai în C++23"
+
+#: charset.cc:1663
+#, c-format
+msgid "'\\u{' not terminated with '}' after %.*s; treating it as separate tokens"
+msgstr "„\\u{” nu se termină cu „}” după %.*s; se tratează ca elemente separate"
+
+#: charset.cc:1675
+#, c-format
+msgid "incomplete universal character name %.*s"
+msgstr "nume de caracter universal incomplet %.*s"
+
+#: charset.cc:1679
+#, c-format
+msgid "'\\u{' not terminated with '}' after %.*s"
+msgstr "„\\u{” nu se termină cu „}” după %.*s"
+
+#: charset.cc:1694
+#, c-format
+msgid "%.*s is not a valid universal character"
+msgstr "%.*s nu este un caracter universal valid"
+
+#: charset.cc:1704 lex.cc:2079
+msgid "'$' in identifier or number"
+msgstr "„$” în identificator sau în număr"
+
+#: charset.cc:1714
+#, c-format
+msgid "universal character %.*s is not valid in an identifier"
+msgstr "caracterul universal %.*s nu este valid într-un identificator"
+
+#: charset.cc:1718
+#, c-format
+msgid "universal character %.*s is not valid at the start of an identifier"
+msgstr "caracterul universal %.*s nu este valid la începutul unui identificator"
+
+#: charset.cc:1725
+#, c-format
+msgid "%.*s is outside the UCS codespace"
+msgstr "%.*s se află în afara spațiului de cod UCS"
+
+#: charset.cc:1769 charset.cc:2797
+msgid "converting UCN to source character set"
+msgstr "se convertește UCN în setul de caractere sursă"
+
+#: charset.cc:1776
+msgid "converting UCN to execution character set"
+msgstr "se convertește UCN în setul de caractere de execuție"
+
+#: charset.cc:1840
+#, c-format
+msgid "extended character %.*s is not valid in an identifier"
+msgstr "caracterul extins %.*s nu este valid într-un identificator"
+
+#: charset.cc:1857
+#, c-format
+msgid "extended character %.*s is not valid at the start of an identifier"
+msgstr "caracterul extins %.*s nu este valid la începutul unui identificator"
+
+#: charset.cc:1945
+msgid "the meaning of '\\x' is different in traditional C"
+msgstr "semnificația lui „\\x” este diferită în limbajul C tradițional"
+
+#: charset.cc:1992
+msgid "\\x used with no following hex digits"
+msgstr "„\\x” utilizat fără să fie urmat de cifre hexazecimale"
+
+#: charset.cc:1998
+#, c-format
+msgid "'\\x{' not terminated with '}' after %.*s"
+msgstr "„\\x{” nu se termină cu „}” după %.*s"
+
+#: charset.cc:2006
+msgid "hex escape sequence out of range"
+msgstr "secvență de eludare hexazecimală în afara intervalului"
+
+#: charset.cc:2049
+msgid "'\\o' not followed by '{'"
+msgstr "„\\o” nu este urmat de „{”"
+
+#: charset.cc:2093
+#, c-format
+msgid "'\\o{' not terminated with '}' after %.*s"
+msgstr "„\\o{” nu se termină cu „}” după %.*s"
+
+#: charset.cc:2102
+msgid "octal escape sequence out of range"
+msgstr "secvență de eludare octală în afara intervalului"
+
+#: charset.cc:2184
+msgid "the meaning of '\\a' is different in traditional C"
+msgstr "semnificația lui „\\a” este diferită în limbajul C tradițional"
+
+#: charset.cc:2191
+#, c-format
+msgid "non-ISO-standard escape sequence, '\\%c'"
+msgstr "secvență de eludare non-standard ISO, „\\%c”"
+
+#: charset.cc:2199
+#, c-format
+msgid "unknown escape sequence: '\\%c'"
+msgstr "secvență de eludare necunoscută: „\\%c”"
+
+#: charset.cc:2209
+#, c-format
+msgid "unknown escape sequence: '\\%s'"
+msgstr "secvență de eludare necunoscută: „\\%s”"
+
+#: charset.cc:2217
+msgid "converting escape sequence to execution character set"
+msgstr "se convertește secvența de eludare în set de caractere de execuție"
+
+#: charset.cc:2357
+msgid "missing open quote"
+msgstr "lipsește ghilimeaua de deschidere"
+
+#: charset.cc:2575 charset.cc:2658
+msgid "character constant too long for its type"
+msgstr "constantă de caractere prea lungă pentru tipul său"
+
+#: charset.cc:2578
+msgid "multi-character character constant"
+msgstr "constantă de caractere cu mai multe caractere"
+
+#: charset.cc:2698
+msgid "empty character constant"
+msgstr "constantă de caractere goală"
+
+#: charset.cc:2882
+#, c-format
+msgid "failure to convert %s to %s"
+msgstr "eșec la conversia %s în %s"
+
+#: directives.cc:237 directives.cc:280
+#, c-format
+msgid "extra tokens at end of #%s directive"
+msgstr "simboluri suplimentare la finalul directivei #%s"
+
+#: directives.cc:387
+#, c-format
+msgid "#%s is a GCC extension"
+msgstr "#%s este o extensie GCC"
+
+#: directives.cc:394 directives.cc:2152 directives.cc:2191
+#, c-format
+msgid "#%s before C++23 is a GCC extension"
+msgstr "#%s înainte de C++23 este o extensie GCC"
+
+#: directives.cc:397 directives.cc:401 directives.cc:2156 directives.cc:2195
+#, c-format
+msgid "#%s before C2X is a GCC extension"
+msgstr "#%s înainte de C2X este o extensie GCC"
+
+#: directives.cc:407
+#, c-format
+msgid "#%s is a deprecated GCC extension"
+msgstr "#%s este o extensie GCC învechită"
+
+#: directives.cc:420
+msgid "suggest not using #elif in traditional C"
+msgstr "se sugerează neutilizarea directivei #elif în limbajul C tradițional"
+
+#: directives.cc:423
+#, c-format
+msgid "traditional C ignores #%s with the # indented"
+msgstr "limbajul C tradițional ignoră #%s cu # indentat"
+
+#: directives.cc:427
+#, c-format
+msgid "suggest hiding #%s from traditional C with an indented #"
+msgstr "se sugerează ascunderea #%s din C tradițional cu un # indentat"
+
+#: directives.cc:453
+msgid "embedding a directive within macro arguments is not portable"
+msgstr "înglobarea unei directive în argumentele macro nu este portabilă"
+
+#: directives.cc:481
+msgid "style of line directive is a GCC extension"
+msgstr "directiva de stil de linie este o extensie GCC"
+
+#: directives.cc:556
+#, c-format
+msgid "invalid preprocessing directive #%s; did you mean #%s?"
+msgstr "directivă de preprocesare nevalidă #%s; ați vrut să spuneți #%s?"
+
+#: directives.cc:562
+#, c-format
+msgid "invalid preprocessing directive #%s"
+msgstr "directivă de preprocesare nevalidă #%s"
+
+#: directives.cc:632
+#, c-format
+msgid "\"%s\" cannot be used as a macro name"
+msgstr "„%s” nu poate fi utilizat ca nume de macrocomandă"
+
+#: directives.cc:639
+#, c-format
+msgid "\"%s\" cannot be used as a macro name as it is an operator in C++"
+msgstr "„%s” nu poate fi utilizat ca nume de macrocomandă, deoarece este un operator în C++"
+
+#: directives.cc:642
+#, c-format
+msgid "no macro name given in #%s directive"
+msgstr "niciun nume de macrocomandă nu este dat în directiva #%s"
+
+#: directives.cc:645
+msgid "macro names must be identifiers"
+msgstr "numele macrocomenzilor trebuie să fie identificatori"
+
+#: directives.cc:694 directives.cc:699
+#, c-format
+msgid "undefining \"%s\""
+msgstr "a fost eliminată definiția „%s”"
+
+#: directives.cc:756
+msgid "missing terminating > character"
+msgstr "lipsește caracterul de terminare „>”"
+
+#: directives.cc:815
+#, c-format
+msgid "#%s expects \"FILENAME\" or <FILENAME>"
+msgstr "#%s se așteaptă „NUME_FIȘIER” sau <NUME_FIȘIER>"
+
+#: directives.cc:861
+#, c-format
+msgid "empty filename in #%s"
+msgstr "nume de fișier gol în #%s"
+
+#: directives.cc:870
+#, c-format
+msgid "#include nested depth %u exceeds maximum of %u (use -fmax-include-depth=DEPTH to increase the maximum)"
+msgstr "adâncimea de imbricare %u din #include depășește maximul de %u (utilizați „-fmax-include-depth=ADÂNCIME” pentru a crește valoarea maximă)"
+
+#: directives.cc:915
+msgid "#include_next in primary source file"
+msgstr "#include_next în fișierul sursă principal (primar)"
+
+#: directives.cc:941
+#, c-format
+msgid "invalid flag \"%s\" in line directive"
+msgstr "opțiune nevalidă „%s” în directiva de linie"
+
+#: directives.cc:1008
+msgid "unexpected end of file after #line"
+msgstr "sfârșit de fișier neașteptat, după #line"
+
+#: directives.cc:1011
+#, c-format
+msgid "\"%s\" after #line is not a positive integer"
+msgstr "„%s” aflat după #line nu este un număr întreg pozitiv"
+
+#: directives.cc:1017 directives.cc:1019
+msgid "line number out of range"
+msgstr "număr de linie în afara intervalului"
+
+#: directives.cc:1032 directives.cc:1113
+#, c-format
+msgid "\"%s\" is not a valid filename"
+msgstr "„%s” nu este un nume de fișier valid"
+
+#: directives.cc:1073
+#, c-format
+msgid "\"%s\" after # is not a positive integer"
+msgstr "„%s” aflat după # nu este un număr întreg pozitiv"
+
+#: directives.cc:1140
+#, c-format
+msgid "file \"%s\" linemarker ignored due to incorrect nesting"
+msgstr "marcatorul de linie al fișierului „%s” a fost ignorat din cauza imbricației incorecte"
+
+#: directives.cc:1218 directives.cc:1220 directives.cc:1222 directives.cc:1810
+#, c-format
+msgid "%s"
+msgstr "%s"
+
+#: directives.cc:1246
+#, c-format
+msgid "invalid #%s directive"
+msgstr "directivă #%s nevalidă"
+
+#: directives.cc:1309
+#, c-format
+msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
+msgstr "se înregistrează pragmas în spațiul de nume „%s” cu o expandare a numelui ce nu coincide"
+
+#: directives.cc:1318
+#, c-format
+msgid "registering pragma \"%s\" with name expansion and no namespace"
+msgstr "se înregistrează pragma „%s” cu expandarea numelui și fără spațiu de nume"
+
+#: directives.cc:1336
+#, c-format
+msgid "registering \"%s\" as both a pragma and a pragma namespace"
+msgstr "se înregistrează „%s” atât ca pragma, cât și ca spațiu de nume pragma"
+
+#: directives.cc:1339
+#, c-format
+msgid "#pragma %s %s is already registered"
+msgstr "#pragma %s %s este deja înregistrată"
+
+#: directives.cc:1342
+#, c-format
+msgid "#pragma %s is already registered"
+msgstr "#pragma %s este deja înregistrată"
+
+#: directives.cc:1372
+msgid "registering pragma with NULL handler"
+msgstr "se înregistrează pragma cu gestionar NULL"
+
+#: directives.cc:1589
+msgid "#pragma once in main file"
+msgstr "#pragma apare o dată în fișierul principal"
+
+#: directives.cc:1612
+msgid "invalid #pragma push_macro directive"
+msgstr "directivă #pragma push_macro nevalidă"
+
+#: directives.cc:1669
+msgid "invalid #pragma pop_macro directive"
+msgstr "directivă #pragma pop_macro nevalidă"
+
+#: directives.cc:1724
+msgid "invalid #pragma GCC poison directive"
+msgstr "directivă #pragma GCC poison nevalidă"
+
+#: directives.cc:1733
+#, c-format
+msgid "poisoning existing macro \"%s\""
+msgstr "se „otrăvește” macrocomanda existentă „%s”"
+
+#: directives.cc:1752
+msgid "#pragma system_header ignored outside include file"
+msgstr "#pragma system_header ignorat în afara fișierului de includere"
+
+#: directives.cc:1777
+#, c-format
+msgid "cannot find source file %s"
+msgstr "nu se poate găsi fișierul sursă %s"
+
+#: directives.cc:1781
+#, c-format
+msgid "current file is older than %s"
+msgstr "fișierul curent este mai vechi decât %s"
+
+#: directives.cc:1805
+#, c-format
+msgid "invalid \"#pragma GCC %s\" directive"
+msgstr "directivă „#pragma GCC %s” nevalidă"
+
+#: directives.cc:2008
+msgid "_Pragma takes a parenthesized string literal"
+msgstr "_Pragma preia un șir literal între paranteze"
+
+#: directives.cc:2091
+msgid "#else without #if"
+msgstr "#else fără #if"
+
+#: directives.cc:2096
+msgid "#else after #else"
+msgstr "#else după #else"
+
+#: directives.cc:2098 directives.cc:2132
+msgid "the conditional began here"
+msgstr "condiționalul a început aici"
+
+#: directives.cc:2124
+#, c-format
+msgid "#%s without #if"
+msgstr "#%s fără #if"
+
+#: directives.cc:2129
+#, c-format
+msgid "#%s after #else"
+msgstr "#%s după #else"
+
+#: directives.cc:2231
+msgid "#endif without #if"
+msgstr "#endif fără #if"
+
+#: directives.cc:2307
+msgid "missing '(' after predicate"
+msgstr "lipsește „(” după predicat"
+
+#: directives.cc:2325
+msgid "missing ')' to complete answer"
+msgstr "lipsește „)” pentru a completa răspunsul"
+
+#: directives.cc:2337
+msgid "predicate's answer is empty"
+msgstr "răspunsul predicatului este gol"
+
+#: directives.cc:2367
+msgid "assertion without predicate"
+msgstr "afirmație fără predicat"
+
+#: directives.cc:2370
+msgid "predicate must be an identifier"
+msgstr "predicatul trebuie să fie un identificator"
+
+#: directives.cc:2452
+#, c-format
+msgid "\"%s\" re-asserted"
+msgstr "„%s” a fost reafirmat"
+
+#: directives.cc:2770
+#, c-format
+msgid "unterminated #%s"
+msgstr "neterminat #%s"
+
+#: errors.cc:335 errors.cc:350
+#, c-format
+msgid "%s: %s"
+msgstr "%s: %s"
+
+#: errors.cc:348
+msgid "stdout"
+msgstr "ieșirea standard"
+
+#: expr.cc:646 expr.cc:763
+msgid "fixed-point constants are a GCC extension"
+msgstr "constantele cu virgulă fixă sunt o extensie GCC"
+
+#: expr.cc:671
+msgid "invalid prefix \"0b\" for floating constant"
+msgstr "prefix nevalid „0b” pentru constanta cu virgulă mobilă"
+
+#: expr.cc:684
+msgid "use of C++17 hexadecimal floating constant"
+msgstr "utilizare a constantei cu virgulă mobilă hexazecimală C++17"
+
+#: expr.cc:687
+msgid "use of C99 hexadecimal floating constant"
+msgstr "utilizare a constantei cu virgulă mobilă hexazecimală C99"
+
+#: expr.cc:731
+#, c-format
+msgid "invalid suffix \"%.*s\" on floating constant"
+msgstr "sufix nevalid „%.*s” pentru o constantă cu virgulă mobilă"
+
+#: expr.cc:742 expr.cc:809
+#, c-format
+msgid "traditional C rejects the \"%.*s\" suffix"
+msgstr "limbajul C tradițional respinge sufixul „%.*s”"
+
+#: expr.cc:750
+msgid "suffix for double constant is a GCC extension"
+msgstr "sufixul pentru constantă dublă este o extensie GCC"
+
+#: expr.cc:756
+#, c-format
+msgid "invalid suffix \"%.*s\" with hexadecimal floating constant"
+msgstr "sufix nevalid „%.*s” pentru o constantă cu virgulă mobilă hexazecimală"
+
+#: expr.cc:769 expr.cc:773
+msgid "decimal float constants are a C2X feature"
+msgstr "constantele cu virgulă mobilă zecimale sunt o caracteristică C2X"
+
+#: expr.cc:792
+#, c-format
+msgid "invalid suffix \"%.*s\" on integer constant"
+msgstr "sufix nevalid „%.*s” pentru o constantă de număr întreg"
+
+#: expr.cc:817
+msgid "use of C++11 long long integer constant"
+msgstr "utilizare a constantei de număr întreg lung lung C++11"
+
+#: expr.cc:818
+msgid "use of C99 long long integer constant"
+msgstr "utilizare a constantei de număr întreg lung lung C99"
+
+#: expr.cc:832
+msgid "use of C++23 %<size_t%> integer constant"
+msgstr "utilizare a constantei de număr întreg %<size_t%> C++23"
+
+#: expr.cc:833
+msgid "use of C++23 %<make_signed_t<size_t>%> integer constant"
+msgstr "utilizare a constantei de număr întreg %<make_signed_t<size_t>%> C++23"
+
+#: expr.cc:844
+msgid "imaginary constants are a GCC extension"
+msgstr "constantele imaginare sunt o extensie GCC"
+
+#: expr.cc:851
+msgid "binary constants are a C++14 feature or GCC extension"
+msgstr "constantele binare sunt o caracteristică C++14 sau o extensie GCC"
+
+#: expr.cc:853
+msgid "binary constants are a C2X feature or GCC extension"
+msgstr "constantele binare sunt o caracteristică C2X sau o extensie GCC"
+
+#: expr.cc:858
+msgid "binary constants are a C2X feature"
+msgstr "constantele binare sunt o caracteristică C2X"
+
+#: expr.cc:954
+msgid "integer constant is too large for its type"
+msgstr "constanta de număr întreg este prea mare pentru tipul său"
+
+#: expr.cc:985
+msgid "integer constant is so large that it is unsigned"
+msgstr "constanta de număr întreg este atât de mare încât este nesemnată"
+
+#: expr.cc:1080
+msgid "missing ')' after \"defined\""
+msgstr "lipsește „)” după «defined»"
+
+#: expr.cc:1087
+msgid "operator \"defined\" requires an identifier"
+msgstr "operatorul «defined» necesită un identificator"
+
+#: expr.cc:1095
+#, c-format
+msgid "(\"%s\" is an alternative token for \"%s\" in C++)"
+msgstr "(„%s” este un element lexical alternativ pentru „%s” în C++)"
+
+#: expr.cc:1108
+msgid "this use of \"defined\" may not be portable"
+msgstr "este posibil ca această utilizare a lui «defined» să nu fie portabilă"
+
+#: expr.cc:1153
+msgid "user-defined literal in preprocessor expression"
+msgstr "literal definit de utilizator în expresia preprocesorului"
+
+#: expr.cc:1158
+msgid "floating constant in preprocessor expression"
+msgstr "constantă cu virgulă mobilă în expresia preprocesorului"
+
+#: expr.cc:1164
+msgid "imaginary number in preprocessor expression"
+msgstr "număr imaginar în expresia preprocesorului"
+
+#: expr.cc:1213
+#, c-format
+msgid "\"%s\" is not defined, evaluates to 0"
+msgstr "„%s” nu este definit, se evaluează la 0"
+
+#: expr.cc:1226
+msgid "assertions are a GCC extension"
+msgstr "aserțiunile sunt o extensie GCC"
+
+#: expr.cc:1229
+msgid "assertions are a deprecated extension"
+msgstr "aserțiunile sunt o extensie depreciată"
+
+#: expr.cc:1479
+#, c-format
+msgid "unbalanced stack in %s"
+msgstr "stivă dezechilibrată în %s"
+
+#: expr.cc:1499
+#, c-format
+msgid "impossible operator '%u'"
+msgstr "operator „%u” imposibil"
+
+#: expr.cc:1600
+msgid "missing ')' in expression"
+msgstr "lipsește „)” în expresie"
+
+#: expr.cc:1629
+msgid "'?' without following ':'"
+msgstr "„?” fără să fie urmat de „:”"
+
+#: expr.cc:1639
+msgid "integer overflow in preprocessor expression"
+msgstr "depășire de număr întreg în expresia preprocesorului"
+
+#: expr.cc:1644
+msgid "missing '(' in expression"
+msgstr "lipsește „(” în expresie"
+
+#: expr.cc:1676
+#, c-format
+msgid "the left operand of \"%s\" changes sign when promoted"
+msgstr "operandul din stânga lui „%s” își schimbă semnul atunci când este promovat"
+
+#: expr.cc:1681
+#, c-format
+msgid "the right operand of \"%s\" changes sign when promoted"
+msgstr "operandul din dreapta lui „%s” își schimbă semnul atunci când este promovat"
+
+#: expr.cc:1940
+msgid "traditional C rejects the unary plus operator"
+msgstr "limbajul C tradițional respinge operatorul unar plus"
+
+#: expr.cc:2038
+msgid "comma operator in operand of #if"
+msgstr "operator virgulă în operandul #if"
+
+#: expr.cc:2174
+msgid "division by zero in #if"
+msgstr "împărțire la zero în #if"
+
+#: files.cc:516
+msgid "NULL directory in find_file"
+msgstr "director NULL în find_file"
+
+#: files.cc:570
+msgid "one or more PCH files were found, but they were invalid"
+msgstr "au fost găsite unul sau mai multe fișiere PCH, dar acestea nu erau valide"
+
+#: files.cc:574
+msgid "use -Winvalid-pch for more information"
+msgstr "utilizați „-Winvalid-pch” pentru mai multe informații"
+
+#: files.cc:688
+#, c-format
+msgid "%s is a block device"
+msgstr "%s este un dispozitiv bloc"
+
+#: files.cc:707
+#, c-format
+msgid "%s is too large"
+msgstr "%s este prea mare"
+
+#: files.cc:748
+#, c-format
+msgid "%s is shorter than expected"
+msgstr "%s este mai scurt decât se aștepta"
+
+#: files.cc:1060
+#, c-format
+msgid "no include path in which to search for %s"
+msgstr "nicio cale de inclus pentru a căuta %s"
+
+#: files.cc:1578
+msgid "Multiple include guards may be useful for:\n"
+msgstr "Multiple „include guards” pot fi utile pentru:\n"
+
+#: init.cc:631
+msgid "cppchar_t must be an unsigned type"
+msgstr "cppchar_t trebuie să fie un tip nesemnat"
+
+#: init.cc:635
+#, c-format
+msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
+msgstr "aritmetica preprocesorului are o precizie maximă de %lu biți; ținta necesită %lu biți"
+
+#: init.cc:642
+msgid "CPP arithmetic must be at least as precise as a target int"
+msgstr "Aritmetica CPP trebuie să fie cel puțin la fel de precisă ca o țintă int"
+
+#: init.cc:645
+msgid "target char is less than 8 bits wide"
+msgstr "char țintă are mai puțin de 8 biți lățime"
+
+#: init.cc:649
+msgid "target wchar_t is narrower than target char"
+msgstr "wchar_t țintă este mai îngust decât char tintă"
+
+#: init.cc:653
+msgid "target int is narrower than target char"
+msgstr "int țintă este mai îngust decât char țintă"
+
+#: init.cc:658
+msgid "CPP half-integer narrower than CPP character"
+msgstr "half-integer din CPP este mai îngust decât caracterul din CPP"
+
+# R-GC, scrie:
+# după revizarea fișerului, DȘ spune:
+# „"CPP de pe această gazdă nu poate gestiona constante de caracter largi de peste %lu biți, dar ținta necesită %lu biți" (traducerea inițială)
+# → nu știu sigur despre ce este vorba dar nu cred că „wide” se traduce cu „larg”, „lat” ar fi mai potrivit.”
+# ***
+# după „despicarea firului problemei”, am creat
+# trei propuneri de substituire a acestui mesaj:
+# .
+# a) „CPP de pe această gazdă nu poate gestiona constante de caracter largi, mai
+# lungi de %lu biți, dar ținta necesită %lu biți”
+# .
+# b) „CPP de pe această gazdă nu poate gestiona constante de caracter lungi mai
+# mari de %lu biți, dar ținta necesită %lu biți”
+# .
+# c) „CPP de pe această gazdă nu poate gestiona constante de caracter mai lungi de
+# %lu biți, dar ținta necesită %lu biți”
+# ***
+# în final, a avut «cîștig de cauză», varianta C.
+#: init.cc:662
+#, c-format
+msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
+msgstr "CPP de pe această gazdă nu poate gestiona constante de caracter mai lungi de %lu biți, dar ținta necesită %lu biți"
+
+#: lex.cc:1132
+msgid "backslash and newline separated by space"
+msgstr "bară oblică inversă și linie nouă separate de spațiu «\\ n»"
+
+#: lex.cc:1137
+msgid "backslash-newline at end of file"
+msgstr "bară oblică inversă și linie nouă «\\n» la sfârșit de fișier"
+
+#: lex.cc:1153
+#, c-format
+msgid "trigraph ??%c converted to %c"
+msgstr "trigraf ??%c convertit în %c"
+
+#: lex.cc:1161
+#, c-format
+msgid "trigraph ??%c ignored, use -trigraphs to enable"
+msgstr "trigraf ??%c ignorat, utilizați „-trigraphs” pentru a activa recunoașterea sa"
+
+#: lex.cc:1610
+msgid "end of bidirectional context"
+msgstr "sfârșitul contextului bidirecţional"
+
+#: lex.cc:1651
+msgid "unpaired UTF-8 bidirectional control characters detected"
+msgstr "au fost detectate caractere de control bidirecțional UTF-8 fără pereche"
+
+#: lex.cc:1655
+msgid "unpaired UTF-8 bidirectional control character detected"
+msgstr "a fost detectat un caracter de control bidirecțional UTF-8 fără pereche"
+
+#: lex.cc:1693
+#, c-format
+msgid "UTF-8 vs UCN mismatch when closing a context by \"%s\""
+msgstr "nepotrivire între UTF-8 și UCN atunci când se încheie contextul cu „%s”"
+
+#: lex.cc:1702
+#, c-format
+msgid "\"%s\" is closing an unopened context"
+msgstr "„%s” închide un context nedeschis"
+
+#: lex.cc:1706
+#, c-format
+msgid "found problematic Unicode character \"%s\""
+msgstr "s-a găsit caracterul Unicode problematic „%s”"
+
+#: lex.cc:1736 lex.cc:1742
+#, c-format
+msgid "invalid UTF-8 character <%x>"
+msgstr "caracter UTF-8 nevalid <%x>"
+
+#: lex.cc:1752 lex.cc:1758
+#, c-format
+msgid "invalid UTF-8 character <%x><%x>"
+msgstr "caracter UTF-8 nevalid <%x><%x>"
+
+#: lex.cc:1768 lex.cc:1774
+#, c-format
+msgid "invalid UTF-8 character <%x><%x><%x>"
+msgstr "caracter UTF-8 nevalid <%x><%x><%x>"
+
+#: lex.cc:1784 lex.cc:1790
+#, c-format
+msgid "invalid UTF-8 character <%x><%x><%x><%x>"
+msgstr "caracter UTF-8 nevalid <%x><%x><%x><%x>"
+
+#: lex.cc:1872
+msgid "\"/*\" within comment"
+msgstr "„/*” în comentariu"
+
+#: lex.cc:1976
+#, c-format
+msgid "%s in preprocessing directive"
+msgstr "%s în directiva de preprocesare"
+
+#: lex.cc:1988
+msgid "null character(s) ignored"
+msgstr "caracter(e) null ignorat(e)"
+
+#: lex.cc:2049
+#, c-format
+msgid "`%.*s' is not in NFKC"
+msgstr "„%.*s” nu se este în NFKC"
+
+#: lex.cc:2052 lex.cc:2055
+#, c-format
+msgid "`%.*s' is not in NFC"
+msgstr "„%.*s” nu se este în NFC"
+
+#: lex.cc:2141
+msgid "__VA_OPT__ is not available until C++20"
+msgstr "__VA_OPT__ nu este disponibilă până la C++20"
+
+#: lex.cc:2144
+msgid "__VA_OPT__ is not available until C2X"
+msgstr "__VA_OPT__ nu este disponibilă până la C2X"
+
+#: lex.cc:2152
+msgid "__VA_OPT__ can only appear in the expansion of a C++20 variadic macro"
+msgstr "__VA_OPT__ poate apărea doar în expansiunea unei macrocomenzi C++20 cu un număr variabil de argumente"
+
+#: lex.cc:2183 lex.cc:2279
+#, c-format
+msgid "attempt to use poisoned \"%s\""
+msgstr "încercați să utilizați „%s” «otrăvit»"
+
+#: lex.cc:2193 lex.cc:2289
+msgid "__VA_ARGS__ can only appear in the expansion of a C++11 variadic macro"
+msgstr "__VA_ARGS__ poate apărea doar în expansiunea unei macrocomenzi C++11 cu un număr variabil de argumente"
+
+#: lex.cc:2197 lex.cc:2293
+msgid "__VA_ARGS__ can only appear in the expansion of a C99 variadic macro"
+msgstr "__VA_ARGS__ poate apărea doar în expansiunea unei macrocomenzi C99 cu un număr variabil de argumente"
+
+#: lex.cc:2207 lex.cc:2305
+#, c-format
+msgid "identifier \"%s\" is a special operator name in C++"
+msgstr "identificatorul „%s” este un nume de operator special în C++"
+
+#: lex.cc:2345
+msgid "adjacent digit separators"
+msgstr "separatori de cifre adiacenți"
+
+#: lex.cc:2665
+msgid "raw string delimiter longer than 16 characters"
+msgstr "delimitator de șir brut, mai lung de 16 caractere"
+
+#: lex.cc:2669
+msgid "invalid new-line in raw string delimiter"
+msgstr "linie nouă nevalidă în delimitatorul de șir brut"
+
+#: lex.cc:2673 lex.cc:5519
+#, c-format
+msgid "invalid character '%c' in raw string delimiter"
+msgstr "caracter nevalid „%c” în delimitatorul de șir brut"
+
+#: lex.cc:2711 lex.cc:2734
+msgid "unterminated raw string"
+msgstr "șir brut neterminat"
+
+#: lex.cc:2770 lex.cc:2922
+msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
+msgstr "sufix nevalid la literal; C++11 necesită un spațiu între literal și macrocomanda șir"
+
+#: lex.cc:2905
+msgid "null character(s) preserved in literal"
+msgstr "caracter(e) null păstrat(e) în literal"
+
+#: lex.cc:2908
+#, c-format
+msgid "missing terminating %c character"
+msgstr "lipsește caracterul %c de încheiere"
+
+#: lex.cc:2940
+msgid "C++11 requires a space between string literal and macro"
+msgstr "C++11 necesită un spațiu între șir literal și macro"
+
+#: lex.cc:3533
+msgid "module control-line cannot be in included file"
+msgstr "linia de control a modulului nu poate fi în fișierul inclus"
+
+#: lex.cc:3547
+#, c-format
+msgid "module control-line \"%s\" cannot be an object-like macro"
+msgstr "linia de control al modulului „%s” nu poate fi un obiect precum o macrocomandă"
+
+#: lex.cc:3949 lex.cc:5352 traditional.cc:174
+msgid "unterminated comment"
+msgstr "comentariu neterminat"
+
+#: lex.cc:3963 lex.cc:3997
+msgid "C++ style comments are not allowed in ISO C90"
+msgstr "comentariile în stil C++ nu sunt permise în ISO C90"
+
+#: lex.cc:3965 lex.cc:3976 lex.cc:4000
+msgid "(this will be reported only once per input file)"
+msgstr "(acest lucru va fi raportat o singură dată pentru fiecare fișier de intrare)"
+
+#: lex.cc:3974
+msgid "C++ style comments are incompatible with C90"
+msgstr "comentariile în stil C++ sunt incompatibile cu C90"
+
+#: lex.cc:4006
+msgid "multi-line comment"
+msgstr "comentariu pe mai multe linii"
+
+#: lex.cc:4427
+#, c-format
+msgid "unspellable token %s"
+msgstr "element neortografiabil %s"
+
+#: lex.cc:5507
+#, c-format
+msgid "raw string delimiter longer than %d characters"
+msgstr "delimitator de șir brut mai lung de %d caractere"
+
+#: lex.cc:5577
+msgid "unterminated literal"
+msgstr "literal neterminat"
+
+#: macro.cc:94
+msgid "'##' cannot appear at either end of __VA_OPT__"
+msgstr "„##” nu poate apărea la niciunul dintre capetele lui __VA_OPT__"
+
+#: macro.cc:144
+msgid "__VA_OPT__ may not appear in a __VA_OPT__"
+msgstr "__VA_OPT__ nu poate să apară într-o __VA_OPT__"
+
+#: macro.cc:157
+msgid "__VA_OPT__ must be followed by an open parenthesis"
+msgstr "__VA_OPT__ trebuie să fie urmată de o paranteză deschisă"
+
+#: macro.cc:235
+msgid "unterminated __VA_OPT__"
+msgstr "__VA_OPT__ neterminată"
+
+#: macro.cc:397
+#, c-format
+msgid "\"%s\" used outside of preprocessing directive"
+msgstr "„%s” folosit în afara directivei de preprocesare"
+
+#: macro.cc:407
+#, c-format
+msgid "missing '(' before \"%s\" operand"
+msgstr "lipsește „(” înainte de operandul „%s”"
+
+#: macro.cc:422
+#, c-format
+msgid "operator \"%s\" requires a header-name"
+msgstr "operatorul „%s” necesită un nume de antet"
+
+#: macro.cc:439
+#, c-format
+msgid "missing ')' after \"%s\" operand"
+msgstr "lipsește „)” după operandul „%s”"
+
+#: macro.cc:459
+#, c-format
+msgid "macro \"%s\" is not used"
+msgstr "macrocomanda „%s” nu este utilizată"
+
+#: macro.cc:498 macro.cc:797
+#, c-format
+msgid "invalid built-in macro \"%s\""
+msgstr "macrocomandă încorporată „%s” nevalidă"
+
+#: macro.cc:505 macro.cc:613
+#, c-format
+msgid "macro \"%s\" might prevent reproducible builds"
+msgstr "macrocomanda „%s” ar putea împiedica compilările reproductibile"
+
+#: macro.cc:536
+msgid "could not determine file timestamp"
+msgstr "nu s-a putut determina marcajul de timp al fișierului"
+
+#: macro.cc:627
+msgid "could not determine date and time"
+msgstr "nu s-a putut determina data și ora"
+
+#: macro.cc:659
+msgid "__COUNTER__ expanded inside directive with -fdirectives-only"
+msgstr "__COUNTER__ expandat în interiorul directivei cu „-fdirectives-only”"
+
+#: macro.cc:916
+msgid "invalid string literal, ignoring final '\\'"
+msgstr "literal de șir nevalid, se ignoră „\\” final"
+
+#: macro.cc:980
+#, c-format
+msgid "pasting \"%.*s\" and \"%.*s\" does not give a valid preprocessing token"
+msgstr "lipirea lui „%.*s” și a lui„%.*s” nu oferă un element lexical de preprocesare valid"
+
+#: macro.cc:1112
+msgid "ISO C++11 requires at least one argument for the \"...\" in a variadic macro"
+msgstr "ISO C++11 necesită cel puțin un argument pentru „...” într-o macrocomandă cu un număr variabil de argumente"
+
+#: macro.cc:1116
+msgid "ISO C99 requires at least one argument for the \"...\" in a variadic macro"
+msgstr "ISO C99 necesită cel puțin un argument pentru „...” într-o macrocomandă cu un număr variabil de argumente"
+
+#: macro.cc:1123
+#, c-format
+msgid "macro \"%s\" requires %u arguments, but only %u given"
+msgstr "macrocomanda „%s” necesită %u argumente, dar numai %u sunt date"
+
+#: macro.cc:1128
+#, c-format
+msgid "macro \"%s\" passed %u arguments, but takes just %u"
+msgstr "macrocomenzii „%s” i s-au transmis %u argumente, dar are nevoie doar de %u"
+
+#: macro.cc:1132
+#, c-format
+msgid "macro \"%s\" defined here"
+msgstr "macrocomanda „%s” este definită aici"
+
+#: macro.cc:1326 traditional.cc:822
+#, c-format
+msgid "unterminated argument list invoking macro \"%s\""
+msgstr "listă neterminată de argumente care invocă macrocomanda „%s”"
+
+#: macro.cc:1472
+#, c-format
+msgid "function-like macro \"%s\" must be used with arguments in traditional C"
+msgstr "macrocomanda „%s” asemănătoare unei funcții trebuie să fie utilizată cu argumente în limbajul C tradițional"
+
+#: macro.cc:2307
+#, c-format
+msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C++98"
+msgstr "se invocă macrocomanda %s argument %d: argumentele macro goale sunt nedefinite în ISO C++98"
+
+#: macro.cc:2315 macro.cc:2324
+#, c-format
+msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
+msgstr "se invocă macrocomanda %s argument %d: argumentele macro goale sunt nedefinite în ISO C90"
+
+#: macro.cc:3375
+#, c-format
+msgid "duplicate macro parameter \"%s\""
+msgstr "parametru de macrocomandă duplicat „%s”"
+
+#: macro.cc:3457
+#, c-format
+msgid "expected parameter name, found \"%s\""
+msgstr "se aștepta un nume parametru, s-a găsit „%s”"
+
+#: macro.cc:3458
+#, c-format
+msgid "expected ',' or ')', found \"%s\""
+msgstr "se aștepta «,» sau «)», s-a găsit „%s”"
+
+#: macro.cc:3459
+msgid "expected parameter name before end of line"
+msgstr "se aștepta un nume de parametru înainte de sfârșitul liniei"
+
+#: macro.cc:3460
+msgid "expected ')' before end of line"
+msgstr "se aștepta „)” înainte de sfârșitul liniei"
+
+#: macro.cc:3461
+msgid "expected ')' after \"...\""
+msgstr "se aștepta „)” după „...”"
+
+#: macro.cc:3518
+msgid "anonymous variadic macros were introduced in C++11"
+msgstr "macrocomenzile anonime cu un număr variabil de argumente au fost introduse în C++11"
+
+#: macro.cc:3519 macro.cc:3523
+msgid "anonymous variadic macros were introduced in C99"
+msgstr "macrocomenzile anonime cu un număr variabil de argumente au fost introduse în C99"
+
+#: macro.cc:3529
+msgid "ISO C++ does not permit named variadic macros"
+msgstr "ISO C++ nu permite macrocomenzi variadice(cu număr variabil de argumente) cu nume"
+
+#: macro.cc:3530
+msgid "ISO C does not permit named variadic macros"
+msgstr "ISO C nu permite macrocomenzi variadice(cu număr variabil de argumente) cu nume"
+
+#: macro.cc:3576
+msgid "'##' cannot appear at either end of a macro expansion"
+msgstr "„##” nu poate apărea la niciunul dintre capetele unei expandări de macrocomandă"
+
+#: macro.cc:3614
+msgid "ISO C++11 requires whitespace after the macro name"
+msgstr "ISO C++11 necesită un spațiu alb după numele macrocomenzii"
+
+#: macro.cc:3615
+msgid "ISO C99 requires whitespace after the macro name"
+msgstr "ISO C99 necesită un spațiu alb după numele macrocomenzii"
+
+#: macro.cc:3639
+msgid "missing whitespace after the macro name"
+msgstr "lipsește spațiul alb după numele macrocomenzii"
+
+#: macro.cc:3692
+msgid "'#' is not followed by a macro parameter"
+msgstr "„#” nu este urmat de un parametru macro"
+
+#: macro.cc:3848
+#, c-format
+msgid "\"%s\" redefined"
+msgstr "„%s” redefinit"
+
+#: macro.cc:3853
+msgid "this is the location of the previous definition"
+msgstr "aceasta este locația definiției precedente"
+
+#: macro.cc:3990
+#, c-format
+msgid "macro argument \"%s\" would be stringified in traditional C"
+msgstr "argumentul macrocomenzii „%s” trebuie să fie schimbat în șir în limbajul C tradițional"
+
+#: pch.cc:90 pch.cc:342 pch.cc:356 pch.cc:374 pch.cc:380 pch.cc:389 pch.cc:396
+msgid "while writing precompiled header"
+msgstr "în timpul scrierii antetului precompilat"
+
+#: pch.cc:616
+#, c-format
+msgid "%s: not used because `%.*s' is poisoned"
+msgstr "%s: nu este folosit deoarece „%.*s” este «otrăvit»"
+
+#: pch.cc:638
+#, c-format
+msgid "%s: not used because `%.*s' not defined"
+msgstr "%s: nu este folosit deoarece „%.*s” nu este definit"
+
+#: pch.cc:650
+#, c-format
+msgid "%s: not used because `%.*s' defined as `%s' not `%.*s'"
+msgstr "%s: nu este folosit deoarece „%.*s” este definit ca „%s” nu „%.*s”"
+
+#: pch.cc:691
+#, c-format
+msgid "%s: not used because `%s' is defined"
+msgstr "%s: nu este folosit deoarece „%s” este definit"
+
+#: pch.cc:711
+#, c-format
+msgid "%s: not used because `__COUNTER__' is invalid"
+msgstr "%s: nu este folosit deoarece „__COUNTER__” este nevalid"
+
+#: pch.cc:720 pch.cc:876
+msgid "while reading precompiled header"
+msgstr "în timpul citirii antetului precompilat"
+
+#: traditional.cc:891
+#, c-format
+msgid "detected recursion whilst expanding macro \"%s\""
+msgstr "s-a detectat recursivitate în timpul expandării macrocomenzii „%s”"
+
+# R-GC, scrie:
+# după revizarea fișierului, DȘ spune:
+# msgid "syntax error in macro parameter list"
+# msgstr "eroare de sintaxă în lista de parametri macro"
+# → poți spune „ai macrocomenzii” pentru a fi consistent cu restul fișierului
+# ***
+# Ok, corecție aplicată!
+#: traditional.cc:1114
+msgid "syntax error in macro parameter list"
+msgstr "eroare de sintaxă în lista de parametri ai macrocomenzii"

@@ -18,8 +18,8 @@ int main()
 {
   Test t;
   B b;
-  B b2(4.2);
+  B b2(4.25);
 
-  if (t.a != 4 || b.i != 42 || b2.d != 4.2)
+  if (t.a != 4 || b.i != 42 || b2.d != 4.25)
     __builtin_abort();
 }

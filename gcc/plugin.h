@@ -1,5 +1,5 @@
 /* Header file for internal GCC plugin mechanism.
-   Copyright (C) 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2009-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -184,7 +184,7 @@ extern bool flag_plugin_added;
    EVENT    - the event identifier
    GCC_DATA - event-specific data provided by the compiler  */
 
-static inline int
+inline int
 invoke_plugin_callbacks (int event ATTRIBUTE_UNUSED,
 			 void *gcc_data ATTRIBUTE_UNUSED)
 {

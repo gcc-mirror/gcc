@@ -16,6 +16,6 @@ class MinHeap(NodeType)
     unittest
     {
         struct TestType {}
-        MinHeap!(TestType) foo = new MinHeap!(TestType)();
+        MinHeap!(TestType) foo;
     }
 }

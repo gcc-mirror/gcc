@@ -1,5 +1,5 @@
 /* Predicate aware uninitialized variable warning.
-   Copyright (C) 2001-2022 Free Software Foundation, Inc.
+   Copyright (C) 2001-2023 Free Software Foundation, Inc.
    Contributed by Xinliang David Li <davidxl@google.com>
 
 This file is part of GCC.
@@ -224,8 +224,6 @@ warn_uninit (opt_code opt, tree t, tree var, gimple *context,
 	     at alt_reloc = temp.
 	  */
 	  tree lhs_var = NULL_TREE;
-	  tree lhs_var_name = NULL_TREE;
-	  const char *lhs_var_name_str = NULL;
 
 	  /* Get the variable name from the 3rd argument of call.  */
 	  tree var_name = gimple_call_arg (var_def_stmt, 2);
@@ -239,11 +237,22 @@ warn_uninit (opt_code opt, tree t, tree var, gimple *context,
 	      else if (TREE_CODE (gimple_assign_lhs (context)) == SSA_NAME)
 		lhs_var = SSA_NAME_VAR (gimple_assign_lhs (context));
 	    }
-	  if (lhs_var
-	      && (lhs_var_name = DECL_NAME (lhs_var))
-	      && (lhs_var_name_str = IDENTIFIER_POINTER (lhs_var_name))
-	      && (strcmp (lhs_var_name_str, var_name_str) == 0))
-	    return;
+	  if (lhs_var)
+	    {
+	      /* Get the name string for the LHS_VAR.
+		 Refer to routine gimple_add_init_for_auto_var.  */
+	      if (DECL_NAME (lhs_var)
+		  && (strcmp (IDENTIFIER_POINTER (DECL_NAME (lhs_var)),
+		      var_name_str) == 0))
+		return;
+	      else if (!DECL_NAME (lhs_var))
+		{
+		  char lhs_var_name_str_buf[3 + (HOST_BITS_PER_INT + 2) / 3];
+		  sprintf (lhs_var_name_str_buf, "D.%u", DECL_UID (lhs_var));
+		  if (strcmp (lhs_var_name_str_buf, var_name_str) == 0)
+		    return;
+		}
+	    }
 	  gcc_assert (var_name_str && var_def_stmt);
 	}
     }
@@ -273,9 +282,6 @@ warn_uninit (opt_code opt, tree t, tree var, gimple *context,
     location = DECL_SOURCE_LOCATION (var);
   else if (var_name_str)
     location = gimple_location (var_def_stmt);
-
-  location = linemap_resolve_location (line_table, location,
-				       LRK_SPELLING_LOCATION, NULL);
 
   auto_diagnostic_group d;
   gcc_assert (opt == OPT_Wuninitialized || opt == OPT_Wmaybe_uninitialized);
@@ -424,10 +430,7 @@ maybe_warn_read_write_only (tree fndecl, gimple *stmt, tree arg, tree ptr)
 	  && access->mode != access_write_only)
 	continue;
 
-      location_t stmtloc
-	= linemap_resolve_location (line_table, gimple_location (stmt),
-				    LRK_SPELLING_LOCATION, NULL);
-
+      location_t stmtloc = gimple_location (stmt);
       if (!warning_at (stmtloc, OPT_Wmaybe_uninitialized,
 		       "%qE may be used uninitialized", ptr))
 	break;
@@ -722,9 +725,7 @@ maybe_warn_operand (ao_ref &ref, gimple *stmt, tree lhs, tree rhs,
   bool warned = false;
   /* We didn't find any may-defs so on all paths either
      reached function entry or a killing clobber.  */
-  location_t location
-    = linemap_resolve_location (line_table, gimple_location (stmt),
-				LRK_SPELLING_LOCATION, NULL);
+  location_t location = gimple_location (stmt);
   if (wlims.always_executed)
     {
       if (warning_at (location, OPT_Wuninitialized,
@@ -991,14 +992,20 @@ warn_uninitialized_vars (bool wmaybe_uninit)
   auto_bb_flag ft_reachable (cfun);
 
   /* Mark blocks that are always executed when we ignore provably
-     not executed edges.  */
+     not executed and EH and abnormal edges.  */
   basic_block bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   while (!(bb->flags & ft_reachable))
     {
       bb->flags |= ft_reachable;
+      edge e = find_fallthru_edge (bb->succs);
+      if (e && e->flags & EDGE_EXECUTABLE)
+	{
+	  bb = e->dest;
+	  continue;
+	}
       /* Find a single executable edge.  */
       edge_iterator ei;
-      edge e, ee = NULL;
+      edge ee = NULL;
       FOR_EACH_EDGE (e, ei, bb->succs)
 	if (e->flags & EDGE_EXECUTABLE)
 	  {
@@ -1251,8 +1258,8 @@ find_uninit_use (gphi *phi, unsigned uninit_opnds, int *bb_to_rpo)
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
-	      fprintf (dump_file, "Found unguarded use in bb %u: ",
-		       use_bb->index);
+	      fprintf (dump_file, "Found unguarded use on edge %u -> %u: ",
+		       e->src->index, e->dest->index);
 	      print_gimple_stmt (dump_file, use_stmt, 0);
 	    }
 	  /* Found a phi use that is not guarded, mark the phi_result as

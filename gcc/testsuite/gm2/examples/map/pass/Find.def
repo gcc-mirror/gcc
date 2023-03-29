@@ -1,0 +1,51 @@
+(* Copyright (C) 2005-2023 Free Software Foundation, Inc. *)
+(* This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License along
+with gm2; see the file COPYING.  If not, write to the Free Software
+Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. *)
+DEFINITION MODULE Find ;
+
+(*
+   Title      : WriteMap
+   Author     : Gaius Mulley
+   Date       : Sat Dec  7 16:04:47 gmt 1991
+   LastEdit   : Sat Dec  7 16:04:47 gmt 1991
+   System     : LOGITECH MODULA-2/86
+   Description: Works out an optimum route from a start position
+      	        to a finish position.
+*)
+
+EXPORT QUALIFIED FindOptimumRoute ;
+
+
+(*
+   FindOptimumRoute - finds the optimum route between two points,
+                      x1, y1, x2, y2. The directions are returned
+                      in a string, Commands. A boolean is returned
+                      if any commands were entered.
+*)
+
+PROCEDURE FindOptimumRoute (x1, y1, x2, y2: INTEGER;
+      	       	     	    VAR Commands: ARRAY OF CHAR) : BOOLEAN ;
+
+(*
+   IsOptimumRoutePossible - returns true if we can use the optimum
+                            route procedure to work out how to get
+      	       	     	    to position, x2, y2 from x1, y1.
+*)
+
+PROCEDURE IsOptimumRoutePossible (x1, y1, x2, y2: INTEGER) : BOOLEAN ;
+
+
+END Find.

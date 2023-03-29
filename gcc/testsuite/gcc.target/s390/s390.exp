@@ -1,4 +1,4 @@
-# Copyright (C) 2007-2022 Free Software Foundation, Inc.
+# Copyright (C) 2007-2023 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -234,6 +234,9 @@ dg-runtest [lsort [prune [glob -nocomplain $srcdir/$subdir/*.{c,S}] \
 			 $md_tests]] "" $DEFAULT_CFLAGS
 
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*vector*/*.{c,S}]] \
+	"" $DEFAULT_CFLAGS
+
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*vector*/partial/*.{c,S}]] \
 	"" $DEFAULT_CFLAGS
 
 gfortran-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*vector*/*.F90]] \

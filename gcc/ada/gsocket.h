@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *         Copyright (C) 2004-2022, Free Software Foundation, Inc.          *
+ *         Copyright (C) 2004-2023, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -80,12 +80,6 @@
 #define FD_SETSIZE 1024
 
 #ifdef __MINGW32__
-/* winsock2.h allows WSAPoll related definitions only when
- * _WIN32_WINNT >= 0x0600 */
-#if !defined(_WIN32_WINNT) || _WIN32_WINNT < 0x0600
-#define _WIN32_WINNT 0x0600
-#endif
-
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <versionhelpers.h>
@@ -173,6 +167,7 @@
 
 #endif
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 #elif defined(VMS)

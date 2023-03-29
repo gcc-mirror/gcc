@@ -23,9 +23,9 @@ fail_compilation/lexer1.d(49): Error: unterminated named entity &*;
 fail_compilation/lexer1.d(50): Error: unterminated named entity &s1";
 fail_compilation/lexer1.d(51): Error: unterminated named entity &2;
 fail_compilation/lexer1.d(52): Error: escape octal sequence \400 is larger than \377
+fail_compilation/lexer1.d(53): Error: html entity requires 2 code units, use a string instead of a character
 ---
 */
-
 // https://dlang.dawg.eu/coverage/src/lexer.c.gcov.html
 x"01 02 03"w;
 0x80000001;
@@ -50,3 +50,4 @@ static s5 = "\&*";
 static s6 = "\&s1";
 static s7 = "\&2;";
 static s7 = "\400;";
+dchar s8 = '\&acE;';

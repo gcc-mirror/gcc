@@ -1,9 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 
-typedef __SIZE_TYPE__ size_t;
-extern void *malloc (size_t);
-extern void abort (void);
+#include "builtin-object-size-common.h"
 
 struct A
 {
@@ -20,52 +18,52 @@ main (void)
   struct A *a = malloc (s);
   struct A *b = malloc (o + 212);
   if (__builtin_object_size (a->buf, 0) != s - o)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (a->buf, 1) != sizeof (a->buf))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (a->buf, 2) != s - o)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (a->buf, 3) != sizeof (a->buf))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&a->buf[0], 0) != s - o)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&a->buf[0], 1) != sizeof (a->buf))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&a->buf[0], 2) != s - o)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&a->buf[0], 3) != sizeof (a->buf))
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&a->buf[6], 0) != s - o - 6)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&a->buf[6], 1) != sizeof (a->buf) - 6)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&a->buf[6], 2) != s - o - 6)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&a->buf[6], 3) != sizeof (a->buf) - 6)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (b->buf, 0) != 212)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (b->buf, 1) != 212)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (b->buf, 2) != 212)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (b->buf, 3) != 212)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&b->buf[0], 0) != 212)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&b->buf[0], 1) != 212)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&b->buf[0], 2) != 212)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&b->buf[0], 3) != 212)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&b->buf[28], 0) != 212 - 28)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&b->buf[28], 1) != 212 - 28)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&b->buf[28], 2) != 212 - 28)
-    abort ();
+    FAIL ();
   if (__builtin_object_size (&b->buf[28], 3) != 212 - 28)
-    abort ();
-  return 0;
+    FAIL ();
+  DONE ();
 }

@@ -1,0 +1,85 @@
+(* Scan.def Provides a primitive symbol fetching from input.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE Scan ;
+
+(* Provides a primitive symbol fetching from input.
+   Symbols are delimited by spaces and tabs.
+   Limitation only allows one source file at
+   a time to deliver symbols.  *)
+
+
+EXPORT QUALIFIED GetNextSymbol, WriteError,
+                 OpenSource, CloseSource,
+                 TerminateOnError, DefineComments ;
+
+
+(* OpenSource - opens a source file for reading.                  *)
+
+PROCEDURE OpenSource (a: ARRAY OF CHAR) : BOOLEAN ;
+
+
+(* CloseSource - closes the current source file from reading.     *)
+
+PROCEDURE CloseSource ;
+
+
+(* GetNextSymbol gets the next source symbol and returns it in a. *)
+
+PROCEDURE GetNextSymbol (VAR a: ARRAY OF CHAR) ;
+
+
+(* WriteError writes a message, a, under the source line, which   *)
+(* attempts to pinpoint the Symbol at fault.                      *)
+
+PROCEDURE WriteError (a: ARRAY OF CHAR) ;
+
+
+(*
+   TerminateOnError - exits with status 1 if we call WriteError.
+*)
+
+PROCEDURE TerminateOnError ;
+
+
+(*
+   DefineComments - defines the start of comments within the source
+                    file.
+
+                    The characters in Start define the comment start
+                    and characters in End define the end.
+                    The BOOLEAN eoln determine whether the comment
+                    is terminated by end of line. If eoln is TRUE
+                    then End is ignored.
+
+                    If this procedure is never called then no comments
+                    are allowed.
+*)
+
+PROCEDURE DefineComments (Start, End: ARRAY OF CHAR; eoln: BOOLEAN) ;
+
+
+END Scan.

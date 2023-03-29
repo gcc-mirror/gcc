@@ -1,0 +1,163 @@
+/* Machine mode switch for RISC-V 'V' Extension for GNU compiler.
+   Copyright (C) 2022-2023 Free Software Foundation, Inc.
+   Contributed by Ju-Zhe Zhong (juzhe.zhong@rivai.ai), RiVAI Technologies Ltd.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+/* This file is enable or disable the RVV modes according '-march'.  */
+
+/* According to rvv-intrinsic and RISC-V 'V' Extension ISA document:
+   https://github.com/riscv-non-isa/rvv-intrinsic-doc/blob/master/rvv-intrinsic-rfc.md.
+   https://github.com/riscv/riscv-v-spec/blob/master/v-spec.adoc.
+
+   Data Types
+   Encode SEW and LMUL into data types.
+   We enforce the constraint LMUL ≥ SEW/ELEN in the implementation.
+   There are the following data types for MIN_VLEN > 32.
+
+Note: N/A means the corresponding vector type is disabled.
+
+|Types   |LMUL=1|LMUL=2 |LMUL=4 |LMUL=8 |LMUL=1/2|LMUL=1/4|LMUL=1/8|
+|int64_t |VNx1DI|VNx2DI |VNx4DI |VNx8DI |N/A     |N/A     |N/A     |
+|uint64_t|VNx1DI|VNx2DI |VNx4DI |VNx8DI |N/A     |N/A     |N/A     |
+|int32_t |VNx2SI|VNx4SI |VNx8SI |VNx16SI|VNx1SI  |N/A     |N/A     |
+|uint32_t|VNx2SI|VNx4SI |VNx8SI |VNx16SI|VNx1SI  |N/A     |N/A     |
+|int16_t |VNx4HI|VNx8HI |VNx16HI|VNx32HI|VNx2HI  |VNx1HI  |N/A     |
+|uint16_t|VNx4HI|VNx8HI |VNx16HI|VNx32HI|VNx2HI  |VNx1HI  |N/A     |
+|int8_t  |VNx8QI|VNx16QI|VNx32QI|VNx64QI|VNx4QI  |VNx2QI  |VNx1QI  |
+|uint8_t |VNx8QI|VNx16QI|VNx32QI|VNx64QI|VNx4QI  |VNx2QI  |VNx1QI  |
+|float64 |VNx1DF|VNx2DF |VNx4DF |VNx8DF |N/A     |N/A     |N/A     |
+|float32 |VNx2SF|VNx4SF |VNx8SF |VNx16SF|VNx1SF  |N/A     |N/A     |
+|float16 |VNx4HF|VNx8HF |VNx16HF|VNx32HF|VNx2HF  |VNx1HF  |N/A     |
+
+Mask Types Encode the ratio of SEW/LMUL into the
+mask types. There are the following mask types.
+
+n = SEW/LMUL
+
+|Types|n=1    |n=2    |n=4    |n=8   |n=16  |n=32  |n=64  |
+|bool |VNx64BI|VNx32BI|VNx16BI|VNx8BI|VNx4BI|VNx2BI|VNx1BI|
+
+There are the following data types for MIN_VLEN = 32.
+
+|Types   |LMUL=1|LMUL=2|LMUL=4 |LMUL=8 |LMUL=1/2|LMUL=1/4|LMUL=1/8|
+|int64_t |N/A   |N/A   |N/A    |N/A    |N/A     |N/A     |N/A     |
+|uint64_t|N/A   |N/A   |N/A    |N/A    |N/A     |N/A     |N/A     |
+|int32_t |VNx1SI|VNx2SI|VNx4SI |VNx8SI |N/A     |N/A     |N/A     |
+|uint32_t|VNx1SI|VNx2SI|VNx4SI |VNx8SI |N/A     |N/A     |N/A     |
+|int16_t |VNx2HI|VNx4HI|VNx8HI |VNx16HI|VNx1HI  |N/A     |N/A     |
+|uint16_t|VNx2HI|VNx4HI|VNx8HI |VNx16HI|VNx1HI  |N/A     |N/A     |
+|int8_t  |VNx4QI|VNx8QI|VNx16QI|VNx32QI|VNx2QI  |VNx1QI  |N/A     |
+|uint8_t |VNx4QI|VNx8QI|VNx16QI|VNx32QI|VNx2QI  |VNx1QI  |N/A     |
+|float64 |N/A   |N/A   |N/A    |N/A    |N/A     |N/A     |N/A     |
+|float32 |VNx1SF|VNx2SF|VNx4SF |VNx8SF |N/A     |N/A     |N/A     |
+|float16 |VNx2HF|VNx4HF|VNx8HF |VNx16HF|VNx1HF  |N/A     |N/A     |
+
+Mask Types Encode the ratio of SEW/LMUL into the
+mask types. There are the following mask types.
+
+n = SEW/LMUL
+
+|Types|n=1    |n=2    |n=4   |n=8   |n=16  |n=32  |n=64|
+|bool |VNx32BI|VNx16BI|VNx8BI|VNx4BI|VNx2BI|VNx1BI|N/A |
+
+TODO: FP16 vector needs support of 'zvfh', we don't support it yet.  */
+
+/* Return 'REQUIREMENT' for machine_mode 'MODE'.
+   For example: 'MODE' = VNx64BImode needs TARGET_MIN_VLEN > 32.  */
+#ifndef ENTRY
+#define ENTRY(MODE, REQUIREMENT, VLMUL_FOR_MIN_VLEN32, RATIO_FOR_MIN_VLEN32,   \
+	      VLMUL_FOR_MIN_VLEN64, RATIO_FOR_MIN_VLEN64)
+#endif
+/* Flag of FP32 vector.  */
+#ifndef TARGET_VECTOR_FP32
+#define TARGET_VECTOR_FP32                                                     \
+  (TARGET_HARD_FLOAT && (TARGET_VECTOR_ELEN_FP_32 || TARGET_VECTOR_ELEN_FP_64))
+#endif
+/* Flag of FP64 vector.  */
+#ifndef TARGET_VECTOR_FP64
+#define TARGET_VECTOR_FP64                                                     \
+  (TARGET_DOUBLE_FLOAT && TARGET_VECTOR_ELEN_FP_64 && (TARGET_MIN_VLEN > 32))
+#endif
+
+/* Mask modes. Disable VNx64BImode when TARGET_MIN_VLEN == 32.  */
+ENTRY (VNx64BI, TARGET_MIN_VLEN > 32, LMUL_RESERVED, 0, LMUL_8, 1)
+ENTRY (VNx32BI, true, LMUL_8, 1, LMUL_4, 2)
+ENTRY (VNx16BI, true, LMUL_4, 2, LMUL_2, 4)
+ENTRY (VNx8BI, true, LMUL_2, 4, LMUL_1, 8)
+ENTRY (VNx4BI, true, LMUL_1, 8, LMUL_F2, 16)
+ENTRY (VNx2BI, true, LMUL_F2, 16, LMUL_F4, 32)
+ENTRY (VNx1BI, true, LMUL_F4, 32, LMUL_F8, 64)
+
+/* SEW = 8. Disable VNx64QImode when TARGET_MIN_VLEN == 32.  */
+ENTRY (VNx64QI, TARGET_MIN_VLEN > 32, LMUL_RESERVED, 0, LMUL_8, 1)
+ENTRY (VNx32QI, true, LMUL_8, 1, LMUL_4, 2)
+ENTRY (VNx16QI, true, LMUL_4, 2, LMUL_2, 4)
+ENTRY (VNx8QI, true, LMUL_2, 4, LMUL_1, 8)
+ENTRY (VNx4QI, true, LMUL_1, 8, LMUL_F2, 16)
+ENTRY (VNx2QI, true, LMUL_F2, 16, LMUL_F4, 32)
+ENTRY (VNx1QI, true, LMUL_F4, 32, LMUL_F8, 64)
+
+/* SEW = 16. Disable VNx32HImode when TARGET_MIN_VLEN == 32.  */
+ENTRY (VNx32HI, TARGET_MIN_VLEN > 32, LMUL_RESERVED, 0, LMUL_8, 2)
+ENTRY (VNx16HI, true, LMUL_8, 2, LMUL_4, 4)
+ENTRY (VNx8HI, true, LMUL_4, 4, LMUL_2, 8)
+ENTRY (VNx4HI, true, LMUL_2, 8, LMUL_1, 16)
+ENTRY (VNx2HI, true, LMUL_1, 16, LMUL_F2, 32)
+ENTRY (VNx1HI, true, LMUL_F2, 32, LMUL_F4, 64)
+
+/* TODO:Disable all FP16 vector, enable them when 'zvfh' is supported.  */
+ENTRY (VNx32HF, false, LMUL_RESERVED, 0, LMUL_8, 2)
+ENTRY (VNx16HF, false, LMUL_8, 2, LMUL_4, 4)
+ENTRY (VNx8HF, false, LMUL_4, 4, LMUL_2, 8)
+ENTRY (VNx4HF, false, LMUL_2, 8, LMUL_1, 16)
+ENTRY (VNx2HF, false, LMUL_1, 16, LMUL_F2, 32)
+ENTRY (VNx1HF, false, LMUL_F2, 32, LMUL_F4, 64)
+
+/* SEW = 32. Disable VNx16SImode when TARGET_MIN_VLEN == 32.
+   For single-precision floating-point, we need TARGET_VECTOR_FP32 ==
+   RVV_ENABLE.  */
+ENTRY (VNx16SI, TARGET_MIN_VLEN > 32, LMUL_RESERVED, 0, LMUL_8, 4)
+ENTRY (VNx8SI, true, LMUL_8, 4, LMUL_4, 8)
+ENTRY (VNx4SI, true, LMUL_4, 8, LMUL_2, 16)
+ENTRY (VNx2SI, true, LMUL_2, 16, LMUL_1, 32)
+ENTRY (VNx1SI, true, LMUL_1, 32, LMUL_F2, 64)
+
+ENTRY (VNx16SF, TARGET_VECTOR_FP32 && (TARGET_MIN_VLEN > 32), LMUL_RESERVED, 0,
+       LMUL_8, 4)
+ENTRY (VNx8SF, TARGET_VECTOR_FP32, LMUL_8, 4, LMUL_4, 8)
+ENTRY (VNx4SF, TARGET_VECTOR_FP32, LMUL_4, 8, LMUL_2, 16)
+ENTRY (VNx2SF, TARGET_VECTOR_FP32, LMUL_2, 16, LMUL_1, 32)
+ENTRY (VNx1SF, TARGET_VECTOR_FP32, LMUL_1, 32, LMUL_F2, 64)
+
+/* SEW = 64. Enable when TARGET_MIN_VLEN > 32.
+   For double-precision floating-point, we need TARGET_VECTOR_FP64 ==
+   RVV_ENABLE.  */
+ENTRY (VNx8DI, TARGET_MIN_VLEN > 32, LMUL_RESERVED, 0, LMUL_8, 8)
+ENTRY (VNx4DI, TARGET_MIN_VLEN > 32, LMUL_RESERVED, 0, LMUL_4, 16)
+ENTRY (VNx2DI, TARGET_MIN_VLEN > 32, LMUL_RESERVED, 0, LMUL_2, 32)
+ENTRY (VNx1DI, TARGET_MIN_VLEN > 32, LMUL_RESERVED, 0, LMUL_1, 64)
+
+ENTRY (VNx8DF, TARGET_VECTOR_FP64 && (TARGET_MIN_VLEN > 32), LMUL_RESERVED, 0,
+       LMUL_8, 8)
+ENTRY (VNx4DF, TARGET_VECTOR_FP64, LMUL_RESERVED, 0, LMUL_4, 16)
+ENTRY (VNx2DF, TARGET_VECTOR_FP64, LMUL_RESERVED, 0, LMUL_2, 32)
+ENTRY (VNx1DF, TARGET_VECTOR_FP64, LMUL_RESERVED, 0, LMUL_1, 64)
+
+#undef TARGET_VECTOR_FP32
+#undef TARGET_VECTOR_FP64
+#undef ENTRY

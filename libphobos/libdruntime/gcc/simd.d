@@ -1,5 +1,5 @@
 // GNU D Compiler SIMD support functions and intrinsics.
-// Copyright (C) 2022 Free Software Foundation, Inc.
+// Copyright (C) 2022-2023 Free Software Foundation, Inc.
 
 // GCC is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -306,13 +306,25 @@ template blendvector(V0, V1, M)
  * assert(c.array == [0, 0, -1, -1]);
  * ---
  */
-V equalMask(V)(V op1, V op2) if (isVectorType!V);
+V equalMask(V)(V op1, V op2) if (isVectorType!V)
+{
+    return op1 == op2;
+}
 /// Ditto
-V notEqualMask(V)(V op1, V op2) if (isVectorType!V);
+V notEqualMask(V)(V op1, V op2) if (isVectorType!V)
+{
+    return op1 != op2;
+}
 /// Ditto
-V greaterMask(V)(V op1, V op2) if (isVectorType!V);
+V greaterMask(V)(V op1, V op2) if (isVectorType!V)
+{
+    return op1 > op2;
+}
 /// Ditto
-V greaterOrEqualMask(V)(V op1, V op2) if (isVectorType!V);
+V greaterOrEqualMask(V)(V op1, V op2) if (isVectorType!V)
+{
+    return op1 >= op2;
+}
 
 /**
  * Perform an element-wise logical comparison between two vectors, producing
@@ -326,19 +338,19 @@ V greaterOrEqualMask(V)(V op1, V op2) if (isVectorType!V);
  */
 V notMask(V)(V op1) if (isVectorType!V)
 {
-    return equalMask(op1, 0);
+    return op1 == 0;
 }
 
 /// Ditto
 V andAndMask(V)(V op1, V op2) if (isVectorType!V)
 {
-    return notEqualMask(op1, 0) & notEqualMask(op2, 0);
+    return (op1 != 0) & (op2 != 0);
 }
 
 /// Ditto
 V orOrMask(V)(V op1, V op2) if (isVectorType!V)
 {
-    return notEqualMask(op1, 0) | notEqualMask(op2, 0);
+    return (op1 != 0) | (op2 != 0);
 }
 
 // Private helper templates.

@@ -1,5 +1,5 @@
 /* Subroutines used for MIPS code generation.
-   Copyright (C) 1989-2022 Free Software Foundation, Inc.
+   Copyright (C) 1989-2023 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
    64-bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -630,6 +630,7 @@ static const struct attribute_spec mips_attribute_table[] = {
     mips_handle_use_shadow_register_set_attr, NULL },
   { "keep_interrupts_masked",	0, 0, false, true,  true, false, NULL, NULL },
   { "use_debug_exception_return", 0, 0, false, true, true, false, NULL, NULL },
+  { "use_hazard_barrier_return", 0, 0, true, false, false, false, NULL, NULL },
   { NULL,	   0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -6683,7 +6684,8 @@ mips_setup_incoming_varargs (cumulative_args_t cum,
      argument.  Advance a local copy of CUM past the last "real" named
      argument, to find out how many registers are left over.  */
   local_cum = *get_cumulative_args (cum);
-  mips_function_arg_advance (pack_cumulative_args (&local_cum), arg);
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    mips_function_arg_advance (pack_cumulative_args (&local_cum), arg);
 
   /* Found out how many registers we need to save.  */
   gp_saved = MAX_ARGS_IN_REGISTERS - local_cum.num_gprs;
@@ -9921,7 +9923,7 @@ mips_finish_declare_object (FILE *stream, tree decl, int top_level, int at_end)
 void
 mips_set_text_contents_type (FILE *file ATTRIBUTE_UNUSED,
 			     const char *prefix ATTRIBUTE_UNUSED,
-			     unsigned long num ATTRIBUTE_UNUSED,
+			     unsigned HOST_WIDE_INT num ATTRIBUTE_UNUSED,
 			     bool function_p ATTRIBUTE_UNUSED)
 {
 #ifdef ASM_OUTPUT_TYPE_DIRECTIVE
@@ -9930,7 +9932,7 @@ mips_set_text_contents_type (FILE *file ATTRIBUTE_UNUSED,
   char *sname;
   rtx symbol;
 
-  sprintf (buf, "%lu", num);
+  sprintf (buf, HOST_WIDE_INT_PRINT_UNSIGNED, num);
   symbol = XEXP (DECL_RTL (current_function_decl), 0);
   fnname = targetm.strip_name_encoding (XSTR (symbol, 0));
   sname = ACONCAT ((prefix, fnname, "_", buf, NULL));
@@ -20277,13 +20279,7 @@ mips_option_override (void)
       target_flags |= MASK_ODD_SPREG;
     }
 
-  if (!ISA_HAS_COMPACT_BRANCHES && mips_cb == MIPS_CB_ALWAYS)
-    {
-      error ("unsupported combination: %qs%s %s",
-	      mips_arch_info->name, TARGET_MICROMIPS ? " -mmicromips" : "",
-	      "-mcompact-branches=always");
-    }
-  else if (!ISA_HAS_DELAY_SLOTS && mips_cb == MIPS_CB_NEVER)
+  if (!ISA_HAS_DELAY_SLOTS && mips_cb == MIPS_CB_NEVER)
     {
       error ("unsupported combination: %qs%s %s",
 	      mips_arch_info->name, TARGET_MICROMIPS ? " -mmicromips" : "",

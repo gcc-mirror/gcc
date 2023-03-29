@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997-2022 Free Software Foundation, Inc.
+// Copyright (C) 1997-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -592,9 +592,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	size_type _M_r;
       };
       _Terminator __term{this};
-      const size_type __n2 [[maybe_unused]] = __n;
-      __term._M_r = std::move(__op)(__p, __n);
-      _GLIBCXX_DEBUG_ASSERT(__term._M_r >= 0 && __term._M_r <= __n2);
+      auto __r = std::move(__op)(auto(__p), auto(__n));
+      static_assert(ranges::__detail::__is_integer_like<decltype(__r)>);
+      _GLIBCXX_DEBUG_ASSERT(__r >= 0 && __r <= __n);
+      __term._M_r = size_type(__r);
+      if (__term._M_r > __n)
+	__builtin_unreachable();
     }
 #endif // C++23
 
@@ -605,47 +608,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #else
 # define _GLIBCXX_STRING_CONSTEXPR
 #endif
-
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    _GLIBCXX20_CONSTEXPR
-    basic_string<_CharT, _Traits, _Alloc>
-    operator+(const _CharT* __lhs,
-	      const basic_string<_CharT, _Traits, _Alloc>& __rhs)
-    {
-      __glibcxx_requires_string(__lhs);
-      typedef basic_string<_CharT, _Traits, _Alloc> __string_type;
-      typedef typename __string_type::size_type	  __size_type;
-      typedef typename __gnu_cxx::__alloc_traits<_Alloc>::template
-	rebind<_CharT>::other _Char_alloc_type;
-      typedef __gnu_cxx::__alloc_traits<_Char_alloc_type> _Alloc_traits;
-      const __size_type __len = _Traits::length(__lhs);
-      __string_type __str(_Alloc_traits::_S_select_on_copy(
-          __rhs.get_allocator()));
-      __str.reserve(__len + __rhs.size());
-      __str.append(__lhs, __len);
-      __str.append(__rhs);
-      return __str;
-    }
-
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    _GLIBCXX20_CONSTEXPR
-    basic_string<_CharT, _Traits, _Alloc>
-    operator+(_CharT __lhs, const basic_string<_CharT, _Traits, _Alloc>& __rhs)
-    {
-      typedef basic_string<_CharT, _Traits, _Alloc> __string_type;
-      typedef typename __string_type::size_type	  __size_type;
-      typedef typename __gnu_cxx::__alloc_traits<_Alloc>::template
-	rebind<_CharT>::other _Char_alloc_type;
-      typedef __gnu_cxx::__alloc_traits<_Char_alloc_type> _Alloc_traits;
-      __string_type __str(_Alloc_traits::_S_select_on_copy(
-          __rhs.get_allocator()));
-      const __size_type __len = __rhs.size();
-      __str.reserve(__len + 1);
-      __str.append(__size_type(1), __lhs);
-      __str.append(__rhs);
-      return __str;
-    }
-
   template<typename _CharT, typename _Traits, typename _Alloc>
     _GLIBCXX_STRING_CONSTEXPR
     typename basic_string<_CharT, _Traits, _Alloc>::size_type

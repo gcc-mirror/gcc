@@ -1,5 +1,5 @@
 /* Common VxWorks target definitions for GNU compiler.
-   Copyright (C) 1999-2022 Free Software Foundation, Inc.
+   Copyright (C) 1999-2023 Free Software Foundation, Inc.
    Contributed by Wind River Systems.
    Rewritten by CodeSourcery, LLC.
 
@@ -19,9 +19,24 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+/* ??? We use HAVE_INITFINI_ARRAY_SUPPORT in preprocessor guards in this
+   header, which is conveyed by auto-host.h despite being a target property.
+   #include auto-host.h here would trigger lots of conflicts so we rely on
+   compiler .c files doing this before target configuration headers.  */
+
 /* Assert that we are targeting VxWorks.  */
 #undef TARGET_VXWORKS
 #define TARGET_VXWORKS 1
+
+/* ??? Even though assigned to a HOST driver hook, this function
+   operates for all vxworks targets regardless of the current host.
+   We will get warnings at build time if the macro happens to be
+   redefined one way or another for a host.  */
+struct cl_decoded_option;
+extern void vxworks_driver_init (unsigned int *, struct cl_decoded_option **);
+
+#define GCC_DRIVER_HOST_INITIALIZATION \
+        vxworks_driver_init (&decoded_options_count, &decoded_options)
 
 /* In kernel mode, VxWorks provides all the libraries itself, as well as
    the functionality of startup files, etc.  In RTP mode, it behaves more
@@ -115,7 +130,7 @@ along with GCC; see the file COPYING3.  If not see
      -lc_internal after -lc -lgcc.
 
    - libc_internal also contains __init/__fini functions for
-     USE_INITFINI_ARRAY support. However, the system expects these in
+     INITFINI_ARRAY support. However, the system expects these in
      every shared lib as well, with slightly different names, and it is
      simpler for us to provide our own versions through vxcrtstuff.
 
@@ -209,21 +224,60 @@ along with GCC; see the file COPYING3.  If not see
 #undef VXWORKS_LINK_SPEC
 #define VXWORKS_LINK_SPEC VXWORKS_BASE_LINK_SPEC " " VXWORKS_EXTRA_LINK_SPEC
 
+/* Control how to include libgcc in the link closure, handling both "shared"
+   and "non-static" in addition to "static-libgcc" when shared lib support is
+   enabled.  */
+
 #undef VXWORKS_LIBGCC_SPEC
+
+/* libgcc_eh control; libgcc_eh.a is available either together with libgcc_s
+   (mrtp and mcmodel!=large when configured with --enable-shared) or when the
+   compiler is specially setup to support dual sjlj/table-based eh.  */
+
+/* VX_LGCC_EH_SO1: The "-lgcc_eh" part we need in situations where we know a
+   shared libgcc is available (ENABLE_SHARED_LIBGCC + mrtp multilib).  */
+
+#define VX_LGCC_EH_SO1 " -lgcc_eh -lgcc"
+/* Extra -lgcc to handle functions from libgcc_eh that refer to symbols
+   exposed by libgcc and not guaranteed to be dragged in before -lgcc_eh
+   appears.  */
+
+/* VX_LGCC_EH_SO0: The "-lgcc_eh" part we need in situations where we know a
+   shared libgcc is not available (!ENABLE_SHARED_LIBGCC or !mrtp multlib).  */
+
+#if !defined(CONFIG_DUAL_EXCEPTIONS)
+
+/* No shared lib && !DUAL_EH -> no libgcc_eh available at all.  */
+#define VX_LGCC_EH_SO0
+
+#else /* CONFIG_DUAL_EXCEPTIONS  */
+
+/* No shared lib but DUAL_EH -> libgcc_eh around and spec handled by the driver
+   depending on ENABLE_SHARED_LIBGCC.  If defined, the driver expects a regular
+   sequence.  Otherwise, the driver is expected to turn -lgcc into -lgcc_eh on
+   its own and just add an instance to address possible cross refs.  */
+
+#if defined(ENABLE_SHARED_LIBGCC)
+#define VX_LGCC_EH_SO0 " -lgcc_eh -lgcc"
+#else
+#define VX_LGCC_EH_SO0 " -lgcc"
+#endif
+
+#endif /* CONFIG_DUAL_EXCEPTIONS  */
+
 #if defined(ENABLE_SHARED_LIBGCC)
 #define VXWORKS_LIBGCC_SPEC                                             \
-"%{!mrtp:-lgcc -lgcc_eh}                                                \
- %{mrtp:%{!static-libgcc:%{shared|non-static:-lgcc_s;:-lgcc -lgcc_eh}}  \
-         %{static-libgcc:-lgcc -lgcc_eh}}"
+  "%{!mrtp|mcmodel=large:-lgcc" VX_LGCC_EH_SO0 ";"			\
+  " :%{!static-libgcc:%{shared|non-static:-lgcc_s;:-lgcc" VX_LGCC_EH_SO1 "}} \
+     %{static-libgcc:-lgcc" VX_LGCC_EH_SO1 "}}"
 #else
-#define VXWORKS_LIBGCC_SPEC "-lgcc"
+#define VXWORKS_LIBGCC_SPEC "-lgcc" VX_LGCC_EH_SO0
 #endif
 
 /* Setup the crtstuff begin/end we might need for dwarf EH registration
-   and/or INITFINI_ARRAY support for shared libs.  */
-
-#if (HAVE_INITFINI_ARRAY_SUPPORT && defined(ENABLE_SHARED_LIBGCC)) \
-    || (DWARF2_UNWIND_INFO && !defined(CONFIG_SJLJ_EXCEPTIONS))
+   and/or INITFINI_ARRAY support.  */
+#if (HAVE_INITFINI_ARRAY_SUPPORT					\
+     || (DWARF2_UNWIND_INFO && !defined(CONFIG_SJLJ_EXCEPTIONS)))
 #define VX_CRTBEGIN_SPEC "%{!shared:vx_crtbegin.o%s;:vx_crtbeginS.o%s}"
 #define VX_CRTEND_SPEC   "%{!shared:vx_crtend.o%s;:vx_crtendS.o%s}"
 #else
@@ -362,11 +416,11 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
   vxworks_emit_call_builtin___clear_cache
 extern void vxworks_emit_call_builtin___clear_cache (rtx begin, rtx end);
 
-/* Default dwarf control values, for non-gdb debuggers that come with
-   VxWorks.  */
+/* Default dwarf control values, accounting for non-gdb debuggers that come
+   with VxWorks.  */
 
-#undef VXWORKS_DWARF_VERSION_DEFAULT
-#define VXWORKS_DWARF_VERSION_DEFAULT (TARGET_VXWORKS7 ? 4 : 2)
+#undef DWARF_VERSION_DEFAULT
+#define DWARF_VERSION_DEFAULT (TARGET_VXWORKS7 ? 3 : 2)
 
 #undef DWARF_GNAT_ENCODINGS_DEFAULT
 #define DWARF_GNAT_ENCODINGS_DEFAULT \

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2022, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2023, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -637,17 +637,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       break;
 
     case E_Constant:
-      /* If this is a constant related to a return in a function returning by
-	 invisible reference without expression, get the return object.  */
-      if (Is_Related_To_Func_Return (gnat_entity)
-	  && current_function_decl
-	  && TREE_ADDRESSABLE (TREE_TYPE (current_function_decl))
-	  && !gnu_expr)
-	{
-	  gnu_decl = DECL_RESULT (current_function_decl);
-	  break;
-	}
-
       /* Ignore constant definitions already marked with the error node.  See
 	 the N_Object_Declaration case of gnat_to_gnu for the rationale.  */
       if (definition
@@ -2279,6 +2268,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 					      gnu_index_type,
 					      gnu_template_type, NULL_TREE,
 					      NULL_TREE, 0, 0);
+	    /* Mark the field specifically for INSTANTIATE_LOAD_IN_EXPR.  */
+	    DECL_DISCRIMINANT_NUMBER (gnu_lb_field) = integer_minus_one_node;
 	    Sloc_to_locus (Sloc (gnat_entity),
 			   &DECL_SOURCE_LOCATION (gnu_lb_field));
 
@@ -2287,6 +2278,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 					      gnu_index_type,
 					      gnu_template_type, NULL_TREE,
 					      NULL_TREE, 0, 0);
+	    /* Mark the field specifically for INSTANTIATE_LOAD_IN_EXPR.  */
+	    DECL_DISCRIMINANT_NUMBER (gnu_hb_field) = integer_minus_one_node;
 	    Sloc_to_locus (Sloc (gnat_entity),
 			   &DECL_SOURCE_LOCATION (gnu_hb_field));
 
@@ -7694,7 +7687,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   if (Ekind (gnat_field) == E_Discriminant)
     {
       DECL_DISCRIMINANT_NUMBER (gnu_field)
-	= UI_To_gnu (Discriminant_Number (gnat_field), sizetype);
+	= UI_To_gnu (Discriminant_Number (gnat_field), integer_type_node);
       DECL_INVARIANT_P (gnu_field)
 	= No (Discriminant_Default_Value (gnat_field));
       DECL_NONADDRESSABLE_P (gnu_field) = 0;
@@ -8359,7 +8352,7 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
        && !Debug_Flag_Dot_R);
   const bool w_reorder
     = (Convention (gnat_record_type) == Convention_Ada
-       && Warn_On_Questionable_Layout
+       && Get_Warn_On_Questionable_Layout ()
        && !(No_Reordering (gnat_record_type) && GNAT_Mode));
   tree gnu_zero_list = NULL_TREE;
   tree gnu_self_list = NULL_TREE;

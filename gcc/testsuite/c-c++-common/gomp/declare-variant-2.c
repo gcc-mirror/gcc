@@ -149,7 +149,8 @@ void f72 (void);
 void f73 (void);
 #pragma omp declare variant (f1) match(construct={requires})	/* { dg-error "selector 'requires' not allowed for context selector set 'construct'" } */
 void f74 (void);
-#pragma omp declare variant (f1),match(construct={parallel})	/* { dg-error "expected 'match' before ','" } */
+void f75a (void);
+#pragma omp declare variant (f75a),match(construct={parallel})
 void f75 (void);
 #pragma omp declare variant (f1) match(implementation={atomic_default_mem_order("relaxed")})	/* { dg-error "expected identifier before string constant" } */
 void f76 (void);

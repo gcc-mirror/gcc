@@ -1,6 +1,6 @@
 // { dg-do run { target c++17 } }
 
-// Copyright (C) 2016-2022 Free Software Foundation, Inc.
+// Copyright (C) 2016-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,14 +19,14 @@
 
 // [string::compare]
 
-#include <string>
+#include <testsuite_string.h>
 #include <testsuite_hooks.h>
 
 void
 test03()
 {
   std::string_view str1("foobar");
-  std::string str2("foobar");
+  __gnu_test::string str2("foobar");
 
   auto x = str2.compare(str1);
   VERIFY (x == 0);
@@ -52,7 +52,7 @@ test03()
 void
 test04()
 {
-  const std::string str("a");
+  const __gnu_test::string str("a");
   char c = 'a';
   int res = str.compare(0, 1, &c, 1);
   VERIFY ( !res );

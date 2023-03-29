@@ -4,5 +4,5 @@
 
 struct A
 {
-  extern static int i;  // { dg-error "conflicting specifiers" }
+  extern static int i;  // { dg-error "'static' specifier conflicts with 'extern'" }
 };

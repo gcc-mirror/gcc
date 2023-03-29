@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -214,6 +214,9 @@ procedure Gnatbind is
 
          No_Specification_Of_Aspect      => False,
          --  Requires a parameter value, not a count
+
+         No_Task_Hierarchy_Implicit      => False,
+         --  A compiler implementation artifact, not a documented restriction
 
          No_Use_Of_Attribute             => False,
          --  Requires a parameter value, not a count

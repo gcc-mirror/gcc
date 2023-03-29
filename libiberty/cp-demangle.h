@@ -1,5 +1,5 @@
 /* Internal demangler interface for g++ V3 ABI.
-   Copyright (C) 2003-2022 Free Software Foundation, Inc.
+   Copyright (C) 2003-2023 Free Software Foundation, Inc.
    Written by Ian Lance Taylor <ian@wasabisystems.com>.
 
    This file is part of the libiberty library, which is part of GCC.
@@ -180,7 +180,7 @@ d_advance (struct d_info *di, int i)
 extern const struct demangle_operator_info cplus_demangle_operators[];
 #endif
 
-#define D_BUILTIN_TYPE_COUNT (34)
+#define D_BUILTIN_TYPE_COUNT (36)
 
 CP_STATIC_IF_GLIBCPP_V3
 const struct demangle_builtin_type_info

@@ -1,0 +1,148 @@
+# 
+# config-host.in a configure sub script for GNU M2.
+# 
+# Copyright (C) 2005-2023 Free Software Foundation, Inc.
+# Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+# 
+# This file is part of GNU Modula-2.
+# 
+# GNU Modula-2 is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+# 
+# GNU Modula-2 is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+# General Public License for more details.
+# 
+# Under Section 7 of GPL version 3, you are granted additional
+# permissions described in the GCC Runtime Library Exception, version
+# 3.1, as published by the Free Software Foundation.
+# 
+# You should have received a copy of the GNU General Public License and
+# a copy of the GCC Runtime Library Exception along with this program;
+# see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+# <http://www.gnu.org/licenses/>.
+#
+AC_INIT(ASCII.def, 1.9.5, gm2@nongnu.org)
+AC_CONFIG_HEADER(gm2-libs-host.h:gm2-libs-host.h.in)
+
+# Checks for programs.
+
+# Checks for libraries.
+
+# Checks for header files.
+AC_HEADER_STDC
+AC_HEADER_TIME
+AC_HEADER_SYS_WAIT
+AC_CHECK_HEADER([math.h],
+	       [AC_DEFINE([HAVE_MATH_H], [1], [have math.h])])
+
+AC_CHECK_HEADERS([limits.h stddef.h string.h strings.h stdlib.h \
+		  time.h \
+		  fcntl.h unistd.h sys/file.h sys/time.h sys/mman.h \
+		  sys/resource.h sys/param.h sys/times.h sys/stat.h \
+                  sys/wait.h sys/ioctl.h errno.h sys/errno.h \
+		  pwd.h direct.h dirent.h signal.h malloc.h langinfo.h \
+                  pthread.h stdarg.h stdio.h sys/types.h termios.h \
+                  netinet/in.h netdb.h])
+
+# Checks for typedefs, structures, and compiler characteristics.
+
+AC_HEADER_STAT
+AC_STRUCT_TM
+AC_FUNC_ALLOCA
+AC_FUNC_SELECT_ARGTYPES
+
+# Checks for library functions.
+
+AC_CHECK_FUNCS(ctime)
+AC_CHECK_FUNCS(rand)
+AC_CHECK_FUNCS(fstat)
+AC_CHECK_FUNCS(select)
+AC_CHECK_FUNCS(strsignal)
+AC_CHECK_FUNCS(strtod)
+AC_CHECK_FUNCS(strtold)
+AC_CHECK_FUNCS(cfmakeraw)
+
+#
+# library functions (used by gm2-libs and ulm-lib-gm2)
+# the results of this configuration are process by
+# tools-src/createUlmSys in order to produce the runtime system
+# interface.
+#
+AC_CHECK_FUNCS(access)
+AC_CHECK_FUNCS(brk)
+AC_CHECK_FUNCS(close)
+AC_CHECK_FUNCS(creat)
+AC_CHECK_FUNCS(dup)
+AC_CHECK_FUNCS(execve)
+AC_CHECK_FUNCS(exit)
+AC_CHECK_FUNCS(fcntl)
+AC_CHECK_FUNCS(fstat)
+AC_CHECK_FUNCS(getdents)
+AC_CHECK_FUNCS(getgid)
+AC_CHECK_FUNCS(getpid)
+AC_CHECK_FUNCS(gettimeofday)
+AC_CHECK_FUNCS(getuid)
+AC_CHECK_FUNCS(ioctl)
+AC_CHECK_FUNCS(kill)
+AC_CHECK_FUNCS(link)
+AC_CHECK_FUNCS(lseek)
+AC_CHECK_FUNCS(open)
+AC_CHECK_FUNCS(pause)
+AC_CHECK_FUNCS(pipe)
+AC_CHECK_FUNCS(read)
+AC_CHECK_FUNCS(setitimer)
+AC_CHECK_FUNCS(setgid)
+AC_CHECK_FUNCS(setuid)
+AC_CHECK_FUNCS(stat)
+AC_CHECK_FUNCS(times)
+AC_CHECK_FUNCS(unlink)
+AC_CHECK_FUNCS(wait)
+AC_CHECK_FUNCS(write)
+
+
+dnl
+dnl  now check for specific types
+dnl
+
+AC_CHECK_SIZEOF([long])
+
+dnl this routine has been adopted from the GNU emacs20 distrubution
+AC_MSG_CHECKING(for struct timeval)
+AC_TRY_COMPILE([#ifdef TIME_WITH_SYS_TIME
+#include <sys/time.h>
+#include <time.h>
+#else
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#else
+#include <time.h>
+#endif
+#endif], [static struct timeval x; x.tv_sec = x.tv_usec;],
+  [AC_MSG_RESULT(yes)
+   HAVE_TIMEVAL=yes
+   AC_DEFINE([HAVE_TIMEVAL], [1], [struct timeval exists])],
+  [AC_MSG_RESULT(no)
+   HAVE_TIMEVAL=no]
+   AC_DEFINE([HAVE_TIMEVAL], [1], [struct timeval exists]))
+
+
+# AC_CHECK_TYPES(time_t)
+
+
+dnl
+dnl  now check for presence of libraries and functions within libraries.
+dnl
+
+AC_CHECK_LIB(m, exp10, [AC_DEFINE([HAVE_EXP10],[1],[Define to 1 if your system has 'exp10'.])])
+AC_CHECK_LIB(m, exp10f, [AC_DEFINE([HAVE_EXP10F],[1],[Define to 1 if your system has 'exp10f'.])])
+AC_CHECK_LIB(m, exp10l, [AC_DEFINE([HAVE_EXP10L],[1],[Define to 1 if your system has 'exp10l'.])])
+
+AC_CHECK_LIB(m, signbit, [AC_DEFINE([HAVE_SIGNBIT],[1],[Define to 1 if your system has 'signbit'.])])
+AC_CHECK_LIB(m, signbitf, [AC_DEFINE([HAVE_SIGNBITF],[1],[Define to 1 if your system has 'signbitf'.])])
+AC_CHECK_LIB(m, signbitl, [AC_DEFINE([HAVE_SIGNBITL],[1],[Define to 1 if your system has 'signbitl'.])])
+
+AC_OUTPUT

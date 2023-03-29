@@ -1,0 +1,83 @@
+(* FormatStrings.def provides a pseudo printf capability.
+
+Copyright (C) 2005-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE FormatStrings ;
+
+FROM SYSTEM IMPORT BYTE ;
+FROM DynamicStrings IMPORT String ;
+EXPORT QUALIFIED Sprintf0, Sprintf1, Sprintf2, Sprintf3, Sprintf4,
+                 HandleEscape ;
+
+
+(*
+   Sprintf0 - returns a String containing, fmt, after it has had its
+              escape sequences translated.
+*)
+
+PROCEDURE Sprintf0 (fmt: String) : String ;
+
+
+(*
+   Sprintf1 - returns a String containing, fmt, together with
+              encapsulated entity, w. It only formats the
+              first %s or %d with n.
+*)
+
+PROCEDURE Sprintf1 (fmt: String; w: ARRAY OF BYTE) : String ;
+
+
+(*
+   Sprintf2 - returns a string, fmt, which has been formatted.
+*)
+
+PROCEDURE Sprintf2 (fmt: String; w1, w2: ARRAY OF BYTE) : String ;
+
+
+(*
+   Sprintf3 - returns a string, fmt, which has been formatted.
+*)
+
+PROCEDURE Sprintf3 (fmt: String; w1, w2, w3: ARRAY OF BYTE) : String ;
+
+
+(*
+   Sprintf4 - returns a string, fmt, which has been formatted.
+*)
+
+PROCEDURE Sprintf4 (fmt: String;
+                    w1, w2, w3, w4: ARRAY OF BYTE) : String ;
+
+
+(*
+   HandleEscape - translates \a, \b, \e, \f, \n, \r, \x[hex] \[octal]
+                  into their respective ascii codes.  It also converts
+                  \[any] into a single [any] character.
+*)
+
+PROCEDURE HandleEscape (s: String) : String ;
+
+
+END FormatStrings.

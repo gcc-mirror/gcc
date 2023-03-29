@@ -297,10 +297,10 @@ __brick_adjacent_difference(_ForwardIterator __first, _ForwardIterator __last, _
     return std::adjacent_difference(__first, __last, __d_first, __op);
 }
 
-template <class _ForwardIterator1, class _ForwardIterator2, class BinaryOperation>
+template <class _ForwardIterator1, class _ForwardIterator2, class _BinaryOperation>
 _ForwardIterator2
 __brick_adjacent_difference(_ForwardIterator1 __first, _ForwardIterator1 __last, _ForwardIterator2 __d_first,
-                            BinaryOperation __op, /*is_vector=*/std::true_type) noexcept
+			    _BinaryOperation __op, /*is_vector=*/std::true_type) noexcept
 {
     _PSTL_ASSERT(__first != __last);
 

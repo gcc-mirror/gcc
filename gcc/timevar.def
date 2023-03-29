@@ -1,6 +1,6 @@
 /* This file contains the definitions for timing variables used to
    measure run-time performance of the compiler.
-   Copyright (C) 2000-2022 Free Software Foundation, Inc.
+   Copyright (C) 2000-2023 Free Software Foundation, Inc.
    Contributed by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.
@@ -226,6 +226,7 @@ DEFTIMEVAR (TV_TREE_WIDEN_MUL        , "gimple widening/fma detection")
 DEFTIMEVAR (TV_TRANS_MEM             , "transactional memory")
 DEFTIMEVAR (TV_TREE_STRLEN           , "tree strlen optimization")
 DEFTIMEVAR (TV_TREE_MODREF	     , "tree modref")
+DEFTIMEVAR (TV_TREE_ASSUMPTIONS      , "tree assumptions")
 DEFTIMEVAR (TV_CGRAPH_VERIFY         , "callgraph verifier")
 DEFTIMEVAR (TV_DOM_FRONTIERS         , "dominance frontiers")
 DEFTIMEVAR (TV_DOMINANCE             , "dominance computation")

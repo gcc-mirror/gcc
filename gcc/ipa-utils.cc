@@ -1,5 +1,5 @@
 /* Utilities for ipa analysis.
-   Copyright (C) 2005-2022 Free Software Foundation, Inc.
+   Copyright (C) 2005-2023 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
 
 This file is part of GCC.
@@ -35,6 +35,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vrp.h"
 #include "ipa-prop.h"
 #include "ipa-fnsummary.h"
+#include "tree-eh.h"
+#include "gimple-iterator.h"
+#include "ipa-modref-tree.h"
+#include "ipa-modref.h"
+#include "tree-ssa-loop-niter.h"
+#include "calls.h"
+#include "cfgloop.h"
+#include "cfganal.h"
 
 /* Debugging function for postorder and inorder code. NOTE is a string
    that is printed before the nodes are printed.  ORDER is an array of
@@ -780,4 +788,259 @@ recursive_call_p (tree func, tree dest)
     if (!dest_node->semantically_equivalent_p (alias->referring))
       return false;
   return true;
+}
+
+/* Return true if stmt may terminate execution of function.
+   If assume_return_or_eh we can further assume that the function ends
+   either by retrn statement or EH (no trapping or infinite loops).  */
+
+bool
+stmt_may_terminate_function_p (function *fun, gimple *stmt, bool assume_return_or_eh)
+{
+  if (stmt_can_throw_external (fun, stmt))
+    return true;
+  if (assume_return_or_eh)
+    return false;
+  gasm *astmt = dyn_cast <gasm *> (stmt);
+  if (astmt && gimple_asm_volatile_p (astmt))
+    return true;
+  if (gimple_could_trap_p (stmt))
+    return true;
+  if (gcall *call = dyn_cast <gcall *> (stmt))
+    {
+      int flags = gimple_call_flags (call);
+      if (flags & (ECF_PURE | ECF_CONST) && ! (flags & ECF_LOOPING_CONST_OR_PURE))
+	return false;
+      modref_summary *s = get_modref_function_summary (call, NULL);
+      if (s && !s->side_effects)
+	return false;
+      return true;
+    }
+  return false;
+}
+
+/* Return bitmap of all basic blocks whose first statements are known to
+   execute on every invocation of the function.
+
+   If assume_return_or_eh we can further assume that the function ends
+   either by retrn statement or EH (no trapping or infinite loops).
+   This is useful when sumarizing function in passes like ipa-modref.
+ 
+   Seeing assume_return_or_eh to false is used to prove that given
+   statmeent will be executed even if the function gets into infinite
+   loop or trap.  */
+bitmap
+find_always_executed_bbs (function *fun, bool assume_return_or_eh)
+{
+  auto_vec<basic_block, 20> stack;
+  auto_vec<basic_block, 20> terminating_bbs;
+  hash_set<basic_block> visited;
+  hash_set<basic_block> terminating_bbs_set;
+  edge e;
+  edge_iterator ei;
+  int flags = flags_from_decl_or_type (fun->decl);
+  /* PUre and const functions always return.  */
+  assume_return_or_eh |= (flags & (ECF_CONST|ECF_PURE)) && !(flags & ECF_LOOPING_CONST_OR_PURE);
+  if (!assume_return_or_eh)
+    mark_dfs_back_edges (fun);
+
+  /* First walk all BBs reachable from entry stopping on statements that may
+     terminate execution.  Everything past this statement is not going to be executed
+     each invocation.  */
+  stack.safe_push (ENTRY_BLOCK_PTR_FOR_FN (fun));
+  while (!stack.is_empty ())
+    {
+      basic_block bb = stack.pop ();
+      bool found = false, found_exit = false;
+      if (bb->index == EXIT_BLOCK)
+	continue;
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	{
+	  if (e->dest == EXIT_BLOCK_PTR_FOR_FN (fun))
+	    {
+	      found_exit = true;
+	      break;
+	    }
+	  /* Watch for infinite loops.  */
+	  if (!found
+	      && !assume_return_or_eh && (e->flags & EDGE_DFS_BACK))
+	    {
+	      if (!dom_info_available_p (CDI_DOMINATORS))
+		calculate_dominance_info (CDI_DOMINATORS);
+	      /* If this is not a loop latch edge it is an irreducible region.
+		 Assume that it is infinite.
+		 TODO: with C++ forced progression we can still walk the
+		 irreducible region and see if it contains any side effects.
+		 Similarly for loops.  -ffinite-loops does not really imply
+		 this since we allow inlining across -ffinite-loops bondary
+		 and thus it can be used only as a loop flag.  */
+	      if (e->dest->loop_father->header != e->dest
+		  || !dominated_by_p (CDI_DOMINATORS, bb, e->dest))
+		found = true;
+	      else if (!finite_loop_p (e->dest->loop_father))
+		found = true;
+	    }
+	}
+      if (!assume_return_or_eh
+	  && (EDGE_COUNT (bb->succs) == 0 || (bb->flags & BB_IRREDUCIBLE_LOOP)))
+	found = true;
+      for (gimple_stmt_iterator si = gsi_start_nondebug_after_labels_bb (bb);
+	   !gsi_end_p (si) && !found; gsi_next_nondebug (&si))
+	if (stmt_may_terminate_function_p (fun, gsi_stmt (si), assume_return_or_eh))
+	  {
+	    found = true;
+	    break;
+	  }
+      if (found)
+	{
+	  visited.add (EXIT_BLOCK_PTR_FOR_FN (fun));
+	  if (!found_exit)
+	    {
+	      terminating_bbs.safe_push (bb);
+	      terminating_bbs_set.add (bb);
+	    }
+	}
+      else
+	FOR_EACH_EDGE (e, ei, bb->succs)
+	  if (!visited.add (e->dest))
+	    stack.safe_push (e->dest);
+    }
+
+  /* Next walk from exit block and find all articulations in the CFG.
+     Add all terminating basic blocks as "fake" predecessors of the
+     exit block.  */
+
+  bitmap ret = BITMAP_ALLOC (NULL);
+  /* A degenerated case when there is no path to exit.  */
+  if (!visited.contains (EXIT_BLOCK_PTR_FOR_FN (fun)))
+    {
+      bitmap_set_bit (ret,
+		      single_succ_edge
+		        (ENTRY_BLOCK_PTR_FOR_FN (fun))->dest->index);
+      return ret;
+    }
+
+  struct astate
+  {
+    unsigned int dfs_preorder;
+    unsigned int dfs_postorder;
+
+    unsigned int low, high;
+  };
+
+  struct worklist
+  {
+    basic_block bb;
+    astate *cstate;
+  };
+
+  struct obstack state_obstack;
+  gcc_obstack_init (&state_obstack);
+  hash_map<basic_block, astate *> state;
+  auto_vec<worklist, 32> worklist_vec;
+  unsigned int next_dfs_num = 1;
+
+  /* Always executed blocks are blocks that are on every path from entry to exit.
+     We proceed in two steps.  First we do backward DFS walk (so we know that entry
+     is always reached) and record preorder and postorder visiting times.
+
+     In second step we proceed in postorder and for every block A we compute
+     minimal preorder (A.low) and maximal postorder (A.high) of block reachable
+     from the BBs in DFS subtree of A.  If A is always executed there are no
+     edges out of this subtree.  This can be tested by checking that A.low == A.preorder
+     and B.high == A.postorder.
+    
+     This is first step. Do backward DFS walk and record preorder, postorder
+     and predecessor info.  Initialize stack in postorder.  */
+  worklist we = {EXIT_BLOCK_PTR_FOR_FN (fun), NULL};
+  worklist_vec.safe_push (we);
+  while (!worklist_vec.is_empty ())
+    {
+      worklist &w = worklist_vec.last ();
+      basic_block bb = w.bb;
+      astate *cstate = w.cstate;
+
+      if (!cstate)
+	{
+	  astate **slot = &state.get_or_insert (bb);
+
+	  cstate = *slot;
+	  /* Already processed by DFS?  */
+	  if (cstate)
+	    {
+	      worklist_vec.pop ();
+	      continue;
+	    }
+	  /* DFS is visiting BB for first time.  */
+	  *slot = cstate = XOBNEW (&state_obstack, struct astate);
+	  cstate->low = cstate->high = cstate->dfs_preorder = next_dfs_num++;
+	  w.cstate = cstate;
+	  /* Exit block is special; process all fake edges we identified.  */
+	  if (bb == EXIT_BLOCK_PTR_FOR_FN (fun))
+	    for (basic_block bb2 : terminating_bbs)
+	      {
+		worklist we = {bb2, NULL};
+		worklist_vec.safe_push (we);
+	      }
+	  FOR_EACH_EDGE (e, ei, bb->preds)
+	    if (visited.contains (e->src))
+	      {
+		worklist we = {e->src, NULL};
+		worklist_vec.safe_push (we);
+	      }
+	  /* Keep BB on worklist so we process it last time.  */
+	  continue;
+	}
+      /* We are finished with processing reachable BBs, see if we have articulation.  */
+      worklist_vec.pop ();
+      cstate->high = cstate->dfs_postorder = next_dfs_num++;
+      stack.safe_push (bb);
+    }
+  /* This is the final postorder walk.  Determine low and high values and mark
+     always executed blocks.  */
+  for (basic_block bb : stack)
+    {
+      astate *cstate = *state.get (bb);
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+	  astate **cstate2 = state.get (e->src);
+	  /* We skip walking part of CFG reached only after first edge to exit.
+	     No BB reachable from the skipped part is always executed */
+	  if (!cstate2)
+	    {
+	      if (e->src != ENTRY_BLOCK_PTR_FOR_FN (fun))
+		cstate->low = 0;
+	      continue;
+	    }
+	  cstate->low = MIN (cstate->low, (*cstate2)->low);
+	  cstate->high = MAX (cstate->high, (*cstate2)->high);
+	}
+      if (dump_file && (dump_flags & TDF_DETAILS) && bb != EXIT_BLOCK_PTR_FOR_FN (fun))
+	fprintf (dump_file, "BB %i %s preorder %i posorder %i low %i high %i\n",
+		 bb->index, terminating_bbs_set.contains (bb) ? "(terminating)": "",
+		 cstate->dfs_preorder, cstate->dfs_postorder, cstate->low, cstate->high);
+      if (cstate->low == cstate->dfs_preorder && cstate->high == cstate->dfs_postorder
+	  && bb != EXIT_BLOCK_PTR_FOR_FN (fun))
+	bitmap_set_bit (ret, bb->index);
+      if (terminating_bbs_set.contains (bb))
+	cstate->low = 0;
+      else
+	FOR_EACH_EDGE (e, ei, bb->succs)
+	  {
+	    astate **cstate2 = state.get (e->dest);
+	    if (!cstate2)
+	      continue;
+	    cstate->low = MIN (cstate->low, (*cstate2)->low);
+	    cstate->high = MAX (cstate->high, (*cstate2)->high);
+	  }
+      }
+  obstack_free (&state_obstack, NULL);
+  if (dump_file)
+    {
+      fprintf (dump_file, "Always executed bbbs %s: ",
+	       assume_return_or_eh ? "(assuming return or EH)": "");
+      bitmap_print (dump_file, ret, "", "\n");
+    }
+
+  return ret;
 }

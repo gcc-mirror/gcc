@@ -9,4 +9,4 @@ foo ()
  return i;
 }
 
-constexpr int i = foo ();
+constexpr int i = foo ();	// { dg-error "foo" }

@@ -133,8 +133,8 @@ contains
     do i = 1, 2
       !$omp parallel do	! 5 constructs in OpenMP context, arch is 2^6, isa 2^7.
       do j = 1, 2
-	  call f13 ()	! { dg-final { scan-tree-dump-times "f09 \\\(\\\);" 1 "gimple" { target { { i?86-*-* x86_64-*-* } && lp64 } } } }
-			! { dg-final { scan-tree-dump-times "f11 \\\(\\\);" 1 "gimple" { target { { i?86-*-* x86_64-*-* } && { ! lp64 } } } } }
+          call f13 ()   ! { dg-final { scan-tree-dump-times "f09 \\\(\\\);" 1 "gimple" { target { { i?86-*-* x86_64-*-* } && { ! ilp32 } } } } }
+                        ! { dg-final { scan-tree-dump-times "f11 \\\(\\\);" 1 "gimple" { target { { i?86-*-* x86_64-*-* } && { ilp32 } } } } }
 			! { dg-final { scan-tree-dump-times "f10 \\\(\\\);" 1 "gimple" { target { ! { i?86-*-* x86_64-*-* } } } } }
 	  call f17 ()	! { dg-final { scan-tree-dump-times "f14 \\\(\\\);" 1 "gimple" } }
 	  call f21 ()	! { dg-final { scan-tree-dump-times "f19 \\\(\\\);" 1 "gimple" } }

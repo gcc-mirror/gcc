@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Sun 68000/68020 version.
-   Copyright (C) 2000-2022 Free Software Foundation, Inc.
+   Copyright (C) 2000-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -84,6 +84,7 @@ extern int emit_move_sequence (rtx *, machine_mode, rtx);
 extern bool m68k_movem_pattern_p (rtx, rtx, HOST_WIDE_INT, bool);
 extern const char *m68k_output_movem (rtx *, rtx, HOST_WIDE_INT, bool);
 extern bool m68k_epilogue_uses (int);
+extern void m68k_final_prescan_insn (rtx_insn *, rtx *, int);
 
 /* Functions from m68k.cc used in constraints.md.  */
 extern rtx m68k_unwrap_symbol (rtx, bool);

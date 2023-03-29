@@ -1,7 +1,7 @@
 /**
  * Semantic analysis for D types.
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/typesem.d, _typesem.d)
@@ -35,6 +35,7 @@ import dmd.dsymbol;
 import dmd.dsymbolsem;
 import dmd.dtemplate;
 import dmd.errors;
+import dmd.errorsink;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
@@ -46,6 +47,7 @@ import dmd.imphint;
 import dmd.importc;
 import dmd.init;
 import dmd.initsem;
+import dmd.location;
 import dmd.visitor;
 import dmd.mtype;
 import dmd.objc;
@@ -117,9 +119,9 @@ private void resolveTupleIndex(const ref Loc loc, Scope* sc, Dsymbol s, out Expr
         return;
     }
     const(uinteger_t) d = eindex.toUInteger();
-    if (d >= tup.objects.dim)
+    if (d >= tup.objects.length)
     {
-        .error(loc, "tuple index `%llu` out of bounds `[0 .. %llu]`", d, cast(ulong)tup.objects.dim);
+        .error(loc, "tuple index `%llu` out of bounds `[0 .. %llu]`", d, cast(ulong)tup.objects.length);
         pt = Type.terror;
         return;
     }
@@ -194,7 +196,7 @@ private void resolveHelper(TypeQualified mt, const ref Loc loc, Scope* sc, Dsymb
     }
     s = s.toAlias();
     //printf("\t2: s = '%s' %p, kind = '%s'\n",s.toChars(), s, s.kind());
-    for (size_t i = 0; i < mt.idents.dim; i++)
+    for (size_t i = 0; i < mt.idents.length; i++)
     {
         RootObject id = mt.idents[i];
         switch (id.dyncast()) with (DYNCAST)
@@ -234,7 +236,7 @@ private void resolveHelper(TypeQualified mt, const ref Loc loc, Scope* sc, Dsymb
                 .error(loc, "`%s` is not visible from module `%s`", sm.toPrettyChars(), sc._module.toChars());
                 sm = null;
             }
-            // Same check as in Expression.semanticY(DotIdExp)
+            // Same check as in dotIdSemanticProp(DotIdExp)
             else if (sm.isPackage() && checkAccess(sc, sm.isPackage()))
             {
                 // @@@DEPRECATED_2.106@@@
@@ -284,54 +286,10 @@ private void resolveHelper(TypeQualified mt, const ref Loc loc, Scope* sc, Dsymb
                     return helper3();
             }
         }
+
         if (!sm)
-        {
-            if (!t)
-            {
-                if (s.isDeclaration()) // var, func, or tuple declaration?
-                {
-                    t = s.isDeclaration().type;
-                    if (!t && s.isTupleDeclaration()) // expression tuple?
-                        return helper3();
-                }
-                else if (s.isTemplateInstance() ||
-                         s.isImport() || s.isPackage() || s.isModule())
-                {
-                    return helper3();
-                }
-            }
-            if (t)
-            {
-                sm = t.toDsymbol(sc);
-                if (sm && id.dyncast() == DYNCAST.identifier)
-                {
-                    sm = sm.search(loc, cast(Identifier)id, IgnorePrivateImports);
-                    if (!sm)
-                        return helper3();
-                }
-                else
-                    return helper3();
-            }
-            else
-            {
-                if (id.dyncast() == DYNCAST.dsymbol)
-                {
-                    // searchX already handles errors for template instances
-                    assert(global.errors);
-                }
-                else
-                {
-                    assert(id.dyncast() == DYNCAST.identifier);
-                    sm = s.search_correct(cast(Identifier)id);
-                    if (sm)
-                        error(loc, "identifier `%s` of `%s` is not defined, did you mean %s `%s`?", id.toChars(), mt.toChars(), sm.kind(), sm.toChars());
-                    else
-                        error(loc, "identifier `%s` of `%s` is not defined", id.toChars(), mt.toChars());
-                }
-                pe = ErrorExp.get();
-                return;
-            }
-        }
+            return helper3();
+
         s = sm.toAlias();
     }
 
@@ -552,9 +510,9 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                 return error();
 
             uinteger_t d = mtype.dim.toUInteger();
-            if (d >= tup.objects.dim)
+            if (d >= tup.objects.length)
             {
-                .error(loc, "tuple index `%llu` out of bounds `[0 .. %llu]`", cast(ulong)d, cast(ulong)tup.objects.dim);
+                .error(loc, "tuple index `%llu` out of bounds `[0 .. %llu]`", cast(ulong)d, cast(ulong)tup.objects.length);
                 return error();
             }
 
@@ -579,6 +537,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
         {
             auto errors = global.errors;
             mtype.dim = semanticLength(sc, tbn, mtype.dim);
+            mtype.dim = mtype.dim.implicitCastTo(sc, Type.tsize_t);
             if (errors != global.errors)
                 return error();
 
@@ -635,7 +594,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                  * run on them for the size, since they may be forward referenced.
                  */
                 bool overflow = false;
-                if (mulu(tbn.size(loc), d2, overflow) >= target.maxStaticDataSize || overflow)
+                if (mulu(tbn.size(loc), d2, overflow) > target.maxStaticDataSize || overflow)
                     return overflowError();
             }
         }
@@ -647,9 +606,9 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                 assert(mtype.dim);
                 TypeTuple tt = tbn.isTypeTuple();
                 uinteger_t d = mtype.dim.toUInteger();
-                if (d >= tt.arguments.dim)
+                if (d >= tt.arguments.length)
                 {
-                    .error(loc, "tuple index `%llu` out of bounds `[0 .. %llu]`", cast(ulong)d, cast(ulong)tt.arguments.dim);
+                    .error(loc, "tuple index `%llu` out of bounds `[0 .. %llu]`", cast(ulong)d, cast(ulong)tt.arguments.length);
                     return error();
                 }
                 Type telem = (*tt.arguments)[cast(size_t)d].type;
@@ -875,11 +834,11 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                 fhash = search_function(ClassDeclaration.object, Id.tohash).isFuncDeclaration();
             assert(fcmp && feq && fhash);
 
-            if (feq.vtblIndex < cd.vtbl.dim && cd.vtbl[feq.vtblIndex] == feq)
+            if (feq.vtblIndex < cd.vtbl.length && cd.vtbl[feq.vtblIndex] == feq)
             {
                 version (all)
                 {
-                    if (fcmp.vtblIndex < cd.vtbl.dim && cd.vtbl[fcmp.vtblIndex] != fcmp)
+                    if (fcmp.vtblIndex < cd.vtbl.length && cd.vtbl[fcmp.vtblIndex] != fcmp)
                     {
                         const(char)* s = (mtype.index.toBasetype().ty != Tclass) ? "bottom of " : "";
                         .error(loc, "%sAA key type `%s` now requires equality rather than comparison", s, cd.toChars());
@@ -993,7 +952,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
         if (mtype.parameterList.parameters)
         {
             tf.parameterList.parameters = mtype.parameterList.parameters.copy();
-            for (size_t i = 0; i < mtype.parameterList.parameters.dim; i++)
+            for (size_t i = 0; i < mtype.parameterList.parameters.length; i++)
             {
                 Parameter p = cast(Parameter)mem.xmalloc(__traits(classInstanceSize, Parameter));
                 memcpy(cast(void*)p, cast(void*)(*mtype.parameterList.parameters)[i], __traits(classInstanceSize, Parameter));
@@ -1180,13 +1139,13 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                      * the elements of TypeTuple::arguments to avoid unintended
                      * sharing of Parameter object among other functions.
                      */
-                    if (tt.arguments && tt.arguments.dim)
+                    if (tt.arguments && tt.arguments.length)
                     {
                         /* Propagate additional storage class from tuple parameters to their
                          * element-parameters.
                          * Make a copy, as original may be referenced elsewhere.
                          */
-                        size_t tdim = tt.arguments.dim;
+                        size_t tdim = tt.arguments.length;
                         auto newparams = new Parameters(tdim);
                         for (size_t j = 0; j < tdim; j++)
                         {
@@ -1284,20 +1243,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
 
                 if (fparam.storageClass & STC.return_)
                 {
-                    if (fparam.isReference())
-                    {
-                        // Disabled for the moment awaiting improvement to allow return by ref
-                        // to be transformed into return by scope.
-                        if (0 && !tf.isref)
-                        {
-                            auto stc = fparam.storageClass & (STC.ref_ | STC.out_);
-                            .error(loc, "parameter `%s` is `return %s` but function does not return by `ref`",
-                                fparam.ident ? fparam.ident.toChars() : "",
-                                stcToString(stc).ptr);
-                            errors = true;
-                        }
-                    }
-                    else
+                    if (!fparam.isReference())
                     {
                         if (!(fparam.storageClass & STC.scope_))
                             fparam.storageClass |= STC.scope_ | STC.scopeinferred; // 'return' implies 'scope'
@@ -1430,7 +1376,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                  */
                 if (eparam.storageClass & STC.auto_)
                 {
-                    Expression farg = mtype.fargs && eidx < mtype.fargs.dim ?
+                    Expression farg = mtype.fargs && eidx < mtype.fargs.length ?
                         (*mtype.fargs)[eidx] : eparam.defaultArg;
                     if (farg && (eparam.storageClass & STC.ref_))
                     {
@@ -1749,10 +1695,10 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
 
         uinteger_t i1 = mtype.lwr.toUInteger();
         uinteger_t i2 = mtype.upr.toUInteger();
-        if (!(i1 <= i2 && i2 <= tt.arguments.dim))
+        if (!(i1 <= i2 && i2 <= tt.arguments.length))
         {
             .error(loc, "slice `[%llu..%llu]` is out of range of `[0..%llu]`",
-                cast(ulong)i1, cast(ulong)i2, cast(ulong)tt.arguments.dim);
+                cast(ulong)i1, cast(ulong)i2, cast(ulong)tt.arguments.length);
             return error();
         }
 
@@ -2089,10 +2035,12 @@ extern (C++) Type merge(Type type)
  *  loc = the location where the property is encountered
  *  ident = the identifier of the property
  *  flag = if flag & 1, don't report "not a property" error and just return NULL.
+ *  src = expression for type `t` or null.
  * Returns:
  *      expression representing the property, or null if not a property and (flag & 1)
  */
-Expression getProperty(Type t, Scope* scope_, const ref Loc loc, Identifier ident, int flag)
+Expression getProperty(Type t, Scope* scope_, const ref Loc loc, Identifier ident, int flag,
+    Expression src = null)
 {
     Expression visitType(Type mt)
     {
@@ -2169,7 +2117,10 @@ Expression getProperty(Type t, Scope* scope_, const ref Loc loc, Identifier iden
                         error(loc, "no property `%s` for type `%s`, perhaps `import %.*s;` is needed?", ident.toChars(), mt.toChars(), cast(int)n.length, n.ptr);
                 else
                 {
-                    error(loc, "no property `%s` for type `%s`", ident.toChars(), mt.toPrettyChars(true));
+                    if (src)
+                        error(loc, "no property `%s` for `%s` of type `%s`", ident.toChars(), src.toChars(), mt.toPrettyChars(true));
+                    else
+                        error(loc, "no property `%s` for type `%s`", ident.toChars(), mt.toPrettyChars(true));
                     if (auto dsym = mt.toDsymbol(scope_))
                         if (auto sym = dsym.isAggregateDeclaration())
                         {
@@ -2465,7 +2416,7 @@ Expression getProperty(Type t, Scope* scope_, const ref Loc loc, Identifier iden
         }
         if (ident == Id.length)
         {
-            e = new IntegerExp(loc, mt.arguments.dim, Type.tsize_t);
+            e = new IntegerExp(loc, mt.arguments.length, Type.tsize_t);
         }
         else if (ident == Id._init)
         {
@@ -2602,9 +2553,9 @@ void resolve(Type mt, const ref Loc loc, Scope* sc, out Expression pe, out Type 
                     return returnError();
 
                 const d = mt.dim.toUInteger();
-                if (d >= tup.objects.dim)
+                if (d >= tup.objects.length)
                 {
-                    error(loc, "tuple index `%llu` out of bounds `[0 .. %llu]`", d, cast(ulong) tup.objects.dim);
+                    error(loc, "tuple index `%llu` out of bounds `[0 .. %llu]`", d, cast(ulong) tup.objects.length);
                     return returnError();
                 }
 
@@ -2885,7 +2836,7 @@ void resolve(Type mt, const ref Loc loc, Scope* sc, out Expression pe, out Type 
             error(loc, "forward reference to `%s`", mt.toChars());
             goto Lerr;
         }
-        if (mt.idents.dim == 0)
+        if (mt.idents.length == 0)
         {
             returnType(t.addMod(mt.mod));
         }
@@ -2925,7 +2876,7 @@ void resolve(Type mt, const ref Loc loc, Scope* sc, out Expression pe, out Type 
                 return returnError();
             }
         }
-        if (mt.idents.dim == 0)
+        if (mt.idents.length == 0)
         {
             return returnType(t.addMod(mt.mod));
         }
@@ -2975,13 +2926,13 @@ void resolve(Type mt, const ref Loc loc, Scope* sc, out Expression pe, out Type 
                 mt.upr = mt.upr.ctfeInterpret();
                 const i1 = mt.lwr.toUInteger();
                 const i2 = mt.upr.toUInteger();
-                if (!(i1 <= i2 && i2 <= td.objects.dim))
+                if (!(i1 <= i2 && i2 <= td.objects.length))
                 {
-                    error(loc, "slice `[%llu..%llu]` is out of range of [0..%llu]", i1, i2, cast(ulong) td.objects.dim);
+                    error(loc, "slice `[%llu..%llu]` is out of range of [0..%llu]", i1, i2, cast(ulong) td.objects.length);
                     return returnError();
                 }
 
-                if (i1 == 0 && i2 == td.objects.dim)
+                if (i1 == 0 && i2 == td.objects.length)
                 {
                     return returnSymbol(td);
                 }
@@ -2990,7 +2941,7 @@ void resolve(Type mt, const ref Loc loc, Scope* sc, out Expression pe, out Type 
                  * is a slice [i1..i2] out of the old one.
                  */
                 auto objects = new Objects(cast(size_t)(i2 - i1));
-                for (size_t i = 0; i < objects.dim; i++)
+                for (size_t i = 0; i < objects.length; i++)
                 {
                     (*objects)[i] = (*td.objects)[cast(size_t)i1 + i];
                 }
@@ -3084,8 +3035,8 @@ void resolve(Type mt, const ref Loc loc, Scope* sc, out Expression pe, out Type 
                 break;
             case EXP.tuple:
                 TupleExp te = e.isTupleExp();
-                Objects* elems = new Objects(te.exps.dim);
-                foreach (i; 0 .. elems.dim)
+                Objects* elems = new Objects(te.exps.length);
+                foreach (i; 0 .. elems.length)
                 {
                     auto src = (*te.exps)[i];
                     switch (src.op)
@@ -3673,7 +3624,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
                  *  template opDispatch(name) if (isValid!name) { ... }
                  */
                 uint errors = gagError ? global.startGagging() : 0;
-                e = dti.semanticY(sc, 0);
+                e = dti.dotTemplateSemanticProp(sc, 0);
                 if (gagError && global.endGagging(errors))
                     e = null;
                 return returnExp(e);
@@ -3691,7 +3642,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
                 auto die = new DotIdExp(e.loc, alias_e, ident);
 
                 auto errors = gagError ? 0 : global.startGagging();
-                auto exp = die.semanticY(sc, gagError);
+                auto exp = die.dotIdSemanticProp(sc, gagError);
                 if (!gagError)
                 {
                     global.endGagging(errors);
@@ -3745,8 +3696,8 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
                 ev = extractSideEffect(sc, "__tup", e0, ev);
 
             auto exps = new Expressions();
-            exps.reserve(mt.sym.fields.dim);
-            for (size_t i = 0; i < mt.sym.fields.dim; i++)
+            exps.reserve(mt.sym.fields.length);
+            for (size_t i = 0; i < mt.sym.fields.length; i++)
             {
                 VarDeclaration v = mt.sym.fields[i];
                 Expression ex;
@@ -3899,8 +3850,15 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
             {
                 /* Rewrite as:
                  *  this.d
+                 *
+                 * only if the scope in which we are
+                 * has a `this` that matches the type
+                 * of the lhs of the dot expression.
+                 *
+                 * https://issues.dlang.org/show_bug.cgi?id=23617
                  */
-                if (hasThis(sc))
+                auto fd = hasThis(sc);
+                if (fd && fd.isThis() == mt.sym)
                 {
                     e = new DotVarExp(e.loc, new ThisExp(e.loc), d);
                     return e.expressionSemantic(sc);
@@ -3947,7 +3905,14 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
         Dsymbol s = mt.sym.search(e.loc, ident);
         if (!s)
         {
-            if (ident == Id.max || ident == Id.min || ident == Id._init)
+            if (ident == Id._init)
+            {
+                return mt.getProperty(sc, e.loc, ident, flag & 1);
+            }
+
+            /* Allow special enums to not need a member list
+             */
+            if ((ident == Id.max || ident == Id.min) && (mt.sym.members || !mt.sym.isSpecial()))
             {
                 return mt.getProperty(sc, e.loc, ident, flag & 1);
             }
@@ -4003,8 +3968,8 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
                 ev = extractSideEffect(sc, "__tup", e0, ev);
 
             auto exps = new Expressions();
-            exps.reserve(mt.sym.fields.dim);
-            for (size_t i = 0; i < mt.sym.fields.dim; i++)
+            exps.reserve(mt.sym.fields.length);
+            for (size_t i = 0; i < mt.sym.fields.length; i++)
             {
                 VarDeclaration v = mt.sym.fields[i];
                 // Don't include hidden 'this' pointer
@@ -4211,6 +4176,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
             }
             if (v.type.ty == Terror)
             {
+                e.error("type of variable `%s` has errors", v.toPrettyChars);
                 return ErrorExp.get();
             }
 
@@ -4457,7 +4423,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
 
 
 /************************
- * Get the the default initialization expression for a type.
+ * Get the default initialization expression for a type.
  * Params:
  *  mt = the type for which the init expression is returned
  *  loc = the location where the expression needs to be evaluated
@@ -4577,8 +4543,8 @@ extern (C++) Expression defaultInit(Type mt, const ref Loc loc, const bool isCfi
         {
             printf("TypeTuple::defaultInit() '%s'\n", mt.toChars());
         }
-        auto exps = new Expressions(mt.arguments.dim);
-        for (size_t i = 0; i < mt.arguments.dim; i++)
+        auto exps = new Expressions(mt.arguments.length);
+        for (size_t i = 0; i < mt.arguments.length; i++)
         {
             Parameter p = (*mt.arguments)[i];
             assert(p.type);
@@ -4643,7 +4609,7 @@ private:
 Expression typeToExpressionHelper(TypeQualified t, Expression e, size_t i = 0)
 {
     //printf("toExpressionHelper(e = %s %s)\n", EXPtoString(e.op).ptr, e.toChars());
-    foreach (id; t.idents[i .. t.idents.dim])
+    foreach (id; t.idents[i .. t.idents.length])
     {
         //printf("\t[%d] e: '%s', id: '%s'\n", i, e.toChars(), id.toChars());
 
@@ -4758,7 +4724,7 @@ Type stripDefaultArgs(Type t)
                 if (ps)
                 {
                     // Replace params with a copy we can modify
-                    Parameters* nparams = new Parameters(parameters.dim);
+                    Parameters* nparams = new Parameters(parameters.length);
 
                     foreach (j, ref np; *nparams)
                     {
@@ -4868,13 +4834,6 @@ Expression getMaxMinValue(EnumDeclaration ed, const ref Loc loc, Identifier id)
         return errorReturn();
     if (!ed.members)
     {
-        if (ed.isSpecial())
-        {
-            /* Allow these special enums to not need a member list
-             */
-            return ed.memtype.getProperty(ed._scope, loc, id, 0);
-        }
-
         ed.error(loc, "is opaque and has no `.%s`", id.toChars());
         return errorReturn();
     }
@@ -4886,7 +4845,7 @@ Expression getMaxMinValue(EnumDeclaration ed, const ref Loc loc, Identifier id)
     }
 
     bool first = true;
-    for (size_t i = 0; i < ed.members.dim; i++)
+    for (size_t i = 0; i < ed.members.length; i++)
     {
         EnumMember em = (*ed.members)[i].isEnumMember();
         if (!em)
@@ -4960,7 +4919,7 @@ RootObject compileTypeMixin(TypeMixin tm, Loc loc, Scope* sc)
     const len = buf.length;
     buf.writeByte(0);
     const str = buf.extractSlice()[0 .. len];
-    scope p = new Parser!ASTCodegen(loc, sc._module, str, false);
+    scope p = new Parser!ASTCodegen(loc, sc._module, str, false, global.errorSink);
     p.nextToken();
     //printf("p.loc.linnum = %d\n", p.loc.linnum);
 

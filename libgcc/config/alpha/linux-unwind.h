@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for Alpha Linux.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -67,17 +67,17 @@ alpha_fallback_frame_state (struct _Unwind_Context *context,
   fs->regs.cfa_offset = new_cfa - (long) context->cfa;
   for (i = 0; i < 30; ++i)
     {
-      fs->regs.reg[i].how = REG_SAVED_OFFSET;
+      fs->regs.how[i] = REG_SAVED_OFFSET;
       fs->regs.reg[i].loc.offset
 	= (long) &sc->sc_regs[i] - new_cfa;
     }
   for (i = 0; i < 31; ++i)
     {
-      fs->regs.reg[i+32].how = REG_SAVED_OFFSET;
+      fs->regs.how[i+32] = REG_SAVED_OFFSET;
       fs->regs.reg[i+32].loc.offset
 	= (long) &sc->sc_fpregs[i] - new_cfa;
     }
-  fs->regs.reg[64].how = REG_SAVED_OFFSET;
+  fs->regs.how[64] = REG_SAVED_OFFSET;
   fs->regs.reg[64].loc.offset = (long)&sc->sc_pc - new_cfa;
   fs->retaddr_column = 64;
   fs->signal_frame = 1;

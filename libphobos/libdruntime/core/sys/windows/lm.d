@@ -8,7 +8,6 @@
  */
 module core.sys.windows.lm;
 version (Windows):
-@system:
 
 /* removed - now supporting only Win2k up
 version (WindowsVista) {

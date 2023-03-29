@@ -1,5 +1,5 @@
 ;; Predicate definitions for LoongArch target.
-;; Copyright (C) 2021-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2023 Free Software Foundation, Inc.
 ;; Contributed by Loongson Ltd.
 ;; Based on MIPS target for GNU compiler.
 ;;
@@ -90,14 +90,6 @@
 (define_predicate "reg_or_1_operand"
   (ior (match_operand 0 "const_1_operand")
        (match_operand 0 "register_operand")))
-
-(define_predicate "const_0_to_3_operand"
-  (and (match_code "const_int")
-       (match_test "IN_RANGE (INTVAL (op), 0, 3)")))
-
-(define_predicate "const_0_to_7_operand"
-  (and (match_code "const_int")
-       (match_test "IN_RANGE (INTVAL (op), 0, 7)")))
 
 (define_predicate "lu52i_mask_operand"
   (and (match_code "const_int")
@@ -226,7 +218,7 @@
   switch (GET_CODE (op))
     {
     case CONST_INT:
-      return !splittable_const_int_operand (op, mode);
+      return true;
 
     case CONST:
     case SYMBOL_REF:

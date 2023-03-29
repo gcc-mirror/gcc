@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++23" }
 // { dg-do compile { target c++23 } }
 
-// Copyright (C) 2021-2022 Free Software Foundation, Inc.
+// Copyright (C) 2021-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,8 +20,11 @@
 
 #include <version>
 
-#ifndef __cpp_lib_string_contains
-# error "Feature-test macro for contains missing in <string_view>"
-#elif __cpp_lib_string_contains != 202011L
-# error "Feature-test macro for contains has wrong value in <string_view>"
+#if __STDC_HOSTED__
+// This FTM is omitted since <string> is not freestanding.
+# ifndef __cpp_lib_string_contains
+#  error "Feature-test macro for contains missing in <string_view>"
+# elif __cpp_lib_string_contains != 202011L
+#  error "Feature-test macro for contains has wrong value in <string_view>"
+# endif
 #endif

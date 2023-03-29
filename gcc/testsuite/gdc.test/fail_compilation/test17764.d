@@ -1,7 +1,7 @@
 /* REQUIRED_ARGS: -preview=dip1000
  * TEST_OUTPUT:
 ---
-fail_compilation/test17764.d(109): Error: scope variable `c` assigned to non-scope `global`
+fail_compilation/test17764.d(109): Error: scope variable `c` assigned to global variable `global`
 ---
  */
 

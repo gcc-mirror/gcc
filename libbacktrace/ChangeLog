@@ -1,3 +1,139 @@
+2023-03-28  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_zstd_read_fse): Call elf_fetch_bits after reading
+	bits, not before.  Add unlikely for error case.
+	(elf_zstd_offset_table): Regenerate.
+	(elf_zstd_read_huff): Clear 13 entries in weight_mark, not 12.
+	(elf_zstd_read_literals): For a single stream adjust by
+	total_streams_size, not compressed_size.
+
+2023-01-20  Ian Lance Taylor  <iant@golang.org>
+
+	* dwarf.c (struct function_addrs): Change low and high fields to
+	uintptr_t.
+	(struct unit_addrs): Likewise.
+	(resolve_addr_index): Change address parameter to uintptr_t*.
+	(add_unit_addr): Change lowpc and highpc parameters to uintptr_t.
+	(add_function_range): Likewise.
+	(struct pcrange): Change lowpc and highpc fields to uintptr_t.
+	(add_low_high_range): Change add_range lowpc and highpc parameters
+	to uintptr_t.
+	(add_ranges_from_ranges): Likewise.
+	(add_ranges_from_rnglists): Likewise.
+	(add_low_high_range): Chnage lowpc and highpc variables to
+	uintpr_t.
+	(add_ranges_from_rnglists): Change some local variables to
+	uintptr_t.
+	(add_ranges_from_ranges): Change base parameter to uintptr_t.
+	(add_ranges_from_rnglists): Likewise.
+	(read_function_entry): Likewise.
+	(resolve_addr_index): Add explicit casts to uintptr_t.
+	(update_pcrange): Likewise.
+	(add_ranges_from_ranges): Likewise.
+	(add_ranges_from_rnglists): Likewise.
+	(read_function_entry): Likewise.
+
+2023-01-17  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Regenerate.
+
+2023-01-06  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/108297
+	* configure.ac: Test whether linker supports --build-id.
+	* Makefile.am: Only run --build-id tests if supported.
+	* configure, Makefile.in: Regenerate.
+
+2022-12-17  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_fetch_backward_init): New static function.
+	(ZSTD_TABLE_SIZE): Use huffman scratch space size rather than
+	literal size.
+	(ZSTD_TABLE_WORK_LIT_SIZE): Don't define.
+	(elf_zstd_read_huff): Use elf_fetch_backward_init.
+	(elf_zstd_read_literals): New static function.
+	(ZSTD_LIT_RAW, ZSTD_LIT_RLE, ZSTD_LIT_HUFF): Don't define.
+	(struct elf_zstd_literals): Don't define.
+	(elf_zstd_literal_output): Remove static function.
+	(elf_zstd_decompress): Use elf_fetch_backward_init and
+	elf_zstd_read_literals.  Rewrite literal copying.<
+
+2022-12-10  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (ZSTD_TABLE_*): Use elf_zstd_fse_baseline_entry.
+	(ZSTD_ENCODE_BASELINE_BITS): Define.
+	(ZSTD_DECODE_BASELINE, ZSTD_DECODE_BASEBITS): Define.
+	(elf_zstd_literal_length_base): New static const array.
+	(elf_zstd_match_length_base): Likewise.
+	(struct elf_zstd_fse_baseline_entry): Define.
+	(elf_zstd_make_literal_baseline_fse): New static function.
+	(elf_zstd_make_offset_baseline_fse): Likewise.
+	(elf_zstd_make_match_baseline_fse): Likewise.
+	(print_table, main): Use elf_zstd_fse_baseline_entry.
+	(elf_zstd_lit_table, elf_zstd_match_table): Likewise.
+	(elf_zstd_offset_table): Likewise.
+	(struct elf_zstd_seq_decode): Likewise.  Remove use_rle and rle
+	fields.
+	(elf_zstd_unpack_seq_decode): Use elf_zstd_fse_baseline_entry,
+	taking a conversion function.  Convert RLE to FSE.
+	(elf_zstd_literal_length_baseline): Remove.
+	(elf_zstd_literal_length_bits): Remove.
+	(elf_zstd_match_length_baseline): Remove.
+	(elf_zstd_match_length_bits): Remove.
+	(elf_zstd_decompress): Use elf_zstd_fse_baseline_entry.  Rewrite
+	and simplify main loop.
+
+2022-12-08  Ian Lance Taylor  <iant@golang.org>
+
+	* configure.ac: Check for zstd library and
+	--compress-debug-sections=zstd linker option.
+	* Makefile.am (zstdtest_*): New targets.
+	(zstdtest_alloc_*, ctestzstd_*): New targets.
+	(BUILDTESTS): Add zstdtest, zstdtest_alloc, ctestzstd as
+	appropriate.
+	* elf.c (ELFCOMPRESS_ZSTD): Define.
+	(elf_fetch_bits): Rename from elf_zlib_fetch.  Update uses.
+	(elf_fetch_bits_backward): New static function.
+	(ZLIB_HUFFMAN_*): Rename from HUFFMAN_*.  Update uses.
+	(ZLIB_TABLE_*): Rename from ZDEBUG_TABLE_*.  Update uses.
+	(ZSTD_TABLE_*): Define.
+	(struct elf_zstd_fse_entry): Define.
+	(elf_zstd_read_fse): New static function.
+	(elf_zstd_build_fse): Likewise.
+	(lit): Define if BACKTRACE_GENERATE_ZSTD_FSE_TABLES.
+	(match, offset, next, print_table, main): Likewise.
+	(elf_zstd_lit_table): New static const array.
+	(elf_zstd_match_table, elf_zstd_offset_table): Likewise.
+	(elf_zstd_read_huff): New static function.
+	(struct elf_zstd_seq_decode): Define.
+	(elf_zstd_unpack_seq_decode): New static function.
+	(ZSTD_LIT_*): Define.
+	(struct elf_zstd_literals): Define.
+	(elf_zstd_literal_output): New static function.
+	(ZSTD_LITERAL_LENGTH_BASELINE_OFFSET): Define.
+	(elf_zstd_literal_length_baseline): New static const array.
+	(elf_zstd_literal_length_bits): Likewise.
+	(ZSTD_MATCH_LENGTH_BASELINE_OFFSET): Define.
+	(elf_zstd_match_length_baseline): New static const array.
+	(elf_zstd_match_length_bits): Likewise.
+	(elf_zstd_decompress): New static function.
+	(ZDEBUG_TABLE_SIZE): New definition.
+	(elf_uncompress_chdr): Support ELF_COMPRESS_ZSTD.
+	(backtrace_uncompress_zstd): New function.
+	(elf_add): Use ZLIB_TABLE_SIZE for zlib-gnu sections.
+	* internal.h (backtrace_uncompress_zstd): Declare.
+	* zstdtest.c: New file.
+	* configure, config.h.in, Makefile.in: Regenerate.
+
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* configure: Regenerate.
+
 2022-07-08  Ian Lance Taylor  <iant@golang.org>
 
 	* configure.ac: Check for sys/link.h.  Use either link.h or
@@ -1838,7 +1974,7 @@
 
 	* Initial implementation.
 
-Copyright (C) 2012-2022 Free Software Foundation, Inc.
+Copyright (C) 2012-2023 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

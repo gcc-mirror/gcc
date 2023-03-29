@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fno-analyzer-suppress-followups" } */
+
 #include "analyzer-decls.h"
 
 typedef __SIZE_TYPE__ size_t;
@@ -37,7 +39,7 @@ void test_1 ()
       __analyzer_eval (q[8] == 1); /* { dg-line eval } */
     
       /* { dg-warning "UNKNOWN" "warning" { target *-*-* } eval } */
-      /* { dg-warning "overread" "warning" { target *-*-* } eval } */
+      /* { dg-warning "heap-based buffer over-read" "warning" { target *-*-* } eval } */
       /* { dg-warning "use of uninitialized value" "warning" { target *-*-* } eval } */
     }
 

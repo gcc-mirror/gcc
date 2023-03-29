@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for GNU Hurd: x86.
-   Copyright (C) 2020-2022 Free Software Foundation, Inc.
+   Copyright (C) 2020-2023 Free Software Foundation, Inc.
    Contributed by Samuel Thibault <samuel.thibault@gnu.org>
 
 This file is part of GCC.
@@ -29,6 +29,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef inhibit_libc
 
 #include <signal.h>
+
+#ifdef __x86_64__
+
+/*
+ * TODO: support for 64 bits needs to be implemented.
+ */
+
+#else /* ifdef __x86_64__  */
 
 #define MD_FALLBACK_FRAME_STATE_FOR x86_gnu_fallback_frame_state
 
@@ -123,19 +131,21 @@ x86_gnu_fallback_frame_state
   fs->regs.cfa_reg = 4;
   fs->regs.cfa_offset = usp - (unsigned long) context->cfa;
 
-  fs->regs.reg[0].how = REG_SAVED_OFFSET;
-  fs->regs.reg[1].how = REG_SAVED_OFFSET;
-  fs->regs.reg[2].how = REG_SAVED_OFFSET;
-  fs->regs.reg[3].how = REG_SAVED_OFFSET;
-  fs->regs.reg[5].how = REG_SAVED_OFFSET;
-  fs->regs.reg[6].how = REG_SAVED_OFFSET;
-  fs->regs.reg[7].how = REG_SAVED_OFFSET;
-  fs->regs.reg[8].how = REG_SAVED_OFFSET;
+  fs->regs.how[0] = REG_SAVED_OFFSET;
+  fs->regs.how[1] = REG_SAVED_OFFSET;
+  fs->regs.how[2] = REG_SAVED_OFFSET;
+  fs->regs.how[3] = REG_SAVED_OFFSET;
+  fs->regs.how[5] = REG_SAVED_OFFSET;
+  fs->regs.how[6] = REG_SAVED_OFFSET;
+  fs->regs.how[7] = REG_SAVED_OFFSET;
+  fs->regs.how[8] = REG_SAVED_OFFSET;
 
   fs->retaddr_column = 8;
   fs->signal_frame = 1;
 
   return _URC_NO_REASON;
 }
+
+#endif /* ifdef __x86_64__  */
 
 #endif /* ifndef inhibit_libc */

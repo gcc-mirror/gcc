@@ -71,10 +71,6 @@ $(BOOKTABLE ,
         $(TD Read/write data in JSON format.)
     )
     $(TR
-        $(TDNW $(MREF std,xml))
-        $(TD Read/write data in XML format.)
-    )
-    $(TR
         $(TDNW $(MREF std,zip))
         $(TD Read/write data in the ZIP archive format.)
     )

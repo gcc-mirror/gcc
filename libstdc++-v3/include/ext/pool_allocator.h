@@ -1,6 +1,6 @@
 // Allocators -*- C++ -*-
 
-// Copyright (C) 2001-2022 Free Software Foundation, Inc.
+// Copyright (C) 2001-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,6 +41,8 @@
 
 #ifndef _POOL_ALLOCATOR_H
 #define _POOL_ALLOCATOR_H 1
+
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
 
 #include <bits/c++config.h>
 #include <cstdlib>

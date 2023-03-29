@@ -1,5 +1,5 @@
 /* Data and Control Flow Analysis for Trees.
-   Copyright (C) 2001-2022 Free Software Foundation, Inc.
+   Copyright (C) 2001-2023 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -63,8 +63,8 @@ extern gphi *get_virtual_phi (basic_block);
 extern gimple *first_stmt (basic_block);
 extern gimple *last_stmt (basic_block);
 extern gimple *last_and_only_stmt (basic_block);
-extern void verify_gimple_in_seq (gimple_seq);
-extern void verify_gimple_in_cfg (struct function *, bool);
+extern bool verify_gimple_in_seq (gimple_seq, bool = true);
+extern bool verify_gimple_in_cfg (struct function *, bool, bool = true);
 extern tree gimple_block_label (basic_block);
 extern void add_phi_args_after_copy_bb (basic_block);
 extern void add_phi_args_after_copy (basic_block *, unsigned, edge);

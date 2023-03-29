@@ -1,5 +1,5 @@
 /* Finding reachable regions and values.
-   Copyright (C) 2020-2022 Free Software Foundation, Inc.
+   Copyright (C) 2020-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -36,23 +37,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "fold-const.h"
 #include "tree-pretty-print.h"
-#include "tristate.h"
 #include "bitmap.h"
-#include "selftest.h"
-#include "function.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "ordered-hash-map.h"
 #include "options.h"
-#include "cgraph.h"
-#include "cfg.h"
-#include "digraph.h"
-#include "json.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/region-model-reachability.h"
+#include "diagnostic.h"
+#include "tree-diagnostic.h"
 
 #if ENABLE_ANALYZER
 

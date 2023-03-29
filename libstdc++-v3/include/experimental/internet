@@ -1,6 +1,6 @@
 // <experimental/internet> -*- C++ -*-
 
-// Copyright (C) 2015-2022 Free Software Foundation, Inc.
+// Copyright (C) 2015-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,6 +32,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // experimental is currently omitted
+
 #if __cplusplus >= 201402L
 
 #include <experimental/netfwd>
@@ -42,6 +44,7 @@
 #include <sstream>
 #include <cstdint>
 #include <experimental/string_view>
+#include <bits/charconv.h>
 #ifdef _GLIBCXX_HAVE_UNISTD_H
 # include <unistd.h>
 #endif
@@ -195,7 +198,12 @@ namespace ip
 
     constexpr
     address_v4(const bytes_type& __b)
-    : _M_addr((__b[0] << 24) | (__b[1] << 16) | (__b[2] << 8) | __b[3])
+#if __has_builtin(__builtin_bit_cast)
+    : _M_addr(__builtin_bit_cast(uint_type, __b))
+#else
+    : _M_addr(_S_hton_32((__b[0] << 24) | (__b[1] << 16)
+			   | (__b[2] << 8) | __b[3]))
+#endif
     { }
 
     explicit constexpr
@@ -224,12 +232,17 @@ namespace ip
     constexpr bytes_type
     to_bytes() const noexcept
     {
+#if __has_builtin(__builtin_bit_cast)
+      return __builtin_bit_cast(bytes_type, _M_addr);
+#else
+      auto __host = to_uint();
       return bytes_type{
-	  (_M_addr >> 24) & 0xFF,
-	  (_M_addr >> 16) & 0xFF,
-	  (_M_addr >> 8) & 0xFF,
-	  _M_addr & 0xFF
+	(__host >> 24) & 0xFF,
+	(__host >> 16) & 0xFF,
+	(__host >> 8) & 0xFF,
+	__host & 0xFF
       };
+#endif
     }
 
     constexpr uint_type
@@ -239,17 +252,28 @@ namespace ip
       __string_with<_Allocator>
       to_string(const _Allocator& __a = _Allocator()) const
       {
-#ifdef _GLIBCXX_HAVE_ARPA_INET_H
+	auto __write = [__addr = to_uint()](char* __p, size_t __n) {
+	  auto __to_chars = [](char* __p, uint8_t __v) {
+	    unsigned __n = __v >= 100u ? 3 : __v >= 10u ? 2 : 1;
+	    std::__detail::__to_chars_10_impl(__p, __n, __v);
+	    return __p + __n;
+	  };
+	  const auto __begin = __p;
+	  __p = __to_chars(__p, uint8_t(__addr >> 24));
+	  for (int __i = 2; __i >= 0; __i--) {
+	    *__p++ = '.';
+	    __p = __to_chars(__p, uint8_t(__addr >> (__i * 8)));
+	  }
+	  return __p - __begin;
+	};
 	__string_with<_Allocator> __str(__a);
-	__str.resize(INET_ADDRSTRLEN);
-	if (inet_ntop(AF_INET, &_M_addr, &__str.front(), __str.size()))
-	  __str.erase(__str.find('\0'));
-	else
-	  __str.resize(0);
-	return __str;
+#if __cpp_lib_string_resize_and_overwrite
+	__str.resize_and_overwrite(15, __write);
 #else
-	std::__throw_system_error((int)__unsupported_err());
+	__str.resize(15);
+	__str.resize(__write(&__str.front(), 15));
 #endif
+	return __str;
       }
 
     // static members:
@@ -1195,10 +1219,10 @@ namespace ip
 
   /// @}
 
-  bool
+  constexpr bool
   operator==(const network_v4& __a, const network_v4& __b) noexcept;
 
-  bool
+  constexpr bool
   operator==(const network_v6& __a, const network_v6& __b) noexcept;
 
 
@@ -1239,10 +1263,10 @@ namespace ip
     constexpr address_v4
     netmask() const noexcept
     {
-      address_v4::uint_type __val = address_v4::broadcast().to_uint();
-      __val >>= (32 - _M_prefix_len);
-      __val <<= (32 - _M_prefix_len);
-      return address_v4{__val};
+      address_v4 __m;
+      if (_M_prefix_len)
+	__m = address_v4(0xFFFFFFFFu << (32 - _M_prefix_len));
+      return __m;
     }
 
     constexpr address_v4
@@ -1251,7 +1275,7 @@ namespace ip
 
     constexpr address_v4
     broadcast() const noexcept
-    { return address_v4{_M_addr.to_uint() | ~netmask().to_uint()}; }
+    { return address_v4{_M_addr.to_uint() | (0xFFFFFFFFu >> _M_prefix_len)}; }
 
     address_v4_range
     hosts() const noexcept
@@ -1282,8 +1306,23 @@ namespace ip
       __string_with<_Allocator>
       to_string(const _Allocator& __a = _Allocator()) const
       {
-	return address().to_string(__a) + '/'
-	  + std::to_string(prefix_length());
+	auto __str = address().to_string(__a);
+	const unsigned __addrlen = __str.length();
+	const unsigned __preflen = prefix_length() >= 10 ? 2 : 1;
+	auto __write = [=](char* __p, size_t __n) {
+	  __p[__addrlen] = '/';
+	  std::__detail::__to_chars_10_impl(__p + __addrlen + 1, __preflen,
+					    (unsigned char)prefix_length());
+	  return __n;
+	};
+	const unsigned __len = __addrlen + 1 + __preflen;
+#if __cpp_lib_string_resize_and_overwrite
+	__str.resize_and_overwrite(__len, __write);
+#else
+	__str.resize(__len);
+	__write(&__str.front(), __len);
+#endif
+	return __str;
       }
 
   private:
@@ -1355,14 +1394,14 @@ namespace ip
    * @{
    */
 
-  inline bool
+  constexpr bool
   operator==(const network_v4& __a, const network_v4& __b) noexcept
   {
     return __a.address() == __b.address()
       && __a.prefix_length() == __b.prefix_length();
   }
 
-  inline bool
+  constexpr bool
   operator!=(const network_v4& __a, const network_v4& __b) noexcept
   { return !(__a == __b); }
 
@@ -1372,14 +1411,14 @@ namespace ip
    * @{
    */
 
-  inline bool
+  constexpr bool
   operator==(const network_v6& __a, const network_v6& __b) noexcept
   {
     return __a.address() == __b.address()
       && __a.prefix_length() == __b.prefix_length();
   }
 
-  inline bool
+  constexpr bool
   operator!=(const network_v6& __a, const network_v6& __b) noexcept
   { return !(__a == __b); }
 
@@ -1587,19 +1626,19 @@ namespace ip
    */
 
   template<typename _InternetProtocol>
-    inline bool
+    constexpr bool
     operator==(const basic_endpoint<_InternetProtocol>& __a,
 	       const basic_endpoint<_InternetProtocol>& __b)
     { return __a.address() == __b.address() && __a.port() == __b.port(); }
 
   template<typename _InternetProtocol>
-    inline bool
+    constexpr bool
     operator!=(const basic_endpoint<_InternetProtocol>& __a,
 	       const basic_endpoint<_InternetProtocol>& __b)
     { return !(__a == __b); }
 
   template<typename _InternetProtocol>
-    inline bool
+    constexpr bool
     operator< (const basic_endpoint<_InternetProtocol>& __a,
 	       const basic_endpoint<_InternetProtocol>& __b)
     {
@@ -1608,19 +1647,19 @@ namespace ip
     }
 
   template<typename _InternetProtocol>
-    inline bool
+    constexpr bool
     operator> (const basic_endpoint<_InternetProtocol>& __a,
 	       const basic_endpoint<_InternetProtocol>& __b)
     { return __b < __a; }
 
   template<typename _InternetProtocol>
-    inline bool
+    constexpr bool
     operator<=(const basic_endpoint<_InternetProtocol>& __a,
 	       const basic_endpoint<_InternetProtocol>& __b)
     { return !(__b < __a); }
 
   template<typename _InternetProtocol>
-    inline bool
+    constexpr bool
     operator>=(const basic_endpoint<_InternetProtocol>& __a,
 	       const basic_endpoint<_InternetProtocol>& __b)
     { return !(__a < __b); }
@@ -2137,7 +2176,7 @@ namespace ip
     using resolver = basic_resolver<tcp>;	 ///< A TCP resolver.
     using socket = basic_stream_socket<tcp>;	 ///< A TCP socket.
     using acceptor = basic_socket_acceptor<tcp>; ///< A TCP acceptor.
-    using iostream = basic_socket_iostream<tcp>; /// A TCP iostream.
+    using iostream = basic_socket_iostream<tcp>; ///< A TCP iostream.
 
 #ifdef TCP_NODELAY
     /// Disable coalescing of small segments (i.e. the Nagle algorithm).

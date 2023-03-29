@@ -205,10 +205,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       template<typename _Tp>
-	using __param_t
-	  = __conditional_t<is_trivially_copyable_v<_Tp>
-			      && sizeof(_Tp) <= sizeof(long),
-			    _Tp, _Tp&&>;
+	using __param_t = __conditional_t<is_scalar_v<_Tp>, _Tp, _Tp&&>;
 
       using _Invoker = _Res (*)(_Mofunc_base _GLIBCXX_MOF_CV*,
 				__param_t<_ArgTypes>...) noexcept(_Noex);

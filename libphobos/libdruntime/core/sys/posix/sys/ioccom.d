@@ -18,7 +18,6 @@ else version (WatchOS)
 version (Posix):
 
 nothrow @nogc:
-@system:
 
 version (Darwin)
 {

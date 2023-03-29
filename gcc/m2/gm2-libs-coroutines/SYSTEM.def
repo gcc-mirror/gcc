@@ -1,0 +1,278 @@
+(* SYSTEM.def provides access to COROUTINE primitives and underlying system.
+
+Copyright (C) 2002-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE SYSTEM ;
+
+(* This module is designed to be used on a native operating system
+   rather than an embedded system as it implements the coroutine
+   primitives TRANSFER, IOTRANSFER and
+   NEWPROCESS through the GNU Pthread library.  *)
+
+FROM COROUTINES IMPORT PROTECTION ;
+
+EXPORT QUALIFIED (* the following are built into the compiler: *)
+                 ADDRESS, WORD, BYTE, CSIZE_T, CSSIZE_T, (* @SYSTEM_DATATYPES@ *)
+                 ADR, TSIZE, ROTATE, SHIFT, THROW, TBITSIZE,
+                 (* SIZE is exported depending upon -fpim2 and
+                    -fpedantic.  *)
+                 (* The rest are implemented in SYSTEM.mod.  *)
+                 PROCESS, TRANSFER, NEWPROCESS, IOTRANSFER,
+                 LISTEN,
+                 ListenLoop, TurnInterrupts,
+                 (* Internal GM2 compiler functions.  *)
+                 ShiftVal, ShiftLeft, ShiftRight,
+                 RotateVal, RotateLeft, RotateRight ;
+
+
+TYPE
+   PROCESS  = RECORD
+                 context: INTEGER ;
+              END ;
+
+(* Note that the full list of system and sized datatypes include:
+   LOC, WORD, BYTE, ADDRESS,
+
+   (and the non language standard target types)
+
+   INTEGER8, INTEGER16, INTEGER32, INTEGER64,
+   CARDINAL8, CARDINAL16, CARDINAL32, CARDINAL64,
+   WORD16, WORD32, WORD64, BITSET8, BITSET16,
+   BITSET32, REAL32, REAL64, REAL128, COMPLEX32,
+   COMPLEX64, COMPLEX128, CSIZE_T, CSSIZE_T.
+
+   Also note that the non-standard data types will
+   move into another module in the future.  *)
+
+(* The following types are supported on this target:
+   @SYSTEM_TYPES@
+*)
+
+
+(*
+   TRANSFER - save the current volatile environment into, p1.
+              Restore the volatile environment from, p2.
+*)
+
+PROCEDURE TRANSFER (VAR p1: PROCESS; p2: PROCESS) ;
+
+
+(*
+   NEWPROCESS - p is a parameterless procedure, a, is the origin of
+                the workspace used for the process stack and containing
+                the volatile environment of the process.  StackSize, is
+                the maximum size of the stack in bytes which can be used
+                by this process.  new, is the new process.
+*)
+
+PROCEDURE NEWPROCESS (p: PROC; a: ADDRESS; StackSize: CARDINAL; VAR new: PROCESS) ;
+
+
+(*
+   IOTRANSFER - saves the current volatile environment into, First,
+                and restores volatile environment, Second.
+                When an interrupt, InterruptNo, is encountered then
+                the reverse takes place.  (The then current volatile
+                environment is shelved onto Second and First is resumed).
+
+                NOTE: that upon interrupt the Second might not be the
+                      same process as that before the original call to
+                      IOTRANSFER.
+*)
+
+PROCEDURE IOTRANSFER (VAR First, Second: PROCESS; InterruptNo: CARDINAL) ;
+
+
+(*
+   LISTEN - briefly listen for any interrupts.
+*)
+
+PROCEDURE LISTEN ;
+
+
+(*
+   ListenLoop - should be called instead of users writing:
+
+                LOOP
+                   LISTEN
+                END
+
+                It performs the same function but yields
+                control back to the underlying operating system
+                via a call to pth_select.
+                It also checks for deadlock.
+                This function returns when an interrupt occurs ie
+                a file descriptor becomes ready or a time event
+                expires.  See the module RTint.
+*)
+
+PROCEDURE ListenLoop ;
+
+
+(*
+   TurnInterrupts - switches processor interrupts to the protection
+                    level, to.  It returns the old value.
+*)
+
+PROCEDURE TurnInterrupts (to: PROTECTION) : PROTECTION ;
+
+
+(*
+   all the functions below are declared internally to gm2
+   ====================================================
+
+PROCEDURE ADR (VAR v: <anytype>): ADDRESS;
+  (* Returns the address of variable v. *)
+
+PROCEDURE SIZE (v: <type>) : ZType;
+  (* Returns the number of BYTES used to store a v of
+     any specified <type>.  Only available if -fpim2 is used.
+  *)
+
+PROCEDURE TSIZE (<type>) : CARDINAL;
+  (* Returns the number of BYTES used to store a value of the
+     specified <type>.
+  *)
+
+PROCEDURE ROTATE (val: <a set type>;
+                  num: INTEGER): <type of first parameter>;
+  (* Returns a bit sequence obtained from val by rotating up or down
+     (left or right) by the absolute value of num.  The direction is
+     down if the sign of num is negative, otherwise the direction is up.
+  *)
+
+PROCEDURE SHIFT (val: <a set type>;
+                 num: INTEGER): <type of first parameter>;
+  (* Returns a bit sequence obtained from val by shifting up or down
+     (left or right) by the absolute value of num, introducing
+     zeros as necessary.  The direction is down if the sign of
+     num is negative, otherwise the direction is up.
+  *)
+
+PROCEDURE THROW (i: INTEGER) <* noreturn *> ;
+  (*
+     THROW is a GNU extension and was not part of the PIM or ISO
+     standards.  It throws an exception which will be caught by the EXCEPT
+     block (assuming it exists).  This is a compiler builtin function which
+     interfaces to the GCC exception handling runtime system.
+     GCC uses the term throw, hence the naming distinction between
+     the GCC builtin and the Modula-2 runtime library procedure Raise.
+     The later library procedure Raise will call SYSTEM.THROW after
+     performing various housekeeping activities.
+  *)
+
+PROCEDURE TBITSIZE (<type>) : CARDINAL ;
+  (* Returns the minimum number of bits necessary to represent
+     <type>.  This procedure function is only useful for determining
+     the number of bits used for any type field within a packed RECORD.
+     It is not particularly useful elsewhere since <type> might be
+     optimized for speed, for example a BOOLEAN could occupy a WORD.
+  *)
+*)
+
+(* The following procedures are invoked by GNU Modula-2 to
+   shift non word sized set types.  They are not strictly part
+   of the core PIM Modula-2, however they are used
+   to implement the SHIFT procedure defined above,
+   which are in turn used by the Logitech compatible libraries.
+
+   Users will access these procedures by using the procedure
+   SHIFT above and GNU Modula-2 will map SHIFT onto one of
+   the following procedures.
+*)
+
+(*
+   ShiftVal - is a runtime procedure whose job is to implement
+              the SHIFT procedure of ISO SYSTEM. GNU Modula-2 will
+              inline a SHIFT of a single WORD sized set and will
+              only call this routine for larger sets.
+*)
+
+PROCEDURE ShiftVal (VAR s, d: ARRAY OF BITSET;
+                    SetSizeInBits: CARDINAL;
+                    ShiftCount: INTEGER) ;
+
+
+(*
+   ShiftLeft - performs the shift left for a multi word set.
+               This procedure might be called by the back end of
+               GNU Modula-2 depending whether amount is known at
+               compile time.
+*)
+
+PROCEDURE ShiftLeft (VAR s, d: ARRAY OF BITSET;
+                     SetSizeInBits: CARDINAL;
+                     ShiftCount: CARDINAL) ;
+
+(*
+   ShiftRight - performs the shift left for a multi word set.
+                This procedure might be called by the back end of
+                GNU Modula-2 depending whether amount is known at
+                compile time.
+*)
+
+PROCEDURE ShiftRight (VAR s, d: ARRAY OF BITSET;
+                     SetSizeInBits: CARDINAL;
+                     ShiftCount: CARDINAL) ;
+
+
+(*
+   RotateVal - is a runtime procedure whose job is to implement
+               the ROTATE procedure of ISO SYSTEM.  GNU Modula-2 will
+               inline a ROTATE of a single WORD (or less)
+               sized set and will only call this routine for
+               larger sets.
+*)
+
+PROCEDURE RotateVal (VAR s, d: ARRAY OF BITSET;
+                     SetSizeInBits: CARDINAL;
+                     RotateCount: INTEGER) ;
+
+
+(*
+   RotateLeft - performs the rotate left for a multi word set.
+                This procedure might be called by the back end of
+                GNU Modula-2 depending whether amount is known
+                at compile time.
+*)
+
+PROCEDURE RotateLeft (VAR s, d: ARRAY OF BITSET;
+                      SetSizeInBits: CARDINAL;
+                      RotateCount: CARDINAL) ;
+
+
+(*
+   RotateRight - performs the rotate right for a multi word set.
+                 This procedure might be called by the back end of
+                 GNU Modula-2 depending whether amount is known at
+                 compile time.
+*)
+
+PROCEDURE RotateRight (VAR s, d: ARRAY OF BITSET;
+                       SetSizeInBits: CARDINAL;
+                       RotateCount: CARDINAL) ;
+
+
+END SYSTEM.

@@ -8,7 +8,6 @@
  */
 module core.sys.windows.lmaccess;
 version (Windows):
-@system:
 pragma(lib, "netapi32");
 
 /**

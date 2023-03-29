@@ -1,4 +1,4 @@
-# Copyright (C) 2008-2022 Free Software Foundation, Inc.
+# Copyright (C) 2008-2023 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -213,4 +213,16 @@ GCC_12.0.0 {
   __truncsfhf2
   __trunctfhf2
   __truncxfhf2
+}
+
+%inherit GCC_13.0.0 GCC_12.0.0
+GCC_13.0.0 {
+  __extendbfsf2
+  __floattibf
+  __floatuntibf
+  __truncdfbf2
+  __truncsfbf2
+  __trunctfbf2
+  __truncxfbf2
+  __trunchfbf2
 }

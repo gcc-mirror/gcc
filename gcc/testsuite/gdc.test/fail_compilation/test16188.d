@@ -1,7 +1,7 @@
 /* REQUIRED_ARGS: -preview=bitfields
  * TEST_OUTPUT:
 ---
-fail_compilation/test16188.d(101): Error: no property `name` for type `test16188.Where`
+fail_compilation/test16188.d(101): Error: no property `name` for `Where()` of type `test16188.Where`
 fail_compilation/test16188.d(101):        potentially malformed `opDispatch`. Use an explicit instantiation to get a better error message
 ---
  */

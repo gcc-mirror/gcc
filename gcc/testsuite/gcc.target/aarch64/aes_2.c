@@ -1,6 +1,6 @@
 
 /* { dg-do compile } */
-/* { dg-options "-O3 -march=armv8-a+crypto" } */
+/* { dg-options "-O3 -march=armv8-a+aes" } */
 
 #include "arm_neon.h"
 
@@ -76,4 +76,6 @@ test7 (uint8x16_t a, uint8x16_t b)
   return result;
 }
 /* { dg-final { scan-assembler-not "mov" } } */
+/* { dg-final { scan-assembler "aesd\tv" } } */
+/* { dg-final { scan-assembler "aese\tv" } } */
 

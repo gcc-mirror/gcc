@@ -1,7 +1,7 @@
 /* Threads compatibility routines for libgcc2 and libobjc.  */
 /* Compile this one with gcc.  */
 
-/* Copyright (C) 1999-2022 Free Software Foundation, Inc.
+/* Copyright (C) 1999-2023 Free Software Foundation, Inc.
    Contributed by Mumit Khan <khan@xraylith.wisc.edu>.
 
 This file is part of GCC.
@@ -28,18 +28,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef GCC_GTHR_WIN32_H
 #define GCC_GTHR_WIN32_H
 
-/* Make sure CONST_CAST2 (origin in system.h) is declared.  */
-#ifndef CONST_CAST2
-#define CONST_CAST2(TOTYPE,FROMTYPE,X) ((__extension__(union {FROMTYPE _q; TOTYPE _nq;})(X))._nq)
-#endif
+/* So we can test Windows version numbers.  */
+#include <stdlib.h>
 
-/* Windows32 threads specific definitions. The windows32 threading model
-   does not map well into pthread-inspired gcc's threading model, and so
-   there are caveats one needs to be aware of.
+/* The Windows threading model does not map well into the POSIX inspired
+   GCC threading model, so there are caveats one needs to be aware of.
 
    1. The destructor supplied to __gthread_key_create is ignored for
-      generic x86-win32 ports. This will certainly cause memory leaks
-      due to unreclaimed eh contexts (sizeof (eh_context) is at least
+      generic Windows ports.  This will certainly cause memory leaks
+      due to unreclaimed EH contexts (sizeof (eh_context) is at least
       24 bytes for x86 currently).
 
       This memory leak may be significant for long-running applications
@@ -50,29 +47,41 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
       linked in if -mthreads option is specified, that runs the dtors in
       the reverse order of registration when each thread exits. If
       -mthreads option is not given, a stub is linked in instead of the
-      DLL, which results in memory leak. Other x86-win32 ports can use
+      DLL, which results in memory leak.  Other Windows ports can use
       the same technique of course to avoid the leak.
 
    2. The error codes returned are non-POSIX like, and cast into ints.
       This may cause incorrect error return due to truncation values on
       hw where sizeof (DWORD) > sizeof (int).
 
-   3. We are currently using a special mutex instead of the Critical
-      Sections, since Win9x does not support TryEnterCriticalSection
-      (while NT does).
+   3. POSIX-like condition variables are supported, but only on Vista and
+      Server 2008 or later versions.
 
-   The basic framework should work well enough. In the long term, GCC
-   needs to use Structured Exception Handling on Windows32.  */
+   4. Timed lock primitives are not supported.  */
 
 #define __GTHREADS 1
 
-#include <errno.h>
-#ifdef __MINGW32__
-#include <_mingw.h>
+/* Condition variables are supported on Vista and Server 2008 or later.  */
+#if _WIN32_WINNT >= 0x0600
+#define __GTHREAD_HAS_COND 1
+#define __GTHREADS_CXX0X 1
 #endif
 
-#ifndef __UNUSED_PARAM
-#define __UNUSED_PARAM(x) x
+#if _GTHREAD_USE_MUTEX_TIMEDLOCK
+#error Timed lock primitives are not supported on Windows targets
+#endif
+
+/* Make sure CONST_CAST2 (origin in system.h) is declared.  */
+#ifndef CONST_CAST2
+#ifdef __cplusplus
+#define CONST_CAST2(TOTYPE,FROMTYPE,X) (const_cast<TOTYPE> (X))
+#else
+#define CONST_CAST2(TOTYPE,FROMTYPE,X) ((__extension__(union {FROMTYPE _q; TOTYPE _nq;})(X))._nq)
+#endif
+#endif
+
+#ifndef ATTRIBUTE_UNUSED
+#define ATTRIBUTE_UNUSED __attribute__ ((__unused__))
 #endif
 
 #ifdef _LIBOBJC
@@ -82,12 +91,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef __OBJC__
 #define __OBJC__
 #endif
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-/* Now undef the windows BOOL.  */
+/* Now undef the windows BOOL and CC_NONE */
 #undef BOOL
+#undef CC_NONE
 
 /* Key structure for maintaining thread specific storage */
-static DWORD	__gthread_objc_data_tls = (DWORD) -1;
+static DWORD __gthread_objc_data_tls = TLS_OUT_OF_INDEXES;
 
 /* Backend initialization functions */
 
@@ -96,7 +107,7 @@ int
 __gthread_objc_init_thread_system (void)
 {
   /* Initialize the thread storage key.  */
-  if ((__gthread_objc_data_tls = TlsAlloc ()) != (DWORD) -1)
+  if ((__gthread_objc_data_tls = TlsAlloc ()) != TLS_OUT_OF_INDEXES)
     return 0;
   else
     return -1;
@@ -106,7 +117,7 @@ __gthread_objc_init_thread_system (void)
 int
 __gthread_objc_close_thread_system (void)
 {
-  if (__gthread_objc_data_tls != (DWORD) -1)
+  if (__gthread_objc_data_tls != TLS_OUT_OF_INDEXES)
     TlsFree (__gthread_objc_data_tls);
   return 0;
 }
@@ -222,15 +233,9 @@ __gthread_objc_thread_set_data (void *value)
 void *
 __gthread_objc_thread_get_data (void)
 {
-  DWORD lasterror;
-  void *ptr;
-
-  lasterror = GetLastError ();
-
-  ptr = TlsGetValue (__gthread_objc_data_tls);          /* Return thread data.  */
-
+  DWORD lasterror = GetLastError ();
+  void * ptr = TlsGetValue (__gthread_objc_data_tls);
   SetLastError (lasterror);
-
   return ptr;
 }
 
@@ -294,7 +299,7 @@ __gthread_objc_mutex_unlock (objc_mutex_t mutex)
 
 /* Allocate a condition.  */
 int
-__gthread_objc_condition_allocate (objc_condition_t __UNUSED_PARAM(condition))
+__gthread_objc_condition_allocate (objc_condition_t condition ATTRIBUTE_UNUSED)
 {
   /* Unimplemented.  */
   return -1;
@@ -302,7 +307,7 @@ __gthread_objc_condition_allocate (objc_condition_t __UNUSED_PARAM(condition))
 
 /* Deallocate a condition.  */
 int
-__gthread_objc_condition_deallocate (objc_condition_t __UNUSED_PARAM(condition))
+__gthread_objc_condition_deallocate (objc_condition_t condition ATTRIBUTE_UNUSED)
 {
   /* Unimplemented.  */
   return -1;
@@ -310,8 +315,8 @@ __gthread_objc_condition_deallocate (objc_condition_t __UNUSED_PARAM(condition))
 
 /* Wait on the condition */
 int
-__gthread_objc_condition_wait (objc_condition_t __UNUSED_PARAM(condition),
-			       objc_mutex_t __UNUSED_PARAM(mutex))
+__gthread_objc_condition_wait (objc_condition_t condition ATTRIBUTE_UNUSED,
+			       objc_mutex_t mutex ATTRIBUTE_UNUSED)
 {
   /* Unimplemented.  */
   return -1;
@@ -319,7 +324,7 @@ __gthread_objc_condition_wait (objc_condition_t __UNUSED_PARAM(condition),
 
 /* Wake up all threads waiting on this condition.  */
 int
-__gthread_objc_condition_broadcast (objc_condition_t __UNUSED_PARAM(condition))
+__gthread_objc_condition_broadcast (objc_condition_t condition ATTRIBUTE_UNUSED)
 {
   /* Unimplemented.  */
   return -1;
@@ -327,7 +332,7 @@ __gthread_objc_condition_broadcast (objc_condition_t __UNUSED_PARAM(condition))
 
 /* Wake up one thread waiting on this condition.  */
 int
-__gthread_objc_condition_signal (objc_condition_t __UNUSED_PARAM(condition))
+__gthread_objc_condition_signal (objc_condition_t condition ATTRIBUTE_UNUSED)
 {
   /* Unimplemented.  */
   return -1;
@@ -335,35 +340,54 @@ __gthread_objc_condition_signal (objc_condition_t __UNUSED_PARAM(condition))
 
 #else /* _LIBOBJC */
 
+/* For struct timespec.  Do not include <sys/time.h> here since Gnulib provides
+   its own version which drags the Win32 API definitions.  */
+#include <sys/timeb.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef unsigned long __gthread_key_t;
+typedef unsigned int __gthr_win32_DWORD;
+typedef void *__gthr_win32_HANDLE;
 
 typedef struct {
-  int done;
-  long started;
-} __gthread_once_t;
+  void *DebugInfo;
+  int LockCount;
+  int RecursionCount;
+  __gthr_win32_HANDLE OwningThread;
+  __gthr_win32_HANDLE LockSemaphore;
+  void *SpinCount;
+} __gthr_win32_CRITICAL_SECTION;
 
 typedef struct {
-  long counter;
-  void *sema;
-} __gthread_mutex_t;
+  void *Ptr;
+} __gthr_win32_CONDITION_VARIABLE;
 
-typedef struct {
-  long counter;
-  long depth;
-  unsigned long owner;
-  void *sema;
-} __gthread_recursive_mutex_t;
+typedef __gthr_win32_HANDLE __gthread_t;
+typedef __gthr_win32_DWORD __gthread_key_t;
+typedef struct { int done; long started; } __gthread_once_t;
+typedef __gthr_win32_CRITICAL_SECTION __gthread_mutex_t;
+typedef __gthr_win32_CRITICAL_SECTION __gthread_recursive_mutex_t;
+#if __GTHREAD_HAS_COND
+typedef __gthr_win32_CONDITION_VARIABLE __gthread_cond_t;
+#endif
+typedef struct timespec __gthread_time_t;
 
 #define __GTHREAD_ONCE_INIT {0, -1}
 #define __GTHREAD_MUTEX_INIT_FUNCTION __gthread_mutex_init_function
-#define __GTHREAD_MUTEX_INIT_DEFAULT {-1, 0}
 #define __GTHREAD_RECURSIVE_MUTEX_INIT_FUNCTION \
   __gthread_recursive_mutex_init_function
-#define __GTHREAD_RECURSIVE_MUTEX_INIT_DEFAULT {-1, 0, 0, 0}
+#define __GTHREAD_COND_INIT_FUNCTION __gthread_cond_init_function
+#define __GTHREAD_TIME_INIT {0, 0}
+
+// Libstdc++ std::basic_filebuf needs the old definition of __gthread_mutex_t
+// for layout purposes, but doesn't actually use it.
+typedef struct {
+  long __unused1;
+  void *__unused2;
+} __gthr_win32_legacy_mutex_t;
+#define __GTHREAD_LEGACY_MUTEX_T __gthr_win32_legacy_mutex_t
 
 #if defined (_WIN32) && !defined(__CYGWIN__)
 #define MINGW32_SUPPORTS_MT_EH 1
@@ -388,30 +412,74 @@ __gthread_active_p (void)
 #endif
 }
 
-#if __GTHREAD_HIDE_WIN32API
-
-/* The implementations are in config/i386/gthr-win32.c in libgcc.a.
-   Only stubs are exposed to avoid polluting the C++ namespace with
-   windows api definitions.  */
-
+extern int __gthr_win32_create (__gthread_t *, void *(*) (void*), void *);
+extern int __gthr_win32_join (__gthread_t, void **);
+extern __gthread_t __gthr_win32_self (void);
 extern int __gthr_win32_once (__gthread_once_t *, void (*) (void));
+extern int __gthr_win32_detach (__gthread_t);
+extern int __gthr_win32_equal (__gthread_t, __gthread_t);
+extern int __gthr_win32_yield (void);
 extern int __gthr_win32_key_create (__gthread_key_t *, void (*) (void*));
 extern int __gthr_win32_key_delete (__gthread_key_t);
 extern void * __gthr_win32_getspecific (__gthread_key_t);
 extern int __gthr_win32_setspecific (__gthread_key_t, const void *);
 extern void __gthr_win32_mutex_init_function (__gthread_mutex_t *);
+extern void __gthr_win32_mutex_destroy (__gthread_mutex_t *);
 extern int __gthr_win32_mutex_lock (__gthread_mutex_t *);
 extern int __gthr_win32_mutex_trylock (__gthread_mutex_t *);
 extern int __gthr_win32_mutex_unlock (__gthread_mutex_t *);
-extern void
-  __gthr_win32_recursive_mutex_init_function (__gthread_recursive_mutex_t *);
-extern int __gthr_win32_recursive_mutex_lock (__gthread_recursive_mutex_t *);
-extern int
-  __gthr_win32_recursive_mutex_trylock (__gthread_recursive_mutex_t *);
-extern int __gthr_win32_recursive_mutex_unlock (__gthread_recursive_mutex_t *);
-extern void __gthr_win32_mutex_destroy (__gthread_mutex_t *);
-extern int
-  __gthr_win32_recursive_mutex_destroy (__gthread_recursive_mutex_t *);
+extern int __gthr_win32_recursive_mutex_trylock (__gthread_recursive_mutex_t *);
+#if __GTHREAD_HAS_COND
+extern void __gthr_win32_cond_init_function (__gthread_cond_t *);
+extern int __gthr_win32_cond_broadcast (__gthread_cond_t *);
+extern int __gthr_win32_cond_signal (__gthread_cond_t *);
+extern int __gthr_win32_cond_wait (__gthread_cond_t *, __gthread_mutex_t *);
+extern int __gthr_win32_cond_timedwait (__gthread_cond_t *, __gthread_mutex_t *,
+					const __gthread_time_t *);
+#endif
+
+static inline int
+__gthread_create (__gthread_t *__thr, void *(*__func) (void*),
+		  void *__args)
+{
+  return __gthr_win32_create (__thr, __func, __args);
+}
+
+static inline int
+__gthread_join (__gthread_t __thr, void **__value_ptr)
+{
+  return __gthr_win32_join (__thr, __value_ptr);
+}
+
+static inline __gthread_t
+__gthread_self (void)
+{
+  return __gthr_win32_self ();
+}
+
+#if __GTHREAD_HIDE_WIN32API
+
+/* The implementations are in config/i386/gthr-win32.c in libgcc.a.
+   Only stubs are exposed to avoid polluting the C++ namespace with
+   Win32 API definitions.  */
+
+static inline int
+__gthread_detach (__gthread_t __thr)
+{
+  return __gthr_win32_detach (__thr);
+}
+
+static inline int
+__gthread_equal (__gthread_t __thr1, __gthread_t __thr2)
+{
+  return __gthr_win32_equal (__thr1, __thr2);
+}
+
+static inline int
+__gthread_yield (void)
+{
+  return __gthr_win32_yield ();
+}
 
 static inline int
 __gthread_once (__gthread_once_t *__once, void (*__func) (void))
@@ -485,21 +553,6 @@ __gthread_mutex_unlock (__gthread_mutex_t *__mutex)
     return 0;
 }
 
-static inline void
-__gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *__mutex)
-{
-   __gthr_win32_recursive_mutex_init_function (__mutex);
-}
-
-static inline int
-__gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *__mutex)
-{
-  if (__gthread_active_p ())
-    return __gthr_win32_recursive_mutex_lock (__mutex);
-  else
-    return 0;
-}
-
 static inline int
 __gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *__mutex)
 {
@@ -509,255 +562,312 @@ __gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *__mutex)
     return 0;
 }
 
-static inline int
-__gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *__mutex)
+#if __GTHREAD_HAS_COND
+
+static inline void
+__gthread_cond_init_function (__gthread_cond_t *__cond)
 {
-  if (__gthread_active_p ())
-    return __gthr_win32_recursive_mutex_unlock (__mutex);
-  else
-    return 0;
+  __gthr_win32_cond_init_function (__cond);
 }
 
 static inline int
-__gthread_recursive_mutex_destroy (__gthread_recursive_mutex_t *__mutex)
+__gthread_cond_broadcast (__gthread_cond_t *__cond)
 {
-  return __gthr_win32_recursive_mutex_destroy (__mutex);
+  return __gthr_win32_cond_broadcast (__cond);
 }
+
+static inline int
+__gthread_cond_signal (__gthread_cond_t *__cond)
+{
+  return __gthr_win32_cond_signal (__cond);
+}
+
+static inline int
+__gthread_cond_wait (__gthread_cond_t *__cond, __gthread_mutex_t *__mutex)
+{
+  return __gthr_win32_cond_wait (__cond, __mutex);
+}
+
+static inline int
+__gthread_cond_timedwait (__gthread_cond_t *__cond, __gthread_mutex_t *__mutex,
+			  const __gthread_time_t *__abs_time)
+{
+  return __gthr_win32_cond_timedwait (__cond, __mutex, __abs_time);
+}
+
+#endif /* __GTHREAD_HAS_COND */
 
 #else /* ! __GTHREAD_HIDE_WIN32API */
 
-#define NOGDI
-#include <windows.h>
-#include <errno.h>
+#ifndef __GTHREAD_WIN32_INLINE
+#define __GTHREAD_WIN32_INLINE static inline
+#endif
 
-static inline int
+#ifndef __GTHREAD_WIN32_COND_INLINE
+#define __GTHREAD_WIN32_COND_INLINE static inline
+#endif
+
+#ifndef __GTHREAD_WIN32_ACTIVE_P
+#define __GTHREAD_WIN32_ACTIVE_P __gthread_active_p
+#endif
+
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#undef CC_NONE
+
+__GTHREAD_WIN32_INLINE int
+__gthread_detach (__gthread_t __thr)
+{
+  CloseHandle ((HANDLE) __thr);
+  return 0;
+}
+
+__GTHREAD_WIN32_INLINE int
+__gthread_equal (__gthread_t __t1, __gthread_t __t2)
+{
+  return GetThreadId ((HANDLE) __t1) == GetThreadId ((HANDLE) __t2);
+}
+
+__GTHREAD_WIN32_INLINE int
+__gthread_yield (void)
+{
+  Sleep (0);
+  return 0;
+}
+
+__GTHREAD_WIN32_INLINE int
 __gthread_once (__gthread_once_t *__once, void (*__func) (void))
 {
-  if (! __gthread_active_p ())
+  if (!__GTHREAD_WIN32_ACTIVE_P ())
     return -1;
-  else if (__once == NULL || __func == NULL)
-    return EINVAL;
 
-  if (! __once->done)
+  if (__builtin_expect (!__once->done, 0))
     {
-      if (InterlockedIncrement (&(__once->started)) == 0)
+      /* We rely on the memory model of the x86 architecture where every load
+	 has acquire semantics and every store has release semantics.  */
+      if (__atomic_add_fetch (&__once->started, 1, __ATOMIC_ACQ_REL) == 0)
 	{
 	  (*__func) ();
-	  __once->done = TRUE;
+	  __once->done = 1;
 	}
       else
 	{
 	  /* Another thread is currently executing the code, so wait for it
-	     to finish; yield the CPU in the meantime.  If performance
+	     to finish and yield the CPU in the meantime.  If performance
 	     does become an issue, the solution is to use an Event that
 	     we wait on here (and set above), but that implies a place to
 	     create the event before this routine is called.  */
-	  while (! __once->done)
-	    Sleep (0);
+	  while (!__once->done)
+	    __gthread_yield ();
 	}
     }
 
   return 0;
 }
 
-/* Windows32 thread local keys don't support destructors; this leads to
+/* Windows thread local keys don't support destructors; this leads to
    leaks, especially in threaded applications making extensive use of
    C++ EH. Mingw uses a thread-support DLL to work-around this problem.  */
-static inline int
+__GTHREAD_WIN32_INLINE int
 __gthread_key_create (__gthread_key_t *__key,
-		      void (*__dtor) (void *) __attribute__((__unused__)))
+		      void (*__dtor) (void *) ATTRIBUTE_UNUSED)
 {
-  int __status = 0;
   DWORD __tls_index = TlsAlloc ();
-  if (__tls_index != 0xFFFFFFFF)
+  if (__tls_index != TLS_OUT_OF_INDEXES)
     {
       *__key = __tls_index;
 #ifdef MINGW32_SUPPORTS_MT_EH
       /* Mingw runtime will run the dtors in reverse order for each thread
          when the thread exits.  */
-      __status = __mingwthr_key_dtor (*__key, __dtor);
+      return __mingwthr_key_dtor (*__key, __dtor);
+#else
+      return 0;
 #endif
     }
   else
-    __status = (int) GetLastError ();
-  return __status;
+    return (int) GetLastError ();
 }
 
-static inline int
+__GTHREAD_WIN32_INLINE int
 __gthread_key_delete (__gthread_key_t __key)
 {
-  return (TlsFree (__key) != 0) ? 0 : (int) GetLastError ();
+  if (TlsFree (__key))
+    return 0;
+  else
+    return (int) GetLastError ();
 }
 
-static inline void *
+__GTHREAD_WIN32_INLINE void *
 __gthread_getspecific (__gthread_key_t __key)
 {
-  DWORD __lasterror;
-  void *__ptr;
-
-  __lasterror = GetLastError ();
-
-  __ptr = TlsGetValue (__key);
-
+  DWORD __lasterror = GetLastError ();
+  void *__ptr = TlsGetValue (__key);
   SetLastError (__lasterror);
-
   return __ptr;
 }
 
-static inline int
+__GTHREAD_WIN32_INLINE int
 __gthread_setspecific (__gthread_key_t __key, const void *__ptr)
 {
-  if (TlsSetValue (__key, CONST_CAST2(void *, const void *, __ptr)) != 0)
+  if (TlsSetValue (__key, CONST_CAST2(void *, const void *, __ptr)))
     return 0;
   else
-    return GetLastError ();
+    return (int) GetLastError ();
 }
 
-static inline void
+__GTHREAD_WIN32_INLINE void
 __gthread_mutex_init_function (__gthread_mutex_t *__mutex)
 {
-  __mutex->counter = -1;
-  __mutex->sema = CreateSemaphoreW (NULL, 0, 65535, NULL);
+  InitializeCriticalSection ((LPCRITICAL_SECTION) __mutex);
 }
 
-static inline void
+__GTHREAD_WIN32_INLINE void
 __gthread_mutex_destroy (__gthread_mutex_t *__mutex)
 {
-  CloseHandle ((HANDLE) __mutex->sema);
+  DeleteCriticalSection ((LPCRITICAL_SECTION) __mutex);
 }
 
-static inline int
+__GTHREAD_WIN32_INLINE int
 __gthread_mutex_lock (__gthread_mutex_t *__mutex)
 {
-  int __status = 0;
-
-  if (__gthread_active_p ())
-    {
-      if (InterlockedIncrement (&__mutex->counter) == 0 ||
-	  WaitForSingleObject (__mutex->sema, INFINITE) == WAIT_OBJECT_0)
-	__status = 0;
-      else
-	{
-	  /* WaitForSingleObject returns WAIT_FAILED, and we can only do
-	     some best-effort cleanup here.  */
-	  InterlockedDecrement (&__mutex->counter);
-	  __status = 1;
-	}
-    }
-  return __status;
-}
-
-static inline int
-__gthread_mutex_trylock (__gthread_mutex_t *__mutex)
-{
-  int __status = 0;
-
-  if (__gthread_active_p ())
-    {
-      if (__GTHR_W32_InterlockedCompareExchange (&__mutex->counter, 0, -1) < 0)
-	__status = 0;
-      else
-	__status = 1;
-    }
-  return __status;
-}
-
-static inline int
-__gthread_mutex_unlock (__gthread_mutex_t *__mutex)
-{
-  if (__gthread_active_p ())
-    {
-      if (InterlockedDecrement (&__mutex->counter) >= 0)
-	return ReleaseSemaphore (__mutex->sema, 1, NULL) ? 0 : 1;
-    }
+  if (__GTHREAD_WIN32_ACTIVE_P ())
+    EnterCriticalSection ((LPCRITICAL_SECTION) __mutex);
   return 0;
 }
+
+__GTHREAD_WIN32_INLINE int
+__gthread_mutex_trylock (__gthread_mutex_t *__mutex)
+{
+  if (__GTHREAD_WIN32_ACTIVE_P ())
+    {
+      BOOL __ret = TryEnterCriticalSection ((LPCRITICAL_SECTION) __mutex);
+      if (__ret)
+	{
+	  if (__mutex->RecursionCount > 1)
+	    {
+	      LeaveCriticalSection ((LPCRITICAL_SECTION) __mutex);
+	      return 1;
+	    }
+	  else
+	    return 0;
+	}
+      else
+	return 1;
+    }
+  else
+    return 0;
+}
+
+__GTHREAD_WIN32_INLINE int
+__gthread_mutex_unlock (__gthread_mutex_t *__mutex)
+{
+  if (__GTHREAD_WIN32_ACTIVE_P ())
+    LeaveCriticalSection ((LPCRITICAL_SECTION) __mutex);
+  return 0;
+}
+
+__GTHREAD_WIN32_INLINE int
+__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *__mutex)
+{
+  if (__GTHREAD_WIN32_ACTIVE_P ())
+    return TryEnterCriticalSection ((LPCRITICAL_SECTION) __mutex) ? 0 : 1;
+  else
+    return 0;
+}
+
+#if __GTHREAD_HAS_COND
+
+__GTHREAD_WIN32_COND_INLINE void
+__gthread_cond_init_function (__gthread_cond_t *__cond)
+{
+  InitializeConditionVariable ((PCONDITION_VARIABLE) __cond);
+}
+
+__GTHREAD_WIN32_COND_INLINE int
+__gthread_cond_broadcast (__gthread_cond_t *__cond)
+{
+  WakeAllConditionVariable ((PCONDITION_VARIABLE) __cond);
+  return 0;
+}
+
+__GTHREAD_WIN32_COND_INLINE int
+__gthread_cond_signal (__gthread_cond_t *__cond)
+{
+  WakeConditionVariable ((PCONDITION_VARIABLE) __cond);
+  return 0;
+}
+
+__GTHREAD_WIN32_COND_INLINE int
+__gthread_cond_wait (__gthread_cond_t *__cond, __gthread_mutex_t *__mutex)
+{
+  if (SleepConditionVariableCS ((PCONDITION_VARIABLE) __cond,
+				(PCRITICAL_SECTION) __mutex,
+				INFINITE))
+    return 0;
+  else
+    return (int) GetLastError ();
+}
+
+extern DWORD __gthr_win32_abs_to_rel_time (const __gthread_time_t *);
+
+__GTHREAD_WIN32_COND_INLINE int
+__gthread_cond_timedwait (__gthread_cond_t *__cond,
+			  __gthread_mutex_t *__mutex,
+			  const __gthread_time_t *__abs_time)
+{
+  DWORD __rel_time = __gthr_win32_abs_to_rel_time (__abs_time);
+  if (SleepConditionVariableCS ((PCONDITION_VARIABLE) __cond,
+				(PCRITICAL_SECTION) __mutex,
+				__rel_time))
+    return 0;
+  else
+    return (int) GetLastError ();
+}
+
+#endif /* __GTHREAD_HAS_COND */
+
+#endif /*  __GTHREAD_HIDE_WIN32API */
 
 static inline void
 __gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *__mutex)
 {
-  __mutex->counter = -1;
-  __mutex->depth = 0;
-  __mutex->owner = 0;
-  __mutex->sema = CreateSemaphoreW (NULL, 0, 65535, NULL);
+  __gthread_mutex_init_function (__mutex);
+}
+
+static inline void
+__gthread_recursive_mutex_destroy (__gthread_recursive_mutex_t *__mutex)
+{
+  __gthread_mutex_destroy (__mutex);
 }
 
 static inline int
 __gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *__mutex)
 {
-  if (__gthread_active_p ())
-    {
-      DWORD __me = GetCurrentThreadId();
-      if (InterlockedIncrement (&__mutex->counter) == 0)
-	{
-	  __mutex->depth = 1;
-	  __mutex->owner = __me;
-	}
-      else if (__mutex->owner == __me)
-	{
-	  InterlockedDecrement (&__mutex->counter);
-	  ++(__mutex->depth);
-	}
-      else if (WaitForSingleObject (__mutex->sema, INFINITE) == WAIT_OBJECT_0)
-	{
-	  __mutex->depth = 1;
-	  __mutex->owner = __me;
-	}
-      else
-	{
-	  /* WaitForSingleObject returns WAIT_FAILED, and we can only do
-	     some best-effort cleanup here.  */
-	  InterlockedDecrement (&__mutex->counter);
-	  return 1;
-	}
-    }
-  return 0;
-}
-
-static inline int
-__gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *__mutex)
-{
-  if (__gthread_active_p ())
-    {
-      DWORD __me = GetCurrentThreadId();
-      if (__GTHR_W32_InterlockedCompareExchange (&__mutex->counter, 0, -1) < 0)
-	{
-	  __mutex->depth = 1;
-	  __mutex->owner = __me;
-	}
-      else if (__mutex->owner == __me)
-	++(__mutex->depth);
-      else
-	return 1;
-    }
-  return 0;
+  return __gthread_mutex_lock (__mutex);
 }
 
 static inline int
 __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *__mutex)
 {
-  if (__gthread_active_p ())
-    {
-      --(__mutex->depth);
-      if (__mutex->depth == 0)
-	{
-	  __mutex->owner = 0;
+  return __gthread_mutex_unlock (__mutex);
+}
 
-	  if (InterlockedDecrement (&__mutex->counter) >= 0)
-	    return ReleaseSemaphore (__mutex->sema, 1, NULL) ? 0 : 1;
-	}
-    }
+#if __GTHREAD_HAS_COND
+
+static inline int
+__gthread_cond_destroy (__gthread_cond_t *__cond ATTRIBUTE_UNUSED)
+{
   return 0;
 }
 
 static inline int
-__gthread_recursive_mutex_destroy (__gthread_recursive_mutex_t *__mutex)
+__gthread_cond_wait_recursive (__gthread_cond_t *__cond,
+			       __gthread_recursive_mutex_t *__mutex)
 {
-  CloseHandle ((HANDLE) __mutex->sema);
-  return 0;
+  return __gthread_cond_wait (__cond, __mutex);
 }
 
-#endif /*  __GTHREAD_HIDE_WIN32API */
+#endif
 
 #ifdef __cplusplus
 }

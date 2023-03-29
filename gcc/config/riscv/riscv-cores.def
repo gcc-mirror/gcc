@@ -1,5 +1,5 @@
 /* List of supported core and tune info for RISC-V.
-   Copyright (C) 2020-2022 Free Software Foundation, Inc.
+   Copyright (C) 2020-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -17,19 +17,46 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+/* This is a list of tune that implement RISC-V.
+
+   Before using #include to read this file, define a macro:
+
+      RISCV_TUNE(TUNE_NAME, PIPELINE_MODEL, TUNE_INFO)
+
+   The TUNE_NAME is the name of the micro-arch, represented as a string.
+   The PIPELINE_MODEL is the pipeline model of the micro-arch, represented as a
+   string, defined in riscv.md.
+   The TUNE_INFO is the detail cost model for this core, represented as an
+   identifier, reference to riscv.cc.  */
+
+#ifndef RISCV_TUNE
+#define RISCV_TUNE(TUNE_NAME, PIPELINE_MODEL, TUNE_INFO)
+#endif
+
+RISCV_TUNE("rocket", generic, rocket_tune_info)
+RISCV_TUNE("sifive-3-series", generic, rocket_tune_info)
+RISCV_TUNE("sifive-5-series", generic, rocket_tune_info)
+RISCV_TUNE("sifive-7-series", sifive_7, sifive_7_tune_info)
+RISCV_TUNE("thead-c906", generic, thead_c906_tune_info)
+RISCV_TUNE("size", generic, optimize_size_tune_info)
+
+#undef RISCV_TUNE
+
 /* This is a list of cores that implement RISC-V.
 
    Before using #include to read this file, define a macro:
 
-      RISCV_CORE(CORE_NAME, ARCH, MICRO_ARCH, TUNE_INFO)
+      RISCV_CORE(CORE_NAME, ARCH, MICRO_ARCH)
 
    The CORE_NAME is the name of the core, represented as a string.
    The ARCH is the default arch of the core, represented as a string,
    can be NULL if no default arch.
    The MICRO_ARCH is the name of the core for which scheduling decisions
-   will be made, represented as an identifier.
-   The TUNE_INFO is the detail cost model for this core, represented as an
-   identifier, reference to riscv-tunes.def.  */
+   will be made, represented as an identifier.  */
+
+#ifndef RISCV_CORE
+#define RISCV_CORE(CORE_NAME, ARCH, MICRO_ARCH)
+#endif
 
 RISCV_CORE("sifive-e20",      "rv32imc",    "rocket")
 RISCV_CORE("sifive-e21",      "rv32imac",   "rocket")
@@ -46,4 +73,8 @@ RISCV_CORE("sifive-s76",      "rv64imafdc", "sifive-7-series")
 RISCV_CORE("sifive-u54",      "rv64imafdc", "sifive-5-series")
 RISCV_CORE("sifive-u74",      "rv64imafdc", "sifive-7-series")
 
+RISCV_CORE("thead-c906",      "rv64imafdc_xtheadba_xtheadbb_xtheadbs_xtheadcmo_"
+			      "xtheadcondmov_xtheadfmemidx_xtheadmac_"
+			      "xtheadmemidx_xtheadmempair_xtheadsync",
+			      "thead-c906")
 #undef RISCV_CORE

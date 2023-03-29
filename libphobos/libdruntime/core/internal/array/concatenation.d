@@ -14,8 +14,6 @@ private extern (C) void[] _d_arraycatnTX(const TypeInfo ti, scope byte[][] arrs)
 /// Implementation of `_d_arraycatnTX` and `_d_arraycatnTXTrace`
 template _d_arraycatnTXImpl(Tarr : ResultArrT[], ResultArrT : T[], T)
 {
-    import core.internal.array.utils : _d_HookTraceImpl;
-
     private enum errorMessage = "Cannot concatenate arrays if compiling without support for runtime type information!";
 
     /**
@@ -45,14 +43,19 @@ template _d_arraycatnTXImpl(Tarr : ResultArrT[], ResultArrT : T[], T)
             assert(0, errorMessage);
     }
 
-    /**
-    * TraceGC wrapper around $(REF _d_arraycatnTX, core,internal,array,concat).
-    * Bugs:
-    *  This function template was ported from a much older runtime hook that bypassed safety,
-    *  purity, and throwabilty checks. To prevent breaking existing code, this function template
-    *  is temporarily declared `@trusted pure nothrow` until the implementation can be brought up to modern D expectations.
-    */
-    alias _d_arraycatnTXTrace = _d_HookTraceImpl!(ResultArrT, _d_arraycatnTX, errorMessage);
+    version (D_ProfileGC)
+    {
+        import core.internal.array.utils : _d_HookTraceImpl;
+
+        /**
+         * TraceGC wrapper around $(REF _d_arraycatnTX, core,internal,array,concat).
+         * Bugs:
+         *  This function template was ported from a much older runtime hook that bypassed safety,
+         *  purity, and throwabilty checks. To prevent breaking existing code, this function template
+         *  is temporarily declared `@trusted pure nothrow` until the implementation can be brought up to modern D expectations.
+         */
+        alias _d_arraycatnTXTrace = _d_HookTraceImpl!(ResultArrT, _d_arraycatnTX, errorMessage);
+    }
 }
 
 @safe unittest

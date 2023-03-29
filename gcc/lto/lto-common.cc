@@ -1,5 +1,5 @@
 /* Top-level LTO routines.
-   Copyright (C) 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2009-2023 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -984,21 +984,25 @@ lto_fixup_prevailing_type (tree t)
       TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (mv);
       TYPE_NEXT_VARIANT (mv) = t;
     }
-
-  /* The following reconstructs the pointer chains
-     of the new pointed-to type if we are a main variant.  We do
-     not stream those so they are broken before fixup.  */
-  if (TREE_CODE (t) == POINTER_TYPE
-      && TYPE_MAIN_VARIANT (t) == t)
+  else if (!TYPE_ATTRIBUTES (t))
     {
-      TYPE_NEXT_PTR_TO (t) = TYPE_POINTER_TO (TREE_TYPE (t));
-      TYPE_POINTER_TO (TREE_TYPE (t)) = t;
-    }
-  else if (TREE_CODE (t) == REFERENCE_TYPE
-	   && TYPE_MAIN_VARIANT (t) == t)
-    {
-      TYPE_NEXT_REF_TO (t) = TYPE_REFERENCE_TO (TREE_TYPE (t));
-      TYPE_REFERENCE_TO (TREE_TYPE (t)) = t;
+      /* The following reconstructs the pointer chains
+	 of the new pointed-to type if we are a main variant.  We do
+	 not stream those so they are broken before fixup.
+	 Don't add it if despite being main variant it has
+	 attributes (then it was created with build_distinct_type_copy).
+	 Similarly don't add TYPE_REF_IS_RVALUE REFERENCE_TYPEs.
+	 Don't add it if there is something in the chain already.  */
+      if (TREE_CODE (t) == POINTER_TYPE)
+	{
+	  TYPE_NEXT_PTR_TO (t) = TYPE_POINTER_TO (TREE_TYPE (t));
+	  TYPE_POINTER_TO (TREE_TYPE (t)) = t;
+	}
+      else if (TREE_CODE (t) == REFERENCE_TYPE && !TYPE_REF_IS_RVALUE (t))
+	{
+	  TYPE_NEXT_REF_TO (t) = TYPE_REFERENCE_TO (TREE_TYPE (t));
+	  TYPE_REFERENCE_TO (TREE_TYPE (t)) = t;
+	}
     }
 }
 
@@ -1189,6 +1193,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 	  compare_values (DECL_FIELD_ABI_IGNORED);
 	  compare_values (DECL_FIELD_CXX_ZERO_WIDTH_BIT_FIELD);
 	  compare_values (DECL_OFFSET_ALIGN);
+	  compare_values (DECL_NOT_FLEXARRAY);
 	}
       else if (code == VAR_DECL)
 	{
@@ -1270,6 +1275,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       if (AGGREGATE_TYPE_P (t1))
 	compare_values (TYPE_TYPELESS_STORAGE);
       compare_values (TYPE_EMPTY_P);
+      compare_values (TYPE_NO_NAMED_ARGS_STDARG_P);
       compare_values (TYPE_PACKED);
       compare_values (TYPE_RESTRICT);
       compare_values (TYPE_USER_ALIGN);
@@ -2117,6 +2123,17 @@ lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
 	  if (strcmp (lto_resolution_str[j], r_str) == 0)
 	    {
 	      r = (enum ld_plugin_symbol_resolution) j;
+	      /* Incremental linking together with -fwhole-program may seem
+		 somewhat contradictionary (as the point of incremental linking
+		 is to allow re-linking with more symbols later) but it is
+		 used to build LTO kernel.  We want to hide all symbols that
+		 are not explicitely marked as exported and thus turn
+		 LDPR_PREVAILING_DEF_IRONLY_EXP
+		 to LDPR_PREVAILING_DEF_IRONLY.  */
+	      if (flag_whole_program
+		  && flag_incremental_link == INCREMENTAL_LINK_NOLTO
+		  && r == LDPR_PREVAILING_DEF_IRONLY_EXP)
+		r = LDPR_PREVAILING_DEF_IRONLY;
 	      break;
 	    }
 	}

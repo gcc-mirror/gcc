@@ -1,0 +1,125 @@
+(* wrapsock.def provides access to low level client socket primitives.
+
+Copyright (C) 2008-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE wrapsock ;
+
+(*
+    Title      : wrapsock
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Wed Oct  1 08:40:21 2008
+    Revision   : $Version$ 
+    Description: provides a set of wrappers to some client side
+                 tcp socket primatives.
+*)
+
+FROM SYSTEM IMPORT ADDRESS ;
+FROM ChanConsts IMPORT OpenResults ;
+
+
+TYPE
+   clientInfo = ADDRESS ;
+
+
+(*
+   clientOpen - returns an ISO Modula-2 OpenResult.
+                It attempts to connect to:  hostname:portNo.
+                If successful then the data structure, c,
+                will have its fields initialized.
+*)
+
+PROCEDURE clientOpen (c: clientInfo;
+                      hostname: ADDRESS;
+                      length: CARDINAL;
+                      portNo: CARDINAL) : OpenResults ;
+
+
+(*
+   clientOpenIP - returns an ISO Modula-2 OpenResult.
+                  It attempts to connect to:  ipaddress:portNo.
+                  If successful then the data structure, c,
+                  will have its fields initialized.
+*)
+
+PROCEDURE clientOpenIP (c: clientInfo;
+                        ip: CARDINAL;
+                        portNo: CARDINAL) : OpenResults ;
+
+
+(*
+   getClientPortNo - returns the portNo from structure, c.
+*)
+
+PROCEDURE getClientPortNo (c: clientInfo) : CARDINAL ;
+
+
+(*
+   getClientHostname - fills in the hostname of the server
+                       the to which the client is connecting.
+*)
+
+PROCEDURE getClientHostname (c: clientInfo;
+                             hostname: ADDRESS; high: CARDINAL) ;
+
+
+(*
+   getClientSocketFd - returns the sockFd from structure, c.
+*)
+
+PROCEDURE getClientSocketFd (c: clientInfo) : INTEGER ;
+
+
+(*
+   getClientIP - returns the sockFd from structure, s.
+*)
+
+PROCEDURE getClientIP (c: clientInfo) : CARDINAL ;
+
+
+(*
+   getPushBackChar - returns TRUE if a pushed back character
+                     is available.
+*)
+
+PROCEDURE getPushBackChar (c: clientInfo; VAR ch: CHAR) : BOOLEAN ;
+
+
+(*
+   setPushBackChar - returns TRUE if it is able to push back a
+                     character.
+*)
+
+PROCEDURE setPushBackChar (c: clientInfo; ch: CHAR) : BOOLEAN ;
+
+
+(*
+   getSizeOfClientInfo - returns the sizeof (opaque data type).
+*)
+
+PROCEDURE getSizeOfClientInfo () : CARDINAL ;
+
+
+END wrapsock.

@@ -4845,6 +4845,7 @@ if (isForwardRange!Range && isSomeChar!(ElementEncodingType!Range) &&
     assert(detabber(" \n\tx", 9).array == " \n         x");
 }
 
+/// ditto
 auto detabber(Range)(auto ref Range r, size_t tabSize = 8)
 if (isConvertibleToString!Range)
 {

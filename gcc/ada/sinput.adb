@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -620,7 +620,6 @@ package body Sinput is
    -------------------------
 
    function Instantiation_Depth (S : Source_Ptr) return Nat is
-      Sind  : Source_File_Index;
       Sval  : Source_Ptr;
       Depth : Nat;
 
@@ -629,8 +628,7 @@ package body Sinput is
       Depth := 0;
 
       loop
-         Sind := Get_Source_File_Index (Sval);
-         Sval := Instantiation (Sind);
+         Sval := Instantiation_Location (Sval);
          exit when Sval = No_Location;
          Depth := Depth + 1;
       end loop;

@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 architecture.
-;; Copyright (C) 2009-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2023 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -988,6 +988,7 @@
     UNSPECV_LX			; Represent a load-exclusive.
     UNSPECV_SX			; Represent a store-exclusive.
     UNSPECV_LDA			; Represent an atomic load or load-acquire.
+    UNSPECV_LDAP		; Represent an atomic acquire load with RCpc semantics.
     UNSPECV_STL			; Represent an atomic store or store-release.
     UNSPECV_ATOMIC_CMPSW	; Represent an atomic compare swap.
     UNSPECV_ATOMIC_EXCHG	; Represent an atomic exchange.
@@ -1095,6 +1096,8 @@
 
 ;; Give the number of bits in the mode
 (define_mode_attr sizen [(QI "8") (HI "16") (SI "32") (DI "64")])
+(define_mode_attr ZEROM [(QI "SI") (HI "SI") (SI "SI") (DI "DI")])
+(define_mode_attr zerom [(QI "si") (HI "si") (SI "si") (DI "di")])
 
 ;; Give the ordinal of the MSB in the mode
 (define_mode_attr sizem1 [(QI "#7") (HI "#15") (SI "#31") (DI "#63")
@@ -2186,6 +2189,9 @@
 ;; Code iterator for variants of vector max and min.
 (define_code_iterator MAXMIN [smax smin umax umin])
 
+;; Code iterator for min/max ops but without UMAX.
+(define_code_iterator MAXMIN_NOUMAX [smax smin umin])
+
 (define_code_iterator FMAXMIN [smax smin])
 
 ;; Signed and unsigned max operations.
@@ -3137,6 +3143,8 @@
 			       UNSPEC_FRINT64Z UNSPEC_FRINT64X])
 
 (define_int_iterator SVE_BRK_UNARY [UNSPEC_BRKA UNSPEC_BRKB])
+
+(define_int_iterator SVE_BRKP [UNSPEC_BRKPA UNSPEC_BRKPB])
 
 (define_int_iterator SVE_BRK_BINARY [UNSPEC_BRKN UNSPEC_BRKPA UNSPEC_BRKPB])
 

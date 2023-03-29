@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2009-2023 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is free software; you can redistribute it and/or modify it
@@ -89,7 +89,7 @@ aarch64_fallback_frame_state (struct _Unwind_Context *context,
 
   for (i = 0; i < AARCH64_DWARF_NUMBER_R; i++)
     {
-      fs->regs.reg[AARCH64_DWARF_R0 + i].how = REG_SAVED_OFFSET;
+      fs->regs.how[AARCH64_DWARF_R0 + i] = REG_SAVED_OFFSET;
       fs->regs.reg[AARCH64_DWARF_R0 + i].loc.offset =
 	(_Unwind_Ptr) & (sc->regs[i]) - new_cfa;
     }
@@ -115,7 +115,7 @@ aarch64_fallback_frame_state (struct _Unwind_Context *context,
 	    {
 	      _Unwind_Sword offset;
 
-	      fs->regs.reg[AARCH64_DWARF_V0 + i].how = REG_SAVED_OFFSET;
+	      fs->regs.how[AARCH64_DWARF_V0 + i] = REG_SAVED_OFFSET;
 
 	      /* sigcontext contains 32 128bit registers for V0 to
 		 V31.  The kernel will have saved the contents of the
@@ -142,12 +142,12 @@ aarch64_fallback_frame_state (struct _Unwind_Context *context,
 	}
     }
 
-  fs->regs.reg[31].how = REG_SAVED_OFFSET;
+  fs->regs.how[31] = REG_SAVED_OFFSET;
   fs->regs.reg[31].loc.offset = (_Unwind_Ptr) & (sc->sp) - new_cfa;
 
   fs->signal_frame = 1;
 
-  fs->regs.reg[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__].how =
+  fs->regs.how[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__] =
     REG_SAVED_VAL_OFFSET;
   fs->regs.reg[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__].loc.offset =
     (_Unwind_Ptr) (sc->pc) - new_cfa;

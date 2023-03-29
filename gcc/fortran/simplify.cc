@@ -1,5 +1,5 @@
 /* Simplify intrinsic functions at compile-time.
-   Copyright (C) 2000-2022 Free Software Foundation, Inc.
+   Copyright (C) 2000-2023 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -720,6 +720,7 @@ simplify_transformation (gfc_expr *array, gfc_expr *dim, gfc_expr *mask,
   size_zero = gfc_is_size_zero_array (array);
 
   if (!(is_constant_array_expr (array) || size_zero)
+      || array->shape == NULL
       || !gfc_is_constant_expr (dim))
     return NULL;
 
@@ -3955,6 +3956,9 @@ gfc_simplify_ishftc (gfc_expr *e, gfc_expr *s, gfc_expr *sz)
 	return NULL;
 
       gfc_extract_int (sz, &ssize);
+
+      if (ssize > isize || ssize <= 0)
+	return &gfc_bad_expr;
     }
   else
     ssize = isize;
@@ -4913,7 +4917,22 @@ gfc_simplify_merge (gfc_expr *tsource, gfc_expr *fsource, gfc_expr *mask)
 
   if (mask->expr_type == EXPR_CONSTANT)
     {
-      result = gfc_copy_expr (mask->value.logical ? tsource : fsource);
+      /* The standard requires evaluation of all function arguments.
+	 Simplify only when the other dropped argument (FSOURCE or TSOURCE)
+	 is a constant expression.  */
+      if (mask->value.logical)
+	{
+	  if (!gfc_is_constant_expr (fsource))
+	    return NULL;
+	  result = gfc_copy_expr (tsource);
+	}
+      else
+	{
+	  if (!gfc_is_constant_expr (tsource))
+	    return NULL;
+	  result = gfc_copy_expr (fsource);
+	}
+
       /* Parenthesis is needed to get lower bounds of 1.  */
       result = gfc_get_parentheses (result);
       gfc_simplify_expr (result, 1);
@@ -6095,7 +6114,7 @@ gfc_simplify_nearest (gfc_expr *x, gfc_expr *s)
   kind = gfc_validate_kind (BT_REAL, x->ts.kind, 0);
   mpfr_set_emin ((mpfr_exp_t) gfc_real_kinds[kind].min_exponent -
 		mpfr_get_prec(result->value.real) + 1);
-  mpfr_set_emax ((mpfr_exp_t) gfc_real_kinds[kind].max_exponent - 1);
+  mpfr_set_emax ((mpfr_exp_t) gfc_real_kinds[kind].max_exponent);
   mpfr_check_range (result->value.real, 0, MPFR_RNDU);
 
   if (mpfr_sgn (s->value.real) > 0)
@@ -8266,7 +8285,7 @@ gfc_simplify_image_index (gfc_expr *coarray, gfc_expr *sub)
     if (ref->type == REF_COMPONENT)
       as = ref->u.ar.as;
 
-  if (as->type == AS_DEFERRED)
+  if (!as || as->type == AS_DEFERRED)
     return NULL;
 
   /* "valid sequence of cosubscripts" are required; thus, return 0 unless
@@ -8458,12 +8477,28 @@ gfc_simplify_unpack (gfc_expr *vector, gfc_expr *mask, gfc_expr *field)
     {
       if (mask_ctor->expr->value.logical)
 	{
-	  gcc_assert (vector_ctor);
-	  e = gfc_copy_expr (vector_ctor->expr);
-	  vector_ctor = gfc_constructor_next (vector_ctor);
+	  if (vector_ctor)
+	    {
+	      e = gfc_copy_expr (vector_ctor->expr);
+	      vector_ctor = gfc_constructor_next (vector_ctor);
+	    }
+	  else
+	    {
+	      gfc_free_expr (result);
+	      return NULL;
+	    }
 	}
       else if (field->expr_type == EXPR_ARRAY)
-	e = gfc_copy_expr (field_ctor->expr);
+	{
+	  if (field_ctor)
+	    e = gfc_copy_expr (field_ctor->expr);
+	  else
+	    {
+	      /* Not enough elements in array FIELD.  */
+	      gfc_free_expr (result);
+	      return &gfc_bad_expr;
+	    }
+	}
       else
 	e = gfc_copy_expr (field);
 

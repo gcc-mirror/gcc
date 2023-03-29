@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2022, AdaCore                     --
+--                     Copyright (C) 1999-2023, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,38 +38,36 @@
 
 --  The traceback information is in the form of absolute code locations.
 --  These code locations may be converted to corresponding source locations
---  using the external addr2line utility, or from within GDB.
+--  using the addr2line or gnatsymbolize utilities, or from within GDB.
 
 --  In order to use this facility, in some cases the binder must be invoked
 --  with -E switch (store the backtrace with exception occurrence). Please
 --  refer to gnatbind documentation for more information.
 
---  To analyze the code locations later using addr2line or gdb, the necessary
---  units must be compiled with the debugging switch -g in the usual manner.
---  Note that it is not necessary to compile with -g to use Call_Chain. In
---  other words, the following sequence of steps can be used:
+--  To analyze the code locations later using addr2line, gnatsymbolize or GDB,
+--  the necessary units must be compiled with the debugging switch -g in the
+--  usual manner. Note that it is not necessary to compile with -g to use
+--  Call_Chain. In other words, the following sequence of steps can be used:
 
 --     Compile without -g
 --     Run the program, and call Call_Chain
 --     Recompile with -g
---     Use addr2line to interpret the absolute call locations (note that
---      addr2line expects addresses in hexadecimal format).
+--     Use addr2line or gnatsymbolize to interpret the absolute call locations
+--     (note that addr2line expects addresses in hexadecimal format).
 
 --  This capability is currently supported on the following targets:
 
---     AiX PowerPC
+--     AIX PowerPC
 --     GNU/Linux x86
 --     GNU/Linux PowerPC
 --     LynxOS x86
---     LynxOS 178 xcoff PowerPC
---     LynxOS 178 elf PowerPC
+--     LynxOS-178 PowerPC
 --     Solaris x86
---     Solaris sparc
+--     Solaris SPARC
 --     VxWorks ARM
---     VxWorks7 ARM
 --     VxWorks PowerPC
 --     VxWorks x86
---     Windows XP
+--     Windows
 
 --  Note: see also GNAT.Traceback.Symbolic, a child unit in file g-trasym.ads
 --  providing symbolic trace back capability for a subset of the above targets.
@@ -101,11 +99,21 @@ package GNAT.Traceback is
    function Call_Chain
      (Max_Len     : Positive;
       Skip_Frames : Natural := 1) return Tracebacks_Array;
-   --  Returns up to Max_Len tracebacks corresponding to the current call
+   --  Return up to Max_Len tracebacks corresponding to the current call
    --  chain. Result array order is the same as in above procedure Call_Chain
    --  except that Skip_Frames says how many of the most recent calls should be
    --  excluded from the result, starting with this procedure itself: 1 means
    --  exclude the frame for this procedure, 2 means 1 + exclude the frame for
    --  this procedure's caller, ...
+
+   function Executable_Load_Address return System.Address;
+   pragma Import (C,
+                  Executable_Load_Address,
+                  "__gnat_get_executable_load_address");
+   --  Return the load address of the executable or System.Null_Address if the
+   --  executable has been loaded at the address computed by the static linker.
+   --  This address is needed to interpret the absolute call locations given by
+   --  the subprograms of this unit when Position-Independent Executables (PIE)
+   --  are used on recent GNU/Linux and Windows versions.
 
 end GNAT.Traceback;

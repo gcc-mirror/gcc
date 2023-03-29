@@ -436,7 +436,7 @@ public:
     static @property size_t dig()
     {
         auto shiftcnt = precision - ((flags&Flags.storeNormalized) == 0);
-        return shiftcnt == 64 ? 19 : cast(size_t) log10(1uL << shiftcnt);
+        return shiftcnt == 64 ? 19 : cast(size_t) log10(real(1uL << shiftcnt));
     }
 
     /// Returns: smallest increment to the value 1
@@ -1124,8 +1124,8 @@ public:
  *
  * References: "On Enclosing Simple Roots of Nonlinear Equations",
  * G. Alefeld, F.A. Potra, Yixun Shi, Mathematics of Computation 61,
- * pp733-744 (1993).  Fortran code available from $(HTTP
- * www.netlib.org,www.netlib.org) as algorithm TOMS478.
+ * pp733-744 (1993).  Fortran code available from
+ * $(HTTP www.netlib.org,www.netlib.org) as algorithm TOMS478.
  *
  */
 T findRoot(T, DF, DT)(scope DF f, const T a, const T b,

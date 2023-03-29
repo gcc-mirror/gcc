@@ -1,5 +1,5 @@
 ;; ARM VFP instruction patterns
-;; Copyright (C) 2003-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2003-2023 Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.
@@ -88,7 +88,7 @@
     case 2:
       return "mov%?\t%0, %1\t%@ movhi";
     case 1:
-      if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_VECTOR_BOOL)
+      if (VALID_MVE_PRED_MODE (<MODE>mode))
         operands[1] = mve_bool_vec_to_const (operands[1]);
       else
         operands[1] = gen_lowpart (HImode, operands[1]);
@@ -105,9 +105,9 @@
     case 8:
       return "vmov%?.f32\t%0, %1\t%@ int";
     case 9:
-      return "vmsr%?\t P0, %1\t@ movhi";
+      return "vmsr%?\tp0, %1\t@ movhi";
     case 10:
-      return "vmrs%?\t %0, P0\t@ movhi";
+      return "vmrs%?\t%0, p0\t@ movhi";
     default:
       gcc_unreachable ();
     }
@@ -192,7 +192,7 @@
     case 2:
       return "mov%?\t%0, %1\t%@ movhi";
     case 1:
-      if (GET_MODE_CLASS (GET_MODE (operands[1])) == MODE_VECTOR_BOOL)
+      if (VALID_MVE_PRED_MODE (<MODE>mode))
         operands[1] = mve_bool_vec_to_const (operands[1]);
       else
         operands[1] = gen_lowpart (HImode, operands[1]);
@@ -209,9 +209,9 @@
     case 8:
       return "vmov%?.f32\t%0, %1\t%@ int";
     case 9:
-      return "vmsr%?\t P0, %1\t%@ movhi";
+      return "vmsr%?\tp0, %1\t%@ movhi";
     case 10:
-      return "vmrs%?\t%0, P0\t%@ movhi";
+      return "vmrs%?\t%0, p0\t%@ movhi";
     default:
       gcc_unreachable ();
     }
@@ -312,9 +312,9 @@
     case 12: case 13:
       return output_move_vfp (operands);
     case 14:
-      return \"vmsr\\t P0, %1\";
+      return \"vmsr\\tp0, %1\";
     case 15:
-      return \"vmrs\\t %0, P0\";
+      return \"vmrs\\t%0, p0\";
     case 16:
       return \"mcr\\tp10, 7, %1, cr1, cr0, 0\\t @SET_FPSCR\";
     case 17:

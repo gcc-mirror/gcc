@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Free Software Foundation, Inc.
+// Copyright (C) 2020-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,35 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // expensive: * [1-9] * *
-#include "bits/verify.h"
-#include "bits/metahelpers.h"
-
-// simd_mask generator functions
-template <class M>
-  M
-  make_mask(const std::initializer_list<bool>& init)
-  {
-    std::size_t i = 0;
-    M r = {};
-    for (;;)
-      {
-	for (bool x : init)
-	  {
-	    r[i] = x;
-	    if (++i == M::size())
-	      {
-		return r;
-	      }
-	  }
-      }
-  }
-
-template <class M>
-  M
-  make_alternating_mask()
-  {
-    return make_mask<M>({false, true});
-  }
+#include "bits/main.h"
 
 template <typename V>
   void

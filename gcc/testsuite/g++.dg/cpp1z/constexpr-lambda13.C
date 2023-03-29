@@ -2,4 +2,4 @@
 
 auto l1 = []() constexpr constexpr { }; // { dg-error "duplicate" }
 auto l2 = []() mutable mutable { }; // { dg-error "duplicate" }
-auto l3 = []() static { };	    // { dg-error "static" }
+auto l3 = []() static { };	    // { dg-error "static' only valid in lambda with" "" { target c++20_down } }

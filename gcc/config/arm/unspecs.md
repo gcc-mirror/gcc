@@ -1,5 +1,5 @@
 ;; Unspec defintions.
-;; Copyright (C) 2012-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2023 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -159,6 +159,7 @@
   UNSPEC_VCDE		; Custom Datapath Extension instruction.
   UNSPEC_VCDEA		; Custom Datapath Extension instruction.
   UNSPEC_DLS		; Used for DLS (Do Loop Start), Armv8.1-M Mainline instruction
+  UNSPEC_PAC_NOP	; Represents PAC signing LR
 ])
 
 
@@ -254,6 +255,9 @@
 			; instruction.
   VUNSPEC_VLLDM		; Represent the lazy load multiple with vlldm
 			; instruction.
+  VUNSPEC_PACBTI_NOP	; Represents PAC signing LR + valid landing pad
+  VUNSPEC_AUT_NOP	; Represents PAC verifying LR
+  VUNSPEC_BTI_NOP	; Represent BTI
 ])
 
 ;; Enumerators for NEON unspecs.
@@ -575,10 +579,8 @@
   VCVTMQ_S
   VCVTMQ_U
   VADDLVQ_U
-  VCTP8Q
-  VCTP16Q
-  VCTP32Q
-  VCTP64Q
+  VCTP
+  VCTP_M
   VPNOT
   VCREATEQ_F
   VCVTQ_N_TO_F_S
@@ -702,10 +704,6 @@
   VADDLVAQ_S
   VBICQ_N_U
   VBICQ_N_S
-  VCTP8Q_M
-  VCTP16Q_M
-  VCTP32Q_M
-  VCTP64Q_M
   VCVTBQ_F16_F32
   VCVTTQ_F16_F32
   VMLALDAVQ_U

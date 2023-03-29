@@ -52,7 +52,7 @@ f5 ()
 int
 main ()
 {
-  int return_lval = __cplusplus > 201703L ? -1 : 2;
+  int return_lval = -1;
   Y y1 = f (A());
   if (y1.y != return_lval)
     __builtin_abort ();

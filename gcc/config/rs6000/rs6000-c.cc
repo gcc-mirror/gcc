@@ -1,5 +1,5 @@
 /* Subroutines for the C front end on the PowerPC architecture.
-   Copyright (C) 2002-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2023 Free Software Foundation, Inc.
 
    Contributed by Zack Weinberg <zack@codesourcery.com>
    and Paolo Bonzini <bonzini@gnu.org>
@@ -808,6 +808,7 @@ static inline bool
 is_float128_p (tree t)
 {
   return (t == float128_type_node
+	  || (t && t == float128t_type_node)
 	  || (TARGET_IEEEQUAD
 	      && TARGET_LONG_DOUBLE_128
 	      && t == long_double_type_node));

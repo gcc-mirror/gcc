@@ -1,5 +1,5 @@
 /* Mainly the interface between cpplib and the C front ends.
-   Copyright (C) 1987-2022 Free Software Foundation, Inc.
+   Copyright (C) 1987-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -378,6 +378,17 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
 		result = 201803;
 	      else if (is_attribute_p ("nodiscard", attr_name))
 		result = 201907;
+	      else if (is_attribute_p ("assume", attr_name))
+		result = 202207;
+	      else if (is_attribute_p ("init_priority", attr_name))
+		{
+		  /* The (non-standard) init_priority attribute is always
+		     included in the attribute table, but we don't want to
+		     advertise the attribute unless the target actually
+		     supports init priorities.  */
+		  result = SUPPORTS_INIT_PRIORITY ? 1 : 0;
+		  attr_name = NULL_TREE;
+		}
 	    }
 	  else
 	    {
@@ -389,6 +400,9 @@ c_common_has_attribute (cpp_reader *pfile, bool std_syntax)
 		result = 202003;
 	      else if (is_attribute_p ("maybe_unused", attr_name))
 		result = 202106;
+	      else if (is_attribute_p ("noreturn", attr_name)
+		       || is_attribute_p ("_Noreturn", attr_name))
+		result = 202202;
 	    }
 	  if (result)
 	    attr_name = NULL_TREE;
@@ -960,6 +974,10 @@ interpret_float (const cpp_token *token, unsigned int flags,
 	  pedwarn (input_location, OPT_Wpedantic, "non-standard suffix on floating constant");
 
 	type = c_common_type_for_mode (mode, 0);
+	/* For Q suffix, prefer float128t_type_node (__float128) type
+	   over float128_type_node (_Float128) type if they are distinct.  */
+	if (type == float128_type_node && float128t_type_node)
+	  type = float128t_type_node;
 	gcc_assert (type);
       }
     else if ((flags & (CPP_N_FLOATN | CPP_N_FLOATNX)) != 0)
@@ -979,8 +997,33 @@ interpret_float (const cpp_token *token, unsigned int flags,
 	    error ("unsupported non-standard suffix on floating constant");
 	    return error_mark_node;
 	  }
+	else if (c_dialect_cxx () && !extended)
+	  {
+	    if (cxx_dialect < cxx23)
+	      pedwarn (input_location, OPT_Wpedantic,
+		       "%<f%d%> or %<F%d%> suffix on floating constant only "
+		       "available with %<-std=c++2b%> or %<-std=gnu++2b%>",
+		       n, n);
+	  }
 	else
-	  pedwarn (input_location, OPT_Wpedantic, "non-standard suffix on floating constant");
+	  pedwarn (input_location, OPT_Wpedantic,
+		   "non-standard suffix on floating constant");
+      }
+    else if ((flags & CPP_N_BFLOAT16) != 0)
+      {
+	type = bfloat16_type_node;
+	if (type == NULL_TREE)
+	  {
+	    error ("unsupported non-standard suffix on floating constant");
+	    return error_mark_node;
+	  }
+	if (!c_dialect_cxx ())
+	  pedwarn (input_location, OPT_Wpedantic,
+		   "non-standard suffix on floating constant");
+	else if (cxx_dialect < cxx23)
+	  pedwarn (input_location, OPT_Wpedantic,
+		   "%<bf16%> or %<BF16%> suffix on floating constant only "
+		   "available with %<-std=c++2b%> or %<-std=gnu++2b%>");
       }
     else if ((flags & CPP_N_WIDTH) == CPP_N_LARGE)
       type = long_double_type_node;

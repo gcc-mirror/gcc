@@ -8,7 +8,6 @@
  */
 module core.sys.windows.httpext;
 version (Windows):
-@system:
 
 /* Comment from MinGW
        httpext.h - Header for ISAPI extensions.

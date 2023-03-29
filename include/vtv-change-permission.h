@@ -1,4 +1,4 @@
-/* Copyright (C) 2013-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2013-2023 Free Software Foundation, Inc.
   
    This file is part of GCC.
   
@@ -48,6 +48,10 @@ extern void __VLTChangePermission (int);
 #else 
 #if defined(__sun__) && defined(__svr4__) && defined(__sparc__)
 #define VTV_PAGE_SIZE 8192
+#elif defined(__loongarch_lp64)
+/* The page size is configurable by the kernel to be 4, 16 or 64 KiB.
+   For now, only the default page size of 16KiB is supported.  */
+#define VTV_PAGE_SIZE 16384
 #else
 #define VTV_PAGE_SIZE 4096
 #endif

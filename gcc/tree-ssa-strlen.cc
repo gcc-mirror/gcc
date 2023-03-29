@@ -1,5 +1,5 @@
 /* String length optimization
-   Copyright (C) 2011-2022 Free Software Foundation, Inc.
+   Copyright (C) 2011-2023 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
 This file is part of GCC.
@@ -1136,14 +1136,15 @@ get_range_strlen_phi (tree src, gphi *phi,
 
       /* Adjust the minimum and maximum length determined so far and
 	 the upper bound on the array size.  */
-      if (!pdata->minlen
-	  || tree_int_cst_lt (argdata.minlen, pdata->minlen))
+      if (TREE_CODE (argdata.minlen) == INTEGER_CST
+	  && (!pdata->minlen
+	      || tree_int_cst_lt (argdata.minlen, pdata->minlen)))
 	pdata->minlen = argdata.minlen;
 
-      if (!pdata->maxlen
-	  || (argdata.maxlen
-	      && TREE_CODE (argdata.maxlen) == INTEGER_CST
-	      && tree_int_cst_lt (pdata->maxlen, argdata.maxlen)))
+      if (TREE_CODE (argdata.maxlen) == INTEGER_CST
+	  && (!pdata->maxlen
+	      || (argdata.maxlen
+		  && tree_int_cst_lt (pdata->maxlen, argdata.maxlen))))
 	pdata->maxlen = argdata.maxlen;
 
       if (!pdata->maxbound
@@ -1987,7 +1988,7 @@ maybe_set_strlen_range (tree lhs, tree src, tree bound)
 	 suggests if it's treated as a poor-man's flexible array member.  */
       src = TREE_OPERAND (src, 0);
       if (TREE_CODE (src) != MEM_REF
-	  && !array_at_struct_end_p (src))
+	  && !array_ref_flexible_size_p (src))
 	{
 	  tree type = TREE_TYPE (src);
 	  tree size = TYPE_SIZE_UNIT (type);
@@ -4735,7 +4736,7 @@ strlen_pass::count_nonzero_bytes (tree exp, gimple *stmt,
 
   /* Compute the number of leading nonzero bytes in the representation
      and update the minimum and maximum.  */
-  unsigned n = prep ? strnlen (prep, nbytes) : nbytes;
+  unsigned HOST_WIDE_INT n = prep ? strnlen (prep, nbytes) : nbytes;
 
   if (n < lenrange[0])
     lenrange[0] = n;

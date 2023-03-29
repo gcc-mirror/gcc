@@ -1,5 +1,5 @@
 /* Data References Analysis and Manipulation Utilities for Vectorization.
-   Copyright (C) 2003-2022 Free Software Foundation, Inc.
+   Copyright (C) 2003-2023 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
 
@@ -4016,6 +4016,11 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
   if (reversep)
     return false;
 
+  /* PR 107346.  Packed structs can have fields at offsets that are not
+     multiples of BITS_PER_UNIT.  Do not use gather/scatters in such cases.  */
+  if (!multiple_p (pbitpos, BITS_PER_UNIT))
+    return false;
+
   poly_int64 pbytepos = exact_div (pbitpos, BITS_PER_UNIT);
 
   if (TREE_CODE (base) == MEM_REF)
@@ -4302,7 +4307,8 @@ vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
       free_data_ref (dr);
       return opt_result::failure_at (stmt,
 				     "not vectorized:"
-				     " statement is bitfield access %G", stmt);
+				     " statement is an unsupported"
+				     " bitfield access %G", stmt);
     }
 
   if (DR_BASE_ADDRESS (dr)
@@ -4839,11 +4845,13 @@ vect_create_addr_base_for_vector_ref (vec_info *vinfo, stmt_vec_info stmt_info,
   if (loop_vinfo)
     addr_base = fold_build_pointer_plus (data_ref_base, base_offset);
   else
-    {
-      addr_base = build1 (ADDR_EXPR,
-			  build_pointer_type (TREE_TYPE (DR_REF (dr))),
-			  unshare_expr (DR_REF (dr)));
-    }
+    addr_base = build1 (ADDR_EXPR,
+			build_pointer_type (TREE_TYPE (DR_REF (dr))),
+			/* Strip zero offset components since we don't need
+			   them and they can confuse late diagnostics if
+			   we CSE them wrongly.  See PR106904 for example.  */
+			unshare_expr (strip_zero_offset_components
+								(DR_REF (dr))));
 
   vect_ptr_type = build_pointer_type (TREE_TYPE (DR_REF (dr)));
   dest = vect_get_new_vect_var (vect_ptr_type, vect_pointer_var, base_name);

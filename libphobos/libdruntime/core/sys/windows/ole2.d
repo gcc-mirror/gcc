@@ -8,7 +8,6 @@
  */
 module core.sys.windows.ole2;
 version (Windows):
-@system:
 pragma(lib, "ole32");
 
 public import core.sys.windows.basetyps, core.sys.windows.objbase, core.sys.windows.oleauto, core.sys.windows.olectlid,

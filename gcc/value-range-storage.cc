@@ -1,5 +1,5 @@
 /* Support routines for vrange storage.
-   Copyright (C) 2022 Free Software Foundation, Inc.
+   Copyright (C) 2022-2023 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>.
 
 This file is part of GCC.
@@ -150,11 +150,7 @@ irange_storage_slot::set_irange (const irange &r)
 {
   gcc_checking_assert (fits_p (r));
 
-  // Avoid calling unsupported get_nonzero_bits on legacy.
-  if (r.legacy_mode_p ())
-    m_ints[0] = -1;
-  else
-    m_ints[0] = r.get_nonzero_bits ();
+  m_ints[0] = r.get_nonzero_bits ();
 
   unsigned pairs = r.num_pairs ();
   for (unsigned i = 0; i < pairs; ++i)
@@ -265,17 +261,35 @@ frange_storage_slot::get_frange (frange &r, tree type) const
 {
   gcc_checking_assert (r.supports_type_p (type));
 
-  r.set_undefined ();
-  r.m_kind = m_kind;
-  r.m_type = type;
-  r.m_min = m_min;
-  r.m_max = m_max;
-  r.m_pos_nan = m_pos_nan;
-  r.m_neg_nan = m_neg_nan;
-  r.normalize_kind ();
+  // Handle explicit NANs.
+  if (m_kind == VR_NAN)
+    {
+      if (HONOR_NANS (type))
+	{
+	  if (m_pos_nan && m_neg_nan)
+	    r.set_nan (type);
+	  else
+	    r.set_nan (type, m_neg_nan);
+	}
+      else
+	r.set_undefined ();
+      return;
+    }
 
-  if (flag_checking)
-    r.verify_range ();
+  // We use the constructor to create the new range instead of writing
+  // out the bits into the frange directly, because the global range
+  // being read may be being inlined into a function with different
+  // restrictions as when it was originally written.  We want to make
+  // sure the resulting range is canonicalized correctly for the new
+  // consumer.
+  r = frange (type, m_min, m_max, m_kind);
+
+  // The constructor will set the NAN bits for HONOR_NANS, but we must
+  // make sure to set the NAN sign if known.
+  if (HONOR_NANS (type) && (m_pos_nan ^ m_neg_nan) == 1)
+    r.update_nan (m_neg_nan);
+  else if (!m_pos_nan && !m_neg_nan)
+    r.clear_nan ();
 }
 
 bool

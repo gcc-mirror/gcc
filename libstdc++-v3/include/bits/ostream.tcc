@@ -1,6 +1,6 @@
 // ostream classes -*- C++ -*-
 
-// Copyright (C) 1997-2022 Free Software Foundation, Inc.
+// Copyright (C) 1997-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -69,7 +69,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    ios_base::iostate __err = ios_base::goodbit;
 	    __try
 	      {
+#ifndef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
 		const __num_put_type& __np = __check_facet(this->_M_num_put);
+#else
+		const __num_put_type& __np
+		  = use_facet<__num_put_type>(this->_M_ios_locale);
+#endif
 		if (__np.put(*this, *this, this->fill(), __v).failed())
 		  __err |= ios_base::badbit;
 	      }

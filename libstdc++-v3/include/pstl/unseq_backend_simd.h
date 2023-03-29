@@ -74,7 +74,7 @@ __simd_or(_Index __first, _DifferenceType __n, _Pred __pred) noexcept
     const _Index __last = __first + __n;
     while (__last != __first)
     {
-        int32_t __flag = 1;
+        __INT32_TYPE__ __flag = 1;
         _PSTL_PRAGMA_SIMD_REDUCTION(& : __flag)
         for (_DifferenceType __i = 0; __i < __block_size; ++__i)
             if (__pred(*(__first + __i)))
@@ -532,7 +532,7 @@ struct _Combiner
     _BinaryOp* __bin_op; // Here is a pointer to function because of default ctor
 
     _Combiner() : __value{}, __bin_op(nullptr) {}
-    _Combiner(const _Tp& value, const _BinaryOp* bin_op) : __value(value), __bin_op(const_cast<_BinaryOp*>(bin_op)) {}
+    _Combiner(const _Tp& value, const _BinaryOp* __bin_op) : __value(value), __bin_op(const_cast<_BinaryOp*>(__bin_op)) {}
     _Combiner(const _Combiner& __obj) : __value{}, __bin_op(__obj.__bin_op) {}
 
     void
@@ -624,8 +624,8 @@ __simd_min_element(_ForwardIterator __first, _Size __n, _Compare __comp) noexcep
         _Compare* __min_comp;
 
         _ComplexType() : __min_val{}, __min_ind{}, __min_comp(nullptr) {}
-        _ComplexType(const _ValueType& val, const _Compare* comp)
-            : __min_val(val), __min_ind(0), __min_comp(const_cast<_Compare*>(comp))
+        _ComplexType(const _ValueType& __val, const _Compare* comp)
+            : __min_val(__val), __min_ind(0), __min_comp(const_cast<_Compare*>(comp))
         {
         }
         _ComplexType(const _ComplexType& __obj)
@@ -685,8 +685,8 @@ __simd_minmax_element(_ForwardIterator __first, _Size __n, _Compare __comp) noex
         _Compare* __minmax_comp;
 
         _ComplexType() : __min_val{}, __max_val{}, __min_ind{}, __max_ind{}, __minmax_comp(nullptr) {}
-        _ComplexType(const _ValueType& min_val, const _ValueType& max_val, const _Compare* comp)
-            : __min_val(min_val), __max_val(max_val), __min_ind(0), __max_ind(0),
+        _ComplexType(const _ValueType& __min_val, const _ValueType& __max_val, const _Compare* comp)
+            : __min_val(__min_val), __max_val(__max_val), __min_ind(0), __max_ind(0),
               __minmax_comp(const_cast<_Compare*>(comp))
         {
         }

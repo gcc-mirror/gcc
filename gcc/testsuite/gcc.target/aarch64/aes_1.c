@@ -1,6 +1,6 @@
 
 /* { dg-do compile } */
-/* { dg-options "-march=armv8-a+crypto" } */
+/* { dg-options "-march=armv8-a+aes" } */
 
 #include "arm_neon.h"
 

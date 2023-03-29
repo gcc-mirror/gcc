@@ -1,6 +1,6 @@
 // <shared_mutex> -*- C++ -*-
 
-// Copyright (C) 2013-2022 Free Software Foundation, Inc.
+// Copyright (C) 2013-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,9 +31,12 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // concurrency
+
 #if __cplusplus >= 201402L
 
 #include <bits/chrono.h>
+#include <bits/error_constants.h>
 #include <bits/functexcept.h>
 #include <bits/move.h>        // move, __exchange
 #include <bits/std_mutex.h>   // defer_lock_t
@@ -418,13 +421,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // Exclusive ownership
 
     void lock() { _M_impl.lock(); }
-    bool try_lock() { return _M_impl.try_lock(); }
+    [[nodiscard]] bool try_lock() { return _M_impl.try_lock(); }
     void unlock() { _M_impl.unlock(); }
 
     // Shared ownership
 
     void lock_shared() { _M_impl.lock_shared(); }
-    bool try_lock_shared() { return _M_impl.try_lock_shared(); }
+    [[nodiscard]] bool try_lock_shared() { return _M_impl.try_lock_shared(); }
     void unlock_shared() { _M_impl.unlock_shared(); }
 
 #if _GLIBCXX_USE_PTHREAD_RWLOCK_T
@@ -471,10 +474,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // Exclusive ownership
 
     void lock() { _Base::lock(); }
-    bool try_lock() { return _Base::try_lock(); }
+    _GLIBCXX_NODISCARD bool try_lock() { return _Base::try_lock(); }
     void unlock() { _Base::unlock(); }
 
     template<typename _Rep, typename _Period>
+      _GLIBCXX_NODISCARD
       bool
       try_lock_for(const chrono::duration<_Rep, _Period>& __rtime)
       {
@@ -487,10 +491,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // Shared ownership
 
     void lock_shared() { _Base::lock_shared(); }
+    _GLIBCXX_NODISCARD
     bool try_lock_shared() { return _Base::try_lock_shared(); }
     void unlock_shared() { _Base::unlock_shared(); }
 
     template<typename _Rep, typename _Period>
+      _GLIBCXX_NODISCARD
       bool
       try_lock_shared_for(const chrono::duration<_Rep, _Period>& __rtime)
       {
@@ -505,6 +511,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // Exclusive ownership
 
     template<typename _Duration>
+      _GLIBCXX_NODISCARD
       bool
       try_lock_until(const chrono::time_point<chrono::system_clock,
 		     _Duration>& __atime)
@@ -530,6 +537,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef _GLIBCXX_USE_PTHREAD_RWLOCK_CLOCKLOCK
     template<typename _Duration>
+      _GLIBCXX_NODISCARD
       bool
       try_lock_until(const chrono::time_point<chrono::steady_clock,
 		   _Duration>& __atime)
@@ -556,6 +564,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
     template<typename _Clock, typename _Duration>
+      _GLIBCXX_NODISCARD
       bool
       try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime)
       {
@@ -578,6 +587,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // Shared ownership
 
     template<typename _Duration>
+      _GLIBCXX_NODISCARD
       bool
       try_lock_shared_until(const chrono::time_point<chrono::system_clock,
 			    _Duration>& __atime)
@@ -617,6 +627,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef _GLIBCXX_USE_PTHREAD_RWLOCK_CLOCKLOCK
     template<typename _Duration>
+      _GLIBCXX_NODISCARD
       bool
       try_lock_shared_until(const chrono::time_point<chrono::steady_clock,
 			    _Duration>& __atime)
@@ -643,6 +654,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
     template<typename _Clock, typename _Duration>
+      _GLIBCXX_NODISCARD
       bool
       try_lock_shared_until(const chrono::time_point<_Clock,
 						     _Duration>& __atime)
@@ -668,6 +680,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // Exclusive ownership
 
     template<typename _Clock, typename _Duration>
+      _GLIBCXX_NODISCARD
       bool
       try_lock_until(const chrono::time_point<_Clock, _Duration>& __abs_time)
       {
@@ -692,6 +705,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // Shared ownership
 
     template <typename _Clock, typename _Duration>
+      _GLIBCXX_NODISCARD
       bool
       try_lock_shared_until(const chrono::time_point<_Clock,
 						     _Duration>& __abs_time)
@@ -774,6 +788,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_owns = true;
       }
 
+      _GLIBCXX_NODISCARD
       bool
       try_lock()
       {
@@ -782,6 +797,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       template<typename _Rep, typename _Period>
+	_GLIBCXX_NODISCARD
 	bool
 	try_lock_for(const chrono::duration<_Rep, _Period>& __rel_time)
 	{
@@ -790,6 +806,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _Clock, typename _Duration>
+	_GLIBCXX_NODISCARD
 	bool
 	try_lock_until(const chrono::time_point<_Clock, _Duration>& __abs_time)
 	{
@@ -824,10 +841,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Getters
 
+      _GLIBCXX_NODISCARD
       bool owns_lock() const noexcept { return _M_owns; }
 
       explicit operator bool() const noexcept { return _M_owns; }
 
+      _GLIBCXX_NODISCARD
       mutex_type* mutex() const noexcept { return _M_pm; }
 
     private:

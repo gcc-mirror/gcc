@@ -1,7 +1,7 @@
 // { dg-do run { target c++11 } }
 // { dg-options "-g -O0" }
 
-// Copyright (C) 2011-2022 Free Software Foundation, Inc.
+// Copyright (C) 2011-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,10 +17,6 @@
 // You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
-
-// GDB can't find global variables using the abi_tag attribute.
-// https://sourceware.org/bugzilla/show_bug.cgi?id=19436
-#define _GLIBCXX_USE_CXX11_ABI 0
 
 #include <string>
 #include <iostream>

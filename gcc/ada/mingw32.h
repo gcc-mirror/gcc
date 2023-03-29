@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 2002-2022, Free Software Foundation, Inc.         *
+ *          Copyright (C) 2002-2023, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -44,11 +44,6 @@
 #define UNICODE  /* For Win32 API */
 #endif
 
-/* We need functionality available only starting with Windows XP */
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0501
-#endif
-
 #ifndef __CYGWIN__
 #include <tchar.h>
 #endif
@@ -58,6 +53,7 @@
 #define _X86INTRIN_H_INCLUDED
 #define _EMMINTRIN_H_INCLUDED
 #endif
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 /* After including this file it is possible to use the character t as prefix
@@ -97,29 +93,6 @@ extern UINT __gnat_current_ccs_encoding;
 #define WS2SU(str,wstr,len) strncpy(str,wstr,len)
 #define S2WS(wstr,str,len) strncpy(wstr,str,len)
 #define WS2S(str,wstr,len) strncpy(str,wstr,len)
-#endif
-
-#include <stdlib.h>
-
-/* STD_MINGW: standard if MINGW32 version > 1.3, we have switched to this
-   version instead of the previous enhanced version to ease building GNAT on
-   Windows platforms. By using STD_MINGW or OLD_MINGW it is possible to build
-   GNAT using both MingW include files (Old MingW + ACT changes and standard
-   MingW starting with version 1.3.
-   For w64 Mingw the define STD_MINGW is always set to value 1, because
-   there is no old header set present.  */
-#ifdef _WIN64
-#define STD_MINGW 1
-#else
-#define STD_MINGW ((__MINGW32_MAJOR_VERSION == 1 \
-		   && __MINGW32_MINOR_VERSION >= 3) \
-     || (__MINGW32_MAJOR_VERSION >= 2))
-#endif
-
-#define OLD_MINGW (!(STD_MINGW))
-
-#ifndef MAXPATHLEN
-#define MAXPATHLEN MAX_PATH
 #endif
 
 #endif /* _MINGW32_H */

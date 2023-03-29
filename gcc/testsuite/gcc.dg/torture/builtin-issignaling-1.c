@@ -4,7 +4,7 @@
 /* Workaround for PR57484 on ia32: */
 /* { dg-additional-options "-msse2 -mfpmath=sse" { target { ia32 && sse2_runtime } } } */
 
-#ifndef EXT
+#if !defined(EXT) && !defined(TYPE)
 int
 f1 (void)
 {
@@ -41,31 +41,42 @@ f6 (long double x)
   return __builtin_issignaling (x);
 }
 #else
-#define CONCATX(X, Y) X ## Y
-#define CONCAT(X, Y) CONCATX (X, Y)
-#define CONCAT3(X, Y, Z) CONCAT (CONCAT (X, Y), Z)
-#define CONCAT4(W, X, Y, Z) CONCAT (CONCAT (CONCAT (W, X), Y), Z)
+#ifndef TYPE
+# define CONCATX(X, Y) X ## Y
+# define CONCAT(X, Y) CONCATX (X, Y)
+# define CONCAT3(X, Y, Z) CONCAT (CONCAT (X, Y), Z)
+# define CONCAT4(W, X, Y, Z) CONCAT (CONCAT (CONCAT (W, X), Y), Z)
 
-#if EXT
-# define TYPE CONCAT3 (_Float, WIDTH, x)
-# define CST(C) CONCAT4 (C, f, WIDTH, x)
-# define FN(F) CONCAT4 (F, f, WIDTH, x)
-#else
-# define TYPE CONCAT (_Float, WIDTH)
-# define CST(C) CONCAT3 (C, f, WIDTH)
-# define FN(F) CONCAT3 (F, f, WIDTH)
+# if EXT
+#  define TYPE CONCAT3 (_Float, WIDTH, x)
+#  define CST(C) CONCAT4 (C, f, WIDTH, x)
+#  define FN(F) CONCAT4 (F, f, WIDTH, x)
+# else
+#  define TYPE CONCAT (_Float, WIDTH)
+#  define CST(C) CONCAT3 (C, f, WIDTH)
+#  define FN(F) CONCAT3 (F, f, WIDTH)
+# endif
+#endif
+#ifndef NANS
+# define NANS(x) FN (__builtin_nans) (x)
+#endif
+#ifndef NAN
+# define NAN(x) FN (__builtin_nan) (x)
+#endif
+#ifndef INF
+# define INF FN (__builtin_inf) ()
 #endif
 
 int
 f1 (void)
 {
-  return __builtin_issignaling (FN (__builtin_nans) (""));
+  return __builtin_issignaling (NANS (""));
 }
 
 int
 f2 (void)
 {
-  return __builtin_issignaling (FN (__builtin_nan) (""));
+  return __builtin_issignaling (NAN (""));
 }
 
 int
@@ -118,10 +129,10 @@ main ()
   if (!f6 (z))
     __builtin_abort ();
 #else
-  if (f4 (w) || !f4 (FN (__builtin_nans) ("0x123")) || f4 (CST (42.0)) || f4 (FN (__builtin_nan) ("0x234"))
-      || f4 (FN (__builtin_inf) ()) || f4 (-FN (__builtin_inf) ()) || f4 (CST (-42.0)) || f4 (CST (-0.0)) || f4 (CST (0.0)))
+  if (f4 (w) || !f4 (NANS ("0x123")) || f4 (CST (42.0)) || f4 (NAN ("0x234"))
+      || f4 (INF) || f4 (-INF) || f4 (CST (-42.0)) || f4 (CST (-0.0)) || f4 (CST (0.0)))
     __builtin_abort ();
-  w = FN (__builtin_nans) ("");
+  w = NANS ("");
   asm volatile ("" : : : "memory");
   if (!f4 (w))
     __builtin_abort ();

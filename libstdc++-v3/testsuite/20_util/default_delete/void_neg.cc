@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 
-// Copyright (C) 2013-2022 Free Software Foundation, Inc.
+// Copyright (C) 2013-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,3 +27,6 @@ void test01()
   d(nullptr);   // { dg-error "here" }
   // { dg-error "delete pointer to incomplete type" "" { target *-*-* } 0 }
 }
+
+// { dg-prune-output "invalid application of 'sizeof' to a void type" }
+// { dg-prune-output "deleting 'void*' is undefined" }

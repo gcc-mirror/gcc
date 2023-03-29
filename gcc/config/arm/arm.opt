@@ -1,6 +1,6 @@
 ; Options for the ARM port of the compiler.
 
-; Copyright (C) 2005-2022 Free Software Foundation, Inc.
+; Copyright (C) 2005-2023 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -20,6 +20,18 @@
 
 HeaderInclude
 config/arm/arm-opts.h
+
+HeaderInclude
+config/arm/aarch-common.h
+
+TargetVariable
+enum aarch_function_type aarch_ra_sign_scope = AARCH_FUNCTION_NONE
+
+TargetVariable
+unsigned aarch_enable_bti = 0
+
+TargetVariable
+enum aarch_key_type aarch_ra_sign_key = AARCH_KEY_A
 
 Enum
 Name(tls_type) Type(enum arm_tls_type)
@@ -313,6 +325,10 @@ When linking for big-endian targets, generate a legacy BE32 format image.
 mbranch-cost=
 Target RejectNegative Joined UInteger Var(arm_branch_cost) Init(-1)
 Cost to assume for a branch insn.
+
+mbranch-protection=
+Target RejectNegative Joined Var(arm_branch_protection_string) Save
+Use branch-protection features.
 
 mgeneral-regs-only
 Target RejectNegative Mask(GENERAL_REGS_ONLY) Save

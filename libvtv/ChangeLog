@@ -1,3 +1,28 @@
+2023-01-07  LIU Hao  <lh_mouse@126.com>
+
+	PR middle-end/108300
+	* vtv_malloc.cc: Define `WIN32_LEAN_AND_MEAN` before <windows.h>.
+	* vtv_rts.cc: Likewise.
+	* vtv_utils.cc: Likewise.
+
+2022-10-31  Lulu Cheng  <chenglulu@loongson.cn>
+	    qijingwen  <qijingwen@loongson.cn>
+
+	* configure.tgt: Add loongarch support.
+
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-10-12  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* testsuite/lib/libvtv-dg.exp: Add load_gcc_lib of scansarif.exp.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* configure: Regenerate.
+
 2022-08-25  Martin Liska  <mliska@suse.cz>
 
 	* configure: Regenerate.
@@ -256,7 +281,7 @@
 	(count_all_pages): Likewise.
 	(dl_iterate_phdr_count_pages): Don't build on Cygwin and MinGW.
 	* libvtv/utils.cc : Include windows.h and skip execinfo.h inclusion on
-	 Cygwin and MinGW.
+	Cygwin and MinGW.
 	(__vtv_open_log): Exchange call to getuid and getpid with
 	GetCurrentProcessId and adjust call to snprintf accordingly on Cygwin
 	and MinGW.  Adjust calls to mkdir on MinGW.  Adjust call to open on

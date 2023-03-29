@@ -191,9 +191,8 @@ Mark_address_taken::expression(Expression** pexpr)
 class Check_escape : public Traverse
 {
  public:
-  Check_escape(Gogo* gogo)
-    : Traverse(traverse_expressions | traverse_variables),
-      gogo_(gogo)
+  Check_escape()
+    : Traverse(traverse_expressions | traverse_variables)
   { }
 
   int
@@ -201,9 +200,6 @@ class Check_escape : public Traverse
 
   int
   variable(Named_object*);
-
- private:
-  Gogo* gogo_;
 };
 
 int
@@ -664,7 +660,7 @@ Gogo::add_write_barriers()
     {
       this->propagate_writebarrierrec();
 
-      Check_escape chk(this);
+      Check_escape chk;
       this->traverse(&chk);
     }
 

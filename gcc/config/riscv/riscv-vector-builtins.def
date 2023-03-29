@@ -1,0 +1,386 @@
+/* Builtins macros for RISC-V 'V' Extension for GNU compiler.
+   Copyright (C) 2022-2023 Free Software Foundation, Inc.
+   Contributed by Ju-Zhe Zhong (juzhe.zhong@rivai.ai), RiVAI Technologies Ltd.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+/* Use "DEF_RVV_TYPE" macro to define RVV datatype builtins.
+   1.The 'NAME' argument is the name exposed to users.
+     For example, "vint32m1_t".
+   2.The 'NCHARS' argument is the length of ABI-name.
+     For example, length of "__rvv_int32m1_t" is 15.
+   3.The 'ABI_NAME' argument is the ABI-name. For example, "__rvv_int32m1_t".
+   4.The 'SCALAR_TYPE' argument is associated scalar type which is used in
+     "build_vector_type_for_mode". For "vint32m1_t", we use "intSI_type_node" in
+     RV64. Otherwise, we use "long_integer_type_node".
+   5.The 'VECTOR_MODE' is the machine modes of corresponding RVV type used
+     in "build_vector_type_for_mode" when TARGET_MIN_VLEN > 32.
+     For example: VECTOR_MODE = VNx2SI for "vint32m1_t".
+   6.The 'VECTOR_MODE_MIN_VLEN_32' is the machine modes of corresponding RVV
+     type used in "build_vector_type_for_mode" when TARGET_MIN_VLEN = 32. For
+     example: VECTOR_MODE_MIN_VLEN_32 = VNx1SI for "vint32m1_t".
+   7.The 'VECTOR_SUFFIX' define mode suffix for vector type.
+     For example: type_suffixes[VECTOR_TYPE_vin32m1_t].vector = i32m1.
+   8.The 'SCALAR_SUFFIX' define mode suffix for scalar type.
+     For example: type_suffixes[VECTOR_TYPE_vin32m1_t].scalar = i32.
+   9.The 'VSETVL_SUFFIX' define mode suffix for vsetvli instruction.
+     For example: type_suffixes[VECTOR_TYPE_vin32m1_t].vsetvl = e32m1.
+*/
+
+#ifndef DEF_RVV_TYPE
+#define DEF_RVV_TYPE(NAME, NCHARS, ABI_NAME, SCALAR_TYPE, VECTOR_MODE,         \
+		     VECTOR_MODE_MIN_VLEN_32, VECTOR_SUFFIX, SCALAR_SUFFIX,    \
+		     VSETVL_SUFFIX)
+#endif
+
+/* Use "DEF_RVV_OP_TYPE" macro to define RVV operand types.
+   The 'NAME' will be concatenated into intrinsic function name.  */
+#ifndef DEF_RVV_OP_TYPE
+#define DEF_RVV_OP_TYPE(NAME)
+#endif
+
+/* Use "DEF_RVV_PRED_TYPE" macro to define RVV predication types.
+   The 'NAME' will be concatenated into intrinsic function name.  */
+#ifndef DEF_RVV_PRED_TYPE
+#define DEF_RVV_PRED_TYPE(NAME)
+#endif
+
+/* Use "DEF_RVV_BASE_TYPE" macro to define RVV base types.
+   The 'NAME' will be concatenated into intrinsic function name.  */
+#ifndef DEF_RVV_BASE_TYPE
+#define DEF_RVV_BASE_TYPE(NAME, TYPE)
+#endif
+
+/* Use "DEF_RVV_TYPE_INDEX" macro to define RVV function types.
+   The 'NAME' will be concatenated into intrinsic function name.  */
+#ifndef DEF_RVV_TYPE_INDEX
+#define DEF_RVV_TYPE_INDEX(VECTOR, MASK, SIGNED, UNSIGNED, EEW8_INDEX, EEW16_INDEX, \
+		      EEW32_INDEX, EEW64_INDEX, SHIFT, DOUBLE_TRUNC,           \
+		      QUAD_TRUNC, OCT_TRUNC, DOUBLE_TRUNC_SCALAR,              \
+		      DOUBLE_TRUNC_SIGNED, DOUBLE_TRUNC_UNSIGNED,              \
+		      DOUBLE_TRUNC_UNSIGNED_SCALAR, DOUBLE_TRUNC_FLOAT, FLOAT, \
+		      LMUL1, WLMUL1, EEW8_INTERPRET, EEW16_INTERPRET,          \
+		      EEW32_INTERPRET, EEW64_INTERPRET, X2_VLMUL_EXT,          \
+		      X4_VLMUL_EXT, X8_VLMUL_EXT, X16_VLMUL_EXT,               \
+		      X32_VLMUL_EXT, X64_VLMUL_EXT)
+#endif
+
+/* SEW/LMUL = 64:
+   Only enable when TARGET_MIN_VLEN > 32 and machine mode = VNx1BImode.  */
+DEF_RVV_TYPE (vbool64_t, 14, __rvv_bool64_t, boolean, VNx1BI, VOID, _b64, , )
+/* SEW/LMUL = 32:
+   Machine mode = VNx2BImode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx1BImode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vbool32_t, 14, __rvv_bool32_t, boolean, VNx2BI, VNx1BI, _b32, , )
+/* SEW/LMUL = 16:
+   Machine mode = VNx2BImode when TARGET_MIN_VLEN = 32.
+   Machine mode = VNx4BImode when TARGET_MIN_VLEN > 32.  */
+DEF_RVV_TYPE (vbool16_t, 14, __rvv_bool16_t, boolean, VNx4BI, VNx2BI, _b16, , )
+/* SEW/LMUL = 8:
+   Machine mode = VNx8BImode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx4BImode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vbool8_t, 13, __rvv_bool8_t, boolean, VNx8BI, VNx4BI, _b8, , )
+/* SEW/LMUL = 4:
+   Machine mode = VNx16BImode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx8BImode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vbool4_t, 13, __rvv_bool4_t, boolean, VNx16BI, VNx8BI, _b4, , )
+/* SEW/LMUL = 2:
+   Machine mode = VNx32BImode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx16BImode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vbool2_t, 13, __rvv_bool2_t, boolean, VNx32BI, VNx16BI, _b2, , )
+/* SEW/LMUL = 1:
+   Machine mode = VNx64BImode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx32BImode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vbool1_t, 13, __rvv_bool1_t, boolean, VNx64BI, VNx32BI, _b1, , )
+
+/* LMUL = 1/8:
+   Only enble when TARGET_MIN_VLEN > 32 and machine mode = VNx1QImode.  */
+DEF_RVV_TYPE (vint8mf8_t, 15, __rvv_int8mf8_t, int8, VNx1QI, VOID, _i8mf8, _i8,
+	      _e8mf8)
+DEF_RVV_TYPE (vuint8mf8_t, 16, __rvv_uint8mf8_t, uint8, VNx1QI, VOID, _u8mf8,
+	      _u8, _e8mf8)
+/* LMUL = 1/4:
+   Machine mode = VNx2QImode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx1QImode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vint8mf4_t, 15, __rvv_int8mf4_t, int8, VNx2QI, VNx1QI, _i8mf4,
+	      _i8, _e8mf4)
+DEF_RVV_TYPE (vuint8mf4_t, 16, __rvv_uint8mf4_t, uint8, VNx2QI, VNx1QI, _u8mf4,
+	      _u8, _e8mf4)
+/* LMUL = 1/2:
+   Machine mode = VNx4QImode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx2QImode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vint8mf2_t, 15, __rvv_int8mf2_t, int8, VNx4QI, VNx2QI, _i8mf2,
+	      _i8, _e8mf2)
+DEF_RVV_TYPE (vuint8mf2_t, 16, __rvv_uint8mf2_t, uint8, VNx4QI, VNx2QI, _u8mf2,
+	      _u8, _e8mf2)
+/* LMUL = 1:
+   Machine mode = VNx8QImode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx4QImode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vint8m1_t, 14, __rvv_int8m1_t, int8, VNx8QI, VNx4QI, _i8m1, _i8,
+	      _e8m1)
+DEF_RVV_TYPE (vuint8m1_t, 15, __rvv_uint8m1_t, uint8, VNx8QI, VNx4QI, _u8m1,
+	      _u8, _e8m1)
+/* LMUL = 2:
+   Machine mode = VNx16QImode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx8QImode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vint8m2_t, 14, __rvv_int8m2_t, int8, VNx16QI, VNx8QI, _i8m2, _i8,
+	      _e8m2)
+DEF_RVV_TYPE (vuint8m2_t, 15, __rvv_uint8m2_t, uint8, VNx16QI, VNx8QI, _u8m2,
+	      _u8, _e8m2)
+/* LMUL = 4:
+   Machine mode = VNx32QImode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx16QImode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vint8m4_t, 14, __rvv_int8m4_t, int8, VNx32QI, VNx16QI, _i8m4, _i8,
+	      _e8m4)
+DEF_RVV_TYPE (vuint8m4_t, 15, __rvv_uint8m4_t, uint8, VNx32QI, VNx16QI, _u8m4,
+	      _u8, _e8m4)
+/* LMUL = 8:
+   Machine mode = VNx64QImode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx32QImode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vint8m8_t, 14, __rvv_int8m8_t, int8, VNx64QI, VNx32QI, _i8m8, _i8,
+	      _e8m8)
+DEF_RVV_TYPE (vuint8m8_t, 15, __rvv_uint8m8_t, uint8, VNx64QI, VNx32QI, _u8m8,
+	      _u8, _e8m8)
+
+/* LMUL = 1/4:
+   Only enble when TARGET_MIN_VLEN > 32 and machine mode = VNx1HImode.  */
+DEF_RVV_TYPE (vint16mf4_t, 16, __rvv_int16mf4_t, int16, VNx1HI, VOID, _i16mf4,
+	      _i16, _e16mf4)
+DEF_RVV_TYPE (vuint16mf4_t, 17, __rvv_uint16mf4_t, uint16, VNx1HI, VOID,
+	      _u16mf4, _u16, _e16mf4)
+/* LMUL = 1/2:
+   Machine mode = VNx2HImode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx1HImode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vint16mf2_t, 16, __rvv_int16mf2_t, int16, VNx2HI, VNx1HI, _i16mf2,
+	      _i16, _e16mf2)
+DEF_RVV_TYPE (vuint16mf2_t, 17, __rvv_uint16mf2_t, uint16, VNx2HI, VNx1HI,
+	      _u16mf2, _u16, _e16mf2)
+/* LMUL = 1:
+   Machine mode = VNx4HImode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx2HImode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vint16m1_t, 15, __rvv_int16m1_t, int16, VNx4HI, VNx2HI, _i16m1,
+	      _i16, _e16m1)
+DEF_RVV_TYPE (vuint16m1_t, 16, __rvv_uint16m1_t, uint16, VNx4HI, VNx2HI, _u16m1,
+	      _u16, _e16m1)
+/* LMUL = 2:
+   Machine mode = VNx8HImode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx4HImode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vint16m2_t, 15, __rvv_int16m2_t, int16, VNx8HI, VNx4HI, _i16m2,
+	      _i16, _e16m2)
+DEF_RVV_TYPE (vuint16m2_t, 16, __rvv_uint16m2_t, uint16, VNx8HI, VNx4HI, _u16m2,
+	      _u16, _e16m2)
+/* LMUL = 4:
+   Machine mode = VNx16HImode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx8HImode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vint16m4_t, 15, __rvv_int16m4_t, int16, VNx16HI, VNx8HI, _i16m4,
+	      _i16, _e16m4)
+DEF_RVV_TYPE (vuint16m4_t, 16, __rvv_uint16m4_t, uint16, VNx16HI, VNx8HI,
+	      _u16m4, _u16, _e16m4)
+/* LMUL = 8:
+   Machine mode = VNx32HImode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx16HImode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vint16m8_t, 15, __rvv_int16m8_t, int16, VNx32HI, VNx16HI, _i16m8,
+	      _i16, _e16m8)
+DEF_RVV_TYPE (vuint16m8_t, 16, __rvv_uint16m8_t, uint16, VNx32HI, VNx16HI,
+	      _u16m8, _u16, _e16m8)
+
+/* LMUL = 1/2:
+   Only enble when TARGET_MIN_VLEN > 32 and machine mode = VNx1SImode.  */
+DEF_RVV_TYPE (vint32mf2_t, 16, __rvv_int32mf2_t, int32, VNx1SI, VOID, _i32mf2,
+	      _i32, _e32mf2)
+DEF_RVV_TYPE (vuint32mf2_t, 17, __rvv_uint32mf2_t, uint32, VNx1SI, VOID,
+	      _u32mf2, _u32, _e32mf2)
+/* LMUL = 1:
+   Machine mode = VNx2SImode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx1SImode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vint32m1_t, 15, __rvv_int32m1_t, int32, VNx2SI, VNx1SI, _i32m1,
+	      _i32, _e32m1)
+DEF_RVV_TYPE (vuint32m1_t, 16, __rvv_uint32m1_t, uint32, VNx2SI, VNx1SI, _u32m1,
+	      _u32, _e32m1)
+/* LMUL = 2:
+   Machine mode = VNx4SImode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx2SImode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vint32m2_t, 15, __rvv_int32m2_t, int32, VNx4SI, VNx2SI, _i32m2,
+	      _i32, _e32m2)
+DEF_RVV_TYPE (vuint32m2_t, 16, __rvv_uint32m2_t, uint32, VNx4SI, VNx2SI, _u32m2,
+	      _u32, _e32m2)
+/* LMUL = 4:
+   Machine mode = VNx8SImode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx4SImode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vint32m4_t, 15, __rvv_int32m4_t, int32, VNx8SI, VNx4SI, _i32m4,
+	      _i32, _e32m4)
+DEF_RVV_TYPE (vuint32m4_t, 16, __rvv_uint32m4_t, uint32, VNx8SI, VNx4SI, _u32m4,
+	      _u32, _e32m4)
+/* LMUL = 8:
+   Machine mode = VNx16SImode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx8SImode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vint32m8_t, 15, __rvv_int32m8_t, int32, VNx16SI, VNx8SI, _i32m8,
+	      _i32, _e32m8)
+DEF_RVV_TYPE (vuint32m8_t, 16, __rvv_uint32m8_t, uint32, VNx16SI, VNx8SI,
+	      _u32m8, _u32, _e32m8)
+
+/* SEW = 64:
+   Disable when TARGET_MIN_VLEN > 32.  */
+DEF_RVV_TYPE (vint64m1_t, 15, __rvv_int64m1_t, int64, VNx1DI, VOID, _i64m1,
+	      _i64, _e64m1)
+DEF_RVV_TYPE (vuint64m1_t, 16, __rvv_uint64m1_t, uint64, VNx1DI, VOID, _u64m1,
+	      _u64, _e64m1)
+DEF_RVV_TYPE (vint64m2_t, 15, __rvv_int64m2_t, int64, VNx2DI, VOID, _i64m2,
+	      _i64, _e64m2)
+DEF_RVV_TYPE (vuint64m2_t, 16, __rvv_uint64m2_t, uint64, VNx2DI, VOID, _u64m2,
+	      _u64, _e64m2)
+DEF_RVV_TYPE (vint64m4_t, 15, __rvv_int64m4_t, int64, VNx4DI, VOID, _i64m4,
+	      _i64, _e64m4)
+DEF_RVV_TYPE (vuint64m4_t, 16, __rvv_uint64m4_t, uint64, VNx4DI, VOID, _u64m4,
+	      _u64, _e64m4)
+DEF_RVV_TYPE (vint64m8_t, 15, __rvv_int64m8_t, int64, VNx8DI, VOID, _i64m8,
+	      _i64, _e64m8)
+DEF_RVV_TYPE (vuint64m8_t, 16, __rvv_uint64m8_t, uint64, VNx8DI, VOID, _u64m8,
+	      _u64, _e64m8)
+
+/* LMUL = 1/2:
+   Only enble when TARGET_MIN_VLEN > 32 and machine mode = VNx1SFmode.  */
+DEF_RVV_TYPE (vfloat32mf2_t, 18, __rvv_float32mf2_t, float, VNx1SF, VOID,
+	      _f32mf2, _f32, _e32mf2)
+/* LMUL = 1:
+   Machine mode = VNx2SFmode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx1SFmode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vfloat32m1_t, 17, __rvv_float32m1_t, float, VNx2SF, VNx1SF,
+	      _f32m1, _f32, _e32m1)
+/* LMUL = 2:
+   Machine mode = VNx4SFmode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx2SFmode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vfloat32m2_t, 17, __rvv_float32m2_t, float, VNx4SF, VNx2SF,
+	      _f32m2, _f32, _e32m2)
+/* LMUL = 4:
+   Machine mode = VNx8SFmode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx4SFmode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vfloat32m4_t, 17, __rvv_float32m4_t, float, VNx8SF, VNx4SF,
+	      _f32m4, _f32, _e32m4)
+/* LMUL = 8:
+   Machine mode = VNx16SFmode when TARGET_MIN_VLEN > 32.
+   Machine mode = VNx8SFmode when TARGET_MIN_VLEN = 32.  */
+DEF_RVV_TYPE (vfloat32m8_t, 17, __rvv_float32m8_t, float, VNx16SF, VNx8SF,
+	      _f32m8, _f32, _e32m8)
+
+/* SEW = 64:
+   Disable when TARGET_VECTOR_FP64.  */
+DEF_RVV_TYPE (vfloat64m1_t, 17, __rvv_float64m1_t, double, VNx1DF, VOID, _f64m1,
+	      _f64, _e64m1)
+DEF_RVV_TYPE (vfloat64m2_t, 17, __rvv_float64m2_t, double, VNx2DF, VOID, _f64m2,
+	      _f64, _e64m2)
+DEF_RVV_TYPE (vfloat64m4_t, 17, __rvv_float64m4_t, double, VNx4DF, VOID, _f64m4,
+	      _f64, _e64m4)
+DEF_RVV_TYPE (vfloat64m8_t, 17, __rvv_float64m8_t, double, VNx8DF, VOID, _f64m8,
+	      _f64, _e64m8)
+
+DEF_RVV_OP_TYPE (vv)
+DEF_RVV_OP_TYPE (vx)
+DEF_RVV_OP_TYPE (v)
+DEF_RVV_OP_TYPE (wv)
+DEF_RVV_OP_TYPE (wx)
+DEF_RVV_OP_TYPE (x_v)
+DEF_RVV_OP_TYPE (vf2)
+DEF_RVV_OP_TYPE (vf4)
+DEF_RVV_OP_TYPE (vf8)
+DEF_RVV_OP_TYPE (vvm)
+DEF_RVV_OP_TYPE (vxm)
+DEF_RVV_OP_TYPE (x_w)
+DEF_RVV_OP_TYPE (x)
+DEF_RVV_OP_TYPE (vs)
+DEF_RVV_OP_TYPE (mm)
+DEF_RVV_OP_TYPE (m)
+DEF_RVV_OP_TYPE (vf)
+DEF_RVV_OP_TYPE (vm)
+DEF_RVV_OP_TYPE (wf)
+DEF_RVV_OP_TYPE (vfm)
+DEF_RVV_OP_TYPE (f)
+DEF_RVV_OP_TYPE (f_v)
+DEF_RVV_OP_TYPE (xu_v)
+DEF_RVV_OP_TYPE (f_w)
+DEF_RVV_OP_TYPE (xu_w)
+DEF_RVV_OP_TYPE (s)
+
+DEF_RVV_PRED_TYPE (ta)
+DEF_RVV_PRED_TYPE (tu)
+DEF_RVV_PRED_TYPE (ma)
+DEF_RVV_PRED_TYPE (mu)
+DEF_RVV_PRED_TYPE (tama)
+DEF_RVV_PRED_TYPE (tamu)
+DEF_RVV_PRED_TYPE (tuma)
+DEF_RVV_PRED_TYPE (tumu)
+DEF_RVV_PRED_TYPE (m)
+DEF_RVV_PRED_TYPE (tam)
+DEF_RVV_PRED_TYPE (tum)
+
+DEF_RVV_BASE_TYPE (vector, builtin_types[type_idx].vector)
+DEF_RVV_BASE_TYPE (scalar, builtin_types[type_idx].scalar)
+DEF_RVV_BASE_TYPE (mask, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (signed_vector, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (unsigned_vector, get_vector_type (type_idx))
+/* According to riscv-vector-builtins-types.def, the unsigned
+   type is always the signed type + 1 (They have same SEW and LMUL).
+   For example 'vuint8mf8_t' enum = 'vint8mf8_t' enum + 1.
+   Note: We dont't allow type_idx to be unsigned type.  */
+DEF_RVV_BASE_TYPE (unsigned_scalar, builtin_types[type_idx + 1].scalar)
+DEF_RVV_BASE_TYPE (vector_ptr, builtin_types[type_idx].vector_ptr)
+/* According to the latest rvv-intrinsic-doc, it defines vsm.v intrinsic:
+   __riscv_vsm (uint8_t *base, vbool1_t value, size_t vl).  */
+DEF_RVV_BASE_TYPE (scalar_ptr, get_scalar_ptr_type (type_idx))
+/* According to the latest rvv-intrinsic-doc, it defines vlm.v intrinsic:
+   __riscv_vlm_v_b1 (const uint8_t *base, size_t vl).  */
+DEF_RVV_BASE_TYPE (scalar_const_ptr, get_scalar_const_ptr_type (type_idx))
+DEF_RVV_BASE_TYPE (void, void_type_node)
+DEF_RVV_BASE_TYPE (size, size_type_node)
+DEF_RVV_BASE_TYPE (ptrdiff, ptrdiff_type_node)
+DEF_RVV_BASE_TYPE (unsigned_long, long_unsigned_type_node)
+DEF_RVV_BASE_TYPE (long, long_integer_type_node)
+DEF_RVV_BASE_TYPE (eew8_index, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (eew16_index, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (eew32_index, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (eew64_index, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (shift_vector, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (double_trunc_vector, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (quad_trunc_vector, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (oct_trunc_vector, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (double_trunc_scalar, get_scalar_type (type_idx))
+DEF_RVV_BASE_TYPE (double_trunc_signed_vector, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (double_trunc_unsigned_vector, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (double_trunc_unsigned_scalar, get_scalar_type (type_idx))
+DEF_RVV_BASE_TYPE (double_trunc_float_vector, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (float_vector, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (lmul1_vector, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (widen_lmul1_vector, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (eew8_interpret, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (eew16_interpret, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (eew32_interpret, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (eew64_interpret, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (vlmul_ext_x2, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (vlmul_ext_x4, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (vlmul_ext_x8, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (vlmul_ext_x16, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (vlmul_ext_x32, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (vlmul_ext_x64, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (size_ptr, build_pointer_type (size_type_node))
+
+#include "riscv-vector-type-indexer.gen.def"
+
+#undef DEF_RVV_PRED_TYPE
+#undef DEF_RVV_OP_TYPE
+#undef DEF_RVV_TYPE
+#undef DEF_RVV_BASE_TYPE
+#undef DEF_RVV_TYPE_INDEX

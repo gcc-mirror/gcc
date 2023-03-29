@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 processor synchronization primitives.
-;; Copyright (C) 2009-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2023 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -640,7 +640,55 @@
   }
 )
 
-(define_insn "atomic_load<mode>"
+(define_insn "*atomic_load<ALLX:mode>_zext<SD_HSDI:mode>"
+  [(set (match_operand:SD_HSDI 0 "register_operand" "=r")
+	(zero_extend:SD_HSDI
+	  (unspec_volatile:ALLX
+	    [(match_operand:ALLX 1 "aarch64_sync_memory_operand" "Q")
+	     (match_operand:SI 2 "const_int_operand")]			;; model
+	   UNSPECV_LDA)))]
+  "GET_MODE_SIZE (<SD_HSDI:MODE>mode) > GET_MODE_SIZE (<ALLX:MODE>mode)"
+  {
+    enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
+    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_release (model))
+      return "ldr<ALLX:atomic_sfx>\t%<ALLX:w>0, %1";
+    else
+      return "ldar<ALLX:atomic_sfx>\t%<ALLX:w>0, %1";
+  }
+)
+
+(define_expand "atomic_load<mode>"
+  [(match_operand:ALLI 0 "register_operand" "=r")
+   (match_operand:ALLI 1 "aarch64_sync_memory_operand" "Q")
+   (match_operand:SI   2 "const_int_operand")]
+  ""
+  {
+    /* If TARGET_RCPC and this is an ACQUIRE load, then expand to a pattern
+       using UNSPECV_LDAP.  */
+    enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
+    if (TARGET_RCPC
+	&& (is_mm_acquire (model)
+	    || is_mm_acq_rel (model)))
+      emit_insn (gen_aarch64_atomic_load<mode>_rcpc (operands[0], operands[1],
+						     operands[2]));
+    else
+      emit_insn (gen_aarch64_atomic_load<mode> (operands[0], operands[1],
+						operands[2]));
+    DONE;
+  }
+)
+
+(define_insn "aarch64_atomic_load<mode>_rcpc"
+  [(set (match_operand:ALLI 0 "register_operand" "=r")
+    (unspec_volatile:ALLI
+      [(match_operand:ALLI 1 "aarch64_sync_memory_operand" "Q")
+       (match_operand:SI 2 "const_int_operand")]			;; model
+      UNSPECV_LDAP))]
+  "TARGET_RCPC"
+  "ldapr<atomic_sfx>\t%<w>0, %1"
+)
+
+(define_insn "aarch64_atomic_load<mode>"
   [(set (match_operand:ALLI 0 "register_operand" "=r")
     (unspec_volatile:ALLI
       [(match_operand:ALLI 1 "aarch64_sync_memory_operand" "Q")
@@ -654,6 +702,28 @@
     else
       return "ldar<atomic_sfx>\t%<w>0, %1";
   }
+)
+
+(define_insn "*aarch64_atomic_load<ALLX:mode>_rcpc_zext"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+    (zero_extend:GPI
+      (unspec_volatile:ALLX
+        [(match_operand:ALLX 1 "aarch64_sync_memory_operand" "Q")
+         (match_operand:SI 2 "const_int_operand")]			;; model
+       UNSPECV_LDAP)))]
+  "TARGET_RCPC && (<GPI:sizen> > <ALLX:sizen>)"
+  "ldapr<ALLX:atomic_sfx>\t%w0, %1"
+)
+
+(define_insn "*aarch64_atomic_load<ALLX:mode>_rcpc_sext"
+  [(set (match_operand:GPI  0 "register_operand" "=r")
+    (sign_extend:GPI
+      (unspec_volatile:ALLX
+        [(match_operand:ALLX 1 "aarch64_sync_memory_operand" "Q")
+         (match_operand:SI 2 "const_int_operand")]			;; model
+       UNSPECV_LDAP)))]
+  "TARGET_RCPC2 && (<GPI:sizen> > <ALLX:sizen>)"
+  "ldapurs<ALLX:size>\t%<GPI:w>0, %1"
 )
 
 (define_insn "atomic_store<mode>"

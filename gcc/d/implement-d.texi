@@ -1,0 +1,2520 @@
+@ignore
+Copyright (C) 2022-2023 Free Software Foundation, Inc.
+This is part of the GNU D manual.
+For copying conditions, see the file gdc.texi.
+@end ignore
+
+@node D Implementation
+@chapter Language Reference
+@cindex language reference, D language
+
+The implementation of the D programming language used by the GNU D compiler is
+shared with parts of the front-end for the Digital Mars D compiler, hosted at
+@uref{https://github.com/dlang/dmd/}.  This common front-end covers lexical
+analysis, parsing, and semantic analysis of the D programming language defined
+in the documents at @uref{https://dlang.org/}.
+
+The implementation details described in this manual are GNU D extensions to the
+D programming language.  If you want to write code that checks whether these
+features are available, you can test for the predefined version @code{GNU}, or
+you can check whether a specific feature is compilable using
+@code{__traits(compiles)}.
+
+@smallexample
+version (GNU)
+@{
+    import gcc.builtins;
+    return __builtin_atan2(x, y);
+@}
+
+static if (__traits(compiles, @{ asm @{"";@} @}))
+@{
+    asm @{ "magic instruction"; @}
+@}
+@end smallexample
+
+@menu
+* Attributes::          Implementation-defined attributes.
+* Builtin Functions::   GCC built-ins module.
+* ImportC::             Importing C sources into D.
+* Inline Assembly::     Interfacing D with assembler.
+* Intrinsics::          Intrinsic functions supported by GDC.
+* Predefined Pragmas::  Pragmas accepted by GDC.
+* Predefined Versions:: List of versions for conditional compilation.
+* Special Enums::       Intrinsic type interoperability with C and C++.
+* Traits::              Compile-time reflection extensions.
+* Vector Extensions::   Using vector types and supported operations.
+* Vector Intrinsics::   Vector instructions through intrinsics.
+* Missing Features::    Deviations from the D2 specification in GDC.
+@end menu
+
+
+@c --------------------------------------------------------
+
+@node Attributes
+@section Attributes
+@cindex attributes
+
+User-Defined Attributes (UDA) are compile-time expressions introduced by the
+@code{@@} token that can be attached to a declaration.  These attributes can
+then be queried, extracted, and manipulated at compile time.
+
+GNU D provides a number of extra special attributes to control specific
+compiler behavior that may help the compiler optimize or check code more
+carefully for correctness.  The attributes are defined in the
+@code{gcc.attributes} module.
+
+There is some overlap between the purposes of attributes and pragmas.  It has
+been found more convenient to use @code{@@attribute} to achieve a natural
+attachment of attributes to their corresponding declarations, whereas
+@code{pragma} is of use for compatibility with other compilers or constructs
+that do not naturally form part of the grammar.
+
+@menu
+* Attribute Syntax::
+* Common Attributes::
+* Other Attributes::
+* Target Attributes::
+@end menu
+
+@c --------------------------------------------------------
+
+@node Attribute Syntax
+@subsection Attribute Syntax
+
+@code{@@(gcc.attributes.attribute)} is the generic entrypoint for applying GCC
+attributes to a function, variable, or type.  There is no type checking done,
+as well as no deprecation path for attributes removed from the compiler.  So
+the recommendation is to use any of the other UDAs available as described in
+@ref{Common Attributes} unless it is a target-specific attribute
+(@xref{Target Attributes}).
+
+Function attributes introduced by the @code{@@attribute} UDA are used in the
+declaration of a function, followed by an attribute name string and any
+arguments separated by commas enclosed in parentheses.
+
+@smallexample
+import gcc.attributes;
+@@attribute("regparm", 1) int func(int size);
+@end smallexample
+
+@noindent
+Multiple attributes can be applied to a single declaration either with multiple
+@code{@@attribute} attributes, or passing all attributes as a comma-separated
+list enclosed by parentheses.
+
+@smallexample
+// Both func1 and func2 have the same attributes applied.
+@@attribute("noinline") @@attribute("noclone") void func1();
+@@(attribute("noinline"), attribute("noclone")) void func2();
+@end smallexample
+
+@noindent
+There are some problems with the semantics of such attributes in D.  For
+example, there are no manglings for attributes, although they may affect code
+generation, so problems may arise when attributed types are used in conjunction
+with templates or overloading.  Similarly, @code{typeid} does not distinguish
+between types with different attributes.  Support for attributes in D are
+restricted to declarations only.
+
+@c --------------------------------------------------------
+
+@node Common Attributes
+@subsection Common Attributes
+
+The following attributes are supported on most targets.
+
+@table @code
+
+@cindex @code{alloc_size} function attribute
+@cindex @code{alloc_size} variable attribute
+@item @@(gcc.attributes.alloc_size (@var{sizeArgIdx}))
+@itemx @@(gcc.attributes.alloc_size (@var{sizeArgIdx}, @var{numArgIdx}))
+@itemx @@(gcc.attributes.alloc_size (@var{sizeArgIdx}, @var{numArgIdx}, @var{zeroBasedNumbering}))
+
+The @code{@@alloc_size} attribute may be applied to a function - or a function
+pointer variable -  that returns a pointer and takes at least one argument of
+an integer or enumerated type.  It indicates that the returned pointer points
+to memory whose size is given by the function argument at @code{sizeArgIdx}, or
+by the product of the arguments at @code{sizeArgIdx} and @code{numArgIdx}.
+Meaningful sizes are positive values less than @code{ptrdiff_t.max}.  Unless
+@code{zeroBasedNumbering} is true, argument numbering starts at one for
+ordinary functions, and at two for non-static member functions.
+
+If @code{numArgIdx} is less than @code{0}, it is taken to mean there is no
+argument specifying the element count.
+
+@smallexample
+@@alloc_size(1) void* malloc(size_t);
+@@alloc_size(3,2) void* reallocarray(void *, size_t, size_t);
+@@alloc_size(1,2) void* my_calloc(size_t, size_t, bool);
+void malloc_cb(@@alloc_size(1) void* function(size_t) ptr) @{ @}
+@end smallexample
+
+@cindex @code{always_inline} function attribute
+@item @@(gcc.attributes.always_inline)
+
+The @code{@@always_inline} attribute inlines the function independent of any
+restrictions that otherwise apply to inlining.  Failure to inline such a
+function is diagnosed as an error.
+
+@smallexample
+@@always_inline int func();
+@end smallexample
+
+@cindex @code{cold} function attribute
+@item @@(gcc.attributes.cold)
+
+The @code{@@cold} attribute on functions is used to inform the compiler that the
+function is unlikely to be executed.  The function is optimized for size
+rather than speed and on many targets it is placed into a special subsection
+of the text section so all cold functions appear close together, improving
+code locality of non-cold parts of program.  The paths leading to calls of
+cold functions within code are considered to be cold too.
+
+@smallexample
+@@cold int func();
+@end smallexample
+
+@cindex @code{flatten} function attribute
+@item @@(gcc.attributes.flatten)
+
+The @code{@@flatten} attribute is used to inform the compiler that every call
+inside this function should be inlined, if possible.  Functions declared with
+attribute @code{@@noinline} and similar are not inlined.
+
+@smallexample
+@@flatten int func();
+@end smallexample
+
+@cindex @code{no_icf} function attribute
+@item @@(gcc.attributes.no_icf)
+
+The @code{@@no_icf} attribute prevents a function from being merged with
+another semantically equivalent function.
+
+@smallexample
+@@no_icf int func();
+@end smallexample
+
+@cindex @code{no_sanitize} function attribute
+@item @@(gcc.attributes.no_sanitize ("@var{sanitize_option}"))
+
+The @code{@@no_sanitize} attribute on functions is used to inform the compiler
+that it should not do sanitization of any option mentioned in
+@var{sanitize_option}.  A list of values acceptable by the @option{-fsanitize}
+option can be provided.
+
+@smallexample
+@@no_sanitize("alignment", "object-size") void func1() @{ @}
+@@no_sanitize("alignment,object-size") void func2() @{ @}
+@end smallexample
+
+@cindex @code{noclone} function attribute
+@item @@(gcc.attributes.noclone)
+
+The @code{@@noclone} attribute prevents a function from being considered for
+cloning - a mechanism that produces specialized copies of functions and which
+is (currently) performed by interprocedural constant propagation.
+
+@smallexample
+@@noclone int func();
+@end smallexample
+
+@cindex @code{noinline} function attribute
+@item @@(gcc.attributes.noinline)
+
+The @code{@@noinline} attribute prevents a function from being considered for
+inlining.  If the function does not have side effects, there are optimizations
+other than inlining that cause function calls to be optimized away, although
+the function call is live.  To keep such calls from being optimized away, put
+@code{asm @{ ""; @}} in the called function, to serve as a special side effect.
+
+@smallexample
+@@noinline int func();
+@end smallexample
+
+@cindex @code{noipa} function attribute
+@item @@(gcc.attributes.noipa)
+
+The @code{@@noipa} attribute disables interprocedural optimizations between the
+function with this attribute and its callers, as if the body of the function is
+not available when optimizing callers and the callers are unavailable when
+optimizing the body.  This attribute implies @code{@@noinline},
+@code{@@noclone}, and @code{@@no_icf} attributes.  However, this attribute is
+not equivalent to a combination of other attributes, because its purpose is to
+suppress existing and future optimizations employing interprocedural analysis,
+including those that do not have an attribute suitable for disabling them
+individually.
+
+This attribute is supported mainly for the purpose of testing the compiler.
+
+@smallexample
+@@noipa int func();
+@end smallexample
+
+@cindex @code{noplt} function attribute
+@item @@(gcc.attributes.noplt)
+
+The @code{@@noplt} attribute is the counterpart to option @option{-fno-plt}.
+Calls to functions marked with this attribute in position-independent code do
+not use the PLT in position-independent code.
+
+In position-dependant code, a few targets also convert call to functions that
+are marked to not use the PLT to use the GOT instead.
+
+@smallexample
+@@noplt int func();
+@end smallexample
+
+@cindex @code{optimize} function attribute
+@item @@(gcc.attributes.optimize (@var{arguments}))
+
+The @code{@@optimize} attribute is used to specify that a function is to be
+compiled with different optimization options than specified on the command
+line.  Valid @var{arguments} are constant non-negative integers and strings.
+Multiple arguments can be provided, separated by commas to specify multiple
+options.  Each numeric argument specifies an optimization level.  Each string
+argument that begins with the letter @code{O} refers to an optimization option
+such as @option{-O0} or @option{-Os}.  Other options are taken as suffixes to
+the @code{-f} prefix jointly forming the name of an optimization option.
+
+Not every optimization option that starts with the @code{-f} prefix
+specified by the attribute necessarily has an effect on the function.
+The @code{@@optimize} attribute should be used for debugging purposes only.
+It is not suitable in production code.
+
+@smallexample
+@@optimize(2) double fn0(double x);
+@@optimize("2") double fn1(double x);
+@@optimize("s") double fn2(double x);
+@@optimize("Ofast") double fn3(double x);
+@@optimize("-O2") double fn4(double x);
+@@optimize("tree-vectorize") double fn5(double x);
+@@optimize("-ftree-vectorize") double fn6(double x);
+@@optimize("no-finite-math-only", 3) double fn7(double x);
+@end smallexample
+
+@cindex @code{register} variable attribute
+@item @@(gcc.attributes.register ("@var{registerName}"))
+
+The @code{@@register} attribute specifies that a local or @code{__gshared}
+variable is to be given a register storage-class in the C99 sense of the term,
+and will be placed into a register named @var{registerName}.
+
+The variable needs to boiled down to a data type that fits the target register.
+It also cannot have either thread-local or @code{extern} storage.  It is an
+error to take the address of a register variable.
+
+@smallexample
+@@register("ebx") __gshared int ebx = void;
+void func() @{ @@register("r10") long r10 = 0x2a; @}
+@end smallexample
+
+@cindex @code{restrict} parameter attribute
+@item @@(gcc.attributes.restrict)
+
+The @code{@@restrict} attribute specifies that a function parameter is to be
+restrict-qualified in the C99 sense of the term.  The parameter needs to boil
+down to either a pointer or reference type, such as a D pointer, class
+reference, or a @code{ref} parameter.
+
+@smallexample
+void func(@@restrict ref const float[16] array);
+@end smallexample
+
+@cindex @code{section} function attribute
+@cindex @code{section} variable attribute
+@item @@(gcc.attributes.section ("@var{sectionName}"))
+
+The @code{@@section} attribute specifies that a function or variable lives in a
+particular section.  For when you need certain particular functions to appear
+in special sections.
+
+Some file formats do not support arbitrary sections so the section attribute is
+not available on all platforms.  If you need to map the entire contents of a
+module to a particular section, consider using the facilities of the linker
+instead.
+
+@smallexample
+@@section("bar") extern void func();
+@@section("stack") ubyte[10000] stack;
+@end smallexample
+
+@cindex @code{simd} function attribute
+@item @@(gcc.attributes.simd)
+
+The @code{@@simd} attribute enables creation of one or more function versions
+that can process multiple arguments using SIMD instructions from a single
+invocation.  Specifying this attribute allows compiler to assume that such
+versions are available at link time (provided in the same or another module).
+Generated versions are target-dependent and described in the corresponding
+Vector ABI document.
+
+@smallexample
+@@simd double sqrt(double x);
+@end smallexample
+
+@cindex @code{simd_clones} function attribute
+@item @@(gcc.attributes.simd_clones ("@var{mask}"))
+
+The @code{@@simd_clones} attribute is the same as @code{@@simd}, but also
+includes a @var{mask} argument.  Valid masks values are @code{notinbranch} or
+@code{inbranch}, and instructs the compiler to generate non-masked or masked
+clones correspondingly.
+
+@smallexample
+@@simd_clones("notinbranch") double atan2(double y, double x);
+@end smallexample
+
+@cindex @code{symver} function attribute
+@item @@(gcc.attributes.symver ("@var{arguments}"))
+
+The @code{@@symver} attribute creates a symbol version on ELF targets.
+The syntax of the string parameter is @code{"@var{name}@@@var{nodename}"}.
+The @var{name} part of the parameter is the actual name of the symbol by which
+it will be externally referenced.  The @var{nodename} portion should be the
+name of a node specified in the version script supplied to the linker when
+building a shared library.  Versioned symbol must be defined and must be
+exported with default visibility.
+
+Finally if the parameter is @code{"@var{name}@@@@@var{nodename}"} then in
+addition to creating a symbol version (as if
+@code{"@var{name}@@@var{nodename}"} was used) the version will be also used to
+resolve @var{name} by the linker.
+
+@smallexample
+@@symver("foo@@VERS_1") int foo_v1();
+@end smallexample
+
+@cindex @code{target} function attribute
+@item @@(gcc.attributes.target ("@var{options}"))
+
+The @code{@@target} attribute is used to specify that a function is to be
+compiled with different target options than specified on the command line.  One
+or more strings can be provided as arguments, separated by commas to specify
+multiple options.  Each string consists of one or more comma-separated suffixes
+to the @option{-m} prefix jointly forming the name of a machine-dependent
+option.
+
+The target attribute can be used for instance to have a function compiled with
+a different ISA (instruction set architecture) than the default.
+
+The options supported are specific to each target.
+
+@smallexample
+@@target("arch=core2") void core2_func();
+@@target("sse3") void sse3_func();
+@end smallexample
+
+@cindex @code{target_clones} function attribute
+@item @@(gcc.attributes.target_clones ("@var{options}"))
+
+The @code{@@target_clones} attribute is used to specify that a function be
+cloned into multiple versions compiled with different target @var{options} than
+specified on the command line.  The supported options and restrictions are the
+same as for @code{@@target} attribute.
+
+It also creates a resolver function that dynamically selects a clone suitable
+for current architecture.  The resolver is created only if there is a usage of
+a function with @code{@@target_clones} attribute.
+
+@smallexample
+@@target_clones("sse4.1,avx,default") double func(double x);
+@end smallexample
+
+@cindex @code{used} function attribute
+@cindex @code{used} variable attribute
+@item @@(gcc.attributes.used)
+
+The @code{@@used} attribute, annotated to a function or variable, means that
+code must be emitted for the function even if it appears that the function is
+not referenced.  This is useful, for example, when the function is referenced
+only in inline assembly.
+
+@smallexample
+@@used __gshared int var = 0x1000;
+@end smallexample
+
+@cindex @code{visibility} function attribute
+@cindex @code{visibility} variable attribute
+@item @@(gcc.attributes.visibility ("@var{visibilityName}"))
+
+The @code{@@visibility} attribute affects the linkage of the declaration to
+which it is attached.  It can be applied to variables, types, and functions.
+
+There are four supported visibility_type values: @code{default}, @code{hidden},
+@code{protected}, or @code{internal} visibility.
+
+@smallexample
+@@visibility("protected") void func() @{  @}
+@end smallexample
+
+@cindex @code{weak} function attribute
+@cindex @code{weak} variable attribute
+@item @@(gcc.attributes.weak)
+
+The @code{@@weak} attribute causes a declaration of an external symbol to be
+emitted as a weak symbol rather than a global.  This is primarily useful in
+defining library functions that can be overridden in user code, though it can
+also be used with non-function declarations.  The overriding symbol must have
+the same type as the weak symbol.  In addition, if it designates a variable it
+must also have the same size and alignment as the weak symbol.
+
+Weak symbols are supported for ELF targets, and also for a.out targets when
+using the GNU assembler and linker.
+
+@smallexample
+@@weak int func() @{ return 1; @}
+@end smallexample
+
+@end table
+
+@c --------------------------------------------------------
+
+@node Other Attributes
+@subsection Other Attributes
+
+The following attributes are defined for compatibility with other compilers.
+
+@table @code
+
+@cindex @code{allocSize} function attribute
+@item @@(gcc.attributes.allocSize (@var{sizeArgIdx}))
+@itemx @@(gcc.attributes.allocSize (@var{sizeArgIdx}, @var{numArgIdx}))
+@item @@(gcc.attributes.allocSize (@var{sizeArgIdx}))
+
+These attributes are a synonym for
+@code{@@alloc_size(@var{sizeArgIdx}, @var{numArgIdx}, true)}.
+Unlike @code{@@alloc_size}, it uses 0-based index of the function arguments.
+
+@cindex @code{assumeUsed} function attribute
+@cindex @code{assumeUsed} variable attribute
+@item @@(gcc.attributes.assumeUsed)
+
+This attribute is a synonym for @code{@@used}.
+
+@cindex @code{dynamicCompile} function attribute
+@item @@(gcc.attributes.dynamicCompile)
+@itemx @@(gcc.attributes.dynamicCompileConst)
+@itemx @@(gcc.attributes.dynamicCompileEmit)
+
+These attributes are accepted, but have no effect.
+
+@cindex @code{fastmath} function attribute
+@item @@(gcc.attributes.fastmath)
+
+This attribute is a synonym for @code{@@optimize("Ofast")}.  Explicitly sets
+"fast-math" for a function, enabling aggressive math optimizations.
+
+@cindex @code{hidden} function attribute
+@cindex @code{hidden} variable attribute
+@item @@(gcc.attributes.hidden)
+
+This attribute is a synonym for @code{@@visibility("hidden")}.  Sets the
+visibility of a function or global variable to "hidden".
+
+@cindex @code{naked} function attribute
+@item @@(gcc.attributes.naked)
+
+This attribute is a synonym for @code{@@attribute("naked")}.  Adds GCC's
+"naked" attribute to a function, disabling function prologue / epilogue
+emission.  Intended to be used in combination with basic @code{asm} statements.
+While using extended @code{asm} or a mixture of basic @code{asm} and D code may
+appear to work, they cannot be depended upon to work reliably and are not
+supported.
+
+@cindex @code{noSanitize} function attribute
+@item @@(gcc.attributes.noSanitize ("@var{sanitize_option}"))
+
+This attribute is a synonym for @code{@@no_sanitize("sanitize_option")}.
+
+
+@cindex @code{optStrategy} function attribute
+@item @@(gcc.attributes.optStrategy ("@var{strategy}"))
+
+This attribute is a synonym for @code{@@optimize("O0")} and
+@code{@@optimize("Os")}.  Sets the optimization strategy for a function.  Valid
+strategies are "none", "optsize", "minsize".  The strategies are mutually
+exclusive.
+
+@item @@(gcc.attributes.polly)
+
+This attribute is a synonym for
+@code{@@optimize("loop-parallelize-all", "loop-nest-optimize")}.
+Only effective when GDC was built with ISL included.
+
+@end table
+
+@c --------------------------------------------------------
+
+@node Target Attributes
+@subsection Target-specific Attributes
+
+Many targets have their own target-specific attributes.  These are also exposed
+via the @code{gcc.attributes} module with use of the generic
+@code{@@(gcc.attributes.attribute)} UDA function.
+
+@xref{Attribute Syntax}, for details of the exact syntax for using attributes.
+
+See the function and variable attribute documentation in the GCC manual for
+more information about what attributes are available on each target.
+
+Examples of using x86-specific target attributes are shown as follows:
+
+@smallexample
+import gcc.attributes;
+
+@@attribute("cdecl")
+@@attribute("fastcall")
+@@attribute("ms_abi")
+@@attribute("sysv_abi")
+@@attribute("callee_pop_aggregate_return", 1)
+@@attribute("ms_hook_prologue")
+@@attribute("naked")
+@@attribute("regparm", 2)
+@@attribute("sseregparm")
+@@attribute("force_align_arg_pointer")
+@@attribute("stdcall")
+@@attribute("no_caller_saved_registers")
+@@attribute("interrupt")
+@@attribute("indirect_branch", "thunk")
+@@attribute("function_return", "keep"))
+@@attribute("nocf_check")
+@@attribute("cf_check")
+@@attribute("indirect_return")
+@@attribute("fentry_name", "nop")
+@@attribute("fentry_section", "__entry_loc")
+@@attribute("nodirect_extern_access")
+
+@end smallexample
+
+
+@c --------------------------------------------------------
+
+@node Builtin Functions
+@section Built-in Functions
+@cindex built-in functions
+
+GCC provides a large number of built-in functions that are made available in
+GNU D by importing the @code{gcc.builtins} module.  Declarations in this module
+are automatically created by the compiler.  All declarations start with
+@code{__builtin_}.  Refer to the built-in function documentation in the GCC
+manual for a full list of functions that are available.
+
+@menu
+* Builtin Types::
+* Query Builtins::
+* Other Builtins::
+@end menu
+
+@c --------------------------------------------------------
+
+@node Builtin Types
+@subsection Built-in Types
+@cindex built-in types
+
+In addition to built-in functions, the following types are defined in the
+@code{gcc.builtins} module.
+
+@table @code
+@item ___builtin_clong
+The D equivalent of the target's C @code{long} type.
+
+@item ___builtin_clonglong
+The D equivalent of the target's C @code{long long} type.
+
+@item ___builtin_culong
+The D equivalent of the target's C @code{unsigned long} type.
+
+@item ___builtin_culonglong
+The D equivalent of the target's C @code{unsigned long long} type.
+
+@item ___builtin_machine_byte
+Signed unit-sized integer type.
+
+@item ___builtin_machine_int
+Signed word-sized integer type.
+
+@item ___builtin_machine_ubyte
+Unsigned unit-sized integer type.
+
+@item ___builtin_machine_uint
+Unsigned word-sized integer type.
+
+@item ___builtin_pointer_int
+Signed pointer-sized integer type.
+
+@item ___builtin_pointer_uint
+Unsigned pointer-sized integer type.
+
+@item ___builtin_unwind_int
+The D equivalent of the target's C @code{_Unwind_Sword} type.
+
+@item ___builtin_unwind_uint
+The D equivalent of the target's C @code{_Unwind_Word} type.
+
+@item ___builtin_va_list
+The target's @code{va_list} type.
+@end table
+
+@c --------------------------------------------------------
+
+@node Query Builtins
+@subsection Querying Available Built-ins
+@cindex built-in functions
+
+Not all of the functions are supported, and some target-specific functions may
+only be available when compiling for a particular ISA.  One way of finding out
+what is exposed by the built-ins module is by generating a D interface file.
+Assuming you have no file @file{builtins.d}, the command
+@smallexample
+  echo "module gcc.builtins;" > builtins.d; gdc -H -fsyntax-only builtins.d
+@end smallexample
+@noindent
+will save all built-in declarations to the file @file{builtins.di}.
+
+Another way to determine whether a specific built-in is available is by using
+compile-time reflection.
+@smallexample
+enum X86_HAVE_SSE3 = __traits(compiles, __builtin_ia32_haddps);
+enum X86_HAVE_SSSE3 = __traits(compiles, __builtin_ia32_pmulhrsw128);
+enum X86_HAVE_SSE41 = __traits(compiles, __builtin_ia32_dpps);
+enum X86_HAVE_SSE42 = __traits(compiles, __builtin_ia32_pcmpgtq);
+enum X86_HAVE_AVX = __traits(compiles, __builtin_ia32_vbroadcastf128_pd256);
+enum X86_HAVE_AVX2 = __traits(compiles, __builtin_ia32_gathersiv2df);
+enum X86_HAVE_BMI2 = __traits(compiles, __builtin_ia32_pext_si);
+@end smallexample
+
+@c --------------------------------------------------------
+
+@node Other Builtins
+@subsection Other Built-in Functions
+@cindex built-in functions
+@opindex fno-builtin
+
+As well as built-ins being available from the @code{gcc.builtins} module, GNU D
+will also recognize when an @code{extern(C)} library function is a GCC
+built-in.  Many of these functions are only optimized in certain cases; if they
+are not optimized in a particular case, a call to the library function is
+emitted.  This optimization can be disabled with the @option{-fno-builtin}
+option (@pxref{Runtime Options}).
+
+In the @code{core.stdc.complex} module, the functions
+@code{cabs}, @code{cabsf}, @code{cabsl}, @code{cacos}, @code{cacosf},
+@code{cacosh}, @code{cacoshf}, @code{cacoshl}, @code{cacosl}, @code{carg},
+@code{cargf}, @code{cargl}, @code{casin}, @code{casinf}, @code{casinh},
+@code{casinhf}, @code{casinhl}, @code{casinl}, @code{catan}, @code{catanf},
+@code{catanh}, @code{catanhf}, @code{catanhl}, @code{catanl}, @code{ccos},
+@code{ccosf}, @code{ccosh}, @code{ccoshf}, @code{ccoshl}, @code{ccosl},
+@code{cexp}, @code{cexpf}, @code{cexpl}, @code{clog}, @code{clogf},
+@code{clogl}, @code{conj}, @code{conjf}, @code{conjl}, @code{cpow},
+@code{cpowf}, @code{cpowl}, @code{cproj}, @code{cprojf}, @code{cprojl},
+@code{csin}, @code{csinf}, @code{csinh}, @code{csinhf}, @code{csinhl},
+@code{csinl}, @code{csqrt}, @code{csqrtf}, @code{csqrtl}, @code{ctan},
+@code{ctanf}, @code{ctanh}, @code{ctanhf}, @code{ctanhl}, @code{ctanl}
+may be handled as built-in functions.  All these functions have corresponding
+versions prefixed with @code{__builtin_} in the @code{gcc.builtins} module.
+
+In the @code{core.stdc.ctype} module, the functions
+@code{isalnum}, @code{isalpha}, @code{isblank}, @code{iscntrl}, @code{isdigit},
+@code{isgraph}, @code{islower}, @code{isprint}, @code{ispunct}, @code{isspace},
+@code{isupper}, @code{isxdigit}, @code{tolower}, @code{toupper}
+may be handled as built-in functions.  All these functions have corresponding
+versions prefixed with @code{__builtin_} in the @code{gcc.builtins} module.
+
+In the @code{core.stdc.fenv} module, the functions
+@code{feclearexcept}, @code{fegetenv}, @code{fegetexceptflag},
+@code{fegetround}, @code{feholdexcept}, @code{feraiseexcept}, @code{fesetenv},
+@code{fesetexceptflag}, @code{fesetround}, @code{fetestexcept},
+@code{feupdateenv}
+may be handled as built-in functions.  All these functions have corresponding
+versions prefixed with @code{__builtin_} in the @code{gcc.builtins} module.
+
+In the @code{core.stdc.inttypes} module, the function @code{imaxabs} may be
+handled as a built-in function.  All these functions have corresponding
+versions prefixed with @code{__builtin_} in the @code{gcc.builtins} module.
+
+In the @code{core.stdc.math} module, the functions
+@code{acos}, @code{acosf}, @code{acosh}, @code{acoshf}, @code{acoshl},
+@code{acosl}, @code{asin}, @code{asinf}, @code{asinh}, @code{asinhf},
+@code{asinhl}, @code{asinl}, @code{atan}, @code{atan2}, @code{atan2f},
+@code{atan2l}, @code{atanf}, @code{atanh}, @code{atanhf}, @code{atanhl},
+@code{atanl}, @code{cbrt}, @code{cbrtf}, @code{cbrtl}, @code{ceil},
+@code{ceilf}, @code{ceill}, @code{copysign}, @code{copysignf},
+@code{copysignl}, @code{cos}, @code{cosf}, @code{cosh}, @code{coshf},
+@code{coshl}, @code{cosl}, @code{erf}, @code{erfc}, @code{erfcf}, @code{erfcl},
+@code{erff}, @code{erfl}, @code{exp}, @code{exp2}, @code{exp2f}, @code{exp2l},
+@code{expf}, @code{expl}, @code{expm1}, @code{expm1f}, @code{expm1l},
+@code{fabs}, @code{fabsf}, @code{fabsl}, @code{fdim}, @code{fdimf},
+@code{fdiml}, @code{floor}, @code{floorf}, @code{floorl}, @code{fma},
+@code{fmaf}, @code{fmal}, @code{fmax}, @code{fmaxf}, @code{fmaxl}, @code{fmin},
+@code{fminf}, @code{fminl}, @code{fmod}, @code{fmodf}, @code{fmodl},
+@code{frexp}, @code{frexpf}, @code{frexpl}, @code{hypot}, @code{hypotf},
+@code{hypotl}, @code{ilogb}, @code{ilogbf}, @code{ilogbl}, @code{isinf},
+@code{isnan}, @code{ldexp}, @code{ldexpf}, @code{ldexpl}, @code{lgamma},
+@code{lgammaf}, @code{lgammal}, @code{llrint}, @code{llrintf}, @code{llrintl},
+@code{llround}, @code{llroundf}, @code{llroundl}, @code{log}, @code{log10},
+@code{log10f}, @code{log10l}, @code{log1p}, @code{log1pf}, @code{log1pl},
+@code{log2}, @code{log2f}, @code{log2l}, @code{logb}, @code{logbf},
+@code{logbl}, @code{logf}, @code{logl}, @code{lrint}, @code{lrintf},
+@code{lrintl}, @code{lround}, @code{lroundf}, @code{lroundl}, @code{modf},
+@code{modff}, @code{modfl}, @code{nan}, @code{nanf}, @code{nanl},
+@code{nearbyint}, @code{nearbyintf}, @code{nearbyintl}, @code{nextafter},
+@code{nextafterf}, @code{nextafterl}, @code{nexttoward}, @code{nexttowardf},
+@code{nexttowardl}, @code{pow}, @code{powf}, @code{powl}, @code{remainder},
+@code{remainderf}, @code{remainderl}, @code{remquo}, @code{remquof},
+@code{remquol}, @code{rint}, @code{rintf}, @code{rintl}, @code{round},
+@code{roundf}, @code{roundl}, @code{scalbln}, @code{scalblnf}, @code{scalblnl},
+@code{scalbn}, @code{scalbnf}, @code{scalbnl}, @code{signbit}, @code{sin},
+@code{sinf}, @code{sinh}, @code{sinhf}, @code{sinhl}, @code{sinl}, @code{sqrt},
+@code{sqrtf}, @code{sqrtl}, @code{tan}, @code{tanf}, @code{tanh}, @code{tanhf},
+@code{tanhl}, @code{tanl}, @code{tgamma}, @code{tgammaf}, @code{tgammal},
+@code{trunc}, @code{truncf}, @code{truncl}
+may be handled as built-in functions.  All these functions have corresponding
+versions prefixed with @code{__builtin_} in the @code{gcc.builtins} module.
+
+In the @code{core.stdc.stdio} module, the functions
+@code{fprintf}, @code{fputc}, @code{fputc_unlocked}, @code{fputs},
+@code{fwrite}, @code{printf}, @code{puts}, @code{snprintf}, @code{sprintf},
+@code{vfprintf}, @code{vprintf}, @code{vsnprintf}, @code{vsprintf}
+may be handled as built-in functions.  All these functions have corresponding
+versions prefixed with @code{__builtin_} in the @code{gcc.builtins} module.
+
+In the @code{core.stdc.stdlib} module, the functions
+@code{abort}, @code{abs}, @code{aligned_alloc}, @code{alloca}, @code{calloc},
+@code{exit}, @code{_Exit}, @code{free}, @code{labs}, @code{llabs},
+@code{malloc}, @code{realloc}
+may be handled as built-in functions.  All these functions have corresponding
+versions prefixed with @code{__builtin_} in the @code{gcc.builtins} module.
+
+In the @code{core.stdc.string} module, the functions
+@code{memchr}, @code{memcmp}, @code{memcpy}, @code{memmove}, @code{memset},
+@code{strcat}, @code{strchr}, @code{strcmp}, @code{strcpy}, @code{strcspn},
+@code{strdup}, @code{strlen}, @code{strncat}, @code{strncmp}, @code{strncpy},
+@code{strpbrk}, @code{strrchr}, @code{strspn}, @code{strstr}
+may be handled as built-in functions.  All these functions have corresponding
+versions prefixed with @code{__builtin_} in the @code{gcc.builtins} module.
+
+In the @code{core.stdc.time} module, the function @code{strftime} may be
+handled as a built-in function.  All these functions have corresponding
+versions prefixed with @code{__builtin_} in the @code{gcc.builtins} module.
+
+In the @code{core.stdc.wctype} module, the functions
+@code{iswalnum}, @code{iswalpha}, @code{iswblank}, @code{iswcntrl},
+@code{iswdigit}, @code{iswgraph}, @code{iswlower}, @code{iswprint},
+@code{iswpunct}, @code{iswspace}, @code{iswupper}, @code{iswxdigit},
+@code{towlower}, @code{towupper}
+may be handled as built-in functions.  All these functions have corresponding
+versions prefixed with @code{__builtin_} in the @code{gcc.builtins} module.
+
+Within the @code{core.sys} package for POSIX and platform definitions, the
+functions
+@code{putchar_unlocked}, @code{putc_unlocked}, @code{posix_memalign},
+@code{ffs}, @code{strcasecmp}, @code{strncasecmp}, @code{stpcpy},
+@code{stpncpy}, @code{strndup}, @code{strnlen}, @code{execl}, @code{execle},
+@code{execlp}, @code{execv}, @code{execve}, @code{execvp}, @code{_exit},
+@code{fork}
+may be handled as built-in functions.  All these functions have corresponding
+versions prefixed with @code{__builtin_} in the @code{gcc.builtins} module.
+
+
+@c --------------------------------------------------------
+
+@node ImportC
+@section Importing C Sources into D
+@cindex importC
+
+ImportC is a C preprocessor and parser embedded into the GNU D implementation.
+It enables direct importation of C files, without needing to manually prepare a
+D file corresponding to the declarations in the C file.
+
+ImportC is an implementation of ISO/IEC 9899:2011, which will be referred to as
+C11.  Prior versions, such as C99, C89, and K+R C, are not supported. 
+
+Assuming you have no file @file{cstdio.c} or @file{main.d}, the commands
+@smallexample
+  cat > cstdio.c << @@EOC
+  int printf(const char*, ...);
+  @@EOC
+  cat > main.d << @@EOD
+  import cstdio;
+  void main() @{ printf("Hello ImportC\n"); @}
+  @@EOD
+  gdc main.d -o main; ./main
+@end smallexample
+will generate a program which will print @samp{Hello ImportC}.
+
+ImportC does not have a preprocessor.  It is designed to compile C files after
+they have been first run through the C preprocessor.  If the C file has a
+@samp{.i} extension, the file is presumed to be already preprocessed.
+Preprocessing can be run manually:
+@smallexample
+  gcc -E file.c > file.i
+@end smallexample
+
+@noindent
+ImportC collects all the @code{#define} macros from the preprocessor run when
+it is run automatically. The macros that look like manifest constants, such as:
+@smallexample
+#define COLOR 0x123456
+@end smallexample
+are interpreted as D manifest constant declarations of the form:
+@smallexample
+enum COLOR = 0x123456;
+@end smallexample
+
+@noindent
+The variety of macros that can be interpreted as D declarations may be
+expanded, but will never encompass all the metaprogramming uses of C macros. 
+
+GNU D does not directly compile C files into modules that can be linked in with
+D code to form an executable.  When given a source file with the suffix
+@samp{.c}, the compiler driver program @command{gdc} instead runs the
+subprogram @command{cc1}.
+
+@smallexample
+gdc file1.d file2.c // d21 file1.d -o file1.s
+                    // cc1 file2.c -o file2.s
+                    // as file1.s -o file1.o
+                    // as file2.s -o file2.o
+                    // ld file1.o file2.o
+@end smallexample
+
+
+@c --------------------------------------------------------
+
+@node Inline Assembly
+@section Inline Assembly
+@cindex assembly language in D
+
+The @code{asm} keyword allows you to embed assembler instructions within D
+code.  GNU D provides two forms of inline @code{asm} statements.  A @dfn{basic
+@code{asm}} statement is one with no operands, while an @dfn{extended
+@code{asm}} statement includes one or more operands.
+
+@example
+asm @var{FunctionAttributes} @{
+        @var{AssemblerInstruction} ;
+@}
+
+asm @var{FunctionAttributes} @{
+        @var{AssemblerTemplate}
+         : @var{OutputOperands}
+         @r{[} : @var{InputOperands}
+         @r{[} : @var{Clobbers}
+         @r{[} : @var{GotoLabels} @r{]} @r{]} @r{]} ;
+@}
+@end example
+
+@noindent
+The extended form is preferred for mixing D and assembly language within a
+function, but to include assembly language in a function declared with the
+@code{naked} attribute you must use basic @code{asm}.
+
+@smallexample
+uint incr (uint value)
+@{
+    uint result;
+    asm @{ "incl %0"
+          : "=a" (result)
+          : "a" (value);
+    @}
+    return result;
+@}
+@end smallexample
+
+@noindent
+Multiple assembler instructions can appear within an @code{asm} block, or the
+instruction template can be a multi-line or concatenated string.  In both
+cases, GCC's optimizers won't discard or move any instruction within the
+statement block.
+@smallexample
+bool hasCPUID()
+@{ 
+    uint flags = void;
+    asm nothrow @@nogc @{
+        "pushfl";
+        "pushfl";
+        "xorl %0, (%%esp)" :: "i" (0x00200000);
+        "popfl";
+        "pushfl";
+        "popl %0" : "=a" (flags);
+        "xorl (%%esp), %0" : "=a" (flags);
+        "popfl";
+    @}
+    return (flags & 0x0020_0000) != 0;
+@} 
+@end smallexample
+
+@noindent
+The instruction templates for both basic and extended @code{asm} can be any
+expression that can be evaluated at compile-time to a string, not just string
+literals.
+
+@smallexample
+uint invert(uint v)
+@{
+    uint result;
+    asm @@safe @@nogc nothrow pure @{
+        genAsmInsn(`invert`)
+        : [res] `=r` (result)
+        : [arg1] `r` (v);
+    @}
+    return result;
+
+@}
+@end smallexample
+
+@noindent
+The total number of input + output + goto operands is limited to 30.
+
+
+@c --------------------------------------------------------
+
+@node Intrinsics
+@section Intrinsics
+@cindex intrinsics
+
+The D language specification itself does not define any intrinsics that a
+compatible compiler must implement.  Rather, within the D core library there
+are a number of modules that define primitives with generic implementations.
+While the generic versions of these functions are computationally expensive
+relative to the cost of the operation itself, compiler implementations are free
+to recognize them and generate equivalent and faster code.
+
+The following are the kinds of intrinsics recognized by GNU D.
+
+@menu
+* Bit Operation Intrinsics::
+* Integer Overflow Intrinsics::
+* Math Intrinsics::
+* Variadic Intrinsics::
+* Volatile Intrinsics::
+* CTFE Intrinsics::
+@end menu
+
+@c --------------------------------------------------------
+
+@node Bit Operation Intrinsics
+@subsection Bit Operation Intrinsics
+@cindex intrinsics, bitop
+
+The following functions are a collection of intrinsics that do bit-level
+operations, available by importing the @code{core.bitop} module.
+
+Although most are named after x86 hardware instructions, it is not guaranteed
+that they will result in generating equivalent assembly on x86.  If the
+compiler determines there is a better way to get the same result in hardware,
+then that will be used instead.
+
+@deftypefn {Function} {int} core.bitop.bsf (uint @var{v})
+@deftypefnx {Function} {int} core.bitop.bsf (ulong @var{v})
+
+Scans the bits in @var{v} starting with bit @code{0}, looking for the first set
+bit.  Returns the bit number of the first bit set.  The return value is
+undefined if @var{v} is zero.
+
+This intrinsic is the same as the GCC built-in function @code{__builtin_ctz}.
+@end deftypefn
+
+@deftypefn {Function} {int} core.bitop.bsr (uint @var{v})
+@deftypefnx {Function} {int} core.bitop.bsr (ulong @var{v})
+
+Scans the bits in @var{v} from the most significant bit to the least
+significant bit, looking for the first set bit.  Returns the bit number of the
+first bit set.  The return value is undefined if @var{v} is zero.
+
+This intrinsic is equivalent to writing the following:
+@smallexample
+result = __builtin_clz(v) ^ (v.sizeof * 8 - 1)
+@end smallexample
+@end deftypefn
+
+@deftypefn {Function} {int} core.bitop.bt (scope const(uint*) @var{p}, uint @var{bitnum})
+@deftypefnx {Function} {int} core.bitop.bt (scope const(uint*) @var{p}, uint @var{bitnum})
+
+Tests the bit @var{bitnum} in the input parameter @var{p}.  Returns a non-zero
+value if the bit was set, and a zero if it was clear.
+
+This intrinsic is equivalent to writing the following:
+@smallexample
+immutable bits_per_unit = (*p).sizeof * 8;
+immutable bit_mask = size_t(1) << (bitnum % bits_per_unit);
+
+result = (p[bitnum / bits_per_unit] & bit_mask) != 0;
+@end smallexample
+@end deftypefn
+
+@deftypefn {Function} {int} core.bitop.btc (uint* @var{p}, uint @var{bitnum})
+@deftypefnx {Function} {int} core.bitop.btc (ulong* @var{p}, ulong @var{bitnum})
+
+Tests and complements the bit @var{bitnum} in the input parameter @var{p}.
+Returns a non-zero value if the bit was set, and a zero if it was clear.
+
+This intrinsic is equivalent to writing the following:
+@smallexample
+immutable bits_per_unit = (*p).sizeof * 8;
+immutable bit_mask = size_t(1) << (bitnum % bits_per_unit);
+
+result = (p[bitnum / bits_per_unit] & bit_mask) != 0;
+
+p[bitnum / bits_per_unit] ^= bit_mask;
+@end smallexample
+@end deftypefn
+
+@deftypefn {Function} {int} core.bitop.btr (uint* @var{p}, uint @var{bitnum})
+@deftypefnx {Function} {int} core.bitop.btr (ulong* @var{p}, ulong @var{bitnum})
+
+Tests and resets (sets to 0) the bit @var{bitnum} in the input parameter
+@var{p}.  Returns a non-zero value if the bit was set, and a zero if it was
+clear.
+
+This intrinsic is equivalent to writing the following:
+@smallexample
+immutable bits_per_unit = (*p).sizeof * 8;
+immutable bit_mask = size_t(1) << (bitnum % bits_per_unit);
+
+result = (p[bitnum / bits_per_unit] & bit_mask) != 0;
+
+p[bitnum / bits_per_unit] &= ~bit_mask;
+@end smallexample
+@end deftypefn
+
+@deftypefn {Function} {int} core.bitop.bts (uint* @var{p}, uint @var{bitnum})
+@deftypefnx {Function} {int} core.bitop.bts (ulong* @var{p}, ulong @var{bitnum})
+
+Tests and sets the bit @var{bitnum} in the input parameter @var{p}.  Returns a
+non-zero value if the bit was set, and a zero if it was clear.
+
+This intrinsic is equivalent to writing the following:
+@smallexample
+immutable bits_per_unit = (*p).sizeof * 8;
+immutable bit_mask = size_t(1) << (bitnum % bits_per_unit);
+
+result = (p[bitnum / bits_per_unit] & bit_mask) != 0;
+
+p[bitnum / bits_per_unit] |= bit_mask;
+@end smallexample
+@end deftypefn
+
+
+@deftypefn {Function} {ushort} core.bitop.byteswap (ushort @var{x})
+@deftypefnx {Function} {uint} core.bitop.bswap (uint @var{x})
+@deftypefnx {Function} {ulong} core.bitop.bswap (ulong @var{x})
+
+Swaps the bytes in @var{x} end-to-end; for example, in a 4-byte @code{uint},
+byte @code{0} becomes byte @code{3}, byte @code{1} becomes byte @code{2}, etc.
+
+This intrinsic is the same as the GCC built-in function @code{__builtin_bswap}.
+@end deftypefn
+
+@deftypefn {Function} {int} core.bitop.popcnt (uint @var{x})
+@deftypefnx {Function} {int} core.bitop.popcnt (ulong @var{x})
+
+Calculates the number of set bits in @var{x}.
+
+This intrinsic is the same as the GCC built-in function
+@code{__builtin_popcount}.
+@end deftypefn
+
+@deftypefn {Template} {T} core.bitop.rol (T)(const T @var{value}, const uint @var{count})
+@deftypefnx {Template} {T} core.bitop.rol (uint @var{count}, T)(const T @var{value})
+
+Bitwise rotate @var{value} left by @var{count} bit positions.
+
+This intrinsic is equivalent to writing the following:
+@smallexample
+result = cast(T) ((value << count) | (value >> (T.sizeof * 8 - count)));
+@end smallexample
+@end deftypefn
+
+@deftypefn {Template} {T} core.bitop.ror (T)(const T @var{value}, const uint @var{count})
+@deftypefnx {Template} {T} core.bitop.ror (uint @var{count}, T)(const T @var{value})
+
+Bitwise rotate @var{value} right by @var{count} bit positions.
+
+This intrinsic is equivalent to writing the following:
+@smallexample
+result = cast(T) ((value >> count) | (value << (T.sizeof * 8 - count)));
+@end smallexample
+@end deftypefn
+
+@c --------------------------------------------------------
+
+@node Integer Overflow Intrinsics
+@subsection Integer Overflow Intrinsics
+@cindex intrinsics, checkedint
+
+The following functions are a collection of intrinsics that implement integral
+arithmetic primitives that check for out-of-range results, available by
+importing the @code{core.checkedint} module.
+
+In all intrinsics, the overflow is sticky, meaning a sequence of operations can
+be done and overflow need only be checked at the end.
+
+@deftypefn {Function} {int} core.checkedint.adds (int @var{x}, int @var{y}, @
+                                                  ref bool @var{overflow})
+@deftypefnx {Function} {long} core.checkedint.adds (long @var{x}, long @var{y}, @
+                                                    ref bool @var{overflow})
+
+Add two signed integers, checking for overflow.
+
+This intrinsic is the same as the GCC built-in function
+@code{__builtin_sadd_overflow}.
+@end deftypefn
+
+@deftypefn {Function} {int} core.checkedint.addu (int @var{x}, int @var{y}, @
+                                                  ref bool @var{overflow})
+@deftypefnx {Function} {long} core.checkedint.addu (long @var{x}, long @var{y}, @
+                                                    ref bool @var{overflow})
+
+Add two unsigned integers, checking for overflow.
+
+This intrinsic is the same as the GCC built-in function
+@code{__builtin_uadd_overflow}.
+@end deftypefn
+
+@deftypefn {Function} {int} core.checkedint.muls (int @var{x}, int @var{y}, @
+                                                  ref bool @var{overflow})
+@deftypefnx {Function} {long} core.checkedint.muls (long @var{x}, long @var{y}, @
+                                                    ref bool @var{overflow})
+
+Multiply two signed integers, checking for overflow.
+
+This intrinsic is the same as the GCC built-in function
+@code{__builtin_smul_overflow}.
+@end deftypefn
+
+@deftypefn {Function} {int} core.checkedint.mulu (int @var{x}, int @var{y}, @
+                                                  ref bool @var{overflow})
+@deftypefnx {Function} {long} core.checkedint.mulu (long @var{x}, long @var{y}, @
+                                                    ref bool @var{overflow})
+
+Multiply two unsigned integers, checking for overflow.
+
+This intrinsic is the same as the GCC built-in function
+@code{__builtin_umul_overflow}.
+@end deftypefn
+
+@deftypefn {Function} {int} core.checkedint.negs (int @var{x}, @
+                                                  ref bool @var{overflow})
+@deftypefnx {Function} {long} core.checkedint.negs (long @var{x}, @
+                                                    ref bool @var{overflow})
+
+Negates an integer.
+
+This intrinsic is equivalent to writing the following:
+@smallexample
+result = __builtin_ssub (0, x, overflow);
+@end smallexample
+@end deftypefn
+
+@deftypefn {Function} {int} core.checkedint.subs (int @var{x}, int @var{y}, @
+                                                  ref bool @var{overflow})
+@deftypefnx {Function} {long} core.checkedint.subs (long @var{x}, long @var{y}, @
+                                                    ref bool @var{overflow})
+
+Substract two signed integers, checking for overflow.
+
+This intrinsic is the same as the GCC built-in function
+@code{__builtin_ssub_overflow}.
+@end deftypefn
+
+@deftypefn {Function} {int} core.checkedint.subu (int @var{x}, int @var{y}, @
+                                                  ref bool @var{overflow})
+@deftypefnx {Function} {long} core.checkedint.subu (long @var{x}, long @var{y}, @
+                                                    ref bool @var{overflow})
+
+Substract two unsigned integers, checking for overflow.
+
+This intrinsic is the same as the GCC built-in function
+@code{__builtin_usub_overflow}.
+@end deftypefn
+
+@c --------------------------------------------------------
+
+@node Math Intrinsics
+@subsection Math Intrinsics
+@cindex intrinsics, math
+
+The following functions are a collection of mathematical intrinsics, available
+by importing the @code{core.math} module.
+
+@deftypefn {Function} {float} core.math.cos (float x)
+@deftypefnx {Function} {double} core.math.cos (double x)
+@deftypefnx {Function} {real} core.math.cos (real x)
+
+Returns cosine of @var{x}, where @var{x} is in radians.  The return value is
+undefined if @var{x} is greater than @math{2^{64}}.
+
+This intrinsic is the same as the GCC built-in function @code{__builtin_cos}.
+@end deftypefn
+
+@deftypefn {Function} {float} core.math.fabs (float x)
+@deftypefnx {Function} {double} core.math.fabs (double x)
+@deftypefnx {Function} {real} core.math.fabs (real x)
+
+Compute the absolute value of @var{x}.
+
+This intrinsic is the same as the GCC built-in function @code{__builtin_fabs}.
+@end deftypefn
+
+@deftypefn {Function} {float} core.math.ldexp (float n, int exp)
+@deftypefnx {Function} {double} core.math.ldexp (double n, int exp)
+@deftypefnx {Function} {real} core.math.ldexp (real n, int exp)
+
+Compute @math{n * 2^{exp}}.
+
+This intrinsic is the same as the GCC built-in function @code{__builtin_ldexp}.
+@end deftypefn
+
+@deftypefn {Function} {float} core.math.rint (float x)
+@deftypefnx {Function} {double} core.math.rint (double x)
+@deftypefnx {Function} {real} core.math.rint (real x)
+
+Rounds @var{x} to the nearest integer value, using the current rounding mode.
+If the return value is not equal to @var{x}, the @code{FE_INEXACT} exception is
+raised. @code{nearbyint} performs the same operation, but does not set the
+@code{FE_INEXACT} exception.
+
+This intrinsic is the same as the GCC built-in function @code{__builtin_rint}.
+@end deftypefn
+
+@deftypefn {Function} {float} core.math.rndtol (float x)
+@deftypefnx {Function} {double} core.math.rndtol (double x)
+@deftypefnx {Function} {real} core.math.rndtol (real x)
+
+Returns @var{x} rounded to a long value using the current rounding mode.
+If the integer value of @var{x} is greater than @code{long.max}, the result
+is indeterminate.
+
+This intrinsic is the same as the GCC built-in function
+@code{__builtin_llround}.
+@end deftypefn
+
+@deftypefn {Function} {float} core.math.sin (float x)
+@deftypefnx {Function} {double} core.math.sin (double x)
+@deftypefnx {Function} {real} core.math.sin (real x)
+
+Returns sine of @var{x}, where @var{x} is in radians.  The return value is
+undefined if @var{x} is greater than @math{2^{64}}.
+
+This intrinsic is the same as the GCC built-in function @code{__builtin_sin}.
+@end deftypefn
+
+@deftypefn {Function} {float} core.math.sqrt (float x)
+@deftypefnx {Function} {double} core.math.sqrt (double x)
+@deftypefnx {Function} {real} core.math.sqrt (real x)
+
+Compute the sqrt of @var{x}.
+
+This intrinsic is the same as the GCC built-in function @code{__builtin_sqrt}.
+@end deftypefn
+
+@deftypefn {Template} {T} core.math.toPrec (T)(float f)
+@deftypefnx {Template} {T} core.math.toPrec (T)(double f)
+@deftypefnx {Template} {T} core.math.toPrec (T)(real f)
+
+Round @var{f} to a specific precision.
+
+In floating-point operations, D language types specify only a minimum
+precision, not a maximum.  The @code{toPrec} function forces rounding of the
+argument @var{f} to the precision of the specified floating point type
+@code{T}.  The rounding mode used is inevitably target-dependent, but will be
+done in a way to maximize accuracy.  In most cases, the default is
+round-to-nearest.
+@end deftypefn
+
+@c --------------------------------------------------------
+
+@node Variadic Intrinsics
+@subsection Variadic Intrinsics
+@cindex intrinsics, stdarg
+
+The following functions are a collection of variadic intrinsics, available by
+importing the @code{core.stdc.stdarg} module.
+
+@deftypefn {Template} {void} core.stdc.stdarg.va_arg (T)(ref va_list ap, ref T parmn)
+
+Retrieve and store in @var{parmn} the next value from the @code{va_list}
+@var{ap} that is of type @code{T}.
+
+This intrinsic is equivalent to writing the following:
+@smallexample
+parmn = __builtin_va_arg (ap, T);
+@end smallexample
+@end deftypefn
+
+@deftypefn {Template} {T} core.stdc.stdarg.va_arg (T)(ref va_list ap)
+
+Retrieve and return the next value from the @code{va_list} @var{ap} that is of
+type @code{T}.
+
+This intrinsic is equivalent to writing the following:
+@smallexample
+result = __builtin_va_arg (ap, T);
+@end smallexample
+@end deftypefn
+
+@deftypefn {Function} {void} core.stdc.stdarg.va_copy (out va_list dest, va_list src)
+
+Make a copy of @var{src} in its current state and store to @var{dest}.
+
+This intrinsic is the same as the GCC built-in function @code{__builtin_va_copy}.
+@end deftypefn
+
+@deftypefn {Function} {void} core.stdc.stdarg.va_end (va_list ap)
+
+Destroy @var{ap} so that it is no longer useable.
+
+This intrinsic is the same as the GCC built-in function @code{__builtin_va_end}.
+@end deftypefn
+
+@deftypefn {Template} {void} core.stdc.stdarg.va_start (T)(out va_list ap, ref T parmn)
+
+Initialize @var{ap} so that it can be used to access the variable arguments
+that follow the named argument @var{parmn}.
+
+This intrinsic is the same as the GCC built-in function @code{__builtin_va_start}.
+@end deftypefn
+
+@c --------------------------------------------------------
+
+@node Volatile Intrinsics
+@subsection Volatile Intrinsics
+@cindex intrinsics, volatile
+
+The following functions are a collection of intrinsics for volatile operations,
+available by importing the @code{core.volatile} module.
+
+Calls to them are guaranteed to not be removed (as dead assignment elimination
+or presumed to have no effect) or reordered in the same thread.
+
+These reordering guarantees are only made with regards to other operations done
+through these functions; the compiler is free to reorder regular loads/stores
+with regards to loads/stores done through these functions.
+
+This is useful when dealing with memory-mapped I/O (MMIO) where a store can
+have an effect other than just writing a value, or where sequential loads with
+no intervening stores can retrieve different values from the same location due
+to external stores to the location.
+
+These functions will, when possible, do the load/store as a single operation.
+In general, this is possible when the size of the operation is less than or
+equal to @code{(void*).sizeof}, although some targets may support larger
+operations.  If the load/store cannot be done as a single operation, multiple
+smaller operations will be used.
+
+These are not to be conflated with atomic operations.  They do not guarantee
+any atomicity.  This may be provided by coincidence as a result of the
+instructions used on the target, but this should not be relied on for portable
+programs.  Further, no memory fences are implied by these functions.  They
+should not be used for communication between threads.  They may be used to
+guarantee a write or read cycle occurs at a specified address.
+
+@deftypefn {Function} {ubyte} core.volatile.volatileLoad (ubyte* ptr)
+@deftypefnx {Function} {ushort} core.volatile.volatileLoad (ushort* ptr)
+@deftypefnx {Function} {uint} core.volatile.volatileLoad (uint* ptr)
+@deftypefnx {Function} {ulong} core.volatile.volatileLoad (ulong* ptr)
+
+Read value from the memory location indicated by @var{ptr}.
+@end deftypefn
+
+@deftypefn {Function} {ubyte} core.volatile.volatileStore (ubyte* ptr, ubyte value)
+@deftypefnx {Function} {ushort} core.volatile.volatileStore (ushort* ptr, ushort value)
+@deftypefnx {Function} {uint} core.volatile.volatileStore (uint* ptr, uint value)
+@deftypefnx {Function} {ulong} core.volatile.volatileStore (ulong* ptr, ulong value)
+
+Write @var{value} to the memory location indicated by @var{ptr}.
+@end deftypefn
+
+@c --------------------------------------------------------
+
+@node CTFE Intrinsics
+@subsection CTFE Intrinsics
+@cindex intrinsics, ctfe
+
+The following functions are only treated as intrinsics during compile-time
+function execution (CTFE) phase of compilation to allow more functions to be
+computable at compile-time, either because their generic implementations are
+too complex, or do some low-level bit manipulation of floating point types.
+
+Calls to these functions that exist after CTFE has finished will get standard
+code-generation without any special compiler intrinsic suppport.
+
+@deftypefn {Function} {float} std.math.exponential.exp (float x)
+@deftypefnx {Function} {double} std.math.exponential.exp (double x)
+@deftypefnx {Function} {real} std.math.exponential.exp (real x)
+
+Calculates @math{e^x}.
+
+This function is evaluated during CTFE as the GCC built-in function
+@code{__builtin_exp}.
+@end deftypefn
+
+@deftypefn {Function} {float} std.math.exponential.expm1 (float x)
+@deftypefnx {Function} {double} std.math.exponential.expm1 (double x)
+@deftypefnx {Function} {real} std.math.exponential.expm1 (real x)
+
+Calculates @math{e^x-1.0}.
+
+This function is evaluated during CTFE as the GCC built-in function
+@code{__builtin_expm1}.
+@end deftypefn
+
+@deftypefn {Function} {float} std.math.exponential.exp2 (float x)
+@deftypefnx {Function} {double} std.math.exponential.exp2 (double x)
+@deftypefnx {Function} {real} std.math.exponential.exp2 (real x)
+
+Calculates @math{2^x}.
+
+This function is evaluated during CTFE as the GCC built-in function
+@code{__builtin_exp2}.
+@end deftypefn
+
+@deftypefn {Function} {float} std.math.exponential.log (float x)
+@deftypefnx {Function} {double} std.math.exponential.log (double x)
+@deftypefnx {Function} {real} std.math.exponential.log (real x)
+
+Calculate the natural logarithm of @var{x}.
+
+This function is evaluated during CTFE as the GCC built-in function
+@code{__builtin_log}.
+@end deftypefn
+
+@deftypefn {Function} {float} std.math.exponential.log10 (float x)
+@deftypefnx {Function} {double} std.math.exponential.log10 (double x)
+@deftypefnx {Function} {real} std.math.exponential.log10 (real x)
+
+Calculates the base-10 logarithm of @var{x}.
+
+This function is evaluated during CTFE as the GCC built-in function
+@code{__builtin_log10}.
+@end deftypefn
+
+@deftypefn {Function} {float} std.math.exponential.log2 (float x)
+@deftypefnx {Function} {double} std.math.exponential.log2 (double x)
+@deftypefnx {Function} {real} std.math.exponential.log2 (real x)
+
+Calculates the base-2 logarithm of @var{x}.
+
+This function is evaluated during CTFE as the GCC built-in function
+@code{__builtin_log2}.
+@end deftypefn
+
+@deftypefn {Template} {Largest!(F, G)} std.math.exponential.pow (F, G) (F x, G y)
+@deftypefnx {Template} {real} std.math.exponential.pow (I, F)(I x, F y)
+
+Calculates @math{x^y}, where @var{y} is a float.
+
+This function is evaluated during CTFE as the GCC built-in function
+@code{__builtin_pow}.
+@end deftypefn
+
+@deftypefn {Template} {F} std.math.exponential.pow (F, G) (F x, G n)
+
+Calculates @math{x^n}, where @var{n} is an integer.
+
+This function is evaluated during CTFE as the GCC built-in function
+@code{__builtin_powi}.
+@end deftypefn
+
+@deftypefn {Function} {real} std.math.operations.fma (real x, real y, real z)
+
+Returns @code{(x * y) + z}, rounding only once according to the current
+rounding mode.
+
+This function is evaluated during CTFE as the GCC built-in function
+@code{__builtin_fma}.
+@end deftypefn
+
+@deftypefn {Template} {F} std.math.operations.fmax (F)(const F x, const F y)
+
+Returns the larger of @var{x} and @var{y}.
+
+This function is evaluated during CTFE as the GCC built-in function
+@code{__builtin_fmax}.
+@end deftypefn
+
+@deftypefn {Template} {F} std.math.operations.fmin (F)(const F x, const F y)
+
+Returns the smaller of @var{x} and @var{y}.
+
+This function is evaluated during CTFE as the GCC built-in function
+@code{__builtin_fmin}.
+@end deftypefn
+
+@deftypefn {Function} {float} std.math.rounding.ceil (float x)
+@deftypefnx {Function} {double} std.math.rounding.ceil (double x)
+@deftypefnx {Function} {real} std.math.rounding.ceil (real x)
+
+Returns the value of @var{x} rounded upward to the next integer (toward
+positive infinity).
+
+This function is evaluated during CTFE as the GCC built-in function
+@code{__builtin_ceil}.
+@end deftypefn
+
+@deftypefn {Function} {float} std.math.rounding.floor (float x)
+@deftypefnx {Function} {double} std.math.rounding.floor (double x)
+@deftypefnx {Function} {real} std.math.rounding.floor (real x)
+
+Returns the value of @var{x} rounded downward to the next integer (toward
+negative infinity).
+
+This function is evaluated during CTFE as the GCC built-in function
+@code{__builtin_floor}.
+@end deftypefn
+
+@deftypefn {Function} {real} std.math.rounding.round (real x)
+
+Return the value of @var{x} rounded to the nearest integer.  If the fractional
+part of @var{x} is exactly 0.5, the return value is rounded away from zero.
+
+This function is evaluated during CTFE as the GCC built-in function
+@code{__builtin_round}.
+@end deftypefn
+
+@deftypefn {Function} {real} std.math.rounding.trunc (real x)
+
+Returns the integer portion of @var{x}, dropping the fractional portion.
+
+This function is evaluated during CTFE as the GCC built-in function
+@code{__builtin_trunc}.
+@end deftypefn
+
+@deftypefn {Template} {R} std.math.traits.copysign (R, X)(R to, X from)
+
+Returns a value composed of @var{to} with @var{from}'s sign bit.
+
+This function is evaluated during CTFE as the GCC built-in function
+@code{__builtin_copysign}.
+@end deftypefn
+
+@deftypefn {Template} {bool} std.math.traits.isFinite (X)(X x)
+
+Returns true if @var{x} is finite.
+
+This function is evaluated during CTFE as the GCC built-in function
+@code{__builtin_isfinite}.
+@end deftypefn
+
+@deftypefn {Template} {bool} std.math.traits.isInfinity (X)(X x)
+
+Returns true if @var{x} is infinite.
+
+This function is evaluated during CTFE as the GCC built-in function
+@code{__builtin_isinf}.
+@end deftypefn
+
+@deftypefn {Template} {bool} std.math.traits.isNaN (X)(X x)
+
+Returns true if @var{x} is NaN.
+
+This function is evaluated during CTFE as the GCC built-in function
+@code{__builtin_isnan}.
+@end deftypefn
+
+@deftypefn {Function} {float} std.math.trigoometry.tan (float x)
+@deftypefnx {Function} {double} std.math.trigoometry.tan (double x)
+@deftypefnx {Function} {real} std.math.trigonometry.tan (real x)
+
+Returns tangent of @var{x}, where @var{x} is in radians.
+
+This intrinsic is the same as the GCC built-in function @code{__builtin_tan}.
+@end deftypefn
+
+
+@c --------------------------------------------------------
+
+@node Predefined Pragmas
+@section Predefined Pragmas
+@cindex predefined pragmas
+@cindex @code{pragma}
+
+The @code{@w{pragma}} operator is used as a way to pass special information to the
+implementation and allow the addition of vendor specific extensions.  The
+standard predefined pragmas are documented by the D language specification
+hosted at @uref{https://dlang.org/spec/pragma.html#predefined-pragmas}.  A D
+compiler must recognize, but is free to ignore any pragma in this list.
+
+Where a pragma is ignored, the GNU D compiler will emit a warning when the
+@option{-Wunknown-pragmas} option is seen on the command-line.
+
+@table @code
+@item pragma(crt_constructor)
+@code{pragma(crt_constructor)} annotates a function so it is run after the C
+runtime library is initialized and before the D runtime library is initialized.
+Functions with this pragma must return @code{void}.
+@smallexample
+pragma(crt_constructor) void init() @{ @}
+@end smallexample
+
+@item pragma(crt_destructor)
+@code{pragma(crt_destructor)} annotates a function so it is run after the D
+runtime library is terminated and before the C runtime library is terminated.
+Calling @code{exit} function also causes the annotated functions to run.
+Functions with this pragma must return @code{void}.
+@smallexample
+pragma(crt_destructor) void init() @{ @}
+@end smallexample
+
+@item pragma(inline)
+@itemx pragma(inline, false)
+@itemx pragma(inline, true)
+@code{pragma(inline)} affects whether functions are declared inlined or not.
+The pragma takes two forms.  In the first form, inlining is controlled by the
+command-line options for inlining.
+
+Functions annotated with @code{pragma(inline, false)} are marked uninlinable.
+Functions annotated with @code{pragma(inline, true)} are always inlined.
+
+@item pragma(lib)
+This pragma is accepted, but has no effect.
+@smallexample
+pragma(lib, "advapi32");
+@end smallexample
+
+@item pragma(linkerDirective)
+This pragma is accepted, but has no effect.
+@smallexample
+pragma(linkerDirective, "/FAILIFMISMATCH:_ITERATOR_DEBUG_LEVEL=2");
+@end smallexample
+
+@item pragma(mangle)
+@code{pragma(mangle, "symbol_name")} overrides the default mangling for a
+function or variable symbol.  The symbol name can be any expression that must
+evaluate at compile time to a string literal.  This enables linking to a symbol
+which is a D keyword, since an identifier cannot be a keyword.
+
+Targets are free to apply a prefix to the user label of the symbol name in
+assembly.  For example, on @code{x86_64-apple-darwin}, @samp{symbol_name} would
+produce @samp{_symbol_name}.  If the mangle string begins with @samp{*}, then
+@code{pragma(mangle)} will output the rest of the string unchanged.
+
+@smallexample
+pragma(mangle, "body")
+extern(C) void body_func();
+
+pragma(mangle, "function")
+extern(C++) struct _function @{@}
+@end smallexample
+
+@item pragma(msg)
+@code{pragma(msg, "message")} causes the compiler to print an informational
+message with the text @samp{message}.  The pragma accepts multiple arguments,
+each to which is evaluated at compile time and then all are combined into one
+concatenated message.
+@smallexample
+pragma(msg, "compiling...", 6, 1.0); // prints "compiling...61.0"
+@end smallexample
+
+@item pragma(printf)
+@itemx pragma(scanf)
+
+@code{pragma(printf)} and @code{pragma(scanf)} specifies that a function
+declaration with @code{printf} or @code{scanf} style arguments that should be
+type-checked against a format string. 
+
+A printf-like or scanf-like function can either be an @code{extern(C)} or
+@code{extern(C++)} function with a @var{format} parameter accepting a pointer
+to a 0-terminated @code{char} string, immediately followed by either a
+@code{...} variadic argument list or a parameter of type @code{va_list} as the
+last parameter.
+
+@smallexample
+extern(C):
+pragma(printf)
+int printf(scope const char* format, scope const ...);
+
+pragma(scanf)
+int vscanf(scope const char* format, va_list arg);
+@end smallexample
+
+@item pragma(startaddress)
+This pragma is accepted, but has no effect.
+@smallexample
+void foo() @{ @}
+pragma(startaddress, foo);
+@end smallexample
+
+@end table
+
+
+@c --------------------------------------------------------
+
+@node Predefined Versions
+@section Predefined Versions
+@cindex predefined versions
+@cindex @code{version}
+
+Several conditional version identifiers are predefined; you use them without
+supplying their definitions.  They fall into three classes: standard, common,
+and target-specific.
+
+Predefined version identifiers from this list cannot be set from the command
+line or from version statements.  This prevents things like both @code{Windows}
+and @code{linux} being simultaneously set.
+
+@menu
+* Standard Predefined Versions::
+* Common Predefined Versions::
+* Target Predefined Versions::
+@end menu
+
+@c --------------------------------------------------------
+
+@node Standard Predefined Versions
+@subsection Standard Predefined Versions
+@cindex standard predefined versions
+
+The standard predefined versions are documented by the D language specification
+hosted at @uref{https://dlang.org/spec/version.html#predefined-versions}.
+
+@table @code
+@item all
+@itemx none
+Version @code{none} is never defined; used to just disable a section of code.
+Version @code{all} is always defined; used as the opposite of @code{none}.
+
+@item BigEndian
+@itemx LittleEndian
+These versions reflect the byte order of multi-byte data in memory.
+@code{LittleEndian} is set when the least significant byte is first.
+@code{BigEndian} is set when the most significant byte is first.
+
+@item CRuntime_Bionic
+@itemx CRuntime_Glibc
+@itemx CRuntime_Microsoft
+@itemx CRuntime_Musl
+@itemx CRuntime_Newlib
+@itemx CRuntime_UClibc
+
+These versions reflect which standard C library is being linked in.
+@code{CRuntime_Bionic} is set when Bionic is the default C library.
+@code{CRuntime_Glibc} is set when GLIBC is the default C library.
+@code{CRuntime_Microsoft} is set when MSVCRT is the default C library.
+@code{CRuntime_Musl} is set when musl is the default C library.
+@code{CRuntime_Newlib} is set when Newlib is the default C library.
+@code{CRuntime_UClibc} is set when uClibc is the default C library.
+
+@item CppRuntime_Gcc
+This version is defined when the standard C++ library being linked in is @file{libstdc++}.
+
+@item D_BetterC
+This version is defined when the standard D libraries are not being implicitly
+linked in.  This also implies that features of the D language that rely on
+exceptions, module information, or run-time type information are disabled as
+well.  Enabled by @option{-fno-druntime}.
+
+@item D_Coverage
+This version is defined when code coverage analysis instrumentation is being
+generated.  Enabled by @option{-ftest-coverage}.
+
+@item D_Ddoc
+This version is defined when Ddoc documentation is being generated.  Enabled by
+@option{-fdoc}.
+
+@item D_Exceptions
+This version is defined when exception handling is supported.  Disabled by
+@option{-fno-exceptions}.
+
+@item D_HardFloat
+@itemx D_SoftFloat
+These versions reflect the floating-point ABI in use by the target.
+@code{D_HardFloat} is set when the target hardware has a floating-point unit.
+@code{D_SoftFloat} is set when the target hardware does not have a
+floating-point unit.
+
+@item D_Invariants
+This version is defined when checks are being emitted for class invariants and
+struct invariants.  Enabled by @option{-finvariants}.
+
+@item D_LP64
+This version is defined when pointers are 64-bits.  Not to be confused with
+with C's @code{__LP64__} model.
+
+@item D_ModuleInfo
+This version is defined when run-time module information (also known as
+@code{ModuleInfo}) is supported.  Disabled by @option{-fno-moduleinfo}.
+
+@item D_NoBoundsChecks
+This version is defined when array bounds checks are disabled.  Enabled by
+@option{-fno-bounds-checks}.
+
+@item D_Optimized
+This version is defined in all optimizing compilations.
+
+@item D_PIC
+This version is defined when position-independent code is being generated.
+Enabled by @option{-fPIC}.
+
+@item D_PIE
+This version is defined when position-independent code that can be only linked
+into executables is being generated.  Enabled by @option{-fPIE}.
+
+@item D_PreConditions
+This version is defined when checks are being emitted for @code{in} contracts.
+Disabled by @option{-fno-preconditions}.
+
+@item D_PostConditions
+This version is defined when checks are being emitted for @code{out} contracts.
+Disabled by @option{-fno-postconditions}.
+
+@item D_TypeInfo
+This version is defined when run-time type information (also known as
+@code{TypeInfo}) is supported.  Disabled by @option{-fno-rtti}.
+
+@item D_Version2
+This version defined when this is a D version 2 compiler.
+
+@item unittest
+This version is defined when the @code{unittest} code is being compiled in.
+Enabled by @option{-funittest}.
+
+@end table
+
+@c --------------------------------------------------------
+
+@node Common Predefined Versions
+@subsection Common Predefined Versions
+@cindex common predefined versions
+
+The common predefined macros are GNU D extensions.  They are available
+with the same meanings regardless of the machine or operating system on
+which you are using GNU D.  Their names all start with @code{GNU}.
+
+@table @code
+
+@item GNU
+This version is defined by the GNU D compiler.  If all you need to know is
+whether or not your D program is being compiled by GDC, or a non-GDC compiler,
+you can simply test @code{version(GNU)}.
+
+@item GNU_DWARF2_Exceptions
+@itemx GNU_SEH_Exceptions
+@itemx GNU_SjLj_Exceptions
+These versions reflect the mechanism that will be used for exception handling
+by the target.  @code{GNU_DWARF2_Exceptions} is defined when the target uses
+DWARF 2 exceptions.  @code{GNU_SEH_Exceptions} is defined when the target uses
+SEH exceptions.  @code{GNU_SjLj_Exceptions} is defined when the target uses the
+@code{setjmp}/@code{longjmp}-based exception handling scheme.
+
+@item GNU_EMUTLS
+This version is defined if the target does not support thread-local storage,
+and an emulation layer is used instead.
+
+@item GNU_InlineAsm
+This version is defined when @code{asm} statements use GNU D style syntax.
+(@pxref{Inline Assembly})
+
+@item GNU_StackGrowsDown
+This version is defined if pushing a word onto the stack moves the stack
+pointer to a smaller address, and is undefined otherwise.
+
+@end table
+
+@c --------------------------------------------------------
+
+@node Target Predefined Versions
+@subsection Target-specific Predefined Versions
+@cindex target-specific predefined versions
+
+The D compiler normally predefines several versions that indicate what type of
+system and machine is in use.  They are obviously different on each target
+supported by GCC.
+
+@table @code
+@item AArch64
+Version relating to the AArch64 family of processors.
+
+@item Android
+Version relating to the Android platform.
+
+@item ARM
+@itemx ARM_HardFloat
+@itemx ARM_SoftFloat
+@itemx ARM_SoftFP
+@itemx ARM_Thumb
+Versions relating to the ARM family of processors.
+
+@item Cygwin
+Version relating to the Cygwin environment.
+
+@item darwin
+Deprecated; use @code{OSX} instead.
+
+@item DragonFlyBSD
+Versions relating to DragonFlyBSD systems.
+
+@item FreeBSD
+@item FreeBSD_9
+@item FreeBSD_10
+@item FreeBSD_11
+@item FreeBSD_...
+Versions relating to FreeBSD systems.  The FreeBSD major version number is
+inferred from the target triplet.
+
+@item HPPA
+@itemx HPPA64
+Versions relating to the HPPA family of processors.
+
+@item Hurd
+Version relating to GNU Hurd systems.
+
+@item linux
+Version relating to Linux systems.
+
+@item MinGW
+Version relating to the MinGW environment.
+
+@item MIPS32
+@itemx MIPS64
+@itemx MIPS_EABI
+@itemx MIPS_HardFloat
+@itemx MIPS_N32
+@itemx MIPS_N64
+@itemx MIPS_O32
+@itemx MIPS_O64
+@itemx MIPS_SoftFloat
+Versions relating to the MIPS family of processors.
+
+@item NetBSD
+Version relating to NetBSD systems.
+
+@item OpenBSD
+Version relating to OpenBSD systems.
+
+@item OSX
+Version relating to OSX systems.
+
+@item Posix
+Version relating to POSIX systems (includes Linux, FreeBSD, OSX, Solaris, etc).
+
+@item PPC
+@itemx PPC64
+@itemx PPC_HardFloat
+@itemx PPC_SoftFloat
+Versions relating to the PowerPC family of processors.
+
+@item RISCV32
+@itemx RISCV64
+Versions relating to the RISC-V family of processors.
+
+@item S390
+@itemx SystemZ
+Versions relating to the S/390 and System Z family of processors.
+
+@item S390X
+Deprecated; use @code{SystemZ} instead.
+
+@item Solaris
+Versions relating to Solaris systems.
+
+@item SPARC
+@itemx SPARC64
+@itemx SPARC_HardFloat
+@itemx SPARC_SoftFloat
+@itemx SPARC_V8Plus
+Versions relating to the SPARC family of processors.
+
+@item Thumb
+Deprecated; use @code{ARM_Thumb} instead.
+
+@item D_X32
+@itemx X86
+@itemx X86_64
+Versions relating to the x86-32 and x86-64 family of processors.
+
+@item Windows
+@itemx Win32
+@itemx Win64
+Versions relating to Microsoft Windows systems.
+
+@end table
+
+
+@c --------------------------------------------------------
+
+@node Special Enums
+@section Special Enums
+@cindex special enums
+
+Special @code{enum} names are used to represent types that do not have an
+equivalent basic D type.  For example, C++ types used by the C++ name mangler.
+
+Special enums are declared opaque, with a base type explicitly set.  Unlike
+regular opaque enums, special enums can be used as any other value type.  They
+have a default @code{.init} value, as well as other enum properties available
+(@code{.min}, @code{.max}).  Special enums can be declared in any module, and
+will be recognized by the compiler.
+
+@smallexample
+import gcc.builtins;
+enum __c_long : __builtin_clong;
+__c_long var = 0x800A;
+@end smallexample
+
+@noindent
+The following identifiers are recognized by GNU D.
+
+@table @code
+@item __c_complex_double
+C @code{_Complex double} type.
+@item __c_complex_float
+C @code{_Complex float} type.
+@item __c_complex_real
+C @code{_Complex long double} type.
+@item __c_long
+C++ @code{long} type.
+@item __c_longlong
+C++ @code{long long} type.
+@item __c_long_double
+C @code{long double} type.
+@item __c_ulong
+C++ @code{unsigned long} type.
+@item __c_ulonglong
+C++ @code{unsigned long long} type.
+@item __c_wchar_t
+C++ @code{wchar_t} type.
+@end table
+
+The @code{core.stdc.config} module declares the following shorthand alias types
+for convenience: @code{c_complex_double}, @code{c_complex_float},
+@code{c_complex_real}, @code{cpp_long}, @code{cpp_longlong},
+@code{c_long_double}, @code{cpp_ulong}, @code{cpp_ulonglong}.
+
+
+@c --------------------------------------------------------
+
+@node Traits
+@section Traits
+@cindex traits
+
+Traits are extensions to the D programming language to enable programs, at
+compile time, to get at information internal to the compiler.  This is also
+known as compile time reflection.
+
+GNU D implements a @code{__traits(getTargetInfo)} trait that receives a string
+key as its argument.  The result is an expression describing the requested
+target information.
+
+@smallexample
+version (OSX)
+@{
+    static assert(__traits(getTargetInfo, "objectFormat") == "macho");
+@}
+@end smallexample
+
+@noindent
+Keys for the trait are implementation defined, allowing target-specific data
+for exotic targets.  A reliable subset exists which a D compiler must
+recognize.  These are documented by the D language specification hosted at
+@uref{https://dlang.org/spec/traits.html#getTargetInfo}.
+
+The following keys are recognized by GNU D.
+
+@table @code
+@item cppRuntimeLibrary
+The C++ runtime library affinity for this toolchain.
+
+@item cppStd
+The version of the C++ standard supported by @code{extern(C++)} code,
+equivalent to the @code{__cplusplus} macro in a C++ compiler.
+
+@item floatAbi
+Floating point ABI; may be @samp{hard}, @samp{soft}, or @samp{softfp}.
+
+@item objectFormat
+Target object format.
+
+@end table
+
+
+@c --------------------------------------------------------
+
+@node Vector Extensions
+@section Vector Extensions
+@cindex vector extensions
+@cindex simd
+
+CPUs often support specialized vector types and vector operations (aka media
+instructions).  Vector types are a fixed array of floating or integer types,
+and vector operations operate simultaneously on them.
+
+@smallexample
+alias int4 = __vector(int[4]);
+@end smallexample
+
+@noindent
+All the basic integer types can be used as base types, both as signed and as
+unsigned: @code{byte}, @code{short}, @code{int}, @code{long}.  In addition,
+@code{float} and @code{double} can be used to build floating-point vector
+types, and @code{void} to build vectors of untyped data.  Only sizes that are
+positive power-of-two multiples of the base type size are currently allowed.
+
+@noindent
+The @code{core.simd} module has the following shorthand aliases for commonly
+supported vector types:
+@code{byte8}, @code{byte16}, @code{byte32}, @code{byte64},
+@code{double1}, @code{double2}, @code{double4}, @code{double8},
+@code{float2}, @code{float4}, @code{float8}, @code{float16},
+@code{int2}, @code{int4}, @code{int8}, @code{int16},
+@code{long1}, @code{long2}, @code{long4}, @code{long8},
+@code{short4}, @code{short8}, @code{short16}, @code{short32},
+@code{ubyte8}, @code{ubyte16}, @code{ubyte32}, @code{ubyte64},
+@code{uint2}, @code{uint4}, @code{uint8}, @code{uint16},
+@code{ulong1}, @code{ulong2}, @code{ulong4}, @code{ulong8},
+@code{ushort4}, @code{ushort8}, @code{ushort16}, @code{ushort32},
+@code{void8}, @code{void16}, @code{void32}, @code{void64}.
+All these aliases correspond to @code{__vector(type[N])}.
+
+Which vector types are supported depends on the target.  Only vector types that
+are implemented for the current architecture are supported at compile-time.
+Vector operations that are not supported in hardware cause GNU D to synthesize
+the instructions using a narrower mode.
+
+@smallexample
+alias v4i = __vector(int[4]);
+alias v128f = __vector(float[128]);    // Error: not supported on this platform
+
+int4 a, b, c;
+
+c = a * b;    // Natively supported on x86 with SSE4
+c = a / b;    // Always synthesized
+@end smallexample
+
+@noindent
+Vector types can be used with a subset of normal D operations.  Currently, GNU
+D allows using the following operators on these types: @code{+, -, *, /,
+unary+, unary-}@.
+
+@smallexample
+alias int4 = __vector(int[4]);
+
+int4 a, b, c;
+
+c = a + b;
+@end smallexample
+
+@noindent
+It is also possible to use shifting operators @code{<<}, @code{>>}, the modulus
+operator @code{%}, logical operations @code{&, |, ^}, and the complement
+operator @code{unary~} on integer-type vectors.
+
+For convenience, it is allowed to use a binary vector operation where one
+operand is a scalar.  In that case the compiler transforms the scalar operand
+into a vector where each element is the scalar from the operation.  The
+transformation happens only if the scalar could be safely converted to the
+vector-element type.  Consider the following code.
+
+@smallexample
+alias int4 = __vector(int[4]);
+
+int4 a, b;
+long l;
+
+a = b + 1;    // a = b + [1,1,1,1];
+a = 2 * b;    // a = [2,2,2,2] * b;
+
+a = l + a;    // Error, incompatible types.
+@end smallexample
+
+@noindent
+Vector comparison is supported with standard comparison operators:
+@code{==, !=, <, <=, >, >=}.  Comparison operands can be vector expressions of
+integer-type or real-type.  Comparison between integer-type vectors and
+real-type vectors are not supported.  The result of the comparison is a vector
+of the same width and number of elements as the comparison operands with a
+signed integral element type.
+
+Vectors are compared element-wise producing 0 when comparison is false
+and -1 (constant of the appropriate type where all bits are set)
+otherwise.  Consider the following example.
+
+@smallexample
+alias int4 = __vector(int[4]);
+
+int4 a = [1,2,3,4];
+int4 b = [3,2,1,4];
+int4 c;
+
+c = a >  b;     // The result would be [0, 0,-1, 0]
+c = a == b;     // The result would be [0,-1, 0,-1]
+@end smallexample
+
+
+@c --------------------------------------------------------
+
+@node Vector Intrinsics
+@section Vector Intrinsics
+@cindex intrinsics, vector
+
+The following functions are a collection of vector operation intrinsics,
+available by importing the @code{gcc.simd} module.
+
+@deftypefn {Template} {void} gcc.simd.prefetch (bool @var{rw}, @
+                                                ubyte @var{locality}) @
+                                               (const(void)* @var{addr})
+
+Emit the prefetch instruction.  The value of @var{addr} is the address of the
+memory to prefetch.  The value of @var{rw} is a compile-time constant one or
+zero; one means that the prefetch is preparing for a write to the memory
+address and zero, the default, means that the prefetch is preparing for a read.
+The value @var{locality} must be a compile-time constant integer between zero
+and three.
+
+This intrinsic is the same as the GCC built-in function
+@code{__builtin_prefetch}.
+
+@smallexample
+for (i = 0; i < n; i++)
+@{
+    import gcc.simd : prefetch;
+    a[i] = a[i] + b[i];
+    prefetch!(true, 1)(&a[i+j]);
+    prefetch!(false, 1)(&b[i+j]);
+    // @r{@dots{}}
+@}
+@end smallexample
+@end deftypefn
+
+@deftypefn {Template} {V} gcc.simd.loadUnaligned (V)(const V* @var{p})
+
+Load unaligned vector from the address @var{p}.
+
+@smallexample
+float4 v;
+ubyte[16] arr;
+
+v = loadUnaligned(cast(float4*)arr.ptr);
+@end smallexample
+@end deftypefn
+
+@deftypefn {Template} {V} gcc.simd.storeUnaligned (V)(V* @var{p}, V @var{value})
+
+Store vector @var{value} to unaligned address @var{p}.
+
+@smallexample
+float4 v;
+ubyte[16] arr;
+
+storeUnaligned(cast(float4*)arr.ptr, v);
+@end smallexample
+@end deftypefn
+
+@deftypefn {Template} {V0} gcc.simd.shuffle (V0, V1, M)(V0 @var{op1}, @
+                                                        V1 @var{op2}, @
+                                                        M @var{mask})
+@deftypefnx {Template} {V} gcc.simd.shuffle (V, M)(V @var{op1}, M @var{mask})
+
+Construct a permutation of elements from one or two vectors, returning a vector
+of the same type as the input vector(s).  The @var{mask} is an integral vector
+with the same width and element count as the output vector.
+
+This intrinsic is the same as the GCC built-in function
+@code{__builtin_shuffle}.
+
+@smallexample
+int4 a = [1, 2, 3, 4];
+int4 b = [5, 6, 7, 8];
+int4 mask1 = [0, 1, 1, 3];
+int4 mask2 = [0, 4, 2, 5];
+int4 res;
+
+res = shuffle(a, mask1);    // res is [1,2,2,4]
+res = shuffle(a, b, mask2); // res is [1,5,3,6]
+@end smallexample
+@end deftypefn
+
+@deftypefn {Template} {V} gcc.simd.shufflevector (V1, V2, M...)(V1 @var{op1}, @
+                                                  V2 @var{op2}, M @var{mask})
+@deftypefnx {Template} {V} gcc.simd.shufflevector (V, @var{mask}...)(V @
+                                                   @var{op1}, V @var{op2})
+
+Construct a permutation of elements from two vectors, returning a vector with
+the same element type as the input vector(s), and same length as the
+@var{mask}.
+
+This intrinsic is the same as the GCC built-in function
+@code{__builtin_shufflevector}.
+
+@smallexample
+int8 a = [1, -2, 3, -4, 5, -6, 7, -8];
+int4 b = shufflevector(a, a, 0, 2, 4, 6);   // b is [1,3,5,7]
+int4 c = [-2, -4, -6, -8];
+int8 d = shufflevector!(int8, 4, 0, 5, 1, 6, 2, 7, 3)(c, b); // d is a
+@end smallexample
+@end deftypefn
+
+@deftypefn {Template} {E} gcc.simd.extractelement (V, int idx)(V @var{val})
+Extracts a single scalar element from a vector @var{val} at a specified index
+@var{idx}.
+
+@smallexample
+int4 a = [0, 10, 20, 30];
+int k = extractelement!(int4, 2)(a);    // a is 20
+@end smallexample
+@end deftypefn
+
+@deftypefn {Template} {V} gcc.simd.insertelement (V, int idx)(V val, B @var{e})
+Inserts a scalar element @var{e} into a vector @var{val} at a specified index
+@var{idx}.
+
+@smallexample
+int4 a = [0, 10, 20, 30];
+int4 b = insertelement!(int4, 2)(a, 50); // b is [0,10,50,30]
+@end smallexample
+@end deftypefn
+
+@deftypefn {Template} {V} gcc.simd.convertvector (V, T)(T val)
+Convert a vector @var{val} from one integral or floating vector type to
+another.  The result is an integral or floating vector that has had every
+element cast to the element type of the return type.
+
+This intrinsic is the same as the GCC built-in function
+@code{__builtin_convertvector}.
+
+@smallexample
+int4 a = [1, -2, 3, -4];
+float4 b = [1.5, -2.5, 3, 7];
+float4 c = convertvector!float4(a);    // c is [1,-2,3,-4]
+double4 d = convertvector!double4(a);  // d is [1,-2,3,-4]
+double4 e = convertvector!double4(b);  // e is [1.5,-2.5,3,7]
+int4 f = convertvector!int4(b);        // f is [1,-2,3,7]
+@end smallexample
+@end deftypefn
+
+@deftypefn {Template} {V0} gcc.simd.blendvector (V0, V1, M)(V0 @var{op0}, @
+                                                            V1 @var{op1}, @
+                                                            M @var{mask})
+
+Construct a conditional merge of elements from two vectors, returning a vector
+of the same type as the input vector(s).  The @var{mask} is an integral vector
+with the same width and element count as the output vector.
+
+@smallexample
+int4 a = [1, 2, 3, 4];
+int4 b = [3, 2, 1, 4];
+auto c = blendvector(a, b, a > b);  // c is [3,2,3,4]
+auto d = blendvector(a, b, a < b);  // d is [1,2,1,4]
+@end smallexample
+@end deftypefn
+
+
+@c --------------------------------------------------------
+
+@node Missing Features
+@section Missing Features and Deviations
+@cindex missing features
+@cindex D spec deviations
+
+Some parts of the D specification are hard or impossible to implement with
+GCC, they should be listed here.
+
+@table @asis
+@item Bit Operation Intrinsics
+The Digital Mars D compiler implements the @code{core.bitop} intrinsics
+@code{inp}, @code{inpw}, @code{inpl}, @code{outp}, @code{outpw}, and
+@code{outpl}.  These are not recognized by GNU D.  On most targets, equivalent
+intrinsics that have the same effect would be @code{core.volatile.loadVolatile}
+and @code{core.volatile.storeVolatile} respectively
+(@pxref{Volatile Intrinsics}).
+
+On x86 targets, if an @code{in} or @code{out} instruction is specifically
+required, that can be achieved using assembler statements instead.
+@smallexample
+ubyte inp(uint port)
+@{
+    ubyte value;
+    asm @{ "inb %w1, %b0" : "=a" (value) : "Nd" (port); @}
+    return value;
+@}
+
+void outp(uint port, ushort value)
+@{
+    asm @{ "outb %b0, %w1" : : "a" (value), "Nd" (port); @}
+@}
+@end smallexample
+
+@item Floating-Point Intermediate Values
+
+GNU D uses a software compile-time floating-point type that assists in
+cross-compilation and support for arbitrary target @code{real} precisions wider
+than 80 bits.  Because of this, the result of floating-point CTFE operations
+may have different results in GNU D compared with other D compilers that use
+the host's native floating-point type for storage and CTFE.  In particular, GNU
+D won't overflow or underflow when a target real features a higher precision
+than the host.  Differences also extend to @code{.stringof} representations of
+intermediate values due to formatting differences with @code{sprintf("%Lg")}.
+@smallexample
+version(GNU)
+    assert((25.5).stringof ~ (3.01).stringof == "2.55e+13.01e+0");
+else
+    assert((25.5).stringof ~ (3.01).stringof == "25.53.01");
+@end smallexample
+
+@item Function Calling Conventions
+GNU D does not implement the @code{extern(D)} calling convention for x86 as
+described in the D specification hosted at
+@uref{https://dlang.org/spec/abi.html#function_calling_conventions}.
+
+Instead, there is no distinction between @code{extern(C)} and @code{extern(D)}
+other than name mangling.
+
+@item ImportC Limitations
+GNU D does not run the preprocessor automatically for any ImportC sources.
+Instead all C files are expected to be manually preprocessed before they are
+imported into the compilation.
+
+@item Inline Assembler
+GNU D does not implement the D inline assembler for x86 and x86_64 as described
+in the D specification hosted at @uref{https://dlang.org/spec/iasm.html}.  Nor
+does GNU D predefine the @code{D_InlineAsm_X86} and @code{D_InlineAsm_X86_64}
+version identifiers to indicate support.
+
+The GNU D compiler uses an alternative, GCC-based syntax for inline assembler
+(@pxref{Inline Assembly}).
+
+@item Interfacing to Objective-C
+GNU D does not support interfacing with Objective-C, nor its protocols,
+classes, subclasses, instance variables, instance methods and class methods.
+The @code{extern(Objective-C)} linkage is ignored, as are the @code{@@optional}
+and @code{@@selector} attributes.  The @code{D_ObjectiveC} version identifier
+is not predefined for compilations.
+
+@item Pragma Directives
+Pragmas that are designed to embed information into object files or otherwise
+pass options to the linker are not supported by GNU D.  These include
+@code{pragma(lib)}, @code{pragma(linkerDirective)}, and
+@code{pragma(startaddress)}.
+
+@item SIMD Intrinsics
+The Digital Mars D compiler implements the @code{core.simd} intrinsics
+@code{__simd}, @code{__simd_ib}, @code{__simd_sto}.  These are not recognized
+by GNU D, nor does GNU D predefine the @code{D_SIMD} version identifier to
+indicate support.
+
+On x86 targets, all intrinsics are available as functions in the
+@code{gcc.builtins} module, and have predictable equivalents.
+@smallexample
+version (DigitalMars)
+@{
+    __simd(XMM.PSLLW, op1, op2);
+    __simd_ib(XMM.PSLLW, op1, imm8);
+@}
+version (GNU)
+@{
+    __builtin_ia32_psllw(op1, op2);
+    __builtin_ia32_psllwi(op1, imm8);
+@}
+@end smallexample
+
+@item TypeInfo-based va_arg
+The Digital Mars D compiler implements a version of @code{core.vararg.va_arg}
+that accepts a run-time @code{TypeInfo} argument for use when the static type
+is not known.  This function is not implemented by GNU D.  It is more portable
+to use variadic template functions instead.
+
+@end table

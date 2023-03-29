@@ -9,7 +9,6 @@
  */
 module core.sys.windows.comcat;
 version (Windows):
-@system:
 
 import core.sys.windows.ole2;
 import core.sys.windows.basetyps, core.sys.windows.cguid, core.sys.windows.objbase, core.sys.windows.unknwn,

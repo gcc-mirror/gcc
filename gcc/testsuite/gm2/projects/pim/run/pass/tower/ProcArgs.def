@@ -1,0 +1,15 @@
+DEFINITION MODULE ProcArgs ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+EXPORT QUALIFIED ProcessArgs,
+                 InitArgs, SetArgs, CollectArgs, KillArgs ;
+
+TYPE
+   ProcessArgs ;
+
+PROCEDURE InitArgs () : ProcessArgs ;
+PROCEDURE SetArgs (p: ProcessArgs; a: ADDRESS) : ADDRESS ;
+PROCEDURE CollectArgs (p: ProcessArgs) : ADDRESS ;
+PROCEDURE KillArgs (p: ProcessArgs) : ProcessArgs ;
+
+END ProcArgs.

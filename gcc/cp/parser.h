@@ -1,5 +1,5 @@
 /* Data structures and function exported by the C++ Parser.
-   Copyright (C) 2010-2022 Free Software Foundation, Inc.
+   Copyright (C) 2010-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -178,6 +178,9 @@ struct GTY(()) cp_unparsed_functions_entry {
 
   /* Functions with noexcept-specifiers that require post-processing.  */
   vec<tree, va_gc> *noexcepts;
+
+  /* Functions with contract attributes that require post-processing.  */
+  vec<tree, va_gc> *contracts;
 };
 
 
@@ -391,7 +394,7 @@ struct GTY(()) cp_parser {
   /* When parsing #pragma acc routine, this is a pointer to a helper data
      structure.  */
   cp_oacc_routine_data * GTY((skip)) oacc_routine;
-  
+
   /* Nonzero if parsing a parameter list where 'auto' should trigger an implicit
      template parameter.  */
   bool auto_is_implicit_function_template_parm_p;

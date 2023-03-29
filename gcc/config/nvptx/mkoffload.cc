@@ -1,6 +1,6 @@
 /* Offload image generation tool for PTX.
 
-   Copyright (C) 2014-2022 Free Software Foundation, Inc.
+   Copyright (C) 2014-2023 Free Software Foundation, Inc.
 
    Contributed by Nathan Sidwell <nathan@codesourcery.com> and
    Bernd Schmidt <bernds@codesourcery.com>.
@@ -364,7 +364,8 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
 	     Alternatively, besides searching for 'BEGIN FUNCTION DECL',
 	     checking for '.visible .entry ' + id->ptx_name would be
 	     required.  */
-	  if (!endswith (id->ptx_name, "$nohost"))
+	  if (!endswith (id->ptx_name, "$nohost")
+	      && !strstr (id->ptx_name, "$nohost$"))
 	    continue;
 	  fprintf (out, "\t\".extern ");
 	  const char *p = input + file_idx[fidx];
@@ -402,7 +403,8 @@ process (FILE *in, FILE *out, uint32_t omp_requires)
 		    "$offload_func_table[] = {");
       for (comma = "", id = func_ids; id; comma = ",", id = id->next)
 	fprintf (out, "%s\"\n\t\t\"%s", comma,
-		 endswith (id->ptx_name, "$nohost") ? id->ptx_name : "0");
+		 (endswith (id->ptx_name, "$nohost")
+		  || strstr (id->ptx_name, "$nohost$")) ? id->ptx_name : "0");
       fprintf (out, "};\\n\";\n\n");
     }
 

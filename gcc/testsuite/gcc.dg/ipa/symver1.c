@@ -8,5 +8,5 @@ int foo()
   return 2;
 }
 
-/* { dg-final { scan-assembler ".symver.*foo, foo@VER_2" } } */
-/* { dg-final { scan-assembler ".symver.*foo, foo@VER_3" } } */
+/* { dg-final { scan-assembler ".symver.*foo, _?foo@VER_2" } } */
+/* { dg-final { scan-assembler ".symver.*foo, _?foo@VER_3" } } */

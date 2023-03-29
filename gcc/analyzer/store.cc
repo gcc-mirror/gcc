@@ -1,5 +1,5 @@
 /* Classes for modeling the state of memory.
-   Copyright (C) 2020-2022 Free Software Foundation, Inc.
+   Copyright (C) 2020-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -38,24 +39,20 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "diagnostic-color.h"
 #include "diagnostic-metadata.h"
-#include "tristate.h"
 #include "bitmap.h"
 #include "selftest.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "ordered-hash-map.h"
 #include "options.h"
-#include "cgraph.h"
 #include "cfg.h"
-#include "digraph.h"
 #include "analyzer/supergraph.h"
 #include "sbitmap.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
+#include "analyzer/call-summary.h"
 #include "analyzer/analyzer-selftests.h"
 #include "stor-layout.h"
 
@@ -130,8 +127,12 @@ binding_key::make (store_manager *mgr, const region *r)
     {
       bit_size_t bit_size;
       if (r->get_bit_size (&bit_size))
-	return mgr->get_concrete_binding (offset.get_bit_offset (),
-					  bit_size);
+	{
+	  /* Must be non-empty.  */
+	  gcc_assert (bit_size > 0);
+	  return mgr->get_concrete_binding (offset.get_bit_offset (),
+					    bit_size);
+	}
       else
 	return mgr->get_symbolic_binding (r);
     }
@@ -910,6 +911,8 @@ binding_map::apply_ctor_val_to_range (const region *parent_reg,
     return false;
   bit_offset_t start_bit_offset = min_offset.get_bit_offset ();
   store_manager *smgr = mgr->get_store_manager ();
+  if (max_element->empty_p ())
+    return false;
   const binding_key *max_element_key = binding_key::make (smgr, max_element);
   if (max_element_key->symbolic_p ())
     return false;
@@ -949,6 +952,8 @@ binding_map::apply_ctor_pair_to_child_region (const region *parent_reg,
   else
     {
       const svalue *sval = get_svalue_for_ctor_val (val, mgr);
+      if (child_reg->empty_p ())
+	return false;
       const binding_key *k
 	= binding_key::make (mgr->get_store_manager (), child_reg);
       /* Handle the case where we have an unknown size for child_reg
@@ -1073,6 +1078,9 @@ binding_map::get_overlapping_bindings (const binding_key *key,
    If UNCERTAINTY is non-NULL, use it to record any svalues that
    were removed, as being maybe-bound.
 
+   If MAYBE_LIVE_VALUES is non-NULL, then use it to record any svalues that
+   were removed as being maybe-live.
+
    If ALWAYS_OVERLAP, then assume that DROP_KEY can overlap anything
    in the map, due to one or both of the underlying clusters being
    symbolic (but not the same symbolic region).  Hence even if DROP_KEY is a
@@ -1084,6 +1092,7 @@ void
 binding_map::remove_overlapping_bindings (store_manager *mgr,
 					  const binding_key *drop_key,
 					  uncertainty_t *uncertainty,
+					  svalue_set *maybe_live_values,
 					  bool always_overlap)
 {
   /* Get the bindings of interest within this map.  */
@@ -1117,6 +1126,11 @@ binding_map::remove_overlapping_bindings (store_manager *mgr,
 	      || iter_binding->symbolic_p ()
 	      || always_overlap))
 	uncertainty->on_maybe_bound_sval (old_sval);
+
+      /* Record any svalues that were removed to *MAYBE_LIVE_VALUES as being
+	 maybe-live. */
+      if (maybe_live_values)
+	maybe_live_values->add (old_sval);
 
       /* Begin by removing the old binding. */
       m_map.remove (iter_binding);
@@ -1346,6 +1360,8 @@ binding_cluster::bind (store_manager *mgr,
       return;
     }
 
+  if (reg->empty_p ())
+    return;
   const binding_key *binding = binding_key::make (mgr, reg);
   bind_key (binding, sval);
 }
@@ -1409,7 +1425,7 @@ binding_cluster::bind_compound_sval (store_manager *mgr,
 void
 binding_cluster::clobber_region (store_manager *mgr, const region *reg)
 {
-  remove_overlapping_bindings (mgr, reg, NULL);
+  remove_overlapping_bindings (mgr, reg, NULL, NULL);
 }
 
 /* Remove any bindings for REG within this cluster.  */
@@ -1418,6 +1434,8 @@ void
 binding_cluster::purge_region (store_manager *mgr, const region *reg)
 {
   gcc_assert (reg->get_kind () == RK_DECL);
+  if (reg->empty_p ())
+    return;
   const binding_key *binding
     = binding_key::make (mgr, const_cast<region *> (reg));
   m_map.remove (binding);
@@ -1455,6 +1473,8 @@ binding_cluster::zero_fill_region (store_manager *mgr, const region *reg)
    Remove any bindings overlapping REG_FOR_OVERLAP.
    If UNCERTAINTY is non-NULL, use it to record any svalues that
    had bindings to them removed, as being maybe-bound.
+   If MAYBE_LIVE_VALUES is non-NULL, use it to record any svalues that
+   had bindings to them removed, as being maybe-live.
 
    REG_TO_BIND and REG_FOR_OVERLAP are the same for
    store::mark_region_as_unknown, but are different in
@@ -1465,9 +1485,14 @@ void
 binding_cluster::mark_region_as_unknown (store_manager *mgr,
 					 const region *reg_to_bind,
 					 const region *reg_for_overlap,
-					 uncertainty_t *uncertainty)
+					 uncertainty_t *uncertainty,
+					 svalue_set *maybe_live_values)
 {
-  remove_overlapping_bindings (mgr, reg_for_overlap, uncertainty);
+  if (reg_to_bind->empty_p ())
+    return;
+
+  remove_overlapping_bindings (mgr, reg_for_overlap, uncertainty,
+			       maybe_live_values);
 
   /* Add a default binding to "unknown".  */
   region_model_manager *sval_mgr = mgr->get_svalue_manager ();
@@ -1519,6 +1544,8 @@ const svalue *
 binding_cluster::get_binding (store_manager *mgr,
 			      const region *reg) const
 {
+  if (reg->empty_p ())
+    return NULL;
   const binding_key *reg_binding = binding_key::make (mgr, reg);
   const svalue *sval = m_map.get (reg_binding);
   if (sval)
@@ -1660,6 +1687,9 @@ binding_cluster::maybe_get_compound_binding (store_manager *mgr,
   if (reg_offset.symbolic_p ())
     return NULL;
 
+  if (reg->empty_p ())
+    return NULL;
+
   region_model_manager *sval_mgr = mgr->get_svalue_manager ();
 
   /* We will a build the result map in two parts:
@@ -1731,7 +1761,7 @@ binding_cluster::maybe_get_compound_binding (store_manager *mgr,
 		 it overlaps with offset_concrete_key.  */
 	      default_map.remove_overlapping_bindings (mgr,
 						       offset_concrete_key,
-						       NULL, false);
+						       NULL, NULL, false);
 	    }
 	  else if (bound_range.contains_p (reg_range, &subrange))
 	    {
@@ -1765,7 +1795,7 @@ binding_cluster::maybe_get_compound_binding (store_manager *mgr,
 		 it overlaps with overlap_concrete_key.  */
 	      default_map.remove_overlapping_bindings (mgr,
 						       overlap_concrete_key,
-						       NULL, false);
+						       NULL, NULL, false);
 	    }
 	}
       else
@@ -1796,13 +1826,19 @@ binding_cluster::maybe_get_compound_binding (store_manager *mgr,
    in the map.
 
    If UNCERTAINTY is non-NULL, use it to record any svalues that
-   were removed, as being maybe-bound.  */
+   were removed, as being maybe-bound.
+
+   If MAYBE_LIVE_VALUES is non-NULL, use it to record any svalues that
+   were removed, as being maybe-live.  */
 
 void
 binding_cluster::remove_overlapping_bindings (store_manager *mgr,
 					      const region *reg,
-					      uncertainty_t *uncertainty)
+					      uncertainty_t *uncertainty,
+					      svalue_set *maybe_live_values)
 {
+  if (reg->empty_p ())
+    return;
   const binding_key *reg_binding = binding_key::make (mgr, reg);
 
   const region *cluster_base_reg = get_base_region ();
@@ -1817,6 +1853,7 @@ binding_cluster::remove_overlapping_bindings (store_manager *mgr,
 			 && (cluster_base_reg->get_kind () == RK_SYMBOLIC
 			     || other_base_reg->get_kind () == RK_SYMBOLIC));
   m_map.remove_overlapping_bindings (mgr, reg_binding, uncertainty,
+				     maybe_live_values,
 				     always_overlap);
 }
 
@@ -2010,11 +2047,14 @@ binding_cluster::on_unknown_fncall (const gcall *call,
     {
       m_map.empty ();
 
-      /* Bind it to a new "conjured" value using CALL.  */
-      const svalue *sval
-	= mgr->get_svalue_manager ()->get_or_create_conjured_svalue
+      if (!m_base_region->empty_p ())
+	{
+	  /* Bind it to a new "conjured" value using CALL.  */
+	  const svalue *sval
+	    = mgr->get_svalue_manager ()->get_or_create_conjured_svalue
 	    (m_base_region->get_type (), call, m_base_region, p);
-      bind (mgr, m_base_region, sval);
+	  bind (mgr, m_base_region, sval);
+	}
 
       m_touched = true;
     }
@@ -2037,6 +2077,17 @@ binding_cluster::on_asm (const gasm *stmt,
   bind (mgr, m_base_region, sval);
 
   m_touched = true;
+}
+
+/* Return true if this cluster has escaped.  */
+
+bool
+binding_cluster::escaped_p () const
+{
+  /* Consider the "errno" region to always have escaped.  */
+  if (m_base_region->get_kind () == RK_ERRNO)
+    return true;
+  return m_escaped;
 }
 
 /* Return true if this binding_cluster has no information
@@ -2138,6 +2189,9 @@ binding_cluster::maybe_get_simple_value (store_manager *mgr) const
     return NULL;
 
   if (m_map.elements () != 1)
+    return NULL;
+
+  if (m_base_region->empty_p ())
     return NULL;
 
   const binding_key *key = binding_key::make (mgr, m_base_region);
@@ -2542,6 +2596,8 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
 	  const region *ptr_base_reg = ptr_dst->get_base_region ();
 	  mark_as_escaped (ptr_base_reg);
 	}
+      if (uncertainty)
+	uncertainty->on_maybe_bound_sval (rhs_sval);
     }
   else if (lhs_base_reg->tracked_p ())
     {
@@ -2562,7 +2618,10 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
      Writes to symbolic clusters can affect both concrete and symbolic
      clusters.
      Invalidate our knowledge of other clusters that might have been
-     affected by the write.  */
+     affected by the write.
+     Gather the set of all svalues that might still be live even if
+     the store doesn't refer to them.  */
+  svalue_set maybe_live_values;
   for (cluster_map_t::iterator iter = m_cluster_map.begin ();
        iter != m_cluster_map.end (); ++iter)
     {
@@ -2599,7 +2658,8 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
 		(mgr,
 		 iter_base_reg, /* reg_to_bind */
 		 lhs_reg, /* reg_for_overlap */
-		 uncertainty);
+		 uncertainty,
+		 &maybe_live_values);
 	      break;
 
 	    case tristate::TS_TRUE:
@@ -2613,6 +2673,11 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
 	    }
 	}
     }
+  /* Given the set of svalues that might still be live, process them
+     (e.g. marking regions as escaped).
+     We do this after the iteration to avoid potentially changing
+     m_cluster_map whilst iterating over it.  */
+  on_maybe_live_values (maybe_live_values);
 }
 
 /* Determine if BASE_REG_A could be an alias of BASE_REG_B.  */
@@ -2693,6 +2758,21 @@ store::eval_alias_1 (const region *base_reg_a,
   return tristate::TS_UNKNOWN;
 }
 
+/* Record all of the values in MAYBE_LIVE_VALUES as being possibly live.  */
+
+void
+store::on_maybe_live_values (const svalue_set &maybe_live_values)
+{
+  for (auto sval : maybe_live_values)
+    {
+      if (const region_svalue *ptr_sval = sval->dyn_cast_region_svalue ())
+	{
+	  const region *base_reg = ptr_sval->get_pointee ()->get_base_region ();
+	  mark_as_escaped (base_reg);
+	}
+    }
+}
+
 /* Remove all bindings overlapping REG within this store.  */
 
 void
@@ -2734,6 +2814,10 @@ store::purge_region (store_manager *mgr, const region *reg)
 void
 store::fill_region (store_manager *mgr, const region *reg, const svalue *sval)
 {
+  /* Filling an empty region is a no-op.  */
+  if (reg->empty_p ())
+    return;
+
   const region *base_reg = reg->get_base_region ();
   if (base_reg->symbolic_for_unknown_ptr_p ()
       || !base_reg->tracked_p ())
@@ -2756,14 +2840,16 @@ store::zero_fill_region (store_manager *mgr, const region *reg)
 
 void
 store::mark_region_as_unknown (store_manager *mgr, const region *reg,
-			       uncertainty_t *uncertainty)
+			       uncertainty_t *uncertainty,
+			       svalue_set *maybe_live_values)
 {
   const region *base_reg = reg->get_base_region ();
   if (base_reg->symbolic_for_unknown_ptr_p ()
       || !base_reg->tracked_p ())
     return;
   binding_cluster *cluster = get_or_create_cluster (base_reg);
-  cluster->mark_region_as_unknown (mgr, reg, reg, uncertainty);
+  cluster->mark_region_as_unknown (mgr, reg, reg, uncertainty,
+				   maybe_live_values);
 }
 
 /* Purge state involving SVAL.  */
@@ -2949,6 +3035,10 @@ store::escaped_p (const region *base_reg) const
   gcc_assert (base_reg);
   gcc_assert (base_reg->get_base_region () == base_reg);
 
+  /* "errno" can always be modified by external code.  */
+  if (base_reg->get_kind () == RK_ERRNO)
+    return true;
+
   if (binding_cluster **cluster_slot
       = const_cast <cluster_map_t &>(m_cluster_map).get (base_reg))
     return (*cluster_slot)->escaped_p ();
@@ -3006,7 +3096,9 @@ store::remove_overlapping_bindings (store_manager *mgr, const region *reg,
 	  delete cluster;
 	  return;
 	}
-      cluster->remove_overlapping_bindings (mgr, reg, uncertainty);
+      /* Pass NULL for the maybe_live_values here, as we don't want to
+	 record the old svalues as being maybe-bound.  */
+      cluster->remove_overlapping_bindings (mgr, reg, uncertainty, NULL);
     }
 }
 
@@ -3057,6 +3149,15 @@ store::canonicalize (store_manager *mgr)
       binding_cluster *cluster = (*iter).second;
       if (base_reg->get_kind () == RK_HEAP_ALLOCATED)
 	{
+	  /* Don't purge a heap-allocated region that's been marked as
+	     escaping, since this could be recording that a ptr to it
+	     was written to an unknown symbolic region along this
+	     path, and so we don't know whether it's referenced or
+	     not, and hence should report it as leaking
+	     (PR analyzer/106473).  */
+	  if (cluster->escaped_p ())
+	    continue;
+
 	  if (cluster->empty_p ())
 	    if (!s.m_regs.contains (base_reg))
 	      purgeable_regions.add (base_reg);
@@ -3127,6 +3228,150 @@ store::loop_replay_fixup (const store *other_store,
 	      this_cluster->bind_key (key, unknown);
 	    }
 	}
+    }
+}
+
+/* Use R to replay the bindings from SUMMARY into this object.  */
+
+void
+store::replay_call_summary (call_summary_replay &r,
+			    const store &summary)
+{
+  if (summary.m_called_unknown_fn)
+    {
+      /* A call to an external function occurred in the summary.
+	 Hence we need to invalidate our knownledge of globals,
+	 escaped regions, etc.  */
+      on_unknown_fncall (r.get_call_stmt (),
+			 r.get_store_manager (),
+			 conjured_purge (r.get_caller_model (),
+					 r.get_ctxt ()));
+    }
+
+  auto_vec<const region *> keys (summary.m_cluster_map.elements ());
+  for (auto kv : summary.m_cluster_map)
+    keys.quick_push (kv.first);
+  keys.qsort (region::cmp_ptr_ptr);
+  for (auto base_reg : keys)
+    replay_call_summary_cluster (r, summary, base_reg);
+}
+
+/* Use R and SUMMARY to replay the bindings in SUMMARY_CLUSTER
+   into this object.  */
+
+void
+store::replay_call_summary_cluster (call_summary_replay &r,
+				    const store &summary,
+				    const region *summary_base_reg)
+{
+  const call_details &cd = r.get_call_details ();
+  region_model_manager *reg_mgr = r.get_manager ();
+  store_manager *mgr = reg_mgr->get_store_manager ();
+  const binding_cluster *summary_cluster
+    = summary.get_cluster (summary_base_reg);
+
+  /* Handle "ESCAPED" and "TOUCHED" flags.  */
+  if (summary_cluster->escaped_p () || summary_cluster->touched_p ())
+    if (const region *caller_reg
+	= r.convert_region_from_summary (summary_base_reg))
+      {
+	const region *caller_base_reg = caller_reg->get_base_region ();
+	if (caller_base_reg->tracked_p ()
+	    && !caller_base_reg->symbolic_for_unknown_ptr_p ())
+	  {
+	    binding_cluster *caller_cluster
+	      = get_or_create_cluster (caller_base_reg);
+	    if (summary_cluster->escaped_p ())
+	      caller_cluster->mark_as_escaped ();
+	    if (summary_cluster->touched_p ())
+	      caller_cluster->m_touched = true;
+	  }
+      }
+
+  switch (summary_base_reg->get_kind ())
+    {
+    /* Top-level regions.  */
+    case RK_FRAME:
+    case RK_GLOBALS:
+    case RK_CODE:
+    case RK_STACK:
+    case RK_HEAP:
+    case RK_THREAD_LOCAL:
+    case RK_ROOT:
+    /* Child regions.  */
+    case RK_FIELD:
+    case RK_ELEMENT:
+    case RK_OFFSET:
+    case RK_SIZED:
+    case RK_CAST:
+    case RK_BIT_RANGE:
+    /* Other regions.  */
+    case RK_VAR_ARG:
+    case RK_UNKNOWN:
+      /* These should never be the base region of a binding cluster.  */
+      gcc_unreachable ();
+      break;
+
+    case RK_FUNCTION:
+    case RK_LABEL:
+    case RK_STRING:
+      /* These can be marked as escaping.  */
+      break;
+
+    case RK_SYMBOLIC:
+      {
+	const symbolic_region *summary_symbolic_reg
+	  = as_a <const symbolic_region *> (summary_base_reg);
+	const svalue *summary_ptr_sval = summary_symbolic_reg->get_pointer ();
+	const svalue *caller_ptr_sval
+	  = r.convert_svalue_from_summary (summary_ptr_sval);
+	if (!caller_ptr_sval)
+	  return;
+	const region *caller_dest_reg
+	  = cd.get_model ()->deref_rvalue (caller_ptr_sval,
+					   NULL_TREE,
+					   cd.get_ctxt ());
+	const svalue *summary_sval
+	  = summary.get_any_binding (mgr, summary_base_reg);
+	if (!summary_sval)
+	  return;
+	const svalue *caller_sval
+	  = r.convert_svalue_from_summary (summary_sval);
+	if (!caller_sval)
+	  caller_sval =
+	    reg_mgr->get_or_create_unknown_svalue (summary_sval->get_type ());
+	set_value (mgr, caller_dest_reg,
+		   caller_sval, NULL /* uncertainty_t * */);
+      }
+      break;
+
+    case RK_HEAP_ALLOCATED:
+    case RK_DECL:
+    case RK_ERRNO:
+      {
+	const region *caller_dest_reg
+	  = r.convert_region_from_summary (summary_base_reg);
+	if (!caller_dest_reg)
+	  return;
+	const svalue *summary_sval
+	  = summary.get_any_binding (mgr, summary_base_reg);
+	if (!summary_sval)
+	  summary_sval = reg_mgr->get_or_create_compound_svalue
+	    (summary_base_reg->get_type (),
+	     summary_cluster->get_map ());
+	const svalue *caller_sval
+	  = r.convert_svalue_from_summary (summary_sval);
+	if (!caller_sval)
+	  caller_sval =
+	    reg_mgr->get_or_create_unknown_svalue (summary_sval->get_type ());
+	set_value (mgr, caller_dest_reg,
+		   caller_sval, NULL /* uncertainty_t * */);
+      }
+      break;
+
+    case RK_ALLOCA:
+      /* Ignore bindings of alloca regions in the summary.  */
+      break;
     }
 }
 

@@ -1,0 +1,57 @@
+(* mcPrintf.def provides a poor mans printf capability.
+
+Copyright (C) 2015-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE mcPrintf ;
+
+
+(* Provides a poor mans printf capability. It requires NameKey
+   as it will translate %a into a namekey.
+   It supports %a, %d, %c and %s.  *)
+
+FROM SYSTEM IMPORT BYTE ;
+FROM FIO IMPORT File ;
+
+
+(*
+   printf0 - writes out an array to, StdOut, after the escape sequences have been
+             translated.
+*)
+
+PROCEDURE printf0 (a: ARRAY OF CHAR) ;
+PROCEDURE printf1 (a: ARRAY OF CHAR; w: ARRAY OF BYTE) ;
+PROCEDURE printf2 (a: ARRAY OF CHAR; w1, w2: ARRAY OF BYTE) ;
+PROCEDURE printf3 (a: ARRAY OF CHAR; w1, w2, w3: ARRAY OF BYTE) ;
+PROCEDURE printf4 (a: ARRAY OF CHAR; w1, w2, w3, w4: ARRAY OF BYTE) ;
+
+
+(*
+   fprintf0 - writes out an array to, file, after the escape sequences have been
+              translated.
+*)
+
+PROCEDURE fprintf0 (file: File; a: ARRAY OF CHAR) ;
+PROCEDURE fprintf1 (file: File; a: ARRAY OF CHAR; w: ARRAY OF BYTE) ;
+PROCEDURE fprintf2 (file: File; a: ARRAY OF CHAR; w1, w2: ARRAY OF BYTE) ;
+PROCEDURE fprintf3 (file: File; a: ARRAY OF CHAR; w1, w2, w3: ARRAY OF BYTE) ;
+PROCEDURE fprintf4 (file: File; a: ARRAY OF CHAR; w1, w2, w3, w4: ARRAY OF BYTE) ;
+
+
+END mcPrintf.

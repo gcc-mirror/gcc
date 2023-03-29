@@ -1,7 +1,271 @@
+2023-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* unicode/README: Update to mention also makeuname2c.
+	* unicode/NameAliases.txt: New file.
+
+2023-03-13  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* unicode/DerivedCoreProperties.txt: Update to Unicode 15.
+	* unicode/DerivedNormalizationProps.txt: Likewise.
+	* unicode/EastAsianWidth.txt: Likwise.
+	* unicode/PropList.txt: Likewise.
+	* unicode/README: Likewise.
+	* unicode/UnicodeData.txt: Likewise.
+
+2023-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config-list.mk (LIST): Clarify i686-symbolics-gnu to i686-gnu.
+
+2023-02-17  Petr Sumbera  <petr.sumbera@oracle.com>
+
+	* make_sunver.pl: Escape brace.
+
+2023-02-10  Flavio Cruz  <flaviocruz@gmail.com>
+
+	* config-list.mk: Add x86_64-gnu to list of archs.
+
+2023-01-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gcc_update (files_and_dependencies): Add dependencies for
+	gcc/m2/gm2config.h.in, gcc/m2/configure,
+	gcc/m2/gm2-libs/config-host, libgm2/Makefile.in,
+	libgm2/aclocal.m4, libgm2/libm2cor/Makefile.in,
+	libgm2/libm2pim/Makefile.in, libgm2/libm2iso/Makefile.in,
+	libgm2/libm2log/Makefile.in and libgm2/libm2min/Makefile.in.
+
+2023-01-17  Martin Liska  <mliska@suse.cz>
+
+	* update-copyright.py: Ignore test_patches.txt.
+
+2023-01-17  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/test_patches.txt: The CR character was removed
+	with ./contrib/update-copyright.py which I'm going to change.
+
+2023-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/108413
+	* update-copyright.py (LibPhobosFilter): Add __builtins.di to
+	skipped files.
+
+2023-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/108413
+	* update-copyright.py (TestsuiteFilter): Add .mod and .rs extensions.
+	(GCCCopyright): Add 'The fast_float authors' as external author.
+
+2023-01-15  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config-list.mk: Update FreeBSD targets to version 13.
+	Add aarch64-freebsd13.
+
+2023-01-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config-list.mk: Remove i486-freebsd4, ia64-freebsd6, and
+	sparc64-freebsd6.
+
+2023-01-06  Martin Liska  <mliska@suse.cz>
+
+	* update-copyright.py: Add contrib as a default dir.
+
+2022-12-28  Martin Liska  <mliska@suse.cz>
+
+	* update-copyright.py: Add contrib folder.
+
+2022-12-23  Arsen Arsenović  <arsen@aarsen.me>
+
+	* dg-out-generator.pl: New file.
+
+2022-12-21  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Simplify.
+
+2022-12-21  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Skip Makefile and libffi warnings.
+
+2022-12-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Support digits in PR's
+	component in subject.
+
+2022-12-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/test_email.py: Add new test.
+	* gcc-changelog/test_patches.txt: Add new patch.
+
+2022-12-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Allow digit in component name.
+
+2022-12-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc-changelog/git_check_commit.py (__main__): With -v print a
+	warning for the auto-added files.
+	* gcc-changelog/git_commit.py (GitCommit.__init__): Add self.warnings.
+	(GitCommit.check_mentioned_files): Add warning for auto-added files.
+	(GitCommit.print_warnings): New function.
+	* gcc-changelog/git_email.py (__main__): Remove bogus argument to
+	GitEmail constructor; print auto-added-files warning.
+	* gcc-changelog/test_email.py (test_auto_add_file_1,
+	test_auto_add_file_2): New tests.
+	* gcc-changelog/test_patches.txt: Add two test cases.
+
+2022-12-19  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/setup.cfg: Do not use flake8 pytest plug-in.
+
+2022-12-16  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Print each warning only one time.
+
+2022-12-16  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_email.py: Use PatchSet constructor
+	as newline argument is not supported with older unidiff
+	library.
+
+2022-12-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc-changelog/git_email.py (GitEmail:__init__): Support older
+	unidiff.PatchSet that do not have a newline= argument
+	of from_filename.
+
+2022-12-14  Martin Liska  <mliska@suse.cz>
+
+	* analyze_brprob.py: Add copyright header.
+	* analyze_brprob_spec.py: Likewise.
+	* check-params-in-docs.py: Likewise.
+	* check_GNU_style.py: Likewise.
+	* check_GNU_style_lib.py: Likewise.
+	* filter-clang-warnings.py: Likewise.
+	* gcc-changelog/git_check_commit.py: Likewise.
+	* gcc-changelog/git_commit.py: Likewise.
+	* gcc-changelog/git_email.py: Likewise.
+	* gcc-changelog/git_repository.py: Likewise.
+	* gcc-changelog/git_update_version.py: Likewise.
+	* gcc-changelog/test_email.py: Likewise.
+	* mark_spam.py: Likewise.
+
+2022-12-14  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Check for number of hunks and not if a modified
+	file is binary.
+
+2022-12-12  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Do not search PR entry in a file that is binary.
+
+2022-12-11  Martin Liska  <mliska@suse.cz>
+
+	* check_GNU_style.py: Use newline=\n.
+	* check_GNU_style_lib.py: Simplify.
+	* gcc-changelog/git_commit.py: Fix issues seen
+	Rust patchset.
+	* gcc-changelog/git_email.py: Use newline argument.
+	* gcc-changelog/test_email.py: New test.
+	* gcc-changelog/test_patches.txt: New test.
+	* mklog.py: Use newline argument.
+
+2022-12-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc-changelog/git_commit.py (default_changelog_locations): Add
+	'gcc/rust'.
+	(bug_components): Add 'rust'.
+
+2022-12-10  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gcc-changelog/git_commit.py (default_changelog_locations):
+	New entry for gcc/m2.  New entry for libgm2.
+
+2022-12-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.doxy (INPUT): Add gcc/analyzer subdirectory.
+
+2022-11-25  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-25  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Temporarily disable
+	check_line.start.
+
+2022-11-25  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Temporarily disable
+	check_line.start.
+
+2022-11-21  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-20  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Temporarily disable
+	check_line.start.
+
+2022-11-20  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Temporarily disable
+	check_line.start.
+
+2022-11-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py: Add
+	1957bedf29a1b2cc231972aba680fe80199d5498 to ignored commits.
+
+2022-11-15  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Revert temporary rule
+	relaxation.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Temporarily disable
+	check_line.start.
+
+2022-11-11  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Check for a space after leading
+	tab.
+	* gcc-changelog/test_email.py: Likewise.
+	* gcc-changelog/test_patches.txt: Likewise.
+
+2022-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py: Add
+	e4cba49413ca429dc82f6aa2e88129ecb3fdd943 to ignored commits.
+
+2022-11-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc-changelog/git_commit.py (default_changelog_locations):
+	Remove 'liboffloadmic'.
+	* gcc_update (files_and_dependencies): Remove 'liboffloadmic'
+	files.
+	* update-copyright.py (GCCCmdLine): Remove 'liboffloadmic'
+	comment.
+
+2022-10-20  Jonathan Wakely   <jwakely@redhat.com>
+	    Ulrich Drepper  <drepper@redhat.com>
+
+	* gcc_update: Add rule for gcc/cp/std-name-hint.gperf.
+
+2022-10-07  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Remove extra fetch.
+
+2022-10-06  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Use logging module
+	and provide robust debugging output.
+
+2022-10-05  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Do fetch before a push.
+
 2022-09-20  Martin Liska  <mliska@suse.cz>
 
 	* filter-clang-warnings.py: Skip egrep: warning: egrep is
-	  obsolescent; using grep -E.
+	obsolescent; using grep -E.
 
 2022-08-31  Martin Liska  <mliska@suse.cz>
 
@@ -115,7 +379,7 @@
 	    Lulu Cheng  <chenglulu@loongson.cn>
 
 	* gcc_update (files_and_dependencies): Add
-	  config/loongarch/loongarch.opt and config/loongarch/loongarch-str.h.
+	config/loongarch/loongarch.opt and config/loongarch/loongarch-str.h.
 
 2022-03-28  Martin Liska  <mliska@suse.cz>
 
@@ -352,7 +616,7 @@
 2021-08-03  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_update_version.py: Ignore problematic
-	  commit.
+	commit.
 
 2021-07-20  Richard Earnshaw  <rearnsha@arm.com>
 
@@ -1805,7 +2069,7 @@
 2016-09-20  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* compare_tests: Take ERROR messages into account when
-	  comparing.
+	comparing.
 
 2016-08-17  Martin Liska  <mliska@suse.cz>
 
@@ -3900,13 +4164,13 @@ Tue Jun 12 12:21:40 CEST 2001  Jan Hubicka  <jh@suse.cz>
 2000-11-19  Zack Weinberg  <zackw@stanford.edu>
 
 	* texi2pod.pl:
-	  - Add real command line parsing.
+	- Add real command line parsing.
 	  - Support @ifset, @ifclear, @set, @value, -D switch.
 	  - Support @sc.  Improve handling of @ref and friends.
 	  - Discard @subsection, @need, @node lines.
-	  - Un-nest font changes to match texinfo semantics.
+	- Un-nest font changes to match texinfo semantics.
 	  - Handle @{ and @}.  Oops.
-	  - Don't emit E<> directives inside verbatim blocks.
+	- Don't emit E<> directives inside verbatim blocks.
 
 2000-11-12  Bruce Korb  <bkorb@gnu.org>
 

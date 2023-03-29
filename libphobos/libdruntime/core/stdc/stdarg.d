@@ -12,7 +12,6 @@
 
 module core.stdc.stdarg;
 
-@system:
 @nogc:
 nothrow:
 

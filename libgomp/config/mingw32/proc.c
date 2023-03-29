@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2023 Free Software Foundation, Inc.
    Contributed by Danny Smith <dannysmith@users.sourceforge.net>
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -30,6 +30,7 @@
    The following implementation uses win32 API routines.  */
 
 #include "libgomp.h"
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 /* Count the CPU's currently available to this process.  */

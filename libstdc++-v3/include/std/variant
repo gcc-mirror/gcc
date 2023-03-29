@@ -1,6 +1,6 @@
 // <variant> -*- C++ -*-
 
-// Copyright (C) 2016-2022 Free Software Foundation, Inc.
+// Copyright (C) 2016-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -831,10 +831,13 @@ namespace __variant
 	: false_type
 	{ using element_type = _Tp; };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wignored-qualifiers"
       template <typename... _Args>
 	struct __untag_result<const void(*)(_Args...)>
 	: false_type
 	{ using element_type = void(*)(_Args...); };
+#pragma GCC diagnostic pop
 
       template <typename... _Args>
 	struct __untag_result<__variant_cookie(*)(_Args...)>
@@ -1478,7 +1481,9 @@ namespace __variant
 			    || !is_nothrow_move_constructible_v<_Tj>)
 		this->emplace<__index>(std::forward<_Tp>(__rhs));
 	      else
-		operator=(variant(std::forward<_Tp>(__rhs)));
+		// _GLIBCXX_RESOLVE_LIB_DEFECTS
+		// 3585. converting assignment with immovable alternative
+		this->emplace<__index>(_Tj(std::forward<_Tp>(__rhs)));
 	    }
 	  return *this;
 	}

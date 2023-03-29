@@ -1,6 +1,6 @@
 // Numeric conversions (to_string, to_chars) -*- C++ -*-
 
-// Copyright (C) 2017-2022 Free Software Foundation, Inc.
+// Copyright (C) 2017-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,19 +35,28 @@
 #if __cplusplus >= 201103L
 
 #include <type_traits>
+#include <ext/numeric_traits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 namespace __detail
 {
+#if __cpp_variable_templates
+  // This accepts 128-bit integers even in strict mode.
+  template<typename _Tp>
+    constexpr bool __integer_to_chars_is_unsigned
+      = ! __gnu_cxx::__int_traits<_Tp>::__is_signed;
+#endif
+
   // Generic implementation for arbitrary bases.
   template<typename _Tp>
     _GLIBCXX14_CONSTEXPR unsigned
     __to_chars_len(_Tp __value, int __base = 10) noexcept
     {
-      static_assert(is_integral<_Tp>::value, "implementation bug");
-      static_assert(is_unsigned<_Tp>::value, "implementation bug");
+#if __cpp_variable_templates
+      static_assert(__integer_to_chars_is_unsigned<_Tp>, "implementation bug");
+#endif
 
       unsigned __n = 1;
       const unsigned __b2 = __base  * __base;
@@ -68,13 +77,14 @@ namespace __detail
   // The caller is required to provide a buffer of exactly the right size
   // (which can be determined by the __to_chars_len function).
   template<typename _Tp>
-    void
+    _GLIBCXX23_CONSTEXPR void
     __to_chars_10_impl(char* __first, unsigned __len, _Tp __val) noexcept
     {
-      static_assert(is_integral<_Tp>::value, "implementation bug");
-      static_assert(is_unsigned<_Tp>::value, "implementation bug");
+#if __cpp_variable_templates
+      static_assert(__integer_to_chars_is_unsigned<_Tp>, "implementation bug");
+#endif
 
-      static constexpr char __digits[201] =
+      constexpr char __digits[201] =
 	"0001020304050607080910111213141516171819"
 	"2021222324252627282930313233343536373839"
 	"4041424344454647484950515253545556575859"

@@ -1,5 +1,5 @@
 ;; Predicate definitions for S/390 and zSeries.
-;; Copyright (C) 2005-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2023 Free Software Foundation, Inc.
 ;; Contributed by Hartmut Penner (hpenner@de.ibm.com) and
 ;;                Ulrich Weigand (uweigand@de.ibm.com).
 ;;
@@ -479,9 +479,9 @@
   if (icode < 0)
     return false;
 
-  extract_constrain_insn (insn);
+  extract_insn (insn);
 
-  return which_alternative >= 0;
+  return constrain_operands (reload_completed, get_enabled_alternatives (insn)) == 1;
 })
 
 ;; Return true if OP is a store multiple operation.  It is known to be a
@@ -606,3 +606,11 @@
        (and (match_code "reg")
 	    (match_test "reload_completed || reload_in_progress")
 	    (match_test "register_operand (op, GET_MODE (op))"))))
+
+; Bias value for LEN_LOAD and LEN_STORE.  The bias will be added to the
+; length (in bytes for s390) to be loaded.  vll/vstl expect the lowest byte
+; to load while LEN_LOAD/LEN_STORE use the actual length in bytes.  This implies
+; that we cannot load a length of 0.
+(define_predicate "vll_bias_operand"
+  (and (match_code "const_int")
+       (match_test "op == CONSTM1_RTX (QImode)")))

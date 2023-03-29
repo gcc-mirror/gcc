@@ -1,0 +1,94 @@
+/* Builtin functions for RISC-V Scalar Cryptography extensions.
+   Copyright (C) 2023 Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+// ZBKB
+RISCV_BUILTIN (pack_sihi, "pack", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_HI_HI, crypto_zbkb32),
+RISCV_BUILTIN (pack_disi, "pack", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_SI_SI, crypto_zbkb64),
+
+RISCV_BUILTIN (packh_si, "packh", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_QI_QI, crypto_zbkb32),
+RISCV_BUILTIN (packh_di, "packh", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_QI_QI, crypto_zbkb64),
+
+RISCV_BUILTIN (packw, "packw", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_HI_HI, crypto_zbkb64),
+
+RISCV_BUILTIN (zip, "zip", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI, crypto_zbkb32),
+RISCV_BUILTIN (unzip, "unzip", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI, crypto_zbkb32),
+
+RISCV_BUILTIN (brev8_si, "brev8", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI, crypto_zbkb32),
+RISCV_BUILTIN (brev8_di, "brev8", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_DI, crypto_zbkb64),
+
+// ZBKC
+RISCV_BUILTIN (clmul_si, "clmul", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI_SI, crypto_zbkc32),
+RISCV_BUILTIN (clmul_di, "clmul", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_DI_DI, crypto_zbkc64),
+RISCV_BUILTIN (clmulh_si, "clmulh", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI_SI, crypto_zbkc32),
+RISCV_BUILTIN (clmulh_di, "clmulh", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_DI_DI, crypto_zbkc64),
+
+// ZBKX
+RISCV_BUILTIN (xperm4_si, "xperm4", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI_SI, crypto_zbkx32),
+RISCV_BUILTIN (xperm4_di, "xperm4", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_DI_DI, crypto_zbkx64),
+RISCV_BUILTIN (xperm8_si, "xperm8", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI_SI, crypto_zbkx32),
+RISCV_BUILTIN (xperm8_di, "xperm8", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_DI_DI, crypto_zbkx64),
+
+// ZKND
+DIRECT_BUILTIN (aes32dsi, RISCV_SI_FTYPE_SI_SI_SI, crypto_zknd32),
+DIRECT_BUILTIN (aes32dsmi, RISCV_SI_FTYPE_SI_SI_SI, crypto_zknd32),
+DIRECT_BUILTIN (aes64ds, RISCV_DI_FTYPE_DI_DI, crypto_zknd64),
+DIRECT_BUILTIN (aes64dsm, RISCV_DI_FTYPE_DI_DI, crypto_zknd64),
+DIRECT_BUILTIN (aes64im, RISCV_DI_FTYPE_DI, crypto_zknd64),
+DIRECT_BUILTIN (aes64ks1i, RISCV_DI_FTYPE_DI_SI, crypto_zkne_or_zknd),
+DIRECT_BUILTIN (aes64ks2, RISCV_DI_FTYPE_DI_DI, crypto_zkne_or_zknd),
+
+// ZKNE
+DIRECT_BUILTIN (aes32esi, RISCV_SI_FTYPE_SI_SI_SI, crypto_zkne32),
+DIRECT_BUILTIN (aes32esmi, RISCV_SI_FTYPE_SI_SI_SI, crypto_zkne32),
+DIRECT_BUILTIN (aes64es, RISCV_DI_FTYPE_DI_DI, crypto_zkne64),
+DIRECT_BUILTIN (aes64esm, RISCV_DI_FTYPE_DI_DI, crypto_zkne64),
+
+// ZKNH
+RISCV_BUILTIN (sha256sig0_si, "sha256sig0", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI, crypto_zknh32),
+RISCV_BUILTIN (sha256sig0_di, "sha256sig0", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_DI, crypto_zknh64),
+RISCV_BUILTIN (sha256sig1_si, "sha256sig1", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI, crypto_zknh32),
+RISCV_BUILTIN (sha256sig1_di, "sha256sig1", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_DI, crypto_zknh64),
+RISCV_BUILTIN (sha256sum0_si, "sha256sum0", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI, crypto_zknh32),
+RISCV_BUILTIN (sha256sum0_di, "sha256sum0", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_DI, crypto_zknh64),
+RISCV_BUILTIN (sha256sum1_si, "sha256sum1", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI, crypto_zknh32),
+RISCV_BUILTIN (sha256sum1_di, "sha256sum1", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_DI, crypto_zknh64),
+
+DIRECT_BUILTIN (sha512sig0h, RISCV_SI_FTYPE_SI_SI, crypto_zknh32),
+DIRECT_BUILTIN (sha512sig0l, RISCV_SI_FTYPE_SI_SI, crypto_zknh32),
+DIRECT_BUILTIN (sha512sig1h, RISCV_SI_FTYPE_SI_SI, crypto_zknh32),
+DIRECT_BUILTIN (sha512sig1l, RISCV_SI_FTYPE_SI_SI, crypto_zknh32),
+DIRECT_BUILTIN (sha512sum0r, RISCV_SI_FTYPE_SI_SI, crypto_zknh32),
+DIRECT_BUILTIN (sha512sum1r, RISCV_SI_FTYPE_SI_SI, crypto_zknh32),
+
+DIRECT_BUILTIN (sha512sig0, RISCV_DI_FTYPE_DI, crypto_zknh64),
+DIRECT_BUILTIN (sha512sig1, RISCV_DI_FTYPE_DI, crypto_zknh64),
+DIRECT_BUILTIN (sha512sum0, RISCV_DI_FTYPE_DI, crypto_zknh64),
+DIRECT_BUILTIN (sha512sum1, RISCV_DI_FTYPE_DI, crypto_zknh64),
+
+// ZKSH
+RISCV_BUILTIN (sm3p0_si, "sm3p0", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI, crypto_zksh32),
+RISCV_BUILTIN (sm3p0_di, "sm3p0", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_DI, crypto_zksh64),
+RISCV_BUILTIN (sm3p1_si, "sm3p1", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI, crypto_zksh32),
+RISCV_BUILTIN (sm3p1_di, "sm3p1", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_DI, crypto_zksh64),
+
+// ZKSED
+RISCV_BUILTIN (sm4ed_si, "sm4ed", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI_SI_SI, crypto_zksed32),
+RISCV_BUILTIN (sm4ed_di, "sm4ed", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_DI_DI_SI, crypto_zksed64),
+RISCV_BUILTIN (sm4ks_si, "sm4ks", RISCV_BUILTIN_DIRECT, RISCV_SI_FTYPE_SI_SI_SI, crypto_zksed32),
+RISCV_BUILTIN (sm4ks_di, "sm4ks", RISCV_BUILTIN_DIRECT, RISCV_DI_FTYPE_DI_DI_SI, crypto_zksed64),

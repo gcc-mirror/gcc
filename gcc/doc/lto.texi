@@ -1,4 +1,4 @@
-@c Copyright (C) 2010-2022 Free Software Foundation, Inc.
+@c Copyright (C) 2010-2023 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 @c Contributed by Jan Hubicka <jh@suse.cz> and
@@ -170,13 +170,11 @@ object files.  This is used at link time to determine the optimization
 level and other settings when they are not explicitly specified at the
 linker command line.
 
-Currently, GCC does not support combining LTO object files compiled
-with different set of the command line options into a single binary.
-At link time, the options given on the command line and the options
-saved on all the files in a link-time set are applied globally.  No
-attempt is made at validating the combination of flags (other than the
-usual validation done by option processing).  This is implemented in
-@file{lto/lto.cc}:@code{lto_read_all_file_options}.
+Most options are recorded at a per function level and their setting
+restored when processing the functions at link time.  Global options
+are composed from options specified at compile time and link time.
+How exactly they are combined or mismatches diagnosed is implemented in
+@file{lto-wrapper.cc}:@code{find_and_merge_options}.
 
 
 @item Symbol table (@code{.gnu.lto_.symtab})
@@ -559,8 +557,8 @@ The following flags are passed into @command{lto1} and are not
 meant to be used directly from the command line.
 
 @itemize
-@item -fwpa
 @opindex fwpa
+@item -fwpa
 This option runs the serial part of the link-time optimizer
 performing the inter-procedural propagation (WPA mode).  The
 compiler reads in summary information from all inputs and
@@ -570,21 +568,21 @@ optimizer where individual object files are optimized using both
 summary information from the WPA mode and the actual function
 bodies.  It then drives the LTRANS phase.
 
-@item -fltrans
 @opindex fltrans
+@item -fltrans
 This option runs the link-time optimizer in the
 local-transformation (LTRANS) mode, which reads in output from a
 previous run of the LTO in WPA mode.  In the LTRANS mode, LTO
 optimizes an object and produces the final assembly.
 
-@item -fltrans-output-list=@var{file}
 @opindex fltrans-output-list
+@item -fltrans-output-list=@var{file}
 This option specifies a file to which the names of LTRANS output
 files are written.  This option is only meaningful in conjunction
 with @option{-fwpa}.
 
-@item -fresolution=@var{file}
 @opindex fresolution
+@item -fresolution=@var{file}
 This option specifies the linker resolution file.  This option is
 only meaningful in conjunction with @option{-fwpa} and as option
 to pass through to the LTO linker plugin.

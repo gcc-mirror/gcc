@@ -66,7 +66,7 @@ import std.exception : basicExceptionCtors;
 import core.exception : UnicodeException;
 import std.meta : AliasSeq;
 import std.range;
-import std.traits : isAutodecodableString, isConvertibleToString, isPointer,
+import std.traits : isAutodecodableString, isConvertibleToString,
     isSomeChar, isSomeString, isStaticArray, Unqual;
 import std.typecons : Flag, Yes, No;
 
@@ -3136,7 +3136,7 @@ private T toUTFImpl(T, S)(scope S s)
     collection cycle and cause a nasty bug when the C code tries to use it.
   +/
 template toUTFz(P)
-if (isPointer!P && isSomeChar!(typeof(*P.init)))
+if (is(P == C*, C) && isSomeChar!C)
 {
     P toUTFz(S)(S str) @safe pure
     if (isSomeString!S)
@@ -3571,7 +3571,7 @@ enum dchar replacementDchar = '\uFFFD';
  *      of characters (including strings) or a type that implicitly converts to a string type.
  * Returns:
  *      If `r` is not an auto-decodable string (i.e. a narrow string or a
- *      user-defined type that implicits converts to a string type), then `r`
+ *      user-defined type that implicitly converts to a string type), then `r`
  *      is returned.
  *
  *      Otherwise, `r` is converted to its corresponding string type (if it's

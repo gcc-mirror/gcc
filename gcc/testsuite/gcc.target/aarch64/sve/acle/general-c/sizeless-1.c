@@ -30,8 +30,7 @@ union union1 {
 /* Pointers to sizeless types.  */
 
 svint8_t *global_sve_sc_ptr;
-svint8_t *invalid_sve_sc_ptr = &(svint8_t) { *global_sve_sc_ptr }; /* { dg-error {initializer element is not constant} } */
-  /* { dg-error {SVE type 'svint8_t' does not have a fixed size} "2nd line" { target *-*-* } .-1 } */
+svint8_t *invalid_sve_sc_ptr = &(svint8_t) {};  /* { dg-error {SVE type 'svint8_t' does not have a fixed size} } */
 
 /* Sizeless arguments and return values.  */
 

@@ -1,4 +1,6 @@
 // { dg-do run { target c++11 } }
+// { dg-require-effective-target hosted }
+
 #include <functional>
 #include <testsuite_hooks.h>
 

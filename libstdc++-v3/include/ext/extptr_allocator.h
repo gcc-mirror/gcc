@@ -1,6 +1,6 @@
 // <extptr_allocator.h> -*- C++ -*-
 
-// Copyright (C) 2008-2022 Free Software Foundation, Inc.
+// Copyright (C) 2008-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,6 +35,8 @@
 
 #ifndef _EXTPTR_ALLOCATOR_H
 #define _EXTPTR_ALLOCATOR_H 1
+
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
 
 #include <memory>
 #include <ext/numeric_traits.h>

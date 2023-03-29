@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -74,6 +74,7 @@ with Style;          use Style;
 with Stylesw;        use Stylesw;
 with Tbuild;         use Tbuild;
 with Uname;          use Uname;
+with Warnsw;         use Warnsw;
 
 package body Sem_Ch10 is
 

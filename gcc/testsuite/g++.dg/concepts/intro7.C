@@ -1,6 +1,6 @@
 // PR c++/66985
 // { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts" }
+// { dg-options "-fconcepts-ts" }
 
 template <template <class> class T>
 concept bool Valid = requires { typename T<int>; };

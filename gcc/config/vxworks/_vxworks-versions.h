@@ -23,15 +23,24 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define _VXWORKS_VERSIONS_H  1
 
 /* All we need is access to the bare _WRS_VXWORKS_MAJOR/MINOR macros,
-   exposed by version.h or already provided somehow (e.g. with a self
-   spec for some reason).  When resorting to system headers, cheat a
-   bit to make sure we don't drag additional header files, which can
-   easily cause #include ordering nightmares.  */
+   exposed by version.h or already provided somehow (e.g. with a self spec
+   for some reason).  When resorting to system headers, use typical os
+   paths to prevent possible confusion with a gcc version of version.h
+   visible during the build and temporarily #undef _WRS_KERNEL to prevent
+   indirect inclusion of internal header files, which can easily cause
+   #include ordering nightmares.  */
 
 #if !defined(_WRS_VXWORKS_MAJOR)
+
+#if defined(_VSB_CONFIG_FILE)
+#define _VXWORKS_VERSION_H <../public/version.h>
+#else
+#define _VXWORKS_VERSION_H <../h/version.h>
+#endif
+
 #pragma push_macro("_WRS_KERNEL")
 #undef _WRS_KERNEL
-#include <version.h>
+#include _VXWORKS_VERSION_H
 #pragma pop_macro("_WRS_KERNEL")
 #endif
 

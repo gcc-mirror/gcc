@@ -1,0 +1,72 @@
+(* Selective.def provides Modula-2 with access to the select(2) primitive.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE Selective ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+EXPORT QUALIFIED SetOfFd, Timeval,
+                 InitSet, KillSet, InitTime, KillTime,
+                 GetTime, SetTime,
+                 FdZero, FdSet, FdClr, FdIsSet, Select,
+                 MaxFdsPlusOne, WriteCharRaw, ReadCharRaw,
+                 GetTimeOfDay ;
+
+TYPE
+   SetOfFd = ADDRESS ;    (* Hidden type in Selective.c *)
+   Timeval = ADDRESS ;    (* Hidden type in Selective.c *)
+
+
+PROCEDURE Select (nooffds: CARDINAL;
+                  readfds, writefds, exceptfds: SetOfFd;
+                  timeout: Timeval) : INTEGER ;
+
+PROCEDURE InitTime (sec, usec: CARDINAL) : Timeval ;
+PROCEDURE KillTime (t: Timeval) : Timeval ;
+PROCEDURE GetTime (t: Timeval; VAR sec, usec: CARDINAL) ;
+PROCEDURE SetTime (t: Timeval; sec, usec: CARDINAL) ;
+PROCEDURE InitSet () : SetOfFd ;
+PROCEDURE KillSet (s: SetOfFd) : SetOfFd ;
+PROCEDURE FdZero (s: SetOfFd) ;
+PROCEDURE FdSet (fd: INTEGER; s: SetOfFd) ;
+PROCEDURE FdClr (fd: INTEGER; s: SetOfFd) ;
+PROCEDURE FdIsSet (fd: INTEGER; s: SetOfFd) : BOOLEAN ;
+PROCEDURE MaxFdsPlusOne (a, b: INTEGER) : INTEGER ;
+
+(* you must use the raw routines with select - not the FIO buffered routines *)
+PROCEDURE WriteCharRaw (fd: INTEGER; ch: CHAR) ;
+PROCEDURE ReadCharRaw (fd: INTEGER) : CHAR ;
+
+(*
+   GetTimeOfDay - fills in a record, Timeval, filled in with the
+                  current system time in seconds and microseconds.
+                  It returns zero (see man 3p gettimeofday)
+*)
+
+PROCEDURE GetTimeOfDay (tv: Timeval) : INTEGER ;
+
+
+END Selective.

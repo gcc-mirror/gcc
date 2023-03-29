@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for DragonFly BSD: AMD x86-64 and x86.
-   Copyright (C) 2014-2022 Free Software Foundation, Inc.
+   Copyright (C) 2014-2023 Free Software Foundation, Inc.
    Contributed by John Marino <gnugcc@marino.st>
 
 This file is part of GCC.
@@ -102,37 +102,37 @@ x86_64_dragonfly_fallback_frame_state
   fs->regs.cfa_offset = new_cfa - (long) context->cfa;
 
   /* The SVR4 register numbering macros aren't usable in libgcc.  */
-  fs->regs.reg[0].how = REG_SAVED_OFFSET;
+  fs->regs.how[0] = REG_SAVED_OFFSET;
   fs->regs.reg[0].loc.offset = (long)&sf->REG_NAME(rax) - new_cfa;
-  fs->regs.reg[1].how = REG_SAVED_OFFSET;
+  fs->regs.how[1] = REG_SAVED_OFFSET;
   fs->regs.reg[1].loc.offset = (long)&sf->REG_NAME(rdx) - new_cfa;
-  fs->regs.reg[2].how = REG_SAVED_OFFSET;
+  fs->regs.how[2] = REG_SAVED_OFFSET;
   fs->regs.reg[2].loc.offset = (long)&sf->REG_NAME(rcx) - new_cfa;
-  fs->regs.reg[3].how = REG_SAVED_OFFSET;
+  fs->regs.how[3] = REG_SAVED_OFFSET;
   fs->regs.reg[3].loc.offset = (long)&sf->REG_NAME(rbx) - new_cfa;
-  fs->regs.reg[4].how = REG_SAVED_OFFSET;
+  fs->regs.how[4] = REG_SAVED_OFFSET;
   fs->regs.reg[4].loc.offset = (long)&sf->REG_NAME(rsi) - new_cfa;
-  fs->regs.reg[5].how = REG_SAVED_OFFSET;
+  fs->regs.how[5] = REG_SAVED_OFFSET;
   fs->regs.reg[5].loc.offset = (long)&sf->REG_NAME(rdi) - new_cfa;
-  fs->regs.reg[6].how = REG_SAVED_OFFSET;
+  fs->regs.how[6] = REG_SAVED_OFFSET;
   fs->regs.reg[6].loc.offset = (long)&sf->REG_NAME(rbp) - new_cfa;
-  fs->regs.reg[8].how = REG_SAVED_OFFSET;
+  fs->regs.how[8] = REG_SAVED_OFFSET;
   fs->regs.reg[8].loc.offset = (long)&sf->REG_NAME(r8) - new_cfa;
-  fs->regs.reg[9].how = REG_SAVED_OFFSET;
+  fs->regs.how[9] = REG_SAVED_OFFSET;
   fs->regs.reg[9].loc.offset = (long)&sf->REG_NAME(r9) - new_cfa;
-  fs->regs.reg[10].how = REG_SAVED_OFFSET;
+  fs->regs.how[10] = REG_SAVED_OFFSET;
   fs->regs.reg[10].loc.offset = (long)&sf->REG_NAME(r10) - new_cfa;
-  fs->regs.reg[11].how = REG_SAVED_OFFSET;
+  fs->regs.how[11] = REG_SAVED_OFFSET;
   fs->regs.reg[11].loc.offset = (long)&sf->REG_NAME(r11) - new_cfa;
-  fs->regs.reg[12].how = REG_SAVED_OFFSET;
+  fs->regs.how[12] = REG_SAVED_OFFSET;
   fs->regs.reg[12].loc.offset = (long)&sf->REG_NAME(r12) - new_cfa;
-  fs->regs.reg[13].how = REG_SAVED_OFFSET;
+  fs->regs.how[13] = REG_SAVED_OFFSET;
   fs->regs.reg[13].loc.offset = (long)&sf->REG_NAME(r13) - new_cfa;
-  fs->regs.reg[14].how = REG_SAVED_OFFSET;
+  fs->regs.how[14] = REG_SAVED_OFFSET;
   fs->regs.reg[14].loc.offset = (long)&sf->REG_NAME(r14) - new_cfa;
-  fs->regs.reg[15].how = REG_SAVED_OFFSET;
+  fs->regs.how[15] = REG_SAVED_OFFSET;
   fs->regs.reg[15].loc.offset = (long)&sf->REG_NAME(r15) - new_cfa;
-  fs->regs.reg[16].how = REG_SAVED_OFFSET;
+  fs->regs.how[16] = REG_SAVED_OFFSET;
   fs->regs.reg[16].loc.offset = (long)&sf->REG_NAME(rip) - new_cfa;
   fs->retaddr_column = 16;
   fs->signal_frame = 1;
@@ -182,21 +182,21 @@ x86_dragonfly_fallback_frame_state
   fs->regs.cfa_offset = new_cfa - (long) context->cfa;
 
   /* The SVR4 register numbering macros aren't usable in libgcc.  */
-  fs->regs.reg[0].how = REG_SAVED_OFFSET;
+  fs->regs.how[0] = REG_SAVED_OFFSET;
   fs->regs.reg[0].loc.offset = (long)&sf->REG_NAME(eax) - new_cfa;
-  fs->regs.reg[3].how = REG_SAVED_OFFSET;
+  fs->regs.how[3] = REG_SAVED_OFFSET;
   fs->regs.reg[3].loc.offset = (long)&sf->REG_NAME(ebx) - new_cfa;
-  fs->regs.reg[1].how = REG_SAVED_OFFSET;
+  fs->regs.how[1] = REG_SAVED_OFFSET;
   fs->regs.reg[1].loc.offset = (long)&sf->REG_NAME(ecx) - new_cfa;
-  fs->regs.reg[2].how = REG_SAVED_OFFSET;
+  fs->regs.how[2] = REG_SAVED_OFFSET;
   fs->regs.reg[2].loc.offset = (long)&sf->REG_NAME(edx) - new_cfa;
-  fs->regs.reg[6].how = REG_SAVED_OFFSET;
+  fs->regs.how[6] = REG_SAVED_OFFSET;
   fs->regs.reg[6].loc.offset = (long)&sf->REG_NAME(esi) - new_cfa;
-  fs->regs.reg[7].how = REG_SAVED_OFFSET;
+  fs->regs.how[7] = REG_SAVED_OFFSET;
   fs->regs.reg[7].loc.offset = (long)&sf->REG_NAME(edi) - new_cfa;
-  fs->regs.reg[5].how = REG_SAVED_OFFSET;
+  fs->regs.how[5] = REG_SAVED_OFFSET;
   fs->regs.reg[5].loc.offset = (long)&sf->REG_NAME(ebp) - new_cfa;
-  fs->regs.reg[8].how = REG_SAVED_OFFSET;
+  fs->regs.how[8] = REG_SAVED_OFFSET;
   fs->regs.reg[8].loc.offset = (long)&sf->REG_NAME(eip) - new_cfa;
   fs->retaddr_column = 8;
   fs->signal_frame = 1;

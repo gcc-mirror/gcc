@@ -1,6 +1,6 @@
 // <experimental/executor> -*- C++ -*-
 
-// Copyright (C) 2015-2022 Free Software Foundation, Inc.
+// Copyright (C) 2015-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,6 +31,8 @@
 #define _GLIBCXX_EXPERIMENTAL_EXECUTOR 1
 
 #pragma GCC system_header
+
+#include <bits/requires_hosted.h> // experimental is currently omitted
 
 #if __cplusplus >= 201402L
 
@@ -1010,6 +1012,9 @@ inline namespace v1
 
   class executor
   {
+    template<typename _Executor>
+      using _Context_t = decltype(std::declval<_Executor&>().context());
+
   public:
     // construct / copy / destroy:
 
@@ -1019,12 +1024,14 @@ inline namespace v1
     executor(const executor&) noexcept = default;
     executor(executor&&) noexcept = default;
 
-    template<typename _Executor>
+    template<typename _Executor,
+	     typename = _Require<is_lvalue_reference<_Context_t<_Executor>>>>
       executor(_Executor __e)
       : _M_target(make_shared<_Tgt1<_Executor>>(std::move(__e)))
       { }
 
-    template<typename _Executor, typename _ProtoAlloc>
+    template<typename _Executor, typename _ProtoAlloc,
+	     typename = _Require<is_lvalue_reference<_Context_t<_Executor>>>>
       executor(allocator_arg_t, const _ProtoAlloc& __a, _Executor __e)
       : _M_target(allocate_shared<_Tgt2<_Executor, _ProtoAlloc>>(__a,
 	    std::move(__e), __a))

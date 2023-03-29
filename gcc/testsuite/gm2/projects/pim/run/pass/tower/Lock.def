@@ -1,0 +1,27 @@
+DEFINITION MODULE Lock ;
+
+(*
+   Author     : Gaius Mulley
+   Title      : Lock
+   Date       : 12/2/86
+   Version    : 1.0
+   Last Edit  : 22/7/86
+   Description: Lock - Implements a Read / Write Lock
+*)
+
+EXPORT QUALIFIED LOCK,
+                 GetReadAccess, ReleaseReadAccess,
+                 GetWriteAccess, ReleaseWriteAccess,
+                 InitLock ;
+
+TYPE
+   LOCK ;
+
+PROCEDURE GetReadAccess (l: LOCK) ;
+PROCEDURE ReleaseReadAccess (l: LOCK) ;
+PROCEDURE GetWriteAccess (l: LOCK) ;
+PROCEDURE ReleaseWriteAccess (l: LOCK) ;
+PROCEDURE InitLock (Name: ARRAY OF CHAR) : LOCK ;
+
+
+END Lock.

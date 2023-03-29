@@ -1,6 +1,6 @@
 // Simd NEON specific implementations -*- C++ -*-
 
-// Copyright (C) 2020-2022 Free Software Foundation, Inc.
+// Copyright (C) 2020-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -61,7 +61,7 @@ template <typename _Abi, typename>
       _S_masked_load(_SimdWrapper<_Tp, _Np> __merge, _MaskMember<_Tp> __k,
 		     const _Up* __mem) noexcept
       {
-	__execute_n_times<_Np>([&](auto __i) {
+	__execute_n_times<_Np>([&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 	  if (__k[__i] != 0)
 	    __merge._M_set(__i, static_cast<_Tp>(__mem[__i]));
 	});
@@ -75,7 +75,7 @@ template <typename _Abi, typename>
       _S_masked_store_nocvt(_SimdWrapper<_Tp, _Np> __v, _Tp* __mem,
 			    _MaskMember<_Tp> __k)
       {
-	__execute_n_times<_Np>([&](auto __i) {
+	__execute_n_times<_Np>([&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 	  if (__k[__i] != 0)
 	    __mem[__i] = __v[__i];
 	});
@@ -134,7 +134,8 @@ template <typename _Abi, typename>
     // math {{{
     // _S_sqrt {{{
     template <typename _Tp, typename _TVT = _VectorTraits<_Tp>>
-      _GLIBCXX_SIMD_INTRINSIC static _Tp _S_sqrt(_Tp __x)
+      _GLIBCXX_SIMD_INTRINSIC static _Tp
+      _S_sqrt(_Tp __x)
       {
 	if constexpr (__have_neon_a64)
 	  {
@@ -157,7 +158,8 @@ template <typename _Abi, typename>
     // }}}
     // _S_trunc {{{
     template <typename _TW, typename _TVT = _VectorTraits<_TW>>
-      _GLIBCXX_SIMD_INTRINSIC static _TW _S_trunc(_TW __x)
+      _GLIBCXX_SIMD_INTRINSIC static _TW
+      _S_trunc(_TW __x)
       {
 	using _Tp = typename _TVT::value_type;
 	if constexpr (__have_neon_a32)
@@ -216,7 +218,8 @@ template <typename _Abi, typename>
     // }}}
     // _S_floor {{{
     template <typename _Tp, typename _TVT = _VectorTraits<_Tp>>
-      _GLIBCXX_SIMD_INTRINSIC static _Tp _S_floor(_Tp __x)
+      _GLIBCXX_SIMD_INTRINSIC static _Tp
+      _S_floor(_Tp __x)
       {
 	if constexpr (__have_neon_a32)
 	  {
@@ -239,7 +242,8 @@ template <typename _Abi, typename>
     // }}}
     // _S_ceil {{{
     template <typename _Tp, typename _TVT = _VectorTraits<_Tp>>
-      _GLIBCXX_SIMD_INTRINSIC static _Tp _S_ceil(_Tp __x)
+      _GLIBCXX_SIMD_INTRINSIC static _Tp
+      _S_ceil(_Tp __x)
       {
 	if constexpr (__have_neon_a32)
 	  {
@@ -286,7 +290,7 @@ struct _MaskImplNeonMixin
 	    {
 	      constexpr auto __bitsel
 		= __generate_from_n_evaluations<16, __vector_type_t<_I, 16>>(
-		  [&](auto __i) {
+		  [&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		    return static_cast<_I>(
 		      __i < _Np ? (__i < 8 ? 1 << __i : 1 << (__i - 8)) : 0);
 		  });
@@ -306,7 +310,7 @@ struct _MaskImplNeonMixin
 	    {
 	      constexpr auto __bitsel
 		= __generate_from_n_evaluations<8, __vector_type_t<_I, 8>>(
-		  [&](auto __i) {
+		  [&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		    return static_cast<_I>(__i < _Np ? 1 << __i : 0);
 		  });
 	      __asint &= __bitsel;
@@ -322,7 +326,7 @@ struct _MaskImplNeonMixin
 	    {
 	      constexpr auto __bitsel
 		= __generate_from_n_evaluations<4, __vector_type_t<_I, 4>>(
-		  [&](auto __i) {
+		  [&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		    return static_cast<_I>(__i < _Np ? 1 << __i : 0);
 		  });
 	      __asint &= __bitsel;
@@ -346,7 +350,7 @@ struct _MaskImplNeonMixin
 	    {
 	      constexpr auto __bitsel
 		= __generate_from_n_evaluations<8, __vector_type_t<_I, 8>>(
-		  [&](auto __i) {
+		  [&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		    return static_cast<_I>(__i < _Np ? 1 << __i : 0);
 		  });
 	      __asint &= __bitsel;
@@ -361,7 +365,7 @@ struct _MaskImplNeonMixin
 	    {
 	      constexpr auto __bitsel
 		= __generate_from_n_evaluations<4, __vector_type_t<_I, 4>>(
-		  [&](auto __i) {
+		  [&](auto __i) _GLIBCXX_SIMD_ALWAYS_INLINE_LAMBDA {
 		    return static_cast<_I>(__i < _Np ? 1 << __i : 0);
 		  });
 	      __asint &= __bitsel;
@@ -400,7 +404,8 @@ template <typename _Abi, typename>
 
     // _S_all_of {{{
     template <typename _Tp>
-      _GLIBCXX_SIMD_INTRINSIC static bool _S_all_of(simd_mask<_Tp, _Abi> __k)
+      _GLIBCXX_SIMD_INTRINSIC static bool
+      _S_all_of(simd_mask<_Tp, _Abi> __k)
       {
 	const auto __kk
 	  = __vector_bitcast<char>(__k._M_data)
@@ -419,7 +424,8 @@ template <typename _Abi, typename>
     // }}}
     // _S_any_of {{{
     template <typename _Tp>
-      _GLIBCXX_SIMD_INTRINSIC static bool _S_any_of(simd_mask<_Tp, _Abi> __k)
+      _GLIBCXX_SIMD_INTRINSIC static bool
+      _S_any_of(simd_mask<_Tp, _Abi> __k)
       {
 	const auto __kk
 	  = __vector_bitcast<char>(__k._M_data)
@@ -438,7 +444,8 @@ template <typename _Abi, typename>
     // }}}
     // _S_none_of {{{
     template <typename _Tp>
-      _GLIBCXX_SIMD_INTRINSIC static bool _S_none_of(simd_mask<_Tp, _Abi> __k)
+      _GLIBCXX_SIMD_INTRINSIC static bool
+      _S_none_of(simd_mask<_Tp, _Abi> __k)
       {
 	const auto __kk = _Abi::_S_masked(__k._M_data);
 	if constexpr (sizeof(__k) == 16)
@@ -472,7 +479,8 @@ template <typename _Abi, typename>
     // }}}
     // _S_popcount {{{
     template <typename _Tp>
-      _GLIBCXX_SIMD_INTRINSIC static int _S_popcount(simd_mask<_Tp, _Abi> __k)
+      _GLIBCXX_SIMD_INTRINSIC static int
+      _S_popcount(simd_mask<_Tp, _Abi> __k)
       {
 	if constexpr (sizeof(_Tp) == 1)
 	  {

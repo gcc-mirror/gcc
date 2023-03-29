@@ -1,5 +1,5 @@
 /* Generic implementation of the SPREAD intrinsic
-   Copyright (C) 2002-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2023 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -54,6 +54,8 @@ spread_internal (gfc_array_char *ret, const gfc_array_char *source,
   size = GFC_DESCRIPTOR_SIZE(source);
 
   srank = GFC_DESCRIPTOR_RANK(source);
+
+  sstride[0] = 0; /* Avoid warnings if not initialized.  */
 
   rrank = srank + 1;
   if (rrank > GFC_MAX_DIMENSIONS)

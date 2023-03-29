@@ -1,5 +1,5 @@
 
-/* Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+/* Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -39,7 +39,7 @@ class RootObject
 public:
     RootObject() { }
 
-    virtual bool equals(const RootObject *o) const;
+    virtual bool equals(const RootObject * const o) const;
 
     /**
      * Pretty-print an Object. Useful for debugging the old-fashioned way.

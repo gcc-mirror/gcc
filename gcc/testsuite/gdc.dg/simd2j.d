@@ -5,6 +5,7 @@ import core.simd;
 void test2j()
 {
     double2 v1, v2 = 1, v3 = 1;
+    bool b1;
     v1 = v2;
     v1 = v2 + v3;
     v1 = v2 - v3;
@@ -16,14 +17,14 @@ void test2j()
     static assert(!__traits(compiles, v1 ^ v2));
     static assert(!__traits(compiles, v1 ~ v2));
     static assert(!__traits(compiles, v1 ^^ v2));
-    static assert(!__traits(compiles, v1 is v2));
-    static assert(!__traits(compiles, v1 !is v2));
-    static assert(!__traits(compiles, v1 == v2));
-    static assert(!__traits(compiles, v1 != v2));
-    static assert(!__traits(compiles, v1 < v2));
-    static assert(!__traits(compiles, v1 > v2));
-    static assert(!__traits(compiles, v1 <= v2));
-    static assert(!__traits(compiles, v1 >= v2));
+    b1 = v1 is v2;
+    b1 = v1 !is v2;
+    static assert( __traits(compiles, v1 == v2));
+    static assert( __traits(compiles, v1 != v2));
+    static assert( __traits(compiles, v1 < v2));
+    static assert( __traits(compiles, v1 > v2));
+    static assert( __traits(compiles, v1 <= v2));
+    static assert( __traits(compiles, v1 >= v2));
     static assert(!__traits(compiles, v1 << 1));
     static assert(!__traits(compiles, v1 >> 1));
     static assert(!__traits(compiles, v1 >>> 1));

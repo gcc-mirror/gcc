@@ -1,6 +1,6 @@
 ## Makefile for the doc subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2008-2022 Free Software Foundation, Inc.
+## Copyright (C) 2008-2023 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -23,6 +23,8 @@
 include $(top_srcdir)/fragment.am
 
 # Documentation Overview
+#
+# See ./xml/manual/documentation_hacking.xml for full details.
 #
 # There are two main input materials for libstdc++ documentation.
 # The first is the doxygen markup in libstdc++ sources, which is a

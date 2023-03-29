@@ -1,0 +1,235 @@
+(* Library module defined by the International Standard
+   Information technology - programming languages
+   BS ISO/IEC 10514-1:1996E Part 1: Modula-2, Base Language.
+
+   Copyright ISO/IEC (International Organization for Standardization
+   and International Electrotechnical Commission) 1996-2021.
+
+   It may be freely copied for the purpose of implementation (see page
+   707 of the Information technology - Programming languages Part 1:
+   Modula-2, Base Language.  BS ISO/IEC 10514-1:1996).  *)
+
+DEFINITION MODULE SYSTEM;
+
+  (* Gives access to system programming facilities that are probably
+     non portable. *)
+
+  (* The constants and types define underlying properties of storage *)
+
+EXPORT QUALIFIED BITSPERLOC, LOCSPERWORD,
+                 LOC, BYTE, WORD, ADDRESS, CSIZE_T, CSSIZE_T, (* @SYSTEM_DATATYPES@  *)
+                 ADDADR, SUBADR, DIFADR, MAKEADR, ADR, ROTATE,
+                 SHIFT, CAST, TSIZE,
+
+                 (* Internal GM2 compiler functions *)
+                 ShiftVal, ShiftLeft, ShiftRight,
+                 RotateVal, RotateLeft, RotateRight,
+                 THROW, TBITSIZE ;
+
+CONST
+                  (* <implementation-defined constant> ; *)
+  BITSPERLOC    = __ATTRIBUTE__ __BUILTIN__ ((BITS_PER_UNIT)) ;
+                  (* <implementation-defined constant> ; *)
+  LOCSPERWORD   = __ATTRIBUTE__ __BUILTIN__ ((UNITS_PER_WORD)) ;
+                  (* <implementation-defined constant> ; *)
+  LOCSPERBYTE = 8 DIV BITSPERLOC ;
+
+(* Note that the full list of system and sized datatypes include:
+   LOC, WORD, BYTE, ADDRESS,
+
+   (and the non language standard target types)
+
+   INTEGER8, INTEGER16, INTEGER32, INTEGER64,
+   CARDINAL8, CARDINAL16, CARDINAL32, CARDINAL64,
+   WORD16, WORD32, WORD64, BITSET8, BITSET16,
+   BITSET32, REAL32, REAL64, REAL128, COMPLEX32,
+   COMPLEX64, COMPLEX128, CSIZE_T, CSSIZE_T.
+
+   Also note that the non-standard data types will
+   move into another module in the future.  *)
+
+(*
+   All the data types and procedures below are declared internally.
+   ===============================================================
+
+TYPE
+   @SYSTEM_TYPES@
+
+TYPE
+  LOC; (* A system basic type. Values are the uninterpreted
+          contents of the smallest addressable unit of storage *)
+  ADDRESS = POINTER TO LOC;
+  WORD = ARRAY [0 .. LOCSPERWORD-1] OF LOC;
+
+  (* BYTE and LOCSPERBYTE are provided if appropriate for machine *)
+
+TYPE
+  BYTE = ARRAY [0 .. LOCSPERBYTE-1] OF LOC;
+
+PROCEDURE ADDADR (addr: ADDRESS; offset: CARDINAL): ADDRESS;
+  (* Returns address given by (addr + offset), or may raise
+     an exception if this address is not valid.
+  *)
+
+PROCEDURE SUBADR (addr: ADDRESS; offset: CARDINAL): ADDRESS;
+  (* Returns address given by (addr - offset), or may raise an
+     exception if this address is not valid.
+  *)
+
+PROCEDURE DIFADR (addr1, addr2: ADDRESS): INTEGER;
+  (* Returns the difference between addresses (addr1 - addr2),
+     or may raise an exception if the arguments are invalid
+     or address space is non-contiguous.
+  *)
+
+PROCEDURE MAKEADR (high: <some type>; ...): ADDRESS;
+  (* Returns an address constructed from a list of values whose
+     types are implementation-defined, or may raise an
+     exception if this address is not valid.
+
+     In GNU Modula-2, MAKEADR can take any number of arguments
+     which are mapped onto the type ADDRESS. The first parameter
+     maps onto the high address bits and subsequent parameters map
+     onto lower address bits. For example:
+
+     a := MAKEADR(BYTE(0FEH), BYTE(0DCH), BYTE(0BAH), BYTE(098H),
+                  BYTE(076H), BYTE(054H), BYTE(032H), BYTE(010H)) ;
+
+     then the value of, a, on a 64 bit machine is: 0FEDCBA9876543210H
+
+     The parameters do not have to be the same type, but constants
+     _must_ be typed.
+  *)
+
+PROCEDURE ADR (VAR v: <anytype>): ADDRESS;
+  (* Returns the address of variable v. *)
+
+PROCEDURE ROTATE (val: <a packedset type>;
+                  num: INTEGER): <type of first parameter>;
+  (* Returns a bit sequence obtained from val by rotating up/right
+     or down/right by the absolute value of num.  The direction is
+     down/right if the sign of num is negative, otherwise the direction
+     is up/left.
+  *)
+
+PROCEDURE SHIFT (val: <a packedset type>;
+                 num: INTEGER): <type of first parameter>;
+  (* Returns a bit sequence obtained from val by shifting up/left
+     or down/right by the absolute value of num, introducing
+     zeros as necessary.  The direction is down/right if the sign of
+     num is negative, otherwise the direction is up/left.
+  *)
+
+PROCEDURE CAST (<targettype>; val: <anytype>): <targettype>;
+  (* CAST is a type transfer function.  Given the expression
+     denoted by val, it returns a value of the type <targettype>.
+     An invalid value for the target value or a
+     physical address alignment problem may raise an exception.
+  *)
+
+PROCEDURE TSIZE (<type>; ... ): CARDINAL;
+  (* Returns the number of LOCS used to store a value of the
+     specified <type>.   The extra parameters, if present,
+     are used to distinguish variants in a variant record.
+  *)
+
+PROCEDURE THROW (i: INTEGER) <* noreturn *> ;
+  (*
+     THROW is a GNU extension and was not part of the PIM or ISO
+     standards.  It throws an exception which will be caught by the
+     EXCEPT block (assuming it exists).  This is a compiler builtin
+     function which interfaces to the GCC exception handling runtime
+     system.
+     GCC uses the term throw, hence the naming distinction between
+     the GCC builtin and the Modula-2 runtime library procedure Raise.
+     The later library procedure Raise will call SYSTEM.THROW after
+     performing various housekeeping activities.
+  *)
+
+PROCEDURE TBITSIZE (<type>) : CARDINAL ;
+  (* Returns the minimum number of bits necessary to represent
+     <type>.  This procedure function is only useful for determining
+     the number of bits used for any type field within a packed RECORD.
+     It is not particularly useful elsewhere since <type> might be
+     optimized for speed, for example a BOOLEAN could occupy a WORD.
+  *)
+*)
+
+
+(* The following procedures are invoked by GNU Modula-2 to
+   shift non word set types. They are not part of ISO Modula-2
+   but are used to implement the SHIFT procedure defined above. *)
+
+(*
+   ShiftVal - is a runtime procedure whose job is to implement
+              the SHIFT procedure of ISO SYSTEM. GNU Modula-2 will
+              inline a SHIFT of a single WORD sized set and will only
+              call this routine for larger sets.
+*)
+
+PROCEDURE ShiftVal (VAR s, d: ARRAY OF BITSET;
+                    SetSizeInBits: CARDINAL;
+                    ShiftCount: INTEGER) ;
+
+
+(*
+   ShiftLeft - performs the shift left for a multi word set.
+               This procedure might be called by the back end of
+               GNU Modula-2 depending whether amount is known at
+               compile time.
+*)
+
+PROCEDURE ShiftLeft (VAR s, d: ARRAY OF BITSET;
+                     SetSizeInBits: CARDINAL;
+                     ShiftCount: CARDINAL) ;
+
+(*
+   ShiftRight - performs the shift left for a multi word set.
+                This procedure might be called by the back end of
+                GNU Modula-2 depending whether amount is known at
+                compile time.
+*)
+
+PROCEDURE ShiftRight (VAR s, d: ARRAY OF BITSET;
+                     SetSizeInBits: CARDINAL;
+                     ShiftCount: CARDINAL) ;
+
+
+(*
+   RotateVal - is a runtime procedure whose job is to implement
+               the ROTATE procedure of ISO SYSTEM. GNU Modula-2 will
+               inline a ROTATE of a single WORD (or less)
+               sized set and will only call this routine for larger
+               sets.
+*)
+
+PROCEDURE RotateVal (VAR s, d: ARRAY OF BITSET;
+                     SetSizeInBits: CARDINAL;
+                     RotateCount: INTEGER) ;
+
+
+(*
+   RotateLeft - performs the rotate left for a multi word set.
+                This procedure might be called by the back end of
+                GNU Modula-2 depending whether amount is known at
+                compile time.
+*)
+
+PROCEDURE RotateLeft (VAR s, d: ARRAY OF BITSET;
+                      SetSizeInBits: CARDINAL;
+                      RotateCount: CARDINAL) ;
+
+
+(*
+   RotateRight - performs the rotate right for a multi word set.
+                 This procedure might be called by the back end of
+                 GNU Modula-2 depending whether amount is known at
+                 compile time.
+*)
+
+PROCEDURE RotateRight (VAR s, d: ARRAY OF BITSET;
+                       SetSizeInBits: CARDINAL;
+                       RotateCount: CARDINAL) ;
+
+
+END SYSTEM.

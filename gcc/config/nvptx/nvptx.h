@@ -1,5 +1,5 @@
 /* Target Definitions for NVPTX.
-   Copyright (C) 2014-2022 Free Software Foundation, Inc.
+   Copyright (C) 2014-2023 Free Software Foundation, Inc.
    Contributed by Bernd Schmidt <bernds@codesourcery.com>
 
    This file is part of GCC.
@@ -27,7 +27,15 @@
 
 /* Run-time Target.  */
 
-#define STARTFILE_SPEC "%{mmainkernel:crt0.o}"
+/* Use '--with-arch' for default '-misa'.  */
+#define OPTION_DEFAULT_SPECS \
+  { "arch", "%{!misa=*:-misa=%(VALUE)}" }, \
+
+/* Assembler supports '-v' option; handle similar to
+   '../../gcc.cc:asm_options', 'HAVE_GNU_AS'.  */
+#define ASM_SPEC "%{v}"
+
+#define STARTFILE_SPEC "%{mmainkernel:crt0.o%s}"
 
 #define TARGET_CPU_CPP_BUILTINS() nvptx_cpu_cpp_builtins ()
 

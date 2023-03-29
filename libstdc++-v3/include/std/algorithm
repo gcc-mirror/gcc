@@ -1,6 +1,6 @@
 // <algorithm> -*- C++ -*-
 
-// Copyright (C) 2001-2022 Free Software Foundation, Inc.
+// Copyright (C) 2001-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -63,7 +63,7 @@
 # include <bits/ranges_algo.h>
 #endif
 
-#if __cplusplus > 201402L
+#if __cplusplus > 201402L && _GLIBCXX_HOSTED
 // Parallel STL algorithms
 # if _PSTL_EXECUTION_POLICIES_DEFINED
 // If <execution> has already been included, pull in implementations
@@ -76,7 +76,7 @@
 
 // Feature test macro for parallel algorithms
 # define __cpp_lib_parallel_algorithm 201603L
-#endif // C++17
+#endif // C++17 && HOSTED
 
 #ifdef _GLIBCXX_PARALLEL
 # include <parallel/algorithm>

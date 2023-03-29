@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,6 +66,7 @@ with Targparm;       use Targparm;
 with Tbuild;         use Tbuild;
 with Ttypes;         use Ttypes;
 with Uintp;          use Uintp;
+with Warnsw;         use Warnsw;
 
 package body Sem_Ch5 is
 
@@ -306,7 +307,8 @@ package body Sem_Ch5 is
          --  get the actual subtype (needed for the unconstrained case). If the
          --  operand is the actual in an entry declaration, then within the
          --  accept statement it is replaced with a local renaming, which may
-         --  also have an actual subtype.
+         --  also have an actual subtype. Likewise for a return object that
+         --  lives on the secondary stack.
 
          if Is_Entity_Name (Opnd)
            and then (Ekind (Entity (Opnd)) in E_Out_Parameter
@@ -317,7 +319,8 @@ package body Sem_Ch5 is
                           and then Nkind (Parent (Entity (Opnd))) =
                                      N_Object_Renaming_Declaration
                           and then Nkind (Parent (Parent (Entity (Opnd)))) =
-                                     N_Accept_Statement))
+                                     N_Accept_Statement)
+                      or else Is_Secondary_Stack_Return_Object (Entity (Opnd)))
          then
             Opnd_Type := Get_Actual_Subtype (Opnd);
 
@@ -1042,8 +1045,7 @@ package body Sem_Ch5 is
                         if Ekind (Comp_Id) = E_Component
                           and then Nkind (Parent (Comp_Id))
                                      = N_Component_Declaration
-                          and then
-                            not Present (Expression (Parent (Comp_Id)))
+                          and then No (Expression (Parent (Comp_Id)))
                         then
                            return True;
                         end if;
@@ -1152,13 +1154,16 @@ package body Sem_Ch5 is
 
       Record_Elaboration_Scenario (N);
 
-      --  Set Referenced_As_LHS if appropriate. We only set this flag if the
-      --  assignment is a source assignment in the extended main source unit.
-      --  We are not interested in any reference information outside this
-      --  context, or in compiler generated assignment statements.
+      --  Set Referenced_As_LHS if appropriate. We are not interested in
+      --  compiler-generated assignment statements, nor in references outside
+      --  the extended main source unit. We check whether the Original_Node is
+      --  in the extended main source unit because in the case of a renaming of
+      --  a component of a packed array, the Lhs itself has a Sloc from the
+      --  place of the renaming.
 
       if Comes_From_Source (N)
-        and then In_Extended_Main_Source_Unit (Lhs)
+        and then (In_Extended_Main_Source_Unit (Lhs)
+          or else In_Extended_Main_Source_Unit (Original_Node (Lhs)))
       then
          Set_Referenced_Modified (Lhs, Out_Param => False);
       end if;
@@ -1614,7 +1619,7 @@ package body Sem_Ch5 is
       --  out non-discretes may resolve the ambiguity.
       --  But GNAT extensions allow casing on non-discretes.
 
-      elsif Extensions_Allowed and then Is_Overloaded (Exp) then
+      elsif Core_Extensions_Allowed and then Is_Overloaded (Exp) then
 
          --  It would be nice if we could generate all the right error
          --  messages by calling "Resolve (Exp, Any_Type);" in the
@@ -1632,7 +1637,7 @@ package body Sem_Ch5 is
       --  Check for a GNAT-extension "general" case statement (i.e., one where
       --  the type of the selecting expression is not discrete).
 
-      elsif Extensions_Allowed
+      elsif Core_Extensions_Allowed
          and then not Is_Discrete_Type (Etype (Exp))
       then
          Resolve (Exp, Etype (Exp));
@@ -1670,7 +1675,7 @@ package body Sem_Ch5 is
            ("(Ada 83) case expression cannot be of a generic type", Exp);
          return;
 
-      elsif not Extensions_Allowed
+      elsif not Core_Extensions_Allowed
         and then not Is_Discrete_Type (Exp_Type)
       then
          Error_Msg_N
@@ -2192,7 +2197,7 @@ package body Sem_Ch5 is
             if Is_Array_Type (Typ)
               or else Is_Reversible_Iterator (Typ)
               or else
-                (Present (Find_Aspect (Typ, Aspect_Iterable))
+                (Has_Aspect (Typ, Aspect_Iterable)
                   and then
                     Present
                       (Get_Iterable_Type_Primitive (Typ, Name_Previous)))
@@ -2429,13 +2434,9 @@ package body Sem_Ch5 is
 
       if not Is_Entity_Name (Iter_Name)
 
-        --  When the context is a quantified expression, the renaming
-        --  declaration is delayed until the expansion phase if we are
-        --  doing expansion.
+        --  Do not perform this expansion in preanalysis
 
-        and then (Nkind (Parent (N)) /= N_Quantified_Expression
-                   or else (Operating_Mode = Check_Semantics
-                            and then not GNATprove_Mode))
+        and then Full_Analysis
 
         --  Do not perform this expansion when expansion is disabled, where the
         --  temporary may hide the transformation of a selected component into
@@ -2527,6 +2528,7 @@ package body Sem_Ch5 is
                 Subtype_Mark        => New_Occurrence_Of (Typ, Loc),
                 Name                =>
                   New_Copy_Tree (Iter_Name, New_Sloc => Loc));
+            Set_Comes_From_Iterator (Decl);
 
             Insert_Actions (Parent (Parent (N)), New_List (Decl));
             Rewrite (Name (N), New_Occurrence_Of (Id, Loc));

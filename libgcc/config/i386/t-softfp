@@ -6,8 +6,9 @@ LIB2FUNCS_EXCLUDE += $(libgcc2-hf-functions)
 libgcc2-hf-extras = $(addsuffix .c, $(libgcc2-hf-functions))
 LIB2ADD += $(addprefix $(srcdir)/config/i386/, $(libgcc2-hf-extras))
 
-softfp_extensions := hfsf hfdf hftf hfxf sfdf sftf dftf xftf
-softfp_truncations := tfhf xfhf dfhf sfhf tfsf dfsf tfdf tfxf
+softfp_extensions := hfsf hfdf hftf hfxf sfdf sftf dftf xftf bfsf
+softfp_truncations := tfhf xfhf dfhf sfhf tfsf dfsf tfdf tfxf \
+		      tfbf xfbf dfbf sfbf hfbf
 
 softfp_extras += eqhf2
 
@@ -15,11 +16,17 @@ CFLAGS-extendhfsf2.c += -msse2
 CFLAGS-extendhfdf2.c += -msse2
 CFLAGS-extendhftf2.c += -msse2
 CFLAGS-extendhfxf2.c += -msse2
+CFLAGS-extendbfsf2.c += -msse2
 
 CFLAGS-truncsfhf2.c += -msse2
 CFLAGS-truncdfhf2.c += -msse2
 CFLAGS-truncxfhf2.c += -msse2
 CFLAGS-trunctfhf2.c += -msse2
+CFLAGS-truncsfbf2.c += -msse2
+CFLAGS-truncdfbf2.c += -msse2
+CFLAGS-truncxfbf2.c += -msse2
+CFLAGS-trunctfbf2.c += -msse2
+CFLAGS-trunchfbf2.c += -msse2
 
 CFLAGS-eqhf2.c += -msse2
 CFLAGS-_divhc3.c += -msse2

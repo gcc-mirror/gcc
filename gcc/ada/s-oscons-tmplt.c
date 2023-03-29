@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -236,9 +236,6 @@ int counter = 0;
 
 #define CST(name,comment) C(#name,String,name,comment)
 /* String constant */
-
-#define STR(x) STR1(x)
-#define STR1(x) #x
 
 #ifdef __MINGW32__
 unsigned int _CRT_fmode = _O_BINARY;

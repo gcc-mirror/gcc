@@ -1,5 +1,5 @@
 /* C/ObjC/C++ command line option handling.
-   Copyright (C) 2002-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2023 Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
 This file is part of GCC.
@@ -812,17 +812,9 @@ c_common_post_options (const char **pfilename)
   C_COMMON_OVERRIDE_OPTIONS;
 #endif
 
-  /* Excess precision other than "fast" requires front-end
-     support.  */
-  if (c_dialect_cxx ())
-    {
-      if (flag_excess_precision == EXCESS_PRECISION_STANDARD)
-	sorry ("%<-fexcess-precision=standard%> for C++");
-      flag_excess_precision = EXCESS_PRECISION_FAST;
-    }
-  else if (flag_excess_precision == EXCESS_PRECISION_DEFAULT)
+  if (flag_excess_precision == EXCESS_PRECISION_DEFAULT)
     flag_excess_precision = (flag_iso ? EXCESS_PRECISION_STANDARD
-				      : EXCESS_PRECISION_FAST);
+			     : EXCESS_PRECISION_FAST);
 
   /* ISO C restricts floating-point expression contraction to within
      source-language expressions (-ffp-contract=on, currently an alias
@@ -975,7 +967,7 @@ c_common_post_options (const char **pfilename)
 
   /* Change flag_abi_version to be the actual current ABI level, for the
      benefit of c_cpp_builtins, and to make comparison simpler.  */
-  const int latest_abi_version = 17;
+  const int latest_abi_version = 18;
   /* Generate compatibility aliases for ABI v13 (8.2) by default.  */
   const int abi_compat_default = 13;
 
@@ -1067,6 +1059,10 @@ c_common_post_options (const char **pfilename)
   if (flag_sized_deallocation == -1)
     flag_sized_deallocation = (cxx_dialect >= cxx14);
 
+  /* Pedwarn about invalid constexpr functions before C++23.  */
+  if (warn_invalid_constexpr == -1)
+    warn_invalid_constexpr = (cxx_dialect < cxx23);
+
   /* char8_t support is implicitly enabled in C++20 and C2X.  */
   if (flag_char8_t == -1)
     flag_char8_t = (cxx_dialect >= cxx20) || flag_isoc2x;
@@ -1098,9 +1094,6 @@ c_common_post_options (const char **pfilename)
      work with the standard.  */
   if (cxx_dialect >= cxx20 || flag_concepts_ts)
     flag_concepts = 1;
-  else if (flag_concepts)
-    /* For -std=c++17 -fconcepts, imply -fconcepts-ts.  */
-    flag_concepts_ts = 1;
 
   if (num_in_fnames > 1)
     error ("too many filenames given; type %<%s %s%> for usage",
@@ -1484,7 +1477,7 @@ c_finish_options (void)
     {
       const line_map_ordinary *bltin_map
 	= linemap_check_ordinary (linemap_add (line_table, LC_RENAME, 0,
-					       _("<built-in>"), 0));
+					       special_fname_builtin (), 0));
       cb_file_change (parse_in, bltin_map);
       linemap_line_start (line_table, 0, 1);
 

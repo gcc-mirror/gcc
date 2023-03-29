@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -41,13 +41,6 @@ enum class Baseok : uint8_t
     semanticdone  // all base classes semantic done
 };
 
-enum class ThreeState : uint8_t
-{
-    none,         // value not yet computed
-    no,           // value is false
-    yes,          // value is true
-};
-
 FuncDeclaration *search_toString(StructDeclaration *sd);
 
 enum class ClassKind : uint8_t
@@ -82,7 +75,7 @@ public:
     CPPMANGLE cppmangle;
 
     // overridden symbol with pragma(mangle, "...")
-    MangleOverride *mangleOverride;
+    MangleOverride *pMangleOverride;
     /* !=NULL if is nested
      * pointing to the dsymbol that directly enclosing it.
      * 1. The function that enclosing it (nested struct and class)
@@ -125,7 +118,7 @@ public:
     bool determineSize(const Loc &loc);
     virtual void finalizeSize() = 0;
     uinteger_t size(const Loc &loc) override final;
-    bool fill(const Loc &loc, Expressions *elements, bool ctorinit);
+    bool fill(const Loc &loc, Expressions &elements, bool ctorinit);
     Type *getType() override final;
     bool isDeprecated() const override final; // is aggregate deprecated?
     void setDeprecated();
@@ -174,7 +167,7 @@ public:
     structalign_t alignment;    // alignment applied outside of the struct
     ThreeState ispod;           // if struct is POD
 private:
-    uint8_t bitFields;
+    uint16_t bitFields;
 public:
     static StructDeclaration *create(const Loc &loc, Identifier *id, bool inObject);
     StructDeclaration *syntaxCopy(Dsymbol *s) override;
@@ -311,7 +304,6 @@ public:
     virtual int vtblOffset() const;
     const char *kind() const override;
 
-    void addLocalClass(ClassDeclarations *) override final;
     void addObjcSymbols(ClassDeclarations *classes, ClassDeclarations *categories) override final;
 
     // Back end

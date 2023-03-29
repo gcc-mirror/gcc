@@ -1,7 +1,7 @@
 /* Dependency checks for instruction scheduling, shared between ARM and
    AARCH64.
 
-   Copyright (C) 1991-2022 Free Software Foundation, Inc.
+   Copyright (C) 1991-2023 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -36,6 +36,7 @@
 #include "expr.h"
 #include "function.h"
 #include "emit-rtl.h"
+#include "aarch-common.h"
 
 /* Return TRUE if X is either an arithmetic shift left, or
    is a multiplication by a power of two.  */
@@ -656,4 +657,187 @@ arm_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
   end_sequence ();
 
   return saw_asm_flag ? seq : NULL;
+}
+
+#define BRANCH_PROTECT_STR_MAX 255
+extern char *accepted_branch_protection_string;
+
+static enum aarch_parse_opt_result
+aarch_handle_no_branch_protection (char* str, char* rest)
+{
+  aarch_ra_sign_scope = AARCH_FUNCTION_NONE;
+  aarch_enable_bti = 0;
+  if (rest)
+    {
+      error ("unexpected %<%s%> after %<%s%>", rest, str);
+      return AARCH_PARSE_INVALID_FEATURE;
+    }
+  return AARCH_PARSE_OK;
+}
+
+static enum aarch_parse_opt_result
+aarch_handle_standard_branch_protection (char* str, char* rest)
+{
+  aarch_ra_sign_scope = AARCH_FUNCTION_NON_LEAF;
+  aarch_ra_sign_key = AARCH_KEY_A;
+  aarch_enable_bti = 1;
+  if (rest)
+    {
+      error ("unexpected %<%s%> after %<%s%>", rest, str);
+      return AARCH_PARSE_INVALID_FEATURE;
+    }
+  return AARCH_PARSE_OK;
+}
+
+static enum aarch_parse_opt_result
+aarch_handle_pac_ret_protection (char* str ATTRIBUTE_UNUSED,
+				 char* rest ATTRIBUTE_UNUSED)
+{
+  aarch_ra_sign_scope = AARCH_FUNCTION_NON_LEAF;
+  aarch_ra_sign_key = AARCH_KEY_A;
+  return AARCH_PARSE_OK;
+}
+
+static enum aarch_parse_opt_result
+aarch_handle_pac_ret_leaf (char* str ATTRIBUTE_UNUSED,
+			   char* rest ATTRIBUTE_UNUSED)
+{
+  aarch_ra_sign_scope = AARCH_FUNCTION_ALL;
+  return AARCH_PARSE_OK;
+}
+
+static enum aarch_parse_opt_result
+aarch_handle_pac_ret_b_key (char* str ATTRIBUTE_UNUSED,
+			    char* rest ATTRIBUTE_UNUSED)
+{
+  aarch_ra_sign_key = AARCH_KEY_B;
+  return AARCH_PARSE_OK;
+}
+
+static enum aarch_parse_opt_result
+aarch_handle_bti_protection (char* str ATTRIBUTE_UNUSED,
+			     char* rest ATTRIBUTE_UNUSED)
+{
+  aarch_enable_bti = 1;
+  return AARCH_PARSE_OK;
+}
+
+static const struct aarch_branch_protect_type aarch_pac_ret_subtypes[] = {
+  { "leaf", aarch_handle_pac_ret_leaf, NULL, 0 },
+  { "b-key", aarch_handle_pac_ret_b_key, NULL, 0 },
+  { NULL, NULL, NULL, 0 }
+};
+
+static const struct aarch_branch_protect_type aarch_branch_protect_types[] = {
+  { "none", aarch_handle_no_branch_protection, NULL, 0 },
+  { "standard", aarch_handle_standard_branch_protection, NULL, 0 },
+  { "pac-ret", aarch_handle_pac_ret_protection, aarch_pac_ret_subtypes,
+    ARRAY_SIZE (aarch_pac_ret_subtypes) },
+  { "bti", aarch_handle_bti_protection, NULL, 0 },
+  { NULL, NULL, NULL, 0 }
+};
+
+/* Parses CONST_STR for branch protection features specified in
+   aarch64_branch_protect_types, and set any global variables required.  Returns
+   the parsing result and assigns LAST_STR to the last processed token from
+   CONST_STR so that it can be used for error reporting.  */
+
+enum aarch_parse_opt_result
+aarch_parse_branch_protection (const char *const_str, char** last_str)
+{
+  char *str_root = xstrdup (const_str);
+  char* token_save = NULL;
+  char *str = strtok_r (str_root, "+", &token_save);
+  enum aarch_parse_opt_result res = AARCH_PARSE_OK;
+  if (!str)
+    res = AARCH_PARSE_MISSING_ARG;
+  else
+    {
+      char *next_str = strtok_r (NULL, "+", &token_save);
+      /* Reset the branch protection features to their defaults.  */
+      aarch_handle_no_branch_protection (NULL, NULL);
+
+      while (str && res == AARCH_PARSE_OK)
+	{
+	  const aarch_branch_protect_type* type = aarch_branch_protect_types;
+	  bool found = false;
+	  /* Search for this type.  */
+	  while (type && type->name && !found && res == AARCH_PARSE_OK)
+	    {
+	      if (strcmp (str, type->name) == 0)
+		{
+		  found = true;
+		  res = type->handler (str, next_str);
+		  str = next_str;
+		  next_str = strtok_r (NULL, "+", &token_save);
+		}
+	      else
+		type++;
+	    }
+	  if (found && res == AARCH_PARSE_OK)
+	    {
+	      bool found_subtype = true;
+	      /* Loop through each token until we find one that isn't a
+		 subtype.  */
+	      while (found_subtype)
+		{
+		  found_subtype = false;
+		  const aarch_branch_protect_type *subtype = type->subtypes;
+		  /* Search for the subtype.  */
+		  while (str && subtype && subtype->name && !found_subtype
+			  && res == AARCH_PARSE_OK)
+		    {
+		      if (strcmp (str, subtype->name) == 0)
+			{
+			  found_subtype = true;
+			  res = subtype->handler (str, next_str);
+			  str = next_str;
+			  next_str = strtok_r (NULL, "+", &token_save);
+			}
+		      else
+			subtype++;
+		    }
+		}
+	    }
+	  else if (!found)
+	    res = AARCH_PARSE_INVALID_ARG;
+	}
+    }
+  /* Copy the last processed token into the argument to pass it back.
+    Used by option and attribute validation to print the offending token.  */
+  if (last_str)
+    {
+      if (str)
+	strcpy (*last_str, str);
+      else
+	*last_str = NULL;
+    }
+
+  if (res == AARCH_PARSE_OK)
+    {
+      /* If needed, alloc the accepted string then copy in const_str.
+	Used by override_option_after_change_1.  */
+      if (!accepted_branch_protection_string)
+	accepted_branch_protection_string
+	  = (char *) xmalloc (BRANCH_PROTECT_STR_MAX + 1);
+      strncpy (accepted_branch_protection_string, const_str,
+	       BRANCH_PROTECT_STR_MAX + 1);
+      /* Forcibly null-terminate.  */
+      accepted_branch_protection_string[BRANCH_PROTECT_STR_MAX] = '\0';
+    }
+  return res;
+}
+
+bool
+aarch_validate_mbranch_protection (const char *const_str)
+{
+  char *str = (char *) xmalloc (strlen (const_str));
+  enum aarch_parse_opt_result res =
+    aarch_parse_branch_protection (const_str, &str);
+  if (res == AARCH_PARSE_INVALID_ARG)
+    error ("invalid argument %<%s%> for %<-mbranch-protection=%>", str);
+  else if (res == AARCH_PARSE_MISSING_ARG)
+    error ("missing argument for %<-mbranch-protection=%>");
+  free (str);
+  return res == AARCH_PARSE_OK;
 }

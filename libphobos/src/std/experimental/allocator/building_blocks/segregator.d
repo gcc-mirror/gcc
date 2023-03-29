@@ -503,12 +503,12 @@ if (Args.length > 3)
 
 @system unittest
 {
-    import std.experimental.allocator.building_blocks.region : Region;
+    import std.experimental.allocator.building_blocks.region : BorrowedRegion;
     import std.typecons : Ternary;
 
-    auto a = Segregator!(10_240, Region!(), Region!())(
-                Region!()(new ubyte[4096 * 1024]),
-                Region!()(new ubyte[4096 * 1024]));
+    auto a = Segregator!(10_240, BorrowedRegion!(), BorrowedRegion!())(
+                BorrowedRegion!()(new ubyte[4096 * 1024]),
+                BorrowedRegion!()(new ubyte[4096 * 1024]));
 
     assert((() nothrow @safe @nogc => a.empty)() == Ternary.yes);
     auto b = a.alignedAllocate(42, 8);

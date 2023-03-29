@@ -4,6 +4,7 @@
 
 // Only build this file if libffi is supported.
 
+//go:build libffi
 // +build libffi
 
 package runtime
@@ -221,9 +222,6 @@ func stringToFFI() *__ffi_type {
 // structToFFI returns an ffi_type for a Go struct type.
 func structToFFI(typ *structtype) *__ffi_type {
 	c := len(typ.fields)
-	if c == 0 {
-		return emptyStructToFFI()
-	}
 	if typ.typ.kind&kindDirectIface != 0 {
 		return ffi_type_pointer()
 	}
@@ -231,6 +229,7 @@ func structToFFI(typ *structtype) *__ffi_type {
 	fields := make([]*__ffi_type, 0, c+1)
 	checkPad := false
 	lastzero := false
+	sawnonzero := false
 	for i, v := range typ.fields {
 		// Skip zero-sized fields; they confuse libffi,
 		// and there is no value to pass in any case.
@@ -239,10 +238,13 @@ func structToFFI(typ *structtype) *__ffi_type {
 		// next field.
 		if v.typ.size == 0 {
 			checkPad = true
-			lastzero = true
+			if v.name == nil || *v.name != "_" {
+				lastzero = true
+			}
 			continue
 		}
 		lastzero = false
+		sawnonzero = true
 
 		if checkPad {
 			off := uintptr(0)
@@ -261,6 +263,10 @@ func structToFFI(typ *structtype) *__ffi_type {
 		}
 
 		fields = append(fields, typeToFFI(v.typ))
+	}
+
+	if !sawnonzero {
+		return emptyStructToFFI()
 	}
 
 	if lastzero {

@@ -1,5 +1,5 @@
 /* Platform-independent deterministic sort function.
-   Copyright (C) 2018-2022 Free Software Foundation, Inc.
+   Copyright (C) 2018-2023 Free Software Foundation, Inc.
    Contributed by Alexander Monakov.
 
 This file is part of GCC.
@@ -237,6 +237,10 @@ do {                                            \
 }
 
 #if CHECKING_P
+  /* Don't complain about cast from void* to function pointer.  */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconditionally-supported"
+
 /* Adapter for using two-argument comparators in functions expecting the
    three-argument sort_r_cmp_fn type.  */
 static int
@@ -266,6 +270,7 @@ gcc_qsort (void *vbase, size_t n, size_t size, cmp_fn *cmp)
     free (buf);
 #if CHECKING_P
   qsort_chk (vbase, n, size, cmp2to3, (void*)cmp);
+#pragma GCC diagnostic pop
 #endif
 }
 

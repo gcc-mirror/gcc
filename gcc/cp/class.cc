@@ -1,5 +1,5 @@
 /* Functions related to building -*- C++ -*- classes and their related objects.
-   Copyright (C) 1987-2022 Free Software Foundation, Inc.
+   Copyright (C) 1987-2023 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -4795,8 +4795,9 @@ check_methods (tree t)
 
   /* Check whether the eligible special member functions (P0848) are
      user-provided.  add_method arranged that the CLASSTYPE_MEMBER_VEC only
-     has the eligible ones; TYPE_FIELDS also contains ineligible overloads,
-     which is why this needs to be separate from the loop above.  */
+     has the eligible ones, unless none are eligible; TYPE_FIELDS also contains
+     ineligible overloads, which is why this needs to be separate from the loop
+     above.  */
 
   if (tree dtor = CLASSTYPE_DESTRUCTOR (t))
     {
@@ -4807,9 +4808,23 @@ check_methods (tree t)
 	     in that class with an empty argument list to select the destructor
 	     for the class, also known as the selected destructor. The program
 	     is ill-formed if overload resolution fails. */
+	  int viable = 0;
+	  for (tree fn : ovl_range (dtor))
+	    if (constraints_satisfied_p (fn))
+	      ++viable;
+	  gcc_checking_assert (viable != 1);
+
 	  auto_diagnostic_group d;
-	  error_at (location_of (t), "destructor for %qT is ambiguous", t);
+	  if (viable == 0)
+	    error_at (location_of (t), "no viable destructor for %qT", t);
+	  else
+	    error_at (location_of (t), "destructor for %qT is ambiguous", t);
 	  print_candidates (dtor);
+
+	  /* Arbitrarily prune the overload set to a single function for
+	     sake of error recovery.  */
+	  tree *slot = find_member_slot (t, dtor_identifier);
+	  *slot = get_first_fn (dtor);
 	}
       else if (user_provided_p (dtor))
 	TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) = true;
@@ -4819,9 +4834,13 @@ check_methods (tree t)
     {
       if (!user_provided_p (fn))
 	/* Might be trivial.  */;
-      else if (copy_fn_p (fn))
+      else if (TREE_CODE (fn) == TEMPLATE_DECL)
+	/* Templates are never special members.  */;
+      else if (copy_fn_p (fn)
+	       && constraints_satisfied_p (fn))
 	TYPE_HAS_COMPLEX_COPY_CTOR (t) = true;
-      else if (move_fn_p (fn))
+      else if (move_fn_p (fn)
+	       && constraints_satisfied_p (fn))
 	TYPE_HAS_COMPLEX_MOVE_CTOR (t) = true;
     }
 
@@ -4829,9 +4848,13 @@ check_methods (tree t)
     {
       if (!user_provided_p (fn))
 	/* Might be trivial.  */;
-      else if (copy_fn_p (fn))
+      else if (TREE_CODE (fn) == TEMPLATE_DECL)
+	/* Templates are never special members.  */;
+      else if (copy_fn_p (fn)
+	       && constraints_satisfied_p (fn))
 	TYPE_HAS_COMPLEX_COPY_ASSIGN (t) = true;
-      else if (move_fn_p (fn))
+      else if (move_fn_p (fn)
+	       && constraints_satisfied_p (fn))
 	TYPE_HAS_COMPLEX_MOVE_ASSIGN (t) = true;
     }
 }
@@ -6039,10 +6062,12 @@ check_bases_and_members (tree t)
   check_bases (t, &cant_have_const_ctor, &no_const_asn_ref);
 
   /* Deduce noexcept on destructor.  This needs to happen after we've set
-     triviality flags appropriately for our bases.  */
+     triviality flags appropriately for our bases, and before checking
+     overriden virtual functions via check_methods.  */
   if (cxx_dialect >= cxx11)
     if (tree dtor = CLASSTYPE_DESTRUCTOR (t))
-      deduce_noexcept_on_destructor (dtor);
+      for (tree fn : ovl_range (dtor))
+	deduce_noexcept_on_destructor (fn);
 
   /* Check all the method declarations.  */
   check_methods (t);
@@ -6451,7 +6476,15 @@ end_of_class (tree t, eoc_mode mode)
 	     size of the type (usually 1) for computing nvsize.  */
 	  size = TYPE_SIZE_UNIT (TREE_TYPE (field));
 
-	offset = size_binop (PLUS_EXPR, byte_position (field), size);
+	if (DECL_BIT_FIELD_TYPE (field))
+	  {
+	    offset = size_binop (PLUS_EXPR, bit_position (field),
+				 DECL_SIZE (field));
+	    offset = size_binop (CEIL_DIV_EXPR, offset, bitsize_unit_node);
+	    offset = fold_convert (sizetype, offset);
+	  }
+	else
+	  offset = size_binop (PLUS_EXPR, byte_position (field), size);
 	if (tree_int_cst_lt (result, offset))
 	  result = offset;
       }
@@ -8703,6 +8736,8 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t complain)
 
   complain &= ~tf_ptrmem_ok;
 
+  STRIP_ANY_LOCATION_WRAPPER (rhs);
+
   if (lhstype == unknown_type_node)
     {
       if (complain & tf_error)
@@ -9007,7 +9042,7 @@ note_name_declared_in_class (tree name, tree decl)
     return;
   /* The C language allows members to be declared with a type of the same
      name, and the C++ standard says this diagnostic is not required.  So
-     allow it in extern "C" blocks unless predantic is specified.
+     allow it in extern "C" blocks unless pedantic is specified.
      Allow it in all cases if -ms-extensions is specified.  */
   if ((!pedantic && current_lang_name == lang_name_c)
       || flag_ms_extensions)
@@ -9023,9 +9058,19 @@ note_name_declared_in_class (tree name, tree decl)
 	 A name N used in a class S shall refer to the same declaration
 	 in its context and when re-evaluated in the completed scope of
 	 S.  */
-      if (permerror (location_of (decl),
-		     "declaration of %q#D changes meaning of %qD",
-		     decl, OVL_NAME (decl)))
+      auto ov = make_temp_override (global_dc->pedantic_errors);
+      if (TREE_CODE (decl) == TYPE_DECL
+	  && TREE_CODE (olddecl) == TYPE_DECL
+	  && same_type_p (TREE_TYPE (decl), TREE_TYPE (olddecl)))
+	/* Different declaration, but same meaning; just warn.  */;
+      else if (flag_permissive)
+	/* Let -fpermissive make it a warning like past versions.  */;
+      else
+	/* Make it an error.  */
+	global_dc->pedantic_errors = 1;
+      if (pedwarn (location_of (decl), OPT_Wchanges_meaning,
+		   "declaration of %q#D changes meaning of %qD",
+		   decl, OVL_NAME (decl)))
 	{
 	  inform (loc, "used here to mean %q#D", olddecl);
 	  inform (location_of (olddecl), "declared here" );

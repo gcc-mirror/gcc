@@ -1,5 +1,5 @@
 ;; Predicate definitions for POWER and PowerPC.
-;; Copyright (C) 2005-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2023 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -760,7 +760,7 @@
     return 0;
   elt = BYTES_BIG_ENDIAN ? GET_MODE_NUNITS (mode) - 1 : 0;
   val = const_vector_elt_as_int (op, elt);
-  val = ((val & 0xff) ^ 0x80) - 0x80;
+  val = sext_hwi (val, 8);
   return EASY_VECTOR_15_ADD_SELF (val);
 })
 

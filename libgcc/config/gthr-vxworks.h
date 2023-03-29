@@ -1,6 +1,6 @@
 /* Threads compatibility routines for libgcc2 and libobjc for VxWorks.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997-2022 Free Software Foundation, Inc.
+/* Copyright (C) 1997-2023 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@wrs.com>.
 
 This file is part of GCC.
@@ -38,8 +38,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <_vxworks-versions.h>
 
 /* Some VxWorks headers profusely use typedefs of a pointer to a function with
-   undefined number of arguments.  */
+   undefined number of arguments.  Arrange to ignore declaration errors in C++,
+   which is achievable by ignoring Wstrict-prototypes diagnostics even when the
+   option is registered as only valid for c/objc.  */
 #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wpragmas"
   #pragma GCC diagnostic ignored "-Wstrict-prototypes"
   #include <semLib.h>
 #pragma GCC diagnostic pop

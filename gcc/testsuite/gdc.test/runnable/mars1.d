@@ -617,6 +617,17 @@ void test11565()
     assert(cond11565(true) == size_t.max);
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=23743
+void test23743()
+{
+    ubyte[] a = [1];
+    foreach (x; a)
+    {
+        ubyte v = x >= 1 ? 255 : 0;
+        assert(v == 255);
+    }
+}
+
 ///////////////////////
 
 int[3] array1 = [1:1,2,0:3];
@@ -2498,6 +2509,7 @@ int main()
     testdocond();
     testnegcom();
     test11565();
+    test23743();
     testoror();
     testbt();
     test12095(0);

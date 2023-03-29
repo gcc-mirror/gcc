@@ -1,5 +1,5 @@
 /* Various declarations for language-independent diagnostics subroutines.
-   Copyright (C) 2000-2022 Free Software Foundation, Inc.
+   Copyright (C) 2000-2023 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -405,6 +405,9 @@ struct diagnostic_context
      of a diagnostic's location.  */
   void (*set_locations_cb)(diagnostic_context *, diagnostic_info *);
 
+  /* Optional callback for attempting to handle ICEs gracefully.  */
+  void (*ice_handler_cb) (diagnostic_context *context);
+
   /* Include files that diagnostic_report_current_module has already listed the
      include path for.  */
   hash_set<location_t, false, location_hash> *includes_seen;
@@ -416,7 +419,7 @@ struct diagnostic_context
   diagnostic_client_data_hooks *m_client_data_hooks;
 };
 
-static inline void
+inline void
 diagnostic_inhibit_notes (diagnostic_context * context)
 {
   context->inhibit_notes_p = true;
@@ -474,7 +477,7 @@ extern diagnostic_context *global_dc;
 /* Override the option index to be used for reporting a
    diagnostic.  */
 
-static inline void
+inline void
 diagnostic_override_option_index (diagnostic_info *info, int optidx)
 {
   info->option_index = optidx;
@@ -546,7 +549,7 @@ int get_terminal_width (void);
 /* Return the location associated to this diagnostic. Parameter WHICH
    specifies which location. By default, expand the first one.  */
 
-static inline location_t
+inline location_t
 diagnostic_location (const diagnostic_info * diagnostic, int which = 0)
 {
   return diagnostic->message.get_location (which);
@@ -554,7 +557,7 @@ diagnostic_location (const diagnostic_info * diagnostic, int which = 0)
 
 /* Return the number of locations to be printed in DIAGNOSTIC.  */
 
-static inline unsigned int
+inline unsigned int
 diagnostic_num_locations (const diagnostic_info * diagnostic)
 {
   return diagnostic->message.m_richloc->get_num_locations ();
@@ -564,7 +567,7 @@ diagnostic_num_locations (const diagnostic_info * diagnostic)
    consistency.  Parameter WHICH specifies which location. By default,
    expand the first one.  */
 
-static inline expanded_location
+inline expanded_location
 diagnostic_expand_location (const diagnostic_info * diagnostic, int which = 0)
 {
   return diagnostic->richloc->get_expanded_location (which);
@@ -579,7 +582,7 @@ const int CARET_LINE_MARGIN = 10;
    caret line.  This is used to build a prefix and also to determine
    whether to print one or two caret lines.  */
 
-static inline bool
+inline bool
 diagnostic_same_line (const diagnostic_context *context,
 		       expanded_location s1, expanded_location s2)
 {

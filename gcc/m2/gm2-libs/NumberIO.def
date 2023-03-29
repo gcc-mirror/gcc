@@ -1,0 +1,83 @@
+(* NumberIO.def provides conversion of ordinal numbers.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE NumberIO ;
+
+EXPORT QUALIFIED ReadCard, WriteCard, ReadHex, WriteHex, ReadInt, WriteInt,
+                 CardToStr, StrToCard, StrToHex, HexToStr, StrToInt, IntToStr,
+                 ReadOct, WriteOct, OctToStr, StrToOct,
+                 ReadBin, WriteBin, BinToStr, StrToBin,
+                 StrToBinInt, StrToHexInt, StrToOctInt ;
+
+
+PROCEDURE ReadCard (VAR x: CARDINAL) ;
+
+PROCEDURE WriteCard (x, n: CARDINAL) ;
+
+PROCEDURE ReadHex (VAR x: CARDINAL) ;
+
+PROCEDURE WriteHex (x, n: CARDINAL) ;
+
+PROCEDURE ReadInt (VAR x: INTEGER) ;
+
+PROCEDURE WriteInt (x: INTEGER ; n: CARDINAL) ;
+
+PROCEDURE CardToStr (x, n: CARDINAL ; VAR a: ARRAY OF CHAR) ;
+
+PROCEDURE StrToCard (a: ARRAY OF CHAR ; VAR x: CARDINAL) ;
+
+PROCEDURE HexToStr (x, n: CARDINAL ; VAR a: ARRAY OF CHAR) ;
+
+PROCEDURE StrToHex (a: ARRAY OF CHAR ; VAR x: CARDINAL) ;
+
+PROCEDURE IntToStr (x: INTEGER ; n: CARDINAL ; VAR a: ARRAY OF CHAR) ;
+
+PROCEDURE StrToInt (a: ARRAY OF CHAR ; VAR x: INTEGER) ;
+
+PROCEDURE ReadOct (VAR x: CARDINAL) ;
+
+PROCEDURE WriteOct (x, n: CARDINAL) ;
+
+PROCEDURE OctToStr (x, n: CARDINAL ; VAR a: ARRAY OF CHAR) ;
+
+PROCEDURE StrToOct (a: ARRAY OF CHAR ; VAR x: CARDINAL) ;
+
+PROCEDURE ReadBin (VAR x: CARDINAL) ;
+
+PROCEDURE WriteBin (x, n: CARDINAL) ;
+
+PROCEDURE BinToStr (x, n: CARDINAL ; VAR a: ARRAY OF CHAR) ;
+
+PROCEDURE StrToBin (a: ARRAY OF CHAR ; VAR x: CARDINAL) ;
+
+PROCEDURE StrToBinInt (a: ARRAY OF CHAR ; VAR x: INTEGER) ;
+
+PROCEDURE StrToHexInt (a: ARRAY OF CHAR ; VAR x: INTEGER) ;
+
+PROCEDURE StrToOctInt (a: ARRAY OF CHAR ; VAR x: INTEGER) ;
+
+
+END NumberIO.

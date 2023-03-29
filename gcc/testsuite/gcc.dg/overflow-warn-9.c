@@ -61,5 +61,6 @@ const struct Types t1 = {
 
   .sl = LONG_MAX + 1LU,     /* { dg-warning "signed conversion from .long unsigned int. to .long int. changes value from .9223372036854775808. to .-9223372036854775808." "lp64" { target lp64 } } */
   /* { dg-warning "signed conversion from .long unsigned int. to .long int. changes value from .2147483648. to .-2147483648." "ilp32" { target ilp32 } .-1 } */
+  /* { dg-warning "signed conversion from .long unsigned int. to .long int. changes value from .2147483648. to .-2147483648." "llp64" { target llp64 } .-2 } */
   .ul = ULONG_MAX + 1LU     /* there should be some warning here */
 };

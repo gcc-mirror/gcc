@@ -1,5 +1,5 @@
 /* Definitions of various defaults for tm.h macros.
-   Copyright (C) 1992-2022 Free Software Foundation, Inc.
+   Copyright (C) 1992-2023 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com)
 
 This file is part of GCC.
@@ -1439,6 +1439,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #ifndef DWARF_GNAT_ENCODINGS_DEFAULT
 #define DWARF_GNAT_ENCODINGS_DEFAULT DWARF_GNAT_ENCODINGS_GDB
+#endif
+
+/* When generating dwarf info, the default standard version we'll honor
+   and advertise in absence of -gdwarf-<N> on the command line.  */
+#ifndef DWARF_VERSION_DEFAULT
+#define DWARF_VERSION_DEFAULT 5
 #endif
 
 #ifndef USED_FOR_TARGET

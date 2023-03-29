@@ -1,0 +1,497 @@
+(* PCSymBuild.def pass C symbol creation.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE PCSymBuild ;
+
+(*
+   Title      : PCSymBuild
+   Author     : Gaius Mulley
+   System     : UNIX (GNU Modula-2)
+   Description: provides scope mainstance for Pass C it also resolves
+                the import/export symbols and assigns types to constructors.
+*)
+
+EXPORT QUALIFIED PCStartBuildDefModule,
+                 PCEndBuildDefModule,
+                 PCStartBuildImpModule,
+                 PCEndBuildImpModule,
+                 PCStartBuildProgModule,
+                 PCEndBuildProgModule,
+                 PCStartBuildInnerModule,
+                 PCEndBuildInnerModule,
+                 PCBuildProcedureHeading,
+                 PCStartBuildProcedure,
+                 PCEndBuildProcedure,
+                 BuildNulName,
+                 BuildConst,
+                 PCBuildImportOuterModule,
+                 PCBuildImportInnerModule,
+                 StartDesConst,
+                 EndDesConst,
+                 BuildRelationConst,
+                 BuildUnaryConst,
+                 BuildBinaryConst,
+                 PushInConstructor,
+                 PopInConstructor,
+                 SkipConst,
+                 PushConstType,
+                 PushConstAttributeType,
+                 PushConstAttributePairType,
+                 PushConstructorCastType,
+                 PushRType,
+                 PushConstFunctionType,
+                 PushIntegerType,
+                 PushStringType,
+                 ResolveConstTypes ;
+
+
+(*
+   StartBuildDefinitionModule - Creates a definition module and starts
+                                a new scope.
+
+                                The Stack is expected:
+
+                                Entry                 Exit
+
+                         Ptr ->                                     <- Ptr
+                                +------------+        +-----------+
+                                | NameStart  |        | NameStart |
+                                |------------|        |-----------|
+
+*)
+
+PROCEDURE PCStartBuildDefModule ;
+
+
+(*
+   EndBuildDefinitionModule - Destroys the definition module scope and
+                              checks for correct name.
+
+                              The Stack is expected:
+
+                              Entry                 Exit
+
+                       Ptr ->
+                              +------------+        +-----------+
+                              | NameEnd    |        |           |
+                              |------------|        |-----------|
+                              | NameStart  |        |           | <- Ptr
+                              |------------|        |-----------|
+*)
+
+PROCEDURE PCEndBuildDefModule ;
+
+
+(*
+   StartBuildImplementationModule - Creates an implementation module and starts
+                                    a new scope.
+
+                                    The Stack is expected:
+
+                                    Entry                 Exit
+
+                             Ptr ->                                     <- Ptr
+                                    +------------+        +-----------+
+                                    | NameStart  |        | NameStart |
+                                    |------------|        |-----------|
+
+*)
+
+PROCEDURE PCStartBuildImpModule ;
+
+
+(*
+   EndBuildImplementationModule - Destroys the implementation module scope and
+                                  checks for correct name.
+
+                                  The Stack is expected:
+
+                                  Entry                 Exit
+
+                           Ptr ->
+                                  +------------+        +-----------+
+                                  | NameEnd    |        |           |
+                                  |------------|        |-----------|
+                                  | NameStart  |        |           | <- Ptr
+                                  |------------|        |-----------|
+*)
+
+PROCEDURE PCEndBuildImpModule ;
+
+
+(*
+   StartBuildProgramModule - Creates a program module and starts
+                             a new scope.
+
+                             The Stack is expected:
+
+                             Entry                 Exit
+
+                      Ptr ->                                     <- Ptr
+                             +------------+        +-----------+
+                             | NameStart  |        | NameStart |
+                             |------------|        |-----------|
+
+*)
+
+PROCEDURE PCStartBuildProgModule ;
+
+
+(*
+   EndBuildProgramModule - Destroys the program module scope and
+                           checks for correct name.
+
+                           The Stack is expected:
+
+                           Entry                 Exit
+
+                    Ptr ->
+                           +------------+        +-----------+
+                           | NameEnd    |        |           |
+                           |------------|        |-----------|
+                           | NameStart  |        |           | <- Ptr
+                           |------------|        |-----------|
+*)
+
+PROCEDURE PCEndBuildProgModule ;
+
+
+(*
+   StartBuildInnerModule - Creates an Inner module and starts
+                           a new scope.
+
+                           The Stack is expected:
+
+                           Entry                 Exit
+
+                    Ptr ->                                     <- Ptr
+                           +------------+        +-----------+
+                           | NameStart  |        | NameStart |
+                           |------------|        |-----------|
+
+*)
+
+PROCEDURE PCStartBuildInnerModule ;
+
+
+(*
+   EndBuildInnermModule - Destroys the Inner module scope and
+                          checks for correct name.
+
+                          The Stack is expected:
+
+                          Entry                 Exit
+
+                   Ptr ->
+                          +------------+        +-----------+
+                          | NameEnd    |        |           |
+                          |------------|        |-----------|
+                          | NameStart  |        |           | <- Ptr
+                          |------------|        |-----------|
+*)
+
+PROCEDURE PCEndBuildInnerModule ;
+
+
+(*
+   BuildProcedureHeading - Builds a procedure heading for the definition
+                           module procedures.
+
+                           Operation only performed if compiling a
+                           definition module.
+
+                           The Stack:
+
+                           Entry                       Exit
+
+                    Ptr ->
+                           +------------+
+                           | ProcSym    |              Empty
+                           |------------|
+
+*)
+
+PROCEDURE PCBuildProcedureHeading ;
+
+
+(*
+   StartBuildProcedure - Builds a Procedure.
+
+                         The Stack:
+
+                         Entry                 Exit
+
+                                                              <- Ptr
+                                               +------------+
+                  Ptr ->                       | ProcSym    |
+                         +------------+        |------------|
+                         | Name       |        | Name       |
+                         |------------|        |------------|
+*)
+
+PROCEDURE PCStartBuildProcedure ;
+
+
+(*
+   EndBuildProcedure - Ends building a Procedure.
+                       It checks the start procedure name matches the end
+                       procedure name.
+
+                       The Stack:
+
+
+                       Entry                 Exit
+
+                Ptr ->
+                       +------------+
+                       | NameEnd    |
+                       |------------|
+                       | ProcSym    |
+                       |------------|
+                       | NameStart  |
+                       |------------|
+                                             Empty
+*)
+
+PROCEDURE PCEndBuildProcedure ;
+
+
+(*
+   BuildImportOuterModule - Builds imported identifiers into an outer module
+                            from a definition module.
+
+                            The Stack is expected:
+
+                            Entry           OR    Entry
+
+                     Ptr ->                Ptr ->
+                            +------------+        +-----------+
+                            | #          |        | #         |
+                            |------------|        |-----------|
+                            | Id1        |        | Id1       |
+                            |------------|        |-----------|
+                            .            .        .           .
+                            .            .        .           .
+                            .            .        .           .
+                            |------------|        |-----------|
+                            | Id#        |        | Id#       |
+                            |------------|        |-----------|
+                            | ImportTok  |        | Ident     |
+                            |------------|        |-----------|
+
+                            IMPORT Id1, .. Id# ;  FROM Ident IMPORT Id1 .. Id# ;
+
+
+                            Exit
+
+                            All above stack discarded
+*)
+
+PROCEDURE PCBuildImportOuterModule ;
+
+
+(*
+   BuildImportInnerModule - Builds imported identifiers into an inner module
+                            from the last level of module.
+
+                            The Stack is expected:
+
+                            Entry           OR    Entry
+
+                     Ptr ->                Ptr ->
+                            +------------+        +-----------+
+                            | #          |        | #         |
+                            |------------|        |-----------|
+                            | Id1        |        | Id1       |
+                            |------------|        |-----------|
+                            .            .        .           .
+                            .            .        .           .
+                            .            .        .           .
+                            |------------|        |-----------|
+                            | Id#        |        | Id#       |
+                            |------------|        |-----------|
+                            | ImportTok  |        | Ident     |
+                            |------------|        |-----------|
+
+                            IMPORT Id1, .. Id# ;  FROM Ident IMPORT Id1 .. Id# ;
+
+
+                                                  Error Condition
+                            Exit
+
+                            All above stack discarded
+*)
+
+PROCEDURE PCBuildImportInnerModule ;
+
+
+(*
+   BuildNulName - Pushes a NulKey onto the top of the stack.
+                  The Stack:
+
+
+                  Entry                    Exit
+
+                                                          <- Ptr
+                  Empty                    +------------+
+                                           | NulKey     |
+                                           |------------|
+*)
+
+PROCEDURE BuildNulName ;
+
+
+(*
+   BuildConst - builds a constant.
+                Stack
+
+                Entry                 Exit
+
+         Ptr ->                                      <- Ptr
+                +------------+        +------------+
+                | Name       |        | Sym        |
+                |------------+        |------------|
+*)
+
+PROCEDURE BuildConst ;
+
+
+(*
+   StartDesConst -
+*)
+
+PROCEDURE StartDesConst ;
+
+
+(*
+   EndDesConst -
+*)
+
+PROCEDURE EndDesConst ;
+
+
+(*
+   BuildRelationConst - builds a relationship binary operation.
+*)
+
+PROCEDURE BuildRelationConst ;
+
+
+(*
+   BuildUnaryConst - builds a unary operator node.
+*)
+
+PROCEDURE BuildUnaryConst ;
+
+
+(*
+   BuildBinaryConst - builds a binary operator node.
+*)
+
+PROCEDURE BuildBinaryConst ;
+
+
+(*
+   PushConstFunctionType -
+*)
+
+PROCEDURE PushConstFunctionType ;
+
+
+(*
+   PushIntegerType - pushes a ztype or char leaf.
+*)
+
+PROCEDURE PushIntegerType ;
+
+
+(*
+   PushRType -
+*)
+
+PROCEDURE PushRType ;
+
+
+(*
+   PushStringType -
+*)
+
+PROCEDURE PushStringType ;
+
+
+(*
+   SkipConst - returns an alias to constant, sym, if one exists.
+               Otherwise sym is returned.
+*)
+
+PROCEDURE SkipConst (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PushConstType - pushes a constant to the expression stack.
+*)
+
+PROCEDURE PushConstType ;
+
+
+(*
+   PushConstAttributeType -
+*)
+
+PROCEDURE PushConstAttributeType ;
+
+
+(*
+   PushConstAttributePairType -
+*)
+
+PROCEDURE PushConstAttributePairType ;
+
+
+(*
+   PushConstructorCastType -
+*)
+
+PROCEDURE PushConstructorCastType ;
+
+
+(*
+   PushInConstructor -
+*)
+
+PROCEDURE PushInConstructor ;
+
+
+(*
+   PopInConstructor -
+*)
+
+PROCEDURE PopInConstructor ;
+
+
+(*
+   ResolveConstTypes - resolves the types of all designator declared constants.
+*)
+
+PROCEDURE ResolveConstTypes ;
+
+
+END PCSymBuild.

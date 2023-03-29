@@ -1,6 +1,6 @@
 /* Report error messages, build initializers, and perform
    some front-end optimizations for C++ compiler.
-   Copyright (C) 1987-2022 Free Software Foundation, Inc.
+   Copyright (C) 1987-2023 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -597,7 +597,7 @@ split_nonconstant_init_1 (tree dest, tree init, bool last,
 		    if (prev == field_index)
 		      break;
 		    tree ptype = TREE_TYPE (prev);
-		    if (type_build_dtor_call (ptype))
+		    if (TYPE_P (ptype) && type_build_dtor_call (ptype))
 		      {
 			tree pcref = build3 (COMPONENT_REF, ptype, dest, prev,
 					     NULL_TREE);
@@ -649,7 +649,7 @@ split_nonconstant_init_1 (tree dest, tree init, bool last,
 		  else
 		    {
 		    build_init:
-		      code = build2 (INIT_EXPR, inner_type, sub, value);
+		      code = cp_build_init_expr (sub, value);
 		    }
 		  code = build_stmt (input_location, EXPR_STMT, code);
 		  add_stmt (code);
@@ -764,7 +764,7 @@ split_nonconstant_init (tree dest, tree init)
 	}
       else if (init)
 	{
-	  tree ie = build2 (INIT_EXPR, void_type_node, dest, init);
+	  tree ie = cp_build_init_expr (dest, init);
 	  code = add_stmt_to_compound (ie, code);
 	}
     }
@@ -773,7 +773,7 @@ split_nonconstant_init (tree dest, tree init)
     code = build_vec_init (dest, NULL_TREE, init, /*value-init*/false,
 			   /*from array*/1, tf_warning_or_error);
   else
-    code = build2 (INIT_EXPR, TREE_TYPE (dest), dest, init);
+    code = cp_build_init_expr (dest, init);
 
   return code;
 }
@@ -997,12 +997,25 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain,
   else if (TREE_CODE (ftype) == REAL_TYPE
 	   && TREE_CODE (type) == REAL_TYPE)
     {
-      if ((same_type_p (ftype, long_double_type_node)
-	   && (same_type_p (type, double_type_node)
-	       || same_type_p (type, float_type_node)))
-	  || (same_type_p (ftype, double_type_node)
-	      && same_type_p (type, float_type_node))
-	  || (TYPE_PRECISION (type) < TYPE_PRECISION (ftype)))
+      if ((extended_float_type_p (ftype) || extended_float_type_p (type))
+	  ? /* "from a floating-point type T to another floating-point type
+	       whose floating-point conversion rank is neither greater than
+	       nor equal to that of T".
+	       So, it is ok if
+	       cp_compare_floating_point_conversion_ranks (ftype, type)
+	       returns -2 (type has greater conversion rank than ftype)
+	       or [-1..1] (type has equal conversion rank as ftype, possibly
+	       different subrank.  Only do this if at least one of the
+	       types is extended floating-point type, otherwise keep doing
+	       what we did before (for the sake of non-standard
+	       backend types).  */
+	    cp_compare_floating_point_conversion_ranks (ftype, type) >= 2
+	  : ((same_type_p (ftype, long_double_type_node)
+	      && (same_type_p (type, double_type_node)
+		  || same_type_p (type, float_type_node)))
+	     || (same_type_p (ftype, double_type_node)
+		 && same_type_p (type, float_type_node))
+	     || (TYPE_PRECISION (type) < TYPE_PRECISION (ftype))))
 	{
 	  if (TREE_CODE (init) == REAL_CST)
 	    {
@@ -1118,6 +1131,15 @@ array_string_literal_compatible_p (tree type, tree init)
   if (ordinary_char_type_p (to_char_type)
       && ordinary_char_type_p (from_char_type))
     return true;
+
+  /* P2513 (C++20/C++23): "an array of char or unsigned char may
+     be initialized by a UTF-8 string literal, or by such a string
+     literal enclosed in braces."  */
+  if (from_char_type == char8_type_node
+      && (to_char_type == char_type_node
+	  || to_char_type == unsigned_char_type_node))
+    return true;
+
   return false;
 }
 
@@ -1442,6 +1464,7 @@ digest_nsdmi_init (tree decl, tree init, tsubst_flags_t complain)
       && CP_AGGREGATE_TYPE_P (type))
     init = reshape_init (type, init, complain);
   init = digest_init_flags (type, init, flags, complain);
+  set_target_expr_eliding (init);
 
   /* We may have temporary materialization in a NSDMI, if the initializer
      has something like A{} in it.  Digesting the {} could have introduced
@@ -1520,6 +1543,7 @@ massage_init_elt (tree type, tree init, int nested, int flags,
       tree t = fold_non_dependent_init (init, complain);
       if (TREE_CONSTANT (t))
 	init = t;
+      set_target_expr_eliding (init);
     }
   return init;
 }
@@ -1749,6 +1773,13 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	    {
 	      gcc_assert (ce->value);
 	      next = massage_init_elt (fldtype, next, nested, flags, complain);
+	      /* We can't actually elide the temporary when initializing a
+		 potentially-overlapping field from a function that returns by
+		 value.  */
+	      if (ce->index
+		  && TREE_CODE (next) == TARGET_EXPR
+		  && unsafe_copy_elision_p (ce->index, next))
+		TARGET_EXPR_ELIDING_P (next) = false;
 	      ++idx;
 	    }
 	}
@@ -1782,6 +1813,9 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 	     a class, just build one up; if it's an array, recurse.  */
 	  next = build_constructor (init_list_type_node, NULL);
 	  next = massage_init_elt (fldtype, next, nested, flags, complain);
+	  if (TREE_CODE (next) == TARGET_EXPR
+	      && unsafe_copy_elision_p (field, next))
+	    TARGET_EXPR_ELIDING_P (next) = false;
 
 	  /* Warn when some struct elements are implicitly initialized.  */
 	  if ((complain & tf_warning)
@@ -2704,4 +2738,42 @@ require_complete_eh_spec_types (tree fntype, tree decl)
 		   decl);
 	}
     }
+}
+
+/* Record that any TARGET_EXPR in T are going to be elided in
+   cp_gimplify_init_expr (or sooner).  */
+
+void
+set_target_expr_eliding (tree t)
+{
+  if (!t)
+    return;
+  switch (TREE_CODE (t))
+    {
+    case TARGET_EXPR:
+      TARGET_EXPR_ELIDING_P (t) = true;
+      break;
+    case COMPOUND_EXPR:
+      set_target_expr_eliding (TREE_OPERAND (t, 1));
+      break;
+    case COND_EXPR:
+      set_target_expr_eliding (TREE_OPERAND (t, 1));
+      set_target_expr_eliding (TREE_OPERAND (t, 2));
+      break;
+
+    default:
+      break;
+    }
+}
+
+/* Call the above in the process of building an INIT_EXPR.  */
+
+tree
+cp_build_init_expr (location_t loc, tree target, tree init)
+{
+  set_target_expr_eliding (init);
+  tree ie = build2_loc (loc, INIT_EXPR, TREE_TYPE (target),
+			target, init);
+  TREE_SIDE_EFFECTS (ie) = true;
+  return ie;
 }

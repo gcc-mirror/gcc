@@ -1,3 +1,60 @@
+2023-03-24  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR libgcc/108891
+	* config/linux/aarch64/atomic_16.S: Fix libat_load_16_i1.
+	Add comments describing the memory order.
+
+2023-03-03  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/cas_n.c: New file.
+	* config/s390/load_n.c: New file.
+	* config/s390/store_n.c: New file.
+
+2023-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure.tgt (config_path) [target_thread_file=single]:
+	Use 'mingw' config.
+
+2023-01-07  LIU Hao  <lh_mouse@126.com>
+
+	PR middle-end/108300
+	* config/mingw/lock.c: Define `WIN32_LEAN_AND_MEAN` before
+	<windows.h>.
+
+2022-11-16  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Re-generate.
+
+2022-11-15  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* Makefile.in: Regenerated with automake 1.15.1.
+	* Makefile.am: Add atomic_16.S for AArch64.
+	* configure.tgt: Disable outline atomics in AArch64 build.
+	* config/linux/aarch64/atomic_16.S: New file - implementation of
+	ifuncs for 16-byte atomics.
+	* config/linux/aarch64/host-config.h: Enable ifuncs, use LSE
+	(HWCAP_ATOMICS) for 1-8-byte atomics and LSE2 (HWCAP_USCAT) for
+	16-byte atomics.
+
+2022-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/104688
+	* config/x86/init.c (__libat_feat1_init): Don't clear
+	bit_AVX on AMD CPUs.
+
+2022-10-19  LIU Hao  <lh_mouse@126.com>
+
+	* configure.tgt: Add new case for `mcf` thread model
+
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* configure: Regenerate.
+
 2022-08-30  Martin Liska  <mliska@suse.cz>
 
 	* testsuite/Makefile.in: Regenerate.
@@ -660,7 +717,7 @@
 
 	* Initial commit.
 
-Copyright (C) 2012-2022 Free Software Foundation, Inc.
+Copyright (C) 2012-2023 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

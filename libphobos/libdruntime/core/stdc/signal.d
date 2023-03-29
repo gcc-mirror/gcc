@@ -15,7 +15,6 @@
 module core.stdc.signal;
 
 extern (C):
-@system:
 nothrow:
 @nogc:
 

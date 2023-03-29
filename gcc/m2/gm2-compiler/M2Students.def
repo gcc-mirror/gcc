@@ -1,0 +1,54 @@
+(* M2Students.def checks for new programmer errors.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2Students ;
+
+(*
+    Title      : M2Students
+    Author     : Gaius Mulley
+    System     : UNIX (gm2)
+    Date       : Wed Nov 27 22:11:22 1996
+    Description: checks for new programmer errors.
+*)
+
+FROM SYSTEM IMPORT ADDRESS ;
+FROM NameKey IMPORT Name ;
+EXPORT QUALIFIED StudentVariableCheck, CheckForVariableThatLooksLikeKeyword ;
+
+
+(*
+   CheckForVariableThatLooksLikeKeyword - checks for a identifier that looks the same
+                                          as a keyword except for its case.
+*)
+
+PROCEDURE CheckForVariableThatLooksLikeKeyword (name: Name) ;
+
+
+(*
+   StudentVariableCheck - checks to see that variables are quite different from keywords and
+                          issues an message if they are not. It ignores case so to catch
+                          1st and 2nd semester programming errors.
+*)
+
+PROCEDURE StudentVariableCheck ;
+
+
+END M2Students.

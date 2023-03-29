@@ -1,5 +1,5 @@
 /* Data structure definitions for a generic GCC target.
-   Copyright (C) 2001-2022 Free Software Foundation, Inc.
+   Copyright (C) 2001-2023 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -259,6 +259,8 @@ enum poly_value_estimate_kind
   POLY_VALUE_LIKELY
 };
 
+typedef void (*emit_support_tinfos_callback) (tree);
+
 extern bool verify_type_context (location_t, type_context_kind, const_tree,
 				 bool = false);
 
@@ -278,7 +280,7 @@ extern struct gcc_target targetm;
    runtime value is needed for correctness, since the function only
    provides a rough guess.  */
 
-static inline HOST_WIDE_INT
+inline HOST_WIDE_INT
 estimated_poly_value (poly_int64 x,
 		      poly_value_estimate_kind kind = POLY_VALUE_LIKELY)
 {
@@ -294,7 +296,7 @@ estimated_poly_value (poly_int64 x,
 #define CUMULATIVE_ARGS_MAGIC ((void *) &targetm.calls)
 #endif
 
-static inline CUMULATIVE_ARGS *
+inline CUMULATIVE_ARGS *
 get_cumulative_args (cumulative_args_t arg)
 {
 #if CHECKING_P
@@ -303,7 +305,7 @@ get_cumulative_args (cumulative_args_t arg)
   return (CUMULATIVE_ARGS *) arg.p;
 }
 
-static inline cumulative_args_t
+inline cumulative_args_t
 pack_cumulative_args (CUMULATIVE_ARGS *arg)
 {
   cumulative_args_t ret;

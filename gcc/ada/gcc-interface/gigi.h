@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2022, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2023, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -911,6 +911,34 @@ extern tree build_call_alloc_dealloc (tree gnu_obj, tree gnu_size,
 extern tree build_allocator (tree type, tree init, tree result_type,
                              Entity_Id gnat_proc, Entity_Id gnat_pool,
                              Node_Id gnat_node, bool);
+
+/* Build a load of SRC using the storage model of GNAT_SMO.  */
+extern tree build_storage_model_load (Entity_Id gnat_smo, tree src);
+
+/* Build a load of SRC into DEST using the storage model of GNAT_SMO.
+   If SIZE is specified, use it, otherwise use the size of SRC.  */
+extern tree build_storage_model_load (Entity_Id gnat_smo, tree dest, tree src,
+				      tree size = NULL_TREE);
+
+/* Build a store of SRC into DEST using the storage model of GNAT_SMO.
+   If SIZE is specified, use it, otherwise use the size of DEST.  */
+extern tree build_storage_model_store (Entity_Id gnat_smo, tree dest, tree src,
+				       tree size = NULL_TREE);
+
+/* Given a tree EXP, instantiate occurrences of LOAD_EXPR in it and associate
+   them with the storage model of GNAT_SMO.  */
+extern tree instantiate_load_in_expr (tree exp, Entity_Id gnat_smo);
+
+/* This macro calls the above function but short-circuits the common
+   case of a constant to save time and also checks for NULL.  */
+
+#define INSTANTIATE_LOAD_IN_EXPR(EXP, GNAT_SMO) \
+  ((EXP) == NULL_TREE || TREE_CONSTANT (EXP) ? (EXP)	\
+   : instantiate_load_in_expr (EXP, GNAT_SMO))
+
+/* Given an array or slice reference, instantiate occurrences of LOAD_EXPR in
+   it and associate them with the storage model of GNAT_SMO.  */
+extern void instantiate_load_in_array_ref (tree ref, Entity_Id gnat_smo);
 
 /* Indicate that we need to take the address of T and that it therefore
    should not be allocated in a register.  Returns true if successful.  */

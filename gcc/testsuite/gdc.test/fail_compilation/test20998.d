@@ -6,7 +6,7 @@ TEST_OUTPUT:
 fail_compilation/test20998.d(76): Error: undefined identifier `invalid`
 X x = { invalid, 2, "asd" };
         ^
-fail_compilation/test20998.d(76): Error: too many initializers for `X`
+fail_compilation/test20998.d(76): Error: too many initializers for `X` with 2 fields
 X x = { invalid, 2, "asd" };
                     ^
 fail_compilation/test20998.d(83): Error: cannot implicitly convert expression `"a"` of type `string` to `int`
@@ -15,7 +15,7 @@ X2 x2 = { ptr: null, "a", ptr: 2, 444 };
 fail_compilation/test20998.d(83): Error: duplicate initializer for field `ptr`
 X2 x2 = { ptr: null, "a", ptr: 2, 444 };
                                ^
-fail_compilation/test20998.d(83): Error: too many initializers for `X2`
+fail_compilation/test20998.d(83): Error: too many initializers for `X2` with 3 fields
 X2 x2 = { ptr: null, "a", ptr: 2, 444 };
                                   ^
 fail_compilation/test20998.d(90): Error: overlapping initialization for field `ptr` and `x`
@@ -27,7 +27,7 @@ X3 x3 = { ptr: null, "a", ptr: 2, 444 };
 fail_compilation/test20998.d(90): Error: duplicate initializer for field `ptr`
 X3 x3 = { ptr: null, "a", ptr: 2, 444 };
                                ^
-fail_compilation/test20998.d(90): Error: too many initializers for `X3`
+fail_compilation/test20998.d(90): Error: too many initializers for `X3` with 3 fields
 X3 x3 = { ptr: null, "a", ptr: 2, 444 };
                                   ^
 fail_compilation/test20998.d(98): Error: field `X4.ptr` cannot assign to misaligned pointers in `@safe` code
@@ -36,7 +36,7 @@ fail_compilation/test20998.d(98): Error: field `X4.ptr` cannot assign to misalig
 fail_compilation/test20998.d(98): Error: cannot implicitly convert expression `"a"` of type `string` to `int`
     X4 x4 = { ptr: null, "a", 444, ptr: 2, true };
                          ^
-fail_compilation/test20998.d(98): Error: too many initializers for `X4`
+fail_compilation/test20998.d(98): Error: too many initializers for `X4` with 2 fields
     X4 x4 = { ptr: null, "a", 444, ptr: 2, true };
                               ^
 fail_compilation/test20998.d(102):        called from here: `test()`
@@ -51,16 +51,16 @@ X2 a5 = { ptr: 1, ptr: 2, ptr: 444, ptr: 555 };
 fail_compilation/test20998.d(104): Error: duplicate initializer for field `ptr`
 X2 a5 = { ptr: 1, ptr: 2, ptr: 444, ptr: 555 };
                                ^
-fail_compilation/test20998.d(104): Error: too many initializers for `X2`
+fail_compilation/test20998.d(104): Error: too many initializers for `X2` with 3 fields
 X2 a5 = { ptr: 1, ptr: 2, ptr: 444, ptr: 555 };
                                          ^
-fail_compilation/test20998.d(107): Error: too many initializers for `X2`
+fail_compilation/test20998.d(107): Error: too many initializers for `X2` with 3 fields
 X2 c6 = { null, 2, true, null };
                          ^
 fail_compilation/test20998.d(116): Error: cannot implicitly convert expression `1` of type `int` to `immutable(char*)`
     immutable Struct iStruct = {1, &ch};
                                 ^
-fail_compilation/test20998.d(116): Error: too many initializers for `Struct`
+fail_compilation/test20998.d(116): Error: too many initializers for `Struct` with 1 field
     immutable Struct iStruct = {1, &ch};
                                    ^
 fail_compilation/test20998.d(120):        called from here: `test2()`

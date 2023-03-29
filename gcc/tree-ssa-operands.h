@@ -1,5 +1,5 @@
 /* SSA operand management for trees.
-   Copyright (C) 2003-2022 Free Software Foundation, Inc.
+   Copyright (C) 2003-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -106,14 +106,14 @@ extern void debug_immediate_uses_for (tree var);
 extern void unlink_stmt_vdef (gimple *);
 
 /* Return the tree pointed-to by USE.  */
-static inline tree
+inline tree
 get_use_from_ptr (use_operand_p use)
 {
   return *(use->use);
 }
 
 /* Return the tree pointed-to by DEF.  */
-static inline tree
+inline tree
 get_def_from_ptr (def_operand_p def)
 {
   return *def;

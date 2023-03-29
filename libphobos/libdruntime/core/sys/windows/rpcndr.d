@@ -8,7 +8,6 @@
  */
 module core.sys.windows.rpcndr;
 version (Windows):
-@system:
 pragma(lib, "rpcrt4");
 
 /* Translation notes:

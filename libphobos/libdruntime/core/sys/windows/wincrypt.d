@@ -9,7 +9,6 @@
  */
 module core.sys.windows.wincrypt;
 version (Windows):
-@system:
 pragma(lib, "advapi32");
 
 version (ANSI) {} else version = Unicode;

@@ -1,4 +1,4 @@
-/* Copyright (C) 2019-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2019-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -124,10 +124,10 @@ _mm256_castph256_ph128 (__m256h __A)
 {
   union
   {
-    __m128h a[2];
-    __m256h v;
-  } u = { .v = __A };
-  return u.a[0];
+    __m128h __a[2];
+    __m256h __v;
+  } __u = { .__v = __A };
+  return __u.__a[0];
 }
 
 extern __inline __m256h
@@ -136,11 +136,11 @@ _mm256_castph128_ph256 (__m128h __A)
 {
   union
   {
-    __m128h a[2];
-    __m256h v;
-  } u;
-  u.a[0] = __A;
-  return u.v;
+    __m128h __a[2];
+    __m256h __v;
+  } __u;
+  __u.__a[0] = __A;
+  return __u.__v;
 }
 
 extern __inline __m256h
@@ -3317,11 +3317,11 @@ _mm256_set1_pch (_Float16 _Complex __A)
 {
   union
   {
-    _Float16 _Complex a;
-    float b;
-  } u = { .a = __A };
+    _Float16 _Complex __a;
+    float __b;
+  } __u = { .__a = __A };
 
-  return (__m256h) _mm256_set1_ps (u.b);
+  return (__m256h) _mm256_set1_ps (__u.__b);
 }
 
 extern __inline __m128h
@@ -3330,11 +3330,11 @@ _mm_set1_pch (_Float16 _Complex __A)
 {
   union
   {
-    _Float16 _Complex a;
-    float b;
-  } u = { .a = __A };
+    _Float16 _Complex __a;
+    float __b;
+  } __u = { .__a = __A };
 
-  return (__m128h) _mm_set1_ps (u.b);
+  return (__m128h) _mm_set1_ps (__u.__b);
 }
 
 // intrinsics below are alias for f*mul_*ch

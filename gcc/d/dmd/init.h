@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -78,6 +78,7 @@ public:
     unsigned dim;       // length of array being initialized
     Type *type;         // type that array will be used to initialize
     bool sem;           // true if semantic() is run
+    bool isCarray;      // C array semantics
 
     bool isAssociativeArray() const;
     Expression *toAssocArrayLiteral();

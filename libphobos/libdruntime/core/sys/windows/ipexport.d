@@ -9,7 +9,6 @@
  */
 module core.sys.windows.ipexport;
 version (Windows):
-@system:
 
 import core.sys.windows.windef;
 

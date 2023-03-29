@@ -1,5 +1,5 @@
 /* Chains of recurrences.
-   Copyright (C) 2003-2022 Free Software Foundation, Inc.
+   Copyright (C) 2003-2023 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <pop@cri.ensmp.fr>
 
 This file is part of GCC.
@@ -622,7 +622,10 @@ chrec_apply (unsigned var,
 	  /* "{a, +, b} (x)"  ->  "a + b*x".  */
 	  else if (operand_equal_p (CHREC_LEFT (chrec), chrecr)
 		   && TREE_CODE (x) == PLUS_EXPR
-		   && integer_all_onesp (TREE_OPERAND (x, 1)))
+		   && integer_all_onesp (TREE_OPERAND (x, 1))
+		   && !POINTER_TYPE_P (type)
+		   && TYPE_PRECISION (TREE_TYPE (x))
+		      >= TYPE_PRECISION (type))
 	    {
 	      /* We know the number of iterations can't be negative.
 		 So {a, +, a} (x-1) -> "a*x".  */

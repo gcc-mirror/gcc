@@ -1,5 +1,5 @@
 /* Target definitions for Darwin (Mac OS X) systems.
-   Copyright (C) 1989-2022 Free Software Foundation, Inc.
+   Copyright (C) 1989-2023 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -447,7 +447,12 @@ extern GTY(()) int darwin_ms_struct;
    %{static|static-libgcc|static-libphobos:%:replace-outfile(-lgphobos libgphobos.a%s)}\
    %{static|static-libgcc|static-libstdc++|static-libgfortran:%:replace-outfile(-lgomp libgomp.a%s)}\
    %{static|static-libgcc|static-libstdc++:%:replace-outfile(-lstdc++ libstdc++.a%s)}\
-   %{force_cpusubtype_ALL:-arch %(darwin_arch)} \
+   %{static|static-libgm2:%:replace-outfile(-lm2pim libm2pim.a%s)}\
+   %{static|static-libgm2:%:replace-outfile(-lm2iso libm2iso.a%s)}\
+   %{static|static-libgm2:%:replace-outfile(-lm2min libm2min.a%s)}\
+   %{static|static-libgm2:%:replace-outfile(-lm2log libm2log.a%s)}\
+   %{static|static-libgm2:%:replace-outfile(-lm2cor libm2cor.a%s)}\
+  %{force_cpusubtype_ALL:-arch %(darwin_arch)} \
    %{!force_cpusubtype_ALL:-arch %(darwin_subarch)} "\
    LINK_SYSROOT_SPEC \
   "%{mmacosx-version-min=*:-macosx_version_min %*} \

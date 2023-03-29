@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003-2022 Free Software Foundation, Inc.
+   Copyright (C) 2003-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -53,6 +53,8 @@ extern scalar_int_mode default_unwind_word_mode (void);
 extern unsigned HOST_WIDE_INT default_shift_truncation_mask
   (machine_mode);
 extern unsigned int default_min_divisions_for_recip_mul (machine_mode);
+extern bool default_preferred_div_as_shifts_over_mult
+  (const_tree);
 extern int default_mode_rep_extended (scalar_int_mode, scalar_int_mode);
 
 extern tree default_stack_protect_guard (void);
@@ -97,6 +99,8 @@ extern tree default_builtin_md_vectorized_function (tree, tree, tree);
 extern int default_builtin_vectorization_cost (enum vect_cost_for_stmt, tree, int);
 
 extern tree default_builtin_reciprocal (tree);
+
+extern void default_emit_support_tinfos (emit_support_tinfos_callback);
 
 extern HOST_WIDE_INT default_static_rtx_alignment (machine_mode);
 extern HOST_WIDE_INT default_constant_alignment (const_tree, HOST_WIDE_INT);
@@ -178,6 +182,8 @@ extern void default_target_option_override (void);
 extern void hook_void_bitmap (bitmap);
 extern int default_reloc_rw_mask (void);
 extern bool default_generate_pic_addr_diff_vec (void);
+extern void default_asm_out_constructor (rtx, int);
+extern void default_asm_out_destructor (rtx, int);
 extern tree default_mangle_decl_assembler_name (tree, tree);
 extern tree default_emutls_var_fields (tree, tree *);
 extern tree default_emutls_var_init (tree, tree, tree);
@@ -229,9 +235,6 @@ extern bool default_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 						    bool);
 extern int default_compare_by_pieces_branch_ratio (machine_mode);
 
-extern void default_print_patchable_function_entry_1 (FILE *,
-						      unsigned HOST_WIDE_INT,
-						      bool, unsigned int);
 extern void default_print_patchable_function_entry (FILE *,
 						    unsigned HOST_WIDE_INT,
 						    bool);

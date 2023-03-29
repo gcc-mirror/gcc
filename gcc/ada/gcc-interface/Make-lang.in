@@ -1,7 +1,5 @@
 # Top level -*- makefile -*- fragment for GNU Ada (GNAT).
-#   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-#   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
-#   Free Software Foundation, Inc.
+# Copyright (C) 2009-2023 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -260,11 +258,20 @@ else
   endif
 endif
 
+ifneq ($(filter darwin9% darwin8%,$(host_os)),)
+# gnat1 uses exceptions which is incompatible with statically-linked libgcc
+# on Darwin8 and 9, since gnat1 also pulls in libraries linked with the system
+# unwinder.
+GCC_LINKERFLAGS = $(filter-out -Werror -static-libgcc, $(ALL_LINKERFLAGS))
+GCC_LDFLAGS = $(filter-out -static-libgcc, $(LDFLAGS))
+else
 # Strip -Werror during linking for the LTO bootstrap
 GCC_LINKERFLAGS = $(filter-out -Werror, $(ALL_LINKERFLAGS))
+GCC_LDFLAGS = $(LDFLAGS)
+endif
 
-GCC_LINK=$(LINKER) $(GCC_LINKERFLAGS) $(LDFLAGS)
-GCC_LLINK=$(LLINKER) $(GCC_LINKERFLAGS) $(LDFLAGS)
+GCC_LINK=$(LINKER) $(GCC_LINKERFLAGS) $(GCC_LDFLAGS)
+GCC_LLINK=$(LLINKER) $(GCC_LINKERFLAGS) $(GCC_LDFLAGS)
 
 # Lists of files for various purposes.
 
@@ -399,6 +406,7 @@ GNAT_ADA_OBJS =	\
  ada/sem_ch12.o	\
  ada/sem_ch13.o	\
  ada/sem_ch2.o	\
+ ada/accessibility.o	\
  ada/sem_ch3.o	\
  ada/sem_ch4.o	\
  ada/sem_ch5.o	\
@@ -601,7 +609,6 @@ GNATBIND_OBJS = \
  ada/osint-b.o    \
  ada/osint.o      \
  ada/output.o     \
- ada/restrict.o   \
  ada/rident.o     \
  ada/scans.o      \
  ada/scil_ll.o    \
@@ -629,6 +636,7 @@ GNATBIND_OBJS = \
  ada/uintp.o      \
  ada/uname.o      \
  ada/urealp.o     \
+ ada/warnsw.o     \
  ada/widechar.o   \
  ada/gnat.o       \
  ada/g-dynhta.o   \

@@ -1,5 +1,5 @@
 /* Post-reload compare elimination.
-   Copyright (C) 2010-2022 Free Software Foundation, Inc.
+   Copyright (C) 2010-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -254,7 +254,8 @@ find_flags_uses_in_insn (struct comparison *cmp, rtx_insn *insn)
 	x = PATTERN (insn);
 	if (GET_CODE (x) == PARALLEL)
 	  x = XVECEXP (x, 0, 0);
-	x = SET_SRC (x);
+	if (GET_CODE (x) == SET)
+	  x = SET_SRC (x);
 	if (GET_CODE (x) == IF_THEN_ELSE)
 	  x = XEXP (x, 0);
 	if (COMPARISON_P (x)

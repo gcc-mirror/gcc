@@ -1,5 +1,5 @@
 /* Fallback frame-state unwinder for Darwin.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -368,7 +368,7 @@ handle_syscall (_Unwind_FrameState *fs, const reg_unit gprs[32],
     return false;
 
 #define set_offset(r, addr)					\
-  (fs->regs.reg[r].how = REG_SAVED_OFFSET,			\
+  (fs->regs.how[r] = REG_SAVED_OFFSET,			\
    fs->regs.reg[r].loc.offset = (_Unwind_Ptr)(addr) - new_cfa)
 
   /* Restore even the registers that are not call-saved, since they

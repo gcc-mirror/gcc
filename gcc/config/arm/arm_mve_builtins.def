@@ -1,5 +1,5 @@
 /*  MVE builtin definitions for Arm.
-    Copyright  (C) 2019-2022 Free Software Foundation, Inc.
+    Copyright  (C) 2019-2023 Free Software Foundation, Inc.
     Contributed by Arm.
 
     This file is part of GCC.
@@ -71,11 +71,11 @@ VAR2 (UNOP_UNONE_NONE, vcvtaq_u, v8hi, v4si)
 VAR2 (UNOP_UNONE_IMM, vmvnq_n_u, v8hi, v4si)
 VAR1 (UNOP_UNONE_UNONE, vrev16q_u, v16qi)
 VAR1 (UNOP_UNONE_UNONE, vaddlvq_u, v4si)
-VAR1 (UNOP_UNONE_UNONE, vctp16q, hi)
-VAR1 (UNOP_UNONE_UNONE, vctp32q, hi)
-VAR1 (UNOP_UNONE_UNONE, vctp64q, hi)
-VAR1 (UNOP_UNONE_UNONE, vctp8q, hi)
-VAR1 (UNOP_UNONE_UNONE, vpnot, hi)
+VAR1 (UNOP_PRED_UNONE, vctp16q, v8bi)
+VAR1 (UNOP_PRED_UNONE, vctp32q, v4bi)
+VAR1 (UNOP_PRED_UNONE, vctp64q, v2qi)
+VAR1 (UNOP_PRED_UNONE, vctp8q, v16bi)
+VAR1 (UNOP_PRED_PRED, vpnot, v16bi)
 VAR2 (BINOP_NONE_NONE_NONE, vsubq_n_f, v8hf, v4sf)
 VAR2 (BINOP_NONE_NONE_NONE, vbrsrq_n_f, v8hf, v4sf)
 VAR2 (BINOP_NONE_NONE_IMM, vcvtq_n_to_f_s, v8hf, v4sf)
@@ -265,10 +265,10 @@ VAR2 (BINOP_NONE_NONE_IMM, vshllbq_n_s, v16qi, v8hi)
 VAR2 (BINOP_NONE_NONE_IMM, vorrq_n_s, v8hi, v4si)
 VAR2 (BINOP_NONE_NONE_IMM, vbicq_n_s, v8hi, v4si)
 VAR1 (BINOP_UNONE_UNONE_UNONE, vrmlaldavhq_u, v4si)
-VAR1 (BINOP_UNONE_UNONE_UNONE, vctp8q_m, hi)
-VAR1 (BINOP_UNONE_UNONE_UNONE, vctp64q_m, hi)
-VAR1 (BINOP_UNONE_UNONE_UNONE, vctp32q_m, hi)
-VAR1 (BINOP_UNONE_UNONE_UNONE, vctp16q_m, hi)
+VAR1 (BINOP_PRED_UNONE_PRED, vctp8q_m, v16bi)
+VAR1 (BINOP_PRED_UNONE_PRED, vctp64q_m, v2qi)
+VAR1 (BINOP_PRED_UNONE_PRED, vctp32q_m, v4bi)
+VAR1 (BINOP_PRED_UNONE_PRED, vctp16q_m, v8bi)
 VAR1 (BINOP_UNONE_UNONE_UNONE, vaddlvaq_u, v4si)
 VAR1 (BINOP_NONE_NONE_NONE, vrmlsldavhxq_s, v4si)
 VAR1 (BINOP_NONE_NONE_NONE, vrmlsldavhq_s, v4si)

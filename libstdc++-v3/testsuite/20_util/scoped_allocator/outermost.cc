@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2022 Free Software Foundation, Inc.
+// Copyright (C) 2016-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,6 +48,14 @@ struct nested_alloc : A
   nested_alloc() = default;
   template<typename U>
     nested_alloc(nested_alloc<U>) { }
+
+  // Need to customize rebind, otherwise nested_alloc<alloc<T>> gets rebound
+  // to nested_alloc<U>.
+  template<typename U>
+    struct rebind
+    {
+      using other = typename std::allocator_traits<A>::template rebind_alloc<U>;
+    };
 
   A& outer_allocator() { return *this; }
 

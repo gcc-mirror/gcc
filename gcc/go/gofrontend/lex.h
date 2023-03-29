@@ -561,7 +561,7 @@ class Lex
   gather_embed(const char*, const char*);
 
   // The input file name.
-  const char* input_file_name_;
+  const char* input_file_name_ ATTRIBUTE_UNUSED;
   // The input file.
   FILE* input_file_;
   // The object used to keep track of file names and line numbers.

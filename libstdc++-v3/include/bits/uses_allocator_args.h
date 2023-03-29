@@ -1,6 +1,6 @@
 // Utility functions for uses-allocator construction -*- C++ -*-
 
-// Copyright (C) 2019-2022 Free Software Foundation, Inc.
+// Copyright (C) 2019-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,7 +44,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
-    concept _Std_pair = __is_pair<_Tp>;
+    concept _Std_pair = __is_pair<remove_cv_t<_Tp>>;
 
 /** @addtogroup allocators
  *  @{
@@ -185,11 +185,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using _Tp1 = typename _Tp::first_type;
       using _Tp2 = typename _Tp::second_type;
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3527. uses_allocator_construction_args handles rvalue pairs
+      // of rvalue references incorrectly
       return std::make_tuple(piecewise_construct,
 	  std::uses_allocator_construction_args<_Tp1>(__a,
-	    std::move(__pr).first),
+	    std::get<0>(std::move(__pr))),
 	  std::uses_allocator_construction_args<_Tp2>(__a,
-	    std::move(__pr).second));
+	    std::get<1>(std::move(__pr))));
     }
 
 #if __cplusplus > 202002L
@@ -216,9 +219,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       return std::make_tuple(piecewise_construct,
 	  std::uses_allocator_construction_args<_Tp1>(__a,
-	    std::move(__pr).first),
+	    std::get<0>(std::move(__pr))),
 	  std::uses_allocator_construction_args<_Tp2>(__a,
-	    std::move(__pr).second));
+	    std::get<1>(std::move(__pr))));
     }
 #endif // C++23
 

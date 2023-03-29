@@ -9,7 +9,6 @@
  */
 module core.sys.windows.mciavi;
 version (Windows):
-@system:
 
 import core.sys.windows.mmsystem;
 

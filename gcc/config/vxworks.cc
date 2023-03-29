@@ -1,5 +1,5 @@
 /* Common VxWorks target definitions for GNU compiler.
-   Copyright (C) 2007-2022 Free Software Foundation, Inc.
+   Copyright (C) 2007-2023 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -164,16 +164,10 @@ vxworks_override_options (void)
   if (flag_pic > 0 && !TARGET_VXWORKS_RTP)
     error ("PIC is only supported for RTPs");
 
-  /* VxWorks comes with non-gdb debuggers which only support strict
-     dwarf up to certain version.  Default dwarf control to friendly
-     values for these.  */
-
+  /* VxWorks comes with non-gdb debuggers which only support strict dwarf
+     up to certain versions, as controlled by DWARF_VERSION_DEFAULT.  */
   if (!OPTION_SET_P (dwarf_strict))
     dwarf_strict = 1;
-
-  if (!OPTION_SET_P (dwarf_version))
-    dwarf_version = VXWORKS_DWARF_VERSION_DEFAULT;
-
 }
 
 /* We don't want to use library symbol __clear_cache on SR0640.  Avoid

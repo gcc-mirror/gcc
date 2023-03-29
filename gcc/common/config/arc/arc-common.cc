@@ -1,5 +1,5 @@
 /* Common hooks for Synopsys DesignWare ARC
-   Copyright (C) 1994-2022 Free Software Foundation, Inc.
+   Copyright (C) 1994-2023 Free Software Foundation, Inc.
    Contributor: Joern Rennecke <joern.rennecke@embecosm.com>
 		on behalf of Synopsys Inc.
 		Claudiu Zissulescu <Claudiu.Zissulescu@synopsys.com>
@@ -44,8 +44,6 @@ arc_option_init_struct (struct gcc_options *opts ATTRIBUTE_UNUSED)
 #define OPT_LEVELS_3_PLUS_SPEED_ONLY OPT_LEVELS_3_PLUS
 static const struct default_options arc_option_optimization_table[] =
   {
-    { OPT_LEVELS_ALL, OPT_mRcq, NULL, 1 },
-    { OPT_LEVELS_ALL, OPT_mRcw, NULL, 1 },
     { OPT_LEVELS_ALL, OPT_msize_level_, NULL, 1 },
     { OPT_LEVELS_ALL, OPT_mearly_cbranchsi, NULL, 1 },
     { OPT_LEVELS_ALL, OPT_mbbit_peephole, NULL, 1 },
@@ -56,7 +54,6 @@ static const struct default_options arc_option_optimization_table[] =
     { OPT_LEVELS_SIZE, OPT_fsection_anchors, NULL, 1 },
     { OPT_LEVELS_SIZE, OPT_mcase_vector_pcrel, NULL, 1 },
     { OPT_LEVELS_SIZE, OPT_msize_level_, NULL, 3 },
-    { OPT_LEVELS_SIZE, OPT_mmillicode, NULL, 1 },
     { OPT_LEVELS_SIZE, OPT_fif_conversion, NULL, 0 },
     { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
     { OPT_LEVELS_3_PLUS_SPEED_ONLY, OPT_msize_level_, NULL, 0 },

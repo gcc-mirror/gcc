@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2022 Free Software Foundation, Inc.
+// Copyright (C) 2018-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,7 +39,7 @@ struct X
   X() : val(1) { }
 
   X& operator+=(const X& x) { val += x.val; return *this; }
-  bool operator==(const X& x) { return val == x.val; }
+  bool operator==(const X& x) const { return val == x.val; }
 
   int val;
 };

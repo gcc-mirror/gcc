@@ -1,5 +1,5 @@
 /* Supporting functions for resolving DATA statement.
-   Copyright (C) 2002-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2023 Free Software Foundation, Inc.
    Contributed by Lifang Zeng <zlf605@hotmail.com>
 
 This file is part of GCC.
@@ -244,13 +244,6 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 		    "array-element nor a scalar-structure-component";
 
   symbol = lvalue->symtree->n.sym;
-  if (symbol->attr.flavor == FL_PARAMETER)
-    {
-      gfc_error ("PARAMETER %qs shall not appear in a DATA statement at %L",
-		 symbol->name, &lvalue->where);
-      return false;
-    }
-
   init = symbol->value;
   last_ts = &symbol->ts;
   last_con = NULL;

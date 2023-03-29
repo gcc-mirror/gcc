@@ -1,5 +1,5 @@
 # Make-lang.in -- Top level -*- makefile -*- fragment for the D frontend.
-# Copyright (C) 2006-2022 Free Software Foundation, Inc.
+# Copyright (C) 2006-2023 Free Software Foundation, Inc.
 
 # GCC is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -70,7 +70,7 @@ DPOSTCOMPILE = @mv $(@D)/$(DEPDIR)/$(*F).TPo $(@D)/$(DEPDIR)/$(*F).Po
 DLINKER = $(GDC) $(NO_PIE_FLAG) -lstdc++
 
 # Like LINKER, but use a mutex for serializing front end links.
-ifeq (@DO_LINK_MUTEX@,true)
+ifeq ($(DO_LINK_MUTEX),true)
 DLLINKER = $(SHELL) $(srcdir)/lock-and-run.sh linkfe.lck $(DLINKER)
 else
 DLLINKER = $(DLINKER)
@@ -124,6 +124,7 @@ D_FRONTEND_OBJS = \
 	d/dversion.o \
 	d/entity.o \
 	d/errors.o \
+	d/errorsink.o \
 	d/escape.o \
 	d/expression.o \
 	d/expressionsem.o \
@@ -147,6 +148,7 @@ D_FRONTEND_OBJS = \
 	d/json.o \
 	d/lambdacomp.o \
 	d/lexer.o \
+	d/location.o \
 	d/mtype.o \
 	d/mustuse.o \
 	d/nogc.o \
@@ -239,6 +241,7 @@ d21$(exeext): $(D_ALL_OBJS) attribs.o $(BACKEND) $(LIBDEPS) $(d.prev)
 
 D_TEXI_FILES = \
 	d/gdc.texi \
+	d/implement-d.texi \
 	$(gcc_docdir)/include/fdl.texi \
 	$(gcc_docdir)/include/gpl_v3.texi \
 	$(gcc_docdir)/include/gcc-common.texi \
@@ -252,16 +255,15 @@ doc/gdc.info: $(D_TEXI_FILES)
 	else true; fi
 
 doc/gdc.dvi: $(D_TEXI_FILES)
-	$(TEXI2DVI) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
+	$(TEXI2DVI) -I $(abs_docdir)/include -o $@ $<
 
 doc/gdc.pdf: $(D_TEXI_FILES)
-	$(TEXI2PDF) -I $(abs_docdir) -I $(abs_docdir)/include -o $@ $<
+	$(TEXI2PDF) -I $(abs_docdir)/include -o $@ $<
 
-$(build_htmldir)/d/index.html: $(D_TEXI_FILES)
+$(build_htmldir)/gdc/index.html: $(D_TEXI_FILES)
 	$(mkinstalldirs) $(@D)
 	rm -f $(@D)/*
-	$(TEXI2HTML) -I $(gcc_docdir) -I $(gcc_docdir)/include \
-		-I $(srcdir)/d -o $(@D) $<
+	$(TEXI2HTML) -I $(gcc_docdir)/include -I $(srcdir)/d -o $(@D) $<
 
 .INTERMEDIATE: gdc.pod
 
@@ -276,7 +278,7 @@ d.rest.encap:
 d.info: doc/gdc.info
 d.dvi: doc/gdc.dvi
 d.pdf: doc/gdc.pdf
-d.html: $(build_htmldir)/d/index.html
+d.html: $(build_htmldir)/gdc/index.html
 d.srcinfo: doc/gdc.info
 	-cp -p $^ $(srcdir)/doc
 d.srcextra:
@@ -340,10 +342,10 @@ d.install-dvi: doc/gdc.dvi
 	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(dvidir)/gcc/$$f"; \
 	done
 
-d.install-html: $(build_htmldir)/d
+d.install-html: $(build_htmldir)/gdc
 	@$(NORMAL_INSTALL)
 	test -z "$(htmldir)" || $(mkinstalldirs) "$(DESTDIR)$(htmldir)"
-	@for p in $(build_htmldir)/d; do \
+	@for p in $(build_htmldir)/gdc; do \
 	  if test -f "$$p" || test -d "$$p"; then d=""; else d="$(srcdir)/"; fi; \
 	  f=$(html__strip_dir) \
 	  if test -d "$$d$$p"; then \

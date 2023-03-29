@@ -14,10 +14,8 @@ version (linux):
 import core.sys.linux.fs : __kernel_rwf_t;
 
 extern (C):
-@system:
 @nogc:
 nothrow:
-@system:
 
 /**
  * IO submission data structure (Submission Queue Entry)

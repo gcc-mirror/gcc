@@ -1232,61 +1232,6 @@ debug(PRINTF)
 /**
  *
  */
-extern (C) void _d_delarray_t(void[]* p, const TypeInfo_Struct ti) @weak
-{
-    if (p)
-    {
-        auto bic = __getBlkInfo(p.ptr);
-        auto info = bic ? *bic : GC.query(p.ptr);
-
-        if (info.base && (info.attr & BlkAttr.APPENDABLE))
-        {
-            if (ti) // ti non-null only if ti is a struct with dtor
-            {
-                void* start = __arrayStart(info);
-                size_t length = __arrayAllocLength(info, ti);
-                finalize_array(start, length, ti);
-            }
-
-            // if p is in the cache, clear it there as well
-            if (bic)
-                bic.base = null;
-
-            GC.free(info.base);
-            *p = null;
-        }
-    }
-}
-
-deprecated unittest
-{
-    __gshared size_t countDtor = 0;
-    struct S
-    {
-        int x;
-        ~this() { countDtor++; }
-    }
-    // destroy large array with x.ptr not base address of allocation
-    auto x = new S[10000];
-    void* p = x.ptr;
-    assert(GC.addrOf(p) != null);
-    _d_delarray_t(cast(void[]*)&x, typeid(typeof(x[0]))); // delete x;
-    assert(GC.addrOf(p) == null);
-    assert(countDtor == 10000);
-
-    // destroy full array even if only slice passed
-    auto y = new S[400];
-    auto z = y[200 .. 300];
-    p = z.ptr;
-    assert(GC.addrOf(p) != null);
-    _d_delarray_t(cast(void[]*)&z, typeid(typeof(z[0]))); // delete z;
-    assert(GC.addrOf(p) == null);
-    assert(countDtor == 10000 + 400);
-}
-
-/**
- *
- */
 extern (C) void _d_delmemory(void* *p) @weak
 {
     if (*p)
@@ -2753,11 +2698,6 @@ deprecated unittest
             dtorCount++;
         }
     }
-
-    dtorCount = 0;
-    S1[] arr1 = new S1[7];
-    _d_delarray_t(cast(void[]*)&arr1, typeid(typeof(arr1[0]))); // delete arr1;
-    assert(dtorCount == 7);
 
     dtorCount = 0;
     S1* s2 = new S1;

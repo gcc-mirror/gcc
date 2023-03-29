@@ -1,5 +1,6 @@
 // { dg-options "-std=gnu++20 -fno-lifetime-dse -O0" }
 // { dg-do run { target c++20 } }
+// { dg-require-effective-target hosted }
 
 // C++20 20.11.3.7 shared_ptr Creation [util.smartptr.shared.create]
 

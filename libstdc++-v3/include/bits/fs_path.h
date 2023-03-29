@@ -1,6 +1,6 @@
 // Class filesystem::path -*- C++ -*-
 
-// Copyright (C) 2014-2022 Free Software Foundation, Inc.
+// Copyright (C) 2014-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -596,12 +596,7 @@ namespace __detail
       _Multi = 0, _Root_name, _Root_dir, _Filename
     };
 
-    path(basic_string_view<value_type> __str, _Type __type)
-    : _M_pathname(__str)
-    {
-      __glibcxx_assert(__type != _Type::_Multi);
-      _M_cmpts.type(__type);
-    }
+    path(basic_string_view<value_type> __str, _Type __type);
 
     enum class _Split { _Stem, _Extension };
 
@@ -727,6 +722,8 @@ namespace __detail
     _List _M_cmpts;
 
     struct _Parser;
+
+    template<typename _EcharT> struct _Codecvt;
   };
 
   /// @{
@@ -806,6 +803,7 @@ namespace __detail
 	   typename _Require = __detail::_Path2<_InputIterator>,
 	   typename _CharT
 	     = __detail::__value_type_is_char_or_char8_t<_InputIterator>>
+    _GLIBCXX20_DEPRECATED_SUGGEST("path(u8string(first, last))")
     inline path
     u8path(_InputIterator __first, _InputIterator __last)
     {
@@ -828,6 +826,7 @@ namespace __detail
   template<typename _Source,
 	   typename _Require = __detail::_Path<_Source>,
 	   typename _CharT = __detail::__value_type_is_char_or_char8_t<_Source>>
+    _GLIBCXX20_DEPRECATED_SUGGEST("path((const char8_t*)&*source)")
     inline path
     u8path(const _Source& __source)
     {
@@ -847,13 +846,38 @@ namespace __detail
 
   struct path::_Cmpt : path
   {
-    _Cmpt(basic_string_view<value_type> __s, _Type __t, size_t __pos)
-      : path(__s, __t), _M_pos(__pos) { }
+    _Cmpt(basic_string_view<value_type> __s, _Type __t, size_t __pos);
 
     _Cmpt() : _M_pos(-1) { }
 
     size_t _M_pos;
   };
+
+  // path::_Codecvt<C> Performs conversions between C and path::string_type.
+  // The native encoding of char strings is the OS-dependent current
+  // encoding for pathnames. FIXME: We assume this is UTF-8 everywhere,
+  // but should use a Windows API to query it.
+
+  // Converts between native pathname encoding and char16_t or char32_t.
+  template<typename _EcharT>
+    struct path::_Codecvt
+    // Need derived class here because std::codecvt has protected destructor.
+    : std::codecvt<_EcharT, char, mbstate_t>
+    { };
+
+  // Converts between native pathname encoding and native wide encoding.
+  // The native encoding for wide strings is the execution wide-character
+  // set encoding. FIXME: We assume that this is either UTF-32 or UTF-16
+  // (depending on the width of wchar_t). That matches GCC's default,
+  // but can be changed with -fwide-exec-charset.
+  // We need a custom codecvt converting the native pathname encoding
+  // to/from the native wide encoding.
+  template<>
+    struct path::_Codecvt<wchar_t>
+    : __conditional_t<sizeof(wchar_t) == sizeof(char32_t),
+		      std::codecvt_utf8<wchar_t>,       // UTF-8 <-> UTF-32
+		      std::codecvt_utf8_utf16<wchar_t>> // UTF-8 <-> UTF-16
+    { };
 
   template<typename _EcharT>
     auto
@@ -861,49 +885,40 @@ namespace __detail
     {
       static_assert(__detail::__is_encoded_char<_EcharT>);
 
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+# define _GLIBCXX_CONV_FROM_UTF8(S) __detail::__wstr_from_utf8(S)
+#else
+# define _GLIBCXX_CONV_FROM_UTF8(S) S
+#endif
+
       if constexpr (is_same_v<_EcharT, value_type>)
 	return basic_string_view<value_type>(__f, __l - __f);
-#if !defined _GLIBCXX_FILESYSTEM_IS_WINDOWS && defined _GLIBCXX_USE_CHAR8_T
+#ifdef _GLIBCXX_USE_CHAR8_T
       else if constexpr (is_same_v<_EcharT, char8_t>)
-	// For POSIX converting from char8_t to char is also 'noconv'
-	return string_view(reinterpret_cast<const char*>(__f), __l - __f);
+	{
+	  string_view __str(reinterpret_cast<const char*>(__f), __l - __f);
+	  return _GLIBCXX_CONV_FROM_UTF8(__str);
+	}
+#endif
+#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+      else if constexpr (is_same_v<_EcharT, char>)
+	{
+	  std::wstring __wstr;
+	  path::_Codecvt<wchar_t> __cvt;
+	  if (__str_codecvt_in_all(__f, __l, __wstr, __cvt))
+	    return __wstr;
+	}
 #endif
       else
 	{
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-	  std::wstring __wstr;
-	  if constexpr (is_same_v<_EcharT, char>)
-	    {
-	      struct _UCvt : std::codecvt<wchar_t, char, std::mbstate_t>
-	      { } __cvt;
-	      if (__str_codecvt_in_all(__f, __l, __wstr, __cvt))
-		return __wstr;
-	    }
-#ifdef _GLIBCXX_USE_CHAR8_T
-	  else if constexpr (is_same_v<_EcharT, char8_t>)
-	    {
-	      const auto __f2 = reinterpret_cast<const char*>(__f);
-	      return __detail::__wstr_from_utf8(string_view(__f2, __l - __f));
-	    }
-#endif
-	  else // char16_t or char32_t
-	    {
-	      struct _UCvt : std::codecvt<_EcharT, char, std::mbstate_t>
-	      { } __cvt;
-	      std::string __str;
-	      if (__str_codecvt_out_all(__f, __l, __str, __cvt))
-		return __detail::__wstr_from_utf8(__str);
-	    }
-#else // ! windows
-	  struct _UCvt : std::codecvt<_EcharT, char, std::mbstate_t>
-	  { } __cvt;
+	  path::_Codecvt<_EcharT> __cvt;
 	  std::string __str;
 	  if (__str_codecvt_out_all(__f, __l, __str, __cvt))
-	    return __str;
-#endif
-	  __detail::__throw_conversion_error();
+	    return _GLIBCXX_CONV_FROM_UTF8(__str);
 	}
+      __detail::__throw_conversion_error();
     }
+#undef _GLIBCXX_CONV_FROM_UTF8
 
   /// @endcond
 
@@ -1085,7 +1100,9 @@ namespace __detail
       if (__str.size() == 0)
 	return _WString(__a);
 
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+#ifndef _GLIBCXX_FILESYSTEM_IS_WINDOWS
+      string_view __u8str = __str;
+#else
       // First convert native string from UTF-16 to to UTF-8.
       // XXX This assumes that the execution wide-character set is UTF-16.
       std::codecvt_utf8_utf16<value_type> __cvt;
@@ -1095,35 +1112,30 @@ namespace __detail
       _String __u8str{_CharAlloc{__a}};
       const value_type* __wfirst = __str.data();
       const value_type* __wlast = __wfirst + __str.size();
-      if (__str_codecvt_out_all(__wfirst, __wlast, __u8str, __cvt)) {
+      if (!__str_codecvt_out_all(__wfirst, __wlast, __u8str, __cvt))
+	__detail::__throw_conversion_error();
       if constexpr (is_same_v<_CharT, char>)
 	return __u8str; // XXX assumes native ordinary encoding is UTF-8.
-      else {
-
-      const char* __first = __u8str.data();
-      const char* __last = __first + __u8str.size();
-#else
-      const value_type* __first = __str.data();
-      const value_type* __last = __first + __str.size();
-#endif
-
-      // Convert UTF-8 string to requested format.
-#ifdef _GLIBCXX_USE_CHAR8_T
-      if constexpr (is_same_v<_CharT, char8_t>)
-	return _WString(__first, __last, __a);
       else
 #endif
 	{
-	  // Convert UTF-8 to wide string.
-	  _WString __wstr(__a);
-	  struct _UCvt : std::codecvt<_CharT, char, std::mbstate_t> { } __cvt;
-	  if (__str_codecvt_in_all(__first, __last, __wstr, __cvt))
-	    return __wstr;
-	}
+	  const char* __first = __u8str.data();
+	  const char* __last = __first + __u8str.size();
 
-#ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-      } }
+	  // Convert UTF-8 string to requested format.
+#ifdef _GLIBCXX_USE_CHAR8_T
+	  if constexpr (is_same_v<_CharT, char8_t>)
+	    return _WString(__first, __last, __a);
+	  else
 #endif
+	    {
+	      // Convert UTF-8 to wide string.
+	      _WString __wstr(__a);
+	      path::_Codecvt<_CharT> __cvt;
+	      if (__str_codecvt_in_all(__first, __last, __wstr, __cvt))
+		return __wstr;
+	    }
+	}
       __detail::__throw_conversion_error();
     }
   /// @endcond
@@ -1262,9 +1274,9 @@ namespace __detail
       {
 	if (_M_pathname.back() == preferred_separator)
 	  return {};
-	auto& __last = *--end();
-	if (__last._M_type() == _Type::_Filename)
-	  return __last;
+	auto __last = --end();
+	if (__last->_M_type() == _Type::_Filename)
+	  return *__last;
       }
     return {};
   }

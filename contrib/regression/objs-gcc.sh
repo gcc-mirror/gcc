@@ -1,8 +1,7 @@
 #!/bin/sh
 
 #  Build tools for testing GCC.
-#  Copyright (C) 1999, 2000, 2001, 2002, 2009
-#  Free Software Foundation, Inc.
+#  Copyright (C) 1999-2023 Free Software Foundation, Inc.
 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -107,7 +106,9 @@ if [ $H_REAL_TARGET = $H_REAL_HOST -a $H_REAL_TARGET = i686-pc-linux-gnu ]
   make all-gdb all-dejagnu all-ld || exit 1
   make install-gdb install-dejagnu install-ld || exit 1
 elif [ $H_REAL_TARGET = $H_REAL_HOST ] ; then
-  make bootstrap || exit 1
+  H_MAKE_TARGET=
+  test -f $SOURCE/gcc/configure && H_MAKE_TARGET=bootstrap
+  make $H_MAKE_TARGET || exit 1
   make install || exit 1
 else
   make || exit 1

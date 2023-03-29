@@ -1,0 +1,108 @@
+/* This file contains the definitions for C++-specific built-in traits.
+
+   Copyright The GNU Toolchain Authors.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* Add a DEFTRAIT_EXPR (CODE, NAME, N) line to this file to define an
+   expression-yielding built-in trait that has internal code name CODE, is
+   spelled as NAME and takes N type arguments (where N is either 1, 2, or
+   the special value -1 which denotes that it takes at least one argument).
+   Such traits are represented as TRAIT_EXPR tree whose TRAIT_EXPR_KIND is
+   CPTK_CODE.  Define the behavior of the trait in finish_trait_expr.  */
+
+/* Add a DEFTRAIT_TYPE (CODE, NAME, N) line to this file to define a
+   type-yielding built-in trait as described above.  Such traits are
+   generally represented as a TRAIT_TYPE tree whose TRAIT_TYPE_KIND is
+   CPTK_CODE (exceptions are BASES and DIRECT_BASES below).  Define the
+   behavior of the trait in finish_trait_type.  */
+
+#ifdef DEFTRAIT
+#define DEFTRAIT_EXPR(CODE, NAME, ARITY) DEFTRAIT(tcc_expression, CODE, NAME, ARITY)
+#define DEFTRAIT_TYPE(CODE, NAME, ARITY) DEFTRAIT(tcc_type, CODE, NAME, ARITY)
+#define DEFTRAIT_EXPR_DEFAULTED
+#define DEFTRAIT_TYPE_DEFAULTED
+#endif
+
+#ifndef DEFTRAIT_EXPR
+#define DEFTRAIT_EXPR(CODE, NAME, ARITY)
+#define DEFTRAIT_EXPR_DEFAULTED
+#endif
+
+#ifndef DEFTRAIT_TYPE
+#define DEFTRAIT_TYPE(CODE, NAME, ARITY)
+#define DEFTRAIT_TYPE_DEFAULTED
+#endif
+
+DEFTRAIT_EXPR (HAS_NOTHROW_ASSIGN, "__has_nothrow_assign", 1)
+DEFTRAIT_EXPR (HAS_NOTHROW_CONSTRUCTOR, "__has_nothrow_constructor", 1)
+DEFTRAIT_EXPR (HAS_NOTHROW_COPY, "__has_nothrow_copy", 1)
+DEFTRAIT_EXPR (HAS_TRIVIAL_ASSIGN, "__has_trivial_assign", 1)
+DEFTRAIT_EXPR (HAS_TRIVIAL_CONSTRUCTOR, "__has_trivial_constructor", 1)
+DEFTRAIT_EXPR (HAS_TRIVIAL_COPY, "__has_trivial_copy", 1)
+DEFTRAIT_EXPR (HAS_TRIVIAL_DESTRUCTOR, "__has_trivial_destructor", 1)
+DEFTRAIT_EXPR (HAS_UNIQUE_OBJ_REPRESENTATIONS, "__has_unique_object_representations", 1)
+DEFTRAIT_EXPR (HAS_VIRTUAL_DESTRUCTOR, "__has_virtual_destructor", 1)
+DEFTRAIT_EXPR (IS_ABSTRACT, "__is_abstract", 1)
+DEFTRAIT_EXPR (IS_AGGREGATE, "__is_aggregate", 1)
+DEFTRAIT_EXPR (IS_ASSIGNABLE, "__is_assignable", 2)
+DEFTRAIT_EXPR (IS_BASE_OF, "__is_base_of", 2)
+DEFTRAIT_EXPR (IS_CLASS, "__is_class", 1)
+DEFTRAIT_EXPR (IS_CONSTRUCTIBLE, "__is_constructible", -1)
+DEFTRAIT_EXPR (IS_CONVERTIBLE, "__is_convertible", 2)
+DEFTRAIT_EXPR (IS_EMPTY, "__is_empty", 1)
+DEFTRAIT_EXPR (IS_ENUM, "__is_enum", 1)
+DEFTRAIT_EXPR (IS_FINAL, "__is_final", 1)
+DEFTRAIT_EXPR (IS_LAYOUT_COMPATIBLE, "__is_layout_compatible", 2)
+DEFTRAIT_EXPR (IS_LITERAL_TYPE, "__is_literal_type", 1)
+DEFTRAIT_EXPR (IS_NOTHROW_ASSIGNABLE, "__is_nothrow_assignable", 2)
+DEFTRAIT_EXPR (IS_NOTHROW_CONSTRUCTIBLE, "__is_nothrow_constructible", -1)
+DEFTRAIT_EXPR (IS_NOTHROW_CONVERTIBLE, "__is_nothrow_convertible", 2)
+DEFTRAIT_EXPR (IS_POINTER_INTERCONVERTIBLE_BASE_OF, "__is_pointer_interconvertible_base_of", 2)
+DEFTRAIT_EXPR (IS_POD, "__is_pod", 1)
+DEFTRAIT_EXPR (IS_POLYMORPHIC, "__is_polymorphic", 1)
+DEFTRAIT_EXPR (IS_SAME, "__is_same", 2)
+DEFTRAIT_EXPR (IS_STD_LAYOUT, "__is_standard_layout", 1)
+DEFTRAIT_EXPR (IS_TRIVIAL, "__is_trivial", 1)
+DEFTRAIT_EXPR (IS_TRIVIALLY_ASSIGNABLE, "__is_trivially_assignable", 2)
+DEFTRAIT_EXPR (IS_TRIVIALLY_CONSTRUCTIBLE, "__is_trivially_constructible", -1)
+DEFTRAIT_EXPR (IS_TRIVIALLY_COPYABLE, "__is_trivially_copyable", 1)
+DEFTRAIT_EXPR (IS_UNION, "__is_union", 1)
+DEFTRAIT_EXPR (REF_CONSTRUCTS_FROM_TEMPORARY, "__reference_constructs_from_temporary", 2)
+DEFTRAIT_EXPR (REF_CONVERTS_FROM_TEMPORARY, "__reference_converts_from_temporary", 2)
+/* FIXME Added space to avoid direct usage in GCC 13.  */
+DEFTRAIT_EXPR (IS_DEDUCIBLE, "__is_deducible ", 2)
+
+DEFTRAIT_TYPE (REMOVE_CV, "__remove_cv", 1)
+DEFTRAIT_TYPE (REMOVE_REFERENCE, "__remove_reference", 1)
+DEFTRAIT_TYPE (REMOVE_CVREF, "__remove_cvref", 1)
+DEFTRAIT_TYPE (UNDERLYING_TYPE,  "__underlying_type", 1)
+
+/* These traits yield a type pack, not a type, and are represented by
+   cp_parser_trait as a special BASES tree instead of a TRAIT_TYPE tree.  */
+DEFTRAIT_TYPE (BASES, "__bases", 1)
+DEFTRAIT_TYPE (DIRECT_BASES, "__direct_bases", 1)
+
+#ifdef DEFTRAIT_EXPR_DEFAULTED
+#undef DEFTRAIT_EXPR
+#undef DEFTRAIT_EXPR_DEFAULTED
+#endif
+
+#ifdef DEFTRAIT_TYPE_DEFAULTED
+#undef DEFTRAIT_TYPE
+#undef DEFTRAIT_TYPE_DEFAULTED
+#endif

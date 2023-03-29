@@ -16,7 +16,7 @@ main ()
     }
   else
     omp_set_num_teams (6);
-  if (getenv ("OMP_TEAMS_THREAD_LIMIT") == NULL
+  if (getenv ("OMP_TEAMS_THREAD_LIMIT") != NULL
       && strcmp (getenv ("OMP_TEAMS_THREAD_LIMIT"), "12") == 0)
     {
       if (omp_get_teams_thread_limit () != 12)

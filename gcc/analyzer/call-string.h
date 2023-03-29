@@ -1,5 +1,5 @@
 /* Call stacks at program points.
-   Copyright (C) 2019-2022 Free Software Foundation, Inc.
+   Copyright (C) 2019-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -104,6 +104,8 @@ public:
     gcc_assert (m_elements.length () > 0);
     return m_elements[m_elements.length () - 1];
   }
+
+  int count_occurrences_of_function (function *) const;
 
   void validate () const;
 

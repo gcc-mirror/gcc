@@ -1,3 +1,34 @@
+2023-01-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* testsuite/lib/libffi.exp: Search for both shared and archive
+	in each path in turn.
+
+2023-01-07  LIU Hao  <lh_mouse@126.com>
+
+	PR middle-end/108300
+	* src/aarch64/ffi.c: Define `WIN32_LEAN_AND_MEAN` before
+	<windows.h>.
+
+2022-12-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* LOCAL_PATCHES: Add patch to fix i686 darwin build.
+
+2022-12-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* src/x86/sysv.S (COMDAT): Amend section use for Darwin, accounting
+	cases where coalesced is needed. (eh_frame): Rework to avoid relocs
+	that cause builf fails on earlier Darwin.  Adjust register numbers
+	to account for X86 m32 Darwin differences between EH and debug.
+
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* configure: Regenerate.
+
 2021-11-15  H.J. Lu  <hjl.tools@gmail.com>
 
 	* LOCAL_PATCHES: Add commit a91f844ef44.
@@ -663,7 +694,7 @@
 	* configure: Rebuild.
 
 2012-10-30  James Greenhalgh  <james.greenhalgh at arm.com>
-	    Marcus Shawcroft  <marcus.shawcroft at arm.com>
+	Marcus Shawcroft  <marcus.shawcroft at arm.com>
 
 	* README: Add details of aarch64 port.
 	* src/aarch64/ffi.c: New.
@@ -674,7 +705,7 @@
 	* Makefile.in, configure: Rebuilt.
 
 2012-10-30  James Greenhalgh  <james.greenhalgh at arm.com>
-	    Marcus Shawcroft  <marcus.shawcroft at arm.com>
+	Marcus Shawcroft  <marcus.shawcroft at arm.com>
 
 	* testsuite/lib/libffi.exp: Add support for aarch64.
 	* testsuite/libffi.call/cls_struct_va1.c: New.
@@ -1733,7 +1764,7 @@
 	* Makefile.in: Rebuilt.
 
 2009-12-31  Anthony Green  <green@redhat.com>
-	    Blake Chaffin.
+	Blake Chaffin.
 
 	* testsuite/libffi.call/huge_struct.c: New test case from Blake
 	Chaffin @ Apple.
@@ -2281,23 +2312,23 @@
 	compiler warnings.
 
 2008-03-04  Anthony Green  <green@redhat.com>
-	    Blake Chaffin
+	Blake Chaffin
 	    hos@tamanegi.org
 
 	* testsuite/libffi.call/cls_align_longdouble_split2.c
-	  testsuite/libffi.call/cls_align_longdouble_split.c
-	  testsuite/libffi.call/cls_dbls_struct.c
-	  testsuite/libffi.call/cls_double_va.c
-	  testsuite/libffi.call/cls_longdouble.c
-	  testsuite/libffi.call/cls_longdouble_va.c
-	  testsuite/libffi.call/cls_pointer.c
-	  testsuite/libffi.call/cls_pointer_stack.c
-	  testsuite/libffi.call/err_bad_abi.c
-	  testsuite/libffi.call/err_bad_typedef.c
-	  testsuite/libffi.call/stret_large2.c
-	  testsuite/libffi.call/stret_large.c
-	  testsuite/libffi.call/stret_medium2.c
-	  testsuite/libffi.call/stret_medium.c: New tests from Apple.
+	testsuite/libffi.call/cls_align_longdouble_split.c
+	testsuite/libffi.call/cls_dbls_struct.c
+	testsuite/libffi.call/cls_double_va.c
+	testsuite/libffi.call/cls_longdouble.c
+	testsuite/libffi.call/cls_longdouble_va.c
+	testsuite/libffi.call/cls_pointer.c
+	testsuite/libffi.call/cls_pointer_stack.c
+	testsuite/libffi.call/err_bad_abi.c
+	testsuite/libffi.call/err_bad_typedef.c
+	testsuite/libffi.call/stret_large2.c
+	testsuite/libffi.call/stret_large.c
+	testsuite/libffi.call/stret_medium2.c
+	testsuite/libffi.call/stret_medium.c: New tests from Apple.
 
 2009-06-05  Andrew Haley  <aph@redhat.com>
 
@@ -2318,7 +2349,7 @@
 2008-02-03  Timothy Wall  <twall@users.sf.net>
 
 	* src/x86/ffi.c (FFI_INIT_TRAMPOLINE_STDCALL): Calculate jump return
-	  offset based on code pointer, not data pointer.
+	offset based on code pointer, not data pointer.
 
 2008-01-31  Timothy Wall <twall@users.sf.net>
 
@@ -5078,12 +5109,12 @@
 2003-01-13 Andreas Tobler <a.tobler@schweiz.ch>
 
 	* libffi/src/ffitest.c
-	 add closure testcases
+	add closure testcases
 
 2003-01-13 Kevin B. Hendricks <khendricks@ivey.uwo.ca>
 
 	* libffi/src/powerpc/ffi.c
-	 fix alignment bug for float (4 byte aligned iso 8 byte)
+	fix alignment bug for float (4 byte aligned iso 8 byte)
 
 2003-01-09  Geoffrey Keating  <geoffk@apple.com>
 
@@ -5101,17 +5132,17 @@
 2002-11-10  Ranjit Mathew <rmathew@hotmail.com>
 
 	* include/ffi.h.in: Added FFI_STDCALL ffi_type
-	  enumeration for X86_WIN32.
+	enumeration for X86_WIN32.
 	* src/x86/win32.S: Added ffi_call_STDCALL function
-	  definition.
+	definition.
 	* src/x86/ffi.c (ffi_call/ffi_raw_call): Added
-	  switch cases for recognising FFI_STDCALL and
-	  calling ffi_call_STDCALL if target is X86_WIN32.
+	switch cases for recognising FFI_STDCALL and
+	calling ffi_call_STDCALL if target is X86_WIN32.
 	* src/ffitest.c (my_stdcall_strlen/stdcall_many):
-	  stdcall versions of the "my_strlen" and "many"
-	  test functions (for X86_WIN32).
-	  Added test cases to test stdcall invocation using
-	  these functions.
+	stdcall versions of the "my_strlen" and "many"
+	test functions (for X86_WIN32).
+	Added test cases to test stdcall invocation using
+	these functions.
 
 2002-12-02  Kaz Kojima  <kkojima@gcc.gnu.org>
 

@@ -1,5 +1,5 @@
 ;; Constraint definitions for Renesas H8/300.
-;; Copyright (C) 2011-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2023 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -211,8 +211,41 @@
   (and (match_code "const_int")
        (match_test "exact_log2 (ival & 0xff) != -1")))
 
-(define_constraint "Z"
+(define_constraint "Zz"
   "@internal"
   (and (match_test "TARGET_H8300SX")
        (match_code "mem")
        (match_test "CONSTANT_P (XEXP (op, 0))")))
+
+(define_register_constraint "Z0" "NOT_R0_REGS"
+  "@internal")
+
+(define_register_constraint "Z1" "NOT_R1_REGS"
+  "@internal")
+
+(define_register_constraint "Z2" "NOT_R2_REGS"
+  "@internal")
+
+(define_register_constraint "Z3" "NOT_R3_REGS"
+  "@internal")
+
+(define_register_constraint "Z4" "NOT_R4_REGS"
+  "@internal")
+
+(define_register_constraint "Z5" "NOT_R5_REGS"
+  "@internal")
+
+(define_register_constraint "Z6" "NOT_R6_REGS"
+  "@internal")
+
+(define_register_constraint "Z7" "NOT_SP_REGS"
+  "@internal")
+
+(define_constraint "Za" "@internal" (match_test "pre_incdec_with_reg (op, 0)"))
+(define_constraint "Zb" "@internal" (match_test "pre_incdec_with_reg (op, 1)"))
+(define_constraint "Zc" "@internal" (match_test "pre_incdec_with_reg (op, 2)"))
+(define_constraint "Zd" "@internal" (match_test "pre_incdec_with_reg (op, 3)"))
+(define_constraint "Ze" "@internal" (match_test "pre_incdec_with_reg (op, 4)"))
+(define_constraint "Zf" "@internal" (match_test "pre_incdec_with_reg (op, 5)"))
+(define_constraint "Zg" "@internal" (match_test "pre_incdec_with_reg (op, 6)"))
+(define_constraint "Zh" "@internal" (match_test "pre_incdec_with_reg (op, 7)"))

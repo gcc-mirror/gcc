@@ -8,7 +8,7 @@
 !
 MODULE FOO
 INTERFACE
-SUBROUTINE dummy(buf) BIND(C, name="sync")
+SUBROUTINE dummy(buf) BIND(C, name="clock")
 type(*), dimension(..) :: buf
 END SUBROUTINE
 END INTERFACE

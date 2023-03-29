@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.  This file computes dependencies between
    instructions.
-   Copyright (C) 1992-2022 Free Software Foundation, Inc.
+   Copyright (C) 1992-2023 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) Enhanced by,
    and currently maintained by, Jim Wilson (wilson@cygnus.com)
 
@@ -2605,26 +2605,33 @@ sched_analyze_2 (class deps_desc *deps, rtx x, rtx_insn *insn)
 
     case MEM:
       {
-	/* Reading memory.  */
-	rtx_insn_list *u;
-	rtx_insn_list *pending;
-	rtx_expr_list *pending_mem;
-	rtx t = x;
-
-	if (sched_deps_info->use_cselib)
+	if (DEBUG_INSN_P (insn) && sched_deps_info->use_cselib)
 	  {
-	    machine_mode address_mode = get_address_mode (t);
+	    machine_mode address_mode = get_address_mode (x);
 
-	    t = shallow_copy_rtx (t);
-	    cselib_lookup_from_insn (XEXP (t, 0), address_mode, 1,
-				     GET_MODE (t), insn);
-	    XEXP (t, 0)
-	      = cselib_subst_to_values_from_insn (XEXP (t, 0), GET_MODE (t),
-						  insn);
+	    cselib_lookup_from_insn (XEXP (x, 0), address_mode, 1,
+				     GET_MODE (x), insn);
 	  }
-
-	if (!DEBUG_INSN_P (insn))
+	else if (!DEBUG_INSN_P (insn))
 	  {
+	    /* Reading memory.  */
+	    rtx_insn_list *u;
+	    rtx_insn_list *pending;
+	    rtx_expr_list *pending_mem;
+	    rtx t = x;
+
+	    if (sched_deps_info->use_cselib)
+	      {
+		machine_mode address_mode = get_address_mode (t);
+
+		t = shallow_copy_rtx (t);
+		cselib_lookup_from_insn (XEXP (t, 0), address_mode, 1,
+					 GET_MODE (t), insn);
+		XEXP (t, 0)
+		  = cselib_subst_to_values_from_insn (XEXP (t, 0), GET_MODE (t),
+						      insn);
+	      }
+
 	    t = canon_rtx (t);
 	    pending = deps->pending_read_insns;
 	    pending_mem = deps->pending_read_mems;
@@ -3688,7 +3695,14 @@ deps_analyze_insn (class deps_desc *deps, rtx_insn *insn)
 
       CANT_MOVE (insn) = 1;
 
-      if (find_reg_note (insn, REG_SETJMP, NULL))
+      if (!reload_completed)
+	{
+	  /* Scheduling across calls may increase register pressure by extending
+	     live ranges of pseudos over the call.  Worse, in presence of setjmp
+	     it may incorrectly move up an assignment over a longjmp.  */
+	  reg_pending_barrier = MOVE_BARRIER;
+	}
+      else if (find_reg_note (insn, REG_SETJMP, NULL))
         {
           /* This is setjmp.  Assume that all registers, not just
              hard registers, may be clobbered by this call.  */

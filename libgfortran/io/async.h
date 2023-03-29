@@ -1,4 +1,4 @@
-/* Copyright (C) 2018-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2018-2023 Free Software Foundation, Inc.
    Contributed by Nicolas Koenig
 
    This file is part of the GNU Fortran runtime library (libgfortran).
@@ -351,7 +351,7 @@ typedef struct async_unit
   struct adv_cond work;
   struct adv_cond emptysignal;
   struct st_parameter_dt *pdt;
-  pthread_t thread;
+  __gthread_t thread;
   struct transfer_queue *head;
   struct transfer_queue *tail;
 

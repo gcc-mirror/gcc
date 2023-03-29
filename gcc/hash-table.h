@@ -1,5 +1,5 @@
 /* A type-safe hash table template.
-   Copyright (C) 2012-2022 Free Software Foundation, Inc.
+   Copyright (C) 2012-2023 Free Software Foundation, Inc.
    Contributed by Lawrence Crowl <crowl@google.com>
 
 This file is part of GCC.
@@ -495,6 +495,7 @@ public:
     {
       if (Lazy && m_entries == NULL)
 	return iterator ();
+      check_complete_insertion ();
       iterator iter (m_entries, m_entries + m_size);
       iter.slide ();
       return iter;
@@ -533,6 +534,11 @@ private:
   void expand ();
   static bool is_deleted (value_type &v)
   {
+    /* Traits are supposed to avoid recognizing elements as both empty
+       and deleted, but to fail safe in case custom traits fail to do
+       that, make sure we never test for is_deleted without having
+       first ruled out is_empty.  */
+    gcc_checking_assert (!Descriptor::is_empty (v));
     return Descriptor::is_deleted (v);
   }
 
@@ -544,6 +550,11 @@ private:
   static void mark_deleted (value_type &v)
   {
     Descriptor::mark_deleted (v);
+    /* Traits are supposed to refuse to set elements as deleted if
+       those would be indistinguishable from empty, but to fail safe
+       in case custom traits fail to do that, check that the
+       just-deleted element does not look empty.  */
+    gcc_checking_assert (!Descriptor::is_empty (v));
   }
 
   static void mark_empty (value_type &v)
@@ -551,8 +562,39 @@ private:
     Descriptor::mark_empty (v);
   }
 
+public:
+  void check_complete_insertion () const
+  {
+#if CHECKING_P
+    if (!m_inserting_slot)
+      return;
+
+    gcc_checking_assert (m_inserting_slot >= &m_entries[0]
+			 && m_inserting_slot < &m_entries[m_size]);
+
+    if (!is_empty (*m_inserting_slot))
+      m_inserting_slot = NULL;
+    else
+      gcc_unreachable ();
+#endif
+  }
+
+private:
+  value_type *check_insert_slot (value_type *ret)
+  {
+#if CHECKING_P
+    gcc_checking_assert (is_empty (*ret));
+    m_inserting_slot = ret;
+#endif
+    return ret;
+  }
+
+#if CHECKING_P
+  mutable value_type *m_inserting_slot;
+#endif
+
   /* Table itself.  */
-  typename Descriptor::value_type *m_entries;
+  value_type *m_entries;
 
   size_t m_size;
 
@@ -607,6 +649,9 @@ hash_table<Descriptor, Lazy, Allocator>::hash_table (size_t size, bool ggc,
 						     ATTRIBUTE_UNUSED,
 						     mem_alloc_origin origin
 						     MEM_STAT_DECL) :
+#if CHECKING_P
+  m_inserting_slot (0),
+#endif
   m_n_elements (0), m_n_deleted (0), m_searches (0), m_collisions (0),
   m_ggc (ggc), m_sanitize_eq_and_hash (sanitize_eq_and_hash)
 #if GATHER_STATISTICS
@@ -639,6 +684,9 @@ hash_table<Descriptor, Lazy, Allocator>::hash_table (const hash_table &h,
 						     ATTRIBUTE_UNUSED,
 						     mem_alloc_origin origin
 						     MEM_STAT_DECL) :
+#if CHECKING_P
+  m_inserting_slot (0),
+#endif
   m_n_elements (h.m_n_elements), m_n_deleted (h.m_n_deleted),
   m_searches (0), m_collisions (0), m_ggc (ggc),
   m_sanitize_eq_and_hash (sanitize_eq_and_hash)
@@ -646,6 +694,8 @@ hash_table<Descriptor, Lazy, Allocator>::hash_table (const hash_table &h,
   , m_gather_mem_stats (gather_mem_stats)
 #endif
 {
+  h.check_complete_insertion ();
+
   size_t size = h.m_size;
 
   if (m_gather_mem_stats)
@@ -660,9 +710,11 @@ hash_table<Descriptor, Lazy, Allocator>::hash_table (const hash_table &h,
       for (size_t i = 0; i < size; ++i)
 	{
 	  value_type &entry = h.m_entries[i];
-	  if (is_deleted (entry))
+	  if (is_empty (entry))
+	    continue;
+	  else if (is_deleted (entry))
 	    mark_deleted (nentries[i]);
-	  else if (!is_empty (entry))
+	  else
 	    new ((void*) (nentries + i)) value_type (entry);
 	}
       m_entries = nentries;
@@ -675,6 +727,8 @@ template<typename Descriptor, bool Lazy,
 	 template<typename Type> class Allocator>
 hash_table<Descriptor, Lazy, Allocator>::~hash_table ()
 {
+  check_complete_insertion ();
+
   if (!Lazy || m_entries)
     {
       for (size_t i = m_size - 1; i < m_size; i--)
@@ -778,6 +832,8 @@ template<typename Descriptor, bool Lazy,
 void
 hash_table<Descriptor, Lazy, Allocator>::expand ()
 {
+  check_complete_insertion ();
+
   value_type *oentries = m_entries;
   unsigned int oindex = m_size_prime_index;
   size_t osize = size ();
@@ -805,19 +861,28 @@ hash_table<Descriptor, Lazy, Allocator>::expand ()
     hash_table_usage ().release_instance_overhead (this, sizeof (value_type)
 						    * osize);
 
+  size_t n_deleted = m_n_deleted;
+
   m_entries = nentries;
   m_size = nsize;
   m_size_prime_index = nindex;
   m_n_elements -= m_n_deleted;
   m_n_deleted = 0;
 
+  size_t n_elements = m_n_elements;
+
   value_type *p = oentries;
   do
     {
       value_type &x = *p;
 
-      if (!is_empty (x) && !is_deleted (x))
+      if (is_empty (x))
+	;
+      else if (is_deleted (x))
+	n_deleted--;
+      else
         {
+	  n_elements--;
           value_type *q = find_empty_slot_for_expand (Descriptor::hash (x));
 	  new ((void*) q) value_type (std::move (x));
 	  /* After the resources of 'x' have been moved to a new object at 'q',
@@ -828,6 +893,8 @@ hash_table<Descriptor, Lazy, Allocator>::expand ()
       p++;
     }
   while (p < olimit);
+
+  gcc_checking_assert (!n_elements && !n_deleted);
 
   if (!m_ggc)
     Allocator <value_type> ::data_free (oentries);
@@ -842,6 +909,8 @@ template<typename Descriptor, bool Lazy,
 void
 hash_table<Descriptor, Lazy, Allocator>::empty_slow ()
 {
+  check_complete_insertion ();
+
   size_t size = m_size;
   size_t nsize = size;
   value_type *entries = m_entries;
@@ -890,6 +959,8 @@ template<typename Descriptor, bool Lazy,
 void
 hash_table<Descriptor, Lazy, Allocator>::clear_slot (value_type *slot)
 {
+  check_complete_insertion ();
+
   gcc_checking_assert (!(slot < m_entries || slot >= m_entries + size ()
 		         || is_empty (*slot) || is_deleted (*slot)));
 
@@ -915,6 +986,8 @@ hash_table<Descriptor, Lazy, Allocator>
 
   if (Lazy && m_entries == NULL)
     m_entries = alloc_entries (size);
+
+  check_complete_insertion ();
 
 #if CHECKING_P
   if (m_sanitize_eq_and_hash)
@@ -965,6 +1038,8 @@ hash_table<Descriptor, Lazy, Allocator>
     }
   if (insert == INSERT && m_size * 3 <= m_n_elements * 4)
     expand ();
+  else
+    check_complete_insertion ();
 
 #if CHECKING_P
   if (m_sanitize_eq_and_hash)
@@ -1011,15 +1086,16 @@ hash_table<Descriptor, Lazy, Allocator>
     {
       m_n_deleted--;
       mark_empty (*first_deleted_slot);
-      return first_deleted_slot;
+      return check_insert_slot (first_deleted_slot);
     }
 
   m_n_elements++;
-  return &m_entries[index];
+  return check_insert_slot (&m_entries[index]);
 }
 
-/* Verify that all existing elements in th hash table which are
-   equal to COMPARABLE have an equal HASH value provided as argument.  */
+/* Verify that all existing elements in the hash table which are
+   equal to COMPARABLE have an equal HASH value provided as argument.
+   Also check that the hash table element counts are correct.  */
 
 template<typename Descriptor, bool Lazy,
 	 template<typename Type> class Allocator>
@@ -1027,14 +1103,23 @@ void
 hash_table<Descriptor, Lazy, Allocator>
 ::verify (const compare_type &comparable, hashval_t hash)
 {
+  size_t n_elements = m_n_elements;
+  size_t n_deleted = m_n_deleted;
   for (size_t i = 0; i < MIN (hash_table_sanitize_eq_limit, m_size); i++)
     {
       value_type *entry = &m_entries[i];
-      if (!is_empty (*entry) && !is_deleted (*entry)
-	  && hash != Descriptor::hash (*entry)
-	  && Descriptor::equal (*entry, comparable))
-	hashtab_chk_error ();
+      if (!is_empty (*entry))
+	{
+	  n_elements--;
+	  if (is_deleted (*entry))
+	    n_deleted--;
+	  else if (hash != Descriptor::hash (*entry)
+		   && Descriptor::equal (*entry, comparable))
+	    hashtab_chk_error ();
+	}
     }
+  if (hash_table_sanitize_eq_limit >= m_size)
+    gcc_checking_assert (!n_elements && !n_deleted);
 }
 
 /* This function deletes an element with the given COMPARABLE value
@@ -1047,6 +1132,8 @@ void
 hash_table<Descriptor, Lazy, Allocator>
 ::remove_elt_with_hash (const compare_type &comparable, hashval_t hash)
 {
+  check_complete_insertion ();
+
   value_type *slot = find_slot_with_hash (comparable, hash, NO_INSERT);
   if (slot == NULL)
     return;
@@ -1072,6 +1159,8 @@ hash_table<Descriptor, Lazy, Allocator>::traverse_noresize (Argument argument)
 {
   if (Lazy && m_entries == NULL)
     return;
+
+  check_complete_insertion ();
 
   value_type *slot = m_entries;
   value_type *limit = slot + size ();
@@ -1147,7 +1236,7 @@ hash_table<Descriptor, Lazy, Allocator>::iterator::operator ++ ()
 /* ggc walking routines.  */
 
 template<typename E>
-static inline void
+inline void
 gt_ggc_mx (hash_table<E> *h)
 {
   typedef hash_table<E> table;
@@ -1168,7 +1257,7 @@ gt_ggc_mx (hash_table<E> *h)
 }
 
 template<typename D>
-static inline void
+inline void
 hashtab_entry_note_pointers (void *obj, void *h, gt_pointer_operator op,
 			     void *cookie)
 {
@@ -1186,9 +1275,10 @@ hashtab_entry_note_pointers (void *obj, void *h, gt_pointer_operator op,
 }
 
 template<typename D>
-static void
+void
 gt_pch_nx (hash_table<D> *h)
 {
+  h->check_complete_insertion ();
   bool success
     = gt_pch_note_object (h->m_entries, h, hashtab_entry_note_pointers<D>);
   gcc_checking_assert (success);
@@ -1203,7 +1293,7 @@ gt_pch_nx (hash_table<D> *h)
 }
 
 template<typename D>
-static inline void
+inline void
 gt_pch_nx (hash_table<D> *h, gt_pointer_operator op, void *cookie)
 {
   op (&h->m_entries, NULL, cookie);

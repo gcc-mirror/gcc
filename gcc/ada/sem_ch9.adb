@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Accessibility;  use Accessibility;
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
@@ -178,8 +179,6 @@ package body Sem_Ch9 is
                elsif Nkind (Decl) = N_Subprogram_Declaration
                  and then
                    Nkind (Specification (Decl)) = N_Procedure_Specification
-                 and then
-                   Present (Parameter_Specifications (Specification (Decl)))
                then
                   declare
                      Par_Specs : constant List_Id   :=
@@ -455,7 +454,7 @@ package body Sem_Ch9 is
 
                   --  Goto statements restricted
 
-                  elsif Kind = N_Goto_Statement then
+                  elsif Kind in N_Goto_Statement | N_Goto_When_Statement then
                      if Lock_Free_Given then
                         Error_Msg_N ("goto statement not allowed", N);
                         return Skip;
@@ -465,7 +464,7 @@ package body Sem_Ch9 is
 
                   --  References
 
-                  elsif Kind = N_Identifier
+                  elsif Kind in N_Identifier | N_Expanded_Name
                     and then Present (Entity (N))
                   then
                      declare
@@ -476,19 +475,28 @@ package body Sem_Ch9 is
                      begin
                         --  Prohibit references to non-constant entities
                         --  outside the protected subprogram scope.
+                        --
+                        --  References to variables in System.Scalar_Values
+                        --  generated because of pragma Initialize_Scalars are
+                        --  allowed, because once those variables are
+                        --  initialized by the binder-generated code, they
+                        --  behave like constants.
 
-                        if Ekind (Id) in Assignable_Kind
+                        if Is_Assignable (Id)
                           and then not
                             Scope_Within_Or_Same (Scope (Id), Sub_Id)
                           and then not
                             Scope_Within_Or_Same
                               (Scope (Id),
                                Protected_Body_Subprogram (Sub_Id))
+                          and then not
+                            (Is_RTU (Scope (Id), System_Scalar_Values)
+                               and then not Comes_From_Source (N))
                         then
                            if Lock_Free_Given then
                               Error_Msg_NE
-                                ("reference to global variable& not " &
-                                 "allowed", N, Id);
+                                ("reference to global variable& not allowed",
+                                 N, Id);
                               return Skip;
                            end if;
 
@@ -566,7 +574,7 @@ package body Sem_Ch9 is
                   --  reference only one component of the protected type, plus
                   --  the type of the component must support atomic operation.
 
-                  if Kind = N_Identifier
+                  if Kind in N_Identifier | N_Expanded_Name
                     and then Present (Entity (N))
                   then
                      declare

@@ -22,7 +22,6 @@ version (DragonFlyBSD) version = LinuxOrCompatible;
 
 version (LinuxOrCompatible):
 extern (C):
-@system:
 nothrow:
 @nogc:
 

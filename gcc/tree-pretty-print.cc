@@ -1,5 +1,5 @@
 /* Pretty formatting of GENERIC trees in C syntax.
-   Copyright (C) 2001-2022 Free Software Foundation, Inc.
+   Copyright (C) 2001-2023 Free Software Foundation, Inc.
    Adapted from c-pretty-print.cc by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -1455,6 +1455,7 @@ void
 dump_location (pretty_printer *pp, location_t loc)
 {
   expanded_location xloc = expand_location (loc);
+  int discriminator = get_discriminator_from_loc (loc);
 
   pp_left_bracket (pp);
   if (xloc.file)
@@ -1465,6 +1466,11 @@ dump_location (pretty_printer *pp, location_t loc)
   pp_decimal_int (pp, xloc.line);
   pp_colon (pp);
   pp_decimal_int (pp, xloc.column);
+  if (discriminator)
+  {
+    pp_string (pp, " discrim ");
+    pp_decimal_int (pp, discriminator);
+  }
   pp_string (pp, "] ");
 }
 
@@ -3407,14 +3413,6 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       dump_generic_node (pp, TREE_OPERAND (node, 0), spc, flags, false);
       pp_string (pp, ", ");
       dump_generic_node (pp, TREE_OPERAND (node, 1), spc, flags, false);
-      pp_greater (pp);
-      break;
-
-    case ASSERT_EXPR:
-      pp_string (pp, "ASSERT_EXPR <");
-      dump_generic_node (pp, ASSERT_EXPR_VAR (node), spc, flags, false);
-      pp_string (pp, ", ");
-      dump_generic_node (pp, ASSERT_EXPR_COND (node), spc, flags, false);
       pp_greater (pp);
       break;
 

@@ -8,7 +8,6 @@
  */
 module core.sys.windows.lmshare;
 version (Windows):
-@system:
 pragma(lib, "netapi32");
 
 import core.sys.windows.lmcons;

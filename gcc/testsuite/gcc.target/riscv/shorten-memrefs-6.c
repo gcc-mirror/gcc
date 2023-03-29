@@ -36,5 +36,5 @@ load2a (long long a0, long long a1, long long a2, long long a3, long long a4,
   return sub2 (a0, a1, a2, a3, a4, 0, a);
 }
 
-/* { dg-final { scan-assembler-not "load1a:\n\taddi" { xfail riscv*-*-* } } } */
+/* { dg-final { scan-assembler-not "load1a:\n(\t?\\.\[^\n\]*\n)*\taddi" { xfail riscv*-*-* } } } */
 /* { dg-final { scan-assembler-not "load2a:\n.*addi\[ \t\]*\[at\]\[0-9\],\[at\]\[0-9\],\[0-9\]*" } } */

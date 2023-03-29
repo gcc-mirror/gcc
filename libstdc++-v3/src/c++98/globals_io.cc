@@ -1,4 +1,4 @@
-// Copyright (C) 2001-2022 Free Software Foundation, Inc.
+// Copyright (C) 2001-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -68,6 +68,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   fake_wostream wcerr;
   fake_wostream wclog;
 #endif
+
+#include "ios_base_init.h"
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

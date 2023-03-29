@@ -15,6 +15,5 @@ long double foo()
 }
 
 
-/* The long double init isn't expanded optimally, see PR105259.  For ia32
-   it uses zero-initialization.  */
-/* { dg-final { scan-assembler-times "long\t-16843010" 3 } } */
+/* { dg-final { scan-assembler-times "long\t-16843010" 5  { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "long\t-16843010" 3  { target { ia32 } } } } */

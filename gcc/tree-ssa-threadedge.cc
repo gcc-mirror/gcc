@@ -1,5 +1,5 @@
 /* SSA Jump Threading
-   Copyright (C) 2005-2022 Free Software Foundation, Inc.
+   Copyright (C) 2005-2023 Free Software Foundation, Inc.
    Contributed by Jeff Law  <law@redhat.com>
 
 This file is part of GCC.
@@ -497,9 +497,9 @@ jump_threader::simplify_control_stmt_condition_1
     }
 
   /* If the condition has the form (A & B) CMP 0 or (A | B) CMP 0 then
-     recurse into the LHS to see if there is a dominating ASSERT_EXPR
-     of A or of B that makes this condition always true or always false
-     along the edge E.  */
+     recurse into the LHS to see if there is a simplification that
+     makes this condition always true or always false along the edge
+     E.  */
   if ((cond_code == EQ_EXPR || cond_code == NE_EXPR)
       && TREE_CODE (op0) == SSA_NAME
       && integer_zerop (op1))

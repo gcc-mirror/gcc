@@ -1,5 +1,5 @@
 /* ACLE support for AArch64 SVE (__ARM_FEATURE_SVE intrinsics)
-   Copyright (C) 2018-2022 Free Software Foundation, Inc.
+   Copyright (C) 2018-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -45,6 +45,7 @@
 #include "aarch64-sve-builtins-base.h"
 #include "aarch64-sve-builtins-functions.h"
 #include "ssa.h"
+#include "gimple-fold.h"
 
 using namespace aarch64_sve;
 
@@ -517,9 +518,7 @@ public:
   gimple *
   fold (gimple_folder &f) const override
   {
-    tree count = build_int_cstu (TREE_TYPE (f.lhs),
-				 GET_MODE_NUNITS (m_ref_mode));
-    return gimple_build_assign (f.lhs, count);
+    return f.fold_to_cstu (GET_MODE_NUNITS (m_ref_mode));
   }
 
   rtx
@@ -536,8 +535,7 @@ public:
 class svcnt_bhwd_pat_impl : public svcnt_bhwd_impl
 {
 public:
-  CONSTEXPR svcnt_bhwd_pat_impl (machine_mode ref_mode)
-    : svcnt_bhwd_impl (ref_mode) {}
+  using svcnt_bhwd_impl::svcnt_bhwd_impl;
 
   gimple *
   fold (gimple_folder &f) const override
@@ -554,10 +552,7 @@ public:
     unsigned int elements_per_vq = 128 / GET_MODE_UNIT_BITSIZE (m_ref_mode);
     HOST_WIDE_INT value = aarch64_fold_sve_cnt_pat (pattern, elements_per_vq);
     if (value >= 0)
-      {
-	tree count = build_int_cstu (TREE_TYPE (f.lhs), value);
-	return gimple_build_assign (f.lhs, count);
-      }
+      return f.fold_to_cstu (value);
 
     return NULL;
   }
@@ -588,8 +583,7 @@ public:
 class svcreate_impl : public quiet<multi_vector_function>
 {
 public:
-  CONSTEXPR svcreate_impl (unsigned int vectors_per_tuple)
-    : quiet<multi_vector_function> (vectors_per_tuple) {}
+  using quiet<multi_vector_function>::quiet;
 
   gimple *
   fold (gimple_folder &f) const override
@@ -722,12 +716,7 @@ public:
 class svdotprod_lane_impl : public unspec_based_function_base
 {
 public:
-  CONSTEXPR svdotprod_lane_impl (int unspec_for_sint,
-				 int unspec_for_uint,
-				 int unspec_for_float)
-    : unspec_based_function_base (unspec_for_sint,
-				  unspec_for_uint,
-				  unspec_for_float) {}
+  using unspec_based_function_base::unspec_based_function_base;
 
   rtx
   expand (function_expander &e) const override
@@ -1003,8 +992,7 @@ public:
 class svget_impl : public quiet<multi_vector_function>
 {
 public:
-  CONSTEXPR svget_impl (unsigned int vectors_per_tuple)
-    : quiet<multi_vector_function> (vectors_per_tuple) {}
+  using quiet<multi_vector_function>::quiet;
 
   gimple *
   fold (gimple_folder &f) const override
@@ -1118,8 +1106,7 @@ public:
 class svld1_extend_impl : public extending_load
 {
 public:
-  CONSTEXPR svld1_extend_impl (type_suffix_index memory_type)
-    : extending_load (memory_type) {}
+  using extending_load::extending_load;
 
   rtx
   expand (function_expander &e) const override
@@ -1158,8 +1145,7 @@ public:
 class svld1_gather_extend_impl : public extending_load
 {
 public:
-  CONSTEXPR svld1_gather_extend_impl (type_suffix_index memory_type)
-    : extending_load (memory_type) {}
+  using extending_load::extending_load;
 
   rtx
   expand (function_expander &e) const override
@@ -1224,7 +1210,8 @@ public:
        vectype is the corresponding ADVSIMD type.  */
 
     if (!BYTES_BIG_ENDIAN
-	&& integer_all_onesp (arg0))
+	&& integer_all_onesp (arg0)
+	&& !flag_non_call_exceptions)
       {
 	tree lhs = gimple_call_lhs (f.call);
 	tree lhs_type = TREE_TYPE (lhs);
@@ -1247,7 +1234,9 @@ public:
 	tree mem_ref_op = fold_build2 (MEM_REF, access_type, arg1, zero);
 	gimple *mem_ref_stmt
 	  = gimple_build_assign (mem_ref_lhs, mem_ref_op);
-	gsi_insert_before (f.gsi, mem_ref_stmt, GSI_SAME_STMT);
+
+	gimple_seq stmts = NULL;
+	gimple_seq_add_stmt_without_update (&stmts, mem_ref_stmt);
 
 	int source_nelts = TYPE_VECTOR_SUBPARTS (access_type).to_constant ();
 	vec_perm_builder sel (lhs_len, source_nelts, 1);
@@ -1260,8 +1249,11 @@ public:
 						   indices));
 	tree mask_type = build_vector_type (ssizetype, lhs_len);
 	tree mask = vec_perm_indices_to_tree (mask_type, indices);
-	return gimple_build_assign (lhs, VEC_PERM_EXPR,
-				    mem_ref_lhs, mem_ref_lhs, mask);
+	gimple *g2 = gimple_build_assign (lhs, VEC_PERM_EXPR,
+					  mem_ref_lhs, mem_ref_lhs, mask);
+	gimple_seq_add_stmt_without_update (&stmts, g2);
+	gsi_replace_with_seq_vops (f.gsi, stmts);
+	return g2;
       }
 
     return NULL;
@@ -1289,8 +1281,7 @@ public:
 class svld234_impl : public full_width_access
 {
 public:
-  CONSTEXPR svld234_impl (unsigned int vectors_per_tuple)
-    : full_width_access (vectors_per_tuple) {}
+  using full_width_access::full_width_access;
 
   unsigned int
   call_properties (const function_instance &) const override
@@ -1372,8 +1363,7 @@ public:
 class svldff1_gather_extend : public extending_load
 {
 public:
-  CONSTEXPR svldff1_gather_extend (type_suffix_index memory_type)
-    : extending_load (memory_type) {}
+  using extending_load::extending_load;
 
   rtx
   expand (function_expander &e) const override
@@ -2070,8 +2060,7 @@ public:
 class svset_impl : public quiet<multi_vector_function>
 {
 public:
-  CONSTEXPR svset_impl (unsigned int vectors_per_tuple)
-    : quiet<multi_vector_function> (vectors_per_tuple) {}
+  using quiet<multi_vector_function>::quiet;
 
   gimple *
   fold (gimple_folder &f) const override
@@ -2199,8 +2188,7 @@ public:
 class svst1_scatter_truncate_impl : public truncating_store
 {
 public:
-  CONSTEXPR svst1_scatter_truncate_impl (scalar_int_mode to_mode)
-    : truncating_store (to_mode) {}
+  using truncating_store::truncating_store;
 
   rtx
   expand (function_expander &e) const override
@@ -2219,8 +2207,7 @@ public:
 class svst1_truncate_impl : public truncating_store
 {
 public:
-  CONSTEXPR svst1_truncate_impl (scalar_int_mode to_mode)
-    : truncating_store (to_mode) {}
+  using truncating_store::truncating_store;
 
   rtx
   expand (function_expander &e) const override
@@ -2235,8 +2222,7 @@ public:
 class svst234_impl : public full_width_access
 {
 public:
-  CONSTEXPR svst234_impl (unsigned int vectors_per_tuple)
-    : full_width_access (vectors_per_tuple) {}
+  using full_width_access::full_width_access;
 
   unsigned int
   call_properties (const function_instance &) const override
@@ -2351,8 +2337,7 @@ public:
 class svundef_impl : public quiet<multi_vector_function>
 {
 public:
-  CONSTEXPR svundef_impl (unsigned int vectors_per_tuple)
-    : quiet<multi_vector_function> (vectors_per_tuple) {}
+  using quiet<multi_vector_function>::quiet;
 
   rtx
   expand (function_expander &e) const override

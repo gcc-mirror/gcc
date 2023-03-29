@@ -9,6 +9,10 @@
 #define ATTR(...)   __attribute__ ((__VA_ARGS__))
 #define ASRT(expr)   _Static_assert (expr, #expr)
 
+#define ASMNAME(cname)  ASMNAME2 (__USER_LABEL_PREFIX__, cname)
+#define ASMNAME2(prefix, cname) STRING (prefix) cname
+#define STRING(x)    #x
+
 /* Variable that is local to this translation unit but that can
    be modified from other units by calling reset_unit_local().  */
 static int unit_local;
@@ -79,7 +83,7 @@ extern _Noreturn void fnoreturn (void);
 
 extern __typeof (fnoreturn)
   ATTR (visibility ("hidden"))
-  fnoreturn __asm__ ("fnoreturn_name");
+  fnoreturn __asm__ (ASMNAME ("fnoreturn_name"));
 
 void fnoreturn (void)
 {

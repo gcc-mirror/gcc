@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 //
-// Copyright (C) 2011-2022 Free Software Foundation, Inc.
+// Copyright (C) 2011-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -37,8 +37,10 @@ int main()
 {
   test01<int*>();
   test01<void*>();
+#if __STDC_HOSTED__
   test01<std::shared_ptr<int>>();
   test01<std::shared_ptr<void>>();
+#endif
   test01<std::unique_ptr<int>>();
   test01<std::unique_ptr<void>>();
 }

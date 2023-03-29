@@ -1,6 +1,6 @@
 // { dg-do run { target c++11 } }
 
-// Copyright (C) 2007-2022 Free Software Foundation, Inc.
+// Copyright (C) 2007-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,7 +38,7 @@ struct MoveOnly
   MoveOnly(MoveOnly const&) = delete;
   MoveOnly& operator=(MoveOnly const&) = delete;
 
-  bool operator==(MoveOnly const& m)
+  bool operator==(MoveOnly const& m) const
   { return i == m.i; }
 
   void swap(MoveOnly& m)

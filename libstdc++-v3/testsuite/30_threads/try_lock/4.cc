@@ -3,7 +3,7 @@
 // { dg-require-effective-target c++11 }
 // { dg-require-gthreads "" }
 
-// Copyright (C) 2010-2022 Free Software Foundation, Inc.
+// Copyright (C) 2010-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -125,7 +125,7 @@ void test03()
         unreliable_lock::count = 0;
         try
           {
-            std::try_lock(l1, l2, l3);
+            (void) std::try_lock(l1, l2, l3);
             VERIFY( false );
           }
         catch (int e)

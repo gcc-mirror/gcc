@@ -12,7 +12,6 @@ import core.sys.posix.signal;
 version (linux):
 
 extern (C):
-@system:
 nothrow:
 @nogc:
 

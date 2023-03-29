@@ -169,8 +169,8 @@ if (isIterable!Range && !isAutodecodableString!Range && !isInfinite!Range)
 }
 
 /// ditto
-ForeachType!(PointerTarget!Range)[] array(Range)(Range r)
-if (isPointer!Range && isIterable!(PointerTarget!Range) && !isAutodecodableString!Range && !isInfinite!Range)
+ForeachType!(typeof((*Range).init))[] array(Range)(Range r)
+if (is(Range == U*, U) && isIterable!U && !isAutodecodableString!Range && !isInfinite!Range)
 {
     return array(*r);
 }
@@ -586,7 +586,7 @@ if (isInputRange!Range)
     static assert(isMutable!ValueType, "assocArray: value type must be mutable");
 
     ValueType[KeyType] aa;
-    foreach (t; r)
+    foreach (ref t; r)
         aa[t[0]] = t[1];
     return aa;
 }
@@ -2294,22 +2294,6 @@ if (isInputRange!RoR &&
     }
 }
 
-// https://issues.dlang.org/show_bug.cgi?id=10895
-@safe unittest
-{
-    static class A
-    {
-        string name;
-        alias name this;
-        this(string name) { this.name = name; }
-    }
-    auto a = [new A(`foo`)];
-    assert(a[0].length == 3);
-    auto temp = join(a, " ");
-    assert(a[0].length == 3);
-    assert(temp.length == 3);
-}
-
 // https://issues.dlang.org/show_bug.cgi?id=14230
 @safe unittest
 {
@@ -3416,7 +3400,8 @@ do
 Implements an output range that appends data to an array. This is
 recommended over $(D array ~= data) when appending many elements because it is more
 efficient. `Appender` maintains its own array metadata locally, so it can avoid
-global locking for each append where $(LREF capacity) is non-zero.
+the $(DDSUBLINK spec/arrays, capacity-reserve, performance hit of looking up slice `capacity`)
+for each append.
 
 Params:
     A = the array type to simulate.
@@ -3587,7 +3572,7 @@ if (isDynamicArray!A)
     private template canPutItem(U)
     {
         enum bool canPutItem =
-            isImplicitlyConvertible!(Unqual!U, Unqual!T) ||
+            is(Unqual!U : Unqual!T) ||
             isSomeChar!T && isSomeChar!U;
     }
     private template canPutConstRange(Range)
@@ -4676,6 +4661,7 @@ nothrow pure @safe @nogc unittest
     assert(a == [0, 1]);
 }
 
+/// ditto
 pragma(inline, true) U[n] staticArray(U, T, size_t n)(auto ref T[n] a)
 if (!is(T == U) && is(T : U))
 {

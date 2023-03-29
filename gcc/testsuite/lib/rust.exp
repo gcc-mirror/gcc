@@ -1,0 +1,188 @@
+# Copyright (C) 2012-2023 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+#
+# rust support library routines
+#
+
+load_lib prune.exp
+load_lib gcc-defs.exp
+load_lib timeout.exp
+load_lib target-libpath.exp
+
+#
+# RUST_UNDER_TEST is the compiler under test.
+#
+
+set rust_compile_options ""
+
+
+#
+# rust_include_flags -- include flags for the gcc tree structure
+#
+
+proc rust_include_flags { paths } {
+    global srcdir
+    global TESTING_IN_BUILD_TREE
+
+    set flags ""
+
+    if { [is_remote host] || ![info exists TESTING_IN_BUILD_TREE] } {
+	return "${flags}"
+    }
+
+    set gccpath ${paths}
+
+    return "$flags"
+}
+
+#
+# rust_link_flags -- linker flags for the gcc tree structure
+#
+
+proc rust_link_flags { paths } {
+    global srcdir
+    global ld_library_path
+    global RUST_UNDER_TEST
+    global shlib_ext
+    global SHARED_OPTION
+
+    set gccpath ${paths}
+    set libio_dir ""
+    set flags ""
+    set ld_library_path "."
+    set shlib_ext [get_shlib_extension]
+    set SHARED_OPTION ""
+    verbose "shared lib extension: $shlib_ext"
+
+    set_ld_library_path_env_vars
+
+    return "$flags"
+}
+
+#
+# rust_init -- called at the start of each subdir of tests
+#
+
+proc rust_init { args } {
+    global subdir
+    global rust_initialized
+    global base_dir
+    global tmpdir
+    global libdir
+    global gluefile wrap_flags
+    global objdir srcdir
+    global ALWAYS_RUSTFLAGS
+    global TOOL_EXECUTABLE TOOL_OPTIONS
+    global RUST_UNDER_TEST
+    global TESTING_IN_BUILD_TREE
+    global TEST_ALWAYS_FLAGS
+    global gcc_warning_prefix
+    global gcc_error_prefix
+
+    # We set LC_ALL and LANG to C so that we get the same error messages as expected.
+    setenv LC_ALL C
+    setenv LANG C
+
+    if ![info exists RUST_UNDER_TEST] then {
+	if [info exists TOOL_EXECUTABLE] {
+	    set RUST_UNDER_TEST $TOOL_EXECUTABLE
+	} else {
+	    if { [is_remote host] || ! [info exists TESTING_IN_BUILD_TREE] } {
+		set RUST_UNDER_TEST [transform gccrs]
+	    } else {
+		set RUST_UNDER_TEST [findfile $base_dir/../../gccrs "$base_dir/../../gccrs -B$base_dir/../../" [findfile $base_dir/gccrs "$base_dir/gccrs -B$base_dir/" [transform gccrs]]]
+	    }
+	}
+    }
+
+    if ![is_remote host] {
+	if { [which $RUST_UNDER_TEST] == 0 } then {
+	    perror "RUST_UNDER_TEST ($RUST_UNDER_TEST) does not exist"
+	    exit 1
+	}
+    }
+
+    if ![info exists tmpdir] {
+	set tmpdir "/tmp"
+    }
+
+    if [info exists gluefile] {
+	unset gluefile
+    }
+
+    rust_maybe_build_wrapper "${tmpdir}/rust-testglue.o"
+
+    set ALWAYS_RUSTFLAGS ""
+
+    # TEST_ALWAYS_FLAGS are flags that should be passed to every
+    # compilation.  They are passed first to allow individual
+    # tests to override them.
+    if [info exists TEST_ALWAYS_FLAGS] {
+	lappend ALWAYS_RUSTFLAGS "additional_flags=$TEST_ALWAYS_FLAGS"
+    }
+
+    if ![is_remote host] {
+	if [info exists TOOL_OPTIONS] {
+	    lappend ALWAYS_RUSTFLAGS "additional_flags=[rust_include_flags [get_multilibs ${TOOL_OPTIONS}] ]"
+	    lappend ALWAYS_RUSTFLAGS "ldflags=[rust_link_flags [get_multilibs ${TOOL_OPTIONS}] ]"
+	} else {
+	    lappend ALWAYS_RUSTFLAGS "additional_flags=[rust_include_flags [get_multilibs] ]"
+	    lappend ALWAYS_RUSTFLAGS "ldflags=[rust_link_flags [get_multilibs] ]"
+	}
+    }
+
+    if [info exists TOOL_OPTIONS] {
+	lappend ALWAYS_RUSTFLAGS "additional_flags=$TOOL_OPTIONS"
+    }
+
+	lappend ALWAYS_RUSTFLAGS "additional_flags=-frust-incomplete-and-experimental-compiler-do-not-use"	
+	
+    verbose -log "ALWAYS_RUSTFLAGS set to $ALWAYS_RUSTFLAGS"
+
+    set gcc_warning_prefix "warning:"
+    set gcc_error_prefix "(fatal )?error:"
+
+    verbose "rust is initialized" 3
+}
+
+#
+# rust_target_compile -- compile a source file
+#
+
+proc rust_target_compile { source dest type options } {
+    global tmpdir
+    global gluefile wrap_flags
+    global ALWAYS_RUSTFLAGS
+    global RUST_UNDER_TEST
+    global individual_timeout
+
+    # HACK: guard against infinite loops in the compiler
+    set individual_timeout 10
+
+    if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
+	lappend options "libs=${gluefile}"
+	lappend options "ldflags=${wrap_flags}"
+    }
+
+    lappend options "timeout=[timeout_value]"
+    lappend options "compiler=$RUST_UNDER_TEST"
+
+    set options [concat "$ALWAYS_RUSTFLAGS" $options]
+    set options [dg-additional-files-options $options $source]
+
+    return [target_compile $source $dest $type $options]
+}

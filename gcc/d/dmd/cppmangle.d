@@ -4,7 +4,7 @@
  * This is the POSIX side of the implementation.
  * It exports two functions to C++, `toCppMangleItanium` and `cppTypeInfoMangleItanium`.
  *
- * Copyright: Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright: Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors: Walter Bright, https://www.digitalmars.com
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/cppmangle.d, _cppmangle.d)
@@ -38,6 +38,7 @@ import dmd.func;
 import dmd.globals;
 import dmd.id;
 import dmd.identifier;
+import dmd.location;
 import dmd.mtype;
 import dmd.nspace;
 import dmd.root.array;
@@ -172,7 +173,7 @@ private final class CppMangleVisitor : Visitor
      *   buf = `OutBuffer` to write the mangling to
      *   loc = `Loc` of the symbol being mangled
      */
-    this(OutBuffer* buf, Loc loc)
+    this(OutBuffer* buf, Loc loc) scope
     {
         this.buf = buf;
         this.loc = loc;
@@ -534,10 +535,10 @@ private final class CppMangleVisitor : Visitor
     {
         /* <template-args> ::= I <template-arg>+ E
          */
-        if (!ti || ti.tiargs.dim <= firstArg)   // could happen if std::basic_string is not a template
+        if (!ti || ti.tiargs.length <= firstArg)   // could happen if std::basic_string is not a template
             return false;
         buf.writeByte('I');
-        foreach (i; firstArg .. ti.tiargs.dim)
+        foreach (i; firstArg .. ti.tiargs.length)
         {
             TemplateDeclaration td = ti.tempdecl.isTemplateDeclaration();
             assert(td);
@@ -556,7 +557,7 @@ private final class CppMangleVisitor : Visitor
                 buf.writeByte('J');     // argument pack
 
                 // mangle the rest of the arguments as types
-                foreach (j; i .. (*ti.tiargs).dim)
+                foreach (j; i .. (*ti.tiargs).length)
                 {
                     Type t = isType((*ti.tiargs)[j]);
                     assert(t);
@@ -615,7 +616,7 @@ private final class CppMangleVisitor : Visitor
         if (!ti)
         {
             auto ag = s.isAggregateDeclaration();
-            const ident = (ag && ag.mangleOverride) ? ag.mangleOverride.id : s.ident;
+            const ident = (ag && ag.pMangleOverride) ? ag.pMangleOverride.id : s.ident;
             this.writeNamespace(s.cppnamespace, () {
                 this.writeIdentifier(ident);
                 this.abiTags.writeSymbol(s, this);
@@ -654,14 +655,14 @@ private final class CppMangleVisitor : Visitor
         }
 
         auto ag = ti.aliasdecl ? ti.aliasdecl.isAggregateDeclaration() : null;
-        if (ag && ag.mangleOverride)
+        if (ag && ag.pMangleOverride)
         {
             this.writeNamespace(
                 ti.toAlias().cppnamespace, () {
-                    this.writeIdentifier(ag.mangleOverride.id);
-                    if (ag.mangleOverride.agg && ag.mangleOverride.agg.isInstantiated())
+                    this.writeIdentifier(ag.pMangleOverride.id);
+                    if (ag.pMangleOverride.agg && ag.pMangleOverride.agg.isInstantiated())
                     {
-                        auto to = ag.mangleOverride.agg.isInstantiated();
+                        auto to = ag.pMangleOverride.agg.isInstantiated();
                         append(to);
                         this.abiTags.writeSymbol(to.tempdecl, this);
                         template_args(to);
@@ -760,7 +761,7 @@ private final class CppMangleVisitor : Visitor
             return false;
         Dsymbol q = getQualifier(ti);
         const bool inStd = isStd(q) || isStd(this.getTiNamespace(ti));
-        return inStd && ti.tiargs.dim == 1 && isChar((*ti.tiargs)[0]);
+        return inStd && ti.tiargs.length == 1 && isChar((*ti.tiargs)[0]);
     }
 
     /***
@@ -771,7 +772,7 @@ private final class CppMangleVisitor : Visitor
      */
     bool char_std_char_traits_char(TemplateInstance ti, string st)
     {
-        if (ti.tiargs.dim == 2 &&
+        if (ti.tiargs.length == 2 &&
             isChar((*ti.tiargs)[0]) &&
             isChar_traits_char((*ti.tiargs)[1]))
         {
@@ -851,7 +852,7 @@ private final class CppMangleVisitor : Visitor
         if (ti.name == Id.basic_string)
         {
             // ::std::basic_string<char, ::std::char_traits<char>, ::std::allocator<char>>
-            if (ti.tiargs.dim == 3 &&
+            if (ti.tiargs.length == 3 &&
                 isChar((*ti.tiargs)[0]) &&
                 isChar_traits_char((*ti.tiargs)[1]) &&
                 isAllocator_char((*ti.tiargs)[2]))
@@ -933,7 +934,7 @@ private final class CppMangleVisitor : Visitor
         else if (s.ident == Id.basic_string)
         {
             // ::std::basic_string<char, ::std::char_traits<char>, ::std::allocator<char>>
-            if (ti.tiargs.dim == 3 &&
+            if (ti.tiargs.length == 3 &&
                 isChar((*ti.tiargs)[0]) &&
                 isChar_traits_char((*ti.tiargs)[1]) &&
                 isAllocator_char((*ti.tiargs)[2]))
@@ -1224,7 +1225,7 @@ private final class CppMangleVisitor : Visitor
         case CppOperator.OpAssign:
             TemplateDeclaration td = ti.tempdecl.isTemplateDeclaration();
             assert(td);
-            assert(ti.tiargs.dim >= 1);
+            assert(ti.tiargs.length >= 1);
             TemplateParameter tp = (*td.parameters)[0];
             TemplateValueParameter tv = tp.isTemplateValueParameter();
             if (!tv || !tv.valType.isString())
@@ -2005,14 +2006,14 @@ extern(C++):
                 this.context.res = (*analyzed_ti.tiargs)[idx];
                 o.visitObject(this);
             }
-            if (analyzed_ti.tiargs.dim > t.tiargs.dim)
+            if (analyzed_ti.tiargs.length > t.tiargs.length)
             {
                 // If the resolved AST has more args than the parse one,
                 // we have default arguments
                 auto oparams = (cast(TemplateDeclaration)analyzed_ti.tempdecl).origParameters;
-                foreach (idx, arg; (*oparams)[t.tiargs.dim .. $])
+                foreach (idx, arg; (*oparams)[t.tiargs.length .. $])
                 {
-                    this.context.res = (*analyzed_ti.tiargs)[idx + t.tiargs.dim];
+                    this.context.res = (*analyzed_ti.tiargs)[idx + t.tiargs.length];
 
                     if (auto ttp = arg.isTemplateTypeParameter())
                         ttp.defaultType.accept(this);

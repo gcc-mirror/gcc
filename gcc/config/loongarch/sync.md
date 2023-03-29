@@ -1,5 +1,5 @@
 ;; Machine description for LoongArch atomic operations.
-;; Copyright (C) 2021-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2021-2023 Free Software Foundation, Inc.
 ;; Contributed by Loongson Ltd.
 ;; Based on MIPS and RISC-V target for GNU compiler.
 
@@ -448,6 +448,29 @@
 }
   [(set (attr "length") (const_int 32))])
 
+(define_insn "atomic_cas_value_exchange_7_<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=&r")
+	(match_operand:GPR 1 "memory_operand" "+ZC"))
+   (set (match_dup 1)
+	(unspec_volatile:GPR [(match_operand:GPR 2 "reg_or_0_operand" "rJ")
+			      (match_operand:GPR 3 "reg_or_0_operand" "rJ")
+			      (match_operand:GPR 4 "reg_or_0_operand" "rJ")
+			      (match_operand:GPR 5 "reg_or_0_operand"  "rJ")
+			      (match_operand:SI 6 "const_int_operand")] ;; model
+	 UNSPEC_SYNC_EXCHANGE))
+   (clobber (match_scratch:GPR 7 "=&r"))]
+  ""
+{
+  return "%G6\\n\\t"
+	 "1:\\n\\t"
+	 "ll.<amo>\\t%0,%1\\n\\t"
+	 "and\\t%7,%0,%z3\\n\\t"
+	 "or%i5\\t%7,%7,%5\\n\\t"
+	 "sc.<amo>\\t%7,%1\\n\\t"
+	 "beqz\\t%7,1b\\n\\t";
+}
+  [(set (attr "length") (const_int 20))])
+
 (define_expand "atomic_exchange<mode>"
   [(set (match_operand:SHORT 0 "register_operand")
 	(unspec_volatile:SHORT
@@ -459,9 +482,9 @@
   ""
 {
   union loongarch_gen_fn_ptrs generator;
-  generator.fn_7 = gen_atomic_cas_value_cmp_and_7_si;
+  generator.fn_7 = gen_atomic_cas_value_exchange_7_si;
   loongarch_expand_atomic_qihi (generator, operands[0], operands[1],
-				operands[1], operands[2], operands[3]);
+				const0_rtx, operands[2], operands[3]);
   DONE;
 })
 

@@ -1,5 +1,5 @@
 /* { dg-do compile { target { lp64 && powerpc_p9vector_ok } } } */
-/* { dg-options "-mdejagnu-cpu=power9 -O2 -ftree-vectorize -fno-vect-cost-model -fno-unroll-loops" } */
+/* { dg-options "-mdejagnu-cpu=power9 -O2 -ftree-vectorize -fno-vect-cost-model -fno-unroll-loops -fno-trapping-math" } */
 
 /* { dg-additional-options "--param=vect-partial-vector-usage=1" } */
 
@@ -8,5 +8,5 @@
 
 #include "p9-vec-length-8.h"
 
-/* { dg-final { scan-assembler-times {\mlxvl\M} 21 } } */
+/* { dg-final { scan-assembler-times {\mlxvl\M} 16 } } */
 /* { dg-final { scan-assembler-times {\mstxvl\M} 7 } } */

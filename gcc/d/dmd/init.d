@@ -1,7 +1,7 @@
 /**
  * Defines initializers of variables, e.g. the array literal in `int[3] x = [0, 1, 2]`.
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/init.d, _init.d)
@@ -22,6 +22,7 @@ import dmd.expression;
 import dmd.globals;
 import dmd.hdrgen;
 import dmd.identifier;
+import dmd.location;
 import dmd.mtype;
 import dmd.common.outbuffer;
 import dmd.root.rootobject;
@@ -167,6 +168,7 @@ extern (C++) final class ArrayInitializer : Initializer
     uint dim;               // length of array being initialized
     Type type;              // type that array will be used to initialize
     bool sem;               // true if semantic() is run
+    bool isCarray;          // C array semantics
 
     extern (D) this(const ref Loc loc)
     {
@@ -270,10 +272,10 @@ Initializer syntaxCopy(Initializer inx)
     static Initializer copyStruct(StructInitializer vi)
     {
         auto si = new StructInitializer(vi.loc);
-        assert(vi.field.dim == vi.value.dim);
-        si.field.setDim(vi.field.dim);
-        si.value.setDim(vi.value.dim);
-        foreach (const i; 0 .. vi.field.dim)
+        assert(vi.field.length == vi.value.length);
+        si.field.setDim(vi.field.length);
+        si.value.setDim(vi.value.length);
+        foreach (const i; 0 .. vi.field.length)
         {
             si.field[i] = vi.field[i];
             si.value[i] = vi.value[i].syntaxCopy();
@@ -284,10 +286,10 @@ Initializer syntaxCopy(Initializer inx)
     static Initializer copyArray(ArrayInitializer vi)
     {
         auto ai = new ArrayInitializer(vi.loc);
-        assert(vi.index.dim == vi.value.dim);
-        ai.index.setDim(vi.index.dim);
-        ai.value.setDim(vi.value.dim);
-        foreach (const i; 0 .. vi.value.dim)
+        assert(vi.index.length == vi.value.length);
+        ai.index.setDim(vi.index.length);
+        ai.value.setDim(vi.value.length);
+        foreach (const i; 0 .. vi.value.length)
         {
             ai.index[i] = vi.index[i] ? vi.index[i].syntaxCopy() : null;
             ai.value[i] = vi.value[i].syntaxCopy();

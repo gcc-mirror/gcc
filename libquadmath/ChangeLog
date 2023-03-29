@@ -1,3 +1,201 @@
+2023-03-02  niXman  <i.nixman@autistici.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR libquadmath/87204
+	PR libquadmath/94756
+	* printf/gmp-impl.h (mp_limb_t, mp_limb_signed_t, BITS_PER_MP_LIMB):
+	Use 64-bit limbs on LLP64 targets.
+	* strtod/strtod_l.c (round_and_return): Cherry-pick glibc
+	9310c284ae9 BZ #16151, 4406c41c1d6 BZ #16965 and fcd6b5ac36a
+	BZ #23279 fixes.
+	(____STRTOF_INTERNAL): Cherry-pick glibc b0debe14fcf BZ #23007,
+	5556d30caee BZ #18247, 09555b9721d and c6aac3bf366 BZ #26137 and
+	d84f25c7d87 fixes.
+
+2023-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* libquadmath.texi: Bump @copying's copyright year.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* doc/conf.py: New file.
+	* doc/copyright.rst: New file.
+	* doc/gnu-free-documentation-license.rst: New file.
+	* doc/i-o-library-routines.rst: New file.
+	* doc/index.rst: New file.
+	* doc/indices-and-tables.rst: New file.
+	* doc/introduction.rst: New file.
+	* doc/math-library-routines.rst: New file.
+	* doc/quadmathsnprintf.rst: New file.
+	* doc/reporting-bugs.rst: New file.
+	* doc/strtoflt128.rst: New file.
+	* doc/typedef-and-constants.rst: New file.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Support Sphinx based documentation.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* libquadmath.texi: Removed.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Support --with-sphinx-build.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Build info pages conditionally.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* doc/copyright.rst:
+	Add trailing newline.
+	* doc/gnu-free-documentation-license.rst:
+	Add trailing newline.
+	* doc/i-o-library-routines.rst:
+	Add trailing newline.
+	* doc/index.rst:
+	Add trailing newline.
+	* doc/indices-and-tables.rst:
+	Add trailing newline.
+	* doc/introduction.rst:
+	Add trailing newline.
+	* doc/math-library-routines.rst:
+	Add trailing newline.
+	* doc/quadmathsnprintf.rst:
+	Add trailing newline.
+	* doc/reporting-bugs.rst:
+	Add trailing newline.
+	* doc/strtoflt128.rst:
+	Add trailing newline.
+	* doc/typedef-and-constants.rst:
+	Add trailing newline.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Add missing HAS_SPHINX_BUILD.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* doc/conf.py: Add newline at last line.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	PR other/107620
+	* configure: Regenerate.
+	* configure.ac: Always set sphinx-build.
+
+2022-11-13  Martin Liska  <mliska@suse.cz>
+
+	PR other/107620
+	* configure: Regenerate.
+	* configure.ac: Always set sphinx-build.
+
+2022-11-10  Martin Liska  <mliska@suse.cz>
+
+	* doc/conf.py: Add newline at last line.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Add missing HAS_SPHINX_BUILD.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/copyright.rst:
+	Add trailing newline.
+	* doc/gnu-free-documentation-license.rst:
+	Add trailing newline.
+	* doc/i-o-library-routines.rst:
+	Add trailing newline.
+	* doc/index.rst:
+	Add trailing newline.
+	* doc/indices-and-tables.rst:
+	Add trailing newline.
+	* doc/introduction.rst:
+	Add trailing newline.
+	* doc/math-library-routines.rst:
+	Add trailing newline.
+	* doc/quadmathsnprintf.rst:
+	Add trailing newline.
+	* doc/reporting-bugs.rst:
+	Add trailing newline.
+	* doc/strtoflt128.rst:
+	Add trailing newline.
+	* doc/typedef-and-constants.rst:
+	Add trailing newline.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Build info pages conditionally.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Support --with-sphinx-build.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* libquadmath.texi: Removed.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Support Sphinx based documentation.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/conf.py: New file.
+	* doc/copyright.rst: New file.
+	* doc/gnu-free-documentation-license.rst: New file.
+	* doc/i-o-library-routines.rst: New file.
+	* doc/index.rst: New file.
+	* doc/indices-and-tables.rst: New file.
+	* doc/introduction.rst: New file.
+	* doc/math-library-routines.rst: New file.
+	* doc/quadmathsnprintf.rst: New file.
+	* doc/reporting-bugs.rst: New file.
+	* doc/strtoflt128.rst: New file.
+	* doc/typedef-and-constants.rst: New file.
+
+2022-10-12  Martin Liska  <mliska@suse.cz>
+
+	* configure: Regenerate.
+
+2022-10-11  Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* configure: Regenerate.
+
 2022-08-25  Martin Liska  <mliska@suse.cz>
 
 	* configure: Regenerate.

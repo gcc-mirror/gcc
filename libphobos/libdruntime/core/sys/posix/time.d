@@ -33,7 +33,6 @@ version (Posix):
 extern (C):
 nothrow:
 @nogc:
-@system:
 
 //
 // Required (defined in core.stdc.time)
@@ -84,6 +83,7 @@ else version (CRuntime_Bionic)
 }
 else version (CRuntime_Musl)
 {
+    pragma(mangle, muslRedirTime64Mangle!("timegm", "__timegm_time64"))
     time_t timegm(tm*);
 }
 else version (CRuntime_UClibc)
@@ -484,15 +484,21 @@ else version (CRuntime_Musl)
 
     int nanosleep(const scope timespec*, timespec*);
 
+    pragma(mangle, muslRedirTime64Mangle!("clock_getres", "__clock_getres_time64"))
     int clock_getres(clockid_t, timespec*);
+    pragma(mangle, muslRedirTime64Mangle!("clock_gettime", "__clock_gettime64"))
     int clock_gettime(clockid_t, timespec*);
+    pragma(mangle, muslRedirTime64Mangle!("clock_settime", "__clock_settime64"))
     int clock_settime(clockid_t, const scope timespec*);
+    pragma(mangle, muslRedirTime64Mangle!("clock_nanosleep", "__clock_nanosleep_time64"))
     int clock_nanosleep(clockid_t, int, const scope timespec*, timespec*);
     int clock_getcpuclockid(pid_t, clockid_t *);
 
     int timer_create(clockid_t, sigevent*, timer_t*);
     int timer_delete(timer_t);
+    pragma(mangle, muslRedirTime64Mangle!("timer_gettime", "__timer_gettime64"))
     int timer_gettime(timer_t, itimerspec*);
+    pragma(mangle, muslRedirTime64Mangle!("timer_settime", "__timer_settime64"))
     int timer_settime(timer_t, int, const scope itimerspec*, itimerspec*);
     int timer_getoverrun(timer_t);
 }
@@ -597,8 +603,11 @@ else version (CRuntime_Bionic)
 else version (CRuntime_Musl)
 {
     char* asctime_r(const scope tm*, char*);
+    pragma(mangle, muslRedirTime64Mangle!("ctime_r", "__ctime64_r"))
     char* ctime_r(const scope time_t*, char*);
+    pragma(mangle, muslRedirTime64Mangle!("gmtime_r", "__gmtime64_r"))
     tm*   gmtime_r(const scope time_t*, tm*);
+    pragma(mangle, muslRedirTime64Mangle!("localtime_r", "__localtime64_r"))
     tm*   localtime_r(const scope time_t*, tm*);
 }
 else version (CRuntime_UClibc)

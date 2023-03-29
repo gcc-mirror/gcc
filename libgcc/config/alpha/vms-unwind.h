@@ -1,5 +1,5 @@
 /* Fallback frame unwinding for Alpha/VMS.
-   Copyright (C) 1996-2022 Free Software Foundation, Inc.
+   Copyright (C) 1996-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -50,7 +50,7 @@ extern int SYS$GL_CALL_HANDL;
 
 #define UPDATE_FS_FOR_CFA_GR(FS, GRN, LOC, CFA) \
 do { \
-(FS)->regs.reg[GRN].how = REG_SAVED_OFFSET;      \
+(FS)->regs.how[GRN] = REG_SAVED_OFFSET;      \
 (FS)->regs.reg[GRN].loc.offset = (_Unwind_Sword) ((REG) (LOC) - (REG) (CFA)); \
 } while (0);
 
@@ -212,10 +212,10 @@ alpha_vms_fallback_frame_state (struct _Unwind_Context *context,
 	if (eh_debug)
 	  printf ("FALLBACK: REGISTER frame procedure\n");
 
-	fs->regs.reg[RA_COLUMN].how = REG_SAVED_REG;
+	fs->regs.how[RA_COLUMN] = REG_SAVED_REG;
 	fs->regs.reg[RA_COLUMN].loc.reg = pv->pdsc$b_save_ra;
 	
-	fs->regs.reg[29].how = REG_SAVED_REG;
+	fs->regs.how[29] = REG_SAVED_REG;
 	fs->regs.reg[29].loc.reg = pv->pdsc$b_save_fp;
 	
 	break;

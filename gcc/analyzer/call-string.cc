@@ -1,5 +1,5 @@
 /* Call stacks at program points.
-   Copyright (C) 2019-2022 Free Software Foundation, Inc.
+   Copyright (C) 2019-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -19,12 +19,12 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "pretty-print.h"
 #include "tree.h"
 #include "options.h"
-#include "json.h"
 #include "ordered-hash-map.h"
 #include "options.h"
 #include "cgraph.h"
@@ -167,6 +167,22 @@ call_string::calc_recursion_depth () const
   for (const call_string::element_t &e : m_elements)
     if (e == top_return_sedge)
       ++result;
+  return result;
+}
+
+/* Count the number of times FUN appears in the string.  */
+
+int
+call_string::count_occurrences_of_function (function *fun) const
+{
+  int result = 0;
+  for (const call_string::element_t &e : m_elements)
+    {
+      if (e.get_callee_function () == fun)
+	result++;
+      if (e.get_caller_function () == fun)
+	result++;
+    }
   return result;
 }
 

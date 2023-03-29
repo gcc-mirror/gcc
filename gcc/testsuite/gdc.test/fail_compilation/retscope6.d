@@ -25,7 +25,7 @@ int* test() @safe
 ---
 fail_compilation/retscope6.d(7034): Error: address of variable `i` assigned to `s` with longer lifetime
 fail_compilation/retscope6.d(7035): Error: address of variable `i` assigned to `s` with longer lifetime
-fail_compilation/retscope6.d(7025): Error: scope variable `_param_2` assigned to `t` with longer lifetime
+fail_compilation/retscope6.d(7025): Error: scope variable `_param_2` assigned to `ref` variable `t` with longer lifetime
 fail_compilation/retscope6.d(7037): Error: template instance `retscope6.S.emplace4!(int*)` error instantiating
 fail_compilation/retscope6.d(7037): Error: address of variable `i` assigned to `s` with longer lifetime
 ---
@@ -141,13 +141,14 @@ void testarchie()
 
 /* TEST_OUTPUT:
 ---
-fail_compilation/retscope6.d(9022): Error: returning `fred(& i)` escapes a reference to local variable `i`
+fail_compilation/retscope6.d(9023): Error: returning `fred(& i)` escapes a reference to local variable `i`
 ---
 */
 
 #line 9000
 
-@safe:
+@safe
+{
 
 alias T9 = S9!(); struct S9()
 {
@@ -198,6 +199,7 @@ void hmac(scope ubyte[] secret)
 {
     ubyte[10] buffer;
     secret = buffer[];
+}
 }
 
 /* TEST_OUTPUT:
@@ -289,3 +291,5 @@ ref int escape23021() @safe
     // ensure we do not infer return ref
     return infer23021(nonScopePtr); // no error
 }
+
+/******************************/

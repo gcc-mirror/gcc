@@ -1,5 +1,5 @@
 /* Target-dependent globals.
-   Copyright (C) 2010-2022 Free Software Foundation, Inc.
+   Copyright (C) 2010-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -69,7 +69,7 @@ extern class target_globals default_target_globals;
 extern class target_globals *save_target_globals (void);
 extern class target_globals *save_target_globals_default_opts (void);
 
-static inline void
+inline void
 restore_target_globals (class target_globals *g)
 {
   this_target_flag_state = g->flag_state;

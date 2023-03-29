@@ -1,5 +1,5 @@
 /* LRA (local register allocator) driver and LRA utilities.
-   Copyright (C) 2010-2022 Free Software Foundation, Inc.
+   Copyright (C) 2010-2023 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -2453,7 +2453,7 @@ lra (FILE *f)
 		  lra_hard_reg_split_p = true;
 		}
 	    }
-	  while (fails_p);
+	  while (fails_p && !lra_asm_error_p);
 	  if (! live_p) {
 	    /* We need the correct reg notes for work of constraint sub-pass.  */
 	    lra_create_live_ranges (true, true);

@@ -1,5 +1,5 @@
 /* Selftest support for diagnostics.
-   Copyright (C) 2016-2022 Free Software Foundation, Inc.
+   Copyright (C) 2016-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -41,6 +41,7 @@ test_diagnostic_context::test_diagnostic_context ()
   show_column = true;
   start_span = start_span_cb;
   min_margin_width = 6;
+  caret_max_width = 80;
 }
 
 test_diagnostic_context::~test_diagnostic_context ()

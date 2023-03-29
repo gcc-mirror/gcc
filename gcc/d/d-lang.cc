@@ -1,5 +1,5 @@
 /* d-lang.cc -- Language-dependent hooks for D.
-   Copyright (C) 2006-2022 Free Software Foundation, Inc.
+   Copyright (C) 2006-2023 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -303,7 +303,7 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   /* Warnings and deprecations are disabled by default.  */
   global.params.useDeprecated = DIAGNOSTICinform;
   global.params.warnings = DIAGNOSTICoff;
-  global.params.messageStyle = MESSAGESTYLEgnu;
+  global.params.messageStyle = MessageStyle::gnu;
 
   global.params.imppath = d_gc_malloc<Strings> ();
   global.params.fileImppath = d_gc_malloc<Strings> ();
@@ -558,7 +558,6 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_fpreview_all:
       global.params.ehnogc = value;
-      global.params.useDIP25 = FeatureState::enabled;
       global.params.useDIP1000 = FeatureState::enabled;
       global.params.useDIP1021 = value;
       global.params.bitfields = value;
@@ -567,10 +566,10 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       global.params.fixAliasThis = value;
       global.params.previewIn = value;
       global.params.fix16997 = value;
-      global.params.noSharedAccess = value;
+      global.params.noSharedAccess = FeatureState::enabled;
       global.params.rvalueRefParam = FeatureState::enabled;
       global.params.inclusiveInContracts = value;
-      global.params.shortenedMethods = value;
+      global.params.systemVariables = FeatureState::enabled;
       global.params.fixImmutableConv = value;
       break;
 
@@ -588,10 +587,6 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_fpreview_dip1021:
       global.params.useDIP1021 = value;
-      break;
-
-    case OPT_fpreview_dip25:
-      global.params.useDIP25 = FeatureState::enabled;
       break;
 
     case OPT_fpreview_dtorfields:
@@ -619,15 +614,15 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fpreview_nosharedaccess:
-      global.params.noSharedAccess = value;
+      global.params.noSharedAccess = FeatureState::enabled;
       break;
 
     case OPT_fpreview_rvaluerefparam:
       global.params.rvalueRefParam = FeatureState::enabled;
       break;
 
-    case OPT_fpreview_shortenedmethods:
-      global.params.shortenedMethods = value;
+    case OPT_fpreview_systemvariables:
+      global.params.systemVariables = FeatureState::enabled;
       break;
 
     case OPT_frelease:
@@ -636,17 +631,12 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_frevert_all:
       global.params.useDIP1000 = FeatureState::disabled;
-      global.params.useDIP25 = FeatureState::disabled;
       global.params.dtorFields = FeatureState::disabled;
       global.params.fix16997 = !value;
       break;
 
     case OPT_frevert_dip1000:
       global.params.useDIP1000 = FeatureState::disabled;
-      break;
-
-    case OPT_frevert_dip25:
-      global.params.useDIP25 = FeatureState::disabled;
       break;
 
     case OPT_frevert_dtorfields:
@@ -911,10 +901,6 @@ d_post_options (const char ** fn)
   if (global.params.useDIP1021)
     global.params.useDIP1000 = FeatureState::enabled;
 
-  /* Enabling DIP1000 implies DIP25.  */
-  if (global.params.useDIP1000 == FeatureState::enabled)
-    global.params.useDIP25 = FeatureState::enabled;
-
   /* Keep in sync with existing -fbounds-check flag.  */
   flag_bounds_check = (global.params.useArrayBounds == CHECKENABLEon);
 
@@ -939,6 +925,9 @@ d_post_options (const char ** fn)
   global.params.useInline = flag_inline_functions;
   global.params.showColumns = flag_show_column;
   global.params.printErrorContext = flag_diagnostics_show_caret;
+
+  /* Keep the front-end location type in sync with params.  */
+  Loc::set (global.params.showColumns, global.params.messageStyle);
 
   if (global.params.useInline)
     global.params.dihdr.fullOutput = true;

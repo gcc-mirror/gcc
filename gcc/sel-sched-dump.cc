@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.   Log dumping infrastructure.
-   Copyright (C) 2006-2022 Free Software Foundation, Inc.
+   Copyright (C) 2006-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -982,16 +982,6 @@ debug_blist (blist_t bnds)
 {
   switch_dump (stderr);
   dump_blist (bnds);
-  sel_print ("\n");
-  restore_dump ();
-}
-
-/* Dump a hard reg set SET to stderr.  */
-DEBUG_FUNCTION void
-debug_hard_reg_set (HARD_REG_SET set)
-{
-  switch_dump (stderr);
-  dump_hard_reg_set ("", set);
   sel_print ("\n");
   restore_dump ();
 }

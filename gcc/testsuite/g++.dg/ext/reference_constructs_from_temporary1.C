@@ -201,7 +201,7 @@ SA(!__reference_constructs_from_temporary(const int&, H));
 SA(!__reference_constructs_from_temporary(int&&, G2));
 SA(!__reference_constructs_from_temporary(const int&, H2));
 
-SA(!__reference_constructs_from_temporary(const Base&, Der));
+SA(__reference_constructs_from_temporary(const Base&, Der));
 
 // This fails because std::is_constructible_v<int&&, id<int[3]>> is false.
 SA(!__reference_constructs_from_temporary(int&&, id<int[3]>));

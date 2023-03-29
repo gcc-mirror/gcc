@@ -1,0 +1,206 @@
+(* m2decl.def definition module for m2decl.cc.
+
+Copyright (C) 2011-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE m2decl ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+FROM m2tree IMPORT Tree ;
+FROM m2linemap IMPORT location_t ;
+
+
+(*
+   BuildModuleCtor creates the per module constructor used as part of
+   the dynamic linking scaffold.
+*)
+
+PROCEDURE BuildModuleCtor (moduleCtor: Tree) ;
+
+
+(*
+   DeclareModuleCtor configures the function to be used as a ctor.
+*)
+
+PROCEDURE DeclareModuleCtor (decl: Tree) : Tree ;
+
+
+
+(*
+
+*)
+
+PROCEDURE DeclareM2linkForcedModuleInitOrder (location: location_t;
+                                              RuntimeOverride: ADDRESS) : Tree ;
+
+
+PROCEDURE DeclareM2linkStaticInitialization (location: location_t;
+                                             ScaffoldStatic: INTEGER) : Tree ;
+
+PROCEDURE BuildPtrToTypeString (location: location_t; string: ADDRESS; type: Tree) : Tree ;
+
+
+(*
+    GetBitsPerBitset - returns the number of bits in a BITSET.
+*)
+
+PROCEDURE GetBitsPerBitset () : INTEGER ;
+
+
+(*
+    GetBitsPerInt - returns the number of bits in a INTEGER.
+*)
+
+PROCEDURE GetBitsPerInt () : INTEGER ;
+
+
+(*
+    GetBitsPerUnit - returns the number of bits in a UNIT.
+*)
+
+PROCEDURE GetBitsPerUnit () : INTEGER ;
+
+
+(*
+    GetBitsPerWord - returns the number of bits in a WORD.
+*)
+
+PROCEDURE GetBitsPerWord () : INTEGER ;
+
+
+(*
+    BuildIntegerConstant - return a tree containing the integer value.
+*)
+
+PROCEDURE BuildIntegerConstant (value: INTEGER) : Tree ;
+
+
+(*
+    BuildStringConstantType - builds a string constant with a type.
+*)
+
+PROCEDURE BuildStringConstantType (length: INTEGER; string: ADDRESS; type: Tree) : Tree ;
+
+
+(*
+    DeclareKnownVariable - declares a variable in scope,
+                           funcscope. Note that the global variable,
+                           current_function_decl, is altered if
+                           isglobal is TRUE.
+*)
+
+PROCEDURE DeclareKnownVariable (location: location_t; name: ADDRESS; type: Tree;
+                                exported, imported, istemporary, isglobal: BOOLEAN;
+                                scope, initial: Tree) : Tree ;
+
+
+(*
+    DeclareKnownConstant - given a constant, value, of, type, create a constant in the GCC
+                           symbol table. Note that the name of the constant is not used
+                           as _all_ constants are declared in the global scope. The front end
+                           deals with scoping rules - here we declare all constants with no names
+                           in the global scope. This allows M2SubExp and constant folding routines
+                           the liberty of operating with quadruples which all assume constants can
+                           always be referenced.
+*)
+
+PROCEDURE DeclareKnownConstant (location: location_t; type: Tree; value: Tree) : Tree ;
+
+
+(*
+    BuildParameterDeclaration - creates and returns one parameter from, name, and, type.
+                                It appends this parameter to the internal param_type_list.
+                                If name is nul then we assume we are creating a function
+                                type declaration and we ignore names.
+*)
+
+PROCEDURE BuildParameterDeclaration (location: location_t; name: ADDRESS; type: Tree;
+                                     isreference: BOOLEAN) : Tree ;
+
+
+(*
+    BuildStartFunctionDeclaration - initializes global variables ready
+                                    for building a function.
+*)
+
+PROCEDURE BuildStartFunctionDeclaration (uses_varargs: BOOLEAN) ;
+
+
+(*
+    BuildEndFunctionDeclaration - build a function which will return a value of returntype.
+                                  The arguments have been created by BuildParameterDeclaration.
+*)
+
+PROCEDURE BuildEndFunctionDeclaration (location_begin, location_end: location_t;
+                                       name: ADDRESS; returntype: Tree;
+                                       isexternal, isnested, ispublic,
+                                       isnoreturn: BOOLEAN) : Tree ;
+
+
+(*
+    RememberVariables -
+*)
+
+PROCEDURE RememberVariables (l: Tree) ;
+
+
+(*
+    DetermineSizeOfConstant - given, str, and, base, fill in
+                              needsLong and needsUnsigned appropriately.
+*)
+
+PROCEDURE DetermineSizeOfConstant (location: location_t;
+                                   str: ADDRESS; base: CARDINAL;
+                                   VAR needsLong, needsUnsigned: BOOLEAN;
+                                   issueError: BOOLEAN) : BOOLEAN ;
+
+
+(*
+    BuildConstLiteralNumber - returns a GCC TREE built from the string, str.
+                              It assumes that, str, represents a legal
+                              number in Modula-2. It always returns a
+                              positive value.
+*)
+
+PROCEDURE BuildConstLiteralNumber (location: location_t;
+                                   str: ADDRESS; base: CARDINAL;
+                                   issueError: BOOLEAN) : Tree ;
+
+
+(*
+    BuildStringConstant - creates a string constant given a, string,
+                          and, length.
+*)
+
+PROCEDURE BuildStringConstant (string: ADDRESS; length: INTEGER) : Tree ;
+
+
+(*
+    BuildCStringConstant - creates a string constant given a, string,
+                           and, length.
+*)
+
+PROCEDURE BuildCStringConstant (string: ADDRESS; length: INTEGER) : Tree ;
+
+
+
+PROCEDURE GetDeclContext (t: Tree) : Tree ;
+
+
+END m2decl.

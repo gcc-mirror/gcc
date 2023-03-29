@@ -1,0 +1,198 @@
+/* Xtensa configuration settings.
+   Copyright (C) 2022-2023 Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
+
+   Under Section 7 of GPL version 3, you are granted additional
+   permissions described in the GCC Runtime Library Exception, version
+   3.1, as published by the Free Software Foundation.
+
+   You should have received a copy of the GNU General Public License and
+   a copy of the GCC Runtime Library Exception along with this program;
+   see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+   <http://www.gnu.org/licenses/>.  */
+
+#ifndef XTENSA_CONFIG_BUILTIN_H
+#define XTENSA_CONFIG_BUILTIN_H
+
+/* The macros defined here match those with the same names in the Xtensa
+   compile-time HAL (Hardware Abstraction Layer).  Please refer to the
+   Xtensa System Software Reference Manual for documentation of these
+   macros.  */
+
+#undef XCHAL_HAVE_BE
+#define XCHAL_HAVE_BE			__XCHAL_HAVE_BE
+
+#undef XCHAL_HAVE_DENSITY
+#define XCHAL_HAVE_DENSITY		__XCHAL_HAVE_DENSITY
+
+#undef XCHAL_HAVE_CONST16
+#define XCHAL_HAVE_CONST16		__XCHAL_HAVE_CONST16
+
+#undef XCHAL_HAVE_ABS
+#define XCHAL_HAVE_ABS			__XCHAL_HAVE_ABS
+
+#undef XCHAL_HAVE_ADDX
+#define XCHAL_HAVE_ADDX			__XCHAL_HAVE_ADDX
+
+#undef XCHAL_HAVE_L32R
+#define XCHAL_HAVE_L32R			__XCHAL_HAVE_L32R
+
+#undef XSHAL_USE_ABSOLUTE_LITERALS
+#define XSHAL_USE_ABSOLUTE_LITERALS	__XSHAL_USE_ABSOLUTE_LITERALS
+
+#undef XSHAL_HAVE_TEXT_SECTION_LITERALS
+#define XSHAL_HAVE_TEXT_SECTION_LITERALS __XSHAL_HAVE_TEXT_SECTION_LITERALS
+
+#undef XCHAL_HAVE_MAC16
+#define XCHAL_HAVE_MAC16		__XCHAL_HAVE_MAC16
+
+#undef XCHAL_HAVE_MUL16
+#define XCHAL_HAVE_MUL16		__XCHAL_HAVE_MUL16
+
+#undef XCHAL_HAVE_MUL32
+#define XCHAL_HAVE_MUL32		__XCHAL_HAVE_MUL32
+
+#undef XCHAL_HAVE_MUL32_HIGH
+#define XCHAL_HAVE_MUL32_HIGH		__XCHAL_HAVE_MUL32_HIGH
+
+#undef XCHAL_HAVE_DIV32
+#define XCHAL_HAVE_DIV32		__XCHAL_HAVE_DIV32
+
+#undef XCHAL_HAVE_NSA
+#define XCHAL_HAVE_NSA			__XCHAL_HAVE_NSA
+
+#undef XCHAL_HAVE_MINMAX
+#define XCHAL_HAVE_MINMAX		__XCHAL_HAVE_MINMAX
+
+#undef XCHAL_HAVE_SEXT
+#define XCHAL_HAVE_SEXT			__XCHAL_HAVE_SEXT
+
+#undef XCHAL_HAVE_LOOPS
+#define XCHAL_HAVE_LOOPS		__XCHAL_HAVE_LOOPS
+
+#undef XCHAL_HAVE_THREADPTR
+#define XCHAL_HAVE_THREADPTR		__XCHAL_HAVE_THREADPTR
+
+#undef XCHAL_HAVE_RELEASE_SYNC
+#define XCHAL_HAVE_RELEASE_SYNC		__XCHAL_HAVE_RELEASE_SYNC
+
+#undef XCHAL_HAVE_S32C1I
+#define XCHAL_HAVE_S32C1I		__XCHAL_HAVE_S32C1I
+
+#undef XCHAL_HAVE_BOOLEANS
+#define XCHAL_HAVE_BOOLEANS		__XCHAL_HAVE_BOOLEANS
+
+#undef XCHAL_HAVE_FP
+#define XCHAL_HAVE_FP			__XCHAL_HAVE_FP
+
+#undef XCHAL_HAVE_FP_DIV
+#define XCHAL_HAVE_FP_DIV		__XCHAL_HAVE_FP_DIV
+
+#undef XCHAL_HAVE_FP_RECIP
+#define XCHAL_HAVE_FP_RECIP		__XCHAL_HAVE_FP_RECIP
+
+#undef XCHAL_HAVE_FP_SQRT
+#define XCHAL_HAVE_FP_SQRT		__XCHAL_HAVE_FP_SQRT
+
+#undef XCHAL_HAVE_FP_RSQRT
+#define XCHAL_HAVE_FP_RSQRT		__XCHAL_HAVE_FP_RSQRT
+
+#undef XCHAL_HAVE_FP_POSTINC
+#define XCHAL_HAVE_FP_POSTINC		__XCHAL_HAVE_FP_POSTINC
+
+#undef XCHAL_HAVE_DFP
+#define XCHAL_HAVE_DFP			__XCHAL_HAVE_DFP
+
+#undef XCHAL_HAVE_DFP_DIV
+#define XCHAL_HAVE_DFP_DIV		__XCHAL_HAVE_DFP_DIV
+
+#undef XCHAL_HAVE_DFP_RECIP
+#define XCHAL_HAVE_DFP_RECIP		__XCHAL_HAVE_DFP_RECIP
+
+#undef XCHAL_HAVE_DFP_SQRT
+#define XCHAL_HAVE_DFP_SQRT		__XCHAL_HAVE_DFP_SQRT
+
+#undef XCHAL_HAVE_DFP_RSQRT
+#define XCHAL_HAVE_DFP_RSQRT		__XCHAL_HAVE_DFP_RSQRT
+
+#undef XCHAL_HAVE_WINDOWED
+#define XCHAL_HAVE_WINDOWED		__XCHAL_HAVE_WINDOWED
+
+#undef XCHAL_NUM_AREGS
+#define XCHAL_NUM_AREGS			__XCHAL_NUM_AREGS
+
+#undef XCHAL_HAVE_WIDE_BRANCHES
+#define XCHAL_HAVE_WIDE_BRANCHES	__XCHAL_HAVE_WIDE_BRANCHES
+
+#undef XCHAL_HAVE_PREDICTED_BRANCHES
+#define XCHAL_HAVE_PREDICTED_BRANCHES	__XCHAL_HAVE_PREDICTED_BRANCHES
+
+
+#undef XCHAL_ICACHE_SIZE
+#define XCHAL_ICACHE_SIZE		__XCHAL_ICACHE_SIZE
+
+#undef XCHAL_DCACHE_SIZE
+#define XCHAL_DCACHE_SIZE		__XCHAL_DCACHE_SIZE
+
+#undef XCHAL_ICACHE_LINESIZE
+#define XCHAL_ICACHE_LINESIZE		__XCHAL_ICACHE_LINESIZE
+
+#undef XCHAL_DCACHE_LINESIZE
+#define XCHAL_DCACHE_LINESIZE		__XCHAL_DCACHE_LINESIZE
+
+#undef XCHAL_ICACHE_LINEWIDTH
+#define XCHAL_ICACHE_LINEWIDTH		__XCHAL_ICACHE_LINEWIDTH
+
+#undef XCHAL_DCACHE_LINEWIDTH
+#define XCHAL_DCACHE_LINEWIDTH		__XCHAL_DCACHE_LINEWIDTH
+
+#undef XCHAL_DCACHE_IS_WRITEBACK
+#define XCHAL_DCACHE_IS_WRITEBACK	__XCHAL_DCACHE_IS_WRITEBACK
+
+
+#undef XCHAL_HAVE_MMU
+#define XCHAL_HAVE_MMU			__XCHAL_HAVE_MMU
+
+#undef XCHAL_MMU_MIN_PTE_PAGE_SIZE
+#define XCHAL_MMU_MIN_PTE_PAGE_SIZE	__XCHAL_MMU_MIN_PTE_PAGE_SIZE
+
+
+#undef XCHAL_HAVE_DEBUG
+#define XCHAL_HAVE_DEBUG		__XCHAL_HAVE_DEBUG
+
+#undef XCHAL_NUM_IBREAK
+#define XCHAL_NUM_IBREAK		__XCHAL_NUM_IBREAK
+
+#undef XCHAL_NUM_DBREAK
+#define XCHAL_NUM_DBREAK		__XCHAL_NUM_DBREAK
+
+#undef XCHAL_DEBUGLEVEL
+#define XCHAL_DEBUGLEVEL		__XCHAL_DEBUGLEVEL
+
+
+#undef XCHAL_MAX_INSTRUCTION_SIZE
+#define XCHAL_MAX_INSTRUCTION_SIZE	__XCHAL_MAX_INSTRUCTION_SIZE
+
+#undef XCHAL_INST_FETCH_WIDTH
+#define XCHAL_INST_FETCH_WIDTH		__XCHAL_INST_FETCH_WIDTH
+
+
+#undef XSHAL_ABI
+#undef XTHAL_ABI_WINDOWED
+#undef XTHAL_ABI_CALL0
+#define XSHAL_ABI			__XSHAL_ABI
+#define XTHAL_ABI_WINDOWED		__XTHAL_ABI_WINDOWED
+#define XTHAL_ABI_CALL0			__XTHAL_ABI_CALL0
+
+#endif /* !XTENSA_CONFIG_BUILTIN_H */

@@ -1,7 +1,9 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail12.d(17): Error: function `fail12.main.Foo!(y).abc` at fail_compilation/fail12.d(9) conflicts with function `fail12.main.Foo!(y).abc` at fail_compilation/fail12.d(9)
+fail_compilation/fail12.d(19): Error: `abc` matches conflicting symbols:
+fail_compilation/fail12.d(11):        function `fail12.main.Foo!(y).abc`
+fail_compilation/fail12.d(11):        function `fail12.main.Foo!(y).abc`
 ---
 */
 template Foo(alias b)

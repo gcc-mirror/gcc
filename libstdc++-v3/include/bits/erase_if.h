@@ -1,6 +1,6 @@
 // <bits/erase_if.h> -*- C++ -*-
 
-// Copyright (C) 2015-2022 Free Software Foundation, Inc.
+// Copyright (C) 2015-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,7 +49,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Container, typename _UnsafeContainer,
 	     typename _Predicate>
       typename _Container::size_type
-      __erase_nodes_if(_Container& __cont, const _UnsafeContainer& __ucont,
+      __erase_nodes_if(_Container& __cont, _UnsafeContainer& __ucont,
 		       _Predicate __pred)
       {
 	typename _Container::size_type __num = 0;

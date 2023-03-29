@@ -1,6 +1,6 @@
 ## Makefile for the C++03 sources of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997-2022 Free Software Foundation, Inc.
+## Copyright (C) 1997-2023 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -148,7 +148,11 @@ sources = \
 
 vpath % $(top_srcdir)/src/c++98
 
+if GLIBCXX_HOSTED
 libc__98convenience_la_SOURCES = $(sources)
+else
+libc__98convenience_la_SOURCES =
+endif
 
 # Use special rules to compile with -fimplicit-templates.
 c++locale.lo: c++locale.cc

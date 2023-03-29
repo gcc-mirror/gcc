@@ -21,7 +21,7 @@ const char8_t (&rca4)[2] = u8"x";
 const char8_t (&rca5)[2] = u"x"; // { dg-error "invalid initialization of reference of type .const char8_t ....... from expression of type .const char16_t ...." "char8_t" }
 
 char ca1[] = "x";
-char ca2[] = u8"x"; // { dg-error "from a string literal with type array of .char8_t." "char8_t" }
+char ca2[] = u8"x";
 char8_t ca3[] = "x"; // { dg-error "from a string literal with type array of .char." "char8_t" }
 char8_t ca4[] = u8"x";
 char8_t ca5[] = u"x"; // { dg-error "from a string literal with type array of .char16_t." "char8_t" }
@@ -30,4 +30,4 @@ signed char sca1[] = "x";
 signed char sca2[] = u8"x"; // { dg-error "from a string literal with type array of .char8_t." "char8_t" }
 
 unsigned char uca1[] = "x";
-unsigned char uca2[] = u8"x"; // { dg-error "from a string literal with type array of .char8_t." "char8_t" }
+unsigned char uca2[] = u8"x";

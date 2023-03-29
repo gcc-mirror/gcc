@@ -1,5 +1,5 @@
 /* DWARF2 frame unwind data structure.
-   Copyright (C) 1997-2022 Free Software Foundation, Inc.
+   Copyright (C) 1997-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -22,6 +22,17 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+enum {
+  REG_UNSAVED,
+  REG_SAVED_OFFSET,
+  REG_SAVED_REG,
+  REG_SAVED_EXP,
+  REG_SAVED_VAL_OFFSET,
+  REG_SAVED_VAL_EXP,
+  REG_UNSAVED_ARCHEXT,		/* Target specific extension.  */
+  REG_UNDEFINED
+};
+
 /* The result of interpreting the frame unwind info for a frame.
    This is all symbolic at this point, as none of the values can
    be resolved until the target pc is located.  */
@@ -37,16 +48,14 @@ typedef struct
 	_Unwind_Sword offset;
 	const unsigned char *exp;
       } loc;
-      enum {
-	REG_UNSAVED,
-	REG_SAVED_OFFSET,
-	REG_SAVED_REG,
-	REG_SAVED_EXP,
-	REG_SAVED_VAL_OFFSET,
-	REG_SAVED_VAL_EXP,
-	REG_UNDEFINED
-      } how;
     } reg[__LIBGCC_DWARF_FRAME_REGISTERS__+1];
+    unsigned char how[__LIBGCC_DWARF_FRAME_REGISTERS__+1];
+
+    enum {
+      CFA_UNSET,
+      CFA_REG_OFFSET,
+      CFA_EXP
+    } cfa_how : 8;
 
     /* Used to implement DW_CFA_remember_state.  */
     struct frame_state_reg_info *prev;
@@ -56,11 +65,6 @@ typedef struct
     _Unwind_Sword cfa_offset;
     _Unwind_Word cfa_reg;
     const unsigned char *cfa_exp;
-    enum {
-      CFA_UNSET,
-      CFA_REG_OFFSET,
-      CFA_EXP
-    } cfa_how;
   } regs;
 
   /* The PC described by the current frame state.  */

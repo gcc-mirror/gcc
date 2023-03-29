@@ -1,6 +1,6 @@
 /* Generic streaming support for various data types.
 
-   Copyright (C) 2011-2022 Free Software Foundation, Inc.
+   Copyright (C) 2011-2023 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -91,7 +91,7 @@ wide_int streamer_read_wide_int (class lto_input_block *);
 widest_int streamer_read_widest_int (class lto_input_block *);
 
 /* Returns a new bit-packing context for bit-packing into S.  */
-static inline struct bitpack_d
+inline struct bitpack_d
 bitpack_create (struct lto_output_stream *s)
 {
   struct bitpack_d bp;
@@ -102,7 +102,7 @@ bitpack_create (struct lto_output_stream *s)
 }
 
 /* Pack the NBITS bit sized value VAL into the bit-packing context BP.  */
-static inline void
+inline void
 bp_pack_value (struct bitpack_d *bp, bitpack_word_t val, unsigned nbits)
 {
   bitpack_word_t word = bp->word;
@@ -132,7 +132,7 @@ bp_pack_value (struct bitpack_d *bp, bitpack_word_t val, unsigned nbits)
 
 /* Pack VAL into the bit-packing context BP, using NBITS for each
    coefficient.  */
-static inline void
+inline void
 bp_pack_poly_value (struct bitpack_d *bp,
 		    const poly_int<NUM_POLY_INT_COEFFS, bitpack_word_t> &val,
 		    unsigned nbits)
@@ -142,7 +142,7 @@ bp_pack_poly_value (struct bitpack_d *bp,
 }
 
 /* Finishes bit-packing of BP.  */
-static inline void
+inline void
 streamer_write_bitpack (struct bitpack_d *bp)
 {
   streamer_write_uhwi_stream ((struct lto_output_stream *) bp->stream,
@@ -152,7 +152,7 @@ streamer_write_bitpack (struct bitpack_d *bp)
 }
 
 /* Returns a new bit-packing context for bit-unpacking from IB.  */
-static inline struct bitpack_d
+inline struct bitpack_d
 streamer_read_bitpack (class lto_input_block *ib)
 {
   struct bitpack_d bp;
@@ -163,7 +163,7 @@ streamer_read_bitpack (class lto_input_block *ib)
 }
 
 /* Unpacks NBITS bits from the bit-packing context BP and returns them.  */
-static inline bitpack_word_t
+inline bitpack_word_t
 bp_unpack_value (struct bitpack_d *bp, unsigned nbits)
 {
   bitpack_word_t mask, val;
@@ -191,7 +191,7 @@ bp_unpack_value (struct bitpack_d *bp, unsigned nbits)
 
 /* Unpacks a polynomial value from the bit-packing context BP in which each
    coefficient has NBITS bits.  */
-static inline poly_int<NUM_POLY_INT_COEFFS, bitpack_word_t>
+inline poly_int<NUM_POLY_INT_COEFFS, bitpack_word_t>
 bp_unpack_poly_value (struct bitpack_d *bp, unsigned nbits)
 {
   poly_int_pod<NUM_POLY_INT_COEFFS, bitpack_word_t> x;
@@ -203,7 +203,7 @@ bp_unpack_poly_value (struct bitpack_d *bp, unsigned nbits)
 
 /* Write a character to the output block.  */
 
-static inline void
+inline void
 streamer_write_char_stream (struct lto_output_stream *obs, char c)
 {
   /* No space left.  */
@@ -221,7 +221,7 @@ streamer_write_char_stream (struct lto_output_stream *obs, char c)
 
 /* Read byte from the input block.  */
 
-static inline unsigned char
+inline unsigned char
 streamer_read_uchar (class lto_input_block *ib)
 {
   if (ib->p >= ib->len)
@@ -233,7 +233,7 @@ streamer_read_uchar (class lto_input_block *ib)
    to be compile time constant.
    Be host independent, limit range to 31bits.  */
 
-static inline void
+inline void
 streamer_write_hwi_in_range (struct lto_output_stream *obs,
 				  HOST_WIDE_INT min,
 				  HOST_WIDE_INT max,
@@ -251,7 +251,7 @@ streamer_write_hwi_in_range (struct lto_output_stream *obs,
 /* Input VAL into OBS and verify it is in range MIN...MAX that is supposed
    to be compile time constant.  PURPOSE is used for error reporting.  */
 
-static inline HOST_WIDE_INT
+inline HOST_WIDE_INT
 streamer_read_hwi_in_range (class lto_input_block *ib,
 				 const char *purpose,
 				 HOST_WIDE_INT min,
@@ -272,7 +272,7 @@ streamer_read_hwi_in_range (class lto_input_block *ib,
    to be compile time constant.
    Be host independent, limit range to 31bits.  */
 
-static inline void
+inline void
 bp_pack_int_in_range (struct bitpack_d *bp,
 		      HOST_WIDE_INT min,
 		      HOST_WIDE_INT max,
@@ -291,7 +291,7 @@ bp_pack_int_in_range (struct bitpack_d *bp,
 /* Input VAL into BP and verify it is in range MIN...MAX that is supposed
    to be compile time constant.  PURPOSE is used for error reporting.  */
 
-static inline HOST_WIDE_INT
+inline HOST_WIDE_INT
 bp_unpack_int_in_range (struct bitpack_d *bp,
 		        const char *purpose,
 		        HOST_WIDE_INT min,
@@ -332,7 +332,7 @@ bp_unpack_int_in_range (struct bitpack_d *bp,
 
 /* Output the start of a record with TAG to output block OB.  */
 
-static inline void
+inline void
 streamer_write_record_start (struct output_block *ob, enum LTO_tags tag)
 {
   streamer_write_enum (ob->main_stream, LTO_tags, LTO_NUM_TAGS, tag);
@@ -340,7 +340,7 @@ streamer_write_record_start (struct output_block *ob, enum LTO_tags tag)
 
 /* Return the next tag in the input block IB.  */
 
-static inline enum LTO_tags
+inline enum LTO_tags
 streamer_read_record_start (class lto_input_block *ib)
 {
   return streamer_read_enum (ib, LTO_tags, LTO_NUM_TAGS);

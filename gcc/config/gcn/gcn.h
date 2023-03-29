@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2023 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -16,20 +16,32 @@
 
 #include "config/gcn/gcn-opts.h"
 
-#define TARGET_CPU_CPP_BUILTINS()	\
-  do					\
-    {					\
-      builtin_define ("__AMDGCN__");	\
-      if (TARGET_GCN3)			\
-	builtin_define ("__GCN3__");	\
-      else if (TARGET_GCN5)		\
-	builtin_define ("__GCN5__");	\
-      else if (TARGET_CDNA1)		\
-	builtin_define ("__CDNA1__");	\
-      else if (TARGET_CDNA2)		\
-	builtin_define ("__CDNA2__");	\
-    }					\
-  while(0)
+#define TARGET_CPU_CPP_BUILTINS()                                              \
+  do                                                                           \
+    {                                                                          \
+      builtin_define ("__AMDGCN__");                                           \
+      if (TARGET_GCN3)                                                         \
+	builtin_define ("__GCN3__");                                           \
+      else if (TARGET_GCN5)                                                    \
+	builtin_define ("__GCN5__");                                           \
+      else if (TARGET_CDNA1)                                                   \
+	builtin_define ("__CDNA1__");                                          \
+      else if (TARGET_CDNA2)                                                   \
+	builtin_define ("__CDNA2__");                                          \
+      if (TARGET_FIJI)                                                         \
+	{                                                                      \
+	  builtin_define ("__fiji__");                                         \
+	  builtin_define ("__gfx803__");                                       \
+	}                                                                      \
+      else if (TARGET_VEGA10)                                                  \
+	builtin_define ("__gfx900__");                                         \
+      else if (TARGET_VEGA20)                                                  \
+	builtin_define ("__gfx906__");                                         \
+      else if (TARGET_GFX908)                                                  \
+	builtin_define ("__gfx908__");                                         \
+      else if (TARGET_GFX90a)                                                  \
+	builtin_define ("__gfx90a__");                                         \
+  } while (0)
 
 /* Support for a compile-time default architecture and tuning.
    The rules are:
@@ -171,7 +183,7 @@
 
 #define FIXED_REGISTERS {			    \
     /* Scalars.  */				    \
-    1, 1, 0, 0, 1, 1, 1, 1, 1, 1,		    \
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,		    \
 /*		fp    sp    lr.  */		    \
     1, 1, 0, 0, 0, 0, 1, 1, 0, 0,		    \
 /*  exec_save, cc_save */			    \
@@ -678,3 +690,27 @@ enum gcn_builtin_codes
 /* Trampolines */
 #define TRAMPOLINE_SIZE 36
 #define TRAMPOLINE_ALIGNMENT 64
+
+/* MD Optimization.
+   The following are intended to be obviously constant at compile time to
+   allow genconditions to eliminate bad patterns at compile time.  */
+#define MODE_VF(M) \
+  ((M == V64QImode || M == V64HImode || M == V64HFmode || M == V64SImode \
+    || M == V64SFmode || M == V64DImode || M == V64DFmode) \
+   ? 64 \
+   : (M == V32QImode || M == V32HImode || M == V32HFmode || M == V32SImode \
+      || M == V32SFmode || M == V32DImode || M == V32DFmode) \
+   ? 32 \
+   : (M == V16QImode || M == V16HImode || M == V16HFmode || M == V16SImode \
+      || M == V16SFmode || M == V16DImode || M == V16DFmode) \
+   ? 16 \
+   : (M == V8QImode || M == V8HImode || M == V8HFmode || M == V8SImode \
+      || M == V8SFmode || M == V8DImode || M == V8DFmode) \
+   ? 8 \
+   : (M == V4QImode || M == V4HImode || M == V4HFmode || M == V4SImode \
+      || M == V4SFmode || M == V4DImode || M == V4DFmode) \
+   ? 4 \
+   : (M == V2QImode || M == V2HImode || M == V2HFmode || M == V2SImode \
+      || M == V2SFmode || M == V2DImode || M == V2DFmode) \
+   ? 2 \
+   : 1)

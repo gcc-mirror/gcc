@@ -3,7 +3,7 @@
 // { dg-do run }
 // { dg-options "-g -O0 -std=gnu++98" }
 
-// Copyright (C) 2011-2022 Free Software Foundation, Inc.
+// Copyright (C) 2011-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,9 +19,6 @@
 // You should have received a copy of the GNU General Public License along
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
-
-// Type printers only recognize the old std::string for now.
-#define _GLIBCXX_USE_CXX11_ABI 0
 
 #include <string>
 #include <deque>
@@ -65,7 +62,7 @@ main()
   std::list<std::string> lst;
   lst.push_back("one");
   lst.push_back("two");
-// { dg-final { regexp-test lst {std::(__debug::)?list = {\[0\] = "one", \[1\] = "two"}} } }
+// { dg-final { regexp-test lst {std::(__cxx11::)?(__debug::)?list = {\[0\] = "one", \[1\] = "two"}} } }
 
   std::list<int>::iterator lstiter0;
 // { dg-final { note-test lstiter0 {non-dereferenceable iterator for std::list} } }

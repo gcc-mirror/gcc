@@ -1,5 +1,5 @@
 /* typeinfo.cc -- D runtime type identification.
-   Copyright (C) 2013-2022 Free Software Foundation, Inc.
+   Copyright (C) 2013-2023 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -1064,17 +1064,6 @@ public:
       : null_pointer_node;
     this->layout_field (xhash);
 
-    if (sd->xhash)
-      {
-	TypeFunction *tf = sd->xhash->type->toTypeFunction ();
-	if (!tf->isnothrow () || tf->trust == TRUST::system)
-	  {
-	    warning (sd->xhash->loc, "toHash() must be declared as "
-		     "extern (D) size_t toHash() const nothrow @safe, "
-		     "not %s", tf->toChars ());
-	  }
-      }
-
     /* bool function(in void*, in void*) xopEquals;  */
     tree xeq = (sd->xeq) ? build_address (get_symbol_decl (sd->xeq))
       : null_pointer_node;
@@ -1410,7 +1399,7 @@ check_typeinfo_type (const Loc &loc, Scope *sc, Expression *expr)
     {
       /* Even when compiling without RTTI we should still be able to evaluate
 	 TypeInfo at compile-time, just not at run-time.  */
-      if (!sc || !(sc->flags & SCOPEctfe))
+      if (!sc || !(sc->flags & unsigned(SCOPE::ctfe)))
 	{
 	  static int warned = 0;
 
@@ -1535,10 +1524,12 @@ get_cpp_typeinfo_decl (ClassDeclaration *decl)
   return decl->cpp_type_info_ptr_sym;
 }
 
-/* Get the exact TypeInfo for TYPE, if it doesn't exist, create it.  */
+/* Get the exact TypeInfo for TYPE, if it doesn't exist, create it.
+   When GENERATE is true, push the TypeInfo as a member of MOD so that it will
+   get code generation. */
 
 void
-create_typeinfo (Type *type, Module *mod)
+create_typeinfo (Type *type, Module *mod, bool generate)
 {
   if (!Type::dtypeinfo)
     create_frontend_tinfo_types ();
@@ -1696,7 +1687,7 @@ create_typeinfo (Type *type, Module *mod)
 
       /* If this has a custom implementation in rt/typeinfo, then
 	 do not generate a COMDAT for it.  */
-      if (!builtin_typeinfo_p (t))
+      if (generate && !builtin_typeinfo_p (t))
 	{
 	  /* Find module that will go all the way to an object file.  */
 	  if (mod)

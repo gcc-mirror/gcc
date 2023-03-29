@@ -1,7 +1,7 @@
 /**
  * Functions related to UTF encoding.
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/root/utf.d, _utf.d)
@@ -288,7 +288,7 @@ bool isUniAlpha(dchar c)
     // Binary search
     while (low <= high)
     {
-        size_t mid = (low + high) >> 1;
+        const size_t mid = low + ((high - low) >> 1);
         if (c < ALPHA_TABLE[mid][0])
             high = mid - 1;
         else if (ALPHA_TABLE[mid][1] < c)
@@ -392,6 +392,26 @@ void utf_encode(int sz, void* s, dchar c)
     {
         assert(sz == 4);
         *(cast(dchar*)s) = c;
+    }
+}
+
+/********************************************
+ * Checks whether an Unicode code point is a bidirectional
+ * control character.
+ */
+@safe bool isBidiControl(dchar c)
+{
+    // Source: https://www.unicode.org/versions/Unicode15.0.0, table 23-3.
+    switch(c)
+    {
+        case '\u061C':
+        case '\u200E':
+        case '\u200F':
+        case '\u202A': .. case '\u202E':
+        case '\u2066': .. case '\u2069':
+            return true;
+        default:
+            return false;
     }
 }
 

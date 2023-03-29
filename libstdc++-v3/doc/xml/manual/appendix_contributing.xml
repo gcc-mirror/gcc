@@ -48,7 +48,7 @@
 	  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.ansi.org">ANSI</link>.
 	  (And if you've already registered with them you can <link
 	  xmlns:xlink="http://www.w3.org/1999/xlink"
-	  xlink:href="https://webstore.ansi.org/Standards/ISO/ISOIEC148822014">buy
+	  xlink:href="https://webstore.ansi.org/standards/iso/isoiec148822014">buy
 	  the standard on-line</link>.)
 	</para>
       </listitem>
@@ -57,7 +57,7 @@
 	<para>
 	  The library working group bugs, and known defects, can
 	  be obtained here:
-	  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/">http://www.open-std.org/jtc1/sc22/wg21</link>
+	  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/">https://www.open-std.org/jtc1/sc22/wg21</link>
 	</para>
       </listitem>
 

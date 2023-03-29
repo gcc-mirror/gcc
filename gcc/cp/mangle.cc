@@ -1,5 +1,5 @@
 /* Name mangling for the 3.0 -*- C++ -*- ABI.
-   Copyright (C) 2000-2022 Free Software Foundation, Inc.
+   Copyright (C) 2000-2023 Free Software Foundation, Inc.
    Written by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.
@@ -798,6 +798,25 @@ write_mangled_name (const tree decl, bool top_level)
       write_string ("_Z");
       write_encoding (decl);
     }
+
+  /* If this is the pre/post function for a guarded function, append
+     .pre/post, like something from create_virtual_clone.  */
+  if (DECL_IS_PRE_FN_P (decl))
+    write_string (".pre");
+  else if (DECL_IS_POST_FN_P (decl))
+    write_string (".post");
+
+  /* If this is a coroutine helper, then append an appropriate string to
+     identify which.  */
+  if (tree ramp = DECL_RAMP_FN (decl))
+    {
+      if (DECL_ACTOR_FN (ramp) == decl)
+	write_string (JOIN_STR "actor");
+      else if (DECL_DESTROY_FN (ramp) == decl)
+	write_string (JOIN_STR "destroy");
+      else
+	gcc_unreachable ();
+    }
 }
 
 /* Returns true if the return type of DECL is part of its signature, and
@@ -856,17 +875,6 @@ write_encoding (const tree decl)
 				mangle_return_type_p (decl),
 				d);
 
-      /* If this is a coroutine helper, then append an appropriate string to
-	 identify which.  */
-      if (tree ramp = DECL_RAMP_FN (decl))
-	{
-	  if (DECL_ACTOR_FN (ramp) == decl)
-	    write_string (JOIN_STR "actor");
-	  else if (DECL_DESTROY_FN (ramp) == decl)
-	    write_string (JOIN_STR "destroy");
-	  else
-	    gcc_unreachable ();
-	}
     }
 }
 
@@ -1252,7 +1260,14 @@ write_prefix (const tree node)
 	{
 	  /* <data-member-prefix> := <member source-name> M */
 	  write_char ('M');
-	  return;
+
+	  /* Before ABI 18, we did not count these as substitution
+	     candidates.  This leads to incorrect demanglings (and
+	     ABI divergence to other compilers).  */
+	  if (abi_warn_or_compat_version_crosses (18))
+	    G.need_abi_warning = true;
+	  if (!abi_version_at_least (18))
+	    return;
 	}
     }
 
@@ -1374,6 +1389,28 @@ find_decomp_unqualified_name (tree decl, size_t *len)
   return p;
 }
 
+/* "For the purposes of mangling, the name of an anonymous union is considered
+   to be the name of the first named data member found by a pre-order,
+   depth-first, declaration-order walk of the data members of the anonymous
+   union. If there is no such data member (i.e., if all of the data members in
+   the union are unnamed), then there is no way for a program to refer to the
+   anonymous union, and there is therefore no need to mangle its name."  */
+
+static tree
+anon_aggr_naming_decl (tree type)
+{
+  tree field = next_aggregate_field (TYPE_FIELDS (type));
+  for (; field; field = next_aggregate_field (DECL_CHAIN (field)))
+    {
+      if (DECL_NAME (field))
+	return field;
+      if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+	if (tree sub = anon_aggr_naming_decl (TREE_TYPE (field)))
+	  return sub;
+    }
+  return NULL_TREE;
+}
+
 /* We don't need to handle thunks, vtables, or VTTs here.  Those are
    mangled through special entry points.
 
@@ -1417,7 +1454,10 @@ write_unqualified_name (tree decl)
 
   bool found = false;
 
-  if (DECL_NAME (decl) == NULL_TREE)
+  if (DECL_NAME (decl) == NULL_TREE
+      && ANON_AGGR_TYPE_P (TREE_TYPE (decl)))
+    decl = anon_aggr_naming_decl (TREE_TYPE (decl));
+  else if (DECL_NAME (decl) == NULL_TREE)
     {
       found = true;
       gcc_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
@@ -1720,6 +1760,66 @@ write_unnamed_type_name (const tree type)
   write_compact_number (discriminator);
 }
 
+// A template head, for templated lambdas.
+// <template-head> ::=   Tp* Ty
+//                       Tp* Tn <type>
+//                       Tp* Tt <template-head> E
+// New in ABI=18. Returns true iff we emitted anything -- used for ABI
+// version warning.
+
+static bool
+write_closure_template_head (tree tmpl)
+{
+  bool any = false;
+
+  // We only need one level of template parms
+  tree inner = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (tmpl));
+
+  for (int ix = 0, len = TREE_VEC_LENGTH (inner); ix != len; ix++)
+    {
+      tree parm = TREE_VEC_ELT (inner, ix);
+      if (parm == error_mark_node)
+	continue;
+      parm = TREE_VALUE (parm);
+
+      if (DECL_VIRTUAL_P (parm))
+	// A synthetic parm, we're done.
+	break;
+
+      any = true;
+      if (abi_version_at_least (18))
+	{
+	  if (TREE_CODE (parm) == PARM_DECL
+	      ? TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm))
+	      : TEMPLATE_TYPE_PARAMETER_PACK (TREE_TYPE (parm)))
+	    write_string ("Tp");
+
+	  switch (TREE_CODE (parm))
+	    {
+	    default:
+	      gcc_unreachable ();
+
+	    case TYPE_DECL:
+	      write_string ("Ty");
+	      break;
+
+	    case PARM_DECL:
+	      write_string ("Tn");
+	      write_type (TREE_TYPE (parm));
+	      break;
+
+	    case TEMPLATE_DECL:
+	      write_string ("Tt");
+	      write_closure_template_head (parm);
+	      write_string ("E");
+	      break;
+	    }
+	}
+    }
+
+  return any;
+}
+
 /* <closure-type-name> ::= Ul <lambda-sig> E [ <nonnegative number> ] _
    <lambda-sig> ::= <parameter type>+  # Parameter types or "v" if the lambda has no parameters */
 
@@ -1733,9 +1833,23 @@ write_closure_type_name (const tree type)
   MANGLE_TRACE_TREE ("closure-type-name", type);
 
   write_string ("Ul");
-  write_method_parms (parms, /*method_p=*/1, fn);
+
+  if (auto ti = maybe_template_info (fn))
+    if (write_closure_template_head (TI_TEMPLATE (ti)))
+      // If there were any explicit template parms, we may need to
+      // issue a mangling diagnostic.
+      if (abi_warn_or_compat_version_crosses (18))
+	G.need_abi_warning = true;
+
+  write_method_parms (parms, TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE, fn);
   write_char ('E');
-  write_compact_number (LAMBDA_EXPR_DISCRIMINATOR (lambda));
+  if ((LAMBDA_EXPR_SCOPE_SIG_DISCRIMINATOR (lambda)
+       != LAMBDA_EXPR_SCOPE_ONLY_DISCRIMINATOR (lambda))
+      && abi_warn_or_compat_version_crosses (18))
+    G.need_abi_warning = true;
+  write_compact_number (abi_version_at_least (18)
+			? LAMBDA_EXPR_SCOPE_SIG_DISCRIMINATOR (lambda)
+			: LAMBDA_EXPR_SCOPE_ONLY_DISCRIMINATOR (lambda));
 }
 
 /* Convert NUMBER to ascii using base BASE and generating at least
@@ -2389,8 +2503,9 @@ write_type (tree type)
 	      sorry ("mangling %<typeof%>, use %<decltype%> instead");
 	      break;
 
-	    case UNDERLYING_TYPE:
-	      sorry ("mangling %<__underlying_type%>");
+	    case TRAIT_TYPE:
+	      error ("use of built-in trait %qT in function signature; "
+		     "use library traits instead", type);
 	      break;
 
 	    case LANG_TYPE:
@@ -2642,67 +2757,30 @@ write_builtin_type (tree type)
 	write_char ('d');
       else if (type == long_double_type_node)
 	write_char ('e');
-      else if (type == dfloat32_type_node || type == fallback_dfloat32_type)
+      else if (type == dfloat32_type_node)
 	write_string ("Df");
-      else if (type == dfloat64_type_node || type == fallback_dfloat64_type)
+      else if (type == dfloat64_type_node)
 	write_string ("Dd");
-      else if (type == dfloat128_type_node || type == fallback_dfloat128_type)
+      else if (type == dfloat128_type_node)
 	write_string ("De");
+      else if (type == float16_type_node)
+	write_string ("DF16_");
+      else if (type == float32_type_node)
+	write_string ("DF32_");
+      else if (type == float64_type_node)
+	write_string ("DF64_");
+      else if (type == float128_type_node)
+	write_string ("DF128_");
+      else if (type == float32x_type_node)
+	write_string ("DF32x");
+      else if (type == float64x_type_node)
+	write_string ("DF64x");
+      else if (type == float128x_type_node)
+	write_string ("DF128x");
+      else if (type == bfloat16_type_node)
+	write_string ("DF16b");
       else
 	gcc_unreachable ();
-      break;
-
-    case FIXED_POINT_TYPE:
-      write_string ("DF");
-      if (GET_MODE_IBIT (TYPE_MODE (type)) > 0)
-	write_unsigned_number (GET_MODE_IBIT (TYPE_MODE (type)));
-      if (type == fract_type_node
-	  || type == sat_fract_type_node
-	  || type == accum_type_node
-	  || type == sat_accum_type_node)
-	write_char ('i');
-      else if (type == unsigned_fract_type_node
-	       || type == sat_unsigned_fract_type_node
-	       || type == unsigned_accum_type_node
-	       || type == sat_unsigned_accum_type_node)
-	write_char ('j');
-      else if (type == short_fract_type_node
-	       || type == sat_short_fract_type_node
-	       || type == short_accum_type_node
-	       || type == sat_short_accum_type_node)
-	write_char ('s');
-      else if (type == unsigned_short_fract_type_node
-	       || type == sat_unsigned_short_fract_type_node
-	       || type == unsigned_short_accum_type_node
-	       || type == sat_unsigned_short_accum_type_node)
-	write_char ('t');
-      else if (type == long_fract_type_node
-	       || type == sat_long_fract_type_node
-	       || type == long_accum_type_node
-	       || type == sat_long_accum_type_node)
-	write_char ('l');
-      else if (type == unsigned_long_fract_type_node
-	       || type == sat_unsigned_long_fract_type_node
-	       || type == unsigned_long_accum_type_node
-	       || type == sat_unsigned_long_accum_type_node)
-	write_char ('m');
-      else if (type == long_long_fract_type_node
-	       || type == sat_long_long_fract_type_node
-	       || type == long_long_accum_type_node
-	       || type == sat_long_long_accum_type_node)
-	write_char ('x');
-      else if (type == unsigned_long_long_fract_type_node
-	       || type == sat_unsigned_long_long_fract_type_node
-	       || type == unsigned_long_long_accum_type_node
-	       || type == sat_unsigned_long_long_accum_type_node)
-	write_char ('y');
-      else
-	sorry ("mangling unknown fixed point type");
-      write_unsigned_number (GET_MODE_FBIT (TYPE_MODE (type)));
-      if (TYPE_SATURATING (type))
-	write_char ('s');
-      else
-	write_char ('n');
       break;
 
     default:
@@ -3056,6 +3134,10 @@ write_expression (tree expr)
   else if (TREE_CODE_CLASS (code) == tcc_constant
 	   || code == CONST_DECL)
     write_template_arg_literal (expr);
+  else if (code == EXCESS_PRECISION_EXPR
+	   && TREE_CODE (TREE_OPERAND (expr, 0)) == REAL_CST)
+    write_template_arg_literal (fold_convert (TREE_TYPE (expr),
+					      TREE_OPERAND (expr, 0)));
   else if (code == PARM_DECL && DECL_ARTIFICIAL (expr))
     {
       gcc_assert (id_equal (DECL_NAME (expr), "this"));
@@ -3711,7 +3793,7 @@ write_template_arg (tree node)
 	}
     }
 
-  if (template_parm_object_p (node))
+  if (TREE_CODE (node) == VAR_DECL && DECL_NTTP_OBJECT_P (node))
     /* We want to mangle the argument, not the var we stored it in.  */
     node = tparm_object_argument (node);
 
@@ -3764,6 +3846,10 @@ write_template_arg (tree node)
 	   || code == CONST_DECL
 	   || null_member_pointer_value_p (node))
     write_template_arg_literal (node);
+  else if (code == EXCESS_PRECISION_EXPR
+	   && TREE_CODE (TREE_OPERAND (node, 0)) == REAL_CST)
+    write_template_arg_literal (fold_convert (TREE_TYPE (node),
+					      TREE_OPERAND (node, 0)));
   else if (DECL_P (node))
     {
       write_char ('L');

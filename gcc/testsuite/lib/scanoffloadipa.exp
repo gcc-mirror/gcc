@@ -1,0 +1,148 @@
+#   Copyright (C) 2018-2023 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Various utilities for scanning offloading ipa dump output, used by
+# libgomp.exp.
+
+load_lib scandump.exp
+load_lib scanoffload.exp
+
+# Utility for scanning compiler result, invoked via dg-final.
+# Call pass if pattern is present, otherwise fail.
+#
+# Argument 0 is the regexp to match
+# Argument 1 is the name of the dumped ipa pass
+# Argument 2 handles expected failures and the like
+proc scan-offload-ipa-dump { args } {
+
+    if { [llength $args] < 2 } {
+	error "scan-offload-ipa-dump: too few arguments"
+	return
+    }
+    if { [llength $args] > 3 } {
+	error "scan-offload-ipa-dump: too many arguments"
+	return
+    }
+    if { [llength $args] >= 3 } {
+	scoff end-1 scan-dump "offload-ipa" [lindex $args 0] \
+	    "\[0-9\]\[0-9\]\[0-9]i.[lindex $args 1]" "" \
+	    [lindex $args 2]
+    } else {
+	scoff end scan-dump "offload-ipa" [lindex $args 0] \
+	    "\[0-9\]\[0-9\]\[0-9]i.[lindex $args 1]" ""
+    }
+}
+
+# Call pass if pattern is present given number of times, otherwise fail.
+# Argument 0 is the regexp to match
+# Argument 1 is number of times the regexp must be found
+# Argument 2 is the name of the dumped ipa pass
+# Argument 3 handles expected failures and the like
+proc scan-offload-ipa-dump-times { args } {
+
+    if { [llength $args] < 3 } {
+	error "scan-offload-ipa-dump-times: too few arguments"
+	return
+    }
+    if { [llength $args] > 4 } {
+	error "scan-offload-ipa-dump-times: too many arguments"
+	return
+    }
+    if { [llength $args] >= 4 } {
+	scoff end-1 scan-dump-times "offload-ipa" [lindex $args 0] \
+	    [lindex $args 1] "\[0-9\]\[0-9\]\[0-9]i.[lindex $args 2]" "" \
+	    [lindex $args 3]
+    } else {
+	scoff end scan-dump-times "offload-ipa" [lindex $args 0] \
+	    [lindex $args 1] "\[0-9\]\[0-9\]\[0-9]i.[lindex $args 2]" ""
+    }
+}
+
+# Call pass if pattern is not present, otherwise fail.
+#
+# Argument 0 is the regexp to match
+# Argument 1 is the name of the dumped ipa pass
+# Argument 2 handles expected failures and the like
+proc scan-offload-ipa-dump-not { args } {
+
+    if { [llength $args] < 2 } {
+	error "scan-offload-ipa-dump-not: too few arguments"
+	return
+    }
+    if { [llength $args] > 3 } {
+	error "scan-offload-ipa-dump-not: too many arguments"
+	return
+    }
+    if { [llength $args] >= 3 } {
+	scoff end-1 scan-dump-not "offload-ipa" [lindex $args 0] \
+	    "\[0-9\]\[0-9\]\[0-9]i.[lindex $args 1]" "" \
+	    [lindex $args 2]
+    } else {
+	scoff end scan-dump-not "offload-ipa" [lindex $args 0] \
+	    "\[0-9\]\[0-9\]\[0-9]i.[lindex $args 1]" ""
+    }
+}
+
+# Utility for scanning demangled compiler result, invoked via dg-final.
+# Call pass if pattern is present, otherwise fail.
+#
+# Argument 0 is the regexp to match
+# Argument 1 is the name of the dumped ipa pass
+# Argument 2 handles expected failures and the like
+proc scan-offload-ipa-dump-dem { args } {
+
+    if { [llength $args] < 2 } {
+	error "scan-offload-ipa-dump-dem: too few arguments"
+	return
+    }
+    if { [llength $args] > 3 } {
+	error "scan-offload-ipa-dump-dem: too many arguments"
+	return
+    }
+    if { [llength $args] >= 3 } {
+	scoff end-1 scan-dump-dem "offload-ipa" [lindex $args 0] \
+	    "\[0-9\]\[0-9\]\[0-9]i.[lindex $args 1]" "" \
+	    [lindex $args 2]
+    } else {
+	scoff end scan-dump-dem "offload-ipa" [lindex $args 0] \
+	    "\[0-9\]\[0-9\]\[0-9]i.[lindex $args 1]" ""
+    }
+}
+
+# Call pass if demangled pattern is not present, otherwise fail.
+#
+# Argument 0 is the regexp to match
+# Argument 1 is the name of the dumped ipa pass
+# Argument 2 handles expected failures and the like
+proc scan-offload-ipa-dump-dem-not { args } {
+
+    if { [llength $args] < 2 } {
+	error "scan-offload-ipa-dump-dem-not: too few arguments"
+	return
+    }
+    if { [llength $args] > 3 } {
+	error "scan-offload-ipa-dump-dem-not: too many arguments"
+	return
+    }
+    if { [llength $args] >= 3 } {
+	scoff end-1 scan-dump-dem-not "offload-ipa" [lindex $args 0] \
+	    "\[0-9\]\[0-9\]\[0-9]i.[lindex $args 1]" "" \
+	    [lindex $args 2]
+    } else {
+	scoff end scan-dump-dem-not "offload-ipa" [lindex $args 0] \
+	    "\[0-9\]\[0-9\]\[0-9]i.[lindex $args 1]" ""
+    }
+}

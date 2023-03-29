@@ -1,0 +1,103 @@
+(* FifoQueue.def provides a simple fifo queue.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE FifoQueue ;
+
+(*
+   Author     : Gaius Mulley
+   Title      : FifoQueue
+   Date       : Tue Dec 12 16:23:22 GMT 1989
+   Description: FifoQueue provides a mechanism to and from which CARDINAL
+                numbers can be stored and retrieved from a FIFO queue.
+   Last update: Tue Dec 12 16:24:24 GMT 1989
+*)
+
+EXPORT QUALIFIED PutEnumerationIntoFifoQueue, GetEnumerationFromFifoQueue,
+                 PutSubrangeIntoFifoQueue, GetSubrangeFromFifoQueue,
+                 PutConstIntoFifoQueue, GetConstFromFifoQueue,
+                 PutConstructorIntoFifoQueue, GetConstructorFromFifoQueue ;
+
+
+(*
+   PutEnumerationIntoFifoQueue - places an enumeration symbol, c,
+                                 into a fifo queue.
+*)
+
+PROCEDURE PutEnumerationIntoFifoQueue (c: CARDINAL) ;
+
+
+(*
+   GetEnumerationFromFifoQueue - retrieves an enumeration symbol,
+                                 c, from a fifo queue.
+*)
+
+PROCEDURE GetEnumerationFromFifoQueue (VAR c: CARDINAL) ;
+
+
+(*
+   PutSubrangeIntoFifoQueue - places a subrange symbol into a fifo
+                              queue.
+*)
+
+PROCEDURE PutSubrangeIntoFifoQueue (c: CARDINAL) ;
+
+
+(*
+   GetSubrangeFromFifoQueue - retrieves a subrange symbol from a
+                              fifo queue.
+*)
+
+PROCEDURE GetSubrangeFromFifoQueue (VAR c: CARDINAL) ;
+
+
+(*
+   PutConstIntoFifoQueue - places a constant symbol
+                           into a fifo queue.
+*)
+
+PROCEDURE PutConstIntoFifoQueue (c: CARDINAL) ;
+
+
+(*
+   GetConstFromFifoQueue - retrieves a const symbol
+                           from a fifo queue.
+*)
+
+PROCEDURE GetConstFromFifoQueue (VAR c: CARDINAL) ;
+
+
+(*
+   PutConstructorIntoFifoQueue - places a constructor symbol
+                                 into a fifo queue.
+*)
+
+PROCEDURE PutConstructorIntoFifoQueue (c: CARDINAL) ;
+
+
+(*
+   GetConstructorFromFifoQueue - retrieves a constructor symbol
+                                 from a fifo queue.
+*)
+
+PROCEDURE GetConstructorFromFifoQueue (VAR c: CARDINAL) ;
+
+
+END FifoQueue.

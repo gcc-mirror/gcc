@@ -1,4 +1,4 @@
-/* Copyright (C) 2011-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2011-2023 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -29,7 +29,10 @@
    will be made, represented as an identifier.
    ARCH_IDENT is the architecture implemented by the chip as specified in
    aarch64-arches.def.
-   FLAGS are the bitwise-or of the traits that apply to that core.
+   FLAGS is a parentheses-enclosed, comma-separated list of architecture
+   features in the core that are present in addition to the base architecture.
+   The architecture feature names are as per the identifiers in
+   aarch64-option-extensions.def.
    This need not include flags implied by the architecture.
    COSTS is the name of the rtx_costs routine to use.
    IMP is the implementer ID of the CPU vendor.  On a GNU/Linux system it
@@ -46,131 +49,138 @@
 /* ARMv8-A Architecture Processors.  */
 
 /* ARM ('A') cores. */
-AARCH64_CORE("cortex-a34",  cortexa34, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa35, 0x41, 0xd02, -1)
-AARCH64_CORE("cortex-a35",  cortexa35, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa35, 0x41, 0xd04, -1)
-AARCH64_CORE("cortex-a53",  cortexa53, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa53, 0x41, 0xd03, -1)
-AARCH64_CORE("cortex-a57",  cortexa57, cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa57, 0x41, 0xd07, -1)
-AARCH64_CORE("cortex-a72",  cortexa72, cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa72, 0x41, 0xd08, -1)
-AARCH64_CORE("cortex-a73",  cortexa73, cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa73, 0x41, 0xd09, -1)
+AARCH64_CORE("cortex-a34",  cortexa34, cortexa53, V8A,  (CRC), cortexa35, 0x41, 0xd02, -1)
+AARCH64_CORE("cortex-a35",  cortexa35, cortexa53, V8A,  (CRC), cortexa35, 0x41, 0xd04, -1)
+AARCH64_CORE("cortex-a53",  cortexa53, cortexa53, V8A,  (CRC), cortexa53, 0x41, 0xd03, -1)
+AARCH64_CORE("cortex-a57",  cortexa57, cortexa57, V8A,  (CRC), cortexa57, 0x41, 0xd07, -1)
+AARCH64_CORE("cortex-a72",  cortexa72, cortexa57, V8A,  (CRC), cortexa72, 0x41, 0xd08, -1)
+AARCH64_CORE("cortex-a73",  cortexa73, cortexa57, V8A,  (CRC), cortexa73, 0x41, 0xd09, -1)
 
 /* Cavium ('C') cores. */
-AARCH64_CORE("thunderx",      thunderx,      thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a0, -1)
+AARCH64_CORE("thunderx",      thunderx,      thunderx,  V8A,  (CRC, CRYPTO), thunderx,  0x43, 0x0a0, -1)
 /* Do not swap around "thunderxt88p1" and "thunderxt88",
    this order is required to handle variant correctly. */
-AARCH64_CORE("thunderxt88p1", thunderxt88p1, thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO,	thunderxt88,  0x43, 0x0a1, 0)
-AARCH64_CORE("thunderxt88",   thunderxt88,   thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderxt88,  0x43, 0x0a1, -1)
+AARCH64_CORE("thunderxt88p1", thunderxt88p1, thunderx,  V8A,  (CRC, CRYPTO),	thunderxt88,  0x43, 0x0a1, 0)
+AARCH64_CORE("thunderxt88",   thunderxt88,   thunderx,  V8A,  (CRC, CRYPTO), thunderxt88,  0x43, 0x0a1, -1)
 
 /* OcteonTX is the official name for T81/T83. */
-AARCH64_CORE("octeontx",      octeontx,      thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a0, -1)
-AARCH64_CORE("octeontx81",    octeontxt81,   thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a2, -1)
-AARCH64_CORE("octeontx83",    octeontxt83,   thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a3, -1)
+AARCH64_CORE("octeontx",      octeontx,      thunderx,  V8A,  (CRC, CRYPTO), thunderx,  0x43, 0x0a0, -1)
+AARCH64_CORE("octeontx81",    octeontxt81,   thunderx,  V8A,  (CRC, CRYPTO), thunderx,  0x43, 0x0a2, -1)
+AARCH64_CORE("octeontx83",    octeontxt83,   thunderx,  V8A,  (CRC, CRYPTO), thunderx,  0x43, 0x0a3, -1)
 
-AARCH64_CORE("thunderxt81",   thunderxt81,   thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a2, -1)
-AARCH64_CORE("thunderxt83",   thunderxt83,   thunderx,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, thunderx,  0x43, 0x0a3, -1)
+AARCH64_CORE("thunderxt81",   thunderxt81,   thunderx,  V8A,  (CRC, CRYPTO), thunderx,  0x43, 0x0a2, -1)
+AARCH64_CORE("thunderxt83",   thunderxt83,   thunderx,  V8A,  (CRC, CRYPTO), thunderx,  0x43, 0x0a3, -1)
 
 /* Ampere Computing ('\xC0') cores. */
-AARCH64_CORE("ampere1", ampere1, cortexa57, 8_6A, AARCH64_FL_FOR_ARCH8_6, ampere1, 0xC0, 0xac3, -1)
+AARCH64_CORE("ampere1", ampere1, cortexa57, V8_6A, (F16, RNG, AES, SHA3), ampere1, 0xC0, 0xac3, -1)
+AARCH64_CORE("ampere1a", ampere1a, cortexa57, V8_6A, (F16, RNG, AES, SHA3, SM4, MEMTAG), ampere1a, 0xC0, 0xac4, -1)
 /* Do not swap around "emag" and "xgene1",
    this order is required to handle variant correctly. */
-AARCH64_CORE("emag",        emag,      xgene1,    8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, emag, 0x50, 0x000, 3)
+AARCH64_CORE("emag",        emag,      xgene1,    V8A,  (CRC, CRYPTO), emag, 0x50, 0x000, 3)
 
 /* APM ('P') cores. */
-AARCH64_CORE("xgene1",      xgene1,    xgene1,    8A,  AARCH64_FL_FOR_ARCH8, xgene1, 0x50, 0x000, -1)
+AARCH64_CORE("xgene1",      xgene1,    xgene1,    V8A,  (), xgene1, 0x50, 0x000, -1)
 
 /* Qualcomm ('Q') cores. */
-AARCH64_CORE("falkor",      falkor,    falkor,    8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO | AARCH64_FL_RDMA, qdf24xx,   0x51, 0xC00, -1)
-AARCH64_CORE("qdf24xx",     qdf24xx,   falkor,    8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO | AARCH64_FL_RDMA, qdf24xx,   0x51, 0xC00, -1)
+AARCH64_CORE("falkor",      falkor,    falkor,    V8A,  (CRC, CRYPTO, RDMA), qdf24xx,   0x51, 0xC00, -1)
+AARCH64_CORE("qdf24xx",     qdf24xx,   falkor,    V8A,  (CRC, CRYPTO, RDMA), qdf24xx,   0x51, 0xC00, -1)
 
 /* Samsung ('S') cores. */
-AARCH64_CORE("exynos-m1",   exynosm1,  exynosm1,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, exynosm1,  0x53, 0x001, -1)
+AARCH64_CORE("exynos-m1",   exynosm1,  exynosm1,  V8A,  (CRC, CRYPTO), exynosm1,  0x53, 0x001, -1)
 
 /* HXT ('h') cores. */
-AARCH64_CORE("phecda",      phecda,    falkor,    8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, qdf24xx,   0x68, 0x000, -1)
+AARCH64_CORE("phecda",      phecda,    falkor,    V8A,  (CRC, CRYPTO), qdf24xx,   0x68, 0x000, -1)
 
 /* ARMv8.1-A Architecture Processors.  */
 
 /* Broadcom ('B') cores. */
-AARCH64_CORE("thunderx2t99p1",  thunderx2t99p1, thunderx2t99, 8_1A,  AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_CRYPTO, thunderx2t99, 0x42, 0x516, -1)
-AARCH64_CORE("vulcan",  vulcan, thunderx2t99, 8_1A,  AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_CRYPTO, thunderx2t99, 0x42, 0x516, -1)
+AARCH64_CORE("thunderx2t99p1",  thunderx2t99p1, thunderx2t99, V8_1A,  (CRYPTO), thunderx2t99, 0x42, 0x516, -1)
+AARCH64_CORE("vulcan",  vulcan, thunderx2t99, V8_1A,  (CRYPTO), thunderx2t99, 0x42, 0x516, -1)
 
 /* Cavium ('C') cores. */
-AARCH64_CORE("thunderx2t99",  thunderx2t99,  thunderx2t99, 8_1A,  AARCH64_FL_FOR_ARCH8_1 | AARCH64_FL_CRYPTO, thunderx2t99, 0x43, 0x0af, -1)
+AARCH64_CORE("thunderx2t99",  thunderx2t99,  thunderx2t99, V8_1A,  (CRYPTO), thunderx2t99, 0x43, 0x0af, -1)
 
 /* ARMv8.2-A Architecture Processors.  */
 
 /* ARM ('A') cores. */
-AARCH64_CORE("cortex-a55",  cortexa55, cortexa53, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD, cortexa53, 0x41, 0xd05, -1)
-AARCH64_CORE("cortex-a75",  cortexa75, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD, cortexa73, 0x41, 0xd0a, -1)
-AARCH64_CORE("cortex-a76",  cortexa76, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD, neoversen1, 0x41, 0xd0b, -1)
-AARCH64_CORE("cortex-a76ae",  cortexa76ae, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD | AARCH64_FL_SSBS, neoversen1, 0x41, 0xd0e, -1)
-AARCH64_CORE("cortex-a77",  cortexa77, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD | AARCH64_FL_SSBS, neoversen1, 0x41, 0xd0d, -1)
-AARCH64_CORE("cortex-a78",  cortexa78, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD | AARCH64_FL_SSBS | AARCH64_FL_PROFILE, neoversen1, 0x41, 0xd41, -1)
-AARCH64_CORE("cortex-a78ae",  cortexa78ae, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD | AARCH64_FL_SSBS | AARCH64_FL_PROFILE, neoversen1, 0x41, 0xd42, -1)
-AARCH64_CORE("cortex-a78c",  cortexa78c, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD | AARCH64_FL_SSBS | AARCH64_FL_PROFILE | AARCH64_FL_FLAGM | AARCH64_FL_PAUTH, neoversen1, 0x41, 0xd4b, -1)
-AARCH64_CORE("cortex-a65",  cortexa65, cortexa53, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD | AARCH64_FL_SSBS, cortexa73, 0x41, 0xd06, -1)
-AARCH64_CORE("cortex-a65ae",  cortexa65ae, cortexa53, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD | AARCH64_FL_SSBS, cortexa73, 0x41, 0xd43, -1)
-AARCH64_CORE("cortex-x1",  cortexx1, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD | AARCH64_FL_SSBS | AARCH64_FL_PROFILE, neoversen1, 0x41, 0xd44, -1)
-AARCH64_CORE("ares",  ares, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD | AARCH64_FL_PROFILE, neoversen1, 0x41, 0xd0c, -1)
-AARCH64_CORE("neoverse-n1",  neoversen1, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD | AARCH64_FL_PROFILE, neoversen1, 0x41, 0xd0c, -1)
-AARCH64_CORE("neoverse-e1",  neoversee1, cortexa53, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD | AARCH64_FL_SSBS, cortexa73, 0x41, 0xd4a, -1)
+AARCH64_CORE("cortex-a55",  cortexa55, cortexa53, V8_2A,  (F16, RCPC, DOTPROD), cortexa53, 0x41, 0xd05, -1)
+AARCH64_CORE("cortex-a75",  cortexa75, cortexa57, V8_2A,  (F16, RCPC, DOTPROD), cortexa73, 0x41, 0xd0a, -1)
+AARCH64_CORE("cortex-a76",  cortexa76, cortexa57, V8_2A,  (F16, RCPC, DOTPROD), neoversen1, 0x41, 0xd0b, -1)
+AARCH64_CORE("cortex-a76ae",  cortexa76ae, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, SSBS), neoversen1, 0x41, 0xd0e, -1)
+AARCH64_CORE("cortex-a77",  cortexa77, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, SSBS), neoversen1, 0x41, 0xd0d, -1)
+AARCH64_CORE("cortex-a78",  cortexa78, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, SSBS, PROFILE), neoversen1, 0x41, 0xd41, -1)
+AARCH64_CORE("cortex-a78ae",  cortexa78ae, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, SSBS, PROFILE), neoversen1, 0x41, 0xd42, -1)
+AARCH64_CORE("cortex-a78c",  cortexa78c, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, SSBS, PROFILE, FLAGM, PAUTH), neoversen1, 0x41, 0xd4b, -1)
+AARCH64_CORE("cortex-a65",  cortexa65, cortexa53, V8_2A,  (F16, RCPC, DOTPROD, SSBS), cortexa73, 0x41, 0xd06, -1)
+AARCH64_CORE("cortex-a65ae",  cortexa65ae, cortexa53, V8_2A,  (F16, RCPC, DOTPROD, SSBS), cortexa73, 0x41, 0xd43, -1)
+AARCH64_CORE("cortex-x1",  cortexx1, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, SSBS, PROFILE), neoversen1, 0x41, 0xd44, -1)
+AARCH64_CORE("cortex-x1c",  cortexx1c, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, SSBS, PROFILE, PAUTH), neoversen1, 0x41, 0xd4c, -1)
+AARCH64_CORE("ares",  ares, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, PROFILE), neoversen1, 0x41, 0xd0c, -1)
+AARCH64_CORE("neoverse-n1",  neoversen1, cortexa57, V8_2A,  (F16, RCPC, DOTPROD, PROFILE), neoversen1, 0x41, 0xd0c, -1)
+AARCH64_CORE("neoverse-e1",  neoversee1, cortexa53, V8_2A,  (F16, RCPC, DOTPROD, SSBS), cortexa73, 0x41, 0xd4a, -1)
 
 /* Cavium ('C') cores. */
-AARCH64_CORE("octeontx2",      octeontx2,      cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_CRYPTO | AARCH64_FL_PROFILE, cortexa57, 0x43, 0x0b0, -1)
-AARCH64_CORE("octeontx2t98",   octeontx2t98,   cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_CRYPTO | AARCH64_FL_PROFILE, cortexa57, 0x43, 0x0b1, -1)
-AARCH64_CORE("octeontx2t96",   octeontx2t96,   cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_CRYPTO | AARCH64_FL_PROFILE, cortexa57, 0x43, 0x0b2, -1)
+AARCH64_CORE("octeontx2",      octeontx2,      cortexa57, V8_2A,  (CRYPTO, PROFILE), cortexa57, 0x43, 0x0b0, -1)
+AARCH64_CORE("octeontx2t98",   octeontx2t98,   cortexa57, V8_2A,  (CRYPTO, PROFILE), cortexa57, 0x43, 0x0b1, -1)
+AARCH64_CORE("octeontx2t96",   octeontx2t96,   cortexa57, V8_2A,  (CRYPTO, PROFILE), cortexa57, 0x43, 0x0b2, -1)
 /* Note OcteonTX2 T93 is an alias to OcteonTX2 T96. */
-AARCH64_CORE("octeontx2t93",   octeontx2t93,   cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_CRYPTO | AARCH64_FL_PROFILE, cortexa57, 0x43, 0x0b2, -1)
-AARCH64_CORE("octeontx2f95",   octeontx2f95,   cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_CRYPTO | AARCH64_FL_PROFILE, cortexa57, 0x43, 0x0b3, -1)
-AARCH64_CORE("octeontx2f95n",  octeontx2f95n,  cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_CRYPTO | AARCH64_FL_PROFILE, cortexa57, 0x43, 0x0b4, -1)
-AARCH64_CORE("octeontx2f95mm", octeontx2f95mm, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_CRYPTO | AARCH64_FL_PROFILE, cortexa57, 0x43, 0x0b5, -1)
+AARCH64_CORE("octeontx2t93",   octeontx2t93,   cortexa57, V8_2A,  (CRYPTO, PROFILE), cortexa57, 0x43, 0x0b2, -1)
+AARCH64_CORE("octeontx2f95",   octeontx2f95,   cortexa57, V8_2A,  (CRYPTO, PROFILE), cortexa57, 0x43, 0x0b3, -1)
+AARCH64_CORE("octeontx2f95n",  octeontx2f95n,  cortexa57, V8_2A,  (CRYPTO, PROFILE), cortexa57, 0x43, 0x0b4, -1)
+AARCH64_CORE("octeontx2f95mm", octeontx2f95mm, cortexa57, V8_2A,  (CRYPTO, PROFILE), cortexa57, 0x43, 0x0b5, -1)
 
 /* Fujitsu ('F') cores. */
-AARCH64_CORE("a64fx", a64fx, a64fx, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_SVE, a64fx, 0x46, 0x001, -1)
+AARCH64_CORE("a64fx", a64fx, a64fx, V8_2A,  (F16, SVE), a64fx, 0x46, 0x001, -1)
 
 /* HiSilicon ('H') cores. */
-AARCH64_CORE("tsv110",  tsv110, tsv110, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_CRYPTO | AARCH64_FL_F16 | AARCH64_FL_AES | AARCH64_FL_SHA2, tsv110,   0x48, 0xd01, -1)
+AARCH64_CORE("tsv110",  tsv110, tsv110, V8_2A,  (CRYPTO, F16), tsv110,   0x48, 0xd01, -1)
 
 /* ARMv8.3-A Architecture Processors.  */
 
 /* Marvell cores (TX3). */
-AARCH64_CORE("thunderx3t110",  thunderx3t110,  thunderx3t110, 8_3A,  AARCH64_FL_FOR_ARCH8_3 | AARCH64_FL_CRYPTO | AARCH64_FL_RCPC | AARCH64_FL_SM4 | AARCH64_FL_SHA3 | AARCH64_FL_F16FML | AARCH64_FL_RCPC8_4, thunderx3t110, 0x43, 0x0b8, 0x0a)
+AARCH64_CORE("thunderx3t110",  thunderx3t110,  thunderx3t110, V8_3A,  (CRYPTO, SM4, SHA3, F16FML), thunderx3t110, 0x43, 0x0b8, 0x0a)
 
 /* ARMv8.4-A Architecture Processors.  */
 
 /* Arm ('A') cores.  */
-AARCH64_CORE("zeus", zeus, cortexa57, 8_4A,  AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_SVE | AARCH64_FL_RCPC | AARCH64_FL_I8MM | AARCH64_FL_BF16 | AARCH64_FL_F16 | AARCH64_FL_PROFILE | AARCH64_FL_SSBS | AARCH64_FL_RNG, neoversev1, 0x41, 0xd40, -1)
-AARCH64_CORE("neoverse-v1", neoversev1, cortexa57, 8_4A,  AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_SVE | AARCH64_FL_RCPC | AARCH64_FL_I8MM | AARCH64_FL_BF16 | AARCH64_FL_F16 | AARCH64_FL_PROFILE | AARCH64_FL_SSBS | AARCH64_FL_RNG, neoversev1, 0x41, 0xd40, -1)
-AARCH64_CORE("neoverse-512tvb", neoverse512tvb, cortexa57, 8_4A,  AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_SVE | AARCH64_FL_RCPC | AARCH64_FL_I8MM | AARCH64_FL_BF16 | AARCH64_FL_F16 | AARCH64_FL_PROFILE | AARCH64_FL_SSBS | AARCH64_FL_RNG, neoverse512tvb, INVALID_IMP, INVALID_CORE, -1)
+AARCH64_CORE("zeus", zeus, cortexa57, V8_4A,  (SVE, I8MM, BF16, PROFILE, SSBS, RNG), neoversev1, 0x41, 0xd40, -1)
+AARCH64_CORE("neoverse-v1", neoversev1, cortexa57, V8_4A,  (SVE, I8MM, BF16, PROFILE, SSBS, RNG), neoversev1, 0x41, 0xd40, -1)
+AARCH64_CORE("neoverse-512tvb", neoverse512tvb, cortexa57, V8_4A,  (SVE, I8MM, BF16, PROFILE, SSBS, RNG), neoverse512tvb, INVALID_IMP, INVALID_CORE, -1)
 
 /* Qualcomm ('Q') cores. */
-AARCH64_CORE("saphira",     saphira,    saphira,    8_4A,  AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_CRYPTO | AARCH64_FL_RCPC, saphira,   0x51, 0xC01, -1)
+AARCH64_CORE("saphira",     saphira,    saphira,    V8_4A,  (CRYPTO), saphira,   0x51, 0xC01, -1)
 
 /* ARMv8-A big.LITTLE implementations.  */
 
-AARCH64_CORE("cortex-a57.cortex-a53",  cortexa57cortexa53, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa57, 0x41, AARCH64_BIG_LITTLE (0xd07, 0xd03), -1)
-AARCH64_CORE("cortex-a72.cortex-a53",  cortexa72cortexa53, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa72, 0x41, AARCH64_BIG_LITTLE (0xd08, 0xd03), -1)
-AARCH64_CORE("cortex-a73.cortex-a35",  cortexa73cortexa35, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa73, 0x41, AARCH64_BIG_LITTLE (0xd09, 0xd04), -1)
-AARCH64_CORE("cortex-a73.cortex-a53",  cortexa73cortexa53, cortexa53, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC, cortexa73, 0x41, AARCH64_BIG_LITTLE (0xd09, 0xd03), -1)
+AARCH64_CORE("cortex-a57.cortex-a53",  cortexa57cortexa53, cortexa53, V8A,  (CRC), cortexa57, 0x41, AARCH64_BIG_LITTLE (0xd07, 0xd03), -1)
+AARCH64_CORE("cortex-a72.cortex-a53",  cortexa72cortexa53, cortexa53, V8A,  (CRC), cortexa72, 0x41, AARCH64_BIG_LITTLE (0xd08, 0xd03), -1)
+AARCH64_CORE("cortex-a73.cortex-a35",  cortexa73cortexa35, cortexa53, V8A,  (CRC), cortexa73, 0x41, AARCH64_BIG_LITTLE (0xd09, 0xd04), -1)
+AARCH64_CORE("cortex-a73.cortex-a53",  cortexa73cortexa53, cortexa53, V8A,  (CRC), cortexa73, 0x41, AARCH64_BIG_LITTLE (0xd09, 0xd03), -1)
 
 /* ARM DynamIQ big.LITTLE configurations.  */
 
-AARCH64_CORE("cortex-a75.cortex-a55",  cortexa75cortexa55, cortexa53, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD, cortexa73, 0x41, AARCH64_BIG_LITTLE (0xd0a, 0xd05), -1)
-AARCH64_CORE("cortex-a76.cortex-a55",  cortexa76cortexa55, cortexa53, 8_2A,  AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_F16 | AARCH64_FL_RCPC | AARCH64_FL_DOTPROD, neoversen1, 0x41, AARCH64_BIG_LITTLE (0xd0b, 0xd05), -1)
+AARCH64_CORE("cortex-a75.cortex-a55",  cortexa75cortexa55, cortexa53, V8_2A,  (F16, RCPC, DOTPROD), cortexa73, 0x41, AARCH64_BIG_LITTLE (0xd0a, 0xd05), -1)
+AARCH64_CORE("cortex-a76.cortex-a55",  cortexa76cortexa55, cortexa53, V8_2A,  (F16, RCPC, DOTPROD), neoversen1, 0x41, AARCH64_BIG_LITTLE (0xd0b, 0xd05), -1)
 
 /* Armv8-R Architecture Processors.  */
-AARCH64_CORE("cortex-r82", cortexr82, cortexa53, 8R, AARCH64_FL_FOR_ARCH8_R, cortexa53, 0x41, 0xd15, -1)
+AARCH64_CORE("cortex-r82", cortexr82, cortexa53, V8R, (), cortexa53, 0x41, 0xd15, -1)
 
 /* Armv9.0-A Architecture Processors.  */
 
 /* Arm ('A') cores. */
-AARCH64_CORE("cortex-a510",  cortexa510, cortexa55, 9A,  AARCH64_FL_FOR_ARCH9 | AARCH64_FL_SVE2_BITPERM | AARCH64_FL_MEMTAG | AARCH64_FL_I8MM | AARCH64_FL_BF16, cortexa53, 0x41, 0xd46, -1)
+AARCH64_CORE("cortex-a510",  cortexa510, cortexa55, V9A,  (SVE2_BITPERM, MEMTAG, I8MM, BF16), cortexa53, 0x41, 0xd46, -1)
 
-AARCH64_CORE("cortex-a710",  cortexa710, cortexa57, 9A,  AARCH64_FL_FOR_ARCH9 | AARCH64_FL_SVE2_BITPERM | AARCH64_FL_MEMTAG | AARCH64_FL_I8MM | AARCH64_FL_BF16, neoversen2, 0x41, 0xd47, -1)
+AARCH64_CORE("cortex-a710",  cortexa710, cortexa57, V9A,  (SVE2_BITPERM, MEMTAG, I8MM, BF16), neoversen2, 0x41, 0xd47, -1)
 
-AARCH64_CORE("cortex-x2",  cortexx2, cortexa57, 9A,  AARCH64_FL_FOR_ARCH9 | AARCH64_FL_SVE2_BITPERM | AARCH64_FL_MEMTAG | AARCH64_FL_I8MM | AARCH64_FL_BF16, neoversen2, 0x41, 0xd48, -1)
+AARCH64_CORE("cortex-a715",  cortexa715, cortexa57, V9A,  (SVE2_BITPERM, MEMTAG, I8MM, BF16), neoversen2, 0x41, 0xd4d, -1)
 
-AARCH64_CORE("neoverse-n2", neoversen2, cortexa57, 9A, AARCH64_FL_FOR_ARCH9 | AARCH64_FL_I8MM | AARCH64_FL_BF16 | AARCH64_FL_SVE2_BITPERM | AARCH64_FL_RNG | AARCH64_FL_MEMTAG | AARCH64_FL_PROFILE, neoversen2, 0x41, 0xd49, -1)
+AARCH64_CORE("cortex-x2",  cortexx2, cortexa57, V9A,  (SVE2_BITPERM, MEMTAG, I8MM, BF16), neoversen2, 0x41, 0xd48, -1)
 
-AARCH64_CORE("demeter", demeter, cortexa57, 9A, AARCH64_FL_FOR_ARCH9 | AARCH64_FL_I8MM | AARCH64_FL_BF16 | AARCH64_FL_SVE2_BITPERM | AARCH64_FL_RNG | AARCH64_FL_MEMTAG | AARCH64_FL_PROFILE, demeter, 0x41, 0xd4f, -1)
+AARCH64_CORE("cortex-x3",  cortexx3, cortexa57, V9A,  (SVE2_BITPERM, MEMTAG, I8MM, BF16), neoversen2, 0x41, 0xd4e, -1)
+
+AARCH64_CORE("neoverse-n2", neoversen2, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversen2, 0x41, 0xd49, -1)
+
+AARCH64_CORE("demeter", demeter, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversev2, 0x41, 0xd4f, -1)
+AARCH64_CORE("neoverse-v2", neoversev2, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversev2, 0x41, 0xd4f, -1)
 
 #undef AARCH64_CORE

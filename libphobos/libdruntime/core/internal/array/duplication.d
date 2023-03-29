@@ -15,10 +15,17 @@ U[] _dup(T, U)(scope T[] a) pure nothrow @trusted if (__traits(isPOD, T))
     if (__ctfe)
         return _dupCtfe!(T, U)(a);
 
-    import core.stdc.string : memcpy;
-    auto arr = _d_newarrayU(typeid(T[]), a.length);
-    memcpy(arr.ptr, cast(const(void)*) a.ptr, T.sizeof * a.length);
-    return *cast(U[]*) &arr;
+    version (D_BetterC)
+    {
+        return _dupCtfe!(T, U)(a);
+    }
+    else
+    {
+        import core.stdc.string : memcpy;
+        auto arr = _d_newarrayU(typeid(T[]), a.length);
+        memcpy(arr.ptr, cast(const(void)*) a.ptr, T.sizeof * a.length);
+        return *cast(U[]*) &arr;
+    }
 }
 
 U[] _dupCtfe(T, U)(scope T[] a)
@@ -41,25 +48,32 @@ U[] _dup(T, U)(T[] a) if (!__traits(isPOD, T))
     if (__ctfe)
         return _dupCtfe!(T, U)(a);
 
-    import core.lifetime: copyEmplace;
-    U[] res = () @trusted {
-        auto arr = cast(U*) _d_newarrayU(typeid(T[]), a.length);
-        size_t i;
-        scope (failure)
-        {
-            import core.internal.lifetime: emplaceInitializer;
-            // Initialize all remaining elements to not destruct garbage
-            foreach (j; i .. a.length)
-                emplaceInitializer(cast() arr[j]);
-        }
-        for (; i < a.length; i++)
-        {
-            copyEmplace(a.ptr[i], arr[i]);
-        }
-        return cast(U[])(arr[0..a.length]);
-    } ();
+    version (D_BetterC)
+    {
+        return _dupCtfe!(T, U)(a);
+    }
+    else
+    {
+        import core.lifetime: copyEmplace;
+        U[] res = () @trusted {
+            auto arr = cast(U*) _d_newarrayU(typeid(T[]), a.length);
+            size_t i;
+            scope (failure)
+            {
+                import core.internal.lifetime: emplaceInitializer;
+                // Initialize all remaining elements to not destruct garbage
+                foreach (j; i .. a.length)
+                    emplaceInitializer(cast() arr[j]);
+            }
+            for (; i < a.length; i++)
+            {
+                copyEmplace(a.ptr[i], arr[i]);
+            }
+            return cast(U[])(arr[0..a.length]);
+        } ();
 
-    return res;
+        return res;
+    }
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=22107

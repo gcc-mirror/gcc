@@ -1,5 +1,5 @@
 /* Intrinsic function resolution.
-   Copyright (C) 2000-2022 Free Software Foundation, Inc.
+   Copyright (C) 2000-2023 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Katherine Holcomb
 
 This file is part of GCC.
@@ -94,9 +94,12 @@ check_charlen_present (gfc_expr *source)
   else if (source->expr_type == EXPR_ARRAY)
     {
       gfc_constructor *c = gfc_constructor_first (source->value.constructor);
-      source->ts.u.cl->length
-		= gfc_get_int_expr (gfc_charlen_int_kind, NULL,
-				    c->expr->value.character.length);
+      if (c)
+	source->ts.u.cl->length
+	  = gfc_get_int_expr (gfc_charlen_int_kind, NULL,
+			      c->expr->value.character.length);
+      if (source->ts.u.cl->length == NULL)
+	gfc_internal_error ("check_charlen_present(): length not set");
     }
 }
 

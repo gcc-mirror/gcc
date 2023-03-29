@@ -3,7 +3,7 @@
 ;; expander, and the actual vector instructions will be in altivec.md and
 ;; vsx.md
 
-;; Copyright (C) 2009-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2023 Free Software Foundation, Inc.
 ;; Contributed by Michael Meissner <meissner@linux.vnet.ibm.com>
 
 ;; This file is part of GCC.
@@ -1475,7 +1475,7 @@
   [(match_operand:VEC_L 0 "vlogical_operand")
    (match_operand:VEC_L 1 "vlogical_operand")
    (match_operand:QI 2 "reg_or_short_operand")]
-  "TARGET_ALTIVEC"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
 {
   rtx bitshift = operands[2];
   rtx shift;

@@ -1,4 +1,5 @@
 // { dg-do run { target c++11 } }
+// { dg-additional-options "-fexcess-precision=fast" }
 // An implementation of TR1's <tuple> using variadic teplates
 // Contributed by Douglas Gregor <doug.gregor@gmail.com>
 

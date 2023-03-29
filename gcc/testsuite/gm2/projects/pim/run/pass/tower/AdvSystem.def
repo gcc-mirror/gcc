@@ -1,0 +1,189 @@
+DEFINITION MODULE AdvSystem ;
+
+
+FROM Executive IMPORT SEMAPHORE, DESCRIPTOR ;
+FROM ProcArgs IMPORT ProcessArgs ;
+
+
+EXPORT QUALIFIED ManWeight,
+                 MaxNoOfPlayers,
+                 Man,
+                 TypeOfDeath,
+                 Player,
+                 PlayerSet,
+                 PlayerNo,
+                 ArrowArgs,
+                 StartPlayer,
+                 TimeMinSec,
+                 RandomNumber,
+                 ClientRead,
+                 DefaultWrite,
+                 ReadString,
+                 NextFreePlayer,
+                 IsPlayerActive,
+                 AssignOutputTo,
+                 UnAssign,
+
+                 GetReadAccessToPlayer,
+                 GetWriteAccessToPlayer,
+                 ReleaseReadAccessToPlayer,
+                 ReleaseWriteAccessToPlayer,
+
+                 GetReadAccessToDoor,
+                 GetWriteAccessToDoor,
+                 ReleaseReadAccessToDoor,
+                 ReleaseWriteAccessToDoor,
+
+                 GetReadAccessToTreasure,
+                 GetWriteAccessToTreasure,
+                 ReleaseReadAccessToTreasure,
+                 ReleaseWriteAccessToTreasure,
+
+                 GetAccessToScreen,
+                 ReleaseAccessToScreen,
+                 GetAccessToScreenNo,
+                 ReleaseAccessToScreenNo ;
+
+
+CONST
+   ManWeight      = 70 ;      (* Kgs                               *)
+   MaxNoOfPlayers = 100 ;
+
+TYPE
+   TypeOfDeath = (living, normalarrow, magicarrow,
+                  exitdungeon, explosion, sword, fireball) ;
+
+   PlayerSet = SET OF [0..MaxNoOfPlayers] ;
+
+   ArrowArgs = POINTER TO RECORD
+                             ArrowPlayer: CARDINAL ;
+                             ArrowRoom  : CARDINAL ;
+                             ArrowX     : CARDINAL ;  (* X coord of Arrow   *)
+                             ArrowY     : CARDINAL ;  (* Y coord of Arrow   *)
+                             ArrowDir   : INTEGER ;   (* Direction of Arrow *)
+                             IsMagic    : BOOLEAN ;
+                          END ;
+
+   Man = RECORD
+            ManName         : ARRAY [0..9] OF CHAR ;
+            DeathType       : TypeOfDeath ;(* How man died!        *)
+            Weight          : CARDINAL ;   (* Mans Weight in lbs   *)
+            Wounds          : CARDINAL ;   (* 0..100  0= Dead!     *)
+            Fatigue         : CARDINAL ;   (* 0..100  0= V Tired   *)
+            TreasureOwn     : BITSET ;     (* Treasures that own   *)
+            NoOfMagic       : CARDINAL ;   (* No Of Magic Arrows   *)
+            NoOfNormal      : CARDINAL ;   (* No Of Normal Arrows  *)
+            Xman            : CARDINAL ;   (* X coord of Man       *)
+            Yman            : CARDINAL ;   (* Y coord of Man       *)
+            Direction       : CARDINAL ;   (* Direction of Man 0.4 *)
+            ScreenX         : CARDINAL ;   (* Top Right of screen  *)
+            ScreenY         : CARDINAL ;   (* ditto                *)
+            RoomOfMan       : CARDINAL ;   (* Room Man Current in  *)
+            NormalProcArgs  : ProcessArgs ;
+            MagicProcArgs   : ProcessArgs ;
+            MagicP,
+            NormalP         : DESCRIPTOR ;
+            LastSecWounds   : CARDINAL ;   (* Last updated Wounds  *)
+            LastSecFatigue  : CARDINAL ;   (* Last updated Fatigue *)
+            PlayerProcess   : DESCRIPTOR ; (* process of player    *)
+            fd              : INTEGER ;    (* socket file desc     *)
+         END ;
+
+
+VAR
+   Player        : ARRAY [0..MaxNoOfPlayers] OF Man ;
+   NextFreePlayer: CARDINAL ;   (* 0..NextFreePlayer-1 are potentially playing *)
+
+
+PROCEDURE ClientRead (VAR ch: CHAR) : BOOLEAN ;
+PROCEDURE DefaultWrite (ch: CHAR) ;
+PROCEDURE ReadString (VAR s: ARRAY OF CHAR) ;
+
+
+(*
+   AssignOutputTo - assigns the current process to be associated with
+                    player, p.
+*)
+
+PROCEDURE AssignOutputTo (p: CARDINAL) ;
+
+
+(*
+   UnAssign - unassign the current process from any player.
+*)
+
+PROCEDURE UnAssign ;
+
+
+(*
+   IsPlayerActive - returns TRUE if player, p, is still playing
+*)
+
+PROCEDURE IsPlayerActive (p: CARDINAL) : BOOLEAN ;
+
+
+(* PlayerNo - returns the Player number of the current man calling *)
+
+PROCEDURE PlayerNo () : CARDINAL ;
+
+
+PROCEDURE StartPlayer (f: INTEGER) ;
+
+
+(* Returns Minutes and seconds in Seconds.                      *)
+
+PROCEDURE TimeMinSec (VAR MinSec: CARDINAL) ;
+
+
+(* RandomNumber delivers a random number in r which is in the   *)
+(* range 0..n-1. However n must be in the range 1..256          *)
+
+PROCEDURE RandomNumber (VAR r: CARDINAL ; n: CARDINAL) ;
+
+
+(* The rules which govern the allocation of these resourses are *)
+
+(* 1)  One may claim multiple resourses in the following order: *)
+(*        AccessPlayer                                          *)
+(*        AccessDoor                                            *)
+(*        AccessTreasure                                        *)
+(*        AccessScreen                                          *)
+(*                                                              *)
+(*                          All r/w  -  doesn't matter.         *)
+(* 2)  Must never reverse this claiming or DEADLOCK may occur.  *)
+(*                                                              *)
+(* 3)  Must claim players in order ie 0 1 2                     *)
+
+
+(* All Player access commands                                   *)
+
+PROCEDURE GetReadAccessToPlayer ;
+PROCEDURE GetWriteAccessToPlayer ;
+PROCEDURE ReleaseReadAccessToPlayer ;
+PROCEDURE ReleaseWriteAccessToPlayer ;
+
+(* All Door access commands                                     *)
+
+PROCEDURE GetReadAccessToDoor ;
+PROCEDURE GetWriteAccessToDoor ;
+PROCEDURE ReleaseReadAccessToDoor ;
+PROCEDURE ReleaseWriteAccessToDoor ;
+
+
+(* All Treasure access commands                                 *)
+
+PROCEDURE GetReadAccessToTreasure ;
+PROCEDURE GetWriteAccessToTreasure ;
+PROCEDURE ReleaseReadAccessToTreasure ;
+PROCEDURE ReleaseWriteAccessToTreasure ;
+
+
+(* All Screen access commands                                   *)
+
+PROCEDURE GetAccessToScreen ;
+PROCEDURE ReleaseAccessToScreen ;
+PROCEDURE GetAccessToScreenNo (Sn: CARDINAL) ;
+PROCEDURE ReleaseAccessToScreenNo (Sn: CARDINAL) ;
+
+
+END AdvSystem.

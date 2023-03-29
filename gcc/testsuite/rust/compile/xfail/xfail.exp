@@ -1,0 +1,63 @@
+# Copyright (C) 2021-2023 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Compile tests, no torture testing.
+#
+# These tests are used to keep track of known limitations :
+# 1- tests that are incorrecly build instead of being rejected
+# 2- tests that are build to an incorrect result
+# 3- tests that are rejected instead of being correctly build
+#
+# Not currently supported here:
+# - tests that are exhibiting incorrect behavior at runtime
+#
+# Here's how to annotate tests for each cases:
+#
+# 1- test is successfuly build instead of being rejected
+#
+# Expected behavior: a specific error rejecting the test
+# Observed behavior: error not present
+# Use dg-error and mark the test xfail and add reference to corresponding issue.
+# { dg-error "lifetime not defined" "#359" { xfail *-*-* } }
+#
+# 2- test is successfuly build but result is incorrect
+#
+# Expected behavior: test is correctly build and has specific property
+# Observed behavior: test is correctly build but is missing the specific property
+# Depends on the property. For example, if the property can be checked in the assembly file, use dg-final + xfail.
+# { dg-final { scan-assembler "given_string_missing_in_assembly_" "#1234" { xfail *-*-* } } }
+#
+# 3- test is rejected instead of being correctly build
+#
+# Expected behavior: test is successfully build
+# Observed behavior: the test is rejected with an error
+# Use dg-bogus + xfail to match the bogus error message, or use dg-xfail-if if it's harder to match a specific error.
+
+# Load support procs.
+load_lib rust-dg.exp
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+set saved-dg-do-what-default ${dg-do-what-default}
+
+set dg-do-what-default "compile"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.rs]] "" ""
+set dg-do-what-default ${saved-dg-do-what-default}
+
+# All done.
+dg-finish

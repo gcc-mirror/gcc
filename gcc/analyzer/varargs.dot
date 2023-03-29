@@ -1,0 +1,56 @@
+/* An overview of the state machine from varargs.cc
+   Copyright (C) 2022-2023 Free Software Foundation, Inc.
+   Contributed by David Malcolm <dmalcolm@redhat.com>.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+/* Keep this in-sync with varargs.cc  */
+
+digraph "va_list" {
+
+  /* STATES. */
+
+  /* Start state.  */
+  start;
+
+  /* State for a va_list that is the result of a va_start or va_copy.  */
+  started;
+
+  /* State for a va_list that has had va_end called on it.  */
+  ended;
+
+  /* TRANSITIONS. */
+
+  /* on_va_start: */
+  start -> started [label="on 'va_start(X, ...)'"];
+
+  /* on_va_copy: */
+  start -> started [label="on 'va_copy(X, ...)'"];
+  // in check_for_ended_va_list:
+  ended -> ended [label="on 'va_copy(X, ...)':\nWarn('use after va_end')"];
+
+  /* on_va_arg: */
+  started -> started [label="on 'va_arg(X, ...)'"];
+  started -> started [label="on 'va_copy(..., X)'"];
+  // in check_for_ended_va_list:
+  ended -> ended [label="on 'va_arg(X, ...)':\nWarn('use after va_end')"];
+
+  /* on_va_end: */
+  started -> ended [label="on 'va_end(X)'"];
+  // in check_for_ended_va_list:
+  ended -> ended [label="on 'va_end(X)':\nWarn('use after va_end')"];
+}

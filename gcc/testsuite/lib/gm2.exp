@@ -1,0 +1,643 @@
+# Copyright (C) 2003-2023 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This file was written by Gaius Mulley (gaius.mulley@southwales.ac.uk)
+# for GNU Modula-2.
+
+# we want to use libgloss so we can get find_gcc.
+load_lib libgloss.exp
+load_lib prune.exp
+load_lib gcc-defs.exp
+load_lib target-libpath.exp
+load_lib timeout.exp
+load_lib timeout-dg.exp
+
+
+if {[info exists individual_timeout]} {
+    set gm2_previous_timeout $individual_timeout
+} else {
+    set gm2_previous_timeout 10
+}
+
+
+# set gm2_previous_timeout $individual_timeout
+
+# We should be able to complete any test in 10 seconds.
+dg-timeout S 10
+
+
+# only push one level.
+
+proc gm2_push_timeout { secs } {
+    global individual_timeout
+    set individual_timeout $secs
+}
+
+
+proc gm2_pop_timeout { } {
+    global individual_timeout
+    global gm2_previous_timeout
+    set individual_timeout $gm2_previous_timeout
+}
+
+
+#
+# GCC_UNDER_TEST is the compiler under test.
+#
+
+#
+# default_gcc_version -- extract and print the version number of the compiler
+#
+
+proc default_gcc_version { } {
+    global GCC_UNDER_TEST
+
+    gm2_init
+
+    # ignore any arguments after the command
+    set compiler [lindex $GCC_UNDER_TEST 0]
+
+    if ![is_remote host] {
+	set compiler_name [which $compiler]
+    } else {
+	set compiler_name $compiler
+    }
+
+    # verify that the compiler exists
+    if { $compiler_name != 0 } then {
+	set tmp [remote_exec host "$compiler --version"]
+	set status [lindex $tmp 0]
+	set output [lindex $tmp 1]
+	regexp "version.*$" $output version
+	if { $status == 0 && [info exists version] } then {
+	    clone_output "$compiler_name $version\n"
+	} else {
+	    clone_output "Couldn't determine version of $compiler_name: $output\n"
+	}
+    } else {
+	# compiler does not exist (this should have already been detected)
+	warning "$compiler does not exist"
+    }
+}
+
+#
+# gcc_version -- Call default_gcc_version, so we can override it if needed.
+#
+
+proc gcc_version { } {
+    default_gcc_version
+}
+
+#
+# gm2_init -- called at the start of each .exp script.
+#
+# There currently isn't much to do, but always using it allows us to
+# make some enhancements without having to go back and rewrite the scripts.
+#
+
+set gm2_initialized 0
+set gm2_compile_method "default"
+set gm2_link_path ""
+set gm2_link_libraries "m2pim m2iso"
+set gm2_link_objects ""
+
+proc gm2_set_compile_method { arg } {
+    global gm2_compile_method
+
+    send_log "********************************************\n"
+    send_log "**** setting gm2_compile_method to $arg ****\n"
+    send_log "********************************************\n"
+    set gm2_compile_method $arg
+}
+
+
+proc gm2_init { args } {
+    global tmpdir
+    global objdir
+    global rootme
+    global base_dir
+    global tool_root_dir
+    global gluefile wrap_flags
+    global gm2_initialized
+    global GCC_UNDER_TEST
+    global TOOL_EXECUTABLE
+    global gm2_link_libraries
+    global gm2_link_objects
+    global gm2_link_path
+    global HAVE_LIBSTDCXX_V3
+
+    if { $gm2_initialized == 1 } { return }
+
+    set gm2_link_objects ""
+    set GCC_UNDER_TEST [lookfor_file $rootme gm2]
+    append GCC_UNDER_TEST " " -B[file dirname $rootme]/gcc " " ${args}
+    append GCC_UNDER_TEST " " -fno-diagnostics-show-caret
+    append GCC_UNDER_TEST " " -fno-diagnostics-show-line-numbers
+    append GCC_UNDER_TEST " " -fdiagnostics-color=never
+    send_log "GCC_UNDER_TEST is ${GCC_UNDER_TEST}\n"
+
+    if ![info exists tmpdir] then {
+	set tmpdir /tmp
+    }
+    if {[target_info needs_status_wrapper] != "" && \
+	    [target_info needs_status_wrapper] != "0" && \
+	    ![info exists gluefile]} {
+	set gluefile ${tmpdir}/gcc-testglue.o
+	set result [build_wrapper $gluefile]
+	if { $result != "" } {
+	    set gluefile [lindex $result 0]
+	    set wrap_flags [lindex $result 1]
+	} else {
+	    unset gluefile
+	}
+    }
+
+    set gm2_link_path "[gm2_link_flags [get_multilibs]]"
+    verbose $gm2_link_path 1
+
+    # Set the default timeout value, larger tests can override
+    # this if necessary.
+    dg-timeout S 10
+}
+
+
+#
+# gm2_target_compile_default -- compile a source file
+#
+
+proc gm2_target_compile_default { source dest type options } {
+    global gluefile wrap_flags
+    global GCC_UNDER_TEST
+    global TOOL_OPTIONS
+    global TEST_ALWAYS_FLAGS
+    global gm2_link_objects
+    global gm2_link_libraries
+    global gm2_link_path
+
+    if {[target_info needs_status_wrapper] != "" && \
+	    [target_info needs_status_wrapper] != "0" && \
+	    [info exists gluefile] } {
+	lappend options "libs=${gluefile}"
+	lappend options "ldflags=$wrap_flags"
+    }
+
+    # TEST_ALWAYS_FLAGS are flags that should be passed to every
+    # compilation.  They are passed first to allow individual
+    # tests to override them.
+    if [info exists TEST_ALWAYS_FLAGS] {
+	set options [concat "{additional_flags=$TEST_ALWAYS_FLAGS}" $options]
+    }
+
+    global TEST_EXTRA_LIBS
+    if [info exists TEST_EXTRA_LIBS] {
+	lappend options "ldflags=$TEST_EXTRA_LIBS"
+    }
+
+    if [target_info exists gcc,stack_size] {
+	lappend options "additional_flags=-DSTACK_SIZE=[target_info gcc,stack_size]"
+    }
+    if [target_info exists gcc,no_trampolines] {
+	lappend options "additional_flags=-DNO_TRAMPOLINES"
+    }
+    if [target_info exists gcc,no_label_values] {
+	lappend options "additional_flags=-DNO_LABEL_VALUES"
+    }
+    if [info exists TOOL_OPTIONS] {
+	lappend options "additional_flags=$TOOL_OPTIONS"
+    }
+    lappend options "timeout=[timeout_value]"
+    lappend options "compiler=$GCC_UNDER_TEST"
+    # puts stderr "options = $options\n"
+    # puts stderr "***** target_compile: $source $dest $type $options\n"
+    return [target_compile $source $dest $type $options]
+}
+
+
+#
+# gm2_target_compile -- compile a source file
+#
+
+proc gm2_target_compile { source dest type options } {
+    global gm2_compile_method
+
+    return [gm2_target_compile_${gm2_compile_method} $source $dest $type $options]
+}
+
+#
+#  gm2_link_lib - allows tests to specify link libraries.
+#                  This _must_ be called before gm2_init.
+#
+
+proc gm2_link_lib { libraries } {
+    global gm2_link_libraries
+
+    set gm2_link_libraries $libraries
+}
+
+
+#
+#  gm2_link_obj - allows tests to specify link with objects.
+#
+
+proc gm2_link_obj { objects } {
+    global gm2_link_objects
+
+    set gm2_link_objects $objects
+}
+
+
+#
+#  gm2_link_flags - detects the whereabouts of libraries (-lstdc++).
+#
+
+proc gm2_link_flags { paths } {
+    global srcdir
+    global ld_library_path
+    global gccpath
+    global gm2_link_libraries
+
+    set gccpath ${paths}
+    set libio_dir ""
+    set flags ""
+    set ld_library_path "."
+
+    set shlib_ext [get_shlib_extension]
+    verbose "shared lib extension: $shlib_ext"
+
+    if { $gccpath == "" } {
+      global tool_root_dir
+
+      set libstdcpp [lookfor_file ${tool_root_dir} libstdc++]
+      if { $libstdcpp != "" } {
+          append flags "-L${libstdcpp} "
+          append ld_library_path ":${libstdcpp}"
+      }
+    } else {
+	if [file exists "${gccpath}/lib/libstdc++.a"] {
+	    append ld_library_path ":${gccpath}/lib"
+	}
+	if [file exists "${gccpath}/libstdc++/libstdc++.a"] {
+	    append flags "-L${gccpath}/libstdc++ "
+	    append ld_library_path ":${gccpath}/libstdc++"
+	}
+	if [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.a"] {
+	    append flags " -L${gccpath}/libstdc++-v3/src/.libs "
+	    append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
+	}
+	# Look for libstdc++.${shlib_ext}.
+	if [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.${shlib_ext}"] {
+	    append flags " -L${gccpath}/libstdc++-v3/src/.libs "
+	    append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
+	}
+
+	# puts stderr "${gm2_link_libraries}  before foreach"
+	foreach d [list {*}${gm2_link_libraries}] {
+	    # puts stderr "${d}  XXXX"
+	    send_log "ld_library_path was ${ld_library_path}\n"
+	    send_log "looking for ${gccpath}/lib${d}/.libs/lib${d}.a\n"
+	    if [file exists "${gccpath}/libgm2/lib${d}/.libs/lib${d}.a"] {
+		send_log "good found ${gccpath}/libgm2/lib${d}/.libs/lib${d}.a\n"
+		# append flags " -L${gccpath}/libgm2/lib${d}/.libs -l${d}"
+		append flags " ${gccpath}/libgm2/lib${d}/.libs/lib${d}.a"
+		append ld_library_path ":${gccpath}/libgm2/lib${d}/.libs"
+	    }
+	    send_log "ld_library_path is ${ld_library_path}\n"
+	}
+
+	global GCC_UNDER_TEST
+	append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
+    }
+
+    set_ld_library_path_env_vars
+    return "$flags"
+}
+
+
+#
+#  gm2_init_pimx - set the default libraries to choose PIM and then ISO.
+#                  choose Modula-2, dialect.
+#
+#
+
+proc gm2_init_pimx { dialect paths args } {
+    global srcdir
+    global gccpath
+
+    set gm2src ${srcdir}/../m2
+
+
+    send_log "srcdir is $srcdir\n"
+    send_log "gccpath is $gccpath\n"
+    send_log "gm2src is $gm2src\n"
+
+    set theIpath -fm2-pathname=m2pim
+    lappend theIpath -I${gccpath}/libgm2/libm2pim
+    lappend theIpath -fm2-pathname=m2log
+    lappend theIpath -I${gm2src}/gm2-libs-log
+
+    # NOTE:
+    lappend theIpath -fm2-pathname=m2pim
+    lappend theIpath -I${gm2src}/gm2-libs
+
+    set theLpath -L${gccpath}/libgm2/libm2pim/.libs
+
+    lappend theIpath -fm2-pathname=m2iso
+    lappend theIpath -I${gccpath}/libgm2/libm2iso
+    lappend theIpath -I${gm2src}/gm2-libs-iso
+
+    lappend theLpath -L${gccpath}/libgm2/libm2iso/.libs
+
+    lappend theIpath -fm2-pathname=-
+    foreach p $paths {
+	lappend theIpath -I$p
+    }
+    lappend theIpath -fm2-pathname=-
+
+    gm2_link_lib "m2pim m2iso"
+    lappend args -fno-libs=-
+    gm2_init {*}${theIpath} {*}${dialect} {*}${theLpath} {*}${args}
+}
+
+#
+#  gm2_init_pim - set the default libraries to choose PIM and then ISO.
+#
+#
+
+proc gm2_init_pim { paths args } {
+    gm2_init_pimx -fpim $paths {*}${args}
+}
+
+
+#
+#  gm2_init_pim2 - set the default libraries to choose PIM and then ISO.
+#                  It uses the PIM2 dialect.
+#
+
+proc gm2_init_pim2 { paths args } {
+    gm2_init_pimx -fpim2 $paths {*}${args}
+}
+
+
+#
+#  gm2_init_pim3 - set the default libraries to choose PIM and then ISO.
+#                  It uses the PIM3 dialect.
+#
+
+proc gm2_init_pim3 { paths args } {
+    gm2_init_pimx -fpim3 $paths {*}${args}
+}
+
+
+#
+#  gm2_init_pim4 - set the default libraries to choose PIM and then ISO.
+#                  It uses the PIM4 dialect.
+#
+
+proc gm2_init_pim4 { paths args } {
+    gm2_init_pimx -fpim4 $paths {*}${args}
+}
+
+
+#
+#  gm2_init_iso - set the default libraries to choose ISO and then PIM.
+#
+
+proc gm2_init_iso { paths args } {
+    global srcdir
+    global gccpath
+
+    set gm2src ${srcdir}/../m2
+
+    set theIpath -fm2-pathname=m2iso
+    lappend theIpath -I${gccpath}/libgm2/libm2iso
+    lappend theIpath -I${gm2src}/gm2-libs-iso
+
+    set theLpath -L${gccpath}/libgm2/libm2iso/.libs
+
+    lappend theIpath -fm2-pathname=m2pim
+    lappend theIpath -I${gccpath}/libgm2/libm2pim
+
+    lappend theIpath -fm2-pathname=m2log
+    lappend theIpath -I${gm2src}/gm2-libs-log
+
+    # NOTE:
+    lappend theIpath -fm2-pathname=m2pim
+    lappend theIpath -I${gm2src}/gm2-libs
+
+    lappend theLpath -L${gccpath}/libgm2/libm2pim/.libs
+
+    lappend theIpath -fm2-pathname=m2cor
+    lappend theIpath -I${gccpath}/libgm2/libm2cor
+    lappend theIpath -I${gm2src}/gm2-libs-coroutines
+
+    lappend theLpath -L${gccpath}/libgm2/libm2cor/.libs
+
+    lappend theIpath -fm2-pathname=-
+    foreach p $paths {
+	lappend theIpath -I$p
+    }
+    lappend theIpath -fm2-pathname=-
+
+    gm2_link_lib "m2iso m2pim m2cor"
+    lappend args -fno-libs=-
+    gm2_init {*}${theIpath} -fiso {*}${theLpath} {*}${args}
+}
+
+#
+#  gm2_init_ulm - set the default libraries to choose the ULM and PIM libraries.
+#
+
+proc gm2_init_ulm { paths args } {
+    global srcdir
+    global gccpath
+
+    set gm2src ${srcdir}/../m2
+
+    set theIpath -fm2-pathname=m2ulm
+    lappend theIpath -I${gccpath}/libgm2/libm2ulm
+    lappend theIpath -I${gm2src}/ulm-lib-gm2/std
+    lappend theIpath -I${gm2src}/ulm-lib-gm2/sys
+
+    set theLpath -L${gccpath}/libgm2/libm2ulm/.libs
+
+    lappend theIpath -fm2-pathname=m2pim
+    lappend theIpath -I${gccpath}/libgm2/libm2pim
+    lappend theIpath -fm2-pathname=m2log
+    lappend theIpath -I${gm2src}/gm2-libs-log
+
+    # NOTE:
+    lappend theIpath -fm2-pathname=m2pim
+    lappend theIpath -I${gm2src}/gm2-libs
+
+    lappend theLpath -L${gccpath}/libgm2/libm2pim/.libs
+
+    lappend theIpath -fm2-pathname=-
+    foreach p $paths {
+	lappend theIpath -I$p
+    }
+    lappend theIpath -fm2-pathname=-
+
+    gm2_link_lib "m2ulm m2pim"
+    lappend args -fno-libs=-
+    gm2_init {*}${theIpath} -fpim {*}${theLpath} {*}${args}
+}
+
+
+#
+#  gm2_init_log - set the default libraries to choose LOG and then PIM.
+#
+#
+
+proc gm2_init_log { paths args } {
+    global srcdir
+    global gccpath
+
+    set gm2src ${srcdir}/../m2
+
+    send_log "srcdir is $srcdir\n"
+    send_log "gccpath is $gccpath\n"
+    send_log "gm2src is $gm2src\n"
+
+    # FIXME: this seems to interleave the library defs.
+    set theIpath -fm2-pathname=m2log
+    lappend theIpath -I${gccpath}/libgm2/libm2log
+    lappend theIpath -I${gm2src}/gm2-libs-log
+
+    set theLpath -L${gccpath}/libgm2/libm2log/.libs
+
+    lappend theIpath -fm2-pathname=m2pim
+    lappend theIpath -I${gccpath}/libgm2/libm2pim
+    lappend theIpath -I${gm2src}/gm2-libs
+
+    lappend theLpath -L${gccpath}/libgm2/libm2pim/.libs
+
+    lappend theIpath -fm2-pathname=m2iso
+    lappend theIpath -I${gccpath}/libgm2/libm2iso
+    lappend theIpath -I${gm2src}/gm2-libs-iso
+    # ??? lappend theIpath -I${gm2src}/gm2-libs
+
+    lappend theLpath -L${gccpath}/libgm2/libm2iso/.libs
+
+    lappend theIpath -fm2-pathname=-
+    foreach p $paths {
+	lappend theIpath -I$p
+    }
+    lappend theIpath -fm2-pathname=-
+
+    gm2_link_lib "m2log m2pim m2iso"
+    lappend args -fno-libs=-
+    gm2_init {*}${theIpath} -fpim {*}${theLpath} {*}${args}
+}
+
+#
+#  gm2_init_cor - set the default libraries to choose COR and then PIM.
+#
+#
+
+proc gm2_init_cor { paths args } {
+    global srcdir
+    global gccpath
+    global gm2_link_libraries
+
+    set gm2src ${srcdir}/../m2
+
+    send_log "srcdir is $srcdir\n"
+    send_log "gccpath is $gccpath\n"
+    send_log "gm2src is $gm2src\n"
+
+    set theIpath -fm2-pathname=m2cor
+    lappend theIpath -I${gccpath}/libgm2/libm2cor
+    lappend theIpath -I${gm2src}/gm2-libs-coroutines
+
+    set theLpath -L${gccpath}/libgm2/libm2cor/.libs
+
+    lappend theIpath -fm2-pathname=m2pim
+    lappend theIpath -I${gccpath}/libgm2/libm2pim
+
+    lappend theIpath -fm2-pathname=m2log
+    lappend theIpath -I${gm2src}/gm2-libs-log
+
+    lappend theIpath -fm2-pathname=m2pim
+    lappend theLpath -L${gccpath}/libgm2/libm2pim/.libs
+
+    lappend theIpath -fm2-pathname=m2log
+    lappend theIpath -I${gccpath}/libgm2/libm2log
+
+    lappend theIpath -fm2-pathname=m2pim
+    lappend theIpath -I${gm2src}/gm2-libs
+
+    lappend theIpath -fm2-pathname=m2log
+    lappend theLpath -L${gccpath}/libgm2/libm2log/.libs
+
+    lappend theIpath -fm2-pathname=m2iso
+    lappend theIpath -I${gccpath}/libgm2/libm2iso
+    lappend theIpath -I${gm2src}/gm2-libs-iso
+
+    lappend theLpath -L${gccpath}/libgm2/libm2iso/.libs
+
+    lappend theIpath -fm2-pathname=-
+    foreach p $paths {
+	lappend theIpath -I$p
+    }
+    lappend theIpath -fm2-pathname=-
+
+    gm2_link_lib "m2cor m2pim m2log m2iso"
+    append args " -fno-libs=- "
+    gm2_init {*}${theIpath} -fpim {*}${theLpath} {*}${args}
+}
+
+
+#
+#  gm2_init_minx - set the default libraries to choose MIN library and
+#                  choose Modula-2, dialect.
+#
+#
+
+proc gm2_init_minx { dialect paths args } {
+    global srcdir
+    global gccpath
+    set gm2src ${srcdir}/../m2
+
+    send_log "srcdir is $srcdir\n"
+    send_log "gccpath is $gccpath\n"
+    send_log "gm2src is $gm2src\n"
+
+    set theIpath -fm2-pathname=m2min
+    lappend theIpath -I${gccpath}/libgm2/libm2min
+    lappend theIpath -I${gm2src}/gm2-libs-min
+
+    set theLpath -L${gccpath}/libgm2/libm2min/.libs
+
+    lappend theIpath -fm2-pathname=-
+    foreach p $paths {
+	lappend theIpath -I$p
+    }
+    lappend theIpath -fm2-pathname=-
+
+    gm2_link_lib "m2min"
+    lappend args -fno-exceptions
+    lappend args -fno-libs=-
+    gm2_init {*}${theIpath} {*}${dialect} {*}${theLpath} {*}${args}
+}
+
+#
+#  gm2_init_min - set the default libraries to choose MIN libraries
+#                 and pim dialect.
+#
+
+proc gm2_init_min { paths args } {
+    gm2_init_minx -fpim $paths {*}${args}
+}

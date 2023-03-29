@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,6 +40,7 @@ with Sinfo.Utils;    use Sinfo.Utils;
 with Snames;         use Snames;
 with Ttypes;         use Ttypes;
 with Uintp;          use Uintp;
+with Warnsw;         use Warnsw;
 
 package body Layout is
 
@@ -500,7 +501,7 @@ package body Layout is
          if Is_Array_Type (E)
            and then Present (First_Index (E))  --  Skip types in error
            and then Number_Dimensions (E) = 1
-           and then not Present (Packed_Array_Impl_Type (E))
+           and then No (Packed_Array_Impl_Type (E))
            and then Has_Pragma_Pack (E)
            and then Is_Constrained (E)
            and then Compile_Time_Known_Bounds (E)

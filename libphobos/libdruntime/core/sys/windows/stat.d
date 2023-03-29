@@ -6,7 +6,6 @@ module core.sys.windows.stat;
 version (Windows):
 
 extern (C) nothrow @nogc:
-@system:
 
 import core.sys.windows.stdc.time;
 

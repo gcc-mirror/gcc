@@ -1,6 +1,6 @@
 /* Gimple walk support.
 
-   Copyright (C) 2007-2022 Free Software Foundation, Inc.
+   Copyright (C) 2007-2023 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -485,6 +485,12 @@ walk_gimple_op (gimple *stmt, walk_tree_fn callback_op,
       }
       break;
 
+    case GIMPLE_ASSUME:
+      ret = walk_tree (gimple_assume_guard_ptr (stmt), callback_op, wi, pset);
+      if (ret)
+	return ret;
+      break;
+
     case GIMPLE_TRANSACTION:
       {
 	gtransaction *txn = as_a <gtransaction *> (stmt);
@@ -703,6 +709,13 @@ walk_gimple_stmt (gimple_stmt_iterator *gsi, walk_stmt_fn callback_stmt,
     case GIMPLE_WITH_CLEANUP_EXPR:
       ret = walk_gimple_seq_mod (gimple_wce_cleanup_ptr (stmt), callback_stmt,
 			     callback_op, wi);
+      if (ret)
+	return wi->callback_result;
+      break;
+
+    case GIMPLE_ASSUME:
+      ret = walk_gimple_seq_mod (gimple_assume_body_ptr (stmt),
+				 callback_stmt, callback_op, wi);
       if (ret)
 	return wi->callback_result;
       break;

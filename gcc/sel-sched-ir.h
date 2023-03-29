@@ -1,6 +1,6 @@
 /* Instruction scheduling pass.  This file contains definitions used
    internally in the scheduler.
-   Copyright (C) 2006-2022 Free Software Foundation, Inc.
+   Copyright (C) 2006-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -359,13 +359,13 @@ struct _list_node
    we can't move them in sel-sched-ir.cc.  */
 extern object_allocator<_list_node> sched_lists_pool;
 
-static inline _list_t
+inline _list_t
 _list_alloc (void)
 {
   return sched_lists_pool.allocate ();
 }
 
-static inline void
+inline void
 _list_add (_list_t *lp)
 {
   _list_t l = _list_alloc ();
@@ -374,7 +374,7 @@ _list_add (_list_t *lp)
   *lp = l;
 }
 
-static inline void
+inline void
 _list_remove_nofree (_list_t *lp)
 {
   _list_t n = *lp;
@@ -382,7 +382,7 @@ _list_remove_nofree (_list_t *lp)
   *lp = _LIST_NEXT (n);
 }
 
-static inline void
+inline void
 _list_remove (_list_t *lp)
 {
   _list_t n = *lp;
@@ -391,7 +391,7 @@ _list_remove (_list_t *lp)
   sched_lists_pool.remove (n);
 }
 
-static inline void
+inline void
 _list_clear (_list_t *l)
 {
   while (*l)
@@ -412,7 +412,7 @@ struct _list_iterator
   bool removed_p;
 };
 
-static inline void
+inline void
 _list_iter_start (_list_iterator *ip, _list_t *lp, bool can_remove_p)
 {
   ip->lp = lp;
@@ -420,7 +420,7 @@ _list_iter_start (_list_iterator *ip, _list_t *lp, bool can_remove_p)
   ip->removed_p = false;
 }
 
-static inline void
+inline void
 _list_iter_next (_list_iterator *ip)
 {
   if (!ip->removed_p)
@@ -429,7 +429,7 @@ _list_iter_next (_list_iterator *ip)
     ip->removed_p = false;
 }
 
-static inline void
+inline void
 _list_iter_remove (_list_iterator *ip)
 {
   gcc_assert (!ip->removed_p && ip->can_remove_p);
@@ -437,7 +437,7 @@ _list_iter_remove (_list_iterator *ip)
   ip->removed_p = true;
 }
 
-static inline void
+inline void
 _list_iter_remove_nofree (_list_iterator *ip)
 {
   gcc_assert (!ip->removed_p && ip->can_remove_p);
@@ -460,7 +460,7 @@ _list_iter_remove_nofree (_list_iterator *ip)
 
 /* _xlist_t functions.  */
 
-static inline void
+inline void
 _xlist_add (_xlist_t *lp, rtx x)
 {
   _list_add (lp);
@@ -470,7 +470,7 @@ _xlist_add (_xlist_t *lp, rtx x)
 #define _xlist_remove(LP) (_list_remove (LP))
 #define _xlist_clear(LP) (_list_clear (LP))
 
-static inline bool
+inline bool
 _xlist_is_in_p (_xlist_t l, rtx x)
 {
   while (l)
@@ -484,7 +484,7 @@ _xlist_is_in_p (_xlist_t l, rtx x)
 }
 
 /* Used through _FOR_EACH.  */
-static inline bool
+inline bool
 _list_iter_cond_x (_xlist_t l, rtx *xp)
 {
   if (l)
@@ -505,7 +505,7 @@ typedef _list_iterator _xlist_iterator;
 
 /* ilist_t functions.  */
 
-static inline void
+inline void
 ilist_add (ilist_t *lp, insn_t insn)
 {
   _list_add (lp);
@@ -514,7 +514,7 @@ ilist_add (ilist_t *lp, insn_t insn)
 #define ilist_remove(LP) (_list_remove (LP))
 #define ilist_clear(LP) (_list_clear (LP))
 
-static inline bool
+inline bool
 ilist_is_in_p (ilist_t l, insn_t insn)
 {
   while (l)
@@ -528,7 +528,7 @@ ilist_is_in_p (ilist_t l, insn_t insn)
 }
 
 /* Used through _FOR_EACH.  */
-static inline bool
+inline bool
 _list_iter_cond_insn (ilist_t l, insn_t *ip)
 {
   if (l)
@@ -574,7 +574,7 @@ typedef _list_iterator def_list_iterator;
 
 #define FOR_EACH_DEF(DEF, I, DEF_LIST) _FOR_EACH (def, (DEF), (I), (DEF_LIST))
 
-static inline bool
+inline bool
 _list_iter_cond_def (def_list_t def_list, def_t *def)
 {
   if (def_list)
@@ -1040,7 +1040,7 @@ extern bool sel_bb_empty_p (basic_block);
 extern bool in_current_region_p (basic_block);
 
 /* True when BB is a header of the inner loop.  */
-static inline bool
+inline bool
 inner_loop_header_p (basic_block bb)
 {
   class loop *inner_loop;
@@ -1068,7 +1068,7 @@ inner_loop_header_p (basic_block bb)
 }
 
 /* Return exit edges of LOOP, filtering out edges with the same dest bb.  */
-static inline vec<edge> 
+inline vec<edge> 
 get_loop_exit_edges_unique_dests (const class loop *loop)
 {
   vec<edge> edges = vNULL;
@@ -1096,7 +1096,7 @@ get_loop_exit_edges_unique_dests (const class loop *loop)
   return edges;
 }
 
-static bool
+inline bool
 sel_bb_empty_or_nop_p (basic_block bb)
 {
   insn_t first = sel_bb_head (bb), last;
@@ -1122,7 +1122,7 @@ sel_bb_empty_or_nop_p (basic_block bb)
    traverse all of them and if any of them turns out to be another loop header
    (after skipping empty BBs), add its loop exits to the resulting vector
    as well.  */
-static inline vec<edge> 
+inline vec<edge> 
 get_all_loop_exits (basic_block bb)
 {
   vec<edge> exits = vNULL;
@@ -1212,7 +1212,7 @@ get_all_loop_exits (basic_block bb)
 
 /* We need to return a succ_iterator to avoid 'unitialized' warning
    during bootstrap.  */
-static inline succ_iterator
+inline succ_iterator
 _succ_iter_start (insn_t *succp, insn_t insn, int flags)
 {
   succ_iterator i;
@@ -1249,7 +1249,7 @@ _succ_iter_start (insn_t *succp, insn_t insn, int flags)
   return i;
 }
 
-static inline bool
+inline bool
 _succ_iter_cond (succ_iterator *ip, insn_t *succp, insn_t insn,
                  bool check (edge, succ_iterator *))
 {
@@ -1354,7 +1354,7 @@ _succ_iter_cond (succ_iterator *ip, insn_t *succp, insn_t insn,
     }
 }
 
-static inline void
+inline void
 _succ_iter_next (succ_iterator *ip)
 {
   gcc_assert (!ip->e2 || ip->e1);
@@ -1367,7 +1367,7 @@ _succ_iter_next (succ_iterator *ip)
    empty blocks.  When E2P is not null, the resulting edge is written there.
    FLAGS are used to specify whether back edges and out-of-region edges
    should be considered.  */
-static inline bool
+inline bool
 _eligible_successor_edge_p (edge e1, succ_iterator *ip)
 {
   edge e2 = e1;
@@ -1476,7 +1476,7 @@ _eligible_successor_edge_p (edge e1, succ_iterator *ip)
 #define SUCC_ITER_EDGE(ITER) ((ITER)->e1)
 
 /* Return the next block of BB not running into inconsistencies.  */
-static inline basic_block
+inline basic_block
 bb_next_bb (basic_block bb)
 {
   switch (EDGE_COUNT (bb->succs))

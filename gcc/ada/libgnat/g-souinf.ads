@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 2000-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,13 @@
 --  and logging purposes. For example, an exception handler can print out
 --  the name of the source file in which the exception is handled.
 
-package GNAT.Source_Info is
+package GNAT.Source_Info with
+   SPARK_Mode,
+   Abstract_State =>
+     (Source_Code_Information with
+         External => (Async_Writers, Async_Readers)),
+   Annotate => (GNATprove, Always_Return)
+is
    pragma Preelaborate;
    --  Note that this unit is Preelaborate, but not Pure, that's because the
    --  functions here such as Line are clearly not pure functions, and normally
@@ -47,6 +53,8 @@ package GNAT.Source_Info is
    --  intrinsics as not Pure, even in Pure units, so no problems arose.
 
    function File return String with
+     Volatile_Function,
+     Global => Source_Code_Information,
      Import, Convention => Intrinsic;
    --  Return the name of the current file, not including the path information.
    --  The result is considered to be a static string constant.
@@ -57,6 +65,8 @@ package GNAT.Source_Info is
    --  static expression.
 
    function Source_Location return String with
+     Volatile_Function,
+     Global => Source_Code_Information,
      Import, Convention => Intrinsic;
    --  Return a string literal of the form "name:line", where name is the
    --  current source file name without path information, and line is the
@@ -66,6 +76,8 @@ package GNAT.Source_Info is
    --  string constant.
 
    function Enclosing_Entity return String with
+     Volatile_Function,
+     Global => Source_Code_Information,
      Import, Convention => Intrinsic;
    --  Return the name of the current subprogram, package, task, entry or
    --  protected subprogram. The string is in exactly the form used for the
@@ -80,15 +92,21 @@ package GNAT.Source_Info is
    --  from within generic templates.
 
    function Compilation_ISO_Date return String with
+     Volatile_Function,
+     Global => Source_Code_Information,
      Import, Convention => Intrinsic;
    --  Returns date of compilation as a static string "yyyy-mm-dd".
 
    function Compilation_Date return String with
+     Volatile_Function,
+     Global => Source_Code_Information,
      Import, Convention => Intrinsic;
    --  Returns date of compilation as a static string "mmm dd yyyy". This is
    --  in local time form, and is exactly compatible with C macro __DATE__.
 
    function Compilation_Time return String with
+     Volatile_Function,
+     Global => Source_Code_Information,
      Import, Convention => Intrinsic;
    --  Returns GMT time of compilation as a static string "hh:mm:ss". This is
    --  in local time form, and is exactly compatible with C macro __TIME__.

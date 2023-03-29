@@ -1,5 +1,5 @@
 /* d-target.def -- Target hook definitions for the D front end.
-   Copyright (C) 2017-2022 Free Software Foundation, Inc.
+   Copyright (C) 2017-2023 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -70,26 +70,29 @@ the target operating system.",
 DEFHOOKPOD
 (d_minfo_section,
  "Contains the name of the section in which module info references should be\n\
-placed.  This section is expected to be bracketed by two symbols to indicate\n\
-the start and end address of the section, so that the runtime library can\n\
-collect all modules for each loaded shared library and executable.  The\n\
-default value of @code{NULL} disables the use of sections altogether.",
- const char *, NULL)
+placed.  By default, the compiler puts all module info symbols in the\n\
+@code{\"minfo\"} section.  Define this macro to override the string if a\n\
+different section name should be used.  This section is expected to be\n\
+bracketed by two symbols @code{TARGET_D_MINFO_SECTION_START} and \n\
+@code{TARGET_D_MINFO_SECTION_END} to indicate the start and end address of\n\
+the section, so that the runtime library can collect all modules for each\n\
+loaded shared library and executable.  Setting the value to @code{NULL}\n\
+disables the use of sections for storing module info altogether.",
+ const char *, "minfo")
 
 DEFHOOKPOD
-(d_minfo_start_name,
+(d_minfo_section_start,
  "If @code{TARGET_D_MINFO_SECTION} is defined, then this must also be defined\n\
 as the name of the symbol indicating the start address of the module info\n\
 section",
- const char *, NULL)
+ const char *, "__start_minfo")
 
-/* The name of the ModuleInfo section.  */
 DEFHOOKPOD
-(d_minfo_end_name,
+(d_minfo_section_end,
  "If @code{TARGET_D_MINFO_SECTION} is defined, then this must also be defined\n\
 as the name of the symbol indicating the end address of the module info\n\
 section",
- const char *, NULL)
+ const char *, "__stop_minfo")
 
 /* The "stdcall" convention is really supported on 32-bit x86/Windows only.
    The following hook is a helper to determine whether to apply the attribute

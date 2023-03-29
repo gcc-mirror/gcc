@@ -1,5 +1,5 @@
 /* VMS specific, C compiler specific functions.
-   Copyright (C) 2011-2022 Free Software Foundation, Inc.
+   Copyright (C) 2011-2023 Free Software Foundation, Inc.
    Contributed by Tristan Gingold (gingold@adacore.com).
 
 This file is part of GCC.
@@ -455,9 +455,6 @@ vms_c_register_includes (const char *sysroot,
 void
 vms_c_common_override_options (void)
 {
-  /* Allow variadic functions without parameters (as declared in starlet).  */
-  flag_allow_parameterless_variadic_functions = TRUE;
-
   /* Initialize c_default_pointer_mode.  */
   switch (flag_vms_pointer_size)
     {

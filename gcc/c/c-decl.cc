@@ -1,5 +1,5 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988-2022 Free Software Foundation, Inc.
+   Copyright (C) 1988-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -153,9 +153,13 @@ static int warn_about_return_type;
 
 static bool undef_nested_function;
 
-/* If non-zero, implicit "omp declare target" attribute is added into the
-   attribute lists.  */
-int current_omp_declare_target_attribute;
+/* Vector of implicit "omp declare target" attributes to be added into
+   the attribute lists.  */
+vec<c_omp_declare_target_attr, va_gc> *current_omp_declare_target_attribute;
+
+/* If non-zero, we are inside of
+   #pragma omp begin assumes ... #pragma omp end assumes region.  */
+int current_omp_begin_assumes;
 
 /* Each c_binding structure describes one binding of an identifier to
    a decl.  All the decls in a scope - irrespective of namespace - are
@@ -679,7 +683,7 @@ decl_jump_unsafe (tree decl)
 
   /* Always warn about crossing variably modified types.  */
   if ((VAR_P (decl) || TREE_CODE (decl) == TYPE_DECL)
-      && variably_modified_type_p (TREE_TYPE (decl), NULL_TREE))
+      && c_type_variably_modified_p (TREE_TYPE (decl)))
     return true;
 
   /* Otherwise, only warn if -Wgoto-misses-init and this is an
@@ -1306,7 +1310,10 @@ pop_scope (void)
 	      && scope != external_scope)
 	    {
 	      if (!TREE_USED (p))
-		warning (OPT_Wunused_variable, "unused variable %q+D", p);
+		{
+		  warning (OPT_Wunused_variable, "unused variable %q+D", p);
+		  suppress_warning (p, OPT_Wunused_variable);
+		}
 	      else if (DECL_CONTEXT (p) == current_function_decl)
 		warning_at (DECL_SOURCE_LOCATION (p),
 			    OPT_Wunused_but_set_variable,
@@ -1466,6 +1473,76 @@ pop_file_scope (void)
   file_scope = 0;
 
   maybe_apply_pending_pragma_weaks ();
+}
+
+/* Whether we are curently inside the initializer for an
+   underspecified object definition (C2x auto or constexpr).  */
+static bool in_underspecified_init;
+
+/* Start an underspecified object definition for NAME at LOC.  This
+   means that NAME is shadowed inside its initializer, so neither the
+   definition being initialized, nor any definition from an outer
+   scope, may be referenced during that initializer.  Return state to
+   be passed to finish_underspecified_init.  If NAME is NULL_TREE, the
+   underspecified object is a (constexpr) compound literal; there is
+   no shadowing in that case, but all the other restrictions on
+   underspecified object definitions still apply.  */
+unsigned int
+start_underspecified_init (location_t loc, tree name)
+{
+  bool prev = in_underspecified_init;
+  bool ok;
+  if (name == NULL_TREE)
+    ok = true;
+  else
+    {
+      tree decl = build_decl (loc, VAR_DECL, name, error_mark_node);
+      C_DECL_UNDERSPECIFIED (decl) = 1;
+      struct c_scope *scope = current_scope;
+      struct c_binding *b = I_SYMBOL_BINDING (name);
+      if (b && B_IN_SCOPE (b, scope))
+	{
+	  error_at (loc, "underspecified declaration of %qE, which is already "
+		    "declared in this scope", name);
+	  ok = false;
+	}
+      else
+	{
+	  bind (name, decl, scope, false, false, loc);
+	  ok = true;
+	}
+    }
+  in_underspecified_init = true;
+  return ok | (prev << 1);
+}
+
+/* Finish an underspecified object definition for NAME, before that
+   name is bound to the real declaration instead of a placeholder.
+   PREV_STATE is the value returned by the call to
+   start_underspecified_init.  If NAME is NULL_TREE, this means a
+   compound literal, as for start_underspecified_init.  */
+void
+finish_underspecified_init (tree name, unsigned int prev_state)
+{
+  if (name != NULL_TREE && (prev_state & 1))
+    {
+      /* A VAR_DECL was bound to the name to shadow any previous
+	 declarations for the name; remove that binding now.  */
+      struct c_scope *scope = current_scope;
+      struct c_binding *b = I_SYMBOL_BINDING (name);
+      gcc_assert (b);
+      gcc_assert (B_IN_SCOPE (b, scope));
+      gcc_assert (VAR_P (b->decl));
+      gcc_assert (C_DECL_UNDERSPECIFIED (b->decl));
+      I_SYMBOL_BINDING (name) = b->shadowed;
+      /* In erroneous cases there may be other bindings added to this
+	 scope during the initializer.  */
+      struct c_binding **p = &scope->bindings;
+      while (*p != b)
+	p = &((*p)->prev);
+      *p = free_binding_and_advance (*p);
+    }
+  in_underspecified_init = (prev_state & (1u << 1)) >> 1;
 }
 
 /* Adjust the bindings for the start of a statement expression.  */
@@ -2173,7 +2250,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	  || warning_suppressed_p (olddecl, OPT_Wpedantic))
 	return true;  /* Allow OLDDECL to continue in use.  */
 
-      if (variably_modified_type_p (newtype, NULL))
+      if (c_type_variably_modified_p (newtype))
 	{
 	  error ("redefinition of typedef %q+D with variably modified type",
 		 newdecl);
@@ -2679,6 +2756,15 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
   /* Merge the initialization information.  */
    if (DECL_INITIAL (newdecl) == NULL_TREE)
     DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
+
+  /* Merge 'constexpr' information.  */
+  if (VAR_P (olddecl) && VAR_P (newdecl))
+    {
+      if (C_DECL_DECLARED_CONSTEXPR (olddecl))
+	C_DECL_DECLARED_CONSTEXPR (newdecl) = 1;
+      else if (C_DECL_DECLARED_CONSTEXPR (newdecl))
+	C_DECL_DECLARED_CONSTEXPR (olddecl) = 1;
+    }
 
   /* Merge the threadprivate attribute.  */
   if (VAR_P (olddecl) && C_DECL_THREADPRIVATE_P (olddecl))
@@ -3892,7 +3978,7 @@ static void
 warn_about_goto (location_t goto_loc, tree label, tree decl)
 {
   auto_diagnostic_group d;
-  if (variably_modified_type_p (TREE_TYPE (decl), NULL_TREE))
+  if (c_type_variably_modified_p (TREE_TYPE (decl)))
     error_at (goto_loc,
 	      "jump into scope of identifier with variably modified type");
   else
@@ -4166,7 +4252,7 @@ c_check_switch_jump_warnings (struct c_spot_bindings *switch_bindings,
 	    {
 	      auto_diagnostic_group d;
 	      bool emitted;
-	      if (variably_modified_type_p (TREE_TYPE (b->decl), NULL_TREE))
+	      if (c_type_variably_modified_p (TREE_TYPE (b->decl)))
 		{
 		  saw_error = true;
 		  error_at (case_loc,
@@ -4476,11 +4562,34 @@ handle_nodiscard_attribute (tree *node, tree name, tree /*args*/,
     }
   return NULL_TREE;
 }
+
+/* Handle the standard [[noreturn]] attribute.  */
+
+static tree
+handle_std_noreturn_attribute (tree *node, tree name, tree args,
+			       int flags, bool *no_add_attrs)
+{
+  /* Unlike GNU __attribute__ ((noreturn)), the standard [[noreturn]]
+     only applies to functions, not function pointers.  */
+  if (TREE_CODE (*node) == FUNCTION_DECL)
+    return handle_noreturn_attribute (node, name, args, flags, no_add_attrs);
+  else
+    {
+      pedwarn (input_location, OPT_Wattributes,
+	       "standard %qE attribute can only be applied to functions",
+	       name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+}
+
 /* Table of supported standard (C2x) attributes.  */
 const struct attribute_spec std_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
+  { "_Noreturn", 0, 0, false, false, false, false,
+    handle_std_noreturn_attribute, NULL },
   { "deprecated", 0, 1, false, false, false, false,
     handle_deprecated_attribute, NULL },
   { "fallthrough", 0, 0, false, false, false, false,
@@ -4489,6 +4598,8 @@ const struct attribute_spec std_attribute_table[] =
     handle_unused_attribute, NULL },
   { "nodiscard", 0, 1, false, false, false, false,
     handle_nodiscard_attribute, NULL },
+  { "noreturn", 0, 0, false, false, false, false,
+    handle_std_noreturn_attribute, NULL },
   { NULL, 0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -4735,6 +4846,17 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 	      warned = 1;
 	    }
 
+	  if (in_underspecified_init)
+	    {
+	      /* This can only occur with extensions such as statement
+		 expressions, but is still appropriate as an error to
+		 avoid types declared in such a context escaping to
+		 the type of an auto variable.  */
+	      error ("%qT declared in underspecified object initializer",
+		     value);
+	      warned = 1;
+	    }
+
 	  if (name == NULL_TREE)
 	    {
 	      if (warned != 1 && code != ENUMERAL_TYPE)
@@ -4785,6 +4907,21 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
 	      warned = 1;
 	      pending_xref_error ();
 	    }
+	  else if (declspecs->typespec_kind != ctsk_tagdef
+		   && declspecs->typespec_kind != ctsk_tagfirstref
+		   && declspecs->typespec_kind != ctsk_tagfirstref_attrs
+		   && code == ENUMERAL_TYPE
+		   && !declspecs->enum_type_specifier_ref_p)
+	    {
+	      bool warned_enum = false;
+	      if (warned != 1)
+		warned_enum = pedwarn (input_location, OPT_Wpedantic,
+				       "empty declaration of %<enum%> type "
+				       "does not redeclare tag");
+	      if (warned_enum)
+		warned = 1;
+	      pending_xref_error ();
+	    }
 	  else
 	    {
 	      pending_invalid_xref = NULL_TREE;
@@ -4828,6 +4965,12 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
       warned = 1;
     }
 
+  if (declspecs->constexpr_p)
+    {
+      error ("%<constexpr%> in empty declaration");
+      warned = 1;
+    }
+
   if (current_scope == file_scope && declspecs->storage_class == csc_auto)
     {
       error ("%<auto%> in file-scope empty declaration");
@@ -4838,6 +4981,38 @@ shadow_tag_warned (const struct c_declspecs *declspecs, int warned)
     {
       error ("%<register%> in file-scope empty declaration");
       warned = 1;
+    }
+
+  if (declspecs->enum_type_specifier_ref_p && !warned)
+    {
+      if (declspecs->storage_class != csc_none)
+	{
+	  error ("storage class specifier in empty declaration with %<enum%> "
+		 "underlying type");
+	  warned = 1;
+	}
+      else if (declspecs->thread_p)
+	{
+	  error ("%qs in empty declaration with %<enum%> underlying type",
+		 declspecs->thread_gnu_p ? "__thread" : "_Thread_local");
+	  warned = 1;
+	}
+      else if (declspecs->const_p
+	       || declspecs->volatile_p
+	       || declspecs->atomic_p
+	       || declspecs->restrict_p
+	       || declspecs->address_space)
+	{
+	  error ("type qualifier in empty declaration with %<enum%> "
+		 "underlying type");
+	  warned = 1;
+	}
+      else if (declspecs->alignas_p)
+	{
+	  error ("%<alignas%> in empty declaration with %<enum%> "
+		 "underlying type");
+	  warned = 1;
+	}
     }
 
   if (!warned && !in_system_header_at (input_location)
@@ -5005,6 +5180,41 @@ set_array_declarator_inner (struct c_declarator *decl,
   return decl;
 }
 
+/* Determine whether TYPE is a ISO C99 flexible array memeber type "[]".  */
+static bool
+flexible_array_member_type_p (const_tree type)
+{
+  if (TREE_CODE (type) == ARRAY_TYPE
+      && TYPE_SIZE (type) == NULL_TREE
+      && TYPE_DOMAIN (type) != NULL_TREE
+      && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) == NULL_TREE)
+    return true;
+
+  return false;
+}
+
+/* Determine whether TYPE is a one-element array type "[1]".  */
+static bool
+one_element_array_type_p (const_tree type)
+{
+  if (TREE_CODE (type) != ARRAY_TYPE)
+    return false;
+  return integer_zerop (array_type_nelts (type));
+}
+
+/* Determine whether TYPE is a zero-length array type "[0]".  */
+static bool
+zero_length_array_type_p (const_tree type)
+{
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    if (tree type_size = TYPE_SIZE_UNIT (type))
+      if ((integer_zerop (type_size))
+	   && TYPE_DOMAIN (type) != NULL_TREE
+	   && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) == NULL_TREE)
+	return true;
+  return false;
+}
+
 /* INIT is a constructor that forms DECL's initializer.  If the final
    element initializes a flexible array field, add the size of that
    initializer to DECL's size.  */
@@ -5019,10 +5229,7 @@ add_flexible_array_elts_to_size (tree decl, tree init)
 
   elt = CONSTRUCTOR_ELTS (init)->last ().value;
   type = TREE_TYPE (elt);
-  if (TREE_CODE (type) == ARRAY_TYPE
-      && TYPE_SIZE (type) == NULL_TREE
-      && TYPE_DOMAIN (type) != NULL_TREE
-      && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) == NULL_TREE)
+  if (flexible_array_member_type_p (type))
     {
       complete_array_type (&type, elt, false);
       DECL_SIZE (decl)
@@ -5076,7 +5283,7 @@ static tree
 c_decl_attributes (tree *node, tree attributes, int flags)
 {
   /* Add implicit "omp declare target" attribute if requested.  */
-  if (current_omp_declare_target_attribute
+  if (vec_safe_length (current_omp_declare_target_attribute)
       && ((VAR_P (*node) && is_global_var (*node))
 	  || TREE_CODE (*node) == FUNCTION_DECL))
     {
@@ -5089,6 +5296,22 @@ c_decl_attributes (tree *node, tree attributes, int flags)
 				  NULL_TREE, attributes);
 	  attributes = tree_cons (get_identifier ("omp declare target block"),
 				  NULL_TREE, attributes);
+	}
+      if (TREE_CODE (*node) == FUNCTION_DECL)
+	{
+	  int device_type
+	    = current_omp_declare_target_attribute->last ().device_type;
+	  device_type = MAX (device_type, 0);
+	  if ((device_type & OMP_CLAUSE_DEVICE_TYPE_HOST) != 0
+	      && !lookup_attribute ("omp declare target host", attributes))
+	    attributes
+	      = tree_cons (get_identifier ("omp declare target host"),
+			   NULL_TREE, attributes);
+	  if ((device_type & OMP_CLAUSE_DEVICE_TYPE_NOHOST) != 0
+	      && !lookup_attribute ("omp declare target nohost", attributes))
+	    attributes
+	      = tree_cons (get_identifier ("omp declare target nohost"),
+			   NULL_TREE, attributes);
 	}
     }
 
@@ -5105,7 +5328,7 @@ c_decl_attributes (tree *node, tree attributes, int flags)
    This is called as soon as the type information and variable name
    have been parsed, before parsing the initializer if any.
    Here we create the ..._DECL node, fill in its type,
-   and put it on the list of decls for the current context.
+   and (if DO_PUSH) put it on the list of decls for the current context.
    When nonnull, set *LASTLOC to the location of the prior declaration
    of the same entity if one exists.
    The ..._DECL node is returned as the value.
@@ -5120,7 +5343,8 @@ c_decl_attributes (tree *node, tree attributes, int flags)
 
 tree
 start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
-	    bool initialized, tree attributes, location_t *lastloc /* = NULL */)
+	    bool initialized, tree attributes, bool do_push /* = true */,
+	    location_t *lastloc /* = NULL */)
 {
   tree decl;
   tree tem;
@@ -5293,15 +5517,20 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
 
   /* Add this decl to the current scope.
      TEM may equal DECL or it may be a previous decl of the same name.  */
-  tem = pushdecl (decl);
-
-  if (initialized && DECL_EXTERNAL (tem))
+  if (do_push)
     {
-      DECL_EXTERNAL (tem) = 0;
-      TREE_STATIC (tem) = 1;
-    }
+      tem = pushdecl (decl);
 
-  return tem;
+      if (initialized && DECL_EXTERNAL (tem))
+	{
+	  DECL_EXTERNAL (tem) = 0;
+	  TREE_STATIC (tem) = 1;
+	}
+
+      return tem;
+    }
+  else
+    return decl;
 }
 
 /* Subroutine of finish_decl. TYPE is the type of an uninitialized object
@@ -5636,7 +5865,7 @@ finish_decl (tree decl, location_t init_loc, tree init,
   if (TREE_CODE (decl) == TYPE_DECL)
     {
       if (!DECL_FILE_SCOPE_P (decl)
-	  && variably_modified_type_p (TREE_TYPE (decl), NULL_TREE))
+	  && c_type_variably_modified_p (TREE_TYPE (decl)))
 	add_stmt (build_stmt (DECL_SOURCE_LOCATION (decl), DECL_EXPR, decl));
 
       rest_of_decl_compilation (decl, DECL_FILE_SCOPE_P (decl), 0);
@@ -5971,11 +6200,13 @@ mark_forward_parm_decls (void)
    literal.  NON_CONST is true if the initializers contain something
    that cannot occur in a constant expression.  If ALIGNAS_ALIGN is nonzero,
    it is the (valid) alignment for this compound literal, as specified
-   with _Alignas.  */
+   with _Alignas.  SCSPECS are the storage class specifiers (C2x) from the
+   compound literal.  */
 
 tree
 build_compound_literal (location_t loc, tree type, tree init, bool non_const,
-			unsigned int alignas_align)
+			unsigned int alignas_align,
+			struct c_declspecs *scspecs)
 {
   /* We do not use start_decl here because we have a type, not a declarator;
      and do not use finish_decl because the decl should be stored inside
@@ -5983,22 +6214,48 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const,
   tree decl;
   tree complit;
   tree stmt;
+  bool threadp = scspecs ? scspecs->thread_p : false;
+  enum c_storage_class storage_class = (scspecs
+					? scspecs->storage_class
+					: csc_none);
 
   if (type == error_mark_node
       || init == error_mark_node)
     return error_mark_node;
 
+  if (current_scope == file_scope && storage_class == csc_register)
+    {
+      error_at (loc, "file-scope compound literal specifies %<register%>");
+      storage_class = csc_none;
+    }
+
+  if (current_scope != file_scope && threadp && storage_class == csc_none)
+    {
+      error_at (loc, "compound literal implicitly auto and declared %qs",
+		scspecs->thread_gnu_p ? "__thread" : "_Thread_local");
+      threadp = false;
+    }
+
   decl = build_decl (loc, VAR_DECL, NULL_TREE, type);
   DECL_EXTERNAL (decl) = 0;
   TREE_PUBLIC (decl) = 0;
-  TREE_STATIC (decl) = (current_scope == file_scope);
+  TREE_STATIC (decl) = (current_scope == file_scope
+			|| storage_class == csc_static);
   DECL_CONTEXT (decl) = current_function_decl;
   TREE_USED (decl) = 1;
   DECL_READ_P (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   C_DECL_COMPOUND_LITERAL_P (decl) = 1;
+  C_DECL_DECLARED_CONSTEXPR (decl) = scspecs && scspecs->constexpr_p;
   TREE_TYPE (decl) = type;
+  if (threadp)
+    set_decl_tls_model (decl, decl_default_tls_model (decl));
+  if (storage_class == csc_register)
+    {
+      C_DECL_REGISTER (decl) = 1;
+      DECL_REGISTER (decl) = 1;
+    }
   c_apply_type_quals_to_decl (TYPE_QUALS (strip_array_types (type)), decl);
   if (alignas_align)
     {
@@ -6006,6 +6263,13 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const,
       DECL_USER_ALIGN (decl) = 1;
     }
   store_init_value (loc, decl, init, NULL_TREE);
+  if (current_scope != file_scope
+      && TREE_STATIC (decl)
+      && !TREE_READONLY (decl)
+      && DECL_DECLARED_INLINE_P (current_function_decl)
+      && DECL_EXTERNAL (current_function_decl))
+    record_inline_static (input_location, current_function_decl,
+			  decl, csi_modifiable);
 
   if (TREE_CODE (type) == ARRAY_TYPE && !COMPLETE_TYPE_P (type))
     {
@@ -6278,6 +6542,7 @@ grokdeclarator (const struct c_declarator *declarator,
 {
   tree type = declspecs->type;
   bool threadp = declspecs->thread_p;
+  bool constexprp = declspecs->constexpr_p;
   enum c_storage_class storage_class = declspecs->storage_class;
   int constp;
   int restrictp;
@@ -6307,6 +6572,15 @@ grokdeclarator (const struct c_declarator *declarator,
   enum c_declarator_kind first_non_attr_kind;
   unsigned int alignas_align = 0;
 
+  if (type == NULL_TREE)
+    {
+      /* This can occur for auto on a parameter in C2X mode.  Set a
+	 dummy type here so subsequent code can give diagnostics for
+	 this case.  */
+      gcc_assert (declspecs->c2x_auto_p);
+      gcc_assert (decl_context == PARM);
+      type = declspecs->type = integer_type_node;
+    }
   if (TREE_CODE (type) == ERROR_MARK)
     return error_mark_node;
   if (expr == NULL)
@@ -6378,6 +6652,16 @@ grokdeclarator (const struct c_declarator *declarator,
       }
   }
 
+  /* An enum type specifier (": specifier-qualifier-list") may only be
+     specified when the enum is being defined or in an empty
+     declaration of the form "enum identifier enum-type-specifier;".
+     Except for the case of an empty declaration that has additional
+     declaration specifiers, all invalid contexts (declarations that
+     aren't empty, type names, parameter declarations, member
+     declarations) pass through grokdeclarator.  */
+  if (declspecs->enum_type_specifier_ref_p)
+    error_at (loc, "%<enum%> underlying type may not be specified here");
+
   /* A function definition's declarator must have the form of
      a function declarator.  */
 
@@ -6401,7 +6685,7 @@ grokdeclarator (const struct c_declarator *declarator,
 
   if ((decl_context == NORMAL || decl_context == FIELD)
       && current_scope == file_scope
-      && variably_modified_type_p (type, NULL_TREE))
+      && c_type_variably_modified_p (type))
     {
       if (name)
 	error_at (loc, "variably modified %qE at file scope", name);
@@ -6501,6 +6785,7 @@ grokdeclarator (const struct c_declarator *declarator,
 
   if (funcdef_flag
       && (threadp
+	  || constexprp
 	  || storage_class == csc_auto
 	  || storage_class == csc_register
 	  || storage_class == csc_typedef))
@@ -6517,14 +6802,23 @@ grokdeclarator (const struct c_declarator *declarator,
 	error_at (loc, "function definition declared %qs",
 		  declspecs->thread_gnu_p ? "__thread" : "_Thread_local");
       threadp = false;
+      /* The parser ensures a constexpr function definition never
+	 reaches here.  */
+      gcc_assert (!constexprp);
       if (storage_class == csc_auto
 	  || storage_class == csc_register
 	  || storage_class == csc_typedef)
 	storage_class = csc_none;
     }
-  else if (decl_context != NORMAL && (storage_class != csc_none || threadp))
+  else if (decl_context != NORMAL && (storage_class != csc_none
+				      || threadp
+				      || constexprp
+				      || declspecs->c2x_auto_p))
     {
-      if (decl_context == PARM && storage_class == csc_register)
+      if (decl_context == PARM
+	  && storage_class == csc_register
+	  && !constexprp
+	  && !declspecs->c2x_auto_p)
 	;
       else
 	{
@@ -6550,6 +6844,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	    }
 	  storage_class = csc_none;
 	  threadp = false;
+	  constexprp = false;
 	}
     }
   else if (storage_class == csc_extern
@@ -6635,6 +6930,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	  array_ptr_attrs = NULL_TREE;
 	  array_parm_static = false;
 	}
+
+      bool varmod = C_TYPE_VARIABLY_MODIFIED (type);
 
       switch (declarator->kind)
 	{
@@ -6990,8 +7287,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		       variable size, so the enclosing shared array type
 		       must too.  */
 		    if (size && TREE_CODE (size) == INTEGER_CST)
-		      type
-			= build_distinct_type_copy (TYPE_MAIN_VARIANT (type));
+		      type = build_distinct_type_copy (TYPE_MAIN_VARIANT (type));
 		    C_TYPE_VARIABLE_SIZE (type) = 1;
 		  }
 
@@ -7134,7 +7430,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	      }
 	    type_quals = TYPE_UNQUALIFIED;
 
-	    type = build_function_type (type, arg_types);
+	    type = build_function_type (type, arg_types,
+					arg_info->no_named_args_stdarg_p);
 	    declarator = declarator->declarator;
 
 	    /* Set the TYPE_CONTEXTs for each tagged type which is local to
@@ -7200,7 +7497,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	       the size evaluation prior to the side effects.  We therefore
 	       use BIND_EXPRs in TYPENAME contexts too.  */
 	    if (!TYPE_NAME (type)
-		&& variably_modified_type_p (type, NULL_TREE))
+		&& c_type_variably_modified_p (type))
 	      {
 		tree bind = NULL_TREE;
 		if (decl_context == TYPENAME || decl_context == PARM)
@@ -7241,6 +7538,8 @@ grokdeclarator (const struct c_declarator *declarator,
 	default:
 	  gcc_unreachable ();
 	}
+      if (type != error_mark_node)
+	C_TYPE_VARIABLY_MODIFIED (type) = varmod || size_varies;
     }
   *decl_attrs = chainon (returned_attrs, *decl_attrs);
   *decl_attrs = chainon (decl_id_attrs, *decl_attrs);
@@ -7435,7 +7734,7 @@ grokdeclarator (const struct c_declarator *declarator,
     }
 
   if (pedantic && decl_context == FIELD
-      && variably_modified_type_p (type, NULL_TREE))
+      && c_type_variably_modified_p (type))
     {
       /* C99 6.7.2.1p8 */
       pedwarn (loc, OPT_Wpedantic, "a member of a structure or union cannot "
@@ -7596,7 +7895,7 @@ grokdeclarator (const struct c_declarator *declarator,
       }
     else if (TREE_CODE (type) == FUNCTION_TYPE)
       {
-	if (storage_class == csc_register || threadp)
+	if (storage_class == csc_register || threadp || constexprp)
 	  {
 	    error_at (loc, "invalid storage class for function %qE", name);
 	  }
@@ -7696,6 +7995,32 @@ grokdeclarator (const struct c_declarator *declarator,
 	/* An uninitialized decl with `extern' is a reference.  */
 	int extern_ref = !initialized && storage_class == csc_extern;
 
+	if (constexprp)
+	  {
+	    /* The type of a constexpr variable must not be variably
+	       modified, volatile, atomic or restrict qualified or
+	       have a member with such a qualifier.  const
+	       qualification is implicitly added, and, at file scope,
+	       has internal linkage.  */
+	    if (c_type_variably_modified_p (type))
+	      error_at (loc, "%<constexpr%> object has variably modified "
+			"type");
+	    if (type_quals
+		& (TYPE_QUAL_VOLATILE | TYPE_QUAL_RESTRICT | TYPE_QUAL_ATOMIC))
+	      error_at (loc, "invalid qualifiers for %<constexpr%> object");
+	    else
+	      {
+		tree type_no_array = strip_array_types (type);
+		if (RECORD_OR_UNION_TYPE_P (type_no_array)
+		    && C_TYPE_FIELDS_NON_CONSTEXPR (type_no_array))
+		  error_at (loc, "invalid qualifiers for field of "
+			    "%<constexpr%> object");
+	      }
+	    type_quals |= TYPE_QUAL_CONST;
+	    if (current_scope == file_scope)
+	      storage_class = csc_static;
+	  }
+
 	type = c_build_qualified_type (type, type_quals, orig_qual_type,
 				       orig_qual_indirect);
 
@@ -7722,6 +8047,8 @@ grokdeclarator (const struct c_declarator *declarator,
 			   VAR_DECL, declarator->u.id.id, type);
 	if (size_varies)
 	  C_DECL_VARIABLE_SIZE (decl) = 1;
+	if (constexprp)
+	  C_DECL_DECLARED_CONSTEXPR (decl) = 1;
 
 	if (declspecs->inline_p)
 	  pedwarn (loc, 0, "variable %q+D declared %<inline%>", decl);
@@ -7757,7 +8084,7 @@ grokdeclarator (const struct c_declarator *declarator,
 	 || (storage_class == csc_none
 	     && TREE_CODE (type) == FUNCTION_TYPE
 	     && !funcdef_flag))
-	&& variably_modified_type_p (type, NULL_TREE))
+	&& c_type_variably_modified_p (type))
       {
 	/* C99 6.7.5.2p2 */
 	if (TREE_CODE (type) == FUNCTION_TYPE)
@@ -7899,7 +8226,8 @@ grokparms (struct c_arg_info *arg_info, bool funcdef_flag)
       /* In C2X, convert () to (void).  */
       if (flag_isoc2x
 	  && !arg_types
-	  && !arg_info->parms)
+	  && !arg_info->parms
+	  && !arg_info->no_named_args_stdarg_p)
 	arg_types = arg_info->types = void_list_node;
 
       /* If there is a parameter of incomplete type in a definition,
@@ -7969,6 +8297,7 @@ build_arg_info (void)
   ret->others = NULL_TREE;
   ret->pending_sizes = NULL;
   ret->had_vla_unspec = 0;
+  ret->no_named_args_stdarg_p = 0;
   return ret;
 }
 
@@ -8160,6 +8489,7 @@ get_parm_info (bool ellipsis, tree expr)
   arg_info->types = types;
   arg_info->others = others;
   arg_info->pending_sizes = expr;
+  arg_info->no_named_args_stdarg_p = ellipsis && !types;
   return arg_info;
 }
 
@@ -8167,12 +8497,15 @@ get_parm_info (bool ellipsis, tree expr)
    Define the tag as a forward-reference with location LOC if it is
    not defined.  HAVE_STD_ATTRS says whether any standard attributes
    were present after the struct, union or enum keyword; ATTRS are the
-   standard attributes present there.  Return a c_typespec structure
-   for the type specifier.  */
+   standard attributes present there.  HAS_ENUM_TYPE_SPECIFIER says
+   whether an enum type specifier (": specifier-qualifier-list") is
+   present; if so, this is called before that specifier is parsed, so
+   that the tag is in scope for that specifier.  Return a c_typespec
+   structure for the type specifier.  */
 
 struct c_typespec
 parser_xref_tag (location_t loc, enum tree_code code, tree name,
-		 bool have_std_attrs, tree attrs)
+		 bool have_std_attrs, tree attrs, bool has_enum_type_specifier)
 {
   struct c_typespec ret;
   tree ref;
@@ -8180,11 +8513,13 @@ parser_xref_tag (location_t loc, enum tree_code code, tree name,
 
   ret.expr = NULL_TREE;
   ret.expr_const_operands = true;
+  ret.has_enum_type_specifier = has_enum_type_specifier;
 
-  /* If a cross reference is requested, look up the type
-     already defined for this tag and return it.  */
+  /* If a cross reference is requested, look up the type already
+     defined for this tag and return it.  If an enum type specifier is
+     present, only a definition in the current scope is relevant.  */
 
-  ref = lookup_tag (code, name, false, &refloc);
+  ref = lookup_tag (code, name, has_enum_type_specifier, &refloc);
   /* If this is the right type of tag, return what we found.
      (This reference will be shadowed by shadow_tag later if appropriate.)
      If this is the wrong type of tag, do not return it.  If it was the
@@ -8253,10 +8588,14 @@ parser_xref_tag (location_t loc, enum tree_code code, tree name,
       TYPE_PRECISION (ref) = TYPE_PRECISION (unsigned_type_node);
       TYPE_MIN_VALUE (ref) = TYPE_MIN_VALUE (unsigned_type_node);
       TYPE_MAX_VALUE (ref) = TYPE_MAX_VALUE (unsigned_type_node);
+      ENUM_FIXED_UNDERLYING_TYPE_P (ref) = has_enum_type_specifier;
     }
 
   pushtag (loc, name, ref);
   decl_attributes (&ref, attrs, (int) ATTR_FLAG_TYPE_IN_PLACE);
+  if (in_underspecified_init)
+    error_at (loc, "%qT declared in underspecified object initializer",
+	      ref);
 
   ret.spec = ref;
   return ret;
@@ -8269,7 +8608,8 @@ parser_xref_tag (location_t loc, enum tree_code code, tree name,
 tree
 xref_tag (enum tree_code code, tree name)
 {
-  return parser_xref_tag (input_location, code, name, false, NULL_TREE).spec;
+  return parser_xref_tag (input_location, code, name, false, NULL_TREE,
+			  false).spec;
 }
 
 /* Make sure that the tag NAME is defined *in the current scope*
@@ -8350,6 +8690,9 @@ start_struct (location_t loc, enum tree_code code, tree name,
 		(in_sizeof
 		 ? "sizeof"
 		 : (in_typeof ? "typeof" : "alignof")));
+
+  if (in_underspecified_init)
+    error_at (loc, "%qT defined in underspecified object initializer", ref);
 
   return ref;
 }
@@ -8710,6 +9053,61 @@ finish_incomplete_vars (tree incomplete_vars, bool toplevel)
     }
 }
 
+/* Determine whether the FIELD_DECL X is a flexible array member according to
+   the following info:
+  A. whether the FIELD_DECL X is the last field of the DECL_CONTEXT;
+  B. whether the FIELD_DECL is an array that is declared as "[]", "[0]",
+     or "[1]";
+  C. flag_strict_flex_arrays;
+  D. the attribute strict_flex_array that is attached to the field
+     if presenting.
+  Return TRUE when it's a flexible array member, FALSE otherwise.  */
+
+static bool
+is_flexible_array_member_p (bool is_last_field,
+			    tree x)
+{
+  /* If not the last field, return false.  */
+  if (!is_last_field)
+    return false;
+
+  /* If not an array field, return false.  */
+  if (TREE_CODE (TREE_TYPE (x)) != ARRAY_TYPE)
+    return false;
+
+  bool is_zero_length_array = zero_length_array_type_p (TREE_TYPE (x));
+  bool is_one_element_array = one_element_array_type_p (TREE_TYPE (x));
+  bool is_flexible_array = flexible_array_member_type_p (TREE_TYPE (x));
+
+  unsigned int strict_flex_array_level = c_strict_flex_array_level_of (x);
+
+  switch (strict_flex_array_level)
+    {
+      case 0:
+	/* Default, all trailing arrays are flexible array members.  */
+	return true;
+      case 1:
+	/* Level 1: all "[1]", "[0]", and "[]" are flexible array members.  */
+	if (is_one_element_array)
+	  return true;
+	/* FALLTHROUGH.  */
+      case 2:
+	/* Level 2: all "[0]", and "[]" are flexible array members.  */
+	if (is_zero_length_array)
+	  return true;
+	/* FALLTHROUGH.  */
+      case 3:
+	/* Level 3: Only "[]" are flexible array members.  */
+	if (is_flexible_array)
+	  return true;
+	break;
+      default:
+	gcc_unreachable ();
+    }
+  return false;
+}
+
+
 /* Fill in the fields of a RECORD_TYPE or UNION_TYPE node, T.
    LOC is the location of the RECORD_TYPE or UNION_TYPE's definition.
    FIELDLIST is a chain of FIELD_DECL nodes for the fields.
@@ -8771,18 +9169,23 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
   bool saw_named_field = false;
   for (x = fieldlist; x; x = DECL_CHAIN (x))
     {
+      /* Whether this field is the last field of the structure or union.
+	 for UNION, any field is the last field of it.  */
+      bool is_last_field = (DECL_CHAIN (x) == NULL_TREE)
+			    || (TREE_CODE (t) == UNION_TYPE);
+
       if (TREE_TYPE (x) == error_mark_node)
 	continue;
 
       DECL_CONTEXT (x) = t;
 
+      tree t1 = strip_array_types (TREE_TYPE (x));
       /* If any field is const, the structure type is pseudo-const.  */
       if (TREE_READONLY (x))
 	C_TYPE_FIELDS_READONLY (t) = 1;
       else
 	{
 	  /* A field that is pseudo-const makes the structure likewise.  */
-	  tree t1 = strip_array_types (TREE_TYPE (x));
 	  if (RECORD_OR_UNION_TYPE_P (t1) && C_TYPE_FIELDS_READONLY (t1))
 	    C_TYPE_FIELDS_READONLY (t) = 1;
 	}
@@ -8790,11 +9193,26 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       /* Any field that is volatile means variables of this type must be
 	 treated in some ways as volatile.  */
       if (TREE_THIS_VOLATILE (x))
-	C_TYPE_FIELDS_VOLATILE (t) = 1;
+	{
+	  C_TYPE_FIELDS_VOLATILE (t) = 1;
+	  C_TYPE_FIELDS_NON_CONSTEXPR (t) = 1;
+	}
+
+      /* Any field that is volatile, restrict-qualified or atomic
+	 means the type cannot be used for a constexpr object.  */
+      if (TYPE_QUALS (t1)
+	  & (TYPE_QUAL_VOLATILE | TYPE_QUAL_RESTRICT | TYPE_QUAL_ATOMIC))
+	C_TYPE_FIELDS_NON_CONSTEXPR (t) = 1;
+      else if (RECORD_OR_UNION_TYPE_P (t1) && C_TYPE_FIELDS_NON_CONSTEXPR (t1))
+	    C_TYPE_FIELDS_NON_CONSTEXPR (t) = 1;
 
       /* Any field of nominal variable size implies structure is too.  */
       if (C_DECL_VARIABLE_SIZE (x))
 	C_TYPE_VARIABLE_SIZE (t) = 1;
+
+      /* If any field is variably modified, record this fact. */
+      if (C_TYPE_VARIABLY_MODIFIED (TREE_TYPE (x)))
+	C_TYPE_VARIABLY_MODIFIED (t) = 1;
 
       if (DECL_C_BIT_FIELD (x))
 	{
@@ -8809,10 +9227,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	DECL_PACKED (x) = 1;
 
       /* Detect flexible array member in an invalid context.  */
-      if (TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE
-	  && TYPE_SIZE (TREE_TYPE (x)) == NULL_TREE
-	  && TYPE_DOMAIN (TREE_TYPE (x)) != NULL_TREE
-	  && TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (x))) == NULL_TREE)
+      if (flexible_array_member_type_p (TREE_TYPE (x)))
 	{
 	  if (TREE_CODE (t) == UNION_TYPE)
 	    {
@@ -8820,7 +9235,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 			"flexible array member in union");
 	      TREE_TYPE (x) = error_mark_node;
 	    }
-	  else if (DECL_CHAIN (x) != NULL_TREE)
+	  else if (!is_last_field)
 	    {
 	      error_at (DECL_SOURCE_LOCATION (x),
 			"flexible array member not at end of struct");
@@ -8839,6 +9254,9 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	  && flexible_array_type_p (TREE_TYPE (x)))
 	pedwarn (DECL_SOURCE_LOCATION (x), OPT_Wpedantic,
 		 "invalid use of structure with flexible array member");
+
+      /* Set DECL_NOT_FLEXARRAY flag for FIELD_DECL x.  */
+      DECL_NOT_FLEXARRAY (x) = !is_flexible_array_member_p (is_last_field, x);
 
       if (DECL_NAME (x)
 	  || RECORD_OR_UNION_TYPE_P (TREE_TYPE (x)))
@@ -8992,7 +9410,9 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       TYPE_TRANSPARENT_AGGR (x) = TYPE_TRANSPARENT_AGGR (t);
       C_TYPE_FIELDS_READONLY (x) = C_TYPE_FIELDS_READONLY (t);
       C_TYPE_FIELDS_VOLATILE (x) = C_TYPE_FIELDS_VOLATILE (t);
+      C_TYPE_FIELDS_NON_CONSTEXPR (x) = C_TYPE_FIELDS_NON_CONSTEXPR (t);
       C_TYPE_VARIABLE_SIZE (x) = C_TYPE_VARIABLE_SIZE (t);
+      C_TYPE_VARIABLY_MODIFIED (x) = C_TYPE_VARIABLY_MODIFIED (t);
       C_TYPE_INCOMPLETE_VARS (x) = NULL_TREE;
     }
 
@@ -9009,7 +9429,7 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
   /* If we're inside a function proper, i.e. not file-scope and not still
      parsing parameters, then arrange for the size of a variable sized type
      to be bound now.  */
-  if (building_stmt_list_p () && variably_modified_type_p (t, NULL_TREE))
+  if (building_stmt_list_p () && c_type_variably_modified_p(t))
     add_stmt (build_stmt (loc,
 			  DECL_EXPR, build_decl (loc, TYPE_DECL, NULL, t)));
 
@@ -9090,12 +9510,15 @@ layout_array_type (tree t)
 /* Begin compiling the definition of an enumeration type.
    NAME is its name (or null if anonymous).
    LOC is the enum's location.
+   FIXED_UNDERLYING_TYPE is the (C2x) underlying type specified in the
+   definition.
    Returns the type object, as yet incomplete.
    Also records info about it so that build_enumerator
    may be used to declare the individual values as they are read.  */
 
 tree
-start_enum (location_t loc, struct c_enum_contents *the_enum, tree name)
+start_enum (location_t loc, struct c_enum_contents *the_enum, tree name,
+	    tree fixed_underlying_type)
 {
   tree enumtype = NULL_TREE;
   location_t enumloc = UNKNOWN_LOCATION;
@@ -9111,6 +9534,23 @@ start_enum (location_t loc, struct c_enum_contents *the_enum, tree name)
     {
       enumtype = make_node (ENUMERAL_TYPE);
       pushtag (loc, name, enumtype);
+      if (fixed_underlying_type != NULL_TREE)
+	{
+	  /* For an enum definition with a fixed underlying type, the
+	     type is complete during the definition and the
+	     enumeration constants have that type.  If there was a
+	     tag, the type was completed in c_parser_enum_specifier.
+	     If not, it must be completed here.  */
+	  ENUM_FIXED_UNDERLYING_TYPE_P (enumtype) = true;
+	  TYPE_MIN_VALUE (enumtype) = TYPE_MIN_VALUE (fixed_underlying_type);
+	  TYPE_MAX_VALUE (enumtype) = TYPE_MAX_VALUE (fixed_underlying_type);
+	  TYPE_UNSIGNED (enumtype) = TYPE_UNSIGNED (fixed_underlying_type);
+	  SET_TYPE_ALIGN (enumtype, TYPE_ALIGN (fixed_underlying_type));
+	  TYPE_SIZE (enumtype) = NULL_TREE;
+	  TYPE_PRECISION (enumtype) = TYPE_PRECISION (fixed_underlying_type);
+	  ENUM_UNDERLYING_TYPE (enumtype) = fixed_underlying_type;
+	  layout_type (enumtype);
+	}
     }
   /* Update type location to the one of the definition, instead of e.g.
      a forward declaration.  */
@@ -9138,10 +9578,16 @@ start_enum (location_t loc, struct c_enum_contents *the_enum, tree name)
       TYPE_VALUES (enumtype) = NULL_TREE;
     }
 
+  if (ENUM_FIXED_UNDERLYING_TYPE_P (enumtype)
+      && fixed_underlying_type == NULL_TREE)
+    error_at (loc, "%<enum%> declared with but defined without "
+	      "fixed underlying type");
+
   the_enum->enum_next_value = integer_zero_node;
+  the_enum->enum_type = enumtype;
   the_enum->enum_overflow = 0;
 
-  if (flag_short_enums)
+  if (flag_short_enums && !ENUM_FIXED_UNDERLYING_TYPE_P (enumtype))
     for (tree v = TYPE_MAIN_VARIANT (enumtype); v; v = TYPE_NEXT_VARIANT (v))
       TYPE_PACKED (v) = 1;
 
@@ -9154,6 +9600,10 @@ start_enum (location_t loc, struct c_enum_contents *the_enum, tree name)
 		(in_sizeof
 		 ? "sizeof"
 		 : (in_typeof ? "typeof" : "alignof")));
+
+  if (in_underspecified_init)
+    error_at (loc, "%qT defined in underspecified object initializer",
+	      enumtype);
 
   return enumtype;
 }
@@ -9201,43 +9651,65 @@ finish_enum (tree enumtype, tree values, tree attributes)
   precision = MAX (tree_int_cst_min_precision (minnode, sign),
 		   tree_int_cst_min_precision (maxnode, sign));
 
-  /* If the precision of the type was specified with an attribute and it
-     was too small, give an error.  Otherwise, use it.  */
-  if (TYPE_PRECISION (enumtype) && lookup_attribute ("mode", attributes))
+  bool wider_than_int =
+    (tree_int_cst_lt (minnode, TYPE_MIN_VALUE (integer_type_node))
+     || tree_int_cst_lt (TYPE_MAX_VALUE (integer_type_node), maxnode));
+
+
+  if (!ENUM_FIXED_UNDERLYING_TYPE_P (enumtype))
     {
-      if (precision > TYPE_PRECISION (enumtype))
+      /* If the precision of the type was specified with an attribute and it
+	 was too small, give an error.  Otherwise, use it.  */
+      if (TYPE_PRECISION (enumtype) && lookup_attribute ("mode", attributes))
 	{
-	  TYPE_PRECISION (enumtype) = 0;
-	  error ("specified mode too small for enumerated values");
+	  if (precision > TYPE_PRECISION (enumtype))
+	    {
+	      TYPE_PRECISION (enumtype) = 0;
+	      error ("specified mode too small for enumerated values");
+	    }
+	  else
+	    precision = TYPE_PRECISION (enumtype);
 	}
       else
-	precision = TYPE_PRECISION (enumtype);
-    }
-  else
-    TYPE_PRECISION (enumtype) = 0;
+	TYPE_PRECISION (enumtype) = 0;
 
-  if (TYPE_PACKED (enumtype)
-      || precision > TYPE_PRECISION (integer_type_node)
-      || TYPE_PRECISION (enumtype))
-    {
-      tem = c_common_type_for_size (precision, sign == UNSIGNED ? 1 : 0);
-      if (tem == NULL)
+      if (TYPE_PACKED (enumtype)
+	  || precision > TYPE_PRECISION (integer_type_node)
+	  || TYPE_PRECISION (enumtype))
 	{
-	  warning (0, "enumeration values exceed range of largest integer");
-	  tem = long_long_integer_type_node;
+	  tem = c_common_type_for_size (precision, sign == UNSIGNED ? 1 : 0);
+	  if (tem == NULL)
+	    {
+	      /* This should only occur when both signed and unsigned
+		 values of maximum precision occur among the
+		 enumerators.  */
+	      pedwarn (input_location, 0,
+		       "enumeration values exceed range of largest integer");
+	      tem = widest_integer_literal_type_node;
+	    }
+	  else if (precision > TYPE_PRECISION (intmax_type_node)
+		   && !tree_int_cst_lt (minnode,
+					TYPE_MIN_VALUE (intmax_type_node))
+		   && !tree_int_cst_lt (TYPE_MAX_VALUE (uintmax_type_node),
+					maxnode))
+	    pedwarn (input_location, OPT_Wpedantic,
+		     "enumeration values exceed range of %qs",
+		     sign == UNSIGNED ? "uintmax_t" : "intmax_t");
 	}
+      else
+	tem = sign == UNSIGNED ? unsigned_type_node : integer_type_node;
+
+      TYPE_MIN_VALUE (enumtype) = TYPE_MIN_VALUE (tem);
+      TYPE_MAX_VALUE (enumtype) = TYPE_MAX_VALUE (tem);
+      TYPE_UNSIGNED (enumtype) = TYPE_UNSIGNED (tem);
+      SET_TYPE_ALIGN (enumtype, TYPE_ALIGN (tem));
+      TYPE_SIZE (enumtype) = NULL_TREE;
+      TYPE_PRECISION (enumtype) = TYPE_PRECISION (tem);
+      ENUM_UNDERLYING_TYPE (enumtype) =
+	c_common_type_for_size (TYPE_PRECISION (tem), TYPE_UNSIGNED (tem));
+
+      layout_type (enumtype);
     }
-  else
-    tem = sign == UNSIGNED ? unsigned_type_node : integer_type_node;
-
-  TYPE_MIN_VALUE (enumtype) = TYPE_MIN_VALUE (tem);
-  TYPE_MAX_VALUE (enumtype) = TYPE_MAX_VALUE (tem);
-  TYPE_UNSIGNED (enumtype) = TYPE_UNSIGNED (tem);
-  SET_TYPE_ALIGN (enumtype, TYPE_ALIGN (tem));
-  TYPE_SIZE (enumtype) = NULL_TREE;
-  TYPE_PRECISION (enumtype) = TYPE_PRECISION (tem);
-
-  layout_type (enumtype);
 
   if (values != error_mark_node)
     {
@@ -9255,17 +9727,19 @@ finish_enum (tree enumtype, tree values, tree attributes)
 
 	  TREE_TYPE (enu) = enumtype;
 
-	  /* The ISO C Standard mandates enumerators to have type int,
-	     even though the underlying type of an enum type is
-	     unspecified.  However, GCC allows enumerators of any
-	     integer type as an extensions.  build_enumerator()
-	     converts any enumerators that fit in an int to type int,
-	     to avoid promotions to unsigned types when comparing
-	     integers with enumerators that fit in the int range.
-	     When -pedantic is given, build_enumerator() would have
-	     already warned about those that don't fit. Here we
-	     convert the rest to the enumerator type. */
-	  if (TREE_TYPE (ini) != integer_type_node)
+	  /* Before C2X, the ISO C Standard mandates enumerators to
+	     have type int, even though the underlying type of an enum
+	     type is unspecified.  However, C2X allows enumerators of
+	     any integer type, and if an enumeration has any
+	     enumerators wider than int, all enumerators have the
+	     enumerated type after it is parsed.  Any enumerators that
+	     fit in int are given type int in build_enumerator (which
+	     is the correct type while the enumeration is being
+	     parsed), so no conversions are needed here if all
+	     enumerators fit in int.  If the enum has a fixed
+	     underlying type, the correct type was also given in
+	     build_enumerator.  */
+	  if (!ENUM_FIXED_UNDERLYING_TYPE_P (enumtype) && wider_than_int)
 	    ini = convert (enumtype, ini);
 
 	  DECL_INITIAL (enu) = ini;
@@ -9303,6 +9777,7 @@ finish_enum (tree enumtype, tree values, tree attributes)
       TYPE_USER_ALIGN (tem) = TYPE_USER_ALIGN (enumtype);
       TYPE_UNSIGNED (tem) = TYPE_UNSIGNED (enumtype);
       TYPE_LANG_SPECIFIC (tem) = TYPE_LANG_SPECIFIC (enumtype);
+      ENUM_UNDERLYING_TYPE (tem) = ENUM_UNDERLYING_TYPE (enumtype);
     }
 
   /* Finish debugging output for this type.  */
@@ -9333,7 +9808,7 @@ tree
 build_enumerator (location_t decl_loc, location_t loc,
 		  struct c_enum_contents *the_enum, tree name, tree value)
 {
-  tree decl, type;
+  tree decl;
 
   /* Validate and default VALUE.  */
 
@@ -9382,43 +9857,120 @@ build_enumerator (location_t decl_loc, location_t loc,
       if (the_enum->enum_overflow)
 	error_at (loc, "overflow in enumeration values");
     }
-  /* Even though the underlying type of an enum is unspecified, the
-     type of enumeration constants is explicitly defined as int
-     (6.4.4.3/2 in the C99 Standard).  GCC allows any integer type as
-     an extension.  */
-  else if (!int_fits_type_p (value, integer_type_node))
-    pedwarn (loc, OPT_Wpedantic,
-	     "ISO C restricts enumerator values to range of %<int%>");
+  if (ENUM_FIXED_UNDERLYING_TYPE_P (the_enum->enum_type))
+    {
+      /* Enumeration constants must fit in the fixed underlying type.  */
+      if (!int_fits_type_p (value, ENUM_UNDERLYING_TYPE (the_enum->enum_type)))
+	error_at (loc,
+		  "enumerator value outside the range of underlying type");
+      /* Enumeration constants for an enum with fixed underlying type
+	 have the enum type, both inside and outside the
+	 definition.  */
+      value = convert (the_enum->enum_type, value);
+    }
+  else
+    {
+      /* Even though the underlying type of an enum is unspecified, the
+	 type of enumeration constants is explicitly defined as int
+	 (6.4.4.3/2 in the C99 Standard).  C2X allows any integer type, and
+	 GCC allows such types for older standards as an extension.  */
+      bool warned_range = false;
+      if (!int_fits_type_p (value,
+			    (TYPE_UNSIGNED (TREE_TYPE (value))
+			     ? uintmax_type_node
+			     : intmax_type_node)))
+	/* GCC does not consider its types larger than intmax_t to be
+	   extended integer types (although C2X would permit such types to
+	   be considered extended integer types if all the features
+	   required by <stdint.h> and <inttypes.h> macros, such as support
+	   for integer constants and I/O, were present), so diagnose if
+	   such a wider type is used.  (If the wider type arose from a
+	   constant of such a type, that will also have been diagnosed,
+	   but this is the only diagnostic in the case where it arises
+	   from choosing a wider type automatically when adding 1
+	   overflows.)  */
+	warned_range = pedwarn (loc, OPT_Wpedantic,
+				"enumerator value outside the range of %qs",
+				(TYPE_UNSIGNED (TREE_TYPE (value))
+				 ? "uintmax_t"
+				 : "intmax_t"));
+      if (!warned_range && !int_fits_type_p (value, integer_type_node))
+	pedwarn_c11 (loc, OPT_Wpedantic,
+		     "ISO C restricts enumerator values to range of %<int%> "
+		     "before C2X");
 
-  /* The ISO C Standard mandates enumerators to have type int, even
-     though the underlying type of an enum type is unspecified.
-     However, GCC allows enumerators of any integer type as an
-     extensions.  Here we convert any enumerators that fit in an int
-     to type int, to avoid promotions to unsigned types when comparing
-     integers with enumerators that fit in the int range.  When
-     -pedantic is given, we would have already warned about those that
-     don't fit. We have to do this here rather than in finish_enum
-     because this value may be used to define more enumerators.  */
-  if (int_fits_type_p (value, integer_type_node))
-    value = convert (integer_type_node, value);
+      /* The ISO C Standard mandates enumerators to have type int before
+	 C2X, even though the underlying type of an enum type is
+	 unspecified.  C2X allows enumerators of any integer type.  During
+	 the parsing of the enumeration, C2X specifies that constants
+	 representable in int have type int, constants not representable
+	 in int have the type of the given expression if any, and
+	 constants not representable in int and derived by adding 1 to the
+	 previous constant have the type of that constant unless the
+	 addition would overflow or wraparound, in which case a wider type
+	 of the same signedness is chosen automatically; after the
+	 enumeration is parsed, all the constants have the type of the
+	 enumeration if any do not fit in int.  */
+      if (int_fits_type_p (value, integer_type_node))
+	value = convert (integer_type_node, value);
+    }
 
   /* Set basis for default for next value.  */
-  the_enum->enum_next_value
-    = build_binary_op (EXPR_LOC_OR_LOC (value, input_location),
-		       PLUS_EXPR, value, integer_one_node, false);
+  if (ENUM_FIXED_UNDERLYING_TYPE_P (the_enum->enum_type))
+    {
+      tree underlying_type = ENUM_UNDERLYING_TYPE (the_enum->enum_type);
+      if (TREE_CODE (underlying_type) == BOOLEAN_TYPE)
+	/* A value of 2 following a value of 1 overflows bool, but we
+	   cannot carry out addition directly on bool without
+	   promotion, and converting the result of arithmetic in a
+	   wider type back to bool would not produce the right result
+	   for this overflow check.  */
+	the_enum->enum_next_value = invert_truthvalue_loc (loc, value);
+      else
+	the_enum->enum_next_value
+	  = build_binary_op (EXPR_LOC_OR_LOC (value, input_location),
+			     PLUS_EXPR, convert (underlying_type, value),
+			     convert (underlying_type, integer_one_node),
+			     false);
+    }
+  else
+    the_enum->enum_next_value
+      = build_binary_op (EXPR_LOC_OR_LOC (value, input_location),
+			 PLUS_EXPR, value, integer_one_node, false);
   the_enum->enum_overflow = tree_int_cst_lt (the_enum->enum_next_value, value);
+  if (the_enum->enum_overflow
+      && !ENUM_FIXED_UNDERLYING_TYPE_P (the_enum->enum_type))
+    {
+      /* Choose a wider type with the same signedness if
+	 available.  */
+      int prec = TYPE_PRECISION (TREE_TYPE (value)) + 1;
+      bool unsignedp = TYPE_UNSIGNED (TREE_TYPE (value));
+      tree new_type = (unsignedp
+		       ? long_unsigned_type_node
+		       : long_integer_type_node);
+      if (prec > TYPE_PRECISION (new_type))
+	new_type = (unsignedp
+		    ? long_long_unsigned_type_node
+		    : long_long_integer_type_node);
+      if (prec > TYPE_PRECISION (new_type))
+	new_type = (unsignedp
+		    ? widest_unsigned_literal_type_node
+		    : widest_integer_literal_type_node);
+      if (prec <= TYPE_PRECISION (new_type))
+	{
+	  the_enum->enum_overflow = false;
+	  the_enum->enum_next_value
+	    = build_binary_op (EXPR_LOC_OR_LOC (value, input_location),
+			       PLUS_EXPR, convert (new_type, value),
+			       integer_one_node, false);
+	  gcc_assert (!tree_int_cst_lt (the_enum->enum_next_value, value));
+	}
+    }
 
   /* Now create a declaration for the enum value name.  */
 
-  type = TREE_TYPE (value);
-  type = c_common_type_for_size (MAX (TYPE_PRECISION (type),
-				      TYPE_PRECISION (integer_type_node)),
-				 (TYPE_PRECISION (type)
-				  >= TYPE_PRECISION (integer_type_node)
-				  && TYPE_UNSIGNED (type)));
-
-  decl = build_decl (decl_loc, CONST_DECL, name, type);
-  DECL_INITIAL (decl) = convert (type, value);
+  decl = build_decl (decl_loc, CONST_DECL, name, TREE_TYPE (value));
+  DECL_INITIAL (decl) = value;
   pushdecl (decl);
 
   return tree_cons (decl, value, NULL_TREE);
@@ -9434,7 +9986,8 @@ c_simulate_enum_decl (location_t loc, const char *name,
   input_location = loc;
 
   struct c_enum_contents the_enum;
-  tree enumtype = start_enum (loc, &the_enum, get_identifier (name));
+  tree enumtype = start_enum (loc, &the_enum, get_identifier (name),
+			      NULL_TREE);
 
   tree value_chain = NULL_TREE;
   string_int_pair *value;
@@ -9504,6 +10057,7 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   tree decl1, old_decl;
   tree restype, resdecl;
   location_t loc;
+  location_t result_loc;
 
   current_function_returns_value = 0;  /* Assume, until we see it does.  */
   current_function_returns_null = 0;
@@ -9558,7 +10112,8 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
       /* Make it return void instead.  */
       TREE_TYPE (decl1)
 	= build_function_type (void_type_node,
-			       TYPE_ARG_TYPES (TREE_TYPE (decl1)));
+			       TYPE_ARG_TYPES (TREE_TYPE (decl1)),
+			       TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (decl1)));
     }
 
   if (warn_about_return_type)
@@ -9729,8 +10284,11 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   push_scope ();
   declare_parm_level ();
 
+  /* Set the result decl source location to the location of the typespec.  */
+  result_loc = (declspecs->locations[cdw_typespec] == UNKNOWN_LOCATION
+		? loc : declspecs->locations[cdw_typespec]);
   restype = TREE_TYPE (TREE_TYPE (current_function_decl));
-  resdecl = build_decl (loc, RESULT_DECL, NULL_TREE, restype);
+  resdecl = build_decl (result_loc, RESULT_DECL, NULL_TREE, restype);
   DECL_ARTIFICIAL (resdecl) = 1;
   DECL_IGNORED_P (resdecl) = 1;
   DECL_RESULT (current_function_decl) = resdecl;
@@ -10157,7 +10715,7 @@ store_parm_decls (void)
      empty argument list was converted to (void) in grokparms; in
      older C standard versions, it does not give the function a type
      with a prototype for future calls.  */
-  proto = arg_info->types != 0;
+  proto = arg_info->types != 0 || arg_info->no_named_args_stdarg_p;
 
   if (proto)
     store_parm_decls_newstyle (fndecl, arg_info);
@@ -10285,7 +10843,7 @@ finish_function (location_t end_loc)
   if (DECL_RESULT (fndecl) && DECL_RESULT (fndecl) != error_mark_node)
     DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;
 
-  if (MAIN_NAME_P (DECL_NAME (fndecl)) && flag_hosted
+  if (MAIN_NAME_P (DECL_NAME (fndecl)) && !TREE_THIS_VOLATILE (fndecl)
       && TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (fndecl)))
       == integer_type_node && flag_isoc99)
     {
@@ -10878,6 +11436,24 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
     specs->deprecated_p = true;
   if (TREE_UNAVAILABLE (type))
     specs->unavailable_p = true;
+
+  /* As a type specifier is present, "auto" must be used as a storage
+     class specifier, not for type deduction.  */
+  if (specs->c2x_auto_p)
+    {
+      specs->c2x_auto_p = false;
+      if (specs->storage_class != csc_none)
+	error ("multiple storage classes in declaration specifiers");
+      else if (specs->thread_p)
+	error ("%qs used with %<auto%>",
+	       specs->thread_gnu_p ? "__thread" : "_Thread_local");
+      else if (specs->constexpr_p)
+	/* auto may only be used with another storage class specifier,
+	   such as constexpr, if the type is inferred.  */
+	error ("%<auto%> used with %<constexpr%>");
+      else
+	specs->storage_class = csc_auto;
+    }
 
   /* Handle type specifier keywords.  */
   if (TREE_CODE (type) == IDENTIFIER_NODE
@@ -11669,11 +12245,9 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
     error_at (loc, "two or more data types in declaration specifiers");
   else if (TREE_CODE (type) == TYPE_DECL)
     {
-      if (TREE_TYPE (type) == error_mark_node)
-	; /* Allow the type to default to int to avoid cascading errors.  */
-      else
+      specs->type = TREE_TYPE (type);
+      if (TREE_TYPE (type) != error_mark_node)
 	{
-	  specs->type = TREE_TYPE (type);
 	  specs->decl_attr = DECL_ATTRIBUTES (type);
 	  specs->typedef_p = true;
 	  specs->explicit_signed_p = C_TYPEDEF_EXPLICITLY_SIGNED (type);
@@ -11723,6 +12297,9 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
 	    }
 	}
       specs->type = type;
+      if (spec.has_enum_type_specifier
+	  && spec.kind != ctsk_tagdef)
+	specs->enum_type_specifier_ref_p = true;
     }
 
   return specs;
@@ -11772,6 +12349,8 @@ declspecs_add_scspec (location_t loc,
 	error ("%qE used with %<register%>", scspec);
       else if (specs->storage_class == csc_typedef)
 	error ("%qE used with %<typedef%>", scspec);
+      else if (specs->constexpr_p)
+	error ("%qE used with %<constexpr%>", scspec);
       else
 	{
 	  specs->thread_p = true;
@@ -11794,7 +12373,21 @@ declspecs_add_scspec (location_t loc,
 	}
       break;
     case RID_AUTO:
+      if (flag_isoc2x
+	  && specs->typespec_kind == ctsk_none
+	  && specs->storage_class != csc_typedef)
+	{
+	  /* "auto" potentially used for type deduction.  */
+	  if (specs->c2x_auto_p)
+	    error ("duplicate %qE", scspec);
+	  specs->c2x_auto_p = true;
+	  return specs;
+	}
       n = csc_auto;
+      /* auto may only be used with another storage class specifier,
+	 such as constexpr, if the type is inferred.  */
+      if (specs->constexpr_p)
+	error ("%qE used with %<constexpr%>", scspec);
       break;
     case RID_EXTERN:
       n = csc_extern;
@@ -11813,6 +12406,27 @@ declspecs_add_scspec (location_t loc,
       break;
     case RID_TYPEDEF:
       n = csc_typedef;
+      if (specs->c2x_auto_p)
+	{
+	  error ("%<typedef%> used with %<auto%>");
+	  specs->c2x_auto_p = false;
+	}
+      break;
+    case RID_CONSTEXPR:
+      dupe = specs->constexpr_p;
+      if (specs->storage_class == csc_extern)
+	error ("%qE used with %<extern%>", scspec);
+      else if (specs->storage_class == csc_typedef)
+	error ("%qE used with %<typedef%>", scspec);
+      else if (specs->storage_class == csc_auto)
+	/* auto may only be used with another storage class specifier,
+	   such as constexpr, if the type is inferred.  */
+	error ("%qE used with %<auto%>", scspec);
+      else if (specs->thread_p)
+	error ("%qE used with %qs", scspec,
+	       specs->thread_gnu_p ? "__thread" : "_Thread_local");
+      else
+	specs->constexpr_p = true;
       break;
     default:
       gcc_unreachable ();
@@ -11842,6 +12456,12 @@ declspecs_add_scspec (location_t loc,
 		     specs->thread_gnu_p ? "__thread" : "_Thread_local",
 		     scspec);
 	      specs->thread_p = false;
+	    }
+	  if (n != csc_auto && n != csc_register && n != csc_static
+	      && specs->constexpr_p)
+	    {
+	      error ("%<constexpr%> used with %qE", scspec);
+	      specs->constexpr_p = false;
 	    }
 	}
     }
@@ -11899,7 +12519,7 @@ finish_declspecs (struct c_declspecs *specs)
     {
       gcc_assert (!specs->long_p && !specs->long_long_p && !specs->short_p
 		  && !specs->signed_p && !specs->unsigned_p
-		  && !specs->complex_p);
+		  && !specs->complex_p && !specs->c2x_auto_p);
 
       /* Set a dummy type.  */
       if (TREE_CODE (specs->type) == ERROR_MARK)
@@ -11935,6 +12555,18 @@ finish_declspecs (struct c_declspecs *specs)
 		   "ISO C does not support plain %<complex%> meaning "
 		   "%<double complex%>");
 	}
+      else if (specs->c2x_auto_p)
+	{
+	  /* Type to be filled in later, including applying postfix
+	     attributes.  This warning only actually appears for
+	     -Wc11-c2x-compat in C2X mode; in older modes, there may
+	     be a warning or pedwarn for implicit "int" instead, or
+	     other errors for use of auto at file scope.  */
+	  pedwarn_c11 (input_location, OPT_Wpedantic,
+		       "ISO C does not support %<auto%> type deduction "
+		       "before C2X");
+	  return specs;
+	}
       else
 	{
 	  specs->typespec_word = cts_int;
@@ -11951,6 +12583,7 @@ finish_declspecs (struct c_declspecs *specs)
   specs->explicit_signed_p = specs->signed_p;
 
   /* Now compute the actual type.  */
+  gcc_assert (!specs->c2x_auto_p);
   switch (specs->typespec_word)
     {
     case cts_auto_type:

@@ -1,6 +1,6 @@
 // Stream iterators
 
-// Copyright (C) 2001-2022 Free Software Foundation, Inc.
+// Copyright (C) 2001-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -80,6 +80,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_stream(std::__addressof(__s)), _M_ok(true)
       { _M_read(); }
 
+      _GLIBCXX_CONSTEXPR
       istream_iterator(const istream_iterator& __obj)
       _GLIBCXX_NOEXCEPT_IF(is_nothrow_copy_constructible<_Tp>::value)
       : _M_stream(__obj._M_stream), _M_value(__obj._M_value),

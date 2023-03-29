@@ -1,6 +1,6 @@
 # Pretty-printers for libstdc++.
 
-# Copyright (C) 2008-2022 Free Software Foundation, Inc.
+# Copyright (C) 2008-2023 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@ import gdb
 import itertools
 import re
 import sys, os, errno
+import datetime
 
 ### Python 2 + Python 3 compatibility code
 
@@ -44,6 +45,7 @@ if sys.version_info[0] > 2:
     izip = zip
     # Also, int subsumes long
     long = int
+    _utc_timezone = datetime.timezone.utc
 else:
     ### Python 2 stuff
     class Iterator:
@@ -62,6 +64,20 @@ else:
 
     # In Python 2, we still need these from itertools
     from itertools import imap, izip
+
+    # Python 2 does not provide the datetime.UTC singleton.
+    class UTC(datetime.tzinfo):
+        """Concrete tzinfo class representing the UTC time zone"""
+
+        def utcoffset(self, dt):
+            return datetime.timedelta(0)
+
+        def tzname(self, dt):
+            return "UTC"
+
+        def dst(self, dt):
+            return datetime.timedelta(0)
+    _utc_timezone = UTC()
 
 # Try to use the new-style pretty-printing if available.
 _use_gdb_pp = True
@@ -166,7 +182,12 @@ def is_member_of_namespace(typ, *namespaces):
     return False
 
 def is_specialization_of(x, template_name):
-    "Test if a type is a given template instantiation."
+    """
+    Test whether a type is a specialization of the named class template.
+    The type can be specified as a string or a gdb.Type object.
+    The template should be the name of a class template as a string,
+    without any 'std' qualification.
+    """
     global _versioned_namespace
     if type(x) is gdb.Type:
         x = x.tag
@@ -1267,9 +1288,34 @@ class StdExpAnyPrinter(SingleObjContainerPrinter):
             mgrname = m.group(1)
             # FIXME need to expand 'std::string' so that gdb.lookup_type works
             if 'std::string' in mgrname:
-                mgrname = re.sub("std::string(?!\w)", str(gdb.lookup_type('std::string').strip_typedefs()), m.group(1))
-
-            mgrtype = gdb.lookup_type(mgrname)
+                # This lookup for std::string might return the __cxx11 version,
+                # but that's not necessarily the one used by the std::any
+                # manager function we're trying to find.
+                strings = {str(gdb.lookup_type('std::string').strip_typedefs())}
+                # So also consider all the other possible std::string types!
+                s = 'basic_string<char, std::char_traits<char>, std::allocator<char> >'
+                quals = ['std::', 'std::__cxx11::', 'std::' + _versioned_namespace]
+                strings |= {q+s for q in quals} # set of unique strings
+                mgrtypes = []
+                for s in strings:
+                    try:
+                        x = re.sub("std::string(?!\w)", s, m.group(1))
+                        # The following lookup might raise gdb.error if the
+                        # manager function was never instantiated for 's' in the
+                        # program, because there will be no such type.
+                        mgrtypes.append(gdb.lookup_type(x))
+                    except gdb.error:
+                        pass
+                if len(mgrtypes) != 1:
+                    # FIXME: this is unlikely in practice, but possible for
+                    # programs that use both old and new string types with
+                    # std::any in a single program. Can we do better?
+                    # Maybe find the address of each type's _S_manage and
+                    # compare to the address stored in _M_manager?
+                    raise ValueError('Cannot uniquely determine std::string type used in std::any')
+                mgrtype = mgrtypes[0]
+            else:
+                mgrtype = gdb.lookup_type(mgrname)
             self.contained_type = mgrtype.template_argument(0)
             valptr = None
             if '::_Manager_internal' in mgrname:
@@ -1815,6 +1861,265 @@ class StdAtomicPrinter:
             val = self.val['_M_i']
         return '%s<%s> = { %s }' % (self.typename, str(self.value_type), val)
 
+class StdFormatArgsPrinter:
+    "Print a std::basic_format_args"
+    # TODO: add printer for basic_format_arg<C> and print out children
+    # TODO: add printer for basic_format_args<C>::_Store<Args...>
+
+    def __init__(self, typename, val):
+        self.typename = strip_versioned_namespace(typename)
+        self.val = val
+
+    def to_string(self):
+        targs = get_template_arg_list(self.val.type)
+        char_type = get_template_arg_list(targs[0])[1]
+        if char_type == gdb.lookup_type('char'):
+            typ = 'std::format_args'
+        elif char_type == gdb.lookup_type('wchar_t'):
+            typ = 'std::wformat_args'
+        else:
+            typ = 'std::basic_format_args'
+
+        size = self.val['_M_packed_size']
+        if size == 1:
+            return "%s with 1 argument" % (typ)
+        if size == 0:
+            size = self.val['_M_unpacked_size']
+        return "%s with %d arguments" % (typ, size)
+
+def std_ratio_t_tuple(ratio_type):
+    # TODO use reduced period i.e. duration::period
+    period = self.val.type.template_argument(1)
+    num = period.template_argument(0)
+    den = period.template_argument(1)
+    return (num, den)
+
+class StdChronoDurationPrinter:
+    "Print a std::chrono::duration"
+
+    def __init__(self, typename, val):
+        self.typename = strip_versioned_namespace(typename)
+        self.val = val
+
+    def _ratio(self):
+        # TODO use reduced period i.e. duration::period
+        period = self.val.type.template_argument(1)
+        num = period.template_argument(0)
+        den = period.template_argument(1)
+        return (num, den)
+
+    def _suffix(self):
+        num, den = self._ratio()
+        if num == 1:
+            if den == 1:
+                return 's'
+            if den == 1000:
+                return 'ms'
+            if den == 1000000:
+                return 'us'
+            if den == 1000000000:
+                return 'ns'
+        elif den == 1:
+            if num == 60:
+                return 'min'
+            if num == 3600:
+                return 'h'
+            if num == 86400:
+                return 'd'
+            return '[{}]s'.format(num)
+        return "[{}/{}]s".format(num, den)
+
+    def to_string(self):
+        return "std::chrono::duration = { %d%s }" % (self.val['__r'], self._suffix())
+
+
+class StdChronoTimePointPrinter:
+    "Print a std::chrono::time_point"
+
+    def __init__(self, typename, val):
+        self.typename = strip_versioned_namespace(typename)
+        self.val = val
+
+    def _clock(self):
+        clock = self.val.type.template_argument(0)
+        name = strip_versioned_namespace(clock.name)
+        if name == 'std::chrono::_V2::system_clock' \
+                or name == 'std::chrono::system_clock':
+            return ('std::chrono::sys_time', 0)
+        # XXX need to remove leap seconds from utc, gps, and tai
+        #if name == 'std::chrono::utc_clock':
+        #    return ('std::chrono::utc_time', 0)
+        #if name == 'std::chrono::gps_clock':
+        #    return ('std::chrono::gps_clock time_point', 315964809)
+        #if name == 'std::chrono::tai_clock':
+        #    return ('std::chrono::tai_clock time_point', -378691210)
+        if name == 'std::filesystem::__file_clock':
+            return ('std::chrono::file_time', 6437664000)
+        if name == 'std::chrono::local_t':
+            return ('std::chrono::local_time', 0)
+        return ('{} time_point'.format(name), None)
+
+    def to_string(self):
+        clock, offset = self._clock()
+        d = self.val['__d']
+        r = d['__r']
+        printer = StdChronoDurationPrinter(d.type.name, d)
+        suffix = printer._suffix()
+        time = ''
+        if offset is not None:
+            num, den = printer._ratio()
+            secs = (r * num / den) + offset
+            try:
+                dt = datetime.fromtimestamp(secs, _utc_timezone)
+                time = ' [{:%Y-%m-%d %H:%M:%S}]'.format(dt)
+            except:
+                pass
+        return '%s = {%d%s%s}' % (clock, r, suffix, time)
+
+class StdChronoZonedTimePrinter:
+    "Print a std::chrono::zoned_time"
+
+    def __init__(self, typename, val):
+        self.typename = strip_versioned_namespace(typename)
+        self.val = val
+
+    def to_string(self):
+        zone = self.val['_M_zone'].dereference()
+        time = self.val['_M_tp']
+        return 'std::chrono::zoned_time = {{{} {}}}'.format(zone, time)
+
+
+months = [None, 'January', 'February', 'March', 'April', 'May', 'June',
+          'July', 'August', 'September', 'October', 'November', 'December']
+
+weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday',
+            'Saturday', 'Sunday']
+
+class StdChronoCalendarPrinter:
+    "Print a std::chrono::day, std::chrono::month, std::chrono::year etc."
+
+    def __init__(self, typename, val):
+        self.typename = strip_versioned_namespace(typename)
+        self.val = val
+
+    def to_string(self):
+        val = self.val
+        typ = self.typename
+        if 'month' in typ and typ != 'std::chrono::year_month_day_last':
+            m = val['_M_m']
+        if typ.startswith('std::chrono::year'):
+            y = val['_M_y']
+
+        if typ == 'std::chrono::day':
+            return '{}'.format(int(val['_M_d']))
+        if typ == 'std::chrono::month':
+            return months[m]
+        if typ == 'std::chrono::year':
+            return '{}y'.format(y)
+        if typ == 'std::chrono::weekday':
+            return '{}'.format(weekdays[val['_M_wd']])
+        if typ == 'std::chrono::weekday_indexed':
+            return '{}[{}]'.format(val['_M_wd'], int(val['_M_index']))
+        if typ == 'std::chrono::weekday_last':
+            return '{}[last]'.format(val['_M_wd'])
+        if typ == 'std::chrono::month_day':
+            return '{}/{}'.format(m, val['_M_d'])
+        if typ == 'std::chrono::month_day_last':
+            return '{}/last'.format(m)
+        if typ == 'std::chrono::month_weekday':
+            return '{}/{}'.format(m, val['_M_wdi'])
+        if typ == 'std::chrono::month_weekday_last':
+            return '{}/{}'.format(m, val['_M_wdl'])
+        if typ == 'std::chrono::year_month':
+            return '{}/{}'.format(y, m)
+        if typ == 'std::chrono::year_month_day':
+            return '{}/{}/{}'.format(y, m, val['_M_d'])
+        if typ == 'std::chrono::year_month_day_last':
+            return '{}/{}'.format(y, val['_M_mdl'])
+        if typ == 'std::chrono::year_month_weekday':
+            return '{}/{}'.format(y, m, val['_M_wdi'])
+        if typ == 'std::chrono::year_month_weekday_last':
+            return '{}/{}'.format(y, m, val['_M_wdl'])
+        if typ.startswith('std::chrono::hh_mm_ss'):
+            fract = ''
+            if val['fractional_width'] != 0:
+                fract = '.{:0{}d}'.format(int(val['_M_ss']['__r']),
+                                          int(val['fractional_width']))
+            h = int(val['_M_h']['__r'])
+            m = int(val['_M_m']['__r'])
+            s = int(val['_M_s']['__r'])
+            if val['_M_is_neg']:
+                h = -h
+            return '{:02}:{:02}:{:02}{}'.format(h, m, s, fract)
+
+class StdChronoTimeZonePrinter:
+    "Print a chrono::time_zone or chrono::time_zone_link"
+
+    def __init__(self, typename, val):
+        self.typename = strip_versioned_namespace(typename)
+        self.val = val
+
+    def to_string(self):
+        str = '%s %s' % (self.typename, self.val['_M_name'])
+        if self.typename.endswith("_link"):
+            str += ' -> %s' % (self.val['_M_target'])
+        return str
+
+class StdChronoLeapSecondPrinter:
+    "Print a chrono::leap_second"
+
+    def __init__(self, typename, val):
+        self.typename = strip_versioned_namespace(typename)
+        self.val = val
+
+    def to_string(self):
+        date = self.val['_M_s']['__r']
+        neg = '+-'[date < 0]
+        return '%s %d (%c)' % (self.typename, abs(date), neg)
+
+class StdChronoTzdbPrinter:
+    "Print a chrono::tzdb"
+
+    def __init__(self, typename, val):
+        self.typename = strip_versioned_namespace(typename)
+        self.val = val
+
+    def to_string(self):
+        return '%s %s' % (self.typename, self.val['version'])
+
+class StdChronoTimeZoneRulePrinter:
+    "Print a chrono::time_zone rule"
+
+    def __init__(self, typename, val):
+        self.typename = strip_versioned_namespace(typename)
+        self.val = val
+
+    def to_string(self):
+        on = self.val['on']
+        kind = on['kind']
+        month = months[on['month']]
+        suffixes = {1:'st', 2:'nd', 3:'rd', 21:'st', 22:'nd', 23:'rd', 31:'st'}
+        day = on['day_of_month']
+        ordinal_day = '{}{}'.format(day, suffixes.get(day, 'th'))
+        if kind == 0: # DayOfMonth
+                start = '{} {}{}'.format(month, ordinal_day)
+        else:
+            weekday = weekdays[on['day_of_week']]
+            if kind == 1: # LastWeekDay
+                start = 'last {} in {}'.format(weekday, month)
+            else:
+                if kind == 2: # LessEq
+                    direction = ('last', '<=')
+                else:
+                    direction = ('first', '>=')
+                day = on['day_of_month']
+                start = '{} {} {} {} {}'.format(direction[0], weekday,
+                                                direction[1], month,
+                                                ordinal_day)
+        return 'time_zone rule {} from {} to {} starting on {}'.format(
+                self.val['name'], self.val['from'], self.val['to'], start)
+
+
 # A "regular expression" printer which conforms to the
 # "SubPrettyPrinter" protocol from gdb.printing.
 class RxPrinter(object):
@@ -1857,7 +2162,7 @@ class Printer(object):
     # Add a name using _GLIBCXX_BEGIN_NAMESPACE_VERSION.
     def add_version(self, base, name, function):
         self.add(base + name, function)
-        if _versioned_namespace:
+        if _versioned_namespace and not '__cxx11' in base:
             vbase = re.sub('^(std|__gnu_cxx)::', r'\g<0>%s' % _versioned_namespace, base)
             self.add(vbase + name, function)
 
@@ -2026,7 +2331,7 @@ def add_one_template_type_printer(obj, name, defargs):
     printer = TemplateTypePrinter('std::__debug::'+name, defargs)
     gdb.types.register_type_printer(obj, printer)
 
-    if _versioned_namespace:
+    if _versioned_namespace and not '__cxx11' in name:
         # Add second type printer for same type in versioned namespace:
         ns = 'std::' + _versioned_namespace
         # PR 86112 Cannot use dict comprehension here:
@@ -2034,64 +2339,92 @@ def add_one_template_type_printer(obj, name, defargs):
         printer = TemplateTypePrinter(ns+name, defargs)
         gdb.types.register_type_printer(obj, printer)
 
+        # Add type printer for same type in debug namespace:
+        printer = TemplateTypePrinter('std::__debug::'+name, defargs)
+        gdb.types.register_type_printer(obj, printer)
+
 class FilteringTypePrinter(object):
     r"""
     A type printer that uses typedef names for common template specializations.
 
     Args:
-        match (str): The class template to recognize.
+        template (str): The class template to recognize.
         name (str): The typedef-name that will be used instead.
+        targ1 (str, optional): The first template argument. Defaults to None.
 
-    Checks if a specialization of the class template 'match' is the same type
+    Checks if a specialization of the class template 'template' is the same type
     as the typedef 'name', and prints it as 'name' instead.
 
     e.g. if an instantiation of std::basic_istream<C, T> is the same type as
     std::istream then print it as std::istream.
+
+    If targ1 is provided (not None), match only template specializations with
+    this type as the first template argument, e.g. if template='basic_string'
+    and targ1='char' then only match 'basic_string<char,...>' and not
+    'basic_string<wchar_t,...>'. This rejects non-matching specializations
+    more quickly, without needing to do GDB type lookups.
     """
 
-    def __init__(self, match, name):
-        self.match = match
+    def __init__(self, template, name, targ1 = None):
+        self.template = template
         self.name = name
+        self.targ1 = targ1
         self.enabled = True
 
     class _recognizer(object):
         "The recognizer class for FilteringTypePrinter."
 
-        def __init__(self, match, name):
-            self.match = match
+        def __init__(self, template, name, targ1):
+            self.template = template
             self.name = name
+            self.targ1 = targ1
             self.type_obj = None
 
         def recognize(self, type_obj):
             """
-            If type_obj starts with self.match and is the same type as
+            If type_obj starts with self.template and is the same type as
             self.name then return self.name, otherwise None.
             """
             if type_obj.tag is None:
                 return None
 
             if self.type_obj is None:
-                if not type_obj.tag.startswith(self.match):
+                if self.targ1 is not None:
+                    if not type_obj.tag.startswith('{}<{}'.format(self.template, self.targ1)):
+                        # Filter didn't match.
+                        return None
+                elif not type_obj.tag.startswith(self.template):
                     # Filter didn't match.
                     return None
+
                 try:
                     self.type_obj = gdb.lookup_type(self.name).strip_typedefs()
                 except:
                     pass
-            if self.type_obj == type_obj:
+
+            if self.type_obj is None:
+                return None
+
+            if gdb.types.get_basic_type(self.type_obj) == gdb.types.get_basic_type(type_obj):
                 return strip_inline_namespaces(self.name)
+
+            # Workaround ambiguous typedefs matching both std:: and std::__cxx11:: symbols.
+            if self.template.split('::')[-1] == 'basic_string':
+                if self.type_obj.tag.replace('__cxx11::', '') == type_obj.tag.replace('__cxx11::', ''):
+                    return strip_inline_namespaces(self.name)
+
             return None
 
     def instantiate(self):
         "Return a recognizer object for this type printer."
-        return self._recognizer(self.match, self.name)
+        return self._recognizer(self.template, self.name, self.targ1)
 
-def add_one_type_printer(obj, match, name):
-    printer = FilteringTypePrinter('std::' + match, 'std::' + name)
+def add_one_type_printer(obj, template, name, targ1 = None):
+    printer = FilteringTypePrinter('std::' + template, 'std::' + name, targ1)
     gdb.types.register_type_printer(obj, printer)
-    if _versioned_namespace:
+    if _versioned_namespace and not '__cxx11' in template:
         ns = 'std::' + _versioned_namespace
-        printer = FilteringTypePrinter(ns + match, ns + name)
+        printer = FilteringTypePrinter(ns + template, ns + name, targ1)
         gdb.types.register_type_printer(obj, printer)
 
 def register_type_printers(obj):
@@ -2101,29 +2434,33 @@ def register_type_printers(obj):
         return
 
     # Add type printers for typedefs std::string, std::wstring etc.
-    for ch in ('', 'w', 'u8', 'u16', 'u32'):
-        add_one_type_printer(obj, 'basic_string', ch + 'string')
-        add_one_type_printer(obj, '__cxx11::basic_string', ch + 'string')
+    for ch in (('', 'char'),
+               ('w', 'wchar_t'),
+               ('u8', 'char8_t'),
+               ('u16', 'char16_t'),
+               ('u32', 'char32_t')):
+        add_one_type_printer(obj, 'basic_string', ch[0] + 'string', ch[1])
+        add_one_type_printer(obj, '__cxx11::basic_string', ch[0] + 'string', ch[1])
         # Typedefs for __cxx11::basic_string used to be in namespace __cxx11:
         add_one_type_printer(obj, '__cxx11::basic_string',
-                             '__cxx11::' + ch + 'string')
-        add_one_type_printer(obj, 'basic_string_view', ch + 'string_view')
+                             '__cxx11::' + ch[0] + 'string', ch[1])
+        add_one_type_printer(obj, 'basic_string_view', ch[0] + 'string_view', ch[1])
 
     # Add type printers for typedefs std::istream, std::wistream etc.
-    for ch in ('', 'w'):
+    for ch in (('', 'char'), ('w', 'wchar_t')):
         for x in ('ios', 'streambuf', 'istream', 'ostream', 'iostream',
                   'filebuf', 'ifstream', 'ofstream', 'fstream'):
-            add_one_type_printer(obj, 'basic_' + x, ch + x)
+            add_one_type_printer(obj, 'basic_' + x, ch[0] + x, ch[1])
         for x in ('stringbuf', 'istringstream', 'ostringstream',
                   'stringstream'):
-            add_one_type_printer(obj, 'basic_' + x, ch + x)
+            add_one_type_printer(obj, 'basic_' + x, ch[0] + x, ch[1])
             # <sstream> types are in __cxx11 namespace, but typedefs aren't:
-            add_one_type_printer(obj, '__cxx11::basic_' + x, ch + x)
+            add_one_type_printer(obj, '__cxx11::basic_' + x, ch[0] + x, ch[1])
 
     # Add type printers for typedefs regex, wregex, cmatch, wcmatch etc.
     for abi in ('', '__cxx11::'):
-        for ch in ('', 'w'):
-            add_one_type_printer(obj, abi + 'basic_regex', abi + ch + 'regex')
+        for ch in (('', 'char'), ('w', 'wchar_t')):
+            add_one_type_printer(obj, abi + 'basic_regex', abi + ch[0] + 'regex', ch[1])
         for ch in ('c', 's', 'wc', 'ws'):
             add_one_type_printer(obj, abi + 'match_results', abi + ch + 'match')
             for x in ('sub_match', 'regex_iterator', 'regex_token_iterator'):
@@ -2134,9 +2471,9 @@ def register_type_printers(obj):
     add_one_type_printer(obj, 'fpos', 'streampos')
 
     # Add type printers for <chrono> typedefs.
-    for dur in ('nanoseconds', 'microseconds', 'milliseconds',
-                'seconds', 'minutes', 'hours'):
-        add_one_type_printer(obj, 'duration', dur)
+    for dur in ('nanoseconds', 'microseconds', 'milliseconds', 'seconds',
+                'minutes', 'hours', 'days', 'weeks', 'years', 'months'):
+        add_one_type_printer(obj, 'chrono::duration', 'chrono::' + dur)
 
     # Add type printers for <random> typedefs.
     add_one_type_printer(obj, 'linear_congruential_engine', 'minstd_rand0')
@@ -2151,9 +2488,13 @@ def register_type_printers(obj):
 
     # Add type printers for experimental::basic_string_view typedefs.
     ns = 'experimental::fundamentals_v1::'
-    for ch in ('', 'w', 'u8', 'u16', 'u32'):
+    for ch in (('', 'char'),
+               ('w', 'wchar_t'),
+               ('u8', 'char8_t'),
+               ('u16', 'char16_t'),
+               ('u32', 'char32_t')):
         add_one_type_printer(obj, ns + 'basic_string_view',
-                             ns + ch + 'string_view')
+                             ns + ch[0] + 'string_view', ch[1])
 
     # Do not show defaulted template arguments in class templates.
     add_one_template_type_printer(obj, 'unique_ptr',
@@ -2284,6 +2625,11 @@ def build_libstdcxx_dictionary ():
         libstdcxx_printer.add_version('std::', 'basic_' + sstream, StdStringStreamPrinter)
         libstdcxx_printer.add_version('std::__cxx11::', 'basic_' + sstream, StdStringStreamPrinter)
 
+    libstdcxx_printer.add_version('std::chrono::', 'duration',
+                                  StdChronoDurationPrinter)
+    libstdcxx_printer.add_version('std::chrono::', 'time_point',
+                                  StdChronoTimePointPrinter)
+
     # std::regex components
     libstdcxx_printer.add_version('std::__detail::', '_State',
                                   StdRegexStatePrinter)
@@ -2336,6 +2682,25 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add_version('std::', 'weak_ordering', StdCmpCatPrinter)
     libstdcxx_printer.add_version('std::', 'strong_ordering', StdCmpCatPrinter)
     libstdcxx_printer.add_version('std::', 'span', StdSpanPrinter)
+    libstdcxx_printer.add_version('std::', 'basic_format_args',
+                                  StdFormatArgsPrinter)
+    for c in ['day','month','year','weekday','weekday_indexed','weekday_last',
+              'month_day','month_day_last','month_weekday','month_weekday_last',
+              'year_month','year_month_day','year_month_day_last',
+              'year_month_weekday','year_month_weekday_last', 'hh_mm_ss']:
+        libstdcxx_printer.add_version('std::chrono::', c,
+                                      StdChronoCalendarPrinter)
+    libstdcxx_printer.add_version('std::chrono::', 'time_zone',
+                                  StdChronoTimeZonePrinter)
+    libstdcxx_printer.add_version('std::chrono::', 'time_zone_link',
+                                  StdChronoTimeZonePrinter)
+    libstdcxx_printer.add_version('std::chrono::', 'zoned_time',
+                                  StdChronoZonedTimePrinter)
+    libstdcxx_printer.add_version('std::chrono::', 'leap_second',
+                                  StdChronoLeapSecondPrinter)
+    libstdcxx_printer.add_version('std::chrono::', 'tzdb', StdChronoTzdbPrinter)
+    #libstdcxx_printer.add_version('std::chrono::(anonymous namespace)', 'Rule',
+    #                              StdChronoTimeZoneRulePrinter)
 
     # Extensions.
     libstdcxx_printer.add_version('__gnu_cxx::', 'slist', StdSlistPrinter)

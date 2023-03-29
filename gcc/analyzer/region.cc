@@ -1,5 +1,5 @@
 /* Regions of memory.
-   Copyright (C) 2019-2022 Free Software Foundation, Inc.
+   Copyright (C) 2019-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -40,11 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "diagnostic-color.h"
 #include "diagnostic-metadata.h"
-#include "tristate.h"
 #include "bitmap.h"
-#include "selftest.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/analyzer-logging.h"
 #include "ordered-hash-map.h"
@@ -674,6 +671,18 @@ region::symbolic_p () const
   return get_kind () == RK_SYMBOLIC;
 }
 
+/* Return true if this region is known to be zero bits in size.  */
+
+bool
+region::empty_p () const
+{
+  bit_size_t num_bits;
+  if (get_bit_size (&num_bits))
+    if (num_bits == 0)
+      return true;
+  return false;
+}
+
 /* Return true if this is a region for a decl with name DECL_NAME.
    Intended for use when debugging (for assertions and conditional
    breakpoints).  */
@@ -1053,6 +1062,17 @@ root_region::dump_to_pp (pretty_printer *pp, bool simple) const
     pp_string (pp, "root_region()");
 }
 
+/* class thread_local_region : public space_region.  */
+
+void
+thread_local_region::dump_to_pp (pretty_printer *pp, bool simple) const
+{
+  if (simple)
+    pp_string (pp, "thread_local_region");
+  else
+    pp_string (pp, "thread_local_region()");
+}
+
 /* class symbolic_region : public map_region.  */
 
 /* symbolic_region's ctor.  */
@@ -1186,6 +1206,9 @@ decl_region::get_svalue_for_initializer (region_model_manager *mgr) const
       /* If we have an "extern" decl then there may be an initializer in
 	 another TU.  */
       if (DECL_EXTERNAL (m_decl))
+	return NULL;
+
+      if (empty_p ())
 	return NULL;
 
       /* Implicit initialization to zero; use a compound_svalue for it.
@@ -1812,6 +1835,17 @@ var_arg_region::get_frame_region () const
 {
   gcc_assert (get_parent_region ());
   return as_a <const frame_region *> (get_parent_region ());
+}
+
+/* class errno_region : public region.  */
+
+void
+errno_region::dump_to_pp (pretty_printer *pp, bool simple) const
+{
+  if (simple)
+    pp_string (pp, "errno_region");
+  else
+    pp_string (pp, "errno_region()");
 }
 
 /* class unknown_region : public region.  */

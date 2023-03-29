@@ -1,5 +1,5 @@
 /* Make uname2c.h from various sources.
-   Copyright (C) 2005-2022 Free Software Foundation, Inc.
+   Copyright (C) 2005-2023 Free Software Foundation, Inc.
    Contributed by Jakub Jelinek <jakub@redhat.com>
 
 This program is free software; you can redistribute it and/or modify it
@@ -69,7 +69,7 @@ struct entry { const char *name; unsigned long codepoint; };
 static struct entry *entries;
 static unsigned long num_allocated, num_entries;
 
-/* Unicode 14 Table 4-8.  */
+/* Unicode 15 Table 4-8.  */
 struct generated {
   const char *prefix;
   /* max_high is a workaround for UnicodeData.txt inconsistencies
@@ -81,13 +81,14 @@ struct generated {
 static struct generated generated_ranges[] =
 { { "HANGUL SYLLABLE ", 0xac00, 0xd7a3, 0, 0, 0 }, /* NR1 rule */
   { "CJK UNIFIED IDEOGRAPH-", 0x3400, 0x4dbf, 0, 1, 0 }, /* NR2 rules */
-  { "CJK UNIFIED IDEOGRAPH-", 0x4e00, 0x9ffc, 0x9fff, 1, 0 },
-  { "CJK UNIFIED IDEOGRAPH-", 0x20000, 0x2a6dd, 0x2a6df, 1, 0 },
-  { "CJK UNIFIED IDEOGRAPH-", 0x2a700, 0x2b734, 0x2b738, 1, 0 },
+  { "CJK UNIFIED IDEOGRAPH-", 0x4e00, 0x9fff, 0, 1, 0 },
+  { "CJK UNIFIED IDEOGRAPH-", 0x20000, 0x2a6df, 0, 1, 0 },
+  { "CJK UNIFIED IDEOGRAPH-", 0x2a700, 0x2b739, 0, 1, 0 },
   { "CJK UNIFIED IDEOGRAPH-", 0x2b740, 0x2b81d, 0, 1, 0 },
   { "CJK UNIFIED IDEOGRAPH-", 0x2b820, 0x2cea1, 0, 1, 0 },
   { "CJK UNIFIED IDEOGRAPH-", 0x2ceb0, 0x2ebe0, 0, 1, 0 },
   { "CJK UNIFIED IDEOGRAPH-", 0x30000, 0x3134a, 0, 1, 0 },
+  { "CJK UNIFIED IDEOGRAPH-", 0x31350, 0x323af, 0, 1, 0 },
   { "TANGUT IDEOGRAPH-", 0x17000, 0x187f7, 0, 2, 0 },
   { "TANGUT IDEOGRAPH-", 0x18d00, 0x18d08, 0, 2, 0 },
   { "KHITAN SMALL SCRIPT CHARACTER-", 0x18b00, 0x18cd5, 0, 3, 0 },
@@ -651,7 +652,7 @@ write_copyright (void)
 {
   static const char copyright[] = "\
 /* Unicode name to codepoint.\n\
-   Copyright (C) 2005-2022 Free Software Foundation, Inc.\n\
+   Copyright (C) 2005-2023 Free Software Foundation, Inc.\n\
 \n\
    This program is free software; you can redistribute it and/or modify it\n\
    under the terms of the GNU General Public License as published by the\n\
@@ -668,7 +669,7 @@ write_copyright (void)
    <http://www.gnu.org/licenses/>.\n\
 \n\
 \n\
-   Copyright (C) 1991-2021 Unicode, Inc.  All rights reserved.\n\
+   Copyright (C) 1991-2022 Unicode, Inc.  All rights reserved.\n\
    Distributed under the Terms of Use in\n\
    http://www.unicode.org/copyright.html.\n\
 \n\

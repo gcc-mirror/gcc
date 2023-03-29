@@ -1,3 +1,5 @@
+/* { dg-additional-options "-Wno-analyzer-too-complex" } */
+
 typedef __SIZE_TYPE__ size_t;
 
 extern void *calloc (size_t __nmemb, size_t __size)

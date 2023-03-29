@@ -75,4 +75,5 @@ main ()
 
 /* { dg-final { scan-tree-dump-times "LOOP VECTORIZED" 5 "vect" { target vect_condition } } } */
 /* { dg-final { scan-tree-dump-times "condition expression based on integer induction." 5 "vect" { target vect_condition xfail vect_fold_extract_last } } } */
-/* { dg-final { scan-tree-dump-times "optimizing condition reduction with FOLD_EXTRACT_LAST" 5 "vect" { target vect_fold_extract_last } } } */
+/* { dg-final { scan-tree-dump-times "optimizing condition reduction with FOLD_EXTRACT_LAST" 5 "vect" { target { { ! vect_multiple_sizes } && vect_fold_extract_last } } } } */
+/* { dg-final { scan-tree-dump "optimizing condition reduction with FOLD_EXTRACT_LAST" "vect" { target { vect_multiple_sizes && vect_fold_extract_last } } } } */

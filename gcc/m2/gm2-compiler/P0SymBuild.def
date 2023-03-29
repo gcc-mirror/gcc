@@ -1,0 +1,134 @@
+(* P0SymBuild.def pass 0 symbol creation.
+
+Copyright (C) 2011-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE P0SymBuild ;
+
+(*
+    Title      : P0SymBuild
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Sat Sep  6 11:48:06 2014
+    Revision   : $Version$
+    Description: provides an interface to the construction of symbols during pass 0.
+*)
+
+FROM NameKey IMPORT Name ;
+
+
+(*
+   EndModule - shutdown the module and create definition symbols for all imported
+               modules.
+*)
+
+PROCEDURE EndModule ;
+
+
+(*
+   RegisterImports - remember all imported modules.
+*)
+
+PROCEDURE RegisterImports ;
+
+
+(*
+   RegisterProgramModule - register the top of stack as a program module.
+                           It starts a new module scope.
+*)
+
+PROCEDURE RegisterProgramModule ;
+
+
+(*
+   RegisterImplementationModule - register the top of stack as an implementation module.
+                                  It starts a new module scope.
+*)
+
+PROCEDURE RegisterImplementationModule ;
+
+
+(*
+   RegisterDefinitionModule - register the top of stack as a definition module.
+                              It starts a new module scope.
+*)
+
+PROCEDURE RegisterDefinitionModule (forC: BOOLEAN) ;
+
+
+(*
+   RegisterInnerModule - register the top of stack as an inner module, this module name
+                         will be removed from the list of outstanding imports in the
+                         current module block.
+                         It starts a new module scope.
+*)
+
+PROCEDURE RegisterInnerModule ;
+
+
+(*
+   RegisterInnerImports -
+*)
+
+PROCEDURE RegisterInnerImports ;
+
+
+(*
+   RegisterProcedure - register the top of stack as a procedure.
+*)
+
+PROCEDURE RegisterProcedure ;
+
+
+(*
+   EndBuildProcedure - ends building a Procedure.
+*)
+
+PROCEDURE EndProcedure ;
+
+
+(*
+   P0Init -
+*)
+
+PROCEDURE P0Init ;
+
+
+(*
+   P1Init -
+*)
+
+PROCEDURE P1Init ;
+
+
+(*
+   EnterBlock -
+*)
+
+PROCEDURE EnterBlock (n: Name) ;
+
+
+(*
+   LeaveBlock -
+*)
+
+PROCEDURE LeaveBlock ;
+
+
+END P0SymBuild.

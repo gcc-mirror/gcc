@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -msse2" } */
+/* { dg-options "-O1 -msse2 -mno-sse4" } */
 
 #include <x86intrin.h>
 

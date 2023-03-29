@@ -1,0 +1,185 @@
+(* M2MetaError.def provides a set of high level error routines.
+
+Copyright (C) 2008-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2MetaError ;
+
+(*
+    Title      : M2MetaError
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Tue Oct 14 12:11:13 2008
+    Revision   : $Version$
+    Description: provides a set of high level error routines.  These
+                 routines utilise M2Error and provides the programmer
+                 with an easier method to obtain useful symbol table
+                 information.
+*)
+
+FROM DynamicStrings IMPORT String ;
+FROM NameKey IMPORT Name ;
+
+EXPORT QUALIFIED MetaError0, MetaError1, MetaError2, MetaError3, MetaError4,
+                 MetaErrors1, MetaErrors2, MetaErrors3, MetaErrors4,
+                 MetaErrorT0, MetaErrorT1, MetaErrorT2, MetaErrorT3, MetaErrorT4,
+                 MetaErrorsT1, MetaErrorsT2, MetaErrorsT3, MetaErrorsT4,
+                 MetaErrorString0,
+                 MetaErrorString1, MetaErrorString2, MetaErrorString3,
+                 MetaErrorString4,
+                 MetaErrorStringT0, MetaErrorStringT1, MetaErrorStringT2,
+                 MetaErrorStringT3, MetaErrorStringT4,
+                 MetaErrorN1, MetaErrorN2, MetaErrorNT0, MetaErrorNT1, MetaErrorNT2,
+                 MetaString0, MetaString1, MetaString2, MetaString3, MetaString4 ;
+
+
+(*
+    All the procedures below expect the s, s1, s2, s3, s4 to be symbols
+    and m, m1, m2, m3 are error messages and format specifiers.
+    By default all substitutions are enclosed in quotes.  However there
+    are a few format modifiers which disable quotations.
+    The format specifiers are:
+
+    {%1a}     symbol name for the first symbol.
+    {%1q}     qualified name for the first symbol.
+    {%1t}     type name for the first symbol.
+    {%1ts}    skips type pseudonyms.
+    {%1d}     symbol description
+    {%1td}    type name or symbol description
+    {%1Td}    get the type of the first symbol and describe it.
+    {%1Sd}    skip the type pseudonyms of the first symbol and describe it.
+    {%1ua}    force no quotes after substituting the text.
+
+    {%1D}     sets the error message to where symbol 1 was declared.
+              The declaration will choose the definition module, then
+              implementation (or program) module.
+    {%1M}     sets the error message to where symbol 1 was declared.
+              The declaration will choose the implementation or program
+              module and if these do not exist then it falls back to
+              the definition module.
+    {%1U}     sets the error message to where symbol 1 was first used.
+    {%A}      abort, issue non recoverable error message (this should
+              not used for internal errors).
+    {%E}      error (default recoverable error).
+    {%W}      message is a warning, not an error.
+    {%O}      message is a note, not an error.
+    {%Kword}  the string word is quoted and rendered as a keyword.
+    {%kword}  the string word is unquoted and rendered as a keyword.
+    {%C}      chain this error on the previous rooted error.
+    {%R}      this error will be the root of the future chained errors.
+    {%n}      decimal number.  Not quoted.
+    {%N}      count (number), for example, 1st, 2nd, 3rd, 4th.  Not quoted.
+    {%X}      push contents of the output string onto the string stack.
+    {%Yname}  place contents of dictionary entry name onto the output string.
+    {%Zname}  replace dictionary entry name for the output string.
+              Pop contents of the string stack onto the output string.
+    {%Q}      remove all entries in the dictionary.
+    {%P}      push the current color state.
+    {%p}      pop the current color state.
+    {%Ffilename} the string filename will be rendered using the filename color.
+    {%ccolor} change color into one of:  none, fixit-delete, fixit-insert,
+              locus, filename, type, error, warning, note.
+    %<        open quote and color.
+    %>        close quote and color.
+    %%        %
+    %{        {
+    %}        }
+    the error messages may also embed optional strings such as:
+
+    {%1a:this string is emitted if the symbol name is non null}
+    {!%1a:this string is emitted if the symbol name is null}
+    {!%1a:{%1d}}
+           if the symbol name does not exist then print a description
+           of the symbol.
+    {%1atd} was incompatible with the return type of the procedure
+           means print the symbol name (if null then print the type name
+           if null then print out the description) followed by the
+           string "was incompatible with the return type of the procedure"
+
+    Note all replaced names or descriptions are enclosed in quotes, like:
+    'foo', which matches the behaviour of gcc.  Also note temporary names
+    are treated as null.  Finally the order of format specifiers does
+    matter, {%1td} means get type name and use it if non null, otherwise
+    describe the symbol.  If ordinary text is copied then it is not quoted.
+
+   The color strings are: "filename", "quote", "error", "warning", "note",
+                          "locus", "insert", "delete", "type", "range1", range2".
+*)
+
+(*
+   ebnf := { percent | lbra | any } =:
+
+   percent := '%' anych =:
+
+   lbra := '{' [ '!' ] percenttoken '}' =:
+
+   percenttoken := '%' ( '1' op | '2' op | '3' op | '4' op ) =:
+
+   op := {'a'|'q'|'t'|'d'|'n'|'s'|'D'|'U'|'E'|'W'} then =:
+
+   then := [ ':' ebnf ] =:
+*)
+
+PROCEDURE MetaError0 (m: ARRAY OF CHAR) ;
+PROCEDURE MetaError1 (m: ARRAY OF CHAR; s: CARDINAL) ;
+PROCEDURE MetaError2 (m: ARRAY OF CHAR; s1, s2: CARDINAL) ;
+PROCEDURE MetaError3 (m: ARRAY OF CHAR; s1, s2, s3: CARDINAL) ;
+PROCEDURE MetaError4 (m: ARRAY OF CHAR; s1, s2, s3, s4: CARDINAL) ;
+
+PROCEDURE MetaErrors1 (m1, m2: ARRAY OF CHAR; s: CARDINAL) ;
+PROCEDURE MetaErrors2 (m1, m2: ARRAY OF CHAR; s1, s2: CARDINAL) ;
+PROCEDURE MetaErrors3 (m1, m2: ARRAY OF CHAR; s1, s2, s3: CARDINAL) ;
+PROCEDURE MetaErrors4 (m1, m2: ARRAY OF CHAR; s1, s2, s3, s4: CARDINAL) ;
+
+PROCEDURE MetaErrorT0 (tok: CARDINAL; m: ARRAY OF CHAR) ;
+PROCEDURE MetaErrorT1 (tok: CARDINAL; m: ARRAY OF CHAR; s: CARDINAL) ;
+PROCEDURE MetaErrorT2 (tok: CARDINAL; m: ARRAY OF CHAR; s1, s2: CARDINAL) ;
+PROCEDURE MetaErrorT3 (tok: CARDINAL; m: ARRAY OF CHAR; s1, s2, s3: CARDINAL) ;
+PROCEDURE MetaErrorT4 (tok: CARDINAL; m: ARRAY OF CHAR; s1, s2, s3, s4: CARDINAL) ;
+
+PROCEDURE MetaErrorsT1 (tok: CARDINAL; m1, m2: ARRAY OF CHAR; s: CARDINAL) ;
+PROCEDURE MetaErrorsT2 (tok: CARDINAL; m1, m2: ARRAY OF CHAR; s1, s2: CARDINAL) ;
+PROCEDURE MetaErrorsT3 (tok: CARDINAL; m1, m2: ARRAY OF CHAR; s1, s2, s3: CARDINAL) ;
+PROCEDURE MetaErrorsT4 (tok: CARDINAL; m1, m2: ARRAY OF CHAR; s1, s2, s3, s4: CARDINAL) ;
+
+PROCEDURE MetaErrorString0 (m: String) ;
+PROCEDURE MetaErrorString1 (m: String; s: CARDINAL) ;
+PROCEDURE MetaErrorString2 (m: String; s1, s2: CARDINAL) ;
+PROCEDURE MetaErrorString3 (m: String; s1, s2, s3: CARDINAL) ;
+PROCEDURE MetaErrorString4 (m: String; s1, s2, s3, s4: CARDINAL) ;
+
+PROCEDURE MetaErrorStringT0 (tok: CARDINAL; m: String) ;
+PROCEDURE MetaErrorStringT1 (tok: CARDINAL; m: String; s: CARDINAL) ;
+PROCEDURE MetaErrorStringT2 (tok: CARDINAL; m: String; s1, s2: CARDINAL) ;
+PROCEDURE MetaErrorStringT3 (tok: CARDINAL; m: String; s1, s2, s3: CARDINAL) ;
+PROCEDURE MetaErrorStringT4 (tok: CARDINAL; m: String; s1, s2, s3, s4: CARDINAL) ;
+
+PROCEDURE MetaErrorN1 (m: ARRAY OF CHAR; n: Name) ;
+PROCEDURE MetaErrorN2 (m: ARRAY OF CHAR; n1, n2: Name) ;
+PROCEDURE MetaErrorNT0 (tok: CARDINAL; format: ARRAY OF CHAR) ;
+PROCEDURE MetaErrorNT1 (tok: CARDINAL; format: ARRAY OF CHAR; name: Name) ;
+PROCEDURE MetaErrorNT2 (tok: CARDINAL; format: ARRAY OF CHAR; name1, name2: Name) ;
+
+PROCEDURE MetaString0 (m: String) : String ;
+PROCEDURE MetaString1 (m: String; s: CARDINAL) : String ;
+PROCEDURE MetaString2 (m: String; s1, s2: CARDINAL) : String ;
+PROCEDURE MetaString3 (m: String; s1, s2, s3: CARDINAL) : String ;
+PROCEDURE MetaString4 (m: String; s1, s2, s3, s4: CARDINAL) : String ;
+
+END M2MetaError.

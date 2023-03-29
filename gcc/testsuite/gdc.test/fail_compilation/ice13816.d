@@ -1,10 +1,12 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice13816.d(15): Error: alias `ice13816.ItemProperty!().ItemProperty` recursive alias declaration
-fail_compilation/ice13816.d(20): Error: template instance `ice13816.ItemProperty!()` error instantiating
+fail_compilation/ice13816.d(17): Error: template instance `TypeTuple!(ItemProperty!())` recursive template expansion
+fail_compilation/ice13816.d(17): Error: alias `ice13816.ItemProperty!().ItemProperty` recursive alias declaration
+fail_compilation/ice13816.d(22): Error: template instance `ice13816.ItemProperty!()` error instantiating
 ---
 */
+
 
 alias TypeTuple(T...) = T;
 

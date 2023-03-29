@@ -1,0 +1,1681 @@
+--
+-- m2-3.bnf grammar and associated actions for pass 3.
+--
+-- Copyright (C) 2001-2023 Free Software Foundation, Inc.
+-- Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+--
+-- This file is part of GNU Modula-2.
+--
+-- GNU Modula-2 is free software; you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation; either version 3, or (at your option)
+-- any later version.
+--
+-- GNU Modula-2 is distributed in the hope that it will be useful, but
+-- WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-- General Public License for more details.
+--
+-- You should have received a copy of the GNU General Public License
+-- along with GNU Modula-2; see the file COPYING3.  If not see
+-- <http://www.gnu.org/licenses/>.
+% module P3Build begin
+(* output from m2-3.bnf, automatically generated do not edit if these
+   are the top two lines in the file.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING.  If not,
+see <https://www.gnu.org/licenses/>.  *)
+
+IMPLEMENTATION MODULE P3Build ;
+
+FROM M2LexBuf IMPORT currentstring, currenttoken, GetToken, InsertToken,
+                     InsertTokenAndRewind, GetTokenNo, PrintTokenNo, MakeVirtualTok,
+                     UnknownTokenNo ;
+
+FROM M2Error IMPORT ErrorStringAt, WriteFormat1, WriteFormat2 ;
+FROM NameKey IMPORT NulName, Name, makekey ;
+FROM DynamicStrings IMPORT String, InitString, KillString, Mark, ConCat, ConCatChar ;
+FROM M2Printf IMPORT printf0, printf1 ;
+FROM M2Debug IMPORT Assert ;
+FROM P2SymBuild IMPORT BuildString, BuildNumber ;
+FROM M2MetaError IMPORT MetaErrorT0 ;
+
+FROM M2Reserved IMPORT tokToTok, toktype,
+                       NulTok, ImportTok, ExportTok, QualifiedTok, UnQualifiedTok,
+                       EqualTok, HashTok, LessGreaterTok, LessTok, LessEqualTok,
+                       GreaterTok, GreaterEqualTok, InTok, PlusTok, MinusTok,
+                       OrTok, TimesTok, DivTok, DivideTok, ModTok, RemTok,
+                       AndTok, AmbersandTok, PeriodPeriodTok, ByTok ;
+
+FROM M2Quads IMPORT PushT, PopT, PushTF, PopTF, PopNothing, Annotate,
+                    PushTtok, PushTFtok, PopTtok, PopTFtok, OperandTok,
+                    BuildModuleStart,
+                    StartBuildDefFile, StartBuildModFile,
+                    EndBuildFile,
+                    StartBuildInit,
+                    EndBuildInit,
+                    StartBuildFinally,
+                    EndBuildFinally,
+                    BuildExceptInitial,
+                    BuildExceptFinally,
+                    BuildExceptProcedure,
+                    BuildReThrow,
+                    BuildProcedureStart,
+                    BuildProcedureBegin,
+                    BuildProcedureEnd,
+                    BuildScaffold,
+      	       	    BuildStmtNote,
+                    BuildFunctionCall, BuildConstFunctionCall,
+                    BuildBinaryOp, BuildUnaryOp, BuildRelOp, BuildNot,
+      	       	    BuildEmptySet, BuildInclRange, BuildInclBit,
+                    BuildSetStart, BuildSetEnd,
+                    PushLineNo, BuildSizeCheckStart,
+                    BuildBuiltinConst, BuildBuiltinTypeInfo,
+                    BuildAssignment, BuildAssignConstant,
+                    BuildAlignment,
+                    BuildRepeat, BuildUntil,
+                    BuildWhile, BuildDoWhile, BuildEndWhile,
+                    BuildLoop, BuildExit, BuildEndLoop,
+                    BuildThenIf, BuildElse, BuildEndIf,
+                    BuildForToByDo, BuildPseudoBy, BuildEndFor,
+                    BuildElsif1, BuildElsif2,
+                    BuildProcedureCall, BuildReturn, BuildNulExpression,
+                    CheckBuildFunction,
+                    StartBuildWith, EndBuildWith,
+                    BuildInline,
+                    BuildCaseStart,
+                    BuildCaseOr,
+                    BuildCaseElse,
+                    BuildCaseEnd,
+                    BuildCaseCheck,
+                    BuildCaseStartStatementSequence,
+                    BuildCaseEndStatementSequence,
+                    BuildCaseList,
+                    BuildCaseRange, BuildCaseEquality,
+                    BuildConstructorStart,
+                    BuildConstructorEnd,
+                    SilentBuildConstructorStart,
+                    NextConstructorField, BuildTypeForConstructor,
+                    BuildComponentValue,
+                    BeginVarient, EndVarient, ElseVarient,
+                    BeginVarientList, EndVarientList,
+                    RecordOp,
+                    BuildNulParam,
+                    BuildDesignatorRecord,
+                    BuildDesignatorArray,
+                    BuildDesignatorPointer,
+                    BuildBooleanVariable,
+                    CheckWithReference,
+                    BuildModulePriority,
+                    BuildRetry,
+                    DisplayStack,
+                    AddVarientRange, AddVarientEquality,
+                    BeginVarient, EndVarient, BeginVarientList, EndVarientList,
+                    PushInConstExpression, PopInConstExpression, IsInConstExpression,
+                    BuildDefaultFieldAlignment, BuildPragmaField,
+                    IsAutoPushOn, PushAutoOff, PushAutoOn, PopAuto ;
+
+FROM P3SymBuild IMPORT P3StartBuildProgModule,
+                       P3EndBuildProgModule,
+
+                       P3StartBuildDefModule,
+                       P3EndBuildDefModule,
+
+                       P3StartBuildImpModule,
+                       P3EndBuildImpModule,
+
+                       StartBuildInnerModule,
+                       EndBuildInnerModule,
+
+                       CheckImportListOuterModule,
+                       CheckCanBeImported,
+                       StartBuildProcedure,
+                       BuildProcedureHeading,
+                       EndBuildProcedure,
+                       BuildVarAtAddress,
+                       BuildConst,
+                       BuildSubrange,
+                       BuildNulName,
+                       BuildOptArgInitializer ;
+
+FROM SymbolTable IMPORT MakeGnuAsm, PutGnuAsmVolatile, PutGnuAsm, PutGnuAsmInput,
+                        PutGnuAsmOutput, PutGnuAsmTrash,
+                        PutGnuAsmVolatile, PutGnuAsmSimple,
+                        MakeRegInterface,
+                        PutRegInterface,
+                        IsRegInterface, IsGnuAsmVolatile, IsGnuAsm,
+                        GetCurrentModule,
+                        GetSymName, GetType, SkipType,
+                        NulSym,
+                        StartScope, EndScope,
+                        PutIncluded,
+                        IsVarParam, IsProcedure, IsDefImp, IsModule, IsProcType,
+                        IsRecord,
+                        RequestSym, IsExported,
+                        GetSym, GetLocalSym ;
+
+FROM M2Batch IMPORT IsModuleKnown ;
+
+FROM M2CaseList IMPORT BeginCaseList, EndCaseList ;
+
+IMPORT M2Error ;
+
+CONST
+   Debugging = FALSE ;
+   Pass1     = FALSE ;          (* permanently disabled for the time being *)
+   Pass2     = FALSE ;
+   Pass3     =  TRUE ;          (* permanently disabled for the time being *)
+   DebugAsm  = FALSE ;
+
+VAR
+   WasNoError: BOOLEAN ;
+
+
+PROCEDURE ErrorString (s: String) ;
+BEGIN
+   ErrorStringAt(s, GetTokenNo ()) ;
+   WasNoError := FALSE
+END ErrorString ;
+
+
+PROCEDURE ErrorArray (a: ARRAY OF CHAR) ;
+BEGIN
+   ErrorString(InitString(a))
+END ErrorArray ;
+
+
+% declaration P3Build begin
+
+
+(*
+   SyntaxError - after a syntax error we skip all tokens up until we reach
+                 a stop symbol.
+*)
+
+PROCEDURE SyntaxError (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   DescribeError ;
+   IF Debugging
+   THEN
+      printf0('\nskipping token *** ')
+   END ;
+   (* --fixme-- this assumes a 32 bit word size.  *)
+   WHILE NOT (((ORD(currenttoken)<32)  AND (currenttoken IN stopset0)) OR
+              ((ORD(currenttoken)>=32) AND (ORD(currenttoken)<64) AND (currenttoken IN stopset1)) OR
+              ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)))
+   DO
+      GetToken
+   END ;
+   IF Debugging
+   THEN
+      printf0(' ***\n')
+   END
+END SyntaxError ;
+
+
+(*
+   SyntaxCheck -
+*)
+
+PROCEDURE SyntaxCheck (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   (* --fixme-- this assumes a 32 bit word size.  *)
+   IF NOT (((ORD(currenttoken)<32)  AND (currenttoken IN stopset0)) OR
+     	   ((ORD(currenttoken)>=32) AND (ORD(currenttoken)<64) AND (currenttoken IN stopset1)) OR
+           ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)))
+   THEN
+      SyntaxError(stopset0, stopset1, stopset2)
+   END
+END SyntaxCheck ;
+
+
+(*
+   WarnMissingToken - generates a warning message about a missing token, t.
+*)
+
+PROCEDURE WarnMissingToken (t: toktype) ;
+VAR
+   s0 : SetOfStop0 ;
+   s1 : SetOfStop1 ;
+   s2 : SetOfStop2 ;
+   str: String ;
+BEGIN
+   s0 := SetOfStop0{} ;
+   s1 := SetOfStop1{} ;
+   s2 := SetOfStop2{} ;
+   IF ORD(t)<32
+   THEN
+      s0 := SetOfStop0{t}
+   ELSIF ORD(t)<64
+   THEN
+      s1 := SetOfStop1{t}
+   ELSE
+      s2 := SetOfStop2{t}
+   END ;
+   str := DescribeStop(s0, s1, s2) ;
+
+   str := ConCat(InitString('syntax error,'), Mark(str)) ;
+   ErrorStringAt (str, GetTokenNo ())
+END WarnMissingToken ;
+
+
+(*
+   MissingToken - generates a warning message about a missing token, t.
+*)
+
+PROCEDURE MissingToken (t: toktype) ;
+BEGIN
+   WarnMissingToken(t) ;
+   IF (t#identtok) AND (t#integertok) AND (t#realtok) AND (t#stringtok)
+   THEN
+      IF Debugging
+      THEN
+         printf0('inserting token\n')
+      END ;
+      InsertToken(t)
+   END
+END MissingToken ;
+
+
+(*
+   CheckAndInsert -
+*)
+
+PROCEDURE CheckAndInsert (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) : BOOLEAN ;
+BEGIN
+   IF ((ORD(t)<32) AND (t IN stopset0)) OR
+      ((ORD(t)>=32) AND (ORD(t)<64) AND (t IN stopset1)) OR
+      ((ORD(t)>=64) AND (t IN stopset2))
+   THEN
+      WarnMissingToken(t) ;
+      InsertTokenAndRewind(t) ;
+      RETURN( TRUE )
+   ELSE
+      RETURN( FALSE )
+   END
+END CheckAndInsert ;
+
+
+(*
+   InStopSet
+*)
+
+PROCEDURE InStopSet (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) : BOOLEAN ;
+BEGIN
+   IF ((ORD(t)<32) AND (t IN stopset0)) OR
+      ((ORD(t)>=32) AND (ORD(t)<64) AND (t IN stopset1)) OR
+      ((ORD(t)>=64) AND (t IN stopset2))
+   THEN
+      RETURN( TRUE )
+   ELSE
+      RETURN( FALSE )
+   END
+END InStopSet ;
+
+
+(*
+   PeepToken - peep token checks to see whether the stopset is satisfied by currenttoken
+               If it is not then it will insert a token providing the token
+               is one of ; ] ) } . OF END ,
+
+               if the stopset contains <identtok> then we do not insert a token
+*)
+
+PROCEDURE PeepToken (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   (* and again (see above re: ORD)
+    *)
+   IF (NOT (((ORD(currenttoken)<32)  AND (currenttoken IN stopset0)) OR
+     	    ((ORD(currenttoken)>=32) AND (ORD(currenttoken)<64) AND (currenttoken IN stopset1)) OR
+            ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)))) AND
+      (NOT InStopSet(identtok, stopset0, stopset1, stopset2))
+   THEN
+      (* SyntaxCheck would fail since currentoken is not part of the stopset
+         we check to see whether any of currenttoken might be a commonly omitted token *)
+      IF CheckAndInsert(semicolontok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(rsbratok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(rparatok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(rcbratok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(periodtok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(oftok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(endtok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(commatok, stopset0, stopset1, stopset2)
+      THEN
+      END
+   END
+END PeepToken ;
+
+
+(*
+   Expect -
+*)
+
+PROCEDURE Expect (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   IF currenttoken=t
+   THEN
+      GetToken ;
+      IF Pass1
+      THEN
+         PeepToken(stopset0, stopset1, stopset2)
+      END
+   ELSE
+      MissingToken(t)
+   END ;
+   SyntaxCheck(stopset0, stopset1, stopset2)
+END Expect ;
+
+
+(*
+   CompilationUnit - returns TRUE if the input was correct enough to parse
+                     in future passes.
+*)
+
+PROCEDURE CompilationUnit () : BOOLEAN ;
+BEGIN
+   WasNoError := TRUE ;
+   FileUnit(SetOfStop0{eoftok}, SetOfStop1{}, SetOfStop2{}) ;
+   RETURN( WasNoError )
+END CompilationUnit ;
+
+
+(*
+   Ident - error checking varient of Ident
+*)
+
+PROCEDURE Ident (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   IF IsAutoPushOn()
+   THEN
+      PushTFtok (makekey (currentstring), identtok, GetTokenNo ())
+      (*  ; MetaErrorT0 (GetTokenNo(), "{%W}an ident")  *)
+   END ;
+   Expect(identtok, stopset0, stopset1, stopset2)
+END Ident ;
+
+
+(*
+   string -
+*)
+
+PROCEDURE string (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   IF IsAutoPushOn()
+   THEN
+      PushTFtok(makekey(currentstring), stringtok, GetTokenNo ()) ;
+      BuildString
+   END ;
+   Expect(stringtok, stopset0, stopset1, stopset2)
+END string ;
+
+
+(*
+   Integer -
+*)
+
+PROCEDURE Integer (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   IF IsAutoPushOn()
+   THEN
+      PushTFtok (makekey(currentstring), integertok, GetTokenNo ()) ;
+      BuildNumber
+   END ;
+   Expect(integertok, stopset0, stopset1, stopset2)
+END Integer ;
+
+
+(*
+   Real -
+*)
+
+PROCEDURE Real (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   IF IsAutoPushOn()
+   THEN
+      PushTFtok (makekey(currentstring), realtok, GetTokenNo ()) ;
+      BuildNumber
+   END ;
+   Expect(realtok, stopset0, stopset1, stopset2)
+END Real ;
+
+% module P3Build end
+END P3Build.
+% rules
+error       'ErrorArray' 'ErrorString'
+tokenfunc   'currenttoken'
+
+token   ''                eoftok      -- internal token
+token   '+'               plustok
+token   '-'               minustok
+token   '*'               timestok
+token   '/'               dividetok
+token   ':='              becomestok
+token   '&'               ambersandtok
+token   "."               periodtok
+token   ","               commatok
+token   ";"               semicolontok
+token   '('               lparatok
+token   ')'               rparatok
+token   '['               lsbratok   -- left  square brackets
+token   ']'               rsbratok   -- right square brackets
+token   '{'               lcbratok   -- left  curly brackets
+token   '}'               rcbratok   -- right curly brackets
+token   '^'               uparrowtok
+token   "'"               singlequotetok
+token   '='               equaltok
+token   '#'               hashtok
+token   '<'               lesstok
+token   '>'               greatertok
+token   '<>'              lessgreatertok
+token   '<='              lessequaltok
+token   '>='              greaterequaltok
+token   '<*'              ldirectivetok
+token   '*>'              rdirectivetok
+token   '..'              periodperiodtok
+token   ':'               colontok
+token   '"'               doublequotestok
+token   '|'               bartok
+token   'AND'             andtok
+token   'ARRAY'           arraytok
+token   'BEGIN'           begintok
+token   'BY'              bytok
+token   'CASE'            casetok
+token   'CONST'           consttok
+token   'DEFINITION'      definitiontok
+token   'DIV'             divtok
+token   'DO'              dotok
+token   'ELSE'            elsetok
+token   'ELSIF'           elsiftok
+token   'END'             endtok
+token   'EXCEPT'          excepttok
+token   'EXIT'            exittok
+token   'EXPORT'          exporttok
+token   'FINALLY'         finallytok
+token   'FOR'             fortok
+token   'FROM'            fromtok
+token   'IF'              iftok
+token   'IMPLEMENTATION'  implementationtok
+token   'IMPORT'          importtok
+token   'IN'              intok
+token   'LOOP'            looptok
+token   'MOD'             modtok
+token   'MODULE'          moduletok
+token   'NOT'             nottok
+token   'OF'              oftok
+token   'OR'              ortok
+token   'PACKEDSET'       packedsettok
+token   'POINTER'         pointertok
+token   'PROCEDURE'       proceduretok
+token   'QUALIFIED'       qualifiedtok
+token   'UNQUALIFIED'     unqualifiedtok
+token   'RECORD'          recordtok
+token   'REM'             remtok
+token   'REPEAT'          repeattok
+token   'RETRY'           retrytok
+token   'RETURN'          returntok
+token   'SET'             settok
+token   'THEN'            thentok
+token   'TO'              totok
+token   'TYPE'            typetok
+token   'UNTIL'           untiltok
+token   'VAR'             vartok
+token   'WHILE'           whiletok
+token   'WITH'            withtok
+token   'ASM'             asmtok
+token   'VOLATILE'        volatiletok
+token   '...'             periodperiodperiodtok
+token   '__DATE__'        datetok
+token   '__LINE__'        linetok
+token   '__FILE__'        filetok
+token   '__ATTRIBUTE__'   attributetok
+token   '__BUILTIN__'     builtintok
+token   '__INLINE__'      inlinetok
+token   'integer number'  integertok
+token   'identifier'      identtok
+token   'real number'     realtok
+token   'string'          stringtok
+
+special Ident             first { < identtok > } follow { }
+special Integer           first { < integertok > } follow { }
+special Real              first { < realtok > } follow { }
+special string            first { < stringtok > } follow { }
+
+BNF
+
+-- the following are provided by the module m2flex and also handbuild procedures below
+-- Ident := Letter { ( Letter | Digit ) } =:
+-- Integer := Digit { Digit } | OctalDigit { OctalDigit } ( " B " | " C " ) |
+--           Digit { HexDigit } " H " =:
+-- Real := Digit { Digit } " . " { Digit } [ ScaleFactor ] =:
+-- ScaleFactor := " E " [ ( " + " | " - " ) ] Digit { Digit } =:
+-- HexDigit := Digit | " A " | " B " | " C " | " D " | " E " | " F " =:
+-- Digit := OctalDigit | " 8 " | " 9 " =:
+-- OctalDigit := "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" =:
+-- String
+
+FileUnit :=                                                                % PushAutoOff %
+            ( DefinitionModule |
+              ImplementationOrProgramModule )                              % PopAuto %
+         =:
+
+ProgramModule :=                                                           % VAR modulet, endt: CARDINAL ; %
+                                                                           % modulet := GetTokenNo () %
+                 "MODULE"                                                  % M2Error.DefaultProgramModule %
+                                                                           % PushAutoOn %
+                  Ident                                                    % P3StartBuildProgModule %
+                                                                           % StartBuildModFile (modulet) %
+                                                                           % BuildModuleStart (modulet) %
+                                                                           % PushAutoOff %
+                  [ Priority
+                  ]
+                  ";"                                                      % BuildScaffold (modulet,
+                                                                                            GetCurrentModule ()) %
+                  { Import }
+                  Block                                                    % PushAutoOn %
+                                                                           % endt := GetTokenNo () -1 %
+                  Ident                                                    % EndBuildFile (endt) %
+                                                                           % P3EndBuildProgModule %
+                  "."                                                      % PopAuto ; PopAuto %
+                  =:
+
+ImplementationModule :=                                                    % VAR modulet, endt: CARDINAL ; %
+                                                                           % modulet := GetTokenNo () %
+                        "IMPLEMENTATION"                                   % M2Error.DefaultImplementationModule %
+                                         "MODULE"                          % PushAutoOn %
+                         Ident                                             % StartBuildModFile (modulet) %
+                                                                           % P3StartBuildImpModule %
+                                                                           % BuildModuleStart (modulet) %
+                                                                           % PushAutoOff %
+                         [ Priority
+                         ] ";"                                             % BuildScaffold (modulet,
+                                                                                            GetCurrentModule ()) %
+                         { Import }
+                         Block                                             % PushAutoOn %
+                                                                           % endt := GetTokenNo () -1 %
+                         Ident                                             % EndBuildFile (endt) %
+                                                                           % P3EndBuildImpModule %
+                         "."                                               % PopAuto ; PopAuto ; PopAuto %
+                      =:
+
+ImplementationOrProgramModule :=                                           % PushAutoOff %
+                                 ( ImplementationModule | ProgramModule )  % PopAuto %
+                              =:
+
+Number := Integer | Real =:
+
+--
+--  In pass 3 Qualident needs some care as we must only parse module.module.ident
+--  and not ident.recordfield.  We leave the ident.recordfield to be parsed by
+--  SubDesignator.  Note that Qualident is called by SubDesignator so if
+--  IsAutoPushOff then we just consume tokens.
+--
+
+Qualident :=                                                               % VAR name          : Name ;
+                                                                                 init, ip1,
+                                                                                 tokstart, tok : CARDINAL ; %
+             Ident
+                                                                           % IF IsAutoPushOn()
+                                                                             THEN
+                                                                                PopTtok(name, tokstart) ;
+										tok := tokstart ;
+                                                                                init := RequestSym (tok, name) ;
+                                                                                WHILE IsDefImp (init) OR IsModule (init) DO
+                                                                                   Expect (periodtok, stopset0, stopset1, stopset2 + SetOfStop2{identtok}) ;
+                                                                                   StartScope (init) ;
+                                                                                   Ident (stopset0, stopset1, stopset2) ;
+                                                                                   PopTtok (name, tok) ;
+                                                                                   ip1 := RequestSym (tok, name) ;
+                                                                                   PutIncluded(ip1) ;
+                                                                                   EndScope ;
+                                                                                   CheckCanBeImported(init, ip1) ;
+                                                                                   init := ip1
+                                                                                END ;
+										IF tok#tokstart
+										THEN
+										   tok := MakeVirtualTok (tokstart, tokstart, tok)
+										END ;
+                                                                                IF IsProcedure(init) OR IsProcType(init)
+                                                                                THEN
+                                                                                   PushTtok(init, tok)
+                                                                                ELSE
+                                                                                   PushTFtok(init, GetType(init), tok) ;
+                                                                                END
+                                                                             ELSE %
+             { "." Ident }                                                 % END %
+           =:
+
+ConstantDeclaration :=                                                     % VAR tokno: CARDINAL ; %
+                                                                           % PushAutoOn %
+                       ( Ident "="                                         % tokno := GetTokenNo () -1 %
+                                                                           % BuildConst %
+                         ConstExpression )                                 % BuildAssignConstant (tokno) %
+                                                                           % PopAuto %
+                     =:
+
+ConstExpression :=                                                         % VAR tokpos: CARDINAL ; %
+                                                                           % PushAutoOn %
+                   SimpleConstExpr [ Relation                              % tokpos := GetTokenNo ()-1 %
+                                              SimpleConstExpr              % BuildRelOp (tokpos) %
+                                   ]                                       % PopAuto %
+                =:
+
+Relation := "="                                                            % PushTtok(EqualTok, GetTokenNo() -1) %
+            | "#"                                                          % PushTtok(HashTok, GetTokenNo() -1) %
+            | "<>"                                                         % PushTtok(LessGreaterTok, GetTokenNo() -1) %
+            | "<"                                                          % PushTtok(LessTok, GetTokenNo() -1) %
+            | "<="                                                         % PushTtok(LessEqualTok, GetTokenNo() -1) %
+            | ">"                                                          % PushTtok(GreaterTok, GetTokenNo() -1) %
+            | ">="                                                         % PushTtok(GreaterEqualTok, GetTokenNo() -1) %
+            | "IN"                                                         % PushTtok(InTok, GetTokenNo() -1) %
+         =:
+
+SimpleConstExpr := UnaryOrConstTerm { AddOperator ConstTerm                % BuildBinaryOp %
+                                    } =:
+
+UnaryOrConstTerm := "+"                                                    % PushTtok(PlusTok, GetTokenNo() -1) %
+                    ConstTerm                                              % BuildUnaryOp %
+                    |
+                    "-"                                                    % PushTtok(MinusTok, GetTokenNo() -1) %
+                    ConstTerm                                              % BuildUnaryOp %
+                    |
+                    ConstTerm =:
+
+AddOperator :=   "+"                                                       % PushTtok(PlusTok, GetTokenNo() -1) ;
+                                                                             RecordOp %
+               | "-"                                                       % PushTtok(MinusTok, GetTokenNo() -1) ;
+                                                                             RecordOp %
+               | "OR"                                                      % PushTtok(OrTok, GetTokenNo() -1) ;
+                                                                             RecordOp %
+            =:
+
+ConstTerm := ConstFactor { MulOperator ConstFactor                         % BuildBinaryOp %
+                         } =:
+
+MulOperator := "*"                                                         % PushTtok(TimesTok, GetTokenNo() -1) ;
+                                                                             RecordOp %
+               | "/"                                                       % PushTtok(DivideTok, GetTokenNo() -1) ;
+                                                                             RecordOp %
+               | "DIV"                                                     % PushTtok(DivTok, GetTokenNo() -1) ;
+                                                                             RecordOp %
+               | "MOD"                                                     % PushTtok(ModTok, GetTokenNo() -1) ;
+                                                                             RecordOp %
+               | "REM"                                                     % PushTtok(RemTok, GetTokenNo() -1) ;
+                                                                             RecordOp %
+               | "AND"                                                     % PushTtok(AndTok, GetTokenNo() -1) ;
+                                                                             RecordOp %
+               | "&"                                                       % PushTtok(AmbersandTok, GetTokenNo() -1) ;
+                                                                             RecordOp %
+            =:
+
+ConstFactor :=                                                             % VAR tokpos: CARDINAL ; %
+               Number | ConstString | ConstSetOrQualidentOrFunction |
+               "(" ConstExpression ")" | "NOT"                             % tokpos := GetTokenNo() -1 %
+                                               ConstFactor                 % BuildNot (tokpos) %
+               | ConstAttribute =:
+
+-- to help satisfy LL1
+
+ConstString := string =:
+
+ComponentElement := ConstExpression ( ".." ConstExpression                 % PushTtok(PeriodPeriodTok, GetTokenNo() -1) %
+                                      |                                    % PushT(NulTok) %
+                                    )
+                  =:
+
+ComponentValue := ComponentElement ( 'BY' ConstExpression                  % PushTtok(ByTok, GetTokenNo() -1) %
+
+                                     |                                     % PushT(NulTok) %
+                                   )
+                =:
+
+ArraySetRecordValue := ComponentValue                                      % BuildComponentValue %
+                                      { ','                                % NextConstructorField %
+                                            ComponentValue                 % BuildComponentValue %
+                                                           }
+                     =:
+
+Constructor :=                                                             % DisplayStack %
+               '{'                                                         % BuildConstructorStart (GetTokenNo() -1) %
+                  [ ArraySetRecordValue ]                                  % BuildConstructorEnd (GetTokenNo())  %
+               '}' =:
+
+ConstSetOrQualidentOrFunction := Qualident
+                                 [ Constructor | ConstActualParameters     % BuildConstFunctionCall %
+                                                                       ]
+                                   |                                       % BuildTypeForConstructor %
+                                     Constructor =:
+
+ConstActualParameters :=                                                   % PushInConstExpression %
+                         ActualParameters                                  % PopInConstExpression %
+                       =:
+
+ConstAttribute := "__ATTRIBUTE__" "__BUILTIN__" "(" "("                    % PushAutoOn %
+                  ConstAttributeExpression                                 % PopAuto %
+                  ")" ")" =:
+
+ConstAttributeExpression :=
+                            Ident                                          % BuildBuiltinConst %
+                                  | "<" Qualident ',' Ident                % BuildBuiltinTypeInfo %
+                                                              ">"
+                          =:
+
+ByteAlignment := '<*'                                                      % PushAutoOn %
+                      AttributeExpression                                  % BuildAlignment %
+                                          '*>'                             % PopAuto %
+               =:
+
+Alignment := [ ByteAlignment ] =:
+
+TypeDeclaration := Ident "=" Type Alignment
+                =:
+
+Type :=
+                                                                           % PushAutoOff %
+        ( SimpleType | ArrayType
+          | RecordType
+          | SetType
+          | PointerType
+          | ProcedureType )                                                % PopAuto %
+      =:
+
+SimpleType := Qualident [ SubrangeType ] | Enumeration | SubrangeType =:
+
+Enumeration := "("
+                   ( IdentList
+                               )
+               ")"
+            =:
+
+IdentList := Ident                                                         % VAR
+                                                                                on: BOOLEAN ;
+                                                                                n : CARDINAL ; %
+                                                                           % on := IsAutoPushOn() ;
+                                                                             IF on
+                                                                             THEN
+                                                                                n := 1
+                                                                             END %
+             { "," Ident                                                   % IF on
+                                                                             THEN
+                                                                                INC(n)
+                                                                             END %
+             }                                                             % IF on
+                                                                             THEN
+                                                                                PushT(n)
+                                                                             END %
+             =:
+
+SubrangeType := "[" ConstExpression  ".." ConstExpression "]"              % BuildSubrange ; %
+              =:
+
+ArrayType := "ARRAY"
+
+              SimpleType
+              { ","
+                SimpleType
+              } "OF"
+             Type
+           =:
+
+RecordType := "RECORD" [ DefaultRecordAttributes ] FieldListSequence "END" =:
+
+DefaultRecordAttributes := '<*'                                           % PushAutoOn %
+                                AttributeExpression                       % BuildDefaultFieldAlignment %
+                                                                          % PopAuto %
+                                                    '*>' =:
+
+RecordFieldPragma := [ '<*' FieldPragmaExpression
+                            { ',' FieldPragmaExpression } '*>' ] =:
+
+FieldPragmaExpression :=                                                   % PushAutoOn %
+                         Ident PragmaConstExpression                       % BuildPragmaField %
+                                                                           % PopAuto %
+                                                           =:
+
+PragmaConstExpression := ( '(' ConstExpression ')' |                       % PushT(NulSym) %
+                                                                           % Annotate('NulSym||no pragma const') %
+                                                     )     =:
+
+AttributeExpression := Ident '(' ConstExpression ')' =:
+
+FieldListSequence := FieldListStatement { ";" FieldListStatement } =:
+
+-- at present FieldListStatement is as follows:
+FieldListStatement := [ FieldList ] =:
+-- later replace it with FieldList to comply with PIM2
+
+-- sadly the PIM rules are not LL1 as Ident and Qualident have the same first
+-- symbols. We rewrite FieldList to inline qualident
+-- was
+-- FieldList := IdentList ":"                                              % BuildNulName %
+--                           Type |
+--             "CASE" [ Ident ":" ] Qualident "OF" Varient { "|" Varient }
+--                    [ "ELSE" FieldListSequence ] "END" =:
+
+FieldList := IdentList ":"
+                           Type RecordFieldPragma
+             |
+             "CASE"                                                        % BeginVarient %
+                    CaseTag "OF"
+                                 Varient { "|" Varient }
+              [ "ELSE"                                                     % ElseVarient %
+                FieldListSequence
+              ] "END"                                                      % EndVarient %
+           =:
+
+TagIdent := [ Ident ] =:
+
+CaseTag :=  TagIdent [":" Qualident ] =:
+
+Varient := [                                                               % BeginVarientList %
+             VarientCaseLabelList ":" FieldListSequence                    % EndVarientList %
+                                                        ] =:
+
+VarientCaseLabelList := VarientCaseLabels { "," VarientCaseLabels } =:
+
+VarientCaseLabels := ConstExpression ( ".." ConstExpression                % AddVarientRange %
+                                       |                                   % AddVarientEquality ; (* epsilon *) %
+                                     )
+                   =:
+
+--
+--  the following rules are a copy of the ConstExpression ebnf rules but without
+--  any actions all prefixed with Silent.
+--  At present they are only used by CaseLabels, if this continues to be true we
+--  might consider restricting the SilentConstExpression. Eg it makes no sence to allow
+--  String in these circumstances!
+--
+
+SilentConstExpression :=                                                   % PushAutoOff %
+                         SilentSimpleConstExpr
+                         [ SilentRelation SilentSimpleConstExpr ]          % PopAuto %
+                      =:
+
+SilentRelation := "=" | "#" | "<>" | "<" | "<=" | ">" | ">=" | "IN" =:
+
+SilentSimpleConstExpr := SilentUnaryOrConstTerm { SilentAddOperator SilentConstTerm } =:
+
+SilentUnaryOrConstTerm := "+" SilentConstTerm | "-" SilentConstTerm | SilentConstTerm =:
+
+SilentAddOperator := "+" | "-" | "OR" =:
+
+SilentConstTerm := SilentConstFactor { SilentMulOperator SilentConstFactor } =:
+
+SilentMulOperator := "*" | "/" | "DIV" | "MOD" | "REM" | "AND" | "&" =:
+
+SilentConstFactor := Number | SilentConstString | SilentConstSetOrQualidentOrFunction |
+                     "(" SilentConstExpression ")" | "NOT" SilentConstFactor
+                     | SilentConstAttribute =:
+
+SilentConstString := string =:
+
+SilentConstAttribute := "__ATTRIBUTE__" "__BUILTIN__" "(" "(" SilentConstAttributeExpression ")" ")" =:
+
+SilentConstAttributeExpression := Ident | "<" Ident ',' SilentConstString ">" =:
+
+SilentComponentElement := SilentConstExpression [ ".." SilentConstExpression ] =:
+
+SilentComponentValue := SilentComponentElement [ 'BY' SilentConstExpression ] =:
+
+SilentArraySetRecordValue := SilentComponentValue { ',' SilentComponentValue } =:
+
+SilentConstructor := '{'                                                   % SilentBuildConstructorStart %
+                         [ SilentArraySetRecordValue ] '}' =:
+
+SilentConstSetOrQualidentOrFunction := SilentConstructor | Qualident
+                                       [ SilentConstructor | SilentActualParameters ] =:
+
+SilentActualParameters := "(" [ SilentExpList ] ")" =:
+
+SilentExpList := SilentConstExpression { "," SilentConstExpression } =:
+
+-- end of the Silent constant rules
+
+SetType := ( "SET" | "PACKEDSET" ) "OF" SimpleType =:
+
+PointerType := "POINTER" "TO"
+                              Type
+             =:
+
+ProcedureType := "PROCEDURE"
+                 [ FormalTypeList ] =:
+
+FormalTypeList := "(" ( ")" FormalReturn |
+                        ProcedureParameters ")" FormalReturn ) =:
+
+FormalReturn := [ ":" OptReturnType ] =:
+
+OptReturnType := "[" Qualident "]" | Qualident =:
+
+ProcedureParameters := ProcedureParameter
+                       { "," ProcedureParameter } =:
+
+ProcedureParameter := "..." | "VAR" FormalType | FormalType =:
+
+
+VarIdent :=                                                                % VAR
+                                                                                Sym, Type: CARDINAL ;
+                                                                                on: BOOLEAN ; %
+                                                                           % on := IsAutoPushOn() %
+                                                                           % IF NOT on
+                                                                             THEN
+                                                                                PushAutoOn
+                                                                             END %
+            Ident                                                          % IF on
+                                                                             THEN
+                                                                                PopTF(Sym, Type) ;
+                                                                                PushTF(Sym, Type) ;
+                                                                                PushTF(Sym, Type)
+                                                                             END %
+                  [ "[" ConstExpression                                    % BuildVarAtAddress %
+                                        "]" ]
+                                                                           % PopNothing ;
+                                                                             PopAuto %
+         =:
+
+VarIdentList := VarIdent                                                   % VAR
+                                                                                on: BOOLEAN ;
+                                                                                n : CARDINAL ; %
+                                                                           % on := IsAutoPushOn() ;
+                                                                             IF on
+                                                                             THEN
+                                                                                n := 1
+                                                                             END %
+             { "," VarIdent                                                % IF on
+                                                                             THEN
+                                                                                INC(n)
+                                                                             END %
+             }                                                             % IF on
+                                                                             THEN
+                                                                                PushT(n)
+                                                                             END %
+             =:
+
+VariableDeclaration := VarIdentList ":"
+                       Type Alignment
+                    =:
+
+Designator := Qualident                                                    % CheckWithReference %
+              { SubDesignator } =:
+
+SubDesignator := "."                                                       % VAR Sym, Type, tok,
+                                                                                 dotpostok     : CARDINAL ;
+                                                                                 name, n1      : Name ; %
+                                                                           % dotpostok := GetTokenNo () -1 ;
+                                                                             PopTFtok (Sym, Type, tok) ;
+                                                                             Type := SkipType(Type) ;
+                                                                             PushTFtok(Sym, Type, tok) ;
+                                                                             IF Type=NulSym
+                                                                             THEN
+                                                                                n1 := GetSymName(Sym) ;
+                                                                                IF IsModuleKnown(GetSymName(Sym))
+                                                                                THEN
+                                                                                   WriteFormat2('%a looks like a module which has not been globally imported (eg. suggest that you IMPORT %a ;)',
+                                                                                   n1, n1)
+                                                                                ELSE
+                                                                                   WriteFormat1('%a is not a record variable', n1)
+                                                                                END
+                                                                             ELSIF NOT IsRecord(Type)
+                                                                             THEN
+                                                                                n1 := GetSymName(Type) ;
+                                                                                WriteFormat1('%a is not a record type', n1)
+                                                                             END ;
+                                                                             StartScope(Type) %
+                 Ident
+                                                                           % PopTtok (name, tok) ;
+                                                                             Sym := GetLocalSym(Type, name) ;
+                                                                             IF Sym=NulSym
+                                                                             THEN
+                                                                                n1 := GetSymName(Type) ;
+                                                                                WriteFormat2('field %a does not exist within record %a', name, n1)
+                                                                             END ;
+                                                                             Type := GetType(Sym) ;
+                                                                             PushTFtok (Sym, Type, tok) ;
+                                                                             EndScope ;
+                                                                             PushT(1) ;
+                                                                             BuildDesignatorRecord (dotpostok) %
+                 | "[" ArrayExpList
+                   "]"
+                 | "^"                                                     % BuildDesignatorPointer (GetTokenNo () -1) %
+            =:
+
+ArrayExpList :=
+           Expression                                                      % BuildBooleanVariable %
+                                                                           % BuildDesignatorArray %
+             { ","
+               Expression                                                  % BuildBooleanVariable %
+                                                                           % BuildDesignatorArray %
+             }
+        =:
+
+ExpList :=                                                                 % VAR n: CARDINAL ; %
+           Expression                                                      % BuildBooleanVariable %
+                                                                           % n := 1 %
+             { ","
+               Expression                                                  % BuildBooleanVariable %
+                                                                           % INC(n) %
+             }
+                                                                           % PushT(n) %
+        =:
+
+Expression :=                                                              % VAR tokpos: CARDINAL ; %
+                                                                           % PushAutoOn %
+              SimpleExpression [ Relation                                  % tokpos := GetTokenNo ()-1 %
+                                          SimpleExpression                 % BuildRelOp (tokpos) %
+                               ]                                           % PopAuto %
+           =:
+
+SimpleExpression := UnaryOrTerm { AddOperator Term                         % BuildBinaryOp %
+                                } =:
+
+UnaryOrTerm := "+"                                                         % PushTtok(PlusTok, GetTokenNo() -1) %
+                 Term                                                      % BuildUnaryOp %
+               | "-"                                                       % PushTtok(MinusTok, GetTokenNo() -1) %
+                 Term                                                      % BuildUnaryOp %
+               | Term =:
+
+Term := Factor
+               { MulOperator Factor                                        % BuildBinaryOp %
+               } =:
+
+Factor :=                                                                  % VAR tokpos: CARDINAL ; %
+          Number | string | SetOrDesignatorOrFunction |
+          "(" Expression ")" | "NOT"                                       % tokpos := GetTokenNo ()-1 %
+                                     ( Factor                              % BuildNot (tokpos) %
+          | ConstAttribute
+                                ) =:
+
+SetOrDesignatorOrFunction := Qualident
+                                                                           % Assert (OperandTok(1) # UnknownTokenNo) %
+                                                                           % CheckWithReference %
+                                                                           % Assert (OperandTok(1) # UnknownTokenNo) %
+                              [ Constructor |
+                                SimpleDes                                  % (* Assert (OperandTok(1) # UnknownTokenNo) *) %
+                                          [ ActualParameters               % IF IsInConstExpression()
+                                                                             THEN
+                                                                                BuildConstFunctionCall
+                                                                             ELSE
+                                                                                BuildFunctionCall
+                                                                             END %
+                                                             ]
+                              ]                                |
+                                                                           % BuildTypeForConstructor %
+                              Constructor =:
+
+-- SimpleDes := { "." Ident | "[" ExpList "]" | "^" } =:
+SimpleDes := { SubDesignator } =:
+
+ActualParameters := "("                                                    % BuildSizeCheckStart %
+                        ( ExpList |                                        % BuildNulParam %
+                        ) ")" =:
+
+ExitStatement := "EXIT"                                                    % BuildExit %
+              =:
+
+ReturnStatement := "RETURN"                                                % VAR tokno: CARDINAL ; %
+                                                                           % tokno := GetTokenNo () -1 %
+                            ( Expression |                                 % BuildNulExpression (* in epsilon *) %
+                                           )                               % BuildReturn (tokno) %
+                =:
+
+Statement :=		                                                   % BuildStmtNote (0) %
+                                                                           % PushAutoOn ; DisplayStack %
+             [ AssignmentOrProcedureCall | IfStatement | CaseStatement |
+               WhileStatement | RepeatStatement | LoopStatement |
+               ForStatement | WithStatement | AsmStatement |
+               ExitStatement | ReturnStatement | RetryStatement
+             ]                                                             % PopAuto ; %
+          =:
+
+RetryStatement := "RETRY"                                                  % BuildRetry (GetTokenNo () -1) %
+                =:
+
+AssignmentOrProcedureCall :=                                               % VAR isFunc: BOOLEAN ;
+                                                                                 tokno : CARDINAL ; %
+                                                                           % DisplayStack %
+                             Designator
+                                                                           % tokno := GetTokenNo () %
+                             ( ":="
+                                                                           % (* PrintTokenNo (tokno) *) %
+                                    Expression                             % BuildAssignment (tokno) %
+                                |                                          % isFunc := CheckBuildFunction() %
+                                  ( ActualParameters |                     % BuildNulParam (* in epsilon *) %
+                                  )                                        % IF isFunc
+                                                                             THEN
+                                                                                BuildFunctionCall ;
+                                                                                BuildAssignment (tokno)
+                                                                             ELSE
+                                                                                BuildProcedureCall (tokno - 1)
+                                                                             END %
+                             )                                             % DisplayStack %
+                           =:
+
+-- these two break LL1 as both start with a Designator
+-- ProcedureCall := Designator [ ActualParameters ] =:
+-- Assignment := Designator ":=" Expression =:
+
+StatementSequence :=
+                     Statement
+                               { ";"
+                                     Statement }
+                  =:
+
+IfStatement := "IF"
+                    Expression
+		               "THEN"                                      % BuildThenIf %
+			       		                                   % BuildStmtNote (-1) %
+                                      StatementSequence
+              { "ELSIF"
+                                                                           % BuildElsif1 %
+                                                                           % BuildStmtNote (-1) %
+                        Expression
+			           "THEN"                                  % BuildThenIf %
+                                                                           % BuildStmtNote (-1) %
+                                          StatementSequence                % BuildElsif2 %
+              }
+              [
+	        "ELSE"                                                     % BuildElse %
+                                                                           % BuildStmtNote (-1) %
+                      StatementSequence ] "END"                            % BuildEndIf %
+                                                                           % BuildStmtNote (-1) %
+            =:
+
+CaseStatement := "CASE"
+                        Expression                                         % BuildCaseStart %
+                                   "OF" Case { "|" Case }
+                 CaseEndStatement
+               =:
+
+CaseEndStatement := "END"                                                  % BuildStmtNote (-1) %
+                                                                           % BuildCaseElse %
+                                                                           % BuildCaseCheck %
+                                                                           % BuildCaseEnd %
+                    | "ELSE"                                               % BuildStmtNote (-1) %
+                                                                           % BuildCaseElse %
+                           StatementSequence                               % BuildStmtNote (0) %
+			                     "END"
+                                                                           % BuildCaseEnd %
+                 =:
+
+Case := [                                                                  % BuildStmtNote (-1) %
+          CaseLabelList                                                    % BuildCaseStartStatementSequence %
+                        ":"
+                          StatementSequence                                % BuildCaseEndStatementSequence %
+                                                                           % EndCaseList %
+        ]
+      =:
+
+CaseLabelList :=                                                           % BeginCaseList(NulSym) %
+                 CaseLabels { ","                                          % BuildCaseOr %
+                                  CaseLabels } =:
+
+CaseLabels := ConstExpression ( ".." ConstExpression                       % BuildCaseRange ;
+                                                                             BuildCaseList %
+                                |                                          % BuildCaseEquality ;  (* epsilon *)
+                                                                             BuildCaseList %
+                              ) =:
+
+WhileStatement := "WHILE"                                                  % BuildWhile %
+                                                                           % BuildStmtNote (0) %
+                  Expression
+		                                                           % BuildStmtNote (0) %
+                             "DO"                                          % BuildDoWhile %
+                                  StatementSequence                        % BuildStmtNote (0) %
+				                    "END"                  % DisplayStack ; BuildEndWhile %
+                =:
+
+RepeatStatement := "REPEAT"
+                                                                           % BuildRepeat %
+                            StatementSequence                              % BuildStmtNote (0) %
+                                              "UNTIL"
+                    Expression                                             % BuildUntil %
+                 =:
+
+ForStatement :=                                                            % VAR endpostok: CARDINAL ; %
+                                                                           % PushLineNo %
+                "FOR" Ident ":=" Expression "TO" Expression
+                ( "BY" ConstExpression |                                   % BuildPseudoBy (* epsilon *) %
+                )                                                          % PushLineNo %
+                                                                           % BuildStmtNote (0) %
+                  "DO"                                                     % BuildForToByDo %
+                StatementSequence                                          % BuildStmtNote (0) %
+                                                                           % endpostok := GetTokenNo () %
+                                  "END"                                    % BuildEndFor (endpostok) %
+              =:
+
+LoopStatement := "LOOP"
+                                                                           % BuildLoop %
+                        StatementSequence                                  % BuildStmtNote (0) %
+                                          "END"                            % BuildEndLoop %
+               =:
+
+WithStatement :=                                                           % VAR
+                                                                                tok: CARDINAL ; %
+                 "WITH"                                                    % tok := GetTokenNo () -1 %
+                        Designator                                         % StartBuildWith (tok) %
+                                                                           % BuildStmtNote (0) %
+                                   "DO"
+                        StatementSequence
+                                                                           % BuildStmtNote (0) %
+                 "END"                                                     % EndBuildWith %
+               =:
+
+ProcedureDeclaration := ProcedureHeading ";" ProcedureBlock                % BuildProcedureEnd ;
+                                                                             PushAutoOn %
+
+                        Ident                                              % EndBuildProcedure ;
+                                                                             PopAuto %
+                      =:
+
+DefineBuiltinProcedure := [ "__ATTRIBUTE__" "__BUILTIN__"
+                            "(" "("                                        % PushAutoOff %
+                                    Ident                                  % PopAuto %
+                                          ")" ")" | "__INLINE__" ]
+                      =:
+
+ProcedureHeading := "PROCEDURE"                                            % M2Error.DefaultProcedure %
+                                                                           % PushAutoOn %
+                     DefineBuiltinProcedure
+                     ( Ident
+                                                                           % StartBuildProcedure ;
+                                                                             PushAutoOff %
+                       [ FormalParameters ] AttributeNoReturn
+                                                                           % BuildProcedureHeading ;
+                                                                             PopAuto %
+                     )                                                     % PopAuto %
+                     =:
+
+Builtin := [ "__BUILTIN__" | "__INLINE__" ] =:
+
+DefProcedureHeading := "PROCEDURE"                                         % M2Error.DefaultProcedure %
+                                                                           % PushAutoOn %
+                        Builtin
+                        ( Ident
+                                                                           % StartBuildProcedure ;
+                                                                             PushAutoOff %
+                          [ DefFormalParameters ] AttributeNoReturn
+                                                                           % BuildProcedureHeading ;
+                                                                             PopAuto %
+                        )                                                  % PopAuto %
+                                                                           % M2Error.LeaveErrorScope %
+                     =:
+
+AttributeNoReturn := [ "<*" Ident "*>" ] =:
+
+AttributeUnused := [ "<*" Ident "*>" ] =:
+
+-- introduced procedure block so we can produce more informative
+-- error messages
+
+ProcedureBlock :=                                                          % BuildProcedureStart %
+                  { Declaration }                                          % BuildProcedureBegin %
+                                  [ "BEGIN"                                % BuildStmtNote (-1) %
+                                            ProcedureBlockBody ]           % BuildStmtNote (0) %
+                                                                 "END"
+                =:
+
+Block := { Declaration }
+                                                                           % StartBuildInit (GetTokenNo ()) %
+                         InitialBlock                                      % EndBuildInit (GetTokenNo ()) ;
+                                                                             StartBuildFinally (GetTokenNo ()) %
+                                      FinalBlock                           % EndBuildFinally (GetTokenNo ()) %
+                                                 "END"
+       =:
+
+InitialBlock := [ "BEGIN"                                                  % BuildStmtNote (-1) %
+                          InitialBlockBody ] =:
+
+FinalBlock := [ "FINALLY"                                                  % BuildStmtNote (-1) %
+                          FinalBlockBody ] =:
+
+InitialBlockBody := NormalPart [
+                                 "EXCEPT"                                  % BuildStmtNote (-1) %
+                                                                           % BuildExceptInitial (GetTokenNo() -1) %
+                                          ExceptionalPart ] =:
+
+FinalBlockBody := NormalPart [
+                               "EXCEPT"                                    % BuildStmtNote (-1) %
+			                                                   % BuildExceptFinally (GetTokenNo() -1) %
+                                        ExceptionalPart ] =:
+
+ProcedureBlockBody := NormalPart [
+                                   "EXCEPT"                                % BuildStmtNote (-1) %
+				                                           % BuildExceptProcedure (GetTokenNo() -1) %
+                                            ExceptionalPart ] =:
+
+NormalPart := StatementSequence =:
+
+ExceptionalPart := StatementSequence                                       % BuildReThrow (GetTokenNo()) %
+                 =:
+
+Declaration := "CONST" { ConstantDeclaration ";" } |
+               "TYPE" { TypeDeclaration ";" } |
+               "VAR" { VariableDeclaration ";" } |
+               ProcedureDeclaration ";" |
+               ModuleDeclaration ";" =:
+
+DefFormalParameters := "(" [ DefMultiFPSection ] ")" FormalReturn =:
+
+DefMultiFPSection := DefExtendedFP |
+                     FPSection [ ";" DefMultiFPSection ] =:
+
+FormalParameters := "(" [ MultiFPSection ] ")" FormalReturn =:
+
+MultiFPSection := ExtendedFP |
+                  FPSection [ ";" MultiFPSection ] =:
+
+FPSection := NonVarFPSection | VarFPSection =:
+
+DefExtendedFP := DefOptArg | "..." =:
+
+ExtendedFP := OptArg | "..." =:
+
+VarFPSection := "VAR" IdentList ":" FormalType [ AttributeUnused ] =:
+
+NonVarFPSection := IdentList ":" FormalType [ AttributeUnused ] =:
+
+OptArg := "[" Ident ":" FormalType [ "=" ConstExpression                   % BuildOptArgInitializer %
+                                                         ] "]" =:
+
+DefOptArg := "[" Ident ":" FormalType "=" ConstExpression                  % BuildOptArgInitializer %
+                                                          "]" =:
+
+FormalType := { "ARRAY" "OF" } Qualident =:
+
+ModuleDeclaration :=                                                       % VAR modulet: CARDINAL ; %
+                                                                           % modulet := GetTokenNo () %
+                     "MODULE"                                              % M2Error.DefaultInnerModule %
+                                                                           % PushAutoOn %
+                     Ident                                                 % StartBuildInnerModule %
+                                                                           % BuildModuleStart (modulet) ;
+                                                                             PushAutoOff %
+                     [ Priority ] ";"
+                     { Import } [ Export ]
+                       Block                                               % PushAutoOn %
+                       Ident                                               % EndBuildInnerModule %
+                                                                           % PopAuto ; PopAuto ; PopAuto %
+                     =:
+
+Priority := "["                                                            % PushAutoOn %
+                ConstExpression                                            % BuildModulePriority ;
+                                                                             PopAuto %
+                                "]" =:
+
+Export := "EXPORT" ( "QUALIFIED"
+                                 IdentList |
+                     "UNQUALIFIED"
+                                 IdentList |
+                     IdentList ) ";" =:
+
+FromImport :=                                                              % PushAutoOn %
+               "FROM" Ident "IMPORT" IdentList ";"                         % CheckImportListOuterModule %
+                                                                           % PopAuto %
+            =:
+
+WithoutFromImport :=                                                       % PushAutoOff %
+                      "IMPORT" IdentList ";"
+                                                                           % PopAuto %
+                   =:
+
+Import :=  FromImport | WithoutFromImport =:
+
+DefinitionModule :=                                                        % VAR deft, endt: CARDINAL ; %
+                                                                           % deft := GetTokenNo () %
+                    "DEFINITION"                                           % M2Error.DefaultDefinitionModule %
+                                 "MODULE"                                  % PushAutoOn %
+                    [ "FOR" string ]
+                    Ident                                                  % StartBuildDefFile (deft) ;
+                                                                             P3StartBuildDefModule ;
+                                                                             PushAutoOff %
+                    ";"
+                    { Import } [ Export
+                                        ]
+                    { Definition }                                         % endt := GetTokenNo () %
+                                   "END"                                   % PushAutoOn %
+                                         Ident                             % EndBuildFile (endt) ;
+                                                                             P3EndBuildDefModule %
+                                               "."                         % PopAuto ; PopAuto ; PopAuto %
+                  =:
+
+Definition := "CONST" { ConstantDeclaration ";" } |
+              "TYPE"
+                    { Ident ( ";"
+                                  | "=" Type Alignment ";" )
+                    }
+              |
+              "VAR" { VariableDeclaration ";" } |
+              DefProcedureHeading ";" =:
+
+AsmStatement :=                                                            % VAR CurrentAsm: CARDINAL ; %
+                'ASM'                                                      % IF Pass3
+                                                                             THEN
+                                                                                PushAutoOn ;
+                                                                                PushT(0) ;  (* operand count *)
+                                                                                PushT(MakeGnuAsm())
+                                                                             END
+                                                                           %
+                [ 'VOLATILE'                                               % IF Pass3
+                                                                             THEN
+                                                                                PopT(CurrentAsm) ;
+                                                                                PutGnuAsmVolatile(CurrentAsm) ;
+                                                                                PushT(CurrentAsm)
+                                                                             END
+                                                                           %
+                ] '(' AsmOperands                                          % IF Pass3
+                                                                             THEN
+                                                                                PopNothing ;  (* throw away interface sym *)
+                                                                                BuildInline ;
+                                                                                PopNothing ;  (* throw away count *)
+                                                                                PopAuto
+                                                                             END
+                                                                           %
+                  ')' =:
+
+AsmOperands :=                                                             % VAR CurrentAsm, count: CARDINAL ;
+                                                                                 str: CARDINAL ;
+                                                                           %
+               string                                                      % IF Pass3
+                                                                             THEN
+                                                                                PopT(str) ;
+                                                                                PopT(CurrentAsm) ;
+                                                                                Assert(IsGnuAsm(CurrentAsm) OR IsGnuAsmVolatile(CurrentAsm)) ;
+                                                                                PopT(count) ;
+                                                                                IF DebugAsm
+                                                                                THEN
+                                                                                   printf1('1: count of asm operands: %d\n', count)
+                                                                                END ;
+                                                                                PushT(count) ;
+                                                                                (* adds the name/instruction for this asm *)
+                                                                                PutGnuAsm(CurrentAsm, str) ;
+                                                                                PushT(CurrentAsm) ;
+                                                                                PushT(NulSym)    (* the InterfaceSym *)
+                                                                             END
+                                                                           %
+                       ( AsmOperandSpec |                                  % (* epsilon *)
+                                                                             IF Pass3
+                                                                             THEN
+                                                                                PutGnuAsmSimple(CurrentAsm)
+                                                                             END
+                                                                           %
+                                                        )
+               =:
+
+AsmOperandSpec :=                                                          % VAR CurrentAsm, outputs, inputs, trash, count: CARDINAL ;
+                                                                           %
+                  [ ':' AsmList                                            % IF Pass3
+                                                                             THEN
+                                                                                PopT(outputs) ;
+                                                                                PopT(CurrentAsm) ;
+                                                                                Assert(IsGnuAsm(CurrentAsm) OR IsGnuAsmVolatile(CurrentAsm)) ;
+                                                                                PopT(count) ;
+                                                                                IF DebugAsm
+                                                                                THEN
+                                                                                   printf1('2: output count of asm operands: %d\n', count)
+                                                                                END ;
+                                                                                PutGnuAsmOutput(CurrentAsm, outputs) ;
+                                                                                PushT(0) ;  (* reset count *)
+                                                                                PushT(CurrentAsm) ;
+                                                                                PushT(NulSym)    (* the InterfaceSym *)
+                                                                             END
+                                                                           %
+                     [ ':' AsmList                                         % IF Pass3
+                                                                             THEN
+                                                                                PopT(inputs) ;
+                                                                                PopT(CurrentAsm) ;
+                                                                                Assert(IsGnuAsm(CurrentAsm) OR IsGnuAsmVolatile(CurrentAsm)) ;
+                                                                                PopT(count) ;
+                                                                                IF DebugAsm
+                                                                                THEN
+                                                                                   printf1('3: input count of asm operands: %d\n', count)
+                                                                                END ;
+                                                                                PutGnuAsmInput(CurrentAsm, inputs) ;
+                                                                                PushT(0) ;  (* reset count *)
+                                                                                PushT(CurrentAsm) ;
+                                                                                PushT(NulSym)    (* the InterfaceSym *)
+                                                                             END
+                                                                           %
+                        [ ':' TrashList                                    % IF Pass3
+                                                                             THEN
+                                                                                PopT(trash) ;
+                                                                                PopT(CurrentAsm) ;
+                                                                                Assert(IsGnuAsm(CurrentAsm) OR IsGnuAsmVolatile(CurrentAsm)) ;
+                                                                                PopT(count) ;
+                                                                                IF DebugAsm
+                                                                                THEN
+                                                                                   printf1('4: trash count of asm operands: %d\n', count)
+                                                                                END ;
+                                                                                PutGnuAsmTrash(CurrentAsm, trash) ;
+                                                                                PushT(0) ;  (* reset count *)
+                                                                                PushT(CurrentAsm) ;
+                                                                                PushT(NulSym)    (* the InterfaceSym *)
+                                                                             END
+                                                                           %
+                           ] ] ]
+            =:
+
+AsmList     :=                                                             % VAR count, CurrentAsm, CurrentInterface: CARDINAL ; %
+                                                                           % IF Pass3
+                                                                             THEN
+                                                                                PopT(CurrentInterface) ;
+                                                                                PopT(CurrentAsm) ;
+                                                                                PopT(count) ;
+                                                                                Assert(IsGnuAsm(CurrentAsm) OR IsGnuAsmVolatile(CurrentAsm)) ;
+                                                                                PushT(count) ;
+                                                                                PushT(CurrentAsm) ;
+                                                                                PushT(CurrentInterface) ;
+                                                                                IF DebugAsm
+                                                                                THEN
+                                                                                   printf1('8: AsmList has a count of asm operands: %d\n', count)
+                                                                                END
+                                                                             END
+                                                                           %
+               [ AsmElement ] { ',' AsmElement } =:
+
+NamedOperand := '[' Ident ']' =:
+
+AsmOperandName :=  ( NamedOperand
+                                  |                                        % IF IsAutoPushOn()
+                                                                             THEN
+                                                                                PushTF(NulName, identtok)
+                                                                             END
+                                                                           %
+                                    )
+                =:
+
+AsmElement :=                                                              % VAR n, str, expr,
+                                                                                 CurrentInterface,
+                                                                                 CurrentAsm, name: CARDINAL ; %
+              AsmOperandName
+
+              string '(' Expression                                        % IF Pass3
+                                                                             THEN
+                                                                                PopT(expr) ;
+                                                                                PopT(str) ;
+                                                                                PopT(name) ;
+                                                                                PopT(CurrentInterface) ;
+                                                                                PopT(CurrentAsm) ;
+                                                                                Assert(IsGnuAsm(CurrentAsm) OR IsGnuAsmVolatile(CurrentAsm)) ;
+                                                                                PopT(n) ;
+                                                                                INC(n) ;
+                                                                                IF CurrentInterface=NulSym
+                                                                                THEN
+                                                                                   CurrentInterface := MakeRegInterface()
+                                                                                END ;
+                                                                                IF DebugAsm
+                                                                                THEN
+                                                                                   printf1('5: count of asm operands: %d\n', n)
+                                                                                END ;
+                                                                                PutRegInterface(CurrentInterface, n, name, str, expr) ;
+                                                                                PushT(n) ;
+                                                                                PushT(CurrentAsm) ;
+                                                                                PushT(CurrentInterface)
+                                                                             END
+                                                                           %
+                      ')'
+           =:
+
+TrashList :=                                                               % VAR CurrentInterface,
+                                                                                 CurrentAsm,
+                                                                                 n, str          : CARDINAL ; %
+             [ string                                                      % IF Pass3
+                                                                             THEN
+                                                                                PopT(str) ;
+                                                                                PopT(CurrentInterface) ;
+                                                                                PopT(CurrentAsm) ;
+                                                                                PopT(n) ;
+                                                                                INC(n) ;
+                                                                                Assert(IsGnuAsm(CurrentAsm) OR IsGnuAsmVolatile(CurrentAsm)) ;
+                                                                                IF DebugAsm
+                                                                                THEN
+                                                                                   printf1('6: count of asm trash operands: %d\n', n)
+                                                                                END ;
+                                                                                IF CurrentInterface=NulSym
+                                                                                THEN
+                                                                                   CurrentInterface := MakeRegInterface()
+                                                                                END ;
+                                                                                PutRegInterface(CurrentInterface, n, NulName, str, NulSym) ;
+                                                                                PushT(n) ;
+                                                                                PushT(CurrentAsm) ;
+                                                                                PushT(CurrentInterface)
+                                                                             END
+                                                                           %
+             ] { ',' string                                                % IF Pass3
+                                                                             THEN
+                                                                                PopT(str) ;
+                                                                                PopT(CurrentInterface) ;
+                                                                                PopT(CurrentAsm) ;
+                                                                                PopT(n) ;
+                                                                                INC(n) ;
+                                                                                Assert(IsGnuAsm(CurrentAsm) OR IsGnuAsmVolatile(CurrentAsm)) ;
+                                                                                IF DebugAsm
+                                                                                THEN
+                                                                                   printf1('7: count of asm trash operands: %d\n', n)
+                                                                                END ;
+                                                                                IF CurrentInterface=NulSym
+                                                                                THEN
+                                                                                   CurrentInterface := MakeRegInterface()
+                                                                                END ;
+                                                                                PutRegInterface(CurrentInterface, n, NulName, str, NulSym) ;
+                                                                                PushT(n) ;
+                                                                                PushT(CurrentAsm) ;
+                                                                                PushT(CurrentInterface)
+                                                                             END
+                                                                           %
+                } =:
+
+FNB

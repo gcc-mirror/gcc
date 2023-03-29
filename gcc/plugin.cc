@@ -1,5 +1,5 @@
 /* Support for GCC plugin mechanism.
-   Copyright (C) 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2009-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 

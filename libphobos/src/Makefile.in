@@ -179,7 +179,6 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/datetime/timezone.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/demangle.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/crc.lo \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/digest.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/hmac.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/md.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/murmurhash.lo \
@@ -291,8 +290,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/windows/charset.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/windows/registry.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/windows/syserror.lo \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/xml.lo std/zip.lo \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/zlib.lo
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/zip.lo std/zlib.lo
 am__objects_2 = $(am__objects_1)
 am__objects_3 = $(am__objects_2)
 am_libgphobos_la_OBJECTS = $(am__objects_3)
@@ -562,9 +560,9 @@ libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/datetime/interval.d std/datetime/package.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/datetime/stopwatch.d std/datetime/systime.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/datetime/timezone.d std/demangle.d std/digest/crc.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/digest.d std/digest/hmac.d std/digest/md.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/murmurhash.d std/digest/package.d std/digest/ripemd.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/sha.d std/encoding.d std/exception.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/hmac.d std/digest/md.d std/digest/murmurhash.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/digest/package.d std/digest/ripemd.d std/digest/sha.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/encoding.d std/exception.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/affix_allocator.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/aligned_block_list.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/experimental/allocator/building_blocks/allocator_list.d \
@@ -621,7 +619,7 @@ libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/stdio.d std/string.d std/sumtype.d std/system.d std/traits.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/typecons.d std/typetuple.d std/uni/package.d std/uri.d std/utf.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/uuid.d std/variant.d std/windows/charset.d std/windows/registry.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/windows/syserror.d std/xml.d std/zip.d std/zlib.d
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/windows/syserror.d std/zip.d std/zlib.d
 
 
 # Source file definitions. Boring stuff, auto-generated with
@@ -754,7 +752,6 @@ std/digest/$(am__dirstamp):
 	@$(MKDIR_P) std/digest
 	@: > std/digest/$(am__dirstamp)
 std/digest/crc.lo: std/digest/$(am__dirstamp)
-std/digest/digest.lo: std/digest/$(am__dirstamp)
 std/digest/hmac.lo: std/digest/$(am__dirstamp)
 std/digest/md.lo: std/digest/$(am__dirstamp)
 std/digest/murmurhash.lo: std/digest/$(am__dirstamp)
@@ -964,7 +961,6 @@ std/windows/$(am__dirstamp):
 std/windows/charset.lo: std/windows/$(am__dirstamp)
 std/windows/registry.lo: std/windows/$(am__dirstamp)
 std/windows/syserror.lo: std/windows/$(am__dirstamp)
-std/xml.lo: std/$(am__dirstamp)
 std/zip.lo: std/$(am__dirstamp)
 std/zlib.lo: std/$(am__dirstamp)
 

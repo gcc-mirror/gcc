@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/statement.html, Statements)
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/statementsem.d, _statementsem.d)
@@ -39,6 +39,7 @@ import dmd.dsymbol;
 import dmd.dsymbolsem;
 import dmd.dtemplate;
 import dmd.errors;
+import dmd.errorsink;
 import dmd.escape;
 import dmd.expression;
 import dmd.expressionsem;
@@ -50,6 +51,7 @@ import dmd.identifier;
 import dmd.importc;
 import dmd.init;
 import dmd.intrange;
+import dmd.location;
 import dmd.mtype;
 import dmd.mustuse;
 import dmd.nogc;
@@ -159,7 +161,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
     Statement result;
     Scope* sc;
 
-    this(Scope* sc)
+    this(Scope* sc) scope
     {
         this.sc = sc;
     }
@@ -249,7 +251,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             }
         }
 
-        for (size_t i = 0; i < cs.statements.dim;)
+        for (size_t i = 0; i < cs.statements.length;)
         {
             Statement s = (*cs.statements)[i];
             if (!s)
@@ -312,7 +314,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                     return true;
                 }
 
-                if (!sfinally && isEmpty((*cs.statements)[i + 1 .. cs.statements.dim]))
+                if (!sfinally && isEmpty((*cs.statements)[i + 1 .. cs.statements.length]))
                 {
                 }
                 else
@@ -358,7 +360,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             }
             else if (sfinally)
             {
-                if (0 && i + 1 == cs.statements.dim)
+                if (0 && i + 1 == cs.statements.length)
                 {
                     cs.statements.push(sfinally);
                 }
@@ -645,6 +647,13 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             CommaExp.allow(fs.increment);
             fs.increment = fs.increment.expressionSemantic(sc);
             fs.increment = resolveProperties(sc, fs.increment);
+            // @@@DEPRECATED_2.112@@@
+            // remove gagging and deprecation() to turn deprecation into an error when
+            // deprecation cycle is over
+            const olderrors = global.startGagging();
+            discardValue(fs.increment);
+            if (global.endGagging(olderrors))
+                fs.increment.deprecation("`%s` has no effect", fs.increment.toChars());
             if (checkNonAssignmentArrayOp(fs.increment))
                 fs.increment = ErrorExp.get();
             fs.increment = fs.increment.optimize(WANTvalue);
@@ -693,7 +702,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         }
 
         const loc = fs.loc;
-        const dim = fs.parameters.dim;
+        const dim = fs.parameters.length;
 
         fs.func = sc.func;
         if (fs.func.fes)
@@ -791,7 +800,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                 }
             }
 
-            //printf("dim = %d, parameters.dim = %d\n", dim, parameters.dim);
+            //printf("dim = %d, parameters.length = %d\n", dim, parameters.length);
             if (foundMismatch && dim != foreachParamCount)
             {
                 const(char)* plural = foreachParamCount > 1 ? "s" : "";
@@ -854,7 +863,6 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             result = s;
         }
 
-        TypeAArray taa = null;
         Type tn = null;
         Type tnv = null;
         Statement apply()
@@ -865,26 +873,25 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             TypeFunction tfld = null;
             if (sapply)
             {
-                FuncDeclaration fdapply = sapply.isFuncDeclaration();
-                if (fdapply)
+                if (auto fdapply = sapply.isFuncDeclaration())
                 {
-                    assert(fdapply.type && fdapply.type.ty == Tfunction);
-                    tfld = cast(TypeFunction)fdapply.type.typeSemantic(loc, sc2);
+                    assert(fdapply.type && fdapply.type.isTypeFunction());
+                    tfld = fdapply.type.typeSemantic(loc, sc2).isTypeFunction();
                     goto Lget;
                 }
-                else if (tab.ty == Tdelegate)
+                else if (tab.isTypeDelegate())
                 {
-                    tfld = cast(TypeFunction)tab.nextOf();
+                    tfld = tab.nextOf().isTypeFunction();
                 Lget:
                     //printf("tfld = %s\n", tfld.toChars());
-                    if (tfld.parameterList.parameters.dim == 1)
+                    if (tfld.parameterList.parameters.length == 1)
                     {
                         Parameter p = tfld.parameterList[0];
-                        if (p.type && p.type.ty == Tdelegate)
+                        if (p.type && p.type.isTypeDelegate())
                         {
                             auto t = p.type.typeSemantic(loc, sc2);
                             assert(t.ty == Tdelegate);
-                            tfld = cast(TypeFunction)t.nextOf();
+                            tfld = t.nextOf().isTypeFunction();
                         }
                     }
                 }
@@ -902,12 +909,11 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                 {
                     // 'Promote' it to this scope, and replace with a return
                     fs.cases.push(gs);
-                    ss.statement = new ReturnStatement(Loc.initial, new IntegerExp(fs.cases.dim + 1));
+                    ss.statement = new ReturnStatement(Loc.initial, new IntegerExp(fs.cases.length + 1));
                 }
             }
 
             Expression e = null;
-            Expression ec;
             if (vinit)
             {
                 e = new DeclarationExp(loc, vinit);
@@ -916,19 +922,22 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                     return null;
             }
 
-            if (taa)
-                ec = applyAssocArray(fs, flde, taa);
-            else if (tab.ty == Tarray || tab.ty == Tsarray)
-                ec = applyArray(fs, flde, sc2, tn, tnv, tab.ty);
-            else if (tab.ty == Tdelegate)
-                ec = applyDelegate(fs, flde, sc2, tab);
-            else
-                ec = applyOpApply(fs, tab, sapply, sc2, flde);
+            Expression ec;
+            switch (tab.ty)
+            {
+                case Tarray:
+                case Tsarray:   ec = applyArray     (fs, flde, tab, sc2, tn, tnv); break;
+                case Tdelegate: ec = applyDelegate  (fs, flde, tab, sc2);          break;
+                case Taarray:   ec = applyAssocArray(fs, flde, tab);               break;
+                default:        ec = applyOpApply   (fs, flde, tab, sc2, sapply);  break;
+            }
             if (!ec)
                 return null;
+
             e = Expression.combine(e, ec);
             return loopReturn(e, fs.cases, loc);
         }
+
         switch (tab.ty)
         {
         case Tarray:
@@ -966,7 +975,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                      *  2. foreach body is lowered to _aApply (see special case below).
                      */
                     Type tv = (*fs.parameters)[1].type.toBasetype();
-                    if ((tab.ty == Tarray ||
+                    if ((tab.isTypeDArray() ||
                          (tn.ty != tv.ty && tn.ty.isSomeChar && tv.ty.isSomeChar)) &&
                         !Type.tsize_t.implicitConvTo(tindex))
                     {
@@ -1021,9 +1030,8 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                             return retError();
                         }
                     }
-                    if (tab.ty == Tsarray)
+                    if (auto ta = tab.isTypeSArray())
                     {
-                        TypeSArray ta = cast(TypeSArray)tab;
                         IntRange dimrange = getIntRange(ta.dim);
                         // https://issues.dlang.org/show_bug.cgi?id=12504
                         dimrange.imax = SignExtendedNumber(dimrange.imax.value-1);
@@ -1072,10 +1080,10 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                 auto ie = new ExpInitializer(loc, new SliceExp(loc, fs.aggr, null, null));
                 const valueIsRef = (*fs.parameters)[$ - 1].isReference();
                 VarDeclaration tmp;
-                if (fs.aggr.op == EXP.arrayLiteral && !valueIsRef)
+                if (fs.aggr.isArrayLiteralExp() && !valueIsRef)
                 {
-                    auto ale = cast(ArrayLiteralExp)fs.aggr;
-                    size_t edim = ale.elements ? ale.elements.dim : 0;
+                    auto ale = fs.aggr.isArrayLiteralExp();
+                    size_t edim = ale.elements ? ale.elements.length : 0;
                     auto telem = (*fs.parameters)[dim - 1].type;
 
                     // https://issues.dlang.org/show_bug.cgi?id=12936
@@ -1182,7 +1190,6 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             if (checkForArgTypes(fs))
                 return retError();
 
-            taa = cast(TypeAArray)tab;
             if (dim < 1 || dim > 2)
             {
                 fs.error("only one or two arguments for associative array `foreach`");
@@ -1207,8 +1214,8 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                  *    }
                  */
                 auto ad = (tab.ty == Tclass) ?
-                    cast(AggregateDeclaration)(cast(TypeClass)tab).sym :
-                    cast(AggregateDeclaration)(cast(TypeStruct)tab).sym;
+                    cast(AggregateDeclaration)tab.isTypeClass().sym :
+                    cast(AggregateDeclaration)tab.isTypeStruct().sym;
                 Identifier idfront;
                 Identifier idpopFront;
                 if (fs.op == TOK.foreach_)
@@ -1229,7 +1236,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                  */
                 VarDeclaration r;
                 Statement _init;
-                if (vinit && fs.aggr.op == EXP.variable && (cast(VarExp)fs.aggr).var == vinit)
+                if (vinit && fs.aggr.isVarExp() && fs.aggr.isVarExp().var == vinit)
                 {
                     r = vinit;
                     _init = new ExpStatement(loc, vinit);
@@ -1270,7 +1277,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                 else if (auto td = sfront.isTemplateDeclaration())
                 {
                     Expressions a;
-                    if (auto f = resolveFuncCall(loc, sc, td, null, tab, &a, FuncResolveFlag.quiet))
+                    if (auto f = resolveFuncCall(loc, sc, td, null, tab, ArgumentList(&a), FuncResolveFlag.quiet))
                         tfront = f.type;
                 }
                 else if (auto d = sfront.toAlias().isDeclaration())
@@ -1279,9 +1286,8 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                 }
                 if (!tfront || tfront.ty == Terror)
                     return rangeError();
-                if (tfront.toBasetype().ty == Tfunction)
+                if (auto ftt = tfront.toBasetype().isTypeFunction())
                 {
-                    auto ftt = cast(TypeFunction)tfront.toBasetype();
                     tfront = tfront.toBasetype().nextOf();
                     if (!ftt.isref)
                     {
@@ -1323,17 +1329,17 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                     auto exps = new Expressions();
                     exps.push(ve);
                     int pos = 0;
-                    while (exps.dim < dim)
+                    while (exps.length < dim)
                     {
                         pos = expandAliasThisTuples(exps, pos);
                         if (pos == -1)
                             break;
                     }
-                    if (exps.dim != dim)
+                    if (exps.length != dim)
                     {
-                        const(char)* plural = exps.dim > 1 ? "s" : "";
+                        const(char)* plural = exps.length > 1 ? "s" : "";
                         fs.error("cannot infer argument types, expected %llu argument%s, not %llu",
-                            cast(ulong) exps.dim, plural, cast(ulong) dim);
+                            cast(ulong) exps.length, plural, cast(ulong) dim);
                         return retError();
                     }
 
@@ -1389,8 +1395,8 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         }
     }
 
-    private static extern(D) Expression applyOpApply(ForeachStatement fs, Type tab, Dsymbol sapply,
-                                                     Scope* sc2, Expression flde)
+    private static extern(D) Expression applyOpApply(ForeachStatement fs, Expression flde,
+                Type tab, Scope* sc2, Dsymbol sapply)
     {
         version (none)
         {
@@ -1425,7 +1431,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
     }
 
     private static extern(D) Expression applyDelegate(ForeachStatement fs, Expression flde,
-                                                      Scope* sc2, Type tab)
+                                                      Type tab, Scope* sc2)
     {
         Expression ec;
         /* Call:
@@ -1450,10 +1456,10 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
     }
 
     private static extern(D) Expression applyArray(ForeachStatement fs, Expression flde,
-                                                   Scope* sc2, Type tn, Type tnv, TY tabty)
+                                                   Type tab, Scope* sc2, Type tn, Type tnv)
     {
         Expression ec;
-        const dim = fs.parameters.dim;
+        const dim = fs.parameters.length;
         const loc = fs.loc;
         /* Call:
          *      _aApply(aggr, flde)
@@ -1486,7 +1492,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                 assert(0);
         }
         const(char)* r = (fs.op == TOK.foreach_reverse_) ? "R" : "";
-        int j = sprintf(fdname.ptr, "_aApply%s%.*s%llu", r, 2, fntab[flag].ptr, cast(ulong)dim);
+        int j = snprintf(fdname.ptr, BUFFER_LEN,  "_aApply%s%.*s%llu", r, 2, fntab[flag].ptr, cast(ulong)dim);
         assert(j < BUFFER_LEN);
 
         FuncDeclaration fdapply;
@@ -1501,7 +1507,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         params.push(new Parameter(0, dgty, null, null, null));
         fdapply = FuncDeclaration.genCfunc(params, Type.tint32, fdname.ptr);
 
-        if (tabty == Tsarray)
+        if (tab.isTypeSArray())
             fs.aggr = fs.aggr.castTo(sc2, tn.arrayOf());
         // paint delegate argument to the type runtime expects
         Expression fexp = flde;
@@ -1516,10 +1522,11 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         return ec;
     }
 
-    private static extern(D) Expression applyAssocArray(ForeachStatement fs, Expression flde, TypeAArray taa)
+    private static extern(D) Expression applyAssocArray(ForeachStatement fs, Expression flde, Type tab)
     {
+        auto taa = tab.isTypeAArray();
         Expression ec;
-        const dim = fs.parameters.dim;
+        const dim = fs.parameters.length;
         // Check types
         Parameter p = (*fs.parameters)[0];
         bool isRef = (p.storageClass & STC.ref_) != 0;
@@ -1593,7 +1600,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
 
     private static extern(D) Statement loopReturn(Expression e, Statements* cases, const ref Loc loc)
     {
-        if (!cases.dim)
+        if (!cases.length)
         {
             // Easy case, a clean exit from the loop
             e = new CastExp(loc, e, Type.tvoid); // https://issues.dlang.org/show_bug.cgi?id=13899
@@ -1949,7 +1956,17 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         // Save 'root' of two branches (then and else) at the point where it forks
         CtorFlow ctorflow_root = scd.ctorflow.clone();
 
-        ifs.ifbody = ifs.ifbody.semanticNoScope(scd);
+        /* Detect `if (__ctfe)`
+         */
+        if (ifs.isIfCtfeBlock())
+        {
+            Scope* scd2 = scd.push();
+            scd2.flags |= SCOPE.ctfeBlock;
+            ifs.ifbody = ifs.ifbody.semanticNoScope(scd2);
+            scd2.pop();
+        }
+        else
+            ifs.ifbody = ifs.ifbody.semanticNoScope(scd);
         scd.pop();
 
         CtorFlow ctorflow_then = sc.ctorflow;   // move flow results
@@ -2010,32 +2027,8 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         //printf("body = %p\n", ps._body);
         if (ps.ident == Id.msg)
         {
-            if (ps.args)
-            {
-                foreach (arg; *ps.args)
-                {
-                    sc = sc.startCTFE();
-                    auto e = arg.expressionSemantic(sc);
-                    e = resolveProperties(sc, e);
-                    sc = sc.endCTFE();
-
-                    // pragma(msg) is allowed to contain types as well as expressions
-                    e = ctfeInterpretForPragmaMsg(e);
-                    if (e.op == EXP.error)
-                    {
-                        errorSupplemental(ps.loc, "while evaluating `pragma(msg, %s)`", arg.toChars());
-                        return setError();
-                    }
-                    if (auto se = e.toStringExp())
-                    {
-                        const slice = se.toUTF8(sc).peekString();
-                        fprintf(stderr, "%.*s", cast(int)slice.length, slice.ptr);
-                    }
-                    else
-                        fprintf(stderr, "%s", e.toChars());
-                }
-                fprintf(stderr, "\n");
-            }
+            if (!pragmaMsgSemantic(ps.loc, sc, ps.args))
+                return setError();
         }
         else if (ps.ident == Id.lib)
         {
@@ -2048,7 +2041,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             }
             else
             {
-                if (!ps.args || ps.args.dim != 1)
+                if (!ps.args || ps.args.length != 1)
                 {
                     ps.error("`string` expected for library name");
                     return setError();
@@ -2075,75 +2068,19 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         }
         else if (ps.ident == Id.startaddress)
         {
-            if (!ps.args || ps.args.dim != 1)
-                ps.error("function name expected for start address");
-            else
-            {
-                Expression e = (*ps.args)[0];
-                sc = sc.startCTFE();
-                e = e.expressionSemantic(sc);
-                e = resolveProperties(sc, e);
-                sc = sc.endCTFE();
-
-                e = e.ctfeInterpret();
-                (*ps.args)[0] = e;
-                Dsymbol sa = getDsymbol(e);
-                if (!sa || !sa.isFuncDeclaration())
-                {
-                    ps.error("function name expected for start address, not `%s`", e.toChars());
-                    return setError();
-                }
-                if (ps._body)
-                {
-                    ps._body = ps._body.statementSemantic(sc);
-                    if (ps._body.isErrorStatement())
-                    {
-                        result = ps._body;
-                        return;
-                    }
-                }
-                result = ps;
-                return;
-            }
+            if (!pragmaStartAddressSemantic(ps.loc, sc, ps.args))
+                return setError();
         }
         else if (ps.ident == Id.Pinline)
         {
-            PINLINE inlining = PINLINE.default_;
-            if (!ps.args || ps.args.dim == 0)
-                inlining = PINLINE.default_;
-            else if (!ps.args || ps.args.dim != 1)
+            if (auto fd = sc.func)
             {
-                ps.error("boolean expression expected for `pragma(inline)`");
-                return setError();
+                fd.inlining = evalPragmaInline(ps.loc, sc, ps.args);
             }
             else
             {
-                Expression e = (*ps.args)[0];
-                sc = sc.startCTFE();
-                e = e.expressionSemantic(sc);
-                e = resolveProperties(sc, e);
-                sc = sc.endCTFE();
-                e = e.ctfeInterpret();
-                e = e.toBoolean(sc);
-                if (e.isErrorExp())
-                {
-                    ps.error("pragma(`inline`, `true` or `false`) expected, not `%s`", (*ps.args)[0].toChars());
-                    return setError();
-                }
-
-                const opt = e.toBool();
-                if (opt.hasValue(true))
-                    inlining = PINLINE.always;
-                else if (opt.hasValue(false))
-                    inlining = PINLINE.never;
-
-                    FuncDeclaration fd = sc.func;
-                if (!fd)
-                {
-                    ps.error("`pragma(inline)` is not inside a function");
-                    return setError();
-                }
-                fd.inlining = inlining;
+                ps.error("`pragma(inline)` is not inside a function");
+                return setError();
             }
         }
         else if (!global.params.ignoreUnsupportedPragmas)
@@ -2296,7 +2233,9 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             if (ed && ss.cases.length < ed.members.length)
             {
                 int missingMembers = 0;
-                const maxShown = !global.params.verbose ? 6 : int.max;
+                const maxShown = !global.params.verbose ?
+                                    (global.params.errorSupplementLimit ? global.params.errorSupplementLimit : int.max)
+                                    : int.max;
             Lmembers:
                 foreach (es; *ed.members)
                 {
@@ -2330,7 +2269,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         }
 
         if (!sc.sw.sdefault &&
-            (!ss.isFinal || needswitcherror || global.params.useAssert == CHECKENABLE.on))
+            (!ss.isFinal || needswitcherror || global.params.useAssert == CHECKENABLE.on || sc.func.isSafe))
         {
             ss.hasNoDefault = 1;
 
@@ -2418,7 +2357,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
 
         size_t numcases = 0;
         if (ss.cases)
-            numcases = ss.cases.dim;
+            numcases = ss.cases.length;
 
         for (size_t i = 0; i < numcases; i++)
         {
@@ -2559,7 +2498,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                 cs.exp = se;
             else if (!cs.exp.isIntegerExp() && !cs.exp.isErrorExp())
             {
-                cs.error("`case` must be a `string` or an integral constant, not `%s`", cs.exp.toChars());
+                cs.error("`case` expression must be a compile-time `string` or an integral constant, not `%s`", cs.exp.toChars());
                 errors = true;
             }
 
@@ -2581,7 +2520,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             sw.cases.push(cs);
 
             // Resolve any goto case's with no exp to this case statement
-            for (size_t i = 0; i < sw.gotoCases.dim;)
+            for (size_t i = 0; i < sw.gotoCases.length;)
             {
                 GotoCaseStatement gcs = sw.gotoCases[i];
                 if (!gcs.exp)
@@ -2815,7 +2754,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             {
                 assert(rs.caseDim == 0);
                 sc.fes.cases.push(rs);
-                result = new ReturnStatement(Loc.initial, new IntegerExp(sc.fes.cases.dim + 1));
+                result = new ReturnStatement(Loc.initial, new IntegerExp(sc.fes.cases.length + 1));
                 return;
             }
             if (fd.returnLabel)
@@ -2932,13 +2871,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                 }
 
                 // https://issues.dlang.org/show_bug.cgi?id=23063
-                if (texp.isTypeNoreturn() && !rs.exp.isAssertExp() && !rs.exp.isThrowExp() && !rs.exp.isCallExp())
-                {
-                    auto msg = new StringExp(rs.exp.loc, "Accessed expression of type `noreturn`");
-                    msg.type = Type.tstring;
-                    rs.exp = new AssertExp(rs.loc, IntegerExp.literal!0, msg);
-                    rs.exp.type = texp;
-                }
+                rs.exp = checkNoreturnVarAccess(rs.exp);
 
                 // @@@DEPRECATED_2.111@@@
                 const olderrors = global.startGagging();
@@ -3022,7 +2955,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
 
                     // If we previously assumed the function could be ref when
                     // checking for `shared`, make sure we were right
-                    if (global.params.noSharedAccess && rs.exp.type.isShared())
+                    if (global.params.noSharedAccess == FeatureState.enabled && rs.exp.type.isShared())
                     {
                         fd.error("function returns `shared` but cannot be inferred `ref`");
                         supplemental();
@@ -3139,8 +3072,8 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                 sc.fes.cases.push(s);
 
                 // Immediately rewrite "this" return statement as:
-                //  return cases.dim+1;
-                rs.exp = new IntegerExp(sc.fes.cases.dim + 1);
+                //  return cases.length+1;
+                rs.exp = new IntegerExp(sc.fes.cases.length + 1);
                 if (e0)
                 {
                     result = new CompoundStatement(rs.loc, new ExpStatement(rs.loc, e0), rs);
@@ -3164,7 +3097,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                 //  return exp;
                 // to:
                 //  vresult = exp; retrun caseDim;
-                rs.caseDim = sc.fes.cases.dim + 1;
+                rs.caseDim = sc.fes.cases.length + 1;
             }
         }
         if (rs.exp)
@@ -3222,7 +3155,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                          * and 1 is break.
                          */
                         sc.fes.cases.push(bs);
-                        result = new ReturnStatement(Loc.initial, new IntegerExp(sc.fes.cases.dim + 1));
+                        result = new ReturnStatement(Loc.initial, new IntegerExp(sc.fes.cases.length + 1));
                         return;
                     }
                     break; // can't break to it
@@ -3310,7 +3243,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
                          * and 1 is break.
                          */
                         sc.fes.cases.push(cs);
-                        result = new ReturnStatement(Loc.initial, new IntegerExp(sc.fes.cases.dim + 1));
+                        result = new ReturnStatement(Loc.initial, new IntegerExp(sc.fes.cases.length + 1));
                         return;
                     }
                     break; // can't continue to it
@@ -3648,7 +3581,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
 
         if (sc.func)
         {
-            sc.func.flags |= FUNCFLAG.hasCatches;
+            sc.func.hasCatches = true;
             if (flags == (FLAGcpp | FLAGd))
             {
                 tcs.error("cannot mix catching D and C++ exceptions in the same try-catch");
@@ -3675,7 +3608,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
          */
         if (!(tcs._body.blockExit(sc.func, false) & BE.throw_) && ClassDeclaration.exception)
         {
-            foreach_reverse (i; 0 .. tcs.catches.dim)
+            foreach_reverse (i; 0 .. tcs.catches.length)
             {
                 Catch c = (*tcs.catches)[i];
 
@@ -3690,7 +3623,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
             }
         }
 
-        if (tcs.catches.dim == 0)
+        if (tcs.catches.length == 0)
         {
             result = tcs._body.hasCode() ? tcs._body : null;
             return;
@@ -3878,6 +3811,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         gs.tf = sc.tf;
         gs.os = sc.os;
         gs.lastVar = sc.lastVar;
+        gs.inCtfeBlock = (sc.flags & SCOPE.ctfeBlock) != 0;
 
         if (!gs.label.statement && sc.fes)
         {
@@ -3917,6 +3851,7 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         ls.tf = sc.tf;
         ls.os = sc.os;
         ls.lastVar = sc.lastVar;
+        ls.inCtfeBlock = (sc.flags & SCOPE.ctfeBlock) != 0;
 
         LabelDsymbol ls2 = fd.searchLabel(ls.ident, ls.loc);
         if (ls2.statement)
@@ -3995,10 +3930,10 @@ package (dmd) extern (C++) final class StatementSemanticVisitor : Visitor
         /* https://dlang.org/spec/module.html#ImportDeclaration
          */
 
-        foreach (i; 0 .. imps.imports.dim)
+        foreach (i; 0 .. imps.imports.length)
         {
             Import s = (*imps.imports)[i].isImport();
-            assert(!s.aliasdecls.dim);
+            assert(!s.aliasdecls.length);
             foreach (j, name; s.names)
             {
                 Identifier _alias = s.aliases[j];
@@ -4303,7 +4238,7 @@ public auto makeTupleForeach(Scope* sc, bool isStatic, bool isDecl, ForeachState
     }
 
     auto loc = fs.loc;
-    size_t dim = fs.parameters.dim;
+    size_t dim = fs.parameters.length;
     const bool skipCheck = isStatic && needExpansion;
     if (!skipCheck && (dim < 1 || dim > 2))
     {
@@ -4337,7 +4272,7 @@ public auto makeTupleForeach(Scope* sc, bool isStatic, bool isDecl, ForeachState
     if (fs.aggr.op == EXP.tuple) // expression tuple
     {
         te = cast(TupleExp)fs.aggr;
-        n = te.exps.dim;
+        n = te.exps.length;
     }
     else if (fs.aggr.op == EXP.type) // type tuple
     {
@@ -4718,7 +4653,7 @@ private Statements* flatten(Statement statement, Scope* sc)
             {
                 return a;
             }
-            auto b = new Statements(a.dim);
+            auto b = new Statements(a.length);
             foreach (i, s; *a)
             {
                 (*b)[i] = s ? new ForwardingStatement(s.loc, fs.sym, s) : null;
@@ -4788,7 +4723,7 @@ private Statements* flatten(Statement statement, Scope* sc)
             if (!a)
                 return null;
 
-            if (!a.dim)
+            if (!a.length)
             {
                 a.push(new ExpStatement(ls.loc, cast(Expression)null));
             }
@@ -4810,7 +4745,7 @@ private Statements* flatten(Statement statement, Scope* sc)
             const len = buf.length;
             buf.writeByte(0);
             const str = buf.extractSlice()[0 .. len];
-            scope p = new Parser!ASTCodegen(cs.loc, sc._module, str, false);
+            scope p = new Parser!ASTCodegen(cs.loc, sc._module, str, false, global.errorSink);
             p.nextToken();
 
             auto a = new Statements();
@@ -4924,4 +4859,84 @@ private void debugThrowWalker(Statement s)
 
     scope walker = new DebugWalker();
     s.accept(walker);
+}
+
+/***********************************************************
+ * Evaluate and print a `pragma(msg, args)`
+ *
+ * Params:
+ *    loc = location for error messages
+ *    sc = scope for argument interpretation
+ *    args = expressions to print
+ * Returns:
+ *    `true` on success
+ */
+bool pragmaMsgSemantic(Loc loc, Scope* sc, Expressions* args)
+{
+    if (!args)
+        return true;
+    foreach (arg; *args)
+    {
+        sc = sc.startCTFE();
+        auto e = arg.expressionSemantic(sc);
+        e = resolveProperties(sc, e);
+        sc = sc.endCTFE();
+
+        // pragma(msg) is allowed to contain types as well as expressions
+        e = ctfeInterpretForPragmaMsg(e);
+        if (e.op == EXP.error)
+        {
+            errorSupplemental(loc, "while evaluating `pragma(msg, %s)`", arg.toChars());
+            return false;
+        }
+        if (auto se = e.toStringExp())
+        {
+            const slice = se.toUTF8(sc).peekString();
+            fprintf(stderr, "%.*s", cast(int)slice.length, slice.ptr);
+        }
+        else
+            fprintf(stderr, "%s", e.toChars());
+    }
+    fprintf(stderr, "\n");
+    return true;
+}
+
+/***********************************************************
+ * Evaluate `pragma(startAddress, func)` and store the resolved symbol in `args`
+ *
+ * Params:
+ *    loc = location for error messages
+ *    sc = scope for argument interpretation
+ *    args = pragma arguments
+ * Returns:
+ *    `true` on success
+ */
+bool pragmaStartAddressSemantic(Loc loc, Scope* sc, Expressions* args)
+{
+    if (!args || args.length != 1)
+    {
+        .error(loc, "function name expected for start address");
+        return false;
+    }
+    else
+    {
+        /* https://issues.dlang.org/show_bug.cgi?id=11980
+         * resolveProperties and ctfeInterpret call are not necessary.
+         */
+        Expression e = (*args)[0];
+        sc = sc.startCTFE();
+        e = e.expressionSemantic(sc);
+        // e = resolveProperties(sc, e);
+        sc = sc.endCTFE();
+
+        // e = e.ctfeInterpret();
+        (*args)[0] = e;
+        Dsymbol sa = getDsymbol(e);
+        if (!sa || !sa.isFuncDeclaration())
+        {
+            .error(loc, "function name expected for start address, not `%s`", e.toChars());
+            return false;
+        }
+    }
+    return true;
 }

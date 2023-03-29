@@ -9,4 +9,4 @@ void foo(int *restrict a, int *restrict b, unsigned int n)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 2 "vect" } } */
+/* { dg-final { scan-tree-dump "Vectorizing an unaligned access" "vect" } } */

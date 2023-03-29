@@ -1,4 +1,4 @@
-# Copyright (C) 2002-2022 Free Software Foundation, Inc.
+# Copyright (C) 2002-2023 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -16,5 +16,10 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-TM_H += $(srcdir)/../include/xtensa-config.h
+TM_H += $(srcdir)/../include/xtensa-config.h \
+	$(srcdir)/../include/xtensa-dynconfig.h
 $(out_object_file): gt-xtensa.h
+
+xtensa-dynconfig.o: $(srcdir)/config/xtensa/xtensa-dynconfig.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)

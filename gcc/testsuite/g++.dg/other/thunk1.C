@@ -1,5 +1,6 @@
 // PR c++/12007 Multiple inheritance float pass by value fails
 // { dg-do run }
+// { dg-additional-options "-fexcess-precision=fast" }
 
 extern "C" void abort (void);
 

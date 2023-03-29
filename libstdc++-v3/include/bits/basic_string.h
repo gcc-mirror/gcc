@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997-2022 Free Software Foundation, Inc.
+// Copyright (C) 1997-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -271,7 +271,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX20_CONSTEXPR
       bool
       _M_is_local() const
-      { return _M_data() == _M_local_data(); }
+      {
+	if (_M_data() == _M_local_data())
+	  {
+	    if (_M_string_length > _S_local_capacity)
+	      __builtin_unreachable();
+	    return true;
+	  }
+	return false;
+      }
 
       // Create & Destroy
       _GLIBCXX20_CONSTEXPR
@@ -352,8 +360,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       {
 #if __cpp_lib_is_constant_evaluated
 	if (std::is_constant_evaluated())
-	  for (_CharT& __c : _M_local_buf)
-	    __c = _CharT();
+	  for (size_type __i = 0; __i <= _S_local_capacity; ++__i)
+	    _M_local_buf[__i] = _CharT();
 #endif
 	return _M_local_data();
       }
@@ -844,9 +852,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       operator=(basic_string&& __str)
       noexcept(_Alloc_traits::_S_nothrow_move())
       {
+	const bool __equal_allocs = _Alloc_traits::_S_always_equal()
+	  || _M_get_allocator() == __str._M_get_allocator();
 	if (!_M_is_local() && _Alloc_traits::_S_propagate_on_move_assign()
-	    && !_Alloc_traits::_S_always_equal()
-	    && _M_get_allocator() != __str._M_get_allocator())
+	    && !__equal_allocs)
 	  {
 	    // Destroy existing storage before replacing allocator.
 	    _M_destroy(_M_allocated_capacity);
@@ -868,16 +877,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 		_M_set_length(__str.size());
 	      }
 	  }
-	else if (_Alloc_traits::_S_propagate_on_move_assign()
-	    || _Alloc_traits::_S_always_equal()
-	    || _M_get_allocator() == __str._M_get_allocator())
+	else if (_Alloc_traits::_S_propagate_on_move_assign() || __equal_allocs)
 	  {
 	    // Just move the allocated pointer, our allocator can free it.
 	    pointer __data = nullptr;
 	    size_type __capacity;
 	    if (!_M_is_local())
 	      {
-		if (_Alloc_traits::_S_always_equal())
+		if (__equal_allocs)
 		  {
 		    // __str can reuse our existing storage.
 		    __data = _M_data();
@@ -1118,6 +1125,35 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
 #if __cplusplus > 202002L
 #define __cpp_lib_string_resize_and_overwrite 202110L
+      /** Resize the string and call a function to fill it.
+       *
+       * @param __n   The maximum size requested.
+       * @param __op  A callable object that writes characters to the string.
+       *
+       * This is a low-level function that is easy to misuse, be careful.
+       *
+       * Calling `str.resize_and_overwrite(n, op)` will reserve at least `n`
+       * characters in `str`, evaluate `n2 = std::move(op)(str.data(), n)`,
+       * and finally set the string length to `n2` (adding a null terminator
+       * at the end). The function object `op` is allowed to write to the
+       * extra capacity added by the initial reserve operation, which is not
+       * allowed if you just call `str.reserve(n)` yourself.
+       *
+       * This can be used to efficiently fill a `string` buffer without the
+       * overhead of zero-initializing characters that will be overwritten
+       * anyway.
+       *
+       * The callable `op` must not access the string directly (only through
+       * the pointer passed as its first argument), must not write more than
+       * `n` characters to the string, must return a value no greater than `n`,
+       * and must ensure that all characters up to the returned length are
+       * valid after it returns (i.e. there must be no uninitialized values
+       * left in the string after the call, because accessing them would
+       * have undefined behaviour). If `op` exits by throwing an exception
+       * the behaviour is undefined.
+       *
+       * @since C++23
+       */
       template<typename _Operation>
 	constexpr void
 	resize_and_overwrite(size_type __n, _Operation __op);
@@ -3485,6 +3521,24 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 _GLIBCXX_END_NAMESPACE_CXX11
 #endif
 
+  template<typename _Str>
+    _GLIBCXX20_CONSTEXPR
+    inline _Str
+    __str_concat(typename _Str::value_type const* __lhs,
+		 typename _Str::size_type __lhs_len,
+		 typename _Str::value_type const* __rhs,
+		 typename _Str::size_type __rhs_len,
+		 typename _Str::allocator_type const& __a)
+    {
+      typedef typename _Str::allocator_type allocator_type;
+      typedef __gnu_cxx::__alloc_traits<allocator_type> _Alloc_traits;
+      _Str __str(_Alloc_traits::_S_select_on_copy(__a));
+      __str.reserve(__lhs_len + __rhs_len);
+      __str.append(__lhs, __lhs_len);
+      __str.append(__rhs, __rhs_len);
+      return __str;
+    }
+
   // operator+
   /**
    *  @brief  Concatenate two strings.
@@ -3494,13 +3548,14 @@ _GLIBCXX_END_NAMESPACE_CXX11
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
     _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
-    basic_string<_CharT, _Traits, _Alloc>
+    inline basic_string<_CharT, _Traits, _Alloc>
     operator+(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	      const basic_string<_CharT, _Traits, _Alloc>& __rhs)
     {
-      basic_string<_CharT, _Traits, _Alloc> __str(__lhs);
-      __str.append(__rhs);
-      return __str;
+      typedef basic_string<_CharT, _Traits, _Alloc> _Str;
+      return std::__str_concat<_Str>(__lhs.c_str(), __lhs.size(),
+				     __rhs.c_str(), __rhs.size(),
+				     __lhs.get_allocator());
     }
 
   /**
@@ -3511,9 +3566,16 @@ _GLIBCXX_END_NAMESPACE_CXX11
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
     _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
-    basic_string<_CharT,_Traits,_Alloc>
+    inline basic_string<_CharT,_Traits,_Alloc>
     operator+(const _CharT* __lhs,
-	      const basic_string<_CharT,_Traits,_Alloc>& __rhs);
+	      const basic_string<_CharT,_Traits,_Alloc>& __rhs)
+    {
+      __glibcxx_requires_string(__lhs);
+      typedef basic_string<_CharT, _Traits, _Alloc> _Str;
+      return std::__str_concat<_Str>(__lhs, _Traits::length(__lhs),
+				     __rhs.c_str(), __rhs.size(),
+				     __rhs.get_allocator());
+    }
 
   /**
    *  @brief  Concatenate character and string.
@@ -3523,8 +3585,14 @@ _GLIBCXX_END_NAMESPACE_CXX11
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
     _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
-    basic_string<_CharT,_Traits,_Alloc>
-    operator+(_CharT __lhs, const basic_string<_CharT,_Traits,_Alloc>& __rhs);
+    inline basic_string<_CharT,_Traits,_Alloc>
+    operator+(_CharT __lhs, const basic_string<_CharT,_Traits,_Alloc>& __rhs)
+    {
+      typedef basic_string<_CharT, _Traits, _Alloc> _Str;
+      return std::__str_concat<_Str>(__builtin_addressof(__lhs), 1,
+				     __rhs.c_str(), __rhs.size(),
+				     __rhs.get_allocator());
+    }
 
   /**
    *  @brief  Concatenate string and C string.
@@ -3538,11 +3606,12 @@ _GLIBCXX_END_NAMESPACE_CXX11
     operator+(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
 	      const _CharT* __rhs)
     {
-      basic_string<_CharT, _Traits, _Alloc> __str(__lhs);
-      __str.append(__rhs);
-      return __str;
+      __glibcxx_requires_string(__rhs);
+      typedef basic_string<_CharT, _Traits, _Alloc> _Str;
+      return std::__str_concat<_Str>(__lhs.c_str(), __lhs.size(),
+				     __rhs, _Traits::length(__rhs),
+				     __lhs.get_allocator());
     }
-
   /**
    *  @brief  Concatenate string and character.
    *  @param __lhs  First string.
@@ -3554,11 +3623,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
     inline basic_string<_CharT, _Traits, _Alloc>
     operator+(const basic_string<_CharT, _Traits, _Alloc>& __lhs, _CharT __rhs)
     {
-      typedef basic_string<_CharT, _Traits, _Alloc>	__string_type;
-      typedef typename __string_type::size_type		__size_type;
-      __string_type __str(__lhs);
-      __str.append(__size_type(1), __rhs);
-      return __str;
+      typedef basic_string<_CharT, _Traits, _Alloc> _Str;
+      return std::__str_concat<_Str>(__lhs.c_str(), __lhs.size(),
+				     __builtin_addressof(__rhs), 1,
+				     __lhs.get_allocator());
     }
 
 #if __cplusplus >= 201103L

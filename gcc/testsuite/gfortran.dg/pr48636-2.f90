@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O3 -fdump-ipa-cp-details -fno-inline" }
+! { dg-options "-O3 -fdump-ipa-cp-details -fno-inline -fno-ipa-sra" }
 
 module foo
   implicit none

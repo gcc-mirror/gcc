@@ -4,7 +4,7 @@
  * Functions and objects dedicated to file I/O and management. TODO: Move here artifacts
  * from places such as root/ so both the frontend and the backend have access to them.
  *
- * Copyright: Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright: Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:   Walter Bright, https://www.digitalmars.com
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/common/file.d, common/_file.d)
@@ -144,9 +144,14 @@ struct FileMapping(Datum)
         import core.stdc.string : strlen;
         import core.stdc.stdlib : malloc;
         import core.stdc.string : memcpy;
-        auto totalNameLength = filename.strlen() + 1;
-        name = cast(char*) memcpy(malloc(totalNameLength), filename, totalNameLength);
-        name || assert(0, "FileMapping: Out of memory.");
+        const totalNameLength = filename.strlen() + 1;
+        auto namex = cast(char*) malloc(totalNameLength);
+        if (!namex)
+        {
+            fprintf(stderr, "FileMapping: Out of memory.");
+            exit(1);
+        }
+        name = cast(char*) memcpy(namex, filename, totalNameLength);
     }
 
     /**

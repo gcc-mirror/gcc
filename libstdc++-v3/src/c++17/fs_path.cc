@@ -1,6 +1,6 @@
 // Class filesystem::path -*- C++ -*-
 
-// Copyright (C) 2014-2022 Free Software Foundation, Inc.
+// Copyright (C) 2014-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -186,6 +186,19 @@ struct path::_Parser
   offset(const cmpt& c) const noexcept
   { return origin + c.str.data() - input.data(); }
 };
+
+inline
+path::path(basic_string_view<value_type> __str, _Type __type)
+: _M_pathname(__str)
+{
+  __glibcxx_assert(__type != _Type::_Multi);
+  _M_cmpts.type(__type);
+}
+
+inline
+path::_Cmpt::_Cmpt(basic_string_view<value_type> __s, _Type __t, size_t __pos)
+: path(__s, __t), _M_pos(__pos)
+{ }
 
 struct path::_List::_Impl
 {

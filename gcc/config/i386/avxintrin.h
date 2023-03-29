@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1207,21 +1207,30 @@ _mm256_movemask_ps (__m256 __A)
 extern __inline __m256d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_undefined_pd (void)
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winit-self"
   __m256d __Y = __Y;
+#pragma GCC diagnostic pop
   return __Y;
 }
 
 extern __inline __m256 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_undefined_ps (void)
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winit-self"
   __m256 __Y = __Y;
+#pragma GCC diagnostic pop
   return __Y;
 }
 
 extern __inline __m256i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_undefined_si256 (void)
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winit-self"
   __m256i __Y = __Y;
+#pragma GCC diagnostic pop
   return __Y;
 }
 

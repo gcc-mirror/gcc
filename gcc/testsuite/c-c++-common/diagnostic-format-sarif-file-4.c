@@ -8,6 +8,8 @@ int test (void)
 }
 
 /* 
+   { dg-final { verify-sarif-file } }
+
        { dg-final { scan-sarif-file "\"level\": \"error\"" } }
 
        We expect the region expressed in display columns:

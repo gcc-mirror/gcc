@@ -3,10 +3,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/test21096.d(13): Error: identifier or new keyword expected following `(...)`.
-fail_compilation/test21096.d(13): Error: found `.` when expecting `]`
-fail_compilation/test21096.d(13): Error: no identifier for declarator `char`
-fail_compilation/test21096.d(13): Error: declaration expected, not `]`
+fail_compilation/test21096.d(11): Error: identifier or new keyword expected following `(...)`.
+fail_compilation/test21096.d(11): Error: no identifier for declarator `char[(__error)]`
 ---
 */
 

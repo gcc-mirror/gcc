@@ -1,5 +1,5 @@
 // { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts" }
+// { dg-options "-fconcepts-ts" }
 
 template <class T1, class T2> class A { };
 

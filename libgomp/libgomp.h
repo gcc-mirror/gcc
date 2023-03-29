@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2023 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -112,8 +112,8 @@ extern void gomp_aligned_free (void *);
 /* Optimized allocators for team-specific data that will die with the team.  */
 
 #ifdef __AMDGCN__
+#include "libgomp-gcn.h"
 /* The arena is initialized in config/gcn/team.c.  */
-#define TEAM_ARENA_SIZE  64*1024  /* Must match the value in plugin-gcn.c.  */
 #define TEAM_ARENA_START 16  /* LDS offset of free pointer.  */
 #define TEAM_ARENA_FREE  24  /* LDS offset of free pointer.  */
 #define TEAM_ARENA_END   32  /* LDS offset of end pointer.  */
@@ -135,7 +135,8 @@ team_malloc (size_t size)
     {
       /* While this is experimental, let's make sure we know when OOM
 	 happens.  */
-      const char msg[] = "GCN team arena exhausted\n";
+      const char msg[] = "GCN team arena exhausted;"
+			 " configure with GCN_TEAM_ARENA_SIZE=bytes\n";
       write (2, msg, sizeof(msg)-1);
 
       /* Fall back to using the heap (slowly).  */
@@ -1128,6 +1129,11 @@ extern int gomp_pause_host (void);
 extern void gomp_init_targets_once (void);
 extern int gomp_get_num_devices (void);
 extern bool gomp_target_task_fn (void *);
+extern void gomp_target_rev (uint64_t, uint64_t, uint64_t, uint64_t, uint64_t,
+			     int,
+			     void (*) (void *, const void *, size_t, void *),
+			     void (*) (void *, const void *, size_t, void *),
+			     void *);
 
 /* Splay tree definitions.  */
 typedef struct splay_tree_node_s *splay_tree_node;
@@ -1152,29 +1158,7 @@ struct target_var_desc {
   uintptr_t length;
 };
 
-struct target_mem_desc {
-  /* Reference count.  */
-  uintptr_t refcount;
-  /* All the splay nodes allocated together.  */
-  splay_tree_node array;
-  /* Start of the target region.  */
-  uintptr_t tgt_start;
-  /* End of the targer region.  */
-  uintptr_t tgt_end;
-  /* Handle to free.  */
-  void *to_free;
-  /* Previous target_mem_desc.  */
-  struct target_mem_desc *prev;
-  /* Number of items in following list.  */
-  size_t list_count;
-
-  /* Corresponding target device descriptor.  */
-  struct gomp_device_descr *device_descr;
-
-  /* List of target items to remove (or decrease refcount)
-     at the end of region.  */
-  struct target_var_desc list[];
-};
+struct target_mem_desc;
 
 /* Special value for refcount - mask to indicate existence of special
    values. Right now we allocate 3 bits.  */
@@ -1267,6 +1251,58 @@ splay_compare (splay_tree_key x, splay_tree_key y)
 }
 
 #include "splay-tree.h"
+
+/* Reverse offload splay-tree handling (functions only). */
+
+struct reverse_splay_tree_key_s {
+  /* Address of the device object.  */
+  uint64_t dev;
+  splay_tree_key k;
+};
+
+typedef struct reverse_splay_tree_node_s *reverse_splay_tree_node;
+typedef struct reverse_splay_tree_s *reverse_splay_tree;
+typedef struct reverse_splay_tree_key_s *reverse_splay_tree_key;
+
+static inline int
+reverse_splay_compare (reverse_splay_tree_key x, reverse_splay_tree_key y)
+{
+  if (x->dev < y->dev)
+    return -1;
+  if (x->dev > y->dev)
+    return 1;
+  return 0;
+}
+
+#define splay_tree_prefix reverse
+#include "splay-tree.h"
+
+struct target_mem_desc {
+  /* Reference count.  */
+  uintptr_t refcount;
+  /* All the splay nodes allocated together.  */
+  splay_tree_node array;
+  /* Likewise for the reverse lookup device->host for reverse offload. */
+  reverse_splay_tree_node rev_array;
+  /* Start of the target region.  */
+  uintptr_t tgt_start;
+  /* End of the targer region.  */
+  uintptr_t tgt_end;
+  /* Handle to free.  */
+  void *to_free;
+  /* Previous target_mem_desc.  */
+  struct target_mem_desc *prev;
+  /* Number of items in following list.  */
+  size_t list_count;
+
+  /* Corresponding target device descriptor.  */
+  struct gomp_device_descr *device_descr;
+
+  /* List of target items to remove (or decrease refcount)
+     at the end of region.  */
+  struct target_var_desc list[];
+};
+
 
 typedef struct acc_dispatch_t
 {
@@ -1362,6 +1398,7 @@ struct gomp_device_descr
 
   /* Splay tree containing information about mapped memory regions.  */
   struct splay_tree_s mem_map;
+  struct reverse_splay_tree_s mem_map_rev;
 
   /* Mutex for the mutable data.  */
   gomp_mutex_t lock;

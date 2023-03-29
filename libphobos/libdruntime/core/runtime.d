@@ -112,7 +112,7 @@ private
     alias void delegate( Throwable ) ExceptionHandler;
     extern (C) void _d_print_throwable(Throwable t);
 
-    extern (C) void* thread_stackBottom();
+    extern (C) void* thread_stackBottom() nothrow @nogc;
 }
 
 
@@ -122,7 +122,7 @@ shared static this()
     //       still possible the app could exit without a stack trace.  If
     //       this becomes an issue, the handler could be set in C main
     //       before the module ctors are run.
-    Runtime.traceHandler = &defaultTraceHandler;
+    Runtime.traceHandler(&defaultTraceHandler, &defaultTraceDeallocator);
 }
 
 
@@ -284,10 +284,18 @@ struct Runtime
      * If the supplied pointer is null then the trace routine should determine
      * an appropriate calling context from which to begin the trace.
      *
+     * If the deallocator is set, then it is called with the traceinfo when the
+     * exception is finalized. The deallocator is only set in the exception if
+     * the default handler is used to generate the trace info.
+     *
      * Params:
      *  h = The new trace handler.  Set to null to disable exception backtracing.
+     *  d = The new trace deallocator. If non-null, this will be called on
+     *      exception destruction with the trace info, only when the trace
+     *      handler is used to generate TraceInfo.
      */
-    extern(C) pragma(mangle, "rt_setTraceHandler") static @property void traceHandler(TraceHandler h);
+    extern(C) pragma(mangle, "rt_setTraceHandler") static @property void traceHandler(TraceHandler h,
+                    Throwable.TraceDeallocator d = null);
 
     /**
      * Gets the current trace handler.
@@ -296,6 +304,14 @@ struct Runtime
      *  The current trace handler or null if none has been set.
      */
     extern(C) pragma(mangle, "rt_getTraceHandler") static @property TraceHandler traceHandler();
+
+    /**
+     * Gets the current trace deallocator.
+     *
+     * Returns:
+     *  The current trace deallocator or null if none has been set.
+     */
+    extern(C) pragma(mangle, "rt_getTraceDeallocator") static @property Throwable.TraceDeallocator traceDeallocator();
 
     /**
      * Overrides the default collect hander with a user-supplied version.  This
@@ -705,6 +721,10 @@ extern (C) UnitTestResult runModuleUnitTests()
  * This functions returns a trace handler, allowing to inspect the
  * current stack trace.
  *
+ * IMPORTANT NOTE! the returned trace is potentially not GC allocated, and so
+ * you must call `defaultTraceDeallocator` when you are finished with the
+ * `TraceInfo`
+ *
  * Params:
  *   ptr = (Windows only) The context to get the stack trace from.
  *         When `null` (the default), start from the current frame.
@@ -714,14 +734,24 @@ extern (C) UnitTestResult runModuleUnitTests()
  *   or `null`. If called from a finalizer (destructor), always returns `null`
  *   as trace handlers allocate.
  */
-Throwable.TraceInfo defaultTraceHandler( void* ptr = null )
+Throwable.TraceInfo defaultTraceHandler( void* ptr = null ) // @nogc
 {
+    // NOTE: with traces now being allocated using C malloc, no need to worry
+    // about GC reentrancy. This code left commented out for reference.
+    //
     // avoid recursive GC calls in finalizer, trace handlers should be made @nogc instead
-    import core.memory : GC;
+    /*import core.memory : GC;
     if (GC.inFinalizer)
-        return null;
+        return null;*/
 
-    static if (__traits(compiles, new LibBacktrace(0)))
+    static T allocate(T, Args...)(auto ref Args args) @nogc
+    {
+        import core.lifetime : emplace;
+        import core.stdc.stdlib : malloc;
+        auto result = cast(T)malloc(__traits(classInstanceSize, T));
+        return emplace(result, args);
+    }
+    static if (__traits(compiles, allocate!LibBacktrace(0)))
     {
         version (Posix)
             static enum FIRSTFRAME = 4;
@@ -729,9 +759,9 @@ Throwable.TraceInfo defaultTraceHandler( void* ptr = null )
             static enum FIRSTFRAME = 4;
         else
             static enum FIRSTFRAME = 0;
-        return new LibBacktrace(FIRSTFRAME);
+        return allocate!LibBacktrace(FIRSTFRAME);
     }
-    else static if (__traits(compiles, new UnwindBacktrace(0)))
+    else static if (__traits(compiles, allocate!UnwindBacktrace(0)))
     {
         version (Posix)
             static enum FIRSTFRAME = 5;
@@ -739,25 +769,25 @@ Throwable.TraceInfo defaultTraceHandler( void* ptr = null )
             static enum FIRSTFRAME = 4;
         else
             static enum FIRSTFRAME = 0;
-        return new UnwindBacktrace(FIRSTFRAME);
+        return allocate!UnwindBacktrace(FIRSTFRAME);
     }
     else version (Windows)
     {
         import core.sys.windows.stacktrace;
-        static if (__traits(compiles, new StackTrace(0, null)))
+        static if (__traits(compiles, allocate!StackTrace(0, null)))
         {
             import core.sys.windows.winnt : CONTEXT;
             version (Win64)
                 enum FIRSTFRAME = 4;
             else version (Win32)
                 enum FIRSTFRAME = 0;
-            return new StackTrace(FIRSTFRAME, cast(CONTEXT*)ptr);
+            return allocate!StackTrace(FIRSTFRAME, cast(CONTEXT*)ptr);
         }
         else
             return null;
     }
-    else static if (__traits(compiles, new DefaultTraceInfo()))
-        return new DefaultTraceInfo();
+    else static if (__traits(compiles, allocate!DefaultTraceInfo()))
+        return allocate!DefaultTraceInfo();
     else
         return null;
 }
@@ -775,7 +805,30 @@ unittest
         {
             printf("%.*s\n", cast(int)line.length, line.ptr);
         }
+        defaultTraceDeallocator(trace);
     }
+}
+
+/***
+ * Deallocate a traceinfo generated by deaultTraceHander.
+ *
+ * Call this function on a TraceInfo generated via `defaultTraceHandler` when
+ * you are done with it. If necessary, this cleans up any manually managed
+ * resources from the `TraceInfo`, and invalidates it. After this, the object
+ * is no longer valid.
+ *
+ * Params:
+ *      info = The `TraceInfo` to deallocate. This should only be a value that
+ *             was returned by `defaultTraceHandler`.
+ */
+void defaultTraceDeallocator(Throwable.TraceInfo info) nothrow
+{
+    if (info is null)
+        return;
+    auto obj = cast(Object)info;
+    destroy(obj);
+    import core.stdc.stdlib : free;
+    free(cast(void *)obj);
 }
 
 version (DRuntime_Use_Libunwind)
@@ -791,7 +844,7 @@ else static if (hasExecinfo) private class DefaultTraceInfo : Throwable.TraceInf
     import core.stdc.stdlib : free;
     import core.stdc.string : strlen, memchr, memmove;
 
-    this()
+    this() @nogc
     {
         // it may not be 1 but it is good enough to get
         // in CALL instruction address range for backtrace
@@ -805,13 +858,13 @@ else static if (hasExecinfo) private class DefaultTraceInfo : Throwable.TraceInf
                 elem -= CALL_INSTRUCTION_SIZE;
         else // backtrace() failed, do it ourselves
         {
-            static void** getBasePtr()
+            static void** getBasePtr() @nogc
             {
                 version (D_InlineAsm_X86)
-                    asm { naked; mov EAX, EBP; ret; }
+                    asm @nogc { naked; mov EAX, EBP; ret; }
                 else
                     version (D_InlineAsm_X86_64)
-                        asm { naked; mov RAX, RBP; ret; }
+                        asm @nogc { naked; mov RAX, RBP; ret; }
                 else
                     return null;
             }
@@ -910,7 +963,7 @@ private:
         {
             fixbuf[0 .. symBeg] = buf[0 .. symBeg];
 
-            auto sym = demangle(buf[symBeg .. symEnd], fixbuf[symBeg .. $]);
+            auto sym = demangle(buf[symBeg .. symEnd], fixbuf[symBeg .. $], getCXXDemangler());
 
             if (sym.ptr !is fixbuf.ptr + symBeg)
             {

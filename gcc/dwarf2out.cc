@@ -1,5 +1,5 @@
 /* Output Dwarf2 format symbol table information from GCC.
-   Copyright (C) 1992-2022 Free Software Foundation, Inc.
+   Copyright (C) 1992-2023 Free Software Foundation, Inc.
    Contributed by Gary Funck (gary@intrepid.com).
    Derived from DWARF 1 implementation of Ron Guilmette (rfg@monkeys.com).
    Extensively modified by Jason Merrill (jason@cygnus.com).
@@ -5598,6 +5598,17 @@ is_fortran (const_tree decl)
 			   "GNU F77") == 0);
     }
   return is_fortran ();
+}
+
+/* Return TRUE if the language is Rust.
+   Note, returns FALSE for dwarf_version < 5 && dwarf_strict. */
+
+static inline bool
+is_rust ()
+{
+  unsigned int lang = get_AT_unsigned (comp_unit_die (), DW_AT_language);
+
+  return lang == DW_LANG_Rust;
 }
 
 /* Return TRUE if the language is Ada.  */
@@ -13232,7 +13243,11 @@ base_type_die (tree type, bool reverse)
 	}
       if (TYPE_STRING_FLAG (type))
 	{
-	  if (TYPE_UNSIGNED (type))
+	  if ((dwarf_version >= 4 || !dwarf_strict)
+	      && is_rust ()
+	      && int_size_in_bytes (type) == 4)
+	    encoding = DW_ATE_UTF;
+	  else if (TYPE_UNSIGNED (type))
 	    encoding = DW_ATE_unsigned_char;
 	  else
 	    encoding = DW_ATE_signed_char;
@@ -24783,7 +24798,8 @@ add_call_src_coords_attributes (tree stmt, dw_die_ref die)
   if (RESERVED_LOCATION_P (BLOCK_SOURCE_LOCATION (stmt)))
     return;
 
-  expanded_location s = expand_location (BLOCK_SOURCE_LOCATION (stmt));
+  location_t locus = BLOCK_SOURCE_LOCATION (stmt);
+  expanded_location s = expand_location (locus);
 
   if (dwarf_version >= 3 || !dwarf_strict)
     {
@@ -24791,6 +24807,9 @@ add_call_src_coords_attributes (tree stmt, dw_die_ref die)
       add_AT_unsigned (die, DW_AT_call_line, s.line);
       if (debug_column_info && s.column)
 	add_AT_unsigned (die, DW_AT_call_column, s.column);
+      unsigned discr = get_discriminator_from_loc (locus);
+	if (discr != 0)
+	  add_AT_unsigned (die, DW_AT_GNU_discriminator, discr);
     }
 }
 
@@ -25202,6 +25221,8 @@ gen_compile_unit_die (const char *filename)
     }
   else if (strcmp (language_string, "GNU F77") == 0)
     language = DW_LANG_Fortran77;
+  else if (strcmp (language_string, "GNU Modula-2") == 0)
+    language = DW_LANG_Modula2;
   else if (dwarf_version >= 3 || !dwarf_strict)
     {
       if (strcmp (language_string, "GNU Ada") == 0)
@@ -25227,6 +25248,8 @@ gen_compile_unit_die (const char *filename)
 	{
 	  if (strcmp (language_string, "GNU Go") == 0)
 	    language = DW_LANG_Go;
+	  else if (strcmp (language_string, "GNU Rust") == 0)
+	    language = DW_LANG_Rust;
 	}
     }
   /* Use a degraded Fortran setting in strict DWARF2 so is_fortran works.  */
@@ -27259,7 +27282,10 @@ dwarf2out_late_global_decl (tree decl)
       /* We may have to generate full debug late for LTO in case debug
          was not enabled at compile-time or the target doesn't support
 	 the LTO early debug scheme.  */
-      if (! die && in_lto_p)
+      if (! die && in_lto_p
+	  /* Function scope variables are emitted when emitting the
+	     DIE for the function.  */
+	  && ! local_function_static (decl))
 	dwarf2out_decl (decl);
       else if (die)
 	{

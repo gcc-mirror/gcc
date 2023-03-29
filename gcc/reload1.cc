@@ -1,5 +1,5 @@
 /* Reload pseudo regs into hard regs for insns that require hard regs.
-   Copyright (C) 1987-2022 Free Software Foundation, Inc.
+   Copyright (C) 1987-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -8606,7 +8606,7 @@ gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
 	  return insn;
 	}
 
-      fatal_insn ("failure trying to reload:", set);
+      fatal_insn ("failure trying to reload:", in);
     }
   /* If IN is a simple operand, use gen_move_insn.  */
   else if (OBJECT_P (in) || GET_CODE (in) == SUBREG)

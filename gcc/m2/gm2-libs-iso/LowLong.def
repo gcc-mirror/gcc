@@ -1,0 +1,85 @@
+(* Library module defined by the International Standard
+   Information technology - programming languages
+   BS ISO/IEC 10514-1:1996E Part 1: Modula-2, Base Language.
+
+   Copyright ISO/IEC (International Organization for Standardization
+   and International Electrotechnical Commission) 1996-2021.
+
+   It may be freely copied for the purpose of implementation (see page
+   707 of the Information technology - Programming languages Part 1:
+   Modula-2, Base Language.  BS ISO/IEC 10514-1:1996).  *)
+
+DEFINITION MODULE LowLong;
+
+  (* Access to underlying properties of the type LONGREAL *)
+
+CONST
+  radix      = __ATTRIBUTE__ __BUILTIN__ (( <LONGREAL, radix> )) ;      (* ZType *)
+  places     = __ATTRIBUTE__ __BUILTIN__ (( <LONGREAL, places> )) ;     (* ZType *)
+  expoMin    = __ATTRIBUTE__ __BUILTIN__ (( <LONGREAL, expoMin> )) ;    (* ZType *)
+  expoMax    = __ATTRIBUTE__ __BUILTIN__ (( <LONGREAL, expoMax> )) ;    (* ZType *)
+  large      = __ATTRIBUTE__ __BUILTIN__ (( <LONGREAL, large> )) ;      (* RType *)
+  small      = __ATTRIBUTE__ __BUILTIN__ (( <LONGREAL, small> )) ;      (* RType *)
+  IEC559     = __ATTRIBUTE__ __BUILTIN__ (( <LONGREAL, IEC559> )) ;     (* BOOLEAN *)
+  LIA1       = __ATTRIBUTE__ __BUILTIN__ (( <LONGREAL, LIA1> )) ;       (* BOOLEAN *)
+  ISO        = __ATTRIBUTE__ __BUILTIN__ (( <LONGREAL, ISO> )) ;        (* BOOLEAN *)
+  IEEE       = __ATTRIBUTE__ __BUILTIN__ (( <LONGREAL, IEEE> )) ;       (* BOOLEAN *)
+  rounds     = __ATTRIBUTE__ __BUILTIN__ (( <LONGREAL, rounds> )) ;     (* BOOLEAN *)
+  gUnderflow = __ATTRIBUTE__ __BUILTIN__ (( <LONGREAL, gUnderflow> )) ; (* BOOLEAN *)
+  exception  = __ATTRIBUTE__ __BUILTIN__ (( <LONGREAL, exception> )) ;  (* BOOLEAN *)
+  extend     = __ATTRIBUTE__ __BUILTIN__ (( <LONGREAL, extend> )) ;     (* BOOLEAN *)
+  nModes     = __ATTRIBUTE__ __BUILTIN__ (( <LONGREAL, nModes> )) ;     (* ZType *)
+
+TYPE
+  Modes = PACKEDSET OF [0 .. nModes-1];
+
+PROCEDURE exponent (x: LONGREAL): INTEGER;
+  (* Returns the exponent value of x *)
+
+PROCEDURE fraction (x: LONGREAL): LONGREAL;
+  (* Returns the significand (or significant part) of x *)
+
+PROCEDURE sign (x: LONGREAL): LONGREAL;
+  (* Returns the signum of x *)
+
+PROCEDURE succ (x: LONGREAL): LONGREAL;
+  (* Returns the next value of the type LONGREAL greater than x *)
+
+PROCEDURE ulp (x: LONGREAL): LONGREAL;
+  (* Returns the value of a unit in the last place of x *)
+
+PROCEDURE pred (x: LONGREAL): LONGREAL;
+  (* Returns the previous value of the type LONGREAL less than x *)
+
+PROCEDURE intpart (x: LONGREAL): LONGREAL;
+  (* Returns the integer part of x *)
+
+PROCEDURE fractpart (x: LONGREAL): LONGREAL;
+  (* Returns the fractional part of x *)
+
+PROCEDURE scale (x: LONGREAL; n: INTEGER): LONGREAL;
+  (* Returns the value of x * radix ** n *)
+
+PROCEDURE trunc (x: LONGREAL; n: INTEGER): LONGREAL;
+  (* Returns the value of the first n places of x *)
+
+PROCEDURE round (x: LONGREAL; n: INTEGER): LONGREAL;
+  (* Returns the value of x rounded to the first n places *)
+
+PROCEDURE synthesize (expart: INTEGER; frapart: LONGREAL): LONGREAL;
+  (* Returns a value of the type LONGREAL constructed from the given expart and frapart *)
+
+PROCEDURE setMode (m: Modes);
+  (* Sets status flags appropriate to the underlying implementation of the type LONGREAL *)
+
+PROCEDURE currentMode (): Modes;
+  (* Returns the current status flags in the form set by setMode *)
+
+PROCEDURE IsLowException (): BOOLEAN;
+  (* Returns TRUE if the current coroutine is in the exceptional execution state
+     because of the raising of an exception in a routine from this module; otherwise
+     returns FALSE.
+  *)
+
+END LowLong.
+

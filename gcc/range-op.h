@@ -1,5 +1,5 @@
 /* Header file for range operator class.
-   Copyright (C) 2017-2022 Free Software Foundation, Inc.
+   Copyright (C) 2017-2023 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -48,12 +48,14 @@ along with GCC; see the file COPYING3.  If not see
 
 class range_operator
 {
+  friend class range_op_table;
 public:
+  range_operator () : m_code (ERROR_MARK) { }
   // Perform an operation between 2 ranges and return it.
   virtual bool fold_range (irange &r, tree type,
 			   const irange &lh,
 			   const irange &rh,
-			   relation_kind rel = VREL_VARYING) const;
+			   relation_trio = TRIO_VARYING) const;
 
   // Return the range for op[12] in the general case.  LHS is the range for
   // the LHS of the expression, OP[12]is the range for the other
@@ -69,11 +71,11 @@ public:
   virtual bool op1_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op2,
-			  relation_kind rel = VREL_VARYING) const;
+			  relation_trio = TRIO_VARYING) const;
   virtual bool op2_range (irange &r, tree type,
 			  const irange &lhs,
 			  const irange &op1,
-			  relation_kind rel = VREL_VARYING) const;
+			  relation_trio = TRIO_VARYING) const;
 
   // The following routines are used to represent relations between the
   // various operations.  If the caller knows where the symbolics are,
@@ -106,6 +108,15 @@ protected:
 			 const wide_int &lh_ub,
 			 const wide_int &rh_lb,
 			 const wide_int &rh_ub) const;
+
+  // Called by fold range to split small subranges into parts when op1 == op2
+  void wi_fold_in_parts_equiv (irange &r, tree type,
+			       const wide_int &lb,
+			       const wide_int &ub,
+			       unsigned limit) const;
+
+  // Tree code of the range operator or ERROR_MARK if unknown.
+  tree_code m_code;
 };
 
 // Like range_operator above, but for floating point operators.
@@ -116,27 +127,40 @@ public:
   virtual bool fold_range (frange &r, tree type,
 			   const frange &lh,
 			   const frange &rh,
-			   relation_kind rel = VREL_VARYING) const;
+			   relation_trio = TRIO_VARYING) const;
+  virtual void rv_fold (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub,
+			bool &maybe_nan,
+			tree type,
+			const REAL_VALUE_TYPE &lh_lb,
+			const REAL_VALUE_TYPE &lh_ub,
+			const REAL_VALUE_TYPE &rh_lb,
+			const REAL_VALUE_TYPE &rh_ub,
+			relation_kind) const;
+  // Unary operations have the range of the LHS as op2.
+  virtual bool fold_range (irange &r, tree type,
+			   const frange &lh,
+			   const irange &rh,
+			   relation_trio = TRIO_VARYING) const;
   virtual bool fold_range (irange &r, tree type,
 			   const frange &lh,
 			   const frange &rh,
-			   relation_kind rel = VREL_VARYING) const;
+			   relation_trio = TRIO_VARYING) const;
   virtual bool op1_range (frange &r, tree type,
 			  const frange &lhs,
 			  const frange &op2,
-			  relation_kind rel = VREL_VARYING) const;
+			  relation_trio = TRIO_VARYING) const;
   virtual bool op1_range (frange &r, tree type,
 			  const irange &lhs,
 			  const frange &op2,
-			  relation_kind rel = VREL_VARYING) const;
+			  relation_trio = TRIO_VARYING) const;
   virtual bool op2_range (frange &r, tree type,
 			  const frange &lhs,
 			  const frange &op1,
-			  relation_kind rel = VREL_VARYING) const;
+			  relation_trio = TRIO_VARYING) const;
   virtual bool op2_range (frange &r, tree type,
 			  const irange &lhs,
 			  const frange &op1,
-			  relation_kind rel = VREL_VARYING) const;
+			  relation_trio = TRIO_VARYING) const;
 
   virtual relation_kind lhs_op1_relation (const frange &lhs,
 					  const frange &op1,
@@ -155,27 +179,28 @@ public:
 					  const frange &op2,
 					  relation_kind = VREL_VARYING) const;
   virtual relation_kind op1_op2_relation (const irange &lhs) const;
+  virtual relation_kind op1_op2_relation (const frange &lhs) const;
 };
 
 class range_op_handler
 {
 public:
+  range_op_handler ();
   range_op_handler (enum tree_code code, tree type);
-  range_op_handler (const gimple *s);
-  operator bool () const;
+  inline operator bool () const { return m_valid; }
 
   bool fold_range (vrange &r, tree type,
 		   const vrange &lh,
 		   const vrange &rh,
-		   relation_kind rel = VREL_VARYING) const;
+		   relation_trio = TRIO_VARYING) const;
   bool op1_range (vrange &r, tree type,
 		  const vrange &lhs,
 		  const vrange &op2,
-		  relation_kind rel = VREL_VARYING) const;
+		  relation_trio = TRIO_VARYING) const;
   bool op2_range (vrange &r, tree type,
 		  const vrange &lhs,
 		  const vrange &op1,
-		  relation_kind rel = VREL_VARYING) const;
+		  relation_trio = TRIO_VARYING) const;
   relation_kind lhs_op1_relation (const vrange &lhs,
 				  const vrange &op1,
 				  const vrange &op2,
@@ -185,9 +210,11 @@ public:
 				  const vrange &op2,
 				  relation_kind = VREL_VARYING) const;
   relation_kind op1_op2_relation (const vrange &lhs) const;
-private:
-  enum tree_code m_code;
-  tree m_type;
+protected:
+  void set_op_handler (enum tree_code code, tree type);
+  bool m_valid;
+  range_operator *m_int;
+  range_operator_float *m_float;
 };
 
 extern bool range_cast (vrange &, tree type);
@@ -208,7 +235,7 @@ enum bool_range_state { BRS_FALSE, BRS_TRUE, BRS_EMPTY, BRS_FULL };
 bool_range_state get_bool_state (vrange &r, const vrange &lhs, tree val_type);
 
 // If the range of either op1 or op2 is undefined, set the result to
-// varying and return TRUE.  If the caller truely cares about a result,
+// varying and return TRUE.  If the caller truly cares about a result,
 // they should pass in a varying if it has an undefined that it wants
 // treated as a varying.
 
@@ -232,9 +259,10 @@ empty_range_varying (vrange &r, tree type,
 
 inline bool
 relop_early_resolve (irange &r, tree type, const vrange &op1,
-		     const vrange &op2, relation_kind rel,
+		     const vrange &op2, relation_trio trio,
 		     relation_kind my_rel)
 {
+  relation_kind rel = trio.op1_op2 ();
   // If known relation is a complete subset of this relation, always true.
   if (relation_union (rel, my_rel) == my_rel)
     {
@@ -283,4 +311,8 @@ private:
 // This holds the range op table for floating point operations.
 extern floating_op_table *floating_tree_table;
 
+extern range_operator *ptr_op_widen_mult_signed;
+extern range_operator *ptr_op_widen_mult_unsigned;
+extern range_operator *ptr_op_widen_plus_signed;
+extern range_operator *ptr_op_widen_plus_unsigned;
 #endif // GCC_RANGE_OP_H

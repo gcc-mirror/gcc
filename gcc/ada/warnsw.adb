@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,515 +23,151 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Err_Vars; use Err_Vars;
 with Opt;      use Opt;
 with Output;   use Output;
 
+with System.Case_Util; use System.Case_Util;
+
 package body Warnsw is
 
-   --  Local Subprograms
+   subtype Lowercase is Character range 'a' .. 'z';
+   --  Warning-enable switches are lowercase letters
 
-   procedure All_Warnings (Setting : Boolean);
-   --  Sets all warnings off if Setting = False, and on if Setting = True
+   Switch_To_Flag_Mapping : constant array (Warning_Family, Lowercase) of
+     --  Mapping from the letter after "-gnatw", "-gnatw." or "-gnatw_" to
+     --  the corresponding flag for the warning it enables. Special_Case means
+     --  Set_Warning_Switch must do something special, as opposed to simply
+     --  setting the corresponding flag. No_Such_Warning means the letter
+     --  is not a defined warning switch, which is an error.
+     X.Opt_Warnings_Enum :=
+       (Plain =>
+         ('a' | 'e' | 'n' | 's' | 'u' | 'y' => Special_Case,
 
-   procedure WA_Warnings;
-   --  Turn on all warnings set by -gnatwa (also used by -gnatw.g)
+          'b' => X.Warn_On_Bad_Fixed_Value,
+          'c' => X.Constant_Condition_Warnings,
+          'd' => X.Warn_On_Dereference,
+          'f' => X.Check_Unreferenced_Formals,
+          'g' => X.Warn_On_Unrecognized_Pragma,
+          'h' => X.Warn_On_Hiding,
+          'i' => X.Implementation_Unit_Warnings,
+          'j' => X.Warn_On_Obsolescent_Feature,
+          'k' => X.Warn_On_Constant,
+          'l' => X.Elab_Warnings,
+          'm' => X.Warn_On_Modified_Unread,
+          'o' => X.Address_Clause_Overlay_Warnings,
+          'p' => X.Ineffective_Inline_Warnings,
+          'q' => X.Warn_On_Questionable_Missing_Parens,
+          'r' => X.Warn_On_Redundant_Constructs,
+          't' => X.Warn_On_Deleted_Code,
+          'v' => X.Warn_On_No_Value_Assigned,
+          'w' => X.Warn_On_Assumed_Low_Bound,
+          'x' => X.Warn_On_Export_Import,
+          'z' => X.Warn_On_Unchecked_Conversion),
 
-   ------------------
-   -- All_Warnings --
-   ------------------
+        '.' =>
+         ('e' | 'g' | 'x' => Special_Case,
 
-   procedure All_Warnings (Setting : Boolean) is
-   begin
-      Address_Clause_Overlay_Warnings      := Setting;
-      Check_Unreferenced                   := Setting;
-      Check_Unreferenced_Formals           := Setting;
-      Check_Withs                          := Setting;
-      Constant_Condition_Warnings          := Setting;
-      Elab_Warnings                        := Setting;
-      Implementation_Unit_Warnings         := Setting;
-      Ineffective_Inline_Warnings          := Setting;
-      List_Body_Required_Info              := Setting;
-      List_Inherited_Aspects               := Setting;
-      Warn_On_Ada_2005_Compatibility       := Setting;
-      Warn_On_Ada_2012_Compatibility       := Setting;
-      Warn_On_All_Unread_Out_Parameters    := Setting;
-      Warn_On_Anonymous_Allocators         := Setting;
-      Warn_On_Assertion_Failure            := Setting;
-      Warn_On_Assumed_Low_Bound            := Setting;
-      Warn_On_Atomic_Synchronization       := Setting;
-      Warn_On_Bad_Fixed_Value              := Setting;
-      Warn_On_Biased_Representation        := Setting;
-      Warn_On_Constant                     := Setting;
-      Warn_On_Deleted_Code                 := Setting;
-      Warn_On_Dereference                  := Setting;
-      Warn_On_Export_Import                := Setting;
-      Warn_On_Hiding                       := Setting;
-      Warn_On_Late_Primitives              := Setting;
-      Warn_On_Modified_Unread              := Setting;
-      Warn_On_No_Value_Assigned            := Setting;
-      Warn_On_Non_Local_Exception          := Setting;
-      Warn_On_Object_Renames_Function      := Setting;
-      Warn_On_Obsolescent_Feature          := Setting;
-      Warn_On_Overlap                      := Setting;
-      Warn_On_Overridden_Size              := Setting;
-      Warn_On_Parameter_Order              := Setting;
-      Warn_On_Pedantic_Checks              := Setting;
-      Warn_On_Questionable_Layout          := Setting;
-      Warn_On_Questionable_Missing_Parens  := Setting;
-      Warn_On_Record_Holes                 := Setting;
-      Warn_On_Component_Order              := Setting;
-      Warn_On_Redundant_Constructs         := Setting;
-      Warn_On_Reverse_Bit_Order            := Setting;
-      Warn_On_Size_Alignment               := Setting;
-      Warn_On_Standard_Redefinition        := Setting;
-      Warn_On_Suspicious_Contract          := Setting;
-      Warn_On_Suspicious_Modulus_Value     := Setting;
-      Warn_On_Unchecked_Conversion         := Setting;
-      Warn_On_Unknown_Compile_Time_Warning := Setting;
-      Warn_On_Unordered_Enumeration_Type   := Setting;
-      Warn_On_Unrecognized_Pragma          := Setting;
-      Warn_On_Unrepped_Components          := Setting;
-      Warn_On_Warnings_Off                 := Setting;
-   end All_Warnings;
+          'a' => X.Warn_On_Assertion_Failure,
+          'b' => X.Warn_On_Biased_Representation,
+          'c' => X.Warn_On_Unrepped_Components,
+          'd' => X.Warning_Doc_Switch,
+          'f' => X.Warn_On_Elab_Access,
+          'h' => X.Warn_On_Record_Holes,
+          'i' => X.Warn_On_Overlap,
+          'j' => X.Warn_On_Late_Primitives,
+          'k' => X.Warn_On_Standard_Redefinition,
+          'l' => X.List_Inherited_Aspects,
+          'm' => X.Warn_On_Suspicious_Modulus_Value,
+          'n' => X.Warn_On_Atomic_Synchronization,
+          'o' => X.Warn_On_All_Unread_Out_Parameters,
+          'p' => X.Warn_On_Parameter_Order,
+          'q' => X.Warn_On_Questionable_Layout,
+          'r' => X.Warn_On_Object_Renames_Function,
+          's' => X.Warn_On_Overridden_Size,
+          't' => X.Warn_On_Suspicious_Contract,
+          'u' => X.Warn_On_Unordered_Enumeration_Type,
+          'v' => X.Warn_On_Reverse_Bit_Order,
+          'w' => X.Warn_On_Warnings_Off,
+          'y' => X.List_Body_Required_Info,
+          'z' => X.Warn_On_Size_Alignment),
+
+        '_' =>
+         ('b' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' |
+          'n' | 'o' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' =>
+           No_Such_Warning,
+
+          'a' => X.Warn_On_Anonymous_Allocators,
+          'c' => X.Warn_On_Unknown_Compile_Time_Warning,
+          'p' => X.Warn_On_Pedantic_Checks,
+          'q' => X.Warn_On_Ignored_Equality,
+          'r' => X.Warn_On_Component_Order));
+
+   All_Warnings : constant Warnings_State := --  Warnings set by -gnatw.e
+     (X.Elab_Info_Messages |
+      X.Warning_Doc_Switch |
+      X.Warn_On_Ada_2022_Compatibility |
+      X.Warn_On_Elab_Access |
+      X.No_Warn_On_Non_Local_Exception => False,
+      others => True);
+   --  Warning_Doc_Switch is not really a warning to be enabled, but controls
+   --  the form of warnings printed. No_Warn_On_Non_Local_Exception is handled
+   --  specially (see Warn_On_Non_Local_Exception). The others are not part of
+   --  -gnatw.e for historical reasons.
+
+   WA_Warnings : constant Warnings_State := --  Warnings set by -gnatwa
+     (X.Check_Unreferenced                  | -- -gnatwf/-gnatwu
+      X.Check_Unreferenced_Formals          | -- -gnatwf/-gnatwu
+      X.Check_Withs                         | -- -gnatwu
+      X.Constant_Condition_Warnings         | -- -gnatwc
+      X.Implementation_Unit_Warnings        | -- -gnatwi
+      X.Ineffective_Inline_Warnings         | -- -gnatwp
+      X.Warn_On_Ada_2005_Compatibility      | -- -gnatwy
+      X.Warn_On_Ada_2012_Compatibility      | -- -gnatwy
+      X.Warn_On_Anonymous_Allocators        | -- -gnatw_a
+      X.Warn_On_Assertion_Failure           | -- -gnatw.a
+      X.Warn_On_Assumed_Low_Bound           | -- -gnatww
+      X.Warn_On_Bad_Fixed_Value             | -- -gnatwb
+      X.Warn_On_Biased_Representation       | -- -gnatw.b
+      X.Warn_On_Constant                    | -- -gnatwk
+      X.Warn_On_Export_Import               | -- -gnatwx
+      X.Warn_On_Late_Primitives             | -- -gnatw.j
+      X.Warn_On_Modified_Unread             | -- -gnatwm
+      X.Warn_On_No_Value_Assigned           | -- -gnatwv
+      X.Warn_On_Non_Local_Exception         | -- -gnatw.x
+      X.Warn_On_Object_Renames_Function     | -- -gnatw.r
+      X.Warn_On_Obsolescent_Feature         | -- -gnatwj
+      X.Warn_On_Overlap                     | -- -gnatw.i
+      X.Warn_On_Parameter_Order             | -- -gnatw.p
+      X.Warn_On_Questionable_Missing_Parens | -- -gnatwq
+      X.Warn_On_Redundant_Constructs        | -- -gnatwr
+      X.Warn_On_Reverse_Bit_Order           | -- -gnatw.v
+      X.Warn_On_Size_Alignment              | -- -gnatw.z
+      X.Warn_On_Suspicious_Contract         | -- -gnatw.t
+      X.Warn_On_Suspicious_Modulus_Value    | -- -gnatw.m
+      X.Warn_On_Unchecked_Conversion        | -- -gnatwz
+      X.Warn_On_Unrecognized_Pragma         | -- -gnatwg
+      X.Warn_On_Unrepped_Components         => -- -gnatw.c
+        True,
+
+      others => False);
 
    ----------------------
    -- Restore_Warnings --
    ----------------------
 
-   procedure Restore_Warnings (W : Warning_Record) is
+   procedure Restore_Warnings (W : Warnings_State) is
    begin
-      Address_Clause_Overlay_Warnings      :=
-        W.Address_Clause_Overlay_Warnings;
-      Check_Unreferenced                   :=
-        W.Check_Unreferenced;
-      Check_Unreferenced_Formals           :=
-        W.Check_Unreferenced_Formals;
-      Check_Withs                          :=
-        W.Check_Withs;
-      Constant_Condition_Warnings          :=
-        W.Constant_Condition_Warnings;
-      Elab_Warnings                        :=
-        W.Elab_Warnings;
-      Elab_Info_Messages                   :=
-        W.Elab_Info_Messages;
-      Implementation_Unit_Warnings         :=
-        W.Implementation_Unit_Warnings;
-      Ineffective_Inline_Warnings          :=
-        W.Ineffective_Inline_Warnings;
-      List_Body_Required_Info              :=
-        W.List_Body_Required_Info;
-      List_Inherited_Aspects               :=
-        W.List_Inherited_Aspects;
-      No_Warn_On_Non_Local_Exception       :=
-        W.No_Warn_On_Non_Local_Exception;
-      Warning_Doc_Switch                   :=
-        W.Warning_Doc_Switch;
-      Warn_On_Ada_2005_Compatibility       :=
-        W.Warn_On_Ada_2005_Compatibility;
-      Warn_On_Ada_2012_Compatibility       :=
-        W.Warn_On_Ada_2012_Compatibility;
-      Warn_On_All_Unread_Out_Parameters    :=
-        W.Warn_On_All_Unread_Out_Parameters;
-      Warn_On_Anonymous_Allocators         :=
-        W.Warn_On_Anonymous_Allocators;
-      Warn_On_Assertion_Failure            :=
-        W.Warn_On_Assertion_Failure;
-      Warn_On_Assumed_Low_Bound            :=
-        W.Warn_On_Assumed_Low_Bound;
-      Warn_On_Atomic_Synchronization       :=
-        W.Warn_On_Atomic_Synchronization;
-      Warn_On_Bad_Fixed_Value              :=
-        W.Warn_On_Bad_Fixed_Value;
-      Warn_On_Biased_Representation        :=
-        W.Warn_On_Biased_Representation;
-      Warn_On_Constant                     :=
-        W.Warn_On_Constant;
-      Warn_On_Deleted_Code                 :=
-        W.Warn_On_Deleted_Code;
-      Warn_On_Dereference                  :=
-        W.Warn_On_Dereference;
-      Warn_On_Export_Import                :=
-        W.Warn_On_Export_Import;
-      Warn_On_Hiding                       :=
-        W.Warn_On_Hiding;
-      Warn_On_Late_Primitives              :=
-        W.Warn_On_Late_Primitives;
-      Warn_On_Modified_Unread              :=
-        W.Warn_On_Modified_Unread;
-      Warn_On_No_Value_Assigned            :=
-        W.Warn_On_No_Value_Assigned;
-      Warn_On_Non_Local_Exception          :=
-        W.Warn_On_Non_Local_Exception;
-      Warn_On_Object_Renames_Function      :=
-        W.Warn_On_Object_Renames_Function;
-      Warn_On_Obsolescent_Feature          :=
-        W.Warn_On_Obsolescent_Feature;
-      Warn_On_Overlap                      :=
-        W.Warn_On_Overlap;
-      Warn_On_Overridden_Size              :=
-        W.Warn_On_Overridden_Size;
-      Warn_On_Parameter_Order              :=
-        W.Warn_On_Parameter_Order;
-      Warn_On_Pedantic_Checks              :=
-        W.Warn_On_Pedantic_Checks;
-      Warn_On_Questionable_Layout          :=
-        W.Warn_On_Questionable_Layout;
-      Warn_On_Questionable_Missing_Parens  :=
-        W.Warn_On_Questionable_Missing_Parens;
-      Warn_On_Record_Holes                 :=
-        W.Warn_On_Record_Holes;
-      Warn_On_Component_Order              :=
-        W.Warn_On_Component_Order;
-      Warn_On_Redundant_Constructs         :=
-        W.Warn_On_Redundant_Constructs;
-      Warn_On_Reverse_Bit_Order            :=
-        W.Warn_On_Reverse_Bit_Order;
-      Warn_On_Size_Alignment               :=
-        W.Warn_On_Size_Alignment;
-      Warn_On_Standard_Redefinition        :=
-        W.Warn_On_Standard_Redefinition;
-      Warn_On_Suspicious_Contract          :=
-        W.Warn_On_Suspicious_Contract;
-      Warn_On_Unchecked_Conversion         :=
-        W.Warn_On_Unchecked_Conversion;
-      Warn_On_Unknown_Compile_Time_Warning :=
-        W.Warn_On_Unknown_Compile_Time_Warning;
-      Warn_On_Unordered_Enumeration_Type   :=
-        W.Warn_On_Unordered_Enumeration_Type;
-      Warn_On_Unrecognized_Pragma          :=
-        W.Warn_On_Unrecognized_Pragma;
-      Warn_On_Unrepped_Components          :=
-        W.Warn_On_Unrepped_Components;
-      Warn_On_Warnings_Off                 :=
-        W.Warn_On_Warnings_Off;
+      Warning_Flags := W;
    end Restore_Warnings;
 
    -------------------
    -- Save_Warnings --
    -------------------
 
-   function Save_Warnings return Warning_Record is
-      W : Warning_Record;
-
+   function Save_Warnings return Warnings_State is
    begin
-      W.Address_Clause_Overlay_Warnings      :=
-        Address_Clause_Overlay_Warnings;
-      W.Check_Unreferenced                   :=
-        Check_Unreferenced;
-      W.Check_Unreferenced_Formals           :=
-        Check_Unreferenced_Formals;
-      W.Check_Withs                          :=
-        Check_Withs;
-      W.Constant_Condition_Warnings          :=
-        Constant_Condition_Warnings;
-      W.Elab_Info_Messages                   :=
-        Elab_Info_Messages;
-      W.Elab_Warnings                        :=
-        Elab_Warnings;
-      W.Implementation_Unit_Warnings         :=
-        Implementation_Unit_Warnings;
-      W.Ineffective_Inline_Warnings          :=
-        Ineffective_Inline_Warnings;
-      W.List_Body_Required_Info              :=
-        List_Body_Required_Info;
-      W.List_Inherited_Aspects               :=
-        List_Inherited_Aspects;
-      W.No_Warn_On_Non_Local_Exception       :=
-        No_Warn_On_Non_Local_Exception;
-      W.Warning_Doc_Switch                   :=
-        Warning_Doc_Switch;
-      W.Warn_On_Ada_2005_Compatibility       :=
-        Warn_On_Ada_2005_Compatibility;
-      W.Warn_On_Ada_2012_Compatibility       :=
-        Warn_On_Ada_2012_Compatibility;
-      W.Warn_On_All_Unread_Out_Parameters    :=
-        Warn_On_All_Unread_Out_Parameters;
-      W.Warn_On_Anonymous_Allocators         :=
-        Warn_On_Anonymous_Allocators;
-      W.Warn_On_Assertion_Failure            :=
-        Warn_On_Assertion_Failure;
-      W.Warn_On_Assumed_Low_Bound            :=
-        Warn_On_Assumed_Low_Bound;
-      W.Warn_On_Atomic_Synchronization       :=
-        Warn_On_Atomic_Synchronization;
-      W.Warn_On_Bad_Fixed_Value              :=
-        Warn_On_Bad_Fixed_Value;
-      W.Warn_On_Biased_Representation        :=
-        Warn_On_Biased_Representation;
-      W.Warn_On_Constant                     :=
-        Warn_On_Constant;
-      W.Warn_On_Deleted_Code                 :=
-        Warn_On_Deleted_Code;
-      W.Warn_On_Dereference                  :=
-        Warn_On_Dereference;
-      W.Warn_On_Export_Import                :=
-        Warn_On_Export_Import;
-      W.Warn_On_Hiding                       :=
-        Warn_On_Hiding;
-      W.Warn_On_Late_Primitives              :=
-        Warn_On_Late_Primitives;
-      W.Warn_On_Modified_Unread              :=
-        Warn_On_Modified_Unread;
-      W.Warn_On_No_Value_Assigned            :=
-        Warn_On_No_Value_Assigned;
-      W.Warn_On_Non_Local_Exception          :=
-        Warn_On_Non_Local_Exception;
-      W.Warn_On_Object_Renames_Function      :=
-        Warn_On_Object_Renames_Function;
-      W.Warn_On_Obsolescent_Feature          :=
-        Warn_On_Obsolescent_Feature;
-      W.Warn_On_Overlap                      :=
-        Warn_On_Overlap;
-      W.Warn_On_Overridden_Size              :=
-        Warn_On_Overridden_Size;
-      W.Warn_On_Parameter_Order              :=
-        Warn_On_Parameter_Order;
-      W.Warn_On_Pedantic_Checks              :=
-        Warn_On_Pedantic_Checks;
-      W.Warn_On_Questionable_Layout          :=
-        Warn_On_Questionable_Layout;
-      W.Warn_On_Questionable_Missing_Parens  :=
-        Warn_On_Questionable_Missing_Parens;
-      W.Warn_On_Record_Holes                 :=
-        Warn_On_Record_Holes;
-      W.Warn_On_Component_Order              :=
-        Warn_On_Component_Order;
-      W.Warn_On_Redundant_Constructs         :=
-        Warn_On_Redundant_Constructs;
-      W.Warn_On_Reverse_Bit_Order            :=
-        Warn_On_Reverse_Bit_Order;
-      W.Warn_On_Size_Alignment               :=
-        Warn_On_Size_Alignment;
-      W.Warn_On_Standard_Redefinition        :=
-        Warn_On_Standard_Redefinition;
-      W.Warn_On_Suspicious_Contract          :=
-        Warn_On_Suspicious_Contract;
-      W.Warn_On_Unchecked_Conversion         :=
-        Warn_On_Unchecked_Conversion;
-      W.Warn_On_Unknown_Compile_Time_Warning :=
-        Warn_On_Unknown_Compile_Time_Warning;
-      W.Warn_On_Unordered_Enumeration_Type   :=
-        Warn_On_Unordered_Enumeration_Type;
-      W.Warn_On_Unrecognized_Pragma          :=
-        Warn_On_Unrecognized_Pragma;
-      W.Warn_On_Unrepped_Components          :=
-        Warn_On_Unrepped_Components;
-      W.Warn_On_Warnings_Off                 :=
-        Warn_On_Warnings_Off;
-      return W;
+      return Warning_Flags;
    end Save_Warnings;
-
-   ----------------------------
-   -- Set_Dot_Warning_Switch --
-   ----------------------------
-
-   function Set_Dot_Warning_Switch (C : Character) return Boolean is
-   begin
-      case C is
-         when 'a' =>
-            Warn_On_Assertion_Failure           := True;
-
-         when 'A' =>
-            Warn_On_Assertion_Failure           := False;
-
-         when 'b' =>
-            Warn_On_Biased_Representation       := True;
-
-         when 'B' =>
-            Warn_On_Biased_Representation       := False;
-
-         when 'c' =>
-            Warn_On_Unrepped_Components         := True;
-
-         when 'C' =>
-            Warn_On_Unrepped_Components         := False;
-
-         when 'd' =>
-            Warning_Doc_Switch                  := True;
-
-         when 'D' =>
-            Warning_Doc_Switch                  := False;
-
-         when 'e' =>
-            All_Warnings (True);
-
-         when 'f' =>
-            Warn_On_Elab_Access                 := True;
-
-         when 'F' =>
-            Warn_On_Elab_Access                 := False;
-
-         when 'g' =>
-            Set_GNAT_Mode_Warnings;
-
-         when 'h' =>
-            Warn_On_Record_Holes                := True;
-
-         when 'H' =>
-            Warn_On_Record_Holes                := False;
-
-         when 'i' =>
-            Warn_On_Overlap                     := True;
-
-         when 'I' =>
-            Warn_On_Overlap                     := False;
-
-         when 'j' =>
-            Warn_On_Late_Primitives             := True;
-
-         when 'J' =>
-            Warn_On_Late_Primitives             := False;
-
-         when 'k' =>
-            Warn_On_Standard_Redefinition       := True;
-
-         when 'K' =>
-            Warn_On_Standard_Redefinition       := False;
-
-         when 'l' =>
-            List_Inherited_Aspects              := True;
-
-         when 'L' =>
-            List_Inherited_Aspects              := False;
-
-         when 'm' =>
-            Warn_On_Suspicious_Modulus_Value    := True;
-
-         when 'M' =>
-            Warn_On_Suspicious_Modulus_Value    := False;
-
-         when 'n' =>
-            Warn_On_Atomic_Synchronization      := True;
-
-         when 'N' =>
-            Warn_On_Atomic_Synchronization      := False;
-
-         when 'o' =>
-            Warn_On_All_Unread_Out_Parameters   := True;
-
-         when 'O' =>
-            Warn_On_All_Unread_Out_Parameters   := False;
-
-         when 'p' =>
-            Warn_On_Parameter_Order             := True;
-
-         when 'P' =>
-            Warn_On_Parameter_Order             := False;
-
-         when 'q' =>
-            Warn_On_Questionable_Layout         := True;
-
-         when 'Q' =>
-            Warn_On_Questionable_Layout         := False;
-
-         when 'r' =>
-            Warn_On_Object_Renames_Function     := True;
-
-         when 'R' =>
-            Warn_On_Object_Renames_Function     := False;
-
-         when 's' =>
-            Warn_On_Overridden_Size             := True;
-
-         when 'S' =>
-            Warn_On_Overridden_Size             := False;
-
-         when 't' =>
-            Warn_On_Suspicious_Contract         := True;
-
-         when 'T' =>
-            Warn_On_Suspicious_Contract         := False;
-
-         when 'u' =>
-            Warn_On_Unordered_Enumeration_Type  := True;
-
-         when 'U' =>
-            Warn_On_Unordered_Enumeration_Type  := False;
-
-         when 'v' =>
-            Warn_On_Reverse_Bit_Order           := True;
-
-         when 'V' =>
-            Warn_On_Reverse_Bit_Order           := False;
-
-         when 'w' =>
-            Warn_On_Warnings_Off                := True;
-
-         when 'W' =>
-            Warn_On_Warnings_Off                := False;
-
-         when 'x' =>
-            Warn_On_Non_Local_Exception         := True;
-
-         when 'X' =>
-            Warn_On_Non_Local_Exception         := False;
-            No_Warn_On_Non_Local_Exception      := True;
-
-         when 'y' =>
-            List_Body_Required_Info             := True;
-
-         when 'Y' =>
-            List_Body_Required_Info             := False;
-
-         when 'z' =>
-            Warn_On_Size_Alignment              := True;
-
-         when 'Z' =>
-            Warn_On_Size_Alignment              := False;
-
-         when others =>
-            if Ignore_Unrecognized_VWY_Switches then
-               Write_Line ("unrecognized switch -gnatw." & C & " ignored");
-            else
-               return False;
-            end if;
-      end case;
-
-      return True;
-   end Set_Dot_Warning_Switch;
-
-   -----------------------------------
-   -- Set_Underscore_Warning_Switch --
-   -----------------------------------
-
-   function Set_Underscore_Warning_Switch (C : Character) return Boolean is
-   begin
-      case C is
-         when 'a' =>
-            Warn_On_Anonymous_Allocators := True;
-
-         when 'A' =>
-            Warn_On_Anonymous_Allocators := False;
-
-         when 'c' =>
-            Warn_On_Unknown_Compile_Time_Warning := True;
-
-         when 'C' =>
-            Warn_On_Unknown_Compile_Time_Warning := False;
-
-         when 'p' =>
-            Warn_On_Pedantic_Checks := True;
-
-         when 'P' =>
-            Warn_On_Pedantic_Checks := False;
-
-         when 'r' =>
-            Warn_On_Component_Order := True;
-
-         when 'R' =>
-            Warn_On_Component_Order := False;
-
-         when others =>
-            if Ignore_Unrecognized_VWY_Switches then
-               Write_Line ("unrecognized switch -gnatw_" & C & " ignored");
-            else
-               return False;
-            end if;
-      end case;
-
-      return True;
-   end Set_Underscore_Warning_Switch;
 
    ----------------------------
    -- Set_GNAT_Mode_Warnings --
@@ -541,8 +177,7 @@ package body Warnsw is
    begin
       --  Set -gnatwa warnings and no others
 
-      All_Warnings (False);
-      WA_Warnings;
+      Warning_Flags := (Warning_Flags and not All_Warnings) or WA_Warnings;
 
       --  These warnings are added to the -gnatwa set
 
@@ -564,215 +199,118 @@ package body Warnsw is
    -- Set_Warning_Switch --
    ------------------------
 
-   function Set_Warning_Switch (C : Character) return Boolean is
+   function Set_Warning_Switch
+     (Family : Warning_Family; C : Character) return Boolean
+   is
+      L : constant Character := To_Lower (C);
    begin
-      case C is
-         when 'a' =>
-            WA_Warnings;
+      --  Error case
 
-         when 'A' =>
-            All_Warnings (False);
-            No_Warn_On_Non_Local_Exception      := True;
+      if L not in Lowercase
+        or else Switch_To_Flag_Mapping (Family, L) = No_Such_Warning
+      then
+         if Ignore_Unrecognized_VWY_Switches then
+            declare
+               Family_Switch : constant String :=
+                 (case Family is
+                   when Plain => "", when '.' => ".", when '_' => "_");
+            begin
+               Write_Line
+                 ("unrecognized switch -gnatw" & Family_Switch & C &
+                  " ignored");
+            end;
+            return True;
+         else
+            return False;
+         end if;
+      end if;
 
-         when 'b' =>
-            Warn_On_Bad_Fixed_Value             := True;
+      --  Special cases that don't fall into the normal pattern below
 
-         when 'B' =>
-            Warn_On_Bad_Fixed_Value             := False;
+      if Switch_To_Flag_Mapping (Family, L) = Special_Case then
+         case Family is
+            when Plain =>
+               case C is
+                  when 'a' =>
+                     --  "or" in the -gnatwa flags, possibly leaving others set
+                     Warning_Flags := Warning_Flags or WA_Warnings;
 
-         when 'c' =>
-            Constant_Condition_Warnings         := True;
+                  when 'A' =>
+                     --  Turn off the All_Warnings flags, except that
+                     --  No_Warn_On_Non_Local_Exception is a special case.
+                     Warning_Flags := Warning_Flags and not All_Warnings;
+                     No_Warn_On_Non_Local_Exception := True;
 
-         when 'C' =>
-            Constant_Condition_Warnings         := False;
+                  when 'e' =>
+                     Warning_Mode := Treat_As_Error;
 
-         when 'd' =>
-            Warn_On_Dereference                 := True;
+                  when 'E' =>
+                     Warning_Mode := Treat_Run_Time_Warnings_As_Errors;
 
-         when 'D' =>
-            Warn_On_Dereference                 := False;
+                  when 'n' =>
+                     Warning_Mode := Normal;
 
-         when 'e' =>
-            Warning_Mode                        := Treat_As_Error;
+                  when 's' =>
+                     Warning_Mode := Suppress;
 
-         when 'E' =>
-            Warning_Mode := Treat_Run_Time_Warnings_As_Errors;
+                  when 'u' =>
+                     Check_Unreferenced := True;
+                     Check_Withs := True;
+                     Check_Unreferenced_Formals := True;
 
-         when 'f' =>
-            Check_Unreferenced_Formals          := True;
+                  when 'U' =>
+                     Check_Unreferenced := False;
+                     Check_Withs := False;
+                     Check_Unreferenced_Formals := False;
 
-         when 'F' =>
-            Check_Unreferenced_Formals          := False;
+                  when 'y' =>
+                     Warn_On_Ada_2005_Compatibility := True;
+                     Warn_On_Ada_2012_Compatibility := True;
 
-         when 'g' =>
-            Warn_On_Unrecognized_Pragma         := True;
+                  when 'Y' =>
+                     Warn_On_Ada_2005_Compatibility := False;
+                     Warn_On_Ada_2012_Compatibility := False;
 
-         when 'G' =>
-            Warn_On_Unrecognized_Pragma         := False;
+                  when others => raise Program_Error;
+               end case;
 
-         when 'h' =>
-            Warn_On_Hiding                      := True;
+            when '.' =>
+               case C is
+                  when 'e' =>
+                     --  "or" in the All_Warnings flags
+                     Warning_Flags := Warning_Flags or All_Warnings;
+                  when 'g' =>
+                     Set_GNAT_Mode_Warnings;
 
-         when 'H' =>
-            Warn_On_Hiding                      := False;
+                  when 'x' =>
+                     Warn_On_Non_Local_Exception := True;
 
-         when 'i' =>
-            Implementation_Unit_Warnings        := True;
+                  when 'X' =>
+                     Warn_On_Non_Local_Exception := False;
+                     No_Warn_On_Non_Local_Exception := True;
 
-         when 'I' =>
-            Implementation_Unit_Warnings        := False;
+                  when others => raise Program_Error;
+               end case;
 
-         when 'j' =>
-            Warn_On_Obsolescent_Feature         := True;
+            when '_' =>
+               raise Program_Error;
+         end case;
 
-         when 'J' =>
-            Warn_On_Obsolescent_Feature         := False;
+         return True;
+      end if;
 
-         when 'k' =>
-            Warn_On_Constant                    := True;
+      --  Normal pattern (lower case enables the warning, upper case disables
+      --  the warning).
 
-         when 'K' =>
-            Warn_On_Constant                    := False;
-
-         when 'l' =>
-            Elab_Warnings                       := True;
-
-         when 'L' =>
-            Elab_Warnings                       := False;
-
-         when 'm' =>
-            Warn_On_Modified_Unread             := True;
-
-         when 'M' =>
-            Warn_On_Modified_Unread             := False;
-
-         when 'n' =>
-            Warning_Mode                        := Normal;
-
-         when 'o' =>
-            Address_Clause_Overlay_Warnings     := True;
-
-         when 'O' =>
-            Address_Clause_Overlay_Warnings     := False;
-
-         when 'p' =>
-            Ineffective_Inline_Warnings         := True;
-
-         when 'P' =>
-            Ineffective_Inline_Warnings         := False;
-
-         when 'q' =>
-            Warn_On_Questionable_Missing_Parens := True;
-
-         when 'Q' =>
-            Warn_On_Questionable_Missing_Parens := False;
-
-         when 'r' =>
-            Warn_On_Redundant_Constructs        := True;
-
-         when 'R' =>
-            Warn_On_Redundant_Constructs        := False;
-
-         when 's' =>
-            Warning_Mode                        := Suppress;
-
-         when 't' =>
-            Warn_On_Deleted_Code                := True;
-
-         when 'T' =>
-            Warn_On_Deleted_Code                := False;
-
-         when 'u' =>
-            Check_Unreferenced                  := True;
-            Check_Withs                         := True;
-            Check_Unreferenced_Formals          := True;
-
-         when 'U' =>
-            Check_Unreferenced                  := False;
-            Check_Withs                         := False;
-            Check_Unreferenced_Formals          := False;
-
-         when 'v' =>
-            Warn_On_No_Value_Assigned           := True;
-
-         when 'V' =>
-            Warn_On_No_Value_Assigned           := False;
-
-         when 'w' =>
-            Warn_On_Assumed_Low_Bound           := True;
-
-         when 'W' =>
-            Warn_On_Assumed_Low_Bound           := False;
-
-         when 'x' =>
-            Warn_On_Export_Import               := True;
-
-         when 'X' =>
-            Warn_On_Export_Import               := False;
-
-         when 'y' =>
-            Warn_On_Ada_2005_Compatibility      := True;
-            Warn_On_Ada_2012_Compatibility      := True;
-
-         when 'Y' =>
-            Warn_On_Ada_2005_Compatibility      := False;
-            Warn_On_Ada_2012_Compatibility      := False;
-
-         when 'z' =>
-            Warn_On_Unchecked_Conversion        := True;
-
-         when 'Z' =>
-            Warn_On_Unchecked_Conversion        := False;
-
-         when others =>
-            if Ignore_Unrecognized_VWY_Switches then
-               Write_Line ("unrecognized switch -gnatw" & C & " ignored");
-            else
-               return False;
-            end if;
-      end case;
+      if C in Lowercase then
+         Warning_Flags (Switch_To_Flag_Mapping (Family, C)) := True;
+      elsif L in Lowercase then
+         Warning_Flags (Switch_To_Flag_Mapping (Family, L)) := False;
+      else
+         raise Program_Error;
+      end if;
 
       return True;
    end Set_Warning_Switch;
-
-   -----------------
-   -- WA_Warnings --
-   -----------------
-
-   procedure WA_Warnings is
-   begin
-      Check_Unreferenced                  := True; -- -gnatwf/-gnatwu
-      Check_Unreferenced_Formals          := True; -- -gnatwf/-gnatwu
-      Check_Withs                         := True; -- -gnatwu
-      Constant_Condition_Warnings         := True; -- -gnatwc
-      Implementation_Unit_Warnings        := True; -- -gnatwi
-      Ineffective_Inline_Warnings         := True; -- -gnatwp
-      Warn_On_Ada_2005_Compatibility      := True; -- -gnatwy
-      Warn_On_Ada_2012_Compatibility      := True; -- -gnatwy
-      Warn_On_Anonymous_Allocators        := True; -- -gnatw_a
-      Warn_On_Assertion_Failure           := True; -- -gnatw.a
-      Warn_On_Assumed_Low_Bound           := True; -- -gnatww
-      Warn_On_Bad_Fixed_Value             := True; -- -gnatwb
-      Warn_On_Biased_Representation       := True; -- -gnatw.b
-      Warn_On_Constant                    := True; -- -gnatwk
-      Warn_On_Export_Import               := True; -- -gnatwx
-      Warn_On_Late_Primitives             := True; -- -gnatw.j
-      Warn_On_Modified_Unread             := True; -- -gnatwm
-      Warn_On_No_Value_Assigned           := True; -- -gnatwv
-      Warn_On_Non_Local_Exception         := True; -- -gnatw.x
-      Warn_On_Object_Renames_Function     := True; -- -gnatw.r
-      Warn_On_Obsolescent_Feature         := True; -- -gnatwj
-      Warn_On_Overlap                     := True; -- -gnatw.i
-      Warn_On_Parameter_Order             := True; -- -gnatw.p
-      Warn_On_Questionable_Missing_Parens := True; -- -gnatwq
-      Warn_On_Redundant_Constructs        := True; -- -gnatwr
-      Warn_On_Reverse_Bit_Order           := True; -- -gnatw.v
-      Warn_On_Size_Alignment              := True; -- -gnatw.z
-      Warn_On_Suspicious_Contract         := True; -- -gnatw.t
-      Warn_On_Suspicious_Modulus_Value    := True; -- -gnatw.m
-      Warn_On_Unchecked_Conversion        := True; -- -gnatwz
-      Warn_On_Unrecognized_Pragma         := True; -- -gnatwg
-      Warn_On_Unrepped_Components         := True; -- -gnatw.c
-   end WA_Warnings;
 
 end Warnsw;

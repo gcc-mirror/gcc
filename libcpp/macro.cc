@@ -1,5 +1,5 @@
 /* Part of CPP library.  (Macro and #define handling.)
-   Copyright (C) 1986-2022 Free Software Foundation, Inc.
+   Copyright (C) 1986-2023 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -563,7 +563,7 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
 	    if (!name)
 	      abort ();
 	  }
-	if (pfile->cb.remap_filename)
+	if (pfile->cb.remap_filename && !pfile->state.in_directive)
 	  name = pfile->cb.remap_filename (name);
 	len = strlen (name);
 	buf = _cpp_unaligned_alloc (pfile, len * 2 + 3);
@@ -1093,7 +1093,7 @@ _cpp_arguments_ok (cpp_reader *pfile, cpp_macro *macro, const cpp_hashnode *node
 
   if (argc < macro->paramc)
     {
-      /* In C++20 (here the va_opt flag is used), and also as a GNU
+      /* In C++20 and C2X (here the va_opt flag is used), and also as a GNU
 	 extension, variadic arguments are allowed to not appear in
 	 the invocation at all.
 	 e.g. #define debug(format, args...) something

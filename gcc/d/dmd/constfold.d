@@ -5,7 +5,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/float.html#fp_const_folding, Floating Point Constant Folding)
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/constfold.d, _constfold.d)
@@ -25,6 +25,7 @@ import dmd.dstruct;
 import dmd.errors;
 import dmd.expression;
 import dmd.globals;
+import dmd.location;
 import dmd.mtype;
 import dmd.root.complex;
 import dmd.root.ctfloat;
@@ -644,7 +645,7 @@ UnionExp Equal(EXP op, const ref Loc loc, Type type, Expression e1, Expression e
         }
         else if (ArrayLiteralExp es2 = e2.isArrayLiteralExp())
         {
-            cmp = !es2.elements || (0 == es2.elements.dim);
+            cmp = !es2.elements || (0 == es2.elements.length);
         }
         else
         {
@@ -660,7 +661,7 @@ UnionExp Equal(EXP op, const ref Loc loc, Type type, Expression e1, Expression e
         }
         else if (ArrayLiteralExp es1 = e1.isArrayLiteralExp())
         {
-            cmp = !es1.elements || (0 == es1.elements.dim);
+            cmp = !es1.elements || (0 == es1.elements.length);
         }
         else
         {
@@ -689,15 +690,15 @@ UnionExp Equal(EXP op, const ref Loc loc, Type type, Expression e1, Expression e
     {
         ArrayLiteralExp es1 = e1.isArrayLiteralExp();
         ArrayLiteralExp es2 = e2.isArrayLiteralExp();
-        if ((!es1.elements || !es1.elements.dim) && (!es2.elements || !es2.elements.dim))
+        if ((!es1.elements || !es1.elements.length) && (!es2.elements || !es2.elements.length))
             cmp = 1; // both arrays are empty
         else if (!es1.elements || !es2.elements)
             cmp = 0;
-        else if (es1.elements.dim != es2.elements.dim)
+        else if (es1.elements.length != es2.elements.length)
             cmp = 0;
         else
         {
-            for (size_t i = 0; i < es1.elements.dim; i++)
+            for (size_t i = 0; i < es1.elements.length; i++)
             {
                 auto ee1 = es1[i];
                 auto ee2 = es2[i];
@@ -724,7 +725,7 @@ UnionExp Equal(EXP op, const ref Loc loc, Type type, Expression e1, Expression e
         StringExp es1 = e1.isStringExp();
         ArrayLiteralExp es2 = e2.isArrayLiteralExp();
         size_t dim1 = es1.len;
-        size_t dim2 = es2.elements ? es2.elements.dim : 0;
+        size_t dim2 = es2.elements ? es2.elements.length : 0;
         if (dim1 != dim2)
             cmp = 0;
         else
@@ -751,16 +752,16 @@ UnionExp Equal(EXP op, const ref Loc loc, Type type, Expression e1, Expression e
         StructLiteralExp es2 = e2.isStructLiteralExp();
         if (es1.sd != es2.sd)
             cmp = 0;
-        else if ((!es1.elements || !es1.elements.dim) && (!es2.elements || !es2.elements.dim))
+        else if ((!es1.elements || !es1.elements.length) && (!es2.elements || !es2.elements.length))
             cmp = 1; // both arrays are empty
         else if (!es1.elements || !es2.elements)
             cmp = 0;
-        else if (es1.elements.dim != es2.elements.dim)
+        else if (es1.elements.length != es2.elements.length)
             cmp = 0;
         else
         {
             cmp = 1;
-            for (size_t i = 0; i < es1.elements.dim; i++)
+            for (size_t i = 0; i < es1.elements.length; i++)
             {
                 Expression ee1 = (*es1.elements)[i];
                 Expression ee2 = (*es2.elements)[i];
@@ -844,20 +845,8 @@ UnionExp Identity(EXP op, const ref Loc loc, Type type, Expression e1, Expressio
     }
     else
     {
-        if (e1.type.isreal())
-        {
-            cmp = CTFloat.isIdentical(e1.toReal(), e2.toReal());
-        }
-        else if (e1.type.isimaginary())
-        {
-            cmp = RealIdentical(e1.toImaginary(), e2.toImaginary());
-        }
-        else if (e1.type.iscomplex())
-        {
-            complex_t v1 = e1.toComplex();
-            complex_t v2 = e2.toComplex();
-            cmp = RealIdentical(creall(v1), creall(v2)) && RealIdentical(cimagl(v1), cimagl(v1));
-        }
+        if (e1.type.isfloating())
+            cmp = e1.isIdentical(e2);
         else
         {
             ue = Equal((op == EXP.identity) ? EXP.equal : EXP.notEqual, loc, type, e1, e2);
@@ -1074,7 +1063,7 @@ UnionExp Cast(const ref Loc loc, Type type, Type to, Expression e1)
         StructDeclaration sd = tb.toDsymbol(null).isStructDeclaration();
         assert(sd);
         auto elements = new Expressions();
-        for (size_t i = 0; i < sd.fields.dim; i++)
+        for (size_t i = 0; i < sd.fields.length; i++)
         {
             VarDeclaration v = sd.fields[i];
             UnionExp zero;
@@ -1110,12 +1099,12 @@ UnionExp ArrayLength(Type type, Expression e1)
     }
     else if (ArrayLiteralExp ale = e1.isArrayLiteralExp())
     {
-        size_t dim = ale.elements ? ale.elements.dim : 0;
+        size_t dim = ale.elements ? ale.elements.length : 0;
         emplaceExp!(IntegerExp)(&ue, loc, dim, type);
     }
     else if (AssocArrayLiteralExp ale = e1.isAssocArrayLiteralExp)
     {
-        size_t dim = ale.keys.dim;
+        size_t dim = ale.keys.length;
         emplaceExp!(IntegerExp)(&ue, loc, dim, type);
     }
     else if (e1.type.toBasetype().ty == Tsarray)
@@ -1183,9 +1172,9 @@ UnionExp Index(Type type, Expression e1, Expression e2, bool indexIsInBounds)
         uinteger_t i = e2.toInteger();
         if (ArrayLiteralExp ale = e1.isArrayLiteralExp())
         {
-            if (i >= ale.elements.dim)
+            if (i >= ale.elements.length)
             {
-                e1.error("array index %llu is out of bounds `%s[0 .. %llu]`", i, e1.toChars(), cast(ulong) ale.elements.dim);
+                e1.error("array index %llu is out of bounds `%s[0 .. %llu]`", i, e1.toChars(), cast(ulong) ale.elements.length);
                 emplaceExp!(ErrorExp)(&ue);
             }
             else
@@ -1206,7 +1195,7 @@ UnionExp Index(Type type, Expression e1, Expression e2, bool indexIsInBounds)
     {
         /* Search the keys backwards, in case there are duplicate keys
          */
-        for (size_t i = ae.keys.dim; i;)
+        for (size_t i = ae.keys.length; i;)
         {
             i--;
             Expression ekey = (*ae.keys)[i];
@@ -1249,7 +1238,14 @@ UnionExp Slice(Type type, Expression e1, Expression lwr, Expression upr)
         }
     }
 
-    if (e1.op == EXP.string_ && lwr.op == EXP.int64 && upr.op == EXP.int64)
+    if (!lwr)
+    {
+        if (e1.op == EXP.string_)
+            emplaceExp(&ue, e1);
+        else
+            cantExp(ue);
+    }
+    else if (e1.op == EXP.string_ && lwr.op == EXP.int64 && upr.op == EXP.int64)
     {
         StringExp es1 = e1.isStringExp();
         const uinteger_t ilwr = lwr.toInteger();
@@ -1274,7 +1270,7 @@ UnionExp Slice(Type type, Expression e1, Expression lwr, Expression upr)
         ArrayLiteralExp es1 = e1.isArrayLiteralExp();
         const uinteger_t ilwr = lwr.toInteger();
         const uinteger_t iupr = upr.toInteger();
-        if (sliceBoundsCheck(0, es1.elements.dim, ilwr, iupr))
+        if (sliceBoundsCheck(0, es1.elements.length, ilwr, iupr))
             cantExp(ue);
         else
         {
@@ -1318,7 +1314,7 @@ void sliceAssignArrayLiteralFromString(ArrayLiteralExp existingAE, const StringE
 void sliceAssignStringFromArrayLiteral(StringExp existingSE, ArrayLiteralExp newae, size_t firstIndex)
 {
     assert(existingSE.ownedByCtfe != OwnedBy.code);
-    foreach (j; 0 .. newae.elements.dim)
+    foreach (j; 0 .. newae.elements.length)
     {
         existingSE.setCodeUnit(firstIndex + j, cast(dchar)newae[j].toInteger());
     }
@@ -1383,9 +1379,9 @@ private Expressions* copyElements(Expression e1, Expression e2 = null)
     {
         if (!ale.elements)
             return;
-        auto d = elems.dim;
+        auto d = elems.length;
         elems.append(ale.elements);
-        foreach (ref el; (*elems)[d .. elems.dim])
+        foreach (ref el; (*elems)[d .. elems.length])
         {
             if (!el)
                 el = ale.basis;
@@ -1524,15 +1520,15 @@ UnionExp Cat(const ref Loc loc, Type type, Expression e1, Expression e2)
         // [chars] ~ string --> [chars]
         StringExp es = e2.isStringExp();
         ArrayLiteralExp ea = e1.isArrayLiteralExp();
-        size_t len = es.len + ea.elements.dim;
+        size_t len = es.len + ea.elements.length;
         auto elems = new Expressions(len);
-        for (size_t i = 0; i < ea.elements.dim; ++i)
+        for (size_t i = 0; i < ea.elements.length; ++i)
         {
             (*elems)[i] = ea[i];
         }
         emplaceExp!(ArrayLiteralExp)(&ue, e1.loc, type, elems);
         ArrayLiteralExp dest = ue.exp().isArrayLiteralExp();
-        sliceAssignArrayLiteralFromString(dest, es, ea.elements.dim);
+        sliceAssignArrayLiteralFromString(dest, es, ea.elements.length);
         assert(ue.exp().type);
         return ue;
     }
@@ -1541,9 +1537,9 @@ UnionExp Cat(const ref Loc loc, Type type, Expression e1, Expression e2)
         // string ~ [chars] --> [chars]
         StringExp es = e1.isStringExp();
         ArrayLiteralExp ea = e2.isArrayLiteralExp();
-        size_t len = es.len + ea.elements.dim;
+        size_t len = es.len + ea.elements.length;
         auto elems = new Expressions(len);
-        for (size_t i = 0; i < ea.elements.dim; ++i)
+        for (size_t i = 0; i < ea.elements.length; ++i)
         {
             (*elems)[es.len + i] = ea[i];
         }
@@ -1609,7 +1605,7 @@ UnionExp Cat(const ref Loc loc, Type type, Expression e1, Expression e2)
         e = ue.exp();
         if (type.toBasetype().ty == Tsarray)
         {
-            e.type = t1.nextOf().sarrayOf(elems.dim);
+            e.type = t1.nextOf().sarrayOf(elems.length);
         }
         else
             e.type = type;
@@ -1633,7 +1629,7 @@ UnionExp Cat(const ref Loc loc, Type type, Expression e1, Expression e2)
         e = ue.exp();
         if (type.toBasetype().ty == Tsarray)
         {
-            e.type = t1.nextOf().sarrayOf(elems.dim);
+            e.type = t1.nextOf().sarrayOf(elems.length);
         }
         else
             e.type = type;
@@ -1651,7 +1647,7 @@ UnionExp Cat(const ref Loc loc, Type type, Expression e1, Expression e2)
         e = ue.exp();
         if (type.toBasetype().ty == Tsarray)
         {
-            e.type = e2.type.sarrayOf(elems.dim);
+            e.type = e2.type.sarrayOf(elems.length);
         }
         else
             e.type = type;
@@ -1667,7 +1663,7 @@ UnionExp Cat(const ref Loc loc, Type type, Expression e1, Expression e2)
         e = ue.exp();
         if (type.toBasetype().ty == Tsarray)
         {
-            e.type = e1.type.sarrayOf(elems.dim);
+            e.type = e1.type.sarrayOf(elems.length);
         }
         else
             e.type = type;

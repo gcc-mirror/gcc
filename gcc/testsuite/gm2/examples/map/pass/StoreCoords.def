@@ -1,0 +1,71 @@
+(* Copyright (C) 2005-2023 Free Software Foundation, Inc. *)
+(* This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License along
+with gm2; see the file COPYING.  If not, write to the Free Software
+Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. *)
+DEFINITION MODULE StoreCoords ;
+
+(*
+   Title      : StoreCoords
+   Author     : Gaius Mulley
+   Date       : 15/7/88
+   LastEdit   : 15/7/88
+   System     : LOGITECH MODULA-2/86
+   Description: Provides a list of unique coordinates.
+                These coordinates maybe randomly requested.
+*)
+
+EXPORT QUALIFIED InitCoords, KillCoords,
+                 GetAndDeleteRandomCoord, AddCoord, CoordsExist ;
+
+(*
+   InitCoords - Initializes a potential list of coordinates.
+                An index to this potential coordinate list is returned.
+*)
+
+PROCEDURE InitCoords () : CARDINAL ;
+
+
+(*
+   KillCoords - Kills a complete coordinate list.
+*)
+
+PROCEDURE KillCoords (CoordListIndex: CARDINAL) ;
+
+
+(*
+   GetAndDeleteRandomCoord - Returns a random coordinate from the coordinate
+                             list and then it is deleted from the list.
+*)
+
+PROCEDURE GetAndDeleteRandomCoord (CoordListIndex: CARDINAL;
+                                   VAR x, y: CARDINAL) ;
+
+
+(*
+   AddCoord - places a coordinate into the specified list.
+*)
+
+PROCEDURE AddCoord (CoordListIndex: CARDINAL; x, y: CARDINAL) ;
+
+
+(*
+   CoordsExist - returns true if a coordinate exists
+                 within the CoordListIndex.
+*)
+
+PROCEDURE CoordsExist (CoordListIndex: CARDINAL) : BOOLEAN ;
+
+
+END StoreCoords.

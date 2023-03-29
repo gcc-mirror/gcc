@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (C) 2013-2022 Free Software Foundation, Inc.
+# Copyright (C) 2013-2023 Free Software Foundation, Inc.
 #
 # This script is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -596,6 +596,8 @@ class TestsuiteFilter (GenericFilter):
                 '.go',
                 '.inc',
                 '.java',
+                '.mod',
+                '.rs'
                 ])
 
     def skip_file (self, dir, filename):
@@ -636,8 +638,9 @@ class LibPhobosFilter (GenericFilter):
         GenericFilter.__init__ (self)
 
         self.skip_files |= set ([
-                # Source module imported from upstream.
+                # Source modules imported from upstream.
                 'object.d',
+                '__builtins.di'
                 ])
 
         self.skip_dirs |= set ([
@@ -680,6 +683,19 @@ class LibStdCxxFilter (GenericFilter):
             return re.compile ('// \(C\) Copyright Jeremy Siek')
         return GenericFilter.get_line_filter (self, dir, filename)
 
+class ContribFilter(GenericFilter):
+    def __init__ (self):
+        GenericFilter.__init__ (self)
+
+        self.skip_files |= set ([
+                # A different copyrights.
+                'unicode-license.txt',
+                'Info.plist',
+                # Contains CR (^M).
+                'repro_fail',
+                'test_patches.txt',
+                ])
+
 class GCCCopyright (Copyright):
     def __init__ (self, errors):
         Copyright.__init__ (self, errors)
@@ -699,6 +715,7 @@ class GCCCopyright (Copyright):
         self.add_external_author ('Advanced Micro Devices Inc.')
         self.add_external_author ('Ami Tavory and Vladimir Dreizin, IBM-HRL.')
         self.add_external_author ('Cavium Networks.')
+        self.add_external_author ('David Malcolm')
         self.add_external_author ('Faraday Technology Corp.')
         self.add_external_author ('Florida State University')
         self.add_external_author ('Gerard Jungman')
@@ -720,6 +737,7 @@ class GCCCopyright (Copyright):
         self.add_external_author ('Stephen L. Moshier')
         self.add_external_author ('Sun Microsystems, Inc. All rights reserved.')
         self.add_external_author ('The D Language Foundation, All Rights Reserved')
+        self.add_external_author ('The fast_float authors')
         self.add_external_author ('The Go Authors.  All rights reserved.')
         self.add_external_author ('The Go Authors. All rights reserved.')
         self.add_external_author ('The Go Authors.')
@@ -738,7 +756,7 @@ class GCCCmdLine (CmdLine):
         # boehm-gc is imported from upstream.
         self.add_dir ('c++tools')
         self.add_dir ('config', ConfigFilter())
-        # contrib isn't really part of GCC.
+        self.add_dir ('contrib', ContribFilter())
         self.add_dir ('fixincludes')
         self.add_dir ('gcc', GCCFilter())
         self.add_dir (os.path.join ('gcc', 'testsuite'), TestsuiteFilter())
@@ -760,7 +778,6 @@ class GCCCmdLine (CmdLine):
         self.add_dir ('libiberty')
         self.add_dir ('libitm')
         self.add_dir ('libobjc')
-        # liboffloadmic is imported from upstream.
         self.add_dir ('libphobos', LibPhobosFilter())
         self.add_dir ('libquadmath')
         # libsanitizer is imported from upstream.
@@ -773,6 +790,7 @@ class GCCCmdLine (CmdLine):
 
         self.default_dirs = [
             'c++tools',
+            'contrib',
             'gcc',
             'include',
             'libada',

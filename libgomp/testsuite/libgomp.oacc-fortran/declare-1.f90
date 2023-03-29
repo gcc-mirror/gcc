@@ -215,7 +215,7 @@ program main
   ! { dg-note {variable 'C\.[0-9]+' declared in block potentially has improper OpenACC privatization level: 'const_decl'} "TODO" { target *-*-* } .-1 }
   ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 }
   ! { dg-note {variable 'S\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-3 }
-  ! { dg-note {variable 'desc\.[0-9]+' declared in block is candidate for adjusting OpenACC privatization level} "TODO" { target *-*-* } .-4 }
+  ! { dg-note {variable 'desc\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: artificial} "" { target *-*-* } .-4 }
   use vars
   use openacc
   implicit none

@@ -1,7 +1,10 @@
 // { dg-do run { target c++11 } }
 // { dg-require-atomic-builtins "" }
 
-// Copyright (C) 2012-2022 Free Software Foundation, Inc.
+// std::abs from <cstdlib> is not freestanding.
+// { dg-require-effective-target hosted }
+
+// Copyright (C) 2012-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

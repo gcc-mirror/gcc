@@ -1,4 +1,4 @@
-/* Copyright (C) 2019-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2019-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -35,67 +35,66 @@
 #endif /* __AVX512BF16__ */
 
 /* Internal data types for implementing the intrinsics.  */
-typedef short __v16bh __attribute__ ((__vector_size__ (32)));
-typedef short __v8bh __attribute__ ((__vector_size__ (16)));
+typedef __bf16 __v16bf __attribute__ ((__vector_size__ (32)));
+typedef __bf16 __v8bf __attribute__ ((__vector_size__ (16)));
 
 /* The Intel API is flexible enough that we must allow aliasing with other
    vector types, and their scalar components.  */
-typedef short __m256bh __attribute__ ((__vector_size__ (32), __may_alias__));
-typedef short __m128bh __attribute__ ((__vector_size__ (16), __may_alias__));
+typedef __bf16 __m256bh __attribute__ ((__vector_size__ (32), __may_alias__));
+typedef __bf16 __m128bh __attribute__ ((__vector_size__ (16), __may_alias__));
 
-typedef unsigned short __bfloat16;
+typedef __bf16 __bfloat16;
+
+#define _mm256_cvtneps_pbh(A) \
+  (__m128bh) __builtin_ia32_cvtneps2bf16_v8sf (A)
+#define _mm_cvtneps_pbh(A) \
+  (__m128bh) __builtin_ia32_cvtneps2bf16_v4sf (A)
+
 /* vcvtne2ps2bf16 */
 
 extern __inline __m256bh
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_cvtne2ps_pbh (__m256 __A, __m256 __B)
 {
-  return (__m256bh)__builtin_ia32_cvtne2ps2bf16_v16hi(__A, __B);
+  return (__m256bh)__builtin_ia32_cvtne2ps2bf16_v16bf(__A, __B);
 }
 
 extern __inline __m256bh
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_cvtne2ps_pbh (__m256bh __A, __mmask16 __B, __m256 __C, __m256 __D)
 {
-  return (__m256bh)__builtin_ia32_cvtne2ps2bf16_v16hi_mask(__C, __D, __A, __B);
+  return (__m256bh)__builtin_ia32_cvtne2ps2bf16_v16bf_mask(__C, __D, __A, __B);
 }
 
 extern __inline __m256bh
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_maskz_cvtne2ps_pbh (__mmask16 __A, __m256 __B, __m256 __C)
 {
-  return (__m256bh)__builtin_ia32_cvtne2ps2bf16_v16hi_maskz(__B, __C, __A);
+  return (__m256bh)__builtin_ia32_cvtne2ps2bf16_v16bf_maskz(__B, __C, __A);
 }
 
 extern __inline __m128bh
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtne2ps_pbh (__m128 __A, __m128 __B)
 {
-  return (__m128bh)__builtin_ia32_cvtne2ps2bf16_v8hi(__A, __B);
+  return (__m128bh)__builtin_ia32_cvtne2ps2bf16_v8bf(__A, __B);
 }
 
 extern __inline __m128bh
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_cvtne2ps_pbh (__m128bh __A, __mmask8 __B, __m128 __C, __m128 __D)
 {
-  return (__m128bh)__builtin_ia32_cvtne2ps2bf16_v8hi_mask(__C, __D, __A, __B);
+  return (__m128bh)__builtin_ia32_cvtne2ps2bf16_v8bf_mask(__C, __D, __A, __B);
 }
 
 extern __inline __m128bh
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_maskz_cvtne2ps_pbh (__mmask8 __A, __m128 __B, __m128 __C)
 {
-  return (__m128bh)__builtin_ia32_cvtne2ps2bf16_v8hi_maskz(__B, __C, __A);
+  return (__m128bh)__builtin_ia32_cvtne2ps2bf16_v8bf_maskz(__B, __C, __A);
 }
 
 /* vcvtneps2bf16 */
-
-extern __inline __m128bh
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_cvtneps_pbh (__m256 __A)
-{
-  return (__m128bh)__builtin_ia32_cvtneps2bf16_v8sf(__A);
-}
 
 extern __inline __m128bh
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -109,13 +108,6 @@ __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_maskz_cvtneps_pbh (__mmask8 __A, __m256 __B)
 {
   return (__m128bh)__builtin_ia32_cvtneps2bf16_v8sf_maskz(__B, __A);
-}
-
-extern __inline __m128bh
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_cvtneps_pbh (__m128 __A)
-{
-  return (__m128bh)__builtin_ia32_cvtneps2bf16_v4sf(__A);
 }
 
 extern __inline __m128bh
@@ -176,13 +168,13 @@ _mm_maskz_dpbf16_ps (__mmask8 __A, __m128 __B, __m128bh __C, __m128bh __D)
   return (__m128)__builtin_ia32_dpbf16ps_v4sf_maskz(__B, __C, __D, __A);
 }
 
-extern __inline __bfloat16
+extern __inline __bf16
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cvtness_sbh (float __A)
 {
   __v4sf __V = {__A, 0, 0, 0};
-  __v8hi __R = __builtin_ia32_cvtneps2bf16_v4sf_mask ((__v4sf)__V,
-	       (__v8hi)_mm_undefined_si128 (), (__mmask8)-1);
+  __v8bf __R = __builtin_ia32_cvtneps2bf16_v4sf_mask ((__v4sf)__V,
+	       (__v8bf)_mm_undefined_si128 (), (__mmask8)-1);
   return __R[0];
 }
 

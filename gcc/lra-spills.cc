@@ -1,5 +1,5 @@
 /* Change pseudos by memory.
-   Copyright (C) 2010-2022 Free Software Foundation, Inc.
+   Copyright (C) 2010-2023 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -860,6 +860,9 @@ lra_final_code_change (void)
 		lra_update_dup (id, i);
 		insn_change_p = true;
 	      }
+	  if ((GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
+	      && alter_subregs (&XEXP (pat, 0), false))
+	    insn_change_p = true;
 	  if (insn_change_p)
 	    lra_update_operator_dups (id);
 

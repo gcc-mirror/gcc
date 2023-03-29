@@ -1,5 +1,5 @@
 /* Declarations and definitions relating to the BPF Type Format (BTF).
-   Copyright (C) 2021-2022 Free Software Foundation, Inc.
+   Copyright (C) 2021-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -109,7 +109,8 @@ struct btf_type
 #define BTF_KIND_VAR		14	/* Variable.  */
 #define BTF_KIND_DATASEC	15	/* Section such as .bss or .data.  */
 #define BTF_KIND_FLOAT		16	/* Floating point.  */
-#define BTF_KIND_MAX		BTF_KIND_FLOAT
+#define BTF_KIND_ENUM64 	19	/* Enumeration up to 64 bits.  */
+#define BTF_KIND_MAX		BTF_KIND_ENUM64
 #define NR_BTF_KINDS		(BTF_KIND_MAX + 1)
 
 /* For some BTF_KINDs, struct btf_type is immediately followed by
@@ -130,13 +131,16 @@ struct btf_type
 #define BTF_INT_BOOL	(1 << 2)
 
 /* BTF_KIND_ENUM is followed by VLEN struct btf_enum entries,
-   which describe the enumerators. Note that BTF currently only
-   supports signed 32-bit enumerator values.  */
+   which describe the enumerators. */
 struct btf_enum
 {
   uint32_t name_off;	/* Offset in string section of enumerator name.  */
   int32_t  val;		/* Enumerator value.  */
 };
+
+/* BTF_KF_ENUM_ holds the flags for kflags in BTF_KIND_ENUM{,64}.  */
+#define BTF_KF_ENUM_UNSIGNED	(0)
+#define BTF_KF_ENUM_SIGNED 	(1 << 0)
 
 /* BTF_KIND_ARRAY is followed by a single struct btf_array.  */
 struct btf_array
@@ -174,20 +178,48 @@ struct btf_param
   uint32_t type;	/* Type of parameter.  */
 };
 
+/* BTF_KIND_FUNC records encode linkage information in the VLEN bits
+   of the type record.  These are the supported values.  */
+enum btf_func_linkage
+{
+  BTF_FUNC_STATIC = 0,
+  BTF_FUNC_GLOBAL = 1,
+  BTF_FUNC_EXTERN = 2,
+};
+
+/* BTF_KIND_VAR records encode linkage information in a single
+   trailing struct btf_var.  These are the supported values.  */
+enum btf_var_linkage
+{
+  BTF_VAR_STATIC = 0,
+  BTF_VAR_GLOBAL_ALLOCATED = 1,
+  BTF_VAR_GLOBAL_EXTERN = 2,
+};
+
 /* BTF_KIND_VAR is followed by a single struct btf_var, which describes
    information about the variable.  */
 struct btf_var
 {
-  uint32_t linkage;	/* Currently only 0=static or 1=global.  */
+  uint32_t linkage;	/* 0=static, 1=global, 2=extern.  */
 };
 
 /* BTF_KIND_DATASEC is followed by VLEN struct btf_var_secinfo entries,
-   which describe all BTF_KIND_VAR types contained in the section.  */
+   which describe all BTF_KIND_VAR or extern BTF_KIND_FUNC types contained
+   in the section.  */
 struct btf_var_secinfo
 {
-  uint32_t type;	/* Type of variable.  */
-  uint32_t offset;	/* In-section offset of variable (in bytes).  */
-  uint32_t size;	/* Size (in bytes) of variable.  */
+  uint32_t type;	/* Type of BTF_KIND_VAR or BTF_KIND_FUNC item.  */
+  uint32_t offset;	/* In-section offset (in bytes) of item.  */
+  uint32_t size;	/* Size (in bytes) of item.  */
+};
+
+/* BTF_KIND_ENUM64 is followed by VLEN struct btf_enum64 entries,
+   which describe the 64 bits enumerators.  */
+struct btf_enum64
+{
+  uint32_t name_off;	/* Offset in string section of enumerator name.  */
+  uint32_t val_lo32;	/* lower 32-bit value for a 64-bit value Enumerator */
+  uint32_t val_hi32;	/* high 32-bit value for a 64-bit value Enumerator */
 };
 
 #ifdef	__cplusplus

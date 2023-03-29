@@ -1,6 +1,6 @@
 /* Target macros for arc*-*-linux targets.
 
-   Copyright (C) 2017-2022 Free Software Foundation, Inc.
+   Copyright (C) 2017-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -45,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
     %{!shared:-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}} \
   -X \
   %{mbig-endian:-EB} %{EB} %{EL} \
-  %{!z:-z max-page-size=0x2000 -z common-page-size=0x2000} \
   %{mcpu=nps400:-marclinux_nps; :-marclinux}"
 
 #undef STARTFILE_SPEC

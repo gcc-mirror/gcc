@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *         Copyright (C) 1992-2022, Free Software Foundation, Inc.          *
+ *         Copyright (C) 1992-2023, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -217,6 +217,7 @@ __gnat_ttyname (int filedes)
 #endif /* __CYGWIN__ */
 
 #if defined (__CYGWIN__) || defined (__MINGW32__)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 int __gnat_is_windows_xp (void);
@@ -323,11 +324,7 @@ __gnat_ttyname (int filedes ATTRIBUTE_UNUSED)
   || defined (__QNX__)
 
 # ifdef __MINGW32__
-#  if OLD_MINGW
-#   include <termios.h>
-#  else
-#   include <conio.h>  /* for getch(), kbhit() */
-#  endif
+#  include <conio.h>  /* for getch(), kbhit() */
 # else
 #  include <termios.h>
 # endif
@@ -593,6 +590,7 @@ getc_immediate_common (FILE *stream,
    Ada programs.  */
 
 #ifdef WINNT
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 /* Provide functions to echo the values passed to WinMain (windows bindings

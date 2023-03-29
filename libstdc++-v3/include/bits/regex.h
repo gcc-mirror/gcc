@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2010-2022 Free Software Foundation, Inc.
+// Copyright (C) 2010-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -1825,6 +1825,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * @brief Destroys a %match_results object.
        */
       ~match_results() = default;
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2195. Missing constructors for match_results
+
+      match_results(const match_results& __m, const _Alloc& __a)
+      : _Base_type(__m, __a) { }
+
+      match_results(match_results&& __m, const _Alloc& __a)
+      noexcept(noexcept(_Base_type(std::move(__m), __a)))
+      : _Base_type(std::move(__m), __a) { }
 
       ///@}
 

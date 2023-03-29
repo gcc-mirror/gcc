@@ -47,7 +47,7 @@ of GNAT, and will generate a warning message.
 This child of ``Ada.Characters``
 provides a set of definitions corresponding to those in the
 RM-defined package ``Ada.Characters.Latin_1`` but with the
-few modifications required for ``Latin-9``
+few modifications required for ``Latin-9``.
 The provision of such a package
 is specifically authorized by the Ada Reference Manual
 (RM A.3.3(27)).
@@ -69,12 +69,12 @@ instead of ``Character``.  The provision of such a package
 is specifically authorized by the Ada Reference Manual
 (RM A.3.3(27)).
 
-.. _`Ada.Characters.Wide_Latin_9_(a-cwila1.ads)`:
+.. _`Ada.Characters.Wide_Latin_9_(a-cwila9.ads)`:
 
-``Ada.Characters.Wide_Latin_9`` (:file:`a-cwila1.ads`)
+``Ada.Characters.Wide_Latin_9`` (:file:`a-cwila9.ads`)
 ======================================================
 
-.. index:: Ada.Characters.Wide_Latin_9 (a-cwila1.ads)
+.. index:: Ada.Characters.Wide_Latin_9 (a-cwila9.ads)
 
 .. index:: Latin_9 constants for Wide_Character
 
@@ -159,8 +159,8 @@ where this concept makes sense.
 This child of ``Ada.Command_Line``
 provides a mechanism for logically removing
 arguments from the argument list.  Once removed, an argument is not visible
-to further calls on the subprograms in ``Ada.Command_Line`` will not
-see the removed argument.
+to further calls to the subprograms in ``Ada.Command_Line``. These calls
+will not see the removed argument.
 
 .. _`Ada.Command_Line.Response_File_(a-clrefi.ads)`:
 
@@ -833,7 +833,7 @@ obtaining information about exceptions provided by Ada 83 compilers.
 
 .. index:: Memory corruption debugging
 
-Provide a debugging storage pools that helps tracking memory corruption
+Provides a debugging storage pools that helps tracking memory corruption
 problems.
 See ``The GNAT Debug_Pool Facility`` section in the :title:`GNAT User's Guide`.
 
@@ -1043,7 +1043,7 @@ a message from a subprogram in a pure package, since the
 necessary types and subprograms are in ``Ada.Exceptions``
 which is not a pure unit. ``GNAT.Exceptions`` provides a
 facility for getting around this limitation for a few
-predefined exceptions, and for example allow raising
+predefined exceptions, and for example allows raising
 ``Constraint_Error`` with a message from a pure subprogram.
 
 .. _`GNAT.Expect_(g-expect.ads)`:
@@ -1098,7 +1098,7 @@ in this package can be used to reestablish the required mode.
 .. index:: Formatted String
 
 Provides support for C/C++ printf() formatted strings. The format is
-copied from the printf() routine and should therefore gives identical
+copied from the printf() routine and should therefore give identical
 output. Some generic routines are provided to be able to use types
 derived from Integer, Float or enumerations as values for the
 formatted string.
@@ -1314,7 +1314,7 @@ Provides a generator of static minimal perfect hash functions. No
 collisions occur and each item can be retrieved from the table in one
 probe (perfect property). The hash table size corresponds to the exact
 size of the key set and no larger (minimal property). The key set has to
-be know in advance (static property). The hash functions are also order
+be known in advance (static property). The hash functions are also order
 preserving. If w2 is inserted after w1 in the generator, their
 hashcode are in the same order. These hashing functions are very
 convenient for use with realtime applications.
@@ -1399,7 +1399,7 @@ this interface usable for large files or socket streams.
 
 .. index:: Secondary Stack Info
 
-Provide the capability to query the high water mark of the current task's
+Provides the capability to query the high water mark of the current task's
 secondary stack.
 
 .. _`GNAT.Semaphores_(g-semaph.ads)`:
@@ -1514,7 +1514,7 @@ targets.
 A high level and portable interface to develop sockets based applications.
 This package is based on the sockets thin binding found in
 ``GNAT.Sockets.Thin``. Currently ``GNAT.Sockets`` is implemented
-on all native GNAT ports and on VxWorks cross prots.  It is not implemented for
+on all native GNAT ports and on VxWorks cross ports.  It is not implemented for
 the LynxOS cross port.
 
 .. _`GNAT.Source_Info_(g-souinf.ads)`:
@@ -1781,12 +1781,12 @@ in various debugging situations.
 
 .. index:: Trace back facilities
 
-.. _`GNAT.UTF_32_(g-table.ads)`:
+.. _`GNAT.UTF_32_(g-utf_32.ads)`:
 
-``GNAT.UTF_32`` (:file:`g-table.ads`)
-=====================================
+``GNAT.UTF_32`` (:file:`g-utf_32.ads`)
+======================================
 
-.. index:: GNAT.UTF_32 (g-table.ads)
+.. index:: GNAT.UTF_32 (g-utf_32.ads)
 
 .. index:: Wide character codes
 
@@ -1800,12 +1800,12 @@ lexical rules for identifiers and strings, and also a
 lower case to upper case fold routine corresponding to
 the Ada 2005 rules for identifier equivalence.
 
-.. _`GNAT.Wide_Spelling_Checker_(g-u3spch.ads)`:
+.. _`GNAT.UTF_32_Spelling_Checker_(g-u3spch.ads)`:
 
-``GNAT.Wide_Spelling_Checker`` (:file:`g-u3spch.ads`)
-=====================================================
+``GNAT.UTF_32_Spelling_Checker`` (:file:`g-u3spch.ads`)
+=======================================================
 
-.. index:: GNAT.Wide_Spelling_Checker (g-u3spch.ads)
+.. index:: GNAT.UTF_32_Spelling_Checker (g-u3spch.ads)
 
 .. index:: Spell checking
 

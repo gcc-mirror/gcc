@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512bf16 -O2" } */
-/* { dg-final { scan-assembler-times "vdpbf16ps\[ \\t\]+\[^\{\n\]*%zmm\[0-9\]+\[^\{\n\]*%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\{%k\[0-9\]\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1 } } */
+/* { dg-final { scan-assembler-times "vdpbf16ps\[ \\t\]+\[^\{\n\]*\[^\{\n\]*%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\{%k\[0-9\]\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1 } } */
 
 #include <immintrin.h>
 

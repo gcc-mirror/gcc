@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -45,7 +45,7 @@ typedef union tree_node Symbol;
 struct Symbol;          // back end symbol
 #endif
 
-void expandTuples(Expressions *exps);
+void expandTuples(Expressions *exps, Identifiers *names = nullptr);
 bool isTrivialExp(Expression *e);
 bool hasSideEffect(Expression *e, bool assumeImpureCalls = false);
 
@@ -81,7 +81,7 @@ class Expression : public ASTNode
 public:
     EXP op;                     // to minimize use of dynamic_cast
     unsigned char size;         // # of bytes in Expression so we can copy() it
-    unsigned char parens;       // if this is a parenthesized expression
+    bool parens;                // if this is a parenthesized expression
     Type *type;                 // !=NULL means that semantic() has been run
     Loc loc;                    // file location
 
@@ -123,6 +123,7 @@ public:
     // A compile-time result is required. Give an error if not possible
     Expression *ctfeInterpret();
     int isConst();
+    virtual bool isIdentical(const Expression *e) const;
     virtual Optional<bool> toBool();
     virtual bool hasCode()
     {
@@ -250,7 +251,7 @@ public:
 
     static IntegerExp *create(const Loc &loc, dinteger_t value, Type *type);
     static void emplace(UnionExp *pue, const Loc &loc, dinteger_t value, Type *type);
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
     dinteger_t toInteger() override;
     real_t toReal() override;
     real_t toImaginary() override;
@@ -280,7 +281,8 @@ public:
 
     static RealExp *create(const Loc &loc, real_t value, Type *type);
     static void emplace(UnionExp *pue, const Loc &loc, real_t value, Type *type);
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
+    bool isIdentical(const Expression *e) const override;
     dinteger_t toInteger() override;
     uinteger_t toUInteger() override;
     real_t toReal() override;
@@ -297,7 +299,8 @@ public:
 
     static ComplexExp *create(const Loc &loc, complex_t value, Type *type);
     static void emplace(UnionExp *pue, const Loc &loc, complex_t value, Type *type);
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
+    bool isIdentical(const Expression *e) const override;
     dinteger_t toInteger() override;
     uinteger_t toUInteger() override;
     real_t toReal() override;
@@ -358,7 +361,7 @@ public:
 class NullExp final : public Expression
 {
 public:
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
     Optional<bool> toBool() override;
     StringExp *toStringExp() override;
     void accept(Visitor *v) override { v->visit(this); }
@@ -377,7 +380,7 @@ public:
     static StringExp *create(const Loc &loc, const char *s);
     static StringExp *create(const Loc &loc, const void *s, d_size_t len);
     static void emplace(UnionExp *pue, const Loc &loc, const char *s);
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
     char32_t getCodeUnit(d_size_t i) const;
     void setCodeUnit(d_size_t i, char32_t c);
     StringExp *toStringExp() override;
@@ -408,7 +411,7 @@ public:
 
     static TupleExp *create(const Loc &loc, Expressions *exps);
     TupleExp *syntaxCopy() override;
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
 
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -419,11 +422,12 @@ public:
     Expression *basis;
     Expressions *elements;
     OwnedBy ownedByCtfe;
+    bool onstack;
 
     static ArrayLiteralExp *create(const Loc &loc, Expressions *elements);
     static void emplace(UnionExp *pue, const Loc &loc, Expressions *elements);
     ArrayLiteralExp *syntaxCopy() override;
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
     Expression *getElement(d_size_t i); // use opIndex instead
     Expression *opIndex(d_size_t i);
     Optional<bool> toBool() override;
@@ -439,7 +443,7 @@ public:
     Expressions *values;
     OwnedBy ownedByCtfe;
 
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
     AssocArrayLiteralExp *syntaxCopy() override;
     Optional<bool> toBool() override;
 
@@ -477,7 +481,7 @@ public:
     OwnedBy ownedByCtfe;
 
     static StructLiteralExp *create(const Loc &loc, StructDeclaration *sd, void *elements, Type *stype = NULL);
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
     StructLiteralExp *syntaxCopy() override;
     Expression *getField(Type *type, unsigned offset);
     int getFieldIndex(Type *type, unsigned offset);
@@ -528,12 +532,15 @@ public:
     Expression *thisexp;        // if !NULL, 'this' for class being allocated
     Type *newtype;
     Expressions *arguments;     // Array of Expression's
+    Identifiers *names;         // Array of names corresponding to expressions
 
     Expression *argprefix;      // expression to be evaluated just before arguments[]
 
     CtorDeclaration *member;    // constructor function
     bool onstack;               // allocate on stack
     bool thrownew;              // this NewExp is the expression of a ThrowStatement
+
+    Expression *lowering;       // lowered druntime hook: `_d_newclass`
 
     static NewExp *create(const Loc &loc, Expression *thisexp, Type *newtype, Expressions *arguments);
     NewExp *syntaxCopy() override;
@@ -583,7 +590,7 @@ class VarExp final : public SymbolExp
 public:
     bool delegateWasExtracted;
     static VarExp *create(const Loc &loc, Declaration *var, bool hasOverloads = true);
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
     bool isLvalue() override;
     Expression *toLvalue(Scope *sc, Expression *e) override;
     Expression *modifiableLvalue(Scope *sc, Expression *e) override;
@@ -612,7 +619,7 @@ public:
     TemplateDeclaration *td;
     TOK tok;
 
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
     FuncExp *syntaxCopy() override;
     const char *toChars() const override;
     bool checkType() override;
@@ -822,6 +829,7 @@ class CallExp final : public UnaExp
 {
 public:
     Expressions *arguments;     // function arguments
+    Identifiers *names;
     FuncDeclaration *f;         // symbol to call
     bool directcall;            // true if a virtual call is devirtualized
     bool inDebugStatement;      // true if this was in a debug statement

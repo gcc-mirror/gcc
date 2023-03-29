@@ -1,6 +1,6 @@
 // Standard iostream objects -*- C++ -*-
 
-// Copyright (C) 1997-2022 Free Software Foundation, Inc.
+// Copyright (C) 1997-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,6 +35,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // iostreams
+
 #include <bits/c++config.h>
 #include <ostream>
 #include <istream>
@@ -46,32 +48,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  @name Standard Stream Objects
    *
-   *  The &lt;iostream&gt; header declares the eight <em>standard stream
-   *  objects</em>.  For other declarations, see
+   *  The `<iostream>` header declares the eight *standard stream objects*.
+   *  For other declarations, see
    *  http://gcc.gnu.org/onlinedocs/libstdc++/manual/io.html
    *  and the @link iosfwd I/O forward declarations @endlink
    *
    *  They are required by default to cooperate with the global C
-   *  library's @c FILE streams, and to be available during program
+   *  library's `FILE` streams, and to be available during program
    *  startup and termination. For more information, see the section of the
    *  manual linked to above.
   */
   ///@{
-  extern istream cin;		/// Linked to standard input
-  extern ostream cout;		/// Linked to standard output
-  extern ostream cerr;		/// Linked to standard error (unbuffered)
-  extern ostream clog;		/// Linked to standard error (buffered)
+  extern istream cin;		///< Linked to standard input
+  extern ostream cout;		///< Linked to standard output
+  extern ostream cerr;		///< Linked to standard error (unbuffered)
+  extern ostream clog;		///< Linked to standard error (buffered)
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-  extern wistream wcin;		/// Linked to standard input
-  extern wostream wcout;	/// Linked to standard output
-  extern wostream wcerr;	/// Linked to standard error (unbuffered)
-  extern wostream wclog;	/// Linked to standard error (buffered)
+  extern wistream wcin;		///< Linked to standard input
+  extern wostream wcout;	///< Linked to standard output
+  extern wostream wcerr;	///< Linked to standard error (unbuffered)
+  extern wostream wclog;	///< Linked to standard error (buffered)
 #endif
   ///@}
 
   // For construction of filebuffers for cout, cin, cerr, clog et. al.
+  // When the init_priority attribute is usable, we do this initialization
+  // in the compiled library instead (src/c++98/globals_io.cc).
+#if !__has_attribute(__init_priority__)
   static ios_base::Init __ioinit;
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

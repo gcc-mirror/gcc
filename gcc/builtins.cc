@@ -1,5 +1,5 @@
 /* Expand builtin functions.
-   Copyright (C) 1988-2022 Free Software Foundation, Inc.
+   Copyright (C) 1988-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -696,14 +696,14 @@ c_strlen (tree arg, int only_value, c_strlen_data *data, unsigned eltsize)
     {
       /* Suppress multiple warnings for propagated constant strings.  */
       if (only_value != 2
-	  && !warning_suppressed_p (arg, OPT_Warray_bounds)
-	  && warning_at (loc, OPT_Warray_bounds,
+	  && !warning_suppressed_p (arg, OPT_Warray_bounds_)
+	  && warning_at (loc, OPT_Warray_bounds_,
 			 "offset %qwi outside bounds of constant string",
 			 eltoff))
 	{
 	  if (decl)
 	    inform (DECL_SOURCE_LOCATION (decl), "%qE declared here", decl);
-	  suppress_warning (arg, OPT_Warray_bounds);
+	  suppress_warning (arg, OPT_Warray_bounds_);
 	}
       return NULL_TREE;
     }
@@ -1931,45 +1931,50 @@ mathfn_built_in_2 (tree type, combined_fn fn)
   built_in_function fcodef64x = END_BUILTINS;
   built_in_function fcodef128x = END_BUILTINS;
 
+  /* If <math.h> has been included somehow, HUGE_VAL and NAN definitions
+     break the uses below.  */
+#undef HUGE_VAL
+#undef NAN
+
   switch (fn)
     {
 #define SEQ_OF_CASE_MATHFN			\
-    CASE_MATHFN (ACOS)				\
-    CASE_MATHFN (ACOSH)				\
-    CASE_MATHFN (ASIN)				\
-    CASE_MATHFN (ASINH)				\
-    CASE_MATHFN (ATAN)				\
-    CASE_MATHFN (ATAN2)				\
-    CASE_MATHFN (ATANH)				\
-    CASE_MATHFN (CBRT)				\
+    CASE_MATHFN_FLOATN (ACOS)			\
+    CASE_MATHFN_FLOATN (ACOSH)			\
+    CASE_MATHFN_FLOATN (ASIN)			\
+    CASE_MATHFN_FLOATN (ASINH)			\
+    CASE_MATHFN_FLOATN (ATAN)			\
+    CASE_MATHFN_FLOATN (ATAN2)			\
+    CASE_MATHFN_FLOATN (ATANH)			\
+    CASE_MATHFN_FLOATN (CBRT)			\
     CASE_MATHFN_FLOATN (CEIL)			\
     CASE_MATHFN (CEXPI)				\
     CASE_MATHFN_FLOATN (COPYSIGN)		\
-    CASE_MATHFN (COS)				\
-    CASE_MATHFN (COSH)				\
+    CASE_MATHFN_FLOATN (COS)			\
+    CASE_MATHFN_FLOATN (COSH)			\
     CASE_MATHFN (DREM)				\
-    CASE_MATHFN (ERF)				\
-    CASE_MATHFN (ERFC)				\
-    CASE_MATHFN (EXP)				\
+    CASE_MATHFN_FLOATN (ERF)			\
+    CASE_MATHFN_FLOATN (ERFC)			\
+    CASE_MATHFN_FLOATN (EXP)			\
     CASE_MATHFN (EXP10)				\
-    CASE_MATHFN (EXP2)				\
-    CASE_MATHFN (EXPM1)				\
-    CASE_MATHFN (FABS)				\
-    CASE_MATHFN (FDIM)				\
+    CASE_MATHFN_FLOATN (EXP2)			\
+    CASE_MATHFN_FLOATN (EXPM1)			\
+    CASE_MATHFN_FLOATN (FABS)			\
+    CASE_MATHFN_FLOATN (FDIM)			\
     CASE_MATHFN_FLOATN (FLOOR)			\
     CASE_MATHFN_FLOATN (FMA)			\
     CASE_MATHFN_FLOATN (FMAX)			\
     CASE_MATHFN_FLOATN (FMIN)			\
-    CASE_MATHFN (FMOD)				\
-    CASE_MATHFN (FREXP)				\
+    CASE_MATHFN_FLOATN (FMOD)			\
+    CASE_MATHFN_FLOATN (FREXP)			\
     CASE_MATHFN (GAMMA)				\
     CASE_MATHFN_REENT (GAMMA) /* GAMMA_R */	\
-    CASE_MATHFN (HUGE_VAL)			\
-    CASE_MATHFN (HYPOT)				\
-    CASE_MATHFN (ILOGB)				\
+    CASE_MATHFN_FLOATN (HUGE_VAL)		\
+    CASE_MATHFN_FLOATN (HYPOT)			\
+    CASE_MATHFN_FLOATN (ILOGB)			\
     CASE_MATHFN (ICEIL)				\
     CASE_MATHFN (IFLOOR)			\
-    CASE_MATHFN (INF)				\
+    CASE_MATHFN_FLOATN (INF)			\
     CASE_MATHFN (IRINT)				\
     CASE_MATHFN (IROUND)			\
     CASE_MATHFN (ISINF)				\
@@ -1977,47 +1982,47 @@ mathfn_built_in_2 (tree type, combined_fn fn)
     CASE_MATHFN (J1)				\
     CASE_MATHFN (JN)				\
     CASE_MATHFN (LCEIL)				\
-    CASE_MATHFN (LDEXP)				\
+    CASE_MATHFN_FLOATN (LDEXP)			\
     CASE_MATHFN (LFLOOR)			\
-    CASE_MATHFN (LGAMMA)			\
+    CASE_MATHFN_FLOATN (LGAMMA)			\
     CASE_MATHFN_REENT (LGAMMA) /* LGAMMA_R */	\
     CASE_MATHFN (LLCEIL)			\
     CASE_MATHFN (LLFLOOR)			\
-    CASE_MATHFN (LLRINT)			\
-    CASE_MATHFN (LLROUND)			\
-    CASE_MATHFN (LOG)				\
-    CASE_MATHFN (LOG10)				\
-    CASE_MATHFN (LOG1P)				\
-    CASE_MATHFN (LOG2)				\
-    CASE_MATHFN (LOGB)				\
-    CASE_MATHFN (LRINT)				\
-    CASE_MATHFN (LROUND)			\
-    CASE_MATHFN (MODF)				\
-    CASE_MATHFN (NAN)				\
-    CASE_MATHFN (NANS)				\
+    CASE_MATHFN_FLOATN (LLRINT)			\
+    CASE_MATHFN_FLOATN (LLROUND)		\
+    CASE_MATHFN_FLOATN (LOG)			\
+    CASE_MATHFN_FLOATN (LOG10)			\
+    CASE_MATHFN_FLOATN (LOG1P)			\
+    CASE_MATHFN_FLOATN (LOG2)			\
+    CASE_MATHFN_FLOATN (LOGB)			\
+    CASE_MATHFN_FLOATN (LRINT)			\
+    CASE_MATHFN_FLOATN (LROUND)			\
+    CASE_MATHFN_FLOATN (MODF)			\
+    CASE_MATHFN_FLOATN (NAN)			\
+    CASE_MATHFN_FLOATN (NANS)			\
     CASE_MATHFN_FLOATN (NEARBYINT)		\
-    CASE_MATHFN (NEXTAFTER)			\
+    CASE_MATHFN_FLOATN (NEXTAFTER)		\
     CASE_MATHFN (NEXTTOWARD)			\
-    CASE_MATHFN (POW)				\
+    CASE_MATHFN_FLOATN (POW)			\
     CASE_MATHFN (POWI)				\
     CASE_MATHFN (POW10)				\
-    CASE_MATHFN (REMAINDER)			\
-    CASE_MATHFN (REMQUO)			\
+    CASE_MATHFN_FLOATN (REMAINDER)		\
+    CASE_MATHFN_FLOATN (REMQUO)			\
     CASE_MATHFN_FLOATN (RINT)			\
     CASE_MATHFN_FLOATN (ROUND)			\
     CASE_MATHFN_FLOATN (ROUNDEVEN)		\
     CASE_MATHFN (SCALB)				\
-    CASE_MATHFN (SCALBLN)			\
-    CASE_MATHFN (SCALBN)			\
+    CASE_MATHFN_FLOATN (SCALBLN)		\
+    CASE_MATHFN_FLOATN (SCALBN)			\
     CASE_MATHFN (SIGNBIT)			\
     CASE_MATHFN (SIGNIFICAND)			\
-    CASE_MATHFN (SIN)				\
+    CASE_MATHFN_FLOATN (SIN)			\
     CASE_MATHFN (SINCOS)			\
-    CASE_MATHFN (SINH)				\
+    CASE_MATHFN_FLOATN (SINH)			\
     CASE_MATHFN_FLOATN (SQRT)			\
-    CASE_MATHFN (TAN)				\
-    CASE_MATHFN (TANH)				\
-    CASE_MATHFN (TGAMMA)			\
+    CASE_MATHFN_FLOATN (TAN)			\
+    CASE_MATHFN_FLOATN (TANH)			\
+    CASE_MATHFN_FLOATN (TGAMMA)			\
     CASE_MATHFN_FLOATN (TRUNC)			\
     CASE_MATHFN (Y0)				\
     CASE_MATHFN (Y1)				\
@@ -2082,6 +2087,14 @@ tree
 mathfn_built_in (tree type, combined_fn fn)
 {
   return mathfn_built_in_1 (type, fn, /*implicit=*/ 1);
+}
+
+/* Like mathfn_built_in_1, but always use the explicit array.  */
+
+tree
+mathfn_built_in_explicit (tree type, combined_fn fn)
+{
+  return mathfn_built_in_1 (type, fn, /*implicit=*/ 0);
 }
 
 /* Like mathfn_built_in_1, but take a built_in_function and
@@ -4199,7 +4212,7 @@ builtin_memset_read_str (void *data, void *prev,
 	return const_vec;
 
       /* Use the move expander with CONST_VECTOR.  */
-      target = targetm.gen_memset_scratch_rtx (mode);
+      target = gen_reg_rtx (mode);
       emit_move_insn (target, const_vec);
       return target;
     }
@@ -4243,7 +4256,7 @@ builtin_memset_gen_str (void *data, void *prev,
 	 the memset expander.  */
       insn_code icode = optab_handler (vec_duplicate_optab, mode);
 
-      target = targetm.gen_memset_scratch_rtx (mode);
+      target = gen_reg_rtx (mode);
       class expand_operand ops[2];
       create_output_operand (&ops[0], target, mode);
       create_input_operand (&ops[1], (rtx) data, QImode);
@@ -7129,8 +7142,16 @@ inline_string_cmp (rtx target, tree var_str, const char *const_str,
 
       op0 = convert_modes (mode, unit_mode, op0, 1);
       op1 = convert_modes (mode, unit_mode, op1, 1);
-      result = expand_simple_binop (mode, MINUS, op0, op1,
-				    result, 1, OPTAB_WIDEN);
+      rtx diff = expand_simple_binop (mode, MINUS, op0, op1,
+				      result, 1, OPTAB_WIDEN);
+
+      /* Force the difference into result register.  We cannot reassign
+	 result here ("result = diff") or we may end up returning
+	 uninitialized result when expand_simple_binop allocates a new
+	 pseudo-register for returning.  */
+      if (diff != result)
+	emit_move_insn (result, diff);
+
       if (i < length - 1)
 	emit_cmp_and_jump_insns (result, CONST0_RTX (mode), NE, NULL_RTX,
 	    			 mode, true, ne_label);
@@ -7157,8 +7178,8 @@ inline_expand_builtin_bytecmp (tree exp, rtx target)
   bool is_ncmp = (fcode == BUILT_IN_STRNCMP || fcode == BUILT_IN_MEMCMP);
 
   /* Do NOT apply this inlining expansion when optimizing for size or
-     optimization level below 2.  */
-  if (optimize < 2 || optimize_insn_for_size_p ())
+     optimization level below 2 or if unused *cmp hasn't been DCEd.  */
+  if (optimize < 2 || optimize_insn_for_size_p () || target == const0_rtx)
     return NULL_RTX;
 
   gcc_checking_assert (fcode == BUILT_IN_STRCMP
@@ -7321,7 +7342,24 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
      by ASan.  */
 
   enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
-  if ((flag_sanitize & SANITIZE_ADDRESS) && asan_intercepted_p (fcode))
+  if (param_asan_kernel_mem_intrinsic_prefix
+      && sanitize_flags_p (SANITIZE_KERNEL_ADDRESS
+			   | SANITIZE_KERNEL_HWADDRESS))
+    switch (fcode)
+      {
+	rtx save_decl_rtl, ret;
+      case BUILT_IN_MEMCPY:
+      case BUILT_IN_MEMMOVE:
+      case BUILT_IN_MEMSET:
+	save_decl_rtl = DECL_RTL (fndecl);
+	DECL_RTL (fndecl) = asan_memfn_rtl (fndecl);
+	ret = expand_call (exp, target, ignore);
+	DECL_RTL (fndecl) = save_decl_rtl;
+	return ret;
+      default:
+	break;
+      }
+  if (sanitize_flags_p (SANITIZE_ADDRESS) && asan_intercepted_p (fcode))
     return expand_call (exp, target, ignore);
 
   /* When not optimizing, generate calls to library functions for a certain
@@ -7393,6 +7431,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       /* Just do a normal library call if we were unable to fold
 	 the values.  */
     CASE_FLT_FN (BUILT_IN_CABS):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_CABS):
       break;
 
     CASE_FLT_FN (BUILT_IN_FMA):
@@ -7838,6 +7877,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       break;
 
     case BUILT_IN_TRAP:
+    case BUILT_IN_UNREACHABLE_TRAP:
       expand_builtin_trap ();
       return const0_rtx;
 
@@ -9521,10 +9561,10 @@ fold_builtin_FILE (location_t loc)
 	 __FILE__ macro so it appears appropriate to use the same file prefix
 	 mappings.  */
       fname = remap_macro_filename (fname);
-    return build_string_literal (strlen (fname) + 1, fname);
+      return build_string_literal (fname);
     }
 
-  return build_string_literal (1, "");
+  return build_string_literal ("");
 }
 
 /* Fold a call to __builtin_FUNCTION to a constant string.  */
@@ -9537,7 +9577,7 @@ fold_builtin_FUNCTION ()
   if (current_function_decl)
     name = lang_hooks.decl_printable_name (current_function_decl, 0);
 
-  return build_string_literal (strlen (name) + 1, name);
+  return build_string_literal (name);
 }
 
 /* Fold a call to __builtin_LINE to an integer constant.  */
@@ -9661,6 +9701,7 @@ fold_builtin_1 (location_t loc, tree expr, tree fndecl, tree arg0)
     break;
 
     CASE_FLT_FN (BUILT_IN_CARG):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_CARG):
       return fold_builtin_carg (loc, arg0, type);
 
     case BUILT_IN_ISASCII:
@@ -11303,6 +11344,7 @@ is_inexpensive_builtin (tree decl)
       case BUILT_IN_VA_ARG_PACK_LEN:
       case BUILT_IN_VA_COPY:
       case BUILT_IN_TRAP:
+      case BUILT_IN_UNREACHABLE_TRAP:
       case BUILT_IN_SAVEREGS:
       case BUILT_IN_POPCOUNTL:
       case BUILT_IN_POPCOUNTLL:
@@ -11350,27 +11392,43 @@ builtin_with_linkage_p (tree decl)
     switch (DECL_FUNCTION_CODE (decl))
     {
       CASE_FLT_FN (BUILT_IN_ACOS):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_ACOS):
       CASE_FLT_FN (BUILT_IN_ACOSH):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_ACOSH):
       CASE_FLT_FN (BUILT_IN_ASIN):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_ASIN):
       CASE_FLT_FN (BUILT_IN_ASINH):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_ASINH):
       CASE_FLT_FN (BUILT_IN_ATAN):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_ATAN):
       CASE_FLT_FN (BUILT_IN_ATANH):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_ATANH):
       CASE_FLT_FN (BUILT_IN_ATAN2):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_ATAN2):
       CASE_FLT_FN (BUILT_IN_CBRT):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_CBRT):
       CASE_FLT_FN (BUILT_IN_CEIL):
       CASE_FLT_FN_FLOATN_NX (BUILT_IN_CEIL):
       CASE_FLT_FN (BUILT_IN_COPYSIGN):
       CASE_FLT_FN_FLOATN_NX (BUILT_IN_COPYSIGN):
       CASE_FLT_FN (BUILT_IN_COS):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_COS):
       CASE_FLT_FN (BUILT_IN_COSH):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_COSH):
       CASE_FLT_FN (BUILT_IN_ERF):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_ERF):
       CASE_FLT_FN (BUILT_IN_ERFC):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_ERFC):
       CASE_FLT_FN (BUILT_IN_EXP):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_EXP):
       CASE_FLT_FN (BUILT_IN_EXP2):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_EXP2):
       CASE_FLT_FN (BUILT_IN_EXPM1):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_EXPM1):
       CASE_FLT_FN (BUILT_IN_FABS):
       CASE_FLT_FN_FLOATN_NX (BUILT_IN_FABS):
       CASE_FLT_FN (BUILT_IN_FDIM):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_FDIM):
       CASE_FLT_FN (BUILT_IN_FLOOR):
       CASE_FLT_FN_FLOATN_NX (BUILT_IN_FLOOR):
       CASE_FLT_FN (BUILT_IN_FMA):
@@ -11380,43 +11438,71 @@ builtin_with_linkage_p (tree decl)
       CASE_FLT_FN (BUILT_IN_FMIN):
       CASE_FLT_FN_FLOATN_NX (BUILT_IN_FMIN):
       CASE_FLT_FN (BUILT_IN_FMOD):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_FMOD):
       CASE_FLT_FN (BUILT_IN_FREXP):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_FREXP):
       CASE_FLT_FN (BUILT_IN_HYPOT):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_HYPOT):
       CASE_FLT_FN (BUILT_IN_ILOGB):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_ILOGB):
       CASE_FLT_FN (BUILT_IN_LDEXP):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_LDEXP):
       CASE_FLT_FN (BUILT_IN_LGAMMA):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_LGAMMA):
       CASE_FLT_FN (BUILT_IN_LLRINT):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_LLRINT):
       CASE_FLT_FN (BUILT_IN_LLROUND):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_LLROUND):
       CASE_FLT_FN (BUILT_IN_LOG):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_LOG):
       CASE_FLT_FN (BUILT_IN_LOG10):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_LOG10):
       CASE_FLT_FN (BUILT_IN_LOG1P):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_LOG1P):
       CASE_FLT_FN (BUILT_IN_LOG2):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_LOG2):
       CASE_FLT_FN (BUILT_IN_LOGB):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_LOGB):
       CASE_FLT_FN (BUILT_IN_LRINT):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_LRINT):
       CASE_FLT_FN (BUILT_IN_LROUND):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_LROUND):
       CASE_FLT_FN (BUILT_IN_MODF):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_MODF):
       CASE_FLT_FN (BUILT_IN_NAN):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_NAN):
       CASE_FLT_FN (BUILT_IN_NEARBYINT):
       CASE_FLT_FN_FLOATN_NX (BUILT_IN_NEARBYINT):
       CASE_FLT_FN (BUILT_IN_NEXTAFTER):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_NEXTAFTER):
       CASE_FLT_FN (BUILT_IN_NEXTTOWARD):
       CASE_FLT_FN (BUILT_IN_POW):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_POW):
       CASE_FLT_FN (BUILT_IN_REMAINDER):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_REMAINDER):
       CASE_FLT_FN (BUILT_IN_REMQUO):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_REMQUO):
       CASE_FLT_FN (BUILT_IN_RINT):
       CASE_FLT_FN_FLOATN_NX (BUILT_IN_RINT):
       CASE_FLT_FN (BUILT_IN_ROUND):
       CASE_FLT_FN_FLOATN_NX (BUILT_IN_ROUND):
       CASE_FLT_FN (BUILT_IN_SCALBLN):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_SCALBLN):
       CASE_FLT_FN (BUILT_IN_SCALBN):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_SCALBN):
       CASE_FLT_FN (BUILT_IN_SIN):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_SIN):
       CASE_FLT_FN (BUILT_IN_SINH):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_SINH):
       CASE_FLT_FN (BUILT_IN_SINCOS):
       CASE_FLT_FN (BUILT_IN_SQRT):
       CASE_FLT_FN_FLOATN_NX (BUILT_IN_SQRT):
       CASE_FLT_FN (BUILT_IN_TAN):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_TAN):
       CASE_FLT_FN (BUILT_IN_TANH):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_TANH):
       CASE_FLT_FN (BUILT_IN_TGAMMA):
+      CASE_FLT_FN_FLOATN_NX (BUILT_IN_TGAMMA):
       CASE_FLT_FN (BUILT_IN_TRUNC):
       CASE_FLT_FN_FLOATN_NX (BUILT_IN_TRUNC):
 	return true;

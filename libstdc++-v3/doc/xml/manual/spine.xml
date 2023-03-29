@@ -48,17 +48,12 @@
       </address>
     </affiliation>
 
-    <authorblurb>
+    <personblurb>
       <para>
       </para>
-    </authorblurb>
+    </personblurb>
   </author>
 -->
-
-  <author><personname><firstname/><surname/></personname><personblurb>
-      <para>
-      </para>
-    </personblurb></author>
 
   <author><personname><firstname>Paolo</firstname><surname>Carlini</surname></personname><personblurb>
       <para>

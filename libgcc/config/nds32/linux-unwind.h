@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for NDS32 Linux signal frame.
-   Copyright (C) 2014-2022 Free Software Foundation, Inc.
+   Copyright (C) 2014-2023 Free Software Foundation, Inc.
    Contributed by Andes Technology Corporation.
 
    This file is part of GCC.
@@ -92,7 +92,7 @@ nds32_fallback_frame_state (struct _Unwind_Context *context,
   fs->regs.cfa_offset = new_cfa - (_Unwind_Ptr) context->cfa;
 
 #define NDS32_PUT_FS_REG(NUM, NAME) \
-  (fs->regs.reg[NUM].how = REG_SAVED_OFFSET, \
+  (fs->regs.how[NUM] = REG_SAVED_OFFSET, \
    fs->regs.reg[NUM].loc.offset = (_Unwind_Ptr) &(sc_->NAME) - new_cfa)
 
   /* Restore all registers value.  */

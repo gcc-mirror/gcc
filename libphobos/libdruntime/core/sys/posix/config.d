@@ -19,7 +19,6 @@ public import core.stdc.config;
 
 version (Posix):
 extern (C) nothrow @nogc:
-@system:
 
 enum _XOPEN_SOURCE     = 600;
 enum _POSIX_SOURCE     = true;

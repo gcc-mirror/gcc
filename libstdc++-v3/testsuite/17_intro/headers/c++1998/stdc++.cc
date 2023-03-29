@@ -3,7 +3,7 @@
 // { dg-do compile }
 // 1999-05-12 bkoz
 
-// Copyright (C) 1999-2022 Free Software Foundation, Inc.
+// Copyright (C) 1999-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,6 +24,7 @@
 
 #include <bits/stdc++.h>
 
+#if __STDC_HOSTED__
 // "C" compatibility headers
 #include <assert.h>
 #include <ctype.h>
@@ -46,4 +47,5 @@
 #endif
 #ifdef _GLIBCXX_HAVE_WCTYPE_H
 #include <wctype.h>
+#endif
 #endif

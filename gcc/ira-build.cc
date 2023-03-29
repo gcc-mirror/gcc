@@ -1,5 +1,5 @@
 /* Building internal representation for IRA.
-   Copyright (C) 2006-2022 Free Software Foundation, Inc.
+   Copyright (C) 2006-2023 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -1832,7 +1832,7 @@ static basic_block curr_bb;
 
 /* This recursive function creates allocnos corresponding to
    pseudo-registers containing in X.  True OUTPUT_P means that X is
-   an lvalue.  PARENT corresponds to the parent expression of X.  */
+   an lvalue.  OUTER corresponds to the parent expression of X.  */
 static void
 create_insn_allocnos (rtx x, rtx outer, bool output_p)
 {

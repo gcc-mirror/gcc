@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2022 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2023 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -156,9 +156,9 @@ operands of the instruction.
 If the vector has multiple elements, the RTL template is treated as a
 @code{parallel} expression.
 
-@item
 @cindex pattern conditions
 @cindex conditions, in patterns
+@item
 The condition: This is a string which contains a C expression.  When the
 compiler attempts to match RTL against a pattern, the condition is
 evaluated.  If the condition evaluates to @code{true}, the match is
@@ -377,7 +377,7 @@ commutative arithmetic operators of RTL and whose mode is @var{mode}:
 
 @smallexample
 int
-commutative_integer_operator (x, mode)
+commutative_operator (x, mode)
      rtx x;
      machine_mode mode;
 @{
@@ -1511,7 +1511,7 @@ operand 1 (meaning it must match operand 0), and @samp{dKs} for operand
 2.  The second alternative has @samp{d} (data register) for operand 0,
 @samp{0} for operand 1, and @samp{dmKs} for operand 2.  The @samp{=} and
 @samp{%} in the constraints apply to all the alternatives; their
-meaning is explained in the next section (@pxref{Class Preferences}).
+meaning is explained in a later section (@pxref{Modifiers}).
 
 If all the operands fit any one alternative, the instruction is valid.
 Otherwise, for each alternative, the compiler counts how many instructions
@@ -2193,8 +2193,7 @@ An integer constant with exactly a single bit set.
 An integer constant with all bits set except exactly one.
 
 @item H
-
-@item Q
+@itemx Q
 Any SYMBOL_REF.
 @end table
 
@@ -3266,9 +3265,6 @@ Like @code{b}, if @option{-mpowerpc64} is used; otherwise, @code{NO_REGS}.
 
 @item wB
 Signed 5-bit constant integer that can be loaded into an Altivec register.
-
-@item wD
-Int constant that is the element number of the 64-bit scalar in a vector.
 
 @item wE
 Vector constant that can be loaded with the XXSPLTIB instruction.
@@ -4950,13 +4946,22 @@ This pattern is not allowed to @code{FAIL}.
 @cindex @code{while_ult@var{m}@var{n}} instruction pattern
 @item @code{while_ult@var{m}@var{n}}
 Set operand 0 to a mask that is true while incrementing operand 1
-gives a value that is less than operand 2.  Operand 0 has mode @var{n}
-and operands 1 and 2 are scalar integers of mode @var{m}.
-The operation is equivalent to:
+gives a value that is less than operand 2, for a vector length up to operand 3.
+Operand 0 has mode @var{n} and operands 1 and 2 are scalar integers of mode
+@var{m}.  Operand 3 should be omitted when @var{n} is a vector mode, and
+a @code{CONST_INT} otherwise.  The operation for vector modes is equivalent to:
 
 @smallexample
 operand0[0] = operand1 < operand2;
 for (i = 1; i < GET_MODE_NUNITS (@var{n}); i++)
+  operand0[i] = operand0[i - 1] && (operand1 + i < operand2);
+@end smallexample
+
+And for non-vector modes the operation is equivalent to:
+
+@smallexample
+operand0[0] = operand1 < operand2;
+for (i = 1; i < operand3; i++)
   operand0[i] = operand0[i - 1] && (operand1 + i < operand2);
 @end smallexample
 
@@ -5285,10 +5290,10 @@ operand 0 is the scalar result, with mode equal to the mode of the elements of
 the input vector.
 
 @cindex @code{reduc_and_scal_@var{m}} instruction pattern
-@item @samp{reduc_and_scal_@var{m}}
 @cindex @code{reduc_ior_scal_@var{m}} instruction pattern
-@itemx @samp{reduc_ior_scal_@var{m}}
 @cindex @code{reduc_xor_scal_@var{m}} instruction pattern
+@item @samp{reduc_and_scal_@var{m}}
+@itemx @samp{reduc_ior_scal_@var{m}}
 @itemx @samp{reduc_xor_scal_@var{m}}
 Compute the bitwise @code{AND}/@code{IOR}/@code{XOR} reduction of the elements
 of a vector of mode @var{m}.  Operand 1 is the vector input and operand 0
@@ -5376,8 +5381,8 @@ usdot<signed op0, unsigned op1, signed op2, signed op3> ==
 @end smallexample
 
 @cindex @code{ssad@var{m}} instruction pattern
-@item @samp{ssad@var{m}}
 @cindex @code{usad@var{m}} instruction pattern
+@item @samp{ssad@var{m}}
 @item @samp{usad@var{m}}
 Compute the sum of absolute differences of two signed/unsigned elements.
 Operand 1 and operand 2 are of the same mode. Their absolute difference, which
@@ -5386,8 +5391,8 @@ equal or wider than the mode of the absolute difference. The result is placed
 in operand 0, which is of the same mode as operand 3.
 
 @cindex @code{widen_ssum@var{m3}} instruction pattern
-@item @samp{widen_ssum@var{m3}}
 @cindex @code{widen_usum@var{m3}} instruction pattern
+@item @samp{widen_ssum@var{m3}}
 @itemx @samp{widen_usum@var{m3}}
 Operands 0 and 2 are of the same mode, which is wider than the mode of
 operand 1. Add operand 1 to operand 2 and place the widened result in
@@ -5395,8 +5400,8 @@ operand 0. (This is used express accumulation of elements into an accumulator
 of a wider mode.)
 
 @cindex @code{smulhs@var{m3}} instruction pattern
-@item @samp{smulhs@var{m3}}
 @cindex @code{umulhs@var{m3}} instruction pattern
+@item @samp{smulhs@var{m3}}
 @itemx @samp{umulhs@var{m3}}
 Signed/unsigned multiply high with scale. This is equivalent to the C code:
 @smallexample
@@ -5408,8 +5413,8 @@ where the sign of @samp{narrow} determines whether this is a signed
 or unsigned operation, and @var{N} is the size of @samp{wide} in bits.
 
 @cindex @code{smulhrs@var{m3}} instruction pattern
-@item @samp{smulhrs@var{m3}}
 @cindex @code{umulhrs@var{m3}} instruction pattern
+@item @samp{smulhrs@var{m3}}
 @itemx @samp{umulhrs@var{m3}}
 Signed/unsigned multiply high with round and scale. This is
 equivalent to the C code:
@@ -5422,8 +5427,8 @@ where the sign of @samp{narrow} determines whether this is a signed
 or unsigned operation, and @var{N} is the size of @samp{wide} in bits.
 
 @cindex @code{sdiv_pow2@var{m3}} instruction pattern
-@item @samp{sdiv_pow2@var{m3}}
 @cindex @code{sdiv_pow2@var{m3}} instruction pattern
+@item @samp{sdiv_pow2@var{m3}}
 @itemx @samp{sdiv_pow2@var{m3}}
 Signed division by power-of-2 immediate. Equivalent to:
 @smallexample
@@ -6958,6 +6963,13 @@ case, you can and should make operand 1's predicate reject some operators
 in the @samp{cstore@var{mode}4} pattern, or remove the pattern altogether
 from the machine description.
 
+@cindex @code{tbranch_@var{op}@var{mode}3} instruction pattern
+@item @samp{tbranch_@var{op}@var{mode}3}
+Conditional branch instruction combined with a bit test-and-compare
+instruction. Operand 0 is the operand of the comparison.  Operand 1 is the bit
+position of Operand 1 to test.  Operand 3 is the @code{code_label} to jump to.
+@var{op} is one of @var{eq} or @var{ne}.
+
 @cindex @code{cbranch@var{mode}4} instruction pattern
 @item @samp{cbranch@var{mode}4}
 Conditional branch instruction combined with a compare instruction.
@@ -8200,12 +8212,12 @@ can itself be a @code{plus}.  @code{and}, @code{ior}, @code{xor},
 @code{umax} are associative when applied to integers, and sometimes to
 floating-point.
 
-@item
 @cindex @code{neg}, canonicalization of
 @cindex @code{not}, canonicalization of
 @cindex @code{mult}, canonicalization of
 @cindex @code{plus}, canonicalization of
 @cindex @code{minus}, canonicalization of
+@item
 For these operators, if only one operand is a @code{neg}, @code{not},
 @code{mult}, @code{plus}, or @code{minus} expression, it will be the
 first operand.
@@ -9308,6 +9320,11 @@ so here's a silly made-up example:
   "")
 @end smallexample
 
+@noindent
+If we had not added the @code{(match_dup 4)} in the middle of the input
+sequence, it might have been the case that the register we chose at the
+beginning of the sequence is killed by the first or second @code{set}.
+
 There are two special macros defined for use in the preparation statements:
 @code{DONE} and @code{FAIL}.  Use them with a following semicolon,
 as a statement.
@@ -9334,11 +9351,6 @@ prevents the input insn from being split at all.)
 If the preparation falls through (invokes neither @code{DONE} nor
 @code{FAIL}), then the @code{define_peephole2} uses the replacement
 template.
-
-@noindent
-If we had not added the @code{(match_dup 4)} in the middle of the input
-sequence, it might have been the case that the register we chose at the
-beginning of the sequence is killed by the first or second @code{set}.
 
 @end ifset
 @ifset INTERNALS
@@ -11075,8 +11087,8 @@ values in @file{sync.md} rather than in the main @file{.md} file.
 Some enumeration names have special significance to GCC:
 
 @table @code
-@item unspecv
 @findex unspec_volatile
+@item unspecv
 If an enumeration called @code{unspecv} is defined, GCC will use it
 when printing out @code{unspec_volatile} expressions.  For example:
 
@@ -11092,8 +11104,8 @@ causes GCC to print @samp{(unspec_volatile @dots{} 0)} as:
 (unspec_volatile ... UNSPECV_BLOCKAGE)
 @end smallexample
 
-@item unspec
 @findex unspec
+@item unspec
 If an enumeration called @code{unspec} is defined, GCC will use
 it when printing out @code{unspec} expressions.  GCC will also use
 it when printing out @code{unspec_volatile} expressions unless an

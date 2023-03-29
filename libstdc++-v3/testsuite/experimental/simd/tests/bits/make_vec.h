@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Free Software Foundation, Inc.
+// Copyright (C) 2020-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -15,6 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#ifndef SIMD_TESTS_BITS_MAKE_VEC_H_
+#define SIMD_TESTS_BITS_MAKE_VEC_H_
 #include <experimental/simd>
 
 template <class M>
@@ -34,6 +36,13 @@ template <class M>
 	      }
 	  }
       }
+  }
+
+template <class M>
+  M
+  make_alternating_mask()
+  {
+    return make_mask<M>({false, true});
   }
 
 template <class V>
@@ -57,3 +66,4 @@ template <class V>
 	base += inc;
       }
   }
+#endif  // SIMD_TESTS_BITS_MAKE_VEC_H_

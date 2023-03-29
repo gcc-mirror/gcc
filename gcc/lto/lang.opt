@@ -1,5 +1,5 @@
 ; Options for the LTO front end.
-; Copyright (C) 2008-2022 Free Software Foundation, Inc.
+; Copyright (C) 2008-2023 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -23,9 +23,6 @@
 
 Language
 LTO
-
-Language
-LTODump
 
 Enum
 Name(lto_linker_output) Type(enum lto_linker_output) UnknownError(unknown linker output %qs)
@@ -52,7 +49,6 @@ flinker-output=
 LTO Driver Joined RejectNegative Enum(lto_linker_output) Var(flag_lto_linker_output) Init(LTO_LINKER_OUTPUT_UNKNOWN)
 Set linker output type (used internally during LTO optimization).
 
-
 fltrans
 LTO Var(flag_ltrans)
 Run the link-time optimizer in local transformation (LTRANS) mode.
@@ -60,6 +56,10 @@ Run the link-time optimizer in local transformation (LTRANS) mode.
 fltrans-output-list=
 LTO Joined Var(ltrans_output_list)
 Specify a file to which a list of files output by LTRANS is written.
+
+fresolution=
+LTO Joined
+The resolution file.
 
 fwpa
 LTO Driver
@@ -69,6 +69,9 @@ fwpa=
 LTO Driver RejectNegative Joined Var(flag_wpa)
 Whole program analysis (WPA) mode with number of parallel jobs specified.
 
+
+Language
+LTODump
 
 list
 LTODump Var(flag_lto_dump_list)
@@ -130,9 +133,5 @@ Dump the dump tool command line options.
 callgraph
 LTODump Var(flag_dump_callgraph)
 Dump the symtab callgraph.
-
-fresolution=
-LTO Joined
-The resolution file.
 
 ; This comment is to ensure we retain the blank line above.

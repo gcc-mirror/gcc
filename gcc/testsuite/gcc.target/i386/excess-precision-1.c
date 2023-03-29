@@ -5,8 +5,14 @@
 
 #include <float.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern void abort (void);
 extern void exit (int);
+#ifdef __cplusplus
+}
+#endif
 
 volatile float f1 = 1.0f;
 volatile float f2 = 0x1.0p-30f;

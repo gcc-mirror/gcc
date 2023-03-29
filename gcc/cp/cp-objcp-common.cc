@@ -1,5 +1,5 @@
 /* Some code common to C++ and ObjC++ front ends.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-objcp-common.h"
 #include "dwarf2.h"
 #include "stringpool.h"
+#include "contracts.h"
 
 /* Special routine to get the alias set for C++.  */
 
@@ -86,6 +87,9 @@ cp_tree_size (enum tree_code code)
     case CONSTRAINT_INFO:       return sizeof (tree_constraint_info);
     case USERDEF_LITERAL:	return sizeof (tree_userdef_literal);
     case TEMPLATE_DECL:		return sizeof (tree_template_decl);
+    case ASSERTION_STMT:	return sizeof (tree_exp);
+    case PRECONDITION_STMT:	return sizeof (tree_exp);
+    case POSTCONDITION_STMT:	return sizeof (tree_exp);
     default:
       switch (TREE_CODE_CLASS (code))
 	{
@@ -430,41 +434,10 @@ names_builtin_p (const char *name)
     case RID_BUILTIN_ASSOC_BARRIER:
     case RID_BUILTIN_BIT_CAST:
     case RID_OFFSETOF:
-    case RID_HAS_NOTHROW_ASSIGN:
-    case RID_HAS_NOTHROW_CONSTRUCTOR:
-    case RID_HAS_NOTHROW_COPY:
-    case RID_HAS_TRIVIAL_ASSIGN:
-    case RID_HAS_TRIVIAL_CONSTRUCTOR:
-    case RID_HAS_TRIVIAL_COPY:
-    case RID_HAS_TRIVIAL_DESTRUCTOR:
-    case RID_HAS_UNIQUE_OBJ_REPRESENTATIONS:
-    case RID_HAS_VIRTUAL_DESTRUCTOR:
-    case RID_IS_ABSTRACT:
-    case RID_IS_AGGREGATE:
-    case RID_IS_BASE_OF:
-    case RID_IS_CLASS:
-    case RID_IS_EMPTY:
-    case RID_IS_ENUM:
-    case RID_IS_FINAL:
-    case RID_IS_LAYOUT_COMPATIBLE:
-    case RID_IS_LITERAL_TYPE:
-    case RID_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
-    case RID_IS_POD:
-    case RID_IS_POLYMORPHIC:
-    case RID_IS_SAME_AS:
-    case RID_IS_STD_LAYOUT:
-    case RID_IS_TRIVIAL:
-    case RID_IS_TRIVIALLY_ASSIGNABLE:
-    case RID_IS_TRIVIALLY_CONSTRUCTIBLE:
-    case RID_IS_TRIVIALLY_COPYABLE:
-    case RID_IS_UNION:
-    case RID_IS_ASSIGNABLE:
-    case RID_IS_CONSTRUCTIBLE:
-    case RID_IS_NOTHROW_ASSIGNABLE:
-    case RID_IS_NOTHROW_CONSTRUCTIBLE:
-    case RID_UNDERLYING_TYPE:
-    case RID_REF_CONSTRUCTS_FROM_TEMPORARY:
-    case RID_REF_CONVERTS_FROM_TEMPORARY:
+#define DEFTRAIT(TCC, CODE, NAME, ARITY) \
+    case RID_##CODE:
+#include "cp-trait.def"
+#undef DEFTRAIT
       return true;
     default:
       break;
@@ -504,7 +477,6 @@ cp_common_init_ts (void)
   /* New decls.  */
   MARK_TS_DECL_COMMON (TEMPLATE_DECL);
   MARK_TS_DECL_COMMON (WILDCARD_DECL);
-  MARK_TS_DECL_COMMON (CONCEPT_DECL);
 
   MARK_TS_DECL_NON_COMMON (USING_DECL);
 
@@ -516,7 +488,7 @@ cp_common_init_ts (void)
   MARK_TS_TYPE_NON_COMMON (DECLTYPE_TYPE);
   MARK_TS_TYPE_NON_COMMON (TYPENAME_TYPE);
   MARK_TS_TYPE_NON_COMMON (TYPEOF_TYPE);
-  MARK_TS_TYPE_NON_COMMON (UNDERLYING_TYPE);
+  MARK_TS_TYPE_NON_COMMON (TRAIT_TYPE);
   MARK_TS_TYPE_NON_COMMON (BOUND_TEMPLATE_TEMPLATE_PARM);
   MARK_TS_TYPE_NON_COMMON (TEMPLATE_TEMPLATE_PARM);
   MARK_TS_TYPE_NON_COMMON (TEMPLATE_TYPE_PARM);
@@ -596,6 +568,10 @@ cp_common_init_ts (void)
   MARK_TS_EXP (CO_YIELD_EXPR);
   MARK_TS_EXP (CO_RETURN_EXPR);
 
+  MARK_TS_EXP (ASSERTION_STMT);
+  MARK_TS_EXP (PRECONDITION_STMT);
+  MARK_TS_EXP (POSTCONDITION_STMT);
+
   c_common_init_ts ();
 }
 
@@ -608,6 +584,39 @@ cp_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 {
   if (handle_module_option (unsigned (scode), arg, value))
     return true;
+
+  enum opt_code code = (enum opt_code) scode;
+  bool handled_p = true;
+
+  switch (code)
+    {
+    case OPT_fcontract_build_level_:
+      handle_OPT_fcontract_build_level_ (arg);
+      break;
+
+    case OPT_fcontract_assumption_mode_:
+      handle_OPT_fcontract_assumption_mode_ (arg);
+      break;
+
+    case OPT_fcontract_continuation_mode_:
+      handle_OPT_fcontract_continuation_mode_ (arg);
+      break;
+
+    case OPT_fcontract_role_:
+      handle_OPT_fcontract_role_ (arg);
+      break;
+
+    case OPT_fcontract_semantic_:
+      handle_OPT_fcontract_semantic_ (arg);
+      break;
+
+    default:
+      handled_p = false;
+      break;
+    }
+  if (handled_p)
+    return handled_p;
+
   return c_common_handle_option (scode, arg, value, kind, loc, handlers);
 }
 

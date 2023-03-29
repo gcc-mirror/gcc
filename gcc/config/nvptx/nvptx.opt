@@ -1,5 +1,5 @@
 ; Options for the NVPTX port
-; Copyright (C) 2014-2022 Free Software Foundation, Inc.
+; Copyright (C) 2014-2023 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -53,7 +53,7 @@ Target Mask(GOMP)
 Generate code for OpenMP offloading: enables -msoft-stack and -muniform-simt.
 
 misa=
-Target RejectNegative ToLower Joined Enum(ptx_isa) Var(ptx_isa_option) Init(PTX_ISA_SM30)
+Target RejectNegative ToLower Joined Enum(ptx_isa) Var(ptx_isa_option)
 Specify the PTX ISA target architecture to use.
 
 march=

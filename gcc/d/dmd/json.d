@@ -1,7 +1,7 @@
 /**
  * Code for generating .json descriptions of the module when passing the `-X` flag to dmd.
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/json.d, _json.d)
@@ -32,6 +32,7 @@ import dmd.globals;
 import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
+import dmd.location;
 import dmd.mtype;
 import dmd.common.outbuffer;
 import dmd.root.rootobject;
@@ -53,7 +54,7 @@ public:
     int indentLevel;
     const(char)[] filename;
 
-    extern (D) this(OutBuffer* buf)
+    extern (D) this(OutBuffer* buf) scope
     {
         this.buf = buf;
     }
@@ -386,13 +387,13 @@ public:
 
     extern(D) void property(const char[] name, Parameters* parameters)
     {
-        if (parameters is null || parameters.dim == 0)
+        if (parameters is null || parameters.length == 0)
             return;
         propertyStart(name);
         arrayStart();
         if (parameters)
         {
-            for (size_t i = 0; i < parameters.dim; i++)
+            for (size_t i = 0; i < parameters.length; i++)
             {
                 Parameter p = (*parameters)[i];
                 objectStart();
@@ -491,7 +492,7 @@ public:
         property("comment", s.comment.toDString);
         propertyStart("members");
         arrayStart();
-        for (size_t i = 0; i < s.members.dim; i++)
+        for (size_t i = 0; i < s.members.length; i++)
         {
             (*s.members)[i].accept(this);
         }
@@ -522,7 +523,7 @@ public:
             property("alias", s.aliasId.toString());
         bool hasRenamed = false;
         bool hasSelective = false;
-        for (size_t i = 0; i < s.aliases.dim; i++)
+        for (size_t i = 0; i < s.aliases.length; i++)
         {
             // avoid empty "renamed" and "selective" sections
             if (hasRenamed && hasSelective)
@@ -537,7 +538,7 @@ public:
             // import foo : alias1 = target1;
             propertyStart("renamed");
             objectStart();
-            for (size_t i = 0; i < s.aliases.dim; i++)
+            for (size_t i = 0; i < s.aliases.length; i++)
             {
                 const name = s.names[i];
                 const _alias = s.aliases[i];
@@ -566,7 +567,7 @@ public:
         Dsymbols* ds = d.include(null);
         if (ds)
         {
-            for (size_t i = 0; i < ds.dim; i++)
+            for (size_t i = 0; i < ds.length; i++)
             {
                 Dsymbol s = (*ds)[i];
                 s.accept(this);
@@ -582,7 +583,7 @@ public:
             return; // Don't visit the if/else bodies again below
         }
         Dsymbols* ds = d.decl ? d.decl : d.elsedecl;
-        for (size_t i = 0; i < ds.dim; i++)
+        for (size_t i = 0; i < ds.length; i++)
         {
             Dsymbol s = (*ds)[i];
             s.accept(this);
@@ -631,7 +632,7 @@ public:
         {
             propertyStart("members");
             arrayStart();
-            for (size_t i = 0; i < d.members.dim; i++)
+            for (size_t i = 0; i < d.members.length; i++)
             {
                 Dsymbol s = (*d.members)[i];
                 s.accept(this);
@@ -649,11 +650,11 @@ public:
         if (tf && tf.ty == Tfunction)
             property("parameters", tf.parameterList.parameters);
         property("endline", "endchar", d.endloc);
-        if (d.foverrides.dim)
+        if (d.foverrides.length)
         {
             propertyStart("overrides");
             arrayStart();
-            for (size_t i = 0; i < d.foverrides.dim; i++)
+            for (size_t i = 0; i < d.foverrides.length; i++)
             {
                 FuncDeclaration fd = d.foverrides[i];
                 item(fd.toPrettyChars().toDString);
@@ -681,7 +682,7 @@ public:
         jsonProperties(d);
         propertyStart("parameters");
         arrayStart();
-        for (size_t i = 0; i < d.parameters.dim; i++)
+        for (size_t i = 0; i < d.parameters.length; i++)
         {
             TemplateParameter s = (*d.parameters)[i];
             objectStart();
@@ -732,7 +733,7 @@ public:
         }
         propertyStart("members");
         arrayStart();
-        for (size_t i = 0; i < d.members.dim; i++)
+        for (size_t i = 0; i < d.members.length; i++)
         {
             Dsymbol s = (*d.members)[i];
             s.accept(this);
@@ -747,7 +748,7 @@ public:
         {
             if (d.members)
             {
-                for (size_t i = 0; i < d.members.dim; i++)
+                for (size_t i = 0; i < d.members.length; i++)
                 {
                     Dsymbol s = (*d.members)[i];
                     s.accept(this);
@@ -762,7 +763,7 @@ public:
         {
             propertyStart("members");
             arrayStart();
-            for (size_t i = 0; i < d.members.dim; i++)
+            for (size_t i = 0; i < d.members.length; i++)
             {
                 Dsymbol s = (*d.members)[i];
                 s.accept(this);
@@ -963,7 +964,7 @@ public:
             requiredProperty("name", m.md ? m.md.toString() : null);
             requiredProperty("file", m.srcfile.toString());
             propertyBool("isRoot", m.isRoot());
-            if(m.contentImportedFiles.dim > 0)
+            if(m.contentImportedFiles.length > 0)
             {
                 propertyStart("contentImports");
                 arrayStart();

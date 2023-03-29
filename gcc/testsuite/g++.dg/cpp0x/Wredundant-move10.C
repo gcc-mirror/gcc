@@ -57,5 +57,5 @@ struct S2: S1 {};
 
 S1 f3(const S2 s)
 {
-  return std::move(s); // { dg-warning "redundant move" "" { target c++20 } }
+  return std::move(s); // { dg-warning "redundant move" }
 }

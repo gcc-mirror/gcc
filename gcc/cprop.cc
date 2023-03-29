@@ -1,5 +1,5 @@
 /* Global constant/copy propagation for RTL.
-   Copyright (C) 1997-2022 Free Software Foundation, Inc.
+   Copyright (C) 1997-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1622,9 +1622,12 @@ bypass_block (basic_block bb, rtx_insn *setcc, rtx_insn *jump)
 	    {
 	      dest = BLOCK_FOR_INSN (XEXP (new_rtx, 0));
 	      /* Don't bypass edges containing instructions.  */
-	      edest = find_edge (bb, dest);
-	      if (edest && edest->insns.r)
-		dest = NULL;
+	      if (dest)
+		{
+		  edest = find_edge (bb, dest);
+		  if (edest && edest->insns.r)
+		    dest = NULL;
+		}
 	    }
 	  else
 	    dest = NULL;

@@ -1,0 +1,86 @@
+(* StrLib.def provides string manipulation procedures.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE StrLib ;
+
+EXPORT QUALIFIED StrConCat, StrLen, StrCopy, StrEqual, StrLess,
+      	       	 IsSubString, StrRemoveWhitePrefix ;
+
+
+(*
+   StrConCat - combines a and b into c.
+*)
+
+PROCEDURE StrConCat (a, b: ARRAY OF CHAR; VAR c: ARRAY OF CHAR) ;
+
+
+(*
+   StrLess - returns TRUE if string, a, alphabetically occurs before
+             string, b.
+*)
+
+PROCEDURE StrLess (a, b: ARRAY OF CHAR) : BOOLEAN ;
+
+
+(*
+   StrEqual - performs a = b on two strings.
+*)
+
+PROCEDURE StrEqual (a, b: ARRAY OF CHAR) : BOOLEAN ;
+
+
+(*
+   StrLen - returns the length of string, a.
+*)
+
+PROCEDURE StrLen (a: ARRAY OF CHAR) : CARDINAL ;
+
+
+(*
+   StrCopy - copy string src into string dest providing dest is large enough.
+             If dest is smaller than a then src then the string is truncated when
+             dest is full.  Add a nul character if there is room in dest.
+*)
+
+PROCEDURE StrCopy (src: ARRAY OF CHAR ; VAR dest: ARRAY OF CHAR) ;
+
+
+(*
+   IsSubString - returns true if b is a subcomponent of a.
+*)
+
+PROCEDURE IsSubString (a, b: ARRAY OF CHAR) : BOOLEAN ;
+
+
+(*
+   StrRemoveWhitePrefix - copies string, into string, b, excluding any white
+                          space infront of a.
+*)
+
+PROCEDURE StrRemoveWhitePrefix (a: ARRAY OF CHAR; VAR b: ARRAY OF CHAR) ;
+
+
+END StrLib.

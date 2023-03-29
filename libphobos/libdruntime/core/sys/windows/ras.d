@@ -8,7 +8,6 @@
  */
 module core.sys.windows.ras;
 version (Windows):
-@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "rasapi32");

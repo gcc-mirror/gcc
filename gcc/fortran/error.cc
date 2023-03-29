@@ -1,5 +1,5 @@
 /* Handle errors.
-   Copyright (C) 2000-2022 Free Software Foundation, Inc.
+   Copyright (C) 2000-2023 Free Software Foundation, Inc.
    Contributed by Andy Vaught & Niels Kristian Bech Jensen
 
 This file is part of GCC.
@@ -48,6 +48,13 @@ static gfc_error_buffer error_buffer;
    the pretty-printer.  */
 static output_buffer *pp_error_buffer, *pp_warning_buffer;
 static int warningcount_buffered, werrorcount_buffered;
+
+/* Return buffered_p.  */
+bool
+gfc_buffered_p (void)
+{
+  return buffered_p;
+}
 
 /* Return true if there output_buffer is empty.  */
 
@@ -1147,7 +1154,7 @@ gfc_diagnostic_build_locus_prefix (diagnostic_context *context,
   const char *locus_ce = colorize_stop (pp_show_color (pp));
   return (s.file == NULL
 	  ? build_message_string ("%s%s:%s", locus_cs, progname, locus_ce )
-	  : !strcmp (s.file, N_("<built-in>"))
+	  : !strcmp (s.file, special_fname_builtin ())
 	  ? build_message_string ("%s%s:%s", locus_cs, s.file, locus_ce)
 	  : context->show_column
 	  ? build_message_string ("%s%s:%d:%d:%s", locus_cs, s.file, s.line,
@@ -1167,7 +1174,7 @@ gfc_diagnostic_build_locus_prefix (diagnostic_context *context,
 
   return (s.file == NULL
 	  ? build_message_string ("%s%s:%s", locus_cs, progname, locus_ce )
-	  : !strcmp (s.file, N_("<built-in>"))
+	  : !strcmp (s.file, special_fname_builtin ())
 	  ? build_message_string ("%s%s:%s", locus_cs, s.file, locus_ce)
 	  : context->show_column
 	  ? build_message_string ("%s%s:%d:%d-%d:%s", locus_cs, s.file, s.line,

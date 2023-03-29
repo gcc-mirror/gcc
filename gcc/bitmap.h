@@ -1,5 +1,5 @@
 /* Functions to support general ended bitmaps.
-   Copyright (C) 1997-2022 Free Software Foundation, Inc.
+   Copyright (C) 1997-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -461,7 +461,7 @@ extern void dump_bitmap_statistics (void);
 /* Initialize a bitmap header.  OBSTACK indicates the bitmap obstack
    to allocate from, NULL for GC'd bitmap.  */
 
-static inline void
+inline void
 bitmap_initialize (bitmap head, bitmap_obstack *obstack CXX_MEM_STAT_INFO)
 {
   head->first = head->current = NULL;
@@ -476,7 +476,7 @@ bitmap_initialize (bitmap head, bitmap_obstack *obstack CXX_MEM_STAT_INFO)
 /* Release a bitmap (but not its head).  This is suitable for pairing with
    bitmap_initialize.  */
 
-static inline void
+inline void
 bitmap_release (bitmap head)
 {
   bitmap_clear (head);
@@ -532,7 +532,7 @@ struct bitmap_iterator
 /* Initialize a single bitmap iterator.  START_BIT is the first bit to
    iterate from.  */
 
-static inline void
+inline void
 bmp_iter_set_init (bitmap_iterator *bi, const_bitmap map,
 		   unsigned start_bit, unsigned *bit_no)
 {
@@ -576,7 +576,7 @@ bmp_iter_set_init (bitmap_iterator *bi, const_bitmap map,
 /* Initialize an iterator to iterate over the intersection of two
    bitmaps.  START_BIT is the bit to commence from.  */
 
-static inline void
+inline void
 bmp_iter_and_init (bitmap_iterator *bi, const_bitmap map1, const_bitmap map2,
 		   unsigned start_bit, unsigned *bit_no)
 {
@@ -645,7 +645,7 @@ bmp_iter_and_init (bitmap_iterator *bi, const_bitmap map1, const_bitmap map2,
 
 /* Initialize an iterator to iterate over the bits in MAP1 & ~MAP2.  */
 
-static inline void
+inline void
 bmp_iter_and_compl_init (bitmap_iterator *bi,
 			 const_bitmap map1, const_bitmap map2,
 			 unsigned start_bit, unsigned *bit_no)
@@ -696,7 +696,7 @@ bmp_iter_and_compl_init (bitmap_iterator *bi,
 /* Advance to the next bit in BI.  We don't advance to the next
    nonzero bit yet.  */
 
-static inline void
+inline void
 bmp_iter_next (bitmap_iterator *bi, unsigned *bit_no)
 {
   bi->bits >>= 1;
@@ -705,7 +705,7 @@ bmp_iter_next (bitmap_iterator *bi, unsigned *bit_no)
 
 /* Advance to first set bit in BI.  */
 
-static inline void
+inline void
 bmp_iter_next_bit (bitmap_iterator * bi, unsigned *bit_no)
 {
 #if (GCC_VERSION >= 3004)
@@ -728,7 +728,7 @@ bmp_iter_next_bit (bitmap_iterator * bi, unsigned *bit_no)
    already advanced past the just iterated bit.  Return true if there
    is a bit to iterate.  */
 
-static inline bool
+inline bool
 bmp_iter_set (bitmap_iterator *bi, unsigned *bit_no)
 {
   /* If our current word is nonzero, it contains the bit we want.  */
@@ -774,7 +774,7 @@ bmp_iter_set (bitmap_iterator *bi, unsigned *bit_no)
    bitmaps.  We will have already advanced past the just iterated bit.
    Return true if there is a bit to iterate.  */
 
-static inline bool
+inline bool
 bmp_iter_and (bitmap_iterator *bi, unsigned *bit_no)
 {
   /* If our current word is nonzero, it contains the bit we want.  */
@@ -843,7 +843,7 @@ bmp_iter_and (bitmap_iterator *bi, unsigned *bit_no)
    complemented bitmaps.  We will have already advanced past the just
    iterated bit.  */
 
-static inline bool
+inline bool
 bmp_iter_and_compl (bitmap_iterator *bi, unsigned *bit_no)
 {
   /* If our current word is nonzero, it contains the bit we want.  */

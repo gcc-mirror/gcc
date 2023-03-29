@@ -1,10 +1,6 @@
-/* Implementation of W32-specific threads compatibility routines for
-   libgcc2.  */
+/* Implementation of threads compatibility routines for libgcc2.  */
 
-/* Copyright (C) 1999-2022 Free Software Foundation, Inc.
-   Contributed by Mumit Khan <khan@xraylith.wisc.edu>.
-   Modified and moved to separate file by Danny Smith
-   <dannysmith@users.sourceforge.net>.
+/* Copyright (C) 1999-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,239 +23,33 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include <windows.h>
-#ifndef __GTHREAD_HIDE_WIN32API
-# define __GTHREAD_HIDE_WIN32API 1
-#endif
+/* Get the out-of-line version of the inline routines.  */
+
+#define __GTHREAD_WIN32_ACTIVE_P() 1
+#define __GTHREAD_WIN32_INLINE
+
+#define __gthread_detach __gthr_win32_detach
+#define __gthread_equal __gthr_win32_equal
+#define __gthread_yield __gthr_win32_yield
+#define __gthread_once __gthr_win32_once
+#define __gthread_key_create __gthr_win32_key_create
+#define __gthread_key_delete __gthr_win32_key_delete
+#define __gthread_getspecific __gthr_win32_getspecific
+#define __gthread_setspecific __gthr_win32_setspecific
+#define __gthread_mutex_init_function __gthr_win32_mutex_init_function
+#define __gthread_mutex_destroy __gthr_win32_mutex_destroy
+#define __gthread_mutex_lock __gthr_win32_mutex_lock
+#define __gthread_mutex_trylock __gthr_win32_mutex_trylock
+#define __gthread_mutex_unlock __gthr_win32_mutex_unlock
+#define __gthread_recursive_mutex_trylock __gthr_win32_recursive_mutex_trylock
+
 #include "gthr-win32.h"
 
-/* Windows32 threads specific definitions. The windows32 threading model
-   does not map well into pthread-inspired gcc's threading model, and so 
-   there are caveats one needs to be aware of.
+/* Check the sizes of the local version of the Win32 types.  */
 
-   1. The destructor supplied to __gthread_key_create is ignored for
-      generic x86-win32 ports. This will certainly cause memory leaks 
-      due to unreclaimed eh contexts (sizeof (eh_context) is at least 
-      24 bytes for x86 currently).
+#define CHECK_SIZE_OF(TYPE) \
+  typedef int assertion[sizeof(__gthr_win32_##TYPE) == sizeof(TYPE) ? 1 : -1];
 
-      This memory leak may be significant for long-running applications
-      that make heavy use of C++ EH.
-
-      However, Mingw runtime (version 0.3 or newer) provides a mechanism
-      to emulate pthreads key dtors; the runtime provides a special DLL,
-      linked in if -mthreads option is specified, that runs the dtors in
-      the reverse order of registration when each thread exits. If
-      -mthreads option is not given, a stub is linked in instead of the
-      DLL, which results in memory leak. Other x86-win32 ports can use 
-      the same technique of course to avoid the leak.
-
-   2. The error codes returned are non-POSIX like, and cast into ints.
-      This may cause incorrect error return due to truncation values on 
-      hw where sizeof (DWORD) > sizeof (int).
-   
-   3. We are currently using a special mutex instead of the Critical
-      Sections, since Win9x does not support TryEnterCriticalSection
-      (while NT does).
-  
-   The basic framework should work well enough. In the long term, GCC
-   needs to use Structured Exception Handling on Windows32.  */
-
-int
-__gthr_win32_once (__gthread_once_t *once, void (*func) (void))
-{
-  if (once == NULL || func == NULL)
-    return EINVAL;
-
-  if (! once->done)
-    {
-      if (InterlockedIncrement (&(once->started)) == 0)
-        {
-	  (*func) ();
-	  once->done = TRUE;
-	}
-      else
-	{
-	  /* Another thread is currently executing the code, so wait for it 
-	     to finish; yield the CPU in the meantime.  If performance 
-	     does become an issue, the solution is to use an Event that 
-	     we wait on here (and set above), but that implies a place to 
-	     create the event before this routine is called.  */ 
-	  while (! once->done)
-	    Sleep (0);
-	}
-    }
-  return 0;
-}
-
-/* Windows32 thread local keys don't support destructors; this leads to
-   leaks, especially in threaded applications making extensive use of 
-   C++ EH. Mingw uses a thread-support DLL to work-around this problem.  */
-
-int
-__gthr_win32_key_create (__gthread_key_t *key,
-			 void (*dtor) (void *) __attribute__((unused)))
-{
-  int status = 0;
-  DWORD tls_index = TlsAlloc ();
-  if (tls_index != 0xFFFFFFFF)
-    {
-      *key = tls_index;
-#ifdef MINGW32_SUPPORTS_MT_EH
-      /* Mingw runtime will run the dtors in reverse order for each thread
-         when the thread exits.  */
-      status = __mingwthr_key_dtor (*key, dtor);
-#endif
-    }
-  else
-    status = (int) GetLastError ();
-  return status;
-}
-
-int
-__gthr_win32_key_delete (__gthread_key_t key)
-{
-  return (TlsFree (key) != 0) ? 0 : (int) GetLastError ();
-}
-
-void *
-__gthr_win32_getspecific (__gthread_key_t key)
-{
-  DWORD lasterror;
-  void *ptr;
-  lasterror = GetLastError();
-  ptr = TlsGetValue(key);
-  SetLastError( lasterror );
-  return ptr;
-}
-
-int
-__gthr_win32_setspecific (__gthread_key_t key, const void *ptr)
-{
-  if (TlsSetValue (key, CONST_CAST2(void *, const void *, ptr)) != 0)
-    return 0;
-  else
-    return GetLastError ();
-}
-
-void
-__gthr_win32_mutex_init_function (__gthread_mutex_t *mutex)
-{
-  mutex->counter = -1;
-  mutex->sema = CreateSemaphoreW (NULL, 0, 65535, NULL);
-}
-
-void
-__gthr_win32_mutex_destroy (__gthread_mutex_t *mutex)
-{
-  CloseHandle ((HANDLE) mutex->sema);
-}
-
-int
-__gthr_win32_mutex_lock (__gthread_mutex_t *mutex)
-{
-  if (InterlockedIncrement (&mutex->counter) == 0 ||
-      WaitForSingleObject (mutex->sema, INFINITE) == WAIT_OBJECT_0)
-    return 0;
-  else
-    {
-      /* WaitForSingleObject returns WAIT_FAILED, and we can only do
-         some best-effort cleanup here.  */
-      InterlockedDecrement (&mutex->counter);
-      return 1;
-    }
-}
-
-int
-__gthr_win32_mutex_trylock (__gthread_mutex_t *mutex)
-{
-  if (__GTHR_W32_InterlockedCompareExchange (&mutex->counter, 0, -1) < 0)
-    return 0;
-  else
-    return 1;
-}
-
-int
-__gthr_win32_mutex_unlock (__gthread_mutex_t *mutex)
-{
-  if (InterlockedDecrement (&mutex->counter) >= 0)
-    return ReleaseSemaphore (mutex->sema, 1, NULL) ? 0 : 1;
-  else
-    return 0;
-}
-
-void
-__gthr_win32_recursive_mutex_init_function (__gthread_recursive_mutex_t *mutex)
-{
-  mutex->counter = -1;
-  mutex->depth = 0;
-  mutex->owner = 0;
-  mutex->sema = CreateSemaphoreW (NULL, 0, 65535, NULL);
-}
-
-int
-__gthr_win32_recursive_mutex_lock (__gthread_recursive_mutex_t *mutex)
-{
-  DWORD me = GetCurrentThreadId();
-  if (InterlockedIncrement (&mutex->counter) == 0)
-    {
-      mutex->depth = 1;
-      mutex->owner = me;
-    }
-  else if (mutex->owner == me)
-    {
-      InterlockedDecrement (&mutex->counter);
-      ++(mutex->depth);
-    }
-  else if (WaitForSingleObject (mutex->sema, INFINITE) == WAIT_OBJECT_0)
-    {
-      mutex->depth = 1;
-      mutex->owner = me;
-    }
-  else
-    {
-      /* WaitForSingleObject returns WAIT_FAILED, and we can only do
-         some best-effort cleanup here.  */
-      InterlockedDecrement (&mutex->counter);
-      return 1;
-    }
-  return 0;
-}
-
-int
-__gthr_win32_recursive_mutex_trylock (__gthread_recursive_mutex_t *mutex)
-{
-  DWORD me = GetCurrentThreadId();
-  if (__GTHR_W32_InterlockedCompareExchange (&mutex->counter, 0, -1) < 0)
-    {
-      mutex->depth = 1;
-      mutex->owner = me;
-    }
-  else if (mutex->owner == me)
-    ++(mutex->depth);
-  else
-    return 1;
-
-  return 0;
-}
-
-int
-__gthr_win32_recursive_mutex_unlock (__gthread_recursive_mutex_t *mutex)
-{
-  --(mutex->depth);
-  if (mutex->depth == 0)
-    {
-      mutex->owner = 0;
-
-      if (InterlockedDecrement (&mutex->counter) >= 0)
-	return ReleaseSemaphore (mutex->sema, 1, NULL) ? 0 : 1;
-    }
-
-  return 0;
-}
-
-int
-__gthr_win32_recursive_mutex_destroy (__gthread_recursive_mutex_t *mutex)
-{
-  CloseHandle ((HANDLE) mutex->sema);
-  return 0;
-}
+CHECK_SIZE_OF (DWORD)
+CHECK_SIZE_OF (HANDLE)
+CHECK_SIZE_OF (CRITICAL_SECTION)

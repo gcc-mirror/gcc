@@ -1,5 +1,5 @@
 /* Hooks for cfg representation specific functions.
-   Copyright (C) 2003-2022 Free Software Foundation, Inc.
+   Copyright (C) 2003-2023 Free Software Foundation, Inc.
    Contributed by Sebastian Pop <s.pop@laposte.net>
 
 This file is part of GCC.
@@ -206,7 +206,7 @@ extern void verify_flow_info (void);
 /* Check control flow invariants, if internal consistency checks are
    enabled.  */
 
-static inline void
+inline void
 checking_verify_flow_info (void)
 {
   /* TODO: Add a separate option for -fchecking=cfg.  */

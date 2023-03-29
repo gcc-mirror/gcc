@@ -3,8 +3,8 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -march=z13 -mzarch --save-temps" } */
 
-/* { dg-final { scan-assembler "locghih\t%r.?,1" } } */
-/* { dg-final { scan-assembler "locgrh\t.*" } } */
+/* { dg-final { scan-assembler "locghi(?:h|nle)\t%r.?,1" } } */
+/* { dg-final { scan-assembler "locgr(?:h|nle)\t.*" } } */
 
 #include <limits.h>
 #include <stdio.h>

@@ -247,7 +247,7 @@ am__objects_4 = runtime/aeshash.lo runtime/go-assert.lo \
 	runtime/go-fieldtrack.lo runtime/go-matherr.lo \
 	runtime/go-memclr.lo runtime/go-memmove.lo \
 	runtime/go-memequal.lo runtime/go-nanotime.lo \
-	runtime/go-now.lo runtime/go-nosys.lo \
+	runtime/go-now.lo runtime/go-nosys.lo runtime/go-strerror.lo \
 	runtime/go-reflect-call.lo runtime/go-setenv.lo \
 	runtime/go-signal.lo runtime/go-unsafe-pointer.lo \
 	runtime/go-unsetenv.lo runtime/go-unwind.lo \
@@ -917,6 +917,7 @@ runtime_files = \
 	runtime/go-nanotime.c \
 	runtime/go-now.c \
 	runtime/go-nosys.c \
+	runtime/go-strerror.c \
 	runtime/go-reflect-call.c \
 	runtime/go-setenv.c \
 	runtime/go-signal.c \
@@ -1390,6 +1391,8 @@ runtime/go-now.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-nosys.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
+runtime/go-strerror.lo: runtime/$(am__dirstamp) \
+	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-reflect-call.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-setenv.lo: runtime/$(am__dirstamp) \
@@ -1457,6 +1460,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-reflect-call.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-setenv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-signal.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-strerror.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-unsafe-pointer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-unsetenv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-unwind.Plo@am__quote@

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -269,8 +269,9 @@ package body Treepr is
    function Image (F : Node_Or_Entity_Field) return String is
    begin
       case F is
-         when F_Alloc_For_BIP_Return =>
-            return "Alloc_For_BIP_Return";
+         --  We special case the following; otherwise the compiler will use
+         --  the usual Mixed_Case convention.
+
          when F_Assignment_OK =>
             return "Assignment_OK";
          when F_Backwards_OK =>

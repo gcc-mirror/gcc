@@ -7,6 +7,10 @@
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
+#if __cpp_lib_ranges_chunk_by != 202202L
+# error "Feature-test macro __cpp_lib_ranges_chunk_by has wrong value in <ranges>"
+#endif
+
 namespace ranges = std::ranges;
 namespace views = std::views;
 
@@ -50,9 +54,17 @@ test02()
   VERIFY( i == v.end() );
 }
 
+void
+test03()
+{
+  // LWG 3796
+  ranges::chunk_by_view<ranges::empty_view<int>, ranges::equal_to> r;
+}
+
 int
 main()
 {
   static_assert(test01());
   test02();
+  test03();
 }

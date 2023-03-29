@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -422,10 +422,10 @@ package body Output is
 
    procedure Write_Char (C : Character) is
    begin
-      pragma Assert (Next_Col in Buffer'Range);
-      if Next_Col = Buffer'Length then
-         Write_Eol;
+      if Next_Col > Buffer'Length then
+         Flush_Buffer;
       end if;
+      pragma Assert (Next_Col in Buffer'Range);
 
       if C = ASCII.LF then
          Write_Eol;

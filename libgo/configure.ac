@@ -10,7 +10,7 @@ AC_INIT(package-unused, version-unused,, libgo)
 AC_CONFIG_SRCDIR(Makefile.am)
 AC_CONFIG_HEADER(config.h)
 
-libtool_VERSION=21:0:0
+libtool_VERSION=22:0:0
 AC_SUBST(libtool_VERSION)
 
 AM_ENABLE_MULTILIB(, ..)
@@ -569,6 +569,9 @@ dnl Test for the -lpthread library.
 PTHREAD_LIBS=
 AC_CHECK_LIB([pthread], [pthread_create], PTHREAD_LIBS=-lpthread)
 AC_SUBST(PTHREAD_LIBS)
+
+dnl Test if -lucontext is required for makecontext.
+AC_SEARCH_LIBS([makecontext], [ucontext])
 
 dnl Test if -lrt is required for sched_yield or nanosleep or clock_gettime.
 AC_SEARCH_LIBS([sched_yield], [rt])

@@ -5043,6 +5043,16 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_VASPRINTF $ac_have_decl
 _ACEOF
+ac_fn_c_check_decl "$LINENO" "memmem" "ac_cv_have_decl_memmem" "$ac_includes_default"
+if test "x$ac_cv_have_decl_memmem" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_MEMMEM $ac_have_decl
+_ACEOF
 
 ac_fn_c_check_decl "$LINENO" "clearerr_unlocked" "ac_cv_have_decl_clearerr_unlocked" "$ac_includes_default"
 if test "x$ac_cv_have_decl_clearerr_unlocked" = xyes; then :

@@ -1,6 +1,6 @@
 // Filesystem operation utilities -*- C++ -*-
 
-// Copyright (C) 2014-2022 Free Software Foundation, Inc.
+// Copyright (C) 2014-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -84,7 +84,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline error_code
   __unsupported() noexcept
   {
-#if defined ENOTSUP
+#if defined __AVR__
+    // avr-libc defines ENOTSUP and EOPNOTSUPP but with nonsense values.
+    // ENOSYS is defined though, so use an error_code corresponding to that.
+    // This contradicts the comment above, but we don't have much choice.
+    return std::make_error_code(std::errc::function_not_supported);
+#elif defined ENOTSUP
     return std::make_error_code(std::errc::not_supported);
 #elif defined EOPNOTSUPP
     // This is supposed to be for socket operations
@@ -167,7 +172,7 @@ namespace __gnu_posix
     return ret;
   }
   using char_type = wchar_t;
-#elif defined _GLIBCXX_HAVE_UNISTD_H
+#elif defined _GLIBCXX_HAVE_UNISTD_H && ! defined __AVR__
   using ::open;
   using ::close;
 # ifdef _GLIBCXX_HAVE_SYS_STAT_H
@@ -620,7 +625,8 @@ _GLIBCXX_BEGIN_NAMESPACE_FILESYSTEM
       {
 	buf.resize(len);
 	len = GetTempPathW(buf.size(), buf.data());
-      } while (len > buf.size());
+      }
+    while (len > buf.size());
 
     if (len == 0)
       ec = __last_system_error();

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC for IA-32.
-   Copyright (C) 1988-2022 Free Software Foundation, Inc.
+   Copyright (C) 1988-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -49,8 +49,6 @@ extern bool ix86_use_pseudo_pic_reg (void);
 extern void ix86_reset_previous_fndecl (void);
 
 extern bool ix86_using_red_zone (void);
-
-extern rtx ix86_gen_scratch_sse_rtx (machine_mode);
 
 extern unsigned int ix86_regmode_natural_size (machine_mode);
 extern bool ix86_check_builtin_isa_match (unsigned int fcode);
@@ -109,7 +107,7 @@ extern void ix86_expand_binary_operator (enum rtx_code,
 					 machine_mode, rtx[]);
 extern void ix86_expand_vector_logical_operator (enum rtx_code,
 						 machine_mode, rtx[]);
-extern bool ix86_binary_operator_ok (enum rtx_code, machine_mode, rtx[]);
+extern bool ix86_binary_operator_ok (enum rtx_code, machine_mode, rtx[3]);
 extern bool ix86_avoid_lea_for_add (rtx_insn *, rtx[]);
 extern bool ix86_use_lea_for_mov (rtx_insn *, rtx[]);
 extern bool ix86_avoid_lea_for_addr (rtx_insn *, rtx[]);
@@ -140,7 +138,7 @@ extern void ix86_split_fp_absneg_operator (enum rtx_code, machine_mode,
 					   rtx[]);
 extern void ix86_expand_copysign (rtx []);
 extern void ix86_expand_xorsign (rtx []);
-extern bool ix86_unary_operator_ok (enum rtx_code, machine_mode, rtx[]);
+extern bool ix86_unary_operator_ok (enum rtx_code, machine_mode, rtx[2]);
 extern bool ix86_match_ccmode (rtx, machine_mode);
 extern void ix86_expand_branch (enum rtx_code, rtx, rtx, rtx);
 extern void ix86_expand_setcc (rtx, enum rtx_code, rtx, rtx);
@@ -168,6 +166,7 @@ extern void ix86_split_lshr (rtx *, rtx, machine_mode);
 extern void ix86_expand_v1ti_shift (enum rtx_code, rtx[]);
 extern void ix86_expand_v1ti_rotate (enum rtx_code, rtx[]);
 extern void ix86_expand_v1ti_ashiftrt (rtx[]);
+extern rtx ix86_replace_reg_with_reg (rtx, rtx, rtx);
 extern rtx ix86_find_base_term (rtx);
 extern bool ix86_check_movabs (rtx, int);
 extern bool ix86_check_no_addr_space (rtx);
@@ -227,6 +226,9 @@ extern void ix86_expand_atomic_fetch_op_loop (rtx, rtx, rtx, enum rtx_code,
 					      bool, bool);
 extern void ix86_expand_cmpxchg_loop (rtx *, rtx, rtx, rtx, rtx, rtx,
 				      bool, rtx_code_label *);
+extern rtx ix86_expand_fast_convert_bf_to_sf (rtx);
+extern rtx ix86_memtag_untagged_pointer (rtx, rtx);
+extern bool ix86_memtag_can_tag_addresses (void);
 
 #ifdef TREE_CODE
 extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);

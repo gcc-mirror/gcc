@@ -1,5 +1,5 @@
 /* IRA hard register and memory cost calculation for allocnos or pseudos.
-   Copyright (C) 2006-2022 Free Software Foundation, Inc.
+   Copyright (C) 2006-2023 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ira-int.h"
 #include "addresses.h"
 #include "reload.h"
+#include "print-rtl.h"
 
 /* The flags is set up every time when we calculate pseudo register
    classes through function ira_set_pseudo_classes.  */
@@ -503,6 +504,18 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
   int insn_allows_mem[MAX_RECOG_OPERANDS];
   move_table *move_in_cost, *move_out_cost;
   short (*mem_cost)[2];
+  const char *p;
+
+  if (ira_dump_file != NULL && internal_flag_ira_verbose > 5)
+    {
+      fprintf (ira_dump_file, "    Processing insn %u", INSN_UID (insn));
+      if (INSN_CODE (insn) >= 0
+	  && (p = get_insn_name (INSN_CODE (insn))) != NULL)
+	fprintf (ira_dump_file, " {%s}", p);
+      fprintf (ira_dump_file, " (freq=%d)\n",
+	       REG_FREQ_FROM_BB (BLOCK_FOR_INSN (insn)));
+      dump_insn_slim (ira_dump_file, insn);
+  }
 
   for (i = 0; i < n_ops; i++)
     insn_allows_mem[i] = 0;
@@ -524,6 +537,21 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 	    constraints[i] = skip_alternative (constraints[i]);
 
 	  continue;
+	}
+
+      if (ira_dump_file != NULL && internal_flag_ira_verbose > 5)
+	{
+	  fprintf (ira_dump_file, "      Alt %d:", alt);
+	  for (i = 0; i < n_ops; i++)
+	    {
+	      p = constraints[i];
+	      if (*p == '\0')
+		continue;
+	      fprintf (ira_dump_file, "  (%d) ", i);
+	      for (; *p != '\0' && *p != ',' && *p != '#'; p++)
+		fputc (*p, ira_dump_file);
+	    }
+	  fprintf (ira_dump_file, "\n");
 	}
 
       for (i = 0; i < n_ops; i++)
@@ -593,12 +621,16 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		     register, this alternative can't be used.  */
 
 		  if (classes[j] == NO_REGS)
-		    alt_fail = 1;
-		  /* Otherwise, add to the cost of this alternative
-		     the cost to copy the other operand to the hard
-		     register used for this operand.  */
+		    {
+		      alt_fail = 1;
+		    }
 		  else
-		    alt_cost += copy_cost (ops[j], mode, classes[j], 1, NULL);
+		    /* Otherwise, add to the cost of this alternative the cost
+		       to copy the other operand to the hard register used for
+		       this operand.  */
+		    {
+		      alt_cost += copy_cost (ops[j], mode, classes[j], 1, NULL);
+		    }
 		}
 	      else
 		{
@@ -1021,18 +1053,45 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
       for (i = 0; i < n_ops; i++)
 	if (REG_P (ops[i]) && REGNO (ops[i]) >= FIRST_PSEUDO_REGISTER)
 	  {
+	    int old_cost;
+	    bool cost_change_p = false;
 	    struct costs *pp = op_costs[i], *qq = this_op_costs[i];
 	    int *pp_costs = pp->cost, *qq_costs = qq->cost;
 	    int scale = 1 + (recog_data.operand_type[i] == OP_INOUT);
 	    cost_classes_t cost_classes_ptr
 	      = regno_cost_classes[REGNO (ops[i])];
 
-	    pp->mem_cost = MIN (pp->mem_cost,
+	    old_cost = pp->mem_cost;
+	    pp->mem_cost = MIN (old_cost,
 				(qq->mem_cost + op_cost_add) * scale);
 
+	    if (ira_dump_file != NULL && internal_flag_ira_verbose > 5
+		&& pp->mem_cost < old_cost)
+	      {
+		cost_change_p = true;
+		fprintf (ira_dump_file, "        op %d(r=%u) new costs MEM:%d",
+			 i, REGNO(ops[i]), pp->mem_cost);
+	      }
 	    for (k = cost_classes_ptr->num - 1; k >= 0; k--)
-	      pp_costs[k]
-		= MIN (pp_costs[k], (qq_costs[k] + op_cost_add) * scale);
+	      {
+		old_cost = pp_costs[k];
+		pp_costs[k]
+		  = MIN (old_cost, (qq_costs[k] + op_cost_add) * scale);
+		if (ira_dump_file != NULL && internal_flag_ira_verbose > 5
+		    && pp_costs[k] < old_cost)
+		  {
+		    if (!cost_change_p)
+		      fprintf (ira_dump_file, "        op %d(r=%u) new costs",
+			       i, REGNO(ops[i]));
+		    cost_change_p = true;
+		    fprintf (ira_dump_file, " %s:%d",
+			     reg_class_names[cost_classes_ptr->classes[k]],
+			     pp_costs[k]);
+		  }
+	      }
+	    if (ira_dump_file != NULL && internal_flag_ira_verbose > 5
+		&& cost_change_p)
+	      fprintf (ira_dump_file, "\n");
 	  }
     }
 
@@ -1307,26 +1366,48 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
 	      || ((regno = REGNO (dest)) >= FIRST_PSEUDO_REGISTER
 		  && (other_regno = REGNO (src)) < FIRST_PSEUDO_REGISTER)))
 	{
-	  machine_mode mode = GET_MODE (SET_SRC (set));
+	  machine_mode mode = GET_MODE (SET_SRC (set)), cost_mode = mode;
+	  machine_mode hard_reg_mode = GET_MODE(regno_reg_rtx[other_regno]);
+	  poly_int64 pmode_size = GET_MODE_SIZE (mode);
+	  poly_int64 phard_reg_mode_size = GET_MODE_SIZE (hard_reg_mode);
+	  HOST_WIDE_INT mode_size, hard_reg_mode_size;
 	  cost_classes_t cost_classes_ptr = regno_cost_classes[regno];
 	  enum reg_class *cost_classes = cost_classes_ptr->classes;
 	  reg_class_t rclass, hard_reg_class, bigger_hard_reg_class;
-	  int cost, k;
+	  int cost_factor = 1, cost, k;
 	  move_table *move_costs;
 	  bool dead_p = find_regno_note (insn, REG_DEAD, REGNO (src));
 
-	  ira_init_register_move_cost_if_necessary (mode);
-	  move_costs = ira_register_move_cost[mode];
 	  hard_reg_class = REGNO_REG_CLASS (other_regno);
-	  bigger_hard_reg_class = ira_pressure_class_translate[hard_reg_class];
-	  /* Target code may return any cost for mode which does not
-	     fit the hard reg class (e.g. DImode for AREG on
-	     i386).  Check this and use a bigger class to get the
-	     right cost.  */
-	  if (bigger_hard_reg_class != NO_REGS
-	      && ! ira_hard_reg_in_set_p (other_regno, mode,
-					  reg_class_contents[hard_reg_class]))
-	    hard_reg_class = bigger_hard_reg_class;
+          bigger_hard_reg_class = ira_pressure_class_translate[hard_reg_class];
+          /* Target code may return any cost for mode which does not fit the
+             hard reg class (e.g. DImode for AREG on i386).  Check this and use
+             a bigger class to get the right cost.  */
+          if (bigger_hard_reg_class != NO_REGS
+              && ! ira_hard_reg_in_set_p (other_regno, mode,
+                                          reg_class_contents[hard_reg_class]))
+            hard_reg_class = bigger_hard_reg_class;
+          ira_init_register_move_cost_if_necessary (mode);
+          ira_init_register_move_cost_if_necessary (hard_reg_mode);
+	  /* Use smaller movement cost for natural hard reg mode or its mode as
+	     operand.  */
+          if (pmode_size.is_constant (&mode_size)
+              && phard_reg_mode_size.is_constant (&hard_reg_mode_size))
+            {
+	      /* Assume we are moving in the natural modes: */
+              cost_factor = mode_size / hard_reg_mode_size;
+              if (mode_size % hard_reg_mode_size != 0)
+		cost_factor++;
+	      if (cost_factor
+		  * (ira_register_move_cost
+		     [hard_reg_mode][hard_reg_class][hard_reg_class])
+		  < (ira_register_move_cost
+		     [mode][hard_reg_class][hard_reg_class]))
+		cost_mode = hard_reg_mode;
+	      else
+		cost_factor = 1;
+            }
+          move_costs = ira_register_move_cost[cost_mode];
 	  i = regno == (int) REGNO (src) ? 1 : 0;
 	  for (k = cost_classes_ptr->num - 1; k >= 0; k--)
 	    {
@@ -1334,7 +1415,7 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
 	      cost = (i == 0
 		      ? move_costs[hard_reg_class][rclass]
 		      : move_costs[rclass][hard_reg_class]);
-	      
+	      cost *= cost_factor;
 	      op_costs[i]->cost[k] = cost * frequency;
 	      /* If this insn is a single set copying operand 1 to
 		 operand 0 and one operand is an allocno with the
@@ -1506,12 +1587,24 @@ scan_one_insn (rtx_insn *insn)
 
   record_operand_costs (insn, pref);
 
+  if (ira_dump_file != NULL && internal_flag_ira_verbose > 5)
+    {
+      const char *p;
+      fprintf (ira_dump_file, "    Final costs after insn %u", INSN_UID (insn));
+      if (INSN_CODE (insn) >= 0
+	  && (p = get_insn_name (INSN_CODE (insn))) != NULL)
+	fprintf (ira_dump_file, " {%s}", p);
+      fprintf (ira_dump_file, " (freq=%d)\n",
+	       REG_FREQ_FROM_BB (BLOCK_FOR_INSN (insn)));
+      dump_insn_slim (ira_dump_file, insn);
+    }
+
   /* Now add the cost for each operand to the total costs for its
      allocno.  */
   for (i = 0; i < recog_data.n_operands; i++)
     {
       rtx op = recog_data.operand[i];
-      
+
       if (GET_CODE (op) == SUBREG)
 	op = SUBREG_REG (op);
       if (REG_P (op) && REGNO (op) >= FIRST_PSEUDO_REGISTER)
@@ -1521,8 +1614,8 @@ scan_one_insn (rtx_insn *insn)
 	  struct costs *q = op_costs[i];
 	  int *p_costs = p->cost, *q_costs = q->cost;
 	  cost_classes_t cost_classes_ptr = regno_cost_classes[regno];
-	  int add_cost;
-	  
+	  int add_cost = 0;
+
 	  /* If the already accounted for the memory "cost" above, don't
 	     do so again.  */
 	  if (!counted_mem)
@@ -1533,6 +1626,11 @@ scan_one_insn (rtx_insn *insn)
 	      else
 		p->mem_cost += add_cost;
 	    }
+	  if (ira_dump_file != NULL && internal_flag_ira_verbose > 5)
+	    {
+	      fprintf (ira_dump_file, "        op %d(r=%u) MEM:%d(+%d)",
+		       i, REGNO(op), p->mem_cost, add_cost);
+	    }
 	  for (k = cost_classes_ptr->num - 1; k >= 0; k--)
 	    {
 	      add_cost = q_costs[k];
@@ -1540,7 +1638,15 @@ scan_one_insn (rtx_insn *insn)
 		p_costs[k] = INT_MAX;
 	      else
 		p_costs[k] += add_cost;
+	      if (ira_dump_file != NULL && internal_flag_ira_verbose > 5)
+		{
+		  fprintf (ira_dump_file, " %s:%d(+%d)",
+			   reg_class_names[cost_classes_ptr->classes[k]],
+			   p_costs[k], add_cost);
+		}
 	    }
+	  if (ira_dump_file != NULL && internal_flag_ira_verbose > 5)
+	    fprintf (ira_dump_file, "\n");
 	}
     }
   return insn;

@@ -1,5 +1,5 @@
 /* toir.cc -- Lower D frontend statements to GCC trees.
-   Copyright (C) 2006-2022 Free Software Foundation, Inc.
+   Copyright (C) 2006-2023 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -529,6 +529,28 @@ public:
     this->do_label (label);
   }
 
+  /* Generate and set a new continue label for the current unrolled loop.  */
+
+  void push_unrolled_continue_label (UnrolledLoopStatement *s)
+  {
+    this->push_continue_label (s);
+  }
+
+  /* Finish with the continue label for the unrolled loop.  */
+
+  void pop_unrolled_continue_label (UnrolledLoopStatement *s)
+  {
+    Statement *stmt = s->getRelatedLabeled ();
+    d_label_entry *ent = d_function_chain->labels->get (stmt);
+    gcc_assert (ent != NULL && ent->bc_label == true);
+
+    this->pop_continue_label (TREE_VEC_ELT (ent->label, bc_continue));
+
+    /* Remove the continue label from the label htab, as a new one must be
+       inserted at the end of every unrolled loop.  */
+    ent->label = TREE_VEC_ELT (ent->label, bc_break);
+  }
+
   /* Visitor interfaces.  */
 
 
@@ -560,8 +582,9 @@ public:
     tree ifbody = void_node;
     tree elsebody = void_node;
 
-    /* Build the `then' branch.  */
-    if (s->ifbody)
+    /* Build the `then' branch, don't do code generation when the condition
+       is `if (__ctfe)', as that is always false at run-time.  */
+    if (s->ifbody && !s->isIfCtfeBlock ())
       {
 	push_stmt_list ();
 	this->build_stmt (s->ifbody);
@@ -1089,9 +1112,9 @@ public:
 
 	if (statement != NULL)
 	  {
-	    tree lcontinue = this->push_continue_label (statement);
+	    this->push_unrolled_continue_label (s);
 	    this->build_stmt (statement);
-	    this->pop_continue_label (lcontinue);
+	    this->pop_unrolled_continue_label (s);
 	  }
       }
 

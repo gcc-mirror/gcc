@@ -1,5 +1,5 @@
 /* Implementation of the C API; all wrappers into the internal C++ API
-   Copyright (C) 2013-2022 Free Software Foundation, Inc.
+   Copyright (C) 2013-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -19,7 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
-#define INCLUDE_PTHREAD_H
+#define INCLUDE_MUTEX
 #include "system.h"
 #include "coretypes.h"
 #include "timevar.h"
@@ -4060,7 +4060,7 @@ gcc_jit_context_new_rvalue_from_vector (gcc_jit_context *ctxt,
    Ideally this would be within parse_basever, but the mutex is only needed
    by libgccjit.  */
 
-static pthread_mutex_t version_mutex = PTHREAD_MUTEX_INITIALIZER;
+static std::mutex version_mutex;
 
 struct jit_version_info
 {
@@ -4068,9 +4068,8 @@ struct jit_version_info
      guarded by version_mutex.  */
   jit_version_info ()
   {
-    pthread_mutex_lock (&version_mutex);
+    std::lock_guard<std::mutex> g (version_mutex);
     parse_basever (&major, &minor, &patchlevel);
-    pthread_mutex_unlock (&version_mutex);
   }
 
   int major;

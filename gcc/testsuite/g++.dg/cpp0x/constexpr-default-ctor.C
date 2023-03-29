@@ -7,6 +7,6 @@ struct A {
 struct B: A { };
 constexpr int f(B b) { return b.i; }
 
-struct C { C(); };	       // { dg-message "" }
-struct D: C { };	       // { dg-message "" }
-constexpr int g(D d) { return 42; } // { dg-error "invalid type" }
+struct C { C(); };	       // { dg-message "" "" { target c++20_down } }
+struct D: C { };	       // { dg-message "" "" { target c++20_down } }
+constexpr int g(D d) { return 42; } // { dg-error "invalid type" "" { target c++20_down } }

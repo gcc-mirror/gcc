@@ -1,6 +1,6 @@
 // Specific definitions for Darwin -*- C++ -*-
 
-// Copyright (C) 2004-2022 Free Software Foundation, Inc.
+// Copyright (C) 2004-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,14 +33,18 @@
    links to, so there's no need for weak-ness for that.  */
 #define _GLIBCXX_GTHREAD_USE_WEAK 0
 
-// On Darwin, in order to enable overriding of operator new and delete,
-// GCC makes the definition of these functions weak, relies on the
-// loader to implement weak semantics properly, and uses
-// -flat_namespace to work around the way that it doesn't.
-#define _GLIBCXX_WEAK_DEFINITION __attribute__ ((weak))
+// On Darwin, in order to enable overriding of operator new and delete, the
+// ABI library exports a weak definition. The static linker will override this
+// iff a user-provided implementation is given (providing that the user
+// implementation is not itself a weak definition).
+#define _GLIBCXX_WEAK_DEFINITION __attribute__ ((__weak__))
 
-// Static initializer macro is buggy in darwin, see libstdc++/51906
+#if defined (__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__) \
+     && (__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 1080)
+// Static initializer macro is absent for Darwin < 11 and buggy in Darwin 11,
+// see libstdc++/51906.  Fixed in Darwin 12 (OS X 10.8).
 #define _GTHREAD_USE_RECURSIVE_MUTEX_INIT_FUNC
+#endif
 
 // Configure checks for nanosleep fail on Darwin, but nanosleep and
 // sched_yield are always available, so use them.

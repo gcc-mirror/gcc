@@ -799,108 +799,107 @@ enum emptyExceptionMsg = "<Empty Exception Message>";
 }
 
 /**
- * Casts a mutable array to an immutable array in an idiomatic
- * manner. Technically, `assumeUnique` just inserts a cast,
- * but its name documents assumptions on the part of the
- * caller. `assumeUnique(arr)` should only be called when
- * there are no more active mutable aliases to elements of $(D
- * arr). To strengthen this assumption, `assumeUnique(arr)`
- * also clears `arr` before returning. Essentially $(D
- * assumeUnique(arr)) indicates commitment from the caller that there
- * is no more mutable access to any of `arr`'s elements
- * (transitively), and that all future accesses will be done through
- * the immutable array returned by `assumeUnique`.
- *
- * Typically, `assumeUnique` is used to return arrays from
- * functions that have allocated and built them.
- *
- * Params:
- *  array = The array to cast to immutable.
- *
- * Returns: The immutable array.
- *
- * Example:
- *
- * $(RUNNABLE_EXAMPLE
- * ----
- * string letters()
- * {
- *   char[] result = new char['z' - 'a' + 1];
- *   foreach (i, ref e; result)
- *   {
- *     e = cast(char)('a' + i);
- *   }
- *   return assumeUnique(result);
- * }
- * ----
- * )
- *
- * The use in the example above is correct because `result`
- * was private to `letters` and is inaccessible in writing
- * after the function returns. The following example shows an
- * incorrect use of `assumeUnique`.
- *
- * Bad:
- *
- * $(RUNNABLE_EXAMPLE
- * ----
- * private char[] buffer;
- * string letters(char first, char last)
- * {
- *   if (first >= last) return null; // fine
- *   auto sneaky = buffer;
- *   sneaky.length = last - first + 1;
- *   foreach (i, ref e; sneaky)
- *   {
- *     e = cast(char)('a' + i);
- *   }
- *   return assumeUnique(sneaky); // BAD
- * }
- * ----
- * )
- *
- * The example above wreaks havoc on client code because it is
- * modifying arrays that callers considered immutable. To obtain an
- * immutable array from the writable array `buffer`, replace
- * the last line with:
- *
- * ----
- * return to!(string)(sneaky); // not that sneaky anymore
- * ----
- *
- * The call will duplicate the array appropriately.
- *
- * Note that checking for uniqueness during compilation is
- * possible in certain cases, especially when a function is
- * marked as a pure function. The following example does not
- * need to call assumeUnique because the compiler can infer the
- * uniqueness of the array in the pure function:
- *
- * $(RUNNABLE_EXAMPLE
- * ----
- * string letters() pure
- * {
- *   char[] result = new char['z' - 'a' + 1];
- *   foreach (i, ref e; result)
- *   {
- *     e = cast(char)('a' + i);
- *   }
- *   return result;
- * }
- * ----
- * )
- *
- * For more on infering uniqueness see the $(B unique) and
- * $(B lent) keywords in the
- * $(HTTP www.cs.cmu.edu/~aldrich/papers/aldrich-dissertation.pdf, ArchJava)
- * language.
- *
- * The downside of using `assumeUnique`'s
- * convention-based usage is that at this time there is no
- * formal checking of the correctness of the assumption;
- * on the upside, the idiomatic use of `assumeUnique` is
- * simple and rare enough to be tolerable.
- *
+Casts a mutable array to an immutable array in an idiomatic
+manner. Technically, `assumeUnique` just inserts a cast,
+but its name documents assumptions on the part of the
+caller. `assumeUnique(arr)` should only be called when
+there are no more active mutable aliases to elements of $(D
+arr). To strengthen this assumption, `assumeUnique(arr)`
+also clears `arr` before returning. Essentially $(D
+assumeUnique(arr)) indicates commitment from the caller that there
+is no more mutable access to any of `arr`'s elements
+(transitively), and that all future accesses will be done through
+the immutable array returned by `assumeUnique`.
+
+Typically, `assumeUnique` is used to return arrays from
+functions that have allocated and built them.
+
+Params:
+ array = The array to cast to immutable.
+
+Returns: The immutable array.
+
+Example:
+
+$(RUNNABLE_EXAMPLE
+----
+string letters()
+{
+  char[] result = new char['z' - 'a' + 1];
+  foreach (i, ref e; result)
+  {
+    e = cast(char)('a' + i);
+  }
+  return assumeUnique(result);
+}
+----
+)
+
+The use in the example above is correct because `result`
+was private to `letters` and is inaccessible in writing
+after the function returns. The following example shows an
+incorrect use of `assumeUnique`.
+
+Bad:
+
+$(RUNNABLE_EXAMPLE
+----
+char[] buffer;
+string letters(char first, char last)
+{
+  if (first >= last) return null; // fine
+  auto sneaky = buffer;
+  sneaky.length = last - first + 1;
+  foreach (i, ref e; sneaky)
+  {
+    e = cast(char)('a' + i);
+  }
+  return assumeUnique(sneaky); // BAD
+}
+----
+)
+
+The example above wreaks havoc on client code because it is
+modifying arrays that callers considered immutable. To obtain an
+immutable array from the writable array `buffer`, replace
+the last line with:
+
+----
+return to!(string)(sneaky); // not that sneaky anymore
+----
+
+The call will duplicate the array appropriately.
+
+Note that checking for uniqueness during compilation is
+possible in certain cases, especially when a function is
+marked as a pure function. The following example does not
+need to call `assumeUnique` because the compiler can infer the
+uniqueness of the array in the pure function:
+
+$(RUNNABLE_EXAMPLE
+----
+static string letters() pure
+{
+  char[] result = new char['z' - 'a' + 1];
+  foreach (i, ref e; result)
+  {
+    e = cast(char)('a' + i);
+  }
+  return result;
+}
+----
+)
+
+For more on infering uniqueness see the $(B unique) and
+$(B lent) keywords in the
+$(HTTP www.cs.cmu.edu/~aldrich/papers/aldrich-dissertation.pdf, ArchJava)
+language.
+
+The downside of using `assumeUnique`'s
+convention-based usage is that at this time there is no
+formal checking of the correctness of the assumption;
+on the upside, the idiomatic use of `assumeUnique` is
+simple and rare enough to be tolerable.
  */
 immutable(T)[] assumeUnique(T)(T[] array) pure nothrow
 {
@@ -1070,9 +1069,9 @@ as the language is free to assume objects don't have internal pointers
 */
 bool doesPointTo(S, T, Tdummy=void)(auto ref const S source, ref const T target) @nogc @trusted pure nothrow
 if (__traits(isRef, source) || isDynamicArray!S ||
-    isPointer!S || is(S == class))
+    is(S == U*, U) || is(S == class))
 {
-    static if (isPointer!S || is(S == class) || is(S == interface))
+    static if (is(S == U*, U) || is(S == class) || is(S == interface))
     {
         const m = *cast(void**) &source;
         const b = cast(void*) &target;
@@ -1116,9 +1115,9 @@ bool doesPointTo(S, T)(auto ref const shared S source, ref const shared T target
 /// ditto
 bool mayPointTo(S, T, Tdummy=void)(auto ref const S source, ref const T target) @trusted pure nothrow
 if (__traits(isRef, source) || isDynamicArray!S ||
-    isPointer!S || is(S == class))
+    is(S == U*, U) || is(S == class))
 {
-    static if (isPointer!S || is(S == class) || is(S == interface))
+    static if (is(S == U*, U) || is(S == class) || is(S == interface))
     {
         const m = *cast(void**) &source;
         const b = cast(void*) &target;
@@ -1533,21 +1532,6 @@ version (StdUnittest)
     assert( doesPointTo(s, j));
     assert( doesPointTo(cast(int*) s, i));
     assert(!doesPointTo(cast(int*) s, j));
-}
-@safe unittest //more alias this opCast
-{
-    void* p;
-    class A
-    {
-        void* opCast(T)() if (is(T == void*))
-        {
-            return p;
-        }
-        alias foo = opCast!(void*);
-        alias foo this;
-    }
-    assert(!doesPointTo(A.init, p));
-    assert(!mayPointTo(A.init, p));
 }
 
 /+

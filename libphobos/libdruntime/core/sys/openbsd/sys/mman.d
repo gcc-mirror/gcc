@@ -47,5 +47,6 @@ static if (__BSD_VISIBLE)
 
     int madvise(void *, size_t, int);
     int minherit(void *, size_t, int);
+    int mimmutable(void *, size_t);
     void* mquery(void *, size_t, int, int, int, off_t);
 }

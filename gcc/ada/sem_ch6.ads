@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -174,6 +174,22 @@ package Sem_Ch6 is
    --  the end of Subp's parameter list (with each subsequent extra formal
    --  being attached to the preceding extra formal).
 
+   function Extra_Formals_Match_OK
+     (E     : Entity_Id;
+      Ref_E : Entity_Id) return Boolean;
+   --  Return True if the extra formals of the given entities match. E is a
+   --  subprogram, and Ref_E is the reference entity that will be used to check
+   --  the extra formals of E: a subprogram type or another subprogram. For
+   --  example, if E is a dispatching primitive of a tagged type then Ref_E
+   --  may be the overridden primitive of its parent type or its ultimate
+   --  renamed entity; however, if E is a subprogram to which 'Access is
+   --  applied then Ref_E is its corresponding subprogram type. Used in
+   --  assertions.
+
+   function Extra_Formals_OK (E : Entity_Id) return Boolean;
+   --  Return True if the decoration of the attributes associated with extra
+   --  formals are properly set. Used in assertions.
+
    function Find_Corresponding_Spec
      (N          : Node_Id;
       Post_Error : Boolean := True) return Entity_Id;
@@ -196,6 +212,9 @@ package Sem_Ch6 is
        Given_S2 : Node_Id) return Boolean;
    --  Determines if two subtype definitions are fully conformant. Used
    --  for entry family conformance checks (RM 6.3.1 (24)).
+
+   function Has_BIP_Formals (E : Entity_Id) return Boolean;
+   --  Determines if a given entity has build-in-place formals
 
    procedure Install_Entity (E : Entity_Id);
    --  Place a single entity on the visibility chain

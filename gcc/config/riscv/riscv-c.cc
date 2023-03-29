@@ -1,5 +1,5 @@
 /* RISC-V-specific code for C family languages.
-   Copyright (C) 2011-2022 Free Software Foundation, Inc.
+   Copyright (C) 2011-2023 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
 
 This file is part of GCC.
@@ -27,9 +27,18 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "c-family/c-common.h"
 #include "cpplib.h"
+#include "c-family/c-pragma.h"
+#include "target.h"
+#include "tm_p.h"
 #include "riscv-subset.h"
 
 #define builtin_define(TXT) cpp_define (pfile, TXT)
+
+static int
+riscv_ext_version_value (unsigned major, unsigned minor)
+{
+  return (major * 1000000) + (minor * 1000);
+}
 
 /* Implement TARGET_CPU_CPP_BUILTINS.  */
 
@@ -58,7 +67,7 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
   if (TARGET_HARD_FLOAT)
     builtin_define_with_int_value ("__riscv_flen", UNITS_PER_FP_REG * 8);
 
-  if (TARGET_HARD_FLOAT && TARGET_FDIV)
+  if ((TARGET_HARD_FLOAT || TARGET_ZFINX) && TARGET_FDIV)
     {
       builtin_define ("__riscv_fdiv");
       builtin_define ("__riscv_fsqrt");
@@ -93,11 +102,6 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
       break;
 
     case CM_PIC:
-      /* __riscv_cmodel_pic is deprecated, and will removed in next GCC release.
-	 see https://github.com/riscv/riscv-c-api-doc/pull/11  */
-      builtin_define ("__riscv_cmodel_pic");
-      /* FALLTHROUGH. */
-
     case CM_MEDANY:
       builtin_define ("__riscv_cmodel_medany");
       break;
@@ -120,7 +124,11 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
     builtin_define_with_int_value ("__riscv_v_elen_fp", 0);
 
   if (TARGET_MIN_VLEN)
-    builtin_define ("__riscv_vector");
+    {
+      builtin_define ("__riscv_vector");
+      builtin_define_with_int_value ("__riscv_v_intrinsic",
+				     riscv_ext_version_value (0, 11));
+    }
 
   /* Define architecture extension test macros.  */
   builtin_define_with_int_value ("__riscv_arch_test", 1);
@@ -143,15 +151,73 @@ riscv_cpu_cpp_builtins (cpp_reader *pfile)
        subset != subset_list->end ();
        subset = subset->next)
     {
-      int version_value = (subset->major_version * 1000000)
-			   + (subset->minor_version * 1000);
+      int version_value = riscv_ext_version_value (subset->major_version,
+						   subset->minor_version);
       /* Special rule for zicsr and zifencei, it's used for ISA spec 2.2 or
 	 earlier.  */
       if ((subset->name == "zicsr" || subset->name == "zifencei")
 	  && version_value == 0)
-	version_value = 2000000;
+	version_value = riscv_ext_version_value (2, 0);
 
       sprintf (buf, "__riscv_%s", subset->name.c_str ());
       builtin_define_with_int_value (buf, version_value);
     }
+}
+
+/* Implement "#pragma riscv intrinsic".  */
+
+static void
+riscv_pragma_intrinsic (cpp_reader *)
+{
+  tree x;
+
+  if (pragma_lex (&x) != CPP_STRING)
+    {
+      error ("%<#pragma riscv intrinsic%> requires a string parameter");
+      return;
+    }
+
+  const char *name = TREE_STRING_POINTER (x);
+
+  if (strcmp (name, "vector") == 0)
+    {
+      if (!TARGET_VECTOR)
+	{
+	  error ("%<#pragma riscv intrinsic%> option %qs needs 'V' extension "
+		 "enabled",
+		 name);
+	  return;
+	}
+      riscv_vector::handle_pragma_vector ();
+    }
+  else
+    error ("unknown %<#pragma riscv intrinsic%> option %qs", name);
+}
+
+/* Implement TARGET_CHECK_BUILTIN_CALL.  */
+static bool
+riscv_check_builtin_call (location_t loc, vec<location_t> arg_loc, tree fndecl,
+			  tree orig_fndecl, unsigned int nargs, tree *args)
+{
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  unsigned int subcode = code >> RISCV_BUILTIN_SHIFT;
+  switch (code & RISCV_BUILTIN_CLASS)
+    {
+    case RISCV_BUILTIN_GENERAL:
+      return true;
+
+    case RISCV_BUILTIN_VECTOR:
+      return riscv_vector::check_builtin_call (loc, arg_loc, subcode,
+					       orig_fndecl, nargs, args);
+    }
+  gcc_unreachable ();
+}
+
+/* Implement REGISTER_TARGET_PRAGMAS.  */
+
+void
+riscv_register_pragmas (void)
+{
+  targetm.check_builtin_call = riscv_check_builtin_call;
+  c_register_pragma ("riscv", "intrinsic", riscv_pragma_intrinsic);
 }

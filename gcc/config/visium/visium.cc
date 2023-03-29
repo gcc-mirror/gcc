@@ -1,5 +1,5 @@
 /* Output routines for Visium.
-   Copyright (C) 2002-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2023 Free Software Foundation, Inc.
    Contributed by C.Nettleton, J.P.Parkes and P.Garbett.
 
    This file is part of GCC.
@@ -1481,7 +1481,8 @@ visium_setup_incoming_varargs (cumulative_args_t pcum_v,
   /* The caller has advanced ARGS_SO_FAR up to, but not beyond, the last named
      argument.  Advance a local copy of ARGS_SO_FAR past the last "real" named
      argument, to find out how many registers are left over.  */
-  TARGET_FUNCTION_ARG_ADVANCE (local_args_so_far, arg);
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    TARGET_FUNCTION_ARG_ADVANCE (local_args_so_far, arg);
 
   /* Find how many registers we need to save.  */
   locargs = get_cumulative_args (local_args_so_far);

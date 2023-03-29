@@ -1,4 +1,4 @@
-/* Copyright (C) 2003-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2003-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -99,7 +99,10 @@ _mm_setr_pd (double __W, double __X)
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_undefined_pd (void)
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winit-self"
   __m128d __Y = __Y;
+#pragma GCC diagnostic pop
   return __Y;
 }
 
@@ -785,7 +788,10 @@ _mm_move_epi64 (__m128i __A)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_undefined_si128 (void)
 {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winit-self"
   __m128i __Y = __Y;
+#pragma GCC diagnostic pop
   return __Y;
 }
 

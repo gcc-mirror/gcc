@@ -573,7 +573,7 @@ $(LINK2 http://en.cppreference.com/w/cpp/algorithm/copy_backward, STL's `copy_ba
 Assigns `value` to each element of input range `range`.
 
 Alternatively, instead of using a single `value` to fill the `range`,
-a `filter` $(REF_ALTTEXT forward range, isForwardRange, std,range,primitives)
+a `filler` $(REF_ALTTEXT forward range, isForwardRange, std,range,primitives)
 can be provided. The length of `filler` and `range` do not need to match, but
 `filler` must not be empty.
 
@@ -1943,6 +1943,7 @@ if (Offset.length >= 1 && allSatisfy!(isValidIntegralTuple, Offset))
     return removeImpl!s(range, offset);
 }
 
+/// ditto
 deprecated("Use of non-integral tuples is deprecated. Use remove(tuple(start, end).")
 Range remove
 (SwapStrategy s = SwapStrategy.stable, Range, Offset ...)

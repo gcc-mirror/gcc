@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -448,57 +448,41 @@ package body MDLL is
      (Lib_Filename : String;
       Def_Filename : String)
    is
-      procedure Build_Import_Library (Lib_Filename : String);
-      --  Build an import library. This is to build only a .a library to link
-      --  against a DLL.
+      function Strip_Lib_Prefix (Filename : String) return String;
+      --  Return Filename without the lib prefix if present
 
-      --------------------------
-      -- Build_Import_Library --
-      --------------------------
+      ----------------------
+      -- Strip_Lib_Prefix --
+      ----------------------
 
-      procedure Build_Import_Library (Lib_Filename : String) is
-
-         function No_Lib_Prefix (Filename : String) return String;
-         --  Return Filename without the lib prefix if present
-
-         -------------------
-         -- No_Lib_Prefix --
-         -------------------
-
-         function No_Lib_Prefix (Filename : String) return String is
-         begin
-            if Filename (Filename'First .. Filename'First + 2) = "lib" then
-               return Filename (Filename'First + 3 .. Filename'Last);
-            else
-               return Filename;
-            end if;
-         end No_Lib_Prefix;
-
-         --  Local variables
-
-         Def_File      : String renames Def_Filename;
-         Dll_File      : constant String := Get_Dll_Name (Lib_Filename);
-         Base_Filename : constant String :=
-                           MDLL.Fil.Ext_To (No_Lib_Prefix (Lib_Filename));
-         Lib_File      : constant String := "lib" & Base_Filename & ".dll.a";
-
-      --  Start of processing for Build_Import_Library
-
+      function Strip_Lib_Prefix (Filename : String) return String is
       begin
-         if not Quiet then
-            Text_IO.Put_Line ("Building import library...");
-            Text_IO.Put_Line
-              ("make " & Lib_File & " to use dynamic library " & Dll_File);
+         if Filename (Filename'First .. Filename'First + 2) = "lib" then
+            return Filename (Filename'First + 3 .. Filename'Last);
+         else
+            return Filename;
          end if;
+      end Strip_Lib_Prefix;
 
-         Utl.Dlltool
-           (Def_File, Dll_File, Lib_File, Build_Import => True);
-      end Build_Import_Library;
+      --  Local variables
+
+      Def_File      : String renames Def_Filename;
+      Dll_File      : constant String := Get_Dll_Name (Lib_Filename);
+      Base_Filename : constant String :=
+                        MDLL.Fil.Ext_To (Strip_Lib_Prefix (Lib_Filename));
+      Lib_File      : constant String := "lib" & Base_Filename & ".dll.a";
 
    --  Start of processing for Build_Import_Library
 
    begin
-      Build_Import_Library (Lib_Filename);
+      if not Quiet then
+         Text_IO.Put_Line ("Building import library...");
+         Text_IO.Put_Line
+           ("make " & Lib_File & " to use dynamic library " & Dll_File);
+      end if;
+
+      Utl.Dlltool
+        (Def_File, Dll_File, Lib_File, Build_Import => True);
    end Build_Import_Library;
 
    ------------------

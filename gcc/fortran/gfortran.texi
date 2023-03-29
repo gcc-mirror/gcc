@@ -1,7 +1,7 @@
 \input texinfo  @c -*-texinfo-*-
 @c %**start of header
 @setfilename gfortran.info
-@set copyrights-gfortran 1999-2022
+@set copyrights-gfortran 1999-2023
 
 @include gcc-common.texi
 
@@ -820,6 +820,7 @@ might in some way or another become visible to the programmer.
 * File operations on symbolic links::
 * File format of unformatted sequential files::
 * Asynchronous I/O::
+* Behavior on integer overflow::
 @end menu
 
 
@@ -1159,6 +1160,23 @@ sytems, such as Linux, it is necessary to specify @option{-pthread},
 
 @c Maybe this chapter should be merged with the 'Standards' section,
 @c whenever that is written :-)
+
+@node Behavior on integer overflow
+@section Behavior on integer overflow
+@cindex integer overflow
+@cindex overflow handling
+
+Integer overflow is prohibited by the Fortran standard.  The behavior
+of gfortran on integer overflow is undefined by default.  Traditional
+code, like linear congruential pseudo-random number generators in old
+programs that rely on specific, non-standard behavior may generate
+unexpected results.  The @option{-fsanitize=undefined} option can be
+used to detect such code at runtime.
+
+It is recommended to use the intrinsic subroutine @code{RANDOM_NUMBER}
+for random number generators or, if the old behavior is desired, to
+use the @option{-fwrapv} option.  Note that this option can impact
+performance.
 
 @node Extensions
 @chapter Extensions
@@ -3246,6 +3264,13 @@ requires an explicit interface.
 @item @code{DEPRECATED} -- print a warning when using a such-tagged
 deprecated procedure, variable or parameter; the warning can be suppressed
 with @option{-Wno-deprecated-declarations}.
+@item @code{NOINLINE} -- prevent inlining given function.
+@item @code{NORETURN} -- add a hint that a given function cannot return.
+@item @code{WEAK} -- emit the declaration of an external symbol as a weak
+symbol rather than a global.  This is primarily useful in defining library
+functions that can be overridden in user code, though it can also be used with
+non-function declarations.  The overriding symbol must have the same type as
+the weak symbol.
 @end itemize
 
 
@@ -3763,8 +3788,7 @@ is used for dummy arguments; with @code{VALUE}, those variables are
 passed by value.
 
 For @code{OPTIONAL} dummy arguments, an absent argument is denoted
-by a NULL pointer, except for scalar dummy arguments of type
-@code{INTEGER}, @code{LOGICAL}, @code{REAL} and @code{COMPLEX}
+by a NULL pointer, except for scalar dummy arguments of intrinsic type
 which have the @code{VALUE} attribute.  For those, a hidden Boolean
 argument (@code{logical(kind=C_bool),value}) is used to indicate
 whether the argument is present.

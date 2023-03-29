@@ -2,7 +2,7 @@
 // { dg-do run { target c++2a } }
 // { dg-require-thread-fence "" }
 
-// Copyright (C) 2008-2022 Free Software Foundation, Inc.
+// Copyright (C) 2008-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,7 +22,8 @@
 #include <atomic>
 #include <testsuite_hooks.h>
 
-int main()
+void
+test01()
 {
   using namespace std;
 
@@ -37,4 +38,27 @@ int main()
   af.clear(memory_order_release);
   VERIFY( ! af.test(memory_order_acquire) );
   VERIFY( ! caf.test(memory_order_acquire) );
+}
+
+void
+test02()
+{
+  using namespace std;
+
+  atomic_flag af{true};
+  const atomic_flag& caf = af;
+
+  VERIFY( atomic_flag_test_explicit(&af, memory_order_acquire) );
+  VERIFY( atomic_flag_test_explicit(&caf, memory_order_acquire) );
+  af.clear(memory_order_release);
+  VERIFY( ! atomic_flag_test_explicit(&af, memory_order_acquire) );
+  VERIFY( ! atomic_flag_test_explicit(&caf, memory_order_acquire) );
+}
+
+int
+main()
+{
+  test01();
+  test02();
+  return 0;
 }

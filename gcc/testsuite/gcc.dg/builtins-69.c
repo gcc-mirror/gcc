@@ -14,7 +14,7 @@ int test_index (void)
 /* PR middle-end/86202 - ICE in get_range_info calling an invalid memcpy()
    declaration */
 
-void *memcpy (void *, void *, __SIZE_TYPE__ *);   /* { dg-warning "conflicting types for built-in function .memcpy.; expected .void \\\*\\\(void \\\*, const void \\\*, \(long \)?unsigned int\\\)." } */
+void *memcpy (void *, void *, __SIZE_TYPE__ *);   /* { dg-warning "conflicting types for built-in function .memcpy.; expected .void \\\*\\\(void \\\*, const void \\\*, \(long \)*unsigned int\\\)." } */
 
 void test_memcpy (void *p, void *q, __SIZE_TYPE__ *r)
 {

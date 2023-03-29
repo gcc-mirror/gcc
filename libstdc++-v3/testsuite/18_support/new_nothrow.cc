@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2022 Free Software Foundation, Inc.
+// Copyright (C) 2018-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,6 +17,7 @@
 
 // { dg-do run }
 // { dg-xfail-run-if "AIX operator new" { powerpc-ibm-aix* } }
+// { dg-require-effective-target hosted }
 
 #include <new>
 #include <stdlib.h>
@@ -63,7 +64,13 @@ void* operator new (size_t n)
     }
 }
 
-void operator delete (void *p)
+#if __cplusplus >= 201103L
+#define NOEXCEPT noexcept
+#else
+#define NOEXCEPT
+#endif
+
+void operator delete (void *p) NOEXCEPT
 {
     ++delete_called;
     if (p)
@@ -76,18 +83,18 @@ void* operator new[] (size_t n)
     return operator new(n);
 }
 
-void operator delete[] (void *p)
+void operator delete[] (void *p) NOEXCEPT
 {
     ++delete_vec_called;
     operator delete(p);
 }
 
 #if __cplusplus >= 201402L
-void operator delete (void *p, std::size_t)
+void operator delete (void *p, std::size_t) noexcept
 {
   ::operator delete(p);
 }
-void operator delete[] (void *p, std::size_t)
+void operator delete[] (void *p, std::size_t) noexcept
 {
   ::operator delete[](p);
 }

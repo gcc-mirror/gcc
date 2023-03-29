@@ -1,5 +1,5 @@
 /* Integration of the analyzer with GCC's pass manager.
-   Copyright (C) 2019-2022 Free Software Foundation, Inc.
+   Copyright (C) 2019-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "context.h"
@@ -26,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "options.h"
 #include "tree.h"
-#include "function.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/engine.h"
 

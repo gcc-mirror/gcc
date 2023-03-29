@@ -7,7 +7,7 @@
    has type_id=0.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O0 -gbtf -dA" } */
+/* { dg-options "-O0 -gbtf -dA -Wno-psabi" } */
 
 /* { dg-final { scan-assembler-times "\[\t \]0xd000003\[\t \]+\[^\n\]*btt_info" 1 } } */
 /* { dg-final { scan-assembler-times "farg_name" 3 } } */

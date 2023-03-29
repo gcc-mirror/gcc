@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Renesas M32R cpu.
-   Copyright (C) 1996-2022 Free Software Foundation, Inc.
+   Copyright (C) 1996-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1287,11 +1287,15 @@ m32r_setup_incoming_varargs (cumulative_args_t cum,
     return;
 
   /* All BLKmode values are passed by reference.  */
-  gcc_assert (arg.mode != BLKmode);
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    gcc_assert (arg.mode != BLKmode);
 
-  first_anon_arg = (ROUND_ADVANCE_CUM (*get_cumulative_args (cum),
-				       arg.mode, arg.type)
-		    + ROUND_ADVANCE_ARG (arg.mode, arg.type));
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    first_anon_arg = (ROUND_ADVANCE_CUM (*get_cumulative_args (cum),
+					 arg.mode, arg.type)
+		      + ROUND_ADVANCE_ARG (arg.mode, arg.type));
+  else
+    first_anon_arg = *get_cumulative_args (cum);
 
   if (first_anon_arg < M32R_MAX_PARM_REGS)
     {

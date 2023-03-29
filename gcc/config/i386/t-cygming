@@ -1,4 +1,4 @@
-# Copyright (C) 2003-2022 Free Software Foundation, Inc.
+# Copyright (C) 2003-2023 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -38,6 +38,10 @@ winnt-stubs.o: $(srcdir)/config/i386/winnt-stubs.cc $(CONFIG_H) $(SYSTEM_H) core
   $(TM_P_H) $(HASHTAB_H) $(GGC_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	$(srcdir)/config/i386/winnt-stubs.cc
+
+cygwin-d.o: $(srcdir)/config/i386/cygwin-d.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)
 
 winnt-d.o: $(srcdir)/config/i386/winnt-d.cc
 	$(COMPILE) $<

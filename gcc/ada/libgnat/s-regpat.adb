@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---                      Copyright (C) 1999-2022, AdaCore                    --
+--                      Copyright (C) 1999-2023, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -920,17 +920,15 @@ package body System.Regpat is
             if Capturing then
                Ender := Emit_Node (CLOSE);
                Emit (Character'Val (Par_No));
-               Link_Tail (IP, Ender);
-
             else
-               --  Need to keep looking after the closing parenthesis
-               Ender := Emit_Ptr;
+               Ender := Emit_Node (NOTHING);
             end if;
 
          else
             Ender := Emit_Node (EOP);
-            Link_Tail (IP, Ender);
          end if;
+
+         Link_Tail (IP, Ender);
 
          if Have_Branch and then Emit_Ptr <= PM.Size + 1 then
 

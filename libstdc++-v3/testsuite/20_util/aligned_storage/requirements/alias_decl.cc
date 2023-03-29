@@ -1,6 +1,6 @@
 // { dg-do compile { target c++14 } }
 
-// Copyright (C) 2014-2022 Free Software Foundation, Inc.
+// Copyright (C) 2014-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,3 +26,6 @@ using namespace std;
 static_assert (is_same<typename aligned_storage<4>::type,
 	               aligned_storage_t<4>>(),
                "aligned_storage_t" );
+
+// { dg-warning "deprecated" "" { target c++23 } 26 }
+// { dg-warning "deprecated" "" { target c++23 } 27 }

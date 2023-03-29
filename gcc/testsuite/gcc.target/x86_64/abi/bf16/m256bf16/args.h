@@ -50,8 +50,8 @@ typedef union {
 } X87_T;
 extern void (*callthis)(void);
 extern unsigned long long rax,rbx,rcx,rdx,rsi,rdi,rsp,rbp,r8,r9,r10,r11,r12,r13,r14,r15;
-YMM_T ymm_regs[16];
-X87_T x87_regs[8];
+extern YMM_T ymm_regs[16];
+extern X87_T x87_regs[8];
 extern volatile unsigned long long volatile_var;
 extern void snapshot (void);
 extern void snapshot_ret (void);

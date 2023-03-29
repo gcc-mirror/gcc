@@ -1,5 +1,5 @@
 /* Timing variables for measuring compiler performance.
-   Copyright (C) 2000-2022 Free Software Foundation, Inc.
+   Copyright (C) 2000-2023 Free Software Foundation, Inc.
    Contributed by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.
@@ -206,14 +206,14 @@ class timer
 };
 
 /* Provided for backward compatibility.  */
-static inline void
+inline void
 timevar_push (timevar_id_t tv)
 {
   if (g_timer)
     g_timer->push (tv);
 }
 
-static inline void
+inline void
 timevar_pop (timevar_id_t tv)
 {
   if (g_timer)

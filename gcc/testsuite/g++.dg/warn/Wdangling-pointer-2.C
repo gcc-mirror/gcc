@@ -1,5 +1,5 @@
 /* { dg-do compile }
-   { dg-options "-O1 -Wall -Wno-class-memaccess" } */
+   { dg-options "-O1 -Wall -Wno-class-memaccess -Wno-dangling-reference" } */
 
 struct A { A (); };
 

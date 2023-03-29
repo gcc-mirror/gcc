@@ -38,11 +38,6 @@ $(BR) $(LINK2 https://en.wikipedia.org/wiki/MurmurHash, Wikipedia)
  */
 module std.digest.murmurhash;
 
-version (X86)
-    version = HaveUnalignedLoads;
-else version (X86_64)
-    version = HaveUnalignedLoads;
-
 ///
 @safe unittest
 {
@@ -96,6 +91,11 @@ else version (X86_64)
     auto hashed = hasher.getBytes();
     assert(hashed == [188, 165, 108, 2]);
 }
+
+version (X86)
+    version = HaveUnalignedLoads;
+else version (X86_64)
+    version = HaveUnalignedLoads;
 
 public import std.digest;
 

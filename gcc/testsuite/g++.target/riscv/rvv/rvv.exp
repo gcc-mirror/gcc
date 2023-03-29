@@ -1,0 +1,44 @@
+# Copyright (C) 2023-2023 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# GCC testsuite that uses the `dg.exp' driver.
+
+# Test the front-end for C++.
+# We don't need to test back-end code-gen in RV32 system for C++
+# Because it is already tested in C.
+# Exit immediately if this isn't a RISC-V target.
+if ![istarget riscv*-*-*] then {
+  return
+}
+
+# Load support procs.
+load_lib g++-dg.exp
+
+set gcc_march "rv64gcv_zfh"
+if [istarget riscv32-*-*] then {
+  set gcc_march "rv32gcv_zfh"
+}
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+set CFLAGS "-march=$gcc_march -O3"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/base/*.C]] \
+	"" $CFLAGS
+
+# All done.
+dg-finish

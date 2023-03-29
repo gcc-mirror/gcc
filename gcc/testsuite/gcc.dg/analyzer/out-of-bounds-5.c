@@ -1,9 +1,8 @@
 /* { dg-additional-options "-Wno-unused-but-set-variable" } */
+/* { dg-require-effective-target alloca } */
 
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <alloca.h>
 #include <stdint.h>
 
 /* Tests with symbolic values.  */
@@ -13,8 +12,8 @@ void test1 (size_t size)
   char *buf = __builtin_malloc (size);
   if (!buf) return;
 
-  buf[size] = '\0'; /* { dg-warning "overflow" } */
-  free (buf);
+  buf[size] = '\0'; /* { dg-warning "heap-based buffer overflow" } */
+  __builtin_free (buf);
 }
 
 void test2 (size_t size)
@@ -22,8 +21,8 @@ void test2 (size_t size)
   char *buf = __builtin_malloc (size);
   if (!buf) return;
 
-  buf[size + 1] = '\0'; /* { dg-warning "overflow" } */
-  free (buf);
+  buf[size + 1] = '\0'; /* { dg-warning "heap-based buffer overflow" } */
+  __builtin_free (buf);
 }
 
 void test3 (size_t size, size_t op)
@@ -31,33 +30,33 @@ void test3 (size_t size, size_t op)
   char *buf = __builtin_malloc (size);
   if (!buf) return;
 
-  buf[size + op] = '\0'; /* { dg-warning "overflow" } */
-  free (buf);
+  buf[size + op] = '\0'; /* { dg-warning "heap-based buffer overflow" } */
+  __builtin_free (buf);
 }
 
 void test4 (size_t size, unsigned short s)
 {
   char *buf = __builtin_alloca (size);
-  buf[size + s] = '\0'; /* { dg-warning "overflow" } */
+  buf[size + s] = '\0'; /* { dg-warning "stack-based buffer overflow" } */
 }
 
 void test5 (size_t size)
 {
   int32_t *buf = __builtin_alloca (4 * size);
-  buf[size] = 42; /* { dg-warning "overflow" } */
+  buf[size] = 42; /* { dg-warning "stack-based buffer overflow" } */
 }
 
 void test6 (size_t size)
 {
   int32_t *buf = __builtin_alloca (4 * size);
   memset (buf, 0, 4 * size);
-  int32_t last = *(buf + 4 * size); /* { dg-warning "overread" } */
+  int32_t last = *(buf + 4 * size); /* { dg-warning "stack-based buffer over-read" } */
 }
 
 void test7 (size_t size)
 {
   int32_t *buf = __builtin_alloca (4 * size + 3); /* { dg-warning "allocated buffer size is not a multiple of the pointee's size" } */
-  buf[size] = 42; /* { dg-warning "overflow" } */
+  buf[size] = 42; /* { dg-warning "stack-based buffer overflow" } */
 }
 
 /* Test where the offset itself is not out-of-bounds
@@ -68,7 +67,8 @@ void test8 (size_t size, size_t offset)
   char src[size];
   char dst[size];
   memcpy (dst, src, size + offset); /* { dg-line test8 } */
-  /* { dg-warning "overread" "warning" { target *-*-* } test8 } */
+  /* { dg-warning "over-read" "warning" { target *-*-* } test8 } */
+  /* { dg-warning "use of uninitialized value" "warning" { target *-*-* } test8 } */
   /* { dg-warning "overflow" "warning" { target *-*-* } test8 } */
 }
 
@@ -77,7 +77,8 @@ void test9 (size_t size, size_t offset)
   int32_t src[size];
   int32_t dst[size];
   memcpy (dst, src, 4 * size + 1); /* { dg-line test9 } */
-  /* { dg-warning "overread" "warning" { target *-*-* } test9 } */
+  /* { dg-warning "over-read" "warning" { target *-*-* } test9 } */
+  /* { dg-warning "use of uninitialized value" "warning" { target *-*-* } test9 } */
   /* { dg-warning "overflow" "warning" { target *-*-* } test9 } */
 }
 
@@ -151,6 +152,6 @@ char *test99 (const char *x, const char *y)
   __builtin_memcpy (result, x, len_x);
   __builtin_memcpy (result + len_x, y, len_y);
   /* BUG (symptom): off-by-one out-of-bounds write to heap.  */
-  result[len_x + len_y] = '\0'; /* { dg-warning "overflow" } */
+  result[len_x + len_y] = '\0'; /* { dg-warning "heap-based buffer overflow" } */
   return result;
 }

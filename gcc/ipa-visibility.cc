@@ -1,5 +1,5 @@
 /* IPA visibility pass
-   Copyright (C) 2003-2022 Free Software Foundation, Inc.
+   Copyright (C) 2003-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -869,6 +869,29 @@ function_and_variable_visibility (bool whole_program)
 			 update_vtable_references, NULL, &visited_nodes);
 	      vnode->remove_all_references ();
 	      record_references_in_initializer (vnode->decl, false);
+	    }
+	}
+    }
+
+  if (symtab->state >= IPA_SSA)
+    {
+      FOR_EACH_VARIABLE (vnode)
+	{
+	  tree decl = vnode->decl;
+
+	  /* Upgrade TLS access model based on optimized visibility status,
+	     unless it was specified explicitly or no references remain.  */
+	  if (DECL_THREAD_LOCAL_P (decl)
+	      && !lookup_attribute ("tls_model", DECL_ATTRIBUTES (decl))
+	      && vnode->ref_list.referring.length ())
+	    {
+	      enum tls_model new_model = decl_default_tls_model (decl);
+	      STATIC_ASSERT (TLS_MODEL_GLOBAL_DYNAMIC < TLS_MODEL_LOCAL_DYNAMIC);
+	      STATIC_ASSERT (TLS_MODEL_INITIAL_EXEC < TLS_MODEL_LOCAL_EXEC);
+	      /* We'd prefer to assert that recomputed model is not weaker than
+		 what the front-end assigned, but cannot: see PR 107353.  */
+	      if (new_model >= decl_tls_model (decl))
+		set_decl_tls_model (decl, new_model);
 	    }
 	}
     }

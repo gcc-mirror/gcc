@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -188,16 +188,6 @@ package Checks is
    procedure Apply_Access_Check (N : Node_Id);
    --  Determines whether an expression node requires a run-time access
    --  check and if so inserts the appropriate run-time check.
-
-   procedure Apply_Accessibility_Check
-     (N           : Node_Id;
-      Typ         : Entity_Id;
-      Insert_Node : Node_Id);
-   --  Given a name N denoting an access parameter, emits a run-time
-   --  accessibility check (if necessary), checking that the level of
-   --  the object denoted by the access parameter is not deeper than the
-   --  level of the type Typ. Program_Error is raised if the check fails.
-   --  Insert_Node indicates the node where the check should be inserted.
 
    procedure Apply_Address_Clause_Check (E : Entity_Id; N : Node_Id);
    --  E is the entity for an object which has an address clause. If checks
@@ -776,12 +766,14 @@ package Checks is
    --           itself lead to erroneous or unpredictable execution, or to
    --           other objects becoming abnormal.
 
-   --  We quote the rules in full here since they are quite delicate. Most
-   --  of the time, we can just compute away with wrong values, and get a
-   --  possibly wrong result, which is well within the range of allowed
-   --  implementation defined behavior. The two tricky cases are subscripted
-   --  array assignments, where we don't want to do wild stores, and case
-   --  statements where we don't want to do wild jumps.
+   --  We quote the rules in full here since they are quite delicate.
+   --  (???The rules quoted here are obsolete; see the GNAT User's Guide for a
+   --  description of all the -gnatV switches.) Most of the time, we can just
+   --  compute away with wrong values, and get a possibly wrong result, which
+   --  is well within the range of allowed implementation defined behavior. The
+   --  two tricky cases are subscripted array assignments, where we don't want
+   --  to do wild stores, and case statements where we don't want to do wild
+   --  jumps.
 
    --  In GNAT, we control validity checking with a switch -gnatV that can take
    --  three parameters, n/d/f for None/Default/Full. These modes have the
@@ -799,15 +791,8 @@ package Checks is
    --        alternatives will be executed. Wild jumps cannot result even
    --        in this mode, since we always do a range check
 
-   --        For subscripted array assignments, wild stores will result in
-   --        the expected manner when addresses are calculated using values
-   --        of subscripts that are out of range.
-
-   --      It could perhaps be argued that this mode is still conformant with
-   --      the letter of the RM, since implementation defined is a rather
-   --      broad category, but certainly it is not in the spirit of the
-   --      RM requirement, since wild stores certainly seem to be a case of
-   --      erroneous behavior.
+   --        For subscripted array assignments, wild stores can result in
+   --        overwriting arbitrary memory locations.
 
    --    Default (default standard RM-compatible validity checking)
 

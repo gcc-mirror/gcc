@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for S/390 Linux.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -106,20 +106,20 @@ s390_fallback_frame_state (struct _Unwind_Context *context,
 
   for (i = 0; i < 16; i++)
     {
-      fs->regs.reg[i].how = REG_SAVED_OFFSET;
+      fs->regs.how[i] = REG_SAVED_OFFSET;
       fs->regs.reg[i].loc.offset =
 	(long)&regs->gprs[i] - new_cfa;
     }
   for (i = 0; i < 16; i++)
     {
-      fs->regs.reg[16+i].how = REG_SAVED_OFFSET;
+      fs->regs.how[16+i] = REG_SAVED_OFFSET;
       fs->regs.reg[16+i].loc.offset =
 	(long)&regs->fprs[dwarf_to_fpr_map[i]] - new_cfa;
     }
 
   /* Load return addr from PSW into dummy register 32.  */
 
-  fs->regs.reg[32].how = REG_SAVED_OFFSET;
+  fs->regs.how[32] = REG_SAVED_OFFSET;
   fs->regs.reg[32].loc.offset = (long)&regs->psw_addr - new_cfa;
   fs->retaddr_column = 32;
   /* SIGILL, SIGFPE and SIGTRAP are delivered with psw_addr

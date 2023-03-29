@@ -1,5 +1,5 @@
 /* Definitions for Dwarf2 EH unwind support for Windows32 targets
-   Copyright (C) 2007-2022 Free Software Foundation, Inc.
+   Copyright (C) 2007-2023 Free Software Foundation, Inc.
    Contributed by Pascal Obry  <obry@adacore.com>
 
 This file is part of GCC.
@@ -153,21 +153,21 @@ i386_w32_fallback_frame_state (struct _Unwind_Context *context,
       fs->regs.cfa_offset = new_cfa_ - (long) ctx_cfa_;
 
       /* Restore registers.  */
-      fs->regs.reg[0].how = REG_SAVED_OFFSET;
+      fs->regs.how[0] = REG_SAVED_OFFSET;
       fs->regs.reg[0].loc.offset = (long)&proc_ctx_->Eax - new_cfa_;
-      fs->regs.reg[3].how = REG_SAVED_OFFSET;
+      fs->regs.how[3] = REG_SAVED_OFFSET;
       fs->regs.reg[3].loc.offset = (long)&proc_ctx_->Ebx - new_cfa_;
-      fs->regs.reg[1].how = REG_SAVED_OFFSET;
+      fs->regs.how[1] = REG_SAVED_OFFSET;
       fs->regs.reg[1].loc.offset = (long)&proc_ctx_->Ecx - new_cfa_;
-      fs->regs.reg[2].how = REG_SAVED_OFFSET;
+      fs->regs.how[2] = REG_SAVED_OFFSET;
       fs->regs.reg[2].loc.offset = (long)&proc_ctx_->Edx - new_cfa_;
-      fs->regs.reg[6].how = REG_SAVED_OFFSET;
+      fs->regs.how[6] = REG_SAVED_OFFSET;
       fs->regs.reg[6].loc.offset = (long)&proc_ctx_->Esi - new_cfa_;
-      fs->regs.reg[7].how = REG_SAVED_OFFSET;
+      fs->regs.how[7] = REG_SAVED_OFFSET;
       fs->regs.reg[7].loc.offset = (long)&proc_ctx_->Edi - new_cfa_;
-      fs->regs.reg[5].how = REG_SAVED_OFFSET;
+      fs->regs.how[5] = REG_SAVED_OFFSET;
       fs->regs.reg[5].loc.offset = (long)&proc_ctx_->Ebp - new_cfa_;
-      fs->regs.reg[8].how = REG_SAVED_OFFSET;
+      fs->regs.how[8] = REG_SAVED_OFFSET;
       fs->regs.reg[8].loc.offset = (long)&proc_ctx_->Eip - new_cfa_;
       fs->retaddr_column = 8;
       fs->signal_frame = 1;
@@ -189,12 +189,12 @@ i386_w32_fallback_frame_state (struct _Unwind_Context *context,
       fs->regs.cfa_offset = new_cfa_ - (long) ctx_cfa_;
 
       /* The saved value of %ecx is at CFA - 4 */
-      fs->regs.reg[1].how = REG_SAVED_OFFSET;
+      fs->regs.how[1] = REG_SAVED_OFFSET;
       fs->regs.reg[1].loc.offset = -4;
 
       /* and what is stored at the CFA is the return address.  */
       fs->retaddr_column = 8;
-      fs->regs.reg[8].how = REG_SAVED_OFFSET;
+      fs->regs.how[8] = REG_SAVED_OFFSET;
       fs->regs.reg[8].loc.offset = 0;
       fs->signal_frame = 1;
 

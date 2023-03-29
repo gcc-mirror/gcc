@@ -1,5 +1,5 @@
 /* SSA Jump Threading
-   Copyright (C) 2005-2022 Free Software Foundation, Inc.
+   Copyright (C) 2005-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -249,25 +249,16 @@ back_threader::maybe_register_path (back_threader_profitability &profit)
 
   if (taken_edge && taken_edge != UNREACHABLE_EDGE)
     {
-      if (m_visited_bbs.contains (taken_edge->dest))
+      bool irreducible = false;
+      if (profit.profitable_path_p (m_path, taken_edge, &irreducible)
+	  && debug_counter ()
+	  && m_registry.register_path (m_path, taken_edge))
 	{
-	  // Avoid circular paths by indicating there is nothing to
-	  // see in this direction.
-	  taken_edge = UNREACHABLE_EDGE;
+	  if (irreducible)
+	    vect_free_loop_info_assumptions (m_path[0]->loop_father);
 	}
       else
-	{
-	  bool irreducible = false;
-	  if (profit.profitable_path_p (m_path, taken_edge, &irreducible)
-	      && debug_counter ()
-	      && m_registry.register_path (m_path, taken_edge))
-	    {
-	      if (irreducible)
-		vect_free_loop_info_assumptions (m_path[0]->loop_father);
-	    }
-	  else
-	    taken_edge = NULL;
-	}
+	taken_edge = NULL;
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -435,28 +426,14 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting,
 		}
 	      /* For other local defs process their uses, amending
 		 imports on the way.  */
-	      else if (gassign *ass = dyn_cast <gassign *> (def_stmt))
+	      else
 		{
 		  tree ssa[3];
-		  if (range_op_handler (ass))
-		    {
-		      ssa[0] = gimple_range_ssa_p (gimple_range_operand1 (ass));
-		      ssa[1] = gimple_range_ssa_p (gimple_range_operand2 (ass));
-		      ssa[2] = NULL_TREE;
-		    }
-		  else if (gimple_assign_rhs_code (ass) == COND_EXPR)
-		    {
-		      ssa[0] = gimple_range_ssa_p (gimple_assign_rhs1 (ass));
-		      ssa[1] = gimple_range_ssa_p (gimple_assign_rhs2 (ass));
-		      ssa[2] = gimple_range_ssa_p (gimple_assign_rhs3 (ass));
-		    }
-		  else
-		    continue;
-		  for (unsigned j = 0; j < 3; ++j)
+		  unsigned lim = gimple_range_ssa_names (ssa, 3, def_stmt);
+		  for (unsigned j = 0; j < lim; ++j)
 		    {
 		      tree rhs = ssa[j];
 		      if (rhs
-			  && TREE_CODE (rhs) == SSA_NAME
 			  && bitmap_set_bit (m_imports,
 					     SSA_NAME_VERSION (rhs)))
 			{
@@ -891,22 +868,18 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
      a multiway branch, in which case we have deemed it worth losing
      other loop optimizations later.
 
-     We also consider it worth creating an irreducible inner loop if
-     the number of copied statement is low relative to the length of
-     the path -- in that case there's little the traditional loop
-     optimizer would have done anyway, so an irreducible loop is not
-     so bad.  */
+     We also consider it worth creating an irreducible inner loop after
+     loop optimizations if the number of copied statement is low.  */
   if (!m_threaded_multiway_branch
       && *creates_irreducible_loop
-      && (m_n_insns * (unsigned) param_fsm_scale_path_stmts
-	  > (m_path.length () *
-	     (unsigned) param_fsm_scale_path_blocks)))
-
+      && (!(cfun->curr_properties & PROP_loop_opts_done)
+	  || (m_n_insns * param_fsm_scale_path_stmts
+	      >= param_max_jump_thread_duplication_stmts)))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
-		 "  FAIL: Would create irreducible loop without threading "
-		 "multiway branch.\n");
+		 "  FAIL: Would create irreducible loop early without "
+		 "threading multiway branch.\n");
       /* We compute creates_irreducible_loop only late.  */
       return false;
     }

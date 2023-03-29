@@ -1,5 +1,5 @@
 /* Language-independent diagnostic subroutines for the GNU Compiler Collection
-   Copyright (C) 1999-2022 Free Software Foundation, Inc.
+   Copyright (C) 1999-2023 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -241,6 +241,7 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->begin_group_cb = NULL;
   context->end_group_cb = NULL;
   context->final_cb = default_diagnostic_final_cb;
+  context->ice_handler_cb = NULL;
   context->includes_seen = NULL;
   context->m_client_data_hooks = NULL;
 }
@@ -470,7 +471,7 @@ diagnostic_get_location_text (diagnostic_context *context,
   const char *file = s.file ? s.file : progname;
   int line = 0;
   int col = -1;
-  if (strcmp (file, N_("<built-in>")))
+  if (strcmp (file, special_fname_builtin ()))
     {
       line = s.line;
       if (context->show_column)
@@ -665,6 +666,18 @@ diagnostic_action_after_output (diagnostic_context *context,
     case DK_ICE:
     case DK_ICE_NOBT:
       {
+	/* Optional callback for attempting to handle ICEs gracefully.  */
+	if (void (*ice_handler_cb) (diagnostic_context *)
+	      = context->ice_handler_cb)
+	  {
+	    /* Clear the callback, to avoid potentially re-entering
+	       the routine if there's a crash within the handler.  */
+	    context->ice_handler_cb = NULL;
+	    ice_handler_cb (context);
+	  }
+	/* The context might have had diagnostic_finish called on
+	   it at this point.  */
+
 	struct backtrace_state *state = NULL;
 	if (diag_kind == DK_ICE)
 	  state = backtrace_create_state (NULL, 0, bt_err_callback, NULL);
@@ -939,18 +952,49 @@ diagnostic_event::meaning::maybe_get_property_str (enum property p)
 
 /* class diagnostic_path.  */
 
+/* Subroutint of diagnostic_path::interprocedural_p.
+   Look for the first event in this path that is within a function
+   i.e. has a non-NULL fndecl, and a non-zero stack depth.
+   If found, write its index to *OUT_IDX and return true.
+   Otherwise return false.  */
+
+bool
+diagnostic_path::get_first_event_in_a_function (unsigned *out_idx) const
+{
+  const unsigned num = num_events ();
+  for (unsigned i = 0; i < num; i++)
+    {
+      if (!(get_event (i).get_fndecl () == NULL
+	    && get_event (i).get_stack_depth () == 0))
+	{
+	  *out_idx = i;
+	  return true;
+	}
+    }
+  return false;
+}
+
 /* Return true if the events in this path involve more than one
    function, or false if it is purely intraprocedural.  */
 
 bool
 diagnostic_path::interprocedural_p () const
 {
+  /* Ignore leading events that are outside of any function.  */
+  unsigned first_fn_event_idx;
+  if (!get_first_event_in_a_function (&first_fn_event_idx))
+    return false;
+
+  const diagnostic_event &first_fn_event = get_event (first_fn_event_idx);
+  tree first_fndecl = first_fn_event.get_fndecl ();
+  int first_fn_stack_depth = first_fn_event.get_stack_depth ();
+
   const unsigned num = num_events ();
-  for (unsigned i = 0; i < num; i++)
+  for (unsigned i = first_fn_event_idx + 1; i < num; i++)
     {
-      if (get_event (i).get_fndecl () != get_event (0).get_fndecl ())
+      if (get_event (i).get_fndecl () != first_fndecl)
 	return true;
-      if (get_event (i).get_stack_depth () != get_event (0).get_stack_depth ())
+      if (get_event (i).get_stack_depth () != first_fn_stack_depth)
 	return true;
     }
   return false;
@@ -2593,7 +2637,10 @@ test_diagnostic_get_location_text ()
   const char *old_progname = progname;
   progname = "PROGNAME";
   assert_location_text ("PROGNAME:", NULL, 0, 0, true);
-  assert_location_text ("<built-in>:", "<built-in>", 42, 10, true);
+  char *built_in_colon = concat (special_fname_builtin (), ":", (char *) 0);
+  assert_location_text (built_in_colon, special_fname_builtin (),
+			42, 10, true);
+  free (built_in_colon);
   assert_location_text ("foo.c:42:10:", "foo.c", 42, 10, true);
   assert_location_text ("foo.c:42:9:", "foo.c", 42, 10, true, 0);
   assert_location_text ("foo.c:42:1010:", "foo.c", 42, 10, true, 1001);

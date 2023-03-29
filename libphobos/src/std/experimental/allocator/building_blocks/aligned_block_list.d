@@ -526,7 +526,7 @@ shared struct SharedAlignedBlockList(Allocator, ParentAllocator, ulong theAlignm
 ///
 @system unittest
 {
-    import std.experimental.allocator.building_blocks.region : SharedRegion;
+    import std.experimental.allocator.building_blocks.region : SharedBorrowedRegion;
     import std.experimental.allocator.building_blocks.ascending_page_allocator : SharedAscendingPageAllocator;
     import std.experimental.allocator.building_blocks.null_allocator : NullAllocator;
     import core.thread : ThreadGroup;
@@ -536,11 +536,11 @@ shared struct SharedAlignedBlockList(Allocator, ParentAllocator, ulong theAlignm
     enum maxIter = 10;
 
     /*
-    In this example we use 'SharedAlignedBlockList' together with 'SharedRegion',
-    in order to create a fast, thread-safe allocator.
+    In this example we use 'SharedAlignedBlockList' together with
+    'SharedBorrowedRegion', in order to create a fast, thread-safe allocator.
     */
     alias SuperAllocator = SharedAlignedBlockList!(
-            SharedRegion!(NullAllocator, 1),
+            SharedBorrowedRegion!(1),
             SharedAscendingPageAllocator,
             4096);
 
@@ -597,7 +597,7 @@ version (StdUnittest)
     SpinLock lock = SpinLock(SpinLock.Contention.brief);
 
     alias SuperAllocator = SharedAlignedBlockList!(
-            SharedRegion!(NullAllocator, 1),
+            SharedBorrowedRegion!(1),
             SharedAscendingPageAllocator,
             1 << 16);
     void[][totalAllocs] buf;

@@ -1,4 +1,4 @@
-!  Copyright (C) 2005-2022 Free Software Foundation, Inc.
+!  Copyright (C) 2005-2023 Free Software Foundation, Inc.
 !  Contributed by Jakub Jelinek <jakub@redhat.com>.
 
 !  This file is part of the GNU Offloading and Multi Processing Library
@@ -442,6 +442,12 @@
           function omp_in_final ()
             logical (4) :: omp_in_final
           end function omp_in_final
+        end interface
+
+        interface
+          function omp_in_explicit_task ()
+            logical (4) :: omp_in_explicit_task
+          end function omp_in_explicit_task
         end interface
 
         interface

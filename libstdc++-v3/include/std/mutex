@@ -1,6 +1,6 @@
 // <mutex> -*- C++ -*-
 
-// Copyright (C) 2003-2022 Free Software Foundation, Inc.
+// Copyright (C) 2003-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,6 +31,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // concurrency
+
 #if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
 #else
@@ -38,8 +40,8 @@
 #include <tuple>
 #include <exception>
 #include <type_traits>
-#include <system_error>
 #include <bits/chrono.h>
+#include <bits/error_constants.h>
 #include <bits/std_mutex.h>
 #include <bits/unique_lock.h>
 #if ! _GTHREAD_USE_MUTEX_TIMEDLOCK
@@ -122,6 +124,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__throw_system_error(__e);
     }
 
+    _GLIBCXX_NODISCARD
     bool
     try_lock() noexcept
     {
@@ -251,6 +254,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__throw_system_error(__e);
     }
 
+    _GLIBCXX_NODISCARD
     bool
     try_lock() noexcept
     {
@@ -259,11 +263,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     template <class _Rep, class _Period>
+      _GLIBCXX_NODISCARD
       bool
       try_lock_for(const chrono::duration<_Rep, _Period>& __rtime)
       { return _M_try_lock_for(__rtime); }
 
     template <class _Clock, class _Duration>
+      _GLIBCXX_NODISCARD
       bool
       try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime)
       { return _M_try_lock_until(__atime); }
@@ -288,8 +294,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if _GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK
       bool
-      _M_clocklock(clockid_t clockid, const __gthread_time_t& __ts)
-      { return !pthread_mutex_clocklock(&_M_mutex, clockid, &__ts); }
+      _M_clocklock(clockid_t __clockid, const __gthread_time_t& __ts)
+      { return !pthread_mutex_clocklock(&_M_mutex, __clockid, &__ts); }
 #endif
   };
 
@@ -326,6 +332,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__throw_system_error(__e);
     }
 
+    _GLIBCXX_NODISCARD
     bool
     try_lock() noexcept
     {
@@ -334,11 +341,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     template <class _Rep, class _Period>
+      _GLIBCXX_NODISCARD
       bool
       try_lock_for(const chrono::duration<_Rep, _Period>& __rtime)
       { return _M_try_lock_for(__rtime); }
 
     template <class _Clock, class _Duration>
+      _GLIBCXX_NODISCARD
       bool
       try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime)
       { return _M_try_lock_until(__atime); }
@@ -363,8 +372,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef _GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK
       bool
-      _M_clocklock(clockid_t clockid, const __gthread_time_t& __ts)
-      { return !pthread_mutex_clocklock(&_M_mutex, clockid, &__ts); }
+      _M_clocklock(clockid_t __clockid, const __gthread_time_t& __ts)
+      { return !pthread_mutex_clocklock(&_M_mutex, __clockid, &__ts); }
 #endif
   };
 
@@ -393,6 +402,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_locked = true;
     }
 
+    _GLIBCXX_NODISCARD
     bool
     try_lock()
     {
@@ -404,6 +414,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     template<typename _Rep, typename _Period>
+      _GLIBCXX_NODISCARD
       bool
       try_lock_for(const chrono::duration<_Rep, _Period>& __rtime)
       {
@@ -415,6 +426,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     template<typename _Clock, typename _Duration>
+      _GLIBCXX_NODISCARD
       bool
       try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime)
       {
@@ -476,6 +488,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ++_M_count;
     }
 
+    _GLIBCXX_NODISCARD
     bool
     try_lock()
     {
@@ -492,6 +505,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     template<typename _Rep, typename _Period>
+      _GLIBCXX_NODISCARD
       bool
       try_lock_for(const chrono::duration<_Rep, _Period>& __rtime)
       {
@@ -508,6 +522,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     template<typename _Clock, typename _Duration>
+      _GLIBCXX_NODISCARD
       bool
       try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime)
       {
@@ -614,6 +629,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  Sequentially calls try_lock() on each argument.
    */
   template<typename _L1, typename _L2, typename... _L3>
+    _GLIBCXX_NODISCARD
     inline int
     try_lock(_L1& __l1, _L2& __l2, _L3&... __l3)
     {

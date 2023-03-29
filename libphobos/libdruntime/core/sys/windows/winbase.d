@@ -8,7 +8,6 @@
  */
 module core.sys.windows.winbase;
 version (Windows):
-@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "kernel32");
@@ -39,6 +38,7 @@ import core.sys.windows.basetyps, core.sys.windows.w32api, core.sys.windows.winn
 // FIXME:
 //alias void va_list;
 import core.stdc.stdarg : va_list;
+import core.stdc.string : memset, memcpy, memmove;
 
 
 // COMMPROP structure, used by GetCommProperties()
@@ -1714,23 +1714,15 @@ extern (Windows) nothrow @nogc {
     BOOL CopyFileExA(LPCSTR, LPCSTR, LPPROGRESS_ROUTINE, LPVOID, LPBOOL, DWORD);
     BOOL CopyFileExW(LPCWSTR, LPCWSTR, LPPROGRESS_ROUTINE, LPVOID, LPBOOL, DWORD);
 
-    /+ FIXME
-    alias memmove RtlMoveMemory;
-    alias memcpy RtlCopyMemory;
+    alias RtlMoveMemory = memmove;
+    alias RtlCopyMemory = memcpy;
+    pragma(inline, true) void RtlFillMemory(PVOID Destination, SIZE_T Length, BYTE Fill) { memset(Destination, Fill, Length); }
+    pragma(inline, true) void RtlZeroMemory(PVOID Destination, SIZE_T Length) { memset(Destination, 0, Length); }
+    alias MoveMemory = RtlMoveMemory;
+    alias CopyMemory = RtlCopyMemory;
+    alias FillMemory = RtlFillMemory;
+    alias ZeroMemory = RtlZeroMemory;
 
-    void RtlFillMemory(PVOID dest, SIZE_T len, BYTE fill) {
-        memset(dest, fill, len);
-    }
-
-    void RtlZeroMemory(PVOID dest, SIZE_T len) {
-        RtlFillMemory(dest, len, 0);
-    }
-
-    alias RtlMoveMemory MoveMemory;
-    alias RtlCopyMemory CopyMemory;
-    alias RtlFillMemory FillMemory;
-    alias RtlZeroMemory ZeroMemory;
-    +/
     BOOL CreateDirectoryA(LPCSTR, LPSECURITY_ATTRIBUTES);
     BOOL CreateDirectoryW(LPCWSTR, LPSECURITY_ATTRIBUTES);
     BOOL CreateDirectoryExA(LPCSTR, LPCSTR, LPSECURITY_ATTRIBUTES);

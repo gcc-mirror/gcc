@@ -340,7 +340,7 @@ transform(_ExecutionPolicy&& __exec, _ForwardIterator1 __first1, _ForwardIterato
     typedef typename iterator_traits<_ForwardIterator>::reference _OutputType;
     return __pstl::__internal::__pattern_walk3(
         std::forward<_ExecutionPolicy>(__exec), __first1, __last1, __first2, __result,
-        [__op](_Input1Type x, _Input2Type y, _OutputType z) mutable { z = __op(x, y); },
+        [__op](_Input1Type __x, _Input2Type __y, _OutputType __z) mutable { __z = __op(__x, __y); },
         __pstl::__internal::__is_vectorization_preferred<_ExecutionPolicy, _ForwardIterator1, _ForwardIterator2,
                                                          _ForwardIterator>(__exec),
         __pstl::__internal::__is_parallelization_preferred<_ExecutionPolicy, _ForwardIterator1, _ForwardIterator2,

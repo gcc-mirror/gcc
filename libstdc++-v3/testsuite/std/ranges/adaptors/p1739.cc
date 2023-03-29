@@ -1,8 +1,10 @@
 // { dg-options "-std=gnu++20" }
 // { dg-do run { target c++20 } }
+// { dg-require-effective-target hosted }
 
 #include <algorithm>
 #include <ranges>
+#include <string_view>
 #include <testsuite_hooks.h>
 
 // Verify P1739R4 (and LWG 3407) changes to views::take/drop/counted.

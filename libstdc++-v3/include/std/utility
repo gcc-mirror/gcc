@@ -1,6 +1,6 @@
 // <utility> -*- C++ -*-
 
-// Copyright (C) 2001-2022 Free Software Foundation, Inc.
+// Copyright (C) 2001-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -85,6 +85,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201402L
 #define __cpp_lib_exchange_function 201304L
+
+#if __cplusplus > 201703L
+# define __cpp_lib_constexpr_algorithms 201806L
+#endif
 
   /// Assign @p __new_val to @p __obj and return its previous value.
   template <typename _Tp, typename _Up = _Tp>

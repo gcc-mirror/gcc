@@ -8,7 +8,6 @@ module core.sys.linux.errno;
 version (linux):
 extern (C):
 nothrow:
-@system:
 
 public import core.stdc.errno;
 import core.sys.linux.config;

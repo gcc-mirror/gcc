@@ -1,5 +1,5 @@
 /* Simulate storage of variables into target memory.
-   Copyright (C) 2007-2022 Free Software Foundation, Inc.
+   Copyright (C) 2007-2023 Free Software Foundation, Inc.
    Contributed by Paul Thomas and Brooks Moses
 
 This file is part of GCC.
@@ -416,11 +416,14 @@ gfc_interpret_float (int kind, unsigned char *buffer, size_t buffer_size,
 		     mpfr_t real)
 {
   gfc_set_model_kind (kind);
-  mpfr_init (real);
-  gfc_conv_tree_to_mpfr (real,
-			 native_interpret_expr (gfc_get_real_type (kind),
-						buffer, buffer_size));
 
+  tree source = native_interpret_expr (gfc_get_real_type (kind), buffer,
+				       buffer_size);
+  if (!source)
+    return 0;
+
+  mpfr_init (real);
+  gfc_conv_tree_to_mpfr (real, source);
   return size_float (kind);
 }
 

@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-add-options ieee } */
-/* { dg-require-effective-target fenv_exceptions } */
+/* { dg-require-effective-target fenv_exceptions_double } */
 
 #include <fenv.h>
 

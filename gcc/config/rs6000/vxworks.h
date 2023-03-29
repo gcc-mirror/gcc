@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Vxworks PowerPC version.
-   Copyright (C) 1996-2022 Free Software Foundation, Inc.
+   Copyright (C) 1996-2023 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC.
 
 This file is part of GCC.
@@ -265,9 +265,10 @@ along with GCC; see the file COPYING3.  If not see
 #undef LINK_OS_EXTRA_SPEC64
 #define LINK_OS_EXTRA_SPEC64 VXWORKS_LINK_SPEC
 
-/* linux64.h enables this, not supported in vxWorks.  */
-#undef TARGET_FLOAT128_ENABLE_TYPE
-#define TARGET_FLOAT128_ENABLE_TYPE 0
+/* Leave TARGET_FLOAT128_ENABLE_TYPE alone here, possibly inherited from
+   a linux configuration file.  This lets compilation tests pass and will
+   trigger visible link errors (hence remain harmless) if the support isn't
+   really there.  */
 
 #endif /* TARGET_VXWORKS7 */
 

@@ -56,8 +56,8 @@ asm (
 "	ldr	r1, [sp, #4]\n"
 	CHECK (r1)
 "	mov	r0, #0\n"
-"	b	exit\n"
+"	bl	exit\n"
 "1:\n"
-"	b	abort\n"
+"	bl	abort\n"
 "	.size	main, .-main"
 );

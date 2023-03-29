@@ -1,5 +1,5 @@
 /* Data and functions related to line maps and input files.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -28,6 +28,12 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef HAVE_ICONV
 #define HAVE_ICONV 0
 #endif
+
+const char *
+special_fname_builtin ()
+{
+  return _("<built-in>");
+}
 
 /* Input charset configuration.  */
 static const char *default_charset_callback (const char *)
@@ -61,6 +67,7 @@ public:
   {
     return m_missing_trailing_newline;
   }
+  char_span get_full_file_content ();
 
   void inc_use_count () { m_use_count++; }
 
@@ -275,7 +282,7 @@ expand_location_1 (location_t loc,
 
   xloc.data = block;
   if (loc <= BUILTINS_LOCATION)
-    xloc.file = loc == UNKNOWN_LOCATION ? NULL : _("<built-in>");
+    xloc.file = loc == UNKNOWN_LOCATION ? NULL : special_fname_builtin ();
 
   return xloc;
 }
@@ -451,6 +458,20 @@ file_cache::add_file (const char *file_path)
   if (!r->create (in_context, file_path, fp, highest_use_count))
     return NULL;
   return r;
+}
+
+/* Get a borrowed char_span to the full content of this file
+   as decoded according to the input charset, encoded as UTF-8.  */
+
+char_span
+file_cache_slot::get_full_file_content ()
+{
+  char *line;
+  ssize_t line_len;
+  while (get_next_line (&line, &line_len))
+    {
+    }
+  return char_span (m_data, m_nb_read);
 }
 
 /* Populate this slot for use on FILE_PATH and FP, dropping any
@@ -949,6 +970,110 @@ location_get_source_line (const char *file_path, int line)
   return char_span (buffer, len);
 }
 
+/* Return a NUL-terminated copy of the source text between two locations, or
+   NULL if the arguments are invalid.  The caller is responsible for freeing
+   the return value.  */
+
+char *
+get_source_text_between (location_t start, location_t end)
+{
+  expanded_location expstart =
+    expand_location_to_spelling_point (start, LOCATION_ASPECT_START);
+  expanded_location expend =
+    expand_location_to_spelling_point (end, LOCATION_ASPECT_FINISH);
+
+  /* If the locations are in different files or the end comes before the
+     start, give up and return nothing.  */
+  if (!expstart.file || !expend.file)
+    return NULL;
+  if (strcmp (expstart.file, expend.file) != 0)
+    return NULL;
+  if (expstart.line > expend.line)
+    return NULL;
+  if (expstart.line == expend.line
+      && expstart.column > expend.column)
+    return NULL;
+  /* These aren't real column numbers, give up.  */
+  if (expstart.column == 0 || expend.column == 0)
+    return NULL;
+
+  /* For a single line we need to trim both edges.  */
+  if (expstart.line == expend.line)
+    {
+      char_span line = location_get_source_line (expstart.file, expstart.line);
+      if (line.length () < 1)
+	return NULL;
+      int s = expstart.column - 1;
+      int len = expend.column - s;
+      if (line.length () < (size_t)expend.column)
+	return NULL;
+      return line.subspan (s, len).xstrdup ();
+    }
+
+  struct obstack buf_obstack;
+  obstack_init (&buf_obstack);
+
+  /* Loop through all lines in the range and append each to buf; may trim
+     parts of the start and end lines off depending on column values.  */
+  for (int lnum = expstart.line; lnum <= expend.line; ++lnum)
+    {
+      char_span line = location_get_source_line (expstart.file, lnum);
+      if (line.length () < 1 && (lnum != expstart.line && lnum != expend.line))
+	continue;
+
+      /* For the first line in the range, only start at expstart.column */
+      if (lnum == expstart.line)
+	{
+	  unsigned off = expstart.column - 1;
+	  if (line.length () < off)
+	    return NULL;
+	  line = line.subspan (off, line.length() - off);
+	}
+      /* For the last line, don't go past expend.column */
+      else if (lnum == expend.line)
+	{
+	  if (line.length () < (size_t)expend.column)
+	    return NULL;
+	  line = line.subspan (0, expend.column);
+	}
+
+      /* Combine spaces at the beginning of later lines.  */
+      if (lnum > expstart.line)
+	{
+	  unsigned off;
+	  for (off = 0; off < line.length(); ++off)
+	    if (line[off] != ' ' && line[off] != '\t')
+	      break;
+	  if (off > 0)
+	    {
+	      obstack_1grow (&buf_obstack, ' ');
+	      line = line.subspan (off, line.length() - off);
+	    }
+	}
+
+      /* This does not include any trailing newlines.  */
+      obstack_grow (&buf_obstack, line.get_buffer (), line.length ());
+    }
+
+  /* NUL-terminate and finish the buf obstack.  */
+  obstack_1grow (&buf_obstack, 0);
+  const char *buf = (const char *) obstack_finish (&buf_obstack);
+
+  return xstrdup (buf);
+}
+
+/* Get a borrowed char_span to the full content of FILE_PATH
+   as decoded according to the input charset, encoded as UTF-8.  */
+
+char_span
+get_source_file_content (const char *file_path)
+{
+  diagnostic_file_cache_init ();
+
+  file_cache_slot *c = global_dc->m_file_cache->lookup_or_add_file (file_path);
+  return c->get_full_file_content ();
+}
+
 /* Determine if FILE_PATH missing a trailing newline on its final line.
    Only valid to call once all of the file has been loaded, by
    requesting a line number beyond the end of the file.  */
@@ -1082,7 +1207,8 @@ make_location (location_t caret, location_t start, location_t finish)
   location_t combined_loc = COMBINE_LOCATION_DATA (line_table,
 						   pure_loc,
 						   src_range,
-						   NULL);
+						   NULL,
+						   0);
   return combined_loc;
 }
 
@@ -1092,7 +1218,7 @@ location_t
 make_location (location_t caret, source_range src_range)
 {
   location_t pure_loc = get_pure_location (caret);
-  return COMBINE_LOCATION_DATA (line_table, pure_loc, src_range, NULL);
+  return COMBINE_LOCATION_DATA (line_table, pure_loc, src_range, NULL, 0);
 }
 
 /* An expanded_location stores the column in byte units.  This function
@@ -1766,6 +1892,37 @@ get_location_within_string (cpp_reader *pfile,
   return NULL;
 }
 
+/* Associate the DISCRIMINATOR with LOCUS, and return a new locus. */
+
+location_t
+location_with_discriminator (location_t locus, int discriminator)
+{
+  tree block = LOCATION_BLOCK (locus);
+  source_range src_range = get_range_from_loc (line_table, locus);
+  locus = get_pure_location (locus);
+
+  if (locus == UNKNOWN_LOCATION)
+    return locus;
+
+  return COMBINE_LOCATION_DATA (line_table, locus, src_range, block, discriminator);
+}
+
+/* Return TRUE if LOCUS represents a location with a discriminator.  */
+
+bool
+has_discriminator (location_t locus)
+{
+  return get_discriminator_from_loc (locus) != 0;
+}
+
+/* Return the discriminator for LOCUS.  */
+
+int
+get_discriminator_from_loc (location_t locus)
+{
+  return get_discriminator_from_loc (line_table, locus);
+}
+
 #if CHECKING_P
 
 namespace selftest {
@@ -2070,7 +2227,7 @@ test_unknown_location ()
 static void
 test_builtins ()
 {
-  assert_loceq (_("<built-in>"), 0, 0, BUILTINS_LOCATION);
+  assert_loceq (special_fname_builtin (), 0, 0, BUILTINS_LOCATION);
   ASSERT_PRED1 (is_location_from_builtin_token, BUILTINS_LOCATION);
 }
 
@@ -3915,7 +4072,104 @@ void test_cpp_utf8 ()
 	  ASSERT_EQ (byte_col2, byte_col);
       }
   }
+}
 
+static bool
+check_cpp_valid_utf8_p (const char *str)
+{
+  return cpp_valid_utf8_p (str, strlen (str));
+}
+
+/* Check that cpp_valid_utf8_p works as expected.  */
+
+static void
+test_cpp_valid_utf8_p ()
+{
+  ASSERT_TRUE (check_cpp_valid_utf8_p ("hello world"));
+
+  /* 2-byte char (pi).  */
+  ASSERT_TRUE (check_cpp_valid_utf8_p("\xcf\x80"));
+
+  /* 3-byte chars (the Japanese word "mojibake").  */
+  ASSERT_TRUE (check_cpp_valid_utf8_p
+	       (
+		/* U+6587 CJK UNIFIED IDEOGRAPH-6587
+		   UTF-8: 0xE6 0x96 0x87
+		   C octal escaped UTF-8: \346\226\207.  */
+		"\346\226\207"
+		/* U+5B57 CJK UNIFIED IDEOGRAPH-5B57
+		   UTF-8: 0xE5 0xAD 0x97
+		   C octal escaped UTF-8: \345\255\227.  */
+		"\345\255\227"
+		/* U+5316 CJK UNIFIED IDEOGRAPH-5316
+		   UTF-8: 0xE5 0x8C 0x96
+		   C octal escaped UTF-8: \345\214\226.  */
+		"\345\214\226"
+		/* U+3051 HIRAGANA LETTER KE
+		   UTF-8: 0xE3 0x81 0x91
+		   C octal escaped UTF-8: \343\201\221.  */
+		"\343\201\221"));
+
+  /* 4-byte char: an emoji.  */
+  ASSERT_TRUE (check_cpp_valid_utf8_p ("\xf0\x9f\x98\x82"));
+
+  /* Control codes, including the NUL byte.  */
+  ASSERT_TRUE (cpp_valid_utf8_p ("\r\n\v\0\1", 5));
+
+  ASSERT_FALSE (check_cpp_valid_utf8_p ("\xf0!\x9f!\x98!\x82!"));
+
+  /* Unexpected continuation bytes.  */
+  for (unsigned char continuation_byte = 0x80;
+       continuation_byte <= 0xbf;
+       continuation_byte++)
+    ASSERT_FALSE (cpp_valid_utf8_p ((const char *)&continuation_byte, 1));
+
+  /* "Lonely start characters" for 2-byte sequences.  */
+  {
+    unsigned char buf[2];
+    buf[1] = ' ';
+    for (buf[0] = 0xc0;
+	 buf[0] <= 0xdf;
+	 buf[0]++)
+      ASSERT_FALSE (cpp_valid_utf8_p ((const char *)buf, 2));
+  }
+
+  /* "Lonely start characters" for 3-byte sequences.  */
+  {
+    unsigned char buf[2];
+    buf[1] = ' ';
+    for (buf[0] = 0xe0;
+	 buf[0] <= 0xef;
+	 buf[0]++)
+      ASSERT_FALSE (cpp_valid_utf8_p ((const char *)buf, 2));
+  }
+
+  /* "Lonely start characters" for 4-byte sequences.  */
+  {
+    unsigned char buf[2];
+    buf[1] = ' ';
+    for (buf[0] = 0xf0;
+	 buf[0] <= 0xf4;
+	 buf[0]++)
+      ASSERT_FALSE (cpp_valid_utf8_p ((const char *)buf, 2));
+  }
+
+  /* Invalid start characters (formerly valid for 5-byte and 6-byte
+     sequences).  */
+  {
+    unsigned char buf[2];
+    buf[1] = ' ';
+    for (buf[0] = 0xf5;
+	 buf[0] <= 0xfd;
+	 buf[0]++)
+      ASSERT_FALSE (cpp_valid_utf8_p ((const char *)buf, 2));
+  }
+
+  /* Impossible bytes.  */
+  ASSERT_FALSE (check_cpp_valid_utf8_p ("\xc0"));
+  ASSERT_FALSE (check_cpp_valid_utf8_p ("\xc1"));
+  ASSERT_FALSE (check_cpp_valid_utf8_p ("\xfe"));
+  ASSERT_FALSE (check_cpp_valid_utf8_p ("\xff"));
 }
 
 /* Run all of the selftests within this file.  */
@@ -3961,6 +4215,7 @@ input_cc_tests ()
   test_line_offset_overflow ();
 
   test_cpp_utf8 ();
+  test_cpp_valid_utf8_p ();
 }
 
 } // namespace selftest

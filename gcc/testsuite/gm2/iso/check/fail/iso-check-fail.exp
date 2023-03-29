@@ -1,0 +1,58 @@
+# Copyright (C) 2008-2023 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This file was written by Gaius Mulley (gaius.mulley@southwales.ac.uk)
+# for GNU Modula-2.
+
+load_lib target-supports.exp
+
+global TESTING_IN_BUILD_TREE
+global ENABLE_PLUGIN
+
+# The plugin testcases currently only work when the build tree is available.
+# Also check whether the host supports plugins.
+if { ![info exists TESTING_IN_BUILD_TREE] || ![info exists ENABLE_PLUGIN] } {
+    return
+}
+
+if $tracelevel then {
+    strace $tracelevel
+}
+
+# load support procs
+load_lib gm2-torture.exp
+
+global TORTURE_OPTIONS
+
+set old_options $TORTURE_OPTIONS
+set TORTURE_OPTIONS [list \
+			 { -O2 -fsoft-check-all } \
+			 { -O2 -g -fsoft-check-all } \
+			 { -O3 -fsoft-check-all } \
+		         { -O3 -g -fsoft-check-all } ]
+
+gm2_init_iso "${srcdir}/gm2/iso/check/fail" -fm2-pathname=- -I${srcdir}/gm2/iso/check/fail
+
+foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
+    # If we're only testing specific files and this isn't one of them, skip it.
+    if ![runtest_file_p $runtests $testcase] then {
+	continue
+    }
+
+    gm2-torture-fail $testcase
+}
+
+set TORTURE_OPTIONS $old_options

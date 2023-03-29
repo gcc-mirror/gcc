@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    additional tree codes used in the GNU C++ compiler (see tree.def
    for the standard codes).
-   Copyright (C) 1987-2022 Free Software Foundation, Inc.
+   Copyright (C) 1987-2023 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -444,8 +444,11 @@ DEFTREECODE (BIT_CAST_EXPR, "bit_cast_expr", tcc_expression, 1)
 
 /** C++ extensions. */
 
-/* Represents a trait expression during template expansion.  */
+/* Represents a templated trait that yields an expression.  */
 DEFTREECODE (TRAIT_EXPR, "trait_expr", tcc_exceptional, 0)
+
+/* Represents a templated trait that yields a type.  */
+DEFTREECODE (TRAIT_TYPE, "trait_type", tcc_type, 0)
 
 /* A lambda expression.  This is a C++0x extension.
    LAMBDA_EXPR_DEFAULT_CAPTURE_MODE is an enum for the default, which may be
@@ -465,10 +468,6 @@ DEFTREECODE (LAMBDA_EXPR, "lambda_expr", tcc_exceptional, 0)
    DECLTYPE_FOR_LAMBDA_CAPTURE is set if we want lambda capture semantics.
    DECLTYPE_FOR_LAMBDA_RETURN is set if we want lambda return deduction.  */
 DEFTREECODE (DECLTYPE_TYPE, "decltype_type", tcc_type, 0)
-
-/* A type designated by `__underlying_type (type)'.
-   UNDERLYING_TYPE_TYPE is the type in question.  */
-DEFTREECODE (UNDERLYING_TYPE, "underlying_type", tcc_type, 0)
 
 /* A type designated by one of the bases type traits.
    BASES_TYPE is the type in question.  */
@@ -495,11 +494,6 @@ DEFTREECODE (TEMPLATE_INFO, "template_info", tcc_exceptional, 0)
 DEFTREECODE (OMP_DEPOBJ, "omp_depobj", tcc_statement, 2)
 
 /* Extensions for Concepts. */
-
-/* Concept definition. This is not entirely different than a VAR_DECL
-   except that a) it must be a template, and b) doesn't have the wide
-   range of value and linkage options available to variables.  */
-DEFTREECODE (CONCEPT_DECL, "concept_decl", tcc_declaration, 0)
 
 /* Used to represent information associated with constrained declarations. */
 DEFTREECODE (CONSTRAINT_INFO, "constraint_info", tcc_exceptional, 0)
@@ -587,6 +581,17 @@ DEFTREECODE (CO_YIELD_EXPR, "co_yield", tcc_expression, 2)
    Op1 is the promise return_xxxx call for for the expression given. */
 
 DEFTREECODE (CO_RETURN_EXPR, "co_return", tcc_statement, 2)
+
+/* Different flavors of contracts.
+
+   Assertions and preconditions have two operands: a node containing
+   the their mode and condition. Postconditions have an additional
+   operand to store the optional name for the result value.
+
+   CONTRACT_SEMANTIC has the computed behavior of the contract.  */
+DEFTREECODE (ASSERTION_STMT, "assertion_stmt", tcc_statement, 3)
+DEFTREECODE (PRECONDITION_STMT, "precondition_stmt", tcc_statement, 3)
+DEFTREECODE (POSTCONDITION_STMT, "postcondition_stmt", tcc_statement, 4)
 
 /*
 Local variables:

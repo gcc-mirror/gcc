@@ -1,5 +1,5 @@
 /* _Unwind_Frames_Extra with shadow stack for x86-64 and x86.
-   Copyright (C) 2017-2022 Free Software Foundation, Inc.
+   Copyright (C) 2017-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -54,10 +54,39 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    aligned.  If the original shadow stack is 8 byte aligned, we just
    need to pop 2 slots, one restore token, from shadow stack.  Otherwise,
    we need to pop 3 slots, one restore token + 4 byte padding, from
-   shadow stack.  */
-#ifndef __x86_64__
+   shadow stack.
+
+   When popping a stack frame, we compare the return address on normal
+   stack against the return address on shadow stack.  If they don't match,
+   return _URC_FATAL_PHASE2_ERROR for the corrupted return address on
+   normal stack.  Don't check the return address for
+   1. Non-catchable exception where exception_class == 0.  Process will
+      be terminated.
+   2. Zero return address which marks the outermost stack frame.
+   3. Signal stack frame since kernel puts a restore token on shadow
+      stack.
+ */
 #undef _Unwind_Frames_Increment
-#define _Unwind_Frames_Increment(context, frames)	\
+#ifdef __x86_64__
+#define _Unwind_Frames_Increment(exc, context, frames)	\
+    {							\
+      frames++;						\
+      if (exc->exception_class != 0			\
+	  && _Unwind_GetIP (context) != 0		\
+	  && !_Unwind_IsSignalFrame (context))		\
+	{						\
+	  _Unwind_Word ssp = _get_ssp ();		\
+	  if (ssp != 0)					\
+	    {						\
+	      ssp += 8 * frames;			\
+	      _Unwind_Word ra = *(_Unwind_Word *) ssp;	\
+	      if (ra != _Unwind_GetIP (context))	\
+		return _URC_FATAL_PHASE2_ERROR;		\
+	    }						\
+	}						\
+    }
+#else
+#define _Unwind_Frames_Increment(exc, context, frames)	\
   if (_Unwind_IsSignalFrame (context))			\
     do							\
       {							\
@@ -83,5 +112,19 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
       }							\
     while (0);						\
   else							\
-    frames++;
+    {							\
+      frames++;						\
+      if (exc->exception_class != 0			\
+	  && _Unwind_GetIP (context) != 0)		\
+	{						\
+	  _Unwind_Word ssp = _get_ssp ();		\
+	  if (ssp != 0)					\
+	    {						\
+	      ssp += 4 * frames;			\
+	      _Unwind_Word ra = *(_Unwind_Word *) ssp;	\
+	      if (ra != _Unwind_GetIP (context))	\
+		return _URC_FATAL_PHASE2_ERROR;		\
+	    }						\
+	}						\
+    }
 #endif

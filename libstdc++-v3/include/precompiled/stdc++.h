@@ -1,6 +1,6 @@
 // C++ includes used for precompiling -*- C++ -*-
 
-// Copyright (C) 2003-2022 Free Software Foundation, Inc.
+// Copyright (C) 2003-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,6 +28,80 @@
 
 // 17.4.1.2 Headers
 
+// C
+#ifndef _GLIBCXX_NO_ASSERT
+#include <cassert>
+#endif
+#include <cctype>
+#include <cfloat>
+#include <ciso646>
+#include <climits>
+#include <csetjmp>
+#include <cstdarg>
+#include <cstddef>
+#include <cstdlib>
+
+#if __cplusplus >= 201103L
+#include <cstdint>
+#endif
+
+// C++
+// #include <bitset>
+// #include <complex>
+#include <algorithm>
+#include <bitset>
+#include <functional>
+#include <iterator>
+#include <limits>
+#include <memory>
+#include <new>
+#include <numeric>
+#include <typeinfo>
+#include <utility>
+
+#if __cplusplus >= 201103L
+#include <array>
+#include <atomic>
+#include <initializer_list>
+#include <ratio>
+#include <scoped_allocator>
+#include <tuple>
+#include <typeindex>
+#include <type_traits>
+#endif
+
+#if __cplusplus >= 201402L
+#endif
+
+#if __cplusplus >= 201703L
+#include <any>
+#include <charconv>
+// #include <execution>
+#include <optional>
+#include <variant>
+#include <string_view>
+#endif
+
+#if __cplusplus >= 202002L
+#include <bit>
+#include <compare>
+#include <concepts>
+#include <numbers>
+#include <ranges>
+#include <span>
+#include <source_location>
+#include <version>
+#endif
+
+#if __cplusplus > 202002L
+#include <expected>
+#include <stdatomic.h>
+#if __cpp_impl_coroutine
+# include <coroutine>
+#endif
+#endif
+
+#if _GLIBCXX_HOSTED
 // C
 #ifndef _GLIBCXX_NO_ASSERT
 #include <cassert>
@@ -62,8 +136,6 @@
 #endif
 
 // C++
-#include <algorithm>
-#include <bitset>
 #include <complex>
 #include <deque>
 #include <exception>
@@ -129,7 +201,6 @@
 #include <filesystem>
 #include <optional>
 #include <memory_resource>
-#include <string_view>
 #include <variant>
 #endif
 
@@ -138,9 +209,7 @@
 #include <bit>
 #include <compare>
 #include <concepts>
-#if __cpp_impl_coroutine
-# include <coroutine>
-#endif
+#include <format>
 #include <latch>
 #include <numbers>
 #include <ranges>
@@ -159,4 +228,7 @@
 # include <stacktrace>
 #endif
 #include <stdatomic.h>
+#include <stdfloat>
 #endif
+
+#endif // HOSTED

@@ -8,7 +8,6 @@
  */
 module core.sys.windows.lmuse;
 version (Windows):
-@system:
 pragma(lib, "netapi32");
 
 import core.sys.windows.lmuseflg;

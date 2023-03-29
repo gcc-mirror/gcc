@@ -8,7 +8,6 @@
  */
 module core.sys.windows.lzexpand;
 version (Windows):
-@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "lz32");

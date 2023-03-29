@@ -1,6 +1,6 @@
 /* Read the GIMPLE representation from a file stream.
 
-   Copyright (C) 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2009-2023 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
    Re-implemented by Diego Novillo <dnovillo@google.com>
 
@@ -409,6 +409,8 @@ lto_location_cache::cmp_loc (const void *pa, const void *pb)
     return a->line - b->line;
   if (a->col != b->col)
     return a->col - b->col;
+  if (a->discr != b->discr)
+    return a->discr - b->discr;
   if ((a->block == NULL_TREE) != (b->block == NULL_TREE))
     return a->block ? 1 : -1;
   if (a->block)
@@ -460,6 +462,8 @@ lto_location_cache::apply_location_cache ()
 	  current_loc = linemap_position_for_column (line_table, loc.col);
 	  if (loc.block)
 	    current_loc = set_block (current_loc, loc.block);
+	  if (loc.discr)
+	    current_loc = location_with_discriminator (current_loc, loc.discr);
 	}
       else if (current_block != loc.block)
 	{
@@ -467,12 +471,17 @@ lto_location_cache::apply_location_cache ()
 	    current_loc = set_block (current_loc, loc.block);
 	  else
 	    current_loc = LOCATION_LOCUS (current_loc);
+	  if (loc.discr)
+	    current_loc = location_with_discriminator (current_loc, loc.discr);
 	}
+      else if (current_discr != loc.discr)
+	current_loc = location_with_discriminator (current_loc, loc.discr);
       *loc.loc = current_loc;
       current_line = loc.line;
       prev_file = current_file = loc.file;
       current_col = loc.col;
       current_block = loc.block;
+      current_discr = loc.discr;
     }
   loc_cache.truncate (0);
   accepted_length = 0;
@@ -512,6 +521,7 @@ lto_location_cache::input_location_and_block (location_t *loc,
   static int stream_col;
   static bool stream_sysp;
   static tree stream_block;
+  static unsigned stream_discr;
   static const char *stream_relative_path_prefix;
 
   gcc_assert (current_cache == this);
@@ -538,6 +548,7 @@ lto_location_cache::input_location_and_block (location_t *loc,
   *loc = RESERVED_LOCATION_COUNT;
   bool line_change = bp_unpack_value (bp, 1);
   bool column_change = bp_unpack_value (bp, 1);
+  bool discr_change = bp_unpack_value (bp, 1);
 
   if (file_change)
     {
@@ -563,6 +574,9 @@ lto_location_cache::input_location_and_block (location_t *loc,
   if (column_change)
     stream_col = bp_unpack_var_len_unsigned (bp);
 
+  if (discr_change)
+    stream_discr = bp_unpack_var_len_unsigned (bp);
+
   tree block = NULL_TREE;
   if (ib)
     {
@@ -578,7 +592,8 @@ lto_location_cache::input_location_and_block (location_t *loc,
   if (current_file == stream_file
       && current_line == stream_line
       && current_col == stream_col
-      && current_sysp == stream_sysp)
+      && current_sysp == stream_sysp
+      && current_discr == stream_discr)
     {
       if (current_block == block)
 	*loc = current_loc;
@@ -590,7 +605,7 @@ lto_location_cache::input_location_and_block (location_t *loc,
     }
 
   struct cached_location entry
-    = {stream_file, loc, stream_line, stream_col, stream_sysp, block};
+    = {stream_file, loc, stream_line, stream_col, stream_sysp, block, stream_discr};
   loc_cache.safe_push (entry);
 }
 
@@ -1303,6 +1318,7 @@ input_struct_function_base (struct function *fn, class data_in *data_in,
   fn->calls_eh_return = bp_unpack_value (&bp, 1);
   fn->has_force_vectorize_loops = bp_unpack_value (&bp, 1);
   fn->has_simduid_loops = bp_unpack_value (&bp, 1);
+  fn->assume_function = bp_unpack_value (&bp, 1);
   fn->va_list_fpr_size = bp_unpack_value (&bp, 8);
   fn->va_list_gpr_size = bp_unpack_value (&bp, 8);
   fn->last_clique = bp_unpack_value (&bp, sizeof (short) * 8);

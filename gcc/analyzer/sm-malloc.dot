@@ -1,5 +1,5 @@
 /* An overview of the state machine from sm-malloc.cc.
-   Copyright (C) 2019-2022 Free Software Foundation, Inc.
+   Copyright (C) 2019-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -32,6 +32,9 @@ digraph "malloc" {
      It could be a pointer to heap-allocated memory, or could be NULL.  */
   unchecked;
 
+  /* State for a pointer that's been unconditionally dereferenced.  */
+  assumed_non_null;
+
   /* State for a pointer that's known to be NULL.  */
   null;
 
@@ -58,6 +61,7 @@ digraph "malloc" {
 
   /* On "free".  */
   start -> freed [label="on 'free(X);'"];
+  assumed_non_null -> freed [label="on 'free(X);'"];
   unchecked -> freed [label="on 'free(X);'"];
   nonnull -> freed [label="on 'free(X);'"];
   freed -> stop [label="on 'free(X);':\n Warn('double-free')"];
@@ -66,6 +70,7 @@ digraph "malloc" {
   /* Handle "__attribute__((nonnull))".   */
   unchecked -> nonnull [label="on 'FN(X)' with __attribute__((nonnull)):\nWarn('possible NULL arg')"];
   null -> stop [label="on 'FN(X)' with __attribute__((nonnull)):\nWarn('NULL arg')"];
+  start -> assumed_non_null [label="on 'FN(X)' with __attribute__((nonnull))"];
 
   /* is_zero_assignment.  */
   start -> null [label="on 'X = 0;'"];
@@ -76,6 +81,7 @@ digraph "malloc" {
   start -> non_heap [label="on 'X = &EXPR;'"];
 
   /* Handle dereferences.  */
+  start -> assumed_non_null [label="on '*X'"];
   unchecked -> nonnull [label="on '*X':\nWarn('possible NULL deref')"];
   null -> stop [label="on '*X':\nWarn('NULL deref')"];
   freed -> stop [label="on '*X':\nWarn('use after free')"];
@@ -83,6 +89,7 @@ digraph "malloc" {
   /* on_condition.  */
   unchecked -> nonnull [label="on 'X != 0'"];
   unchecked -> null [label="on 'X == 0'"];
+  assumed_non_null -> stop [label="on 'if (X)':\nWarn('deref-before-check')"];
 
   unchecked -> stop [label="on leak:\nWarn('leak')"];
   nonnull -> stop [label="on leak:\nWarn('leak')"];

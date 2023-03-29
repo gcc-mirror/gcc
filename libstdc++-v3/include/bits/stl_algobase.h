@@ -1,6 +1,6 @@
 // Core algorithmic facilities -*- C++ -*-
 
-// Copyright (C) 2001-2022 Free Software Foundation, Inc.
+// Copyright (C) 2001-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -72,7 +72,10 @@
 #if __cplusplus >= 201103L
 # include <type_traits>
 #endif
-#if __cplusplus > 201703L
+#if __cplusplus >= 201402L
+# include <bit> // std::__bit_width
+#endif
+#if __cplusplus >= 202002L
 # include <compare>
 #endif
 
@@ -388,6 +391,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  return __result;
 	}
+
+      template<typename _Tp, typename _Up>
+	static void
+	__assign_one(_Tp* __to, _Up* __from)
+	{ *__to = *__from; }
     };
 
 #if __cplusplus >= 201103L
@@ -408,27 +416,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  return __result;
 	}
+
+      template<typename _Tp, typename _Up>
+	static void
+	__assign_one(_Tp* __to, _Up* __from)
+	{ *__to = std::move(*__from); }
     };
 #endif
 
   template<bool _IsMove>
     struct __copy_move<_IsMove, true, random_access_iterator_tag>
     {
-      template<typename _Tp>
+      template<typename _Tp, typename _Up>
 	_GLIBCXX20_CONSTEXPR
-	static _Tp*
-	__copy_m(const _Tp* __first, const _Tp* __last, _Tp* __result)
+	static _Up*
+	__copy_m(_Tp* __first, _Tp* __last, _Up* __result)
 	{
-#if __cplusplus >= 201103L
-	  using __assignable = __conditional_t<_IsMove,
-					       is_move_assignable<_Tp>,
-					       is_copy_assignable<_Tp>>;
-	  // trivial types can have deleted assignment
-	  static_assert( __assignable::value, "type must be assignable" );
-#endif
 	  const ptrdiff_t _Num = __last - __first;
-	  if (_Num)
+	  if (__builtin_expect(_Num > 1, true))
 	    __builtin_memmove(__result, __first, sizeof(_Tp) * _Num);
+	  else if (_Num == 1)
+	    std::__copy_move<_IsMove, false, random_access_iterator_tag>::
+	      __assign_one(__result, __first);
 	  return __result + _Num;
 	}
     };
@@ -729,21 +738,17 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
   template<bool _IsMove>
     struct __copy_move_backward<_IsMove, true, random_access_iterator_tag>
     {
-      template<typename _Tp>
+      template<typename _Tp, typename _Up>
 	_GLIBCXX20_CONSTEXPR
-	static _Tp*
-	__copy_move_b(const _Tp* __first, const _Tp* __last, _Tp* __result)
+	static _Up*
+	__copy_move_b(_Tp* __first, _Tp* __last, _Up* __result)
 	{
-#if __cplusplus >= 201103L
-	  using __assignable = __conditional_t<_IsMove,
-					       is_move_assignable<_Tp>,
-					       is_copy_assignable<_Tp>>;
-	  // trivial types can have deleted assignment
-	  static_assert( __assignable::value, "type must be assignable" );
-#endif
 	  const ptrdiff_t _Num = __last - __first;
-	  if (_Num)
+	  if (__builtin_expect(_Num > 1, true))
 	    __builtin_memmove(__result - _Num, __first, sizeof(_Tp) * _Num);
+	  else if (_Num == 1)
+	    std::__copy_move<_IsMove, false, random_access_iterator_tag>::
+	      __assign_one(__result - 1, __first);
 	  return __result - _Num;
 	}
     };
@@ -1505,29 +1510,25 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 
   /// This is a helper function for the sort routines and for random.tcc.
   //  Precondition: __n > 0.
-  inline _GLIBCXX_CONSTEXPR int
-  __lg(int __n)
-  { return (int)sizeof(int) * __CHAR_BIT__  - 1 - __builtin_clz(__n); }
-
-  inline _GLIBCXX_CONSTEXPR unsigned
-  __lg(unsigned __n)
-  { return (int)sizeof(int) * __CHAR_BIT__  - 1 - __builtin_clz(__n); }
-
-  inline _GLIBCXX_CONSTEXPR long
-  __lg(long __n)
-  { return (int)sizeof(long) * __CHAR_BIT__ - 1 - __builtin_clzl(__n); }
-
-  inline _GLIBCXX_CONSTEXPR unsigned long
-  __lg(unsigned long __n)
-  { return (int)sizeof(long) * __CHAR_BIT__ - 1 - __builtin_clzl(__n); }
-
-  inline _GLIBCXX_CONSTEXPR long long
-  __lg(long long __n)
-  { return (int)sizeof(long long) * __CHAR_BIT__ - 1 - __builtin_clzll(__n); }
-
-  inline _GLIBCXX_CONSTEXPR unsigned long long
-  __lg(unsigned long long __n)
-  { return (int)sizeof(long long) * __CHAR_BIT__ - 1 - __builtin_clzll(__n); }
+  template<typename _Tp>
+    inline _GLIBCXX_CONSTEXPR _Tp
+    __lg(_Tp __n)
+    {
+#if __cplusplus >= 201402L
+      return std::__bit_width(make_unsigned_t<_Tp>(__n)) - 1;
+#else
+      // Use +__n so it promotes to at least int.
+      const int __sz = sizeof(+__n);
+      int __w = __sz * __CHAR_BIT__ - 1;
+      if (__sz == sizeof(long long))
+	__w -= __builtin_clzll(+__n);
+      else if (__sz == sizeof(long))
+	__w -= __builtin_clzl(+__n);
+      else if (__sz == sizeof(int))
+	__w -= __builtin_clz(+__n);
+      return __w;
+#endif
+    }
 
 _GLIBCXX_BEGIN_NAMESPACE_ALGO
 

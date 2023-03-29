@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// Copyright (C) 2007-2022 Free Software Foundation, Inc.
+// Copyright (C) 2007-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,6 +25,8 @@ namespace gnu
   using std::atexit;
   using std::exit;
 
+#if __STDC_HOSTED__
   using std::getenv;
   using std::system;
+#endif
 }

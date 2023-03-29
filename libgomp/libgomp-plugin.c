@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2014-2023 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -77,4 +77,16 @@ GOMP_PLUGIN_fatal (const char *msg, ...)
   va_start (ap, msg);
   gomp_vfatal (msg, ap);
   va_end (ap);
+}
+
+void
+GOMP_PLUGIN_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
+			uint64_t sizes_ptr, uint64_t kinds_ptr, int dev_num,
+			void (*dev_to_host_cpy) (void *, const void *, size_t,
+						 void *),
+			void (*host_to_dev_cpy) (void *, const void *, size_t,
+						 void *), void *token)
+{
+  gomp_target_rev (fn_ptr, mapnum, devaddrs_ptr, sizes_ptr, kinds_ptr, dev_num,
+		   dev_to_host_cpy, host_to_dev_cpy, token);
 }

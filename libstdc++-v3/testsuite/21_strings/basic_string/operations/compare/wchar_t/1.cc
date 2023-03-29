@@ -1,6 +1,6 @@
 // 980930 bkoz work with libstdc++v3
 
-// Copyright (C) 1998-2022 Free Software Foundation, Inc.
+// Copyright (C) 1998-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,7 +29,7 @@
 // NB compare should be thought of as a lexographical compare, ie how
 // things would be sorted in a dictionary.
 
-#include <string>
+#include <testsuite_string.h>
 #include <testsuite_hooks.h>
 
 enum want_value {lt=0, z=1, gt=2};
@@ -67,7 +67,7 @@ test_value(int result, want_value expected)
 int 
 test01()
 {
-  using namespace std;
+  using namespace __gnu_test;
 
   wstring 	str_0(L"costa rica");
   wstring 	str_1(L"costa marbella");

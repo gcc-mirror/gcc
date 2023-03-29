@@ -1,7 +1,7 @@
 /* Generate pattern matching and transform code shared between
    GENERIC and GIMPLE folding code from match-and-simplify description.
 
-   Copyright (C) 2014-2022 Free Software Foundation, Inc.
+   Copyright (C) 2014-2023 Free Software Foundation, Inc.
    Contributed by Richard Biener <rguenther@suse.de>
    and Prathamesh Kulkarni  <bilbotheelffriend@gmail.com>
 
@@ -489,6 +489,21 @@ commutative_op (id_base *id)
       case CFN_FNMS:
 	return 0;
 
+      case CFN_COND_ADD:
+      case CFN_COND_MUL:
+      case CFN_COND_MIN:
+      case CFN_COND_MAX:
+      case CFN_COND_FMIN:
+      case CFN_COND_FMAX:
+      case CFN_COND_AND:
+      case CFN_COND_IOR:
+      case CFN_COND_XOR:
+      case CFN_COND_FMA:
+      case CFN_COND_FMS:
+      case CFN_COND_FNMA:
+      case CFN_COND_FNMS:
+	return 1;
+
       default:
 	return -1;
       }
@@ -496,7 +511,7 @@ commutative_op (id_base *id)
     {
       int res = commutative_op (uid->substitutes[0]);
       if (res < 0)
-	return 0;
+	return -1;
       for (unsigned i = 1; i < uid->substitutes.length (); ++i)
 	if (res != commutative_op (uid->substitutes[i]))
 	  return -1;
@@ -1449,7 +1464,7 @@ lower_for (simplify *sin, vec<simplify *>& simplifiers)
       vec<user_id *>& ids = for_vec[fi];
       unsigned n_ids = ids.length ();
       unsigned max_n_opers = 0;
-      bool can_delay_subst = (sin->kind == simplify::SIMPLIFY);
+      bool can_delay_subst = true;
       for (unsigned i = 0; i < n_ids; ++i)
 	{
 	  if (ids[i]->substitutes.length () > max_n_opers)
@@ -1489,6 +1504,9 @@ lower_for (simplify *sin, vec<simplify *>& simplifiers)
 	    else
 	      can_delay_subst = false;
 	}
+      if (sin->kind == simplify::MATCH
+	  && can_delay_subst)
+	continue;
 
       unsigned worklist_end = worklist.length ();
       for (unsigned si = worklist_start; si < worklist_end; ++si)
@@ -1512,7 +1530,9 @@ lower_for (simplify *sin, vec<simplify *>& simplifiers)
 		      break;
 		    }
 		  subst.quick_push (std::make_pair (id, oper));
-		  match_op = replace_id (match_op, id, oper);
+		  if (sin->kind == simplify::SIMPLIFY
+		      || !can_delay_subst)
+		    match_op = replace_id (match_op, id, oper);
 		  if (result_op
 		      && !can_delay_subst)
 		    result_op = replace_id (result_op, id, oper);
@@ -2526,7 +2546,8 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
       for (unsigned i = 0; i < ops.length (); ++i)
 	fprintf (f, ", _o%d[%u]", depth, i);
       fprintf (f, ");\n");
-      fprintf_indent (f, indent, "tem_op.resimplify (lseq, valueize);\n");
+      fprintf_indent (f, indent, "tem_op.resimplify (%s, valueize);\n",
+		      !force_leaf ? "lseq" : "NULL");
       fprintf_indent (f, indent,
 		      "_r%d = maybe_push_res_to_seq (&tem_op, %s);\n", depth,
 		      !force_leaf ? "lseq" : "NULL");
@@ -2808,6 +2829,9 @@ dt_operand::gen_gimple_expr (FILE *f, int indent, int depth)
   unsigned n_ops = e->ops.length ();
   unsigned n_braces = 0;
 
+  if (user_id *u = dyn_cast <user_id *> (id))
+    id = u->substitutes[0];
+
   for (unsigned i = 0; i < n_ops; ++i)
     {
       char child_opname[20];
@@ -2889,14 +2913,18 @@ unsigned
 dt_operand::gen_generic_expr (FILE *f, int indent, const char *opname)
 {
   expr *e = static_cast<expr *> (op);
+  id_base *id = e->operation;
   unsigned n_ops = e->ops.length ();
+
+  if (user_id *u = dyn_cast <user_id *> (id))
+    id = u->substitutes[0];
 
   for (unsigned i = 0; i < n_ops; ++i)
     {
       char child_opname[20];
       gen_opname (child_opname, i);
 
-      if (e->operation->kind == id_base::CODE)
+      if (id->kind == id_base::CODE)
 	fprintf_indent (f, indent, "tree %s = TREE_OPERAND (%s, %u);\n",
 			child_opname, opname, i);
       else
@@ -2927,8 +2955,16 @@ dt_node::gen_kids (FILE *f, int indent, bool gimple, int depth)
 	  if (expr *e = dyn_cast <expr *> (op->op))
 	    {
 	      if (e->ops.length () == 0
+		  /* In GIMPLE a CONSTRUCTOR always appears in a
+		     separate definition.  */
 		  && (!gimple || !(*e->operation == CONSTRUCTOR)))
-		generic_exprs.safe_push (op);
+		{
+		  generic_exprs.safe_push (op);
+		  /* But ADDR_EXPRs can appear directly when invariant
+		     and in a separate definition when not.  */
+		  if (gimple && *e->operation == ADDR_EXPR)
+		    gimple_exprs.safe_push (op);
+		}
 	      else if (e->operation->kind == id_base::FN)
 		{
 		  if (gimple)
@@ -2940,10 +2976,21 @@ dt_node::gen_kids (FILE *f, int indent, bool gimple, int depth)
 		preds.safe_push (op);
 	      else
 		{
-		  if (gimple && !e->is_generic)
-		    gimple_exprs.safe_push (op);
+		  user_id *u = dyn_cast <user_id *> (e->operation);
+		  if (u && u->substitutes[0]->kind == id_base::FN)
+		    {
+		      if (gimple)
+			fns.safe_push (op);
+		      else
+			generic_fns.safe_push (op);
+		    }
 		  else
-		    generic_exprs.safe_push (op);
+		    {
+		      if (gimple && !e->is_generic)
+			gimple_exprs.safe_push (op);
+		      else
+			generic_exprs.safe_push (op);
+		    }
 		}
 	    }
 	  else if (op->op->type == operand::OP_PREDICATE)
@@ -3040,11 +3087,19 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple, int depth,
 	  for (unsigned i = 0; i < exprs_len; ++i)
 	    {
 	      expr *e = as_a <expr *> (gimple_exprs[i]->op);
-	      id_base *op = e->operation;
-	      if (*op == CONVERT_EXPR || *op == NOP_EXPR)
-		fprintf_indent (f, indent, "CASE_CONVERT:\n");
+	      if (user_id *u = dyn_cast <user_id *> (e->operation))
+		{
+		  for (auto id : u->substitutes)
+		    fprintf_indent (f, indent, "case %s:\n", id->id);
+		}
 	      else
-		fprintf_indent (f, indent, "case %s:\n", op->id);
+		{
+		  id_base *op = e->operation;
+		  if (*op == CONVERT_EXPR || *op == NOP_EXPR)
+		    fprintf_indent (f, indent, "CASE_CONVERT:\n");
+		  else
+		    fprintf_indent (f, indent, "case %s:\n", op->id);
+		}
 	      fprintf_indent (f, indent, "  {\n");
 	      gimple_exprs[i]->gen (f, indent + 4, true, depth);
 	      fprintf_indent (f, indent, "    break;\n");
@@ -3069,7 +3124,11 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple, int depth,
 	  for (unsigned i = 0; i < fns_len; ++i)
 	    {
 	      expr *e = as_a <expr *>(fns[i]->op);
-	      fprintf_indent (f, indent, "case %s:\n", e->operation->id);
+	      if (user_id *u = dyn_cast <user_id *> (e->operation))
+		for (auto id : u->substitutes)
+		  fprintf_indent (f, indent, "case %s:\n", id->id);
+	      else
+		fprintf_indent (f, indent, "case %s:\n", e->operation->id);
 	      /* We need to be defensive against bogus prototypes allowing
 		 calls with not enough arguments.  */
 	      fprintf_indent (f, indent,
@@ -3116,7 +3175,13 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple, int depth,
 	/* Already handled above.  */
 	continue;
       else
-	fprintf_indent (f, indent, "case %s:\n", op->id);
+	{
+	  if (user_id *u = dyn_cast <user_id *> (op))
+	    for (auto id : u->substitutes)
+	      fprintf_indent (f, indent, "case %s:\n", id->id);
+	  else
+	    fprintf_indent (f, indent, "case %s:\n", op->id);
+	}
       fprintf_indent (f, indent, "  {\n");
       generic_exprs[i]->gen (f, indent + 4, gimple, depth);
       fprintf_indent (f, indent, "    break;\n");
@@ -3428,7 +3493,8 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	  if (!is_predicate)
 	    {
 	      fprintf_indent (f, indent,
-			      "res_op->resimplify (lseq, valueize);\n");
+			      "res_op->resimplify (%s, valueize);\n",
+			      !e->force_leaf ? "lseq" : "NULL");
 	      if (e->force_leaf)
 		fprintf_indent (f, indent,
 				"if (!maybe_push_res_to_seq (res_op, NULL)) "
@@ -4447,8 +4513,11 @@ parser::parse_c_expr (cpp_ttype start)
       /* If this is possibly a user-defined identifier mark it used.  */
       if (token->type == CPP_NAME)
 	{
-	  id_base *idb = get_operator ((const char *)CPP_HASHNODE
-				      (token->val.node.node)->ident.str);
+	  const char *str
+	    = (const char *)CPP_HASHNODE (token->val.node.node)->ident.str;
+	  if (strcmp (str, "return") == 0)
+	    fatal_at (token, "return statement not allowed in C expression");
+	  id_base *idb = get_operator (str);
 	  user_id *p;
 	  if (idb && (p = dyn_cast<user_id *> (idb)) && p->is_oper_list)
 	    record_operlist (token->src_loc, p);

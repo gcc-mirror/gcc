@@ -1,6 +1,6 @@
 // Short-string-optimized versatile string base -*- C++ -*-
 
-// Copyright (C) 2005-2022 Free Software Foundation, Inc.
+// Copyright (C) 2005-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,6 +29,8 @@
 
 #ifndef _SSO_STRING_BASE_H
 #define _SSO_STRING_BASE_H 1
+
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {

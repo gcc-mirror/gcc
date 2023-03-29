@@ -1,0 +1,120 @@
+(* MemStream.def provide a memory stream channel.
+
+Copyright (C) 2015-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE MemStream ;
+
+(*
+    Title      : MemStream
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Wed Jan 28 16:44:30 2015
+    Revision   : $Version$
+    Description: provides an ISO module which can write to a memory
+                 buffer or read from a memory buffer.
+*)
+
+FROM IOChan IMPORT ChanId ;
+FROM ChanConsts IMPORT FlagSet, OpenResults ;
+FROM SYSTEM IMPORT ADDRESS, LOC ;
+
+
+(*
+   Attempts to obtain and open a channel connected to a contigeous
+   buffer in memory.  The write flag is implied; without the raw
+   flag, text is implied.  If successful, assigns to cid the identity of
+   the opened channel, assigns the value opened to res.
+   If a channel cannot be opened as required,
+   the value of res indicates the reason, and cid identifies the
+   invalid channel.
+
+   The parameters, buffer, length and used maybe updated as
+   data is written.  The buffer maybe reallocated
+   and its address might alter, however the parameters will
+   always reflect the current active buffer.  When this
+   channel is closed the buffer is deallocated and
+   buffer will be set to NIL, length and used will be set to
+   zero.
+*)
+
+PROCEDURE OpenWrite (VAR cid: ChanId; flags: FlagSet;
+                     VAR res: OpenResults;
+                     VAR buffer: ADDRESS;
+                     VAR length: CARDINAL;
+                     VAR used: CARDINAL;
+                     deallocOnClose: BOOLEAN) ;
+
+
+(*
+   Attempts to obtain and open a channel connected to a contigeous
+   buffer in memory.  The read and old flags are implied; without
+   the raw flag, text is implied.  If successful, assigns to cid the
+   identity of the opened channel, assigns the value opened to res, and
+   selects input mode, with the read position corresponding to the start
+   of the buffer.  If a channel cannot be opened as required, the value of
+   res indicates the reason, and cid identifies the invalid channel.
+*)
+
+PROCEDURE OpenRead (VAR cid: ChanId; flags: FlagSet;
+                    VAR res: OpenResults;
+                    buffer: ADDRESS; length: CARDINAL;
+                    deallocOnClose: BOOLEAN) ;
+
+
+(*
+   Close - if the channel identified by cid is not open to
+           a memory stream, the exception wrongDevice is
+           raised; otherwise closes the channel, and assigns
+           the value identifying the invalid channel to cid.
+*)
+
+PROCEDURE Close (VAR cid: ChanId) ;
+
+
+(*
+   Rewrite - assigns the buffer index to zero.  Subsequent
+             writes will overwrite the previous buffer contents.
+*)
+
+PROCEDURE Rewrite (cid: ChanId) ;
+
+
+(*
+   Reread - assigns the buffer index to zero.  Subsequent
+            reads will read the previous buffer contents.
+*)
+
+PROCEDURE Reread (cid: ChanId) ;
+
+
+(*
+   IsMem - tests if the channel identified by cid is open as
+           a memory stream.
+*)
+
+PROCEDURE IsMem (cid: ChanId) : BOOLEAN ;
+
+
+END MemStream.

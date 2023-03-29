@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2023, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1309,6 +1309,7 @@ gnat_init_ts (void)
   MARK_TS_COMMON (UNCONSTRAINED_ARRAY_TYPE);
 
   MARK_TS_TYPED (UNCONSTRAINED_ARRAY_REF);
+  MARK_TS_TYPED (LOAD_EXPR);
   MARK_TS_TYPED (NULL_EXPR);
   MARK_TS_TYPED (PLUS_NOMOD_EXPR);
   MARK_TS_TYPED (MINUS_NOMOD_EXPR);

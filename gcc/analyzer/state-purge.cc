@@ -1,5 +1,5 @@
 /* Classes for purging state at function_points.
-   Copyright (C) 2019-2022 Free Software Foundation, Inc.
+   Copyright (C) 2019-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -36,24 +37,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-iterators.h"
 #include "diagnostic-core.h"
 #include "gimple-pretty-print.h"
-#include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "analyzer/call-string.h"
-#include "digraph.h"
-#include "ordered-hash-map.h"
-#include "cfg.h"
-#include "gimple-iterator.h"
-#include "cgraph.h"
 #include "analyzer/supergraph.h"
 #include "analyzer/program-point.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/state-purge.h"
-#include "tristate.h"
-#include "selftest.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "gimple-walk.h"
+#include "cgraph.h"
 
 #if ENABLE_ANALYZER
 
@@ -70,6 +63,8 @@ get_candidate_for_purging (tree node)
       default:
 	return NULL_TREE;
 
+      case ADDR_EXPR:
+      case MEM_REF:
       case COMPONENT_REF:
 	iter = TREE_OPERAND (iter, 0);
 	continue;
@@ -820,7 +815,11 @@ same_binding_p (const region *reg_a, const region *reg_b,
 {
   if (reg_a->get_base_region () != reg_b->get_base_region ())
     return false;
+  if (reg_a->empty_p ())
+    return false;
   const binding_key *bind_key_a = binding_key::make (store_mgr, reg_a);
+  if (reg_b->empty_p ())
+    return false;
   const binding_key *bind_key_b = binding_key::make (store_mgr, reg_b);
   return bind_key_a == bind_key_b;
 }
@@ -925,7 +924,20 @@ process_point_backwards (const function_point &point,
       {
 	/* This is somewhat equivalent to how the SSA case handles
 	   def-stmts.  */
-	if (fully_overwrites_p (point.get_stmt (), m_decl, model))
+	if (fully_overwrites_p (point.get_stmt (), m_decl, model)
+	    /* ...but we mustn't be at a point that also consumes the
+	       current value of the decl when it's generating the new
+	       value, for cases such as
+		  struct st s;
+		  s = foo ();
+		  s = bar (s);
+	       where we want to make sure that we don't stop at the:
+		  s = bar (s);
+	       since otherwise we would erroneously purge the state of "s"
+	       after:
+		  s = foo ();
+	    */
+	    && !m_points_needing_decl.contains (point))
 	  {
 	    if (logger)
 	      logger->log ("stmt fully overwrites %qE; terminating", m_decl);

@@ -1,6 +1,6 @@
 /* Internal to rs6000 type, variable, and function declarations and
    definitons shared between the various rs6000 source files.
-   Copyright (C) 1991-2022 Free Software Foundation, Inc.
+   Copyright (C) 1991-2023 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
    This file is part of GCC.
@@ -181,6 +181,10 @@ extern tree rs6000_fold_builtin (tree fndecl ATTRIBUTE_UNUSED,
 			         int n_args ATTRIBUTE_UNUSED,
 			         tree *args ATTRIBUTE_UNUSED,
 			         bool ignore ATTRIBUTE_UNUSED);
+
+extern void rs6000_print_patchable_function_entry (FILE *,
+						   unsigned HOST_WIDE_INT,
+						   bool);
 
 extern bool rs6000_passes_float;
 extern bool rs6000_passes_long_double;

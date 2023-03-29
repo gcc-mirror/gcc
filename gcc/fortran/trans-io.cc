@@ -1,5 +1,5 @@
 /* IO Code translation/library interface
-   Copyright (C) 2002-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2023 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -2690,6 +2690,7 @@ scalarize:
 
   gfc_add_block_to_block (&body, &se.pre);
   gfc_add_block_to_block (&body, &se.post);
+  gfc_add_block_to_block (&body, &se.finalblock);
 
   if (se.ss == NULL)
     tmp = gfc_finish_block (&body);

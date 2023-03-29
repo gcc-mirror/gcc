@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  MIPS version.
-   Copyright (C) 1989-2022 Free Software Foundation, Inc.
+   Copyright (C) 1989-2023 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky (lich@inria.inria.fr).
    Changed by Michael Meissner	(meissner@osf.org).
    64-bit r4000 support by Ian Lance Taylor (ian@cygnus.com) and
@@ -120,11 +120,9 @@ struct mips_cpu_info {
 #define TARGET_RTP_PIC (TARGET_VXWORKS_RTP && flag_pic)
 
 /* Compact branches must not be used if the user either selects the
-   'never' policy or the 'optimal' policy on a core that lacks
+   'never' policy or the 'optimal' / 'always' policy on a core that lacks
    compact branch instructions.  */
-#define TARGET_CB_NEVER (mips_cb == MIPS_CB_NEVER	\
-			 || (mips_cb == MIPS_CB_OPTIMAL \
-			     && !ISA_HAS_COMPACT_BRANCHES))
+#define TARGET_CB_NEVER (mips_cb == MIPS_CB_NEVER || !ISA_HAS_COMPACT_BRANCHES)
 
 /* Compact branches may be used if the user either selects the
    'always' policy or the 'optimal' policy on a core that supports
@@ -134,10 +132,11 @@ struct mips_cpu_info {
 			     && ISA_HAS_COMPACT_BRANCHES))
 
 /* Compact branches must always be generated if the user selects
-   the 'always' policy or the 'optimal' policy om a core that
-   lacks delay slot branch instructions.  */
-#define TARGET_CB_ALWAYS (mips_cb == MIPS_CB_ALWAYS	\
-			 || (mips_cb == MIPS_CB_OPTIMAL \
+   the 'always' policy on a core support compact branches,
+   or the 'optimal' policy on a core that lacks delay slot branch instructions.  */
+#define TARGET_CB_ALWAYS ((mips_cb == MIPS_CB_ALWAYS	  \
+			     && ISA_HAS_COMPACT_BRANCHES) \
+			 || (mips_cb == MIPS_CB_OPTIMAL   \
 			     && !ISA_HAS_DELAY_SLOTS))
 
 /* Special handling for JRC that exists in microMIPSR3 as well as R6
@@ -677,6 +676,13 @@ struct mips_cpu_info {
 	builtin_define ("__mips_no_lxc1_sxc1");				\
       if (!ISA_HAS_UNFUSED_MADD4 && !ISA_HAS_FUSED_MADD4)		\
 	builtin_define ("__mips_no_madd4");				\
+									\
+      if (TARGET_CB_NEVER)						\
+	builtin_define ("__mips_compact_branches_never");		\
+      else if (TARGET_CB_ALWAYS)					\
+	builtin_define ("__mips_compact_branches_always");		\
+      else 								\
+	builtin_define ("__mips_compact_branches_optimal");		\
     }									\
   while (0)
 
@@ -909,7 +915,9 @@ struct mips_cpu_info {
   {"mips-plt", "%{!mplt:%{!mno-plt:-m%(VALUE)}}" }, \
   {"synci", "%{!msynci:%{!mno-synci:-m%(VALUE)}}" },			\
   {"lxc1-sxc1", "%{!mlxc1-sxc1:%{!mno-lxc1-sxc1:-m%(VALUE)}}" }, \
-  {"madd4", "%{!mmadd4:%{!mno-madd4:-m%(VALUE)}}" } \
+  {"madd4", "%{!mmadd4:%{!mno-madd4:-m%(VALUE)}}" }, \
+  {"compact-branches", "%{!mcompact-branches=*:-mcompact-branches=%(VALUE)}" }, \
+  {"msa", "%{!mmsa:%{!mno-msa:-m%(VALUE)}}" } \
 
 /* A spec that infers the:
    -mnan=2008 setting from a -mips argument,
@@ -3379,6 +3387,9 @@ struct GTY(())  machine_function {
 
   /* True if GCC stored callee saved registers in the frame header.  */
   bool use_frame_header_for_callee_saved_regs;
+
+  /* True if the function should generate hazard barrier return.  */
+  bool use_hazard_barrier_return_p;
 };
 #endif
 
@@ -3427,12 +3438,14 @@ struct GTY(())  machine_function {
 
 /* If we are *not* using multilibs and the default ABI is not ABI_32 we
    need to change these from /lib and /usr/lib.  */
+#ifndef ENABLE_MULTIARCH
 #if MIPS_ABI_DEFAULT == ABI_N32
 #define STANDARD_STARTFILE_PREFIX_1 "/lib32/"
 #define STANDARD_STARTFILE_PREFIX_2 "/usr/lib32/"
 #elif MIPS_ABI_DEFAULT == ABI_64
 #define STANDARD_STARTFILE_PREFIX_1 "/lib64/"
 #define STANDARD_STARTFILE_PREFIX_2 "/usr/lib64/"
+#endif
 #endif
 
 /* Load store bonding is not supported by micromips and fix_24k.  The

@@ -1,5 +1,5 @@
 /* Definitions for Linux-based systems with libraries in ELF format.
-   Copyright (C) 2021-2022 Free Software Foundation, Inc.
+   Copyright (C) 2021-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -48,3 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #define STACK_CHECK_PROTECT (TARGET_64BIT ? 16 * 1024 : 12 * 1024)
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
+
+/* The stack pointer needs to be moved while checking the stack.  */
+#define STACK_CHECK_MOVING_SP 1

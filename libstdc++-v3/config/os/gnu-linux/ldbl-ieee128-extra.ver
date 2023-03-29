@@ -50,6 +50,15 @@ GLIBCXX_IEEE128_3.4.30 {
   _ZNSt17__gnu_cxx_ieee12816__convert_from_vERKP15__locale_structPciPKcz;
 } GLIBCXX_3.4.30;
 
+GLIBCXX_IEEE128_3.4.31 {
+  _ZSt15__try_use_facetINSt17__gnu_cxx_ieee1287num_get*;
+  _ZSt15__try_use_facetINSt17__gnu_cxx_ieee1287num_put*;
+  _ZSt15__try_use_facetINSt19__gnu_cxx11_ieee1289money_get*;
+  _ZSt15__try_use_facetINSt19__gnu_cxx11_ieee1289money_put*;
+  _ZNSt19__gnu_cxx11_ieee1289money_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEE2idE;
+  _ZNSt19__gnu_cxx11_ieee1289money_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE2idE;
+} GLIBCXX_3.4.31;
+
 CXXABI_IEEE128_1.3.13 {
 
   _ZT[IS]u9__ieee128;

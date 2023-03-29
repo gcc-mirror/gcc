@@ -1,0 +1,11 @@
+// PR c++/108829
+// { dg-do compile { target c++11 } }
+
+template<int, class... Ts>
+void f(Ts... ts) {
+  constexpr int IDX_PAGE_SIZE = 4096;
+  int abyPage = [=, ts...] { return IDX_PAGE_SIZE; }();  // { dg-error "redundant" }
+}
+void h() {
+  f<1>(0, 1);
+}

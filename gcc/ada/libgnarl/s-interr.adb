@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2022, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2023, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,27 +54,22 @@
 
 with Ada.Exceptions;
 with Ada.Task_Identification;
+with Ada.Unchecked_Conversion;
 
-with System.Task_Primitives;
 with System.Interrupt_Management;
-
 with System.Interrupt_Management.Operations;
-pragma Elaborate_All (System.Interrupt_Management.Operations);
-
 with System.IO;
-
+with System.Parameters;
+with System.Task_Primitives;
 with System.Task_Primitives.Operations;
 with System.Task_Primitives.Interrupt_Operations;
 with System.Storage_Elements;
-with System.Tasking.Utilities;
-
-with System.Tasking.Rendezvous;
-pragma Elaborate_All (System.Tasking.Rendezvous);
-
 with System.Tasking.Initialization;
-with System.Parameters;
+with System.Tasking.Utilities;
+with System.Tasking.Rendezvous;
 
-with Ada.Unchecked_Conversion;
+pragma Elaborate_All (System.Interrupt_Management.Operations);
+pragma Elaborate_All (System.Tasking.Rendezvous);
 
 package body System.Interrupts is
 
@@ -114,8 +109,8 @@ package body System.Interrupts is
          Static      : Boolean);
 
       entry Detach_Handler
-        (Interrupt   : Interrupt_ID;
-         Static      : Boolean);
+        (Interrupt : Interrupt_ID;
+         Static    : Boolean);
 
       entry Bind_Interrupt_To_Entry
         (T         : Task_Id;
@@ -179,15 +174,14 @@ package body System.Interrupts is
    pragma Atomic_Components (Ignored);
    --  True iff the corresponding interrupt is blocked in the process level
 
-   Last_Unblocker :
-     array (Interrupt_ID'Range) of Task_Id := [others => Null_Task];
+   Last_Unblocker : array (Interrupt_ID'Range) of Task_Id :=
+                      [others => Null_Task];
    pragma Atomic_Components (Last_Unblocker);
    --  Holds the ID of the last Task which Unblocked this Interrupt. It
    --  contains Null_Task if no tasks have ever requested the Unblocking
    --  operation or the Interrupt is currently Blocked.
 
-   Server_ID : array (Interrupt_ID'Range) of Task_Id :=
-                 [others => Null_Task];
+   Server_ID : array (Interrupt_ID'Range) of Task_Id := [others => Null_Task];
    pragma Atomic_Components (Server_ID);
    --  Holds the Task_Id of the Server_Task for each interrupt. Task_Id is
    --  needed to accomplish locking per Interrupt base. Also is needed to

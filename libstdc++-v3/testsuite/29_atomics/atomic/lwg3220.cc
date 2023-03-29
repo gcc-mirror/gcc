@@ -1,4 +1,8 @@
 // { dg-do compile { target c++11 } }
+
+// std::shared_ptr is not freestanding.
+// { dg-require-effective-target hosted }
+
 // DR 3220. P0558 broke conforming C++14 uses of atomic shared_ptr
 
 #include <atomic>

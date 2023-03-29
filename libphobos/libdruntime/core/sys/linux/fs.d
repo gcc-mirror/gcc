@@ -18,7 +18,6 @@ public import core.sys.posix.sys.ioctl;
 import core.stdc.config : c_ulong, c_long;
 
 extern (C):
-@system:
 @nogc:
 nothrow:
 

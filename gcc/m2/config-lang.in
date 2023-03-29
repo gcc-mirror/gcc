@@ -1,0 +1,54 @@
+# Top level configure fragment for GNU Modula-2.
+# Copyright (C) 2000-2023 Free Software Foundation, Inc.
+
+# This file is part of GCC.
+
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Configure looks for the existence of this file to auto-config each language.
+# We define several parameters used by configure:
+#
+# language	- name of language as it would appear in $(LANGUAGES)
+# compilers	- value to add to $(COMPILERS)
+# stagestuff	- files to add to $(STAGESTUFF)
+
+language="m2"
+
+compilers="cc1gm2\$(exeext)"
+
+stagestuff="gm2\$(exeext) cc1gm2\$(exeext) cc1gm2-cross\$(exeext)"
+
+target_libs="target-libstdc++-v3 target-libgm2"
+
+# The Modula-2 frontend needs C++ compiler during stage 1.
+lang_requires_boot_languages=c++
+
+# Do not build by default.
+build_by_default="no"
+
+gtfiles="\$(srcdir)/m2/gm2-lang.cc \
+         \$(srcdir)/m2/gm2-lang.h \
+         \$(srcdir)/m2/gm2-gcc/rtegraph.cc \
+         \$(srcdir)/m2/gm2-gcc/m2block.cc \
+         \$(srcdir)/m2/gm2-gcc/m2builtins.cc \
+         \$(srcdir)/m2/gm2-gcc/m2decl.cc \
+         \$(srcdir)/m2/gm2-gcc/m2except.cc \
+         \$(srcdir)/m2/gm2-gcc/m2expr.cc \
+         \$(srcdir)/m2/gm2-gcc/m2statement.cc \
+         \$(srcdir)/m2/gm2-gcc/m2type.cc"
+
+outputs="m2/config-make \
+         m2/Make-maintainer \
+        "

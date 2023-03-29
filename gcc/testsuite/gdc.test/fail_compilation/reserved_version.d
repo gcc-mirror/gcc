@@ -117,6 +117,7 @@ fail_compilation/reserved_version.d(218): Error: version identifier `D_PreCondit
 fail_compilation/reserved_version.d(219): Error: version identifier `D_PostConditions` is reserved and cannot be set
 fail_compilation/reserved_version.d(220): Error: version identifier `D_ProfileGC` is reserved and cannot be set
 fail_compilation/reserved_version.d(221): Error: version identifier `D_Invariants` is reserved and cannot be set
+fail_compilation/reserved_version.d(222): Error: version identifier `D_Optimized` is reserved and cannot be set
 ---
 */
 
@@ -240,6 +241,7 @@ version = D_PreConditions;
 version = D_PostConditions;
 version = D_ProfileGC;
 version = D_Invariants;
+version = D_Optimized;
 
 // This should work though
 debug = DigitalMars;
@@ -351,3 +353,4 @@ debug = AVR;
 debug = D_PreConditions;
 debug = D_PostConditions;
 debug = D_ProfileGC;
+debug = D_Optimized;

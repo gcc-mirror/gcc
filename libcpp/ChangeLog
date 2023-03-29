@@ -1,3 +1,142 @@
+2023-03-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109098
+	* charset.cc (cpp_valid_utf8_p): New function.
+	* include/cpplib.h (cpp_valid_utf8_p): New prototype.
+
+2023-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* makeucnid.cc (write_copyright): Update Unicode copyright years
+	up to 2022.
+	* makeuname2c.cc (write_copyright): Likewise.
+	* ucnid.h: Regenerated.
+	* uname2c.h: Regenerated.
+
+2023-03-13  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/67046
+	* directives.cc (_cpp_do__Pragma): Increment pfile->keep_tokens to
+	ensure the returned string token is valid.
+
+2023-03-13  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* generated_cpp_wcwidth.h: Regenerated for Unicode 15.
+
+2022-12-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* init.cc (lang_defaults): Enable va_opt for STDC2X.
+	* lex.cc (maybe_va_opt_error): Adjust diagnostic message for C.
+	* macro.cc (_cpp_arguments_ok): Update comment.
+
+2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	Revert:
+	2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac (--enable-host-shared): Don't set PICFLAG here.
+	(--enable-host-pie): New check.  Set PICFLAG after this check.
+	* configure: Regenerate.
+
+2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac (--enable-host-shared): Don't set PICFLAG here.
+	(--enable-host-pie): New check.  Set PICFLAG after this check.
+	* configure: Regenerate.
+
+2022-11-21  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* directives.cc (do_pragma): Fix memory leak in token buffer.  Fix
+	unwanted paste between two tokens.
+
+2022-11-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* files.cc: Ensure pattern matches before use.
+
+2022-11-21  Martin Liska  <mliska@suse.cz>
+
+	* config.in: Re-configure.
+
+2022-11-19  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR preprocessor/107691
+	* configure.ac: Add valgrind header checks.
+	* configure: Regenerate.
+
+2022-11-18  Richard Purdie  <richard.purdie@linuxfoundation.org>
+
+	* macro.cc (_cpp_builtin_macro_text): Don't remap filenames within
+	directives.
+
+2022-11-05  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/55971
+	* lex.cc (get_fresh_line_impl): New function refactoring the code
+	from...
+	(_cpp_get_fresh_line): ...here.
+	(lex_raw_string): Use the new version of get_fresh_line_impl() to
+	support raw strings containing new lines when processing a directive.
+
+2022-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* makeuname2c.cc (struct generated): Update from Unicode 15.0.0
+	table 4-8.
+	* ucnid.h: Regenerated for Unicode 15.0.0.
+	* uname2c.h: Likewise.
+
+2022-10-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* include/cpplib.h (struct cpp_string): Use new "string_length" GTY.
+	* include/symtab.h (struct ht_identifier): Likewise.
+
+2022-10-14  Joseph Myers  <joseph@codesourcery.com>
+
+	* charset.cc (ucn_valid_in_identifier): Check xid_identifiers not
+	cplusplus to determine whether to use CXX23 and NXX23 flags.
+	* include/cpplib.h (struct cpp_options): Add xid_identifiers.
+	* init.cc (struct lang_flags, lang_defaults): Add xid_identifiers.
+	(cpp_set_lang): Set xid_identifiers.
+	* lex.cc (warn_about_normalization): Add parameter identifier.
+	Only pedwarn about non-NFC for identifiers, not pp-numbers.
+	(_cpp_lex_direct): Update calls to warn_about_normalization.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (CPP_N_BFLOAT16): Define.
+	* expr.cc (interpret_float_suffix): Handle bf16 and BF16 suffixes for
+	C++.
+
+2022-09-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* include/line-map.h: Add discriminator to location_adhoc_data.
+	(get_combined_adhoc_loc): Add discriminator parameter.
+	(get_discriminator_from_adhoc_loc): Add external declaration.
+	(get_discriminator_from_loc): Add external declaration.
+	(COMBINE_LOCATION_DATA): Add discriminator parameter.
+	* lex.cc (get_location_for_byte_range_in_cur_line) Pass 0 discriminator
+	in a call to COMBINE_LOCATION_DATA.
+	(warn_about_normalization): Pass 0 discriminator in a call to
+	COMBINE_LOCATION_DATA.
+	(_cpp_lex_direct): Pass 0 discriminator in a call to
+	COMBINE_LOCATION_DATA.
+	* line-map.cc (location_adhoc_data_hash): Use discriminator compute
+	location_adhoc_data hash.
+	(location_adhoc_data_eq): Use discriminator when comparing
+	location_adhoc_data.
+	(can_be_stored_compactly_p): Check discriminator to determine
+	compact storage.
+	(get_combined_adhoc_loc): Add discriminator parameter.
+	(get_discriminator_from_adhoc_loc): New function to get the discriminator
+	from an ad-hoc location.
+	(get_discriminator_from_loc): New function to get the discriminator
+	from a location.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	PR c++/85518
+	* expr.cc (interpret_float_suffix): Allow {f,F}{16,32,64,128} and
+	{f,F}{32,64,128}x suffixes for C++.
+
 2022-09-08  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* line-map.cc (location_adhoc_data_update): Remove reliance on
@@ -7387,7 +7526,7 @@
 	* include/symtab.h: Moved from gcc/hashtable.h.  Change header
 	guard name.
 
-Copyright (C) 2004-2022 Free Software Foundation, Inc.
+Copyright (C) 2004-2023 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

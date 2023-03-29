@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -19,6 +19,7 @@
 // Can't include arraytypes.h here, need to declare these directly.
 template <typename TYPE> struct Array;
 
+class ErrorSink;
 class FileManager;
 struct Loc;
 
@@ -30,11 +31,10 @@ enum
     DIAGNOSTICoff     // disable diagnostic
 };
 
-typedef unsigned char MessageStyle;
-enum
+enum class MessageStyle : unsigned char
 {
-    MESSAGESTYLEdigitalmars, // file(line,column): message
-    MESSAGESTYLEgnu          // file:line:column: message
+    digitalmars, // file(line,column): message
+    gnu          // file:line:column: message
 };
 
 // The state of array bounds checking
@@ -158,7 +158,7 @@ struct Param
                                  // https://gist.github.com/andralex/e5405a5d773f07f73196c05f8339435a
                                  // https://digitalmars.com/d/archives/digitalmars/D/Binding_rvalues_to_ref_parameters_redux_325087.html
                                  // Implementation: https://github.com/dlang/dmd/pull/9817
-    bool noSharedAccess;         // read/write access to shared memory objects
+    FeatureState noSharedAccess; // read/write access to shared memory objects
     bool previewIn;              // `in` means `[ref] scope const`, accepts rvalues
     bool inclusiveInContracts;   // 'in' contracts of overridden methods must be a superset of parent contract
     bool shortenedMethods;       // allow => in normal function declarations
@@ -166,7 +166,9 @@ struct Param
     bool fix16997;               // fix integral promotions for unary + - ~ operators
                                  // https://issues.dlang.org/show_bug.cgi?id=16997
     FeatureState dtorFields;     // destruct fields of partially constructed objects
-                                     // https://issues.dlang.org/show_bug.cgi?id=14246
+                                 // https://issues.dlang.org/show_bug.cgi?id=14246
+    FeatureState systemVariables; // limit access to variables marked @system from @safe code
+
     CHECKENABLE useInvariants;     // generate class invariant checks
     CHECKENABLE useIn;             // generate precondition checks
     CHECKENABLE useOut;            // generate postcondition checks
@@ -178,6 +180,7 @@ struct Param
     CHECKACTION checkAction;       // action to take when bounds, asserts or switch defaults are violated
 
     unsigned errorLimit;
+    unsigned errorSupplementLimit; // Limit the number of supplemental messages for each error (0 means unlimited)
 
     DString  argv0;    // program name
     Array<const char *> modFileAliasStrings; // array of char*'s of -I module filename alias strings
@@ -276,6 +279,7 @@ struct Global
     unsigned varSequenceNumber;
 
     FileManager* fileManager;
+    ErrorSink* errorSink;       // where the error messages go
 
     FileName (*preprocess)(FileName, const Loc&, bool&, OutBuffer&);
 
@@ -340,6 +344,11 @@ struct Loc
     unsigned linnum;
     unsigned charnum;
 
+    static void set(bool showColumns, MessageStyle messageStyle);
+
+    static bool showColumns;
+    static MessageStyle messageStyle;
+
     Loc()
     {
         linnum = 0;
@@ -355,8 +364,8 @@ struct Loc
     }
 
     const char *toChars(
-        bool showColumns = global.params.showColumns,
-        MessageStyle messageStyle = global.params.messageStyle) const;
+        bool showColumns = Loc::showColumns,
+        MessageStyle messageStyle = Loc::messageStyle) const;
     bool equals(const Loc& loc) const;
 };
 

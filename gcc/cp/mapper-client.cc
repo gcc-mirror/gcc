@@ -1,5 +1,5 @@
 /* C++ modules.  Experimental!
-   Copyright (C) 2017-2022 Free Software Foundation, Inc.
+   Copyright (C) 2017-2023 Free Software Foundation, Inc.
    Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
 
    This file is part of GCC.
@@ -227,6 +227,8 @@ module_client::open_module_client (location_t loc, const char *o,
 		int fd = -1;
 #if CODY_NETWORKING
 		fd = Cody::OpenLocal (&errmsg, name.c_str () + 1);
+#else
+		errmsg = "disabled";
 #endif
 		if (fd >= 0)
 		  c = new module_client (fd, fd);
@@ -254,6 +256,8 @@ module_client::open_module_client (location_t loc, const char *o,
 			int fd = -1;
 #if CODY_NETWORKING
 			fd = Cody::OpenInet6 (&errmsg, name.c_str (), port);
+#else
+			errmsg = "disabled";
 #endif
 			name[colon] = ':';
 

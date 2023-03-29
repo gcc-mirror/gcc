@@ -1,3 +1,41 @@
+2023-01-09  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR other/107616
+	* server.cc (server): Don't call FD_ISSET when HAVE_PSELECT
+	and HAVE_SELECT are zero.
+
+2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	Revert:
+	2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* Makefile.in: Rename PIEFLAG to PICFLAG.  Set LD_PICFLAG.  Use it.
+	Use pic/libiberty.a if PICFLAG is set.
+	* configure.ac (--enable-default-pie): Set PICFLAG instead of PIEFLAG.
+	(--enable-host-pie): New check.
+	* configure: Regenerate.
+
+2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	Revert:
+	2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac (--enable-host-bind-now): New check.
+	* configure: Regenerate.
+
+2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac (--enable-host-bind-now): New check.
+	* configure: Regenerate.
+
+2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* Makefile.in: Rename PIEFLAG to PICFLAG.  Set LD_PICFLAG.  Use it.
+	Use pic/libiberty.a if PICFLAG is set.
+	* configure.ac (--enable-default-pie): Set PICFLAG instead of PIEFLAG.
+	(--enable-host-pie): New check.
+	* configure: Regenerate.
+
 2022-03-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* server.cc (accept_from): Use "1" as the dummy port number.
@@ -138,7 +176,7 @@
 	* server.cc: New.
 
 
-Copyright (C) 2020-2022 Free Software Foundation, Inc.
+Copyright (C) 2020-2023 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

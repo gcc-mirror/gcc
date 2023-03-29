@@ -1,6 +1,6 @@
 // Reference-counted versatile string base -*- C++ -*-
 
-// Copyright (C) 2005-2022 Free Software Foundation, Inc.
+// Copyright (C) 2005-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,6 +29,8 @@
 
 #ifndef _RC_STRING_BASE_H
 #define _RC_STRING_BASE_H 1
+
+#include <bits/requires_hosted.h> // GNU extensions are currently omitted
 
 #include <ext/atomicity.h>
 #include <ext/alloc_traits.h>

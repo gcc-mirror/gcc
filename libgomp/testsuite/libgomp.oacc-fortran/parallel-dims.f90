@@ -2,8 +2,8 @@
 ! vector_length.
 
 ! { dg-additional-sources parallel-dims-aux.c }
+! { dg-additional-options -Wno-complain-wrong-lang }
 ! { dg-do run }
-! { dg-prune-output "command-line option '-fintrinsic-modules-path=.*' is valid for Fortran but not for C" }
 
 ! { dg-additional-options "-DEXPENSIVE" { target run_expensive_tests } }
 ! { dg-additional-options "-cpp" }

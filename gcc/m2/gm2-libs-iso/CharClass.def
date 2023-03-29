@@ -1,0 +1,35 @@
+(* Library module defined by the International Standard
+   Information technology - programming languages
+   BS ISO/IEC 10514-1:1996E Part 1: Modula-2, Base Language.
+
+   Copyright ISO/IEC (International Organization for Standardization
+   and International Electrotechnical Commission) 1996-2021.
+
+   It may be freely copied for the purpose of implementation (see page
+   707 of the Information technology - Programming languages Part 1:
+   Modula-2, Base Language.  BS ISO/IEC 10514-1:1996).  *)
+
+DEFINITION MODULE CharClass;
+
+  (* Classification of values of the type CHAR *)
+
+PROCEDURE IsNumeric (ch: CHAR): BOOLEAN;
+  (* Returns TRUE if and only if ch is classified as a numeric character *)
+
+PROCEDURE IsLetter (ch: CHAR): BOOLEAN;
+  (* Returns TRUE if and only if ch is classified as a letter *)
+
+PROCEDURE IsUpper (ch: CHAR): BOOLEAN;
+  (* Returns TRUE if and only if ch is classified as an upper case letter *)
+
+PROCEDURE IsLower (ch: CHAR): BOOLEAN;
+  (* Returns TRUE if and only if ch is classified as a lower case letter *)
+
+PROCEDURE IsControl (ch: CHAR): BOOLEAN;
+  (* Returns TRUE if and only if ch represents a control function *)
+
+PROCEDURE IsWhiteSpace (ch: CHAR): BOOLEAN;
+  (* Returns TRUE if and only if ch represents a space character or a format effector *)
+
+END CharClass.
+

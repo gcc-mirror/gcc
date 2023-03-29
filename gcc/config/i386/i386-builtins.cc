@@ -1,4 +1,4 @@
-/* Copyright (C) 1988-2022 Free Software Foundation, Inc.
+/* Copyright (C) 1988-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -127,7 +127,6 @@ static GTY(()) tree ix86_builtin_type_tab[(int) IX86_BT_LAST_CPTR + 1];
 
 tree ix86_float16_type_node = NULL_TREE;
 tree ix86_bf16_type_node = NULL_TREE;
-tree ix86_bf16_ptr_type_node = NULL_TREE;
 
 /* Retrieve an element from the above table, building some of
    the types lazily.  */
@@ -280,10 +279,14 @@ def_builtin (HOST_WIDE_INT mask, HOST_WIDE_INT mask2,
       if (((mask2 == 0 || (mask2 & ix86_isa_flags2) != 0)
 	   && (mask == 0 || (mask & ix86_isa_flags) != 0))
 	  || ((mask & OPTION_MASK_ISA_MMX) != 0 && TARGET_MMX_WITH_SSE)
-	  /* "Unified" builtin used by either AVXVNNI intrinsics or AVX512VNNIVL
-	     non-mask intrinsics should be defined whenever avxvnni
-	     or avx512vnni && avx512vl exist.  */
+	  /* "Unified" builtin used by either AVXVNNI/AVXIFMA intrinsics
+	     or AVX512VNNIVL/AVX512IFMAVL non-mask intrinsics should be
+	     defined whenever avxvnni/avxifma or avx512vnni/avxifma &&
+	     avx512vl exist.  */
 	  || (mask2 == OPTION_MASK_ISA2_AVXVNNI)
+	  || (mask2 == OPTION_MASK_ISA2_AVXIFMA)
+	  || (mask2 == (OPTION_MASK_ISA2_AVXNECONVERT
+			| OPTION_MASK_ISA2_AVX512BF16))
 	  || (lang_hooks.builtin_function
 	      == lang_hooks.builtin_function_ext_scope))
 	{
@@ -1372,17 +1375,18 @@ ix86_register_float16_builtin_type (void)
 static void
 ix86_register_bf16_builtin_type (void)
 {
-  ix86_bf16_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (ix86_bf16_type_node) = 16;
-  SET_TYPE_MODE (ix86_bf16_type_node, BFmode);
-  layout_type (ix86_bf16_type_node);
+  if (bfloat16_type_node == NULL_TREE)
+    {
+      ix86_bf16_type_node = make_node (REAL_TYPE);
+      TYPE_PRECISION (ix86_bf16_type_node) = 16;
+      SET_TYPE_MODE (ix86_bf16_type_node, BFmode);
+      layout_type (ix86_bf16_type_node);
+    }
+  else
+    ix86_bf16_type_node = bfloat16_type_node;
 
   if (!maybe_get_identifier ("__bf16") && TARGET_SSE2)
-    {
-      lang_hooks.types.register_builtin_type (ix86_bf16_type_node,
-					    "__bf16");
-      ix86_bf16_ptr_type_node = build_pointer_type (ix86_bf16_type_node);
-    }
+    lang_hooks.types.register_builtin_type (ix86_bf16_type_node, "__bf16");
 }
 
 static void
@@ -1409,9 +1413,18 @@ ix86_init_builtin_types (void)
   lang_hooks.types.register_builtin_type (float80_type_node, "__float80");
 
   /* The __float128 type.  The node has already been created as
-     _Float128, so we only need to register the __float128 name for
-     it.  */
-  lang_hooks.types.register_builtin_type (float128_type_node, "__float128");
+     _Float128, so for C we only need to register the __float128 name for
+     it.  For C++, we create a distinct type which will mangle differently
+     (g) vs. _Float128 (DF128_) and behave backwards compatibly.  */
+  if (float128t_type_node == NULL_TREE)
+    {
+      float128t_type_node = make_node (REAL_TYPE);
+      TYPE_PRECISION (float128t_type_node)
+	= TYPE_PRECISION (float128_type_node);
+      SET_TYPE_MODE (float128t_type_node, TYPE_MODE (float128_type_node));
+      layout_type (float128t_type_node);
+    }
+  lang_hooks.types.register_builtin_type (float128t_type_node, "__float128");
 
   ix86_register_float16_builtin_type ();
 
@@ -2168,18 +2181,14 @@ fold_builtin_cpu (tree fndecl, tree *args)
 	      varpool_node::add (ix86_cpu_features2_var);
 	    }
 
+	  /* Skip __cpu_features[0].  */
 	  feature -= INT_TYPE_SIZE;
-	  field_val = 1U << (feature % INT_TYPE_SIZE);
 	  tree index = size_int (feature / INT_TYPE_SIZE);
+	  feature = feature % INT_TYPE_SIZE;
 	  array_elt = build4 (ARRAY_REF, unsigned_type_node,
 			      ix86_cpu_features2_var,
 			      index, NULL_TREE, NULL_TREE);
 	  /* Return __cpu_features2[index] & field_val  */
-	  final = build2 (BIT_AND_EXPR, unsigned_type_node,
-			  array_elt,
-			  build_int_cstu (unsigned_type_node,
-					  field_val));
-	  return build1 (NOP_EXPR, integer_type_node, final);
 	}
       else
 	{
@@ -2196,16 +2205,17 @@ fold_builtin_cpu (tree fndecl, tree *args)
 	  array_elt = build4 (ARRAY_REF, unsigned_type_node, ref,
 			      integer_zero_node, NULL_TREE, NULL_TREE);
 
-	  field_val = (1U << feature);
 	  /* Return __cpu_model.__cpu_features[0] & field_val  */
-	  final = build2 (BIT_AND_EXPR, unsigned_type_node, array_elt,
-			  build_int_cstu (unsigned_type_node, field_val));
-	  if (feature == (INT_TYPE_SIZE - 1))
-	    return build2 (NE_EXPR, integer_type_node, final,
-			   build_int_cst (unsigned_type_node, 0));
-	  else
-	    return build1 (NOP_EXPR, integer_type_node, final);
 	}
+
+      field_val = 1U << feature;
+      final = build2 (BIT_AND_EXPR, unsigned_type_node, array_elt,
+		      build_int_cstu (unsigned_type_node, field_val));
+      if (feature == INT_TYPE_SIZE - 1)
+	return build2 (NE_EXPR, integer_type_node, final,
+		       build_int_cst (unsigned_type_node, 0));
+      else
+	return build1 (NOP_EXPR, integer_type_node, final);
     }
   gcc_unreachable ();
 }

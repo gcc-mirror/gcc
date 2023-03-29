@@ -161,7 +161,8 @@ case "$target" in
   *-*-linux*)
     # Some old Linux distributions miss required syscalls.
     sanitizer_supported=no
-    AC_TRY_COMPILE([#include <sys/syscall.h>],[
+    AC_TRY_COMPILE([#include <sys/syscall.h>
+#include <unistd.h>],[
       syscall (__NR_gettid);
       syscall (__NR_futex);
       syscall (__NR_exit_group);
@@ -415,8 +416,16 @@ GCC_BASE_VER
 
 # Add CET specific flags if Intel CET is enabled.
 GCC_CET_FLAGS(CET_FLAGS)
-EXTRA_CFLAGS="$EXTRA_CFLAGS $CET_FLAGS"
-EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS $CET_FLAGS"
+
+# Always set -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 to sync with LLVM,
+# and keep struct *stat* have the same size.
+case "${host}" in
+  mips*-*) FILE64_FLAGS="-D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64" ;;
+  *) FILE64_FLAGS="" ;;
+esac
+
+EXTRA_CFLAGS="$EXTRA_CFLAGS $CET_FLAGS $FILE64_FLAGS"
+EXTRA_CXXFLAGS="$EXTRA_CXXFLAGS $CET_FLAGS $FILE64_FLAGS"
 EXTRA_ASFLAGS=$CET_FLAGS
 AC_SUBST(EXTRA_ASFLAGS)
 AC_SUBST(EXTRA_CFLAGS)

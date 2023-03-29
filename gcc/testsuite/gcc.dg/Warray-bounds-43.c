@@ -19,7 +19,7 @@ NOIPA int g2 (int i)
 
   sink (p0, p1, p2);
 
-  return p2[8];     // { dg-warning "\\\[-Warray-bounds]" }
+  return p2[8];     // { dg-warning "\\\[-Warray-bounds" }
 }
 
 NOIPA int g3 (int i)
@@ -33,7 +33,7 @@ NOIPA int g3 (int i)
 
   sink (p0, p1, p2, p3);
 
-  return p3[7];     // { dg-warning "\\\[-Warray-bounds]" }
+  return p3[7];     // { dg-warning "\\\[-Warray-bounds" }
 }
 
 NOIPA int g4 (int i)
@@ -48,7 +48,7 @@ NOIPA int g4 (int i)
 
   sink (p0, p1, p2, p3, p4);
 
-  return p4[6];     // { dg-warning "\\\[-Warray-bounds]" }
+  return p4[6];     // { dg-warning "\\\[-Warray-bounds" }
 }
 
 NOIPA int g5 (int i)

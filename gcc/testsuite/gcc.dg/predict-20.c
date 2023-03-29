@@ -16,8 +16,9 @@ c ()
 	break;
     }
   int d = b < 0;
+  /* We fail to apply __builtin_expect heuristics here.  Se PR109210.  */
   if (__builtin_expect (d, 0))
     asm("");
 }
 
-/* { dg-final { scan-tree-dump-times "__builtin_expect heuristics of edge" 3 "profile_estimate"} } */
+/* { dg-final { scan-tree-dump-times "__builtin_expect heuristics of edge" 2 "profile_estimate" } } */

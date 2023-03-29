@@ -1,0 +1,140 @@
+(* mcPretty.def provides an interface to the pretty printing of output code.
+
+Copyright (C) 2016-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE mcPretty ;
+
+
+FROM DynamicStrings IMPORT String ;
+
+TYPE
+   pretty ;
+   writeProc = PROCEDURE (CHAR) ;
+   writeLnProc = PROCEDURE ;
+
+
+(*
+   initPretty - initialise a pretty print data structure.
+*)
+
+PROCEDURE initPretty (w: writeProc; l: writeLnProc) : pretty ;
+
+
+(*
+   dupPretty - duplicate a pretty print data structure.
+*)
+
+PROCEDURE dupPretty (p: pretty) : pretty ;
+
+
+(*
+   killPretty - destroy a pretty print data structure.
+                Post condition:  p is assigned to NIL.
+*)
+
+PROCEDURE killPretty (VAR p: pretty) ;
+
+
+(*
+   pushPretty - duplicate, p.  Push, p, and return the duplicate.
+*)
+
+PROCEDURE pushPretty (p: pretty) : pretty ;
+
+
+(*
+   popPretty - pops the pretty object from the stack.
+*)
+
+PROCEDURE popPretty (p: pretty) : pretty ;
+
+
+(*
+   getindent - returns the current indent value.
+*)
+
+PROCEDURE getindent (p: pretty) : CARDINAL ;
+
+
+(*
+   setindent - sets the current indent to, n.
+*)
+
+PROCEDURE setindent (p: pretty; n: CARDINAL) ;
+
+
+(*
+   getcurpos - returns the current cursor position.
+*)
+
+PROCEDURE getcurpos (s: pretty) : CARDINAL ;
+
+
+(*
+   getseekpos - returns the seek position.
+*)
+
+PROCEDURE getseekpos (s: pretty) : CARDINAL ;
+
+
+(*
+   getcurline - returns the current line number.
+*)
+
+PROCEDURE getcurline (s: pretty) : CARDINAL ;
+
+
+(*
+   setNeedSpace - sets needSpace flag to TRUE.
+*)
+
+PROCEDURE setNeedSpace (s: pretty) ;
+
+
+(*
+   noSpace - unset needsSpace.
+*)
+
+PROCEDURE noSpace (s: pretty) ;
+
+
+(*
+   print - print a string using, p.
+*)
+
+PROCEDURE print (p: pretty; a: ARRAY OF CHAR) ;
+
+
+(*
+   prints - print a string using, p.
+*)
+
+PROCEDURE prints (p: pretty; s: String) ;
+
+
+(*
+   raw - print out string, s, without any translation of
+         escape sequences.
+*)
+
+PROCEDURE raw (p: pretty; s: String) ;
+
+
+END mcPretty.

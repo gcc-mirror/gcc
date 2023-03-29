@@ -1,6 +1,6 @@
 // C++11 <type_traits> -*- C++ -*-
 
-// Copyright (C) 2007-2022 Free Software Foundation, Inc.
+// Copyright (C) 2007-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -459,6 +459,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_floating_point_helper<long double>
     : public true_type { };
 
+#ifdef __STDCPP_FLOAT16_T__
+  template<>
+    struct __is_floating_point_helper<_Float16>
+    : public true_type { };
+#endif
+
+#ifdef __STDCPP_FLOAT32_T__
+  template<>
+    struct __is_floating_point_helper<_Float32>
+    : public true_type { };
+#endif
+
+#ifdef __STDCPP_FLOAT64_T__
+  template<>
+    struct __is_floating_point_helper<_Float64>
+    : public true_type { };
+#endif
+
+#ifdef __STDCPP_FLOAT128_T__
+  template<>
+    struct __is_floating_point_helper<_Float128>
+    : public true_type { };
+#endif
+
+#ifdef __STDCPP_BFLOAT16_T__
+  template<>
+    struct __is_floating_point_helper<__gnu_cxx::__bfloat16_t>
+    : public true_type { };
+#endif
+
 #if !defined(__STRICT_ANSI__) && defined(_GLIBCXX_USE_FLOAT128)
   template<>
     struct __is_floating_point_helper<__float128>
@@ -785,7 +815,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Could use is_standard_layout && is_trivial instead of the builtin.
   template<typename _Tp>
     struct
-    _GLIBCXX20_DEPRECATED("use is_standard_layout && is_trivial instead")
+    _GLIBCXX20_DEPRECATED_SUGGEST("is_standard_layout && is_trivial")
     is_pod
     : public integral_constant<bool, __is_pod(_Tp)>
     {
@@ -1381,6 +1411,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public integral_constant<bool, __is_base_of(_Base, _Derived)>
     { };
 
+#if __has_builtin(__is_convertible)
+  template<typename _From, typename _To>
+    struct is_convertible
+    : public __bool_constant<__is_convertible(_From, _To)>
+    { };
+#else
   template<typename _From, typename _To,
            bool = __or_<is_void<_From>, is_function<_To>,
                         is_array<_To>>::value>
@@ -1416,12 +1452,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct is_convertible
     : public __is_convertible_helper<_From, _To>::type
     { };
+#endif
 
   // helper trait for unique_ptr<T[]>, shared_ptr<T[]>, and span<T, N>
   template<typename _ToElementType, typename _FromElementType>
     using __is_array_convertible
       = is_convertible<_FromElementType(*)[], _ToElementType(*)[]>;
 
+#if __cplusplus >= 202002L
+#define __cpp_lib_is_nothrow_convertible 201806L
+
+#if __has_builtin(__is_nothrow_convertible)
+  /// is_nothrow_convertible_v
+  template<typename _From, typename _To>
+    inline constexpr bool is_nothrow_convertible_v
+      = __is_nothrow_convertible(_From, _To);
+
+  /// is_nothrow_convertible
+  template<typename _From, typename _To>
+    struct is_nothrow_convertible
+    : public bool_constant<is_nothrow_convertible_v<_From, _To>>
+    { };
+#else
   template<typename _From, typename _To,
            bool = __or_<is_void<_From>, is_function<_To>,
                         is_array<_To>>::value>
@@ -1451,14 +1503,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 #pragma GCC diagnostic pop
 
-  // is_nothrow_convertible for C++11
-  template<typename _From, typename _To>
-    struct __is_nothrow_convertible
-    : public __is_nt_convertible_helper<_From, _To>::type
-    { };
-
-#if __cplusplus > 201703L
-#define __cpp_lib_is_nothrow_convertible 201806L
   /// is_nothrow_convertible
   template<typename _From, typename _To>
     struct is_nothrow_convertible
@@ -1469,6 +1513,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _From, typename _To>
     inline constexpr bool is_nothrow_convertible_v
       = is_nothrow_convertible<_From, _To>::value;
+#endif
 #endif // C++2a
 
   // Const-volatile modifications.
@@ -1492,6 +1537,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { typedef _Tp     type; };
 
   /// remove_cv
+#if __has_builtin(__remove_cv)
+  template<typename _Tp>
+    struct remove_cv
+    { using type = __remove_cv(_Tp); };
+#else
   template<typename _Tp>
     struct remove_cv
     { using type = _Tp; };
@@ -1507,6 +1557,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct remove_cv<const volatile _Tp>
     { using type = _Tp; };
+#endif
 
   /// add_const
   template<typename _Tp>
@@ -1555,17 +1606,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Reference transformations.
 
   /// remove_reference
+#if __has_builtin(__remove_reference)
   template<typename _Tp>
     struct remove_reference
-    { typedef _Tp   type; };
+    { using type = __remove_reference(_Tp); };
+#else
+  template<typename _Tp>
+    struct remove_reference
+    { using type = _Tp; };
 
   template<typename _Tp>
     struct remove_reference<_Tp&>
-    { typedef _Tp   type; };
+    { using type = _Tp; };
 
   template<typename _Tp>
     struct remove_reference<_Tp&&>
-    { typedef _Tp   type; };
+    { using type = _Tp; };
+#endif
 
   /// add_lvalue_reference
   template<typename _Tp>
@@ -1779,8 +1836,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { typedef typename __make_unsigned_selector<_Tp>::__type type; };
 
   // Integral, but don't define.
-  template<>
-    struct make_unsigned<bool>;
+  template<> struct make_unsigned<bool>;
+  template<> struct make_unsigned<bool const>;
+  template<> struct make_unsigned<bool volatile>;
+  template<> struct make_unsigned<bool const volatile>;
 
   /// @cond undocumented
 
@@ -1909,8 +1968,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { typedef typename __make_signed_selector<_Tp>::__type type; };
 
   // Integral, but don't define.
-  template<>
-    struct make_signed<bool>;
+  template<> struct make_signed<bool>;
+  template<> struct make_signed<bool const>;
+  template<> struct make_signed<bool volatile>;
+  template<> struct make_signed<bool const volatile>;
 
 #if __cplusplus > 201103L
   /// Alias template for make_signed
@@ -2027,10 +2088,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  type shall be a POD type suitable for use as uninitialized
    *  storage for any object whose size is at most _Len and whose
    *  alignment is a divisor of _Align.
+   *
+   *  @deprecated Deprecated in C++23. Uses can be replaced by an
+   *  array std::byte[_Len] declared with alignas(_Align).
   */
   template<std::size_t _Len, std::size_t _Align =
 	   __alignof__(typename __aligned_storage_msa<_Len>::__type)>
-    struct aligned_storage
+    struct
+    _GLIBCXX23_DEPRECATED
+    aligned_storage
     {
       union type
       {
@@ -2057,6 +2123,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	? sizeof(_Tp) : __strictest_alignment<_Types...>::_S_size;
     };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
   /**
    *  @brief Provide aligned storage for types.
    *
@@ -2066,9 +2135,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  least size _Len.
    *
    *  @see aligned_storage
+   *
+   *  @deprecated Deprecated in C++23.
    */
   template <size_t _Len, typename... _Types>
-    struct aligned_union
+    struct
+    _GLIBCXX23_DEPRECATED
+    aligned_union
     {
     private:
       static_assert(sizeof...(_Types) != 0, "At least one type is required");
@@ -2085,6 +2158,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template <size_t _Len, typename... _Types>
     const size_t aligned_union<_Len, _Types...>::alignment_value;
+#pragma GCC diagnostic pop
 
   /// @cond undocumented
 
@@ -2516,13 +2590,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { } _GLIBCXX17_DEPRECATED_SUGGEST("std::invoke_result");
 
 #if __cplusplus >= 201402L
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
   /// Alias template for aligned_storage
   template<size_t _Len, size_t _Align =
 	    __alignof__(typename __aligned_storage_msa<_Len>::__type)>
-    using aligned_storage_t = typename aligned_storage<_Len, _Align>::type;
+    using aligned_storage_t _GLIBCXX23_DEPRECATED = typename aligned_storage<_Len, _Align>::type;
 
   template <size_t _Len, typename... _Types>
-    using aligned_union_t = typename aligned_union<_Len, _Types...>::type;
+    using aligned_union_t _GLIBCXX23_DEPRECATED = typename aligned_union<_Len, _Types...>::type;
+#pragma GCC diagnostic pop
 
   /// Alias template for decay
   template<typename _Tp>
@@ -2557,13 +2634,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @cond undocumented
 
+  // Detection idiom.
+  // Detect whether _Op<_Args...> is a valid type, use default _Def if not.
+
+#if __cpp_concepts
+  // Implementation of the detection idiom (negative case).
+  template<typename _Def, template<typename...> class _Op, typename... _Args>
+    struct __detected_or
+    {
+      using type = _Def;
+      using __is_detected = false_type;
+    };
+
+  // Implementation of the detection idiom (positive case).
+  template<typename _Def, template<typename...> class _Op, typename... _Args>
+    requires requires { typename _Op<_Args...>; }
+    struct __detected_or<_Def, _Op, _Args...>
+    {
+      using type = _Op<_Args...>;
+      using __is_detected = true_type;
+    };
+#else
   /// Implementation of the detection idiom (negative case).
   template<typename _Default, typename _AlwaysVoid,
 	   template<typename...> class _Op, typename... _Args>
     struct __detector
     {
-      using value_t = false_type;
       using type = _Default;
+      using __is_detected = false_type;
     };
 
   /// Implementation of the detection idiom (positive case).
@@ -2571,14 +2669,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    typename... _Args>
     struct __detector<_Default, __void_t<_Op<_Args...>>, _Op, _Args...>
     {
-      using value_t = true_type;
       using type = _Op<_Args...>;
+      using __is_detected = true_type;
     };
 
-  // Detect whether _Op<_Args...> is a valid type, use _Default if not.
   template<typename _Default, template<typename...> class _Op,
 	   typename... _Args>
     using __detected_or = __detector<_Default, void, _Op, _Args...>;
+#endif // __cpp_concepts
 
   // _Op<_Args...> if that is a valid type, otherwise _Default.
   template<typename _Default, template<typename...> class _Op,
@@ -2825,7 +2923,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // The primary template is used for invalid INVOKE expressions.
   template<typename _Result, typename _Ret,
 	   bool = is_void<_Ret>::value, typename = void>
-    struct __is_invocable_impl : false_type { };
+    struct __is_invocable_impl
+    : false_type
+    {
+      using __nothrow_conv = false_type; // For is_nothrow_invocable_r
+    };
 
   // Used for valid INVOKE and INVOKE<void> expressions.
   template<typename _Result, typename _Ret>
@@ -2833,7 +2935,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			       /* is_void<_Ret> = */ true,
 			       __void_t<typename _Result::type>>
     : true_type
-    { };
+    {
+      using __nothrow_conv = true_type; // For is_nothrow_invocable_r
+    };
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wctor-dtor-privacy"
@@ -2845,23 +2949,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     private:
       // The type of the INVOKE expression.
-      // Unlike declval, this doesn't add_rvalue_reference.
-      static typename _Result::type _S_get();
+      using _Res_t = typename _Result::type;
 
+      // Unlike declval, this doesn't add_rvalue_reference, so it respects
+      // guaranteed copy elision.
+      static _Res_t _S_get() noexcept;
+
+      // Used to check if _Res_t can implicitly convert to _Tp.
       template<typename _Tp>
-	static void _S_conv(_Tp);
+	static void _S_conv(__type_identity_t<_Tp>) noexcept;
 
       // This overload is viable if INVOKE(f, args...) can convert to _Tp.
-      template<typename _Tp, typename = decltype(_S_conv<_Tp>(_S_get()))>
-	static true_type
+      template<typename _Tp,
+	       bool _Nothrow = noexcept(_S_conv<_Tp>(_S_get())),
+	       typename = decltype(_S_conv<_Tp>(_S_get())),
+#if __has_builtin(__reference_converts_from_temporary)
+	       bool _Dangle = __reference_converts_from_temporary(_Tp, _Res_t)
+#else
+	       bool _Dangle = false
+#endif
+	      >
+	static __bool_constant<_Nothrow && !_Dangle>
 	_S_test(int);
 
-      template<typename _Tp>
+      template<typename _Tp, bool = false>
 	static false_type
 	_S_test(...);
 
     public:
-      using type = decltype(_S_test<_Ret>(1));
+      // For is_invocable_r
+      using type = decltype(_S_test<_Ret, /* Nothrow = */ true>(1));
+
+      // For is_nothrow_invocable_r
+      using __nothrow_conv = decltype(_S_test<_Ret>(1));
     };
 #pragma GCC diagnostic pop
 
@@ -2992,15 +3112,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   /// @cond undocumented
-  template<typename _Result, typename _Ret, typename = void>
-    struct __is_nt_invocable_impl : false_type { };
-
+  // This checks that the INVOKE<R> expression is well-formed and that the
+  // conversion to R does not throw. It does *not* check whether the INVOKE
+  // expression itself can throw. That is done by __call_is_nothrow_ instead.
   template<typename _Result, typename _Ret>
-    struct __is_nt_invocable_impl<_Result, _Ret,
-				  __void_t<typename _Result::type>>
-    : __or_<is_void<_Ret>,
-	    __is_nothrow_convertible<typename _Result::type, _Ret>>::type
-    { };
+    using __is_nt_invocable_impl
+      = typename __is_invocable_impl<_Result, _Ret>::__nothrow_conv;
   /// @endcond
 
   /// std::is_nothrow_invocable_r
@@ -3109,7 +3226,7 @@ template <typename _Tp>
 template <typename _Tp>
   inline constexpr bool is_standard_layout_v = __is_standard_layout(_Tp);
 template <typename _Tp>
-  _GLIBCXX20_DEPRECATED("use is_standard_layout_v && is_trivial_v instead")
+  _GLIBCXX20_DEPRECATED_SUGGEST("is_standard_layout_v && is_trivial_v")
   inline constexpr bool is_pod_v = __is_pod(_Tp);
 template <typename _Tp>
   _GLIBCXX17_DEPRECATED
@@ -3243,7 +3360,7 @@ template <typename _Tp>
 template <typename _Base, typename _Derived>
   inline constexpr bool is_base_of_v = __is_base_of(_Base, _Derived);
 template <typename _From, typename _To>
-  inline constexpr bool is_convertible_v = is_convertible<_From, _To>::value;
+  inline constexpr bool is_convertible_v = __is_convertible(_From, _To);
 template<typename _Fn, typename... _Args>
   inline constexpr bool is_invocable_v = is_invocable<_Fn, _Args...>::value;
 template<typename _Fn, typename... _Args>
@@ -3303,20 +3420,23 @@ template<typename _Ret, typename _Fn, typename... _Args>
    */
 #define __cpp_lib_remove_cvref 201711L
 
+#if __has_builtin(__remove_cvref)
   template<typename _Tp>
     struct remove_cvref
-    : remove_cv<_Tp>
-    { };
+    { using type = __remove_cvref(_Tp); };
+#else
+  template<typename _Tp>
+    struct remove_cvref
+    { using type = typename remove_cv<_Tp>::type; };
 
   template<typename _Tp>
     struct remove_cvref<_Tp&>
-    : remove_cv<_Tp>
-    { };
+    { using type = typename remove_cv<_Tp>::type; };
 
   template<typename _Tp>
     struct remove_cvref<_Tp&&>
-    : remove_cv<_Tp>
-    { };
+    { using type = typename remove_cv<_Tp>::type; };
+#endif
 
   template<typename _Tp>
     using remove_cvref_t = typename remove_cvref<_Tp>::type;

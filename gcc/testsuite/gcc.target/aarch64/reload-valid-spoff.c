@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-options "-O2 -mcmodel=large -fno-builtin" }  */
+/* { dg-options "-O2 -mcmodel=large -fno-builtin -fno-pie" }  */
 /* { dg-skip-if "-mcmodel=large -fPIC not currently supported" { aarch64-*-* }  { "-fPIC" } { "" } } */
 
 typedef long unsigned int size_t;

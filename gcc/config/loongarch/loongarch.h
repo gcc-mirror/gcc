@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  LoongArch version.
-   Copyright (C) 2021-2022 Free Software Foundation, Inc.
+   Copyright (C) 2021-2023 Free Software Foundation, Inc.
    Contributed by Loongson Ltd.
    Based on MIPS and RISC-V target for GNU compiler.
 
@@ -668,11 +668,15 @@ enum reg_class
 
 #define STACK_BOUNDARY (TARGET_ABI_LP64 ? 128 : 64)
 
+/* This value controls how many pages we manually unroll the loop for when
+   generating stack clash probes.  */
+#define STACK_CLASH_MAX_UNROLL_PAGES 4
+
 /* Symbolic macros for the registers used to return integer and floating
    point values.  */
 
 #define GP_RETURN (GP_REG_FIRST + 4)
-#define FP_RETURN ((TARGET_SOFT_FLOAT) ? GP_RETURN : (FP_REG_FIRST + 0))
+#define FP_RETURN ((TARGET_SOFT_FLOAT_ABI) ? GP_RETURN : (FP_REG_FIRST + 0))
 
 #define MAX_ARGS_IN_REGISTERS 8
 
@@ -1150,6 +1154,6 @@ struct GTY (()) machine_function
 /* The largest type that can be passed in floating-point registers.  */
 /* TODO: according to mabi.  */
 #define UNITS_PER_FP_ARG  \
-  (TARGET_HARD_FLOAT ? (TARGET_DOUBLE_FLOAT ? 8 : 4) : 0)
+  (TARGET_HARD_FLOAT_ABI ? (TARGET_DOUBLE_FLOAT_ABI ? 8 : 4) : 0)
 
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == GP_RETURN || (N) == FP_RETURN)

@@ -23,7 +23,7 @@ foo (int a)
   /* { dg-error "init" "incomplete union type" { target *-*-* } .-1 } */
   /* { dg-error "invalid use of undefined type" "" { target *-*-* } .-2 } */
   (void (void)) { 0 }; /* { dg-bogus "warning" "warning in place of error" } */
-  /* { dg-error "init" "function type" { target *-*-* } .-1 } */
+  /* { dg-error "compound literal has function type" "function type" { target *-*-* } .-1 } */
   (int [a]) { 1 }; /* { dg-bogus "warning" "warning in place of error" } */
   /* { dg-error "init|variable" "VLA type" { target *-*-* } .-1 } */
   /* Initializers must not attempt to initialize outside the object

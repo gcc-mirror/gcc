@@ -1,5 +1,5 @@
 /* Functions related to invoking -*- C++ -*- methods and overloaded functions.
-   Copyright (C) 1987-2022 Free Software Foundation, Inc.
+   Copyright (C) 1987-2023 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) and
    modified by Brendan Kehoe (brendan@cygnus.com).
 
@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "decl.h"
 #include "gcc-rich-location.h"
 
 /* The various kinds of conversion.  */
@@ -621,6 +622,15 @@ conversion_obstack_alloc (size_t n)
   memset (p, 0, n);
   return p;
 }
+
+/* RAII class to discard anything added to conversion_obstack.  */
+
+struct conversion_obstack_sentinel
+{
+  void *p;
+  conversion_obstack_sentinel (): p (conversion_obstack_alloc (0)) {}
+  ~conversion_obstack_sentinel () { obstack_free (&conversion_obstack, p); }
+};
 
 /* Allocate rejection reasons.  */
 
@@ -1272,9 +1282,6 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	    }
 	}
       conv = build_conv (ck_rvalue, from, conv);
-      if (flags & LOOKUP_PREFER_RVALUE)
-	/* Tell convert_like to set LOOKUP_PREFER_RVALUE.  */
-	conv->rvaluedness_matches_p = true;
       /* If we're performing copy-initialization, remember to skip
 	 explicit constructors.  */
       if (flags & LOOKUP_ONLYCONVERTING)
@@ -1541,6 +1548,22 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	   || (underlying_type && same_type_p (to, underlying_type)))
 	  && next_conversion (conv)->rank <= cr_promotion)
 	conv->rank = cr_promotion;
+
+      /* A prvalue of floating-point type can be converted to a prvalue of
+	 another floating-point type with a greater or equal conversion
+	 rank ([conv.rank]).  A prvalue of standard floating-point type can
+	 be converted to a prvalue of another standard floating-point type.
+	 For backwards compatibility with handling __float128 and other
+	 non-standard floating point types, allow all implicit floating
+	 point conversions if neither type is extended floating-point
+	 type and if at least one of them is, fail if they have unordered
+	 conversion rank or from has higher conversion rank.  */
+      if (fcode == REAL_TYPE
+	  && tcode == REAL_TYPE
+	  && (extended_float_type_p (from)
+	      || extended_float_type_p (to))
+	  && cp_compare_floating_point_conversion_ranks (from, to) >= 2)
+	conv->bad_p = true;
     }
   else if (fcode == VECTOR_TYPE && tcode == VECTOR_TYPE
 	   && vector_types_convertible_p (from, to, false))
@@ -1556,9 +1579,6 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	 type.  A temporary object is created to hold the result of
 	 the conversion unless we're binding directly to a reference.  */
       conv->need_temporary_p = !(flags & LOOKUP_NO_TEMP_BIND);
-      if (flags & LOOKUP_PREFER_RVALUE)
-	/* Tell convert_like to set LOOKUP_PREFER_RVALUE.  */
-	conv->rvaluedness_matches_p = true;
       /* If we're performing copy-initialization, remember to skip
 	 explicit constructors.  */
       if (flags & LOOKUP_ONLYCONVERTING)
@@ -1864,8 +1884,10 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 
       /* Nor the reverse.  */
       if (!is_lvalue && !TYPE_REF_IS_RVALUE (rto)
-	  /* Unless it's really an lvalue.  */
-	  && !(cxx_dialect >= cxx20
+	  /* Unless it's really a C++20 lvalue being treated as an xvalue.
+	     But in C++23, such an expression is just an xvalue, not a special
+	     lvalue, so the binding is once again ill-formed.  */
+	  && !(cxx_dialect <= cxx20
 	       && (gl_kind & clk_implicit_rval))
 	  && (!CP_TYPE_CONST_NON_VOLATILE_P (to)
 	      || (flags & LOOKUP_NO_RVAL_BIND))
@@ -2026,9 +2048,8 @@ implicit_conversion_1 (tree to, tree from, tree expr, bool c_cast_p,
   /* Other flags only apply to the primary function in overload
      resolution, or after we've chosen one.  */
   flags &= (LOOKUP_ONLYCONVERTING|LOOKUP_NO_CONVERSION|LOOKUP_COPY_PARM
-	    |LOOKUP_NO_TEMP_BIND|LOOKUP_NO_RVAL_BIND|LOOKUP_PREFER_RVALUE
-	    |LOOKUP_NO_NARROWING|LOOKUP_PROTECT|LOOKUP_NO_NON_INTEGRAL
-	    |LOOKUP_SHORTCUT_BAD_CONVS);
+	    |LOOKUP_NO_TEMP_BIND|LOOKUP_NO_RVAL_BIND|LOOKUP_NO_NARROWING
+	    |LOOKUP_PROTECT|LOOKUP_NO_NON_INTEGRAL|LOOKUP_SHORTCUT_BAD_CONVS);
 
   /* FIXME: actually we don't want warnings either, but we can't just
      have 'complain &= ~(tf_warning|tf_error)' because it would cause
@@ -3592,7 +3613,9 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
   /* Now the explicit specifier might have been deduced; check if this
      declaration is explicit.  If it is and we're ignoring non-converting
      constructors, don't add this function to the set of candidates.  */
-  if ((flags & LOOKUP_ONLYCONVERTING) && DECL_NONCONVERTING_P (fn))
+  if (((flags & (LOOKUP_ONLYCONVERTING|LOOKUP_LIST_INIT_CTOR))
+       == LOOKUP_ONLYCONVERTING)
+      && DECL_NONCONVERTING_P (fn))
     return NULL;
 
   if (DECL_CONSTRUCTOR_P (fn) && nargs == 2)
@@ -4143,6 +4166,149 @@ add_list_candidates (tree fns, tree first_arg,
 		  access_path, flags, candidates, complain);
 }
 
+/* Given C(std::initializer_list<A>), return A.  */
+
+static tree
+list_ctor_element_type (tree fn)
+{
+  gcc_checking_assert (is_list_ctor (fn));
+
+  tree parm = FUNCTION_FIRST_USER_PARMTYPE (fn);
+  parm = non_reference (TREE_VALUE (parm));
+  return TREE_VEC_ELT (CLASSTYPE_TI_ARGS (parm), 0);
+}
+
+/* If EXPR is a braced-init-list where the elements all decay to the same type,
+   return that type.  */
+
+static tree
+braced_init_element_type (tree expr)
+{
+  if (TREE_CODE (expr) == CONSTRUCTOR
+      && TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE)
+    return TREE_TYPE (TREE_TYPE (expr));
+  if (!BRACE_ENCLOSED_INITIALIZER_P (expr))
+    return NULL_TREE;
+
+  tree elttype = NULL_TREE;
+  for (constructor_elt &e: CONSTRUCTOR_ELTS (expr))
+    {
+      tree type = TREE_TYPE (e.value);
+      type = type_decays_to (type);
+      if (!elttype)
+	elttype = type;
+      else if (!same_type_p (type, elttype))
+	return NULL_TREE;
+    }
+  return elttype;
+}
+
+/* True iff EXPR contains any temporaries with non-trivial destruction.
+
+   ??? Also ignore classes with non-trivial but no-op destruction other than
+   std::allocator?  */
+
+static bool
+has_non_trivial_temporaries (tree expr)
+{
+  auto_vec<tree*> temps;
+  cp_walk_tree_without_duplicates (&expr, find_temps_r, &temps);
+  for (tree *p : temps)
+    {
+      tree t = TREE_TYPE (*p);
+      if (!TYPE_HAS_TRIVIAL_DESTRUCTOR (t)
+	  && !is_std_allocator (t))
+	return true;
+    }
+  return false;
+}
+
+/* We're initializing an array of ELTTYPE from INIT.  If it seems useful,
+   return INIT as an array (of its own type) so the caller can initialize the
+   target array in a loop.  */
+
+static tree
+maybe_init_list_as_array (tree elttype, tree init)
+{
+  /* Only do this if the array can go in rodata but not once converted.  */
+  if (!TYPE_NON_AGGREGATE_CLASS (elttype))
+    return NULL_TREE;
+  tree init_elttype = braced_init_element_type (init);
+  if (!init_elttype || !SCALAR_TYPE_P (init_elttype) || !TREE_CONSTANT (init))
+    return NULL_TREE;
+
+  /* Check with a stub expression to weed out special cases, and check whether
+     we call the same function for direct-init as copy-list-init.  */
+  conversion_obstack_sentinel cos;
+  tree arg = build_stub_object (init_elttype);
+  conversion *c = implicit_conversion (elttype, init_elttype, arg, false,
+				       LOOKUP_NORMAL, tf_none);
+  if (c && c->kind == ck_rvalue)
+    c = next_conversion (c);
+  if (!c || c->kind != ck_user)
+    return NULL_TREE;
+
+  tree first = CONSTRUCTOR_ELT (init, 0)->value;
+  conversion *fc = implicit_conversion (elttype, init_elttype, first, false,
+					LOOKUP_IMPLICIT|LOOKUP_NO_NARROWING,
+					tf_none);
+  if (fc && fc->kind == ck_rvalue)
+    fc = next_conversion (fc);
+  if (!fc || fc->kind != ck_user || fc->cand->fn != c->cand->fn)
+    return NULL_TREE;
+  first = convert_like (fc, first, tf_none);
+  if (first == error_mark_node)
+    /* Let the normal code give the error.  */
+    return NULL_TREE;
+
+  /* Don't do this if the conversion would be constant.  */
+  first = maybe_constant_init (first);
+  if (TREE_CONSTANT (first))
+    return NULL_TREE;
+
+  /* We can't do this if the conversion creates temporaries that need
+     to live until the whole array is initialized.  */
+  if (has_non_trivial_temporaries (first))
+    return NULL_TREE;
+
+  init_elttype = cp_build_qualified_type (init_elttype, TYPE_QUAL_CONST);
+  tree arr = build_array_of_n_type (init_elttype, CONSTRUCTOR_NELTS (init));
+  return finish_compound_literal (arr, init, tf_none);
+}
+
+/* If we were going to call e.g. vector(initializer_list<string>) starting
+   with a list of string-literals (which is inefficient, see PR105838),
+   instead build an array of const char* and pass it to the range constructor.
+   But only do this for standard library types, where we can assume the
+   transformation makes sense.
+
+   Really the container classes should have initializer_list<U> constructors to
+   get the same effect more simply; this is working around that lack.  */
+
+static tree
+maybe_init_list_as_range (tree fn, tree expr)
+{
+  if (!processing_template_decl
+      && BRACE_ENCLOSED_INITIALIZER_P (expr)
+      && is_list_ctor (fn)
+      && decl_in_std_namespace_p (fn))
+    {
+      tree to = list_ctor_element_type (fn);
+      if (tree init = maybe_init_list_as_array (to, expr))
+	{
+	  tree begin = decay_conversion (TARGET_EXPR_SLOT (init), tf_none);
+	  tree nelts = array_type_nelts_top (TREE_TYPE (init));
+	  tree end = cp_build_binary_op (input_location, PLUS_EXPR, begin,
+					 nelts, tf_none);
+	  begin = cp_build_compound_expr (init, begin, tf_none);
+	  return build_constructor_va (init_list_type_node, 2,
+				       NULL_TREE, begin, NULL_TREE, end);
+	}
+    }
+
+  return NULL_TREE;
+}
+
 /* Returns the best overload candidate to perform the requested
    conversion.  This function is used for three the overloading situations
    described in [over.match.copy], [over.match.conv], and [over.match.ref].
@@ -4414,6 +4580,16 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
       return cand;
     }
 
+  /* Maybe pass { } as iterators instead of an initializer_list.  */
+  if (tree iters = maybe_init_list_as_range (cand->fn, expr))
+    if (z_candidate *cand2
+	= build_user_type_conversion_1 (totype, iters, flags, tf_none))
+      if (cand2->viable == 1 && !is_list_ctor (cand2->fn))
+	{
+	  cand = cand2;
+	  expr = iters;
+	}
+
   tree convtype;
   if (!DECL_CONSTRUCTOR_P (cand->fn))
     convtype = non_reference (TREE_TYPE (TREE_TYPE (cand->fn)));
@@ -4432,14 +4608,6 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
   conv->cand = cand;
   if (cand->viable == -1)
     conv->bad_p = true;
-
-  /* We're performing the maybe-rvalue overload resolution and
-     a conversion function is in play.  Reject converting the return
-     value of the conversion function to a base class.  */
-  if ((flags & LOOKUP_PREFER_RVALUE) && !DECL_CONSTRUCTOR_P (cand->fn))
-    for (conversion *t = cand->second_conv; t; t = next_conversion (t))
-      if (t->kind == ck_base)
-	return NULL;
 
   /* Remember that this was a list-initialization.  */
   if (flags & LOOKUP_NO_NARROWING)
@@ -5014,6 +5182,33 @@ build_operator_new_call (tree fnname, vec<tree, va_gc> **args,
    return ret;
 }
 
+/* Evaluate side-effects from OBJ before evaluating call
+   to FN in RESULT expression.
+   This is for expressions of the form `obj->fn(...)'
+   where `fn' turns out to be a static member function and
+   `obj' needs to be evaluated.  `fn' could be also static operator[]
+   or static operator(), in which cases the source expression
+   would be `obj[...]' or `obj(...)'.  */
+
+tree
+keep_unused_object_arg (tree result, tree obj, tree fn)
+{
+  if (result == NULL_TREE
+      || result == error_mark_node
+      || TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE
+      || !TREE_SIDE_EFFECTS (obj))
+    return result;
+
+  /* But avoid the implicit lvalue-rvalue conversion when `obj' is
+     volatile.  */
+  tree a = obj;
+  if (TREE_THIS_VOLATILE (a))
+    a = build_this (a);
+  if (TREE_SIDE_EFFECTS (a))
+    return build2 (COMPOUND_EXPR, TREE_TYPE (result), a, result);
+  return result;
+}
+
 /* Build a new call to operator().  This may change ARGS.  */
 
 tree
@@ -5134,7 +5329,13 @@ build_op_call (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
       else if (TREE_CODE (cand->fn) == FUNCTION_DECL
 	       && DECL_OVERLOADED_OPERATOR_P (cand->fn)
 	       && DECL_OVERLOADED_OPERATOR_IS (cand->fn, CALL_EXPR))
-	result = build_over_call (cand, LOOKUP_NORMAL, complain);
+	{
+	  result = build_over_call (cand, LOOKUP_NORMAL, complain);
+	  /* In an expression of the form `a()' where cand->fn
+	     which is operator() turns out to be a static member function,
+	     `a' is none-the-less evaluated.  */
+	  result = keep_unused_object_arg (result, obj, cand->fn);
+	}
       else
 	{
 	  if (TREE_CODE (cand->fn) == FUNCTION_DECL)
@@ -5356,6 +5557,7 @@ build_conditional_expr (const op_location_t &loc,
   tree arg3_type;
   tree result = NULL_TREE;
   tree result_type = NULL_TREE;
+  tree semantic_result_type = NULL_TREE;
   bool is_glvalue = true;
   struct z_candidate *candidates = 0;
   struct z_candidate *cand;
@@ -5384,6 +5586,14 @@ build_conditional_expr (const op_location_t &loc,
 	  arg1 = cp_stabilize_reference (arg1);
 	  arg2 = arg1 = prevent_lifetime_extension (arg1);
 	}
+      else if (TREE_CODE (arg1) == TARGET_EXPR)
+	/* arg1 can't be a prvalue result of the conditional
+	   expression, since it needs to be materialized for the
+	   conversion to bool, so treat it as an xvalue in arg2.  */
+	arg2 = move (TARGET_EXPR_SLOT (arg1));
+      else if (TREE_CODE (arg1) == EXCESS_PRECISION_EXPR)
+	arg2 = arg1 = build1 (EXCESS_PRECISION_EXPR, TREE_TYPE (arg1),
+			      cp_save_expr (TREE_OPERAND (arg1, 0)));
       else
 	arg2 = arg1 = cp_save_expr (arg1);
     }
@@ -5542,6 +5752,52 @@ build_conditional_expr (const op_location_t &loc,
   if (error_operand_p (arg1))
     return error_mark_node;
 
+  arg2_type = unlowered_expr_type (arg2);
+  arg3_type = unlowered_expr_type (arg3);
+
+  if ((TREE_CODE (arg2) == EXCESS_PRECISION_EXPR
+       || TREE_CODE (arg3) == EXCESS_PRECISION_EXPR)
+      && (TREE_CODE (arg2_type) == INTEGER_TYPE
+	  || TREE_CODE (arg2_type) == REAL_TYPE
+	  || TREE_CODE (arg2_type) == COMPLEX_TYPE)
+      && (TREE_CODE (arg3_type) == INTEGER_TYPE
+	  || TREE_CODE (arg3_type) == REAL_TYPE
+	  || TREE_CODE (arg3_type) == COMPLEX_TYPE))
+    {
+      semantic_result_type
+	= type_after_usual_arithmetic_conversions (arg2_type, arg3_type);
+      if (semantic_result_type == error_mark_node)
+	{
+	  tree t1 = arg2_type;
+	  tree t2 = arg3_type;
+	  if (TREE_CODE (t1) == COMPLEX_TYPE)
+	    t1 = TREE_TYPE (t1);
+	  if (TREE_CODE (t2) == COMPLEX_TYPE)
+	    t2 = TREE_TYPE (t2);
+	  gcc_checking_assert (TREE_CODE (t1) == REAL_TYPE
+			       && TREE_CODE (t2) == REAL_TYPE
+			       && (extended_float_type_p (t1)
+				   || extended_float_type_p (t2))
+			       && cp_compare_floating_point_conversion_ranks
+				    (t1, t2) == 3);
+	  if (complain & tf_error)
+	    error_at (loc, "operands to %<?:%> of types %qT and %qT "
+			   "have unordered conversion rank",
+		      arg2_type, arg3_type);
+	  return error_mark_node;
+	}
+      if (TREE_CODE (arg2) == EXCESS_PRECISION_EXPR)
+	{
+	  arg2 = TREE_OPERAND (arg2, 0);
+	  arg2_type = TREE_TYPE (arg2);
+	}
+      if (TREE_CODE (arg3) == EXCESS_PRECISION_EXPR)
+	{
+	  arg3 = TREE_OPERAND (arg3, 0);
+	  arg3_type = TREE_TYPE (arg3);
+	}
+    }
+
   /* [expr.cond]
 
      If either the second or the third operand has type (possibly
@@ -5549,8 +5805,6 @@ build_conditional_expr (const op_location_t &loc,
      array-to-pointer (_conv.array_), and function-to-pointer
      (_conv.func_) standard conversions are performed on the second
      and third operands.  */
-  arg2_type = unlowered_expr_type (arg2);
-  arg3_type = unlowered_expr_type (arg3);
   if (VOID_TYPE_P (arg2_type) || VOID_TYPE_P (arg3_type))
     {
       /* 'void' won't help in resolving an overloaded expression on the
@@ -5839,9 +6093,72 @@ build_conditional_expr (const op_location_t &loc,
 	   && (ARITHMETIC_TYPE_P (arg3_type)
 	       || UNSCOPED_ENUM_P (arg3_type)))
     {
-      /* In this case, there is always a common type.  */
-      result_type = type_after_usual_arithmetic_conversions (arg2_type,
-							     arg3_type);
+      /* A conditional expression between a floating-point
+	 type and an integer type should convert the integer type to
+	 the evaluation format of the floating-point type, with
+	 possible excess precision.  */
+      tree eptype2 = arg2_type;
+      tree eptype3 = arg3_type;
+      tree eptype;
+      if (ANY_INTEGRAL_TYPE_P (arg2_type)
+	  && (eptype = excess_precision_type (arg3_type)) != NULL_TREE)
+	{
+	  eptype3 = eptype;
+	  if (!semantic_result_type)
+	    semantic_result_type
+	      = type_after_usual_arithmetic_conversions (arg2_type, arg3_type);
+	}
+      else if (ANY_INTEGRAL_TYPE_P (arg3_type)
+	       && (eptype = excess_precision_type (arg2_type)) != NULL_TREE)
+	{
+	  eptype2 = eptype;
+	  if (!semantic_result_type)
+	    semantic_result_type
+	      = type_after_usual_arithmetic_conversions (arg2_type, arg3_type);
+	}
+      result_type = type_after_usual_arithmetic_conversions (eptype2,
+							     eptype3);
+      if (result_type == error_mark_node)
+	{
+	  tree t1 = eptype2;
+	  tree t2 = eptype3;
+	  if (TREE_CODE (t1) == COMPLEX_TYPE)
+	    t1 = TREE_TYPE (t1);
+	  if (TREE_CODE (t2) == COMPLEX_TYPE)
+	    t2 = TREE_TYPE (t2);
+	  gcc_checking_assert (TREE_CODE (t1) == REAL_TYPE
+			       && TREE_CODE (t2) == REAL_TYPE
+			       && (extended_float_type_p (t1)
+				   || extended_float_type_p (t2))
+			       && cp_compare_floating_point_conversion_ranks
+				    (t1, t2) == 3);
+	  if (complain & tf_error)
+	    error_at (loc, "operands to %<?:%> of types %qT and %qT "
+			   "have unordered conversion rank",
+		      eptype2, eptype3);
+	  return error_mark_node;
+	}
+      if (semantic_result_type == error_mark_node)
+	{
+	  tree t1 = arg2_type;
+	  tree t2 = arg3_type;
+	  if (TREE_CODE (t1) == COMPLEX_TYPE)
+	    t1 = TREE_TYPE (t1);
+	  if (TREE_CODE (t2) == COMPLEX_TYPE)
+	    t2 = TREE_TYPE (t2);
+	  gcc_checking_assert (TREE_CODE (t1) == REAL_TYPE
+			       && TREE_CODE (t2) == REAL_TYPE
+			       && (extended_float_type_p (t1)
+				   || extended_float_type_p (t2))
+			       && cp_compare_floating_point_conversion_ranks
+				    (t1, t2) == 3);
+	  if (complain & tf_error)
+	    error_at (loc, "operands to %<?:%> of types %qT and %qT "
+			   "have unordered conversion rank",
+		      arg2_type, arg3_type);
+	  return error_mark_node;
+	}
+
       if (complain & tf_warning)
 	do_warn_double_promotion (result_type, arg2_type, arg3_type,
 				  "implicit conversion from %qH to %qI to "
@@ -5976,13 +6293,25 @@ build_conditional_expr (const op_location_t &loc,
 	 but now we sometimes wrap them in NOP_EXPRs so the test would
 	 fail.  */
       if (CLASS_TYPE_P (TREE_TYPE (result)))
-	result = get_target_expr (result, complain);
+	{
+	  result = get_target_expr (result, complain);
+	  /* Tell gimplify_modify_expr_rhs not to strip this in
+	     assignment context: we want both arms to initialize
+	     the same temporary.  */
+	  TARGET_EXPR_NO_ELIDE (result) = true;
+	}
       /* If this expression is an rvalue, but might be mistaken for an
 	 lvalue, we must add a NON_LVALUE_EXPR.  */
       result = rvalue (result);
+      if (semantic_result_type)
+	result = build1 (EXCESS_PRECISION_EXPR, semantic_result_type,
+			 result);
     }
   else
-    result = force_paren_expr (result);
+    {
+      result = force_paren_expr (result);
+      gcc_assert (semantic_result_type == NULL_TREE);
+    }
 
   return result;
 }
@@ -6101,6 +6430,7 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
   bool check_list_ctor = false;
   bool check_converting = false;
   unification_kind_t strict;
+  tree ne_fns = NULL_TREE;
 
   if (!fns)
     return;
@@ -6136,6 +6466,32 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 	}
       strict = DEDUCE_CALL;
       ctype = conversion_path ? BINFO_TYPE (conversion_path) : NULL_TREE;
+    }
+
+  /* P2468: Check if operator== is a rewrite target with first operand
+     (*args)[0]; for now just do the lookups.  */
+  if ((flags & (LOOKUP_REWRITTEN | LOOKUP_REVERSED))
+      && DECL_OVERLOADED_OPERATOR_IS (fn, EQ_EXPR))
+    {
+      tree ne_name = ovl_op_identifier (false, NE_EXPR);
+      if (DECL_CLASS_SCOPE_P (fn))
+	{
+	  ne_fns = lookup_fnfields (TREE_TYPE ((*args)[0]), ne_name,
+				    1, tf_none);
+	  if (ne_fns == error_mark_node || ne_fns == NULL_TREE)
+	    ne_fns = NULL_TREE;
+	  else
+	    ne_fns = BASELINK_FUNCTIONS (ne_fns);
+	}
+      else
+	{
+	  tree context = decl_namespace_context (fn);
+	  ne_fns = lookup_qualified_name (context, ne_name, LOOK_want::NORMAL,
+					  /*complain*/false);
+	  if (ne_fns == error_mark_node
+	      || !is_overloaded_fn (ne_fns))
+	    ne_fns = NULL_TREE;
+	}
     }
 
   if (first_arg)
@@ -6211,6 +6567,27 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 	  tree parmlist = TYPE_ARG_TYPES (TREE_TYPE (fn));
 	  if (same_type_p (TREE_VALUE (parmlist),
 			   TREE_VALUE (TREE_CHAIN (parmlist))))
+	    continue;
+	}
+
+      /* When considering reversed operator==, if there's a corresponding
+	 operator!= in the same scope, it's not a rewrite target.  */
+      if (ne_fns)
+	{
+	  bool found = false;
+	  for (lkp_iterator ne (ne_fns); !found && ne; ++ne)
+	    if (0 && !ne.using_p ()
+		&& DECL_NAMESPACE_SCOPE_P (fn)
+		&& DECL_CONTEXT (*ne) != DECL_CONTEXT (fn))
+	      /* ??? This kludge excludes inline namespace members for the H
+		 test in spaceship-eq15.C, but I don't see why we would want
+		 that behavior.  Asked Core 2022-11-04.  Disabling for now.  */;
+	    else if (fns_correspond (fn, *ne))
+	      {
+		found = true;
+		break;
+	      }
+	  if (found)
 	    continue;
 	}
 
@@ -6410,12 +6787,36 @@ add_operator_candidates (z_candidate **candidates,
       if (fns == error_mark_node)
 	return error_mark_node;
       if (fns)
-	add_candidates (BASELINK_FUNCTIONS (fns),
-			NULL_TREE, arglist, NULL_TREE,
-			NULL_TREE, false,
-			BASELINK_BINFO (fns),
-			BASELINK_ACCESS_BINFO (fns),
-			flags, candidates, complain);
+	{
+	  if (code == ARRAY_REF)
+	    {
+	      vec<tree,va_gc> *restlist = make_tree_vector ();
+	      for (unsigned i = 1; i < nargs; ++i)
+		vec_safe_push (restlist, (*arglist)[i]);
+	      z_candidate *save_cand = *candidates;
+	      add_candidates (BASELINK_FUNCTIONS (fns),
+			      (*arglist)[0], restlist, NULL_TREE,
+			      NULL_TREE, false,
+			      BASELINK_BINFO (fns),
+			      BASELINK_ACCESS_BINFO (fns),
+			      flags, candidates, complain);
+	      /* Release the vec if we didn't add a candidate that uses it.  */
+	      for (z_candidate *c = *candidates; c != save_cand; c = c->next)
+		if (c->args == restlist)
+		  {
+		    restlist = NULL;
+		    break;
+		  }
+	      release_tree_vector (restlist);
+	    }
+	  else
+	    add_candidates (BASELINK_FUNCTIONS (fns),
+			    NULL_TREE, arglist, NULL_TREE,
+			    NULL_TREE, false,
+			    BASELINK_BINFO (fns),
+			    BASELINK_ACCESS_BINFO (fns),
+			    flags, candidates, complain);
+	}
     }
   /* Per [over.match.oper]3.2, if no operand has a class type, then
      only non-member functions that have type T1 or reference to
@@ -6786,10 +7187,12 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 		  gcc_checking_assert (cand->reversed ());
 		  gcc_fallthrough ();
 		case NE_EXPR:
+		  if (result == error_mark_node)
+		    ;
 		  /* If a rewritten operator== candidate is selected by
 		     overload resolution for an operator @, its return type
 		     shall be cv bool.... */
-		  if (TREE_CODE (TREE_TYPE (result)) != BOOLEAN_TYPE)
+		  else if (TREE_CODE (TREE_TYPE (result)) != BOOLEAN_TYPE)
 		    {
 		      if (complain & tf_error)
 			{
@@ -6841,6 +7244,12 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
 		  gcc_unreachable ();
 		}
 	    }
+
+	  /* In an expression of the form `a[]' where cand->fn
+	     which is operator[] turns out to be a static member function,
+	     `a' is none-the-less evaluated.  */
+	  if (code == ARRAY_REF)
+	    result = keep_unused_object_arg (result, arg1, cand->fn);
 	}
       else
 	{
@@ -6929,7 +7338,7 @@ build_new_op (const op_location_t &loc, enum tree_code code, int flags,
     case TRUTH_ORIF_EXPR:
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
-      if (complain & tf_warning)
+      if ((complain & tf_warning) && !processing_template_decl)
 	warn_logical_operator (loc, code, boolean_type_node,
 			       code_orig_arg1, arg1,
 			       code_orig_arg2, arg2);
@@ -7097,6 +7506,11 @@ build_op_subscript (const op_location_t &loc, tree obj,
 	      /* Specify evaluation order as per P0145R2.  */
 	      CALL_EXPR_ORDERED_ARGS (call) = op_is_ordered (ARRAY_REF) == 1;
 	    }
+
+	  /* In an expression of the form `a[]' where cand->fn
+	     which is operator[] turns out to be a static member function,
+	     `a' is none-the-less evaluated.  */
+	  result = keep_unused_object_arg (result, obj, cand->fn);
 	}
       else
 	gcc_unreachable ();
@@ -7846,7 +8260,7 @@ maybe_warn_array_conv (location_t loc, conversion *c, tree expr)
 }
 
 /* We call this recursively in convert_like_internal.  */
-static tree convert_like (conversion *, tree, tree, int, bool, bool,
+static tree convert_like (conversion *, tree, tree, int, bool, bool, bool,
 			  tsubst_flags_t);
 
 /* Perform the conversions in CONVS on the expression EXPR.  FN and
@@ -7862,7 +8276,7 @@ static tree convert_like (conversion *, tree, tree, int, bool, bool,
 static tree
 convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 		       bool issue_conversion_warnings, bool c_cast_p,
-		       tsubst_flags_t complain)
+		       bool nested_p, tsubst_flags_t complain)
 {
   tree totype = convs->type;
   diagnostic_t diag_kind;
@@ -7906,6 +8320,27 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 				"direct-initialization",
 				totype, TREE_TYPE (expr));
 
+      if (TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
+	  && TREE_CODE (totype) == REAL_TYPE
+	  && (extended_float_type_p (TREE_TYPE (expr))
+	      || extended_float_type_p (totype)))
+	switch (cp_compare_floating_point_conversion_ranks (TREE_TYPE (expr),
+							    totype))
+	  {
+	  case 2:
+	    pedwarn (loc, 0, "converting to %qH from %qI with greater "
+			     "conversion rank", totype, TREE_TYPE (expr));
+	    complained = true;
+	    break;
+	  case 3:
+	    pedwarn (loc, 0, "converting to %qH from %qI with unordered "
+			     "conversion ranks", totype, TREE_TYPE (expr));
+	    complained = true;
+	    break;
+	  default:
+	    break;
+	  }
+
       for (; t ; t = next_conversion (t))
 	{
 	  if (t->kind == ck_user && t->cand->reason)
@@ -7918,7 +8353,8 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 		print_z_candidate (loc, N_("candidate is:"), t->cand);
 	      expr = convert_like (t, expr, fn, argnum,
 				   /*issue_conversion_warnings=*/false,
-				   /*c_cast_p=*/false, complain);
+				   /*c_cast_p=*/false, /*nested_p=*/true,
+				   complain);
 	      if (convs->kind == ck_ref_bind)
 		expr = convert_to_reference (totype, expr, CONV_IMPLICIT,
 					     LOOKUP_NORMAL, NULL_TREE,
@@ -7933,13 +8369,15 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	    {
 	      expr = convert_like (t, expr, fn, argnum,
 				   /*issue_conversion_warnings=*/false,
-				   /*c_cast_p=*/false, complain);
+				   /*c_cast_p=*/false, /*nested_p=*/true,
+				   complain);
 	      break;
 	    }
 	  else if (t->kind == ck_ambig)
 	    return convert_like (t, expr, fn, argnum,
 				 /*issue_conversion_warnings=*/false,
-				 /*c_cast_p=*/false, complain);
+				 /*c_cast_p=*/false, /*nested_p=*/true,
+				 complain);
 	  else if (t->kind == ck_identity)
 	    break;
 	}
@@ -8059,6 +8497,8 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 
       if (type_unknown_p (expr))
 	expr = instantiate_type (totype, expr, complain);
+      if (!nested_p && TREE_CODE (expr) == EXCESS_PRECISION_EXPR)
+	expr = cp_convert (totype, TREE_OPERAND (expr, 0), complain);
       if (expr == null_node
 	  && INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (totype))
 	/* If __null has been converted to an integer type, we do not want to
@@ -8098,7 +8538,8 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	    FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (expr), ix, val)
 	      {
 		tree sub = convert_like (convs->u.list[ix], val, fn,
-					 argnum, false, false, complain);
+					 argnum, false, false,
+					 /*nested_p=*/true, complain);
 		if (sub == error_mark_node)
 		  return sub;
 		if (!BRACE_ENCLOSED_INITIALIZER_P (val)
@@ -8166,7 +8607,7 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
   expr = convert_like (next_conversion (convs), expr, fn, argnum,
 		       convs->kind == ck_ref_bind
 		       ? issue_conversion_warnings : false,
-		       c_cast_p, complain & ~tf_no_cleanup);
+		       c_cast_p, /*nested_p=*/true, complain & ~tf_no_cleanup);
   if (expr == error_mark_node)
     return error_mark_node;
 
@@ -8227,9 +8668,6 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	 explicit constructors.  */
       if (convs->copy_init_p)
 	flags |= LOOKUP_ONLYCONVERTING;
-      if (convs->rvaluedness_matches_p)
-	/* standard_conversion got LOOKUP_PREFER_RVALUE.  */
-	flags |= LOOKUP_PREFER_RVALUE;
       expr = build_temp (expr, totype, flags, &diag_kind, complain);
       if (diag_kind && complain)
 	{
@@ -8431,7 +8869,11 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
   if (issue_conversion_warnings)
     expr = cp_convert_and_check (totype, expr, complain);
   else
-    expr = cp_convert (totype, expr, complain);
+    {
+      if (TREE_CODE (expr) == EXCESS_PRECISION_EXPR)
+	expr = TREE_OPERAND (expr, 0);
+      expr = cp_convert (totype, expr, complain);
+    }
 
   return expr;
 }
@@ -8462,7 +8904,7 @@ conv_unsafe_in_template_p (tree to, tree from)
 
 static tree
 convert_like (conversion *convs, tree expr, tree fn, int argnum,
-	      bool issue_conversion_warnings, bool c_cast_p,
+	      bool issue_conversion_warnings, bool c_cast_p, bool nested_p,
 	      tsubst_flags_t complain)
 {
   /* Creating &TARGET_EXPR<> in a template breaks when substituting,
@@ -8485,7 +8927,8 @@ convert_like (conversion *convs, tree expr, tree fn, int argnum,
 	 error_mark_node.  */
     }
   expr = convert_like_internal (convs, expr, fn, argnum,
-				issue_conversion_warnings, c_cast_p, complain);
+				issue_conversion_warnings, c_cast_p,
+				nested_p, complain);
   if (expr == error_mark_node)
     return error_mark_node;
   return conv_expr ? conv_expr : expr;
@@ -8498,7 +8941,7 @@ convert_like (conversion *convs, tree expr, tsubst_flags_t complain)
 {
   return convert_like (convs, expr, NULL_TREE, 0,
 		       /*issue_conversion_warnings=*/true,
-		       /*c_cast_p=*/false, complain);
+		       /*c_cast_p=*/false, /*nested_p=*/false, complain);
 }
 
 /* Convenience wrapper for convert_like.  */
@@ -8509,7 +8952,7 @@ convert_like_with_context (conversion *convs, tree expr, tree fn, int argnum,
 {
   return convert_like (convs, expr, fn, argnum,
 		       /*issue_conversion_warnings=*/true,
-		       /*c_cast_p=*/false, complain);
+		       /*c_cast_p=*/false, /*nested_p=*/false, complain);
 }
 
 /* ARG is being passed to a varargs function.  Perform any conversions
@@ -8531,7 +8974,8 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
   if (TREE_CODE (arg_type) == REAL_TYPE
       && (TYPE_PRECISION (arg_type)
 	  < TYPE_PRECISION (double_type_node))
-      && !DECIMAL_FLOAT_MODE_P (TYPE_MODE (arg_type)))
+      && !DECIMAL_FLOAT_MODE_P (TYPE_MODE (arg_type))
+      && !extended_float_type_p (arg_type))
     {
       if ((complain & tf_warning)
 	  && warn_double_promotion && !c_inhibit_evaluation_warnings)
@@ -8539,6 +8983,8 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 		    "implicit conversion from %qH to %qI when passing "
 		    "argument to function",
 		    arg_type, double_type_node);
+      if (TREE_CODE (arg) == EXCESS_PRECISION_EXPR)
+	arg = TREE_OPERAND (arg, 0);
       arg = mark_rvalue_use (arg);
       arg = convert_to_real_nofold (double_type_node, arg);
     }
@@ -8845,9 +9291,9 @@ convert_for_arg_passing (tree type, tree val, tsubst_flags_t complain)
 /* Returns non-zero iff FN is a function with magic varargs, i.e. ones for
    which just decay_conversion or no conversions at all should be done.
    This is true for some builtins which don't act like normal functions.
-   Return 2 if no conversions at all should be done, 1 if just
-   decay_conversion.  Return 3 for special treatment of the 3rd argument
-   for __builtin_*_overflow_p.  */
+   Return 2 if just decay_conversion and removal of excess precision should
+   be done, 1 if just decay_conversion.  Return 3 for special treatment of
+   the 3rd argument for __builtin_*_overflow_p.  */
 
 int
 magic_varargs_p (tree fn)
@@ -8866,7 +9312,15 @@ magic_varargs_p (tree fn)
       case BUILT_IN_MUL_OVERFLOW_P:
 	return 3;
 
-      default:;
+      case BUILT_IN_ISFINITE:
+      case BUILT_IN_ISINF:
+      case BUILT_IN_ISINF_SIGN:
+      case BUILT_IN_ISNAN:
+      case BUILT_IN_ISNORMAL:
+      case BUILT_IN_FPCLASSIFY:
+	return 2;
+
+      default:
 	return lookup_attribute ("type generic",
 				 TYPE_ATTRIBUTES (TREE_TYPE (fn))) != 0;
       }
@@ -9078,7 +9532,7 @@ init_by_return_slot_p (tree exp)
    Places that use this function (or _opt) to decide to elide a copy should
    probably use make_safe_copy_elision instead.  */
 
-static bool
+bool
 unsafe_copy_elision_p (tree target, tree exp)
 {
   return unsafe_return_slot_p (target) && init_by_return_slot_p (exp);
@@ -9144,15 +9598,53 @@ conv_binds_ref_to_prvalue (conversion *c)
   return conv_is_prvalue (next_conversion (c));
 }
 
-/* Return tristate::TS_TRUE if converting EXPR to a reference type TYPE does
-   not involve creating a temporary.  Return tristate::TS_FALSE if converting
-   EXPR to a reference type TYPE binds the reference to a temporary.  If the
-   conversion is invalid or bad, return tristate::TS_UNKNOWN.  DIRECT_INIT_P
+/* True iff EXPR represents a (subobject of a) temporary.  */
+
+static bool
+expr_represents_temporary_p (tree expr)
+{
+  while (handled_component_p (expr))
+    expr = TREE_OPERAND (expr, 0);
+  return TREE_CODE (expr) == TARGET_EXPR;
+}
+
+/* True iff C is a conversion that binds a reference to a temporary.
+   This is a superset of conv_binds_ref_to_prvalue: here we're also
+   interested in xvalues.  */
+
+static bool
+conv_binds_ref_to_temporary (conversion *c)
+{
+  if (conv_binds_ref_to_prvalue (c))
+    return true;
+  if (c->kind != ck_ref_bind)
+    return false;
+  c = next_conversion (c);
+  /* This is the case for
+       struct Base {};
+       struct Derived : Base {};
+       const Base& b(Derived{});
+     where we bind 'b' to the Base subobject of a temporary object of type
+     Derived.  The subobject is an xvalue; the whole object is a prvalue.
+
+     The ck_base doesn't have to be present for cases like X{}.m.  */
+  if (c->kind == ck_base)
+    c = next_conversion (c);
+  if (c->kind == ck_identity && c->u.expr
+      && expr_represents_temporary_p (c->u.expr))
+    return true;
+  return false;
+}
+
+/* Return tristate::TS_TRUE if converting EXPR to a reference type TYPE binds
+   the reference to a temporary.  Return tristate::TS_FALSE if converting
+   EXPR to a reference type TYPE doesn't bind the reference to a temporary.  If
+   the conversion is invalid or bad, return tristate::TS_UNKNOWN.  DIRECT_INIT_P
    says whether the conversion should be done in direct- or copy-initialization
    context.  */
 
 tristate
-ref_conv_binds_directly (tree type, tree expr, bool direct_init_p /*= false*/)
+ref_conv_binds_to_temporary (tree type, tree expr, bool direct_init_p/*=false*/)
 {
   gcc_assert (TYPE_REF_P (type));
 
@@ -9164,7 +9656,7 @@ ref_conv_binds_directly (tree type, tree expr, bool direct_init_p /*= false*/)
 					  /*c_cast_p=*/false, flags, tf_none);
   tristate ret (tristate::TS_UNKNOWN);
   if (conv && !conv->bad_p)
-    ret = tristate (!conv_binds_ref_to_prvalue (conv));
+    ret = tristate (conv_binds_ref_to_temporary (conv));
 
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);
@@ -9203,7 +9695,8 @@ build_trivial_dtor_call (tree instance, bool no_ptr_deref)
 }
 
 /* Return true if in an immediate function context, or an unevaluated operand,
-   or a subexpression of an immediate invocation.  */
+   or a default argument/member initializer, or a subexpression of an immediate
+   invocation.  */
 
 bool
 in_immediate_context ()
@@ -9211,8 +9704,11 @@ in_immediate_context ()
   return (cp_unevaluated_operand != 0
 	  || (current_function_decl != NULL_TREE
 	      && DECL_IMMEDIATE_FUNCTION_P (current_function_decl))
-	  || (current_binding_level->kind == sk_function_parms
-	      && current_binding_level->immediate_fn_ctx_p)
+	  /* DR 2631: default args and DMI aren't immediately evaluated.
+	     Return true here so immediate_invocation_p returns false.  */
+	  || current_binding_level->kind == sk_function_parms
+	  || current_binding_level->kind == sk_template_parms
+	  || parsing_nsdmi ()
 	  || in_consteval_if_p);
 }
 
@@ -9220,28 +9716,12 @@ in_immediate_context ()
    is an immediate invocation.  */
 
 static bool
-immediate_invocation_p (tree fn, int nargs)
+immediate_invocation_p (tree fn)
 {
   return (TREE_CODE (fn) == FUNCTION_DECL
 	  && DECL_IMMEDIATE_FUNCTION_P (fn)
-	  && !in_immediate_context ()
-	  /* As an exception, we defer std::source_location::current ()
-	     invocations until genericization because LWG3396 mandates
-	     special behavior for it.  */
-	  && (nargs > 1 || !source_location_current_p (fn)));
+	  && !in_immediate_context ());
 }
-
-/* temp_override for in_consteval_if_p, which can't use make_temp_override
-   because it is a bitfield.  */
-
-struct in_consteval_if_p_temp_override {
-  bool save_in_consteval_if_p;
-  in_consteval_if_p_temp_override ()
-    : save_in_consteval_if_p (in_consteval_if_p) {}
-  void reset () { in_consteval_if_p = save_in_consteval_if_p; }
-  ~in_consteval_if_p_temp_override ()
-  { reset (); }
-};
 
 /* Subroutine of the various build_*_call functions.  Overload resolution
    has chosen a winning candidate CAND; build up a CALL_EXPR accordingly.
@@ -9300,7 +9780,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       SET_EXPR_LOCATION (expr, input_location);
       if (TREE_THIS_VOLATILE (fn) && cfun)
 	current_function_returns_abnormally = 1;
-      if (immediate_invocation_p (fn, vec_safe_length (args)))
+      if (immediate_invocation_p (fn))
 	{
 	  tree obj_arg = NULL_TREE, exprimm = expr;
 	  if (DECL_CONSTRUCTOR_P (fn))
@@ -9445,7 +9925,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   in_consteval_if_p_temp_override icip;
   /* If the call is immediate function invocation, make sure
      taking address of immediate functions is allowed in its arguments.  */
-  if (immediate_invocation_p (STRIP_TEMPLATE (fn), nargs))
+  if (immediate_invocation_p (STRIP_TEMPLATE (fn)))
     in_consteval_if_p = true;
 
   /* The implicit parameters to a constructor are not considered by overload
@@ -9473,23 +9953,6 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  argarray[j++] = (*args)[arg_index];
 	  ++arg_index;
 	  parm = TREE_CHAIN (parm);
-	}
-
-      if (cxx_dialect < cxx20
-	  && (cand->flags & LOOKUP_PREFER_RVALUE))
-	{
-	  /* The implicit move specified in 15.8.3/3 fails "...if the type of
-	     the first parameter of the selected constructor is not an rvalue
-	     reference to the object's type (possibly cv-qualified)...." */
-	  gcc_assert (!(complain & tf_error));
-	  tree ptype = convs[0]->type;
-	  /* Allow calling a by-value converting constructor even though it
-	     isn't permitted by the above, because we've allowed it since GCC 5
-	     (PR58051) and it's allowed in C++20.  But don't call a copy
-	     constructor.  */
-	  if ((TYPE_REF_P (ptype) && !TYPE_REF_IS_RVALUE (ptype))
-	      || CONVERSION_RANK (convs[0]) > cr_exact)
-	    return error_mark_node;
 	}
     }
   /* Bypass access control for 'this' parameter.  */
@@ -9666,7 +10129,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   for (; arg_index < vec_safe_length (args); ++arg_index)
     {
       tree a = (*args)[arg_index];
-      if ((magic == 3 && arg_index == 2) || magic == 2)
+      if (magic == 3 && arg_index == 2)
 	{
 	  /* Do no conversions for certain magic varargs.  */
 	  a = mark_type_use (a);
@@ -9674,8 +10137,13 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	    return error_mark_node;
 	}
       else if (magic != 0)
-	/* For other magic varargs only do decay_conversion.  */
-	a = decay_conversion (a, complain);
+	{
+	  /* Don't truncate excess precision to the semantic type.  */
+	  if (magic == 1 && TREE_CODE (a) == EXCESS_PRECISION_EXPR)
+	    a = TREE_OPERAND (a, 0);
+	  /* For other magic varargs only do decay_conversion.  */
+	  a = decay_conversion (a, complain);
+	}
       else if (DECL_CONSTRUCTOR_P (fn)
 	       && same_type_ignoring_top_level_qualifiers_p (DECL_CONTEXT (fn),
 							     TREE_TYPE (a)))
@@ -9843,7 +10311,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	       && !unsafe)
 	{
 	  tree to = cp_build_fold_indirect_ref (fa);
-	  val = build2 (INIT_EXPR, DECL_CONTEXT (fn), to, arg);
+	  val = cp_build_init_expr (to, arg);
 	  return val;
 	}
     }
@@ -9946,10 +10414,11 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     }
   else
     {
-      /* If FN is marked deprecated, then we've already issued a deprecated-use
-	 warning from mark_used above, so avoid redundantly issuing another one
-	 from build_addr_func.  */
-      warning_sentinel w (warn_deprecated_decl);
+      /* If FN is marked deprecated or unavailable, then we've already
+	 issued a diagnostic from mark_used above, so avoid redundantly
+	 issuing another one from build_addr_func.  */
+      auto w = make_temp_override (deprecated_state,
+				   UNAVAILABLE_DEPRECATED_SUPPRESS);
 
       fn = build_addr_func (fn, complain);
       if (fn == error_mark_node)
@@ -9974,7 +10443,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   if (TREE_CODE (fn) == ADDR_EXPR)
     {
       tree fndecl = STRIP_TEMPLATE (TREE_OPERAND (fn, 0));
-      if (immediate_invocation_p (fndecl, nargs))
+      if (immediate_invocation_p (fndecl))
 	{
 	  tree obj_arg = NULL_TREE;
 	  /* Undo convert_from_reference called by build_cxx_call.  */
@@ -10002,7 +10471,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	    }
 	  call = cxx_constant_value (call, obj_arg, complain);
 	  if (obj_arg && !error_operand_p (call))
-	    call = build2 (INIT_EXPR, void_type_node, obj_arg, call);
+	    call = cp_build_init_expr (obj_arg, call);
 	  call = convert_from_reference (call);
 	}
     }
@@ -10667,7 +11136,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
 	    check_self_delegation (arg);
 	  /* Avoid change of behavior on Wunused-var-2.C.  */
 	  instance = mark_lvalue_use (instance);
-	  return build2 (INIT_EXPR, class_type, instance, arg);
+	  return cp_build_init_expr (instance, arg);
 	}
     }
 
@@ -11085,9 +11554,7 @@ build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
 	{
 	  if (is_dummy_object (instance))
 	    return get_target_expr (init, complain);
-	  init = build2 (INIT_EXPR, TREE_TYPE (instance), instance, init);
-	  TREE_SIDE_EFFECTS (init) = true;
-	  return init;
+	  return cp_build_init_expr (instance, init);
 	}
 
       /* Otherwise go ahead with overload resolution.  */
@@ -11134,9 +11601,7 @@ build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
 	      ctor = digest_init (basetype, ctor, complain);
 	      if (ctor == error_mark_node)
 		return error_mark_node;
-	      ctor = build2 (INIT_EXPR, TREE_TYPE (instance), instance, ctor);
-	      TREE_SIDE_EFFECTS (ctor) = true;
-	      return ctor;
+	      return cp_build_init_expr (instance, ctor);
 	    }
 	}
       if (complain & tf_error)
@@ -11241,21 +11706,11 @@ build_new_method_call (tree instance, tree fns, vec<tree, va_gc> **args,
 	      /* In an expression of the form `a->f()' where `f' turns
 		 out to be a static member function, `a' is
 		 none-the-less evaluated.  */
-	      if (TREE_CODE (TREE_TYPE (fn)) != METHOD_TYPE
-		  && !is_dummy_object (instance)
-		  && TREE_SIDE_EFFECTS (instance))
-		{
-		  /* But avoid the implicit lvalue-rvalue conversion when 'a'
-		     is volatile.  */
-		  tree a = instance;
-		  if (TREE_THIS_VOLATILE (a))
-		    a = build_this (a);
-		  if (TREE_SIDE_EFFECTS (a))
-		    call = build2 (COMPOUND_EXPR, TREE_TYPE (call), a, call);
-		}
-	      else if (call != error_mark_node
-		       && DECL_DESTRUCTOR_P (cand->fn)
-		       && !VOID_TYPE_P (TREE_TYPE (call)))
+	      if (!is_dummy_object (instance))
+		call = keep_unused_object_arg (call, instance, fn);
+	      if (call != error_mark_node
+		  && DECL_DESTRUCTOR_P (cand->fn)
+		  && !VOID_TYPE_P (TREE_TYPE (call)))
 		/* An explicit call of the form "x->~X()" has type
 		   "void".  However, on platforms where destructors
 		   return "this" (i.e., those where
@@ -11719,6 +12174,81 @@ compare_ics (conversion *ics1, conversion *ics2)
 	return 1;
     }
 
+  {
+    /* A conversion in either direction between floating-point type FP1 and
+       floating-point type FP2 is better than a conversion in the same
+       direction between FP1 and arithmetic type T3 if
+       - the floating-point conversion rank of FP1 is equal to the rank of
+	 FP2, and
+       - T3 is not a floating-point type, or T3 is a floating-point type
+	 whose rank is not equal to the rank of FP1, or the floating-point
+	 conversion subrank of FP2 is greater than the subrank of T3.  */
+    tree fp1 = from_type1;
+    tree fp2 = to_type1;
+    tree fp3 = from_type2;
+    tree t3 = to_type2;
+    int ret = 1;
+    if (TYPE_MAIN_VARIANT (fp2) == TYPE_MAIN_VARIANT (t3))
+      {
+	std::swap (fp1, fp2);
+	std::swap (fp3, t3);
+      }
+    if (TYPE_MAIN_VARIANT (fp1) == TYPE_MAIN_VARIANT (fp3)
+	&& TREE_CODE (fp1) == REAL_TYPE
+	/* Only apply this rule if at least one of the 3 types is
+	   extended floating-point type, otherwise keep them as
+	   before for compatibility reasons with types like __float128.
+	   float, double and long double alone have different conversion
+	   ranks and so when just those 3 types are involved, this
+	   rule doesn't trigger.  */
+	&& (extended_float_type_p (fp1)
+	    || (TREE_CODE (fp2) == REAL_TYPE && extended_float_type_p (fp2))
+	    || (TREE_CODE (t3) == REAL_TYPE && extended_float_type_p (t3))))
+      {
+	if (TREE_CODE (fp2) != REAL_TYPE)
+	  {
+	    ret = -ret;
+	    std::swap (fp2, t3);
+	  }
+	if (TREE_CODE (fp2) == REAL_TYPE)
+	  {
+	    /* cp_compare_floating_point_conversion_ranks returns -1, 0 or 1
+	       if the conversion rank is equal (-1 or 1 if the subrank is
+	       different).  */
+	    if (IN_RANGE (cp_compare_floating_point_conversion_ranks (fp1,
+								      fp2),
+			  -1, 1))
+	      {
+		/* Conversion ranks of FP1 and FP2 are equal.  */
+		if (TREE_CODE (t3) != REAL_TYPE
+		    || !IN_RANGE (cp_compare_floating_point_conversion_ranks
+								(fp1, t3),
+				  -1, 1))
+		  /* FP1 <-> FP2 conversion is better.  */
+		  return ret;
+		int c = cp_compare_floating_point_conversion_ranks (fp2, t3);
+		gcc_assert (IN_RANGE (c, -1, 1));
+		if (c == 1)
+		  /* Conversion subrank of FP2 is greater than subrank of T3.
+		     FP1 <-> FP2 conversion is better.  */
+		  return ret;
+		else if (c == -1)
+		  /* Conversion subrank of FP2 is less than subrank of T3.
+		     FP1 <-> T3 conversion is better.  */
+		  return -ret;
+	      }
+	    else if (TREE_CODE (t3) == REAL_TYPE
+		     && IN_RANGE (cp_compare_floating_point_conversion_ranks
+								(fp1, t3),
+				  -1, 1))
+	      /* Conversion ranks of FP1 and FP2 are not equal, conversion
+		 ranks of FP1 and T3 are equal.
+		 FP1 <-> T3 conversion is better.  */
+	      return -ret;
+	  }
+      }
+  }
+
   if (TYPE_PTR_P (from_type1)
       && TYPE_PTR_P (from_type2)
       && TYPE_PTR_P (to_type1)
@@ -12016,6 +12546,8 @@ joust_maybe_elide_copy (z_candidate *&cand)
   if (!DECL_COPY_CONSTRUCTOR_P (fn) && !DECL_MOVE_CONSTRUCTOR_P (fn))
     return false;
   conversion *conv = cand->convs[0];
+  if (conv->kind == ck_ambig)
+    return false;
   gcc_checking_assert (conv->kind == ck_ref_bind);
   conv = next_conversion (conv);
   if (conv->kind == ck_user && !TYPE_REF_P (conv->type))
@@ -12133,10 +12665,14 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
   len = cand1->num_convs;
   if (len != cand2->num_convs)
     {
-      int static_1 = DECL_STATIC_FUNCTION_P (cand1->fn);
-      int static_2 = DECL_STATIC_FUNCTION_P (cand2->fn);
+      int static_1 = (TREE_CODE (cand1->fn) == FUNCTION_DECL
+		      && DECL_STATIC_FUNCTION_P (cand1->fn));
+      int static_2 = (TREE_CODE (cand2->fn) == FUNCTION_DECL
+		      && DECL_STATIC_FUNCTION_P (cand2->fn));
 
-      if (DECL_CONSTRUCTOR_P (cand1->fn)
+      if (TREE_CODE (cand1->fn) == FUNCTION_DECL
+	  && TREE_CODE (cand2->fn) == FUNCTION_DECL
+	  && DECL_CONSTRUCTOR_P (cand1->fn)
 	  && is_list_ctor (cand1->fn) != is_list_ctor (cand2->fn))
 	/* We're comparing a near-match list constructor and a near-match
 	   non-list constructor.  Just treat them as unordered.  */
@@ -12145,9 +12681,20 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
       gcc_assert (static_1 != static_2);
 
       if (static_1)
-	off2 = 1;
+	{
+	  /* C++23 [over.best.ics.general] says:
+	     When the parameter is the implicit object parameter of a static
+	     member function, the implicit conversion sequence is a standard
+	     conversion sequence that is neither better nor worse than any
+	     other standard conversion sequence.  */
+	  if (CONVERSION_RANK (cand2->convs[0]) >= cr_user)
+	    winner = 1;
+	  off2 = 1;
+	}
       else
 	{
+	  if (CONVERSION_RANK (cand1->convs[0]) >= cr_user)
+	    winner = -1;
 	  off1 = 1;
 	  --len;
 	}
@@ -12219,10 +12766,53 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 	  if (winner && comp != winner)
 	    {
 	      /* Ambiguity between normal and reversed comparison operators
-		 with the same parameter types; prefer the normal one.  */
-	      if ((cand1->reversed () != cand2->reversed ())
+		 with the same parameter types.  P2468 decided not to go with
+		 this approach to resolving the ambiguity, so pedwarn.  */
+	      if ((complain & tf_warning_or_error)
+		  && (cand1->reversed () != cand2->reversed ())
 		  && cand_parms_match (cand1, cand2))
-		return cand1->reversed () ? -1 : 1;
+		{
+		  struct z_candidate *w, *l;
+		  if (cand2->reversed ())
+		    winner = 1, w = cand1, l = cand2;
+		  else
+		    winner = -1, w = cand2, l = cand1;
+		  if (warn)
+		    {
+		      auto_diagnostic_group d;
+		      if (pedwarn (input_location, 0,
+				   "C++20 says that these are ambiguous, "
+				   "even though the second is reversed:"))
+			{
+			  print_z_candidate (input_location,
+					     N_("candidate 1:"), w);
+			  print_z_candidate (input_location,
+					     N_("candidate 2:"), l);
+			  if (w->fn == l->fn
+			      && DECL_NONSTATIC_MEMBER_FUNCTION_P (w->fn)
+			      && (type_memfn_quals (TREE_TYPE (w->fn))
+				  & TYPE_QUAL_CONST) == 0)
+			    {
+			      /* Suggest adding const to
+				 struct A { bool operator==(const A&); }; */
+			      tree parmtype
+				= FUNCTION_FIRST_USER_PARMTYPE (w->fn);
+			      parmtype = TREE_VALUE (parmtype);
+			      if (TYPE_REF_P (parmtype)
+				  && TYPE_READONLY (TREE_TYPE (parmtype))
+				  && (same_type_ignoring_top_level_qualifiers_p
+				      (TREE_TYPE (parmtype),
+				       DECL_CONTEXT (w->fn))))
+				inform (DECL_SOURCE_LOCATION (w->fn),
+					"try making the operator a %<const%> "
+					"member function");
+			    }
+			}
+		    }
+		  else
+		    add_warning (w, l);
+		  return winner;
+		}
 
 	      winner = 0;
 	      goto tweak;
@@ -12611,7 +13201,7 @@ tourney (struct z_candidate *candidates, tsubst_flags_t complain)
 {
   struct z_candidate *champ = candidates, *challenger;
   int fate;
-  int champ_compared_to_predecessor = 0;
+  struct z_candidate *champ_compared_to_predecessor = nullptr;
 
   /* Walk through the list once, comparing each current champ to the next
      candidate, knocking out a candidate or two with each comparison.  */
@@ -12628,12 +13218,12 @@ tourney (struct z_candidate *candidates, tsubst_flags_t complain)
 	      champ = challenger->next;
 	      if (champ == 0)
 		return NULL;
-	      champ_compared_to_predecessor = 0;
+	      champ_compared_to_predecessor = nullptr;
 	    }
 	  else
 	    {
+	      champ_compared_to_predecessor = champ;
 	      champ = challenger;
-	      champ_compared_to_predecessor = 1;
 	    }
 
 	  challenger = champ->next;
@@ -12645,7 +13235,7 @@ tourney (struct z_candidate *candidates, tsubst_flags_t complain)
 
   for (challenger = candidates;
        challenger != champ
-	 && !(champ_compared_to_predecessor && challenger->next == champ);
+	 && challenger != champ_compared_to_predecessor;
        challenger = challenger->next)
     {
       fate = joust (champ, challenger, 0, complain);
@@ -12867,7 +13457,7 @@ perform_direct_initialization_if_possible (tree type,
   else
     expr = convert_like (conv, expr, NULL_TREE, 0,
 			 /*issue_conversion_warnings=*/false,
-			 c_cast_p, complain);
+			 c_cast_p, /*nested_p=*/false, complain);
 
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);
@@ -12999,7 +13589,7 @@ set_up_extended_ref_temp (tree decl, tree expr, vec<tree, va_gc> **cleanups,
 
   /* If the initializer is constant, put it in DECL_INITIAL so we get
      static initialization and use in constant expressions.  */
-  init = maybe_constant_init (expr);
+  init = maybe_constant_init (expr, var, /*manifestly_const_eval=*/true);
   /* As in store_init_value.  */
   init = cp_fully_fold (init);
   if (TREE_CONSTANT (init))
@@ -13165,6 +13755,266 @@ initialize_reference (tree type, tree expr,
   return expr;
 }
 
+/* Return true if T is std::pair<const T&, const T&>.  */
+
+static bool
+std_pair_ref_ref_p (tree t)
+{
+  /* First, check if we have std::pair.  */
+  if (!NON_UNION_CLASS_TYPE_P (t)
+      || !CLASSTYPE_TEMPLATE_INSTANTIATION (t))
+    return false;
+  tree tdecl = TYPE_NAME (TYPE_MAIN_VARIANT (t));
+  if (!decl_in_std_namespace_p (tdecl))
+    return false;
+  tree name = DECL_NAME (tdecl);
+  if (!name || !id_equal (name, "pair"))
+    return false;
+
+  /* Now see if the template arguments are both const T&.  */
+  tree args = CLASSTYPE_TI_ARGS (t);
+  if (TREE_VEC_LENGTH (args) != 2)
+    return false;
+  for (int i = 0; i < 2; i++)
+    if (!TYPE_REF_OBJ_P (TREE_VEC_ELT (args, i))
+	|| !CP_TYPE_CONST_P (TREE_TYPE (TREE_VEC_ELT (args, i))))
+      return false;
+
+  return true;
+}
+
+/* Return true if a class CTYPE is either std::reference_wrapper or
+   std::ref_view, or a reference wrapper class.  We consider a class
+   a reference wrapper class if it has a reference member.  We no
+   longer check that it has a constructor taking the same reference type
+   since that approach still generated too many false positives.  */
+
+static bool
+class_has_reference_member_p (tree t)
+{
+  for (tree fields = TYPE_FIELDS (t);
+       fields;
+       fields = DECL_CHAIN (fields))
+    if (TREE_CODE (fields) == FIELD_DECL
+	&& !DECL_ARTIFICIAL (fields)
+	&& TYPE_REF_P (TREE_TYPE (fields)))
+      return true;
+  return false;
+}
+
+/* A wrapper for the above suitable as a callback for dfs_walk_once.  */
+
+static tree
+class_has_reference_member_p_r (tree binfo, void *)
+{
+  return (class_has_reference_member_p (BINFO_TYPE (binfo))
+	  ? integer_one_node : NULL_TREE);
+}
+
+static bool
+reference_like_class_p (tree ctype)
+{
+  if (!CLASS_TYPE_P (ctype))
+    return false;
+
+  /* Also accept a std::pair<const T&, const T&>.  */
+  if (std_pair_ref_ref_p (ctype))
+    return true;
+
+  tree tdecl = TYPE_NAME (TYPE_MAIN_VARIANT (ctype));
+  if (decl_in_std_namespace_p (tdecl))
+    {
+      tree name = DECL_NAME (tdecl);
+      if (name
+	  && (id_equal (name, "reference_wrapper")
+	      || id_equal (name, "span")
+	      || id_equal (name, "ref_view")))
+	return true;
+    }
+
+  /* Some classes, such as std::tuple, have the reference member in its
+     (non-direct) base class.  */
+  if (dfs_walk_once (TYPE_BINFO (ctype), class_has_reference_member_p_r,
+		     nullptr, nullptr))
+    return true;
+
+  return false;
+}
+
+/* Helper for maybe_warn_dangling_reference to find a problematic CALL_EXPR
+   that initializes the LHS (and at least one of its arguments represents
+   a temporary, as outlined in maybe_warn_dangling_reference), or NULL_TREE
+   if none found.  For instance:
+
+     const S& s = S().self(); // S::self (&TARGET_EXPR <...>)
+     const int& r = (42, f(1)); // f(1)
+     const int& t = b ? f(1) : f(2); // f(1)
+     const int& u = b ? f(1) : f(g); // f(1)
+     const int& v = b ? f(g) : f(2); // f(2)
+     const int& w = b ? f(g) : f(g); // NULL_TREE
+     const int& y = (f(1), 42); // NULL_TREE
+     const int& z = f(f(1)); // f(f(1))
+
+   EXPR is the initializer.  If ARG_P is true, we're processing an argument
+   to a function; the point is to distinguish between, for example,
+
+     Ref::inner (&TARGET_EXPR <D.2839, F::foo (fm)>)
+
+   where we shouldn't warn, and
+
+     Ref::inner (&TARGET_EXPR <D.2908, F::foo (&TARGET_EXPR <...>)>)
+
+   where we should warn (Ref is a reference_like_class_p so we see through
+   it.  */
+
+static tree
+do_warn_dangling_reference (tree expr, bool arg_p)
+{
+  STRIP_NOPS (expr);
+
+  if (arg_p && expr_represents_temporary_p (expr))
+    {
+      /* An attempt to reduce the number of -Wdangling-reference
+	 false positives concerning reference wrappers (c++/107532).
+	 When we encounter a reference_like_class_p, we don't warn
+	 just yet; instead, we keep recursing to see if there were
+	 any temporaries behind the reference-wrapper class.  */
+      tree e = expr;
+      while (handled_component_p (e))
+	e = TREE_OPERAND (e, 0);
+      if (!reference_like_class_p (TREE_TYPE (e)))
+	return expr;
+    }
+
+  switch (TREE_CODE (expr))
+    {
+    case CALL_EXPR:
+      {
+	tree fndecl = cp_get_callee_fndecl_nofold (expr);
+	if (!fndecl
+	    || warning_suppressed_p (fndecl, OPT_Wdangling_reference)
+	    || !warning_enabled_at (DECL_SOURCE_LOCATION (fndecl),
+				    OPT_Wdangling_reference)
+	    /* Don't emit a false positive for:
+		std::vector<int> v = ...;
+		std::vector<int>::const_iterator it = v.begin();
+		const int &r = *it++;
+	       because R refers to one of the int elements of V, not to
+	       a temporary object.  Member operator* may return a reference
+	       but probably not to one of its arguments.  */
+	    || (DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl)
+		&& DECL_OVERLOADED_OPERATOR_P (fndecl)
+		&& DECL_OVERLOADED_OPERATOR_IS (fndecl, INDIRECT_REF)))
+	  return NULL_TREE;
+
+	tree rettype = TREE_TYPE (TREE_TYPE (fndecl));
+	/* If the function doesn't return a reference, don't warn.  This
+	   can be e.g.
+	     const int& z = std::min({1, 2, 3, 4, 5, 6, 7});
+	   which doesn't dangle: std::min here returns an int.
+
+	   If the function returns a std::pair<const T&, const T&>, we
+	   warn, to detect e.g.
+	     std::pair<const int&, const int&> v = std::minmax(1, 2);
+	   which also creates a dangling reference, because std::minmax
+	   returns std::pair<const T&, const T&>(b, a).  */
+	if (!(TYPE_REF_OBJ_P (rettype) || reference_like_class_p (rettype)))
+	  return NULL_TREE;
+
+	/* Here we're looking to see if any of the arguments is a temporary
+	   initializing a reference parameter.  */
+	for (int i = 0; i < call_expr_nargs (expr); ++i)
+	  {
+	    tree arg = CALL_EXPR_ARG (expr, i);
+	    /* Check that this argument initializes a reference, except for
+	       the argument initializing the object of a member function.  */
+	    if (!DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl)
+		&& !TYPE_REF_P (TREE_TYPE (arg)))
+	      continue;
+	    STRIP_NOPS (arg);
+	    if (TREE_CODE (arg) == ADDR_EXPR)
+	      arg = TREE_OPERAND (arg, 0);
+	    /* Recurse to see if the argument is a temporary.  It could also
+	       be another call taking a temporary and returning it and
+	       initializing this reference parameter.  */
+	    if (do_warn_dangling_reference (arg, /*arg_p=*/true))
+	      return expr;
+	  /* Don't warn about member function like:
+	      std::any a(...);
+	      S& s = a.emplace<S>({0}, 0);
+	     which constructs a new object and returns a reference to it, but
+	     we still want to detect:
+	       struct S { const S& self () { return *this; } };
+	       const S& s = S().self();
+	     where 's' dangles.  If we've gotten here, the object this function
+	     is invoked on is not a temporary.  */
+	    if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fndecl))
+	      break;
+	  }
+	return NULL_TREE;
+      }
+    case COMPOUND_EXPR:
+      return do_warn_dangling_reference (TREE_OPERAND (expr, 1), arg_p);
+    case COND_EXPR:
+      if (tree t = do_warn_dangling_reference (TREE_OPERAND (expr, 1), arg_p))
+	return t;
+      return do_warn_dangling_reference (TREE_OPERAND (expr, 2), arg_p);
+    case PAREN_EXPR:
+      return do_warn_dangling_reference (TREE_OPERAND (expr, 0), arg_p);
+    case TARGET_EXPR:
+      return do_warn_dangling_reference (TARGET_EXPR_INITIAL (expr), arg_p);
+    default:
+      return NULL_TREE;
+    }
+}
+
+/* Implement -Wdangling-reference, to detect cases like
+
+     int n = 1;
+     const int& r = std::max(n - 1, n + 1); // r is dangling
+
+   This creates temporaries from the arguments, returns a reference to
+   one of the temporaries, but both temporaries are destroyed at the end
+   of the full expression.
+
+   This works by checking if a reference is initialized with a function
+   that returns a reference, and at least one parameter of the function
+   is a reference that is bound to a temporary.  It assumes that such a
+   function actually returns one of its arguments.
+
+   DECL is the reference being initialized, INIT is the initializer.  */
+
+static void
+maybe_warn_dangling_reference (const_tree decl, tree init)
+{
+  if (!warn_dangling_reference)
+    return;
+  tree type = TREE_TYPE (decl);
+  /* Only warn if what we're initializing has type T&& or const T&, or
+     std::pair<const T&, const T&>.  (A non-const lvalue reference can't
+     bind to a temporary.)  */
+  if (!((TYPE_REF_OBJ_P (type)
+	 && (TYPE_REF_IS_RVALUE (type)
+	     || CP_TYPE_CONST_P (TREE_TYPE (type))))
+	|| std_pair_ref_ref_p (type)))
+    return;
+  /* Don't suppress the diagnostic just because the call comes from
+     a system header.  If the DECL is not in a system header, or if
+     -Wsystem-headers was provided, warn.  */
+  auto wsh
+    = make_temp_override (global_dc->dc_warn_system_headers,
+			  (!in_system_header_at (DECL_SOURCE_LOCATION (decl))
+			   || global_dc->dc_warn_system_headers));
+  if (tree call = do_warn_dangling_reference (init, /*arg_p=*/false))
+    {
+      auto_diagnostic_group d;
+      if (warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wdangling_reference,
+		      "possibly dangling reference to a temporary"))
+	inform (EXPR_LOCATION (call), "the temporary was destroyed at "
+		"the end of the full expression %qE", call);
+    }
+}
+
 /* If *P is an xvalue expression, prevent temporary lifetime extension if it
    gets used to initialize a reference.  */
 
@@ -13190,6 +14040,34 @@ static tree
 extend_ref_init_temps_1 (tree decl, tree init, vec<tree, va_gc> **cleanups,
 			 tree *cond_guard)
 {
+  /* CWG1299 (C++20): The temporary object to which the reference is bound or
+     the temporary object that is the complete object of a subobject to which
+     the reference is bound persists for the lifetime of the reference if the
+     glvalue to which the reference is bound was obtained through one of the
+     following:
+     - a temporary materialization conversion ([conv.rval]),
+     - ( expression ), where expression is one of these expressions,
+     - subscripting ([expr.sub]) of an array operand, where that operand is one
+       of these expressions,
+     - a class member access ([expr.ref]) using the . operator where the left
+       operand is one of these expressions and the right operand designates a
+       non-static data member of non-reference type,
+     - a pointer-to-member operation ([expr.mptr.oper]) using the .* operator
+       where the left operand is one of these expressions and the right operand
+       is a pointer to data member of non-reference type,
+     - a const_cast ([expr.const.cast]), static_cast ([expr.static.cast]),
+       dynamic_cast ([expr.dynamic.cast]), or reinterpret_cast
+       ([expr.reinterpret.cast]) converting, without a user-defined conversion,
+       a glvalue operand that is one of these expressions to a glvalue that
+       refers to the object designated by the operand, or to its complete
+       object or a subobject thereof,
+     - a conditional expression ([expr.cond]) that is a glvalue where the
+       second or third operand is one of these expressions, or
+     - a comma expression ([expr.comma]) that is a glvalue where the right
+       operand is one of these expressions.  */
+
+  /* FIXME several cases are still handled wrong (101572, 81420).  */
+
   tree sub = init;
   tree *p;
   STRIP_NOPS (sub);
@@ -13197,6 +14075,16 @@ extend_ref_init_temps_1 (tree decl, tree init, vec<tree, va_gc> **cleanups,
     {
       TREE_OPERAND (sub, 1)
 	= extend_ref_init_temps_1 (decl, TREE_OPERAND (sub, 1), cleanups,
+				   cond_guard);
+      return init;
+    }
+  if (TREE_CODE (sub) == POINTER_PLUS_EXPR
+      && TYPE_PTRDATAMEM_P (TREE_TYPE (tree_strip_nop_conversions
+				       (TREE_OPERAND (sub, 1)))))
+    {
+      /* A pointer-to-member operation.  */
+      TREE_OPERAND (sub, 0)
+	= extend_ref_init_temps_1 (decl, TREE_OPERAND (sub, 0), cleanups,
 				   cond_guard);
       return init;
     }
@@ -13262,6 +14150,9 @@ extend_ref_init_temps (tree decl, tree init, vec<tree, va_gc> **cleanups,
   tree type = TREE_TYPE (init);
   if (processing_template_decl)
     return init;
+
+  maybe_warn_dangling_reference (decl, init);
+
   if (TYPE_REF_P (type))
     init = extend_ref_init_temps_1 (decl, init, cleanups, cond_guard);
   else

@@ -1,4 +1,4 @@
-@c Copyright (C) 2002-2022 Free Software Foundation, Inc.
+@c Copyright (C) 2002-2023 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -196,7 +196,26 @@ static GTY((length("reg_known_value_size"))) rtx *reg_known_value;
 Note that the @code{length} option is only meant for use with arrays of
 non-atomic objects, that is, objects that contain pointers pointing to
 other GTY-managed objects.  For other GC-allocated arrays and strings
-you should use @code{atomic}.
+you should use @code{atomic} or @code{string_length}.
+
+@findex string_length
+@item string_length ("@var{expression}")
+
+In order to simplify production of PCH, a structure member that is a plain
+array of bytes (an optionally @code{const} and/or @code{unsigned} @code{char
+*}) is treated specially by the infrastructure. Even if such an array has not
+been allocated in GC-controlled memory, it will still be written properly into
+a PCH.  The machinery responsible for this needs to know the length of the
+data; by default, the length is determined by calling @code{strlen} on the
+pointer.  The @code{string_length} option specifies an alternate way to
+determine the length, such as by inspecting another struct member:
+
+@smallexample
+struct GTY(()) non_terminated_string @{
+  size_t sz;
+  const char * GTY((string_length ("%h.sz"))) data;
+@};
+@end smallexample
 
 @findex skip
 @item skip

@@ -1,6 +1,6 @@
 /* OpenACC Runtime initialization routines
 
-   Copyright (C) 2013-2022 Free Software Foundation, Inc.
+   Copyright (C) 2013-2023 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -1150,8 +1150,7 @@ goacc_enter_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 	}
       else if (n && groupnum > 1)
 	{
-	  assert (n->refcount != REFCOUNT_INFINITY
-		  && n->refcount != REFCOUNT_LINK);
+	  assert (n->refcount != REFCOUNT_LINK);
 
 	  for (size_t j = i + 1; j <= group_last; j++)
 	    if ((kinds[j] & 0xff) == GOMP_MAP_ATTACH)
@@ -1166,6 +1165,44 @@ goacc_enter_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 	  bool processed = false;
 
 	  struct target_mem_desc *tgt = n->tgt;
+
+	  /* Minimal OpenACC variant corresponding to PR96668
+	     "[OpenMP] Re-mapping allocated but previously unallocated
+	     allocatable does not work" 'libgomp/target.c' changes, so that
+	     OpenACC 'declare' code à la PR106643
+	     "[gfortran + OpenACC] Allocate in module causes refcount error"
+	     has a chance to work.  */
+	  if ((kinds[i] & 0xff) == GOMP_MAP_TO_PSET
+	      && tgt->list_count == 0)
+	    {
+	      /* 'declare target'.  */
+	      assert (n->refcount == REFCOUNT_INFINITY);
+
+	      for (size_t k = 1; k < groupnum; k++)
+		{
+		  /* The only thing we expect to see here.  */
+		  assert ((kinds[i + k] & 0xff) == GOMP_MAP_POINTER);
+		}
+
+	      /* Let 'goacc_map_vars' -> 'gomp_map_vars_internal' handle
+		 this.  */
+	      gomp_mutex_unlock (&acc_dev->lock);
+	      struct target_mem_desc *tgt_
+		= goacc_map_vars (acc_dev, aq, groupnum, &hostaddrs[i], NULL,
+				  &sizes[i], &kinds[i], true,
+				  GOMP_MAP_VARS_ENTER_DATA);
+	      assert (tgt_ == NULL);
+	      gomp_mutex_lock (&acc_dev->lock);
+
+	      /* Given that 'goacc_exit_data_internal'/'goacc_exit_datum_1'
+		 will always see 'n->refcount == REFCOUNT_INFINITY',
+		 there's no need to adjust 'n->dynamic_refcount' here.  */
+
+	      processed = true;
+	    }
+	  else
+	    assert (n->refcount != REFCOUNT_INFINITY);
+
 	  for (size_t j = 0; j < tgt->list_count; j++)
 	    if (tgt->list[j].key == n)
 	      {

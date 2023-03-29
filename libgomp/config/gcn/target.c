@@ -1,4 +1,4 @@
-/* Copyright (C) 2017-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2017-2023 Free Software Foundation, Inc.
    Contributed by Mentor Embedded.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -24,7 +24,10 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "libgomp.h"
+#include "libgomp-gcn.h"
 #include <limits.h>
+
+extern volatile struct gomp_offload_icvs GOMP_ADDITIONAL_ICVS;
 
 bool
 GOMP_teams4 (unsigned int num_teams_lower, unsigned int num_teams_upper,
@@ -75,16 +78,43 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
 		 void **hostaddrs, size_t *sizes, unsigned short *kinds,
 		 unsigned int flags, void **depend, void **args)
 {
-  (void) device;
-  (void) fn;
-  (void) mapnum;
-  (void) hostaddrs;
-  (void) sizes;
-  (void) kinds;
   (void) flags;
   (void) depend;
   (void) args;
-  __builtin_unreachable ();
+
+  if (device != GOMP_DEVICE_HOST_FALLBACK || fn == NULL)
+    return;
+
+  /* The output data is at ((void*) kernargs)[2].  */
+  register void **kernargs = (void**) __builtin_gcn_kernarg_ptr ();
+  struct output *data = (struct output *) kernargs[2];
+  /* Reserve one slot. */
+  unsigned int index = __atomic_fetch_add (&data->next_output, 1,
+					   __ATOMIC_ACQUIRE);
+
+  if ((unsigned int) (index + 1) < data->consumed)
+    abort ();  /* Overflow.  */
+
+  /* Spinlock while the host catches up.  */
+  if (index >= 1024)
+    while (__atomic_load_n (&data->consumed, __ATOMIC_ACQUIRE)
+	   <= (index - 1024))
+      asm ("s_sleep 64");
+
+  unsigned int slot = index % 1024;
+  data->queue[slot].value_u64[0] = (uint64_t) fn;
+  data->queue[slot].value_u64[1] = (uint64_t) mapnum;
+  data->queue[slot].value_u64[2] = (uint64_t) hostaddrs;
+  data->queue[slot].value_u64[3] = (uint64_t) sizes;
+  data->queue[slot].value_u64[4] = (uint64_t) kinds;
+  data->queue[slot].value_u64[5] = (uint64_t) GOMP_ADDITIONAL_ICVS.device_num;
+
+  data->queue[slot].type = 4; /* Reverse offload.  */
+  __atomic_store_n (&data->queue[slot].written, 1, __ATOMIC_RELEASE);
+
+  /* Spinlock while the host catches up.  */
+  while (__atomic_load_n (&data->queue[slot].written, __ATOMIC_ACQUIRE) != 0)
+    asm ("s_sleep 64");
 }
 
 void

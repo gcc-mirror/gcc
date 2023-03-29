@@ -1,3 +1,21 @@
+2023-02-16  Patrick Palka  <ppalka@redhat.com>
+
+	* objc-act.h: Mechanically drop static from static inline
+	functions via s/^static inline/inline/g.
+	* objc-map.h: Likewise.
+	* objc-act.cc: Remove the redundant redeclarations of is_ivar
+	and lookup_category.
+
+2022-10-28  Joseph Myers  <joseph@codesourcery.com>
+
+	* objc-next-runtime-abi-01.cc (build_next_objc_exception_stuff):
+	Use build_function_type to build type of objc_setjmp_decl.
+
+2022-10-07  Martin Liska  <mliska@suse.cz>
+
+	* objc-gnu-runtime-abi-01.cc (generate_static_references):
+	Remove unused variable.
+
 2022-06-02  David Malcolm  <dmalcolm@redhat.com>
 
 	* objc-act.h (objc_get_sarif_source_language): New decl.
@@ -4246,7 +4264,7 @@
 	Move to c-objc-common.h.
 
 
-Copyright (C) 2004-2022 Free Software Foundation, Inc.
+Copyright (C) 2004-2023 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

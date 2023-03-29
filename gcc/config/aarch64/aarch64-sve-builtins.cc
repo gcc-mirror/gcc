@@ -1,5 +1,5 @@
 /* ACLE support for AArch64 SVE
-   Copyright (C) 2018-2022 Free Software Foundation, Inc.
+   Copyright (C) 2018-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -82,7 +82,7 @@ public:
 
   /* The architecture extensions that the function requires, as a set of
      AARCH64_FL_* flags.  */
-  uint64_t required_extensions;
+  aarch64_feature_flags required_extensions;
 
   /* True if the decl represents an overloaded function that needs to be
      resolved by function_resolver.  */
@@ -694,16 +694,18 @@ check_required_registers (location_t location, tree fndecl)
    Report an error against LOCATION if not.  */
 static bool
 check_required_extensions (location_t location, tree fndecl,
-			   uint64_t required_extensions)
+			   aarch64_feature_flags required_extensions)
 {
-  uint64_t missing_extensions = required_extensions & ~aarch64_isa_flags;
+  auto missing_extensions = required_extensions & ~aarch64_asm_isa_flags;
   if (missing_extensions == 0)
     return check_required_registers (location, fndecl);
 
-  static const struct { uint64_t flag; const char *name; } extensions[] = {
-#define AARCH64_OPT_EXTENSION(EXT_NAME, FLAG_CANONICAL, FLAGS_ON, FLAGS_OFF, \
-			      SYNTHETIC, FEATURE_STRING) \
-    { FLAG_CANONICAL, EXT_NAME },
+  static const struct {
+    aarch64_feature_flags flag;
+    const char *name;
+  } extensions[] = {
+#define AARCH64_OPT_EXTENSION(EXT_NAME, IDENT, C, D, E, F) \
+    { AARCH64_FL_##IDENT, EXT_NAME },
 #include "aarch64-option-extensions.def"
   };
 
@@ -993,7 +995,7 @@ function_builder::get_attributes (const function_instance &instance)
 registered_function &
 function_builder::add_function (const function_instance &instance,
 				const char *name, tree fntype, tree attrs,
-				uint64_t required_extensions,
+				aarch64_feature_flags required_extensions,
 				bool overloaded_p,
 				bool placeholder_p)
 {
@@ -1035,11 +1037,12 @@ function_builder::add_function (const function_instance &instance,
    one-to-one mapping between "short" and "full" names, and if standard
    overload resolution therefore isn't necessary.  */
 void
-function_builder::add_unique_function (const function_instance &instance,
-				       tree return_type,
-				       vec<tree> &argument_types,
-				       uint64_t required_extensions,
-				       bool force_direct_overloads)
+function_builder::
+add_unique_function (const function_instance &instance,
+		     tree return_type,
+		     vec<tree> &argument_types,
+		     aarch64_feature_flags required_extensions,
+		     bool force_direct_overloads)
 {
   /* Add the function under its full (unique) name.  */
   char *name = get_name (instance, false);
@@ -1082,8 +1085,9 @@ function_builder::add_unique_function (const function_instance &instance,
    features are available as part of resolving the function to the
    relevant unique function.  */
 void
-function_builder::add_overloaded_function (const function_instance &instance,
-					   uint64_t required_extensions)
+function_builder::
+add_overloaded_function (const function_instance &instance,
+			 aarch64_feature_flags required_extensions)
 {
   char *name = get_name (instance, true);
   if (registered_function **map_value = m_overload_names.get (name))
@@ -2609,6 +2613,13 @@ gimple_folder::redirect_call (const function_instance &instance)
 
   gimple_call_set_fndecl (call, rfn->decl);
   return call;
+}
+
+/* Fold the call to constant VAL.  */
+gimple *
+gimple_folder::fold_to_cstu (poly_uint64 val)
+{
+  return gimple_build_assign (lhs, build_int_cstu (TREE_TYPE (lhs), val));
 }
 
 /* Fold the call to a PTRUE, taking the element size from type suffix 0.  */

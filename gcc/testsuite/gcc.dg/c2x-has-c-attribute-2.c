@@ -34,6 +34,22 @@
 #error "bad result for __fallthrough__"
 #endif
 
+#if __has_c_attribute (noreturn) != 202202L
+#error "bad result for noreturn"
+#endif
+
+#if __has_c_attribute (__noreturn__) != 202202L
+#error "bad result for __noreturn__"
+#endif
+
+#if __has_c_attribute (_Noreturn) != 202202L
+#error "bad result for _Noreturn"
+#endif
+
+#if __has_c_attribute (___Noreturn__) != 202202L
+#error "bad result for ___Noreturn__"
+#endif
+  
 /* Macros in the attribute name are expanded.  */
 #define foo deprecated
 #if __has_c_attribute (foo) != 201904L

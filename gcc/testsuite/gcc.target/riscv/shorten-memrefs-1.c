@@ -23,5 +23,5 @@ store2z (long long *array)
   array[203] = 0;
 }
 
-/* { dg-final { scan-assembler-not "store1z:\n\taddi" } } */
-/* { dg-final { scan-assembler-not "store2z:\n\taddi" } } */
+/* { dg-final { scan-assembler-not "store1z:\n(\t?\\.\[^\n\]*\n)\taddi" } } */
+/* { dg-final { scan-assembler-not "store2z:\n(\t?\\.\[^\n\]*\n)\taddi" } } */

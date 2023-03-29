@@ -11,4 +11,4 @@ namespace std {
 }
 
 auto x = __builtin_source_location ();	// { dg-error "'std::source_location::__impl::_M_file_name' does not have 'const char \\*' type" }
-// { dg-message "evaluating '__builtin_source_location'" "" { target *-*-* } .-1 }
+// { dg-message "using '__builtin_source_location'" "" { target *-*-* } .-1 }

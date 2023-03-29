@@ -1,6 +1,6 @@
 // Specific definitions for generic platforms  -*- C++ -*-
 
-// Copyright (C) 2007-2022 Free Software Foundation, Inc.
+// Copyright (C) 2007-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -167,6 +167,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef EOVERFLOW
       value_too_large = 			EOVERFLOW,
+#elif defined __AVR__
+      value_too_large = 			999,
 #endif
 
       wrong_protocol_type = 			EPROTOTYPE

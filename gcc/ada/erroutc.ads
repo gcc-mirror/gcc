@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -209,7 +209,7 @@ package Erroutc is
       --  will be posted. Note that an error placed on an instantiation will
       --  have Sptr pointing to the instantiation point.
 
-      Optr : Source_Ptr;
+      Optr : Source_Span;
       --  Flag location used in the call to post the error. This is the same as
       --  Sptr, except when an error is posted on a particular instantiation of
       --  a generic. In such a case, Sptr will point to the original source

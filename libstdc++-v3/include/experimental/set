@@ -1,6 +1,6 @@
 // <experimental/set> -*- C++ -*-
 
-// Copyright (C) 2015-2022 Free Software Foundation, Inc.
+// Copyright (C) 2015-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,6 +32,8 @@
 
 #pragma GCC system_header
 
+#include <bits/requires_hosted.h> // experimental is currently omitted
+
 #if __cplusplus >= 201402L
 
 #include <set>
@@ -51,7 +53,7 @@ inline namespace fundamentals_v2
     inline void
     erase_if(set<_Key, _Compare, _Alloc>& __cont, _Predicate __pred)
     {
-      const _GLIBCXX_STD_C::set<_Key, _Compare, _Alloc>& __ucont = __cont;
+      _GLIBCXX_STD_C::set<_Key, _Compare, _Alloc>& __ucont = __cont;
       std::__detail::__erase_nodes_if(__cont, __ucont, __pred);
     }
 
@@ -60,7 +62,7 @@ inline namespace fundamentals_v2
     inline void
     erase_if(multiset<_Key, _Compare, _Alloc>& __cont, _Predicate __pred)
     {
-      const _GLIBCXX_STD_C::multiset<_Key, _Compare, _Alloc>& __ucont = __cont;
+      _GLIBCXX_STD_C::multiset<_Key, _Compare, _Alloc>& __ucont = __cont;
       std::__detail::__erase_nodes_if(__cont, __ucont, __pred);
     }
 

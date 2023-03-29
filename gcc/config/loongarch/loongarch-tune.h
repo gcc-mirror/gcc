@@ -1,5 +1,5 @@
 /* Definitions for microarchitecture-related data structures.
-   Copyright (C) 2021-2022 Free Software Foundation, Inc.
+   Copyright (C) 2021-2023 Free Software Foundation, Inc.
    Contributed by Loongson Ltd.
 
 This file is part of GCC.
@@ -45,6 +45,7 @@ struct loongarch_cache {
     int l1d_line_size;  /* bytes */
     int l1d_size;       /* KiB */
     int l2d_size;       /* kiB */
+    int simultaneous_prefetches; /* number of parallel prefetch */
 };
 
 #endif /* LOONGARCH_TUNE_H */

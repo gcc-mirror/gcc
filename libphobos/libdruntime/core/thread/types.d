@@ -47,31 +47,15 @@ else
 
 package
 {
-    static immutable size_t PAGESIZE;
     version (Posix) static immutable size_t PTHREAD_STACK_MIN;
 }
 
 shared static this()
 {
-    version (Windows)
-    {
-        import core.sys.windows.winbase;
-
-        SYSTEM_INFO info;
-        GetSystemInfo(&info);
-
-        PAGESIZE = info.dwPageSize;
-        assert(PAGESIZE < int.max);
-    }
-    else version (Posix)
+    version (Posix)
     {
         import core.sys.posix.unistd;
 
-        PAGESIZE = cast(size_t)sysconf(_SC_PAGESIZE);
         PTHREAD_STACK_MIN = cast(size_t)sysconf(_SC_THREAD_STACK_MIN);
-    }
-    else
-    {
-        static assert(0, "unimplemented");
     }
 }

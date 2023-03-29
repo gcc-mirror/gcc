@@ -1,0 +1,74 @@
+(* M2FileName.def construct file names.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2FileName ;
+
+(*
+   Author     : Gaius Mulley
+   Title      : M2FileName
+   Date       : 3/4/86  [$Date: 2013/07/08 10:27:56 $]
+   SYSTEM     : UNIX (GNU Modula-2)
+   Description: construct file names.
+   Version    : $Revision: 1.11 $
+*)
+
+FROM DynamicStrings IMPORT String ;
+EXPORT QUALIFIED CalculateFileName, CalculateStemName, ExtractExtension ;
+
+
+(*
+   CalculateFileName - calculates and returns a new string filename
+                       given a module and an extension. This file name
+                       length will be operating system specific.
+                       String, Extension, is concatenated onto
+                       Module and thus it is safe to `Mark' the extension
+                       for garbage collection.
+*)
+
+PROCEDURE CalculateFileName (Module, Extension: String) : String ;
+
+
+(*
+   CalculateStemName - calculates the stem name for given a module.
+                       This name length will be operating system and
+      	       	       compiler specific.
+*)
+
+PROCEDURE CalculateStemName (Module: String) : String ;
+
+
+(*
+   ExtractExtension - given a, filename, return the filename without
+                      the extension, Ext.
+*)
+
+PROCEDURE ExtractExtension (filename, ext: String) : String ;
+
+
+(*
+   ExtractModule - given a, filename, return the module name including any
+                   extension. A new string is returned.
+*)
+
+PROCEDURE ExtractModule (filename: String) : String ;
+
+
+END M2FileName.

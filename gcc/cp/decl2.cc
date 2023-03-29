@@ -1,5 +1,5 @@
 /* Process declarations and variables for C++ compiler.
-   Copyright (C) 1988-2022 Free Software Foundation, Inc.
+   Copyright (C) 1988-2023 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -1561,6 +1561,9 @@ cp_check_const_attributes (tree attributes)
   tree attr;
   for (attr = attributes; attr; attr = TREE_CHAIN (attr))
     {
+      if (cxx_contract_attribute_p (attr))
+	continue;
+
       tree arg;
       /* As we implement alignas using gnu::aligned attribute and
 	 alignas argument is a constant expression, force manifestly
@@ -1652,17 +1655,40 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
 	  && DECL_CLASS_SCOPE_P (*decl))
 	error ("%q+D static data member inside of declare target directive",
 	       *decl);
-      else if (VAR_P (*decl)
-	       && (processing_template_decl
-		   || !omp_mappable_type (TREE_TYPE (*decl))))
-	attributes = tree_cons (get_identifier ("omp declare target implicit"),
-				NULL_TREE, attributes);
       else
 	{
-	  attributes = tree_cons (get_identifier ("omp declare target"),
-				  NULL_TREE, attributes);
-	  attributes = tree_cons (get_identifier ("omp declare target block"),
-				  NULL_TREE, attributes);
+	  if (VAR_P (*decl)
+	      && (processing_template_decl
+		  || !omp_mappable_type (TREE_TYPE (*decl))))
+	    attributes
+	      = tree_cons (get_identifier ("omp declare target implicit"),
+			   NULL_TREE, attributes);
+	  else
+	    {
+	      attributes = tree_cons (get_identifier ("omp declare target"),
+				      NULL_TREE, attributes);
+	      attributes
+		= tree_cons (get_identifier ("omp declare target block"),
+			     NULL_TREE, attributes);
+	    }
+	  if (TREE_CODE (*decl) == FUNCTION_DECL)
+	    {
+	      cp_omp_declare_target_attr &last
+		= scope_chain->omp_declare_target_attribute->last ();
+	      int device_type = MAX (last.device_type, 0);
+	      if ((device_type & OMP_CLAUSE_DEVICE_TYPE_HOST) != 0
+		  && !lookup_attribute ("omp declare target host",
+					attributes))
+		attributes
+		  = tree_cons (get_identifier ("omp declare target host"),
+			       NULL_TREE, attributes);
+	      if ((device_type & OMP_CLAUSE_DEVICE_TYPE_NOHOST) != 0
+		  && !lookup_attribute ("omp declare target nohost",
+					attributes))
+		attributes
+		  = tree_cons (get_identifier ("omp declare target nohost"),
+			       NULL_TREE, attributes);
+	    }
 	}
     }
 
@@ -2083,7 +2109,17 @@ void
 comdat_linkage (tree decl)
 {
   if (flag_weak)
-    make_decl_one_only (decl, cxx_comdat_group (decl));
+    {
+      make_decl_one_only (decl, cxx_comdat_group (decl));
+      if (HAVE_COMDAT_GROUP && flag_contracts && DECL_CONTRACTS (decl))
+	{
+	  symtab_node *n = symtab_node::get (decl);
+	  if (tree pre = DECL_PRE_FN (decl))
+	    cgraph_node::get_create (pre)->add_to_same_comdat_group (n);
+	  if (tree post = DECL_POST_FN (decl))
+	    cgraph_node::get_create (post)->add_to_same_comdat_group (n);
+	}
+    }
   else if (TREE_CODE (decl) == FUNCTION_DECL
 	   || (VAR_P (decl) && DECL_ARTIFICIAL (decl)))
     /* We can just emit function and compiler-generated variables
@@ -3587,7 +3623,7 @@ var_defined_without_dynamic_init (tree var)
 /* Returns true iff VAR is a variable that needs uses to be
    wrapped for possible dynamic initialization.  */
 
-static bool
+bool
 var_needs_tls_wrapper (tree var)
 {
   return (!error_operand_p (var)
@@ -4946,7 +4982,7 @@ c_parse_final_cleanups (void)
 	 get emitted.  */
       for (i = unemitted_tinfo_decls->length ();
 	   unemitted_tinfo_decls->iterate (--i, &t);)
-	if (emit_tinfo_decl (t))
+	if (DECL_INITIAL (t) || emit_tinfo_decl (t))
 	  {
 	    reconsider = true;
 	    unemitted_tinfo_decls->unordered_remove (i);
@@ -5564,7 +5600,7 @@ mark_single_function (tree expr, tsubst_flags_t complain)
 
   if (is_overloaded_fn (expr) == 1
       && !mark_used (expr, complain)
-      && (complain & tf_error))
+      && !(complain & tf_error))
     return false;
   return true;
 }
@@ -5765,14 +5801,6 @@ mark_used (tree decl, tsubst_flags_t complain /* = tf_warning_or_error */)
       && !DECL_DEFAULTED_OUTSIDE_CLASS_P (decl)
       && ! DECL_INITIAL (decl))
     {
-      /* Defer virtual destructors so that thunks get the right
-	 linkage.  */
-      if (DECL_VIRTUAL_P (decl) && !at_eof)
-	{
-	  note_vague_linkage_fn (decl);
-	  return true;
-	}
-
       /* Remember the current location for a function we will end up
 	 synthesizing.  Then we can inform the user where it was
 	 required in the case of error.  */

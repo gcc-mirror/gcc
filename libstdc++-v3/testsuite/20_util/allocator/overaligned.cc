@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2022 Free Software Foundation, Inc.
+// Copyright (C) 2016-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,6 +18,7 @@
 // { dg-options "-faligned-new" }
 // { dg-do run { target { c++11 && { c++17 || std_allocator_new } } } }
 // { dg-require-cstdint "" }
+// { dg-require-effective-target hosted }
 
 #include <memory>
 #include <cstddef>

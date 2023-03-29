@@ -1,6 +1,6 @@
 /* Subroutines used to expand string and block move, clear,
    compare and other operations for PowerPC.
-   Copyright (C) 1991-2022 Free Software Foundation, Inc.
+   Copyright (C) 1991-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -414,9 +414,9 @@ static void
 do_isel (rtx dest, rtx cmp, rtx src_t, rtx src_f, rtx cr)
 {
   if (GET_MODE (dest) == DImode)
-    emit_insn (gen_isel_signed_di (dest, cmp, src_t, src_f, cr));
+    emit_insn (gen_isel_cc_di (dest, cmp, src_t, src_f, cr));
   else
-    emit_insn (gen_isel_signed_si (dest, cmp, src_t, src_f, cr));
+    emit_insn (gen_isel_cc_si (dest, cmp, src_t, src_f, cr));
 }
 
 /* Emit a subtract of the proper mode for DEST.

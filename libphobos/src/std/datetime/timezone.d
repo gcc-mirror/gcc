@@ -3397,8 +3397,7 @@ struct TZConversions
 TZConversions parseTZConversions(string windowsZonesXMLText) @safe pure
 {
     // This is a bit hacky, since it doesn't properly read XML, but it avoids
-    // needing to pull in std.xml (which we're theoretically replacing at some
-    // point anyway).
+    // needing to pull in an xml parsing module.
     import std.algorithm.iteration : uniq;
     import std.algorithm.searching : find;
     import std.algorithm.sorting : sort;

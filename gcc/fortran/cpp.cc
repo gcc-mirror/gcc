@@ -1,4 +1,4 @@
-/* Copyright (C) 2008-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2008-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -605,7 +605,7 @@ gfc_cpp_init (void)
   if (gfc_option.flag_preprocessed)
     return;
 
-  cpp_change_file (cpp_in, LC_RENAME, _("<built-in>"));
+  cpp_change_file (cpp_in, LC_RENAME, special_fname_builtin ());
   if (!gfc_cpp_option.no_predefined)
     {
       /* Make sure all of the builtins about to be declared have

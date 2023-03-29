@@ -1,0 +1,2295 @@
+2023-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* rust-lang.cc (grs_langhook_type_for_mode): Also consider all
+	'int_n' modes/types.
+
+2023-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* rust-lang.cc (grs_langhook_init): Do not initialize
+	void_list_node.
+
+2023-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config-lang.in (target_libs): Remove.
+
+2023-02-21  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* backend/rust-builtins.cc (BuiltinsContext::setup_math_fns): New functions.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-constexpr.cc (get_nth_callarg): Remove function.
+	(rs_bind_parameters_in_call): Use CALL_EXPR_ARG instead.
+	(potential_constant_expression_1): Likewise.
+
+2023-02-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lang.opt: Fix ordering of file.
+
+2023-02-21  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-type.cc (TyTyResolveCompile::visit): Remove unused parameters.
+	* backend/rust-constexpr.cc (constant_value_1): Likewise.
+	(fold_non_dependent_init): Likewise.
+	* backend/rust-tree.cc (publicly_uniquely_derived_p): Likewise.
+	(instantiation_dependent_expression_p): Likewise.
+	(type_has_nontrivial_copy_init): Likewise.
+	(is_normal_capture_proxy): Likewise.
+	(resolve_nondeduced_context): Likewise.
+	(undeduced_auto_decl): Likewise.
+	(require_deduced_type): Likewise.
+	* checks/errors/privacy/rust-privacy-reporter.cc (PrivacyReporter::visit): Likewise.
+	* checks/errors/privacy/rust-reachability.cc (ReachabilityVisitor::visit): Likewise.
+	* checks/errors/privacy/rust-visibility-resolver.cc (VisibilityResolver::visit): Likewise.
+	* checks/errors/rust-const-checker.cc (ConstChecker::visit): Likewise.
+	* checks/errors/rust-unsafe-checker.cc (UnsafeChecker::visit): Likewise.
+	* checks/lints/rust-lint-marklive.cc (MarkLive::go): Likewise.
+	* checks/lints/rust-lint-unused-var.cc (unused_var_walk_fn): Likewise.
+	* expand/rust-macro-builtins.cc (try_expand_single_string_literal): Likewise.
+	(try_expand_many_expr): Likewise.
+	(parse_single_string_literal): Likewise.
+	(MacroBuiltin::assert_handler): Likewise.
+	(MacroBuiltin::file_handler): Likewise.
+	(MacroBuiltin::column_handler): Likewise.
+	(MacroBuiltin::concat_handler): Likewise.
+	(MacroBuiltin::env_handler): Likewise.
+	(MacroBuiltin::line_handler): Likewise.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::visit): Likewise.
+	(ASTLoweringBase::handle_doc_item_attribute): Likewise.
+	* hir/rust-hir-dump.cc (Dump::visit): Likewise.
+	* hir/tree/rust-hir-full-test.cc (ConstGenericParam::accept_vis): Likewise.
+	* lex/rust-lex.cc (Lexer::parse_utf8_escape): Likewise.
+	(Lexer::parse_string): Likewise.
+	(Lexer::parse_char_or_lifetime): Likewise.
+	* lex/rust-lex.h: Likewise.
+	* metadata/rust-export-metadata.cc: Likewise.
+	* resolve/rust-ast-resolve-expr.cc (ResolveExpr::visit): Likewise.
+	* resolve/rust-ast-resolve-type.cc (ResolveType::visit): Likewise.
+	(ResolveTypeToCanonicalPath::visit): Likewise.
+	* resolve/rust-ast-verify-assignee.h: Likewise.
+	* resolve/rust-early-name-resolver.cc (EarlyNameResolver::visit): Likewise.
+	* typecheck/rust-hir-type-check-expr.h: Likewise.
+	* typecheck/rust-hir-type-check-item.h: Likewise.
+	* typecheck/rust-hir-type-check-pattern.cc (TypeCheckPattern::visit): Likewise.
+	* typecheck/rust-tyty-rules.h: Likewise.
+	* util/rust-attributes.cc (AttributeChecker::visit): Likewise.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* hir/tree/rust-hir-expr.h: Add const `get_method_name`.
+	* hir/tree/rust-hir-full-decls.h (struct GenericArgs): Move from `struct`...
+	(class GenericArgs): ...to `class`.
+	* hir/tree/rust-hir-path.h (struct GenericArgs): Likewise.
+	(class GenericArgs): Clear `type_args` in copy constructor.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): Reorder
+	debug print.
+	* typecheck/rust-tyty.h: Add default constructors for `SubstitutionArgumentMappings`.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* backend/rust-compile-context.cc (Context::push_closure_context): New function.
+	(Context::pop_closure_context): Likewise.
+	(Context::insert_closure_binding): Likewise.
+	(Context::lookup_closure_binding): Likewise.
+	* backend/rust-compile-context.h: Declare new functions and closure mappings.
+	* backend/rust-compile-expr.cc (CompileExpr::visit): Visit captures properly.
+	(CompileExpr::generate_closure_function): Compile captures properly.
+	* backend/rust-compile-resolve-path.cc (ResolvePathRef::resolve): Check for
+	closure bindings.
+	* backend/rust-compile-type.cc (TyTyResolveCompile::visit): Compile capture list's
+	types as well.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): Pass captures
+	properly to `TyTy::ClosureType` constructor.
+	* typecheck/rust-tyty.cc (ClosureType::as_string): Fix string representation.
+	(ClosureType::clone): Pass `captures` argument.
+	* typecheck/rust-tyty.h: Add `captures` field.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* resolve/rust-ast-resolve-expr.cc (ResolveExpr::visit): Use proper closure
+	contexts.
+	* resolve/rust-name-resolver.cc (Scope::lookup_decl_type): New function.
+	(Scope::lookup_rib_for_decl): Likewise.
+	(Resolver::insert_resolved_name): Insert captured items.
+	(Resolver::push_closure_context): New function.
+	(Resolver::pop_closure_context): Likewise.
+	(Resolver::insert_captured_item): Likewise.
+	(Resolver::decl_needs_capture): Likewise.
+	(Resolver::get_captures): Likewise.
+	* resolve/rust-name-resolver.h: Declare new functions.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* resolve/rust-ast-resolve-expr.cc (ResolveExpr::visit): Add Rib argument.
+	(ResolveExpr::resolve_closure_param): Likewise.
+	* resolve/rust-ast-resolve-implitem.h: Likewise.
+	* resolve/rust-ast-resolve-item.cc (ResolveTraitItems::visit): Likewise.
+	(ResolveItem::visit): Likewise.
+	* resolve/rust-ast-resolve-pattern.cc (PatternDeclaration::visit): Likewise.
+	* resolve/rust-ast-resolve-pattern.h: Likewise.
+	* resolve/rust-ast-resolve-stmt.h: Likewise.
+	* resolve/rust-ast-resolve-toplevel.h: Likewise.
+	* resolve/rust-ast-resolve-type.h: Likewise.
+	* resolve/rust-name-resolver.cc (Rib::lookup_decl_type): Likewise.
+	(Scope::insert): Likewise.
+	(Resolver::insert_builtin_types): Likewise.
+	* resolve/rust-name-resolver.h: Likewise.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* resolve/rust-name-resolver.cc (MKBUILTIN_TYPE): Remove macro.
+	(Rib::Rib): Remove `mappings` field.
+	(Resolver::generate_builtins): Use `setup_builtin` instead of macro.
+	(Resolver::setup_builtin): New function.
+	* resolve/rust-name-resolver.h: Declare `setup_builtin`, add FIXME
+	comment.
+
+2023-02-21  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* lex/rust-lex.cc (Lexer::Lexer): Add `dump_lex` boolean flag.
+	(Lexer::skip_token): Dump tokens if flag is enabled.
+	(Lexer::dump_and_skip): New function.
+	* lex/rust-lex.h: Include optional.h and declare functions.
+	* parse/rust-parse-impl.h (Parser::debug_dump_lex_output): Remove old
+	unused function.
+	* parse/rust-parse.h: Likewise.
+	* rust-session-manager.cc (Session::compile_crate): Pass lexer dump
+	option to lexer.
+	(Session::dump_lex): New function.
+	* util/rust-optional.h: Add missing constructor.
+
+2023-02-21  Dave  <dme2223@gmail.com>
+
+	* ast/rust-item.h: Remoe default location for Visibility class.
+	* parse/rust-parse-impl.h (Parser::parse_visibility): Pass proper location
+	when instantiating visibilities.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Fix dumping of fn params.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Remove extraneous string when
+	dumping statements.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc: Remove unused include.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitor.
+	* ast/rust-ast-dump.h: Likewise.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitor.
+	* ast/rust-ast-dump.h: Add missing getter declaration.
+	* ast/rust-ast-full-test.cc (BareFunctionType::as_string): Fix bare function
+	string representation.
+	* ast/rust-type.h (class BareFunctionType): Declare said getter.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing tuple type visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing never type visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing RawPointer visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing array visitor
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing slice visitor.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitors.
+	* ast/rust-ast-dump.h: Likewise.
+	* ast/rust-ast.h: Add `get_lifetime_bounds` method.
+	* ast/rust-item.h: Add missing getter for lifetimes.
+	* ast/rust-type.h: Likewise.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add new reference visitor wrapper.
+	* ast/rust-ast-dump.h: Declare it.
+	* ast/rust-item.h: Add mutable visibility getters.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* typecheck/rust-tyty-call.cc (TypeCheckCallExpr::visit): Fix extra call
+	to `delete`.
+
+2023-02-21  Dave  <dme2223@gmail.com>
+
+	* ast/rust-item.h: Add location member.
+	* hir/rust-ast-lower.cc (translate_visibility): Pass location argument.
+	* hir/tree/rust-hir-item.h: Fix constructor to accept Location argument.
+
+2023-02-21  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* util/rust-lang-item.h: Add handling for `phantom_data` lang item.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add handling for unit structures.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.h: Fix documentation.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::go): Use new API.
+	(Dump::format_function_param): Refactor.
+	(Dump::visit_items_joined_by_separator): New function.
+	(Dump::emit_attrib): Refactor.
+	(Dump::visit_as_line): New function.
+	(Dump::visit_items_as_lines): Likewise.
+	(Dump::visit_items_as_block): Likewise.
+	(Dump::visit): Use new API.
+	(Dump::emit_visibility): Likewise.
+	(Dump::emit_indented_string): Likewise.
+	(Dump::emit_generic_params): Likewise.
+	(Dump::format_tuple_field): Likewise.
+	(Dump::format_struct_field): Likewise.
+	(Dump::format_function_common): Likewise.
+	(Dump::visit_function_common): Likewise.
+	* ast/rust-ast-dump.h: Declare new functions and add documentation.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add new visit function for overloading.
+	* ast/rust-ast-dump.h: Add documentation for layer.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-builtins.cc (BuiltinsContext::setup_atomic_fns): Declare atomic
+	load intrinsics.
+	* backend/rust-compile-intrinsic.cc (atomic_load_handler_inner): New handler.
+	(atomic_load_handler): Likewise.
+	(unchecked_op_handler): Remove `static` function qualifier.
+	(build_atomic_builtin_name): Handle load intrinsics.
+	(atomic_store_handler_inner): New handler.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-compile-intrinsic.cc (check_for_basic_integer_type): New function.
+	(build_atomic_builtin_name): Use HIR Type instead of `tree`.
+	(atomic_store_handler_inner): Cleanup error handling.
+	(unchecked_op_inner): Likewise.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-compile-intrinsic.cc (wrapping_op_handler): Refactor to return
+	an `std::function`.
+	(wrapping_op_handler_inner): Rename.
+	(wrapping_add_handler): Remove function.
+	(wrapping_sub_handler): Likewise.
+	(wrapping_mul_handler): Likewise.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-compile-intrinsic.cc (is_basic_integer_type): New function.
+	(unchecked_op_inner): New handler.
+	(unchecked_op_handler): New handler.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-builtins.cc (BuiltinsContext::setup_atomic_fns): New function.
+	(BuiltinsContext::setup): Call `setup_atomic_fns`.
+	* backend/rust-builtins.h: Declare `setup_atomic_fns`.
+	* backend/rust-compile-intrinsic.cc (atomic_store_handler_inner): New function.
+	(atomic_store_handler): New handler.
+	(make_unsigned_long_tree): Add helper around making unsigned long trees.
+	(prefetch_data_handler): Use `make_unsigned_long_tree`.
+	(build_atomic_builtin_name): New function.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-constexpr.cc (build_anon_member_initialization): Workaround uninitialized
+	values.
+	(build_data_member_initialization): Likewise.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-compile-intrinsic.cc (sorry_handler): New intrinsic handler.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* expand/rust-macro-builtins.cc (MacroBuiltin::assert): Rename to...
+	(MacroBuiltin::assert_handler): ..this.
+	(MacroBuiltin::file): Rename to...
+	(MacroBuiltin::file_handler): ..this.
+	(MacroBuiltin::column): Rename to...
+	(MacroBuiltin::column_handler): ..this.
+	(MacroBuiltin::include_bytes): Rename to...
+	(MacroBuiltin::include_bytes_handler): ..this.
+	(MacroBuiltin::include_str): Rename to...
+	(MacroBuiltin::include_str_handler): ..this.
+	(MacroBuiltin::compile_error): Rename to...
+	(MacroBuiltin::compile_error_handler): ..this.
+	(MacroBuiltin::concat): Rename to...
+	(MacroBuiltin::concat_handler): ..this.
+	(MacroBuiltin::env): Rename to...
+	(MacroBuiltin::env_handler): ..this.
+	(MacroBuiltin::cfg): Rename to...
+	(MacroBuiltin::cfg_handler): ..this.
+	(MacroBuiltin::include): Rename to...
+	(MacroBuiltin::include_handler): ..this.
+	(MacroBuiltin::line): Rename to...
+	(MacroBuiltin::line_handler): ..this.
+	* expand/rust-macro-builtins.h: Rename all handlers.
+	* util/rust-hir-map.cc (Mappings::insert_macro_def): Use new handler
+	names.
+
+2023-02-21  Simon Cook  <simon.cook@embecosm.com>
+
+	* util/rust-inline-visitor.h: Remove some offending system includes.
+
+2023-02-21  YizhePKU  <yizhe@pku.edu.cn>
+
+	* util/rust-inline-visitor.h: New file.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* backend/rust-compile-expr.cc (CompileExpr::visit): Refactor checking of closures.
+	(CompileExpr::generate_possible_fn_trait_call): New function.
+	* backend/rust-compile-expr.h: Declare `generate_possible_fn_trait_call`.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-tyty-bounds.cc (TypeCheckBase::get_predicate_from_bound): Add missing
+	implementation.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* Make-lang.in: Compile rust-ast-lower-type.cc.
+	* ast/rust-path.h: Add `get_locus` method to `TypePathFunction`.
+	* hir/rust-ast-lower-base.cc (ASTLowerTypePath::visit): Move implementation to
+	rust-ast-lower-type.cc.
+	(ASTLowerQualifiedPathInType::visit): Likewise.
+	(ASTLoweringType::visit): Likewise.
+	* hir/rust-ast-lower-type.h: Move implementations to source file.
+	* hir/tree/rust-hir-path.h: Likewise.
+	* hir/rust-ast-lower-type.cc: New file.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* resolve/rust-ast-resolve-type.cc (ResolveRelativeTypePath::go): Add missing handling of
+	function case.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* backend/rust-compile-context.h: Add new functions: `insert_closure_decl` and
+	`lookup_closure_decl`.
+	* backend/rust-compile-expr.cc (CompileExpr::visit): Start compiling Closures properly.
+	(CompileExpr::generate_closure_function): New function.
+	(CompileExpr::generate_closure_fntype): Likewise.
+	* backend/rust-compile-expr.h: Declare `generate_closure_function` and
+	`generate_closure_fntype`.
+	* backend/rust-compile-type.cc (TyTyResolveCompile::visit): Visit closure types properly.
+	* backend/rust-mangle.cc (legacy_mangle_name): Add support for closures.
+	* backend/rust-tree.h (RS_CLOSURE_FLAG): Add new tree macro.
+	(RS_CLOSURE_TYPE_P): And checking for it on tree nodes.
+	* typecheck/rust-tyty.cc (ClosureType::is_equal): Add implementation.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* hir/tree/rust-hir-expr.h: Add `get_params` method.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): Typecheck closure nodes.
+	(TypeCheckExpr::resolve_fn_trait_call): New function.
+	* typecheck/rust-hir-type-check-expr.h: Declare `resolve_fn_trait_call` and
+	`resolve_possible_fn_trait_call_method_name`.
+	* typecheck/rust-hir-type-check.h: Declare `get_context_type`.
+	* typecheck/rust-tyctx.cc (TypeCheckContextItem::get_context_type): New function.
+	* typecheck/rust-tyty-cmp.h: Visit closures properly.
+	* typecheck/rust-tyty-rules.h: Likewise.
+	* typecheck/rust-tyty.cc (BaseType::bounds_compatible): Add commented out assertin.
+	(ClosureType::as_string): Implement it.
+	(ClosureType::clone): Fix closure cloning.
+	(ClosureType::setup_fn_once_output): New function.
+	* typecheck/rust-tyty.h: Improve `ClosureType` class and declare `setup_fn_once_output`.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* checks/errors/rust-const-checker.cc (ConstChecker::visit): Visit closures properly.
+	* checks/errors/rust-unsafe-checker.cc (UnsafeChecker::visit): Likewise.
+	* checks/lints/rust-lint-marklive.h: Likewise.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): Simplify method
+	call type checking 	by removing visitor and instead using one static cast. Use the
+	new interface.
+	* typecheck/rust-tyty-call.cc (TypeCheckMethodCallExpr::visit): Likewise.
+	(TypeCheckMethodCallExpr::go): Likewise.
+	(TypeCheckMethodCallExpr::check): Likewise.
+	* typecheck/rust-tyty-call.h (class TypeCheckMethodCallExpr): Likewise.
+	(class Argument): Likewise.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* resolve/rust-ast-resolve-expr.cc (ResolveExpr::visit): Visit closure properly when
+	name resolving.
+	(ResolveExpr::resolve_closure_param): Implement closure name resolving.
+	* resolve/rust-ast-resolve-expr.h: Declare visitors for closure types.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* hir/rust-ast-lower-pattern.cc (ASTLoweringPattern::ASTLoweringPattern):
+	Improve formatting.
+	(ASTLoweringPattern::translate): Likewise.
+	* hir/rust-ast-lower-pattern.h: Likewise.
+	* resolve/rust-ast-resolve-expr.h: Likewise.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* Make-lang.in: Add new object file for expression lowering.
+	* ast/rust-expr.h: Move implementation of expr lowering to source file.
+	* backend/rust-compile-block.h: Likewise.
+	* backend/rust-compile-expr.cc (CompileExpr::visit): Likewise.
+	* backend/rust-compile-expr.h: Likewise.
+	* checks/errors/privacy/rust-privacy-reporter.cc (PrivacyReporter::visit): Likewise.
+	* checks/errors/privacy/rust-privacy-reporter.h: Likewise.
+	* checks/errors/rust-const-checker.cc (ConstChecker::visit): Likewise.
+	* checks/errors/rust-const-checker.h: Likewise.
+	* checks/errors/rust-unsafe-checker.cc (UnsafeChecker::visit): Likewise.
+	* checks/errors/rust-unsafe-checker.h: Likewise.
+	* hir/rust-ast-lower-base.h: Likewise.
+	* hir/rust-ast-lower-expr.h (RUST_AST_LOWER_EXPR): Likewise.
+	* hir/rust-ast-lower.cc (ASTLoweringBase::lower_closure_param): Likewise.
+	* hir/rust-hir-dump.cc (Dump::visit): Likewise.
+	* hir/rust-hir-dump.h: Likewise.
+	* hir/tree/rust-hir-expr.h (class ClosureExpr): Likewise.
+	(class ClosureExprInner): Likewise.
+	(class ClosureExprInnerTyped): Likewise.
+	* hir/tree/rust-hir-full-decls.h (class ClosureExprInner): Likewise.
+	(class ClosureExprInnerTyped): Likewise.
+	* hir/tree/rust-hir-full-test.cc (ClosureExprInnerTyped::as_string): Likewise.
+	(ClosureExprInner::as_string): Likewise.
+	(ClosureExprInner::accept_vis): Likewise.
+	(ClosureExpr::accept_vis): Likewise.
+	(ClosureExprInnerTyped::accept_vis): Likewise.
+	* hir/tree/rust-hir-visitor.h: Likewise.
+	* hir/tree/rust-hir.h (class Expr): Likewise.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): Likewise.
+	* typecheck/rust-hir-type-check-expr.h: Likewise.
+	* hir/rust-ast-lower-expr.cc: New file.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* util/rust-lang-item.h: Add handling for `fn_once_output`.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-fragment.cc (Fragment::Fragment): Add better APIs.
+	(Fragment::complete): New function.
+	(Fragment::unexpanded): New function.
+	* ast/rust-ast-fragment.h: Declare new APIs and add documentation.
+	* expand/rust-attribute-visitor.h: Use new Fragment API.
+	* expand/rust-macro-builtins.cc (MacroBuiltin::file): Likewise.
+	(MacroBuiltin::column): Likewise.
+	(MacroBuiltin::include_bytes): Likewise.
+	(MacroBuiltin::include_str): Likewise.
+	(MacroBuiltin::concat): Likewise.
+	(MacroBuiltin::env): Likewise.
+	(MacroBuiltin::cfg): Likewise.
+	(MacroBuiltin::include): Likewise.
+	(MacroBuiltin::line): Likewise.
+	* expand/rust-macro-expand.cc (parse_many): Likewise.
+	(transcribe_expression): Likewise.
+	(transcribe_type): Likewise.
+	* expand/rust-macro-expand.h (struct MacroExpander): Likewise.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast.h (class ASTFragment): Remove old ASTFragment class.
+	* ast/rust-macro.h (class MacroRulesDefinition): Use new Fragment API.
+	* expand/rust-attribute-visitor.h: Likewise.
+	* expand/rust-macro-builtins.cc (macro_end_token): Likewise.
+	(MacroBuiltin::assert): Likewise.
+	(MacroBuiltin::file): Likewise.
+	(MacroBuiltin::column): Likewise.
+	(MacroBuiltin::include_bytes): Likewise.
+	(MacroBuiltin::include_str): Likewise.
+	(MacroBuiltin::compile_error): Likewise.
+	(MacroBuiltin::concat): Likewise.
+	(MacroBuiltin::env): Likewise.
+	(MacroBuiltin::cfg): Likewise.
+	(MacroBuiltin::include): Likewise.
+	(MacroBuiltin::line): Likewise.
+	* expand/rust-macro-builtins.h: Likewise.
+	* expand/rust-macro-expand.cc (MacroExpander::expand_decl_macro): Likewise.
+	(MacroExpander::expand_invoc): Likewise.
+	(MacroExpander::match_repetition): Likewise.
+	(parse_many): Likewise.
+	(transcribe_many_items): Likewise.
+	(transcribe_many_ext): Likewise.
+	(transcribe_many_trait_items): Likewise.
+	(transcribe_many_impl_items): Likewise.
+	(transcribe_many_trait_impl_items): Likewise.
+	(transcribe_expression): Likewise.
+	(transcribe_type): Likewise.
+	(transcribe_on_delimiter): Likewise.
+	(tokens_to_str): Likewise.
+	* expand/rust-macro-expand.h (struct MacroExpander): Likewise.
+	* util/rust-hir-map.cc (Mappings::insert_macro_def): Likewise.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* Make-lang.in: Add `rust-ast-fragment.o` object file.
+	* ast/rust-ast-fragment.cc: New file.
+	* ast/rust-ast-fragment.h: New file.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-hir-trait-resolve.cc (TraitResolver::resolve_trait): Check if a
+	trait query is currently in progress.
+	* typecheck/rust-hir-type-check.h (class TraitQueryGuard): Add helpers around
+	checking for trait queries and inserting them.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add missing visitors for macro definition dumping.
+	(get_delimiters): New function.
+	* ast/rust-ast-dump.h: Declare `get_delimiters` and add documentation.
+	* ast/rust-macro.h: Add `get_token_tree` method.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Properly handle unloaded modules.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Fix formatting when dumping modules.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Dump items in modules properly.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-dump.cc: Emit visibility when dumping items.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* hir/rust-ast-lower-base.h (class ItemWrapper): New class.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::handle_outer_attributes): Use
+	`ItemWrapper` class.
+	(ASTLoweringBase::handle_doc_item_attribute): Likewise.
+	(ASTLoweringBase::handle_lang_item_attribute): Likewise.
+	* hir/rust-ast-lower-implitem.h: Check outer attributes on items.
+	* hir/tree/rust-hir-item.h: Add `get_trait_locus` methods.
+	* hir/tree/rust-hir.h: Likewise.
+	* util/rust-hir-map.h: Add defId mappings and associated functions.
+	* util/rust-hir-map.cc (Mappings::insert_defid_mapping): Implement insertion to said
+	mappings.
+	(Mappings::lookup_trait_item_defid): And looking up said mappings.
+
+2023-02-21  Jakub Dupak  <dev@jakubdupak.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add code for dumping type aliases.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-hir-trait-resolve.cc (TraitResolver::TraitResolver): Do not nullptr init
+	`resolved_trait_reference` anymore.
+	(TraitResolver::resolve_path): Simplify function and rename to...
+	(TraitResolver::resolve_path_to_trait): ...this.
+	(TraitResolver::lookup_path): Use new interface.
+	* typecheck/rust-hir-trait-resolve.h (class TraitResolver): Do not inherit `HIRFullVisitor`
+	class anymore.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add dump for RangeExprs.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add dump for, BorrowExpr, DereferenceExpr,
+	ErrorPropagationExpr, NegationExpr, TypeCastExpr and GroupedExpr.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add dump code for ArrayExpr.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Add dumps for ComparisonExpr and
+	LazyBooleanExpr.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Fix IfExpr formatting.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Fix block formatting.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-autoderef.cc: Add support for multiple resolution candidates.
+	* typecheck/rust-hir-dot-operator.cc (MethodResolver::MethodResolver): Edit
+	`try_result` field and change constructor.
+	(MethodResolver::Probe): Return set of candidates instead of singular candidate.
+	(MethodResolver::select): Add better implementation to account for multiple
+	candidates.
+	* typecheck/rust-hir-dot-operator.h (struct MethodCandidate): Overload comparison
+	operator in order to store them in `std::set`.
+	* typecheck/rust-hir-inherent-impl-overlap.h: Do not fail assertion on missing type.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): Adapt code to use
+	multiple candidates.
+	* typecheck/rust-tyty.cc (set_cmp_autoderef_mode): Add code to handle automatic
+	derefs properly.
+	(reset_cmp_autoderef_mode): Add helper function to reset said mode.
+	* typecheck/rust-tyty.h (set_cmp_autoderef_mode): Declare function.
+	(reset_cmp_autoderef_mode): Likewise.
+	* typecheck/rust-tyty-cmp.h: Add handling of `autoderef_cmp_flag`
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* util/rust-abi.cc (get_abi_from_string): Add missing "rust-call"
+	possibility for ABI variant.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* util/rust-lang-item.h: Add `fn_once` lang item.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* backend/rust-compile.cc: Add note about missing support for super
+	traits.
+	* typecheck/rust-tyty.cc (BaseType::satisfies_bound): New function.
+	(BaseType::bounds_compatible): New function.
+	(DynamicObjectType::get_object_items): New function.
+	* typecheck/rust-hir-trait-ref.h: Use new API to perform type resolution
+	on dyn objects.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* Make-lang.in: Compile early name resolver.
+	* expand/rust-attribute-visitor.cc (AttrVisitor::visit): Move macro
+	name resolution.
+	* expand/rust-macro-builtins.cc (try_expand_macro_expression): Run ENR
+	when recursively expanding macros.
+	* expand/rust-macro-expand.cc (MacroExpander::expand_invoc): No longer
+	perform name resolution in `expand_invoc`.
+	* expand/rust-macro-expand.h (struct MacroExpander): Keep ENR within
+	MacroExpander.
+	* rust-session-manager.cc (Session::expansion): Run ENR.
+	* resolve/rust-early-name-resolver.cc: New file.
+	* resolve/rust-early-name-resolver.h: New file.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-path.h: Add `accept_vis` method to `GenericArg` class.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* resolve/rust-ast-resolve-item.cc (ResolveItem::visit): Add note for
+	glob import resolving.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* util/rust-hir-map.h: Add new mappings.
+	* util/rust-hir-map.cc (Mappings::insert_macro_invocation): Add insertion
+	function into mappings.
+	(Mappings::lookup_macro_invocation): Add lookup function for mappings.
+
+2023-02-21  Marc Poulhiès  <dkm@kataplop.net>
+
+	* parse/rust-parse-impl.h (Parser::parse_stmt_or_expr_without_block):
+	Check if `expr` is valid after parsing it.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-builtins.cc (BuiltinsContext::setup): Declare prefetch
+	intrinsics.
+	* backend/rust-compile-intrinsic.cc (enum class Prefetch): Add kinds of
+	prefetch intrinsics.
+	(prefetch_data_handler): New function.
+	(prefetch_read_data): Likewise.
+	(prefetch_write_data): Likewise.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Fill empty functions for
+	structs, enums and unions.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::format_tuple_field): New.
+	(Dump::format_struct_field): New.
+	* ast/rust-ast-dump.h (format_tuple_field): New.
+	(format_struct_field): New.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): move generic params dump ...
+	(Dump::emit_generic_params): ... here.
+	* ast/rust-ast-dump.h (emit_generic_params): New.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-hir-trait-ref.h (lookup_trait_item): Add lookup
+	in super_trait.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* backend/rust-compile-expr.cc
+	(CompileExpr::resolve_method_address): Use auto and minor change
+	in candidate init.
+	* typecheck/rust-hir-type-check-path.cc
+	(TypeCheckExpr::resolve_segments): Likewise.
+	* typecheck/rust-hir-type-check-type.cc: Likewise.
+	* backend/rust-compile-resolve-path.cc
+	(HIRCompileBase::query_compile): Likewise. Removecall to
+	set_ty_ref.
+	* typecheck/rust-hir-path-probe.h (struct PathProbeCandidate): Add
+	locus initializer in ctor, implement get_defid.
+	(class PathProbeType::Probe): return a set instead of vector.
+	Adjust class impl.
+	(class ReportMultipleCandidateError): Do not inherit from
+	HIRImplVisitor anymore and remove corresponding impl. Adjust for
+	change in Probe. Simplify Report handling.
+	(class PathProbeImplTrait::Probe): Adjust return type.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-hir-type-check-enumitem.cc
+	(TypeCheckEnumItem::visit): Adjust VariantDef ctor calls with
+	DefID.
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::visit):
+	Likewise.
+	* typecheck/rust-tyty.h (VariantDef): Add defid parameter to ctor.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* Make-lang.in: Add `rust-builtins.o` as target
+	* backend/rust-builtins.h: Refactor to new file.
+	* backend/rust-builtins.cc: New file.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Implement visitor for If
+	expressions.
+
+2023-02-21  David Faust  <david.faust@oracle.com>
+
+	* ast/rust-ast-dump.cc (Dump::visit): Dump assignment and compound
+	assignment expressions.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-hir-type-check-base.cc (TypeCheckBase::query_type):
+	Check for recursive queries.
+	* typecheck/rust-hir-type-check.h: New functions: `query_completed`,
+	`query_in_progress`, `insert_query`.
+	* typecheck/rust-tyty-bounds.cc (TypeBoundsProbe::scan): Use `query_type` API.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-dump.cc (Dump::emit_visibility): New function.
+	(Dump::visit): Call into `emit_visibility`.
+	(Dump::format_function_common): Likewise.
+	* ast/rust-ast-dump.h: Declare `emit_visibility`.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-item.h: Rename get_public_vis_type.
+	* hir/rust-ast-lower.cc (translate_visibility): Use new name.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* resolve/rust-name-resolver.h: Add miscellenaous item mappings.
+	* resolve/rust-name-resolver.cc (Resolver::insert_resolved_misc): Use
+	new mappings.
+	(Resolver::lookup_resolved_misc): Likewise.
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::resolve_segments):
+	Adapt function to insert into miscelleanous mappings.
+	* checks/lints/rust-lint-marklive.cc (MarkLive::find_ref_node_id):
+	Allow lookup in miscelleanous mappings in mark-live phase.
+
+2023-02-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* backend/rust-tree.cc: Include memmodel.h.
+
+2023-02-17  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* backend/rust-tree.cc: '#include "tm_p.h"'.
+
+2023-01-31  Philip Herron  <philip.herron@embecosm.com>
+
+	* Make-lang.in: Remove `rust-hir-typecheck-toplevel` object and add
+	`rust-hir-path-probe` one.
+	* typecheck/rust-hir-dot-operator.cc (MethodResolver::MethodResolver):
+	Remove no longer used `context` and `mapping` fields, and use new
+	`query_type` API.
+	(MethodResolver::MethodResolver): Likewise.
+	(MethodResolver::select): Use new `query_type` API.
+	* typecheck/rust-hir-path-probe.h: New header.
+	* typecheck/rust-hir-path-probe.cc: New file.
+	* typecheck/rust-hir-dot-operator.h (class MethodResolver): Remove no
+	longer used `context` and `mapping` fields, and use new `query_type` API.
+	* typecheck/rust-hir-type-check-base.cc (TypeCheckBase::query_type): New function.
+	* typecheck/rust-hir-type-check-base.h: Declare `query_type` function.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): Add debug print.
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckTopLevelExternItem::Resolve):
+	Refactor and make use of new query system.
+	(TypeCheckTopLevelExternItem::Resolve): Likewise.
+	(TypeCheckTopLevelExternItem::visit): Likewise.
+	(TypeCheckTopLevelImplItem::visit): Likewise.
+	(TypeCheckImplItem::visit): Likewise.
+	(TypeCheckImplItem::TypeCheckImplItem): Likewise.
+	(TypeCheckImplItem::Resolve): Likewise.
+	(TypeCheckImplItemWithTrait::visit): Likewise.
+	* typecheck/rust-hir-type-check-implitem.h (class TypeCheckTopLevelImplItem): Likewise.
+	(class TypeCheckImplItemWithTrait): Likewise.
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::TypeCheckItem): Likewise.
+	(TypeCheckItem::Resolve): Likewise.
+	(TypeCheckItem::ResolveImplItem): Likewise.
+	(TypeCheckItem::ResolveImplBlockSelf): Likewise.
+	(TypeCheckItem::visit): Likewise.
+	(TypeCheckItem::resolve_impl_item): Likewise.
+	(TypeCheckItem::resolve_impl_block_substitutions): Likewise.
+	(TypeCheckItem::resolve_impl_block_self): Likewise.
+	* typecheck/rust-hir-type-check-item.h: Likewise.
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::resolve_root_path): Likewise.
+	(TypeCheckExpr::resolve_segments): Likewise.
+	* typecheck/rust-hir-type-check-stmt.cc (TypeCheckStmt::visit): Likewise.
+	* typecheck/rust-hir-type-check-stmt.h: Likewise.
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::Resolve): Likewise.
+	(TypeCheckType::visit): Likewise.
+	(TypeCheckType::resolve_root_path): Likewise.
+	* typecheck/rust-hir-type-check.cc (TypeResolution::Resolve): Likewise.
+	* typecheck/rust-hir-type-check.h: Likewise.
+	* typecheck/rust-substitution-mapper.h: Likewise.
+	* typecheck/rust-tyty-bounds.cc (TypeBoundsProbe::scan): Likewise.
+	(TypeCheckBase::get_predicate_from_bound): Likewise.
+	(TypeBoundsMappings::add_bound): Likewise.
+	* typecheck/rust-tyty-cmp.h: Likewise.
+	* typecheck/rust-tyty.h: Likewise.
+	* typecheck/rust-tyty.cc (SubstitutionRef::infer_substitions): Likewise.
+	(ParamType::resolve): Do not infinite loop anymore.
+	* util/rust-hir-map.h: Add new `hirImplBlockTypeMappings` and
+	declare `lookup_impl_block_type`.
+	* util/rust-hir-map.cc (Mappings::insert_hir_impl_block): Use new
+	`hirImplBlockTypeMappings`
+	(Mappings::lookup_impl_block_type): New function.
+
+2023-01-31  Philip Herron  <philip.herron@embecosm.com>
+
+	* backend/rust-compile-context.h: Add new optional `asm_name` string
+	argument to `lookup_function_decl`.
+	* backend/rust-compile-item.cc (CompileItem::visit): Compute assembly
+	name and pass it to `lookup_function_decl` when calling it.
+
+2023-01-31  Philip Herron  <philip.herron@embecosm.com>
+
+	* backend/rust-constexpr.cc (eval_store_expression): Remove invalid
+	assertion on constexpr constructors.
+
+2023-01-31  Philip Herron  <philip.herron@embecosm.com>
+
+	* backend/rust-compile-expr.h: Formatting.
+
+2023-01-31  liushuyu  <liushuyu011@gmail.com>
+
+	* ast/rust-ast.h (class MacroInvocData): Store expander as
+	member of the class.
+	(class Expr): Add `is_literal` virtual method
+	* ast/rust-expr.h: Override `is_literal` for `LiteralExpr`s.
+	* expand/rust-macro-builtins.cc (try_expand_macro_expression): New function.
+	(try_extract_string_literal_from_fragment): Likewise.
+	(try_expand_single_string_literal): Likewise.
+	(try_expand_many_expr): Likewise.
+	(parse_single_string_literal): Add macro expander as argument.
+	(MacroBuiltin::include_bytes): Pass expander as argument to
+	`parse_single_string_literal`.
+	(MacroBuiltin::include_str): Likewise.
+	(MacroBuiltin::compile_error): Likewise.
+	(MacroBuiltin::include): Likewise.
+	(MacroBuiltin::concat): Likewise and add better error handling.
+	(MacroBuiltin::env): Likewise.
+	* expand/rust-macro-expand.cc (MacroExpander::expand_invoc): Expand
+	invocations recursively.
+
+2023-01-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* lang.opt: Add new ``-frust-compile-until` option.
+	* rust-session-manager.cc (Session::compile_crate): Add stops around
+	various compilation steps in the pipeline.
+	* rust-session-manager.h (struct CompileOptions): Add `CompileStep` enum
+	and field.
+
+2023-01-31  Philip Herron  <philip.herron@embecosm.com>
+
+	* backend/rust-tree.cc (rs_type_quals): Comment out bad assertion
+
+2023-01-31  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-hir-type-check-toplevel.cc (TypeCheckTopLevel::visit):
+	Make static items behave more similarly to const items.
+
+2023-01-31  Philip Herron  <philip.herron@embecosm.com>
+
+	* backend/rust-compile-item.cc (CompileItem::visit): Const evaluate
+	static item expressions.
+
+2023-01-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* hir/rust-ast-lower-item.cc (ASTLoweringItem::visit): Do not lower
+	null items within modules.
+
+2023-01-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* util/rust-attributes.cc: Add `macro_use` to list of builtin
+	attributes.
+
+2023-01-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* checks/errors/rust-const-checker.cc (ConstChecker::ctx_to_str): Allow
+	getting an error string from a specific constant context.
+	(ConstChecker::ctx_allows_default): New function, check if a context
+	allows default values for Const generics.
+	(ConstChecker::visit): Call into `ctx_allows_default`.
+	* checks/errors/rust-const-checker.h: Declare `ctx_allows_default`.
+
+2023-01-31  liushuyu  <liushuyu011@gmail.com>
+
+	* backend/rust-compile-expr.cc (CompileExpr::visit): Properly formulate
+	exit condition when compiling while loops.
+
+2023-01-31  Faisal Abbas  <90.abbasfaisal@gmail.com>
+
+	* typecheck/rust-hir-type-check-stmt.cc (TypeCheckStmt::visit): Turn
+	constant item typechecking into a coercion site instead of a unify
+	site.
+
+2023-01-31  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-tyty.h: Fix `is_concrete` for unit types with
+	substitutions.
+
+2023-01-31  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-tyty-bounds.cc (TypeBoundPredicate::contains_associated_types):
+	Check if a type bound predicate contains assocated types.
+	* typecheck/rust-tyty.h: Declare the above mentioned function.
+	* typecheck/rust-hir-trait-resolve.cc: Use `contains_associated_types`
+	function.
+
+2023-01-31  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): Add
+	more calls to `rust_debug` for development.
+
+2023-01-31  Philip Herron  <philip.herron@embecosm.com>
+
+	* backend/rust-compile-base.cc: Improve compilation pipeline and simplify
+	function.
+
+2023-01-31  Philip Herron  <philip.herron@embecosm.com>
+
+	* backend/rust-tree.cc (comptypes): Remove some C++ specific checks in
+	Rust const folder for now.
+
+2023-01-31  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-hir-type-check-base.cc (TypeCheckBase::unify_site): Add
+	better unification function with debug calls.
+	* typecheck/rust-autoderef.cc (AutoderefCycle::cycle): Add more debug
+	calls and use new unify API.
+	* typecheck/rust-coercion.cc (TypeCoercionRules::do_coercion): Likewise.
+	(TypeCoercionRules::coerce_borrowed_pointer): Likewise.
+	(TypeCoercionRules::select): Likewise.
+	* typecheck/rust-hir-dot-operator.cc (MethodResolver::select): Likewise.
+	* typecheck/rust-hir-trait-resolve.cc (TraitItemReference::resolve_item): Likewise.
+	(TypeCheckBase::coercion_site): Likewise.
+	(TypeCheckBase::cast_site): Likewise.
+	* typecheck/rust-hir-type-check-base.h: Likewise.
+	* typecheck/rust-hir-type-check-enumitem.cc (TypeCheckEnumItem::visit): Likewise.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): Likewise.
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckTopLevelImplItem::visit): Likewise.
+	(TypeCheckImplItem::visit): Likewise.
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::visit): Likewise.
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::resolve_segments): Likewise.
+	* typecheck/rust-hir-type-check-pattern.cc (TypeCheckPattern::visit): Likewise.
+	* typecheck/rust-hir-type-check-stmt.cc (TypeCheckStmt::visit): Likewise.
+	* typecheck/rust-hir-type-check-struct.cc (TypeCheckStructExpr::resolve): Likewise.
+	* typecheck/rust-hir-type-check-toplevel.cc (TypeCheckTopLevel::visit): Likewise.
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::visit): Likewise.
+	* typecheck/rust-hir-type-check.cc (TypeResolution::Resolve): Likewise.
+	* typecheck/rust-tyctx.cc (TypeCheckContext::peek_return_type): Likewise.
+	* typecheck/rust-tyty-call.cc (TypeCheckMethodCallExpr::visit): Likewise.
+	* typecheck/rust-tyty-cmp.h: Likewise.
+	* typecheck/rust-tyty-rules.h: Likewise.
+	* typecheck/rust-tyty.cc (BaseType::mappings_str): Likewise.
+	(BaseType::debug): Print type name more clearly.
+	(BaseType::debug_str): Add new function to print type pointer and name.
+	(TupleType::get_name): Improve type name fetching function.
+	(ReferenceType::get_name): Likewise.
+	(PointerType::get_name): Likewise.
+	* typecheck/rust-tyty.h: Refactor definitions outside of the header.
+
+2023-01-31  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-hir-type-check-base.cc (TypeCheckBase::TypeCheckBase):
+	Remove constructor.
+	(TypeCheckBase::coercion_site): Add `Location` argument to function.
+	* typecheck/rust-hir-type-check-base.h: Use `TypeCheckBase::coercion_site`
+	function with location argument.
+	* typecheck/rust-hir-type-check-enumitem.cc (TypeCheckEnumItem::visit): Likewise.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): Likewise.
+	* typecheck/rust-hir-type-check-expr.h (class TypeCheckExpr): Likewise.
+	* typecheck/rust-hir-type-check-stmt.cc (TypeCheckStmt::visit): Likewise.
+	* typecheck/rust-hir-type-check-struct.cc (TypeCheckStructExpr::visit): Likewise.
+	* typecheck/rust-hir-type-check-toplevel.cc (TypeCheckTopLevel::visit): Likewise.
+	* typecheck/rust-tyty-call.cc (TypeCheckCallExpr::visit): Likewise.
+	(TypeCheckMethodCallExpr::visit): Likewise.
+	* typecheck/rust-tyty.h: Add missing locus field.
+	* typecheck/rust-tyty.cc (StructFieldType::clone): Use locus field.
+	(StructFieldType::monomorphized_clone): Likewise.
+
+2023-01-31  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-tyctx.cc (TypeCheckContext::pop_return_type): Add
+	guards around `std::vector<T>.pop_back()`.
+	(TypeCheckContext::peek_context): Likewise for `std::vector<T>.back()`.
+
+2023-01-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+	    philberty  <philip.herron@embecosm.com>
+
+	* ast/rust-ast.h: Improve assertions within ASTFragment API.
+
+2023-01-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast.h: Add assertions and accessors for fragment nodes.
+	* expand/rust-attribute-visitor.cc (AttrVisitor::visit): Fix expansion
+	context typo when visiting `InherentImpl` items.
+	(AttrVisitor::maybe_expand_expr): Use new Fragment accessor to fetch
+	properly typed node.
+	(AttrVisitor::maybe_expand_type): Likewise.
+	* expand/rust-macro-expand.cc (transcribe_type): Emit parse errors
+	when trying to parse a type.
+
+2023-01-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-dump.h: Add shorthand `AST::Dump::debug` function to
+	dump an AST node on `stderr`.
+
+2023-01-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+	    philberty  <philip.herron@embecosm.com>
+
+	* expand/rust-macro-expand.cc (parse_many): Return early from parsing
+	loop if we encounter an error, and emit that error in the meantime.
+
+2023-01-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* expand/rust-macro-expand.cc (MacroExpander::match_matcher): Handle
+	fragments differently based on whether or not we are currently trying
+	to match a matcher in a repetition context.
+	(MacroExpander::match_n_matches): Use new `in_repetition` argument
+	properly when calling `match_matcher`.
+	* expand/rust-macro-expand.h (MacroExpander::match_matcher): Allow
+	passing extra `in_repetition` bool argument
+
+2023-01-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* parse/rust-parse-impl.h: Allow parsing full range expressions without
+	erroring out.
+
+2023-01-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* checks/lints/rust-lint-scan-deadcode.h: Do not report public items
+	as dead code.
+
+2023-01-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* util/rust-attributes.cc: Add `rustc_inherit_overflow_checks` to list
+	of builtin attributes.
+
+2023-01-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-compile-expr.cc (CompileExpr::visit): Insert overflow
+	checks logic.
+	(CompileExpr::array_copied_expr): Insert overflow checks logic.
+	* backend/rust-compile-item.cc (CompileItem::visit): Insert overflow
+	checks logic.
+	* backend/rust-compile-type.cc (TyTyResolveCompile::visit): Insert
+	overflow checks logic.
+	* rust-gcc.cc (Gcc_backend::arithmetic_or_logical_expression): Differentiate
+	existing function from `arithmetic_or_logical_expression_checked`.
+	This function does insert perform overflow checks.
+	(Gcc_backend::arithmetic_or_logical_expression_checked): New
+	function.
+	(is_overflowing_expr): New function. Check if an expression is an
+	overflowing one (ADD, SUB, MUL).
+	(fetch_overflow_builtins): New function.
+	* rust-backend.h: Declare `arithmetic_or_logical_expression_checked` in
+	abstract `Backend` class.
+
+2023-01-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* backend/rust-builtins.h: Refactor builtin context class and add
+	overflow builtins.
+
+2023-01-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust-gcc.cc (class Bvariable): Move class to `rust-gcc.h` header.
+	* rust-gcc.h: New file.
+
+2023-01-31  Philip Herron  <philip.herron@embecosm.com>
+
+	* hir/rust-ast-lower-expr.h: Lower double borrow expressions to two
+	`HIR::BorrowExpr`s.
+	* hir/tree/rust-hir-expr.h: Remove `is_double_borrow` field from
+	`HIR::BorrowExpr`.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): Remove
+	call to `gcc_unreachable` on double borrow expressions.
+
+2023-01-31  Faisal Abbas  <90.abbasfaisal@gmail.com>
+
+	* backend/rust-tree.cc : Add new includes.
+	(scope_chain): New.
+	(maybe_add_global): New.
+	(init_modules): New (copied from cp)
+	(var_in_constexpr_fn): Likewise.
+	(member_vec_linear_search): Likewise.
+	(member_vec_binary_search): Likewise.
+	(is_overloaded_fn): Likewise.
+	(ovl_make): Likewise.
+	(lookup_add): Likewise.
+	(type_memfn_quals): Likewise.
+	(struct find_parameter_pack_data): Likewise.
+	(struct conv_type_hasher): Likewise.
+	(make_conv_op_name): Likewise.
+	(builtin_pack_fn_p): Likewise.
+	(builtin_pack_call_p): Likewise.
+	(has_extra_args_mechanism_p): Likewise.
+	(find_parameter_packs_r): Likewise.
+	(WALK_SUBTREE): Likewise.
+	(type_memfn_rqual): Likewise.
+	(maybe_add_lang_type_raw): Likewise.
+	(struct c_fileinfo): Likewise.
+	(get_fileinfo): Likewise.
+	(cxx_make_type): Likewise.
+	(build_min_array_type): Likewise.
+	(fields_linear_search): Likewise.
+	(nothrow_spec_p): Likewise.
+	(maybe_get_fns): Likewise.
+	(get_fns): Likewise.
+	(get_first_fn): Likewise.
+	(dependent_name): Likewise.
+	(called_fns_equal): Likewise.
+	(canonical_eh_spec): Likewise.
+	(rs_tree_code_length): Likewise.
+	(rs_tree_operand_length): Likewise.
+	(rs_tree_equal): Likewise.
+	(publicly_uniquely_derived_p): Likewise.
+	(comp_except_types): Likewise.
+	(comp_except_specs): Likewise.
+	(compparms): Likewise.
+	(set_array_type_canon): Likewise.
+	(struct cplus_array_info): Likewise.
+	(struct cplus_array_hasher): Likewise.
+	(cplus_array_hasher::hash): Likewise.
+	(cplus_array_hasher::equal): Likewise.
+	(is_byte_access_type): Likewise.
+	(build_cplus_array_type): Likewise.
+	(rs_build_qualified_type_real): Likewise.
+	(vector_targets_convertible_p): Likewise.
+	(comp_array_types): Likewise.
+	(same_type_ignoring_top_level_qualifiers_p): Likewise.
+	(comp_ptr_ttypes_const): Likewise.
+	(similar_type_p): Likewise.
+	(structural_comptypes): Likewise.
+	(comptypes): Likewise.
+	(next_initializable_field): Likewise.
+	(sufficient_parms_p): Likewise.
+	(default_ctor_p): Likewise.
+	(user_provided_p): Likewise.
+	(type_has_non_user_provided_default_constructor): Likewise.
+	(default_init_uninitialized_part): Likewise.
+	(extract_conversion_operator): Likewise.
+	(get_class_binding_direct): Likewise.
+	(lang_check_failed): Likewise.
+	(skip_artificial_parms_for): Likewise.
+	(in_class_defaulted_default_constructor): Likewise.
+	(is_instantiation_of_constexpr): Likewise.
+	(check_for_uninitialized_const_var): Likewise.
+	(cv_unqualified): Likewise.
+	(make_tree_vector): Likewise.
+	(release_tree_vector): Likewise.
+	(instantiation_dependent_expression_p): Likewise.
+	(cp_get_callee): Likewise.
+	(build_nop): Likewise.
+	(scalarish_type_p): Likewise.
+	(type_has_nontrivial_copy_init): Likewise.
+	(build_local_temp): Likewise.
+	(is_normal_capture_proxy): Likewise.
+	(reject_gcc_builtin): Likewise.
+	(is_bitfield_expr_with_lowered_type): Likewise.
+	(maybe_undo_parenthesized_ref): Likewise.
+	(fold_offsetof): Likewise.
+	(char_type_p): Likewise.
+	(resolve_nondeduced_context): Likewise.
+	(instantiate_non_dependent_or_null): Likewise.
+	(resolve_nondeduced_context_or_error): Likewise.
+	(really_overloaded_fn): Likewise.
+	(invalid_nonstatic_memfn_p): Likewise.
+	(strip_top_quals): Likewise.
+	(cxx_incomplete_type_inform): Likewise.
+	(cxx_incomplete_type_diagnostic): Likewise.
+	(decl_constant_var_p): Likewise.
+	(undeduced_auto_decl): Likewise.
+	(require_deduced_type): Likewise.
+	* backend/rust-tree.h (enum c_tree_index): Likewise.
+	(GTY): Likewise.
+	(enum cp_tree_index): Likewise.
+	(wchar_decl_node): Likewise.
+	(vtable_entry_type): Likewise.
+	(delta_type_node): Likewise.
+	(vtable_index_type): Likewise.
+	(class_type_node): Likewise.
+	(unknown_type_node): Likewise.
+	(init_list_type_node): Likewise.
+	(explicit_void_list_node): Likewise.
+	(vtbl_type_node): Likewise.
+	(vtbl_ptr_type_node): Likewise.
+	(std_node): Likewise.
+	(abi_node): Likewise.
+	(global_namespace): Likewise.
+	(const_type_info_type_node): Likewise.
+	(conv_op_marker): Likewise.
+	(abort_fndecl): Likewise.
+	(current_aggr): Likewise.
+	(nullptr_node): Likewise.
+	(nullptr_type_node): Likewise.
+	(align_type_node): Likewise.
+	(char8_type_node): Likewise.
+	(char16_type_node): Likewise.
+	(char32_type_node): Likewise.
+	(wchar_type_node): Likewise.
+	(underlying_wchar_type_node): Likewise.
+	(wint_type_node): Likewise.
+	(signed_size_type_node): Likewise.
+	(unsigned_ptrdiff_type_node): Likewise.
+	(intmax_type_node): Likewise.
+	(uintmax_type_node): Likewise.
+	(widest_integer_literal_type_node): Likewise.
+	(widest_unsigned_literal_type_node): Likewise.
+	(sig_atomic_type_node): Likewise.
+	(int8_type_node): Likewise.
+	(int16_type_node): Likewise.
+	(int32_type_node): Likewise.
+	(int64_type_node): Likewise.
+	(uint8_type_node): Likewise.
+	(c_uint16_type_node): Likewise.
+	(c_uint32_type_node): Likewise.
+	(c_uint64_type_node): Likewise.
+	(int_least8_type_node): Likewise.
+	(int_least16_type_node): Likewise.
+	(int_least32_type_node): Likewise.
+	(int_least64_type_node): Likewise.
+	(uint_least8_type_node): Likewise.
+	(uint_least16_type_node): Likewise.
+	(uint_least32_type_node): Likewise.
+	(uint_least64_type_node): Likewise.
+	(int_fast8_type_node): Likewise.
+	(int_fast16_type_node): Likewise.
+	(int_fast32_type_node): Likewise.
+	(int_fast64_type_node): Likewise.
+	(uint_fast8_type_node): Likewise.
+	(uint_fast16_type_node): Likewise.
+	(uint_fast32_type_node): Likewise.
+	(uint_fast64_type_node): Likewise.
+	(intptr_type_node): Likewise.
+	(uintptr_type_node): Likewise.
+	(truthvalue_type_node): Likewise.
+	(truthvalue_true_node): Likewise.
+	(truthvalue_false_node): Likewise.
+	(char_array_type_node): Likewise.
+	(char8_array_type_node): Likewise.
+	(char16_array_type_node): Likewise.
+	(char32_array_type_node): Likewise.
+	(wchar_array_type_node): Likewise.
+	(string_type_node): Likewise.
+	(const_string_type_node): Likewise.
+	(default_function_type): Likewise.
+	(function_name_decl_node): Likewise.
+	(pretty_function_name_decl_node): Likewise.
+	(c99_function_name_decl_node): Likewise.
+	(saved_function_name_decls): Likewise.
+	(null_node): Likewise.
+	(ctor_identifier): Likewise.
+	(complete_ctor_identifier): Likewise.
+	(base_ctor_identifier): Likewise.
+	(dtor_identifier): Likewise.
+	(complete_dtor_identifier): Likewise.
+	(base_dtor_identifier): Likewise.
+	(deleting_dtor_identifier): Likewise.
+	(conv_op_identifier): Likewise.
+	(delta_identifier): Likewise.
+	(in_charge_identifier): Likewise.
+	(vtt_parm_identifier): Likewise.
+	(as_base_identifier): Likewise.
+	(this_identifier): Likewise.
+	(pfn_identifier): Likewise.
+	(vptr_identifier): Likewise.
+	(global_identifier): Likewise.
+	(anon_identifier): Likewise.
+	(auto_identifier): Likewise.
+	(decltype_auto_identifier): Likewise.
+	(init_list_identifier): Likewise.
+	(for_range__identifier): Likewise.
+	(for_begin__identifier): Likewise.
+	(for_end__identifier): Likewise.
+	(for_range_identifier): Likewise.
+	(for_begin_identifier): Likewise.
+	(for_end_identifier): Likewise.
+	(abi_tag_identifier): Likewise.
+	(aligned_identifier): Likewise.
+	(begin_identifier): Likewise.
+	(end_identifier): Likewise.
+	(get__identifier): Likewise.
+	(gnu_identifier): Likewise.
+	(tuple_element_identifier): Likewise.
+	(tuple_size_identifier): Likewise.
+	(type_identifier): Likewise.
+	(value_identifier): Likewise.
+	(fun_identifier): Likewise.
+	(closure_identifier): Likewise.
+	(heap_uninit_identifier): Likewise.
+	(heap_identifier): Likewise.
+	(heap_deleted_identifier): Likewise.
+	(heap_vec_uninit_identifier): Likewise.
+	(heap_vec_identifier): Likewise.
+	(omp_identifier): Likewise.
+	(lang_name_c): Likewise.
+	(lang_name_cplusplus): Likewise.
+	(empty_except_spec): Likewise.
+	(noexcept_true_spec): Likewise.
+	(noexcept_false_spec): Likewise.
+	(noexcept_deferred_spec): Likewise.
+	(terminate_fn): Likewise.
+	(call_unexpected_fn): Likewise.
+	(get_exception_ptr_fn): Likewise.
+	(begin_catch_fn): Likewise.
+	(end_catch_fn): Likewise.
+	(allocate_exception_fn): Likewise.
+	(free_exception_fn): Likewise.
+	(throw_fn): Likewise.
+	(rethrow_fn): Likewise.
+	(atexit_fn_ptr_type_node): Likewise.
+	(atexit_node): Likewise.
+	(dso_handle_node): Likewise.
+	(dynamic_cast_node): Likewise.
+	(cleanup_type): Likewise.
+	(vtt_parm_type): Likewise.
+	(any_targ_node): Likewise.
+	(source_location_impl): Likewise.
+	(OVL_FUNCTION): Likewise.
+	(OVL_CHAIN): Likewise.
+	(OVL_DEDUP_P): Likewise.
+	(OVL_USING_P): Likewise.
+	(OVL_HIDDEN_P): Likewise.
+	(OVL_NESTED_P): Likewise.
+	(OVL_LOOKUP_P): Likewise.
+	(OVL_EXPORT_P): Likewise.
+	(OVL_FIRST): Likewise.
+	(OVL_NAME): Likewise.
+	(OVL_P): Likewise.
+	(OVL_SINGLE_P): Likewise.
+	(TYPE_HAS_DEFAULT_CONSTRUCTOR): Likewise.
+	(CLASSTYPE_LAZY_DEFAULT_CTOR): Likewise.
+	(CLASSTYPE_CONSTRUCTORS): Likewise.
+	(ATTR_IS_DEPENDENT): Likewise.
+	(ABI_TAG_IMPLICIT): Likewise.
+	(PARENTHESIZED_LIST_P): Likewise.
+	(DECL_DEPENDENT_P): Likewise.
+	(USING_DECL_SCOPE): Likewise.
+	(USING_DECL_DECLS): Likewise.
+	(USING_DECL_TYPENAME_P): Likewise.
+	(USING_DECL_UNRELATED_P): Likewise.
+	(DECL_DECLARES_FUNCTION_P): Likewise.
+	(DECL_DECLARES_TYPE_P): Likewise.
+	(IDENTIFIER_KIND_BIT_0): Likewise.
+	(IDENTIFIER_KIND_BIT_1): Likewise.
+	(IDENTIFIER_KIND_BIT_2): Likewise.
+	(IDENTIFIER_MARKED): Likewise.
+	(IDENTIFIER_VIRTUAL_P): Likewise.
+	(IDENTIFIER_KEYWORD_P): Likewise.
+	(IDENTIFIER_CDTOR_P): Likewise.
+	(IDENTIFIER_CTOR_P): Likewise.
+	(IDENTIFIER_DTOR_P): Likewise.
+	(IDENTIFIER_ANY_OP_P): Likewise.
+	(IDENTIFIER_OVL_OP_P): Likewise.
+	(IDENTIFIER_ASSIGN_OP_P): Likewise.
+	(IDENTIFIER_CONV_OP_P): Likewise.
+	(IDENTIFIER_NEWDEL_OP_P): Likewise.
+	(IDENTIFIER_NEW_OP_P): Likewise.
+	(CLASSTYPE_DIAMOND_SHAPED_P): Likewise.
+	(CLASSTYPE_REPEATED_BASE_P): Likewise.
+	(CLASSTYPE_KEY_METHOD): Likewise.
+	(CLASSTYPE_MEMBER_VEC): Likewise.
+	(CLASSTYPE_DECL_LIST): Likewise.
+	(CLASSTYPE_DESTRUCTOR): Likewise.
+	(CLASSTYPE_HAS_PRIMARY_BASE_P): Likewise.
+	(CLASSTYPE_PRIMARY_BINFO): Likewise.
+	(CLASSTYPE_VBASECLASSES): Likewise.
+	(CLASSTYPE_AS_BASE): Likewise.
+	(DECL_CONV_FN_P): Likewise.
+	(DECL_CONV_FN_TYPE): Likewise.
+	(same_type_p): Likewise.
+	(WILDCARD_TYPE_P): Likewise.
+	(MAYBE_CLASS_TYPE_P): Likewise.
+	(FUNCTION_REF_QUALIFIED): Likewise.
+	(FUNCTION_RVALUE_QUALIFIED): Likewise.
+	(TYPE_PTRMEMFUNC_FN_TYPE): Likewise.
+	(TYPE_PTRMEMFUNC_FN_TYPE_RAW): Likewise.
+	(TYPE_DEPENDENT_P): Likewise.
+	(TYPE_DEPENDENT_P_VALID): Likewise.
+	(TYPE_HAS_NONTRIVIAL_DESTRUCTOR): Likewise.
+	(TYPE_RAISES_EXCEPTIONS): Likewise.
+	(IDENTIFIER_BINDING): Likewise.
+	(LANG_IDENTIFIER_CAST): Likewise.
+	(IF_COND): Likewise.
+	(THEN_CLAUSE): Likewise.
+	(ELSE_CLAUSE): Likewise.
+	(IF_SCOPE): Likewise.
+	(IF_STMT_CONSTEXPR_P): Likewise.
+	(IF_STMT_CONSTEVAL_P): Likewise.
+	(DECLTYPE_TYPE_EXPR): Likewise.
+	(SET_CLASSTYPE_INTERFACE_UNKNOWN_X): Likewise.
+	(CLASSTYPE_INTERFACE_ONLY): Likewise.
+	(TYPE_NAME_STRING): Likewise.
+	(TYPE_NAME_LENGTH): Likewise.
+	(CONSTRAINT_VAR_P): Likewise.
+	(KOENIG_LOOKUP_P): Likewise.
+	(DECL_PARM_INDEX): Likewise.
+	(DECL_PARM_LEVEL): Likewise.
+	(CONV_IMPLICIT): Likewise.
+	(CONV_STATIC): Likewise.
+	(CONV_CONST): Likewise.
+	(CONV_REINTERPRET): Likewise.
+	(CONV_PRIVATE): Likewise.
+	(CONV_FORCE_TEMP): Likewise.
+	(CONV_FOLD): Likewise.
+	(CONV_OLD_CONVERT): Likewise.
+	(CONV_C_CAST): Likewise.
+	(CONV_BACKEND_CONVERT): Likewise.
+	(WANT_INT): Likewise.
+	(WANT_FLOAT): Likewise.
+	(WANT_ENUM): Likewise.
+	(WANT_POINTER): Likewise.
+	(WANT_NULL): Likewise.
+	(WANT_VECTOR_OR_COMPLEX): Likewise.
+	(WANT_ARITH): Likewise.
+	(COMPARE_STRICT): Likewise.
+	(COMPARE_BASE): Likewise.
+	(COMPARE_DERIVED): Likewise.
+	(COMPARE_REDECLARATION): Likewise.
+	(COMPARE_STRUCTURAL): Likewise.
+	(SF_DEFAULT): Likewise.
+	(SF_PRE_PARSED): Likewise.
+	(SF_INCLASS_INLINE): Likewise.
+	(SD_UNINITIALIZED): Likewise.
+	(SD_INITIALIZED): Likewise.
+	(SD_DECOMPOSITION): Likewise.
+	(SD_DEFAULTED): Likewise.
+	(SD_DELETED): Likewise.
+	(TYPE_PTRDATAMEM_P): Likewise.
+	(RS_TYPE_CONST_P): Likewise.
+	(TYPE_MAIN_DECL): Likewise.
+	(DECL_NONTRIVIALLY_INITIALIZED_P): Likewise.
+	(DECL_DEFAULTED_FN): Likewise.
+	(TYPE_HAS_USER_CONSTRUCTOR): Likewise.
+	(DECL_INITIALIZED_IN_CLASS_P): Likewise.
+	(DECL_DEFAULTED_IN_CLASS_P): Likewise.
+	(DECL_NONSTATIC_MEMBER_FUNCTION_P): Likewise.
+	(DECL_HAS_IN_CHARGE_PARM_P): Likewise.
+	(DECL_HAS_VTT_PARM_P): Likewise.
+	(FUNCTION_FIRST_USER_PARMTYPE): Likewise.
+	(FUNCTION_FIRST_USER_PARM): Likewise.
+	(DECL_CONSTRUCTOR_P): Likewise.
+	(DECL_DELETED_FN): Likewise.
+	(BRACE_ENCLOSED_INITIALIZER_P): Likewise.
+	(DECL_IMMEDIATE_FUNCTION_P): Likewise.
+	(SET_DECL_IMMEDIATE_FUNCTION_P): Likewise.
+	(CONSTRUCTOR_MUTABLE_POISON): Likewise.
+	(PTRMEM_CST_MEMBER): Likewise.
+	(REF_PARENTHESIZED_P): Likewise.
+	(TYPE_PTRMEM_P): Likewise.
+	(TYPE_PTR_OR_PTRMEM_P): Likewise.
+	(DECL_DECOMPOSITION_P): Likewise.
+	(DECL_DECOMP_BASE): Likewise.
+	(DECL_MAYBE_IN_CHARGE_CDTOR_P): Likewise.
+	(DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P): Likewise.
+	(DECL_CLONED_FUNCTION_P): Likewise.
+	(DECL_CLONED_FUNCTION): Likewise.
+	(DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P): Likewise.
+	(cp_function_chain): Likewise.
+	(cdtor_label): Likewise.
+	(current_class_ptr): Likewise.
+	(current_class_ref): Likewise.
+	(current_eh_spec_block): Likewise.
+	(current_in_charge_parm): Likewise.
+	(current_vtt_parm): Likewise.
+	(current_retval_sentinel): Likewise.
+	(current_function_returns_value): Likewise.
+	(current_function_returns_null): Likewise.
+	(current_function_returns_abnormally): Likewise.
+	(current_function_infinite_loop): Likewise.
+	(in_base_initializer): Likewise.
+	(in_function_try_handler): Likewise.
+	(current_function_return_value): Likewise.
+	(current_class_type): Likewise.
+	(TYPE_BEING_DEFINED): Likewise.
+	(DECL_STATIC_FUNCTION_P): Likewise.
+	(DECL_FUNCTION_MEMBER_P): Likewise.
+	(LANG_DECL_MIN_CHECK): Likewise.
+	(LANG_DECL_FN_CHECK): Likewise.
+	(LANG_DECL_NS_CHECK): Likewise.
+	(LANG_DECL_PARM_CHECK): Likewise.
+	(LANG_DECL_DECOMP_CHECK): Likewise.
+	(RS_INTEGRAL_TYPE_P): Likewise.
+	(STAT_HACK_P): Likewise.
+	(STAT_TYPE_VISIBLE_P): Likewise.
+	(STAT_TYPE): Likewise.
+	(STAT_DECL): Likewise.
+	(STAT_VISIBLE): Likewise.
+	(MAYBE_STAT_DECL): Likewise.
+	(MAYBE_STAT_TYPE): Likewise.
+	(STAT_TYPE_HIDDEN_P): Likewise.
+	(STAT_DECL_HIDDEN_P): Likewise.
+	(class warning_sentinel): Likewise.
+	(struct uid_sensitive_constexpr_evaluation_checker): Likewise.
+	(class iloc_sentinel): Likewise.
+	(struct GTY): Likewise.
+	(struct named_decl_hash): Likewise.
+	(enum lang_decl_selector): Likewise.
+	(LANG_DECL_HAS_MIN): Likewise.
+	(struct named_label_entry): Likewise.
+	(struct named_label_hash): Likewise.
+	(enum ref_operator): Likewise.
+	(struct c_fileinfo): Likewise.
+	(class ovl_iterator): Likewise.
+	(class lkp_iterator): Likewise.
+	(enum rs_ref_qualifier): Likewise.
+	(enum tsubst_flags): Likewise.
+	(enum cp_identifier_kind): Likewise.
+	(enum tag_types): Likewise.
+	(enum compare_bounds_t): Likewise.
+	(mark_rvalue_use): Likewise.
+	(type_unknown_p): Likewise.
+	(init_modules): Likewise.
+	(var_in_constexpr_fn): Likewise.
+	(ovl_first): Likewise.
+	(lookup_add): Likewise.
+	(ovl_make): Likewise.
+	(is_overloaded_fn): Likewise.
+	(maybe_add_lang_type_raw): Likewise.
+	(type_memfn_rqual): Likewise.
+	(builtin_pack_fn_p): Likewise.
+	(make_conv_op_name): Likewise.
+	(type_memfn_quals): Likewise.
+	(get_fileinfo): Likewise.
+	(cxx_make_type): Likewise.
+	(build_cplus_array_type): Likewise.
+	(is_byte_access_type): Likewise.
+	(comptypes): Likewise.
+	(canonical_eh_spec): Likewise.
+	(cp_tree_operand_length): Likewise.
+	(rs_tree_equal): Likewise.
+	(compparms): Likewise.
+	(rs_build_qualified_type_real): Likewise.
+	(rs_build_qualified_type): Likewise.
+	(cv_qualified_p): Likewise.
+	(similar_type_p): Likewise.
+	(vector_targets_convertible_p): Likewise.
+	(same_type_ignoring_top_level_qualifiers_p): Likewise.
+	(comp_ptr_ttypes_const): Likewise.
+	(get_class_binding_direct): Likewise.
+	(skip_artificial_parms_for): Likewise.
+	(lang_check_failed): Likewise.
+	(default_init_uninitialized_part): Likewise.
+	(type_has_non_user_provided_default_constructor): Likewise.
+	(default_ctor_p): Likewise.
+	(user_provided_p): Likewise.
+	(sufficient_parms_p): Likewise.
+	(next_initializable_field): Likewise.
+	(in_class_defaulted_default_constructor): Likewise.
+	(is_instantiation_of_constexpr): Likewise.
+	(check_for_uninitialized_const_var): Likewise.
+	(reduced_constant_expression_p): Likewise.
+	(cv_unqualified): Likewise.
+	(cp_get_callee): Likewise.
+	(cp_get_callee_fndecl_nofold): Likewise.
+	(is_nondependent_static_init_expression): Likewise.
+	(maybe_constant_init): Likewise.
+	(build_nop): Likewise.
+	(scalarish_type_p): Likewise.
+	(is_bitfield_expr_with_lowered_type): Likewise.
+	(convert_bitfield_to_declared_type): Likewise.
+	(cp_fold_maybe_rvalue): Likewise.
+	(maybe_undo_parenthesized_ref): Likewise.
+	(fold_offsetof): Likewise.
+	(cp_truthvalue_conversion): Likewise.
+	(fold_non_dependent_expr): Likewise.
+	(char_type_p): Likewise.
+	(instantiation_dependent_expression_p): Likewise.
+	(type_has_nontrivial_copy_init): Likewise.
+	(build_local_temp): Likewise.
+	(is_normal_capture_proxy): Likewise.
+	(reject_gcc_builtin): Likewise.
+	(resolve_nondeduced_context): Likewise.
+	(cxx_incomplete_type_diagnostic): Likewise.
+	(cxx_incomplete_type_error): Likewise.
+	(invalid_nonstatic_memfn_p): Likewise.
+	(really_overloaded_fn): Likewise.
+	(resolve_nondeduced_context_or_error): Likewise.
+	(instantiate_non_dependent_or_null): Likewise.
+	(cxx_incomplete_type_inform): Likewise.
+	(strip_top_quals): Likewise.
+	(undeduced_auto_decl): Likewise.
+	(require_deduced_type): Likewise.
+	(decl_constant_var_p): Likewise.
+	(type_of_this_parm): Likewise.
+	(class_of_this_parm): Likewise.
+	(identifier_p): Likewise.
+	(gnu_vector_type_p): Likewise.
+	(make_tree_vector): Likewise.
+	(release_tree_vector): Likewise.
+	(class releasing_vec): Likewise.
+	(vec_safe_push): Likewise.
+	(null_node_p): Likewise.
+	* backend/rust-compile-base.cc (HIRCompileBase::setup_fndecl): Correctly
+	set fndecl as constexpr from qualifiers.
+	(HIRCompileBase::compile_function): Test if fndecl is constexpr.
+	(HIRCompileBase::compile_constant_item): Set fndecl as constexpr.
+	* backend/rust-compile-intrinsic.cc : Update include.
+	(finalize_intrinsic_block): Set fndecl as constexpr.
+	* backend/rust-constexpr.cc : Update include.
+	(VERIFY_CONSTANT): New.
+	(is_instantiation_of_constexpr): New.
+	(literal_type_p): New.
+	(verify_constant): New.
+	(find_array_ctor_elt): New.
+	(array_index_cmp): New.
+	(potential_constant_expression_1): New.
+	(get_nth_callarg): New.
+	(unshare_constructor): New.
+	(maybe_save_constexpr_fundef): New.
+	(returns): New.
+	(breaks): New.
+	(continues): New.
+	(switches): New.
+	(struct constexpr_global_ctx): Add new fields.
+	(constexpr_fundef): New.
+	(struct constexpr_call): New.
+	(constexpr_call_hasher : ggc_ptr_hash<constexpr_call>): New.
+	(enum constexpr_switch_state): New.
+	(struct constexpr_ctx): Add new fields.
+	(struct constexpr_fundef_hasher): New.
+	(constexpr_fundef_table): New.
+	(constexpr_fundef_hasher::equal): New.
+	(constexpr_fundef_hasher::hash): New.
+	(retrieve_constexpr_fundef): New.
+	(uid_sensitive_constexpr_evaluation_value): New.
+	(uid_sensitive_constexpr_evaluation_true_counter): New.
+	(uid_sensitive_constexpr_evaluation_p): New.
+	(class temp_override): New.
+	(struct uid_sensitive_constexpr_evaluation_sentinel): New.
+	(struct uid_sensitive_constexpr_evaluation_checker): New.
+	(::uid_sensitive_constexpr_evaluation_sentinel): New.
+	(::uid_sensitive_constexpr_evaluation_checker): New.
+	(uid_sensitive_constexpr_evaluation_checker::evaluation_restricted_p): New.
+	(constexpr_call_table): New.
+	(constexpr_call_hasher::hash): New.
+	(constexpr_call_hasher::equal): New.
+	(maybe_initialize_constexpr_call_table): New.
+	(fundef_copies_table): New.
+	(get_fundef_copy): New.
+	(save_fundef_copy): New.
+	(constexpr_expression): Refactor in ...
+	(eval_constant_expression): ...this.
+	(eval_store_expression): Add 3 bool params.
+	(eval_call_expression): Likewise.
+	(eval_binary_expression): Likewise.
+	(eval_statement_list): New.
+	(extract_string_elt): New.
+	(eval_conditional_expression): New.
+	(eval_bit_field_ref): New.
+	(eval_loop_expr): New.
+	(eval_switch_expr): New.
+	(eval_unary_expression): New.
+	(call_stack): New.
+	(call_stack_tick): New.
+	(last_cx_error_tick): New.
+	(push_cx_call_context): New.
+	(pop_cx_call_context): New.
+	(cx_error_context): New.
+	(fold_expr): Adjust call to eval_constant_expression.
+	(same_type_ignoring_tlq_and_bounds_p): New.
+	(union_active_member): Port more for cxx constexpr.
+	(fold_indirect_ref_1): New.
+	(rs_fold_indirect_ref): Likewise.
+	(rs_eval_indirect_ref): New (from corresponding cxx FE file).
+	(eval_logical_expression): Adjust parameter list.
+	(lookup_placeholder): New (from corresponding cxx FE file).
+	(constant_value_1): Remove.
+	(inline_asm_in_constexpr_error): New (from corresponding cxx FE file).
+	(verify_ctor_sanity): New.
+	(get_callee): Remove.
+	(initialized_type): New.
+	(maybe_constexpr_fn): Remove.
+	(init_subob_ctx): New.
+	(base_field_constructor_elt): New.
+	(get_or_insert_ctor_field): New.
+	(eval_vector_conditional_expression): New (from correponding cxx FE file).
+	(eval_bare_aggregate): New.
+	(cxx_eval_trinary_expression): New.
+	(reduced_constant_expression_p): New.
+	(adjust_temp_type): New.
+	(free_constructor): New.
+	(eval_and_check_array_index): New.
+	(eval_array_reference): New.
+	(eval_component_reference): New.
+	(label_matches): New.
+	(eval_constant_expression): New.
+	(modifying_const_object_error): New.
+	(is_empty_field): New.
+	(eval_store_expression): New.
+	(eval_binary_expression): New.
+	(addr_of_non_const_var): New.
+	(rs_bind_parameters_in_call): New.
+	(eval_builtin_function_call): New.
+	(eval_call_expression): New.
+	(build_anon_member_initialization): New.
+	(build_data_member_initialization): New.
+	(constexpr_fn_retval): New.
+	(constant_value_1): New.
+	(decl_constant_value): New.
+	(non_const_var_error): New.
+	(get_callee): New.
+	(get_function_named_in_call): New.
+	(maybe_constexpr_fn): New.
+	(get_nth_callarg): New.
+	(var_in_maybe_constexpr_fn): New.
+	(instantiate_cx_fn_r): New.
+	(instantiate_constexpr_fns): New.
+	(array_index_cmp): New.
+	(unshare_constructor): New.
+	(find_array_ctor_elt): New.
+	(verify_constant): New.
+	(find_heap_var_refs): New.
+	(find_immediate_fndecl): New.
+	(diag_array_subscript): New.
+	(get_array_or_vector_nelts): New.
+	(eval_and_check_array_index): New.
+	(extract_string_elt): New.
+	(is_valid_constexpr_fn): New.
+	(explain_invalid_constexpr_fn): New.
+	(register_constexpr_fundef): New.
+	(maybe_save_constexpr_fundef): New.
+	(eval_statement_list): New.
+	(eval_conditional_expression): New.
+	(eval_bit_field_ref): New.
+	(returns): New.
+	(breaks): New.
+	(continues): New.
+	(switches): New.
+	(eval_loop_expr): New.
+	(eval_switch_expr): New.
+	(eval_unary_expression): New.
+	(cxx_eval_outermost_constant_expr): New.
+	(is_static_init_expression): New.
+	(is_constant_expression): New.
+	(is_nondependent_static_init_expression): New.
+	(maybe_constant_init_1): New.
+	(maybe_constant_init): New.
+	(is_nondependent_constant_expression): New.
+	(cv_cache): New.
+	(maybe_constant_value): New.
+	(potential_constant_expression): New.
+	(struct check_for_return_continue_data): New.
+	(check_for_return_continue): New.
+	(decl_namespace_context): New.
+	(decl_in_std_namespace_p): New.
+	(is_std_construct_at): New.
+	(cxx_dynamic_cast_fn_p): New.
+	(is_std_allocator_allocate): New.
+	(is_std_allocator_allocate): New.
+	(potential_constant_expression_1): New.
+	(potential_constant_expression_1): New.
+	(fold_non_dependent_init): New.
+	* backend/rust-constexpr.h (maybe_save_constexpr_fundef): New.
+
+2023-01-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust-session-manager.cc (Session::compile_crate): Allow the dump of prettified AST
+	(Session::dump_ast_pretty): New
+	* rust-session-manager.h: Add new output file for pretty AST dump
+
+2023-01-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* resolve/rust-ast-resolve-item.cc (selftest::rust_flatten_list):
+	Remove output to stderr.
+
+2023-01-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (selftest-rust-gdb): New.
+	(selftest-rust-valgrind): New.
+
+2022-12-20  Marc Poulhiès  <dkm@kataplop.net>
+
+	PR rust/108113
+	* Make-lang.in (rust.serial): New variable.
+	(rust1$(exeext)): Depend on $(rust.prev). Call LINK_PROGRESS.
+
+2022-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rust/106072
+	* parse/rust-parse-impl.h (parse_closure_param): Store
+	pattern->get_locus () in a temporary before std::move (pattern) is
+	invoked.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* CONTRIBUTING.md: New.
+	* README.md: New.
+	* logo.png: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* config-lang.in: New.
+
+2022-12-13  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* lang.opt (-frust-incomplete-and-experimental-compiler-do-not-use):
+	New.
+	* rust-session-manager.cc (Session::compile_crate): Check it.
+	* Make-lang.in (RUST_SELFTEST_FLAGS): Add it.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* Make-lang.in: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* lang.opt: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* lang-specs.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* rust-lang.cc: New.
+	* rust-session-manager.cc: New.
+	* rust-session-manager.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* rustspec.cc: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* rust-diagnostics.cc: New.
+	* rust-diagnostics.h: New.
+	* rust-gcc-diagnostics.cc: New.
+	* rust-linemap.cc: New.
+	* rust-linemap.h: New.
+	* rust-location.h: New.
+	* rust-system.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+	    David Faust  <david.faust@oracle.com>
+	    Faisal Abbas  <90.abbasfaisal@gmail.com>
+
+	* backend/rust-compile-context.cc: New.
+	* backend/rust-compile-context.h: New.
+	* backend/rust-compile.cc: New.
+	* backend/rust-compile.h: New.
+	* backend/rust-constexpr.cc: New.
+	* backend/rust-constexpr.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+	    David Faust  <david.faust@oracle.com>
+
+	* backend/rust-compile-block.cc: New.
+	* backend/rust-compile-block.h: New.
+	* backend/rust-compile-expr.cc: New.
+	* backend/rust-compile-expr.h: New.
+	* backend/rust-compile-extern.h: New.
+	* backend/rust-compile-fnparam.cc: New.
+	* backend/rust-compile-fnparam.h: New.
+	* backend/rust-compile-implitem.cc: New.
+	* backend/rust-compile-implitem.h: New.
+	* backend/rust-compile-intrinsic.cc: New.
+	* backend/rust-compile-intrinsic.h: New.
+	* backend/rust-compile-item.cc: New.
+	* backend/rust-compile-item.h: New.
+	* backend/rust-compile-pattern.cc: New.
+	* backend/rust-compile-pattern.h: New.
+	* backend/rust-compile-resolve-path.cc: New.
+	* backend/rust-compile-resolve-path.h: New.
+	* backend/rust-compile-stmt.cc: New.
+	* backend/rust-compile-stmt.h: New.
+	* backend/rust-compile-struct-field-expr.cc: New.
+	* backend/rust-compile-struct-field-expr.h: New.
+	* backend/rust-compile-type.cc: New.
+	* backend/rust-compile-type.h: New.
+	* backend/rust-compile-var-decl.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+	    David Faust  <david.faust@oracle.com>
+
+	* backend/rust-builtins.h: New.
+	* backend/rust-compile-base.cc: New.
+	* backend/rust-compile-base.h: New.
+	* backend/rust-mangle.cc: New.
+	* backend/rust-mangle.h: New.
+	* backend/rust-tree.cc: New.
+	* backend/rust-tree.h: New.
+	* rust-backend.h: New.
+	* rust-gcc.cc: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* metadata/rust-export-metadata.cc: New.
+	* metadata/rust-export-metadata.h: New.
+	* metadata/rust-extern-crate.cc: New.
+	* metadata/rust-extern-crate.h: New.
+	* metadata/rust-import-archive.cc: New.
+	* metadata/rust-imports.cc: New.
+	* metadata/rust-imports.h: New.
+	* rust-object-export.cc: New.
+	* rust-object-export.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* checks/lints/rust-lint-unused-var.cc: New.
+	* checks/lints/rust-lint-unused-var.h: New.
+
+2022-12-13  Thomas Young  <wenzhang5800@gmail.com>
+
+	* checks/lints/rust-lint-marklive-base.h: New.
+	* checks/lints/rust-lint-marklive.cc: New.
+	* checks/lints/rust-lint-marklive.h: New.
+	* checks/lints/rust-lint-scan-deadcode.h: New.
+
+2022-12-13  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* checks/errors/privacy/rust-privacy-check.cc: New.
+	* checks/errors/privacy/rust-privacy-check.h: New.
+	* checks/errors/privacy/rust-privacy-common.h: New.
+	* checks/errors/privacy/rust-privacy-ctx.cc: New.
+	* checks/errors/privacy/rust-privacy-ctx.h: New.
+	* checks/errors/privacy/rust-privacy-reporter.cc: New.
+	* checks/errors/privacy/rust-privacy-reporter.h: New.
+	* checks/errors/privacy/rust-pub-restricted-visitor.cc: New.
+	* checks/errors/privacy/rust-pub-restricted-visitor.h: New.
+	* checks/errors/privacy/rust-reachability.cc: New.
+	* checks/errors/privacy/rust-reachability.h: New.
+	* checks/errors/privacy/rust-visibility-resolver.cc: New.
+	* checks/errors/privacy/rust-visibility-resolver.h: New.
+
+2022-12-13  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* checks/errors/rust-const-checker.cc: New.
+	* checks/errors/rust-const-checker.h: New.
+
+2022-12-13  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* checks/errors/rust-unsafe-checker.cc: New.
+	* checks/errors/rust-unsafe-checker.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-autoderef.cc: New.
+	* typecheck/rust-autoderef.h: New.
+	* typecheck/rust-casts.cc: New.
+	* typecheck/rust-casts.h: New.
+	* typecheck/rust-coercion.cc: New.
+	* typecheck/rust-coercion.h: New.
+	* typecheck/rust-hir-dot-operator.cc: New.
+	* typecheck/rust-hir-dot-operator.h: New.
+	* typecheck/rust-hir-inherent-impl-overlap.h: New.
+	* typecheck/rust-hir-path-probe.h: New.
+	* typecheck/rust-hir-trait-ref.h: New.
+	* typecheck/rust-hir-type-bounds.h: New.
+	* typecheck/rust-substitution-mapper.cc: New.
+	* typecheck/rust-substitution-mapper.h: New.
+	* typecheck/rust-tycheck-dump.h: New.
+	* typecheck/rust-tyctx.cc: New.
+	* typecheck/rust-tyty-bounds.cc: New.
+	* typecheck/rust-tyty-call.cc: New.
+	* typecheck/rust-tyty-call.h: New.
+	* typecheck/rust-tyty-cmp.h: New.
+	* typecheck/rust-tyty-rules.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-tyty.cc: New.
+	* typecheck/rust-tyty.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* typecheck/rust-hir-trait-resolve.cc: New.
+	* typecheck/rust-hir-trait-resolve.h: New.
+	* typecheck/rust-hir-type-check-base.cc: New.
+	* typecheck/rust-hir-type-check-base.h: New.
+	* typecheck/rust-hir-type-check-enumitem.cc: New.
+	* typecheck/rust-hir-type-check-enumitem.h: New.
+	* typecheck/rust-hir-type-check-expr.cc: New.
+	* typecheck/rust-hir-type-check-expr.h: New.
+	* typecheck/rust-hir-type-check-implitem.cc: New.
+	* typecheck/rust-hir-type-check-implitem.h: New.
+	* typecheck/rust-hir-type-check-item.cc: New.
+	* typecheck/rust-hir-type-check-item.h: New.
+	* typecheck/rust-hir-type-check-path.cc: New.
+	* typecheck/rust-hir-type-check-pattern.cc: New.
+	* typecheck/rust-hir-type-check-pattern.h: New.
+	* typecheck/rust-hir-type-check-stmt.cc: New.
+	* typecheck/rust-hir-type-check-stmt.h: New.
+	* typecheck/rust-hir-type-check-struct-field.h: New.
+	* typecheck/rust-hir-type-check-struct.cc: New.
+	* typecheck/rust-hir-type-check-toplevel.cc: New.
+	* typecheck/rust-hir-type-check-toplevel.h: New.
+	* typecheck/rust-hir-type-check-type.cc: New.
+	* typecheck/rust-hir-type-check-type.h: New.
+	* typecheck/rust-hir-type-check-util.cc: New.
+	* typecheck/rust-hir-type-check-util.h: New.
+	* typecheck/rust-hir-type-check.cc: New.
+	* typecheck/rust-hir-type-check.h: New.
+	* typecheck/rust-tyty-visitor.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* util/rust-canonical-path.h: New.
+	* util/rust-common.h: New.
+	* util/rust-hir-map.cc: New.
+	* util/rust-hir-map.h: New.
+	* util/rust-identifier.h: New.
+	* util/rust-lang-item.h: New.
+	* util/rust-mapping-common.h: New.
+	* util/rust-stacked-contexts.h: New.
+
+2022-12-13  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* util/rust-attributes.cc: New.
+	* util/rust-attributes.h: New.
+
+2022-12-13  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* util/rust-optional-test.cc: New.
+	* util/rust-optional.h: New.
+
+2022-12-13  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* util/rust-base62.cc: New.
+	* util/rust-base62.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* util/rust-abi.cc: New.
+	* util/rust-abi.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* util/fnv-hash.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* util/rust-make-unique.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* hir/rust-ast-lower-base.cc: New.
+	* hir/rust-ast-lower-base.h: New.
+	* hir/rust-ast-lower-block.h: New.
+	* hir/rust-ast-lower-enumitem.h: New.
+	* hir/rust-ast-lower-expr.h: New.
+	* hir/rust-ast-lower-extern.h: New.
+	* hir/rust-ast-lower-implitem.h: New.
+	* hir/rust-ast-lower-item.cc: New.
+	* hir/rust-ast-lower-item.h: New.
+	* hir/rust-ast-lower-pattern.cc: New.
+	* hir/rust-ast-lower-pattern.h: New.
+	* hir/rust-ast-lower-stmt.h: New.
+	* hir/rust-ast-lower-struct-field-expr.h: New.
+	* hir/rust-ast-lower-type.h: New.
+	* hir/rust-ast-lower.cc: New.
+	* hir/rust-ast-lower.h: New.
+	* hir/rust-hir-dump.cc: New.
+	* hir/rust-hir-dump.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* hir/tree/rust-hir-full-decls.h: New.
+	* hir/tree/rust-hir-full-test.cc: New.
+	* hir/tree/rust-hir-full.h: New.
+	* hir/tree/rust-hir-visitor.h: New.
+	* hir/tree/rust-hir.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* hir/tree/rust-hir-expr.h: New.
+	* hir/tree/rust-hir-item.h: New.
+	* hir/tree/rust-hir-path.h: New.
+	* hir/tree/rust-hir-pattern.h: New.
+	* hir/tree/rust-hir-stmt.h: New.
+	* hir/tree/rust-hir-type.h: New.
+
+2022-12-13  Philip Herron  <philip.herron@embecosm.com>
+
+	* resolve/rust-ast-resolve-base.cc: New.
+	* resolve/rust-ast-resolve-base.h: New.
+	* resolve/rust-ast-resolve-expr.cc: New.
+	* resolve/rust-ast-resolve-expr.h: New.
+	* resolve/rust-ast-resolve-implitem.h: New.
+	* resolve/rust-ast-resolve-item.cc: New.
+	* resolve/rust-ast-resolve-item.h: New.
+	* resolve/rust-ast-resolve-path.cc: New.
+	* resolve/rust-ast-resolve-path.h: New.
+	* resolve/rust-ast-resolve-pattern.cc: New.
+	* resolve/rust-ast-resolve-pattern.h: New.
+	* resolve/rust-ast-resolve-stmt.cc: New.
+	* resolve/rust-ast-resolve-stmt.h: New.
+	* resolve/rust-ast-resolve-struct-expr-field.cc: New.
+	* resolve/rust-ast-resolve-struct-expr-field.h: New.
+	* resolve/rust-ast-resolve-toplevel.h: New.
+	* resolve/rust-ast-resolve-type.cc: New.
+	* resolve/rust-ast-resolve-type.h: New.
+	* resolve/rust-ast-resolve.cc: New.
+	* resolve/rust-ast-resolve.h: New.
+	* resolve/rust-ast-verify-assignee.h: New.
+	* resolve/rust-name-resolver.cc: New.
+	* resolve/rust-name-resolver.h: New.
+
+2022-12-13  Arthur Cohen  <arthur.cohen@embecosm.com>
+	    Philip Herron  <philip.herron@embecosm.com>
+	    Joel Phillips  <simplytheother@gmail.com>
+
+	* expand/rust-attribute-visitor.cc: New.
+	* expand/rust-attribute-visitor.h: New.
+	* expand/rust-macro-builtins.cc: New.
+	* expand/rust-macro-builtins.h: New.
+	* expand/rust-macro-expand.cc: New.
+	* expand/rust-macro-expand.h: New.
+	* expand/rust-macro-invoc-lexer.cc: New.
+	* expand/rust-macro-invoc-lexer.h: New.
+	* expand/rust-macro-substitute-ctx.cc: New.
+	* expand/rust-macro-substitute-ctx.h: New.
+
+2022-12-13  Joel Phillips  <simplytheother@gmail.com>
+	    Philip Herron  <philip.herron@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* parse/rust-parse-impl.h: New, second half.
+
+2022-12-13  Joel Phillips  <simplytheother@gmail.com>
+	    Philip Herron  <philip.herron@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* parse/rust-cfg-parser.cc: New.
+	* parse/rust-cfg-parser.h: New.
+	* parse/rust-parse-impl.h: New.
+	* parse/rust-parse.cc: New.
+	* parse/rust-parse.h: New.
+
+2022-12-13  Joel Phillips  <simplytheother@gmail.com>
+	    Philip Herron  <philip.herron@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+	    Mark Wielaard  <mark@klomp.org>
+
+	* lex/rust-codepoint.h: New.
+	* lex/rust-lex.cc: New.
+	* lex/rust-lex.h: New.
+	* lex/rust-token.cc: New.
+	* lex/rust-token.h: New.
+	* rust-buffered-queue.h: New.
+
+2022-12-13  Joel Phillips  <simplytheother@gmail.com>
+	    Philip Herron  <philip.herron@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-dump.cc: New.
+	* ast/rust-ast-dump.h: New.
+	* ast/rust-ast-visitor.h: New.
+	* ast/rust-cond-compilation.h: New.
+
+2022-12-13  Joel Phillips  <simplytheother@gmail.com>
+	    Philip Herron  <philip.herron@embecosm.com>
+
+	* ast/rust-expr.h: New.
+	* ast/rust-macro.h: New.
+	* ast/rust-path.h: New.
+	* ast/rust-pattern.h: New.
+	* ast/rust-stmt.h: New.
+	* ast/rust-type.h: New.
+
+2022-12-13  Joel Phillips  <simplytheother@gmail.com>
+	    Philip Herron  <philip.herron@embecosm.com>
+
+	* ast/rust-item.h: New.
+
+2022-12-13  Joel Phillips  <simplytheother@gmail.com>
+	    Philip Herron  <philip.herron@embecosm.com>
+	    Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-full-decls.h: New.
+	* ast/rust-ast-full-test.cc: New.
+	* ast/rust-ast-full.h: New.
+	* ast/rust-ast.h: New.
+	* operator.h: New.
+
+
+Copyright (C) 2022-2023 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

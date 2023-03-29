@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+# Copyright (C) 2018-2023 Free Software Foundation, Inc.
 #
 # Script to analyze warnings produced by clang.
 #
@@ -69,18 +71,19 @@ parser.add_argument('log', help='Log file with clang warnings')
 args = parser.parse_args()
 
 lines = [line.strip() for line in open(args.log)]
-total = 0
-messages = []
+messages = set()
 for line in lines:
     token = ': warning: '
     i = line.find(token)
     if i != -1:
         location = line[:i]
         message = line[i + len(token):]
+        if '/libffi/' in location or location.startswith('Makefile'):
+            continue
         if not skip_warning(location, message):
-            total += 1
-            messages.append(line)
+            messages.add(line)
 
 for line in sorted(messages):
     print(line)
-print('\nTotal warnings: %d' % total)
+
+print('\nTotal warnings: %d' % len(messages))

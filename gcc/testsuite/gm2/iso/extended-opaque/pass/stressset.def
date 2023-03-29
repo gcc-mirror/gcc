@@ -1,0 +1,6 @@
+DEFINITION MODULE stressset ;
+
+TYPE
+   dataType ;
+
+END stressset.

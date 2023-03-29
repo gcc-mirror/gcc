@@ -1,4 +1,5 @@
 /* This test assumes IEEE float and double.  */
+/* { dg-additional-options "-fexcess-precision=fast" } */
 
 #include "convert.h"
 

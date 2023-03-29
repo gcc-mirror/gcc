@@ -1,5 +1,5 @@
 # -*- shell-script -*-
-#   Copyright (C) 2013-2022 Free Software Foundation, Inc.
+#   Copyright (C) 2013-2023 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -49,6 +49,9 @@ case "${target}" in
 	VTV_SUPPORTED=yes
 	;;
   x86_64-*-darwin[1]* | i?86-*-darwin[1]*)
+	;;
+  loongarch*-*-linux*)
+	VTV_SUPPORTED=yes
 	;;
   *)
 	;;

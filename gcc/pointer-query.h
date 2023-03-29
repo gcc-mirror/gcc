@@ -1,6 +1,6 @@
 /* Definitions of the pointer_query and related classes.
 
-   Copyright (C) 2020-2022 Free Software Foundation, Inc.
+   Copyright (C) 2020-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -88,7 +88,7 @@ struct access_ref
      argument to the minimum.  */
   offset_int size_remaining (offset_int * = nullptr) const;
 
-/* Return true if the offset and object size are in range for SIZE.  */
+  /* Return true if the offset and object size are in range for SIZE.  */
   bool offset_in_range (const offset_int &) const;
 
   /* Return true if *THIS is an access to a declared object.  */
@@ -141,6 +141,9 @@ struct access_ref
   /* Positive when REF is dereferenced, negative when its address is
      taken.  */
   int deref;
+  /* The following indicates if heuristics interpreted 'ref' is interpreted
+     as (offsetted) nullptr.  */
+  bool ref_nullptr_p;
   /* Set if trailing one-element arrays should be treated as flexible
      array members.  */
   bool trail1special;

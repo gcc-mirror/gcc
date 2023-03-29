@@ -2,7 +2,7 @@
    directives to separate functions, converts others into explicit calls to the
    runtime library (libgomp) and so forth
 
-Copyright (C) 2005-2022 Free Software Foundation, Inc.
+Copyright (C) 2005-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2003,8 +2003,8 @@ expand_omp_for_init_counts (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 	    t = fold_build2 (MINUS_EXPR, itype, unshare_expr (fd->loops[i].m2),
 			     unshare_expr (fd->loops[i].m1));
 	  else if (fd->loops[i].m1)
-	    t = fold_unary (NEGATE_EXPR, itype,
-			    unshare_expr (fd->loops[i].m1));
+	    t = fold_build1 (NEGATE_EXPR, itype,
+			     unshare_expr (fd->loops[i].m1));
 	  else
 	    t = unshare_expr (fd->loops[i].m2);
 	  tree m2minusm1
@@ -3674,7 +3674,7 @@ expand_omp_ordered_source_sink (struct omp_region *region,
 static basic_block
 expand_omp_for_ordered_loops (struct omp_for_data *fd, tree *counts,
 			      basic_block cont_bb, basic_block body_bb,
-			      bool ordered_lastprivate)
+			      basic_block l0_bb, bool ordered_lastprivate)
 {
   if (fd->ordered == fd->collapse)
     return cont_bb;
@@ -3783,7 +3783,7 @@ expand_omp_for_ordered_loops (struct omp_for_data *fd, tree *counts,
 	  class loop *loop = alloc_loop ();
 	  loop->header = new_header;
 	  loop->latch = e2->src;
-	  add_loop (loop, body_bb->loop_father);
+	  add_loop (loop, l0_bb->loop_father);
 	}
     }
 
@@ -4481,9 +4481,15 @@ expand_omp_for_generic (struct omp_region *region,
 	    }
 	  if (i < fd->ordered)
 	    {
+	      if (entry_bb->loop_father != l0_bb->loop_father)
+		{
+		  remove_bb_from_loops (l0_bb);
+		  add_bb_to_loop (l0_bb, entry_bb->loop_father);
+		  gcc_assert (single_succ (l0_bb) == l1_bb);
+		}
 	      cont_bb
 		= create_empty_bb (EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb);
-	      add_bb_to_loop (cont_bb, l1_bb->loop_father);
+	      add_bb_to_loop (cont_bb, l0_bb->loop_father);
 	      gimple_stmt_iterator gsi = gsi_after_labels (cont_bb);
 	      gimple *g = gimple_build_omp_continue (fd->loop.v, fd->loop.v);
 	      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
@@ -4495,7 +4501,7 @@ expand_omp_for_generic (struct omp_region *region,
 	}
       expand_omp_ordered_source_sink (region, fd, counts, cont_bb);
       cont_bb = expand_omp_for_ordered_loops (fd, counts, cont_bb, l1_bb,
-					      ordered_lastprivate);
+					      l0_bb, ordered_lastprivate);
       if (counts[fd->collapse - 1])
 	{
 	  gcc_assert (fd->collapse == 1);
@@ -10054,13 +10060,8 @@ expand_omp_target (struct omp_region *region)
 
       /* Handle the case that an inner ancestor:1 target is called by an outer
 	 target region. */
-      if (!is_ancestor)
-	cgraph_node::get (child_fn)->calls_declare_variant_alt
-	  |= cgraph_node::get (cfun->decl)->calls_declare_variant_alt;
-      else  /* Duplicate function to create empty nonhost variant. */
+      if (is_ancestor)
 	{
-	  /* Enable pass_omp_device_lower pass.  */
-	  cgraph_node::get (cfun->decl)->calls_declare_variant_alt = 1;
 	  cgraph_node *fn2_node;
 	  child_fn2 = build_decl (DECL_SOURCE_LOCATION (child_fn),
 				  FUNCTION_DECL,
@@ -10074,7 +10075,7 @@ expand_omp_target (struct omp_region *region)
 	  TREE_PUBLIC (child_fn2) = 0;
 	  DECL_UNINLINABLE (child_fn2) = 1;
 	  DECL_EXTERNAL (child_fn2) = 0;
-	  DECL_CONTEXT (child_fn2) = NULL_TREE;
+	  DECL_CONTEXT (child_fn2) = DECL_CONTEXT (child_fn);
 	  DECL_INITIAL (child_fn2) = make_node (BLOCK);
 	  BLOCK_SUPERCONTEXT (DECL_INITIAL (child_fn2)) = child_fn2;
 	  DECL_ATTRIBUTES (child_fn)
@@ -10097,6 +10098,10 @@ expand_omp_target (struct omp_region *region)
 	  fn2_node->offloadable = 1;
 	  fn2_node->force_output = 1;
 	  node->offloadable = 0;
+
+	  /* Enable pass_omp_device_lower pass.  */
+	  fn2_node = cgraph_node::get (DECL_CONTEXT (child_fn));
+	  fn2_node->calls_declare_variant_alt = 1;
 
 	  t = build_decl (DECL_SOURCE_LOCATION (child_fn),
 			  RESULT_DECL, NULL_TREE, void_type_node);
@@ -10712,7 +10717,10 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 		case GF_OMP_TARGET_KIND_OACC_ENTER_DATA:
 		case GF_OMP_TARGET_KIND_OACC_EXIT_DATA:
 		case GF_OMP_TARGET_KIND_OACC_DECLARE:
-		  /* ..., other than for those stand-alone directives...  */
+		  /* ..., other than for those stand-alone directives...
+		     To be precise, target data isn't stand-alone, but
+		     gimplifier put the end API call into try finally block
+		     for it, so omp expansion can treat it as such.  */
 		  region = NULL;
 		  break;
 		default:
@@ -10727,6 +10735,11 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 	  else if (code == GIMPLE_OMP_TASK
 		   && gimple_omp_task_taskwait_p (stmt))
 	    /* #pragma omp taskwait depend(...) is a stand-alone directive.  */
+	    region = NULL;
+	  else if (code == GIMPLE_OMP_TASKGROUP)
+	    /* #pragma omp taskgroup isn't a stand-alone directive, but
+	       gimplifier put the end API call into try finall block
+	       for it, so omp expansion can treat it as such.  */
 	    region = NULL;
 	  /* ..., this directive becomes the parent for a new region.  */
 	  if (region)
@@ -10927,11 +10940,16 @@ omp_make_gimple_edges (basic_block bb, struct omp_region **region,
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_MASKED:
     case GIMPLE_OMP_SCOPE:
-    case GIMPLE_OMP_TASKGROUP:
     case GIMPLE_OMP_CRITICAL:
     case GIMPLE_OMP_SECTION:
       cur_region = new_omp_region (bb, code, cur_region);
       fallthru = true;
+      break;
+
+    case GIMPLE_OMP_TASKGROUP:
+      cur_region = new_omp_region (bb, code, cur_region);
+      fallthru = true;
+      cur_region = cur_region->outer;
       break;
 
     case GIMPLE_OMP_TASK:

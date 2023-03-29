@@ -10,7 +10,6 @@
  */
 module core.sys.windows.ocidl;
 version (Windows):
-@system:
 
 import core.sys.windows.ole2, core.sys.windows.oleidl, core.sys.windows.oaidl, core.sys.windows.objfwd,
   core.sys.windows.windef, core.sys.windows.wtypes;

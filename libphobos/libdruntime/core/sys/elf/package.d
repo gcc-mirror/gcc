@@ -8,7 +8,6 @@ module core.sys.elf;
 extern (C):
 pure:
 nothrow:
-@system:
 
 import core.stdc.stdint;
 

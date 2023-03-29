@@ -1,5 +1,5 @@
 /* d-target.cc -- Target interface for the D front end.
-   Copyright (C) 2013-2022 Free Software Foundation, Inc.
+   Copyright (C) 2013-2023 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -321,17 +321,6 @@ Target::isVectorOpSupported (Type *type, EXP op, Type *)
     case EXP::andAnd:
     case EXP::orOr:
       /* Logical operators must have a result type of bool.  */
-      return false;
-
-    case EXP::lessOrEqual:
-    case EXP::lessThan:
-    case EXP::greaterOrEqual:
-    case EXP::greaterThan:
-    case EXP::equal:
-    case EXP::notEqual:
-    case EXP::identity:
-    case EXP::notIdentity:
-      /* Comparison operators must have a result type of bool.  */
       return false;
 
     default:

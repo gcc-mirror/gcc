@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2003-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,6 +37,7 @@
 --  Strings.Wide_Wide_Bounded.Generic_Bounded_Length use this type with
 --  an appropriate discriminant value set.
 
+with Ada.Strings.Text_Buffers;
 with Ada.Strings.Wide_Wide_Maps;
 
 package Ada.Strings.Wide_Wide_Superbounded is
@@ -55,7 +56,8 @@ package Ada.Strings.Wide_Wide_Superbounded is
       --  no longer necessary, because we now special-case this type in the
       --  compiler, so "=" composes properly for descendants of this type.
       --  Leaving it out is more efficient.
-   end record;
+   end record
+   with Put_Image => Put_Image;
 
    --  The subprograms defined for Super_String are similar to those defined
    --  for Bounded_Wide_Wide_String, except that they have different names, so
@@ -485,6 +487,10 @@ package Ada.Strings.Wide_Wide_Superbounded is
      (Count : Natural;
       Item  : Super_String;
       Drop  : Truncation := Error) return Super_String;
+
+   procedure Put_Image
+     (S      : in out Ada.Strings.Text_Buffers.Root_Buffer_Type'Class;
+      Source : Super_String);
 
 private
       --  Pragma Inline declarations

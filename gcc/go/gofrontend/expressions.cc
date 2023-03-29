@@ -4092,6 +4092,9 @@ Type_conversion_expression::do_numeric_constant_value(
 bool
 Type_conversion_expression::do_string_constant_value(std::string* val) const
 {
+  if (this->type_->is_string_type() && this->expr_->type()->is_string_type())
+    return this->expr_->string_constant_value(val);
+
   if (this->type_->is_string_type()
       && this->expr_->type()->integer_type() != NULL)
     {
@@ -10316,7 +10319,12 @@ Builtin_call_expression::do_check_types(Gogo*)
     case BUILTIN_PANIC:
     case BUILTIN_SIZEOF:
     case BUILTIN_ALIGNOF:
-      this->check_one_arg();
+      if (this->check_one_arg())
+        {
+	  Expression* arg = this->one_arg();
+	  if (arg->type()->is_void_type())
+	    this->report_error(_("argument to builtin has void type"));
+        }
       break;
 
     case BUILTIN_RECOVER:
@@ -11259,6 +11267,7 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
 
       Struct_type* st = Type::make_struct_type(sfl, loc);
       st->set_is_struct_incomparable();
+      st->set_is_results_struct();
       this->call_temp_ = Statement::make_temporary(st, NULL, loc);
       inserter->insert(this->call_temp_);
     }
@@ -12492,7 +12501,7 @@ Call_expression::do_type()
   else if (results->size() == 1)
     ret = results->begin()->type();
   else
-    ret = Type::make_call_multiple_result_type(this);
+    ret = Type::make_call_multiple_result_type();
 
   this->type_ = ret;
 

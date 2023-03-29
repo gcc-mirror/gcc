@@ -1,4 +1,4 @@
-#   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+#   Copyright (C) 2004-2023 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +15,11 @@
 # <http://www.gnu.org/licenses/>.
 
 # GCC testsuite that uses the `dg.exp' driver.
+
+# Exit immediately if this isn't a PowerPC target.
+if { ![istarget powerpc*-*-*] && ![istarget rs6000-*-*] } then {
+  return
+}
 
 # Load support procs.
 load_lib gfortran-dg.exp
@@ -52,6 +57,11 @@ proc dg-compile-aux-modules { args } {
 	rename dg-save-unknown-level-$level dg-save-unknown
     }
 }
+
+# Override gcc_{warning,error}_prefix with Fortran specific prefixes used
+# in gfortran_init to support dg-{warning,error} checks.
+set gcc_warning_prefix "\[Ww\]arning:"
+set gcc_error_prefix "(Fatal )?\[Ee\]rror:"
 
 # Main loop.
 gfortran-dg-runtest [lsort \

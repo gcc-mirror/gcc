@@ -1,6 +1,6 @@
 // <system_error> implementation file
 
-// Copyright (C) 2007-2022 Free Software Foundation, Inc.
+// Copyright (C) 2007-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,6 +33,7 @@
 #undef __sso_string
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
+#define WIN32_LEAN_AND_MEAN
 #include <memory>
 #include <windows.h>
 #endif
@@ -49,7 +50,6 @@ namespace
     struct constant_init
     {
       union {
-	unsigned char unused;
 	T obj;
       };
       constexpr constant_init() : obj() { }
@@ -251,6 +251,15 @@ namespace
 	X (WRITE_PROTECT,		EROFS);
 #undef X
 
+#elif defined __AVR__
+      // avr-libc only defines a few distinct error numbers. Most <errno.h>
+      // constants are not usable in #if directives and have the same value.
+      case EDOM:
+      case ERANGE:
+      case ENOSYS:
+      case EINTR:
+      case 0:
+	return std::error_condition(ev, generic_category_instance.obj);
 #else
       // List of errno macros from [cerrno.syn].
       // C11 only defines EDOM, EILSEQ and ERANGE, the rest are from POSIX.

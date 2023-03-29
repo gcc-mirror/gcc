@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for SPARC Solaris.
-   Copyright (C) 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2009-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -96,7 +96,7 @@ sparc64_frob_update_context (struct _Unwind_Context *context,
       context->cfa -= STACK_BIAS;
 
       for (i = 0; i < __LIBGCC_DWARF_FRAME_REGISTERS__ + 1; ++i)
-	if (fs->regs.reg[i].how == REG_SAVED_OFFSET)
+	if (fs->regs.how[i] == REG_SAVED_OFFSET)
 	  _Unwind_SetGRPtr (context, i,
 			    _Unwind_GetGRPtr (context, i) - STACK_BIAS);
     }
@@ -221,7 +221,7 @@ MD_FALLBACK_FRAME_STATE_FOR (struct _Unwind_Context *context,
 	continue;
 
       /* First the global registers and then the out registers.  */
-      fs->regs.reg[i].how = REG_SAVED_OFFSET;
+      fs->regs.how[i] = REG_SAVED_OFFSET;
       fs->regs.reg[i].loc.offset = (long)&mctx->gregs[REG_Y + i] - new_cfa;
     }
 
@@ -229,7 +229,7 @@ MD_FALLBACK_FRAME_STATE_FOR (struct _Unwind_Context *context,
      the register window (in and local registers) was saved.  */
   for (i = 0; i < 16; i++)
     {
-      fs->regs.reg[i + 16].how = REG_SAVED_OFFSET;
+      fs->regs.how[i + 16] = REG_SAVED_OFFSET;
       fs->regs.reg[i + 16].loc.offset = i * sizeof(long);
     }
 
@@ -238,7 +238,7 @@ MD_FALLBACK_FRAME_STATE_FOR (struct _Unwind_Context *context,
     {
       for (i = 0; i < 32; i++)
 	{
-	  fs->regs.reg[i + 32].how = REG_SAVED_OFFSET;
+	  fs->regs.how[i + 32] = REG_SAVED_OFFSET;
 	  fs->regs.reg[i + 32].loc.offset
 	    = (long)&mctx->fpregs.fpu_fr.fpu_regs[i] - new_cfa;
 	}
@@ -250,7 +250,7 @@ MD_FALLBACK_FRAME_STATE_FOR (struct _Unwind_Context *context,
 	  if (i > 32 && (i & 1))
 	    continue;
 
-	  fs->regs.reg[i + 32].how = REG_SAVED_OFFSET;
+	  fs->regs.how[i + 32] = REG_SAVED_OFFSET;
 	  fs->regs.reg[i + 32].loc.offset
 	    = (long)&mctx->fpregs.fpu_fr.fpu_dregs[i/2] - new_cfa;
 	}
@@ -265,7 +265,7 @@ MD_FALLBACK_FRAME_STATE_FOR (struct _Unwind_Context *context,
   shifted_ra_location = &mctx->gregs[REG_Y];
   *(void **)shifted_ra_location = *(void **)ra_location - 8;
   fs->retaddr_column = 0;
-  fs->regs.reg[0].how = REG_SAVED_OFFSET;
+  fs->regs.how[0] = REG_SAVED_OFFSET;
   fs->regs.reg[0].loc.offset = (long)shifted_ra_location - new_cfa;
 
   /* SIGFPE for IEEE-754 exceptions is delivered after the faulting insn

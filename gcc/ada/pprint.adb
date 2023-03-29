@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2008-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -114,7 +114,7 @@ package body Pprint is
             Num       : Natural := 1) return String
          is
          begin
-            if not Present (List) then
+            if No (List) then
                if First or else not Add_Paren then
                   return "";
                else
@@ -229,7 +229,7 @@ package body Pprint is
                --  is not prepared to deal with a zero-length result.
 
                elsif Null_Record_Present (Expr)
-                 or else not Present (First (Component_Associations (Expr)))
+                 or else No (First (Component_Associations (Expr)))
                then
                   return ("(null record)");
 

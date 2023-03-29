@@ -1,6 +1,6 @@
 /* Plugin for NVPTX execution.
 
-   Copyright (C) 2013-2022 Free Software Foundation, Inc.
+   Copyright (C) 2013-2023 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -39,6 +39,9 @@
 #include "oacc-plugin.h"
 #include "gomp-constants.h"
 #include "oacc-int.h"
+
+/* For struct rev_offload + GOMP_REV_OFFLOAD_VAR. */
+#include "config/nvptx/libgomp-nvptx.h"
 
 #include <pthread.h>
 #ifndef PLUGIN_NVPTX_INCLUDE_SYSTEM_CUDA_H
@@ -329,6 +332,7 @@ struct ptx_device
       pthread_mutex_t lock;
     } omp_stacks;
 
+  struct rev_offload *rev_data;
   struct ptx_device *next;
 };
 
@@ -423,7 +427,7 @@ nvptx_open_device (int n)
   struct ptx_device *ptx_dev;
   CUdevice dev, ctx_dev;
   CUresult r;
-  int async_engines, pi;
+  int pi;
 
   CUDA_CALL_ERET (NULL, cuDeviceGet, &dev, n);
 
@@ -519,10 +523,12 @@ nvptx_open_device (int n)
 		  CU_DEVICE_ATTRIBUTE_MAX_THREADS_PER_MULTIPROCESSOR, dev);
   ptx_dev->max_threads_per_multiprocessor = pi;
 
-  r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &async_engines,
-			 CU_DEVICE_ATTRIBUTE_ASYNC_ENGINE_COUNT, dev);
-  if (r != CUDA_SUCCESS)
-    async_engines = 1;
+  /* Required below for reverse offload as implemented, but with compute
+     capability >= 2.0 and 64bit device processes, this should be universally be
+     the case; hence, an assert.  */
+  r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi,
+			 CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING, dev);
+  assert (r == CUDA_SUCCESS && pi);
 
   for (int i = 0; i != GOMP_DIM_MAX; i++)
     ptx_dev->default_dims[i] = 0;
@@ -539,6 +545,8 @@ nvptx_open_device (int n)
   ptx_dev->omp_stacks.ptr = 0;
   ptx_dev->omp_stacks.size = 0;
   pthread_mutex_init (&ptx_dev->omp_stacks.lock, NULL);
+
+  ptx_dev->rev_data = NULL;
 
   return ptx_dev;
 }
@@ -734,8 +742,7 @@ link_ptx (CUmodule *module, const struct targ_ptx_obj *ptx_objs,
 }
 
 static void
-nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
-	    unsigned *dims, void *targ_mem_desc,
+nvptx_exec (void (*fn), unsigned *dims, void *targ_mem_desc,
 	    CUdeviceptr dp, CUstream stream)
 {
   struct targ_fn_descriptor *targ_fn = (struct targ_fn_descriptor *) fn;
@@ -1179,8 +1186,12 @@ GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
 {
   int num_devices = nvptx_get_num_devices ();
   /* Return -1 if no omp_requires_mask cannot be fulfilled but
-     devices were present.  */
-  if (num_devices > 0 && omp_requires_mask != 0)
+     devices were present.  Unified-shared address: see comment in
+     nvptx_open_device for CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING.  */
+  if (num_devices > 0
+      && ((omp_requires_mask
+	   & ~(GOMP_REQUIRES_UNIFIED_ADDRESS
+	       | GOMP_REQUIRES_REVERSE_OFFLOAD)) != 0))
     return -1;
   return num_devices;
 }
@@ -1381,6 +1392,7 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
     {
       CUdeviceptr var;
       size_t bytes;
+      unsigned int i;
       r = CUDA_CALL_NOCHECK (cuModuleGetGlobal, &var, &bytes, module,
 			     "$offload_func_table");
       if (r != CUDA_SUCCESS)
@@ -1390,6 +1402,48 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
       r = CUDA_CALL_NOCHECK (cuMemcpyDtoH, *rev_fn_table, var, bytes);
       if (r != CUDA_SUCCESS)
 	GOMP_PLUGIN_fatal ("cuMemcpyDtoH error: %s", cuda_error (r));
+      /* Free if only NULL entries.  */
+      for (i = 0; i < fn_entries; ++i)
+	if ((*rev_fn_table)[i] != 0)
+	  break;
+      if (i == fn_entries)
+	{
+	  free (*rev_fn_table);
+	  *rev_fn_table = NULL;
+	}
+    }
+
+  if (rev_fn_table && *rev_fn_table && dev->rev_data == NULL)
+    {
+      /* Get the on-device GOMP_REV_OFFLOAD_VAR variable.  It should be
+	 available but it might be not.  One reason could be: if the user code
+	 has 'omp target device(ancestor:1)' in pure hostcode, GOMP_target_ext
+	 is not called on the device and, hence, it and GOMP_REV_OFFLOAD_VAR
+	 are not linked in.  */
+      CUdeviceptr device_rev_offload_var;
+      size_t device_rev_offload_size;
+      CUresult r = CUDA_CALL_NOCHECK (cuModuleGetGlobal,
+				      &device_rev_offload_var,
+				      &device_rev_offload_size, module,
+				      XSTRING (GOMP_REV_OFFLOAD_VAR));
+      if (r != CUDA_SUCCESS)
+	{
+	  free (*rev_fn_table);
+	  *rev_fn_table = NULL;
+	}
+      else
+	{
+	  /* cuMemHostAlloc memory is accessible on the device, if
+	     unified-shared address is supported; this is assumed - see comment
+	     in nvptx_open_device for CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING. */
+	  CUDA_CALL_ASSERT (cuMemHostAlloc, (void **) &dev->rev_data,
+			    sizeof (*dev->rev_data), CU_MEMHOSTALLOC_DEVICEMAP);
+	  CUdeviceptr dp = (CUdeviceptr) dev->rev_data;
+	  r = CUDA_CALL_NOCHECK (cuMemcpyHtoD, device_rev_offload_var, &dp,
+				 sizeof (dp));
+	  if (r != CUDA_SUCCESS)
+	    GOMP_PLUGIN_fatal ("cuMemcpyHtoD error: %s", cuda_error (r));
+	}
     }
 
   nvptx_set_clocktick (module, dev);
@@ -1474,70 +1528,16 @@ GOMP_OFFLOAD_free (int ord, void *ptr)
 }
 
 void
-GOMP_OFFLOAD_openacc_exec (void (*fn) (void *), size_t mapnum,
-			   void **hostaddrs, void **devaddrs,
+GOMP_OFFLOAD_openacc_exec (void (*fn) (void *),
+			   size_t mapnum  __attribute__((unused)),
+			   void **hostaddrs __attribute__((unused)),
+			   void **devaddrs,
 			   unsigned *dims, void *targ_mem_desc)
 {
-  GOMP_PLUGIN_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
+  GOMP_PLUGIN_debug (0, "nvptx %s\n", __FUNCTION__);
 
-  struct goacc_thread *thr = GOMP_PLUGIN_goacc_thread ();
-  acc_prof_info *prof_info = thr->prof_info;
-  acc_event_info data_event_info;
-  acc_api_info *api_info = thr->api_info;
-  bool profiling_p = __builtin_expect (prof_info != NULL, false);
-
-  void **hp = NULL;
-  CUdeviceptr dp = 0;
-
-  if (mapnum > 0)
-    {
-      size_t s = mapnum * sizeof (void *);
-      hp = alloca (s);
-      for (int i = 0; i < mapnum; i++)
-	hp[i] = (devaddrs[i] ? devaddrs[i] : hostaddrs[i]);
-      CUDA_CALL_ASSERT (cuMemAlloc, &dp, s);
-      if (profiling_p)
-	goacc_profiling_acc_ev_alloc (thr, (void *) dp, s);
-    }
-
-  /* Copy the (device) pointers to arguments to the device (dp and hp might in
-     fact have the same value on a unified-memory system).  */
-  if (mapnum > 0)
-    {
-      if (profiling_p)
-	{
-	  prof_info->event_type = acc_ev_enqueue_upload_start;
-
-	  data_event_info.data_event.event_type = prof_info->event_type;
-	  data_event_info.data_event.valid_bytes
-	    = _ACC_DATA_EVENT_INFO_VALID_BYTES;
-	  data_event_info.data_event.parent_construct
-	    = acc_construct_parallel;
-	  data_event_info.data_event.implicit = 1; /* Always implicit.  */
-	  data_event_info.data_event.tool_info = NULL;
-	  data_event_info.data_event.var_name = NULL;
-	  data_event_info.data_event.bytes = mapnum * sizeof (void *);
-	  data_event_info.data_event.host_ptr = hp;
-	  data_event_info.data_event.device_ptr = (const void *) dp;
-
-	  api_info->device_api = acc_device_api_cuda;
-
-	  GOMP_PLUGIN_goacc_profiling_dispatch (prof_info, &data_event_info,
-						api_info);
-	}
-      CUDA_CALL_ASSERT (cuMemcpyHtoD, dp, (void *) hp,
-			mapnum * sizeof (void *));
-      if (profiling_p)
-	{
-	  prof_info->event_type = acc_ev_enqueue_upload_end;
-	  data_event_info.data_event.event_type = prof_info->event_type;
-	  GOMP_PLUGIN_goacc_profiling_dispatch (prof_info, &data_event_info,
-						api_info);
-	}
-    }
-
-  nvptx_exec (fn, mapnum, hostaddrs, devaddrs, dims, targ_mem_desc,
-	      dp, NULL);
+  CUdeviceptr dp = (CUdeviceptr) devaddrs;
+  nvptx_exec (fn, dims, targ_mem_desc, dp, NULL);
 
   CUresult r = CUDA_CALL_NOCHECK (cuStreamSynchronize, NULL);
   const char *maybe_abort_msg = "(perhaps abort was called)";
@@ -1546,98 +1546,20 @@ GOMP_OFFLOAD_openacc_exec (void (*fn) (void *), size_t mapnum,
 		       maybe_abort_msg);
   else if (r != CUDA_SUCCESS)
     GOMP_PLUGIN_fatal ("cuStreamSynchronize error: %s", cuda_error (r));
-
-  CUDA_CALL_ASSERT (cuMemFree, dp);
-  if (profiling_p)
-    goacc_profiling_acc_ev_free (thr, (void *) dp);
-}
-
-static void
-cuda_free_argmem (void *ptr)
-{
-  void **block = (void **) ptr;
-  nvptx_free (block[0], (struct ptx_device *) block[1]);
-  free (block);
 }
 
 void
-GOMP_OFFLOAD_openacc_async_exec (void (*fn) (void *), size_t mapnum,
-				 void **hostaddrs, void **devaddrs,
+GOMP_OFFLOAD_openacc_async_exec (void (*fn) (void *),
+				 size_t mapnum __attribute__((unused)),
+				 void **hostaddrs __attribute__((unused)),
+				 void **devaddrs,
 				 unsigned *dims, void *targ_mem_desc,
 				 struct goacc_asyncqueue *aq)
 {
-  GOMP_PLUGIN_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
+  GOMP_PLUGIN_debug (0, "nvptx %s\n", __FUNCTION__);
 
-  struct goacc_thread *thr = GOMP_PLUGIN_goacc_thread ();
-  acc_prof_info *prof_info = thr->prof_info;
-  acc_event_info data_event_info;
-  acc_api_info *api_info = thr->api_info;
-  bool profiling_p = __builtin_expect (prof_info != NULL, false);
-
-  void **hp = NULL;
-  CUdeviceptr dp = 0;
-  void **block = NULL;
-
-  if (mapnum > 0)
-    {
-      size_t s = mapnum * sizeof (void *);
-      block = (void **) GOMP_PLUGIN_malloc (2 * sizeof (void *) + s);
-      hp = block + 2;
-      for (int i = 0; i < mapnum; i++)
-	hp[i] = (devaddrs[i] ? devaddrs[i] : hostaddrs[i]);
-      CUDA_CALL_ASSERT (cuMemAlloc, &dp, s);
-      if (profiling_p)
-	goacc_profiling_acc_ev_alloc (thr, (void *) dp, s);
-    }
-
-  /* Copy the (device) pointers to arguments to the device (dp and hp might in
-     fact have the same value on a unified-memory system).  */
-  if (mapnum > 0)
-    {
-      if (profiling_p)
-	{
-	  prof_info->event_type = acc_ev_enqueue_upload_start;
-
-	  data_event_info.data_event.event_type = prof_info->event_type;
-	  data_event_info.data_event.valid_bytes
-	    = _ACC_DATA_EVENT_INFO_VALID_BYTES;
-	  data_event_info.data_event.parent_construct
-	    = acc_construct_parallel;
-	  data_event_info.data_event.implicit = 1; /* Always implicit.  */
-	  data_event_info.data_event.tool_info = NULL;
-	  data_event_info.data_event.var_name = NULL;
-	  data_event_info.data_event.bytes = mapnum * sizeof (void *);
-	  data_event_info.data_event.host_ptr = hp;
-	  data_event_info.data_event.device_ptr = (const void *) dp;
-
-	  api_info->device_api = acc_device_api_cuda;
-
-	  GOMP_PLUGIN_goacc_profiling_dispatch (prof_info, &data_event_info,
-						api_info);
-	}
-
-      CUDA_CALL_ASSERT (cuMemcpyHtoDAsync, dp, (void *) hp,
-			mapnum * sizeof (void *), aq->cuda_stream);
-      block[0] = (void *) dp;
-
-      struct nvptx_thread *nvthd =
-	(struct nvptx_thread *) GOMP_PLUGIN_acc_thread ();
-      block[1] = (void *) nvthd->ptx_dev;
-
-      if (profiling_p)
-	{
-	  prof_info->event_type = acc_ev_enqueue_upload_end;
-	  data_event_info.data_event.event_type = prof_info->event_type;
-	  GOMP_PLUGIN_goacc_profiling_dispatch (prof_info, &data_event_info,
-						api_info);
-	}
-    }
-
-  nvptx_exec (fn, mapnum, hostaddrs, devaddrs, dims, targ_mem_desc,
-	      dp, aq->cuda_stream);
-
-  if (mapnum > 0)
-    GOMP_OFFLOAD_openacc_async_queue_callback (aq, cuda_free_argmem, block);
+  CUdeviceptr dp = (CUdeviceptr) devaddrs;
+  nvptx_exec (fn, dims, targ_mem_desc, dp, aq->cuda_stream);
 }
 
 void *
@@ -2001,6 +1923,23 @@ nvptx_stacks_acquire (struct ptx_device *ptx_dev, size_t size, int num)
   return (void *) ptx_dev->omp_stacks.ptr;
 }
 
+
+void
+rev_off_dev_to_host_cpy (void *dest, const void *src, size_t size,
+			 CUstream stream)
+{
+  CUDA_CALL_ASSERT (cuMemcpyDtoHAsync, dest, (CUdeviceptr) src, size, stream);
+  CUDA_CALL_ASSERT (cuStreamSynchronize, stream);
+}
+
+void
+rev_off_host_to_dev_cpy (void *dest, const void *src, size_t size,
+			 CUstream stream)
+{
+  CUDA_CALL_ASSERT (cuMemcpyHtoDAsync, (CUdeviceptr) dest, src, size, stream);
+  CUDA_CALL_ASSERT (cuStreamSynchronize, stream);
+}
+
 void
 GOMP_OFFLOAD_run (int ord, void *tgt_fn, void *tgt_vars, void **args)
 {
@@ -2035,6 +1974,8 @@ GOMP_OFFLOAD_run (int ord, void *tgt_fn, void *tgt_vars, void **args)
   nvptx_adjust_launch_bounds (tgt_fn, ptx_dev, &teams, &threads);
 
   size_t stack_size = nvptx_stacks_size ();
+  bool reverse_offload = ptx_dev->rev_data != NULL;
+  CUstream copy_stream = NULL;
 
   pthread_mutex_lock (&ptx_dev->omp_stacks.lock);
   void *stacks = nvptx_stacks_acquire (ptx_dev, stack_size, teams * threads);
@@ -2048,12 +1989,41 @@ GOMP_OFFLOAD_run (int ord, void *tgt_fn, void *tgt_vars, void **args)
   GOMP_PLUGIN_debug (0, "  %s: kernel %s: launch"
 		     " [(teams: %u), 1, 1] [(lanes: 32), (threads: %u), 1]\n",
 		     __FUNCTION__, fn_name, teams, threads);
+  if (reverse_offload)
+    CUDA_CALL_ASSERT (cuStreamCreate, &copy_stream, CU_STREAM_NON_BLOCKING);
   r = CUDA_CALL_NOCHECK (cuLaunchKernel, function, teams, 1, 1,
 			 32, threads, 1, 0, NULL, NULL, config);
   if (r != CUDA_SUCCESS)
     GOMP_PLUGIN_fatal ("cuLaunchKernel error: %s", cuda_error (r));
+  if (reverse_offload)
+    while (true)
+      {
+	r = CUDA_CALL_NOCHECK (cuStreamQuery, NULL);
+	if (r == CUDA_SUCCESS)
+	  break;
+	if (r == CUDA_ERROR_LAUNCH_FAILED)
+	  GOMP_PLUGIN_fatal ("cuStreamQuery error: %s %s\n", cuda_error (r),
+			     maybe_abort_msg);
+	else if (r != CUDA_ERROR_NOT_READY)
+	  GOMP_PLUGIN_fatal ("cuStreamQuery error: %s", cuda_error (r));
 
-  r = CUDA_CALL_NOCHECK (cuCtxSynchronize, );
+	if (__atomic_load_n (&ptx_dev->rev_data->fn, __ATOMIC_ACQUIRE) != 0)
+	  {
+	    struct rev_offload *rev_data = ptx_dev->rev_data;
+	    GOMP_PLUGIN_target_rev (rev_data->fn, rev_data->mapnum,
+				    rev_data->addrs, rev_data->sizes,
+				    rev_data->kinds, rev_data->dev_num,
+				    rev_off_dev_to_host_cpy,
+				    rev_off_host_to_dev_cpy, copy_stream);
+	    CUDA_CALL_ASSERT (cuStreamSynchronize, copy_stream);
+	    __atomic_store_n (&rev_data->fn, 0, __ATOMIC_RELEASE);
+	  }
+	usleep (1);
+      }
+  else
+    r = CUDA_CALL_NOCHECK (cuCtxSynchronize, );
+  if (reverse_offload)
+    CUDA_CALL_ASSERT (cuStreamDestroy, copy_stream);
   if (r == CUDA_ERROR_LAUNCH_FAILED)
     GOMP_PLUGIN_fatal ("cuCtxSynchronize error: %s %s\n", cuda_error (r),
 		       maybe_abort_msg);

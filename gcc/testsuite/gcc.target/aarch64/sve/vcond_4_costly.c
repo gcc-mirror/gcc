@@ -61,8 +61,8 @@ TEST_CMP (nuge)
 TEST_CMP (nugt)
 
 /* 2 each for: eq, ne, ueq, nueq.  */
-/* { dg-final { scan-assembler-times {\tfcm(?:eq|ne)\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 8 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tfcm(?:eq|ne)\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 16 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {\tfcm(?:eq|ne)\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 8 } } */
+/* { dg-final { scan-assembler-times {\tfcm(?:eq|ne)\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 16 } } */
 
 /* 2 each for: olt, ult, nult, ogt, ugt, nugt.  */
 /* { dg-final { scan-assembler-times {\tfcm[lg]t\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 12 } } */

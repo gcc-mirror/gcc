@@ -70,10 +70,7 @@ else version (Posix)
         else if (errno ==  ECHILD)
             return ChildStatus.done; // someone called posix.syswait
         else if (waited_pid != pid || status != 0)
-        {
             onForkError();
-            return ChildStatus.error;
-        }
         return ChildStatus.done;
     }
 

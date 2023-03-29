@@ -1,0 +1,3 @@
+The tests in this directory serve to test whether the C object files
+in the pimlib have been built, are visible to the linker and
+accessible to the user via gm2.

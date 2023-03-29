@@ -1,0 +1,50 @@
+# Expect driver script for GCC Regression Tests
+# Copyright (C) 2022-2023 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This file was written by Gaius Mulley (gaius.mulley@southwales.ac.uk)
+# for GNU Modula-2.
+
+if $tracelevel then {
+    strace $tracelevel
+}
+
+# load support procs
+load_lib gm2-torture.exp
+
+gm2_init_pim "${srcdir}/${subdir}" -g
+gm2_link_obj "WriteMap.o AdvMap.o BoxMap.o Chance.o Geometry.o MakeBoxes.o MapOptions.o Options.o RoomMap.o StoreCoords.o"
+
+# If we want these to be re-built for each torture option we need some different 
+# logic.
+gm2_target_compile $srcdir/$subdir/AdvMap.mod AdvMap.o object "-g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/BoxMap.mod BoxMap.o object "-g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/Chance.mod Chance.o object "-g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/Geometry.mod Geometry.o object "-g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/MakeBoxes.mod MakeBoxes.o object "-g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/MapOptions.mod MapOptions.o object "-g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/Options.mod Options.o object "-g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/RoomMap.mod RoomMap.o object "-g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/StoreCoords.mod StoreCoords.o object "-g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/WriteMap.mod WriteMap.o object "-g -I$srcdir/$subdir/"
+
+foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/Map.mod]] {
+    # If we're only testing specific files and this isn't one of them, skip it.
+    if ![runtest_file_p $runtests $testcase] then {
+	continue
+    }
+    gm2-torture-execute $testcase "" "pass"
+}

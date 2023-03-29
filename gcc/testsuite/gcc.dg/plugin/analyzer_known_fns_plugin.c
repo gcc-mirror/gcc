@@ -1,6 +1,7 @@
 /* Proof-of-concept of a -fanalyzer plugin to handle known functions.  */
 /* { dg-options "-g" } */
 
+#define INCLUDE_MEMORY
 #include "gcc-plugin.h"
 #include "config.h"
 #include "system.h"
@@ -40,7 +41,9 @@
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
+#include "analyzer/call-details.h"
 #include "analyzer/call-info.h"
+#include "make-unique.h"
 
 int plugin_is_GPL_compatible;
 
@@ -53,6 +56,11 @@ namespace ana {
 class known_function_returns_42 : public known_function
 {
 public:
+  bool matches_call_types_p (const call_details &) const final override
+  {
+    return true;
+  }
+
   void impl_call_pre (const call_details &cd) const final override
   {
     if (cd.get_lhs_type ())
@@ -113,6 +121,11 @@ public:
     }
   };
 
+  bool matches_call_types_p (const call_details &cd) const
+  {
+    return cd.num_args () == 3;
+  }
+
   void impl_call_pre (const call_details &cd) const final override
   {
     region_model_manager *mgr = cd.get_manager ();
@@ -151,7 +164,7 @@ public:
     if (cd.get_ctxt ())
       {
 	/* Bifurcate state, creating a "failure" out-edge.  */
-	cd.get_ctxt ()->bifurcate (new copy_failure (cd));
+	cd.get_ctxt ()->bifurcate (make_unique<copy_failure> (cd));
 
 	/* The "unbifurcated" state is the "success" case.  */
 	copy_success success (cd,
@@ -173,9 +186,10 @@ known_fn_analyzer_init_cb (void *gcc_data, void */*user_data*/)
   if (0)
     inform (input_location, "got here: known_fn_analyzer_init_cb");
   iface->register_known_function ("returns_42",
-				  new known_function_returns_42 ());
-  iface->register_known_function ("attempt_to_copy",
-				  new known_function_attempt_to_copy ());
+				  make_unique<known_function_returns_42> ());
+  iface->register_known_function
+    ("attempt_to_copy",
+     make_unique<known_function_attempt_to_copy> ());
 }
 
 } // namespace ana

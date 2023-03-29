@@ -678,6 +678,7 @@ struct JSONValue
             assert( j["language"].str == "Perl" );
     }
 
+    /// ditto
     void opIndexAssign(T)(T arg, size_t i)
     {
         auto a = this.arrayNoRef;
@@ -754,11 +755,13 @@ struct JSONValue
         assert(j["author"].str == "Walter");
     }
 
+    ///
     bool opEquals(const JSONValue rhs) const @nogc nothrow pure @safe
     {
         return opEquals(rhs);
     }
 
+    /// ditto
     bool opEquals(ref const JSONValue rhs) const @nogc nothrow pure @trusted
     {
         // Default doesn't work well since store is a union.  Compare only

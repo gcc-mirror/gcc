@@ -1,5 +1,5 @@
 /* Dependency analysis
-   Copyright (C) 2000-2022 Free Software Foundation, Inc.
+   Copyright (C) 2000-2023 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of GCC.
@@ -1291,6 +1291,11 @@ gfc_check_dependency (gfc_expr *expr1, gfc_expr *expr2, bool identical)
 
   if (expr1->expr_type != EXPR_VARIABLE)
     gfc_internal_error ("gfc_check_dependency: expecting an EXPR_VARIABLE");
+
+  /* Prevent NULL pointer dereference while recursively analyzing invalid
+     expressions.  */
+  if (expr2 == NULL)
+    return 0;
 
   switch (expr2->expr_type)
     {

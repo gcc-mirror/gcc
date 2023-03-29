@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for Linux/m68k.
-   Copyright (C) 2006-2022 Free Software Foundation, Inc.
+   Copyright (C) 2006-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -68,21 +68,21 @@ m68k_fallback_frame_state (struct _Unwind_Context *context,
       fs->regs.cfa_reg = 15;
       fs->regs.cfa_offset = cfa - (long) context->cfa;
 
-      fs->regs.reg[0].how = REG_SAVED_OFFSET;
+      fs->regs.how[0] = REG_SAVED_OFFSET;
       fs->regs.reg[0].loc.offset = (long) &sc->sc_d0 - cfa;
-      fs->regs.reg[1].how = REG_SAVED_OFFSET;
+      fs->regs.how[1] = REG_SAVED_OFFSET;
       fs->regs.reg[1].loc.offset = (long) &sc->sc_d1 - cfa;
-      fs->regs.reg[8].how = REG_SAVED_OFFSET;
+      fs->regs.how[8] = REG_SAVED_OFFSET;
       fs->regs.reg[8].loc.offset = (long) &sc->sc_a0 - cfa;
-      fs->regs.reg[9].how = REG_SAVED_OFFSET;
+      fs->regs.how[9] = REG_SAVED_OFFSET;
       fs->regs.reg[9].loc.offset = (long) &sc->sc_a1 - cfa;
 
 #ifdef __uClinux__
-      fs->regs.reg[13].how = REG_SAVED_OFFSET;
+      fs->regs.how[13] = REG_SAVED_OFFSET;
       fs->regs.reg[13].loc.offset = (long) &sc->sc_a5 - cfa;
 #endif
 
-      fs->regs.reg[24].how = REG_SAVED_OFFSET;
+      fs->regs.how[24] = REG_SAVED_OFFSET;
       fs->regs.reg[24].loc.offset = (long) &sc->sc_pc - cfa;
 
 #ifndef __uClinux__
@@ -90,9 +90,9 @@ m68k_fallback_frame_state (struct _Unwind_Context *context,
 	{
 	  int *fpregs = (int *) sc->sc_fpregs;
 
-	  fs->regs.reg[16].how = REG_SAVED_OFFSET;
+	  fs->regs.how[16] = REG_SAVED_OFFSET;
 	  fs->regs.reg[16].loc.offset = (long) &fpregs[0] - cfa;
-	  fs->regs.reg[17].how = REG_SAVED_OFFSET;
+	  fs->regs.how[17] = REG_SAVED_OFFSET;
 	  fs->regs.reg[17].loc.offset = (long) &fpregs[M68K_FP_SIZE/4] - cfa;
 	}
 #elif defined __mcffpu__
@@ -124,12 +124,12 @@ m68k_fallback_frame_state (struct _Unwind_Context *context,
       /* register %d0-%d7/%a0-%a6  */
       for (i = 0; i <= 14; i++)
 	{
-	  fs->regs.reg[i].how = REG_SAVED_OFFSET;
+	  fs->regs.how[i] = REG_SAVED_OFFSET;
 	  fs->regs.reg[i].loc.offset = (long) &gregs[i] - cfa;
 	}
 
       /* return address  */
-      fs->regs.reg[24].how = REG_SAVED_OFFSET;
+      fs->regs.how[24] = REG_SAVED_OFFSET;
       fs->regs.reg[24].loc.offset = (long) &gregs[16] - cfa;
 
 #define uc_fpstate      uc_filler[0]
@@ -141,7 +141,7 @@ m68k_fallback_frame_state (struct _Unwind_Context *context,
 	  /* register %fp0-%fp7  */
 	  for (i = 16; i <= 23; i++)
 	    {
-	      fs->regs.reg[i].how = REG_SAVED_OFFSET;
+	      fs->regs.how[i] = REG_SAVED_OFFSET;
 	      fs->regs.reg[i].loc.offset = fpregs - cfa;
 	      fpregs += M68K_FP_SIZE;
 	    }

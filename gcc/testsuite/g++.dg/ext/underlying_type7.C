@@ -9,7 +9,7 @@ enum class E6 : long { c = __LONG_MAX__ };
 
 template<typename T>
   void
-  test(T, __underlying_type(T)) // { dg-message "sorry, unimplemented: mangling" }
+  test(T, __underlying_type(T)) // { dg-error "built-in trait '__underlying_type\\(T\\)'" }
   { }
 
 int main()

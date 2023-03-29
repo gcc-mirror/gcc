@@ -1,5 +1,5 @@
 ;; Machine description for eBPF.
-;; Copyright (C) 2019-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2019-2023 Free Software Foundation, Inc.
 
 ;; This file is part of GCC.
 
@@ -242,7 +242,7 @@
 
 (define_insn "zero_extendhidi2"
   [(set (match_operand:DI 0 "register_operand" "=r,r,r")
-	(zero_extend:DI (match_operand:HI 1 "nonimmediate_operand" "0,r,m")))]
+	(zero_extend:DI (match_operand:HI 1 "nonimmediate_operand" "0,r,q")))]
   ""
   "@
    and\t%0,0xffff
@@ -252,7 +252,7 @@
 
 (define_insn "zero_extendqidi2"
   [(set (match_operand:DI 0 "register_operand" "=r,r,r")
-	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "0,r,m")))]
+	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "0,r,q")))]
   ""
   "@
    and\t%0,0xff
@@ -263,7 +263,7 @@
 (define_insn "zero_extendsidi2"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(zero_extend:DI
-	  (match_operand:SI 1 "nonimmediate_operand" "r,m")))]
+	  (match_operand:SI 1 "nonimmediate_operand" "r,q")))]
   ""
   "@
    * return bpf_has_alu32 ? \"mov32\t%0,%1\" : \"mov\t%0,%1\;and\t%0,0xffffffff\";
@@ -302,8 +302,8 @@
 }")
 
 (define_insn "*mov<MM:mode>"
-  [(set (match_operand:MM 0 "nonimmediate_operand" "=r, r,r,m,m")
-        (match_operand:MM 1 "mov_src_operand"      " m,rI,B,r,I"))]
+  [(set (match_operand:MM 0 "nonimmediate_operand" "=r, r,r,q,q")
+        (match_operand:MM 1 "mov_src_operand"      " q,rI,B,r,I"))]
   ""
   "@
    ldx<mop>\t%0,%1
@@ -340,6 +340,23 @@
   ""
   "rsh<msuffix>\t%0,%2"
   [(set_attr "type" "<mtype>")])
+
+;;;; Endianness conversion
+
+(define_mode_iterator BSM [HI SI DI])
+(define_mode_attr endmode [(HI "16") (SI "32") (DI "64")])
+
+(define_insn "bswap<BSM:mode>2"
+  [(set (match_operand:BSM 0 "register_operand"            "=r")
+        (bswap:BSM (match_operand:BSM 1 "register_operand" " r")))]
+  ""
+{
+  if (TARGET_BIG_ENDIAN)
+    return "endle\t%0, <endmode>";
+  else
+    return "endbe\t%0, <endmode>";
+}
+  [(set_attr "type" "end")])
 
 ;;;; Conditional branches
 

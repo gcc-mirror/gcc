@@ -1,5 +1,5 @@
 /* Loop optimizer initialization routines and RTL loop optimization passes.
-   Copyright (C) 2002-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -567,7 +567,8 @@ public:
   /* opt_pass methods: */
   bool gate (function *) final override
     {
-      return (flag_unroll_loops || flag_unroll_all_loops || cfun->has_unroll);
+      return (flag_unroll_loops || flag_unroll_all_loops
+	      || cfun->has_unroll);
     }
 
   unsigned int execute (function *) final override;

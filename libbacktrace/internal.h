@@ -1,5 +1,5 @@
 /* internal.h -- Internal header file for stack backtrace library.
-   Copyright (C) 2012-2022 Free Software Foundation, Inc.
+   Copyright (C) 2012-2023 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 Redistribution and use in source and binary forms, with or without
@@ -367,6 +367,15 @@ extern int backtrace_uncompress_zdebug (struct backtrace_state *,
 					backtrace_error_callback, void *data,
 					unsigned char **uncompressed,
 					size_t *uncompressed_size);
+
+/* A test-only hook for elf_zstd_decompress.  */
+
+extern int backtrace_uncompress_zstd (struct backtrace_state *,
+				      const unsigned char *compressed,
+				      size_t compressed_size,
+				      backtrace_error_callback, void *data,
+				      unsigned char *uncompressed,
+				      size_t uncompressed_size);
 
 /* A test-only hook for elf_uncompress_lzma.  */
 

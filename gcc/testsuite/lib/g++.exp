@@ -1,4 +1,4 @@
-# Copyright (C) 1992-2022 Free Software Foundation, Inc.
+# Copyright (C) 1992-2023 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -141,6 +141,10 @@ proc g++_link_flags { paths } {
       if [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.${shlib_ext}"] {
 	  append flags " -L${gccpath}/libstdc++-v3/src/.libs "
 	  append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
+      }
+      if [file exists "${gccpath}/libstdc++-v3/src/experimental/.libs/libstdc++exp.a"] {
+	  append flags " -L${gccpath}/libstdc++-v3/src/experimental/.libs "
+	  append ld_library_path ":${gccpath}/libstdc++-v3/src/experimental/.libs"
       }
 
       if [file exists "${gccpath}/libiberty/libiberty.a"] {

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+# Copyright (C) 2017-2023 Free Software Foundation, Inc.
 #
 # Checks some of the GNU style formatting rules in a set of patches.
 # The script is a rewritten of the same bash script and should eventually
@@ -262,7 +264,7 @@ class SpacesAndTabsMixedTest(unittest.TestCase):
         r = self.check.check('foo', 123, '\t  a = 123;')
         self.assertIsNone(r)
 
-def check_GNU_style_file(file, file_encoding, format):
+def check_GNU_style_file(file, format):
     checks = [LineLengthCheck(), SpacesCheck(), TrailingWhitespaceCheck(),
         SentenceSeparatorCheck(), SentenceEndOfCommentCheck(),
         SentenceDotEndCheck(), FunctionParenthesisCheck(),
@@ -271,7 +273,7 @@ def check_GNU_style_file(file, file_encoding, format):
         SpacesAndTabsMixedCheck()]
     errors = []
 
-    patch = PatchSet(file, encoding=file_encoding)
+    patch = PatchSet(file)
 
     for pfile in patch.added_files + patch.modified_files:
         t = pfile.target_file.lstrip('b/')

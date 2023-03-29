@@ -1,5 +1,5 @@
 /* Main parser.
-   Copyright (C) 2000-2022 Free Software Foundation, Inc.
+   Copyright (C) 2000-2023 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -885,6 +885,11 @@ decode_omp_directive (void)
   switch (c)
     {
     case 'a':
+      /* For -fopenmp-simd, ignore 'assumes'; note no clause starts with 's'. */
+      if (!flag_openmp && gfc_match ("assumes") == MATCH_YES)
+	break;
+      matcho ("assumes", gfc_match_omp_assumes, ST_OMP_ASSUMES);
+      matchs ("assume", gfc_match_omp_assume, ST_OMP_ASSUME);
       matcho ("atomic", gfc_match_omp_atomic, ST_OMP_ATOMIC);
       break;
     case 'b':
@@ -913,6 +918,7 @@ decode_omp_directive (void)
       break;
     case 'e':
       matcho ("error", gfc_match_omp_error, ST_OMP_ERROR);
+      matchs ("end assume", gfc_match_omp_eos_error, ST_OMP_END_ASSUME);
       matcho ("end atomic", gfc_match_omp_eos_error, ST_OMP_END_ATOMIC);
       matcho ("end critical", gfc_match_omp_end_critical, ST_OMP_END_CRITICAL);
       matchs ("end distribute parallel do simd", gfc_match_omp_eos_error,
@@ -924,7 +930,7 @@ decode_omp_directive (void)
       matcho ("end distribute", gfc_match_omp_eos_error, ST_OMP_END_DISTRIBUTE);
       matchs ("end do simd", gfc_match_omp_end_nowait, ST_OMP_END_DO_SIMD);
       matcho ("end do", gfc_match_omp_end_nowait, ST_OMP_END_DO);
-      matcho ("end loop", gfc_match_omp_eos_error, ST_OMP_END_LOOP);
+      matchs ("end loop", gfc_match_omp_eos_error, ST_OMP_END_LOOP);
       matchs ("end simd", gfc_match_omp_eos_error, ST_OMP_END_SIMD);
       matcho ("end masked taskloop simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_MASKED_TASKLOOP_SIMD);
@@ -939,7 +945,8 @@ decode_omp_directive (void)
       matchs ("end ordered", gfc_match_omp_eos_error, ST_OMP_END_ORDERED);
       matchs ("end parallel do simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_PARALLEL_DO_SIMD);
-      matcho ("end parallel do", gfc_match_omp_eos_error, ST_OMP_END_PARALLEL_DO);
+      matcho ("end parallel do", gfc_match_omp_eos_error,
+	      ST_OMP_END_PARALLEL_DO);
       matcho ("end parallel loop", gfc_match_omp_eos_error,
 	      ST_OMP_END_PARALLEL_LOOP);
       matcho ("end parallel masked taskloop simd", gfc_match_omp_eos_error,
@@ -1023,7 +1030,7 @@ decode_omp_directive (void)
       matcho ("nothing", gfc_match_omp_nothing, ST_NONE);
       break;
     case 'l':
-      matcho ("loop", gfc_match_omp_loop, ST_OMP_LOOP);
+      matchs ("loop", gfc_match_omp_loop, ST_OMP_LOOP);
       break;
     case 'o':
       if (gfc_match ("ordered depend (") == MATCH_YES
@@ -1070,7 +1077,7 @@ decode_omp_directive (void)
       matcho ("requires", gfc_match_omp_requires, ST_OMP_REQUIRES);
       break;
     case 's':
-      matcho ("scan", gfc_match_omp_scan, ST_OMP_SCAN);
+      matchs ("scan", gfc_match_omp_scan, ST_OMP_SCAN);
       matcho ("scope", gfc_match_omp_scope, ST_OMP_SCOPE);
       matcho ("sections", gfc_match_omp_sections, ST_OMP_SECTIONS);
       matcho ("section", gfc_match_omp_eos_error, ST_OMP_SECTION);
@@ -1716,6 +1723,7 @@ next_statement (void)
   case ST_OMP_TARGET_SIMD: case ST_OMP_TASKLOOP: case ST_OMP_TASKLOOP_SIMD: \
   case ST_OMP_LOOP: case ST_OMP_PARALLEL_LOOP: case ST_OMP_TEAMS_LOOP: \
   case ST_OMP_TARGET_PARALLEL_LOOP: case ST_OMP_TARGET_TEAMS_LOOP: \
+  case ST_OMP_ASSUME: \
   case ST_CRITICAL: \
   case ST_OACC_PARALLEL_LOOP: case ST_OACC_PARALLEL: case ST_OACC_KERNELS: \
   case ST_OACC_DATA: case ST_OACC_HOST_DATA: case ST_OACC_LOOP: \
@@ -1733,7 +1741,7 @@ next_statement (void)
 
 #define case_omp_decl case ST_OMP_THREADPRIVATE: case ST_OMP_DECLARE_SIMD: \
   case ST_OMP_DECLARE_TARGET: case ST_OMP_DECLARE_REDUCTION: \
-  case ST_OMP_DECLARE_VARIANT: \
+  case ST_OMP_DECLARE_VARIANT: case ST_OMP_ASSUMES: \
   case ST_OMP_REQUIRES: case ST_OACC_ROUTINE: case ST_OACC_DECLARE
 
 /* Block end statements.  Errors associated with interchanging these
@@ -1925,10 +1933,11 @@ gfc_enclosing_unit (gfc_compile_state * result)
 }
 
 
-/* Translate a statement enum to a string.  */
+/* Translate a statement enum to a string.  If strip_sentinel is true,
+   the !$OMP/!$ACC sentinel is excluded.  */
 
 const char *
-gfc_ascii_statement (gfc_statement st)
+gfc_ascii_statement (gfc_statement st, bool strip_sentinel)
 {
   const char *p;
 
@@ -2353,6 +2362,12 @@ gfc_ascii_statement (gfc_statement st)
     case ST_OACC_END_ATOMIC:
       p = "!$ACC END ATOMIC";
       break;
+    case ST_OMP_ASSUME:
+      p = "!$OMP ASSUME";
+      break;
+    case ST_OMP_ASSUMES:
+      p = "!$OMP ASSUMES";
+      break;
     case ST_OMP_ATOMIC:
       p = "!$OMP ATOMIC";
       break;
@@ -2400,6 +2415,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OMP_DO_SIMD:
       p = "!$OMP DO SIMD";
+      break;
+    case ST_OMP_END_ASSUME:
+      p = "!$OMP END ASSUME";
       break;
     case ST_OMP_END_ATOMIC:
       p = "!$OMP END ATOMIC";
@@ -2600,6 +2618,10 @@ gfc_ascii_statement (gfc_statement st)
     case ST_OMP_ORDERED_DEPEND:
       p = "!$OMP ORDERED";
       break;
+    case ST_OMP_NOTHING:
+      /* Note: gfc_match_omp_nothing returns ST_NONE. */
+      p = "!$OMP NOTHING";
+      break;
     case ST_OMP_PARALLEL:
       p = "!$OMP PARALLEL";
       break;
@@ -2751,6 +2773,8 @@ gfc_ascii_statement (gfc_statement st)
       gfc_internal_error ("gfc_ascii_statement(): Bad statement code");
     }
 
+  if (strip_sentinel && p[0] == '!')
+    return p + strlen ("!$OMP ");
   return p;
 }
 
@@ -3913,7 +3937,7 @@ match_deferred_characteristics (gfc_typespec * ts)
   m = gfc_match_prefix (ts);
   gfc_buffer_error (false);
 
-  if (ts->type == BT_DERIVED)
+  if (ts->type == BT_DERIVED || ts->type == BT_CLASS)
     {
       ts->kind = 0;
 
@@ -3950,21 +3974,30 @@ match_deferred_characteristics (gfc_typespec * ts)
    For return types specified in a FUNCTION prefix, the IMPLICIT rules of the
    scope are not yet parsed so this has to be delayed up to parse_spec.  */
 
-static void
+static bool
 check_function_result_typed (void)
 {
   gfc_typespec ts;
 
   gcc_assert (gfc_current_state () == COMP_FUNCTION);
 
-  if (!gfc_current_ns->proc_name->result) return;
+  if (!gfc_current_ns->proc_name->result)
+    return true;
 
   ts = gfc_current_ns->proc_name->result->ts;
 
   /* Check type-parameters, at the moment only CHARACTER lengths possible.  */
   /* TODO:  Extend when KIND type parameters are implemented.  */
   if (ts.type == BT_CHARACTER && ts.u.cl && ts.u.cl->length)
-    gfc_expr_check_typed (ts.u.cl->length, gfc_current_ns, true);
+    {
+      /* Reject invalid type of specification expression for length.  */
+      if (ts.u.cl->length->ts.type != BT_INTEGER)
+	  return false;
+
+      gfc_expr_check_typed (ts.u.cl->length, gfc_current_ns, true);
+    }
+
+  return true;
 }
 
 
@@ -3994,7 +4027,7 @@ parse_spec (gfc_statement st)
       gfc_symbol* proc = gfc_current_ns->proc_name;
       gcc_assert (proc);
 
-      if (proc->result->ts.type == BT_UNKNOWN)
+      if (proc->result && proc->result->ts.type == BT_UNKNOWN)
 	function_result_typed = true;
     }
 
@@ -4072,10 +4105,7 @@ loop:
 	}
 
       if (verify_now)
-	{
-	  check_function_result_typed ();
-	  function_result_typed = true;
-	}
+	function_result_typed = check_function_result_typed ();
     }
 
   switch (st)
@@ -4086,10 +4116,7 @@ loop:
     case ST_IMPLICIT_NONE:
     case ST_IMPLICIT:
       if (!function_result_typed)
-	{
-	  check_function_result_typed ();
-	  function_result_typed = true;
-	}
+	function_result_typed = check_function_result_typed ();
       goto declSt;
 
     case ST_FORMAT:
@@ -4194,7 +4221,7 @@ declSt:
   if (bad_characteristic)
     {
       ts = &gfc_current_block ()->result->ts;
-      if (ts->type != BT_DERIVED)
+      if (ts->type != BT_DERIVED && ts->type != BT_CLASS)
 	gfc_error ("Bad kind expression for function %qs at %L",
 		   gfc_current_block ()->name,
 		   &gfc_current_block ()->declared_at);
@@ -5285,7 +5312,13 @@ parse_omp_do (gfc_statement omp_st)
   if (st == omp_end_st)
     {
       if (new_st.op == EXEC_OMP_END_NOWAIT)
-	cp->ext.omp_clauses->nowait |= new_st.ext.omp_bool;
+	{
+	  if (cp->ext.omp_clauses->nowait && new_st.ext.omp_bool)
+	    gfc_error_now ("Duplicated NOWAIT clause on %s and %s at %C",
+			   gfc_ascii_statement (omp_st),
+			   gfc_ascii_statement (omp_end_st));
+	  cp->ext.omp_clauses->nowait |= new_st.ext.omp_bool;
+	}
       else
 	gcc_assert (new_st.op == EXEC_NOP);
       gfc_clear_new_st ();
@@ -5518,6 +5551,9 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 
   switch (omp_st)
     {
+    case ST_OMP_ASSUME:
+      omp_end_st = ST_OMP_END_ASSUME;
+      break;
     case ST_OMP_PARALLEL:
       omp_end_st = ST_OMP_END_PARALLEL;
       break;
@@ -5651,6 +5687,7 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 		  parse_forall_block ();
 		  break;
 
+		case ST_OMP_ASSUME:
 		case ST_OMP_PARALLEL:
 		case ST_OMP_PARALLEL_MASKED:
 		case ST_OMP_PARALLEL_MASTER:
@@ -5721,6 +5758,10 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
   switch (new_st.op)
     {
     case EXEC_OMP_END_NOWAIT:
+      if (cp->ext.omp_clauses->nowait && new_st.ext.omp_bool)
+	gfc_error_now ("Duplicated NOWAIT clause on %s and %s at %C",
+		       gfc_ascii_statement (omp_st),
+		       gfc_ascii_statement (omp_end_st));
       cp->ext.omp_clauses->nowait |= new_st.ext.omp_bool;
       break;
     case EXEC_OMP_END_CRITICAL:
@@ -5735,8 +5776,22 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
       new_st.ext.omp_name = NULL;
       break;
     case EXEC_OMP_END_SINGLE:
-      cp->ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE]
-	= new_st.ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE];
+      if (cp->ext.omp_clauses->nowait && new_st.ext.omp_clauses->nowait)
+	gfc_error_now ("Duplicated NOWAIT clause on %s and %s at %C",
+		       gfc_ascii_statement (omp_st),
+		       gfc_ascii_statement (omp_end_st));
+      cp->ext.omp_clauses->nowait |= new_st.ext.omp_clauses->nowait;
+      if (cp->ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE])
+	{
+	  gfc_omp_namelist *nl;
+	  for (nl = cp->ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE];
+	      nl->next; nl = nl->next)
+	    ;
+	  nl->next = new_st.ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE];
+	}
+      else
+	cp->ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE]
+	  = new_st.ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE];
       new_st.ext.omp_clauses->lists[OMP_LIST_COPYPRIVATE] = NULL;
       gfc_free_omp_clauses (new_st.ext.omp_clauses);
       break;
@@ -5874,6 +5929,7 @@ parse_executable (gfc_statement st)
 	  parse_oacc_structured_block (st);
 	  break;
 
+	case ST_OMP_ASSUME:
 	case ST_OMP_PARALLEL:
 	case ST_OMP_PARALLEL_MASKED:
 	case ST_OMP_PARALLEL_MASTER:
@@ -6452,7 +6508,6 @@ parse_module (void)
 {
   gfc_statement st;
   gfc_gsymbol *s;
-  bool error;
 
   s = gfc_get_gsymbol (gfc_new_block->name, false);
   if (s->defined || (s->type != GSYM_UNKNOWN && s->type != GSYM_MODULE))
@@ -6475,7 +6530,6 @@ parse_module (void)
 
   st = parse_spec (ST_NONE);
 
-  error = false;
 loop:
   switch (st)
     {
@@ -6494,16 +6548,11 @@ loop:
     default:
       gfc_error ("Unexpected %s statement in MODULE at %C",
 		 gfc_ascii_statement (st));
-
-      error = true;
       reject_statement ();
       st = next_statement ();
       goto loop;
     }
-
-  /* Make sure not to free the namespace twice on error.  */
-  if (!error)
-    s->ns = gfc_current_ns;
+  s->ns = gfc_current_ns;
 }
 
 

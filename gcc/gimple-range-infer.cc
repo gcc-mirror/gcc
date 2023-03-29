@@ -1,5 +1,5 @@
 /* Gimple range inference implementation.
-   Copyright (C) 2022 Free Software Foundation, Inc.
+   Copyright (C) 2022-2023 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>.
 
 This file is part of GCC.
@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "cfganal.h"
+#include "tree-dfa.h"
 
 // Adapted from infer_nonnull_range_by_dereference and check_loadstore
 // to process nonnull ssa_name OP in S.  DATA contains a pointer to a
@@ -54,6 +55,54 @@ non_null_loadstore (gimple *, tree op, tree, void *data)
 	}
     }
   return false;
+}
+
+// Process an ASSUME call to see if there are any inferred ranges available.
+
+void
+gimple_infer_range::check_assume_func (gcall *call)
+{
+  tree arg;
+  unsigned i;
+  tree assume_id = TREE_OPERAND (gimple_call_arg (call, 0), 0);
+  if (!assume_id)
+    return;
+  struct function *fun = DECL_STRUCT_FUNCTION (assume_id);
+  if (!fun)
+    return;
+  // Loop over arguments, matching them to the assume parameters.
+  for (arg = DECL_ARGUMENTS (assume_id), i = 1;
+       arg && i < gimple_call_num_args (call);
+       i++, arg = DECL_CHAIN (arg))
+    {
+      tree op = gimple_call_arg (call, i);
+      tree type = TREE_TYPE (op);
+      if (gimple_range_ssa_p (op) && Value_Range::supports_type_p (type))
+	{
+	  tree default_def = ssa_default_def (fun, arg);
+	  if (!default_def || type != TREE_TYPE (default_def))
+	    continue;
+	  // Query the global range of the default def in the assume function.
+	  Value_Range assume_range (type);
+	  gimple_range_global (assume_range, default_def, fun);
+	  // If there is a non-varying result, add it as an inferred range.
+	  if (!assume_range.varying_p ())
+	    {
+	      add_range (op, assume_range);
+	      if (dump_file)
+		{
+		  print_generic_expr (dump_file, assume_id, TDF_SLIM);
+		  fprintf (dump_file, " assume inferred range of ");
+		  print_generic_expr (dump_file, op, TDF_SLIM);
+		  fprintf (dump_file, " (param ");
+		  print_generic_expr (dump_file, arg, TDF_SLIM);
+		  fprintf (dump_file, ") = ");
+		  assume_range.dump (dump_file);
+		  fputc ('\n', dump_file);
+		}
+	    }
+	}
+    }
 }
 
 // Add NAME and RANGE to the range inference summary.
@@ -111,6 +160,11 @@ gimple_infer_range::gimple_infer_range (gimple *s)
       // Fallthru and walk load/store ops now.
     }
 
+  // Check for inferred ranges from ASSUME calls.
+  if (is_a<gcall *> (s) && gimple_call_internal_p (s)
+      && gimple_call_internal_fn (s) == IFN_ASSUME)
+    check_assume_func (as_a<gcall *> (s));
+
   // Look for possible non-null values.
   if (flag_delete_null_pointer_checks && gimple_code (s) != GIMPLE_ASM
       && !gimple_clobber_p (s))
@@ -121,7 +175,7 @@ gimple_infer_range::gimple_infer_range (gimple *s)
 
 // -------------------------------------------------------------------------
 
-// This class is an element in the list of infered ranges.
+// This class is an element in the list of inferred ranges.
 
 class exit_range
 {
@@ -196,6 +250,17 @@ infer_range_manager::get_nonzero (tree name)
       m_nonzero[v]->set_nonzero (TREE_TYPE (name));
     }
   return *(m_nonzero[v]);
+}
+
+// Return TRUE if there are any range inferences in block BB.
+
+bool
+infer_range_manager::has_range_p (basic_block bb)
+{
+  if (bb->index >= (int)m_on_exit.length ())
+    return false;
+  bitmap b = m_on_exit[bb->index].m_names;
+  return b && !bitmap_empty_p (b);
 }
 
 // Return TRUE if NAME has a range inference in block BB.

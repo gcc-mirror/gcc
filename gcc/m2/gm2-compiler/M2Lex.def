@@ -1,0 +1,106 @@
+(* M2Lex.def provides a non tokenised lexical analyser.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+DEFINITION MODULE M2Lex ;
+
+(*
+   Title      : M2Lex
+   Author     : Gaius Mulley
+   Date       : Date: Sat 16-09-1989 Time: 17:54:22.58
+   LastEdit   : Date: Sat 16-09-1989 Time: 17:54:22.58
+   System     : UNIX (GNU Modula-2)
+   Description: Provides a non tokenised version of M2Lexical.
+                Symbols are distinct MODULA-2 symbols.
+*)
+
+EXPORT QUALIFIED MaxLine,
+                 GetSymbol,
+                 PutSymbol,
+                 CurrentSymbol,
+                 LastSymbol,
+                 OpenSource,
+                 CloseSource,
+                 SymIs,
+                 IsSym,
+                 WriteError ;
+
+CONST
+   MaxLine = 1024 ;
+
+VAR
+   LastSymbol,
+   CurrentSymbol : ARRAY [0..MaxLine] OF CHAR ;
+
+
+(*
+   OpenSource - Attempts to open the source file, a.
+                The success of the operation is returned.
+*)
+
+PROCEDURE OpenSource (a: ARRAY OF CHAR) : BOOLEAN ;
+
+
+(*
+   CloseSource - Closes the current open file.
+*)
+
+PROCEDURE CloseSource ;
+
+
+(*
+   SymIs - if Name is equal to the CurrentSymbol the next Symbol is read
+           and true is returned, otherwise false is returned.
+*)
+
+PROCEDURE SymIs (Name: ARRAY OF CHAR) : BOOLEAN ;
+
+
+(*
+   IsSym - returns the result of the comparison between CurrentSymbol
+           and Name.
+*)
+
+PROCEDURE IsSym (Name: ARRAY OF CHAR) : BOOLEAN ;
+
+
+(*
+   GetSymbol - gets the next Symbol into CurrentSymbol.
+*)
+
+PROCEDURE GetSymbol ;
+
+
+(*
+   PutSymbol - pushes a symbol, Name, back onto the input.
+               GetSymbol will set CurrentSymbol to, Name.
+*)
+
+PROCEDURE PutSymbol (Name: ARRAY OF CHAR) ;
+
+
+(*
+   WriteError - displays the source line and points to the symbol in error.
+                The message, a, is displayed.
+*)
+
+PROCEDURE WriteError (a: ARRAY OF CHAR) ;
+
+
+END M2Lex.

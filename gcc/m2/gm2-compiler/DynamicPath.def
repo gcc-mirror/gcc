@@ -1,0 +1,88 @@
+(* DynamicPath.def implements a path for DynamicStrings.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE DynamicPath ;  (*!m2iso+gm2*)
+
+FROM DynamicStrings IMPORT String ;
+
+TYPE
+   PathList ;
+
+
+(*
+   InitPathList - creates a new empty path list.
+*)
+
+PROCEDURE InitPathList (str: String) : PathList ;
+
+
+(*
+   KillPathList - places list pl onto the freelist.
+                  Postcondition: pl will be NIL.
+*)
+
+PROCEDURE KillPathList (VAR pl: PathList) ;
+
+
+(*
+   Cons - appends str to the end of a path list.
+          If pl is NIL a new list is created and returned
+          containing str.
+*)
+
+PROCEDURE Cons (pl: PathList; str: String) : PathList ;
+
+
+(*
+   ConsList - concatenates path list left and right together.
+*)
+
+PROCEDURE ConsList (left, right: PathList) : PathList ;
+
+
+(*
+   Stash - returns pl before setting pl to NIL.
+*)
+
+PROCEDURE Stash (VAR pl: PathList) : PathList ;
+
+
+(*
+   FindFileName - returns NIL if a file cannot be found otherwise
+                  it returns the path including the filename.
+*)
+
+PROCEDURE FindFileName (filename: String; pl: PathList) : String ;
+
+
+(*
+   DumpPath - debugging dump of the pathlist.
+*)
+
+PROCEDURE DumpPath (name: String; pl: PathList) ;
+
+
+END DynamicPath.

@@ -8,7 +8,6 @@
  */
 module core.sys.windows.odbcinst;
 version (Windows):
-@system:
 
 version (ANSI) {} else version = Unicode;
 

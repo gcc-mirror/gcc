@@ -1,6 +1,6 @@
 ; Parameter options of the compiler.
 
-; Copyright (C) 2019-2022 Free Software Foundation, Inc.
+; Copyright (C) 2019-2023 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -49,6 +49,10 @@ Enable asan store operations protection.
 -param=asan-instrumentation-with-call-threshold=
 Common Joined UInteger Var(param_asan_instrumentation_with_call_threshold) Init(7000) Param Optimization
 Use callbacks instead of inline code if number of accesses in function becomes greater or equal to this number.
+
+-param=asan-kernel-mem-intrinsic-prefix=
+Common Joined UInteger Var(param_asan_kernel_mem_intrinsic_prefix) Init(0) IntegerRange(0, 1) Param Optimization
+Prefix calls to memcpy, memset and memmove with __asan_ or __hwasan_ for -fsanitize=kernel-address or -fsanitize=kernel-hwaddress.
 
 -param=asan-memintrin=
 Common Joined UInteger Var(param_asan_memintrin) Init(1) IntegerRange(0, 1) Param Optimization
@@ -134,13 +138,9 @@ Maximum number of basic blocks before EVRP uses a sparse cache.
 Common Joined UInteger Var(param_evrp_switch_limit) Init(50) Optimization Param
 Maximum number of outgoing edges in a switch before EVRP will not process it.
 
--param=fsm-scale-path-blocks=
-Common Joined UInteger Var(param_fsm_scale_path_blocks) Init(3) IntegerRange(1, 10) Param Optimization
-Scale factor to apply to the number of blocks in a threading path when comparing to the number of (scaled) statements.
-
 -param=fsm-scale-path-stmts=
 Common Joined UInteger Var(param_fsm_scale_path_stmts) Init(2) IntegerRange(1, 10) Param Optimization
-Scale factor to apply to the number of statements in a threading path when comparing to the number of (scaled) blocks.
+Scale factor to apply to the number of statements in a threading path crossing a loop backedge when comparing to max-jump-thread-duplication-stmts.
 
 -param=gcse-after-reload-critical-fraction=
 Common Joined UInteger Var(param_gcse_after_reload_critical_fraction) Init(10) Param Optimization
@@ -282,13 +282,21 @@ Maximum number of different predicates used to track properties of loops in IPA 
 Common Joined UInteger Var(param_ipa_max_switch_predicate_bounds) Init(5) Param Optimization
 Maximal number of boundary endpoints of case ranges of switch statement used during IPA function summary generation.
 
+-param=ipa-sra-deref-prob-threshold=
+Common Joined UInteger Var(param_ipa_sra_deref_prob_threshold) Init(50) IntegerRange(0, 100) Param Optimization
+Minimum probability (in percent) of dereferencing of a function pointer parameter for it to be considered for replacement with simple values.
+
 -param=ipa-sra-max-replacements=
 Common Joined UInteger Var(param_ipa_sra_max_replacements) Optimization Init(8) IntegerRange(0, 16) Param
 Maximum pieces that IPA-SRA tracks per formal parameter, as a consequence, also the maximum number of replacements of a formal parameter.
 
 -param=ipa-sra-ptr-growth-factor=
 Common Joined UInteger Var(param_ipa_sra_ptr_growth_factor) Init(2) Param Optimization
-Maximum allowed growth of number and total size of new parameters that ipa-sra replaces a pointer to an aggregate with.
+Maximum allowed growth of total size of new parameters that ipa-sra replaces a pointer to an aggregate with.
+
+-param=ipa-sra-ptrwrap-growth-factor=
+Common Joined UInteger Var(param_ipa_sra_ptrwrap_growth_factor) Init(4) IntegerRange(1, 8) Param Optimization
+Additional maximum allowed growth of total size of new parameters that ipa-sra replaces a pointer to an aggregate with, if it points to a local variable that the caller only writes to and passes it as an argument to functions.
 
 -param=ira-loop-reserved-regs=
 Common Joined UInteger Var(param_ira_loop_reserved_regs) Init(2) Param Optimization
@@ -297,6 +305,10 @@ The number of registers in each class kept unused by loop invariant motion.
 -param=ira-max-conflict-table-size=
 Common Joined UInteger Var(param_ira_max_conflict_table_size) Init(1000) Param Optimization
 Max size of conflict table in MB.
+
+-param=ira-simple-lra-insn-threshold=
+Common Joined UInteger Var(param_ira_simple_lra_insn_threshold) Init(1000) Param Optimization
+Approximate function insn number in 1K units triggering simple local RA.
 
 -param=ira-max-loops-num=
 Common Joined UInteger Var(param_ira_max_loops_num) Init(100) Param Optimization
@@ -319,11 +331,11 @@ Common Joined UInteger Var(param_iv_max_considered_uses) Init(250) Param Optimiz
 Bound on number of iv uses in loop optimized in iv optimizations.
 
 -param=jump-table-max-growth-ratio-for-size=
-Common Joined UInteger Var(param_jump_table_max_growth_ratio_for_size) Init(300) Param Optimization
+Common Joined UInteger Var(param_jump_table_max_growth_ratio_for_size) Init(300) IntegerRange(0, 10000) Param Optimization
 The maximum code size growth ratio when expanding into a jump table (in percent).  The parameter is used when optimizing for size.
 
 -param=jump-table-max-growth-ratio-for-speed=
-Common Joined UInteger Var(param_jump_table_max_growth_ratio_for_speed) Init(800) Param Optimization
+Common Joined UInteger Var(param_jump_table_max_growth_ratio_for_speed) Init(800) IntegerRange(0, 10000) Param Optimization
 The maximum code size growth ratio when expanding into a jump table (in percent).  The parameter is used when optimizing for speed.
 
 -param=l1-cache-line-size=
@@ -726,6 +738,10 @@ The maximum number of instructions to consider to unroll in a loop.
 Common Joined UInteger Var(param_max_unswitch_insns) Init(50) Param Optimization
 The maximum number of insns of an unswitched loop.
 
+-param=max-unswitch-depth=
+Common Joined UInteger Var(param_max_unswitch_depth) Init(50) IntegerRange(1, 50) Param Optimization
+The maximum depth of a loop nest to be unswitched.
+
 -param=max-variable-expansions-in-unroller=
 Common Joined UInteger Var(param_max_variable_expansions) Init(1) Param Optimization
 If -fvariable-expansion-in-unroller is used, the maximum number of times that an individual variable will be expanded during loop unrolling.
@@ -745,10 +761,6 @@ Max. size of var tracking hash tables.
 -param=max-find-base-term-values=
 Common Joined UInteger Var(param_max_find_base_term_values) Init(200) Param Optimization
 Maximum number of VALUEs handled during a single find_base_term call.
-
--param=max-vrp-switch-assertions=
-Common Joined UInteger Var(param_max_vrp_switch_assertions) Init(10) Param Optimization
-Maximum number of assertions to add along the default edge of a switch statement during VRP.
 
 -param=min-crossjump-insns=
 Common Joined UInteger Var(param_min_crossjump_insns) Init(5) IntegerRange(1, 65536) Param Optimization
@@ -1164,22 +1176,5 @@ The maximum factor which the loop vectorizer applies to the cost of statements i
 -param=vect-induction-float=
 Common Joined UInteger Var(param_vect_induction_float) Init(1) IntegerRage(0, 1) Param Optimization
 Enable loop vectorization of floating point inductions.
-
--param=vrp1-mode=
-Common Joined Var(param_vrp1_mode) Enum(vrp_mode) Init(VRP_MODE_VRP) Param Optimization
---param=vrp1-mode=[vrp|ranger] Specifies the mode VRP1 should operate in.
-
--param=vrp2-mode=
-Common Joined Var(param_vrp2_mode) Enum(vrp_mode) Init(VRP_MODE_RANGER) Param Optimization
---param=vrp2-mode=[vrp|ranger] Specifies the mode VRP2 should operate in.
-
-Enum
-Name(vrp_mode) Type(enum vrp_mode) UnknownError(unknown vrp mode %qs)
-
-EnumValue
-Enum(vrp_mode) String(vrp) Value(VRP_MODE_VRP)
-
-EnumValue
-Enum(vrp_mode) String(ranger) Value(VRP_MODE_RANGER)
 
 ; This comment is to ensure we retain the blank line above.

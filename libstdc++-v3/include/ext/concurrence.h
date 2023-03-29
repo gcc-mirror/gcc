@@ -1,6 +1,6 @@
 // Support for concurrent programing -*- C++ -*-
 
-// Copyright (C) 2003-2022 Free Software Foundation, Inc.
+// Copyright (C) 2003-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,7 +50,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Compile time constant that indicates prefered locking policy in
   // the current configuration.
-  static const _Lock_policy __default_lock_policy = 
+  _GLIBCXX17_INLINE const _Lock_policy __default_lock_policy =
 #ifndef __GTHREADS
   _S_single;
 #elif defined _GLIBCXX_HAVE_ATOMIC_LOCK_POLICY

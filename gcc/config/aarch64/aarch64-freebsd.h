@@ -1,5 +1,5 @@
 /* Definitions for AArch64 running FreeBSD
-   Copyright (C) 2016-2022 Free Software Foundation, Inc.
+   Copyright (C) 2016-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -50,7 +50,7 @@
 #define LINK_SPEC FBSD_TARGET_LINK_SPEC AARCH64_ERRATA_LINK_SPEC
 
 #define GNU_USER_TARGET_MATHFILE_SPEC \
-  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s}"
+  "%{Ofast|ffast-math|funsafe-math-optimizations:%{!shared:crtfastmath.o%s}}"
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \

@@ -1,5 +1,5 @@
 /* A type-safe hash set.
-   Copyright (C) 2014-2022 Free Software Foundation, Inc.
+   Copyright (C) 2014-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -58,7 +58,12 @@ public:
       Key *e = m_table.find_slot_with_hash (k, Traits::hash (k), INSERT);
       bool existed = !Traits::is_empty (*e);
       if (!existed)
-	new (e) Key (k);
+	{
+	  new (e) Key (k);
+	  // Catch attempts to insert e.g. a NULL pointer.
+	  gcc_checking_assert (!Traits::is_empty (*e)
+			       && !Traits::is_deleted (*e));
+	}
 
       return existed;
     }
@@ -189,21 +194,21 @@ debug_helper (hash_set<T> &ref)
 /* ggc marking routines.  */
 
 template<typename K, typename H>
-static inline void
+inline void
 gt_ggc_mx (hash_set<K, false, H> *h)
 {
   gt_ggc_mx (&h->m_table);
 }
 
 template<typename K, typename H>
-static inline void
+inline void
 gt_pch_nx (hash_set<K, false, H> *h)
 {
   gt_pch_nx (&h->m_table);
 }
 
 template<typename K, typename H>
-static inline void
+inline void
 gt_pch_nx (hash_set<K, false, H> *h, gt_pointer_operator op, void *cookie)
 {
   op (&h->m_table.m_entries, NULL, cookie);

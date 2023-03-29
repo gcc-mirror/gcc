@@ -1,7 +1,7 @@
 #ifndef _GLIBCXX_TESTSUITE_STRING_H
 #define _GLIBCXX_TESTSUITE_STRING_H
 
-#ifdef _GLIBCXX_DEBUG
+#if defined(_GLIBCXX_DEBUG) && defined(_GLIBCXX_TEST_DEBUG_STRING)
 # include <debug/string>
 namespace __gnu_test
 {

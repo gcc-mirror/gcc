@@ -9,14 +9,16 @@
 #define CONCAT3(X, Y, Z) CONCAT (CONCAT (X, Y), Z)
 #define CONCAT4(W, X, Y, Z) CONCAT (CONCAT (CONCAT (W, X), Y), Z)
 
-#if EXT
-# define TYPE CONCAT3 (_Float, WIDTH, x)
-# define CST(C) CONCAT4 (C, f, WIDTH, x)
-# define CSTU(C) CONCAT4 (C, F, WIDTH, x)
-#else
-# define TYPE CONCAT (_Float, WIDTH)
-# define CST(C) CONCAT3 (C, f, WIDTH)
-# define CSTU(C) CONCAT3 (C, F, WIDTH)
+#ifndef TYPE
+# if EXT
+#  define TYPE CONCAT3 (_Float, WIDTH, x)
+#  define CST(C) CONCAT4 (C, f, WIDTH, x)
+#  define CSTU(C) CONCAT4 (C, F, WIDTH, x)
+# else
+#  define TYPE CONCAT (_Float, WIDTH)
+#  define CST(C) CONCAT3 (C, f, WIDTH)
+#  define CSTU(C) CONCAT3 (C, F, WIDTH)
+# endif
 #endif
 
 extern void exit (int);

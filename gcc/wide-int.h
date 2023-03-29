@@ -1,5 +1,5 @@
 /* Operations with very long integers.  -*- C++ -*-
-   Copyright (C) 2012-2022 Free Software Foundation, Inc.
+   Copyright (C) 2012-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3495,7 +3495,7 @@ wi::set_bit_in_zero (unsigned int bit)
 
 /* Accumulate a set of overflows into OVERFLOW.  */
 
-static inline void
+inline void
 wi::accumulate_overflow (wi::overflow_type &overflow,
 			 wi::overflow_type suboverflow)
 {

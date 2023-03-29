@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+# Copyright (C) 2020-2023 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -20,6 +22,7 @@ import difflib
 import os
 import re
 import sys
+from collections import defaultdict
 
 default_changelog_locations = {
     'c++tools',
@@ -41,9 +44,11 @@ default_changelog_locations = {
     'gcc/go',
     'gcc/jit',
     'gcc/lto',
+    'gcc/m2',
     'gcc/objc',
     'gcc/objcp',
     'gcc/po',
+    'gcc/rust',
     'gcc/testsuite',
     'gnattools',
     'gotools',
@@ -62,12 +67,12 @@ default_changelog_locations = {
     'libgcc/config/avr/libf7',
     'libgcc/config/libbid',
     'libgfortran',
+    'libgm2',
     'libgomp',
     'libhsail-rt',
     'libiberty',
     'libitm',
     'libobjc',
-    'liboffloadmic',
     'libphobos',
     'libquadmath',
     'libsanitizer',
@@ -121,6 +126,7 @@ bug_components = {
     'preprocessor',
     'regression',
     'rtl-optimization',
+    'rust',
     'sanitizer',
     'spam',
     'target',
@@ -157,9 +163,9 @@ author_line_regex = \
         re.compile(r'^(?P<datetime>\d{4}-\d{2}-\d{2})\ {2}(?P<name>.*  <.*>)')
 additional_author_regex = re.compile(r'^\t(?P<spaces>\ *)?(?P<name>.*  <.*>)')
 changelog_regex = re.compile(r'^(?:[fF]or +)?([a-z0-9+-/]*)ChangeLog:?')
-subject_pr_regex = re.compile(r'(^|\W)PR\s+(?P<component>[a-zA-Z+-]+)/(?P<pr>\d{4,7})')
+subject_pr_regex = re.compile(r'(^|\W)PR\s+(?P<component>[a-zA-Z0-9+-]+)/(?P<pr>\d{4,7})')
 subject_pr2_regex = re.compile(r'[(\[]PR\s*(?P<pr>\d{4,7})[)\]]')
-pr_regex = re.compile(r'\tPR (?P<component>[a-z+-]+\/)?(?P<pr>[0-9]+)$')
+pr_regex = re.compile(r'\tPR (?P<component>[a-z0-9+-]+\/)?(?P<pr>[0-9]+)$')
 dr_regex = re.compile(r'\tDR ([0-9]+)$')
 star_prefix_regex = re.compile(r'\t\*(?P<spaces>\ *)(?P<content>.*)')
 end_of_location_regex = re.compile(r'[\[<(:]')
@@ -299,6 +305,7 @@ class GitCommit:
         self.changes = None
         self.changelog_entries = []
         self.errors = []
+        self.warnings = []
         self.top_level_authors = []
         self.co_authors = []
         self.top_level_prs = []
@@ -366,6 +373,7 @@ class GitCommit:
             self.check_for_broken_parentheses()
             self.deduce_changelog_locations()
             self.check_file_patterns()
+            self.check_line_start()
             if not self.errors:
                 self.check_mentioned_files()
                 self.check_for_correct_changelog()
@@ -614,6 +622,13 @@ class GitCommit:
                 msg = 'bad parentheses wrapping'
                 self.errors.append(Error(msg, entry.parentheses_stack[-1]))
 
+    def check_line_start(self):
+        for entry in self.changelog_entries:
+            for line in entry.lines:
+                if line.startswith('\t '):
+                    msg = 'extra space after tab'
+                    self.errors.append(Error(msg, line))
+
     def get_file_changelog_location(self, changelog_file):
         for file in self.info.modified_files:
             if file[0] == changelog_file:
@@ -693,6 +708,7 @@ class GitCommit:
                 msg += f' (did you mean "{candidates[0]}"?)'
                 details = '\n'.join(difflib.Differ().compare([file], [candidates[0]])).rstrip()
             self.errors.append(Error(msg, file, details))
+        auto_add_warnings = defaultdict(list)
         for file in sorted(changed_files - mentioned_files):
             if not self.in_ignored_location(file):
                 if file in self.new_files:
@@ -707,11 +723,12 @@ class GitCommit:
                         if not prs:
                             # if all ChangeLog entries have identical PRs
                             # then use them
-                            prs = self.changelog_entries[0].prs
-                            for entry in self.changelog_entries:
-                                if entry.prs != prs:
-                                    prs = []
-                                    break
+                            if self.changelog_entries:
+                                prs = self.changelog_entries[0].prs
+                                for entry in self.changelog_entries:
+                                    if entry.prs != prs:
+                                        prs = []
+                                        break
                         entry = ChangeLogEntry(changelog_location,
                                                self.top_level_authors,
                                                prs)
@@ -724,6 +741,7 @@ class GitCommit:
                         file = file[len(entry.folder):].lstrip('/')
                         entry.lines.append('\t* %s: New file.' % file)
                         entry.files.append(file)
+                        auto_add_warnings[entry.folder].append(file)
                     else:
                         msg = 'new file in the top-level folder not mentioned in a ChangeLog'
                         self.errors.append(Error(msg, file))
@@ -741,6 +759,11 @@ class GitCommit:
             if pattern not in used_patterns:
                 error = "pattern doesn't match any changed files"
                 self.errors.append(Error(error, pattern))
+        for entry, val in auto_add_warnings.items():
+            if len(val) == 1:
+                self.warnings.append(f"Auto-added new file '{entry}/{val[0]}'")
+            else:
+                self.warnings.append(f"Auto-added {len(val)} new files in '{entry}'")
 
     def check_for_correct_changelog(self):
         for entry in self.changelog_entries:
@@ -815,6 +838,12 @@ class GitCommit:
         print('Errors:')
         for error in self.errors:
             print(error)
+
+    def print_warnings(self):
+        if self.warnings:
+            print('Warnings:')
+            for warning in self.warnings:
+                print(warning)
 
     def check_commit_email(self):
         # Parse 'Martin Liska  <mliska@suse.cz>'

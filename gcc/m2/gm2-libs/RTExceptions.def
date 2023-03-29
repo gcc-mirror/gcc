@@ -1,0 +1,195 @@
+(* RTExceptions.def runtime exception handler routines.
+
+Copyright (C) 2008-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE RTExceptions ;
+
+(* Runtime exception handler routines.  This should
+   be considered as a system module for GNU Modula-2
+   and allow the compiler to interface with exception
+   handling.  *)
+
+FROM SYSTEM IMPORT ADDRESS ;
+EXPORT QUALIFIED EHBlock,
+                 Raise, SetExceptionBlock, GetExceptionBlock,
+                 GetTextBuffer, GetTextBufferSize, GetNumber,
+                 InitExceptionBlock, KillExceptionBlock,
+                 PushHandler, PopHandler,
+                 BaseExceptionsThrow, DefaultErrorCatch,
+                 IsInExceptionState, SetExceptionState,
+                 SwitchExceptionState, GetBaseExceptionBlock,
+                 SetExceptionSource, GetExceptionSource ;
+
+TYPE
+   EHBlock ;
+   ProcedureHandler = PROCEDURE ;
+
+
+(*
+   Raise - invoke the exception handler associated with, number,
+           in the active EHBlock.  It keeps a record of the number
+           and message in the EHBlock for later use.
+*)
+
+PROCEDURE Raise (number: CARDINAL;
+                 file: ADDRESS; line: CARDINAL;
+                 column: CARDINAL; function: ADDRESS;
+                 message: ADDRESS) <* noreturn *> ;
+
+
+(*
+   SetExceptionBlock - sets, source, as the active EHB.
+*)
+
+PROCEDURE SetExceptionBlock (source: EHBlock) ;
+
+
+(*
+   GetExceptionBlock - returns the active EHB.
+*)
+
+PROCEDURE GetExceptionBlock () : EHBlock ;
+
+
+(*
+   GetTextBuffer - returns the address of the EHB buffer.
+*)
+
+PROCEDURE GetTextBuffer (e: EHBlock) : ADDRESS ;
+
+
+(*
+   GetTextBufferSize - return the size of the EHB text buffer.
+*)
+
+PROCEDURE GetTextBufferSize (e: EHBlock) : CARDINAL ;
+
+
+(*
+   GetNumber - return the exception number associated with,
+               source.
+*)
+
+PROCEDURE GetNumber (source: EHBlock) : CARDINAL ;
+
+
+(*
+   InitExceptionBlock - creates and returns a new exception block.
+*)
+
+PROCEDURE InitExceptionBlock () : EHBlock ;
+
+
+(*
+   KillExceptionBlock - destroys the EHB, e, and all its handlers.
+*)
+
+PROCEDURE KillExceptionBlock (e: EHBlock) : EHBlock ;
+
+
+(*
+   PushHandler - install a handler in EHB, e.
+*)
+
+PROCEDURE PushHandler (e: EHBlock; number: CARDINAL; p: ProcedureHandler) ;
+
+
+(*
+   PopHandler - removes the handler associated with, number, from
+                EHB, e.
+*)
+
+PROCEDURE PopHandler (e: EHBlock; number: CARDINAL) ;
+
+
+(*
+   DefaultErrorCatch - displays the current error message in
+                       the current exception block and then
+                       calls HALT.
+*)
+
+PROCEDURE DefaultErrorCatch ;
+
+
+(*
+   BaseExceptionsThrow - configures the Modula-2 exceptions to call
+                         THROW which in turn can be caught by an
+                         exception block.  If this is not called then
+                         a Modula-2 exception will simply call an
+                         error message routine and then HALT.
+*)
+
+PROCEDURE BaseExceptionsThrow ;
+
+
+(*
+   IsInExceptionState - returns TRUE if the program is currently
+                        in the exception state.
+*)
+
+PROCEDURE IsInExceptionState () : BOOLEAN ;
+
+
+(*
+   SetExceptionState - returns the current exception state and
+                       then sets the current exception state to,
+                       to.
+*)
+
+PROCEDURE SetExceptionState (to: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   SwitchExceptionState - assigns, from, with the current exception
+                          state and then assigns the current exception
+                          to, to.
+*)
+
+PROCEDURE SwitchExceptionState (VAR from: BOOLEAN; to: BOOLEAN) ;
+
+
+(*
+   GetBaseExceptionBlock - returns the initial language exception block
+                           created.
+*)
+
+PROCEDURE GetBaseExceptionBlock () : EHBlock ;
+
+
+(*
+   SetExceptionSource - sets the current exception source to, source.
+*)
+
+PROCEDURE SetExceptionSource (source: ADDRESS) ;
+
+
+(*
+   GetExceptionSource - returns the current exception source.
+*)
+
+PROCEDURE GetExceptionSource () : ADDRESS ;
+
+
+END RTExceptions.

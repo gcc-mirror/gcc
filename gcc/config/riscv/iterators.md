@@ -1,5 +1,5 @@
 ;; Iterators for the machine description for RISC-V
-;; Copyright (C) 2011-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2023 Free Software Foundation, Inc.
 
 ;; This file is part of GCC.
 ;;
@@ -25,6 +25,10 @@
 ;; This mode iterator allows 32-bit and 64-bit GPR patterns to be generated
 ;; from the same template.
 (define_mode_iterator GPR [SI (DI "TARGET_64BIT")])
+
+;; A copy of GPR that can be used when a pattern has two independent
+;; modes.
+(define_mode_iterator GPR2 [SI (DI "TARGET_64BIT")])
 
 ;; This mode iterator allows :P to be used for patterns that operate on
 ;; pointer-sized quantities.  Exactly one of the two alternatives will match.
@@ -59,9 +63,9 @@
 (define_mode_iterator ANYI [QI HI SI (DI "TARGET_64BIT")])
 
 ;; Iterator for hardware-supported floating-point modes.
-(define_mode_iterator ANYF [(SF "TARGET_HARD_FLOAT")
-			    (DF "TARGET_DOUBLE_FLOAT")
-			    (HF "TARGET_ZFH")])
+(define_mode_iterator ANYF [(SF "TARGET_HARD_FLOAT || TARGET_ZFINX")
+			    (DF "TARGET_DOUBLE_FLOAT || TARGET_ZDINX")
+			    (HF "TARGET_ZFH || TARGET_ZHINX")])
 
 ;; Iterator for floating-point modes that can be loaded into X registers.
 (define_mode_iterator SOFTF [SF (DF "TARGET_64BIT") (HF "TARGET_ZFHMIN")])
@@ -136,6 +140,10 @@
 ;; from the same template.
 (define_code_iterator any_bitwise [and ior xor])
 
+;; This code iterator allows ior and xor instructions to be generated
+;; from the same template.
+(define_code_iterator any_or [ior xor])
+
 ;; This code iterator allows unsigned and signed division to be generated
 ;; from the same template.
 (define_code_iterator any_div [div udiv mod umod])
@@ -171,7 +179,9 @@
 		     (gt "") (gtu "u")
 		     (ge "") (geu "u")
 		     (lt "") (ltu "u")
-		     (le "") (leu "u")])
+		     (le "") (leu "u")
+		     (fix "") (unsigned_fix "u")
+		     (float "") (unsigned_float "u")])
 
 ;; <su> is like <u>, but the signed form expands to "s" rather than "".
 (define_code_attr su [(sign_extend "s") (zero_extend "u")])
@@ -192,7 +202,26 @@
 			 (xor "xor")
 			 (and "and")
 			 (plus "add")
-			 (minus "sub")])
+			 (minus "sub")
+			 (smin "smin")
+			 (smax "smax")
+			 (umin "umin")
+			 (umax "umax")
+			 (mult "mul")
+			 (not "one_cmpl")
+			 (neg "neg")
+			 (abs "abs")
+			 (sqrt "sqrt")
+			 (ss_plus "ssadd")
+			 (us_plus "usadd")
+			 (ss_minus "sssub")
+			 (us_minus "ussub")
+			 (sign_extend "extend")
+			 (zero_extend "zero_extend")])
+
+;; <or_optab> code attributes
+(define_code_attr or_optab [(ior "ior")
+			    (xor "xor")])
 
 ;; <insn> expands to the name of the insn that implements a particular code.
 (define_code_attr insn [(ashift "sll")
@@ -206,13 +235,30 @@
 			(xor "xor")
 			(and "and")
 			(plus "add")
-			(minus "sub")])
+			(minus "sub")
+			(smin "min")
+			(smax "max")
+			(umin "minu")
+			(umax "maxu")
+			(mult "mul")
+			(not "not")
+			(neg "neg")
+			(abs "abs")
+			(sqrt "sqrt")
+			(ss_plus "sadd")
+			(us_plus "saddu")
+			(ss_minus "ssub")
+			(us_minus "ssubu")])
 
 ; atomics code attribute
 (define_code_attr atomic_optab
   [(plus "add") (ior "or") (xor "xor") (and "and")])
 
 ; bitmanip code attributes
+(define_code_attr minmax_optab [(smin "smin")
+				(smax "smax")
+				(umin "umin")
+				(umax "umax")])
 (define_code_attr bitmanip_optab [(smin "smin")
 				  (smax "smax")
 				  (umin "umin")

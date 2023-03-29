@@ -1,4 +1,4 @@
-/* Copyright (C) 2014-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2014-2023 Free Software Foundation, Inc.
    Contributed by Kai Tietz <ktietz@redhat.com>.
 
    This file is part of the GNU Atomic Library (libatomic).
@@ -23,6 +23,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #define UWORD __shadow_UWORD
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #undef UWORD
 #include "libatomic_i.h"

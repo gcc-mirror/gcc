@@ -1322,22 +1322,22 @@ void test70()
 class C71
 {
     static int cnt;
-    this() { printf("C()\n"); cnt++; }
-    ~this() { printf("~C()\n"); cnt--; }
+    this() scope { printf("C()\n"); cnt++; }
+    ~this() scope { printf("~C()\n"); cnt--; }
 }
 
 class D71
 {
     static int cnt;
-    this() { printf("D()\n"); cnt++; }
-    ~this() { printf("~D()\n"); cnt--; }
+    this() scope { printf("D()\n"); cnt++; }
+    ~this() scope { printf("~D()\n"); cnt--; }
 }
 
 class E71
 {
     static int cnt;
-    this() { printf("E()\n"); cnt++; }
-    ~this() { printf("~E()\n"); cnt--; }
+    this() scope { printf("E()\n"); cnt++; }
+    ~this() scope { printf("~E()\n"); cnt--; }
 }
 
 void test71()

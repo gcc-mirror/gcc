@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Free Software Foundation, Inc.
+// Copyright (C) 2020-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,6 +17,9 @@
 
 // { dg-options "-std=gnu++2a" }
 // { dg-do run { target c++2a } }
+
+// std::stable_partition is not freestanding.
+// { dg-require-effective-target hosted }
 
 #include <algorithm>
 #include <testsuite_hooks.h>

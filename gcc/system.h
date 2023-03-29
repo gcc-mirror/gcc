@@ -1,6 +1,6 @@
 /* Get common system includes and various definitions and declarations based
    on autoconf macros.
-   Copyright (C) 1998-2022 Free Software Foundation, Inc.
+   Copyright (C) 1998-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -747,6 +747,14 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 # include <memory>
 #endif
 
+#ifdef INCLUDE_MUTEX
+# include <mutex>
+#endif
+
+#ifdef INCLUDE_SSTREAM
+# include <sstream>
+#endif
+
 #ifdef INCLUDE_MALLOC_H
 #if defined(HAVE_MALLINFO) || defined(HAVE_MALLINFO2)
 #include <malloc.h>
@@ -1075,7 +1083,7 @@ extern void fancy_abort (const char *, int, const char *)
 	EH_FRAME_IN_DATA_SECTION TARGET_FLT_EVAL_METHOD_NON_DEFAULT	   \
 	JCR_SECTION_NAME TARGET_USE_JCR_SECTION SDB_DEBUGGING_INFO	   \
 	SDB_DEBUG NO_IMPLICIT_EXTERN_C NOTICE_UPDATE_CC			   \
-	CC_STATUS_MDEP_INIT CC_STATUS_MDEP CC_STATUS
+	CC_STATUS_MDEP_INIT CC_STATUS_MDEP CC_STATUS SLOW_SHORT_ACCESS
 
 /* Hooks that are no longer used.  */
  #pragma GCC poison LANG_HOOKS_FUNCTION_MARK LANG_HOOKS_FUNCTION_FREE	\
@@ -1162,7 +1170,7 @@ extern void fancy_abort (const char *, int, const char *)
    so does GCC 3.4.x (PR17436).  */
 #define CONST_CAST2(TOTYPE,FROMTYPE,X) ((__extension__(union {FROMTYPE _q; TOTYPE _nq;})(X))._nq)
 #elif defined(__GNUC__)
-static inline char *
+inline char *
 helper_const_non_const_cast (const char *p)
 {
   union {
@@ -1304,7 +1312,7 @@ void gcc_stablesort_r (void *, size_t, size_t, sort_r_cmp_fn *, void *data);
 
 /* Return true if STR string starts with PREFIX.  */
 
-static inline bool
+inline bool
 startswith (const char *str, const char *prefix)
 {
   return strncmp (str, prefix, strlen (prefix)) == 0;
@@ -1312,7 +1320,7 @@ startswith (const char *str, const char *prefix)
 
 /* Return true if STR string ends with SUFFIX.  */
 
-static inline bool
+inline bool
 endswith (const char *str, const char *suffix)
 {
   size_t str_len = strlen (str);

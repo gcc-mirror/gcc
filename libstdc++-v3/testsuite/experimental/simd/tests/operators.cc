@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Free Software Foundation, Inc.
+// Copyright (C) 2020-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,19 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // expensive: * [1-9] * *
-#include "bits/verify.h"
-#include "bits/make_vec.h"
-#include "bits/test_values.h"
-
-template <class T>
-  constexpr T
-  genHalfBits()
-  {
-    if constexpr (std::is_floating_point_v<T>)
-      return 0;
-    else
-      return std::__finite_max_v<T> >> (std::__digits_v<T> / 2);
-  }
+#include "bits/main.h"
 
 template <typename V>
   void
@@ -223,7 +211,14 @@ template <typename V>
     }
 
     // divides
-    constexpr bool is_iec559 = __GCC_IEC_559 >= 2;
+    constexpr bool is_iec559 =
+#ifdef __GCC_IEC_559
+      __GCC_IEC_559 >= 2;
+#elif defined __STDC_IEC_559__
+      true;
+#else
+      false;
+#endif
     if constexpr (std::is_floating_point_v<T> && !is_iec559)
       { // avoid testing subnormals and expect minor deltas for non-IEC559 float
 	V x = 2;

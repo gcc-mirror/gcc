@@ -161,3 +161,79 @@ int test_7 ()
 	}
 	return 0;
 }
+
+int test_bitmask_1 (int x)
+{
+  int flag = 0;
+  if (x & 0x80)
+    flag = 1;
+
+  switch (x)
+    {
+    case 0:
+      if (flag)
+	__analyzer_dump_path ();  /* { dg-bogus "path" } */
+      else
+	__analyzer_dump_path ();  /* { dg-message "path" } */
+      break;
+
+    case 0x80:
+      if (flag)
+	__analyzer_dump_path ();  /* { dg-message "path" } */
+      else
+	__analyzer_dump_path ();  /* { dg-bogus "path" } */
+      break;
+
+    case 0x81:
+      if (flag)
+	__analyzer_dump_path ();  /* { dg-message "path" } */
+      else
+	__analyzer_dump_path ();  /* { dg-bogus "path" } */
+      break;
+    }
+}
+
+int test_bitmask_2 (int x)
+{
+  int flag = 0;
+  if ((x & 0xf80) == 0x80)
+    flag = 1;
+
+  switch (x)
+    {
+    case 0:
+      if (flag)
+	__analyzer_dump_path ();  /* { dg-bogus "path" } */
+      else
+	__analyzer_dump_path ();  /* { dg-message "path" } */
+      break;
+
+    case 0x80:
+      if (flag)
+	__analyzer_dump_path ();  /* { dg-message "path" } */
+      else
+	__analyzer_dump_path ();  /* { dg-bogus "path" } */
+      break;
+
+    case 0x81:
+      if (flag)
+	__analyzer_dump_path ();  /* { dg-message "path" } */
+      else
+	__analyzer_dump_path ();  /* { dg-bogus "path" } */
+      break;
+
+    case 0x180:
+      if (flag)
+	__analyzer_dump_path ();  /* { dg-bogus "path" } */
+      else
+	__analyzer_dump_path ();  /* { dg-message "path" } */
+      break;
+
+    case 0xf80:
+      if (flag)
+	__analyzer_dump_path ();  /* { dg-bogus "path" } */
+      else
+	__analyzer_dump_path ();  /* { dg-message "path" } */
+      break;
+    }
+}

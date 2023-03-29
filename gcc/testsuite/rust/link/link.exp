@@ -1,0 +1,172 @@
+# Copyright (C) 2021-2023 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Execute tests, torture testing.
+
+# Load support procs.
+load_lib rust-dg.exp
+
+# Initialize `dg'.
+dg-init
+
+# Main loop.
+set saved-dg-do-what-default ${dg-do-what-default}
+
+set dg-do-what-default "assemble"
+
+# rs-obj -- compile to an object file
+#
+# SOURCE is the source file
+# DEST is the object file
+# OPTALL is the list of compiler options to use with all tests
+# OPTFILE is the list of compiler options to use with this file
+# OPTSTR is the options to print with test messages
+# XFAILDATA is the xfail data to be passed to the compiler
+proc rs-obj { source dest optall optfile optstr xfaildata } {
+    global tool
+    global compiler_conditional_xfail_data
+
+    # Set up the options for compiling this file.
+    set options ""
+    lappend options "additional_flags=$optall $optfile"
+
+    set compiler_conditional_xfail_data $xfaildata
+    set comp_output [${tool}_target_compile "$source" "$dest" object $options]
+}
+
+# rs-execute -- compile multi-file tests
+#
+# SRC1 is the full pathname of the main file of the testcase.
+# SID identifies a test suite in the names of temporary files.
+proc rs-execute-1 { src1 } {
+    global srcdir tmpdir
+    
+    # Get extra flags for this test from the primary source file, and
+    # process other dg-* options that this suite supports.  Warn about
+    # unsupported flags.
+    verbose "rs-execute: $src1" 1
+    set compile_type "run"
+    set compile_xfail(0) "" 
+
+    # Set up the names of the other source files.
+    set dir [file dirname $src1]
+    set base [file rootname $src1]
+    set base [string range $base [string length $dir] end]
+    regsub "_0" $base "" base
+    regsub "/" $base "" base
+    set src_list $src1
+    set i 1
+    set done 0
+    while { !$done } {
+	set names [glob -nocomplain -types f -- "${dir}/${base}_${i}.*"]
+	if { [llength ${names}] > 1 } {
+	    warning "rs-link-execute: more than one file matched ${dir}/${base}_${i}.*"
+	}
+	if { [llength ${names}] == 1 } {
+	    lappend src_list [lindex ${names} 0]
+	    incr i
+	} else {
+	    set num_srcs ${i}
+	    set done 1
+	}
+    }
+
+
+    # Define the names of the object files.
+    set obj_list ""
+    for {set i 0} {$i < $num_srcs} {incr i} {
+	lappend obj_list "${base}_${i}.o"
+    }
+
+    # Get the base name of this test, for use in messages.
+    set testcase [lindex ${src_list} 0]
+
+    # Remove the $srcdir and $tmpdir prefixes from $src1.  (It would
+    # be possible to use "regsub" here, if we were careful to escape
+    # all regular expression characters in $srcdir and $tmpdir, but
+    # that would be more complicated that this approach.) 
+    if {[string first "$srcdir/" "${testcase}"] == 0} {
+	set testcase [string range "${testcase}" [string length "$srcdir/"] end]
+    }
+    if {[string first "$tmpdir/" "$testcase"] == 0} {
+	set testcase [string range "$testcase" [string length "$tmpdir/"] end]
+	set testcase "tmpdir-$testcase"
+    }
+    # If we couldn't rip $srcdir out of `src1' then just do the best we can.
+    # The point is to reduce the unnecessary noise in the logs.  Don't strip
+    # out too much because different testcases with the same name can confuse
+    # `test-tool'.
+    if [string match "/*" $testcase] then {
+        set testcase "[file tail [file dirname $src1]]/[file tail $src1]"
+    }
+
+    # Set up the base name of executable files so they'll be unique.
+    regsub -all "\[./\]" $testcase "-" execbase
+
+    verbose "Testing $testcase - $obj_list - $src_list"
+    
+    # There's a unique name for each executable we generate.
+    set execname "${execbase}-1.exe"
+
+    # The LTO tests don't use dg-test, so testname_with_flags and
+    # output_file need to be defined explicitly for each file.  scan-symbol
+    # directives rely on both of these to be defined to find the symbol to
+    # scan and for the text to print in the PASS/FAIL since they can also
+    # be called from dg-test.  testname_with_flags is also used via
+    # testname-for-summary when calling into generic function below to
+    # clean temporary files.
+    set output_file $execname
+    set testname_with_flags $execname
+
+    file_on_host delete $execname
+    
+    rs-obj [lindex ${src_list} 1] [lindex ${obj_list} 1] "" "" "" ""
+    rs-obj [lindex ${src_list} 0] [lindex ${obj_list} 0] "" "" "" ""
+
+    gcc-dg-runtest [lindex ${src_list} 0] "" ""
+
+    # FIXME it would be ideal if we could link then execute these tests.
+    # I was not able to figure out how to specify gc-dg-runtest to link
+    # against the first object.
+}
+
+proc rs-link-execute { src1 } {
+    rs-execute-1 $src1
+}
+
+# Main loop.
+foreach src [lsort [find $srcdir/$subdir *_0.rs]] {
+    # If we're only testing specific files and this isn't one of them, skip it.
+    if ![runtest_file_p $runtests $src] then {
+	continue
+    }
+
+    # To prevent 'runtest_file_p' being tested again (for example, via
+    # 'gcc-dg-runtest'), with undesirable consequences due to its side effects,
+    # interpose a dummy:
+    rename runtest_file_p saved_runtest_file_p
+    proc runtest_file_p { runtests testcase } {
+	return 1
+    }
+    rs-link-execute $src
+    rename runtest_file_p {}
+    rename saved_runtest_file_p runtest_file_p
+}
+
+set dg-do-what-default ${saved-dg-do-what-default}
+
+# All done.
+dg-finish

@@ -18,6 +18,7 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
 #define _FP_QNANNEGATEDP 0
 
 #define _FP_NANSIGN_H		1
+#define _FP_NANSIGN_B		1
 #define _FP_NANSIGN_S		1
 #define _FP_NANSIGN_D		1
 #define _FP_NANSIGN_E		1

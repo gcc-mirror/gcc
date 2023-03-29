@@ -1,5 +1,5 @@
 /* Declarations for the C-SKY back end.
-   Copyright (C) 2018-2022 Free Software Foundation, Inc.
+   Copyright (C) 2018-2023 Free Software Foundation, Inc.
    Contributed by C-SKY Microsystems and Mentor Graphics.
 
    This file is part of GCC.
@@ -952,7 +952,7 @@ while (0)
    specially when using MULTILIB_OPTIONS.  */
 #undef MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS    \
-    {"mlittle-endian", "mcpu=ck810f", "msoft-float"}
+    {"mlittle-endian", "mcpu=ck810f", "mfloat-abi=soft"}
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:
    --with-arch is ignored if -march or -mcpu are specified.

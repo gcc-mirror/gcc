@@ -2,7 +2,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/test15785.d(16): Error: no property `foo` for type `imports.test15785.Base`
+fail_compilation/test15785.d(16): Error: no property `foo` for `super` of type `imports.test15785.Base`
 fail_compilation/test15785.d(17): Error: undefined identifier `bar`
 ---
 */

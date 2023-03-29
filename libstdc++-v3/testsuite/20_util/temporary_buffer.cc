@@ -1,6 +1,6 @@
 // 2002-01-24  Phil Edwards  <pme@gcc.gnu.org>
 
-// Copyright (C) 2002-2022 Free Software Foundation, Inc.
+// Copyright (C) 2002-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,6 +18,8 @@
 // <http://www.gnu.org/licenses/>.
 
 // 20.4.3 temporary buffers
+
+// { dg-require-effective-target hosted }
 
 #include <memory>
 #include <testsuite_hooks.h>

@@ -1,5 +1,5 @@
 ;; Constraint definitions for Xtensa.
-;; Copyright (C) 2006-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2023 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -121,7 +121,7 @@
  (ior (and (match_code "const_int,const_double,const,symbol_ref,label_ref")
 	   (match_test "TARGET_AUTO_LITPOOLS"))
       (and (match_code "const_int")
-	   (match_test "can_create_pseudo_p ()"))))
+	   (match_test "! xtensa_split1_finished_p ()"))))
 
 ;; Memory constraints.  Do not use define_memory_constraint here.  Doing so
 ;; causes reload to force some constants into the constant pool, but since

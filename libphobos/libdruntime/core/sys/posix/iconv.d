@@ -34,7 +34,6 @@ version (Posix):
 extern (C):
 nothrow:
 @nogc:
-@system:
 
 
 alias void* iconv_t;

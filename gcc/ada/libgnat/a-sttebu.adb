@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2020-2022, Free Software Foundation, Inc.       --
+--            Copyright (C) 2020-2023, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,6 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Ada.Strings.UTF_Encoding.Strings;
 with Ada.Strings.UTF_Encoding.Wide_Strings;
 with Ada.Strings.UTF_Encoding.Wide_Wide_Strings;
 
@@ -53,13 +54,26 @@ package body Ada.Strings.Text_Buffers is
       Buffer.Indentation := @ - Natural (Amount);
    end Decrease_Indent;
 
+   procedure Set_Trim_Leading_Spaces
+     (Buffer : in out Root_Buffer_Type;
+      Trim   : Boolean := True) is
+   begin
+      Buffer.Trim_Leading_White_Spaces := Trim;
+   end Set_Trim_Leading_Spaces;
+
+   function Trim_Leading_Spaces
+     (Buffer : Root_Buffer_Type) return Boolean is
+   begin
+      return Buffer.Trim_Leading_White_Spaces;
+   end Trim_Leading_Spaces;
+
    package body Output_Mapping is
       --  Implement indentation in Put_UTF_8 and New_Line.
       --  Implement other output procedures using Put_UTF_8.
 
       procedure Put (Buffer : in out Buffer_Type; Item : String) is
       begin
-         Put_UTF_8 (Buffer, Item);
+         Put_UTF_8 (Buffer, UTF_Encoding.Strings.Encode (Item));
       end Put;
 
       procedure Wide_Put (Buffer : in out Buffer_Type; Item : Wide_String) is
@@ -90,7 +104,9 @@ package body Ada.Strings.Text_Buffers is
             return;
          end if;
 
-         if Buffer.Indent_Pending then
+         if Buffer.Indent_Pending
+           and then not Buffer.Trim_Leading_White_Spaces
+         then
             Buffer.Indent_Pending := False;
             if Buffer.Indentation > 0 then
                Put_UTF_8_Implementation
@@ -112,8 +128,9 @@ package body Ada.Strings.Text_Buffers is
       begin
          Buffer.Indent_Pending := False; --  just for a moment
          Put (Buffer, [ASCII.LF]);
-         Buffer.Indent_Pending := True;
-         Buffer.UTF_8_Column   := 1;
+         Buffer.Indent_Pending            := True;
+         Buffer.UTF_8_Column              := 1;
+         Buffer.Trim_Leading_White_Spaces := False;
       end New_Line;
 
    end Output_Mapping;

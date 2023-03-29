@@ -2,7 +2,7 @@
 REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/retscope2.d(102): Error: scope variable `s` assigned to `p` with longer lifetime
+fail_compilation/retscope2.d(102): Error: scope variable `s` assigned to `ref` variable `p` with longer lifetime
 fail_compilation/retscope2.d(107): Error: address of variable `s` assigned to `p` with longer lifetime
 ---
 */
@@ -86,8 +86,8 @@ fail_compilation/retscope2.d(504): Error: scope variable `c` may not be returned
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope2.d(604): Error: scope variable `_param_0` assigned to non-scope parameter `__anonymous_param` calling `foo600`
-fail_compilation/retscope2.d(604): Error: scope variable `_param_1` assigned to non-scope parameter `__anonymous_param` calling `foo600`
+fail_compilation/retscope2.d(604): Error: scope variable `_param_0` assigned to non-scope anonymous parameter calling `foo600`
+fail_compilation/retscope2.d(604): Error: scope variable `_param_1` assigned to non-scope anonymous parameter calling `foo600`
 fail_compilation/retscope2.d(614): Error: template instance `retscope2.test600!(int*, int*)` error instantiating
 ---
 */

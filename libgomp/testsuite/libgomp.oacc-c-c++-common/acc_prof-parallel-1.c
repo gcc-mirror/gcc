@@ -195,6 +195,123 @@ static void cb_device_init_end (acc_prof_info *prof_info, acc_event_info *event_
 #endif
 }
 
+static void cb_alloc (acc_prof_info *prof_info, acc_event_info *event_info, acc_api_info *api_info)
+{
+  DEBUG_printf ("%s\n", __FUNCTION__);
+
+#if DEVICE_INIT_INSIDE_COMPUTE_CONSTRUCT
+# error TODO
+#else
+  assert (state == 4
+	  || state == 104);
+  STATE_OP (state, ++);
+
+  if (state == 5
+      || state == 105)
+    {
+      assert (tool_info != NULL);
+      assert (tool_info->event_info.other_event.event_type == acc_ev_compute_construct_start);
+      assert (tool_info->nested != NULL);
+      assert (tool_info->nested->event_info.other_event.event_type == acc_ev_enter_data_start);
+      assert (tool_info->nested->nested == NULL);
+    }
+  else
+    abort ();
+#endif
+
+  assert (prof_info->event_type == acc_ev_alloc);
+  assert (prof_info->valid_bytes == _ACC_PROF_INFO_VALID_BYTES);
+  assert (prof_info->version == _ACC_PROF_INFO_VERSION);
+  assert (prof_info->device_type == acc_device_type);
+  assert (prof_info->device_number == acc_device_num);
+  assert (prof_info->thread_id == -1);
+  assert (prof_info->async == acc_async);
+  assert (prof_info->async_queue == prof_info->async);
+  assert (prof_info->src_file == NULL);
+  assert (prof_info->func_name == NULL);
+  assert (prof_info->line_no == -1);
+  assert (prof_info->end_line_no == -1);
+  assert (prof_info->func_line_no == -1);
+  assert (prof_info->func_end_line_no == -1);
+
+  assert (event_info->data_event.event_type == prof_info->event_type);
+  assert (event_info->data_event.valid_bytes == _ACC_DATA_EVENT_INFO_VALID_BYTES);
+  assert (event_info->data_event.parent_construct == acc_construct_parallel);
+  assert (event_info->data_event.implicit == 1);
+  assert (event_info->data_event.tool_info == NULL);
+  assert (event_info->data_event.var_name == NULL);
+  assert (event_info->data_event.bytes != 0);
+  assert (event_info->data_event.host_ptr == NULL);
+  assert (event_info->data_event.device_ptr != NULL);
+
+  assert (api_info->valid_bytes == _ACC_API_INFO_VALID_BYTES);
+  assert (api_info->device_type == prof_info->device_type);
+  assert (api_info->vendor == -1);
+  assert (api_info->device_handle == NULL);
+  assert (api_info->context_handle == NULL);
+  assert (api_info->async_handle == NULL);
+}
+
+static void cb_free (acc_prof_info *prof_info, acc_event_info *event_info, acc_api_info *api_info)
+{
+  DEBUG_printf ("%s\n", __FUNCTION__);
+
+#if DEVICE_INIT_INSIDE_COMPUTE_CONSTRUCT
+# error TODO
+#else
+  assert (state == 9);
+  STATE_OP (state, ++);
+
+  if (state == 10)
+    {
+      assert (tool_info != NULL);
+      assert (tool_info->event_info.other_event.event_type == acc_ev_compute_construct_start);
+      assert (tool_info->nested != NULL);
+      assert (tool_info->nested->event_info.other_event.event_type == acc_ev_exit_data_start);
+      assert (tool_info->nested->nested == NULL);
+    }
+  else
+    abort ();
+#endif
+
+  assert (prof_info->event_type == acc_ev_free);
+  assert (prof_info->valid_bytes == _ACC_PROF_INFO_VALID_BYTES);
+  assert (prof_info->version == _ACC_PROF_INFO_VERSION);
+  assert (prof_info->device_type == acc_device_type);
+  assert (prof_info->device_number == acc_device_num);
+  assert (prof_info->thread_id == -1);
+  assert (prof_info->async == acc_async);
+  assert (prof_info->async_queue == prof_info->async);
+  assert (prof_info->src_file == NULL);
+  assert (prof_info->func_name == NULL);
+  assert (prof_info->line_no == -1);
+  assert (prof_info->end_line_no == -1);
+  assert (prof_info->func_line_no == -1);
+  assert (prof_info->func_end_line_no == -1);
+
+  assert (event_info->data_event.event_type == prof_info->event_type);
+  assert (event_info->data_event.valid_bytes == _ACC_DATA_EVENT_INFO_VALID_BYTES);
+  assert (event_info->data_event.parent_construct == acc_construct_parallel);
+  assert (event_info->data_event.implicit == 1);
+  assert (event_info->data_event.tool_info == NULL);
+  assert (event_info->data_event.var_name == NULL);
+  if (acc_device_type == acc_device_nvidia)
+    assert (event_info->data_event.bytes == (size_t) -1);
+  else if (acc_device_type == acc_device_radeon)
+    assert (event_info->data_event.bytes == 0);
+  else
+    abort ();
+  assert (event_info->data_event.host_ptr == NULL);
+  assert (event_info->data_event.device_ptr != NULL);
+
+  assert (api_info->valid_bytes == _ACC_API_INFO_VALID_BYTES);
+  assert (api_info->device_type == prof_info->device_type);
+  assert (api_info->vendor == -1);
+  assert (api_info->device_handle == NULL);
+  assert (api_info->context_handle == NULL);
+  assert (api_info->async_handle == NULL);
+}
+
 static void cb_enter_data_start (acc_prof_info *prof_info, acc_event_info *event_info, acc_api_info *api_info)
 {
   DEBUG_printf ("%s\n", __FUNCTION__);
@@ -246,8 +363,8 @@ static void cb_enter_data_end (acc_prof_info *prof_info, acc_event_info *event_i
 {
   DEBUG_printf ("%s\n", __FUNCTION__);
 
-  assert (state == 4
-	  || state == 104);
+  assert (state == 5
+	  || state == 105);
 #if defined COPYIN
   /* Conceptually, 'acc_ev_enter_data_end' marks the end of data copying,
      before 'acc_ev_enqueue_launch_start' marks invoking the compute region.
@@ -316,9 +433,9 @@ static void cb_exit_data_start (acc_prof_info *prof_info, acc_event_info *event_
 {
   DEBUG_printf ("%s\n", __FUNCTION__);
 
-  assert (state == 7
+  assert (state == 8
 #if ASYNC_EXIT_DATA
-	  || state == 107
+	  || state == 108
 #endif
 	  );
   STATE_OP (state, ++);
@@ -366,15 +483,25 @@ static void cb_exit_data_start (acc_prof_info *prof_info, acc_event_info *event_
 
   tool_info->nested->event_info.other_event.event_type = event_info->other_event.event_type;
   event_info->other_event.tool_info = tool_info->nested;
+
+#if ASYNC_EXIT_DATA
+  if (acc_async != acc_async_sync)
+    {
+      /* Compensate for the deferred 'acc_ev_free'.  */
+      state += 1;
+    }
+#else
+# error TODO
+#endif
 }
 
 static void cb_exit_data_end (acc_prof_info *prof_info, acc_event_info *event_info, acc_api_info *api_info)
 {
   DEBUG_printf ("%s\n", __FUNCTION__);
 
-  assert (state == 8
+  assert (state == 10
 #if ASYNC_EXIT_DATA
-	  || state == 108
+	  || state == 110
 #endif
 	  );
   STATE_OP (state, ++);
@@ -488,6 +615,8 @@ static void cb_compute_construct_start (acc_prof_info *prof_info, acc_event_info
     {
       /* Compensate for the missing 'acc_ev_enter_data_start'.  */
       state += 1;
+      /* Compensate for the missing 'acc_ev_alloc'.  */
+      state += 1;
     }
 }
 
@@ -502,9 +631,12 @@ static void cb_compute_construct_end (acc_prof_info *prof_info, acc_event_info *
       /* Compensate for the missing 'acc_ev_enqueue_launch_start' and
 	 'acc_ev_enqueue_launch_end'.  */
       state += 2;
-      /* Compensate for the missing 'acc_ev_exit_data_start' and
-	 'acc_ev_exit_data_end'.  */
-      state += 2;
+      /* Compensate for the missing 'acc_ev_exit_data_start'.  */
+      state += 1;
+      /* Compensate for the missing 'acc_ev_free'.  */
+      state += 1;
+      /* Compensate for the missing 'acc_ev_exit_data_end'.  */
+      state += 1;
     }
 #if !ASYNC_EXIT_DATA
   else if (acc_async != acc_async_sync)
@@ -514,8 +646,8 @@ static void cb_compute_construct_end (acc_prof_info *prof_info, acc_event_info *
       state += 2;
     }
 #endif
-  assert (state == 9
-	  || state == 109);
+  assert (state == 11
+	  || state == 111);
   STATE_OP (state, ++);
 
   assert (tool_info != NULL);
@@ -569,8 +701,8 @@ static void cb_enqueue_launch_start (acc_prof_info *prof_info, acc_event_info *e
 
   assert (acc_device_type != acc_device_host);
 
-  assert (state == 5
-	  || state == 105);
+  assert (state == 6
+	  || state == 106);
   STATE_OP (state, ++);
 
   assert (tool_info != NULL);
@@ -638,8 +770,8 @@ static void cb_enqueue_launch_end (acc_prof_info *prof_info, acc_event_info *eve
 
   assert (acc_device_type != acc_device_host);
 
-  assert (state == 6
-	  || state == 106);
+  assert (state == 7
+	  || state == 107);
   STATE_OP (state, ++);
 
   assert (tool_info != NULL);
@@ -703,6 +835,8 @@ int main()
   STATE_OP (state, = 0);
   reg (acc_ev_device_init_start, cb_device_init_start, acc_reg);
   reg (acc_ev_device_init_end, cb_device_init_end, acc_reg);
+  reg (acc_ev_alloc, cb_alloc, acc_reg);
+  reg (acc_ev_free, cb_free, acc_reg);
   reg (acc_ev_enter_data_start, cb_enter_data_start, acc_reg);
   reg (acc_ev_enter_data_end, cb_enter_data_end, acc_reg);
   reg (acc_ev_exit_data_start, cb_exit_data_start, acc_reg);
@@ -725,9 +859,9 @@ int main()
 
       state_init = state;
     }
-    assert (state_init == 4);
+    assert (state_init == 5);
   }
-  assert (state == 10);
+  assert (state == 12);
 
   STATE_OP (state, = 100);
 
@@ -742,9 +876,9 @@ int main()
     }
     acc_async = acc_async_sync;
 #pragma acc wait
-    assert (state_init == 104);
+    assert (state_init == 105);
   }
-  assert (state == 110);
+  assert (state == 112);
 
   return 0;
 }

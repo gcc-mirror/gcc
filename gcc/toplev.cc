@@ -1,5 +1,5 @@
 /* Top level of GCC compilers (cc1, cc1plus, etc.)
-   Copyright (C) 1987-2022 Free Software Foundation, Inc.
+   Copyright (C) 1987-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1358,7 +1358,7 @@ process_options (bool no_backend)
      option flags in use.  */
   if (version_flag)
     {
-      print_version (stderr, "", true);
+      /* We already printed the version header in main ().  */
       if (!quiet_flag)
 	{
 	  fputs ("options passed: ", stderr);
@@ -1580,7 +1580,7 @@ process_options (bool no_backend)
   if (flag_stack_check != NO_STACK_CHECK && flag_stack_clash_protection)
     {
       warning_at (UNKNOWN_LOCATION, 0,
-		  "%<-fstack-check=%> and %<-fstack-clash_protection%> are "
+		  "%<-fstack-check=%> and %<-fstack-clash-protection%> are "
 		  "mutually exclusive; disabling %<-fstack-check=%>");
       flag_stack_check = NO_STACK_CHECK;
     }
@@ -2276,7 +2276,7 @@ toplev::main (int argc, char **argv)
 	start_timevars ();
       do_compile (no_backend);
 
-      if (flag_self_test)
+      if (flag_self_test && !seen_error ())
 	{
 	  if (no_backend)
 	    error_at (UNKNOWN_LOCATION, "self-tests incompatible with %<-E%>");

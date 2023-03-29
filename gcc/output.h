@@ -1,6 +1,6 @@
 /* Declarations for insn-output.cc and other code to write to asm_out_file.
    These functions are defined in final.cc, and varasm.cc.
-   Copyright (C) 1987-2022 Free Software Foundation, Inc.
+   Copyright (C) 1987-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -198,10 +198,6 @@ extern void assemble_end_function (tree, const char *);
    DONT_OUTPUT_DATA if nonzero means don't actually output the
    initial value (that will be done by the caller).  */
 extern void assemble_variable (tree, int, int, int);
-
-/* Put the vtable verification constructor initialization function
-   into the preinit array.  */
-extern void assemble_vtv_preinit_initializer (tree);
 
 /* Assemble everything that is needed for a variable declaration that has
    no definition in the current translation unit.  */

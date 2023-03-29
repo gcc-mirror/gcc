@@ -1,5 +1,5 @@
 /* CPP Library - charsets
-   Copyright (C) 1998-2022 Free Software Foundation, Inc.
+   Copyright (C) 1998-2023 Free Software Foundation, Inc.
 
    Broken out of c-lex.cc Apr 2003, adding valid C99 UCN ranges.
 
@@ -1291,7 +1291,7 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
   valid_flags = C99 | CXX | C11 | CXX23;
   if (CPP_PEDANTIC (pfile))
     {
-      if (CPP_OPTION (pfile, cplusplus))
+      if (CPP_OPTION (pfile, xid_identifiers))
 	valid_flags = CXX23;
       else if (CPP_OPTION (pfile, c11_identifiers))
 	valid_flags = C11;
@@ -1355,7 +1355,7 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
       return 2;
     }
 
-  if (CPP_OPTION (pfile, cplusplus))
+  if (CPP_OPTION (pfile, xid_identifiers))
     invalid_start_flags = NXX23;
   else if (CPP_OPTION (pfile, c11_identifiers))
     invalid_start_flags = N11;
@@ -1861,6 +1861,33 @@ _cpp_valid_utf8 (cpp_reader *pfile,
 	}
     }
 
+  return true;
+}
+
+/* Return true iff BUFFER of size NUM_BYTES is validly-encoded UTF-8.  */
+
+extern bool
+cpp_valid_utf8_p (const char *buffer, size_t num_bytes)
+{
+  const uchar *iter = (const uchar *)buffer;
+  size_t bytesleft = num_bytes;
+  while (bytesleft > 0)
+    {
+      /* one_utf8_to_cppchar implements 5-byte and 6 byte sequences as per
+	 RFC 2279, but this has been superceded by RFC 3629, which
+	 restricts UTF-8 to 1-byte through 4-byte sequences, and
+	 states "the octet values C0, C1, F5 to FF never appear".
+
+	 Reject such values.  */
+      if (*iter >= 0xf4)
+	return false;
+
+      cppchar_t cp;
+      int err = one_utf8_to_cppchar (&iter, &bytesleft, &cp);
+      if (err)
+	return false;
+    }
+  /* No problems encountered.  */
   return true;
 }
 

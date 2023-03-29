@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for TPF OS.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
    Contributed by P.J. Darcy (darcypj@us.ibm.com).
 
 This file is part of GCC.
@@ -88,18 +88,18 @@ s390_fallback_frame_state (struct _Unwind_Context *context,
       /* All registers remain unchanged ...  */
       for (i = 0; i < 32; i++)
 	{
-	  fs->regs.reg[i].how = REG_SAVED_REG;
+	  fs->regs.how[i] = REG_SAVED_REG;
 	  fs->regs.reg[i].loc.reg = i;
 	}
 
       /* ... except for %r14, which is stored at CFA+offset where offset
 	 is displacment of ICST_CRET or ICST_SRET from CFA */
       if ( __isPATrange(context->ra) )  {
-	   fs->regs.reg[14].how = REG_SAVED_OFFSET;
+	   fs->regs.how[14] = REG_SAVED_OFFSET;
 	   fs->regs.reg[14].loc.offset = ICST_CRET - STACK_POINTER_OFFSET;
 	   fs->retaddr_column = 14;
       }  else  {
-	   fs->regs.reg[14].how = REG_SAVED_OFFSET;
+	   fs->regs.how[14] = REG_SAVED_OFFSET;
 	   fs->regs.reg[14].loc.offset = ICST_SRET - STACK_POINTER_OFFSET;
 	   fs->retaddr_column = 14;
 
@@ -119,13 +119,13 @@ s390_fallback_frame_state (struct _Unwind_Context *context,
 
   for (i = 0; i < 16; i++)
     {
-      fs->regs.reg[i].how = REG_SAVED_OFFSET;
+      fs->regs.how[i] = REG_SAVED_OFFSET;
       fs->regs.reg[i].loc.offset = regs + i*8 - new_cfa;
     }
 
   for (i = 0; i < 4; i++)
     {
-      fs->regs.reg[16 + i].how = REG_SAVED_OFFSET;
+      fs->regs.how[16 + i] = REG_SAVED_OFFSET;
       fs->regs.reg[16 + i].loc.offset = regs + 16*8 + i*8 - new_cfa;
     }
 

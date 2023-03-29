@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2014-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -258,6 +258,16 @@ package body Ghost is
 
             elsif Nkind (Decl) = N_Expression_Function
               and then not Analyzed (Decl)
+            then
+               return True;
+
+            --  A reference to a Ghost entity may appear within the class-wide
+            --  precondition of a helper subprogram. This context is treated
+            --  as suitable because it was already verified when we were
+            --  analyzing the original class-wide precondition.
+
+            elsif Is_Subprogram (Current_Scope)
+              and then Present (Class_Preconditions_Subprogram (Current_Scope))
             then
                return True;
 

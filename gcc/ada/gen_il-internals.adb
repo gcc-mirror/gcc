@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2020-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 2020-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -257,8 +257,6 @@ package body Gen_IL.Internals is
          --  Special cases for the same reason as in the above Image
          --  function for Opt_Type_Enum.
 
-         when Alloc_For_BIP_Return =>
-            return "Alloc_For_BIP_Return";
          when Assignment_OK =>
             return "Assignment_OK";
          when Backwards_OK =>

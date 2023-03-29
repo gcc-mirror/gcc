@@ -753,23 +753,6 @@ public:
         }
     }
 
-    invariant
-    {
-        this.match!((ref value) {
-            static if (is(typeof(value) == class))
-            {
-                if (value !is null)
-                {
-                    assert(value);
-                }
-            }
-            else static if (is(typeof(value) == struct))
-            {
-                assert(&value);
-            }
-        });
-    }
-
     // Workaround for https://issues.dlang.org/show_bug.cgi?id=21400
     version (StdDdoc)
     {
@@ -1328,36 +1311,6 @@ version (D_BetterC) {} else
             {
         x = MySum(123);
     }));
-}
-
-// Types with invariants
-// Disabled in BetterC due to use of exceptions
-version (D_BetterC) {} else
-version (D_Invariants)
-@system unittest
-{
-    import std.exception : assertThrown;
-    import core.exception : AssertError;
-
-    struct S
-    {
-        int i;
-        invariant { assert(i >= 0); }
-    }
-
-    class C
-    {
-        int i;
-        invariant { assert(i >= 0); }
-    }
-
-    SumType!S x;
-    x.match!((ref v) { v.i = -1; });
-    assertThrown!AssertError(assert(&x));
-
-    SumType!C y = new C();
-    y.match!((ref v) { v.i = -1; });
-    assertThrown!AssertError(assert(&y));
 }
 
 // Calls value postblit on self-assignment
@@ -1999,10 +1952,10 @@ private template matchImpl(Flag!"exhaustive" exhaustive, handlers...)
         // An array that maps caseIds to handler indices ("hids").
         enum matches = ()
         {
-            size_t[numCases] matches;
+            size_t[numCases] result;
 
             // Workaround for https://issues.dlang.org/show_bug.cgi?id=19561
-            foreach (ref match; matches)
+            foreach (ref match; result)
             {
                 match = noMatch;
             }
@@ -2013,15 +1966,15 @@ private template matchImpl(Flag!"exhaustive" exhaustive, handlers...)
                 {
                     static if (canMatch!(handler, valueTypes!caseId))
                     {
-                        if (matches[caseId] == noMatch)
+                        if (result[caseId] == noMatch)
                         {
-                            matches[caseId] = hid;
+                            result[caseId] = hid;
                         }
                     }
                 }
             }
 
-            return matches;
+            return result;
         }();
 
         import std.algorithm.searching : canFind;

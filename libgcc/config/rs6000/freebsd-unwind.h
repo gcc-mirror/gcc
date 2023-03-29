@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for PowerPC64 FreeBSD.
-   Copyright (C) 2012-2022 Free Software Foundation, Inc.
+   Copyright (C) 2012-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -33,7 +33,7 @@ frob_update_context (struct _Unwind_Context *context,
   const unsigned int *pc = (const unsigned int *) context->ra;
 
 #ifdef __powerpc64__
-  if (fs->regs.reg[2].how == REG_UNSAVED)
+  if (fs->regs.how[2] == REG_UNSAVED)
     {
       /* If the current unwind info (FS) does not contain explicit info
 	 saving R2, then we have to do a minor amount of code reading to

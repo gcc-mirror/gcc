@@ -1,5 +1,5 @@
 /* Definitions for c-common.cc.
-   Copyright (C) 1987-2022 Free Software Foundation, Inc.
+   Copyright (C) 1987-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -104,7 +104,8 @@ enum rid
   RID_SIZEOF,
 
   /* C extensions */
-  RID_ASM,       RID_TYPEOF,   RID_ALIGNOF,  RID_ATTRIBUTE,  RID_VA_ARG,
+  RID_ASM,       RID_TYPEOF,   RID_TYPEOF_UNQUAL, RID_ALIGNOF,  RID_ATTRIBUTE,
+  RID_VA_ARG,
   RID_EXTENSION, RID_IMAGPART, RID_REALPART, RID_LABEL,      RID_CHOOSE_EXPR,
   RID_TYPES_COMPATIBLE_P,      RID_BUILTIN_COMPLEX,	     RID_BUILTIN_SHUFFLE,
   RID_BUILTIN_SHUFFLEVECTOR,   RID_BUILTIN_CONVERTVECTOR,   RID_BUILTIN_TGMATH,
@@ -163,29 +164,14 @@ enum rid
   RID_CONSTCAST, RID_DYNCAST, RID_REINTCAST, RID_STATCAST,
 
   /* C++ extensions */
-  RID_ADDRESSOF,               RID_BASES,
-  RID_BUILTIN_LAUNDER,         RID_DIRECT_BASES,
-  RID_HAS_NOTHROW_ASSIGN,      RID_HAS_NOTHROW_CONSTRUCTOR,
-  RID_HAS_NOTHROW_COPY,        RID_HAS_TRIVIAL_ASSIGN,
-  RID_HAS_TRIVIAL_CONSTRUCTOR, RID_HAS_TRIVIAL_COPY,
-  RID_HAS_TRIVIAL_DESTRUCTOR,  RID_HAS_UNIQUE_OBJ_REPRESENTATIONS,
-  RID_HAS_VIRTUAL_DESTRUCTOR,  RID_BUILTIN_BIT_CAST,
-  RID_IS_ABSTRACT,             RID_IS_AGGREGATE,
-  RID_IS_BASE_OF,              RID_IS_CLASS,
-  RID_IS_EMPTY,                RID_IS_ENUM,
-  RID_IS_FINAL,                RID_IS_LAYOUT_COMPATIBLE,
-  RID_IS_LITERAL_TYPE,
-  RID_IS_POINTER_INTERCONVERTIBLE_BASE_OF,
-  RID_IS_POD,                  RID_IS_POLYMORPHIC,
-  RID_IS_SAME_AS,
-  RID_IS_STD_LAYOUT,           RID_IS_TRIVIAL,
-  RID_IS_TRIVIALLY_ASSIGNABLE, RID_IS_TRIVIALLY_CONSTRUCTIBLE,
-  RID_IS_TRIVIALLY_COPYABLE,
-  RID_IS_UNION,                RID_UNDERLYING_TYPE,
-  RID_IS_ASSIGNABLE,           RID_IS_CONSTRUCTIBLE,
-  RID_IS_NOTHROW_ASSIGNABLE,   RID_IS_NOTHROW_CONSTRUCTIBLE,
-  RID_REF_CONSTRUCTS_FROM_TEMPORARY,
-  RID_REF_CONVERTS_FROM_TEMPORARY,
+  RID_ADDRESSOF,
+  RID_BUILTIN_LAUNDER,
+  RID_BUILTIN_BIT_CAST,
+
+#define DEFTRAIT(TCC, CODE, NAME, ARITY) \
+  RID_##CODE,
+#include "cp/cp-trait.def"
+#undef DEFTRAIT
 
   /* C++11 */
   RID_CONSTEXPR, RID_DECLTYPE, RID_NOEXCEPT, RID_NULLPTR, RID_STATIC_ASSERT,
@@ -453,16 +439,17 @@ extern machine_mode c_default_pointer_mode;
 #define D_CXX11         0x0010	/* In C++, C++11 only.  */
 #define D_EXT		0x0020	/* GCC extension.  */
 #define D_EXT89		0x0040	/* GCC extension incorporated in C99.  */
-#define D_ASM		0x0080	/* Disabled by -fno-asm.  */
-#define D_OBJC		0x0100	/* In Objective C and neither C nor C++.  */
-#define D_CXX_OBJC	0x0200	/* In Objective C, and C++, but not C.  */
-#define D_CXXWARN	0x0400	/* In C warn with -Wcxx-compat.  */
-#define D_CXX_CONCEPTS  0x0800	/* In C++, only with concepts.  */
-#define D_TRANSMEM	0x1000	/* C++ transactional memory TS.  */
-#define D_CXX_CHAR8_T	0x2000	/* In C++, only with -fchar8_t.  */
-#define D_CXX20		0x4000  /* In C++, C++20 only.  */
-#define D_CXX_COROUTINES 0x8000  /* In C++, only with coroutines.  */
-#define D_CXX_MODULES	0x10000  /* In C++, only with modules.  */
+#define D_EXT11		0x0080	/* GCC extension incorporated in C2X.  */
+#define D_ASM		0x0100	/* Disabled by -fno-asm.  */
+#define D_OBJC		0x0200	/* In Objective C and neither C nor C++.  */
+#define D_CXX_OBJC	0x0400	/* In Objective C, and C++, but not C.  */
+#define D_CXXWARN	0x0800	/* In C warn with -Wcxx-compat.  */
+#define D_CXX_CONCEPTS  0x1000	/* In C++, only with concepts.  */
+#define D_TRANSMEM	0x2000	/* C++ transactional memory TS.  */
+#define D_CXX_CHAR8_T	0x4000	/* In C++, only with -fchar8_t.  */
+#define D_CXX20		0x8000  /* In C++, C++20 only.  */
+#define D_CXX_COROUTINES 0x10000  /* In C++, only with coroutines.  */
+#define D_CXX_MODULES	0x20000  /* In C++, only with modules.  */
 
 #define D_CXX_CONCEPTS_FLAGS D_CXXONLY | D_CXX_CONCEPTS
 #define D_CXX_CHAR8_T_FLAGS D_CXXONLY | D_CXX_CHAR8_T
@@ -920,6 +907,7 @@ extern tree fold_for_warn (tree);
 extern tree c_common_get_narrower (tree, int *);
 extern bool get_attribute_operand (tree, unsigned HOST_WIDE_INT *);
 extern void c_common_finalize_early_debug (void);
+extern unsigned int c_strict_flex_array_level_of (tree);
 extern bool c_option_is_from_cpp_diagnostics (int);
 
 /* Used by convert_and_check; in front ends.  */
@@ -930,6 +918,30 @@ extern tree convert_init (tree, tree);
 
 /* Subroutine of build_binary_op, used for certain operations.  */
 extern tree shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwise);
+
+/* Return true if division or modulo op0 / op1 or op0 % op1 may be shortened.
+   We can shorten only if we can guarantee that op0 is not signed integral
+   minimum or op1 is not -1, because e.g. (long long) INT_MIN / -1 is
+   well defined INT_MAX + 1LL if long long is wider than int, but INT_MIN / -1
+   is UB.  */
+inline bool
+may_shorten_divmod (tree op0, tree op1)
+{
+  tree type0 = TREE_TYPE (op0);
+  if (TYPE_UNSIGNED (type0))
+    return true;
+  /* A cast from narrower unsigned won't be signed integral minimum,
+     but cast from same or wider precision unsigned could be.  */
+  if (TREE_CODE (op0) == NOP_EXPR
+      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (op0, 0)))
+      && TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op0, 0)))
+      && (TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (op0, 0)))
+	  < TYPE_PRECISION (type0)))
+    return true;
+  if (TREE_CODE (op1) == INTEGER_CST && !integer_all_onesp (op1))
+    return true;
+  return false;
+}
 
 /* Subroutine of build_binary_op, used for comparison operations.
    See if the operands have both been converted from subword integer types
@@ -1017,6 +1029,30 @@ extern void c_parse_final_cleanups (void);
 /* True iff TYPE is cv decltype(nullptr).  */
 #define NULLPTR_TYPE_P(TYPE) (TREE_CODE (TYPE) == NULLPTR_TYPE)
 
+/* Returns the underlying type of the given enumeration type. The
+   underlying type is determined in different ways, depending on the
+   properties of the enum:
+
+     - In C++0x or C2x, the underlying type can be explicitly specified, e.g.,
+
+         enum E1 : char { ... } // underlying type is char
+
+     - In a C++0x scoped enumeration, the underlying type is int
+       unless otherwises specified:
+
+         enum class E2 { ... } // underlying type is int
+
+     - Otherwise, the underlying type is determined based on the
+       values of the enumerators. In this case, the
+       ENUM_UNDERLYING_TYPE will not be set until after the definition
+       of the enumeration is completed by finish_enum.  */
+#define ENUM_UNDERLYING_TYPE(TYPE) \
+  TREE_TYPE (ENUMERAL_TYPE_CHECK (TYPE))
+
+/* Determines whether an ENUMERAL_TYPE has an explicit
+   underlying type.  */
+#define ENUM_FIXED_UNDERLYING_TYPE_P(NODE) (TYPE_LANG_FLAG_5 (NODE))
+
 extern tree do_case (location_t, tree, tree, tree);
 extern tree build_stmt (location_t, enum tree_code, ...);
 extern tree build_real_imag_expr (location_t, enum tree_code, tree);
@@ -1066,6 +1102,7 @@ extern tree lookup_label (tree);
 extern tree lookup_name (tree);
 extern bool lvalue_p (const_tree);
 extern int maybe_adjust_arg_pos_for_attribute (const_tree);
+extern bool instantiation_dependent_expression_p (tree);
 
 extern bool vector_targets_convertible_p (const_tree t1, const_tree t2);
 extern bool vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note);
@@ -1285,12 +1322,13 @@ struct c_omp_directive {
   bool simd;
 };
 
+extern const struct c_omp_directive c_omp_directives[];
 extern const struct c_omp_directive *c_omp_categorize_directive (const char *,
 								 const char *,
 								 const char *);
 
 /* Return next tree in the chain for chain_next walking of tree nodes.  */
-static inline tree
+inline tree
 c_tree_chain_next (tree t)
 {
   /* TREE_CHAIN of a type is TYPE_STUB_DECL, which is different
@@ -1486,7 +1524,7 @@ extern void warn_for_multistatement_macros (location_t, location_t,
 
 extern void check_for_xor_used_as_pow (location_t lhs_loc, tree lhs_val,
 				       location_t operator_loc,
-				       tree rhs_val);
+				       location_t rhs_loc, tree rhs_val);
 
 /* In c-attribs.cc.  */
 extern bool attribute_takes_identifier_p (const_tree);

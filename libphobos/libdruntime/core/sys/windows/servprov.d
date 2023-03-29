@@ -8,7 +8,6 @@
  */
 module core.sys.windows.servprov;
 version (Windows):
-@system:
 
 import core.sys.windows.basetyps, core.sys.windows.unknwn, core.sys.windows.windef, core.sys.windows.wtypes;
 

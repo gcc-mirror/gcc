@@ -1,6 +1,6 @@
 // Exception Handling support header (exception_ptr class) for -*- C++ -*-
 
-// Copyright (C) 2008-2022 Free Software Foundation, Inc.
+// Copyright (C) 2008-2023 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -280,7 +280,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
   // instead of a working one compiled with RTTI and/or exceptions enabled.
   template<typename _Ex>
     __attribute__ ((__always_inline__))
-    exception_ptr
+    inline exception_ptr
     make_exception_ptr(_Ex) _GLIBCXX_USE_NOEXCEPT
     { return exception_ptr(); }
 #endif

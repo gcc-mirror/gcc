@@ -1,4 +1,4 @@
-/* Copyright (C) 1989-2022 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -412,6 +412,7 @@ typedef __WINT_TYPE__ wint_t;
 #ifdef _STDDEF_H
 
 /* Offset of member MEMBER in a struct of type TYPE. */
+#undef offsetof		/* in case a system header has defined it. */
 #define offsetof(TYPE, MEMBER) __builtin_offsetof (TYPE, MEMBER)
 
 #if (defined (__STDC_VERSION__) && __STDC_VERSION__ >= 201112L) \
@@ -453,6 +454,7 @@ typedef struct {
 
 #if defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L
 #define unreachable() (__builtin_unreachable ())
+#define __STDC_VERSION_STDDEF_H__	202311L
 #endif
 
 #endif /* _STDDEF_H was defined this time */

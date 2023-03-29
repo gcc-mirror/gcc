@@ -1,5 +1,5 @@
 /* Optimize and expand sanitizer functions.
-   Copyright (C) 2014-2022 Free Software Foundation, Inc.
+   Copyright (C) 2014-2023 Free Software Foundation, Inc.
    Contributed by Marek Polacek <polacek@redhat.com>
 
 This file is part of GCC.
@@ -80,16 +80,16 @@ struct sanopt_info
 
 /* If T has a single definition of form T = T2, return T2.  */
 
-static tree
+static gimple *
 maybe_get_single_definition (tree t)
 {
   if (TREE_CODE (t) == SSA_NAME)
     {
       gimple *g = SSA_NAME_DEF_STMT (t);
       if (gimple_assign_single_p (g))
-	return gimple_assign_rhs1 (g);
+	return g;
     }
-  return NULL_TREE;
+  return NULL;
 }
 
 /* Tree triplet for vptr_check_map.  */
@@ -618,11 +618,31 @@ maybe_optimize_ubsan_vptr_ifn (class sanopt_ctx *ctx, gimple *stmt)
   return true;
 }
 
+/* Checks whether value of T in CHECK and USE is the same.  */
+
+static bool
+same_value_p (gimple *check, gimple *use, tree t)
+{
+  tree check_vuse = gimple_vuse (check);
+  tree use_vuse = gimple_vuse (use);
+
+  if (TREE_CODE (t) == SSA_NAME
+      || is_gimple_min_invariant (t)
+      || ! use_vuse)
+    return true;
+
+  if (check_vuse == use_vuse)
+    return true;
+
+  return false;
+}
+
 /* Returns TRUE if ASan check of length LEN in block BB can be removed
    if preceded by checks in V.  */
 
 static bool
-can_remove_asan_check (auto_vec<gimple *> &v, tree len, basic_block bb)
+can_remove_asan_check (auto_vec<gimple *> &v, tree len, basic_block bb,
+		       gimple *base_stmt, tree base_addr)
 {
   unsigned int i;
   gimple *g;
@@ -674,8 +694,10 @@ can_remove_asan_check (auto_vec<gimple *> &v, tree len, basic_block bb)
 
 	  last_bb = imm;
 	}
-      if (last_bb == gbb)
-	remove = true;
+      if (last_bb != gbb)
+	break;
+      // In case of base_addr residing in memory we also need to check aliasing
+      remove = ! base_addr || same_value_p (g, base_stmt, base_addr);
       break;
     }
 
@@ -718,7 +740,8 @@ maybe_optimize_asan_check_ifn (class sanopt_ctx *ctx, gimple *stmt)
 
   auto_vec<gimple *> *ptr_checks = &ctx->asan_check_map.get_or_insert (ptr);
 
-  tree base_addr = maybe_get_single_definition (ptr);
+  gimple *base_stmt = maybe_get_single_definition (ptr);
+  tree base_addr = base_stmt ? gimple_assign_rhs1 (base_stmt) : NULL_TREE;
   auto_vec<gimple *> *base_checks = NULL;
   if (base_addr)
     {
@@ -747,11 +770,12 @@ maybe_optimize_asan_check_ifn (class sanopt_ctx *ctx, gimple *stmt)
   bool remove = false;
 
   if (ptr_checks)
-    remove = can_remove_asan_check (*ptr_checks, len, bb);
+    remove = can_remove_asan_check (*ptr_checks, len, bb, NULL, NULL);
 
   if (!remove && base_checks)
     /* Try with base address as well.  */
-    remove = can_remove_asan_check (*base_checks, len, bb);
+    remove = can_remove_asan_check (*base_checks, len, bb, base_stmt,
+				    base_addr);
 
   if (!remove)
     {
@@ -963,15 +987,11 @@ static void
 sanitize_asan_mark_unpoison (void)
 {
   /* 1) Find all BBs that contain an ASAN_MARK poison call.  */
-  auto_sbitmap with_poison (last_basic_block_for_fn (cfun) + 1);
-  bitmap_clear (with_poison);
+  auto_bitmap with_poison;
   basic_block bb;
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      if (bitmap_bit_p (with_poison, bb->index))
-	continue;
-
       gimple_stmt_iterator gsi;
       for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
 	{
@@ -986,8 +1006,8 @@ sanitize_asan_mark_unpoison (void)
 
   auto_sbitmap poisoned (last_basic_block_for_fn (cfun) + 1);
   bitmap_clear (poisoned);
-  auto_sbitmap worklist (last_basic_block_for_fn (cfun) + 1);
-  bitmap_copy (worklist, with_poison);
+  /* We now treat with_poison as worklist.  */
+  bitmap worklist = with_poison;
 
   /* 2) Propagate the information to all reachable blocks.  */
   while (!bitmap_empty_p (worklist))
@@ -1064,8 +1084,7 @@ static void
 sanitize_asan_mark_poison (void)
 {
   /* 1) Find all BBs that possibly contain an ASAN_CHECK.  */
-  auto_sbitmap with_check (last_basic_block_for_fn (cfun) + 1);
-  bitmap_clear (with_check);
+  auto_bitmap with_check;
   basic_block bb;
 
   FOR_EACH_BB_FN (bb, cfun)
@@ -1084,8 +1103,8 @@ sanitize_asan_mark_poison (void)
 
   auto_sbitmap can_reach_check (last_basic_block_for_fn (cfun) + 1);
   bitmap_clear (can_reach_check);
-  auto_sbitmap worklist (last_basic_block_for_fn (cfun) + 1);
-  bitmap_copy (worklist, with_check);
+  /* We now treat with_check as worklist.  */
+  bitmap worklist = with_check;
 
   /* 2) Propagate the information to all definitions blocks.  */
   while (!bitmap_empty_p (worklist))
@@ -1281,6 +1300,7 @@ pass_sanopt::execute (function *fun)
   basic_block bb;
   int asan_num_accesses = 0;
   bool contains_asan_mark = false;
+  int ret = 0;
 
   /* Try to remove redundant checks.  */
   if (optimize
@@ -1333,6 +1353,7 @@ pass_sanopt::execute (function *fun)
 	  if (gimple_call_internal_p (stmt))
 	    {
 	      enum internal_fn ifn = gimple_call_internal_fn (stmt);
+	      int this_ret = TODO_cleanup_cfg;
 	      switch (ifn)
 		{
 		case IFN_UBSAN_NULL:
@@ -1368,8 +1389,10 @@ pass_sanopt::execute (function *fun)
 		  no_next = hwasan_expand_mark_ifn (&gsi);
 		  break;
 		default:
+		  this_ret = 0;
 		  break;
 		}
+	      ret |= this_ret;
 	    }
 	  else if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
 	    {
@@ -1399,7 +1422,7 @@ pass_sanopt::execute (function *fun)
   if (need_commit_edge_insert)
     gsi_commit_edge_inserts ();
 
-  return 0;
+  return ret;
 }
 
 } // anon namespace

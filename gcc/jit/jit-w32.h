@@ -1,5 +1,5 @@
 /* Functions used by the Windows port of libgccjit.
-   Copyright (C) 2020-2022 Free Software Foundation, Inc.
+   Copyright (C) 2020-2023 Free Software Foundation, Inc.
    Contributed by Nicolas Bertolo <nicolasbertolo@gmail.com>.
 
 This file is part of GCC.
@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 namespace gcc {

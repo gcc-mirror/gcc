@@ -1,6 +1,6 @@
 # Multilibs for VxWorks.
 #
-# Copyright (C) 2018-2022 Free Software Foundation, Inc.
+# Copyright (C) 2018-2023 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -20,3 +20,8 @@
 
 MULTILIB_OPTIONS += mrtp
 MULTILIB_DIRNAMES += mrtp
+
+# Setup a separate multilib for mcmodel=large, for which
+# we may not have shared lib support unlike with -mrtp alone.
+MULTILIB_OPTIONS += mcmodel=large
+MULTILIB_DIRNAMES += large

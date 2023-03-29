@@ -1,5 +1,5 @@
 /* A type-safe hash map.
-   Copyright (C) 2014-2022 Free Software Foundation, Inc.
+   Copyright (C) 2014-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -169,11 +169,13 @@ public:
     {
       hash_entry *e = m_table.find_slot_with_hash (k, Traits::hash (k),
 						   INSERT);
-      bool ins = hash_entry::is_empty (*e);
+      bool ins = Traits::is_empty (*e);
       if (ins)
 	{
 	  e->m_key = k;
-	  new ((void *) &e->m_value) Value (v);
+	  new ((void *)&e->m_value) Value (v);
+	  gcc_checking_assert (!Traits::is_empty (*e)
+			       && !Traits::is_deleted (*e));
 	}
       else
 	e->m_value = v;
@@ -203,6 +205,8 @@ public:
 	{
 	  e->m_key = k;
 	  new ((void *)&e->m_value) Value ();
+	  gcc_checking_assert (!Traits::is_empty (*e)
+			       && !Traits::is_deleted (*e));
 	}
 
       if (existed != NULL)
@@ -311,21 +315,21 @@ private:
 /* ggc marking routines.  */
 
 template<typename K, typename V, typename H>
-static inline void
+inline void
 gt_ggc_mx (hash_map<K, V, H> *h)
 {
   gt_ggc_mx (&h->m_table);
 }
 
 template<typename K, typename V, typename H>
-static inline void
+inline void
 gt_pch_nx (hash_map<K, V, H> *h)
 {
   gt_pch_nx (&h->m_table);
 }
 
 template<typename K, typename V, typename H>
-static inline void
+inline void
 gt_cleare_cache (hash_map<K, V, H> *h)
 {
   if (h)
@@ -333,7 +337,7 @@ gt_cleare_cache (hash_map<K, V, H> *h)
 }
 
 template<typename K, typename V, typename H>
-static inline void
+inline void
 gt_pch_nx (hash_map<K, V, H> *h, gt_pointer_operator op, void *cookie)
 {
   op (&h->m_table.m_entries, NULL, cookie);

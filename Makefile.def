@@ -50,7 +50,7 @@ host_modules= { module= gcc; bootstrap=true;
 		extra_make_flags="$(EXTRA_GCC_FLAGS)"; };
 host_modules= { module= gmp; lib_path=.libs; bootstrap=true;
 		// Work around in-tree gmp configure bug with missing flex.
-		extra_configure_flags='--disable-shared LEX="touch lex.yy.c"';
+		extra_configure_flags='--disable-shared LEX="touch lex.yy.c" @host_libs_picflag@';
 		extra_make_flags='AM_CFLAGS="-DNO_ASM"';
 		no_install= true;
 		// none-*-* disables asm optimizations, bootstrap-testing
@@ -60,18 +60,19 @@ host_modules= { module= gmp; lib_path=.libs; bootstrap=true;
 		// different from host for target.
 	        target="none-${host_vendor}-${host_os}"; };
 host_modules= { module= mpfr; lib_path=src/.libs; bootstrap=true;
-		extra_configure_flags='--disable-shared @extra_mpfr_configure_flags@';
+		extra_configure_flags='--disable-shared @extra_mpfr_configure_flags@ @host_libs_picflag@';
 		extra_make_flags='AM_CFLAGS="-DNO_ASM"';
 		no_install= true; };
 host_modules= { module= mpc; lib_path=src/.libs; bootstrap=true;
-		extra_configure_flags='--disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@ --disable-maintainer-mode';
+		extra_configure_flags='--disable-shared @extra_mpc_gmp_configure_flags@ @extra_mpc_mpfr_configure_flags@  @host_libs_picflag@ --disable-maintainer-mode';
 		no_install= true; };
 host_modules= { module= isl; lib_path=.libs; bootstrap=true;
-		extra_configure_flags='--disable-shared @extra_isl_gmp_configure_flags@';
+		extra_configure_flags='--disable-shared @extra_isl_gmp_configure_flags@  @host_libs_picflag@';
 		extra_make_flags='V=1';
 		no_install= true; };
 host_modules= { module= gold; bootstrap=true; };
 host_modules= { module= gprof; };
+// intl acts on 'host_shared' directly, and does not support --with-pic.
 host_modules= { module= intl; bootstrap=true; };
 host_modules= { module= tcl;
                 missing=mostlyclean; };
@@ -107,7 +108,7 @@ host_modules= { module= libiberty-linker-plugin; bootstrap=true;
 // We abuse missing to avoid installing anything for libiconv.
 host_modules= { module= libiconv;
 		bootstrap=true;
-		extra_configure_flags='--disable-shared';
+		extra_configure_flags='--disable-shared  @host_libs_picflag@';
 		no_install= true;
 		missing= pdf;
 		missing= html;
@@ -122,7 +123,7 @@ host_modules= { module= sim; };
 host_modules= { module= texinfo; no_install= true; };
 host_modules= { module= zlib; no_install=true; no_check=true;
 		bootstrap=true;
-	        extra_configure_flags='@extra_host_zlib_configure_flags@';};
+	        extra_configure_flags='@extra_host_zlib_configure_flags@ @host_libs_picflag@';};
 host_modules= { module= gnulib; };
 host_modules= { module= gdbsupport; };
 host_modules= { module= gdbserver; };
@@ -145,6 +146,7 @@ host_modules= { module= lto-plugin; bootstrap=true;
 host_modules= { module= libcc1; extra_configure_flags=--enable-shared; };
 host_modules= { module= gotools; };
 host_modules= { module= libctf; bootstrap=true; };
+host_modules= { module= libsframe; bootstrap=true; };
 
 target_modules = { module= libstdc++-v3;
 		   bootstrap=true;
@@ -158,9 +160,6 @@ target_modules = { module= libvtv;
 		   bootstrap=true;
 		   lib_path=.libs;
 		   raw_cxx=true; };
-target_modules = { module= liboffloadmic;
-		   lib_path=.libs;
-		   extra_configure_flags='@extra_liboffloadmic_configure_flags@'; };
 target_modules = { module= libssp; lib_path=.libs; };
 target_modules = { module= newlib; };
 target_modules = { module= libgcc; bootstrap=true; no_check=true;
@@ -182,10 +181,12 @@ target_modules = { module= libtermcap; no_check=true;
                    missing=maintainer-clean; };
 target_modules = { module= winsup; };
 target_modules = { module= libgloss; no_check=true; };
-target_modules = { module= libffi; no_install=true; };
+target_modules = { module= libffi; no_install=true;
+                   extra_configure_flags='--disable-shared --with-pic'; };
 target_modules = { module= zlib; bootstrap=true; };
 target_modules = { module= rda; };
 target_modules = { module= libada; };
+target_modules = { module= libgm2; lib_path=.libs; };
 target_modules = { module= libgomp; bootstrap= true; lib_path=.libs; };
 target_modules = { module= libitm; lib_path=.libs; };
 target_modules = { module= libatomic; bootstrap=true; lib_path=.libs; };
@@ -308,6 +309,8 @@ flags_to_pass = { flag= GOC_FOR_TARGET ; };
 flags_to_pass = { flag= GOCFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= GDC_FOR_TARGET ; };
 flags_to_pass = { flag= GDCFLAGS_FOR_TARGET ; };
+flags_to_pass = { flag= GM2_FOR_TARGET ; };
+flags_to_pass = { flag= GM2FLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= LD_FOR_TARGET ; };
 flags_to_pass = { flag= LIPO_FOR_TARGET ; };
 flags_to_pass = { flag= LDFLAGS_FOR_TARGET ; };
@@ -413,6 +416,8 @@ dependencies = { module=configure-isl; on=all-gmp; };
 dependencies = { module=all-intl; on=all-libiconv; };
 
 // Host modules specific to gdb.
+dependencies = { module=configure-gdb; on=all-gmp; };
+dependencies = { module=configure-gdb; on=all-mpfr; };
 dependencies = { module=configure-gdb; on=all-intl; };
 dependencies = { module=configure-gdb; on=configure-sim; };
 dependencies = { module=configure-gdb; on=all-bfd; };
@@ -473,6 +478,7 @@ dependencies = { module=all-binutils; on=all-intl; };
 dependencies = { module=all-binutils; on=all-gas; };
 dependencies = { module=all-binutils; on=all-libctf; };
 dependencies = { module=all-ld; on=all-libctf; };
+dependencies = { module=all-binutils; on=all-libsframe; };
 
 // We put install-opcodes before install-binutils because the installed
 // binutils might be on PATH, and they might need the shared opcodes
@@ -603,7 +609,6 @@ dependencies = { module=all-m4; on=all-build-texinfo; };
 // on libgcc and newlib/libgloss.
 lang_env_dependencies = { module=libitm; cxx=true; };
 lang_env_dependencies = { module=libffi; cxx=true; };
-lang_env_dependencies = { module=liboffloadmic; cxx=true; };
 lang_env_dependencies = { module=newlib; no_c=true; };
 lang_env_dependencies = { module=libgloss; no_c=true; };
 lang_env_dependencies = { module=libgcc; no_gcc=true; no_c=true; };
@@ -619,20 +624,20 @@ dependencies = { module=configure-target-libgo; on=all-target-libstdc++-v3; };
 dependencies = { module=all-target-libgo; on=all-target-libbacktrace; };
 dependencies = { module=all-target-libgo; on=all-target-libffi; };
 dependencies = { module=all-target-libgo; on=all-target-libatomic; };
+dependencies = { module=configure-target-libgm2; on=all-target-libstdc++-v3; };
+dependencies = { module=all-target-libgm2; on=all-target-libatomic; };
 dependencies = { module=configure-target-libphobos; on=configure-target-libbacktrace; };
 dependencies = { module=configure-target-libphobos; on=configure-target-zlib; };
 dependencies = { module=all-target-libphobos; on=all-target-libbacktrace; };
 dependencies = { module=all-target-libphobos; on=all-target-zlib; };
 dependencies = { module=all-target-libphobos; on=all-target-libatomic; };
 dependencies = { module=configure-target-libstdc++-v3; on=configure-target-libgomp; };
-dependencies = { module=configure-target-liboffloadmic; on=configure-target-libgomp; };
 dependencies = { module=configure-target-libsanitizer; on=all-target-libstdc++-v3; };
 dependencies = { module=configure-target-libvtv; on=all-target-libstdc++-v3; };
 // parallel_list.o and parallel_settings.o depend on omp.h, which is
 // generated by the libgomp configure.  Unfortunately, due to the use of
 //  recursive make, we can't be that specific.
 dependencies = { module=all-target-libstdc++-v3; on=configure-target-libgomp; };
-dependencies = { module=all-target-liboffloadmic; on=all-target-libgomp; };
 
 dependencies = { module=install-target-libgo; on=install-target-libatomic; };
 dependencies = { module=install-target-libgfortran; on=install-target-libquadmath; };
@@ -642,8 +647,6 @@ dependencies = { module=install-target-libsanitizer; on=install-target-libstdc++
 dependencies = { module=install-target-libsanitizer; on=install-target-libgcc; };
 dependencies = { module=install-target-libvtv; on=install-target-libstdc++-v3; };
 dependencies = { module=install-target-libvtv; on=install-target-libgcc; };
-dependencies = { module=install-target-liboffloadmic; on=install-target-libstdc++-v3; };
-dependencies = { module=install-target-liboffloadmic; on=install-target-libgcc; };
 dependencies = { module=install-target-libitm; on=install-target-libgcc; };
 dependencies = { module=install-target-libobjc; on=install-target-libgcc; };
 dependencies = { module=install-target-libstdc++-v3; on=install-target-libgcc; };
@@ -678,9 +681,12 @@ languages = { language=obj-c++;	gcc-check-target=check-obj-c++; };
 languages = { language=go;	gcc-check-target=check-go;
 				lib-check-target=check-target-libgo;
 				lib-check-target=check-gotools; };
+languages = { language=m2;	gcc-check-target=check-m2;
+				lib-check-target=check-target-libgm2; };
 languages = { language=d;	gcc-check-target=check-d;
 				lib-check-target=check-target-libphobos; };
 languages = { language=jit;	gcc-check-target=check-jit; };
+languages = { language=rust;	gcc-check-target=check-rust; };
 
 // Toplevel bootstrap
 bootstrap_stage = { id=1 ; };

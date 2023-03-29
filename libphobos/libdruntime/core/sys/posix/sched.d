@@ -32,7 +32,6 @@ version (Posix):
 extern (C):
 nothrow:
 @nogc:
-@system:
 
 //
 // Required
@@ -66,7 +65,10 @@ version (linux)
         {
             int sched_priority;
             int __reserved1;
-            timespec[2] __reserved2;
+            static if (muslRedirTime64)
+                c_long[2] __reserved2;
+            else
+                timespec[2] __reserved2;
             int __reserved3;
         }
     }
@@ -283,6 +285,7 @@ else version (CRuntime_Musl)
 {
     int sched_get_priority_max(int);
     int sched_get_priority_min(int);
+    pragma(mangle, muslRedirTime64Mangle!("sched_rr_get_interval", "__sched_rr_get_interval_time64"))
     int sched_rr_get_interval(pid_t, timespec*);
 }
 else version (CRuntime_UClibc)

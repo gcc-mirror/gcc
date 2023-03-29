@@ -1,6 +1,6 @@
 // Core algorithmic facilities -*- C++ -*-
 
-// Copyright (C) 2020-2022 Free Software Foundation, Inc.
+// Copyright (C) 2020-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -239,7 +239,7 @@ namespace ranges
 	{
 	  auto [__in,__out]
 	    = ranges::__copy_or_move<_IsMove>(__first.base(), __last.base(),
-					      __result);
+					      std::move(__result));
 	  return {decltype(__first){__in}, std::move(__out)};
 	}
       else if constexpr (__is_normal_iterator<_Out>)

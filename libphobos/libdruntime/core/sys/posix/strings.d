@@ -15,7 +15,6 @@ module core.sys.posix.strings;
 
 version (Posix):
 extern(C):
-@system:
 nothrow:
 @nogc:
 

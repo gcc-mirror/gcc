@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1007,7 +1007,7 @@ package body Sem_Type is
 
       elsif Ada_Version >= Ada_2022
         and then T2 = Any_Composite
-        and then Present (Find_Aspect (T1, Aspect_Aggregate))
+        and then Has_Aspect (T1, Aspect_Aggregate)
       then
          return True;
 

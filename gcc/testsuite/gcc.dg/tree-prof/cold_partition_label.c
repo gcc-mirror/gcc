@@ -43,6 +43,6 @@ main (int argc, char *argv[])
   return 0;
 }
 
-/* { dg-final-use { scan-assembler "foo\[._\]+cold" { target *-*-linux* *-*-gnu* } } } */
-/* { dg-final-use { scan-assembler "size\[ \ta-zA-Z0-0\]+foo\[._\]+cold" { target *-*-linux* *-*-gnu* } } } */
+/* { dg-final-use-not-autofdo { scan-assembler "foo\[._\]+cold" { target *-*-linux* *-*-gnu* } } } */
+/* { dg-final-use-not-autofdo { scan-assembler "size\[ \ta-zA-Z0-0\]+foo\[._\]+cold" { target *-*-linux* *-*-gnu* } } } */
 /* { dg-final-use { scan-tree-dump-not "Invalid sum" "optimized"} } */

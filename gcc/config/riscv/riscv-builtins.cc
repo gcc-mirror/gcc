@@ -1,5 +1,5 @@
 /* Subroutines used for expanding RISC-V builtins.
-   Copyright (C) 2011-2022 Free Software Foundation, Inc.
+   Copyright (C) 2011-2023 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
 
 This file is part of GCC.
@@ -37,10 +37,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "expr.h"
 #include "langhooks.h"
+#include "tm_p.h"
+#include "backend.h"
+#include "gimple.h"
+#include "gimple-iterator.h"
 
 /* Macros to create an enumeration identifier for a function prototype.  */
 #define RISCV_FTYPE_NAME0(A) RISCV_##A##_FTYPE
 #define RISCV_FTYPE_NAME1(A, B) RISCV_##A##_FTYPE_##B
+#define RISCV_FTYPE_NAME2(A, B, C) RISCV_##A##_FTYPE_##B##_##C
+#define RISCV_FTYPE_NAME3(A, B, C, D) RISCV_##A##_FTYPE_##B##_##C##_##D
 
 /* Classifies the prototype of a built-in function.  */
 enum riscv_function_type {
@@ -86,9 +92,7 @@ struct riscv_builtin_description {
   unsigned int (*avail) (void);
 };
 
-AVAIL (hard_float, TARGET_HARD_FLOAT)
-
-
+AVAIL (hard_float, TARGET_HARD_FLOAT || TARGET_ZFINX)
 AVAIL (clean32, TARGET_ZICBOM && !TARGET_64BIT)
 AVAIL (clean64, TARGET_ZICBOM && TARGET_64BIT)
 AVAIL (flush32, TARGET_ZICBOM && !TARGET_64BIT)
@@ -99,6 +103,24 @@ AVAIL (zero32,  TARGET_ZICBOZ && !TARGET_64BIT)
 AVAIL (zero64,  TARGET_ZICBOZ && TARGET_64BIT)
 AVAIL (prefetchi32, TARGET_ZICBOP && !TARGET_64BIT)
 AVAIL (prefetchi64, TARGET_ZICBOP && TARGET_64BIT)
+AVAIL (crypto_zbkb32, TARGET_ZBKB && !TARGET_64BIT)
+AVAIL (crypto_zbkb64, TARGET_ZBKB && TARGET_64BIT)
+AVAIL (crypto_zbkc32, TARGET_ZBKC && !TARGET_64BIT)
+AVAIL (crypto_zbkc64, TARGET_ZBKC && TARGET_64BIT)
+AVAIL (crypto_zbkx32, TARGET_ZBKX && !TARGET_64BIT)
+AVAIL (crypto_zbkx64, TARGET_ZBKX && TARGET_64BIT)
+AVAIL (crypto_zknd32, TARGET_ZKND && !TARGET_64BIT)
+AVAIL (crypto_zknd64, TARGET_ZKND && TARGET_64BIT)
+AVAIL (crypto_zkne32, TARGET_ZKNE && !TARGET_64BIT)
+AVAIL (crypto_zkne64, TARGET_ZKNE && TARGET_64BIT)
+AVAIL (crypto_zkne_or_zknd, (TARGET_ZKNE || TARGET_ZKND) && TARGET_64BIT)
+AVAIL (crypto_zknh32, TARGET_ZKNH && !TARGET_64BIT)
+AVAIL (crypto_zknh64, TARGET_ZKNH && TARGET_64BIT)
+AVAIL (crypto_zksh32, TARGET_ZKSH && !TARGET_64BIT)
+AVAIL (crypto_zksh64, TARGET_ZKSH && TARGET_64BIT)
+AVAIL (crypto_zksed32, TARGET_ZKSED && !TARGET_64BIT)
+AVAIL (crypto_zksed64, TARGET_ZKSED && TARGET_64BIT)
+AVAIL (always,     (!0))
 
 /* Construct a riscv_builtin_description from the given arguments.
 
@@ -132,6 +154,8 @@ AVAIL (prefetchi64, TARGET_ZICBOP && TARGET_64BIT)
 /* Argument types.  */
 #define RISCV_ATYPE_VOID void_type_node
 #define RISCV_ATYPE_USI unsigned_intSI_type_node
+#define RISCV_ATYPE_QI intQI_type_node
+#define RISCV_ATYPE_HI intHI_type_node
 #define RISCV_ATYPE_SI intSI_type_node
 #define RISCV_ATYPE_DI intDI_type_node
 #define RISCV_ATYPE_VOID_PTR ptr_type_node
@@ -142,12 +166,18 @@ AVAIL (prefetchi64, TARGET_ZICBOP && TARGET_64BIT)
   RISCV_ATYPE_##A
 #define RISCV_FTYPE_ATYPES1(A, B) \
   RISCV_ATYPE_##A, RISCV_ATYPE_##B
+#define RISCV_FTYPE_ATYPES2(A, B, C) \
+  RISCV_ATYPE_##A, RISCV_ATYPE_##B, RISCV_ATYPE_##C
+#define RISCV_FTYPE_ATYPES3(A, B, C, D) \
+  RISCV_ATYPE_##A, RISCV_ATYPE_##B, RISCV_ATYPE_##C, RISCV_ATYPE_##D
 
 static const struct riscv_builtin_description riscv_builtins[] = {
   #include "riscv-cmo.def"
+  #include "riscv-scalar-crypto.def"
 
   DIRECT_BUILTIN (frflags, RISCV_USI_FTYPE, hard_float),
-  DIRECT_NO_TARGET_BUILTIN (fsflags, RISCV_VOID_FTYPE_USI, hard_float)
+  DIRECT_NO_TARGET_BUILTIN (fsflags, RISCV_VOID_FTYPE_USI, hard_float),
+  DIRECT_NO_TARGET_BUILTIN (pause, RISCV_VOID_FTYPE, always),
 };
 
 /* Index I is the function declaration for riscv_builtins[I], or null if the
@@ -213,6 +243,7 @@ void
 riscv_init_builtins (void)
 {
   riscv_init_builtin_types ();
+  riscv_vector::init_builtins ();
 
   for (size_t i = 0; i < ARRAY_SIZE (riscv_builtins); i++)
     {
@@ -221,7 +252,10 @@ riscv_init_builtins (void)
 	{
 	  tree type = riscv_build_function_type (d->prototype);
 	  riscv_builtin_decls[i]
-	    = add_builtin_function (d->name, type, i, BUILT_IN_MD, NULL, NULL);
+	    = add_builtin_function (d->name, type,
+				    (i << RISCV_BUILTIN_SHIFT)
+				      + RISCV_BUILTIN_GENERAL,
+				    BUILT_IN_MD, NULL, NULL);
 	  riscv_builtin_decl_index[d->icode] = i;
 	}
     }
@@ -232,9 +266,18 @@ riscv_init_builtins (void)
 tree
 riscv_builtin_decl (unsigned int code, bool initialize_p ATTRIBUTE_UNUSED)
 {
-  if (code >= ARRAY_SIZE (riscv_builtins))
-    return error_mark_node;
-  return riscv_builtin_decls[code];
+  unsigned int subcode = code >> RISCV_BUILTIN_SHIFT;
+  switch (code & RISCV_BUILTIN_CLASS)
+    {
+    case RISCV_BUILTIN_GENERAL:
+      if (subcode >= ARRAY_SIZE (riscv_builtins))
+	return error_mark_node;
+      return riscv_builtin_decls[subcode];
+
+    case RISCV_BUILTIN_VECTOR:
+      return riscv_vector::builtin_decl (subcode, initialize_p);
+    }
+  return error_mark_node;
 }
 
 /* Take argument ARGNO from EXP's argument list and convert it into
@@ -292,6 +335,34 @@ riscv_expand_builtin_direct (enum insn_code icode, rtx target, tree exp,
   return riscv_expand_builtin_insn (icode, opno, ops, has_target_p);
 }
 
+/* Implement TARGET_GIMPLE_FOLD_BUILTIN.  */
+
+bool
+riscv_gimple_fold_builtin (gimple_stmt_iterator *gsi)
+{
+  gcall *stmt = as_a<gcall *> (gsi_stmt (*gsi));
+  tree fndecl = gimple_call_fndecl (stmt);
+  unsigned int code = DECL_MD_FUNCTION_CODE (fndecl);
+  unsigned int subcode = code >> RISCV_BUILTIN_SHIFT;
+  gimple *new_stmt = NULL;
+  switch (code & RISCV_BUILTIN_CLASS)
+    {
+    case RISCV_BUILTIN_GENERAL:
+      new_stmt = NULL;
+      break;
+
+    case RISCV_BUILTIN_VECTOR:
+      new_stmt = riscv_vector::gimple_fold_builtin (subcode, gsi, stmt);
+      break;
+    }
+
+  if (!new_stmt)
+    return false;
+
+  gsi_replace (gsi, new_stmt, false);
+  return true;
+}
+
 /* Implement TARGET_EXPAND_BUILTIN.  */
 
 rtx
@@ -301,15 +372,23 @@ riscv_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
   unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
-  const struct riscv_builtin_description *d = &riscv_builtins[fcode];
-
-  switch (d->builtin_type)
+  unsigned int subcode = fcode >> RISCV_BUILTIN_SHIFT;
+  switch (fcode & RISCV_BUILTIN_CLASS)
     {
-    case RISCV_BUILTIN_DIRECT:
-      return riscv_expand_builtin_direct (d->icode, target, exp, true);
+      case RISCV_BUILTIN_VECTOR:
+	return riscv_vector::expand_builtin (subcode, exp, target);
+      case RISCV_BUILTIN_GENERAL: {
+	const struct riscv_builtin_description *d = &riscv_builtins[subcode];
 
-    case RISCV_BUILTIN_DIRECT_NO_TARGET:
-      return riscv_expand_builtin_direct (d->icode, target, exp, false);
+	switch (d->builtin_type)
+	  {
+	  case RISCV_BUILTIN_DIRECT:
+	    return riscv_expand_builtin_direct (d->icode, target, exp, true);
+
+	  case RISCV_BUILTIN_DIRECT_NO_TARGET:
+	    return riscv_expand_builtin_direct (d->icode, target, exp, false);
+	  }
+      }
     }
 
   gcc_unreachable ();
@@ -320,7 +399,7 @@ riscv_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 void
 riscv_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 {
-  if (!TARGET_HARD_FLOAT)
+  if (!(TARGET_HARD_FLOAT || TARGET_ZFINX))
     return;
 
   tree frflags = GET_BUILTIN_DECL (CODE_FOR_riscv_frflags);

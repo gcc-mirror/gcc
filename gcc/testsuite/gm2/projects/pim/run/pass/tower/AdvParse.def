@@ -1,0 +1,18 @@
+DEFINITION MODULE AdvParse ;
+
+(*
+    Title      : AdvParse
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Sun Jul 17 14:26:41 2005
+    Revision   : $Version$ 
+    Description: provides a simple interface to the parser.
+*)
+
+FROM SYSTEM IMPORT ADDRESS ;
+EXPORT QUALIFIED ParseMap ;
+
+PROCEDURE ParseMap (a: ADDRESS) : INTEGER ;
+
+
+END AdvParse.

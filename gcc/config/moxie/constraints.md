@@ -1,5 +1,5 @@
 ;; Constraint definitions for Moxie
-;; Copyright (C) 2009-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2023 Free Software Foundation, Inc.
 ;; Contributed by Anthony Green <green@moxielogic.com>
 
 ;; This file is part of GCC.
@@ -22,19 +22,19 @@
 ;; Constraints
 ;; -------------------------------------------------------------------------
 
-(define_constraint "A"
+(define_memory_constraint "A"
   "An absolute address."
   (and (match_code "mem")
        (ior (match_test "GET_CODE (XEXP (op, 0)) == SYMBOL_REF")
 	    (match_test "GET_CODE (XEXP (op, 0)) == LABEL_REF")
 	    (match_test "GET_CODE (XEXP (op, 0)) == CONST"))))
 
-(define_constraint "B"
+(define_memory_constraint "B"
   "An offset address."
   (and (match_code "mem")
        (match_test "moxie_offset_address_p (op)")))
 
-(define_constraint "W"
+(define_memory_constraint "W"
   "A register indirect memory operand."
   (and (match_code "mem")
        (match_test "REG_P (XEXP (op, 0))

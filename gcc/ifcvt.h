@@ -1,5 +1,5 @@
 /* If-conversion header file.
-   Copyright (C) 2014-2022 Free Software Foundation, Inc.
+   Copyright (C) 2014-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -85,6 +85,14 @@ struct noce_if_info
      from TEST_BB.  For the noce transformations, we allow the symmetric
      form as well.  */
   bool then_else_reversed;
+
+  /* True if THEN_BB is conditional on !COND rather than COND.
+     This is used if:
+
+     - JUMP branches to THEN_BB on COND
+     - JUMP falls through to JOIN_BB on !COND
+     - COND cannot be reversed.  */
+  bool cond_inverted;
 
   /* True if the contents of then_bb and else_bb are a
      simple single set instruction.  */

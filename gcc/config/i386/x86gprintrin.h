@@ -1,4 +1,4 @@
-/* Copyright (C) 2020-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2020-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -52,6 +52,8 @@
 
 #include <clzerointrin.h>
 
+#include <cmpccxaddintrin.h>
+
 #include <enqcmdintrin.h>
 
 #include <fxsrintrin.h>
@@ -71,6 +73,10 @@
 #include <popcntintrin.h>
 
 #include <pkuintrin.h>
+
+#include <prfchiintrin.h>
+
+#include <raointintrin.h>
 
 #include <rdseedintrin.h>
 

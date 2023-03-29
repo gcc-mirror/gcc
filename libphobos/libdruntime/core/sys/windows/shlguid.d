@@ -8,7 +8,6 @@
  */
 module core.sys.windows.shlguid;
 version (Windows):
-@system:
 
 import core.sys.windows.basetyps, core.sys.windows.w32api;
 

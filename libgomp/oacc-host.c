@@ -1,6 +1,6 @@
 /* OpenACC Runtime Library: acc_device_host.
 
-   Copyright (C) 2013-2022 Free Software Foundation, Inc.
+   Copyright (C) 2013-2023 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -284,6 +284,7 @@ static struct gomp_device_descr host_dispatch =
     .run_func = host_run,
 
     .mem_map = { NULL },
+    .mem_map_rev = { NULL },
     /* .lock initialized in goacc_host_init.  */
     .state = GOMP_DEVICE_UNINITIALIZED,
 

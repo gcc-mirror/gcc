@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,7 +26,6 @@
 with Atree;          use Atree;
 with Csets;          use Csets;
 with Namet;          use Namet;
-with Opt;            use Opt;
 with Restrict;       use Restrict;
 with Rident;         use Rident;
 with Scans;          use Scans;
@@ -34,6 +33,7 @@ with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinput;         use Sinput;
 with Uintp;          use Uintp;
+with Warnsw;         use Warnsw;
 
 package body Scn is
 

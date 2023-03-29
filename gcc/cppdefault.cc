@@ -1,5 +1,5 @@
 /* CPP Library.
-   Copyright (C) 1986-2022 Free Software Foundation, Inc.
+   Copyright (C) 1986-2023 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -74,6 +74,9 @@ const struct default_include cpp_include_defaults[]
 #endif
 #ifdef FIXED_INCLUDE_DIR
     /* This is the dir for fixincludes.  */
+#ifndef SYSROOT_HEADERS_SUFFIX_SPEC
+    { FIXED_INCLUDE_DIR, "GCC", 0, 0, 0, 2 },
+#endif
     { FIXED_INCLUDE_DIR, "GCC", 0, 0, 0,
       /* A multilib suffix needs adding if different multilibs use
 	 different headers.  */

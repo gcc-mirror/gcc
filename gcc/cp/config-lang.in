@@ -1,5 +1,5 @@
 # Top level configure fragment for GNU C++.
-#   Copyright (C) 1994-2022 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2023 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -39,6 +39,7 @@ gtfiles="\
 \$(srcdir)/c-family/c-common.cc \$(srcdir)/c-family/c-format.cc \
 \$(srcdir)/c-family/c-cppbuiltin.cc \$(srcdir)/c-family/c-pragma.cc \
 \$(srcdir)/cp/call.cc \$(srcdir)/cp/class.cc \$(srcdir)/cp/constexpr.cc \
+\$(srcdir)/cp/contracts.cc \
 \$(srcdir)/cp/constraint.cc \$(srcdir)/cp/coroutines.cc \
 \$(srcdir)/cp/cp-gimplify.cc \
 \$(srcdir)/cp/cp-lang.cc \$(srcdir)/cp/cp-objcp-common.cc \

@@ -1,5 +1,5 @@
 # End of .init and .fini sections.
-# Copyright (C) 2003-2022 Free Software Foundation, Inc.
+# Copyright (C) 2003-2023 Free Software Foundation, Inc.
 # 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -25,7 +25,13 @@
 # fact return.  Users may put any desired instructions in those sections.
 # This file is the last thing linked into any executable.
 
-#include "xtensa-config.h"
+#include "xtensa-config-builtin.h"
+
+/* An executable stack is *not* required for these functions.  */
+#if defined(__ELF__) && defined(__linux__)
+.section .note.GNU-stack,"",%progbits
+.previous
+#endif
 
 	.section .init
 #if XCHAL_HAVE_WINDOWED && !__XTENSA_CALL0_ABI__

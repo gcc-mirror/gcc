@@ -4,7 +4,7 @@
    Note that "normal" builtins (generic math functions, etc.) are handled
    in rs6000.c.
 
-   Copyright (C) 2002-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -733,7 +733,22 @@ rs6000_init_builtins (void)
       if (TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128)
 	ieee128_float_type_node = long_double_type_node;
       else
-	ieee128_float_type_node = float128_type_node;
+	{
+	  /* For C we only need to register the __ieee128 name for
+	     it.  For C++, we create a distinct type which will mangle
+	     differently (u9__ieee128) vs. _Float128 (DF128_) and behave
+	     backwards compatibly.  */
+	  if (float128t_type_node == NULL_TREE)
+	    {
+	      float128t_type_node = make_node (REAL_TYPE);
+	      TYPE_PRECISION (float128t_type_node)
+		= TYPE_PRECISION (float128_type_node);
+	      layout_type (float128t_type_node);
+	      SET_TYPE_MODE (float128t_type_node,
+			     TYPE_MODE (float128_type_node));
+	    }
+	  ieee128_float_type_node = float128t_type_node;
+	}
       t = build_qualified_type (ieee128_float_type_node, TYPE_QUAL_CONST);
       lang_hooks.types.register_builtin_type (ieee128_float_type_node,
 					      "__ieee128");
@@ -2918,7 +2933,7 @@ stv_expand_builtin (insn_code icode, rtx *op,
 
       rtx addr;
       if (op[1] == const0_rtx)
-	addr = gen_rtx_MEM (Pmode, op[2]);
+	addr = gen_rtx_MEM (tmode, op[2]);
       else
 	{
 	  op[1] = copy_to_mode_reg (Pmode, op[1]);

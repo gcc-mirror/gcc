@@ -1,5 +1,5 @@
 ;; Constraint definitions for RS6000
-;; Copyright (C) 2006-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2023 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -106,12 +106,6 @@
   (and (match_code "const_int")
        (match_test "TARGET_P8_VECTOR")
        (match_operand 0 "s5bit_cint_operand")))
-
-(define_constraint "wD"
-  "@internal Int constant that is the element number of the 64-bit scalar
-   in a vector."
-  (and (match_code "const_int")
-       (match_test "TARGET_VSX && (ival == VECTOR_ELEMENT_SCALAR_64BIT)")))
 
 (define_constraint "wE"
   "@internal Vector constant that can be loaded with the XXSPLTIB instruction."

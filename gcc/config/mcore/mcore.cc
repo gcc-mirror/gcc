@@ -1,5 +1,5 @@
 /* Output routines for Motorola MCore processor
-   Copyright (C) 1993-2022 Free Software Foundation, Inc.
+   Copyright (C) 1993-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1953,8 +1953,9 @@ mcore_setup_incoming_varargs (cumulative_args_t args_so_far_v,
   /* We need to know how many argument registers are used before
      the varargs start, so that we can push the remaining argument
      registers during the prologue.  */
-  number_of_regs_before_varargs
-    = *args_so_far + mcore_num_arg_regs (arg.mode, arg.type);
+  number_of_regs_before_varargs = *args_so_far;
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    number_of_regs_before_varargs += mcore_num_arg_regs (arg.mode, arg.type);
   
   /* There is a bug somewhere in the arg handling code.
      Until I can find it this workaround always pushes the

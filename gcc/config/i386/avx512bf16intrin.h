@@ -1,4 +1,4 @@
-/* Copyright (C) 2019-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2019-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -35,20 +35,18 @@
 #endif /* __AVX512BF16__ */
 
 /* Internal data types for implementing the intrinsics.  */
-typedef short __v32bh __attribute__ ((__vector_size__ (64)));
+typedef __bf16 __v32bf __attribute__ ((__vector_size__ (64)));
 
 /* The Intel API is flexible enough that we must allow aliasing with other
    vector types, and their scalar components.  */
-typedef short __m512bh __attribute__ ((__vector_size__ (64), __may_alias__));
+typedef __bf16 __m512bh __attribute__ ((__vector_size__ (64), __may_alias__));
 
 /* Convert One BF16 Data to One Single Float Data.  */
 extern __inline float
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_cvtsbh_ss (__bfloat16 __A)
+_mm_cvtsbh_ss (__bf16 __A)
 {
-  union{ float a; unsigned int b;} __tmp;
-  __tmp.b = ((unsigned int)(__A)) << 16;
-  return __tmp.a;
+  return __builtin_ia32_cvtbf2sf (__A);
 }
 
 /* vcvtne2ps2bf16 */
@@ -57,21 +55,21 @@ extern __inline __m512bh
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_cvtne2ps_pbh (__m512 __A, __m512 __B)
 {
-  return (__m512bh)__builtin_ia32_cvtne2ps2bf16_v32hi(__A, __B);
+  return (__m512bh)__builtin_ia32_cvtne2ps2bf16_v32bf(__A, __B);
 }
 
 extern __inline __m512bh
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_cvtne2ps_pbh (__m512bh __A, __mmask32 __B, __m512 __C, __m512 __D)
 {
-  return (__m512bh)__builtin_ia32_cvtne2ps2bf16_v32hi_mask(__C, __D, __A, __B);
+  return (__m512bh)__builtin_ia32_cvtne2ps2bf16_v32bf_mask(__C, __D, __A, __B);
 }
 
 extern __inline __m512bh
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_maskz_cvtne2ps_pbh (__mmask32 __A, __m512 __B, __m512 __C)
 {
-  return (__m512bh)__builtin_ia32_cvtne2ps2bf16_v32hi_maskz(__B, __C, __A);
+  return (__m512bh)__builtin_ia32_cvtne2ps2bf16_v32bf_maskz(__B, __C, __A);
 }
 
 /* vcvtneps2bf16 */

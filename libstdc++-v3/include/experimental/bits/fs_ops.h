@@ -1,6 +1,6 @@
 // Filesystem operational functions -*- C++ -*-
 
-// Copyright (C) 2014-2022 Free Software Foundation, Inc.
+// Copyright (C) 2014-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -98,8 +98,8 @@ inline namespace v1
   bool create_directory(const path& __p);
   bool create_directory(const path& __p, error_code& __ec) noexcept;
 
-  bool create_directory(const path& __p, const path& attributes);
-  bool create_directory(const path& __p, const path& attributes,
+  bool create_directory(const path& __p, const path& __attributes);
+  bool create_directory(const path& __p, const path& __attributes,
 			error_code& __ec) noexcept;
 
   void create_directory_symlink(const path& __to, const path& __new_symlink);

@@ -1,5 +1,5 @@
 /* Perform type resolution on the various structures.
-   Copyright (C) 2001-2022 Free Software Foundation, Inc.
+   Copyright (C) 2001-2023 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -514,7 +514,7 @@ gfc_resolve_formal_arglist (gfc_symbol *proc)
 	    {
 	      /* F03:C1263 (R1238) The function-name and each dummy-arg-name
 		 shall be specified, explicitly or implicitly, to be scalar.  */
-	      gfc_error ("Argument '%s' of statement function '%s' at %L "
+	      gfc_error ("Argument %qs of statement function %qs at %L "
 			 "must be scalar", sym->name, proc->name,
 			 &proc->declared_at);
 	      continue;
@@ -953,9 +953,15 @@ resolve_common_vars (gfc_common_head *common_block, bool named_common)
     {
       gsym = gfc_find_gsymbol (gfc_gsym_root, csym->name);
       if (gsym && (gsym->type == GSYM_MODULE || gsym->type == GSYM_PROGRAM))
-	gfc_error_now ("Global entity %qs at %L cannot appear in a "
-			"COMMON block at %L", gsym->name,
-			&gsym->where, &csym->common_block->where);
+	{
+	  if (csym->common_block)
+	    gfc_error_now ("Global entity %qs at %L cannot appear in a "
+			   "COMMON block at %L", gsym->name,
+			   &gsym->where, &csym->common_block->where);
+	  else
+	    gfc_error_now ("Global entity %qs at %L cannot appear in a "
+			   "COMMON block", gsym->name, &gsym->where);
+	}
 
       /* gfc_add_in_common may have been called before, but the reported errors
 	 have been ignored to continue parsing.
@@ -1664,9 +1670,11 @@ check_assumed_size_reference (gfc_symbol *sym, gfc_expr *e)
 
   /* FIXME: The comparison "e->ref->u.ar.type == AR_FULL" is wrong.
      What should it be?  */
-  if (e->ref && (e->ref->u.ar.end[e->ref->u.ar.as->rank - 1] == NULL)
-	  && (e->ref->u.ar.as->type == AS_ASSUMED_SIZE)
-	       && (e->ref->u.ar.type == AR_FULL))
+  if (e->ref
+      && e->ref->u.ar.as
+      && (e->ref->u.ar.end[e->ref->u.ar.as->rank - 1] == NULL)
+      && (e->ref->u.ar.as->type == AS_ASSUMED_SIZE)
+      && (e->ref->u.ar.type == AR_FULL))
     {
       gfc_error ("The upper bound in the last dimension must "
 		 "appear in the reference to the assumed size "
@@ -3470,6 +3478,24 @@ resolve_function (gfc_expr *expr)
 	expr->ts = expr->symtree->n.sym->result->ts;
     }
 
+  /* These derived types with an incomplete namespace, arising from use
+     association, cause gfc_get_derived_vtab to segfault. If the function
+     namespace does not suffice, something is badly wrong.  */
+  if (expr->ts.type == BT_DERIVED
+      && !expr->ts.u.derived->ns->proc_name)
+    {
+      gfc_symbol *der;
+      gfc_find_symbol (expr->ts.u.derived->name, expr->symtree->n.sym->ns, 1, &der);
+      if (der)
+	{
+	  expr->ts.u.derived->refs--;
+	  expr->ts.u.derived = der;
+	  der->refs++;
+	}
+      else
+	expr->ts.u.derived->ns = expr->symtree->n.sym->ns;
+    }
+
   if (!expr->ref && !expr->value.function.isym)
     {
       if (expr->value.function.esym)
@@ -4381,8 +4407,8 @@ resolve_operator (gfc_expr *e)
 	  guessed = lookup_uop_fuzzy (name, e->value.op.uop->ns->uop_root);
 	  if (guessed)
 	    snprintf (msg, sizeof (msg),
-		      _("Unknown operator %%<%s%%> at %%L; did you mean '%s'?"),
-		      name, guessed);
+		      _("Unknown operator %%<%s%%> at %%L; did you mean "
+			"%%<%s%%>?"), name, guessed);
 	  else
 	    snprintf (msg, sizeof (msg), _("Unknown operator %%<%s%%> at %%L"),
 		      name);
@@ -4575,11 +4601,10 @@ compare_bound_int (gfc_expr *a, int b)
 {
   int i;
 
-  if (a == NULL || a->expr_type != EXPR_CONSTANT)
+  if (a == NULL
+      || a->expr_type != EXPR_CONSTANT
+      || a->ts.type != BT_INTEGER)
     return CMP_UNKNOWN;
-
-  if (a->ts.type != BT_INTEGER)
-    gfc_internal_error ("compare_bound_int(): Bad expression");
 
   i = mpz_cmp_si (a->value.integer, b);
 
@@ -4598,11 +4623,10 @@ compare_bound_mpz_t (gfc_expr *a, mpz_t b)
 {
   int i;
 
-  if (a == NULL || a->expr_type != EXPR_CONSTANT)
+  if (a == NULL
+      || a->expr_type != EXPR_CONSTANT
+      || a->ts.type != BT_INTEGER)
     return CMP_UNKNOWN;
-
-  if (a->ts.type != BT_INTEGER)
-    gfc_internal_error ("compare_bound_int(): Bad expression");
 
   i = mpz_cmp (a->value.integer, b);
 
@@ -4733,23 +4757,24 @@ check_dimension (int i, gfc_array_ref *ar, gfc_array_spec *as)
 #define AR_END (ar->end[i] ? ar->end[i] : as->upper[i])
 
 	compare_result comp_start_end = compare_bound (AR_START, AR_END);
+	compare_result comp_stride_zero = compare_bound_int (ar->stride[i], 0);
 
 	/* Check for zero stride, which is not allowed.  */
-	if (compare_bound_int (ar->stride[i], 0) == CMP_EQ)
+	if (comp_stride_zero == CMP_EQ)
 	  {
 	    gfc_error ("Illegal stride of zero at %L", &ar->c_where[i]);
 	    return false;
 	  }
 
-	/* if start == len || (stride > 0 && start < len)
-			   || (stride < 0 && start > len),
+	/* if start == end || (stride > 0 && start < end)
+			   || (stride < 0 && start > end),
 	   then the array section contains at least one element.  In this
 	   case, there is an out-of-bounds access if
 	   (start < lower || start > upper).  */
-	if (compare_bound (AR_START, AR_END) == CMP_EQ
-	    || ((compare_bound_int (ar->stride[i], 0) == CMP_GT
-		 || ar->stride[i] == NULL) && comp_start_end == CMP_LT)
-	    || (compare_bound_int (ar->stride[i], 0) == CMP_LT
+	if (comp_start_end == CMP_EQ
+	    || ((comp_stride_zero == CMP_GT || ar->stride[i] == NULL)
+		&& comp_start_end == CMP_LT)
+	    || (comp_stride_zero == CMP_LT
 	        && comp_start_end == CMP_GT))
 	  {
 	    if (compare_bound (AR_START, as->lower[i]) == CMP_LT)
@@ -5005,8 +5030,9 @@ find_array_spec (gfc_expr *e)
       case REF_ARRAY:
 	if (as == NULL)
 	  {
+	    locus loc = ref->u.ar.where.lb ? ref->u.ar.where : e->where;
 	    gfc_error ("Invalid array reference of a non-array entity at %L",
-		       &ref->u.ar.where);
+		       &loc);
 	    return false;
 	  }
 
@@ -6053,11 +6079,14 @@ resolve_procedure:
 
 
 /* Checks to see that the correct symbol has been host associated.
-   The only situation where this arises is that in which a twice
-   contained function is parsed after the host association is made.
-   Therefore, on detecting this, change the symbol in the expression
-   and convert the array reference into an actual arglist if the old
-   symbol is a variable.  */
+   The only situations where this arises are:
+	(i)  That in which a twice contained function is parsed after
+	     the host association is made. On detecting this, change
+	     the symbol in the expression and convert the array reference
+	     into an actual arglist if the old symbol is a variable; or
+	(ii) That in which an external function is typed but not declared
+	     explcitly to be external. Here, the old symbol is changed
+	     from a variable to an external function.  */
 static bool
 check_host_association (gfc_expr *e)
 {
@@ -6086,7 +6115,6 @@ check_host_association (gfc_expr *e)
       gfc_find_symbol (e->symtree->name, gfc_current_ns, 1, &sym);
 
       if (sym && old_sym != sym
-	      && sym->ts.type == old_sym->ts.type
 	      && sym->attr.flavor == FL_PROCEDURE
 	      && sym->attr.contained)
 	{
@@ -6131,6 +6159,9 @@ check_host_association (gfc_expr *e)
 		  return false;
 		}
 
+	      if (ref == NULL)
+		return false;
+
 	      gcc_assert (ref->type == REF_ARRAY);
 
 	      /* Grab the start expressions from the array ref and
@@ -6156,6 +6187,27 @@ check_host_association (gfc_expr *e)
 
 	  gfc_resolve_expr (e);
 	  sym->refs++;
+	}
+      /* This case corresponds to a call, from a block or a contained
+	 procedure, to an external function, which has not been declared
+	 as being external in the main program but has been typed.  */
+      else if (sym && old_sym != sym
+	       && !e->ref
+	       && sym->ts.type == BT_UNKNOWN
+	       && old_sym->ts.type != BT_UNKNOWN
+	       && sym->attr.flavor == FL_PROCEDURE
+	       && old_sym->attr.flavor == FL_VARIABLE
+	       && sym->ns->parent == old_sym->ns
+	       && sym->ns->proc_name
+	       && sym->ns->proc_name->attr.proc != PROC_MODULE
+	       && (sym->ns->proc_name->attr.flavor == FL_LABEL
+		   || sym->ns->proc_name->attr.flavor == FL_PROCEDURE))
+	{
+	  old_sym->attr.flavor = FL_PROCEDURE;
+	  old_sym->attr.external = 1;
+	  old_sym->attr.function = 1;
+	  old_sym->result = old_sym;
+	  gfc_resolve_expr (e);
 	}
     }
   /* This might have changed!  */
@@ -7535,7 +7587,8 @@ derived_inaccessible (gfc_symbol *sym)
   for (c = sym->components; c; c = c->next)
     {
 	/* Prevent an infinite loop through this function.  */
-	if (c->ts.type == BT_DERIVED && c->attr.pointer
+	if (c->ts.type == BT_DERIVED
+	    && (c->attr.pointer || c->attr.allocatable)
 	    && sym == c->ts.u.derived)
 	  continue;
 
@@ -7569,7 +7622,7 @@ resolve_deallocate_expr (gfc_expr *e)
   sym = e->symtree->n.sym;
   unlimited = UNLIMITED_POLY(sym);
 
-  if (sym->ts.type == BT_CLASS)
+  if (sym->ts.type == BT_CLASS && sym->attr.class_ok && CLASS_DATA (sym))
     {
       allocatable = CLASS_DATA (sym)->attr.allocatable;
       pointer = CLASS_DATA (sym)->attr.class_pointer;
@@ -8211,7 +8264,7 @@ check_symbols:
 	{
 	  if (i == (ar->dimen + ar->codimen - 1))
 	    {
-	      gfc_error ("Expected '*' in coindex specification in ALLOCATE "
+	      gfc_error ("Expected %<*%> in coindex specification in ALLOCATE "
 			 "statement at %L", &e->where);
 	      goto failure;
 	    }
@@ -10017,6 +10070,7 @@ resolve_transfer (gfc_code *code)
 
   if (exp == NULL || (exp->expr_type != EXPR_VARIABLE
 		      && exp->expr_type != EXPR_FUNCTION
+		      && exp->expr_type != EXPR_ARRAY
 		      && exp->expr_type != EXPR_STRUCTURE))
     return;
 
@@ -10030,6 +10084,7 @@ resolve_transfer (gfc_code *code)
 
   const gfc_typespec *ts = exp->expr_type == EXPR_STRUCTURE
 			|| exp->expr_type == EXPR_FUNCTION
+			|| exp->expr_type == EXPR_ARRAY
 			 ? &exp->ts : &exp->symtree->n.sym->ts;
 
   /* Go to actual component transferred.  */
@@ -10126,6 +10181,9 @@ resolve_transfer (gfc_code *code)
     }
 
   if (exp->expr_type == EXPR_STRUCTURE)
+    return;
+
+  if (exp->expr_type == EXPR_ARRAY)
     return;
 
   sym = exp->symtree->n.sym;
@@ -10540,6 +10598,11 @@ resolve_where (gfc_code *code, gfc_expr *mask)
 	      if (e && !resolve_where_shape (cnext->expr1, e))
 	       gfc_error ("WHERE assignment target at %L has "
 			  "inconsistent shape", &cnext->expr1->where);
+
+	      if (cnext->op == EXEC_ASSIGN
+		  && gfc_may_be_finalized (cnext->expr1->ts))
+		cnext->expr1->must_finalize = 1;
+
 	      break;
 
 
@@ -10627,6 +10690,11 @@ gfc_resolve_where_code_in_forall (gfc_code *code, int nvar,
 	    /* WHERE assignment statement */
 	    case EXEC_ASSIGN:
 	      gfc_resolve_assign_in_forall (cnext, nvar, var_expr);
+
+	      if (cnext->op == EXEC_ASSIGN
+		  && gfc_may_be_finalized (cnext->expr1->ts))
+		cnext->expr1->must_finalize = 1;
+
 	      break;
 
 	    /* WHERE operator assignment statement */
@@ -10673,6 +10741,11 @@ gfc_resolve_forall_body (gfc_code *code, int nvar, gfc_expr **var_expr)
 	case EXEC_ASSIGN:
 	case EXEC_POINTER_ASSIGN:
 	  gfc_resolve_assign_in_forall (c, nvar, var_expr);
+
+	  if (c->op == EXEC_ASSIGN
+	      && gfc_may_be_finalized (c->expr1->ts))
+	    c->expr1->must_finalize = 1;
+
 	  break;
 
 	case EXEC_ASSIGN_CALL:
@@ -10812,15 +10885,20 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
 
 
 /* Resolve a BLOCK construct statement.  */
+static gfc_expr*
+get_temp_from_expr (gfc_expr *, gfc_namespace *);
+static gfc_code *
+build_assignment (gfc_exec_op, gfc_expr *, gfc_expr *,
+		  gfc_component *, gfc_component *, locus);
 
 static void
 resolve_block_construct (gfc_code* code)
 {
-  /* Resolve the BLOCK's namespace.  */
-  gfc_resolve (code->ext.block.ns);
+  gfc_namespace *ns = code->ext.block.ns;
 
   /* For an ASSOCIATE block, the associations (and their targets) are already
-     resolved during resolve_symbol.  */
+     resolved during resolve_symbol. Resolve the BLOCK's namespace.  */
+  gfc_resolve (ns);
 }
 
 
@@ -10902,6 +10980,7 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	case EXEC_OACC_ENTER_DATA:
 	case EXEC_OACC_EXIT_DATA:
 	case EXEC_OACC_ROUTINE:
+	case EXEC_OMP_ASSUME:
 	case EXEC_OMP_CRITICAL:
 	case EXEC_OMP_DISTRIBUTE:
 	case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
@@ -11179,7 +11258,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
     {
       gfc_error ("Nonallocatable variable must not be polymorphic in intrinsic "
 		 "assignment at %L - check that there is a matching specific "
-		 "subroutine for '=' operator", &lhs->where);
+		 "subroutine for %<=%> operator", &lhs->where);
       return false;
     }
 
@@ -11352,6 +11431,7 @@ get_temp_from_expr (gfc_expr *e, gfc_namespace *ns)
   tmp->n.sym->attr.use_assoc = 0;
   tmp->n.sym->attr.intent = INTENT_UNKNOWN;
 
+
   if (as)
     {
       tmp->n.sym->as = gfc_copy_array_spec (as);
@@ -11403,8 +11483,61 @@ add_code_to_chain (gfc_code **this_code, gfc_code **head, gfc_code **tail)
 }
 
 
+/* Generate a final call from a variable expression  */
+
+static void
+generate_final_call (gfc_expr *tmp_expr, gfc_code **head, gfc_code **tail)
+{
+  gfc_code *this_code;
+  gfc_expr *final_expr = NULL;
+  gfc_expr *size_expr;
+  gfc_expr *fini_coarray;
+
+  gcc_assert (tmp_expr->expr_type == EXPR_VARIABLE);
+  if (!gfc_is_finalizable (tmp_expr->ts.u.derived, &final_expr) || !final_expr)
+    return;
+
+  /* Now generate the finalizer call.  */
+  this_code = gfc_get_code (EXEC_CALL);
+  this_code->symtree = final_expr->symtree;
+  this_code->resolved_sym = final_expr->symtree->n.sym;
+
+  //* Expression to be finalized  */
+  this_code->ext.actual = gfc_get_actual_arglist ();
+  this_code->ext.actual->expr = gfc_copy_expr (tmp_expr);
+
+  /* size_expr = STORAGE_SIZE (...) / NUMERIC_STORAGE_SIZE.  */
+  this_code->ext.actual->next = gfc_get_actual_arglist ();
+  size_expr = gfc_get_expr ();
+  size_expr->where = gfc_current_locus;
+  size_expr->expr_type = EXPR_OP;
+  size_expr->value.op.op = INTRINSIC_DIVIDE;
+  size_expr->value.op.op1
+	= gfc_build_intrinsic_call (gfc_current_ns, GFC_ISYM_STORAGE_SIZE,
+				    "storage_size", gfc_current_locus, 2,
+				    gfc_lval_expr_from_sym (tmp_expr->symtree->n.sym),
+				    gfc_get_int_expr (gfc_index_integer_kind,
+						      NULL, 0));
+  size_expr->value.op.op2 = gfc_get_int_expr (gfc_index_integer_kind, NULL,
+					      gfc_character_storage_size);
+  size_expr->value.op.op1->ts = size_expr->value.op.op2->ts;
+  size_expr->ts = size_expr->value.op.op1->ts;
+  this_code->ext.actual->next->expr = size_expr;
+
+  /* fini_coarray  */
+  this_code->ext.actual->next->next = gfc_get_actual_arglist ();
+  fini_coarray = gfc_get_constant_expr (BT_LOGICAL, gfc_default_logical_kind,
+					&tmp_expr->where);
+  fini_coarray->value.logical = (int)gfc_expr_attr (tmp_expr).codimension;
+  this_code->ext.actual->next->next->expr = fini_coarray;
+
+  add_code_to_chain (&this_code, head, tail);
+
+}
+
 /* Counts the potential number of part array references that would
    result from resolution of typebound defined assignments.  */
+
 
 static int
 nonscalar_typebound_assign (gfc_symbol *derived, int depth)
@@ -11438,62 +11571,111 @@ nonscalar_typebound_assign (gfc_symbol *derived, int depth)
 }
 
 
-/* Implement 7.2.1.3 of the F08 standard:
-   "An intrinsic assignment where the variable is of derived type is
-   performed as if each component of the variable were assigned from the
-   corresponding component of expr using pointer assignment (7.2.2) for
-   each pointer component, defined assignment for each nonpointer
-   nonallocatable component of a type that has a type-bound defined
-   assignment consistent with the component, intrinsic assignment for
-   each other nonpointer nonallocatable component, ..."
+/* Implement 10.2.1.3 paragraph 13 of the F18 standard:
+   "An intrinsic assignment where the variable is of derived type is performed
+    as if each component of the variable were assigned from the corresponding
+    component of expr using pointer assignment (10.2.2) for each pointer
+    component, defined assignment for each nonpointer nonallocatable component
+    of a type that has a type-bound defined assignment consistent with the
+    component, intrinsic assignment for each other nonpointer nonallocatable
+    component, and intrinsic assignment for each allocated coarray component.
+    For unallocated coarray components, the corresponding component of the
+    variable shall be unallocated. For a noncoarray allocatable component the
+    following sequence of operations is applied.
+	(1) If the component of the variable is allocated, it is deallocated.
+	(2) If the component of the value of expr is allocated, the
+	    corresponding component of the variable is allocated with the same
+	    dynamic type and type parameters as the component of the value of
+	    expr. If it is an array, it is allocated with the same bounds. The
+	    value of the component of the value of expr is then assigned to the
+	    corresponding component of the variable using defined assignment if
+	    the declared type of the component has a type-bound defined
+	    assignment consistent with the component, and intrinsic assignment
+	    for the dynamic type of that component otherwise."
 
-   The pointer assignments are taken care of by the intrinsic
-   assignment of the structure itself.  This function recursively adds
-   defined assignments where required.  The recursion is accomplished
-   by calling gfc_resolve_code.
+   The pointer assignments are taken care of by the intrinsic assignment of the
+   structure itself.  This function recursively adds defined assignments where
+   required.  The recursion is accomplished by calling gfc_resolve_code.
 
-   When the lhs in a defined assignment has intent INOUT, we need a
-   temporary for the lhs.  In pseudo-code:
+   When the lhs in a defined assignment has intent INOUT or is intent OUT
+   and the component of 'var' is finalizable, we need a temporary for the
+   lhs.  In pseudo-code for an assignment var = expr:
 
-   ! Only call function lhs once.
-      if (lhs is not a constant or an variable)
-	  temp_x = expr2
-          expr2 => temp_x
+   ! Confine finalization of temporaries, as far as possible.
+     Enclose the code for the assignment in a block
+   ! Only call function 'expr' once.
+      #if ('expr is not a constant or an variable)
+	temp_expr = expr
+	expr = temp_x
    ! Do the intrinsic assignment
-      expr1 = expr2
-   ! Now do the defined assignments
-      do over components with typebound defined assignment [%cmp]
-	#if one component's assignment procedure is INOUT
-	  t1 = expr1
-	  #if expr2 non-variable
-	    temp_x = expr2
-	    expr2 => temp_x
-	  # endif
-	  expr1 = expr2
-	  # for each cmp
-	    t1%cmp {defined=} expr2%cmp
-	    expr1%cmp = t1%cmp
+      #if typeof ('var') has a typebound final subroutine
+	finalize (var)
+      var = expr
+   ! Now do the component assignments
+      #do over derived type components [%cmp]
+	#if (cmp is a pointer of any kind)
+	  continue
+	build the assignment
+	resolve the code
+	#if the code is a typebound assignment
+	   #if (arg1 is INOUT or finalizable OUT && !t1)
+	     t1 = var
+	     arg1 = t1
+	     deal with allocatation or not of var and this component
+	#elseif the code is an assignment by itself
+	   #if this component does not need finalization
+	     delete code and continue
 	#else
-	  expr1 = expr2
-
-	# for each cmp
-	  expr1%cmp {defined=} expr2%cmp
+	   remove the leading assignment
 	#endif
-   */
+	commit the code
+	#if (t1 and (arg1 is INOUT or finalizable OUT))
+	   var%cmp = t1%cmp
+      #enddo
+      put all code chunks involving t1 to the top of the generated code
+      insert the generated block in place of the original code
+*/
+
+static bool
+is_finalizable_type (gfc_typespec ts)
+{
+  gfc_component *c;
+
+  if (ts.type != BT_DERIVED)
+    return false;
+
+  /* (1) Check for FINAL subroutines.  */
+  if (ts.u.derived->f2k_derived && ts.u.derived->f2k_derived->finalizers)
+    return true;
+
+  /* (2) Check for components of finalizable type.  */
+  for (c = ts.u.derived->components; c; c = c->next)
+    if (c->ts.type == BT_DERIVED
+	&& !c->attr.pointer && !c->attr.proc_pointer && !c->attr.allocatable
+	&& c->ts.u.derived->f2k_derived
+	&& c->ts.u.derived->f2k_derived->finalizers)
+      return true;
+
+  return false;
+}
 
 /* The temporary assignments have to be put on top of the additional
    code to avoid the result being changed by the intrinsic assignment.
    */
 static int component_assignment_level = 0;
 static gfc_code *tmp_head = NULL, *tmp_tail = NULL;
+static bool finalizable_comp;
 
 static void
 generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 {
   gfc_component *comp1, *comp2;
   gfc_code *this_code = NULL, *head = NULL, *tail = NULL;
-  gfc_expr *t1;
+  gfc_code *tmp_code = NULL;
+  gfc_expr *t1 = NULL;
+  gfc_expr *tmp_expr = NULL;
   int error_count, depth;
+  bool finalizable_lhs;
 
   gfc_get_errors (NULL, &error_count);
 
@@ -11514,19 +11696,39 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
       return;
     }
 
+  if (!component_assignment_level)
+    finalizable_comp = true;
+
+  /* Build a block so that function result temporaries are finalized
+     locally on exiting the rather than enclosing scope.  */
+  if (!component_assignment_level)
+    {
+      ns = gfc_build_block_ns (ns);
+      tmp_code = gfc_get_code (EXEC_NOP);
+      *tmp_code = **code;
+      tmp_code->next = NULL;
+      (*code)->op = EXEC_BLOCK;
+      (*code)->ext.block.ns = ns;
+      (*code)->ext.block.assoc = NULL;
+      (*code)->expr1 = (*code)->expr2 = NULL;
+      ns->code = tmp_code;
+      code = &ns->code;
+    }
+
   component_assignment_level++;
+
+  finalizable_lhs = is_finalizable_type ((*code)->expr1->ts);
 
   /* Create a temporary so that functions get called only once.  */
   if ((*code)->expr2->expr_type != EXPR_VARIABLE
       && (*code)->expr2->expr_type != EXPR_CONSTANT)
     {
-      gfc_expr *tmp_expr;
-
       /* Assign the rhs to the temporary.  */
       tmp_expr = get_temp_from_expr ((*code)->expr1, ns);
       this_code = build_assignment (EXEC_ASSIGN,
 				    tmp_expr, (*code)->expr2,
 				    NULL, NULL, (*code)->loc);
+      this_code->expr2->must_finalize = 1;
       /* Add the code and substitute the rhs expression.  */
       add_code_to_chain (&this_code, &tmp_head, &tmp_tail);
       gfc_free_expr ((*code)->expr2);
@@ -11536,8 +11738,10 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
   /* Do the intrinsic assignment.  This is not needed if the lhs is one
      of the temporaries generated here, since the intrinsic assignment
      to the final result already does this.  */
-  if ((*code)->expr1->symtree->n.sym->name[2] != '@')
+  if ((*code)->expr1->symtree->n.sym->name[2] != '.')
     {
+      if (finalizable_lhs)
+	(*code)->expr1->must_finalize = 1;
       this_code = build_assignment (EXEC_ASSIGN,
 				    (*code)->expr1, (*code)->expr2,
 				    NULL, NULL, (*code)->loc);
@@ -11547,10 +11751,10 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
   comp1 = (*code)->expr1->ts.u.derived->components;
   comp2 = (*code)->expr2->ts.u.derived->components;
 
-  t1 = NULL;
   for (; comp1; comp1 = comp1->next, comp2 = comp2->next)
     {
       bool inout = false;
+      bool finalizable_out = false;
 
       /* The intrinsic assignment does the right thing for pointers
 	 of all kinds and allocatable components.  */
@@ -11561,6 +11765,9 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 	  || comp1->attr.class_pointer
 	  || comp1->attr.proc_pointer)
 	continue;
+
+      finalizable_comp = is_finalizable_type (comp1->ts)
+			 && !finalizable_lhs;
 
       /* Make an assignment for this component.  */
       this_code = build_assignment (EXEC_ASSIGN,
@@ -11594,8 +11801,13 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 	     a temporary must be generated and used instead.  */
 	  rsym = this_code->resolved_sym;
 	  dummy_args = gfc_sym_get_dummy_args (rsym);
-	  if (dummy_args
-	      && dummy_args->sym->attr.intent == INTENT_INOUT)
+	  finalizable_out = gfc_may_be_finalized (comp1->ts)
+			    && dummy_args
+			    && dummy_args->sym->attr.intent == INTENT_OUT;
+	  inout = dummy_args
+		  && dummy_args->sym->attr.intent == INTENT_INOUT;
+	  if ((inout || finalizable_out)
+	      && !comp1->attr.allocatable)
 	    {
 	      gfc_code *temp_code;
 	      inout = true;
@@ -11604,7 +11816,11 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 		 it at the head of the generated code.  */
 	      if (!t1)
 		{
-		  t1 = get_temp_from_expr ((*code)->expr1, ns);
+		  gfc_namespace *tmp_ns = ns;
+		  if (ns->parent && gfc_may_be_finalized (comp1->ts))
+		    tmp_ns = (*code)->expr1->symtree->n.sym->ns;
+		  t1 = get_temp_from_expr ((*code)->expr1, tmp_ns);
+		  t1->symtree->n.sym->attr.artificial = 1;
 		  temp_code = build_assignment (EXEC_ASSIGN,
 						t1, (*code)->expr1,
 				NULL, NULL, (*code)->loc);
@@ -11666,20 +11882,38 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
       else if (this_code->op == EXEC_ASSIGN && !this_code->next)
 	{
 	  /* Don't add intrinsic assignments since they are already
-	     effected by the intrinsic assignment of the structure.  */
-	  gfc_free_statements (this_code);
-	  this_code = NULL;
-	  continue;
+	     effected by the intrinsic assignment of the structure, unless
+	     finalization is required.  */
+	  if (finalizable_comp)
+	    this_code->expr1->must_finalize = 1;
+	  else
+	    {
+	      gfc_free_statements (this_code);
+	      this_code = NULL;
+	      continue;
+	    }
+	}
+      else
+	{
+	  /* Resolution has expanded an assignment of a derived type with
+	     defined assigned components.  Remove the redundant, leading
+	     assignment.  */
+	  gcc_assert (this_code->op == EXEC_ASSIGN);
+	  gfc_code *tmp = this_code;
+	  this_code = this_code->next;
+	  tmp->next = NULL;
+	  gfc_free_statements (tmp);
 	}
 
       add_code_to_chain (&this_code, &head, &tail);
 
-      if (t1 && inout)
+      if (t1 && (inout || finalizable_out))
 	{
 	  /* Transfer the value to the final result.  */
 	  this_code = build_assignment (EXEC_ASSIGN,
 					(*code)->expr1, t1,
 					comp1, comp2, (*code)->loc);
+	  this_code->expr1->must_finalize = 0;
 	  add_code_to_chain (&this_code, &head, &tail);
 	}
     }
@@ -11692,8 +11926,8 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
       tmp_head = tmp_tail = NULL;
     }
 
-  // If we did a pointer assignment - thus, we need to ensure that the LHS is
-  // not accidentally deallocated. Hence, nullify t1.
+  /* If we did a pointer assignment - thus, we need to ensure that the LHS is
+     not accidentally deallocated. Hence, nullify t1.  */
   if (t1 && (*code)->expr1->symtree->n.sym->attr.allocatable
       && gfc_expr_attr ((*code)->expr1).allocatable)
     {
@@ -11714,6 +11948,18 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
       tail = block;
     }
 
+  component_assignment_level--;
+
+  /* Make an explicit final call for the function result.  */
+  if (tmp_expr)
+    generate_final_call (tmp_expr, &head, &tail);
+
+  if (tmp_code)
+    {
+      ns->code = head;
+      return;
+    }
+
   /* Now attach the remaining code chain to the input code.  Step on
      to the end of the new code since resolution is complete.  */
   gcc_assert ((*code)->op == EXEC_ASSIGN);
@@ -11726,8 +11972,6 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
   if (head != tail)
     free (head);
   *code = tail;
-
-  component_assignment_level--;
 }
 
 
@@ -11908,9 +12152,14 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	      break;
 	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
 	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_MASKED_TASKLOOP:
+	    case EXEC_OMP_MASKED_TASKLOOP_SIMD:
+	    case EXEC_OMP_MASTER_TASKLOOP:
+	    case EXEC_OMP_MASTER_TASKLOOP_SIMD:
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
 	    case EXEC_OMP_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_PARALLEL_LOOP:
 	    case EXEC_OMP_PARALLEL_MASKED:
 	    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP:
 	    case EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD:
@@ -11921,11 +12170,13 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	    case EXEC_OMP_TARGET_PARALLEL:
 	    case EXEC_OMP_TARGET_PARALLEL_DO:
 	    case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_TARGET_PARALLEL_LOOP:
 	    case EXEC_OMP_TARGET_TEAMS:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+	    case EXEC_OMP_TARGET_TEAMS_LOOP:
 	    case EXEC_OMP_TASK:
 	    case EXEC_OMP_TASKLOOP:
 	    case EXEC_OMP_TASKLOOP_SIMD:
@@ -11934,6 +12185,7 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
 	    case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	    case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
+	    case EXEC_OMP_TEAMS_LOOP:
 	      omp_workshare_save = omp_workshare_flag;
 	      omp_workshare_flag = 0;
 	      gfc_resolve_omp_parallel_blocks (code, ns);
@@ -11942,6 +12194,7 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	    case EXEC_OMP_DISTRIBUTE_SIMD:
 	    case EXEC_OMP_DO:
 	    case EXEC_OMP_DO_SIMD:
+	    case EXEC_OMP_LOOP:
 	    case EXEC_OMP_SIMD:
 	    case EXEC_OMP_TARGET_SIMD:
 	      gfc_resolve_omp_do_blocks (code, ns);
@@ -12138,6 +12391,14 @@ start:
 	      && code->expr1->ts.u.derived
 	      && code->expr1->ts.u.derived->attr.defined_assign_comp)
 	    generate_component_assignments (&code, ns);
+	  else if (code->op == EXEC_ASSIGN)
+	    {
+	      if (gfc_may_be_finalized (code->expr1->ts))
+		code->expr1->must_finalize = 1;
+	      if (code->expr2->expr_type == EXPR_ARRAY
+		  && gfc_may_be_finalized (code->expr2->ts))
+		code->expr2->must_finalize = 1;
+	    }
 
 	  break;
 
@@ -12376,6 +12637,7 @@ start:
 	  gfc_resolve_oacc_directive (code, ns);
 	  break;
 
+	case EXEC_OMP_ASSUME:
 	case EXEC_OMP_ATOMIC:
 	case EXEC_OMP_BARRIER:
 	case EXEC_OMP_CANCEL:
@@ -12960,6 +13222,7 @@ resolve_fl_var_and_proc (gfc_symbol *sym, int mp_flag)
 	  && sym->ts.u.derived
 	  && !sym->attr.select_type_temporary
 	  && !UNLIMITED_POLY (sym)
+	  && CLASS_DATA (sym)->ts.u.derived
 	  && !gfc_type_is_extensible (CLASS_DATA (sym)->ts.u.derived))
 	{
 	  gfc_error ("Type %qs of CLASS variable %qs at %L is not extensible",
@@ -13633,6 +13896,16 @@ check_formal:
 	    }
 	}
     }
+
+  /* F2018:15.4.2.2 requires an explicit interface for procedures with the
+     BIND(C) attribute.  */
+  if (sym->attr.is_bind_c && sym->attr.if_source == IFSRC_UNKNOWN)
+    {
+      gfc_error ("Interface of %qs at %L must be explicit",
+		 sym->name, &sym->declared_at);
+      return false;
+    }
+
   return true;
 }
 
@@ -13712,6 +13985,22 @@ gfc_resolve_finalizers (gfc_symbol* derived, bool *finalizable)
 	  goto error;
 	}
       arg = dummy_args->sym;
+
+      if (!arg)
+	{
+	  gfc_error ("Argument of FINAL procedure at %L must be of type %qs",
+		     &list->proc_sym->declared_at, derived->name);
+	  goto error;
+	}
+
+      if (arg->as && arg->as->type == AS_ASSUMED_RANK
+	  && ((list != derived->f2k_derived->finalizers) || list->next))
+	{
+	  gfc_error ("FINAL procedure at %L with assumed rank argument must "
+		     "be the only finalizer with the same kind/type "
+		     "(F2018: C790)", &list->where);
+	  goto error;
+	}
 
       /* This argument must be of our type.  */
       if (arg->ts.type != BT_DERIVED || arg->ts.u.derived != derived)
@@ -13813,7 +14102,8 @@ error:
   if (warn_surprising && derived->f2k_derived->finalizers && !seen_scalar)
     gfc_warning (OPT_Wsurprising,
 		 "Only array FINAL procedures declared for derived type %qs"
-		 " defined at %L, suggest also scalar one",
+		 " defined at %L, suggest also scalar one unless an assumed"
+		 " rank finalizer has been declared",
 		 derived->name, &derived->declared_at);
 
   vtab = gfc_find_derived_vtab (derived);
@@ -14545,7 +14835,6 @@ check_defined_assignments (gfc_symbol *derived)
     {
       if (!gfc_bt_struct (c->ts.type)
 	  || c->attr.pointer
-	  || c->attr.allocatable
 	  || c->attr.proc_pointer_comp
 	  || c->attr.class_pointer
 	  || c->attr.proc_pointer)
@@ -14558,6 +14847,9 @@ check_defined_assignments (gfc_symbol *derived)
 	  derived->attr.defined_assign_comp = 1;
 	  return;
 	}
+
+      if (c->attr.allocatable)
+	continue;
 
       check_defined_assignments (c->ts.u.derived);
       if (c->ts.u.derived->attr.defined_assign_comp)
@@ -14863,6 +15155,19 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
                     c->name,
                     c->ts.u.cl->length ? &c->ts.u.cl->length->where : &c->loc);
          return false;
+       }
+
+     if (c->ts.u.cl->length && c->ts.u.cl->length->ts.type != BT_INTEGER)
+       {
+	 if (!c->ts.u.cl->length->error)
+	   {
+	     gfc_error ("Character length expression of component %qs at %L "
+			"must be of INTEGER type, found %s",
+			c->name, &c->ts.u.cl->length->where,
+			gfc_basic_typename (c->ts.u.cl->length->ts.type));
+	     c->ts.u.cl->length->error = 1;
+	   }
+	 return false;
        }
     }
 
@@ -15220,7 +15525,7 @@ resolve_fl_derived (gfc_symbol *sym)
       && sym->ns->proc_name
       && sym->ns->proc_name->attr.flavor == FL_MODULE
       && sym->attr.access != ACCESS_PRIVATE
-      && !(sym->attr.use_assoc || sym->attr.vtype || sym->attr.pdt_template))
+      && !(sym->attr.vtype || sym->attr.pdt_template))
     {
       gfc_symbol *vtab = gfc_find_derived_vtab (sym);
       gfc_set_sym_referenced (vtab);
@@ -15892,8 +16197,8 @@ resolve_symbol (gfc_symbol *sym)
 
       /* First, make sure the variable is declared at the
 	 module-level scope (J3/04-007, Section 15.3).	*/
-      if (sym->ns->proc_name->attr.flavor != FL_MODULE &&
-          sym->attr.in_common == 0)
+      if (!(sym->ns->proc_name && sym->ns->proc_name->attr.flavor == FL_MODULE)
+	  && !sym->attr.in_common)
 	{
 	  gfc_error ("Variable %qs at %L cannot be BIND(C) because it "
 		     "is neither a COMMON block nor declared at the "
@@ -16316,6 +16621,15 @@ resolve_symbol (gfc_symbol *sym)
 
   if (sym->param_list)
     resolve_pdt (sym);
+
+  if (!sym->attr.referenced
+      && (sym->ts.type == BT_CLASS || sym->ts.type == BT_DERIVED))
+    {
+      gfc_expr *final_expr = gfc_lval_expr_from_sym (sym);
+      if (gfc_is_finalizable (final_expr->ts.u.derived, NULL))
+	gfc_set_sym_referenced (sym);
+      gfc_free_expr (final_expr);
+    }
 }
 
 
@@ -17211,6 +17525,7 @@ resolve_equivalence (gfc_equiv *eq)
 	    "statement at %L with different type objects";
       if ((object ==2
 	   && last_eq_type == SEQ_MIXED
+	   && last_where
 	   && !gfc_notify_std (GFC_STD_GNU, msg, first_sym->name, last_where))
 	  || (eq_type == SEQ_MIXED
 	      && !gfc_notify_std (GFC_STD_GNU, msg, sym->name, &e->where)))
@@ -17220,6 +17535,7 @@ resolve_equivalence (gfc_equiv *eq)
 	    "statement at %L with objects of different type";
       if ((object ==2
 	   && last_eq_type == SEQ_NONDEFAULT
+	   && last_where
 	   && !gfc_notify_std (GFC_STD_GNU, msg, first_sym->name, last_where))
 	  || (eq_type == SEQ_NONDEFAULT
 	      && !gfc_notify_std (GFC_STD_GNU, msg, sym->name, &e->where)))
@@ -17389,7 +17705,9 @@ resolve_fntype (gfc_namespace *ns)
 	  }
       }
 
-  if (sym->ts.type == BT_CHARACTER)
+  if (sym->ts.type == BT_CHARACTER
+      && sym->ts.u.cl->length
+      && sym->ts.u.cl->length->ts.type == BT_INTEGER)
     gfc_traverse_expr (sym->ts.u.cl->length, sym, flag_fn_result_spec, 0);
 }
 
@@ -17650,6 +17968,9 @@ gfc_resolve (gfc_namespace *ns)
   resolve_types (ns);
   component_assignment_level = 0;
   resolve_codes (ns);
+
+  if (ns->omp_assumes)
+    gfc_resolve_omp_assumptions (ns->omp_assumes);
 
   gfc_current_ns = old_ns;
   cs_base = old_cs_base;

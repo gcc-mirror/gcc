@@ -1,5 +1,5 @@
 /* Target-specific code for C family languages.
-   Copyright (C) 2015-2022 Free Software Foundation, Inc.
+   Copyright (C) 2015-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -64,7 +64,7 @@ aarch64_define_unconditional_macros (cpp_reader *pfile)
   builtin_define ("__ARM_ARCH_8A");
 
   builtin_define_with_int_value ("__ARM_ARCH_PROFILE",
-      AARCH64_ISA_V8_R ? 'R' : 'A');
+      AARCH64_ISA_V8R ? 'R' : 'A');
   builtin_define ("__ARM_FEATURE_CLZ");
   builtin_define ("__ARM_FEATURE_IDIV");
   builtin_define ("__ARM_FEATURE_UNALIGNED");
@@ -82,7 +82,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 {
   aarch64_def_or_undef (flag_unsafe_math_optimizations, "__ARM_FP_FAST", pfile);
 
-  builtin_define_with_int_value ("__ARM_ARCH", AARCH64_ISA_V9 ? 9 : 8);
+  builtin_define_with_int_value ("__ARM_ARCH", AARCH64_ISA_V9A ? 9 : 8);
 
   builtin_define_with_int_value ("__ARM_SIZEOF_MINIMAL_ENUM",
 				 flag_short_enums ? 1 : 4);
@@ -92,7 +92,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 
   aarch64_def_or_undef (TARGET_FLOAT, "__ARM_FEATURE_FMA", pfile);
 
-  if (TARGET_FLOAT || TARGET_SIMD)
+  if (TARGET_FLOAT)
     {
       builtin_define_with_int_value ("__ARM_FP", 0x0E);
       builtin_define ("__ARM_FP16_FORMAT_IEEE");
@@ -179,22 +179,24 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
   aarch64_def_or_undef (TARGET_RNG, "__ARM_FEATURE_RNG", pfile);
   aarch64_def_or_undef (TARGET_MEMTAG, "__ARM_FEATURE_MEMORY_TAGGING", pfile);
 
-  aarch64_def_or_undef (aarch64_bti_enabled (),
+  aarch64_def_or_undef (aarch_bti_enabled (),
 			"__ARM_FEATURE_BTI_DEFAULT", pfile);
 
   cpp_undef (pfile, "__ARM_FEATURE_PAC_DEFAULT");
-  if (aarch64_ra_sign_scope != AARCH64_FUNCTION_NONE)
+  if (aarch_ra_sign_scope != AARCH_FUNCTION_NONE)
     {
       int v = 0;
-      if (aarch64_ra_sign_key == AARCH64_KEY_A)
+      if (aarch_ra_sign_key == AARCH_KEY_A)
 	v |= 1;
-      if (aarch64_ra_sign_key == AARCH64_KEY_B)
+      if (aarch_ra_sign_key == AARCH_KEY_B)
 	v |= 2;
-      if (aarch64_ra_sign_scope == AARCH64_FUNCTION_ALL)
+      if (aarch_ra_sign_scope == AARCH_FUNCTION_ALL)
 	v |= 4;
       builtin_define_with_int_value ("__ARM_FEATURE_PAC_DEFAULT", v);
     }
 
+  aarch64_def_or_undef (TARGET_PAUTH, "__ARM_FEATURE_PAUTH", pfile);
+  aarch64_def_or_undef (TARGET_BTI, "__ARM_FEATURE_BTI", pfile);
   aarch64_def_or_undef (TARGET_I8MM, "__ARM_FEATURE_MATMUL_INT8", pfile);
   aarch64_def_or_undef (TARGET_BF16_SIMD,
 			"__ARM_FEATURE_BF16_VECTOR_ARITHMETIC", pfile);
@@ -202,6 +204,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 			"__ARM_FEATURE_BF16_SCALAR_ARITHMETIC", pfile);
   aarch64_def_or_undef (TARGET_LS64,
 			"__ARM_FEATURE_LS64", pfile);
+  aarch64_def_or_undef (AARCH64_ISA_RCPC, "__ARM_FEATURE_RCPC", pfile);
 
   /* Not for ACLE, but required to keep "float.h" correct if we switch
      target between implementations that do or do not support ARMv8.2-A

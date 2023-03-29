@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2020-2022, Free Software Foundation, Inc.        --
+--           Copyright (C) 2020-2023, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -441,6 +441,9 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Has_Wide_Character, Flag),
         Sm (Has_Wide_Wide_Character, Flag)));
 
+   Cc (N_Interpolated_String_Literal, N_Numeric_Or_String_Literal,
+       (Sy (Expressions, List_Id, Default_No_List)));
+
    Cc (N_Explicit_Dereference, N_Subexpr,
        (Sy (Prefix, Node_Id),
         Sm (Actual_Designated_Subtype, Node_Id),
@@ -494,7 +497,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Expression, Node_Id, Default_Empty),
         Sy (Subpool_Handle_Name, Node_Id, Default_Empty),
         Sy (Null_Exclusion_Present, Flag, Default_False),
-        Sm (Alloc_For_BIP_Return, Flag),
+        Sm (For_Special_Return_Object, Flag),
         Sm (Do_Storage_Check, Flag),
         Sm (Is_Dynamic_Coextension, Flag),
         Sm (Is_Static_Coextension, Flag),
@@ -906,6 +909,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Subtype_Mark, Node_Id, Default_Empty),
         Sy (Access_Definition, Node_Id, Default_Empty),
         Sy (Name, Node_Id, Default_Empty),
+        Sm (Comes_From_Iterator, Flag),
         Sm (Corresponding_Generic_Association, Node_Id)));
 
    Cc (N_Package_Renaming_Declaration, N_Renaming_Declaration,

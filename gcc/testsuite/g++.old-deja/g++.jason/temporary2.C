@@ -8,7 +8,7 @@ public:
   int i;
 };
 
-X foo() { X x; return x; }
+X foo() { X x; return x; } // { dg-error "cannot bind non-const lvalue reference" "" { target c++23 } }
 
 int main() 
 {

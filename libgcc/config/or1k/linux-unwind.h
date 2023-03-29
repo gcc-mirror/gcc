@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for OpenRISC Linux.
-   Copyright (C) 2018-2022 Free Software Foundation, Inc.
+   Copyright (C) 2018-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -59,10 +59,10 @@ or1k_fallback_frame_state (struct _Unwind_Context *context,
   fs->regs.cfa_offset = new_cfa - (long) context->cfa;
   for (i = 2; i < 32; ++i)
     {
-      fs->regs.reg[i].how = REG_SAVED_OFFSET;
+      fs->regs.how[i] = REG_SAVED_OFFSET;
       fs->regs.reg[i].loc.offset = (long) &sc->regs.gpr[i] - new_cfa;
     }
-  fs->regs.reg[32].how = REG_SAVED_OFFSET;
+  fs->regs.how[32] = REG_SAVED_OFFSET;
   fs->regs.reg[32].loc.offset = (long)&sc->regs.pc - new_cfa;
   fs->retaddr_column = 32;
   fs->signal_frame = 1;

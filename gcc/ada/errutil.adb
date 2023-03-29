@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1991-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1991-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -208,7 +208,7 @@ package body Errutil is
             Prev                => No_Error_Msg,
             Sfile               => Get_Source_File_Index (Sptr),
             Sptr                => To_Span (Sptr),
-            Optr                => Optr,
+            Optr                => To_Span (Optr),
             Insertion_Sloc      => No_Location,
             Line                => Get_Physical_Line_Number (Sptr),
             Col                 => Get_Column_Number (Sptr),

@@ -1,6 +1,6 @@
 // Utilities used throughout the library -*- C++ -*-
 
-// Copyright (C) 2004-2022 Free Software Foundation, Inc.
+// Copyright (C) 2004-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -261,6 +261,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp0, typename _Tp1, typename _Tp2, typename... _Rest>
     struct _Nth_type<1, _Tp0, _Tp1, _Tp2, _Rest...>
     { using type = _Tp1; };
+#endif
+
+#if __cplusplus > 202002L
+#define __cpp_lib_ranges_zip 202110L // for <tuple> and <utility>
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION

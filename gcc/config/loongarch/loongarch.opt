@@ -5,7 +5,7 @@
 ; It will be automatically updated during a gcc build
 ; if you change "loongarch.opt.in" or "loongarch-strings".
 ;
-; Copyright (C) 2021-2022 Free Software Foundation, Inc.
+; Copyright (C) 2021-2023 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;

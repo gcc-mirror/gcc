@@ -1,6 +1,6 @@
 /* The libgomp plugin API.
 
-   Copyright (C) 2014-2022 Free Software Foundation, Inc.
+   Copyright (C) 2014-2023 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -49,7 +49,6 @@ enum offload_target_type
   OFFLOAD_TARGET_TYPE_HOST = 2,
   /* OFFLOAD_TARGET_TYPE_HOST_NONSHM = 3 removed.  */
   OFFLOAD_TARGET_TYPE_NVIDIA_PTX = 5,
-  OFFLOAD_TARGET_TYPE_INTEL_MIC = 6,
   OFFLOAD_TARGET_TYPE_HSA = 7,
   OFFLOAD_TARGET_TYPE_GCN = 8
 };
@@ -120,6 +119,13 @@ extern void GOMP_PLUGIN_error (const char *, ...)
 	__attribute__ ((format (printf, 1, 2)));
 extern void GOMP_PLUGIN_fatal (const char *, ...)
 	__attribute__ ((noreturn, format (printf, 1, 2)));
+
+extern void GOMP_PLUGIN_target_rev (uint64_t, uint64_t, uint64_t, uint64_t,
+				    uint64_t, int,
+				    void (*) (void *, const void *, size_t,
+					      void *),
+				    void (*) (void *, const void *, size_t,
+					      void *), void *);
 
 /* Prototypes for functions implemented by libgomp plugins.  */
 extern const char *GOMP_OFFLOAD_get_name (void);

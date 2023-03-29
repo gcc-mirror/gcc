@@ -1,0 +1,1136 @@
+--
+-- mc-2.bnf grammar and associated actions for mcp2.
+--
+-- Copyright (C) 2015-2023 Free Software Foundation, Inc.
+-- Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+--
+-- This file is part of GNU Modula-2.
+--
+-- GNU Modula-2 is free software; you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation; either version 3, or (at your option)
+-- any later version.
+--
+-- GNU Modula-2 is distributed in the hope that it will be useful, but
+-- WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-- General Public License for more details.
+--
+-- You should have received a copy of the GNU General Public License
+-- along with GNU Modula-2; see the file COPYING3.  If not see
+-- <http://www.gnu.org/licenses/>.
+% module mcp2 begin
+(* output from mc-2.bnf, automatically generated do not edit.
+
+Copyright (C) 2015-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING.  If not,
+see <https://www.gnu.org/licenses/>.  *)
+
+IMPLEMENTATION MODULE mcp2 ;
+
+FROM DynamicStrings IMPORT String, InitString, KillString, Mark,
+                           ConCat, ConCatChar ;
+
+FROM mcError IMPORT errorStringAt ;
+FROM nameKey IMPORT NulName, Name, makekey ;
+FROM mcPrintf IMPORT printf0, printf1 ;
+FROM mcDebug IMPORT assert ;
+FROM mcReserved IMPORT toktype ;
+
+FROM mcLexBuf IMPORT currentstring, currenttoken, getToken, insertToken,
+                     insertTokenAndRewind, getTokenNo ;
+
+FROM decl IMPORT node, lookupDef, lookupImp, lookupModule, getSymName,
+                 makeType, makeVar, makeConst,
+		 enterScope, leaveScope,
+		 addImportedModule, getCurrentModule,
+		 makeEnum, makeEnumField, putType, lookupSym, isDef,
+		 lookupInScope, setEnumsComplete ;
+
+
+CONST
+   Pass1     = FALSE ;
+   Debugging = FALSE ;
+
+VAR
+   WasNoError: BOOLEAN ;
+   curident  : Name ;
+   typeDes,
+   typeExp,
+   curproc,
+   curmodule : node ;
+
+
+PROCEDURE ErrorString (s: String) ;
+BEGIN
+   errorStringAt (s, getTokenNo ()) ;
+   WasNoError := FALSE
+END ErrorString ;
+
+
+PROCEDURE ErrorArray (a: ARRAY OF CHAR) ;
+BEGIN
+   ErrorString (InitString (a))
+END ErrorArray ;
+
+
+(*
+   checkEndName - if module does not have, name, then issue an error containing, desc.
+*)
+
+PROCEDURE checkEndName (module: node; name: Name; desc: ARRAY OF CHAR) ;
+VAR
+   s: String ;
+BEGIN
+   IF getSymName (module)#name
+   THEN
+      s := InitString ('inconsistent module name found with this ') ;
+      s := ConCat (s, Mark (InitString (desc))) ;
+      ErrorString (s)
+   END
+END checkEndName ;
+
+% declaration mcp2 begin
+
+
+(*
+   SyntaxError - after a syntax error we skip all tokens up until we reach
+                 a stop symbol.
+*)
+
+PROCEDURE SyntaxError (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   DescribeError ;
+   IF Debugging
+   THEN
+      printf0('\nskipping token *** ')
+   END ;
+   (*
+      yes the ORD(currenttoken) looks ugly, but it is *much* safer than
+      using currenttoken<sometok as a change to the ordering of the
+      token declarations below would cause this to break. Using ORD() we are
+      immune from such changes
+   *)
+   WHILE NOT (((ORD(currenttoken)<32)  AND (currenttoken IN stopset0)) OR
+              ((ORD(currenttoken)>=32) AND (ORD(currenttoken)<64) AND (currenttoken IN stopset1)) OR
+              ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)))
+   DO
+      getToken
+   END ;
+   IF Debugging
+   THEN
+      printf0(' ***\n')
+   END
+END SyntaxError ;
+
+
+(*
+   SyntaxCheck -
+*)
+
+PROCEDURE SyntaxCheck (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   (* and again (see above re: ORD)
+    *)
+   IF NOT (((ORD(currenttoken)<32)  AND (currenttoken IN stopset0)) OR
+     	   ((ORD(currenttoken)>=32) AND (ORD(currenttoken)<64) AND (currenttoken IN stopset1)) OR
+           ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)))
+   THEN
+      SyntaxError (stopset0, stopset1, stopset2)
+   END
+END SyntaxCheck ;
+
+
+(*
+   WarnMissingToken - generates a warning message about a missing token, t.
+*)
+
+PROCEDURE WarnMissingToken (t: toktype) ;
+VAR
+   s0 : SetOfStop0 ;
+   s1 : SetOfStop1 ;
+   s2 : SetOfStop2 ;
+   str: String ;
+BEGIN
+   s0 := SetOfStop0{} ;
+   s1 := SetOfStop1{} ;
+   s2 := SetOfStop2{} ;
+   IF ORD(t)<32
+   THEN
+      s0 := SetOfStop0{t}
+   ELSIF ORD(t)<64
+   THEN
+      s1 := SetOfStop1{t}
+   ELSE
+      s2 := SetOfStop2{t}
+   END ;
+   str := DescribeStop (s0, s1, s2) ;
+
+   str := ConCat (InitString ('syntax error,'), Mark (str)) ;
+   errorStringAt (str, getTokenNo ())
+END WarnMissingToken ;
+
+
+(*
+   MissingToken - generates a warning message about a missing token, t.
+*)
+
+PROCEDURE MissingToken (t: toktype) ;
+BEGIN
+   WarnMissingToken (t) ;
+   IF (t#identtok) AND (t#integertok) AND (t#realtok) AND (t#stringtok)
+   THEN
+      IF Debugging
+      THEN
+         printf0 ('inserting token\n')
+      END ;
+      insertToken (t)
+   END
+END MissingToken ;
+
+
+(*
+   CheckAndInsert -
+*)
+
+PROCEDURE CheckAndInsert (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) : BOOLEAN ;
+BEGIN
+   IF ((ORD(t)<32) AND (t IN stopset0)) OR
+      ((ORD(t)>=32) AND (ORD(t)<64) AND (t IN stopset1)) OR
+      ((ORD(t)>=64) AND (t IN stopset2))
+   THEN
+      WarnMissingToken (t) ;
+      insertTokenAndRewind (t) ;
+      RETURN( TRUE )
+   ELSE
+      RETURN( FALSE )
+   END
+END CheckAndInsert ;
+
+
+(*
+   InStopSet
+*)
+
+PROCEDURE InStopSet (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) : BOOLEAN ;
+BEGIN
+   IF ((ORD(t)<32) AND (t IN stopset0)) OR
+      ((ORD(t)>=32) AND (ORD(t)<64) AND (t IN stopset1)) OR
+      ((ORD(t)>=64) AND (t IN stopset2))
+   THEN
+      RETURN( TRUE )
+   ELSE
+      RETURN( FALSE )
+   END
+END InStopSet ;
+
+
+(*
+   PeepToken - peep token checks to see whether the stopset is satisfied by currenttoken
+               If it is not then it will insert a token providing the token
+               is one of ; ] ) } . OF END ,
+
+               if the stopset contains <identtok> then we do not insert a token
+*)
+
+PROCEDURE PeepToken (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   (* and again (see above re: ORD)
+    *)
+   IF (NOT (((ORD(currenttoken)<32)  AND (currenttoken IN stopset0)) OR
+     	    ((ORD(currenttoken)>=32) AND (ORD(currenttoken)<64) AND (currenttoken IN stopset1)) OR
+            ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)))) AND
+      (NOT InStopSet(identtok, stopset0, stopset1, stopset2))
+   THEN
+      (* SyntaxCheck would fail since currentoken is not part of the stopset
+         we check to see whether any of currenttoken might be a commonly omitted token *)
+      IF CheckAndInsert(semicolontok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(rsbratok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(rparatok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(rcbratok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(periodtok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(oftok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(endtok, stopset0, stopset1, stopset2) OR
+         CheckAndInsert(commatok, stopset0, stopset1, stopset2)
+      THEN
+      END
+   END
+END PeepToken ;
+
+
+(*
+   Expect -
+*)
+
+PROCEDURE Expect (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   IF currenttoken=t
+   THEN
+      getToken ;
+      IF Pass1
+      THEN
+         PeepToken(stopset0, stopset1, stopset2)
+      END
+   ELSE
+      MissingToken(t)
+   END ;
+   SyntaxCheck(stopset0, stopset1, stopset2)
+END Expect ;
+
+
+(*
+   CompilationUnit - returns TRUE if the input was correct enough to parse
+                     in future passes.
+*)
+
+PROCEDURE CompilationUnit () : BOOLEAN ;
+BEGIN
+   WasNoError := TRUE ;
+   FileUnit(SetOfStop0{eoftok}, SetOfStop1{}, SetOfStop2{}) ;
+   RETURN( WasNoError )
+END CompilationUnit ;
+
+
+(*
+   Ident - error checking varient of Ident
+*)
+
+PROCEDURE Ident (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+   curident := makekey (currentstring) ;
+   Expect(identtok, stopset0, stopset1, stopset2)
+END Ident ;
+
+
+(*
+   string -
+*)
+
+PROCEDURE string (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+(*
+   PushTF(makekey(currentstring), stringtok) ;
+   BuildString
+*)
+   Expect(stringtok, stopset0, stopset1, stopset2)
+END string ;
+
+
+(*
+   Integer -
+*)
+
+PROCEDURE Integer (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+(*
+   PushTF(makekey(currentstring), integertok) ;
+   BuildNumber
+*)
+   Expect(integertok, stopset0, stopset1, stopset2)
+END Integer ;
+
+
+(*
+   Real -
+*)
+
+PROCEDURE Real (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+BEGIN
+(*
+   PushTF(makekey(currentstring), realtok) ;
+   BuildNumber
+*)
+   Expect(realtok, stopset0, stopset1, stopset2)
+END Real ;
+
+
+(*
+   registerImport - looks up module, ident, and adds it to the
+                    current module import list.
+*)
+
+PROCEDURE registerImport (ident: Name; scoped: BOOLEAN) ;
+VAR
+   n: node ;
+BEGIN
+   n := lookupDef (ident) ;
+   addImportedModule (getCurrentModule (), n, scoped)
+END registerImport ;
+
+
+% module mcp2 end
+END mcp2.
+% rules
+error       'ErrorArray' 'ErrorString'
+tokenfunc   'currenttoken'
+
+token   ''                eoftok      -- internal token
+token   '+'               plustok
+token   '-'               minustok
+token   '*'               timestok
+token   '/'               dividetok
+token   ':='              becomestok
+token   '&'               ambersandtok
+token   "."               periodtok
+token   ","               commatok
+token   ";"               semicolontok
+token   '('               lparatok
+token   ')'               rparatok
+token   '['               lsbratok   -- left  square brackets
+token   ']'               rsbratok   -- right square brackets
+token   '{'               lcbratok   -- left  curly brackets
+token   '}'               rcbratok   -- right curly brackets
+token   '^'               uparrowtok
+token   "'"               singlequotetok
+token   '='               equaltok
+token   '#'               hashtok
+token   '<'               lesstok
+token   '>'               greatertok
+token   '<>'              lessgreatertok
+token   '<='              lessequaltok
+token   '>='              greaterequaltok
+token   '<*'              ldirectivetok
+token   '*>'              rdirectivetok
+token   '..'              periodperiodtok
+token   ':'               colontok
+token   '"'               doublequotestok
+token   '|'               bartok
+token   'AND'             andtok
+token   'ARRAY'           arraytok
+token   'BEGIN'           begintok
+token   'BY'              bytok
+token   'CASE'            casetok
+token   'CONST'           consttok
+token   'DEFINITION'      definitiontok
+token   'DIV'             divtok
+token   'DO'              dotok
+token   'ELSE'            elsetok
+token   'ELSIF'           elsiftok
+token   'END'             endtok
+token   'EXCEPT'          excepttok
+token   'EXIT'            exittok
+token   'EXPORT'          exporttok
+token   'FINALLY'         finallytok
+token   'FOR'             fortok
+token   'FROM'            fromtok
+token   'IF'              iftok
+token   'IMPLEMENTATION'  implementationtok
+token   'IMPORT'          importtok
+token   'IN'              intok
+token   'LOOP'            looptok
+token   'MOD'             modtok
+token   'MODULE'          moduletok
+token   'NOT'             nottok
+token   'OF'              oftok
+token   'OR'              ortok
+token   'PACKEDSET'       packedsettok
+token   'POINTER'         pointertok
+token   'PROCEDURE'       proceduretok
+token   'QUALIFIED'       qualifiedtok
+token   'UNQUALIFIED'     unqualifiedtok
+token   'RECORD'          recordtok
+token   'REM'             remtok
+token   'REPEAT'          repeattok
+token   'RETRY'           retrytok
+token   'RETURN'          returntok
+token   'SET'             settok
+token   'THEN'            thentok
+token   'TO'              totok
+token   'TYPE'            typetok
+token   'UNTIL'           untiltok
+token   'VAR'             vartok
+token   'WHILE'           whiletok
+token   'WITH'            withtok
+token   'ASM'             asmtok
+token   'VOLATILE'        volatiletok
+token   '...'             periodperiodperiodtok
+token   '__DATE__'        datetok
+token   '__LINE__'        linetok
+token   '__FILE__'        filetok
+token   '__ATTRIBUTE__'   attributetok
+token   '__BUILTIN__'     builtintok
+token   '__INLINE__'      inlinetok
+token   'integer number'  integertok
+token   'identifier'      identtok
+token   'real number'     realtok
+token   'string'          stringtok
+
+special Ident             first { < identtok > } follow { }
+special Integer           first { < integertok > } follow { }
+special Real              first { < realtok > } follow { }
+special string            first { < stringtok > } follow { }
+
+BNF
+
+-- the following are provided by the module m2flex and also handbuild procedures below
+-- Ident := Letter { ( Letter | Digit ) } =:
+-- Integer := Digit { Digit } | OctalDigit { OctalDigit } ( " B " | " C " ) |
+--           Digit { HexDigit } " H " =:
+-- Real := Digit { Digit } " . " { Digit } [ ScaleFactor ] =:
+-- ScaleFactor := " E " [ ( " + " | " - " ) ] Digit { Digit } =:
+-- HexDigit := Digit | " A " | " B " | " C " | " D " | " E " | " F " =:
+-- Digit := OctalDigit | " 8 " | " 9 " =:
+-- OctalDigit := "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" =:
+-- String
+
+FileUnit := DefinitionModule | ImplementationOrProgramModule
+          =:
+
+ProgramModule := "MODULE"
+                  Ident                                                % curmodule := lookupModule (curident) %
+		                                                       % enterScope (curmodule) %
+                  [ Priority
+                  ]
+                  ";"
+                  { Import }
+                  Block
+                  Ident                                                % checkEndName (curmodule, curident, 'program module') %
+		                                                       % leaveScope %
+		                                                       % setEnumsComplete (curmodule) %
+                  "."
+                  =:
+
+ImplementationModule := "IMPLEMENTATION" "MODULE"
+                         Ident                                         % curmodule := lookupImp (curident) %
+			                                               % enterScope (lookupDef (curident)) %
+                                                                       % enterScope (curmodule) %
+                         [ Priority
+                         ] ";"
+                         { Import }
+                         Block
+                         Ident                                         % checkEndName (curmodule, curident, 'implementation module') %
+                                                                       % leaveScope ; leaveScope %
+		                                                       % setEnumsComplete (curmodule) %
+                         "."
+                      =:
+
+ImplementationOrProgramModule := ImplementationModule | ProgramModule
+                               =:
+
+Number := Integer | Real =:
+
+--
+--  Qualident needs some care as we must only parse module.module.ident
+--  and not ident.recordfield.  We leave the ident.recordfield to be parsed by
+--  SubDesignator.  Note that Qualident is called by SubDesignator so if
+--  IsAutoPushOff then we just consume tokens.
+--
+
+Qualident :=
+             Ident { "." Ident }
+           =:
+
+ConstantDeclaration := Ident "=" ConstExpression
+                     =:
+
+ConstExpression := SimpleConstExpr [ Relation SimpleConstExpr ] =:
+
+Relation := "="
+            | "#"
+            | "<>"
+            | "<"
+            | "<="
+            | ">"
+            | ">="
+            | "IN"
+         =:
+
+SimpleConstExpr := UnaryOrConstTerm { AddOperator ConstTerm } =:
+
+UnaryOrConstTerm := "+"
+                    ConstTerm
+                    |
+                    "-"
+                    ConstTerm
+                    |
+                    ConstTerm =:
+
+AddOperator :=   "+"
+               | "-"
+               | "OR"
+            =:
+
+ConstTerm := ConstFactor { MulOperator ConstFactor
+                         } =:
+
+MulOperator := "*"
+               | "/"
+               | "DIV"
+               | "MOD"
+               | "REM"
+               | "AND"
+               | "&"
+            =:
+
+ConstFactor := Number | ConstString | ConstSetOrQualidentOrFunction |
+               "(" ConstExpression ")" | "NOT" ConstFactor
+               | ConstAttribute =:
+
+-- to help satisfy LL1
+
+ConstString := string =:
+
+ComponentElement := ConstExpression [ ".." ConstExpression ]
+                  =:
+
+ComponentValue := ComponentElement [ 'BY' ConstExpression ]
+                =:
+
+ArraySetRecordValue := ComponentValue { ',' ComponentValue }
+                     =:
+
+Constructor := '{'
+                  [ ArraySetRecordValue ]
+               '}' =:
+
+ConstSetOrQualidentOrFunction := Qualident
+                                 [ Constructor | ConstActualParameters
+                                                                       ]
+                                   |
+                                     Constructor =:
+
+ConstActualParameters :=
+                         ActualParameters
+                       =:
+
+ConstAttribute := "__ATTRIBUTE__" "__BUILTIN__" "(" "("
+                  ConstAttributeExpression
+                  ")" ")" =:
+
+ConstAttributeExpression :=
+                            Ident
+                                  | "<" Qualident ',' Ident
+                                                              ">"
+                          =:
+
+ByteAlignment := '<*' AttributeExpression '*>'
+               =:
+
+OptAlignmentExpression := [ AlignmentExpression ] =:
+
+AlignmentExpression := "(" ConstExpression ")" =:
+
+Alignment := [ ByteAlignment ] =:
+
+TypeDeclaration := Ident                                                % typeDes := lookupSym (curident) %
+                         "=" Type Alignment
+                 =:
+
+Type := ( DefSimpleType | ArrayType
+          | RecordType
+          | SetType
+          | PointerType
+          | ProcedureType )
+      =:
+
+SimpleType := Qualident [ SubrangeType ] | Enumeration | SubrangeType =:
+
+EnumIdentList :=                                                        % VAR n, f: node ; %
+                                                                        % n := makeEnum () %
+                    Ident                                               % f := makeEnumField (n, curident) %
+		          { "," Ident                                   % f := makeEnumField (n, curident) %
+			              }
+                  =:
+
+Enumeration := "(" ( EnumIdentList )
+               ")"
+             =:
+
+IdentList := Ident { "," Ident }
+           =:
+
+SubrangeType := "[" ConstExpression  ".." ConstExpression "]"
+              =:
+
+ArrayType := "ARRAY"
+              SimpleType
+              { ","
+                SimpleType
+              } "OF"
+             Type
+           =:
+
+RecordType := "RECORD" [ DefaultRecordAttributes ] FieldListSequence "END" =:
+
+DefaultRecordAttributes := '<*'
+                                AttributeExpression
+
+                                                    '*>' =:
+
+RecordFieldPragma := [ '<*' FieldPragmaExpression
+                            { ',' FieldPragmaExpression } '*>' ] =:
+
+FieldPragmaExpression := Ident PragmaConstExpression =:
+
+PragmaConstExpression := [ '(' ConstExpression ')' ] =:
+
+AttributeExpression := Ident '(' ConstExpression ')' =:
+
+FieldListSequence := FieldListStatement { ";" FieldListStatement } =:
+
+-- at present FieldListStatement is as follows:
+FieldListStatement := [ FieldList ] =:
+-- later replace it with FieldList to comply with PIM2
+
+-- sadly the PIM rules are not LL1 as Ident and Qualident have the same first
+-- symbols. We rewrite FieldList to inline qualident
+-- was
+-- FieldList := IdentList ":"
+--                           Type |
+--             "CASE" [ Ident ":" ] Qualident "OF" Varient { "|" Varient }
+--                    [ "ELSE" FieldListSequence ] "END" =:
+
+FieldList := IdentList ":"
+                           Type RecordFieldPragma
+             |
+             "CASE"
+                    CaseTag "OF"
+                                 Varient { "|" Varient }
+              [ "ELSE"
+                FieldListSequence
+              ] "END"
+           =:
+
+TagIdent := [ Ident ] =:
+
+CaseTag :=  TagIdent [":" Qualident ] =:
+
+Varient := [
+             VarientCaseLabelList ":" FieldListSequence
+                                                        ] =:
+
+VarientCaseLabelList := VarientCaseLabels { "," VarientCaseLabels } =:
+
+VarientCaseLabels := ConstExpression [ ".." ConstExpression ]
+                   =:
+
+--
+--  the following rules are a copy of the ConstExpression ebnf rules but without
+--  any actions all prefixed with Silent.
+--  At present they are only used by CaseLabels, if this continues to be true we
+--  might consider restricting the SilentConstExpression.  Eg it makes no sence to allow
+--  String in these circumstances!
+--
+
+SilentConstExpression :=
+                         SilentSimpleConstExpr
+                         [ SilentRelation SilentSimpleConstExpr ]
+                      =:
+
+SilentRelation := "=" | "#" | "<>" | "<" | "<=" | ">" | ">=" | "IN" =:
+
+SilentSimpleConstExpr := SilentUnaryOrConstTerm { SilentAddOperator SilentConstTerm } =:
+
+SilentUnaryOrConstTerm := "+" SilentConstTerm | "-" SilentConstTerm | SilentConstTerm =:
+
+SilentAddOperator := "+" | "-" | "OR" =:
+
+SilentConstTerm := SilentConstFactor { SilentMulOperator SilentConstFactor } =:
+
+SilentMulOperator := "*" | "/" | "DIV" | "MOD" | "REM" | "AND" | "&" =:
+
+SilentConstFactor := Number | SilentConstString | SilentConstSetOrQualidentOrFunction |
+                     "(" SilentConstExpression ")" | "NOT" SilentConstFactor
+                     | SilentConstAttribute =:
+
+SilentConstString := string =:
+
+SilentConstAttribute := "__ATTRIBUTE__" "__BUILTIN__" "(" "(" SilentConstAttributeExpression ")" ")" =:
+
+SilentConstAttributeExpression := Ident | "<" Ident ',' SilentConstString ">" =:
+
+SilentComponentElement := SilentConstExpression [ ".." SilentConstExpression ] =:
+
+SilentComponentValue := SilentComponentElement [ 'BY' SilentConstExpression ] =:
+
+SilentArraySetRecordValue := SilentComponentValue { ',' SilentComponentValue } =:
+
+SilentConstructor := '{'
+                         [ SilentArraySetRecordValue ] '}' =:
+
+SilentConstSetOrQualidentOrFunction := SilentConstructor | Qualident
+                                       [ SilentConstructor | SilentActualParameters ] =:
+
+SilentElement := SilentConstExpression [ ".." SilentConstExpression ] =:
+
+SilentActualParameters := "(" [ SilentExpList ] ")" =:
+
+SilentExpList := SilentConstExpression { "," SilentConstExpression } =:
+
+-- end of the Silent constant rules
+
+SetType := ( "SET" | "PACKEDSET" ) "OF" SimpleType =:
+
+PointerType := "POINTER" "TO" Type
+             =:
+
+ProcedureType := "PROCEDURE" [ FormalTypeList ] =:
+
+FormalTypeList := "(" ( ")" FormalReturn |
+                        ProcedureParameters ")" FormalReturn ) =:
+
+FormalReturn := [ ":" OptReturnType ] =:
+
+OptReturnType := "[" Qualident "]" | Qualident =:
+
+ProcedureParameters := ProcedureParameter
+                       { "," ProcedureParameter } =:
+
+ProcedureParameter := "..." | "VAR" FormalType | FormalType =:
+
+
+VarIdent := Ident [ "[" ConstExpression "]" ]
+          =:
+
+VarIdentList := VarIdent { "," VarIdent }
+              =:
+
+VariableDeclaration := VarIdentList ":"
+                       Type Alignment
+                     =:
+
+DefVarIdent := Ident
+                     [ "[" ConstExpression "]" ]
+             =:
+
+DefVarIdentList := DefVarIdent { "," DefVarIdent }
+                 =:
+
+DefVariableDeclaration :=                                               % typeDes := NIL %
+                          DefVarIdentList ":" Type Alignment
+                        =:
+
+Designator := Qualident
+              { SubDesignator } =:
+
+SubDesignator := "."
+                 Ident
+                 | "[" ArrayExpList
+                   "]"
+                 | "^"
+               =:
+
+ArrayExpList :=
+                Expression
+                { ","
+                   Expression
+                }
+              =:
+
+ExpList := Expression { "," Expression }
+         =:
+
+Expression := SimpleExpression [ Relation SimpleExpression ]
+           =:
+
+SimpleExpression := UnaryOrTerm { AddOperator Term } =:
+
+UnaryOrTerm := "+" Term
+               | "-" Term
+               | Term
+	     =:
+
+Term := Factor { MulOperator Factor
+               } =:
+
+Factor := Number | string | SetOrDesignatorOrFunction |
+          "(" Expression ")" | "NOT" ( Factor
+          | ConstAttribute
+                                ) =:
+
+SetOrDesignatorOrFunction := Qualident
+                              [ Constructor |
+                                SimpleDes [ ActualParameters ]
+                              ]                                |
+                              Constructor =:
+
+-- SimpleDes := { "." Ident | "[" ExpList "]" | "^" } =:
+SimpleDes := { SubDesignator } =:
+
+ActualParameters := "(" [ ExpList ] ")" =:
+
+ExitStatement := "EXIT"
+               =:
+
+ReturnStatement := "RETURN" [ Expression ]
+                 =:
+
+Statement := [ AssignmentOrProcedureCall | IfStatement | CaseStatement |
+               WhileStatement | RepeatStatement | LoopStatement |
+               ForStatement | WithStatement | AsmStatement |
+               ExitStatement | ReturnStatement | RetryStatement
+             ]
+          =:
+
+RetryStatement := "RETRY"
+                =:
+
+AssignmentOrProcedureCall := Designator
+                             ( ":=" Expression
+                                |
+                                  ActualParameters |                     % (* epsilon *) %
+                             )
+                           =:
+
+-- these two break LL1 as both start with a Designator
+-- ProcedureCall := Designator [ ActualParameters ] =:
+-- Assignment := Designator ":=" Expression =:
+
+StatementSequence := Statement { ";" Statement }
+                  =:
+
+IfStatement := "IF"
+                    Expression "THEN"
+                StatementSequence
+              { "ELSIF"
+
+                        Expression "THEN"
+                                          StatementSequence
+              }
+              [ "ELSE"
+                      StatementSequence ] "END"
+            =:
+
+CaseStatement := "CASE"
+                        Expression
+                                   "OF" Case { "|" Case }
+                 CaseEndStatement
+               =:
+
+CaseEndStatement := "END"
+                    | "ELSE"
+                           StatementSequence "END"
+                 =:
+
+Case := [ CaseLabelList ":" StatementSequence ]
+      =:
+
+CaseLabelList := CaseLabels { "," CaseLabels } =:
+
+CaseLabels := ConstExpression [ ".." ConstExpression ]
+            =:
+
+WhileStatement := "WHILE" Expression "DO"
+                      StatementSequence
+		  "END"
+                =:
+
+RepeatStatement := "REPEAT"
+                       StatementSequence
+	           "UNTIL" Expression
+                 =:
+
+ForStatement :=
+                "FOR" Ident ":=" Expression "TO" Expression [ "BY" ConstExpression ] "DO"
+                    StatementSequence
+                "END"
+              =:
+
+LoopStatement := "LOOP"
+                      StatementSequence
+                 "END"
+               =:
+
+WithStatement := "WITH" Designator "DO"
+                     StatementSequence
+                 "END"
+               =:
+
+ProcedureDeclaration := ProcedureHeading ";" ProcedureBlock
+                        Ident
+                      =:
+
+ProcedureIdent := Ident                                                   % curproc := lookupSym (curident) %
+                =:
+
+DefineBuiltinProcedure := [ "__ATTRIBUTE__" "__BUILTIN__" "(" "(" Ident ")" ")" | "__INLINE__" ]
+                      =:
+
+ProcedureHeading := "PROCEDURE" DefineBuiltinProcedure ( ProcedureIdent            % enterScope (curproc) %
+                                                         [ FormalParameters ]
+                                                         AttributeNoReturn )
+                  =:
+
+Builtin := [ "__BUILTIN__" | "__INLINE__" ] =:
+
+DefProcedureHeading := "PROCEDURE" Builtin ( ProcedureIdent
+                                             [ DefFormalParameters ]
+                                             AttributeNoReturn )
+                     =:
+
+-- introduced procedure block so we can produce more informative
+-- error messages
+
+ProcedureBlock := { Declaration } [ "BEGIN" ProcedureBlockBody ] "END"             % leaveScope %
+                =:
+
+Block := { Declaration } InitialBlock FinalBlock "END"
+       =:
+
+InitialBlock := [ "BEGIN" InitialBlockBody ] =:
+
+FinalBlock := [ "FINALLY" FinalBlockBody ] =:
+
+InitialBlockBody := NormalPart [ "EXCEPT" ExceptionalPart ] =:
+
+FinalBlockBody := NormalPart [ "EXCEPT" ExceptionalPart ] =:
+
+ProcedureBlockBody := NormalPart [ "EXCEPT" ExceptionalPart ] =:
+
+NormalPart := StatementSequence =:
+
+ExceptionalPart := StatementSequence
+                 =:
+
+Declaration := "CONST" { ConstantDeclaration ";" } |
+               "TYPE" { TypeDeclaration ";" } |
+               "VAR" { VariableDeclaration ";" } |
+               ProcedureDeclaration ";" |
+               ModuleDeclaration ";" =:
+
+DefFormalParameters := "(" [ DefMultiFPSection ] ")" FormalReturn =:
+
+DefMultiFPSection := DefExtendedFP | FPSection [ ";" DefMultiFPSection ] =:
+
+FormalParameters := "(" [ MultiFPSection ] ")" FormalReturn =:
+
+AttributeNoReturn := [ "<*" Ident "*>" ] =:
+
+AttributeUnused := [ "<*" Ident "*>" ] =:
+
+MultiFPSection := ExtendedFP | FPSection [ ";" MultiFPSection ] =:
+
+FPSection := NonVarFPSection | VarFPSection =:
+
+DefExtendedFP := DefOptArg | "..." =:
+
+ExtendedFP := OptArg | "..." =:
+
+VarFPSection := "VAR" IdentList ":" FormalType [ AttributeUnused ] =:
+
+NonVarFPSection := IdentList ":" FormalType [ AttributeUnused ] =:
+
+OptArg := "[" Ident ":" FormalType [ "=" ConstExpression ] "]" =:
+
+DefOptArg := "[" Ident ":" FormalType "=" ConstExpression "]" =:
+
+FormalType := { "ARRAY" "OF" } Qualident =:
+
+ModuleDeclaration := "MODULE" Ident [ Priority ] ";"
+                        { Import } [ Export ]
+                      Block Ident
+                     =:
+
+Priority := "[" ConstExpression "]" =:
+
+Export := "EXPORT" ( "QUALIFIED"
+                                 IdentList |
+                     "UNQUALIFIED"
+                                 IdentList |
+                     IdentList ) ";" =:
+
+FromImport := "FROM" Ident "IMPORT" IdentList ";"
+            =:
+
+ImportModuleList := Ident { "," Ident }
+                  =:
+
+WithoutFromImport := "IMPORT" ImportModuleList ";"
+                   =:
+
+Import := FromImport | WithoutFromImport =:
+
+DefinitionModule := "DEFINITION" "MODULE" [ "FOR" string ] Ident ";"   % curmodule := lookupDef (curident) %
+    		                                                       % enterScope (curmodule) %
+                      { Import } [ Export ]
+                      { Definition }
+                    "END" Ident "."                                    % checkEndName (curmodule, curident, 'definition module') %
+                                                                       % leaveScope %
+		                                                       % setEnumsComplete (curmodule) %
+                  =:
+
+DefQualident :=
+                Ident                                                  % typeExp := lookupSym (curident) %
+                      [ "."                                            % IF NOT isDef (typeExp)
+                                                                         THEN
+									    ErrorArray ('the first component of this qualident must be a definition module')
+                                                                         END %
+		            Ident                                      % typeExp := lookupInScope (typeExp, curident) ;
+			                                                 IF typeExp=NIL
+                                                                         THEN
+                                                                            ErrorArray ('identifier not found in definition module')
+                                                                         END %
+			          ]
+              =:
+
+DefOptSubrange := [ SubrangeType |                                      % putType (typeDes, typeExp) %
+                  ]
+                =:
+
+DefTypeEquiv := DefQualident DefOptSubrange =:
+
+DefEnumIdentList :=                                                     % VAR n, f: node ; %
+                                                                        % n := makeEnum () %
+                    Ident                                               % f := makeEnumField (n, curident) %
+		          { "," Ident                                   % f := makeEnumField (n, curident) %
+                                                                 }      % IF typeDes # NIL THEN putType (typeDes, n) END %
+                  =:
+
+DefEnumeration := "(" DefEnumIdentList ")" =:
+
+DefSimpleType := DefTypeEquiv | DefEnumeration | SubrangeType
+	       =:
+
+DefType := DefSimpleType | ArrayType | RecordType | SetType |
+           PointerType | ProcedureType
+         =:
+
+DefTypeDeclaration := { Ident                                           % typeDes := lookupSym (curident) %
+                        ( ";" | "=" DefType Alignment ";" ) }
+		    =:
+
+DefConstantDeclaration := Ident
+                                "=" ConstExpression
+                        =:
+
+Definition := "CONST" { DefConstantDeclaration ";" } |
+              "TYPE" { DefTypeDeclaration } |
+              "VAR" { DefVariableDeclaration ";" } |
+              DefProcedureHeading ";" =:
+
+AsmStatement := 'ASM' [ 'VOLATILE' ] '(' AsmOperands ')' =:
+
+AsmOperands := string [ AsmOperandSpec ]
+             =:
+
+AsmOperandSpec := [ ':' AsmList [ ':' AsmList [ ':' TrashList ] ] ]
+                =:
+
+AsmList := [ AsmElement ] { ',' AsmElement } =:
+
+NamedOperand := '[' Ident ']' =:
+
+AsmOperandName := [ NamedOperand ]
+                =:
+
+AsmElement := AsmOperandName string '(' Expression ')'
+            =:
+
+TrashList := [ string ] { ',' string } =:
+
+FNB

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -401,6 +401,20 @@ package body Tchk is
    begin
       Check_Token (Tok_Record, AP);
    end T_Record;
+
+   ---------------------------
+   -- T_Right_Curly_Bracket --
+   ---------------------------
+
+   procedure T_Right_Curly_Bracket is
+   begin
+      if Token = Tok_Right_Curly_Bracket then
+         Scan;
+      else
+         Error_Msg_AP
+           ("|missing ""'}'""");
+      end if;
+   end T_Right_Curly_Bracket;
 
    ---------------------
    -- T_Right_Bracket --

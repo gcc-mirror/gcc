@@ -1,5 +1,5 @@
 /* Control flow optimization header file.
-   Copyright (C) 2014-2022 Free Software Foundation, Inc.
+   Copyright (C) 2014-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,5 +30,6 @@ extern int flow_find_head_matching_sequence (basic_block, basic_block,
 extern bool delete_unreachable_blocks (void);
 extern void delete_dead_jumptables (void);
 extern bool cleanup_cfg (int);
+extern bool bb_is_just_return (basic_block, rtx_insn **, rtx_insn **);
 
 #endif /* GCC_CFGCLEANUP_H */

@@ -6,8 +6,8 @@
 # tests requiring checks not turned on by default, this script
 # automatically adds the needed flags to pass (ie: -gnato or -gnatE).
 
-# gccflags="-O3 -fomit-frame-pointer -funroll-all-loops -finline-functions"
-# gnatflags="-gnatN"
+# gccflags="-O3 -funroll-loops"
+# gnatflags="-gnatn"
 
 gccflags="-O2"
 gnatflags="-gnatws"

@@ -1,5 +1,5 @@
 /* Definitions for MIPS running Linux-based GNU systems with ELF format.
-   Copyright (C) 2012-2022 Free Software Foundation, Inc.
+   Copyright (C) 2012-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,9 +26,6 @@ along with GCC; see the file COPYING3.  If not see
       builtin_define ("_GNU_SOURCE");				\
     ANDROID_TARGET_OS_CPP_BUILTINS();				\
   } while (0)
-
-#define EXTRA_TARGET_D_OS_VERSIONS()				\
-  ANDROID_TARGET_D_OS_VERSIONS();
 
 #undef  LINK_SPEC
 #define LINK_SPEC							\

@@ -1,5 +1,5 @@
 /* Assembly functions for libgcc2.
-   Copyright (C) 2001-2022 Free Software Foundation, Inc.
+   Copyright (C) 2001-2023 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -23,7 +23,13 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include "xtensa-config.h"
+#include "xtensa-config-builtin.h"
+
+/* An executable stack is *not* required for these functions.  */
+#if defined(__ELF__) && defined(__linux__)
+.section .note.GNU-stack,"",%progbits
+.previous
+#endif
 
 /* __xtensa_libgcc_window_spill: This function flushes out all but the
    current register window.  This is used to set up the stack so that

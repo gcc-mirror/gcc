@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for PowerPC and PowerPC64 Linux.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -215,12 +215,12 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
   fs->regs.cfa_offset = new_cfa - (long) context->cfa;
 
 #ifdef __powerpc64__
-  fs->regs.reg[2].how = REG_SAVED_OFFSET;
+  fs->regs.how[2] = REG_SAVED_OFFSET;
   fs->regs.reg[2].loc.offset = (long) &regs->gpr[2] - new_cfa;
 #endif
   for (i = 14; i < 32; i++)
     {
-      fs->regs.reg[i].how = REG_SAVED_OFFSET;
+      fs->regs.how[i] = REG_SAVED_OFFSET;
       fs->regs.reg[i].loc.offset = (long) &regs->gpr[i] - new_cfa;
     }
 
@@ -230,20 +230,20 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
   cr_offset += sizeof (long) - 4;
 #endif
   /* In the ELFv1 ABI, CR2 stands in for the whole CR.  */
-  fs->regs.reg[R_CR2].how = REG_SAVED_OFFSET;
+  fs->regs.how[R_CR2] = REG_SAVED_OFFSET;
   fs->regs.reg[R_CR2].loc.offset = cr_offset;
 #if _CALL_ELF == 2
   /* In the ELFv2 ABI, every CR field has a separate CFI entry.  */
-  fs->regs.reg[R_CR3].how = REG_SAVED_OFFSET;
+  fs->regs.how[R_CR3] = REG_SAVED_OFFSET;
   fs->regs.reg[R_CR3].loc.offset = cr_offset;
-  fs->regs.reg[R_CR4].how = REG_SAVED_OFFSET;
+  fs->regs.how[R_CR4] = REG_SAVED_OFFSET;
   fs->regs.reg[R_CR4].loc.offset = cr_offset;
 #endif
 
-  fs->regs.reg[R_LR].how = REG_SAVED_OFFSET;
+  fs->regs.how[R_LR] = REG_SAVED_OFFSET;
   fs->regs.reg[R_LR].loc.offset = (long) &regs->link - new_cfa;
 
-  fs->regs.reg[ARG_POINTER_REGNUM].how = REG_SAVED_OFFSET;
+  fs->regs.how[ARG_POINTER_REGNUM] = REG_SAVED_OFFSET;
   fs->regs.reg[ARG_POINTER_REGNUM].loc.offset = (long) &regs->nip - new_cfa;
   fs->retaddr_column = ARG_POINTER_REGNUM;
   fs->signal_frame = 1;
@@ -251,7 +251,7 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
   /* If we have a FPU...  */
   for (i = 14; i < 32; i++)
     {
-      fs->regs.reg[i + 32].how = REG_SAVED_OFFSET;
+      fs->regs.how[i + 32] = REG_SAVED_OFFSET;
       fs->regs.reg[i + 32].loc.offset = (long) &regs->fpr[i] - new_cfa;
     }
 
@@ -265,12 +265,12 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
     {
       for (i = 20; i < 32; i++)
 	{
-	  fs->regs.reg[i + R_VR0].how = REG_SAVED_OFFSET;
+	  fs->regs.how[i + R_VR0] = REG_SAVED_OFFSET;
 	  fs->regs.reg[i + R_VR0].loc.offset = (long) &vregs->vr[i] - new_cfa;
 	}
     }
 
-  fs->regs.reg[R_VRSAVE].how = REG_SAVED_OFFSET;
+  fs->regs.how[R_VRSAVE] = REG_SAVED_OFFSET;
   fs->regs.reg[R_VRSAVE].loc.offset = (long) &vregs->vsave - new_cfa;
 
   /* If we have SPE register high-parts... we check at compile-time to
@@ -278,7 +278,7 @@ ppc_fallback_frame_state (struct _Unwind_Context *context,
 #ifdef __SPE__
   for (i = 14; i < 32; i++)
     {
-      fs->regs.reg[i + FIRST_SPE_HIGH_REGNO - 4].how = REG_SAVED_OFFSET;
+      fs->regs.how[i + FIRST_SPE_HIGH_REGNO - 4] = REG_SAVED_OFFSET;
       fs->regs.reg[i + FIRST_SPE_HIGH_REGNO - 4].loc.offset
 	= (long) &regs->vregs - new_cfa + 4 * i;
     }
@@ -315,7 +315,7 @@ frob_update_context (struct _Unwind_Context *context, _Unwind_FrameState *fs ATT
 #endif
 
 #ifdef __powerpc64__
-  if (fs->regs.reg[2].how == REG_UNSAVED)
+  if (fs->regs.how[2] == REG_UNSAVED)
     {
       /* If the current unwind info (FS) does not contain explicit info
 	 saving R2, then we have to do a minor amount of code reading to

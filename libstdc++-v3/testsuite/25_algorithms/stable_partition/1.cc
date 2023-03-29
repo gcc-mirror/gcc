@@ -1,4 +1,4 @@
-// Copyright (C) 2001-2022 Free Software Foundation, Inc.
+// Copyright (C) 2001-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,6 +16,9 @@
 // <http://www.gnu.org/licenses/>.
 
 // 25.2.12 [lib.alg.partitions] Partitions.
+
+// std::stable_partition is not freestanding.
+// { dg-require-effective-target hosted }
 
 #include <algorithm>
 #include <functional>

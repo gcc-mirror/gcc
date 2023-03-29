@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Free Software Foundation, Inc.
+// Copyright (C) 2020-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,7 +34,7 @@ test01()
 {
   std::timed_mutex m;
   std::unique_lock<std::timed_mutex> l(m, std::defer_lock);
-  l.try_lock_until(clok::now()); // { dg-error "here" }
+  (void) l.try_lock_until(clok::now()); // { dg-error "here" }
 }
 
 struct cloc
@@ -53,7 +53,7 @@ test02()
 {
   std::recursive_timed_mutex m;
   std::unique_lock<std::recursive_timed_mutex> l(m, std::defer_lock);
-  l.try_lock_until(cloc::now()); // { dg-error "here" }
+  (void) l.try_lock_until(cloc::now()); // { dg-error "here" }
 }
 
 // { dg-error "static assertion failed" "" { target *-*-* } 0 }

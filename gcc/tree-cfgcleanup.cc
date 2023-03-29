@@ -1,5 +1,5 @@
 /* CFG cleanup for trees.
-   Copyright (C) 2001-2022 Free Software Foundation, Inc.
+   Copyright (C) 2001-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -450,7 +450,7 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
    those alternatives are equal in each of the PHI nodes, then return
    true, else return false.  */
 
-static bool
+bool
 phi_alternatives_equal (basic_block dest, edge e1, edge e2)
 {
   int n1 = e1->dest_idx;
@@ -1106,9 +1106,11 @@ cleanup_tree_cfg_noloop (unsigned ssa_update_flags)
       timevar_push (TV_TREE_CLEANUP_CFG);
     }
 
-  /* Compute dominator info which we need for the iterative process below.  */
+  /* Compute dominator info which we need for the iterative process below.
+     Avoid computing the fast query DFS numbers since any block merging
+     done will invalidate them anyway.  */
   if (!dom_info_available_p (CDI_DOMINATORS))
-    calculate_dominance_info (CDI_DOMINATORS);
+    calculate_dominance_info (CDI_DOMINATORS, false);
   else
     checking_verify_dominators (CDI_DOMINATORS);
 

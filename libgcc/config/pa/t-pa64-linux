@@ -1,0 +1,8 @@
+# Plug millicode routines into libgcc.a  We want these on both native and
+# cross compiles.
+LIB1ASMSRC = pa/milli64.S
+LIB1ASMFUNCS = _divI _divU _remI _remU _div_const _mulI
+
+HOST_LIBGCC2_CFLAGS += -Dpa64=1 -DELF=1 -DLINUX=1
+
+LIB2ADD_ST = $(srcdir)/config/pa/linux-atomic.c

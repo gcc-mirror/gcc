@@ -1,0 +1,324 @@
+(* keyc.def provides an interface to emitting symbols which.
+
+Copyright (C) 2016-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE keyc ;
+
+FROM mcPretty IMPORT pretty ;
+FROM DynamicStrings IMPORT String ;
+FROM decl IMPORT node ;
+FROM nameKey IMPORT Name ;
+
+
+(*
+   useUnistd - need to use unistd.h call using open/close/read/write require this header.
+*)
+
+PROCEDURE useUnistd ;
+
+
+(*
+   useThrow - use the throw function.
+*)
+
+PROCEDURE useThrow ;
+
+
+(*
+   useStorage - indicate we have used storage.
+*)
+
+PROCEDURE useStorage ;
+
+
+(*
+   useFree - indicate we have used free.
+*)
+
+PROCEDURE useFree ;
+
+
+(*
+   useMalloc - indicate we have used malloc.
+*)
+
+PROCEDURE useMalloc ;
+
+
+(*
+   useProc - indicate we have used proc.
+*)
+
+PROCEDURE useProc ;
+
+
+(*
+   useTrue - indicate we have used TRUE.
+*)
+
+PROCEDURE useTrue ;
+
+
+(*
+   useFalse - indicate we have used FALSE.
+*)
+
+PROCEDURE useFalse ;
+
+
+(*
+   useNull - indicate we have used NULL.
+*)
+
+PROCEDURE useNull ;
+
+
+(*
+   useMemcpy - indicate we have used memcpy.
+*)
+
+PROCEDURE useMemcpy ;
+
+
+(*
+   useIntMin - indicate we have used INT_MIN.
+*)
+
+PROCEDURE useIntMin ;
+
+
+(*
+   useUIntMin - indicate we have used UINT_MIN.
+*)
+
+PROCEDURE useUIntMin ;
+
+
+(*
+   useLongMin - indicate we have used LONG_MIN.
+*)
+
+PROCEDURE useLongMin ;
+
+
+(*
+   useULongMin - indicate we have used ULONG_MIN.
+*)
+
+PROCEDURE useULongMin ;
+
+
+(*
+   useCharMin - indicate we have used CHAR_MIN.
+*)
+
+PROCEDURE useCharMin ;
+
+
+(*
+   useUCharMin - indicate we have used UCHAR_MIN.
+*)
+
+PROCEDURE useUCharMin ;
+
+
+(*
+   useIntMax - indicate we have used INT_MAX.
+*)
+
+PROCEDURE useIntMax ;
+
+
+(*
+   useUIntMax - indicate we have used UINT_MAX.
+*)
+
+PROCEDURE useUIntMax ;
+
+
+(*
+   useLongMax - indicate we have used LONG_MAX.
+*)
+
+PROCEDURE useLongMax ;
+
+
+(*
+   useULongMax - indicate we have used ULONG_MAX.
+*)
+
+PROCEDURE useULongMax ;
+
+
+(*
+   useCharMax - indicate we have used CHAR_MAX.
+*)
+
+PROCEDURE useCharMax ;
+
+
+(*
+   useUCharMax - indicate we have used UChar_MAX.
+*)
+
+PROCEDURE useUCharMax ;
+
+
+(*
+   useSize_t - indicate we have used size_t.
+*)
+
+PROCEDURE useSize_t ;
+
+
+(*
+   useSSize_t - indicate we have used ssize_t.
+*)
+
+PROCEDURE useSSize_t ;
+
+
+(*
+   useLabs - indicate we have used labs.
+*)
+
+PROCEDURE useLabs ;
+
+
+(*
+   useAbs - indicate we have used abs.
+*)
+
+PROCEDURE useAbs ;
+
+
+(*
+   useFabs - indicate we have used fabs.
+*)
+
+PROCEDURE useFabs ;
+
+
+(*
+   useFabsl - indicate we have used fabsl.
+*)
+
+PROCEDURE useFabsl ;
+
+
+(*
+   useException - use the exceptions module, mcrts.
+*)
+
+PROCEDURE useException ;
+
+
+(*
+   useComplex - use the complex data type.
+*)
+
+PROCEDURE useComplex ;
+
+
+(*
+   useM2RTS - indicate we have used M2RTS in the converted code.
+*)
+
+PROCEDURE useM2RTS ;
+
+
+(*
+   useStrlen - indicate we have used strlen in the converted code.
+*)
+
+PROCEDURE useStrlen ;
+
+
+(*
+   useCtype - indicate we have used the toupper function.
+*)
+
+PROCEDURE useCtype ;
+
+
+(*
+   genDefs - generate definitions or includes for all
+             macros and prototypes used.
+*)
+
+PROCEDURE genDefs (p: pretty) ;
+
+
+(*
+   genConfigSystem - generate include files for config.h and system.h
+                     within the GCC framework.
+*)
+
+PROCEDURE genConfigSystem (p: pretty) ;
+
+
+(*
+   enterScope - enter a scope defined by, n.
+*)
+
+PROCEDURE enterScope (n: node) ;
+
+
+(*
+   leaveScope - leave the scope defined by, n.
+*)
+
+PROCEDURE leaveScope (n: node) ;
+
+
+(*
+   cname - attempts to declare a symbol with name, n, in the
+           current scope.  If there is no conflict with the
+           target language then NIL is returned, otherwise
+           a mangled name is returned as a String.
+           If scopes is FALSE then only the keywords and
+           macros are detected for a clash (all scoping
+           is ignored).
+*)
+
+PROCEDURE cname (n: Name; scopes: BOOLEAN) : String ;
+
+
+(*
+   cnamen - attempts to declare a symbol with name, n, in the
+            current scope.  If there is no conflict with the
+            target language then NIL is returned, otherwise
+            a mangled name is returned as a Name
+            If scopes is FALSE then only the keywords and
+            macros are detected for a clash (all scoping
+            is ignored).
+*)
+
+PROCEDURE cnamen (n: Name; scopes: BOOLEAN) : Name ;
+
+
+(*
+   cp - include C++ keywords and standard declarations to avoid.
+*)
+
+PROCEDURE cp ;
+
+
+END keyc.

@@ -1,5 +1,5 @@
 /* Matching subroutines in all sizes, shapes and colors.
-   Copyright (C) 2000-2022 Free Software Foundation, Inc.
+   Copyright (C) 2000-2023 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -193,7 +193,7 @@ gfc_match_member_sep(gfc_symbol *sym)
   if (gfc_match_name (name) != MATCH_YES)
     {
       gfc_error ("Expected structure component or operator name "
-                 "after '.' at %C");
+		 "after %<.%> at %C");
       goto error;
     }
 
@@ -5345,6 +5345,16 @@ gfc_match_common (void)
 		goto cleanup;
 	    }
 
+	  /* F2018:R874:  common-block-object is variable-name [ (array-spec) ]
+	     F2018:C8121: A variable-name shall not be a name made accessible
+	     by use association.  */
+	  if (sym->attr.use_assoc)
+	    {
+	      gfc_error ("Symbol %qs at %C is USE associated from module %qs "
+			 "and cannot occur in COMMON", sym->name, sym->module);
+	      goto cleanup;
+	    }
+
 	  /* Deal with an optional array specification after the
 	     symbol name.  */
 	  m = gfc_match_array_spec (&as, true, true);
@@ -5524,13 +5534,15 @@ gfc_free_namelist (gfc_namelist *name)
 /* Free an OpenMP namelist structure.  */
 
 void
-gfc_free_omp_namelist (gfc_omp_namelist *name, bool free_ns)
+gfc_free_omp_namelist (gfc_omp_namelist *name, bool free_ns, bool free_align)
 {
   gfc_omp_namelist *n;
 
   for (; name; name = n)
     {
       gfc_free_expr (name->expr);
+      if (free_align)
+	gfc_free_expr (name->u.align);
       if (free_ns)
 	gfc_free_namespace (name->u2.ns);
       else if (name->u2.udr)
@@ -5913,6 +5925,30 @@ recursive_stmt_fcn (gfc_expr *e, gfc_symbol *sym)
 }
 
 
+/* Check for invalid uses of statement function dummy arguments in body.  */
+
+static bool
+chk_stmt_fcn_body (gfc_expr *e, gfc_symbol *sym, int *f ATTRIBUTE_UNUSED)
+{
+  gfc_formal_arglist *formal;
+
+  if (e == NULL || e->symtree == NULL || e->expr_type != EXPR_FUNCTION)
+    return false;
+
+  for (formal = sym->formal; formal; formal = formal->next)
+    {
+      if (formal->sym == e->symtree->n.sym)
+	{
+	  gfc_error ("Invalid use of statement function argument at %L",
+		     &e->where);
+	  return true;
+	}
+    }
+
+  return false;
+}
+
+
 /* Match a statement function declaration.  It is so easy to match
    non-statement function statements with a MATCH_ERROR as opposed to
    MATCH_NO that we suppress error message in most cases.  */
@@ -5980,6 +6016,9 @@ gfc_match_st_function (void)
 		 sym->name, &expr->where);
       return MATCH_ERROR;
     }
+
+  if (gfc_traverse_expr (expr, sym, chk_stmt_fcn_body, 0))
+    return MATCH_ERROR;
 
   sym->value = expr;
 

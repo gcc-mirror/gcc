@@ -1,0 +1,131 @@
+(* RandomNumber.def provide a set of random number procedures for pervasive types.
+
+Copyright (C) 2012-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE RandomNumber ;
+
+(*
+    Title      : Random
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Wed Nov 26 15:38:01 2012
+    Revision   : $Version$ 
+    Description: provides primitives for obtaining random numbers on
+                 pervasive data types.
+*)
+
+FROM SYSTEM IMPORT BYTE ;
+EXPORT QUALIFIED Randomize, RandomInit, RandomBytes,
+                 RandomCard, RandomShortCard, RandomLongCard,
+                 RandomInt, RandomShortInt, RandomLongInt,
+                 RandomReal, RandomLongReal, RandomShortReal ;
+
+
+(*
+   Randomize - initialize the random number generator with a seed
+               based on the microseconds.
+*)
+
+PROCEDURE Randomize ;
+
+
+(*
+   RandomInit - initialize the random number generator with value, seed.
+*)
+
+PROCEDURE RandomInit (seed: CARDINAL) ;
+
+
+(*
+   RandomBytes - fills in an array with random values.
+*)
+
+PROCEDURE RandomBytes (VAR a: ARRAY OF BYTE) ;
+
+
+(*
+   RandomInt - return an INTEGER in the range [low .. high].
+*)
+
+PROCEDURE RandomInt (low, high: INTEGER) : INTEGER ;
+
+
+(*
+   RandomShortInt - return an SHORTINT in the range [low..high].
+*)
+
+PROCEDURE RandomShortInt (low, high: SHORTINT) : SHORTINT ;
+
+
+(*
+   RandomLongInt - return an LONGINT in the range [low..high].
+*)
+
+PROCEDURE RandomLongInt (low, high: LONGINT) : LONGINT ;
+
+
+(*
+   RandomShortCard - return a SHORTCARD in the range [low..high].
+*)
+
+PROCEDURE RandomShortCard (low, high: CARDINAL) : CARDINAL ;
+
+
+(*
+   RandomCard - return a CARDINAL in the range [low..high].
+*)
+
+PROCEDURE RandomCard (low, high: CARDINAL) : CARDINAL ;
+
+
+(*
+   RandomLongCard - return an LONGCARD in the range [low..high].
+*)
+
+PROCEDURE RandomLongCard (low, high: LONGCARD) : LONGCARD ;
+
+
+(*
+   RandomReal - return a REAL number in the range 0.0..1.0
+*)
+
+PROCEDURE RandomReal () : REAL ;
+
+
+(*
+   RandomShortReal - return a SHORTREAL number in the range 0.0..1.0
+*)
+
+PROCEDURE RandomShortReal () : SHORTREAL ;
+
+
+(*
+   RandomLongReal - return a LONGREAL number in the range 0.0..1.0
+*)
+
+PROCEDURE RandomLongReal () : LONGREAL ;
+
+
+END RandomNumber.

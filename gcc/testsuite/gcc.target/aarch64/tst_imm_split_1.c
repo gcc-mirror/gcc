@@ -14,5 +14,4 @@ g (unsigned char *p)
 }
 
 /* { dg-final { scan-assembler-not "and\\t\[xw\]\[0-9\]+, \[xw\]\[0-9\]+.*" } } */
-/* { dg-final { scan-assembler "tst\\t\[xw\]\[0-9\]+, \[xw\]\[0-9\]+" } } */
-/* { dg-final { scan-assembler "tst\\t\[xw\]\[0-9\]+, \[xw\]\[0-9\]+, lsr 4" } } */
+/* { dg-final { scan-assembler-times "tst\\t\[xw\]\[0-9\]+, \[xw\]\[0-9\]+" 2 } } */

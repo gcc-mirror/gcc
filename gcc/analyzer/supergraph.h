@@ -1,5 +1,5 @@
 /* "Supergraph" classes that combine CFGs and callgraph into one digraph.
-   Copyright (C) 2019-2022 Free Software Foundation, Inc.
+   Copyright (C) 2019-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -20,6 +20,13 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_ANALYZER_SUPERGRAPH_H
 #define GCC_ANALYZER_SUPERGRAPH_H
+
+#include "ordered-hash-map.h"
+#include "cfg.h"
+#include "basic-block.h"
+#include "gimple.h"
+#include "gimple-iterator.h"
+#include "digraph.h"
 
 using namespace ana;
 
@@ -563,6 +570,8 @@ class switch_cfg_superedge : public cfg_superedge {
 
   const vec<tree> &get_case_labels () const { return m_case_labels; }
 
+  bool implicitly_created_default_p () const;
+
 private:
   auto_vec<tree> m_case_labels;
 };
@@ -605,7 +614,8 @@ class dot_annotator
   }
 };
 
-extern cgraph_edge *supergraph_call_edge (function *fun, gimple *stmt);
+extern cgraph_edge *supergraph_call_edge (function *fun, const gimple *stmt);
+extern function *get_ultimate_function_for_cgraph_edge (cgraph_edge *edge);
 
 } // namespace ana
 

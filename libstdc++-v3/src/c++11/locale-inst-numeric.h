@@ -1,6 +1,6 @@
 // Explicit instantantiations for numeric facets -*- C++ -*-
 
-// Copyright (C) 2018-2022 Free Software Foundation, Inc.
+// Copyright (C) 2018-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,14 +26,14 @@
 #define "This file should not be compiled directly, only included"
 #endif
 
+#include "facet_inst_macros.h"
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 #if ! _GLIBCXX_USE_CXX11_ABI
-  template const num_get<C>& use_facet<num_get<C> >(const locale&);
-  template const num_put<C>& use_facet<num_put<C> >(const locale&);
-
-  template bool has_facet<num_get<C> >(const locale&);
-  template bool has_facet<num_put<C> >(const locale&);
+// use_facet and has_facet instantiations
+INSTANTIATE_FACET_ACCESSORS(num_get<C>);
+INSTANTIATE_FACET_ACCESSORS(num_put<C>);
 #endif
 
 _GLIBCXX_BEGIN_NAMESPACE_LDBL

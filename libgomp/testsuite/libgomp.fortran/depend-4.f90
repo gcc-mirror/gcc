@@ -1,7 +1,7 @@
 ! { dg-additional-options "-fdump-tree-gimple" }
 !
 ! { dg-additional-sources my-usleep.c }
-! { dg-prune-output "command-line option '-fintrinsic-modules-path=.*' is valid for Fortran but not for C" }
+! { dg-additional-options -Wno-complain-wrong-lang }
 !
 ! Ensure that 'depend(...: var)' and 'depobj(...) depend(...: var)'
 ! depend on the same variable when 'var' is a pointer

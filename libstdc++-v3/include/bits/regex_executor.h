@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2013-2022 Free Software Foundation, Inc.
+// Copyright (C) 2013-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -71,14 +71,15 @@ namespace __detail
 		_ResultsVec&    __results,
 		const _RegexT&  __re,
 		_FlagT          __flags)
-      : _M_begin(__begin),
-      _M_end(__end),
-      _M_re(__re),
-      _M_nfa(*__re._M_automaton),
-      _M_results(__results),
-      _M_rep_count(_M_nfa.size()),
-      _M_states(_M_nfa._M_start(), _M_nfa.size()),
-      _M_flags(__flags)
+      : _M_cur_results(__results.get_allocator()),
+	_M_begin(__begin),
+	_M_end(__end),
+	_M_re(__re),
+	_M_nfa(*__re._M_automaton),
+	_M_results(__results),
+	_M_rep_count(_M_nfa.size()),
+	_M_states(_M_nfa._M_start(), _M_nfa.size()),
+	_M_flags(__flags)
       {
 	using namespace regex_constants;
 	if (__flags & match_prev_avail) // ignore not_bol and not_bow

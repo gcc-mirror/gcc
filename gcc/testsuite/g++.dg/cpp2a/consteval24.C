@@ -27,4 +27,4 @@ bar ()
   return fn1 () + fn2 () + (s.*fn3) () + (s.*fn4) () + fn5 () + (s.*fn6) () + (s.*fn7) ();
 }
 
-auto a = bar ();
+auto a = bar ();		// { dg-error "bar" }

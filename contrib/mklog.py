@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (C) 2020 Free Software Foundation, Inc.
+# Copyright (C) 2020-2023 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -186,23 +186,26 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False,
             # contains commented code which a note that it
             # has not been tested due to a certain PR or DR.
             this_file_prs = []
-            for line in list(file)[0][0:10]:
-                m = pr_regex.search(line.value)
-                if m:
-                    pr = m.group('pr')
-                    if pr not in prs:
-                        prs.append(pr)
-                        this_file_prs.append(pr.split('/')[-1])
-                else:
-                    m = dr_regex.search(line.value)
+            hunks = list(file)
+            if hunks:
+                for line in hunks[0][0:10]:
+                    m = pr_regex.search(line.value)
                     if m:
-                        dr = m.group('dr')
-                        if dr not in prs:
-                            prs.append(dr)
-                            this_file_prs.append(dr.split('/')[-1])
-                    elif dg_regex.search(line.value):
-                        # Found dg-warning/dg-error line
-                        break
+                        pr = m.group('pr')
+                        if pr not in prs:
+                            prs.append(pr)
+                            this_file_prs.append(pr.split('/')[-1])
+                    else:
+                        m = dr_regex.search(line.value)
+                        if m:
+                            dr = m.group('dr')
+                            if dr not in prs:
+                                prs.append(dr)
+                                this_file_prs.append(dr.split('/')[-1])
+                        elif dg_regex.search(line.value):
+                            # Found dg-warning/dg-error line
+                            break
+
             # PR number in the file name
             fname = os.path.basename(file.path)
             m = pr_filename_regex.search(fname)
@@ -361,7 +364,7 @@ if __name__ == '__main__':
     if args.directory:
         root = args.directory
 
-    data = open(args.input) if args.input else sys.stdin
+    data = open(args.input, newline='\n') if args.input else sys.stdin
     if args.update_copyright:
         update_copyright(data)
     else:

@@ -1719,6 +1719,7 @@ Alphabetical List of All Switches
     Float_Words_BE             : Nat; -- Float words stored big-endian?
     Int_Size                   : Pos; -- Standard.Integer'Size
     Long_Double_Size           : Pos; -- Standard.Long_Long_Float'Size
+    Long_Long_Long_Size        : Pos; -- Standard.Long_Long_Long_Integer'Size
     Long_Long_Size             : Pos; -- Standard.Long_Long_Integer'Size
     Long_Size                  : Pos; -- Standard.Long_Integer'Size
     Maximum_Alignment          : Pos; -- Maximum permitted alignment
@@ -1816,6 +1817,7 @@ Alphabetical List of All Switches
     Float_Words_BE                0
     Int_Size                     64
     Long_Double_Size            128
+    Long_Long_Long_Size         128
     Long_Long_Size               64
     Long_Size                    64
     Maximum_Alignment            16
@@ -2178,7 +2180,13 @@ Alphabetical List of All Switches
 .. index:: -gnatX  (gcc)
 
 :switch:`-gnatX`
-  Enable GNAT implementation extensions and latest Ada version.
+  Enable core GNAT implementation extensions and latest Ada version.
+
+
+.. index:: -gnatX0  (gcc)
+
+:switch:`-gnatX0`
+  Enable all GNAT implementation extensions and latest Ada version.
 
 
 .. index:: -gnaty  (gcc)
@@ -2787,6 +2795,8 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 
   * :switch:`-gnatw.q` (questionable layout of record types)
 
+  * :switch:`-gnatw_q` (ignored equality)
+
   * :switch:`-gnatw_r` (out-of-order record representation clauses)
 
   * :switch:`-gnatw.s` (overridden size clause)
@@ -2928,7 +2938,7 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   tests that are known to be True or False at compile time. The default
   is that such warnings are not generated.
   Note that this warning does
-  not get issued for the use of boolean variables or constants whose
+  not get issued for the use of boolean constants whose
   values are known at compile time, since this is a standard technique
   for conditional compilation in Ada, and this would generate too many
   false positive warnings.
@@ -3211,8 +3221,13 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 
   This switch activates warnings on component clauses in record
   representation clauses that leave holes (gaps) in the record layout.
-  If this warning option is active, then record representation clauses
-  should specify a contiguous layout, adding unused fill fields if needed.
+  If a record representation clause does not specify a location for
+  every component of the record type, then the warnings generated (or not
+  generated) are unspecified. For example, there may be gaps for which
+  either no warning is generated or a warning is generated that
+  incorrectly describes the location of the gap. This undesirable situation
+  can sometimes be avoided by adding (and specifying the location for) unused
+  fill fields.
 
 
 .. index:: -gnatw.H  (gcc)
@@ -3677,6 +3692,27 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 
   This switch suppresses warnings for cases where the default layout of
   a record type would very likely cause inefficiencies.
+
+
+.. index:: -gnatw_q  (gcc)
+
+:switch:`-gnatw_q`
+  *Activate warnings for ignored equality operators.*
+
+  This switch activates warnings for a user-defined "=" function that does
+  not compose (i.e. is ignored for a predefined "=" for a composite type
+  containing a component whose type has the user-defined "=" as
+  primitive). Note that the user-defined "=" must be a primitive operator
+  in order to trigger the warning.
+  See RM-4.5.2(14/3-15/5, 21, 24/3, 32.1/1)
+  for the exact Ada rules on composability of "=".
+
+  The default is that these warnings are not given.
+
+.. index:: -gnatw_Q  (gcc)
+
+:switch:`-gnatw_Q`
+  *Suppress warnings for ignored equality operators.*
 
 
 .. index:: -gnatwr  (gcc)
@@ -5583,15 +5619,26 @@ indicate Ada 83 compatibility mode.
   language.
 
 
-.. index:: -gnatX  (gcc)
+.. index:: -gnatX0  (gcc)
 .. index:: Ada language extensions
 .. index:: GNAT extensions
 
-:switch:`-gnatX` (Enable GNAT Extensions)
+:switch:`-gnatX0` (Enable GNAT Extensions)
   This switch directs the compiler to implement the latest version of the
   language (currently Ada 2022) and also to enable certain GNAT implementation
   extensions that are not part of any Ada standard. For a full list of these
   extensions, see the GNAT reference manual, ``Pragma Extensions_Allowed``.
+
+.. index:: -gnatX  (gcc)
+.. index:: Ada language extensions
+.. index:: GNAT extensions
+
+:switch:`-gnatX` (Enable core GNAT Extensions)
+  This switch is similar to -gnatX0 except that only some, not all, of the
+  GNAT-defined language extensions are enabled. For a list of the
+  extensions enabled by this switch, see the GNAT reference manual
+  ``Pragma Extensions_Allowed`` and the description of that pragma's
+  "On" (as opposed to "All") argument.
 
 
 .. _Character_Set_Control:
@@ -6229,10 +6276,32 @@ Linker switches can be specified after :switch:`-largs` builder switch.
 .. index:: -fuse-ld=name
 
 :switch:`-fuse-ld={name}`
-  Linker to be used. The default is ``bfd`` for :file:`ld.bfd`,
-  the alternative being ``gold`` for :file:`ld.gold`. The later is
-  a more recent and faster linker, but only available on GNU/Linux
+  Linker to be used. The default is ``bfd`` for :file:`ld.bfd`; ``gold``
+  (for :file:`ld.gold`) and ``mold`` (for :file:`ld.mold`) are more
+  recent and faster alternatives, but only available on GNU/Linux
   platforms.
+
+  .. only:: PRO
+
+    The GNAT distribution for native Linux platforms includes ``mold``,
+    compiled against OpenSSL version 1.1; however, the distribution does
+    not include OpenSSL.  In order to use this linker, you may either:
+
+    * use your system's OpenSSL library, if the version matches: in this
+      situation, you need not do anything beside using the
+      :switch:`-fuse-ld=mold` switch,
+
+    * obtain a source distribution for OpenSSL 1.1, compile the
+      :file:`libcrypto.so` library and install it in the directory of
+      your choice, then include this directory in the
+      :envvar:`LD_LIBRARY_PATH` environment variable,
+
+    * install another copy of ``mold`` by other means in the directory
+      of your choice, and include this directory in the :envvar:`PATH`
+      environment variable; you may find this alternative preferable if
+      the copy of ``mold`` included in GNAT does not suit your needs
+      (e.g. being able to link against your system's OpenSSL, or using
+      another version of ``mold``).
 
 .. _Binding_with_gnatbind:
 
@@ -7362,7 +7431,7 @@ development environments much more flexible.
 Examples of ``gnatbind`` Usage
 ------------------------------
 
-Here are some examples of ``gnatbind`` invovations:
+Here are some examples of ``gnatbind`` invocations:
 
   ::
 

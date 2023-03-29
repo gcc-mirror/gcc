@@ -1,5 +1,5 @@
 /* Deal with interfaces.
-   Copyright (C) 2000-2022 Free Software Foundation, Inc.
+   Copyright (C) 2000-2023 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -1334,6 +1334,12 @@ gfc_check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
   if (s1 == NULL || s2 == NULL)
     return s1 == s2 ? true : false;
 
+  if (s1->attr.proc == PROC_ST_FUNCTION || s2->attr.proc == PROC_ST_FUNCTION)
+    {
+      strncpy (errmsg, "Statement function", err_len);
+      return false;
+    }
+
   /* Check type and rank.  */
   if (type_must_agree)
     {
@@ -2343,6 +2349,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   char err[200];
   gfc_component *ppc;
   bool codimension = false;
+  gfc_array_spec *formal_as;
 
   /* If the formal arg has type BT_VOID, it's to one of the iso_c_binding
      procs c_f_pointer or c_f_procpointer, and we need to accept most
@@ -2534,6 +2541,9 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       return false;
     }
 
+  formal_as = (formal->ts.type == BT_CLASS
+	       ? CLASS_DATA (formal)->as : formal->as);
+
   if (codimension && formal->attr.allocatable)
     {
       gfc_ref *last = NULL;
@@ -2644,10 +2654,10 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   if (symbol_rank (formal) == actual->rank || symbol_rank (formal) == -1)
     return true;
 
-  rank_check = where != NULL && !is_elemental && formal->as
-	       && (formal->as->type == AS_ASSUMED_SHAPE
-		   || formal->as->type == AS_DEFERRED)
-	       && actual->expr_type != EXPR_NULL;
+  rank_check = where != NULL && !is_elemental && formal_as
+    && (formal_as->type == AS_ASSUMED_SHAPE
+	|| formal_as->type == AS_DEFERRED)
+    && actual->expr_type != EXPR_NULL;
 
   /* Skip rank checks for NO_ARG_CHECK.  */
   if (formal->attr.ext_attr & (1 << EXT_ATTR_NO_ARG_CHECK))
@@ -2656,14 +2666,20 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   /* Scalar & coindexed, see: F2008, Section 12.5.2.4.  */
   if (rank_check || ranks_must_agree
       || (formal->attr.pointer && actual->expr_type != EXPR_NULL)
-      || (actual->rank != 0 && !(is_elemental || formal->attr.dimension))
+      || (actual->rank != 0
+	  && !(is_elemental || formal->attr.dimension
+	       || (formal->ts.type == BT_CLASS
+		   && CLASS_DATA (formal)->attr.dimension)))
       || (actual->rank == 0
 	  && ((formal->ts.type == BT_CLASS
 	       && CLASS_DATA (formal)->as->type == AS_ASSUMED_SHAPE)
 	      || (formal->ts.type != BT_CLASS
 		   && formal->as->type == AS_ASSUMED_SHAPE))
 	  && actual->expr_type != EXPR_NULL)
-      || (actual->rank == 0 && formal->attr.dimension
+      || (actual->rank == 0
+	  && (formal->attr.dimension
+	      || (formal->ts.type == BT_CLASS
+		  && CLASS_DATA (formal)->attr.dimension))
 	  && gfc_is_coindexed (actual))
       /* Assumed-rank actual argument; F2018 C838.  */
       || actual->rank == -1)
@@ -2684,7 +2700,10 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	}
       return false;
     }
-  else if (actual->rank != 0 && (is_elemental || formal->attr.dimension))
+  else if (actual->rank != 0
+	   && (is_elemental || formal->attr.dimension
+	       || (formal->ts.type == BT_CLASS
+		   && CLASS_DATA (formal)->attr.dimension)))
     return true;
 
   /* At this point, we are considering a scalar passed to an array.   This
@@ -2852,7 +2871,8 @@ get_expr_storage_size (gfc_expr *e)
   if (e->ts.type == BT_CHARACTER)
     {
       if (e->ts.u.cl && e->ts.u.cl->length
-          && e->ts.u.cl->length->expr_type == EXPR_CONSTANT)
+	  && e->ts.u.cl->length->expr_type == EXPR_CONSTANT
+	  && e->ts.u.cl->length->ts.type == BT_INTEGER)
 	strlen = mpz_get_si (e->ts.u.cl->length->value.integer);
       else if (e->expr_type == EXPR_CONSTANT
 	       && (e->ts.u.cl == NULL || e->ts.u.cl->length == NULL))
@@ -2903,7 +2923,8 @@ get_expr_storage_size (gfc_expr *e)
 
 	    if (ref->u.ar.stride[i])
 	      {
-		if (ref->u.ar.stride[i]->expr_type == EXPR_CONSTANT)
+		if (ref->u.ar.stride[i]->expr_type == EXPR_CONSTANT
+		    && ref->u.ar.stride[i]->ts.type == BT_INTEGER)
 		  stride = mpz_get_si (ref->u.ar.stride[i]->value.integer);
 		else
 		  return 0;
@@ -2911,26 +2932,30 @@ get_expr_storage_size (gfc_expr *e)
 
 	    if (ref->u.ar.start[i])
 	      {
-		if (ref->u.ar.start[i]->expr_type == EXPR_CONSTANT)
+		if (ref->u.ar.start[i]->expr_type == EXPR_CONSTANT
+		    && ref->u.ar.start[i]->ts.type == BT_INTEGER)
 		  start = mpz_get_si (ref->u.ar.start[i]->value.integer);
 		else
 		  return 0;
 	      }
 	    else if (ref->u.ar.as->lower[i]
-		     && ref->u.ar.as->lower[i]->expr_type == EXPR_CONSTANT)
+		     && ref->u.ar.as->lower[i]->expr_type == EXPR_CONSTANT
+		     && ref->u.ar.as->lower[i]->ts.type == BT_INTEGER)
 	      start = mpz_get_si (ref->u.ar.as->lower[i]->value.integer);
 	    else
 	      return 0;
 
 	    if (ref->u.ar.end[i])
 	      {
-		if (ref->u.ar.end[i]->expr_type == EXPR_CONSTANT)
+		if (ref->u.ar.end[i]->expr_type == EXPR_CONSTANT
+		    && ref->u.ar.end[i]->ts.type == BT_INTEGER)
 		  end = mpz_get_si (ref->u.ar.end[i]->value.integer);
 		else
 		  return 0;
 	      }
 	    else if (ref->u.ar.as->upper[i]
-		     && ref->u.ar.as->upper[i]->expr_type == EXPR_CONSTANT)
+		     && ref->u.ar.as->upper[i]->expr_type == EXPR_CONSTANT
+		     && ref->u.ar.as->upper[i]->ts.type == BT_INTEGER)
 	      end = mpz_get_si (ref->u.ar.as->upper[i]->value.integer);
 	    else
 	      return 0;
@@ -2971,7 +2996,9 @@ get_expr_storage_size (gfc_expr *e)
 		  || ref->u.ar.as->upper[i] == NULL
 		  || ref->u.ar.as->lower[i] == NULL
 		  || ref->u.ar.as->upper[i]->expr_type != EXPR_CONSTANT
-		  || ref->u.ar.as->lower[i]->expr_type != EXPR_CONSTANT)
+		  || ref->u.ar.as->lower[i]->expr_type != EXPR_CONSTANT
+		  || ref->u.ar.as->upper[i]->ts.type != BT_INTEGER
+		  || ref->u.ar.as->lower[i]->ts.type != BT_INTEGER)
 		return 0;
 
 	      elements
@@ -2993,7 +3020,9 @@ get_expr_storage_size (gfc_expr *e)
 	    {
 	      if (!as->upper[i] || !as->lower[i]
 		  || as->upper[i]->expr_type != EXPR_CONSTANT
-		  || as->lower[i]->expr_type != EXPR_CONSTANT)
+		  || as->lower[i]->expr_type != EXPR_CONSTANT
+		  || as->upper[i]->ts.type != BT_INTEGER
+		  || as->lower[i]->ts.type != BT_INTEGER)
 		return 0;
 
 	      elements = elements
@@ -3273,9 +3302,11 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
       if (a->expr->ts.type == BT_CHARACTER
 	  && a->expr->ts.u.cl && a->expr->ts.u.cl->length
 	  && a->expr->ts.u.cl->length->expr_type == EXPR_CONSTANT
+	  && a->expr->ts.u.cl->length->ts.type == BT_INTEGER
 	  && f->sym->ts.type == BT_CHARACTER && f->sym->ts.u.cl
 	  && f->sym->ts.u.cl->length
 	  && f->sym->ts.u.cl->length->expr_type == EXPR_CONSTANT
+	  && f->sym->ts.u.cl->length->ts.type == BT_INTEGER
 	  && (f->sym->attr.pointer || f->sym->attr.allocatable
 	      || (f->sym->as && f->sym->as->type == AS_ASSUMED_SHAPE))
 	  && (mpz_cmp (a->expr->ts.u.cl->length->value.integer,
@@ -3477,25 +3508,39 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  goto match;
 	}
 
-      if (a->expr->expr_type != EXPR_NULL
-	  && compare_pointer (f->sym, a->expr) == 0)
+      if (a->expr->expr_type != EXPR_NULL)
 	{
-	  if (where)
-	    gfc_error ("Actual argument for %qs must be a pointer at %L",
-		       f->sym->name, &a->expr->where);
-	  ok = false;
-	  goto match;
-	}
+	  int cmp = compare_pointer (f->sym, a->expr);
+	  bool pre2008 = ((gfc_option.allow_std & GFC_STD_F2008) == 0);
 
-      if (a->expr->expr_type != EXPR_NULL
-	  && (gfc_option.allow_std & GFC_STD_F2008) == 0
-	  && compare_pointer (f->sym, a->expr) == 2)
-	{
-	  if (where)
-	    gfc_error ("Fortran 2008: Non-pointer actual argument at %L to "
-		       "pointer dummy %qs", &a->expr->where,f->sym->name);
-	  ok = false;
-	  goto match;
+	  if (pre2008 && cmp == 0)
+	    {
+	      if (where)
+		gfc_error ("Actual argument for %qs at %L must be a pointer",
+			   f->sym->name, &a->expr->where);
+	      ok = false;
+	      goto match;
+	    }
+
+	  if (pre2008 && cmp == 2)
+	    {
+	      if (where)
+		gfc_error ("Fortran 2008: Non-pointer actual argument at %L to "
+			   "pointer dummy %qs", &a->expr->where, f->sym->name);
+	      ok = false;
+	      goto match;
+	    }
+
+	  if (!pre2008 && cmp == 0)
+	    {
+	      if (where)
+		gfc_error ("Actual argument for %qs at %L must be a pointer "
+			   "or a valid target for the dummy pointer in a "
+			   "pointer assignment statement",
+			   f->sym->name, &a->expr->where);
+	      ok = false;
+	      goto match;
+	    }
 	}
 
 
@@ -4142,6 +4187,14 @@ gfc_procedure_use (gfc_symbol *sym, gfc_actual_arglist **ap, locus *where)
 	    {
 	      gfc_error ("MOLD argument to NULL required at %L",
 			 &a->expr->where);
+	      a->expr->error = 1;
+	      return false;
+	    }
+
+	  if (a->expr && a->expr->expr_type == EXPR_NULL)
+	    {
+	      gfc_error ("Passing intrinsic NULL as actual argument at %L "
+			 "requires an explicit interface", &a->expr->where);
 	      a->expr->error = 1;
 	      return false;
 	    }

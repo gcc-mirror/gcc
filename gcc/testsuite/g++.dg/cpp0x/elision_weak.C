@@ -9,11 +9,11 @@ struct S
 S f()
 {
   S s;
-  return s;
+  return s; // { dg-error "cannot bind non-const lvalue reference" "" { target c++23 } }
 }
 
 void g()
 {
   S s;
-  throw s;
+  throw s; // { dg-error "cannot bind non-const lvalue reference" "" { target c++23 } }
 }

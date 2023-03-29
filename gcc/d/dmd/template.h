@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -46,6 +46,21 @@ struct TemplatePrevious
     Objects *dedargs;
 };
 
+struct ArgumentList final
+{
+    Expressions* arguments;
+    Identifiers* names;
+    ArgumentList() :
+        arguments(),
+        names()
+    {
+    }
+    ArgumentList(Expressions* arguments, Identifiers* names = nullptr) :
+        arguments(arguments),
+        names(names)
+        {}
+};
+
 class TemplateDeclaration final : public ScopeDsymbol
 {
 public:
@@ -70,7 +85,6 @@ public:
     bool isTrivialAlias;        // matches pattern `template Alias(T) { alias Alias = qualifiers(T); }`
     bool deprecated_;           // this template declaration is deprecated
     Visibility visibility;
-    int inuse;                  // for recursive expansion detection
 
     TemplatePrevious *previous;         // threaded list of previous instantiation attempts on stack
 
@@ -82,7 +96,7 @@ public:
 
     Visibility visible() override;
 
-    MATCH leastAsSpecialized(Scope *sc, TemplateDeclaration *td2, Expressions *fargs);
+    MATCH leastAsSpecialized(Scope* sc, TemplateDeclaration* td2, ArgumentList argumentList);
     RootObject *declareParameter(Scope *sc, TemplateParameter *tp, RootObject *o);
 
     TemplateDeclaration *isTemplateDeclaration() override { return this; }

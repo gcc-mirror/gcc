@@ -14,8 +14,8 @@ contains
     write (*,*) i, "a" // letters(ivec)
   end subroutine concat
 end program foo_mod
-! { dg-output " *1 aa(\n|\r\n|\r)" }
-! { dg-output " *2 ab(\n|\r\n|\r)" }
-! { dg-output " *3 aaab(\n|\r\n|\r)" }
-! { dg-output " *4 abaa(\n|\r\n|\r)" }
-! { dg-output " *5 ababab(\n|\r\n|\r)" }
+! { dg-output " *1 aa(\r*\n+)" }
+! { dg-output " *2 ab(\r*\n+)" }
+! { dg-output " *3 aaab(\r*\n+)" }
+! { dg-output " *4 abaa(\r*\n+)" }
+! { dg-output " *5 ababab(\r*\n+)" }

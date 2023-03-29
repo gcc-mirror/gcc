@@ -1803,7 +1803,7 @@ version (CoreDdoc)
      * image. The isub_image field is an index into the sub-images
      * (sub-frameworks and sub-umbrellas list) that made up the two-level image
      * that the undefined symbol was found in when it was built by the static
-     * link editor. If isub-image is 0 the the symbol is expected to be defined
+     * link editor. If isub-image is 0 the symbol is expected to be defined
      * in library and not in the sub-images. If isub-image is non-zero it is an
      * index into the array of sub-images for the umbrella with the first index
      * in the sub-images being 1. The array of sub-images is the ordered list of

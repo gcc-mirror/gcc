@@ -1,6 +1,6 @@
 /* Manipulation of formal and actual parameters of functions and function
    calls.
-   Copyright (C) 2017-2022 Free Software Foundation, Inc.
+   Copyright (C) 2017-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -236,13 +236,6 @@ public:
   void get_surviving_params (vec<bool> *surviving_params);
   /* Fill a vector with new indices of surviving original parameters.  */
   void get_updated_indices (vec<int> *new_indices);
-  /* If a parameter with original INDEX has survived intact, return its new
-     index.  Otherwise return -1.  In that case, if it has been split and there
-     is a new parameter representing a portion at UNIT_OFFSET for which a value
-     of a TYPE can be substituted, store its new index into SPLIT_INDEX,
-     otherwise store -1 there.  */
-  int get_updated_index_or_split (int index, unsigned unit_offset, tree type,
-				  int *split_index);
   /* Return the original index for the given new parameter index.  Return a
      negative number if not available.  */
   int get_original_index (int newidx);
@@ -321,8 +314,14 @@ public:
 
   /* Change the PARM_DECLs.  */
   void modify_formal_parameters ();
+  /* Register a REPLACEMENT for accesses to BASE at UNIT_OFFSET.  */
+  void register_replacement (tree base, unsigned unit_offset, tree replacement);
   /* Register a replacement decl for the transformation done in APM.  */
   void register_replacement (ipa_adjusted_param *apm, tree replacement);
+  /* Sort m_replacements and set m_sorted_replacements_p to true.  Users that
+     call register_replacement themselves must call the method before any
+     lookup and thus also any statement or expression modification.  */
+  void sort_replacements ();
   /* Lookup a replacement for a given offset within a given parameter.  */
   tree lookup_replacement (tree base, unsigned unit_offset);
   /* Lookup a replacement for an expression, if there is one.  */
@@ -340,6 +339,10 @@ public:
      they are mapped to.  */
   void remap_with_debug_expressions (tree *t);
 
+  /* If there are any initialization statements that need to be emitted into
+     the basic block BB right at ther start of the new function, do so.  */
+  void append_init_stmts (basic_block bb);
+
   /* Pointers to data structures defining how the function should be
      modified.  */
   vec<ipa_adjusted_param, va_gc> *m_adj_params;
@@ -349,10 +352,6 @@ public:
      statements re-mapped and debug decls created.  */
 
   auto_vec<tree, 16> m_reset_debug_decls;
-
-  /* Set to true if there are any IPA_PARAM_OP_SPLIT adjustments among stored
-     adjustments.  */
-  bool m_split_modifications_p;
 
   /* Sets of statements and SSA_NAMEs that only manipulate data from parameters
      removed because they are not necessary.  */
@@ -372,6 +371,7 @@ private:
   unsigned get_base_index (ipa_adjusted_param *apm);
   ipa_param_body_replacement *lookup_replacement_1 (tree base,
 						    unsigned unit_offset);
+  ipa_param_body_replacement *lookup_first_base_replacement (tree base);
   tree replace_removed_params_ssa_names (tree old_name, gimple *stmt);
   bool modify_expression (tree *expr_p, bool convert);
   bool modify_assignment (gimple *stmt, gimple_seq *extra_stmts);
@@ -409,6 +409,12 @@ private:
 
   auto_vec<ipa_param_body_replacement, 16> m_replacements;
 
+  /* List of initialization assignments to be put at the beginning of the
+     cloned function to deal with split aggregates which however have known
+     constant value and so their PARM_DECL disappears.  */
+
+  auto_vec<gimple *, 8> m_split_agg_csts_inits;
+
   /* Vector for remapping SSA_BASES from old parameter declarations that are
      being removed as a part of the transformation.  Before a new VAR_DECL is
      created, it holds the old PARM_DECL, once the variable is built it is
@@ -424,6 +430,10 @@ private:
      its this pointer and must be converted to a normal function.  */
 
   bool m_method2func;
+
+  /* True if m_replacements have ben sorted since the last insertion.  */
+
+  bool m_sorted_replacements_p;
 };
 
 void push_function_arg_decls (vec<tree> *args, tree fndecl);

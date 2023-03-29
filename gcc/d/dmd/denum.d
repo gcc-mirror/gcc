@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/enum.html, Enums)
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/denum.d, _denum.d)
@@ -28,6 +28,7 @@ import dmd.globals;
 import dmd.id;
 import dmd.identifier;
 import dmd.init;
+import dmd.location;
 import dmd.mtype;
 import dmd.tokens;
 import dmd.typesem;
@@ -88,7 +89,7 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
         version (none)
         {
             printf("EnumDeclaration::addMember() %s\n", toChars());
-            for (size_t i = 0; i < members.dim; i++)
+            for (size_t i = 0; i < members.length; i++)
             {
                 EnumMember em = (*members)[i].isEnumMember();
                 printf("    member %s\n", em.toChars());
@@ -191,7 +192,7 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
             return handleErrors();
         }
 
-        foreach (const i; 0 .. members.dim)
+        foreach (const i; 0 .. members.length)
         {
             EnumMember em = (*members)[i].isEnumMember();
             if (em)

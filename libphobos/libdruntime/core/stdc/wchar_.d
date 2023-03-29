@@ -22,7 +22,6 @@ public import core.stdc.time;    // for tm
 public import core.stdc.stdint;  // for WCHAR_MIN, WCHAR_MAX
 
 extern (C):
-@system:
 nothrow:
 @nogc:
 

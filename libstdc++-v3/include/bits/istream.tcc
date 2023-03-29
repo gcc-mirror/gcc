@@ -1,6 +1,6 @@
 // istream classes -*- C++ -*-
 
-// Copyright (C) 1997-2022 Free Software Foundation, Inc.
+// Copyright (C) 1997-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -102,7 +102,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    ios_base::iostate __err = ios_base::goodbit;
 	    __try
 	      {
+#ifndef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
 		const __num_get_type& __ng = __check_facet(this->_M_num_get);
+#else
+		const __num_get_type& __ng
+		  = use_facet<__num_get_type>(this->_M_ios_locale);
+#endif
 		__ng.get(*this, 0, *this, __err, __v);
 	      }
 	    __catch(__cxxabiv1::__forced_unwind&)
@@ -132,7 +137,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __try
 	    {
 	      long __l;
+#ifndef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
 	      const __num_get_type& __ng = __check_facet(this->_M_num_get);
+#else
+	      const __num_get_type& __ng
+		= use_facet<__num_get_type>(this->_M_ios_locale);
+#endif
 	      __ng.get(*this, 0, *this, __err, __l);
 
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -177,7 +187,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __try
 	    {
 	      long __l;
+#ifndef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
 	      const __num_get_type& __ng = __check_facet(this->_M_num_get);
+#else
+	      const __num_get_type& __ng
+		= use_facet<__num_get_type>(this->_M_ios_locale);
+#endif
 	      __ng.get(*this, 0, *this, __err, __l);
 
 	      // _GLIBCXX_RESOLVE_LIB_DEFECTS

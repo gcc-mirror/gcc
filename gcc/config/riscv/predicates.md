@@ -1,5 +1,5 @@
 ;; Predicate description for RISC-V target.
-;; Copyright (C) 2011-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2011-2023 Free Software Foundation, Inc.
 ;; Contributed by Andrew Waterman (andrew@sifive.com).
 ;; Based on MIPS target for GNU compiler.
 ;;
@@ -146,6 +146,9 @@
     case CONST_INT:
       return !splittable_const_int_operand (op, mode);
 
+    case CONST_POLY_INT:
+      return known_eq (rtx_to_poly_int64 (op), BYTES_PER_RISCV_VECTOR);
+
     case CONST:
     case SYMBOL_REF:
     case LABEL_REF:
@@ -259,3 +262,153 @@
 
 	return true;
 })
+
+;; Predicates for the V extension.
+(define_special_predicate "vector_length_operand"
+  (ior (match_operand 0 "pmode_register_operand")
+       (match_operand 0 "const_csr_operand")))
+
+(define_predicate "reg_or_mem_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "memory_operand")))
+
+(define_predicate "reg_or_int_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "const_int_operand")))
+
+(define_predicate "vector_move_operand"
+  (ior (match_operand 0 "nonimmediate_operand")
+       (and (match_code "const_vector")
+            (match_test "reload_completed
+		|| satisfies_constraint_vi (op)
+		|| satisfies_constraint_Wc0 (op)"))))
+
+(define_predicate "vector_all_trues_mask_operand"
+  (and (match_code "const_vector")
+       (match_test "op == CONSTM1_RTX (GET_MODE (op))")))
+
+(define_predicate "vector_least_significant_set_mask_operand"
+  (and (match_code "const_vector")
+       (match_test "rtx_equal_p (op, riscv_vector::gen_scalar_move_mask (GET_MODE (op)))")))
+
+(define_predicate "vector_mask_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "vector_all_trues_mask_operand")))
+
+(define_predicate "vector_broadcast_mask_operand"
+  (ior (match_operand 0 "vector_least_significant_set_mask_operand")
+    (ior (match_operand 0 "register_operand")
+         (match_operand 0 "vector_all_trues_mask_operand"))))
+
+(define_predicate "vector_undef_operand"
+  (match_test "rtx_equal_p (op, RVV_VUNDEF (GET_MODE (op)))"))
+
+(define_predicate "vector_merge_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "vector_undef_operand")))
+
+(define_predicate "vector_arith_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_code "const_vector")
+            (match_test "riscv_vector::const_vec_all_same_in_range_p (op, -16, 15)"))))
+
+(define_predicate "vector_neg_arith_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_code "const_vector")
+            (match_test "riscv_vector::const_vec_all_same_in_range_p (op, -15, 16)"))))
+
+(define_predicate "vector_shift_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_code "const_vector")
+            (match_test "riscv_vector::const_vec_all_same_in_range_p (op, 0, 31)"))))
+
+(define_predicate "ltge_operator"
+  (match_code "lt,ltu,ge,geu"))
+
+(define_predicate "comparison_except_ltge_operator"
+  (match_code "eq,ne,le,leu,gt,gtu"))
+
+(define_predicate "comparison_except_eqge_operator"
+  (match_code "le,leu,gt,gtu,lt,ltu"))
+
+(define_predicate "ge_operator"
+  (match_code "ge,geu"))
+
+;; pmode_reg_or_uimm5_operand can be used by vsll.vx/vsrl.vx/vsra.vx instructions.
+;; Since it has the same predicate with vector_length_operand which allows register
+;; or immediate (0 ~ 31), we define this predicate same as vector_length_operand here.
+;; We don't use vector_length_operand directly to predicate vsll.vx/vsrl.vx/vsra.vx
+;; since it may be confusing.
+(define_special_predicate "pmode_reg_or_uimm5_operand"
+  (match_operand 0 "vector_length_operand"))
+
+(define_special_predicate "pmode_reg_or_0_operand"
+  (ior (match_operand 0 "const_0_operand")
+       (match_operand 0 "pmode_register_operand")))
+
+;; A special predicate that doesn't match a particular mode.
+(define_special_predicate "vector_any_register_operand"
+  (match_code "reg"))
+
+;; The scalar operand can be directly broadcast by RVV instructions.
+(define_predicate "direct_broadcast_operand"
+  (and (match_test "!(reload_completed && !FLOAT_MODE_P (GET_MODE (op))
+		&& (register_operand (op, GET_MODE (op)) || CONST_INT_P (op)
+		|| rtx_equal_p (op, CONST0_RTX (GET_MODE (op))))
+		&& maybe_gt (GET_MODE_BITSIZE (GET_MODE (op)), GET_MODE_BITSIZE (Pmode)))")
+    (ior (match_test "rtx_equal_p (op, CONST0_RTX (GET_MODE (op)))")
+         (ior (match_operand 0 "const_int_operand")
+              (ior (match_operand 0 "register_operand")
+                   (match_test "satisfies_constraint_Wdm (op)"))))))
+
+;; A CONST_INT operand that has exactly two bits cleared.
+(define_predicate "const_nottwobits_operand"
+  (and (match_code "const_int")
+       (match_test "popcount_hwi (~UINTVAL (op)) == 2")))
+
+;; A CONST_INT operand that consists of a single run of 32 consecutive
+;; set bits.
+(define_predicate "consecutive_bits32_operand"
+  (and (match_operand 0 "consecutive_bits_operand")
+       (match_test "popcount_hwi (UINTVAL (op)) == 32")))
+
+;; A CONST_INT operand that, if shifted down to start with its least
+;; significant non-zero bit, is a SMALL_OPERAND (suitable as an
+;; immediate to logical and arithmetic instructions).
+(define_predicate "shifted_const_arith_operand"
+  (and (match_code "const_int")
+       (match_test "ctz_hwi (INTVAL (op)) > 0")
+       (match_test "SMALL_OPERAND (INTVAL (op) >> ctz_hwi (INTVAL (op)))")))
+
+;; A CONST_INT operand that has exactly two bits set.
+(define_predicate "const_twobits_operand"
+  (and (match_code "const_int")
+       (match_test "popcount_hwi (UINTVAL (op)) == 2")))
+
+(define_predicate "const_twobits_not_arith_operand"
+  (and (match_code "const_int")
+       (and (not (match_operand 0 "arith_operand"))
+	    (match_operand 0 "const_twobits_operand"))))
+
+;; A CONST_INT operand that fits into the unsigned half of a
+;; signed-immediate after the top bit has been cleared
+(define_predicate "uimm_extra_bit_operand"
+  (and (match_code "const_int")
+       (match_test "UIMM_EXTRA_BIT_OPERAND (UINTVAL (op))")))
+
+(define_predicate "uimm_extra_bit_or_twobits"
+  (and (match_code "const_int")
+       (ior (match_operand 0 "uimm_extra_bit_operand")
+	    (match_operand 0 "const_twobits_operand"))))
+
+;; A CONST_INT operand that fits into the negative half of a
+;; signed-immediate after a single cleared top bit has been
+;; set: i.e., a bitwise-negated uimm_extra_bit_operand
+(define_predicate "not_uimm_extra_bit_operand"
+  (and (match_code "const_int")
+       (match_test "UIMM_EXTRA_BIT_OPERAND (~UINTVAL (op))")))
+
+(define_predicate "not_uimm_extra_bit_or_nottwobits"
+  (and (match_code "const_int")
+       (ior (match_operand 0 "not_uimm_extra_bit_operand")
+	    (match_operand 0 "const_nottwobits_operand"))))

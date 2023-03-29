@@ -1,6 +1,6 @@
 // TR1 stdio.h -*- C++ -*-
 
-// Copyright (C) 2006-2022 Free Software Foundation, Inc.
+// Copyright (C) 2006-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,6 +28,8 @@
 
 #ifndef _TR1_STDIO_H
 #define _TR1_STDIO_H 1
+
+#include <bits/requires_hosted.h> // TR1
 
 #include <tr1/cstdio>
 

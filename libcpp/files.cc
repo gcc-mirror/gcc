@@ -1,5 +1,5 @@
 /* Part of CPP library.  File handling.
-   Copyright (C) 1986-2022 Free Software Foundation, Inc.
+   Copyright (C) 1986-2023 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -1833,7 +1833,7 @@ remap_filename (cpp_reader *pfile, _cpp_file *file)
 #ifdef HAVE_DOS_BASED_FILE_SYSTEM
       {
 	const char *p2 = strchr (fname, '\\');
-	if (!p || (p > p2))
+	if (!p || (p2 && p > p2))
 	  p = p2;
       }
 #endif

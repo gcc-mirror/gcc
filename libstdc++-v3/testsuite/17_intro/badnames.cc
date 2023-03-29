@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2022 Free Software Foundation, Inc.
+// Copyright (C) 2020-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile { target x86_64-*-linux* } }
+// { dg-add-options no_pch }
 
 // Names taken from coding_style.bad_identifiers in the libstdc++ manual.
 // We can't test this on all targets, because these names are used in

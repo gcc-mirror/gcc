@@ -81,5 +81,5 @@ foo (int a, int b, long c, long d)
 /* { dg-final { scan-tree-dump-times "thread_limit\\(-1\\)" 3 "gimple" } } */
 /* { dg-final { scan-tree-dump-times "num_teams\\(0\\)" 4 "gimple" } } */
 /* { dg-final { scan-tree-dump-times "thread_limit\\(0\\)" 6 "gimple" } } */
-/* { dg-final { scan-tree-dump-times "num_teams\\(1\\)" 2 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "num_teams\\(-2\\)" 2 "gimple" } } */
 /* { dg-final { scan-tree-dump-times "thread_limit\\(1\\)" 0 "gimple" } } */

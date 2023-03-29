@@ -609,7 +609,7 @@ FILE_LIST=""
 # Programs we use.
 
 BZIP2="${BZIP2:-bzip2}"
-XZ="${XZ:-xz --best}"
+XZ="${XZ:-xz -T0 --best}"
 CVS="${CVS:-cvs -f -Q -z9}"
 DIFF="${DIFF:-diff -Nrcpad}"
 ENV="${ENV:-env}"

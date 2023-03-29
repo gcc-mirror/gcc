@@ -28,7 +28,7 @@ immutable
         gnu = 2,         /// GNU D Compiler (GDC)
         llvm = 3,        /// LLVM D Compiler (LDC)
         dotNET = 4,      /// D.NET
-        sdc = 5,         /// Stupid D Compiler (SDC)
+        sdc = 5,         /// Snazzy D Compiler (SDC)
     }
 
     /// Which vendor produced this compiler.

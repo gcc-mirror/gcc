@@ -7,7 +7,7 @@
 
   <copyright>
     <year>
-      2008-2018
+      2008-2023
     </year>
     <holder>
       <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.fsf.org">FSF</link>
@@ -754,7 +754,7 @@
     (i.e., nearly all of us needing to read this page in the first
     place), a public list of the library defects is occasionally
     published on <link xmlns:xlink="http://www.w3.org/1999/xlink"
-    xlink:href="http://www.open-std.org/jtc1/sc22/wg21/">the WG21
+    xlink:href="https://www.open-std.org/jtc1/sc22/wg21/">the WG21
     website</link>.
     Many of these issues have resulted in
     <link linkend="manual.intro.status.bugs.iso">code changes in libstdc++</link>.
@@ -1181,7 +1181,7 @@
     </para>
     <para>
     The C++ Standard Library
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf">
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf">
     Technical Report 1</link> added many new features to the library.
     </para>
     <para>

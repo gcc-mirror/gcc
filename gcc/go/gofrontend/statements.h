@@ -1411,7 +1411,7 @@ class Thunk_statement : public Statement
 
   // Build the thunk.
   void
-  build_thunk(Gogo*, const std::string&);
+  build_thunk(Gogo*, const std::string&, Struct_type*);
 
   // Set the name to use for thunk field N.
   void
@@ -1420,9 +1420,6 @@ class Thunk_statement : public Statement
   // The function call to be executed in a separate thread (go) or
   // later (defer).
   Expression* call_;
-  // The type used for a struct to pass to a thunk, if this is not a
-  // simple call.
-  Struct_type* struct_type_;
 };
 
 // A go statement.

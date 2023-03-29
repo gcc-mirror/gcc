@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/objc_interface.html, Interfacing to Objective-C)
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/objc.d, _objc.d)
@@ -36,6 +36,7 @@ import dmd.gluelayer;
 import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
+import dmd.location;
 import dmd.mtype;
 import dmd.root.array;
 import dmd.common.outbuffer;
@@ -555,7 +556,7 @@ extern(C++) private final class Supported : Objc
                 return 1;
             }
 
-            assert(literal.elements.dim == 1);
+            assert(literal.elements.length == 1);
             auto se = (*literal.elements)[0].toStringExp();
             assert(se);
 
@@ -570,7 +571,7 @@ extern(C++) private final class Supported : Objc
         if (!fd.objc.selector)
             return;
         TypeFunction tf = cast(TypeFunction)fd.type;
-        if (fd.objc.selector.paramCount != tf.parameterList.parameters.dim)
+        if (fd.objc.selector.paramCount != tf.parameterList.parameters.length)
             fd.error("number of colons in Objective-C selector must match number of parameters");
         if (fd.parent && fd.parent.isTemplateInstance())
             fd.error("template cannot have an Objective-C selector attached");

@@ -1,0 +1,3556 @@
+(* SymbolTable.def provides access to the symbol table.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS for A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE SymbolTable ;
+
+(*
+   Author     : Gaius Mulley
+   Title      : SymbolTable
+   Date       : 7/3/87
+   Description: SymbolTable provides the higher level routines to
+                maintain a symbol table for the Modula-2 Compiler.
+*)
+
+FROM SYSTEM IMPORT WORD ;
+FROM SymbolKey IMPORT PerformOperation ;
+FROM NameKey IMPORT Name ;
+FROM m2tree IMPORT Tree ;
+FROM DynamicStrings IMPORT String ;
+FROM M2Error IMPORT ErrorScope ;
+FROM Lists IMPORT List ;
+
+EXPORT QUALIFIED NulSym,
+                 FinalSymbol,
+
+                 ModeOfAddr,
+                 GetMode, PutMode,
+
+                 AppendModuleOnImportStatement,
+                 AppendModuleImportStatement,
+
+                 StartScope, EndScope, PseudoScope,
+                 GetCurrentScope,
+                 IsDeclaredIn,
+                 CheckAnonymous, IsNameAnonymous,
+
+                 SetCurrentModule,
+                 SetMainModule,
+                 SetFileModule,
+                 MakeModule, MakeDefImp,
+                 MakeInnerModule, MakeModuleCtor, PutModuleCtorExtern,
+                 MakeProcedure,
+                 MakeProcedureCtorExtern,
+                 MakeConstant,
+                 MakeConstLit,
+                 MakeConstVar,
+                 MakeConstLitString,
+                 MakeConstString,
+                 MakeConstStringC, MakeConstStringCnul, MakeConstStringM2nul,
+                 MakeType,
+                 MakeHiddenType,
+                 MakeVar,
+                 MakeRecord,
+                 MakeVarient,
+                 MakeFieldVarient,
+                 MakeEnumeration,
+                 MakeSubrange,
+      	       	 MakeSet,
+                 MakeArray,
+                 MakeTemporary,
+                 MakeComponentRecord,
+                 MakeComponentRef,
+                 IsComponent,
+                 MakePointer,
+                 MakeSubscript,
+                 MakeUnbounded,
+                 MakeOAFamily,
+                 MakeProcType,
+                 MakeImport, MakeImportStatement,
+                 Make2Tuple,
+                 MakeGnuAsm,
+                 MakeRegInterface,
+                 MakeError, MakeErrorS,
+
+                 ForeachModuleDo,
+                 ForeachInnerModuleDo,
+                 ForeachLocalSymDo,
+                 ForeachFieldEnumerationDo,
+                 GetModule,
+                 GetCurrentModule,
+                 GetFileModule,
+                 GetMainModule,
+                 GetBaseModule,
+                 GetCurrentModuleScope,
+                 GetLastModuleScope,
+                 AddSymToModuleScope,
+                 GetType, GetLType, GetSType, GetDType,
+                 SkipType, SkipTypeAndSubrange,
+                 GetLowestType,
+                 GetSym, GetLocalSym, GetDeclareSym, GetRecord,
+                 FromModuleGetSym,
+                 GetOAFamily,
+                 GetDimension,
+                 GetNth,
+                 GetVarScope,
+                 GetSubrange,
+                 GetParam,
+                 GetString,
+                 GetStringLength,
+                 GetProcedureBuiltin,
+                 GetNthParam,
+                 GetNthProcedure,
+                 GetParameterShadowVar,
+                 GetUnbounded,
+                 GetUnboundedRecordType,
+                 GetUnboundedAddressOffset,
+                 GetUnboundedHighOffset,
+                 GetModuleQuads,
+                 PutModuleFinallyFunction, GetModuleFinallyFunction,
+                 PutExceptionBlock, HasExceptionBlock,
+                 PutExceptionFinally, HasExceptionFinally,
+                 GetProcedureQuads,
+                 GetQuads,
+                 GetReadQuads, GetWriteQuads,
+                 GetReadLimitQuads, GetWriteLimitQuads,
+                 GetDeclaredDef, GetDeclaredMod, PutDeclared,
+                 GetDeclaredDefinition, GetDeclaredModule,
+                 GetFirstUsed,
+                 PutProcedureBegin, PutProcedureEnd, GetProcedureBeginEnd,
+                 GetGnuAsmInput, GetGnuAsmOutput, GetGnuAsmTrash, GetGnuAsm,
+                 GetRegInterface,
+                 GetVariableAtAddress,
+                 GetAlignment, GetDefaultRecordFieldAlignment,
+                 PutDeclaredPacked, IsDeclaredPacked, IsDeclaredPackedResolved,
+                 GetPackedEquivalent, GetNonPackedEquivalent,
+                 GetConstStringM2, GetConstStringC, GetConstStringM2nul, GetConstStringCnul,
+                 GetModuleCtors,
+                 GetImportModule, GetImportDeclared,
+                 GetImportStatementList, GetModuleDefImportStatementList, GetModuleModImportStatementList,
+
+                 PutVar,
+                 PutVarConst,
+                 PutLeftValueFrontBackType,
+                 GetVarBackEndType,
+                 PutVarPointerCheck,
+                 GetVarPointerCheck,
+                 PutVarWritten,
+                 GetVarWritten,
+                 PutConst,
+                 PutConstString,
+                 PutDefLink,
+                 PutModLink,
+                 PutModuleBuiltin,
+
+                 PutConstSet,
+                 PutConstructor,
+                 PutConstructorFrom,
+                 PutFieldRecord,
+                 PutFieldVarient,
+                 GetVarient,
+                 GetVarientTag,
+
+                 PutVarientTag,
+                 IsRecordFieldAVarientTag,
+                 IsEmptyFieldVarient,
+                 PutFieldEnumeration,
+                 PutSubrange,
+      	       	 PutSet, IsSetPacked,
+                 PutArraySubscript, GetArraySubscript,
+                 PutArray,
+		 PutArrayLarge, IsArrayLarge,
+                 PutType,
+                 PutFunction, PutOptFunction,
+                 PutParam, PutVarParam, PutParamName,
+                 PutProcTypeParam, PutProcTypeVarParam,
+                 PutPointer,
+                 PutSubscript,
+                 PutProcedureBuiltin, PutProcedureInline,
+                 PutModuleStartQuad,
+                 PutModuleEndQuad,
+                 PutModuleFinallyStartQuad,
+                 PutModuleFinallyEndQuad,
+                 PutProcedureStartQuad,
+                 PutProcedureEndQuad,
+                 PutProcedureScopeQuad,
+                 PutProcedureReachable,
+                 PutProcedureNoReturn, IsProcedureNoReturn,
+                 PutReadQuad, RemoveReadQuad,
+                 PutWriteQuad, RemoveWriteQuad,
+                 PutGnuAsm, PutGnuAsmOutput, PutGnuAsmInput, PutGnuAsmTrash,
+                 PutGnuAsmVolatile, PutGnuAsmSimple,
+                 PutRegInterface,
+                 PutVariableAtAddress,
+                 PutAlignment, PutDefaultRecordFieldAlignment,
+                 PutUnused, IsUnused,
+                 PutVariableSSA, IsVariableSSA,
+                 PutPublic, IsPublic, PutCtor, IsCtor, PutExtern, IsExtern,
+                 PutMonoName, IsMonoName,
+
+                 IsDefImp,
+                 IsModule,
+                 IsInnerModule,
+                 IsUnknown,
+                 IsPartialUnbounded,
+                 IsType,
+                 IsProcedure,
+                 IsParameter,
+                 IsParameterUnbounded,
+                 IsParameterVar,
+                 IsVarParam,
+                 IsUnboundedParam,
+                 IsPointer,
+                 IsRecord,
+                 IsVarient,
+                 IsFieldVarient,
+                 IsEnumeration,
+                 IsFieldEnumeration,
+                 IsUnbounded,
+                 IsArray,
+                 IsRecordField,
+                 IsProcType,
+                 IsImport,
+                 IsImportStatement,
+                 IsVar,
+                 IsVarConst,
+                 IsConst,
+                 IsConstString,
+                 IsConstStringM2, IsConstStringC, IsConstStringM2nul, IsConstStringCnul,
+                 IsConstLit,
+                 IsConstSet,
+                 IsConstructor,
+                 IsDummy,
+                 IsTemporary, IsVarAParam,
+                 IsSubscript,
+                 IsSubrange,
+      	       	 IsSet,
+                 IsHiddenType,
+                 IsAModula2Type,
+                 IsGnuAsmVolatile, IsGnuAsmSimple, IsGnuAsm, IsRegInterface,
+                 IsError,
+                 IsObject,
+                 IsTuple,
+                 IsComposite,
+
+                 IsReallyPointer,
+                 IsLegal,
+
+                 IsProcedureReachable,
+                 IsProcedureVariable,
+                 IsProcedureNested,
+                 IsProcedureBuiltin, IsProcedureInline,
+                 IsModuleWithinProcedure,
+                 IsVariableAtAddress,
+                 IsReturnOptional,
+                 IsDefLink,
+                 IsModLink,
+                 IsModuleBuiltin,
+
+                 ForeachProcedureDo,
+                 ProcedureParametersDefined,
+                 AreProcedureParametersDefined,
+                 ParametersDefinedInDefinition,
+                 AreParametersDefinedInDefinition,
+                 ParametersDefinedInImplementation,
+                 AreParametersDefinedInImplementation,
+
+                 PutUseVarArgs,
+                 UsesVarArgs,
+                 PutUseOptArg,
+                 UsesOptArg,
+                 PutOptArgInit,
+                 GetOptArgInit,
+                 PutPriority,
+                 GetPriority,
+                 PutNeedSavePriority,
+                 GetNeedSavePriority,
+
+                 NoOfVariables,
+                 NoOfElements,
+                 NoOfParam,
+                 AddNameToImportList,
+                 AddNameToScope, ResolveImports,
+                 GetScope, GetModuleScope, GetProcedureScope,
+                 GetParent,
+
+                 GetSymName,
+                 RenameSym,
+
+                 RequestSym,
+
+                 GetExported,
+                 PutImported,
+                 PutIncluded,
+                 PutExported,
+                 PutExportQualified,
+                 PutExportUnQualified,
+                 PutExportUnImplemented,
+                 GetFromOuterModule,
+                 IsExportQualified,
+                 IsExportUnQualified,
+                 IsExported,
+                 IsImplicityExported,
+                 IsImported,
+                 PutIncludedByDefinition, IsIncludedByDefinition,
+                 TryMoveUndeclaredSymToInnerModule,
+                 ForeachImportedDo,
+                 ForeachExportedDo,
+                 ForeachOAFamily,
+
+                 CheckForExportedImplementation,
+                 CheckForUnImplementedExports,
+                 CheckForUndeclaredExports,
+                 CheckForUnknownInModule, UnknownReported,
+                 CheckHiddenTypeAreAddress,
+
+                 CheckForEnumerationInCurrentModule,
+                 PutHiddenTypeDeclared,
+                 IsHiddenTypeDeclared,
+
+                 PutDefinitionForC,
+                 IsDefinitionForC,
+
+                 PutDoesNeedExportList, PutDoesNotNeedExportList,
+                 DoesNotNeedExportList,
+                 ResolveConstructorTypes,
+                 MakeTemporaryFromExpression, MakeTemporaryFromExpressions,
+                 SanityCheckConstants,
+
+                 PutModuleContainsBuiltin, IsBuiltinInModule,
+		 HasVarParameters,
+                 GetErrorScope,
+                 GetLibName, PutLibName,
+
+                 IsSizeSolved,
+                 IsOffsetSolved,
+                 IsValueSolved,
+                 IsConstructorConstant,
+                 IsSumOfParamSizeSolved,
+                 PushSize,
+                 PushOffset,
+                 PushValue,
+                 PushParamSize,
+                 PushVarSize,
+                 PushSumOfLocalVarSize,
+                 PushSumOfParamSize,
+                 PopValue,
+                 PopSize,
+                 PopOffset,
+                 PopSumOfParamSize,
+                 DisplayTrees,
+		 DebugLineNumbers ;
+
+
+(*
+   Throughout this module any SymKey value of 0 is deemed to be a
+   nul symbol.
+*)
+
+CONST
+   NulSym = 0 ;
+
+
+(*
+   Mode describes the modes of the variables and constants
+*)
+
+TYPE
+   ModeOfAddr = (NoValue, ImmediateValue, RightValue, LeftValue) ;
+   FamilyOperation = PROCEDURE (CARDINAL, CARDINAL, CARDINAL) ;
+
+
+(*
+   FinalSymbol - returns the highest number symbol used.
+*)
+
+PROCEDURE FinalSymbol () : CARDINAL ;
+
+
+(*
+   MakeComponentRecord - make a temporary which will be used to reference and field
+                         (or sub field) of record.
+*)
+
+PROCEDURE MakeComponentRecord (tok: CARDINAL;
+                               Mode: ModeOfAddr; record: CARDINAL) : CARDINAL ;
+
+
+(*
+   MakeComponentRef - use, sym, to reference, field, sym is returned.
+*)
+
+PROCEDURE MakeComponentRef (sym: CARDINAL; field: CARDINAL) : CARDINAL ;
+
+
+(*
+   IsComponent - returns TRUE if symbol, sym, is a temporary and a component
+                 reference.
+*)
+
+PROCEDURE IsComponent (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   MakeTemporary - makes a new temporary variable at the highest real scope.
+                   The addressing mode of the temporary is set to Mode.
+*)
+
+PROCEDURE MakeTemporary (tok: CARDINAL; Mode: ModeOfAddr) : CARDINAL ;
+
+
+(*
+   MakeTemporaryFromExpression - makes a new temporary variable at the
+                                 highest real scope.  The addressing
+                                 mode of the temporary is set and the
+                                 type is determined by expressions, e.
+*)
+
+PROCEDURE MakeTemporaryFromExpression (tok: CARDINAL;
+                                       e: CARDINAL;
+                                       mode: ModeOfAddr) : CARDINAL ;
+
+(*
+   MakeTemporaryFromExpressions - makes a new temporary variable at the
+                                  highest real scope.  The addressing
+                                  mode of the temporary is set and the
+                                  type is determined by expressions,
+                                  e1 and e2.
+*)
+
+PROCEDURE MakeTemporaryFromExpressions (tok: CARDINAL;
+                                        e1, e2: CARDINAL;
+                                        mode: ModeOfAddr) : CARDINAL ;
+
+
+(*
+   PutMode - Puts the addressing mode, SymMode, into symbol Sym.
+      	     The mode may only be altered if the mode is None.
+*)
+
+PROCEDURE PutMode (Sym: CARDINAL; SymMode: ModeOfAddr) ;
+
+
+(*
+   GetMode - Returns the addressing mode of a symbol.
+*)
+
+PROCEDURE GetMode (Sym: CARDINAL) : ModeOfAddr ;
+
+
+(*
+   StartScope - starts a block scope at Sym.
+*)
+
+PROCEDURE StartScope (Sym: CARDINAL) ;
+
+
+(*
+   EndScope - ends a block scope started by StartScope. The current
+              head of the symbol scope reverts back to the symbol
+              which was the Head of the symbol scope before the
+              last StartScope was called.
+*)
+
+PROCEDURE EndScope ;
+
+
+(*
+   PseudoScope - starts a pseudo scope. This is used to implement
+                 enumeration types. It is nesessary since the
+                 enumeration type does not have an explicit
+                 structure, as opposed to RECORD, WITH, MODULE and
+                 PROCEDURE. Therefore there is no explicit end and
+                 hence the end of an outer scope would cause the
+                 end of the enumeration scope. Thus we need to have
+                 a pseudo scope which will be treated the same
+                 during the search of a symbol, but will be popped
+                 automatically when the EndScope calls - for a
+                 structured scope end.
+*)
+
+PROCEDURE PseudoScope (Sym: CARDINAL) ;
+
+
+(*
+   GetCurrentScope - returns the symbol who is responsible for the current
+                     scope. Note that it ignores pseudo scopes.
+*)
+
+PROCEDURE GetCurrentScope () : CARDINAL ;
+
+
+(*
+   IsDeclaredIn - returns TRUE if a symbol was declared in, scope.
+*)
+
+PROCEDURE IsDeclaredIn (scope, sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetCurrentModule - Used to set the CurrentModule to a symbol, Sym.
+                      This Sym may represent an inner module.
+*)
+
+PROCEDURE SetCurrentModule (Sym: CARDINAL) ;
+
+
+(*
+   SetFileModule - Used to set the FileModule to a symbol, Sym.
+                   This Sym must represent the current program module
+                   file which is being parsed.
+*)
+
+PROCEDURE SetFileModule (Sym: CARDINAL) ;
+
+
+(*
+   SetMainModule - Used to set the MainModule to a symbol, Sym.
+                   This Sym must represent the main module which was
+                   envoked by the user to be compiled.
+*)
+
+PROCEDURE SetMainModule (Sym: CARDINAL) ;
+
+
+(*
+   CheckAnonymous - checks to see whether the name is NulName and if so
+                    it creates a unique anonymous name.
+*)
+
+PROCEDURE CheckAnonymous (name: Name) : Name ;
+
+
+(*
+   IsNameAnonymous - returns TRUE if the symbol, sym, has an anonymous name
+                     or no name.
+*)
+
+PROCEDURE IsNameAnonymous (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   NoOfVariables - returns the number of variables in scope.  The scope maybe
+                   a procedure, module or defimp scope.
+*)
+
+PROCEDURE NoOfVariables (scope: CARDINAL) : CARDINAL ;
+
+
+(*
+   MakeModule - creates a module sym with ModuleName. It returns the
+                symbol index.
+*)
+
+PROCEDURE MakeModule (tok: CARDINAL; ModuleName: Name) : CARDINAL ;
+
+
+(*
+   MakeDefImp - creates a definition and implementation module sym
+                with name DefImpName. It returns the symbol index.
+*)
+
+PROCEDURE MakeDefImp (tok: CARDINAL; DefImpName: Name) : CARDINAL ;
+
+
+(*
+   MakeInnerModule - creates an inner module sym with ModuleName. It returns the
+                     symbol index.
+*)
+
+PROCEDURE MakeInnerModule (tok: CARDINAL; ModuleName: Name) : CARDINAL ;
+
+
+(*
+   MakeProcedure - creates a procedure sym with name. It returns
+                   the symbol index.
+*)
+
+PROCEDURE MakeProcedure (tok: CARDINAL; ProcedureName: Name) : CARDINAL ;
+
+
+(*
+   MakeProcedureCtorExtern - creates an extern ctor procedure
+*)
+
+PROCEDURE MakeProcedureCtorExtern (tokenno: CARDINAL; libname, modulename: Name) : CARDINAL ;
+
+
+(*
+   PutLibName - places libname into defimp or module sym.
+*)
+
+PROCEDURE PutLibName (sym: CARDINAL; libname: Name) ;
+
+
+(*
+   GetLibName - returns libname associated with a defimp or module sym.
+*)
+
+PROCEDURE GetLibName (sym: CARDINAL) : Name ;
+
+
+(*
+   PutMonoName - changes the IsMonoName boolean inside the procedure.
+*)
+
+PROCEDURE PutMonoName (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   IsMonoName - returns the public boolean associated with a procedure.
+*)
+
+PROCEDURE IsMonoName (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutExtern - changes the extern boolean inside the procedure.
+*)
+
+PROCEDURE PutExtern (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   IsExtern - returns the public boolean associated with a procedure.
+*)
+
+PROCEDURE IsExtern (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutPublic - changes the public boolean inside the procedure.
+*)
+
+PROCEDURE PutPublic (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   IsPublic - returns the public boolean associated with a procedure.
+*)
+
+PROCEDURE IsPublic (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutCtor - changes the ctor boolean inside the procedure.
+*)
+
+PROCEDURE PutCtor (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   IsCtor - returns the ctor boolean associated with a procedure.
+*)
+
+PROCEDURE IsCtor (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetModuleCtors - mod can be a DefImp or Module symbol.  ctor, init and fini
+                    are assigned for this module.  An inner module ctor value will
+                    be NulSym.
+*)
+
+PROCEDURE GetModuleCtors (mod: CARDINAL; VAR ctor, init, fini, dep: CARDINAL) ;
+
+
+(*
+   MakeModuleCtor - for a defimp or module symbol create all the ctor
+                    related procedures.
+*)
+
+PROCEDURE MakeModuleCtor (moduleTok, beginTok, finallyTok: CARDINAL;
+                          moduleSym: CARDINAL) ;
+
+
+(*
+   PutModuleCtorExtern - for every ctor related procedure in module sym.
+                         Make it external.  It will create any missing
+                         init/fini procedures but not any missing dep/ctor
+                         procedures.
+*)
+
+PROCEDURE PutModuleCtorExtern (tok: CARDINAL; sym: CARDINAL; external: BOOLEAN) ;
+
+
+(*
+   MakeVar - creates a variable sym with VarName. It returns the
+             symbol index.
+*)
+
+PROCEDURE MakeVar (tok: CARDINAL; VarName: Name) : CARDINAL ;
+
+
+(*
+   MakeRecord - makes a Record symbol with name RecordName.
+*)
+
+PROCEDURE MakeRecord (tok: CARDINAL; RecordName: Name) : CARDINAL ;
+
+
+(*
+   MakeVarient - creates a new symbol, a varient symbol for record or varient field
+                 symbol, RecOrVarFieldSym.
+*)
+
+PROCEDURE MakeVarient (tok: CARDINAL; RecOrVarFieldSym: CARDINAL) : CARDINAL ;
+
+
+(*
+   MakeFieldVarient - returns a FieldVarient symbol which has been
+                      assigned to the Varient symbol, Sym.
+*)
+
+PROCEDURE MakeFieldVarient (n: Name; Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   MakeEnumeration - places a new symbol in the current scope, the symbol
+                     is an enumeration symbol. The symbol index is returned.
+*)
+
+PROCEDURE MakeEnumeration (tok: CARDINAL; EnumerationName: Name) : CARDINAL ;
+
+
+(*
+   MakeType - makes a type symbol with name TypeName.
+*)
+
+PROCEDURE MakeType (tok: CARDINAL; TypeName: Name) : CARDINAL ;
+
+
+(*
+   MakeHiddenType - makes a type symbol that is hidden from the
+                    definition module.
+                    This symbol is placed into the UnImplemented list of
+                    the definition/implementation module.
+                    The type will be filled in when the implementation module
+                    is reached.
+*)
+
+PROCEDURE MakeHiddenType (tok: CARDINAL; TypeName: Name) : CARDINAL ;
+
+
+(*
+   MakeConstant - create a constant cardinal and return the symbol.
+*)
+
+PROCEDURE MakeConstant (tok: CARDINAL; value: CARDINAL) : CARDINAL ;
+
+
+(*
+   MakeConstLit - returns a constant literal of type, constType, with a constName,
+                  at location, tok.
+*)
+
+PROCEDURE MakeConstLit (tok: CARDINAL; constName: Name; constType: CARDINAL) : CARDINAL ;
+
+
+(*
+   MakeConstVar - makes a ConstVar type with
+                  name ConstVarName.
+*)
+
+PROCEDURE MakeConstVar (tok: CARDINAL; ConstVarName: Name) : CARDINAL ;
+
+
+(*
+   MakeConstLitString - put a constant which has the string described by
+                        ConstName into the ConstantTree and return a symbol.
+                        This symbol is known as a String Constant rather than a
+                        ConstLit which indicates a number.
+                        If the constant already exits
+                        then a duplicate constant is not entered in the tree.
+                        All values of constant strings
+                        are ignored in Pass 1 and evaluated in Pass 2 via
+                        character manipulation.
+*)
+
+PROCEDURE MakeConstLitString (tok: CARDINAL; ConstName: Name) : CARDINAL ;
+
+
+(*
+   MakeConstString - puts a constant into the symboltable which is a string.
+                     The string value is unknown at this time and will be
+                     filled in later by PutString.
+*)
+
+PROCEDURE MakeConstString (tok: CARDINAL; ConstName: Name) : CARDINAL ;
+
+
+(*
+   MakeSubrange - makes a new symbol into a subrange type with
+                  name SubrangeName.
+*)
+
+PROCEDURE MakeSubrange (tok: CARDINAL; SubrangeName: Name) : CARDINAL ;
+
+
+(*
+   MakeSet - makes a set Symbol with name, SetName.
+*)
+
+PROCEDURE MakeSet (tok: CARDINAL; SetName: Name) : CARDINAL ;
+
+
+(*
+   MakeArray - makes an Array symbol with name ArrayName.
+*)
+
+PROCEDURE MakeArray (tok: CARDINAL; ArrayName: Name) : CARDINAL ;
+
+
+(*
+   PutArrayLarge - indicates that this is a large array in which case
+                   the interface to gcc maps this array from 0..high-low,
+                   using an integer indice.
+*)
+
+PROCEDURE PutArrayLarge (array: CARDINAL) ;
+
+
+(*
+   IsArrayLarge - returns TRUE if we need to treat this as a large array.
+*)
+
+PROCEDURE IsArrayLarge (array: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutPriority - places a interrupt, priority, value into module, module.
+*)
+
+PROCEDURE PutPriority (module: CARDINAL; priority: CARDINAL) ;
+
+
+(*
+   GetPriority - returns the interrupt priority which was assigned to
+                 module, module.
+*)
+
+PROCEDURE GetPriority (module: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutNeedSavePriority - set a boolean flag indicating that this procedure
+                         needs to save and restore interrupts.
+*)
+
+PROCEDURE PutNeedSavePriority (sym: CARDINAL) ;
+
+
+(*
+   GetNeedSavePriority - returns the boolean flag indicating whether this procedure
+                         needs to save and restore interrupts.
+*)
+
+PROCEDURE GetNeedSavePriority (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutVariableAtAddress - determines that a variable, sym, is declared at
+                          a specific address.
+*)
+
+PROCEDURE PutVariableAtAddress (sym: CARDINAL; address: CARDINAL) ;
+
+
+(*
+   GetVariableAtAddress - returns the address at which variable, sym, is declared.
+*)
+
+PROCEDURE GetVariableAtAddress (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   IsVariableAtAddress - returns TRUE if a variable, sym, was declared at
+                         a specific address.
+*)
+
+PROCEDURE IsVariableAtAddress (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutVariableSSA - assigns value to the SSA field within variable sym.
+*)
+
+PROCEDURE PutVariableSSA (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   IsVariableSSA - returns TRUE if variable is known to be a SSA.
+*)
+
+PROCEDURE IsVariableSSA (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutVarConst - sets the IsConst field to value indicating the variable is read only.
+*)
+
+PROCEDURE PutVarConst (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   MakeGnuAsm - create a GnuAsm symbol.
+*)
+
+PROCEDURE MakeGnuAsm () : CARDINAL ;
+
+
+(*
+   PutGnuAsm - places the instruction textual name into the GnuAsm symbol.
+*)
+
+PROCEDURE PutGnuAsm (sym: CARDINAL; string: CARDINAL) ;
+
+
+(*
+   PutGnuAsmOutput - places the interface object, out, into GnuAsm symbol, sym.
+*)
+
+PROCEDURE PutGnuAsmOutput (sym: CARDINAL; out: CARDINAL) ;
+
+
+(*
+   PutGnuAsmInput - places the interface object, in, into GnuAsm symbol, sym.
+*)
+
+PROCEDURE PutGnuAsmInput (sym: CARDINAL; in: CARDINAL) ;
+
+
+(*
+   PutGnuAsmTrash - places the interface object, trash, into GnuAsm symbol, sym.
+*)
+
+PROCEDURE PutGnuAsmTrash (sym: CARDINAL; trash: CARDINAL) ;
+
+
+(*
+   GetGnuAsm - returns the string symbol, representing the instruction textual
+               of the GnuAsm symbol. It will return a ConstString.
+*)
+
+PROCEDURE GetGnuAsm (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetGnuAsmInput - returns the input list of registers.
+*)
+
+PROCEDURE GetGnuAsmInput (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetGnuAsmOutput - returns the output list of registers.
+*)
+
+PROCEDURE GetGnuAsmOutput (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetGnuAsmTrash - returns the list of trashed registers.
+*)
+
+PROCEDURE GetGnuAsmTrash (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutGnuAsmVolatile - defines a GnuAsm symbol as VOLATILE.
+*)
+
+PROCEDURE PutGnuAsmVolatile (Sym: CARDINAL) ;
+
+
+(*
+   PutGnuAsmSimple - defines a GnuAsm symbol as a simple kind.
+*)
+
+PROCEDURE PutGnuAsmSimple (Sym: CARDINAL) ;
+
+
+(*
+   MakeRegInterface - creates and returns a register interface symbol.
+*)
+
+PROCEDURE MakeRegInterface () : CARDINAL ;
+
+
+(*
+   PutRegInterface - places a, name, string, and, object, into the interface array,
+                     sym, at position, i.
+                     The string symbol will either be a register name or a constraint.
+                     The object is an optional Modula-2 variable or constant symbol.
+*)
+
+PROCEDURE PutRegInterface (sym: CARDINAL; i: CARDINAL;
+                           n: Name; string, object: CARDINAL) ;
+
+
+(*
+   GetRegInterface - gets a, name, string, and, object, from the interface array,
+                     sym, from position, i.
+*)
+
+PROCEDURE GetRegInterface (sym: CARDINAL; i: CARDINAL;
+                           VAR n: Name; VAR string, object: CARDINAL) ;
+
+
+(*
+   GetModule - Returns the Module symbol for the module with name, n.
+*)
+
+PROCEDURE GetModule (name: Name) : CARDINAL ;
+
+
+(*
+   GetCurrentModule - returns the current module Sym that is being
+                      compiled. It may return an inner module.
+*)
+
+PROCEDURE GetCurrentModule () : CARDINAL ;
+
+
+(*
+   GetFileModule - returns the FileModule symbol that was requested by
+                   the user to be compiled.
+*)
+
+PROCEDURE GetFileModule () : CARDINAL ;
+
+
+(*
+   GetBaseModule - returns the base module symbol that contains Modula-2
+                   base types, procedures and functions.
+*)
+
+PROCEDURE GetBaseModule () : CARDINAL ;
+
+
+(*
+   GetMainModule - returns the main module symbol that was requested by
+                   the user to be compiled.
+*)
+
+PROCEDURE GetMainModule () : CARDINAL ;
+
+
+(*
+   GetCurrentModuleScope - returns the module symbol which forms the
+                           current (possibly inner most) module.
+*)
+
+PROCEDURE GetCurrentModuleScope () : CARDINAL ;
+
+
+(*
+   GetLastModuleScope - returns the last module scope encountered,
+                        the module scope before the Current Module Scope.
+*)
+
+PROCEDURE GetLastModuleScope () : CARDINAL ;
+
+
+(*
+   AddSymToModuleScope - adds a symbol, Sym, to the scope of the module
+                         ModSym.
+*)
+
+PROCEDURE AddSymToModuleScope (ModSym: CARDINAL; Sym: CARDINAL) ;
+
+
+(*
+   GetType - Returns the symbol that is the TYPE symbol to Sym.
+             If NulSym is returned then we assume type unknown.
+*)
+
+PROCEDURE GetType (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   SkipType - if sym is a TYPE foo = bar
+              then call SkipType(bar)
+              else return sym
+
+              it does not skip over hidden types.
+*)
+
+PROCEDURE SkipType (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   SkipTypeAndSubrange - if sym is a TYPE foo = bar OR
+                            sym is declared as a subrange of bar
+                         then call SkipTypeAndSubrange(bar)
+                         else return sym
+
+                         it does not skip over hidden types.
+*)
+
+PROCEDURE SkipTypeAndSubrange (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetLowestType - Returns the lowest type in the type chain of
+                   symbol Sym.
+                   If NulSym is returned then we assume type unknown.
+*)
+
+PROCEDURE GetLowestType (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetLType - get lowest type.  It returns the lowest type
+              of symbol, sym.  It skips over type equivalences.
+*)
+
+PROCEDURE GetLType (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetSType - get source type.  It returns the type closest
+              to the object.  It does not skip over type
+              equivalences.
+*)
+
+PROCEDURE GetSType (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetDType - get gcc declared type.  It returns the type
+              of the object which is declared to GCC.
+              It does skip over type equivalences but only
+              if they do not contain a user alignment.
+              It does not skip over hidden types.
+
+              This is the same as SkipType(GetType(sym))
+*)
+
+PROCEDURE GetDType (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetSym - searches the current scope (and previous scopes if the
+            scope tranparent allows) for a symbol with Name.
+*)
+
+PROCEDURE GetSym (name: Name) : CARDINAL ;
+
+
+(*
+   GetDeclareSym - searches for a symbol with a name SymName in the
+                   current and previous scopes.
+                   If the symbol is found then it is returned
+                   else an unknown symbol is returned.
+                   This procedure assumes that SymName is being
+                   declared at this point and therefore it does
+                   not examine the base scope (for pervasive
+                   identifiers).
+*)
+
+PROCEDURE GetDeclareSym (tok: CARDINAL; SymName: Name) : CARDINAL ;
+
+
+(*
+   GetLocalSym - only searches the scope Sym for a symbol with Name
+                 and returns the index to the symbol.
+*)
+
+PROCEDURE GetLocalSym (Sym: CARDINAL; name: Name) : CARDINAL ;
+
+
+(*
+   GetRecord - fetches the record symbol from the parent of Sym.
+               Sym maybe a varient symbol in which case its parent is searched
+               etc.
+*)
+
+PROCEDURE GetRecord (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   FromModuleGetSym - attempts to find a symbol of name, n, in the
+                      module, mod, scope.  An unknown symbol is created
+                      at token position tok if necessary.
+*)
+
+PROCEDURE FromModuleGetSym (tok: CARDINAL;
+                            n: Name; mod: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetNth - returns the n th symbol in the list of father Sym.
+            Sym may be a Module, DefImp, Procedure or Record symbol.
+*)
+
+PROCEDURE GetNth (Sym: CARDINAL; n: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetNthParam - returns the n th parameter in procedure Sym.
+                 Sym may be an ordinary procedure or a
+                 procedure variable.
+                 ParamNo of zero yields the return argument
+                 if the procedure is a function.
+                 NOTE that this is returned as a type NOT
+                 a parameter.
+*)
+
+PROCEDURE GetNthParam (Sym: CARDINAL; ParamNo: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetVarScope - returns the symbol definining the scope where, Sym, was declared.
+                 ie a Module, DefImp or Procedure Symbol.
+*)
+
+PROCEDURE GetVarScope (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetSubrange - returns HighSym and LowSym - two constants
+                 which make up the subrange.
+*)
+
+PROCEDURE GetSubrange (Sym: CARDINAL; VAR HighSym, LowSym: CARDINAL) ;
+
+
+(*
+   GetParam - returns the ParamNo parameter from procedure ProcSym
+*)
+
+PROCEDURE GetParam (Sym: CARDINAL; ParamNo: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetString - returns the actual string key for ConstString symbol Sym,
+               which is not necessarily the same as its name.
+               ie CONST
+                     hello = 'HELLO' ;      Name = hello, string = HELLO
+                     GetString returns HELLO
+
+               and simply 'Hello World'     Name will be same
+                     GetString returns Hello World
+*)
+
+PROCEDURE GetString (Sym: CARDINAL) : Name ;
+
+
+(*
+   GetStringLength - returns the actual string length for ConstString
+                     symbol Sym.
+*)
+
+PROCEDURE GetStringLength (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetProcedureBuiltin - returns the builtin name for the equivalent procedure, Sym.
+*)
+
+PROCEDURE GetProcedureBuiltin (Sym: CARDINAL) : Name ;
+
+
+(*
+   PutProcedureBuiltin - assigns the builtin name for the equivalent procedure, Sym.
+*)
+
+PROCEDURE PutProcedureBuiltin (Sym: CARDINAL; name: Name) ;
+
+
+(*
+   IsProcedureBuiltin - returns TRUE if this procedure has a builtin equivalent.
+*)
+
+PROCEDURE IsProcedureBuiltin (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutProcedureInline - determines that procedure, Sym, has been requested to be inlined.
+*)
+
+PROCEDURE PutProcedureInline (Sym: CARDINAL) ;
+
+
+(*
+   IsProcedureInline - returns TRUE if this procedure was declared as inlined.
+*)
+
+PROCEDURE IsProcedureInline (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutExceptionBlock - sets a BOOLEAN in block module/procedure/defimp,
+                       sym, indicating that this block as an EXCEPT
+                       statement sequence.
+*)
+
+PROCEDURE PutExceptionBlock (sym: CARDINAL) ;
+
+
+(*
+   HasExceptionBlock - returns a BOOLEAN determining whether
+                       module/procedure/defimp, sym, has
+                       an EXCEPT statement sequence.
+*)
+
+PROCEDURE HasExceptionBlock (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutExceptionFinally - sets a BOOLEAN in block module/defimp,
+                         sym, indicating that this FINALLY block
+                         as an EXCEPT statement sequence.
+*)
+
+PROCEDURE PutExceptionFinally (sym: CARDINAL) ;
+
+
+(*
+   HasExceptionFinally - returns a BOOLEAN determining whether
+                         module/defimp, sym, has
+                         an EXCEPT statement sequence.
+*)
+
+PROCEDURE HasExceptionFinally (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutVar - gives the variable symbol Sym a type VarType.
+*)
+
+PROCEDURE PutVar (Sym: CARDINAL; VarType: CARDINAL) ;
+
+
+(*
+   PutLeftValueFrontBackType - gives the variable symbol a front and backend type.
+                               The variable must be a LeftValue.
+*)
+
+PROCEDURE PutLeftValueFrontBackType (Sym: CARDINAL; FrontType, BackType: CARDINAL) ;
+
+
+(*
+   GetVarBackEndType - returns the back end type if specified.
+*)
+
+PROCEDURE GetVarBackEndType (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutVarPointerCheck - marks variable, sym, as requiring (or not
+                        depending upon the, value), a NIL pointer check
+                        when this symbol is dereferenced.
+*)
+
+PROCEDURE PutVarPointerCheck (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   GetVarPointerCheck - returns TRUE if this symbol is a variable and
+                        has been marked as needing a pointer via NIL check.
+*)
+
+PROCEDURE GetVarPointerCheck (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutVarWritten - marks variable, sym, as being written to (or not
+                   depending upon the, value).
+*)
+
+PROCEDURE PutVarWritten (sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   GetVarWritten - returns TRUE if this symbol is a variable and
+                   has been marked as being written.
+*)
+
+PROCEDURE GetVarWritten (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutConst - gives the constant symbol Sym a type ConstType.
+*)
+
+PROCEDURE PutConst (Sym: CARDINAL; ConstType: CARDINAL) ;
+
+
+(*
+   PutConstString - places contents into a constant symbol, sym.
+                    sym maybe a ConstString or a ConstVar.  If the later is
+                    true then the ConstVar is converted to a ConstString.
+*)
+
+PROCEDURE PutConstString (tok: CARDINAL; sym: CARDINAL; contents: Name) ;
+
+
+(*
+   GetConstStringM2 - returns the Modula-2 variant of a string
+                      (with no added nul terminator).
+*)
+
+PROCEDURE GetConstStringM2 (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetConstStringC - returns the C variant of a string
+                     (with no added nul terminator).
+*)
+
+PROCEDURE GetConstStringC (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetConstStringM2nul - returns the Modula-2 variant of a string
+                         (with added nul terminator).
+*)
+
+PROCEDURE GetConstStringM2nul (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetConstStringCnul - returns the C variant of a string
+                        (with no added nul terminator).
+*)
+
+PROCEDURE GetConstStringCnul (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutConstSet - informs the constant symbol, sym, that it is or will contain
+                 a set value.
+*)
+
+PROCEDURE PutConstSet (Sym: CARDINAL) ;
+
+
+(*
+   IsConstSet - returns TRUE if the constant is declared as a set.
+*)
+
+PROCEDURE IsConstSet (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutConstructor - informs the symbol sym that this will be
+                    a constructor constant.
+*)
+
+PROCEDURE PutConstructor (Sym: CARDINAL) ;
+
+
+(*
+   PutConstructorFrom - sets the from type field in constructor
+                        Sym to from.
+*)
+
+PROCEDURE PutConstructorFrom (Sym: CARDINAL; from: CARDINAL) ;
+
+
+(*
+   PutFieldRecord - places a field, FieldName and FieldType into a record, Sym.
+                    VarSym is a optional varient symbol which can be returned
+                    by a call to GetVarient(fieldsymbol).  The created field
+                    is returned.
+*)
+
+PROCEDURE PutFieldRecord (Sym: CARDINAL;
+                          FieldName: Name; FieldType: CARDINAL;
+                          VarSym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutFieldVarient - places the field varient, Field, as a brother to, the
+                     varient symbol, sym.
+*)
+
+PROCEDURE PutFieldVarient (Field, Sym: CARDINAL) ;
+
+
+(*
+   GetVarient - returns the varient symbol associated with the
+                record or varient field symbol, Field.
+*)
+
+PROCEDURE GetVarient (Field: CARDINAL) : CARDINAL ;
+
+
+(*
+   IsRecordFieldAVarientTag - returns TRUE if record field, sym, is
+                              a varient tag.
+*)
+
+PROCEDURE IsRecordFieldAVarientTag (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsEmptyFieldVarient - returns TRUE if the field variant has
+                         no fields.  This will occur then the
+                         compiler constructs 'else end' variants.
+*)
+
+PROCEDURE IsEmptyFieldVarient (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetVarientTag - returns the varient tag from, Sym.
+*)
+
+PROCEDURE GetVarientTag (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutVarientTag - places, Tag, into varient, Sym.
+*)
+
+PROCEDURE PutVarientTag (Sym, Tag: CARDINAL) ;
+
+
+(*
+   PutFieldEnumeration - places a field into the enumeration type
+                         Sym. The field has a name FieldName and a
+                         value FieldVal.
+*)
+
+PROCEDURE PutFieldEnumeration (tok: CARDINAL; Sym: CARDINAL; FieldName: Name) ;
+
+
+(*
+   PutSubrange - places LowSym and HighSym as two symbols
+                 which provide the limits of the range.
+*)
+
+PROCEDURE PutSubrange (Sym: CARDINAL; LowSym, HighSym: CARDINAL;
+                       TypeSymbol: CARDINAL) ;
+
+
+(*
+   PutSet - places SimpleType as the type for set, Sym.
+*)
+
+PROCEDURE PutSet (Sym: CARDINAL; SimpleType: CARDINAL; packed: BOOLEAN) ;
+
+
+(*
+   IsSetPacked - returns TRUE if Sym is packed.
+*)
+
+PROCEDURE IsSetPacked (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetArraySubscript - returns the subrange symbol for array, Sym.
+*)
+
+PROCEDURE GetArraySubscript (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutArraySubscript - places an index field into the array Sym. The
+                       index field is a subscript sym.
+*)
+
+PROCEDURE PutArraySubscript (Sym: CARDINAL; SubscriptSymbol: CARDINAL) ;
+
+
+(*
+   PutType - gives a type symbol Sym type TypeSymbol.
+*)
+
+PROCEDURE PutType (Sym: CARDINAL; TypeSymbol: CARDINAL) ;
+
+
+(*
+   PutFunction - Places a TypeSym as the return type to a procedure Sym.
+*)
+
+PROCEDURE PutFunction (Sym: CARDINAL; TypeSym: CARDINAL) ;
+
+
+(*
+   PutOptFunction - places a TypeSym as the optional return type to a procedure Sym.
+*)
+
+PROCEDURE PutOptFunction (Sym: CARDINAL; TypeSym: CARDINAL) ;
+
+
+(*
+   IsReturnOptional - returns TRUE if the return value for, sym, is
+                      optional.
+*)
+
+PROCEDURE IsReturnOptional (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutParam - Places a Non VAR parameter ParamName with type ParamType into
+              procedure Sym. The parameter number is ParamNo.
+              If the procedure Sym already has this parameter then
+              the parameter is checked for consistancy and the
+              consistancy test is returned.
+*)
+
+PROCEDURE PutParam (tok: CARDINAL; Sym: CARDINAL; ParamNo: CARDINAL;
+                    ParamName: Name; ParamType: CARDINAL;
+                    isUnbounded: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   PutVarParam - Places a Non VAR parameter ParamName with type
+                 ParamType into procedure Sym.
+                 The parameter number is ParamNo.
+                 If the procedure Sym already has this parameter then
+                 the parameter is checked for consistancy and the
+                 consistancy test is returned.
+*)
+
+PROCEDURE PutVarParam (tok: CARDINAL; Sym: CARDINAL; ParamNo: CARDINAL;
+                       ParamName: Name; ParamType: CARDINAL;
+                       isUnbounded: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   PutParamName - assigns a name, name, to paramater, no, of procedure,
+                  ProcSym.
+*)
+
+PROCEDURE PutParamName (tok: CARDINAL; ProcSym: CARDINAL; no: CARDINAL; name: Name) ;
+
+
+(*
+   PutProcedureReachable - Sets the procedure, Sym, to be reachable by the
+                           main Module.
+*)
+
+PROCEDURE PutProcedureReachable (Sym: CARDINAL) ;
+
+
+(*
+   IsProcedureReachable - Returns true if the procedure, Sym, is
+                          reachable from the main Module.
+*)
+
+PROCEDURE IsProcedureReachable (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutProcedureNoReturn - places value into the no return attribute
+                          field of procedure sym.
+*)
+
+PROCEDURE PutProcedureNoReturn (Sym: CARDINAL; value: BOOLEAN) ;
+
+
+(*
+   IsProcedureNoReturn - returns TRUE if this procedure never returns.
+*)
+
+PROCEDURE IsProcedureNoReturn (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutModuleStartQuad - Places QuadNumber into the Module symbol, Sym.
+                        QuadNumber is the start quad of Module,
+                        Sym.
+*)
+
+PROCEDURE PutModuleStartQuad (Sym: CARDINAL; QuadNumber: CARDINAL) ;
+
+
+(*
+   PutModuleEndQuad - Places QuadNumber into the Module symbol, Sym.
+                      QuadNumber is the end quad of Module,
+                      Sym.
+*)
+
+PROCEDURE PutModuleEndQuad (Sym: CARDINAL; QuadNumber: CARDINAL) ;
+
+
+(*
+   PutModuleFinallyStartQuad - Places QuadNumber into the Module symbol, Sym.
+                               QuadNumber is the finally start quad of
+                               Module, Sym.
+*)
+
+PROCEDURE PutModuleFinallyStartQuad (Sym: CARDINAL; QuadNumber: CARDINAL) ;
+
+
+(*
+   PutModuleFinallyEndQuad - Places QuadNumber into the Module symbol, Sym.
+                             QuadNumber is the end quad of the finally block
+                             in Module, Sym.
+*)
+
+PROCEDURE PutModuleFinallyEndQuad (Sym: CARDINAL; QuadNumber: CARDINAL) ;
+
+
+(*
+   GetModuleQuads - Returns, StartInit EndInit StartFinish EndFinish,
+                    Quads of a Module, Sym.
+                    Start and End represent the initialization code
+                    of the Module, Sym.
+*)
+
+PROCEDURE GetModuleQuads (Sym: CARDINAL;
+                          VAR StartInit, EndInit,
+                          StartFinish, EndFinish: CARDINAL) ;
+
+(*
+   PutModuleFinallyFunction - Places Tree, finally, into the Module symbol, Sym.
+*)
+
+PROCEDURE PutModuleFinallyFunction (Sym: CARDINAL; finally: Tree) ;
+
+
+(*
+   GetModuleFinallyFunction - returns the finally tree from the Module symbol, Sym.
+*)
+
+PROCEDURE GetModuleFinallyFunction (Sym: CARDINAL) : Tree ;
+
+
+(*
+   PutProcedureScopeQuad - Places QuadNumber into the Procedure symbol, Sym.
+                           QuadNumber is the start quad of procedure,
+                           Sym.
+*)
+
+PROCEDURE PutProcedureScopeQuad (Sym: CARDINAL; QuadNumber: CARDINAL) ;
+
+
+(*
+   PutProcedureStartQuad - Places QuadNumber into the Procedure symbol, Sym.
+                           QuadNumber is the start quad of procedure,
+                           Sym.
+*)
+
+PROCEDURE PutProcedureStartQuad (Sym: CARDINAL; QuadNumber: CARDINAL) ;
+
+
+(*
+   PutProcedureEndQuad - Places QuadNumber into the Procedure symbol, Sym.
+                         QuadNumber is the end quad of procedure,
+                         Sym.
+*)
+
+PROCEDURE PutProcedureEndQuad (Sym: CARDINAL; QuadNumber: CARDINAL) ;
+
+
+(*
+   GetProcedureQuads - Returns, Start and End, Quads of a procedure, Sym.
+*)
+
+PROCEDURE GetProcedureQuads (Sym: CARDINAL; VAR scope, start, end: CARDINAL) ;
+
+
+(*
+   GetQuads - assigns Start and End to the beginning and end of
+              symbol, Sym, usage.
+*)
+
+PROCEDURE GetQuads (Sym: CARDINAL; m: ModeOfAddr;
+                    VAR Start, End: CARDINAL) ;
+
+
+(*
+   GetReadQuads - assigns Start and End to the beginning and end of
+                  symbol, Sym, usage.
+*)
+
+PROCEDURE GetReadQuads (Sym: CARDINAL; m: ModeOfAddr;
+                        VAR Start, End: CARDINAL) ;
+
+
+(*
+   GetWriteQuads - assigns Start and End to the beginning and end of
+                   symbol, Sym, usage.
+*)
+
+PROCEDURE GetWriteQuads (Sym: CARDINAL; m: ModeOfAddr;
+                         VAR Start, End: CARDINAL) ;
+
+
+(*
+   PutReadQuad - places Quad into the list of symbol usage.
+*)
+
+PROCEDURE PutReadQuad (Sym: CARDINAL; m: ModeOfAddr; Quad: CARDINAL) ;
+
+
+(*
+   RemoveReadQuad - places Quad into the list of symbol usage.
+*)
+
+PROCEDURE RemoveReadQuad (Sym: CARDINAL; m: ModeOfAddr; Quad: CARDINAL) ;
+
+
+(*
+   PutWriteQuad - places Quad into the list of symbol usage.
+*)
+
+PROCEDURE PutWriteQuad (Sym: CARDINAL; m: ModeOfAddr; Quad: CARDINAL) ;
+
+
+(*
+   RemoveWriteQuad - places Quad into the list of symbol usage.
+*)
+
+PROCEDURE RemoveWriteQuad (Sym: CARDINAL; m: ModeOfAddr; Quad: CARDINAL) ;
+
+
+(*
+   GetReadLimitQuads - returns Start and End which have been assigned
+                       the start and end of when the symbol was read
+                       to within: StartLimit..EndLimit.
+*)
+
+PROCEDURE GetReadLimitQuads (Sym: CARDINAL; m: ModeOfAddr;
+                             StartLimit, EndLimit: CARDINAL;
+                             VAR Start, End: CARDINAL) ;
+
+
+(*
+   GetWriteLimitQuads - returns Start and End which have been assigned
+                        the start and end of when the symbol was written
+                        to within: StartLimit..EndLimit.
+*)
+
+PROCEDURE GetWriteLimitQuads (Sym: CARDINAL; m: ModeOfAddr;
+                              StartLimit, EndLimit: CARDINAL;
+                              VAR Start, End: CARDINAL) ;
+
+
+(*
+   GetNthProcedure - Returns the Nth procedure in Module, Sym.
+*)
+
+PROCEDURE GetNthProcedure (Sym: CARDINAL; n: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetDeclaredDef - returns the token where this symbol was declared
+                    with the priority of the definition, implementation,
+                    program.
+*)
+
+PROCEDURE GetDeclaredDef (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetDeclaredMod - returns the token where this symbol was declared.
+                    with the priority of the implementation, program
+                    and definition.
+*)
+
+PROCEDURE GetDeclaredMod (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetDeclaredDefinition - returns the token where this symbol
+                           was declared in the definition module.
+*)
+
+PROCEDURE GetDeclaredDefinition (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetDeclaredModule - returns the token where this symbol was declared
+                       in an implementation or program module.
+*)
+
+PROCEDURE GetDeclaredModule (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutDeclared - adds an entry to symbol, Sym, indicating that it
+                 was declared at, tok.  This routine
+                 may be called twice, once for definition module
+                 partial declaration and once when parsing the
+                 implementation module.
+*)
+
+PROCEDURE PutDeclared (tok: CARDINAL; Sym: CARDINAL) ;
+
+
+(*
+   GetFirstUsed - returns the token where this symbol was first used.
+*)
+
+PROCEDURE GetFirstUsed (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutProcedureBegin - assigns begin as the token number matching the
+                       procedure BEGIN.
+*)
+
+PROCEDURE PutProcedureBegin (Sym: CARDINAL; begin: CARDINAL) ;
+
+
+(*
+   PutProcedureEnd - assigns end as the token number matching the
+                     procedure END.
+*)
+
+PROCEDURE PutProcedureEnd (Sym: CARDINAL; end: CARDINAL) ;
+
+
+(*
+   GetProcedureBeginEnd - assigns, begin, end, to the stored token values.
+*)
+
+PROCEDURE GetProcedureBeginEnd (Sym: CARDINAL; VAR begin, end: CARDINAL) ;
+
+
+(*
+   ForeachProcedureDo - for each procedure in module, Sym, do procedure, P.
+*)
+
+PROCEDURE ForeachProcedureDo (Sym: CARDINAL; P: PerformOperation) ;
+
+
+(*
+   ForeachModuleDo - for each module do procedure, P.
+*)
+
+PROCEDURE ForeachModuleDo (P: PerformOperation) ;
+
+
+(*
+   ForeachInnerModuleDo - for each inner module in module, Sym,
+                          do procedure, P.
+*)
+
+PROCEDURE ForeachInnerModuleDo (Sym: CARDINAL; P: PerformOperation) ;
+
+
+(*
+   IsVarParam - Returns a conditional depending whether parameter ParamNo
+                is a VAR procedure parameter.
+*)
+
+PROCEDURE IsVarParam (Sym: CARDINAL; ParamNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsUnboundedParam - Returns a conditional depending whether parameter
+                      ParamNo is an unbounded array procedure parameter.
+*)
+
+PROCEDURE IsUnboundedParam (Sym: CARDINAL; ParamNo: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsParameterUnbounded - returns TRUE if parameter, Sym, is
+                          unbounded.
+*)
+
+PROCEDURE IsParameterUnbounded (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsParameterVar - returns true if parameter symbol Sym
+                    was declared as a VAR.
+*)
+
+PROCEDURE IsParameterVar (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetParameterShadowVar - returns the local variable associated with the
+                           parameter symbol, sym.
+*)
+
+PROCEDURE GetParameterShadowVar (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   NoOfParam - Returns the number of parameters that procedure Sym contains.
+*)
+
+PROCEDURE NoOfParam (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   HasVarParameters - returns TRUE if procedure, p, has any VAR parameters.
+*)
+
+PROCEDURE HasVarParameters (p: CARDINAL) : BOOLEAN ;
+
+
+(*
+   NoOfLocalVar - returns the number of local variables that exist in
+                  procedure Sym. Parameters are NOT included in the
+                  count.
+*)
+
+PROCEDURE NoOfLocalVar (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   IsDefImp - returns true is the Sym is a DefImp symbol.
+              Definition/Implementation module symbol.
+*)
+
+PROCEDURE IsDefImp (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsModule - returns true if the Sym is a Module symbol.
+              Program module symbol.
+              Includes inner modules.
+*)
+
+PROCEDURE IsModule (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsInnerModule - returns true if the symbol, Sym, is an inner module.
+*)
+
+PROCEDURE IsInnerModule (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetSymName - returns the symbol name.
+*)
+
+PROCEDURE GetSymName (Sym: CARDINAL) : Name ;
+
+
+(*
+   RenameSym - renames a symbol, Sym, with SymName.
+               It also checks the unknown tree for a symbol
+               with this new name.
+*)
+
+PROCEDURE RenameSym (Sym: CARDINAL; SymName: Name) ;
+
+
+(*
+   IsUnknown - returns true is the symbol Sym is unknown.
+*)
+
+PROCEDURE IsUnknown (Sym: WORD) : BOOLEAN ;
+
+
+(*
+   IsPartialUnbounded - returns TRUE if, sym, is a partially unbounded symbol.
+*)
+
+PROCEDURE IsPartialUnbounded (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   RequestSym - searches for a symbol with a name SymName in the
+                current and previous scopes.
+                If the symbol is found then it is returned
+                else an unknown symbol is returned create at token
+                position, tok.
+                This procedure does search the base scope (for
+                pervasive identifiers).
+*)
+
+PROCEDURE RequestSym (tok: CARDINAL; SymName: Name) : CARDINAL ;
+
+
+(*
+   PutImported - places a symbol, Sym, into the current main scope.
+*)
+
+PROCEDURE PutImported (Sym: CARDINAL) ;
+
+
+(*
+   PutIncluded - places a symbol, Sym, into the included list of the
+                 current module.
+                 Symbols that are placed in this list are indirectly declared
+                 by:
+
+                 import modulename ;
+
+                 modulename.identifier
+*)
+
+PROCEDURE PutIncluded (Sym: CARDINAL) ;
+
+
+(*
+   PutExported - places a symbol, Sym into the the next level out module.
+                 Sym is also placed in the ExportTree of the current inner
+                 module.
+*)
+
+PROCEDURE PutExported (Sym: CARDINAL) ;
+
+
+(*
+   PutExportQualified - places a symbol with the name, SymName,
+                        into the export tree of the
+                        Definition module being compiled.
+                        The symbol with SymName has been export QUALIFIED
+                        by the definition module and therefore any reference
+                        to this symbol in the code generation phase
+                        will be in the form _Module_SymName.
+*)
+
+PROCEDURE PutExportQualified (tokenno: CARDINAL; SymName: Name) ;
+
+
+(*
+   PutExportUnQualified - places a symbol with the name, SymName,
+                          into the export tree of the
+                          Definition module being compiled.
+                          The symbol with SymName has been export unqualified
+                          by the definition module and therefore any reference
+                          to this symbol in the code generation phase
+                          will be in the form _SymName.
+*)
+
+PROCEDURE PutExportUnQualified (tokenno: CARDINAL; SymName: Name) ;
+
+
+(*
+   PutExportUnImplemented - places a symbol, Sym, into the currently compiled
+                            DefImp module NeedToBeImplemented list.
+*)
+
+PROCEDURE PutExportUnImplemented (tokenno: CARDINAL; Sym: CARDINAL) ;
+
+
+(*
+   GetExported - returns the symbol which has a name SymName,
+                 and is exported from module ModSym.
+
+*)
+
+PROCEDURE GetExported (tokenno: CARDINAL;
+                       ModSym: CARDINAL;
+                       SymName: Name) : CARDINAL ;
+
+
+(*
+   GetFromOuterModule - returns a symbol with name, SymName, which comes
+                        from outside the current module.
+*)
+
+PROCEDURE GetFromOuterModule (tokenno: CARDINAL; SymName: Name) : CARDINAL ;
+
+
+(*
+   TryMoveUndeclaredSymToInnerModule - attempts to move a symbol of
+                                       name, name, which is
+                                       currently undefined in the
+                                       outer scope to the inner scope.
+                                       If successful then the symbol is
+                                       returned otherwise NulSym is
+                                       returned.
+*)
+
+PROCEDURE TryMoveUndeclaredSymToInnerModule (OuterScope,
+                                             InnerScope: CARDINAL;
+                                             name: Name) : CARDINAL ;
+
+
+(*
+   IsExportQualified - returns true if a symbol, Sym, was defined as
+                       being EXPORT QUALIFIED.
+                       Sym is expected to be either a procedure or a
+                       variable.
+*)
+
+PROCEDURE IsExportQualified (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsExportUnQualified - returns true if a symbol, Sym, was defined as
+                         being EXPORT UNQUALIFIED.
+                         Sym is expected to be either a procedure or a
+                         variable.
+*)
+
+PROCEDURE IsExportUnQualified (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsExported - returns true if a symbol, Sym, is exported
+                from module, ModSym.
+                If ModSym is a DefImp symbol then its
+                ExportQualified and ExportUnQualified lists are examined.
+*)
+
+PROCEDURE IsExported (ModSym: CARDINAL; Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsImplicityExported - returns TRUE if, Sym, is implicitly exported from module, ModSym.
+                         ModSym must be a defimp symbol.
+*)
+
+PROCEDURE IsImplicityExported (ModSym, Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsImported - returns true if a symbol, Sym, in module, ModSym,
+                was imported.
+*)
+
+PROCEDURE IsImported (ModSym: CARDINAL; Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutIncludedByDefinition - places a module symbol, Sym, into the
+                             included list of the current definition module.
+*)
+
+PROCEDURE PutIncludedByDefinition (Sym: CARDINAL) ;
+
+
+(*
+   IsIncludedByDefinition - returns TRUE if definition module symbol, Sym, was included
+                            by ModSym's definition module.
+*)
+
+PROCEDURE IsIncludedByDefinition (ModSym, Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   ForeachImportedDo - calls a procedure, P, foreach imported symbol
+                       in module, ModSym.
+*)
+
+PROCEDURE ForeachImportedDo (ModSym: CARDINAL; P: PerformOperation) ;
+
+
+(*
+   ForeachExportedDo - calls a procedure, P, foreach exported symbol
+                       from module, ModSym.
+*)
+
+PROCEDURE ForeachExportedDo (ModSym: CARDINAL; P: PerformOperation) ;
+
+
+(*
+   CheckForExportedImplementation - checks to see whether an implementation
+                                    module is currently being compiled, if so,
+                                    symbol, Sym, is removed from the
+                                    NeedToBeImplemented list.
+                                    This procedure is called whenever a symbol
+                                    is declared, thus attenpting to reduce
+                                    the NeedToBeImplemented list.
+                                    Only needs to be called when a TYPE or
+                                    PROCEDURE is built since the implementation
+                                    module can only implement these objects
+                                    declared in the definition module.
+*)
+
+PROCEDURE CheckForExportedImplementation (Sym: CARDINAL) ;
+
+
+(*
+   CheckForUnImplementedExports - displays an error and the offending symbols
+                                  which have been EXPORTed but not implemented
+                                  from the current compiled module.
+*)
+
+PROCEDURE CheckForUnImplementedExports ;
+
+
+(*
+   CheckForUndeclaredExports - displays an error and the offending symbols
+                               which have been EXPORTed but not declared
+                               from module, ModSym.
+*)
+
+PROCEDURE CheckForUndeclaredExports (ModSym: CARDINAL) ;
+
+
+(*
+   CheckForUnknownInModule - checks for any unknown symbols in the
+                             current module.
+                             If any unknown symbols are found then
+                             an error message is displayed.
+*)
+
+PROCEDURE CheckForUnknownInModule ;
+
+
+(*
+   UnknownReported - if sym is an unknown symbol and has not been reported
+                     then include it into the set of reported unknowns.
+*)
+
+PROCEDURE UnknownReported (sym: CARDINAL) ;
+
+
+(*
+   IsReallyPointer - returns TRUE is sym is a pointer, address or a
+                     type declared as a pointer or address.
+*)
+
+PROCEDURE IsReallyPointer (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   CheckHiddenTypeAreAddress - checks to see that any hidden types
+                               which we have declared are actually
+                               of type ADDRESS or map onto a POINTER type.
+*)
+
+PROCEDURE CheckHiddenTypeAreAddress ;
+
+
+(*
+   PutDefinitionForC - sets a flag in the module, Sym, which
+                       indicates that this module is a wrapper for a C
+                       file. Parameters passes to procedures in this module
+                       will adopt the C calling convention.
+*)
+
+PROCEDURE PutDefinitionForC (Sym: CARDINAL) ;
+
+
+(*
+   IsDefinitionForC - returns true if this definition module was declared
+                      as a DEFINITION MODULE FOR "C".
+*)
+
+PROCEDURE IsDefinitionForC (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutDoesNeedExportList - sets a flag in module, Sym, which
+                           indicates that this module requires an explicit
+                           EXPORT QUALIFIED or UNQUALIFIED list. PIM-2
+*)
+
+PROCEDURE PutDoesNeedExportList (Sym: CARDINAL) ;
+
+
+(*
+   PutDoesNotNeedExportList - sets a flag in module, Sym, which
+                              indicates that this module does not require an explicit
+                              EXPORT QUALIFIED or UNQUALIFIED list. PIM-3|4
+*)
+
+PROCEDURE PutDoesNotNeedExportList (Sym: CARDINAL) ;
+
+
+(*
+   DoesNotNeedExportList - returns TRUE if module, Sym, does not require an explicit
+                           EXPORT QUALIFIED list.
+*)
+
+PROCEDURE DoesNotNeedExportList (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   CheckForEnumerationInCurrentModule - checks to see whether the enumeration
+                                        type symbol, Sym, has been entered into
+                                        the current modules scope list.
+*)
+
+PROCEDURE CheckForEnumerationInCurrentModule (Sym: CARDINAL) ;
+
+
+(*
+   SanityCheckConstants - must only be called once all constants, types, procedures
+                          have been declared.  It checks to see that constants are
+                          not used as PROCEDURE parameter types.
+*)
+
+PROCEDURE SanityCheckConstants ;
+
+
+(*
+   ForeachLocalSymDo - foreach local symbol in module, Sym, or procedure, Sym,
+                       perform the procedure, P.
+*)
+
+PROCEDURE ForeachLocalSymDo (Sym: CARDINAL; P: PerformOperation) ;
+
+
+(*
+   ForeachFieldEnumerationDo - for each field in enumeration, Sym,
+                               do procedure, P.
+*)
+
+PROCEDURE ForeachFieldEnumerationDo (Sym: CARDINAL; P: PerformOperation) ;
+
+
+(*
+   IsType - returns true if the Sym is a type symbol.
+*)
+
+PROCEDURE IsType (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsProcedure - returns true is Sym is a PROCEDURE symbol.
+*)
+
+PROCEDURE IsProcedure (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsParameter - returns true if Sym is a parameter symbol.
+*)
+
+PROCEDURE IsParameter (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   ProcedureParametersDefined - dictates to procedure symbol, Sym,
+                                that its parameters have been defined.
+*)
+
+PROCEDURE ProcedureParametersDefined (Sym: CARDINAL) ;
+
+
+(*
+   AreProcedureParametersDefined - returns true if the parameters to procedure
+                                   symbol, Sym, have been defined.
+*)
+
+PROCEDURE AreProcedureParametersDefined (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   ParametersDefinedInDefinition - dictates to procedure symbol, Sym,
+                                   that its parameters have been defined in
+                                   a definition module.
+*)
+
+PROCEDURE ParametersDefinedInDefinition (Sym: CARDINAL) ;
+
+
+(*
+   AreParametersDefinedInDefinition - returns true if procedure symbol, Sym,
+                                      has had its parameters been defined in
+                                      a definition module.
+*)
+
+PROCEDURE AreParametersDefinedInDefinition (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   ParametersDefinedInImplementation - dictates to procedure symbol, Sym,
+                                       that its parameters have been defined in
+                                       a implementation module.
+*)
+
+PROCEDURE ParametersDefinedInImplementation (Sym: CARDINAL) ;
+
+
+(*
+   AreParametersDefinedInImplementation - returns true if procedure symbol, Sym,
+                                          has had its parameters been defined in
+                                          an implementation module.
+*)
+
+PROCEDURE AreParametersDefinedInImplementation (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutUseVarArgs - tell the symbol table that this procedure, Sym, uses varargs.
+                   The procedure _must_ be declared inside a
+                   DEFINITION FOR "C"
+
+*)
+
+PROCEDURE PutUseVarArgs (Sym: CARDINAL) ;
+
+
+(*
+   UsesVarArgs - returns TRUE if procedure, Sym, uses varargs.
+                 The procedure _must_ be declared inside a
+                 DEFINITION FOR "C"
+*)
+
+PROCEDURE UsesVarArgs (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutUseOptArg - tell the symbol table that this procedure, Sym,
+                  uses an optarg.
+*)
+
+PROCEDURE PutUseOptArg (Sym: CARDINAL) ;
+
+
+(*
+   UsesOptArg - returns TRUE if procedure, Sym, uses varargs.
+*)
+
+PROCEDURE UsesOptArg (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutOptArgInit - makes symbol, Sym, the initializer value to
+                   procedure, ProcSym.
+*)
+
+PROCEDURE PutOptArgInit (ProcSym, Sym: CARDINAL) ;
+
+
+(*
+   GetOptArgInit - returns the initializer value to the optional parameter in
+                   procedure, ProcSym.
+*)
+
+PROCEDURE GetOptArgInit (ProcSym: CARDINAL) : CARDINAL ;
+
+
+(*
+   MakePointer - returns a pointer symbol with PointerName.
+*)
+
+PROCEDURE MakePointer (tok: CARDINAL; PointerName: Name) : CARDINAL ;
+
+
+(*
+   PutPointer - gives a pointer symbol a type, PointerType.
+*)
+
+PROCEDURE PutPointer (Sym: CARDINAL; PointerType: CARDINAL) ;
+
+
+(*
+   IsPointer - returns true is Sym is a pointer type symbol.
+*)
+
+PROCEDURE IsPointer (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsRecord - returns true is Sym is a record type symbol.
+*)
+
+PROCEDURE IsRecord (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsVarient - returns true if the symbol, Sym, is a
+               varient symbol.
+*)
+
+PROCEDURE IsVarient (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+  IsFieldVarient - returns true if the symbol, Sym, is a
+                   varient field.
+*)
+
+PROCEDURE IsFieldVarient (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsFieldEnumeration - returns true if the symbol, Sym, is an
+                        enumeration field.
+*)
+
+PROCEDURE IsFieldEnumeration (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsArray - returns true is Sym is an array type symbol.
+*)
+
+PROCEDURE IsArray (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsEnumeration - returns true if Sym is an enumeration symbol.
+*)
+
+PROCEDURE IsEnumeration (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsSet - returns TRUE if Sym is a set symbol.
+*)
+
+PROCEDURE IsSet (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsHiddenType - returns TRUE if, Sym, is a Type and is also declared as a hidden type.
+*)
+
+PROCEDURE IsHiddenType (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsOAFamily - returns TRUE if, Sym, is an OAFamily symbol.
+*)
+
+PROCEDURE IsOAFamily (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetDimension - return the number of dimensions associated with
+                  this unbounded ARRAY parameter.
+*)
+
+PROCEDURE GetDimension (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   MakeOAFamily - makes an OAFamily symbol based on SimpleType.
+                  It returns the OAFamily symbol.  A new symbol
+                  is created if one does not already exist for
+                  SimpleType.
+*)
+
+PROCEDURE MakeOAFamily (SimpleType: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetOAFamily - returns the oafamily symbol associated with
+                 SimpleType.
+*)
+
+PROCEDURE GetOAFamily (SimpleType: CARDINAL) : CARDINAL ;
+
+
+(*
+   ForeachOAFamily - call, p[oaf, ndim, symbol] for every unbounded symbol,
+                     sym, in the oaf.
+*)
+
+PROCEDURE ForeachOAFamily (sym: CARDINAL; p: FamilyOperation) ;
+
+
+(*
+   IsUnbounded - returns true if Sym is an unbounded symbol.
+*)
+
+PROCEDURE IsUnbounded (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetUnbounded - returns the unbounded symbol associated with
+                  SimpleType.
+*)
+
+PROCEDURE GetUnbounded (oaf: CARDINAL; ndim: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetUnboundedRecordType - returns the record type used to
+                            implement the unbounded array.
+*)
+
+PROCEDURE GetUnboundedRecordType (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetUnboundedAddressOffset - returns the offset of the address field
+                               inside the record used to implement the
+                               unbounded type.
+*)
+
+PROCEDURE GetUnboundedAddressOffset (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetUnboundedHighOffset - returns the offset of the high field
+                            inside the record used to implement the
+                            unbounded type.
+*)
+
+PROCEDURE GetUnboundedHighOffset (sym: CARDINAL; ndim: CARDINAL) : CARDINAL ;
+
+
+(*
+   MakeSubscript - makes a subscript Symbol.
+                   No name is required.
+*)
+
+PROCEDURE MakeSubscript () : CARDINAL ;
+
+
+(*
+   PutSubscript - gives a subscript symbol a type, SimpleType.
+*)
+
+PROCEDURE PutSubscript (Sym: CARDINAL; SimpleType: CARDINAL) ;
+
+
+(*
+   MakeUnbounded - makes an unbounded array Symbol.
+                   ndim is the number of dimensions required.
+                   No name is required.
+*)
+
+PROCEDURE MakeUnbounded (tok: CARDINAL;
+                         SimpleType: CARDINAL; ndim: CARDINAL) : CARDINAL ;
+
+
+(*
+   NoOfElements - Returns the number of elements in array Sym,
+                  or the number of elements in an enumeration Sym.
+*)
+
+PROCEDURE NoOfElements (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutArray - places a type symbol into an Array.
+*)
+
+PROCEDURE PutArray (Sym, TypeSymbol: CARDINAL) ;
+
+
+(*
+   ResolveImports -
+*)
+
+PROCEDURE ResolveImports ;
+
+
+(*
+   ResolveConstructorTypes - to be called at the end of pass three.  Its
+                             purpose is to fix up all constructors whose
+                             types are unknown.
+*)
+
+PROCEDURE ResolveConstructorTypes ;
+
+
+(*
+   AddNameToScope - adds a Name, n, to the list of objects declared at the
+                    current scope.
+*)
+
+PROCEDURE AddNameToScope (n: Name) ;
+
+
+(*
+   AddNameToImportList - adds a Name, n, to the import list of the current
+                         module.
+*)
+
+PROCEDURE AddNameToImportList (n: Name) ;
+
+
+(*
+   GetScope - returns the declaration scope of the symbol.
+*)
+
+PROCEDURE GetScope (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetModuleScope - returns the module scope of symbol, sym.
+                    If sym was declared within a nested procedure
+                    then return the module which defines the
+                    procedure.
+*)
+
+PROCEDURE GetModuleScope (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetProcedureScope - returns the innermost procedure (if any)
+                       in which the symbol, sym, resides.
+                       A module inside the PROCEDURE is skipped
+                       over.
+*)
+
+PROCEDURE GetProcedureScope (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   IsModuleWithinProcedure - returns TRUE if module, sym, is
+                             inside a procedure.
+*)
+
+PROCEDURE IsModuleWithinProcedure (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetParent - returns the parent of symbol, Sym.
+*)
+
+PROCEDURE GetParent (Sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   IsRecordField - returns true if Sym is a record field.
+*)
+
+PROCEDURE IsRecordField (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   MakeProcType - returns a procedure type symbol with ProcTypeName.
+*)
+
+PROCEDURE MakeProcType (tok: CARDINAL; ProcTypeName: Name) : CARDINAL ;
+
+
+(*
+   PutProcTypeParam - Places a Non VAR parameter ParamName with type
+                      ParamType into ProcType Sym.
+*)
+
+PROCEDURE PutProcTypeParam (Sym: CARDINAL;
+                            ParamType: CARDINAL; isUnbounded: BOOLEAN) ;
+
+
+(*
+   PutProcTypeVarParam - Places a Non VAR parameter ParamName with type
+                         ParamType into ProcType Sym.
+*)
+
+PROCEDURE PutProcTypeVarParam (Sym: CARDINAL;
+                               ParamType: CARDINAL; isUnbounded: BOOLEAN) ;
+
+
+(*
+   IsProcType - returns true if Sym is a ProcType Symbol.
+*)
+
+PROCEDURE IsProcType (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsVar - returns true if Sym is a Var Symbol.
+*)
+
+PROCEDURE IsVar (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsVarConst - returns the IsConst field indicating the variable is read only.
+*)
+
+PROCEDURE IsVarConst (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsConst - returns true is Sym is a Const Symbol.
+*)
+
+PROCEDURE IsConst (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsConstString - returns true if Sym is a string.
+*)
+
+PROCEDURE IsConstString (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsConstStringM2 - returns whether this conststring is an unaltered Modula-2 string.
+*)
+
+PROCEDURE IsConstStringM2 (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsConstStringC - returns whether this conststring is a C style string
+                    which will have any escape translated.
+*)
+
+PROCEDURE IsConstStringC (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsConstStringM2nul - returns whether this conststring is a Modula-2 string which
+                        contains a nul terminator.
+*)
+
+PROCEDURE IsConstStringM2nul (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsConstStringCnul - returns whether this conststring is a C style string
+                       which will have any escape translated and also contains
+                       a nul terminator.
+*)
+
+PROCEDURE IsConstStringCnul (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsConstStringNulTerminated - returns TRUE if the constant string, sym,
+                                should be created with a nul terminator.
+*)
+
+PROCEDURE IsConstStringNulTerminated (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   MakeConstStringCnul - creates a constant string nul terminated string suitable for C.
+                         sym is a ConstString and a new symbol is returned
+                         with the escape sequences converted into characters.
+*)
+
+PROCEDURE MakeConstStringCnul (tok: CARDINAL; sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   MakeConstStringM2nul - creates a constant string nul terminated string.
+                          sym is a ConstString and a new symbol is returned.
+*)
+
+PROCEDURE MakeConstStringM2nul (tok: CARDINAL; sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   MakeConstStringC - creates a constant string suitable for C.
+                      sym is a Modula-2 ConstString and a new symbol is returned
+                      with the escape sequences converted into characters.
+                      It is not nul terminated.
+*)
+
+PROCEDURE MakeConstStringC (tok: CARDINAL; sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   IsConstLit - returns true if Sym is a literal constant.
+*)
+
+PROCEDURE IsConstLit (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsConstructor - returns TRUE if the constant is declared as a
+                   constant set, array or record.
+*)
+
+PROCEDURE IsConstructor (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsDummy - returns true if Sym is a Dummy symbol.
+*)
+
+PROCEDURE IsDummy (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsTemporary - returns true if Sym is a Temporary symbol.
+*)
+
+PROCEDURE IsTemporary (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsVarAParam - returns true if Sym is a variable declared as a parameter.
+*)
+
+PROCEDURE IsVarAParam (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsSubscript - returns true if Sym is a subscript symbol.
+*)
+
+PROCEDURE IsSubscript (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsSubrange - returns true if Sym is a subrange symbol.
+*)
+
+PROCEDURE IsSubrange (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsProcedureVariable - returns true if a Sym is a variable and
+                         it was declared within a procedure.
+*)
+
+PROCEDURE IsProcedureVariable (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsProcedureNested - returns TRUE if procedure, Sym, was
+                       declared as a nested procedure.
+*)
+
+PROCEDURE IsProcedureNested (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsAModula2Type - returns true if Sym, is a:
+                    IsType, IsPointer, IsRecord, IsEnumeration,
+                    IsSubrange, IsArray, IsUnbounded, IsProcType.
+                    NOTE that it different from IsType.
+                    IsType is used for:
+                    TYPE
+                       a = CARDINAL ;  (* IsType(a)=TRUE *)
+*)
+
+PROCEDURE IsAModula2Type (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsGnuAsmVolatile - returns TRUE if a GnuAsm symbol was defined as VOLATILE.
+*)
+
+PROCEDURE IsGnuAsmVolatile (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsGnuAsmSimple - returns TRUE if a GnuAsm symbol is a simple statement of the
+                    form ASM("instruction"), which differs from ASM("instruction" :)
+                    slightly.
+*)
+
+PROCEDURE IsGnuAsmSimple (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsGnuAsm - returns TRUE if Sym is a GnuAsm symbol.
+*)
+
+PROCEDURE IsGnuAsm (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsRegInterface - returns TRUE if Sym is a RegInterface symbol.
+*)
+
+PROCEDURE IsRegInterface (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsSizeSolved - returns true if the size of Sym is solved.
+*)
+
+PROCEDURE IsSizeSolved (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsOffsetSolved - returns true if the Offset of Sym is solved.
+*)
+
+PROCEDURE IsOffsetSolved (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsValueSolved - returns true if the value of Sym is solved.
+*)
+
+PROCEDURE IsValueSolved (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsConstructorConstant - returns TRUE if constructor, Sym, is
+                           defined by only constants.
+*)
+
+PROCEDURE IsConstructorConstant (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsComposite - returns TRUE if symbol, sym, is a composite
+                 type:  ie an ARRAY or RECORD.
+*)
+
+PROCEDURE IsComposite (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsSumOfParamSizeSolved - has the sum of parameters been solved yet?
+*)
+
+PROCEDURE IsSumOfParamSizeSolved (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutAlignment - assigns the alignment constant associated with,
+                  type, with, align.
+*)
+
+PROCEDURE PutAlignment (type: CARDINAL; align: CARDINAL) ;
+
+
+(*
+   GetAlignment - returns the alignment constant associated with,
+                  type.
+*)
+
+PROCEDURE GetAlignment (type: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetDefaultRecordFieldAlignment - assigns, align, as the default alignment
+                                    to record, sym.
+*)
+
+PROCEDURE GetDefaultRecordFieldAlignment (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PutDefaultRecordFieldAlignment - assigns, align, as the default alignment
+                                    to record, sym.
+*)
+
+PROCEDURE PutDefaultRecordFieldAlignment (sym: CARDINAL; align: CARDINAL) ;
+
+
+(*
+   PutUnused - sets, sym, as unused.  This is a gm2 pragma.
+*)
+
+PROCEDURE PutUnused (sym: CARDINAL) ;
+
+
+(*
+   IsUnused - returns TRUE if the symbol was declared as unused with a
+              gm2 pragma.
+*)
+
+PROCEDURE IsUnused (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutDeclaredPacked - sets the Packed field of the record or record field symbol.
+*)
+
+PROCEDURE PutDeclaredPacked (sym: CARDINAL; b: BOOLEAN) ;
+
+
+(*
+   IsDeclaredPacked - was the record symbol or record field, sym,
+                      declared as packed?
+*)
+
+PROCEDURE IsDeclaredPacked (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsDeclaredPackedResolved - do we know if the record symbol or record
+                              field, sym, declared as packed or not packed?
+*)
+
+PROCEDURE IsDeclaredPackedResolved (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetPackedEquivalent - returns the packed equivalent of type, sym.
+                         sym must be a type, subrange, set or enumerated type.
+*)
+
+PROCEDURE GetPackedEquivalent (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetNonPackedEquivalent - returns the equivalent non packed symbol
+                            associated with, sym.
+*)
+
+PROCEDURE GetNonPackedEquivalent (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   IsEquivalent - returns TRUE if, sym, is an equivalent symbol.
+*)
+
+PROCEDURE IsEquivalent (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PushSize - pushes the size of Sym.
+*)
+
+PROCEDURE PushSize (Sym: CARDINAL) ;
+
+
+(*
+   PushOffset - pushes the Offset of Sym.
+*)
+
+PROCEDURE PushOffset (Sym: CARDINAL) ;
+
+
+(*
+   PushValue - pushes the Value of Sym onto the ALU stack.
+*)
+
+PROCEDURE PushValue (Sym: CARDINAL) ;
+
+
+(*
+   PushParamSize - push the size of parameter, ParamNo,
+                   of procedure Sym onto the ALU stack.
+*)
+
+PROCEDURE PushParamSize (Sym: CARDINAL; ParamNo: CARDINAL) ;
+
+
+(*
+   PushSumOfLocalVarSize - push the total size of all local variables
+                           onto the ALU stack.
+*)
+
+PROCEDURE PushSumOfLocalVarSize (Sym: CARDINAL) ;
+
+
+(*
+   PushSumOfParamSize - push the total size of all parameters onto
+                        the ALU stack.
+*)
+
+PROCEDURE PushSumOfParamSize (Sym: CARDINAL) ;
+
+
+(*
+   PushVarSize - pushes the size of a variable, Sym.
+                 The runtime size of Sym will depend upon its addressing mode,
+                 RightValue has size PushSize(GetType(Sym)) and
+                 LeftValue has size PushSize(Address) since it points to a
+                 variable.
+                 However this procedure uses the Type of Sym therefore
+                 this Type must be solved before this procedure is called.
+*)
+
+PROCEDURE PushVarSize (Sym: CARDINAL) ;
+
+
+(*
+   PopValue - pops the ALU stack into Value of Sym.
+*)
+
+PROCEDURE PopValue (Sym: CARDINAL) ;
+
+
+(*
+   PopSize - pops the ALU stack into Size of Sym.
+*)
+
+PROCEDURE PopSize (Sym: CARDINAL) ;
+
+
+(*
+   PopOffset - pops the ALU stack into Offset of Sym.
+*)
+
+PROCEDURE PopOffset (Sym: CARDINAL) ;
+
+
+(*
+   PopSumOfParamSize - pop the total value on the ALU stack as the
+                       sum of all parameters.
+*)
+
+PROCEDURE PopSumOfParamSize (Sym: CARDINAL) ;
+
+
+(*
+   IsObject - returns TRUE if the symbol is an object symbol.
+*)
+
+PROCEDURE IsObject (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsTuple - returns TRUE if the symbol is a tuple symbol.
+*)
+
+PROCEDURE IsTuple (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   Make2Tuple - creates and returns a 2 tuple from, a, and, b.
+*)
+
+PROCEDURE Make2Tuple (a, b: CARDINAL) : CARDINAL ;
+
+
+(*
+   MakeError - creates an error node, which can be used in MetaError messages.
+               It will be removed from ExportUndeclared and Unknown trees.
+*)
+
+PROCEDURE MakeError (tok: CARDINAL; name: Name) : CARDINAL ;
+
+
+(*
+   MakeErrorS - creates an error node from a string, which can be used
+                in MetaError messages.
+                It will be removed from ExportUndeclared and Unknown trees.
+*)
+
+PROCEDURE MakeErrorS (tok: CARDINAL; name: String) : CARDINAL ;
+
+
+(*
+   IsError - returns TRUE if the symbol is an error symbol.
+*)
+
+PROCEDURE IsError (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsLegal - returns TRUE if, sym, is a legal symbol.
+*)
+
+PROCEDURE IsLegal (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutModuleContainsBuiltin - sets a flag in the current compiled module which
+                              indicates that a builtin PROCEDURE is being declared.
+                              This is only expected to be called when we are
+                              parsing the definition module.
+*)
+
+PROCEDURE PutModuleContainsBuiltin ;
+
+
+(*
+   IsBuiltinInModule - returns true if a module, Sym, has declared a builtin procedure.
+*)
+
+PROCEDURE IsBuiltinInModule (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutHiddenTypeDeclared - sets a flag in the current compiled module which
+                           indicates that a Hidden Type is declared within
+                           the implementation part of the module.
+                           This procedure is expected to be called while
+                           compiling the associated definition module.
+*)
+
+PROCEDURE PutHiddenTypeDeclared ;
+
+
+(*
+   IsHiddenTypeDeclared - returns true if a Hidden Type was declared in
+                          the module, Sym.
+*)
+
+PROCEDURE IsHiddenTypeDeclared (Sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   DisplayTrees - displays the SymbolTrees for Module symbol, ModSym.
+*)
+
+PROCEDURE DisplayTrees (ModSym: CARDINAL) ;
+
+
+(*
+   DebugLineNumbers - internal debugging, emit all procedure names in this module
+                      together with the line numbers for the corresponding begin/end
+                      tokens.
+*)
+
+PROCEDURE DebugLineNumbers (sym: CARDINAL) ;
+
+
+(*
+   GetErrorScope - returns the error scope for a symbol.
+                   The error scope is the title scope which is used to
+                   announce the symbol in the GCC error message.
+*)
+
+PROCEDURE GetErrorScope (sym: CARDINAL) : ErrorScope ;
+
+
+(*
+   PutErrorScope - sets the error scope for a symbol.
+                   The error scope is the title scope which is used to
+                   announce the symbol in the GCC error message.
+
+PROCEDURE PutErrorScope (sym: CARDINAL; errorScope: ErrorScope) ;
+*)
+
+
+(*
+   MakeImport - create and return an import symbol.
+                moduleSym is the symbol being imported.
+                isqualified is FALSE if it were IMPORT modulename and
+                TRUE for the qualified FROM modulename IMPORT etc.
+                listno is the import list count for this module.
+                tok should match this modulename position.
+*)
+
+PROCEDURE MakeImport (tok: CARDINAL;
+                      moduleSym: CARDINAL;
+                      listno: CARDINAL;
+                      isqualified: BOOLEAN) : CARDINAL ;
+
+
+(*
+   MakeImportStatement - return a dependent symbol which represents an import statement
+                         or a qualified import statement.  The tok should either match
+                         the FROM token or the IMPORT token.  listno is the import list
+                         count for the module.
+*)
+
+PROCEDURE MakeImportStatement (tok: CARDINAL; listno: CARDINAL) : CARDINAL ;
+
+
+(*
+   IsImport - returns TRUE if sym is an import symbol.
+*)
+
+PROCEDURE IsImport (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsImportStatement - returns TRUE if sym is a dependent symbol.
+*)
+
+PROCEDURE IsImportStatement (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetImportModule - returns the module associated with the import symbol.
+*)
+
+PROCEDURE GetImportModule (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetImportDeclared - returns the token associated with the import symbol.
+*)
+
+PROCEDURE GetImportDeclared (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetImportStatementList - returns the list of imports for this dependent.
+                            Each import symbol corresponds to a module.
+*)
+
+PROCEDURE GetImportStatementList (sym: CARDINAL) : List ;
+
+
+(*
+   GetModuleDefImportStatementList - returns the list of dependents associated with
+                                     the definition module.
+*)
+
+PROCEDURE GetModuleDefImportStatementList (sym: CARDINAL) : List ;
+
+
+(*
+   GetModuleModImportStatementList - returns the list of dependents associated with
+                                     the implementation or program module.
+*)
+
+PROCEDURE GetModuleModImportStatementList (sym: CARDINAL) : List ;
+
+
+(*
+   AppendModuleImportStatement - appends the ImportStatement symbol onto the
+                                 module import list.
+
+                                 For example:
+
+                                 FROM x IMPORT y, z ;
+                                 ^^^^
+
+                                 also:
+
+                                 IMPORT p, q, r;
+                                 ^^^^^^
+                                 will result in a new ImportStatement symbol added
+                                 to the current module import list.
+                                 The ImportStatement symbol is expected to be created
+                                 by MakeImportStatement using the token positions
+                                 outlined above.
+*)
+
+PROCEDURE AppendModuleImportStatement (module, statement: CARDINAL) ;
+
+
+(*
+   AppendModuleOnImportStatement - appends the import symbol onto the
+                                   dependent list (chain).
+
+                                   For example each:
+
+                                   FROM x IMPORT y, z ;
+                                        ^
+                                   x are added to the dependent list.
+
+                                   also:
+
+                                   IMPORT p, q, r;
+                                          ^  ^  ^
+                                   will result in p, q and r added to
+                                   to the dependent list.
+
+                                   The import symbol is created by MakeImport
+                                   and the token is expected to match the module
+                                   name outlined above.
+*)
+
+PROCEDURE AppendModuleOnImportStatement (module, import: CARDINAL) ;
+
+
+(*
+   PutModLink - assigns link to module sym.
+*)
+
+PROCEDURE PutModLink (sym: CARDINAL; link: BOOLEAN) ;
+
+
+(*
+   IsModLink - returns the ModLink value associated with the module symbol.
+*)
+
+PROCEDURE IsModLink (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutDefLink - assigns link to the definition module sym.
+*)
+
+PROCEDURE PutDefLink (sym: CARDINAL; link: BOOLEAN) ;
+
+
+(*
+   IsDefLink - returns the DefLink value associated with the definition module symbol.
+*)
+
+PROCEDURE IsDefLink (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsModuleBuiltin - returns TRUE if the module is a builtin module.
+                     (For example _BaseTypes).
+*)
+
+PROCEDURE IsModuleBuiltin (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutModuleBuiltin - sets the Builtin flag to value.
+*)
+
+PROCEDURE PutModuleBuiltin (sym: CARDINAL; value: BOOLEAN) ;
+
+
+END SymbolTable.

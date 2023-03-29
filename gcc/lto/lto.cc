@@ -1,5 +1,5 @@
 /* Top-level LTO routines.
-   Copyright (C) 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2009-2023 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -137,6 +137,12 @@ materialize_cgraph (void)
     fprintf (stderr,
 	     flag_wpa ? "Materializing decls:" : "Reading function bodies:");
 
+  /* Start the appropriate timer depending on the mode that we are
+     operating in.  */
+  lto_timer = (flag_wpa) ? TV_WHOPR_WPA
+	      : (flag_ltrans) ? TV_WHOPR_LTRANS
+	      : TV_LTO;
+  timevar_push (lto_timer);
 
   FOR_EACH_FUNCTION (node)
     {
@@ -146,14 +152,6 @@ materialize_cgraph (void)
 	  lto_stats.num_input_cgraph_nodes++;
 	}
     }
-
-
-  /* Start the appropriate timer depending on the mode that we are
-     operating in.  */
-  lto_timer = (flag_wpa) ? TV_WHOPR_WPA
-	      : (flag_ltrans) ? TV_WHOPR_LTRANS
-	      : TV_LTO;
-  timevar_push (lto_timer);
 
   current_function_decl = NULL;
   set_cfun (NULL);

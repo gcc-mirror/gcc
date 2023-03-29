@@ -1,5 +1,5 @@
 /* UndefinedBehaviorSanitizer, undefined behavior detector.
-   Copyright (C) 2013-2022 Free Software Foundation, Inc.
+   Copyright (C) 2013-2023 Free Software Foundation, Inc.
    Contributed by Marek Polacek <polacek@redhat.com>
 
 This file is part of GCC.
@@ -649,7 +649,7 @@ sanitize_unreachable_fn (tree *data, location_t loc)
       ? (flag_sanitize_trap & SANITIZE_UNREACHABLE)
       : flag_unreachable_traps)
     {
-      fn = builtin_decl_explicit (BUILT_IN_TRAP);
+      fn = builtin_decl_explicit (BUILT_IN_UNREACHABLE_TRAP);
       *data = NULL_TREE;
     }
   else if (san)
@@ -721,7 +721,7 @@ ubsan_expand_bounds_ifn (gimple_stmt_iterator *gsi)
 
   gimple_stmt_iterator gsi_orig = *gsi;
 
-  /* Create condition "if (index > bound)".  */
+  /* Create condition "if (index >= bound)".  */
   basic_block then_bb, fallthru_bb;
   gimple_stmt_iterator cond_insert_point
     = create_cond_insert_point (gsi, false, false, true,
@@ -730,7 +730,7 @@ ubsan_expand_bounds_ifn (gimple_stmt_iterator *gsi)
   index = force_gimple_operand_gsi (&cond_insert_point, index,
 				    true, NULL_TREE,
 				    false, GSI_NEW_STMT);
-  gimple *g = gimple_build_cond (GT_EXPR, index, bound, NULL_TREE, NULL_TREE);
+  gimple *g = gimple_build_cond (GE_EXPR, index, bound, NULL_TREE, NULL_TREE);
   gimple_set_location (g, loc);
   gsi_insert_after (&cond_insert_point, g, GSI_NEW_STMT);
 

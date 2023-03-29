@@ -1,7 +1,7 @@
 /**
  * A depth-first visitor for expressions.
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/apply.d, _apply.d)
@@ -16,6 +16,7 @@ import dmd.dsymbol;
 import dmd.dsymbolsem;
 import dmd.dtemplate;
 import dmd.expression;
+import dmd.root.array;
 import dmd.visitor;
 
 bool walkPostorder(Expression e, StoppableVisitor v)
@@ -74,7 +75,7 @@ private extern (C++) final class PostorderExpressionVisitor : StoppableVisitor
 public:
     StoppableVisitor v;
 
-    extern (D) this(StoppableVisitor v)
+    extern (D) this(StoppableVisitor v) scope
     {
         this.v = v;
     }
@@ -86,12 +87,10 @@ public:
         return stop;
     }
 
-    bool doCond(Expressions* e)
+    extern(D) bool doCond(Expression[] e)
     {
-        if (!e)
-            return false;
-        for (size_t i = 0; i < e.dim && !stop; i++)
-            doCond((*e)[i]);
+        for (size_t i = 0; i < e.length && !stop; i++)
+            doCond(e[i]);
         return stop;
     }
 
@@ -110,13 +109,13 @@ public:
     override void visit(NewExp e)
     {
         //printf("NewExp::apply(): %s\n", toChars());
-        doCond(e.thisexp) || doCond(e.arguments) || applyTo(e);
+        doCond(e.thisexp) || doCond(e.arguments.peekSlice()) || applyTo(e);
     }
 
     override void visit(NewAnonClassExp e)
     {
         //printf("NewAnonClassExp::apply(): %s\n", toChars());
-        doCond(e.thisexp) || doCond(e.arguments) || applyTo(e);
+        doCond(e.thisexp) || doCond(e.arguments.peekSlice()) || applyTo(e);
     }
 
     override void visit(TypeidExp e)
@@ -143,13 +142,13 @@ public:
     override void visit(CallExp e)
     {
         //printf("CallExp::apply(apply_fp_t fp, void *param): %s\n", toChars());
-        doCond(e.e1) || doCond(e.arguments) || applyTo(e);
+        doCond(e.e1) || doCond(e.arguments.peekSlice()) || applyTo(e);
     }
 
     override void visit(ArrayExp e)
     {
         //printf("ArrayExp::apply(apply_fp_t fp, void *param): %s\n", toChars());
-        doCond(e.e1) || doCond(e.arguments) || applyTo(e);
+        doCond(e.e1) || doCond(e.arguments.peekSlice()) || applyTo(e);
     }
 
     override void visit(SliceExp e)
@@ -159,12 +158,12 @@ public:
 
     override void visit(ArrayLiteralExp e)
     {
-        doCond(e.basis) || doCond(e.elements) || applyTo(e);
+        doCond(e.basis) || doCond(e.elements.peekSlice()) || applyTo(e);
     }
 
     override void visit(AssocArrayLiteralExp e)
     {
-        doCond(e.keys) || doCond(e.values) || applyTo(e);
+        doCond(e.keys.peekSlice()) || doCond(e.values.peekSlice()) || applyTo(e);
     }
 
     override void visit(StructLiteralExp e)
@@ -173,13 +172,13 @@ public:
             return;
         int old = e.stageflags;
         e.stageflags |= stageApply;
-        doCond(e.elements) || applyTo(e);
+        doCond(e.elements.peekSlice()) || applyTo(e);
         e.stageflags = old;
     }
 
     override void visit(TupleExp e)
     {
-        doCond(e.e0) || doCond(e.exps) || applyTo(e);
+        doCond(e.e0) || doCond(e.exps.peekSlice()) || applyTo(e);
     }
 
     override void visit(CondExp e)

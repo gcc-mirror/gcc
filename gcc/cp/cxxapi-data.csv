@@ -1,0 +1,1032 @@
+# C++ API data.
+#
+# Copyright (C) 2022-2023 Free Software Foundation, Inc.
+# This file is part of GCC.
+#
+# This file is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+#
+# This file can be processed with gen-cxxapi-file.py to create the
+# export list for the standard C++ library module and the tables for
+# suggesting actions on missing symbols in the std:: namespace.
+#
+# The generated code is integral part of the C++ frontend but the
+# content of this file is consists of information solely in the
+# domain of the libstdc++ maintainers.  Therefore ownership of
+# this file is shared between these two groups.
+#
+# The format of this file must match what the gen-cxxapi-file.py
+# script expects.
+#  column  value
+#       1  header file, including angle brackets
+#       2  symbol name without std:: prefix
+#       3  nonzero if to be exported
+#       4  "no" if not to be added to the hint table else the appropriate
+#          enum cxx_dialect value
+#       5  optional, a string used after #if in a line inserted first to
+#          enable conditional definitions
+#
+<algorithm>,ranges::in_fun_result,1,no
+<algorithm>,ranges::in_in_result,1,no
+<algorithm>,ranges::in_out_result,1,no
+<algorithm>,ranges::in_in_out_result,1,no
+<algorithm>,ranges::in_out_out_result,1,no
+<algorithm>,ranges::min_max_result,1,no
+<algorithm>,ranges::in_found_result,1,no
+# unimplemented <algorithm>,ranges::out_value_result,1,no
+<algorithm>,all_of,1,no
+# c++/106851 <algorithm>,ranges::all_of,1,no
+<algorithm>,any_of,1,no
+# c++/106851 <algorithm>,ranges::any_of,1,no
+<algorithm>,none_of,1,no
+# c++/106851 <algorithm>,ranges::none_of,1,no
+<algorithm>,for_each,1,no
+<algorithm>,ranges::for_each_result,1,no
+# c++/106851 <algorithm>,ranges::for_each,1,no
+<algorithm>,for_each_n,1,no
+<algorithm>,ranges::for_each_n_result,1,no
+# c++/106851 <algorithm>,ranges::for_each_n,1,no
+<algorithm>,find,1,no
+<algorithm>,find_if,1,no
+<algorithm>,find_if_not,1,no
+# c++/106851 <algorithm>,ranges::find,1,no
+# c++/106851 <algorithm>,ranges::find_if,1,no
+# c++/106851 <algorithm>,ranges::find_if_not,1,no
+<algorithm>,find_end,1,no
+# c++/106851 <algorithm>,ranges::find_end,1,no
+<algorithm>,find_first_of,1,no
+# c++/106851 <algorithm>,ranges::find_first_of,1,no
+<algorithm>,adjacent_find,1,no
+# c++/106851 <algorithm>,ranges::adjacent_find,1,no
+<algorithm>,count,1,no
+<algorithm>,count_if,1,no
+# c++/106851 <algorithm>,ranges::count,1,no
+# c++/106851 <algorithm>,ranges::count_if,1,no
+<algorithm>,mismatch,1,no
+<algorithm>,ranges::mismatch_result,1,no
+# c++/106851 <algorithm>,ranges::mismatch,1,no
+<algorithm>,equal,1,no
+# c++/106851 <algorithm>,ranges::equal,1,no
+<algorithm>,is_permutation,1,no
+# c++/106851 <algorithm>,ranges::is_permutation,1,no
+<algorithm>,search,1,no
+# c++/106851 <algorithm>,ranges::search,1,no
+<algorithm>,search_n,1,no
+# c++/106851 <algorithm>,ranges::search_n,1,no
+# unimplemented <algorithm>,ranges::starts_with,1,no
+# unimplemented <algorithm>,ranges::ends_with,1,no
+<algorithm>,copy,1,no
+<algorithm>,ranges::copy_result,1,no
+# c++/106851 <algorithm>,ranges::copy,1,no
+<algorithm>,copy_n,1,no
+<algorithm>,ranges::copy_n_result,1,no
+# c++/106851 <algorithm>,ranges::copy_n,1,no
+<algorithm>,copy_if,1,no
+<algorithm>,ranges::copy_if_result,1,no
+# c++/106851 <algorithm>,ranges::copy_if,1,no
+<algorithm>,copy_backward,1,no
+<algorithm>,ranges::copy_backward_result,1,no
+# c++/106851 <algorithm>,ranges::copy_backward,1,no
+<algorithm>,move,1,no
+<algorithm>,ranges::move_result,1,no
+# c++/106851 <algorithm>,ranges::move,1,no
+<algorithm>,move_backward,1,no
+<algorithm>,ranges::move_backward_result,1,no
+# c++/106851 <algorithm>,ranges::move_backward,1,no
+# <algorithm> TODO the rest
+<any>,bad_any_cast,1,no
+<any>,any,1,cxx17
+<any>,swap,1,no
+<any>,make_any,1,cxx17
+<any>,any_cast,1,cxx17
+<array>,array,1,cxx11
+<array>,operator==,1,no
+<array>,operator<=>,1,no
+<array>,swap,1,no
+<array>,to_array,1,cxx20
+<array>,tuple_size,1,no
+<array>,tuple_element,1,no
+<array>,get,1,no
+<atomic>,memory_order,1,no
+<atomic>,kill_dependency,1,no
+<atomic>,atomic_ref,1,cxx20
+<atomic>,atomic,1,cxx11
+<atomic>,atomic_is_lock_free,1,no
+<atomic>,atomic_store,1,no
+<atomic>,atomic_store_explicit,1,no
+<atomic>,atomic_load,1,no
+<atomic>,atomic_load_explicit,1,no
+<atomic>,atomic_exchange,1,no
+<atomic>,atomic_exchange_explicit,1,no
+<atomic>,atomic_compare_exchange_weak,1,no
+<atomic>,atomic_compare_exchange_strong,1,no
+<atomic>,atomic_compare_exchange_weak_explicit,1,no
+<atomic>,atomic_compare_exchange_strong_explicit,1,no
+<atomic>,atomic_fetch_add,1,no
+<atomic>,atomic_fetch_add_explicit,1,no
+<atomic>,atomic_fetch_sub,1,no
+<atomic>,atomic_fetch_sub_explicit,1,no
+<atomic>,atomic_fetch_and,1,no
+<atomic>,atomic_fetch_and_explicit,1,no
+<atomic>,atomic_fetch_or,1,no
+<atomic>,atomic_fetch_or_explicit,1,no
+<atomic>,atomic_fetch_xor,1,no
+<atomic>,atomic_fetch_xor_explicit,1,no
+<atomic>,atomic_wait,1,no
+<atomic>,atomic_wait_explicit,1,no
+<atomic>,atomic_notify_one,1,no
+<atomic>,atomic_notify_all,1,no
+<atomic>,atomic_notify_all,1,no
+<atomic>,atomic_bool,1,no
+<atomic>,atomic_char,1,no
+<atomic>,atomic_schar,1,no
+<atomic>,atomic_uchar,1,no
+<atomic>,atomic_short,1,no
+<atomic>,atomic_ushort,1,no
+<atomic>,atomic_int,1,no
+<atomic>,atomic_uint,1,no
+<atomic>,atomic_long,1,no
+<atomic>,atomic_ulong,1,no
+<atomic>,atomic_llong,1,no
+<atomic>,atomic_ullong,1,no
+<atomic>,atomic_char8_t,1,no
+<atomic>,atomic_char16_t,1,no
+<atomic>,atomic_char32_t,1,no
+<atomic>,atomic_wchar_t,1,no
+<atomic>,atomic_int8_t,1,no
+<atomic>,atomic_uint8_t,1,no
+<atomic>,atomic_int16_t,1,no
+<atomic>,atomic_uint16_t,1,no
+<atomic>,atomic_int32_t,1,no
+<atomic>,atomic_uint32_t,1,no
+<atomic>,atomic_int64_t,1,no
+<atomic>,atomic_uint64_t,1,no
+<atomic>,atomic_int_least8_t,1,no
+<atomic>,atomic_uint_least8_t,1,no
+<atomic>,atomic_int_least16_t,1,no
+<atomic>,atomic_uint_least16_t,1,no
+<atomic>,atomic_int_least32_t,1,no
+<atomic>,atomic_uint_least32_t,1,no
+<atomic>,atomic_int_least64_t,1,no
+<atomic>,atomic_uint_least64_t,1,no
+<atomic>,atomic_int_fast8_t,1,no
+<atomic>,atomic_uint_fast8_t,1,no
+<atomic>,atomic_int_fast16_t,1,no
+<atomic>,atomic_uint_fast16_t,1,no
+<atomic>,atomic_int_fast32_t,1,no
+<atomic>,atomic_uint_fast32_t,1,no
+<atomic>,atomic_int_fast64_t,1,no
+<atomic>,atomic_uint_fast64_t,1,no
+<atomic>,atomic_intptr_t,1,no
+<atomic>,atomic_uintptr_t,1,no
+<atomic>,atomic_size_t,1,no
+<atomic>,atomic_ptrdiff_t,1,no
+<atomic>,atomic_intmax_t,1,no
+<atomic>,atomic_uintmax_t,1,no
+<atomic>,atomic_uintmax_t,1,cxx20
+<atomic>,atomic_signed_lock_free,1,cxx11,__cpp_lib_atomic_lock_free_type_aliases
+<atomic>,atomic_unsigned_lock_free,1,cxx11,__cpp_lib_atomic_lock_free_type_aliases
+# libstdc++/103934 <atomic>,atomic_flag_test,1,no
+# libstdc++/103934 <atomic>,atomic_flag_test_explicit,1,no
+<atomic>,atomic_flag_test_and_set,1,no
+<atomic>,atomic_flag_test_and_set_explicit,1,no
+<atomic>,atomic_flag_clear,1,no
+<atomic>,atomic_flag_clear_explicit,1,no
+# libstdc++/103934 <atomic>,atomic_flag_wait,1,no
+# libstdc++/103934 <atomic>,atomic_flag_wait_explicit,1,no
+# libstdc++/103934 <atomic>,atomic_flag_notify_one,1,no
+# libstdc++/103934 <atomic>,atomic_flag_notify_all,1,no
+<atomic>,atomic_thread_fence,1,no
+<atomic>,atomic_signal_fence,1,no
+<barrier>,barrier,1,no
+<bit>,bit_cast,1,no
+<bit>,byteswap,1,no
+<bit>,has_single_bit,1,no
+<bit>,bit_ceil,1,no
+<bit>,bit_floor,1,no
+<bit>,bit_width,1,no
+<bit>,rotl,1,no
+<bit>,rotr,1,no
+<bit>,countl_zero,1,no
+<bit>,countl_one,1,no
+<bit>,countr_zero,1,no
+<bit>,countr_one,1,no
+<bit>,popcount,1,no
+<bit>,endian,1,no
+<bit>,endian::little,1,no
+<bit>,endian::big,1,no
+<bit>,endian::native,1,no
+<bitset>,bitset,1,cxx11
+<bitset>,operator&,1,no
+<bitset>,operator|,1,no
+<bitset>,operator^,1,no
+<bitset>,operator>>,1,no
+<bitset>,operator<<,1,no
+<charconv>,chars_format,1,no
+<charconv>,to_chars_result,1,no
+<charconv>,to_chars,1,no
+<charconv>,from_chars_result,1,no
+<charconv>,from_chars,1,no
+# <chrono> TODO
+# <codecvt> TODO
+<compare>,weak_equality,1,cxx20
+<compare>,strong_equality,1,cxx20
+<compare>,partial_ordering,1,cxx20
+<compare>,weak_ordering,1,cxx20
+<compare>,strong_ordering,1,cxx20
+# <compare> TODO the rest
+<complex>,complex,1,cxx98
+<complex>,complex_literals,0,cxx14
+# <complex> TODO the rest
+# <concepts> TODO
+<condition_variable>,condition_variable,1,cxx11
+<condition_variable>,condition_variable_any,1,cxx11
+<condition_variable>,notify_all_at_thread_exit,1,no
+<condition_variable>,cv_status,1,no
+<condition_variable>,cv_status::no_timeout,1,no
+<condition_variable>,cv_status::timeout,1,no
+<coroutine>,coroutine_traits,1,no
+<coroutine>,coroutine_handle,1,no
+<coroutine>,operator==,1,no
+<coroutine>,operator<=>,1,no
+<coroutine>,hash,1,no
+<coroutine>,noop_coroutine_promise,1,no
+<coroutine>,noop_coroutine_handle,1,no
+<coroutine>,noop_coroutine,1,no
+<coroutine>,suspend_never,1,no
+<coroutine>,suspend_always,1,no
+<cstddef>,byte,0,cxx17
+<deque>,deque,1,cxx98
+<deque>,operator==,1,no
+<deque>,operator<=>,1,no
+<deque>,swap,1,no
+<deque>,erase,1,no
+<deque>,erase_if,1,no
+# c++/106851 <deque>,pmr::deque,1,no
+# <exception> TODO
+<exception>,exception,1,cxx98
+<exception>,bad_exception,1,no
+<exception>,nested_exception,1,no
+<exception>,terminate_handler,1,no
+<exception>,get_terminate,1,no
+<exception>,set_terminate,1,no
+<exception>,terminate,1,cxx98
+<exception>,uncaught_exceptions,1,cxx17
+<exception>,exception_ptr,1,cxx11
+<exception>,current_exception,1,cxx11
+<exception>,rethrow_exception,1,no
+<exception>,make_exception_ptr,1,cxx11
+<exception>,throw_with_nested,1,no
+<exception>,rethrow_if_nested,1,no
+<expected>,unexpected,1,no
+<expected>,bad_expected_access,1,no
+<expected>,unexpect_t,1,no
+<expected>,unexpect,1,no
+<expected>,expected,1,cxx23
+# <filesystem> TODO
+# <flat_map>,flat_map,1,no
+# <flat_map>,flat_multimap,1,no
+# <flat_map>,sorted_unique_t,1,no
+# <flat_map>,sorted_unique,1,no
+# <flat_map>,sorted_equivalent_t,1,no
+# <flat_map>,sorted_equivalent,1,no
+# <flat_map>,erase_if,1,no
+# <flat_map>,uses_allocator,1,no
+# <flat_set>,flat_set,1,no
+# <flat_set>,flat_multiset,1,no
+# <flat_set>,sorted_unique_t,1,no
+# <flat_set>,sorted_unique,1,no
+# <flat_set>,sorted_equivalent_t,1,no
+# <flat_set>,sorted_equivalent,1,no
+# <flat_set>,erase_if,1,no
+# <flat_set>,uses_allocator,1,no
+<forward_list>,forward_list,1,cxx11
+<forward_list>,operator==,1,no
+<forward_list>,operator<=>,1,no
+<forward_list>,swap,1,no
+<forward_list>,erase,1,no
+<forward_list>,erase_if,1,no
+# c++/106851 <forward_list>,pmr::forward_list,1,no
+<fstream>,basic_filebuf,1,no
+<fstream>,swap,1,no
+<fstream>,basic_filebuf,0,cxx98
+<fstream>,filebuf,1,no
+<fstream>,wfilebuf,1,no
+<fstream>,basic_ifstream,1,cxx98
+<fstream>,ifstream,1,no
+<fstream>,wifstream,1,no
+<fstream>,basic_ofstream,1,cxx98
+<fstream>,ofstream,1,cxx98
+<fstream>,wofstream,1,no
+<fstream>,basic_fstream,1,cxx98
+<fstream>,fstream,1,cxx98
+<fstream>,ifstream,1,cxx98
+<functional>,bind,1,cxx11
+<functional>,bind_front,1,cxx20
+<functional>,function,1,cxx11
+<functional>,hash,0,cxx11
+<functional>,invoke,1,cxx17
+<functional>,invoke_r,1,cxx23
+<functional>,mem_fn,1,cxx11
+<functional>,not_fn,1,cxx17
+<functional>,reference_wrapper,1,cxx11
+<functional>,unwrap_reference,1,cxx20
+<functional>,unwrap_reference_t,1,cxx20
+<functional>,unwrap_ref_decay,1,cxx20
+<functional>,unwrap_ref_decay_t,1,cxx20
+# <functional> TODO the rest
+<future>,future_errc,1,no
+<future>,launch,1,no
+<future>,future_status,1,no
+<future>,is_error_code_enum,1,no
+<future>,make_error_code,1,no
+<future>,make_error_condition,1,no
+<future>,future_category,1,no
+<future>,future_error,1,no
+<future>,promise,1,cxx11
+<future>,swap,1,no
+<future>,uses_allocator,1,no
+<future>,future,1,cxx11
+<future>,shared_future,1,no
+<future>,packaged_task,1,cxx11
+<future>,async,1,cxx11
+<initializer_list>,initializer_list,1,no
+<initializer_list>,begin,1,no
+<initializer_list>,end,1,no
+<iomanip>,resetiosflags,1,cxx98
+<iomanip>,setiosflags,1,cxx98
+<iomanip>,setbase,1,cxx98
+<iomanip>,setfill,1,cxx98
+<iomanip>,setprecision,1,cxx98
+<iomanip>,setw,1,cxx98
+<iomanip>,get_money,1,cxx11
+<iomanip>,put_money,1,cxx11
+<iomanip>,get_time,1,cxx11
+<iomanip>,put_time,1,cxx11
+<iomanip>,quoted,1,cxx14
+<ios>,boolalpha,0,cxx98
+<ios>,noboolalpha,0,cxx98
+<ios>,showbase,0,cxx98
+<ios>,noshowbase,0,cxx98
+<ios>,showpoint,0,cxx98
+<ios>,noshowpoint,0,cxx98
+<ios>,showpos,0,cxx98
+<ios>,noshowpos,0,cxx98
+<ios>,skipws,0,cxx98
+<ios>,noskipws,0,cxx98
+<ios>,uppercase,0,cxx98
+<ios>,nouppercase,0,cxx98
+<ios>,unitbuf,0,cxx98
+<ios>,nounitbuf,0,cxx98
+<ios>,internal,0,cxx98
+<ios>,left,0,cxx98
+<ios>,right,0,cxx98
+<ios>,dec,0,cxx98
+<ios>,hex,0,cxx98
+<ios>,oct,0,cxx98
+<ios>,fixed,0,cxx98
+<ios>,scientific,0,cxx98
+<ios>,hexfloat,0,cxx11
+<ios>,defaultfloat,0,cxx11
+# <ios> TODO the rest
+# <iosfwd> TODO ?
+<iostream>,cin,1,cxx98
+<iostream>,cout,1,cxx98
+<iostream>,cerr,1,cxx98
+<iostream>,clog,1,cxx98
+<iostream>,wcin,1,cxx98
+<iostream>,wcout,1,cxx98
+<iostream>,wcerr,1,cxx98
+<iostream>,wclog,1,cxx98
+<istream>,basic_istream,1,no
+<istream>,istream,1,cxx98
+<istream>,wistream,1,no
+<istream>,basic_iostream,1,no
+<istream>,iostream,1,no
+<istream>,wiostream,1,no
+<istream>,ws,1,cxx98
+<istream>,operator>>,1,no
+<iterator>,advance,1,cxx98
+<iterator>,back_inserter,1,cxx98
+<iterator>,begin,1,cxx11
+<iterator>,distance,1,cxx98
+<iterator>,end,1,cxx11
+<iterator>,front_inserter,1,cxx98
+<iterator>,inserter,1,cxx98
+<iterator>,istream_iterator,1,cxx98
+<iterator>,istreambuf_iterator,1,cxx98
+<iterator>,iterator_traits,1,cxx98
+<iterator>,move_iterator,1,cxx11
+<iterator>,next,1,cxx11
+<iterator>,ostream_iterator,1,cxx98
+<iterator>,ostreambuf_iterator,1,cxx98
+<iterator>,prev,1,cxx11
+<iterator>,reverse_iterator,1,cxx98
+# <iterator> TODO the rest
+<latch>,latch,1,no
+<list>,list,1,cxx98
+<list>,operator==,1,no
+<list>,operator<=>,1,no
+<list>,swap,1,no
+<list>,erase,1,no
+<list>,erase_if,1,no
+# c++/106851 <list>,pmr::list,1,no
+# <locale> TODO
+<map>,map,1,cxx98
+<map>,multimap,1,cxx98
+<map>,operator==,1,no
+<map>,operator<=>,1,no
+<map>,swap,1,no
+<map>,erase,1,no
+<map>,erase_if,1,no
+# c++/106851 <map>,pmr::map,1,no
+# c++/106851 <map>,pmr::multimap,1,no
+# unimplemented <mdspan>,extents,1,no
+# unimplemented <mdspan>,dextents,1,no
+# unimplemented <mdspan>,layout_left,1,no
+# unimplemented <mdspan>,layout_right,1,no
+# unimplemented <mdspan>,layout_stride,1,no
+# unimplemented <mdspan>,default_accessor,1,no
+# unimplemented <mdspan>,mdspan,1,cxx23
+<memory>,pointer_traits,1,cxx11
+<memory>,to_address,1,cxx11
+<memory>,align,1,cxx11
+<memory>,assume_aligned,1,cxx20
+<memory>,allocator_arg_t,1,cxx11
+<memory>,allocator_arg,1,cxx11
+<memory>,uses_allocator,1,cxx11
+<memory>,uses_allocator_v,1,cxx17
+<memory>,uses_allocator_construction_args,1,cxx20
+<memory>,make_obj_using_allocator,1,cxx20
+<memory>,uninitialized_construct_using_allocator,1,cxx20
+<memory>,allocator_traits,1,cxx11
+<memory>,allocator,1,cxx98
+<memory>,operator==,1,no
+<memory>,addressof,1,cxx11
+# TODO uninitialized memory algos
+<memory>,construct_at,1,cxx20
+# c++/106851 <memory>,ranges::construct_at,1,cxx20
+<memory>,destroy_at,1,cxx20
+<memory>,destroy,1,cxx20
+<memory>,destroy_n,1,cxx20
+# c++/106851 <memory>,ranges::destroy_at,1,cxx20
+# c++/106851 <memory>,ranges::destroy,1,cxx20
+# c++/106851 <memory>,ranges::destroy_n,1,cxx20
+<memory>,default_delete,1,cxx11
+<memory>,unique_ptr,1,cxx11
+<memory>,make_unique,1,cxx14
+<memory>,make_unique_for_overwrite,1,cxx20
+<memory>,swap,1,no
+<memory>,operator==,1,no
+<memory>,operator<=>,1,no
+<memory>,operator>,1,no
+<memory>,operator<=,1,no
+<memory>,operator>=,1,no
+<memory>,operator<=>,1,no
+<memory>,operator<<,1,no
+<memory>,bad_weak_ptr,1,cxx11
+<memory>,shared_ptr,1,cxx11
+<memory>,make_shared,1,cxx11
+<memory>,allocate_shared,1,cxx11
+<memory>,make_shared_for_overwrite,1,cxx20
+<memory>,allocate_shared_for_overwrite,1,cxx20
+<memory>,get_deleter,1,cxx11
+<memory>,static_pointer_cast,1,cxx11
+<memory>,dynamic_pointer_cast,1,cxx11
+<memory>,const_pointer_cast,1,cxx11
+<memory>,reinterpret_pointer_cast,1,cxx17
+<memory>,weak_ptr,1,cxx11
+<memory>,owner_less,1,cxx11
+<memory>,enable_shared_from_this,1,cxx11
+<memory>,hash,1,no
+<memory_resource>,pmr,0,cxx17
+<memory_resource>,pmr::memory_resource,1,cxx17
+<memory_resource>,pmr::operator==,1,no
+<memory_resource>,pmr::polymorphic_allocator,1,cxx17
+<memory_resource>,pmr::new_delete_resource,1,cxx17
+<memory_resource>,pmr::set_default_resource,1,cxx17
+<memory_resource>,pmr::get_default_resource,1,cxx17
+<memory_resource>,pmr::pool_options,1,cxx17
+<memory_resource>,pmr::synchronized_pool_resource,1,cxx17
+<memory_resource>,pmr::unsynchronized_pool_resource,1,cxx17
+<memory_resource>,pmr::monotonic_buffer_resource,1,cxx17
+<mutex>,mutex,1,cxx11
+<mutex>,recursive_mutex,1,cxx11
+<mutex>,timed_mutex,1,cxx11
+<mutex>,recursive_timed_mutex,1,cxx11
+<mutex>,defer_lock_t,1,no
+<mutex>,try_to_lock_t,1,no
+<mutex>,adopt_lock_t,1,no
+<mutex>,defer_lock,1,no
+<mutex>,try_to_lock,1,no
+<mutex>,adopt_lock,1,no
+<mutex>,lock_guard,1,cxx11
+<mutex>,scoped_lock,1,cxx17
+<mutex>,unique_lock,1,cxx11
+<mutex>,swap,1,no
+<mutex>,try_lock,1,cxx11
+<mutex>,lock,1,cxx11
+<mutex>,once_flag,1,cxx11
+<mutex>,call_once,1,cxx11
+<new>,bad_alloc,1,cxx98
+<new>,bad_array_new_length,1,no
+<new>,destroying_delete_t,1,no
+<new>,destroying_delete,1,no
+<new>,align_val_t,1,no
+<new>,nothrow_t,1,cxx98
+<new>,nothrow,1,cxx98
+<new>,new_handler,1,no
+<new>,get_new_handler,1,no
+<new>,set_new_handler,1,no
+<new>,launder,1,cxx17
+<new>,hardware_destructive_interference_size,1,cxx17
+<new>,hardware_constructive_interference_size,1,cxx17
+<numbers>,numbers::e_v,1,cxx20
+<numbers>,numbers::log2e_v,1,cxx20
+<numbers>,numbers::log10e_v,1,cxx20
+<numbers>,numbers::pi_v,1,cxx20
+<numbers>,numbers::inv_pi_v,1,cxx20
+<numbers>,numbers::inv_sqrtpi_v,1,cxx20
+<numbers>,numbers::ln2_v,1,cxx20
+<numbers>,numbers::ln10_v,1,cxx20
+<numbers>,numbers::sqrt2_v,1,cxx20
+<numbers>,numbers::sqrt3_v,1,cxx20
+<numbers>,numbers::inv_sqrt3_v,1,cxx20
+<numbers>,numbers::egamma_v,1,cxx20
+<numbers>,numbers::phi_v,1,cxx20
+<optional>,optional,1,cxx17
+<optional>,nullopt_t,1,no
+<optional>,nullopt,1,cxx17
+<optional>,bad_optional_access,1,no
+<optional>,operator==,1,no
+<optional>,operator!=,1,no
+<optional>,operator<,1,no
+<optional>,operator>,1,no
+<optional>,operator<=,1,no
+<optional>,operator>=,1,no
+<optional>,operator<=>,1,no
+<optional>,swap,1,no
+<optional>,make_optional,1,cxx17
+<optional>,hash,1,no
+<ostream>,basic_ostream,1,no
+<ostream>,ostream,1,cxx98
+<ostream>,wostream,1,cxx98
+<ostream>,endl,1,cxx98
+<ostream>,ends,1,cxx98
+<ostream>,flush,1,cxx98
+<ostream>,emit_on_flush,1,cxx20
+<ostream>,noemit_on_flush,1,cxx20
+<ostream>,flush_emit,1,cxx20
+<ostream>,operator<<,1,no
+# <numeric> TODO
+<queue>,queue,1,cxx98
+<queue>,operator==,1,no
+<queue>,operator!=,1,no
+<queue>,operator<,1,no
+<queue>,operator>,1,no
+<queue>,operator<=,1,no
+<queue>,operator>=,1,no
+<queue>,operator<=>,1,no
+<queue>,swap,1,no
+<queue>,uses_allocator,1,no
+<queue>,priority_queue,1,cxx98
+# <random> TODO
+<ranges>,ranges::enable_view,1,cxx20
+<ranges>,ranges::enable_borrowed_range,1,cxx20
+# <ranges> TODO the rest
+<ratio>,ratio,1,no
+<ratio>,ratio_add,1,no
+<ratio>,ratio_subtract,1,no
+<ratio>,ratio_multiply,1,no
+<ratio>,ratio_divide,1,no
+<ratio>,ratio_equal,1,no
+<ratio>,ratio_not_equal,1,no
+<ratio>,ratio_less,1,no
+<ratio>,ratio_less_equal,1,no
+<ratio>,ratio_greater,1,no
+<ratio>,ratio_greater_equal,1,no
+<ratio>,ratio_equal_v,1,no
+<ratio>,ratio_not_equal_v,1,no
+<ratio>,ratio_less_v,1,no
+<ratio>,ratio_less_equal_v,1,no
+<ratio>,ratio_greater_v,1,no
+<ratio>,ratio_greater_equal_v,1,no
+<ratio>,yocto,1,no,__INTMAX_WIDTH__ > 80
+<ratio>,zepto,1,no,__INTMAX_WIDTH__ > 70
+<ratio>,atto,1,no
+<ratio>,femto,1,no
+<ratio>,pico,1,no
+<ratio>,nano,1,no
+<ratio>,micro,1,no
+<ratio>,milli,1,no
+<ratio>,centi,1,no
+<ratio>,deci,1,no
+<ratio>,deca,1,no
+<ratio>,hecto,1,no
+<ratio>,kilo,1,no
+<ratio>,mega,1,no
+<ratio>,giga,1,no
+<ratio>,tera,1,no
+<ratio>,peta,1,no
+<ratio>,exa,1,no
+<ratio>,zetta,1,no,__INTMAX_WIDTH__ > 70
+<ratio>,yotta,1,no,__INTMAX_WIDTH__ > 80
+# <regex> TODO
+<scoped_allocator>,scoped_allocator_adaptor,1,cxx11
+<scoped_allocator>,operator==,1,no
+<semaphore>,counting_semaphore,1,cxx20
+<semaphore>,binary_semaphore,1,cxx20
+<set>,set,1,cxx98
+<set>,multiset,1,cxx98
+<set>,operator==,1,no
+<set>,operator<=>,1,no
+<set>,swap,1,no
+<set>,erase,1,no
+<set>,erase_if,1,no
+# c++/106851 <set>,pmr::set,1,no
+# c++/106851 <set>,pmr::multiset,1,no
+<shared_mutex>,shared_mutex,1,cxx17
+<shared_mutex>,shared_timed_mutex,1,cxx14
+<shared_mutex>,shared_lock,1,cxx14
+<shared_mutex>,swap,1,no
+<source_location>,source_location,1,cxx20
+<span>,dynamic_extent,1,no
+<span>,span,1,cxx20
+<span>,ranges::enable_view,1,no
+<span>,ranges::enable_borrowed_range,1,no
+<span>,as_bytes,1,no
+<span>,as_writable_bytes,1,no
+<spanstream>,basic_spanbuf,1,cxx23
+<spanstream>,swap,1,no
+<spanstream>,spanbuf,1,cxx23
+<spanstream>,wspanbuf,1,cxx23
+<spanstream>,basic_ispanstream,1,cxx23
+<spanstream>,ispanstream,1,cxx23
+<spanstream>,wispanstream,1,cxx23
+<spanstream>,basic_ospanstream,1,cxx23
+<spanstream>,ospanstream,1,cxx23
+<spanstream>,wospanstream,1,cxx23
+<spanstream>,basic_spanstream,1,cxx23
+<spanstream>,spanstream,1,cxx23
+<spanstream>,ispanstream,1,cxx23
+<sstream>,basic_stringbuf,1,cxx98
+<sstream>,swap,1,no
+<sstream>,stringbuf,1,cxx98
+<sstream>,wstringbuf,1,cxx98
+<sstream>,basic_istringstream,1,cxx98
+<sstream>,istringstream,1,cxx98
+<sstream>,wistringstream,1,cxx98
+<sstream>,basic_ostringstream,1,cxx98
+<sstream>,ostringstream,1,cxx98
+<sstream>,wostringstream,1,cxx98
+<sstream>,basic_stringstream,1,cxx98
+<sstream>,stringstream,1,cxx98
+<sstream>,istringstream,1,cxx98
+<stack>,stack,1,cxx98
+<stack>,operator==,1,no
+<stack>,operator!=,1,no
+<stack>,operator<,1,no
+<stack>,operator>,1,no
+<stack>,operator<=,1,no
+<stack>,operator>=,1,no
+<stack>,operator<=>,1,no
+<stack>,swap,1,no
+<stack>,uses_allocator,1,no
+<stacktrace>,stacktrace_entry,1,no
+<stacktrace>,basic_stacktrace,1,no
+<stacktrace>,stacktrace,1,cxx23
+<stacktrace>,swap,1,no
+<stacktrace>,to_string,1,no
+<stacktrace>,operator<<,1,no
+# c++/106851 <stacktrace>,pmr::stacktrace,1,no
+<stacktrace>,hash,1,no
+<stdexcept>,logic_error,1,cxx98
+<stdexcept>,domain_error,1,cxx98
+<stdexcept>,invalid_argument,1,cxx98
+<stdexcept>,length_error,1,cxx98
+<stdexcept>,out_of_range,1,cxx98
+<stdexcept>,runtime_error,1,cxx98
+<stdexcept>,range_error,1,cxx98
+<stdexcept>,overflow_error,1,cxx98
+<stdexcept>,underflow_error,1,cxx98
+<stop_token>,stop_token,1,cxx20
+<stop_token>,stop_source,1,cxx20
+<stop_token>,nostopstate_t,1,no
+<stop_token>,nostopstate,1,no
+<stop_token>,stop_callback,1,cxx20
+<streambuf>,basic_streambuf,1,cxx98
+<streambuf>,streambuf,1,cxx98
+<streambuf>,wstreambuf,1,cxx98
+<string>,char_traits,1,cxx98
+<string>,basic_string,1,cxx98
+<string>,operator+,1,no
+<string>,operator==,1,no
+<string>,operator<=>,1,no
+<string>,swap,1,no
+<string>,operator<<,1,no
+<string>,operator>>,1,no
+<string>,getline,1,no
+<string>,erase,1,no
+<string>,erase_if,1,no
+<string>,string,1,cxx98
+<string>,wstring,1,cxx98
+<string>,u8string,1,cxx20
+<string>,u16string,1,cxx11
+<string>,u32string,1,cxx11
+<string>,stoi,1,cxx11
+<string>,stol,1,cxx11
+<string>,stoul,1,cxx11
+<string>,stoll,1,cxx11
+<string>,stoull,1,cxx11
+<string>,stof,1,cxx11
+<string>,stod,1,cxx11
+<string>,stold,1,cxx11
+<string>,to_string,1,cxx17
+<string>,to_wstring,1,cxx17
+# c++/106851 <string>,pmr::string,1,cxx17
+# c++/106851 <string>,pmr::wstring,1,cxx17
+# c++/106851 <string>,pmr::u8string,1,cxx20
+# c++/106851 <string>,pmr::u16string,1,cxx17
+# c++/106851 <string>,pmr::u32string,1,cxx17
+<string_view>,basic_string_view,1,cxx17
+<string_view>,ranges::enable_view,1,no
+<string_view>,ranges::enable_borrowed_range,1,no
+<string_view>,operator==,1,no
+<string_view>,operator<=>,1,no
+<string_view>,operator<<,1,no
+<string_view>,string_view,1,cxx17
+<string_view>,hash,1,no
+<string_view>,literals::string_literals::operator""sv,1,no
+<system_error>,error_category,1,cxx11
+<system_error>,generic_category,1,cxx11
+<system_error>,system_category,1,cxx11
+<system_error>,error_code,1,cxx11
+<system_error>,error_condition,1,cxx11
+<system_error>,is_error_code_enum,1,cxx11
+<system_error>,is_error_condition_enum,1,cxx11
+<system_error>,errc,1,cxx11
+<system_error>,make_error_code,1,cxx11
+<system_error>,make_error_condition,1,cxx11
+<system_error>,operator==,1,no
+<system_error>,operator<=>,1,no
+<system_error>,hash,1,no
+<system_error>,is_error_code_enum_v,1,cxx17
+<system_error>,is_error_condition_enum_v,1,cxx17
+<syncstream>,basic_syncbuf,1,no
+<syncstream>,swap,1,no
+<syncstream>,syncbuf,1,no
+<syncstream>,wsyncbuf,1,no
+<syncstream>,basic_osyncstream,1,no
+<syncstream>,osyncstream,1,no
+<syncstream>,wosyncstream,1,no
+<thread>,thread,1,cxx11
+<thread>,swap,1,no
+<thread>,jthread,1,cxx20
+<thread>,this_thread,0,cxx11
+<thread>,this_thread::get_id,1,no
+<thread>,this_thread::yield,1,no
+<thread>,this_thread::sleep_until,1,no
+<thread>,this_thread::sleep_for,1,no
+<tuple>,tuple,1,cxx11
+<tuple>,basic_common_reference,1,no
+<tuple>,common_type,1,no
+<tuple>,ignore,1,no
+<tuple>,make_tuple,1,cxx11
+<tuple>,forward_as_tuple,1,cxx11
+<tuple>,tie,1,cxx11
+<tuple>,tuple_cat,1,cxx11
+<tuple>,apply,1,cxx17
+<tuple>,make_from_tuple,1,cxx17
+<tuple>,tuple_size,1,cxx11
+<tuple>,tuple_size_v,1,cxx17
+<tuple>,tuple_element,1,cxx11
+<tuple>,tuple_element_t,1,cxx14
+<tuple>,get,1,no
+<tuple>,operator==,1,no
+<tuple>,operator<=>,1,no
+<tuple>,uses_allocator,1,no
+<tuple>,swap,1,no
+<typeindex>,type_index,1,cxx11
+<typeindex>,hash,1,no
+<typeinfo>,type_info,1,no
+<typeinfo>,bad_cast,1,cxx98
+<typeinfo>,bad_typeid,1,cxx98
+<type_traits>,enable_if,1,cxx11
+<type_traits>,enable_if_t,1,cxx14
+<type_traits>,invoke_result,1,cxx17
+<type_traits>,invoke_result_t,1,cxx17
+<type_traits>,remove_cvref,1,cxx20
+<type_traits>,remove_cvref_t,1,cxx20
+<type_traits>,type_identity,1,cxx20
+<type_traits>,type_identity_t,1,cxx20
+<type_traits>,void_t,1,cxx17
+<type_traits>,conjunction,1,cxx17
+<type_traits>,conjunction_v,1,cxx17
+<type_traits>,disjunction,1,cxx17
+<type_traits>,disjunction_v,1,cxx17
+<type_traits>,negation,1,cxx17
+<type_traits>,negation_v,1,cxx17
+<unordered_map>,unordered_map,1,cxx11
+<unordered_map>,unordered_multimap,1,cxx11
+<unordered_map>,operator==,1,no
+<unordered_map>,operator<=>,1,no
+<unordered_map>,swap,1,no
+<unordered_map>,erase,1,no
+<unordered_map>,erase_if,1,no
+# c++/106851 <unordered_map>,pmr::unordered_map,1,cxx17
+# c++/106851 <unordered_map>,pmr::unordered_multimap,1,cxx17
+<unordered_set>,unordered_set,1,cxx11
+<unordered_set>,unordered_multiset,1,cxx11
+<unordered_set>,operator==,1,no
+<unordered_set>,operator<=>,1,no
+<unordered_set>,swap,1,no
+<unordered_set>,erase,1,no
+<unordered_set>,erase_if,1,no
+# c++/106851 <unordered_set>,pmr::unordered_set,1,no
+# c++/106851 <unordered_set>,pmr::unordered_multiset,1,no
+<utility>,swap,1,no
+<utility>,exchange,1,cxx14
+<utility>,forward,1,cxx11
+# unimplemented <utility>,forward_like,1,cxx23
+<utility>,move,1,cxx11
+<utility>,move_if_noexcept,1,cxx11
+<utility>,as_const,1,cxx17
+<utility>,declval,1,cxx11
+<utility>,cmp_equal,1,cxx20
+<utility>,cmp_not_equal,1,cxx20
+<utility>,cmp_less,1,cxx20
+<utility>,cmp_greater,1,cxx20
+<utility>,cmp_less_equal,1,cxx20
+<utility>,cmp_greater_equal,1,cxx20
+<utility>,in_range,1,cxx20
+<utility>,to_underlying,1,cxx23
+<utility>,unreachable,1,cxx23
+<utility>,integer_sequence,1,cxx14
+<utility>,index_sequence,1,cxx14
+<utility>,make_integer_sequence,1,cxx14
+<utility>,make_index_sequence,1,cxx14
+<utility>,index_sequence_for,1,cxx14
+<utility>,pair,1,cxx98
+<utility>,operator==,1,no
+<utility>,operator<=>,1,no
+<utility>,basic_common_reference,1,no
+<utility>,common_type,1,no
+<utility>,make_pair,1,cxx98
+<utility>,tuple_size,1,no
+<utility>,tuple_element,1,no
+<utility>,get,1,no
+<utility>,piecewise_construct_t,1,cxx11
+<utility>,piecewise_construct,1,cxx11
+<utility>,in_place_t,1,cxx17
+<utility>,in_place,1,cxx17
+<utility>,in_place_type_t,1,cxx17
+<utility>,in_place_type,1,cxx17
+<utility>,in_place_index_t,1,cxx17
+<utility>,in_place_index,1,cxx17
+# <valarray> TODO
+<variant>,variant,1,cxx17
+<variant>,variant_size,1,cxx17
+<variant>,variant_size_v,1,cxx17
+<variant>,variant_alternative,1,cxx17
+<variant>,variant_alternative_t,1,cxx17
+<variant>,variant_npos,1,cxx17
+<variant>,holds_alternative,1,cxx17
+<variant>,get,1,no
+<variant>,get_if,1,no
+<variant>,operator==,1,no
+<variant>,operator!=,1,no
+<variant>,operator<,1,no
+<variant>,operator>,1,no
+<variant>,operator<=,1,no
+<variant>,operator>=,1,no
+<variant>,operator<=>,1,no
+<variant>,visit,1,cxx17
+<variant>,monostate,1,cxx17
+<variant>,swap,1,no
+<variant>,bad_variant_access,1,cxx17
+<variant>,hash,1,no
+<vector>,vector,1,cxx98
+<vector>,operator==,1,no
+<vector>,operator<=>,1,no
+<vector>,swap,1,no
+<vector>,erase,1,no
+<vector>,erase_if,1,no
+<vector>,hash,1,no
+# <version> contains no exportable names
+# <cassert> contains no exportable names
+# <cctype> TODO
+<cfenv>,fenv_t,1,no
+<cfenv>,fexcept_t,1,no
+<cfenv>,feclearexcept,1,no
+<cfenv>,fegetexceptflag,1,no
+<cfenv>,feraiseexcept,1,no
+<cfenv>,fesetexceptflag,1,no
+<cfenv>,fetestexcept,1,no
+<cfenv>,fegetround,1,no
+<cfenv>,fesetround,1,no
+<cfenv>,fegetenv,1,no
+<cfenv>,feholdexcept,1,no
+<cfenv>,fesetenv,1,no
+<cfenv>,feupdateenv,1,no
+<cinttypes>,imaxdiv_t,1,no
+<cinttypes>,imaxabs,1,no
+<cinttypes>,imaxdiv,1,no
+<cinttypes>,strtoimax,1,no
+<cinttypes>,strtoumax,1,no
+<cinttypes>,wcstoimax,1,no
+<cinttypes>,wcstoumax,1,no
+<cinttypes>,abs,1,no
+<cinttypes>,div,1,no
+# <climits> only contains macros, handled by get_stdlib_header_for_name
+# <climits>,CHAR_BIT,0,cxx98
+# <climits>,SCHAR_MIN,0,cxx98
+# <climits>,SCHAR_MAX,0,cxx98
+# <climits>,UCHAR_MAX,0,cxx98
+# <climits>,CHAR_MIN,0,cxx98
+# <climits>,CHAR_MAX,0,cxx98
+# <climits>,MB_LEN_MAX,0,cxx98
+# <climits>,SHRT_MIN,0,cxx98
+# <climits>,SHRT_MAX,0,cxx98
+# <climits>,USHRT_MAX,0,cxx98
+# <climits>,INT_MIN,0,cxx98
+# <climits>,INT_MAX,0,cxx98
+# <climits>,UINT_MAX,0,cxx98
+# <climits>,LONG_MIN,0,cxx98
+# <climits>,LONG_MAX,0,cxx98
+# <climits>,ULONG_MAX,0,cxx98
+# <climits>,LLONG_MIN,0,cxx98
+# <climits>,LLONG_MAX,0,cxx11
+# <climits>,ULLONG_MAX,0,cxx11
+<clocale>,lconv,1,no
+<clocale>,setlocale,1,no
+<clocale>,localeconv,1,no
+# <cmath> TODO 
+<csetjmp>,jmp_buf,1,no
+<csetjmp>,longjmp,1,no
+<csignal>,sig_atomic_t,1,no
+<csignal>,signal,1,no
+<csignal>,raise,1,no
+<csignal>,va_list,1,no
+<cstddef>,ptrdiff_t,1,no
+<cstddef>,size_t,1,no
+<cstddef>,max_align_t,1,no
+<cstddef>,nullptr_t,1,no
+<cstddef>,byte,1,no
+<cstddef>,operator<<=,1,no
+<cstddef>,operator<<,1,no
+<cstddef>,operator>>=,1,no
+<cstddef>,operator>>,1,no
+<cstddef>,operator|=,1,no
+<cstddef>,operator|,1,no
+<cstddef>,operator&=,1,no
+<cstddef>,operator&,1,no
+<cstddef>,operator^=,1,no
+<cstddef>,operator^,1,no
+<cstddef>,operator~,1,no
+<cstddef>,to_integer,1,no
+<cstdint>,int8_t,1,no
+<cstdint>,int16_t,1,no
+<cstdint>,int32_t,1,no
+<cstdint>,int64_t,1,no
+<cstdint>,int_fast8_t,1,no
+<cstdint>,int_fast16_t,1,no
+<cstdint>,int_fast32_t,1,no
+<cstdint>,int_fast64_t,1,no
+<cstdint>,int_least8_t,1,no
+<cstdint>,int_least16_t,1,no
+<cstdint>,int_least32_t,1,no
+<cstdint>,int_least64_t,1,no
+<cstdint>,intmax_t,1,no
+<cstdint>,intptr_t,1,no
+<cstdint>,uint8_t,1,no
+<cstdint>,uint16_t,1,no
+<cstdint>,uint32_t,1,no
+<cstdint>,uint64_t,1,no
+<cstdint>,uint_fast8_t,1,cxx11
+<cstdint>,uint_fast16_t,1,cxx11
+<cstdint>,uint_fast32_t,1,cxx11
+<cstdint>,uint_fast64_t,1,cxx11
+<cstdint>,uint_least8_t,1,cxx11
+<cstdint>,uint_least16_t,1,cxx11
+<cstdint>,uint_least32_t,1,cxx11
+<cstdint>,uint_least64_t,1,cxx11
+<cstdint>,uintmax_t,1,cxx11
+<cstdint>,uintptr_t,1,cxx11
+# <cstdio> TODO
+# <cstdlib> TODO
+# <cstring> TODO
+# <ctime> TODO
+# <cuchar> TODO
+# <cwchar> TODO
+# <cwctype> TODO

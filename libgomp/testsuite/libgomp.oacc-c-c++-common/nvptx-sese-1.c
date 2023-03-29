@@ -22,7 +22,7 @@ int main ()
     if (foo (r))
       r *= 2;
 
-    if (r & 1) /* to here. */
+    if (r & 8) /* to here. */
 #pragma acc loop vector reduction (+:r)
       for (int i = 00; i < 40; i++)
 	r += i;

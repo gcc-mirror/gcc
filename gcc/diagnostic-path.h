@@ -1,5 +1,5 @@
 /* Paths through the code associated with a diagnostic.
-   Copyright (C) 2019-2022 Free Software Foundation, Inc.
+   Copyright (C) 2019-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>
 
 This file is part of GCC.
@@ -167,6 +167,9 @@ class diagnostic_path
   virtual const diagnostic_event & get_event (int idx) const = 0;
 
   bool interprocedural_p () const;
+
+private:
+  bool get_first_event_in_a_function (unsigned *out_idx) const;
 };
 
 /* Concrete subclasses.  */

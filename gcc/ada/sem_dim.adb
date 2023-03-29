@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1316,7 +1316,7 @@ package body Sem_Dim is
 
          --  Look at the named components right after the positional components
 
-         if not Present (Next (Comp))
+         if No (Next (Comp))
            and then List_Containing (Comp) = Exps
          then
             Comp := First (Comp_Ass);

@@ -42,7 +42,7 @@ public:
 B A::compute(void) const
 {
   B sub(*this, 1);
-  return sub;
+  return static_cast<B&>(sub);
 }
 
 int main ()

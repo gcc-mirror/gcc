@@ -5,7 +5,7 @@
  * The serialization is a string which contains the type of the parameters and the string
  * represantation of the lambda expression.
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/lamdbacomp.d, _lambdacomp.d)
@@ -120,7 +120,7 @@ public:
     OutBuffer buf;
     alias visit = SemanticTimeTransitiveVisitor.visit;
 
-    this(Scope* sc)
+    this(Scope* sc) scope
     {
         this.sc = sc;
     }
@@ -452,7 +452,7 @@ public:
         if (ty)
         {
             writeMangledName(ty.sym);
-            auto dim = e.elements.dim;
+            auto dim = e.elements.length;
             foreach (i; 0..dim)
             {
                 auto elem = (*e.elements)[i];

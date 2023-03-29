@@ -1,7 +1,7 @@
 // { dg-do compile { target c++11 } }
 // 2007-09-17  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2007-2022 Free Software Foundation, Inc.
+// Copyright (C) 2007-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,3 +29,6 @@ namespace std
   template struct aligned_storage<1, alignment_of<test_type>::value>;
   template struct aligned_storage<2>;
 }
+
+// { dg-warning "deprecated" "" { target c++23 } 29 }
+// { dg-warning "deprecated" "" { target c++23 } 30 }

@@ -1,6 +1,6 @@
 // class template regex -*- C++ -*-
 
-// Copyright (C) 2013-2022 Free Software Foundation, Inc.
+// Copyright (C) 2013-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -124,9 +124,10 @@ namespace __detail
 	    break;
 	  std::fill_n(_M_states._M_visited_states, _M_nfa.size(), false);
 	  auto __old_queue = std::move(_M_states._M_match_queue);
+	  auto __alloc = _M_cur_results.get_allocator();
 	  for (auto& __task : __old_queue)
 	    {
-	      _M_cur_results = std::move(__task.second);
+	      _M_cur_results = _ResultsVec(std::move(__task.second), __alloc);
 	      _M_dfs(__match_mode, __task.first);
 	    }
 	  if (__match_mode == _Match_mode::_Prefix)

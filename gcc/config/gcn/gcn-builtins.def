@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2023 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -62,6 +62,21 @@ DEF_BUILTIN (SQRTF, 3 /*CODE_FOR_sqrtf */,
 DEF_BUILTIN (FABSVF, 3 /*CODE_FOR_fabsvf */,
 	     "fabsvf", B_INSN,
 	     _A2 (GCN_BTI_V64SF, GCN_BTI_V64SF),
+	     gcn_expand_builtin_1)
+
+DEF_BUILTIN (FABSV, 3 /*CODE_FOR_fabsv */,
+	     "fabsv", B_INSN,
+	     _A2 (GCN_BTI_V64DF, GCN_BTI_V64DF),
+	     gcn_expand_builtin_1)
+
+DEF_BUILTIN (FLOORVF, 3 /*CODE_FOR_floorvf */,
+	     "floorvf", B_INSN,
+	     _A2 (GCN_BTI_V64SF, GCN_BTI_V64SF),
+	     gcn_expand_builtin_1)
+
+DEF_BUILTIN (FLOORV, 3 /*CODE_FOR_floorv */,
+	     "floorv", B_INSN,
+	     _A2 (GCN_BTI_V64DF, GCN_BTI_V64DF),
 	     gcn_expand_builtin_1)
 
 DEF_BUILTIN (LDEXPVF, 3 /*CODE_FOR_ldexpvf */,
@@ -143,6 +158,14 @@ DEF_BUILTIN (ACC_SINGLE_COPY_END, -1, "single_copy_end", B_INSN,
 DEF_BUILTIN (ACC_BARRIER, -1, "acc_barrier", B_INSN, _A1 (GCN_BTI_VOID),
 	     gcn_expand_builtin_1)
 
+/* Kernel inputs.  */
+
+DEF_BUILTIN (FIRST_CALL_THIS_THREAD_P, -1, "first_call_this_thread_p", B_INSN,
+	     _A1 (GCN_BTI_BOOL), gcn_expand_builtin_1)
+DEF_BUILTIN (KERNARG_PTR, -1, "kernarg_ptr", B_INSN, _A1 (GCN_BTI_VOIDPTR),
+	     gcn_expand_builtin_1)
+DEF_BUILTIN (GET_STACK_LIMIT, -1, "get_stack_limit", B_INSN,
+	     _A1 (GCN_BTI_VOIDPTR), gcn_expand_builtin_1)
 
 #undef _A1
 #undef _A2

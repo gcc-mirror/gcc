@@ -7,7 +7,7 @@
 /*
 **off_load8_0:
 **	...
-**	vldrb.8	q0, \[r0, #16\]
+**	vldrb.8	q[0-7], \[r0, #16\]
 **	...
 */
 int8x16_t off_load8_0 (int8_t * a)
@@ -18,7 +18,7 @@ int8x16_t off_load8_0 (int8_t * a)
 /*
 **off_load8_1:
 **	...
-**	vldrb.u16	q0, \[r0, #1\]
+**	vldrb.u16	q[0-7], \[r0, #1\]
 **	...
 */
 uint16x8_t off_load8_1 (uint8_t * a)
@@ -29,7 +29,7 @@ uint16x8_t off_load8_1 (uint8_t * a)
 /*
 **off_load8_2:
 **	...
-**	vldrb.s32	q0, \[r0, #127\]
+**	vldrb.s32	q[0-7], \[r0, #127\]
 **	...
 */
 int32x4_t off_load8_2 (int8_t * a)
@@ -40,7 +40,7 @@ int32x4_t off_load8_2 (int8_t * a)
 /*
 **off_load8_3:
 **	...
-**	vldrb.8	q0, \[r0, #-127\]
+**	vldrb.8	q[0-7], \[r0, #-127\]
 **	...
 */
 uint8x16_t off_load8_3 (uint8_t * a)
@@ -51,7 +51,7 @@ uint8x16_t off_load8_3 (uint8_t * a)
 /*
 **not_off_load8_0:
 **	...
-**	vldrb.8	q0, \[r[0-9]+\]
+**	vldrb.8	q[0-7], \[r[0-7]+\]
 **	...
 */
 int8x16_t not_off_load8_0 (int8_t * a)
@@ -62,7 +62,7 @@ int8x16_t not_off_load8_0 (int8_t * a)
 /*
 **off_loadfp16_0:
 **	...
-**	vldrh.16	q0, \[r0, #-244\]
+**	vldrh.16	q[0-7], \[r0, #-244\]
 **	...
 */
 float16x8_t off_loadfp16_0 (float16_t *a)
@@ -73,7 +73,7 @@ float16x8_t off_loadfp16_0 (float16_t *a)
 /*
 **off_load16_0:
 **	...
-**	vldrh.16	q0, \[r0, #-2\]
+**	vldrh.16	q[0-7], \[r0, #-2\]
 **	...
 */
 uint16x8_t off_load16_0 (uint16_t * a)
@@ -84,7 +84,7 @@ uint16x8_t off_load16_0 (uint16_t * a)
 /*
 **off_load16_1:
 **	...
-**	vldrh.u32	q0, \[r0, #254\]
+**	vldrh.u32	q[0-7], \[r0, #254\]
 **	...
 */
 uint32x4_t off_load16_1 (uint16_t * a)
@@ -95,7 +95,7 @@ uint32x4_t off_load16_1 (uint16_t * a)
 /*
 **not_off_load16_0:
 **	...
-**	vldrh.16	q0, \[r[0-9]+\]
+**	vldrh.16	q[0-7], \[r[0-7]+\]
 **	...
 */
 int16x8_t not_off_load16_0 (int8_t * a)
@@ -106,7 +106,7 @@ int16x8_t not_off_load16_0 (int8_t * a)
 /*
 **not_off_load16_1:
 **	...
-**	vldrh.u32	q0, \[r[0-9]+\]
+**	vldrh.u32	q[0-7], \[r[0-7]+\]
 **	...
 */
 uint32x4_t not_off_load16_1 (uint16_t * a)
@@ -117,7 +117,7 @@ uint32x4_t not_off_load16_1 (uint16_t * a)
 /*
 **off_loadfp32_0:
 **	...
-**	vldrw.32	q0, \[r0, #24\]
+**	vldrw.32	q[0-7], \[r0, #24\]
 **	...
 */
 float32x4_t off_loadfp32_0 (float32_t *a)
@@ -128,7 +128,7 @@ float32x4_t off_loadfp32_0 (float32_t *a)
 /*
 **off_load32_0:
 **	...
-**	vldrw.32	q0, \[r0, #4\]
+**	vldrw.32	q[0-7], \[r0, #4\]
 **	...
 */
 uint32x4_t off_load32_0 (uint32_t * a)
@@ -139,7 +139,7 @@ uint32x4_t off_load32_0 (uint32_t * a)
 /*
 **off_load32_1:
 **	...
-**	vldrw.32	q0, \[r0, #-508\]
+**	vldrw.32	q[0-7], \[r0, #-508\]
 **	...
 */
 int32x4_t off_load32_1 (int32_t * a)
@@ -149,7 +149,7 @@ int32x4_t off_load32_1 (int32_t * a)
 /*
 **pre_load8_0:
 **	...
-**	vldrb.8	q[0-9]+, \[r0, #16\]!
+**	vldrb.8	q[0-7], \[r0, #16\]!
 **	...
 */
 int8_t* pre_load8_0 (int8_t * a, int8x16_t *v)
@@ -162,7 +162,7 @@ int8_t* pre_load8_0 (int8_t * a, int8x16_t *v)
 /*
 **pre_load8_1:
 **	...
-**	vldrb.u16	q[0-9]+, \[r0, #4\]!
+**	vldrb.u16	q[0-7], \[r0, #4\]!
 **	...
 */
 uint8_t* pre_load8_1 (uint8_t * a, uint16x8_t *v)
@@ -175,7 +175,7 @@ uint8_t* pre_load8_1 (uint8_t * a, uint16x8_t *v)
 /*
 **pre_loadfp16_0:
 **	...
-**	vldrh.16	q[0-9]+, \[r0, #128\]!
+**	vldrh.16	q[0-7], \[r0, #128\]!
 **	...
 */
 float16_t* pre_loadfp16_0 (float16_t *a, float16x8_t *v)
@@ -188,7 +188,7 @@ float16_t* pre_loadfp16_0 (float16_t *a, float16x8_t *v)
 /*
 **pre_load16_0:
 **	...
-**	vldrh.16	q[0-9]+, \[r0, #-254\]!
+**	vldrh.16	q[0-7], \[r0, #-254\]!
 **	...
 */
 int16_t* pre_load16_0 (int16_t * a, int16x8_t *v)
@@ -201,7 +201,7 @@ int16_t* pre_load16_0 (int16_t * a, int16x8_t *v)
 /*
 **pre_load16_1:
 **	...
-**	vldrh.s32	q[0-9]+, \[r0, #52\]!
+**	vldrh.s32	q[0-7], \[r0, #52\]!
 **	...
 */
 int16_t* pre_load16_1 (int16_t * a, int32x4_t *v)
@@ -214,7 +214,7 @@ int16_t* pre_load16_1 (int16_t * a, int32x4_t *v)
 /*
 **pre_loadfp32_0:
 **	...
-**	vldrw.32	q[0-9]+, \[r0, #-72\]!
+**	vldrw.32	q[0-7], \[r0, #-72\]!
 **	...
 */
 float32_t* pre_loadfp32_0 (float32_t *a, float32x4_t *v)
@@ -228,7 +228,7 @@ float32_t* pre_loadfp32_0 (float32_t *a, float32x4_t *v)
 /*
 **pre_load32_0:
 **	...
-**	vldrw.32	q[0-9]+, \[r0, #-4\]!
+**	vldrw.32	q[0-7], \[r0, #-4\]!
 **	...
 */
 uint32_t* pre_load32_0 (uint32_t * a, uint32x4_t *v)
@@ -242,7 +242,7 @@ uint32_t* pre_load32_0 (uint32_t * a, uint32x4_t *v)
 /*
 **post_load8_0:
 **	...
-**	vldrb.8	q[0-9]+, \[r0\], #26
+**	vldrb.8	q[0-7], \[r0\], #26
 **	...
 */
 uint8_t* post_load8_0 (uint8_t * a, uint8x16_t *v)
@@ -255,7 +255,7 @@ uint8_t* post_load8_0 (uint8_t * a, uint8x16_t *v)
 /*
 **post_load8_1:
 **	...
-**	vldrb.s16	q[0-9]+, \[r0\], #-1
+**	vldrb.s16	q[0-7], \[r0\], #-1
 **	...
 */
 int8_t* post_load8_1 (int8_t * a, int16x8_t *v)
@@ -268,7 +268,7 @@ int8_t* post_load8_1 (int8_t * a, int16x8_t *v)
 /*
 **post_load8_2:
 **	...
-**	vldrb.8	q[0-9]+, \[r0\], #26
+**	vldrb.8	q[0-7], \[r0\], #26
 **	...
 */
 uint8_t* post_load8_2 (uint8_t * a, uint8x16_t *v)
@@ -281,7 +281,7 @@ uint8_t* post_load8_2 (uint8_t * a, uint8x16_t *v)
 /*
 **post_load8_3:
 **	...
-**	vldrb.s16	q[0-9]+, \[r0\], #-1
+**	vldrb.s16	q[0-7], \[r0\], #-1
 **	...
 */
 int8_t* post_load8_3 (int8_t * a, int16x8_t *v)
@@ -294,7 +294,7 @@ int8_t* post_load8_3 (int8_t * a, int16x8_t *v)
 /*
 **post_loadfp16_0:
 **	...
-**	vldrh.16	q[0-9]+, \[r0\], #-24
+**	vldrh.16	q[0-7], \[r0\], #-24
 **	...
 */
 float16_t* post_loadfp16_0 (float16_t *a, float16x8_t *v)
@@ -307,7 +307,7 @@ float16_t* post_loadfp16_0 (float16_t *a, float16x8_t *v)
 /*
 **post_load16_0:
 **	...
-**	vldrh.16	q[0-9]+, \[r0\], #-126
+**	vldrh.16	q[0-7], \[r0\], #-126
 **	...
 */
 uint16_t* post_load16_0 (uint16_t * a, uint16x8_t *v)
@@ -320,7 +320,7 @@ uint16_t* post_load16_0 (uint16_t * a, uint16x8_t *v)
 /*
 **post_load16_1:
 **	...
-**	vldrh.u32	q[0-9]+, \[r0\], #16
+**	vldrh.u32	q[0-7], \[r0\], #16
 **	...
 */
 uint16_t* post_load16_1 (uint16_t * a, uint32x4_t *v)
@@ -333,7 +333,7 @@ uint16_t* post_load16_1 (uint16_t * a, uint32x4_t *v)
 /*
 **post_loadfp32_0:
 **	...
-**	vldrw.32	q[0-9]+, \[r0\], #4
+**	vldrw.32	q[0-7], \[r0\], #4
 **	...
 */
 float32_t* post_loadfp32_0 (float32_t *a, float32x4_t *v)
@@ -346,7 +346,7 @@ float32_t* post_loadfp32_0 (float32_t *a, float32x4_t *v)
 /*
 **post_load32_0:
 **	...
-**	vldrw.32	q[0-9]+, \[r0\], #-16
+**	vldrw.32	q[0-7], \[r0\], #-16
 **	...
 */
 int32_t* post_load32_0 (int32_t * a, int32x4_t *v)

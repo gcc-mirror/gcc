@@ -1,0 +1,152 @@
+(* Executive.def provides a simple multitasking executive.
+
+Copyright (C) 2002-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE Executive ;
+
+EXPORT QUALIFIED SEMAPHORE, DESCRIPTOR,
+                 InitProcess, KillProcess, Resume, Suspend, InitSemaphore,
+                 Wait, Signal, WaitForIO, Ps, GetCurrentProcess,
+                 RotateRunQueue, ProcessName, DebugProcess ;
+
+TYPE
+   SEMAPHORE ;         (* defines Dijkstra's semaphores *)
+   DESCRIPTOR ;        (* handle onto a process         *)
+
+
+(*
+   InitProcess - initializes a process which is held in the suspended
+                 state. When the process is resumed it will start executing
+                 procedure, p. The process has a maximum stack size of,
+                 StackSize, bytes and its textual name is, Name.
+                 The StackSize should be at least 5000 bytes.
+*)
+
+PROCEDURE InitProcess (p: PROC; StackSize: CARDINAL;
+                       Name: ARRAY OF CHAR) : DESCRIPTOR ;
+
+
+(*
+   KillProcess - kills the current process. Notice that if InitProcess
+                 is called again, it might reuse the DESCRIPTOR of the
+                 killed process. It is the responsibility of the caller
+                 to ensure all other processes understand this process
+                 is different.
+*)
+
+PROCEDURE KillProcess ;
+
+
+(*
+   Resume - resumes a suspended process. If all is successful then the process, p,
+            is returned. If it fails then NIL is returned.
+*)
+
+PROCEDURE Resume (d: DESCRIPTOR) : DESCRIPTOR ;
+
+
+(*
+   Suspend - suspend the calling process.
+             The process can only continue running if another process
+             Resumes it.
+*)
+
+PROCEDURE Suspend ;
+
+
+(*
+   InitSemaphore - creates a semaphore whose initial value is, v, and
+                   whose name is, Name.
+*)
+
+PROCEDURE InitSemaphore (v: CARDINAL; Name: ARRAY OF CHAR) : SEMAPHORE ;
+
+
+(*
+   Wait - performs dijkstra's P operation on a semaphore.
+          A process which calls this procedure will
+          wait until the value of the semaphore is > 0
+          and then it will decrement this value.
+*)
+
+PROCEDURE Wait (s: SEMAPHORE) ;
+
+
+(*
+   Signal - performs dijkstra's V operation on a semaphore.
+            A process which calls the procedure will increment
+            the semaphores value.
+*)
+
+PROCEDURE Signal (s: SEMAPHORE) ;
+
+
+(*
+   WaitForIO - waits for an interrupt to occur on vector, VectorNo.
+*)
+
+PROCEDURE WaitForIO (VectorNo: CARDINAL) ;
+
+
+(*
+   Ps - displays a process list together with process status.
+*)
+
+PROCEDURE Ps ;
+
+
+(*
+   GetCurrentProcess - returns the descriptor of the current running
+                       process.
+*)
+
+PROCEDURE GetCurrentProcess () : DESCRIPTOR ;
+
+
+(*
+   RotateRunQueue - rotates the process run queue.
+                    It does not call the scheduler.
+*)
+
+PROCEDURE RotateRunQueue ;
+
+
+(*
+   ProcessName - displays the name of process, d, through
+                 DebugString.
+*)
+
+PROCEDURE ProcessName (d: DESCRIPTOR) ;
+
+
+(*
+   DebugProcess - gdb debug handle to enable users to debug deadlocked
+                  semaphore processes.
+*)
+
+PROCEDURE DebugProcess (d: DESCRIPTOR) ;
+
+
+END Executive.

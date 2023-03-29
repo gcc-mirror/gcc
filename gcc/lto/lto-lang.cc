@@ -1,5 +1,5 @@
 /* Language-dependent hooks for LTO.
-   Copyright (C) 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2009-2023 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -901,7 +901,6 @@ lto_post_options (const char **pfilename ATTRIBUTE_UNUSED)
       break;
 
     case LTO_LINKER_OUTPUT_NOLTOREL: /* .o: incremental link producing asm  */
-      flag_whole_program = 0;
       flag_incremental_link = INCREMENTAL_LINK_NOLTO;
       break;
 
@@ -1005,6 +1004,11 @@ lto_type_for_mode (machine_mode mode, int unsigned_p)
   if (mode == TYPE_MODE (long_double_type_node))
     return long_double_type_node;
 
+  for (i = 0; i < NUM_FLOATN_NX_TYPES; i++)
+    if (FLOATN_NX_TYPE_NODE (i) != NULL_TREE
+	&& mode == TYPE_MODE (FLOATN_NX_TYPE_NODE (i)))
+      return FLOATN_NX_TYPE_NODE (i);
+
   if (mode == TYPE_MODE (void_type_node))
     return void_type_node;
 
@@ -1029,6 +1033,11 @@ lto_type_for_mode (machine_mode mode, int unsigned_p)
 	return complex_double_type_node;
       if (mode == TYPE_MODE (complex_long_double_type_node))
 	return complex_long_double_type_node;
+
+      for (i = 0; i < NUM_FLOATN_NX_TYPES; i++)
+	if (COMPLEX_FLOATN_NX_TYPE_NODE (i) != NULL_TREE
+	    && mode == TYPE_MODE (COMPLEX_FLOATN_NX_TYPE_NODE (i)))
+	  return COMPLEX_FLOATN_NX_TYPE_NODE (i);
 
       if (mode == TYPE_MODE (complex_integer_type_node) && !unsigned_p)
 	return complex_integer_type_node;
@@ -1155,9 +1164,13 @@ lto_type_for_mode (machine_mode mode, int unsigned_p)
     }
 
   for (t = registered_builtin_types; t; t = TREE_CHAIN (t))
-    if (TYPE_MODE (TREE_VALUE (t)) == mode)
-      return TREE_VALUE (t);
-
+    {
+      tree type = TREE_VALUE (t);
+      if (TYPE_MODE (type) == mode
+	  && VECTOR_TYPE_P (type) == VECTOR_MODE_P (mode)
+	  && !!unsigned_p == !!TYPE_UNSIGNED (type))
+	return type;
+    }
   return NULL_TREE;
 }
 

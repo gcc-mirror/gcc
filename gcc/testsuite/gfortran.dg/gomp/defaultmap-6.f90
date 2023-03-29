@@ -101,4 +101,4 @@ end
 ! { dg-final { scan-tree-dump-times "map\\(to:\\.strxparr \\\[len:" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(to:strxparr \\\[pointer set, len:" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(to:\\.strxp \\\[len:" 1 "gimple" } }
-! { dg-final { scan-tree-dump-times "#pragma omp target num_teams\\(1\\) thread_limit\\(0\\) defaultmap\\(default\\)" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "#pragma omp target num_teams\\(-2\\) thread_limit\\(0\\) defaultmap\\(default\\)" 1 "gimple" } }

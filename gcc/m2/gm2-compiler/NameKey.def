@@ -1,0 +1,122 @@
+(* NameKey.def provides a dynamic binary tree name to key.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE NameKey ;
+
+(*
+    Title      : NameKey.def
+    Author     : Gaius Mulley
+    System     : UNIX (GNU Modula-2)
+    Date       : Mon Apr 23 17:20:48 2001
+    Last edit  : Mon Apr 23 17:20:48 2001
+    Description: NameKey provides a totally dynamic binary tree name to key
+                 interface for the Modula-2 compiler.
+*)
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+EXPORT QUALIFIED Name, NulName,
+                 MakeKey, GetKey, LengthKey, IsKey, WriteKey,
+                 IsSameExcludingCase, KeyToCharStar, makekey,
+                 CharKey ;
+
+
+CONST
+   NulName = 0 ;  (* No legal name.                      *)
+                  (* NulName is not present in the Tree  *)
+
+TYPE
+   Name = CARDINAL ;
+
+
+(*
+   MakeKey - returns the Key of the symbol, a. If a is not in the
+             name table then it is added, otherwise the Key of a is returned
+             directly. Note that the name table has no scope - it merely
+             presents a more convienient way of expressing strings. By a Key.
+             These keys last for the duration of compilation.
+*)
+
+PROCEDURE MakeKey (a: ARRAY OF CHAR) : Name ;
+
+
+(*
+   makekey - returns the Key of the symbol, a. If a is not in the
+             name table then it is added, otherwise the Key of a is returned
+             directly. Note that the name table has no scope - it merely
+             presents a more convienient way of expressing strings. By a Key.
+             These keys last for the duration of compilation.
+*)
+
+PROCEDURE makekey (a: ADDRESS) : Name ;
+
+
+(*
+   GetKey - returns the name, a, of the key, key.
+*)
+
+PROCEDURE GetKey (key: Name; VAR a: ARRAY OF CHAR) ;
+
+
+(*
+   LengthKey - returns the StrLen of a Key.
+*)
+
+PROCEDURE LengthKey (Key: Name) : CARDINAL ;
+
+
+(*
+   IsKey - returns TRUE if string, a, is currently a key.
+*)
+
+PROCEDURE IsKey (a: ARRAY OF CHAR) : BOOLEAN ;
+
+
+(*
+   WriteKey - Display the symbol represented by Key.
+*)
+
+PROCEDURE WriteKey (key: Name) ;
+
+
+(*
+   IsSameExcludingCase - returns TRUE if key1 and key2 are
+                         the same. It is case insensitive.
+*)
+
+PROCEDURE IsSameExcludingCase (key1, key2: Name) : BOOLEAN ;
+
+
+(*
+   KeyToCharStar - returns the C char * string equivalent for, key.
+*)
+
+PROCEDURE KeyToCharStar (key: Name) : ADDRESS ;
+
+
+(*
+   CharKey - returns the key[i] character.
+*)
+
+PROCEDURE CharKey (key: Name; i: CARDINAL) : CHAR ;
+
+
+END NameKey.

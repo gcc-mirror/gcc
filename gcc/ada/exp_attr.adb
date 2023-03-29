@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Accessibility;  use Accessibility;
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
@@ -1998,16 +1999,21 @@ package body Exp_Attr is
    --  Start of processing for Expand_N_Attribute_Reference
 
    begin
-      --  Do required validity checking, if enabled. Do not apply check to
-      --  output parameters of an Asm instruction, since the value of this
-      --  is not set till after the attribute has been elaborated, and do
-      --  not apply the check to the arguments of a 'Read or 'Input attribute
-      --  reference since the scalar argument is an OUT scalar.
+      --  Do required validity checking, if enabled.
+      --
+      --  Skip check for output parameters of an Asm instruction (since their
+      --  valuesare not set till after the attribute has been elaborated),
+      --  for the arguments of a 'Read attribute reference (since the
+      --  scalar argument is an OUT scalar) and for the arguments of a
+      --  'Has_Same_Storage or 'Overlaps_Storage attribute reference (which not
+      --  considered to be reads of their prefixes and expressions, see Ada RM
+      --  13.3(73.10/3)).
 
       if Validity_Checks_On and then Validity_Check_Operands
         and then Id /= Attribute_Asm_Output
         and then Id /= Attribute_Read
-        and then Id /= Attribute_Input
+        and then Id /= Attribute_Has_Same_Storage
+        and then Id /= Attribute_Overlaps_Storage
       then
          declare
             Expr : Node_Id;
@@ -2210,12 +2216,24 @@ package body Exp_Attr is
 
             --  Local declarations
 
-            Enc_Object : constant Node_Id := Enclosing_Object (Ref_Object);
+            Enc_Object : Node_Id := Enclosing_Object (Ref_Object);
 
          --  Start of processing for Access_Cases
 
          begin
             Btyp_DDT := Designated_Type (Btyp);
+
+            --  When Enc_Object is a view conversion then RM 3.10.2 (9)
+            --  applies and we obtain the expression being converted.
+            --  Otherwise we do not dig any deeper since a conversion
+            --  might generate a copy and we can't assume it will be as
+            --  long-lived as the original.
+
+            while Nkind (Enc_Object) = N_Type_Conversion
+              and then Is_View_Conversion (Enc_Object)
+            loop
+               Enc_Object := Expression (Enc_Object);
+            end loop;
 
             --  Handle designated types that come from the limited view
 
@@ -2311,19 +2329,40 @@ package body Exp_Attr is
             if Is_Access_Protected_Subprogram_Type (Btyp) then
                Expand_Access_To_Protected_Op (N, Pref, Typ);
 
-            --  If prefix is a subprogram that has class-wide preconditions and
-            --  an indirect-call wrapper (ICW) of such subprogram is available
-            --  then replace the prefix by the ICW.
-
             elsif Is_Access_Subprogram_Type (Btyp)
               and then Is_Entity_Name (Pref)
-              and then Present (Class_Preconditions (Entity (Pref)))
-              and then Present (Indirect_Call_Wrapper (Entity (Pref)))
             then
-               Rewrite (Pref,
-                 New_Occurrence_Of
-                   (Indirect_Call_Wrapper (Entity (Pref)), Loc));
-               Analyze_And_Resolve (N, Typ);
+               --  If prefix is a subprogram that has class-wide preconditions
+               --  and an indirect-call wrapper (ICW) of the subprogram is
+               --  available then replace the prefix by the ICW.
+
+               if Present (Class_Preconditions (Entity (Pref)))
+                 and then Present (Indirect_Call_Wrapper (Entity (Pref)))
+               then
+                  Rewrite (Pref,
+                    New_Occurrence_Of
+                      (Indirect_Call_Wrapper (Entity (Pref)), Loc));
+                  Analyze_And_Resolve (N, Typ);
+               end if;
+
+               --  Ensure the availability of the extra formals to check that
+               --  they match.
+
+               if not Is_Frozen (Entity (Pref))
+                 or else From_Limited_With (Etype (Entity (Pref)))
+               then
+                  Create_Extra_Formals (Entity (Pref));
+               end if;
+
+               if not Is_Frozen (Btyp_DDT)
+                 or else From_Limited_With (Etype (Btyp_DDT))
+               then
+                  Create_Extra_Formals (Btyp_DDT);
+               end if;
+
+               pragma Assert
+                 (Extra_Formals_Match_OK
+                   (E => Entity (Pref), Ref_E => Btyp_DDT));
 
             --  If prefix is a type name, this is a reference to the current
             --  instance of the type, within its initialization procedure.
@@ -5599,9 +5638,7 @@ package body Exp_Attr is
                          Make_Integer_Literal (Loc, 1))));
 
             else
-               --  Add Boolean parameter True, to request program error if
-               --  we have a bad representation on our hands. If checks are
-               --  suppressed, then add False instead
+               --  Add Boolean parameter depending on check suppression
 
                Append_To (Exprs, Rep_To_Pos_Flag (Ptyp, Loc));
                Rewrite (N,
@@ -5611,13 +5648,13 @@ package body Exp_Attr is
                        (Enum_Pos_To_Rep (Etyp), Loc),
                    Expressions => New_List (
                      Make_Op_Subtract (Loc,
-                    Left_Opnd =>
-                      Make_Function_Call (Loc,
-                        Name =>
-                          New_Occurrence_Of
-                            (TSS (Etyp, TSS_Rep_To_Pos), Loc),
-                          Parameter_Associations => Exprs),
-                    Right_Opnd => Make_Integer_Literal (Loc, 1)))));
+                       Left_Opnd =>
+                         Make_Function_Call (Loc,
+                           Name =>
+                             New_Occurrence_Of
+                               (TSS (Etyp, TSS_Rep_To_Pos), Loc),
+                           Parameter_Associations => Exprs),
+                       Right_Opnd => Make_Integer_Literal (Loc, 1)))));
             end if;
 
             --  Suppress checks since they have all been done above
@@ -6575,7 +6612,7 @@ package body Exp_Attr is
                --  If Storage_Size wasn't found (can only occur in the simple
                --  storage pool case), then simply use zero for the result.
 
-               if not Present (Alloc_Op) then
+               if No (Alloc_Op) then
                   Rewrite (N, Make_Integer_Literal (Loc, 0));
 
                --  Otherwise, rewrite the allocator as a call to pool type's
@@ -6732,9 +6769,7 @@ package body Exp_Attr is
                          Make_Integer_Literal (Loc, 1))));
 
             else
-               --  Add Boolean parameter True, to request program error if
-               --  we have a bad representation on our hands. Add False if
-               --  checks are suppressed.
+               --  Add Boolean parameter depending on check suppression
 
                Append_To (Exprs, Rep_To_Pos_Flag (Ptyp, Loc));
                Rewrite (N,
@@ -6758,7 +6793,8 @@ package body Exp_Attr is
             Analyze_And_Resolve (N, Typ, Suppress => All_Checks);
 
          --  For floating-point, we transform 'Succ into a call to the Succ
-         --  floating-point attribute function in Fat_xxx (xxx is root type)
+         --  floating-point attribute function in Fat_xxx (xxx is root type).
+         --  Note that this function takes care of the overflow case.
 
          elsif Is_Floating_Point_Type (Ptyp) then
             Expand_Fpt_Attribute_R (N);

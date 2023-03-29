@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail19687.d(17): Error: no property `nonexisting` for type `string`
+fail_compilation/fail19687.d(17): Error: no property `nonexisting` for `""` of type `string`
 ---
 */
 

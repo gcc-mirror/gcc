@@ -49,7 +49,6 @@ public import core.sys.posix.sched : sched_param;
 extern(C):
 @nogc:
 nothrow:
-@system:
 
 int posix_spawn_file_actions_addclose(posix_spawn_file_actions_t*, int);
 int posix_spawn_file_actions_adddup2(posix_spawn_file_actions_t*, int, int);

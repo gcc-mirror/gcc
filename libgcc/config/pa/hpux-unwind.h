@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for PA HP-UX.
-   Copyright (C) 2005-2022 Free Software Foundation, Inc.
+   Copyright (C) 2005-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -57,19 +57,19 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 #define UPDATE_FS_FOR_SAR(FS, N) \
-  (FS)->regs.reg[N].how = REG_SAVED_OFFSET;				\
+  (FS)->regs.how[N] = REG_SAVED_OFFSET;				\
   (FS)->regs.reg[N].loc.offset = GetSSRegAddr (mc, ss_cr11) - new_cfa
 
 #define UPDATE_FS_FOR_GR(FS, GRN, N) \
-  (FS)->regs.reg[N].how = REG_SAVED_OFFSET;				\
+  (FS)->regs.how[N] = REG_SAVED_OFFSET;				\
   (FS)->regs.reg[N].loc.offset = GetSSRegAddr (mc, ss_gr##GRN) - new_cfa
 
 #define UPDATE_FS_FOR_FR(FS, FRN, N) \
-  (FS)->regs.reg[N].how = REG_SAVED_OFFSET;				\
+  (FS)->regs.how[N] = REG_SAVED_OFFSET;				\
   (FS)->regs.reg[N].loc.offset = (long) &(mc->ss_fr##FRN) - new_cfa;
 
 #define UPDATE_FS_FOR_PC(FS, N) \
-  (FS)->regs.reg[N].how = REG_SAVED_OFFSET;				\
+  (FS)->regs.how[N] = REG_SAVED_OFFSET;				\
   (FS)->regs.reg[N].loc.offset = GetSSRegAddr (mc, ss_pcoq_head) - new_cfa
 
 /* Extract bit field from word using HP's numbering (MSB = 0).  */
@@ -151,7 +151,7 @@ pa_fallback_frame_state (struct _Unwind_Context *context,
       fs->regs.cfa_offset = 0;
 
       fs->retaddr_column = 0;
-      fs->regs.reg[0].how = REG_SAVED_OFFSET;
+      fs->regs.how[0] = REG_SAVED_OFFSET;
       fs->regs.reg[0].loc.offset = -24;
 
       /* Update context to describe the stub frame.  */
@@ -171,7 +171,7 @@ pa_fallback_frame_state (struct _Unwind_Context *context,
       fs->regs.cfa_offset = 0;
 
       fs->retaddr_column = 0;
-      fs->regs.reg[0].how = REG_SAVED_OFFSET;
+      fs->regs.how[0] = REG_SAVED_OFFSET;
       fs->regs.reg[0].loc.offset = -8;
 
       /* Update context to describe the stub frame.  */

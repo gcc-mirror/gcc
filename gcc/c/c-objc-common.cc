@@ -1,5 +1,5 @@
 /* Some code common to C and ObjC front ends.
-   Copyright (C) 2001-2022 Free Software Foundation, Inc.
+   Copyright (C) 2001-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -37,9 +37,12 @@ static bool c_tree_printer (pretty_printer *, text_info *, const char *,
 bool
 c_missing_noreturn_ok_p (tree decl)
 {
-  /* A missing noreturn is not ok for freestanding implementations and
-     ok for the `main' function in hosted implementations.  */
-  return flag_hosted && MAIN_NAME_P (DECL_ASSEMBLER_NAME (decl));
+  /* A missing noreturn is ok for the `main' function.  */
+  if (!MAIN_NAME_P (DECL_ASSEMBLER_NAME (decl)))
+    return false;
+
+  return flag_hosted
+    || TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (decl))) == integer_type_node;
 }
 
 /* Called from check_global_declaration.  */
@@ -368,12 +371,12 @@ c_types_compatible_p (tree x, tree y)
   return comptypes (TYPE_MAIN_VARIANT (x), TYPE_MAIN_VARIANT (y));
 }
 
-/* Determine if the type is a vla type for the backend.  */
+/* Determine if the type is a variably modified type for the backend.  */
 
 bool
-c_vla_unspec_p (tree x, tree fn ATTRIBUTE_UNUSED)
+c_var_mod_p (tree x, tree fn ATTRIBUTE_UNUSED)
 {
-  return c_vla_type_p (x);
+  return C_TYPE_VARIABLY_MODIFIED (x);
 }
 
 /* Special routine to get the alias set of T for C.  */
@@ -384,13 +387,7 @@ c_get_alias_set (tree t)
   /* Allow aliasing between enumeral types and the underlying
      integer type.  This is required since those are compatible types.  */
   if (TREE_CODE (t) == ENUMERAL_TYPE)
-    {
-      tree t1 = c_common_type_for_size (tree_to_uhwi (TYPE_SIZE (t)),
-					/* short-cut commoning to signed
-					   type.  */
-					false);
-      return get_alias_set (t1);
-    }
+    return get_alias_set (ENUM_UNDERLYING_TYPE (t));
 
   return c_common_get_alias_set (t);
 }
@@ -402,4 +399,12 @@ int
 maybe_adjust_arg_pos_for_attribute (const_tree)
 {
   return 0;
+}
+
+/* In C, no expression is dependent.  */
+
+bool
+instantiation_dependent_expression_p (tree)
+{
+  return false;
 }

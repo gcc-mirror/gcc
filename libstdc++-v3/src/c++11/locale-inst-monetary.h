@@ -1,6 +1,6 @@
 // Explicit instantantiations for monetary facets -*- C++ -*-
 
-// Copyright (C) 2018-2022 Free Software Foundation, Inc.
+// Copyright (C) 2018-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,17 +26,17 @@
 #define "This file should not be compiled directly, only included"
 #endif
 
+#include "facet_inst_macros.h"
+
 // This header is included multiple times, to instantiate these symbols
 // for char/wchar_t and for both std::string ABIs,
 // and (depending on the target) for two long double formats.
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-  template const money_put<C>& use_facet<money_put<C> >(const locale&);
-  template const money_get<C>& use_facet<money_get<C> >(const locale&);
-
-  template bool has_facet<money_put<C> >(const locale&);
-  template bool has_facet<money_get<C> >(const locale&);
+// use_facet and has_facet instantiations
+INSTANTIATE_FACET_ACCESSORS(money_put<C>);
+INSTANTIATE_FACET_ACCESSORS(money_get<C>);
 
 _GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
   template class money_get<C, istreambuf_iterator<C> >;

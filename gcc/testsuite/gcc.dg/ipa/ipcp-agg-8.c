@@ -48,5 +48,5 @@ entry (int c)
       foo (4, i, &s);
     }
 }
-/* { dg-final { scan-ipa-dump "Aggregate replacements: 1\\\[32]=64, 1\\\[64]=32" "cp" } } */
-/* { dg-final { scan-ipa-dump "Aggregate replacements: 1\\\[32]=0" "cp" } } */
+/* { dg-final { scan-ipa-dump "Aggregate replacements: 1\\\[4]=64\\(by_ref\\), 1\\\[8]=32\\(by_ref\\)" "cp" } } */
+/* { dg-final { scan-ipa-dump "Aggregate replacements: 1\\\[4]=0\\(by_ref\\)" "cp" } } */

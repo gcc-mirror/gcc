@@ -1,5 +1,5 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987-2022 Free Software Foundation, Inc.
+   Copyright (C) 1987-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -130,7 +130,6 @@ static tree eval_subst (location_t, tree, tree, tree, tree, tree);
 static tree optimize_bit_field_compare (location_t, enum tree_code,
 					tree, tree, tree);
 static bool simple_operand_p (const_tree);
-static bool simple_operand_p_2 (tree);
 static tree range_binop (enum tree_code, tree, tree, int, tree, int);
 static tree range_predecessor (tree);
 static tree range_successor (tree);
@@ -165,7 +164,7 @@ expr_location_or (tree t, location_t loc)
 /* Similar to protected_set_expr_location, but never modify x in place,
    if location can and needs to be set, unshare it.  */
 
-static inline tree
+tree
 protected_set_expr_location_unshare (tree x, location_t loc)
 {
   if (CAN_HAVE_LOCATION_P (x)
@@ -323,36 +322,62 @@ negate_mathfn_p (combined_fn fn)
   switch (fn)
     {
     CASE_CFN_ASIN:
+    CASE_CFN_ASIN_FN:
     CASE_CFN_ASINH:
+    CASE_CFN_ASINH_FN:
     CASE_CFN_ATAN:
+    CASE_CFN_ATAN_FN:
     CASE_CFN_ATANH:
+    CASE_CFN_ATANH_FN:
     CASE_CFN_CASIN:
+    CASE_CFN_CASIN_FN:
     CASE_CFN_CASINH:
+    CASE_CFN_CASINH_FN:
     CASE_CFN_CATAN:
+    CASE_CFN_CATAN_FN:
     CASE_CFN_CATANH:
+    CASE_CFN_CATANH_FN:
     CASE_CFN_CBRT:
+    CASE_CFN_CBRT_FN:
     CASE_CFN_CPROJ:
+    CASE_CFN_CPROJ_FN:
     CASE_CFN_CSIN:
+    CASE_CFN_CSIN_FN:
     CASE_CFN_CSINH:
+    CASE_CFN_CSINH_FN:
     CASE_CFN_CTAN:
+    CASE_CFN_CTAN_FN:
     CASE_CFN_CTANH:
+    CASE_CFN_CTANH_FN:
     CASE_CFN_ERF:
+    CASE_CFN_ERF_FN:
     CASE_CFN_LLROUND:
+    CASE_CFN_LLROUND_FN:
     CASE_CFN_LROUND:
+    CASE_CFN_LROUND_FN:
     CASE_CFN_ROUND:
     CASE_CFN_ROUNDEVEN:
     CASE_CFN_ROUNDEVEN_FN:
     CASE_CFN_SIN:
+    CASE_CFN_SIN_FN:
     CASE_CFN_SINH:
+    CASE_CFN_SINH_FN:
     CASE_CFN_TAN:
+    CASE_CFN_TAN_FN:
     CASE_CFN_TANH:
+    CASE_CFN_TANH_FN:
     CASE_CFN_TRUNC:
+    CASE_CFN_TRUNC_FN:
       return true;
 
     CASE_CFN_LLRINT:
+    CASE_CFN_LLRINT_FN:
     CASE_CFN_LRINT:
+    CASE_CFN_LRINT_FN:
     CASE_CFN_NEARBYINT:
+    CASE_CFN_NEARBYINT_FN:
     CASE_CFN_RINT:
+    CASE_CFN_RINT_FN:
       return !flag_rounding_math;
 
     default:
@@ -2153,6 +2178,15 @@ fold_convert_const_real_from_real (tree type, const_tree arg1)
   REAL_VALUE_TYPE value;
   tree t;
 
+  /* If the underlying modes are the same, simply treat it as
+     copy and rebuild with TREE_REAL_CST information and the
+     given type.  */
+  if (TYPE_MODE (type) == TYPE_MODE (TREE_TYPE (arg1)))
+    {
+      t = build_real (type, TREE_REAL_CST (arg1));
+      return t;
+    }
+
   /* Don't perform the operation if flag_signaling_nans is on
      and the operand is a signaling NaN.  */
   if (HONOR_SNANS (arg1)
@@ -2593,7 +2627,7 @@ fold_convert_loc (location_t loc, tree type, tree arg)
       gcc_unreachable ();
     }
  fold_convert_exit:
-  protected_set_expr_location_unshare (tem, loc);
+  tem = protected_set_expr_location_unshare (tem, loc);
   return tem;
 }
 
@@ -2612,6 +2646,7 @@ maybe_lvalue_p (const_tree x)
   case LABEL_DECL:
   case FUNCTION_DECL:
   case SSA_NAME:
+  case COMPOUND_LITERAL_EXPR:
 
   case COMPONENT_REF:
   case MEM_REF:
@@ -3352,9 +3387,6 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 		if (compare_address
 		    && (flags & OEP_ADDRESS_OF_SAME_FIELD) == 0)
 		  {
-		    if (TREE_OPERAND (arg0, 2)
-			|| TREE_OPERAND (arg1, 2))
-		      return OP_SAME_WITH_NULL (2);
 		    tree field0 = TREE_OPERAND (arg0, 1);
 		    tree field1 = TREE_OPERAND (arg1, 1);
 
@@ -3865,17 +3897,10 @@ operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
 	      if (sflags & OEP_ADDRESS_OF)
 		{
 		  hash_operand (TREE_OPERAND (t, 0), hstate, flags);
-		  if (TREE_OPERAND (t, 2))
-		    hash_operand (TREE_OPERAND (t, 2), hstate,
-				  flags & ~OEP_ADDRESS_OF);
-		  else
-		    {
-		      tree field = TREE_OPERAND (t, 1);
-		      hash_operand (DECL_FIELD_OFFSET (field),
-				    hstate, flags & ~OEP_ADDRESS_OF);
-		      hash_operand (DECL_FIELD_BIT_OFFSET (field),
-				    hstate, flags & ~OEP_ADDRESS_OF);
-		    }
+		  hash_operand (DECL_FIELD_OFFSET (TREE_OPERAND (t, 1)),
+				hstate, flags & ~OEP_ADDRESS_OF);
+		  hash_operand (DECL_FIELD_BIT_OFFSET (TREE_OPERAND (t, 1)),
+				hstate, flags & ~OEP_ADDRESS_OF);
 		  return;
 		}
 	      break;
@@ -4868,8 +4893,8 @@ sign_bit_p (tree exp, const_tree val)
   return NULL_TREE;
 }
 
-/* Subroutine for fold_truth_andor_1: determine if an operand is simple enough
-   to be evaluated unconditionally.  */
+/* Subroutine for fold_truth_andor_1 and simple_condition_p: determine if an
+   operand is simple enough to be evaluated unconditionally.  */
 
 static bool
 simple_operand_p (const_tree exp)
@@ -4897,13 +4922,12 @@ simple_operand_p (const_tree exp)
 	      && (! TREE_STATIC (exp) || DECL_REGISTER (exp))));
 }
 
-/* Subroutine for fold_truth_andor: determine if an operand is simple enough
-   to be evaluated unconditionally.
-   I addition to simple_operand_p, we assume that comparisons, conversions,
+/* Determine if an operand is simple enough to be evaluated unconditionally.
+   In addition to simple_operand_p, we assume that comparisons, conversions,
    and logic-not operations are simple, if their operands are simple, too.  */
 
-static bool
-simple_operand_p_2 (tree exp)
+bool
+simple_condition_p (tree exp)
 {
   enum tree_code code;
 
@@ -4920,7 +4944,7 @@ simple_operand_p_2 (tree exp)
 	    && simple_operand_p (TREE_OPERAND (exp, 1)));
 
   if (code == TRUTH_NOT_EXPR)
-      return simple_operand_p_2 (TREE_OPERAND (exp, 0));
+    return simple_condition_p (TREE_OPERAND (exp, 0));
 
   return simple_operand_p (exp);
 }
@@ -7070,6 +7094,7 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	 If we have an unsigned type, we cannot do this since it will change
 	 the result if the original computation overflowed.  */
       if (TYPE_OVERFLOW_UNDEFINED (ctype)
+	  && !TYPE_OVERFLOW_SANITIZED (ctype)
 	  && ((code == MULT_EXPR && tcode == EXACT_DIV_EXPR)
 	      || (tcode == MULT_EXPR
 		  && code != TRUNC_MOD_EXPR && code != CEIL_MOD_EXPR
@@ -7079,8 +7104,7 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	  if (wi::multiple_of_p (wi::to_wide (op1), wi::to_wide (c),
 				 TYPE_SIGN (type)))
 	    {
-	      if (TYPE_OVERFLOW_UNDEFINED (ctype))
-		*strict_overflow_p = true;
+	      *strict_overflow_p = true;
 	      return fold_build2 (tcode, ctype, fold_convert (ctype, op0),
 				  fold_convert (ctype,
 						const_binop (TRUNC_DIV_EXPR,
@@ -7089,8 +7113,7 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 	  else if (wi::multiple_of_p (wi::to_wide (c), wi::to_wide (op1),
 				      TYPE_SIGN (type)))
 	    {
-	      if (TYPE_OVERFLOW_UNDEFINED (ctype))
-		*strict_overflow_p = true;
+	      *strict_overflow_p = true;
 	      return fold_build2 (code, ctype, fold_convert (ctype, op0),
 				  fold_convert (ctype,
 						const_binop (TRUNC_DIV_EXPR,
@@ -8850,11 +8873,13 @@ native_interpret_expr (tree type, const unsigned char *ptr, int len)
 	     valid values that GCC can't really represent accurately.
 	     See PR95450.  Even for other modes, e.g. x86 XFmode can have some
 	     bit combinationations which GCC doesn't preserve.  */
-	  unsigned char buf[24];
+	  unsigned char buf[24 * 2];
 	  scalar_float_mode mode = SCALAR_FLOAT_TYPE_MODE (type);
 	  int total_bytes = GET_MODE_SIZE (mode);
+	  memcpy (buf + 24, ptr, total_bytes);
+	  clear_type_padding_in_mask (type, buf + 24);
 	  if (native_encode_expr (ret, buf, total_bytes, 0) != total_bytes
-	      || memcmp (ptr, buf, total_bytes) != 0)
+	      || memcmp (buf + 24, buf, total_bytes) != 0)
 	    return NULL_TREE;
 	  return ret;
 	}
@@ -9355,8 +9380,8 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 	      && TREE_CODE (tem) == COND_EXPR
 	      && TREE_CODE (TREE_OPERAND (tem, 1)) == code
 	      && TREE_CODE (TREE_OPERAND (tem, 2)) == code
-	      && ! VOID_TYPE_P (TREE_OPERAND (tem, 1))
-	      && ! VOID_TYPE_P (TREE_OPERAND (tem, 2))
+	      && ! VOID_TYPE_P (TREE_TYPE (TREE_OPERAND (tem, 1)))
+	      && ! VOID_TYPE_P (TREE_TYPE (TREE_OPERAND (tem, 2)))
 	      && (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (tem, 1), 0))
 		  == TREE_TYPE (TREE_OPERAND (TREE_OPERAND (tem, 2), 0)))
 	      && (! (INTEGRAL_TYPE_P (TREE_TYPE (tem))
@@ -9551,7 +9576,9 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
       if (INTEGRAL_TYPE_P (type)
 	  && TREE_CODE (op0) == MULT_EXPR
 	  && INTEGRAL_TYPE_P (TREE_TYPE (op0))
-	  && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (op0)))
+	  && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (op0))
+	  && (TYPE_OVERFLOW_WRAPS (TREE_TYPE (op0))
+	      || !sanitize_flags_p (SANITIZE_SI_OVERFLOW)))
 	{
 	  /* Be careful not to introduce new overflows.  */
 	  tree mult_type;
@@ -9787,10 +9814,10 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
 	 side-effects, or isn't simple, then we can't add to it,
 	 as otherwise we might destroy if-sequence.  */
       if (TREE_CODE (arg0) == icode
-	  && simple_operand_p_2 (arg1)
+	  && simple_condition_p (arg1)
 	  /* Needed for sequence points to handle trappings, and
 	     side-effects.  */
-	  && simple_operand_p_2 (TREE_OPERAND (arg0, 1)))
+	  && simple_condition_p (TREE_OPERAND (arg0, 1)))
 	{
 	  tem = fold_build2_loc (loc, ncode, type, TREE_OPERAND (arg0, 1),
 				 arg1);
@@ -9800,10 +9827,10 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
 	/* Same as above but for (A AND[-IF] (B AND-IF C)) -> ((A AND B) AND-IF C),
 	   or (A OR[-IF] (B OR-IF C) -> ((A OR B) OR-IF C).  */
       else if (TREE_CODE (arg1) == icode
-	  && simple_operand_p_2 (arg0)
+	  && simple_condition_p (arg0)
 	  /* Needed for sequence points to handle trappings, and
 	     side-effects.  */
-	  && simple_operand_p_2 (TREE_OPERAND (arg1, 0)))
+	  && simple_condition_p (TREE_OPERAND (arg1, 0)))
 	{
 	  tem = fold_build2_loc (loc, ncode, type, 
 				 arg0, TREE_OPERAND (arg1, 0));
@@ -9814,8 +9841,8 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
 	 into (A OR B).
 	 For sequence point consistancy, we need to check for trapping,
 	 and side-effects.  */
-      else if (code == icode && simple_operand_p_2 (arg0)
-               && simple_operand_p_2 (arg1))
+      else if (code == icode && simple_condition_p (arg0)
+	       && simple_condition_p (arg1))
 	return fold_build2_loc (loc, ncode, type, arg0, arg1);
     }
 
@@ -10737,7 +10764,6 @@ tree_expr_nonzero_warnv_p (tree t, bool *strict_overflow_p)
     case COND_EXPR:
     case CONSTRUCTOR:
     case OBJ_TYPE_REF:
-    case ASSERT_EXPR:
     case ADDR_EXPR:
     case WITH_SIZE_EXPR:
     case SSA_NAME:
@@ -12604,10 +12630,6 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 				 : fold_convert_loc (loc, type, arg1);
       return tem;
 
-    case ASSERT_EXPR:
-      /* An ASSERT_EXPR should never be passed to fold_binary.  */
-      gcc_unreachable ();
-
     default:
       return NULL_TREE;
     } /* switch (code) */
@@ -14290,9 +14312,12 @@ tree_expr_finite_p (const_tree x)
       switch (get_call_combined_fn (x))
 	{
 	CASE_CFN_FABS:
+	CASE_CFN_FABS_FN:
 	  return tree_expr_finite_p (CALL_EXPR_ARG (x, 0));
 	CASE_CFN_FMAX:
+	CASE_CFN_FMAX_FN:
 	CASE_CFN_FMIN:
+	CASE_CFN_FMIN_FN:
 	  return tree_expr_finite_p (CALL_EXPR_ARG (x, 0))
 		 && tree_expr_finite_p (CALL_EXPR_ARG (x, 1));
 	default:
@@ -14410,9 +14435,12 @@ tree_expr_maybe_signaling_nan_p (const_tree x)
       switch (get_call_combined_fn (x))
 	{
 	CASE_CFN_FABS:
+	CASE_CFN_FABS_FN:
 	  return tree_expr_maybe_signaling_nan_p (CALL_EXPR_ARG (x, 0));
 	CASE_CFN_FMAX:
+	CASE_CFN_FMAX_FN:
 	CASE_CFN_FMIN:
+	CASE_CFN_FMIN_FN:
 	  return tree_expr_maybe_signaling_nan_p (CALL_EXPR_ARG (x, 0))
 		 || tree_expr_maybe_signaling_nan_p (CALL_EXPR_ARG (x, 1));
 	default:
@@ -14483,9 +14511,12 @@ tree_expr_maybe_nan_p (const_tree x)
       switch (get_call_combined_fn (x))
 	{
 	CASE_CFN_FABS:
+	CASE_CFN_FABS_FN:
 	  return tree_expr_maybe_nan_p (CALL_EXPR_ARG (x, 0));
 	CASE_CFN_FMAX:
+	CASE_CFN_FMAX_FN:
 	CASE_CFN_FMIN:
+	CASE_CFN_FMIN_FN:
 	  return tree_expr_maybe_nan_p (CALL_EXPR_ARG (x, 0))
 		 || tree_expr_maybe_nan_p (CALL_EXPR_ARG (x, 1));
 	default:
@@ -14522,6 +14553,7 @@ tree_expr_maybe_real_minus_zero_p (const_tree x)
       switch (get_call_combined_fn (x))
 	{
 	CASE_CFN_FABS:
+	CASE_CFN_FABS_FN:
 	  return false;
 	default:
 	  break;
@@ -14799,16 +14831,26 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
   switch (fn)
     {
     CASE_CFN_ACOS:
+    CASE_CFN_ACOS_FN:
     CASE_CFN_ACOSH:
+    CASE_CFN_ACOSH_FN:
     CASE_CFN_CABS:
+    CASE_CFN_CABS_FN:
     CASE_CFN_COSH:
+    CASE_CFN_COSH_FN:
     CASE_CFN_ERFC:
+    CASE_CFN_ERFC_FN:
     CASE_CFN_EXP:
+    CASE_CFN_EXP_FN:
     CASE_CFN_EXP10:
     CASE_CFN_EXP2:
+    CASE_CFN_EXP2_FN:
     CASE_CFN_FABS:
+    CASE_CFN_FABS_FN:
     CASE_CFN_FDIM:
+    CASE_CFN_FDIM_FN:
     CASE_CFN_HYPOT:
+    CASE_CFN_HYPOT_FN:
     CASE_CFN_POW10:
     CASE_CFN_FFS:
     CASE_CFN_PARITY:
@@ -14830,17 +14872,25 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
       return RECURSE (arg0);
 
     CASE_CFN_ASINH:
+    CASE_CFN_ASINH_FN:
     CASE_CFN_ATAN:
+    CASE_CFN_ATAN_FN:
     CASE_CFN_ATANH:
+    CASE_CFN_ATANH_FN:
     CASE_CFN_CBRT:
+    CASE_CFN_CBRT_FN:
     CASE_CFN_CEIL:
     CASE_CFN_CEIL_FN:
     CASE_CFN_ERF:
+    CASE_CFN_ERF_FN:
     CASE_CFN_EXPM1:
+    CASE_CFN_EXPM1_FN:
     CASE_CFN_FLOOR:
     CASE_CFN_FLOOR_FN:
     CASE_CFN_FMOD:
+    CASE_CFN_FMOD_FN:
     CASE_CFN_FREXP:
+    CASE_CFN_FREXP_FN:
     CASE_CFN_ICEIL:
     CASE_CFN_IFLOOR:
     CASE_CFN_IRINT:
@@ -14851,10 +14901,15 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
     CASE_CFN_LLCEIL:
     CASE_CFN_LLFLOOR:
     CASE_CFN_LLRINT:
+    CASE_CFN_LLRINT_FN:
     CASE_CFN_LLROUND:
+    CASE_CFN_LLROUND_FN:
     CASE_CFN_LRINT:
+    CASE_CFN_LRINT_FN:
     CASE_CFN_LROUND:
+    CASE_CFN_LROUND_FN:
     CASE_CFN_MODF:
+    CASE_CFN_MODF_FN:
     CASE_CFN_NEARBYINT:
     CASE_CFN_NEARBYINT_FN:
     CASE_CFN_RINT:
@@ -14865,11 +14920,15 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
     CASE_CFN_ROUNDEVEN_FN:
     CASE_CFN_SCALB:
     CASE_CFN_SCALBLN:
+    CASE_CFN_SCALBLN_FN:
     CASE_CFN_SCALBN:
+    CASE_CFN_SCALBN_FN:
     CASE_CFN_SIGNBIT:
     CASE_CFN_SIGNIFICAND:
     CASE_CFN_SINH:
+    CASE_CFN_SINH_FN:
     CASE_CFN_TANH:
+    CASE_CFN_TANH_FN:
     CASE_CFN_TRUNC:
     CASE_CFN_TRUNC_FN:
       /* True if the 1st argument is nonnegative.  */
@@ -14909,6 +14968,7 @@ tree_call_nonnegative_warnv_p (tree type, combined_fn fn, tree arg0, tree arg1,
       return RECURSE (arg0);
 
     CASE_CFN_POW:
+    CASE_CFN_POW_FN:
       /* True if the 1st argument is nonnegative or the second
 	 argument is an even integer valued real.  */
       if (TREE_CODE (arg1) == REAL_CST)
@@ -14955,7 +15015,7 @@ tree_invalid_nonnegative_warnv_p (tree t, bool *strict_overflow_p, int depth)
 
 	/* If the initializer is non-void, then it's a normal expression
 	   that will be assigned to the slot.  */
-	if (!VOID_TYPE_P (t))
+	if (!VOID_TYPE_P (TREE_TYPE (t)))
 	  return RECURSE (t);
 
 	/* Otherwise, the initializer sets the slot in some way.  One common
@@ -15065,7 +15125,6 @@ tree_expr_nonnegative_warnv_p (tree t, bool *strict_overflow_p, int depth)
     case COND_EXPR:
     case CONSTRUCTOR:
     case OBJ_TYPE_REF:
-    case ASSERT_EXPR:
     case ADDR_EXPR:
     case WITH_SIZE_EXPR:
     case SSA_NAME:
@@ -16298,6 +16357,11 @@ split_address_to_core_and_offset (tree exp,
   poly_int64 bitsize;
   location_t loc = EXPR_LOCATION (exp);
 
+  if (TREE_CODE (exp) == SSA_NAME)
+    if (gassign *def = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (exp)))
+      if (gimple_assign_rhs_code (def) == ADDR_EXPR)
+	exp = gimple_assign_rhs1 (def);
+
   if (TREE_CODE (exp) == ADDR_EXPR)
     {
       core = get_inner_reference (TREE_OPERAND (exp, 0), &bitsize, pbitpos,
@@ -16582,6 +16646,10 @@ address_compare (tree_code code, tree type, tree op0, tree op1,
 		 tree &base0, tree &base1, poly_int64 &off0, poly_int64 &off1,
 		 bool generic)
 {
+  if (TREE_CODE (op0) == SSA_NAME)
+    op0 = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (op0));
+  if (TREE_CODE (op1) == SSA_NAME)
+    op1 = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (op1));
   gcc_checking_assert (TREE_CODE (op0) == ADDR_EXPR);
   gcc_checking_assert (TREE_CODE (op1) == ADDR_EXPR);
   base0 = get_addr_base_and_unit_offset (TREE_OPERAND (op0, 0), &off0);

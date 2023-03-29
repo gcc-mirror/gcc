@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -222,10 +222,9 @@ package Einfo is
 --  on the actions triggered by a freeze node, which include the construction
 --  of initialization procedures and dispatch tables.
 
---  b) The presence of a freeze node on an entity is used by the back end to
---  defer elaboration of the entity until its freeze node is seen. In the
---  absence of an explicit freeze node, an entity is frozen (and elaborated)
---  at the point of declaration.
+--  b) The flag is used by the back end to defer elaboration of the entity
+--  until its freeze node is seen. In the absence of an explicit freeze node,
+--  an entity is frozen (and elaborated) at the point of declaration.
 
 --  For object declarations, the flag is set when an address clause for the
 --  object is encountered. Legality checks on the address expression only take
@@ -359,9 +358,11 @@ package Einfo is
 --
 --       For objects, the Actual_Subtype is set only if this is a discriminated
 --       type. For arrays, the bounds of the expression are obtained and the
---       Etype of the object is directly the constrained subtype. This is
---       rather irregular, and the semantic checks that depend on the nominal
---       subtype being unconstrained use flag Is_Constr_Subt_For_U_Nominal(qv).
+--       Etype of the object is directly the constrained subtype, except in the
+--       case of a return object that lives on the secondary stack where Etype
+--       is the nominal unconstrained subtype. This is rather irregular and the
+--       semantic checks that depend on the nominal subtype being unconstrained
+--       use flag Is_Constr_Subt_For_U_Nominal(qv).
 
 --    Address_Clause (synthesized)
 --       Applies to entries, objects and subprograms. Set if an address clause
@@ -875,7 +876,7 @@ package Einfo is
 --       are generated (subprograms, package declarations and package
 --       bodies). Defined if there are pending generic body instantiations
 --       for the corresponding entity. If this flag is set, then generation
---       of the subprogram descriptor for the corresponding enities must
+--       of the subprogram descriptor for the corresponding entities must
 --       be delayed, since the insertion of the generic body may add entries
 --       to the list of handlers.
 --
@@ -1864,7 +1865,7 @@ package Einfo is
 --    Has_Per_Object_Constraint
 --       Defined in E_Component entities. Set if the subtype of the component
 --       has a per object constraint. Per object constraints result from the
---       following situations :
+--       following situations:
 --
 --       1. N_Attribute_Reference - when the prefix is the enclosing type and
 --          the attribute is Access.
@@ -2571,7 +2572,7 @@ package Einfo is
 
 --    Is_Elaboration_Checks_OK_Id
 --       Defined in elaboration targets (see terminology in Sem_Elab). Set when
---       the target appears in a region which is subject to elabled elaboration
+--       the target appears in a region which is subject to enabled elaboration
 --       checks. Such targets are allowed to generate run-time conditional ABE
 --       checks or guaranteed ABE failures.
 
@@ -3115,7 +3116,7 @@ package Einfo is
 --       Defined in all entities, set in E_Package and E_Generic_Package
 --       entities to which a pragma Preelaborate is applied, and also in
 --       all entities within such packages. Note that the fact that this
---       flag is set does not necesarily mean that no elaboration code is
+--       flag is set does not necessarily mean that no elaboration code is
 --       generated for the package.
 
 --    Is_Primitive
@@ -3229,7 +3230,7 @@ package Einfo is
 --       Defined in all entities, set only for a variable or constant for
 --       which the Renamed_Object field is non-empty and for which the
 --       renaming is handled by the front end, by macro substitution of
---       a copy of the (evaluated) name tree whereever the variable is used.
+--       a copy of the (evaluated) name tree wherever the variable is used.
 
 --    Is_Return_Object
 --       Defined in all object entities. True if the object is the return
@@ -3965,7 +3966,8 @@ package Einfo is
 --       Present in variable entities. Contains all references to the variable
 --       when it is subject to pragma Part_Of. If the variable is a constituent
 --       of a single protected/task type, the references are examined as they
---       must appear only within the type defintion and the corresponding body.
+--       must appear only within the type definition and the corresponding
+--       body.
 
 --    Partial_DIC_Procedure (synthesized)
 --       Defined in type entities. Set for a private type and its full view
@@ -4059,7 +4061,7 @@ package Einfo is
 
 --    Prev_Entity
 --       Defined in all entities. The entities of a scope are chained, and this
---       field is used as a backward pointer for this entity list - effectivly
+--       field is used as a backward pointer for this entity list - effectively
 --       making the entity chain doubly-linked.
 
 --    Primitive_Operations (synthesized)
@@ -4134,14 +4136,14 @@ package Einfo is
 --       set instead, or a similar appearance as an out parameter actual, in
 --       which case Referenced_As_Out_Parameter is set.
 
---    Referenced_As_LHS :
+--    Referenced_As_LHS
 --       Defined in all entities. This flag is set instead of Referenced if a
 --       simple variable that is not a renaming appears as the left side of an
 --       assignment. The reason we distinguish this kind of reference is that
 --       we have a separate warning for variables that are only assigned and
 --       never read.
 
---    Referenced_As_Out_Parameter :
+--    Referenced_As_Out_Parameter
 --       Defined in all entities. This flag is set instead of Referenced if a
 --       simple variable that is not a renaming appears as an actual for an out
 --       formal. The reason we distinguish this kind of reference is that
@@ -4824,39 +4826,6 @@ package Einfo is
 --    Z : Integer renames Y;   -- renamed object is the identifier Y
 
 --  The front-end does not store explicitly the fact that Z renames X.
-
---------------------------------------
--- Delayed Freezing and Elaboration --
---------------------------------------
-
---  The flag Has_Delayed_Freeze indicates that an entity carries an explicit
---  freeze node, which appears later in the expanded tree.
-
---  a) The flag is used by the front-end to trigger expansion actions
---  which include the generation of that freeze node. Typically this happens at
---  the end of the current compilation unit, or before the first subprogram
---  body is encountered in the current unit. See files freeze and exp_ch13 for
---  details on the actions triggered by a freeze node, which include the
---  construction of initialization procedures and dispatch tables.
-
---  b) The flag is used by the backend to defer elaboration of the entity until
---  its freeze node is seen. In the absence of an explicit freeze node, an
---  entity is frozen (and elaborated) at the point of declaration.
-
---  For object declarations, the flag is set when an address clause for the
---  object is encountered. Legality checks on the address expression only
---  take place at the freeze point of the object.
-
---  Most types have an explicit freeze node, because they cannot be elaborated
---  until all representation and operational items that apply to them have been
---  analyzed. Private types and incomplete types have the flag set as well, as
---  do task and protected types.
-
---  Implicit base types created for type derivations, as well as classwide
---  types created for all tagged types, have the flag set.
-
---  If a subprogram has an access parameter whose designated type is incomplete
---  the subprogram has the flag set.
 
 ------------------
 -- Access Kinds --

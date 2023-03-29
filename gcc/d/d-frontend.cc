@@ -1,5 +1,5 @@
 /* d-frontend.cc -- D frontend interface to the gcc back-end.
-   Copyright (C) 2013-2022 Free Software Foundation, Inc.
+   Copyright (C) 2013-2023 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -79,11 +79,11 @@ eval_builtin (const Loc &loc, FuncDeclaration *fd, Expressions *arguments)
 /* Build and return typeinfo type for TYPE.  */
 
 Type *
-getTypeInfoType (const Loc &loc, Type *type, Scope *sc)
+getTypeInfoType (const Loc &loc, Type *type, Scope *sc, bool genObjCode)
 {
   gcc_assert (type->ty != TY::Terror);
   check_typeinfo_type (loc, sc);
-  create_typeinfo (type, sc ? sc->_module->importedFrom : NULL);
+  create_typeinfo (type, sc ? sc->_module->importedFrom : NULL, genObjCode);
   return type->vtinfo->type;
 }
 

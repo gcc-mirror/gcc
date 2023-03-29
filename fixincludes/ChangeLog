@@ -1,3 +1,78 @@
+2023-03-28  Xi Ruoyao  <xry111@xry111.site>
+
+	PR other/109293
+	* configure.ac (AC_CHECK_DECLS): Add memmem.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* system.h (memmem): Declare if HAVE_DECL_MEMMEM is zero.
+
+2023-02-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* inclhack.def (solaris_math_12): Add bypass.
+	* fixincl.x: Regenerate.
+
+2023-01-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* fixincl.x: Regenerate.
+	* inclhack.def (darwin_objc_runtime_1): New hack.
+	* tests/base/objc/runtime.h: New file.
+
+2023-01-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/107568
+	* fixincl.x: Regenerate.
+	* inclhack.def: Add a fix for MacOS13 SDK function deprecations
+	in stdio.h.
+	* tests/base/stdio.h (__deprecated_msg): New test.
+
+2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	Revert:
+	2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* Makefile.in: Set and use PICFLAG and LD_PICFLAG.  Use the "pic"
+	build of libiberty if PICFLAG is set.
+	* configure.ac:
+	* configure: Regenerate.
+
+2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* Makefile.in: Set and use PICFLAG and LD_PICFLAG.  Use the "pic"
+	build of libiberty if PICFLAG is set.
+	* configure.ac:
+	* configure: Regenerate.
+
+2022-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/107059
+	* inclhack.def (glibc_cxx_floatn_5): New.
+	* fixincl.x: Regenerated.
+	* tests/base/bits/floatn.h: Regenerated.
+
+2022-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/107059
+	* inclhack.def (glibc_cxx_floatn_2): Handle #elif the same as #if.
+	(glibc_cxx_floatn_4): New.
+	* fixincl.x: Regenerated.
+	* tests/base/bits/floatn.h: Regenerated.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* inclhack.def (glibc_cxx_floatn_1, glibc_cxx_floatn_2,
+	glibc_cxx_floatn_3): Add to files also "*/bits/floatn.h"
+	and "*/bits/floatn-common.h".
+	* fixincl.x: Regenerated.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	PR c++/85518
+	* inclhack.def (glibc_cxx_floatn_1, glibc_cxx_floatn_2,
+	glibc_cxx_floatn_3): New fixes.
+	* tests/base/bits/floatn.h: New file.
+	* fixincl.x: Regenerated.
+
 2022-08-31  Martin Liska  <mliska@suse.cz>
 
 	* configure: Regenerate.
@@ -72,8 +147,8 @@
 	PR other/21823
 	PR bootstrap/80047
 	* fixincl.c (process): Simplify the handling for highly
-	  unlikely access() failure, to avoid using non-standard
-	  extensions.
+	unlikely access() failure, to avoid using non-standard
+	extensions.
 
 2021-08-30  John David Anglin  <danglin@gcc.gnu.org>
 
@@ -91,8 +166,8 @@
 
 	PR other/91085
 	* fixfixes.c (check_has_inc): New static function.
-	  (machine_name_fix): Don't replace header names in
-	  __has_include(...).
+	(machine_name_fix): Don't replace header names in
+	__has_include(...).
 	* inclhack.def (machine_name): Adjust test.
 	* tests/base/testing.h: Update.
 

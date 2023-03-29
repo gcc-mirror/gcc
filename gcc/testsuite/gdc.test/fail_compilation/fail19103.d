@@ -1,8 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail19103.d(12): Error: no property `puts` for type `fail19103.C`
-fail_compilation/fail19103.d(14): Error: no property `puts` for type `fail19103.S1`
+fail_compilation/fail19103.d(12): Error: no property `puts` for `new C` of type `fail19103.C`
+fail_compilation/fail19103.d(14): Error: no property `puts` for `s1` of type `fail19103.S1`
 fail_compilation/fail19103.d(16): Error: no property `puts` for type `S2`, did you mean `core.stdc.stdio.puts`?
 ---
 */

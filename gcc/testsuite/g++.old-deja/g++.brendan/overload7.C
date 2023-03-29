@@ -1,4 +1,5 @@
 // { dg-do run  }
+// { dg-additional-options "-fexcess-precision=fast" }
 // GROUPS passed overloading
 extern "C" int printf (const char *, ...);
 

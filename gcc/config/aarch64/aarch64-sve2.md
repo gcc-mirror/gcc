@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 SVE2.
-;; Copyright (C) 2019-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2019-2023 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -81,7 +81,7 @@
 ;; ---- Histogram processing
 ;; ---- String matching
 ;;
-;; == Crypotographic extensions
+;; == Cryptographic extensions
 ;; ---- Optional AES extensions
 ;; ---- Optional SHA-3 extensions
 ;; ---- Optional SM4 extensions
@@ -1599,6 +1599,22 @@
   "<sve_int_op>\t%0.<Ventype>, %2.<Vetype>, %3.<Vetype>"
 )
 
+;; Optimize ((a + b) >> n) where n is half the bitsize of the vector
+(define_insn "*bitmask_shift_plus<mode>"
+  [(set (match_operand:SVE_FULL_HSDI 0 "register_operand" "=w")
+	(unspec:SVE_FULL_HSDI
+	   [(match_operand:<VPRED> 1)
+	    (lshiftrt:SVE_FULL_HSDI
+	      (plus:SVE_FULL_HSDI
+		(match_operand:SVE_FULL_HSDI 2 "register_operand" "w")
+		(match_operand:SVE_FULL_HSDI 3 "register_operand" "w"))
+	      (match_operand:SVE_FULL_HSDI 4
+		 "aarch64_simd_shift_imm_vec_exact_top" ""))]
+          UNSPEC_PRED_X))]
+  "TARGET_SVE2"
+  "addhnb\t%0.<Ventype>, %2.<Vetype>, %3.<Vetype>"
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] Narrowing right shifts
 ;; -------------------------------------------------------------------------
@@ -2528,7 +2544,7 @@
 )
 
 ;; =========================================================================
-;; == Crypotographic extensions
+;; == Cryptographic extensions
 ;; =========================================================================
 
 ;; -------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 /* Common hooks for RISC-V.
-   Copyright (C) 2016-2022 Free Software Foundation, Inc.
+   Copyright (C) 2016-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -51,6 +51,11 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"d", "f"},
   {"f", "zicsr"},
   {"d", "zicsr"},
+
+  {"zdinx", "zfinx"},
+  {"zfinx", "zicsr"},
+  {"zdinx", "zicsr"},
+
   {"zk", "zkn"},
   {"zk", "zkr"},
   {"zk", "zkt"},
@@ -99,6 +104,9 @@ static const riscv_implied_info_t riscv_implied_info[] =
 
   {"zfh", "zfhmin"},
   {"zfhmin", "f"},
+  
+  {"zhinx", "zhinxmin"},
+  {"zhinxmin", "zfinx"},
 
   {NULL, NULL}
 };
@@ -145,6 +153,8 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"c", ISA_SPEC_CLASS_20190608, 2, 0},
   {"c", ISA_SPEC_CLASS_2P2,      2, 0},
 
+  {"h",       ISA_SPEC_CLASS_NONE, 1, 0},
+
   {"v",       ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zicsr", ISA_SPEC_CLASS_20191213, 2, 0},
@@ -153,10 +163,17 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
   {"zifencei", ISA_SPEC_CLASS_20191213, 2, 0},
   {"zifencei", ISA_SPEC_CLASS_20190608, 2, 0},
 
+  {"zawrs", ISA_SPEC_CLASS_NONE, 1, 0},
+
   {"zba", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zbb", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zbc", ISA_SPEC_CLASS_NONE, 1, 0},
   {"zbs", ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"zfinx", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zdinx", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zhinx", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zhinxmin", ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zbkb",  ISA_SPEC_CLASS_NONE, 1, 0},
   {"zbkc",  ISA_SPEC_CLASS_NONE, 1, 0},
@@ -202,6 +219,22 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
 
   {"zmmul", ISA_SPEC_CLASS_NONE, 1, 0},
 
+  {"svinval", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"svnapot", ISA_SPEC_CLASS_NONE, 1, 0},
+
+  {"xtheadba", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"xtheadbb", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"xtheadbs", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"xtheadcmo", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"xtheadcondmov", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"xtheadfmemidx", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"xtheadfmv", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"xtheadint", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"xtheadmac", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"xtheadmemidx", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"xtheadmempair", ISA_SPEC_CLASS_NONE, 1, 0},
+  {"xtheadsync", ISA_SPEC_CLASS_NONE, 1, 0},
+
   /* Terminate the list.  */
   {NULL, ISA_SPEC_CLASS_NONE, 0, 0}
 };
@@ -222,6 +255,14 @@ static const riscv_cpu_info riscv_cpu_tables[] =
     {CORE_NAME, ARCH, TUNE},
 #include "../../../config/riscv/riscv-cores.def"
     {NULL, NULL, NULL}
+};
+
+static const char *riscv_tunes[] =
+{
+#define RISCV_TUNE(TUNE_NAME, PIPELINE_MODEL, TUNE_INFO) \
+    TUNE_NAME,
+#include "../../../config/riscv/riscv-cores.def"
+    NULL
 };
 
 static const char *riscv_supported_std_ext (void);
@@ -353,21 +394,18 @@ multi_letter_subset_rank (const std::string &subset)
   gcc_assert (subset.length () >= 2);
   int high_order = -1;
   int low_order = 0;
-  /* The order between multi-char extensions: s -> h -> z -> x.  */
+  /* The order between multi-char extensions: s -> z -> x.  */
   char multiletter_class = subset[0];
   switch (multiletter_class)
     {
     case 's':
       high_order = 0;
       break;
-    case 'h':
+    case 'z':
       high_order = 1;
       break;
-    case 'z':
-      high_order = 2;
-      break;
     case 'x':
-      high_order = 3;
+      high_order = 2;
       break;
     default:
       gcc_unreachable ();
@@ -663,7 +701,7 @@ riscv_subset_list::lookup (const char *subset, int major_version,
 static const char *
 riscv_supported_std_ext (void)
 {
-  return "mafdqlcbkjtpvn";
+  return "mafdqlcbkjtpvnh";
 }
 
 /* Parsing subset version.
@@ -822,7 +860,7 @@ riscv_subset_list::parse_std_ext (const char *p)
     {
       char subset[2] = {0, 0};
 
-      if (*p == 'x' || *p == 's' || *p == 'h' || *p == 'z')
+      if (*p == 'x' || *p == 's' || *p == 'z')
 	break;
 
       if (*p == '_')
@@ -947,7 +985,7 @@ riscv_subset_list::handle_combine_ext ()
 
    Arguments:
      `p`: Current parsing position.
-     `ext_type`: What kind of extensions, 's', 'h', 'z' or 'x'.
+     `ext_type`: What kind of extensions, 's', 'z' or 'x'.
      `ext_type_str`: Full name for kind of extension.  */
 
 const char *
@@ -1089,12 +1127,6 @@ riscv_subset_list::parse (const char *arch, location_t loc)
   if (p == NULL)
     goto fail;
 
-  /* Parsing hypervisor extension.  */
-  p = subset_list->parse_multiletter_ext (p, "h", "hypervisor extension");
-
-  if (p == NULL)
-    goto fail;
-
   /* Parsing sub-extensions.  */
   p = subset_list->parse_multiletter_ext (p, "z", "sub-extension");
 
@@ -1158,15 +1190,23 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   {"f", &gcc_options::x_target_flags, MASK_HARD_FLOAT},
   {"d", &gcc_options::x_target_flags, MASK_DOUBLE_FLOAT},
   {"c", &gcc_options::x_target_flags, MASK_RVC},
+  {"v", &gcc_options::x_target_flags, MASK_FULL_V},
   {"v", &gcc_options::x_target_flags, MASK_VECTOR},
 
   {"zicsr",    &gcc_options::x_riscv_zi_subext, MASK_ZICSR},
   {"zifencei", &gcc_options::x_riscv_zi_subext, MASK_ZIFENCEI},
 
+  {"zawrs", &gcc_options::x_riscv_za_subext, MASK_ZAWRS},
+
   {"zba",    &gcc_options::x_riscv_zb_subext, MASK_ZBA},
   {"zbb",    &gcc_options::x_riscv_zb_subext, MASK_ZBB},
   {"zbc",    &gcc_options::x_riscv_zb_subext, MASK_ZBC},
   {"zbs",    &gcc_options::x_riscv_zb_subext, MASK_ZBS},
+
+  {"zfinx",    &gcc_options::x_riscv_zinx_subext, MASK_ZFINX},
+  {"zdinx",    &gcc_options::x_riscv_zinx_subext, MASK_ZDINX},
+  {"zhinx",    &gcc_options::x_riscv_zinx_subext, MASK_ZHINX},
+  {"zhinxmin", &gcc_options::x_riscv_zinx_subext, MASK_ZHINXMIN},
 
   {"zbkb",   &gcc_options::x_riscv_zk_subext, MASK_ZBKB},
   {"zbkc",   &gcc_options::x_riscv_zk_subext, MASK_ZBKC},
@@ -1218,13 +1258,29 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
 
   {"zmmul", &gcc_options::x_riscv_zm_subext, MASK_ZMMUL},
 
+  {"svinval", &gcc_options::x_riscv_sv_subext, MASK_SVINVAL},
+  {"svnapot", &gcc_options::x_riscv_sv_subext, MASK_SVNAPOT},
+
+  {"xtheadba",      &gcc_options::x_riscv_xthead_subext, MASK_XTHEADBA},
+  {"xtheadbb",      &gcc_options::x_riscv_xthead_subext, MASK_XTHEADBB},
+  {"xtheadbs",      &gcc_options::x_riscv_xthead_subext, MASK_XTHEADBS},
+  {"xtheadcmo",     &gcc_options::x_riscv_xthead_subext, MASK_XTHEADCMO},
+  {"xtheadcondmov", &gcc_options::x_riscv_xthead_subext, MASK_XTHEADCONDMOV},
+  {"xtheadfmemidx", &gcc_options::x_riscv_xthead_subext, MASK_XTHEADFMEMIDX},
+  {"xtheadfmv",     &gcc_options::x_riscv_xthead_subext, MASK_XTHEADFMV},
+  {"xtheadint",     &gcc_options::x_riscv_xthead_subext, MASK_XTHEADINT},
+  {"xtheadmac",     &gcc_options::x_riscv_xthead_subext, MASK_XTHEADMAC},
+  {"xtheadmemidx",  &gcc_options::x_riscv_xthead_subext, MASK_XTHEADMEMIDX},
+  {"xtheadmempair", &gcc_options::x_riscv_xthead_subext, MASK_XTHEADMEMPAIR},
+  {"xtheadsync",    &gcc_options::x_riscv_xthead_subext, MASK_XTHEADSYNC},
+
   {NULL, NULL, 0}
 };
 
 /* Parse a RISC-V ISA string into an option mask.  Must clear or set all arch
    dependent mask bits, in case more than one -march string is passed.  */
 
-static void
+void
 riscv_parse_arch_string (const char *isa,
 			 struct gcc_options *opts,
 			 location_t loc)
@@ -1509,7 +1565,7 @@ riscv_check_conds (
 
   for (itr = conds.begin (); itr != conds.end (); ++itr)
     {
-      /* We'll check march= and mabi= in ohter place.  */
+      /* We'll check march= and mabi= in other place.  */
       if (prefixed_with (*itr, "march=") || prefixed_with (*itr, "mabi="))
 	continue;
 
@@ -1671,7 +1727,10 @@ riscv_compute_multilib (
 
       /* Record highest match score multi-lib setting.  */
       if (match_score > max_match_score)
-	best_match_multi_lib = i;
+	{
+	  best_match_multi_lib = i;
+	  max_match_score = match_score;
+	}
     }
 
   if (best_match_multi_lib == -1)
@@ -1687,11 +1746,50 @@ riscv_compute_multilib (
 #define TARGET_COMPUTE_MULTILIB riscv_compute_multilib
 #endif
 
+vec<const char *>
+riscv_get_valid_option_values (int option_code,
+			       const char *prefix ATTRIBUTE_UNUSED)
+{
+  vec<const char *> v;
+  v.create (0);
+  opt_code opt = (opt_code) option_code;
+
+  switch (opt)
+    {
+    case OPT_mtune_:
+      {
+	const char **tune = &riscv_tunes[0];
+	for (;*tune; ++tune)
+	  v.safe_push (*tune);
+
+	const riscv_cpu_info *cpu_info = &riscv_cpu_tables[0];
+	for (;cpu_info->name; ++cpu_info)
+	  v.safe_push (cpu_info->name);
+      }
+      break;
+    case OPT_mcpu_:
+      {
+	const riscv_cpu_info *cpu_info = &riscv_cpu_tables[0];
+	for (;cpu_info->name; ++cpu_info)
+	  v.safe_push (cpu_info->name);
+      }
+      break;
+    default:
+      break;
+    }
+
+  return v;
+}
+
 /* Implement TARGET_OPTION_OPTIMIZATION_TABLE.  */
 static const struct default_options riscv_option_optimization_table[] =
   {
     { OPT_LEVELS_1_PLUS, OPT_fsection_anchors, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_free, NULL, 1 },
+#if TARGET_DEFAULT_ASYNC_UNWIND_TABLES == 1
+    { OPT_LEVELS_ALL, OPT_fasynchronous_unwind_tables, NULL, 1 },
+    { OPT_LEVELS_ALL, OPT_funwind_tables, NULL, 1},
+#endif
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };
 
@@ -1700,5 +1798,8 @@ static const struct default_options riscv_option_optimization_table[] =
 
 #undef TARGET_HANDLE_OPTION
 #define TARGET_HANDLE_OPTION riscv_handle_option
+
+#undef  TARGET_GET_VALID_OPTION_VALUES
+#define TARGET_GET_VALID_OPTION_VALUES riscv_get_valid_option_values
 
 struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;

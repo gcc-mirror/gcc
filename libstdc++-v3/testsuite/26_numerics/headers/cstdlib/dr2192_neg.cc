@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2022 Free Software Foundation, Inc.
+// Copyright (C) 2016-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -16,6 +16,9 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile { target c++11 } }
+
+// Math-related cstdlib bits are not freestanding.
+// { dg-require-effective-target hosted }
 
 // NB: Don't include any other headers in this file.
 // LWG 2192 requires abs to be ill-formed for unsigned arguments.

@@ -1,5 +1,5 @@
 /* d-ctfloat.cc -- D frontend interface to the gcc back-end.
-   Copyright (C) 2020-2022 Free Software Foundation, Inc.
+   Copyright (C) 2020-2023 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -96,16 +96,16 @@ CTFloat::parse (const char *buffer, bool &overflow)
   return r;
 }
 
-/* Format the real_t value R to string BUFFER as a decimal or hexadecimal,
-   converting the result to uppercase if FMT requests it.  */
+/* Format the real_t value R to string BUFFER, bounded by BUF_SIZE, as a decimal
+   or hexadecimal, converting the result to uppercase if FMT requests it.  */
 
 int
-CTFloat::sprint (char *buffer, char fmt, real_t r)
+CTFloat::sprint (char *buffer, d_size_t buf_size, char fmt, real_t r)
 {
   if (fmt == 'a' || fmt == 'A')
     {
       /* Converting to a hexadecimal string.  */
-      real_to_hexadecimal (buffer, &r.rv (), 32, 0, 1);
+      real_to_hexadecimal (buffer, &r.rv (), buf_size, 0, 1);
       int buflen;
 
       switch (fmt)

@@ -1,6 +1,6 @@
 # Xmethods for libstdc++.
 
-# Copyright (C) 2014-2022 Free Software Foundation, Inc.
+# Copyright (C) 2014-2023 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -730,13 +730,16 @@ class SharedPtrUseCountWorker(gdb.xmethod.XMethodWorker):
     "Implements std::shared_ptr<T>::use_count()"
 
     def __init__(self, elem_type):
-        SharedPtrUseCountWorker.__init__(self, elem_type)
+        pass
 
     def get_arg_types(self):
         return None
 
     def get_result_type(self, obj):
         return gdb.lookup_type('long')
+
+    def _supports(self, method_name):
+        return True
 
     def __call__(self, obj):
         refcounts = obj['_M_refcount']['_M_pi']

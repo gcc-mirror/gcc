@@ -1,7 +1,7 @@
 /**
  * Inline assembler for the GCC D compiler.
  *
- *              Copyright (C) 2018-2022 by The D Language Foundation, All Rights Reserved
+ *              Copyright (C) 2018-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     Iain Buclaw
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/iasmgcc.d, _iasmgcc.d)
@@ -17,10 +17,12 @@ import dmd.arraytypes;
 import dmd.astcodegen;
 import dmd.dscope;
 import dmd.errors;
+import dmd.errorsink;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.identifier;
 import dmd.globals;
+import dmd.location;
 import dmd.parse;
 import dmd.tokens;
 import dmd.statement;
@@ -71,7 +73,7 @@ int parseExtAsmOperands(Parser)(Parser p, GccAsmStatement s)
                 }
                 else
                 {
-                    p.error(s.loc, "expected identifier after `[`");
+                    p.eSink.error(s.loc, "expected identifier after `[`");
                     goto Lerror;
                 }
                 // Look for closing `]`
@@ -84,13 +86,10 @@ int parseExtAsmOperands(Parser)(Parser p, GccAsmStatement s)
 
             case TOK.string_:
                 constraint = p.parsePrimaryExp();
-                // @@@DEPRECATED_2.101@@@
-                // Old parser allowed omitting parentheses around the expression.
-                // Deprecated in 2.091. Can be made permanent error after 2.100
                 if (p.token.value != TOK.leftParenthesis)
                 {
                     arg = p.parseAssignExp();
-                    deprecation(arg.loc, "`%s` must be surrounded by parentheses", arg.toChars());
+                    error(arg.loc, "`%s` must be surrounded by parentheses", arg.toChars());
                 }
                 else
                 {
@@ -118,7 +117,7 @@ int parseExtAsmOperands(Parser)(Parser p, GccAsmStatement s)
                 break;
 
             default:
-                p.error("expected constant string constraint for operand, not `%s`",
+                p.eSink.error(p.token.loc, "expected constant string constraint for operand, not `%s`",
                         p.token.toChars());
                 goto Lerror;
         }
@@ -169,7 +168,7 @@ Expressions *parseExtAsmClobbers(Parser)(Parser p)
                 break;
 
             default:
-                p.error("expected constant string constraint for clobber name, not `%s`",
+                p.eSink.error(p.token.loc, "expected constant string constraint for clobber name, not `%s`",
                         p.token.toChars());
                 goto Lerror;
         }
@@ -216,7 +215,7 @@ Identifiers *parseExtAsmGotoLabels(Parser)(Parser p)
                 break;
 
             default:
-                p.error("expected identifier for goto label name, not `%s`",
+                p.eSink.error(p.token.loc, "expected identifier for goto label name, not `%s`",
                         p.token.toChars());
                 goto Lerror;
         }
@@ -303,7 +302,7 @@ Ldone:
 extern (C++) public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
 {
     //printf("GccAsmStatement.semantic()\n");
-    scope p = new Parser!ASTCodegen(sc._module, ";", false);
+    scope p = new Parser!ASTCodegen(sc._module, ";", false, global.errorSink);
 
     // Make a safe copy of the token list before parsing.
     Token *toklist = null;
@@ -335,7 +334,7 @@ extern (C++) public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
     // Analyse all input and output operands.
     if (s.args)
     {
-        foreach (i; 0 .. s.args.dim)
+        foreach (i; 0 .. s.args.length)
         {
             Expression e = (*s.args)[i];
             e = e.expressionSemantic(sc);
@@ -356,7 +355,7 @@ extern (C++) public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
     // Analyse all clobbers.
     if (s.clobbers)
     {
-        foreach (i; 0 .. s.clobbers.dim)
+        foreach (i; 0 .. s.clobbers.length)
         {
             Expression e = (*s.clobbers)[i];
             e = e.expressionSemantic(sc);
@@ -368,7 +367,7 @@ extern (C++) public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
     // Analyse all goto labels.
     if (s.labels)
     {
-        foreach (i; 0 .. s.labels.dim)
+        foreach (i; 0 .. s.labels.length)
         {
             Identifier ident = (*s.labels)[i];
             GotoStatement gs = new GotoStatement(s.loc, ident);
@@ -385,6 +384,9 @@ extern (C++) public Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
 unittest
 {
     import dmd.mtype : TypeBasic;
+
+    if (!global.errorSink)
+        global.errorSink = new ErrorSinkCompiler;
 
     uint errors = global.startGagging();
     scope(exit) global.endGagging(errors);
@@ -408,7 +410,7 @@ unittest
     {
         const errors = global.errors;
         scope gas = new GccAsmStatement(Loc.initial, tokens);
-        scope p = new Parser!ASTCodegen(null, ";", false);
+        scope p = new Parser!ASTCodegen(null, ";", false, global.errorSink);
         p.token = *tokens;
         p.parseGccAsm(gas);
         return global.errors - errors;
@@ -418,7 +420,7 @@ unittest
     static void parseAsm(string input, bool expectError)
     {
         // Generate tokens from input test.
-        scope p = new Parser!ASTCodegen(null, input, false);
+        scope p = new Parser!ASTCodegen(null, input, false, global.errorSink);
         p.nextToken();
 
         Token* toklist = null;
@@ -527,6 +529,9 @@ unittest
         // Found ',' when expecting ':'
         q{ asm { "", "";
         } },
+
+        // https://issues.dlang.org/show_bug.cgi?id=20593
+        q{ asm { "instruction" : : "operand" 123; } },
     ];
 
     foreach (test; passAsmTests)

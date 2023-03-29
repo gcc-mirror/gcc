@@ -1,4 +1,4 @@
-#   Copyright (C) 1997-2022 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2023 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,6 +33,12 @@ proc libstdc++-dg-prune { system text } {
 
 #    send_user "Before:$text\n"
 
+    if { [string match "*This header is not available in freestanding mode.*" $text] } {
+      return "::unsupported::hosted C++ headers not supported"
+    }
+
+    regsub -all "std::__8::" $text "std::" text
+
     # Ignore caret diagnostics. Unfortunately dejaGNU trims leading
     # spaces, so one cannot rely on them being present.
     regsub -all "(^|\n)\[^\n\]+\n *\\^\n" $text "\n" text
@@ -47,6 +53,7 @@ proc libstdc++-dg-prune { system text } {
     regsub -all "(^|\n)\[^\n\]*:   (recursively )?required \[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*:   . skipping \[0-9\]* instantiation contexts \[^\n\]*" $text "" text
     regsub -all "(^|\n)\[^\n\]*:   in .constexpr. expansion \[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*:   in requirements  .with\[^\n\]*" $text "" text
     regsub -all "(^|\n)    inlined from \[^\n\]*" $text "" text
     # Why doesn't GCC need these to strip header context?
     regsub -all "(^|\n)In file included from \[^\n\]*" $text "" text

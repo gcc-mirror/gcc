@@ -1,5 +1,5 @@
 /* Definition of RISC-V target for GNU compiler.
-   Copyright (C) 2011-2022 Free Software Foundation, Inc.
+   Copyright (C) 2011-2023 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
    Based on MIPS target for GNU compiler.
 
@@ -312,7 +312,7 @@ ASM_MISA_SPEC
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   /* Others.  */							\
-  1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
   /* Vector registers.  */						\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
@@ -392,6 +392,7 @@ ASM_MISA_SPEC
 /* Define Dwarf for RVV.  */
 #define RISCV_DWARF_VL (4096 + 0xc20)
 #define RISCV_DWARF_VTYPE (4096 + 0xc21)
+#define RISCV_DWARF_VLENB (4096 + 0xc22)
 
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM (GP_TEMP_FIRST + 2)
@@ -405,6 +406,8 @@ ASM_MISA_SPEC
 
 #define RISCV_PROLOGUE_TEMP_REGNUM (GP_TEMP_FIRST)
 #define RISCV_PROLOGUE_TEMP(MODE) gen_rtx_REG (MODE, RISCV_PROLOGUE_TEMP_REGNUM)
+#define RISCV_PROLOGUE_TEMP2_REGNUM (GP_TEMP_FIRST + 1)
+#define RISCV_PROLOGUE_TEMP2(MODE) gen_rtx_REG (MODE, RISCV_PROLOGUE_TEMP2_REGNUM)
 
 #define RISCV_CALL_ADDRESS_TEMP_REGNUM (GP_TEMP_FIRST + 1)
 #define RISCV_CALL_ADDRESS_TEMP(MODE) \
@@ -459,8 +462,6 @@ enum reg_class
   GR_REGS,			/* integer registers */
   FP_REGS,			/* floating-point registers */
   FRAME_REGS,			/* arg pointer and frame pointer */
-  VL_REGS,			/* vl register */
-  VTYPE_REGS,			/* vtype register */
   VM_REGS,			/* v0.t registers */
   VD_REGS,			/* vector registers except v0.t */
   V_REGS,			/* vector registers */
@@ -484,8 +485,6 @@ enum reg_class
   "GR_REGS",								\
   "FP_REGS",								\
   "FRAME_REGS",								\
-  "VL_REGS",								\
-  "VTYPE_REGS",								\
   "VM_REGS",								\
   "VD_REGS",								\
   "V_REGS",								\
@@ -511,12 +510,10 @@ enum reg_class
   { 0xffffffff, 0x00000000, 0x00000000, 0x00000000 },	/* GR_REGS */		\
   { 0x00000000, 0xffffffff, 0x00000000, 0x00000000 },	/* FP_REGS */		\
   { 0x00000000, 0x00000000, 0x00000003, 0x00000000 },	/* FRAME_REGS */	\
-  { 0x00000000, 0x00000000, 0x00000004, 0x00000000 },	/* VL_REGS */		\
-  { 0x00000000, 0x00000000, 0x00000008, 0x00000000 },	/* VTYPE_REGS */	\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000001 },	/* V0_REGS */		\
   { 0x00000000, 0x00000000, 0x00000000, 0xfffffffe },	/* VNoV0_REGS */	\
   { 0x00000000, 0x00000000, 0x00000000, 0xffffffff },	/* V_REGS */		\
-  { 0xffffffff, 0xffffffff, 0x00000003, 0x00000000 }	/* ALL_REGS */		\
+  { 0xffffffff, 0xffffffff, 0x00000003, 0xffffffff }	/* ALL_REGS */		\
 }
 
 /* A C expression whose value is a register class containing hard
@@ -589,6 +586,14 @@ enum reg_class
   (pow2p_hwi (TARGET_64BIT						\
 		? (VALUE)						\
 		: ((VALUE) & ((HOST_WIDE_INT_1U << 32)-1))))
+
+/* True if VALUE can be represented as an immediate with 1 extra bit
+   set: we check that it is not a SMALL_OPERAND (as this would be true
+   for all small operands) unmodified and turns into a small operand
+   once we clear the top bit. */
+#define UIMM_EXTRA_BIT_OPERAND(VALUE)					\
+  (!SMALL_OPERAND (VALUE)						\
+   && SMALL_OPERAND (VALUE & ~(HOST_WIDE_INT_1U << floor_log2 (VALUE))))
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -749,18 +754,19 @@ typedef struct {
 #define CASE_VECTOR_MODE SImode
 #define CASE_VECTOR_PC_RELATIVE (riscv_cmodel != CM_MEDLOW)
 
+#define LOCAL_SYM_P(sym)						\
+     ((SYMBOL_REF_P (sym) && SYMBOL_REF_LOCAL_P (sym))			\
+	 || ((GET_CODE (sym) == CONST)					\
+	     && SYMBOL_REF_P (XEXP (XEXP (sym, 0),0))			\
+	     && SYMBOL_REF_LOCAL_P (XEXP (XEXP (sym, 0),0))))
+
 /* The load-address macro is used for PC-relative addressing of symbols
    that bind locally.  Don't use it for symbols that should be addressed
    via the GOT.  Also, avoid it for CM_MEDLOW, where LUI addressing
    currently results in more opportunities for linker relaxation.  */
 #define USE_LOAD_ADDRESS_MACRO(sym)					\
   (!TARGET_EXPLICIT_RELOCS &&						\
-   ((flag_pic								\
-     && ((SYMBOL_REF_P (sym) && SYMBOL_REF_LOCAL_P (sym))		\
-	 || ((GET_CODE (sym) == CONST)					\
-	     && SYMBOL_REF_P (XEXP (XEXP (sym, 0),0))			\
-	     && SYMBOL_REF_LOCAL_P (XEXP (XEXP (sym, 0),0)))))		\
-     || riscv_cmodel == CM_MEDANY))
+   ((flag_pic && LOCAL_SYM_P (sym)) || riscv_cmodel == CM_MEDANY))
 
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 0
@@ -1018,6 +1024,9 @@ extern bool riscv_slow_unaligned_access_p;
 extern unsigned riscv_stack_boundary;
 extern unsigned riscv_bytes_per_vector_chunk;
 extern poly_uint16 riscv_vector_chunks;
+extern poly_int64 riscv_v_adjust_nunits (enum machine_mode, int);
+extern poly_int64 riscv_v_adjust_precision (enum machine_mode, int);
+extern poly_int64 riscv_v_adjust_bytesize (enum machine_mode, int);
 /* The number of bits and bytes in a RVV vector.  */
 #define BITS_PER_RISCV_VECTOR (poly_uint16 (riscv_vector_chunks * riscv_bytes_per_vector_chunk * 8))
 #define BYTES_PER_RISCV_VECTOR (poly_uint16 (riscv_vector_chunks * riscv_bytes_per_vector_chunk))
@@ -1076,5 +1085,16 @@ extern void riscv_remove_unneeded_save_restore_calls (void);
   ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)
 
 #define TARGET_SUPPORTS_WIDE_INT 1
+
+#define REGISTER_TARGET_PRAGMAS() riscv_register_pragmas ()
+
+#define REGMODE_NATURAL_SIZE(MODE) riscv_regmode_natural_size (MODE)
+
+#define RISCV_DWARF_VLENB (4096 + 0xc22)
+
+#define DWARF_FRAME_REGISTERS (FIRST_PSEUDO_REGISTER + 1 /* VLENB */)
+
+#define DWARF_REG_TO_UNWIND_COLUMN(REGNO) \
+  ((REGNO == RISCV_DWARF_VLENB) ? (FIRST_PSEUDO_REGISTER + 1) : REGNO)
 
 #endif /* ! GCC_RISCV_H */

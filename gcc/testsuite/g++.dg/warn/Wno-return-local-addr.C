@@ -4,7 +4,7 @@
 int& bad1()
 {
   int x = 0;
-  return x;
+  return x; // { dg-error "cannot bind non-const lvalue reference" "" { target c++23 } }
 }
 
 int* bad2()

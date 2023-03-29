@@ -1,0 +1,142 @@
+(* M2ColorString.def provides procedures for obtaining GCC color strings.
+
+Copyright (C) 2019-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius@glam.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2ColorString ;  (*!m2pim+gm2*)
+
+(*
+    Title      : M2ColorString
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Sat Apr 13 19:21:03 2019
+    Revision   : $Version$
+    Description: provides procedures for obtaining GCC color strings.
+*)
+
+FROM DynamicStrings IMPORT String ;
+
+
+(*
+   SetEnableColor - sets the global variable to, b, and returns
+                    the previous value.
+*)
+
+PROCEDURE SetEnableColor (b: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   quoteOpen - adds an open quote to string, s.
+*)
+
+PROCEDURE quoteOpen (s: String) : String ;
+
+
+(*
+   quoteClose - adds a close quote to string, s.
+*)
+
+PROCEDURE quoteClose (s: String) : String ;
+
+
+(*
+   endColor - stops using color.
+*)
+
+PROCEDURE endColor (s: String) : String ;
+
+
+(*
+   quoteColor - adds quote color to string, s.
+*)
+
+PROCEDURE quoteColor (s: String) : String ;
+
+
+(*
+   errorColor - adds error color to string, s.
+*)
+
+PROCEDURE errorColor (s: String) : String ;
+
+
+(*
+   warningColor - adds warning color to string, s.
+*)
+
+PROCEDURE warningColor (s: String) : String ;
+
+
+(*
+   noteColor - adds note color to string, s.
+*)
+
+PROCEDURE noteColor (s: String) : String ;
+
+
+(*
+   locusColor - adds locus color to string, s.
+*)
+
+PROCEDURE locusColor (s: String) : String ;
+
+
+(*
+   insertColor - adds fixit-insert color to string, s.
+*)
+
+PROCEDURE insertColor (s: String) : String ;
+
+
+(*
+   deleteColor - adds fixit-insert color to string, s.
+*)
+
+PROCEDURE deleteColor (s: String) : String ;
+
+
+(*
+   filenameColor - adds filename color to string, s.
+*)
+
+PROCEDURE filenameColor (s: String) : String ;
+
+
+(*
+   typeColor - adds type color to string, s.
+*)
+
+PROCEDURE typeColor (s: String) : String ;
+
+
+(*
+   range1Color - adds type color to string, s.
+*)
+
+PROCEDURE range1Color (s: String) : String ;
+
+
+(*
+   range2Color - adds type color to string, s.
+*)
+
+PROCEDURE range2Color (s: String) : String ;
+
+
+END M2ColorString.

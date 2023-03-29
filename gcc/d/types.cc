@@ -1,5 +1,5 @@
 /* types.cc -- Lower D frontend types to GCC trees.
-   Copyright (C) 2006-2022 Free Software Foundation, Inc.
+   Copyright (C) 2006-2023 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -381,9 +381,9 @@ layout_aggregate_members (Dsymbols *members, tree context, bool inherited_p)
 	    continue;
 
 	  /* If this variable was really a tuple, add all tuple fields.  */
-	  if (var->aliassym)
+	  if (var->aliasTuple)
 	    {
-	      TupleDeclaration *td = var->aliassym->isTupleDeclaration ();
+	      TupleDeclaration *td = var->aliasTuple;
 	      Dsymbols tmembers;
 	      /* No other way to coerce the underlying type out of the tuple.
 		 Frontend should have already validated this.  */

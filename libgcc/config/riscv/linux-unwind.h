@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2023 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -73,13 +73,13 @@ riscv_fallback_frame_state (struct _Unwind_Context *context,
 
   for (i = 0; i < 32; i++)
     {
-      fs->regs.reg[i].how = REG_SAVED_OFFSET;
+      fs->regs.how[i] = REG_SAVED_OFFSET;
       fs->regs.reg[i].loc.offset = (_Unwind_Ptr) &sc->gregs[i] - new_cfa;
     }
 
   fs->signal_frame = 1;
   fs->retaddr_column = __LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__;
-  fs->regs.reg[fs->retaddr_column].how = REG_SAVED_VAL_OFFSET;
+  fs->regs.how[fs->retaddr_column] = REG_SAVED_VAL_OFFSET;
   fs->regs.reg[fs->retaddr_column].loc.offset =
     (_Unwind_Ptr) sc->gregs[0] - new_cfa;
 

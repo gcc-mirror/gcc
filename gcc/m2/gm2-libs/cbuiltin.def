@@ -1,0 +1,208 @@
+(* cbuiltin.def provides non-builtin equivalent routines.
+
+Copyright (C) 2003-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE FOR "C" cbuiltin ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+EXPORT UNQUALIFIED alloca, memcpy,
+		   isfinite, isfinitef, isfinitel,
+		   isinf_sign, isinf_signf, isinf_signl,
+                   sinf, sinl, sin,
+                   cosf, cosl, cos,
+                   atan2f, atan2l, atan2,
+                   sqrtf, sqrtl, sqrt,
+                   fabsf, fabsl, fabs,
+                   logf, logl, log,
+                   expf, expl, exp,
+                   log10f, log10l, log10,
+                   exp10f, exp10l, exp10,
+                   ilogbf, ilogbl, ilogb,
+                   significand, significandf, significandl,
+                   modf, modff, modfl,
+                   nextafter, nextafterf, nextafterl,
+                   nexttoward, nexttowardf, nexttowardl,
+                   scalb, scalbf, scalbl,
+                   scalbn, scalbnf, scalbnl,
+                   scalbln, scalblnf, scalblnl,
+
+                   cabsf, cabsl, cabs,
+                   cargf, carg, cargl,
+                   conjf, conj, conjl,
+                   cpowf, cpow, cpowl,
+                   csqrtf, csqrt, csqrtl,
+                   cexpf, cexp, cexpl,
+                   clogf, clog, clogl,
+                   csinf, csin, csinl,
+                   ccosf, ccos, ccosl,
+                   ctanf, ctan, ctanl,
+                   casinf, casin, casinl,
+                   cacosf, cacos, cacosl,
+                   catanf, catan, catanl,
+
+                   index, rindex,
+                   memcmp, memset, memmove,
+                   strcat, strncat, strcpy, strncpy, strcmp, strncmp,
+                   strlen, strstr, strpbrk, strspn, strcspn, strchr, strrchr ;
+
+PROCEDURE alloca (i: CARDINAL) : ADDRESS ;
+PROCEDURE memcpy (dest, src: ADDRESS; n: CARDINAL) : ADDRESS ;
+PROCEDURE isfinite (x: REAL) : BOOLEAN ;
+PROCEDURE isfinitel (x: LONGREAL) : BOOLEAN ;
+PROCEDURE isfinitef (x: SHORTREAL) : BOOLEAN ;
+PROCEDURE isinf_sign (x: REAL) : BOOLEAN ;
+PROCEDURE isinf_signl (x: LONGREAL) : BOOLEAN ;
+PROCEDURE isinf_signf (x: SHORTREAL) : BOOLEAN ;
+PROCEDURE sinf (x: SHORTREAL) : SHORTREAL ;
+PROCEDURE sin (x: REAL) : REAL ;
+PROCEDURE sinl (x: LONGREAL) : LONGREAL ;
+PROCEDURE cosf (x: SHORTREAL) : SHORTREAL ;
+PROCEDURE cos (x: REAL) : REAL ;
+PROCEDURE cosl (x: LONGREAL) : LONGREAL ;
+PROCEDURE atan2f (x, y: SHORTREAL) : SHORTREAL ;
+PROCEDURE atan2 (x, y: REAL) : REAL ;
+PROCEDURE atan2l (x, y: LONGREAL) : LONGREAL ;
+PROCEDURE sqrtf (x: SHORTREAL) : SHORTREAL ;
+PROCEDURE sqrt (x: REAL) : REAL ;
+PROCEDURE sqrtl (x: LONGREAL) : LONGREAL ;
+PROCEDURE fabsf (x: SHORTREAL) : SHORTREAL ;
+PROCEDURE fabs (x: REAL) : REAL ;
+PROCEDURE fabsl (x: LONGREAL) : LONGREAL ;
+PROCEDURE logf (x: SHORTREAL) : SHORTREAL ;
+PROCEDURE log (x: REAL) : REAL ;
+PROCEDURE logl (x: LONGREAL) : LONGREAL ;
+PROCEDURE expf (x: SHORTREAL) : SHORTREAL ;
+PROCEDURE exp (x: REAL) : REAL ;
+PROCEDURE expl (x: LONGREAL) : LONGREAL ;
+PROCEDURE log10f (x: SHORTREAL) : SHORTREAL ;
+PROCEDURE log10 (x: REAL) : REAL ;
+PROCEDURE log10l (x: LONGREAL) : LONGREAL ;
+PROCEDURE exp10f (x: SHORTREAL) : SHORTREAL ;
+PROCEDURE exp10 (x: REAL) : REAL ;
+PROCEDURE exp10l (x: LONGREAL) : LONGREAL ;
+PROCEDURE ilogbf (x: SHORTREAL) : INTEGER ;
+PROCEDURE ilogb (x: REAL) : INTEGER ;
+PROCEDURE ilogbl (x: LONGREAL) : INTEGER ;
+
+PROCEDURE significand (r: REAL) : REAL ;
+PROCEDURE significandf (s: SHORTREAL) : SHORTREAL ;
+PROCEDURE significandl (l: LONGREAL) : LONGREAL ;
+
+PROCEDURE modf (x: REAL; VAR y: REAL) : REAL ;
+PROCEDURE modff (x: SHORTREAL; VAR y: SHORTREAL) : SHORTREAL ;
+PROCEDURE modfl (x: LONGREAL; VAR y: LONGREAL) : LONGREAL ;
+
+PROCEDURE nextafter (x, y: REAL) : REAL ;
+PROCEDURE nextafterf (x, y: SHORTREAL) : SHORTREAL ;
+PROCEDURE nextafterl (x, y: LONGREAL) : LONGREAL ;
+
+PROCEDURE nexttoward (x, y: REAL) : REAL ;
+PROCEDURE nexttowardf (x, y: SHORTREAL) : SHORTREAL ;
+PROCEDURE nexttowardl (x, y: LONGREAL) : LONGREAL ;
+
+PROCEDURE scalb (x, n: REAL) : REAL ;
+PROCEDURE scalbf (x, n: SHORTREAL) : SHORTREAL ;
+PROCEDURE scalbl (x, n: LONGREAL) : LONGREAL ;
+
+PROCEDURE scalbn (x: REAL; n: INTEGER) : REAL ;
+PROCEDURE scalbnf (x: SHORTREAL; n: INTEGER) : SHORTREAL ;
+PROCEDURE scalbnl (x: LONGREAL; n: INTEGER) : LONGREAL ;
+
+PROCEDURE scalbln (x: REAL; n: LONGINT) : REAL ;
+PROCEDURE scalblnf (x: SHORTREAL; n: LONGINT) : SHORTREAL ;
+PROCEDURE scalblnl (x: LONGREAL; n: LONGINT) : LONGREAL ;
+
+PROCEDURE cabsf (z: SHORTCOMPLEX) : SHORTREAL ;
+PROCEDURE cabs (z: COMPLEX) : REAL ;
+PROCEDURE cabsl (z: LONGCOMPLEX) : LONGREAL ;
+
+PROCEDURE cargf (z: SHORTCOMPLEX) : SHORTREAL ;
+PROCEDURE carg (z: COMPLEX) : REAL ;
+PROCEDURE cargl (z: LONGCOMPLEX) : LONGREAL ;
+
+PROCEDURE conjf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+PROCEDURE conj (z: COMPLEX) : COMPLEX ;
+PROCEDURE conjl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+PROCEDURE cpowf (base: SHORTCOMPLEX; exp: SHORTREAL) : SHORTCOMPLEX ;
+PROCEDURE cpow (base: COMPLEX; exp: REAL) : COMPLEX ;
+PROCEDURE cpowl (base: LONGCOMPLEX; exp: LONGREAL) : LONGCOMPLEX ;
+
+PROCEDURE csqrtf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+PROCEDURE csqrt (z: COMPLEX) : COMPLEX ;
+PROCEDURE csqrtl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+PROCEDURE cexpf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+PROCEDURE cexp (z: COMPLEX) : COMPLEX ;
+PROCEDURE cexpl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+PROCEDURE clogf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+PROCEDURE clog (z: COMPLEX) : COMPLEX ;
+PROCEDURE clogl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+PROCEDURE csinf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+PROCEDURE csin (z: COMPLEX) : COMPLEX ;
+PROCEDURE csinl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+PROCEDURE ccosf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+PROCEDURE ccos (z: COMPLEX) : COMPLEX ;
+PROCEDURE ccosl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+PROCEDURE ctanf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+PROCEDURE ctan (z: COMPLEX) : COMPLEX ;
+PROCEDURE ctanl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+PROCEDURE casinf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+PROCEDURE casin (z: COMPLEX) : COMPLEX ;
+PROCEDURE casinl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+PROCEDURE cacosf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+PROCEDURE cacos (z: COMPLEX) : COMPLEX ;
+PROCEDURE cacosl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+PROCEDURE catanf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+PROCEDURE catan (z: COMPLEX) : COMPLEX ;
+PROCEDURE catanl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+PROCEDURE index (s: ADDRESS; c: INTEGER) : ADDRESS ;
+PROCEDURE rindex (s: ADDRESS; c: INTEGER) : ADDRESS ;
+PROCEDURE memcmp (s1, s2: ADDRESS; n: CARDINAL) : INTEGER ;
+PROCEDURE memmove (s1, s2: ADDRESS; n: CARDINAL) : ADDRESS ;
+PROCEDURE memset (s: ADDRESS; c: INTEGER; n: CARDINAL) : ADDRESS ;
+PROCEDURE strcat (dest, src: ADDRESS) : ADDRESS ;
+PROCEDURE strncat (dest, src: ADDRESS; n: CARDINAL) : ADDRESS ;
+PROCEDURE strcpy (dest, src: ADDRESS) : ADDRESS ;
+PROCEDURE strncpy (dest, src: ADDRESS; n: CARDINAL) : ADDRESS ;
+PROCEDURE strcmp (s1, s2: ADDRESS) : INTEGER ;
+PROCEDURE strncmp (s1, s2: ADDRESS; n: CARDINAL) : INTEGER ;
+PROCEDURE strlen (s: ADDRESS) : INTEGER ;
+PROCEDURE strstr (haystack, needle: ADDRESS) : ADDRESS ;
+PROCEDURE strpbrk (s, accept: ADDRESS) : ADDRESS ;
+PROCEDURE strspn (s, accept: ADDRESS) : CARDINAL ;
+PROCEDURE strcspn (s, accept: ADDRESS) : CARDINAL ;
+PROCEDURE strchr (s: ADDRESS; c: INTEGER) : ADDRESS ;
+PROCEDURE strrchr (s: ADDRESS; c: INTEGER) : ADDRESS ;
+
+END cbuiltin.

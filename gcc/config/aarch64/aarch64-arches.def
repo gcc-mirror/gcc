@@ -1,4 +1,4 @@
-/* Copyright (C) 2011-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2011-2023 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -28,18 +28,21 @@
    ARCH_REV is an integer specifying the architecture major revision.
    FLAGS are the flags implied by the architecture.
    Due to the assumptions about the positions of these fields in config.gcc,
-   the NAME should be kept as the first argument and FLAGS as the last.  */
+   NAME should be kept as the first argument.  */
 
-AARCH64_ARCH("armv8-a",	      generic,	     8A,	8,  AARCH64_FL_FOR_ARCH8)
-AARCH64_ARCH("armv8.1-a",     generic,	     8_1A,	8,  AARCH64_FL_FOR_ARCH8_1)
-AARCH64_ARCH("armv8.2-a",     generic,	     8_2A,	8,  AARCH64_FL_FOR_ARCH8_2)
-AARCH64_ARCH("armv8.3-a",     generic,	     8_3A,	8,  AARCH64_FL_FOR_ARCH8_3)
-AARCH64_ARCH("armv8.4-a",     generic,	     8_4A,	8,  AARCH64_FL_FOR_ARCH8_4)
-AARCH64_ARCH("armv8.5-a",     generic,	     8_5A,	8,  AARCH64_FL_FOR_ARCH8_5)
-AARCH64_ARCH("armv8.6-a",     generic,	     8_6A,	8,  AARCH64_FL_FOR_ARCH8_6)
-AARCH64_ARCH("armv8.7-a",     generic,       8_7A,      8,  AARCH64_FL_FOR_ARCH8_7)
-AARCH64_ARCH("armv8.8-a",     generic,       8_8A,      8,  AARCH64_FL_FOR_ARCH8_8)
-AARCH64_ARCH("armv8-r",       generic,	     8R  ,	8,  AARCH64_FL_FOR_ARCH8_R)
-AARCH64_ARCH("armv9-a",       generic,	     9A  ,	9,  AARCH64_FL_FOR_ARCH9)
+AARCH64_ARCH("armv8-a",       generic,       V8A,       8,  (SIMD))
+AARCH64_ARCH("armv8.1-a",     generic,       V8_1A,     8,  (V8A, LSE, CRC, RDMA))
+AARCH64_ARCH("armv8.2-a",     generic,       V8_2A,     8,  (V8_1A))
+AARCH64_ARCH("armv8.3-a",     generic,       V8_3A,     8,  (V8_2A, PAUTH, RCPC))
+AARCH64_ARCH("armv8.4-a",     generic,       V8_4A,     8,  (V8_3A, F16FML, DOTPROD, FLAGM))
+AARCH64_ARCH("armv8.5-a",     generic,       V8_5A,     8,  (V8_4A, SB, SSBS, PREDRES))
+AARCH64_ARCH("armv8.6-a",     generic,       V8_6A,     8,  (V8_5A, I8MM, BF16))
+AARCH64_ARCH("armv8.7-a",     generic,       V8_7A,     8,  (V8_6A, LS64))
+AARCH64_ARCH("armv8.8-a",     generic,       V8_8A,     8,  (V8_7A, MOPS))
+AARCH64_ARCH("armv8-r",       generic,       V8R  ,     8,  (V8_4A))
+AARCH64_ARCH("armv9-a",       generic,       V9A  ,     9,  (V8_5A, SVE2))
+AARCH64_ARCH("armv9.1-a",     generic,       V9_1A,     9,  (V8_6A, V9A))
+AARCH64_ARCH("armv9.2-a",     generic,       V9_2A,     9,  (V8_7A, V9_1A))
+AARCH64_ARCH("armv9.3-a",     generic,       V9_3A,     9,  (V8_8A, V9_2A))
 
 #undef AARCH64_ARCH

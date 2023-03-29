@@ -1,5 +1,5 @@
 /* Loop invariant motion.
-   Copyright (C) 2003-2022 Free Software Foundation, Inc.
+   Copyright (C) 2003-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alias.h"
 #include "builtins.h"
 #include "tree-dfa.h"
+#include "tree-ssa.h"
 #include "dbgcnt.h"
 
 /* TODO:  Support for predicated code motion.  I.e.
@@ -331,8 +332,8 @@ enum move_pos
    because it may trap), return MOVE_PRESERVE_EXECUTION.
    Otherwise return MOVE_IMPOSSIBLE.  */
 
-enum move_pos
-movement_possibility (gimple *stmt)
+static enum move_pos
+movement_possibility_1 (gimple *stmt)
 {
   tree lhs;
   enum move_pos ret = MOVE_POSSIBLE;
@@ -421,6 +422,23 @@ movement_possibility (gimple *stmt)
 
   return ret;
 }
+
+static enum move_pos
+movement_possibility (gimple *stmt)
+{
+  enum move_pos pos = movement_possibility_1 (stmt);
+  if (pos == MOVE_POSSIBLE)
+    {
+      use_operand_p use_p;
+      ssa_op_iter ssa_iter;
+      FOR_EACH_PHI_OR_STMT_USE (use_p, stmt, ssa_iter, SSA_OP_USE)
+	if (TREE_CODE (USE_FROM_PTR (use_p)) == SSA_NAME
+	    && ssa_name_maybe_undef_p (USE_FROM_PTR (use_p)))
+	  return MOVE_PRESERVE_EXECUTION;
+    }
+  return pos;
+}
+
 
 /* Compare the profile count inequality of bb and loop's preheader, it is
    three-state as stated in profile-count.h, FALSE is returned if inequality
@@ -835,10 +853,15 @@ determine_max_movement (gimple *stmt, bool must_preserve_exec)
 
       return true;
     }
-  else
-    FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, SSA_OP_USE)
-      if (!add_dependency (val, lim_data, loop, true))
-	return false;
+
+  /* A stmt that receives abnormal edges cannot be hoisted.  */
+  if (is_a <gcall *> (stmt)
+      && (gimple_call_flags (stmt) & ECF_RETURNS_TWICE))
+    return false;
+
+  FOR_EACH_SSA_TREE_OPERAND (val, stmt, iter, SSA_OP_USE)
+    if (!add_dependency (val, lim_data, loop, true))
+      return false;
 
   if (gimple_vuse (stmt))
     {
@@ -2582,7 +2605,9 @@ sm_seq_valid_bb (class loop *loop, basic_block bb, tree vdef,
       if (data->ref == UNANALYZABLE_MEM_ID)
 	return -1;
       /* Stop at memory references which we can't move.  */
-      else if (memory_accesses.refs_list[data->ref]->mem.ref == error_mark_node)
+      else if (memory_accesses.refs_list[data->ref]->mem.ref == error_mark_node
+	       || TREE_THIS_VOLATILE
+		    (memory_accesses.refs_list[data->ref]->mem.ref))
 	{
 	  /* Mark refs_not_in_seq as unsupported.  */
 	  bitmap_ior_into (refs_not_supported, refs_not_in_seq);
@@ -3526,6 +3551,8 @@ loop_invariant_motion_in_fun (function *fun, bool store_motion)
   unsigned int todo = 0;
 
   tree_ssa_lim_initialize (store_motion);
+
+  mark_ssa_maybe_undefs ();
 
   /* Gathers information about memory accesses in the loops.  */
   analyze_memory_references (store_motion);

@@ -1,5 +1,5 @@
 /* Variable tracking routines for the GNU compiler.
-   Copyright (C) 2002-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -9904,6 +9904,23 @@ vt_add_function_parameter (tree parm)
 		  record_entry_value (val, mem);
 		  set_variable_part (out, mem, dv_from_value (val->val_rtx), 0,
 				     VAR_INIT_STATUS_INITIALIZED, NULL, INSERT);
+		}
+	    }
+
+	  if (GET_MODE_CLASS (mode) == MODE_INT)
+	    {
+	      machine_mode wider_mode_iter;
+	      FOR_EACH_WIDER_MODE (wider_mode_iter, mode)
+		{
+		  if (!HWI_COMPUTABLE_MODE_P (wider_mode_iter))
+		    break;
+		  rtx wider_reg
+		    = gen_rtx_REG (wider_mode_iter, REGNO (incoming));
+		  cselib_val *wider_val
+		    = cselib_lookup_from_insn (wider_reg, wider_mode_iter, 1,
+					       VOIDmode, get_insns ());
+		  preserve_value (wider_val);
+		  record_entry_value (wider_val, wider_reg);
 		}
 	    }
 	}

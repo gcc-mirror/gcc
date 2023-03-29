@@ -1,0 +1,233 @@
+(* termios.def provides a procedural interface to termios.
+
+Copyright (C) 2005-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE termios ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+TYPE
+   TERMIOS = ADDRESS ;
+
+   ControlChar = (vintr, vquit, verase, vkill, veof, vtime, vmin,
+                  vswtc, vstart, vstop, vsusp, veol, vreprint, vdiscard,
+                  vwerase, vlnext, veol2) ;
+
+   Flag = (
+           (* input flag bits *)
+           ignbrk, ibrkint, ignpar, iparmrk, inpck, istrip, inlcr,
+           igncr, icrnl, iuclc, ixon, ixany, ixoff, imaxbel,
+           (* output flag bits *)
+           opost, olcuc, onlcr, ocrnl, onocr, onlret, ofill, ofdel,
+           onl0, onl1, ocr0, ocr1, ocr2, ocr3,
+           otab0, otab1, otab2, otab3, obs0, obs1, off0, off1, ovt0, ovt1,
+           (* baud rate *)
+           b0, b50, b75, b110, b135, b150, b200, b300, b600, b1200,
+           b1800, b2400, b4800, b9600, b19200, b38400,
+           b57600, b115200, b240400, b460800, b500000, b576000,
+           b921600, b1000000, b1152000, b1500000, b2000000, b2500000,
+           b3000000, b3500000, b4000000, maxbaud, crtscts,
+           (* character size *)
+           cs5, cs6, cs7, cs8, cstopb, cread, parenb, parodd, hupcl, clocal,
+           (* local flags *)
+           lisig, licanon, lxcase, lecho, lechoe, lechok, lechonl, lnoflsh,
+           ltopstop, lechoctl, lechoprt, lechoke, lflusho, lpendin, liexten) ;
+
+
+(*
+   InitTermios - new data structure.
+*)
+
+PROCEDURE InitTermios () : TERMIOS ;
+
+
+(*
+   KillTermios - delete data structure.
+*)
+
+PROCEDURE KillTermios (t: TERMIOS) : TERMIOS ;
+
+
+(*
+   cfgetospeed - return output baud rate.
+*)
+
+PROCEDURE cfgetospeed (t: TERMIOS) : INTEGER ;
+
+
+(*
+   cfgetispeed - return input baud rate.
+*)
+
+PROCEDURE cfgetispeed (t: TERMIOS) : INTEGER ;
+
+
+(*
+   cfsetospeed - set output baud rate.
+*)
+
+PROCEDURE cfsetospeed (t: TERMIOS; b: CARDINAL) : INTEGER ;
+
+
+(*
+   cfsetispeed - set input baud rate.
+*)
+
+PROCEDURE cfsetispeed (t: TERMIOS; b: CARDINAL) : INTEGER ;
+
+
+(*
+   cfsetspeed - set input and output baud rate.
+*)
+
+PROCEDURE cfsetspeed (t: TERMIOS; b: CARDINAL) : INTEGER ;
+
+
+(*
+   tcgetattr - get state of, fd, into, t.
+*)
+
+PROCEDURE tcgetattr (fd: INTEGER; t: TERMIOS) : INTEGER ;
+
+
+(*
+   The following three functions return the different option values.
+*)
+
+PROCEDURE tcsnow () : INTEGER ;   (* alter fd now *)
+PROCEDURE tcsdrain () : INTEGER ; (* alter when all output has been sent *)
+PROCEDURE tcsflush () : INTEGER ; (* like drain, except discard any pending input *)
+
+
+(*
+   tcsetattr - set state of, fd, to, t, using option.
+*)
+
+PROCEDURE tcsetattr (fd: INTEGER; option: INTEGER; t: TERMIOS) : INTEGER ;
+
+
+(*
+   cfmakeraw - sets, t, to raw mode.
+*)
+
+PROCEDURE cfmakeraw (t: TERMIOS) ;
+
+
+(*
+   tcsendbreak - send zero bits for duration.
+*)
+
+PROCEDURE tcsendbreak (fd: INTEGER; duration: INTEGER) : INTEGER ;
+
+
+(*
+   tcdrain - waits for pending output to be written on, fd.
+*)
+
+PROCEDURE tcdrain (fd: INTEGER) : INTEGER ;
+
+
+(*
+   tcflushi - flush input.
+*)
+
+PROCEDURE tcflushi (fd: INTEGER) : INTEGER ;
+
+
+(*
+   tcflusho - flush output.
+*)
+
+PROCEDURE tcflusho (fd: INTEGER) : INTEGER ;
+
+
+(*
+   tcflushio - flush input and output.
+*)
+
+PROCEDURE tcflushio (fd: INTEGER) : INTEGER ;
+
+
+(*
+   tcflowoni - restart input on, fd.
+*)
+
+PROCEDURE tcflowoni (fd: INTEGER) : INTEGER ;
+
+
+(*
+   tcflowoffi - stop input on, fd.
+*)
+
+PROCEDURE tcflowoffi (fd: INTEGER) : INTEGER ;
+
+
+(*
+   tcflowono - restart output on, fd.
+*)
+
+PROCEDURE tcflowono (fd: INTEGER) : INTEGER ;
+
+
+(*
+   tcflowoffo - stop output on, fd.
+*)
+
+PROCEDURE tcflowoffo (fd: INTEGER) : INTEGER ;
+
+
+(*
+   GetFlag - sets a flag value from, t, in, b, and returns TRUE
+             if, t, supports, f.
+*)
+
+PROCEDURE GetFlag (t: TERMIOS; f: Flag; VAR b: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   SetFlag - sets a flag value in, t, to, b, and returns TRUE if
+             this flag value is supported.
+*)
+
+PROCEDURE SetFlag (t: TERMIOS; f: Flag; b: BOOLEAN) : BOOLEAN ;
+
+
+(*
+   GetChar - sets a CHAR, ch, value from, t, and returns TRUE if
+             this value is supported.
+*)
+
+PROCEDURE GetChar (t: TERMIOS; c: ControlChar; VAR ch: CHAR) : BOOLEAN ;
+
+
+(*
+   SetChar - sets a CHAR value in, t, and returns TRUE if, c,
+             is supported.
+*)
+
+PROCEDURE SetChar (t: TERMIOS; c: ControlChar; ch: CHAR) : BOOLEAN ;
+
+
+END termios.

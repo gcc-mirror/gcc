@@ -1,0 +1,32 @@
+DEFINITION MODULE advflex ;
+
+(*
+    Title      : advflex
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Sun Jul 17 12:32:58 2005
+    Revision   : $Version$
+    Description: provides access to basic lexical functions.
+*)
+
+FROM SYSTEM IMPORT ADDRESS ;
+EXPORT QUALIFIED toktype, OpenSource, CloseSource, error, GetToken, GetLineNo,
+                 currenttoken, currentinteger ;
+
+TYPE
+   toktype = (eoftok, roomtok, doortok, walltok, treasuretok, attok,
+              leadstok, totok, statustok, closedtok, opentok, secrettok,
+              istok, endtok, enddottok, integertok, randomizetok) ;
+
+VAR
+   currenttoken  : toktype ;
+   currentinteger: INTEGER ;
+
+PROCEDURE OpenSource (s: ADDRESS) : BOOLEAN ;
+PROCEDURE CloseSource ;
+PROCEDURE GetLineNo () : CARDINAL ;
+PROCEDURE error (s: ADDRESS) ;
+PROCEDURE GetToken ;
+
+
+END advflex.

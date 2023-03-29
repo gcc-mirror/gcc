@@ -1,5 +1,5 @@
 /* gfortran header file
-   Copyright (C) 2000-2022 Free Software Foundation, Inc.
+   Copyright (C) 2000-2023 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -222,11 +222,12 @@ enum gfc_intrinsic_op
    Assumptions are made about the numbering of the interface_op enums.  */
 #define GFC_INTRINSIC_OPS GFC_INTRINSIC_END
 
-/* Arithmetic results.  */
+/* Arithmetic results.  ARITH_NOT_REDUCED is used to keep track of expressions
+   that were not reduced by the arithmetic evaluation code.  */
 enum arith
 { ARITH_OK = 1, ARITH_OVERFLOW, ARITH_UNDERFLOW, ARITH_NAN,
   ARITH_DIV0, ARITH_INCOMMENSURATE, ARITH_ASYMMETRIC, ARITH_PROHIBIT,
-  ARITH_WRONGCONCAT
+  ARITH_WRONGCONCAT, ARITH_INVALID_TYPE, ARITH_NOT_REDUCED
 };
 
 /* Statements.  */
@@ -316,7 +317,9 @@ enum gfc_statement
   ST_OMP_END_PARALLEL_MASKED_TASKLOOP_SIMD, ST_OMP_MASKED_TASKLOOP,
   ST_OMP_END_MASKED_TASKLOOP, ST_OMP_MASKED_TASKLOOP_SIMD,
   ST_OMP_END_MASKED_TASKLOOP_SIMD, ST_OMP_SCOPE, ST_OMP_END_SCOPE,
-  ST_OMP_ERROR, ST_NONE
+  ST_OMP_ERROR, ST_OMP_ASSUME, ST_OMP_END_ASSUME, ST_OMP_ASSUMES,
+  /* Note: gfc_match_omp_nothing returns ST_NONE. */
+  ST_OMP_NOTHING, ST_NONE
 };
 
 /* Types of interfaces that we can have.  Assignment interfaces are
@@ -835,6 +838,9 @@ typedef enum
   EXT_ATTR_FASTCALL,
   EXT_ATTR_NO_ARG_CHECK,
   EXT_ATTR_DEPRECATED,
+  EXT_ATTR_NOINLINE,
+  EXT_ATTR_NORETURN,
+  EXT_ATTR_WEAK,
   EXT_ATTR_LAST, EXT_ATTR_NUM = EXT_ATTR_LAST
 }
 ext_attr_id_t;
@@ -1346,6 +1352,7 @@ typedef struct gfc_omp_namelist
       gfc_omp_reduction_op reduction_op;
       gfc_omp_depend_doacross_op depend_doacross_op;
       gfc_omp_map_op map_op;
+      gfc_expr *align;
       struct
 	{
 	  ENUM_BITFIELD (gfc_omp_linear_op) op:4;
@@ -1506,6 +1513,18 @@ enum gfc_omp_bind_type
   OMP_BIND_THREAD
 };
 
+typedef struct gfc_omp_assumptions
+{
+  int n_absent, n_contains;
+  enum gfc_statement *absent, *contains;
+  gfc_expr_list *holds;
+  bool no_openmp:1, no_openmp_routines:1, no_parallelism:1;
+}
+gfc_omp_assumptions;
+
+#define gfc_get_omp_assumptions() XCNEW (gfc_omp_assumptions)
+
+
 typedef struct gfc_omp_clauses
 {
   gfc_omp_namelist *lists[OMP_LIST_NUM];
@@ -1529,6 +1548,7 @@ typedef struct gfc_omp_clauses
   struct gfc_expr *if_exprs[OMP_IF_LAST];
   struct gfc_expr *dist_chunk_size;
   struct gfc_expr *message;
+  struct gfc_omp_assumptions *assume;
   const char *critical_name;
   enum gfc_omp_default_sharing default_sharing;
   enum gfc_omp_atomic_op atomic_op;
@@ -1854,22 +1874,34 @@ typedef struct gfc_symbol
 
   gfc_namelist *namelist, *namelist_tail;
 
-  /* Change management fields.  Symbols that might be modified by the
-     current statement have the mark member nonzero.  Of these symbols,
-     symbols with old_symbol equal to NULL are symbols created within
-     the current statement.  Otherwise, old_symbol points to a copy of
-     the old symbol. gfc_new is used in symbol.cc to flag new symbols.
-     comp_mark is used to indicate variables which have component accesses
-     in OpenMP/OpenACC directive clauses.  */
-  struct gfc_symbol *old_symbol;
-  unsigned mark:1, comp_mark:1, gfc_new:1;
-
   /* The tlink field is used in the front end to carry the module
      declaration of separate module procedures so that the characteristics
      can be compared with the corresponding declaration in a submodule. In
      translation this field carries a linked list of symbols that require
      deferred initialization.  */
   struct gfc_symbol *tlink;
+
+  /* Change management fields.  Symbols that might be modified by the
+     current statement have the mark member nonzero.  Of these symbols,
+     symbols with old_symbol equal to NULL are symbols created within
+     the current statement.  Otherwise, old_symbol points to a copy of
+     the old symbol. gfc_new is used in symbol.cc to flag new symbols.
+     comp_mark is used to indicate variables which have component accesses
+     in OpenMP/OpenACC directive clauses (cf. c-typeck.cc:c_finish_omp_clauses,
+     map_field_head).
+     data_mark is used to check duplicate mappings for OpenMP data-sharing
+     clauses (see firstprivate_head/lastprivate_head in the above function).
+     dev_mark is used to check duplicate mappings for OpenMP
+     is_device_ptr/has_device_addr clauses (see is_on_device_head in above
+     function).
+     gen_mark is used to check duplicate mappings for OpenMP
+     use_device_ptr/use_device_addr/private/shared clauses (see generic_head in
+     above functon).
+     reduc_mark is used to check duplicate mappings for OpenMP reduction
+     clauses.  */
+  struct gfc_symbol *old_symbol;
+  unsigned mark:1, comp_mark:1, data_mark:1, dev_mark:1, gen_mark:1;
+  unsigned reduc_mark:1, gfc_new:1;
 
   /* Nonzero if all equivalences associated with this symbol have been
      processed.  */
@@ -2144,6 +2176,9 @@ typedef struct gfc_namespace
 
   /* Linked list of !$omp declare variant constructs.  */
   struct gfc_omp_declare_variant *omp_declare_variant;
+
+  /* OpenMP assumptions.  */
+  struct gfc_omp_assumptions *omp_assumes;
 
   /* A hash set for the gfc expressions that have already
      been finalized in this namespace.  */
@@ -2913,7 +2948,7 @@ enum gfc_exec_op
   EXEC_OMP_ORDERED, EXEC_OMP_PARALLEL, EXEC_OMP_PARALLEL_DO,
   EXEC_OMP_PARALLEL_SECTIONS, EXEC_OMP_PARALLEL_WORKSHARE,
   EXEC_OMP_SECTIONS, EXEC_OMP_SINGLE, EXEC_OMP_WORKSHARE,
-  EXEC_OMP_ATOMIC, EXEC_OMP_BARRIER, EXEC_OMP_END_NOWAIT,
+  EXEC_OMP_ASSUME, EXEC_OMP_ATOMIC, EXEC_OMP_BARRIER, EXEC_OMP_END_NOWAIT,
   EXEC_OMP_END_SINGLE, EXEC_OMP_TASK, EXEC_OMP_TASKWAIT,
   EXEC_OMP_TASKYIELD, EXEC_OMP_CANCEL, EXEC_OMP_CANCELLATION_POINT,
   EXEC_OMP_TASKGROUP, EXEC_OMP_SIMD, EXEC_OMP_DO_SIMD,
@@ -3188,7 +3223,6 @@ int gfc_at_eof (void);
 int gfc_at_bol (void);
 int gfc_at_eol (void);
 void gfc_advance_line (void);
-int gfc_check_include (void);
 int gfc_define_undef_line (void);
 
 int gfc_wide_is_printable (gfc_char_t);
@@ -3242,7 +3276,7 @@ void gfc_done_2 (void);
 int get_c_kind (const char *, CInteropKind_t *);
 
 const char *gfc_closest_fuzzy_match (const char *, char **);
-static inline void
+inline void
 vec_push (char **&optr, size_t &osz, const char *elt)
 {
   /* {auto,}vec.safe_push () replacement.  Don't ask..  */
@@ -3297,6 +3331,7 @@ void gfc_internal_error (const char *, ...) ATTRIBUTE_NORETURN ATTRIBUTE_GCC_GFC
 void gfc_clear_error (void);
 bool gfc_error_check (void);
 bool gfc_error_flag_test (void);
+bool gfc_buffered_p (void);
 
 notification gfc_notification_std (int);
 bool gfc_notify_std (int, const char *, ...) ATTRIBUTE_GCC_GFC(2,3);
@@ -3518,7 +3553,7 @@ void gfc_intrinsic_done_1 (void);
 
 char gfc_type_letter (bt, bool logical_equals_int = false);
 int gfc_type_abi_kind (bt, int);
-static inline int
+inline int
 gfc_type_abi_kind (gfc_typespec *ts)
 {
   return gfc_type_abi_kind (ts->type, ts->kind);
@@ -3554,7 +3589,7 @@ void gfc_free_iterator (gfc_iterator *, int);
 void gfc_free_forall_iterator (gfc_forall_iterator *);
 void gfc_free_alloc_list (gfc_alloc *);
 void gfc_free_namelist (gfc_namelist *);
-void gfc_free_omp_namelist (gfc_omp_namelist *, bool);
+void gfc_free_omp_namelist (gfc_omp_namelist *, bool, bool);
 void gfc_free_equiv (gfc_equiv *);
 void gfc_free_equiv_until (gfc_equiv *, gfc_equiv *);
 void gfc_free_data (gfc_data *);
@@ -3576,6 +3611,7 @@ void gfc_free_omp_declare_simd (gfc_omp_declare_simd *);
 void gfc_free_omp_declare_simd_list (gfc_omp_declare_simd *);
 void gfc_free_omp_udr (gfc_omp_udr *);
 gfc_omp_udr *gfc_omp_udr_find (gfc_symtree *, gfc_typespec *);
+void gfc_resolve_omp_assumptions (gfc_omp_assumptions *);
 void gfc_resolve_omp_directive (gfc_code *, gfc_namespace *);
 void gfc_resolve_do_iterator (gfc_code *, gfc_symbol *, bool);
 void gfc_resolve_omp_local_vars (gfc_namespace *);
@@ -3896,6 +3932,7 @@ gfc_typebound_proc* gfc_find_typebound_intrinsic_op (gfc_symbol*, bool*,
 						     locus*);
 gfc_symtree* gfc_get_tbp_symtree (gfc_symtree**, const char*);
 bool gfc_is_finalizable (gfc_symbol *, gfc_expr **);
+bool gfc_may_be_finalized (gfc_typespec);
 
 #define CLASS_DATA(sym) sym->ts.u.derived->components
 #define UNLIMITED_POLY(sym) \

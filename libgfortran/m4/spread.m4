@@ -1,5 +1,5 @@
 `/* Special implementation of the SPREAD intrinsic
-   Copyright (C) 2008-2022 Free Software Foundation, Inc.
+   Copyright (C) 2008-2023 Free Software Foundation, Inc.
    Contributed by Thomas Koenig <tkoenig@gcc.gnu.org>, based on
    spread_generic.c written by Paul Brook <paul@nowt.org>
 
@@ -57,6 +57,8 @@ spread_'rtype_code` ('rtype` *ret, const 'rtype` *source,
 
   srank = GFC_DESCRIPTOR_RANK(source);
 
+  sstride[0] = 0; /* Avoid warnings if not initialized.  */
+  
   rrank = srank + 1;
   if (rrank > GFC_MAX_DIMENSIONS)
     runtime_error ("return rank too large in spread()");

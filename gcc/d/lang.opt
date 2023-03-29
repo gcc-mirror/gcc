@@ -1,5 +1,5 @@
 ; lang.opt -- Options for the D front end.
-; Copyright (C) 2006-2022 Free Software Foundation, Inc.
+; Copyright (C) 2006-2023 Free Software Foundation, Inc.
 ;
 ; GCC is free software; you can redistribute it and/or modify it under
 ; the terms of the GNU General Public License as published by the Free
@@ -360,10 +360,6 @@ fpreview=dip1021
 D RejectNegative
 Implement DIP1021: Mutable function arguments.
 
-fpreview=dip25
-D RejectNegative
-Implement DIP25: Sealed references.
-
 fpreview=dtorfields
 D RejectNegative
 Destruct fields of partially constructed objects.
@@ -396,9 +392,9 @@ fpreview=rvaluerefparam
 D RejectNegative
 Enable rvalue arguments to ref parameters.
 
-fpreview=shortenedmethods
+fpreview=systemvariables
 D RejectNegative
-Allow use of '=>' for methods and top-level functions in addition to lambdas.
+Disable access to variables marked `@system' from @safe code.
 
 frelease
 D
@@ -412,17 +408,13 @@ frevert=dip1000
 D RejectNegative
 Revert DIP1000: Scoped pointers.
 
-frevert=dip25
-D RejectNegative
-Revert DIP25: Sealed references.
-
 frevert=dtorfields
 D RejectNegative
 Don't destruct fields of partially constructed objects.
 
 frevert=intpromote
 D RejectNegative
-Use C-style integral promotion for unary '+', '-' and '~'.
+Don't use C-style integral promotion for unary '+', '-' and '~'.
 
 frtti
 D

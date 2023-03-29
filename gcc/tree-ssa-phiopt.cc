@@ -1,5 +1,5 @@
 /* Optimization of PHI nodes by converting them into straightline code.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-match.h"
 #include "dbgcnt.h"
 #include "tree-ssa-propagate.h"
+#include "tree-ssa-dce.h"
 
 static unsigned int tree_ssa_phiopt_worker (bool, bool, bool);
 static bool two_value_replacement (basic_block, basic_block, edge, gphi *,
@@ -74,7 +75,6 @@ static bool cond_store_replacement (basic_block, basic_block, edge, edge,
 				    hash_set<tree> *);
 static bool cond_if_else_store_replacement (basic_block, basic_block, basic_block);
 static hash_set<tree> * get_non_trapping ();
-static void replace_phi_edge_with_variable (basic_block, edge, gphi *, tree);
 static void hoist_adjacent_loads (basic_block, basic_block,
 				  basic_block, basic_block);
 static bool gate_hoist_loads (void);
@@ -402,7 +402,8 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 
 static void
 replace_phi_edge_with_variable (basic_block cond_block,
-				edge e, gphi *phi, tree new_tree)
+				edge e, gphi *phi, tree new_tree,
+				bitmap dce_ssa_names = auto_bitmap())
 {
   basic_block bb = gimple_bb (phi);
   gimple_stmt_iterator gsi;
@@ -476,6 +477,8 @@ replace_phi_edge_with_variable (basic_block cond_block,
       else if (keep_edge->flags & EDGE_TRUE_VALUE)
 	gimple_cond_make_true (cond);
     }
+
+  simple_dce_from_worklist (dce_ssa_names);
 
   statistics_counter_event (cfun, "Replace PHI with variable", 1);
 
@@ -986,6 +989,7 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
   gimple_seq seq = NULL;
   tree result;
   gimple *stmt_to_move = NULL;
+  auto_bitmap inserted_exprs;
 
   /* Special case A ? B : B as this will always simplify to B. */
   if (operand_equal_for_phi_arg_p (arg0, arg1))
@@ -996,6 +1000,11 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
   if (!empty_block_p (middle_bb))
     {
       if (!single_pred_p (middle_bb))
+	return false;
+
+      /* The middle bb cannot have phi nodes as we don't
+	 move those assignments yet. */
+      if (!gimple_seq_empty_p (phi_nodes (middle_bb)))
 	return false;
 
       stmt_to_move = last_and_only_stmt (middle_bb);
@@ -1060,14 +1069,22 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
   gsi = gsi_last_bb (cond_bb);
   /* Insert the sequence generated from gimple_simplify_phiopt.  */
   if (seq)
+    {
+      // Mark the lhs of the new statements maybe for dce
+      gimple_stmt_iterator gsi1 = gsi_start (seq);
+      for (; !gsi_end_p (gsi1); gsi_next (&gsi1))
+	{
+	  gimple *stmt = gsi_stmt (gsi1);
+	  tree name = gimple_get_lhs (stmt);
+	  if (name && TREE_CODE (name) == SSA_NAME)
+	    bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (name));
+	}
     gsi_insert_seq_before (&gsi, seq, GSI_CONTINUE_LINKING);
+  }
 
-  /* If there was a statement to move and the result of the statement
-     is going to be used, move it to right before the original
-     conditional.  */
-  if (stmt_to_move
-      && (gimple_assign_lhs (stmt_to_move) == result
-	  || !has_single_use (gimple_assign_lhs (stmt_to_move))))
+  /* If there was a statement to move, move it to right before
+     the original conditional.  */
+  if (stmt_to_move)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -1075,12 +1092,17 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
 	  print_gimple_stmt (dump_file, stmt_to_move, 0,
 			   TDF_VOPS|TDF_MEMSYMS);
 	}
+
+      tree name = gimple_get_lhs (stmt_to_move);
+      // Mark the name to be renamed if there is one.
+      if (name && TREE_CODE (name) == SSA_NAME)
+	bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (name));
       gimple_stmt_iterator gsi1 = gsi_for_stmt (stmt_to_move);
       gsi_move_before (&gsi1, &gsi);
       reset_flow_sensitive_info (gimple_assign_lhs (stmt_to_move));
     }
 
-  replace_phi_edge_with_variable (cond_bb, e1, phi, result);
+  replace_phi_edge_with_variable (cond_bb, e1, phi, result, inserted_exprs);
 
   /* Add Statistic here even though replace_phi_edge_with_variable already
      does it as we want to be able to count when match-simplify happens vs
@@ -1474,6 +1496,26 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 		  default:
 		    break;
 		  }
+	      if (equal_p)
+		{
+		  tree phires = gimple_phi_result (phi);
+		  if (SSA_NAME_RANGE_INFO (phires))
+		    {
+		      /* After the optimization PHI result can have value
+			 which it couldn't have previously.  */
+		      int_range_max r;
+		      if (get_global_range_query ()->range_of_expr (r, phires,
+								    phi))
+			{
+			  int_range<2> tmp (carg, carg);
+			  r.union_ (tmp);
+			  reset_flow_sensitive_info (phires);
+			  set_range_info (phires, r);
+			}
+		      else
+			reset_flow_sensitive_info (phires);
+		    }
+		}
 	      if (equal_p && MAY_HAVE_DEBUG_BIND_STMTS)
 		{
 		  imm_use_iterator imm_iter;

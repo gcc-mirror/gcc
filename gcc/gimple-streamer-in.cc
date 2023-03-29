@@ -1,6 +1,6 @@
 /* Routines for reading GIMPLE from a file stream.
 
-   Copyright (C) 2011-2022 Free Software Foundation, Inc.
+   Copyright (C) 2011-2023 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@google.com>
 
 This file is part of GCC.
@@ -267,7 +267,6 @@ input_bb (class lto_input_block *ib, enum LTO_tags tag,
     bb->count
       = bb->count.apply_scale (count_materialization_scale, REG_BR_PROB_BASE);
   bb->flags = streamer_read_hwi (ib);
-  bb->discriminator = streamer_read_hwi (ib);
 
   /* LTO_bb1 has statements.  LTO_bb0 does not.  */
   if (tag == LTO_bb0)

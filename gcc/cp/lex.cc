@@ -1,5 +1,5 @@
 /* Separate lexical analyzer for GNU C++.
-   Copyright (C) 1987-2022 Free Software Foundation, Inc.
+   Copyright (C) 1987-2023 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -241,9 +241,9 @@ init_reswords (void)
   if (!flag_char8_t)
     mask |= D_CXX_CHAR8_T;
   if (flag_no_asm)
-    mask |= D_ASM | D_EXT;
+    mask |= D_ASM | D_EXT | D_EXT11;
   if (flag_no_gnu_keywords)
-    mask |= D_EXT;
+    mask |= D_EXT | D_EXT11;
 
   /* The Objective-C keywords are all context-dependent.  */
   mask |= D_OBJC;

@@ -1,4 +1,4 @@
-#   Copyright (C) 1997-2022 Free Software Foundation, Inc.
+#   Copyright (C) 1997-2023 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -683,3 +683,18 @@ proc dg-require-symver { args } {
 	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
     }
 }
+
+# If this target does not provide prog named "$args", skip this test.
+
+proc dg-require-prog-name-available { args } {
+    # The args are within another list; pull them out.
+    set args [lindex $args 0]
+
+    set prog [lindex $args 1]
+
+    if { ![ check_is_prog_name_available $prog ] } {
+        upvar dg-do-what dg-do-what
+        set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+    }
+}
+

@@ -5002,7 +5002,7 @@ If set to `OpenRight.yes`, then the interval is open to the right
 (last element is not included).
 
 Otherwise if set to `OpenRight.no`, then the interval is closed to the right
-(last element included).
+including the entire sentinel.
  */
 alias OpenRight = Flag!"openRight";
 
@@ -5052,6 +5052,7 @@ if (isInputRange!Range)
     static if (!is(Sentinel == void))
         private Sentinel _sentinel;
     private OpenRight _openRight;
+    private bool _matchStarted;
     private bool _done;
 
     static if (!is(Sentinel == void))
@@ -5063,7 +5064,19 @@ if (isInputRange!Range)
             _input = input;
             _sentinel = sentinel;
             _openRight = openRight;
-            _done = _input.empty || openRight && predSatisfied();
+            static if (isInputRange!Sentinel)
+            {
+                _matchStarted = predSatisfied();
+                _done = _input.empty || _sentinel.empty || openRight && _matchStarted;
+                if (_matchStarted && !_done && !openRight)
+                {
+                    _sentinel.popFront;
+                }
+            }
+            else
+            {
+                _done = _input.empty || openRight && predSatisfied();
+            }
         }
         private this(Range input, Sentinel sentinel, OpenRight openRight,
             bool done)
@@ -5118,9 +5131,32 @@ if (isInputRange!Range)
         assert(!empty, "Can not popFront of an empty Until");
         if (!_openRight)
         {
-            _done = predSatisfied();
-            _input.popFront();
-            _done = _done || _input.empty;
+            static if (isInputRange!Sentinel)
+            {
+                _input.popFront();
+                _done = _input.empty || _sentinel.empty;
+                if (!_done)
+                {
+                    if (_matchStarted)
+                    {
+                        _sentinel.popFront;
+                    }
+                    else
+                    {
+                        _matchStarted = predSatisfied();
+                        if (_matchStarted)
+                        {
+                            _sentinel.popFront;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                _done = predSatisfied();
+                _input.popFront();
+                _done = _done || _input.empty;
+            }
         }
         else
         {
@@ -5212,3 +5248,33 @@ pure @safe unittest
         assert(equal(r.save, "foo"));
     }
 }
+// https://issues.dlang.org/show_bug.cgi?id=14543
+pure @safe unittest
+{
+    import std.algorithm.comparison : equal;
+    import std.uni : toUpper;
+    assert("one two three".until("two").equal("one "));
+    assert("one two three".until("two", OpenRight.no).equal("one two"));
+
+    assert("one two three".until("two", No.openRight).equal("one two"));
+    assert("one two three".until("two", Yes.openRight).equal("one "));
+
+    assert("one two three".until('t', Yes.openRight).equal("one "));
+    assert("one two three".until("", Yes.openRight).equal(""));
+    assert("one two three".until("", No.openRight).equal(""));
+
+    assert("one two three".until("three", No.openRight).equal("one two three"));
+    assert("one two three".until("three", Yes.openRight).equal("one two "));
+
+    assert("one two three".until("one", No.openRight).equal("one"));
+    assert("one two three".until("one", Yes.openRight).equal(""));
+
+    assert("one two three".until("o", No.openRight).equal("o"));
+    assert("one two three".until("o", Yes.openRight).equal(""));
+
+    assert("one two three".until("", No.openRight).equal(""));
+    assert("one two three".until("", Yes.openRight).equal(""));
+
+    assert("one two three".until!((a,b)=>a.toUpper == b)("TWO", No.openRight).equal("one two"));
+}
+

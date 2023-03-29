@@ -1,5 +1,5 @@
 /* Basic block path solver.
-   Copyright (C) 2021-2022 Free Software Foundation, Inc.
+   Copyright (C) 2021-2023 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>.
 
 This file is part of GCC.
@@ -351,7 +351,7 @@ path_range_query::compute_ranges_in_phis (basic_block bb)
   auto_bitmap phi_set;
 
   // PHIs must be resolved simultaneously on entry to the block
-  // because any dependencies must be satistifed with values on entry.
+  // because any dependencies must be satisfied with values on entry.
   // Thus, we calculate all PHIs first, and then update the cache at
   // the end.
 

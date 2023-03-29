@@ -1,0 +1,98 @@
+(* TimeDate.def provides a Logitech-3.0 compatible library module.
+
+Copyright (C) 2005-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE TimeDate ;
+
+(*
+   Legacy compatibility - you are advised to use cleaner
+   designed modules based on 'man 3 strtime'
+   and friends for new projects as the day value here is ugly.
+   [it was mapped onto MSDOS pre 2000].
+*)
+
+EXPORT QUALIFIED Time, GetTime, SetTime, CompareTime, TimeToZero,
+                 TimeToString ;
+
+TYPE
+(*
+   day holds:  bits 0..4 = day of month (1..31)
+                    5..8 = month of year (1..12)
+                    9..  = year - 1900
+   minute holds:    hours * 60 + minutes
+   millisec holds:  seconds * 1000 + millisec
+                    which is reset to 0 every minute
+*)
+
+   Time = RECORD
+             day, minute, millisec: CARDINAL ;
+          END ;
+
+
+(*
+   GetTime - returns the current date and time.
+*)
+
+PROCEDURE GetTime (VAR curTime: Time) ;
+
+
+(*
+   SetTime - does nothing, but provides compatibility with
+             the Logitech-3.0 library.
+*)
+
+PROCEDURE SetTime (curTime: Time) ;
+
+
+(*
+   CompareTime - compare two dates and time which returns:
+
+                 -1  if t1 < t2
+                  0  if t1 = t2
+                  1  if t1 > t2
+*)
+
+PROCEDURE CompareTime (t1, t2: Time) : INTEGER ;
+
+
+(*
+   TimeToZero - initializes, t, to zero.
+*)
+
+PROCEDURE TimeToZero (VAR t: Time) ;
+
+
+(*
+   TimeToString - convert time, t, to a string.
+                  The string, s, should be at least 19 characters
+                  long and the returned string will be
+
+                  yyyy-mm-dd hh:mm:ss
+*)
+
+PROCEDURE TimeToString (t: Time; VAR s: ARRAY OF CHAR) ;
+
+
+END TimeDate.

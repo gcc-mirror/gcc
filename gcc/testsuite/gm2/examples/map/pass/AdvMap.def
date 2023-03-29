@@ -1,0 +1,106 @@
+(* Copyright (C) 2005-2023 Free Software Foundation, Inc. *)
+(* This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 3, or (at your option) any later
+version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+You should have received a copy of the GNU General Public License along
+with gm2; see the file COPYING.  If not, write to the Free Software
+Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. *)
+DEFINITION MODULE AdvMap ;
+
+
+EXPORT QUALIFIED Rooms, Line, DoorStatus, Door, Room, Treasure,
+                 ActualNoOfRooms, MaxNoOfTreasures, MaxNoOfRooms,
+                 NoOfRoomsToHidePlayers, NoOfRoomsToSpring,
+                 NoOfRoomsToHideCoal, NoOfRoomsToHideGrenade,
+                 ReadAdvMap, Adjacent, IncPosition,
+                 FileName, MaxLengthOfFileName ;
+
+
+CONST
+   MaxNoOfRooms           = 350 ;  (* An upper limit *)
+   WallsPerRoom           =   8 ;  (* An upper limit *)
+   DoorsPerRoom           =   6 ;  (* An upper limit *)
+   MaxNoOfTreasures       =  15 ;  (* An upper limit *)
+   MaxLengthOfFileName    =  11 ;
+   NoOfRoomsToHidePlayers =  50 ;
+   NoOfRoomsToSpring      =  50 ;
+   NoOfRoomsToHideCoal    =  50 ;
+   NoOfRoomsToHideGrenade =  50 ;
+
+
+TYPE
+
+   Line         = RECORD
+                     X1 : CARDINAL ;
+                     Y1 : CARDINAL ;
+                     X2 : CARDINAL ;
+                     Y2 : CARDINAL
+                  END ;
+
+   DoorStatus   = (Open, Closed, Secret) ;
+
+   Door         = RECORD
+                     Position    : Line ;
+                     StateOfDoor : DoorStatus ;
+                     LeadsTo     : CARDINAL
+                  END ;
+
+   TreasureInfo = RECORD
+                     Xpos         : CARDINAL ;
+                     Ypos         : CARDINAL ;
+                     Rm           : CARDINAL ;
+                     Tweight      : CARDINAL ;
+                     TreasureName : ARRAY [0..12] OF CHAR
+                  END ;
+
+   Room         = RECORD
+                     RoomNo      : CARDINAL ;
+                     NoOfWalls   : CARDINAL ;
+                     NoOfDoors   : CARDINAL ;
+                     Walls       : ARRAY [1..WallsPerRoom] OF Line ;
+                     Doors       : ARRAY [1..DoorsPerRoom] OF Door ;
+                     Treasures   : BITSET ;
+                  END ;
+
+
+
+VAR
+   ActualNoOfRooms : CARDINAL ;
+   Treasure        : ARRAY [1..MaxNoOfTreasures] OF TreasureInfo ;
+   Rooms           : ARRAY [1..MaxNoOfRooms] OF Room ;
+
+   FileName        : ARRAY [0..MaxLengthOfFileName] OF CHAR ;
+
+
+(*
+   ReadAdvMap - read map, Name, into memory.
+                TRUE is returned if the operation was successful.
+*)
+
+PROCEDURE ReadAdvMap (Name: ARRAY OF CHAR) : BOOLEAN ;
+
+
+(*
+   Adjacent - tests to see if two rooms are Adjacent to each other.
+*)
+
+PROCEDURE Adjacent (R1, R2: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IncPosition - increments the position of x, y by the direction that are facing.
+*)
+
+PROCEDURE IncPosition (VAR x, y: CARDINAL ; Dir: CARDINAL) ;
+
+
+END AdvMap.

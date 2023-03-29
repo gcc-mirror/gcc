@@ -9,7 +9,6 @@
  */
 module core.sys.windows.powrprof;
 version (Windows):
-@system:
 pragma(lib, "powrprof");
 
 import core.sys.windows.windef;

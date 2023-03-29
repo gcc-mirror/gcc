@@ -1,5 +1,5 @@
 // { dg-do compile { target c++17_only } }
-// { dg-options "-fconcepts" }
+// { dg-options "-fconcepts-ts" }
 
 // Test that constraint satisfaction checks work even when
 // processing template declarations.

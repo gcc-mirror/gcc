@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for MIPS Linux.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -103,7 +103,7 @@ mips_fallback_frame_state (struct _Unwind_Context *context,
 #endif
 
   for (i = 0; i < 32; i++) {
-    fs->regs.reg[i].how = REG_SAVED_OFFSET;
+    fs->regs.how[i] = REG_SAVED_OFFSET;
     fs->regs.reg[i].loc.offset
       = (_Unwind_Ptr)&(sc->sc_regs[i]) + reg_offset - new_cfa;
   }
@@ -115,7 +115,7 @@ mips_fallback_frame_state (struct _Unwind_Context *context,
      Note that setting fs->signal_frame would not work.  As the comment
      above MASK_RETURN_ADDR explains, MIPS unwinders must earch for an
      odd-valued address.  */
-  fs->regs.reg[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__].how
+  fs->regs.how[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__]
     = REG_SAVED_VAL_OFFSET;
   fs->regs.reg[__LIBGCC_DWARF_ALT_FRAME_RETURN_COLUMN__].loc.offset
     = (_Unwind_Ptr)(sc->sc_pc) + 2 - new_cfa;

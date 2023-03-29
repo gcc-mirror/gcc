@@ -29,6 +29,7 @@ void blockmove_NtoN_blend_noremap32 (const UINT32 *srcdata, int srcwidth,
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail { vect_no_align && { ! vect_hw_misalign } } } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { xfail { vect_no_align && { ! vect_hw_misalign } } } } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target { ! vect_multiple_sizes } xfail { vect_no_align && { ! vect_hw_misalign } } } } } */
+/* { dg-final { scan-tree-dump "vectorizing stmts using SLP" "vect" { target vect_multiple_sizes xfail { vect_no_align && { ! vect_hw_misalign } } } } } */
 
 

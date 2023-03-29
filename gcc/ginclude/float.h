@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -248,8 +248,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DBL_NORM_MAX	__DBL_NORM_MAX__
 #define LDBL_NORM_MAX	__LDBL_NORM_MAX__
 
-/* Whether each type matches an IEC 60559 format (1 for format, 2 for
-   format and operations).  */
+/* Whether each type matches an IEC 60559 format.  */
 #undef FLT_IS_IEC_60559
 #undef DBL_IS_IEC_60559
 #undef LDBL_IS_IEC_60559
@@ -624,5 +623,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif /* C2X */
 
 #endif /* __DEC32_MANT_DIG__ */
+
+#if defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L
+#define __STDC_VERSION_FLOAT_H__	202311L
+#endif
 
 #endif /* _FLOAT_H___ */

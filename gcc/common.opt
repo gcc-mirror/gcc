@@ -1,6 +1,6 @@
 ; Options for the language- and target-independent parts of the compiler.
 
-; Copyright (C) 2003-2022 Free Software Foundation, Inc.
+; Copyright (C) 2003-2023 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -539,8 +539,7 @@ Common Var(warn_aggressive_loop_optimizations) Init(1) Warning
 Warn if a loop with constant number of iterations triggers undefined behavior.
 
 Warray-bounds
-Common Var(warn_array_bounds) Warning
-Warn if an array is accessed out of bounds.
+Common Alias(Warray-bounds=, 1, 0) Warning
 
 Warray-bounds=
 Common Joined RejectNegative UInteger Var(warn_array_bounds) Warning IntegerRange(0, 2)
@@ -582,6 +581,10 @@ Warn about pointer casts which increase alignment.
 Wcast-align=strict
 Common Var(warn_cast_align,2) Warning
 Warn about pointer casts which increase alignment.
+
+Wcomplain-wrong-lang
+Common Var(warn_complain_wrong_lang) Init(1) Warning
+Complain when a command-line option is valid, but not applicable to the current front end.
 
 Wcpp
 Common Var(warn_cpp) Init(1) Warning
@@ -1004,6 +1007,9 @@ Driver Undocumented
 ;     member initializers in C++14 and up.
 ;     Default in G++ 12.
 ;
+; 18: Corrects errors in mangling of lambdas with additional context.
+;     Default in G++ 13.
+;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
 fabi-version=
@@ -1201,6 +1207,10 @@ Perform internal consistency checkings.
 fchecking=
 Common Joined RejectNegative UInteger Var(flag_checking)
 Perform internal consistency checkings.
+
+fcanon-prefix-map
+Common Var(common_deferred_options) Defer
+For -f*-prefix-map= options compare canonicalized pathnames rather than just strings.
 
 fcode-hoisting
 Common Var(flag_code_hoisting) Optimization
@@ -2106,7 +2116,7 @@ Specify the algorithm to partition symbols and vars at linktime.
 ; The initial value of -1 comes from Z_DEFAULT_COMPRESSION in zlib.h.
 flto-compression-level=
 Common Joined RejectNegative UInteger Var(flag_lto_compression_level) Init(-1) IntegerRange(0, 19)
--flto-compression-level=<number>	Use zlib/zstd compression level <number> for IL.
+Use zlib/zstd compression level <number> for IL.
 
 flto-odr-type-merging
 Common Ignore
@@ -2171,6 +2181,10 @@ fmove-loop-stores
 Common Var(flag_move_loop_stores) Optimization
 Move stores out of loops.
 
+fmultiflags
+Common Driver
+Building block for specs-based multilib-aware TFLAGS.
+
 fdce
 Common Var(flag_dce) Init(1) Optimization
 Use the RTL dead code elimination pass.
@@ -2210,6 +2224,28 @@ Enum(offload_abi) String(lp64) Value(OFFLOAD_ABI_LP64)
 fomit-frame-pointer
 Common Var(flag_omit_frame_pointer) Optimization
 When possible do not generate stack frames.
+
+fopenmp-target-simd-clone
+Common Alias(fopenmp-target-simd-clone=,any,none)
+
+fopenmp-target-simd-clone=
+Common Joined RejectNegative Enum(target_simd_clone_device) Var(flag_openmp_target_simd_clone) Init(OMP_TARGET_SIMD_CLONE_NONE) Optimization
+Generate SIMD clones for functions with the OpenMP declare target directive.
+
+Enum
+Name(target_simd_clone_device) Type(int)
+
+EnumValue
+Enum(target_simd_clone_device) String(none) Value(OMP_TARGET_SIMD_CLONE_NONE)
+
+EnumValue
+Enum(target_simd_clone_device) String(host) Value(OMP_TARGET_SIMD_CLONE_HOST)
+
+EnumValue
+Enum(target_simd_clone_device) String(nohost) Value(OMP_TARGET_SIMD_CLONE_NOHOST)
+
+EnumValue
+Enum(target_simd_clone_device) String(any) Value(OMP_TARGET_SIMD_CLONE_ANY)
 
 fopt-info
 Common Var(flag_opt_info) Optimization
@@ -3313,11 +3349,11 @@ Common Driver RejectNegative JoinedOrMissing
 Generate BTF debug information at default level.
 
 gdwarf
-Common Driver JoinedOrMissing Negative(gdwarf-)
+Common Driver JoinedOrMissing RejectNegative
 Generate debug information in default version of DWARF format.
 
 gdwarf-
-Common Driver Joined UInteger Var(dwarf_version) Init(5)
+Common Driver Joined UInteger Var(dwarf_version) Init(DWARF_VERSION_DEFAULT) RejectNegative
 Generate debug information in DWARF v2 (or later) format.
 
 gdwarf32
@@ -3329,7 +3365,7 @@ Common Driver Var(dwarf_offset_size,8) RejectNegative
 Use 64-bit DWARF format when emitting DWARF debug information.
 
 ggdb
-Common Driver JoinedOrMissing
+Common Driver JoinedOrMissing RejectNegative
 Generate debug information in default extended format.
 
 ginline-points
@@ -3396,7 +3432,7 @@ gvariable-location-views=incompat5
 Common Driver RejectNegative Var(debug_variable_location_views, -1) Init(2)
 
 gvms
-Common Driver JoinedOrMissing
+Common Driver JoinedOrMissing RejectNegative
 Generate debug information in VMS format.
 
 gxcoff
@@ -3419,7 +3455,10 @@ EnumValue
 Enum(compressed_debug_sections) String(zlib) Value(1)
 
 EnumValue
-Enum(compressed_debug_sections) String(zlib-gnu) Value(2)
+Enum(compressed_debug_sections) String(zstd) Value(2)
+
+EnumValue
+Enum(compressed_debug_sections) String(zlib-gnu) Value(3)
 
 gz
 Common Driver
@@ -3590,6 +3629,10 @@ Driver
 static-libgfortran
 Driver
 ; Documented for Fortran, but always accepted by driver.
+
+static-libgm2
+Driver
+; Documented for Modula-2, but always accepted by driver.
 
 static-libphobos
 Driver

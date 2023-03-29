@@ -1,6 +1,6 @@
 // shared_ptr atomic access -*- C++ -*-
 
-// Copyright (C) 2014-2022 Free Software Foundation, Inc.
+// Copyright (C) 2014-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -649,6 +649,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       operator=(shared_ptr<_Tp> __desired) noexcept
       { _M_impl.swap(__desired, memory_order_seq_cst); }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3893. LWG 3661 broke atomic<shared_ptr<T>> a; a = nullptr;
+      void
+      operator=(nullptr_t) noexcept
+      { store(nullptr); }
 
       shared_ptr<_Tp>
       exchange(shared_ptr<_Tp> __desired,

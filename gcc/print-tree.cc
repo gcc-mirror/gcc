@@ -1,5 +1,5 @@
 /* Prints out tree in human readable form - GCC
-   Copyright (C) 1990-2022 Free Software Foundation, Inc.
+   Copyright (C) 1990-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -517,8 +517,12 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	  fprintf (file, " align:%d warn_if_not_align:%d",
 		   DECL_ALIGN (node), DECL_WARN_IF_NOT_ALIGN (node));
 	  if (code == FIELD_DECL)
-	    fprintf (file, " offset_align " HOST_WIDE_INT_PRINT_UNSIGNED,
-		     DECL_OFFSET_ALIGN (node));
+	    {
+	      fprintf (file, " offset_align " HOST_WIDE_INT_PRINT_UNSIGNED,
+		       DECL_OFFSET_ALIGN (node));
+	      fprintf (file, " decl_not_flexarray: %d",
+		       DECL_NOT_FLEXARRAY (node));
+	    }
 
 	  if (code == FUNCTION_DECL && fndecl_built_in_p (node))
 	    {

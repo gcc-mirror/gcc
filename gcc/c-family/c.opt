@@ -1,5 +1,5 @@
 ; Options for the C, ObjC, C++ and ObjC++ front ends.
-; Copyright (C) 2003-2022 Free Software Foundation, Inc.
+; Copyright (C) 2003-2023 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -494,6 +494,10 @@ Wcatch-value=
 C++ ObjC++ Var(warn_catch_value) Warning Joined RejectNegative UInteger LangEnabledBy(C++ ObjC++,Wall, 1, 0) IntegerRange(0, 3)
 Warn about catch handlers of non-reference type.
 
+Wchanges-meaning
+C++ ObjC++ Var(warn_changes_meaning) Warning Init(1)
+Complain about a name being declared as a class member after a previous use of the same name.
+
 Wchar-subscripts
 C ObjC C++ ObjC++ Var(warn_char_subscripts) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about subscripts whose type is \"char\".
@@ -554,6 +558,10 @@ Warn for uses of pointers to auto variables whose lifetime has ended.
 Wdangling-pointer=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_dangling_pointer) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall, 2, 0) IntegerRange(0, 2)
 Warn for uses of pointers to auto variables whose lifetime has ended.
+
+Wdangling-reference
+C++ ObjC++ Var(warn_dangling_reference) Warning LangEnabledBy(C++ ObjC++, Wall)
+Warn when a reference is bound to a temporary whose lifetime has ended.
 
 Wdate-time
 C ObjC C++ ObjC++ CPP(warn_date_time) CppReason(CPP_W_DATE_TIME) Var(cpp_warn_date_time) Init(0) Warning
@@ -813,6 +821,10 @@ Wint-to-pointer-cast
 C ObjC C++ ObjC++ Var(warn_int_to_pointer_cast) Init(1) Warning
 Warn when there is a cast to a pointer from an integer of a different size.
 
+Winvalid-constexpr
+C++ ObjC++ Var(warn_invalid_constexpr) Init(-1) Warning
+Warn when a function never produces a constant expression.
+
 Winvalid-offsetof
 C++ ObjC++ Var(warn_invalid_offsetof) Init(1) Warning
 Warn about invalid uses of the \"offsetof\" macro.
@@ -967,6 +979,11 @@ Warn about reading past the end of a source array in string manipulation functio
 Wstringop-truncation
 C ObjC C++ LTO ObjC++ Var(warn_stringop_truncation) Warning Init (1) LangEnabledBy(C ObjC C++ LTO ObjC++, Wall)
 Warn about truncation in string manipulation functions like strncat and strncpy.
+
+Wstrict-flex-arrays
+C C++ Var(warn_strict_flex_arrays) Warning
+Warn about inproper usages of flexible array members
+according to the level of -fstrict-flex-arrays.
 
 Wsuggest-attribute=format
 C ObjC C++ ObjC++ Var(warn_suggest_attribute_format) Warning
@@ -1508,8 +1525,8 @@ fall-virtual
 C++ ObjC++ WarnRemoved
 
 fallow-parameterless-variadic-functions
-C ObjC Var(flag_allow_parameterless_variadic_functions)
-Allow variadic functions without named parameter.
+C ObjC Ignore
+Does nothing. Preserved for backward compatibility.
 
 falt-external-templates
 C++ ObjC++ WarnRemoved
@@ -1669,6 +1686,47 @@ C++ ObjC++ Joined RejectNegative UInteger Var(constexpr_loop_limit) Init(262144)
 fconstexpr-ops-limit=
 C++ ObjC++ Joined RejectNegative Host_Wide_Int Var(constexpr_ops_limit) Init(33554432)
 -fconstexpr-ops-limit=<number>	Specify maximum number of constexpr operations during a single constexpr evaluation.
+
+fcontracts
+C++ ObjC++ Var(flag_contracts) Init(0)
+Enable certain features present in drafts of C++ Contracts.
+
+Enum
+Name(on_off) Type(int) UnknownError(argument %qs must be either %<on%> or %<off%>)
+
+EnumValue
+Enum(on_off) String(off) Value(0)
+
+EnumValue
+Enum(on_off) String(on) Value(1)
+
+fcontract-assumption-mode=
+C++ Joined RejectNegative
+-fcontract-assumption-mode=[on|off]	Enable or disable treating axiom level contracts as assumptions (default on).
+
+fcontract-build-level=
+C++ Joined RejectNegative
+-fcontract-build-level=[off|default|audit]	Specify max contract level to generate runtime checks for.
+
+fcontract-strict-declarations=
+C++ Var(flag_contract_strict_declarations) Enum(on_off) Joined Init(0) RejectNegative
+-fcontract-strict-declarations=[on|off]	Enable or disable warnings on generalized redeclaration of functions with contracts (default off).
+
+fcontract-mode=
+C++ Var(flag_contract_mode) Enum(on_off) Joined Init(1) RejectNegative
+-fcontract-mode=[on|off]	Enable or disable all contract facilities (default on).
+
+fcontract-continuation-mode=
+C++ Joined RejectNegative
+-fcontract-continuation-mode=[on|off]	Enable or disable contract continuation mode (default off).
+
+fcontract-role=
+C++ Joined RejectNegative
+-fcontract-role=<name>:<semantics>	Specify the semantics for all levels in a role (default, review), or a custom contract role with given semantics (ex: opt:assume,assume,assume).
+
+fcontract-semantic=
+C++ Joined RejectNegative
+-fcontract-semantic=<level>:<semantic>	Specify the concrete semantics for level.
 
 fcoroutines
 C++ LTO Var(flag_coroutines)
@@ -2075,6 +2133,13 @@ Make \"char\" signed by default.
 fsized-deallocation
 C++ ObjC++ Var(flag_sized_deallocation) Init(-1)
 Enable C++14 sized deallocation support.
+
+fstrict-flex-arrays
+C C++ Common Alias(fstrict-flex-arrays=,3,0)
+
+fstrict-flex-arrays=
+C C++ Common Joined RejectNegative UInteger Var(flag_strict_flex_arrays) Init(0) IntegerRange(0,3)
+-fstrict-flex-arrays=<level>    Control when to treat the trailing array of a structure as a flexible array member for the purposes of accessing the elements of such an array. The default is treating all trailing arrays of structures as flexible array members.
 
 fsquangle
 C++ ObjC++ WarnRemoved

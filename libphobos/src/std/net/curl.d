@@ -28,7 +28,7 @@ to your $(B dub.json) file if you are using $(LINK2 http://code.dlang.org, DUB).
 
 Windows x86 note:
 A DMD compatible libcurl static library can be downloaded from the dlang.org
-$(LINK2 http://downloads.dlang.org/other/index.html, download archive page).
+$(LINK2 https://downloads.dlang.org/other/index.html, download archive page).
 
 This module is not available for iOS, tvOS or watchOS.
 
@@ -1973,7 +1973,7 @@ private mixin template Protocol()
     }
 
     /**
-     * The network interface to use in form of the the IP of the interface.
+     * The network interface to use in form of the IP of the interface.
      *
      * Example:
      * ----
@@ -2171,7 +2171,7 @@ private mixin template Protocol()
       *
       * Example:
       * ----
-      * import std.net.curl, std.stdio;
+      * import std.net.curl, std.stdio, std.conv;
       * auto client = HTTP("dlang.org");
       * client.onReceive = (ubyte[] data)
       * {
@@ -2706,7 +2706,7 @@ struct HTTP
         @property void dnsTimeout(Duration d);
 
         /**
-         * The network interface to use in form of the the IP of the interface.
+         * The network interface to use in form of the IP of the interface.
          *
          * Example:
          * ----
@@ -2817,7 +2817,7 @@ struct HTTP
          *
          * Example:
          * ----
-         * import std.net.curl, std.stdio;
+         * import std.net.curl, std.stdio, std.conv;
          * auto client = HTTP("dlang.org");
          * client.onReceive = (ubyte[] data)
          * {
@@ -3054,7 +3054,7 @@ struct HTTP
       *
       * Example:
       * ----
-      * import std.net.curl, std.stdio;
+      * import std.net.curl, std.stdio, std.conv;
       * auto http = HTTP("http://www.mydomain.com");
       * http.onReceive = (ubyte[] data) { writeln(to!(const(char)[])(data)); return data.length; };
       * http.postData = [1,2,3,4,5];
@@ -3073,7 +3073,7 @@ struct HTTP
       *
       * Example:
       * ----
-      * import std.net.curl, std.stdio;
+      * import std.net.curl, std.stdio, std.conv;
       * auto http = HTTP("http://www.mydomain.com");
       * http.onReceive = (ubyte[] data) { writeln(to!(const(char)[])(data)); return data.length; };
       * http.postData = "The quick....";
@@ -3145,7 +3145,7 @@ struct HTTP
       *
       * Example:
       * ----
-      * import std.net.curl, std.stdio;
+      * import std.net.curl, std.stdio, std.conv;
       * auto http = HTTP("dlang.org");
       * http.onReceive = (ubyte[] data) { writeln(to!(const(char)[])(data)); return data.length; };
       * http.onReceiveHeader = (in char[] key, in char[] value) { writeln(key, " = ", value); };
@@ -3486,7 +3486,7 @@ struct FTP
         @property void dnsTimeout(Duration d);
 
         /**
-         * The network interface to use in form of the the IP of the interface.
+         * The network interface to use in form of the IP of the interface.
          *
          * Example:
          * ----
@@ -3912,7 +3912,7 @@ struct SMTP
         @property void dnsTimeout(Duration d);
 
         /**
-         * The network interface to use in form of the the IP of the interface.
+         * The network interface to use in form of the IP of the interface.
          *
          * Example:
          * ----
@@ -4551,7 +4551,7 @@ struct Curl
       *
       * Example:
       * ----
-      * import std.net.curl, std.stdio;
+      * import std.net.curl, std.stdio, std.conv;
       * Curl curl;
       * curl.initialize();
       * curl.set(CurlOption.url, "http://dlang.org");

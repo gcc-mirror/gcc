@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 architecture.
-;; Copyright (C) 2009-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2009-2023 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -107,6 +107,11 @@
 (define_constraint "N"
  "A constant that can be used with a 64-bit MOV immediate operation."
  (and (match_code "const_int")
+      (match_test "aarch64_is_mov_xn_imm (ival)")))
+
+(define_constraint "O"
+ "A constant that can be used with a 32 or 64-bit MOV immediate operation."
+ (and (match_code "const_int")
       (match_test "aarch64_move_imm (ival, DImode)")))
 
 (define_constraint "Uti"
@@ -151,6 +156,11 @@
   (and (match_code "const,symbol_ref,label_ref")
        (match_test "aarch64_symbolic_address_p (op)")
        (match_test "aarch64_mov_operand_p (op, GET_MODE (op))")))
+
+(define_constraint "Usm"
+ "A constant that can be used with the S[MIN/MAX] CSSC instructions."
+ (and (match_code "const_int")
+      (match_test "aarch64_sminmax_immediate (op, VOIDmode)")))
 
 ;; const is needed here to support UNSPEC_SALT_ADDR.
 (define_constraint "Usw"
@@ -388,6 +398,11 @@
    FMOV immediate operation."
   (and (match_code "const_double,const_vector")
        (match_test "aarch64_float_const_representable_p (op)")))
+
+(define_constraint "Uum"
+ "A constant that can be used with the U[MIN/MAX] CSSC instructions."
+ (and (match_code "const_int")
+      (match_test "aarch64_uminmax_immediate (op, VOIDmode)")))
 
 (define_constraint "Uvi"
   "A floating point constant which can be used with a\

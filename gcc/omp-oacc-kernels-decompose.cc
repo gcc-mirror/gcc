@@ -1,7 +1,7 @@
 /* Decompose OpenACC 'kernels' constructs into parts, a sequence of compute
    constructs
 
-   Copyright (C) 2020-2022 Free Software Foundation, Inc.
+   Copyright (C) 2020-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -189,6 +189,7 @@ adjust_region_code_walk_stmt_fn (gimple_stmt_iterator *gsi_p,
     case GIMPLE_GOTO:
     case GIMPLE_SWITCH:
     case GIMPLE_ASM:
+    case GIMPLE_ASSUME:
     case GIMPLE_TRANSACTION:
     case GIMPLE_RETURN:
       /* Statement that might constitute some looping/control flow pattern.  */

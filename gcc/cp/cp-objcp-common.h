@@ -1,5 +1,5 @@
 /* Language hooks common to C++ and ObjC++ front ends.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -24,8 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 /* In cp/objcp-common.c, cp/cp-lang.cc and objcp/objcp-lang.cc.  */
 
 extern tree cp_get_debug_type (const_tree);
-extern tree objcp_tsubst_copy_and_build (tree, tree, tsubst_flags_t,
-					 tree, bool);
+extern tree objcp_tsubst_copy_and_build (tree, tree, tsubst_flags_t, tree);
 
 extern int cp_decl_dwarf_attribute (const_tree, int);
 extern int cp_type_dwarf_attribute (const_tree, int);

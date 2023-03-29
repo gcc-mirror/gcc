@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -139,6 +139,7 @@ public:
     bool isWild() const         { return (storage_class & STCwild) != 0; }
     bool isAuto() const         { return (storage_class & STCauto) != 0; }
     bool isScope() const        { return (storage_class & STCscope) != 0; }
+    bool isReturn() const       { return (storage_class & STCreturn) != 0; }
     bool isSynchronized() const { return (storage_class & STCsynchronized) != 0; }
     bool isParameter() const    { return (storage_class & STCparameter) != 0; }
     bool isDeprecated() const override final { return (storage_class & STCdeprecated) != 0; }
@@ -210,7 +211,7 @@ public:
     Dsymbol *aliassym;
 
     const char *kind() const override;
-    bool equals(const RootObject *o) const override;
+    bool equals(const RootObject * const o) const override;
     bool overloadInsert(Dsymbol *s) override;
 
     Dsymbol *toAlias() override;
@@ -228,7 +229,7 @@ class VarDeclaration : public Declaration
 public:
     Initializer *_init;
     FuncDeclarations nestedrefs; // referenced by these lexically nested functions
-    Dsymbol *aliassym;          // if redone as alias to another symbol
+    TupleDeclaration *aliasTuple;  // if `this` is really a tuple of declarations
     VarDeclaration *lastVar;    // Linked list of variables for goto-skips-init detection
     Expression *edtor;          // if !=NULL, does the destruction of the variable
     IntRange *range;            // if !NULL, the variable is known to be within the range
@@ -269,6 +270,14 @@ public:
     bool doNotInferReturn(bool v);
     bool isArgDtorVar() const; // temporary created to handle scope destruction of a function argument
     bool isArgDtorVar(bool v);
+    bool isCmacro() const; // if a C macro turned into a C variable
+    bool isCmacro(bool v);
+#if MARS
+    bool inClosure() const; // is inserted into a GC allocated closure
+    bool inClosure(bool v);
+    bool inAlignSection() const; // is inserted into aligned section on stack
+    bool inAlignSection(bool v);
+#endif
     static VarDeclaration *create(const Loc &loc, Type *t, Identifier *id, Initializer *init, StorageClass storage_class = STCundefined);
     VarDeclaration *syntaxCopy(Dsymbol *) override;
     void setFieldOffset(AggregateDeclaration *ad, FieldState& fieldState, bool isunion) override final;
@@ -615,7 +624,54 @@ public:
 
     AttributeViolation* safetyViolation;
 
-    unsigned flags;                     // FUNCFLAGxxxxx
+    // Formerly FUNCFLAGS
+    uint32_t flags;
+    bool purityInprocess() const;
+    bool purityInprocess(bool v);
+    bool safetyInprocess() const;
+    bool safetyInprocess(bool v);
+    bool nothrowInprocess() const;
+    bool nothrowInprocess(bool v);
+    bool nogcInprocess() const;
+    bool nogcInprocess(bool v);
+    bool returnInprocess() const;
+    bool returnInprocess(bool v);
+    bool inlineScanned() const;
+    bool inlineScanned(bool v);
+    bool inferScope() const;
+    bool inferScope(bool v);
+    bool hasCatches() const;
+    bool hasCatches(bool v);
+    bool skipCodegen() const;
+    bool skipCodegen(bool v);
+    bool printf() const;
+    bool printf(bool v);
+    bool scanf() const;
+    bool scanf(bool v);
+    bool noreturn() const;
+    bool noreturn(bool v);
+    bool isNRVO() const;
+    bool isNRVO(bool v);
+    bool isNaked() const;
+    bool isNaked(bool v);
+    bool isGenerated() const;
+    bool isGenerated(bool v);
+    bool isIntroducing() const;
+    bool isIntroducing(bool v);
+    bool hasSemantic3Errors() const;
+    bool hasSemantic3Errors(bool v);
+    bool hasNoEH() const;
+    bool hasNoEH(bool v);
+    bool inferRetType() const;
+    bool inferRetType(bool v);
+    bool hasDualContext() const;
+    bool hasDualContext(bool v);
+    bool hasAlwaysInlines() const;
+    bool hasAlwaysInlines(bool v);
+    bool isCrtCtor() const;
+    bool isCrtCtor(bool v);
+    bool isCrtDtor() const;
+    bool isCrtDtor(bool v);
 
     // Data for a function declaration that is needed for the Objective-C
     // integration.
@@ -625,14 +681,14 @@ public:
     FuncDeclaration *syntaxCopy(Dsymbol *) override;
     bool functionSemantic();
     bool functionSemantic3();
-    bool equals(const RootObject *o) const override final;
+    bool equals(const RootObject * const o) const override final;
 
     int overrides(FuncDeclaration *fd);
     int findVtblIndex(Dsymbols *vtbl, int dim);
     BaseClass *overrideInterface();
     bool overloadInsert(Dsymbol *s) override;
     bool inUnittest();
-    MATCH leastAsSpecialized(FuncDeclaration *g);
+    MATCH leastAsSpecialized(FuncDeclaration *g, Identifiers *names);
     LabelDsymbol *searchLabel(Identifier *ident, const Loc &loc);
     int getLevel(FuncDeclaration *fd, int intypeof); // lexical nesting level difference
     int getLevelAndCheck(const Loc &loc, Scope *sc, FuncDeclaration *fd);
@@ -655,22 +711,6 @@ public:
 
     bool isNogc();
     bool isNogcBypassingInference();
-    bool isNRVO() const;
-    void isNRVO(bool v);
-    bool isNaked() const;
-    void isNaked(bool v);
-    bool isGenerated() const;
-    void isGenerated(bool v);
-    bool isIntroducing() const;
-    bool hasSemantic3Errors() const;
-    bool hasNoEH() const;
-    bool inferRetType() const;
-    bool hasDualContext() const;
-    bool hasAlwaysInlines() const;
-    bool isCrtCtor() const;
-    void isCrtCtor(bool v);
-    bool isCrtDtor() const;
-    void isCrtDtor(bool v);
 
     virtual bool isNested() const;
     AggregateDeclaration *isThis() override;

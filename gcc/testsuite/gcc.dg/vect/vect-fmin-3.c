@@ -1,3 +1,5 @@
+/* { dg-require-effective-target vect_float } */
+
 #include "tree-vect.h"
 
 void __attribute__((noipa))

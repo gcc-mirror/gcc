@@ -1,5 +1,5 @@
 ; Overloaded built-in functions for PowerPC.
-; Copyright (C) 2020-2022 Free Software Foundation, Inc.
+; Copyright (C) 2020-2023 Free Software Foundation, Inc.
 ; Contributed by Bill Schmidt, IBM <wschmidt@linux.ibm.com>
 ;
 ; This file is part of GCC.
@@ -5930,7 +5930,7 @@
   unsigned int __builtin_vec_scalar_test_data_class_sp (float, const int);
     VSTDCSP  VSTDCSP_DEPR1
 
-[VEC_VSUBCUQ, vec_vsubcuqP, __builtin_vec_vsubcuq]
+[VEC_VSUBCUQ, vec_vsubcuq, __builtin_vec_vsubcuq]
   vsq __builtin_vec_vsubcuq (vsq, vsq);
     VSUBCUQ  VSUBCUQ_DEPR1
   vuq __builtin_vec_vsubcuq (vuq, vuq);

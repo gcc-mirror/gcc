@@ -1,3 +1,6 @@
+// AAPCS overrides TARGET_CXX_KEY_METHOD_MAY_BE_INLINE,
+// in a way that invalidates this test.
+// { dg-skip-if "!TARGET_CXX_KEY_METHOD_MAY_BE_INLINE" { arm_eabi } } 
 // { dg-module-do run }
 // { dg-additional-options -fmodules-ts }
 export module foo;

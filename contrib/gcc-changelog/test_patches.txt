@@ -3536,7 +3536,7 @@ index 765ae746745..15735b6684f 100644
 @@ -1,3 +1,4 @@
 +
  /* Interprocedural Identical Code Folding pass
-    Copyright (C) 2014-2022 Free Software Foundation, Inc.
+    Copyright (C) 2014-2023 Free Software Foundation, Inc.
  
 diff --git a/gcc/ipa-icf2.cc b/gcc/ipa-icf2.cc
 new file mode 100644
@@ -3571,3 +3571,189 @@ index 00000000000..d6459e00543
 +xxx
 -- 
 2.34.1
+
+=== 0001-Use-Value_Range-when-applying-inferred-ranges.patch ===
+From 69a233610f6b27cd4283561569d8ce0f35044dc4 Mon Sep 17 00:00:00 2001
+From: Andrew MacLeod <amacleod@redhat.com>
+Date: Wed, 19 Oct 2022 09:21:22 -0400
+Subject: [PATCH] Use Value_Range when applying inferred ranges.
+
+Applying an inferred range is using int_range_ma as the
+temporary rather than the general purpose Value_Range.  This causes it
+to trap if we have a non-integral inferred range.
+
+	* gimple-range-cache.cc (ranger_cache::range_from_dom): Use
+	  Value_Range not int_range_max.
+---
+ gcc/gimple-range-cache.cc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gcc/gimple-range-cache.cc b/gcc/gimple-range-cache.cc
+index 0b9aa3639c5..f279371948a 100644
+--- a/gcc/gimple-range-cache.cc
++++ b/gcc/gimple-range-cache.cc
+@@ -1546,7 +1546,6 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
+ void
+ ranger_cache::apply_inferred_ranges (gimple *s)
+ {
+-  int_range_max r;
+   bool update = true;
+ 
+   basic_block bb = gimple_bb (s);
+@@ -1572,6 +1571,7 @@ ranger_cache::apply_inferred_ranges (gimple *s)
+       m_exit.add_range (name, bb, infer.range (x));
+       if (update)
+ 	{
++	  Value_Range r (TREE_TYPE (name));
+ 	  if (!m_on_entry.get_bb_range (r, name, bb))
+ 	    exit_range (r, name, bb, RFD_READ_ONLY);
+ 	  if (r.intersect (infer.range (x)))
+-- 
+2.38.0
+
+=== 0001-Add-M-character.patch ====
+From 71ab4c18f279dc0fa0172ffe8cfac5fabcde953d Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Fri, 9 Dec 2022 11:55:21 +0100
+Subject: [PATCH] Add ^M character
+
+---
+ demo.txt | 5 +++++
+ 1 file changed, 5 insertions(+)
+ create mode 100644 demo.txt
+
+diff --git a/demo.txt b/demo.txt
+new file mode 100644
+index 0000000..d75da75
+--- /dev/null
++++ b/demo.txt
+@@ -0,0 +1,5 @@
++pub fn main ()
++{
++// { dg-error "Isolated CR" "" { target *-*-* } .+1 }
++  //! doc cr comment
++}
+-- 
+2.38.1
+
+=== 0001-Auto-Add-File.patch ====
+From e205ec03f0794aeac3e8a89e947c12624d5a274e Mon Sep 17 00:00:00 2001
+From: Tobias Burnus <tobias@codesourcery.com>
+Date: Thu, 15 Dec 2022 12:25:07 +0100
+Subject: [PATCH] libgfortran's ISO_Fortran_binding.c: Use GCC11 version for
+ backward-only code [PR108056]
+
+libgfortran/ChangeLog:
+
+	PR libfortran/108056
+	* runtime/ISO_Fortran_binding.c (cfi_desc_to_gfc_desc,
+	gfc_desc_to_cfi_desc): Mostly revert to GCC 11 version for
+	those backward-compatiblity-only functions.
+---
+ libgfortran/runtime/ISO_Fortran_binding.c     | 151 +++---------------
+ .../testsuite/libgomp.fortran/allocate-4.f90  |  42 +++++
+ 2 files changed, 64 insertions(+), 129 deletions(-)
+ create mode 100644 libgomp/testsuite/libgomp.fortran/allocate-4.f90
+
+diff --git a/libgfortran/runtime/ISO_Fortran_binding.c b/libgfortran/runtime/ISO_Fortran_binding.c
+index 342df4275b9..e63a717a69b 100644
+--- a/libgfortran/runtime/ISO_Fortran_binding.c
++++ b/libgfortran/runtime/ISO_Fortran_binding.c
+@@ -41,1 +41,1 @@ export_proto(cfi_desc_to_gfc_desc);
+-  signed char type;
++  size_t type;
+diff --git a/libgomp/testsuite/libgomp.fortran/allocate-4.f90 b/libgomp/testsuite/libgomp.fortran/allocate-4.f90
+new file mode 100644
+index 00000000000..ddb507ba8e4
+--- /dev/null
++++ b/libgomp/testsuite/libgomp.fortran/allocate-4.f90
+@@ -0,0 +1,1 @@
++end
+-- 
+2.25.1
+
+=== 0002-Auto-Add-File.patch ====
+From 1eee94d351774cdc2efc8ee508b82d065184c6ee Mon Sep 17 00:00:00 2001
+From: Gaius Mulley <gaiusmod2@gmail.com>
+Date: Wed, 14 Dec 2022 17:43:08 +0000
+Subject: [PATCH 363/400] Merge modula-2 front end onto gcc.
+
+This commit merges the devel/modula2 into master.
+The libraries reside in libgm2, the compiler in gcc/m2
+and the testsuite in gcc/testsuite/gm2.
+
+gcc/ChangeLog:
+
+	* configure.ac (HAVE_PYTHON): Test for Python3 added.
+	* doc/install.texi: Add m2 as a language.  (--disable-libgm2)
+
+Signed-off-by: Gaius Mulley <gaiusmod2@gmail.com>
+---
+ gcc/configure.ac                              |    15 +-
+ gcc/doc/gm2.texi                              |  2838 ++
+ gcc/doc/install.texi                          |    53 +-
+ gcc/m2/COPYING.FDL                            |   397 +
+ gcc/m2/COPYING.RUNTIME                        |    73 +
+diff --git a/gcc/configure.ac b/gcc/configure.ac
+index 7ca08726efa..5efbf11793c 100644
+--- a/gcc/configure.ac
++++ b/gcc/configure.ac
+@@ -7651,3 +7665,2 @@ done
+ [subdirs='$subdirs'])
+ AC_OUTPUT
+-
+diff --git a/gcc/doc/gm2.texi b/gcc/doc/gm2.texi
+new file mode 100644
+index 00000000000..513fdd3ec7f
+--- /dev/null
++++ b/gcc/doc/gm2.texi
+@@ -0,0 +1,1 @@
++\input texinfo
+diff --git a/gcc/doc/install.texi b/gcc/doc/install.texi
+index 89ff6a6734b..6884a74936b 100644
+--- a/gcc/doc/install.texi
++++ b/gcc/doc/install.texi
+@@ -308,1 +308,2 @@ On some targets, @samp{libphobos} isn't enabled by default, but compiles
+ 
++@item @anchor{GM2-prerequisite}GM2
+diff --git a/gcc/m2/COPYING.FDL b/gcc/m2/COPYING.FDL
+new file mode 100644
+index 00000000000..9854856fa81
+--- /dev/null
++++ b/gcc/m2/COPYING.FDL
+@@ -0,0 +1,1 @@
++		GNU Free Documentation License
+diff --git a/gcc/m2/COPYING.RUNTIME b/gcc/m2/COPYING.RUNTIME
+new file mode 100644
+index 00000000000..649af5e573a
+--- /dev/null
++++ b/gcc/m2/COPYING.RUNTIME
+@@ -0,0 +1,1 @@
++GCC RUNTIME LIBRARY EXCEPTION
+-- 
+2.25.1
+
+=== modula-PR-component.patch ===
+From 1052d89a0b9769453561e18da32b1558d059b320 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Mon, 19 Dec 2022 14:34:18 +0100
+Subject: [PATCH] gcc-changelog: allow digit in component name
+
+	PR modula2/123456
+
+contrib/ChangeLog:
+
+	* gcc-changelog/git_commit.py: Allow digit in component name.
+---
+ contrib/gcc-changelog/git_commit.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/contrib/gcc-changelog/git_commit.py b/contrib/gcc-changelog/git_commit.py
+index e82fbcacd3e..7fde02cba85 100755
+--- a/contrib/gcc-changelog/git_commit.py
++++ b/contrib/gcc-changelog/git_commit.py
+@@ -0,0 +1,1 @@
++		GNU Free Documentation License
+-- 
+2.39.0
+

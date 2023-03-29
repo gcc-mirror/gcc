@@ -1,0 +1,88 @@
+(* ShortComplexMath.def provides access to the ShortComplex intrincics.
+
+Copyright (C) 2010-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE ShortComplexMath;
+
+  (* Mathematical functions for the type SHORTCOMPLEX *)
+
+CONST
+  i =    CMPLX (0.0, 1.0);
+  one =  CMPLX (1.0, 0.0);
+  zero = CMPLX (0.0, 0.0);
+
+PROCEDURE abs (z: SHORTCOMPLEX): SHORTREAL;
+  (* Returns the length of z *)
+
+PROCEDURE arg (z: SHORTCOMPLEX): SHORTREAL;
+  (* Returns the angle that z subtends to the positive real axis *)
+
+PROCEDURE conj (z: SHORTCOMPLEX): SHORTCOMPLEX;
+  (* Returns the complex conjugate of z *)
+
+PROCEDURE power (base: SHORTCOMPLEX; exponent: SHORTREAL): SHORTCOMPLEX;
+  (* Returns the value of the number base raised to the power exponent *)
+
+PROCEDURE sqrt (z: SHORTCOMPLEX): SHORTCOMPLEX;
+  (* Returns the principal square root of z *)
+
+PROCEDURE exp (z: SHORTCOMPLEX): SHORTCOMPLEX;
+  (* Returns the complex exponential of z *)
+
+PROCEDURE ln (z: SHORTCOMPLEX): SHORTCOMPLEX;
+  (* Returns the principal value of the natural logarithm of z *)
+
+PROCEDURE sin (z: SHORTCOMPLEX): SHORTCOMPLEX;
+  (* Returns the sine of z *)
+
+PROCEDURE cos (z: SHORTCOMPLEX): SHORTCOMPLEX;
+  (* Returns the cosine of z *)
+
+PROCEDURE tan (z: SHORTCOMPLEX): SHORTCOMPLEX;
+  (* Returns the tangent of z *)
+
+PROCEDURE arcsin (z: SHORTCOMPLEX): SHORTCOMPLEX;
+  (* Returns the arcsine of z *)
+
+PROCEDURE arccos (z: SHORTCOMPLEX): SHORTCOMPLEX;
+  (* Returns the arccosine of z *)
+
+PROCEDURE arctan (z: SHORTCOMPLEX): SHORTCOMPLEX;
+  (* Returns the arctangent of z *)
+
+PROCEDURE polarToComplex (abs, arg: SHORTREAL): SHORTCOMPLEX;
+  (* Returns the complex number with the specified polar coordinates *)
+
+PROCEDURE scalarMult (scalar: SHORTREAL; z: SHORTCOMPLEX): SHORTCOMPLEX;
+  (* Returns the scalar product of scalar with z *)
+
+PROCEDURE IsCMathException (): BOOLEAN;
+  (* Returns TRUE if the current coroutine is in the exceptional execution state
+     because of the raising of an exception in a routine from this module; otherwise
+     returns FALSE.
+  *)
+
+END ShortComplexMath.
+

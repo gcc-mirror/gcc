@@ -1,4 +1,4 @@
-@c Copyright (C) 2002-2022 Free Software Foundation, Inc.
+@c Copyright (C) 2002-2023 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -73,10 +73,10 @@ The runtime support library for atomic operations (e.g.@: for @code{__sync}
 and @code{__atomic}).
 
 @item libbacktrace
-A library that allows gcc to produce backtraces when it crashes.
+A library that allows GCC to produce backtraces when it crashes.
 
 @item libcc1
-A library that allows gdb to make use of the compiler.
+A library that allows GDB to make use of the compiler.
 
 @item libcody
 A compiler dynamism library to allow communication between compilers and
@@ -97,6 +97,9 @@ The GCC runtime library.
 @item libgfortran
 The Fortran runtime library.
 
+@item libgm2
+The Modula-2 runtime library.
+
 @item libgo
 The Go runtime library.  The bulk of this library is mirrored from the
 @uref{https://github.com/@/golang/go, master Go repository}.
@@ -115,9 +118,6 @@ The runtime support library for transactional memory.
 
 @item libobjc
 The Objective-C and Objective-C++ runtime library.
-
-@item liboffloadmic
-A library to allow OpenMP to Intel MIC targets.
 
 @item libphobos
 The D standard and runtime library.  The bulk of this library is mirrored
@@ -154,8 +154,7 @@ uncompressing GCC's intermediate language in LTO object files.
 The build system in the top level directory, including how recursion
 into subdirectories works and how building runtime libraries for
 multilibs is handled, is documented in a separate manual, included
-with GNU Binutils.  @xref{Top, , GNU configure and build system,
-configure, The GNU configure and build system}, for details.
+with GNU Binutils.
 
 @node gcc Directory
 @section The @file{gcc} Subdirectory
@@ -187,7 +186,8 @@ The @file{gcc} directory contains the following subdirectories:
 @item @var{language}
 Subdirectories for various languages.  Directories containing a file
 @file{config-lang.in} are language subdirectories.  The contents of
-the subdirectories @file{c} (for C), @file{cp} (for C++),
+the subdirectories @file{c} (for C), @file{cp} (for C++), @file{m2}
+(for Modula-2),
 @file{objc} (for Objective-C), @file{objcp} (for Objective-C++),
 and @file{lto} (for LTO) are documented in this
 manual (@pxref{Passes, , Passes and Files of the Compiler});
@@ -465,10 +465,6 @@ that of @samp{@@option} but for man page output a different effect is
 wanted.
 @item @@gccoptlist
 Use for summary lists of options in manuals.
-@item @@gol
-Use at the end of each line inside @samp{@@gccoptlist}.  This is
-necessary to avoid problems with differences in how the
-@samp{@@gccoptlist} macro is handled by different Texinfo formatters.
 @end table
 
 FIXME: describe the @file{texi2pod.pl} input language and magic
@@ -2194,6 +2190,10 @@ ARM target supports options to generate instructions from ARMv8.1-M with
 the Custom Datapath Extension (CDE) and M-Profile Vector Extension (MVE).
 Some multilibs may be incompatible with these options.
 
+@item arm_pacbti_hw
+Test system supports executing Pointer Authentication and Branch Target
+Identification instructions.
+
 @item arm_prefer_ldrd_strd
 ARM target prefers @code{LDRD} and @code{STRD} instructions over
 @code{LDM} and @code{STM} instructions.
@@ -2282,6 +2282,12 @@ executing the Armv8.1-M Mainline Low Overhead Loop instructions
 ARM target generates Thumb-2 code for @code{-mthumb} but does not
 support executing the Armv8.1-M Mainline Low Overhead Loop
 instructions @code{DLS} and @code{LE}.
+
+@item mbranch_protection_ok
+ARM target supporting @code{-mbranch-protection=standard}.
+
+@item arm_pacbti_hw
+Test system supports for executing non nop pacbti instructions.
 
 @end table
 
@@ -2447,7 +2453,7 @@ PowerPC target pre-defines macro _ARCH_PWR9 which means the @code{-mcpu}
 setting is Power9 or later.
 @end table
 
-@subsection RISC-V specific attributes
+@subsubsection RISC-V specific attributes
 
 @table @code
 
@@ -2490,6 +2496,15 @@ Target supports the execution of @code{avx512f} instructions.
 @item avx512vp2intersect
 Target supports the execution of @code{avx512vp2intersect} instructions.
 
+@item avxifma
+Target supports the execution of @code{avxifma} instructions.
+
+@item avxneconvert
+Target supports the execution of @code{avxneconvert} instructions.
+
+@item avxvnniint8
+Target supports the execution of @code{avxvnniint8} instructions.
+
 @item amx_tile
 Target supports the execution of @code{amx-tile} instructions.
 
@@ -2499,8 +2514,32 @@ Target supports the execution of @code{amx-int8} instructions.
 @item amx_bf16
 Target supports the execution of @code{amx-bf16} instructions.
 
+@item amx_fp16
+Target supports the execution of @code{amx-fp16} instructions.
+
 @item cell_hw
 Test system can execute AltiVec and Cell PPU instructions.
+
+@item clz
+Target supports a clz optab on int.
+
+@item clzl
+Target supports a clz optab on long.
+
+@item clzll
+Target supports a clz optab on long long.
+
+@item ctz
+Target supports a ctz optab on int.
+
+@item ctzl
+Target supports a ctz optab on long.
+
+@item ctzll
+Target supports a ctz optab on long long.
+
+@item cmpccxadd
+Target supports the execution of @code{cmpccxadd} instructions.
 
 @item coldfire_fpu
 Target uses a ColdFire FPU.
@@ -2519,6 +2558,21 @@ Target does not require strict alignment.
 
 @item pie_copyreloc
 The x86-64 target linker supports PIE with copy reloc.
+
+@item popcount
+Target supports a popcount optab on int.
+
+@item popcountl
+Target supports a popcount optab on long.
+
+@item popcountll
+Target supports a popcount optab on long long.
+
+@item prefetchi
+Target supports the execution of @code{prefetchi} instructions.
+
+@item raoint
+Target supports the execution of @code{raoint} instructions.
 
 @item rdrand
 Target supports x86 @code{rdrand} instruction.
@@ -2639,6 +2693,9 @@ Target supports Newlib.
 GCC was configured with @code{--enable-newlib-nano-formatted-io}, which reduces
 the code size of Newlib formatted I/O functions.
 
+@item posix_memalign
+Target supports @code{posix_memalign}.
+
 @item pow10
 Target provides @code{pow10} function.
 
@@ -2647,6 +2704,9 @@ Target can compile using @code{pthread.h} with no errors or warnings.
 
 @item pthread_h
 Target has @code{pthread.h}.
+
+@item sockets
+Target can compile using @code{sys/socket.h} with no errors or warnings.
 
 @item run_expensive_tests
 Expensive testcases (usually those that consume excessive amounts of CPU
@@ -2698,6 +2758,9 @@ Target is a VxWorks RTP.
 
 @item wchar
 Target supports wide characters.
+
+@item weak_undefined
+Target supports weak undefined symbols
 @end table
 
 @subsubsection Other attributes
@@ -2783,6 +2846,9 @@ Target supports named sections.
 Target uses natural alignment (aligned to type size) for types of
 32 bits or less.
 
+@item tail_call
+Target supports tail-call optimizations.
+
 @item target_natural_alignment_64
 Target uses natural alignment (aligned to type size) for types of
 64 bits or less.
@@ -2867,6 +2933,9 @@ Vector alignment is reachable for types of 32 bits or less.
 
 @item vector_alignment_reachable_for_64bit
 Vector alignment is reachable for types of 64 bits or less.
+
+@item vma_equals_lma
+Target generates executable with VMA equal to LMA for .data section.
 
 @item wchar_t_char16_t_compatible
 Target supports @code{wchar_t} that is compatible with @code{char16_t}.
@@ -3063,6 +3132,9 @@ instructions, if any.
 
 @item tls
 Add the target-specific flags needed to use thread-local storage.
+
+@item weak_undefined
+Add the flags needed to enable support for weak undefined symbols.
 @end table
 
 @node Require Support

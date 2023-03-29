@@ -1,12 +1,12 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -ftrapping-math" } */
 /* { dg-add-options ieee } */
-/* { dg-require-effective-target fenv_exceptions } */
+/* { dg-require-effective-target fenv_exceptions_double } */
 
 #include <fenv.h>
 #include <stdlib.h>
 
-double
+__attribute__ ((noipa)) double
 x (void)
 {
   double d = __builtin_inf ();

@@ -8,7 +8,6 @@ module core.sys.linux.sys.prctl;
 
 version (linux):
 extern (C):
-@system:
 @nogc:
 nothrow:
 

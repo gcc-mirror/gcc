@@ -9,7 +9,7 @@ int g();
 
 // We should complain about this.
 template<> constexpr int A<int>::f()
-{ return g(); }			// { dg-error "non-.constexpr." }
+{ return g(); }			// { dg-error "non-.constexpr." "" { target c++20_down } }
 
 // But not about this.
 struct B

@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-csky-options "-mcpu=ck801 -O1 -fno-reorder-blocks" } */
+/* { dg-skip-if  "test is specific to ck801"  { csky-*-* }  { "*" }  { "-mcpu=ck801" }  }  */
+/* { dg-csky-options "-O1 -fno-reorder-blocks" } */
 
 /* Test branch generation on CK801, which cannot rely on assembler
    branch relaxation because long branches clobber lr.  */

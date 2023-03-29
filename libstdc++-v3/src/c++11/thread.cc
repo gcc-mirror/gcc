@@ -1,6 +1,6 @@
 // thread -*- C++ -*-
 
-// Copyright (C) 2008-2022 Free Software Foundation, Inc.
+// Copyright (C) 2008-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,7 +34,8 @@
 #ifndef _GLIBCXX_USE_NANOSLEEP
 # ifdef _GLIBCXX_HAVE_SLEEP
 #  include <unistd.h>
-# elif defined(_GLIBCXX_HAVE_WIN32_SLEEP)
+# elif defined(_GLIBCXX_USE_WIN32_SLEEP)
+#  define WIN32_LEAN_AND_MEAN
 #  include <windows.h>
 # elif defined _GLIBCXX_NO_SLEEP && defined _GLIBCXX_HAS_GTHREADS
 // We expect to be able to sleep for targets that support multiple threads:
@@ -62,12 +63,32 @@ static inline int get_nprocs()
  return 0;
 }
 # define _GLIBCXX_NPROCS get_nprocs()
+#elif defined(_GLIBCXX_USE_GET_NPROCS_WIN32)
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+static inline int get_nprocs()
+{
+  SYSTEM_INFO sysinfo;
+  GetSystemInfo (&sysinfo);
+  return (int)sysinfo.dwNumberOfProcessors;
+}
+# define _GLIBCXX_NPROCS get_nprocs()
 #elif defined(_GLIBCXX_USE_SC_NPROCESSORS_ONLN)
 # include <unistd.h>
 # define _GLIBCXX_NPROCS sysconf(_SC_NPROCESSORS_ONLN)
 #elif defined(_GLIBCXX_USE_SC_NPROC_ONLN)
 # include <unistd.h>
 # define _GLIBCXX_NPROCS sysconf(_SC_NPROC_ONLN)
+#elif defined(_WIN32)
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+static inline int get_nprocs()
+{
+  SYSTEM_INFO sysinfo;
+  GetSystemInfo(&sysinfo);
+  return (int) sysinfo.dwNumberOfProcessors;
+}
+# define _GLIBCXX_NPROCS get_nprocs()
 #else
 # define _GLIBCXX_NPROCS 0
 #endif
@@ -133,8 +154,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   void
-  thread::_M_start_thread(_State_ptr state, void (*)())
+  thread::_M_start_thread(_State_ptr state, void (*depend)())
   {
+    // Make sure it's not optimized out, not even with LTO.
+    asm ("" : : "rm" (depend));
+
     if (!__gthread_active_p())
       {
 #if __cpp_exceptions
@@ -169,8 +193,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   void
-  thread::_M_start_thread(__shared_base_type __b, void (*)())
+  thread::_M_start_thread(__shared_base_type __b, void (*depend)())
   {
+    // Make sure it's not optimized out, not even with LTO.
+    asm ("" : : "rm" (depend));
+
     auto ptr = __b.get();
     // Create a reference cycle that will be broken in the new thread.
     ptr->_M_this_ptr = std::move(__b);
@@ -245,7 +272,7 @@ namespace this_thread
 	__s = chrono::duration_cast<chrono::seconds>(target - now);
 	__ns = chrono::duration_cast<chrono::nanoseconds>(target - (now + __s));
     }
-#elif defined(_GLIBCXX_HAVE_WIN32_SLEEP)
+#elif defined(_GLIBCXX_USE_WIN32_SLEEP)
     unsigned long ms = __ns.count() / 1000000;
     if (__ns.count() > 0 && ms == 0)
       ms = 1;

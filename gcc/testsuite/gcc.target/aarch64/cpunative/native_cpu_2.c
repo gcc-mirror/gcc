@@ -7,6 +7,6 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-assembler {\.arch armv8-a\+nofp\+nosimd} } } */
+/* { dg-final { scan-assembler {\.arch armv8-a\+nofp} } } */
 
 /* Test one where asimd is provided byt no fp.  */

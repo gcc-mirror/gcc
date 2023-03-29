@@ -61,6 +61,15 @@
   "mov.b	%t0,%t0"
   [(set_attr "length" "2")])
 
+(define_insn "*tsthi_upper_z"
+  [(set (reg:CCZ CC_REG)
+	(compare (and:HI (match_operand:HI 0 "register_operand" "r")
+			 (const_int -256))
+		 (const_int 0)))]
+  "reload_completed"
+  "mov.b	%t0,%t0"
+  [(set_attr "length" "2")])
+
 (define_insn "*tstsi_upper"
   [(set (reg:CCZN CC_REG)
 	(compare (and:SI (match_operand:SI 0 "register_operand" "r")
@@ -84,6 +93,30 @@
       return "cmp.l	%S1,%S0";
     gcc_unreachable ();
   }
+  [(set_attr "length_table" "add")])
+
+(define_insn "*cmpqi_z"
+  [(set (reg:CCZ CC_REG)
+	(eq (match_operand:QI 0 "h8300_dst_operand" "rQ")
+	    (match_operand:QI 1 "h8300_src_operand" "rQi")))]
+  "reload_completed"
+  { return "cmp.b	%X1,%X0"; }
+  [(set_attr "length_table" "add")])
+
+(define_insn "*cmphi_z"
+  [(set (reg:CCZ CC_REG)
+	(eq (match_operand:HI 0 "h8300_dst_operand" "rQ")
+	    (match_operand:HI 1 "h8300_src_operand" "rQi")))]
+  "reload_completed"
+  { return "cmp.w	%T1,%T0"; }
+  [(set_attr "length_table" "add")])
+
+(define_insn "*cmpsi_z"
+  [(set (reg:CCZ CC_REG)
+	(eq (match_operand:SI 0 "h8300_dst_operand" "rQ")
+	    (match_operand:SI 1 "h8300_src_operand" "rQi")))]
+  "reload_completed"
+  { return "cmp.l	%S1,%S0"; }
   [(set_attr "length_table" "add")])
 
 (define_insn "*cmpqi"
@@ -209,6 +242,8 @@
 	  return "xor.l\t%S0,%S0\;bist\t#0,%w0";
 	gcc_unreachable ();
       }
+    else
+      gcc_unreachable ();
   }
   [(set (attr "length") (symbol_ref "<MODE>mode == SImode ? 6 : 4"))])
 
@@ -340,3 +375,235 @@
 	(ashift:QHSI (<geultu_to_c>:QHSI (reg:CCC CC_REG) (const_int 0))
 		     (match_dup 3)))])
 
+;; Storing Z into a QImode destination is fairly easy on the H8/S and
+;; newer as the stc; shift; mask is just 3 insns/6 bytes.  On the H8/300H
+;; it is 4 insns/8 bytes which is a speed improvement, but a size
+;; regression relative to the branchy sequence
+;;
+;; Storing inverted Z in QImode is not profitable on the H8/300H, but
+;; is a speed improvement on the H8S.
+(define_insn_and_split "*store_z_qi"
+  [(set (match_operand:QI 0 "register_operand" "=r")
+	(eq:QI (match_operand:HI 1 "register_operand" "r")
+	       (match_operand:HI 2 "register_operand" "r")))]
+  "TARGET_H8300S || !optimize_size"
+  "#"
+  "&& reload_completed"
+  [(set (reg:CCZ CC_REG)
+	(eq:CCZ (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+	(ne:QI (reg:CCZ CC_REG) (const_int 0)))])
+
+(define_insn_and_split "*store_z_i_qi"
+  [(set (match_operand:QI 0 "register_operand" "=r")
+	(ne:QI (match_operand:HI 1 "register_operand" "r")
+	       (match_operand:HI 2 "register_operand" "r")))]
+  "TARGET_H8300S"
+  "#"
+  "&& reload_completed"
+  [(set (reg:CCZ CC_REG)
+	(eq:CCZ (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+	(eq:QI (reg:CCZ CC_REG) (const_int 0)))])
+
+(define_insn "*store_z_qi"
+  [(set (match_operand:QI 0 "register_operand" "=r")
+	(ne:QI (reg:CCZ CC_REG) (const_int 0)))]
+  "(TARGET_H8300S || !optimize_size) && reload_completed"
+  {
+    if (TARGET_H8300S)
+      return "stc\tccr,%X0\;shar\t#2,%X0\;and\t#0x1,%X0";
+    else
+      return "stc\tccr,%X0\;shar\t%X0\;shar\t%X0\;and\t#0x1,%X0";
+  }
+  [(set (attr "length") (symbol_ref "TARGET_H8300S ? 6 : 8"))])
+
+(define_insn "*store_z_i_qi"
+  [(set (match_operand:QI 0 "register_operand" "=r")
+	(eq:QI (reg:CCZ CC_REG) (const_int 0)))]
+  "(TARGET_H8300S || !optimize_size) && reload_completed"
+  "stc\tccr,%X0\;bld\t#2,%X0\;xor.w\t%T0,%T0\;bist\t#0,%X0";
+  [(set_attr "length" "8")])
+
+;; Storing Z or an inverted Z into a HImode destination is
+;; profitable on the H8/S and older variants, but not on the
+;; H8/SX where the branchy sequence can use the two-byte
+;; mov-immediate that is specific to the H8/SX
+(define_insn_and_split "*store_z_hi"
+  [(set (match_operand:HSI 0 "register_operand" "=r")
+	(eqne:HSI (match_operand:HSI2 1 "register_operand" "r")
+		  (match_operand:HSI2 2 "register_operand" "r")))]
+  "!TARGET_H8300SX"
+  "#"
+  "&& reload_completed"
+  [(set (reg:CCZ CC_REG)
+	(eq:CCZ (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+	(<eqne_invert>:HSI (reg:CCZ CC_REG) (const_int 0)))])
+
+;; Similar, but putting the result into the sign bit
+(define_insn_and_split "*store_z_hi_sb"
+  [(set (match_operand:HSI 0 "register_operand" "=r")
+	(ashift:HSI (eqne:HSI (match_operand:HSI2 1 "register_operand" "r")
+			      (match_operand:HSI2 2 "register_operand" "r"))
+		     (const_int 15)))]
+  "!TARGET_H8300SX"
+  "#"
+  "&& reload_completed"
+  [(set (reg:CCZ CC_REG)
+	(eq:CCZ (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+	(ashift:HSI (<eqne_invert>:HSI (reg:CCZ CC_REG) (const_int 0))
+		    (const_int 15)))])
+
+;; Similar, but negating the result
+(define_insn_and_split "*store_z_hi_neg"
+  [(set (match_operand:HSI 0 "register_operand" "=r")
+	(neg:HSI (eqne:HSI (match_operand:HSI2 1 "register_operand" "r")
+			   (match_operand:HSI2 2 "register_operand" "r"))))]
+  "!TARGET_H8300SX"
+  "#"
+  "&& reload_completed"
+  [(set (reg:CCZ CC_REG)
+	(eq:CCZ (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+	(neg:HSI (<eqne_invert>:HSI (reg:CCZ CC_REG) (const_int 0))))])
+
+(define_insn_and_split "*store_z_hi_and"
+  [(set (match_operand:HSI 0 "register_operand" "=r")
+	(and:HSI (eqne:HSI (match_operand:HSI2 1 "register_operand" "r")
+			   (match_operand:HSI2 2 "register_operand" "r"))
+		 (match_operand:HSI 3 "register_operand" "r")))]
+  "!TARGET_H8300SX"
+  "#"
+  "&& reload_completed"
+  [(set (reg:CCZ CC_REG)
+	(eq:CCZ (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+	(and:HSI (<eqne_invert>:HSI (reg:CCZ CC_REG) (const_int 0))
+		 (match_dup 3)))])
+
+(define_insn "*store_z_<mode>"
+  [(set (match_operand:HSI 0 "register_operand" "=r")
+	(eqne:HSI (reg:CCZ CC_REG) (const_int 0)))]
+  "!TARGET_H8300SX"
+  {
+    if (<MODE>mode == HImode)
+      {
+	if (<CODE> == NE)
+	  {
+	    if (TARGET_H8300S)
+	      return "stc\tccr,%X0\;shlr.b\t#2,%X0\;and.w\t#1,%T0";
+	    return "stc\tccr,%X0\;bld\t#2,%X0\;xor.w\t%T0,%T0\;bst\t#0,%X0";
+	  }
+	else
+	  return "stc\tccr,%X0\;bld\t#2,%X0\;xor.w\t%T0,%T0\;bist\t#0,%X0";
+      }
+    else if (<MODE>mode == SImode)
+      {
+	if (<CODE> == NE)
+	  {
+	    if (TARGET_H8300S)
+	      return "stc\tccr,%X0\;shlr.b\t#2,%X0\;and.l\t#1,%S0";
+	    return "stc\tccr,%X0\;bld\t#2,%X0\;xor.l\t%S0,%S0\;bst\t#0,%X0";
+	  }
+	else
+	  return "stc\tccr,%X0\;bld\t#2,%X0\;xor.l\t%S0,%S0\;bist\t#0,%X0";
+      }
+    gcc_unreachable ();
+  }
+;; XXXSImode is 2 bytes longer
+  [(set_attr "length" "8")])
+
+(define_insn "*store_z_<mode>_sb"
+  [(set (match_operand:HSI 0 "register_operand" "=r")
+	(ashift:HSI (eqne:HSI (reg:CCZ CC_REG) (const_int 0))
+		    (const_int 15)))]
+  "!TARGET_H8300SX"
+  {
+    if (<MODE>mode == HImode)
+      {
+	if (<CODE> == NE)
+	  return "stc\tccr,%X0\;bld\t#2,%X0\;xor.w\t%T0,%T0\;bst\t#7,%t0";
+	else
+	  return "stc\tccr,%X0\;bld\t#2,%X0\;xor.w\t%T0,%T0\;bist\t#7,%t0";
+      }
+    else if (<MODE>mode == SImode)
+      {
+	if (<CODE> == NE)
+	  return "stc\tccr,%X0\;bld\t#2,%X0\;xor.l\t%T0,%T0\;rotxr.l\t%S0";
+	else
+	  return "stc\tccr,%X0\;bild\t#2,%X0\;xor.l\t%T0,%T0\;rotxr.l\t%S0";
+      }
+    gcc_unreachable ();
+  }
+  ;; XXX SImode is larger
+  [(set_attr "length" "8")])
+
+(define_insn "*store_z_<mode>_neg"
+  [(set (match_operand:HSI 0 "register_operand" "=r")
+	(neg:HSI (eqne:HSI (reg:CCZ CC_REG) (const_int 0))))]
+  "!TARGET_H8300SX"
+  {
+    if (<MODE>mode == HImode)
+      {
+	if (<CODE> == NE)
+	  return "stc\tccr,%X0\;bld\t#2,%X0\;subx.b\t%X0,%X0\;exts.w\t%T0";
+	else
+	  return "stc\tccr,%X0\;bild\t#2,%X0\;subx.b\t%X0,%X0\;exts.w\t%T0";
+      }
+    else if (<MODE>mode == SImode)
+      {
+	if (<CODE> == NE)
+	  return "stc\tccr,%X0\;bld\t#2,%X0\;subx.b\t%X0,%X0\;exts.w\t%T0\;exts.l\t%S0";
+	else
+	  return "stc\tccr,%X0\;bild\t#2,%X0\;subx.b\t%X0,%X0\;exts.w\t%T0\;exts.l\t%S0";
+      }
+    gcc_unreachable ();
+  }
+  ;; XXX simode is an instruction longer
+  [(set_attr "length" "8")])
+
+(define_insn "*store_z_<mode>_and"
+  [(set (match_operand:HSI 0 "register_operand" "=r")
+	(and:HSI (eqne:HSI (reg:CCZ CC_REG) (const_int 0))
+		 (match_operand:HSI 1 "register_operand" "r")))]
+  "!TARGET_H8300SX"
+  {
+    if (<MODE>mode == HImode)
+      {
+	if (<CODE> == NE)
+	  return "bld\t#0,%X1\;stc\tccr,%X0\;band\t#2,%X0\;xor.w\t%T0,%T0\;bst\t#0,%X0";
+	else
+	  return "bild\t#0,%X1\;stc\tccr,%X0\;band\t#2,%X0\;xor.w\t%T0,%T0\;bist\t#0,X0";
+      }
+    else if (<MODE>mode == SImode)
+      {
+	if (<CODE> == NE)
+	  return "bld\t#0,%X1\;stc\tccr,%X0\;band\t#2,%X0\;xor.l\t%S0,%S0\;bst\t#0,%X0";
+	else
+	  return "bild\t#0,%X1\;stc\tccr,%X0\;band\t#2,%X0\;xor.l\t%S0,%S0\;bist\t#0,X0";
+      }
+    gcc_unreachable ();
+  }
+  ;; XXX simode is an instruction longer
+  [(set_attr "length" "8")])
+
+;; We can test the upper byte of a HImode register and the upper word
+;; of a SImode register
+
+;; We can test the upper byte of a HImode register and the upper word
+;; of a SImode register
+(define_insn_and_split "*store_z"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(eqne:HI (and:HI (match_operand:HI 1 "register_operand" "r")
+			 (const_int -256))
+		 (const_int 0)))]
+  "!TARGET_H8300SX"
+  "#"
+  "&& reload_completed"
+  [(set (reg:CCZ CC_REG)
+	(compare (and:HI (match_dup 1) (const_int -256))
+		 (const_int 0)))
+   (set (match_dup 0)
+	(<eqne_invert>:HI (reg:CCZ CC_REG) (const_int 0)))])

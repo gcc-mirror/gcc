@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+# Copyright (C) 2016-2023 Free Software Foundation, Inc.
 #
 # Script to analyze results of our branch prediction heuristics
 #

@@ -1,6 +1,6 @@
 // shared_ptr and weak_ptr implementation details -*- C++ -*-
 
-// Copyright (C) 2007-2022 Free Software Foundation, Inc.
+// Copyright (C) 2007-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -2049,9 +2049,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __weak_ptr&
       operator=(__weak_ptr&& __r) noexcept
       {
-	_M_ptr = __r._M_ptr;
-	_M_refcount = std::move(__r._M_refcount);
-	__r._M_ptr = nullptr;
+	__weak_ptr(std::move(__r)).swap(*this);
 	return *this;
       }
 

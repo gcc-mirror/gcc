@@ -1,5 +1,5 @@
 # -*- shell-script -*-
-#  Copyright (C) 2012-2022 Free Software Foundation, Inc.
+#  Copyright (C) 2012-2023 Free Software Foundation, Inc.
 #  Contributed by Richard Henderson <rth@redhat.com>.
 #
 #  This file is part of the GNU Atomic Library (libatomic).
@@ -49,6 +49,7 @@ case "${target_cpu}" in
 		fi
 		;;
 	esac
+	XCFLAGS="${XCFLAGS} -mno-outline-atomics"
 	;;
   arm*)
 	ARCH=arm
@@ -159,7 +160,7 @@ case "${target}" in
   *-*-mingw*)
 	# OS support for atomic primitives.
         case ${target_thread_file} in
-          win32)
+          win32 | mcf | single)
             config_path="${config_path} mingw"
             ;;
           posix)

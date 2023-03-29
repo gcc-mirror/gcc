@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2022 Free Software Foundation, Inc.
+   Copyright (C) 2009-2023 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -81,6 +81,9 @@
 #include "rtlanal.h"
 #include "tree-dfa.h"
 #include "asan.h"
+#include "aarch64-feature-deps.h"
+#include "config/arm/aarch-common.h"
+#include "config/arm/aarch-common-protos.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -304,7 +307,6 @@ static bool aarch64_builtin_support_vector_misalignment (machine_mode mode,
 static machine_mode aarch64_simd_container_mode (scalar_mode, poly_int64);
 static bool aarch64_print_address_internal (FILE*, machine_mode, rtx,
 					    aarch64_addr_query_type);
-static HOST_WIDE_INT aarch64_clamp_to_uimm12_shift (HOST_WIDE_INT val);
 
 /* The processor for which instructions should be scheduled.  */
 enum aarch64_processor aarch64_tune = cortexa53;
@@ -318,11 +320,7 @@ bool aarch64_pcrelative_literal_loads;
 /* Global flag for whether frame pointer is enabled.  */
 bool aarch64_use_frame_pointer;
 
-#define BRANCH_PROTECT_STR_MAX 255
 char *accepted_branch_protection_string = NULL;
-
-static enum aarch64_parse_opt_result
-aarch64_parse_branch_protection (const char*, char**);
 
 /* Support for command line parsing of boolean flags in the tuning
    structures.  */
@@ -534,7 +532,7 @@ static const struct cpu_addrcost_table neoversen2_addrcost_table =
   0 /* imm_offset  */
 };
 
-static const struct cpu_addrcost_table demeter_addrcost_table =
+static const struct cpu_addrcost_table neoversev2_addrcost_table =
 {
     {
       1, /* hi  */
@@ -677,7 +675,7 @@ static const struct cpu_regmove_cost neoversev1_regmove_cost =
   2 /* FP2FP  */
 };
 
-static const struct cpu_regmove_cost demeter_regmove_cost =
+static const struct cpu_regmove_cost neoversev2_regmove_cost =
 {
   1, /* GP2GP  */
   /* Spilling to int<->fp instead of memory is recommended so set
@@ -1134,7 +1132,7 @@ static const struct cpu_vector_cost thunderx3t110_vector_cost =
 
 static const advsimd_vec_cost ampere1_advsimd_vector_cost =
 {
-  3, /* int_stmt_cost  */
+  1, /* int_stmt_cost  */
   3, /* fp_stmt_cost  */
   0, /* ld2_st2_permute_cost  */
   0, /* ld3_st3_permute_cost  */
@@ -1150,17 +1148,17 @@ static const advsimd_vec_cost ampere1_advsimd_vector_cost =
   8, /* store_elt_extra_cost  */
   6, /* vec_to_scalar_cost  */
   7, /* scalar_to_vec_cost  */
-  5, /* align_load_cost  */
-  5, /* unalign_load_cost  */
-  2, /* unalign_store_cost  */
-  2  /* store_cost  */
+  4, /* align_load_cost  */
+  4, /* unalign_load_cost  */
+  1, /* unalign_store_cost  */
+  1  /* store_cost  */
 };
 
 /* Ampere-1 costs for vector insn classes.  */
 static const struct cpu_vector_cost ampere1_vector_cost =
 {
   1, /* scalar_int_stmt_cost  */
-  1, /* scalar_fp_stmt_cost  */
+  3, /* scalar_fp_stmt_cost  */
   4, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
   1, /* cond_taken_branch_cost  */
@@ -1346,6 +1344,7 @@ static const struct tune_params generic_tunings =
   "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1382,6 +1381,7 @@ static const struct tune_params cortexa35_tunings =
   "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1415,6 +1415,7 @@ static const struct tune_params cortexa53_tunings =
   "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1448,6 +1449,7 @@ static const struct tune_params cortexa57_tunings =
   "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1481,6 +1483,7 @@ static const struct tune_params cortexa72_tunings =
   "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1514,6 +1517,7 @@ static const struct tune_params cortexa73_tunings =
   "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1548,6 +1552,7 @@ static const struct tune_params exynosm1_tunings =
   "4",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1580,6 +1585,7 @@ static const struct tune_params thunderxt88_tunings =
   "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1612,6 +1618,7 @@ static const struct tune_params thunderx_tunings =
   "8",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1646,6 +1653,7 @@ static const struct tune_params tsv110_tunings =
   "8",  /* loop_align.  */
   2,    /* int_reassoc_width.  */
   4,    /* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,    /* vec_reassoc_width.  */
   2,    /* min_div_recip_mul_sf.  */
   2,    /* min_div_recip_mul_df.  */
@@ -1678,6 +1686,7 @@ static const struct tune_params xgene1_tunings =
   "16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1710,6 +1719,7 @@ static const struct tune_params emag_tunings =
   "16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1743,6 +1753,7 @@ static const struct tune_params qdf24xx_tunings =
   "16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1778,6 +1789,7 @@ static const struct tune_params saphira_tunings =
   "16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1811,6 +1823,7 @@ static const struct tune_params thunderx2t99_tunings =
   "16",	/* loop_align.  */
   3,	/* int_reassoc_width.  */
   2,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   2,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1844,6 +1857,7 @@ static const struct tune_params thunderx3t110_tunings =
   "16",	/* loop_align.  */
   3,	/* int_reassoc_width.  */
   2,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   2,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1876,6 +1890,7 @@ static const struct tune_params neoversen1_tunings =
   "32:16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   2,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -1912,6 +1927,45 @@ static const struct tune_params ampere1_tunings =
   "32:16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
+  2,	/* vec_reassoc_width.  */
+  2,	/* min_div_recip_mul_sf.  */
+  2,	/* min_div_recip_mul_df.  */
+  0,	/* max_case_values.  */
+  tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
+  (AARCH64_EXTRA_TUNE_NONE),		/* tune_flags.  */
+  &ampere1_prefetch_tune
+};
+
+static const struct tune_params ampere1a_tunings =
+{
+  &ampere1a_extra_costs,
+  &generic_addrcost_table,
+  &generic_regmove_cost,
+  &ampere1_vector_cost,
+  &generic_branch_cost,
+  &generic_approx_modes,
+  SVE_NOT_IMPLEMENTED, /* sve_width  */
+  { 4, /* load_int.  */
+    4, /* store_int.  */
+    4, /* load_fp.  */
+    4, /* store_fp.  */
+    4, /* load_pred.  */
+    4 /* store_pred.  */
+  }, /* memmov_cost.  */
+  4, /* issue_rate  */
+  (AARCH64_FUSE_ADRP_ADD | AARCH64_FUSE_AES_AESMC |
+   AARCH64_FUSE_MOV_MOVK | AARCH64_FUSE_MOVK_MOVK |
+   AARCH64_FUSE_ALU_BRANCH /* adds, ands, bics, ccmp, ccmn */ |
+   AARCH64_FUSE_CMP_BRANCH | AARCH64_FUSE_ALU_CBZ |
+   AARCH64_FUSE_ADDSUB_2REG_CONST1),
+  /* fusible_ops  */
+  "32",		/* function_align.  */
+  "4",		/* jump_align.  */
+  "32:16",	/* loop_align.  */
+  2,	/* int_reassoc_width.  */
+  4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   2,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -2089,6 +2143,7 @@ static const struct tune_params neoversev1_tunings =
   "32:16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  4,	/* fma_reassoc_width.  */
   2,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -2226,6 +2281,7 @@ static const struct tune_params neoverse512tvb_tunings =
   "32:16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  4,	/* fma_reassoc_width.  */
   2,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -2414,6 +2470,7 @@ static const struct tune_params neoversen2_tunings =
   "32:16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   2,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -2426,7 +2483,7 @@ static const struct tune_params neoversen2_tunings =
   &generic_prefetch_tune
 };
 
-static const advsimd_vec_cost demeter_advsimd_vector_cost =
+static const advsimd_vec_cost neoversev2_advsimd_vector_cost =
 {
   2, /* int_stmt_cost  */
   2, /* fp_stmt_cost  */
@@ -2457,7 +2514,7 @@ static const advsimd_vec_cost demeter_advsimd_vector_cost =
   1  /* store_cost  */
 };
 
-static const sve_vec_cost demeter_sve_vector_cost =
+static const sve_vec_cost neoversev2_sve_vector_cost =
 {
   {
     2, /* int_stmt_cost  */
@@ -2514,7 +2571,7 @@ static const sve_vec_cost demeter_sve_vector_cost =
   3 /* scatter_store_elt_cost  */
 };
 
-static const aarch64_scalar_vec_issue_info demeter_scalar_issue_info =
+static const aarch64_scalar_vec_issue_info neoversev2_scalar_issue_info =
 {
   3, /* loads_stores_per_cycle  */
   2, /* stores_per_cycle  */
@@ -2523,7 +2580,7 @@ static const aarch64_scalar_vec_issue_info demeter_scalar_issue_info =
   1 /* fp_simd_store_general_ops  */
 };
 
-static const aarch64_advsimd_vec_issue_info demeter_advsimd_issue_info =
+static const aarch64_advsimd_vec_issue_info neoversev2_advsimd_issue_info =
 {
   {
     3, /* loads_stores_per_cycle  */
@@ -2537,7 +2594,7 @@ static const aarch64_advsimd_vec_issue_info demeter_advsimd_issue_info =
   3 /* ld4_st4_general_ops  */
 };
 
-static const aarch64_sve_vec_issue_info demeter_sve_issue_info =
+static const aarch64_sve_vec_issue_info neoversev2_sve_issue_info =
 {
   {
     {
@@ -2559,15 +2616,15 @@ static const aarch64_sve_vec_issue_info demeter_sve_issue_info =
   1 /* gather_scatter_pair_pred_ops  */
 };
 
-static const aarch64_vec_issue_info demeter_vec_issue_info =
+static const aarch64_vec_issue_info neoversev2_vec_issue_info =
 {
-  &demeter_scalar_issue_info,
-  &demeter_advsimd_issue_info,
-  &demeter_sve_issue_info
+  &neoversev2_scalar_issue_info,
+  &neoversev2_advsimd_issue_info,
+  &neoversev2_sve_issue_info
 };
 
 /* Demeter costs for vector insn classes.  */
-static const struct cpu_vector_cost demeter_vector_cost =
+static const struct cpu_vector_cost neoversev2_vector_cost =
 {
   1, /* scalar_int_stmt_cost  */
   2, /* scalar_fp_stmt_cost  */
@@ -2575,17 +2632,17 @@ static const struct cpu_vector_cost demeter_vector_cost =
   1, /* scalar_store_cost  */
   1, /* cond_taken_branch_cost  */
   1, /* cond_not_taken_branch_cost  */
-  &demeter_advsimd_vector_cost, /* advsimd  */
-  &demeter_sve_vector_cost, /* sve  */
-  &demeter_vec_issue_info /* issue_info  */
+  &neoversev2_advsimd_vector_cost, /* advsimd  */
+  &neoversev2_sve_vector_cost, /* sve  */
+  &neoversev2_vec_issue_info /* issue_info  */
 };
 
-static const struct tune_params demeter_tunings =
+static const struct tune_params neoversev2_tunings =
 {
   &cortexa76_extra_costs,
-  &demeter_addrcost_table,
-  &demeter_regmove_cost,
-  &demeter_vector_cost,
+  &neoversev2_addrcost_table,
+  &neoversev2_regmove_cost,
+  &neoversev2_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_128, /* sve_width  */
@@ -2603,6 +2660,7 @@ static const struct tune_params demeter_tunings =
   "32:16",	/* loop_align.  */
   3,	/* int_reassoc_width.  */
   6,	/* fp_reassoc_width.  */
+  4,	/* fma_reassoc_width.  */
   3,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -2638,6 +2696,7 @@ static const struct tune_params a64fx_tunings =
   "32",	/* loop_align.  */
   4,	/* int_reassoc_width.  */
   2,	/* fp_reassoc_width.  */
+  1,	/* fma_reassoc_width.  */
   2,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
@@ -2670,19 +2729,20 @@ aarch64_tuning_override_functions[] =
 /* A processor implementing AArch64.  */
 struct processor
 {
-  const char *const name;
-  enum aarch64_processor ident;
-  enum aarch64_processor sched_core;
-  enum aarch64_arch arch;
-  const uint64_t flags;
-  const struct tune_params *const tune;
+  const char *name;
+  aarch64_processor ident;
+  aarch64_processor sched_core;
+  aarch64_arch arch;
+  aarch64_feature_flags flags;
+  const tune_params *tune;
 };
 
 /* Architectures implementing AArch64.  */
-static const struct processor all_architectures[] =
+static CONSTEXPR const processor all_architectures[] =
 {
-#define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, ARCH_REV, FLAGS) \
-  {NAME, CORE, CORE, AARCH64_ARCH_##ARCH_IDENT, FLAGS, NULL},
+#define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, D, E) \
+  {NAME, CORE, CORE, AARCH64_ARCH_##ARCH_IDENT, \
+   feature_deps::ARCH_IDENT ().enable, NULL},
 #include "aarch64-arches.def"
   {NULL, aarch64_none, aarch64_none, aarch64_no_arch, 0, NULL}
 };
@@ -2690,12 +2750,12 @@ static const struct processor all_architectures[] =
 /* Processor cores implementing AArch64.  */
 static const struct processor all_cores[] =
 {
-#define AARCH64_CORE(NAME, IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
-  {NAME, IDENT, SCHED, AARCH64_ARCH_##ARCH,				\
-  FLAGS, &COSTS##_tunings},
+#define AARCH64_CORE(NAME, IDENT, SCHED, ARCH, E, COSTS, G, H, I) \
+  {NAME, IDENT, SCHED, AARCH64_ARCH_##ARCH, \
+   feature_deps::cpu_##IDENT, &COSTS##_tunings},
 #include "aarch64-cores.def"
-  {"generic", generic, cortexa53, AARCH64_ARCH_8A,
-    AARCH64_FL_FOR_ARCH8, &generic_tunings},
+  {"generic", generic, cortexa53, AARCH64_ARCH_V8A,
+   feature_deps::V8A ().enable, &generic_tunings},
   {NULL, aarch64_none, aarch64_none, aarch64_no_arch, 0, NULL}
 };
 
@@ -2746,14 +2806,6 @@ static const struct attribute_spec aarch64_attribute_table[] =
   { NULL,                 0, 0, false, false, false, false, NULL, NULL }
 };
 
-/* An ISA extension in the co-processor and main instruction set space.  */
-struct aarch64_option_extension
-{
-  const char *const name;
-  const unsigned long flags_on;
-  const unsigned long flags_off;
-};
-
 typedef enum aarch64_cond_code
 {
   AARCH64_EQ = 0, AARCH64_NE, AARCH64_CS, AARCH64_CC, AARCH64_MI, AARCH64_PL,
@@ -2764,100 +2816,6 @@ aarch64_cc;
 
 #define AARCH64_INVERSE_CONDITION_CODE(X) ((aarch64_cc) (((int) X) ^ 1))
 
-struct aarch64_branch_protect_type
-{
-  /* The type's name that the user passes to the branch-protection option
-    string.  */
-  const char* name;
-  /* Function to handle the protection type and set global variables.
-    First argument is the string token corresponding with this type and the
-    second argument is the next token in the option string.
-    Return values:
-    * AARCH64_PARSE_OK: Handling was sucessful.
-    * AARCH64_INVALID_ARG: The type is invalid in this context and the caller
-      should print an error.
-    * AARCH64_INVALID_FEATURE: The type is invalid and the handler prints its
-      own error.  */
-  enum aarch64_parse_opt_result (*handler)(char*, char*);
-  /* A list of types that can follow this type in the option string.  */
-  const aarch64_branch_protect_type* subtypes;
-  unsigned int num_subtypes;
-};
-
-static enum aarch64_parse_opt_result
-aarch64_handle_no_branch_protection (char* str, char* rest)
-{
-  aarch64_ra_sign_scope = AARCH64_FUNCTION_NONE;
-  aarch64_enable_bti = 0;
-  if (rest)
-    {
-      error ("unexpected %<%s%> after %<%s%>", rest, str);
-      return AARCH64_PARSE_INVALID_FEATURE;
-    }
-  return AARCH64_PARSE_OK;
-}
-
-static enum aarch64_parse_opt_result
-aarch64_handle_standard_branch_protection (char* str, char* rest)
-{
-  aarch64_ra_sign_scope = AARCH64_FUNCTION_NON_LEAF;
-  aarch64_ra_sign_key = AARCH64_KEY_A;
-  aarch64_enable_bti = 1;
-  if (rest)
-    {
-      error ("unexpected %<%s%> after %<%s%>", rest, str);
-      return AARCH64_PARSE_INVALID_FEATURE;
-    }
-  return AARCH64_PARSE_OK;
-}
-
-static enum aarch64_parse_opt_result
-aarch64_handle_pac_ret_protection (char* str ATTRIBUTE_UNUSED,
-				    char* rest ATTRIBUTE_UNUSED)
-{
-  aarch64_ra_sign_scope = AARCH64_FUNCTION_NON_LEAF;
-  aarch64_ra_sign_key = AARCH64_KEY_A;
-  return AARCH64_PARSE_OK;
-}
-
-static enum aarch64_parse_opt_result
-aarch64_handle_pac_ret_leaf (char* str ATTRIBUTE_UNUSED,
-			      char* rest ATTRIBUTE_UNUSED)
-{
-  aarch64_ra_sign_scope = AARCH64_FUNCTION_ALL;
-  return AARCH64_PARSE_OK;
-}
-
-static enum aarch64_parse_opt_result
-aarch64_handle_pac_ret_b_key (char* str ATTRIBUTE_UNUSED,
-			      char* rest ATTRIBUTE_UNUSED)
-{
-  aarch64_ra_sign_key = AARCH64_KEY_B;
-  return AARCH64_PARSE_OK;
-}
-
-static enum aarch64_parse_opt_result
-aarch64_handle_bti_protection (char* str ATTRIBUTE_UNUSED,
-				    char* rest ATTRIBUTE_UNUSED)
-{
-  aarch64_enable_bti = 1;
-  return AARCH64_PARSE_OK;
-}
-
-static const struct aarch64_branch_protect_type aarch64_pac_ret_subtypes[] = {
-  { "leaf", aarch64_handle_pac_ret_leaf, NULL, 0 },
-  { "b-key", aarch64_handle_pac_ret_b_key, NULL, 0 },
-  { NULL, NULL, NULL, 0 }
-};
-
-static const struct aarch64_branch_protect_type aarch64_branch_protect_types[] = {
-  { "none", aarch64_handle_no_branch_protection, NULL, 0 },
-  { "standard", aarch64_handle_standard_branch_protection, NULL, 0 },
-  { "pac-ret", aarch64_handle_pac_ret_protection, aarch64_pac_ret_subtypes,
-    ARRAY_SIZE (aarch64_pac_ret_subtypes) },
-  { "bti", aarch64_handle_bti_protection, NULL, 0 },
-  { NULL, NULL, NULL, 0 }
-};
 
 /* The condition codes of the processor, and the inverse function.  */
 static const char * const aarch64_condition_codes[] =
@@ -3349,9 +3307,15 @@ aarch64_reassociation_width (unsigned opc, machine_mode mode)
     return aarch64_tune_params.vec_reassoc_width;
   if (INTEGRAL_MODE_P (mode))
     return aarch64_tune_params.int_reassoc_width;
-  /* Avoid reassociating floating point addition so we emit more FMAs.  */
-  if (FLOAT_MODE_P (mode) && opc != PLUS_EXPR)
-    return aarch64_tune_params.fp_reassoc_width;
+  /* Reassociation reduces the number of FMAs which may result in worse
+     performance.  Use a per-CPU setting for FMA reassociation which allows
+     narrow CPUs with few FP pipes to switch it off (value of 1), and wider
+     CPUs with many FP pipes to enable reassociation.
+     Since the reassociation pass doesn't understand FMA at all, assume
+     that any FP addition might turn into FMA.  */
+  if (FLOAT_MODE_P (mode))
+    return opc == PLUS_EXPR ? aarch64_tune_params.fma_reassoc_width
+			    : aarch64_tune_params.fp_reassoc_width;
   return 1;
 }
 
@@ -3373,6 +3337,20 @@ aarch64_debugger_regno (unsigned regno)
    /* Return values >= DWARF_FRAME_REGISTERS indicate that there is no
       equivalent DWARF register.  */
    return DWARF_FRAME_REGISTERS;
+}
+
+/* Implement TARGET_DWARF_FRAME_REG_MODE.  */
+static machine_mode
+aarch64_dwarf_frame_reg_mode (int regno)
+{
+  /* Predicate registers are call-clobbered in the EH ABI (which is
+     ARM_PCS_AAPCS64), so they should not be described by CFI.
+     Their size changes as VL changes, so any values computed by
+     __builtin_init_dwarf_reg_size_table might not be valid for
+     all frames.  */
+  if (PR_REGNUM_P (regno))
+    return VOIDmode;
+  return default_dwarf_frame_reg_mode (regno);
 }
 
 /* If X is a CONST_DOUBLE, return its bit representation as a constant
@@ -3867,6 +3845,19 @@ aarch64_vectorize_related_mode (machine_mode vector_mode,
     }
 
   return default_vectorize_related_mode (vector_mode, element_mode, nunits);
+}
+
+/* Implement TARGET_VECTORIZE_PREFERRED_DIV_AS_SHIFTS_OVER_MULT.  */
+
+static bool
+aarch64_vectorize_preferred_div_as_shifts_over_mult (const_tree type)
+{
+  machine_mode mode = TYPE_MODE (type);
+  unsigned int vec_flags = aarch64_classify_vector_mode (mode);
+  bool sve_p = (vec_flags & VEC_ANY_SVE);
+  bool simd_p = (vec_flags & VEC_ADVSIMD);
+
+  return (sve_p && TARGET_SVE2) || (simd_p && TARGET_SIMD);
 }
 
 /* Implement TARGET_PREFERRED_ELSE_VALUE.  For binary operations,
@@ -5500,14 +5491,153 @@ aarch64_output_sve_vector_inc_dec (const char *operands, rtx x)
 					     factor, nelts_per_vq);
 }
 
+/* Multipliers for repeating bitmasks of width 32, 16, 8, 4, and 2.  */
+
+static const unsigned HOST_WIDE_INT bitmask_imm_mul[] =
+  {
+    0x0000000100000001ull,
+    0x0001000100010001ull,
+    0x0101010101010101ull,
+    0x1111111111111111ull,
+    0x5555555555555555ull,
+  };
+
+
+
+/* Return true if 64-bit VAL is a valid bitmask immediate.  */
+static bool
+aarch64_bitmask_imm (unsigned HOST_WIDE_INT val)
+{
+  unsigned HOST_WIDE_INT tmp, mask, first_one, next_one;
+  int bits;
+
+  /* Check for a single sequence of one bits and return quickly if so.
+     The special cases of all ones and all zeroes returns false.  */
+  tmp = val + (val & -val);
+
+  if (tmp == (tmp & -tmp))
+    return (val + 1) > 1;
+
+  /* Invert if the immediate doesn't start with a zero bit - this means we
+     only need to search for sequences of one bits.  */
+  if (val & 1)
+    val = ~val;
+
+  /* Find the first set bit and set tmp to val with the first sequence of one
+     bits removed.  Return success if there is a single sequence of ones.  */
+  first_one = val & -val;
+  tmp = val & (val + first_one);
+
+  if (tmp == 0)
+    return true;
+
+  /* Find the next set bit and compute the difference in bit position.  */
+  next_one = tmp & -tmp;
+  bits = clz_hwi (first_one) - clz_hwi (next_one);
+  mask = val ^ tmp;
+
+  /* Check the bit position difference is a power of 2, and that the first
+     sequence of one bits fits within 'bits' bits.  */
+  if ((mask >> bits) != 0 || bits != (bits & -bits))
+    return false;
+
+  /* Check the sequence of one bits is repeated 64/bits times.  */
+  return val == mask * bitmask_imm_mul[__builtin_clz (bits) - 26];
+}
+
+
+/* Return true if VAL is a valid bitmask immediate for MODE.  */
+bool
+aarch64_bitmask_imm (unsigned HOST_WIDE_INT val, machine_mode mode)
+{
+  if (mode == DImode)
+    return aarch64_bitmask_imm (val);
+
+  if (mode == SImode)
+    return aarch64_bitmask_imm ((val & 0xffffffff) | (val << 32));
+
+  /* Replicate small immediates to fit 64 bits.  */
+  int size = GET_MODE_UNIT_PRECISION (mode);
+  val &= (HOST_WIDE_INT_1U << size) - 1;
+  val *= bitmask_imm_mul[__builtin_clz (size) - 26];
+
+  return aarch64_bitmask_imm (val);
+}
+
+
+/* Return true if the immediate VAL can be a bitfield immediate
+   by changing the given MASK bits in VAL to zeroes, ones or bits
+   from the other half of VAL.  Return the new immediate in VAL2.  */
+static inline bool
+aarch64_check_bitmask (unsigned HOST_WIDE_INT val,
+		       unsigned HOST_WIDE_INT &val2,
+		       unsigned HOST_WIDE_INT mask)
+{
+  val2 = val & ~mask;
+  if (val2 != val && aarch64_bitmask_imm (val2))
+    return true;
+  val2 = val | mask;
+  if (val2 != val && aarch64_bitmask_imm (val2))
+    return true;
+  val = val & ~mask;
+  val2 = val | (((val >> 32) | (val << 32)) & mask);
+  if (val2 != val && aarch64_bitmask_imm (val2))
+    return true;
+  val2 = val | (((val >> 16) | (val << 48)) & mask);
+  if (val2 != val && aarch64_bitmask_imm (val2))
+    return true;
+  return false;
+}
+
+
+/* Return true if VAL is a valid MOVZ immediate.  */
+static inline bool
+aarch64_is_movz (unsigned HOST_WIDE_INT val)
+{
+  return (val >> (ctz_hwi (val) & 48)) < 65536;
+}
+
+
+/* Return true if immediate VAL can be created by a 64-bit MOVI/MOVN/MOVZ.  */
+bool
+aarch64_is_mov_xn_imm (unsigned HOST_WIDE_INT val)
+{
+  return aarch64_is_movz (val) || aarch64_is_movz (~val)
+    || aarch64_bitmask_imm (val);
+}
+
+
+/* Return true if VAL is an immediate that can be created by a single
+   MOV instruction.  */
+bool
+aarch64_move_imm (unsigned HOST_WIDE_INT val, machine_mode mode)
+{
+  gcc_assert (mode == SImode || mode == DImode);
+
+  if (val < 65536)
+    return true;
+
+  unsigned HOST_WIDE_INT mask =
+    (val >> 32) == 0 || mode == SImode ? 0xffffffff : HOST_WIDE_INT_M1U;
+
+  if (aarch64_is_movz (val & mask) || aarch64_is_movz (~val & mask))
+    return true;
+
+  val = (val & mask) | ((val << 32) & ~mask);
+  return aarch64_bitmask_imm (val);
+}
+
+
 static int
 aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
-				scalar_int_mode mode)
+				machine_mode mode)
 {
   int i;
   unsigned HOST_WIDE_INT val, val2, mask;
   int one_match, zero_match;
   int num_insns;
+
+  gcc_assert (mode == SImode || mode == DImode);
 
   val = INTVAL (imm);
 
@@ -5516,31 +5646,6 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
       if (generate)
 	emit_insn (gen_rtx_SET (dest, imm));
       return 1;
-    }
-
-  /* Check to see if the low 32 bits are either 0xffffXXXX or 0xXXXXffff
-     (with XXXX non-zero). In that case check to see if the move can be done in
-     a smaller mode.  */
-  val2 = val & 0xffffffff;
-  if (mode == DImode
-      && aarch64_move_imm (val2, SImode)
-      && (((val >> 32) & 0xffff) == 0 || (val >> 48) == 0))
-    {
-      if (generate)
-	emit_insn (gen_rtx_SET (dest, GEN_INT (val2)));
-
-      /* Check if we have to emit a second instruction by checking to see
-         if any of the upper 32 bits of the original DI mode value is set.  */
-      if (val == val2)
-	return 1;
-
-      i = (val >> 48) ? 48 : 32;
-
-      if (generate)
-	 emit_insn (gen_insv_immdi (dest, GEN_INT (i),
-				    GEN_INT ((val >> i) & 0xffff)));
-
-      return 2;
     }
 
   if ((val >> 32) == 0 || mode == SImode)
@@ -5566,26 +5671,21 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
   one_match = ((~val & mask) == 0) + ((~val & (mask << 16)) == 0) +
     ((~val & (mask << 32)) == 0) + ((~val & (mask << 48)) == 0);
 
-  if (zero_match != 2 && one_match != 2)
-    {
-      /* Try emitting a bitmask immediate with a movk replacing 16 bits.
-	 For a 64-bit bitmask try whether changing 16 bits to all ones or
-	 zeroes creates a valid bitmask.  To check any repeated bitmask,
-	 try using 16 bits from the other 32-bit half of val.  */
+  /* Try a bitmask immediate and a movk to generate the immediate
+     in 2 instructions.  */
 
-      for (i = 0; i < 64; i += 16, mask <<= 16)
+  if (zero_match < 2 && one_match < 2)
+    {
+      for (i = 0; i < 64; i += 16)
 	{
-	  val2 = val & ~mask;
-	  if (val2 != val && aarch64_bitmask_imm (val2, mode))
+	  if (aarch64_check_bitmask (val, val2, mask << i))
 	    break;
-	  val2 = val | mask;
-	  if (val2 != val && aarch64_bitmask_imm (val2, mode))
-	    break;
-	  val2 = val2 & ~mask;
-	  val2 = val2 | (((val2 >> 32) | (val2 << 32)) & mask);
-	  if (val2 != val && aarch64_bitmask_imm (val2, mode))
+
+	  val2 = val & ~(mask << i);
+	  if ((val2 >> 32) == 0 && aarch64_move_imm (val2, DImode))
 	    break;
 	}
+
       if (i != 64)
 	{
 	  if (generate)
@@ -5596,6 +5696,25 @@ aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
 	    }
 	  return 2;
 	}
+    }
+
+  /* Try a bitmask plus 2 movk to generate the immediate in 3 instructions.  */
+  if (zero_match + one_match == 0)
+    {
+      for (i = 0; i < 48; i += 16)
+	for (int j = i + 16; j < 64; j += 16)
+	  if (aarch64_check_bitmask (val, val2, (mask << i) | (mask << j)))
+	    {
+	      if (generate)
+		{
+		  emit_insn (gen_rtx_SET (dest, GEN_INT (val2)));
+		  emit_insn (gen_insv_immdi (dest, GEN_INT (i),
+					     GEN_INT ((val >> i) & 0xffff)));
+		  emit_insn (gen_insv_immdi (dest, GEN_INT (j),
+					       GEN_INT ((val >> j) & 0xffff)));
+		}
+	      return 3;
+	    }
     }
 
   /* Generate 2-4 instructions, skipping 16 bits of all zeroes or ones which
@@ -5641,6 +5760,97 @@ aarch64_mov128_immediate (rtx imm)
 	 + aarch64_internal_mov_immediate (NULL_RTX, hi, false, DImode) <= 4;
 }
 
+
+/* Return true if val can be encoded as a 12-bit unsigned immediate with
+   a left shift of 0 or 12 bits.  */
+bool
+aarch64_uimm12_shift (unsigned HOST_WIDE_INT val)
+{
+  return val < 4096 || (val & 0xfff000) == val;
+}
+
+/* Returns the nearest value to VAL that will fit as a 12-bit unsigned immediate
+   that can be created with a left shift of 0 or 12.  */
+static HOST_WIDE_INT
+aarch64_clamp_to_uimm12_shift (unsigned HOST_WIDE_INT val)
+{
+  /* Check to see if the value fits in 24 bits, as that is the maximum we can
+     handle correctly.  */
+  gcc_assert (val < 0x1000000);
+
+  if (val < 4096)
+    return val;
+
+  return val & 0xfff000;
+}
+
+
+/* Test whether:
+
+     X = (X & AND_VAL) | IOR_VAL;
+
+   can be implemented using:
+
+     MOVK X, #(IOR_VAL >> shift), LSL #shift
+
+   Return the shift if so, otherwise return -1.  */
+int
+aarch64_movk_shift (const wide_int_ref &and_val,
+		    const wide_int_ref &ior_val)
+{
+  unsigned int precision = and_val.get_precision ();
+  unsigned HOST_WIDE_INT mask = 0xffff;
+  for (unsigned int shift = 0; shift < precision; shift += 16)
+    {
+      if (and_val == ~mask && (ior_val & mask) == ior_val)
+	return shift;
+      mask <<= 16;
+    }
+  return -1;
+}
+
+/* Create mask of ones, covering the lowest to highest bits set in VAL_IN.
+   Assumed precondition: VAL_IN Is not zero.  */
+
+unsigned HOST_WIDE_INT
+aarch64_and_split_imm1 (HOST_WIDE_INT val_in)
+{
+  int lowest_bit_set = ctz_hwi (val_in);
+  int highest_bit_set = floor_log2 (val_in);
+  gcc_assert (val_in != 0);
+
+  return ((HOST_WIDE_INT_UC (2) << highest_bit_set) -
+	  (HOST_WIDE_INT_1U << lowest_bit_set));
+}
+
+/* Create constant where bits outside of lowest bit set to highest bit set
+   are set to 1.  */
+
+unsigned HOST_WIDE_INT
+aarch64_and_split_imm2 (HOST_WIDE_INT val_in)
+{
+  return val_in | ~aarch64_and_split_imm1 (val_in);
+}
+
+/* Return true if VAL_IN is a valid 'and' bitmask immediate.  */
+
+bool
+aarch64_and_bitmask_imm (unsigned HOST_WIDE_INT val_in, machine_mode mode)
+{
+  scalar_int_mode int_mode;
+  if (!is_a <scalar_int_mode> (mode, &int_mode))
+    return false;
+
+  if (aarch64_bitmask_imm (val_in, int_mode))
+    return false;
+
+  if (aarch64_move_imm (val_in, int_mode))
+    return false;
+
+  unsigned HOST_WIDE_INT imm2 = aarch64_and_split_imm2 (val_in);
+
+  return aarch64_bitmask_imm (imm2, int_mode);
+}
 
 /* Return the number of temporary registers that aarch64_add_offset_1
    would need to add OFFSET to a register.  */
@@ -6226,7 +6436,8 @@ aarch64_expand_sve_const_vector (rtx target, rtx src)
 	  /* If the integer can be moved into a general register by a
 	     single instruction, do that and duplicate the result.  */
 	  if (CONST_INT_P (elt_value)
-	      && aarch64_move_imm (INTVAL (elt_value), elt_mode))
+	      && aarch64_move_imm (INTVAL (elt_value),
+				   encoded_bits <= 32 ? SImode : DImode))
 	    {
 	      elt_value = force_reg (elt_mode, elt_value);
 	      return expand_vector_broadcast (mode, elt_value);
@@ -6719,8 +6930,7 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
       return;
     }
 
-  aarch64_internal_mov_immediate (dest, imm, true,
-				  as_a <scalar_int_mode> (mode));
+  aarch64_internal_mov_immediate (dest, imm, true, mode);
 }
 
 /* Return the MEM rtx that provides the canary value that should be used
@@ -7249,15 +7459,19 @@ aarch64_vfp_is_call_candidate (cumulative_args_t pcum_v, machine_mode mode,
 /* Given MODE and TYPE of a function argument, return the alignment in
    bits.  The idea is to suppress any stronger alignment requested by
    the user and opt for the natural alignment (specified in AAPCS64 \S
-   4.1).  ABI_BREAK is set to true if the alignment was incorrectly
-   calculated in versions of GCC prior to GCC-9.  This is a helper
+   4.1).  ABI_BREAK is set to the old alignment if the alignment was
+   incorrectly calculated in versions of GCC prior to GCC-9.
+   ABI_BREAK_PACKED is set to the old alignment if it was incorrectly
+   calculated in versions between GCC-9 and GCC-13.  This is a helper
    function for local use only.  */
 
 static unsigned int
 aarch64_function_arg_alignment (machine_mode mode, const_tree type,
-				unsigned int *abi_break)
+				unsigned int *abi_break,
+				unsigned int *abi_break_packed)
 {
   *abi_break = 0;
+  *abi_break_packed = 0;
   if (!type)
     return GET_MODE_ALIGNMENT (mode);
 
@@ -7273,6 +7487,7 @@ aarch64_function_arg_alignment (machine_mode mode, const_tree type,
     return TYPE_ALIGN (TREE_TYPE (type));
 
   unsigned int alignment = 0;
+  unsigned int bitfield_alignment_with_packed = 0;
   unsigned int bitfield_alignment = 0;
   for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     if (TREE_CODE (field) == FIELD_DECL)
@@ -7292,10 +7507,29 @@ aarch64_function_arg_alignment (machine_mode mode, const_tree type,
 	   but gains 8-byte alignment and size thanks to "e".  */
 	alignment = std::max (alignment, DECL_ALIGN (field));
 	if (DECL_BIT_FIELD_TYPE (field))
-	  bitfield_alignment
-	    = std::max (bitfield_alignment,
-			TYPE_ALIGN (DECL_BIT_FIELD_TYPE (field)));
+	  {
+	    /* Take the bit-field type's alignment into account only
+	       if the user didn't reduce this field's alignment with
+	       the packed attribute.  */
+	    if (!DECL_PACKED (field))
+	      bitfield_alignment
+		= std::max (bitfield_alignment,
+			    TYPE_ALIGN (DECL_BIT_FIELD_TYPE (field)));
+
+	    /* Compute the alignment even if the bit-field is
+	       packed, so that we can emit a warning in case the
+	       alignment changed between GCC versions.  */
+	    bitfield_alignment_with_packed
+	      = std::max (bitfield_alignment_with_packed,
+			  TYPE_ALIGN (DECL_BIT_FIELD_TYPE (field)));
+	  }
       }
+
+  /* Emit a warning if the alignment is different when taking the
+     'packed' attribute into account.  */
+  if (bitfield_alignment != bitfield_alignment_with_packed
+      && bitfield_alignment_with_packed > alignment)
+    *abi_break_packed = bitfield_alignment_with_packed;
 
   if (bitfield_alignment > alignment)
     {
@@ -7322,16 +7556,83 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
   bool allocate_ncrn, allocate_nvrn;
   HOST_WIDE_INT size;
   unsigned int abi_break;
+  unsigned int abi_break_packed;
 
   /* We need to do this once per argument.  */
   if (pcum->aapcs_arg_processed)
     return;
+
+  bool warn_pcs_change
+    = (warn_psabi
+       && !pcum->silent_p
+       && (currently_expanding_function_start
+	   || currently_expanding_gimple_stmt));
+
+  /* HFAs and HVAs can have an alignment greater than 16 bytes.  For example:
+
+       typedef struct foo {
+         __Int8x16_t foo[2] __attribute__((aligned(32)));
+       } foo;
+
+     is still a HVA despite its larger-than-normal alignment.
+     However, such over-aligned HFAs and HVAs are guaranteed to have
+     no padding.
+
+     If we exclude HFAs and HVAs from the discussion below, then there
+     are several things to note:
+
+     - Both the C and AAPCS64 interpretations of a type's alignment should
+       give a value that is no greater than the type's size.
+
+     - Types bigger than 16 bytes are passed indirectly.
+
+     - If an argument of type T is passed indirectly, TYPE and MODE describe
+       a pointer to T rather than T iself.
+
+     It follows that the AAPCS64 alignment of TYPE must be no greater
+     than 16 bytes.
+
+     Versions prior to GCC 9.1 ignored a bitfield's underlying type
+     and so could calculate an alignment that was too small.  If this
+     happened for TYPE then ABI_BREAK is this older, too-small alignment.
+
+     Although GCC 9.1 fixed that bug, it introduced a different one:
+     it would consider the alignment of a bitfield's underlying type even
+     if the field was packed (which should have the effect of overriding
+     the alignment of the underlying type).  This was fixed in GCC 13.1.
+
+     As a result of this bug, GCC 9 to GCC 12 could calculate an alignment
+     that was too big.  If this happened for TYPE, ABI_BREAK_PACKED is
+     this older, too-big alignment.
+
+     Also, the fact that GCC 9 to GCC 12 considered irrelevant
+     alignments meant they could calculate type alignments that were
+     bigger than the type's size, contrary to the assumption above.
+     The handling of register arguments was nevertheless (and justifiably)
+     written to follow the assumption that the alignment can never be
+     greater than the size.  The same was not true for stack arguments;
+     their alignment was instead handled by MIN bounds in
+     aarch64_function_arg_boundary.
+
+     The net effect is that, if GCC 9 to GCC 12 incorrectly calculated
+     an alignment of more than 16 bytes for TYPE then:
+
+     - If the argument was passed in registers, these GCC versions
+       would treat the alignment as though it was *less than* 16 bytes.
+
+     - If the argument was passed on the stack, these GCC versions
+       would treat the alignment as though it was *equal to* 16 bytes.
+
+     Both behaviors were wrong, but in different cases.  */
 
   pcum->aapcs_arg_processed = true;
 
   pure_scalable_type_info pst_info;
   if (type && pst_info.analyze_registers (type))
     {
+      /* aarch64_function_arg_alignment has never had an effect on
+	 this case.  */
+
       /* The PCS says that it is invalid to pass an SVE value to an
 	 unprototyped function.  There is no ABI-defined location we
 	 can return in this case, so we have no real choice but to raise
@@ -7393,6 +7694,14 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 						 &nregs);
   gcc_assert (!sve_p || !allocate_nvrn);
 
+  unsigned int alignment
+    = aarch64_function_arg_alignment (mode, type, &abi_break,
+				      &abi_break_packed);
+
+  gcc_assert ((allocate_nvrn || alignment <= 16 * BITS_PER_UNIT)
+	      && (!alignment || abi_break < alignment)
+	      && (!abi_break_packed || alignment < abi_break_packed));
+
   /* allocate_ncrn may be false-positive, but allocate_nvrn is quite reliable.
      The following code thus handles passing by SIMD/FP registers first.  */
 
@@ -7402,6 +7711,8 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
      and homogenous short-vector aggregates (HVA).  */
   if (allocate_nvrn)
     {
+      /* aarch64_function_arg_alignment has never had an effect on
+	 this case.  */
       if (!pcum->silent_p && !TARGET_FLOAT)
 	aarch64_err_no_fpadvsimd (mode);
 
@@ -7458,19 +7769,29 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
       /* C.8 if the argument has an alignment of 16 then the NGRN is
 	 rounded up to the next even number.  */
       if (nregs == 2
-	  && ncrn % 2
+	  && ncrn % 2)
+	{
+	  /* Emit a warning if the alignment changed when taking the
+	     'packed' attribute into account.  */
+	  if (warn_pcs_change
+	      && abi_break_packed
+	      && ((abi_break_packed == 16 * BITS_PER_UNIT)
+		  != (alignment == 16 * BITS_PER_UNIT)))
+	    inform (input_location, "parameter passing for argument of type "
+		    "%qT changed in GCC 13.1", type);
+
 	  /* The == 16 * BITS_PER_UNIT instead of >= 16 * BITS_PER_UNIT
 	     comparison is there because for > 16 * BITS_PER_UNIT
 	     alignment nregs should be > 2 and therefore it should be
 	     passed by reference rather than value.  */
-	  && (aarch64_function_arg_alignment (mode, type, &abi_break)
-	      == 16 * BITS_PER_UNIT))
-	{
-	  if (abi_break && warn_psabi && currently_expanding_gimple_stmt)
-	    inform (input_location, "parameter passing for argument of type "
-		    "%qT changed in GCC 9.1", type);
-	  ++ncrn;
-	  gcc_assert (ncrn + nregs <= NUM_ARG_REGS);
+	  if (alignment == 16 * BITS_PER_UNIT)
+	    {
+	      if (warn_pcs_change && abi_break)
+		inform (input_location, "parameter passing for argument of type "
+			"%qT changed in GCC 9.1", type);
+	      ++ncrn;
+	      gcc_assert (ncrn + nregs <= NUM_ARG_REGS);
+	    }
 	}
 
       /* If an argument with an SVE mode needs to be shifted up to the
@@ -7523,13 +7844,19 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 on_stack:
   pcum->aapcs_stack_words = size / UNITS_PER_WORD;
 
-  if (aarch64_function_arg_alignment (mode, type, &abi_break)
-      == 16 * BITS_PER_UNIT)
+  if (warn_pcs_change
+      && abi_break_packed
+      && ((abi_break_packed >= 16 * BITS_PER_UNIT)
+	  != (alignment >= 16 * BITS_PER_UNIT)))
+    inform (input_location, "parameter passing for argument of type "
+	    "%qT changed in GCC 13.1", type);
+
+  if (alignment == 16 * BITS_PER_UNIT)
     {
       int new_size = ROUND_UP (pcum->aapcs_stack_size, 16 / UNITS_PER_WORD);
       if (pcum->aapcs_stack_size != new_size)
 	{
-	  if (abi_break && warn_psabi && currently_expanding_gimple_stmt)
+	  if (warn_pcs_change && abi_break)
 	    inform (input_location, "parameter passing for argument of type "
 		    "%qT changed in GCC 9.1", type);
 	  pcum->aapcs_stack_size = new_size;
@@ -7646,17 +7973,13 @@ static unsigned int
 aarch64_function_arg_boundary (machine_mode mode, const_tree type)
 {
   unsigned int abi_break;
+  unsigned int abi_break_packed;
   unsigned int alignment = aarch64_function_arg_alignment (mode, type,
-							   &abi_break);
+							   &abi_break,
+							   &abi_break_packed);
+  /* We rely on aarch64_layout_arg and aarch64_gimplify_va_arg_expr
+     to emit warnings about ABI incompatibility.  */
   alignment = MIN (MAX (alignment, PARM_BOUNDARY), STACK_BOUNDARY);
-  if (abi_break & warn_psabi)
-    {
-      abi_break = MIN (MAX (abi_break, PARM_BOUNDARY), STACK_BOUNDARY);
-      if (alignment != abi_break)
-	inform (input_location, "parameter passing for argument of type "
-		"%qT changed in GCC 9.1", type);
-    }
-
   return alignment;
 }
 
@@ -8606,18 +8929,72 @@ aarch64_return_address_signing_enabled (void)
   if (crtl->calls_eh_return)
     return false;
 
-  /* If signing scope is AARCH64_FUNCTION_NON_LEAF, we only sign a leaf function
+  /* If signing scope is AARCH_FUNCTION_NON_LEAF, we only sign a leaf function
      if its LR is pushed onto stack.  */
-  return (aarch64_ra_sign_scope == AARCH64_FUNCTION_ALL
-	  || (aarch64_ra_sign_scope == AARCH64_FUNCTION_NON_LEAF
+  return (aarch_ra_sign_scope == AARCH_FUNCTION_ALL
+	  || (aarch_ra_sign_scope == AARCH_FUNCTION_NON_LEAF
 	      && known_ge (cfun->machine->frame.reg_offset[LR_REGNUM], 0)));
 }
 
+/* Only used by the arm backend.  */
+void aarch_bti_arch_check (void)
+{}
+
 /* Return TRUE if Branch Target Identification Mechanism is enabled.  */
 bool
-aarch64_bti_enabled (void)
+aarch_bti_enabled (void)
 {
-  return (aarch64_enable_bti == 1);
+  return (aarch_enable_bti == 1);
+}
+
+/* Check if INSN is a BTI J insn.  */
+bool
+aarch_bti_j_insn_p (rtx_insn *insn)
+{
+  if (!insn || !INSN_P (insn))
+    return false;
+
+  rtx pat = PATTERN (insn);
+  return GET_CODE (pat) == UNSPEC_VOLATILE && XINT (pat, 1) == UNSPECV_BTI_J;
+}
+
+/* Check if X (or any sub-rtx of X) is a PACIASP/PACIBSP instruction.  */
+bool
+aarch_pac_insn_p (rtx x)
+{
+  if (!INSN_P (x))
+    return false;
+
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, PATTERN (x), ALL)
+    {
+      rtx sub = *iter;
+      if (sub && GET_CODE (sub) == UNSPEC)
+	{
+	  int unspec_val = XINT (sub, 1);
+	  switch (unspec_val)
+	    {
+	    case UNSPEC_PACIASP:
+            case UNSPEC_PACIBSP:
+	      return true;
+
+	    default:
+	      return false;
+	    }
+	  iter.skip_subrtxes ();
+	}
+    }
+  return false;
+}
+
+rtx aarch_gen_bti_c (void)
+{
+  return gen_bti_c ();
+}
+
+rtx aarch_gen_bti_j (void)
+{
+  return gen_bti_j ();
 }
 
 /* The caller is going to use ST1D or LD1D to save or restore an SVE
@@ -9609,12 +9986,12 @@ aarch64_expand_prologue (void)
   /* Sign return address for functions.  */
   if (aarch64_return_address_signing_enabled ())
     {
-      switch (aarch64_ra_sign_key)
+      switch (aarch_ra_sign_key)
 	{
-	  case AARCH64_KEY_A:
+	  case AARCH_KEY_A:
 	    insn = emit_insn (gen_paciasp ());
 	    break;
-	  case AARCH64_KEY_B:
+	  case AARCH_KEY_B:
 	    insn = emit_insn (gen_pacibsp ());
 	    break;
 	  default:
@@ -9915,12 +10292,12 @@ aarch64_expand_epilogue (bool for_sibcall)
   if (aarch64_return_address_signing_enabled ()
       && (for_sibcall || !TARGET_ARMV8_3))
     {
-      switch (aarch64_ra_sign_key)
+      switch (aarch_ra_sign_key)
 	{
-	  case AARCH64_KEY_A:
+	  case AARCH_KEY_A:
 	    insn = emit_insn (gen_autiasp ());
 	    break;
-	  case AARCH64_KEY_B:
+	  case AARCH_KEY_B:
 	    insn = emit_insn (gen_autibsp ());
 	    break;
 	  default:
@@ -9999,7 +10376,7 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   rtx_insn *insn;
   const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk));
 
-  if (aarch64_bti_enabled ())
+  if (aarch_bti_enabled ())
     emit_insn (gen_bti_c());
 
   reload_completed = 1;
@@ -10096,207 +10473,6 @@ aarch64_tls_referenced_p (rtx x)
   return false;
 }
 
-
-/* Return true if val can be encoded as a 12-bit unsigned immediate with
-   a left shift of 0 or 12 bits.  */
-bool
-aarch64_uimm12_shift (HOST_WIDE_INT val)
-{
-  return ((val & (((HOST_WIDE_INT) 0xfff) << 0)) == val
-	  || (val & (((HOST_WIDE_INT) 0xfff) << 12)) == val
-	  );
-}
-
-/* Returns the nearest value to VAL that will fit as a 12-bit unsigned immediate
-   that can be created with a left shift of 0 or 12.  */
-static HOST_WIDE_INT
-aarch64_clamp_to_uimm12_shift (HOST_WIDE_INT val)
-{
-  /* Check to see if the value fits in 24 bits, as that is the maximum we can
-     handle correctly.  */
-  gcc_assert ((val & 0xffffff) == val);
-
-  if (((val & 0xfff) << 0) == val)
-    return val;
-
-  return val & (0xfff << 12);
-}
-
-/* Return true if val is an immediate that can be loaded into a
-   register by a MOVZ instruction.  */
-static bool
-aarch64_movw_imm (HOST_WIDE_INT val, scalar_int_mode mode)
-{
-  if (GET_MODE_SIZE (mode) > 4)
-    {
-      if ((val & (((HOST_WIDE_INT) 0xffff) << 32)) == val
-	  || (val & (((HOST_WIDE_INT) 0xffff) << 48)) == val)
-	return 1;
-    }
-  else
-    {
-      /* Ignore sign extension.  */
-      val &= (HOST_WIDE_INT) 0xffffffff;
-    }
-  return ((val & (((HOST_WIDE_INT) 0xffff) << 0)) == val
-	  || (val & (((HOST_WIDE_INT) 0xffff) << 16)) == val);
-}
-
-/* Test whether:
-
-     X = (X & AND_VAL) | IOR_VAL;
-
-   can be implemented using:
-
-     MOVK X, #(IOR_VAL >> shift), LSL #shift
-
-   Return the shift if so, otherwise return -1.  */
-int
-aarch64_movk_shift (const wide_int_ref &and_val,
-		    const wide_int_ref &ior_val)
-{
-  unsigned int precision = and_val.get_precision ();
-  unsigned HOST_WIDE_INT mask = 0xffff;
-  for (unsigned int shift = 0; shift < precision; shift += 16)
-    {
-      if (and_val == ~mask && (ior_val & mask) == ior_val)
-	return shift;
-      mask <<= 16;
-    }
-  return -1;
-}
-
-/* VAL is a value with the inner mode of MODE.  Replicate it to fill a
-   64-bit (DImode) integer.  */
-
-static unsigned HOST_WIDE_INT
-aarch64_replicate_bitmask_imm (unsigned HOST_WIDE_INT val, machine_mode mode)
-{
-  unsigned int size = GET_MODE_UNIT_PRECISION (mode);
-  while (size < 64)
-    {
-      val &= (HOST_WIDE_INT_1U << size) - 1;
-      val |= val << size;
-      size *= 2;
-    }
-  return val;
-}
-
-/* Multipliers for repeating bitmasks of width 32, 16, 8, 4, and 2.  */
-
-static const unsigned HOST_WIDE_INT bitmask_imm_mul[] =
-  {
-    0x0000000100000001ull,
-    0x0001000100010001ull,
-    0x0101010101010101ull,
-    0x1111111111111111ull,
-    0x5555555555555555ull,
-  };
-
-
-/* Return true if val is a valid bitmask immediate.  */
-
-bool
-aarch64_bitmask_imm (HOST_WIDE_INT val_in, machine_mode mode)
-{
-  unsigned HOST_WIDE_INT val, tmp, mask, first_one, next_one;
-  int bits;
-
-  /* Check for a single sequence of one bits and return quickly if so.
-     The special cases of all ones and all zeroes returns false.  */
-  val = aarch64_replicate_bitmask_imm (val_in, mode);
-  tmp = val + (val & -val);
-
-  if (tmp == (tmp & -tmp))
-    return (val + 1) > 1;
-
-  /* Replicate 32-bit immediates so we can treat them as 64-bit.  */
-  if (mode == SImode)
-    val = (val << 32) | (val & 0xffffffff);
-
-  /* Invert if the immediate doesn't start with a zero bit - this means we
-     only need to search for sequences of one bits.  */
-  if (val & 1)
-    val = ~val;
-
-  /* Find the first set bit and set tmp to val with the first sequence of one
-     bits removed.  Return success if there is a single sequence of ones.  */
-  first_one = val & -val;
-  tmp = val & (val + first_one);
-
-  if (tmp == 0)
-    return true;
-
-  /* Find the next set bit and compute the difference in bit position.  */
-  next_one = tmp & -tmp;
-  bits = clz_hwi (first_one) - clz_hwi (next_one);
-  mask = val ^ tmp;
-
-  /* Check the bit position difference is a power of 2, and that the first
-     sequence of one bits fits within 'bits' bits.  */
-  if ((mask >> bits) != 0 || bits != (bits & -bits))
-    return false;
-
-  /* Check the sequence of one bits is repeated 64/bits times.  */
-  return val == mask * bitmask_imm_mul[__builtin_clz (bits) - 26];
-}
-
-/* Create mask of ones, covering the lowest to highest bits set in VAL_IN.  
-   Assumed precondition: VAL_IN Is not zero.  */
-
-unsigned HOST_WIDE_INT
-aarch64_and_split_imm1 (HOST_WIDE_INT val_in)
-{
-  int lowest_bit_set = ctz_hwi (val_in);
-  int highest_bit_set = floor_log2 (val_in);
-  gcc_assert (val_in != 0);
-
-  return ((HOST_WIDE_INT_UC (2) << highest_bit_set) -
-	  (HOST_WIDE_INT_1U << lowest_bit_set));
-}
-
-/* Create constant where bits outside of lowest bit set to highest bit set
-   are set to 1.  */
-
-unsigned HOST_WIDE_INT
-aarch64_and_split_imm2 (HOST_WIDE_INT val_in)
-{
-  return val_in | ~aarch64_and_split_imm1 (val_in);
-}
-
-/* Return true if VAL_IN is a valid 'and' bitmask immediate.  */
-
-bool
-aarch64_and_bitmask_imm (unsigned HOST_WIDE_INT val_in, machine_mode mode)
-{
-  scalar_int_mode int_mode;
-  if (!is_a <scalar_int_mode> (mode, &int_mode))
-    return false;
-
-  if (aarch64_bitmask_imm (val_in, int_mode))
-    return false;
-
-  if (aarch64_move_imm (val_in, int_mode))
-    return false;
-
-  unsigned HOST_WIDE_INT imm2 = aarch64_and_split_imm2 (val_in);
-
-  return aarch64_bitmask_imm (imm2, int_mode);
-}
-
-/* Return true if val is an immediate that can be loaded into a
-   register in a single instruction.  */
-bool
-aarch64_move_imm (HOST_WIDE_INT val, machine_mode mode)
-{
-  scalar_int_mode int_mode;
-  if (!is_a <scalar_int_mode> (mode, &int_mode))
-    return false;
-
-  if (aarch64_movw_imm (val, int_mode) || aarch64_movw_imm (~val, int_mode))
-    return 1;
-  return aarch64_bitmask_imm (val, int_mode);
-}
 
 static bool
 aarch64_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
@@ -11093,9 +11269,7 @@ aarch64_float_const_rtx_p (rtx x)
       && SCALAR_FLOAT_MODE_P (mode)
       && aarch64_reinterpret_float_as_int (x, &ival))
     {
-      scalar_int_mode imode = (mode == HFmode
-			       ? SImode
-			       : int_mode_for_mode (mode).require ());
+      machine_mode imode = known_eq (GET_MODE_SIZE (mode), 8) ? DImode : SImode;
       int num_instr = aarch64_internal_mov_immediate
 			(NULL_RTX, gen_int_mode (ival, imode), false, imode);
       return num_instr < 3;
@@ -11272,7 +11446,7 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
   if (y == const0_rtx && (REG_P (x) || SUBREG_P (x))
       && (code == EQ || code == NE)
       && (mode_x == HImode || mode_x == QImode))
-    return CC_NZmode;
+    return CC_Zmode;
 
   /* Similarly, comparisons of zero_extends from shorter modes can
      be performed using an ANDS with an immediate mask.  */
@@ -11280,15 +11454,29 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
       && (mode_x == SImode || mode_x == DImode)
       && (GET_MODE (XEXP (x, 0)) == HImode || GET_MODE (XEXP (x, 0)) == QImode)
       && (code == EQ || code == NE))
-    return CC_NZmode;
+    return CC_Zmode;
 
+  /* Zero extracts support equality comparisons.  */
+  if ((mode_x == SImode || mode_x == DImode)
+      && y == const0_rtx
+      && (code_x == ZERO_EXTRACT && CONST_INT_P (XEXP (x, 1))
+	  && CONST_INT_P (XEXP (x, 2)))
+      && (code == EQ || code == NE))
+    return CC_Zmode;
+
+  /* ANDS/BICS/TST support equality and all signed comparisons.  */
+  if ((mode_x == SImode || mode_x == DImode)
+      && y == const0_rtx
+      && (code_x == AND)
+      && (code == EQ || code == NE || code == LT || code == GE
+	  || code == GT || code == LE))
+    return CC_NZVmode;
+
+  /* ADDS/SUBS correctly set N and Z flags.  */
   if ((mode_x == SImode || mode_x == DImode)
       && y == const0_rtx
       && (code == EQ || code == NE || code == LT || code == GE)
-      && (code_x == PLUS || code_x == MINUS || code_x == AND
-	  || code_x == NEG
-	  || (code_x == ZERO_EXTRACT && CONST_INT_P (XEXP (x, 1))
-	      && CONST_INT_P (XEXP (x, 2)))))
+      && (code_x == PLUS || code_x == MINUS || code_x == NEG))
     return CC_NZmode;
 
   /* A compare with a shifted operand.  Because of canonicalization,
@@ -11421,6 +11609,19 @@ aarch64_get_condition_code_1 (machine_mode mode, enum rtx_code comp_code)
 	case GTU: return AARCH64_HI; /* = pmore */
 	case LEU: return AARCH64_LS; /* = plast */
 	case LTU: return AARCH64_CC; /* = last */
+	default: return -1;
+	}
+      break;
+
+    case E_CC_NZVmode:
+      switch (comp_code)
+	{
+	case NE: return AARCH64_NE;
+	case EQ: return AARCH64_EQ;
+	case GE: return AARCH64_PL;
+	case LT: return AARCH64_MI;
+	case GT: return AARCH64_GT;
+	case LE: return AARCH64_LE;
 	default: return -1;
 	}
       break;
@@ -12824,7 +13025,7 @@ aarch64_output_casesi (rtx *operands)
 int
 aarch64_uxt_size (int shift, HOST_WIDE_INT mask)
 {
-  if (shift >= 0 && shift <= 3)
+  if (shift >= 0 && shift <= 4)
     {
       int size;
       for (size = 8; size <= 32; size *= 2)
@@ -13726,10 +13927,10 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 	     proportionally expensive to the number of instructions
 	     required to build that constant.  This is true whether we
 	     are compiling for SPEED or otherwise.  */
-	  if (!is_a <scalar_int_mode> (mode, &int_mode))
-	    int_mode = word_mode;
+	  machine_mode imode = known_le (GET_MODE_SIZE (mode), 4)
+				? SImode : DImode;
 	  *cost = COSTS_N_INSNS (aarch64_internal_mov_immediate
-				 (NULL_RTX, x, false, int_mode));
+				 (NULL_RTX, x, false, imode));
 	}
       return true;
 
@@ -13745,9 +13946,8 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 	  bool succeed = aarch64_reinterpret_float_as_int (x, &ival);
 	  gcc_assert (succeed);
 
-	  scalar_int_mode imode = (mode == HFmode
-				   ? SImode
-				   : int_mode_for_mode (mode).require ());
+	  machine_mode imode = known_eq (GET_MODE_SIZE (mode), 8)
+				? DImode : SImode;
 	  int ncost = aarch64_internal_mov_immediate
 		(NULL_RTX, gen_int_mode (ival, imode), false, imode);
 	  *cost += COSTS_N_INSNS (ncost);
@@ -14123,6 +14323,16 @@ cost_plus:
 			& AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS))
 		  *cost += COSTS_N_INSNS (1);
 	      }
+	    return true;
+	  }
+
+	if (aarch64_pluslong_immediate (op1, mode))
+	  {
+	    /* 24-bit add in 2 instructions or 12-bit shifted add.  */
+	    if ((INTVAL (op1) & 0xfff) != 0)
+	      *cost += COSTS_N_INSNS (1);
+
+	    *cost += rtx_cost (op0, mode, PLUS, 0, speed);
 	    return true;
 	  }
 
@@ -15128,7 +15338,7 @@ aarch64_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   if (!new_stmt)
     return false;
 
-  gsi_replace (gsi, new_stmt, true);
+  gsi_replace (gsi, new_stmt, false);
   return true;
 }
 
@@ -15451,6 +15661,33 @@ aarch64_first_cycle_multipass_dfa_lookahead_guard (rtx_insn *insn,
 
 /* Vectorizer cost model target hooks.  */
 
+/* If a vld1 from address ADDR should be recorded in vector_load_decls,
+   return the decl that should be recorded.  Return null otherwise.  */
+tree
+aarch64_vector_load_decl (tree addr)
+{
+  if (TREE_CODE (addr) != ADDR_EXPR)
+    return NULL_TREE;
+  tree base = get_base_address (TREE_OPERAND (addr, 0));
+  if (TREE_CODE (base) != VAR_DECL)
+    return NULL_TREE;
+  return base;
+}
+
+/* Return true if STMT_INFO accesses a decl that is known to be the
+   argument to a vld1 in the same function.  */
+static bool
+aarch64_accesses_vector_load_decl_p (stmt_vec_info stmt_info)
+{
+  if (!cfun->machine->vector_load_decls)
+    return false;
+  auto dr = STMT_VINFO_DATA_REF (stmt_info);
+  if (!dr)
+    return false;
+  tree decl = aarch64_vector_load_decl (DR_BASE_ADDRESS (dr));
+  return decl && cfun->machine->vector_load_decls->contains (decl);
+}
+
 /* Information about how the CPU would issue the scalar, Advanced SIMD
    or SVE version of a vector loop, using the scheme defined by the
    aarch64_base_vec_issue_info hierarchy of structures.  */
@@ -15566,7 +15803,7 @@ aarch64_vec_op_count::rename_cycles_per_iter () const
 {
   if (sve_issue_info () == &neoverse512tvb_sve_issue_info
       || sve_issue_info () == &neoversen2_sve_issue_info
-      || sve_issue_info () == &demeter_sve_issue_info)
+      || sve_issue_info () == &neoversev2_sve_issue_info)
     /* + 1 for an addition.  We've already counted a general op for each
        store, so we don't need to account for stores separately.  The branch
        reads no registers and so does not need to be counted either.
@@ -15680,6 +15917,20 @@ private:
   /* This loop uses an average operation that is not supported by SVE, but is
      supported by Advanced SIMD and SVE2.  */
   bool m_has_avg = false;
+
+  /* True if the vector body contains a store to a decl and if the
+     function is known to have a vld1 from the same decl.
+
+     In the Advanced SIMD ACLE, the recommended endian-agnostic way of
+     initializing a vector is:
+
+       float f[4] = { elts };
+       float32x4_t x = vld1q_f32(f);
+
+     We should strongly prefer vectorization of the initialization of f,
+     so that the store to f and the load back can be optimized away,
+     leaving a vectorization of { elts }.  */
+  bool m_stores_to_vector_load_decl = false;
 
   /* - If M_VEC_FLAGS is zero then we're costing the original scalar code.
      - If M_VEC_FLAGS & VEC_ADVSIMD is nonzero then we're costing Advanced
@@ -16697,6 +16948,18 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	    }
 	}
     }
+
+  /* If the statement stores to a decl that is known to be the argument
+     to a vld1 in the same function, ignore the store for costing purposes.
+     See the comment above m_stores_to_vector_load_decl for more details.  */
+  if (stmt_info
+      && (kind == vector_store || kind == unaligned_store)
+      && aarch64_accesses_vector_load_decl_p (stmt_info))
+    {
+      stmt_cost = 0;
+      m_stores_to_vector_load_decl = true;
+    }
+
   return record_stmt_cost (stmt_info, where, (count * stmt_cost).ceil ());
 }
 
@@ -16986,12 +17249,21 @@ aarch64_vector_costs::finish_cost (const vector_costs *uncast_scalar_costs)
 
   /* Apply the heuristic described above m_stp_sequence_cost.  Prefer
      the scalar code in the event of a tie, since there is more chance
-     of scalar code being optimized with surrounding operations.  */
+     of scalar code being optimized with surrounding operations.
+
+     In addition, if the vector body is a simple store to a decl that
+     is elsewhere loaded using vld1, strongly prefer the vector form,
+     to the extent of giving the prologue a zero cost.  See the comment
+     above m_stores_to_vector_load_decl for details.  */
   if (!loop_vinfo
       && scalar_costs
-      && m_stp_sequence_cost != ~0U
-      && m_stp_sequence_cost >= scalar_costs->m_stp_sequence_cost)
-    m_costs[vect_body] = 2 * scalar_costs->total_cost ();
+      && m_stp_sequence_cost != ~0U)
+    {
+      if (m_stores_to_vector_load_decl)
+	m_costs[vect_prologue] = 0;
+      else if (m_stp_sequence_cost >= scalar_costs->m_stp_sequence_cost)
+	m_costs[vect_body] = 2 * scalar_costs->total_cost ();
+    }
 
   vector_costs::finish_cost (scalar_costs);
 }
@@ -17112,14 +17384,15 @@ static void initialize_aarch64_code_model (struct gcc_options *);
 
 /* Parse the TO_PARSE string and put the architecture struct that it
    selects into RES and the architectural features into ISA_FLAGS.
-   Return an aarch64_parse_opt_result describing the parse result.
+   Return an aarch_parse_opt_result describing the parse result.
    If there is an error parsing, RES and ISA_FLAGS are left unchanged.
    When the TO_PARSE string contains an invalid extension,
    a copy of the string is created and stored to INVALID_EXTENSION.  */
 
-static enum aarch64_parse_opt_result
+static enum aarch_parse_opt_result
 aarch64_parse_arch (const char *to_parse, const struct processor **res,
-		    uint64_t *isa_flags, std::string *invalid_extension)
+		    aarch64_feature_flags *isa_flags,
+		    std::string *invalid_extension)
 {
   const char *ext;
   const struct processor *arch;
@@ -17133,7 +17406,7 @@ aarch64_parse_arch (const char *to_parse, const struct processor **res,
     len = strlen (to_parse);
 
   if (len == 0)
-    return AARCH64_PARSE_MISSING_ARG;
+    return AARCH_PARSE_MISSING_ARG;
 
 
   /* Loop through the list of supported ARCHes to find a match.  */
@@ -17142,39 +17415,40 @@ aarch64_parse_arch (const char *to_parse, const struct processor **res,
       if (strlen (arch->name) == len
 	  && strncmp (arch->name, to_parse, len) == 0)
 	{
-	  uint64_t isa_temp = arch->flags;
+	  auto isa_temp = arch->flags;
 
 	  if (ext != NULL)
 	    {
 	      /* TO_PARSE string contains at least one extension.  */
-	      enum aarch64_parse_opt_result ext_res
+	      enum aarch_parse_opt_result ext_res
 		= aarch64_parse_extension (ext, &isa_temp, invalid_extension);
 
-	      if (ext_res != AARCH64_PARSE_OK)
+	      if (ext_res != AARCH_PARSE_OK)
 		return ext_res;
 	    }
 	  /* Extension parsing was successful.  Confirm the result
 	     arch and ISA flags.  */
 	  *res = arch;
 	  *isa_flags = isa_temp;
-	  return AARCH64_PARSE_OK;
+	  return AARCH_PARSE_OK;
 	}
     }
 
   /* ARCH name not found in list.  */
-  return AARCH64_PARSE_INVALID_ARG;
+  return AARCH_PARSE_INVALID_ARG;
 }
 
 /* Parse the TO_PARSE string and put the result tuning in RES and the
-   architecture flags in ISA_FLAGS.  Return an aarch64_parse_opt_result
+   architecture flags in ISA_FLAGS.  Return an aarch_parse_opt_result
    describing the parse result.  If there is an error parsing, RES and
    ISA_FLAGS are left unchanged.
    When the TO_PARSE string contains an invalid extension,
    a copy of the string is created and stored to INVALID_EXTENSION.  */
 
-static enum aarch64_parse_opt_result
+static enum aarch_parse_opt_result
 aarch64_parse_cpu (const char *to_parse, const struct processor **res,
-		   uint64_t *isa_flags, std::string *invalid_extension)
+		   aarch64_feature_flags *isa_flags,
+		   std::string *invalid_extension)
 {
   const char *ext;
   const struct processor *cpu;
@@ -17188,7 +17462,7 @@ aarch64_parse_cpu (const char *to_parse, const struct processor **res,
     len = strlen (to_parse);
 
   if (len == 0)
-    return AARCH64_PARSE_MISSING_ARG;
+    return AARCH_PARSE_MISSING_ARG;
 
 
   /* Loop through the list of supported CPUs to find a match.  */
@@ -17196,35 +17470,34 @@ aarch64_parse_cpu (const char *to_parse, const struct processor **res,
     {
       if (strlen (cpu->name) == len && strncmp (cpu->name, to_parse, len) == 0)
 	{
-	  uint64_t isa_temp = cpu->flags;
-
+	  auto isa_temp = cpu->flags;
 
 	  if (ext != NULL)
 	    {
 	      /* TO_PARSE string contains at least one extension.  */
-	      enum aarch64_parse_opt_result ext_res
+	      enum aarch_parse_opt_result ext_res
 		= aarch64_parse_extension (ext, &isa_temp, invalid_extension);
 
-	      if (ext_res != AARCH64_PARSE_OK)
+	      if (ext_res != AARCH_PARSE_OK)
 		return ext_res;
 	    }
 	  /* Extension parsing was successfull.  Confirm the result
 	     cpu and ISA flags.  */
 	  *res = cpu;
 	  *isa_flags = isa_temp;
-	  return AARCH64_PARSE_OK;
+	  return AARCH_PARSE_OK;
 	}
     }
 
   /* CPU name not found in list.  */
-  return AARCH64_PARSE_INVALID_ARG;
+  return AARCH_PARSE_INVALID_ARG;
 }
 
 /* Parse the TO_PARSE string and put the cpu it selects into RES.
-   Return an aarch64_parse_opt_result describing the parse result.
+   Return an aarch_parse_opt_result describing the parse result.
    If the parsing fails the RES does not change.  */
 
-static enum aarch64_parse_opt_result
+static enum aarch_parse_opt_result
 aarch64_parse_tune (const char *to_parse, const struct processor **res)
 {
   const struct processor *cpu;
@@ -17235,12 +17508,12 @@ aarch64_parse_tune (const char *to_parse, const struct processor **res)
       if (strcmp (cpu->name, to_parse) == 0)
 	{
 	  *res = cpu;
-	  return AARCH64_PARSE_OK;
+	  return AARCH_PARSE_OK;
 	}
     }
 
   /* CPU name not found in list.  */
-  return AARCH64_PARSE_INVALID_ARG;
+  return AARCH_PARSE_INVALID_ARG;
 }
 
 /* Parse TOKEN, which has length LENGTH to see if it is an option
@@ -17828,25 +18101,25 @@ aarch64_print_hint_for_extensions (const std::string &str)
 
 static bool
 aarch64_validate_mcpu (const char *str, const struct processor **res,
-		       uint64_t *isa_flags)
+		       aarch64_feature_flags *isa_flags)
 {
   std::string invalid_extension;
-  enum aarch64_parse_opt_result parse_res
+  enum aarch_parse_opt_result parse_res
     = aarch64_parse_cpu (str, res, isa_flags, &invalid_extension);
 
-  if (parse_res == AARCH64_PARSE_OK)
+  if (parse_res == AARCH_PARSE_OK)
     return true;
 
   switch (parse_res)
     {
-      case AARCH64_PARSE_MISSING_ARG:
+      case AARCH_PARSE_MISSING_ARG:
 	error ("missing cpu name in %<-mcpu=%s%>", str);
 	break;
-      case AARCH64_PARSE_INVALID_ARG:
+      case AARCH_PARSE_INVALID_ARG:
 	error ("unknown value %qs for %<-mcpu%>", str);
 	aarch64_print_hint_for_core (str);
 	break;
-      case AARCH64_PARSE_INVALID_FEATURE:
+      case AARCH_PARSE_INVALID_FEATURE:
 	error ("invalid feature modifier %qs in %<-mcpu=%s%>",
 	       invalid_extension.c_str (), str);
 	aarch64_print_hint_for_extensions (invalid_extension);
@@ -17931,110 +18204,6 @@ aarch64_validate_sls_mitigation (const char *const_str)
   free (str_root);
 }
 
-/* Parses CONST_STR for branch protection features specified in
-   aarch64_branch_protect_types, and set any global variables required.  Returns
-   the parsing result and assigns LAST_STR to the last processed token from
-   CONST_STR so that it can be used for error reporting.  */
-
-static enum
-aarch64_parse_opt_result aarch64_parse_branch_protection (const char *const_str,
-							  char** last_str)
-{
-  char *str_root = xstrdup (const_str);
-  char* token_save = NULL;
-  char *str = strtok_r (str_root, "+", &token_save);
-  enum aarch64_parse_opt_result res = AARCH64_PARSE_OK;
-  if (!str)
-    res = AARCH64_PARSE_MISSING_ARG;
-  else
-    {
-      char *next_str = strtok_r (NULL, "+", &token_save);
-      /* Reset the branch protection features to their defaults.  */
-      aarch64_handle_no_branch_protection (NULL, NULL);
-
-      while (str && res == AARCH64_PARSE_OK)
-	{
-	  const aarch64_branch_protect_type* type = aarch64_branch_protect_types;
-	  bool found = false;
-	  /* Search for this type.  */
-	  while (type && type->name && !found && res == AARCH64_PARSE_OK)
-	    {
-	      if (strcmp (str, type->name) == 0)
-		{
-		  found = true;
-		  res = type->handler (str, next_str);
-		  str = next_str;
-		  next_str = strtok_r (NULL, "+", &token_save);
-		}
-	      else
-		type++;
-	    }
-	  if (found && res == AARCH64_PARSE_OK)
-	    {
-	      bool found_subtype = true;
-	      /* Loop through each token until we find one that isn't a
-		 subtype.  */
-	      while (found_subtype)
-		{
-		  found_subtype = false;
-		  const aarch64_branch_protect_type *subtype = type->subtypes;
-		  /* Search for the subtype.  */
-		  while (str && subtype && subtype->name && !found_subtype
-			  && res == AARCH64_PARSE_OK)
-		    {
-		      if (strcmp (str, subtype->name) == 0)
-			{
-			  found_subtype = true;
-			  res = subtype->handler (str, next_str);
-			  str = next_str;
-			  next_str = strtok_r (NULL, "+", &token_save);
-			}
-		      else
-			subtype++;
-		    }
-		}
-	    }
-	  else if (!found)
-	    res = AARCH64_PARSE_INVALID_ARG;
-	}
-    }
-  /* Copy the last processed token into the argument to pass it back.
-    Used by option and attribute validation to print the offending token.  */
-  if (last_str)
-    {
-      if (str) strcpy (*last_str, str);
-      else *last_str = NULL;
-    }
-  if (res == AARCH64_PARSE_OK)
-    {
-      /* If needed, alloc the accepted string then copy in const_str.
-	Used by override_option_after_change_1.  */
-      if (!accepted_branch_protection_string)
-	accepted_branch_protection_string = (char *) xmalloc (
-						      BRANCH_PROTECT_STR_MAX
-							+ 1);
-      strncpy (accepted_branch_protection_string, const_str,
-		BRANCH_PROTECT_STR_MAX + 1);
-      /* Forcibly null-terminate.  */
-      accepted_branch_protection_string[BRANCH_PROTECT_STR_MAX] = '\0';
-    }
-  return res;
-}
-
-static bool
-aarch64_validate_mbranch_protection (const char *const_str)
-{
-  char *str = (char *) xmalloc (strlen (const_str));
-  enum aarch64_parse_opt_result res =
-    aarch64_parse_branch_protection (const_str, &str);
-  if (res == AARCH64_PARSE_INVALID_ARG)
-    error ("invalid argument %<%s%> for %<-mbranch-protection=%>", str);
-  else if (res == AARCH64_PARSE_MISSING_ARG)
-    error ("missing argument for %<-mbranch-protection=%>");
-  free (str);
-  return res == AARCH64_PARSE_OK;
-}
-
 /* Validate a command-line -march option.  Parse the arch and extensions
    (if any) specified in STR and throw errors if appropriate.  Put the
    results, if they are valid, in RES and ISA_FLAGS.  Return whether the
@@ -18042,30 +18211,30 @@ aarch64_validate_mbranch_protection (const char *const_str)
 
 static bool
 aarch64_validate_march (const char *str, const struct processor **res,
-			 uint64_t *isa_flags)
+			aarch64_feature_flags *isa_flags)
 {
   std::string invalid_extension;
-  enum aarch64_parse_opt_result parse_res
+  enum aarch_parse_opt_result parse_res
     = aarch64_parse_arch (str, res, isa_flags, &invalid_extension);
 
-  if (parse_res == AARCH64_PARSE_OK)
+  if (parse_res == AARCH_PARSE_OK)
     return true;
 
   switch (parse_res)
     {
-      case AARCH64_PARSE_MISSING_ARG:
+      case AARCH_PARSE_MISSING_ARG:
 	error ("missing arch name in %<-march=%s%>", str);
 	break;
-      case AARCH64_PARSE_INVALID_ARG:
+      case AARCH_PARSE_INVALID_ARG:
 	error ("unknown value %qs for %<-march%>", str);
 	aarch64_print_hint_for_arch (str);
 	/* A common user error is confusing -march and -mcpu.
 	   If the -march string matches a known CPU suggest -mcpu.  */
 	parse_res = aarch64_parse_cpu (str, res, isa_flags, &invalid_extension);
-	if (parse_res == AARCH64_PARSE_OK)
+	if (parse_res == AARCH_PARSE_OK)
 	  inform (input_location, "did you mean %<-mcpu=%s%>?", str);
 	break;
-      case AARCH64_PARSE_INVALID_FEATURE:
+      case AARCH_PARSE_INVALID_FEATURE:
 	error ("invalid feature modifier %qs in %<-march=%s%>",
 	       invalid_extension.c_str (), str);
 	aarch64_print_hint_for_extensions (invalid_extension);
@@ -18085,18 +18254,18 @@ aarch64_validate_march (const char *str, const struct processor **res,
 static bool
 aarch64_validate_mtune (const char *str, const struct processor **res)
 {
-  enum aarch64_parse_opt_result parse_res
+  enum aarch_parse_opt_result parse_res
     = aarch64_parse_tune (str, res);
 
-  if (parse_res == AARCH64_PARSE_OK)
+  if (parse_res == AARCH_PARSE_OK)
     return true;
 
   switch (parse_res)
     {
-      case AARCH64_PARSE_MISSING_ARG:
+      case AARCH_PARSE_MISSING_ARG:
 	error ("missing cpu name in %<-mtune=%s%>", str);
 	break;
-      case AARCH64_PARSE_INVALID_ARG:
+      case AARCH_PARSE_INVALID_ARG:
 	error ("unknown value %qs for %<-mtune%>", str);
 	aarch64_print_hint_for_core (str);
 	break;
@@ -18127,19 +18296,28 @@ aarch64_convert_sve_vector_bits (aarch64_sve_vector_bits_enum value)
     return (int) value / 64;
 }
 
+/* Set the global aarch64_asm_isa_flags to FLAGS and update
+   aarch64_isa_flags accordingly.  */
+
+void
+aarch64_set_asm_isa_flags (aarch64_feature_flags flags)
+{
+  aarch64_set_asm_isa_flags (&global_options, flags);
+}
+
 /* Implement TARGET_OPTION_OVERRIDE.  This is called once in the beginning
    and is used to parse the -m{cpu,tune,arch} strings and setup the initial
    tuning structs.  In particular it must set selected_tune and
-   aarch64_isa_flags that define the available ISA features and tuning
+   aarch64_asm_isa_flags that define the available ISA features and tuning
    decisions.  It must also set selected_arch as this will be used to
    output the .arch asm tags for each function.  */
 
 static void
 aarch64_override_options (void)
 {
-  uint64_t cpu_isa = 0;
-  uint64_t arch_isa = 0;
-  aarch64_isa_flags = 0;
+  aarch64_feature_flags cpu_isa = 0;
+  aarch64_feature_flags arch_isa = 0;
+  aarch64_set_asm_isa_flags (0);
 
   const struct processor *cpu = NULL;
   const struct processor *arch = NULL;
@@ -18149,7 +18327,7 @@ aarch64_override_options (void)
     aarch64_validate_sls_mitigation (aarch64_harden_sls_string);
 
   if (aarch64_branch_protection_string)
-    aarch64_validate_mbranch_protection (aarch64_branch_protection_string);
+    aarch_validate_mbranch_protection (aarch64_branch_protection_string);
 
   /* -mcpu=CPU is shorthand for -march=ARCH_FOR_CPU, -mtune=CPU.
      If either of -march or -mtune is given, they override their
@@ -18179,35 +18357,35 @@ aarch64_override_options (void)
 	}
 
       selected_arch = arch->arch;
-      aarch64_isa_flags = arch_isa;
+      aarch64_set_asm_isa_flags (arch_isa);
     }
   else if (cpu)
     {
       selected_arch = cpu->arch;
-      aarch64_isa_flags = cpu_isa;
+      aarch64_set_asm_isa_flags (cpu_isa);
     }
   else if (arch)
     {
       cpu = &all_cores[arch->ident];
       selected_arch = arch->arch;
-      aarch64_isa_flags = arch_isa;
+      aarch64_set_asm_isa_flags (arch_isa);
     }
   else
     {
       /* No -mcpu or -march specified, so use the default CPU.  */
       cpu = &all_cores[TARGET_CPU_DEFAULT];
       selected_arch = cpu->arch;
-      aarch64_isa_flags = cpu->flags;
+      aarch64_set_asm_isa_flags (cpu->flags);
     }
 
   selected_tune = tune ? tune->ident : cpu->ident;
 
-  if (aarch64_enable_bti == 2)
+  if (aarch_enable_bti == 2)
     {
 #ifdef TARGET_ENABLE_BTI
-      aarch64_enable_bti = 1;
+      aarch_enable_bti = 1;
 #else
-      aarch64_enable_bti = 0;
+      aarch_enable_bti = 0;
 #endif
     }
 
@@ -18217,9 +18395,9 @@ aarch64_override_options (void)
   if (!TARGET_ILP32 && accepted_branch_protection_string == NULL)
     {
 #ifdef TARGET_ENABLE_PAC_RET
-      aarch64_ra_sign_scope = AARCH64_FUNCTION_NON_LEAF;
+      aarch_ra_sign_scope = AARCH_FUNCTION_NON_LEAF;
 #else
-      aarch64_ra_sign_scope = AARCH64_FUNCTION_NONE;
+      aarch_ra_sign_scope = AARCH_FUNCTION_NONE;
 #endif
     }
 
@@ -18233,7 +18411,7 @@ aarch64_override_options (void)
   /* Convert -msve-vector-bits to a VG count.  */
   aarch64_sve_vg = aarch64_convert_sve_vector_bits (aarch64_sve_vector_bits);
 
-  if (aarch64_ra_sign_scope != AARCH64_FUNCTION_NONE && TARGET_ILP32)
+  if (aarch_ra_sign_scope != AARCH_FUNCTION_NONE && TARGET_ILP32)
     sorry ("return address signing is only supported for %<-mabi=lp64%>");
 
   /* The pass to insert speculation tracking runs before
@@ -18339,7 +18517,7 @@ aarch64_option_print (FILE *file, int indent, struct cl_target_option *ptr)
     = aarch64_get_tune_cpu (ptr->x_selected_tune);
   const struct processor *arch = aarch64_get_arch (ptr->x_selected_arch);
   std::string extension
-    = aarch64_get_extension_string_for_isa_flags (ptr->x_aarch64_isa_flags,
+    = aarch64_get_extension_string_for_isa_flags (ptr->x_aarch64_asm_isa_flags,
 						  arch->flags);
 
   fprintf (file, "%*sselected tune = %s\n", indent, "", cpu->name);
@@ -18447,26 +18625,28 @@ aarch64_handle_attr_arch (const char *str)
 {
   const struct processor *tmp_arch = NULL;
   std::string invalid_extension;
-  enum aarch64_parse_opt_result parse_res
-    = aarch64_parse_arch (str, &tmp_arch, &aarch64_isa_flags, &invalid_extension);
+  aarch64_feature_flags tmp_flags;
+  enum aarch_parse_opt_result parse_res
+    = aarch64_parse_arch (str, &tmp_arch, &tmp_flags, &invalid_extension);
 
-  if (parse_res == AARCH64_PARSE_OK)
+  if (parse_res == AARCH_PARSE_OK)
     {
       gcc_assert (tmp_arch);
       selected_arch = tmp_arch->arch;
+      aarch64_set_asm_isa_flags (tmp_flags);
       return true;
     }
 
   switch (parse_res)
     {
-      case AARCH64_PARSE_MISSING_ARG:
+      case AARCH_PARSE_MISSING_ARG:
 	error ("missing name in %<target(\"arch=\")%> pragma or attribute");
 	break;
-      case AARCH64_PARSE_INVALID_ARG:
+      case AARCH_PARSE_INVALID_ARG:
 	error ("invalid name %qs in %<target(\"arch=\")%> pragma or attribute", str);
 	aarch64_print_hint_for_arch (str);
 	break;
-      case AARCH64_PARSE_INVALID_FEATURE:
+      case AARCH_PARSE_INVALID_FEATURE:
 	error ("invalid feature modifier %s of value %qs in "
 	       "%<target()%> pragma or attribute", invalid_extension.c_str (), str);
 	aarch64_print_hint_for_extensions (invalid_extension);
@@ -18485,27 +18665,29 @@ aarch64_handle_attr_cpu (const char *str)
 {
   const struct processor *tmp_cpu = NULL;
   std::string invalid_extension;
-  enum aarch64_parse_opt_result parse_res
-    = aarch64_parse_cpu (str, &tmp_cpu, &aarch64_isa_flags, &invalid_extension);
+  aarch64_feature_flags tmp_flags;
+  enum aarch_parse_opt_result parse_res
+    = aarch64_parse_cpu (str, &tmp_cpu, &tmp_flags, &invalid_extension);
 
-  if (parse_res == AARCH64_PARSE_OK)
+  if (parse_res == AARCH_PARSE_OK)
     {
       gcc_assert (tmp_cpu);
       selected_tune = tmp_cpu->ident;
       selected_arch = tmp_cpu->arch;
+      aarch64_set_asm_isa_flags (tmp_flags);
       return true;
     }
 
   switch (parse_res)
     {
-      case AARCH64_PARSE_MISSING_ARG:
+      case AARCH_PARSE_MISSING_ARG:
 	error ("missing name in %<target(\"cpu=\")%> pragma or attribute");
 	break;
-      case AARCH64_PARSE_INVALID_ARG:
+      case AARCH_PARSE_INVALID_ARG:
 	error ("invalid name %qs in %<target(\"cpu=\")%> pragma or attribute", str);
 	aarch64_print_hint_for_core (str);
 	break;
-      case AARCH64_PARSE_INVALID_FEATURE:
+      case AARCH_PARSE_INVALID_FEATURE:
 	error ("invalid feature modifier %qs of value %qs in "
 	       "%<target()%> pragma or attribute", invalid_extension.c_str (), str);
 	aarch64_print_hint_for_extensions (invalid_extension);
@@ -18523,23 +18705,23 @@ aarch64_handle_attr_cpu (const char *str)
  aarch64_handle_attr_branch_protection (const char* str)
  {
   char *err_str = (char *) xmalloc (strlen (str) + 1);
-  enum aarch64_parse_opt_result res = aarch64_parse_branch_protection (str,
-								      &err_str);
+  enum aarch_parse_opt_result res = aarch_parse_branch_protection (str,
+								   &err_str);
   bool success = false;
   switch (res)
     {
-     case AARCH64_PARSE_MISSING_ARG:
+     case AARCH_PARSE_MISSING_ARG:
        error ("missing argument to %<target(\"branch-protection=\")%> pragma or"
 	      " attribute");
        break;
-     case AARCH64_PARSE_INVALID_ARG:
+     case AARCH_PARSE_INVALID_ARG:
        error ("invalid protection type %qs in %<target(\"branch-protection"
 	      "=\")%> pragma or attribute", err_str);
        break;
-     case AARCH64_PARSE_OK:
+     case AARCH_PARSE_OK:
        success = true;
       /* Fall through.  */
-     case AARCH64_PARSE_INVALID_FEATURE:
+     case AARCH_PARSE_INVALID_FEATURE:
        break;
      default:
        gcc_unreachable ();
@@ -18554,10 +18736,10 @@ static bool
 aarch64_handle_attr_tune (const char *str)
 {
   const struct processor *tmp_tune = NULL;
-  enum aarch64_parse_opt_result parse_res
+  enum aarch_parse_opt_result parse_res
     = aarch64_parse_tune (str, &tmp_tune);
 
-  if (parse_res == AARCH64_PARSE_OK)
+  if (parse_res == AARCH_PARSE_OK)
     {
       gcc_assert (tmp_tune);
       selected_tune = tmp_tune->ident;
@@ -18566,7 +18748,7 @@ aarch64_handle_attr_tune (const char *str)
 
   switch (parse_res)
     {
-      case AARCH64_PARSE_INVALID_ARG:
+      case AARCH_PARSE_INVALID_ARG:
 	error ("invalid name %qs in %<target(\"tune=\")%> pragma or attribute", str);
 	aarch64_print_hint_for_core (str);
 	break;
@@ -18585,8 +18767,8 @@ aarch64_handle_attr_tune (const char *str)
 static bool
 aarch64_handle_attr_isa_flags (char *str)
 {
-  enum aarch64_parse_opt_result parse_res;
-  uint64_t isa_flags = aarch64_isa_flags;
+  enum aarch_parse_opt_result parse_res;
+  auto isa_flags = aarch64_asm_isa_flags;
 
   /* We allow "+nothing" in the beginning to clear out all architectural
      features if the user wants to handpick specific features.  */
@@ -18599,19 +18781,19 @@ aarch64_handle_attr_isa_flags (char *str)
   std::string invalid_extension;
   parse_res = aarch64_parse_extension (str, &isa_flags, &invalid_extension);
 
-  if (parse_res == AARCH64_PARSE_OK)
+  if (parse_res == AARCH_PARSE_OK)
     {
-      aarch64_isa_flags = isa_flags;
+      aarch64_set_asm_isa_flags (isa_flags);
       return true;
     }
 
   switch (parse_res)
     {
-      case AARCH64_PARSE_MISSING_ARG:
+      case AARCH_PARSE_MISSING_ARG:
 	error ("missing value in %<target()%> pragma or attribute");
 	break;
 
-      case AARCH64_PARSE_INVALID_FEATURE:
+      case AARCH_PARSE_INVALID_FEATURE:
 	error ("invalid feature modifier %qs of value %qs in "
 	       "%<target()%> pragma or attribute", invalid_extension.c_str (), str);
 	break;
@@ -18858,12 +19040,12 @@ aarch64_process_target_attr (tree args)
 	{
 	  /* Check if token is possibly an arch extension without
 	     leading '+'.  */
-	  uint64_t isa_temp = 0;
+	  aarch64_feature_flags isa_temp = 0;
 	  auto with_plus = std::string ("+") + token;
-	  enum aarch64_parse_opt_result ext_res
+	  enum aarch_parse_opt_result ext_res
 	    = aarch64_parse_extension (with_plus.c_str (), &isa_temp, nullptr);
 
-	  if (ext_res == AARCH64_PARSE_OK)
+	  if (ext_res == AARCH_PARSE_OK)
 	    error ("arch extension %<%s%> should be prefixed by %<+%>",
 		   token);
 	  else
@@ -19011,8 +19193,12 @@ aarch64_can_inline_p (tree caller, tree callee)
 					   : target_option_default_node);
 
   /* Callee's ISA flags should be a subset of the caller's.  */
+  if ((caller_opts->x_aarch64_asm_isa_flags
+       & callee_opts->x_aarch64_asm_isa_flags)
+      != callee_opts->x_aarch64_asm_isa_flags)
+    return false;
   if ((caller_opts->x_aarch64_isa_flags & callee_opts->x_aarch64_isa_flags)
-       != callee_opts->x_aarch64_isa_flags)
+      != callee_opts->x_aarch64_isa_flags)
     return false;
 
   /* Allow non-strict aligned functions inlining into strict
@@ -19554,8 +19740,10 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   size = int_size_in_bytes (type);
 
   unsigned int abi_break;
+  unsigned int abi_break_packed;
   align
-    = aarch64_function_arg_alignment (mode, type, &abi_break) / BITS_PER_UNIT;
+    = aarch64_function_arg_alignment (mode, type, &abi_break, &abi_break_packed)
+    / BITS_PER_UNIT;
 
   dw_align = false;
   adjust = 0;
@@ -19597,6 +19785,10 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 		      unshare_expr (valist), f_groff, NULL_TREE);
       rsize = ROUND_UP (size, UNITS_PER_WORD);
       nregs = rsize / UNITS_PER_WORD;
+
+      if (align <= 8 && abi_break_packed && warn_psabi)
+	inform (input_location, "parameter passing for argument of type "
+		"%qT changed in GCC 13.1", type);
 
       if (align > 8)
 	{
@@ -19741,7 +19933,7 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	  field_ptr_t = aarch64_fp16_ptr_type_node;
 	  break;
 	case E_BFmode:
-	  field_t = aarch64_bf16_type_node;
+	  field_t = bfloat16_type_node;
 	  field_ptr_t = aarch64_bf16_ptr_type_node;
 	  break;
 	case E_V2SImode:
@@ -19809,7 +20001,8 @@ aarch64_setup_incoming_varargs (cumulative_args_t cum_v,
      argument.  Advance a local copy of CUM past the last "real" named
      argument, to find out how many registers are left over.  */
   local_cum = *cum;
-  aarch64_function_arg_advance (pack_cumulative_args(&local_cum), arg);
+  if (!TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (current_function_decl)))
+    aarch64_function_arg_advance (pack_cumulative_args(&local_cum), arg);
 
   /* Found out how many registers we need to save.
      Honor tree-stdvar analysis results.  */
@@ -20644,6 +20837,8 @@ aarch64_mangle_type (const_tree type)
   /* Half-precision floating point types.  */
   if (TREE_CODE (type) == REAL_TYPE && TYPE_PRECISION (type) == 16)
     {
+      if (TYPE_MAIN_VARIANT (type) == float16_type_node)
+	return NULL;
       if (TYPE_MODE (type) == BFmode)
 	return "u6__bf16";
       else
@@ -21906,6 +22101,38 @@ aarch64_expand_vector_init (rtx target, rtx vals)
       return;
     }
 
+  /* Check for interleaving case.
+     For eg if initializer is (int16x8_t) {x, y, x, y, x, y, x, y}.
+     Generate following code:
+     dup v0.h, x
+     dup v1.h, y
+     zip1 v0.h, v0.h, v1.h
+     for "large enough" initializer.  */
+
+  if (n_elts >= 8)
+    {
+      int i;
+      for (i = 2; i < n_elts; i++)
+	if (!rtx_equal_p (XVECEXP (vals, 0, i), XVECEXP (vals, 0, i % 2)))
+	  break;
+
+      if (i == n_elts)
+	{
+	  machine_mode mode = GET_MODE (target);
+	  rtx dest[2];
+
+	  for (int i = 0; i < 2; i++)
+	    {
+	      rtx x = expand_vector_broadcast (mode, XVECEXP (vals, 0, i));
+	      dest[i] = force_reg (mode, x);
+	    }
+
+	  rtvec v = gen_rtvec (2, dest[0], dest[1]);
+	  emit_set_insn (target, gen_rtx_UNSPEC (mode, v, UNSPEC_ZIP1));
+	  return;
+	}
+    }
+
   enum insn_code icode = optab_handler (vec_set_optab, mode);
   gcc_assert (icode != CODE_FOR_nothing);
 
@@ -22474,7 +22701,7 @@ aarch64_declare_function_name (FILE *stream, const char* name,
   const struct processor *this_arch
     = aarch64_get_arch (targ_options->x_selected_arch);
 
-  uint64_t isa_flags = targ_options->x_aarch64_isa_flags;
+  auto isa_flags = targ_options->x_aarch64_asm_isa_flags;
   std::string extension
     = aarch64_get_extension_string_for_isa_flags (isa_flags,
 						  this_arch->flags);
@@ -22509,30 +22736,56 @@ aarch64_declare_function_name (FILE *stream, const char* name,
   cfun->machine->label_is_assembled = true;
 }
 
-/* Implement PRINT_PATCHABLE_FUNCTION_ENTRY.  Check if the patch area is after
-   the function label and emit a BTI if necessary.  */
+/* Implement PRINT_PATCHABLE_FUNCTION_ENTRY.  */
 
 void
 aarch64_print_patchable_function_entry (FILE *file,
 					unsigned HOST_WIDE_INT patch_area_size,
 					bool record_p)
 {
-  if (cfun->machine->label_is_assembled
-      && aarch64_bti_enabled ()
-      && !cgraph_node::get (cfun->decl)->only_called_directly_p ())
+  if (!cfun->machine->label_is_assembled)
     {
-      /* Remove the BTI that follows the patch area and insert a new BTI
-	 before the patch area right after the function label.  */
-      rtx_insn *insn = next_real_nondebug_insn (get_insns ());
-      if (insn
-	  && INSN_P (insn)
-	  && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
-	  && XINT (PATTERN (insn), 1) == UNSPECV_BTI_C)
-	delete_insn (insn);
-      asm_fprintf (file, "\thint\t34 // bti c\n");
+      /* Emit the patching area before the entry label, if any.  */
+      default_print_patchable_function_entry (file, patch_area_size,
+					      record_p);
+      return;
     }
 
-  default_print_patchable_function_entry (file, patch_area_size, record_p);
+  rtx pa = gen_patchable_area (GEN_INT (patch_area_size),
+			       GEN_INT (record_p));
+  basic_block bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
+
+  if (!aarch_bti_enabled ()
+      || cgraph_node::get (cfun->decl)->only_called_directly_p ())
+    {
+      /* Emit the patchable_area at the beginning of the function.  */
+      rtx_insn *insn = emit_insn_before (pa, BB_HEAD (bb));
+      INSN_ADDRESSES_NEW (insn, -1);
+      return;
+    }
+
+  rtx_insn *insn = next_real_nondebug_insn (get_insns ());
+  if (!insn
+      || !INSN_P (insn)
+      || GET_CODE (PATTERN (insn)) != UNSPEC_VOLATILE
+      || XINT (PATTERN (insn), 1) != UNSPECV_BTI_C)
+    {
+      /* Emit a BTI_C.  */
+      insn = emit_insn_before (gen_bti_c (), BB_HEAD (bb));
+    }
+
+  /* Emit the patchable_area after BTI_C.  */
+  insn = emit_insn_after (pa, insn);
+  INSN_ADDRESSES_NEW (insn, -1);
+}
+
+/* Output patchable area.  */
+
+void
+aarch64_output_patchable_area (unsigned int patch_area_size, bool record_p)
+{
+  default_print_patchable_function_entry (asm_out_file, patch_area_size,
+					  record_p);
 }
 
 /* Implement ASM_OUTPUT_DEF_FROM_DECLS.  Output .variant_pcs for aliases.  */
@@ -22564,7 +22817,7 @@ void
 aarch64_post_cfi_startproc (FILE *f, tree ignored ATTRIBUTE_UNUSED)
 {
   if (cfun->machine->frame.laid_out && aarch64_return_address_signing_enabled ()
-      && aarch64_ra_sign_key == AARCH64_KEY_B)
+      && aarch_ra_sign_key == AARCH_KEY_B)
 	asm_fprintf (f, "\t.cfi_b_key_frame\n");
 }
 
@@ -22578,7 +22831,7 @@ aarch64_start_file (void)
 
   const struct processor *default_arch
     = aarch64_get_arch (default_options->x_selected_arch);
-  uint64_t default_isa_flags = default_options->x_aarch64_isa_flags;
+  auto default_isa_flags = default_options->x_aarch64_asm_isa_flags;
   std::string extension
     = aarch64_get_extension_string_for_isa_flags (default_isa_flags,
 						  default_arch->flags);
@@ -24183,7 +24436,6 @@ aarch64_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
 
   return ret;
 }
-
 /* Generate a byte permute mask for a register of mode MODE,
    which has NUNITS units.  */
 
@@ -25454,6 +25706,34 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	}
     }
 
+  /* Fuse A+B+1 and A-B-1 */
+  if (simple_sets_p
+      && aarch64_fusion_enabled_p (AARCH64_FUSE_ADDSUB_2REG_CONST1))
+    {
+      /* We're trying to match:
+	  prev == (set (r0) (plus (r0) (r1)))
+	  curr == (set (r0) (plus (r0) (const_int 1)))
+	or:
+	  prev == (set (r0) (minus (r0) (r1)))
+	  curr == (set (r0) (plus (r0) (const_int -1))) */
+
+      rtx prev_src = SET_SRC (prev_set);
+      rtx curr_src = SET_SRC (curr_set);
+
+      int polarity = 1;
+      if (GET_CODE (prev_src) == MINUS)
+	polarity = -1;
+
+      if (GET_CODE (curr_src) == PLUS
+	  && (GET_CODE (prev_src) == PLUS || GET_CODE (prev_src) == MINUS)
+	  && CONST_INT_P (XEXP (curr_src, 1))
+	  && INTVAL (XEXP (curr_src, 1)) == polarity
+	  && REG_P (XEXP (curr_src, 0))
+	  && REG_P (SET_DEST (prev_set))
+	  && REGNO (SET_DEST (prev_set)) == REGNO (XEXP (curr_src, 0)))
+	return true;
+    }
+
   return false;
 }
 
@@ -26343,18 +26623,18 @@ aarch64_dwarf_poly_indeterminate_value (unsigned int i, unsigned int *factor,
 }
 
 /* Implement TARGET_LIBGCC_FLOATING_POINT_MODE_SUPPORTED_P - return TRUE
-   if MODE is HFmode, and punt to the generic implementation otherwise.  */
+   if MODE is [BH]Fmode, and punt to the generic implementation otherwise.  */
 
 static bool
 aarch64_libgcc_floating_mode_supported_p (scalar_float_mode mode)
 {
-  return (mode == HFmode
+  return ((mode == HFmode || mode == BFmode)
 	  ? true
 	  : default_libgcc_floating_mode_supported_p (mode));
 }
 
 /* Implement TARGET_SCALAR_MODE_SUPPORTED_P - return TRUE
-   if MODE is HFmode, and punt to the generic implementation otherwise.  */
+   if MODE is [BH]Fmode, and punt to the generic implementation otherwise.  */
 
 static bool
 aarch64_scalar_mode_supported_p (scalar_mode mode)
@@ -26362,7 +26642,7 @@ aarch64_scalar_mode_supported_p (scalar_mode mode)
   if (DECIMAL_FLOAT_MODE_P (mode))
     return default_decimal_float_supported_p ();
 
-  return (mode == HFmode
+  return ((mode == HFmode || mode == BFmode)
 	  ? true
 	  : default_scalar_mode_supported_p (mode));
 }
@@ -26475,8 +26755,9 @@ aarch64_can_change_mode_class (machine_mode from,
   bool from_pred_p = (from_flags & VEC_SVE_PRED);
   bool to_pred_p = (to_flags & VEC_SVE_PRED);
 
-  bool from_full_advsimd_struct_p = (from_flags == (VEC_ADVSIMD | VEC_STRUCT));
   bool to_partial_advsimd_struct_p = (to_flags == (VEC_ADVSIMD | VEC_STRUCT
+						   | VEC_PARTIAL));
+  bool from_partial_advsimd_struct_p = (from_flags == (VEC_ADVSIMD | VEC_STRUCT
 						   | VEC_PARTIAL));
 
   /* Don't allow changes between predicate modes and other modes.
@@ -26499,9 +26780,10 @@ aarch64_can_change_mode_class (machine_mode from,
 	  || GET_MODE_UNIT_SIZE (from) != GET_MODE_UNIT_SIZE (to)))
     return false;
 
-  /* Don't allow changes between partial and full Advanced SIMD structure
-     modes.  */
-  if (from_full_advsimd_struct_p && to_partial_advsimd_struct_p)
+  /* Don't allow changes between partial and other registers only if
+     one is a normal SIMD register, allow only if not larger than 64-bit.  */
+  if ((to_partial_advsimd_struct_p ^ from_partial_advsimd_struct_p)
+      && (known_gt (GET_MODE_SIZE (to), 8) || known_gt (GET_MODE_SIZE (to), 8)))
     return false;
 
   if (maybe_ne (BITS_PER_SVE_VECTOR, 128u))
@@ -26649,7 +26931,8 @@ currently_supported_simd_type (tree t, tree b)
 static int
 aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 					struct cgraph_simd_clone *clonei,
-					tree base_type, int num)
+					tree base_type, int num,
+					bool explicit_p)
 {
   tree t, ret_type;
   unsigned int elt_bits, count;
@@ -26667,8 +26950,9 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	  || const_simdlen > 1024
 	  || (const_simdlen & (const_simdlen - 1)) != 0))
     {
-      warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		  "unsupported simdlen %wd", const_simdlen);
+      if (explicit_p)
+	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+		    "unsupported simdlen %wd", const_simdlen);
       return 0;
     }
 
@@ -26676,7 +26960,9 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
   if (TREE_CODE (ret_type) != VOID_TYPE
       && !currently_supported_simd_type (ret_type, base_type))
     {
-      if (TYPE_SIZE (ret_type) != TYPE_SIZE (base_type))
+      if (!explicit_p)
+	;
+      else if (TYPE_SIZE (ret_type) != TYPE_SIZE (base_type))
 	warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
 		    "GCC does not currently support mixed size types "
 		    "for %<simd%> functions");
@@ -26703,7 +26989,9 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
       if (clonei->args[i].arg_type != SIMD_CLONE_ARG_TYPE_UNIFORM
 	  && !currently_supported_simd_type (arg_type, base_type))
 	{
-	  if (TYPE_SIZE (arg_type) != TYPE_SIZE (base_type))
+	  if (!explicit_p)
+	    ;
+	  else if (TYPE_SIZE (arg_type) != TYPE_SIZE (base_type))
 	    warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
 			"GCC does not currently support mixed size types "
 			"for %<simd%> functions");
@@ -26733,9 +27021,11 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
       if (clonei->simdlen.is_constant (&const_simdlen)
 	  && maybe_ne (vec_bits, 64U) && maybe_ne (vec_bits, 128U))
 	{
-	  warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
-		      "GCC does not currently support simdlen %wd for type %qT",
-		      const_simdlen, base_type);
+	  if (explicit_p)
+	    warning_at (DECL_SOURCE_LOCATION (node->decl), 0,
+			"GCC does not currently support simdlen %wd for "
+			"type %qT",
+			const_simdlen, base_type);
 	  return 0;
 	}
     }
@@ -26820,39 +27110,6 @@ aarch64_stack_protect_guard (void)
   return NULL_TREE;
 }
 
-/* Return the diagnostic message string if conversion from FROMTYPE to
-   TOTYPE is not allowed, NULL otherwise.  */
-
-static const char *
-aarch64_invalid_conversion (const_tree fromtype, const_tree totype)
-{
-  if (element_mode (fromtype) != element_mode (totype))
-    {
-      /* Do no allow conversions to/from BFmode scalar types.  */
-      if (TYPE_MODE (fromtype) == BFmode)
-	return N_("invalid conversion from type %<bfloat16_t%>");
-      if (TYPE_MODE (totype) == BFmode)
-	return N_("invalid conversion to type %<bfloat16_t%>");
-    }
-
-  /* Conversion allowed.  */
-  return NULL;
-}
-
-/* Return the diagnostic message string if the unary operation OP is
-   not permitted on TYPE, NULL otherwise.  */
-
-static const char *
-aarch64_invalid_unary_op (int op, const_tree type)
-{
-  /* Reject all single-operand operations on BFmode except for &.  */
-  if (element_mode (type) == BFmode && op != ADDR_EXPR)
-    return N_("operation not permitted on type %<bfloat16_t%>");
-
-  /* Operation allowed.  */
-  return NULL;
-}
-
 /* Return the diagnostic message string if the binary operation OP is
    not permitted on TYPE1 and TYPE2, NULL otherwise.  */
 
@@ -26860,11 +27117,6 @@ static const char *
 aarch64_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1,
 			   const_tree type2)
 {
-  /* Reject all 2-operand operations on BFmode.  */
-  if (element_mode (type1) == BFmode
-      || element_mode (type2) == BFmode)
-    return N_("operation not permitted on type %<bfloat16_t%>");
-
   if (VECTOR_TYPE_P (type1)
       && VECTOR_TYPE_P (type2)
       && !TYPE_INDIVISIBLE_P (type1)
@@ -26897,10 +27149,10 @@ aarch64_file_end_indicate_exec_stack ()
   file_end_indicate_exec_stack ();
 
   unsigned feature_1_and = 0;
-  if (aarch64_bti_enabled ())
+  if (aarch_bti_enabled ())
     feature_1_and |= GNU_PROPERTY_AARCH64_FEATURE_1_BTI;
 
-  if (aarch64_ra_sign_scope != AARCH64_FUNCTION_NONE)
+  if (aarch_ra_sign_scope != AARCH_FUNCTION_NONE)
     feature_1_and |= GNU_PROPERTY_AARCH64_FEATURE_1_PAC;
 
   if (feature_1_and)
@@ -27461,12 +27713,6 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE aarch64_mangle_type
 
-#undef TARGET_INVALID_CONVERSION
-#define TARGET_INVALID_CONVERSION aarch64_invalid_conversion
-
-#undef TARGET_INVALID_UNARY_OP
-#define TARGET_INVALID_UNARY_OP aarch64_invalid_unary_op
-
 #undef TARGET_INVALID_BINARY_OP
 #define TARGET_INVALID_BINARY_OP aarch64_invalid_binary_op
 
@@ -27518,6 +27764,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_SCHED_REASSOCIATION_WIDTH
 #define TARGET_SCHED_REASSOCIATION_WIDTH aarch64_reassociation_width
+
+#undef TARGET_DWARF_FRAME_REG_MODE
+#define TARGET_DWARF_FRAME_REG_MODE aarch64_dwarf_frame_reg_mode
 
 #undef TARGET_PROMOTED_TYPE
 #define TARGET_PROMOTED_TYPE aarch64_promoted_type
@@ -27643,6 +27892,10 @@ aarch64_libgcc_floating_mode_supported_p
    to determine the size of the access.  We assume accesses are aligned.  */
 #undef TARGET_MAX_ANCHOR_OFFSET
 #define TARGET_MAX_ANCHOR_OFFSET 4095
+
+#undef TARGET_VECTORIZE_PREFERRED_DIV_AS_SHIFTS_OVER_MULT
+#define TARGET_VECTORIZE_PREFERRED_DIV_AS_SHIFTS_OVER_MULT \
+  aarch64_vectorize_preferred_div_as_shifts_over_mult
 
 #undef TARGET_VECTOR_ALIGNMENT
 #define TARGET_VECTOR_ALIGNMENT aarch64_simd_vector_alignment
@@ -27820,6 +28073,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_HAVE_SHADOW_CALL_STACK
 #define TARGET_HAVE_SHADOW_CALL_STACK true
+
+#undef TARGET_CONST_ANCHOR
+#define TARGET_CONST_ANCHOR 0x1000000
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

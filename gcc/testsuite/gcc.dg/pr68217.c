@@ -10,4 +10,4 @@ int foo (void)
     return 0;
 }
 
-/* { dg-final { scan-tree-dump "\\\[-INF, 0\\\]" "vrp1" } } */
+/* { dg-final { scan-tree-dump "\\\[-INF, -INF\\\]\\\[0, 0\\\]" "vrp1" } } */

@@ -1,5 +1,5 @@
 /* Vectorizer
-   Copyright (C) 2003-2022 Free Software Foundation, Inc.
+   Copyright (C) 2003-2023 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -1973,9 +1973,11 @@ vector_costs::compare_inside_loop_cost (const vector_costs *other) const
   HOST_WIDE_INT estimated_max_niter = likely_max_stmt_executions_int (loop);
   if (estimated_max_niter != -1)
     {
-      if (known_le (estimated_max_niter, this_vf))
+      if (estimated_poly_value (this_vf, POLY_VALUE_MIN)
+	  >= estimated_max_niter)
 	this_vf = estimated_max_niter;
-      if (known_le (estimated_max_niter, other_vf))
+      if (estimated_poly_value (other_vf, POLY_VALUE_MIN)
+	  >= estimated_max_niter)
 	other_vf = estimated_max_niter;
     }
 

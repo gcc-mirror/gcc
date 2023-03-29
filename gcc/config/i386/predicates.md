@@ -1,5 +1,5 @@
 ;; Predicate definitions for IA-32 and x86-64.
-;; Copyright (C) 2004-2022 Free Software Foundation, Inc.
+;; Copyright (C) 2004-2023 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -92,6 +92,14 @@
   (and (match_code "reg")
        (match_test "MASK_REGNO_P (REGNO (op))")))
 
+;; Match a DI, SI or HImode register operand.
+(define_special_predicate "int248_register_operand"
+  (and (match_operand 0 "register_operand")
+       (ior (and (match_test "TARGET_64BIT")
+		 (match_test "GET_MODE (op) == DImode"))
+	    (match_test "GET_MODE (op) == SImode")
+	    (match_test "GET_MODE (op) == HImode"))))
+
 ;; Match a DI, SI, HI or QImode nonimmediate_operand.
 (define_special_predicate "int_nonimmediate_operand"
   (and (match_operand 0 "nonimmediate_operand")
@@ -100,6 +108,20 @@
 	    (match_test "GET_MODE (op) == SImode")
 	    (match_test "GET_MODE (op) == HImode")
 	    (match_test "GET_MODE (op) == QImode"))))
+
+;; Match nonimmediate operand, but exclude non-constant addresses for x86_64.
+(define_predicate "nonimm_x64constmem_operand"
+  (ior (match_operand 0 "register_operand")
+       (and (match_operand 0 "memory_operand")
+	    (ior (not (match_test "TARGET_64BIT"))
+		 (match_test "constant_address_p (XEXP (op, 0))")))))
+
+;; Match general operand, but exclude non-constant addresses for x86_64.
+(define_predicate "general_x64constmem_operand"
+  (ior (match_operand 0 "nonmemory_operand")
+       (and (match_operand 0 "memory_operand")
+	    (ior (not (match_test "TARGET_64BIT"))
+		 (match_test "constant_address_p (XEXP (op, 0))")))))
 
 ;; Match register operands, but include memory operands for TARGET_SSE_MATH.
 (define_predicate "register_ssemem_operand"
@@ -608,6 +630,21 @@
     return true;
 
   return false;
+})
+
+(define_predicate "local_func_symbolic_operand"
+  (match_operand 0 "local_symbolic_operand")
+{
+  if (GET_CODE (op) == CONST
+      && GET_CODE (XEXP (op, 0)) == PLUS
+      && CONST_INT_P (XEXP (XEXP (op, 0), 1)))
+    op = XEXP (XEXP (op, 0), 0);
+
+  if (GET_CODE (op) == SYMBOL_REF
+      && !SYMBOL_REF_FUNCTION_P (op))
+    return false;
+
+  return true;
 })
 
 ;; Test for a legitimate @GOTOFF operand.
@@ -1159,6 +1196,55 @@
        (match_test "INTEGRAL_MODE_P (GET_MODE (op))")
        (match_test "op == CONSTM1_RTX (GET_MODE (op))")))
 
+/* Return true if operand is an 128/256bit all ones vector
+   that zero-extends to 256/512bit.  */
+(define_predicate "vector_all_ones_zero_extend_half_operand"
+  (match_code "const_vector")
+{
+  mode = GET_MODE (op);
+  if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT
+      || (GET_MODE_SIZE (mode) != 32
+	  && GET_MODE_SIZE (mode) != 64))
+    return false;
+
+  int nelts = CONST_VECTOR_NUNITS (op);
+  for (int i = 0; i != nelts; i++)
+    {
+      rtx elt = CONST_VECTOR_ELT (op, i);
+      if (i < nelts / 2
+	  && elt != CONSTM1_RTX (GET_MODE_INNER (mode)))
+	return false;
+      if (i >= nelts / 2
+	  && elt != CONST0_RTX (GET_MODE_INNER (mode)))
+	return false;
+    }
+  return true;
+})
+
+/* Return true if operand is an 128bit all ones vector
+   that zero extends to 512bit.  */
+(define_predicate "vector_all_ones_zero_extend_quarter_operand"
+  (match_code "const_vector")
+{
+  mode = GET_MODE (op);
+  if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT
+      || GET_MODE_SIZE (mode) != 64)
+    return false;
+
+  int nelts = CONST_VECTOR_NUNITS (op);
+  for (int i = 0; i != nelts; i++)
+    {
+      rtx elt = CONST_VECTOR_ELT (op, i);
+      if (i < nelts / 4
+	  && elt != CONSTM1_RTX (GET_MODE_INNER (mode)))
+	return false;
+      if (i >= nelts / 4
+	  && elt != CONST0_RTX (GET_MODE_INNER (mode)))
+	return false;
+    }
+  return true;
+})
+
 ; Return true when OP is operand acceptable for vector memory operand.
 ; Only AVX can have misaligned memory operand.
 (define_predicate "vector_memory_operand"
@@ -1170,6 +1256,13 @@
 (define_predicate "vector_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "vector_memory_operand")))
+
+; Return true when OP is register_operand, vector_memory_operand
+; or const_vector.
+(define_predicate "vector_or_const_vector_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "vector_memory_operand")
+       (match_code "const_vector")))
 
 (define_predicate "bcst_mem_operand"
   (and (match_code "vec_duplicate")
@@ -2058,11 +2151,11 @@
   for(i = 4; i < 7; i++)
     {
       elt = XVECEXP (op, 0, i);
-      if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_DEST (elt)) != REG
-	  || GET_MODE (SET_DEST (elt)) != V2DImode
-	  || REGNO (SET_DEST (elt)) != GET_SSE_REGNO (i)
-	  || SET_SRC (elt) != CONST0_RTX (V2DImode))
+      if (GET_CODE (elt) != CLOBBER
+	  || GET_MODE (elt) != VOIDmode
+	  || GET_CODE (XEXP (elt, 0)) != REG
+	  || GET_MODE (XEXP (elt, 0)) != V2DImode
+	  || REGNO (XEXP (elt, 0)) != GET_SSE_REGNO (i))
 	return false;
     }
 
@@ -2108,11 +2201,11 @@
   for(i = 4; i < 7; i++)
     {
       elt = XVECEXP (op, 0, i + 1);
-      if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_DEST (elt)) != REG
-	  || GET_MODE (SET_DEST (elt)) != V2DImode
-	  || REGNO (SET_DEST (elt)) != GET_SSE_REGNO (i)
-	  || SET_SRC (elt) != CONST0_RTX (V2DImode))
+      if (GET_CODE (elt) != CLOBBER
+	  || GET_MODE (elt) != VOIDmode
+	  || GET_CODE (XEXP (elt, 0)) != REG
+	  || GET_MODE (XEXP (elt, 0)) != V2DImode
+	  || REGNO (XEXP (elt, 0)) != GET_SSE_REGNO (i))
 	return false;
     }
 

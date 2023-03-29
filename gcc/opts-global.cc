@@ -1,6 +1,6 @@
 /* Command line option handling.  Code involving global state that
    should not be shared with the driver.
-   Copyright (C) 2002-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -90,6 +90,9 @@ complain_wrong_lang (const struct cl_decoded_option *decoded,
   const char *text = decoded->orig_option_with_args_text;
   char *ok_langs = NULL, *bad_lang = NULL;
   unsigned int opt_flags = option->flags;
+
+  if (!warn_complain_wrong_lang)
+    return;
 
   if (!lang_hooks.complain_wrong_lang_p (option))
     return;
@@ -364,6 +367,7 @@ handle_common_deferred_options (void)
   if (flag_opt_info)
     opt_info_switch_p (NULL);
 
+  flag_canon_prefix_map = false;
   FOR_EACH_VEC_ELT (v, i, opt)
     {
       switch (opt->opt_index)
@@ -390,6 +394,10 @@ handle_common_deferred_options (void)
 
 	case OPT_fprofile_prefix_map_:
 	  add_profile_prefix_map (opt->arg);
+	  break;
+
+	case OPT_fcanon_prefix_map:
+	  flag_canon_prefix_map = opt->value;
 	  break;
 
 	case OPT_fdump_:

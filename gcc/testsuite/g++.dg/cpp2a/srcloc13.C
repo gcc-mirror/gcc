@@ -12,4 +12,4 @@ namespace std {
 }
 
 auto x = __builtin_source_location ();	// { dg-error "'std::source_location::__impl::_M_line' does not have integral type" }
-// { dg-message "evaluating '__builtin_source_location'" "" { target *-*-* } .-1 }
+// { dg-message "using '__builtin_source_location'" "" { target *-*-* } .-1 }

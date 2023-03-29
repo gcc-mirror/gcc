@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -74,7 +74,7 @@ package MDLL is
    procedure Build_Import_Library
      (Lib_Filename : String;
       Def_Filename : String);
-   --  Build an import library (.a) from a definition files. An import library
-   --  is needed to link against a DLL.
+   --  Build an import library (.a) from definition files. An import library is
+   --  needed to link against a DLL.
 
 end MDLL;

@@ -1,0 +1,135 @@
+(* PushBackInput.def provides a method for pushing back and consuming input.
+
+Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE PushBackInput ;
+
+FROM FIO IMPORT File ;
+FROM DynamicStrings IMPORT String ;
+
+EXPORT QUALIFIED Open, PutCh, GetCh, Error, WarnError, WarnString,
+                 Close, SetDebug, GetExitStatus, PutStr,
+                 PutString, GetColumnPosition, GetCurrentLine ;
+
+
+(*
+   Open - opens a file for reading.
+*)
+
+PROCEDURE Open (a: ARRAY OF CHAR) : File ;
+
+
+(*
+   GetCh - gets a character from either the push back stack or
+           from file, f.
+*)
+
+PROCEDURE GetCh (f: File) : CHAR ;
+
+
+(*
+   PutCh - pushes a character onto the push back stack, it also
+           returns the character which has been pushed.
+*)
+
+PROCEDURE PutCh (ch: CHAR) : CHAR ;
+
+
+(*
+   PutString - pushes a string onto the push back stack.
+*)
+
+PROCEDURE PutString (a: ARRAY OF CHAR) ;
+
+
+(*
+   PutStr - pushes a dynamic string onto the push back stack.
+            The string, s, is not deallocated.
+*)
+
+PROCEDURE PutStr (s: String) ;
+
+
+(*
+   Error - emits an error message with the appropriate file, line combination.
+*)
+
+PROCEDURE Error (a: ARRAY OF CHAR) ;
+
+
+(*
+   WarnError - emits an error message with the appropriate file, line combination.
+               It does not terminate but when the program finishes an exit status of
+               1 will be issued.
+*)
+
+PROCEDURE WarnError (a: ARRAY OF CHAR) ;
+
+
+(*
+   WarnString - emits an error message with the appropriate file, line combination.
+                It does not terminate but when the program finishes an exit status of
+                1 will be issued.
+*)
+
+PROCEDURE WarnString (s: String) ;
+
+
+(*
+   Close - closes the opened file.
+*)
+
+PROCEDURE Close (f: File) ;
+
+
+(*
+   GetExitStatus - returns the exit status which will be 1 if any warnings were issued.
+*)
+
+PROCEDURE GetExitStatus () : CARDINAL ;
+
+
+(*
+   SetDebug - sets the debug flag on or off.
+*)
+
+PROCEDURE SetDebug (d: BOOLEAN) ;
+
+
+(*
+   GetColumnPosition - returns the column position of the current character.
+*)
+
+PROCEDURE GetColumnPosition () : CARDINAL ;
+
+
+(*
+   GetCurrentLine - returns the current line number.
+*)
+
+PROCEDURE GetCurrentLine () : CARDINAL ;
+
+
+END PushBackInput.

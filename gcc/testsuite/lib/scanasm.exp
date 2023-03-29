@@ -1,4 +1,4 @@
-# Copyright (C) 2000-2022 Free Software Foundation, Inc.
+# Copyright (C) 2000-2023 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,19 +24,33 @@ proc make_pattern_printable { pattern } {
     return [string map {\t \\t \n \\n \r \\r \\ \\\\} $pattern]
 }
 
+# Append to ARGS to make it suitable for use by dg-scan to indicate
+# that encoding ENC should be used when reading from the file.
+
+proc append_encoding_arg { args enc } {
+    if { [llength $args] < 2 } {
+	# Add target selector.
+	lappend args { target "*-*-*" }
+    }
+    # Add encoding ENC.
+    lappend args $enc
+    return $args
+}
+
 # Scan the OUTPUT_FILE for a pattern.  If it is present and POSITIVE
 # is non-zero, or it is not present and POSITIVE is zero, the test
 # passes.  The ORIG_ARGS is the list of arguments provided by dg-final
 # to scan-assembler.  The first element in ORIG_ARGS is the regular
 # expression to look for in the file.  The second element, if present,
-# is a DejaGNU target selector.
+# is a DejaGNU target selector.  The third element, if present, is the
+# encoding to use when reading from the file.
 
 proc dg-scan { name positive testcase output_file orig_args } {
     if { [llength $orig_args] < 1 } {
 	error "$name: too few arguments"
         return
     }
-    if { [llength $orig_args] > 2 } {
+    if { [llength $orig_args] > 3 } {
 	error "$name: too many arguments"
 	return
     }
@@ -59,6 +73,10 @@ proc dg-scan { name positive testcase output_file orig_args } {
 	return
     }
     set fd [open $output_file r]
+    if { [llength $orig_args] >= 3 } {
+	set file_encoding [lindex $orig_args 2]
+	fconfigure $fd -encoding $file_encoding
+    }
     set text [read $fd]
     close $fd
 
@@ -803,7 +821,12 @@ proc check_function_body { functions name body_regexp } {
     if { ![info exists up_functions($name)] } {
 	return 0
     }
-    return [regexp "^$body_regexp\$" $up_functions($name)]
+    set fn_res [regexp "^$body_regexp\$" $up_functions($name)]
+    if { !$fn_res } {
+      verbose -log "body: $body_regexp"
+      verbose -log "against: $up_functions($name)"
+    }
+    return $fn_res
 }
 
 # Check the implementations of functions against expected output.  Used as:

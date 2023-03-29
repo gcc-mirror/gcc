@@ -1,6 +1,6 @@
 ; Options for the HP PA-RISC port of the compiler.
 
-; Copyright (C) 2005-2022 Free Software Foundation, Inc.
+; Copyright (C) 2005-2023 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -36,6 +36,10 @@ Generate PA1.1 code.
 march=2.0
 Target RejectNegative
 Generate PA2.0 code (requires binutils 2.10 or later).
+
+matomic-libcalls
+Target Var(TARGET_ATOMIC_LIBCALLS) Init(1)
+Generate libcalls for atomic loads and stores when sync libcalls are disabled.
 
 mbig-switch
 Target Ignore

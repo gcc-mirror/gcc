@@ -9,7 +9,6 @@
  */
 module core.sys.windows.windef;
 version (Windows):
-@system:
 
 public import core.sys.windows.winnt;
 import core.sys.windows.w32api;

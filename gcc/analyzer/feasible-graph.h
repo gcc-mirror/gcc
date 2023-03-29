@@ -1,5 +1,5 @@
 /* A graph for exploring trees of feasible paths through the egraph.
-   Copyright (C) 2021-2022 Free Software Foundation, Inc.
+   Copyright (C) 2021-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifndef GCC_ANALYZER_FEASIBLE_GRAPH_H
 #define GCC_ANALYZER_FEASIBLE_GRAPH_H
+
+#include "analyzer/exploded-graph.h"
 
 namespace ana {
 
@@ -101,6 +103,9 @@ public:
   }
 
   unsigned get_path_length () const { return m_path_length; }
+
+  bool get_state_at_stmt (const gimple *target_stmt,
+			  region_model *out) const;
 
 private:
   feasibility_state m_state;
@@ -195,7 +200,7 @@ class feasible_graph : public digraph <fg_traits>
 				const exploded_edge *eedge,
 				rejected_constraint *rc);
 
-  exploded_path *make_epath (feasible_node *fnode) const;
+  std::unique_ptr<exploded_path> make_epath (feasible_node *fnode) const;
 
   void dump_feasible_path (const feasible_node &dst_fnode,
 			   const char *filename) const;

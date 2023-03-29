@@ -1,5 +1,5 @@
 /* Builtins' description for AArch64 SIMD architecture.
-   Copyright (C) 2011-2022 Free Software Foundation, Inc.
+   Copyright (C) 2011-2023 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -918,7 +918,6 @@ tree aarch64_fp16_type_node = NULL_TREE;
 tree aarch64_fp16_ptr_type_node = NULL_TREE;
 
 /* Back-end node type for brain float (bfloat) types.  */
-tree aarch64_bf16_type_node = NULL_TREE;
 tree aarch64_bf16_ptr_type_node = NULL_TREE;
 
 /* Wrapper around add_builtin_function.  NAME is the name of the built-in
@@ -1010,7 +1009,7 @@ aarch64_int_or_fp_type (machine_mode mode,
     case E_DFmode:
       return double_type_node;
     case E_BFmode:
-      return aarch64_bf16_type_node;
+      return bfloat16_type_node;
     default:
       gcc_unreachable ();
     }
@@ -1124,8 +1123,8 @@ aarch64_init_simd_builtin_types (void)
   aarch64_simd_types[Float64x2_t].eltype = double_type_node;
 
   /* Init Bfloat vector types with underlying __bf16 type.  */
-  aarch64_simd_types[Bfloat16x4_t].eltype = aarch64_bf16_type_node;
-  aarch64_simd_types[Bfloat16x8_t].eltype = aarch64_bf16_type_node;
+  aarch64_simd_types[Bfloat16x4_t].eltype = bfloat16_type_node;
+  aarch64_simd_types[Bfloat16x8_t].eltype = bfloat16_type_node;
 
   for (i = 0; i < nelts; i++)
     {
@@ -1197,7 +1196,7 @@ aarch64_init_simd_builtin_scalar_types (void)
 					     "__builtin_aarch64_simd_poly128");
   (*lang_hooks.types.register_builtin_type) (intTI_type_node,
 					     "__builtin_aarch64_simd_ti");
-  (*lang_hooks.types.register_builtin_type) (aarch64_bf16_type_node,
+  (*lang_hooks.types.register_builtin_type) (bfloat16_type_node,
 					     "__builtin_aarch64_simd_bf");
   /* Unsigned integer types for various mode sizes.  */
   (*lang_hooks.types.register_builtin_type) (unsigned_intQI_type_node,
@@ -1549,20 +1548,20 @@ aarch64_scalar_builtin_type_p (aarch64_simd_type t)
 /* Enable AARCH64_FL_* flags EXTRA_FLAGS on top of the base Advanced SIMD
    set.  */
 aarch64_simd_switcher::aarch64_simd_switcher (unsigned int extra_flags)
-  : m_old_isa_flags (aarch64_isa_flags),
+  : m_old_asm_isa_flags (aarch64_asm_isa_flags),
     m_old_general_regs_only (TARGET_GENERAL_REGS_ONLY)
 {
   /* Changing the ISA flags should be enough here.  We shouldn't need to
      pay the compile-time cost of a full target switch.  */
-  aarch64_isa_flags = AARCH64_FL_FP | AARCH64_FL_SIMD | extra_flags;
   global_options.x_target_flags &= ~MASK_GENERAL_REGS_ONLY;
+  aarch64_set_asm_isa_flags (AARCH64_FL_FP | AARCH64_FL_SIMD | extra_flags);
 }
 
 aarch64_simd_switcher::~aarch64_simd_switcher ()
 {
   if (m_old_general_regs_only)
     global_options.x_target_flags |= MASK_GENERAL_REGS_ONLY;
-  aarch64_isa_flags = m_old_isa_flags;
+  aarch64_set_asm_isa_flags (m_old_asm_isa_flags);
 }
 
 /* Implement #pragma GCC aarch64 "arm_neon.h".
@@ -1682,13 +1681,8 @@ aarch64_init_fp16_types (void)
 static void
 aarch64_init_bf16_types (void)
 {
-  aarch64_bf16_type_node = make_node (REAL_TYPE);
-  TYPE_PRECISION (aarch64_bf16_type_node) = 16;
-  SET_TYPE_MODE (aarch64_bf16_type_node, BFmode);
-  layout_type (aarch64_bf16_type_node);
-
-  lang_hooks.types.register_builtin_type (aarch64_bf16_type_node, "__bf16");
-  aarch64_bf16_ptr_type_node = build_pointer_type (aarch64_bf16_type_node);
+  lang_hooks.types.register_builtin_type (bfloat16_type_node, "__bf16");
+  aarch64_bf16_ptr_type_node = build_pointer_type (bfloat16_type_node);
 }
 
 /* Pointer authentication builtins that will become NOP on legacy platform.
@@ -2648,7 +2642,7 @@ static rtx
 aarch64_expand_builtin_data_intrinsic (unsigned int fcode, tree exp, rtx target)
 {
   expand_operand ops[2];
-  machine_mode mode = GET_MODE (target);
+  machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
   create_output_operand (&ops[0], target, mode);
   create_input_operand (&ops[1], expand_normal (CALL_EXPR_ARG (exp, 0)), mode);
   enum insn_code icode;
@@ -3000,6 +2994,19 @@ get_mem_type_for_load_store (unsigned int fcode)
   }
 }
 
+/* We've seen a vector load from address ADDR.  Record it in
+   vector_load_decls, if appropriate.  */
+static void
+aarch64_record_vector_load_arg (tree addr)
+{
+  tree decl = aarch64_vector_load_decl (addr);
+  if (!decl)
+    return;
+  if (!cfun->machine->vector_load_decls)
+    cfun->machine->vector_load_decls = hash_set<tree>::create_ggc (31);
+  cfun->machine->vector_load_decls->add (decl);
+}
+
 /* Try to fold STMT, given that it's a call to the built-in function with
    subcode FCODE.  Return the new statement on success and null on
    failure.  */
@@ -3057,6 +3064,11 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
      BUILTIN_VALL_F16 (LOAD1, ld1, 0, LOAD)
      BUILTIN_VDQ_I (LOAD1_U, ld1, 0, LOAD)
      BUILTIN_VALLP_NO_DI (LOAD1_P, ld1, 0, LOAD)
+	/* Punt until after inlining, so that we stand more chance of
+	   recording something meaningful in vector_load_decls.  */
+	if (!cfun->after_inlining)
+	  break;
+	aarch64_record_vector_load_arg (args[0]);
 	if (!BYTES_BIG_ENDIAN)
 	  {
 	    enum aarch64_simd_type mem_type
@@ -3075,6 +3087,8 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
 				     fold_build2 (MEM_REF,
 						  access_type,
 						  args[0], zero));
+	    gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+	    gimple_set_vdef (new_stmt, gimple_vdef (stmt));
 	  }
 	break;
 
@@ -3098,6 +3112,8 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
 	      = gimple_build_assign (fold_build2 (MEM_REF, access_type,
 						  args[0], zero),
 				     args[1]);
+	    gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+	    gimple_set_vdef (new_stmt, gimple_vdef (stmt));
 	  }
 	break;
 

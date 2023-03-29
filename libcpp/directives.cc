@@ -1,5 +1,5 @@
 /* CPP Library. (Directive handling.)
-   Copyright (C) 1986-2022 Free Software Foundation, Inc.
+   Copyright (C) 1986-2023 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -1565,15 +1565,15 @@ do_pragma (cpp_reader *pfile)
 	{
 	  /* Invalid name comes from macro expansion, _cpp_backup_tokens
 	     won't allow backing 2 tokens.  */
-	  /* ??? The token buffer is leaked.  Perhaps if def_pragma hook
-	     reads both tokens, we could perhaps free it, but if it doesn't,
-	     we don't know the exact lifespan.  */
-	  cpp_token *toks = XNEWVEC (cpp_token, 2);
+	  const auto tok_buff = _cpp_get_buff (pfile, 2 * sizeof (cpp_token));
+	  const auto toks = (cpp_token *)tok_buff->base;
 	  toks[0] = ns_token;
 	  toks[0].flags |= NO_EXPAND;
 	  toks[1] = *token;
-	  toks[1].flags |= NO_EXPAND;
+	  toks[1].flags |= NO_EXPAND | PREV_WHITE;
 	  _cpp_push_token_context (pfile, NULL, toks, 2);
+	  /* Arrange to free this buffer when no longer needed.  */
+	  pfile->context->buff = tok_buff;
 	}
       pfile->cb.def_pragma (pfile, pfile->directive_line);
     }
@@ -1996,7 +1996,12 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in,
 int
 _cpp_do__Pragma (cpp_reader *pfile, location_t expansion_loc)
 {
+  /* Make sure we don't invalidate the string token, if the closing parenthesis
+   ended up on a different line.  */
+  ++pfile->keep_tokens;
   const cpp_token *string = get__Pragma_string (pfile);
+  --pfile->keep_tokens;
+
   pfile->directive_result.type = CPP_PADDING;
 
   if (string)

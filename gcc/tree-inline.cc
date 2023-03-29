@@ -1,5 +1,5 @@
 /* Tree inlining.
-   Copyright (C) 2001-2022 Free Software Foundation, Inc.
+   Copyright (C) 2001-2023 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -148,7 +148,7 @@ insert_decl_map (copy_body_data *id, tree key, tree value)
 
   /* Always insert an identity map as well.  If we see this same new
      node again, we won't want to duplicate it a second time.  */
-  if (key != value)
+  if (key != value && value)
     id->decl_map->put (value, value);
 }
 
@@ -171,7 +171,7 @@ remap_ssa_name (tree name, copy_body_data *id)
   n = id->decl_map->get (name);
   if (n)
     {
-      /* WHen we perform edge redirection as part of CFG copy, IPA-SRA can
+      /* When we perform edge redirection as part of CFG copy, IPA-SRA can
 	 remove an unused LHS from a call statement.  Such LHS can however
 	 still appear in debug statements, but their value is lost in this
 	 function and we do not want to map them.  */
@@ -1535,7 +1535,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
       if (id->reset_location)
 	gimple_set_location (bind, input_location);
       id->debug_stmts.safe_push (bind);
-      gimple_seq_add_stmt (&stmts, bind);
+      gimple_seq_add_stmt_without_update (&stmts, bind);
       return stmts;
     }
 
@@ -1736,6 +1736,11 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 					      (as_a <gomp_critical *> (stmt)));
 	  break;
 
+	case GIMPLE_ASSUME:
+	  s1 = remap_gimple_seq (gimple_assume_body (stmt), id);
+	  copy = gimple_build_assume (gimple_assume_guard (stmt), s1);
+	  break;
+
 	case GIMPLE_TRANSACTION:
 	  {
 	    gtransaction *old_trans_stmt = as_a <gtransaction *> (stmt);
@@ -1760,7 +1765,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
     }
   else
     {
-      if (gimple_assign_copy_p (stmt)
+      if (gimple_assign_single_p (stmt)
 	  && gimple_assign_lhs (stmt) == gimple_assign_rhs1 (stmt)
 	  && auto_var_in_fn_p (gimple_assign_lhs (stmt), id->src_fn))
 	{
@@ -1828,7 +1833,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	  if (id->reset_location)
 	    gimple_set_location (copy, input_location);
 	  id->debug_stmts.safe_push (copy);
-	  gimple_seq_add_stmt (&stmts, copy);
+	  gimple_seq_add_stmt_without_update (&stmts, copy);
 	  return stmts;
 	}
       if (gimple_debug_source_bind_p (stmt))
@@ -1840,7 +1845,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	  if (id->reset_location)
 	    gimple_set_location (copy, input_location);
 	  id->debug_stmts.safe_push (copy);
-	  gimple_seq_add_stmt (&stmts, copy);
+	  gimple_seq_add_stmt_without_update (&stmts, copy);
 	  return stmts;
 	}
       if (gimple_debug_nonbind_marker_p (stmt))
@@ -1854,7 +1859,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 
 	  gdebug *copy = as_a <gdebug *> (gimple_copy (stmt));
 	  id->debug_stmts.safe_push (copy);
-	  gimple_seq_add_stmt (&stmts, copy);
+	  gimple_seq_add_stmt_without_update (&stmts, copy);
 	  return stmts;
 	}
 
@@ -1962,7 +1967,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	       !gsi_end_p (egsi);
 	       gsi_next (&egsi))
 	    walk_gimple_op (gsi_stmt (egsi), remap_gimple_op_r, &wi);
-	  gimple_seq_add_seq (&stmts, extra_stmts);
+	  gimple_seq_add_seq_without_update (&stmts, extra_stmts);
 	}
     }
 
@@ -2001,14 +2006,14 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 				     gimple_cond_code (cond),
 				     gimple_cond_lhs (cond),
 				     gimple_cond_rhs (cond));
-	    gimple_seq_add_stmt (&stmts, cmp);
+	    gimple_seq_add_stmt_without_update (&stmts, cmp);
 	    gimple_cond_set_code (cond, NE_EXPR);
 	    gimple_cond_set_lhs (cond, gimple_assign_lhs (cmp));
 	    gimple_cond_set_rhs (cond, boolean_false_node);
 	  }
     }
 
-  gimple_seq_add_stmt (&stmts, copy);
+  gimple_seq_add_stmt_without_update (&stmts, copy);
   return stmts;
 }
 
@@ -2068,21 +2073,6 @@ copy_bb (copy_body_data *id, basic_block bb,
 
 	  gimple_duplicate_stmt_histograms (cfun, stmt, id->src_cfun,
 					    orig_stmt);
-
-	  /* With return slot optimization we can end up with
-	     non-gimple (foo *)&this->m, fix that here.  */
-	  if (is_gimple_assign (stmt)
-	      && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt))
-	      && !is_gimple_val (gimple_assign_rhs1 (stmt)))
-	    {
-	      tree new_rhs;
-	      new_rhs = force_gimple_operand_gsi (&seq_gsi,
-						  gimple_assign_rhs1 (stmt),
-						  true, NULL, false,
-						  GSI_CONTINUE_LINKING);
-	      gimple_assign_set_rhs1 (stmt, new_rhs);
-	      id->regimplify = false;
-	    }
 
 	  gsi_insert_after (&seq_gsi, stmt, GSI_NEW_STMT);
 
@@ -2564,17 +2554,17 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 	  && !old_edge->src->aux)
 	new_bb->count -= old_edge->count ().apply_scale (num, den);
 
-  for (si = gsi_start_bb (new_bb); !gsi_end_p (si);)
+  /* Walk stmts from end to start so that splitting will adjust the BB
+     pointer for each stmt at most once, even when we split the block
+     multiple times.  */
+  bool seen_nondebug = false;
+  for (si = gsi_last_bb (new_bb); !gsi_end_p (si);)
     {
-      gimple *copy_stmt;
       bool can_throw, nonlocal_goto;
-
-      copy_stmt = gsi_stmt (si);
-      if (!is_gimple_debug (copy_stmt))
-	update_stmt (copy_stmt);
+      gimple *copy_stmt = gsi_stmt (si);
 
       /* Do this before the possible split_block.  */
-      gsi_next (&si);
+      gsi_prev (&si);
 
       /* If this tree could throw an exception, there are two
          cases where we need to add abnormal edge(s): the
@@ -2594,24 +2584,22 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 
       if (can_throw || nonlocal_goto)
 	{
-	  if (!gsi_end_p (si))
+	  /* If there's only debug insns after copy_stmt don't split
+	     the block but instead mark the block for cleanup.  */
+	  if (!seen_nondebug)
+	    need_debug_cleanup = true;
+	  else
 	    {
-	      while (!gsi_end_p (si) && is_gimple_debug (gsi_stmt (si)))
-		gsi_next (&si);
-	      if (gsi_end_p (si))
-		need_debug_cleanup = true;
-	    }
-	  if (!gsi_end_p (si))
-	    /* Note that bb's predecessor edges aren't necessarily
-	       right at this point; split_block doesn't care.  */
-	    {
+	      /* Note that bb's predecessor edges aren't necessarily
+		 right at this point; split_block doesn't care.  */
 	      edge e = split_block (new_bb, copy_stmt);
-
-	      new_bb = e->dest;
-	      new_bb->aux = e->src->aux;
-	      si = gsi_start_bb (new_bb);
+	      e->dest->aux = new_bb->aux;
+	      seen_nondebug = false;
 	    }
 	}
+
+      if (!is_gimple_debug (copy_stmt))
+	seen_nondebug = true;
 
       bool update_probs = false;
 
@@ -2793,16 +2781,12 @@ initialize_cfun (tree new_fndecl, tree callee_fndecl, profile_count count)
 {
   struct function *src_cfun = DECL_STRUCT_FUNCTION (callee_fndecl);
 
-  if (!DECL_ARGUMENTS (new_fndecl))
-    DECL_ARGUMENTS (new_fndecl) = DECL_ARGUMENTS (callee_fndecl);
-  if (!DECL_RESULT (new_fndecl))
-    DECL_RESULT (new_fndecl) = DECL_RESULT (callee_fndecl);
-
   /* Register specific tree functions.  */
   gimple_register_cfg_hooks ();
 
   /* Get clean struct function.  */
-  push_struct_function (new_fndecl);
+  push_struct_function (new_fndecl, true);
+  targetm.target_option.relayout_function (new_fndecl);
 
   /* We will rebuild these, so just sanity check that they are empty.  */
   gcc_assert (VALUE_HISTOGRAMS (cfun) == NULL);
@@ -3863,10 +3847,11 @@ declare_return_variable (copy_body_data *id, tree return_slot, tree modify_dest,
 	 it's default_def SSA_NAME.  */
       if (gimple_in_ssa_p (id->src_cfun)
 	  && is_gimple_reg (result))
-	{
-	  temp = make_ssa_name (temp);
-	  insert_decl_map (id, ssa_default_def (id->src_cfun, result), temp);
-	}
+	if (tree default_def = ssa_default_def (id->src_cfun, result))
+	  {
+	    temp = make_ssa_name (temp);
+	    insert_decl_map (id, default_def, temp);
+	  }
       insert_init_stmt (id, entry_bb, gimple_build_assign (temp, var));
     }
   else
@@ -6246,8 +6231,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
   id.transform_return_to_modify = false;
   id.transform_parameter = false;
 
-  old_entry_block = ENTRY_BLOCK_PTR_FOR_FN
-    (DECL_STRUCT_FUNCTION (old_decl));
+  old_entry_block = ENTRY_BLOCK_PTR_FOR_FN (DECL_STRUCT_FUNCTION (old_decl));
   DECL_RESULT (new_decl) = DECL_RESULT (old_decl);
   DECL_ARGUMENTS (new_decl) = DECL_ARGUMENTS (old_decl);
   initialize_cfun (new_decl, old_decl,
@@ -6372,6 +6356,8 @@ tree_function_versioning (tree old_decl, tree new_decl,
   bb = split_edge (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
   while (init_stmts.length ())
     insert_init_stmt (&id, bb, init_stmts.pop ());
+  if (param_body_adjs)
+    param_body_adjs->append_init_stmts (bb);
   update_clone_info (&id);
 
   /* Remap the nonlocal_goto_save_area, if any.  */

@@ -1,6 +1,6 @@
 // C++ includes used for precompiling extensions -*- C++ -*-
 
-// Copyright (C) 2006-2022 Free Software Foundation, Inc.
+// Copyright (C) 2006-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,14 +32,21 @@
 #include <bits/stdc++.h>
 #endif
 
-#include <ext/algorithm>
 #if __cplusplus >= 201103L
 # include <ext/aligned_buffer.h>
 #endif
 #include <ext/alloc_traits.h>
 #include <ext/atomicity.h>
-#include <ext/bitmap_allocator.h>
 #include <ext/cast.h>
+#include <ext/iterator>
+#include <ext/numeric_traits.h>
+#include <ext/pointer.h>
+#include <ext/typelist.h>
+#include <ext/type_traits.h>
+
+#if _GLIBCXX_HOSTED
+#include <ext/algorithm>
+#include <ext/bitmap_allocator.h>
 #if __cplusplus >= 201103L
 # include <ext/cmath>
 #endif
@@ -47,15 +54,12 @@
 #include <ext/debug_allocator.h>
 #include <ext/extptr_allocator.h>
 #include <ext/functional>
-#include <ext/iterator>
 #include <ext/malloc_allocator.h>
 #include <ext/memory>
 #include <ext/mt_allocator.h>
 #include <ext/new_allocator.h>
 #include <ext/numeric>
-#include <ext/numeric_traits.h>
 #include <ext/pod_char_traits.h>
-#include <ext/pointer.h>
 #include <ext/pool_allocator.h>
 #if __cplusplus >= 201103L
 # include <ext/random>
@@ -66,8 +70,6 @@
 #include <ext/stdio_filebuf.h>
 #include <ext/stdio_sync_filebuf.h>
 #include <ext/throw_allocator.h>
-#include <ext/typelist.h>
-#include <ext/type_traits.h>
 #include <ext/vstring.h>
 #include <ext/pb_ds/assoc_container.hpp>
 #include <ext/pb_ds/priority_queue.hpp>
@@ -81,3 +83,4 @@
  #include <ext/codecvt_specializations.h>
  #include <ext/enc_filebuf.h>
 #endif
+#endif // HOSTED

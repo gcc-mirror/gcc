@@ -1,5 +1,5 @@
 /* Forward propagation of expressions for single use variables.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "cgraph.h"
 #include "tree-ssa.h"
+#include "gimple-range.h"
 
 /* This pass propagates the RHS of assignment statements into use
    sites of the LHS of the assignment.  It's basically a specialized
@@ -1837,8 +1838,12 @@ defcodefor_name (tree name, enum tree_code *code, tree *arg1, tree *arg2)
    ((T) ((T2) X << Y)) | ((T) ((T2) X >> ((-Y) & (B - 1))))
    ((T) ((T2) X << (int) Y)) | ((T) ((T2) X >> (int) ((-Y) & (B - 1))))
 
-   transform these into:
+   transform these into (last 2 only if ranger can prove Y < B
+   or Y = N * B):
    X r<< Y
+   or
+   X r<< (& & (B - 1))
+   The latter for the forms with T2 wider than T if ranger can't prove Y < B.
 
    Or for:
    (X << (Y & (B - 1))) | (X >> ((-Y) & (B - 1)))
@@ -1866,6 +1871,9 @@ simplify_rotate (gimple_stmt_iterator *gsi)
   int i;
   bool swapped_p = false;
   gimple *g;
+  gimple *def_arg_stmt[2] = { NULL, NULL };
+  int wider_prec = 0;
+  bool add_masking = false;
 
   arg[0] = gimple_assign_rhs1 (stmt);
   arg[1] = gimple_assign_rhs2 (stmt);
@@ -1878,7 +1886,11 @@ simplify_rotate (gimple_stmt_iterator *gsi)
     return false;
 
   for (i = 0; i < 2; i++)
-    defcodefor_name (arg[i], &def_code[i], &def_arg1[i], &def_arg2[i]);
+    {
+      defcodefor_name (arg[i], &def_code[i], &def_arg1[i], &def_arg2[i]);
+      if (TREE_CODE (arg[i]) == SSA_NAME)
+	def_arg_stmt[i] = SSA_NAME_DEF_STMT (arg[i]);
+    }
 
   /* Look through narrowing (or same precision) conversions.  */
   if (CONVERT_EXPR_CODE_P (def_code[0])
@@ -1891,10 +1903,13 @@ simplify_rotate (gimple_stmt_iterator *gsi)
       && has_single_use (arg[0])
       && has_single_use (arg[1]))
     {
+      wider_prec = TYPE_PRECISION (TREE_TYPE (def_arg1[0]));
       for (i = 0; i < 2; i++)
 	{
 	  arg[i] = def_arg1[i];
 	  defcodefor_name (arg[i], &def_code[i], &def_arg1[i], &def_arg2[i]);
+	  if (TREE_CODE (arg[i]) == SSA_NAME)
+	    def_arg_stmt[i] = SSA_NAME_DEF_STMT (arg[i]);
 	}
     }
   else
@@ -1910,6 +1925,8 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 	{
 	  arg[i] = def_arg1[i];
 	  defcodefor_name (arg[i], &def_code[i], &def_arg1[i], &def_arg2[i]);
+	  if (TREE_CODE (arg[i]) == SSA_NAME)
+	    def_arg_stmt[i] = SSA_NAME_DEF_STMT (arg[i]);
 	}
     }
 
@@ -1983,6 +2000,9 @@ simplify_rotate (gimple_stmt_iterator *gsi)
     {
       tree cdef_arg1[2], cdef_arg2[2], def_arg2_alt[2];
       enum tree_code cdef_code[2];
+      gimple *def_arg_alt_stmt[2] = { NULL, NULL };
+      int check_range = 0;
+      gimple *check_range_stmt = NULL;
       /* Look through conversion of the shift count argument.
 	 The C/C++ FE cast any shift count argument to integer_type_node.
 	 The only problem might be if the shift count type maximum value
@@ -1999,9 +2019,13 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 	      && type_has_mode_precision_p (TREE_TYPE (cdef_arg1[i])))
 	    {
 	      def_arg2_alt[i] = cdef_arg1[i];
+	      if (TREE_CODE (def_arg2[i]) == SSA_NAME)
+		def_arg_alt_stmt[i] = SSA_NAME_DEF_STMT (def_arg2[i]);
 	      defcodefor_name (def_arg2_alt[i], &cdef_code[i],
 			       &cdef_arg1[i], &cdef_arg2[i]);
 	    }
+	  else
+	    def_arg_alt_stmt[i] = def_arg_stmt[i];
 	}
       for (i = 0; i < 2; i++)
 	/* Check for one shift count being Y and the other B - Y,
@@ -2018,18 +2042,28 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 		|| cdef_arg2[i] == def_arg2_alt[1 - i])
 	      {
 		rotcnt = cdef_arg2[i];
+		check_range = -1;
+		if (cdef_arg2[i] == def_arg2[1 - i])
+		  check_range_stmt = def_arg_stmt[1 - i];
+		else
+		  check_range_stmt = def_arg_alt_stmt[1 - i];
 		break;
 	      }
 	    defcodefor_name (cdef_arg2[i], &code, &tem, NULL);
 	    if (CONVERT_EXPR_CODE_P (code)
 		&& INTEGRAL_TYPE_P (TREE_TYPE (tem))
 		&& TYPE_PRECISION (TREE_TYPE (tem))
-		 > floor_log2 (TYPE_PRECISION (rtype))
+		   > floor_log2 (TYPE_PRECISION (rtype))
 		&& type_has_mode_precision_p (TREE_TYPE (tem))
 		&& (tem == def_arg2[1 - i]
 		    || tem == def_arg2_alt[1 - i]))
 	      {
 		rotcnt = tem;
+		check_range = -1;
+		if (tem == def_arg2[1 - i])
+		  check_range_stmt = def_arg_stmt[1 - i];
+		else
+		  check_range_stmt = def_arg_alt_stmt[1 - i];
 		break;
 	      }
 	  }
@@ -2053,7 +2087,7 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 	    if (CONVERT_EXPR_CODE_P (code)
 		&& INTEGRAL_TYPE_P (TREE_TYPE (tem))
 		&& TYPE_PRECISION (TREE_TYPE (tem))
-		 > floor_log2 (TYPE_PRECISION (rtype))
+		   > floor_log2 (TYPE_PRECISION (rtype))
 		&& type_has_mode_precision_p (TREE_TYPE (tem)))
 	      defcodefor_name (tem, &code, &tem, NULL);
 
@@ -2062,6 +2096,11 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 		if (tem == def_arg2[1 - i] || tem == def_arg2_alt[1 - i])
 		  {
 		    rotcnt = tem;
+		    check_range = 1;
+		    if (tem == def_arg2[1 - i])
+		      check_range_stmt = def_arg_stmt[1 - i];
+		    else
+		      check_range_stmt = def_arg_alt_stmt[1 - i];
 		    break;
 		  }
 		tree tem2;
@@ -2076,6 +2115,11 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 			|| tem2 == def_arg2_alt[1 - i])
 		      {
 			rotcnt = tem2;
+			check_range = 1;
+			if (tem2 == def_arg2[1 - i])
+			  check_range_stmt = def_arg_stmt[1 - i];
+			else
+			  check_range_stmt = def_arg_alt_stmt[1 - i];
 			break;
 		      }
 		  }
@@ -2111,6 +2155,50 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 		  }
 	      }
 	  }
+      if (check_range && wider_prec > TYPE_PRECISION (rtype))
+	{
+	  if (TREE_CODE (rotcnt) != SSA_NAME)
+	    return false;
+	  int_range_max r;
+	  range_query *q = get_range_query (cfun);
+	  if (q == get_global_range_query ())
+	    q = enable_ranger (cfun);
+	  if (!q->range_of_expr (r, rotcnt, check_range_stmt))
+	    {
+	      if (check_range > 0)
+		return false;
+	      r.set_varying (TREE_TYPE (rotcnt));
+	    }
+	  int prec = TYPE_PRECISION (TREE_TYPE (rotcnt));
+	  signop sign = TYPE_SIGN (TREE_TYPE (rotcnt));
+	  wide_int min = wide_int::from (TYPE_PRECISION (rtype), prec, sign);
+	  wide_int max = wide_int::from (wider_prec - 1, prec, sign);
+	  if (check_range < 0)
+	    max = min;
+	  int_range<1> r2 (TREE_TYPE (rotcnt), min, max);
+	  r.intersect (r2);
+	  if (!r.undefined_p ())
+	    {
+	      if (check_range > 0)
+		{
+		  int_range_max r3;
+		  for (int i = TYPE_PRECISION (rtype) + 1; i < wider_prec;
+		       i += TYPE_PRECISION (rtype))
+		    {
+		      int j = i + TYPE_PRECISION (rtype) - 2;
+		      min = wide_int::from (i, prec, sign);
+		      max = wide_int::from (MIN (j, wider_prec - 1),
+					    prec, sign);
+		      int_range<1> r4 (TREE_TYPE (rotcnt), min, max);
+		      r3.union_ (r4);
+		    }
+		  r.intersect (r3);
+		  if (!r.undefined_p ())
+		    return false;
+		}
+	      add_masking = true;
+	    }
+	}
       if (rotcnt == NULL_TREE)
 	return false;
       swapped_p = i != 1;
@@ -2121,6 +2209,15 @@ simplify_rotate (gimple_stmt_iterator *gsi)
     {
       g = gimple_build_assign (make_ssa_name (TREE_TYPE (def_arg2[0])),
 			       NOP_EXPR, rotcnt);
+      gsi_insert_before (gsi, g, GSI_SAME_STMT);
+      rotcnt = gimple_assign_lhs (g);
+    }
+  if (add_masking)
+    {
+      g = gimple_build_assign (make_ssa_name (TREE_TYPE (rotcnt)),
+			       BIT_AND_EXPR, rotcnt,
+			       build_int_cst (TREE_TYPE (rotcnt),
+					      TYPE_PRECISION (rtype) - 1));
       gsi_insert_before (gsi, g, GSI_SAME_STMT);
       rotcnt = gimple_assign_lhs (g);
     }
@@ -3162,7 +3259,11 @@ optimize_vector_load (gimple_stmt_iterator *gsi)
 	      && (def == lhs
 		  || (known_eq (bit_field_size (use_rhs), def_eltsize)
 		      && constant_multiple_p (bit_field_offset (use_rhs),
-					      def_eltsize))))
+					      def_eltsize)
+		      /* We can simulate the VEC_UNPACK_{HI,LO}_EXPR
+			 via a NOP_EXPR only for integral types.
+			 ???  Support VEC_UNPACK_FLOAT_{HI,LO}_EXPR.  */
+		      && INTEGRAL_TYPE_P (TREE_TYPE (use_rhs)))))
 	    {
 	      bf_stmts.safe_push (use_stmt);
 	      continue;
@@ -3198,7 +3299,8 @@ optimize_vector_load (gimple_stmt_iterator *gsi)
     {
       if (TREE_CODE (TREE_OPERAND (load_rhs, 0)) == ADDR_EXPR)
 	mark_addressable (TREE_OPERAND (TREE_OPERAND (load_rhs, 0), 0));
-      tree tem = make_ssa_name (TREE_TYPE (TREE_OPERAND (load_rhs, 0)));
+      tree ptrtype = build_pointer_type (TREE_TYPE (load_rhs));
+      tree tem = make_ssa_name (ptrtype);
       gimple *new_stmt
 	= gimple_build_assign (tem, build1 (ADDR_EXPR, TREE_TYPE (tem),
 					    unshare_expr (load_rhs)));
@@ -3358,15 +3460,51 @@ pass_forwprop::execute (function *fun)
   lattice.create (num_ssa_names);
   lattice.quick_grow_cleared (num_ssa_names);
   int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (fun));
-  int postorder_num = pre_and_rev_post_order_compute_fn (cfun, NULL,
+  int postorder_num = pre_and_rev_post_order_compute_fn (fun, NULL,
 							 postorder, false);
+  int *bb_to_rpo = XNEWVEC (int, last_basic_block_for_fn (fun));
+  for (int i = 0; i < postorder_num; ++i)
+    {
+      bb_to_rpo[postorder[i]] = i;
+      edge_iterator ei;
+      edge e;
+      FOR_EACH_EDGE (e, ei, BASIC_BLOCK_FOR_FN (fun, postorder[i])->succs)
+	e->flags &= ~EDGE_EXECUTABLE;
+    }
+  single_succ_edge (BASIC_BLOCK_FOR_FN (fun, ENTRY_BLOCK))->flags
+    |= EDGE_EXECUTABLE;
   auto_vec<gimple *, 4> to_fixup;
   auto_vec<gimple *, 32> to_remove;
   to_purge = BITMAP_ALLOC (NULL);
+  bitmap need_ab_cleanup = BITMAP_ALLOC (NULL);
   for (int i = 0; i < postorder_num; ++i)
     {
       gimple_stmt_iterator gsi;
       basic_block bb = BASIC_BLOCK_FOR_FN (fun, postorder[i]);
+      edge_iterator ei;
+      edge e;
+
+      /* Skip processing not executable blocks.  We could improve
+	 single_use tracking by at least unlinking uses from unreachable
+	 blocks but since blocks with uses are not processed in a
+	 meaningful order this is probably not worth it.  */
+      bool any = false;
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+	  if ((e->flags & EDGE_EXECUTABLE)
+	      /* With dominators we could improve backedge handling
+		 when e->src is dominated by bb.  But for irreducible
+		 regions we have to take all backedges conservatively.
+		 We can handle single-block cycles as we know the
+		 dominator relationship here.  */
+	      || bb_to_rpo[e->src->index] > i)
+	    {
+	      any = true;
+	      break;
+	    }
+	}
+      if (!any)
+	continue;
 
       /* Record degenerate PHIs in the lattice.  */
       for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
@@ -3377,14 +3515,31 @@ pass_forwprop::execute (function *fun)
 	  if (virtual_operand_p (res))
 	    continue;
 
-	  use_operand_p use_p;
-	  ssa_op_iter it;
 	  tree first = NULL_TREE;
 	  bool all_same = true;
-	  FOR_EACH_PHI_ARG (use_p, phi, it, SSA_OP_USE)
+	  edge_iterator ei;
+	  edge e;
+	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    {
-	      tree use = USE_FROM_PTR (use_p);
-	      if (! first)
+	      /* Ignore not executable forward edges.  */
+	      if (!(e->flags & EDGE_EXECUTABLE))
+		{
+		  if (bb_to_rpo[e->src->index] < i)
+		    continue;
+		  /* Avoid equivalences from backedges - while we might
+		     be able to make irreducible regions reducible and
+		     thus turning a back into a forward edge we do not
+		     want to deal with the intermediate SSA issues that
+		     exposes.  */
+		  all_same = false;
+		}
+	      tree use = PHI_ARG_DEF_FROM_EDGE (phi, e);
+	      if (use == res)
+		/* The PHI result can also appear on a backedge, if so
+		   we can ignore this case for the purpose of determining
+		   the singular value.  */
+		;
+	      else if (! first)
 		first = use;
 	      else if (! operand_equal_p (first, use, 0))
 		{
@@ -3486,7 +3641,7 @@ pass_forwprop::execute (function *fun)
 		   && !gimple_has_volatile_ops (stmt)
 		   && (TREE_CODE (gimple_assign_rhs1 (stmt))
 		       != TARGET_MEM_REF)
-		   && !stmt_can_throw_internal (cfun, stmt))
+		   && !stmt_can_throw_internal (fun, stmt))
 	    {
 	      /* Rewrite loads used only in real/imagpart extractions to
 	         component-wise loads.  */
@@ -3552,7 +3707,7 @@ pass_forwprop::execute (function *fun)
 		       || (fun->curr_properties & PROP_gimple_lvec))
 		   && gimple_assign_load_p (stmt)
 		   && !gimple_has_volatile_ops (stmt)
-		   && !stmt_can_throw_internal (cfun, stmt)
+		   && !stmt_can_throw_internal (fun, stmt)
 		   && (!VAR_P (rhs) || !DECL_HARD_REGISTER (rhs)))
 	    optimize_vector_load (&gsi);
 
@@ -3561,7 +3716,8 @@ pass_forwprop::execute (function *fun)
 	      /* Rewrite stores of a single-use complex build expression
 	         to component-wise stores.  */
 	      use_operand_p use_p;
-	      gimple *use_stmt;
+	      gimple *use_stmt, *def1, *def2;
+	      tree rhs2;
 	      if (single_imm_use (lhs, &use_p, &use_stmt)
 		  && gimple_store_p (use_stmt)
 		  && !gimple_has_volatile_ops (use_stmt)
@@ -3579,7 +3735,7 @@ pass_forwprop::execute (function *fun)
 		  location_t loc = gimple_location (use_stmt);
 		  gimple_set_location (new_stmt, loc);
 		  gimple_set_vuse (new_stmt, gimple_vuse (use_stmt));
-		  gimple_set_vdef (new_stmt, make_ssa_name (gimple_vop (cfun)));
+		  gimple_set_vdef (new_stmt, make_ssa_name (gimple_vop (fun)));
 		  SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
 		  gimple_set_vuse (use_stmt, gimple_vdef (new_stmt));
 		  gimple_stmt_iterator gsi2 = gsi_for_stmt (use_stmt);
@@ -3594,6 +3750,38 @@ pass_forwprop::execute (function *fun)
 
 		  release_defs (stmt);
 		  gsi_remove (&gsi, true);
+		}
+	      /* Rewrite a component-wise load of a complex to a complex
+		 load if the components are not used separately.  */
+	      else if (TREE_CODE (rhs) == SSA_NAME
+		       && has_single_use (rhs)
+		       && ((rhs2 = gimple_assign_rhs2 (stmt)), true)
+		       && TREE_CODE (rhs2) == SSA_NAME
+		       && has_single_use (rhs2)
+		       && (def1 = SSA_NAME_DEF_STMT (rhs),
+			   gimple_assign_load_p (def1))
+		       && (def2 = SSA_NAME_DEF_STMT (rhs2),
+			   gimple_assign_load_p (def2))
+		       && (gimple_vuse (def1) == gimple_vuse (def2))
+		       && !gimple_has_volatile_ops (def1)
+		       && !gimple_has_volatile_ops (def2)
+		       && !stmt_can_throw_internal (fun, def1)
+		       && !stmt_can_throw_internal (fun, def2)
+		       && gimple_assign_rhs_code (def1) == REALPART_EXPR
+		       && gimple_assign_rhs_code (def2) == IMAGPART_EXPR
+		       && operand_equal_p (TREE_OPERAND (gimple_assign_rhs1
+								 (def1), 0),
+					   TREE_OPERAND (gimple_assign_rhs1
+								 (def2), 0)))
+		{
+		  tree cl = TREE_OPERAND (gimple_assign_rhs1 (def1), 0);
+		  gimple_assign_set_rhs_from_tree (&gsi, unshare_expr (cl));
+		  gcc_assert (gsi_stmt (gsi) == stmt);
+		  gimple_set_vuse (stmt, gimple_vuse (def1));
+		  gimple_set_modified (stmt, true);
+		  gimple_stmt_iterator gsi2 = gsi_for_stmt (def1);
+		  gsi_remove (&gsi, false);
+		  gsi_insert_after (&gsi2, stmt, GSI_SAME_STMT);
 		}
 	      else
 		gsi_next (&gsi);
@@ -3613,7 +3801,7 @@ pass_forwprop::execute (function *fun)
 	      if (single_imm_use (lhs, &use_p, &use_stmt)
 		  && gimple_store_p (use_stmt)
 		  && !gimple_has_volatile_ops (use_stmt)
-		  && !stmt_can_throw_internal (cfun, use_stmt)
+		  && !stmt_can_throw_internal (fun, use_stmt)
 		  && is_gimple_assign (use_stmt)
 		  && (TREE_CODE (gimple_assign_lhs (use_stmt))
 		      != TARGET_MEM_REF))
@@ -3644,7 +3832,7 @@ pass_forwprop::execute (function *fun)
 		      gimple_set_location (new_stmt, loc);
 		      gimple_set_vuse (new_stmt, gimple_vuse (use_stmt));
 		      gimple_set_vdef (new_stmt,
-				       make_ssa_name (gimple_vop (cfun)));
+				       make_ssa_name (gimple_vop (fun)));
 		      SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
 		      gimple_set_vuse (use_stmt, gimple_vdef (new_stmt));
 		      gimple_stmt_iterator gsi2 = gsi_for_stmt (use_stmt);
@@ -3673,6 +3861,9 @@ pass_forwprop::execute (function *fun)
 	  /* Mark stmt as potentially needing revisiting.  */
 	  gimple_set_plf (stmt, GF_PLF_1, false);
 
+	  bool can_make_abnormal_goto = (is_gimple_call (stmt)
+					 && stmt_can_make_abnormal_goto (stmt));
+
 	  /* Substitute from our lattice.  We need to do so only once.  */
 	  bool substituted_p = false;
 	  use_operand_p usep;
@@ -3691,6 +3882,10 @@ pass_forwprop::execute (function *fun)
 	      && is_gimple_assign (stmt)
 	      && gimple_assign_rhs_code (stmt) == ADDR_EXPR)
 	    recompute_tree_invariant_for_addr_expr (gimple_assign_rhs1 (stmt));
+	  if (substituted_p
+	      && can_make_abnormal_goto
+	      && !stmt_can_make_abnormal_goto (stmt))
+	    bitmap_set_bit (need_ab_cleanup, bb->index);
 
 	  bool changed;
 	  do
@@ -3833,8 +4028,6 @@ pass_forwprop::execute (function *fun)
 	}
 
       /* Substitute in destination PHI arguments.  */
-      edge_iterator ei;
-      edge e;
       FOR_EACH_EDGE (e, ei, bb->succs)
 	for (gphi_iterator gsi = gsi_start_phis (e->dest);
 	     !gsi_end_p (gsi); gsi_next (&gsi))
@@ -3850,8 +4043,18 @@ pass_forwprop::execute (function *fun)
 		&& may_propagate_copy (arg, val))
 	      propagate_value (use_p, val);
 	  }
+
+      /* Mark outgoing exectuable edges.  */
+      if (edge e = find_taken_edge (bb, NULL))
+	e->flags |= EDGE_EXECUTABLE;
+      else
+	{
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    e->flags |= EDGE_EXECUTABLE;
+	}
     }
   free (postorder);
+  free (bb_to_rpo);
   lattice.release ();
 
   /* Remove stmts in reverse order to make debug stmt creation possible.  */
@@ -3892,7 +4095,12 @@ pass_forwprop::execute (function *fun)
     }
 
   cfg_changed |= gimple_purge_all_dead_eh_edges (to_purge);
+  cfg_changed |= gimple_purge_all_dead_abnormal_call_edges (need_ab_cleanup);
   BITMAP_FREE (to_purge);
+  BITMAP_FREE (need_ab_cleanup);
+
+  if (get_range_query (fun) != get_global_range_query ())
+    disable_ranger (fun);
 
   if (cfg_changed)
     todoflags |= TODO_cleanup_cfg;

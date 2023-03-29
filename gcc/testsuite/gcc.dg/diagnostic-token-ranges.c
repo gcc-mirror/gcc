@@ -1,4 +1,4 @@
-/* { dg-options "-fdiagnostics-show-caret -Wc++-compat -std=c11" } */
+/* { dg-options "-fdiagnostics-show-caret -Wc++-compat -std=c11 -pedantic" } */
 
 /* Verify that various diagnostics show source code ranges.  */
 
@@ -48,7 +48,7 @@ void test_identifier_conflicts_with_cplusplus (void)
 }
 
 extern void
-bogus_varargs (...); /* { dg-error "ISO C requires a named argument before '...'" } */
+bogus_varargs (...); /* { dg-warning "ISO C requires a named argument before '...'" } */
 /*
 { dg-begin-multiline-output "" }
  bogus_varargs (...);

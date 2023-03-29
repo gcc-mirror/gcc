@@ -1,5 +1,5 @@
 /* Specific implementation of the PACK intrinsic
-   Copyright (C) 2002-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2023 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
 This file is part of the GNU Fortran runtime library (libgfortran).
@@ -95,6 +95,9 @@ pack_i2 (gfc_array_i2 *ret, const gfc_array_i2 *array,
   int mask_kind;
 
   dim = GFC_DESCRIPTOR_RANK (array);
+
+  sstride[0] = 0; /* Avoid warnings if not initialized.  */
+  mstride[0] = 0;
 
   mptr = mask->base_addr;
 

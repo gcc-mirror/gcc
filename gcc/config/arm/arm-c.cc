@@ -1,4 +1,4 @@
-/* Copyright (C) 2007-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2007-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -202,6 +202,8 @@ arm_cpu_builtins (struct cpp_reader* pfile)
   def_or_undef_macro (pfile, "__ARM_FEATURE_QBIT", TARGET_ARM_QBIT);
   def_or_undef_macro (pfile, "__ARM_FEATURE_SAT", TARGET_ARM_SAT);
   def_or_undef_macro (pfile, "__ARM_FEATURE_CRYPTO", TARGET_CRYPTO);
+  def_or_undef_macro (pfile, "__ARM_FEATURE_AES", TARGET_CRYPTO);
+  def_or_undef_macro (pfile, "__ARM_FEATURE_SHA2", TARGET_CRYPTO);
 
   def_or_undef_macro (pfile, "__ARM_FEATURE_UNALIGNED", unaligned_access);
 
@@ -211,6 +213,24 @@ arm_cpu_builtins (struct cpp_reader* pfile)
   def_or_undef_macro (pfile, "__ARM_FEATURE_DOTPROD", TARGET_DOTPROD);
   def_or_undef_macro (pfile, "__ARM_FEATURE_COMPLEX", TARGET_COMPLEX);
   def_or_undef_macro (pfile, "__ARM_32BIT_STATE", TARGET_32BIT);
+
+  def_or_undef_macro (pfile, "__ARM_FEATURE_PAUTH", TARGET_HAVE_PACBTI);
+  def_or_undef_macro (pfile, "__ARM_FEATURE_BTI", TARGET_HAVE_PACBTI);
+  def_or_undef_macro (pfile, "__ARM_FEATURE_BTI_DEFAULT",
+		      aarch_enable_bti == 1);
+
+  cpp_undef (pfile, "__ARM_FEATURE_PAC_DEFAULT");
+  if (aarch_ra_sign_scope != AARCH_FUNCTION_NONE)
+  {
+    unsigned int pac = 1;
+
+    gcc_assert (aarch_ra_sign_key == AARCH_KEY_A);
+
+    if (aarch_ra_sign_scope == AARCH_FUNCTION_ALL)
+      pac |= 0x4;
+
+    builtin_define_with_int_value ("__ARM_FEATURE_PAC_DEFAULT", pac);
+  }
 
   cpp_undef (pfile, "__ARM_FEATURE_MVE");
   if (TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT)
@@ -236,8 +256,12 @@ arm_cpu_builtins (struct cpp_reader* pfile)
     builtin_define_with_int_value ("__ARM_FEATURE_LDREX",
 				   TARGET_ARM_FEATURE_LDREX);
 
+  /* ACLE says that __ARM_FEATURE_CLZ is defined if the hardware
+     supports it; it's also clear that this doesn't mean the current
+     ISA, so we define this even when compiling for Thumb1 if the
+     target supports CLZ in A32.  */
   def_or_undef_macro (pfile, "__ARM_FEATURE_CLZ",
-		      ((TARGET_ARM_ARCH >= 5 && !TARGET_THUMB)
+		      ((TARGET_ARM_ARCH >= 5 && arm_arch_notm)
 		       || TARGET_ARM_ARCH_ISA_THUMB >=2));
 
   def_or_undef_macro (pfile, "__ARM_FEATURE_NUMERIC_MAXMIN",

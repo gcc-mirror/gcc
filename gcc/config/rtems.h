@@ -1,5 +1,5 @@
 /* Configuration common to all targets running RTEMS. 
-   Copyright (C) 2000-2022 Free Software Foundation, Inc.
+   Copyright (C) 2000-2023 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -56,3 +56,7 @@
 /* Prefer int for int32_t (see stdint-newlib.h).  */
 #undef STDINT_LONG32
 #define STDINT_LONG32 (INT_TYPE_SIZE != 32 && LONG_TYPE_SIZE == 32)
+
+/* Default to local-exec TLS model.  */
+#undef OS_CC1_SPEC
+#define OS_CC1_SPEC " %{!ftls-model=*:-ftls-model=local-exec}"

@@ -1,5 +1,5 @@
 /* Subroutines shared by all languages that are variants of C.
-   Copyright (C) 1992-2022 Free Software Foundation, Inc.
+   Copyright (C) 1992-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -352,13 +352,13 @@ const struct c_common_resword c_common_reswords[] =
   { "_Bool",		RID_BOOL,      D_CONLY },
   { "_Complex",		RID_COMPLEX,	0 },
   { "_Imaginary",	RID_IMAGINARY, D_CONLY },
-  { "_Float16",         RID_FLOAT16,   D_CONLY },
-  { "_Float32",         RID_FLOAT32,   D_CONLY },
-  { "_Float64",         RID_FLOAT64,   D_CONLY },
-  { "_Float128",        RID_FLOAT128,  D_CONLY },
-  { "_Float32x",        RID_FLOAT32X,  D_CONLY },
-  { "_Float64x",        RID_FLOAT64X,  D_CONLY },
-  { "_Float128x",       RID_FLOAT128X, D_CONLY },
+  { "_Float16",         RID_FLOAT16,    0 },
+  { "_Float32",         RID_FLOAT32,    0 },
+  { "_Float64",         RID_FLOAT64,    0 },
+  { "_Float128",        RID_FLOAT128,   0 },
+  { "_Float32x",        RID_FLOAT32X,   0 },
+  { "_Float64x",        RID_FLOAT64X,   0 },
+  { "_Float128x",       RID_FLOAT128X,  0 },
   { "_Decimal32",       RID_DFLOAT32,  D_CONLY },
   { "_Decimal64",       RID_DFLOAT64,  D_CONLY },
   { "_Decimal128",      RID_DFLOAT128, D_CONLY },
@@ -378,7 +378,6 @@ const struct c_common_resword c_common_reswords[] =
   { "__attribute",	RID_ATTRIBUTE,	0 },
   { "__attribute__",	RID_ATTRIBUTE,	0 },
   { "__auto_type",	RID_AUTO_TYPE,	D_CONLY },
-  { "__bases",          RID_BASES, D_CXXONLY },
   { "__builtin_addressof", RID_ADDRESSOF, D_CXXONLY },
   { "__builtin_bit_cast", RID_BUILTIN_BIT_CAST, D_CXXONLY },
   { "__builtin_call_with_static_chain",
@@ -401,44 +400,12 @@ const struct c_common_resword c_common_reswords[] =
   { "__const__",	RID_CONST,	0 },
   { "__constinit",	RID_CONSTINIT,	D_CXXONLY },
   { "__decltype",       RID_DECLTYPE,   D_CXXONLY },
-  { "__direct_bases",   RID_DIRECT_BASES, D_CXXONLY },
   { "__extension__",	RID_EXTENSION,	0 },
   { "__func__",		RID_C99_FUNCTION_NAME, 0 },
-  { "__has_nothrow_assign", RID_HAS_NOTHROW_ASSIGN, D_CXXONLY },
-  { "__has_nothrow_constructor", RID_HAS_NOTHROW_CONSTRUCTOR, D_CXXONLY },
-  { "__has_nothrow_copy", RID_HAS_NOTHROW_COPY, D_CXXONLY },
-  { "__has_trivial_assign", RID_HAS_TRIVIAL_ASSIGN, D_CXXONLY },
-  { "__has_trivial_constructor", RID_HAS_TRIVIAL_CONSTRUCTOR, D_CXXONLY },
-  { "__has_trivial_copy", RID_HAS_TRIVIAL_COPY, D_CXXONLY },
-  { "__has_trivial_destructor", RID_HAS_TRIVIAL_DESTRUCTOR, D_CXXONLY },
-  { "__has_unique_object_representations", RID_HAS_UNIQUE_OBJ_REPRESENTATIONS,
-					D_CXXONLY },
-  { "__has_virtual_destructor", RID_HAS_VIRTUAL_DESTRUCTOR, D_CXXONLY },
   { "__imag",		RID_IMAGPART,	0 },
   { "__imag__",		RID_IMAGPART,	0 },
   { "__inline",		RID_INLINE,	0 },
   { "__inline__",	RID_INLINE,	0 },
-  { "__is_abstract",	RID_IS_ABSTRACT, D_CXXONLY },
-  { "__is_aggregate",	RID_IS_AGGREGATE, D_CXXONLY },
-  { "__is_base_of",	RID_IS_BASE_OF, D_CXXONLY },
-  { "__is_class",	RID_IS_CLASS,	D_CXXONLY },
-  { "__is_empty",	RID_IS_EMPTY,	D_CXXONLY },
-  { "__is_enum",	RID_IS_ENUM,	D_CXXONLY },
-  { "__is_final",	RID_IS_FINAL,	D_CXXONLY },
-  { "__is_layout_compatible", RID_IS_LAYOUT_COMPATIBLE, D_CXXONLY },
-  { "__is_literal_type", RID_IS_LITERAL_TYPE, D_CXXONLY },
-  { "__is_pointer_interconvertible_base_of",
-			RID_IS_POINTER_INTERCONVERTIBLE_BASE_OF, D_CXXONLY },
-  { "__is_pod",		RID_IS_POD,	D_CXXONLY },
-  { "__is_polymorphic",	RID_IS_POLYMORPHIC, D_CXXONLY },
-  { "__is_same",     RID_IS_SAME_AS, D_CXXONLY },
-  { "__is_same_as",     RID_IS_SAME_AS, D_CXXONLY },
-  { "__is_standard_layout", RID_IS_STD_LAYOUT, D_CXXONLY },
-  { "__is_trivial",     RID_IS_TRIVIAL, D_CXXONLY },
-  { "__is_trivially_assignable", RID_IS_TRIVIALLY_ASSIGNABLE, D_CXXONLY },
-  { "__is_trivially_constructible", RID_IS_TRIVIALLY_CONSTRUCTIBLE, D_CXXONLY },
-  { "__is_trivially_copyable", RID_IS_TRIVIALLY_COPYABLE, D_CXXONLY },
-  { "__is_union",	RID_IS_UNION,	D_CXXONLY },
   { "__label__",	RID_LABEL,	0 },
   { "__null",		RID_NULL,	0 },
   { "__real",		RID_REALPART,	0 },
@@ -453,7 +420,6 @@ const struct c_common_resword c_common_reswords[] =
   { "__transaction_cancel", RID_TRANSACTION_CANCEL, 0 },
   { "__typeof",		RID_TYPEOF,	0 },
   { "__typeof__",	RID_TYPEOF,	0 },
-  { "__underlying_type", RID_UNDERLYING_TYPE, D_CXXONLY },
   { "__volatile",	RID_VOLATILE,	0 },
   { "__volatile__",	RID_VOLATILE,	0 },
   { "__GIMPLE",		RID_GIMPLE,	D_CONLY },
@@ -474,7 +440,7 @@ const struct c_common_resword c_common_reswords[] =
   { "class",		RID_CLASS,	D_CXX_OBJC | D_CXXWARN },
   { "const",		RID_CONST,	0 },
   { "consteval",	RID_CONSTEVAL,	D_CXXONLY | D_CXX20 | D_CXXWARN },
-  { "constexpr",	RID_CONSTEXPR,	D_CXXONLY | D_CXX11 | D_CXXWARN },
+  { "constexpr",	RID_CONSTEXPR,	D_C2X | D_CXX11 | D_CXXWARN },
   { "constinit",	RID_CONSTINIT,	D_CXXONLY | D_CXX20 | D_CXXWARN },
   { "const_cast",	RID_CONSTCAST,	D_CXXONLY | D_CXXWARN },
   { "continue",		RID_CONTINUE,	0 },
@@ -528,7 +494,8 @@ const struct c_common_resword c_common_reswords[] =
   { "typedef",		RID_TYPEDEF,	0 },
   { "typename",		RID_TYPENAME,	D_CXXONLY | D_CXXWARN },
   { "typeid",		RID_TYPEID,	D_CXXONLY | D_CXXWARN },
-  { "typeof",		RID_TYPEOF,	D_ASM | D_EXT },
+  { "typeof",		RID_TYPEOF,	D_EXT11 },
+  { "typeof_unqual",	RID_TYPEOF_UNQUAL,	D_CONLY | D_C2X },
   { "union",		RID_UNION,	0 },
   { "unsigned",		RID_UNSIGNED,	0 },
   { "using",		RID_USING,	D_CXXONLY | D_CXXWARN },
@@ -537,14 +504,13 @@ const struct c_common_resword c_common_reswords[] =
   { "volatile",		RID_VOLATILE,	0 },
   { "wchar_t",		RID_WCHAR,	D_CXXONLY },
   { "while",		RID_WHILE,	0 },
-  { "__is_assignable", RID_IS_ASSIGNABLE, D_CXXONLY },
-  { "__is_constructible", RID_IS_CONSTRUCTIBLE, D_CXXONLY },
-  { "__is_nothrow_assignable", RID_IS_NOTHROW_ASSIGNABLE, D_CXXONLY },
-  { "__is_nothrow_constructible", RID_IS_NOTHROW_CONSTRUCTIBLE, D_CXXONLY },
-  { "__reference_constructs_from_temporary", RID_REF_CONSTRUCTS_FROM_TEMPORARY,
-					D_CXXONLY },
-  { "__reference_converts_from_temporary", RID_REF_CONVERTS_FROM_TEMPORARY,
-					D_CXXONLY },
+
+#define DEFTRAIT(TCC, CODE, NAME, ARITY) \
+  { NAME,		RID_##CODE,	D_CXXONLY },
+#include "cp/cp-trait.def"
+#undef DEFTRAIT
+  /* An alias for __is_same.  */
+  { "__is_same_as",	RID_IS_SAME,	D_CXXONLY },
 
   /* C++ transactional memory.  */
   { "synchronized",	RID_SYNCHRONIZED, D_CXX_OBJC | D_TRANSMEM },
@@ -1429,8 +1395,11 @@ shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwise)
 	  == TYPE_PRECISION (TREE_TYPE (arg0)))
       && unsigned0 == unsigned1
       && (unsigned0 || !uns))
-    return c_common_signed_or_unsigned_type
-      (unsigned0, common_type (TREE_TYPE (arg0), TREE_TYPE (arg1)));
+    {
+      tree ctype = common_type (TREE_TYPE (arg0), TREE_TYPE (arg1));
+      if (ctype != error_mark_node)
+	return c_common_signed_or_unsigned_type (unsigned0, ctype);
+    }
 
   else if (TREE_CODE (arg0) == INTEGER_CST
 	   && (unsigned1 || !uns)
@@ -2185,11 +2154,16 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
 
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
-    case COMPONENT_REF:
     case ARRAY_REF:
       if (cxx_dialect >= cxx17)
 	goto sequenced_binary;
       goto do_default;
+
+    case COMPONENT_REF:
+      /* Treat as unary, the other operands aren't evaluated.  */
+      x = TREE_OPERAND (x, 0);
+      writer = 0;
+      goto restart;
 
     default:
     do_default:
@@ -2269,7 +2243,8 @@ check_case_value (location_t loc, tree value)
   if (value == NULL_TREE)
     return value;
 
-  if (TREE_CODE (value) == INTEGER_CST)
+  if (INTEGRAL_TYPE_P (TREE_TYPE (value))
+      && TREE_CODE (value) == INTEGER_CST)
     /* Promote char or short to int.  */
     value = perform_integral_promotions (value);
   else if (value != error_mark_node)
@@ -2328,6 +2303,10 @@ c_common_type_for_size (unsigned int bits, int unsignedp)
 
   if (bits <= TYPE_PRECISION (intDI_type_node))
     return unsignedp ? unsigned_intDI_type_node : intDI_type_node;
+
+  if (bits <= TYPE_PRECISION (widest_integer_literal_type_node))
+    return (unsignedp ? widest_unsigned_literal_type_node
+	    : widest_integer_literal_type_node);
 
   return NULL_TREE;
 }
@@ -3202,9 +3181,10 @@ shorten_compare (location_t loc, tree *op0_ptr, tree *op1_ptr,
 
   else if (unsignedp0 == unsignedp1 && real1 == real2
 	   && TYPE_PRECISION (TREE_TYPE (primop0)) < TYPE_PRECISION (*restype_ptr)
-	   && TYPE_PRECISION (TREE_TYPE (primop1)) < TYPE_PRECISION (*restype_ptr))
+	   && TYPE_PRECISION (TREE_TYPE (primop1)) < TYPE_PRECISION (*restype_ptr)
+	   && (type = common_type (TREE_TYPE (primop0), TREE_TYPE (primop1)))
+	      != error_mark_node)
     {
-      type = common_type (TREE_TYPE (primop0), TREE_TYPE (primop1));
       type = c_common_signed_or_unsigned_type (unsignedp0
 					       || TYPE_UNSIGNED (*restype_ptr),
 					       type);
@@ -4090,7 +4070,8 @@ static tree builtin_types[(int) BT_LAST + 1];
 
 /* A helper function for c_common_nodes_and_builtins.  Build function type
    for DEF with return type RET and N arguments.  If VAR is true, then the
-   function should be variadic after those N arguments.
+   function should be variadic after those N arguments, or, if N is zero,
+   unprototyped.
 
    Takes special care not to ICE if any of the types involved are
    error_mark_node, which indicates that said type is not in fact available
@@ -4119,7 +4100,10 @@ def_fn_type (builtin_type def, builtin_type ret, bool var, int n, ...)
   if (t == error_mark_node)
     goto egress;
   if (var)
-    t = build_varargs_function_type_array (t, n, args);
+    if (n == 0)
+      t = build_function_type (t, NULL_TREE);
+    else
+      t = build_varargs_function_type_array (t, n, args);
   else
     t = build_function_type_array (t, n, args);
 
@@ -4378,11 +4362,18 @@ c_common_nodes_and_builtins (void)
   record_builtin_type (RID_DOUBLE, NULL, double_type_node);
   record_builtin_type (RID_MAX, "long double", long_double_type_node);
 
-  if (!c_dialect_cxx ())
-    for (i = 0; i < NUM_FLOATN_NX_TYPES; i++)
+  for (i = 0; i < NUM_FLOATN_NX_TYPES; i++)
+    {
       if (FLOATN_NX_TYPE_NODE (i) != NULL_TREE)
 	record_builtin_type ((enum rid) (RID_FLOATN_NX_FIRST + i), NULL,
 			     FLOATN_NX_TYPE_NODE (i));
+    }
+
+  /* For C, let float128t_type_node (__float128 in some backends) be the
+     same type as float128_type_node (_Float128), for C++ let those
+     be distinct types that mangle and behave differently.  */
+  if (c_dialect_cxx ())
+    float128t_type_node = NULL_TREE;
 
   /* Only supported decimal floating point extension if the target
      actually supports underlying modes. */
@@ -4590,8 +4581,11 @@ c_common_nodes_and_builtins (void)
   char32_array_type_node
     = build_array_type (char32_type_node, array_domain_type);
 
-  wint_type_node =
-    TREE_TYPE (identifier_global_value (get_identifier (WINT_TYPE)));
+  if (strcmp (WINT_TYPE, "wchar_t") == 0)
+    wint_type_node = wchar_type_node;
+  else
+    wint_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (WINT_TYPE)));
 
   intmax_type_node =
     TREE_TYPE (identifier_global_value (get_identifier (INTMAX_TYPE)));
@@ -4680,8 +4674,7 @@ c_common_nodes_and_builtins (void)
     uintptr_type_node =
       TREE_TYPE (identifier_global_value (c_get_ident (UINTPTR_TYPE)));
 
-  default_function_type
-    = build_varargs_function_type_list (integer_type_node, NULL_TREE);
+  default_function_type = build_function_type (integer_type_node, NULL_TREE);
   unsigned_ptrdiff_type_node = c_common_unsigned_type (ptrdiff_type_node);
 
   lang_hooks.decls.pushdecl
@@ -5374,7 +5367,14 @@ c_stddef_cpp_builtins(void)
   builtin_define_with_value ("__SIZE_TYPE__", SIZE_TYPE, 0);
   builtin_define_with_value ("__PTRDIFF_TYPE__", PTRDIFF_TYPE, 0);
   builtin_define_with_value ("__WCHAR_TYPE__", MODIFIED_WCHAR_TYPE, 0);
-  builtin_define_with_value ("__WINT_TYPE__", WINT_TYPE, 0);
+  /* C++ has wchar_t as a builtin type, C doesn't, so if WINT_TYPE
+     maps to wchar_t, define it to the underlying WCHAR_TYPE in C, and
+     to wchar_t in C++, so the desired type equivalence holds.  */
+  if (!c_dialect_cxx ()
+      && strcmp (WINT_TYPE, "wchar_t") == 0)
+    builtin_define_with_value ("__WINT_TYPE__", WCHAR_TYPE, 0);
+  else
+    builtin_define_with_value ("__WINT_TYPE__", WINT_TYPE, 0);
   builtin_define_with_value ("__INTMAX_TYPE__", INTMAX_TYPE, 0);
   builtin_define_with_value ("__UINTMAX_TYPE__", UINTMAX_TYPE, 0);
   if (flag_char8_t)
@@ -6031,12 +6031,12 @@ attribute_fallthrough_p (tree attr)
 {
   if (attr == error_mark_node)
    return false;
-  tree t = lookup_attribute ("fallthrough", attr);
+  tree t = lookup_attribute ("", "fallthrough", attr);
   if (t == NULL_TREE)
     return false;
   /* It is no longer true that "this attribute shall appear at most once in
      each attribute-list", but we still give a warning.  */
-  if (lookup_attribute ("fallthrough", TREE_CHAIN (t)))
+  if (lookup_attribute ("", "fallthrough", TREE_CHAIN (t)))
     warning (OPT_Wattributes, "attribute %<fallthrough%> specified multiple "
 	     "times");
   /* No attribute-argument-clause shall be present.  */
@@ -6047,7 +6047,8 @@ attribute_fallthrough_p (tree attr)
   for (t = attr; t != NULL_TREE; t = TREE_CHAIN (t))
     {
       tree name = get_attribute_name (t);
-      if (!is_attribute_p ("fallthrough", name))
+      if (!is_attribute_p ("fallthrough", name)
+	  || !is_attribute_namespace_p ("", t))
 	{
 	  if (!c_dialect_cxx () && get_attribute_namespace (t) == NULL_TREE)
 	    /* The specifications of standard attributes in C mean
@@ -6826,7 +6827,7 @@ fold_offsetof (tree expr, tree type, enum tree_code ctx)
 		     definition thereof.  */
 		  if (TREE_CODE (v) == ARRAY_REF
 		      || TREE_CODE (v) == COMPONENT_REF)
-		    warning (OPT_Warray_bounds,
+		    warning (OPT_Warray_bounds_,
 			     "index %E denotes an offset "
 			     "greater than size of %qT",
 			     t, TREE_TYPE (TREE_OPERAND (expr, 0)));
@@ -8512,6 +8513,8 @@ c_common_init_ts (void)
   MARK_TS_EXP (FOR_STMT);
   MARK_TS_EXP (SWITCH_STMT);
   MARK_TS_EXP (WHILE_STMT);
+
+  MARK_TS_DECL_COMMON (CONCEPT_DECL);
 }
 
 /* Build a user-defined numeric literal out of an integer constant type VALUE
@@ -8547,7 +8550,7 @@ convert_vector_to_array_for_subscript (location_t loc,
       if (TREE_CODE (index) == INTEGER_CST)
         if (!tree_fits_uhwi_p (index)
 	    || maybe_ge (tree_to_uhwi (index), TYPE_VECTOR_SUBPARTS (type)))
-          warning_at (loc, OPT_Warray_bounds, "index value is out of bound");
+	  warning_at (loc, OPT_Warray_bounds_, "index value is out of bound");
 
       /* We are building an ARRAY_REF so mark the vector as addressable
          to not run into the gimplifiers premature setting of DECL_GIMPLE_REG_P
@@ -9511,6 +9514,35 @@ c_common_finalize_early_debug (void)
 	&& (cnode->has_gimple_body_p ()
 	    || !DECL_IS_UNDECLARED_BUILTIN (cnode->decl)))
       (*debug_hooks->early_global_decl) (cnode->decl);
+}
+
+/* Get the LEVEL of the strict_flex_array for the ARRAY_FIELD based on the
+   values of attribute strict_flex_array and the flag_strict_flex_arrays.  */
+unsigned int
+c_strict_flex_array_level_of (tree array_field)
+{
+  gcc_assert (TREE_CODE (array_field) == FIELD_DECL);
+  unsigned int strict_flex_array_level = flag_strict_flex_arrays;
+
+  tree attr_strict_flex_array
+    = lookup_attribute ("strict_flex_array", DECL_ATTRIBUTES (array_field));
+  /* If there is a strict_flex_array attribute attached to the field,
+     override the flag_strict_flex_arrays.  */
+  if (attr_strict_flex_array)
+    {
+      /* Get the value of the level first from the attribute.  */
+      unsigned HOST_WIDE_INT attr_strict_flex_array_level = 0;
+      gcc_assert (TREE_VALUE (attr_strict_flex_array) != NULL_TREE);
+      attr_strict_flex_array = TREE_VALUE (attr_strict_flex_array);
+      gcc_assert (TREE_VALUE (attr_strict_flex_array) != NULL_TREE);
+      attr_strict_flex_array = TREE_VALUE (attr_strict_flex_array);
+      gcc_assert (tree_fits_uhwi_p (attr_strict_flex_array));
+      attr_strict_flex_array_level = tree_to_uhwi (attr_strict_flex_array);
+
+      /* The attribute has higher priority than flag_struct_flex_array.  */
+      strict_flex_array_level = attr_strict_flex_array_level;
+    }
+  return strict_flex_array_level;
 }
 
 #include "gt-c-family-c-common.h"

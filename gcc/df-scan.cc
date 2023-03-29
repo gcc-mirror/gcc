@@ -1,5 +1,5 @@
 /* Scanning of rtl for dataflow analysis.
-   Copyright (C) 1999-2022 Free Software Foundation, Inc.
+   Copyright (C) 1999-2023 Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -2475,10 +2475,11 @@ df_ref_create_structure (enum df_ref_class cl,
 			 enum df_ref_type ref_type,
 			 int ref_flags)
 {
-  df_ref this_ref = NULL;
-  unsigned int regno = REGNO (GET_CODE (reg) == SUBREG ? SUBREG_REG (reg) : reg);
+  const unsigned int regno
+    = REGNO (GET_CODE (reg) == SUBREG ? SUBREG_REG (reg) : reg);
   struct df_scan_problem_data *problem_data
     = (struct df_scan_problem_data *) df_scan->problem_data;
+  df_ref this_ref;
 
   switch (cl)
     {
@@ -2498,12 +2499,15 @@ df_ref_create_structure (enum df_ref_class cl,
       this_ref->regular_ref.loc = loc;
       gcc_checking_assert (loc);
       break;
+
+    default:
+      gcc_unreachable ();
     }
 
   DF_REF_CLASS (this_ref) = cl;
   DF_REF_ID (this_ref) = -1;
   DF_REF_REG (this_ref) = reg;
-  DF_REF_REGNO (this_ref) =  regno;
+  DF_REF_REGNO (this_ref) = regno;
   DF_REF_TYPE (this_ref) = ref_type;
   DF_REF_INSN_INFO (this_ref) = info;
   DF_REF_CHAIN (this_ref) = NULL;
@@ -2512,17 +2516,17 @@ df_ref_create_structure (enum df_ref_class cl,
   DF_REF_PREV_REG (this_ref) = NULL;
   DF_REF_ORDER (this_ref) = df->ref_order++;
 
-  /* We need to clear this bit because fwprop, and in the future
-     possibly other optimizations sometimes create new refs using ond
-     refs as the model.  */
+  /* We need to clear the DF_HARD_REG_LIVE bit because fwprop, and in the
+     future possibly other optimizations, sometimes create new refs using
+     live refs as the model.  */
   DF_REF_FLAGS_CLEAR (this_ref, DF_HARD_REG_LIVE);
 
-  /* See if this ref needs to have DF_HARD_REG_LIVE bit set.  */
+  /* Now see if this ref really needs to have the bit set.  */
   if (regno < FIRST_PSEUDO_REGISTER
-      && !DF_REF_IS_ARTIFICIAL (this_ref)
-      && !DEBUG_INSN_P (DF_REF_INSN (this_ref)))
+      && cl != DF_REF_ARTIFICIAL
+      && !DEBUG_INSN_P (info->insn))
     {
-      if (DF_REF_REG_DEF_P (this_ref))
+      if (ref_type == DF_REF_REG_DEF)
 	{
 	  if (!DF_REF_FLAGS_IS_SET (this_ref, DF_REF_MAY_CLOBBER))
 	    DF_REF_FLAGS_SET (this_ref, DF_HARD_REG_LIVE);

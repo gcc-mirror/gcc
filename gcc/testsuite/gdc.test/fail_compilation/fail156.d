@@ -2,9 +2,9 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail156.d(35): Error: overlapping initialization for `y`
+fail_compilation/fail156.d(35): Error: overlapping initialization for field `x` and `y`
 fail_compilation/fail156.d(35):        `struct` initializers that contain anonymous unions must initialize only the first member of a `union`. All subsequent non-overlapping fields are default initialized
-fail_compilation/fail156.d(42): Error: overlapping initialization for `y`
+fail_compilation/fail156.d(42): Error: overlapping initialization for field `x` and `y`
 fail_compilation/fail156.d(42):        `struct` initializers that contain anonymous unions must initialize only the first member of a `union`. All subsequent non-overlapping fields are default initialized
 ---
 */

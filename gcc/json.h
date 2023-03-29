@@ -1,5 +1,5 @@
 /* JSON trees
-   Copyright (C) 2017-2022 Free Software Foundation, Inc.
+   Copyright (C) 2017-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -82,8 +82,11 @@ class value
   void dump (FILE *) const;
 };
 
-/* Subclass of value for objects: an unordered collection of
-   key/value pairs.  */
+/* Subclass of value for objects: a collection of key/value pairs
+   preserving the ordering in which keys were inserted.
+
+   Preserving the order eliminates non-determinism in the output,
+   making it easier for the user to compare repeated invocations.  */
 
 class object : public value
 {
@@ -100,6 +103,9 @@ class object : public value
   typedef hash_map <char *, value *,
     simple_hashmap_traits<nofree_string_hash, value *> > map_t;
   map_t m_map;
+
+  /* Keep track of order in which keys were inserted.  */
+  auto_vec <const char *> m_keys;
 };
 
 /* Subclass of value for arrays.  */
@@ -156,16 +162,19 @@ class integer_number : public value
 class string : public value
 {
  public:
-  string (const char *utf8);
+  explicit string (const char *utf8);
+  string (const char *utf8, size_t len);
   ~string () { free (m_utf8); }
 
   enum kind get_kind () const final override { return JSON_STRING; }
   void print (pretty_printer *pp) const final override;
 
   const char *get_string () const { return m_utf8; }
+  size_t get_length () const { return m_len; }
 
  private:
   char *m_utf8;
+  size_t m_len;
 };
 
 /* Subclass of value for the three JSON literals "true", "false",

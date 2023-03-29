@@ -1,5 +1,5 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
-   Copyright (C) 1989-2022 Free Software Foundation, Inc.
+   Copyright (C) 1989-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -60,6 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attr-fnspec.h"
 #include "value-query.h"
 #include "tree-pretty-print.h"
+#include "tree-eh.h"
 
 /* Like PREFERRED_STACK_BOUNDARY but in units of bytes, not bits.  */
 #define STACK_BYTES (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT)
@@ -2907,8 +2908,8 @@ expand_call (tree exp, rtx target, int ignore)
     }
 
   /* Count the arguments and set NUM_ACTUALS.  */
-  num_actuals =
-    call_expr_nargs (exp) + num_complex_actuals + structure_value_addr_parm;
+  num_actuals
+    = call_expr_nargs (exp) + num_complex_actuals + structure_value_addr_parm;
 
   /* Compute number of named args.
      First, do a raw count of the args for INIT_CUMULATIVE_ARGS.  */
@@ -2918,6 +2919,8 @@ expand_call (tree exp, rtx target, int ignore)
       = (list_length (type_arg_types)
 	 /* Count the struct value address, if it is passed as a parm.  */
 	 + structure_value_addr_parm);
+  else if (TYPE_NO_NAMED_ARGS_STDARG_P (funtype))
+    n_named_args = 0;
   else
     /* If we know nothing, treat all args as named.  */
     n_named_args = num_actuals;
@@ -2956,6 +2959,8 @@ expand_call (tree exp, rtx target, int ignore)
 	   && ! targetm.calls.pretend_outgoing_varargs_named (args_so_far))
     /* Don't include the last named arg.  */
     --n_named_args;
+  else if (TYPE_NO_NAMED_ARGS_STDARG_P (funtype))
+    n_named_args = 0;
   else
     /* Treat all args as named.  */
     n_named_args = num_actuals;
@@ -3154,7 +3159,10 @@ expand_call (tree exp, rtx target, int ignore)
       if (pass && (flags & ECF_MALLOC))
 	start_sequence ();
 
-      if (pass == 0
+      /* Check the canary value for sibcall or function which doesn't
+	 return and could throw.  */
+      if ((pass == 0
+	   || ((flags & ECF_NORETURN) != 0 && tree_could_throw_p (exp)))
 	  && crtl->stack_protect_guard
 	  && targetm.stack_protect_runtime_enabled_p ())
 	stack_protect_epilogue ();

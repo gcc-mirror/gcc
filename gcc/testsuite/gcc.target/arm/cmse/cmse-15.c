@@ -144,6 +144,8 @@ int secure2 (s_bar_ptr s_bar_p)
 **	bx	r[0-3]
 ** |
 **	blx	r[0-3]
+** |
+**	b	secure1
 ** )
 **	...
 */

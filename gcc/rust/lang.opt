@@ -1,0 +1,162 @@
+; Options for the Rust front end.
+; Copyright (C) 2003-2023 Free Software Foundation, Inc.
+;
+; This file is part of GCC.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+; See the GCC internals manual for a description of this file's format.
+
+; Please try to keep this file in ASCII collating order.
+
+; Describes command-line options used by this frontend
+
+Language
+Rust
+
+I
+Rust Joined Separate
+; Documented in c.opt
+
+L
+Rust Joined Separate
+; Not documented
+
+Wall
+Rust
+; Documented in c.opt
+
+Wunused-variable
+Rust Var(warn_unused_variable) Warning
+; documented in common.opt
+
+Wunused-const-variable
+Rust Warning Alias(Wunused-const-variable=, 2, 0)
+Warn when a const variable is unused.
+
+Wunused-const-variable=
+Rust Joined RejectNegative UInteger Var(warn_unused_const_variable) Warning LangEnabledBy(Rust,Wunused-variable, 1, 0) IntegerRange(0, 2)
+Warn when a const variable is unused.
+
+Wunused-result
+Rust Var(warn_unused_result) Warning
+Warn if a caller of a function, marked with attribute warn_unused_result, does not use its return value.
+
+frust-crate=
+Rust Joined RejectNegative
+-frust-crate=<name>             Set the crate name for the compilation
+
+frust-debug
+Rust Var(flag_rust_debug)
+Dump various Rust front end internals.
+
+frust-dump-
+Rust Joined RejectNegative
+-frust-dump-<type>	Dump Rust frontend internal information.
+
+frust-incomplete-and-experimental-compiler-do-not-use
+Rust Var(flag_rust_experimental)
+Enable experimental compilation of Rust files at your own risk
+
+frust-max-recursion-depth=
+Rust RejectNegative Type(int) Var(rust_max_recursion_depth) Init(64)
+-frust-max-recursion-depth=integer
+
+frust-mangling=
+Rust Joined RejectNegative Enum(frust_mangling) Var(flag_rust_mangling)
+-frust-mangling=[legacy|v0]     Choose which version to use for name mangling
+
+Enum
+Name(frust_mangling) Type(int) UnknownError(unknown rust mangling option %qs)
+
+EnumValue
+Enum(frust_mangling) String(legacy) Value(0)
+
+EnumValue
+Enum(frust_mangling) String(v0) Value(1)
+
+frust-cfg=
+Rust Joined RejectNegative
+-frust-cfg=<name>             Set a config expansion option
+
+frust-edition=
+Rust Joined RejectNegative Enum(frust_edition) Var(flag_rust_edition)
+-frust-edition=[2015|2018|2021]             Choose which edition to use when compiling rust code
+
+Enum
+Name(frust_edition) Type(int) UnknownError(unknown rust edition %qs)
+
+EnumValue
+Enum(frust_edition) String(2015) Value(0)
+
+EnumValue
+Enum(frust_edition) String(2018) Value(1)
+
+EnumValue
+Enum(frust_edition) String(2021) Value(2)
+
+frust-embed-metadata
+Rust Var(flag_rust_embed_metadata)
+Flag to enable embeding metadata directly into object files
+
+frust-metadata-output=
+Rust Joined RejectNegative
+-frust-metadata-output=<path.rox>  Path to output crate metadata
+
+o
+Rust Joined Separate
+; Documented in common.opt
+
+frust-compile-until=
+Rust Joined RejectNegative Enum(frust_compile_until) Var(flag_rust_compile_until)
+-frust-compile-until=[ast|attributecheck|expansion|nameresolution|lowering|typecheck|privacy|unsafety|const|copimlation|end]             When to stop in the pipeline when compiling Rust code
+
+Enum
+Name(frust_compile_until) Type(int) UnknownError(unknown rust compile-until %qs)
+
+EnumValue
+Enum(frust_compile_until) String(ast) Value(0)
+
+EnumValue
+Enum(frust_compile_until) String(attributecheck) Value(1)
+
+EnumValue
+Enum(frust_compile_until) String(expansion) Value(2)
+
+EnumValue
+Enum(frust_compile_until) String(nameresolution) Value(3)
+
+EnumValue
+Enum(frust_compile_until) String(lowering) Value(4)
+
+EnumValue
+Enum(frust_compile_until) String(typecheck) Value(5)
+
+EnumValue
+Enum(frust_compile_until) String(privacy) Value(6)
+
+EnumValue
+Enum(frust_compile_until) String(unsafety) Value(7)
+
+EnumValue
+Enum(frust_compile_until) String(const) Value(8)
+
+EnumValue
+Enum(frust_compile_until) String(compilation) Value(9)
+
+EnumValue
+Enum(frust_compile_until) String(end) Value(10)
+
+; This comment is to ensure we retain the blank line above.

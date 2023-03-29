@@ -9,3 +9,5 @@ foo(void)
 {
   f += (F)(f != (F){}[0]);
 }
+
+/* { dg-xfail-if "-fnon-call-exceptions unsupported" { amdgcn-*-* } } */

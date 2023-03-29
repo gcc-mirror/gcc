@@ -1,3 +1,265 @@
+2023-03-03  Costas Argyris  <costas.argyris@gmail.com>
+
+	* pex-win32.c (win32_spawn): Fix memory leak of cmdline
+	buffer and refactor to have cleanup code appear once
+	for all exit cases.
+
+2023-02-11  niXman  <i.nixman@autistici.org>
+
+	* lrealpath.c (lrealpath): try to resolve symlink and
+	use UNC paths where applicable.
+
+2023-01-07  LIU Hao  <lh_mouse@126.com>
+
+	PR middle-end/108300
+	* make-temp-file.c: Define `WIN32_LEAN_AND_MEAN` before <windows.h>.
+	* pex-win32.c: Likewise.
+
+2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	Revert:
+	2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac: Also set shared when enable_host_pie.
+	* configure: Regenerate.
+
+2022-11-23  Marek Polacek  <polacek@redhat.com>
+
+	* configure.ac: Also set shared when enable_host_pie.
+	* configure: Regenerate.
+
+2022-11-15  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-demangle.c (struct d_print_info): Rename is_lambda_arg to
+	lambda_tpl_parms.  Augment semantics.
+	(d_make_comp): Add checks for new components.
+	(d_template_parm, d_template_head): New.
+	(d_lambda): Add templated lambda support.
+	(d_print_init): Adjust.
+	(d_print_lambda_parm_name): New.
+	(d_print_comp_inner): Support templated lambdas,
+	* testsuite/demangle-expected: Add testcases.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* doc/bsd.rst: New file.
+	* doc/conf.py: New file.
+	* doc/copyright.rst: New file.
+	* doc/extensions.rst: New file.
+	* doc/function-variable-and-macro-listing.rst: New file.
+	* doc/index.rst: New file.
+	* doc/indices-and-tables.rst: New file.
+	* doc/introduction.rst: New file.
+	* doc/lesser-general-public-license-2.1.rst: New file.
+	* doc/overview.rst: New file.
+	* doc/replacement-functions.rst: New file.
+	* doc/supplemental-functions.rst: New file.
+	* doc/using.rst: New file.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Support Sphinx based documentation.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* at-file.texi: Removed.
+	* copying-lib.texi: Removed.
+	* functions.texi: Removed.
+	* libiberty.texi: Removed.
+	* obstacks.texi: Removed.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Support --with-sphinx-build.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* doc/bsd.rst:
+	Add trailing newline.
+	* doc/copyright.rst:
+	Add trailing newline.
+	* doc/extensions.rst:
+	Add trailing newline.
+	* doc/function-variable-and-macro-listing.rst:
+	Add trailing newline.
+	* doc/index.rst:
+	Add trailing newline.
+	* doc/indices-and-tables.rst:
+	Add trailing newline.
+	* doc/introduction.rst:
+	Add trailing newline.
+	* doc/lesser-general-public-license-2.1.rst:
+	Add trailing newline.
+	* doc/overview.rst:
+	Add trailing newline.
+	* doc/replacement-functions.rst:
+	Add trailing newline.
+	* doc/supplemental-functions.rst:
+	Add trailing newline.
+	* doc/using.rst:
+	Add trailing newline.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	* doc/conf.py: Add newline at last line.
+
+2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2022-11-14  Martin Liska  <mliska@suse.cz>
+
+	PR other/107620
+	* configure: Regenerate.
+	* configure.ac: Always set sphinx-build.
+
+2022-11-13  Martin Liska  <mliska@suse.cz>
+
+	PR other/107620
+	* configure: Regenerate.
+	* configure.ac: Always set sphinx-build.
+
+2022-11-10  Martin Liska  <mliska@suse.cz>
+
+	* doc/conf.py: Add newline at last line.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/bsd.rst:
+	Add trailing newline.
+	* doc/copyright.rst:
+	Add trailing newline.
+	* doc/extensions.rst:
+	Add trailing newline.
+	* doc/function-variable-and-macro-listing.rst:
+	Add trailing newline.
+	* doc/index.rst:
+	Add trailing newline.
+	* doc/indices-and-tables.rst:
+	Add trailing newline.
+	* doc/introduction.rst:
+	Add trailing newline.
+	* doc/lesser-general-public-license-2.1.rst:
+	Add trailing newline.
+	* doc/overview.rst:
+	Add trailing newline.
+	* doc/replacement-functions.rst:
+	Add trailing newline.
+	* doc/supplemental-functions.rst:
+	Add trailing newline.
+	* doc/using.rst:
+	Add trailing newline.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Support --with-sphinx-build.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* at-file.texi: Removed.
+	* copying-lib.texi: Removed.
+	* functions.texi: Removed.
+	* libiberty.texi: Removed.
+	* obstacks.texi: Removed.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Support Sphinx based documentation.
+
+2022-11-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/bsd.rst: New file.
+	* doc/conf.py: New file.
+	* doc/copyright.rst: New file.
+	* doc/extensions.rst: New file.
+	* doc/function-variable-and-macro-listing.rst: New file.
+	* doc/index.rst: New file.
+	* doc/indices-and-tables.rst: New file.
+	* doc/introduction.rst: New file.
+	* doc/lesser-general-public-license-2.1.rst: New file.
+	* doc/overview.rst: New file.
+	* doc/replacement-functions.rst: New file.
+	* doc/supplemental-functions.rst: New file.
+	* doc/using.rst: New file.
+
+2022-10-18  Florian Weimer  <fweimer@redhat.com>
+
+	* acinclude.m4 (ac_cv_func_strncmp_works): Add missing
+	int return type and parameter list to the definition of main.
+	Include <stdlib.h> and <string.h> for prototypes.
+	(ac_cv_c_stack_direction): Add missing
+	int return type and parameter list to the definitions of
+	main, find_stack_direction.  Include <stdlib.h> for exit
+	prototype.
+	* configure: Regenerate.
+
+2022-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-demangle.h (D_BUILTIN_TYPE_COUNT): Increment.
+	* cp-demangle.c (cplus_demangle_builtin_types): Add std::bfloat16_t
+	entry.
+	(cplus_demangle_type): Demangle DF16b.
+	* testsuite/demangle-expected (_Z3xxxDF16b): New test.
+
+2022-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-demangle.c (d_prefix): 'M' components are not
+	(re-)added to the substitution table.
+	* testsuite/demangle-expected: Add tests.
+
+2022-10-07  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-demangle.c (d_print_comp_inner): Allow parameter packs
+	in a lambda signature.
+	* testsuite/demangle-expected: Add tests.
+
+2022-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/106652
+	PR c++/85518
+	* cp-demangle.c (d_dump): Handle
+	DEMANGLE_COMPONENT_EXTENDED_BUILTIN_TYPE.  Don't handle
+	DEMANGLE_COMPONENT_FIXED_TYPE.
+	(d_make_extended_builtin_type): New function.
+	(cplus_demangle_builtin_types): Add _Float entry.
+	(cplus_demangle_type): For DF demangle it as _Float<N> or
+	_Float<N>x rather than fixed point which conflicts with it.
+	(d_count_templates_scopes): Handle
+	DEMANGLE_COMPONENT_EXTENDED_BUILTIN_TYPE.  Just break; for
+	DEMANGLE_COMPONENT_FIXED_TYPE.
+	(d_find_pack): Handle DEMANGLE_COMPONENT_EXTENDED_BUILTIN_TYPE.
+	Don't handle DEMANGLE_COMPONENT_FIXED_TYPE.
+	(d_print_comp_inner): Likewise.
+	* cp-demangle.h (D_BUILTIN_TYPE_COUNT): Bump.
+	* testsuite/demangle-expected: Replace _Z3xxxDFyuVb test
+	with _Z3xxxDF16_DF32_DF64_DF128_CDF16_Vb.  Add
+	_Z3xxxDF32xDF64xDF128xCDF32xVb test.
+
+2022-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* README: Replace gcc-bugs email address with Bugzilla URL.
+
 2022-08-25  Martin Liska  <mliska@suse.cz>
 
 	* configure: Regenerate.
@@ -1508,7 +1770,7 @@
 2016-06-12  Brooks Moses  <bmoses@google.com>
 
 	* cp-demangle.c (cplus_demangle_print_callback): Avoid zero-length
-	  VLAs.
+	VLAs.
 
 2016-05-31  Alan Modra  <amodra@gmail.com>
 
@@ -3085,8 +3347,8 @@
 
 2009-08-23  H.J. Lu  <hongjiu.lu@intel.com>
 
-	 PR ld/10536
-	 * Makefile.in (install-html-recursive): Removed.
+	PR ld/10536
+	* Makefile.in (install-html-recursive): Removed.
 
 2009-08-22  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
@@ -7520,7 +7782,7 @@ Sun Nov 28 00:59:39 1999  Philippe De Muyter  <phdm@macqel.be>
 	* strtoul.c, strtol.c, random.c: Remove advertising clause from
 	BSD license, pursuant with
 
-	  ftp://ftp.cs.berkeley.edu/pub/4bsd/README.Impt.License.Change
+	ftp://ftp.cs.berkeley.edu/pub/4bsd/README.Impt.License.Change
 
 Wed Nov 10 09:42:39 1999  Jeffrey A Law  (law@cygnus.com)
 
@@ -9904,12 +10166,12 @@ Sun Feb 27 21:50:11 1994  Jim Kingdon  (kingdon@deneb.cygnus.com)
 Thu Feb 24 11:51:12 1994  David J. Mackenzie  (djm@rtl.cygnus.com)
 
 	* getopt.c: Remove #ifdef GETOPT_COMPAT and #if 0 code.
-	 (_getopt_initialize): New function, broken out of _getopt_internal.
-	 (_getopt_internal):
-	 If long_only and the ARGV-element has the form "-f", where f is
-	 a valid short option, don't consider it an abbreviated form of
-	 a long option that starts with f.  Otherwise there would be no
-	 way to give the -f short option.
+	(_getopt_initialize): New function, broken out of _getopt_internal.
+	(_getopt_internal):
+	If long_only and the ARGV-element has the form "-f", where f is
+	a valid short option, don't consider it an abbreviated form of
+	a long option that starts with f.  Otherwise there would be no
+	way to give the -f short option.
 
 Thu Feb 10 14:44:16 1994  Richard Stallman  (rms@mole.gnu.ai.mit.edu)
 
@@ -10129,8 +10391,8 @@ Fri Oct 22 07:53:15 1993  Jim Kingdon  (kingdon@lioth.cygnus.com)
 Tue Oct 19 17:12:01 1993  david d `zoo' zuhn  (zoo@rtl.cygnus.com)
 
 	* Makefile.in (lneeded-list): ensure that object file names are
-	  not duplicated, as multiple instances of the same object file in
-	  a library causes problems on some machines
+	not duplicated, as multiple instances of the same object file in
+	a library causes problems on some machines
 
 Mon Oct 18 21:59:28 1993  Jim Kingdon  (kingdon@lioth.cygnus.com)
 
@@ -10543,10 +10805,10 @@ Wed Sep  9 12:41:48 1992  Ian Lance Taylor  (ian@cygnus.com)
 Thu Sep  3 13:29:39 1992  K. Richard Pixley  (rich@sendai.cygnus.com)
 
 	* cplus-dem.c: (demangle_prefix): reduction in strength of strstr
-	  as a time optimization.
+	as a time optimization.
 
 	* cplus-dem.c (cplus_demangle): remove strpbrk test.  Appears to
-	  be more expensive than simply demangling.
+	be more expensive than simply demangling.
 
 	* cplus-dem.c (cplus_match): new function.
 
@@ -10642,7 +10904,7 @@ Wed Jun 17 18:13:58 1992  Per Bothner  (bothner@rtl.cygnus.com)
 Tue Jun 16 16:11:59 1992  K. Richard Pixley  (rich@rtl.cygnus.com)
 
 	* getopt.c, getopt1.c: merged largely gratuitous, mostly
-	  whitespace diffs from other prep distributions.
+	whitespace diffs from other prep distributions.
 
 Mon Jun 15 12:25:46 1992  Fred Fish  (fnf@cygnus.com)
 
@@ -10732,7 +10994,7 @@ Mon Apr 20 20:49:32 1992  K. Richard Pixley  (rich@cygnus.com)
 	* Makefile.in: do not print recursion line.
 
 	* Makefile.in: allow CFLAGS to be passed in from command line.
-	  Removed MINUS_G.  Default CFLAGS to -g.
+	Removed MINUS_G.  Default CFLAGS to -g.
 
 Mon Apr 20 12:57:46 1992  Per Bothner  (bothner@rtl.cygnus.com)
 
@@ -10803,8 +11065,8 @@ Thu Feb 27 22:19:39 1992  Per Bothner  (bothner@cygnus.com)
 Wed Feb 26 18:04:40 1992  K. Richard Pixley  (rich@cygnus.com)
 
 	* Makefile.in, configure.in: removed traces of namesubdir,
-	  -subdirs, $(subdir), $(unsubdir), some rcs triggers.  Forced
-	  copyrights to '92, changed some from Cygnus to FSF.
+	-subdirs, $(subdir), $(unsubdir), some rcs triggers.  Forced
+	copyrights to '92, changed some from Cygnus to FSF.
 
 Sat Feb 22 01:09:21 1992  Stu Grossman  (grossman at cygnus.com)
 
@@ -10889,17 +11151,17 @@ Tue Dec 10 04:14:49 1991  K. Richard Pixley  (rich at rtl.cygnus.com)
 Fri Dec  6 23:26:45 1991  K. Richard Pixley  (rich at rtl.cygnus.com)
 
 	* Makefile.in: remove spaces following hyphens because bsd make
-	  can't cope.  added standards.text support.  install using
-	  INSTALL_DATA.
+	can't cope.  added standards.text support.  install using
+	INSTALL_DATA.
 
 	* configure.in: remove commontargets as it is no longer a
-	  recognized hook.
+	recognized hook.
 
 Thu Dec  5 22:46:46 1991  K. Richard Pixley  (rich at rtl.cygnus.com)
 
 	* Makefile.in: idestdir and ddestdir go away.  Added copyrights
-	  and shift gpl to v2.  Added ChangeLog if it didn't exist. docdir
-	  and mandir now keyed off datadir by default.
+	and shift gpl to v2.  Added ChangeLog if it didn't exist. docdir
+	and mandir now keyed off datadir by default.
 
 Fri Nov 22 19:15:29 1991  John Gilmore  (gnu at cygnus.com)
 

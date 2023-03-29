@@ -10,8 +10,8 @@ const A a = 42;
 
 constexpr int f()
 {
-  const int j = a.i;		// { dg-message "'a'" }
+  const int j = a.i;		// { dg-error "'a'" }
   return j;
 }
 
-static_assert (f() == 42,"");	// { dg-error "non-constant" }
+static_assert (f() == 42,"");	// { dg-error "" }

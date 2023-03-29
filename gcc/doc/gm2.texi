@@ -1,0 +1,2853 @@
+\input texinfo
+@c -*-texinfo-*-
+@c Copyright (C) 2001-2023 Free Software Foundation, Inc.
+@c This is part of the GM2 manual.
+
+@c User level documentation for GNU Modula-2
+@c
+@c header
+
+@setfilename gm2.info
+@settitle The GNU Modula-2 Compiler
+
+@set version-python  3.5
+
+@include gcc-common.texi
+
+@c Copyright years for this manual.
+@set copyrights-gm2 1999-2023
+
+@copying
+@c man begin COPYRIGHT
+Copyright @copyright{} @value{copyrights-gm2} Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+A copy of the license is included in the
+@c man end
+section entitled ``GNU Free Documentation License''.
+@ignore
+@c man begin COPYRIGHT
+man page gfdl(7).
+@c man end
+@end ignore
+@end copying
+
+@ifinfo
+@format
+@dircategory Software development
+@direntry
+* gm2: (gm2).               A GCC-based compiler for the Modula-2 language
+@end direntry
+@end format
+
+@insertcopying
+@end ifinfo
+
+@titlepage
+@title The GNU Modula-2 Compiler
+@versionsubtitle
+@author Gaius Mulley
+
+@page
+@vskip 0pt plus 1filll
+Published by the Free Software Foundation @*
+51 Franklin Street, Fifth Floor@*
+Boston, MA 02110-1301, USA@*
+@sp 1
+@insertcopying
+@end titlepage
+@contents
+@page
+
+@c `Top' Node and Master Menu
+
+@node Top, Overview, (dir), (dir)
+@top Introduction
+
+@menu
+* Overview::         What is GNU Modula-2.
+* Using::            Using GNU Modula-2.
+* License::          License of GNU Modula-2
+* Copying::          GNU Public License V3.
+* Contributing::     Contributing to GNU Modula-2
+@c * Internals::        GNU Modula-2 internals.
+* EBNF::             EBNF of GNU Modula-2
+* Libraries::        PIM and ISO library definitions.
+* Indices::          Document and function indices.
+@end menu
+
+@node Overview, Using, Top, Top
+@chapter Overview of GNU Modula-2
+
+@menu
+* What is GNU Modula-2::  Brief description of GNU Modula-2.
+* Why use GNU Modula-2::  Advantages of GNU Modula-2.
+* Development::           How to get source code using git.
+* Features::              GNU Modula-2 Features
+@end menu
+
+@node What is GNU Modula-2, Why use GNU Modula-2, , Overview
+@section What is GNU Modula-2
+
+GNU Modula-2 is a @uref{http://gcc.gnu.org/frontends.html, front end}
+for the GNU Compiler Collection (@uref{http://gcc.gnu.org/, GCC}).
+The GNU Modula-2 compiler is compliant with the PIM2, PIM3, PIM4 and
+ISO dialects.  Also implemented are a complete set of free ISO
+libraries and PIM libraries.
+
+@footnote{The four Modula-2 dialects supported are defined in the following
+references:
+
+PIM2: 'Programming in Modula-2', 2nd Edition, Springer Verlag, 1982,
+1983 by Niklaus Wirth (PIM2).
+
+PIM3: 'Programming in Modula-2', 3rd Corrected Edition, Springer Verlag,
+1985 (PIM3).
+
+PIM4: 'Programming in Modula-2', 4th Edition, Springer Verlag, 1988
+(@uref{http://freepages.modula2.org/report4/modula-2.html, PIM4}).
+
+ISO: the ISO Modula-2 language as defined in 'ISO/IEC Information
+technology - programming languages - part 1: Modula-2 Language,
+ISO/IEC 10514-1 (1996)'
+}
+
+@node Why use GNU Modula-2, Development, What is GNU Modula-2, Overview
+@section Why use GNU Modula-2
+
+There are a number of advantages of using GNU Modula-2 rather than
+translate an existing project into another language.
+
+The first advantage is of maintainability of the original sources
+and the ability to debug the original project source code using a
+combination of gm2 and gdb.
+
+The second advantage is that gcc runs on many processors and
+platforms.  gm2 builds and runs on powerpc64le, amd64, i386, aarch64
+to name but a few processors.
+
+gm2 can produce swig interface headers to allow access from Python and
+other scripting languages.  It can also be used with C/C++ and
+generate shared libraries.
+
+The compiler provides semantic analysis and run time checking (full ISO
+Modula-2 checking is implemented) and there is a plugin which can,
+under certain conditions, detect run time errors at compile time.
+
+The compiler supports PIM2, PIM3, PIM4 and ISO dialects of Modula-2,
+work is underway to implement M2R10.  Many of the GCC builtins are
+available and access to assembly programming is achieved using the
+same syntax as that used by GCC.
+
+The gm2 driver allows third party libraries to be installed alongside
+gm2 libraries.  For example if the user specifies library @code{foo}
+using @code{-flibs=foo} the driver will check the standard GCC install
+directory for a sub directory @code{foo} containing the library
+contents.  The library module search path is altered accordingly
+for compile and link.
+
+@node Development, Features, Why use GNU Modula-2, Overview
+@section How to get source code using git
+
+GNU Modula-2 is now in the @url{https://gcc.gnu.org/git.html, GCC git
+tree}.
+
+@node Features, , Development, Overview
+@section GNU Modula-2 Features
+
+@itemize @bullet
+
+@item
+the compiler currently complies with Programming in Modula-2 Edition
+2, 3, 4 and ISO Modula-2.  Users can switch on specific language
+features by using: @samp{-fpim}, @samp{-fpim2}, @samp{-fpim3},
+@samp{-fpim4} or @samp{-fiso}.
+
+@item
+the option @samp{-fswig} will automatically create a swig interface
+file which corresponds to the definition module of the file being
+compiled.
+
+@item
+exception handling is compatible with C++ and swig.  Modula-2 code can
+be used with C or C++ code.
+
+@item
+Python can call GNU Modula-2 modules via swig.
+
+@item
+shared libraries can be built.
+
+@item
+fixed sized types are now available from @samp{SYSTEM}.
+
+@c @item
+@c support for dynamic @code{ARRAY}s has been added into @samp{gdb}.
+
+@item
+variables can be declared at addresses.
+
+@item
+much better dwarf-2 debugging support and when used with
+@samp{gdb} the programmer can display @code{RECORD}s,
+@code{ARRAY}s, @code{SET}s, subranges and constant char literals
+in Modula-2 syntax.
+
+@item
+supports sets of any ordinal size (memory permitting).
+
+@item
+easy interface to C, and varargs can be passed to C routines.
+
+@item
+many Logitech libraries have been implemented and can be accessed via:
+@samp{-flibs=m2log,m2pim,m2iso}.
+
+@item
+coroutines have been implemented in the PIM style and these are
+accessible from SYSTEM.  A number of supporting libraries (executive
+and file descriptor mapping to interrupt vector libraries are
+available through the @samp{-flibs=m2iso,m2pim} switch).
+
+@item
+can be built as a cross compiler (for embedded microprocessors
+such as the AVR and the ARM).
+
+@end itemize
+
+@node Using, License, Overview, Top
+@chapter Using GNU Modula-2
+
+@menu
+* Example usage::         Example compile and link.
+* Compiler options::      GNU Modula-2 compiler options.
+* Linking::               Linking options in more detail.
+* Elementary data types:: Data types supported by GNU Modula-2.
+* Standard procedures::   Permanently accessible base procedures.
+* Dialect::               GNU Modula-2 supported dialects.
+* Exceptions::            Exception implementation
+* Semantic checking::     How to detect run time problems at compile time.
+* Extensions::            GNU Modula-2 language extensions.
+* Type compatibility::    Data type compatibility.
+* Unbounded by reference::Explanation of a language optimization.
+* Building a shared library:: How to build a shared library.
+* Interface for Python::  How to produce swig interface files.
+* Producing a Python module::  How to produce a Python module.
+* Interface to C::        Interfacing GNU Modula-2 to C.
+* Assembly language::     Interface to assembly language.
+* Alignment::             Data type alignment.
+* Packed::                Packing data types.
+* Built-ins::             Accessing GNU Modula-2 Built-ins.
+* The PIM system module:: SYSTEM data types and procedures.
+* The ISO system module:: SYSTEM data types, procedures and run time.
+@c @ifnothtml
+@c omit these nodes if generating gm2 webpage as these are hand written.
+* Release map:: Release map.
+* Documentation:: Placeholder for how to access the documentation online.
+* Regression tests:: How to run the testsuite.
+* Limitations:: Current limitations.
+* Objectives:: Objectives of the implementation.
+* FAQ:: Frequently asked questions.
+* Community:: How to join the community.
+* Other languages:: Other languages for GCC.
+@c @end ifnothtml
+@end menu
+
+This document contains the user and design issues relevant to the
+Modula-2 front end to gcc.
+
+@node Example usage, Compiler options, Using, Using
+@section Example compile and link
+
+@ignore
+@c man begin SYNOPSIS gm2
+gm2 [@option{-c}|@option{-S}] [@option{-g}] [@option{-pg}]
+    [@option{-O}@var{level}] [@option{-W}@var{warn}@dots{}]
+    [@option{-I}@var{dir}@dots{}] [@option{-L}@var{dir}@dots{}]
+    [@option{-f}@var{option}@dots{}] [@option{-m}@var{machine-option}@dots{}]
+    [@option{-o} @var{outfile}] [@@@var{file}] @var{infile}@dots{}
+
+Only the most useful options are listed here; see below for the
+remainder.
+@c man end
+@c man begin SEEALSO
+gpl(7), gfdl(7), fsf-funding(7), gcc(1)
+and the Info entries for @file{gm2} and @file{gcc}.
+@c man end
+@end ignore
+
+@c man begin DESCRIPTION gm2
+
+The @command{gm2} command is the GNU compiler for the Modula-2 language and
+supports many of the same options as @command{gcc}.  @xref{Option Summary, ,
+Option Summary, gcc, Using the GNU Compiler Collection (GCC)}.
+This manual only documents the options specific to @command{gm2}.
+
+@c man end
+
+This section describes how to compile and link a simple hello world
+program.  It provides a few examples of using the different options
+mentioned in @pxref{Compiler options, , ,gm2}.  Assuming that you have
+a file called @file{hello.mod} in your current directory which
+contains:
+
+@example
+MODULE hello ;
+
+FROM StrIO IMPORT WriteString, WriteLn ;
+
+BEGIN
+   WriteString ('hello world') ; WriteLn
+END hello.
+@end example
+
+You can compile and link it by: @samp{gm2 -g hello.mod}.
+The result will be an @samp{a.out} file created in your directory.
+
+You can split this command into two steps if you prefer.  The compile
+step can be achieved by: @samp{gm2 -g -c -fscaffold-main hello.mod}
+and the link via: @samp{gm2 -g hello.o}.
+
+@footnote{To see all the compile actions taken by @samp{gm2} users can also
+add the @samp{-v} flag at the command line, for example:
+
+@samp{gm2 -v -g -I. hello.mod}
+
+This displays the sub processes initiated by @samp{gm2} which can be useful
+when trouble shooting.}
+
+@node Compiler options, Linking, Example usage, Using
+@section Compiler options
+
+This section describes the compiler options specific to GNU Modula-2
+for generic flags details @xref{Invoking GCC, , ,gcc}.
+
+@c man begin OPTIONS
+
+For any given input file, the file name suffix determines what kind of
+compilation is done.  The following kinds of input file names are supported:
+
+@table @gcctabopt
+@item @var{file}.mod
+Modula-2 implementation or program source files.  See the
+@samp{-fmod=} option if you wish to compile a project which uses a
+different source file extension.
+@item @var{file}.def
+Modula-2 definition module source files.  Definition modules are not
+compiled separately, in GNU Modula-2 definition modules are parsed as
+required when program or implementation modules are compiled.  See the
+@samp{-fdef=} option if you wish to compile a project which uses a
+different source file extension.
+@end table
+
+You can specify more than one input file on the @command{gm2} command line,
+
+@table @code
+
+@item -g
+create debugging information so that debuggers such as @file{gdb}
+can inspect and control executable.
+
+@item -I
+used to specify the search path for definition and implementation
+modules.  An example is:  @code{gm2 -g -c -I.:../../libs foo.mod}.
+If this option is not specified then the default path is added
+which consists of the current directory followed by the appropriate
+language dialect library directories.
+
+@c ordered list of options from here.
+
+@item -fauto-init
+turns on auto initialization of pointers to NIL.  Whenever a block is
+created all pointers declared within this scope will have their
+addresses assigned to NIL.
+
+@item -fbounds
+turns on run time subrange, array index and indirection via @code{NIL}
+pointer checking.
+
+@item -fcase
+turns on compile time checking to check whether a @code{CASE}
+statement requires an @code{ELSE} clause when on was not specified.
+
+@item -fcpp
+preprocess the source with @samp{cpp -lang-asm -traditional-cpp}
+For further details about these options @xref{Invocation, , ,cpp}.
+If @samp{-fcpp} is supplied then all definition modules and
+implementation modules which are parsed will be prepossessed by
+@samp{cpp}.
+
+@c fcpp-end
+@c Modula-2
+@c passed to the preprocessor if -fcpp is used (internal switch)
+
+@c fcpp-begin
+@c Modula-2
+@c passed to the preprocessor if -fcpp is used (internal switch)
+
+@item -fdebug-builtins
+call a real function, rather than the builtin equivalent.  This can
+be useful for debugging parameter values to a builtin function as
+it allows users to single step code into a real function.
+
+@c fd
+@c Modula-2
+@c turn on internal debugging of the compiler (internal switch)
+
+@c fdebug-trace-quad
+@c Modula-2
+@c turn on quadruple tracing (internal switch)
+
+@c fdebug-trace-api
+@c Modula-2
+@c turn on the Modula-2 api tracing (internal switch)
+
+@c fdebug-function-line-numbers
+@c Modula-2
+@c turn on the Modula-2 function line number generation (internal switch)
+
+@item -fdef=
+recognize the specified suffix as a definition module filename.
+The default implementation and module filename suffix is @file{.def}.
+If this option is used GNU Modula-2 will still fall back to this
+default if a requested definition module is not found.
+
+@item -fdump-system-exports
+display all inbuilt system items.
+This is an internal command line option.
+
+@item -fexceptions
+turn on exception handling code.  By default this option is on.
+Exception handling can be disabled by @samp{-fno-exceptions}
+and no references are made to the run time exception libraries.
+
+@item -fextended-opaque
+allows opaque types to be implemented as any type.  This is a GNU
+Modula-2 extension and it requires that the implementation module
+defining the opaque type is available so that it can be resolved when
+compiling the module which imports the opaque type.
+
+@item -ffloatvalue
+turns on run time checking to check whether a floating point number is
+about to exceed range.
+
+@item -fgen-module-list=@file{filename}
+attempt to find all modules when linking and generate a module list.
+If the @file{filename} is @samp{-} then the contents are not written
+and only used to force the linking of all module ctors.
+This option cannot be used if @samp{-fuse-list=} is enabled.
+
+@item -findex
+generate code to check whether array index values are out of bounds.
+Array index checking can be disabled via @samp{-fno-index}.
+
+@item -fiso
+turn on ISO standard features.  Currently this enables the ISO
+@code{SYSTEM} module and alters the default library search path so
+that the ISO libraries are searched before the PIM libraries.  It also
+effects the behavior of @code{DIV} and @code{MOD} operators.
+@xref{Dialect, , ,gm2}.
+
+@item -flibs=
+modifies the default library search path.  The libraries supplied are:
+m2pim, m2iso, m2min, m2log and m2cor.  These map onto the
+Programming in Modula-2 base libraries, ISO standard libraries, minimal
+library support, Logitech compatible library and Programming in
+Modula-2 with coroutines.
+Multiple libraries can be specified and are comma separated with precedence
+going to the first in the list.  It is not necessary to use -flibs=m2pim or
+-flibs=m2iso if you also specify -fpim, -fpim2, -fpim3, -fpim4 or
+-fiso.  Unless you are using -flibs=m2min you should include m2pim as
+the they provide the base modules which all other dialects utilize.
+The option @samp{-fno-libs=-} disables the @samp{gm2} driver from
+modifying the search and library paths.
+
+@item -static-libgm2
+On systems that provide the m2 runtimes as both shared and static libraries,
+this option forces the use of the static version.
+
+@c flocation=
+@c Modula-2 Joined
+@c set all location values to a specific value (internal switch)
+
+@item -fm2-g
+improve the debugging experience for new programmers at the expense
+of generating @code{nop} instructions if necessary to ensure single
+stepping precision over all code related keywords.  An example
+of this is in termination of a list of nested @code{IF} statements
+where multiple @code{END} keywords are mapped onto a sequence of
+@code{nop} instructions.
+
+@item -fm2-lower-case
+render keywords in error messages using lower case.
+
+@item -fm2-pathname=
+specify the module mangled prefix name for all modules in the
+following include paths.
+
+@item -fm2-pathnameI
+for internal use only: used by the driver to copy the user facing -I
+option.
+
+@item -fm2-plugin
+insert plugin to identify run time errors at compile time (default on).
+
+@item -fm2-prefix=
+specify the module mangled prefix name.  All exported symbols from a
+definition module will have the prefix name.
+
+@item -fm2-statistics
+generates quadruple information: number of quadruples generated,
+number of quadruples remaining after optimization and number of source
+lines compiled.
+
+@item -fm2-strict-type
+experimental flag to turn on the new strict type checker.
+
+@item -fm2-whole-program
+compile all implementation modules and program module at once.  Notice
+that you need to take care if you are compiling different dialect
+modules (particularly with the negative operands to modulus).  But
+this option, when coupled together with @code{-O3}, can deliver huge
+performance improvements.
+
+@item -fmod=
+recognize the specified suffix as implementation and module filenames.
+The default implementation and module filename suffix is @file{.mod}.
+If this option is used GNU Modula-2 will still fall back to this
+default if it needs to read an implementation module and the specified
+suffixed filename does not exist.
+
+@item -fnil
+generate code to detect accessing data through a @code{NIL} value
+pointer.  Dereferencing checking through a @code{NIL} pointer can be
+disabled by @samp{-fno-nil}.
+
+@item -fpim
+turn on PIM standard features.  Currently this enables the PIM
+@code{SYSTEM} module and determines which identifiers are pervasive
+(declared in the base module).  If no other @samp{-fpim[234]} switch is
+used then division and modulus operators behave as defined in PIM4.
+@xref{Dialect, , ,gm2}.
+
+@item -fpim2
+turn on PIM-2 standard features.  Currently this removes @code{SIZE}
+from being a pervasive identifier (declared in the base module).  It
+places @code{SIZE} in the @code{SYSTEM} module.  It also effects the
+behavior of @code{DIV} and @code{MOD} operators.
+@xref{Dialect, , ,gm2}.
+
+@item -fpim3
+turn on PIM-3 standard features.  Currently this only effects the
+behavior of @code{DIV} and @code{MOD} operators.
+@xref{Dialect, , ,gm2}.
+
+@item -fpim4
+turn on PIM-4 standard features.  Currently this only effects the
+behavior of @code{DIV} and @code{MOD} operators.
+@xref{Dialect, , ,gm2}.
+
+@item -fpositive-mod-floor-div
+forces the @code{DIV} and @code{MOD} operators to behave as defined by PIM4.
+All modulus results are positive and the results from the division are
+rounded to the floor.
+@xref{Dialect, , ,gm2}.
+
+@item -fpthread
+link against the pthread library.  By default this option is on.  It
+can be disabled by @samp{-fno-pthread}.  GNU Modula-2 uses the GCC
+pthread libraries to implement coroutines (see the SYSTEM
+implementation module).
+
+@c -fq
+@c -Modula-2
+@c -internal compiler debugging information, dump the list of quadruples
+
+@item -frange
+generate code to check the assignment range, return value range
+set range and constructor range.  Range checking can be disabled
+via @samp{-fno-range}.
+
+@item -freturn
+generate code to check that functions always exit with a @code{RETURN}
+and do not fall out at the end.  Return checking can be disabled
+via @samp{-fno-return}.
+
+@item -fruntime-modules=
+specify, using a comma separated list, the run time modules and their
+order.  These modules will initialized first before any other modules
+in the application dependency.  By default the run time modules list
+is set to @code{m2iso:RTentity,m2iso:Storage,m2iso:SYSTEM,}
+@code{m2iso:M2RTS,m2iso:RTExceptions,m2iso:IOLink}.  Note that these
+modules will only be linked into your executable if they are required.
+Adding a long list of dependent modules will not effect the size of
+the executable it merely states the initialization order should they
+be required.
+
+@item -fscaffold-dynamic
+the option ensures that @samp{gm2} will generate a dynamic scaffold
+infrastructure when compiling implementation and program modules.
+By default this option is on.  Use @samp{-fno-scaffold-dynamic}
+to turn it off or select @samp{-fno-scaffold-static}.
+
+@item -fscaffold-c
+generate a C source scaffold for the current module being compiled.
+
+@item -fscaffold-c++
+generate a C++ source scaffold for the current module being compiled.
+
+@item -fscaffold-main
+force the generation of the @samp{main} function.  This is not
+necessary if the @samp{-c} is omitted.
+
+@item -fscaffold-static
+the option ensures that @samp{gm2} will generate a static scaffold
+within the program module.  The static scaffold consists of sequences
+of calls to all dependent module initialization and finalization
+procedures.  The static scaffold is useful for debugging and single
+stepping the initialization blocks of implementation modules.
+
+@item -fshared
+generate a shared library from the module.
+
+@item -fsoft-check-all
+turns on all run time checks.  This is the same as invoking
+GNU Modula-2 using the command options
+@code{-fnil} @code{-frange} @code{-findex}
+@code{-fwholevalue}
+@code{-fwholediv} @code{-fcase} @code{-freturn}.
+
+@item -fsources
+displays the path to the source of each module.  This option
+can be used at compile time to check the correct definition module
+is being used.
+
+@item -fswig
+generate a swig interface file.
+
+@item -funbounded-by-reference
+enable optimization of unbounded parameters by attempting to pass non
+@code{VAR} unbounded parameters by reference.  This optimization
+avoids the implicit copy inside the callee procedure.  GNU Modula-2
+will only allow unbounded parameters to be passed by reference if,
+inside the callee procedure, they are not written to, no address is
+calculated on the array and it is not passed as a @code{VAR}
+parameter.  Note that it is possible to write code to break this
+optimization, therefore this option should be used carefully.
+For example it would be possible to take the address of an array, pass
+the address and the array to a procedure, read from the array in
+the procedure and write to the location using the address parameter.
+
+Due to the dangerous nature of this option it is not enabled
+when the @samp{-O} option is specified.
+
+@item -fuse-list=@file{filename}
+if @samp{-fscaffold-static} is enabled then use the file
+@file{filename} for the initialization order of modules.  Whereas if
+@samp{-fscaffold-dynamic} is enabled then use this file to force
+linking of all module ctors.
+This option cannot be used if @samp{-fgen-module-list=} is enabled.
+
+@item -fwholediv
+generate code to detect whole number division by zero or modulus by
+zero.
+
+@item -fwholevalue
+generate code to detect whole number overflow and underflow.
+
+@c the following warning options are complete but need to be
+@c regression tested against all other front ends
+@c to ensure the options do not conflict.
+
+@c @item -Wall
+@c turn on all Modula-2 warnings.
+
+@c @item -Wpedantic
+@c forces the compiler to reject nested @code{WITH} statements
+@c referencing the same record type.  Does not allow multiple imports of
+@c the same item from a module.  It also checks that: procedure variables
+@c are written to before being read; variables are not only written to
+@c but read from; variables are declared and used.  If the compiler
+@c encounters a variable being read before written it will terminate with
+@c a message.  It will check that @code{FOR} loop indices are not used
+@c outside the end of this loop without being reset.
+
+@c @item -Wpedantic-cast
+@c warns if the ISO system function is used and if the size of
+@c the variable is different from that of the type.  This is legal
+@c in ISO Modula-2, however it can be dangerous.  Some users may prefer
+@c to use @code{VAL} instead in these situations and use @code{CAST}
+@c exclusively for changes in type on objects which have the same size.
+
+@c @item -Wpedantic-param-names
+@c procedure parameter names are checked in the definition module
+@c against their implementation module counterpart.  This is not
+@c necessary in ISO or PIM versions of Modula-2.
+
+@c @item -Wstyle
+@c checks for poor programming style.  This option is aimed at new users of
+@c Modula-2 in that it checks for situations which might cause confusion
+@c and thus mistakes.  It checks whether variables of the same name are
+@c declared in different scopes and whether variables look like keywords.
+@c Experienced users might find this option too aggressive.
+
+@c @item -Wunused-variable
+@c warns if a variable has been declared and it not used.
+
+@c @item -Wunused-parameter
+@c warns if a parameter has been declared and it not used.
+
+@c @item -Wverbose-unbounded
+@c inform the user which non @code{VAR} unbounded parameters will be
+@c passed by reference.  This only produces output if the option
+@c @samp{-funbounded-by-reference} is also supplied on the command line.
+
+@end table
+
+@c man end
+
+@node Linking, Elementary data types, Compiler options, Using
+
+This section describes the linking related options.  There are three
+linking strategies available which are dynamic scaffold, static
+scaffold and user defined.  The dynamic scaffold is enabled by default
+and each module will register itself to the run time @samp{M2RTS} via
+a constructor.  The static scaffold mechanism will invoke each modules
+@samp{_init} and @samp{_finish} function in turn via a sequence of
+calls from within @samp{main}.  Lastly the user defined strategy
+can be implemented by turning off the dynamic and static options via
+@samp{-fno-scaffold-dynamic} and @samp{-fno-scaffold-static}.
+
+In the simple test below:
+
+@example
+$ gm2 hello.mod
+@end example
+
+the driver will add the options @samp{-fscaffold-dynamic} and
+@samp{-fgen-module-list=-} which generate a list of application
+modules and also creates the @samp{main} function with calls to
+@samp{M2RTS}.  It can be useful to add the option @samp{-fsources}
+which displays the source files as they are parsed and summarizes
+whether the source file is required for compilation or linking.
+
+If you wish to split the above command line into a compile and link
+then you could use these steps:
+
+@example
+$ gm2 -c -fscaffold-main hello.mod
+$ gm2 hello.o
+@end example
+
+The @samp{-fscaffold-main} informs the compiler to generate the
+@samp{main} function and scaffold.  You can enable the environment
+variable @samp{GCC_M2LINK_RTFLAG} to trace the construction and
+destruction of the application.  The values for
+@samp{GCC_M2LINK_RTFLAG} are shown in the table below:
+
+@example
+value   | meaning
+=================
+all     | turn on all flags below
+module  | trace modules as they register themselves
+hex     | display the hex address of the init/fini functions
+warning | show any warnings
+pre     | generate module list prior to dependency resolution
+dep     | trace module dependency resolution
+post    | generate module list after dependency resolution
+force   | generate a module list after dependency and forced
+        | ordering is complete
+@end example
+
+The values can be combined using a comma separated list.
+
+One of the advantages of the dynamic scaffold is that the driver
+behaves in a similar way to the other front end drivers.
+For example consider a small project consisting of 4 definition
+implementation modules (@samp{a.def}, @samp{a.mod}, @samp{b.def},
+@samp{b.mod}, @samp{c.def}, @samp{c.mod}, @samp{d.def}, @samp{d.mod})
+and a program module @samp{program.mod}.
+
+To link this project we could:
+
+@example
+$ gm2 -g -c a.mod
+$ gm2 -g -c b.mod
+$ gm2 -g -c c.mod
+$ gm2 -g -c d.mod
+$ gm2 -g program.mod a.o b.o c.o d.o
+@end example
+
+The module initialization sequence is defined by the ISO standard to
+follow the import graph traversal.  The initialization order is the
+order in which the corresponding separate modules finish the
+processing of their import lists.
+
+However, if required, you can override this using
+@samp{-fruntime-modules=a,b,c,d} for example which forces the
+initialization sequence to @samp{a}, @samp{b}, @samp{c} and @samp{d}.
+
+@node Elementary data types, Standard procedures, Linking, Using
+@section Elementary data types
+
+This section describes the elementary data types supported by GNU
+Modula-2.  It also describes the relationship between these data types
+and the equivalent C data types.
+
+The following data types are supported: @code{INTEGER},
+@code{LONGINT}, @code{SHORTINT}, @code{CARDINAL}, @code{LONGCARD},
+@code{SHORTCARD}, @code{BOOLEAN}, @code{REAL}, @code{LONGREAL},
+@code{SHORTREAL}, @code{COMPLEX}, @code{LONGCOMPLEX},
+@code{SHORTCOMPLEX} and @code{CHAR}.
+
+An equivalence table is given below:
+
+@example
+GNU Modula-2              GNU C
+======================================
+INTEGER                   int
+LONGINT                   long long int
+SHORTINT                  short int
+CARDINAL                  unsigned int
+LONGCARD                  long long unsigned int
+SHORTCARD                 short unsigned int
+BOOLEAN                   bool
+REAL                      double
+LONGREAL                  long double
+SHORTREAL                 float
+CHAR                      char
+SHORTCOMPLEX              complex float
+COMPLEX                   complex double
+LONGCOMPLEX               complex long double
+@end example
+
+Note that GNU Modula-2 also supports fixed sized data types which are
+exported from the @code{SYSTEM} module.
+@xref{The PIM system module, , ,gm2}.
+@xref{The ISO system module, , ,gm2}.
+
+@node Standard procedures, Dialect, Elementary data types, Using
+@section Permanently accessible base procedures.
+
+This section describes the procedures and functions which are
+always visible.
+
+@subsection Standard procedures and functions common to PIM and ISO
+
+The following procedures are implemented and conform with Programming
+in Modula-2 and ISO Modula-2: @code{NEW}, @code{DISPOSE}, @code{INC},
+@code{DEC}, @code{INCL}, @code{EXCL} and @code{HALT}.  The standard
+functions are: @code{ABS}, @code{CAP}, @code{CHR}, @code{FLOAT},
+@code{HIGH}, @code{LFLOAT}, @code{LTRUNC}, @code{MIN}, @code{MAX},
+@code{ODD}, @code{SFLOAT}, @code{STRUNC} @code{TRUNC} and
+@code{VAL}.  All these functions and procedures (except @code{HALT},
+@code{NEW}, @code{DISPOSE} and, under non constant conditions,
+@code{LENGTH}) generate in-line code for efficiency.
+
+@example
+
+(*
+   ABS - returns the positive value of i.
+*)
+
+@findex ABS
+PROCEDURE ABS (i: <any signed type>) : <any signed type> ;
+
+@end example
+
+@example
+
+(*
+   CAP - returns the capital of character ch providing
+         ch lies within the range 'a'..'z'.  Otherwise ch
+         is returned unaltered.
+*)
+
+@findex CAP
+PROCEDURE CAP (ch: CHAR) : CHAR ;
+
+@end example
+
+@example
+
+(*
+   CHR - converts a value of a <whole number type> into a CHAR.
+         CHR(x) is shorthand for VAL(CHAR, x).
+*)
+
+@findex CHR
+PROCEDURE CHR (x: <whole number type>) : CHAR ;
+
+@end example
+
+@example
+
+(*
+   DISPOSE - the procedure DISPOSE is replaced by:
+             DEALLOCATE(p, TSIZE(p^)) ;
+             The user is expected to import the procedure DEALLOCATE
+             (normally found in the module, Storage.)
+
+             In:  a variable p: of any pointer type which has been
+                  initialized by a call to NEW.
+             Out: the area of memory
+                  holding p^ is returned to the system.
+                  Note that the underlying procedure DEALLOCATE
+                  procedure in module Storage will assign p to NIL.
+*)
+
+@findex DISPOSE
+PROCEDURE DISPOSE (VAR p:<any pointer type>) ;
+@end example
+
+@example
+
+(*
+   DEC - can either take one or two parameters.  If supplied
+         with one parameter then on the completion of the call to
+         DEC, v will have its predecessor value.  If two
+         parameters are supplied then the value v will have its
+         n'th predecessor.  For these reasons the value of n
+         must be >=0.
+*)
+
+@findex DEC
+PROCEDURE DEC (VAR v: <any base type>; [n: <any base type> = 1]) ;
+@end example
+
+@example
+
+(*
+   EXCL - excludes bit element e from a set type s.
+*)
+
+@findex EXCL
+PROCEDURE EXCL (VAR s: <any set type>; e: <element of set type s>) ;
+@end example
+
+@example
+
+(*
+   FLOAT - will return a REAL number whose value is the same as o.
+*)
+
+@findex FLOAT
+PROCEDURE FLOAT (o: <any whole number type>) : REAL ;
+@end example
+
+@example
+
+(*
+   FLOATS - will return a SHORTREAL number whose value is the same as o.
+*)
+
+@findex FLOATS
+PROCEDURE FLOATS (o: <any whole number type>) : REAL ;
+@end example
+
+@example
+
+(*
+   FLOATL - will return a LONGREAL number whose value is the same as o.
+*)
+
+@findex FLOATL
+PROCEDURE FLOATL (o: <any whole number type>) : REAL ;
+@end example
+
+@example
+
+(*
+   HALT - will call the HALT procedure inside the module M2RTS.
+          Users can replace M2RTS.
+*)
+
+@findex HALT
+PROCEDURE HALT ;
+@end example
+
+@example
+
+(*
+   HIGH - returns the last accessible index of an parameter declared as
+          ARRAY OF CHAR.  Thus
+
+          PROCEDURE foo (a: ARRAY OF CHAR) ;
+          VAR
+             c: CARDINAL ;
+          BEGIN
+             c := HIGH(a)
+          END foo ;
+
+          BEGIN
+             foo('hello')
+          END
+
+          will cause the local variable c to contain the value 4
+*)
+
+@findex HIGH
+PROCEDURE HIGH (a: ARRAY OF CHAR) : CARDINAL ;
+@end example
+
+@example
+
+(*
+   INC - can either take one or two parameters.  If supplied
+         with one parameter then on the completion of the call to
+         INC, v will have its successor value.  If two
+         parameters are supplied then the value v will have its
+         n'th successor.  For these reasons the value of n
+         must be >=0.
+*)
+
+@findex INC
+PROCEDURE INC (VAR v: <any base type>; [n: <any base type> = 1]) ;
+@end example
+
+@example
+
+(*
+   INCL - includes bit element e to a set type s.
+*)
+
+@findex INCL
+PROCEDURE INCL (VAR s: <any set type>; e: <element of set type s>) ;
+@end example
+
+@example
+
+(*
+   LFLOAT - will return a LONGREAL number whose value is the same as o.
+*)
+
+@findex LFLOAT
+PROCEDURE LFLOAT (o: <any whole number type>) : LONGREAL ;
+@end example
+
+@example
+
+(*
+   LTRUNC - will return a LONG<type> number whose value is the
+            same as o.  PIM2, PIM3 and ISO Modula-2 will return
+            a LONGCARD whereas PIM4 returns LONGINT.
+*)
+
+@findex LTRUNC
+PROCEDURE LTRUNC (o: <any floating point type>) : LONG<type> ;
+@end example
+
+@example
+
+(*
+   MIN - returns the lowest legal value of an ordinal type.
+*)
+
+@findex MIN
+PROCEDURE MIN (t: <ordinal type>) : <ordinal type> ;
+
+@end example
+
+@example
+
+(*
+   MAX - returns the largest legal value of an ordinal type.
+*)
+
+@findex MAX
+PROCEDURE MAX (t: <ordinal type>) : <ordinal type> ;
+
+@end example
+
+@example
+
+(*
+   NEW - the procedure NEW is replaced by:
+         ALLOCATE(p, TSIZE(p^)) ;
+         The user is expected to import the procedure ALLOCATE
+         (normally found in the module, Storage.)
+
+         In:  a variable p: of any pointer type.
+         Out: variable p is set to some allocated memory
+              which is large enough to hold all the contents of p^.
+*)
+
+@findex NEW
+PROCEDURE NEW (VAR p:<any pointer type>) ;
+@end example
+
+@example
+
+(*
+   ODD - returns TRUE if the value is not divisible by 2.
+*)
+
+@findex ODD
+PROCEDURE ODD (x: <whole number type>) : BOOLEAN ;
+
+@end example
+
+@example
+
+(*
+   SFLOAT - will return a SHORTREAL number whose value is the same
+            as o.
+*)
+
+@findex SFLOAT
+PROCEDURE SFLOAT (o: <any whole number type>) : SHORTREAL ;
+@end example
+
+@example
+
+(*
+   STRUNC - will return a SHORT<type> number whose value is the same
+            as o.  PIM2, PIM3 and ISO Modula-2 will return a
+            SHORTCARD whereas PIM4 returns SHORTINT.
+*)
+
+@findex STRUNC
+PROCEDURE STRUNC (o: <any floating point type>) : SHORT<type> ;
+@end example
+
+@example
+
+(*
+   TRUNC - will return a <type> number whose value is the same as o.
+           PIM2, PIM3 and ISO Modula-2 will return a CARDINAL
+           whereas PIM4 returns INTEGER.
+*)
+
+@findex TRUNC
+PROCEDURE TRUNC (o: <any floating point type>) : <type> ;
+@end example
+
+@example
+
+(*
+   TRUNCS - will return a <type> number whose value is the same
+            as o.  PIM2, PIM3 and ISO Modula-2 will return a
+            SHORTCARD whereas PIM4 returns SHORTINT.
+*)
+
+@findex TRUNCS
+PROCEDURE TRUNCS (o: <any floating point type>) : <type> ;
+@end example
+
+@example
+
+(*
+   TRUNCL - will return a <type> number whose value is the same
+            as o.  PIM2, PIM3 and ISO Modula-2 will return a
+            LONGCARD whereas PIM4 returns LONGINT.
+*)
+
+@findex TRUNCL
+PROCEDURE TRUNCL (o: <any floating point type>) : <type> ;
+@end example
+
+@example
+
+(*
+   VAL - converts data i of <any simple data type 2> to
+         <any simple data type 1> and returns this value.
+         No range checking is performed during this conversion.
+*)
+
+@findex VAL
+PROCEDURE VAL (<any simple data type 1>,
+               i: <any simple data type 2>) : <any simple data type 1> ;
+
+@end example
+
+@subsection ISO specific standard procedures and functions
+
+The standard function @code{LENGTH} is specific to ISO Modula-2 and
+is defined as:
+
+@example
+
+(*
+   IM - returns the imaginary component of a complex type.
+        The return value will the same type as the imaginary field
+        within the complex type.
+*)
+
+@findex IM
+PROCEDURE IM (c: <any complex type>) : <floating point type> ;
+@end example
+
+@example
+
+(*
+   INT - returns an INTEGER value which has the same value as v.
+         This function is equivalent to: VAL(INTEGER, v).
+*)
+
+@findex INT
+PROCEDURE INT (v: <any ordinal type>) : INTEGER ;
+@end example
+
+@example
+
+(*
+   LENGTH - returns the length of string a.
+*)
+
+@findex LENGTH
+PROCEDURE LENGTH (a: ARRAY OF CHAR) : CARDINAL ;
+@end example
+
+This function is evaluated at compile time, providing that string
+@code{a} is a constant.  If @code{a} cannot be evaluated then a call is
+made to @code{M2RTS.Length}.
+
+@example
+
+(*
+   ODD - returns a BOOLEAN indicating whether the whole number
+         value, v, is odd.
+*)
+
+@findex ODD
+PROCEDURE ODD (v: <any whole number type>) : BOOLEAN ;
+@end example
+
+@example
+
+(*
+   RE - returns the real component of a complex type.
+        The return value will the same type as the real field
+        within the complex type.
+*)
+
+@findex RE
+PROCEDURE RE (c: <any complex type>) : <floating point type> ;
+@end example
+
+@node Dialect, Exceptions, Standard procedures, Using
+@section GNU Modula-2 supported dialects
+
+This section describes the dialects understood by GNU Modula-2.
+It also describes the differences between the dialects and
+any command line switches which determine dialect behaviour.
+
+The GNU Modula-2 compiler is compliant with four dialects of Modula-2.
+The language as defined in 'Programming in Modula-2' 2nd Edition,
+Springer Verlag, 1982, 1983 by Niklaus Wirth (PIM2), 'Programming in
+Modula-2', 3rd Corrected Edition, Springer Verlag, 1985 (PIM3) and
+'Programming in Modula-2', 4th Edition, Springer Verlag, 1988 (PIM4)
+@uref{http://freepages.modula2.org/report4/modula-2.html} and the ISO
+Modula-2 language as defined in ISO/IEC Information technology -
+programming languages - part 1: Modula-2 Language, ISO/IEC 10514-1
+(1996) (ISO).
+
+The command line switches @samp{-fpim2}, @samp{-fpim3}, @samp{-fpim4}
+and @samp{-fiso} can be used to force mutually exclusive
+features.  However by default the compiler will not aggressively fail
+if a non mutually exclusive feature is used from another dialect.  For
+example it is possible to specify @samp{-fpim2} and still utilize
+@samp{DEFINITION} @samp{MODULES} which have no export list.
+
+Some dialect differences will force a compile time error, for example
+in PIM2 the user must @code{IMPORT} @code{SIZE} from the module
+@code{SYSTEM}, whereas in PIM3 and PIM4 @code{SIZE} is a pervasive
+function.  Thus compiling PIM4 source code with the @samp{-fpim2}
+switch will cause a compile time error.  This can be fixed quickly
+with an additional @code{IMPORT} or alternatively by compiling with
+the @samp{-fpim4} switch.
+
+However there are some very important differences between the dialects
+which are mutually exclusive and therefore it is vital that users
+choose the dialects with care when these language features are used.
+
+@subsection Integer division, remainder and modulus
+
+The most dangerous set of mutually exclusive features found in the
+four dialects supported by GNU Modula-2 are the @code{INTEGER}
+division, remainder and modulus arithmetic operators.  It is important
+to note that the same source code can be compiled to give different
+run time results depending upon these switches!  The reference manual
+for the various dialects of Modula-2 are quite clear about this
+behavior and sadly there are three distinct definitions.
+
+The table below illustrates the problem when a negative operand is
+used.
+
+@example
+                  Pim2/3          Pim4                ISO
+               -----------    -----------    ----------------------
+lval    rval   DIV     MOD    DIV     MOD    DIV    MOD    /    REM
+ 31      10      3       1      3       1      3      1     3     1
+-31      10     -3      -1     -4       9     -4      9    -3    -1
+ 31     -10     -3       1     -3       1     Exception    -3     1
+-31     -10      3      -1      4       9     Exception     3    -1
+@end example
+
+See also P24 of PIM2, P27 of PIM3, P29 of PIM4 and P201 of the ISO
+Standard.  At present all dialect division, remainder and modulus are
+implemented as above, apart from the exception calling in the ISO
+dialect.  Instead of exception handling the results are the same as the
+PIM4 dialect.  This is a temporary implementation situation.
+
+@node Exceptions, Semantic checking, Dialect, Using
+@section Exception implementation
+
+This section describes how exceptions are implemented in GNU Modula-2
+and how command line switches affect their behavior.  The option
+@samp{-fsoft-check-all} enables all software checking of nil
+dereferences, division by zero etc.  Additional code is produced to
+check these conditions and exception handlers are invoked if the
+conditions prevail.
+
+Without @samp{-fsoft-check-all} these exceptions will be caught by
+hardware (assuming the hardware support exists) and a signal handler
+is invoked.  The signal handler will in turn @code{THROW} an exception
+which will be caught by the appropriate Modula-2 handler.  However the
+action of throwing an exception from within a signal handler is
+implementation defined (according to the C++ documentation).  For
+example on the x86_64 architecture this works whereas on the i686
+architecture it does not.  Therefore to ensure portability it is
+recommended to use @samp{-fsoft-check-all}.
+
+@footnote{@samp{-fsoft-check-all} can be effectively combined with
+@samp{-O2} to semantically analyze source code for possible run time
+errors at compile time.}
+
+@node Semantic checking, Extensions, Exceptions, Using
+@section How to detect run time problems at compile time
+
+Consider the following program:
+
+@example
+MODULE assignvalue ;  (*!m2iso+gm2*)
+
+PROCEDURE bad () : INTEGER ;
+VAR
+   i: INTEGER ;
+BEGIN
+   i := -1 ;
+   RETURN i
+END bad ;
+
+VAR
+   foo: CARDINAL ;
+BEGIN
+   (* The m2rte plugin will detect this as an error, post
+      optimization.  *)
+   foo := bad ()
+END assignvalue.
+@end example
+
+here we see that the programmer has overlooked that the return value
+from @samp{bad} will cause an overflow to @samp{foo}.  If we compile
+the code with the following options:
+
+@example
+$ gm2 -g -fsoft-check-all -O2 -c assignvalue.mod
+assignvalue.mod:16:0:inevitable that this error will occur at run time,
+assignment will result in an overflow
+@end example
+
+The gm2 semantic plugin is automatically run and will generate a
+warning message for every exception call which is known as reachable.
+It is highly advised to run the optimizer (@samp{-O2} or @samp{-O3})
+with @samp{-fsoft-check-all} so that the compiler is able to run the
+optimizer and perform variable and flow analysis before the semantic
+plugin is invoked.
+
+@node Extensions, Type compatibility, Semantic checking, Using
+@section GNU Modula-2 language extensions
+
+This section introduces the GNU Modula-2 language extensions.
+The GNU Modula-2 compiler allows abstract data types to be any type,
+not just restricted to a pointer type providing the
+@samp{-fextended-opaque} option is supplied
+@xref{Compiler options, , ,gm2}.
+
+Declarations can be made in any order, whether they are
+types, constants, procedures, nested modules or variables.
+@c (@xref{Passes, , ,}.)
+
+GNU Modula-2 also allows programmers to interface to @code{C} and
+assembly language.
+
+GNU Modula-2 provides support for the special tokens @code{__LINE__},
+@code{__FILE__}, @code{__FUNCTION__} and @code{__DATE__}.  Support for
+these tokens will occur even if the @samp{-fcpp} option is not
+supplied.  A table of these identifiers and their data type and values
+is given below:
+
+@example
+Scope       GNU Modula-2 token      Data type and example value
+
+anywhere    __LINE__                Constant Literal compatible
+                                    with CARDINAL, INTEGER and WORD.
+                                    Example 1234
+
+anywhere    __FILE__                Constant string compatible
+                                    with parameter ARRAY OF CHAR or
+                                    an ARRAY whose SIZE is >= string
+                                    length.  Example
+                                    "hello.mod"
+
+procedure   __FUNCTION__            Constant string compatible
+                                    with parameter ARRAY OF CHAR or
+                                    an ARRAY whose SIZE is >= string
+                                    length.  Example
+                                    "calc"
+
+module      __FUNCTION__            Example
+                                    "module hello initialization"
+
+anywhere    __DATE__                Constant string compatible
+                                    with parameter ARRAY OF CHAR or
+                                    an ARRAY whose SIZE is >= string
+                                    length.  Example
+                                    "Thu Apr 29 10:07:16 BST 2004"
+
+anywhere   __COLUMN__               Gives a constant literal number
+                                    determining the left hand column
+                                    where the first _ appears in
+                                    __COLUMN__.  The left most column
+                                    is 1.
+
+@end example
+
+The preprocessor @samp{cpp} can be invoked via the @samp{-fcpp}
+command line option.  This in turn invokes @samp{cpp} with the
+following arguments @samp{-traditional -lang-asm}.  These options
+preserve comments and all quotations.  @samp{gm2} treats a @samp{#}
+character in the first column as a preprocessor directive.
+
+For example here is a module which calls @code{FatalError}
+via the macro @code{ERROR}.
+
+@example
+MODULE cpp ;
+
+FROM SYSTEM IMPORT ADR, SIZE ;
+FROM libc IMPORT exit, printf, malloc ;
+
+PROCEDURE FatalError (a, file: ARRAY OF CHAR;
+                         line: CARDINAL;
+                         func: ARRAY OF CHAR) ;
+BEGIN
+   printf ("%s:%d:fatal error, %s, in %s\n",
+            ADR (file), line, ADR (a), ADR (func)) ;
+   exit (1)
+END FatalError ;
+
+#define ERROR(X)  FatalError(X, __FILE__, __LINE__, __FUNCTION__)
+
+VAR
+   pc: POINTER TO CARDINAL;
+BEGIN
+   pc := malloc (SIZE (CARDINAL)) ;
+   IF pc = NIL
+   THEN
+      ERROR ('out of memory')
+   END
+END cpp.
+@end example
+
+Another use for the C preprocessor in Modula-2 might be to turn on
+debugging code.  For example the library module
+@file{FormatStrings.mod} uses procedures from @file{DynamicStrings.mod}
+and to track down memory leaks it was useful to track the source file
+and line where each string was created.  Here is a section of
+@file{FormatStrings.mod} which shows how the debugging code was
+enabled and disabled by adding @code{-fcpp} to the command line.
+
+@example
+FROM DynamicStrings IMPORT String, InitString, InitStringChar, Mark,
+                           ConCat, Slice, Index, char,
+                           Assign, Length, Mult, Dup, ConCatChar,
+                           PushAllocation, PopAllocationExemption,
+                           InitStringDB, InitStringCharStarDB,
+                           InitStringCharDB, MultDB, DupDB, SliceDB ;
+
+(*
+#define InitString(X) InitStringDB(X, __FILE__, __LINE__)
+#define InitStringCharStar(X) InitStringCharStarDB(X, __FILE__, \
+                                                   __LINE__)
+#define InitStringChar(X) InitStringCharDB(X, __FILE__, __LINE__)
+#define Mult(X,Y) MultDB(X, Y, __FILE__, __LINE__)
+#define Dup(X) DupDB(X, __FILE__, __LINE__)
+#define Slice(X,Y,Z) SliceDB(X, Y, Z, __FILE__, __LINE__)
+*)
+
+PROCEDURE doDSdbEnter ;
+BEGIN
+   PushAllocation
+END doDSdbEnter ;
+
+PROCEDURE doDSdbExit (s: String) ;
+BEGIN
+   s := PopAllocationExemption (TRUE, s)
+END doDSdbExit ;
+
+PROCEDURE DSdbEnter ;
+BEGIN
+END DSdbEnter ;
+
+PROCEDURE DSdbExit (s: String) ;
+BEGIN
+END DSdbExit ;
+
+(*
+#define DBsbEnter doDBsbEnter
+#define DBsbExit  doDBsbExit
+*)
+
+PROCEDURE Sprintf1 (s: String; w: ARRAY OF BYTE) : String ;
+BEGIN
+   DSdbEnter ;
+   s := FormatString (HandleEscape (s), w) ;
+   DSdbExit (s) ;
+   RETURN s
+END Sprintf1 ;
+@end example
+
+It is worth noting that the overhead of this code once @code{-fcpp} is
+not present and -O2 is used will be zero since the local empty
+procedures @code{DSdbEnter} and @code{DSdbExit} will be thrown away by
+the optimization passes of the GCC backend.
+
+@subsection Optional procedure parameter
+
+GNU Modula-2 allows the last parameter to a procedure or function
+parameter to be optional.  For example in the ISO library
+@file{COROUTINES.def} the procedure @code{NEWCOROUTINE} is defined as
+having an optional fifth argument (@code{initProtection}) which, if
+absent, is automatically replaced by @code{NIL}.
+
+@example
+@findex NEWCOROUTINE
+PROCEDURE NEWCOROUTINE (procBody: PROC; workspace: SYSTEM.ADDRESS;
+                        size: CARDINAL; VAR cr: COROUTINE;
+                        [initProtection: PROTECTION = NIL]);
+
+  (* Creates a new coroutine whose body is given by procBody,
+     and returns the identity of the coroutine in cr.
+     workspace is a pointer to the work space allocated to
+     the coroutine; size specifies the size of this workspace
+     in terms of SYSTEM.LOC.
+
+     The optional fifth argument may contain a single parameter
+     which specifies the initial protection level of the coroutine.
+  *)
+@end example
+
+The implementation module @file{COROUTINES.mod} implements this
+procedure using the following syntax:
+
+@example
+PROCEDURE NEWCOROUTINE (procBody: PROC; workspace: SYSTEM.ADDRESS;
+                        size: CARDINAL; VAR cr: COROUTINE;
+                        [initProtection: PROTECTION]);
+BEGIN
+
+END NEWCOROUTINE ;
+@end example
+
+Note that it is illegal for this declaration to contain an initializer
+value for @code{initProtection}.  However it is necessary to surround
+this parameter with the brackets @code{[} and @code{]}.  This serves to
+remind the programmer that the last parameter was declared as optional
+in the definition module.
+
+Local procedures can be declared to have an optional final parameter
+in which case the initializer is mandatory in the implementation or
+program module.
+
+GNU Modula-2 also provides additional fixed sized data types which
+are all exported from the @code{SYSTEM} module.
+@xref{The PIM system module, , ,gm2}.
+@xref{The ISO system module, , ,gm2}.
+
+@node Type compatibility, Unbounded by reference, Extensions, Using
+@section Type compatibility
+
+This section discuss the issues surrounding assignment, expression
+and parameter compatibility, their effect of the additional
+fixed sized datatypes and also their effect of run time checking.
+The data types supported by the compiler are:
+
+@example
+GNU Modula-2              scope      switches
+=============================================
+INTEGER                   pervasive
+LONGINT                   pervasive
+SHORTINT                  pervasive
+CARDINAL                  pervasive
+LONGCARD                  pervasive
+SHORTCARD                 pervasive
+BOOLEAN                   pervasive
+BITSET                    pervasive
+REAL                      pervasive
+LONGREAL                  pervasive
+SHORTREAL                 pervasive
+CHAR                      pervasive
+SHORTCOMPLEX              pervasive
+COMPLEX                   pervasive
+LONGCOMPLEX               pervasive
+
+LOC                       SYSTEM     -fiso
+BYTE                      SYSTEM
+WORD                      SYSTEM
+ADDRESS                   SYSTEM
+
+The following extensions are supported for
+most architectures (please check SYSTEM.def).
+=============================================
+INTEGER8                  SYSTEM
+INTEGER16                 SYSTEM
+INTEGER32                 SYSTEM
+INTEGER64                 SYSTEM
+CARDINAL8                 SYSTEM
+CARDINAL16                SYSTEM
+CARDINAL32                SYSTEM
+CARDINAL64                SYSTEM
+BITSET8                   SYSTEM
+BITSET16                  SYSTEM
+BITSET32                  SYSTEM
+WORD16                    SYSTEM
+WORD32                    SYSTEM
+WORD64                    SYSTEM
+REAL32                    SYSTEM
+REAL64                    SYSTEM
+REAL96                    SYSTEM
+REAL128                   SYSTEM
+COMPLEX32                 SYSTEM
+COMPLEX64                 SYSTEM
+COMPLEX96                 SYSTEM
+COMPLEX128                SYSTEM
+@end example
+
+The Modula-2 language categorizes compatibility between entities of
+possibly differing types into three sub components: expressions,
+assignments, and parameters.  Parameter compatibility is further
+divided into two sections for pass by reference and pass by value
+compatibility.
+
+For more detail on the Modula-2 type compatibility see the Modula-2
+ISO standard BS ISO/IEC 10514-1:1996 page 121-125.  For detail on the
+PIM type compatibility see Programming in Modula-2 Edition 4 page 29,
+(Elementary Data Types).
+
+@subsection Expression compatibility
+
+Modula-2 restricts the types of expressions to the same type.
+Expression compatibility is a symmetric relation.
+
+For example two sub expressions of @code{INTEGER} and @code{CARDINAL}
+are not expression compatible
+(@uref{http://freepages.modula2.org/report4/modula-2.html} and ISO
+Modula-2).
+
+In GNU Modula-2 this rule is also extended across all fixed sized data
+types (imported from SYSTEM).
+
+@subsection Assignment compatibility
+
+This section discusses the assignment issues surrounding assignment
+compatibility of elementary types (@code{INTEGER}, @code{CARDINAL},
+@code{REAL} and @code{CHAR} for example).  The information here is
+found in more detail in the Modula-2 ISO standard BS ISO/IEC
+10514-1:1996 page 122.
+
+Assignment compatibility exists between the same sized elementary
+types.
+
+Same type family of different sizes are
+also compatible as long as the @code{MAX(}type@code{)} and
+@code{MIN(}type@code{)} is known.  So for example this includes the
+@code{INTEGER} family, @code{CARDINAL} family and the @code{REAL}
+family.
+
+The reason for this is that when the assignment is performed
+the compiler will check to see that the expression (on the right of
+the @code{:=}) lies within the range of the designator type (on the
+left hand side of the @code{:=}).  Thus these ordinal types can be
+assignment compatible.  However it does mean that @code{WORD32} is not
+compatible with @code{WORD16} as @code{WORD32} does not have a minimum
+or maximum value and therefore cannot be checked.  The compiler does
+not know which of the two bytes from @code{WORD32} should be copied
+into @code{WORD16} and which two should be ignored.  Currently the
+types @code{BITSET8}, @code{BITSET16} and @code{BITSET32} are
+assignment incompatible.  However this restriction maybe lifted when
+further run time checking is achieved.
+
+Modula-2 does allow @code{INTEGER} to be assignment compatible with
+@code{WORD} as they are the same size.  Likewise GNU Modula-2 allows
+@code{INTEGER16} to be compatible with @code{WORD16} and the same for
+the other fixed sized types and their sized equivalent in either
+@code{WORD}n, @code{BYTE} or @code{LOC} types.  However it prohibits
+assignment between @code{WORD} and @code{WORD32} even though on many
+systems these sizes will be the same.  The reasoning behind this rule
+is that the extended fixed sized types are meant to be used by
+applications requiring fixed sized data types and it is more portable
+to forbid the blurring of the boundaries between fixed sized and
+machine dependent sized types.
+
+Intermediate code run time checking is always generated by the front
+end.  However this intermediate code is only translated into actual
+code if the appropriate command line switches are specified.  This
+allows the compiler to perform limited range checking at compile time.
+In the future it will allow the extensive GCC optimizations to
+propagate constant values through to the range checks which if they
+are found to exceed the type range will result in a compile time
+error message.
+
+@subsection Parameter compatibility
+
+Parameter compatibility is divided into two areas, pass by value and
+pass by reference (@code{VAR}).  In the case of pass by value the
+rules are exactly the same as assignment.  However in the second case,
+pass by reference, the actual parameter and formal parameter must be
+the same size and family.  Furthermore @code{INTEGER} and
+@code{CARDINAL}s are not treated as compatible in the pass by
+reference case.
+
+The types @code{BYTE}, @code{LOC}, @code{WORD} and @code{WORD}n
+derivatives are assignment and parameter compatible with any data type
+of the same size.
+
+@node Unbounded by reference, Building a shared library, Type compatibility, Using
+@section Unbounded by reference
+
+This section documents a GNU Modula-2 compiler switch which implements
+a language optimization surrounding the implementation of unbounded
+arrays.  In GNU Modula-2 the unbounded array is implemented by
+utilizing an internal structure @code{struct @{dataType *address,
+unsigned int high@}}.  So given the Modula-2 procedure declaration:
+
+@example
+PROCEDURE foo (VAR a: ARRAY OF dataType) ;
+BEGIN
+   IF a[2]= (* etc *)
+END foo ;
+@end example
+
+it is translated into GCC @code{tree}s, which can be represented
+in their C form thus:
+
+@example
+void foo (struct @{dataType *address, unsigned int high@} a)
+@{
+   if (a.address[2] == /* etc */
+@}
+@end example
+
+Whereas if the procedure @code{foo} was declared as:
+
+@example
+PROCEDURE foo (a: ARRAY OF dataType) ;
+BEGIN
+   IF a[2]= (* etc *)
+END foo ;
+@end example
+
+then it is implemented by being translated into the following
+GCC @code{tree}s, which can be represented in their C form thus:
+
+@example
+void foo (struct @{dataType *address, unsigned int high@} a)
+@{
+   dataType *copyContents = (dataType *)alloca (a.high+1);
+   memcpy(copyContents, a.address, a.high+1);
+   a.address = copyContents;
+
+   if (a.address[2] == /* etc */
+@}
+@end example
+
+This implementation works, but it makes a copy of each non VAR
+unbounded array when a procedure is entered.  If the unbounded array
+is not changed during procedure @code{foo} then this implementation
+will be very inefficient.  In effect Modula-2 lacks the @code{REF}
+keyword of Ada.  Consequently the programmer maybe tempted to
+sacrifice semantic clarity for greater efficiency by declaring the
+parameter using the @code{VAR} keyword in place of @code{REF}.
+
+The @code{-funbounded-by-reference} switch instructs the compiler to
+check and see if the programmer is modifying the content of any
+unbounded array.  If it is modified then a copy will be made upon
+entry into the procedure.  Conversely if the content is only read and
+never modified then this non @code{VAR} unbounded array is a candidate
+for being passed by reference.  It is only a candidate as it is still
+possible that passing this parameter by reference could alter the
+meaning of the source code.  For example consider the following case:
+
+@example
+PROCEDURE StrConCat (VAR a: ARRAY OF CHAR; b, c: ARRAY OF CHAR) ;
+BEGIN
+   (* code which performs string a := b + c *)
+END StrConCat ;
+
+PROCEDURE foo ;
+VAR
+   a: ARRAY [0..3] OF CHAR ;
+BEGIN
+   a := 'q' ;
+   StrConCat(a, a, a)
+END foo ;
+@end example
+
+In the code above we see that the same parameter, @code{a}, is being
+passed three times to @code{StrConCat}.  Clearly even though parameters
+@code{b} and @code{c} are never modified it would be incorrect to
+implement them as pass by reference.  Therefore the compiler checks to
+see if any non @code{VAR} parameter is type compatible with any
+@code{VAR} parameter and if so it generates run time procedure entry
+checks to determine whether the contents of parameters @code{b} or
+@code{c} matches the contents of @code{a}.  If a match is detected
+then a copy is made and the @code{address} in the unbounded
+@code{struct}ure is modified.
+
+The compiler will check the address range of each candidate against
+the address range of any @code{VAR} parameter, providing they are type
+compatible.  For example consider:
+
+@example
+PROCEDURE foo (a: ARRAY OF BYTE; VAR f: REAL) ;
+BEGIN
+   f := 3.14 ;
+   IF a[0]=BYTE(0)
+   THEN
+      (* etc *)
+   END
+END foo ;
+
+PROCEDURE bar ;
+BEGIN
+   r := 2.0 ;
+   foo(r, r)
+END bar ;
+@end example
+
+Here we see that although parameter, @code{a}, is a candidate for the
+passing by reference, it would be incorrect to use this
+transformation.  Thus the compiler detects that parameters, @code{a}
+and @code{f} are type compatible and will produce run time checking
+code to test whether the address range of their respective contents
+intersect.
+
+@node Building a shared library, Interface for Python, Unbounded by reference, Using
+@section Building a shared library
+
+This section describes building a tiny shared library implemented in
+Modula-2 and built with @file{libtool}.  Suppose a project consists of
+two definition modules and two implementation modules and a program
+module @file{a.def}, @file{a.mod}, @file{b.def}, @file{b.mod} and
+@file{c.mod}.  The first step is to compile the modules using position
+independent code.  This can be achieved by the following three
+commands:
+
+@example
+libtool --tag=CC --mode=compile gm2 -g -c a.mod -o a.lo
+libtool --tag=CC --mode=compile gm2 -g -c b.mod -o b.lo
+libtool --tag=CC --mode=compile gm2 -g -c c.mod -o c.lo
+@end example
+
+The second step is to generate the shared library initialization and
+finalization routines.  We can do this by asking gm2 to generate a
+list of dependent modules and then use this to generate the scaffold.
+We also must compile the scaffold.
+
+@example
+gm2 -c -g -fmakelist c.mod
+gm2 -c -g -fmakeinit -fshared c.mod
+libtool --tag=CC --mode=compile g++ -g -c c_m2.cpp -o c_m2.lo
+@end example
+
+The third step is to link all these @file{.lo} files.
+
+@example
+libtool --mode=link gcc -g c_m2.lo a.lo b.lo c.lo \
+        -L$(prefix)/lib64 \
+        -rpath `pwd` -lgm2 -lstdc++ -lm -o libabc.la
+@end example
+
+At this point the shared library @file{libabc.so} will have been
+created inside the directory @file{.libs}.
+
+@node Interface for Python, Producing a Python module, Building a shared library, Using
+@section How to produce swig interface files
+
+This section describes how Modula-2 implementation modules can be
+called from Python (and other scripting languages such as TCL and
+Perl).  GNU Modula-2 can be instructed to create a swig interface when
+it is compiling an implementation module.  Swig then uses the
+interface file to generate all the necessary wrapping to that the
+desired scripting language may access the implementation module.
+
+Here is an example of how you might call upon the services of the
+Modula-2 library module @code{NumberIO} from Python3.
+
+The following commands can be used to generate the Python3 module:
+
+@example
+export src=@samp{directory to the sources}
+export prefix=@samp{directory to where the compiler is installed}
+gm2 -I$@{src@} -c -g -fswig $@{src@}/../../../gm2-libs/NumberIO.mod
+gm2 -I$@{src@} -c -g -fmakelist $@{src@}/../../../gm2-libs/NumberIO.mod
+
+gm2 -I$@{src@} -c -g -fmakeinit -fshared \
+   $@{src@}/../../../gm2-libs/NumberIO.mod
+
+swig -c++ -python3 NumberIO.i
+
+libtool --mode=compile g++ -g -c -I$@{src@} NumberIO_m2.cpp \
+  -o NumberIO_m2.lo
+
+libtool --tag=CC --mode=compile gm2 -g -c \
+  -I$@{src@}../../../gm2-libs \
+  $@{src@}/../../../gm2-libs/NumberIO.mod -o NumberIO.lo
+
+libtool --tag=CC --mode=compile g++ -g -c NumberIO_wrap.cxx \
+  -I/usr/include/python3 -o NumberIO_wrap.lo
+
+libtool --mode=link gcc -g NumberIO_m2.lo NumberIO_wrap.lo \
+   -L$@{prefix@}/lib64 \
+   -rpath `pwd` -lgm2 -lstdc++ -lm -o libNumberIO.la
+
+cp .libs/libNumberIO.so _NumberIO.so
+@end example
+
+The first four commands, generate the swig interface file
+@file{NumberIO.i} and python wrap files @file{NumberIO_wrap.cxx} and
+@file{NumberIO.py}.  The next three @file{libtool} commnads compile
+the C++ and Modula-2 source code into @file{.lo} objects.  The last
+@file{libtool} command links all the @file{.lo} files into a
+@file{.la} file and includes all shared library dependencies.
+
+Now it is possible to run the following Python script
+(called @file{testnum.py}):
+
+@example
+import NumberIO
+
+print ("1234 x 2 =", NumberIO.NumberIO_StrToInt("1234")*2)
+@end example
+
+like this:
+
+@example
+$ python3 testnum.py
+1234 x 2 = 2468
+@end example
+
+@xref{Producing a Python module, , ,gm2} for another example which
+uses the @code{UNQUALIFIED} keyword to reduce the module name clutter
+from the viewport of Python3.
+
+@subsection Limitations of automatic generated of Swig files
+
+This section discusses the limitations of automatically generating
+swig files.  From the previous example we see that the module
+@code{NumberIO} had a swig interface file @file{NumberIO.i}
+automatically generated by the compiler.  If we consider three of the
+procedure definitions in @file{NumberIO.def} we can see the
+success and limitations of the automatic interface generation.
+
+@example
+PROCEDURE StrToHex (a: ARRAY OF CHAR; VAR x: CARDINAL) ;
+PROCEDURE StrToInt (a: ARRAY OF CHAR; VAR x: INTEGER) ;
+PROCEDURE ReadInt (VAR x: CARDINAL) ;
+@end example
+
+Below are the swig interface prototypes:
+
+@example
+extern void NumberIO_StrToHex (char *_m2_address_a,
+                               int _m2_high_a, unsigned int *OUTPUT);
+/*  parameters: x is known to be an OUTPUT */
+extern void NumberIO_StrToInt (char *_m2_address_a,
+                               int _m2_high_a, int *OUTPUT);
+/*  parameters: x is guessed to be an OUTPUT */
+extern void NumberIO_ReadInt (int *x);
+/*  parameters: x is unknown */
+@end example
+
+In the case of @code{StrToHex} it can be seen that the compiler
+detects that the last parameter is an output.  It explicitly tells
+swig this by using the parameter name @code{OUTPUT} and in the
+following comment it informs the user that it knows this to be an
+output parameter.  In the second procedure @code{StrToInt} it marks
+the final parameter as an output, but it tells the user that this is
+only a guess.  Finally in @code{ReadInt} it informs the user that
+it does not know whether the parameter, @code{x}, is an output, input
+or an inout parameter.
+
+The compiler decides whether to mark a parameter as either:
+@code{INPUT}, @code{OUTPUT} or @code{INOUT} if it is read before
+written or visa versa in the first basic block.  At this point
+it will write output that the parameter is known.  If it is not
+read or written in the first basic block then subsequent basic blocks
+are searched and the result is commented as a guess.  Finally if
+no read or write occurs then the parameter is commented as unknown.
+However, clearly it is possible to fool this mechanism.  Nevertheless
+automatic generation of implementation module into swig interface files
+was thought sufficiently useful despite these limitations.
+
+In conclusion it would be wise to check all parameters in any
+automatically generated swig interface file.  Furthermore you can
+force the automatic mechanism to generate correct interface files by
+reading or writing to the @code{VAR} parameter in the first basic
+block of a procedure.
+
+@node Producing a Python module, Interface to C, Interface for Python, Using
+@section How to produce a Python module
+
+This section describes how it is possible to produce a Python module
+from Modula-2 code.  There are a number of advantages to this
+approach, it ensures your code reaches a wider audience, maybe it is
+easier to initialize your application in Python.
+
+The example application here is a pedagogical two dimensional gravity
+next event simulation.  The Python module needs to have a clear API
+which should be placed in a single definition module.  Furthermore the
+API should only use fundamental pervasive data types and strings.
+Below the API is contained in the file @file{twoDsim.def}:
+
+@example
+DEFINITION MODULE twoDsim ;
+
+EXPORT UNQUALIFIED gravity, box, poly3, poly5, poly6, mass,
+                   fix, circle, pivot, velocity, accel, fps,
+                   replayRate, simulateFor ;
+(*
+   gravity - turn on gravity at: g m^2
+*)
+
+PROCEDURE gravity (g: REAL) ;
+
+
+(*
+   box - place a box in the world at (x0,y0),(x0+i,y0+j)
+*)
+
+PROCEDURE box (x0, y0, i, j: REAL) : CARDINAL ;
+
+
+(*
+   poly3 - place a triangle in the world at:
+           (x0,y0),(x1,y1),(x2,y2)
+*)
+
+PROCEDURE poly3 (x0, y0, x1, y1, x2, y2: REAL) : CARDINAL ;
+
+
+(*
+   poly5 - place a pentagon in the world at:
+           (x0,y0),(x1,y1),(x2,y2),(x3,y3),(x4,y4)
+*)
+
+PROCEDURE poly5 (x0, y0, x1, y1,
+                 x2, y2, x3, y3, x4, y4: REAL) : CARDINAL ;
+
+
+(*
+   poly6 - place a hexagon in the world at:
+           (x0,y0),(x1,y1),(x2,y2),(x3,y3),(x4,y4),(x5,y5)
+*)
+
+PROCEDURE poly6 (x0, y0, x1, y1,
+                 x2, y2, x3, y3,
+                 x4, y4, x5, y5: REAL) : CARDINAL ;
+
+
+(*
+   mass - specify the mass of an object and return the, id.
+*)
+
+PROCEDURE mass (id: CARDINAL; m: REAL) : CARDINAL ;
+
+
+(*
+   fix - fix the object to the world.
+*)
+
+PROCEDURE fix (id: CARDINAL) : CARDINAL ;
+
+
+(*
+   circle - adds a circle to the world.  Center
+            defined by: x0, y0 radius, r.
+*)
+
+PROCEDURE circle (x0, y0, r: REAL) : CARDINAL ;
+
+
+(*
+   velocity - give an object, id, a velocity, vx, vy.
+*)
+
+PROCEDURE velocity (id: CARDINAL; vx, vy: REAL) : CARDINAL ;
+
+
+(*
+   accel - give an object, id, an acceleration, ax, ay.
+*)
+
+PROCEDURE accel (id: CARDINAL; ax, ay: REAL) : CARDINAL ;
+
+
+(*
+   fps - set frames per second.
+*)
+
+PROCEDURE fps (f: REAL) ;
+
+
+(*
+   replayRate - set frames per second during replay.
+*)
+
+PROCEDURE replayRate (f: REAL) ;
+
+
+(*
+   simulateFor - render for, t, seconds.
+*)
+
+PROCEDURE simulateFor (t: REAL) ;
+
+
+END twoDsim.
+@end example
+
+The keyword @code{UNQUALIFIED} can be used to ensure that the
+compiler will provide externally accessible functions
+@code{gravity}, @code{box}, @code{poly3}, @code{poly5}, @code{poly6},
+@code{mass}, @code{fix}, @code{circle}, @code{pivot}, @code{velocity},
+@code{accel}, @code{fps}, @code{replayRate}, @code{simulateFor}
+rather than name mangled alternatives.
+Hence in our Python3 application we could write:
+
+@example
+#!/usr/bin/env python3
+
+from twoDsim import *
+
+b = box (0.0, 0.0, 1.0, 1.0)
+b = fix (b)
+c1 = circle (0.7, 0.7, 0.05)
+c1 = mass (c1, 0.01)
+c2 = circle (0.7, 0.1, 0.05)
+c2 = mass (c2, 0.01)
+c2 = fix (c2)
+gravity (-9.81)
+fps (24.0*4.0)
+replayRate (24.0)
+print ("creating frames")
+try:
+    simulateFor (1.0)
+    print ("all done")
+except:
+    print ("exception raised")
+@end example
+
+which accesses the various functions defined and implemented by the
+module @code{twoDsim}.  The Modula-2 source code is compiled via:
+
+@example
+$ gm2 -g -fiso -c -fswig twoDsim.mod
+$ gm2 -g -fiso -c -fmakelist twoDsim.mod
+$ gm2 -g -fiso -c -fmakeinit twoDsim.mod
+@end example
+
+The first command both compiles the source file creating
+@file{twoDsim.o} and produces a swig interface file @file{swig.i}.  We
+now use @code{swig} and @code{g++} to produce and compile the
+interface wrappers:
+
+@example
+$ libtool --mode=compile g++ -g -c twoDsim_m2.cpp -o twoDsim_m2.lo
+$ swig -c++ -python3 twoDsim.i
+$ libtool --mode=compile g++ -c -fPIC twoDsim_wrap.cxx \
+   -I/usr/include/python3 -o twoDsim_wrap.lo
+$ libtool --mode=compile gm2 -g -fPIC -fiso -c deviceGnuPic.mod
+$ libtool --mode=compile gm2 -g -fPIC -fiso -c roots.mod
+$ libtool --mode=compile gm2 -g -fPIC -fiso -c -fswig \
+   twoDsim.mod -o twoDsim.lo
+@end example
+
+Finally the application is linked into a shared library:
+
+@example
+$ libtool --mode=link gcc -g twoDsim_m2.lo twoDsim_wrap.lo \
+  roots.lo deviceGnuPic.lo \
+   -L$@{prefix@}/lib64 \
+   -rpath `pwd` -lgm2 -lstdc++ -lm -o libtwoDsim.la
+cp .libs/libtwoDsim.so _twoDsim.so
+@end example
+
+The library name must start with @code{_} to comply with the Python3
+module naming scheme.
+
+@node Interface to C, Assembly language, Producing a Python module, Using
+@section Interfacing GNU Modula-2 to C
+
+The GNU Modula-2 compiler tries to use the C calling convention
+wherever possible however some parameters have no C equivalent and
+thus a language specific method is used.  For example unbounded arrays
+are passed as a @code{struct @{void *address, unsigned int high@}} and
+the contents of these arrays are copied by callee functions when they
+are declared as non @code{VAR} parameters.  The @code{VAR} equivalent
+unbounded array parameters need no copy, but still use the
+@code{struct} representation.
+
+The recommended method of interfacing GNU Modula-2 to C is by telling
+the definition module that the implementation is in the C language.
+This is achieved by using the tokens @code{DEFINITION MODULE FOR "C"}.
+Here is an example @file{libprintf.def}.
+
+@example
+DEFINITION MODULE FOR "C" libprintf ;
+
+EXPORT UNQUALIFIED printf ;
+
+PROCEDURE printf (a: ARRAY OF CHAR; ...) : [ INTEGER ] ;
+
+END libprintf.
+@end example
+
+the @code{UNQUALIFIED} keyword in the definition module informs
+GNU Modula-2 not to prefix the module name to exported references
+in the object file.
+
+The @code{printf} declaration states that the first parameter
+semantically matches @code{ARRAY OF CHAR} but since the module is for
+the C language it will be mapped onto @code{char *}.  The token
+@code{...} indicates a variable number of arguments (varargs) and all
+parameters passed here are mapped onto their C equivalents.  Arrays and
+constant strings are passed as pointers.  Lastly @code{[ INTEGER ]}
+states that the caller can ignore the function return result if desired.
+
+The hello world program can be rewritten as:
+
+@example
+MODULE hello ;
+
+FROM libprintf IMPORT printf ;
+
+BEGIN
+   printf ("hello world\n")
+END hello.
+@end example
+
+and it can be compiled by:
+
+@samp{gm2 -g hello.mod -lc}
+
+In reality the @samp{-lc} is redundant as libc is always included in the
+linking process.  It is shown here to emphasize that the C library or
+object file containing @code{printf} must be present.  The search path
+for modules can be changed by using @samp{-I}.
+
+If a procedure function is declared using varargs then some parameter
+values are converted.  The table below summarizes the default conversions
+and default types used.
+
+@example
+Actual Parameter       |  Default conversion  |   Type of actual
+                       |                      |   value passed
+===============================================================
+123                    |  none                |   long long int
+"hello world"          |  none                |   const char *
+a: ARRAY OF CHAR       |  ADR (a)             |   char *
+a: ARRAY [0..5] OF CHAR|  ADR (a)             |   char *
+3.14                   |  none                |   long double
+@end example
+
+If you wish to pass @code{int} values then you should explicitly
+convert the constants using one of the conversion mechanisms.
+For example:  @code{INTEGER(10)} or @code{VAL(INTEGER, 10)} or
+@code{CAST(INTEGER, 10)}.
+
+@node Assembly language, Alignment, Interface to C, Using
+@section Interface to assembly language
+
+The interface for GNU Modula-2 to assembly language is almost
+identical to GNU C.  The only alterations are that the keywords
+@code{asm} and @code{volatile} are in capitals, following the Modula-2
+convention.
+
+A simple, but highly non optimal, example is given below.  Here we want
+to add the two @code{CARDINAL}s @code{foo} and @code{bar} together and
+return the result.  The target processor is assumed to be executing
+the x86_64 instruction set.
+
+@example
+PROCEDURE Example (foo, bar: CARDINAL) : CARDINAL ;
+VAR
+   myout: CARDINAL ;
+BEGIN
+   ASM VOLATILE ("movq %1,%%rax; addq %2,%%rax; movq %%rax,%0"
+      : "=rm" (myout)            (* outputs *)
+      : "rm" (foo), "rm" (bar)   (* inputs  *)
+      : "rax") ;                 (* we trash *)
+   RETURN( myout )
+END Example ;
+@end example
+
+For a full description of this interface we refer the reader to the GNU C manual.
+
+@xref{Extended Asm, ,Extensions to the C Language Family,gcc}.
+
+The same example can be written using the newer extensions of naming
+the operands rather than using numbered arguments.
+
+@example
+PROCEDURE Example (foo, bar: CARDINAL) : CARDINAL ;
+VAR
+   myout: CARDINAL ;
+BEGIN
+   ASM VOLATILE (
+    "movq %[left],%%rax; addq %[right],%%rax; movq %%rax,%[output]"
+      : [output] "=rm" (myout)                  (* outputs *)
+      : [left] "rm" (foo), [right] "rm" (bar)   (* inputs  *)
+      : "rax") ;                                (* we trash *)
+   RETURN( myout )
+END Example ;
+@end example
+
+Both examples generate exactly the same code.  It is worth noting that
+the specifier ``rm'' indicates that the operand can be either a
+register or memory.  Of course you must choose an instruction which
+can take either, but this allows the compiler to take make more
+efficient choices depending upon the optimization level given to the
+compiler.
+
+@node Alignment, Packed, Assembly language, Using
+@section Data type alignment
+
+GNU Modula-2 allows you to specify alignment for types and variables.
+The syntax for alignment is to use the ISO pragma directives @code{<*}
+@code{bytealignment (} expression @code{)} and @code{*>}.  These directives
+can be used after type and variable declarations.
+
+The ebnf of the alignment production is:
+
+@example
+Alignment := [ ByteAlignment ] =:
+ByteAlignment := '<*' AttributeExpression '*>' =:
+AlignmentExpression := "(" ConstExpression ")" =:
+@end example
+
+The @code{Alignment} ebnf statement may be used during construction of
+types, records, record fields, arrays, pointers and variables.  Below
+is an example of aligning a type so that the variable @code{bar} is
+aligned on a 1024 address.
+
+@example
+MODULE align ;
+
+TYPE
+   foo = INTEGER <* bytealignment(1024) *> ;
+
+VAR
+   z  : INTEGER ;
+   bar: foo ;
+BEGIN
+END align.
+@end example
+
+The next example aligns a variable on a 1024 byte boundary.
+
+@example
+MODULE align2 ;
+
+VAR
+   x  : CHAR ;
+   z  : ARRAY [0..255] OF INTEGER <* bytealignment(1024) *> ;
+BEGIN
+END align2.
+@end example
+
+Here the example aligns a pointer on a 1024 byte boundary.
+
+@example
+MODULE align4 ;
+
+FROM SYSTEM IMPORT ADR ;
+FROM libc IMPORT exit ;
+
+VAR
+   x  : CHAR ;
+   z  : POINTER TO INTEGER <* bytealignment(1024) *> ;
+BEGIN
+   IF ADR(z) MOD 1024=0
+   THEN
+      exit(0)
+   ELSE
+      exit(1)
+   END
+END align4.
+@end example
+
+In example @code{align5} record field @code{y} is aligned on a 1024
+byte boundary.
+
+@example
+MODULE align5 ;
+
+FROM SYSTEM IMPORT ADR ;
+FROM libc IMPORT exit ;
+
+TYPE
+   rec = RECORD
+            x: CHAR ;
+            y: CHAR <* bytealignment(1024) *> ;
+         END ;
+VAR
+   r: rec ;
+BEGIN
+   IF ADR(r.y) MOD 1024=0
+   THEN
+      exit(0)
+   ELSE
+      exit(1)
+   END
+END align5.
+@end example
+
+In the example below module @code{align6} declares @code{foo} as an
+array of 256 @code{INTEGER}s.  The array @code{foo} is aligned on a
+1024 byte boundary.
+
+@example
+MODULE align6 ;
+
+FROM SYSTEM IMPORT ADR ;
+FROM libc IMPORT exit ;
+
+TYPE
+   foo = ARRAY [0..255] OF INTEGER <* bytealignment(1024) *> ;
+
+VAR
+   x  : CHAR ;
+   z  : foo ;
+BEGIN
+   IF ADR(z) MOD 1024=0
+   THEN
+      exit(0)
+   ELSE
+      exit(1)
+   END
+END align6.
+@end example
+
+@node Packed, Built-ins, Alignment, Using
+@section Packing data types
+
+The pragma @code{<* bytealignment(0) *>} can be used to specify that
+the fields within a @code{RECORD} are to be packed.  Currently this
+only applies to fields which are declared as subranges, ordinal types
+and enumerated types.  Here is an example of how two subranges might
+be packed into a byte.
+
+@example
+TYPE
+   bits3c =  [0..7] ;
+   bits3i = [-4..3] ;
+
+   byte = RECORD
+              <* bytealignment(0) *>
+              x: bits3c ;
+              <* bitsunused(2) *>
+              y: bits3i ;
+          END ;
+@end example
+
+Notice that the user has specified that in between fields @code{x} and
+@code{y} there are two bits unused.
+
+Now the user wishes to create a record with byte numbers zero and one
+occupied and then an @code{INTEGER32} field which is four byte
+aligned.  In this case byte numbers two and three will be unused.  The
+pragma @code{bytealignment} can be issued at the start of the record
+indicating the default alignment for the whole record and this can be
+overridden by individual fields if necessary.
+
+@example
+   rec = RECORD
+            <* bytealignment (1) *> ;
+            a, b: byte ;
+            x: INTEGER32 <* bytealignment(4) *> ;
+         END ;
+@end example
+
+In the following example the user has specified that a record has two
+fields @code{p} and @code{q} but that there are three bytes unused between
+these fields.
+
+@example
+   header = RECORD
+               <* bytealignment(1) *>
+               p: byte ;
+               <* bytesunused(3) *>
+               q: byte ;
+            END ;
+@end example
+
+The pragma @code{<* bytesunused(x) *>} can only be used if the current
+field is on a byte boundary.  There is also a @code{SYSTEM} pseudo
+procedure function @code{TBITSIZE(T)} which returns the minimum number of
+bits necessary to represent type @code{T}.
+
+Another example of packing record bit fields is given below:
+
+@example
+MODULE align21 ;
+
+FROM libc IMPORT exit ;
+
+TYPE
+   colour = (red, blue, green, purple, white, black) ;
+
+   soc = PACKEDSET OF colour ;
+
+   rec = RECORD
+            <* bytealignment(0) *>
+            x: soc ;
+            y: [-1..1] ;
+         END ;
+
+VAR
+   r: rec ;
+   v: CARDINAL ;
+BEGIN
+   v := SIZE(r) ;
+   IF SIZE(r)#1
+   THEN
+      exit(1)
+   END ;
+   r.x := soc@{blue@} ;
+   IF r.x#soc@{blue@}
+   THEN
+      exit(2)
+   END
+END align21.
+@end example
+
+Here we see that the total size of this record is one byte and consists
+of a six bit set type followed by a 2 bit integer subrange.
+
+@node Built-ins, The PIM system module, Packed, Using
+@section Accessing GNU Modula-2 Built-ins
+
+This section describes the built-in constants and functions defined in
+GNU Modula-2.  The following compiler constants can be accessed using
+the @code{__ATTRIBUTE__} @code{__BUILTIN__} keywords.  These are not
+part of the Modula-2 language and they may differ depending upon the
+target architecture but they provide a method whereby common
+libraries can interface to a different underlying architecture.
+
+The built-in constants are: @code{BITS_PER_UNIT}, @code{BITS_PER_WORD},
+@code{BITS_PER_CHAR} and @code{UNITS_PER_WORD}.  They are integrated into
+GNU Modula-2 by an extension to the @code{ConstFactor} rule:
+
+@example
+ConstFactor := ConstQualidentOrSet | Number | ConstString |
+               "(" ConstExpression ")" | "NOT" ConstFactor |
+               ConstAttribute =:
+
+ConstAttribute := "__ATTRIBUTE__" "__BUILTIN__" "(" "(" Ident ")" ")" =:
+@end example
+
+Here is an example taken from the ISO library @code{SYSTEM.def}:
+
+@example
+CONST
+   BITSPERLOC    = __ATTRIBUTE__ __BUILTIN__ ((BITS_PER_UNIT)) ;
+   LOCSPERWORD   = __ATTRIBUTE__ __BUILTIN__ ((UNITS_PER_WORD)) ;
+@end example
+
+Built-in functions are transparent to the end user.  All built-in
+functions are declared in @code{DEFINITION MODULE}s and are imported
+as and when required.  Built-in functions are declared in definition
+modules by using the @code{__BUILTIN__} keyword.  Here is a section of
+the ISO library @code{LongMath.def} which demonstrates this feature.
+
+@example
+PROCEDURE __BUILTIN__ sqrt (x: LONGREAL): LONGREAL;
+  (* Returns the square root of x *)
+@end example
+
+This indicates that the function @code{sqrt} will be implemented using
+the gcc built-in maths library.  If gcc cannot utilize the built-in
+function (for example if the programmer requested the address of
+@code{sqrt}) then code is generated to call the alternative function
+implemented in the @code{IMPLEMENTATION} @code{MODULE}.
+
+Sometimes a function exported from the @code{DEFINITION} @code{MODULE}
+will have a different name from the built-in function within gcc.  In
+such cases the mapping between the GNU Modula-2 function name and the
+gcc name is expressed using the keywords @code{__ATTRIBUTE__}
+@code{__BUILTIN__} @code{((Ident))}.  For example the function
+@code{sqrt} in @code{LongMath.def} maps onto the gcc built-in function
+@code{sqrtl} and this is expressed as:
+
+@example
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((sqrtl)) sqrt
+                                    (x: LONGREAL) : LONGREAL;
+  (* Returns the positive square root of x *)
+@end example
+
+The following module @code{Builtins.def} enumerates the list of
+built-in functions which can be accessed in GNU Modula-2.  It also
+serves to define the parameter and return value for each function:
+
+@include m2/Builtins.texi
+
+Although this module exists and will result in the generation of
+in-line code if optimization flags are passed to GNU Modula-2, users
+are advised to utilize the same functions from more generic libraries.
+The built-in mechanism will be applied to these generic
+libraries where appropriate.  Note for the mathematical routines to
+be in-lined you need to specify the @samp{-ffast-math -O} options.
+
+@node The PIM system module, The ISO system module, Built-ins, Using
+@section The PIM system module
+
+@include m2/SYSTEM-pim.texi
+
+The different dialects of Modula-2 PIM-[234] and ISO Modula-2 declare
+the function @code{SIZE} in different places.  PIM-[34] and ISO
+Modula-2 declare @code{SIZE} as a pervasive function (declared in the
+base module).  PIM-2 defined @code{SIZE} in the @code{SYSTEM} module
+(as shown above).
+
+GNU Modula-2 allows users to specify the dialect of Modula-2 by using
+the @code{-fiso} and @code{-fpim2} command line switches.
+
+The data types @code{CSIZE_T} and @code{CSSIZE_T} are also exported from
+the @code{SYSTEM} module.  The type @code{CSIZE_T} is unsigned and is
+mapped onto the target C data type @code{size_t} whereas the type
+@code{CSSIZE_T} is mapped onto the signed C data type @code{ssize_t}.
+
+It is anticipated that these should only be used to provide cross
+platform definition modules for C libraries.
+
+There are also a variety of fixed sized @code{INTEGER} and
+@code{CARDINAL} types.  The variety of the fixed sized types will
+depend upon the target architecture.
+
+@node The ISO system module, Release map, The PIM system module, Using
+@section The ISO system module
+
+@include m2/SYSTEM-iso.texi
+
+The data types @code{CSIZE_T} and @code{CSSIZE_T} are also exported from
+the @code{SYSTEM} module.  The type @code{CSIZE_T} is unsigned and is
+mapped onto the target C data type @code{size_t} whereas the type
+@code{CSSIZE_T} is mapped onto the signed C data type @code{ssize_t}.
+
+It is anticipated that these should only be used to provide cross
+platform definition modules for C libraries.
+
+There are also a variety of fixed sized @code{INTEGER} and
+@code{CARDINAL} types.  The variety of the fixed sized types will
+depend upon the target architecture.
+
+@node Release map, Documentation, The ISO system module, Using
+@section Release map
+
+GNU Modula-2 is now part of GCC and therefore will adopt the GCC
+release schedule.  It is intended that GNU Modula-2 implement more of
+the GCC builtins (vararg access) and GCC features.
+
+There is an intention to implement the ISO generics and the M2R10
+dialect of Modula-2.  It will also implement all language changes.  If
+you wish to see something different please email
+@email{gm2@@nongnu.org} with your ideas.
+
+@node Documentation, Regression tests, Release map, Using
+@section Documentation
+
+The GNU Modula-2 documentation is available on line
+@url{https://gcc.gnu.org/onlinedocs}
+or in the pdf, info, html file format.
+
+@node Regression tests, Limitations, Documentation, Using
+@section Regression tests for gm2 in the repository
+
+The regression testsuite can be run from the gcc build directory:
+
+@example
+$ cd build-gcc
+$ make check -j 24
+@end example
+
+which runs the complete testsuite for all compilers using 24 parallel
+invocations of the compiler.  Individual language testsuites can be
+run by specifying the language, for example the Modula-2 testsuite can
+be run using:
+
+@example
+$ cd build-gcc
+$ make check-m2 -j 24
+@end example
+
+Finally the results of the testsuite can be emailed to the
+@url{https://gcc.gnu.org/lists.html, gcc-testresults} list using the
+@file{test_summary} script found in the gcc source tree:
+
+@example
+$ @samp{directory to the sources}/contrib/test_summary
+@end example
+
+@node Limitations, Objectives, Regression tests, Using
+@section Limitations
+
+Logitech compatibility library is incomplete.  The principle modules
+for this platform exist however for a comprehensive list of completed
+modules please check the documentation
+@url{gm2.html}.
+
+@node Objectives, FAQ, Limitations, Using
+@section Objectives
+
+@itemize @bullet
+
+@item
+The intention of GNU Modula-2 is to provide a production Modula-2
+front end to GCC.
+
+@item
+It should support all Niklaus Wirth PIM Dialects [234] and also ISO
+Modula-2 including a re-implementation of all the ISO modules.
+
+@item
+There should be an easy interface to C.
+
+@item
+Exploit the features of GCC.
+
+@item
+Listen to the requests of the users.
+@end itemize
+
+@node FAQ, Community, Objectives, Using
+@section FAQ
+
+@subsection Why use the C++ exception mechanism in GCC, rather than a bespoke Modula-2 mechanism?
+
+The C++ mechanism is tried and tested, it also provides GNU Modula-2
+with the ability to link with C++ modules and via swig it can raise
+Python exceptions.
+
+@node Community, Other languages, FAQ, Using
+@section Community
+
+You can subscribe to the GNU Modula-2 mailing by sending an
+email to:
+@email{gm2-subscribe@@nongnu.org}
+or by
+@url{http://lists.nongnu.org/mailman/listinfo/gm2}.
+The mailing list contents can be viewed
+@url{http://lists.gnu.org/archive/html/gm2}.
+
+@node Other languages, , Community, Using
+@section Other languages for GCC
+
+These exist and can be found on the frontends web page on the
+@uref{http://gcc.gnu.org/frontends.html, gcc web site}.
+
+@node License, Copying, Using, Top
+@section License of GNU Modula-2
+
+GNU Modula-2 is free software, the compiler is held under the GPL v3
+@uref{http://www.gnu.org/licenses/gpl.txt},
+its libraries (pim, iso and Logitech compatible) are under the
+GPL v3 with the GCC run time library exception clause.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.
+
+More information on how these licenses work is available
+@uref{http://www.gnu.org/licenses/licenses.html} on the GNU web site.
+
+@node Copying, Contributing, License, Top
+@include gpl_v3_without_node.texi
+
+@node Contributing, EBNF, Copying, Top
+@section Contributing to GNU Modula-2
+
+Please do and please read the GNU Emacs info under
+
+@example
+* Standards: (standards).       GNU coding standards.
+* Intellectual Property::       Keeping Free Software Free
+* Reading Non-Free Code::       Referring to Proprietary Programs
+* Contributions::               Accepting Contributions
+@end example
+
+You might consider joining the GM2 Mailing list before you start
+coding.  The mailing list may be subscribed via a web interface
+@uref{http://lists.nongnu.org/mailman/listinfo/gm2} or via email
+@email{gm2-subscribe@@nongnu.org}.
+
+Many thanks and enjoy your coding!
+
+@c @node Internals, , ,
+
+@c This section is still being written.
+@c @include gm2-internals.texi
+
+@node EBNF, Libraries, Contributing, Top
+@chapter EBNF of GNU Modula-2
+
+This chapter contains the EBNF of GNU Modula-2.  This grammar currently
+supports both PIM and ISO dialects.  The rules here are automatically
+extracted from the crammer files in GNU Modula-2 and serve to document
+the syntax of the extensions described earlier and how they fit in
+with the base language.
+
+Note that the first six productions are built into the lexical analysis
+phase.
+
+@include m2/gm2-ebnf.texi
+
+@node Libraries, Indices, EBNF, Top
+@chapter PIM and ISO library definitions
+
+This chapter contains M2F, PIM and ISO libraries.
+
+@include m2/gm2-libs.texi
+
+@node Indices, , Libraries, Top
+@section Indices
+
+@ifhtml
+@menu
+* Contents::    Section and subsections.
+* Functions::   Function, constants, types, ebnf indices.
+@end menu
+
+@node Contents, , ,
+@section Section and subsections
+@printindex cp
+
+@node Functions, , ,
+@section Function, constants, types, ebnf indices.
+@end ifhtml
+
+@printindex fn
+
+@summarycontents
+@contents
+@bye

@@ -1,6 +1,6 @@
 // Predefined symbols and macros -*- C++ -*-
 
-// Copyright (C) 1997-2022 Free Software Foundation, Inc.
+// Copyright (C) 1997-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -84,8 +84,10 @@
 //   _GLIBCXX14_DEPRECATED_SUGGEST( string-literal )
 //   _GLIBCXX17_DEPRECATED
 //   _GLIBCXX17_DEPRECATED_SUGGEST( string-literal )
-//   _GLIBCXX20_DEPRECATED( string-literal )
+//   _GLIBCXX20_DEPRECATED
 //   _GLIBCXX20_DEPRECATED_SUGGEST( string-literal )
+//   _GLIBCXX23_DEPRECATED
+//   _GLIBCXX23_DEPRECATED_SUGGEST( string-literal )
 #ifndef _GLIBCXX_USE_DEPRECATED
 # define _GLIBCXX_USE_DEPRECATED 1
 #endif
@@ -124,11 +126,19 @@
 #endif
 
 #if defined(__DEPRECATED) && (__cplusplus >= 202002L)
-# define _GLIBCXX20_DEPRECATED(MSG) [[deprecated(MSG)]]
+# define _GLIBCXX20_DEPRECATED [[__deprecated__]]
 # define _GLIBCXX20_DEPRECATED_SUGGEST(ALT) _GLIBCXX_DEPRECATED_SUGGEST(ALT)
 #else
-# define _GLIBCXX20_DEPRECATED(MSG)
+# define _GLIBCXX20_DEPRECATED
 # define _GLIBCXX20_DEPRECATED_SUGGEST(ALT)
+#endif
+
+#if defined(__DEPRECATED) && (__cplusplus >= 202100L)
+# define _GLIBCXX23_DEPRECATED [[__deprecated__]]
+# define _GLIBCXX23_DEPRECATED_SUGGEST(ALT) _GLIBCXX_DEPRECATED_SUGGEST(ALT)
+#else
+# define _GLIBCXX23_DEPRECATED
+# define _GLIBCXX23_DEPRECATED_SUGGEST(ALT)
 #endif
 
 // Macros for ABI tag attributes.
@@ -794,6 +804,20 @@ namespace std
   && __DBL_MIN_EXP__ == -1021 \
   && __DBL_MAX_EXP__ == 1024
 # define _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 1
+#endif
+
+// Define if long double has the IEEE binary128 format.
+#if __LDBL_MANT_DIG__ == 113 \
+  && __LDBL_MIN_EXP__ == -16381 \
+  && __LDBL_MAX_EXP__ == 16384
+# define _GLIBCXX_LDOUBLE_IS_IEEE_BINARY128 1
+#endif
+
+#ifdef __STDCPP_BFLOAT16_T__
+namespace __gnu_cxx
+{
+  using __bfloat16_t = decltype(0.0bf16);
+}
 #endif
 
 #ifdef __has_builtin

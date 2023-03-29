@@ -10,6 +10,7 @@
  * $(TR $(TH Category) $(TH Templates))
  * $(TR $(TD Symbol Name traits) $(TD
  *           $(LREF fullyQualifiedName)
+ *           $(LREF mangledName)
  *           $(LREF moduleName)
  *           $(LREF packageName)
  * ))
@@ -67,9 +68,7 @@
  *           $(LREF isCovariantWith)
  *           $(LREF isImplicitlyConvertible)
  * ))
- * $(TR $(TD SomethingTypeOf) $(TD
- *           $(LREF rvalueOf)
- *           $(LREF lvalueOf)
+ * $(TR $(TD Type Constructors) $(TD
  *           $(LREF InoutOf)
  *           $(LREF ConstOf)
  *           $(LREF SharedOf)
@@ -138,7 +137,8 @@
  *           $(LREF Promoted)
  * ))
  * $(TR $(TD Misc) $(TD
- *           $(LREF mangledName)
+ *           $(LREF lvalueOf)
+ *           $(LREF rvalueOf)
  *           $(LREF Select)
  *           $(LREF select)
  * ))
@@ -889,10 +889,10 @@ private template fqnType(T,
             );
         }
     }
-    else static if (isPointer!T)
+    else static if (is(T == U*, U))
     {
         enum fqnType = chain!(
-            fqnType!(PointerTarget!T, qualifiers) ~ "*"
+            fqnType!(U, qualifiers) ~ "*"
         );
     }
     else static if (is(T : __vector(V[N]), V, size_t N))
@@ -986,6 +986,10 @@ private template fqnType(T,
  * or a class with an `opCall`. Please note that $(D_KEYWORD ref)
  * is not part of a type, but the attribute of the function
  * (see template $(LREF functionAttributes)).
+ *
+ * $(NOTE To reduce template instantiations, consider instead using
+ * $(D typeof(() { return func(args); } ())) if the argument types are known or
+ * $(D static if (is(typeof(func) Ret == return))) if only that basic test is needed.)
  */
 template ReturnType(alias func)
 if (isCallable!func)
@@ -2302,7 +2306,7 @@ if (isCallable!func)
         int  test(int);
         int  test() @property;
     }
-    alias ov = __traits(getVirtualFunctions, Overloads, "test");
+    alias ov = __traits(getVirtualMethods, Overloads, "test");
     alias F_ov0 = FunctionTypeOf!(ov[0]);
     alias F_ov1 = FunctionTypeOf!(ov[1]);
     alias F_ov2 = FunctionTypeOf!(ov[2]);
@@ -3925,8 +3929,8 @@ template hasStaticMember(T, string member)
 {
     static if (__traits(hasMember, T, member))
     {
-        static if (isPointer!T)
-            alias U = PointerTarget!T;
+        static if (is(T == V*, V))
+            alias U = V;
         else
             alias U = T;
 
@@ -4529,7 +4533,7 @@ if (is(C == class) || is(C == interface))
             static if (__traits(hasMember, Node, name) && __traits(compiles, __traits(getMember, Node, name)))
             {
                 // Get all overloads in sight (not hidden).
-                alias inSight = __traits(getVirtualFunctions, Node, name);
+                alias inSight = __traits(getVirtualMethods, Node, name);
 
                 // And collect all overloads in ancestor classes to reveal hidden
                 // methods.  The result may contain duplicates.
@@ -5297,7 +5301,8 @@ enum isLvalueAssignable(Lhs, Rhs = Lhs) = __traits(compiles, { lvalueOf!Lhs = lv
     static assert(!isAssignable!S5);
 
     // `-preview=in` is enabled
-    static if (!is(typeof(mixin(q{(in ref int a) => a}))))
+    alias DScannerBug895 = int[256];
+    static if (((in DScannerBug895 a) { return __traits(isRef, a); })(DScannerBug895.init))
     {
         struct S6 { void opAssign(in S5); }
 
@@ -5446,8 +5451,8 @@ private template isStorageClassImplicitlyConvertible(From, To)
 {
     alias Pointify(T) = void*;
 
-    enum isStorageClassImplicitlyConvertible = isImplicitlyConvertible!(
-            ModifyTypePreservingTQ!(Pointify, From),
+    enum isStorageClassImplicitlyConvertible = is(
+            ModifyTypePreservingTQ!(Pointify, From) :
             ModifyTypePreservingTQ!(Pointify,   To) );
 }
 
@@ -6066,7 +6071,7 @@ template StringTypeOf(T)
                 static assert(is(Q!T[] == StringTypeOf!( SubTypeOf!(Q!T[]) )));
 
                 alias Str = Q!T[];
-                class C(S) { S val;  alias val this; }
+                struct C(S) { S val;  alias val this; }
                 static assert(is(StringTypeOf!(C!Str) == Str));
             }}
         }
@@ -7138,7 +7143,7 @@ enum bool isSIMDVector(T) = is(T : __vector(V[N]), V, size_t N);
 /**
  * Detect whether type `T` is a pointer.
  */
-enum bool isPointer(T) = is(T == U*, U) && __traits(isScalar, T);
+enum bool isPointer(T) = is(T == U*, U);
 
 ///
 @safe unittest
@@ -7481,24 +7486,10 @@ Params:
 Returns:
     A `bool`
  */
-template isSomeFunction(alias T)
-{
-    static if (is(typeof(& T) U : U*) && is(U == function) || is(typeof(& T) U == delegate))
-    {
-        // T is a (nested) function symbol.
-        enum bool isSomeFunction = true;
-    }
-    else static if (is(T W) || is(typeof(T) W))
-    {
-        // T is an expression or a type.  Take the type of it and examine.
-        static if (is(W F : F*) && is(F == function))
-            enum bool isSomeFunction = true; // function pointer
-        else
-            enum bool isSomeFunction = is(W == function) || is(W == delegate);
-    }
-    else
-        enum bool isSomeFunction = false;
-}
+enum bool isSomeFunction(alias T) =
+    is(T == return) ||
+    is(typeof(T) == return) ||
+    is(typeof(&T) == return); // @property
 
 ///
 @safe unittest
@@ -7513,17 +7504,16 @@ template isSomeFunction(alias T)
     auto c = new C;
     auto fp = &func;
     auto dg = &c.method;
-    real val;
 
     static assert( isSomeFunction!func);
     static assert( isSomeFunction!prop);
     static assert( isSomeFunction!(C.method));
     static assert( isSomeFunction!(C.prop));
     static assert( isSomeFunction!(c.prop));
-    static assert( isSomeFunction!(c.prop));
     static assert( isSomeFunction!fp);
     static assert( isSomeFunction!dg);
 
+    real val;
     static assert(!isSomeFunction!int);
     static assert(!isSomeFunction!val);
 }
@@ -7969,7 +7959,7 @@ has both opApply and a range interface.
 */
 template ForeachType(T)
 {
-    alias ForeachType = ReturnType!(typeof(
+    alias ForeachType = typeof(
     (inout int x = 0)
     {
         foreach (elem; T.init)
@@ -7977,7 +7967,7 @@ template ForeachType(T)
             return elem;
         }
         assert(0);
-    }));
+    }());
 }
 
 ///
@@ -8822,6 +8812,30 @@ template getSymbolsByUDA(alias symbol, alias attribute)
     static assert(is(getSymbolsByUDA!(X, X) == AliasSeq!()));
 }
 
+// https://issues.dlang.org/show_bug.cgi?id=23776
+@safe pure nothrow @nogc unittest
+{
+    struct T
+    {
+        struct Tag {}
+        @Tag struct MyStructA {}
+        @Tag struct MyStructB {}
+        @Tag struct MyStructC {}
+    }
+    alias tcomponents = getSymbolsByUDA!(T, T.Tag);
+    static assert(tcomponents.length > 0);
+
+    struct X
+    {
+        struct Tag {}
+        @Tag enum MyEnumA;
+        @Tag enum MyEnumB;
+        @Tag enum MyEnumC;
+    }
+    alias xcomponents = getSymbolsByUDA!(X, X.Tag);
+    static assert(xcomponents.length > 0);
+}
+
 // getSymbolsByUDA produces wrong result if one of the symbols having the UDA is a function
 // https://issues.dlang.org/show_bug.cgi?id=18624
 @safe unittest
@@ -8847,6 +8861,14 @@ version (StdUnittest)
     static assert(__traits(compiles, getSymbolsByUDA!(mixin(__MODULE__), "Issue20054")));
 }
 
+private template isAliasSeq(Args...)
+{
+    static if (Args.length != 1)
+        enum isAliasSeq = true;
+    else
+        enum isAliasSeq = false;
+}
+
 private template getSymbolsByUDAImpl(alias symbol, alias attribute, names...)
 {
     import std.meta : Alias, AliasSeq, Filter;
@@ -8868,12 +8890,13 @@ private template getSymbolsByUDAImpl(alias symbol, alias attribute, names...)
             alias member = __traits(getMember, symbol, names[0]);
 
             // Filtering not compiled members such as alias of basic types.
-            static if (!__traits(compiles, hasUDA!(member, attribute)))
+            static if (isAliasSeq!member ||
+                       (isType!member && !isAggregateType!member && !is(member == enum)))
             {
                 alias getSymbolsByUDAImpl = tail;
             }
-            // Get overloads for functions, in case different overloads have different sets of UDAs.
-            else static if (isFunction!member)
+            // If a symbol is overloaded, get UDAs for each overload (including templated overlaods).
+            else static if (__traits(getOverloads, symbol, names[0], true).length > 0)
             {
                 enum hasSpecificUDA(alias member) = hasUDA!(member, attribute);
                 alias overloadsWithUDA = Filter!(hasSpecificUDA, __traits(getOverloads, symbol, names[0]));
@@ -9136,3 +9159,11 @@ package(std) template DeducedParameterType(T)
 {
     static assert(is(DeducedParameterType!(inout(int[])) == inout(int)[]));
 }
+
+private auto dip1000Test(int x) {return *&x;}
+// We don't use isSafe, because betterC client code needs to instantiate
+// core.internal.array.comparison.__cmp in the client side. isSafe uses
+// __cmp of two strings, so using it would instantate that here instead. That
+// won't do because betterC compilations do not link the Phobos binary in.
+package(std) enum dip1000Enabled
+    = is(typeof(&dip1000Test) : int function(int) @safe);

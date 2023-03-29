@@ -1,6 +1,6 @@
 /* OpenACC Runtime Library Definitions.
 
-   Copyright (C) 2013-2022 Free Software Foundation, Inc.
+   Copyright (C) 2013-2023 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 
@@ -409,9 +409,6 @@ goacc_wait (int async, int num_waits, va_list *ap)
 	    acc_wait_all_async (async);
 	  break;
 	}
-
-      if (acc_async_test (qid))
-	continue;
 
       if (async == acc_async_sync)
 	acc_wait (qid);

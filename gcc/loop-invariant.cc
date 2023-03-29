@@ -1,5 +1,5 @@
 /* RTL-level loop invariant motion.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1837,6 +1837,8 @@ move_invariant_reg (class loop *loop, unsigned invno)
       else if (dump_file)
 	fprintf (dump_file, "Invariant %d moved without introducing a new "
 			    "temporary register\n", invno);
+      if (JUMP_P (BB_END (preheader)))
+	preheader = split_edge (loop_preheader_edge (loop));
       reorder_insns (inv->insn, inv->insn, BB_END (preheader));
       df_recompute_luids (preheader);
 

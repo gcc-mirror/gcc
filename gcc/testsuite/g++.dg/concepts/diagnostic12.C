@@ -3,7 +3,7 @@
 
 template<typename T, typename... Args>
   concept c1 = requires (T t, Args... args) { *t; };
-// { dg-message "in requirements with .T t., .Args ... args. .with Args = \{\}; T = int" "" { target *-*-* } .-1 }
+// { dg-message "in requirements with .T t., .Args ... args. .with T = int; Args = \{\}" "" { target *-*-* } .-1 }
 
 static_assert(c1<int>); // { dg-error "failed" }
 

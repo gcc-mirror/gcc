@@ -845,9 +845,9 @@ public:
 
 @system unittest
 {
-    import std.experimental.allocator.building_blocks.region : Region;
+    import std.experimental.allocator.building_blocks.region : BorrowedRegion;
 
-    auto a = StatsCollector!(Region!(), Options.all, Options.all)(Region!()(new ubyte[1024 * 64]));
+    auto a = StatsCollector!(BorrowedRegion!(), Options.all, Options.all)(BorrowedRegion!()(new ubyte[1024 * 64]));
     auto b = a.allocate(42);
     assert(b.length == 42);
     // Test that reallocate infers from parent
@@ -859,9 +859,9 @@ public:
 
 @system unittest
 {
-    import std.experimental.allocator.building_blocks.region : Region;
+    import std.experimental.allocator.building_blocks.region : BorrowedRegion;
 
-    auto a = StatsCollector!(Region!(), Options.all)(Region!()(new ubyte[1024 * 64]));
+    auto a = StatsCollector!(BorrowedRegion!(), Options.all)(BorrowedRegion!()(new ubyte[1024 * 64]));
     auto b = a.alignedAllocate(42, 128);
     assert(b.length == 42);
     assert(b.ptr.alignedAt(128));

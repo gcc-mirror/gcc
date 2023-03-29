@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2003-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 2003-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -296,6 +296,17 @@ package body Ada.Strings.Wide_Superbounded is
    begin
       return Left <= Right.Data (1 .. Right.Current_Length);
    end Less_Or_Equal;
+
+   ---------------
+   -- Put_Image --
+   ---------------
+
+   procedure Put_Image
+     (S      : in out Ada.Strings.Text_Buffers.Root_Buffer_Type'Class;
+      Source : Super_String) is
+   begin
+      Wide_String'Put_Image (S, Super_To_String (Source));
+   end Put_Image;
 
    ----------------------
    -- Set_Super_String --

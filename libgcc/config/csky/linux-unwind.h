@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for C-SKY Linux.
-   Copyright (C) 2018-2022 Free Software Foundation, Inc.
+   Copyright (C) 2018-2023 Free Software Foundation, Inc.
    Contributed by C-SKY Microsystems and Mentor Graphics.
 
    This file is part of GCC.
@@ -85,28 +85,28 @@ csky_fallback_frame_state (struct _Unwind_Context *context,
   fs->regs.cfa_reg = STACK_POINTER_REGNUM;
   fs->regs.cfa_offset = new_cfa - (_Unwind_Ptr) context->cfa;
 
-  fs->regs.reg[0].how = REG_SAVED_OFFSET;
+  fs->regs.how[0] = REG_SAVED_OFFSET;
   fs->regs.reg[0].loc.offset = (_Unwind_Ptr) & sc_pt_regs (a0) - new_cfa;
 
-  fs->regs.reg[1].how = REG_SAVED_OFFSET;
+  fs->regs.how[1] = REG_SAVED_OFFSET;
   fs->regs.reg[1].loc.offset = (_Unwind_Ptr) & sc_pt_regs (a1) - new_cfa;
 
-  fs->regs.reg[2].how = REG_SAVED_OFFSET;
+  fs->regs.how[2] = REG_SAVED_OFFSET;
   fs->regs.reg[2].loc.offset = (_Unwind_Ptr) & sc_pt_regs (a2) - new_cfa;
 
-  fs->regs.reg[3].how = REG_SAVED_OFFSET;
+  fs->regs.how[3] = REG_SAVED_OFFSET;
   fs->regs.reg[3].loc.offset = (_Unwind_Ptr) & sc_pt_regs (a3) - new_cfa;
 
   for (i = 4; i < 14; i++)
     {
-      fs->regs.reg[i].how = REG_SAVED_OFFSET;
+      fs->regs.how[i] = REG_SAVED_OFFSET;
       fs->regs.reg[i].loc.offset =
 	(_Unwind_Ptr) & sc_pt_regs (regs[i - 4]) - new_cfa;
     }
 
   for (i = 16; i < 31; i++)
     {
-      fs->regs.reg[i].how = REG_SAVED_OFFSET;
+      fs->regs.how[i] = REG_SAVED_OFFSET;
       fs->regs.reg[i].loc.offset =
 	(_Unwind_Ptr) & sc_pt_regs (exregs[i - 16]) - new_cfa;
     }
@@ -114,10 +114,10 @@ csky_fallback_frame_state (struct _Unwind_Context *context,
   fs->regs.reg[31].loc.offset =
     (_Unwind_Ptr) & sc_pt_regs_tls (tls) - new_cfa;
   /* FIXME : hi lo ? */
-  fs->regs.reg[15].how = REG_SAVED_OFFSET;
+  fs->regs.how[15] = REG_SAVED_OFFSET;
   fs->regs.reg[15].loc.offset = (_Unwind_Ptr) & sc_pt_regs_lr - new_cfa;
 
-  fs->regs.reg[32].how = REG_SAVED_OFFSET;
+  fs->regs.how[32] = REG_SAVED_OFFSET;
   fs->regs.reg[32].loc.offset = (_Unwind_Ptr) & sc_pt_regs (pc) - new_cfa;
   fs->retaddr_column = 32;
   fs->signal_frame = 1;

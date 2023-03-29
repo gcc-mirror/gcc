@@ -1,8 +1,8 @@
-// { dg-do link { target c++11 } }
+// { dg-do run { target c++11 } }
 // { dg-require-static-libstdcxx }
 // { dg-options "-static-libstdc++" }
 
-// Copyright (C) 2012-2022 Free Software Foundation, Inc.
+// Copyright (C) 2012-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

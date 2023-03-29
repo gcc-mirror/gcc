@@ -1,5 +1,5 @@
 /* ARM EABI compliant unwinding routines
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
    Contributed by Paul Brook
  
    This file is free software; you can redistribute it and/or modify it
@@ -106,7 +106,12 @@ __gnu_unwind_execute (_Unwind_Context * context, __gnu_unwind_state * uws)
 {
   _uw op;
   int set_pc;
+#if defined(TARGET_HAVE_PACBTI)
+  int set_pac = 0;
+  int set_pac_sp = 0;
+#endif
   _uw reg;
+  _uw sp;
 
   set_pc = 0;
   for (;;)
@@ -114,6 +119,28 @@ __gnu_unwind_execute (_Unwind_Context * context, __gnu_unwind_state * uws)
       op = next_unwind_byte (uws);
       if (op == CODE_FINISH)
 	{
+	  /* When we reach end, we have to authenticate R12 we just popped
+	     earlier.
+
+	     Note: while the check provides additional security against a
+	     corrupted unwind chain, it isn't essential for correct unwinding
+	     of an uncorrupted chain.  */
+#if defined(TARGET_HAVE_PACBTI)
+	  if (set_pac)
+	    {
+	      _uw lr;
+	      _uw pac;
+	      if (!set_pac_sp)
+		_Unwind_VRS_Get (context, _UVRSC_CORE, R_SP, _UVRSD_UINT32,
+				 &sp);
+	      _Unwind_VRS_Get (context, _UVRSC_CORE, R_LR, _UVRSD_UINT32, &lr);
+	      _Unwind_VRS_Get (context, _UVRSC_PAC, R_IP,
+			       _UVRSD_UINT32, &pac);
+	      __asm__ __volatile__
+		("autg %0, %1, %2" : : "r"(pac), "r"(lr), "r"(sp) :);
+	    }
+#endif
+
 	  /* If we haven't already set pc then copy it from lr.  */
 	  if (!set_pc)
 	    {
@@ -227,6 +254,28 @@ __gnu_unwind_execute (_Unwind_Context * context, __gnu_unwind_state * uws)
 		return _URC_FAILURE;
 	      continue;
 	    }
+	  /* Pop PAC off the stack into VRS pseudo.pac.  */
+	  if (op == 0xb4)
+	    {
+	      if (_Unwind_VRS_Pop (context, _UVRSC_PAC, 0, _UVRSD_UINT32)
+		  != _UVRSR_OK)
+		return _URC_FAILURE;
+#if defined(TARGET_HAVE_PACBTI)
+	      set_pac = 1;
+#endif
+	      continue;
+	    }
+
+	  /* Use current VSP as modifier in PAC validation.  */
+	  if (op == 0xb5)
+	    {
+	      _Unwind_VRS_Get (context, _UVRSC_CORE, R_SP, _UVRSD_UINT32, &sp);
+#if defined(TARGET_HAVE_PACBTI)
+	      set_pac_sp = 1;
+#endif
+	      continue;
+	    }
+
 	  if ((op & 0xfc) == 0xb4)  /* Obsolete FPA.  */
 	    return _URC_FAILURE;
 

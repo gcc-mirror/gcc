@@ -1,5 +1,5 @@
 /* Array things
-   Copyright (C) 2000-2022 Free Software Foundation, Inc.
+   Copyright (C) 2000-2023 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -489,7 +489,20 @@ match_array_element_spec (gfc_array_spec *as)
     }
 
   if (gfc_match_char (':') == MATCH_YES)
-    return AS_DEFERRED;
+    {
+      locus old_loc = gfc_current_locus;
+      if (gfc_match_char ('*') == MATCH_YES)
+	{
+	  /* F2018:R821: "assumed-implied-spec  is  [ lower-bound : ] *".  */
+	  gfc_error ("A lower bound must precede colon in "
+		     "assumed-size array specification at %L", &old_loc);
+	  return AS_UNKNOWN;
+	}
+      else
+	{
+	  return AS_DEFERRED;
+	}
+    }
 
   m = gfc_match_expr (upper);
   if (m == MATCH_NO)
@@ -498,8 +511,6 @@ match_array_element_spec (gfc_array_spec *as)
     return AS_UNKNOWN;
   if (!gfc_expr_check_typed (*upper, gfc_current_ns, false))
     return AS_UNKNOWN;
-
-  gfc_try_simplify_expr (*upper, 0);
 
   if (((*upper)->expr_type == EXPR_CONSTANT
 	&& (*upper)->ts.type != BT_INTEGER) ||
@@ -532,8 +543,6 @@ match_array_element_spec (gfc_array_spec *as)
     return AS_ASSUMED_SHAPE;
   if (!gfc_expr_check_typed (*upper, gfc_current_ns, false))
     return AS_UNKNOWN;
-
-  gfc_try_simplify_expr (*upper, 0);
 
   if (((*upper)->expr_type == EXPR_CONSTANT
 	&& (*upper)->ts.type != BT_INTEGER) ||
@@ -591,6 +600,8 @@ gfc_match_array_spec (gfc_array_spec **asp, bool match_dim, bool match_codim)
     {
       as->rank++;
       current_type = match_array_element_spec (as);
+      if (current_type == AS_UNKNOWN)
+	goto cleanup;
 
       /* Note that current_type == AS_ASSUMED_SIZE for both assumed-size
 	 and implied-shape specifications.  If the rank is at least 2, we can
@@ -600,8 +611,6 @@ gfc_match_array_spec (gfc_array_spec **asp, bool match_dim, bool match_codim)
 
       if (as->rank == 1)
 	{
-	  if (current_type == AS_UNKNOWN)
-	    goto cleanup;
 	  as->type = current_type;
 	}
       else
@@ -958,7 +967,7 @@ gfc_copy_array_spec (gfc_array_spec *src)
 
 
 /* Returns nonzero if the two expressions are equal.
-   We should not need to support more than constant values, as that’s what is
+   We should not need to support more than constant values, as that's what is
    allowed in derived type component array spec.  However, we may create types
    with non-constant array spec for dummy variable class container types, for
    which the _data component holds the array spec of the variable declaration.
@@ -970,7 +979,7 @@ compare_bounds (gfc_expr *bound1, gfc_expr *bound2)
   if (bound1 == NULL || bound2 == NULL
       || bound1->ts.type != BT_INTEGER
       || bound2->ts.type != BT_INTEGER)
-    gfc_internal_error ("gfc_compare_array_spec(): Array spec clobbered");
+    return false;
 
   /* What qualifies as identical bounds?  We could probably just check that the
      expressions are exact clones.  We avoid rewriting a specific comparison

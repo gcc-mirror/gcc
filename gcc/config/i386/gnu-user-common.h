@@ -1,5 +1,5 @@
 /* Common definitions for Intel 386 and AMD x86-64 systems using
-   GNU userspace.  Copyright (C) 2012-2022 Free Software Foundation, Inc.
+   GNU userspace.  Copyright (C) 2012-2023 Free Software Foundation, Inc.
    Contributed by Ilya Enkovich.
 
 This file is part of GCC.
@@ -47,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Similar to standard GNU userspace, but adding -ffast-math support.  */
 #define GNU_USER_TARGET_MATHFILE_SPEC \
-  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
+  "%{mdaz-ftz:crtfastmath.o%s;Ofast|ffast-math|funsafe-math-optimizations:%{!shared:%{!mno-daz-ftz:crtfastmath.o%s}}} \
    %{mpc32:crtprec32.o%s} \
    %{mpc64:crtprec64.o%s} \
    %{mpc80:crtprec80.o%s}"

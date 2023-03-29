@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for SPARC Linux.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -65,13 +65,13 @@ sparc64_fallback_frame_state (struct _Unwind_Context *context,
       if ((unsigned int) i == __builtin_dwarf_sp_column ())
 	continue;
 
-      fs->regs.reg[i].how = REG_SAVED_OFFSET;
+      fs->regs.how[i] = REG_SAVED_OFFSET;
       fs->regs.reg[i].loc.offset
 	= this_cfa + regs_off + (i * 8) - new_cfa;
     }
   for (i = 0; i < 16; i++)
     {
-      fs->regs.reg[i + 16].how = REG_SAVED_OFFSET;
+      fs->regs.how[i + 16] = REG_SAVED_OFFSET;
       fs->regs.reg[i + 16].loc.offset
 	= this_cfa + (i * 8) - new_cfa;
     }
@@ -81,7 +81,7 @@ sparc64_fallback_frame_state (struct _Unwind_Context *context,
 	{
 	  if (i > 32 && (i & 0x1))
 	    continue;
-	  fs->regs.reg[i + 32].how = REG_SAVED_OFFSET;
+	  fs->regs.how[i + 32] = REG_SAVED_OFFSET;
 	  fs->regs.reg[i + 32].loc.offset
 	    = fpu_save + (i * 4) - new_cfa;
 	}
@@ -95,7 +95,7 @@ sparc64_fallback_frame_state (struct _Unwind_Context *context,
   shifted_ra_location = this_cfa + regs_off + 19 * 8; /* Y register */
   *(long *)shifted_ra_location = *(long *)ra_location - 8;
   fs->retaddr_column = 0;
-  fs->regs.reg[0].how = REG_SAVED_OFFSET;
+  fs->regs.how[0] = REG_SAVED_OFFSET;
   fs->regs.reg[0].loc.offset = shifted_ra_location - new_cfa;
   fs->signal_frame = 1;
 
@@ -122,7 +122,7 @@ sparc64_frob_update_context (struct _Unwind_Context *context,
       context->cfa -= STACK_BIAS;
 
       for (i = 0; i < __LIBGCC_DWARF_FRAME_REGISTERS__ + 1; ++i)
-	if (fs->regs.reg[i].how == REG_SAVED_OFFSET)
+	if (fs->regs.how[i] == REG_SAVED_OFFSET)
 	  _Unwind_SetGRPtr (context, i,
 			    _Unwind_GetGRPtr (context, i) - STACK_BIAS);
     }
@@ -177,13 +177,13 @@ sparc_fallback_frame_state (struct _Unwind_Context *context,
       if ((unsigned int) i == __builtin_dwarf_sp_column ())
 	continue;
 
-      fs->regs.reg[i].how = REG_SAVED_OFFSET;
+      fs->regs.how[i] = REG_SAVED_OFFSET;
       fs->regs.reg[i].loc.offset
 	= this_cfa + regs_off + (4 * 4) + (i * 4) - new_cfa;
     }
   for (i = 0; i < 16; i++)
     {
-      fs->regs.reg[i + 16].how = REG_SAVED_OFFSET;
+      fs->regs.how[i + 16] = REG_SAVED_OFFSET;
       fs->regs.reg[i + 16].loc.offset
 	= this_cfa + (i * 4) - new_cfa;
     }
@@ -191,7 +191,7 @@ sparc_fallback_frame_state (struct _Unwind_Context *context,
     {
       for (i = 0; i < 32; i++)
 	{
-	  fs->regs.reg[i + 32].how = REG_SAVED_OFFSET;
+	  fs->regs.how[i + 32] = REG_SAVED_OFFSET;
 	  fs->regs.reg[i + 32].loc.offset
 	    = fpu_save + (i * 4) - new_cfa;
 	}
@@ -205,7 +205,7 @@ sparc_fallback_frame_state (struct _Unwind_Context *context,
   shifted_ra_location = this_cfa + regs_off + 3 * 4; /* Y register */
   *(int *)shifted_ra_location = *(int *)ra_location - 8;
   fs->retaddr_column = 0;
-  fs->regs.reg[0].how = REG_SAVED_OFFSET;
+  fs->regs.how[0] = REG_SAVED_OFFSET;
   fs->regs.reg[0].loc.offset = shifted_ra_location - new_cfa;
   fs->signal_frame = 1;
 

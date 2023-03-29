@@ -19,21 +19,6 @@ test1 (int *p)
   (void) (nullptr != 1); /* { dg-error "invalid operands" } */
   (void) (1 != nullptr); /* { dg-error "invalid operands" } */
   (void) (1 > nullptr); /* { dg-error "invalid operands" } */
-
-  /* "(nullptr_t)nullptr" has type nullptr_t but isn't an NPC.  */
-  (void) ((nullptr_t)nullptr == p); /* { dg-error "invalid operands" } */
-  (void) ((nullptr_t)nullptr != p); /* { dg-error "invalid operands" } */
-  (void) (p == (nullptr_t)nullptr); /* { dg-error "invalid operands" } */
-  (void) (p != (nullptr_t)nullptr); /* { dg-error "invalid operands" } */
-  (void) (cmp () == p); /* { dg-error "invalid operands" } */
-  (void) (cmp () != p); /* { dg-error "invalid operands" } */
-  (void) (p == cmp ()); /* { dg-error "invalid operands" } */
-  (void) (p != cmp ()); /* { dg-error "invalid operands" } */
-  /* "(void *)nullptr" is not an NPC, either.  */
-  (void) ((void *)nullptr == cmp ()); /* { dg-error "invalid operands" } */
-  (void) ((void *)nullptr != cmp ()); /* { dg-error "invalid operands" } */
-  (void) (cmp () == (void *)nullptr); /* { dg-error "invalid operands" } */
-  (void) (cmp () != (void *)nullptr); /* { dg-error "invalid operands" } */
 }
 
 void
@@ -44,21 +29,24 @@ test2 (void)
   float d = nullptr; /* { dg-error "incompatible types" } */
   char arr[10] = { nullptr }; /* { dg-error "incompatible types" } */
 
-  /* No type other than nullptr_t shall be converted to nullptr_t.  */
-  const nullptr_t n = 0; /* { dg-error "invalid initializer" } */
-  +(nullptr_t) 0; /* { dg-error "conversion from .int. to .nullptr_t." } */
+  /* Unary '+' is not valid for nullptr.  */
+  +nullptr; /* { dg-error "wrong type argument to unary plus" } */
 
-  g (0); /* { dg-error "incompatible type" } */
-
+  g (0.0); /* { dg-error "incompatible type" } */
+  g (1); /* { dg-error "incompatible type" } */
+  g ((int) (float) 0.0); /* { dg-error "incompatible type" } */
   int i = 42 + nullptr; /* { dg-error "invalid operands" } */
 
   /* The assignment of an object of type nullptr_t with a value of another
-     type, even if the value is a null pointer constant, is a constraint
+     type, other than a null pointer constant, is a constraint
      violation.  */
   nullptr_t m;
-  m = 0; /* { dg-error "incompatible types" } */
+  m = 1; /* { dg-error "incompatible types" } */
+  m = 0.0; /* { dg-error "incompatible types" } */
   (void) m;
-  nullptr_t o = 0; /* { dg-error "invalid initializer" } */
+  nullptr_t o = 1; /* { dg-error "incompatible types" } */
+  (nullptr_t) 0.0; /* { dg-error "conversion" } */
+  (nullptr_t) (int) (float) 0.0; /* { dg-error "conversion" } */
 
   switch (nullptr); /* { dg-error "switch quantity not an integer" } */
 }

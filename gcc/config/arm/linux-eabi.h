@@ -1,5 +1,5 @@
 /* Configuration file for ARM GNU/Linux EABI targets.
-   Copyright (C) 2004-2022 Free Software Foundation, Inc.
+   Copyright (C) 2004-2023 Free Software Foundation, Inc.
    Contributed by CodeSourcery, LLC   
 
    This file is part of GCC.
@@ -29,9 +29,6 @@
       ANDROID_TARGET_OS_CPP_BUILTINS();		\
     }						\
   while (false)
-
-#define EXTRA_TARGET_D_OS_VERSIONS()		\
-  ANDROID_TARGET_D_OS_VERSIONS();
 
 /* We default to a soft-float ABI so that binaries can run on all
    target hardware.  If you override this to use the hard-float ABI then
@@ -124,7 +121,7 @@
 
 #undef	ENDFILE_SPEC
 #define ENDFILE_SPEC \
-  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s} "	\
+  "%{Ofast|ffast-math|funsafe-math-optimizations:%{!shared:crtfastmath.o%s}} "	\
   LINUX_OR_ANDROID_LD (GNU_USER_TARGET_ENDFILE_SPEC, ANDROID_ENDFILE_SPEC)
 
 /* Use the default LIBGCC_SPEC, not the version in linux-elf.h, as we

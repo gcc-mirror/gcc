@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.cc for HPPA.
-   Copyright (C) 1992-2022 Free Software Foundation, Inc.
+   Copyright (C) 1992-2023 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.cc
 
 This file is part of GCC.
@@ -566,6 +566,9 @@ pa_option_override (void)
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }
+
+  /* Disable -fstack-protector to suppress warning.  */
+  flag_stack_protect = 0;
 
   /* We can't guarantee that .dword is available for 32-bit targets.  */
   if (UNITS_PER_WORD == 4)
@@ -5937,8 +5940,8 @@ pa_init_libfuncs (void)
 			"_U_Qfcnvxf_udbl_to_quad");
     }
 
-  if (TARGET_SYNC_LIBCALL)
-    init_sync_libfuncs (8);
+  if (TARGET_SYNC_LIBCALLS)
+    init_sync_libfuncs (MAX_SYNC_LIBFUNC_SIZE);
 }
 
 /* HP's millicode routines mean something special to the assembler.

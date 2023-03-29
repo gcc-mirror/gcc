@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Renesas H8/300 (generic)
-   Copyright (C) 1992-2022 Free Software Foundation, Inc.
+   Copyright (C) 1992-2023 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -282,6 +282,8 @@ extern const char * const *h8_reg_names;
 
 enum reg_class {
   NO_REGS, COUNTER_REGS, SOURCE_REGS, DESTINATION_REGS,
+  NOT_R0_REGS, NOT_R1_REGS, NOT_R2_REGS, NOT_R3_REGS,
+  NOT_R4_REGS, NOT_R5_REGS, NOT_R6_REGS, NOT_SP_REGS,
   GENERAL_REGS, MAC_REGS, ALL_REGS, LIM_REG_CLASSES
 };
 
@@ -291,6 +293,8 @@ enum reg_class {
 
 #define REG_CLASS_NAMES \
 { "NO_REGS", "COUNTER_REGS", "SOURCE_REGS", "DESTINATION_REGS", \
+  "NOT_R0_REGS", "NOT_R1_REGS", "NOT_R2_REGS", "NOT_R3_REGS", \
+  "NOT_R4_REGS", "NOT_R5_REGS", "NOT_R6_REGS", "NOT_SP_REGS", \
   "GENERAL_REGS", "MAC_REGS", "ALL_REGS", "LIM_REGS" }
 
 /* Define which registers fit in which classes.
@@ -302,6 +306,14 @@ enum reg_class {
    {0x010},		/* COUNTER_REGS */	\
    {0x020},		/* SOURCE_REGS */	\
    {0x040},		/* DESTINATION_REGS */	\
+   {0x0fe},		/* NOT_R0_REGS */	\
+   {0x0fd},		/* NOT_R1_REGS */	\
+   {0x0fb},		/* NOT_R2_REGS */	\
+   {0x0f7},		/* NOT_R3_REGS */	\
+   {0x0ef},		/* NOT_R4_REGS */	\
+   {0x0df},		/* NOT_R5_REGS */	\
+   {0x0bf},		/* NOT_R6_REGS */	\
+   {0x07f},		/* NOT_SP_REGS */	\
    {0xeff},		/* GENERAL_REGS */	\
    {0x100},		/* MAC_REGS */		\
    {0xfff},		/* ALL_REGS	*/	\

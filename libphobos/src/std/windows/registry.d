@@ -1856,7 +1856,7 @@ private:
         if (i++ > 0)
             break;
 
-        import core.memory;
+        import core.memory : GC;
         GC.collect();
     }
     assert(i == 2);

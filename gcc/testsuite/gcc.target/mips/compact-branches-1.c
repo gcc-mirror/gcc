@@ -1,4 +1,4 @@
-/* { dg-options "-mcompact-branches=always -mno-micromips" } */
+/* { dg-options "-mcompact-branches=always -mno-micromips isa_rev>=6" } */
 int glob;
 
 void

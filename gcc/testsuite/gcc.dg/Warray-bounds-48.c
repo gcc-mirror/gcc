@@ -4,6 +4,11 @@
    { dg-options "-O2 -Wall" }
    { dg-require-effective-target alloca } */
 
+/* pr102706: disabled warnings because the now-disabled conditions for the
+   bogus warnings to come up do not take cost analysis into account, and often
+   come up wrong.  */
+/* { dg-additional-options "-Wno-stringop-overflow" } */
+
 typedef __INT16_TYPE__ int16_t;
 typedef __INT32_TYPE__ int32_t;
 
@@ -30,7 +35,8 @@ static void nowarn_ax_extern (struct AX *p)
 
 static void warn_ax_local_buf (struct AX *p)
 {
-  p->ax[0] = 4; p->ax[1] = 5;  // { dg-warning "\\\[-Wstringop-overflow" "pr102706" { target { vect_slp_v2hi_store_align &&  { ! vect_slp_v4hi_store_unalign } } } }
+  p->ax[0] = 4; p->ax[1] = 5;  // { dg-bogus "\\\[-Wstringop-overflow" "pr102706" }
+                               //   { xfail { vect_slp_v2hi_store_align &&  { ! vect_slp_v4hi_store_unalign } } }
 
   p->ax[2] = 6;     // { dg-warning "\\\[-Warray-bounds" }
   p->ax[3] = 7;     // { dg-warning "\\\[-Warray-bounds" }
@@ -130,7 +136,8 @@ static void warn_a0_extern (struct A0 *p)
 
 static void warn_a0_local_buf (struct A0 *p)
 {
-  p->a0[0] = 4; p->a0[1] = 5;  // { dg-warning "\\\[-Wstringop-overflow" "pr102706" { target { vect_slp_v2hi_store_align && { ! vect_slp_v4hi_store_unalign } } } }
+  p->a0[0] = 4; p->a0[1] = 5;  // { dg-bogus "\\\[-Wstringop-overflow" "pr102706" }
+                               //   { xfail { vect_slp_v2hi_store_align && { ! vect_slp_v4hi_store_unalign } } }
 
   p->a0[2] = 6;     // { dg-warning "\\\[-Warray-bounds" }
   p->a0[3] = 7;     // { dg-warning "\\\[-Warray-bounds" }

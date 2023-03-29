@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2014-2022, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2023, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2225,7 +2225,7 @@ package body Exp_Unst is
 
             if No (UPJ.Ref)
               or else not Is_Entity_Name (UPJ.Ref)
-              or else not Present (Entity (UPJ.Ref))
+              or else No (Entity (UPJ.Ref))
               or else not Opt.Generate_C_Code
             then
                goto Continue;

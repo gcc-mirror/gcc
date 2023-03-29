@@ -1,5 +1,5 @@
 /* String pool for GCC.
-   Copyright (C) 2000-2022 Free Software Foundation, Inc.
+   Copyright (C) 2000-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -194,6 +194,13 @@ gt_pch_n_S (const void *x)
 {
   gt_pch_note_object (CONST_CAST (void *, x), CONST_CAST (void *, x),
 		      &gt_pch_p_S);
+}
+
+void
+gt_pch_n_S2 (const void *x, size_t string_len)
+{
+  gt_pch_note_object (CONST_CAST (void *, x), CONST_CAST (void *, x),
+		      &gt_pch_p_S, string_len);
 }
 
 

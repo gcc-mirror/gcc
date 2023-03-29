@@ -1,5 +1,5 @@
 /* Definitions of Tensilica's Xtensa target machine for GNU compiler.
-   Copyright (C) 2001-2022 Free Software Foundation, Inc.
+   Copyright (C) 2001-2023 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -19,27 +19,12 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* Get Xtensa configuration settings */
-#include "xtensa-config.h"
+#include "xtensa-dynconfig.h"
 
 /* External variables defined in xtensa.cc.  */
 
 /* Macros used in the machine description to select various Xtensa
    configuration options.  */
-#ifndef XCHAL_HAVE_MUL32_HIGH
-#define XCHAL_HAVE_MUL32_HIGH 0
-#endif
-#ifndef XCHAL_HAVE_RELEASE_SYNC
-#define XCHAL_HAVE_RELEASE_SYNC 0
-#endif
-#ifndef XCHAL_HAVE_S32C1I
-#define XCHAL_HAVE_S32C1I 0
-#endif
-#ifndef XCHAL_HAVE_THREADPTR
-#define XCHAL_HAVE_THREADPTR 0
-#endif
-#ifndef XCHAL_HAVE_FP_POSTINC
-#define XCHAL_HAVE_FP_POSTINC 0
-#endif
 #define TARGET_BIG_ENDIAN	XCHAL_HAVE_BE
 #define TARGET_DENSITY		XCHAL_HAVE_DENSITY
 #define TARGET_MAC16		XCHAL_HAVE_MAC16
@@ -50,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_NSA		XCHAL_HAVE_NSA
 #define TARGET_MINMAX		XCHAL_HAVE_MINMAX
 #define TARGET_SEXT		XCHAL_HAVE_SEXT
+#define TARGET_CLAMPS		XCHAL_HAVE_CLAMPS
 #define TARGET_BOOLEANS		XCHAL_HAVE_BOOLEANS
 #define TARGET_HARD_FLOAT	XCHAL_HAVE_FP
 #define TARGET_HARD_FLOAT_DIV	XCHAL_HAVE_FP_DIV
@@ -63,7 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #define TARGET_S32C1I		XCHAL_HAVE_S32C1I
 #define TARGET_ABSOLUTE_LITERALS XSHAL_USE_ABSOLUTE_LITERALS
 #define TARGET_THREADPTR	XCHAL_HAVE_THREADPTR
-#define TARGET_LOOPS	        XCHAL_HAVE_LOOPS
+#define TARGET_LOOPS		XCHAL_HAVE_LOOPS
 #define TARGET_WINDOWED_ABI_DEFAULT (XSHAL_ABI == XTHAL_ABI_WINDOWED)
 #define TARGET_WINDOWED_ABI	xtensa_windowed_abi
 #define TARGET_DEBUG		XCHAL_HAVE_DEBUG
@@ -76,7 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 /* Define this if the target has no hardware divide instructions.  */
-#if !TARGET_DIV32
+#if !__XCHAL_HAVE_DIV32
 #define TARGET_HAS_NO_HW_DIVIDE
 #endif
 
@@ -84,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Target CPU builtins.  */
 #define TARGET_CPU_CPP_BUILTINS()					\
   do {									\
+    const char **builtin;						\
     builtin_assert ("cpu=xtensa");					\
     builtin_assert ("machine=xtensa");					\
     builtin_define ("__xtensa__");					\
@@ -93,6 +80,8 @@ along with GCC; see the file COPYING3.  If not see
     builtin_define (TARGET_BIG_ENDIAN ? "__XTENSA_EB__" : "__XTENSA_EL__"); \
     if (!TARGET_HARD_FLOAT)						\
       builtin_define ("__XTENSA_SOFT_FLOAT__");				\
+    for (builtin = xtensa_get_config_strings (); *builtin; ++builtin)	\
+      builtin_define (*builtin);					\
   } while (0)
 
 #define CPP_SPEC " %(subtarget_cpp_spec) "
@@ -229,7 +218,7 @@ along with GCC; see the file COPYING3.  If not see
 }
 
 /* 1 for registers not available across function calls.
-   These must include the FIXED_REGISTERS and also any
+   These need not include the FIXED_REGISTERS but must any
    registers that can be used without being saved.
    The latter must include the registers where values are returned
    and the register where structure-value addresses are passed.
@@ -242,52 +231,29 @@ along with GCC; see the file COPYING3.  If not see
 
    Proper values are computed in TARGET_CONDITIONAL_REGISTER_USAGE.  */
 
-#define CALL_USED_REGISTERS						\
+#define CALL_REALLY_USED_REGISTERS					\
 {									\
-  1, 1, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 2, 2, 2, 2,			\
-  1, 1, 1,								\
+  1, 0, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 2, 2, 2, 2,			\
+  0, 0, 1,								\
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,			\
   1,									\
 }
 
-/* For non-leaf procedures on Xtensa processors, the allocation order
-   is as specified below by REG_ALLOC_ORDER.  For leaf procedures, we
-   want to use the lowest numbered registers first to minimize
-   register window overflows.  However, local-alloc is not smart
-   enough to consider conflicts with incoming arguments.  If an
-   incoming argument in a2 is live throughout the function and
-   local-alloc decides to use a2, then the incoming argument must
-   either be spilled or copied to another register.  To get around
-   this, we define ADJUST_REG_ALLOC_ORDER to redefine
-   reg_alloc_order for leaf functions such that lowest numbered
-   registers are used first with the exception that the incoming
-   argument registers are not used until after other register choices
-   have been exhausted.  */
+/* For the windowed register ABI on Xtensa processors, the allocation
+   order is as specified below by REG_ALLOC_ORDER.
+   For the call0 ABI, on the other hand, ADJUST_REG_ALLOC_ORDER hook
+   will be called once at the start of IRA, replacing it with the
+   appropriate one.  */
 
-#define REG_ALLOC_ORDER \
-{  8,  9, 10, 11, 12, 13, 14, 15,  7,  6,  5,  4,  3,  2, \
-  18, \
-  19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, \
-   0,  1, 16, 17, \
-  35, \
+#define REG_ALLOC_ORDER							\
+{									\
+   8,  9, 10, 11, 12, 13, 14, 15,  7,  6,  5,  4,  3,  2,		\
+  18,									\
+  19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,	\
+   0,  1, 16, 17,							\
+  35,									\
 }
-
-#define ADJUST_REG_ALLOC_ORDER order_regs_for_local_alloc ()
-
-/* For Xtensa, the only point of this is to prevent GCC from otherwise
-   giving preference to call-used registers.  To minimize window
-   overflows for the AR registers, we want to give preference to the
-   lower-numbered AR registers.  For other register files, which are
-   not windowed, we still prefer call-used registers, if there are any.  */
-extern const char xtensa_leaf_regs[FIRST_PSEUDO_REGISTER];
-#define LEAF_REGISTERS xtensa_leaf_regs
-
-/* For Xtensa, no remapping is necessary, but this macro must be
-   defined if LEAF_REGISTERS is defined.  */
-#define LEAF_REG_REMAP(REGNO) ((int) (REGNO))
-
-/* This must be declared if LEAF_REGISTERS is set.  */
-extern int leaf_function;
+#define ADJUST_REG_ALLOC_ORDER xtensa_adjust_reg_alloc_order ()
 
 /* Internal macros to classify a register number.  */
 
@@ -298,7 +264,7 @@ extern int leaf_function;
 
 /* Coprocessor registers */
 #define BR_REG_FIRST 18
-#define BR_REG_LAST  18 
+#define BR_REG_LAST  18
 #define BR_REG_NUM   (BR_REG_LAST - BR_REG_FIRST + 1)
 
 /* 16 floating-point registers */
@@ -486,9 +452,9 @@ enum reg_class
 
 /* Symbolic macros for the registers used to return integer, floating
    point, and values of coprocessor and user-defined modes.  */
-#define GP_RETURN (GP_REG_FIRST + 2 + WINDOW_SIZE)
+#define GP_RETURN_FIRST (GP_REG_FIRST + 2 + WINDOW_SIZE)
+#define GP_RETURN_LAST  (GP_RETURN_FIRST + 3)
 #define GP_OUTGOING_RETURN (GP_REG_FIRST + 2)
-#define GP_RETURN_REG_COUNT 4
 
 /* Symbolic macros for the first/last argument registers.  */
 #define GP_ARG_FIRST (GP_REG_FIRST + 2)
@@ -624,18 +590,9 @@ typedef struct xtensa_args
 /* C expressions that are nonzero if X (assumed to be a `reg' RTX) is
    valid for use as a base or index register.  */
 
-#ifdef REG_OK_STRICT
-#define REG_OK_STRICT_FLAG 1
-#else
-#define REG_OK_STRICT_FLAG 0
-#endif
-
 #define BASE_REG_P(X, STRICT)						\
-  ((!(STRICT) && REGNO (X) >= FIRST_PSEUDO_REGISTER)			\
+  ((!(STRICT) && ! HARD_REGISTER_P (X))					\
    || REGNO_OK_FOR_BASE_P (REGNO (X)))
-
-#define REG_OK_FOR_INDEX_P(X) 0
-#define REG_OK_FOR_BASE_P(X) BASE_REG_P (X, REG_OK_STRICT_FLAG)
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 #define MAX_REGS_PER_ADDRESS 1
@@ -754,7 +711,7 @@ typedef struct xtensa_args
 
 
 /* Define output to appear before the constant pool.  */
-#define ASM_OUTPUT_POOL_PROLOGUE(FILE, FUNNAME, FUNDECL, SIZE)          \
+#define ASM_OUTPUT_POOL_PROLOGUE(FILE, FUNNAME, FUNDECL, SIZE)		\
   do {									\
     if ((SIZE) > 0 || !TARGET_WINDOWED_ABI)				\
       {									\

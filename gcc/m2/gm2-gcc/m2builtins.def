@@ -1,0 +1,121 @@
+(* m2builtins.def definition module for m2builtins.cc.
+
+Copyright (C) 2003-2023 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE FOR "C" m2builtins ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+FROM m2tree IMPORT Tree ;
+FROM m2linemap IMPORT location_t ;
+
+EXPORT QUALIFIED GetBuiltinConst, GetBuiltinConstType,
+                 GetBuiltinTypeInfoType, GetBuiltinTypeInfo,
+                 BuiltinExists, BuildBuiltinTree,
+                 BuiltInMemCopy, BuiltInAlloca,
+		 BuiltInIsfinite ;
+
+
+(*
+   GetBuiltinConst - returns the gcc tree of a built in constant, name.
+                     NIL is returned if the constant is unknown.
+*)
+
+PROCEDURE GetBuiltinConst (name: ADDRESS) : Tree ;
+
+
+(*
+   GetBuiltinConstType - returns the type of a builtin constant, name.
+
+                         0 = unknown constant name
+                         1 = integer
+                         2 = real
+*)
+
+PROCEDURE GetBuiltinConstType (name: ADDRESS) : CARDINAL ;
+
+
+
+(*
+   GetBuiltinTypeInfoType - returns value:
+                            0    is ident is unknown.
+                            1    if ident is IEC559, LIA1, ISO, IEEE, rounds, underflow,
+                                             exception, extend.
+                            2    if ident is radix, places, exponentmin, exponentmax,
+                                             noofmodes.
+                            3    if ident is large, small.
+*)
+
+PROCEDURE GetBuiltinTypeInfoType (ident: ADDRESS) : CARDINAL ;
+
+
+(*
+   GetBuiltinTypeInfo - returns a Tree value:
+
+                        NULL_TREE        if ident is unknown.
+                        boolean Tree     if ident is IEC559, LIA1, ISO, IEEE, rounds, underflow,
+                                         exception, extend.
+                        ZType Tree       if ident is radix, places, exponentmin, exponentmax,
+                                         noofmodes.
+                        RType Tree       if ident is large, small.
+*)
+
+PROCEDURE GetBuiltinTypeInfo (location: location_t; type: Tree; ident: ADDRESS) : Tree ;
+
+
+(*
+   BuiltinExists - returns TRUE if the builtin function, name, exists
+                   for this target architecture.
+*)
+
+PROCEDURE BuiltinExists (name: ADDRESS) : BOOLEAN ;
+
+
+(*
+   BuildBuiltinTree - returns a Tree containing the builtin function, name.
+*)
+
+PROCEDURE BuildBuiltinTree (location: location_t; name: ADDRESS) : Tree ;
+
+
+(*
+   BuiltinMemCopy and BuiltinAlloca - are called by M2GenGCC to implement open arrays.
+*)
+
+PROCEDURE BuiltInMemCopy (location: location_t; dest, src, n: Tree) : Tree ;
+
+
+(*
+   BuiltInAlloca - given an expression, n, allocate, n, bytes on the stack for the life
+                   of the current function.
+*)
+
+PROCEDURE BuiltInAlloca (location: location_t; n: Tree) : Tree ;
+
+
+(*
+   BuiltInIsfinite - given an expression, e, return an integer Tree of 1 if the
+                     value is finite.  Return an integer Tree 0 if the value is
+                     not finite.
+*)
+
+PROCEDURE BuiltInIsfinite (location: location_t; e: Tree) : Tree ;
+
+
+END m2builtins.

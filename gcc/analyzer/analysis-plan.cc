@@ -1,5 +1,5 @@
 /* A class to encapsulate decisions about how the analysis should happen.
-   Copyright (C) 2019-2022 Free Software Foundation, Inc.
+   Copyright (C) 2019-2023 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_MEMORY
 #include "system.h"
 #include "coretypes.h"
 #include "tree.h"
@@ -27,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "ipa-utils.h"
 #include "function.h"
-#include "json.h"
 #include "analyzer/analyzer.h"
 #include "diagnostic-core.h"
 #include "analyzer/analyzer-logging.h"
@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ordered-hash-map.h"
 #include "options.h"
 #include "cgraph.h"
-#include "function.h"
 #include "cfg.h"
 #include "basic-block.h"
 #include "gimple.h"

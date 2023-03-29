@@ -271,9 +271,9 @@
       <para>
 	To generate the pretty pictures and hierarchy
 	graphs, the
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.graphviz.org">Graphviz</link> package
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.graphviz.org">Graphviz</link> package
 	will need to be installed. For PDF
-	output, <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.tug.org/applications/pdftex/">
+	output, <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://tug.org/applications/pdftex/">
 	pdflatex</link> is required as well as a number of TeX packages
 	such as <package>texlive-xtab</package> and
 	<package>texlive-tocloft</package>.
@@ -286,7 +286,9 @@
 	formatting system, and will require the expansion of TeX's memory
 	capacity. Specifically, the <literal>pool_size</literal>
 	variable in the configuration file <filename>texmf.cnf</filename> may
-	need to be increased by a minimum factor of two.
+	need to be increased by a minimum factor of two. Alternatively, using
+	<userinput>LATEX_CMD=lualatex</userinput> might allow the docs to be
+	build without running out of memory.
       </para>
     </section>
 
@@ -515,9 +517,12 @@
       </para>
 
       <para>
-	Please use markup tags like @p and @a when referring to things
-	such as the names of function parameters. Use @e for emphasis
-	when necessary. Use @c to refer to other standard names.
+	Markdown can be used for formatting text. Doxygen is configured to
+	support this, and it is a good compromise between readable comments
+	in the C++ source and nice formatting in the generated HTML.
+	Please format the names of function parameters in either code font
+	or italics. Use underscores or @e for emphasis when necessary.
+	Use backticks or @c to refer to other standard names.
 	(Examples of all these abound in the present code.)
       </para>
 
@@ -595,6 +600,7 @@
     <row>
       <entry>HTML</entry>
       <entry>Doxygen</entry>
+      <entry>Markdown</entry>
     </row>
   </thead>
 
@@ -602,41 +608,49 @@
     <row>
       <entry>\</entry>
       <entry>\\</entry>
+      <entry>\\</entry>
     </row>
 
     <row>
       <entry>"</entry>
+      <entry>\"</entry>
       <entry>\"</entry>
     </row>
 
     <row>
       <entry>'</entry>
       <entry>\'</entry>
+      <entry>\'</entry>
     </row>
 
     <row>
       <entry>&lt;i&gt;</entry>
       <entry>@a word</entry>
+      <entry>_word_ or *word*</entry>
     </row>
 
     <row>
       <entry>&lt;b&gt;</entry>
       <entry>@b word</entry>
+      <entry>**word** or __word__</entry>
     </row>
 
     <row>
       <entry>&lt;code&gt;</entry>
       <entry>@c word</entry>
+      <entry>`word`</entry>
     </row>
 
     <row>
       <entry>&lt;em&gt;</entry>
       <entry>@a word</entry>
+      <entry>_word_ or *word*</entry>
     </row>
 
     <row>
       <entry>&lt;em&gt;</entry>
       <entry>&lt;em&gt;two words or more&lt;/em&gt;</entry>
+      <entry>_two words or more_</entry>
     </row>
   </tbody>
 
@@ -719,7 +733,7 @@
 </table>
 
       <para>
-	Editing the DocBook sources requires an XML editor. Many
+	An XML editor is recommended for editing the DocBook sources. Many
 	exist: some notable options
 	include <command>emacs</command>, <application>Kate</application>,
 	or <application>Conglomerate</application>.
@@ -765,7 +779,7 @@
 
       <para>
 	For PDF output, something that transforms valid Docbook XML to PDF is
-	required. Possible solutions include <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://dblatex.sourceforge.net">dblatex</link>,
+	required. Possible solutions include <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://dblatex.sourceforge.net">dblatex</link>,
 	<command>xmlto</command>, or <command>prince</command>. Of
 	these, <command>dblatex</command> is the default.
 	Please consult the <email>libstdc++@gcc.gnu.org</email> list when
@@ -775,7 +789,7 @@
 
       <para>
 	For Texinfo output, something that transforms valid Docbook
-	XML to Texinfo is required. The default choice is <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://docbook2x.sourceforge.net/">docbook2X</link>.
+	XML to Texinfo is required. The default choice is <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://docbook2x.sourceforge.net/">docbook2X</link>.
       </para>
 
       <para>
@@ -815,8 +829,8 @@
       </para>
 
       <para>
-	The <screen>doc-html-docbook-regenerate</screen> target will generate
-	the HTML files and copy them back to the libstdc++ source tree.
+	The <userinput>doc-html-docbook-regenerate</userinput> target will
+	generate the HTML files and copy them back to the libstdc++ source tree.
 	This can be used to update the HTML files that are checked in to
 	version control.
       </para>

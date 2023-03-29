@@ -1,4 +1,4 @@
-! Runs the the target region asynchrolously and checks for it
+! Run the target region asynchronously and check it
 !
 ! Note that  map(alloc: work(:, i)) + nowait  should be safe
 ! given that a nondescriptor array is used. However, it still

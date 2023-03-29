@@ -209,6 +209,10 @@ extern int errno;
 extern void abort (void);
 #endif
 
+#if defined (HAVE_DECL_MEMMEM) && !HAVE_DECL_MEMMEM
+extern void *memmem (const void *, size_t, const void *, size_t);
+#endif
+
 #if HAVE_SYS_STAT_H
 # include <sys/stat.h>
 #endif

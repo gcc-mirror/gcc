@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2002-2022 Free Software Foundation, Inc.
+   Copyright (C) 2002-2023 Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
 This file is part of GCC.
@@ -34,9 +34,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-color.h"
 #include "version.h"
 #include "selftest.h"
+#include "file-prefix-map.h"
 
 /* In this file all option sets are explicit.  */
 #undef OPTION_SET_P
+
+/* Set by -fcanon-prefix-map.  */
+bool flag_canon_prefix_map;
 
 static void set_Wstrict_aliasing (struct gcc_options *opts, int onoff);
 
@@ -658,6 +662,8 @@ static const struct default_options default_options_table[] =
       REORDER_BLOCKS_ALGORITHM_STC },
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_ftree_loop_vectorize, NULL, 1 },
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_ftree_slp_vectorize, NULL, 1 },
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_fopenmp_target_simd_clone_, NULL,
+      OMP_TARGET_SIMD_CLONE_NOHOST },
 #ifdef INSN_SCHEDULING
   /* Only run the pre-regalloc scheduling pass if optimizing for speed.  */
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_fschedule_insns, NULL, 1 },
@@ -1288,8 +1294,9 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	   "%<-fsanitize=kernel-address%>");
 
   /* Currently live patching is not support for LTO.  */
-  if (opts->x_flag_live_patching && opts->x_flag_lto)
-    sorry ("live patching is not supported with LTO");
+  if (opts->x_flag_live_patching == LIVE_PATCHING_INLINE_ONLY_STATIC && opts->x_flag_lto)
+    sorry ("live patching (with %qs) is not supported with LTO",
+	   "inline-only-static");
 
   /* Currently vtable verification is not supported for LTO */
   if (opts->x_flag_vtable_verify && opts->x_flag_lto)
@@ -1408,6 +1415,14 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       opts->x_profile_flag = 0;
     }
 
+  if (opts->x_warn_strict_flex_arrays)
+    if (opts->x_flag_strict_flex_arrays == 0)
+      {
+	opts->x_warn_strict_flex_arrays = 0;
+	warning_at (UNKNOWN_LOCATION, 0,
+		    "%<-Wstrict-flex-arrays%> is ignored when"
+		    " %<-fstrict-flex-arrays%> is not present");
+      }
 
   diagnose_options (opts, opts_set, loc);
 }
@@ -1801,7 +1816,7 @@ print_filtered_help (unsigned int include_flags,
 	  help = new_help;
 	}
 
-      if (option->range_max != -1)
+      if (option->range_max != -1 && tab == NULL)
 	{
 	  char b[128];
 	  snprintf (b, sizeof (b), "<%d,%d>", option->range_min,
@@ -2235,7 +2250,14 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 		  flags |= sanitizer_opts[i].flag;
 	      }
 	    else
-	      flags &= ~sanitizer_opts[i].flag;
+	      {
+		flags &= ~sanitizer_opts[i].flag;
+		/* Don't always clear SANITIZE_ADDRESS if it was previously
+		   set: -fsanitize=address -fno-sanitize=kernel-address should
+		   leave SANITIZE_ADDRESS set.  */
+		if (flags & (SANITIZE_KERNEL_ADDRESS | SANITIZE_USER_ADDRESS))
+		  flags |= SANITIZE_ADDRESS;
+	      }
 	    found = true;
 	    break;
 	  }
@@ -2801,6 +2823,10 @@ common_handle_option (struct gcc_options *opts,
       /* Deferred.  */
       break;
 
+    case OPT_fcanon_prefix_map:
+      flag_canon_prefix_map = value;
+      break;
+
     case OPT_fcallgraph_info:
       opts->x_flag_callgraph_info = CALLGRAPH_INFO_NAKED;
       break;
@@ -2852,9 +2878,13 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fdiagnostics_format_:
-      diagnostic_output_format_init (dc, opts->x_dump_base_name,
-				     (enum diagnostics_output_format)value);
-      break;
+	{
+	  const char *basename = (opts->x_dump_base_name ? opts->x_dump_base_name
+				  : opts->x_main_input_basename);
+	  diagnostic_output_format_init (dc, basename,
+					 (enum diagnostics_output_format)value);
+	  break;
+	}
 
     case OPT_fdiagnostics_parseable_fixits:
       dc->extra_output_kind = (value
@@ -3245,6 +3275,10 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_freport_bug:
       dc->report_bug = value;
+      break;
+
+    case OPT_fmultiflags:
+      gcc_checking_assert (lang_mask == CL_DRIVER);
       break;
 
     default:
@@ -3703,6 +3737,7 @@ gen_command_line_string (cl_decoded_option *options,
       case OPT_fmacro_prefix_map_:
       case OPT_ffile_prefix_map_:
       case OPT_fprofile_prefix_map_:
+      case OPT_fcanon_prefix_map:
       case OPT_fcompare_debug:
       case OPT_fchecking:
       case OPT_fchecking_:

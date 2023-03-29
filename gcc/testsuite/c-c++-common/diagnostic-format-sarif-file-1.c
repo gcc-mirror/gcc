@@ -4,6 +4,7 @@
 #warning message
 
 /* Verify that some JSON was written to a file with the expected name.  */
+/* { dg-final { verify-sarif-file } } */
 
 /* We expect various properties.
    The indentation here reflects the expected hierarchy, though these tests
@@ -24,6 +25,11 @@
          { dg-final { scan-sarif-file "\"name\": \"GNU C" } }
          { dg-final { scan-sarif-file "\"fullName\": \"GNU C" } }
          { dg-final { scan-sarif-file "\"informationUri\": \"" } }
+
+     { dg-final { scan-sarif-file "\"invocations\": \\\[" } }
+       { dg-final { scan-sarif-file "\"toolExecutionNotifications\": \\\[\\\]" } }
+       { dg-final { scan-sarif-file "\"executionSuccessful\": true" } }
+
      { dg-final { scan-sarif-file "\"results\": \\\[" } }
        { dg-final { scan-sarif-file "\"level\": \"warning\"" } }
        { dg-final { scan-sarif-file "\"ruleId\": \"-Wcpp\"" } }

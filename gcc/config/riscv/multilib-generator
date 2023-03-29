@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # RISC-V multilib list generator.
-# Copyright (C) 2011-2022 Free Software Foundation, Inc.
+# Copyright (C) 2011-2023 Free Software Foundation, Inc.
 # Contributed by Andrew Waterman (andrew@sifive.com).
 # 
 # This file is part of GCC.
@@ -175,7 +175,7 @@ for cmodel in cmodels:
     # Drop duplicated entry.
     alts = unique(alts)
 
-    for alt in alts[1:]:
+    for alt in alts:
       if alt == arch:
         continue
       arches[alt] = 1

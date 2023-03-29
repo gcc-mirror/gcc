@@ -111,7 +111,7 @@ private struct DRange
         static assert(is(ElementType!DRange == BaseNode*));
     }
 
-nothrow @safe pure:
+nothrow @safe @nogc pure:
     private BaseNode* _first;
     private BaseNode* _last;
 

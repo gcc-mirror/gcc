@@ -30,7 +30,6 @@ else version (CRuntime_UClibc)
     version = ReturnStrerrorR;
 
 extern (C):
-@system:
 nothrow:
 @nogc:
 

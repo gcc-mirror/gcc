@@ -8,8 +8,7 @@ ands_si_test1 (int a, int b, int c)
 {
   int d = a & b;
 
-  /* { dg-final { scan-assembler-not "ands\tw\[0-9\]+, w\[0-9\]+, w\[0-9\]+" } } */
-  /* { dg-final { scan-assembler-times "and\tw\[0-9\]+, w\[0-9\]+, w\[0-9\]+" 2 } } */
+  /* { dg-final { scan-assembler "ands\tw\[0-9\]+, w\[0-9\]+, w\[0-9\]+" } } */
   if (d <= 0)
     return a + c;
   else
@@ -21,12 +20,11 @@ ands_si_test2 (int a, int b, int c)
 {
   int d = a & 0x99999999;
 
-  /* { dg-final { scan-assembler-not "ands\tw\[0-9\]+, w\[0-9\]+, -1717986919" } } */
-  /* { dg-final { scan-assembler "and\tw\[0-9\]+, w\[0-9\]+, -1717986919" } } */
-  if (d <= 0)
-    return a + c;
-  else
+  /* { dg-final { scan-assembler "ands\tw\[0-9\]+, w\[0-9\]+, -1717986919" } } */
+  if (d > 0)
     return b + d + c;
+  else
+    return a + c;
 }
 
 int
@@ -34,8 +32,7 @@ ands_si_test3 (int a, int b, int c)
 {
   int d = a & (b << 3);
 
-  /* { dg-final { scan-assembler-not "ands\tw\[0-9\]+, w\[0-9\]+, w\[0-9\]+, lsl 3" } } */
-  /* { dg-final { scan-assembler "and\tw\[0-9\]+, w\[0-9\]+, w\[0-9\]+, lsl 3" } } */
+  /* { dg-final { scan-assembler "ands\tw\[0-9\]+, w\[0-9\]+, w\[0-9\]+, lsl 3" } } */
   if (d <= 0)
     return a + c;
   else
@@ -49,8 +46,7 @@ ands_di_test1 (s64 a, s64 b, s64 c)
 {
   s64 d = a & b;
 
-  /* { dg-final { scan-assembler-not "ands\tx\[0-9\]+, x\[0-9\]+, x\[0-9\]+" } } */
-  /* { dg-final { scan-assembler-times "and\tx\[0-9\]+, x\[0-9\]+, x\[0-9\]+" 2 } } */
+  /* { dg-final { scan-assembler "ands\tx\[0-9\]+, x\[0-9\]+, x\[0-9\]+" } } */
   if (d <= 0)
     return a + c;
   else
@@ -62,12 +58,11 @@ ands_di_test2 (s64 a, s64 b, s64 c)
 {
   s64 d = a & 0xaaaaaaaaaaaaaaaall;
 
-  /* { dg-final { scan-assembler-not "ands\tx\[0-9\]+, x\[0-9\]+, -6148914691236517206" } } */
-  /* { dg-final { scan-assembler "and\tx\[0-9\]+, x\[0-9\]+, -6148914691236517206" } } */
-  if (d <= 0)
-    return a + c;
-  else
+  /* { dg-final { scan-assembler "ands\tx\[0-9\]+, x\[0-9\]+, -6148914691236517206" } } */
+  if (d > 0)
     return b + d + c;
+  else
+    return a + c;
 }
 
 s64
@@ -75,8 +70,7 @@ ands_di_test3 (s64 a, s64 b, s64 c)
 {
   s64 d = a & (b << 3);
 
-  /* { dg-final { scan-assembler-not "ands\tx\[0-9\]+, x\[0-9\]+, x\[0-9\]+, lsl 3" } } */
-  /* { dg-final { scan-assembler "and\tx\[0-9\]+, x\[0-9\]+, x\[0-9\]+, lsl 3" } } */
+  /* { dg-final { scan-assembler "ands\tx\[0-9\]+, x\[0-9\]+, x\[0-9\]+, lsl 3" } } */
   if (d <= 0)
     return a + c;
   else

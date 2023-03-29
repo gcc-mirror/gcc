@@ -8,8 +8,7 @@ bics_si_test1 (int a, int b, int c)
 {
   int d = a & ~b;
 
-  /* { dg-final { scan-assembler-not "bics\tw\[0-9\]+, w\[0-9\]+, w\[0-9\]+" } } */
-  /* { dg-final { scan-assembler-times "bic\tw\[0-9\]+, w\[0-9\]+, w\[0-9\]+" 2 } } */
+  /* { dg-final { scan-assembler "bics\tw\[0-9\]+, w\[0-9\]+, w\[0-9\]+" } } */
   if (d <= 0)
     return a + c;
   else
@@ -21,12 +20,11 @@ bics_si_test2 (int a, int b, int c)
 {
   int d = a & ~(b << 3);
 
-  /* { dg-final { scan-assembler-not "bics\tw\[0-9\]+, w\[0-9\]+, w\[0-9\]+, lsl 3" } } */
-  /* { dg-final { scan-assembler "bic\tw\[0-9\]+, w\[0-9\]+, w\[0-9\]+, lsl 3" } } */
-  if (d <= 0)
-    return a + c;
-  else
+  /* { dg-final { scan-assembler "bics\tw\[0-9\]+, w\[0-9\]+, w\[0-9\]+, lsl 3" } } */
+  if (d > 0)
     return b + d + c;
+  else
+    return a + c;
 }
 
 typedef long long s64;
@@ -36,8 +34,7 @@ bics_di_test1 (s64 a, s64 b, s64 c)
 {
   s64 d = a & ~b;
 
-  /* { dg-final { scan-assembler-not "bics\tx\[0-9\]+, x\[0-9\]+, x\[0-9\]+" } } */
-  /* { dg-final { scan-assembler-times "bic\tx\[0-9\]+, x\[0-9\]+, x\[0-9\]+" 2 } } */
+  /* { dg-final { scan-assembler "bics\tx\[0-9\]+, x\[0-9\]+, x\[0-9\]+" } } */
   if (d <= 0)
     return a + c;
   else
@@ -49,12 +46,11 @@ bics_di_test2 (s64 a, s64 b, s64 c)
 {
   s64 d = a & ~(b << 3);
 
-  /* { dg-final { scan-assembler-not "bics\tx\[0-9\]+, x\[0-9\]+, x\[0-9\]+, lsl 3" } } */
-  /* { dg-final { scan-assembler "bic\tx\[0-9\]+, x\[0-9\]+, x\[0-9\]+, lsl 3" } } */
-  if (d <= 0)
-    return a + c;
-  else
+  /* { dg-final { scan-assembler "bics\tx\[0-9\]+, x\[0-9\]+, x\[0-9\]+, lsl 3" } } */
+  if (d > 0)
     return b + d + c;
+  else
+    return a + c;
 }
 
 int

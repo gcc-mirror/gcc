@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2022 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2023 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -9,7 +9,7 @@
 The GCC project would like to thank its many contributors.  Without them the
 project would not have been nearly as successful as it has been.  Any omissions
 in this list are accidental.  Feel free to contact
-@email{law@@redhat.com} or @email{gerald@@pfeifer.com} if you have been left
+@email{jlaw@@ventanamicro.com} or @email{gerald@@pfeifer.com} if you have been left
 out or some of your contributions are not listed.  Please keep this list in
 alphabetical order.
 
@@ -633,6 +633,10 @@ and unit testing.
 
 @item
 Bob Manson for his behind the scenes work on dejagnu.
+
+@item
+Jose E. Marchesi for contributing the eBPF backend and his ongoing
+work maintaining it.
 
 @item
 John Marino for contributing the DragonFly BSD port.

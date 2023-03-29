@@ -1,0 +1,67 @@
+/* An overview of the state machine from sm-file.cc.
+   Copyright (C) 2022-2023 Free Software Foundation, Inc.
+   Contributed by David Malcolm <dmalcolm@redhat.com>.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+/* Keep this in-sync with sm-file.cc  */
+
+digraph "file" {
+
+  /* STATES. */
+
+  /* Start state.  */
+  start;
+
+  /* State for a FILE * returned from fopen that hasn't been checked for
+     NULL.
+     It could be an open stream, or could be NULL.  */
+  unchecked;
+
+  /* State for a FILE * that's known to be NULL.  */
+  null;
+
+  /* State for a FILE * that's known to be a non-NULL open stream.  */
+  nonnull;
+
+  /* State for a FILE * that's had fclose called on it.  */
+  closed;
+
+  /* Stop state, for a FILE * we don't want to track any more.  */
+  stop;
+
+  /* TRANSITIONS. */
+
+  /* On "fopen".  */
+  start -> unchecked [label="on 'X = fopen(...);'"];
+
+  /* On "fclose".  */
+  start -> closed [label="on 'close(X);'"];
+  /* TODO: is it safe to call fclose (NULL) ? */
+  unchecked -> closed [label="on 'close(X);'"];
+  null -> closed [label="on 'close(X);'"];
+  nonnull -> closed [label="on 'close(X);'"];
+  closed -> stop [label="on 'close(X);':\nWarn('double fclose')"];
+
+  /* on_condition.  */
+  unchecked -> nonnull [label="on 'X != 0'"];
+  unchecked -> null [label="on 'X == 0'"];
+
+  /* Leaks.  */
+  unchecked -> stop [label="on leak:\nWarn('leak')"];
+  nonnull -> stop [label="on leak:\nWarn('leak')"];
+}

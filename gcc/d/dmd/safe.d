@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/function.html#function-safety, Function Safety)
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/safe.d, _safe.d)
@@ -26,7 +26,7 @@ import dmd.identifier;
 import dmd.mtype;
 import dmd.target;
 import dmd.tokens;
-import dmd.func : setUnsafe;
+import dmd.func : setUnsafe, setUnsafePreview;
 
 /*************************************************************
  * Check for unsafe access in @safe code:
@@ -56,6 +56,14 @@ bool checkUnsafeAccess(Scope* sc, Expression e, bool readonly, bool printmsg)
         auto ad = v.isMember2();
         if (!ad)
             return false;
+
+        import dmd.globals : global;
+        if (v.isSystem())
+        {
+            if (sc.setUnsafePreview(global.params.systemVariables, !printmsg, e.loc,
+                "cannot access `@system` field `%s.%s` in `@safe` code", ad, v))
+                return true;
+        }
 
         // needed to set v.overlapped and v.overlapUnsafe
         if (ad.sizeok != Sizeok.done)

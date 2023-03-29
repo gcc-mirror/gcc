@@ -1,4 +1,4 @@
-// Copyright (C) 2018-2022 Free Software Foundation, Inc.
+// Copyright (C) 2018-2023 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,9 +21,7 @@
 #include <type_traits>
 #include <testsuite_tr1.h>
 
-#ifndef IS_NT_CONVERTIBLE_DEFINED
 using std::is_nothrow_convertible;
-#endif
 
 void test01()
 {

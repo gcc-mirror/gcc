@@ -1,6 +1,6 @@
 ## Makefile for the python subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2009-2022 Free Software Foundation, Inc.
+## Copyright (C) 2009-2023 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -62,5 +62,6 @@ install-data-local: gdb.py
 	$(INSTALL_DATA) gdb.py $(DESTDIR)$(toolexeclibdir)/$$libname-gdb.py ; \
 	if [ -n "$(debug_gdb_py)" ]; then \
 	  sed "/^libdir = /s;'$$;/debug';" gdb.py > debug-gdb.py ; \
+	  $(mkdir_p) $(DESTDIR)$(toolexeclibdir)/debug ; \
 	  $(INSTALL_DATA) debug-gdb.py $(DESTDIR)$(toolexeclibdir)/debug/$$libname-gdb.py ; \
 	fi

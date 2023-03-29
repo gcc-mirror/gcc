@@ -1,5 +1,5 @@
 /* Output colorization.
-   Copyright (C) 2011-2022 Free Software Foundation, Inc.
+   Copyright (C) 2011-2023 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include "diagnostic-url.h"
 
 #ifdef __MINGW32__
+#  define WIN32_LEAN_AND_MEAN
 #  include <windows.h>
 #endif
 

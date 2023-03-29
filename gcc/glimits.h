@@ -1,4 +1,4 @@
-/* Copyright (C) 1991-2022 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -156,6 +156,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # define BOOL_MAX 1
 # undef BOOL_WIDTH
 # define BOOL_WIDTH 1
+
+# define __STDC_VERSION_LIMITS_H__	202311L
 #endif
 
 #endif /* _LIMITS_H___ */

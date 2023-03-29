@@ -1,4 +1,4 @@
-/* Copyright (C) 2013-2022 Free Software Foundation, Inc.
+/* Copyright (C) 2013-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -247,5 +247,9 @@ extern void atomic_flag_clear (volatile atomic_flag *);
 #define atomic_flag_clear(PTR)	__atomic_clear ((PTR), __ATOMIC_SEQ_CST)
 extern void atomic_flag_clear_explicit (volatile atomic_flag *, memory_order);
 #define atomic_flag_clear_explicit(PTR, MO)   __atomic_clear ((PTR), (MO))
+
+#if defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L
+#define __STDC_VERSION_STDATOMIC_H__	202311L
+#endif
 
 #endif  /* _STDATOMIC_H */

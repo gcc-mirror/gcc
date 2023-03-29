@@ -1,0 +1,1067 @@
+@c gm2-internals.texi describes the internals of gm2.
+@c Copyright @copyright{} 2000-2023 Free Software Foundation, Inc.
+@c
+@c This is part of the GM2 manual.
+@c For copying conditions, see the file gcc/doc/include/fdl.texi.
+
+@chapter GNU Modula-2 Internals
+
+This document is a small step in the long journey of documenting the GNU
+Modula-2 compiler and how it integrates with GCC.
+The document is still in it's infancy.
+
+@menu
+* History::                 How GNU Modula-2 came about.
+* Overview::                Overview of the structure of GNU Modula-2.
+* Integrating::             How the front end integrates with gcc.
+* Passes::                  What gets processed during each pass.
+* Run time::                Integration of run time modules with the compiler.
+* Scope rules::             Clarification of some the scope rules.
+* Done list::               Progression of the GNU Modula-2 project.
+* To do list::              Outstanding issues.
+@end menu
+
+@node History, Overview, , Internals
+@section History
+
+This document is out of date and needs to be rewritten.
+
+The Modula-2 compiler sources have come from the m2f compiler which
+runs under GNU/Linux.  The original m2f compiler was written in Modula-2
+and was bootstrapped via a modified version of p2c 1.20.  The m2f
+compiler was a recursive descent which generated quadruples as
+intermediate code. It also used C style calling convention wherever
+possible and utilized a C structure for dynamic arrays.
+
+@node Overview, Integrating, History, Internals
+@section Overview
+
+GNU Modula-2 uses flex and a machine generated recursive descent
+parser. Most of the source code is written in Modula-2 and
+bootstrapping is achieved via a modified version of p2c-1.20.
+The modified p2c-1.20 is contained in the GNU Modula-2 source
+tree as are a number of other tools necessary for bootstrapping.
+
+The changes to p2c include:
+
+@itemize @bullet
+@item
+allowing @code{DEFINITION MODULE FOR "C"}
+@item
+fixes to abstract data types.
+@item
+making p2c understand the 2nd Edition dialect of Modula-2.
+@item
+introducing the @code{UNQUALIFIED} keyword.
+@item
+allowing varargs (@code{...}) inside @code{DEFINITION MODULE FOR "C"} modules.
+@item
+fixing the parser to understand commented @code{FORWARD} prototypes,
+which are ignored by GNU Modula-2.
+@item
+fixes to the @code{CASE} syntax for 2nd Edition Modula-2.
+@item
+fixes to a @code{FOR} loop counting down to zero using a @code{CARDINAL}.
+@item
+introducing an initialization section for each implementation module.
+@item
+various porting improvements and general tidying up so that
+it compiles with the gcc option @code{-Wall}.
+@end itemize
+
+GNU Modula-2 comes with PIM and ISO style libraries. The compiler
+is built using PIM libraries and the source of the compiler
+complies with the PIM dialect together with a few @code{C}
+library calling extensions.
+
+The compiler is a four pass compiler. The first pass tokenizes
+the source code, creates scope and enumeration type symbols.
+All tokens are placed into a dynamic buffer and subsequent passes reread
+tokens and build types, quadruples and resolve hidden types.
+@xref{Passes, , ,}.
+
+GNU Modula-2 uses a technique of double book keeping @footnote{See the
+excellent tutorial by Joachim Nadler translated by Tim Josling}.
+@xref{Back end Access to Symbol Table, , , gcc}.
+The front end builds a complete symbol table and a list of quadruples.
+Each symbol is translated into a @code{gcc} equivalent after which
+each quadruple is translated into a @code{gcc} @code{tree}.
+
+@node Integrating, Passes, Overview, Internals
+@section How the front end integrates with gcc
+
+The M2Base and M2System
+modules contain base types and system types respectively they
+map onto GCC back-end data types.
+
+@node Passes, Run time, Integrating, Internals
+@section Passes
+
+This section describes the general actions of each pass.  The key to
+building up the symbol table correctly is to ensure that the symbols
+are only created in the scope where they were declared.  This may seem
+obvious (and easy) but it is complicated by two issues: firstly GNU
+Modula-2 does not generate @code{.sym} files and so all imported
+definition modules are parsed after the module is parsed; secondly the
+import/export rules might mean that you can see and use a symbol
+before it is declared in a completely different scope.
+
+Here is a brief description of the lists of symbols maintained within
+@code{DefImp} and @code{Module} symbols. It is these lists and actions
+at each pass which manipulate these lists which solve the scoping and
+visability of all symbols.
+
+The @code{DefImp} symbol maintains the: @code{ExportQualified},
+@code{ExportUnQualified}, @code{ExportRequest}, @code{IncludeList},
+@code{ImportTree}, @code{ExportUndeclared},
+@code{NeedToBeImplemented}, @code{LocalSymbols},
+@code{EnumerationScopeList}, @code{Unresolved}, @code{ListOfVars},
+@code{ListOfProcs} and @code{ListOfModules} lists.
+
+The @code{Module} symbol maintains the: @code{LocalSymbols},
+@code{ExportTree}, @code{IncludeList}, @code{ImportTree},
+@code{ExportUndeclared}, @code{EnumerationScopeList},
+@code{Unresolved}, @code{ListOfVars}, @code{ListOfProcs} and
+@code{ListOfModules} lists.
+
+Initially we discuss the lists which are common to both @code{DefImp}
+and @code{Module} symbols, thereafter the lists peculiar to @code{DefImp}
+and @code{Module} symbols are discussed.
+
+The @code{ListOfVars}, @code{ListOfProcs} and @code{ListOfModules}
+lists (common to both symbols) and simply contain a list of
+variables, procedures and inner modules which are declared with this
+definition/implementation or program module.
+
+The @code{LocalSymbols} list (common to both symbols) contains a
+complete list of symbols visible in this modules scope. The symbols in
+this list may have been imported or exported from an inner module.
+
+The @code{EnumerationScope} list (common to both symbols) defines all
+visible enumeration symbols.  When this module is parsed the contents
+of these enumeration types are marked as visible. Internally to GNU
+Modula-2 these form a pseudo scope (rather like a @code{WITH}
+statement which temporarily makes the fields of the record visible).
+
+The @code{ExportUndeclared} list (common to both symbols) contains a
+list of all symbols marked as exported but are as yet undeclared.
+
+The @code{IncludeList} is (common to both symbols) contains a list of
+all modules imported by the @code{IMPORT modulename ;} construct.
+
+The @code{ImportTree} (common to both symbols) contains a tree of all
+imported identifiers.
+
+The @code{ExportQualified} and @code{ExportUnQualified} trees (only
+present in the @code{DefImp} symbol) contain identifiers which are
+marked as @code{EXPORT QUALIFIED} and @code{EXPORT UNQUALIFIED}
+respectively.
+
+The @code{NeedToBeImplemented} list (only present in the @code{DefImp}
+symbol) and contains a list of all unresolved symbols which are exported.
+
+@subsection Pass 1
+
+During pass 1 each @code{DefImp} and @code{Module} symbol is
+created. These are also placed into a list of outstanding sources to
+be parsed.  The import and export lists are recorded and each object
+imported is created in the module from whence it is exported and added
+into the imported list of the current module. Any exported objects are
+placed into the export list and marked as qualified or unqualified.
+
+Inner module symbols are also created and their import and export
+lists are also processed. An import list will result in a symbol being
+fetched (or created if it does not exist) from the outer scope and
+placed into the scope of the inner module. An export list results in
+each symbol being fetched or created in the current inner scope and
+added to the outer scope. If the symbol has not yet been declared then
+it is added to the current modules @code{ExportUndeclared} list.
+
+Procedure symbols are created (the parameters are parsed but no more
+symbols are created). Enumerated types are created, hidden types in
+the definition modules are marked as such. All the rest of the Modula-2
+syntax is parsed but no symbols are created.
+
+@subsection Pass 2
+
+This section discuss varient records and their representation within
+the front end @file{gm2/gm2-compiler/SymbolTable.mod}. Records and
+varient records are declared in pass 2.
+
+Ordinary records are represented by the following symbol table entries:
+
+@example
+TYPE
+   this = RECORD
+             foo: CARDINAL ;
+             bar: CHAR ;
+          END ;
+
+
+    SymRecord [1]
+   +-------------+
+   | Name = this |        SymRecordField [2]
+   | ListOfSons  |       +-------------------+
+   |    +--------|       | Name = foo        |
+   |    | [2] [3]|       | Parent = [1]      |
+   +-------------+       | Type = [Cardinal] |
+   | LocalSymbols|       +-------------------+
+   | +-----------+
+   | | foo bar   |
+   | +-----------+
+   +-------------+
+
+
+    SymRecordField [3]
+   +-------------------+
+   | Name = bar        |
+   | Parent = [1]      |
+   | Type = [Cardinal] |
+   +-------------------+
+@end example
+
+Whereas varient records are represented by the following symbol table
+entries:
+
+@example
+TYPE
+   this = RECORD
+             CASE tag: CHAR OF
+             'a': foo: CARDINAL ;
+                  bar: CHAR |
+             'b': an:  REAL |
+             ELSE
+             END
+          END ;
+
+
+    SymRecord [1]
+   +-------------+
+   | Name = this |        SymRecordField [2]
+   | ListOfSons  |       +-------------------+
+   |    +--------|       | Name = tag        |
+   |    | [2] [3]|       | Parent = [1]      |
+   |    +--------+       | Type = [CHAR]     |
+   | LocalSymbols|       +-------------------+
+   | +-----------+
+   | | tag foo   |
+   | | bar an    |
+   | +-----------+
+   +-------------+
+
+    SymVarient [3]          SymFieldVarient [4]
+   +-------------------+   +-------------------+
+   | Parent = [1]      |   | Parent = [1]      |
+   | ListOfSons        |   | ListOfSons        |
+   |    +--------------|   |    +--------------|
+   |    | [4] [5]      |   |    | [6] [7]      |
+   +-------------------+   +-------------------+
+
+    SymFieldVarient [5]
+   +-------------------+
+   | Parent = [1]      |
+   | ListOfSons        |
+   |    +--------------|
+   |    | [8]          |
+   +-------------------+
+
+    SymRecordField [6]      SymRecordField [7]
+   +-------------------+   +-------------------+
+   | Name = foo        |   | Name = bar        |
+   | Parent = [1]      |   | Parent = [1]      |
+   | Type = [CARDINAL] |   | Type = [CHAR]     |
+   +-------------------+   +-------------------+
+
+    SymRecordField [8]
+   +-------------------+
+   | Name = an         |
+   | Parent = [1]      |
+   | Type = [REAL]     |
+   +-------------------+
+@end example
+
+Varient records which have nested @code{CASE} statements are
+represented by the following symbol table entries:
+
+@example
+TYPE
+   this = RECORD
+             CASE tag: CHAR OF
+             'a': foo: CARDINAL ;
+                  CASE bar: BOOLEAN OF
+                  TRUE : bt: INTEGER |
+                  FALSE: bf: CARDINAL
+                  END |
+             'b': an:  REAL |
+             ELSE
+             END
+          END ;
+
+
+    SymRecord [1]
+   +-------------+
+   | Name = this |        SymRecordField [2]
+   | ListOfSons  |       +-------------------+
+   |    +--------|       | Name = tag        |
+   |    | [2] [3]|       | Parent = [1]      |
+   |    +--------+       | Type = [CHAR]     |
+   | LocalSymbols|       +-------------------+
+   | +-----------+
+   | | tag foo   |
+   | | bar bt bf |
+   | | an        |
+   | +-----------+
+   +-------------+
+
+      ('1st CASE')            ('a' selector)
+    SymVarient [3]          SymFieldVarient [4]
+   +-------------------+   +-------------------+
+   | Parent = [1]      |   | Parent = [1]      |
+   | ListOfSons        |   | ListOfSons        |
+   |    +--------------|   |    +--------------|
+   |    | [4] [5]      |   |    | [6] [7] [8]  |
+   +-------------------+   +-------------------+
+
+     ('b' selector)
+    SymFieldVarient [5]
+   +-------------------+
+   | Parent = [1]      |
+   | ListOfSons        |
+   |    +--------------|
+   |    | [9]          |
+   +-------------------+
+
+    SymRecordField [6]      SymRecordField [7]
+   +-------------------+   +-------------------+
+   | Name = foo        |   | Name = bar        |
+   | Parent = [1]      |   | Parent = [1]      |
+   | Type = [CARDINAL] |   | Type = [BOOLEAN]  |
+   +-------------------+   +-------------------+
+
+      ('2nd CASE')
+    SymVarient [8]
+   +-------------------+
+   | Parent = [1]      |
+   | ListOfSons        |
+   |    +--------------|
+   |    | [12] [13]    |
+   +-------------------+
+
+    SymRecordField [9]
+   +-------------------+
+   | Name = an         |
+   | Parent = [1]      |
+   | Type = [REAL]     |
+   +-------------------+
+
+    SymRecordField [10]     SymRecordField [11]
+   +-------------------+   +-------------------+
+   | Name = bt         |   | Name = bf         |
+   | Parent = [1]      |   | Parent = [1]      |
+   | Type = [REAL]     |   | Type = [REAL]     |
+   +-------------------+   +-------------------+
+
+    (TRUE selector)            (FALSE selector)
+    SymFieldVarient [12]    SymFieldVarient [13]
+   +-------------------+   +-------------------+
+   | Parent = [1]      |   | Parent = [1]      |
+   | ListOfSons        |   | ListOfSons        |
+   |    +--------------|   |    +--------------|
+   |    | [10]         |   |    | [11]         |
+   +-------------------+   +-------------------+
+@end example
+
+@subsection Pass 3
+
+To do
+
+@subsection Pass H
+
+To do
+
+@subsection Declaration ordering
+
+This section gives a few stress testing examples and walks though
+the mechanics of the passes and how the lists of symbols are created.
+
+The first example contains a nested module in which an enumeration
+type is created and exported. A procedure declared before the nested
+module uses the enumeration type.
+
+@example
+MODULE colour ;
+
+   PROCEDURE make (VAR c: colours) ;
+   BEGIN
+      c := yellow
+   END make ;
+
+   MODULE inner ;
+   EXPORT colours ;
+
+   TYPE
+      colours = (red, blue, yellow, white) ;
+   END inner ;
+
+VAR
+   g: colours
+BEGIN
+   make(g)
+END colour.
+@end example
+
+@node Run time, Scope rules, Passes, Internals
+@section Run time
+
+This section describes how the GNU Modula-2 compiler interfaces with
+the run time system.  The modules which must be common to all library
+collections are @code{M2RTS} and @code{SYSTEM}. In the PIM library
+collection an implementation of @code{M2RTS} and @code{SYSTEM} exist;
+likewise in the ISO library and ULM library collection these modules
+also exist.
+
+The @code{M2RTS} module contains many of the base runtime features
+required by the GNU Modula-2 compiler. For example @code{M2RTS}
+contains the all the low level exception handling routines.  These
+include exception handlers for run time range checks for: assignments,
+increments, decrements, static array access, dynamic array access, for
+loop begin, for loop to, for loop increment, pointer via nil, function
+without return, case value not specified and no exception.  The
+@code{M2RTS} module also contains the @code{HALT} and @code{LENGTH}
+procedure. The ISO @code{SYSTEM} module contains a number of
+@code{SHIFT} and @code{ROTATE} procedures which GNU Modula-2 will call
+when wishing to shift and rotate multi-word set types.
+
+@subsection Exception handling
+
+This section describes how exception handling is implemented in GNU
+Modula-2.  We begin by including a simple Modula-2 program which uses
+exception handling and provide the same program written in C++.  The
+compiler will translate the Modula-2 into the equivalent trees, just
+like the C++ frontend.  This ensures that the Modula-2 frontend will
+not do anything that the middle and backend cannot process, which
+ensures that migration through the later gcc releases will be smooth.
+
+Here is an example of Modula-2 using exception handling:
+
+@example
+MODULE except ;
+
+FROM libc IMPORT printf ;
+FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
+
+PROCEDURE fly ;
+BEGIN
+   printf("fly main body\n") ;
+   IF 4 DIV ip^ = 4
+   THEN
+      printf("yes it worked\n")
+   ELSE
+      printf("no it failed\n")
+   END
+END fly ;
+
+PROCEDURE tryFlying ;
+BEGIN
+   printf("tryFlying main body\n");
+   fly ;
+EXCEPT
+   printf("inside tryFlying exception routine\n") ;
+   IF (ip#NIL) AND (ip^=0)
+   THEN
+      ip^ := 1 ;
+      RETRY
+   END
+END tryFlying ;
+
+PROCEDURE keepFlying ;
+BEGIN
+   printf("keepFlying main body\n") ;
+   tryFlying ;
+EXCEPT
+   printf("inside keepFlying exception routine\n") ;
+   IF ip=NIL
+   THEN
+      NEW(ip) ;
+      ip^ := 0 ;
+      RETRY
+   END
+END keepFlying ;
+
+VAR
+   ip: POINTER TO INTEGER ;
+BEGIN
+   ip := NIL ;
+   keepFlying ;
+   printf("all done\n")
+END except.
+@end example
+
+Now the same program implemented in GNU C++
+
+@example
+#include <stdio.h>
+#include <stdlib.h>
+
+// a c++ example of Modula-2 exception handling
+
+static int *ip = NULL;
+
+void fly (void)
+@{
+  printf("fly main body\n") ;
+  if (ip == NULL)
+    throw;
+  if (*ip == 0)
+    throw;
+  if (4 / (*ip) == 4)
+    printf("yes it worked\n");
+  else
+    printf("no it failed\n");
+@}
+
+/*
+ *   a C++ version of the Modula-2 example given in the ISO standard.
+ */
+
+void tryFlying (void)
+@{
+ again_tryFlying:
+  printf("tryFlying main body\n");
+  try @{
+    fly() ;
+  @}
+  catch (...) @{
+    printf("inside tryFlying exception routine\n") ;
+    if ((ip != NULL) && ((*ip) == 0)) @{
+      *ip = 1;
+      // retry
+      goto again_tryFlying;
+    @}
+    printf("did't handle exception here so we will call the next exception routine\n") ;
+    throw;  // unhandled therefore call previous exception handler
+  @}
+@}
+
+void keepFlying (void)
+@{
+ again_keepFlying:
+  printf("keepFlying main body\n") ;
+  try @{
+    tryFlying();
+  @}
+  catch (...) @{
+    printf("inside keepFlying exception routine\n");
+    if (ip == NULL) @{
+      ip = (int *)malloc(sizeof(int));
+      *ip = 0;
+      goto again_keepFlying;
+    @}
+    throw;  // unhandled therefore call previous exception handler
+  @}
+@}
+
+main ()
+@{
+  keepFlying();
+  printf("all done\n");
+@}
+@end example
+
+The equivalent program in GNU C is given below.  However the
+use of @code{setjmp} and @code{longjmp} in creating an exception
+handler mechanism is not used used by GNU C++ and GNU Java.
+The GNU exception handling ABI uses @code{TRY_CATCH_EXPR} tree
+nodes.  Thus GNU Modula-2 generates trees which model the C++
+code above, rather than the C code shown below.  The code here
+serves as a mental model (for readers who are familiar with C
+but not of C++) of what is happening in the C++ code above.
+
+@example
+#include <setjmp.h>
+#include <malloc.h>
+#include <stdio.h>
+
+typedef enum jmpstatus @{
+  jmp_normal,
+  jmp_retry,
+  jmp_exception,
+@} jmp_status;
+
+struct setjmp_stack @{
+  jmp_buf  env;
+  struct setjmp_stack *next;
+@} *head = NULL;
+
+void pushsetjmp (void)
+@{
+  struct setjmp_stack *p = (struct setjmp_stack *)
+                           malloc (sizeof (struct setjmp_stack));
+
+  p->next = head;
+  head = p;
+@}
+
+void exception (void)
+@{
+  printf("invoking exception handler\n");
+  longjmp (head->env, jmp_exception);
+@}
+
+void retry (void)
+@{
+  printf("retry\n");
+  longjmp (head->env, jmp_retry);
+@}
+
+void popsetjmp (void)
+@{
+  struct setjmp_stack *p = head;
+
+  head = head->next;
+  free (p);
+@}
+
+static int *ip = NULL;
+
+void fly (void)
+@{
+  printf("fly main body\n");
+  if (ip == NULL) @{
+    printf("ip == NULL\n");
+    exception();
+  @}
+  if ((*ip) == 0) @{
+    printf("*ip == 0\n");
+    exception();
+  @}
+  if ((4 / (*ip)) == 4)
+    printf("yes it worked\n");
+  else
+    printf("no it failed\n");
+@}
+
+void tryFlying (void)
+@{
+  void tryFlying_m2_exception () @{
+    printf("inside tryFlying exception routine\n");
+    if ((ip != NULL) && ((*ip) == 0)) @{
+      (*ip) = 1;
+      retry();
+    @}
+  @}
+
+  int t;
+
+  pushsetjmp ();
+  do @{
+    t = setjmp (head->env);
+  @} while (t == jmp_retry);
+
+  if (t == jmp_exception) @{
+    /* exception called */
+    tryFlying_m2_exception ();
+    /* exception has not been handled, invoke previous handler */
+    printf("exception not handled here\n");
+    popsetjmp();
+    exception();
+  @}
+
+  printf("tryFlying main body\n");
+  fly();
+  popsetjmp();
+@}
+
+void keepFlying (void)
+@{
+  void keepFlying_m2_exception () @{
+    printf("inside keepFlying exception routine\n");
+    if (ip == NULL) @{
+      ip = (int *)malloc (sizeof (int));
+      *ip = 0;
+      retry();
+    @}
+  @}
+  int t;
+
+  pushsetjmp ();
+  do @{
+    t = setjmp (head->env);
+  @} while (t == jmp_retry);
+
+  if (t == jmp_exception) @{
+    /* exception called */
+    keepFlying_m2_exception ();
+    /* exception has not been handled, invoke previous handler */
+    popsetjmp();
+    exception();
+  @}
+  printf("keepFlying main body\n");
+  tryFlying();
+  popsetjmp();
+@}
+
+main ()
+@{
+  keepFlying();
+  printf("all done\n");
+@}
+@end example
+
+@node Scope rules, Done list, Run time, Internals
+@section Scope rules
+
+This section describes my understanding of the Modula-2 scope rules
+with respect to enumerated types.  If they are incorrect please
+correct me by email @email{gaius@@gnu.org}. They also serve to
+document the behaviour of GNU Modula-2 in these cirumstances.
+
+In GNU Modula-2 the syntax for a type declaration is defined as:
+
+@example
+TypeDeclaration := Ident "=" Type =:
+
+Type :=  SimpleType | ArrayType
+          | RecordType
+          | SetType
+          | PointerType
+          | ProcedureType
+      =:
+
+SimpleType := Qualident | Enumeration | SubrangeType =:
+
+@end example
+
+If the @code{TypeDeclaration} rule is satisfied by
+@code{SimpleType} and @code{Qualident} ie:
+
+@example
+TYPE
+   foo = bar ;
+@end example
+
+then @code{foo} is said to be equivalent to @code{bar}. Thus
+variables, parameters and record fields declared with either type will
+be compatible with each other.
+
+If, however, the @code{TypeDeclaration} rule is satisfied by any
+alternative clause @code{ArrayType}, @code{RecordType},
+@code{SetType}, @code{PointerType}, @code{ProcedureType},
+@code{Enumeration} or @code{SubrangeType} then in these cases a new
+type is created which is distinct from all other types.  It will be
+incompatible with all other user defined types.
+
+It also has furthur consequences in that if bar was defined as an
+enumerated type and foo is imported by another module then the
+enumerated values are also visible in this module.
+
+Consider the following modules:
+
+@example
+DEFINITION MODULE impc ;
+
+TYPE
+   C = (red, blue, green) ;
+
+END impc.
+@end example
+
+@example
+DEFINITION MODULE impb ;
+
+IMPORT impc ;
+
+TYPE
+   C = impc.C ;
+
+END impb.
+@end example
+
+@example
+MODULE impa ;
+
+FROM impb IMPORT C ;
+
+VAR
+   a: C ;
+BEGIN
+   a := red
+END impa.
+@end example
+
+Here we see that the type @code{C} defined in module @code{impb} is
+equivalent to the type @code{C} in module @code{impc}. Module
+@code{impa} imports the type @code{C} from module @code{impb}
+and at that point the enumeration values @code{red, blue, green}
+(declared in module @code{impc}) are also visible.
+
+The ISO Standand (p.41) in section 6.1.8 Import Lists states:
+
+``Following the module heading, a module may have a sequence of import
+lists. An import list includes a list of the identifiers that are to
+be explicitly imported into the module. Explicit import of an
+enumeration type identifier implicitly imports the enumeration
+constant identifiers of the enumeration type.
+
+Imported identifiers are introduced into the module, thus extending
+their scope, but they have a defining occurrence that appears elsewhere.
+
+Every kind of module may include a sequence of import lists, whether it
+is a program module, a definition module, an implementation module or
+a local module. In the case of any other kind of module, the imported
+identifiers may be used in the block of the module.''
+
+These statements confirm that the previous example is legal. But it
+prompts the question, what about implicit imports othersise known
+as qualified references.
+
+In section 6.10 Implicit Import and Export of the ISO Modula-2 standard
+it says:
+
+``The set of identifiers that is imported or exported if an identifier
+is explicitly imported or exported is called the (import and export)
+closure of that identifier. Normally, the closure includes only the
+explicitly imported or exported identifier. However, in the case
+of the explicit import or export of an identifier of an enumeration
+type, the closure also includes the identifiers of the values of that
+type.
+
+Implicit export applies to the identifiers that are exported (qualified)
+from separate modules, by virtue of their being the subject of a
+definition module, as well as to export from a local module that
+uses an export list.''
+
+Clearly this means that the following is legal:
+
+@example
+MODULE impd ;
+
+IMPORT impc ;
+
+VAR
+   a: impc.C ;
+BEGIN
+   a := impc.red
+END impd.
+@end example
+
+It also means that the following code is legal:
+
+@example
+MODULE impe ;
+
+IMPORT impb ;
+
+VAR
+   a: impb.C ;
+BEGIN
+   a := impb.red
+END impe.
+@end example
+
+And also this code is legal:
+
+@example
+MODULE impf ;
+
+FROM impb IMPORT C ;
+
+VAR
+   a: C ;
+BEGIN
+   a := red
+END impf.
+@end example
+
+And also that this code is legal:
+
+@example
+DEFINITION MODULE impg ;
+
+IMPORT impc;
+
+TYPE
+   C = impc.C ;
+
+END impg.
+@end example
+
+@example
+IMPLEMENTATION MODULE impg ;
+
+VAR
+   t: C ;
+BEGIN
+   t := red
+END impg.
+@end example
+
+Furthermore the following code is also legal as the new type, @code{C}
+is declared and exported. Once exported all its enumerated fields
+are also exported.
+
+@example
+DEFINITION MODULE imph;
+
+IMPORT impc;
+TYPE
+   C = impc.C;
+
+END imph.
+@end example
+
+Here we see that the current scope is populated with the enumeration
+fields @code{red, blue, green} and also it is possible to reference
+these values via a qualified identifier.
+
+@example
+IMPLEMENTATION MODULE imph;
+
+IMPORT impc;
+
+VAR
+   a: C ;
+   b: impc.C ;
+BEGIN
+   a := impc.red ;
+   b := red ;
+   a := b ;
+   b := a
+END imph.
+@end example
+
+
+@node Done list, To do list, Scope rules, Internals
+@section Done list
+
+What has been done:
+
+@itemize @bullet
+
+@item
+Coroutines have been implemented. The @code{SYSTEM} module in
+PIM-[234] now includes @code{TRANSFER}, @code{IOTRANSFER} and
+@code{NEWPROCESS}. This module is available in the directory
+@file{gm2/gm2-libs-coroutines}.  Users of this module also have to
+link with GNU Pthreads @code{-lpth}.
+
+@item
+GM2 now works on the @code{opteron} 64 bit architecture. @code{make
+gm2.paranoid} and @code{make check-gm2} pass.
+
+@item
+GM2 can now be built as a cross compiler to the MinGW platform under
+GNU/Linux i386.
+
+@item
+GM2 now works on the @code{sparc} architecture. @code{make
+gm2.paranoid} and @code{make check-gm2} pass.
+
+@item
+converted the regression test suite into the GNU dejagnu format.
+In turn this can be grafted onto the GCC testsuite and can be
+invoked as @code{make check-gm2}. GM2 should now pass all
+regression tests.
+
+@item
+provided access to a few compiler built-in constants
+and twenty seven built-in C functions.
+
+@item
+definition modules no longer have to @code{EXPORT QUALIFIED}
+objects (as per PIM-3, PIM-4 and ISO).
+
+@item
+implemented ISO Modula-2 sets. Large sets are now allowed,
+no limits imposed. The comparison operators
+@code{# = <= >= < >} all behave as per ISO standard.
+The obvious use for large sets is
+@code{SET OF CHAR}. These work well with gdb once it has been
+patched to understand Modula-2 sets.
+
+@item
+added @code{DEFINITION MODULE FOR "C"} method of linking
+to C. Also added varargs handling in C definition modules.
+
+@item
+cpp can be run on definition and implementation modules.
+
+@item
+@samp{-fmakell} generates a temporary @code{Makefile} and
+will build all dependant modules.
+
+@item
+compiler will bootstrap itself and three generations of the
+compiler all produce the same code.
+
+@item
+the back end will generate code and assembly declarations for
+modules containing global variables of all types. Procedure
+prologue/epilogue is created.
+
+@item
+all loop constructs, if then else, case statements and expressions.
+
+@item
+nested module initialization.
+
+@item
+pointers, arrays, procedure calls, nested procedures.
+
+@item
+front end @samp{gm2} can now compile and link modules.
+
+@item
+the ability to insert gnu asm statements within GNU Modula-2.
+
+@item
+inbuilt functions, @code{SIZE}, @code{ADR}, @code{TSIZE}, @code{HIGH} etc
+
+@item
+block becomes and complex procedure parameters (unbounded arrays, strings).
+
+@item
+the front end now utilizes GCC tree constants and types and is no
+longer tied to a 32 bit architecture, but reflects the 'configure'
+target machine description.
+
+@item
+fixed all C compiler warnings when gcc compiles the p2c generated C
+with -Wall.
+
+@item
+built a new parser which implements error recovery.
+
+@item
+added mechanism to invoke cpp to support conditional compilation if required.
+
+@item
+all @samp{Makefile}s are generated via @samp{./configure}
+
+@end itemize
+
+@node To do list, , Done list, Internals
+@section To do list
+
+What needs to be done:
+
+@itemize @bullet
+
+@item
+ISO library implementation needs to be completed and debugged.
+
+@item
+Easy access to other libraries using @code{-flibs=} so that libraries
+can be added into the @file{/usr/.../gcc-lib/gm2/...} structure.
+
+@item
+improve documentation, specifically this document which should
+also include a synopsis of 2nd Edition Modula-2.
+
+@item
+modifying @file{SymbolTable.mod} to make all the data structures dynamic.
+
+@item
+testing and fixing bugs
+
+@end itemize

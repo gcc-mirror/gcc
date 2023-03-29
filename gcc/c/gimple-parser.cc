@@ -1,5 +1,5 @@
 /* Parser for GIMPLE.
-   Copyright (C) 2016-2022 Free Software Foundation, Inc.
+   Copyright (C) 2016-2023 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -364,6 +364,16 @@ c_parser_parse_gimple_body (c_parser *cparser, char *gimple_pass,
       cgraph_node::get_create (cfun->decl);
       cgraph_edge::rebuild_edges ();
     }
+
+  /* Perform IL validation and if any error is found abort compilation
+     of this function by zapping its body.  */
+  if ((cfun->curr_properties & PROP_cfg)
+      && verify_gimple_in_cfg (cfun, false, false))
+    init_empty_tree_cfg ();
+  else if (!(cfun->curr_properties & PROP_cfg)
+	   && verify_gimple_in_seq (gimple_body (current_function_decl), false))
+    gimple_set_body (current_function_decl, NULL);
+
   dump_function (TDI_gimple, current_function_decl);
 }
 

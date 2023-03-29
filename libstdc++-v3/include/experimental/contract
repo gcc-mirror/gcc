@@ -1,0 +1,81 @@
+// Contracts support header for -*- C++ -*-
+
+// Copyright (C) 2019-2023 Free Software Foundation, Inc.
+//
+// This file is part of GCC.
+//
+// GCC is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 3, or (at your option)
+// any later version.
+//
+// GCC is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file contract
+ *  This is a Standard C++ Library header.
+ */
+
+#ifndef _GLIBCXX_CONTRACT
+#define _GLIBCXX_CONTRACT 1
+
+#pragma GCC system_header
+
+#if __cplusplus >= 201703L
+
+#include <string_view>
+#include <cstdint>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+namespace experimental
+{
+  // From P1332
+  enum class contract_violation_continuation_mode {
+    never_continue, maybe_continue
+  };
+
+  class contract_violation {
+    const char* _M_file;
+    const char* _M_function;
+    const char* _M_comment;
+    const char* _M_level;
+    const char* _M_role;
+    uint_least32_t _M_line;
+    signed char _M_continue;
+  public:
+    // From N4820
+    uint_least32_t line_number() const noexcept { return _M_line; }
+    string_view file_name() const noexcept { return _M_file; }
+    string_view function_name() const noexcept { return _M_function; }
+    string_view comment() const noexcept { return _M_comment; }
+    string_view assertion_level() const noexcept { return _M_level; }
+    // From P1332
+    string_view assertion_role() const noexcept { return _M_role; }
+    contract_violation_continuation_mode continuation_mode() const noexcept
+    { return static_cast<contract_violation_continuation_mode>(_M_continue); }
+  };
+
+} // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+
+// To override the contract violation handler, define
+//void ::handle_contract_violation (const std::experimental::contract_violation &);
+
+#endif // C++17
+#endif // _GLIBCXX_CONTRACT

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2022 Free Software Foundation, Inc.
+# Copyright (C) 2020-2023 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -25,4 +25,17 @@ GCC_11.0 {
   __floatuntihf
   __mulhc3
   __trunctfhf2
+}
+
+%inherit GCC_13.0.0 GCC_11.0.0
+GCC_13.0.0 {
+  __extendbfsf2
+  __floatdibf
+  __floattibf
+  __floatundibf
+  __floatuntibf
+  __truncdfbf2
+  __truncsfbf2
+  __trunctfbf2
+  __trunchfbf2
 }

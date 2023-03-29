@@ -75,6 +75,7 @@ while [ $# -gt 0 ]; do
 done
 
 mkdir -p "$dst"
+pch="$dst/pch.h"
 dst="$dst/Makefile"
 if [ -f "$dst" ]; then
   echo "Error: $dst already exists. Aborting." 1>&2
@@ -84,9 +85,23 @@ fi
 CXX="$1"
 shift
 
+cat >> "$pch" <<EOF
+#ifndef SIMD_PCH_
+#define SIMD_PCH_
+#include "${srcdir}/bits/verify.h"
+#include "${srcdir}/bits/make_vec.h"
+#include "${srcdir}/bits/mathreference.h"
+#include "${srcdir}/bits/metahelpers.h"
+#include "${srcdir}/bits/simd_view.h"
+#include "${srcdir}/bits/test_values.h"
+#include "${srcdir}/bits/ulp.h"
+#include "${srcdir}/bits/conversions.h"
+#endif  // SIMD_PCH_
+EOF
+
 echo "TESTFLAGS ?=" > "$dst"
 echo "test_flags := $testflags \$(TESTFLAGS)" >> "$dst"
-echo CXXFLAGS = "$@" "\$(test_flags)" >> "$dst"
+echo CXXFLAGS = "$@" -include pch.h "\$(test_flags)" >> "$dst"
 [ -n "$sim" ] && echo "export GCC_TEST_SIMULATOR = $sim" >> "$dst"
 cat >> "$dst" <<EOF
 srcdir = ${srcdir}
@@ -94,8 +109,13 @@ CXX = ${CXX}
 DRIVER = ${driver}
 DRIVEROPTS ?=
 driveroptions := \$(DRIVEROPTS)
+PCH_DEPS := \$(shell \$(CXX) \$(CXXFLAGS) -M pch.h | sed -e 's/^.*://' -e 's/\\\\//g')
 
 all: simd_testsuite.sum
+
+pch.h.gch: \$(PCH_DEPS)
+	@echo "Preparing pre-compiled header"
+	@\$(CXX) \$(CXXFLAGS) -c \$< -o \$@
 
 simd_testsuite.sum: .progress .progress_total simd_testsuite.log
 	@printf "\n\t\t=== simd_testsuite \$(test_flags) Summary ===\n\n"\\
@@ -247,7 +267,7 @@ EOF
 EOF
     for i in $(seq 0 9); do
       cat <<EOF
-%-$type-$i.log: \$(srcdir)/%.cc
+%-$type-$i.log: pch.h.gch \$(srcdir)/%.cc
 	@\$(DRIVER) \$(driveroptions) -t "$t" -a $i -n \$* \$(CXX) \$(CXXFLAGS)
 
 EOF
