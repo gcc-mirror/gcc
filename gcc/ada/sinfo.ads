@@ -1329,8 +1329,9 @@ package Sinfo is
    --    to the entity for the first subtype.
 
    --  Float_Truncate
-   --    A flag present in type conversion nodes. This is used for float to
-   --    integer conversions where truncation is required rather than rounding.
+   --    A flag present in type conversion nodes. It is used for floating-point
+   --    to fixed-point or integer conversions, where truncation is required
+   --    rather than rounding.
 
    --  Forwards_OK
    --    A flag present in the N_Assignment_Statement node. It is used only

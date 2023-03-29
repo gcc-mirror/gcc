@@ -125,7 +125,7 @@ package body Debug is
    --  d.K  Do not reject components in extensions overlapping with parent
    --  d.L  Depend on back end for limited types in if and case expressions
    --  d.M  Relaxed RM semantics
-   --  d.N
+   --  d.N  Use rounding when converting from floating point to fixed point
    --  d.O  Dump internal SCO tables
    --  d.P  Previous (non-optimized) handling of length comparisons
    --  d.Q  Previous (incomplete) style check for binary operators
@@ -905,6 +905,10 @@ package body Debug is
 
    --  d.M  Relaxed RM semantics. This flag sets Opt.Relaxed_RM_Semantics
    --       See Opt.Relaxed_RM_Semantics for more details.
+
+   --  d.N  Use rounding instead of truncation when dynamically converting from
+   --       a floating-point type to an ordinary fixed-point type, for the sake
+   --       of compatibility with earlier versions of the compiler.
 
    --  d.O  Dump internal SCO tables. Before outputting the SCO information to
    --       the ALI file, the internal SCO tables (SCO_Table/SCO_Unit_Table)

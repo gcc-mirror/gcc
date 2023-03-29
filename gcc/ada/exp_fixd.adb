@@ -25,6 +25,7 @@
 
 with Atree;          use Atree;
 with Checks;         use Checks;
+with Debug;          use Debug;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
@@ -1624,13 +1625,14 @@ package body Exp_Fixd is
 
       --  Fall through to use floating-point for the close result set case,
       --  as a result of the numerator or denominator of the small ratio not
-      --  being a sufficiently small integer.
+      --  being sufficiently small. See also Expand_Convert_Float_To_Fixed.
 
       Set_Result (N,
         Build_Multiply (N,
           Fpt_Value (Expr),
           Real_Literal (N, Small_Ratio)),
-        Rng_Check);
+        Rng_Check,
+        Trunc => not Rounded_Result (N));
    end Expand_Convert_Fixed_To_Fixed;
 
    -----------------------------------
@@ -1769,23 +1771,23 @@ package body Exp_Fixd is
       if Small = Ureal_1 then
          Set_Result (N, Expr, Rng_Check, Trunc => True);
 
-      --  Normal case where multiply is required. Rounding is truncating
-      --  for decimal fixed point types only, see RM 4.6(29), except if the
-      --  conversion comes from an attribute reference 'Round (RM 3.5.10 (14)):
-      --  The attribute is implemented by means of a conversion that must
-      --  round.
+      --  Normal case where multiply is required. The conversion is truncating
+      --  for fixed-point types, see RM 4.6(29), except if the conversion comes
+      --  from an attribute reference 'Round (RM 3.5.10 (14)): the attribute is
+      --  implemented by means of a conversion that needs to round. However, if
+      --  the switch -gnatd.N is specified, we use rounding for ordinary fixed-
+      --  point types, for compatibility with earlier versions of the compiler.
 
       else
-         Set_Result
-           (N     => N,
-            Expr  =>
-              Build_Multiply
-                (N => N,
-                 L => Fpt_Value (Expr),
-                 R => Real_Literal (N, Ureal_1 / Small)),
-            Rchk  => Rng_Check,
-            Trunc => Is_Decimal_Fixed_Point_Type (Result_Type)
-                       and not Rounded_Result (N));
+         Set_Result (N,
+           Build_Multiply (N,
+             L => Fpt_Value (Expr),
+             R => Real_Literal (N, Ureal_1 / Small)),
+          Rchk  => Rng_Check,
+          Trunc => not Rounded_Result (N)
+                     and then not
+                       (Debug_Flag_Dot_NN
+                         and then Is_Ordinary_Fixed_Point_Type (Result_Type)));
       end if;
    end Expand_Convert_Float_To_Fixed;
 
@@ -1852,13 +1854,14 @@ package body Exp_Fixd is
 
       --  Fall through to use floating-point for the close result set case,
       --  as a result of the numerator or denominator of the small value not
-      --  being a sufficiently small integer.
+      --  being sufficiently small. See also Expand_Convert_Float_To_Fixed.
 
       Set_Result (N,
         Build_Multiply (N,
           Fpt_Value (Expr),
           Real_Literal (N, Ureal_1 / Small)),
-        Rng_Check);
+        Rng_Check,
+        Trunc => not Rounded_Result (N));
    end Expand_Convert_Integer_To_Fixed;
 
    --------------------------------
