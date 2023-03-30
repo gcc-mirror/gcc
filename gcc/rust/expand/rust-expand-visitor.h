@@ -313,6 +313,16 @@ public:
   void visit (AST::InferredType &) override;
   void visit (AST::BareFunctionType &type) override;
 
+  bool is_derive (AST::Attribute &attr);
+
+  template <typename T>
+  void expand_derive (const T &item, std::unique_ptr<AST::TokenTree> &trait);
+
+  template <typename T>
+  void expand_derive (const T &item, AST::DelimTokenTree &attr);
+
+  template <typename T> void visit_attrs_with_derive (T &item);
+
 private:
   MacroExpander &expander;
 };
