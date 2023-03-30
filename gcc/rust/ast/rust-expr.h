@@ -78,7 +78,7 @@ public:
   bool is_marked_for_strip () const override { return literal.is_error (); }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
@@ -269,7 +269,7 @@ public:
   }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
@@ -865,7 +865,7 @@ public:
   std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
@@ -1096,7 +1096,7 @@ public:
   std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
@@ -1256,7 +1256,7 @@ public:
   }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
@@ -1290,7 +1290,7 @@ public:
   std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
@@ -1439,7 +1439,7 @@ public:
   }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
@@ -1483,7 +1483,7 @@ public:
   bool is_marked_for_strip () const override { return struct_name.is_error (); }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
@@ -1938,7 +1938,7 @@ public:
   }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
@@ -2041,7 +2041,7 @@ public:
   PathExprSegment &get_method_name () { return method_name; }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
@@ -2126,7 +2126,7 @@ public:
   Identifier get_field_name () const { return field; }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
@@ -2254,7 +2254,7 @@ public:
   std::vector<ClosureParam> &get_params () { return params; }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
@@ -2449,7 +2449,7 @@ public:
   void strip_tail_expr () { expr = nullptr; }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
@@ -2594,7 +2594,7 @@ public:
   bool is_marked_for_strip () const override { return marked_for_strip; }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
@@ -2690,7 +2690,7 @@ public:
   }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
@@ -2723,6 +2723,12 @@ public:
   // should never be called - error if called
   void set_outer_attrs (std::vector<Attribute> /* new_attrs */) override
   {
+    rust_assert (false);
+  }
+
+  std::vector<Attribute> &get_outer_attrs () override
+  {
+    // RangeExpr cannot have any outer attributes
     rust_assert (false);
   }
 };
@@ -3180,7 +3186,7 @@ public:
   }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
@@ -3262,7 +3268,7 @@ public:
   }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
@@ -3381,7 +3387,7 @@ public:
   }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
@@ -3730,7 +3736,7 @@ public:
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
 protected:
   // Base clone function but still concrete as concrete base class
@@ -3979,7 +3985,7 @@ public:
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -4455,7 +4461,7 @@ public:
   std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
@@ -4544,7 +4550,7 @@ public:
   }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
@@ -4626,7 +4632,7 @@ public:
   }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {

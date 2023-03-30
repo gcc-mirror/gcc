@@ -673,7 +673,7 @@ public:
   }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
