@@ -57,6 +57,7 @@ typedef enum {
   CUDA_ERROR_INVALID_CONTEXT = 201,
   CUDA_ERROR_NOT_FOUND = 500,
   CUDA_ERROR_NOT_READY = 600,
+  CUDA_ERROR_HOST_MEMORY_ALREADY_REGISTERED = 712,
   CUDA_ERROR_LAUNCH_FAILED = 719,
   CUDA_ERROR_COOPERATIVE_LAUNCH_TOO_LARGE = 720,
   CUDA_ERROR_NOT_PERMITTED = 800,
@@ -80,7 +81,8 @@ typedef enum {
   CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING = 41,
   CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR = 75,
   CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MINOR = 76,
-  CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR = 82
+  CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR = 82,
+  CU_DEVICE_ATTRIBUTE_READ_ONLY_HOST_REGISTER_SUPPORTED = 113
 } CUdevice_attribute;
 
 typedef enum {
@@ -124,7 +126,10 @@ enum {
 #define CU_LAUNCH_PARAM_END ((void *) 0)
 #define CU_LAUNCH_PARAM_BUFFER_POINTER ((void *) 1)
 #define CU_LAUNCH_PARAM_BUFFER_SIZE ((void *) 2)
+
 #define CU_MEMHOSTALLOC_DEVICEMAP 0x02U
+
+#define CU_MEMHOSTREGISTER_READ_ONLY 0x08
 
 enum {
   CU_STREAM_DEFAULT = 0,
@@ -183,6 +188,10 @@ CUresult cuMemAlloc (CUdeviceptr *, size_t);
 CUresult cuMemAllocHost (void **, size_t);
 CUresult cuMemAllocManaged(CUdeviceptr *, size_t, unsigned int);
 CUresult cuMemHostAlloc (void **, size_t, unsigned int);
+CUresult cuMemHostGetFlags (unsigned int *, void *);
+#define cuMemHostRegister cuMemHostRegister_v2
+CUresult cuMemHostRegister(void *, size_t, unsigned int);
+CUresult cuMemHostUnregister(void *);
 CUresult cuMemcpy (CUdeviceptr, CUdeviceptr, size_t);
 #define cuMemcpyDtoDAsync cuMemcpyDtoDAsync_v2
 CUresult cuMemcpyDtoDAsync (CUdeviceptr, CUdeviceptr, size_t, CUstream);

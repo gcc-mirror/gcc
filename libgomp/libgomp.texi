@@ -4402,9 +4402,40 @@ creating memory allocators requesting
 The following sections present notes on the offload-target specifics
 
 @menu
+* @option{-foffload-memory=pinned}::
 * AMD Radeon::
 * nvptx::
 @end menu
+
+@node @option{-foffload-memory=pinned}
+@section @option{-foffload-memory=pinned}
+
+@c The following paragraph is duplicated from
+@c '../gcc/doc/invoke.texi', '-foffload-memory=pinned'.
+If supported by the active offloading device,
+@option{-foffload-memory=pinned} enables automatic use of page-locked
+host memory for memory objects participating in host <-> device memory
+transfers, for both OpenACC and OpenMP offloading.
+Such memory is allocated or registered using the respective offloading
+device interfaces, which potentially helps optimization of host <->
+device data transfers.
+This option is experimental.
+Beware that use of a lot of pinned memory may degrade overall system
+performance, as it does reduce the amount of host memory available for
+paging.
+
+An OpenACC @emph{async} @code{enter data}-like operation may register
+a memory object as pinned.  After the corresponding @emph{async}
+@code{exit data}-like operation, this registration does last until
+next synchronization point (such as @code{acc_async_synchronize}).
+During this time, the user code must not "touch" the host-side memory
+allocation -- but that does correspond to the @emph{async} semantics
+anyway.
+
+We don't consider @code{-foffload-memory=pinned} for one-time internal
+data transfers, such as setup during device initialization.
+
+
 
 @node AMD Radeon
 @section AMD Radeon (GCN)
@@ -4459,6 +4490,8 @@ The implementation remark:
 @item OpenMP @emph{pinned} memory (@code{omp_atk_pinned},
       @code{ompx_pinned_mem_alloc}, for example)
       is allocated via @code{mmap}, @code{mlock}.
+@item @option{-foffload-memory=pinned} is not supported,
+      @pxref{@option{-foffload-memory=pinned}}.
 @item The available stack size can be changed using the @code{GCN_STACK_SIZE}
       environment variable; the default is 32 kiB per thread.
 @end itemize
@@ -4528,6 +4561,8 @@ The implementation remark:
       is allocated via @code{cuMemHostAlloc} (CUDA Driver API).
       This potentially helps optimization of host <-> device data
       transfers.
+@item @option{-foffload-memory=pinned} is supported,
+      @pxref{@option{-foffload-memory=pinned}}.
 @end itemize
 
 

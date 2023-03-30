@@ -2724,13 +2724,28 @@ Typical command lines are
 @itemx -foffload-memory=unified
 @itemx -foffload-memory=pinned
 @opindex foffload-memory
+@cindex Offloading memory modes
 @cindex OpenMP offloading memory modes
+
 Enable a memory optimization mode to use with OpenMP.  The default behavior,
 @option{-foffload-memory=none}, is to do nothing special (unless enabled via
 a requires directive in the code).  @option{-foffload-memory=unified} is
 equivalent to @code{#pragma omp requires unified_shared_memory}.
-@option{-foffload-memory=pinned} forces all host memory to be pinned (this
-mode may require the user to increase the ulimit setting for locked memory).
+
+@c The following paragraph is duplicated in
+@c '../../libgomp/libgomp.texi', '-foffload-memory=pinned'.
+If supported by the active offloading device,
+@option{-foffload-memory=pinned} enables automatic use of page-locked
+host memory for memory objects participating in host <-> device memory
+transfers, for both OpenACC and OpenMP offloading.
+Such memory is allocated or registered using the respective offloading
+device interfaces, which potentially helps optimization of host <->
+device data transfers.
+This option is experimental.
+Beware that use of a lot of pinned memory may degrade overall system
+performance, as it does reduce the amount of host memory available for
+paging.
+
 All translation units must select the same setting to avoid undefined
 behavior.
 

@@ -1123,11 +1123,18 @@ extern int gomp_pause_host (void);
 
 /* target.c */
 
+extern bool always_pinned_mode;
+
 extern void gomp_init_targets_once (void);
 extern int gomp_get_num_devices (void);
 extern bool gomp_target_task_fn (void *);
 extern void * gomp_usm_alloc (size_t size);
 extern void gomp_usm_free (void *device_ptr);
+extern int gomp_page_locked_host_register_dev (struct gomp_device_descr *,
+					       void *, size_t, int);
+extern bool gomp_page_locked_host_unregister_dev (struct gomp_device_descr *,
+						  void *, size_t,
+						  struct goacc_asyncqueue *);
 extern void gomp_target_rev (uint64_t, uint64_t, uint64_t, uint64_t, uint64_t,
 			     int, struct goacc_asyncqueue *);
 extern bool gomp_page_locked_host_alloc (void **, size_t);
@@ -1232,6 +1239,9 @@ struct splay_tree_key_s {
     uintptr_t *structelem_refcount_ptr;
   };
   struct splay_tree_aux *aux;
+  /* Whether we have registered page-locked host memory for
+     '[host_start, host_end)'.  */
+  bool page_locked_host_p;
 };
 
 /* The comparison function.  */
@@ -1393,6 +1403,11 @@ struct gomp_device_descr
   __typeof (GOMP_OFFLOAD_is_usm_ptr) *is_usm_ptr_func;
   __typeof (GOMP_OFFLOAD_page_locked_host_alloc) *page_locked_host_alloc_func;
   __typeof (GOMP_OFFLOAD_page_locked_host_free) *page_locked_host_free_func;
+  __typeof (GOMP_OFFLOAD_page_locked_host_register)
+       *page_locked_host_register_func;
+  __typeof (GOMP_OFFLOAD_page_locked_host_unregister)
+       *page_locked_host_unregister_func;
+  __typeof (GOMP_OFFLOAD_page_locked_host_p) *page_locked_host_p_func;
   __typeof (GOMP_OFFLOAD_dev2host) *dev2host_func;
   __typeof (GOMP_OFFLOAD_host2dev) *host2dev_func;
   __typeof (GOMP_OFFLOAD_dev2dev) *dev2dev_func;

@@ -1,3 +1,7 @@
+2023-04-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/invoke.texi (-foffload-memory=pinned): Document.
+
 2023-03-31  Frederik Harwath  <frederik@codesourcery.com>
 
 	* omp-transform-loops.cc (walk_omp_for_loops): Handle

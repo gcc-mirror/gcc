@@ -108,6 +108,74 @@ static int num_devices_openmp;
 /* OpenMP requires mask.  */
 static int omp_requires_mask;
 
+
+static void *gomp_page_locked_host_alloc_dev (struct gomp_device_descr *,
+					      size_t, bool);
+static bool gomp_page_locked_host_free_dev (struct gomp_device_descr *,
+					    void *,
+					    struct goacc_asyncqueue *);
+static void *gomp_page_locked_host_aligned_alloc_dev (struct gomp_device_descr *,
+						      size_t, size_t);
+static bool gomp_page_locked_host_aligned_free_dev (struct gomp_device_descr *,
+						    void *,
+						    struct goacc_asyncqueue *);
+
+/* Use (that is, allocate or register) page-locked host memory for memory
+   objects participating in host <-> device memory transfers.
+
+   When this is enabled, there is no fallback to non-page-locked host
+   memory.  */
+
+attribute_hidden
+bool always_pinned_mode = false;
+
+/* This function is called by the compiler when -foffload-memory=pinned
+   is used.  */
+
+void
+GOMP_enable_pinned_mode ()
+{
+  always_pinned_mode = true;
+}
+
+/* Verify that page-locked host memory is used for memory objects participating
+   in host <-> device memory transfers.  */
+
+static const bool verify_always_pinned_mode = false;
+
+static bool
+gomp_verify_always_pinned_mode (struct gomp_device_descr *device,
+				const void *ptr, size_t size)
+{
+  gomp_debug (0, "%s: device=%p (%s), ptr=%p, size=%llu\n",
+	      __FUNCTION__,
+	      device, device->name, ptr, (unsigned long long) size);
+
+  if (size == 0)
+    /* Skip zero-size requests; for those we've got no actual region of
+       page-locked host memory.  */
+    ;
+  else if (device->page_locked_host_register_func)
+    {
+      int page_locked_host_p
+	= device->page_locked_host_p_func (device->target_id, ptr, size);
+      if (page_locked_host_p < 0)
+	{
+	  gomp_error ("Failed to test page-locked host memory"
+		      " via %s libgomp plugin",
+		      device->name);
+	  return false;
+	}
+      if (!page_locked_host_p)
+	{
+	  gomp_error ("Failed page-locked host memory test");
+	  return false;
+	}
+    }
+  return true;
+}
+
+
 /* Similar to gomp_realloc, but release register_lock before gomp_fatal.  */
 
 static void *
@@ -402,6 +470,9 @@ gomp_copy_host2dev (struct gomp_device_descr *devicep,
 		  if (__builtin_expect (aq != NULL, 0))
 		    assert (ephemeral);
 
+		  /* We're just filling the CBUF; 'always_pinned_mode' isn't
+		     relevant.  */
+
 		  memcpy ((char *) cbuf->buf + (doff - cbuf->chunks[0].start),
 			  h, sz);
 		  return;
@@ -422,18 +493,92 @@ gomp_copy_host2dev (struct gomp_device_descr *devicep,
 	     stack local in a function that is no longer executing).  As we've
 	     not been able to use CBUF, make a copy of the data into a
 	     temporary buffer.  */
-	  h_buf = gomp_malloc (sz);
+	  if (always_pinned_mode)
+	    {
+	      h_buf = gomp_page_locked_host_alloc_dev (devicep, sz, false);
+	      if (!h_buf)
+		{
+		  gomp_mutex_unlock (&devicep->lock);
+		  exit (EXIT_FAILURE);
+		}
+	    }
+	  else
+	    h_buf = gomp_malloc (sz);
 	  memcpy (h_buf, h, sz);
 	}
+
+      /* No 'gomp_verify_always_pinned_mode' for 'ephemeral'; have just
+	 allocated.  */
+      if (!ephemeral
+	  && verify_always_pinned_mode
+	  && always_pinned_mode)
+	if (!gomp_verify_always_pinned_mode (devicep, h_buf, sz))
+	  {
+	    gomp_mutex_unlock (&devicep->lock);
+	    exit (EXIT_FAILURE);
+	  }
+
       goacc_device_copy_async (devicep, devicep->openacc.async.host2dev_func,
 			       "dev", d, "host", h_buf, h, sz, aq);
+
       if (ephemeral)
-	/* Free once the transfer has completed.  */
-	devicep->openacc.async.queue_callback_func (aq, free, h_buf);
+	{
+	  if (always_pinned_mode)
+	    {
+	      if (!gomp_page_locked_host_free_dev (devicep, h_buf, aq))
+		{
+		  gomp_mutex_unlock (&devicep->lock);
+		  exit (EXIT_FAILURE);
+		}
+	    }
+	  else
+	    /* Free once the transfer has completed.  */
+	    devicep->openacc.async.queue_callback_func (aq, free, h_buf);
+	}
     }
   else
-    gomp_device_copy (devicep, devicep->host2dev_func,
-		      "dev", d, "host", h, sz);
+    {
+      if (ephemeral
+	  && always_pinned_mode)
+	{
+	  /* TODO: Page-locking on the spot probably doesn't make a lot of
+	     sense (performance-wise).  Should we instead use a "page-locked
+	     host memory bounce buffer" (per host thread, or per device,
+	     or...)?  */
+	  void *ptr = (void *) h;
+	  int page_locked_host_p
+	    = gomp_page_locked_host_register_dev (devicep,
+						  ptr, sz, GOMP_MAP_TO);
+	  if (page_locked_host_p < 0)
+	    {
+	      gomp_mutex_unlock (&devicep->lock);
+	      exit (EXIT_FAILURE);
+	    }
+	  /* Ephemeral data isn't already page-locked host memory.  */
+	  assert (page_locked_host_p);
+	}
+      else if (verify_always_pinned_mode
+	       && always_pinned_mode)
+	if (!gomp_verify_always_pinned_mode (devicep, h, sz))
+	  {
+	    gomp_mutex_unlock (&devicep->lock);
+	    exit (EXIT_FAILURE);
+	  }
+
+      gomp_device_copy (devicep, devicep->host2dev_func,
+			"dev", d, "host", h, sz);
+
+      if (ephemeral
+	  && always_pinned_mode)
+	{
+	  void *ptr = (void *) h;
+	  if (!gomp_page_locked_host_unregister_dev (devicep, ptr, sz, aq))
+	    {
+	      gomp_mutex_unlock (&devicep->lock);
+	      exit (EXIT_FAILURE);
+	    }
+	}
+    }
 }
 
 attribute_hidden void
@@ -441,6 +586,14 @@ gomp_copy_dev2host (struct gomp_device_descr *devicep,
 		    struct goacc_asyncqueue *aq,
 		    void *h, const void *d, size_t sz)
 {
+  if (verify_always_pinned_mode
+      && always_pinned_mode)
+    if (!gomp_verify_always_pinned_mode (devicep, h, sz))
+      {
+	gomp_mutex_unlock (&devicep->lock);
+	exit (EXIT_FAILURE);
+      }
+
   if (__builtin_expect (aq != NULL, 0))
     goacc_device_copy_async (devicep, devicep->openacc.async.dev2host_func,
 			     "host", h, "dev", d, NULL, sz, aq);
@@ -1367,8 +1520,19 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	cbuf.chunk_cnt--;
       if (cbuf.chunk_cnt > 0)
 	{
-	  cbuf.buf
-	    = malloc (cbuf.chunks[cbuf.chunk_cnt - 1].end - cbuf.chunks[0].start);
+	  size_t sz
+	    = cbuf.chunks[cbuf.chunk_cnt - 1].end - cbuf.chunks[0].start;
+	  if (always_pinned_mode)
+	    {
+	      cbuf.buf = gomp_page_locked_host_alloc_dev (devicep, sz, false);
+	      if (!cbuf.buf)
+		{
+		  gomp_mutex_unlock (&devicep->lock);
+		  exit (EXIT_FAILURE);
+		}
+	    }
+	  else
+	    cbuf.buf = malloc (sz);
 	  if (cbuf.buf)
 	    {
 	      cbuf.tgt = tgt;
@@ -1671,6 +1835,23 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		k->tgt = tgt;
 		k->refcount = 0;
 		k->dynamic_refcount = 0;
+		k->page_locked_host_p = false;
+		if (always_pinned_mode)
+		  {
+		    void *ptr = (void *) k->host_start;
+		    size_t size = k->host_end - k->host_start;
+		    int page_locked_host_p = 0;
+		    if (size != 0)
+		      page_locked_host_p = gomp_page_locked_host_register_dev
+			(devicep, ptr, size, kind & typemask);
+		    if (page_locked_host_p < 0)
+		      {
+			gomp_mutex_unlock (&devicep->lock);
+			exit (EXIT_FAILURE);
+		      }
+		    if (page_locked_host_p)
+		      k->page_locked_host_p = true;
+		  }
 		if (field_tgt_clear != FIELD_TGT_EMPTY)
 		  {
 		    k->tgt_offset = k->host_start - field_tgt_base
@@ -1976,11 +2157,22 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 						 - cbuf.chunks[0].start),
 			    cbuf.chunks[c].end - cbuf.chunks[c].start,
 			    false, NULL);
-      if (aq)
-	/* Free once the transfer has completed.  */
-	devicep->openacc.async.queue_callback_func (aq, free, cbuf.buf);
+      if (always_pinned_mode)
+	{
+	  if (!gomp_page_locked_host_free_dev (devicep, cbuf.buf, aq))
+	    {
+	      gomp_mutex_unlock (&devicep->lock);
+	      exit (EXIT_FAILURE);
+	    }
+	}
       else
-	free (cbuf.buf);
+	{
+	  if (aq)
+	    /* Free once the transfer has completed.  */
+	    devicep->openacc.async.queue_callback_func (aq, free, cbuf.buf);
+	  else
+	    free (cbuf.buf);
+	}
       cbuf.buf = NULL;
       cbufp = NULL;
     }
@@ -2112,6 +2304,23 @@ gomp_remove_var_internal (struct gomp_device_descr *devicep, splay_tree_key k,
 	  /* Starting from the _FIRST key, and continue for all following
 	     sibling keys.  */
 	  gomp_remove_splay_tree_key (&devicep->mem_map, k);
+
+	  if (always_pinned_mode)
+	    {
+	      if (k->page_locked_host_p)
+		{
+		  void *ptr = (void *) k->host_start;
+		  size_t size = k->host_end - k->host_start;
+		  if (!gomp_page_locked_host_unregister_dev (devicep,
+							     ptr, size, aq))
+		    {
+		      gomp_mutex_unlock (&devicep->lock);
+		      exit (EXIT_FAILURE);
+		    }
+		  k->page_locked_host_p = false;
+		}
+	    }
+
 	  if (REFCOUNT_STRUCTELEM_LAST_P (k->refcount))
 	    break;
 	  else
@@ -2119,7 +2328,25 @@ gomp_remove_var_internal (struct gomp_device_descr *devicep, splay_tree_key k,
 	}
     }
   else
-    gomp_remove_splay_tree_key (&devicep->mem_map, k);
+    {
+      gomp_remove_splay_tree_key (&devicep->mem_map, k);
+
+      if (always_pinned_mode)
+	{
+	  if (k->page_locked_host_p)
+	    {
+	      void *ptr = (void *) k->host_start;
+	      size_t size = k->host_end - k->host_start;
+	      if (!gomp_page_locked_host_unregister_dev (devicep,
+							 ptr, size, aq))
+		{
+		  gomp_mutex_unlock (&devicep->lock);
+		  exit (EXIT_FAILURE);
+		}
+	      k->page_locked_host_p = false;
+	    }
+	}
+    }
 
   if (aq)
     devicep->openacc.async.queue_callback_func (aq, gomp_unref_tgt_void,
@@ -2211,6 +2438,8 @@ gomp_unmap_vars_internal (struct target_mem_desc *tgt, bool do_copyfrom,
 				      + tgt->list[i].offset),
 			    tgt->list[i].length);
       /* Queue all removals together for processing below.
+	 We may unregister page-locked host memory only after all device to
+	 host memory transfers have completed.
 	 See also 'gomp_exit_data'.  */
       if (do_remove)
 	remove_vars[nrmvars++] = k;
@@ -2392,8 +2621,17 @@ get_gomp_offload_icvs (int dev_num)
   if (offload_icvs != NULL)
     return &offload_icvs->icvs;
 
-  struct gomp_offload_icv_list *new
-    = (struct gomp_offload_icv_list *) gomp_malloc (sizeof (struct gomp_offload_icv_list));
+  struct gomp_offload_icv_list *new;
+  size_t size = sizeof (struct gomp_offload_icv_list);
+  if (always_pinned_mode)
+    {
+      struct gomp_device_descr *device = &devices[dev_num];
+      new = gomp_page_locked_host_alloc_dev (device, size, false);
+      if (!new)
+	exit (EXIT_FAILURE);
+    }
+  else
+    new = gomp_malloc (size);
 
   new->device_num = dev_num;
   new->icvs.device_num = dev_num;
@@ -2447,6 +2685,8 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
 			   const void *host_table, const void *target_data,
 			   bool is_register_lock)
 {
+  gomp_debug (0, "%s: devicep=%p (%s)\n",
+	      __FUNCTION__, devicep, devicep->name);
   void **host_func_table = ((void ***) host_table)[0];
   void **host_funcs_end  = ((void ***) host_table)[1];
   void **host_var_table  = ((void ***) host_table)[2];
@@ -2511,6 +2751,7 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
       k->refcount = REFCOUNT_INFINITY;
       k->dynamic_refcount = 0;
       k->aux = NULL;
+      k->page_locked_host_p = false;
       array->left = NULL;
       array->right = NULL;
       splay_tree_insert (&devicep->mem_map, array);
@@ -2556,6 +2797,34 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
       k->refcount = is_link_var ? REFCOUNT_LINK : REFCOUNT_INFINITY;
       k->dynamic_refcount = 0;
       k->aux = NULL;
+      k->page_locked_host_p = false;
+      if (always_pinned_mode)
+	{
+	  void *ptr = (void *) k->host_start;
+	  size_t size = k->host_end - k->host_start;
+	  gomp_debug (0, "  var %d: ptr=%p, size=%llu, is_link_var=%d\n",
+		      i, ptr, (unsigned long long) size, is_link_var);
+	  if (!is_link_var)
+	    {
+	      /* '#pragma omp declare target' variables typically are
+		 read/write, but in particular artificial ones, like Fortran
+		 array constructors, may be placed in section '.rodata'.
+		 We don't have the actual mapping kind available here, so we
+		 use a magic number.  */
+	      const int kind = -1;
+	      int page_locked_host_p = gomp_page_locked_host_register_dev
+		(devicep, ptr, size, kind);
+	      if (page_locked_host_p < 0)
+		{
+		  gomp_mutex_unlock (&devicep->lock);
+		  if (is_register_lock)
+		    gomp_mutex_unlock (&register_lock);
+		  exit (EXIT_FAILURE);
+		}
+	      if (page_locked_host_p)
+		k->page_locked_host_p = true;
+	    }
+	}
       array->left = NULL;
       array->right = NULL;
       splay_tree_insert (&devicep->mem_map, array);
@@ -2577,6 +2846,13 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
 	     devicep->target_id.  */
 	  int dev_num = (int) (devicep - &devices[0]);
 	  struct gomp_offload_icvs *icvs = get_gomp_offload_icvs (dev_num);
+	  if (!icvs)
+	    {
+	      gomp_mutex_unlock (&devicep->lock);
+	      if (is_register_lock)
+		gomp_mutex_unlock (&register_lock);
+	      gomp_fatal ("'get_gomp_offload_icvs' failed");
+	    }
 	  size_t var_size = var->end - var->start;
 	  if (var_size != sizeof (struct gomp_offload_icvs))
 	    {
@@ -2599,6 +2875,8 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
 	  k->refcount = REFCOUNT_INFINITY;
 	  k->dynamic_refcount = 0;
 	  k->aux = NULL;
+	  /* 'always_pinned_mode' handled via 'get_gomp_offload_icvs'.  */
+	  k->page_locked_host_p = always_pinned_mode;
 	  array->left = NULL;
 	  array->right = NULL;
 	  splay_tree_insert (&devicep->mem_map, array);
@@ -3261,6 +3539,12 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
 
   flags = clear_unsupported_flags (devicep, flags);
 
+  /* For 'nowait' we supposedly have to unregister/free page-locked host memory
+     via 'GOMP_PLUGIN_target_task_completion'.  There is no current
+     configuration exercising this (and thus, infeasible to test).  */
+  assert (!(flags & GOMP_TARGET_FLAG_NOWAIT)
+	  || !(devicep && devicep->page_locked_host_register_func));
+
   if (flags & GOMP_TARGET_FLAG_NOWAIT)
     {
       struct gomp_thread *thr = gomp_thread ();
@@ -3572,18 +3856,37 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
     }
   else
     {
-      devaddrs = (uint64_t *) gomp_malloc (mapnum * sizeof (uint64_t));
-      sizes = (uint64_t *) gomp_malloc (mapnum * sizeof (uint64_t));
-      kinds = (unsigned short *) gomp_malloc (mapnum * sizeof (unsigned short));
+      size_t devaddrs_size = mapnum * sizeof (uint64_t);
+      size_t sizes_size = mapnum * sizeof (uint64_t);
+      size_t kinds_size = mapnum * sizeof (unsigned short);
+      if (always_pinned_mode)
+	{
+	  if (!(devaddrs = gomp_page_locked_host_alloc_dev (devicep,
+							    devaddrs_size,
+							    false))
+	      || !(sizes = gomp_page_locked_host_alloc_dev (devicep,
+							    sizes_size,
+							    false))
+	      || !(kinds = gomp_page_locked_host_alloc_dev (devicep,
+							    kinds_size,
+							    false)))
+	    exit (EXIT_FAILURE);
+	}
+      else
+	{
+	  devaddrs = gomp_malloc (devaddrs_size);
+	  sizes = gomp_malloc (sizes_size);
+	  kinds = gomp_malloc (kinds_size);
+	}
       gomp_copy_dev2host (devicep, aq, devaddrs,
 			  (const void *) (uintptr_t) devaddrs_ptr,
-			  mapnum * sizeof (uint64_t));
+			  devaddrs_size);
       gomp_copy_dev2host (devicep, aq, sizes,
 			  (const void *) (uintptr_t) sizes_ptr,
-			  mapnum * sizeof (uint64_t));
+			  sizes_size);
       gomp_copy_dev2host (devicep, aq, kinds,
 			  (const void *) (uintptr_t) kinds_ptr,
-			  mapnum * sizeof (unsigned short));
+			  kinds_size);
       if (aq && !devicep->openacc.async.synchronize_func (aq))
 	exit (EXIT_FAILURE);
     }
@@ -3598,7 +3901,23 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 
   if (tgt_align)
     {
-      char *tgt = gomp_alloca (tgt_size + tgt_align - 1);
+      size_t tgt_alloc_size = tgt_size + tgt_align - 1;
+      char *tgt = gomp_alloca (tgt_alloc_size);
+      if (always_pinned_mode)
+	{
+	  /* TODO: See 'gomp_copy_host2dev' re "page-locking on the spot".
+	     On the other hand, performance isn't really a concern, here.  */
+	  int page_locked_host_p = 0;
+	  if (tgt_alloc_size != 0)
+	    {
+	      page_locked_host_p = gomp_page_locked_host_register_dev
+		(devicep, tgt, tgt_alloc_size, GOMP_MAP_TOFROM);
+	      if (page_locked_host_p < 0)
+		exit (EXIT_FAILURE);
+	      /* 'gomp_alloca' isn't already page-locked host memory.  */
+	      assert (page_locked_host_p);
+	    }
+	}
       uintptr_t al = (uintptr_t) tgt & (tgt_align - 1);
       if (al)
 	tgt += tgt_align - al;
@@ -3632,6 +3951,14 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 		++i;
 	      }
 	  }
+      if (always_pinned_mode)
+	{
+	  if (tgt_alloc_size != 0
+	      && !gomp_page_locked_host_unregister_dev (devicep,
+							tgt, tgt_alloc_size,
+							NULL))
+	    exit (EXIT_FAILURE);
+	}
     }
 
   if (!(devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM) && mapnum > 0)
@@ -3718,9 +4045,20 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 		  {
 		    cdata[i].aligned = true;
 		    size_t align = (size_t) 1 << (kinds[i] >> 8);
-		    devaddrs[i]
-		      = (uint64_t) (uintptr_t) gomp_aligned_alloc (align,
-								   sizes[i]);
+		    void *ptr;
+		    if (always_pinned_mode)
+		      {
+			ptr = gomp_page_locked_host_aligned_alloc_dev
+			  (devicep, align, sizes[i]);
+			if (!ptr)
+			  {
+			    gomp_mutex_unlock (&devicep->lock);
+			    exit (EXIT_FAILURE);
+			  }
+		      }
+		    else
+		      ptr = gomp_aligned_alloc (align, sizes[i]);
+		    devaddrs[i] = (uint64_t) (uintptr_t) ptr;
 		  }
 		else if (n2 != NULL)
 		  devaddrs[i] = (n2->host_start + cdata[i].devaddr
@@ -3770,7 +4108,23 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 		      }
 		  }
 		if (!cdata[i].present)
-		  devaddrs[i] = (uintptr_t) gomp_malloc (sizeof (void*));
+		  {
+		    void *ptr;
+		    size_t size = sizeof (void *);
+		    if (always_pinned_mode)
+		      {
+			ptr = gomp_page_locked_host_alloc_dev (devicep,
+							       size, false);
+			if (!ptr)
+			  {
+			    gomp_mutex_unlock (&devicep->lock);
+			    exit (EXIT_FAILURE);
+			  }
+		      }
+		    else
+		      ptr = gomp_malloc (size);
+		    devaddrs[i] = (uintptr_t) ptr;
+		  }
 		/* Assume that when present, the pointer is already correct.  */
 		if (!n2)
 		  *(uint64_t *) (uintptr_t) (devaddrs[i] + sizes[i])
@@ -3803,9 +4157,20 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 		  {
 		    cdata[i].aligned = true;
 		    size_t align = (size_t) 1 << (kinds[i] >> 8);
-		    devaddrs[i]
-		      = (uint64_t) (uintptr_t) gomp_aligned_alloc (align,
-								   sizes[i]);
+		    void *ptr;
+		    if (always_pinned_mode)
+		      {
+			ptr = gomp_page_locked_host_aligned_alloc_dev
+			  (devicep, align, sizes[i]);
+			if (!ptr)
+			  {
+			    gomp_mutex_unlock (&devicep->lock);
+			    exit (EXIT_FAILURE);
+			  }
+		      }
+		    else
+		      ptr = gomp_aligned_alloc (align, sizes[i]);
+		    devaddrs[i] = (uint64_t) (uintptr_t) ptr;
 		    gomp_copy_dev2host (devicep, aq,
 					(void *) (uintptr_t) devaddrs[i],
 					(void *) (uintptr_t) cdata[i].devaddr,
@@ -3881,7 +4246,20 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 					  + sizes[i + sizes[i]]);
 		    size_t align = (size_t) 1 << (kinds[i] >> 8);
 		    cdata[i].aligned = true;
-		    devaddrs[i] = (uintptr_t) gomp_aligned_alloc (align, sz);
+		    void *ptr;
+		    if (always_pinned_mode)
+		      {
+			ptr = gomp_page_locked_host_aligned_alloc_dev
+			  (devicep, align, sz);
+			if (!ptr)
+			  {
+			    gomp_mutex_unlock (&devicep->lock);
+			    exit (EXIT_FAILURE);
+			  }
+		      }
+		    else
+		      ptr = gomp_aligned_alloc (align, sz);
+		    devaddrs[i] = (uintptr_t) ptr;
 		    devaddrs[i] -= devaddrs[i+1] - cdata[i].devaddr;
 		  }
 		else
@@ -3945,9 +4323,29 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 	      struct_cpy = sizes[i];
 	    }
 	  else if (!cdata[i].present && cdata[i].aligned)
-	    gomp_aligned_free ((void *) (uintptr_t) devaddrs[i]);
+	    {
+	      void *ptr = (void *) (uintptr_t) devaddrs[i];
+	      if (always_pinned_mode)
+		{
+		  if (!gomp_page_locked_host_aligned_free_dev (devicep,
+							       ptr,
+							       aq))
+		    exit (EXIT_FAILURE);
+		}
+	      else
+		gomp_aligned_free (ptr);
+	    }
 	  else if (!cdata[i].present)
-	    free ((void *) (uintptr_t) devaddrs[i]);
+	    {
+	      void *ptr = (void *) (uintptr_t) devaddrs[i];
+	      if (always_pinned_mode)
+		{
+		  if (!gomp_page_locked_host_free_dev (devicep, ptr, aq))
+		    exit (EXIT_FAILURE);
+		}
+	      else
+		free (ptr);
+	    }
 	}
       if (clean_struct)
 	for (uint64_t i = 0; i < mapnum; i++)
@@ -3956,12 +4354,30 @@ gomp_target_rev (uint64_t fn_ptr, uint64_t mapnum, uint64_t devaddrs_ptr,
 		  == GOMP_MAP_STRUCT))
 	    {
 	      devaddrs[i] += cdata[i+1].devaddr - cdata[i].devaddr;
-	      gomp_aligned_free ((void *) (uintptr_t) devaddrs[i]);
+	      void *ptr = (void *) (uintptr_t) devaddrs[i];
+	      if (always_pinned_mode)
+		{
+		  if (!gomp_page_locked_host_aligned_free_dev (devicep,
+							       ptr, aq))
+		    exit (EXIT_FAILURE);
+		}
+	      else
+		gomp_aligned_free (ptr);
 	    }
 
-      free (devaddrs);
-      free (sizes);
-      free (kinds);
+      if (always_pinned_mode)
+	{
+	  if (!gomp_page_locked_host_free_dev (devicep, devaddrs, aq)
+	      || !gomp_page_locked_host_free_dev (devicep, sizes, aq)
+	      || !gomp_page_locked_host_free_dev (devicep, kinds, aq))
+	    exit (EXIT_FAILURE);
+	}
+      else
+	{
+	  free (devaddrs);
+	  free (sizes);
+	  free (kinds);
+	}
     }
 }
 
@@ -4580,6 +4996,160 @@ gomp_usm_free (void *device_ptr)
 }
 
 
+/* Allocate page-locked host memory via DEVICE.  */
+
+static void *
+gomp_page_locked_host_alloc_dev (struct gomp_device_descr *device,
+				 size_t size, bool allow_null)
+{
+  gomp_debug (0, "%s: device=%p (%s), size=%llu\n",
+	      __FUNCTION__, device, device->name, (unsigned long long) size);
+
+  void *ret;
+  if (!device->page_locked_host_alloc_func (&ret, size))
+    {
+      const char *fmt
+	= "Failed to allocate page-locked host memory via %s libgomp plugin";
+      if (allow_null)
+	gomp_fatal (fmt, device->name);
+      else
+	gomp_error (fmt, device->name);
+      ret = NULL;
+    }
+  else if (ret == NULL && !allow_null)
+    gomp_error ("Out of memory allocating %lu bytes"
+		" page-locked host memory"
+		" via %s libgomp plugin",
+		(unsigned long) size, device->name);
+  else
+    gomp_debug (0, "  -> ret=[%p, %p)\n",
+		ret, ret + size);
+  return ret;
+}
+
+/* Free page-locked host memory via DEVICE.  */
+
+static bool
+gomp_page_locked_host_free_dev (struct gomp_device_descr *device,
+				void *ptr,
+				struct goacc_asyncqueue *aq)
+{
+  gomp_debug (0, "%s: device=%p (%s), ptr=%p, aq=%p\n",
+	      __FUNCTION__, device, device->name, ptr, aq);
+
+  if (!device->page_locked_host_free_func (ptr, aq))
+    {
+      gomp_error ("Failed to free page-locked host memory"
+		  " via %s libgomp plugin",
+		  device->name);
+      return false;
+    }
+  return true;
+}
+
+/* Allocate aligned page-locked host memory via DEVICE.
+
+   That is, 'gomp_aligned_alloc' (see 'alloc.c') for page-locked host
+   memory.  */
+
+static void *
+gomp_page_locked_host_aligned_alloc_dev (struct gomp_device_descr *device,
+					 size_t al, size_t size)
+{
+  gomp_debug (0, "%s: device=%p (%s), al=%llu, size=%llu\n",
+	      __FUNCTION__, device, device->name,
+	      (unsigned long long) al, (unsigned long long) size);
+
+  void *ret;
+  if (al < sizeof (void *))
+    al = sizeof (void *);
+  ret = NULL;
+  if ((al & (al - 1)) == 0 && size)
+    {
+      void *p = gomp_page_locked_host_alloc_dev (device, size + al, true);
+      if (p)
+	{
+	  void *ap = (void *) (((uintptr_t) p + al) & -al);
+	  ((void **) ap)[-1] = p;
+	  ret = ap;
+	}
+    }
+  if (ret == NULL)
+    gomp_error ("Out of memory allocating %lu bytes", (unsigned long) size);
+  else
+    gomp_debug (0, "  -> ret=[%p, %p)\n",
+		ret, ret + size);
+  return ret;
+}
+
+/* Free aligned page-locked host memory via DEVICE.
+
+   That is, 'gomp_aligned_free' (see 'alloc.c') for page-locked host
+   memory.  */
+
+static bool
+gomp_page_locked_host_aligned_free_dev (struct gomp_device_descr *device,
+					void *ptr,
+					struct goacc_asyncqueue *aq)
+{
+  gomp_debug (0, "%s: device=%p (%s), ptr=%p, aq=%p\n",
+	      __FUNCTION__, device, device->name, ptr, aq);
+
+  if (ptr)
+    {
+      ptr = ((void **) ptr)[-1];
+      gomp_debug (0, "  ptr=%p\n",
+		  ptr);
+
+      if (!gomp_page_locked_host_free_dev (device, ptr, aq))
+	return false;
+    }
+  return true;
+}
+
+/* Register page-locked host memory via DEVICE.  */
+
+attribute_hidden int
+gomp_page_locked_host_register_dev (struct gomp_device_descr *device,
+				    void *ptr, size_t size, int kind)
+{
+  gomp_debug (0, "%s: device=%p (%s), ptr=%p, size=%llu, kind=%d\n",
+	      __FUNCTION__, device, device->name,
+	      ptr, (unsigned long long) size, kind);
+  assert (size != 0);
+
+  int ret = device->page_locked_host_register_func (device->target_id,
+						    ptr, size, kind);
+  if (ret < 0)
+    gomp_error ("Failed to register page-locked host memory"
+		" via %s libgomp plugin",
+		device->name);
+  return ret;
+}
+
+/* Unregister page-locked host memory via DEVICE.  */
+
+attribute_hidden bool
+gomp_page_locked_host_unregister_dev (struct gomp_device_descr *device,
+				      void *ptr, size_t size,
+				      struct goacc_asyncqueue *aq)
+{
+  gomp_debug (0, "%s: device=%p (%s), ptr=%p, size=%llu, aq=%p\n",
+	      __FUNCTION__, device, device->name,
+	      ptr, (unsigned long long) size, aq);
+  assert (size != 0);
+
+  if (!device->page_locked_host_unregister_func (ptr, size, aq))
+    {
+      gomp_error ("Failed to unregister page-locked host memory"
+		  " via %s libgomp plugin",
+		  device->name);
+      return false;
+    }
+  return true;
+}
+
+
 /* Device (really: libgomp plugin) to use for paged-locked memory.  We
    assume there is either none or exactly one such device for the lifetime of
    the process.  */
@@ -4676,10 +5246,7 @@ gomp_page_locked_host_alloc (void **ptr, size_t size)
 	}
       gomp_mutex_unlock (&device->lock);
 
-      if (!device->page_locked_host_alloc_func (ptr, size))
-	gomp_fatal ("Failed to allocate page-locked host memory"
-		    " via %s libgomp plugin",
-		    device->name);
+      *ptr = gomp_page_locked_host_alloc_dev (device, size, true);
     }
   return device != NULL;
 }
@@ -4708,10 +5275,8 @@ gomp_page_locked_host_free (void *ptr)
     }
   gomp_mutex_unlock (&device->lock);
 
-  if (!device->page_locked_host_free_func (ptr))
-    gomp_fatal ("Failed to free page-locked host memory"
-		" via %s libgomp plugin",
-		device->name);
+  if (!gomp_page_locked_host_free_dev (device, ptr, NULL))
+    exit (EXIT_FAILURE);
 }
 
 
@@ -4787,30 +5352,84 @@ omp_target_memcpy_copy (void *dst, const void *src, size_t length,
   bool ret;
   if (src_devicep == NULL && dst_devicep == NULL)
     {
+      /* No 'gomp_verify_always_pinned_mode' here.  */
       memcpy ((char *) dst + dst_offset, (char *) src + src_offset, length);
       return 0;
     }
   if (src_devicep == NULL)
     {
       gomp_mutex_lock (&dst_devicep->lock);
+
+      void *src_ptr = (void *) src + src_offset;
+      int src_ptr_page_locked_host_p = 0;
+
+      if (always_pinned_mode)
+	{
+	  if (length != 0)
+	    src_ptr_page_locked_host_p = gomp_page_locked_host_register_dev
+	      (dst_devicep, src_ptr, length, GOMP_MAP_TO);
+	  if (src_ptr_page_locked_host_p < 0)
+	    {
+	      gomp_mutex_unlock (&dst_devicep->lock);
+	      return ENOMEM;
+	    }
+	}
+
+      /* No 'gomp_verify_always_pinned_mode' here; have just registered.  */
       ret = dst_devicep->host2dev_func (dst_devicep->target_id,
 					(char *) dst + dst_offset,
-					(char *) src + src_offset, length);
+					src_ptr, length);
+
+      if (src_ptr_page_locked_host_p
+	  && !gomp_page_locked_host_unregister_dev (dst_devicep,
+						    src_ptr, length, NULL))
+	    {
+	      gomp_mutex_unlock (&dst_devicep->lock);
+	      return ENOMEM;
+	    }
+
       gomp_mutex_unlock (&dst_devicep->lock);
       return (ret ? 0 : EINVAL);
     }
   if (dst_devicep == NULL)
     {
       gomp_mutex_lock (&src_devicep->lock);
+
+      void *dst_ptr = (void *) dst + dst_offset;
+      int dst_ptr_page_locked_host_p = 0;
+
+      if (always_pinned_mode)
+	{
+	  if (length != 0)
+	    dst_ptr_page_locked_host_p = gomp_page_locked_host_register_dev
+	      (src_devicep, dst_ptr, length, GOMP_MAP_FROM);
+	  if (dst_ptr_page_locked_host_p < 0)
+	    {
+	      gomp_mutex_unlock (&src_devicep->lock);
+	      return ENOMEM;
+	    }
+	}
+
+      /* No 'gomp_verify_always_pinned_mode' here; have just registered.  */
       ret = src_devicep->dev2host_func (src_devicep->target_id,
-					(char *) dst + dst_offset,
+					dst_ptr,
 					(char *) src + src_offset, length);
+
+      if (dst_ptr_page_locked_host_p
+	  && !gomp_page_locked_host_unregister_dev (src_devicep,
+						    dst_ptr, length, NULL))
+	    {
+	      gomp_mutex_unlock (&src_devicep->lock);
+	      return ENOMEM;
+	    }
+
       gomp_mutex_unlock (&src_devicep->lock);
       return (ret ? 0 : EINVAL);
     }
   if (src_devicep == dst_devicep)
     {
       gomp_mutex_lock (&src_devicep->lock);
+      /* No 'gomp_verify_always_pinned_mode' here.  */
       ret = src_devicep->dev2dev_func (src_devicep->target_id,
 				       (char *) dst + dst_offset,
 				       (char *) src + src_offset, length);
@@ -4922,21 +5541,63 @@ omp_target_memcpy_rect_worker (void *dst, const void *src, size_t element_size,
 	return EINVAL;
       if (dst_devicep == NULL && src_devicep == NULL)
 	{
+	  /* No 'gomp_verify_always_pinned_mode' here.  */
 	  memcpy ((char *) dst + dst_off, (const char *) src + src_off,
 		  length);
 	  ret = 1;
 	}
       else if (src_devicep == NULL)
-	ret = dst_devicep->host2dev_func (dst_devicep->target_id,
-					  (char *) dst + dst_off,
-					  (const char *) src + src_off,
-					  length);
+	{
+	  void *src_ptr = (void *) src + src_off;
+	  int src_ptr_page_locked_host_p = 0;
+
+	  if (always_pinned_mode)
+	    {
+	      if (length != 0)
+		src_ptr_page_locked_host_p = gomp_page_locked_host_register_dev
+		  (dst_devicep, src_ptr, length, GOMP_MAP_TO);
+	      if (src_ptr_page_locked_host_p < 0)
+		return ENOMEM;
+	    }
+
+	  /* No 'gomp_verify_always_pinned_mode' here; have just registered.  */
+	  ret = dst_devicep->host2dev_func (dst_devicep->target_id,
+					    (char *) dst + dst_off,
+					    src_ptr,
+					    length);
+
+	  if (src_ptr_page_locked_host_p
+	      && !gomp_page_locked_host_unregister_dev (dst_devicep,
+							src_ptr, length, NULL))
+	    return ENOMEM;
+	}
       else if (dst_devicep == NULL)
-	ret = src_devicep->dev2host_func (src_devicep->target_id,
-					  (char *) dst + dst_off,
-					  (const char *) src + src_off,
-					  length);
+	{
+	  void *dst_ptr = (void *) dst + dst_off;
+	  int dst_ptr_page_locked_host_p = 0;
+
+	  if (always_pinned_mode)
+	    {
+	      if (length != 0)
+		dst_ptr_page_locked_host_p = gomp_page_locked_host_register_dev
+		  (src_devicep, dst_ptr, length, GOMP_MAP_FROM);
+	      if (dst_ptr_page_locked_host_p < 0)
+		return ENOMEM;
+	    }
+
+	  /* No 'gomp_verify_always_pinned_mode' here; have just registered.  */
+	  ret = src_devicep->dev2host_func (src_devicep->target_id,
+					    dst_ptr,
+					    (const char *) src + src_off,
+					    length);
+
+	  if (dst_ptr_page_locked_host_p
+	      && !gomp_page_locked_host_unregister_dev (src_devicep,
+							dst_ptr, length, NULL))
+	    return ENOMEM;
+	}
       else if (src_devicep == dst_devicep)
+	/* No 'gomp_verify_always_pinned_mode' here.  */
 	ret = src_devicep->dev2dev_func (src_devicep->target_id,
 					 (char *) dst + dst_off,
 					 (const char *) src + src_off,
@@ -5179,6 +5840,7 @@ omp_target_associate_ptr (const void *host_ptr, const void *device_ptr,
       k->refcount = REFCOUNT_INFINITY;
       k->dynamic_refcount = 0;
       k->aux = NULL;
+      k->page_locked_host_p = false;
       array->left = NULL;
       array->right = NULL;
       splay_tree_insert (&devicep->mem_map, array);
@@ -5401,6 +6063,9 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
   DLSYM_OPT (is_usm_ptr, is_usm_ptr);
   DLSYM_OPT (page_locked_host_alloc, page_locked_host_alloc);
   DLSYM_OPT (page_locked_host_free, page_locked_host_free);
+  DLSYM_OPT (page_locked_host_register, page_locked_host_register);
+  DLSYM_OPT (page_locked_host_unregister, page_locked_host_unregister);
+  DLSYM_OPT (page_locked_host_p, page_locked_host_p);
   DLSYM (dev2host);
   DLSYM (host2dev);
   DLSYM (evaluate_device);

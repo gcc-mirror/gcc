@@ -78,11 +78,14 @@ extern CUresult cuGetErrorString (CUresult, const char **);
 CUresult cuLinkAddData (CUlinkState, CUjitInputType, void *, size_t,
 			const char *, unsigned, CUjit_option *, void **);
 CUresult cuLinkCreate (unsigned, CUjit_option *, void **, CUlinkState *);
+#undef cuMemHostRegister
+CUresult cuMemHostRegister (void *, size_t, unsigned int);
 #else
 typedef size_t (*CUoccupancyB2DSize)(int);
 CUresult cuLinkAddData_v2 (CUlinkState, CUjitInputType, void *, size_t,
 			   const char *, unsigned, CUjit_option *, void **);
 CUresult cuLinkCreate_v2 (unsigned, CUjit_option *, void **, CUlinkState *);
+CUresult cuMemHostRegister_v2 (void *, size_t, unsigned int);
 CUresult cuOccupancyMaxPotentialBlockSize(int *, int *, CUfunction,
 					  CUoccupancyB2DSize, size_t, int);
 #endif
@@ -218,6 +221,8 @@ static pthread_mutex_t ptx_dev_lock = PTHREAD_MUTEX_INITIALIZER;
 struct goacc_asyncqueue
 {
   CUstream cuda_stream;
+  pthread_mutex_t page_locked_host_unregister_blocks_lock;
+  struct ptx_free_block *page_locked_host_unregister_blocks;
 };
 
 struct nvptx_callback
@@ -314,6 +319,7 @@ struct ptx_device
   int warp_size;
   int max_threads_per_block;
   int max_threads_per_multiprocessor;
+  bool read_only_host_register_supported;
   int default_dims[GOMP_DIM_MAX];
   int compute_major, compute_minor;
 
@@ -339,6 +345,33 @@ struct ptx_device
 };
 
 static struct ptx_device **ptx_devices;
+
+static struct ptx_free_block *free_host_blocks = NULL;
+static pthread_mutex_t free_host_blocks_lock = PTHREAD_MUTEX_INITIALIZER;
+
+static bool
+nvptx_run_deferred_page_locked_host_free (void)
+{
+  GOMP_PLUGIN_debug (0, "%s\n",
+		     __FUNCTION__);
+
+  pthread_mutex_lock (&free_host_blocks_lock);
+  struct ptx_free_block *b = free_host_blocks;
+  free_host_blocks = NULL;
+  pthread_mutex_unlock (&free_host_blocks_lock);
+
+  while (b)
+    {
+      GOMP_PLUGIN_debug (0, "  b=%p: cuMemFreeHost(b->ptr=%p)\n",
+			 b, b->ptr);
+
+      struct ptx_free_block *b_next = b->next;
+      CUDA_CALL (cuMemFreeHost, b->ptr);
+      free (b);
+      b = b_next;
+    }
+  return true;
+}
 
 static bool nvptx_do_global_cdtors (CUmodule, struct ptx_device *,
 				    const char *);
@@ -541,6 +574,19 @@ nvptx_open_device (int n)
   r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi,
 			 CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING, dev);
   assert (r == CUDA_SUCCESS && pi);
+
+  /* This is a CUDA 11.1 feature.  */
+  r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi,
+			 CU_DEVICE_ATTRIBUTE_READ_ONLY_HOST_REGISTER_SUPPORTED,
+			 dev);
+  if (r == CUDA_ERROR_INVALID_VALUE)
+    pi = false;
+  else if (r != CUDA_SUCCESS)
+    {
+      GOMP_PLUGIN_error ("cuDeviceGetAttribute error: %s", cuda_error (r));
+      return NULL;
+    }
+  ptx_dev->read_only_host_register_supported = pi;
 
   for (int i = 0; i != GOMP_DIM_MAX; i++)
     ptx_dev->default_dims[i] = 0;
@@ -1278,6 +1324,11 @@ GOMP_OFFLOAD_init_device (int n)
 bool
 GOMP_OFFLOAD_fini_device (int n)
 {
+  /* This isn't related to this specific 'ptx_devices[n]', but is a convenient
+     place to clean up.  */
+  if (!nvptx_run_deferred_page_locked_host_free ())
+    return false;
+
   pthread_mutex_lock (&ptx_dev_lock);
 
   if (ptx_devices[n] != NULL)
@@ -1722,6 +1773,12 @@ GOMP_OFFLOAD_page_locked_host_alloc (void **ptr, size_t size)
   GOMP_PLUGIN_debug (0, "nvptx %s: ptr=%p, size=%llu\n",
 		     __FUNCTION__, ptr, (unsigned long long) size);
 
+  /* TODO: Maybe running the deferred 'cuMemFreeHost's here is not the best
+     idea, given that we don't know what context we're called from?  (See
+     'GOMP_OFFLOAD_run' reverse offload handling.)  But, where to do it?  */
+  if (!nvptx_run_deferred_page_locked_host_free ())
+    return false;
+
   CUresult r;
 
   unsigned int flags = 0;
@@ -1740,14 +1797,241 @@ GOMP_OFFLOAD_page_locked_host_alloc (void **ptr, size_t size)
   return true;
 }
 
-bool
-GOMP_OFFLOAD_page_locked_host_free (void *ptr)
+static void
+nvptx_page_locked_host_free_callback (CUstream stream, CUresult r, void *ptr)
 {
-  GOMP_PLUGIN_debug (0, "nvptx %s: ptr=%p\n",
-		     __FUNCTION__, ptr);
+  GOMP_PLUGIN_debug (0, "%s: stream=%p, r=%u, ptr=%p\n",
+		     __FUNCTION__, stream, (unsigned) r, ptr);
 
-  CUDA_CALL (cuMemFreeHost, ptr);
+  if (r != CUDA_SUCCESS)
+    GOMP_PLUGIN_error ("%s error: %s", __FUNCTION__, cuda_error (r));
+
+  /* We can't now call 'cuMemFreeHost': we're in a CUDA stream context,
+     where we "must not make any CUDA API calls".
+     And, in particular in an OpenMP 'target' reverse offload context,
+     this may even dead-lock?!  */
+  /* See 'nvptx_free'.  */
+  struct ptx_free_block *n
+    = GOMP_PLUGIN_malloc (sizeof (struct ptx_free_block));
+  GOMP_PLUGIN_debug (0, "  defer; n=%p\n", n);
+  n->ptr = ptr;
+  pthread_mutex_lock (&free_host_blocks_lock);
+  n->next = free_host_blocks;
+  free_host_blocks = n;
+  pthread_mutex_unlock (&free_host_blocks_lock);
+}
+
+bool
+GOMP_OFFLOAD_page_locked_host_free (void *ptr, struct goacc_asyncqueue *aq)
+{
+  GOMP_PLUGIN_debug (0, "nvptx %s: ptr=%p, aq=%p\n",
+		     __FUNCTION__, ptr, aq);
+
+  if (aq)
+    {
+      GOMP_PLUGIN_debug (0, "  aq <-"
+			 " nvptx_page_locked_host_free_callback(ptr)\n");
+      CUDA_CALL (cuStreamAddCallback, aq->cuda_stream,
+		 nvptx_page_locked_host_free_callback, ptr, 0);
+    }
+  else
+    CUDA_CALL (cuMemFreeHost, ptr);
   return true;
+}
+
+static int
+nvptx_page_locked_host_p (const void *ptr, size_t size)
+{
+  GOMP_PLUGIN_debug (0, "%s: ptr=%p, size=%llu\n",
+		     __FUNCTION__, ptr, (unsigned long long) size);
+
+  int ret;
+
+  CUresult r;
+
+  /* Apparently, there exists no CUDA call to query 'PTR + [0, SIZE)'.  Instead
+     of invoking 'cuMemHostGetFlags' SIZE times, we deem it sufficient to only
+     query the base PTR.  */
+  unsigned int flags;
+  void *ptr_noconst = (void *) ptr;
+  r = CUDA_CALL_NOCHECK (cuMemHostGetFlags, &flags, ptr_noconst);
+  (void) flags;
+  if (r == CUDA_SUCCESS)
+    ret = 1;
+  else if (r == CUDA_ERROR_INVALID_VALUE)
+    ret = 0;
+  else
+    {
+      GOMP_PLUGIN_error ("cuMemHostGetFlags error: %s", cuda_error (r));
+      ret = -1;
+    }
+  GOMP_PLUGIN_debug (0, "  -> %d (with r = %u)\n",
+		     ret, (unsigned) r);
+  return ret;
+}
+
+int
+GOMP_OFFLOAD_page_locked_host_register (int ord,
+					void *ptr, size_t size, int kind)
+{
+  bool try_read_only;
+  /* Magic number: if the actualy mapping kind is unknown...  */
+  if (kind == -1)
+    /* ..., allow for trying read-only registration here.  */
+    try_read_only = true;
+  else
+    try_read_only = !GOMP_MAP_COPY_FROM_P (kind);
+  GOMP_PLUGIN_debug (0, "nvptx %s: ord=%d, ptr=%p, size=%llu,"
+		     " kind=%d (try_read_only=%d)\n",
+		     __FUNCTION__, ord, ptr, (unsigned long long) size,
+		     kind, try_read_only);
+  assert (size != 0);
+
+  if (!nvptx_attach_host_thread_to_device (ord))
+    return -1;
+  struct ptx_device *ptx_dev = ptx_devices[ord];
+
+  int ret = -1;
+
+  CUresult r;
+
+  unsigned int flags = 0;
+  /* Given 'CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING', we don't need
+     'flags |= CU_MEMHOSTREGISTER_PORTABLE;' here.  */
+ cuMemHostRegister:
+  if (CUDA_CALL_EXISTS (cuMemHostRegister_v2))
+    r = CUDA_CALL_NOCHECK (cuMemHostRegister_v2, ptr, size, flags);
+  else
+    r = CUDA_CALL_NOCHECK (cuMemHostRegister, ptr, size, flags);
+  if (r == CUDA_SUCCESS)
+    ret = 1;
+  else if (r == CUDA_ERROR_INVALID_VALUE)
+    {
+      /* For example, for 'cuMemHostAlloc' (via the user code, for example)
+	 followed by 'cuMemHostRegister' (via 'always_pinned_mode', for
+	 example), we don't get 'CUDA_ERROR_HOST_MEMORY_ALREADY_REGISTERED' but
+	 'CUDA_ERROR_INVALID_VALUE'.  */
+      if (nvptx_page_locked_host_p (ptr, size))
+	/* Accept the case that the region already is page-locked.  */
+	ret = 0;
+      /* Depending on certain circumstances (see 'cuMemHostRegister'
+	 documentation), for example, 'const' data that is placed in section
+	 '.rodata' may need 'flags |= CU_MEMHOSTREGISTER_READ_ONLY;', to avoid
+	 'CUDA_ERROR_INVALID_VALUE'.  If running into that, we now apply/re-try
+	 lazily instead of actively setting it above, to avoid the following
+	 problem.  Supposedly/observably (but, not documented), if part of a
+	 memory page has been registered without 'CU_MEMHOSTREGISTER_READ_ONLY'
+	 and we then try to register another part with
+	 'CU_MEMHOSTREGISTER_READ_ONLY', we'll get 'CUDA_ERROR_INVALID_VALUE'.
+	 In that case, we can solve the issue by re-trying with
+	 'CU_MEMHOSTREGISTER_READ_ONLY' masked out.  However, if part of a
+	 memory page has been registered with 'CU_MEMHOSTREGISTER_READ_ONLY'
+	 and we then try to register another part without
+	 'CU_MEMHOSTREGISTER_READ_ONLY', that latter part apparently inherits
+	 the former's 'CU_MEMHOSTREGISTER_READ_ONLY' (and any device to host
+	 copy then fails).  We can't easily resolve that situation
+	 retroactively, that is, we can't easily re-register the first
+	 'CU_MEMHOSTREGISTER_READ_ONLY' part without that flag.  */
+      else if (!(flags & CU_MEMHOSTREGISTER_READ_ONLY)
+	       && try_read_only
+	       && ptx_dev->read_only_host_register_supported)
+	{
+	  GOMP_PLUGIN_debug (0, "  flags |= CU_MEMHOSTREGISTER_READ_ONLY;\n");
+	  flags |= CU_MEMHOSTREGISTER_READ_ONLY;
+	  goto cuMemHostRegister;
+	}
+      /* We ought to use 'CU_MEMHOSTREGISTER_READ_ONLY', but it's not
+	 available.  */
+      else if (try_read_only
+	       && !ptx_dev->read_only_host_register_supported)
+	{
+	  assert (!(flags & CU_MEMHOSTREGISTER_READ_ONLY));
+	  GOMP_PLUGIN_debug (0, "  punt;"
+			     " CU_MEMHOSTREGISTER_READ_ONLY not available\n");
+	  /* Accept this (legacy) case; we can't (easily) register page-locked
+	     this region of host memory.  */
+	  ret = 0;
+	}
+    }
+  else if (r == CUDA_ERROR_HOST_MEMORY_ALREADY_REGISTERED)
+    {
+      /* 'cuMemHostRegister' (via the user code, for example) followed by
+	 another (potentially partially overlapping) 'cuMemHostRegister'
+	 (via 'always_pinned_mode', for example).  */
+      /* Accept this case in good faith; do not verify further.  */
+      ret = 0;
+    }
+  if (ret == -1)
+    GOMP_PLUGIN_error ("cuMemHostRegister error: %s", cuda_error (r));
+  GOMP_PLUGIN_debug (0, "  -> %d (with r = %u)\n",
+		     ret, (unsigned) r);
+  return ret;
+}
+
+static void
+nvptx_page_locked_host_unregister_callback (CUstream stream, CUresult r,
+					    void *b_)
+{
+  void **b = b_;
+  struct goacc_asyncqueue *aq = b[0];
+  void *ptr = b[1];
+  GOMP_PLUGIN_debug (0, "%s: stream=%p, r=%u, b_=%p (aq=%p, ptr=%p)\n",
+		     __FUNCTION__, stream, (unsigned) r, b_, aq, ptr);
+
+  free (b_);
+
+  if (r != CUDA_SUCCESS)
+    GOMP_PLUGIN_error ("%s error: %s", __FUNCTION__, cuda_error (r));
+
+  /* We can't now call 'cuMemHostUnregister': we're in a CUDA stream context,
+     where we "must not make any CUDA API calls".  */
+  /* See 'nvptx_free'.  */
+  struct ptx_free_block *n
+    = GOMP_PLUGIN_malloc (sizeof (struct ptx_free_block));
+  GOMP_PLUGIN_debug (0, "  defer; n=%p\n", n);
+  n->ptr = ptr;
+  pthread_mutex_lock (&aq->page_locked_host_unregister_blocks_lock);
+  n->next = aq->page_locked_host_unregister_blocks;
+  aq->page_locked_host_unregister_blocks = n;
+  pthread_mutex_unlock (&aq->page_locked_host_unregister_blocks_lock);
+}
+
+bool
+GOMP_OFFLOAD_page_locked_host_unregister (void *ptr, size_t size,
+					  struct goacc_asyncqueue *aq)
+{
+  GOMP_PLUGIN_debug (0, "nvptx %s: ptr=%p, size=%llu, aq=%p\n",
+		     __FUNCTION__, ptr, (unsigned long long) size, aq);
+  assert (size != 0);
+
+  if (aq)
+    {
+      /* We don't unregister right away, as in-flight operations may still
+	 benefit from the registration.  */
+      void **b = GOMP_PLUGIN_malloc (2 * sizeof (*b));
+      b[0] = aq;
+      b[1] = ptr;
+      GOMP_PLUGIN_debug (0, "  aq <-"
+			 " nvptx_page_locked_host_unregister_callback(b=%p)\n",
+			 b);
+      CUDA_CALL (cuStreamAddCallback, aq->cuda_stream,
+		 nvptx_page_locked_host_unregister_callback, b, 0);
+    }
+  else
+    CUDA_CALL (cuMemHostUnregister, ptr);
+  return true;
+}
+
+int
+GOMP_OFFLOAD_page_locked_host_p (int ord, const void *ptr, size_t size)
+{
+  GOMP_PLUGIN_debug (0, "nvptx %s: ord=%d, ptr=%p, size=%llu\n",
+		     __FUNCTION__, ord, ptr, (unsigned long long) size);
+
+  if (!nvptx_attach_host_thread_to_device (ord))
+    return -1;
+
+  return nvptx_page_locked_host_p (ptr, size);
 }
 
 
@@ -1852,12 +2136,19 @@ GOMP_OFFLOAD_openacc_cuda_set_stream (struct goacc_asyncqueue *aq, void *stream)
 static struct goacc_asyncqueue *
 nvptx_goacc_asyncqueue_construct (unsigned int flags)
 {
+  GOMP_PLUGIN_debug (0, "%s: flags=%u\n",
+		     __FUNCTION__, flags);
+
   CUstream stream = NULL;
   CUDA_CALL_ERET (NULL, cuStreamCreate, &stream, flags);
 
   struct goacc_asyncqueue *aq
     = GOMP_PLUGIN_malloc (sizeof (struct goacc_asyncqueue));
   aq->cuda_stream = stream;
+  pthread_mutex_init (&aq->page_locked_host_unregister_blocks_lock, NULL);
+  aq->page_locked_host_unregister_blocks = NULL;
+  GOMP_PLUGIN_debug (0, "  -> aq=%p (with cuda_stream=%p)\n",
+		     aq, aq->cuda_stream);
   return aq;
 }
 
@@ -1870,9 +2161,24 @@ GOMP_OFFLOAD_openacc_async_construct (int device __attribute__((unused)))
 static bool
 nvptx_goacc_asyncqueue_destruct (struct goacc_asyncqueue *aq)
 {
+  GOMP_PLUGIN_debug (0, "nvptx %s: aq=%p\n",
+		     __FUNCTION__, aq);
+
   CUDA_CALL_ERET (false, cuStreamDestroy, aq->cuda_stream);
+
+  bool ret = true;
+  pthread_mutex_lock (&aq->page_locked_host_unregister_blocks_lock);
+  if (aq->page_locked_host_unregister_blocks != NULL)
+    {
+      GOMP_PLUGIN_error ("aq->page_locked_host_unregister_blocks not empty");
+      ret = false;
+    }
+  pthread_mutex_unlock (&aq->page_locked_host_unregister_blocks_lock);
+  pthread_mutex_destroy (&aq->page_locked_host_unregister_blocks_lock);
+
   free (aq);
-  return true;
+
+  return ret;
 }
 
 bool
@@ -1881,12 +2187,50 @@ GOMP_OFFLOAD_openacc_async_destruct (struct goacc_asyncqueue *aq)
   return nvptx_goacc_asyncqueue_destruct (aq);
 }
 
+static bool
+nvptx_run_deferred_page_locked_host_unregister (struct goacc_asyncqueue *aq)
+{
+  GOMP_PLUGIN_debug (0, "%s: aq=%p\n",
+		     __FUNCTION__, aq);
+
+  bool ret = true;
+  pthread_mutex_lock (&aq->page_locked_host_unregister_blocks_lock);
+  for (struct ptx_free_block *b = aq->page_locked_host_unregister_blocks; b;)
+    {
+      GOMP_PLUGIN_debug (0, "  b=%p: cuMemHostUnregister(b->ptr=%p)\n",
+			 b, b->ptr);
+
+      struct ptx_free_block *b_next = b->next;
+      CUresult r = CUDA_CALL_NOCHECK (cuMemHostUnregister, b->ptr);
+      if (r != CUDA_SUCCESS)
+	{
+	  GOMP_PLUGIN_error ("cuMemHostUnregister error: %s", cuda_error (r));
+	  ret = false;
+	}
+      free (b);
+      b = b_next;
+    }
+  aq->page_locked_host_unregister_blocks = NULL;
+  pthread_mutex_unlock (&aq->page_locked_host_unregister_blocks_lock);
+  return ret;
+}
+
 int
 GOMP_OFFLOAD_openacc_async_test (struct goacc_asyncqueue *aq)
 {
+  GOMP_PLUGIN_debug (0, "nvptx %s: aq=%p\n",
+		     __FUNCTION__, aq);
+
   CUresult r = CUDA_CALL_NOCHECK (cuStreamQuery, aq->cuda_stream);
   if (r == CUDA_SUCCESS)
-    return 1;
+    {
+      /* As a user may expect that they don't need to 'wait' if
+	 'acc_async_test' returns 'true', clean up here, too.  */
+      if (!nvptx_run_deferred_page_locked_host_unregister (aq))
+	return -1;
+
+      return 1;
+    }
   if (r == CUDA_ERROR_NOT_READY)
     return 0;
 
@@ -1897,7 +2241,17 @@ GOMP_OFFLOAD_openacc_async_test (struct goacc_asyncqueue *aq)
 static bool
 nvptx_goacc_asyncqueue_synchronize (struct goacc_asyncqueue *aq)
 {
+  GOMP_PLUGIN_debug (0, "%s: aq=%p\n",
+		     __FUNCTION__, aq);
+
   CUDA_CALL_ERET (false, cuStreamSynchronize, aq->cuda_stream);
+
+  /* This is called from a user code (non-stream) context, and upon returning,
+     we must've given up on any page-locked memory registrations, so unregister
+     any pending ones now.  */
+  if (!nvptx_run_deferred_page_locked_host_unregister (aq))
+    return false;
+
   return true;
 }
 
@@ -1907,14 +2261,70 @@ GOMP_OFFLOAD_openacc_async_synchronize (struct goacc_asyncqueue *aq)
   return nvptx_goacc_asyncqueue_synchronize (aq);
 }
 
+static void
+nvptx_move_page_locked_host_unregister_blocks_aq1_aq2_callback
+(CUstream stream, CUresult r, void *b_)
+{
+  void **b = b_;
+  struct goacc_asyncqueue *aq1 = b[0];
+  struct goacc_asyncqueue *aq2 = b[1];
+  GOMP_PLUGIN_debug (0, "%s: stream=%p, r=%u, b_=%p (aq1=%p, aq2=%p)\n",
+		     __FUNCTION__, stream, (unsigned) r, b_, aq1, aq2);
+
+  free (b_);
+
+  if (r != CUDA_SUCCESS)
+    GOMP_PLUGIN_error ("%s error: %s", __FUNCTION__, cuda_error (r));
+
+  pthread_mutex_lock (&aq1->page_locked_host_unregister_blocks_lock);
+  if (aq1->page_locked_host_unregister_blocks)
+    {
+      pthread_mutex_lock (&aq2->page_locked_host_unregister_blocks_lock);
+      GOMP_PLUGIN_debug (0, "  page_locked_host_unregister_blocks:"
+			 " aq1 -> aq2\n");
+      if (aq2->page_locked_host_unregister_blocks == NULL)
+	aq2->page_locked_host_unregister_blocks
+	  = aq1->page_locked_host_unregister_blocks;
+      else
+	{
+	  struct ptx_free_block *b = aq2->page_locked_host_unregister_blocks;
+	  while (b->next != NULL)
+	    b = b->next;
+	  b->next = aq1->page_locked_host_unregister_blocks;
+	}
+      pthread_mutex_unlock (&aq2->page_locked_host_unregister_blocks_lock);
+      aq1->page_locked_host_unregister_blocks = NULL;
+    }
+  pthread_mutex_unlock (&aq1->page_locked_host_unregister_blocks_lock);
+}
+
 bool
 GOMP_OFFLOAD_openacc_async_serialize (struct goacc_asyncqueue *aq1,
 				      struct goacc_asyncqueue *aq2)
 {
+  GOMP_PLUGIN_debug (0, "nvptx %s: aq1=%p, aq2=%p\n",
+		     __FUNCTION__, aq1, aq2);
+
+  if (aq1 != aq2)
+    {
+      void **b = GOMP_PLUGIN_malloc (2 * sizeof (*b));
+      b[0] = aq1;
+      b[1] = aq2;
+      /* Enqueue on 'aq1': move 'page_locked_host_unregister_blocks' of 'aq1'
+	 to 'aq2'.  */
+      GOMP_PLUGIN_debug (0, "  aq1 <-"
+			 " nvptx_move_page_locked_host_unregister_blocks_aq1_aq2_callback"
+			 "(b=%p)\n", b);
+      CUDA_CALL (cuStreamAddCallback, aq1->cuda_stream,
+		 nvptx_move_page_locked_host_unregister_blocks_aq1_aq2_callback,
+		 b, 0);
+    }
+
   CUevent e;
   CUDA_CALL_ERET (false, cuEventCreate, &e, CU_EVENT_DISABLE_TIMING);
   CUDA_CALL_ERET (false, cuEventRecord, e, aq1->cuda_stream);
   CUDA_CALL_ERET (false, cuStreamWaitEvent, aq2->cuda_stream, e, 0);
+
   return true;
 }
 
@@ -2249,6 +2659,19 @@ GOMP_OFFLOAD_run (int ord, void *tgt_fn, void *tgt_vars, void **args)
 	    if (!nvptx_goacc_asyncqueue_synchronize (reverse_offload_aq))
 	      exit (EXIT_FAILURE);
 	    __atomic_store_n (&rev_data->fn, 0, __ATOMIC_RELEASE);
+
+	    /* Clean up here; otherwise we may run into the situation that
+	       a following reverse offload does
+	       'GOMP_OFFLOAD_page_locked_host_alloc', and that then runs the
+	       deferred 'cuMemFreeHost's -- which may dead-lock?!
+	       TODO: This may need more considerations for the case that
+	       different host threads do reverse offload?  We could move
+	       'free_host_blocks' into 'aq' (which is separate per reverse
+	       offload) instead of global, like
+	       'page_locked_host_unregister_blocks', but that doesn't seem the
+	       right thing for OpenACC 'async' generally?  */
+	    if (!nvptx_run_deferred_page_locked_host_free ())
+	      exit (EXIT_FAILURE);
 	  }
 	usleep (1);
       }

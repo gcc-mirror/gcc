@@ -140,7 +140,12 @@ extern void *GOMP_OFFLOAD_usm_alloc (int, size_t);
 extern bool GOMP_OFFLOAD_usm_free (int, void *);
 extern bool GOMP_OFFLOAD_is_usm_ptr (void *);
 extern bool GOMP_OFFLOAD_page_locked_host_alloc (void **, size_t);
-extern bool GOMP_OFFLOAD_page_locked_host_free (void *);
+extern bool GOMP_OFFLOAD_page_locked_host_free (void *,
+						struct goacc_asyncqueue *);
+extern int GOMP_OFFLOAD_page_locked_host_register (int, void *, size_t, int);
+extern bool GOMP_OFFLOAD_page_locked_host_unregister (void *, size_t,
+						      struct goacc_asyncqueue *);
+extern int GOMP_OFFLOAD_page_locked_host_p (int, const void *, size_t);
 extern bool GOMP_OFFLOAD_dev2host (int, void *, const void *, size_t);
 extern bool GOMP_OFFLOAD_host2dev (int, void *, const void *, size_t);
 extern bool GOMP_OFFLOAD_dev2dev (int, void *, const void *, size_t);

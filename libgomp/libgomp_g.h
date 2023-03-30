@@ -365,6 +365,7 @@ extern bool GOMP_teams4 (unsigned int, unsigned int, unsigned int, bool);
 
 extern bool GOMP_evaluate_target_device (int, const char *, const char *,
 					 const char *);
+extern void GOMP_enable_pinned_mode (void);
 
 /* teams.c */
 
@@ -375,7 +376,6 @@ extern void GOMP_teams_reg (void (*) (void *), void *, unsigned, unsigned,
 
 extern void *GOMP_alloc (size_t, size_t, uintptr_t);
 extern void GOMP_free (void *, uintptr_t);
-extern void GOMP_enable_pinned_mode (void);
 
 /* error.c */
 
