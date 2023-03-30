@@ -812,6 +812,7 @@ ExpandVisitor::visit (AST::TypeAlias &type_alias)
 void
 ExpandVisitor::visit (AST::StructStruct &struct_item)
 {
+  visit_attrs_with_derive (struct_item);
   for (auto &generic : struct_item.get_generic_params ())
     visit (generic);
 
@@ -824,6 +825,7 @@ ExpandVisitor::visit (AST::StructStruct &struct_item)
 void
 ExpandVisitor::visit (AST::TupleStruct &tuple_struct)
 {
+  visit_attrs_with_derive (tuple_struct);
   for (auto &generic : tuple_struct.get_generic_params ())
     visit (generic);
 
@@ -858,6 +860,7 @@ ExpandVisitor::visit (AST::EnumItemDiscriminant &item)
 void
 ExpandVisitor::visit (AST::Enum &enum_item)
 {
+  visit_attrs_with_derive (enum_item);
   for (auto &generic : enum_item.get_generic_params ())
     visit (generic);
 
@@ -868,6 +871,7 @@ ExpandVisitor::visit (AST::Enum &enum_item)
 void
 ExpandVisitor::visit (AST::Union &union_item)
 {
+  visit_attrs_with_derive (union_item);
   for (auto &generic : union_item.get_generic_params ())
     visit (generic);
 
@@ -1335,6 +1339,65 @@ ExpandVisitor::visit (AST::BareFunctionType &type)
 
   if (type.has_return_type ())
     visit (type.get_return_type ());
+}
+
+template <typename T>
+void
+ExpandVisitor::expand_derive (const T &item,
+			      std::unique_ptr<AST::TokenTree> &trait)
+{
+  // FIXME: Implement expansion for that particular trait
+}
+
+template <typename T>
+void
+ExpandVisitor::expand_derive (const T &item, AST::DelimTokenTree &attr)
+{
+  // Item is const because even though the tokenstream might be modified, it
+  // should appear as the same input for every derive proc macro.
+  auto &trees = attr.get_token_trees ();
+  if (trees.size () > 2)
+    {
+      // Skipping begin and end parenthesis
+      for (auto it = trees.begin () + 1; it < trees.end () - 1;
+	   it += 2 /* Increment + skip comma */)
+	{
+	  expand_derive (item, *it);
+	}
+    }
+}
+
+template <typename T>
+void
+ExpandVisitor::visit_attrs_with_derive (T &item)
+{
+  auto &attrs = item.get_outer_attrs ();
+  for (auto it = attrs.begin (); it != attrs.end (); /* erase => No increment*/)
+    {
+      auto current = *it;
+
+      if (is_derive (current))
+	{
+	  it = attrs.erase (it);
+	  // Downcasting checked in is_derive
+	  expand_derive (item, static_cast<AST::DelimTokenTree &> (
+				 current.get_attr_input ()));
+	}
+      else // Skip unknwown
+	{
+	  it++;
+	}
+    }
+}
+
+bool
+ExpandVisitor::is_derive (AST::Attribute &attr)
+{
+  auto &segments = attr.get_path ().get_segments ();
+  return attr.has_attr_input ()
+	 && attr.get_attr_input ().get_attr_input_type ()
+	      == AST::AttrInput::TOKEN_TREE
+	 && !segments.empty () && "derive" == segments[0].get_segment_name ();
 }
 
 } // namespace Rust
