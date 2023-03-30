@@ -199,10 +199,26 @@ memcpy_tofrom_device (bool from, void *d, void *h, size_t s, int async,
     }
 
   goacc_aq aq = get_goacc_asyncqueue (async);
+
+  int h_page_locked_host_p = 0;
+
+  if (always_pinned_mode
+      && s != 0)
+    {
+      h_page_locked_host_p = gomp_page_locked_host_register_dev
+	(thr->dev, h, s, from ? GOMP_MAP_FROM : GOMP_MAP_TO);
+      if (h_page_locked_host_p < 0)
+	exit (EXIT_FAILURE);
+    }
+
   if (from)
     gomp_copy_dev2host (thr->dev, aq, h, d, s);
   else
     gomp_copy_host2dev (thr->dev, aq, d, h, s, false, /* TODO: cbuf? */ NULL);
+
+  if (h_page_locked_host_p
+      && !gomp_page_locked_host_unregister_dev (thr->dev, h, s, aq))
+    exit (EXIT_FAILURE);
 
   if (profiling_p)
     {

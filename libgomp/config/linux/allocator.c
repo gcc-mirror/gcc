@@ -45,20 +45,6 @@
 #include <assert.h>
 #include "libgomp.h"
 
-static bool always_pinned_mode = false;
-
-/* This function is called by the compiler when -foffload-memory=pinned
-   is used.  */
-
-void
-GOMP_enable_pinned_mode ()
-{
-  if (mlockall (MCL_CURRENT | MCL_FUTURE) != 0)
-    gomp_error ("failed to pin all memory (ulimit too low?)");
-  else
-    always_pinned_mode = true;
-}
-
 static int using_device_for_page_locked
   = /* uninitialized */ -1;
 
@@ -69,9 +55,6 @@ linux_memspace_alloc (omp_memspace_handle_t memspace, size_t size, int pin,
   gomp_debug (0, "%s: memspace=%llu, size=%llu, pin=%d, init0=%d\n",
 	      __FUNCTION__, (unsigned long long) memspace,
 	      (unsigned long long) size, pin, init0);
-
-  /* Explicit pinning may not be required.  */
-  pin = pin && !always_pinned_mode;
 
   void *addr;
 
@@ -137,9 +120,6 @@ linux_memspace_calloc (omp_memspace_handle_t memspace, size_t size, int pin)
   gomp_debug (0, "%s: memspace=%llu, size=%llu, pin=%d\n",
 	      __FUNCTION__, (unsigned long long) memspace, (unsigned long long) size, pin);
 
-  /* Explicit pinning may not be required.  */
-  pin = pin && !always_pinned_mode;
-
   if (memspace == ompx_unified_shared_mem_space)
     {
       void *ret = gomp_usm_alloc (size, GOMP_DEVICE_ICV);
@@ -158,9 +138,6 @@ linux_memspace_free (omp_memspace_handle_t memspace, void *addr, size_t size,
 {
   gomp_debug (0, "%s: memspace=%llu, addr=%p, size=%llu, pin=%d\n",
 	      __FUNCTION__, (unsigned long long) memspace, addr, (unsigned long long) size, pin);
-
-  /* Explicit pinning may not be required.  */
-  pin = pin && !always_pinned_mode;
 
   if (memspace == ompx_unified_shared_mem_space)
     gomp_usm_free (addr, GOMP_DEVICE_ICV);
@@ -187,9 +164,6 @@ linux_memspace_realloc (omp_memspace_handle_t memspace, void *addr,
 {
   gomp_debug (0, "%s: memspace=%llu, addr=%p, oldsize=%llu, size=%llu, oldpin=%d, pin=%d\n",
 	      __FUNCTION__, (unsigned long long) memspace, addr, (unsigned long long) oldsize, (unsigned long long) size, oldpin, pin);
-
-  /* Explicit pinning may not be required.  */
-  pin = pin && !always_pinned_mode;
 
   if (memspace == ompx_unified_shared_mem_space)
     goto manual_realloc;

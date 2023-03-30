@@ -1,3 +1,12 @@
+2023-04-03  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* cuda/cuda.h (CUresult): Add
+	'CUDA_ERROR_HOST_MEMORY_ALREADY_REGISTERED'.
+	(CUdevice_attribute): Add
+	'CU_DEVICE_ATTRIBUTE_READ_ONLY_HOST_REGISTER_SUPPORTED'.
+	(CU_MEMHOSTREGISTER_READ_ONLY): Add.
+	(cuMemHostGetFlags, cuMemHostRegister, cuMemHostUnregister): Add.
+
 2023-02-20  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* cuda/cuda.h (cuMemHostRegister, cuMemHostUnregister): Remove.

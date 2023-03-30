@@ -1,5 +1,80 @@
 2023-04-03  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* libgomp-plugin.h (GOMP_OFFLOAD_page_locked_host_free): Add
+	'struct goacc_asyncqueue *' formal parameter.
+	(GOMP_OFFLOAD_page_locked_host_register)
+	(GOMP_OFFLOAD_page_locked_host_unregister)
+	(GOMP_OFFLOAD_page_locked_host_p): Add.
+	* libgomp.h (always_pinned_mode)
+	(gomp_page_locked_host_register_dev)
+	(gomp_page_locked_host_unregister_dev): Add.
+	(struct splay_tree_key_s): Add 'page_locked_host_p'.
+	(struct gomp_device_descr): Add
+	'GOMP_OFFLOAD_page_locked_host_register',
+	'GOMP_OFFLOAD_page_locked_host_unregister',
+	'GOMP_OFFLOAD_page_locked_host_p'.
+	* libgomp.texi (-foffload-memory=pinned): Document.
+	* plugin/cuda-lib.def (cuMemHostGetFlags, cuMemHostRegister_v2)
+	(cuMemHostRegister, cuMemHostUnregister): Add.
+	* plugin/plugin-nvptx.c (struct ptx_device): Add
+	'read_only_host_register_supported'.
+	(nvptx_open_device): Initialize it.
+	(free_host_blocks, free_host_blocks_lock)
+	(nvptx_run_deferred_page_locked_host_free)
+	(nvptx_page_locked_host_free_callback, nvptx_page_locked_host_p)
+	(GOMP_OFFLOAD_page_locked_host_register)
+	(nvptx_page_locked_host_unregister_callback)
+	(GOMP_OFFLOAD_page_locked_host_unregister)
+	(GOMP_OFFLOAD_page_locked_host_p)
+	(nvptx_run_deferred_page_locked_host_unregister)
+	(nvptx_move_page_locked_host_unregister_blocks_aq1_aq2_callback):
+	Add.
+	(GOMP_OFFLOAD_fini_device, GOMP_OFFLOAD_page_locked_host_alloc)
+	(GOMP_OFFLOAD_run): Call
+	'nvptx_run_deferred_page_locked_host_free'.
+	(struct goacc_asyncqueue): Add
+	'page_locked_host_unregister_blocks_lock',
+	'page_locked_host_unregister_blocks'.
+	(nvptx_goacc_asyncqueue_construct)
+	(nvptx_goacc_asyncqueue_destruct): Handle those.
+	(GOMP_OFFLOAD_page_locked_host_free): Handle
+	'struct goacc_asyncqueue *' formal parameter.
+	(GOMP_OFFLOAD_openacc_async_test)
+	(nvptx_goacc_asyncqueue_synchronize): Call
+	'nvptx_run_deferred_page_locked_host_unregister'.
+	(GOMP_OFFLOAD_openacc_async_serialize): Call
+	'nvptx_move_page_locked_host_unregister_blocks_aq1_aq2_callback'.
+	* config/linux/allocator.c (linux_memspace_alloc)
+	(linux_memspace_calloc, linux_memspace_free)
+	(linux_memspace_realloc): Remove 'always_pinned_mode' handling.
+	(GOMP_enable_pinned_mode): Move...
+	* target.c: ... here.
+	(always_pinned_mode, verify_always_pinned_mode)
+	(gomp_verify_always_pinned_mode, gomp_page_locked_host_alloc_dev)
+	(gomp_page_locked_host_free_dev)
+	(gomp_page_locked_host_aligned_alloc_dev)
+	(gomp_page_locked_host_aligned_free_dev)
+	(gomp_page_locked_host_register_dev)
+	(gomp_page_locked_host_unregister_dev): Add.
+	(gomp_copy_host2dev, gomp_map_vars_internal)
+	(gomp_remove_var_internal, gomp_unmap_vars_internal)
+	(get_gomp_offload_icvs, gomp_load_image_to_device)
+	(gomp_target_rev, omp_target_memcpy_copy)
+	(omp_target_memcpy_rect_worker): Handle 'always_pinned_mode'.
+	(gomp_copy_host2dev, gomp_copy_dev2host): Handle
+	'verify_always_pinned_mode'.
+	(GOMP_target_ext): Add 'assert'.
+	(gomp_page_locked_host_alloc): Use
+	'gomp_page_locked_host_alloc_dev'.
+	(gomp_page_locked_host_free): Use
+	'gomp_page_locked_host_free_dev'.
+	(omp_target_associate_ptr): Adjust.
+	(gomp_load_plugin_for_device): Handle 'page_locked_host_register',
+	'page_locked_host_unregister', 'page_locked_host_p'.
+	* oacc-mem.c (memcpy_tofrom_device): Handle 'always_pinned_mode'.
+	* libgomp_g.h (GOMP_enable_pinned_mode): Adjust.
+	* testsuite/libgomp.c/alloc-pinned-7.c: Remove.
+
 	PR other/76739
 	* target.c (gomp_map_vars_internal): Pass pre-allocated 'ptrblock'
 	to 'goacc_noncontig_array_create_ptrblock'.
