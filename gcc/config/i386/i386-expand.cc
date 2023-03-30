@@ -2033,7 +2033,7 @@ ix86_expand_vector_convert_uns_vsivsf (rtx target, rtx val)
 }
 
 /* Adjust a V*SFmode/V*DFmode value VAL so that *sfix_trunc* resp. fix_trunc*
-   pattern can be used on it instead of *ufix_trunc* resp. fixuns_trunc*.
+   pattern can be used on it instead of fixuns_trunc*.
    This is done by doing just signed conversion if < 0x1p31, and otherwise by
    subtracting 0x1p31 first and xoring in 0x80000000 from *XORP afterwards.  */
 

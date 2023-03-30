@@ -7850,7 +7850,7 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "ufloat<sseintvecmodelower><mode>2<mask_name><round_name>"
+(define_insn "<mask_codefor>floatuns<sseintvecmodelower><mode>2<mask_name><round_name>"
   [(set (match_operand:VF1_AVX512VL 0 "register_operand" "=v")
 	(unsigned_float:VF1_AVX512VL
 	  (match_operand:<sseintvecmode> 1 "nonimmediate_operand" "<round_constraint>")))]
@@ -7861,24 +7861,16 @@
    (set_attr "mode" "<MODE>")])
 
 (define_expand "floatuns<sseintvecmodelower><mode>2"
-  [(match_operand:VF1 0 "register_operand")
-   (match_operand:<sseintvecmode> 1 "register_operand")]
+  [(set (match_operand:VF1 0 "register_operand")
+	(unsigned_float:VF1
+	  (match_operand:<sseintvecmode> 1 "register_operand")))]
   "TARGET_SSE2 && (<MODE>mode == V4SFmode || TARGET_AVX2)"
 {
-  if (<MODE>mode == V16SFmode)
-    emit_insn (gen_ufloatv16siv16sf2 (operands[0], operands[1]));
-  else
-    if (TARGET_AVX512VL)
-      {
-	if (<MODE>mode == V4SFmode)
-	  emit_insn (gen_ufloatv4siv4sf2 (operands[0], operands[1]));
-	else
-	  emit_insn (gen_ufloatv8siv8sf2 (operands[0], operands[1]));
-      }
-  else
-    ix86_expand_vector_convert_uns_vsivsf (operands[0], operands[1]);
-
-  DONE;
+  if (<MODE>mode != V16SFmode && !TARGET_AVX512VL)
+    {
+      ix86_expand_vector_convert_uns_vsivsf (operands[0], operands[1]);
+      DONE;
+    }
 })
 
 
@@ -7913,7 +7905,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
-(define_insn "<mask_codefor><avx512>_ufix_notrunc<sf2simodelower><mode><mask_name><round_name>"
+(define_insn "<mask_codefor><avx512>_fixuns_notrunc<sf2simodelower><mode><mask_name><round_name>"
   [(set (match_operand:VI4_AVX512VL 0 "register_operand" "=v")
 	(unspec:VI4_AVX512VL
 	  [(match_operand:<ssePSmode> 1 "nonimmediate_operand" "<round_constraint>")]
@@ -7970,7 +7962,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "TI")])
 
-(define_insn "<fixsuffix>fix_truncv16sfv16si2<mask_name><round_saeonly_name>"
+(define_insn "fix<fixunssuffix>_truncv16sfv16si2<mask_name><round_saeonly_name>"
   [(set (match_operand:V16SI 0 "register_operand" "=v")
 	(any_fix:V16SI
 	  (match_operand:V16SF 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")))]
@@ -8010,22 +8002,21 @@
    (set_attr "mode" "TI")])
 
 (define_expand "fixuns_trunc<mode><sseintvecmodelower>2"
-  [(match_operand:<sseintvecmode> 0 "register_operand")
-   (match_operand:VF1 1 "register_operand")]
+  [(set (match_operand:<sseintvecmode> 0 "register_operand")
+	  (unsigned_fix:<sseintvecmode>
+	    (match_operand:VF1_128_256 1 "register_operand")))]
   "TARGET_SSE2"
 {
-  if (<MODE>mode == V16SFmode)
-    emit_insn (gen_ufix_truncv16sfv16si2 (operands[0],
-					  operands[1]));
-  else
+  /* AVX512 support vcvttps2udq for all 128/256/512-bit vectors.  */
+  if (!TARGET_AVX512VL)
     {
       rtx tmp[3];
       tmp[0] = ix86_expand_adjust_ufix_to_sfix_si (operands[1], &tmp[2]);
       tmp[1] = gen_reg_rtx (<sseintvecmode>mode);
       emit_insn (gen_fix_trunc<mode><sseintvecmodelower>2 (tmp[1], tmp[0]));
       emit_insn (gen_xor<sseintvecmodelower>3 (operands[0], tmp[1], tmp[2]));
+      DONE;
     }
-  DONE;
 })
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -8413,7 +8404,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "V4SF")])
 
-(define_insn "ufloat<si2dfmodelower><mode>2<mask_name>"
+(define_insn "floatuns<si2dfmodelower><mode>2<mask_name>"
   [(set (match_operand:VF2_512_256VL 0 "register_operand" "=v")
 	(unsigned_float:VF2_512_256VL
 	  (match_operand:<si2dfmode> 1 "nonimmediate_operand" "vm")))]
@@ -8423,7 +8414,7 @@
     (set_attr "prefix" "evex")
     (set_attr "mode" "<MODE>")])
 
-(define_insn "ufloatv2siv2df2<mask_name>"
+(define_insn "<mask_codefor>floatunsv2siv2df2<mask_name>"
   [(set (match_operand:V2DF 0 "register_operand" "=v")
 	(unsigned_float:V2DF
 	  (vec_select:V2SI
@@ -8572,11 +8563,11 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "TI")])
 
-;; For ufix_notrunc* insn patterns
+;; For fixuns_notrunc* insn patterns
 (define_mode_attr pd2udqsuff
   [(V8DF "") (V4DF "{y}")])
 
-(define_insn "ufix_notrunc<mode><si2dfmodelower>2<mask_name><round_name>"
+(define_insn "fixuns_notrunc<mode><si2dfmodelower>2<mask_name><round_name>"
   [(set (match_operand:<si2dfmode> 0 "register_operand" "=v")
 	(unspec:<si2dfmode>
 	  [(match_operand:VF2_512_256VL 1 "nonimmediate_operand" "<round_constraint>")]
@@ -8587,7 +8578,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "ufix_notruncv2dfv2si2"
+(define_insn "fixuns_notruncv2dfv2si2"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
 	(vec_concat:V4SI
 	  (unspec:V2SI
@@ -8600,7 +8591,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "TI")])
 
-(define_insn "ufix_notruncv2dfv2si2_mask"
+(define_insn "fixuns_notruncv2dfv2si2_mask"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
 	(vec_concat:V4SI
 	  (vec_merge:V2SI
@@ -8618,7 +8609,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "TI")])
 
-(define_insn "*ufix_notruncv2dfv2si2_mask_1"
+(define_insn "*fixuns_notruncv2dfv2si2_mask_1"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
 	(vec_concat:V4SI
 	  (vec_merge:V2SI
@@ -8644,7 +8635,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "OI")])
 
-(define_insn "ufix_truncv2dfv2si2"
+(define_insn "*fixuns_truncv2dfv2si2"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
 	(vec_concat:V4SI
 	  (unsigned_fix:V2SI (match_operand:V2DF 1 "nonimmediate_operand" "vm"))
@@ -8655,7 +8646,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "TI")])
 
-(define_insn "ufix_truncv2dfv2si2_mask"
+(define_insn "fixuns_truncv2dfv2si2_mask"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
 	(vec_concat:V4SI
 	  (vec_merge:V2SI
@@ -8671,7 +8662,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "TI")])
 
-(define_insn "*ufix_truncv2dfv2si2_mask_1"
+(define_insn "*fixuns_truncv2dfv2si2_mask_1"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
 	(vec_concat:V4SI
 	  (vec_merge:V2SI
@@ -8694,7 +8685,7 @@
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "OI")])
 
-(define_insn "ufix_truncv4dfv4si2<mask_name>"
+(define_insn "fixuns_truncv4dfv4si2<mask_name>"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
 	(unsigned_fix:V4SI (match_operand:V4DF 1 "nonimmediate_operand" "vm")))]
   "TARGET_AVX512VL && TARGET_AVX512F"
@@ -8724,7 +8715,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseintvecmode2>")])
 
-(define_insn "ufix_notrunc<mode><sseintvecmodelower>2<mask_name><round_name>"
+(define_insn "fixuns_notrunc<mode><sseintvecmodelower>2<mask_name><round_name>"
   [(set (match_operand:<sseintvecmode> 0 "register_operand" "=v")
 	(unspec:<sseintvecmode>
 	  [(match_operand:VF2_AVX512VL 1 "nonimmediate_operand" "<round_constraint>")]
@@ -8827,7 +8818,7 @@
   DONE;
 })
 
-(define_insn "ufix_trunc<mode><sseintvecmodelower>2<mask_name>"
+(define_insn "<mask_codefor>fixuns_trunc<mode><sseintvecmodelower>2<mask_name>"
   [(set (match_operand:<sseintvecmode> 0 "register_operand" "=v")
 	(unsigned_fix:<sseintvecmode>
 	  (match_operand:VF1_128_256VL 1 "nonimmediate_operand" "vm")))]
