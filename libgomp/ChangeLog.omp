@@ -1,5 +1,8 @@
 2023-04-03  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* target.c (gomp_map_vars_internal)
+	<non-contiguous array support>: Handle 'always_pinned_mode'.
+
 	* libgomp-plugin.h (GOMP_OFFLOAD_page_locked_host_free): Add
 	'struct goacc_asyncqueue *' formal parameter.
 	(GOMP_OFFLOAD_page_locked_host_register)

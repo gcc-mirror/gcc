@@ -2087,6 +2087,23 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		      k->dynamic_refcount = 0;
 		      k->aux = NULL;
 		      k->tgt_offset = tgt_size;
+		      k->page_locked_host_p = false;
+		      if (always_pinned_mode)
+			{
+			  void *ptr = (void *) k->host_start;
+			  size_t size = k->host_end - k->host_start;
+			  int page_locked_host_p = 0;
+			  if (size != 0)
+			    page_locked_host_p = gomp_page_locked_host_register_dev
+			      (devicep, ptr, size, kind & typemask);
+			  if (page_locked_host_p < 0)
+			    {
+			      gomp_mutex_unlock (&devicep->lock);
+			      exit (EXIT_FAILURE);
+			    }
+			  if (page_locked_host_p)
+			    k->page_locked_host_p = true;
+			}
 
 		      tgt_size += nca->data_row_size;
 
@@ -2120,16 +2137,44 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		 accelerator side ptrblock and copy it in.  */
 	      if (nca->ptrblock_size)
 		{
-		  void *ptrblock = gomp_malloc (nca->ptrblock_size);
+		  void *ptrblock;
+		  if (always_pinned_mode)
+		    {
+		      ptrblock
+			= gomp_page_locked_host_alloc_dev (devicep,
+							   nca->ptrblock_size,
+							   false);
+		      if (!ptrblock)
+			{
+			  gomp_mutex_unlock (&devicep->lock);
+			  exit (EXIT_FAILURE);
+			}
+		    }
+		  else
+		    ptrblock = gomp_malloc (nca->ptrblock_size);
 		  goacc_noncontig_array_create_ptrblock
 		    (nca, ptrblock, target_ptrblock);
 		  gomp_copy_host2dev (devicep, aq, target_ptrblock, ptrblock,
 				      nca->ptrblock_size, false, cbufp);
-		  if (aq)
-		    /* Free once the transfer has completed.  */
-		    devicep->openacc.async.queue_callback_func (aq, free, ptrblock);
+		  if (always_pinned_mode)
+		    {
+		      if (!gomp_page_locked_host_free_dev (devicep,
+							   ptrblock,
+							   aq))
+			{
+			  gomp_mutex_unlock (&devicep->lock);
+			  exit (EXIT_FAILURE);
+			}
+		    }
 		  else
-		    free (ptrblock);
+		    {
+		      if (aq)
+			/* Free once the transfer has completed.  */
+			devicep->openacc.async.queue_callback_func
+			  (aq, free, ptrblock);
+		      else
+			free (ptrblock);
+		    }
 		}
 	    }
 	}
