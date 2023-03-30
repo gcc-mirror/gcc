@@ -8296,7 +8296,7 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	  || SCALAR_TYPE_P (totype))
       && convs->kind != ck_base)
     {
-      bool complained = false;
+      int complained = 0;
       conversion *t = convs;
 
       /* Give a helpful error if this is bad because of excess braces.  */
@@ -8328,14 +8328,18 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 							    totype))
 	  {
 	  case 2:
-	    pedwarn (loc, 0, "converting to %qH from %qI with greater "
-			     "conversion rank", totype, TREE_TYPE (expr));
-	    complained = true;
+	    if (pedwarn (loc, 0, "converting to %qH from %qI with greater "
+				 "conversion rank", totype, TREE_TYPE (expr)))
+	      complained = 1;
+	    else if (!complained)
+	      complained = -1;
 	    break;
 	  case 3:
-	    pedwarn (loc, 0, "converting to %qH from %qI with unordered "
-			     "conversion ranks", totype, TREE_TYPE (expr));
-	    complained = true;
+	    if (pedwarn (loc, 0, "converting to %qH from %qI with unordered "
+				 "conversion ranks", totype, TREE_TYPE (expr)))
+	      complained = 1;
+	    else if (!complained)
+	      complained = -1;
 	    break;
 	  default:
 	    break;
@@ -8389,7 +8393,7 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 				  "invalid conversion from %qH to %qI",
 				  TREE_TYPE (expr), totype);
 	}
-      if (complained)
+      if (complained == 1)
 	maybe_inform_about_fndecl_for_bogus_argument_init (fn, argnum);
 
       return cp_convert (totype, expr, complain);
