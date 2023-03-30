@@ -24472,9 +24472,12 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
     return unify_cv_qual_mismatch (explain_p, parm, arg);
 
   if (!(strict & UNIFY_ALLOW_OUTER_LEVEL)
-      && TYPE_P (parm) && !CP_TYPE_CONST_P (parm))
+      && TYPE_P (parm) && !CP_TYPE_CONST_P (parm)
+      && !FUNC_OR_METHOD_TYPE_P (parm))
     strict &= ~UNIFY_ALLOW_MORE_CV_QUAL;
-  strict &= ~UNIFY_ALLOW_OUTER_LEVEL;
+  /* PMFs recurse at the same level, so don't strip this yet.  */
+  if (!TYPE_PTRMEMFUNC_P (parm))
+    strict &= ~UNIFY_ALLOW_OUTER_LEVEL;
   strict &= ~UNIFY_ALLOW_DERIVED;
   strict &= ~UNIFY_ALLOW_OUTER_MORE_CV_QUAL;
   strict &= ~UNIFY_ALLOW_OUTER_LESS_CV_QUAL;
@@ -25022,7 +25025,31 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	      RECUR_AND_CHECK_FAILURE (tparms, targs, TREE_PURPOSE (pspec),
 				       TREE_PURPOSE (aspec),
 				       UNIFY_ALLOW_NONE, explain_p);
-	    else if (nothrow_spec_p (pspec) && !nothrow_spec_p (aspec))
+	    else
+	      {
+		bool pn = nothrow_spec_p (pspec);
+		bool an = nothrow_spec_p (aspec);
+		/* Here "less cv-qual" means the deduced arg (i.e. parm) has
+		   /more/ noexcept, since function pointer conversions are the
+		   reverse of qualification conversions.  */
+		if (an == pn
+		    || (an < pn && (strict & UNIFY_ALLOW_LESS_CV_QUAL))
+		    || (an > pn && (strict & UNIFY_ALLOW_MORE_CV_QUAL)))
+		  /* OK.  */;
+		else
+		  return unify_type_mismatch (explain_p, parm, arg);
+	      }
+	  }
+	if (flag_tm)
+	  {
+	    /* As for noexcept.  */
+	    bool pn = tx_safe_fn_type_p (parm);
+	    bool an = tx_safe_fn_type_p (arg);
+	    if (an == pn
+		|| (an < pn && (strict & UNIFY_ALLOW_LESS_CV_QUAL))
+		|| (an > pn && (strict & UNIFY_ALLOW_MORE_CV_QUAL)))
+	      /* OK.  */;
+	    else
 	      return unify_type_mismatch (explain_p, parm, arg);
 	  }
 
