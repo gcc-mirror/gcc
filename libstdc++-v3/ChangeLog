@@ -1,3 +1,54 @@
+2023-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109242
+	* testsuite/20_util/optional/monadic/pr109340.cc: Moved to...
+	* testsuite/20_util/optional/monadic/pr109242.cc: ...here.
+
+2023-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (ip::make_address): Implement
+	missing overload.
+	(ip::address_v4::broadcast()): Avoid undefined shift.
+	(ip::basic_endpoint): Fix member functions for constexpr.
+	(ip::basic_endpoint::_M_is_v6): Replace member function with
+	data member, adjust member functions using it.
+	(ip::basic_endpoint::resize): Update _M_is_v6 based on sockaddr
+	content.
+	* testsuite/experimental/net/internet/address/v4/cons.cc: Fix
+	constexpr checks to work in C++14.
+	* testsuite/experimental/net/internet/address/v4/creation.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/endpoint/cons.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/network/v4/cons.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/network/v4/members.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/endpoint/extensible.cc: New test.
+
+2023-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (expected::value() &): Use const lvalue
+	for unex member passed to bad_expected_access constructor, as
+	per LWG 3843.
+
+2023-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109340
+	* include/std/expected (expected::transform): Use
+	std::remove_cv_t instead of std::remove_cvref_t.
+	(expected::transform_error): Likewise.
+	(expected<cv void, E>::transform): Likewise.
+	(expected<cv void, E>::transform_error): Likewise.
+	* include/std/optional (transform): Use std::remove_cv_t.
+	* testsuite/20_util/optional/monadic/pr109340.cc: New test.
+
+2023-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional (optional): Adjust static assertion to
+	reject arrays and functions as well as references.
+	* testsuite/20_util/optional/requirements_neg.cc: New test.
+
 2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/103387

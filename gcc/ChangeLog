@@ -1,3 +1,54 @@
+2023-03-29  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.cc (cris_rtx_costs) [CONST_INT]: Return 0
+	for many quick operands, for register-sized modes.
+
+2023-03-29  Jiawei  <jiawei@iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::parse):
+	New check.
+
+2023-03-29  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/109310
+	* configure.ac: Emit a warning for deprecated option
+	--enable-link-mutex.
+	* configure: Regenerate.
+
+2023-03-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109331
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): When we
+	discover a taken edge make sure to cleanup the CFG.
+
+2023-03-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109327
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Deal with
+	already removed stmts when draining to_remove.
+
+2023-03-29  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/106124
+	* dwarf2out.cc (lookup_type_die): Reset TREE_ASM_WRITTEN
+	so we can re-create the DIE for the type if required.
+
+2023-03-29  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109301
+	* tree-ssa-math-opts.cc (pass_data_cse_sincos): Change
+	properties_provided from PROP_gimple_opt_math to 0.
+	(pass_data_expand_powcabs): Change properties_provided from 0 to
+	PROP_gimple_opt_math.
+
+2023-03-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109154
+	* tree-if-conv.cc (gen_phi_arg_condition): Handle single
+	inverted condition specially by inverting at the caller.
+	(gen_phi_arg_condition): Swap COND_EXPR arms if requested.
+
 2023-03-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/107002

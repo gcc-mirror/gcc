@@ -1,3 +1,32 @@
+2023-03-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109336
+	PR modula2/109315
+	* gm2-compiler/M2FileName.mod (CalculateFileName): Simplified by
+	ensuring the extension contains the ".".
+	(CalculateStemName): Re-formatted.
+	(ExtractExtension): Re-formatted.
+	(ExtractModule): Re-formatted.
+	* gm2-compiler/M2Options.def (setdefextension): Add block comment.
+	(setmodextension): Add block comment.  Re-formatted.
+	* gm2-compiler/M2Options.mod (setdefextension): Add block comment.
+	(setmodextension): Add block comment.  Re-formatted.
+	* gm2-compiler/M2Search.mod (FindSourceDefFile): Use
+	DefaultDefExt.
+	(DefaultDefExt): New constant.
+	(DefaultModExt): New constant.
+	(FindSourceModFile): Use DefaultModExt.
+	* gm2-gcc/m2decl.cc (m2decl_DeclareKnownVariable): Correct
+	spelling.
+	* gm2spec.cc (M2SOURCE): New constant.
+	(LANGSPEC): New value.
+	(MATHLIB): New value.
+	(WITHLIBC): New value.
+	(SKIPOPT): New value.
+	(lang_specific_driver): Replace seen_module_extension bool with
+	module_extension char *.  Detect -fmod= and remember extension.
+	Use the extension to detect modula-2 source and mark it as such.
+
 2023-03-23  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109264

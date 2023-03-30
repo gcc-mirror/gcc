@@ -1,3 +1,47 @@
+2023-03-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109336
+	* gm2/link/nondefaultext/pass/hello.md: New test.
+	* gm2/link/nondefaultext/pass/liba.dm: New test.
+	* gm2/link/nondefaultext/pass/liba.md: New test.
+	* gm2/link/nondefaultext/pass/link-nondefaultext-pass.exp: New test.
+
+2023-03-29  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/arch-19.c: New test.
+
+2023-03-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109331
+	* gcc.dg/torture/pr109331.c: New testcase.
+
+2023-03-29  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/pr94920.C: Scan forwprop1 instead of optimized.
+
+2023-03-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109327
+	* gcc.dg/pr109327.c: New testcase.
+
+2023-03-29  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/106124
+	* g++.dg/gomp/pr106124.C: New testcase.
+
+2023-03-29  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109301
+	* gcc.dg/pr109301.c: New test.
+
+2023-03-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109321
+	PR c++/109320
+	* g++.dg/cpp2a/class-deduction-alias16.C: New test.
+	* g++.dg/cpp2a/class-deduction-alias17.C: New test.
+
 2023-03-28  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* gfortran.dg/weak-2.f90: Enable for nvptx target.

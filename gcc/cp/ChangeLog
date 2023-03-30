@@ -1,3 +1,10 @@
+2023-03-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109321
+	PR c++/109320
+	* pt.cc (alias_ctad_tweaks): Rewrite deduced args.
+	(type_targs_deducible_from): Handle null pack deduction.
+
 2023-03-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/107002
