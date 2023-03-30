@@ -313,6 +313,14 @@ public:
   void visit (AST::InferredType &) override;
   void visit (AST::BareFunctionType &type) override;
 
+  template <typename T>
+  void expand_inner_attribute (T &item, AST::SimplePath &Path);
+
+  template <typename T>
+  void visit_inner_using_attrs (T &item, std::vector<AST::Attribute> &attrs);
+
+  template <typename T> void visit_inner_attrs (T &item);
+
   bool is_derive (AST::Attribute &attr);
 
   template <typename T>

@@ -762,8 +762,11 @@ void
 ExpandVisitor::visit (AST::Module &module)
 {
   if (module.get_kind () == AST::Module::ModuleKind::LOADED)
-    for (auto &item : module.get_items ())
-      visit (item);
+    {
+      visit_inner_attrs (module);
+      for (auto &item : module.get_items ())
+	visit (item);
+    }
 }
 
 void
@@ -789,6 +792,8 @@ ExpandVisitor::visit (AST::UseDeclaration &use_decl)
 void
 ExpandVisitor::visit (AST::Function &function)
 {
+  visit_inner_using_attrs (function,
+			   function.get_definition ()->get_inner_attrs ());
   for (auto &param : function.get_generic_params ())
     visit (param);
 
@@ -954,6 +959,7 @@ ExpandVisitor::visit (AST::Trait &trait)
 void
 ExpandVisitor::visit (AST::InherentImpl &impl)
 {
+  visit_inner_attrs (impl);
   // just expand sub-stuff - can't actually strip generic params themselves
   for (auto &generic : impl.get_generic_params ())
     visit (generic);
@@ -978,6 +984,7 @@ ExpandVisitor::visit (AST::InherentImpl &impl)
 void
 ExpandVisitor::visit (AST::TraitImpl &impl)
 {
+  visit_inner_attrs (impl);
   // just expand sub-stuff - can't actually strip generic params themselves
   for (auto &param : impl.get_generic_params ())
     visit (param);
@@ -1035,6 +1042,7 @@ ExpandVisitor::visit (AST::ExternalFunctionItem &item)
 void
 ExpandVisitor::visit (AST::ExternBlock &block)
 {
+  visit_inner_attrs (block);
   std::function<std::unique_ptr<AST::ExternalItem> (AST::SingleASTNode)>
     extractor
     = [] (AST::SingleASTNode node) { return node.take_external_item (); };
@@ -1339,6 +1347,35 @@ ExpandVisitor::visit (AST::BareFunctionType &type)
 
   if (type.has_return_type ())
     visit (type.get_return_type ());
+}
+
+template <typename T>
+void
+ExpandVisitor::expand_inner_attribute (T &item, AST::SimplePath &path)
+{
+  // TODO: Warn about instability ?
+  // FIXME: Implement expansion for that particular path
+}
+
+template <typename T>
+void
+ExpandVisitor::visit_inner_using_attrs (T &item,
+					std::vector<AST::Attribute> &attrs)
+{
+  for (auto it = attrs.begin (); it != attrs.end (); /* erase => No increment*/)
+    {
+      auto current = *it;
+
+      it = attrs.erase (it);
+      expand_inner_attribute (item, current.get_path ());
+    }
+}
+
+template <typename T>
+void
+ExpandVisitor::visit_inner_attrs (T &item)
+{
+  visit_inner_using_attrs (item, item.get_inner_attrs ());
 }
 
 template <typename T>
