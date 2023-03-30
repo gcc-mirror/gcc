@@ -597,7 +597,7 @@ maybe_instantiate_nsdmi_init (tree member, tsubst_flags_t complain)
 	  DECL_INSTANTIATING_NSDMI_P (member) = 1;
 
 	  bool pushed = false;
-	  tree ctx = DECL_CONTEXT (member);
+	  tree ctx = type_context_for_name_lookup (member);
 
 	  processing_template_decl_sentinel ptds (/*reset*/false);
 	  if (!currently_open_class (ctx))

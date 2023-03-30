@@ -485,6 +485,25 @@ context_for_name_lookup (tree decl)
   return context;
 }
 
+/* Like the above, but always return a type, because it's simpler for member
+   handling to refer to the anonymous aggr rather than a function.  */
+
+tree
+type_context_for_name_lookup (tree decl)
+{
+  tree context = DECL_P (decl) ? DECL_CONTEXT (decl) : decl;
+  gcc_checking_assert (CLASS_TYPE_P (context));
+
+  while (context && TYPE_P (context) && ANON_AGGR_TYPE_P (context))
+    {
+      tree next = TYPE_CONTEXT (context);
+      if (!TYPE_P (next))
+	break;
+      context = next;
+    }
+  return context;
+}
+
 /* Returns true iff DECL is declared in TYPE.  */
 
 static bool
@@ -880,6 +899,10 @@ accessible_p (tree type, tree decl, bool consider_local_p)
     }
   else
     otype = type;
+
+  /* Anonymous unions don't have their own access.  */
+  if (ANON_AGGR_TYPE_P (type))
+    type = type_context_for_name_lookup (type);
 
   /* [class.access.base]
 
