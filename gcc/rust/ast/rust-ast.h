@@ -980,6 +980,8 @@ public:
 
   virtual void set_node_id (NodeId id) { node_id = id; }
 
+  virtual std::vector<Attribute> &get_outer_attrs () = 0;
+
 protected:
   // Constructor
   Expr () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
@@ -1064,7 +1066,7 @@ public:
   bool is_marked_for_strip () const override { return ident.empty (); }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
   {
