@@ -4583,20 +4583,37 @@ static bool
 dominated_by_p_w_unex (basic_block bb1, basic_block bb2, bool);
 
 static tree
-vn_nary_op_get_predicated_value (vn_nary_op_t vno, basic_block bb)
+vn_nary_op_get_predicated_value (vn_nary_op_t vno, basic_block bb,
+				 edge e = NULL)
 {
   if (! vno->predicated_values)
     return vno->u.result;
   for (vn_pval *val = vno->u.values; val; val = val->next)
     for (unsigned i = 0; i < val->n; ++i)
-      /* Do not handle backedge executability optimistically since
-	 when figuring out whether to iterate we do not consider
-	 changed predication.  */
-      if (dominated_by_p_w_unex
-	    (bb, BASIC_BLOCK_FOR_FN (cfun, val->valid_dominated_by_p[i]),
-	     false))
-	return val->result;
+      {
+	basic_block cand
+	  = BASIC_BLOCK_FOR_FN (cfun, val->valid_dominated_by_p[i]);
+	/* Do not handle backedge executability optimistically since
+	   when figuring out whether to iterate we do not consider
+	   changed predication.
+	   When asking for predicated values on an edge avoid looking
+	   at edge executability for edges forward in our iteration
+	   as well.  */
+	if (e && (e->flags & EDGE_DFS_BACK))
+	  {
+	    if (dominated_by_p (CDI_DOMINATORS, bb, cand))
+	      return val->result;
+	  }
+	else if (dominated_by_p_w_unex (bb, cand, false))
+	  return val->result;
+      }
   return NULL_TREE;
+}
+
+static tree
+vn_nary_op_get_predicated_value (vn_nary_op_t vno, edge e)
+{
+  return vn_nary_op_get_predicated_value (vno, e->src, e);
 }
 
 /* Insert the rhs of STMT into the current hash table with a value number of
@@ -5928,7 +5945,7 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 						     ops, &vnresult);
 		if (! val && vnresult && vnresult->predicated_values)
 		  {
-		    val = vn_nary_op_get_predicated_value (vnresult, e->src);
+		    val = vn_nary_op_get_predicated_value (vnresult, e);
 		    if (val && integer_truep (val)
 			&& !(sameval_e && (sameval_e->flags & EDGE_DFS_BACK)))
 		      {
@@ -5947,7 +5964,7 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 		       we can change sameval to def.  */
 		    if (EDGE_COUNT (bb->preds) == 2
 			&& (val = vn_nary_op_get_predicated_value
-				    (vnresult, EDGE_PRED (bb, 0)->src))
+				    (vnresult, EDGE_PRED (bb, 0)))
 			&& integer_truep (val)
 			&& !(e->flags & EDGE_DFS_BACK))
 		      {
