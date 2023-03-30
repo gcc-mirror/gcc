@@ -1351,6 +1351,33 @@ ExpandVisitor::visit (AST::BareFunctionType &type)
 
 template <typename T>
 void
+ExpandVisitor::expand_outer_attribute (T &item, AST::SimplePath &path)
+{
+  // FIXME: Implement outer attribute expansion
+}
+
+template <typename T>
+void
+ExpandVisitor::visit_outer_attrs (T &item, std::vector<AST::Attribute> &attrs)
+{
+  for (auto it = attrs.begin (); it != attrs.end (); /* erase => No increment*/)
+    {
+      auto current = *it;
+
+      it = attrs.erase (it);
+      expand_outer_attribute (item, current.get_path ());
+    }
+}
+
+template <typename T>
+void
+ExpandVisitor::visit_outer_attrs (T &item)
+{
+  visit_outer_attrs (item, item.get_outer_attrs ());
+}
+
+template <typename T>
+void
 ExpandVisitor::expand_inner_attribute (T &item, AST::SimplePath &path)
 {
   // TODO: Warn about instability ?
