@@ -30,9 +30,9 @@ pragma Assertion_Policy (Ghost => Ignore);
 package Ada.Numerics.Big_Numbers.Big_Integers_Ghost with
    SPARK_Mode,
    Ghost,
-   Pure
+   Pure,
+   Always_Terminates
 is
-   pragma Annotate (GNATprove, Always_Return, Big_Integers_Ghost);
 
    type Big_Integer is private
      with Integer_Literal => From_Universal_Image;

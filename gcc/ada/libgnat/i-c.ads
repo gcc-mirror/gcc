@@ -27,10 +27,11 @@ pragma Assertion_Policy (Pre            => Ignore,
 with System;
 with System.Parameters;
 
-package Interfaces.C
-  with SPARK_Mode, Pure
+package Interfaces.C with
+  SPARK_Mode,
+  Pure,
+  Always_Terminates
 is
-   pragma Annotate (GNATprove, Always_Return, C);
 
    --  Each of the types declared in Interfaces.C is C-compatible.
 

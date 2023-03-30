@@ -45,7 +45,7 @@
 package System.SPARK.Cut_Operations with
   SPARK_Mode,
   Pure,
-  Annotate => (GNATprove, Always_Return)
+  Always_Terminates
 is
 
    function By (Consequence, Premise : Boolean) return Boolean with

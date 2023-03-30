@@ -44,7 +44,8 @@ pragma Assertion_Policy (Pre => Ignore);
 package Interfaces.C.Strings with
   SPARK_Mode     => On,
   Abstract_State => (C_Memory),
-  Initializes    => (C_Memory)
+  Initializes    => (C_Memory),
+  Always_Terminates
 is
    pragma Preelaborate;
 
@@ -118,16 +119,11 @@ is
       Chars  : char_array;
       Check  : Boolean := True)
    with
-     Pre      =>
+     Pre    =>
        Item /= Null_Ptr
-         and then
-      (if Check then
-         Strlen (Item) <= size_t'Last - Offset
-           and then Strlen (Item) + Offset <= Chars'Length),
-     Global   => (In_Out => C_Memory),
-     Annotate => (GNATprove, Might_Not_Return);
-     --  Update may not return if Check is False and the null terminator
-     --  is overwritten or skipped with Offset.
+         and then Strlen (Item) <= size_t'Last - Offset
+         and then Strlen (Item) + Offset <= Chars'Length,
+     Global => (In_Out => C_Memory);
 
    procedure Update
      (Item   : chars_ptr;
@@ -135,16 +131,11 @@ is
       Str    : String;
       Check  : Boolean := True)
    with
-     Pre      =>
+     Pre    =>
        Item /= Null_Ptr
-         and then
-      (if Check then
-         Strlen (Item) <= size_t'Last - Offset
-           and then Strlen (Item) + Offset <= Str'Length),
-     Global   => (In_Out => C_Memory),
-     Annotate => (GNATprove, Might_Not_Return);
-     --  Update may not return if Check is False and the null terminator
-     --  is overwritten or skipped with Offset.
+         and then Strlen (Item) <= size_t'Last - Offset
+         and then Strlen (Item) + Offset <= Str'Length,
+     Global => (In_Out => C_Memory);
 
    Update_Error : exception;
 

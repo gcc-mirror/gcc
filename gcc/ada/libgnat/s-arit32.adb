@@ -104,9 +104,8 @@ is
 
    function To_Neg_Int (A : Uns32) return Int32
    with
-     Annotate => (GNATprove, Always_Return),
-     Pre      => In_Int32_Range (-Big (A)),
-     Post     => Big (To_Neg_Int'Result) = -Big (A);
+     Pre  => In_Int32_Range (-Big (A)),
+     Post => Big (To_Neg_Int'Result) = -Big (A);
    --  Convert to negative integer equivalent. If the input is in the range
    --  0 .. 2**31, then the corresponding nonpositive signed integer (obtained
    --  by negating the given value) is returned, otherwise constraint error is
@@ -114,9 +113,8 @@ is
 
    function To_Pos_Int (A : Uns32) return Int32
    with
-     Annotate => (GNATprove, Always_Return),
-     Pre      => In_Int32_Range (Big (A)),
-     Post     => Big (To_Pos_Int'Result) = Big (A);
+     Pre  => In_Int32_Range (Big (A)),
+     Post => Big (To_Pos_Int'Result) = Big (A);
    --  Convert to positive integer equivalent. If the input is in the range
    --  0 .. 2**31 - 1, then the corresponding nonnegative signed integer is
    --  returned, otherwise constraint error is raised.

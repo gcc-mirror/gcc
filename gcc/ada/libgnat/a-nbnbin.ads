@@ -18,10 +18,10 @@ with Ada.Strings.Text_Buffers; use Ada.Strings.Text_Buffers;
 private with Ada.Finalization;
 private with System;
 
-package Ada.Numerics.Big_Numbers.Big_Integers
-  with Preelaborate
+package Ada.Numerics.Big_Numbers.Big_Integers with
+  Preelaborate,
+  Always_Terminates
 is
-   pragma Annotate (GNATprove, Always_Return, Big_Integers);
 
    type Big_Integer is private
      with Integer_Literal => From_Universal_Image,

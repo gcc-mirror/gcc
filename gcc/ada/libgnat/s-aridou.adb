@@ -165,9 +165,8 @@ is
 
    function To_Neg_Int (A : Double_Uns) return Double_Int
    with
-     Annotate => (GNATprove, Always_Return),
-     Pre      => In_Double_Int_Range (-Big (A)),
-     Post     => Big (To_Neg_Int'Result) = -Big (A);
+     Pre  => In_Double_Int_Range (-Big (A)),
+     Post => Big (To_Neg_Int'Result) = -Big (A);
    --  Convert to negative integer equivalent. If the input is in the range
    --  0 .. 2 ** (Double_Size - 1), then the corresponding nonpositive signed
    --  integer (obtained by negating the given value) is returned, otherwise
@@ -175,9 +174,8 @@ is
 
    function To_Pos_Int (A : Double_Uns) return Double_Int
    with
-     Annotate => (GNATprove, Always_Return),
-     Pre      => In_Double_Int_Range (Big (A)),
-     Post     => Big (To_Pos_Int'Result) = Big (A);
+     Pre  => In_Double_Int_Range (Big (A)),
+     Post => Big (To_Pos_Int'Result) = Big (A);
    --  Convert to positive integer equivalent. If the input is in the range
    --  0 .. 2 ** (Double_Size - 1) - 1, then the corresponding non-negative
    --  signed integer is returned, otherwise constraint error is raised.

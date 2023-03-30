@@ -40,13 +40,12 @@ pragma Assertion_Policy (Post => Ignore);
 
 with Ada.Characters.Latin_1;
 
-package Ada.Characters.Handling
-  with SPARK_Mode
+package Ada.Characters.Handling with
+  SPARK_Mode,
+  Always_Terminates
 is
    pragma Pure;
    --  In accordance with Ada 2005 AI-362
-
-   pragma Annotate (GNATprove, Always_Return, Handling);
 
    ----------------------------------------
    -- Character Classification Functions --

@@ -41,7 +41,7 @@ package GNAT.Source_Info with
    Abstract_State =>
      (Source_Code_Information with
          External => (Async_Writers, Async_Readers)),
-   Annotate => (GNATprove, Always_Return)
+   Always_Terminates
 is
    pragma Preelaborate;
    --  Note that this unit is Preelaborate, but not Pure, that's because the
