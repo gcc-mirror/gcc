@@ -1700,6 +1700,21 @@ walk_omp_for_loops (gimple_seq *seq, walk_ctx *ctx)
 	case GIMPLE_ASSUME:
 	  break;
 
+	case GIMPLE_OMP_METADIRECTIVE:
+	  {
+	    gimple *variant = gimple_omp_metadirective_variants (stmt);
+
+	    while (variant)
+	      {
+		gbind *bind = ctx->bind;
+		walk_omp_for_loops (gimple_omp_body_ptr (variant), ctx);
+		ctx->bind = bind;
+
+		variant = variant->next;
+	      }
+	  }
+	  break;
+
 	default:
 	  gcc_assert (!gimple_has_substatements (stmt));
 	  continue;
