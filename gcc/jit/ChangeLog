@@ -1,3 +1,8 @@
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/internals/index.rst: Remove reference to ".c" extensions
+	of source files.
+
 2022-08-19  Release Manager
 
 	* GCC 12.2.0 released.

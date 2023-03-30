@@ -1,3 +1,59 @@
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109094
+	* gcc.dg/analyzer/setjmp-pr109094.c: New test.
+
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108968
+	* gcc.dg/analyzer/uninit-pr108968-register.c: New test.
+
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108733
+	* gcc.dg/analyzer/torture/uninit-pr108733.c: New test.
+
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108704
+	* gcc.dg/analyzer/uninit-7.c: New test.
+	* gcc.dg/analyzer/uninit-pr108704.c: New test.
+
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106325
+	* gcc.dg/analyzer/attr-nonnull-pr106325.c: New test.
+	* gcc.dg/analyzer/attribute-nonnull.c (test_6): New.
+	(test_7): New.
+
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107948
+	* gcc.dg/analyzer/feasibility-pr107948.c: New test.
+
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105784
+	* gcc.dg/analyzer/torture/fold-ptr-arith-pr105784.c: New test.
+
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107582
+	* gcc.dg/analyzer/feasibility-4.c: New test.
+	* gcc.dg/analyzer/feasibility-pr107582-1.c: New test.
+	* gcc.dg/analyzer/feasibility-pr107582-2.c: New test.
+
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107345
+	* gcc.dg/analyzer/pr107345.c: New test.
+
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106573
+	* gcc.dg/analyzer/error-uninit.c: New test.
+	* gcc.dg/analyzer/file-uninit-1.c: New test.
+
 2023-03-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/20230328-1.c: New test.

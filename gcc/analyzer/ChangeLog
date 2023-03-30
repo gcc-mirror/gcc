@@ -1,3 +1,95 @@
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109094
+	* region-model.cc (region_model::on_longjmp): Pass false for
+	new "eval_return_svalue" param of pop_frame.
+	(region_model::pop_frame): Add new "eval_return_svalue" param and
+	use it to suppress the call to get_rvalue on the result when
+	needed by on_longjmp.
+	* region-model.h (region_model::pop_frame): Add new
+	"eval_return_svalue" param.
+
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108968
+	* region-model.cc (region_model::get_rvalue_1): Handle VAR_DECLs
+	with a DECL_HARD_REGISTER by returning UNKNOWN.
+
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108733
+	* state-purge.cc (get_candidate_for_purging): Add ADDR_EXPR
+	and MEM_REF.
+
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108704
+	* state-purge.cc (state_purge_per_decl::process_point_backwards):
+	Don't stop processing the decl if it's fully overwritten by
+	this stmt if it's also used by this stmt.
+
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106325
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_null_ptr): New.
+	* region-model.cc (region_model::on_top_level_param): Add
+	"nonnull" param and make use of it.
+	(region_model::push_frame): When handling a top-level entrypoint
+	to the analysis, determine which params __attribute__((nonnull))
+	applies to, and pass to on_top_level_param.
+	* region-model.h (region_model_manager::get_or_create_null_ptr):
+	New decl.
+	(region_model::on_top_level_param): Add "nonnull" param.
+
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107948
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_binop): Fold (0 - VAL) to -VAL.
+	* region-model.cc (region_model::eval_condition): Handle e.g.
+	"-X <= 0" as equivalent to X >= 0".
+
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/105784
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_binop): For POINTER_PLUS_EXPR,
+	PLUS_EXPR and MINUS_EXPR, eliminate requirement that the final
+	type matches that of arg0 in favor of a cast.
+
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107582
+	* engine.cc (dynamic_call_info_t::update_model): Update the model
+	by pushing or pop a frame, rather than by clobbering it with the
+	model from the exploded_node's state.
+
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107345
+	* region-model.cc (region_model::eval_condition_without_cm):
+	Ensure that constants are on the right-hand side before checking
+	for them.
+
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_unaryop): Fold -(-(VAL)) to VAL.
+
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106573
+	* region-model.cc (region_model::on_call_pre): Use check_call_args
+	when ensuring that we call get_arg_svalue on all args.  Remove
+	redundant call from handling for stdio builtins.
+
+2023-03-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/106573
+	* region-model.cc (region_model::on_call_pre): Ensure that we call
+	get_arg_svalue on all arguments.
+
 2022-08-19  Release Manager
 
 	* GCC 12.2.0 released.
