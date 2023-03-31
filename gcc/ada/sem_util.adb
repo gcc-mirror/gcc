@@ -4644,7 +4644,8 @@ package body Sem_Util is
       --  attribute 'Result.
 
       elsif Present (Case_Prag) and then not Seen_In_Case then
-         Error_Msg_N ("contract cases do not mention result?.t?", Case_Prag);
+         Error_Msg_N
+           ("contract cases do not mention function result?.t?", Case_Prag);
 
       --  The function has non-trivial postconditions only and they do not
       --  mention attribute 'Result.
