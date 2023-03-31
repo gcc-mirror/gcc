@@ -5061,7 +5061,23 @@ combine_reload_insn (rtx_insn *from, rtx_insn *to)
       curr_insn = to;
       curr_id = lra_get_insn_recog_data (curr_insn);
       curr_static_id = curr_id->insn_static_data;
-      ok_p = !curr_insn_transform (true);
+      for (bool swapped_p = false;;)
+	{
+	  ok_p = !curr_insn_transform (true);
+	  if (ok_p || curr_static_id->commutative < 0)
+	    break;
+	  swap_operands (curr_static_id->commutative);
+	  if (lra_dump_file != NULL)
+	    {
+	      fprintf (lra_dump_file,
+		       "    Swapping %scombined insn operands:\n",
+		       swapped_p ? "back " : "");
+	      dump_insn_slim (lra_dump_file, to);
+	    }
+	  if (swapped_p)
+	    break;
+	  swapped_p = true;
+	}
       curr_insn = saved_insn;
       curr_id = lra_get_insn_recog_data (curr_insn);
       curr_static_id = curr_id->insn_static_data;
