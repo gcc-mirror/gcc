@@ -4846,9 +4846,6 @@ package body Contracts is
       --  Traverse Expr and clear the Controlling_Argument of calls to
       --  nonabstract functions.
 
-      procedure Remove_Formals (Id : Entity_Id);
-      --  Remove formals from homonym chains and make them not visible
-
       procedure Restore_Original_Selected_Component;
       --  Traverse Expr searching for dispatching calls to functions whose
       --  original node was a selected component, and replace them with
@@ -4897,21 +4894,6 @@ package body Contracts is
       begin
          Remove_Ctrl_Args (Expr);
       end Remove_Controlling_Arguments;
-
-      --------------------
-      -- Remove_Formals --
-      --------------------
-
-      procedure Remove_Formals (Id : Entity_Id) is
-         F : Entity_Id := First_Formal (Id);
-
-      begin
-         while Present (F) loop
-            Set_Is_Immediately_Visible (F, False);
-            Remove_Homonym (F);
-            Next_Formal (F);
-         end loop;
-      end Remove_Formals;
 
       -----------------------------------------
       -- Restore_Original_Selected_Component --
@@ -5032,8 +5014,7 @@ package body Contracts is
       Preanalyze_Spec_Expression (Expr, Standard_Boolean);
 
       Inside_Class_Condition_Preanalysis := False;
-      Remove_Formals (Subp);
-      Pop_Scope;
+      End_Scope;
 
       --  If this preanalyzed condition has occurrences of dispatching calls
       --  using the Object.Operation notation, during preanalysis such calls

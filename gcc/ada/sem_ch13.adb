@@ -9757,10 +9757,10 @@ package body Sem_Ch13 is
 
                --  Resolve new expression in function context
 
-               Install_Formals (Predicate_Function (Typ));
                Push_Scope (Predicate_Function (Typ));
+               Install_Formals (Predicate_Function (Typ));
                Analyze_And_Resolve (Expr, Standard_Boolean);
-               Pop_Scope;
+               End_Scope;
             end if;
          end;
       end;
