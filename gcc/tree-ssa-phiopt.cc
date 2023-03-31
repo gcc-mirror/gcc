@@ -938,6 +938,66 @@ gimple_simplify_phiopt (bool early_p, tree type, gimple *comp_stmt,
   return NULL;
 }
 
+/* empty_bb_or_one_feeding_into_p returns true if bb was empty basic block
+   or it has one cheap preparation statement that feeds into the PHI
+   statement and it sets STMT to that statement. */
+static bool
+empty_bb_or_one_feeding_into_p (basic_block bb,
+				gimple *phi,
+				gimple *&stmt)
+{
+  stmt = nullptr;
+  gimple *stmt_to_move = nullptr;
+
+  if (empty_block_p (bb))
+    return true;
+
+  if (!single_pred_p (bb))
+    return false;
+
+  /* The middle bb cannot have phi nodes as we don't
+     move those assignments yet. */
+  if (!gimple_seq_empty_p (phi_nodes (bb)))
+    return false;
+
+  stmt_to_move = last_and_only_stmt (bb);
+  if (!stmt_to_move)
+    return false;
+
+  if (gimple_vuse (stmt_to_move))
+    return false;
+
+  if (gimple_could_trap_p (stmt_to_move)
+      || gimple_has_side_effects (stmt_to_move))
+    return false;
+
+  if (gimple_uses_undefined_value_p (stmt_to_move))
+    return false;
+
+  /* Allow assignments and not no calls.
+     As const calls don't match any of the above, yet they could
+     still have some side-effects - they could contain
+     gimple_could_trap_p statements, like floating point
+     exceptions or integer division by zero.  See PR70586.
+     FIXME: perhaps gimple_has_side_effects or gimple_could_trap_p
+     should handle this.  */
+  if (!is_gimple_assign (stmt_to_move))
+    return false;
+
+  tree lhs = gimple_assign_lhs (stmt_to_move);
+  gimple *use_stmt;
+  use_operand_p use_p;
+
+  /* Allow only a statement which feeds into the other stmt.  */
+  if (!lhs || TREE_CODE (lhs) != SSA_NAME
+      || !single_imm_use (lhs, &use_p, &use_stmt)
+      || use_stmt != phi)
+    return false;
+
+  stmt = stmt_to_move;
+  return true;
+}
+
 /*  The function match_simplify_replacement does the main work of doing the
     replacement using match and simplify.  Return true if the replacement is done.
     Otherwise return false.
@@ -963,50 +1023,8 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
 
   /* If the basic block only has a cheap preparation statement,
      allow it and move it once the transformation is done. */
-  if (!empty_block_p (middle_bb))
-    {
-      if (!single_pred_p (middle_bb))
-	return false;
-
-      /* The middle bb cannot have phi nodes as we don't
-	 move those assignments yet. */
-      if (!gimple_seq_empty_p (phi_nodes (middle_bb)))
-	return false;
-
-      stmt_to_move = last_and_only_stmt (middle_bb);
-      if (!stmt_to_move)
-	return false;
-
-      if (gimple_vuse (stmt_to_move))
-	return false;
-
-      if (gimple_could_trap_p (stmt_to_move)
-	  || gimple_has_side_effects (stmt_to_move))
-	return false;
-
-      if (gimple_uses_undefined_value_p (stmt_to_move))
-	return false;
-
-      /* Allow assignments and not no calls.
-	 As const calls don't match any of the above, yet they could
-	 still have some side-effects - they could contain
-	 gimple_could_trap_p statements, like floating point
-	 exceptions or integer division by zero.  See PR70586.
-	 FIXME: perhaps gimple_has_side_effects or gimple_could_trap_p
-	 should handle this.  */
-      if (!is_gimple_assign (stmt_to_move))
-	return false;
-
-      tree lhs = gimple_assign_lhs (stmt_to_move);
-      gimple *use_stmt;
-      use_operand_p use_p;
-
-      /* Allow only a statement which feeds into the phi.  */
-      if (!lhs || TREE_CODE (lhs) != SSA_NAME
-	  || !single_imm_use (lhs, &use_p, &use_stmt)
-	  || use_stmt != phi)
-	return false;
-    }
+  if (!empty_bb_or_one_feeding_into_p (middle_bb, phi, stmt_to_move))
+    return false;
 
     /* At this point we know we have a GIMPLE_COND with two successors.
      One successor is BB, the other successor is an empty block which
