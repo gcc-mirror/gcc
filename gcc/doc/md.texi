@@ -6030,6 +6030,17 @@ floating-point mode.
 
 This pattern is not allowed to @code{FAIL}.
 
+@cindex @code{signbit@var{m}2} instruction pattern
+@item @samp{signbit@var{m}2}
+Store the sign bit of floating-point operand 1 in operand 0.
+@var{m} is either a scalar or vector mode.  When it is a scalar,
+operand 1 has mode @var{m} but operand 0 must have mode @code{SImode}.
+When @var{m} is a vector, operand 1 has the mode @var{m}.
+operand 0's mode should be an vector integer mode which has
+the same number of elements and the same size as mode @var{m}.
+
+This pattern is not allowed to @code{FAIL}.
+
 @cindex @code{significand@var{m}2} instruction pattern
 @item @samp{significand@var{m}2}
 Store the significand of floating-point operand 1 in operand 0.
