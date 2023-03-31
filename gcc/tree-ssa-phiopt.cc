@@ -77,7 +77,6 @@ static bool cond_if_else_store_replacement (basic_block, basic_block, basic_bloc
 static hash_set<tree> * get_non_trapping ();
 static void hoist_adjacent_loads (basic_block, basic_block,
 				  basic_block, basic_block);
-static bool gate_hoist_loads (void);
 
 /* This pass tries to transform conditional stores into unconditional
    ones, enabling further simplifications with the simpler then and else
