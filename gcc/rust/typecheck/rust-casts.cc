@@ -64,7 +64,6 @@ TypeCastRules::cast_rules ()
 
   rust_debug ("cast_rules from={%s} to={%s}", from_type->debug_str ().c_str (),
 	      to.get_ty ()->debug_str ().c_str ());
-
   switch (from_type->get_kind ())
     {
       case TyTy::TypeKind::INFER: {
@@ -79,7 +78,21 @@ TypeCastRules::cast_rules ()
 	  case TyTy::InferType::InferTypeKind::INTEGRAL:
 	    switch (to.get_ty ()->get_kind ())
 	      {
-	      case TyTy::TypeKind::CHAR:
+		case TyTy::TypeKind::CHAR: {
+		  // only u8 and char
+		  bool was_uint
+		    = from.get_ty ()->get_kind () == TyTy::TypeKind::UINT;
+		  bool was_u8
+		    = was_uint
+		      && (static_cast<TyTy::UintType *> (from.get_ty ())
+			    ->get_uint_kind ()
+			  == TyTy::UintType::UintKind::U8);
+		  if (was_u8)
+		    return TypeCoercionRules::CoercionResult{
+		      {}, to.get_ty ()->clone ()};
+		}
+		break;
+
 	      case TyTy::TypeKind::USIZE:
 	      case TyTy::TypeKind::ISIZE:
 	      case TyTy::TypeKind::UINT:
