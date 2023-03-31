@@ -478,7 +478,6 @@ GNATRTL_NONTASKING_OBJS= \
   g-speche$(objext) \
   g-spipat$(objext) \
   g-spitbo$(objext) \
-  g-spogwa$(objext) \
   g-sptabo$(objext) \
   g-sptain$(objext) \
   g-sptavs$(objext) \
@@ -856,7 +855,7 @@ GNATLIB_SHARED = gnatlib
 # to LIBGNAT_TARGET_PAIRS.
 
 GNATRTL_SOCKETS_OBJS = g-soccon$(objext) g-socket$(objext) g-socthi$(objext) \
-  g-soliop$(objext) g-sothco$(objext) g-socpol$(objext)
+  g-soliop$(objext) g-sothco$(objext) g-socpol$(objext) g-spogwa$(objext)
 
 DUMMY_SOCKETS_TARGET_PAIRS = \
   g-socket.adb<libgnat/g-socket__dummy.adb \
