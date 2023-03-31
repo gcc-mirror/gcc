@@ -907,17 +907,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       // Capacity:
+
       ///  Returns the number of characters in the string, not including any
       ///  null-termination.
       size_type
       size() const _GLIBCXX_NOEXCEPT
-      { return _M_rep()->_M_length; }
+      {
+#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0 && __OPTIMIZE__
+	if (_S_empty_rep()._M_length != 0)
+	  __builtin_unreachable();
+#endif
+	return _M_rep()->_M_length;
+      }
 
       ///  Returns the number of characters in the string, not including any
       ///  null-termination.
       size_type
       length() const _GLIBCXX_NOEXCEPT
-      { return _M_rep()->_M_length; }
+      { return size(); }
 
       ///  Returns the size() of the largest possible %string.
       size_type
