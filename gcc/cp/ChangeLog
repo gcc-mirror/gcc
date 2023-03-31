@@ -1,3 +1,39 @@
+2023-03-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105452
+	* search.cc (type_context_for_name_lookup): New.
+	(accessible_p): Handle anonymous union.
+	* init.cc (maybe_instantiate_nsdmi_init): Use
+	type_context_for_name_lookup.
+	* parser.cc (cp_parser_class_specifier): Likewise.
+	* cp-tree.h (type_context_for_name_lookup): Declare.
+
+2023-03-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105221
+	* pt.cc (unify) [FUNCTION_TYPE]: Handle function pointer
+	conversions.
+
+2023-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109319
+	* decl2.cc (grok_array_decl): After emitting a pedwarn for
+	-Wcomma-subscript, if processing_template_decl set orig_index_exp
+	to compound expr from orig_index_exp_list.
+
+2023-03-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107897
+	PR c++/108887
+	* decl2.cc (record_mangling): Use symtab_node::reset.
+
+2023-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109278
+	* call.cc (convert_like_internal): If pedwarn for extended float
+	type conversions doesn't report anything, avoid calling
+	maybe_inform_about_fndecl_for_bogus_argument_init.
+
 2023-03-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/109321

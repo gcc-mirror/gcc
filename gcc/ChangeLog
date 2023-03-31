@@ -1,3 +1,38 @@
+2023-03-30  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109154
+	* gimple-range-gori.cc (gori_compute::may_recompute_p): Add depth limit.
+	* gimple-range-gori.h (may_recompute_p): Add depth param.
+	* params.opt (ranger-recompute-depth): New param.
+
+2023-03-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107897
+	PR c++/108887
+	* cgraph.h: Move reset() from cgraph_node to symtab_node.
+	* cgraphunit.cc (symtab_node::reset): Adjust.  Also call
+	remove_from_same_comdat_group.
+
+2023-03-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107561
+	* gimple-ssa-warn-access.cc (get_size_range): Add flags
+	argument and pass it on.
+	(check_access): When querying for the size range pass
+	SR_ALLOW_ZERO when the known destination size is zero.
+
+2023-03-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109342
+	* tree-ssa-sccvn.cc (vn_nary_op_get_predicated_value): New
+	overload for edge.  When that edge is a backedge use
+	dominated_by_p directly.
+
+2023-03-30  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.cc (expand_vec_perm_blend): Generate
+	vpblendd instead of vpblendw for V4SI under avx2.
+
 2023-03-29  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.cc (cris_rtx_costs) [CONST_INT]: Return 0

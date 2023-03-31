@@ -1,3 +1,9 @@
+2023-03-30  Andrew Pinski  <apinski@marvell.com>
+
+	* dump-parse-tree.cc (get_c_type_name): Fix "long_long"
+	type name to be "long long". Add a comment on why adding
+	2 to the name too.
+
 2023-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/109314

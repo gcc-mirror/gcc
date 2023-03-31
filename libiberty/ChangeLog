@@ -1,3 +1,8 @@
+2023-03-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* obstacks.texi (Preparing for Obstacks): Remove a (broken)
+	reference to the Glibc manual.
+
 2023-03-03  Costas Argyris  <costas.argyris@gmail.com>
 
 	* pex-win32.c (win32_spawn): Fix memory leak of cmdline

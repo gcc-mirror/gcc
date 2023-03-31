@@ -1,3 +1,50 @@
+2023-03-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105452
+	* g++.dg/lookup/anon8.C: New test.
+
+2023-03-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105221
+	* g++.dg/cpp1z/noexcept-type27.C: New test.
+
+2023-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109319
+	* g++.dg/cpp23/subscript14.C: New test.
+
+2023-03-30  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109154
+	* gcc.dg/Walloca-13.c: Remove bogus warning that is now fixed.
+
+2023-03-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107897
+	PR c++/108887
+	* g++.dg/cpp2a/concepts-lambda3.C: Use -flto if supported.
+	* g++.dg/cpp0x/lambda/lambda-mangle7.C: New test.
+
+2023-03-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107561
+	* g++.dg/pr71488.C: Remove XFAILed bogus diagnostic again.
+	* g++.dg/warn/Warray-bounds-16.C: Likewise.
+
+2023-03-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109342
+	* g++.dg/torture/pr109342.C: New testcase.
+
+2023-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109278
+	* g++.dg/cpp23/ext-floating15.C: New test.
+
+2023-03-30  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr88828-0.c: Adjust testcase.
+
 2023-03-29  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109336
