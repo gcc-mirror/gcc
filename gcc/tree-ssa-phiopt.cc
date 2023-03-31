@@ -55,7 +55,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "tree-ssa-dce.h"
 
-static unsigned int tree_ssa_phiopt_worker (bool, bool, bool);
 static bool two_value_replacement (basic_block, basic_block, edge, gphi *,
 				   tree, tree);
 static bool match_simplify_replacement (basic_block, basic_block,
@@ -77,62 +76,6 @@ static bool cond_if_else_store_replacement (basic_block, basic_block, basic_bloc
 static hash_set<tree> * get_non_trapping ();
 static void hoist_adjacent_loads (basic_block, basic_block,
 				  basic_block, basic_block);
-
-/* This pass tries to transform conditional stores into unconditional
-   ones, enabling further simplifications with the simpler then and else
-   blocks.  In particular it replaces this:
-
-     bb0:
-       if (cond) goto bb2; else goto bb1;
-     bb1:
-       *p = RHS;
-     bb2:
-
-   with
-
-     bb0:
-       if (cond) goto bb1; else goto bb2;
-     bb1:
-       condtmp' = *p;
-     bb2:
-       condtmp = PHI <RHS, condtmp'>
-       *p = condtmp;
-
-   This transformation can only be done under several constraints,
-   documented below.  It also replaces:
-
-     bb0:
-       if (cond) goto bb2; else goto bb1;
-     bb1:
-       *p = RHS1;
-       goto bb3;
-     bb2:
-       *p = RHS2;
-     bb3:
-
-   with
-
-     bb0:
-       if (cond) goto bb3; else goto bb1;
-     bb1:
-     bb3:
-       condtmp = PHI <RHS1, RHS2>
-       *p = condtmp;  */
-
-static unsigned int
-tree_ssa_cs_elim (void)
-{
-  unsigned todo;
-  /* ???  We are not interested in loop related info, but the following
-     will create it, ICEing as we didn't init loops with pre-headers.
-     An interfacing issue of find_data_references_in_bb.  */
-  loop_optimizer_init (LOOPS_NORMAL);
-  scev_initialize ();
-  todo = tree_ssa_phiopt_worker (true, false, false);
-  scev_finalize ();
-  loop_optimizer_finalize ();
-  return todo;
-}
 
 /* Return the singleton PHI in the SEQ of PHIs for edges E0 and E1. */
 
@@ -4278,6 +4221,47 @@ make_pass_phiopt (gcc::context *ctxt)
   return new pass_phiopt (ctxt);
 }
 
+/* This pass tries to transform conditional stores into unconditional
+   ones, enabling further simplifications with the simpler then and else
+   blocks.  In particular it replaces this:
+
+     bb0:
+       if (cond) goto bb2; else goto bb1;
+     bb1:
+       *p = RHS;
+     bb2:
+
+   with
+
+     bb0:
+       if (cond) goto bb1; else goto bb2;
+     bb1:
+       condtmp' = *p;
+     bb2:
+       condtmp = PHI <RHS, condtmp'>
+       *p = condtmp;
+
+   This transformation can only be done under several constraints,
+   documented below.  It also replaces:
+
+     bb0:
+       if (cond) goto bb2; else goto bb1;
+     bb1:
+       *p = RHS1;
+       goto bb3;
+     bb2:
+       *p = RHS2;
+     bb3:
+
+   with
+
+     bb0:
+       if (cond) goto bb3; else goto bb1;
+     bb1:
+     bb3:
+       condtmp = PHI <RHS1, RHS2>
+       *p = condtmp;  */
+
 namespace {
 
 const pass_data pass_data_cselim =
@@ -4302,10 +4286,7 @@ public:
 
   /* opt_pass methods: */
   bool gate (function *) final override { return flag_tree_cselim; }
-  unsigned int execute (function *) final override
-  {
-    return tree_ssa_cs_elim ();
-  }
+  unsigned int execute (function *) final override;
 
 }; // class pass_cselim
 
@@ -4315,4 +4296,19 @@ gimple_opt_pass *
 make_pass_cselim (gcc::context *ctxt)
 {
   return new pass_cselim (ctxt);
+}
+
+unsigned int
+pass_cselim::execute (function *)
+{
+  unsigned todo;
+  /* ???  We are not interested in loop related info, but the following
+     will create it, ICEing as we didn't init loops with pre-headers.
+     An interfacing issue of find_data_references_in_bb.  */
+  loop_optimizer_init (LOOPS_NORMAL);
+  scev_initialize ();
+  todo = tree_ssa_phiopt_worker (true, false, false);
+  scev_finalize ();
+  loop_optimizer_finalize ();
+  return todo;
 }
