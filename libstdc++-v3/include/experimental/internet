@@ -1531,7 +1531,6 @@ namespace ip
 	    std::_Construct(&_M_data._M_v6);
 	    _M_data._M_v6.sin6_family = __proto.family();
 	    _M_data._M_v6.sin6_port = address_v4::_S_hton_16(__port_num);
-	    _M_is_v6 = true;
 	  }
 	else
 	  {
@@ -1560,7 +1559,6 @@ namespace ip
 	    for (int __i = 0; __i < 16; ++__i)
 	      __s6a[__i] = __addr._M_v6._M_bytes[__i];
 	    _M_data._M_v6.sin6_scope_id = __addr._M_v6._M_scope_id;
-	    _M_is_v6 = true;
 	  }
       }
 
@@ -1568,13 +1566,13 @@ namespace ip
 
       constexpr protocol_type protocol() const noexcept
       {
-	return _M_is_v6 ? protocol_type::v6() : protocol_type::v4();
+	return _M_is_v6() ? protocol_type::v6() : protocol_type::v4();
       }
 
       constexpr ip::address
       address() const noexcept
       {
-	if (_M_is_v6)
+	if (_M_is_v6())
 	  {
 	    address_v6 __v6;
 	    const uint8_t* __s6a = _M_data._M_v6.sin6_addr.s6_addr;
@@ -1601,14 +1599,12 @@ namespace ip
 	    __builtin_memcpy(_M_data._M_v6.sin6_addr.s6_addr,
 			     __addr._M_v6._M_bytes.data(), 16);
 	    _M_data._M_v6.sin6_scope_id = __addr._M_v6._M_scope_id;
-	    _M_is_v6 = true;
 	  }
 	else
 	  {
 	    std::_Construct(&_M_data._M_v4);
 	    _M_data._M_v4.sin_family = protocol_type::v4().family();
 	    _M_data._M_v4.sin_addr.s_addr = __addr._M_v4._M_addr;
-	    _M_is_v6 = false;
 	  }
       }
 
@@ -1616,7 +1612,7 @@ namespace ip
       port() const noexcept
       {
 	port_type __p = 0;
-	if (_M_is_v6)
+	if (_M_is_v6())
 	  __p = _M_data._M_v6.sin6_port;
 	else
 	  __p = _M_data._M_v4.sin_port;
@@ -1627,7 +1623,7 @@ namespace ip
       port(port_type __port_num) noexcept
       {
 	__port_num = address_v4::_S_hton_16(__port_num);
-	if (_M_is_v6)
+	if (_M_is_v6())
 	  _M_data._M_v6.sin6_port = __port_num;
 	else
 	  _M_data._M_v4.sin_port = __port_num;
@@ -1639,19 +1635,11 @@ namespace ip
 
       constexpr size_t
       size() const noexcept
-      { return _M_is_v6 ? sizeof(sockaddr_in6) : sizeof(sockaddr_in); }
+      { return _M_is_v6() ? sizeof(sockaddr_in6) : sizeof(sockaddr_in); }
 
       void
       resize(size_t __s)
       {
-	__glibcxx_assert(__s >= 0);
-	static_assert(offsetof(sockaddr_in6, sin6_family)
-			== offsetof(sockaddr_in, sin_family),
-		      "sockaddr_in::sin_family and sockaddr_in6::sin6_family "
-		      "must be at the same offset");
-	const sa_family_t __in6 = AF_INET6;
-	const auto* __ptr = (char*)&_M_data + offsetof(sockaddr_in, sin_family);
-	_M_is_v6 = __builtin_memcmp(&__in6, __ptr, sizeof(__in6)) == 0;
 	if (__s != size())
 	  __throw_length_error("net::ip::basic_endpoint::resize");
       }
@@ -1665,7 +1653,15 @@ namespace ip
 	sockaddr_in6	_M_v6;
       } _M_data;
 
-      bool _M_is_v6 = false;
+      constexpr bool
+      _M_is_v6() const noexcept
+      {
+	// For constexpr eval we can just detect which union member is active.
+	// i.e. emulate P2641R1's std::is_active_member(&_M_data._M_v6)).
+	if (std::__is_constant_evaluated())
+	  return __builtin_constant_p(_M_data._M_v6.sin6_family);
+	return _M_data._M_v6.sin6_family == AF_INET6;
+      }
     };
 
   /** basic_endpoint comparisons
