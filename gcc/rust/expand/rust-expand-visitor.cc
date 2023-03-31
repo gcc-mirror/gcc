@@ -85,7 +85,10 @@ void
 ExpandVisitor::expand_struct_fields (std::vector<AST::StructField> &fields)
 {
   for (auto &field : fields)
-    maybe_expand_type (field.get_field_type ());
+    {
+      visit_outer_attrs (field);
+      maybe_expand_type (field.get_field_type ());
+    }
 }
 
 void
@@ -100,7 +103,10 @@ void
 ExpandVisitor::expand_function_params (std::vector<AST::FunctionParam> &params)
 {
   for (auto &param : params)
-    maybe_expand_type (param.get_type ());
+    {
+      visit_outer_attrs (param);
+      maybe_expand_type (param.get_type ());
+    }
 }
 
 void
@@ -147,8 +153,11 @@ void
 ExpandVisitor::expand_closure_params (std::vector<AST::ClosureParam> &params)
 {
   for (auto &param : params)
-    if (param.has_type_given ())
-      maybe_expand_type (param.get_type ());
+    {
+      visit_outer_attrs (param);
+      if (param.has_type_given ())
+	maybe_expand_type (param.get_type ());
+    }
 }
 
 void
@@ -501,6 +510,7 @@ ExpandVisitor::visit (AST::ClosureExprInner &expr)
 void
 ExpandVisitor::visit (AST::BlockExpr &expr)
 {
+  visit_outer_attrs (expr);
   std::function<std::unique_ptr<AST::Stmt> (AST::SingleASTNode)> extractor
     = [] (AST::SingleASTNode node) { return node.take_stmt (); };
 
@@ -694,6 +704,7 @@ ExpandVisitor::visit (AST::MatchExpr &expr)
   for (auto &match_case : expr.get_match_cases ())
     {
       auto &arm = match_case.get_arm ();
+      visit_outer_attrs (arm);
 
       for (auto &pattern : arm.get_patterns ())
 	visit (pattern);
@@ -743,6 +754,7 @@ ExpandVisitor::visit (AST::TypeBoundWhereClauseItem &item)
 void
 ExpandVisitor::visit (AST::Method &method)
 {
+  visit_outer_attrs (method);
   for (auto &param : method.get_generic_params ())
     visit (param);
 
@@ -761,6 +773,7 @@ ExpandVisitor::visit (AST::Method &method)
 void
 ExpandVisitor::visit (AST::Module &module)
 {
+  visit_outer_attrs (module);
   if (module.get_kind () == AST::Module::ModuleKind::LOADED)
     {
       visit_inner_attrs (module);
@@ -771,7 +784,9 @@ ExpandVisitor::visit (AST::Module &module)
 
 void
 ExpandVisitor::visit (AST::ExternCrate &crate)
-{}
+{
+  visit_outer_attrs (crate);
+}
 
 void
 ExpandVisitor::visit (AST::UseTreeGlob &)
@@ -787,11 +802,14 @@ ExpandVisitor::visit (AST::UseTreeRebind &)
 
 void
 ExpandVisitor::visit (AST::UseDeclaration &use_decl)
-{}
+{
+  visit_outer_attrs (use_decl);
+}
 
 void
 ExpandVisitor::visit (AST::Function &function)
 {
+  visit_outer_attrs (function);
   visit_inner_using_attrs (function,
 			   function.get_definition ()->get_inner_attrs ());
   for (auto &param : function.get_generic_params ())
@@ -811,6 +829,7 @@ ExpandVisitor::visit (AST::Function &function)
 void
 ExpandVisitor::visit (AST::TypeAlias &type_alias)
 {
+  visit_outer_attrs (type_alias);
   visit (type_alias.get_type_aliased ());
 }
 
@@ -818,6 +837,7 @@ void
 ExpandVisitor::visit (AST::StructStruct &struct_item)
 {
   visit_attrs_with_derive (struct_item);
+  visit_outer_attrs (struct_item);
   for (auto &generic : struct_item.get_generic_params ())
     visit (generic);
 
@@ -830,6 +850,7 @@ ExpandVisitor::visit (AST::StructStruct &struct_item)
 void
 ExpandVisitor::visit (AST::TupleStruct &tuple_struct)
 {
+  visit_outer_attrs (tuple_struct);
   visit_attrs_with_derive (tuple_struct);
   for (auto &generic : tuple_struct.get_generic_params ())
     visit (generic);
@@ -842,7 +863,9 @@ ExpandVisitor::visit (AST::TupleStruct &tuple_struct)
 
 void
 ExpandVisitor::visit (AST::EnumItem &item)
-{}
+{
+  visit_outer_attrs (item);
+}
 
 void
 ExpandVisitor::visit (AST::EnumItemTuple &item)
@@ -866,6 +889,7 @@ void
 ExpandVisitor::visit (AST::Enum &enum_item)
 {
   visit_attrs_with_derive (enum_item);
+  visit_outer_attrs (enum_item);
   for (auto &generic : enum_item.get_generic_params ())
     visit (generic);
 
@@ -877,6 +901,7 @@ void
 ExpandVisitor::visit (AST::Union &union_item)
 {
   visit_attrs_with_derive (union_item);
+  visit_outer_attrs (union_item);
   for (auto &generic : union_item.get_generic_params ())
     visit (generic);
 
@@ -886,6 +911,7 @@ ExpandVisitor::visit (AST::Union &union_item)
 void
 ExpandVisitor::visit (AST::ConstantItem &const_item)
 {
+  visit_outer_attrs (const_item);
   maybe_expand_type (const_item.get_type ());
 
   visit (const_item.get_expr ());
@@ -894,6 +920,7 @@ ExpandVisitor::visit (AST::ConstantItem &const_item)
 void
 ExpandVisitor::visit (AST::StaticItem &static_item)
 {
+  visit_outer_attrs (static_item);
   maybe_expand_type (static_item.get_type ());
 
   visit (static_item.get_expr ());
@@ -936,6 +963,7 @@ ExpandVisitor::visit (AST::TraitItemType &item)
 void
 ExpandVisitor::visit (AST::Trait &trait)
 {
+  visit_outer_attrs (trait);
   for (auto &generic : trait.get_generic_params ())
     visit (generic);
 
@@ -959,6 +987,7 @@ ExpandVisitor::visit (AST::Trait &trait)
 void
 ExpandVisitor::visit (AST::InherentImpl &impl)
 {
+  visit_outer_attrs (impl);
   visit_inner_attrs (impl);
   // just expand sub-stuff - can't actually strip generic params themselves
   for (auto &generic : impl.get_generic_params ())
@@ -984,6 +1013,7 @@ ExpandVisitor::visit (AST::InherentImpl &impl)
 void
 ExpandVisitor::visit (AST::TraitImpl &impl)
 {
+  visit_outer_attrs (impl);
   visit_inner_attrs (impl);
   // just expand sub-stuff - can't actually strip generic params themselves
   for (auto &param : impl.get_generic_params ())
@@ -1042,6 +1072,7 @@ ExpandVisitor::visit (AST::ExternalFunctionItem &item)
 void
 ExpandVisitor::visit (AST::ExternBlock &block)
 {
+  visit_outer_attrs (block);
   visit_inner_attrs (block);
   std::function<std::unique_ptr<AST::ExternalItem> (AST::SingleASTNode)>
     extractor
@@ -1066,7 +1097,9 @@ ExpandVisitor::visit (AST::MacroMatcher &)
 
 void
 ExpandVisitor::visit (AST::MacroRulesDefinition &rules_def)
-{}
+{
+  visit_outer_attrs (rules_def);
+}
 
 void
 ExpandVisitor::visit (AST::MetaItemPath &)
@@ -1343,7 +1376,10 @@ void
 ExpandVisitor::visit (AST::BareFunctionType &type)
 {
   for (auto &param : type.get_function_params ())
-    maybe_expand_type (param.get_type ());
+    {
+      visit_outer_attrs (param);
+      maybe_expand_type (param.get_type ());
+    }
 
   if (type.has_return_type ())
     visit (type.get_return_type ());
