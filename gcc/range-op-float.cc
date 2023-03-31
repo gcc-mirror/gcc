@@ -1587,7 +1587,13 @@ public:
 	r = range_true (type);
 	return true;
       }
-    if (!fop_lt.fold_range (r, type, op1, op2, rel))
+    frange op1_no_nan = op1;
+    frange op2_no_nan = op2;
+    if (op1.maybe_isnan ())
+      op1_no_nan.clear_nan ();
+    if (op2.maybe_isnan ())
+      op2_no_nan.clear_nan ();
+    if (!fop_lt.fold_range (r, type, op1_no_nan, op2_no_nan, rel))
       return false;
     // The result is the same as the ordered version when the
     // comparison is true or when the operands cannot be NANs.
@@ -1692,7 +1698,13 @@ public:
 	r = range_true (type);
 	return true;
       }
-    if (!fop_le.fold_range (r, type, op1, op2, rel))
+    frange op1_no_nan = op1;
+    frange op2_no_nan = op2;
+    if (op1.maybe_isnan ())
+      op1_no_nan.clear_nan ();
+    if (op2.maybe_isnan ())
+      op2_no_nan.clear_nan ();
+    if (!fop_le.fold_range (r, type, op1_no_nan, op2_no_nan, rel))
       return false;
     // The result is the same as the ordered version when the
     // comparison is true or when the operands cannot be NANs.
@@ -1793,7 +1805,13 @@ public:
 	r = range_true (type);
 	return true;
       }
-    if (!fop_gt.fold_range (r, type, op1, op2, rel))
+    frange op1_no_nan = op1;
+    frange op2_no_nan = op2;
+    if (op1.maybe_isnan ())
+      op1_no_nan.clear_nan ();
+    if (op2.maybe_isnan ())
+      op2_no_nan.clear_nan ();
+    if (!fop_gt.fold_range (r, type, op1_no_nan, op2_no_nan, rel))
       return false;
     // The result is the same as the ordered version when the
     // comparison is true or when the operands cannot be NANs.
@@ -1898,7 +1916,13 @@ public:
 	r = range_true (type);
 	return true;
       }
-    if (!fop_ge.fold_range (r, type, op1, op2, rel))
+    frange op1_no_nan = op1;
+    frange op2_no_nan = op2;
+    if (op1.maybe_isnan ())
+      op1_no_nan.clear_nan ();
+    if (op2.maybe_isnan ())
+      op2_no_nan.clear_nan ();
+    if (!fop_ge.fold_range (r, type, op1_no_nan, op2_no_nan, rel))
       return false;
     // The result is the same as the ordered version when the
     // comparison is true or when the operands cannot be NANs.
@@ -2002,7 +2026,13 @@ public:
 	r = range_true (type);
 	return true;
       }
-    if (!fop_equal.fold_range (r, type, op1, op2, rel))
+    frange op1_no_nan = op1;
+    frange op2_no_nan = op2;
+    if (op1.maybe_isnan ())
+      op1_no_nan.clear_nan ();
+    if (op2.maybe_isnan ())
+      op2_no_nan.clear_nan ();
+    if (!fop_equal.fold_range (r, type, op1_no_nan, op2_no_nan, rel))
       return false;
     // The result is the same as the ordered version when the
     // comparison is true or when the operands cannot be NANs.

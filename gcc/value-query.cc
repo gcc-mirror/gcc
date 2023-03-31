@@ -230,15 +230,21 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
     default:
       break;
     }
-  if (BINARY_CLASS_P (expr))
+  if (BINARY_CLASS_P (expr) || COMPARISON_CLASS_P (expr))
     {
-      range_op_handler op (TREE_CODE (expr), type);
+      tree op0 = TREE_OPERAND (expr, 0);
+      tree op1 = TREE_OPERAND (expr, 1);
+      if (COMPARISON_CLASS_P (expr)
+	  && !Value_Range::supports_type_p (TREE_TYPE (op0)))
+	return false;
+      range_op_handler op (TREE_CODE (expr),
+			   BINARY_CLASS_P (expr) ? type : TREE_TYPE (op0));
       if (op)
 	{
-	  Value_Range r0 (TREE_TYPE (TREE_OPERAND (expr, 0)));
-	  Value_Range r1 (TREE_TYPE (TREE_OPERAND (expr, 1)));
-	  range_of_expr (r0, TREE_OPERAND (expr, 0), stmt);
-	  range_of_expr (r1, TREE_OPERAND (expr, 1), stmt);
+	  Value_Range r0 (TREE_TYPE (op0));
+	  Value_Range r1 (TREE_TYPE (op1));
+	  range_of_expr (r0, op0, stmt);
+	  range_of_expr (r1, op1, stmt);
 	  if (!op.fold_range (r, type, r0, r1))
 	    r.set_varying (type);
 	}
