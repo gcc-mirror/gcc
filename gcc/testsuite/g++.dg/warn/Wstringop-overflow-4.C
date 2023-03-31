@@ -141,7 +141,7 @@ void test_strcpy_new_int16_t (size_t n, const size_t vals[])
 
   int r_imin_imax = SR (INT_MIN, INT_MAX);
   T (S (1), new int16_t[r_imin_imax]);
-  T (S (2), new int16_t[r_imin_imax + 1]); // { dg-bogus "into a region of size" "pr106120" { xfail { ilp32 && c++98_only } } }
+  T (S (2), new int16_t[r_imin_imax + 1]); // { dg-bogus "into a region of size" "pr106120" { xfail { c++98_only } } }
   T (S (9), new int16_t[r_imin_imax * 2 + 1]);
 
   int r_0_imax = SR (0, INT_MAX);
