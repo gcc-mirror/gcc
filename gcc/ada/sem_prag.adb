@@ -5245,7 +5245,7 @@ package body Sem_Prag is
          then
             if Ada_Version < Ada_2022 then
                Error_Msg_Ada_2022_Feature
-                 ("pre/postcondition access-to-subprogram", Loc);
+                 ("pre/postcondition on access-to-subprogram", Loc);
                raise Pragma_Exit;
             end if;
 
