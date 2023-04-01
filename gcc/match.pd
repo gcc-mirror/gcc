@@ -4843,6 +4843,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        (convert @c0))))))))
 #endif
 
+/* These was part of minmax phiopt.  */
+/* Optimize (a CMP b) ? minmax<a, c> : minmax<b, c>
+   to minmax<min/max<a, b>, c> */
+(for minmax (min max)
+ (for cmp (lt le gt ge)
+  (simplify
+   (cond (cmp @1 @3) (minmax:c @1 @4) (minmax:c @2 @4))
+   (with
+    {
+      tree_code code = minmax_from_comparison (cmp, @1, @2, @1, @3);
+    }
+    (if (code == MIN_EXPR)
+     (minmax (min @1 @2) @4)
+     (if (code == MAX_EXPR)
+      (minmax (max @1 @2) @4)))))))
+
 /* X != C1 ? -X : C2 simplifies to -X when -C1 == C2.  */
 (simplify
  (cond (ne @0 INTEGER_CST@1) (negate@3 @0) INTEGER_CST@2)
