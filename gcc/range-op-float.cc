@@ -616,6 +616,13 @@ foperator_equal::fold_range (irange &r, tree type,
       else
 	r = range_false (type);
     }
+  else if (real_iszero (&op1.lower_bound ())
+	   && real_iszero (&op1.upper_bound ())
+	   && real_iszero (&op2.lower_bound ())
+	   && real_iszero (&op2.upper_bound ())
+	   && !maybe_isnan (op1, op2))
+    // [-0.0, 0.0] == [-0.0, 0.0] or similar.
+    r = range_true (type);
   else
     {
       // If ranges do not intersect, we know the range is not equal,
@@ -732,6 +739,13 @@ foperator_not_equal::fold_range (irange &r, tree type,
       else
 	r = range_true (type);
     }
+  else if (real_iszero (&op1.lower_bound ())
+	   && real_iszero (&op1.upper_bound ())
+	   && real_iszero (&op2.lower_bound ())
+	   && real_iszero (&op2.upper_bound ())
+	   && !maybe_isnan (op1, op2))
+    // [-0.0, 0.0] != [-0.0, 0.0] or similar.
+    r = range_false (type);
   else
     {
       // If ranges do not intersect, we know the range is not equal,
