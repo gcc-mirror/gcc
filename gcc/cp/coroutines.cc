@@ -4081,6 +4081,10 @@ coro_rewrite_function_body (location_t fn_start, tree fnbody, tree orig,
       tree bind_wrap = build3_loc (fn_start, BIND_EXPR, void_type_node,
 				   NULL, NULL, NULL);
       BIND_EXPR_BODY (bind_wrap) = fnbody;
+      /* Ensure we have a block to connect up the scopes.  */
+      tree new_blk = make_node (BLOCK);
+      BIND_EXPR_BLOCK (bind_wrap) = new_blk;
+      BLOCK_SUBBLOCKS (top_block) = new_blk;
       fnbody = bind_wrap;
     }
 
