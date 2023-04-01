@@ -2490,6 +2490,9 @@ operation_could_trap_helper_p (enum tree_code op,
     case GT_EXPR:
     case GE_EXPR:
     case LTGT_EXPR:
+    /* MIN/MAX similar as LT/LE/GT/GE. */
+    case MIN_EXPR:
+    case MAX_EXPR:
       /* Some floating point comparisons may trap.  */
       return honor_nans;
 

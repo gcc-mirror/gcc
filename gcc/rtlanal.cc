@@ -3204,6 +3204,9 @@ may_trap_p_1 (const_rtx x, unsigned flags)
     case LT:
     case LTGT:
     case COMPARE:
+    /* Treat min/max similar as comparisons.  */
+    case SMIN:
+    case SMAX:
       /* Some floating point comparisons may trap.  */
       if (!flag_trapping_math)
 	break;
