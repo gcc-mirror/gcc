@@ -1,3 +1,7 @@
+2023-03-31  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/avr/pr90706.c: New.
+
 2023-03-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/109094

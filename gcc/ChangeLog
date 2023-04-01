@@ -1,3 +1,10 @@
+2023-03-31  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* ira-costs.cc: Include print-rtl.h.
+	(record_reg_classes, scan_one_insn): Add code to print debug info.
+	(record_operand_costs): Find and use smaller cost for hard reg
+	move.
+
 2023-03-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/invoke.texi (Static Analyzer Options): Add notes about
