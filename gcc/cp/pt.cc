@@ -220,6 +220,7 @@ static tree make_argument_pack (tree);
 static tree enclosing_instantiation_of (tree tctx);
 static void instantiate_body (tree pattern, tree args, tree d, bool nested);
 static tree maybe_dependent_member_ref (tree, tree, tsubst_flags_t, tree);
+static void mark_template_arguments_used (tree, tree);
 
 /* Make the current scope suitable for access checking when we are
    processing T.  T can be FUNCTION_DECL for instantiated function
@@ -7142,12 +7143,13 @@ invalid_tparm_referent_p (tree type, tree expr, tsubst_flags_t complain)
 	      decl = TREE_OPERAND (decl, 0);
 	    }
 
-	if (!VAR_P (decl))
+	if (!VAR_OR_FUNCTION_DECL_P (decl))
 	  {
 	    if (complain & tf_error)
 	      error_at (cp_expr_loc_or_input_loc (expr),
 			"%qE is not a valid template argument of type %qT "
-			"because %qE is not a variable", expr, type, decl);
+			"because %qE is not a variable or function",
+			expr, type, decl);
 	    return true;
 	  }
 	else if (cxx_dialect < cxx11 && !DECL_EXTERNAL_LINKAGE_P (decl))
@@ -12152,6 +12154,9 @@ instantiate_class_template (tree type)
       cp_unevaluated_operand = 0;
       c_inhibit_evaluation_warnings = 0;
     }
+
+  mark_template_arguments_used (templ, CLASSTYPE_TI_ARGS (type));
+
   /* Use #pragma pack from the template context.  */
   saved_maximum_field_alignment = maximum_field_alignment;
   maximum_field_alignment = TYPE_PRECISION (pattern);
@@ -21192,22 +21197,10 @@ tsubst_copy_and_build (tree t,
 	  }
 
 	/* Remember that there was a reference to this entity.  */
-	if (function != NULL_TREE)
-	  {
-	    tree inner = function;
-	    if (TREE_CODE (inner) == ADDR_EXPR
-		&& TREE_CODE (TREE_OPERAND (inner, 0)) == FUNCTION_DECL)
-	      /* We should already have called mark_used when taking the
-		 address of this function, but do so again anyway to make
-		 sure it's odr-used: at worst this is a no-op, but if we
-		 obtained this FUNCTION_DECL as part of ahead-of-time overload
-		 resolution then that call to mark_used wouldn't have marked it
-		 odr-used yet (53164).  */
-	      inner = TREE_OPERAND (inner, 0);
-	    if (DECL_P (inner)
-		&& !mark_used (inner, complain) && !(complain & tf_error))
-	      RETURN (error_mark_node);
-	  }
+	if (function != NULL_TREE
+	    && DECL_P (function)
+	    && !mark_used (function, complain) && !(complain & tf_error))
+	  RETURN (error_mark_node);
 
 	if (!maybe_fold_fn_template_args (function, complain))
 	  return error_mark_node;
@@ -21900,6 +21893,61 @@ check_instantiated_args (tree tmpl, tree args, tsubst_flags_t complain)
   if (result && (complain & tf_error))
     error ("  trying to instantiate %qD", tmpl);
   return result;
+}
+
+/* Call mark_used on each entity within the non-type template arguments in
+   ARGS for an instantiation of TMPL, to ensure that each such entity is
+   considered odr-used (and therefore marked for instantiation) regardless of
+   whether the specialization was first formed in a template context (which
+   inhibits mark_used).
+
+   This function assumes push_to_top_level has been called beforehand.  */
+
+static void
+mark_template_arguments_used (tree tmpl, tree args)
+{
+  /* It suffices to do this only when instantiating a primary template.  */
+  if (TREE_CODE (tmpl) != TEMPLATE_DECL || !PRIMARY_TEMPLATE_P (tmpl))
+    return;
+
+  /* We already marked outer arguments when specializing the context.  */
+  args = INNERMOST_TEMPLATE_ARGS (args);
+
+  for (tree arg : tree_vec_range (args))
+    {
+      /* A (pointer/reference to) function or variable NTTP argument.  */
+      if (TREE_CODE (arg) == ADDR_EXPR
+	  || TREE_CODE (arg) == INDIRECT_REF)
+	{
+	  while (TREE_CODE (arg) == ADDR_EXPR
+		 || REFERENCE_REF_P (arg)
+		 || CONVERT_EXPR_P (arg))
+	    arg = TREE_OPERAND (arg, 0);
+	  if (VAR_OR_FUNCTION_DECL_P (arg))
+	    {
+	      /* Pass tf_none to avoid duplicate diagnostics: if this call
+		 fails then an earlier call to mark_used for this argument
+		 must have also failed and emitted a diagnostic.  */
+	      bool ok = mark_used (arg, tf_none);
+	      gcc_checking_assert (ok || seen_error ());
+	    }
+	}
+      /* A class NTTP argument.  */
+      else if (VAR_P (arg)
+	       && DECL_NTTP_OBJECT_P (arg))
+	{
+	  auto mark_used_r = [](tree *tp, int *, void *) {
+	    if (VAR_OR_FUNCTION_DECL_P (*tp))
+	      {
+		bool ok = mark_used (*tp, tf_none);
+		gcc_checking_assert (ok || seen_error ());
+	      }
+	    return NULL_TREE;
+	  };
+	  cp_walk_tree_without_duplicates (&DECL_INITIAL (arg),
+					   mark_used_r, nullptr);
+	}
+    }
 }
 
 /* We're out of SFINAE context now, so generate diagnostics for the access
@@ -26774,6 +26822,8 @@ instantiate_body (tree pattern, tree args, tree d, bool nested_p)
       cp_unevaluated_operand = 0;
       c_inhibit_evaluation_warnings = 0;
     }
+
+  mark_template_arguments_used (pattern, args);
 
   if (VAR_P (d))
     {
