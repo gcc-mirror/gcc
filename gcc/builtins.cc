@@ -1446,18 +1446,19 @@ apply_args_size (void)
 	  {
 	    fixed_size_mode mode = targetm.calls.get_raw_arg_mode (regno);
 
-	    gcc_assert (mode != VOIDmode);
-
-	    align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
-	    if (size % align != 0)
-	      size = CEIL (size, align) * align;
-	    size += GET_MODE_SIZE (mode);
-	    apply_args_mode[regno] = mode;
+	    if (mode != VOIDmode)
+	      {
+		align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
+		if (size % align != 0)
+		  size = CEIL (size, align) * align;
+		size += GET_MODE_SIZE (mode);
+		apply_args_mode[regno] = mode;
+	      }
+	    else
+	      apply_args_mode[regno] = as_a <fixed_size_mode> (VOIDmode);
 	  }
 	else
-	  {
-	    apply_args_mode[regno] = as_a <fixed_size_mode> (VOIDmode);
-	  }
+	  apply_args_mode[regno] = as_a <fixed_size_mode> (VOIDmode);
     }
   return size;
 }
@@ -1481,13 +1482,16 @@ apply_result_size (void)
 	  {
 	    fixed_size_mode mode = targetm.calls.get_raw_result_mode (regno);
 
-	    gcc_assert (mode != VOIDmode);
-
-	    align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
-	    if (size % align != 0)
-	      size = CEIL (size, align) * align;
-	    size += GET_MODE_SIZE (mode);
-	    apply_result_mode[regno] = mode;
+	    if (mode != VOIDmode)
+	      {
+		align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
+		if (size % align != 0)
+		  size = CEIL (size, align) * align;
+		size += GET_MODE_SIZE (mode);
+		apply_result_mode[regno] = mode;
+	      }
+	    else
+	      apply_result_mode[regno] = as_a <fixed_size_mode> (VOIDmode);
 	  }
 	else
 	  apply_result_mode[regno] = as_a <fixed_size_mode> (VOIDmode);

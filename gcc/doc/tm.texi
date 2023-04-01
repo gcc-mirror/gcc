@@ -4820,13 +4820,15 @@ nothing when you use @option{-freg-struct-return} mode.
 @deftypefn {Target Hook} fixed_size_mode TARGET_GET_RAW_RESULT_MODE (int @var{regno})
 This target hook returns the mode to be used when accessing raw return
 registers in @code{__builtin_return}.  Define this macro if the value
-in @var{reg_raw_mode} is not correct.
+in @var{reg_raw_mode} is not correct.  Use @code{VOIDmode} if a register
+should be ignored for @code{__builtin_return} purposes.
 @end deftypefn
 
 @deftypefn {Target Hook} fixed_size_mode TARGET_GET_RAW_ARG_MODE (int @var{regno})
 This target hook returns the mode to be used when accessing raw argument
 registers in @code{__builtin_apply_args}.  Define this macro if the value
-in @var{reg_raw_mode} is not correct.
+in @var{reg_raw_mode} is not correct.  Use @code{VOIDmode} if a register
+should be ignored for @code{__builtin_apply_args} purposes.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_EMPTY_RECORD_P (const_tree @var{type})
