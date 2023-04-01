@@ -1,3 +1,78 @@
+2023-03-31  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.cc: (combine_reload_insn): New function.
+
+2023-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91645
+	* range-op-float.cc (foperator_unordered_lt::fold_range,
+	foperator_unordered_le::fold_range,
+	foperator_unordered_gt::fold_range,
+	foperator_unordered_ge::fold_range,
+	foperator_unordered_equal::fold_range): Call the ordered
+	fold_range on ranges with cleared NaNs.
+	* value-query.cc (range_query::get_tree_range): Handle also
+	COMPARISON_CLASS_P trees.
+
+2023-03-31  Kito Cheng  <kito.cheng@sifive.com>
+	    Andrew Pinski  <pinskia@gmail.com>
+
+	PR target/109328
+	* config/riscv/t-riscv: Add missing dependencies.
+
+2023-03-31  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (inline_memory_move_cost): Return 100
+	for MASK_REGS when MODE_SIZE > 8.
+
+2023-03-31  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/85048
+	* config/i386/i386-builtin.def (BDESC): Adjust icode name from
+	ufloat/ufix to floatuns/fixuns.
+	* config/i386/i386-expand.cc
+	(ix86_expand_vector_convert_uns_vsivsf): Adjust comments.
+	* config/i386/sse.md
+	(ufloat<sseintvecmodelower><mode>2<mask_name><round_name>):
+	Renamed	to ..
+	(<mask_codefor>floatuns<sseintvecmodelower><mode>2<mask_name><round_name>):.. this.
+	(<mask_codefor><avx512>_ufix_notrunc<sf2simodelower><mode><mask_name><round_name>):
+	Renamed to ..
+	(<mask_codefor><avx512>_fixuns_notrunc<sf2simodelower><mode><mask_name><round_name>):
+	.. this.
+	(<fixsuffix>fix_truncv16sfv16si2<mask_name><round_saeonly_name>):
+	Renamed to ..
+	(fix<fixunssuffix>_truncv16sfv16si2<mask_name><round_saeonly_name>):.. this.
+	(ufloat<si2dfmodelower><mode>2<mask_name>): Renamed to ..
+	(floatuns<si2dfmodelower><mode>2<mask_name>): .. this.
+	(ufloatv2siv2df2<mask_name>): Renamed to ..
+	(<mask_codefor>floatunsv2siv2df2<mask_name>): .. this.
+	(ufix_notrunc<mode><si2dfmodelower>2<mask_name><round_name>):
+	Renamed to ..
+	(fixuns_notrunc<mode><si2dfmodelower>2<mask_name><round_name>):
+	.. this.
+	(ufix_notruncv2dfv2si2): Renamed to ..
+	(fixuns_notruncv2dfv2si2):.. this.
+	(ufix_notruncv2dfv2si2_mask): Renamed to ..
+	(fixuns_notruncv2dfv2si2_mask): .. this.
+	(*ufix_notruncv2dfv2si2_mask_1): Renamed to ..
+	(*fixuns_notruncv2dfv2si2_mask_1): .. this.
+	(ufix_truncv2dfv2si2): Renamed to ..
+	(*fixuns_truncv2dfv2si2): .. this.
+	(ufix_truncv2dfv2si2_mask): Renamed to ..
+	(fixuns_truncv2dfv2si2_mask): .. this.
+	(*ufix_truncv2dfv2si2_mask_1): Renamed to ..
+	(*fixuns_truncv2dfv2si2_mask_1): .. this.
+	(ufix_truncv4dfv4si2<mask_name>): Renamed to ..
+	(fixuns_truncv4dfv4si2<mask_name>): .. this.
+	(ufix_notrunc<mode><sseintvecmodelower>2<mask_name><round_name>):
+	Renamed to ..
+	(fixuns_notrunc<mode><sseintvecmodelower>2<mask_name><round_name>):
+	.. this.
+	(ufix_trunc<mode><sseintvecmodelower>2<mask_name>): Renamed to ..
+	(<mask_codefor>fixuns_trunc<mode><sseintvecmodelower>2<mask_name>):
+	.. this.
+
 2023-03-30  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/109154

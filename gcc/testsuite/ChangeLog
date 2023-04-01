@@ -1,3 +1,35 @@
+2023-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR analyzer/107396
+	* gcc.dg/analyzer/pipe-glibc.c (read_from_pie, write_to_pipe): Exit
+	if fdopen returns NULL.
+
+2023-03-31  Andrew MacLeod  <amacleod@redhat.com>
+
+	* g++.dg/warn/Wstringop-overflow-4.C: Always check bogus message.
+	* gcc.dg/tree-ssa/pr23109.c: Disable better recomputations.
+
+2023-03-31  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/i386/pr109052-2.c: New.
+
+2023-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/91645
+	* gcc.target/i386/pr103559-1.c: New test.
+	* gcc.target/i386/pr103559-2.c: New test.
+	* gcc.target/i386/pr103559-3.c: New test.
+	* gcc.target/i386/pr103559-4.c: New test.
+
+2023-03-31  Jonathan Yong  <10walls@gmail.com>
+
+	* c-c++-common/Warray-bounds.c: Fix excess warnings on
+	LLP64.
+
+2023-03-31  liuhongt  <hongtao.liu@intel.com>
+
+	* g++.target/i386/pr85048.C: New test.
+
 2023-03-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105452

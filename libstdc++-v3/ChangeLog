@@ -1,3 +1,25 @@
+2023-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR tree-optimization/107087
+	* include/bits/cow_string.h (basic_string::size()): Add
+	optimizer hint that _S_empty_rep()._M_length is always zero.
+	(basic_string::length()): Call size().
+
+2023-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109339
+	* include/std/stop_token (_Stop_state_ptr(const stop_source&)):
+	Add attribute access with access-mode 'none'.
+	* testsuite/30_threads/stop_token/stop_source/109339.cc: New test.
+
+2023-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (ip::basic_endpoint::_M_if_v6):
+	Revert change from member function to data member. Fix for
+	constant evaluation by detecting which union member is active.
+	(ip::basic_endpoint::resize): Revert changes to update _M_is_v6
+	flag.
+
 2023-03-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/109242
