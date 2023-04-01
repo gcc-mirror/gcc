@@ -533,9 +533,23 @@ phiopt_early_allow (gimple_seq &seq, gimple_match_op &op)
     return false;
   tree_code code = (tree_code)op.code;
 
-  /* For non-empty sequence, only allow one statement.  */
+  /* For non-empty sequence, only allow one statement
+     except for MIN/MAX, allow max 2 statements,
+     each with MIN/MAX.  */
   if (!gimple_seq_empty_p (seq))
     {
+      if (code == MIN_EXPR || code == MAX_EXPR)
+	{
+	  if (!gimple_seq_singleton_p (seq))
+	    return false;
+
+	  gimple *stmt = gimple_seq_first_stmt (seq);
+	  /* Only allow assignments.  */
+	  if (!is_gimple_assign (stmt))
+	    return false;
+	  code = gimple_assign_rhs_code (stmt);
+	  return code == MIN_EXPR || code == MAX_EXPR;
+	}
       /* Check to make sure op was already a SSA_NAME.  */
       if (code != SSA_NAME)
 	return false;
