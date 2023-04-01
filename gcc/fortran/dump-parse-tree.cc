@@ -3700,6 +3700,8 @@ get_c_type_name (gfc_typespec *ts, gfc_array_spec *as, const char **pre,
 	      *type_name = c_interop_kinds_table[i].name + 2;
 	      if (strcmp (*type_name, "long_long") == 0)
 		*type_name = "long long";
+	      if (strcmp (*type_name, "long_double") == 0)
+		*type_name = "long double";
 	      if (strcmp (*type_name, "signed_char") == 0)
 		*type_name = "signed char";
 	      else if (strcmp (*type_name, "size_t") == 0)
