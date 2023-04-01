@@ -616,7 +616,7 @@ foperator_equal::fold_range (irange &r, tree type,
       else
 	r = range_false (type);
     }
-  else if (!maybe_isnan (op1, op2))
+  else
     {
       // If ranges do not intersect, we know the range is not equal,
       // otherwise we don't know anything for sure.
@@ -638,8 +638,6 @@ foperator_equal::fold_range (irange &r, tree type,
       else
 	r = range_true_and_false (type);
     }
-  else
-    r = range_true_and_false (type);
   return true;
 }
 
@@ -734,7 +732,7 @@ foperator_not_equal::fold_range (irange &r, tree type,
       else
 	r = range_true (type);
     }
-  else if (!maybe_isnan (op1, op2))
+  else
     {
       // If ranges do not intersect, we know the range is not equal,
       // otherwise we don't know anything for sure.
@@ -756,8 +754,6 @@ foperator_not_equal::fold_range (irange &r, tree type,
       else
 	r = range_true_and_false (type);
     }
-  else
-    r = range_true_and_false (type);
   return true;
 }
 
@@ -839,17 +835,13 @@ foperator_lt::fold_range (irange &r, tree type,
   if (frelop_early_resolve (r, type, op1, op2, rel, VREL_LT))
     return true;
 
-  if (op1.known_isnan () || op2.known_isnan ())
+  if (op1.known_isnan ()
+      || op2.known_isnan ()
+      || !real_less (&op1.lower_bound (), &op2.upper_bound ()))
     r = range_false (type);
-  else if (!maybe_isnan (op1, op2))
-    {
-      if (real_less (&op1.upper_bound (), &op2.lower_bound ()))
-	r = range_true (type);
-      else if (!real_less (&op1.lower_bound (), &op2.upper_bound ()))
-	r = range_false (type);
-      else
-	r = range_true_and_false (type);
-    }
+  else if (!maybe_isnan (op1, op2)
+	   && real_less (&op1.upper_bound (), &op2.lower_bound ()))
+    r = range_true (type);
   else
     r = range_true_and_false (type);
   return true;
@@ -959,17 +951,13 @@ foperator_le::fold_range (irange &r, tree type,
   if (frelop_early_resolve (r, type, op1, op2, rel, VREL_LE))
     return true;
 
-  if (op1.known_isnan () || op2.known_isnan ())
+  if (op1.known_isnan ()
+      || op2.known_isnan ()
+      || !real_compare (LE_EXPR, &op1.lower_bound (), &op2.upper_bound ()))
     r = range_false (type);
-  else if (!maybe_isnan (op1, op2))
-    {
-      if (real_compare (LE_EXPR, &op1.upper_bound (), &op2.lower_bound ()))
-	r = range_true (type);
-      else if (!real_compare (LE_EXPR, &op1.lower_bound (), &op2.upper_bound ()))
-	r = range_false (type);
-      else
-	r = range_true_and_false (type);
-    }
+  else if (!maybe_isnan (op1, op2)
+	   && real_compare (LE_EXPR, &op1.upper_bound (), &op2.lower_bound ()))
+    r = range_true (type);
   else
     r = range_true_and_false (type);
   return true;
@@ -1073,17 +1061,13 @@ foperator_gt::fold_range (irange &r, tree type,
   if (frelop_early_resolve (r, type, op1, op2, rel, VREL_GT))
     return true;
 
-  if (op1.known_isnan () || op2.known_isnan ())
+  if (op1.known_isnan ()
+      || op2.known_isnan ()
+      || !real_compare (GT_EXPR, &op1.upper_bound (), &op2.lower_bound ()))
     r = range_false (type);
-  else if (!maybe_isnan (op1, op2))
-    {
-      if (real_compare (GT_EXPR, &op1.lower_bound (), &op2.upper_bound ()))
-	r = range_true (type);
-      else if (!real_compare (GT_EXPR, &op1.upper_bound (), &op2.lower_bound ()))
-	r = range_false (type);
-      else
-	r = range_true_and_false (type);
-    }
+  else if (!maybe_isnan (op1, op2)
+	   && real_compare (GT_EXPR, &op1.lower_bound (), &op2.upper_bound ()))
+    r = range_true (type);
   else
     r = range_true_and_false (type);
   return true;
@@ -1197,17 +1181,13 @@ foperator_ge::fold_range (irange &r, tree type,
   if (frelop_early_resolve (r, type, op1, op2, rel, VREL_GE))
     return true;
 
-  if (op1.known_isnan () || op2.known_isnan ())
+  if (op1.known_isnan ()
+      || op2.known_isnan ()
+      || !real_compare (GE_EXPR, &op1.upper_bound (), &op2.lower_bound ()))
     r = range_false (type);
-  else if (!maybe_isnan (op1, op2))
-    {
-      if (real_compare (GE_EXPR, &op1.lower_bound (), &op2.upper_bound ()))
-	r = range_true (type);
-      else if (!real_compare (GE_EXPR, &op1.upper_bound (), &op2.lower_bound ()))
-	r = range_false (type);
-      else
-	r = range_true_and_false (type);
-    }
+  else if (!maybe_isnan (op1, op2)
+	   && real_compare (GE_EXPR, &op1.lower_bound (), &op2.upper_bound ()))
+    r = range_true (type);
   else
     r = range_true_and_false (type);
   return true;
@@ -2092,6 +2072,87 @@ foperator_unordered_equal::op1_range (frange &r, tree type,
   return true;
 }
 
+class foperator_ltgt : public range_operator_float
+{
+  using range_operator_float::fold_range;
+  using range_operator_float::op1_range;
+  using range_operator_float::op2_range;
+public:
+  bool fold_range (irange &r, tree type,
+		   const frange &op1, const frange &op2,
+		   relation_trio rel = TRIO_VARYING) const final override
+  {
+    if (op1.known_isnan () || op2.known_isnan ())
+      {
+	r = range_false (type);
+	return true;
+      }
+    frange op1_no_nan = op1;
+    frange op2_no_nan = op2;
+    if (op1.maybe_isnan ())
+      op1_no_nan.clear_nan ();
+    if (op2.maybe_isnan ())
+      op2_no_nan.clear_nan ();
+    if (!fop_not_equal.fold_range (r, type, op1_no_nan, op2_no_nan, rel))
+      return false;
+    // The result is the same as the ordered version when the
+    // comparison is true or when the operands cannot be NANs.
+    if (!maybe_isnan (op1, op2) || r == range_false (type))
+      return true;
+    else
+      {
+	r = range_true_and_false (type);
+	return true;
+      }
+  }
+  bool op1_range (frange &r, tree type,
+		  const irange &lhs, const frange &op2,
+		  relation_trio = TRIO_VARYING) const final override;
+  bool op2_range (frange &r, tree type,
+		  const irange &lhs, const frange &op1,
+		  relation_trio rel = TRIO_VARYING) const final override
+  {
+    return op1_range (r, type, lhs, op1, rel.swap_op1_op2 ());
+  }
+} fop_ltgt;
+
+bool
+foperator_ltgt::op1_range (frange &r, tree type,
+			   const irange &lhs,
+			   const frange &op2,
+			   relation_trio) const
+{
+  switch (get_bool_state (r, lhs, type))
+    {
+    case BRS_TRUE:
+      // A true LTGT means both operands are !NAN, so it's
+      // impossible for op2 to be a NAN.
+      if (op2.known_isnan ())
+	r.set_undefined ();
+      else
+	{
+	  // The true side indicates !NAN and not equal.  We can at least
+	  // represent !NAN.
+	  r.set_varying (type);
+	  r.clear_nan ();
+	}
+      break;
+
+    case BRS_FALSE:
+      // If it's false, the result is the same as OP2 plus a NAN.
+      r = op2;
+      // Add both zeros if there's the possibility of zero equality.
+      frange_add_zeros (r, type);
+      // Add the possibility of a NAN.
+      r.update_nan ();
+      break;
+
+    default:
+      break;
+    }
+  return true;
+}
+
 // Final tweaks for float binary op op1_range/op2_range.
 // Return TRUE if the operation is performed and a valid range is available.
 
@@ -2767,6 +2828,7 @@ floating_op_table::floating_op_table ()
   set (UNEQ_EXPR, fop_unordered_equal);
   set (ORDERED_EXPR, fop_ordered);
   set (UNORDERED_EXPR, fop_unordered);
+  set (LTGT_EXPR, fop_ltgt);
 
   set (ABS_EXPR, fop_abs);
   set (NEGATE_EXPR, fop_negate);
