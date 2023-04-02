@@ -76,7 +76,7 @@ static tree start_static_storage_duration_function (unsigned, bool);
 static void finish_static_storage_duration_function (tree);
 static priority_info get_priority_info (int);
 static void do_static_initialization_or_destruction (tree, bool, bool);
-static void one_static_initialization_or_destruction (tree, tree, bool, bool);
+static void one_static_initialization_or_destruction (tree, tree, bool);
 static void generate_ctor_or_dtor_function (bool, int, location_t *, bool);
 static int generate_ctor_and_dtor_functions_for_priority (splay_tree_node,
 							  void *);
@@ -4167,8 +4167,7 @@ fix_temporary_vars_context_r (tree *node,
    are destroying it.  */
 
 static void
-one_static_initialization_or_destruction (tree decl, tree init, bool initp,
-					  bool omp_target)
+one_static_initialization_or_destruction (tree decl, tree init, bool initp)
 {
   tree guard_if_stmt = NULL_TREE;
   tree guard;
@@ -4389,8 +4388,7 @@ do_static_initialization_or_destruction (tree vars, bool initp, bool omp_target)
 	if (omp_target)
 	  init = copy_node (init);
 	/* Do one initialization or destruction.  */
-	one_static_initialization_or_destruction (decl, init, initp,
-						  omp_target);
+	one_static_initialization_or_destruction (decl, init, initp);
       }
 
     /* Finish up the priority if-stmt body.  */
@@ -4854,7 +4852,7 @@ handle_tls_init (void)
     {
       tree var = TREE_VALUE (vars);
       tree init = TREE_PURPOSE (vars);
-      one_static_initialization_or_destruction (var, init, true, false);
+      one_static_initialization_or_destruction (var, init, true);
 
       /* Output init aliases even with -fno-extern-tls-init.  */
       if (TARGET_SUPPORTS_ALIASES && TREE_PUBLIC (var))
