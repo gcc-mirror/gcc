@@ -60,7 +60,22 @@
 ;; "I" "A signed 12-bit constant (for arithmetic instructions)."
 ;; "J" "Integer zero."
 ;; "K" "An unsigned 12-bit constant (for logic instructions)."
-;; "L" <-----unused
+;; "L" -
+;;     "La"
+;;	 "A signed constant in [-4096, 2048) or (2047, 4094]."
+;;     "Lb"
+;;	 "A signed 32-bit constant and low 16-bit is zero, which can be
+;;	  added onto a register with addu16i.d.  It matches nothing if
+;;	  the addu16i.d instruction is not available."
+;;     "Lc"
+;;	 "A signed 64-bit constant can be expressed as Lb + I, but not a
+;;	  single Lb or I."
+;;     "Ld"
+;;	 "A signed 64-bit constant can be expressed as Lb + Lb, but not a
+;;	  single Lb."
+;;     "Le"
+;;	 "A signed 32-bit constant can be expressed as Lb + I, but not a
+;;	  single Lb or I."
 ;; "M" <-----unused
 ;; "N" <-----unused
 ;; "O" <-----unused
@@ -169,6 +184,35 @@
   "An unsigned 12-bit constant (for logic instructions)."
   (and (match_code "const_int")
        (match_test "IMM12_OPERAND_UNSIGNED (ival)")))
+
+(define_constraint "La"
+  "A signed constant in [-4096, 2048) or (2047, 4094]."
+  (and (match_code "const_int")
+       (match_test "DUAL_IMM12_OPERAND (ival)")))
+
+(define_constraint "Lb"
+  "A signed 32-bit constant and low 16-bit is zero, which can be added
+   onto a register with addu16i.d."
+  (and (match_code "const_int")
+       (match_test "ADDU16I_OPERAND (ival)")))
+
+(define_constraint "Lc"
+  "A signed 64-bit constant can be expressed as Lb + I, but not a single Lb
+   or I."
+  (and (match_code "const_int")
+       (match_test "loongarch_addu16i_imm12_operand_p (ival, DImode)")))
+
+(define_constraint "Ld"
+  "A signed 64-bit constant can be expressed as Lb + Lb, but not a single
+   Lb."
+  (and (match_code "const_int")
+       (match_test "DUAL_ADDU16I_OPERAND (ival)")))
+
+(define_constraint "Le"
+  "A signed 32-bit constant can be expressed as Lb + I, but not a single Lb
+   or I."
+  (and (match_code "const_int")
+       (match_test "loongarch_addu16i_imm12_operand_p (ival, SImode)")))
 
 (define_constraint "Yd"
   "@internal

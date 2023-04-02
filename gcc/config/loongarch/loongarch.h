@@ -612,6 +612,25 @@ enum reg_class
 
 #define CONST_LOW_PART(VALUE) ((VALUE) - CONST_HIGH_PART (VALUE))
 
+/* True if VALUE can be added onto a register with one addu16i.d
+   instruction.  */
+
+#define ADDU16I_OPERAND(VALUE)			\
+  (TARGET_64BIT && (((VALUE) & 0xffff) == 0	\
+   && IMM16_OPERAND ((HOST_WIDE_INT) (VALUE) / 65536)))
+
+/* True if VALUE can be added onto a register with two addi.{d/w}
+   instructions, but not one addi.{d/w} instruction.  */
+#define DUAL_IMM12_OPERAND(VALUE) \
+  (IN_RANGE ((VALUE), -4096, 4094) && !IMM12_OPERAND (VALUE))
+
+/* True if VALUE can be added onto a register with two addu16i.d
+   instruction, but not one addu16i.d instruction.  */
+#define DUAL_ADDU16I_OPERAND(VALUE)		\
+  (TARGET_64BIT && (((VALUE) & 0xffff) == 0	\
+   && !ADDU16I_OPERAND (VALUE)			\
+   && IN_RANGE ((VALUE) / 65536, -0x10000, 0xfffe)))
+
 #define IMM12_INT(X) IMM12_OPERAND (INTVAL (X))
 #define IMM12_INT_UNSIGNED(X) IMM12_OPERAND_UNSIGNED (INTVAL (X))
 #define LU12I_INT(X) LU12I_OPERAND (INTVAL (X))

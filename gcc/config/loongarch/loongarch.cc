@@ -3754,6 +3754,50 @@ loongarch_split_move (rtx dest, rtx src, rtx insn_)
     }
 }
 
+/* Check if adding an integer constant value for a specific mode can be
+   performed with an addu16i.d instruction and an addi.{w/d}
+   instruction.  */
+
+bool
+loongarch_addu16i_imm12_operand_p (HOST_WIDE_INT value, machine_mode mode)
+{
+  /* Not necessary, but avoid unnecessary calculation if !TARGET_64BIT.  */
+  if (!TARGET_64BIT)
+    return false;
+
+  if ((value & 0xffff) == 0)
+    return false;
+
+  if (IMM12_OPERAND (value))
+    return false;
+
+  value = (value & ~HWIT_UC_0xFFF) + ((value & 0x800) << 1);
+  return ADDU16I_OPERAND (trunc_int_for_mode (value, mode));
+}
+
+/* Split one integer constant op[0] into two (op[1] and op[2]) for constant
+   plus operation in a specific mode.  The splitted constants can be added
+   onto a register with a single instruction (addi.{d/w} or addu16i.d).  */
+
+void
+loongarch_split_plus_constant (rtx *op, machine_mode mode)
+{
+  HOST_WIDE_INT v = INTVAL (op[0]), a;
+
+  if (DUAL_IMM12_OPERAND (v))
+    a = (v > 0 ? 2047 : -2048);
+  else if (loongarch_addu16i_imm12_operand_p (v, mode))
+    a = (v & ~HWIT_UC_0xFFF) + ((v & 0x800) << 1);
+  else if (mode == DImode && DUAL_ADDU16I_OPERAND (v))
+    a = (v > 0 ? 0x7fff : -0x8000) << 16;
+  else
+    gcc_unreachable ();
+
+  op[1] = gen_int_mode (a, mode);
+  v = v - (unsigned HOST_WIDE_INT) a;
+  op[2] = gen_int_mode (v, mode);
+}
+
 /* Return true if a move from SRC to DEST in INSN should be split.  */
 
 static bool
