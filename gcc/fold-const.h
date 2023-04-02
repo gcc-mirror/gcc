@@ -246,6 +246,9 @@ extern tree fold_build_pointer_plus_hwi_loc (location_t loc, tree ptr, HOST_WIDE
 #define fold_build_pointer_plus_hwi(p,o) \
 	fold_build_pointer_plus_hwi_loc (UNKNOWN_LOCATION, p, o)
 
+extern tree_code minmax_from_comparison (tree_code, tree, tree,
+					 tree, tree);
+
 /* In gimple-fold.cc.  */
 extern void clear_type_padding_in_mask (tree, unsigned char *);
 extern bool clear_padding_type_may_have_padding_p (tree);
