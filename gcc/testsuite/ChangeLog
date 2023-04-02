@@ -1,3 +1,35 @@
+2023-04-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109160
+	* g++.dg/cpp2a/concepts-placeholder12.C: New test.
+
+2023-04-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/53164
+	PR c++/105848
+	* g++.dg/template/fn-ptr3a.C: New test.
+	* g++.dg/template/fn-ptr3b.C: New test.
+	* g++.dg/template/fn-ptr4.C: New test.
+
+2023-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/torture/inf-compare-1.c: Add dg-additional-options
+	-fno-tree-dominator-opts -fno-tree-vrp.
+	* gcc.dg/torture/inf-compare-1-float.c: Likewise.
+	* gcc.dg/torture/inf-compare-2.c: Likewise.
+	* gcc.dg/torture/inf-compare-2-float.c: Likewise.
+
+2023-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109362
+	* gcc.target/i386/pr109362.c: New test.
+
+2023-04-01  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/109254
+	* gcc.target/aarch64/sve/pr109254.c: New test.
+
 2023-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR analyzer/107396

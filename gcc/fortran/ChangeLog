@@ -1,3 +1,8 @@
+2023-04-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-parse-tree.cc (get_c_type_name): Fix "long_long"
+	type name to be "long long".
+
 2023-03-30  Andrew Pinski  <apinski@marvell.com>
 
 	* dump-parse-tree.cc (get_c_type_name): Fix "long_long"

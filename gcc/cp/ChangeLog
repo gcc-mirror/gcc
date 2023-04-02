@@ -1,3 +1,34 @@
+2023-04-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109160
+	* cp-tree.h (do_auto_deduction): Add defaulted tmpl parameter.
+	* pt.cc (convert_template_argument): Pass 'in_decl' as 'tmpl' to
+	do_auto_deduction.
+	(tsubst_decl) <case VAR_/TYPE_DECL>: Pass 'tmpl' instead of 't' as
+	'in_decl' to coerce_template_parms.
+	(unify) <case TEMPLATE_PARM_INDEX>: Pass TPARMS_PRIMARY_TEMPLATE
+	as 'tmpl' to do_auto_deduction.
+	(do_auto_deduction): Document default arguments.  Rename local
+	variable 'tmpl' to 'ctmpl'.  Use 'tmpl' to obtain a full set of
+	template arguments for satisfaction in the adc_unify case.
+
+2023-04-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/53164
+	PR c++/105848
+	* pt.cc (invalid_tparm_referent_p): Accept ADDR_EXPR of
+	FUNCTION_DECL.
+	(instantiate_class_template): Call mark_template_arguments_used.
+	(tsubst_copy_and_build) <case CALL_EXPR>: Revert r13-995 change.
+	(mark_template_arguments_used): Define.
+	(instantiate_body): Call mark_template_arguments_used.
+
+2023-04-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/101118
+	* coroutines.cc (flatten_await_stmt): Use the current count of
+	promoted temporaries to build a unique name for the frame entries.
+
 2023-03-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/105452
