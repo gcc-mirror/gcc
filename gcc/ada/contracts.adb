@@ -334,7 +334,7 @@ package body Contracts is
             if Is_OK_Classification then
                Add_Classification;
 
-            elsif Ekind (Id) in Access_Subprogram_Kind
+            elsif Ekind (Id) = E_Subprogram_Type
                 and then Prag_Nam in Name_Precondition
                                    | Name_Postcondition
             then
@@ -665,7 +665,10 @@ package body Contracts is
       Freeze_Id : Entity_Id := Empty)
    is
       Items     : constant Node_Id := Contract (Subp_Id);
-      Subp_Decl : constant Node_Id := Unit_Declaration_Node (Subp_Id);
+      Subp_Decl : constant Node_Id :=
+        (if Ekind (Subp_Id) = E_Subprogram_Type
+         then Associated_Node_For_Itype (Subp_Id)
+         else Unit_Declaration_Node (Subp_Id));
 
       Saved_SM  : constant SPARK_Mode_Type := SPARK_Mode;
       Saved_SMP : constant Node_Id         := SPARK_Mode_Pragma;
@@ -1593,8 +1596,9 @@ package body Contracts is
 
       --  Analyze Pre/Post on access-to-subprogram type
 
-      if Is_Access_Subprogram_Type (Type_Id) then
-         Analyze_Entry_Or_Subprogram_Contract (Type_Id);
+      if Ekind (Type_Id) in Access_Subprogram_Kind then
+         Analyze_Entry_Or_Subprogram_Contract
+           (Directly_Designated_Type (Type_Id));
       end if;
    end Analyze_Type_Contract;
 

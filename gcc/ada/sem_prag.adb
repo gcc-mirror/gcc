@@ -5265,7 +5265,11 @@ package body Sem_Prag is
          --  Chain the pragma on the contract for further processing by
          --  Analyze_Pre_Post_Condition_In_Decl_Part.
 
-         Add_Contract_Item (N, Subp_Id);
+         if Ekind (Subp_Id) in Access_Subprogram_Kind then
+            Add_Contract_Item (N, Directly_Designated_Type (Subp_Id));
+         else
+            Add_Contract_Item (N, Subp_Id);
+         end if;
 
          --  Fully analyze the pragma when it appears inside an entry or
          --  subprogram body because it cannot benefit from forward references.
