@@ -26,7 +26,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config.h"
 #include "system.h"
-#include "ansi-decl.h"
+#include <getopt.h>
+// #include "ansi-decl.h"
 
 
 #ifdef __cplusplus
@@ -60,7 +61,7 @@ int
 cgetopt_cgetopt_long (int argc, char *argv[], char *optstring, const struct option *longopts,
                     int *longindex)
 {
-  int r = cgetopt_long (argc, argv, optstring, longopts, longindex);
+  int r = getopt_long (argc, argv, optstring, longopts, longindex);
 
   cgetopt_optarg = optarg;
   cgetopt_optind = optind;
@@ -75,7 +76,7 @@ int
 cgetopt_cgetopt_long_only (int argc, char *argv[], char *optstring,
                          const struct option *longopts, int *longindex)
 {
-  int r = cgetopt_long_only (argc, argv, optstring, longopts, longindex);
+  int r = getopt_long_only (argc, argv, optstring, longopts, longindex);
 
   cgetopt_optarg = optarg;
   cgetopt_optind = optind;

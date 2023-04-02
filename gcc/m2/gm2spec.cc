@@ -451,7 +451,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   int need_math = (MATH_LIBRARY[0] != '\0');
 
   /* 1 if we should add -lpthread to the command-line.
-    FIXME: the default should be a configuration choice.  */
+     FIXME: the default should be a configuration choice.  */
   int need_pthread = 1;
 
   /* True if we saw -static.  */
@@ -533,7 +533,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  break;
 	case OPT_fmod_:
 	  module_extension = xstrdup (arg);
-	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
 #if defined(DEBUG_ARG)
 	  printf ("seen -fmod=%s\n", module_extension);
 #endif
@@ -701,7 +700,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 		    printf ("modula-2 source file detected: %s\n", source_file);
 #endif
 		    args[i] |= M2SOURCE;
-		    // args[i] = 0;
 		  }
 	      }
 	  }

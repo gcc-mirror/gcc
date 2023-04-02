@@ -455,7 +455,7 @@ MC=m2/boot-bin/mc$(exeext) $(MC_ARGS)
 MC_LIBS=m2/mc-boot-ch/Glibc.o m2/mc-boot-ch/Gmcrts.o
 
 M2LINK=m2/boot-bin/mklink$(exeext)
-GM2_O=
+GM2_O=-O0
 GM2_O_S3=-O
 GM2_OS=-Os
 GM2_G=-g -fm2-g
@@ -505,7 +505,7 @@ GM2_C_OBJS        = m2/gm2-lang.o \
                     m2/gm2-gcc/m2misc.o \
                     m2/gm2-gcc/init.o
 GM2_LIBS          = m2/gm2-compiler/gm2.a \
-                    ../$(target_subdir)/libgm2/libm2pim/.libs/libm2pim.a m2/gm2-libs-boot/choosetemp.o
+                    m2/gm2-libs/libgm2.a \
 
 GM2_LIBS_BOOT     = m2/gm2-compiler-boot/gm2.a \
                     m2/gm2-libs-boot/libgm2.a \
@@ -1138,6 +1138,11 @@ BUILD-COMPILER-BOOT = $(BUILD-COMPILER-BOOT-H) \
 BUILD-BOOT-H = m2/boot-bin/mc$(exeext) \
                $(BUILD-LIBS-BOOT-H) $(BUILD-COMPILER-BOOT-H) $(TARGET_H) $(PLUGIN_HEADERS)
 
+BUILD-LIBS = $(BUILD-LIBS-BOOT-H) \
+             $(GM2-LIBS-MODS:%.mod=m2/gm2-libs/%.o) \
+             $(GM2-LIBS-CC:%.cc=m2/gm2-libs/%.o) \
+             $(GM2-LIBS-C:%.c=m2/gm2-libs/%.o)
+
 # Core library definition modules used by the modula-2 to C++ translator.
 
 MC-LIB-DEFS = \
@@ -1594,6 +1599,29 @@ m2/gm2-compiler/gm2.a: build-compiler gm2$(exeext)
 	$(AR_FOR_TARGET) cr $@ $(GM2-COMP-MODS:%.mod=m2/gm2-compiler/%.o) \
                     $(GM2-AUTO-MODS:%.mod=m2/gm2-compiler/%.o)
 	$(RANLIB) $@
+
+m2/gm2-libs/libgm2.a: build-compiler gm2$(exeext) $(BUILD-LIBS)
+	-test -d $(@D) || $(mkinstalldirs) $(@D)
+	$(AR) cr $@ $(GM2-LIBS-MODS:%.mod=m2/gm2-libs/%.o) \
+                    $(GM2-LIBS-CC:%.cc=m2/gm2-libs/%.o) \
+                    $(GM2-LIBS-C:%.c=m2/gm2-libs/%.o)
+	$(RANLIB) $@
+
+m2/gm2-libs/%.o: $(srcdir)/m2/gm2-libs/%.mod $(MCDEPS) $(BUILD-BOOT-H)
+	-test -d $(@D) || $(mkinstalldirs) $(@D)
+	$(GM2_1) -c $(GM2_FLAGS) -Im2/gm2-libs -I$(srcdir)/m2/gm2-libs -I$(srcdir)/m2/gm2-libs-iso $< -o $@
+
+m2/gm2-libs/%.o: $(srcdir)/m2/gm2-libs-ch/%.c m2/gm2-libs/gm2-libs-host.h
+	-test -d $(@D) || $(mkinstalldirs) $(@D)
+	$(CXX) -DBUILD_GM2_LIBS -c $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
+
+m2/gm2-libs/%.o: $(srcdir)/m2/gm2-libs-ch/%.cc m2/gm2-libs/gm2-libs-host.h
+	-test -d $(@D) || $(mkinstalldirs) $(@D)
+	$(CXX) -c $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
+
+m2/gm2-libs/choosetemp.o: m2/gm2-libs-ch/choosetemp.c m2/gm2-libiberty/Gchoosetemp.h m2/gm2-libs/gm2-libs-host.h
+	-test -d $(@D) || $(mkinstalldirs) $(@D)
+	$(CXX) -c $(CFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot -Im2/gm2-libiberty -I$(srcdir)/m2/gm2-libiberty/ $(INCLUDES) $< -o $@
 
 m2/gm2-libs-boot/libgm2.a: m2/boot-bin/mc$(exeext) $(BUILD-LIBS-BOOT)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)

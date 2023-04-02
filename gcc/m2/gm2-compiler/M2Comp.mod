@@ -319,9 +319,9 @@ BEGIN
       ELSE
          ModuleType := Program
       END ;
-      IF (Main=Sym) OR NeedToParseImplementation(Sym)
+      IF (Main=Sym) OR NeedToParseImplementation (Sym)
       THEN
-         (* only need to read implementation module if hidden types are declared or it is the main module *)
+         (* Only need to read implementation module if hidden types are declared or it is the main module *)
          LibName := NIL ;
          IF Main=Sym
          THEN
@@ -333,13 +333,16 @@ BEGIN
             THEN
                FileName := PreprocessModule (FileName, FALSE) ;
                PutLibName (Sym, makekey (string (LibName)))
+            ELSE
+               qprintf1 ('   Module %-20s : implementation source file not found\n', SymName)
             END
          END ;
+
          IF FileName#NIL
          THEN
             IF OpenSource (AssociateModule (Dup (FileName), Sym))
             THEN
-               IF NOT P0SyntaxCheck.CompilationUnit()
+               IF NOT P0SyntaxCheck.CompilationUnit ()
                THEN
                   WriteFormat0 ('compilation failed') ;
                   CloseSource ;
@@ -356,9 +359,9 @@ BEGIN
             ELSE
                (* It is quite legitimate to implement a module in C (and pretend it was a M2
                   implementation) providing that it is not the main program module and the
-                  definition module do not declare a hidden type when -fextended-opaque
+                  definition module does not declare a hidden type when -fextended-opaque
                   is used.  *)
-               IF (NOT WholeProgram) OR (Sym=Main) OR IsHiddenTypeDeclared(Sym)
+               IF (NOT WholeProgram) OR (Sym=Main) OR IsHiddenTypeDeclared (Sym)
                THEN
                   (* Unrecoverable error.  *)
                   MetaErrorString1 (Sprintf1 (InitString ('file {%%1EUAF%s} containing module {%%1a} cannot be found'),
