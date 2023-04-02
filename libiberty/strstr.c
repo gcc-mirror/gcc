@@ -32,6 +32,9 @@ strstr (const char *s1, const char *s2)
   const char *p = s1;
   const size_t len = strlen (s2);
 
+  if (!len)
+    return s1;
+
   for (; (p = strchr (p, *s2)) != 0; p++)
     {
       if (strncmp (p, s2, len) == 0)
