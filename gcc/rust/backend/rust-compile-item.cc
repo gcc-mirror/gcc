@@ -18,9 +18,7 @@
 
 #include "rust-compile-item.h"
 #include "rust-compile-implitem.h"
-#include "rust-compile-expr.h"
 #include "rust-compile-extern.h"
-#include "rust-constexpr.h"
 
 namespace Rust {
 namespace Compile {
@@ -66,7 +64,9 @@ CompileItem::visit (HIR::StaticItem &var)
     = ctx->get_backend ()->global_variable (name, asm_name, type, is_external,
 					    is_hidden, in_unique_section,
 					    var.get_locus ());
-  ctx->get_backend ()->global_variable_set_init (static_global, value);
+
+  tree init = value == error_mark_node ? error_mark_node : DECL_INITIAL (value);
+  ctx->get_backend ()->global_variable_set_init (static_global, init);
 
   ctx->insert_var_decl (var.get_mappings ().get_hirid (), static_global);
   ctx->push_var (static_global);
