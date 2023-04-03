@@ -2086,7 +2086,12 @@ determine_known_aggregate_parts (struct ipa_func_body_info *fbi,
 	     whether its value is clobbered any other dominating one.  */
 	  if ((content->value.pass_through.formal_id >= 0
 	       || content->value.pass_through.operand)
-	      && !clobber_by_agg_contents_list_p (all_list, content))
+	      && !clobber_by_agg_contents_list_p (all_list, content)
+	      /* Since IPA-CP stores results with unsigned int offsets, we can
+		 discard those which would not fit now before we stream them to
+		 WPA.  */
+	      && (content->offset + content->size - arg_offset
+		  <= (HOST_WIDE_INT) UINT_MAX * BITS_PER_UNIT))
 	    {
 	      struct ipa_known_agg_contents_list *copy
 			= XALLOCA (struct ipa_known_agg_contents_list);
