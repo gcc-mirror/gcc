@@ -44,6 +44,7 @@ enum class Kind
   UNKNOWN,
   MACRO_RULES_DEFINITION,
   MACRO_INVOCATION,
+  IDENTIFIER,
 };
 
 class Visitable
@@ -1071,6 +1072,8 @@ public:
   {
     outer_attrs = std::move (new_attrs);
   }
+
+  Kind get_ast_kind () const override { return Kind::IDENTIFIER; }
 
 protected:
   // Clone method implementation
