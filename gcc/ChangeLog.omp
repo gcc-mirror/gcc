@@ -1,3 +1,7 @@
+2023-04-03  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (one_cmpl<mode>2<exec>): New.
+
 2023-04-03  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* doc/invoke.texi (-foffload-memory=pinned): Document.
