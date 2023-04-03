@@ -234,7 +234,7 @@ DEF_RVV_TYPE (vuint32m8_t, 16, __rvv_uint32m8_t, uint32, VNx16SI, VNx8SI,
 	      _u32m8, _u32, _e32m8)
 
 /* SEW = 64:
-   Disable when TARGET_MIN_VLEN > 32.  */
+   Enable when TARGET_MIN_VLEN > 32.  */
 DEF_RVV_TYPE (vint64m1_t, 15, __rvv_int64m1_t, int64, VNx1DI, VOID, _i64m1,
 	      _i64, _e64m1)
 DEF_RVV_TYPE (vuint64m1_t, 16, __rvv_uint64m1_t, uint64, VNx1DI, VOID, _u64m1,
@@ -278,7 +278,7 @@ DEF_RVV_TYPE (vfloat32m8_t, 17, __rvv_float32m8_t, float, VNx16SF, VNx8SF,
 	      _f32m8, _f32, _e32m8)
 
 /* SEW = 64:
-   Disable when TARGET_VECTOR_FP64.  */
+   Enable when TARGET_VECTOR_FP64.  */
 DEF_RVV_TYPE (vfloat64m1_t, 17, __rvv_float64m1_t, double, VNx1DF, VOID, _f64m1,
 	      _f64, _e64m1)
 DEF_RVV_TYPE (vfloat64m2_t, 17, __rvv_float64m2_t, double, VNx2DF, VOID, _f64m2,
