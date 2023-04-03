@@ -3504,8 +3504,6 @@ check_restricted (gfc_expr *e)
 	    || sym->attr.implied_index
 	    || sym->attr.flavor == FL_PARAMETER
 	    || is_parent_of_current_ns (sym->ns)
-	    || (sym->ns->proc_name != NULL
-		  && sym->ns->proc_name->attr.flavor == FL_MODULE)
 	    || (gfc_is_formal_arg () && (sym->ns == gfc_current_ns)))
 	{
 	  t = true;
