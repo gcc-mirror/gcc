@@ -2732,6 +2732,23 @@
     DONE;
   })
 
+(define_insn_and_split "one_cmpl<mode>2<exec>"
+  [(set (match_operand:V_DI 0 "register_operand"  "=   v")
+        (not:V_DI
+          (match_operand:V_DI 1 "gcn_alu_operand" "vSvDB")))]
+  ""
+  "#"
+  "reload_completed"
+  [(set (match_dup 3) (not:<VnSI> (match_dup 5)))
+   (set (match_dup 4) (not:<VnSI> (match_dup 6)))]
+  {
+    operands[3] = gcn_operand_part (<VnDI>mode, operands[0], 0);
+    operands[4] = gcn_operand_part (<VnDI>mode, operands[0], 1);
+    operands[5] = gcn_operand_part (<VnDI>mode, operands[1], 0);
+    operands[6] = gcn_operand_part (<VnDI>mode, operands[1], 1);
+  }
+  [(set_attr "type" "mult")])
+
 ;; }}}
 ;; {{{ FP binops - special cases
 
