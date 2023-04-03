@@ -29,9 +29,9 @@ namespace Resolver {
 
 void
 ResolveExpr::go (AST::Expr *expr, const CanonicalPath &prefix,
-		 const CanonicalPath &canonical_prefix)
+		 const CanonicalPath &canonical_prefix, bool funny_error)
 {
-  ResolveExpr resolver (prefix, canonical_prefix);
+  ResolveExpr resolver (prefix, canonical_prefix, funny_error);
   expr->accept_vis (resolver);
 }
 
@@ -674,8 +674,10 @@ ResolveExpr::resolve_closure_param (AST::ClosureParam &param,
 }
 
 ResolveExpr::ResolveExpr (const CanonicalPath &prefix,
-			  const CanonicalPath &canonical_prefix)
-  : ResolverBase (), prefix (prefix), canonical_prefix (canonical_prefix)
+			  const CanonicalPath &canonical_prefix,
+			  bool funny_error)
+  : ResolverBase (), prefix (prefix), canonical_prefix (canonical_prefix),
+    funny_error (funny_error)
 {}
 
 } // namespace Resolver

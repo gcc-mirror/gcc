@@ -31,7 +31,8 @@ class ResolveExpr : public ResolverBase
 
 public:
   static void go (AST::Expr *expr, const CanonicalPath &prefix,
-		  const CanonicalPath &canonical_prefix);
+		  const CanonicalPath &canonical_prefix,
+		  bool funny_error = false);
 
   void visit (AST::TupleIndexExpr &expr) override;
   void visit (AST::TupleExpr &expr) override;
@@ -84,10 +85,11 @@ protected:
 
 private:
   ResolveExpr (const CanonicalPath &prefix,
-	       const CanonicalPath &canonical_prefix);
+	       const CanonicalPath &canonical_prefix, bool funny_error);
 
   const CanonicalPath &prefix;
   const CanonicalPath &canonical_prefix;
+  bool funny_error;
 };
 
 } // namespace Resolver
