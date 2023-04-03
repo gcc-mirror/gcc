@@ -339,6 +339,8 @@ public:
 
   template <typename T> void visit_attrs_with_derive (T &item);
 
+  bool is_builtin (AST::Attribute &attr);
+
 private:
   MacroExpander &expander;
 };
