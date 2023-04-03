@@ -2775,6 +2775,9 @@ Target supports automatic stack alignment.
 @item branch_cost
 Target supports @option{-branch-cost=N}.
 
+@item const_volatile_readonly_section
+Target places const volatile variables in readonly sections.
+
 @item cxa_atexit
 Target uses @code{__cxa_atexit}.
 
