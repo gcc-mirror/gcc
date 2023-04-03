@@ -588,6 +588,10 @@ setup_class_subset_and_memory_move_costs (void)
 	    /* Costs for NO_REGS are used in cost calculation on the
 	       1st pass when the preferred register classes are not
 	       known yet.  In this case we take the best scenario.  */
+	    if (!targetm.hard_regno_mode_ok (ira_class_hard_regs[cl][0],
+					     (machine_mode) mode))
+	      continue;
+
 	    if (ira_memory_move_cost[mode][NO_REGS][0]
 		> ira_memory_move_cost[mode][cl][0])
 	      ira_max_memory_move_cost[mode][NO_REGS][0]
