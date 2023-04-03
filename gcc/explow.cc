@@ -349,9 +349,14 @@ convert_memory_address_addr_space_1 (scalar_int_mode to_mode ATTRIBUTE_UNUSED,
       return temp;
 
     case CONST:
-      temp = convert_memory_address_addr_space_1 (to_mode, XEXP (x, 0), as,
-						  true, no_emit);
-      return temp ? gen_rtx_CONST (to_mode, temp) : temp;
+      {
+	auto *last = no_emit ? nullptr : get_last_insn ();
+	temp = convert_memory_address_addr_space_1 (to_mode, XEXP (x, 0), as,
+						    true, no_emit);
+	if (temp && (no_emit || last == get_last_insn ()))
+	  return gen_rtx_CONST (to_mode, temp);
+	return temp;
+      }
 
     case PLUS:
     case MULT:
