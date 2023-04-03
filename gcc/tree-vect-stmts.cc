@@ -6128,6 +6128,8 @@ vectorizable_operation (vec_info *vinfo,
                          "use not simple.\n");
       return false;
     }
+  bool is_invariant = (dt[0] == vect_external_def
+		       || dt[0] == vect_constant_def);
   /* If op0 is an external or constant def, infer the vector type
      from the scalar type.  */
   if (!vectype)
@@ -6181,6 +6183,8 @@ vectorizable_operation (vec_info *vinfo,
                              "use not simple.\n");
 	  return false;
 	}
+      is_invariant &= (dt[1] == vect_external_def
+		       || dt[1] == vect_constant_def);
       if (vectype2
 	  && maybe_ne (nunits_out, TYPE_VECTOR_SUBPARTS (vectype2)))
 	return false;
@@ -6195,6 +6199,8 @@ vectorizable_operation (vec_info *vinfo,
                              "use not simple.\n");
 	  return false;
 	}
+      is_invariant &= (dt[2] == vect_external_def
+		       || dt[2] == vect_constant_def);
       if (vectype3
 	  && maybe_ne (nunits_out, TYPE_VECTOR_SUBPARTS (vectype3)))
 	return false;
@@ -6292,14 +6298,22 @@ vectorizable_operation (vec_info *vinfo,
   vec_loop_masks *masks = (loop_vinfo ? &LOOP_VINFO_MASKS (loop_vinfo) : NULL);
   internal_fn cond_fn = get_conditional_internal_fn (code);
 
+  /* If operating on inactive elements could generate spurious traps,
+     we need to restrict the operation to active lanes.  Note that this
+     specifically doesn't apply to unhoisted invariants, since they
+     operate on the same value for every lane.
+
+     Similarly, if this operation is part of a reduction, a fully-masked
+     loop should only change the active lanes of the reduction chain,
+     keeping the inactive lanes as-is.  */
+  bool mask_out_inactive = ((!is_invariant && gimple_could_trap_p (stmt))
+			    || reduc_idx >= 0);
+
   if (!vec_stmt) /* transformation not required.  */
     {
-      /* If this operation is part of a reduction, a fully-masked loop
-	 should only change the active lanes of the reduction chain,
-	 keeping the inactive lanes as-is.  */
       if (loop_vinfo
 	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
-	  && reduc_idx >= 0)
+	  && mask_out_inactive)
 	{
 	  if (cond_fn == IFN_LAST
 	      || !direct_internal_fn_supported_p (cond_fn, vectype,
@@ -6442,16 +6456,31 @@ vectorizable_operation (vec_info *vinfo,
       vop1 = ((op_type == binary_op || op_type == ternary_op)
 	      ? vec_oprnds1[i] : NULL_TREE);
       vop2 = ((op_type == ternary_op) ? vec_oprnds2[i] : NULL_TREE);
-      if (masked_loop_p && reduc_idx >= 0)
+      if (masked_loop_p && mask_out_inactive)
 	{
-	  /* Perform the operation on active elements only and take
-	     inactive elements from the reduction chain input.  */
-	  gcc_assert (!vop2);
-	  vop2 = reduc_idx == 1 ? vop1 : vop0;
 	  tree mask = vect_get_loop_mask (gsi, masks, vec_num * ncopies,
 					  vectype, i);
-	  gcall *call = gimple_build_call_internal (cond_fn, 4, mask,
-						    vop0, vop1, vop2);
+	  auto_vec<tree> vops (5);
+	  vops.quick_push (mask);
+	  vops.quick_push (vop0);
+	  if (vop1)
+	    vops.quick_push (vop1);
+	  if (vop2)
+	    vops.quick_push (vop2);
+	  if (reduc_idx >= 0)
+	    {
+	      /* Perform the operation on active elements only and take
+		 inactive elements from the reduction chain input.  */
+	      gcc_assert (!vop2);
+	      vops.quick_push (reduc_idx == 1 ? vop1 : vop0);
+	    }
+	  else
+	    {
+	      auto else_value = targetm.preferred_else_value
+		(cond_fn, vectype, vops.length () - 1, &vops[1]);
+	      vops.quick_push (else_value);
+	    }
+	  gcall *call = gimple_build_call_internal_vec (cond_fn, vops);
 	  new_temp = make_ssa_name (vec_dest, call);
 	  gimple_call_set_lhs (call, new_temp);
 	  gimple_call_set_nothrow (call, true);

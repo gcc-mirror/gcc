@@ -1,5 +1,5 @@
 /* { dg-do assemble { target aarch64_asm_sve_ok } } */
-/* { dg-options "-O3 --save-temps" } */
+/* { dg-options "-O3 --save-temps -fno-trapping-math" } */
 
 #define N 16
 
