@@ -2483,10 +2483,17 @@ package body Sem_Res is
          Expr_Type := Etype (Parent (N));
 
       --  If not overloaded, then we know the type, and all that needs doing
-      --  is to check that this type is compatible with the context.
+      --  is to check that this type is compatible with the context. But note
+      --  that we may have an operator with no interpretation in Ada 2022 for
+      --  the case of possible user-defined literals as operands.
 
       elsif not Is_Overloaded (N) then
-         Found := Covers (Typ, Etype (N));
+         if Nkind (N) in N_Op and then No (Entity (N)) then
+            pragma Assert (Ada_Version >= Ada_2022);
+            Found := False;
+         else
+            Found := Covers (Typ, Etype (N));
+         end if;
          Expr_Type := Etype (N);
 
       --  In the overloaded case, we must select the interpretation that
@@ -3058,8 +3065,7 @@ package body Sem_Res is
             --  literal aspect, rewrite node as a call to the corresponding
             --  function, which plays the role of an implicit conversion.
 
-            if Nkind (N) in
-                N_Numeric_Or_String_Literal | N_Identifier
+            if Nkind (N) in N_Numeric_Or_String_Literal | N_Identifier
               and then Has_Applicable_User_Defined_Literal (N, Typ)
             then
                Analyze_And_Resolve (N, Typ);
@@ -3169,13 +3175,15 @@ package body Sem_Res is
                           (First (Component_Associations (N))));
                   end if;
 
-               --  For an operator with no interpretation, check whether
-               --  one of its operands may be a user-defined literal.
+               --  For an operator with no interpretation, check whether one of
+               --  its operands may be a user-defined literal.
 
-               elsif Nkind (N) in N_Op
-                 and then Try_User_Defined_Literal (N, Typ)
-               then
-                  return;
+               elsif Nkind (N) in N_Op and then No (Entity (N)) then
+                  if Try_User_Defined_Literal (N, Typ) then
+                     return;
+                  else
+                     Unresolved_Operator (N);
+                  end if;
 
                else
                   Wrong_Type (N, Typ);
@@ -13306,22 +13314,22 @@ package body Sem_Res is
       Typ : Entity_Id) return Boolean
    is
    begin
-      if Nkind (N) in N_Op_Add | N_Op_Divide | N_Op_Mod | N_Op_Multiply
-        | N_Op_Rem | N_Op_Subtract
+      if Nkind (N) in N_Op_Add
+                    | N_Op_Divide
+                    | N_Op_Mod
+                    | N_Op_Multiply
+                    | N_Op_Rem
+                    | N_Op_Subtract
       then
-
-         --  Both operands must have the same type as the context.
+         --  Both operands must have the same type as the context
          --  (ignoring for now fixed-point and exponentiation ops).
 
          if Has_Applicable_User_Defined_Literal (Right_Opnd (N), Typ) then
             Resolve (Left_Opnd (N), Typ);
             Analyze_And_Resolve (N, Typ);
             return True;
-         end if;
 
-         if
-           Has_Applicable_User_Defined_Literal (Left_Opnd (N), Typ)
-         then
+         elsif Has_Applicable_User_Defined_Literal (Left_Opnd (N), Typ) then
             Resolve (Right_Opnd (N), Typ);
             Analyze_And_Resolve (N, Typ);
             return True;
@@ -13331,7 +13339,7 @@ package body Sem_Res is
          end if;
 
       elsif Nkind (N) in N_Binary_Op then
-         --  For other operators the context does not impose a type on
+         --  For other binary operators the context does not impose a type on
          --  the operands, but their types must match.
 
          if Nkind (Left_Opnd (N))
@@ -13351,18 +13359,20 @@ package body Sem_Res is
          then
             Analyze_And_Resolve (N, Typ);
             return True;
+
          else
             return False;
          end if;
 
       elsif Nkind (N) in N_Unary_Op
-        and then
-          Has_Applicable_User_Defined_Literal (Right_Opnd (N), Typ)
+        and then Has_Applicable_User_Defined_Literal (Right_Opnd (N), Typ)
       then
          Analyze_And_Resolve (N, Typ);
          return True;
 
-      else   --  Other operators
+      else
+         --  Other operators
+
          return False;
       end if;
    end Try_User_Defined_Literal;

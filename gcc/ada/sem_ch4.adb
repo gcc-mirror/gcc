@@ -256,8 +256,8 @@ package body Sem_Ch4 is
    --  type is not directly visible. The routine uses this type to emit a more
    --  informative message.
 
-   function Has_Possible_Literal_Aspects (N : Node_Id) return Boolean;
-   --  Ada_2022: if an operand is a literal it may be subject to an
+   function Has_Possible_User_Defined_Literal (N : Node_Id) return Boolean;
+   --  Ada 2022: if an operand is a literal, it may be subject to an
    --  implicit conversion to a type for which a user-defined literal
    --  function exists. During the first pass of type resolution we do
    --  not know the context imposed on the literal, so we assume that
@@ -7572,19 +7572,11 @@ package body Sem_Ch4 is
 
       if Etype (N) = Any_Type then
          declare
-            L     : Node_Id;
-            R     : Node_Id;
-            Op_Id : Entity_Id := Empty;
+            L : constant Node_Id :=
+                  (if Nkind (N) in N_Binary_Op then Left_Opnd (N) else Empty);
+            R : constant Node_Id := Right_Opnd (N);
 
          begin
-            R := Right_Opnd (N);
-
-            if Nkind (N) in N_Binary_Op then
-               L := Left_Opnd (N);
-            else
-               L := Empty;
-            end if;
-
             --  If either operand has no type, then don't complain further,
             --  since this simply means that we have a propagated error.
 
@@ -7665,9 +7657,10 @@ package body Sem_Ch4 is
             then
                return;
 
-            elsif Present (Entity (N))
-              and then Has_Possible_Literal_Aspects (N)
-            then
+            --  The handling of user-defined literals is deferred to the second
+            --  pass of resolution.
+
+            elsif Has_Possible_User_Defined_Literal (N) then
                return;
 
             --  If we have a logical operator, one of whose operands is
@@ -7882,117 +7875,19 @@ package body Sem_Ch4 is
                end if;
             end if;
 
-            --  If we fall through then just give general message. Note that in
-            --  the following messages, if the operand is overloaded we choose
-            --  an arbitrary type to complain about, but that is probably more
-            --  useful than not giving a type at all.
+            --  If we fall through then just give general message
 
-            if Nkind (N) in N_Unary_Op then
-               Error_Msg_Node_2 := Etype (R);
-               Error_Msg_N ("operator& not defined for}", N);
-               return;
-
-            else
-               if Nkind (N) in N_Binary_Op then
-                  if not Is_Overloaded (L)
-                    and then not Is_Overloaded (R)
-                    and then Base_Type (Etype (L)) = Base_Type (Etype (R))
-                  then
-                     Error_Msg_Node_2 := First_Subtype (Etype (R));
-                     Error_Msg_N ("there is no applicable operator& for}", N);
-
-                  else
-                     --  Another attempt to find a fix: one of the candidate
-                     --  interpretations may not be use-visible. This has
-                     --  already been checked for predefined operators, so
-                     --  we examine only user-defined functions.
-
-                     Op_Id := Get_Name_Entity_Id (Chars (N));
-
-                     while Present (Op_Id) loop
-                        if Ekind (Op_Id) /= E_Operator
-                          and then Is_Overloadable (Op_Id)
-                        then
-                           if not Is_Immediately_Visible (Op_Id)
-                             and then not In_Use (Scope (Op_Id))
-                             and then not Is_Abstract_Subprogram (Op_Id)
-                             and then not Is_Hidden (Op_Id)
-                             and then Ekind (Scope (Op_Id)) = E_Package
-                             and then
-                               Has_Compatible_Type
-                                 (L, Etype (First_Formal (Op_Id)))
-                             and then Present
-                              (Next_Formal (First_Formal (Op_Id)))
-                             and then
-                               Has_Compatible_Type
-                                 (R,
-                                  Etype (Next_Formal (First_Formal (Op_Id))))
-                           then
-                              Error_Msg_N
-                                ("no legal interpretation for operator&", N);
-                              Error_Msg_NE
-                                ("\use clause on& would make operation legal",
-                                 N, Scope (Op_Id));
-                              exit;
-                           end if;
-                        end if;
-
-                        Op_Id := Homonym (Op_Id);
-                     end loop;
-
-                     if No (Op_Id) then
-                        Error_Msg_N ("invalid operand types for operator&", N);
-
-                        if Nkind (N) /= N_Op_Concat then
-                           Error_Msg_NE ("\left operand has}!",  N, Etype (L));
-                           Error_Msg_NE ("\right operand has}!", N, Etype (R));
-
-                           --  For multiplication and division operators with
-                           --  a fixed-point operand and an integer operand,
-                           --  indicate that the integer operand should be of
-                           --  type Integer.
-
-                           if Nkind (N) in N_Op_Multiply | N_Op_Divide
-                             and then Is_Fixed_Point_Type (Etype (L))
-                             and then Is_Integer_Type (Etype (R))
-                           then
-                              Error_Msg_N
-                                ("\convert right operand to `Integer`", N);
-
-                           elsif Nkind (N) = N_Op_Multiply
-                             and then Is_Fixed_Point_Type (Etype (R))
-                             and then Is_Integer_Type (Etype (L))
-                           then
-                              Error_Msg_N
-                                ("\convert left operand to `Integer`", N);
-                           end if;
-
-                        --  For concatenation operators it is more difficult to
-                        --  determine which is the wrong operand. It is worth
-                        --  flagging explicitly an access type, for those who
-                        --  might think that a dereference happens here.
-
-                        elsif Is_Access_Type (Etype (L)) then
-                           Error_Msg_N ("\left operand is access type", N);
-
-                        elsif Is_Access_Type (Etype (R)) then
-                           Error_Msg_N ("\right operand is access type", N);
-                        end if;
-                     end if;
-                  end if;
-               end if;
-            end if;
+            Unresolved_Operator (N);
          end;
       end if;
    end Operator_Check;
 
-   ----------------------------------
-   -- Has_Possible_Literal_Aspects --
-   ----------------------------------
+   ---------------------------------------
+   -- Has_Possible_User_Defined_Literal --
+   ---------------------------------------
 
-   function Has_Possible_Literal_Aspects (N : Node_Id) return Boolean is
+   function Has_Possible_User_Defined_Literal (N : Node_Id) return Boolean is
       R : constant Node_Id := Right_Opnd (N);
-      L : Node_Id := Empty;
 
       procedure Check_Literal_Opnd (Opnd : Node_Id);
       --  If an operand is a literal to which an aspect may apply,
@@ -8006,25 +7901,20 @@ package body Sem_Ch4 is
       begin
          if Nkind (Opnd) in N_Numeric_Or_String_Literal
            or else (Is_Entity_Name (Opnd)
-             and then Present (Entity (Opnd))
-             and then Is_Named_Number (Entity (Opnd)))
+                     and then Present (Entity (Opnd))
+                     and then Is_Named_Number (Entity (Opnd)))
          then
             Add_One_Interp (N, Etype (Opnd), Etype (Opnd));
          end if;
       end Check_Literal_Opnd;
 
-   --  Start of processing for Has_Possible_Literal_Aspects
+   --  Start of processing for Has_Possible_User_Defined_Literal
 
    begin
       if Ada_Version < Ada_2022 then
          return False;
       end if;
 
-      if Nkind (N) in N_Binary_Op then
-         L := Left_Opnd (N);
-      else
-         L := Empty;
-      end if;
       Check_Literal_Opnd (R);
 
       --  Check left operand only if right one did not provide a
@@ -8040,14 +7930,12 @@ package body Sem_Ch4 is
       --  determine whether a user-defined literal may apply to
       --  either or both.
 
-      if Present (L)
-        and then Etype (N) = Any_Type
-      then
-         Check_Literal_Opnd (L);
+      if Nkind (N) in N_Binary_Op and then Etype (N) = Any_Type then
+         Check_Literal_Opnd (Left_Opnd (N));
       end if;
 
       return Etype (N) /= Any_Type;
-   end Has_Possible_Literal_Aspects;
+   end Has_Possible_User_Defined_Literal;
 
    -----------------------------------------------
    -- Nondispatching_Call_To_Abstract_Operation --
@@ -10672,6 +10560,106 @@ package body Sem_Ch4 is
          return False;
       end if;
    end Try_Object_Operation;
+
+   -------------------------
+   -- Unresolved_Operator --
+   -------------------------
+
+   procedure Unresolved_Operator (N : Node_Id) is
+      L : constant Node_Id :=
+            (if Nkind (N) in N_Binary_Op then Left_Opnd (N) else Empty);
+      R : constant Node_Id := Right_Opnd (N);
+
+      Op_Id : Entity_Id;
+
+   begin
+      --  Note that in the following messages, if the operand is overloaded we
+      --  choose an arbitrary type to complain about, but that is probably more
+      --  useful than not giving a type at all.
+
+      if Nkind (N) in N_Unary_Op then
+         Error_Msg_Node_2 := Etype (R);
+         Error_Msg_N ("operator& not defined for}", N);
+
+      elsif Nkind (N) in N_Binary_Op then
+         if not Is_Overloaded (L)
+           and then not Is_Overloaded (R)
+           and then Base_Type (Etype (L)) = Base_Type (Etype (R))
+         then
+            Error_Msg_Node_2 := First_Subtype (Etype (R));
+            Error_Msg_N ("there is no applicable operator& for}", N);
+
+         else
+            --  Another attempt to find a fix: one of the candidate
+            --  interpretations may not be use-visible. This has
+            --  already been checked for predefined operators, so
+            --  we examine only user-defined functions.
+
+            Op_Id := Get_Name_Entity_Id (Chars (N));
+
+            while Present (Op_Id) loop
+               if Ekind (Op_Id) /= E_Operator
+                 and then Is_Overloadable (Op_Id)
+                 and then not Is_Immediately_Visible (Op_Id)
+                 and then not In_Use (Scope (Op_Id))
+                 and then not Is_Abstract_Subprogram (Op_Id)
+                 and then not Is_Hidden (Op_Id)
+                 and then Ekind (Scope (Op_Id)) = E_Package
+                 and then Has_Compatible_Type (L, Etype (First_Formal (Op_Id)))
+                 and then Present (Next_Formal (First_Formal (Op_Id)))
+                 and then
+                   Has_Compatible_Type
+                     (R, Etype (Next_Formal (First_Formal (Op_Id))))
+               then
+                  Error_Msg_N ("no legal interpretation for operator&", N);
+                  Error_Msg_NE ("\use clause on& would make operation legal",
+                                N, Scope (Op_Id));
+                  exit;
+               end if;
+
+               Op_Id := Homonym (Op_Id);
+            end loop;
+
+            if No (Op_Id) then
+               Error_Msg_N ("invalid operand types for operator&", N);
+
+               if Nkind (N) /= N_Op_Concat then
+                  Error_Msg_NE ("\left operand has}!",  N, Etype (L));
+                  Error_Msg_NE ("\right operand has}!", N, Etype (R));
+
+                  --  For multiplication and division operators with
+                  --  a fixed-point operand and an integer operand,
+                  --  indicate that the integer operand should be of
+                  --  type Integer.
+
+                  if Nkind (N) in N_Op_Multiply | N_Op_Divide
+                    and then Is_Fixed_Point_Type (Etype (L))
+                    and then Is_Integer_Type (Etype (R))
+                  then
+                     Error_Msg_N ("\convert right operand to `Integer`", N);
+
+                  elsif Nkind (N) = N_Op_Multiply
+                    and then Is_Fixed_Point_Type (Etype (R))
+                    and then Is_Integer_Type (Etype (L))
+                  then
+                     Error_Msg_N ("\convert left operand to `Integer`", N);
+                  end if;
+
+               --  For concatenation operators it is more difficult to
+               --  determine which is the wrong operand. It is worth
+               --  flagging explicitly an access type, for those who
+               --  might think that a dereference happens here.
+
+               elsif Is_Access_Type (Etype (L)) then
+                  Error_Msg_N ("\left operand is access type", N);
+
+               elsif Is_Access_Type (Etype (R)) then
+                  Error_Msg_N ("\right operand is access type", N);
+               end if;
+            end if;
+         end if;
+      end if;
+   end Unresolved_Operator;
 
    ---------
    -- wpo --
