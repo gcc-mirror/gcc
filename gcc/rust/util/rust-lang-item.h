@@ -72,6 +72,8 @@ public:
     PHANTOM_DATA,
 
     // functions
+    FN,
+    FN_MUT,
     FN_ONCE,
     FN_ONCE_OUTPUT,
 
@@ -251,6 +253,14 @@ public:
     else if (item.compare ("phantom_data") == 0)
       {
 	return ItemType::PHANTOM_DATA;
+      }
+    else if (item.compare ("fn") == 0)
+      {
+	return ItemType::FN;
+      }
+    else if (item.compare ("fn_mut") == 0)
+      {
+	return ItemType::FN_MUT;
       }
     else if (item.compare ("fn_once") == 0)
       {
@@ -462,6 +472,10 @@ public:
 	return "RangeToInclusive";
       case PHANTOM_DATA:
 	return "phantom_data";
+      case FN:
+	return "fn";
+      case FN_MUT:
+	return "fn_mut";
       case FN_ONCE:
 	return "fn_once";
       case FN_ONCE_OUTPUT:
