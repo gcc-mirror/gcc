@@ -1613,6 +1613,11 @@ find_last_decl (tree decl)
 
   if (tree name = DECL_P (decl) ? DECL_NAME (decl) : NULL_TREE)
     {
+      /* Template specializations are matched elsewhere.  */
+      if (DECL_LANG_SPECIFIC (decl)
+	  && DECL_USE_TEMPLATE (decl))
+	return NULL_TREE;
+
       /* Look up the declaration in its scope.  */
       tree pushed_scope = NULL_TREE;
       if (tree ctype = DECL_CONTEXT (decl))
