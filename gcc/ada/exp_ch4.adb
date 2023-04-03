@@ -5401,17 +5401,6 @@ package body Exp_Ch4 is
       --  when minimizing expressions with actions (e.g. when generating C
       --  code) since it allows us to do the optimization below in more cases.
 
-      --  Small optimization: when the case expression appears in the context
-      --  of a simple return statement, expand into
-
-      --    case X is
-      --       when A =>
-      --          return AX;
-      --       when B =>
-      --          return BX;
-      --       ...
-      --    end case;
-
       Case_Stmt :=
         Make_Case_Statement (Loc,
           Expression   => Expression (N),
@@ -5425,16 +5414,28 @@ package body Exp_Ch4 is
       Set_From_Conditional_Expression (Case_Stmt);
       Acts := New_List;
 
+      --  Small optimization: when the case expression appears in the context
+      --  of a simple return statement, expand into
+
+      --    case X is
+      --       when A =>
+      --          return AX;
+      --       when B =>
+      --          return BX;
+      --       ...
+      --    end case;
+
+      --  This makes the expansion much easier when expressions are calls to
+      --  a BIP function. But do not perform it when the return statement is
+      --  within a predicate function, as this causes spurious errors.
+
+      Optimize_Return_Stmt :=
+        Nkind (Par) = N_Simple_Return_Statement and then not In_Predicate;
+
       --  Scalar/Copy case
 
       if Is_Copy_Type (Typ) then
          Target_Typ := Typ;
-
-         --  Do not perform the optimization when the return statement is
-         --  within a predicate function, as this causes spurious errors.
-
-         Optimize_Return_Stmt :=
-           Nkind (Par) = N_Simple_Return_Statement and then not In_Predicate;
 
       --  Otherwise create an access type to handle the general case using
       --  'Unrestricted_Access.
@@ -5499,16 +5500,6 @@ package body Exp_Ch4 is
             --  limited and unconstrained cases.
 
             --  Generate:
-            --    AX'Unrestricted_Access
-
-            if not Is_Copy_Type (Typ) then
-               Alt_Expr :=
-                 Make_Attribute_Reference (Alt_Loc,
-                   Prefix         => Relocate_Node (Alt_Expr),
-                   Attribute_Name => Name_Unrestricted_Access);
-            end if;
-
-            --  Generate:
             --    return AX['Unrestricted_Access];
 
             if Optimize_Return_Stmt then
@@ -5520,6 +5511,13 @@ package body Exp_Ch4 is
             --    Target := AX['Unrestricted_Access];
 
             else
+               if not Is_Copy_Type (Typ) then
+                  Alt_Expr :=
+                    Make_Attribute_Reference (Alt_Loc,
+                      Prefix         => Relocate_Node (Alt_Expr),
+                      Attribute_Name => Name_Unrestricted_Access);
+               end if;
+
                LHS := New_Occurrence_Of (Target, Loc);
                Set_Assignment_OK (LHS);
 
@@ -5789,6 +5787,7 @@ package body Exp_Ch4 is
       Loc   : constant Source_Ptr := Sloc (N);
       Thenx : constant Node_Id    := Next (Cond);
       Elsex : constant Node_Id    := Next (Thenx);
+      Par   : constant Node_Id    := Parent (N);
       Typ   : constant Entity_Id  := Etype (N);
 
       Force_Expand : constant Boolean := Is_Anonymous_Access_Actual (N);
@@ -5820,6 +5819,10 @@ package body Exp_Ch4 is
          return
            UI_Max (Hi1, Hi2) - UI_Min (Lo1, Lo2) < Too_Large_Length_For_Array;
       end OK_For_Single_Subtype;
+
+      Optimize_Return_Stmt : Boolean := False;
+      --  Flag set when the if expression can be optimized in the context of
+      --  a simple return statement.
 
       --  Local variables
 
@@ -5912,6 +5915,50 @@ package body Exp_Ch4 is
          end;
       end if;
 
+      --  Small optimization: when the if expression appears in the context of
+      --  a simple return statement, expand into
+
+      --    if cond then
+      --       return then-expr
+      --    else
+      --       return else-expr;
+      --    end if;
+
+      --  This makes the expansion much easier when expressions are calls to
+      --  a BIP function. But do not perform it when the return statement is
+      --  within a predicate function, as this causes spurious errors.
+
+      Optimize_Return_Stmt :=
+        Nkind (Par) = N_Simple_Return_Statement
+          and then not (Ekind (Current_Scope) in E_Function | E_Procedure
+                         and then Is_Predicate_Function (Current_Scope));
+
+      if Optimize_Return_Stmt then
+         --  When the "then" or "else" expressions involve controlled function
+         --  calls, generated temporaries are chained on the corresponding list
+         --  of actions. These temporaries need to be finalized after the if
+         --  expression is evaluated.
+
+         Process_If_Case_Statements (N, Then_Actions (N));
+         Process_If_Case_Statements (N, Else_Actions (N));
+
+         New_If :=
+           Make_Implicit_If_Statement (N,
+             Condition       => Relocate_Node (Cond),
+             Then_Statements => New_List (
+               Make_Simple_Return_Statement (Sloc (Thenx),
+                 Expression => Relocate_Node (Thenx))),
+             Else_Statements => New_List (
+               Make_Simple_Return_Statement (Sloc (Elsex),
+                 Expression => Relocate_Node (Elsex))));
+
+         --  Preserve the original context for which the if statement is
+         --  being generated. This is needed by the finalization machinery
+         --  to prevent the premature finalization of controlled objects
+         --  found within the if statement.
+
+         Set_From_Conditional_Expression (New_If);
+
       --  If the type is limited, and the back end does not handle limited
       --  types, then we expand as follows to avoid the possibility of
       --  improper copying.
@@ -5931,7 +5978,7 @@ package body Exp_Ch4 is
       --  This special case can be skipped if the back end handles limited
       --  types properly and ensures that no incorrect copies are made.
 
-      if Is_By_Reference_Type (Typ)
+      elsif Is_By_Reference_Type (Typ)
         and then not Back_End_Handles_Limited_Types
       then
          --  When the "then" or "else" expressions involve controlled function
@@ -6253,9 +6300,10 @@ package body Exp_Ch4 is
       --  Note that the test for being in an object declaration avoids doing an
       --  unnecessary expansion, and also avoids infinite recursion.
 
-      elsif Is_Array_Type (Typ) and then not Is_Constrained (Typ)
-        and then (Nkind (Parent (N)) /= N_Object_Declaration
-                   or else Expression (Parent (N)) /= N)
+      elsif Is_Array_Type (Typ)
+        and then not Is_Constrained (Typ)
+        and then not (Nkind (Par) = N_Object_Declaration
+                       and then Expression (Par) = N)
       then
          declare
             Cnn : constant Node_Id := Make_Temporary (Loc, 'C', N);
@@ -6418,14 +6466,14 @@ package body Exp_Ch4 is
       --  in order to make sure that no branch is shared between the decisions.
 
       elsif Opt.Suppress_Control_Flow_Optimizations
-        and then Nkind (Original_Node (Parent (N))) in N_Case_Expression
-                                                     | N_Case_Statement
-                                                     | N_If_Expression
-                                                     | N_If_Statement
-                                                     | N_Goto_When_Statement
-                                                     | N_Loop_Statement
-                                                     | N_Return_When_Statement
-                                                     | N_Short_Circuit
+        and then Nkind (Original_Node (Par)) in N_Case_Expression
+                                              | N_Case_Statement
+                                              | N_If_Expression
+                                              | N_If_Statement
+                                              | N_Goto_When_Statement
+                                              | N_Loop_Statement
+                                              | N_Return_When_Statement
+                                              | N_Short_Circuit
       then
          declare
             Cnn  : constant Entity_Id := Make_Temporary (Loc, 'C');
@@ -6466,20 +6514,35 @@ package body Exp_Ch4 is
       --  change it to the SLOC of the expression which, after expansion, will
       --  correspond to what is being evaluated.
 
-      if Present (Parent (N)) and then Nkind (Parent (N)) = N_If_Statement then
-         Set_Sloc (New_If, Sloc (Parent (N)));
-         Set_Sloc (Parent (N), Loc);
+      if Present (Par) and then Nkind (Par) = N_If_Statement then
+         Set_Sloc (New_If, Sloc (Par));
+         Set_Sloc (Par, Loc);
       end if;
 
       --  Move Then_Actions and Else_Actions, if any, to the new if statement
 
-      Insert_List_Before (First (Then_Statements (New_If)), Then_Actions (N));
-      Insert_List_Before (First (Else_Statements (New_If)), Else_Actions (N));
+      if Present (Then_Actions (N)) then
+         Prepend_List (Then_Actions (N), Then_Statements (New_If));
+      end if;
 
-      Insert_Action (N, Decl);
-      Insert_Action (N, New_If);
-      Rewrite (N, New_N);
-      Analyze_And_Resolve (N, Typ);
+      if Present (Else_Actions (N)) then
+         Prepend_List (Else_Actions (N), Else_Statements (New_If));
+      end if;
+
+      --  Rewrite the parent return statement as an if statement
+
+      if Optimize_Return_Stmt then
+         Rewrite (Par, New_If);
+         Analyze (Par);
+
+      --  Otherwise rewrite the if expression itself
+
+      else
+         Insert_Action (N, Decl);
+         Insert_Action (N, New_If);
+         Rewrite (N, New_N);
+         Analyze_And_Resolve (N, Typ);
+      end if;
    end Expand_N_If_Expression;
 
    -----------------
@@ -15089,12 +15152,18 @@ package body Exp_Ch4 is
       --       <finalize Trans_Id>
       --    in Result end;
 
-      --  As a result, the finalization of any transient objects can safely
-      --  take place after the result capture.
+      --  As a result, the finalization of any transient objects can take place
+      --  just after the result is captured, except for the case of conditional
+      --  expressions in a simple return statement because the return statement
+      --  will be distributed into the conditional expressions (see the special
+      --  handling of simple return statements a few lines below).
 
       --  ??? could this be extended to elementary types?
 
-      if Is_Boolean_Type (Etype (Expr)) then
+      if Is_Boolean_Type (Etype (Expr))
+        and then (Nkind (Expr) = N_Expression_With_Actions
+                   or else Nkind (Parent (Expr)) /= N_Simple_Return_Statement)
+      then
          Fin_Context := Last (Stmts);
 
       --  Otherwise the immediate context may not be safe enough to carry

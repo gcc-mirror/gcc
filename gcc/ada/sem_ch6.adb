@@ -857,6 +857,14 @@ package body Sem_Ch6 is
             end if;
 
             Resolve (Expr, R_Type);
+
+            --  The expansion of the expression may have rewritten the return
+            --  statement itself, e.g. when it is a conditional expression.
+
+            if Nkind (N) /= N_Simple_Return_Statement then
+               return;
+            end if;
+
             Check_Limited_Return (N, Expr, R_Type);
 
             Check_Return_Construct_Accessibility (N, Stm_Entity);
@@ -952,9 +960,7 @@ package body Sem_Ch6 is
 
          --  Defend against previous errors
 
-         if Nkind (Expr) = N_Empty
-           or else No (Etype (Expr))
-         then
+         if Nkind (Expr) = N_Empty or else No (Etype (Expr)) then
             return;
          end if;
 
