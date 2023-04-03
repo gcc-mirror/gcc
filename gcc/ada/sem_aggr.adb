@@ -5632,7 +5632,7 @@ package body Sem_Aggr is
                end if;
 
                Record_Def := Type_Definition (Parent (Base_Type (Parent_Typ)));
-               Gather_Components (Empty,
+               Gather_Components (Parent_Typ,
                  Component_List (Record_Extension_Part (Record_Def)),
                  Governed_By   => New_Assoc_List,
                  Into          => Components,
