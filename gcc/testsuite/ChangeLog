@@ -1,3 +1,26 @@
+2023-04-02  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/109375
+	* gnat.dg/opt39.adb: Add hppa*-*-* to dg-additional-options list.
+
+2023-04-02  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/109376
+	* gnat.dg/prot7.adb: Skip on hppa.
+
+2023-04-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+	    kito-cheng  <kito.cheng@sifive.com>
+
+	* g++.target/riscv/rvv/base/bug-19.C: New test.
+	* g++.target/riscv/rvv/base/bug-20.C: New test.
+	* g++.target/riscv/rvv/base/bug-21.C: New test.
+	* g++.target/riscv/rvv/base/bug-22.C: New test.
+
+2023-04-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/scalar_move-6.c: Adapt test.
+	* gcc.target/riscv/rvv/base/scalar_move-9.c: New test.
+
 2023-04-01  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/109160

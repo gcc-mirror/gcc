@@ -1,3 +1,14 @@
+2023-04-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+	    kito-cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/vector.md: Fix RA constraint.
+
+2023-04-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (gen_avl_for_scalar_move): New function.
+	* config/riscv/riscv-v.cc (gen_avl_for_scalar_move): New function.
+	* config/riscv/vector.md: Fix scalar move bug.
+
 2023-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* range-op-float.cc (foperator_equal::fold_range): If at least

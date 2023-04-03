@@ -1,3 +1,22 @@
+2023-04-02  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109336
+	* Make-lang.in (GM2_O): Set to -O0.
+	(GM2_LIBS): Remove target libraries and replace with build libs.
+	(BUILD-LIBS): New declaration.
+	(m2/gm2-libs/libgm2.a): New rule.
+	(m2/gm2-libs/%.o): New rule.
+	(m2/gm2-libs/choosetemp.o): New rule.
+	* gm2-compiler/M2ColorString.mod (append): Use ADR rather than
+	implicit conversion.
+	* gm2-compiler/M2Comp.mod (Compile): Add qprintf messages for when
+	a source file is not found.  Improve comments and formatting.
+	* gm2-libs-ch/cgetopt.c (cgetopt_cgetopt_long): Remove
+	ansi-decl.h.  Add getopt.h.
+	(cgetopt_cgetopt_long_only): Change cgetopt_ to getopt_.
+	* gm2spec.cc (lang_specific_driver): Do not skip -fmod=.
+	Remove comment.
+
 2023-03-29  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109336
