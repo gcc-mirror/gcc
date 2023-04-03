@@ -233,7 +233,9 @@ ExpandVisitor::visit (AST::AttrInputMetaItemContainer &)
 
 void
 ExpandVisitor::visit (AST::IdentifierExpr &ident_expr)
-{}
+{
+  visit_outer_attrs (ident_expr);
+}
 
 void
 ExpandVisitor::visit (AST::Lifetime &)
@@ -257,6 +259,7 @@ ExpandVisitor::visit (AST::MacroInvocation &macro_invoc)
 void
 ExpandVisitor::visit (AST::PathInExpression &path)
 {
+  visit_outer_attrs (path);
   for (auto &segment : path.get_segments ())
     if (segment.has_generic_args ())
       expand_generic_args (segment.get_generic_args ());
@@ -292,6 +295,7 @@ ExpandVisitor::visit (AST::TypePath &path)
 void
 ExpandVisitor::visit (AST::QualifiedPathInExpression &path)
 {
+  visit_outer_attrs (path);
   expand_qualified_path_type (path.get_qualified_path_type ());
 
   for (auto &segment : path.get_segments ())
@@ -311,7 +315,9 @@ ExpandVisitor::visit (AST::QualifiedPathInType &path)
 
 void
 ExpandVisitor::visit (AST::LiteralExpr &expr)
-{}
+{
+  visit_outer_attrs (expr);
+}
 
 void
 ExpandVisitor::visit (AST::AttrInputLiteral &)
@@ -328,30 +334,35 @@ ExpandVisitor::visit (AST::MetaItemPathLit &)
 void
 ExpandVisitor::visit (AST::BorrowExpr &expr)
 {
+  visit_outer_attrs (expr);
   visit (expr.get_borrowed_expr ());
 }
 
 void
 ExpandVisitor::visit (AST::DereferenceExpr &expr)
 {
+  visit_outer_attrs (expr);
   visit (expr.get_dereferenced_expr ());
 }
 
 void
 ExpandVisitor::visit (AST::ErrorPropagationExpr &expr)
 {
+  visit_outer_attrs (expr);
   visit (expr.get_propagating_expr ());
 }
 
 void
 ExpandVisitor::visit (AST::NegationExpr &expr)
 {
+  visit_outer_attrs (expr);
   visit (expr.get_negated_expr ());
 }
 
 void
 ExpandVisitor::visit (AST::ArithmeticOrLogicalExpr &expr)
 {
+  visit_outer_attrs (expr);
   maybe_expand_expr (expr.get_left_expr ());
   maybe_expand_expr (expr.get_right_expr ());
 }
@@ -359,6 +370,7 @@ ExpandVisitor::visit (AST::ArithmeticOrLogicalExpr &expr)
 void
 ExpandVisitor::visit (AST::ComparisonExpr &expr)
 {
+  visit_outer_attrs (expr);
   maybe_expand_expr (expr.get_left_expr ());
   maybe_expand_expr (expr.get_right_expr ());
 }
@@ -366,6 +378,7 @@ ExpandVisitor::visit (AST::ComparisonExpr &expr)
 void
 ExpandVisitor::visit (AST::LazyBooleanExpr &expr)
 {
+  visit_outer_attrs (expr);
   maybe_expand_expr (expr.get_left_expr ());
   maybe_expand_expr (expr.get_right_expr ());
 }
@@ -373,6 +386,7 @@ ExpandVisitor::visit (AST::LazyBooleanExpr &expr)
 void
 ExpandVisitor::visit (AST::TypeCastExpr &expr)
 {
+  visit_outer_attrs (expr);
   visit (expr.get_casted_expr ());
 
   visit (expr.get_type_to_cast_to ());
@@ -381,6 +395,7 @@ ExpandVisitor::visit (AST::TypeCastExpr &expr)
 void
 ExpandVisitor::visit (AST::AssignmentExpr &expr)
 {
+  visit_outer_attrs (expr);
   maybe_expand_expr (expr.get_left_expr ());
   maybe_expand_expr (expr.get_right_expr ());
 }
@@ -388,6 +403,7 @@ ExpandVisitor::visit (AST::AssignmentExpr &expr)
 void
 ExpandVisitor::visit (AST::CompoundAssignmentExpr &expr)
 {
+  visit_outer_attrs (expr);
   maybe_expand_expr (expr.get_left_expr ());
   maybe_expand_expr (expr.get_right_expr ());
 }
@@ -395,6 +411,7 @@ ExpandVisitor::visit (AST::CompoundAssignmentExpr &expr)
 void
 ExpandVisitor::visit (AST::GroupedExpr &expr)
 {
+  visit_outer_attrs (expr);
   visit (expr.get_expr_in_parens ());
 }
 
@@ -415,12 +432,14 @@ ExpandVisitor::visit (AST::ArrayElemsCopied &elems)
 void
 ExpandVisitor::visit (AST::ArrayExpr &expr)
 {
+  visit_outer_attrs (expr);
   visit (expr.get_array_elems ());
 }
 
 void
 ExpandVisitor::visit (AST::ArrayIndexExpr &expr)
 {
+  visit_outer_attrs (expr);
   visit (expr.get_array_expr ());
   visit (expr.get_index_expr ());
 }
@@ -428,6 +447,7 @@ ExpandVisitor::visit (AST::ArrayIndexExpr &expr)
 void
 ExpandVisitor::visit (AST::TupleExpr &expr)
 {
+  visit_outer_attrs (expr);
   for (auto &element : expr.get_tuple_elems ())
     visit (element);
 }
@@ -435,6 +455,7 @@ ExpandVisitor::visit (AST::TupleExpr &expr)
 void
 ExpandVisitor::visit (AST::TupleIndexExpr &expr)
 {
+  visit_outer_attrs (expr);
   visit (expr.get_tuple_expr ());
 
   // We can't have macro invocations for tuple indexes, right? Need a test!
@@ -442,7 +463,9 @@ ExpandVisitor::visit (AST::TupleIndexExpr &expr)
 
 void
 ExpandVisitor::visit (AST::StructExprStruct &expr)
-{}
+{
+  visit_outer_attrs (expr);
+}
 
 void
 ExpandVisitor::visit (AST::StructExprFieldIdentifier &)
@@ -479,6 +502,7 @@ ExpandVisitor::visit (AST::StructExprStructBase &expr)
 void
 ExpandVisitor::visit (AST::CallExpr &expr)
 {
+  visit_outer_attrs (expr);
   visit (expr.get_function_expr ());
 
   for (auto &param : expr.get_params ())
@@ -488,6 +512,7 @@ ExpandVisitor::visit (AST::CallExpr &expr)
 void
 ExpandVisitor::visit (AST::MethodCallExpr &expr)
 {
+  visit_outer_attrs (expr);
   visit (expr.get_receiver_expr ());
 
   for (auto &param : expr.get_params ())
@@ -497,12 +522,14 @@ ExpandVisitor::visit (AST::MethodCallExpr &expr)
 void
 ExpandVisitor::visit (AST::FieldAccessExpr &expr)
 {
+  visit_outer_attrs (expr);
   visit (expr.get_receiver_expr ());
 }
 
 void
 ExpandVisitor::visit (AST::ClosureExprInner &expr)
 {
+  visit_outer_attrs (expr);
   expand_closure_params (expr.get_params ());
 
   visit (expr.get_definition_expr ());
@@ -529,6 +556,7 @@ ExpandVisitor::visit (AST::BlockExpr &expr)
 void
 ExpandVisitor::visit (AST::ClosureExprInnerTyped &expr)
 {
+  visit_outer_attrs (expr);
   expand_closure_params (expr.get_params ());
 
   maybe_expand_type (expr.get_return_type ());
@@ -538,11 +566,14 @@ ExpandVisitor::visit (AST::ClosureExprInnerTyped &expr)
 
 void
 ExpandVisitor::visit (AST::ContinueExpr &expr)
-{}
+{
+  visit_outer_attrs (expr);
+}
 
 void
 ExpandVisitor::visit (AST::BreakExpr &expr)
 {
+  visit_outer_attrs (expr);
   if (expr.has_break_expr ())
     visit (expr.get_break_expr ());
 }
@@ -586,6 +617,7 @@ ExpandVisitor::visit (AST::RangeToInclExpr &expr)
 void
 ExpandVisitor::visit (AST::ReturnExpr &expr)
 {
+  visit_outer_attrs (expr);
   if (expr.has_returned_expr ())
     visit (expr.get_returned_expr ());
 }
@@ -593,12 +625,14 @@ ExpandVisitor::visit (AST::ReturnExpr &expr)
 void
 ExpandVisitor::visit (AST::UnsafeBlockExpr &expr)
 {
+  visit_outer_attrs (expr);
   visit (expr.get_block_expr ());
 }
 
 void
 ExpandVisitor::visit (AST::LoopExpr &expr)
 {
+  visit_outer_attrs (expr);
   visit (expr.get_loop_block ());
 }
 
@@ -612,6 +646,7 @@ ExpandVisitor::visit (AST::WhileLoopExpr &expr)
 void
 ExpandVisitor::visit (AST::WhileLetLoopExpr &expr)
 {
+  visit_outer_attrs (expr);
   for (auto &pattern : expr.get_patterns ())
     visit (pattern);
 
@@ -622,6 +657,7 @@ ExpandVisitor::visit (AST::WhileLetLoopExpr &expr)
 void
 ExpandVisitor::visit (AST::ForLoopExpr &expr)
 {
+  visit_outer_attrs (expr);
   visit (expr.get_pattern ());
   visit (expr.get_iterator_expr ());
   visit (expr.get_loop_block ());
@@ -630,6 +666,7 @@ ExpandVisitor::visit (AST::ForLoopExpr &expr)
 void
 ExpandVisitor::visit (AST::IfExpr &expr)
 {
+  visit_outer_attrs (expr);
   maybe_expand_expr (expr.get_condition_expr ());
 
   visit (expr.get_if_block ());
@@ -665,6 +702,7 @@ ExpandVisitor::visit (AST::IfExprConseqIfLet &expr)
 void
 ExpandVisitor::visit (AST::IfLetExpr &expr)
 {
+  visit_outer_attrs (expr);
   maybe_expand_expr (expr.get_value_expr ());
 
   visit (expr.get_if_block ());
@@ -700,6 +738,7 @@ ExpandVisitor::visit (AST::IfLetExprConseqIfLet &expr)
 void
 ExpandVisitor::visit (AST::MatchExpr &expr)
 {
+  visit_outer_attrs (expr);
   visit (expr.get_scrutinee_expr ());
 
   for (auto &match_case : expr.get_match_cases ())
@@ -720,12 +759,14 @@ ExpandVisitor::visit (AST::MatchExpr &expr)
 void
 ExpandVisitor::visit (AST::AwaitExpr &expr)
 {
+  visit_outer_attrs (expr);
   visit (expr.get_awaited_expr ());
 }
 
 void
 ExpandVisitor::visit (AST::AsyncBlockExpr &expr)
 {
+  visit_outer_attrs (expr);
   visit (expr.get_block_expr ());
 }
 
