@@ -151,6 +151,7 @@ proc prune_file_path { text } {
 proc prune_ices { text } {
   regsub -all "(^|\n)\[^\n\]*: internal compiler error:.*\nSee \[^\n\]*" $text "" text
   regsub -all "(^|\n|')*Internal compiler error:.*\nSee \[^\n\]*" $text "" text
+  regsub -all "(^|\n)\[^\n\]*: internal compiler error:.*\nYou have broken GCC Rust. This is a feature." $text "" text
   return $text
 }
 

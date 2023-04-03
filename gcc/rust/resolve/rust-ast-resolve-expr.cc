@@ -23,6 +23,7 @@
 #include "rust-ast-resolve-type.h"
 #include "rust-ast-resolve-pattern.h"
 #include "rust-ast-resolve-path.h"
+#include "diagnostic.h"
 
 namespace Rust {
 namespace Resolver {
@@ -105,6 +106,45 @@ ResolveExpr::visit (AST::AssignmentExpr &expr)
   VerifyAsignee::go (expr.get_left_expr ().get ());
 }
 
+/* The "break rust" Easter egg.
+
+   Backstory: once upon a time, there used to be a bug in rustc: it would ICE
+   during typechecking on a 'break' with an expression outside of a loop.  The
+   issue has been reported [0] and fixed [1], but in recognition of this, as a
+   special Easter egg, "break rust" was made to intentionally cause an ICE.
+
+   [0]: https://github.com/rust-lang/rust/issues/43162
+   [1]: https://github.com/rust-lang/rust/pull/43745
+
+   This was made in a way that does not break valid programs: namely, it only
+   happens when the 'break' is outside of a loop (so invalid anyway).
+
+   GCC Rust supports this essential feature as well, but in a slightly
+   different way.  Instead of delaying the error until type checking, we emit
+   it here in the resolution phase.  We, too, only do this to programs that
+   are already invalid: we only emit our funny ICE if the name "rust" (which
+   must be immediately inside a break-with-a-value expression) fails to
+   resolve.  Note that "break (rust)" does not trigger our ICE, only using
+   "break rust" directly does, and only if there's no "rust" in scope.  We do
+   this in the same way regardless of whether the "break" is outside of a loop
+   or inside one.
+
+   As a GNU extension, we also support "break gcc", much to the same effect,
+   subject to the same rules.  */
+
+/* The finalizer for our funny ICE.  This prints a custom message instead of
+   the default bug reporting instructions, as there is no bug to report.  */
+
+static void ATTRIBUTE_NORETURN
+funny_ice_finalizer (diagnostic_context *context,
+		     const diagnostic_info *diagnostic, diagnostic_t diag_kind)
+{
+  gcc_assert (diag_kind == DK_ICE_NOBT);
+  default_diagnostic_finalizer (context, diagnostic, diag_kind);
+  fnotice (stderr, "You have broken GCC Rust. This is a feature.\n");
+  exit (ICE_EXIT_CODE);
+}
+
 void
 ResolveExpr::visit (AST::IdentifierExpr &expr)
 {
@@ -119,6 +159,17 @@ ResolveExpr::visit (AST::IdentifierExpr &expr)
 	     &resolved_node))
     {
       resolver->insert_resolved_type (expr.get_node_id (), resolved_node);
+    }
+  else if (funny_error)
+    {
+      /* This was a "break rust" or "break gcc", and the identifier failed to
+	 resolve.  Emit a funny ICE.  We set the finalizer to our custom one,
+	 and use the lower-level emit_diagnostic () instead of the more common
+	 internal_error_no_backtrace () in order to pass our locus.  */
+      diagnostic_finalizer (global_dc) = funny_ice_finalizer;
+      emit_diagnostic (DK_ICE_NOBT, expr.get_locus ().gcc_location (), -1,
+		       "are you trying to break %s? how dare you?",
+		       expr.as_string ().c_str ());
     }
   else
     {
@@ -407,7 +458,24 @@ ResolveExpr::visit (AST::BreakExpr &expr)
     }
 
   if (expr.has_break_expr ())
-    ResolveExpr::go (expr.get_break_expr ().get (), prefix, canonical_prefix);
+    {
+      bool funny_error = false;
+      AST::Expr &break_expr = *expr.get_break_expr ().get ();
+      if (break_expr.get_ast_kind () == AST::Kind::IDENTIFIER)
+	{
+	  /* This is a break with an expression, and the expression is just a
+	     single identifier.  See if the identifier is either "rust" or
+	     "gcc", in which case we have "break rust" or "break gcc", and so
+	     may need to emit our funny error.  We cannot yet emit the error
+	     here though, because the identifier may still be in scope, and
+	     ICE'ing on valid programs would not be very funny.  */
+	  std::string ident
+	    = static_cast<AST::IdentifierExpr &> (break_expr).as_string ();
+	  if (ident == "rust" || ident == "gcc")
+	    funny_error = true;
+	}
+      ResolveExpr::go (&break_expr, prefix, canonical_prefix, funny_error);
+    }
 }
 
 void
