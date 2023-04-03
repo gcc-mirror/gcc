@@ -39,7 +39,7 @@ class ASTVisitor;
 using AttrVec = std::vector<Attribute>;
 
 // The available kinds of AST Nodes
-enum Kind
+enum class Kind
 {
   UNKNOWN,
   MACRO_RULES_DEFINITION,
