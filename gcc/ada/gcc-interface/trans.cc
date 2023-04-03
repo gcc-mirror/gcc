@@ -1714,12 +1714,17 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
     case Attr_Address:
     case Attr_Unrestricted_Access:
       /* Conversions don't change the address of references but can cause
-	 build_unary_op to miss the references below, so strip them off.
+	 build_unary_op to miss the references below so strip them off.
+
+         Also remove the conversions applied to declarations as the intent is
+         to take the decls' address, not that of the copies that the
+         conversions may create.
+
 	 On the contrary, if the address-of operation causes a temporary
 	 to be created, then it must be created with the proper type.  */
       gnu_expr = remove_conversions (gnu_prefix,
 				     !Must_Be_Byte_Aligned (gnat_node));
-      if (REFERENCE_CLASS_P (gnu_expr))
+      if (REFERENCE_CLASS_P (gnu_expr) || DECL_P (gnu_expr))
 	gnu_prefix = gnu_expr;
 
       /* If we are taking 'Address of an unconstrained object, this is the
@@ -4575,7 +4580,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
   /* The FUNCTION_TYPE node giving the GCC type of the subprogram.  */
   tree gnu_subprog_type = TREE_TYPE (gnu_subprog);
   /* The return type of the FUNCTION_TYPE.  */
-  tree gnu_result_type;;
+  tree gnu_result_type;
   const bool frontend_builtin
     = (TREE_CODE (gnu_subprog) == FUNCTION_DECL
        && DECL_BUILT_IN_CLASS (gnu_subprog) == BUILT_IN_FRONTEND);
@@ -4657,7 +4662,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
     }
 
   /* We must elaborate the entire profile now because, if it references types
-     that were initially incomplete,, their elaboration changes the contents
+     that were initially incomplete, their elaboration changes the contents
      of GNU_SUBPROG_TYPE and, in particular, may change the result type.  */
   elaborate_profile (gnat_formal, gnat_result_type);
 
