@@ -10622,45 +10622,6 @@ fi
 CXXFLAGS="$CXXFLAGS $ZSTD_CPPFLAGS"
 LDFLAGS="$LDFLAGS $ZSTD_LDFLAGS"
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for zstd.h" >&5
-$as_echo_n "checking for zstd.h... " >&6; }
-if ${gcc_cv_header_zstd_h+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  # We require version 1.3.0 or later.  This is the first version that has
-# ZSTD_getFrameContentSize.
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <zstd.h>
-#if ZSTD_VERSION_NUMBER < 10300
-#error "need zstd 1.3.0 or better"
-#endif
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  gcc_cv_header_zstd_h=yes
-else
-  gcc_cv_header_zstd_h=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_header_zstd_h" >&5
-$as_echo "$gcc_cv_header_zstd_h" >&6; }
-if test $gcc_cv_header_zstd_h = yes; then
-
-$as_echo "#define HAVE_ZSTD_H 1" >>confdefs.h
-
-elif test "x$with_zstd" != x; then
-    as_fn_error $? "Unable to find zstd.h.  See config.log for details." "$LINENO" 5
-fi
-
 # LTO can use zstd compression algorithm
 save_LIBS="$LIBS"
 LIBS=
@@ -10718,11 +10679,52 @@ ac_res=$ac_cv_search_ZSTD_compress
 if test "$ac_res" != no; then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
 
+else
+  gcc_cv_header_zstd_h=no
 fi
 
 ZSTD_LIB="$LIBS"
 LIBS="$save_LIBS"
 
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for zstd.h" >&5
+$as_echo_n "checking for zstd.h... " >&6; }
+if ${gcc_cv_header_zstd_h+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  # We require version 1.3.0 or later.  This is the first version that has
+# ZSTD_getFrameContentSize.
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <zstd.h>
+#if ZSTD_VERSION_NUMBER < 10300
+#error "need zstd 1.3.0 or better"
+#endif
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  gcc_cv_header_zstd_h=yes
+else
+  gcc_cv_header_zstd_h=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_header_zstd_h" >&5
+$as_echo "$gcc_cv_header_zstd_h" >&6; }
+if test $gcc_cv_header_zstd_h = yes; then
+
+$as_echo "#define HAVE_ZSTD_H 1" >>confdefs.h
+
+elif test "x$with_zstd" != x; then
+    as_fn_error $? "Unable to find zstd.h.  See config.log for details." "$LINENO" 5
+fi
 fi
 
 
@@ -19823,7 +19825,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19826 "configure"
+#line 19828 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19929,7 +19931,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19932 "configure"
+#line 19934 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

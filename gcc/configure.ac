@@ -1515,6 +1515,14 @@ fi
 CXXFLAGS="$CXXFLAGS $ZSTD_CPPFLAGS"
 LDFLAGS="$LDFLAGS $ZSTD_LDFLAGS"
 
+# LTO can use zstd compression algorithm
+save_LIBS="$LIBS"
+LIBS=
+AC_SEARCH_LIBS(ZSTD_compress, zstd,, gcc_cv_header_zstd_h=no)
+ZSTD_LIB="$LIBS"
+LIBS="$save_LIBS"
+AC_SUBST(ZSTD_LIB)
+
 AC_MSG_CHECKING(for zstd.h)
 AC_CACHE_VAL(gcc_cv_header_zstd_h,
 # We require version 1.3.0 or later.  This is the first version that has
@@ -1533,14 +1541,6 @@ if test $gcc_cv_header_zstd_h = yes; then
 elif test "x$with_zstd" != x; then
     as_fn_error $? "Unable to find zstd.h.  See config.log for details." "$LINENO" 5
 fi
-
-# LTO can use zstd compression algorithm
-save_LIBS="$LIBS"
-LIBS=
-AC_SEARCH_LIBS(ZSTD_compress, zstd)
-ZSTD_LIB="$LIBS"
-LIBS="$save_LIBS"
-AC_SUBST(ZSTD_LIB)
 fi
 
 dnl Disabled until we have a complete test for buggy enum bitfields.
