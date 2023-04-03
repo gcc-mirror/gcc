@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-expand-visitor.h"
+#include "rust-attributes.h"
 
 namespace Rust {
 
@@ -1400,8 +1401,15 @@ ExpandVisitor::visit_outer_attrs (T &item, std::vector<AST::Attribute> &attrs)
     {
       auto current = *it;
 
-      it = attrs.erase (it);
-      expand_outer_attribute (item, current.get_path ());
+      if (!is_builtin (current) && !is_derive (current))
+	{
+	  it = attrs.erase (it);
+	  expand_outer_attribute (item, current.get_path ());
+	}
+      else
+	{
+	  it++;
+	}
     }
 }
 
@@ -1429,8 +1437,15 @@ ExpandVisitor::visit_inner_using_attrs (T &item,
     {
       auto current = *it;
 
-      it = attrs.erase (it);
-      expand_inner_attribute (item, current.get_path ());
+      if (!is_builtin (current) && !is_derive (current))
+	{
+	  it = attrs.erase (it);
+	  expand_inner_attribute (item, current.get_path ());
+	}
+      else
+	{
+	  it++;
+	}
     }
 }
 
@@ -1476,7 +1491,7 @@ ExpandVisitor::visit_attrs_with_derive (T &item)
     {
       auto current = *it;
 
-      if (is_derive (current))
+      if (!is_builtin (current) && is_derive (current))
 	{
 	  it = attrs.erase (it);
 	  // Downcasting checked in is_derive
@@ -1498,6 +1513,16 @@ ExpandVisitor::is_derive (AST::Attribute &attr)
 	 && attr.get_attr_input ().get_attr_input_type ()
 	      == AST::AttrInput::TOKEN_TREE
 	 && !segments.empty () && "derive" == segments[0].get_segment_name ();
+}
+
+bool
+ExpandVisitor::is_builtin (AST::Attribute &attr)
+{
+  auto &segments = attr.get_path ().get_segments ();
+  return !segments.empty ()
+	 && !Analysis::BuiltinAttributeMappings::get ()
+	       ->lookup_builtin (segments[0].get_segment_name ())
+	       .is_error ();
 }
 
 } // namespace Rust

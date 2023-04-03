@@ -39,6 +39,7 @@ static const BuiltinAttrDefinition __definitions[]
      {"link_section", CODE_GENERATION},
      {"no_mangle", CODE_GENERATION},
      {"repr", CODE_GENERATION},
+     {"rustc_builtin_macro", EXPANSION},
      {"path", EXPANSION},
      {"macro_use", NAME_RESOLUTION},
      // FIXME: This is not implemented yet, see
