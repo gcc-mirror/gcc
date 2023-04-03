@@ -16170,6 +16170,10 @@ per supernode, before terminating analysis.
 Maximum depth of logical expression evaluation ranger will look through
 when evaluating outgoing edge ranges.
 
+@item ranger-recompute-depth
+Maximum depth of instruction chains to consider for recomputation
+in the outgoing range calculator.
+
 @item relation-block-limit
 Maximum number of relations the oracle will register in a basic block.
 
