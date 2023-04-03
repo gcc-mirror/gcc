@@ -73,7 +73,9 @@ GRS_OBJS = \
     rust/rust-cfg-parser.o \
     rust/rust-parse.o \
     rust/rust-ast.o \
+    rust/rust-ast-formatting.o \
     rust/rust-path.o \
+    rust/rust-pattern.o \
     rust/rust-ast-fragment.o \
     rust/rust-ast-dump.o \
     rust/rust-ast-tokenstream.o \

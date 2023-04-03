@@ -16,17 +16,44 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#ifndef RUST_AST_FULL_H
-#define RUST_AST_FULL_H
-// Use as a fast way of including all aspects of the AST (i.e. all headers)
-#include "rust-ast.h"
-#include "rust-ast-formatting.h"
-#include "rust-expr.h"
-#include "rust-item.h"
-#include "rust-path.h"
-#include "rust-pattern.h"
-#include "rust-stmt.h"
-#include "rust-type.h"
-#include "rust-macro.h"
+#ifndef RUST_AST_FORMATTING_H
+#define RUST_AST_FORMATTING_H
 
-#endif
+namespace Rust {
+namespace AST {
+
+enum indent_mode
+{
+  enter,
+  out,
+  stay
+};
+
+enum AttrMode
+{
+  OUTER,
+  INNER
+};
+
+std::string
+indent_spaces (enum indent_mode mode);
+
+// Gets a string in a certain delim type.
+std::string
+get_string_in_delims (std::string str_input, DelimType delim_type);
+
+std::string
+get_mode_dump_desc (AttrMode mode);
+
+// Adds lines below adding attributes
+std::string
+append_attributes (std::vector<Attribute> attrs, AttrMode mode);
+
+// Removes the beginning and end quotes of a quoted string.
+std::string
+unquote_string (std::string input);
+
+} // namespace AST
+} // namespace Rust
+
+#endif /* ! RUST_AST_FORMATTING_H */
