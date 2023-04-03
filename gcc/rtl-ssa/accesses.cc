@@ -794,23 +794,26 @@ function_info::merge_clobber_groups (clobber_info *clobber1,
 // GROUP spans INSN, and INSN now sets the resource that GROUP clobbers.
 // Split GROUP around INSN and return the clobber that comes immediately
 // before INSN.
+//
+// The resource that GROUP clobbers is known to have an associated
+// splay tree.
 clobber_info *
 function_info::split_clobber_group (clobber_group *group, insn_info *insn)
 {
   // Search for either the previous or next clobber in the group.
   // The result is less than zero if CLOBBER should come before NEIGHBOR
   // or greater than zero if CLOBBER should come after NEIGHBOR.
-  int comparison = lookup_clobber (group->m_clobber_tree, insn);
+  clobber_tree &tree1 = group->m_clobber_tree;
+  int comparison = lookup_clobber (tree1, insn);
   gcc_checking_assert (comparison != 0);
-  clobber_info *neighbor = group->m_clobber_tree.root ();
+  clobber_info *neighbor = tree1.root ();
 
-  clobber_tree tree1, tree2;
+  clobber_tree tree2;
   clobber_info *prev;
   clobber_info *next;
   if (comparison > 0)
     {
       // NEIGHBOR is the last clobber in what will become the first group.
-      tree1 = neighbor;
       tree2 = tree1.split_after_root ();
       prev = neighbor;
       next = as_a<clobber_info *> (prev->next_def ());
@@ -842,6 +845,9 @@ function_info::split_clobber_group (clobber_group *group, insn_info *insn)
   next->set_group (group2);
   tree2->set_group (group2);
   last_clobber->set_group (group2);
+
+  // Insert GROUP2 into the splay tree as an immediate successor of GROUP1.
+  def_splay_tree::insert_child (group1, 1, group2);
 
   return prev;
 }
