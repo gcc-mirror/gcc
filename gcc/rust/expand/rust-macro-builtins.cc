@@ -612,7 +612,7 @@ MacroBuiltin::concat_handler (Location invoc_locus, AST::MacroInvocData &invoc)
   for (auto &expr : expanded_expr)
     {
       if (!expr->is_literal ()
-	  && expr->get_ast_kind () != AST::MACRO_INVOCATION)
+	  && expr->get_ast_kind () != AST::Kind::MACRO_INVOCATION)
 	{
 	  has_error = true;
 	  rust_error_at (expr->get_locus (), "expected a literal");
