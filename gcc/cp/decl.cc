@@ -8276,7 +8276,20 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	      return;
 	    }
 
-	  gcc_assert (CLASS_PLACEHOLDER_TEMPLATE (auto_node));
+	  if (CLASS_PLACEHOLDER_TEMPLATE (auto_node))
+	    /* Class deduction with no initializer is OK.  */;
+	  else
+	    {
+	      /* Ordinary auto deduction without an initializer, a situation
+		 which grokdeclarator already detects and rejects for the most
+		 part.  But we can still get here if we're instantiating a
+		 variable template before we've fully parsed (and attached) its
+		 initializer, e.g. template<class> auto x = x<int>;  */
+	      error_at (DECL_SOURCE_LOCATION (decl),
+			"declaration of %q#D has no initializer", decl);
+	      TREE_TYPE (decl) = error_mark_node;
+	      return;
+	    }
 	}
       d_init = init;
       if (d_init)
