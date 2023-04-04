@@ -7237,23 +7237,29 @@ rs6000_expand_vector_set_var_p9 (rtx target, rtx val, rtx idx)
   machine_mode idx_mode = GET_MODE (idx);
 
   machine_mode shift_mode;
-  rtx (*gen_ashl)(rtx, rtx, rtx);
-  rtx (*gen_lvsl)(rtx, rtx);
-  rtx (*gen_lvsr)(rtx, rtx);
+  /* Gen function pointers for shifting left and generation of permutation
+     control vectors.  */
+  rtx (*gen_ashl) (rtx, rtx, rtx);
+  rtx (*gen_pcvr1) (rtx, rtx);
+  rtx (*gen_pcvr2) (rtx, rtx);
 
   if (TARGET_POWERPC64)
     {
       shift_mode = DImode;
       gen_ashl = gen_ashldi3;
-      gen_lvsl = gen_altivec_lvsl_reg_di;
-      gen_lvsr = gen_altivec_lvsr_reg_di;
+      gen_pcvr1 = BYTES_BIG_ENDIAN ? gen_altivec_lvsl_reg_di
+				   : gen_altivec_lvsr_reg_di;
+      gen_pcvr2 = BYTES_BIG_ENDIAN ? gen_altivec_lvsr_reg_di
+				   : gen_altivec_lvsl_reg_di;
     }
   else
     {
       shift_mode = SImode;
       gen_ashl = gen_ashlsi3;
-      gen_lvsl = gen_altivec_lvsl_reg_si;
-      gen_lvsr = gen_altivec_lvsr_reg_si;
+      gen_pcvr1 = BYTES_BIG_ENDIAN ? gen_altivec_lvsl_reg_si
+				   : gen_altivec_lvsr_reg_si;
+      gen_pcvr2 = BYTES_BIG_ENDIAN ? gen_altivec_lvsr_reg_si
+				   : gen_altivec_lvsl_reg_si;
     }
   /* Generate the IDX for permute shift, width is the vector element size.
      idx = idx * width.  */
@@ -7262,25 +7268,29 @@ rs6000_expand_vector_set_var_p9 (rtx target, rtx val, rtx idx)
 
   emit_insn (gen_ashl (tmp, idx, GEN_INT (shift)));
 
-  /*  lvsr    v1,0,idx.  */
-  rtx pcvr = gen_reg_rtx (V16QImode);
-  emit_insn (gen_lvsr (pcvr, tmp));
-
-  /*  lvsl    v2,0,idx.  */
-  rtx pcvl = gen_reg_rtx (V16QImode);
-  emit_insn (gen_lvsl (pcvl, tmp));
+  /* Generate one permutation control vector used for rotating the element
+     at to-insert position to element zero in target vector.  lvsl is
+     used for big endianness while lvsr is used for little endianness:
+     lvs[lr]    v1,0,idx.  */
+  rtx pcvr1 = gen_reg_rtx (V16QImode);
+  emit_insn (gen_pcvr1 (pcvr1, tmp));
 
   rtx sub_target = simplify_gen_subreg (V16QImode, target, mode, 0);
+  rtx perm1 = gen_altivec_vperm_v8hiv16qi (sub_target, sub_target, sub_target,
+					   pcvr1);
+  emit_insn (perm1);
 
-  rtx permr
-    = gen_altivec_vperm_v8hiv16qi (sub_target, sub_target, sub_target, pcvr);
-  emit_insn (permr);
-
+  /* Insert val into element 0 of target vector.  */
   rs6000_expand_vector_set (target, val, const0_rtx);
 
-  rtx perml
-    = gen_altivec_vperm_v8hiv16qi (sub_target, sub_target, sub_target, pcvl);
-  emit_insn (perml);
+  /* Rotate back with a reversed permutation control vector generated from:
+     lvs[rl]   v2,0,idx.  */
+  rtx pcvr2 = gen_reg_rtx (V16QImode);
+  emit_insn (gen_pcvr2 (pcvr2, tmp));
+
+  rtx perm2 = gen_altivec_vperm_v8hiv16qi (sub_target, sub_target, sub_target,
+					   pcvr2);
+  emit_insn (perm2);
 }
 
 /* Insert VAL into IDX of TARGET, VAL size is same of the vector element, IDX
