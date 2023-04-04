@@ -644,7 +644,6 @@ TokenStream::visit (GenericArg &arg)
 {
   // `GenericArg` implements `accept_vis` but it is not useful for this case as
   // it ignores unresolved cases (`Kind::Either`).
-  auto path = arg.get_path ();
   switch (arg.get_kind ())
     {
     case GenericArg::Kind::Const:
@@ -653,9 +652,11 @@ TokenStream::visit (GenericArg &arg)
     case GenericArg::Kind::Type:
       visit (arg.get_type ());
       break;
-    case GenericArg::Kind::Either:
-      tokens.push_back (
-	Rust::Token::make_identifier (Location (), std::move (path)));
+      case GenericArg::Kind::Either: {
+	auto path = arg.get_path ();
+	tokens.push_back (
+	  Rust::Token::make_identifier (Location (), std::move (path)));
+      }
       break;
     case GenericArg::Kind::Error:
       gcc_unreachable ();
