@@ -212,17 +212,6 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
       bool is_impl_item = resolved_item != nullptr;
       if (is_impl_item)
 	{
-	  rust_assert (parent_impl_id != UNKNOWN_HIRID);
-	  HIR::Item *impl_ref
-	    = ctx->get_mappings ()->lookup_hir_item (parent_impl_id);
-	  rust_assert (impl_ref != nullptr);
-	  HIR::ImplBlock *impl = static_cast<HIR::ImplBlock *> (impl_ref);
-
-	  TyTy::BaseType *self = nullptr;
-	  bool ok = ctx->get_tyctx ()->lookup_type (
-	    impl->get_type ()->get_mappings ().get_hirid (), &self);
-	  rust_assert (ok);
-
 	  if (!lookup->has_subsititions_defined ())
 	    return CompileInherentImplItem::Compile (resolved_item, ctx,
 						     nullptr, true, expr_locus);
