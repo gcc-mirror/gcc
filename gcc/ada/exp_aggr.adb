@@ -1459,7 +1459,7 @@ package body Exp_Aggr is
               and then not Is_Build_In_Place_Function_Call (Init_Expr)
               and then not
                 (Is_Array_Type (Comp_Typ)
-                  and then Is_Controlled (Component_Type (Comp_Typ))
+                  and then Needs_Finalization (Component_Type (Comp_Typ))
                   and then Nkind (Expr) = N_Aggregate)
             then
                Adj_Call :=
