@@ -1,3 +1,13 @@
+2023-04-05  Julian Brown  <julian@codesourcery.com>
+
+	* decl2.cc (tree-inline.h): Include.
+	(do_static_initialization_or_destruction): Change OMP_TARGET parameter
+	to pass the host version of the SSDF function decl.  Use
+	copy_tree_body_r to clone init stmt.  Update forward declaration.
+	(c_parse_final_cleanups): Update calls to
+	do_static_initialization_or_destruction.  Use TREE_CHAIN instead of
+	OMP_CLAUSE_CHAIN.
+
 2023-04-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* decl2.cc (one_static_initialization_or_destruction): Remove

@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "optabs-query.h"
 #include "omp-general.h"
+#include "tree-inline.h"
 
 /* Id for dumping the raw trees.  */
 int raw_dump_id;
@@ -75,7 +76,7 @@ static void finish_objects (int, int, tree);
 static tree start_static_storage_duration_function (unsigned, bool);
 static void finish_static_storage_duration_function (tree);
 static priority_info get_priority_info (int);
-static void do_static_initialization_or_destruction (tree, bool, bool);
+static void do_static_initialization_or_destruction (tree, bool, tree);
 static void one_static_initialization_or_destruction (tree, tree, bool);
 static void generate_ctor_or_dtor_function (bool, int, location_t *, bool);
 static int generate_ctor_and_dtor_functions_for_priority (splay_tree_node,
@@ -4314,9 +4315,11 @@ one_static_initialization_or_destruction (tree decl, tree init, bool initp)
    Whether initialization or destruction is performed is specified by INITP.  */
 
 static void
-do_static_initialization_or_destruction (tree vars, bool initp, bool omp_target)
+do_static_initialization_or_destruction (tree vars, bool initp,
+					 tree host_ssdf_decl = NULL_TREE)
 {
   tree node, init_if_stmt, cond;
+  bool omp_target = host_ssdf_decl != NULL_TREE;
 
   /* Build the outer if-stmt to check for initialization or destruction.  */
   init_if_stmt = begin_if_stmt ();
@@ -4386,7 +4389,25 @@ do_static_initialization_or_destruction (tree vars, bool initp, bool omp_target)
 	/* We will emit 'init' twice, and it is modified in-place during
 	   gimplification.  Make a copy here.  */
 	if (omp_target)
-	  init = copy_node (init);
+	  {
+	    /* We've already emitted INIT in the host version of the ctor/dtor
+	       function.  We need to deep-copy it (including new versions of
+	       local variables introduced, etc.) for use in the target
+	       ctor/dtor function.  */
+	    copy_body_data id;
+	    hash_map<tree, tree> decl_map;
+	    memset (&id, 0, sizeof (id));
+	    id.src_fn = host_ssdf_decl;
+	    id.dst_fn = current_function_decl;
+	    id.src_cfun = DECL_STRUCT_FUNCTION (id.src_fn);
+	    id.decl_map = &decl_map;
+	    id.copy_decl = copy_decl_no_change;
+	    id.transform_call_graph_edges = CB_CGE_DUPLICATE;
+	    id.transform_new_cfg = true;
+	    id.transform_return_to_modify = false;
+	    id.eh_lp_nr = 0;
+	    walk_tree (&init, copy_tree_body_r, &id, NULL);
+	  }
 	/* Do one initialization or destruction.  */
 	one_static_initialization_or_destruction (decl, init, initp);
       }
@@ -5245,8 +5266,7 @@ c_parse_final_cleanups (void)
 
 	  /* First generate code to do all the initializations.  */
 	  if (vars)
-	    do_static_initialization_or_destruction (vars, /*initp=*/true,
-						     /*omp_target=*/false);
+	    do_static_initialization_or_destruction (vars, /*initp=*/true);
 
 	  tree filtered_vars = NULL_TREE;
 
@@ -5262,11 +5282,12 @@ c_parse_final_cleanups (void)
 	  if (!flag_use_cxa_atexit && vars)
 	    {
 	      vars = nreverse (vars);
-	      do_static_initialization_or_destruction (vars, /*initp=*/false,
-						       /*omp_target=*/false);
+	      do_static_initialization_or_destruction (vars, /*initp=*/false);
 	    }
 	  else
 	    vars = NULL_TREE;
+
+	  tree host_ssdf_decl = current_function_decl;
 
 	  /* Finish up the static storage duration function for this
 	     round.  */
@@ -5286,9 +5307,9 @@ c_parse_final_cleanups (void)
 
 		  if (lookup_attribute ("omp declare target",
 					DECL_ATTRIBUTES (decl)))
-		    fvarsp = &OMP_CLAUSE_CHAIN (*fvarsp);
+		    fvarsp = &TREE_CHAIN (*fvarsp);
 		  else
-		    *fvarsp = OMP_CLAUSE_CHAIN (*fvarsp);
+		    *fvarsp = TREE_CHAIN (*fvarsp);
 		}
 
 	      input_location = locus_at_end_of_parsing;
@@ -5318,14 +5339,13 @@ c_parse_final_cleanups (void)
 
 		  do_static_initialization_or_destruction (filtered_vars,
 							   /*initp=*/true,
-							   /*omp_target=*/true);
+							   host_ssdf_decl);
 		  if (!flag_use_cxa_atexit && filtered_vars)
 		    {
 		      filtered_vars = nreverse (filtered_vars);
 		      do_static_initialization_or_destruction (filtered_vars,
 							       /*initp=*/false,
-							       /*omp_target=*/
-							       false);
+							       host_ssdf_decl);
 		    }
 		  else
 		    filtered_vars = NULL_TREE;
