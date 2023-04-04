@@ -3916,9 +3916,11 @@
   [(set_attr "type" "vecsimple")])
 
 ;; Vector parity
-(define_insn "*p9v_parity<mode>2"
-  [(set (match_operand:VParity 0 "register_operand" "=v")
-        (parity:VParity (match_operand:VParity 1 "register_operand" "v")))]
+(define_insn "rs6000_vprtyb<mode>2"
+  [(set (match_operand:VEC_IP 0 "register_operand" "=v")
+        (unspec:VEC_IP
+          [(match_operand:VEC_IP 1 "register_operand" "v")]
+          UNSPEC_PARITY))]
   "TARGET_P9_VECTOR"
   "vprtyb<wd> %0,%1"
   [(set_attr "type" "vecsimple")])
