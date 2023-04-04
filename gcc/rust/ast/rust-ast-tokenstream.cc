@@ -1255,6 +1255,7 @@ TokenStream::visit (BlockExpr &expr)
   tokens.push_back (Rust::Token::make (LEFT_CURLY, expr.get_locus ()));
   newline ();
   increment_indentation ();
+  visit_items_as_lines (expr.get_inner_attrs ());
 
   visit_items_as_lines (expr.get_statements (),
 			{Rust::Token::make (SEMICOLON, Location ())});
