@@ -341,36 +341,16 @@ PathProbeType::process_associated_trait_for_candidates (
       break;
     }
 
-  TyTy::BaseType *trait_item_tyty = trait_item_ref->get_tyty ();
+  const TyTy::TypeBoundPredicate p (*trait_ref, Location ());
+  TyTy::TypeBoundPredicateItem item (&p, trait_item_ref);
 
-  // we can substitute the Self with the receiver here
-  if (trait_item_tyty->get_kind () == TyTy::TypeKind::FNDEF)
-    {
-      TyTy::FnType *fn = static_cast<TyTy::FnType *> (trait_item_tyty);
-      TyTy::SubstitutionParamMapping *param = nullptr;
-      for (auto &param_mapping : fn->get_substs ())
-	{
-	  const HIR::TypeParam &type_param = param_mapping.get_generic_param ();
-	  if (type_param.get_type_representation ().compare ("Self") == 0)
-	    {
-	      param = &param_mapping;
-	      break;
-	    }
-	}
-      rust_assert (param != nullptr);
-
-      std::vector<TyTy::SubstitutionArg> mappings;
-      mappings.push_back (TyTy::SubstitutionArg (param, receiver->clone ()));
-
-      Location locus; // FIXME
-      TyTy::SubstitutionArgumentMappings args (std::move (mappings), {}, locus);
-      trait_item_tyty = SubstMapperInternal::Resolve (trait_item_tyty, args);
-    }
+  TyTy::BaseType *trait_item_tyty = item.get_raw_item ()->get_tyty ();
+  if (receiver->get_kind () != TyTy::DYNAMIC)
+    trait_item_tyty = item.get_tyty_for_receiver (receiver);
 
   PathProbeCandidate::TraitItemCandidate trait_item_candidate{trait_ref,
 							      trait_item_ref,
 							      impl};
-
   PathProbeCandidate candidate{candidate_type, trait_item_tyty,
 			       trait_item_ref->get_locus (),
 			       trait_item_candidate};
@@ -411,7 +391,10 @@ PathProbeType::process_predicate_for_candidates (
       break;
     }
 
-  TyTy::BaseType *trait_item_tyty = item.get_tyty_for_receiver (receiver);
+  TyTy::BaseType *trait_item_tyty = item.get_raw_item ()->get_tyty ();
+  if (receiver->get_kind () != TyTy::DYNAMIC)
+    trait_item_tyty = item.get_tyty_for_receiver (receiver);
+
   PathProbeCandidate::TraitItemCandidate trait_item_candidate{trait_ref,
 							      trait_item_ref,
 							      nullptr};
