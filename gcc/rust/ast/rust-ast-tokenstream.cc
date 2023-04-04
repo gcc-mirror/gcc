@@ -32,6 +32,7 @@ TokenStream::collect_tokens () const
 void
 TokenStream::visit (AST::Crate &crate)
 {
+  visit_items_as_lines (crate.inner_attrs);
   visit_items_as_lines (crate.items);
 }
 
