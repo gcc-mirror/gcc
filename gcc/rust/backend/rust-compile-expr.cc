@@ -1919,9 +1919,7 @@ CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
 
   auto root = receiver->get_root ();
   auto candidates
-    = Resolver::PathProbeType::Probe (root, segment, true /* probe_impls */,
-				      false /* probe_bounds */,
-				      true /* ignore_mandatory_trait_items */);
+    = Resolver::PathProbeImplTrait::Probe (root, segment, trait_ref);
   if (candidates.size () == 0)
     {
       // this means we are defaulting back to the trait_item if
