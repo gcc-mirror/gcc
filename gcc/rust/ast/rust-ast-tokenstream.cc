@@ -789,8 +789,10 @@ TokenStream::visit (Literal &lit, Location locus)
   switch (lit.get_lit_type ())
     {
     case Literal::LitType::CHAR:
-      tokens.push_back (Rust::Token::make_char (
-	locus, Codepoint (static_cast<uint32_t> (std::stoul (value)))));
+      tokens.push_back (
+	Rust::Token::make_char (locus,
+				// TODO: Change this to support utf-8 properly
+				Codepoint (static_cast<uint32_t> (value[0]))));
       break;
     case Literal::LitType::STRING:
       tokens.push_back (Rust::Token::make_string (locus, std::move (value)));
