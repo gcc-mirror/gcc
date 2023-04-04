@@ -1153,10 +1153,9 @@ riscv_subset_list::parse (const char *arch, location_t loc)
 
   subset_list->handle_combine_ext ();
 
-  if (subset_list->lookup("zfinx") && subset_list->lookup("f"))
-	error_at (loc,
-	"%<-march=%s%>: z*inx is conflict with float extensions",
-	arch);
+  if (subset_list->lookup ("zfinx") && subset_list->lookup ("f"))
+    error_at (loc, "%<-march=%s%>: z*inx conflicts with floating-point "
+		   "extensions", arch);
 
   return subset_list;
 
