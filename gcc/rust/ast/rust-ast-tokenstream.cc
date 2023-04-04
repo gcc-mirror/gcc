@@ -159,27 +159,19 @@ TokenStream::visit (Attribute &attrib)
 
   if (attrib.has_attr_input ())
     {
-      tokens.push_back (Rust::Token::make (EQUAL, Location ()));
-
       switch (attrib.get_attr_input ().get_attr_input_type ())
 	{
 	  case AST::AttrInput::AttrInputType::LITERAL: {
-	    auto &literal
-	      = static_cast<AST::AttrInputLiteral &> (attrib.get_attr_input ())
-		  .get_literal ();
-	    auto value = literal.as_string ();
-	    tokens.push_back (Rust::Token::make (DOUBLE_QUOTE, Location ()));
-	    tokens.push_back (Rust::Token::make_string (literal.get_locus (),
-							std::move (value)));
-	    tokens.push_back (Rust::Token::make (DOUBLE_QUOTE, Location ()));
+	    visit (static_cast<AttrInputLiteral &> (attrib.get_attr_input ()));
 	    break;
 	  }
 	  case AST::AttrInput::AttrInputType::META_ITEM: {
-	    // FIXME: Implement this
+	    visit (static_cast<AttrInputMetaItemContainer &> (
+	      attrib.get_attr_input ()));
 	    break;
 	  }
 	  case AST::AttrInput::AttrInputType::TOKEN_TREE: {
-	    // FIXME: Implement this
+	    visit (static_cast<DelimTokenTree &> (attrib.get_attr_input ()));
 	    break;
 	  }
 	default:
