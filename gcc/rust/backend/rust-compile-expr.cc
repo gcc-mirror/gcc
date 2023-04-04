@@ -18,13 +18,11 @@
 
 #include "rust-compile-expr.h"
 #include "rust-compile-struct-field-expr.h"
-#include "rust-hir-path-probe.h"
 #include "rust-compile-pattern.h"
 #include "rust-compile-resolve-path.h"
 #include "rust-compile-block.h"
 #include "rust-compile-implitem.h"
 #include "rust-constexpr.h"
-#include "rust-type-util.h"
 #include "rust-compile-type.h"
 #include "rust-gcc.h"
 
@@ -1878,89 +1876,6 @@ CompileExpr::get_receiver_from_dyn (const TyTy::DynamicObjectType *dyn,
   // access the offs + 1 for the fnptr and offs=0 for the reciever obj
   return ctx->get_backend ()->struct_field_expression (receiver_ref, 0,
 						       expr_locus);
-}
-
-tree
-CompileExpr::resolve_method_address (TyTy::FnType *fntype, HirId ref,
-				     TyTy::BaseType *receiver,
-				     HIR::PathIdentSegment &segment,
-				     Analysis::NodeMapping expr_mappings,
-				     Location expr_locus)
-{
-  // Now we can try and resolve the address since this might be a forward
-  // declared function, generic function which has not be compiled yet or
-  // its an not yet trait bound function
-  HIR::ImplItem *resolved_item
-    = ctx->get_mappings ()->lookup_hir_implitem (ref, nullptr);
-  if (resolved_item != nullptr)
-    {
-      if (!fntype->has_subsititions_defined ())
-	return CompileInherentImplItem::Compile (resolved_item, ctx);
-
-      return CompileInherentImplItem::Compile (resolved_item, ctx, fntype);
-    }
-
-  // it might be resolved to a trait item
-  HIR::TraitItem *trait_item
-    = ctx->get_mappings ()->lookup_hir_trait_item (ref);
-  HIR::Trait *trait = ctx->get_mappings ()->lookup_trait_item_mapping (
-    trait_item->get_mappings ().get_hirid ());
-
-  Resolver::TraitReference *trait_ref
-    = &Resolver::TraitReference::error_node ();
-  bool ok = ctx->get_tyctx ()->lookup_trait_reference (
-    trait->get_mappings ().get_defid (), &trait_ref);
-  rust_assert (ok);
-
-  // the type resolver can only resolve type bounds to their trait
-  // item so its up to us to figure out if this path should resolve
-  // to an trait-impl-block-item or if it can be defaulted to the
-  // trait-impl-item's definition
-
-  auto root = receiver->get_root ();
-  auto candidates
-    = Resolver::PathProbeImplTrait::Probe (root, segment, trait_ref);
-  if (candidates.size () == 0)
-    {
-      // this means we are defaulting back to the trait_item if
-      // possible
-      Resolver::TraitItemReference *trait_item_ref = nullptr;
-      bool ok = trait_ref->lookup_hir_trait_item (*trait_item, &trait_item_ref);
-      rust_assert (ok);				    // found
-      rust_assert (trait_item_ref->is_optional ()); // has definition
-
-      // FIXME Optional means it has a definition and an associated
-      // block which can be a default implementation, if it does not
-      // contain an implementation we should actually return
-      // error_mark_node
-
-      return CompileTraitItem::Compile (trait_item_ref->get_hir_trait_item (),
-					ctx, fntype, true, expr_locus);
-    }
-
-  // FIXME this will be a case to return error_mark_node, there is
-  // an error scenario where a Trait Foo has a method Bar, but this
-  // receiver does not implement this trait or has an incompatible
-  // implementation and we should just return error_mark_node
-
-  rust_assert (candidates.size () == 1);
-  auto &candidate = *candidates.begin ();
-  rust_assert (candidate.is_impl_candidate ());
-  rust_assert (candidate.ty->get_kind () == TyTy::TypeKind::FNDEF);
-  TyTy::FnType *candidate_call = static_cast<TyTy::FnType *> (candidate.ty);
-  HIR::ImplItem *impl_item = candidate.item.impl.impl_item;
-
-  TyTy::BaseType *monomorphized = candidate_call;
-  if (candidate_call->needs_generic_substitutions ())
-    {
-      TyTy::BaseType *infer_impl_call
-	= candidate_call->infer_substitions (expr_locus);
-      monomorphized
-	= Resolver::unify_site (ref, TyTy::TyWithLocation (infer_impl_call),
-				TyTy::TyWithLocation (fntype), expr_locus);
-    }
-
-  return CompileInherentImplItem::Compile (impl_item, ctx, monomorphized);
 }
 
 tree
