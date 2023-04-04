@@ -8137,7 +8137,9 @@ package body Sem_Prag is
          --  then. For example, if the expression is "Record_Type'Size /= 32"
          --  it might be known after the back end has determined the size of
          --  Record_Type. We do not defer validation if we're inside a generic
-         --  unit, because we will have more information in the instances.
+         --  unit, because we will have more information in the instances, and
+         --  this ultimately applies to the main unit itself, because it is not
+         --  compiled by the back end when it is generic.
 
          if Compile_Time_Known_Value (Arg1x) then
             Validate_Compile_Time_Warning_Or_Error (N, Sloc (Arg1));
@@ -8155,7 +8157,10 @@ package body Sem_Prag is
                end if;
             end loop;
 
-            if No (P) then
+            if No (P)
+              and then
+                Nkind (Unit (Cunit (Main_Unit))) not in N_Generic_Declaration
+            then
                Defer_Compile_Time_Warning_Error_To_BE (N);
             end if;
          end if;
