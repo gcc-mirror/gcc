@@ -1952,6 +1952,7 @@ TokenStream::visit (Enum &enumeration)
 void
 TokenStream::visit (Union &union_item)
 {
+  visit_items_as_lines (union_item.get_outer_attrs ());
   auto id = union_item.get_identifier ();
   tokens.push_back (
     Rust::Token::make_identifier (union_item.get_locus (), "union"));
