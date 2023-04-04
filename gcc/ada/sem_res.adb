@@ -8117,11 +8117,19 @@ package body Sem_Res is
             --  Parameters of modes OUT or IN OUT of the subprogram shall not
             --  occur in the consequences of an exceptional contract unless
             --  they are either passed by reference or occur in the prefix
-            --  of a reference to the 'Old attribute.
+            --  of a reference to the 'Old attribute. For convenience, we also
+            --  allow them as prefixes of attributes that do not actually read
+            --  data from the object.
 
             if Ekind (E) in E_Out_Parameter | E_In_Out_Parameter
               and then Within_Exceptional_Cases_Consequence (N)
               and then not In_Attribute_Old (N)
+              and then not (Nkind (Parent (N)) = N_Attribute_Reference
+                              and then
+                            Attribute_Name (Parent (N)) in Name_Constrained
+                                                         | Name_First
+                                                         | Name_Last
+                                                         | Name_Length)
               and then not Is_By_Reference_Type (Etype (E))
               and then not Is_Aliased (E)
             then
