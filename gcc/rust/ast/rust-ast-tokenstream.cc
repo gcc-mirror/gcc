@@ -2243,8 +2243,7 @@ TokenStream::visit (ExternBlock &block)
 	Rust::Token::make_string (Location (), std::move (abi)));
     }
 
-  visit_items_as_block (block.get_extern_items (),
-			{Rust::Token::make (SEMICOLON, Location ())});
+  visit_items_as_block (block.get_extern_items ());
 }
 
 static std::pair<TokenId, TokenId>

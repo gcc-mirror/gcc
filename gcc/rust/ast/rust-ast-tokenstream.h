@@ -85,7 +85,7 @@ private:
    * collection to print only the delimiters with no new line inside.
    */
   template <typename T>
-  void visit_items_as_block (T &collection, std::vector<TokenPtr> trailing,
+  void visit_items_as_block (T &collection, std::vector<TokenPtr> trailing = {},
 			     TokenId left_brace = LEFT_CURLY,
 			     TokenId right_brace = RIGHT_CURLY);
 
