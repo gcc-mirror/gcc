@@ -8963,8 +8963,7 @@ It looks like:
 
 @smallexample
 
-(include
-  @var{pathname})
+(include @var{pathname})
 @end smallexample
 
 For example:
