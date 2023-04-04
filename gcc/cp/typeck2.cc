@@ -298,10 +298,6 @@ cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
 {
   bool is_decl = false, complained = false;
 
-  gcc_assert (diag_kind == DK_WARNING 
-	      || diag_kind == DK_PEDWARN 
-	      || diag_kind == DK_ERROR);
-
   /* Avoid duplicate error message.  */
   if (TREE_CODE (type) == ERROR_MARK)
     return false;
