@@ -716,7 +716,7 @@
 	 VCREATEQ_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vmov %q0[2], %q0[0], %Q2, %Q1\;vmov %q0[3], %q0[1], %R2, %R1"
+  "vmov %q0[2], %q0[0], %Q1, %Q2\;vmov %q0[3], %q0[1], %R1, %R2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -731,7 +731,7 @@
 	 VCREATEQ))
   ]
   "TARGET_HAVE_MVE"
-  "vmov %q0[2], %q0[0], %Q2, %Q1\;vmov %q0[3], %q0[1], %R2, %R1"
+  "vmov %q0[2], %q0[0], %Q1, %Q2\;vmov %q0[3], %q0[1], %R1, %R2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
