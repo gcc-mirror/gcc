@@ -97,12 +97,6 @@ protected:
 			      TyTy::BaseType *receiver, TyTy::FnType *fntype,
 			      tree receiver_ref, Location expr_locus);
 
-  tree resolve_method_address (TyTy::FnType *fntype, HirId ref,
-			       TyTy::BaseType *receiver,
-			       HIR::PathIdentSegment &segment,
-			       Analysis::NodeMapping expr_mappings,
-			       Location expr_locus);
-
   tree
   resolve_operator_overload (Analysis::RustLangItem::ItemType lang_item_type,
 			     HIR::OperatorExprMeta expr, tree lhs, tree rhs,
