@@ -248,7 +248,7 @@ TokenStream::visit (Visibility &vis)
     case Visibility::PUB_IN_PATH:
       tokens.push_back (Rust::Token::make (PUB, vis.get_locus ()));
       tokens.push_back (Rust::Token::make (LEFT_PAREN, Location ()));
-      tokens.push_back (Rust::Token::make_identifier (Location (), "in"));
+      tokens.push_back (Rust::Token::make (IN, Location ()));
       visit (vis.get_path ());
       tokens.push_back (Rust::Token::make (RIGHT_PAREN, Location ()));
       break;
