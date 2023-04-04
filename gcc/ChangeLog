@@ -1,3 +1,33 @@
+2023-04-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/109303
+	* ipa-prop.cc (determine_known_aggregate_parts): Check that the
+	offset + size will be representable in unsigned int.
+
+2023-04-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (ZSTD_LIB): Move before zstd.h check.
+	Unset gcc_cv_header_zstd_h without libzstd.
+	* configure: Regenerate.
+
+2023-04-03  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Document new param.
+
+2023-04-03  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	* doc/sourcebuild.texi (const_volatile_readonly_section): Document
+	new check_effective_target function.
+
+2023-04-03  Li Xu  <xuli1@eswincomputing.com>
+
+	* config/riscv/riscv-vector-builtins.def (vuint32m8_t): Fix typo.
+	(vfloat32m8_t): Likewise
+
+2023-04-03  liuhongt  <hongtao.liu@intel.com>
+
+	* doc/md.texi: Document signbitm2.
+
 2023-04-02  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
 	    kito-cheng  <kito.cheng@sifive.com>
 

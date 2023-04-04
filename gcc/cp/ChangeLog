@@ -1,3 +1,9 @@
+2023-04-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109300
+	* decl.cc (cp_finish_decl): Diagnose ordinary auto deduction
+	with no initializer, instead of asserting.
+
 2023-04-01  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/109160

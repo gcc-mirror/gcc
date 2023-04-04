@@ -1,3 +1,16 @@
+2023-04-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109388
+	* gm2-compiler/M2GCCDeclare.mod (DoVariableDeclaration):
+	Remove second parameter module.  Adjust all callers to
+	remove the second parameter.
+	* gm2-compiler/PHBuild.bnf (CheckAndInsert): Remove.
+	(InStopSet): Remove.
+	(PeepToken): Remove.
+	(PushQualident): Remove.
+	(SimpleDes): Remove.
+	(ActualParameters): Remove.
+
 2023-04-02  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109336
