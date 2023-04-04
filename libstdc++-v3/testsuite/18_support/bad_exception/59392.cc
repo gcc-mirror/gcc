@@ -17,6 +17,7 @@
 
 // { dg-options "-Wno-deprecated" }
 // { dg-do run { target c++14_down } }
+// { dg-require-effective-target hosted }
 
 #include <exception>
 #include <cstdlib>
