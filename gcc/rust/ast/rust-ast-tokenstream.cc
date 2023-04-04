@@ -2310,7 +2310,10 @@ TokenStream::visit (MacroMatcher &matcher)
 
   tokens.push_back (Rust::Token::make (delimiters.first, Location ()));
 
-  visit_items_joined_by_separator (matcher.get_matches (), {});
+  for (auto &item : matcher.get_matches ())
+    {
+      visit (item);
+    }
 
   tokens.push_back (Rust::Token::make (delimiters.second, Location ()));
 }
