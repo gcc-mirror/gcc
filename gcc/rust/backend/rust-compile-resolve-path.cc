@@ -248,12 +248,7 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 	  ok = ctx->get_tyctx ()->lookup_receiver (mappings.get_hirid (),
 						   &receiver);
 	  rust_assert (ok);
-
-	  if (receiver->get_kind () == TyTy::TypeKind::PARAM)
-	    {
-	      TyTy::ParamType *p = static_cast<TyTy::ParamType *> (receiver);
-	      receiver = p->resolve ();
-	    }
+	  receiver = receiver->destructure ();
 
 	  // the type resolver can only resolve type bounds to their trait
 	  // item so its up to us to figure out if this path should resolve
