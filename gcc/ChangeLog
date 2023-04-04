@@ -1,3 +1,94 @@
+2023-04-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/96373
+	PR tree-optimization/108979
+	* tree-vect-stmts.cc (vectorizable_operation): Predicate trapping
+	operations on the loop mask.  Reject partial vectors if this isn't
+	possible.  Don't mask operations on invariants.
+
+2023-04-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-03-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/109072
+	* config/aarch64/aarch64-protos.h (aarch64_vector_load_decl): Declare.
+	* config/aarch64/aarch64.h (machine_function::vector_load_decls): New
+	variable.
+	* config/aarch64/aarch64-builtins.cc (aarch64_record_vector_load_arg):
+	New function.
+	(aarch64_general_gimple_fold_builtin): Delay folding of vld1 until
+	after inlining.  Record which decls are loaded from.  Fix handling
+	of vops for loads and stores.
+	* config/aarch64/aarch64.cc (aarch64_vector_load_decl): New function.
+	(aarch64_accesses_vector_load_decl_p): Likewise.
+	(aarch64_vector_costs::m_stores_to_vector_load_decl): New member
+	variable.
+	(aarch64_vector_costs::add_stmt_cost): If the function has a vld1
+	that loads from a decl, treat vector stores to those decls as
+	zero cost.
+	(aarch64_vector_costs::finish_cost): ...and in that case,
+	if the vector code does nothing more than a store, give the
+	prologue a zero cost as well.
+
+2023-04-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-02-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/108681
+	* lra-spills.cc (lra_final_code_change): Extend subreg replacement
+	code to handle bare uses and clobbers.
+
+2023-04-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-01-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/108608
+	* tree-vect-loop.cc (vect_transform_reduction): Handle single
+	def-use cycles that involve function calls rather than tree codes.
+
+2023-04-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-03-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/108603
+	* explow.cc (convert_memory_address_addr_space_1): Only wrap
+	the result of a recursive call in a CONST if no instructions
+	were emitted.
+
+2023-04-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-02-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/108508
+	* rtl-ssa/accesses.cc (function_info::split_clobber_group): When
+	the splay tree search gives the first clobber in the second group,
+	make sure that the root of the first clobber group is updated
+	correctly.  Enter the new clobber group into the definition splay
+	tree.
+
+2023-04-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-03-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/108430
+	* tree-vect-stmts.cc (vectorizable_condition): Fix handling
+	of inverted condition.
+
+2023-04-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-02-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/108086
+	* rtl-ssa/insns.h (insn_info): Make m_num_defs a full unsigned int.
+	Adjust size-related commentary accordingly.
+
 2023-03-31  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	* ira-costs.cc: Include print-rtl.h.

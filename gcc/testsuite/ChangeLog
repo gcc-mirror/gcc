@@ -1,3 +1,64 @@
+2023-04-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/96373
+	PR tree-optimization/108571
+	PR tree-optimization/108979
+	* gcc.target/aarch64/sve/fabd_1.c: Add -fno-trapping-math.
+	* gcc.target/aarch64/sve/fsubr_1.c: Likewise.
+	* gcc.target/aarch64/sve/fmul_1.c: Expect predicate ops.
+	* gcc.target/aarch64/sve/fp_arith_1.c: Likewise.
+	* gfortran.dg/vect/pr108979.f90: New test.
+
+2023-04-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-03-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/109072
+	* gcc.target/aarch64/pr109072_1.c: New test.
+	* gcc.target/aarch64/pr109072_2.c: Likewise.
+
+2023-04-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-02-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/108681
+	* gcc.target/aarch64/pr108681.c: New test.
+
+2023-04-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-01-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/108608
+	* gcc.dg/vect/pr108608.c: New test.
+	* gcc.target/aarch64/sve/pr108608-1.c: Likewise.
+
+2023-04-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-03-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/108603
+	* gcc.target/aarch64/sve/pr108603.c: New test.
+
+2023-04-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-02-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/108508
+	* gcc.target/aarch64/pr108508.c: New test.
+
+2023-04-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-03-02  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/108430
+	* gcc.target/aarch64/sve/pr108430.c: New test.
+
 2023-03-31  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	* gcc.target/avr/pr90706.c: New.
