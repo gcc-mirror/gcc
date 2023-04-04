@@ -1509,7 +1509,7 @@ TokenStream::visit (MatchCase &match_case)
   visit (match_case.get_arm ());
   tokens.push_back (Rust::Token::make (MATCH_ARROW, Location ()));
   visit (match_case.get_expr ());
-  trailing_comma ();
+  tokens.push_back (Rust::Token::make (COMMA, Location ()));
 }
 
 void
