@@ -397,6 +397,13 @@ _GLIBCXX_END_NAMESPACE_VERSION
 # define _GLIBCXX_END_INLINE_ABI_NAMESPACE(X)   } // inline namespace X
 #endif
 
+// In the case that we don't have a hosted environment, we can't provide the
+// debugging mode.  Instead, we do our best and downgrade to assertions.
+#if defined(_GLIBCXX_DEBUG) && !__STDC_HOSTED__
+#undef _GLIBCXX_DEBUG
+#define _GLIBCXX_ASSERTIONS 1
+#endif
+
 // Inline namespaces for special modes: debug, parallel.
 #if defined(_GLIBCXX_DEBUG) || defined(_GLIBCXX_PARALLEL)
 namespace std
