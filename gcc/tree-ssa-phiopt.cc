@@ -916,6 +916,18 @@ gimple_simplify_phiopt (bool early_p, tree type, gimple *comp_stmt,
      "a != 0".  */
   tree cond = build2_loc (loc, comp_code, boolean_type_node,
 			  cmp0, cmp1);
+
+  if (dump_file && (dump_flags & TDF_FOLDING))
+    {
+      fprintf (dump_file, "\nphiopt match-simplify trying:\n\t");
+      print_generic_expr (dump_file, cond);
+      fprintf (dump_file, " ? ");
+      print_generic_expr (dump_file, arg0);
+      fprintf (dump_file, " : ");
+      print_generic_expr (dump_file, arg1);
+      fprintf (dump_file, "\n");
+    }
+
   gimple_match_op op (gimple_match_cond::UNCOND,
 		      COND_EXPR, type, cond, arg0, arg1);
 
@@ -947,6 +959,18 @@ gimple_simplify_phiopt (bool early_p, tree type, gimple *comp_stmt,
   cond = build2_loc (loc,
 		     comp_code, boolean_type_node,
 		     cmp0, cmp1);
+
+  if (dump_file && (dump_flags & TDF_FOLDING))
+    {
+      fprintf (dump_file, "\nphiopt match-simplify trying:\n\t");
+      print_generic_expr (dump_file, cond);
+      fprintf (dump_file, " ? ");
+      print_generic_expr (dump_file, arg1);
+      fprintf (dump_file, " : ");
+      print_generic_expr (dump_file, arg0);
+      fprintf (dump_file, "\n");
+    }
+
   gimple_match_op op1 (gimple_match_cond::UNCOND,
 		       COND_EXPR, type, cond, arg1, arg0);
 
@@ -1077,6 +1101,11 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
 	  tree name = gimple_get_lhs (stmt);
 	  if (name && TREE_CODE (name) == SSA_NAME)
 	    bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (name));
+	}
+      if (dump_file && (dump_flags & TDF_FOLDING))
+	{
+	  fprintf (dump_file, "Folded into the sequence:\n");
+	  print_gimple_seq (dump_file, seq, 0, TDF_VOPS|TDF_MEMSYMS);
 	}
     gsi_insert_seq_before (&gsi, seq, GSI_CONTINUE_LINKING);
   }
