@@ -65,8 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #define DEF_RVV_BASE_TYPE(NAME, TYPE)
 #endif
 
-/* Use "DEF_RVV_TYPE_INDEX" macro to define RVV function types.
-   The 'NAME' will be concatenated into intrinsic function name.  */
+/* Use "DEF_RVV_TYPE_INDEX" macro to define RVV function types.  */
 #ifndef DEF_RVV_TYPE_INDEX
 #define DEF_RVV_TYPE_INDEX(VECTOR, MASK, SIGNED, UNSIGNED, EEW8_INDEX, EEW16_INDEX, \
 		      EEW32_INDEX, EEW64_INDEX, SHIFT, DOUBLE_TRUNC,           \
