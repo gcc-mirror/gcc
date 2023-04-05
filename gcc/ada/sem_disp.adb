@@ -1414,9 +1414,9 @@ package body Sem_Disp is
                  and then Is_Null_Interface_Primitive
                              (Ultimate_Alias (Old_Subp)))
 
-              or else Get_TSS_Name (Subp) = TSS_Stream_Read
-              or else Get_TSS_Name (Subp) = TSS_Stream_Write
-              or else Get_TSS_Name (Subp) = TSS_Put_Image
+              or else Get_TSS_Name (Subp) in TSS_Stream_Read
+                                           | TSS_Stream_Write
+                                           | TSS_Put_Image
 
               or else
                (Is_Wrapper (Subp)

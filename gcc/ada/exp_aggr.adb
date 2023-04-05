@@ -4487,8 +4487,7 @@ package body Exp_Aggr is
 
             while Present (Stmt) loop
                if Nkind (Stmt) = N_Procedure_Call_Statement
-                 and then Get_TSS_Name (Entity (Name (Stmt)))
-                            = TSS_Slice_Assign
+                 and then Is_TSS (Entity (Name (Stmt)), TSS_Slice_Assign)
                then
                   Param := First (Parameter_Associations (Stmt));
                   Insert_Actions

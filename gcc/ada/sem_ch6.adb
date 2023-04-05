@@ -6005,41 +6005,35 @@ package body Sem_Ch6 is
               --  avoids some redundant error messages.
 
               and then not Error_Posted (New_Formal)
+
+              --  It is allowed to omit the null-exclusion in case of stream
+              --  attribute subprograms. We recognize stream subprograms
+              --  through their TSS-generated suffix.
+
+              and then Get_TSS_Name (New_Id) not in TSS_Stream_Read
+                                                  | TSS_Stream_Write
+                                                  | TSS_Stream_Input
+                                                  | TSS_Stream_Output
             then
-               --  It is allowed to omit the null-exclusion in case of stream
-               --  attribute subprograms. We recognize stream subprograms
-               --  through their TSS-generated suffix.
+               --  Here we have a definite conformance error. It is worth
+               --  special casing the error message for the case of a
+               --  controlling formal (which excludes null).
 
-               declare
-                  TSS_Name : constant TSS_Name_Type := Get_TSS_Name (New_Id);
+               if Is_Controlling_Formal (New_Formal) then
+                  Error_Msg_Node_2 := Scope (New_Formal);
+                  Conformance_Error
+                    ("\controlling formal & of & excludes null, "
+                     & "declaration must exclude null as well",
+                     New_Formal);
 
-               begin
-                  if TSS_Name /= TSS_Stream_Read
-                    and then TSS_Name /= TSS_Stream_Write
-                    and then TSS_Name /= TSS_Stream_Input
-                    and then TSS_Name /= TSS_Stream_Output
-                  then
-                     --  Here we have a definite conformance error. It is worth
-                     --  special casing the error message for the case of a
-                     --  controlling formal (which excludes null).
+                  --  Normal case (couldn't we give more detail here???)
 
-                     if Is_Controlling_Formal (New_Formal) then
-                        Error_Msg_Node_2 := Scope (New_Formal);
-                        Conformance_Error
-                         ("\controlling formal & of & excludes null, "
-                          & "declaration must exclude null as well",
-                          New_Formal);
+               else
+                  Conformance_Error
+                    ("\type of & does not match!", New_Formal);
+               end if;
 
-                     --  Normal case (couldn't we give more detail here???)
-
-                     else
-                        Conformance_Error
-                          ("\type of & does not match!", New_Formal);
-                     end if;
-
-                     return;
-                  end if;
-               end;
+               return;
             end if;
          end if;
 
@@ -10650,21 +10644,16 @@ package body Sem_Ch6 is
 
       else
          declare
-            Typ : constant Entity_Id :=
-                    Underlying_Type (Find_Dispatching_Type (Alias_E));
+            TSS_Name : constant TSS_Name_Type := Get_TSS_Name (E);
+            Typ      : constant Entity_Id :=
+              Underlying_Type (Find_Dispatching_Type (Alias_E));
 
          begin
-            if (Get_TSS_Name (E) = TSS_Stream_Input
-                  and then not Stream_Operation_OK (Typ, TSS_Stream_Input))
-              or else
-                (Get_TSS_Name (E) = TSS_Stream_Output
-                   and then not Stream_Operation_OK (Typ, TSS_Stream_Output))
-              or else
-                (Get_TSS_Name (E) = TSS_Stream_Read
-                   and then not Stream_Operation_OK (Typ, TSS_Stream_Read))
-              or else
-                (Get_TSS_Name (E) = TSS_Stream_Write
-                   and then not Stream_Operation_OK (Typ, TSS_Stream_Write))
+            if TSS_Name in TSS_Stream_Input
+                         | TSS_Stream_Output
+                         | TSS_Stream_Read
+                         | TSS_Stream_Write
+              and then not Stream_Operation_OK (Typ, TSS_Name)
             then
                return False;
             end if;
