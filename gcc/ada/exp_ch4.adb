@@ -6972,11 +6972,13 @@ package body Exp_Ch4 is
 
                --  If the null exclusion checks are not compatible, need to
                --  perform further checks. In other words, we cannot have
-               --  Ltyp including null and Typ excluding null. All other cases
-               --  are OK.
+               --  Ltyp including null or Lop being null, and Typ excluding
+               --  null. All other cases are OK.
 
                Check_Null_Exclusion :=
-                 Can_Never_Be_Null (Typ) and then not Can_Never_Be_Null (Ltyp);
+                 Can_Never_Be_Null (Typ)
+                   and then (not Can_Never_Be_Null (Ltyp)
+                              or else Nkind (Lop) = N_Null);
                Typ := Designated_Type (Typ);
             end if;
 
