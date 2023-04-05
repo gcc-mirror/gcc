@@ -56,7 +56,9 @@
 
 ;; Atomic memory operations.
 
-;; Implement atomic stores with amoswap.  Fall back to fences for atomic loads.
+;; Implement atomic stores with conservative fences.  Fall back to fences for
+;; atomic loads.
+;; This allows us to be compatible with the ISA manual Table A.6 and Table A.7.
 (define_insn "atomic_store<mode>"
   [(set (match_operand:GPR 0 "memory_operand" "=A")
     (unspec_volatile:GPR
@@ -64,9 +66,22 @@
        (match_operand:SI 2 "const_int_operand")]      ;; model
       UNSPEC_ATOMIC_STORE))]
   "TARGET_ATOMIC"
-  "%F2amoswap.<amo>%A2 zero,%z1,%0"
+  {
+    enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+    model = memmodel_base (model);
+
+    if (model == MEMMODEL_SEQ_CST)
+      return "fence\trw,w\;"
+	     "s<amo>\t%z1,%0\;"
+	     "fence\trw,rw";
+    if (model == MEMMODEL_RELEASE)
+      return "fence\trw,w\;"
+	     "s<amo>\t%z1,%0";
+    else
+      return "s<amo>\t%z1,%0";
+  }
   [(set_attr "type" "atomic")
-   (set (attr "length") (const_int 8))])
+   (set (attr "length") (const_int 12))])
 
 (define_insn "atomic_<atomic_optab><mode>"
   [(set (match_operand:GPR 0 "memory_operand" "+A")
