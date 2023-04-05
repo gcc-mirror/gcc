@@ -149,7 +149,8 @@ public:
   AST::Visibility parse_visibility ();
   std::unique_ptr<AST::IdentifierPattern> parse_identifier_pattern ();
   std::unique_ptr<AST::TokenTree> parse_token_tree ();
-  AST::Attribute parse_attribute_body ();
+  std::tuple<AST::SimplePath, std::unique_ptr<AST::AttrInput>, Location>
+  parse_attribute_body ();
   AST::AttrVec parse_inner_attributes ();
   std::unique_ptr<AST::MacroInvocation>
   parse_macro_invocation (AST::AttrVec outer_attrs);
@@ -172,7 +173,8 @@ private:
   AST::AttrVec parse_outer_attributes ();
   AST::Attribute parse_outer_attribute ();
   std::unique_ptr<AST::AttrInput> parse_attr_input ();
-  AST::Attribute parse_doc_comment ();
+  std::tuple<AST::SimplePath, std::unique_ptr<AST::AttrInput>, Location>
+  parse_doc_comment ();
 
   // Path-related
   AST::SimplePath parse_simple_path ();

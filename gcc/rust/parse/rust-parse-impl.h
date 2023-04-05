@@ -484,7 +484,7 @@ Parser<ManagedTokenSource>::parse_inner_attributes ()
 
 // Parse a inner or outer doc comment into an doc attribute
 template <typename ManagedTokenSource>
-AST::Attribute
+std::tuple<AST::SimplePath, std::unique_ptr<AST::AttrInput>, Location>
 Parser<ManagedTokenSource>::parse_doc_comment ()
 {
   const_TokenPtr token = lexer.peek_token ();
@@ -498,7 +498,7 @@ Parser<ManagedTokenSource>::parse_doc_comment ()
   std::unique_ptr<AST::AttrInput> attr_input (
     new AST::AttrInputLiteral (std::move (lit_expr)));
   lexer.skip_token ();
-  return AST::Attribute (std::move (attr_path), std::move (attr_input), locus);
+  return std::make_tuple (std::move (attr_path), std::move (attr_input), locus);
 }
 
 // Parse a single inner attribute.
@@ -507,7 +507,13 @@ AST::Attribute
 Parser<ManagedTokenSource>::parse_inner_attribute ()
 {
   if (lexer.peek_token ()->get_id () == INNER_DOC_COMMENT)
-    return parse_doc_comment ();
+    {
+      auto values = parse_doc_comment ();
+      auto path = std::move (std::get<0> (values));
+      auto input = std::move (std::get<1> (values));
+      auto loc = std::get<2> (values);
+      return AST::Attribute (std::move (path), std::move (input), loc, true);
+    }
 
   if (lexer.peek_token ()->get_id () != HASH)
     {
@@ -533,7 +539,13 @@ Parser<ManagedTokenSource>::parse_inner_attribute ()
   if (!skip_token (LEFT_SQUARE))
     return AST::Attribute::create_empty ();
 
-  AST::Attribute actual_attribute = parse_attribute_body ();
+  auto values = parse_attribute_body ();
+
+  auto path = std::move (std::get<0> (values));
+  auto input = std::move (std::get<1> (values));
+  auto loc = std::get<2> (values);
+  auto actual_attribute
+    = AST::Attribute (std::move (path), std::move (input), loc, true);
 
   if (!skip_token (RIGHT_SQUARE))
     return AST::Attribute::create_empty ();
@@ -543,7 +555,7 @@ Parser<ManagedTokenSource>::parse_inner_attribute ()
 
 // Parses the body of an attribute (inner or outer).
 template <typename ManagedTokenSource>
-AST::Attribute
+std::tuple<AST::SimplePath, std::unique_ptr<AST::AttrInput>, Location>
 Parser<ManagedTokenSource>::parse_attribute_body ()
 {
   Location locus = lexer.peek_token ()->get_locus ();
@@ -558,13 +570,13 @@ Parser<ManagedTokenSource>::parse_attribute_body ()
 
       // Skip past potential further info in attribute (i.e. attr_input)
       skip_after_end_attribute ();
-      return AST::Attribute::create_empty ();
+      return std::make_tuple (std::move (attr_path), nullptr, Location ());
     }
 
   std::unique_ptr<AST::AttrInput> attr_input = parse_attr_input ();
   // AttrInput is allowed to be null, so no checks here
 
-  return AST::Attribute (std::move (attr_path), std::move (attr_input), locus);
+  return std::make_tuple (std::move (attr_path), std::move (attr_input), locus);
 }
 
 /* Determines whether token is a valid simple path segment. This does not
@@ -1161,7 +1173,13 @@ AST::Attribute
 Parser<ManagedTokenSource>::parse_outer_attribute ()
 {
   if (lexer.peek_token ()->get_id () == OUTER_DOC_COMMENT)
-    return parse_doc_comment ();
+    {
+      auto values = parse_doc_comment ();
+      auto path = std::move (std::get<0> (values));
+      auto input = std::move (std::get<1> (values));
+      auto loc = std::get<2> (values);
+      return AST::Attribute (std::move (path), std::move (input), loc, false);
+    }
 
   if (lexer.peek_token ()->get_id () == INNER_DOC_COMMENT)
     {
@@ -1199,7 +1217,12 @@ Parser<ManagedTokenSource>::parse_outer_attribute ()
 
   lexer.skip_token ();
 
-  AST::Attribute actual_attribute = parse_attribute_body ();
+  auto values = parse_attribute_body ();
+  auto path = std::move (std::get<0> (values));
+  auto input = std::move (std::get<1> (values));
+  auto loc = std::get<2> (values);
+  auto actual_attribute
+    = AST::Attribute (std::move (path), std::move (input), loc, true);
 
   if (lexer.peek_token ()->get_id () != RIGHT_SQUARE)
     return AST::Attribute::create_empty ();
