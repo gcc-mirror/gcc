@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RISCV_PROTOS_H
 #define GCC_RISCV_PROTOS_H
 
+#include "memmodel.h"
+
 /* Symbol types we understand.  The order of this list must match that of
    the unspec enum in riscv.md, subsequent to UNSPEC_ADDRESS_FIRST.  */
 enum riscv_symbol_type {
@@ -81,6 +83,7 @@ extern bool riscv_v_ext_vector_mode_p (machine_mode);
 extern bool riscv_shamt_matches_mask_p (int, HOST_WIDE_INT);
 extern void riscv_subword_address (rtx, rtx *, rtx *, rtx *, rtx *);
 extern void riscv_lshift_subword (machine_mode, rtx, rtx, rtx *);
+extern enum memmodel riscv_union_memmodels (enum memmodel, enum memmodel);
 
 /* Routines implemented in riscv-c.cc.  */
 void riscv_cpu_cpp_builtins (cpp_reader *);
