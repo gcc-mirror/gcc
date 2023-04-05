@@ -456,6 +456,8 @@ private:
 
   Location locus;
 
+  bool inner_attribute;
+
   // TODO: maybe a variable storing whether attr input is parsed or not
 
 public:
@@ -464,8 +466,9 @@ public:
 
   // Constructor has pointer AttrInput for polymorphism reasons
   Attribute (SimplePath path, std::unique_ptr<AttrInput> input,
-	     Location locus = Location ())
-    : path (std::move (path)), attr_input (std::move (input)), locus (locus)
+	     Location locus = Location (), bool inner_attribute = false)
+    : path (std::move (path)), attr_input (std::move (input)), locus (locus),
+      inner_attribute (inner_attribute)
   {}
 
   // default destructor
@@ -553,6 +556,8 @@ public:
    *   feature     */
 
   std::string as_string () const;
+
+  bool is_inner_attribute () const { return inner_attribute; }
 
   // no visitor pattern as not currently polymorphic
 
