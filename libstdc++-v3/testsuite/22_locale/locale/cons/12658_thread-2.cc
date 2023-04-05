@@ -3,6 +3,7 @@
 // { dg-require-effective-target pthread }
 // { dg-require-namedlocale "en_US.ISO8859-1" }
 // { dg-require-namedlocale "fr_FR.ISO8859-15" }
+// { dg-timeout-factor 2.0 { target hppa*-*-* } }
 
 // Copyright (C) 2004-2023 Free Software Foundation, Inc.
 //
