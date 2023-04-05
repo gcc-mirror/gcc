@@ -7232,12 +7232,12 @@ BEGIN
             GenQuadO (proctok, InclOp, VarSym, NulSym, DerefSym, FALSE)
          ELSE
             MetaErrorT1 (proctok,
-                         'the first parameter to {%EkINCL} must be a set variable but is {%E1d}',
+                         'the first parameter to {%EkINCL} must be a set variable but is {%1Ed}',
                          VarSym)
          END
       ELSE
          MetaErrorT1 (proctok,
-                      'base procedure {%EkINCL} expects a variable as a parameter but is {%E1d}',
+                      'base procedure {%EkINCL} expects a variable as a parameter but is {%1Ed}',
                       VarSym)
       END
    ELSE
@@ -7298,12 +7298,12 @@ BEGIN
             GenQuadO (proctok, ExclOp, VarSym, NulSym, DerefSym, FALSE)
          ELSE
             MetaErrorT1 (proctok,
-                         'the first parameter to {%EkEXCL} must be a set variable but is {%E1d}',
+                         'the first parameter to {%EkEXCL} must be a set variable but is {%1Ed}',
                          VarSym)
          END
       ELSE
          MetaErrorT1 (proctok,
-                      'base procedure {%EkEXCL} expects a variable as a parameter but is {%E1d}',
+                      'base procedure {%EkEXCL} expects a variable as a parameter but is {%1Ed}',
                       VarSym)
       END
    ELSE
@@ -9996,6 +9996,7 @@ BEGIN
          ELSE
             GenQuadO (combinedTok, AddrOp, returnVar, NulSym, OperandT (1), FALSE)
          END ;
+         PutWriteQuad (OperandT (1), GetMode (OperandT (1)), NextQuad-1) ;
          rw := OperandMergeRW (1) ;
          Assert (IsLegal (rw))
       END ;

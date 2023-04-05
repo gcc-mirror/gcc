@@ -85,8 +85,7 @@ PROCEDURE CreateModule (name, libname: ADDRESS;
                         init, fini:  ArgCVEnvP;
                         dependencies: PROC) : ModuleChain ;
 VAR
-   mptr  : ModuleChain ;
-   p0, p1: ADDRESS ;
+   mptr: ModuleChain ;
 BEGIN
    NEW (mptr) ;
    mptr^.name := name ;
@@ -595,8 +594,6 @@ END DisplayModuleInfo ;
 *)
 
 PROCEDURE DumpModuleData (flag: BOOLEAN) ;
-VAR
-   mptr: ModuleChain ;
 BEGIN
    IF flag
    THEN
@@ -767,7 +764,6 @@ PROCEDURE ConstructModules (applicationmodule, libname,
                             argc: INTEGER; argv, envp: ADDRESS) ;
 VAR
    mptr: ModuleChain ;
-   nulp: ArgCVEnvP ;
 BEGIN
    CheckInitialized ;
    DynamicInitialization := TRUE ;  (* This procedure is only called if we desire dynamic initialization.  *)

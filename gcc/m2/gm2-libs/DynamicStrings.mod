@@ -129,8 +129,6 @@ END writeNspace ;
 *)
 
 PROCEDURE DumpStringInfo (s: String; i: CARDINAL) ;
-VAR
-   t: String ;
 BEGIN
    IF s # NIL
    THEN
@@ -164,7 +162,6 @@ END stop ;
 PROCEDURE PopAllocationExemption (halt: BOOLEAN; e: String) : String ;
 VAR
    s: String ;
-   f: frame ;
    b: BOOLEAN ;
 BEGIN
    Init ;

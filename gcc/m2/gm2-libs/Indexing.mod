@@ -261,9 +261,9 @@ END IsIndiceInIndex ;
 
 PROCEDURE RemoveIndiceFromIndex (i: Index; a: ADDRESS) ;
 VAR
-   j, k: CARDINAL ;
-   p   : PtrToAddress ;
-   b   : PtrToByte ;
+   j: CARDINAL ;
+   p: PtrToAddress ;
+   b: PtrToByte ;
 BEGIN
    WITH i^ DO
       j := Low ;

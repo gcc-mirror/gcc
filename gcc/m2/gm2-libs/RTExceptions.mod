@@ -531,7 +531,7 @@ END PushHandler ;
 
 PROCEDURE PopHandler (e: EHBlock; number: CARDINAL) ;
 VAR
-   h, i: Handler ;
+   h: Handler ;
 BEGIN
    h := findHandler(e, number) ;
    IF h#NIL
