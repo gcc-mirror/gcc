@@ -1111,11 +1111,6 @@ void
 TokenStream::visit (StructExprStruct &expr)
 {
   visit (expr.get_struct_name ());
-  tokens.push_back (Rust::Token::make (LEFT_CURLY, expr.get_locus ()));
-  // FIXME: Reference says it should have fields but node doesn't have them for
-  // now. We need to disambiguate with StructExprUnit and visit fields.
-  gcc_unreachable ();
-  tokens.push_back (Rust::Token::make (RIGHT_CURLY, Location ()));
 }
 
 void
@@ -1161,6 +1156,8 @@ TokenStream::visit (StructBase &base)
 void
 TokenStream::visit (StructExprStructFields &expr)
 {
+  visit (expr.get_struct_name ());
+  tokens.push_back (Rust::Token::make (LEFT_CURLY, expr.get_locus ()));
   visit_items_joined_by_separator (expr.get_fields (), COMMA);
   if (expr.has_struct_base ())
     {
@@ -1171,6 +1168,7 @@ TokenStream::visit (StructExprStructFields &expr)
     {
       trailing_comma ();
     }
+  tokens.push_back (Rust::Token::make (RIGHT_CURLY, expr.get_locus ()));
 }
 
 void
