@@ -13333,12 +13333,16 @@ package body Sem_Res is
          --  Both operands must have the same type as the context
          --  (ignoring for now fixed-point and exponentiation ops).
 
-         if Has_Applicable_User_Defined_Literal (Right_Opnd (N), Typ) then
+         if Covers (Typ, Etype (Right_Opnd (N)))
+           or else Has_Applicable_User_Defined_Literal (Right_Opnd (N), Typ)
+         then
             Resolve (Left_Opnd (N), Typ);
             Analyze_And_Resolve (N, Typ);
             return True;
 
-         elsif Has_Applicable_User_Defined_Literal (Left_Opnd (N), Typ) then
+         elsif Covers (Typ, Etype (Left_Opnd (N)))
+           or else Has_Applicable_User_Defined_Literal (Left_Opnd (N), Typ)
+         then
             Resolve (Right_Opnd (N), Typ);
             Analyze_And_Resolve (N, Typ);
             return True;
