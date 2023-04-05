@@ -1,3 +1,58 @@
+2023-04-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104349
+	* gfortran.dg/der_charlen_1.f90: Adjust dg-patterns.
+	* gfortran.dg/pr104349.f90: New test.
+
+2023-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109386
+	* gcc.c-torture/execute/ieee/pr109386.c: New test.
+
+2023-04-04  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/109107
+	* c-c++-common/ubsan/pr109107-1.c: New test.
+	* c-c++-common/ubsan/pr109107-2.c: New test.
+	* c-c++-common/ubsan/pr109107-3.c: New test.
+	* c-c++-common/ubsan/pr109107-4.c: New test.
+
+2023-04-04  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vcreateq_f16.c: Tighten test.
+	* gcc.target/arm/mve/intrinsics/vcreateq_f32.c: Tighten test.
+	* gcc.target/arm/mve/intrinsics/vcreateq_s16.c: Tighten test.
+	* gcc.target/arm/mve/intrinsics/vcreateq_s32.c: Tighten test.
+	* gcc.target/arm/mve/intrinsics/vcreateq_s64.c: Tighten test.
+	* gcc.target/arm/mve/intrinsics/vcreateq_s8.c: Tighten test.
+	* gcc.target/arm/mve/intrinsics/vcreateq_u16.c: Tighten test.
+	* gcc.target/arm/mve/intrinsics/vcreateq_u32.c: Tighten test.
+	* gcc.target/arm/mve/intrinsics/vcreateq_u64.c: Tighten test.
+	* gcc.target/arm/mve/intrinsics/vcreateq_u8.c: Tighten test.
+
+2023-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109384
+	* gcc.target/riscv/arch-19.c: Expect a different message about zfinx
+	vs. f conflict.
+
+2023-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109304
+	* gcc.dg/pr109304.c: New testcase.
+
+2023-04-04  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/108699
+	* gcc.target/powerpc/p9-vparity.c: Add scan-assembler-not for vpopcntb
+	to distinguish parity byte from parity.
+	* gcc.target/powerpc/pr108699.c: New test.
+
+2023-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107484
+	* g++.dg/lookup/friend25.C: New test.
+
 2023-04-03  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/109300

@@ -1,3 +1,9 @@
+2023-04-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104349
+	* expr.cc (check_restricted): Adjust check for valid variables in
+	restricted expressions: make no exception for module variables.
+
 2023-04-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* dump-parse-tree.cc (get_c_type_name): Fix "long_long"

@@ -1,3 +1,79 @@
+2023-04-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* doc/md.texi (Including Patterns): Fix page break.
+
+2023-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109386
+	* range-op-float.cc (foperator_lt::op1_range, foperator_lt::op2_range,
+	foperator_le::op1_range, foperator_le::op2_range,
+	foperator_gt::op1_range, foperator_gt::op2_range,
+	foperator_ge::op1_range, foperator_ge::op2_range): Make r varying for
+	BRS_FALSE case even if the other op is maybe_isnan, not just
+	known_isnan.
+	(foperator_unordered_lt::op1_range, foperator_unordered_lt::op2_range,
+	foperator_unordered_le::op1_range, foperator_unordered_le::op2_range,
+	foperator_unordered_gt::op1_range, foperator_unordered_gt::op2_range,
+	foperator_unordered_ge::op1_range, foperator_unordered_ge::op2_range):
+	Make r varying for BRS_TRUE case even if the other op is maybe_isnan,
+	not just known_isnan.
+
+2023-04-04  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/109107
+	* fold-const.cc (fold_binary_loc): Use TYPE_OVERFLOW_SANITIZED
+	when associating.
+	* match.pd: Use TYPE_OVERFLOW_SANITIZED.
+
+2023-04-04  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/arm/mve.md (mve_vcvtq_n_to_f_<supf><mode>): Swap operands.
+	(mve_vcreateq_f<mode>): Swap operands.
+
+2023-04-04  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (one_cmpl<mode>2<exec>): New.
+
+2023-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109384
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::parse):
+	Reword diagnostics about zfinx conflict with f, formatting fixes.
+
+2023-04-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2.h (LIB_SPEC): Don't link with -lpthread.
+
+2023-04-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109304
+	* tree-profile.cc (tree_profiling): Use symtab node
+	availability to decide whether to skip adjusting calls.
+	Do not adjust calls to internal functions.
+
+2023-04-04  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/108807
+	* config/rs6000/rs6000.cc (rs6000_expand_vector_set_var_p9): Fix gen
+	function for permutation control vector by considering big endianness.
+
+2023-04-04  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/108699
+	* config/rs6000/altivec.md (*p9v_parity<mode>2): Rename to ...
+	(rs6000_vprtyb<mode>2): ... this.
+	* config/rs6000/rs6000-builtins.def (VPRTYBD): Replace parityv2di2 with
+	rs6000_vprtybv2di2.
+	(VPRTYBW): Replace parityv4si2 with rs6000_vprtybv4si2.
+	(VPRTYBQ): Replace parityv1ti2 with rs6000_vprtybv1ti2.
+	* config/rs6000/vector.md (parity<mode>2 with VEC_IP): Expand with
+	popcountv16qi2 and the corresponding rs6000_vprtyb<mode>2.
+
+2023-04-04  Hans-Peter Nilsson  <hp@axis.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/md.texi (Insn Splitting): Tweak wording for readability.
+
 2023-04-03  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/109303

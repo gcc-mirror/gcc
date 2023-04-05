@@ -1,3 +1,8 @@
+2023-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107484
+	* decl2.cc (find_last_decl): Return early if DECL_USE_TEMPLATE.
+
 2023-04-03  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/109300
