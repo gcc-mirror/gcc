@@ -2683,7 +2683,13 @@ pass_vsetvl::compute_local_backward_infos (const bb_info *bb)
 	      if (!(propagate_avl_across_demands_p (change, info)
 		    && !reg_available_p (insn, change))
 		  && change.compatible_p (info))
-		info = change.merge (info);
+		{
+		  info = change.merge (info);
+		  /* Fix PR109399, we should update user vsetvl instruction
+		     if there is a change in demand fusion.  */
+		  if (vsetvl_insn_p (insn->rtl ()))
+		    change_vsetvl_insn (insn, info);
+		}
 	    }
 	  change = info;
 	}
