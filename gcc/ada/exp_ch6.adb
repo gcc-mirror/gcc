@@ -6641,6 +6641,13 @@ package body Exp_Ch6 is
       if Is_Boolean_Type (Exp_Typ) and then Nonzero_Is_True (Exp_Typ) then
          Adjust_Condition (Exp);
          Adjust_Result_Type (Exp, Exp_Typ);
+
+         --  The adjustment of the expression may have rewritten the return
+         --  statement itself, e.g. when it is turned into an if expression.
+
+         if Nkind (N) /= N_Simple_Return_Statement then
+            return;
+         end if;
       end if;
 
       --  Do validity check if enabled for returns
