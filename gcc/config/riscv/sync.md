@@ -116,21 +116,22 @@
 	(unspec_volatile:SI
 	  [(any_atomic:SI (match_dup 1)
 		     (match_operand:SI 2 "register_operand" "rI")) ;; value for op
-	   (match_operand:SI 3 "register_operand" "rI")]	   ;; mask
+	   (match_operand:SI 3 "const_int_operand")]		   ;; model
 	 UNSPEC_SYNC_OLD_OP_SUBWORD))
-    (match_operand:SI 4 "register_operand" "rI")		   ;; not_mask
-    (clobber (match_scratch:SI 5 "=&r"))			   ;; tmp_1
-    (clobber (match_scratch:SI 6 "=&r"))]			   ;; tmp_2
+    (match_operand:SI 4 "register_operand" "rI")		   ;; mask
+    (match_operand:SI 5 "register_operand" "rI")		   ;; not_mask
+    (clobber (match_scratch:SI 6 "=&r"))			   ;; tmp_1
+    (clobber (match_scratch:SI 7 "=&r"))]			   ;; tmp_2
   "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
   {
     return "1:\;"
-	   "lr.w.aqrl\t%0, %1\;"
-	   "<insn>\t%5, %0, %2\;"
-	   "and\t%5, %5, %3\;"
-	   "and\t%6, %0, %4\;"
-	   "or\t%6, %6, %5\;"
-	   "sc.w.rl\t%5, %6, %1\;"
-	   "bnez\t%5, 1b";
+	   "lr.w%I3\t%0, %1\;"
+	   "<insn>\t%6, %0, %2\;"
+	   "and\t%6, %6, %4\;"
+	   "and\t%7, %0, %5\;"
+	   "or\t%7, %7, %6\;"
+	   "sc.w%J3\t%6, %7, %1\;"
+	   "bnez\t%6, 1b";
   }
   [(set (attr "length") (const_int 28))])
 
@@ -151,6 +152,7 @@
   rtx old = gen_reg_rtx (SImode);
   rtx mem = operands[1];
   rtx value = operands[2];
+  rtx model = operands[3];
   rtx aligned_mem = gen_reg_rtx (SImode);
   rtx shift = gen_reg_rtx (SImode);
   rtx mask = gen_reg_rtx (SImode);
@@ -162,7 +164,7 @@
   riscv_lshift_subword (<MODE>mode, value, shift, &shifted_value);
 
   emit_insn (gen_subword_atomic_fetch_strong_nand (old, aligned_mem,
-						   shifted_value,
+						   shifted_value, model,
 						   mask, not_mask));
 
   emit_move_insn (old, gen_rtx_ASHIFTRT (SImode, old,
@@ -180,22 +182,23 @@
 	(unspec_volatile:SI
 	  [(not:SI (and:SI (match_dup 1)
 			   (match_operand:SI 2 "register_operand" "rI"))) ;; value for op
-	   (match_operand:SI 3 "register_operand" "rI")]		  ;; mask
+	   (match_operand:SI 3 "const_int_operand")]			  ;; mask
 	 UNSPEC_SYNC_OLD_OP_SUBWORD))
-    (match_operand:SI 4 "register_operand" "rI")			  ;; not_mask
-    (clobber (match_scratch:SI 5 "=&r"))				  ;; tmp_1
-    (clobber (match_scratch:SI 6 "=&r"))]				  ;; tmp_2
+    (match_operand:SI 4 "register_operand" "rI")			  ;; mask
+    (match_operand:SI 5 "register_operand" "rI")			  ;; not_mask
+    (clobber (match_scratch:SI 6 "=&r"))				  ;; tmp_1
+    (clobber (match_scratch:SI 7 "=&r"))]				  ;; tmp_2
   "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
   {
     return "1:\;"
-	   "lr.w.aqrl\t%0, %1\;"
-	   "and\t%5, %0, %2\;"
-	   "not\t%5, %5\;"
-	   "and\t%5, %5, %3\;"
-	   "and\t%6, %0, %4\;"
-	   "or\t%6, %6, %5\;"
-	   "sc.w.rl\t%5, %6, %1\;"
-	   "bnez\t%5, 1b";
+	   "lr.w%I3\t%0, %1\;"
+	   "and\t%6, %0, %2\;"
+	   "not\t%6, %6\;"
+	   "and\t%6, %6, %4\;"
+	   "and\t%7, %0, %5\;"
+	   "or\t%7, %7, %6\;"
+	   "sc.w%J3\t%6, %7, %1\;"
+	   "bnez\t%6, 1b";
   }
   [(set (attr "length") (const_int 32))])
 
@@ -216,6 +219,7 @@
   rtx old = gen_reg_rtx (SImode);
   rtx mem = operands[1];
   rtx value = operands[2];
+  rtx model = operands[3];
   rtx aligned_mem = gen_reg_rtx (SImode);
   rtx shift = gen_reg_rtx (SImode);
   rtx mask = gen_reg_rtx (SImode);
@@ -228,7 +232,8 @@
 
   emit_insn (gen_subword_atomic_fetch_strong_<atomic_optab> (old, aligned_mem,
 							     shifted_value,
-							     mask, not_mask));
+							     model, mask,
+							     not_mask));
 
   emit_move_insn (old, gen_rtx_ASHIFTRT (SImode, old,
 					 gen_lowpart (QImode, shift)));
@@ -261,6 +266,7 @@
   rtx old = gen_reg_rtx (SImode);
   rtx mem = operands[1];
   rtx value = operands[2];
+  rtx model = operands[3];
   rtx aligned_mem = gen_reg_rtx (SImode);
   rtx shift = gen_reg_rtx (SImode);
   rtx mask = gen_reg_rtx (SImode);
@@ -272,7 +278,8 @@
   riscv_lshift_subword (<MODE>mode, value, shift, &shifted_value);
 
   emit_insn (gen_subword_atomic_exchange_strong (old, aligned_mem,
-						 shifted_value, not_mask));
+						 shifted_value, model,
+						 not_mask));
 
   emit_move_insn (old, gen_rtx_ASHIFTRT (SImode, old,
 					 gen_lowpart (QImode, shift)));
@@ -286,18 +293,19 @@
 	(match_operand:SI 1 "memory_operand" "+A"))	 ;; mem location
    (set (match_dup 1)
 	(unspec_volatile:SI
-	  [(match_operand:SI 2 "reg_or_0_operand" "rI")  ;; value
-	   (match_operand:SI 3 "reg_or_0_operand" "rI")] ;; not_mask
+	  [(match_operand:SI 2 "reg_or_0_operand" "rI")	 ;; value
+	   (match_operand:SI 3 "const_int_operand")]	 ;; model
       UNSPEC_SYNC_EXCHANGE_SUBWORD))
-    (clobber (match_scratch:SI 4 "=&r"))]		 ;; tmp_1
+    (match_operand:SI 4 "reg_or_0_operand" "rI")	 ;; not_mask
+    (clobber (match_scratch:SI 5 "=&r"))]		 ;; tmp_1
   "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
   {
     return "1:\;"
-	   "lr.w.aqrl\t%0, %1\;"
-	   "and\t%4, %0, %3\;"
-	   "or\t%4, %4, %2\;"
-	   "sc.w.rl\t%4, %4, %1\;"
-	   "bnez\t%4, 1b";
+	   "lr.w%I3\t%0, %1\;"
+	   "and\t%5, %0, %4\;"
+	   "or\t%5, %5, %2\;"
+	   "sc.w%J3\t%5, %5, %1\;"
+	   "bnez\t%5, 1b";
   }
   [(set (attr "length") (const_int 20))])
 
@@ -313,10 +321,15 @@
    (clobber (match_scratch:GPR 6 "=&r"))]
   "TARGET_ATOMIC"
   {
+    enum memmodel model_success = (enum memmodel) INTVAL (operands[4]);
+    enum memmodel model_failure = (enum memmodel) INTVAL (operands[5]);
+    /* Find the union of the two memory models so we can satisfy both success
+       and failure memory models.  */
+    operands[5] = GEN_INT (riscv_union_memmodels (model_success, model_failure));
     return "1:\;"
-	   "lr.<amo>.aqrl\t%0,%1\;"
+	   "lr.<amo>%I5\t%0,%1\;"
 	   "bne\t%0,%z2,1f\;"
-	   "sc.<amo>.rl\t%6,%z3,%1\;"
+	   "sc.<amo>%J5\t%6,%z3,%1\;"
 	   "bnez\t%6,1b\;"
 	   "1:";
   }
@@ -440,9 +453,15 @@
   emit_move_insn (shifted_o, gen_rtx_AND (SImode, shifted_o, mask));
   emit_move_insn (shifted_n, gen_rtx_AND (SImode, shifted_n, mask));
 
+  enum memmodel model_success = (enum memmodel) INTVAL (operands[4]);
+  enum memmodel model_failure = (enum memmodel) INTVAL (operands[5]);
+  /* Find the union of the two memory models so we can satisfy both success
+     and failure memory models.  */
+  rtx model = GEN_INT (riscv_union_memmodels (model_success, model_failure));
+
   emit_insn (gen_subword_atomic_cas_strong (old, aligned_mem,
 					    shifted_o, shifted_n,
-					    mask, not_mask));
+					    model, mask, not_mask));
 
   emit_move_insn (old, gen_rtx_ASHIFTRT (SImode, old,
 					 gen_lowpart (QImode, shift)));
@@ -459,19 +478,20 @@
 	(unspec_volatile:SI [(match_operand:SI 2 "reg_or_0_operand" "rJ")  ;; expected value
 			     (match_operand:SI 3 "reg_or_0_operand" "rJ")] ;; desired value
 	 UNSPEC_COMPARE_AND_SWAP_SUBWORD))
-	(match_operand:SI 4 "register_operand" "rI")			   ;; mask
-	(match_operand:SI 5 "register_operand" "rI")			   ;; not_mask
-	(clobber (match_scratch:SI 6 "=&r"))]				   ;; tmp_1
+	(match_operand:SI 4 "const_int_operand")			   ;; model
+	(match_operand:SI 5 "register_operand" "rI")			   ;; mask
+	(match_operand:SI 6 "register_operand" "rI")			   ;; not_mask
+	(clobber (match_scratch:SI 7 "=&r"))]				   ;; tmp_1
   "TARGET_ATOMIC && TARGET_INLINE_SUBWORD_ATOMIC"
   {
     return "1:\;"
-	   "lr.w.aqrl\t%0, %1\;"
-	   "and\t%6, %0, %4\;"
-	   "bne\t%6, %z2, 1f\;"
-	   "and\t%6, %0, %5\;"
-	   "or\t%6, %6, %3\;"
-	   "sc.w.rl\t%6, %6, %1\;"
-	   "bnez\t%6, 1b\;"
+	   "lr.w%I4\t%0, %1\;"
+	   "and\t%7, %0, %5\;"
+	   "bne\t%7, %z2, 1f\;"
+	   "and\t%7, %0, %6\;"
+	   "or\t%7, %7, %3\;"
+	   "sc.w%J4\t%7, %7, %1\;"
+	   "bnez\t%7, 1b\;"
 	   "1:";
   }
   [(set (attr "length") (const_int 28))])
