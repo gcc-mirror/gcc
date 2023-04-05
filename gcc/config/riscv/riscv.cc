@@ -4304,14 +4304,11 @@ riscv_memmodel_needs_amo_acquire (enum memmodel model)
     {
       case MEMMODEL_ACQ_REL:
       case MEMMODEL_SEQ_CST:
-      case MEMMODEL_SYNC_SEQ_CST:
       case MEMMODEL_ACQUIRE:
       case MEMMODEL_CONSUME:
-      case MEMMODEL_SYNC_ACQUIRE:
 	return true;
 
       case MEMMODEL_RELEASE:
-      case MEMMODEL_SYNC_RELEASE:
       case MEMMODEL_RELAXED:
 	return false;
 
@@ -4330,14 +4327,11 @@ riscv_memmodel_needs_release_fence (enum memmodel model)
     {
       case MEMMODEL_ACQ_REL:
       case MEMMODEL_SEQ_CST:
-      case MEMMODEL_SYNC_SEQ_CST:
       case MEMMODEL_RELEASE:
-      case MEMMODEL_SYNC_RELEASE:
 	return true;
 
       case MEMMODEL_ACQUIRE:
       case MEMMODEL_CONSUME:
-      case MEMMODEL_SYNC_ACQUIRE:
       case MEMMODEL_RELAXED:
 	return false;
 
@@ -4376,6 +4370,7 @@ riscv_print_operand (FILE *file, rtx op, int letter)
     }
   machine_mode mode = GET_MODE (op);
   enum rtx_code code = GET_CODE (op);
+  const enum memmodel model = memmodel_base (INTVAL (op));
 
   switch (letter)
     {
@@ -4513,12 +4508,12 @@ riscv_print_operand (FILE *file, rtx op, int letter)
       break;
 
     case 'A':
-      if (riscv_memmodel_needs_amo_acquire ((enum memmodel) INTVAL (op)))
+      if (riscv_memmodel_needs_amo_acquire (model))
 	fputs (".aq", file);
       break;
 
     case 'F':
-      if (riscv_memmodel_needs_release_fence ((enum memmodel) INTVAL (op)))
+      if (riscv_memmodel_needs_release_fence (model))
 	fputs ("fence iorw,ow; ", file);
       break;
 
