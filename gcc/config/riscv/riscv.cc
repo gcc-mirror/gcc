@@ -4498,8 +4498,13 @@ riscv_print_operand (FILE *file, rtx op, int letter)
       break;
 
     case 'A':
-      if (riscv_memmodel_needs_amo_acquire (model))
+      if (riscv_memmodel_needs_amo_acquire (model)
+	  && riscv_memmodel_needs_release_fence (model))
+	fputs (".aqrl", file);
+      else if (riscv_memmodel_needs_amo_acquire (model))
 	fputs (".aq", file);
+      else if (riscv_memmodel_needs_release_fence (model))
+	fputs (".rl", file);
       break;
 
     case 'F':
