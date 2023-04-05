@@ -2261,6 +2261,16 @@ Parser<ManagedTokenSource>::parse_macro_match_repetition ()
     case QUESTION_MARK:
       op = AST::MacroMatchRepetition::ZERO_OR_ONE;
       lexer.skip_token ();
+
+      if (separator != nullptr)
+	{
+	  add_error (
+	    Error (separator->get_locus (),
+		   "the %<?%> macro repetition operator does not take a "
+		   "separator"));
+	  separator = nullptr;
+	}
+
       break;
     default:
       add_error (
