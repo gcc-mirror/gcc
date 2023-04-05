@@ -4317,11 +4317,11 @@ riscv_memmodel_needs_amo_acquire (enum memmodel model)
     }
 }
 
-/* Return true if a FENCE should be emitted to before a memory access to
-   implement the release portion of memory model MODEL.  */
+/* Return true if the .RL suffix should be added to an AMO to implement the
+   release portion of memory model MODEL.  */
 
 static bool
-riscv_memmodel_needs_release_fence (enum memmodel model)
+riscv_memmodel_needs_amo_release (enum memmodel model)
 {
   switch (model)
     {
@@ -4347,7 +4347,6 @@ riscv_memmodel_needs_release_fence (enum memmodel model)
    'R'	Print the low-part relocation associated with OP.
    'C'	Print the integer branch condition for comparison OP.
    'A'	Print the atomic operation suffix for memory model OP.
-   'F'	Print a FENCE if the memory model requires a release.
    'z'	Print x0 if OP is zero, otherwise print OP normally.
    'i'	Print i if the operand is not a register.
    'S'	Print shift-index of single-bit mask OP.
@@ -4509,17 +4508,12 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 
     case 'A':
       if (riscv_memmodel_needs_amo_acquire (model)
-	  && riscv_memmodel_needs_release_fence (model))
+	  && riscv_memmodel_needs_amo_release (model))
 	fputs (".aqrl", file);
       else if (riscv_memmodel_needs_amo_acquire (model))
 	fputs (".aq", file);
-      else if (riscv_memmodel_needs_release_fence (model))
+      else if (riscv_memmodel_needs_amo_release (model))
 	fputs (".rl", file);
-      break;
-
-    case 'F':
-      if (riscv_memmodel_needs_release_fence (model))
-	fputs ("fence iorw,ow; ", file);
       break;
 
     case 'i':
