@@ -1981,7 +1981,7 @@
 	riscv_vector::neg_simm5_p (operands[4]),
 	[] (rtx *operands, rtx boardcast_scalar) {
 	  emit_insn (gen_pred_sub<mode> (operands[0], operands[1],
-	       operands[2], operands[3], boardcast_scalar, operands[5],
+	       operands[2], boardcast_scalar, operands[3], operands[5],
 	       operands[6], operands[7], operands[8]));
         }))
     DONE;
