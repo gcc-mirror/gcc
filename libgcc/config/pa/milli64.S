@@ -105,8 +105,10 @@ sar:	.reg	%cr11	/* Shift Amount Register */
 rp:	.reg    r2	/* return pointer */
 #ifdef pa64
 mrp:	.reg	r2 	/* millicode return pointer */
+#define RETURN_COLUMN	2
 #else
 mrp:	.reg	r31	/* millicode return pointer */
+#define RETURN_COLUMN	31
 #endif
 ret0:	.reg    r28	/* return value */
 ret1:	.reg    r29	/* return value (high part of double) */
@@ -313,6 +315,8 @@ RDEFINE(temp1,arg0)
 	.import $$divI_15,millicode
 	.export $$divI,millicode
 	.export	$$divoI,millicode
+	.cfi_startproc
+	.cfi_return_column RETURN_COLUMN
 	.proc
 	.callinfo	millicode
 	.entry
@@ -484,6 +488,7 @@ LSYM(negative1)
 	addo	arg0,arg1,r0	/*  trap iff dividend==0x80000000 && divisor==-1 */
 	.exit
 	.procend
+	.cfi_endproc
 	.end
 #endif
 
@@ -543,6 +548,8 @@ RDEFINE(temp1,arg0)
 	.import $$divU_12,millicode
 	.import $$divU_14,millicode
 	.import $$divU_15,millicode
+	.cfi_startproc
+	.cfi_return_column RETURN_COLUMN
 	.proc
 	.callinfo	millicode
 	.entry
@@ -706,6 +713,7 @@ LSYM(big_divisor)
 	addc	r0,r0,retreg
 	.exit
 	.procend
+	.cfi_endproc
 	.end
 #endif
 
@@ -750,6 +758,8 @@ RDEFINE(retreg,ret1)
 
 	SUBSPA_MILLI
 	ATTR_MILLI
+	.cfi_startproc
+	.cfi_return_column RETURN_COLUMN
 	.proc
 	.callinfo millicode
 	.entry
@@ -875,6 +885,7 @@ LSYM(finish)
 	nop
 	.exit
 	.procend
+	.cfi_endproc
 #ifdef milliext
 	.origin 0x00000200
 #endif
@@ -922,6 +933,8 @@ RDEFINE(rmndr,ret1)	/*  r29 */
 	SUBSPA_MILLI
 	ATTR_MILLI
 	.export $$remU,millicode
+	.cfi_startproc
+	.cfi_return_column RETURN_COLUMN
 	.proc
 	.callinfo	millicode
 	.entry
@@ -1013,6 +1026,7 @@ LSYM(special_case)
 	nop
 	.exit
 	.procend
+	.cfi_endproc
 	.end
 #endif
 
