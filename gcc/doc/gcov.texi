@@ -195,7 +195,7 @@ Structure of the JSON is following:
 @{
   "current_working_directory": "foo/bar",
   "data_file": "a.out",
-  "format_version": "1",
+  "format_version": "2",
   "gcc_version": "11.1.1 20210510"
   "files": ["$file"]
 @}
@@ -213,6 +213,12 @@ a compilation unit was compiled
 
 @item
 @var{format_version}: semantic version of the format
+
+Changes in version @emph{2}:
+@itemize @bullet
+@item
+@var{calls}: information about function calls is added
+@end itemize
 
 @item
 @var{gcc_version}: version of the GCC compiler
@@ -291,7 +297,9 @@ Each @var{line} has the following form:
 
 @smallexample
 @{
+  "block_ids": ["$block_id"],
   "branches": ["$branch"],
+  "calls": ["$call"],
   "count": 2,
   "line_number": 15,
   "unexecuted_block": false,
@@ -299,10 +307,13 @@ Each @var{line} has the following form:
 @}
 @end smallexample
 
-Branches are present only with @var{-b} option.
+Branches and calls are present only with @var{-b} option.
 Fields of the @var{line} element have following semantics:
 
 @itemize @bullet
+@item
+@var{block_ids}: IDs of basic blocks that belong to the line
+
 @item
 @var{count}: number of executions of the line
 
@@ -323,7 +334,9 @@ Each @var{branch} has the following form:
 @smallexample
 @{
   "count": 11,
+  "destination_block_id": 17,
   "fallthrough": true,
+  "source_block_id": 13,
   "throw": false
 @}
 @end smallexample
@@ -339,6 +352,36 @@ Fields of the @var{branch} element have following semantics:
 
 @item
 @var{throw}: true when the branch is an exceptional branch
+
+@item
+@var{isource_block_id}: ID of the basic block where this branch happens
+
+@item
+@var{destination_block_id}: ID of the basic block this branch jumps to
+@end itemize
+
+Each @var{call} has the following form:
+
+@smallexample
+@{
+  "destination_block_id": 1,
+  "returned": 11,
+  "source_block_id": 13
+@}
+@end smallexample
+
+Fields of the @var{call} element have following semantics:
+
+@itemize @bullet
+@item
+@var{returned}: number of times a function call returned (call count is equal
+to @var{line::count})
+
+@item
+@var{isource_block_id}: ID of the basic block where this call happens
+
+@item
+@var{destination_block_id}: ID of the basic block this calls continues after return
 @end itemize
 
 @item -H

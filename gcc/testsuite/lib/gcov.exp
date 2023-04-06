@@ -274,7 +274,7 @@ proc run-gcov-pytest { args } {
 
     verbose "Running $GCOV $testcase in $srcdir/$subdir" 2
     set testcase [remote_download host $testcase]
-    set result [remote_exec host $GCOV "$testcase -i"]
+    set result [remote_exec host $GCOV "$testcase -i -abc"]
 
     set pytest_script [lindex $args 1]
     if { ![check_effective_target_pytest3] } {
