@@ -271,6 +271,7 @@ check in changes outside of the parts of the compiler they maintain.
 arc port		Claudiu Zissulescu	<claziss@synopsys.com>
 callgraph		Martin Jambor		<mjambor@suse.cz>
 C front end		Marek Polacek		<polacek@redhat.com>
+CTF, BTF		Indu Bhagat		<indu.bhagat@oracle.com>
 CTF, BTF		David Faust		<david.faust@oracle.com>
 dataflow		Paolo Bonzini		<bonzini@gnu.org>
 dataflow		Seongbae Park		<seongbae.park@gmail.com>
@@ -340,7 +341,6 @@ Andrew Benson					<abensonca@gmail.com>
 Daniel Berlin					<dberlin@dberlin.org>
 Pat Bernardi					<bernardi@adacore.com>
 Jan Beulich					<jbeulich@novell.com>
-Indu Bhagat					<indu.bhagat@oracle.com>
 David Billinghurst				<David.Billinghurst@riotinto.com>
 Tomas Bily					<tbily@suse.cz>
 Laurynas Biveinis				<laurynas.biveinis@gmail.com>
