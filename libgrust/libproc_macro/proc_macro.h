@@ -23,4 +23,6 @@
 #ifndef PROC_MACRO_H
 #define PROC_MACRO_H
 
+#include "literal.h"
+
 #endif /* ! PROC_MACRO_H */
