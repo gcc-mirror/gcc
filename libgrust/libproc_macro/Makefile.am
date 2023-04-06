@@ -51,7 +51,8 @@ AM_MAKEFLAGS = \
 toolexeclib_LTLIBRARIES = libproc_macro.la
 
 libproc_macro_la_SOURCES = \
-	proc_macro.cc
+	proc_macro.cc \
+	literal.cc
 
 include_HEADERS = \
 	proc_macro.h

@@ -158,4 +158,19 @@ struct Literal
   LiteralPayload payload;
 };
 
+extern "C" {
+void
+Literal__drop (Literal *lit);
+
+Literal
+Literal__string (const unsigned char *str, std::uint64_t len);
+
+Literal
+Literal__byte_string (const std::uint8_t *bytes, std::uint64_t len);
+
+bool
+Literal__from_string (const unsigned char *str, std::uint64_t len,
+		      Literal *lit);
+}
+
 #endif /* ! LITERAL_H */
