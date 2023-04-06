@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-dump.h"
+#include "rust-expr.h"
 
 namespace Rust {
 namespace AST {
@@ -1916,5 +1917,21 @@ Dump::visit (BareFunctionType &type)
     }
 }
 
+void
+Dump::debug (Visitable &v)
+{
+  auto dump = Dump (std::cerr);
+
+  std::cerr << '\n';
+  v.accept_vis (dump);
+  std::cerr << '\n';
+}
+
 } // namespace AST
 } // namespace Rust
+
+void
+debug (Rust::AST::Visitable &v)
+{
+  Rust::AST::Dump::debug (v);
+}
