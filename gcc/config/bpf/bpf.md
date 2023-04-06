@@ -45,6 +45,7 @@
   UNSPEC_AFXOR
   UNSPEC_AXCHG
   UNSPEC_ACMP
+  UNSPEC_CORE_RELOC
 ])
 
 ;;;; Constants
@@ -367,6 +368,8 @@
         ""
         "
 {
+  bpf_replace_core_move_operands (operands);
+
   if (!register_operand(operands[0], <MM:MODE>mode)
       && !register_operand(operands[1], <MM:MODE>mode))
     operands[1] = force_reg (<MM:MODE>mode, operands[1]);
@@ -383,6 +386,20 @@
    {stx<mop>\t%0,%1|*(<smop> *) (%0) = %1}
    {st<mop>\t%0,%1|*(<smop> *) (%0) = %1}"
 [(set_attr "type" "ldx,alu,alu,stx,st")])
+
+(define_insn "mov_reloc_core<MM:mode>"
+  [(set (match_operand:MM 0 "nonimmediate_operand" "=r,q,r")
+	(unspec:MM [
+	  (match_operand:MM 1 "immediate_operand"  " I,I,B")
+	  (match_operand:SI 2 "immediate_operand"  " I,I,I")
+	 ] UNSPEC_CORE_RELOC)
+   )]
+  ""
+  "@
+   *return bpf_add_core_reloc (operands, \"{mov\t%0,%1|%0 = %1}\");
+   *return bpf_add_core_reloc (operands, \"{st<mop>\t%0,%1|*(<smop> *) (%0) = %1}\");
+   *return bpf_add_core_reloc (operands, \"{lddw\t%0,%1|%0 = %1 ll}\");"
+  [(set_attr "type" "alu,st,alu")])
 
 ;;;; Shifts
 
