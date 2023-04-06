@@ -1,3 +1,31 @@
+2023-04-05  Jeff Law  <jlaw@ventanamicro>
+
+	PR target/108892
+	* combine.cc (combine_instructions): Force re-recognition when
+	after restoring the body of an insn to its original form.
+
+2023-04-05  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/108959
+	* ipa-sra.cc (zap_useless_ipcp_results): New function.
+	(process_isra_node_results): Call it.
+
+2023-04-05  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Fix incorrect operand order.
+
+2023-04-05  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc
+	(pass_vsetvl::compute_local_backward_infos): Update user vsetvl in local
+	demand fusion.
+
+2023-04-05  Li Xu  <xuli1@eswincomputing.com>
+
+	* config/riscv/riscv-vector-builtins.def: Fix typo.
+	* config/riscv/riscv.cc (riscv_dwarf_poly_indeterminate_value): Ditto.
+	* config/riscv/vector-iterators.md: Ditto.
+
 2023-04-04  Hans-Peter Nilsson  <hp@axis.com>
 
 	* doc/md.texi (Including Patterns): Fix page break.

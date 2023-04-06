@@ -1,3 +1,12 @@
+2023-04-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/109374
+	* config/pa/milli64.S (RETURN_COLUMN): Define.
+	($$divI): Add CFI directives.
+	($$divU): Likewise.
+	($$remI): Likewise.
+	($$remU): Likewise.
+
 2023-03-19  Stafford Horne  <shorne@gmail.com>
 
 	* config/or1k/sfp-machine.h (FP_HANDLE_EXCEPTIONS): Remove

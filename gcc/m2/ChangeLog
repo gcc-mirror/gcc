@@ -1,3 +1,35 @@
+2023-04-05  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109423
+	* gm2-compiler/M2Base.def (Unbounded): Remove.
+	* gm2-compiler/M2Error.def (ErrorAbort0): Add noreturn
+	attribute.
+	* gm2-compiler/M2Quads.mod (BuildInclProcedure): Correct
+	error format string.
+	(BuildExceptProcedure): Correct error format string.
+	(BuildAdrFunction): Call PutWriteQuad when taking the
+	address of a variable.
+	* gm2-libs-ch/SysExceptions.c (_M2_SysExceptions_init): Add
+	parameters.
+	* gm2-libs-ch/wrapc.c (_M2_wrapc_init): Add parameters.
+	* gm2-libs/DynamicStrings.mod (DumpStringInfo): Remove t.
+	(PopAllocationExemption): Remove f.
+	* gm2-libs/FIO.mod (BufferedWrite): Remove result.
+	* gm2-libs/FormatStrings.mod (Copy): Remove endpos and
+	afterperc.
+	(HandlePercent): Remove result.
+	* gm2-libs/Indexing.mod (RemoveIndiceFromIndex): Remove k.
+	* gm2-libs/M2Dependent.mod (CreateModule): Remove p0
+	and p1.
+	(DumpModuleData): Remove mptr.
+	(ConstructModules): Remove nulp.
+	* gm2-libs/RTExceptions.mod (PopHandler): Remove i.
+	* gm2-libs/RTint.mod (Listen): Remove b4s, b4m, afs
+	and afm.
+	* gm2-libs/SFIO.mod (ReadS): Remove c.
+	* gm2-libs/StringConvert.mod (doDecimalPlaces): Remove
+	whole and fraction.
+
 2023-04-03  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109388

@@ -1,3 +1,27 @@
+2023-04-05  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109423
+	* gm2/pim/fail/setunknown.mod: New test.
+	* gm2/pim/fail/setunknown2.mod: New test.
+
+2023-04-05  Jeff Law  <jlaw@ventanamicro>
+
+	PR target/108892
+	* gcc.c-torture/compile/pr108892.c: New test.
+
+2023-04-05  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/108959
+	* gcc.dg/ipa/pr108959.c: New test.
+
+2023-04-05  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* g++.target/riscv/rvv/base/bug-23.C: New test.
+
+2023-04-05  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/pr109399.c: New test.
+
 2023-04-04  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/104349

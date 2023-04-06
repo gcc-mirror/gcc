@@ -1,3 +1,78 @@
+2023-04-05  Arsen Arsenović  <arsen@aarsen.me>
+
+	* include/precompiled/stdc++.h (C++17): Don't double-include
+	<charconv>, once with wrong conditions.
+	* testsuite/18_support/96817.cc: Require hosted.
+	* testsuite/18_support/bad_exception/59392.cc: Ditto.
+	* testsuite/20_util/scoped_allocator/108952.cc: Ditto.
+	* testsuite/20_util/uses_allocator/lwg3527.cc: Ditto.
+	* testsuite/29_atomics/atomic/operators/pointer_partial_void.cc:
+	Ditto.
+
+2023-04-05  Arsen Arsenović  <arsen@aarsen.me>
+
+	* include/bits/c++config: When __STDC_HOSTED__ is zero,
+	disable _GLIBCXX_DEBUG and, if it was set, enable
+	_GLIBCXX_ASSERTIONS.
+	* testsuite/lib/libstdc++.exp (check_v3_target_debug_mode):
+	Include <bits/c++config.h> when determining whether debug is
+	set, in order to inherit the logic from above
+
+2023-04-05  Arsen Arsenović  <arsen@aarsen.me>
+
+	* testsuite/17_intro/versionconflict.cc: New test.
+	* include/std/version: Allow disabling the system_header pragma
+	via _GLIBCXX_TESTING_SYSHDR.
+
+2023-04-05  Arsen Arsenović  <arsen@aarsen.me>
+
+	* include/bits/unique_ptr.h (__cpp_lib_constexpr_memory):
+	Synchronize the definition block with...
+	* include/bits/ptr_traits.h (__cpp_lib_constexpr_memory):
+	... this one here.  Also define the 202202L value, rather than
+	leaving it up to purely unique_ptr.h, so that the value is
+	synchronized across all headers.
+	(__gnu_debug::_Safe_iterator_base): Move into new conditional
+	block.
+	* include/std/memory (__cpp_lib_atomic_value_initialization):
+	Define on freestanding under the same conditions as in
+	atomic_base.h.
+	* include/std/version (__cpp_lib_robust_nonmodifying_seq_ops):
+	Also define on freestanding.
+	(__cpp_lib_to_chars): Ditto.
+	(__cpp_lib_gcd): Ditto.
+	(__cpp_lib_gcd_lcm): Ditto.
+	(__cpp_lib_raw_memory_algorithms): Ditto.
+	(__cpp_lib_array_constexpr): Ditto.
+	(__cpp_lib_nonmember_container_access): Ditto.
+	(__cpp_lib_clamp): Ditto.
+	(__cpp_lib_constexpr_char_traits): Ditto.
+	(__cpp_lib_constexpr_string): Ditto.
+	(__cpp_lib_sample): Ditto.
+	(__cpp_lib_lcm): Ditto.
+	(__cpp_lib_constexpr_iterator): Ditto.
+	(__cpp_lib_constexpr_char_traits): Ditto.
+	(__cpp_lib_interpolate): Ditto.
+	(__cpp_lib_constexpr_utility): Ditto.
+	(__cpp_lib_shift): Ditto.
+	(__cpp_lib_ranges): Ditto.
+	(__cpp_lib_move_iterator_concept): Ditto.
+	(__cpp_lib_constexpr_numeric): Ditto.
+	(__cpp_lib_constexpr_functional): Ditto.
+	(__cpp_lib_constexpr_algorithms): Ditto.
+	(__cpp_lib_constexpr_tuple): Ditto.
+	(__cpp_lib_constexpr_memory): Ditto.
+
+2023-04-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/22_locale/locale/cons/12658_thread-2.cc: Double
+	timeout factor on hppa*-*-*.
+
+2023-04-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (sub_match::swap): New function.
+	* testsuite/28_regex/sub_match/lwg3204.cc: New test.
+
 2023-04-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/extensions.xml: Remove std::bad_exception from
