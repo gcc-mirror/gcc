@@ -179,6 +179,7 @@ fp-bit			Ian Lance Taylor	<ian@airs.com>
 libgcc			Ian Lance Taylor	<ian@airs.com>
 libgo			Ian Lance Taylor	<ian@airs.com>
 libgomp			Jakub Jelinek		<jakub@redhat.com>
+libgomp			Tobias Burnus		<tobias@codesourcery.com>
 libgomp (OpenACC)	Thomas Schwinge		<thomas@codesourcery.com>
 libiberty		Ian Lance Taylor	<ian@airs.com>
 libitm			Torvald Riegel		<triegel@redhat.com>
@@ -253,6 +254,7 @@ loop optimizer		Bin Cheng		<bin.cheng@linux.alibaba.com>
 OpenACC			Thomas Schwinge		<thomas@codesourcery.com>
 OpenACC			Tobias Burnus		<tobias@codesourcery.com>
 OpenMP			Jakub Jelinek		<jakub@redhat.com>
+OpenMP			Tobias Burnus		<tobias@codesourcery.com>
 testsuite		Rainer Orth		<ro@CeBiTec.Uni-Bielefeld.DE>
 testsuite		Mike Stump		<mikestump@comcast.net>
 register allocation	Vladimir Makarov	<vmakarov@redhat.com>
@@ -269,6 +271,7 @@ check in changes outside of the parts of the compiler they maintain.
 arc port		Claudiu Zissulescu	<claziss@synopsys.com>
 callgraph		Martin Jambor		<mjambor@suse.cz>
 C front end		Marek Polacek		<polacek@redhat.com>
+CTF, BTF		Indu Bhagat		<indu.bhagat@oracle.com>
 CTF, BTF		David Faust		<david.faust@oracle.com>
 dataflow		Paolo Bonzini		<bonzini@gnu.org>
 dataflow		Seongbae Park		<seongbae.park@gmail.com>
@@ -318,6 +321,7 @@ from other maintainers or reviewers.
 Mark G. Adams					<mark.g.adams@sympatico.ca>
 Pedro Alves					<palves@redhat.com>
 Paul-Antoine Arras				<pa@codesourcery.com>
+Arsen Arsenović		      	    		<arsen@aarsen.me>
 Raksit Ashok					<raksit@google.com>
 Matt Austern					<austern@google.com>
 David Ayers					<ayers@fsfe.org>
@@ -337,7 +341,6 @@ Andrew Benson					<abensonca@gmail.com>
 Daniel Berlin					<dberlin@dberlin.org>
 Pat Bernardi					<bernardi@adacore.com>
 Jan Beulich					<jbeulich@novell.com>
-Indu Bhagat					<indu.bhagat@oracle.com>
 David Billinghurst				<David.Billinghurst@riotinto.com>
 Tomas Bily					<tbily@suse.cz>
 Laurynas Biveinis				<laurynas.biveinis@gmail.com>

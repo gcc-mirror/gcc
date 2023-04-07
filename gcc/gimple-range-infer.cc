@@ -70,7 +70,7 @@ gimple_infer_range::check_assume_func (gcall *call)
   struct function *fun = DECL_STRUCT_FUNCTION (assume_id);
   if (!fun)
     return;
-  // Loop over arguments, matching them to the assume paramters.
+  // Loop over arguments, matching them to the assume parameters.
   for (arg = DECL_ARGUMENTS (assume_id), i = 1;
        arg && i < gimple_call_num_args (call);
        i++, arg = DECL_CHAIN (arg))
@@ -175,7 +175,7 @@ gimple_infer_range::gimple_infer_range (gimple *s)
 
 // -------------------------------------------------------------------------
 
-// This class is an element in the list of infered ranges.
+// This class is an element in the list of inferred ranges.
 
 class exit_range
 {

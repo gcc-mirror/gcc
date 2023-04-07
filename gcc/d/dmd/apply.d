@@ -75,7 +75,7 @@ private extern (C++) final class PostorderExpressionVisitor : StoppableVisitor
 public:
     StoppableVisitor v;
 
-    extern (D) this(StoppableVisitor v)
+    extern (D) this(StoppableVisitor v) scope
     {
         this.v = v;
     }

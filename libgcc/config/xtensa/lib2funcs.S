@@ -25,6 +25,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "xtensa-config-builtin.h"
 
+/* An executable stack is *not* required for these functions.  */
+#if defined(__ELF__) && defined(__linux__)
+.section .note.GNU-stack,"",%progbits
+.previous
+#endif
+
 /* __xtensa_libgcc_window_spill: This function flushes out all but the
    current register window.  This is used to set up the stack so that
    arbitrary frames can be accessed.  */

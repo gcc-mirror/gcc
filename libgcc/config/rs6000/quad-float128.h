@@ -27,21 +27,37 @@
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-/* quad.h defines the TFtype type by:
-   typedef float TFtype __attribute__ ((mode (TF)));
+/* Override the types for IEEE 128-bit scalar and complex.  We need to use the
+   same IEEE 128-bit type (either long double or _Float128) for both the
+   128-bit scalar type and for the base type in _Complex.  Otherwise, if
+   different types are used, there may be problems in mixing _Complex values
+   with the scalar value.
 
-   This define forces it to use KFmode (aka, ieee 128-bit floating point).
-   However, when the compiler's default is changed so that long double is IEEE
-   128-bit floating point, we need to go back to using TFmode and TCmode.  */
-#ifndef __LONG_DOUBLE_IEEE128__
-#define TF KF
+   We can't use _Compelx _float128 since GCC doesn't allow it.  It only allows
+   _Complex for _Float128 or for long double.
 
-/* We also need TCtype to represent complex ieee 128-bit float for
-   __mulkc3 and __divkc3.  */
-typedef __complex float TCtype __attribute__ ((mode (KC)));
+   We use _Float128 when long double is IBM double-double or 64-bit, and long
+   double when long double uses the IEEE 128-bit type.  We need to do this
+   because the compiler has a built-in prototype for __mulkc3 and __divkc3
+   using those types.  Since we are declaring these functions here, we need to
+   use the same type that the compiler uses (i.e. we can't just always use
+   _Float128).
+
+   Even though the type _Float128 and long double (when long double uses IEEE
+   128-bits) both hold IEEE 128-bit values, the front ends treat these as two
+   separate types.
+
+   The extension keyword __float128 is currently problematical because it can
+   either be a synonym for _Float128 (when long double is IBM) or for long
+   double (when long double is IEEE).  */
+
+#ifdef __LONG_DOUBLE_IEEE128__
+#define TFtype long double
+#define TCtype _Complex long double
 
 #else
-typedef __complex float TCtype __attribute__ ((mode (TC)));
+#define TFtype _Float128
+#define TCtype _Complex _Float128
 #endif
 
 /* Force the use of the VSX instruction set.  */

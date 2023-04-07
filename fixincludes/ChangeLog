@@ -1,3 +1,11 @@
+2023-03-28  Xi Ruoyao  <xry111@xry111.site>
+
+	PR other/109293
+	* configure.ac (AC_CHECK_DECLS): Add memmem.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* system.h (memmem): Declare if HAVE_DECL_MEMMEM is zero.
+
 2023-02-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* inclhack.def (solaris_math_12): Add bypass.

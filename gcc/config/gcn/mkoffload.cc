@@ -1082,6 +1082,9 @@ main (int argc, char **argv)
       if (verbose)
 	obstack_ptr_grow (&ld_argv_obstack, "-v");
 
+      if (save_temps)
+	obstack_ptr_grow (&ld_argv_obstack, "-save-temps");
+
       for (int i = 1; i < argc; i++)
 	if (startswith (argv[i], "-l")
 	    || startswith (argv[i], "-Wl")

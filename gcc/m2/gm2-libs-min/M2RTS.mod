@@ -30,16 +30,29 @@ IMPORT libc, SYSTEM ;
 (* we reference these to ensure they are dragged in to the link *)
 
 
-PROCEDURE ConstructModules (applicationmodule: ADDRESS;
+PROCEDURE ConstructModules (applicationmodule, libname: ADDRESS;
                             argc: INTEGER; argv, envp: ADDRESS) ;
 BEGIN
 END ConstructModules ;
 
 
-PROCEDURE DeconstructModules (applicationmodule: ADDRESS;
+PROCEDURE DeconstructModules (applicationmodule, libname: ADDRESS;
                               argc: INTEGER; argv, envp: ADDRESS) ;
 BEGIN
 END DeconstructModules ;
+
+
+(*
+   RegisterModule - adds module name to the list of outstanding
+                    modules which need to have their dependencies
+                    explored to determine initialization order.
+*)
+
+PROCEDURE RegisterModule (name, libname: ADDRESS;
+                          init, fini:  ArgCVEnvP;
+                          dependencies: PROC) ;
+BEGIN
+END RegisterModule ;
 
 
 (* all these procedures do nothing except satisfy the linker.  *)
@@ -65,27 +78,15 @@ BEGIN
 END NoException ;
 
 
-PROCEDURE RequestDependant (modulename, dependantmodule: ADDRESS) ;
+(*
+   RequestDependant - used to specify that modulename is dependant upon
+                      module dependantmodule.
+*)
+
+PROCEDURE RequestDependant (modulename, libname,
+                            dependantmodule, dependantlibname: ADDRESS) ;
 BEGIN
 END RequestDependant ;
 
-
-PROCEDURE ConstructModules (applicationmodule: ADDRESS;
-                            argc: INTEGER; argv, envp: ADDRESS) ;
-BEGIN
-END ConstructModules ;
-
-
-PROCEDURE DeconstructModules (applicationmodule: ADDRESS;
-                              argc: INTEGER; argv, envp: ADDRESS) ;
-BEGIN
-END DeconstructModules ;
-
-
-PROCEDURE RegisterModule (name: ADDRESS;
-                          init, fini:  ArgCVEnvP;
-                          dependencies: PROC) ;
-BEGIN
-END RegisterModule ;
 
 END M2RTS.

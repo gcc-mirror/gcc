@@ -152,18 +152,18 @@ program will generally cause it to misbehave or fail.
 @c man begin OPTIONS gccgo
 
 @table @gcctabopt
-@item -I@var{dir}
 @cindex @option{-I}
+@item -I@var{dir}
 Specify a directory to use when searching for an import package at
 compile time.
 
-@item -L@var{dir}
 @cindex @option{-L}
+@item -L@var{dir}
 When linking, specify a library search directory, as with
 @command{gcc}.
 
-@item -fgo-pkgpath=@var{string}
 @cindex @option{-fgo-pkgpath}
+@item -fgo-pkgpath=@var{string}
 Set the package path to use.  This sets the value returned by the
 PkgPath method of reflect.Type objects.  It is also used for the names
 of globally visible symbols.  The argument to this option should
@@ -171,8 +171,8 @@ normally be the string that will be used to import this package after
 it has been installed; in other words, a pathname within the
 directories specified by the @option{-I} option.
 
-@item -fgo-prefix=@var{string}
 @cindex @option{-fgo-prefix}
+@item -fgo-prefix=@var{string}
 An alternative to @option{-fgo-pkgpath}.  The argument will be
 combined with the package name from the source file to produce the
 package path.  If @option{-fgo-pkgpath} is used, @option{-fgo-prefix}
@@ -189,24 +189,24 @@ Using either @option{-fgo-pkgpath} or @option{-fgo-prefix} disables
 the special treatment of the @code{main} package and permits that
 package to be imported like any other.
 
-@item -fgo-relative-import-path=@var{dir}
 @cindex @option{-fgo-relative-import-path}
+@item -fgo-relative-import-path=@var{dir}
 A relative import is an import that starts with @file{./} or
 @file{../}.  If this option is used, @command{gccgo} will use
 @var{dir} as a prefix for the relative import when searching for it.
 
-@item -frequire-return-statement
-@itemx -fno-require-return-statement
 @cindex @option{-frequire-return-statement}
 @cindex @option{-fno-require-return-statement}
+@item -frequire-return-statement
+@itemx -fno-require-return-statement
 By default @command{gccgo} will warn about functions which have one or
 more return parameters but lack an explicit @code{return} statement.
 This warning may be disabled using
 @option{-fno-require-return-statement}.
 
-@item -fgo-check-divide-zero
 @cindex @option{-fgo-check-divide-zero}
 @cindex @option{-fno-go-check-divide-zero}
+@item -fgo-check-divide-zero
 Add explicit checks for division by zero.  In Go a division (or
 modulos) by zero causes a panic.  On Unix systems this is detected in
 the runtime by catching the @code{SIGFPE} signal.  Some processors,
@@ -217,9 +217,9 @@ systems, this option may be used.  Or the checks may be removed via
 default, but in the future may be off by default on systems that do
 not require it.
 
-@item -fgo-check-divide-overflow
 @cindex @option{-fgo-check-divide-overflow}
 @cindex @option{-fno-go-check-divide-overflow}
+@item -fgo-check-divide-overflow
 Add explicit checks for division overflow.  For example, division
 overflow occurs when computing @code{INT_MIN / -1}.  In Go this should
 be wrapped, to produce @code{INT_MIN}.  Some processors, such as x86,
@@ -229,41 +229,41 @@ may be used.  Or the checks may be removed via
 by default, but in the future may be off by default on systems that do
 not require it.
 
-@item -fno-go-optimize-allocs
 @cindex @option{-fno-go-optimize-allocs}
+@item -fno-go-optimize-allocs
 Disable escape analysis, which tries to allocate objects on the stack
 rather than the heap.
 
-@item -fgo-debug-escape@var{n}
 @cindex @option{-fgo-debug-escape}
+@item -fgo-debug-escape@var{n}
 Output escape analysis debugging information.  Larger values of
 @var{n} generate more information.
 
-@item -fgo-debug-escape-hash=@var{n}
 @cindex @option{-fgo-debug-escape-hash}
+@item -fgo-debug-escape-hash=@var{n}
 A hash value to debug escape analysis.  @var{n} is a binary string.
 This runs escape analysis only on functions whose names hash to values
 that match the given suffix @var{n}.  This can be used to binary
 search across functions to uncover escape analysis bugs.
 
-@item -fgo-debug-optimization
 @cindex @option{-fgo-debug-optimization}
 @cindex @option{-fno-go-debug-optimization}
+@item -fgo-debug-optimization
 Output optimization diagnostics.
 
-@item -fgo-c-header=@var{file}
 @cindex @option{-fgo-c-header}
+@item -fgo-c-header=@var{file}
 Write top-level named Go struct definitions to @var{file} as C code.
 This is used when compiling the runtime package.
 
-@item -fgo-compiling-runtime
 @cindex @option{-fgo-compiling-runtime}
+@item -fgo-compiling-runtime
 Apply special rules for compiling the runtime package.  Implicit
 memory allocation is forbidden.  Some additional compiler directives
 are supported.
 
-@item -fgo-embedcfg=@var{file}
 @cindex @option{-fgo-embedcfg}
+@item -fgo-embedcfg=@var{file}
 Identify a JSON file used to map patterns used with special
 @code{//go:embed} comments to the files named by the patterns.  The
 JSON file should have two components: @code{Patterns} maps each
@@ -271,8 +271,8 @@ pattern to a list of file names, and @code{Files} maps each file name
 to a full path to the file.  This option is intended for use by the
 @command{go} command to implement @code{//go:embed}.
 
-@item -g
 @cindex @option{-g for gccgo}
+@item -g
 This is the standard @command{gcc} option (@pxref{Debugging Options, ,
 Debugging Options, gcc, Using the GNU Compiler Collection (GCC)}).  It
 is mentioned here because by default @command{gccgo} turns on

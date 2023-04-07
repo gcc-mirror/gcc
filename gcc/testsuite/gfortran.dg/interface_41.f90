@@ -14,6 +14,6 @@ contains
    subroutine s
       type(t) :: x(2)
       real :: z
-      z = f(x)     ! { dg-error "Rank mismatch in argument" }
+      z = f(x)
    end
 end

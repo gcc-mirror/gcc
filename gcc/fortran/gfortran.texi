@@ -820,6 +820,7 @@ might in some way or another become visible to the programmer.
 * File operations on symbolic links::
 * File format of unformatted sequential files::
 * Asynchronous I/O::
+* Behavior on integer overflow::
 @end menu
 
 
@@ -1159,6 +1160,23 @@ sytems, such as Linux, it is necessary to specify @option{-pthread},
 
 @c Maybe this chapter should be merged with the 'Standards' section,
 @c whenever that is written :-)
+
+@node Behavior on integer overflow
+@section Behavior on integer overflow
+@cindex integer overflow
+@cindex overflow handling
+
+Integer overflow is prohibited by the Fortran standard.  The behavior
+of gfortran on integer overflow is undefined by default.  Traditional
+code, like linear congruential pseudo-random number generators in old
+programs that rely on specific, non-standard behavior may generate
+unexpected results.  The @option{-fsanitize=undefined} option can be
+used to detect such code at runtime.
+
+It is recommended to use the intrinsic subroutine @code{RANDOM_NUMBER}
+for random number generators or, if the old behavior is desired, to
+use the @option{-fwrapv} option.  Note that this option can impact
+performance.
 
 @node Extensions
 @chapter Extensions

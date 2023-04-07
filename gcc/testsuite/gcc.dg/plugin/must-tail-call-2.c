@@ -1,3 +1,4 @@
+/* { dg-do compile { target tail_call } } */
 /* Allow nested functions.  */
 /* { dg-options "-Wno-pedantic" } */
 

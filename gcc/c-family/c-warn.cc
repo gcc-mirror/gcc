@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "calls.h"
 #include "stor-layout.h"
 #include "tree-pretty-print.h"
+#include "langhooks.h"
 
 /* Print a warning if a constant expression had overflow in folding.
    Invoke this function on every expression that the language
@@ -2344,42 +2345,63 @@ warn_for_sign_compare (location_t location,
      have all bits set that are set in the ~ operand when it is
      extended.  */
 
-  op0 = c_common_get_narrower (op0, &unsignedp0);
-  op1 = c_common_get_narrower (op1, &unsignedp1);
+  /* bits0 is the bit index of op0 extended to result_type, which will
+     be always 0 and so all bits above it.  If there is a BIT_NOT_EXPR
+     in that operand possibly sign or zero extended to op0 and then
+     possibly further sign or zero extended to result_type, bits0 will
+     be the precision of result type if all the extensions involved
+     if any are sign extensions, and will be the place of the innermost
+     zero extension otherwise.  We warn only if BIT_NOT_EXPR's operand is
+     zero extended from some even smaller precision, in that case after
+     BIT_NOT_EXPR some bits below bits0 will be guaranteed to be set.
+     Similarly for bits1.  */
+  int bits0 = TYPE_PRECISION (result_type);
+  if (TYPE_UNSIGNED (TREE_TYPE (op0)))
+    bits0 = TYPE_PRECISION (TREE_TYPE (op0));
+  tree arg0 = c_common_get_narrower (op0, &unsignedp0);
+  if (TYPE_PRECISION (TREE_TYPE (arg0)) == TYPE_PRECISION (TREE_TYPE (op0)))
+    unsignedp0 = TYPE_UNSIGNED (TREE_TYPE (op0));
+  else if (unsignedp0)
+    bits0 = TYPE_PRECISION (TREE_TYPE (arg0));
+  op0 = arg0;
+  int bits1 = TYPE_PRECISION (result_type);
+  if (TYPE_UNSIGNED (TREE_TYPE (op1)))
+    bits1 = TYPE_PRECISION (TREE_TYPE (op1));
+  tree arg1 = c_common_get_narrower (op1, &unsignedp1);
+  if (TYPE_PRECISION (TREE_TYPE (arg1)) == TYPE_PRECISION (TREE_TYPE (op1)))
+    unsignedp1 = TYPE_UNSIGNED (TREE_TYPE (op1));
+  else if (unsignedp1)
+    bits1 = TYPE_PRECISION (TREE_TYPE (arg1));
+  op1 = arg1;
 
   if ((TREE_CODE (op0) == BIT_NOT_EXPR)
       ^ (TREE_CODE (op1) == BIT_NOT_EXPR))
     {
-      if (TREE_CODE (op0) == BIT_NOT_EXPR)
-	op0 = c_common_get_narrower (TREE_OPERAND (op0, 0), &unsignedp0);
       if (TREE_CODE (op1) == BIT_NOT_EXPR)
-	op1 = c_common_get_narrower (TREE_OPERAND (op1, 0), &unsignedp1);
-
-      if (tree_fits_shwi_p (op0) || tree_fits_shwi_p (op1))
 	{
-	  tree primop;
-	  HOST_WIDE_INT constant, mask;
-	  int unsignedp;
-	  unsigned int bits;
+	  std::swap (op0, op1);
+	  std::swap (unsignedp0, unsignedp1);
+	  std::swap (bits0, bits1);
+	}
 
-	  if (tree_fits_shwi_p (op0))
-	    {
-	      primop = op1;
-	      unsignedp = unsignedp1;
-	      constant = tree_to_shwi (op0);
-	    }
-	  else
-	    {
-	      primop = op0;
-	      unsignedp = unsignedp0;
-	      constant = tree_to_shwi (op1);
-	    }
+      int unsignedp;
+      arg0 = c_common_get_narrower (TREE_OPERAND (op0, 0), &unsignedp);
 
-	  bits = TYPE_PRECISION (TREE_TYPE (primop));
-	  if (bits < TYPE_PRECISION (result_type)
-	      && bits < HOST_BITS_PER_LONG && unsignedp)
+      /* For these warnings, we need BIT_NOT_EXPR operand to be
+	 zero extended from narrower type to BIT_NOT_EXPR's type.
+	 In that case, all those bits above the narrower's type
+	 are after BIT_NOT_EXPR set to 1.  */
+      if (tree_fits_shwi_p (op1))
+	{
+	  HOST_WIDE_INT constant = tree_to_shwi (op1);
+	  unsigned int bits = TYPE_PRECISION (TREE_TYPE (arg0));
+	  if (unsignedp
+	      && bits < TYPE_PRECISION (TREE_TYPE (op0))
+	      && bits < HOST_BITS_PER_WIDE_INT)
 	    {
-	      mask = HOST_WIDE_INT_M1U << bits;
+	      HOST_WIDE_INT mask = HOST_WIDE_INT_M1U << bits;
+	      if (bits0 < HOST_BITS_PER_WIDE_INT)
+		mask &= ~(HOST_WIDE_INT_M1U << bits0);
 	      if ((mask & constant) != mask)
 		{
 		  if (constant == 0)
@@ -2393,11 +2415,11 @@ warn_for_sign_compare (location_t location,
 		}
 	    }
 	}
-      else if (unsignedp0 && unsignedp1
-	       && (TYPE_PRECISION (TREE_TYPE (op0))
-		   < TYPE_PRECISION (result_type))
-	       && (TYPE_PRECISION (TREE_TYPE (op1))
-		   < TYPE_PRECISION (result_type)))
+      else if ((TYPE_PRECISION (TREE_TYPE (arg0))
+		< TYPE_PRECISION (TREE_TYPE (op0)))
+	       && unsignedp
+	       && unsignedp1
+	       && TYPE_PRECISION (TREE_TYPE (op1)) < bits0)
 	warning_at (location, OPT_Wsign_compare,
 		    "comparison of promoted bitwise complement "
 		    "of an unsigned value with unsigned");
@@ -2615,14 +2637,19 @@ maybe_warn_shift_overflow (location_t loc, tree op0, tree op1)
       || TREE_CODE (op1) != INTEGER_CST)
     return false;
 
-  tree type0 = TREE_TYPE (op0);
+  /* match.pd could have narrowed the left shift already,
+     take type promotion into account.  */
+  tree type0 = lang_hooks.types.type_promotes_to (TREE_TYPE (op0));
   unsigned int prec0 = TYPE_PRECISION (type0);
 
   /* Left-hand operand must be signed.  */
   if (TYPE_OVERFLOW_WRAPS (type0) || cxx_dialect >= cxx20)
     return false;
 
-  unsigned int min_prec = (wi::min_precision (wi::to_wide (op0), SIGNED)
+  signop sign = SIGNED;
+  if (TYPE_PRECISION (TREE_TYPE (op0)) < TYPE_PRECISION (type0))
+    sign = TYPE_SIGN (TREE_TYPE (op0));
+  unsigned int min_prec = (wi::min_precision (wi::to_wide (op0), sign)
 			   + TREE_INT_CST_LOW (op1));
   /* Handle the case of left-shifting 1 into the sign bit.
    * However, shifting 1 _out_ of the sign bit, as in
@@ -2645,7 +2672,8 @@ maybe_warn_shift_overflow (location_t loc, tree op0, tree op1)
     warning_at (loc, OPT_Wshift_overflow_,
 		"result of %qE requires %u bits to represent, "
 		"but %qT only has %u bits",
-		build2_loc (loc, LSHIFT_EXPR, type0, op0, op1),
+		build2_loc (loc, LSHIFT_EXPR, type0,
+			    fold_convert (type0, op0), op1),
 		min_prec, type0, prec0);
 
   return overflowed;
@@ -3000,6 +3028,10 @@ check_address_or_pointer_of_packed_member (tree type, tree rhs)
 	  if (rhs == NULL_TREE)
 	    return NULL_TREE;
 	  rhs = TREE_TYPE (rhs);	/* Pointer type.  */
+	  /* We could be called while processing a template and RHS could be
+	     a functor.  In that case it's a class, not a pointer.  */
+	  if (!POINTER_TYPE_P (rhs))
+	    return NULL_TREE;
 	  rhs = TREE_TYPE (rhs);	/* Function type.  */
 	  rhstype = TREE_TYPE (rhs);
 	  if (!rhstype || !POINTER_TYPE_P (rhstype))
@@ -3803,14 +3835,15 @@ do_warn_array_compare (location_t location, tree_code code, tree op0, tree op1)
     }
 }
 
-/* Given LHS_VAL ^ RHS_VAL, where LHS_LOC is the location of the LHS and
-   OPERATOR_LOC is the location of the ^, complain with -Wxor-used-as-pow
-   if it looks like the user meant exponentiation rather than xor.  */
+/* Given LHS_VAL ^ RHS_VAL, where LHS_LOC is the location of the LHS,
+   OPERATOR_LOC is the location of the ^, and RHS_LOC the location of the
+   RHS, complain with -Wxor-used-as-pow if it looks like the user meant
+   exponentiation rather than xor.  */
 
 void
 check_for_xor_used_as_pow (location_t lhs_loc, tree lhs_val,
 			   location_t operator_loc,
-			   tree rhs_val)
+			   location_t rhs_loc, tree rhs_val)
 {
   /* Only complain if both args are non-negative integer constants that fit
      in uhwi.  */
@@ -3826,6 +3859,20 @@ check_for_xor_used_as_pow (location_t lhs_loc, tree lhs_val,
   unsigned HOST_WIDE_INT xor_result = lhs_uhwi ^ rhs_uhwi;
   binary_op_rich_location loc (operator_loc,
 			       lhs_val, rhs_val, false);
+
+  /* Reject cases where we don't have 3 distinct locations.
+     This can happen e.g. due to macro expansion with
+     -ftrack-macro-expansion=0 */
+  if (!(lhs_loc != operator_loc
+	&& lhs_loc != rhs_loc
+	&& operator_loc != rhs_loc))
+    return;
+
+  /* Reject cases in which any of the locations came from a macro.  */
+  if (from_macro_expansion_at (lhs_loc)
+      || from_macro_expansion_at (operator_loc)
+      || from_macro_expansion_at (rhs_loc))
+    return;
 
   /* If we issue fix-it hints with the warning then we will also issue a
      note suggesting how to suppress the warning with a different change.

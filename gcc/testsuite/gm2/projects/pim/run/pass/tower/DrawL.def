@@ -1,0 +1,23 @@
+DEFINITION MODULE DrawL ;
+
+FROM AdvMap IMPORT DoorStatus ;
+EXPORT QUALIFIED DrawRoom, ClearRoom, DrawAllPlayers, EraseAllPlayers,
+                 StrPoint, DTreasure, Erase, DrawMan, DLine, DArrow ;
+
+
+PROCEDURE DrawRoom ;
+PROCEDURE ClearRoom (r: CARDINAL) ;
+PROCEDURE DrawAllPlayers ;
+PROCEDURE EraseAllPlayers ;
+
+(* and some low level string routines *)
+
+PROCEDURE StrPoint (a: ARRAY OF CHAR; x, y: CARDINAL) ;
+PROCEDURE DTreasure (x, y: CARDINAL) ;
+PROCEDURE Erase (x, y: CARDINAL) ;
+PROCEDURE DrawMan (other: BOOLEAN; x, y, dir: CARDINAL) ;
+PROCEDURE DLine (x1, y1, x2, y2: CARDINAL; hinge: BOOLEAN; ds: DoorStatus) ;
+PROCEDURE DArrow (x, y, dir: CARDINAL) ;
+
+
+END DrawL.

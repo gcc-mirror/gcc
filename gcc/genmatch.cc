@@ -1464,7 +1464,7 @@ lower_for (simplify *sin, vec<simplify *>& simplifiers)
       vec<user_id *>& ids = for_vec[fi];
       unsigned n_ids = ids.length ();
       unsigned max_n_opers = 0;
-      bool can_delay_subst = (sin->kind == simplify::SIMPLIFY);
+      bool can_delay_subst = true;
       for (unsigned i = 0; i < n_ids; ++i)
 	{
 	  if (ids[i]->substitutes.length () > max_n_opers)
@@ -1504,6 +1504,9 @@ lower_for (simplify *sin, vec<simplify *>& simplifiers)
 	    else
 	      can_delay_subst = false;
 	}
+      if (sin->kind == simplify::MATCH
+	  && can_delay_subst)
+	continue;
 
       unsigned worklist_end = worklist.length ();
       for (unsigned si = worklist_start; si < worklist_end; ++si)
@@ -1527,7 +1530,9 @@ lower_for (simplify *sin, vec<simplify *>& simplifiers)
 		      break;
 		    }
 		  subst.quick_push (std::make_pair (id, oper));
-		  match_op = replace_id (match_op, id, oper);
+		  if (sin->kind == simplify::SIMPLIFY
+		      || !can_delay_subst)
+		    match_op = replace_id (match_op, id, oper);
 		  if (result_op
 		      && !can_delay_subst)
 		    result_op = replace_id (result_op, id, oper);
@@ -2824,6 +2829,9 @@ dt_operand::gen_gimple_expr (FILE *f, int indent, int depth)
   unsigned n_ops = e->ops.length ();
   unsigned n_braces = 0;
 
+  if (user_id *u = dyn_cast <user_id *> (id))
+    id = u->substitutes[0];
+
   for (unsigned i = 0; i < n_ops; ++i)
     {
       char child_opname[20];
@@ -2905,14 +2913,18 @@ unsigned
 dt_operand::gen_generic_expr (FILE *f, int indent, const char *opname)
 {
   expr *e = static_cast<expr *> (op);
+  id_base *id = e->operation;
   unsigned n_ops = e->ops.length ();
+
+  if (user_id *u = dyn_cast <user_id *> (id))
+    id = u->substitutes[0];
 
   for (unsigned i = 0; i < n_ops; ++i)
     {
       char child_opname[20];
       gen_opname (child_opname, i);
 
-      if (e->operation->kind == id_base::CODE)
+      if (id->kind == id_base::CODE)
 	fprintf_indent (f, indent, "tree %s = TREE_OPERAND (%s, %u);\n",
 			child_opname, opname, i);
       else
@@ -2964,10 +2976,21 @@ dt_node::gen_kids (FILE *f, int indent, bool gimple, int depth)
 		preds.safe_push (op);
 	      else
 		{
-		  if (gimple && !e->is_generic)
-		    gimple_exprs.safe_push (op);
+		  user_id *u = dyn_cast <user_id *> (e->operation);
+		  if (u && u->substitutes[0]->kind == id_base::FN)
+		    {
+		      if (gimple)
+			fns.safe_push (op);
+		      else
+			generic_fns.safe_push (op);
+		    }
 		  else
-		    generic_exprs.safe_push (op);
+		    {
+		      if (gimple && !e->is_generic)
+			gimple_exprs.safe_push (op);
+		      else
+			generic_exprs.safe_push (op);
+		    }
 		}
 	    }
 	  else if (op->op->type == operand::OP_PREDICATE)
@@ -3064,11 +3087,19 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple, int depth,
 	  for (unsigned i = 0; i < exprs_len; ++i)
 	    {
 	      expr *e = as_a <expr *> (gimple_exprs[i]->op);
-	      id_base *op = e->operation;
-	      if (*op == CONVERT_EXPR || *op == NOP_EXPR)
-		fprintf_indent (f, indent, "CASE_CONVERT:\n");
+	      if (user_id *u = dyn_cast <user_id *> (e->operation))
+		{
+		  for (auto id : u->substitutes)
+		    fprintf_indent (f, indent, "case %s:\n", id->id);
+		}
 	      else
-		fprintf_indent (f, indent, "case %s:\n", op->id);
+		{
+		  id_base *op = e->operation;
+		  if (*op == CONVERT_EXPR || *op == NOP_EXPR)
+		    fprintf_indent (f, indent, "CASE_CONVERT:\n");
+		  else
+		    fprintf_indent (f, indent, "case %s:\n", op->id);
+		}
 	      fprintf_indent (f, indent, "  {\n");
 	      gimple_exprs[i]->gen (f, indent + 4, true, depth);
 	      fprintf_indent (f, indent, "    break;\n");
@@ -3093,7 +3124,11 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple, int depth,
 	  for (unsigned i = 0; i < fns_len; ++i)
 	    {
 	      expr *e = as_a <expr *>(fns[i]->op);
-	      fprintf_indent (f, indent, "case %s:\n", e->operation->id);
+	      if (user_id *u = dyn_cast <user_id *> (e->operation))
+		for (auto id : u->substitutes)
+		  fprintf_indent (f, indent, "case %s:\n", id->id);
+	      else
+		fprintf_indent (f, indent, "case %s:\n", e->operation->id);
 	      /* We need to be defensive against bogus prototypes allowing
 		 calls with not enough arguments.  */
 	      fprintf_indent (f, indent,
@@ -3140,7 +3175,13 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple, int depth,
 	/* Already handled above.  */
 	continue;
       else
-	fprintf_indent (f, indent, "case %s:\n", op->id);
+	{
+	  if (user_id *u = dyn_cast <user_id *> (op))
+	    for (auto id : u->substitutes)
+	      fprintf_indent (f, indent, "case %s:\n", id->id);
+	  else
+	    fprintf_indent (f, indent, "case %s:\n", op->id);
+	}
       fprintf_indent (f, indent, "  {\n");
       generic_exprs[i]->gen (f, indent + 4, gimple, depth);
       fprintf_indent (f, indent, "    break;\n");

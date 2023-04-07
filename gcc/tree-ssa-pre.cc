@@ -2364,11 +2364,14 @@ compute_partial_antic_aux (basic_block block,
 	      unsigned int i;
 	      bitmap_iterator bi;
 
-	      FOR_EACH_EXPR_ID_IN_SET (ANTIC_IN (e->dest), i, bi)
-		bitmap_value_insert_into_set (PA_OUT,
-					      expression_for_id (i));
 	      if (!gimple_seq_empty_p (phi_nodes (e->dest)))
 		{
+		  bitmap_set_t antic_in = bitmap_set_new ();
+		  phi_translate_set (antic_in, ANTIC_IN (e->dest), e);
+		  FOR_EACH_EXPR_ID_IN_SET (antic_in, i, bi)
+		    bitmap_value_insert_into_set (PA_OUT,
+						  expression_for_id (i));
+		  bitmap_set_free (antic_in);
 		  bitmap_set_t pa_in = bitmap_set_new ();
 		  phi_translate_set (pa_in, PA_IN (e->dest), e);
 		  FOR_EACH_EXPR_ID_IN_SET (pa_in, i, bi)
@@ -2377,9 +2380,14 @@ compute_partial_antic_aux (basic_block block,
 		  bitmap_set_free (pa_in);
 		}
 	      else
-		FOR_EACH_EXPR_ID_IN_SET (PA_IN (e->dest), i, bi)
-		  bitmap_value_insert_into_set (PA_OUT,
-						expression_for_id (i));
+		{
+		  FOR_EACH_EXPR_ID_IN_SET (ANTIC_IN (e->dest), i, bi)
+		    bitmap_value_insert_into_set (PA_OUT,
+						  expression_for_id (i));
+		  FOR_EACH_EXPR_ID_IN_SET (PA_IN (e->dest), i, bi)
+		    bitmap_value_insert_into_set (PA_OUT,
+						  expression_for_id (i));
+		}
 	    }
 	}
     }

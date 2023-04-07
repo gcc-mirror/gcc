@@ -89,7 +89,9 @@ else version (CRuntime_Musl)
         time_t      tv_sec;
         suseconds_t tv_usec;
     }
+    pragma(mangle, muslRedirTime64Mangle!("gettimeofday", "__gettimeofday_time64"))
     int gettimeofday(timeval*, void*);
+    pragma(mangle, muslRedirTime64Mangle!("utimes", "__utimes_time64"))
     int utimes(const scope char*, ref const(timeval)[2]);
 }
 else version (Darwin)

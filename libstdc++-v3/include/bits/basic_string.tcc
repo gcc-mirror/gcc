@@ -592,9 +592,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	size_type _M_r;
       };
       _Terminator __term{this};
-      const size_type __n2 [[maybe_unused]] = __n;
-      __term._M_r = std::move(__op)(__p, __n);
-      _GLIBCXX_DEBUG_ASSERT(__term._M_r >= 0 && __term._M_r <= __n2);
+      auto __r = std::move(__op)(auto(__p), auto(__n));
+      static_assert(ranges::__detail::__is_integer_like<decltype(__r)>);
+      _GLIBCXX_DEBUG_ASSERT(__r >= 0 && __r <= __n);
+      __term._M_r = size_type(__r);
+      if (__term._M_r > __n)
+	__builtin_unreachable();
     }
 #endif // C++23
 

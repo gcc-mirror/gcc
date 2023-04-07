@@ -338,9 +338,12 @@ struct OutBuffer
         offset += len;
     }
 
-    /// write newline
+    /// strip trailing tabs or spaces, write newline
     extern (C++) void writenl() pure nothrow @safe
     {
+        while (offset > 0 && (data[offset - 1] == ' ' || data[offset - 1] == '\t'))
+            offset--;
+
         version (Windows)
         {
             writeword(0x0A0D); // newline is CR,LF on Microsoft OS's
@@ -918,4 +921,19 @@ unittest
 
     buf.setsize(4);
     assert(buf.length == 4);
+}
+
+unittest
+{
+    OutBuffer buf;
+
+    buf.writenl();
+    buf.writestring("abc \t ");
+    buf.writenl(); // strips trailing whitespace
+    buf.writenl(); // doesn't strip previous newline
+
+    version(Windows)
+        assert(buf[] == "\r\nabc\r\n\r\n");
+    else
+        assert(buf[] == "\nabc\n\n");
 }

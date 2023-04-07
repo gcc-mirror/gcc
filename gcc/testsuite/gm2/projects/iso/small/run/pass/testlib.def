@@ -1,0 +1,16 @@
+DEFINITION MODULE testlib ;
+
+(*
+    Title      : testlib
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Tue Mar 21 13:43:56 2023
+    Revision   : $Version$
+    Description:
+*)
+
+TYPE
+   opaque ;
+
+
+END testlib.

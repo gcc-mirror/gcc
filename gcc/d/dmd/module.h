@@ -170,3 +170,5 @@ struct ModuleDeclaration
 
     const char *toChars() const;
 };
+
+extern void getLocalClasses(Module* mod, Array<ClassDeclaration* >& aclasses);

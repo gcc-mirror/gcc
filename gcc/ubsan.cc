@@ -721,7 +721,7 @@ ubsan_expand_bounds_ifn (gimple_stmt_iterator *gsi)
 
   gimple_stmt_iterator gsi_orig = *gsi;
 
-  /* Create condition "if (index > bound)".  */
+  /* Create condition "if (index >= bound)".  */
   basic_block then_bb, fallthru_bb;
   gimple_stmt_iterator cond_insert_point
     = create_cond_insert_point (gsi, false, false, true,
@@ -730,7 +730,7 @@ ubsan_expand_bounds_ifn (gimple_stmt_iterator *gsi)
   index = force_gimple_operand_gsi (&cond_insert_point, index,
 				    true, NULL_TREE,
 				    false, GSI_NEW_STMT);
-  gimple *g = gimple_build_cond (GT_EXPR, index, bound, NULL_TREE, NULL_TREE);
+  gimple *g = gimple_build_cond (GE_EXPR, index, bound, NULL_TREE, NULL_TREE);
   gimple_set_location (g, loc);
   gsi_insert_after (&cond_insert_point, g, GSI_NEW_STMT);
 

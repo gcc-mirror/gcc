@@ -345,7 +345,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct hash<coroutine_handle<_Promise>>
     {
       size_t
-      operator()(const coroutine_handle<_Promise>& __h) noexcept
+      operator()(const coroutine_handle<_Promise>& __h) const noexcept
       {
 	return reinterpret_cast<size_t>(__h.address());
       }

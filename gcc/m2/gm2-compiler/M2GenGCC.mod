@@ -149,8 +149,7 @@ FROM M2GCCDeclare IMPORT WalkAction,
                          CompletelyResolved,
                          PoisonSymbols, GetTypeMin, GetTypeMax,
                          IsProcedureGccNested, DeclareParameters,
-                         ConstantKnownAndUsed, PrintSym,
-                         DeclareM2linkGlobals ;
+                         ConstantKnownAndUsed, PrintSym ;
 
 FROM M2Range IMPORT CodeRangeCheck, FoldRangeCheck, CodeErrorCheck, GetMinMax ;
 
@@ -1163,17 +1162,7 @@ BEGIN
       GetModuleCtors (moduleSym, ctor, init, fini, dep) ;
       finishFunctionDecl (location, Mod2Gcc (fini)) ;
       BuildEndFunctionCode (location, Mod2Gcc (fini),
-                            IsModuleWithinProcedure (moduleSym)) ;
-      IF ScaffoldMain OR (NOT cflag)
-      THEN
-         IF CompilingMainModule AND
-            (ScaffoldDynamic OR ScaffoldStatic OR ScaffoldMain) AND
-            (moduleSym = GetMainModule ())
-         THEN
-            qprintf0 ("        generating scaffold m2link information\n");
-            DeclareM2linkGlobals (tokenpos)
-         END
-      END
+                            IsModuleWithinProcedure (moduleSym))
    END
 END CodeFinallyEnd ;
 

@@ -1275,7 +1275,7 @@ hashtab_entry_note_pointers (void *obj, void *h, gt_pointer_operator op,
 }
 
 template<typename D>
-static void
+void
 gt_pch_nx (hash_table<D> *h)
 {
   h->check_complete_insertion ();

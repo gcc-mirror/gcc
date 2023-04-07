@@ -23,7 +23,11 @@ void T (bool);
 void warn_memptr_if ()
 {
   // Exercise warnings for addresses of nonstatic member functions.
-  if (&A::f == 0)         // { dg-warning "the address '&A::f'" }
+  // On targets with TARGET_PTRMEMFUNC_VBIT_LOCATION ==
+  // ptrmemfunc_vbit_in_delta, cp_build_binary_op recurses to compare
+  // the pfn from the ptrmemfunc with null, so we get two warnings.
+  // This matches both.  ??? Should we disable one of them?
+  if (&A::f == 0)         // { dg-warning "A::f" }
     T (0);
 
   if (&A::vf)             // { dg-warning "-Waddress" }

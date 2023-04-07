@@ -1884,7 +1884,28 @@ cris_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno,
 	if (val == 0)
 	  *total = 0;
 	else if (val < 32 && val >= -32)
-	  *total = 1;
+	  switch (outer_code)
+	    {
+	      /* For modes that fit in one register we tell they cost
+		 the same as with register operands.  DImode operations
+		 needs careful consideration for more basic reasons:
+		 shifting by a non-word-size amount needs more
+		 operations than an addition by a register pair.
+		 Deliberately excluding SET, PLUS and comparisons and
+		 also not including the full -64..63 range for (PLUS
+		 and) MINUS.  */
+	    case MINUS: case ASHIFT: case LSHIFTRT:
+	    case ASHIFTRT: case AND: case IOR:
+	      if (GET_MODE_SIZE(mode) <= UNITS_PER_WORD)
+		{
+		  *total = 0;
+		  break;
+		}
+	      /* FALL THROUGH.  */
+	    default:
+	      *total = 1;
+	      break;
+	    }
 	/* Eight or 16 bits are a word and cycle more expensive.  */
 	else if (val <= 32767 && val >= -32768)
 	  *total = 2;

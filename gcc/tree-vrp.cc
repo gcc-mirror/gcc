@@ -156,7 +156,7 @@ remove_unreachable::remove_and_update_globals (bool final_p)
 	  m_ranger.range_on_entry (ex, EXIT_BLOCK_PTR_FOR_FN (cfun), name);
 	  // If the range produced by this __builtin_unreachacble expression
 	  // is not fully reflected in the range at exit, then it does not
-	  // dominate the exit of the funciton.
+	  // dominate the exit of the function.
 	  if (ex.intersect (r))
 	    dominate_exit_p = false;
 	}
@@ -179,7 +179,7 @@ remove_unreachable::remove_and_update_globals (bool final_p)
 
   if (bitmap_empty_p (all_exports))
     return false;
-  // Invoke DCE on all exported names to elimnate dead feeding defs
+  // Invoke DCE on all exported names to eliminate dead feeding defs.
   auto_bitmap dce;
   bitmap_copy (dce, all_exports);
   // Don't attempt to DCE parameters.
@@ -233,7 +233,7 @@ remove_unreachable::remove_and_update_globals (bool final_p)
   return change;
 }
 
-/* VR_TYPE describes a range with mininum value *MIN and maximum
+/* VR_TYPE describes a range with minimum value *MIN and maximum
    value *MAX.  Restrict the range to the set of values that have
    no bits set outside NONZERO_BITS.  Update *MIN and *MAX and
    return the new range type.

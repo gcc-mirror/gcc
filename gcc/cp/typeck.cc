@@ -5780,11 +5780,18 @@ cp_build_binary_op (const op_location_t &location,
 
 	      pfn0 = pfn_from_ptrmemfunc (op0);
 	      delta0 = delta_from_ptrmemfunc (op0);
-	      e1 = cp_build_binary_op (location,
-				       EQ_EXPR,
-	  			       pfn0,
-				       build_zero_cst (TREE_TYPE (pfn0)),
-				       complain);
+	      {
+		/* If we will warn below about a null-address compare
+		   involving the orig_op0 ptrmemfunc, we'd likely also
+		   warn about the pfn0's null-address compare, and
+		   that would be redundant, so suppress it.  */
+		warning_sentinel ws (warn_address);
+		e1 = cp_build_binary_op (location,
+					 EQ_EXPR,
+					 pfn0,
+					 build_zero_cst (TREE_TYPE (pfn0)),
+					 complain);
+	      }
 	      e2 = cp_build_binary_op (location,
 				       BIT_AND_EXPR,
 				       delta0,
@@ -9623,6 +9630,8 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	}
 
       /* Allow array assignment in compiler-generated code.  */
+      else if (DECL_P (lhs) && DECL_ARTIFICIAL (lhs))
+	/* OK, used by coroutines (co-await-initlist1.C).  */;
       else if (!current_function_decl
 	       || !DECL_DEFAULTED_FN (current_function_decl))
 	{
@@ -9951,18 +9960,15 @@ build_ptrmemfunc (tree type, tree pfn, int force, bool c_cast_p,
       if (n == error_mark_node)
 	return error_mark_node;
 
+      STRIP_ANY_LOCATION_WRAPPER (pfn);
+
       /* We don't have to do any conversion to convert a
 	 pointer-to-member to its own type.  But, we don't want to
 	 just return a PTRMEM_CST if there's an explicit cast; that
 	 cast should make the expression an invalid template argument.  */
-      if (TREE_CODE (pfn) != PTRMEM_CST)
-	{
-	  if (same_type_p (to_type, pfn_type))
-	    return pfn;
-	  else if (integer_zerop (n) && TREE_CODE (pfn) != CONSTRUCTOR)
-	    return build_reinterpret_cast (input_location, to_type, pfn, 
-                                           complain);
-	}
+      if (TREE_CODE (pfn) != PTRMEM_CST
+	  && same_type_p (to_type, pfn_type))
+	return pfn;
 
       if (TREE_SIDE_EFFECTS (pfn))
 	pfn = save_expr (pfn);

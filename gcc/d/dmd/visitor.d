@@ -248,7 +248,7 @@ extern (C++) class StoppableVisitor : Visitor
 public:
     bool stop;
 
-    final extern (D) this()
+    final extern (D) this() scope
     {
     }
 }

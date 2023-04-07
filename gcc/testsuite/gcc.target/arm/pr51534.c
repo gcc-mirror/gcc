@@ -1,9 +1,9 @@
 /* Test the vector comparison intrinsics when comparing to immediate zero.
    */
 
-/* { dg-do assemble } */
+/* { dg-do assemble { target { arm_hard_ok } } } */
 /* { dg-require-effective-target arm_neon_ok } */
-/* { dg-options "-save-temps -O3" } */
+/* { dg-options "-save-temps -mfloat-abi=hard -O3" } */
 /* { dg-add-options arm_neon } */
 
 #include <arm_neon.h>
@@ -64,9 +64,8 @@ GEN_COND_TESTS(vceq)
 /* { dg-final { scan-assembler-times "vceq\.i8\[ 	\]+\[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+, #0" 4 } } */
 /* { dg-final { scan-assembler-times "vceq\.i16\[ 	\]+\[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+, #0" 4 } } */
 /* { dg-final { scan-assembler-times "vceq\.i32\[ 	\]+\[qQ\]\[0-9\]+, \[qQ\]\[0-9\]+, #0" 4 } } */
-/* { dg-final { scan-assembler-times "vmov\.i32\[ 	\]+\[dD\]\[0-9\]+, #0xffffffff" 3 { target { arm_hard_ok } } } } */
-/* { dg-final { scan-assembler-times "vmov\.i32\[ 	\]+\[qQ\]\[0-9\]+, #4294967295" 3 { target { arm_hard_ok } } } } */
-/* { dg-final { scan-assembler-times "mov\[ 	\]+r\[0-9\]+, #-1" 6 { target { arm_softfp_ok } } } } */
+/* { dg-final { scan-assembler-times "vmov\.i32\[ 	\]+\[dD\]\[0-9\]+, #0xffffffff" 3 } } */
+/* { dg-final { scan-assembler-times "vmov\.i32\[ 	\]+\[qQ\]\[0-9\]+, #4294967295" 3 } } */
 
 /* And ensure we don't have unexpected output too.  */
 /* { dg-final { scan-assembler-not "vc\[gl\]\[te\]\.u\[0-9\]+\[ 	\]+\[qQdD\]\[0-9\]+, \[qQdD\]\[0-9\]+, #0" } } */

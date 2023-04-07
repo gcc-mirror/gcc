@@ -34,9 +34,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-color.h"
 #include "version.h"
 #include "selftest.h"
+#include "file-prefix-map.h"
 
 /* In this file all option sets are explicit.  */
 #undef OPTION_SET_P
+
+/* Set by -fcanon-prefix-map.  */
+bool flag_canon_prefix_map;
 
 static void set_Wstrict_aliasing (struct gcc_options *opts, int onoff);
 
@@ -2819,6 +2823,10 @@ common_handle_option (struct gcc_options *opts,
       /* Deferred.  */
       break;
 
+    case OPT_fcanon_prefix_map:
+      flag_canon_prefix_map = value;
+      break;
+
     case OPT_fcallgraph_info:
       opts->x_flag_callgraph_info = CALLGRAPH_INFO_NAKED;
       break;
@@ -2870,9 +2878,13 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_fdiagnostics_format_:
-      diagnostic_output_format_init (dc, opts->x_dump_base_name,
-				     (enum diagnostics_output_format)value);
-      break;
+	{
+	  const char *basename = (opts->x_dump_base_name ? opts->x_dump_base_name
+				  : opts->x_main_input_basename);
+	  diagnostic_output_format_init (dc, basename,
+					 (enum diagnostics_output_format)value);
+	  break;
+	}
 
     case OPT_fdiagnostics_parseable_fixits:
       dc->extra_output_kind = (value
@@ -3725,6 +3737,7 @@ gen_command_line_string (cl_decoded_option *options,
       case OPT_fmacro_prefix_map_:
       case OPT_ffile_prefix_map_:
       case OPT_fprofile_prefix_map_:
+      case OPT_fcanon_prefix_map:
       case OPT_fcompare_debug:
       case OPT_fchecking:
       case OPT_fchecking_:

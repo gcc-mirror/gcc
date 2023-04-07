@@ -7,7 +7,7 @@ PROCEDURE KeyPressed () : BOOLEAN ;
 BEGIN
    IF Narg () < 0
    THEN
-      Halt(__FILE__, __LINE__, __FUNCTION__, 'no active status procedure')
+      Halt ('no active status procedure', __FILE__, __FUNCTION__, __LINE__)
    ELSE
       RETURN FALSE
    END

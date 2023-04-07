@@ -27,6 +27,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <config.h>
 #include <m2rts.h>
 
+#define EXPORT(FUNC) m2pim ## _termios_ ## FUNC
+#define M2EXPORT(FUNC) m2pim ## _M2_termios_ ## FUNC
+#define M2LIBNAME "m2pim"
+
 #if defined(HAVE_STDIO_H)
 #include <stdio.h>
 #endif
@@ -59,8 +63,6 @@ void _M2_termios_init (void);
 void _M2_termios_finish (void);
 
 #if defined(HAVE_TERMIOS_H)
-
-#define EXPORT(X) termios##_##X
 
 typedef enum {
   vintr,
@@ -206,14 +208,14 @@ extern "C" int EXPORT (tcflowoni) (int fd);
 extern "C" int EXPORT (tcflowoffi) (int fd);
 extern "C" int EXPORT (tcflowono) (int fd);
 extern "C" int EXPORT (tcflowoffo) (int fd);
-extern "C" int EXPORT (GetFlag) (struct termios *t, Flag f, int *b);
-extern "C" int EXPORT (SetFlag) (struct termios *t, Flag f, int b);
-extern "C" int EXPORT (GetChar) (struct termios *t, ControlChar c, char *ch);
-extern "C" int EXPORT (SetChar) (struct termios *t, ControlChar c, char ch);
+extern "C" bool EXPORT (GetFlag) (struct termios *t, Flag f, bool *b);
+extern "C" bool EXPORT (SetFlag) (struct termios *t, Flag f, bool b);
+extern "C" bool EXPORT (GetChar) (struct termios *t, ControlChar c, char *ch);
+extern "C" bool EXPORT (SetChar) (struct termios *t, ControlChar c, char ch);
 extern "C" int EXPORT (tcsnow) (void);
 extern "C" int EXPORT (tcsflush) (void);
 extern "C" int EXPORT (tcsdrain) (void);
-extern "C" int doSetUnset (tcflag_t *bitset, unsigned int mask, int value);
+extern "C" bool doSetUnset (tcflag_t *bitset, unsigned int mask, bool value);
 
 /* InitTermios new data structure.   */
 
@@ -410,23 +412,22 @@ EXPORT (tcflowoffo) (int fd)
 #endif
 }
 
-/* doSetUnset applies mask or undoes mask depending upon value.  */
+/* doSetUnset applies mask or undoes mask depending upon value and returns true.  */
 
-extern "C" int
-doSetUnset (tcflag_t *bitset, unsigned int mask, int value)
+extern "C" bool
+doSetUnset (tcflag_t *bitset, unsigned int mask, bool value)
 {
   if (value)
     (*bitset) |= mask;
   else
     (*bitset) &= (~mask);
-  return 1;
+  return true;
 }
 
-/* GetFlag sets a flag value from, t, in, b, and returns TRUE
-   if, t, supports, f.  */
+/* GetFlag sets a flag value from t in b and returns true if t supports f.  */
 
-extern "C" int
-EXPORT (GetFlag) (struct termios *t, Flag f, int *b)
+extern "C" bool
+EXPORT (GetFlag) (struct termios *t, Flag f, bool *b)
 {
   switch (f)
     {
@@ -434,684 +435,684 @@ EXPORT (GetFlag) (struct termios *t, Flag f, int *b)
     case ignbrk:
 #if defined(IGNBRK)
       *b = ((t->c_iflag & IGNBRK) == IGNBRK);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case ibrkint:
 #if defined(BRKINT)
       *b = ((t->c_iflag & BRKINT) == BRKINT);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case ignpar:
 #if defined(IGNPAR)
       *b = ((t->c_iflag & IGNPAR) == IGNPAR);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case iparmrk:
 #if defined(PARMRK)
       *b = ((t->c_iflag & PARMRK) == PARMRK);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case inpck:
 #if defined(INPCK)
       *b = ((t->c_iflag & INPCK) == INPCK);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case istrip:
 #if defined(ISTRIP)
       *b = ((t->c_iflag & ISTRIP) == ISTRIP);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case inlcr:
 #if defined(INLCR)
       *b = ((t->c_iflag & INLCR) == INLCR);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case igncr:
 #if defined(IGNCR)
       *b = ((t->c_iflag & IGNCR) == IGNCR);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case icrnl:
 #if defined(ICRNL)
       *b = ((t->c_iflag & ICRNL) == ICRNL);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case iuclc:
 #if defined(IUCLC)
       *b = ((t->c_iflag & IUCLC) == IUCLC);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case ixon:
 #if defined(IXON)
       *b = ((t->c_iflag & IXON) == IXON);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case ixany:
 #if defined(IXANY)
       *b = ((t->c_iflag & IXANY) == IXANY);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case ixoff:
 #if defined(IXOFF)
       *b = ((t->c_iflag & IXOFF) == IXOFF);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case imaxbel:
 #if defined(IMAXBEL)
       *b = ((t->c_iflag & IMAXBEL) == IMAXBEL);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case opost:
 #if defined(OPOST)
       *b = ((t->c_oflag & OPOST) == OPOST);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case olcuc:
 #if defined(OLCUC)
       *b = ((t->c_oflag & OLCUC) == OLCUC);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case onlcr:
 #if defined(ONLCR)
       *b = ((t->c_oflag & ONLCR) == ONLCR);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case ocrnl:
 #if defined(OCRNL)
       *b = ((t->c_oflag & OCRNL) == OCRNL);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case onocr:
 #if defined(ONOCR)
       *b = ((t->c_oflag & ONOCR) == ONOCR);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case onlret:
 #if defined(ONLRET)
       *b = ((t->c_oflag & ONLRET) == ONLRET);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case ofill:
 #if defined(OFILL)
       *b = ((t->c_oflag & OFILL) == OFILL);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case ofdel:
 #if defined(OFDEL)
       *b = ((t->c_oflag & OFDEL) == OFDEL);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case onl0:
 #if defined(NL0)
       *b = ((t->c_oflag & NL0) == NL0);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case onl1:
 #if defined(NL1)
       *b = ((t->c_oflag & NL1) == NL1);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case ocr0:
 #if defined(CR0)
       *b = ((t->c_oflag & CR0) == CR0);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case ocr1:
 #if defined(CR1)
       *b = ((t->c_oflag & CR1) == CR1);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case ocr2:
 #if defined(CR2)
       *b = ((t->c_oflag & CR2) == CR2);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case ocr3:
 #if defined(CR3)
       *b = ((t->c_oflag & CR3) == CR3);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case otab0:
 #if defined(TAB0)
       *b = ((t->c_oflag & TAB0) == TAB0);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case otab1:
 #if defined(TAB1)
       *b = ((t->c_oflag & TAB1) == TAB1);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case otab2:
 #if defined(TAB2)
       *b = ((t->c_oflag & TAB2) == TAB2);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case otab3:
 #if defined(TAB3)
       *b = ((t->c_oflag & TAB3) == TAB3);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case obs0:
 #if defined(BS0)
       *b = ((t->c_oflag & BS0) == BS0);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case obs1:
 #if defined(BS1)
       *b = ((t->c_oflag & BS1) == BS1);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case off0:
 #if defined(FF0)
       *b = ((t->c_oflag & FF0) == FF0);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case off1:
 #if defined(FF1)
       *b = ((t->c_oflag & FF1) == FF1);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case ovt0:
 #if defined(VT0)
       *b = ((t->c_oflag & VT0) == VT0);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case ovt1:
 #if defined(VT1)
       *b = ((t->c_oflag & VT1) == VT1);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b0:
 #if defined(B0)
       *b = ((t->c_cflag & B0) == B0);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b50:
 #if defined(B50)
       *b = ((t->c_cflag & B50) == B50);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b75:
 #if defined(B75)
       *b = ((t->c_cflag & B75) == B75);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b110:
 #if defined(B110)
       *b = ((t->c_cflag & B110) == B110);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b135:
 #if defined(B134)
       *b = ((t->c_cflag & B134) == B134);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b150:
 #if defined(B150)
       *b = ((t->c_cflag & B150) == B150);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b200:
 #if defined(B200)
       *b = ((t->c_cflag & B200) == B200);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b300:
 #if defined(B300)
       *b = ((t->c_cflag & B300) == B300);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b600:
 #if defined(B600)
       *b = ((t->c_cflag & B600) == B600);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b1200:
 #if defined(B1200)
       *b = ((t->c_cflag & B1200) == B1200);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b1800:
 #if defined(B1800)
       *b = ((t->c_cflag & B1800) == B1800);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b2400:
 #if defined(B2400)
       *b = ((t->c_cflag & B2400) == B2400);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b4800:
 #if defined(B4800)
       *b = ((t->c_cflag & B4800) == B4800);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b9600:
 #if defined(B9600)
       *b = ((t->c_cflag & B9600) == B9600);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b19200:
 #if defined(B19200)
       *b = ((t->c_cflag & B19200) == B19200);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b38400:
 #if defined(B38400)
       *b = ((t->c_cflag & B38400) == B38400);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b57600:
 #if defined(B57600)
       *b = ((t->c_cflag & B57600) == B57600);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b115200:
 #if defined(B115200)
       *b = ((t->c_cflag & B115200) == B115200);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b240400:
 #if defined(B230400)
       *b = ((t->c_cflag & B230400) == B230400);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b460800:
 #if defined(B460800)
       *b = ((t->c_cflag & B460800) == B460800);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b500000:
 #if defined(B500000)
       *b = ((t->c_cflag & B500000) == B500000);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b576000:
 #if defined(B576000)
       *b = ((t->c_cflag & B576000) == B576000);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b921600:
 #if defined(B921600)
       *b = ((t->c_cflag & B921600) == B921600);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b1000000:
 #if defined(B1000000)
       *b = ((t->c_cflag & B1000000) == B1000000);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b1152000:
 #if defined(B1152000)
       *b = ((t->c_cflag & B1152000) == B1152000);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b1500000:
 #if defined(B1500000)
       *b = ((t->c_cflag & B1500000) == B1500000);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b2000000:
 #if defined(B2000000)
       *b = ((t->c_cflag & B2000000) == B2000000);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b2500000:
 #if defined(B2500000)
       *b = ((t->c_cflag & B2500000) == B2500000);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b3000000:
 #if defined(B3000000)
       *b = ((t->c_cflag & B3000000) == B3000000);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b3500000:
 #if defined(B3500000)
       *b = ((t->c_cflag & B3500000) == B3500000);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case b4000000:
 #if defined(B4000000)
       *b = ((t->c_cflag & B4000000) == B4000000);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case maxbaud:
 #if defined(MAX)
       *b = ((t->c_cflag & __MAX_BAUD) == __MAX_BAUD);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case crtscts:
 #if defined(CRTSCTS)
       *b = ((t->c_cflag & CRTSCTS) == CRTSCTS);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case cs5:
 #if defined(CS5)
       *b = ((t->c_cflag & CS5) == CS5);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case cs6:
 #if defined(CS6)
       *b = ((t->c_cflag & CS6) == CS6);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case cs7:
 #if defined(CS7)
       *b = ((t->c_cflag & CS7) == CS7);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case cs8:
 #if defined(CS8)
       *b = ((t->c_cflag & CS8) == CS8);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case cstopb:
 #if defined(CSTOPB)
       *b = ((t->c_cflag & CSTOPB) == CSTOPB);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case cread:
 #if defined(CREAD)
       *b = ((t->c_cflag & CREAD) == CREAD);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case parenb:
 #if defined(PARENB)
       *b = ((t->c_cflag & PARENB) == PARENB);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case parodd:
 #if defined(PARODD)
       *b = ((t->c_cflag & PARODD) == PARODD);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case hupcl:
 #if defined(HUPCL)
       *b = ((t->c_cflag & HUPCL) == HUPCL);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case clocal:
 #if defined(CLOCAL)
       *b = ((t->c_cflag & CLOCAL) == CLOCAL);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case lisig:
 #if defined(ISIG)
       *b = ((t->c_lflag & ISIG) == ISIG);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case licanon:
 #if defined(ICANON)
       *b = ((t->c_lflag & ICANON) == ICANON);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case lxcase:
 #if defined(XCASE)
       *b = ((t->c_lflag & XCASE) == XCASE);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case lecho:
 #if defined(ECHO)
       *b = ((t->c_lflag & ECHO) == ECHO);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case lechoe:
 #if defined(ECHOE)
       *b = ((t->c_lflag & ECHOE) == ECHOE);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case lechok:
 #if defined(ECHOK)
       *b = ((t->c_lflag & ECHOK) == ECHOK);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case lechonl:
 #if defined(ECHONL)
       *b = ((t->c_lflag & ECHONL) == ECHONL);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case lnoflsh:
 #if defined(NOFLSH)
       *b = ((t->c_lflag & NOFLSH) == NOFLSH);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case ltopstop:
 #if defined(TOSTOP)
       *b = ((t->c_lflag & TOSTOP) == TOSTOP);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case lechoctl:
 #if defined(ECHOCTL)
       *b = ((t->c_lflag & ECHOCTL) == ECHOCTL);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case lechoprt:
 #if defined(ECHOPRT)
       *b = ((t->c_lflag & ECHOPRT) == ECHOPRT);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case lechoke:
 #if defined(ECHOKE)
       *b = ((t->c_lflag & ECHOKE) == ECHOKE);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case lflusho:
 #if defined(FLUSHO)
       *b = ((t->c_lflag & FLUSHO) == FLUSHO);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case lpendin:
 #if defined(PENDIN)
       *b = ((t->c_lflag & PENDIN) == PENDIN);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case liexten:
 #if defined(IEXTEN)
       *b = ((t->c_lflag & IEXTEN) == IEXTEN);
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     }
-  return 0;
+  return false;
 }
 
-/* SetFlag sets a flag value in, t, to, b, and returns TRUE if
-   this flag value is supported.  */
+/* SetFlag sets a flag value in t to b and returns true if this flag
+   value is supported.  */
 
-extern "C" int
-EXPORT (SetFlag) (struct termios *t, Flag f, int b)
+extern "C" bool
+EXPORT (SetFlag) (struct termios *t, Flag f, bool b)
 {
   switch (f)
     {
@@ -1120,586 +1121,586 @@ EXPORT (SetFlag) (struct termios *t, Flag f, int b)
 #if defined(IGNBRK)
       return doSetUnset (&t->c_iflag, IGNBRK, b);
 #else
-      return 0;
+      return false;
 #endif
     case ibrkint:
 #if defined(BRKINT)
       return doSetUnset (&t->c_iflag, BRKINT, b);
 #else
-      return 0;
+      return false;
 #endif
     case ignpar:
 #if defined(IGNPAR)
       return doSetUnset (&t->c_iflag, IGNPAR, b);
 #else
-      return 0;
+      return false;
 #endif
     case iparmrk:
 #if defined(PARMRK)
       return doSetUnset (&t->c_iflag, PARMRK, b);
 #else
-      return 0;
+      return false;
 #endif
     case inpck:
 #if defined(INPCK)
       return doSetUnset (&t->c_iflag, INPCK, b);
 #else
-      return 0;
+      return false;
 #endif
     case istrip:
 #if defined(ISTRIP)
       return doSetUnset (&t->c_iflag, ISTRIP, b);
 #else
-      return 0;
+      return false;
 #endif
     case inlcr:
 #if defined(INLCR)
       return doSetUnset (&t->c_iflag, INLCR, b);
 #else
-      return 0;
+      return false;
 #endif
     case igncr:
 #if defined(IGNCR)
       return doSetUnset (&t->c_iflag, IGNCR, b);
 #else
-      return 0;
+      return false;
 #endif
     case icrnl:
 #if defined(ICRNL)
       return doSetUnset (&t->c_iflag, ICRNL, b);
 #else
-      return 0;
+      return false;
 #endif
     case iuclc:
 #if defined(IUCLC)
       return doSetUnset (&t->c_iflag, IUCLC, b);
 #else
-      return 0;
+      return false;
 #endif
     case ixon:
 #if defined(IXON)
       return doSetUnset (&t->c_iflag, IXON, b);
 #else
-      return 0;
+      return false;
 #endif
     case ixany:
 #if defined(IXANY)
       return doSetUnset (&t->c_iflag, IXANY, b);
 #else
-      return 0;
+      return false;
 #endif
     case ixoff:
 #if defined(IXOFF)
       return doSetUnset (&t->c_iflag, IXOFF, b);
 #else
-      return 0;
+      return false;
 #endif
     case imaxbel:
 #if defined(IMAXBEL)
       return doSetUnset (&t->c_iflag, IMAXBEL, b);
 #else
-      return 0;
+      return false;
 #endif
     case opost:
 #if defined(OPOST)
       return doSetUnset (&t->c_oflag, OPOST, b);
 #else
-      return 0;
+      return false;
 #endif
     case olcuc:
 #if defined(OLCUC)
       return doSetUnset (&t->c_oflag, OLCUC, b);
 #else
-      return 0;
+      return false;
 #endif
     case onlcr:
 #if defined(ONLCR)
       return doSetUnset (&t->c_oflag, ONLCR, b);
 #else
-      return 0;
+      return false;
 #endif
     case ocrnl:
 #if defined(OCRNL)
       return doSetUnset (&t->c_oflag, OCRNL, b);
 #else
-      return 0;
+      return false;
 #endif
     case onocr:
 #if defined(ONOCR)
       return doSetUnset (&t->c_oflag, ONOCR, b);
 #else
-      return 0;
+      return false;
 #endif
     case onlret:
 #if defined(ONLRET)
       return doSetUnset (&t->c_oflag, ONLRET, b);
 #else
-      return 0;
+      return false;
 #endif
     case ofill:
 #if defined(OFILL)
       return doSetUnset (&t->c_oflag, OFILL, b);
 #else
-      return 0;
+      return false;
 #endif
     case ofdel:
 #if defined(OFDEL)
       return doSetUnset (&t->c_oflag, OFDEL, b);
 #else
-      return 0;
+      return false;
 #endif
     case onl0:
 #if defined(NL0)
       return doSetUnset (&t->c_oflag, NL0, b);
 #else
-      return 0;
+      return false;
 #endif
     case onl1:
 #if defined(NL1)
       return doSetUnset (&t->c_oflag, NL1, b);
 #else
-      return 0;
+      return false;
 #endif
     case ocr0:
 #if defined(CR0)
       return doSetUnset (&t->c_oflag, CR0, b);
 #else
-      return 0;
+      return false;
 #endif
     case ocr1:
 #if defined(CR1)
       return doSetUnset (&t->c_oflag, CR1, b);
 #else
-      return 0;
+      return false;
 #endif
     case ocr2:
 #if defined(CR2)
       return doSetUnset (&t->c_oflag, CR2, b);
 #else
-      return 0;
+      return false;
 #endif
     case ocr3:
 #if defined(CR3)
       return doSetUnset (&t->c_oflag, CR3, b);
 #else
-      return 0;
+      return false;
 #endif
     case otab0:
 #if defined(TAB0)
       return doSetUnset (&t->c_oflag, TAB0, b);
 #else
-      return 0;
+      return false;
 #endif
     case otab1:
 #if defined(TAB1)
       return doSetUnset (&t->c_oflag, TAB1, b);
 #else
-      return 0;
+      return false;
 #endif
     case otab2:
 #if defined(TAB2)
       return doSetUnset (&t->c_oflag, TAB2, b);
 #else
-      return 0;
+      return false;
 #endif
     case otab3:
 #if defined(TAB3)
       return doSetUnset (&t->c_oflag, TAB3, b);
 #else
-      return 0;
+      return false;
 #endif
     case obs0:
 #if defined(BS0)
       return doSetUnset (&t->c_oflag, BS0, b);
 #else
-      return 0;
+      return false;
 #endif
     case obs1:
 #if defined(BS1)
       return doSetUnset (&t->c_oflag, BS1, b);
 #else
-      return 0;
+      return false;
 #endif
     case off0:
 #if defined(FF0)
       return doSetUnset (&t->c_oflag, FF0, b);
 #else
-      return 0;
+      return false;
 #endif
     case off1:
 #if defined(FF1)
       return doSetUnset (&t->c_oflag, FF1, b);
 #else
-      return 0;
+      return false;
 #endif
     case ovt0:
 #if defined(VT0)
       return doSetUnset (&t->c_oflag, VT0, b);
 #else
-      return 0;
+      return false;
 #endif
     case ovt1:
 #if defined(VT1)
       return doSetUnset (&t->c_oflag, VT1, b);
 #else
-      return 0;
+      return false;
 #endif
     case b0:
 #if defined(B0)
       return doSetUnset (&t->c_cflag, B0, b);
 #else
-      return 0;
+      return false;
 #endif
     case b50:
 #if defined(B50)
       return doSetUnset (&t->c_cflag, B50, b);
 #else
-      return 0;
+      return false;
 #endif
     case b75:
 #if defined(B75)
       return doSetUnset (&t->c_cflag, B75, b);
 #else
-      return 0;
+      return false;
 #endif
     case b110:
 #if defined(B110)
       return doSetUnset (&t->c_cflag, B110, b);
 #else
-      return 0;
+      return false;
 #endif
     case b135:
 #if defined(B134)
       return doSetUnset (&t->c_cflag, B134, b);
 #else
-      return 0;
+      return false;
 #endif
     case b150:
 #if defined(B150)
       return doSetUnset (&t->c_cflag, B150, b);
 #else
-      return 0;
+      return false;
 #endif
     case b200:
 #if defined(B200)
       return doSetUnset (&t->c_cflag, B200, b);
 #else
-      return 0;
+      return false;
 #endif
     case b300:
 #if defined(B300)
       return doSetUnset (&t->c_cflag, B300, b);
 #else
-      return 0;
+      return false;
 #endif
     case b600:
 #if defined(B600)
       return doSetUnset (&t->c_cflag, B600, b);
 #else
-      return 0;
+      return false;
 #endif
     case b1200:
 #if defined(B1200)
       return doSetUnset (&t->c_cflag, B1200, b);
 #else
-      return 0;
+      return false;
 #endif
     case b1800:
 #if defined(B1800)
       return doSetUnset (&t->c_cflag, B1800, b);
 #else
-      return 0;
+      return false;
 #endif
     case b2400:
 #if defined(B2400)
       return doSetUnset (&t->c_cflag, B2400, b);
 #else
-      return 0;
+      return false;
 #endif
     case b4800:
 #if defined(B4800)
       return doSetUnset (&t->c_cflag, B4800, b);
 #else
-      return 0;
+      return false;
 #endif
     case b9600:
 #if defined(B9600)
       return doSetUnset (&t->c_cflag, B9600, b);
 #else
-      return 0;
+      return false;
 #endif
     case b19200:
 #if defined(B19200)
       return doSetUnset (&t->c_cflag, B19200, b);
 #else
-      return 0;
+      return false;
 #endif
     case b38400:
 #if defined(B38400)
       return doSetUnset (&t->c_cflag, B38400, b);
 #else
-      return 0;
+      return false;
 #endif
     case b57600:
 #if defined(B57600)
       return doSetUnset (&t->c_cflag, B57600, b);
 #else
-      return 0;
+      return false;
 #endif
     case b115200:
 #if defined(B115200)
       return doSetUnset (&t->c_cflag, B115200, b);
 #else
-      return 0;
+      return false;
 #endif
     case b240400:
 #if defined(B230400)
       return doSetUnset (&t->c_cflag, B230400, b);
 #else
-      return 0;
+      return false;
 #endif
     case b460800:
 #if defined(B460800)
       return doSetUnset (&t->c_cflag, B460800, b);
 #else
-      return 0;
+      return false;
 #endif
     case b500000:
 #if defined(B500000)
       return doSetUnset (&t->c_cflag, B500000, b);
 #else
-      return 0;
+      return false;
 #endif
     case b576000:
 #if defined(B576000)
       return doSetUnset (&t->c_cflag, B576000, b);
 #else
-      return 0;
+      return false;
 #endif
     case b921600:
 #if defined(B921600)
       return doSetUnset (&t->c_cflag, B921600, b);
 #else
-      return 0;
+      return false;
 #endif
     case b1000000:
 #if defined(B1000000)
       return doSetUnset (&t->c_cflag, B1000000, b);
 #else
-      return 0;
+      return false;
 #endif
     case b1152000:
 #if defined(B1152000)
       return doSetUnset (&t->c_cflag, B1152000, b);
 #else
-      return 0;
+      return false;
 #endif
     case b1500000:
 #if defined(B1500000)
       return doSetUnset (&t->c_cflag, B1500000, b);
 #else
-      return 0;
+      return false;
 #endif
     case b2000000:
 #if defined(B2000000)
       return doSetUnset (&t->c_cflag, B2000000, b);
 #else
-      return 0;
+      return false;
 #endif
     case b2500000:
 #if defined(B2500000)
       return doSetUnset (&t->c_cflag, B2500000, b);
 #else
-      return 0;
+      return false;
 #endif
     case b3000000:
 #if defined(B3000000)
       return doSetUnset (&t->c_cflag, B3000000, b);
 #else
-      return 0;
+      return false;
 #endif
     case b3500000:
 #if defined(B3500000)
       return doSetUnset (&t->c_cflag, B3500000, b);
 #else
-      return 0;
+      return false;
 #endif
     case b4000000:
 #if defined(B4000000)
       return doSetUnset (&t->c_cflag, B4000000, b);
 #else
-      return 0;
+      return false;
 #endif
     case maxbaud:
 #if defined(__MAX_BAUD)
       return doSetUnset (&t->c_cflag, __MAX_BAUD, b);
 #else
-      return 0;
+      return false;
 #endif
     case crtscts:
 #if defined(CRTSCTS)
       return doSetUnset (&t->c_cflag, CRTSCTS, b);
 #else
-      return 0;
+      return false;
 #endif
     case cs5:
 #if defined(CS5)
       return doSetUnset (&t->c_cflag, CS5, b);
 #else
-      return 0;
+      return false;
 #endif
     case cs6:
 #if defined(CS6)
       return doSetUnset (&t->c_cflag, CS6, b);
 #else
-      return 0;
+      return false;
 #endif
     case cs7:
 #if defined(CS7)
       return doSetUnset (&t->c_cflag, CS7, b);
 #else
-      return 0;
+      return false;
 #endif
     case cs8:
 #if defined(CS8)
       return doSetUnset (&t->c_cflag, CS8, b);
 #else
-      return 0;
+      return false;
 #endif
     case cstopb:
 #if defined(CSTOPB)
       return doSetUnset (&t->c_cflag, CSTOPB, b);
 #else
-      return 0;
+      return false;
 #endif
     case cread:
 #if defined(CREAD)
       return doSetUnset (&t->c_cflag, CREAD, b);
 #else
-      return 0;
+      return false;
 #endif
     case parenb:
 #if defined(PARENB)
       return doSetUnset (&t->c_cflag, PARENB, b);
 #else
-      return 0;
+      return false;
 #endif
     case parodd:
 #if defined(PARODD)
       return doSetUnset (&t->c_cflag, PARODD, b);
 #else
-      return 0;
+      return false;
 #endif
     case hupcl:
 #if defined(HUPCL)
       return doSetUnset (&t->c_cflag, HUPCL, b);
 #else
-      return 0;
+      return false;
 #endif
     case clocal:
 #if defined(CLOCAL)
       return doSetUnset (&t->c_cflag, CLOCAL, b);
 #else
-      return 0;
+      return false;
 #endif
     case lisig:
 #if defined(ISIG)
       return doSetUnset (&t->c_lflag, ISIG, b);
 #else
-      return 0;
+      return false;
 #endif
     case licanon:
 #if defined(ICANON)
       return doSetUnset (&t->c_lflag, ICANON, b);
 #else
-      return 0;
+      return false;
 #endif
     case lxcase:
 #if defined(XCASE)
       return doSetUnset (&t->c_lflag, XCASE, b);
 #else
-      return 0;
+      return false;
 #endif
     case lecho:
 #if defined(ECHO)
       return doSetUnset (&t->c_lflag, ECHO, b);
 #else
-      return 0;
+      return false;
 #endif
     case lechoe:
 #if defined(ECHOE)
       return doSetUnset (&t->c_lflag, ECHOE, b);
 #else
-      return 0;
+      return false;
 #endif
     case lechok:
 #if defined(ECHOK)
       return doSetUnset (&t->c_lflag, ECHOK, b);
 #else
-      return 0;
+      return false;
 #endif
     case lechonl:
 #if defined(ECHONL)
       return doSetUnset (&t->c_lflag, ECHONL, b);
 #else
-      return 0;
+      return false;
 #endif
     case lnoflsh:
 #if defined(NOFLSH)
       return doSetUnset (&t->c_lflag, NOFLSH, b);
 #else
-      return 0;
+      return false;
 #endif
     case ltopstop:
 #if defined(TOSTOP)
       return doSetUnset (&t->c_lflag, TOSTOP, b);
 #else
-      return 0;
+      return false;
 #endif
     case lechoctl:
 #if defined(ECHOCTL)
       return doSetUnset (&t->c_lflag, ECHOCTL, b);
 #else
-      return 0;
+      return false;
 #endif
     case lechoprt:
 #if defined(ECHOPRT)
       return doSetUnset (&t->c_lflag, ECHOPRT, b);
 #else
-      return 0;
+      return false;
 #endif
     case lechoke:
 #if defined(ECHOKE)
       return doSetUnset (&t->c_lflag, ECHOKE, b);
 #else
-      return 0;
+      return false;
 #endif
     case lflusho:
 #if defined(FLUSHO)
       return doSetUnset (&t->c_lflag, FLUSHO, b);
 #else
-      return 0;
+      return false;
 #endif
     case lpendin:
 #if defined(PENDIN)
       return doSetUnset (&t->c_lflag, PENDIN, b);
 #else
-      return 0;
+      return false;
 #endif
     case liexten:
 #if defined(IEXTEN)
       return doSetUnset (&t->c_lflag, IEXTEN, b);
 #else
-      return 0;
+      return false;
 #endif
     }
-  return 0;
+  return false;
 }
 
 /* GetChar sets a CHAR, ch, value from, t, and returns TRUE if
    this value is supported.  */
 
-extern "C" int
+extern "C" bool
 EXPORT (GetChar) (struct termios *t, ControlChar c, char *ch)
 {
   switch (c)
@@ -1708,131 +1709,131 @@ EXPORT (GetChar) (struct termios *t, ControlChar c, char *ch)
     case vintr:
 #if defined(VINTR)
       *ch = t->c_cc[VINTR];
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vquit:
 #if defined(VQUIT)
       *ch = t->c_cc[VQUIT];
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case verase:
 #if defined(VERASE)
       *ch = t->c_cc[VERASE];
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vkill:
 #if defined(VKILL)
       *ch = t->c_cc[VKILL];
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case veof:
 #if defined(VEOF)
       *ch = t->c_cc[VEOF];
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vtime:
 #if defined(VTIME)
       *ch = t->c_cc[VTIME];
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vmin:
 #if defined(VMIN)
       *ch = t->c_cc[VMIN];
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vswtc:
 #if defined(VSWTC)
       *ch = t->c_cc[VSWTC];
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vstart:
 #if defined(VSTART)
       *ch = t->c_cc[VSTART];
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vstop:
 #if defined(VSTOP)
       *ch = t->c_cc[VSTOP];
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vsusp:
 #if defined(VSUSP)
       *ch = t->c_cc[VSUSP];
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case veol:
 #if defined(VEOL)
       *ch = t->c_cc[VEOL];
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vreprint:
 #if defined(VREPRINT)
       *ch = t->c_cc[VREPRINT];
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vdiscard:
 #if defined(VDISCARD)
       *ch = t->c_cc[VDISCARD];
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vwerase:
 #if defined(VWERASE)
       *ch = t->c_cc[VWERASE];
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vlnext:
 #if defined(VLNEXT)
       *ch = t->c_cc[VLNEXT];
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case veol2:
 #if defined(VEOL2)
       *ch = t->c_cc[VEOL2];
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     default:
-      return 0;
+      return false;
     }
 }
 
 /* SetChar sets a CHAR value in, t, and returns TRUE if, c,
    is supported.  */
 
-extern "C" int
+extern "C" bool
 EXPORT (SetChar) (struct termios *t, ControlChar c, char ch)
 {
   switch (c)
@@ -1841,146 +1842,146 @@ EXPORT (SetChar) (struct termios *t, ControlChar c, char ch)
     case vintr:
 #if defined(VINTR)
       t->c_cc[VINTR] = ch;
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vquit:
 #if defined(VQUIT)
       t->c_cc[VQUIT] = ch;
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case verase:
 #if defined(VERASE)
       t->c_cc[VERASE] = ch;
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vkill:
 #if defined(VKILL)
       t->c_cc[VKILL] = ch;
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case veof:
 #if defined(VEOF)
       t->c_cc[VEOF] = ch;
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vtime:
 #if defined(VTIME)
       t->c_cc[VTIME] = ch;
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vmin:
 #if defined(VMIN)
       t->c_cc[VMIN] = ch;
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vswtc:
 #if defined(VSWTC)
       t->c_cc[VSWTC] = ch;
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vstart:
 #if defined(VSTART)
       t->c_cc[VSTART] = ch;
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vstop:
 #if defined(VSTOP)
       t->c_cc[VSTOP] = ch;
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vsusp:
 #if defined(VSUSP)
       t->c_cc[VSUSP] = ch;
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case veol:
 #if defined(VEOL)
       t->c_cc[VEOL] = ch;
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vreprint:
 #if defined(VREPRINT)
       t->c_cc[VREPRINT] = ch;
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vdiscard:
 #if defined(VDISCARD)
       t->c_cc[VDISCARD] = ch;
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vwerase:
 #if defined(VWERASE)
       t->c_cc[VWERASE] = ch;
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case vlnext:
 #if defined(VLNEXT)
       t->c_cc[VLNEXT] = ch;
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     case veol2:
 #if defined(VEOL2)
       t->c_cc[VEOL2] = ch;
-      return 1;
+      return true;
 #else
-      return 0;
+      return false;
 #endif
     default:
-      return 0;
+      return false;
     }
 }
 #endif
 
 extern "C" void
-_M2_termios_init (int, char *[], char *[])
+M2EXPORT(init) (int, char *argv[], char *env[])
 {
 }
 
 extern "C" void
-_M2_termios_fini (int, char *[], char *[])
+M2EXPORT(fini) (int, char *argv[], char *env[])
 {
 }
 
 extern "C" void
-_M2_termios_dep (void)
+M2EXPORT(dep) (void)
 {
 }
 
 extern "C" void __attribute__((__constructor__))
-_M2_termios_ctor (void)
+M2EXPORT(ctor) (void)
 {
-  M2RTS_RegisterModule ("termios", _M2_termios_init, _M2_termios_fini,
-			_M2_termios_dep);
+  m2pim_M2RTS_RegisterModule ("termios", M2LIBNAME,
+			      M2EXPORT(init),	M2EXPORT(fini),	M2EXPORT(dep));
 }

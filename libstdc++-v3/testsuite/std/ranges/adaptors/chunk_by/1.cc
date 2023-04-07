@@ -54,9 +54,17 @@ test02()
   VERIFY( i == v.end() );
 }
 
+void
+test03()
+{
+  // LWG 3796
+  ranges::chunk_by_view<ranges::empty_view<int>, ranges::equal_to> r;
+}
+
 int
 main()
 {
   static_assert(test01());
   test02();
+  test03();
 }

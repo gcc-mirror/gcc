@@ -2171,7 +2171,7 @@ private mixin template Protocol()
       *
       * Example:
       * ----
-      * import std.net.curl, std.stdio;
+      * import std.net.curl, std.stdio, std.conv;
       * auto client = HTTP("dlang.org");
       * client.onReceive = (ubyte[] data)
       * {
@@ -2817,7 +2817,7 @@ struct HTTP
          *
          * Example:
          * ----
-         * import std.net.curl, std.stdio;
+         * import std.net.curl, std.stdio, std.conv;
          * auto client = HTTP("dlang.org");
          * client.onReceive = (ubyte[] data)
          * {
@@ -3054,7 +3054,7 @@ struct HTTP
       *
       * Example:
       * ----
-      * import std.net.curl, std.stdio;
+      * import std.net.curl, std.stdio, std.conv;
       * auto http = HTTP("http://www.mydomain.com");
       * http.onReceive = (ubyte[] data) { writeln(to!(const(char)[])(data)); return data.length; };
       * http.postData = [1,2,3,4,5];
@@ -3073,7 +3073,7 @@ struct HTTP
       *
       * Example:
       * ----
-      * import std.net.curl, std.stdio;
+      * import std.net.curl, std.stdio, std.conv;
       * auto http = HTTP("http://www.mydomain.com");
       * http.onReceive = (ubyte[] data) { writeln(to!(const(char)[])(data)); return data.length; };
       * http.postData = "The quick....";
@@ -3145,7 +3145,7 @@ struct HTTP
       *
       * Example:
       * ----
-      * import std.net.curl, std.stdio;
+      * import std.net.curl, std.stdio, std.conv;
       * auto http = HTTP("dlang.org");
       * http.onReceive = (ubyte[] data) { writeln(to!(const(char)[])(data)); return data.length; };
       * http.onReceiveHeader = (in char[] key, in char[] value) { writeln(key, " = ", value); };
@@ -4551,7 +4551,7 @@ struct Curl
       *
       * Example:
       * ----
-      * import std.net.curl, std.stdio;
+      * import std.net.curl, std.stdio, std.conv;
       * Curl curl;
       * curl.initialize();
       * curl.set(CurlOption.url, "http://dlang.org");

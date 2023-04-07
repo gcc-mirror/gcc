@@ -582,8 +582,9 @@ public:
     tree ifbody = void_node;
     tree elsebody = void_node;
 
-    /* Build the `then' branch.  */
-    if (s->ifbody)
+    /* Build the `then' branch, don't do code generation when the condition
+       is `if (__ctfe)', as that is always false at run-time.  */
+    if (s->ifbody && !s->isIfCtfeBlock ())
       {
 	push_stmt_list ();
 	this->build_stmt (s->ifbody);

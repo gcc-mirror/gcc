@@ -1,4 +1,4 @@
-/* { dg-do compile { target lp64 } } */
+/* { dg-do compile { target { lp64 || llp64 } } } */
 struct A { int b[1]; };
 
 void

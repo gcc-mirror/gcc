@@ -1007,6 +1007,7 @@ proc check_v3_target_debug_mode { } {
     global cxxflags
     return [check_v3_target_prop_cached et_debug_mode {
 	set code "
+	#include <bits/c++config.h>
 	#if ! defined _GLIBCXX_DEBUG
 	# error no debug mode
 	#endif

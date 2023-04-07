@@ -56,6 +56,8 @@ spread_c4 (gfc_array_c4 *ret, const gfc_array_c4 *source,
 
   srank = GFC_DESCRIPTOR_RANK(source);
 
+  sstride[0] = 0; /* Avoid warnings if not initialized.  */
+  
   rrank = srank + 1;
   if (rrank > GFC_MAX_DIMENSIONS)
     runtime_error ("return rank too large in spread()");

@@ -38,7 +38,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 EXTERN void m2top_StartGlobalContext (void);
 EXTERN void m2top_EndGlobalContext (void);
-EXTERN void m2top_SetFlagUnitAtATime (int b);
+EXTERN void m2top_SetFlagUnitAtATime (bool b);
 
 #undef EXTERN
 #endif /* m2top_h.  */

@@ -20,16 +20,6 @@
 \body\
 @end smallexample
 @end macro
-@c Makeinfo handles the above macro OK, TeX needs manual line breaks;
-@c they get lost at some point in handling the macro.  But if @macro is
-@c used here rather than @alias, it produces double line breaks.
-@iftex
-@alias gol = *
-@end iftex
-@ifnottex
-@macro gol
-@end macro
-@end ifnottex
 
 @c For FSF printing, define FSFPRINT.  Also update the ISBN and last
 @c printing date for the manual being printed.
@@ -70,4 +60,20 @@
 @c Even if there are no authors, the second titlepage line should be
 @c forced to the bottom of the page.
 @vskip 0pt plus 1filll
+@end macro
+
+@c Convenience macro for defining builtins, in similar spirit
+@c to @deftypefun for functions.  These macros provide syntax similar
+@c to @deftypefun, except all arguments are passed as a single
+@c argument, by being wrapped in curly braces.
+@macro defbuiltin {rest}
+@deftypefn {Built-in Function} \rest\
+@end macro
+
+@macro defbuiltinx {rest}
+@deftypefnx {Built-in Function} \rest\
+@end macro
+
+@macro enddefbuiltin
+@end deftypefn
 @end macro

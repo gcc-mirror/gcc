@@ -145,6 +145,14 @@ test_counting()
   VERIFY( counter == 2 );
 }
 
+void
+test_lwg3893()
+{
+  // LWG 3893. LWG 3661 broke atomic<shared_ptr<T>> a; a = nullptr;
+  std::atomic<std::shared_ptr<int>> a;
+  a = nullptr;
+}
+
 int
 main()
 {
@@ -152,4 +160,5 @@ main()
   test_atomic_shared_ptr();
   test_wait_notify();
   test_counting();
+  test_lwg3893();
 }

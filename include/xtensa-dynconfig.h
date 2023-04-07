@@ -104,6 +104,14 @@ struct xtensa_config_v2
   int xtensa_march_earliest;
 };
 
+struct xtensa_config_v3
+{
+  int xchal_have_clamps;
+  int xchal_have_depbits;
+  int xchal_have_exclusive;
+  int xchal_have_xea3;
+};
+
 typedef struct xtensa_isa_internal_struct xtensa_isa_internal;
 
 extern const void *xtensa_load_config (const char *name,
@@ -111,6 +119,7 @@ extern const void *xtensa_load_config (const char *name,
 				       const void *no_name_def);
 extern const struct xtensa_config_v1 *xtensa_get_config_v1 (void);
 extern const struct xtensa_config_v2 *xtensa_get_config_v2 (void);
+extern const struct xtensa_config_v3 *xtensa_get_config_v3 (void);
 
 #ifdef XTENSA_CONFIG_DEFINITION
 
@@ -182,6 +191,22 @@ extern const struct xtensa_config_v2 *xtensa_get_config_v2 (void);
 #define XTENSA_MARCH_EARLIEST 0
 #endif
 
+#ifndef XCHAL_HAVE_CLAMPS
+#define XCHAL_HAVE_CLAMPS 0
+#endif
+
+#ifndef XCHAL_HAVE_DEPBITS
+#define XCHAL_HAVE_DEPBITS 0
+#endif
+
+#ifndef XCHAL_HAVE_EXCLUSIVE
+#define XCHAL_HAVE_EXCLUSIVE 0
+#endif
+
+#ifndef XCHAL_HAVE_XEA3
+#define XCHAL_HAVE_XEA3 0
+#endif
+
 #define XTENSA_CONFIG_ENTRY(a) a
 
 #define XTENSA_CONFIG_V1_ENTRY_LIST \
@@ -245,17 +270,27 @@ extern const struct xtensa_config_v2 *xtensa_get_config_v2 (void);
     XTENSA_CONFIG_ENTRY(XTENSA_MARCH_LATEST), \
     XTENSA_CONFIG_ENTRY(XTENSA_MARCH_EARLIEST)
 
+#define XTENSA_CONFIG_V3_ENTRY_LIST \
+    XTENSA_CONFIG_ENTRY(XCHAL_HAVE_CLAMPS), \
+    XTENSA_CONFIG_ENTRY(XCHAL_HAVE_DEPBITS), \
+    XTENSA_CONFIG_ENTRY(XCHAL_HAVE_EXCLUSIVE), \
+    XTENSA_CONFIG_ENTRY(XCHAL_HAVE_XEA3)
+
 #define XTENSA_CONFIG_INSTANCE_LIST \
 const struct xtensa_config_v1 xtensa_config_v1 = { \
     XTENSA_CONFIG_V1_ENTRY_LIST, \
 }; \
 const struct xtensa_config_v2 xtensa_config_v2 = { \
     XTENSA_CONFIG_V2_ENTRY_LIST, \
+}; \
+const struct xtensa_config_v3 xtensa_config_v3 = { \
+    XTENSA_CONFIG_V3_ENTRY_LIST, \
 }
 
 #define XTENSA_CONFIG_ENTRY_LIST \
     XTENSA_CONFIG_V1_ENTRY_LIST, \
-    XTENSA_CONFIG_V2_ENTRY_LIST
+    XTENSA_CONFIG_V2_ENTRY_LIST, \
+    XTENSA_CONFIG_V3_ENTRY_LIST
 
 #else /* XTENSA_CONFIG_DEFINITION */
 
@@ -433,6 +468,19 @@ const struct xtensa_config_v2 xtensa_config_v2 = { \
 
 #undef XTENSA_MARCH_EARLIEST
 #define XTENSA_MARCH_EARLIEST		(xtensa_get_config_v2 ()->xtensa_march_earliest)
+
+
+#undef XCHAL_HAVE_CLAMPS
+#define XCHAL_HAVE_CLAMPS		(xtensa_get_config_v3 ()->xchal_have_clamps)
+
+#undef XCHAL_HAVE_DEPBITS
+#define XCHAL_HAVE_DEPBITS		(xtensa_get_config_v3 ()->xchal_have_depbits)
+
+#undef XCHAL_HAVE_EXCLUSIVE
+#define XCHAL_HAVE_EXCLUSIVE		(xtensa_get_config_v3 ()->xchal_have_exclusive)
+
+#undef XCHAL_HAVE_XEA3
+#define XCHAL_HAVE_XEA3			(xtensa_get_config_v3 ()->xchal_have_xea3)
 
 #endif /* XTENSA_CONFIG_DEFINITION */
 

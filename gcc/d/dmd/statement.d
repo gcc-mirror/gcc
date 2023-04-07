@@ -1061,6 +1061,16 @@ extern (C++) final class IfStatement : Statement
     {
         v.visit(this);
     }
+
+    /******
+     * Returns: true if `if (__ctfe)`
+     */
+    bool isIfCtfeBlock()
+    {
+        if (auto cv = condition.isVarExp())
+            return cv.var.ident == Id.ctfe;
+        return false;
+    }
 }
 
 /***********************************************************
@@ -1762,6 +1772,7 @@ extern (C++) final class GotoStatement : Statement
     TryFinallyStatement tf;
     ScopeGuardStatement os;
     VarDeclaration lastVar;
+    bool inCtfeBlock;               /// set if goto is inside an `if (__ctfe)` block
 
     extern (D) this(const ref Loc loc, Identifier ident)
     {
@@ -1801,6 +1812,12 @@ extern (C++) final class GotoStatement : Statement
         if (label.statement.tf != tf)
         {
             error("cannot `goto` in or out of `finally` block");
+            return true;
+        }
+
+        if (label.statement.inCtfeBlock && !inCtfeBlock)
+        {
+            error("cannot `goto` into `if (__ctfe)` block");
             return true;
         }
 
@@ -1870,6 +1887,7 @@ extern (C++) final class LabelStatement : Statement
     Statement gotoTarget;       // interpret
     void* extra;                // used by Statement_toIR()
     bool breaks;                // someone did a 'break ident'
+    bool inCtfeBlock;           // inside a block dominated by `if (__ctfe)`
 
     extern (D) this(const ref Loc loc, Identifier ident, Statement statement)
     {

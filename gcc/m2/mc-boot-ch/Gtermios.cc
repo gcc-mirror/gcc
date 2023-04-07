@@ -1,4 +1,4 @@
-/* Gtermios.c handwritten module for mc.
+/* Gtermios.cc handwritten module for mc.
 
 Copyright (C) 2010-2023 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.

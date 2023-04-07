@@ -171,9 +171,9 @@ Returns:
  */
 enum bool isInputRange(R) =
     is(typeof(R.init) == R)
-    && is(ReturnType!((R r) => r.empty) == bool)
+    && is(typeof((R r) { return r.empty; } (R.init)) == bool)
     && (is(typeof((return ref R r) => r.front)) || is(typeof(ref (return ref R r) => r.front)))
-    && !is(ReturnType!((R r) => r.front) == void)
+    && !is(typeof((R r) { return r.front; } (R.init)) == void)
     && is(typeof((R r) => r.popFront));
 
 ///
@@ -998,7 +998,7 @@ See_Also:
     The header of $(MREF std,range) for tutorials on ranges.
  */
 enum bool isForwardRange(R) = isInputRange!R
-    && is(ReturnType!((R r) => r.save) == R);
+    && is(typeof((R r) { return r.save; } (R.init)) == R);
 
 ///
 @safe unittest
@@ -1041,7 +1041,7 @@ See_Also:
  */
 enum bool isBidirectionalRange(R) = isForwardRange!R
     && is(typeof((R r) => r.popBack))
-    && is(ReturnType!((R r) => r.back) == ElementType!R);
+    && is(typeof((R r) { return r.back; } (R.init)) == ElementType!R);
 
 ///
 @safe unittest
@@ -1674,8 +1674,8 @@ The following expression must be true for `hasSlicing` to be `true`:
 
 ----
     isForwardRange!R
-    && !isNarrowString!R
-    && is(ReturnType!((R r) => r[1 .. 1].length) == size_t)
+    && !(isAutodecodableString!R && !isAggregateType!R)
+    && is(typeof((R r) { return r[1 .. 1].length; } (R.init)) == size_t)
     && (is(typeof(lvalueOf!R[1 .. 1]) == R) || isInfinite!R)
     && (!is(typeof(lvalueOf!R[0 .. $])) || is(typeof(lvalueOf!R[0 .. $]) == R))
     && (!is(typeof(lvalueOf!R[0 .. $])) || isInfinite!R
@@ -1688,7 +1688,7 @@ The following expression must be true for `hasSlicing` to be `true`:
  */
 enum bool hasSlicing(R) = isForwardRange!R
     && !(isAutodecodableString!R && !isAggregateType!R)
-    && is(ReturnType!((R r) => r[1 .. 1].length) == size_t)
+    && is(typeof((R r) { return r[1 .. 1].length; } (R.init)) == size_t)
     && (is(typeof(lvalueOf!R[1 .. 1]) == R) || isInfinite!R)
     && (!is(typeof(lvalueOf!R[0 .. $])) || is(typeof(lvalueOf!R[0 .. $]) == R))
     && (!is(typeof(lvalueOf!R[0 .. $])) || isInfinite!R

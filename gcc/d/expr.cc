@@ -313,6 +313,31 @@ public:
 
 	this->result_ = build_struct_comparison (code, ts->sym, t1, t2);
       }
+    else if (tb1->ty == TY::Tvector && tb2->ty == TY::Tvector)
+      {
+	/* For vectors, identity is defined as all values being equal.  */
+	tree t1 = build_expr (e->e1);
+	tree t2 = build_expr (e->e2);
+	tree mask = build_boolop (code, t1, t2);
+
+	/* To reinterpret the vector comparison as a boolean expression, bitcast
+	   the bitmask result and generate an additional integer comparison.  */
+	opt_scalar_int_mode mode =
+	  int_mode_for_mode (TYPE_MODE (TREE_TYPE (mask)));
+	gcc_assert (mode.exists ());
+
+	tree type = lang_hooks.types.type_for_mode (mode.require (), 1);
+	if (type == NULL_TREE)
+	  type = make_unsigned_type (GET_MODE_BITSIZE (mode.require ()));
+
+	/* In `t1 is t2', all mask bits must be set for vectors to be equal.
+	   Otherwise any bit set is enough for vectors to be not-equal.  */
+	tree mask_eq = (code == EQ_EXPR)
+	  ? build_all_ones_cst (type) : build_zero_cst (type);
+
+	this->result_ = build_boolop (code, mask_eq,
+				      build_vconvert (type, mask));
+      }
     else
       {
 	/* For operands of other types, identity is defined as being the
@@ -2252,8 +2277,7 @@ public:
 	else
 	  {
 	    /* Generate: _d_newclass()  */
-	    tree arg = build_address (get_classinfo_decl (cd));
-	    new_call = build_libcall (LIBCALL_NEWCLASS, tb, 1, arg);
+	    new_call = build_expr (e->lowering);
 	  }
 
 	/* Set the context pointer for nested classes.  */

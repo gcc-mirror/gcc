@@ -156,9 +156,9 @@ operands of the instruction.
 If the vector has multiple elements, the RTL template is treated as a
 @code{parallel} expression.
 
-@item
 @cindex pattern conditions
 @cindex conditions, in patterns
+@item
 The condition: This is a string which contains a C expression.  When the
 compiler attempts to match RTL against a pattern, the condition is
 evaluated.  If the condition evaluates to @code{true}, the match is
@@ -2193,8 +2193,7 @@ An integer constant with exactly a single bit set.
 An integer constant with all bits set except exactly one.
 
 @item H
-
-@item Q
+@itemx Q
 Any SYMBOL_REF.
 @end table
 
@@ -5291,10 +5290,10 @@ operand 0 is the scalar result, with mode equal to the mode of the elements of
 the input vector.
 
 @cindex @code{reduc_and_scal_@var{m}} instruction pattern
-@item @samp{reduc_and_scal_@var{m}}
 @cindex @code{reduc_ior_scal_@var{m}} instruction pattern
-@itemx @samp{reduc_ior_scal_@var{m}}
 @cindex @code{reduc_xor_scal_@var{m}} instruction pattern
+@item @samp{reduc_and_scal_@var{m}}
+@itemx @samp{reduc_ior_scal_@var{m}}
 @itemx @samp{reduc_xor_scal_@var{m}}
 Compute the bitwise @code{AND}/@code{IOR}/@code{XOR} reduction of the elements
 of a vector of mode @var{m}.  Operand 1 is the vector input and operand 0
@@ -5382,8 +5381,8 @@ usdot<signed op0, unsigned op1, signed op2, signed op3> ==
 @end smallexample
 
 @cindex @code{ssad@var{m}} instruction pattern
-@item @samp{ssad@var{m}}
 @cindex @code{usad@var{m}} instruction pattern
+@item @samp{ssad@var{m}}
 @item @samp{usad@var{m}}
 Compute the sum of absolute differences of two signed/unsigned elements.
 Operand 1 and operand 2 are of the same mode. Their absolute difference, which
@@ -5392,8 +5391,8 @@ equal or wider than the mode of the absolute difference. The result is placed
 in operand 0, which is of the same mode as operand 3.
 
 @cindex @code{widen_ssum@var{m3}} instruction pattern
-@item @samp{widen_ssum@var{m3}}
 @cindex @code{widen_usum@var{m3}} instruction pattern
+@item @samp{widen_ssum@var{m3}}
 @itemx @samp{widen_usum@var{m3}}
 Operands 0 and 2 are of the same mode, which is wider than the mode of
 operand 1. Add operand 1 to operand 2 and place the widened result in
@@ -5401,8 +5400,8 @@ operand 0. (This is used express accumulation of elements into an accumulator
 of a wider mode.)
 
 @cindex @code{smulhs@var{m3}} instruction pattern
-@item @samp{smulhs@var{m3}}
 @cindex @code{umulhs@var{m3}} instruction pattern
+@item @samp{smulhs@var{m3}}
 @itemx @samp{umulhs@var{m3}}
 Signed/unsigned multiply high with scale. This is equivalent to the C code:
 @smallexample
@@ -5414,8 +5413,8 @@ where the sign of @samp{narrow} determines whether this is a signed
 or unsigned operation, and @var{N} is the size of @samp{wide} in bits.
 
 @cindex @code{smulhrs@var{m3}} instruction pattern
-@item @samp{smulhrs@var{m3}}
 @cindex @code{umulhrs@var{m3}} instruction pattern
+@item @samp{smulhrs@var{m3}}
 @itemx @samp{umulhrs@var{m3}}
 Signed/unsigned multiply high with round and scale. This is
 equivalent to the C code:
@@ -5428,8 +5427,8 @@ where the sign of @samp{narrow} determines whether this is a signed
 or unsigned operation, and @var{N} is the size of @samp{wide} in bits.
 
 @cindex @code{sdiv_pow2@var{m3}} instruction pattern
-@item @samp{sdiv_pow2@var{m3}}
 @cindex @code{sdiv_pow2@var{m3}} instruction pattern
+@item @samp{sdiv_pow2@var{m3}}
 @itemx @samp{sdiv_pow2@var{m3}}
 Signed division by power-of-2 immediate. Equivalent to:
 @smallexample
@@ -6028,6 +6027,17 @@ This pattern is not allowed to @code{FAIL}.
 Store the base-@code{FLT_RADIX} logarithm of operand 1 into operand 0.
 Both operands have mode @var{m}, which is a scalar or vector
 floating-point mode.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{signbit@var{m}2} instruction pattern
+@item @samp{signbit@var{m}2}
+Store the sign bit of floating-point operand 1 in operand 0.
+@var{m} is either a scalar or vector mode.  When it is a scalar,
+operand 1 has mode @var{m} but operand 0 must have mode @code{SImode}.
+When @var{m} is a vector, operand 1 has the mode @var{m}.
+operand 0's mode should be an vector integer mode which has
+the same number of elements and the same size as mode @var{m}.
 
 This pattern is not allowed to @code{FAIL}.
 
@@ -8213,12 +8223,12 @@ can itself be a @code{plus}.  @code{and}, @code{ior}, @code{xor},
 @code{umax} are associative when applied to integers, and sometimes to
 floating-point.
 
-@item
 @cindex @code{neg}, canonicalization of
 @cindex @code{not}, canonicalization of
 @cindex @code{mult}, canonicalization of
 @cindex @code{plus}, canonicalization of
 @cindex @code{minus}, canonicalization of
+@item
 For these operators, if only one operand is a @code{neg}, @code{not},
 @code{mult}, @code{plus}, or @code{minus} expression, it will be the
 first operand.
@@ -8757,21 +8767,21 @@ insns that don't.  Instead, write two separate @code{define_split}
 definitions, one for the insns that are valid and one for the insns that
 are not valid.
 
-The splitter is allowed to split jump instructions into sequence of
-jumps or create new jumps in while splitting non-jump instructions.  As
-the control flow graph and branch prediction information needs to be updated,
-several restriction apply.
+The splitter is allowed to split jump instructions into a sequence of jumps or
+create new jumps while splitting non-jump instructions.  As the control flow
+graph and branch prediction information needs to be updated after the splitter
+runs, several restrictions apply.
 
-Splitting of jump instruction into sequence that over by another jump
-instruction is always valid, as compiler expect identical behavior of new
-jump.  When new sequence contains multiple jump instructions or new labels,
-more assistance is needed.  Splitter is required to create only unconditional
-jumps, or simple conditional jump instructions.  Additionally it must attach a
-@code{REG_BR_PROB} note to each conditional jump.  A global variable
-@code{split_branch_probability} holds the probability of the original branch in case
-it was a simple conditional jump, @minus{}1 otherwise.  To simplify
-recomputing of edge frequencies, the new sequence is required to have only
-forward jumps to the newly created labels.
+Splitting of a jump instruction into a sequence that has another jump
+instruction to the same label is always valid, as the compiler expects
+identical behavior of the new jump.  When the new sequence contains multiple
+jump instructions or new labels, more assistance is needed.  The splitter is
+permitted to create only unconditional jumps, or simple conditional jump
+instructions.  Additionally it must attach a @code{REG_BR_PROB} note to each
+conditional jump.  A global variable @code{split_branch_probability} holds the
+probability of the original branch in case it was a simple conditional jump,
+@minus{}1 otherwise.  To simplify recomputing of edge frequencies, the new
+sequence is permitted to have only forward jumps to the newly-created labels.
 
 @findex define_insn_and_split
 For the common case where the pattern of a define_split exactly matches the
@@ -8953,8 +8963,7 @@ It looks like:
 
 @smallexample
 
-(include
-  @var{pathname})
+(include @var{pathname})
 @end smallexample
 
 For example:
@@ -11088,8 +11097,8 @@ values in @file{sync.md} rather than in the main @file{.md} file.
 Some enumeration names have special significance to GCC:
 
 @table @code
-@item unspecv
 @findex unspec_volatile
+@item unspecv
 If an enumeration called @code{unspecv} is defined, GCC will use it
 when printing out @code{unspec_volatile} expressions.  For example:
 
@@ -11105,8 +11114,8 @@ causes GCC to print @samp{(unspec_volatile @dots{} 0)} as:
 (unspec_volatile ... UNSPECV_BLOCKAGE)
 @end smallexample
 
-@item unspec
 @findex unspec
+@item unspec
 If an enumeration called @code{unspec} is defined, GCC will use
 it when printing out @code{unspec} expressions.  GCC will also use
 it when printing out @code{unspec_volatile} expressions unless an

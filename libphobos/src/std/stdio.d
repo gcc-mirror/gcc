@@ -1374,8 +1374,9 @@ Throws: `Exception` if the file is not opened.
     }
 
 /**
-Calls $(HTTP cplusplus.com/reference/clibrary/cstdio/ftell.html, ftell) for the
-managed file handle.
+Calls $(HTTP cplusplus.com/reference/cstdio/ftell.html, ftell)
+for the managed file handle, which returns the current value of
+the position indicator of the file handle.
 
 Throws: `Exception` if the file is not opened.
         `ErrnoException` if the call to `ftell` fails.

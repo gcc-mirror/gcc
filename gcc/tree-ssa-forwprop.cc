@@ -3460,8 +3460,19 @@ pass_forwprop::execute (function *fun)
   lattice.create (num_ssa_names);
   lattice.quick_grow_cleared (num_ssa_names);
   int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (fun));
-  int postorder_num = pre_and_rev_post_order_compute_fn (cfun, NULL,
+  int postorder_num = pre_and_rev_post_order_compute_fn (fun, NULL,
 							 postorder, false);
+  int *bb_to_rpo = XNEWVEC (int, last_basic_block_for_fn (fun));
+  for (int i = 0; i < postorder_num; ++i)
+    {
+      bb_to_rpo[postorder[i]] = i;
+      edge_iterator ei;
+      edge e;
+      FOR_EACH_EDGE (e, ei, BASIC_BLOCK_FOR_FN (fun, postorder[i])->succs)
+	e->flags &= ~EDGE_EXECUTABLE;
+    }
+  single_succ_edge (BASIC_BLOCK_FOR_FN (fun, ENTRY_BLOCK))->flags
+    |= EDGE_EXECUTABLE;
   auto_vec<gimple *, 4> to_fixup;
   auto_vec<gimple *, 32> to_remove;
   to_purge = BITMAP_ALLOC (NULL);
@@ -3470,6 +3481,30 @@ pass_forwprop::execute (function *fun)
     {
       gimple_stmt_iterator gsi;
       basic_block bb = BASIC_BLOCK_FOR_FN (fun, postorder[i]);
+      edge_iterator ei;
+      edge e;
+
+      /* Skip processing not executable blocks.  We could improve
+	 single_use tracking by at least unlinking uses from unreachable
+	 blocks but since blocks with uses are not processed in a
+	 meaningful order this is probably not worth it.  */
+      bool any = false;
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+	  if ((e->flags & EDGE_EXECUTABLE)
+	      /* With dominators we could improve backedge handling
+		 when e->src is dominated by bb.  But for irreducible
+		 regions we have to take all backedges conservatively.
+		 We can handle single-block cycles as we know the
+		 dominator relationship here.  */
+	      || bb_to_rpo[e->src->index] > i)
+	    {
+	      any = true;
+	      break;
+	    }
+	}
+      if (!any)
+	continue;
 
       /* Record degenerate PHIs in the lattice.  */
       for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
@@ -3480,13 +3515,25 @@ pass_forwprop::execute (function *fun)
 	  if (virtual_operand_p (res))
 	    continue;
 
-	  use_operand_p use_p;
-	  ssa_op_iter it;
 	  tree first = NULL_TREE;
 	  bool all_same = true;
-	  FOR_EACH_PHI_ARG (use_p, phi, it, SSA_OP_USE)
+	  edge_iterator ei;
+	  edge e;
+	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    {
-	      tree use = USE_FROM_PTR (use_p);
+	      /* Ignore not executable forward edges.  */
+	      if (!(e->flags & EDGE_EXECUTABLE))
+		{
+		  if (bb_to_rpo[e->src->index] < i)
+		    continue;
+		  /* Avoid equivalences from backedges - while we might
+		     be able to make irreducible regions reducible and
+		     thus turning a back into a forward edge we do not
+		     want to deal with the intermediate SSA issues that
+		     exposes.  */
+		  all_same = false;
+		}
+	      tree use = PHI_ARG_DEF_FROM_EDGE (phi, e);
 	      if (use == res)
 		/* The PHI result can also appear on a backedge, if so
 		   we can ignore this case for the purpose of determining
@@ -3594,7 +3641,7 @@ pass_forwprop::execute (function *fun)
 		   && !gimple_has_volatile_ops (stmt)
 		   && (TREE_CODE (gimple_assign_rhs1 (stmt))
 		       != TARGET_MEM_REF)
-		   && !stmt_can_throw_internal (cfun, stmt))
+		   && !stmt_can_throw_internal (fun, stmt))
 	    {
 	      /* Rewrite loads used only in real/imagpart extractions to
 	         component-wise loads.  */
@@ -3660,7 +3707,7 @@ pass_forwprop::execute (function *fun)
 		       || (fun->curr_properties & PROP_gimple_lvec))
 		   && gimple_assign_load_p (stmt)
 		   && !gimple_has_volatile_ops (stmt)
-		   && !stmt_can_throw_internal (cfun, stmt)
+		   && !stmt_can_throw_internal (fun, stmt)
 		   && (!VAR_P (rhs) || !DECL_HARD_REGISTER (rhs)))
 	    optimize_vector_load (&gsi);
 
@@ -3669,7 +3716,8 @@ pass_forwprop::execute (function *fun)
 	      /* Rewrite stores of a single-use complex build expression
 	         to component-wise stores.  */
 	      use_operand_p use_p;
-	      gimple *use_stmt;
+	      gimple *use_stmt, *def1, *def2;
+	      tree rhs2;
 	      if (single_imm_use (lhs, &use_p, &use_stmt)
 		  && gimple_store_p (use_stmt)
 		  && !gimple_has_volatile_ops (use_stmt)
@@ -3687,7 +3735,7 @@ pass_forwprop::execute (function *fun)
 		  location_t loc = gimple_location (use_stmt);
 		  gimple_set_location (new_stmt, loc);
 		  gimple_set_vuse (new_stmt, gimple_vuse (use_stmt));
-		  gimple_set_vdef (new_stmt, make_ssa_name (gimple_vop (cfun)));
+		  gimple_set_vdef (new_stmt, make_ssa_name (gimple_vop (fun)));
 		  SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
 		  gimple_set_vuse (use_stmt, gimple_vdef (new_stmt));
 		  gimple_stmt_iterator gsi2 = gsi_for_stmt (use_stmt);
@@ -3702,6 +3750,38 @@ pass_forwprop::execute (function *fun)
 
 		  release_defs (stmt);
 		  gsi_remove (&gsi, true);
+		}
+	      /* Rewrite a component-wise load of a complex to a complex
+		 load if the components are not used separately.  */
+	      else if (TREE_CODE (rhs) == SSA_NAME
+		       && has_single_use (rhs)
+		       && ((rhs2 = gimple_assign_rhs2 (stmt)), true)
+		       && TREE_CODE (rhs2) == SSA_NAME
+		       && has_single_use (rhs2)
+		       && (def1 = SSA_NAME_DEF_STMT (rhs),
+			   gimple_assign_load_p (def1))
+		       && (def2 = SSA_NAME_DEF_STMT (rhs2),
+			   gimple_assign_load_p (def2))
+		       && (gimple_vuse (def1) == gimple_vuse (def2))
+		       && !gimple_has_volatile_ops (def1)
+		       && !gimple_has_volatile_ops (def2)
+		       && !stmt_can_throw_internal (fun, def1)
+		       && !stmt_can_throw_internal (fun, def2)
+		       && gimple_assign_rhs_code (def1) == REALPART_EXPR
+		       && gimple_assign_rhs_code (def2) == IMAGPART_EXPR
+		       && operand_equal_p (TREE_OPERAND (gimple_assign_rhs1
+								 (def1), 0),
+					   TREE_OPERAND (gimple_assign_rhs1
+								 (def2), 0)))
+		{
+		  tree cl = TREE_OPERAND (gimple_assign_rhs1 (def1), 0);
+		  gimple_assign_set_rhs_from_tree (&gsi, unshare_expr (cl));
+		  gcc_assert (gsi_stmt (gsi) == stmt);
+		  gimple_set_vuse (stmt, gimple_vuse (def1));
+		  gimple_set_modified (stmt, true);
+		  gimple_stmt_iterator gsi2 = gsi_for_stmt (def1);
+		  gsi_remove (&gsi, false);
+		  gsi_insert_after (&gsi2, stmt, GSI_SAME_STMT);
 		}
 	      else
 		gsi_next (&gsi);
@@ -3721,7 +3801,7 @@ pass_forwprop::execute (function *fun)
 	      if (single_imm_use (lhs, &use_p, &use_stmt)
 		  && gimple_store_p (use_stmt)
 		  && !gimple_has_volatile_ops (use_stmt)
-		  && !stmt_can_throw_internal (cfun, use_stmt)
+		  && !stmt_can_throw_internal (fun, use_stmt)
 		  && is_gimple_assign (use_stmt)
 		  && (TREE_CODE (gimple_assign_lhs (use_stmt))
 		      != TARGET_MEM_REF))
@@ -3752,7 +3832,7 @@ pass_forwprop::execute (function *fun)
 		      gimple_set_location (new_stmt, loc);
 		      gimple_set_vuse (new_stmt, gimple_vuse (use_stmt));
 		      gimple_set_vdef (new_stmt,
-				       make_ssa_name (gimple_vop (cfun)));
+				       make_ssa_name (gimple_vop (fun)));
 		      SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
 		      gimple_set_vuse (use_stmt, gimple_vdef (new_stmt));
 		      gimple_stmt_iterator gsi2 = gsi_for_stmt (use_stmt);
@@ -3948,8 +4028,6 @@ pass_forwprop::execute (function *fun)
 	}
 
       /* Substitute in destination PHI arguments.  */
-      edge_iterator ei;
-      edge e;
       FOR_EACH_EDGE (e, ei, bb->succs)
 	for (gphi_iterator gsi = gsi_start_phis (e->dest);
 	     !gsi_end_p (gsi); gsi_next (&gsi))
@@ -3965,14 +4043,32 @@ pass_forwprop::execute (function *fun)
 		&& may_propagate_copy (arg, val))
 	      propagate_value (use_p, val);
 	  }
+
+      /* Mark outgoing exectuable edges.  */
+      if (edge e = find_taken_edge (bb, NULL))
+	{
+	  e->flags |= EDGE_EXECUTABLE;
+	  if (EDGE_COUNT (bb->succs) > 1)
+	    cfg_changed = true;
+	}
+      else
+	{
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    e->flags |= EDGE_EXECUTABLE;
+	}
     }
   free (postorder);
+  free (bb_to_rpo);
   lattice.release ();
 
   /* Remove stmts in reverse order to make debug stmt creation possible.  */
   while (!to_remove.is_empty())
     {
       gimple *stmt = to_remove.pop ();
+      /* For example remove_prop_source_from_use can remove stmts queued
+	 for removal.  Deal with this gracefully.  */
+      if (!gimple_bb (stmt))
+	continue;
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "Removing dead stmt ");
@@ -4011,8 +4107,8 @@ pass_forwprop::execute (function *fun)
   BITMAP_FREE (to_purge);
   BITMAP_FREE (need_ab_cleanup);
 
-  if (get_range_query (cfun) != get_global_range_query ())
-    disable_ranger (cfun);
+  if (get_range_query (fun) != get_global_range_query ())
+    disable_ranger (fun);
 
   if (cfg_changed)
     todoflags |= TODO_cleanup_cfg;

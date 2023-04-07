@@ -11267,6 +11267,7 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
 
       Struct_type* st = Type::make_struct_type(sfl, loc);
       st->set_is_struct_incomparable();
+      st->set_is_results_struct();
       this->call_temp_ = Statement::make_temporary(st, NULL, loc);
       inserter->insert(this->call_temp_);
     }

@@ -813,6 +813,12 @@ remove_unused_locals (void)
 	      continue;
 	    }
 
+	  if (gimple_call_internal_p (stmt, IFN_DEFERRED_INIT))
+	    {
+	      have_local_clobbers = true;
+	      continue;
+	    }
+
 	  if (b)
 	    TREE_USED (b) = true;
 
@@ -856,7 +862,7 @@ remove_unused_locals (void)
      to remove them if they are the only references to a local variable,
      but we want to retain them when there's any other.  So the first pass
      ignores them, and the second pass (if there were any) tries to remove
-     them.  */
+     them.  We do the same for .DEFERRED_INIT.  */
   if (have_local_clobbers)
     FOR_EACH_BB_FN (bb, cfun)
       {
@@ -879,6 +885,20 @@ remove_unused_locals (void)
 			&& SSA_NAME_IS_DEFAULT_DEF (TREE_OPERAND (lhs, 0))
 			&& (TREE_CODE (SSA_NAME_VAR (TREE_OPERAND (lhs, 0)))
 			    != PARM_DECL)))
+		  {
+		    unlink_stmt_vdef (stmt);
+		    gsi_remove (&gsi, true);
+		    release_defs (stmt);
+		    continue;
+		  }
+		if (b)
+		  TREE_USED (b) = true;
+	      }
+	    else if (gimple_call_internal_p (stmt, IFN_DEFERRED_INIT))
+	      {
+		tree lhs = gimple_call_lhs (stmt);
+		tree base = get_base_address (lhs);
+		if (DECL_P (base) && !is_used_p (base))
 		  {
 		    unlink_stmt_vdef (stmt);
 		    gsi_remove (&gsi, true);

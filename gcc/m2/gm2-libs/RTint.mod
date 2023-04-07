@@ -97,21 +97,21 @@ END Min ;
 
 
 (*
-   FindVector - searches the exists list for a vector of type, t,
+   FindVector - searches the exists list for a vector of type
                 which is associated with file descriptor, fd.
 *)
 
-PROCEDURE FindVector (fd: INTEGER; t: VectorType) : Vector ;
+PROCEDURE FindVector (fd: INTEGER; type: VectorType) : Vector ;
 VAR
-   v: Vector ;
+   vec: Vector ;
 BEGIN
-   v := Exists ;
-   WHILE v#NIL DO
-      IF (v^.type=t) AND (v^.File=fd)
+   vec := Exists ;
+   WHILE vec#NIL DO
+      IF (vec^.type=type) AND (vec^.File=fd)
       THEN
-         RETURN v
+         RETURN vec
       END ;
-      v := v^.exists
+      vec := vec^.exists
    END ;
    RETURN NIL
 END FindVector ;
@@ -124,19 +124,19 @@ END FindVector ;
 
 PROCEDURE InitInputVector (fd: INTEGER; pri: CARDINAL) : CARDINAL ;
 VAR
-   v: Vector ;
+   vptr: Vector ;
 BEGIN
    IF Debugging
    THEN
       printf("InitInputVector fd = %d priority = %d\n", fd, pri)
    END ;
    wait (lock) ;
-   v := FindVector(fd, input) ;
-   IF v=NIL
+   vptr := FindVector(fd, input) ;
+   IF vptr = NIL
    THEN
-      NEW(v) ;
-      INC(VecNo) ;
-      WITH v^ DO
+      NEW (vptr) ;
+      INC (VecNo) ;
+      WITH vptr^ DO
          type     := input ;
          priority := pri ;
          arg      := NIL ;
@@ -145,12 +145,12 @@ BEGIN
          no       := VecNo ;
          File     := fd
       END ;
-      Exists := v ;
+      Exists := vptr ;
       signal (lock) ;
       RETURN VecNo
    ELSE
       signal (lock) ;
-      RETURN v^.no
+      RETURN vptr^.no
    END
 END InitInputVector ;
 
@@ -162,19 +162,19 @@ END InitInputVector ;
 
 PROCEDURE InitOutputVector (fd: INTEGER; pri: CARDINAL) : CARDINAL ;
 VAR
-   v: Vector ;
+   vptr: Vector ;
 BEGIN
    wait (lock) ;
-   v := FindVector (fd, output) ;
-   IF v=NIL
+   vptr := FindVector (fd, output) ;
+   IF vptr = NIL
    THEN
-      NEW (v) ;
-      IF v = NIL
+      NEW (vptr) ;
+      IF vptr = NIL
       THEN
          HALT
       ELSE
          INC (VecNo) ;
-         WITH v^ DO
+         WITH vptr^ DO
             type     := output ;
             priority := pri ;
             arg      := NIL ;
@@ -183,13 +183,13 @@ BEGIN
             no       := VecNo ;
             File     := fd
          END ;
-         Exists := v ;
+         Exists := vptr ;
          signal (lock) ;
          RETURN VecNo
       END
    ELSE
       signal (lock) ;
-      RETURN v^.no
+      RETURN vptr^.no
    END
 END InitOutputVector ;
 
@@ -201,28 +201,28 @@ END InitOutputVector ;
 
 PROCEDURE InitTimeVector (micro, secs: CARDINAL; pri: CARDINAL) : CARDINAL ;
 VAR
-   v: Vector ;
+   vptr: Vector ;
 BEGIN
    wait (lock) ;
-   NEW (v) ;
-   IF v = NIL
+   NEW (vptr) ;
+   IF vptr = NIL
    THEN
       HALT
    ELSE
       INC (VecNo) ;
       Assert (micro<Microseconds) ;
-      WITH v^ DO
+      WITH vptr^ DO
          type     := time ;
          priority := pri ;
          arg      := NIL ;
          pending  := NIL ;
          exists   := Exists ;
          no       := VecNo ;
-         rel      := InitTime(secs+DebugTime, micro) ;
-         abs      := InitTime(0, 0) ;
+         rel      := InitTime (secs+DebugTime, micro) ;
+         abs      := InitTime (0, 0) ;
          queued   := FALSE
       END ;
-      Exists := v
+      Exists := vptr
    END ;
    signal (lock) ;
    RETURN VecNo
@@ -230,18 +230,18 @@ END InitTimeVector ;
 
 
 (*
-   FindVectorNo - searches the Exists list for vector, vec.
+   FindVectorNo - searches the Exists list for vector vec.
 *)
 
 PROCEDURE FindVectorNo (vec: CARDINAL) : Vector ;
 VAR
-   v: Vector ;
+   vptr: Vector ;
 BEGIN
-   v := Exists ;
-   WHILE (v#NIL) AND (v^.no#vec) DO
-      v := v^.exists
+   vptr := Exists ;
+   WHILE (vptr#NIL) AND (vptr^.no#vec) DO
+      vptr := vptr^.exists
    END ;
-   RETURN v
+   RETURN vptr
 END FindVectorNo ;
 
 
@@ -251,17 +251,17 @@ END FindVectorNo ;
 
 PROCEDURE FindPendingVector (vec: CARDINAL) : Vector ;
 VAR
-   i: CARDINAL ;
-   v: Vector ;
+   pri : CARDINAL ;
+   vptr: Vector ;
 BEGIN
-   FOR i := MIN(PROTECTION) TO MAX(PROTECTION) DO
-      v := Pending[i] ;
-      WHILE (v#NIL) AND (v^.no#vec) DO
-         v := v^.pending
+   FOR pri := MIN(PROTECTION) TO MAX(PROTECTION) DO
+      vptr := Pending[pri] ;
+      WHILE (vptr#NIL) AND (vptr^.no#vec) DO
+         vptr := vptr^.pending
       END ;
-      IF (v#NIL) AND (v^.no=vec)
+      IF (vptr#NIL) AND (vptr^.no=vec)
       THEN
-         RETURN v
+         RETURN vptr
       END
    END ;
    RETURN NIL
@@ -276,17 +276,17 @@ END FindPendingVector ;
 PROCEDURE ReArmTimeVector (vec: CARDINAL;
                            micro, secs: CARDINAL) ;
 VAR
-   v: Vector ;
+   vptr: Vector ;
 BEGIN
-   Assert(micro<Microseconds) ;
+   Assert (micro<Microseconds) ;
    wait (lock) ;
-   v := FindVectorNo(vec) ;
-   IF v=NIL
+   vptr := FindVectorNo (vec) ;
+   IF vptr = NIL
    THEN
-      Halt(__FILE__, __LINE__, __FUNCTION__,
-           'cannot find vector supplied')
+      Halt ('cannot find vector supplied',
+            __FILE__, __FUNCTION__, __LINE__)
    ELSE
-      WITH v^ DO
+      WITH vptr^ DO
          SetTime (rel, secs + DebugTime, micro)
       END
    END ;
@@ -303,16 +303,16 @@ END ReArmTimeVector ;
 
 PROCEDURE GetTimeVector (vec: CARDINAL; VAR micro, secs: CARDINAL) ;
 VAR
-   v: Vector ;
+   vptr: Vector ;
 BEGIN
    wait (lock) ;
-   v := FindVectorNo (vec) ;
-   IF v=NIL
+   vptr := FindVectorNo (vec) ;
+   IF vptr=NIL
    THEN
-      Halt(__FILE__, __LINE__, __FUNCTION__,
-           'cannot find vector supplied')
+      Halt ('cannot find vector supplied',
+            __FILE__, __FUNCTION__, __LINE__)
    ELSE
-      WITH v^ DO
+      WITH vptr^ DO
          GetTime (rel, secs, micro) ;
          Assert (micro < Microseconds)
       END
@@ -322,31 +322,32 @@ END GetTimeVector ;
 
 
 (*
-   AttachVector - adds the pointer, p, to be associated with the interrupt
+   AttachVector - adds the pointer ptr to be associated with the interrupt
                   vector. It returns the previous value attached to this
                   vector.
 *)
 
-PROCEDURE AttachVector (vec: CARDINAL; p: ADDRESS) : ADDRESS ;
+PROCEDURE AttachVector (vec: CARDINAL; ptr: ADDRESS) : ADDRESS ;
 VAR
-   v: Vector ;
-   l: ADDRESS ;
+   vptr   : Vector ;
+   prevArg: ADDRESS ;
 BEGIN
    wait (lock) ;
-   v := FindVectorNo (vec) ;
-   IF v=NIL
+   vptr := FindVectorNo (vec) ;
+   IF vptr = NIL
    THEN
-      Halt (__FILE__, __LINE__, __FUNCTION__, 'cannot find vector supplied')
+      Halt ( 'cannot find vector supplied',
+            __FILE__, __FUNCTION__, __LINE__)
    ELSE
-      l := v^.arg ;
-      v^.arg := p ;
+      prevArg := vptr^.arg ;
+      vptr^.arg := ptr ;
       IF Debugging
       THEN
-         printf ("AttachVector %d with 0x%x\n", vec, p);
+         printf ("AttachVector %d with %p\n", vec, ptr);
          DumpPendingQueue ;
       END ;
       signal (lock) ;
-      RETURN l
+      RETURN prevArg
    END
 END AttachVector ;
 
@@ -358,42 +359,41 @@ END AttachVector ;
 
 PROCEDURE IncludeVector (vec: CARDINAL) ;
 VAR
-   v   : Vector ;
-   m, s: CARDINAL ;
-   r   : INTEGER ;
+   vptr      : Vector ;
+   micro, sec: CARDINAL ;
+   result    : INTEGER ;
 BEGIN
    wait (lock) ;
-   v := FindPendingVector (vec) ;
-   IF v=NIL
+   vptr := FindPendingVector (vec) ;
+   IF vptr = NIL
    THEN
-      v := FindVectorNo (vec) ;
-      IF v = NIL
+      vptr := FindVectorNo (vec) ;
+      IF vptr = NIL
       THEN
-         Halt (__FILE__, __LINE__, __FUNCTION__,
-               'cannot find vector supplied') ;
+         Halt ('cannot find vector supplied',
+               __FILE__, __FUNCTION__, __LINE__)
       ELSE
          (* printf('including vector %d  (fd = %d)\n', vec, v^.File) ; *)
-         v^.pending := Pending[v^.priority] ;
-         Pending[v^.priority] := v ;
-         IF (v^.type = time) AND (NOT v^.queued)
+         vptr^.pending := Pending[vptr^.priority] ;
+         Pending[vptr^.priority] := vptr ;
+         IF (vptr^.type = time) AND (NOT vptr^.queued)
          THEN
-            v^.queued := TRUE ;
-            r := GetTimeOfDay (v^.abs) ;
-            Assert (r=0) ;
-            GetTime (v^.abs, s, m) ;
-            Assert (m<Microseconds) ;
-            AddTime (v^.abs, v^.rel) ;
-            GetTime (v^.abs, s, m) ;
-            Assert (m<Microseconds)
+            vptr^.queued := TRUE ;
+            result := GetTimeOfDay (vptr^.abs) ;
+            Assert (result=0) ;
+            GetTime (vptr^.abs, sec, micro) ;
+            Assert (micro<Microseconds) ;
+            AddTime (vptr^.abs, vptr^.rel) ;
+            GetTime (vptr^.abs, sec, micro) ;
+            Assert (micro<Microseconds)
          END
       END
    ELSE
       IF Debugging
       THEN
-         printf ('odd vector (%d) type (%d) arg (0x%x) is already attached to the pending queue\n',
-                 vec, v^.type, v^.arg)
-      END ;
-      stop
+         printf ('odd vector (%d) type (%d) arg (%p) is already attached to the pending queue\n',
+                 vec, vptr^.type, vptr^.arg)
+      END
    END ;
    signal (lock)
 END IncludeVector ;
@@ -406,29 +406,29 @@ END IncludeVector ;
 
 PROCEDURE ExcludeVector (vec: CARDINAL) ;
 VAR
-   v, u: Vector ;
+   vptr, uptr: Vector ;
 BEGIN
    wait (lock) ;
-   v := FindPendingVector(vec) ;
-   IF v=NIL
+   vptr := FindPendingVector (vec) ;
+   IF vptr = NIL
    THEN
-      Halt (__FILE__, __LINE__, __FUNCTION__,
-            'cannot find pending vector supplied')
+      Halt ('cannot find pending vector supplied',
+            __FILE__, __FUNCTION__, __LINE__)
    ELSE
       (* printf('excluding vector %d\n', vec) ; *)
-      IF Pending[v^.priority]=v
+      IF Pending[vptr^.priority] = vptr
       THEN
-         Pending[v^.priority] := Pending[v^.priority]^.pending
+         Pending[vptr^.priority] := Pending[vptr^.priority]^.pending
       ELSE
-         u := Pending[v^.priority] ;
-         WHILE u^.pending#v DO
-            u := u^.pending
+         uptr := Pending[vptr^.priority] ;
+         WHILE uptr^.pending#vptr DO
+            uptr := uptr^.pending
          END ;
-         u^.pending := v^.pending
+         uptr^.pending := vptr^.pending
       END ;
-      IF v^.type=time
+      IF vptr^.type=time
       THEN
-         v^.queued := FALSE
+         vptr^.queued := FALSE
       END
    END ;
    signal (lock)
@@ -436,18 +436,18 @@ END ExcludeVector ;
 
 
 (*
-   AddFd - adds the file descriptor, fd, to set, s, updating, max.
+   AddFd - adds the file descriptor fd to set updating max.
 *)
 
-PROCEDURE AddFd (VAR s: SetOfFd; VAR max: INTEGER; fd: INTEGER) ;
+PROCEDURE AddFd (VAR set: SetOfFd; VAR max: INTEGER; fd: INTEGER) ;
 BEGIN
    max := Max (fd, max) ;
-   IF s = NIL
+   IF set = NIL
    THEN
-      s := InitSet () ;
-      FdZero (s)
+      set := InitSet () ;
+      FdZero (set)
    END ;
-   FdSet (fd, s)
+   FdSet (fd, set)
    (* printf('%d, ', fd) *)
 END AddFd ;
 
@@ -458,34 +458,31 @@ END AddFd ;
 
 PROCEDURE DumpPendingQueue ;
 VAR
-   p   : PROTECTION ;
-   v   : Vector ;
-   s, m: CARDINAL ;
+   pri  : PROTECTION ;
+   vptr : Vector ;
+   sec,
+   micro: CARDINAL ;
 BEGIN
    printf ("Pending queue\n");
-   FOR p := MIN (PROTECTION) TO MAX (PROTECTION) DO
-      printf ("[%d]  ", p);
-      v := Pending[p] ;
-      WHILE v#NIL DO
-         IF (v^.type=input) OR (v^.type=output)
+   FOR pri := MIN (PROTECTION) TO MAX (PROTECTION) DO
+      printf ("[%d]  ", pri);
+      vptr := Pending[pri] ;
+      WHILE vptr # NIL DO
+         IF (vptr^.type=input) OR (vptr^.type=output)
          THEN
-            printf ("(fd=%d) (vec=%d)", v^.File, v^.no)
-         ELSIF v^.type=time
+            printf ("(fd=%d) (vec=%d)", vptr^.File, vptr^.no)
+         ELSIF vptr^.type=time
          THEN
-            GetTime(v^.rel, s, m) ;
-            Assert (m<Microseconds) ;
-            printf ("time (%u.%06u secs) (arg = 0x%x)\n", s, m, v^.arg)
+            GetTime (vptr^.rel, sec, micro) ;
+            Assert (micro < Microseconds) ;
+            printf ("time (%u.%06u secs) (arg = %p)\n",
+                    sec, micro, vptr^.arg)
          END ;
-         v := v^.pending
+         vptr := vptr^.pending
       END ;
       printf (" \n")
    END
 END DumpPendingQueue ;
-
-
-PROCEDURE stop ;
-BEGIN
-END stop ;
 
 
 (*
@@ -565,63 +562,64 @@ END SubTime ;
 *)
 
 PROCEDURE activatePending (untilInterrupt: BOOLEAN; call: DispatchVector; pri: CARDINAL;
-                           maxFd: INTEGER; VAR i, o: SetOfFd; VAR t: Timeval; b4, after: Timeval) : BOOLEAN ;
+                           maxFd: INTEGER; VAR inSet, outSet: SetOfFd; VAR timeval: Timeval; b4, after: Timeval) : BOOLEAN ;
 VAR
-   r   : INTEGER ;
-   p   : CARDINAL ;
-   v   : Vector ;
+   result: INTEGER ;
+   p     : CARDINAL ;
+   vec   : Vector ;
    b4s,
    b4m,
    afs,
    afm,
-   s, m: CARDINAL ;
+   sec,
+   micro : CARDINAL ;
 BEGIN
    wait (lock) ;
    p := MAX (PROTECTION) ;
    WHILE p > pri DO
-      v := Pending[p] ;
-      WHILE v # NIL DO
-         WITH v^ DO
+      vec := Pending[p] ;
+      WHILE vec # NIL DO
+         WITH vec^ DO
             CASE type OF
 
-            input :  IF (File < maxFd) AND (i # NIL) AND FdIsSet (File, i)
+            input :  IF (File < maxFd) AND (inSet # NIL) AND FdIsSet (File, inSet)
                      THEN
                         IF Debugging
                         THEN
                            printf ('read (fd=%d) is ready (vec=%d)\n', File, no) ;
                            DumpPendingQueue
                         END ;
-                        FdClr (File, i) ;  (* so we dont activate this again from our select.  *)
+                        FdClr (File, inSet) ;  (* so we dont activate this again from our select.  *)
                         signal (lock) ;
                         call (no, priority, arg) ;
                         RETURN TRUE
                      END |
-            output:  IF (File < maxFd) AND (o#NIL) AND FdIsSet (File, o)
+            output:  IF (File < maxFd) AND (outSet#NIL) AND FdIsSet (File, outSet)
                      THEN
                         IF Debugging
                         THEN
                            printf ('write (fd=%d) is ready (vec=%d)\n', File, no) ;
                            DumpPendingQueue
                         END ;
-                        FdClr (File, o) ;  (* so we dont activate this again from our select.  *)
+                        FdClr (File, outSet) ;  (* so we dont activate this again from our select.  *)
                         signal (lock) ;
                         call (no, priority, arg) ;
                         RETURN TRUE
                      END |
-            time  :  IF untilInterrupt AND (t # NIL)
+            time  :  IF untilInterrupt AND (timeval # NIL)
                      THEN
-                        r := GetTimeOfDay (after) ;
-                        Assert (r=0) ;
+                        result := GetTimeOfDay (after) ;
+                        Assert (result=0) ;
                         IF Debugging
                         THEN
-                           GetTime (t, s, m) ;
-                           Assert (m < Microseconds) ;
+                           GetTime (timeval, sec, micro) ;
+                           Assert (micro < Microseconds) ;
                            GetTime (after, afs, afm) ;
                            Assert (afm < Microseconds) ;
                            GetTime (b4, b4s, b4m) ;
                            Assert (b4m < Microseconds) ;
                            printf ("waited %u.%06u + %u.%06u now is %u.%06u\n",
-                                   s, m, b4s, b4m, afs, afm) ;
+                                   sec, micro, b4s, b4m, afs, afm) ;
                         END ;
                         IF IsGreaterEqual (after, abs)
                         THEN
@@ -630,7 +628,7 @@ BEGIN
                               DumpPendingQueue ;
                               printf ("time has expired calling dispatcher\n")
                            END ;
-                           t := KillTime (t) ;  (* so we dont activate this again from our select.  *)
+                           timeval := KillTime (timeval) ;  (* so we dont activate this again from our select.  *)
                            signal (lock) ;
                            IF Debugging
                            THEN
@@ -645,7 +643,7 @@ BEGIN
                      END
             END
          END ;
-         v := v^.pending
+         vec := vec^.pending
       END ;
       DEC (p)
    END ;
@@ -667,20 +665,18 @@ PROCEDURE Listen (untilInterrupt: BOOLEAN;
                   call: DispatchVector;
                   pri: CARDINAL) ;
 VAR
-   found: BOOLEAN ;
-   r    : INTEGER ;
+   found  : BOOLEAN ;
+   result : INTEGER ;
    after,
    b4,
-   t    : Timeval ;
-   v    : Vector ;
-   i, o : SetOfFd ;
-   b4s,
-   b4m,
-   afs,
-   afm,
-   s, m : CARDINAL ;
-   maxFd: INTEGER ;
-   p    : CARDINAL ;
+   timeval: Timeval ;
+   vec    : Vector ;
+   inSet,
+   outSet : SetOfFd ;
+   sec,
+   micro  : CARDINAL ;
+   maxFd  : INTEGER ;
+   p      : CARDINAL ;
 BEGIN
    wait (lock) ;
    IF pri < MAX (PROTECTION)
@@ -690,120 +686,120 @@ BEGIN
          DumpPendingQueue
       END ;
       maxFd := -1 ;
-      t := NIL ;
-      i := NIL ;
-      o := NIL ;
-      t := InitTime (MAX (INTEGER), 0) ;
+      timeval := NIL ;
+      inSet := NIL ;
+      outSet := NIL ;
+      timeval := InitTime (MAX (INTEGER), 0) ;
       p := MAX (PROTECTION) ;
       found := FALSE ;
       WHILE p>pri DO
-         v := Pending[p] ;
-         WHILE v#NIL DO
-            WITH v^ DO
+         vec := Pending[p] ;
+         WHILE vec#NIL DO
+            WITH vec^ DO
                CASE type OF
 
-               input :  AddFd (i, maxFd, File) |
-               output:  AddFd (o, maxFd, File) |
-               time  :  IF IsGreaterEqual (t, abs)
+               input :  AddFd (inSet, maxFd, File) |
+               output:  AddFd (outSet, maxFd, File) |
+               time  :  IF IsGreaterEqual (timeval, abs)
                         THEN
-                           GetTime (abs, s, m) ;
-                           Assert (m<Microseconds) ;
+                           GetTime (abs, sec, micro) ;
+                           Assert (micro < Microseconds) ;
                            IF Debugging
                            THEN
-                              printf ("shortest delay is %u.%06u\n", s, m)
+                              printf ("shortest delay is %u.%06u\n", sec, micro)
                            END ;
-                           SetTime (t, s, m) ;
+                           SetTime (timeval, sec, micro) ;
                            found := TRUE
                         END
 
                END
             END ;
-            v := v^.pending
+            vec := vec^.pending
          END ;
          DEC (p)
       END ;
       IF NOT untilInterrupt
       THEN
-         SetTime (t, 0, 0)
+         SetTime (timeval, 0, 0)
       END ;
-      IF untilInterrupt AND (i=NIL) AND (o=NIL) AND (NOT found)
+      IF untilInterrupt AND (inSet=NIL) AND (outSet=NIL) AND (NOT found)
       THEN
-         Halt (__FILE__, __LINE__, __FUNCTION__,
-               'deadlock found, no more processes to run and no interrupts active')
+         Halt ('deadlock found, no more processes to run and no interrupts active',
+               __FILE__, __FUNCTION__, __LINE__)
       END ;
-      (* printf('timeval = 0x%x\n', t) ; *)
+      (* printf('timeval = 0x%x\n', timeval) ; *)
       (* printf('}\n') ; *)
-      IF (NOT found) AND (maxFd=-1) AND (i=NIL) AND (o=NIL)
+      IF (NOT found) AND (maxFd=-1) AND (inSet=NIL) AND (outSet=NIL)
       THEN
          (* no file descriptors to be selected upon.  *)
-         t := KillTime (t) ;
+         timeval := KillTime (timeval) ;
          signal (lock) ;
          RETURN
       ELSE
-         GetTime (t, s, m) ;
-         Assert (m<Microseconds) ;
+         GetTime (timeval, sec, micro) ;
+         Assert (micro < Microseconds) ;
          b4 := InitTime (0, 0) ;
          after := InitTime (0, 0) ;
-         r := GetTimeOfDay (b4) ;
-         Assert (r=0) ;
-         SubTime (s, m, t, b4) ;
-         SetTime (t, s, m) ;
+         result := GetTimeOfDay (b4) ;
+         Assert (result=0) ;
+         SubTime (sec, micro, timeval, b4) ;
+         SetTime (timeval, sec, micro) ;
          IF Debugging
          THEN
-            printf ("select waiting for %u.%06u seconds\n", s, m)
+            printf ("select waiting for %u.%06u seconds\n", sec, micro)
          END ;
          signal (lock) ;
          REPEAT
             IF Debugging
             THEN
-               printf ("select (.., .., .., %u.%06u)\n", s, m)
+               printf ("select (.., .., .., %u.%06u)\n", sec, micro)
             END ;
-            r := select (maxFd+1, i, o, NIL, t) ;
-            IF r=-1
+            result := select (maxFd+1, inSet, outSet, NIL, timeval) ;
+            IF result=-1
             THEN
                perror ("select") ;
-               r := select (maxFd+1, i, o, NIL, NIL) ;
-               IF r=-1
+               result := select (maxFd+1, inSet, outSet, NIL, NIL) ;
+               IF result=-1
                THEN
                   perror ("select timeout argument is faulty")
                END ;
-               r := select (maxFd+1, i, NIL, NIL, t) ;
-               IF r=-1
+               result := select (maxFd+1, inSet, NIL, NIL, timeval) ;
+               IF result=-1
                THEN
                   perror ("select output fd argument is faulty")
                END ;
-               r := select (maxFd+1, NIL, o, NIL, t) ;
-               IF r=-1
+               result := select (maxFd+1, NIL, outSet, NIL, timeval) ;
+               IF result=-1
                THEN
                   perror ("select input fd argument is faulty")
                ELSE
                   perror ("select maxFD+1 argument is faulty")
                END
             END
-         UNTIL r#-1
+         UNTIL result#-1
       END ;
       WHILE activatePending (untilInterrupt, call, pri,
-                             maxFd+1, i, o, t, b4, after) DO
+                             maxFd+1, inSet, outSet, timeval, b4, after) DO
       END ;
-      IF t#NIL
+      IF timeval#NIL
       THEN
-         t := KillTime (t)
+         timeval := KillTime (timeval)
       END ;
       IF after#NIL
       THEN
-         t := KillTime (after)
+         after := KillTime (after)
       END ;
       IF b4#NIL
       THEN
-         t := KillTime (b4)
+         b4 := KillTime (b4)
       END ;
-      IF i#NIL
+      IF inSet#NIL
       THEN
-         i := KillSet (i)
+         inSet := KillSet (inSet)
       END ;
-      IF o#NIL
+      IF outSet#NIL
       THEN
-         o := KillSet (o)
+         outSet := KillSet (outSet)
       END
    END ;
    signal (lock)

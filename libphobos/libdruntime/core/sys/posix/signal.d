@@ -2990,6 +2990,7 @@ else version (CRuntime_Bionic)
 else version (CRuntime_Musl)
 {
     int sigqueue(pid_t, int, const sigval);
+    pragma(mangle, muslRedirTime64Mangle!("sigtimedwait", "__sigtimedwait_time64"))
     int sigtimedwait(const scope sigset_t*, siginfo_t*, const scope timespec*);
     int sigwaitinfo(const scope sigset_t*, siginfo_t*);
 }

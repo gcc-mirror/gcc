@@ -53,6 +53,7 @@
 #include "dwarf2.h"
 #include "gimple.h"
 #include "cgraph.h"
+#include "case-cfn-macros.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -491,6 +492,15 @@ gcn_class_max_nregs (reg_class_t rclass, machine_mode mode)
     }
   else if (rclass == VCC_CONDITIONAL_REG && mode == BImode)
     return 2;
+
+  /* Vector modes in SGPRs are not supposed to happen (disallowed by
+     gcn_hard_regno_mode_ok), but there are some patterns that have an "Sv"
+     constraint and are used by splitters, post-reload.
+     This ensures that we don't accidentally mark the following 63 scalar
+     registers as "live".  */
+  if (rclass == SGPR_REGS && VECTOR_MODE_P (mode))
+    return CEIL (GET_MODE_SIZE (GET_MODE_INNER (mode)), 4);
+
   return CEIL (GET_MODE_SIZE (mode), 4);
 }
 
@@ -797,7 +807,7 @@ static reg_class_t
 gcn_spill_class (reg_class_t c, machine_mode /*mode */ )
 {
   if (reg_classes_intersect_p (ALL_CONDITIONAL_REGS, c)
-      || c == VCC_CONDITIONAL_REG)
+      || c == VCC_CONDITIONAL_REG || c == EXEC_MASK_REG)
     return SGPR_REGS;
   else
     return NO_REGS;
@@ -1420,6 +1430,24 @@ CODE_FOR_OP (reload_out)
 
 #undef CODE_FOR_OP
 #undef CODE_FOR
+
+/* Return true if OP is a PARALLEL of CONST_INTs that form a linear
+   series with step STEP.  */
+
+bool
+gcn_stepped_zero_int_parallel_p (rtx op, int step)
+{
+  if (GET_CODE (op) != PARALLEL || !CONST_INT_P (XVECEXP (op, 0, 0)))
+    return false;
+
+  unsigned HOST_WIDE_INT base = 0;
+  for (int i = 0; i < XVECLEN (op, 0); ++i)
+    if (!CONST_INT_P (XVECEXP (op, 0, i))
+	|| UINTVAL (XVECEXP (op, 0, i)) != base + i * step)
+      return false;
+
+  return true;
+}
 
 /* }}}  */
 /* {{{ Addresses, pointers and moves.  */
@@ -3220,6 +3248,10 @@ move_callee_saved_registers (rtx sp, machine_function *offsets,
       emit_insn (move_vectors);
       emit_insn (move_scalars);
     }
+
+  /* This happens when a new register becomes "live" after reload.
+     Check your splitters!  */
+  gcc_assert (offset <= offsets->callee_saves);
 }
 
 /* Generate prologue.  Called from gen_prologue during pro_and_epilogue pass.
@@ -5012,6 +5044,79 @@ gcn_vector_alignment_reachable (const_tree ARG_UNUSED (type), bool is_packed)
   return !is_packed;
 }
 
+/* Generate DPP pairwise swap instruction.
+   This instruction swaps the values in each even lane with the value in the
+   next one:
+     a, b, c, d -> b, a, d, c.
+   The opcode is given by INSN.  */
+
+char *
+gcn_expand_dpp_swap_pairs_insn (machine_mode mode, const char *insn,
+				int ARG_UNUSED (unspec))
+{
+  static char buf[128];
+  const char *dpp;
+
+  /* Add the DPP modifiers.  */
+  dpp = "quad_perm:[1,0,3,2]";
+
+  if (vgpr_2reg_mode_p (mode))
+    sprintf (buf, "%s\t%%L0, %%L1 %s\n\t%s\t%%H0, %%H1 %s",
+	     insn, dpp, insn, dpp);
+  else
+    sprintf (buf, "%s\t%%0, %%1 %s", insn, dpp);
+
+  return buf;
+}
+
+/* Generate DPP distribute even instruction.
+   This instruction copies the value in each even lane to the next one:
+     a, b, c, d -> a, a, c, c.
+   The opcode is given by INSN.  */
+
+char *
+gcn_expand_dpp_distribute_even_insn (machine_mode mode, const char *insn,
+				     int ARG_UNUSED (unspec))
+{
+  static char buf[128];
+  const char *dpp;
+
+  /* Add the DPP modifiers.  */
+  dpp = "quad_perm:[0,0,2,2]";
+
+  if (vgpr_2reg_mode_p (mode))
+    sprintf (buf, "%s\t%%L0, %%L1 %s\n\t%s\t%%H0, %%H1 %s",
+	     insn, dpp, insn, dpp);
+  else
+    sprintf (buf, "%s\t%%0, %%1 %s", insn, dpp);
+
+  return buf;
+}
+
+/* Generate DPP distribute odd instruction.
+   This isntruction copies the value in each odd lane to the previous one:
+     a, b, c, d -> b, b, d, d.
+   The opcode is given by INSN.  */
+
+char *
+gcn_expand_dpp_distribute_odd_insn (machine_mode mode, const char *insn,
+				    int ARG_UNUSED (unspec))
+{
+  static char buf[128];
+  const char *dpp;
+
+  /* Add the DPP modifiers.  */
+  dpp = "quad_perm:[1,1,3,3]";
+
+  if (vgpr_2reg_mode_p (mode))
+    sprintf (buf, "%s\t%%L0, %%L1 %s\n\t%s\t%%H0, %%H1 %s",
+	     insn, dpp, insn, dpp);
+  else
+    sprintf (buf, "%s\t%%0, %%1 %s", insn, dpp);
+
+  return buf;
+}
+
 /* Generate DPP instructions used for vector reductions.
 
    The opcode is given by INSN.
@@ -5238,6 +5343,110 @@ gcn_simd_clone_usable (struct cgraph_node *ARG_UNUSED (node))
      gcn_simd_clone_compute_vecsize_and_simdlen currently only returns one
      possibility.  */
   return 0;
+}
+
+tree mathfn_built_in_explicit (tree, combined_fn);
+
+/* Implement TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION.
+   Return the function declaration of the vectorized version of the builtin
+   in the math library if available.  */
+
+tree
+gcn_vectorize_builtin_vectorized_function (unsigned int fn, tree type_out,
+					   tree type_in)
+{
+  if (TREE_CODE (type_out) != VECTOR_TYPE
+      || TREE_CODE (type_in) != VECTOR_TYPE)
+    return NULL_TREE;
+
+  machine_mode out_mode = TYPE_MODE (TREE_TYPE (type_out));
+  int out_n = TYPE_VECTOR_SUBPARTS (type_out);
+  machine_mode in_mode = TYPE_MODE (TREE_TYPE (type_in));
+  int in_n = TYPE_VECTOR_SUBPARTS (type_in);
+  combined_fn cfn = combined_fn (fn);
+
+  /* Keep this consistent with the list of vectorized math routines.  */
+  int implicit_p;
+  switch (fn)
+    {
+    CASE_CFN_ACOS:
+    CASE_CFN_ACOSH:
+    CASE_CFN_ASIN:
+    CASE_CFN_ASINH:
+    CASE_CFN_ATAN:
+    CASE_CFN_ATAN2:
+    CASE_CFN_ATANH:
+    CASE_CFN_COPYSIGN:
+    CASE_CFN_COS:
+    CASE_CFN_COSH:
+    CASE_CFN_ERF:
+    CASE_CFN_EXP:
+    CASE_CFN_EXP2:
+    CASE_CFN_FINITE:
+    CASE_CFN_FMOD:
+    CASE_CFN_GAMMA:
+    CASE_CFN_HYPOT:
+    CASE_CFN_ISNAN:
+    CASE_CFN_LGAMMA:
+    CASE_CFN_LOG:
+    CASE_CFN_LOG10:
+    CASE_CFN_LOG2:
+    CASE_CFN_POW:
+    CASE_CFN_REMAINDER:
+    CASE_CFN_RINT:
+    CASE_CFN_SIN:
+    CASE_CFN_SINH:
+    CASE_CFN_SQRT:
+    CASE_CFN_TAN:
+    CASE_CFN_TANH:
+    CASE_CFN_TGAMMA:
+      implicit_p = 1;
+      break;
+
+    CASE_CFN_SCALB:
+    CASE_CFN_SIGNIFICAND:
+      implicit_p = 0;
+      break;
+
+    default:
+      return NULL_TREE;
+    }
+
+  tree out_t_node = (out_mode == DFmode) ? double_type_node : float_type_node;
+  tree fndecl = implicit_p ? mathfn_built_in (out_t_node, cfn)
+			   : mathfn_built_in_explicit (out_t_node, cfn);
+
+  const char *bname = IDENTIFIER_POINTER (DECL_NAME (fndecl));
+  char name[20];
+  sprintf (name, out_mode == DFmode ? "v%ddf_%s" : "v%dsf_%s",
+	   out_n, bname + 10);
+
+  unsigned arity = 0;
+  for (tree args = DECL_ARGUMENTS (fndecl); args; args = TREE_CHAIN (args))
+    arity++;
+
+  tree fntype = (arity == 1)
+		? build_function_type_list (type_out, type_in, NULL)
+		: build_function_type_list (type_out, type_in, type_in, NULL);
+
+  /* Build a function declaration for the vectorized function.  */
+  tree new_fndecl = build_decl (BUILTINS_LOCATION,
+				FUNCTION_DECL, get_identifier (name), fntype);
+  TREE_PUBLIC (new_fndecl) = 1;
+  DECL_EXTERNAL (new_fndecl) = 1;
+  DECL_IS_NOVOPS (new_fndecl) = 1;
+  TREE_READONLY (new_fndecl) = 1;
+
+  return new_fndecl;
+}
+
+/* Implement TARGET_LIBC_HAS_FUNCTION.  */
+
+bool
+gcn_libc_has_function (enum function_class fn_class,
+		       tree type)
+{
+  return bsd_libc_has_function (fn_class, type);
 }
 
 /* }}}  */
@@ -7290,6 +7499,8 @@ gcn_dwarf_register_span (rtx rtl)
   gcn_ira_change_pseudo_allocno_class
 #undef  TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P gcn_legitimate_constant_p
+#undef  TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION gcn_libc_has_function
 #undef  TARGET_LRA_P
 #define TARGET_LRA_P hook_bool_void_true
 #undef  TARGET_MACHINE_DEPENDENT_REORG
@@ -7337,6 +7548,9 @@ gcn_dwarf_register_span (rtx rtl)
 #define TARGET_TRULY_NOOP_TRUNCATION gcn_truly_noop_truncation
 #undef  TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST gcn_vectorization_cost
+#undef  TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
+#define TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION \
+  gcn_vectorize_builtin_vectorized_function
 #undef  TARGET_VECTORIZE_GET_MASK_MODE
 #define TARGET_VECTORIZE_GET_MASK_MODE gcn_vectorize_get_mask_mode
 #undef  TARGET_VECTORIZE_PREFERRED_SIMD_MODE

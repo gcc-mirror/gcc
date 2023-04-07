@@ -466,6 +466,10 @@ free_expr0 (gfc_expr *e)
 	  mpc_clear (e->value.complex);
 	  break;
 
+	case BT_BOZ:
+	  free (e->boz.str);
+	  break;
+
 	default:
 	  break;
 	}
@@ -545,6 +549,7 @@ gfc_free_actual_arglist (gfc_actual_arglist *a1)
       a2 = a1->next;
       if (a1->expr)
 	gfc_free_expr (a1->expr);
+      free (a1->associated_dummy);
       free (a1);
       a1 = a2;
     }
@@ -564,6 +569,12 @@ gfc_copy_actual_arglist (gfc_actual_arglist *p)
     {
       new_arg = gfc_get_actual_arglist ();
       *new_arg = *p;
+
+      if (p->associated_dummy != NULL)
+	{
+	  new_arg->associated_dummy = gfc_get_dummy_arg ();
+	  *new_arg->associated_dummy = *p->associated_dummy;
+	}
 
       new_arg->expr = gfc_copy_expr (p->expr);
       new_arg->next = NULL;
@@ -3493,8 +3504,6 @@ check_restricted (gfc_expr *e)
 	    || sym->attr.implied_index
 	    || sym->attr.flavor == FL_PARAMETER
 	    || is_parent_of_current_ns (sym->ns)
-	    || (sym->ns->proc_name != NULL
-		  && sym->ns->proc_name->attr.flavor == FL_MODULE)
 	    || (gfc_is_formal_arg () && (sym->ns == gfc_current_ns)))
 	{
 	  t = true;

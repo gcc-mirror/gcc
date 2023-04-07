@@ -437,13 +437,97 @@ than printing the underlying variable name.
 @cindex analyzer, debugging
 @cindex static analyzer, debugging
 
+When debugging the analyzer I normally use all of these options
+together:
+
+@smallexample
+./xgcc -B. \
+  -S \
+  -fanalyzer \
+  OTHER_GCC_ARGS \
+  -wrapper gdb,--args \
+  -fdump-analyzer-stderr \
+  -fanalyzer-fine-grained \
+  -fdump-ipa-analyzer=stderr
+@end smallexample
+
+where:
+
+@itemize @bullet
+@item @code{./xgcc -B.}
+is the usual way to invoke a self-built GCC from within the @file{BUILDDIR/gcc}
+subdirectory.
+
+@item @code{-S}
+so that the driver (@code{./xgcc}) invokes @code{cc1}, but doesn't bother
+running the assembler or linker (since the analyzer runs inside @code{cc1}).
+
+@item @code{-fanalyzer}
+enables the analyzer, obviously.
+
+@item @code{-wrapper gdb,--args}
+invokes @code{cc1} under the debugger so that I can debug @code{cc1} and
+set breakpoints and step through things.
+
+@item @code{-fdump-analyzer-stderr}
+so that the logging interface is enabled and goes to stderr, which often
+gives valuable context into what's happening when stepping through the
+analyzer
+
+@item @code{-fanalyzer-fine-grained}
+which splits the effect of every statement into its own
+exploded_node, rather than the default (which tries to combine
+successive stmts to reduce the size of the exploded_graph).  This makes
+it easier to see exactly where a particular change happens.
+
+@item @code{-fdump-ipa-analyzer=stderr}
+which dumps the GIMPLE IR seen by the analyzer pass to stderr
+
+@end itemize
+
+Other useful options:
+
+@itemize @bullet
+@item @code{-fdump-analyzer-exploded-graph}
+which dumps a @file{SRC.eg.dot} GraphViz file that I can look at (with
+python-xdot)
+
+@item @code{-fdump-analyzer-exploded-nodes-2}
+which dumps a @file{SRC.eg.txt} file containing the full @code{exploded_graph}.
+
+@end itemize
+
+Assuming that you have the
+@uref{https://gcc-newbies-guide.readthedocs.io/en/latest/debugging.html,,python support scripts for gdb}
+installed, you can use:
+
+@smallexample
+(gdb) break-on-saved-diagnostic
+@end smallexample
+
+to put a breakpoint at the place where a diagnostic is saved during
+@code{exploded_graph} exploration, to see where a particular diagnostic
+is being saved, and:
+
+@smallexample
+(gdb) break-on-diagnostic
+@end smallexample
+
+to put a breakpoint at the place where diagnostics are actually emitted.
+
 @subsection Special Functions for Debugging the Analyzer
 
 The analyzer recognizes various special functions by name, for use
-in debugging the analyzer.  Declarations can be seen in the testsuite
-in @file{analyzer-decls.h}.  None of these functions are actually
-implemented.
+in debugging the analyzer, and for use in DejaGnu tests.
 
+The declarations of these functions can be seen in the testsuite
+in @file{analyzer-decls.h}.  None of these functions are actually
+implemented in terms of code, merely as @code{known_function} subclasses
+(in @file{gcc/analyzer/kf-analyzer.cc}).
+
+@table @code
+
+@item __analyzer_break
 Add:
 @smallexample
   __analyzer_break ();
@@ -452,6 +536,7 @@ to the source being analyzed to trigger a breakpoint in the analyzer when
 that source is reached.  By putting a series of these in the source, it's
 much easier to effectively step through the program state as it's analyzed.
 
+@item __analyzer_describe
 The analyzer handles:
 
 @smallexample
@@ -462,6 +547,7 @@ by emitting a warning describing the 2nd argument (which can be of any
 type), at a verbosity level given by the 1st argument.  This is for use when
 debugging, and may be of use in DejaGnu tests.
 
+@item __analyzer_dump
 @smallexample
 __analyzer_dump ();
 @end smallexample
@@ -469,6 +555,7 @@ __analyzer_dump ();
 will dump the copious information about the analyzer's state each time it
 reaches the call in its traversal of the source.
 
+@item __analyzer_dump_capacity
 @smallexample
 extern void __analyzer_dump_capacity (const void *ptr);
 @end smallexample
@@ -476,6 +563,7 @@ extern void __analyzer_dump_capacity (const void *ptr);
 will emit a warning describing the capacity of the base region of
 the region pointed to by the 1st argument.
 
+@item __analyzer_dump_escaped
 @smallexample
 extern void __analyzer_dump_escaped (void);
 @end smallexample
@@ -484,16 +572,19 @@ will emit a warning giving the number of decls that have escaped on this
 analysis path, followed by a comma-separated list of their names,
 in alphabetical order.
 
+@item __analyzer_dump_path
 @smallexample
 __analyzer_dump_path ();
 @end smallexample
 
 will emit a placeholder ``note'' diagnostic with a path to that call site,
-if the analyzer finds a feasible path to it.
+if the analyzer finds a feasible path to it.  This can be useful for
+writing DejaGnu tests for constraint-tracking and feasibility checking.
 
-The builtin @code{__analyzer_dump_exploded_nodes} will emit a warning
-after analysis containing information on all of the exploded nodes at that
-program point:
+@item __analyzer_dump_exploded_nodes
+For every callsite to @code{__analyzer_dump_exploded_nodes} the analyzer
+will emit a warning after it finished the analysis containing information
+on all of the exploded nodes at that program point.
 
 @smallexample
   __analyzer_dump_exploded_nodes (0);
@@ -514,8 +605,9 @@ With a non-zero argument
 
 it will also dump all of the states within the ``processed'' nodes.
 
-The builtin @code{__analyzer_dump_named_constant} will emit a warning
-during analysis describing what is known about the value of a given
+@item __analyzer_dump_named_constant
+When the analyzer sees a call to @code{__analyzer_dump_named_constant} it
+will emit a warning describing what is known about the value of a given
 named constant, for parts of the analyzer that interact with target
 headers.
 
@@ -525,17 +617,19 @@ For example:
 __analyzer_dump_named_constant ("O_RDONLY");
 @end smallexample
 
-might emit the warning:
+might lead to the analyzer emitting the warning:
 
 @smallexample
 warning: named constant 'O_RDONLY' has value '1'
 @end smallexample
 
+@item __analyzer_dump_region_model
 @smallexample
    __analyzer_dump_region_model ();
 @end smallexample
 will dump the region_model's state to stderr.
 
+@item __analyzer_dump_state
 @smallexample
 __analyzer_dump_state ("malloc", ptr);
 @end smallexample
@@ -545,18 +639,31 @@ will emit a warning describing the state of the 2nd argument
 a name matching the 1st argument (which must be a string literal).
 This is for use when debugging, and may be of use in DejaGnu tests.
 
+@item __analyzer_eval
 @smallexample
 __analyzer_eval (expr);
 @end smallexample
 will emit a warning with text "TRUE", FALSE" or "UNKNOWN" based on the
 truthfulness of the argument.  This is useful for writing DejaGnu tests.
 
+@item __analyzer_get_unknown_ptr
 @smallexample
 __analyzer_get_unknown_ptr ();
 @end smallexample
 will obtain an unknown @code{void *}.
 
+@end table
+
 @subsection Other Debugging Techniques
+
+To compare two different exploded graphs, try
+@code{-fdump-analyzer-exploded-nodes-2 -fdump-noaddr -fanalyzer-fine-grained}.
+This will dump a @file{SRC.eg.txt} file containing the full
+@code{exploded_graph}. I use @code{diff -u50 -p} to compare two different
+such files (e.g. before and after a patch) to find the first place where the
+two graphs diverge.  The option @option{-fdump-noaddr} will suppress
+printing pointers withihn the dumps (which would otherwise hide the real
+differences with irrelevent churn).
 
 The option @option{-fdump-analyzer-json} will dump both the supergraph
 and the exploded graph in compressed JSON form.

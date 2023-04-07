@@ -36,8 +36,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "m2rts.h"
 
+#define EXPORT(FUNC) m2pim ## _errno_ ## FUNC
+#define M2EXPORT(FUNC) m2pim ## _M2_errno_ ## FUNC
+#define M2LIBNAME "m2pim"
+
 extern "C" int
-errno_geterrno (void)
+EXPORT(geterrno) (void)
 {
 #if defined(HAVE_ERRNO_H) || defined(HAVE_SYS_ERRNO_H)
   return errno;
@@ -47,23 +51,24 @@ errno_geterrno (void)
 }
 
 extern "C" void
-_M2_errno_init (int, char *[], char *[])
+M2EXPORT(init) (int, char **, char **)
 {
 }
 
 extern "C" void
-_M2_errno_fini (int, char *[], char *[])
+M2EXPORT(fini) (int, char **, char **)
 {
 }
 
 extern "C" void
-_M2_errno_dep (void)
+M2EXPORT(dep) (void)
 {
 }
 
 extern "C" void __attribute__((__constructor__))
-_M2_errno_ctor (void)
+M2EXPORT(ctor) (void)
 {
-  M2RTS_RegisterModule ("errno", _M2_errno_init, _M2_errno_fini,
-			_M2_errno_dep);
+  m2pim_M2RTS_RegisterModule ("errno", M2LIBNAME,
+			      M2EXPORT(init), M2EXPORT(fini),
+			      M2EXPORT(dep));
 }

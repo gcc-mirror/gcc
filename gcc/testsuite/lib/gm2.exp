@@ -343,22 +343,28 @@ proc gm2_init_pimx { dialect paths args } {
     send_log "gccpath is $gccpath\n"
     send_log "gm2src is $gm2src\n"
 
-    set theIpath -I${gccpath}/libgm2/libm2pim
+    set theIpath -fm2-pathname=m2pim
+    lappend theIpath -I${gccpath}/libgm2/libm2pim
+    lappend theIpath -fm2-pathname=m2log
     lappend theIpath -I${gm2src}/gm2-libs-log
 
     # NOTE:
+    lappend theIpath -fm2-pathname=m2pim
     lappend theIpath -I${gm2src}/gm2-libs
 
     set theLpath -L${gccpath}/libgm2/libm2pim/.libs
 
+    lappend theIpath -fm2-pathname=m2iso
     lappend theIpath -I${gccpath}/libgm2/libm2iso
     lappend theIpath -I${gm2src}/gm2-libs-iso
 
     lappend theLpath -L${gccpath}/libgm2/libm2iso/.libs
 
+    lappend theIpath -fm2-pathname=-
     foreach p $paths {
 	lappend theIpath -I$p
     }
+    lappend theIpath -fm2-pathname=-
 
     gm2_link_lib "m2pim m2iso"
     lappend args -fno-libs=-
@@ -415,27 +421,35 @@ proc gm2_init_iso { paths args } {
 
     set gm2src ${srcdir}/../m2
 
-    set theIpath -I${gccpath}/libgm2/libm2iso
+    set theIpath -fm2-pathname=m2iso
+    lappend theIpath -I${gccpath}/libgm2/libm2iso
     lappend theIpath -I${gm2src}/gm2-libs-iso
 
     set theLpath -L${gccpath}/libgm2/libm2iso/.libs
 
+    lappend theIpath -fm2-pathname=m2pim
     lappend theIpath -I${gccpath}/libgm2/libm2pim
+
+    lappend theIpath -fm2-pathname=m2log
     lappend theIpath -I${gm2src}/gm2-libs-log
 
     # NOTE:
+    lappend theIpath -fm2-pathname=m2pim
     lappend theIpath -I${gm2src}/gm2-libs
 
     lappend theLpath -L${gccpath}/libgm2/libm2pim/.libs
 
+    lappend theIpath -fm2-pathname=m2cor
     lappend theIpath -I${gccpath}/libgm2/libm2cor
     lappend theIpath -I${gm2src}/gm2-libs-coroutines
 
     lappend theLpath -L${gccpath}/libgm2/libm2cor/.libs
 
+    lappend theIpath -fm2-pathname=-
     foreach p $paths {
 	lappend theIpath -I$p
     }
+    lappend theIpath -fm2-pathname=-
 
     gm2_link_lib "m2iso m2pim m2cor"
     lappend args -fno-libs=-
@@ -452,23 +466,29 @@ proc gm2_init_ulm { paths args } {
 
     set gm2src ${srcdir}/../m2
 
-    set theIpath -I${gccpath}/libgm2/libm2ulm
+    set theIpath -fm2-pathname=m2ulm
+    lappend theIpath -I${gccpath}/libgm2/libm2ulm
     lappend theIpath -I${gm2src}/ulm-lib-gm2/std
     lappend theIpath -I${gm2src}/ulm-lib-gm2/sys
 
     set theLpath -L${gccpath}/libgm2/libm2ulm/.libs
 
+    lappend theIpath -fm2-pathname=m2pim
     lappend theIpath -I${gccpath}/libgm2/libm2pim
+    lappend theIpath -fm2-pathname=m2log
     lappend theIpath -I${gm2src}/gm2-libs-log
 
     # NOTE:
+    lappend theIpath -fm2-pathname=m2pim
     lappend theIpath -I${gm2src}/gm2-libs
 
     lappend theLpath -L${gccpath}/libgm2/libm2pim/.libs
 
+    lappend theIpath -fm2-pathname=-
     foreach p $paths {
 	lappend theIpath -I$p
     }
+    lappend theIpath -fm2-pathname=-
 
     gm2_link_lib "m2ulm m2pim"
     lappend args -fno-libs=-
@@ -492,25 +512,30 @@ proc gm2_init_log { paths args } {
     send_log "gm2src is $gm2src\n"
 
     # FIXME: this seems to interleave the library defs.
-    set theIpath -I${gccpath}/libgm2/libm2log
+    set theIpath -fm2-pathname=m2log
+    lappend theIpath -I${gccpath}/libgm2/libm2log
     lappend theIpath -I${gm2src}/gm2-libs-log
 
     set theLpath -L${gccpath}/libgm2/libm2log/.libs
 
+    lappend theIpath -fm2-pathname=m2pim
     lappend theIpath -I${gccpath}/libgm2/libm2pim
     lappend theIpath -I${gm2src}/gm2-libs
 
     lappend theLpath -L${gccpath}/libgm2/libm2pim/.libs
 
+    lappend theIpath -fm2-pathname=m2iso
     lappend theIpath -I${gccpath}/libgm2/libm2iso
     lappend theIpath -I${gm2src}/gm2-libs-iso
     # ??? lappend theIpath -I${gm2src}/gm2-libs
 
     lappend theLpath -L${gccpath}/libgm2/libm2iso/.libs
 
+    lappend theIpath -fm2-pathname=-
     foreach p $paths {
 	lappend theIpath -I$p
     }
+    lappend theIpath -fm2-pathname=-
 
     gm2_link_lib "m2log m2pim m2iso"
     lappend args -fno-libs=-
@@ -533,29 +558,41 @@ proc gm2_init_cor { paths args } {
     send_log "gccpath is $gccpath\n"
     send_log "gm2src is $gm2src\n"
 
-    set theIpath -I${gccpath}/libgm2/libm2cor
+    set theIpath -fm2-pathname=m2cor
+    lappend theIpath -I${gccpath}/libgm2/libm2cor
     lappend theIpath -I${gm2src}/gm2-libs-coroutines
 
     set theLpath -L${gccpath}/libgm2/libm2cor/.libs
 
+    lappend theIpath -fm2-pathname=m2pim
     lappend theIpath -I${gccpath}/libgm2/libm2pim
+
+    lappend theIpath -fm2-pathname=m2log
     lappend theIpath -I${gm2src}/gm2-libs-log
 
+    lappend theIpath -fm2-pathname=m2pim
     lappend theLpath -L${gccpath}/libgm2/libm2pim/.libs
 
+    lappend theIpath -fm2-pathname=m2log
     lappend theIpath -I${gccpath}/libgm2/libm2log
+
+    lappend theIpath -fm2-pathname=m2pim
     lappend theIpath -I${gm2src}/gm2-libs
 
+    lappend theIpath -fm2-pathname=m2log
     lappend theLpath -L${gccpath}/libgm2/libm2log/.libs
 
+    lappend theIpath -fm2-pathname=m2iso
     lappend theIpath -I${gccpath}/libgm2/libm2iso
     lappend theIpath -I${gm2src}/gm2-libs-iso
 
     lappend theLpath -L${gccpath}/libgm2/libm2iso/.libs
 
+    lappend theIpath -fm2-pathname=-
     foreach p $paths {
 	lappend theIpath -I$p
     }
+    lappend theIpath -fm2-pathname=-
 
     gm2_link_lib "m2cor m2pim m2log m2iso"
     append args " -fno-libs=- "
@@ -578,14 +615,17 @@ proc gm2_init_minx { dialect paths args } {
     send_log "gccpath is $gccpath\n"
     send_log "gm2src is $gm2src\n"
 
-    set theIpath -I${gccpath}/libgm2/libm2min
+    set theIpath -fm2-pathname=m2min
+    lappend theIpath -I${gccpath}/libgm2/libm2min
     lappend theIpath -I${gm2src}/gm2-libs-min
 
     set theLpath -L${gccpath}/libgm2/libm2min/.libs
 
+    lappend theIpath -fm2-pathname=-
     foreach p $paths {
 	lappend theIpath -I$p
     }
+    lappend theIpath -fm2-pathname=-
 
     gm2_link_lib "m2min"
     lappend args -fno-exceptions

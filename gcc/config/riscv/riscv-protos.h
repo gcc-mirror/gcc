@@ -54,12 +54,13 @@ extern bool riscv_split_64bit_move_p (rtx, rtx);
 extern void riscv_split_doubleword_move (rtx, rtx);
 extern const char *riscv_output_move (rtx, rtx);
 extern const char *riscv_output_return ();
+
 #ifdef RTX_CODE
 extern void riscv_expand_int_scc (rtx, enum rtx_code, rtx, rtx);
 extern void riscv_expand_float_scc (rtx, enum rtx_code, rtx, rtx);
 extern void riscv_expand_conditional_branch (rtx, enum rtx_code, rtx, rtx);
-extern void riscv_expand_conditional_move (rtx, rtx, rtx, rtx_code, rtx, rtx);
 #endif
+extern bool riscv_expand_conditional_move (rtx, rtx, rtx, rtx);
 extern rtx riscv_legitimize_call_address (rtx);
 extern void riscv_set_return_address (rtx, rtx);
 extern bool riscv_expand_block_move (rtx, rtx, rtx);
@@ -85,6 +86,7 @@ void riscv_register_pragmas (void);
 
 /* Routines implemented in riscv-builtins.cc.  */
 extern void riscv_atomic_assign_expand_fenv (tree *, tree *, tree *);
+extern bool riscv_gimple_fold_builtin (gimple_stmt_iterator *);
 extern rtx riscv_expand_builtin (tree, rtx, rtx, machine_mode, int);
 extern tree riscv_builtin_decl (unsigned int, bool);
 extern void riscv_init_builtins (void);
@@ -122,7 +124,8 @@ void riscv_run_selftests (void);
 namespace riscv_vector {
 #define RVV_VLMAX gen_rtx_REG (Pmode, X0_REGNUM)
 #define RVV_VUNDEF(MODE)                                                       \
-  gen_rtx_UNSPEC (MODE, gen_rtvec (1, const0_rtx), UNSPEC_VUNDEF)
+  gen_rtx_UNSPEC (MODE, gen_rtvec (1, gen_rtx_REG (SImode, X0_REGNUM)),        \
+		  UNSPEC_VUNDEF)
 enum vlmul_type
 {
   LMUL_1 = 0,
@@ -133,6 +136,7 @@ enum vlmul_type
   LMUL_F8 = 5,
   LMUL_F4 = 6,
   LMUL_F2 = 7,
+  NUM_LMUL = 8
 };
 
 enum avl_type
@@ -148,10 +152,15 @@ bool verify_type_context (location_t, type_context_kind, const_tree, bool);
 #endif
 void handle_pragma_vector (void);
 tree builtin_decl (unsigned, bool);
+gimple *gimple_fold_builtin (unsigned int, gimple_stmt_iterator *, gcall *);
 rtx expand_builtin (unsigned int, tree, rtx);
+bool check_builtin_call (location_t, vec<location_t>, unsigned int,
+			   tree, unsigned int, tree *);
 bool const_vec_all_same_in_range_p (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 bool legitimize_move (rtx, rtx, machine_mode);
+void emit_vlmax_vsetvl (machine_mode, rtx);
 void emit_vlmax_op (unsigned, rtx, rtx, machine_mode);
+void emit_vlmax_op (unsigned, rtx, rtx, rtx, machine_mode);
 void emit_nonvlmax_op (unsigned, rtx, rtx, rtx, machine_mode);
 enum vlmul_type get_vlmul (machine_mode);
 unsigned int get_ratio (machine_mode);
@@ -183,6 +192,20 @@ bool has_vi_variant_p (rtx_code, rtx);
 #endif
 bool sew64_scalar_helper (rtx *, rtx *, rtx, machine_mode, machine_mode,
 			  bool, void (*)(rtx *, rtx));
+rtx gen_scalar_move_mask (machine_mode);
+
+/* RVV vector register sizes.
+   TODO: Currently, we only add RVV_32/RVV_64/RVV_128, we may need to
+   support other values in the future.  */
+enum vlen_enum
+{
+  RVV_32 = 32,
+  RVV_64 = 64,
+  RVV_65536 = 65536
+};
+bool slide1_sew64_helper (int, machine_mode, machine_mode,
+			  machine_mode, rtx *);
+rtx gen_avl_for_scalar_move (rtx);
 }
 
 /* We classify builtin types into two classes:
@@ -199,5 +222,18 @@ const unsigned int RISCV_BUILTIN_SHIFT = 1;
 
 /* Mask that selects the riscv_builtin_class part of a function code.  */
 const unsigned int RISCV_BUILTIN_CLASS = (1 << RISCV_BUILTIN_SHIFT) - 1;
+
+/* Routines implemented in thead.cc.  */
+extern bool th_mempair_operands_p (rtx[4], bool, machine_mode);
+extern void th_mempair_order_operands (rtx[4], bool, machine_mode);
+extern void th_mempair_prepare_save_restore_operands (rtx[4], bool,
+						      machine_mode,
+						      int, HOST_WIDE_INT,
+						      int, HOST_WIDE_INT);
+extern void th_mempair_save_restore_regs (rtx[4], bool, machine_mode);
+#ifdef RTX_CODE
+extern const char*
+th_mempair_output_move (rtx[4], bool, machine_mode, RTX_CODE);
+#endif
 
 #endif /* ! GCC_RISCV_PROTOS_H */

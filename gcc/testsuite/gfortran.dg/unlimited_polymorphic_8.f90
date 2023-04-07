@@ -15,5 +15,5 @@ contains
   end
 end
 
-! { dg-final { scan-tree-dump-times "foo.0.x._data = 0B;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "foo.0.x._vptr = .* &__vtab__STAR;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "foo.1.x._data = 0B;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "foo.1.x._vptr = .* &__vtab__STAR;" 1 "original" } }

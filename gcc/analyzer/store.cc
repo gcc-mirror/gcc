@@ -1078,6 +1078,9 @@ binding_map::get_overlapping_bindings (const binding_key *key,
    If UNCERTAINTY is non-NULL, use it to record any svalues that
    were removed, as being maybe-bound.
 
+   If MAYBE_LIVE_VALUES is non-NULL, then use it to record any svalues that
+   were removed as being maybe-live.
+
    If ALWAYS_OVERLAP, then assume that DROP_KEY can overlap anything
    in the map, due to one or both of the underlying clusters being
    symbolic (but not the same symbolic region).  Hence even if DROP_KEY is a
@@ -1089,6 +1092,7 @@ void
 binding_map::remove_overlapping_bindings (store_manager *mgr,
 					  const binding_key *drop_key,
 					  uncertainty_t *uncertainty,
+					  svalue_set *maybe_live_values,
 					  bool always_overlap)
 {
   /* Get the bindings of interest within this map.  */
@@ -1122,6 +1126,11 @@ binding_map::remove_overlapping_bindings (store_manager *mgr,
 	      || iter_binding->symbolic_p ()
 	      || always_overlap))
 	uncertainty->on_maybe_bound_sval (old_sval);
+
+      /* Record any svalues that were removed to *MAYBE_LIVE_VALUES as being
+	 maybe-live. */
+      if (maybe_live_values)
+	maybe_live_values->add (old_sval);
 
       /* Begin by removing the old binding. */
       m_map.remove (iter_binding);
@@ -1416,7 +1425,7 @@ binding_cluster::bind_compound_sval (store_manager *mgr,
 void
 binding_cluster::clobber_region (store_manager *mgr, const region *reg)
 {
-  remove_overlapping_bindings (mgr, reg, NULL);
+  remove_overlapping_bindings (mgr, reg, NULL, NULL);
 }
 
 /* Remove any bindings for REG within this cluster.  */
@@ -1464,6 +1473,8 @@ binding_cluster::zero_fill_region (store_manager *mgr, const region *reg)
    Remove any bindings overlapping REG_FOR_OVERLAP.
    If UNCERTAINTY is non-NULL, use it to record any svalues that
    had bindings to them removed, as being maybe-bound.
+   If MAYBE_LIVE_VALUES is non-NULL, use it to record any svalues that
+   had bindings to them removed, as being maybe-live.
 
    REG_TO_BIND and REG_FOR_OVERLAP are the same for
    store::mark_region_as_unknown, but are different in
@@ -1474,12 +1485,14 @@ void
 binding_cluster::mark_region_as_unknown (store_manager *mgr,
 					 const region *reg_to_bind,
 					 const region *reg_for_overlap,
-					 uncertainty_t *uncertainty)
+					 uncertainty_t *uncertainty,
+					 svalue_set *maybe_live_values)
 {
   if (reg_to_bind->empty_p ())
     return;
 
-  remove_overlapping_bindings (mgr, reg_for_overlap, uncertainty);
+  remove_overlapping_bindings (mgr, reg_for_overlap, uncertainty,
+			       maybe_live_values);
 
   /* Add a default binding to "unknown".  */
   region_model_manager *sval_mgr = mgr->get_svalue_manager ();
@@ -1748,7 +1761,7 @@ binding_cluster::maybe_get_compound_binding (store_manager *mgr,
 		 it overlaps with offset_concrete_key.  */
 	      default_map.remove_overlapping_bindings (mgr,
 						       offset_concrete_key,
-						       NULL, false);
+						       NULL, NULL, false);
 	    }
 	  else if (bound_range.contains_p (reg_range, &subrange))
 	    {
@@ -1782,7 +1795,7 @@ binding_cluster::maybe_get_compound_binding (store_manager *mgr,
 		 it overlaps with overlap_concrete_key.  */
 	      default_map.remove_overlapping_bindings (mgr,
 						       overlap_concrete_key,
-						       NULL, false);
+						       NULL, NULL, false);
 	    }
 	}
       else
@@ -1813,12 +1826,16 @@ binding_cluster::maybe_get_compound_binding (store_manager *mgr,
    in the map.
 
    If UNCERTAINTY is non-NULL, use it to record any svalues that
-   were removed, as being maybe-bound.  */
+   were removed, as being maybe-bound.
+
+   If MAYBE_LIVE_VALUES is non-NULL, use it to record any svalues that
+   were removed, as being maybe-live.  */
 
 void
 binding_cluster::remove_overlapping_bindings (store_manager *mgr,
 					      const region *reg,
-					      uncertainty_t *uncertainty)
+					      uncertainty_t *uncertainty,
+					      svalue_set *maybe_live_values)
 {
   if (reg->empty_p ())
     return;
@@ -1836,6 +1853,7 @@ binding_cluster::remove_overlapping_bindings (store_manager *mgr,
 			 && (cluster_base_reg->get_kind () == RK_SYMBOLIC
 			     || other_base_reg->get_kind () == RK_SYMBOLIC));
   m_map.remove_overlapping_bindings (mgr, reg_binding, uncertainty,
+				     maybe_live_values,
 				     always_overlap);
 }
 
@@ -2600,7 +2618,10 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
      Writes to symbolic clusters can affect both concrete and symbolic
      clusters.
      Invalidate our knowledge of other clusters that might have been
-     affected by the write.  */
+     affected by the write.
+     Gather the set of all svalues that might still be live even if
+     the store doesn't refer to them.  */
+  svalue_set maybe_live_values;
   for (cluster_map_t::iterator iter = m_cluster_map.begin ();
        iter != m_cluster_map.end (); ++iter)
     {
@@ -2637,7 +2658,8 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
 		(mgr,
 		 iter_base_reg, /* reg_to_bind */
 		 lhs_reg, /* reg_for_overlap */
-		 uncertainty);
+		 uncertainty,
+		 &maybe_live_values);
 	      break;
 
 	    case tristate::TS_TRUE:
@@ -2651,6 +2673,11 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
 	    }
 	}
     }
+  /* Given the set of svalues that might still be live, process them
+     (e.g. marking regions as escaped).
+     We do this after the iteration to avoid potentially changing
+     m_cluster_map whilst iterating over it.  */
+  on_maybe_live_values (maybe_live_values);
 }
 
 /* Determine if BASE_REG_A could be an alias of BASE_REG_B.  */
@@ -2731,6 +2758,21 @@ store::eval_alias_1 (const region *base_reg_a,
   return tristate::TS_UNKNOWN;
 }
 
+/* Record all of the values in MAYBE_LIVE_VALUES as being possibly live.  */
+
+void
+store::on_maybe_live_values (const svalue_set &maybe_live_values)
+{
+  for (auto sval : maybe_live_values)
+    {
+      if (const region_svalue *ptr_sval = sval->dyn_cast_region_svalue ())
+	{
+	  const region *base_reg = ptr_sval->get_pointee ()->get_base_region ();
+	  mark_as_escaped (base_reg);
+	}
+    }
+}
+
 /* Remove all bindings overlapping REG within this store.  */
 
 void
@@ -2798,14 +2840,16 @@ store::zero_fill_region (store_manager *mgr, const region *reg)
 
 void
 store::mark_region_as_unknown (store_manager *mgr, const region *reg,
-			       uncertainty_t *uncertainty)
+			       uncertainty_t *uncertainty,
+			       svalue_set *maybe_live_values)
 {
   const region *base_reg = reg->get_base_region ();
   if (base_reg->symbolic_for_unknown_ptr_p ()
       || !base_reg->tracked_p ())
     return;
   binding_cluster *cluster = get_or_create_cluster (base_reg);
-  cluster->mark_region_as_unknown (mgr, reg, reg, uncertainty);
+  cluster->mark_region_as_unknown (mgr, reg, reg, uncertainty,
+				   maybe_live_values);
 }
 
 /* Purge state involving SVAL.  */
@@ -3052,7 +3096,9 @@ store::remove_overlapping_bindings (store_manager *mgr, const region *reg,
 	  delete cluster;
 	  return;
 	}
-      cluster->remove_overlapping_bindings (mgr, reg, uncertainty);
+      /* Pass NULL for the maybe_live_values here, as we don't want to
+	 record the old svalues as being maybe-bound.  */
+      cluster->remove_overlapping_bindings (mgr, reg, uncertainty, NULL);
     }
 }
 

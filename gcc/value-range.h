@@ -268,6 +268,56 @@ public:
   virtual void accept (const vrange_visitor &v) const override;
 };
 
+// The NAN state as an opaque object.  The default constructor is +-NAN.
+
+class nan_state
+{
+public:
+  nan_state ();
+  nan_state (bool pos_nan, bool neg_nan);
+  bool neg_p () const;
+  bool pos_p () const;
+private:
+  bool m_pos_nan;
+  bool m_neg_nan;
+};
+
+// Default constructor initializing the object to +-NAN.
+
+inline
+nan_state::nan_state ()
+{
+  m_pos_nan = true;
+  m_neg_nan = true;
+}
+
+// Constructor initializing the object to +NAN if POS_NAN is set, -NAN
+// if NEG_NAN is set, or +-NAN if both are set.  Otherwise POS_NAN and
+// NEG_NAN are clear, and the object cannot be a NAN.
+
+inline
+nan_state::nan_state (bool pos_nan, bool neg_nan)
+{
+  m_pos_nan = pos_nan;
+  m_neg_nan = neg_nan;
+}
+
+// Return if +NAN is possible.
+
+inline bool
+nan_state::pos_p () const
+{
+  return m_pos_nan;
+}
+
+// Return if -NAN is possible.
+
+inline bool
+nan_state::neg_p () const
+{
+  return m_neg_nan;
+}
+
 // A floating point range.
 //
 // The representation is a type with a couple of endpoints, unioned
@@ -295,6 +345,8 @@ public:
   virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
   void set (tree type, const REAL_VALUE_TYPE &, const REAL_VALUE_TYPE &,
 	    value_range_kind = VR_RANGE);
+  void set (tree type, const REAL_VALUE_TYPE &, const REAL_VALUE_TYPE &,
+	    const nan_state &, value_range_kind = VR_RANGE);
   void set_nan (tree type);
   void set_nan (tree type, bool sign);
   virtual void set_varying (tree type) override;
@@ -315,10 +367,13 @@ public:
   bool operator!= (const frange &r) const { return !(*this == r); }
   const REAL_VALUE_TYPE &lower_bound () const;
   const REAL_VALUE_TYPE &upper_bound () const;
+  nan_state get_nan_state () const;
   void update_nan ();
   void update_nan (bool sign);
   void update_nan (tree) = delete; // Disallow silent conversion to bool.
+  void update_nan (const nan_state &);
   void clear_nan ();
+  void flush_denormals_to_zero ();
 
   // fpclassify like API
   bool known_isfinite () const;
@@ -335,7 +390,6 @@ private:
   bool union_nans (const frange &);
   bool intersect_nans (const frange &);
   bool combine_zeros (const frange &, bool union_p);
-  void flush_denormals_to_zero ();
 
   tree m_type;
   REAL_VALUE_TYPE m_min;
@@ -356,6 +410,14 @@ frange::upper_bound () const
 {
   gcc_checking_assert (!undefined_p () && !known_isnan ());
   return m_max;
+}
+
+// Return the NAN state.
+
+inline nan_state
+frange::get_nan_state () const
+{
+  return nan_state (m_pos_nan, m_neg_nan);
 }
 
 // is_a<> and as_a<> implementation for vrange.
@@ -452,7 +514,7 @@ public:
   void dump (FILE *) const;
   static bool supports_type_p (const_tree type);
 
-  // Convenience methods for vrange compatability.
+  // Convenience methods for vrange compatibility.
   void set (tree min, tree max, value_range_kind kind = VR_RANGE)
     { return m_vrange->set (min, max, kind); }
   tree type () { return m_vrange->type (); }
@@ -466,8 +528,8 @@ public:
   bool singleton_p (tree *result = NULL) const
     { return m_vrange->singleton_p (result); }
   bool zero_p () const { return m_vrange->zero_p (); }
-  wide_int lower_bound () const; // For irange/prange compatability.
-  wide_int upper_bound () const; // For irange/prange compatability.
+  wide_int lower_bound () const; // For irange/prange comparability.
+  wide_int upper_bound () const; // For irange/prange comparability.
   void accept (const vrange_visitor &v) const { m_vrange->accept (v); }
 private:
   void init (tree type);
@@ -1122,7 +1184,7 @@ frange::set_undefined ()
   m_type = NULL;
   m_pos_nan = false;
   m_neg_nan = false;
-  // m_min and m_min are unitialized as they are REAL_VALUE_TYPE ??.
+  // m_min and m_min are uninitialized as they are REAL_VALUE_TYPE ??.
   if (flag_checking)
     verify_range ();
 }

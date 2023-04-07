@@ -397,27 +397,38 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
 			       "of an interior zero-length array %qT")),
 			 low_sub, artype);
 
-  if (warned || out_of_bound)
+  if (warned && dump_file && (dump_flags & TDF_DETAILS))
     {
-      if (warned && dump_file && (dump_flags & TDF_DETAILS))
+      fprintf (dump_file, "Array bound warning for ");
+      dump_generic_expr (MSG_NOTE, TDF_SLIM, ref);
+      fprintf (dump_file, "\n");
+    }
+
+   /* Issue warnings for -Wstrict-flex-arrays according to the level of
+      flag_strict_flex_arrays.  */
+  if (out_of_bound && warn_strict_flex_arrays
+      && (sam == special_array_member::trail_0
+	  || sam == special_array_member::trail_1
+	  || sam == special_array_member::trail_n)
+      && DECL_NOT_FLEXARRAY (afield_decl))
+    {
+      bool warned1
+	= warning_at (location, OPT_Wstrict_flex_arrays,
+		      "trailing array %qT should not be used as "
+		      "a flexible array member",
+		      artype);
+
+      if (warned1 && dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  fprintf (dump_file, "Array bound warning for ");
+	  fprintf (dump_file, "Trailing non flexible-like array bound warning for ");
 	  dump_generic_expr (MSG_NOTE, TDF_SLIM, ref);
 	  fprintf (dump_file, "\n");
 	}
+      warned |= warned1;
+    }
 
-      /* issue warnings for -Wstrict-flex-arrays according to the level of
-	 flag_strict_flex_arrays.  */
-      if ((out_of_bound && warn_strict_flex_arrays)
-	  && (((sam == special_array_member::trail_0)
-		|| (sam == special_array_member::trail_1)
-		|| (sam == special_array_member::trail_n))
-	      && DECL_NOT_FLEXARRAY (afield_decl)))
-	      warned = warning_at (location, OPT_Wstrict_flex_arrays,
-				   "trailing array %qT should not be used as "
-				   "a flexible array member",
-				   artype);
-
+  if (warned)
+    {
       /* Avoid more warnings when checking more significant subscripts
 	 of the same expression.  */
       ref = TREE_OPERAND (ref, 0);

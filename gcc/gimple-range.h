@@ -35,7 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 //
 // This base class provides all the API entry points, but only provides
 // functionality at the statement level.  Ie, it can calculate ranges on
-// statements, but does no additonal lookup.
+// statements, but does no additional lookup.
 //
 // All the range_of_* methods will return a range if the types is
 // supported by the range engine.  It may be the full range for the
@@ -76,7 +76,7 @@ protected:
 
 /* Create a new ranger instance and associate it with a function.
    Each call must be paired with a call to disable_ranger to release
-   resources.  If USE_IMM_USES is true, pre-calculate sideffects like
+   resources.  If USE_IMM_USES is true, pre-calculate side effects like
    non-null uses as required using the immediate use chains.  */
 extern gimple_ranger *enable_ranger (struct function *m,
 				     bool use_imm_uses = true);

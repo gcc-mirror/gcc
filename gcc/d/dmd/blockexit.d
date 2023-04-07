@@ -71,7 +71,7 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
         bool mustNotThrow;
         int result;
 
-        extern (D) this(FuncDeclaration func, bool mustNotThrow)
+        extern (D) this(FuncDeclaration func, bool mustNotThrow) scope
         {
             this.func = func;
             this.mustNotThrow = mustNotThrow;

@@ -27,6 +27,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <config.h>
 #include <m2rts.h>
 
+#define EXPORT(FUNC) m2cor ## _KeyBoardLEDs_ ## FUNC
+#define M2EXPORT(FUNC) m2cor ## _M2_KeyBoardLEDs_ ## FUNC
+#define M2LIBNAME "m2cor"
+
 #if defined(linux)
 
 #include <sys/types.h>
@@ -50,7 +54,7 @@ static int initialized = FALSE;
 
 
 extern "C" void
-KeyBoardLEDs_SwitchScroll (int scrolllock)
+EXPORT(SwitchScroll) (int scrolllock)
 {
   unsigned char leds;
   int r = ioctl (fd, KDGETLED, &leds);
@@ -62,7 +66,7 @@ KeyBoardLEDs_SwitchScroll (int scrolllock)
 }
 
 extern "C" void
-KeyBoardLEDs_SwitchNum (int numlock)
+EXPORT(SwitchNum) (int numlock)
 {
   unsigned char leds;
   int r = ioctl (fd, KDGETLED, &leds);
@@ -74,7 +78,7 @@ KeyBoardLEDs_SwitchNum (int numlock)
 }
 
 extern "C" void
-KeyBoardLEDs_SwitchCaps (int capslock)
+EXPORT(SwitchCaps) (int capslock)
 {
   unsigned char leds;
   int r = ioctl (fd, KDGETLED, &leds);
@@ -86,15 +90,15 @@ KeyBoardLEDs_SwitchCaps (int capslock)
 }
 
 extern "C" void
-KeyBoardLEDs_SwitchLeds (int numlock, int capslock, int scrolllock)
+EXPORT(SwitchLeds) (int numlock, int capslock, int scrolllock)
 {
-  KeyBoardLEDs_SwitchScroll (scrolllock);
-  KeyBoardLEDs_SwitchNum (numlock);
-  KeyBoardLEDs_SwitchCaps (capslock);
+  EXPORT(SwitchScroll) (scrolllock);
+  EXPORT(SwitchNum) (numlock);
+  EXPORT(SwitchCaps) (capslock);
 }
 
 extern "C" void
-_M2_KeyBoardLEDs_init (int, char **, char **)
+M2EXPORT(init) (int, char **, char **)
 {
   if (! initialized)
     {
@@ -110,47 +114,47 @@ _M2_KeyBoardLEDs_init (int, char **, char **)
 
 #else
 extern "C" void
-KeyBoardLEDs_SwitchLeds (int numlock, int capslock, int scrolllock)
+EXPORT(SwitchLeds) (int numlock, int capslock, int scrolllock)
 {
 }
 
 extern "C" void
-KeyBoardLEDs_SwitchScroll (int scrolllock)
+EXPORT(SwitchScroll) (int scrolllock)
 {
 }
 
 extern "C" void
-KeyBoardLEDs_SwitchNum (int numlock)
+EXPORT(SwitchNum) (int numlock)
 {
 }
 
 extern "C" void
-KeyBoardLEDs_SwitchCaps (int capslock)
+EXPORT(SwitchCaps) (int capslock)
 {
 }
 
 extern "C" void
-_M2_KeyBoardLEDs_init (int, char **, char **)
+M2EXPORT(init) (int, char **, char **)
 {
 }
-
 #endif
 
 /* GNU Modula-2 linking hooks.  */
 
 extern "C" void
-_M2_KeyBoardLEDs_finish (int, char **, char **)
+M2EXPORT(fini) (int, char **, char **)
 {
 }
 
 extern "C" void
-_M2_KeyBoardLEDs_dep (void)
+M2EXPORT(dep) (void)
 {
 }
 
 extern "C" void __attribute__((__constructor__))
- _M2_KeyBoardLEDs_ctor (void)
+M2EXPORT(ctor) (void)
 {
-  M2RTS_RegisterModule ("KeyBoardLEDs", _M2_KeyBoardLEDs_init, _M2_KeyBoardLEDs_finish,
-			_M2_KeyBoardLEDs_dep);
+  m2pim_M2RTS_RegisterModule ("KeyBoardLEDs", M2LIBNAME,
+			      M2EXPORT(init), M2EXPORT(fini),
+			      M2EXPORT(dep));
 }

@@ -29,20 +29,24 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <getopt.h>
 #include <m2rts.h>
 
-extern "C" {char *cgetopt_optarg;}
-extern "C" {int cgetopt_optind;}
-extern "C" {int cgetopt_opterr;}
-extern "C" {int cgetopt_optopt;}
+#define EXPORT(FUNC) m2pim ## _cgetopt_ ## FUNC
+#define M2EXPORT(FUNC) m2pim ## _M2_cgetopt_ ## FUNC
+#define M2LIBNAME "m2pim"
+
+extern "C" {char *EXPORT(optarg);}
+extern "C" {int EXPORT(optind);}
+extern "C" {int EXPORT(opterr);}
+extern "C" {int EXPORT(optopt);}
 
 extern "C" char
-cgetopt_getopt (int argc, char *argv[], char *optstring)
+EXPORT(getopt) (int argc, char *argv[], char *optstring)
 {
   char r = getopt (argc, argv, optstring);
 
-  cgetopt_optarg = optarg;
-  cgetopt_optind = optind;
-  cgetopt_opterr = opterr;
-  cgetopt_optopt = optopt;
+  EXPORT(optarg) = optarg;
+  EXPORT(optind) = optind;
+  EXPORT(opterr) = opterr;
+  EXPORT(optopt) = optopt;
 
   if (r == (char)-1)
     return (char)0;
@@ -50,29 +54,29 @@ cgetopt_getopt (int argc, char *argv[], char *optstring)
 }
 
 extern "C" int
-cgetopt_getopt_long (int argc, char *argv[], char *optstring,
+EXPORT(getopt_long) (int argc, char *argv[], char *optstring,
                     const struct option *longopts, int *longindex)
 {
   int r = getopt_long (argc, argv, optstring, longopts, longindex);
 
-  cgetopt_optarg = optarg;
-  cgetopt_optind = optind;
-  cgetopt_opterr = opterr;
-  cgetopt_optopt = optopt;
+  EXPORT(optarg) = optarg;
+  EXPORT(optind) = optind;
+  EXPORT(opterr) = opterr;
+  EXPORT(optopt) = optopt;
 
   return r;
 }
 
 extern "C" int
-cgetopt_getopt_long_only (int argc, char *argv[], char *optstring,
+EXPORT(getopt_long_only) (int argc, char *argv[], char *optstring,
                          const struct option *longopts, int *longindex)
 {
   int r = getopt_long_only (argc, argv, optstring, longopts, longindex);
 
-  cgetopt_optarg = optarg;
-  cgetopt_optind = optind;
-  cgetopt_opterr = opterr;
-  cgetopt_optopt = optopt;
+  EXPORT(optarg) = optarg;
+  EXPORT(optind) = optind;
+  EXPORT(opterr) = opterr;
+  EXPORT(optopt) = optopt;
 
   return r;
 }
@@ -86,7 +90,7 @@ typedef struct cgetopt_Options_s
 /* InitOptions a constructor for Options.  */
 
 extern "C" cgetopt_Options *
-cgetopt_InitOptions (void)
+EXPORT(InitOptions) (void)
 {
   cgetopt_Options *o = (cgetopt_Options *)malloc (sizeof (cgetopt_Options));
   o->cinfo = (struct option *)malloc (sizeof (struct option));
@@ -98,7 +102,7 @@ cgetopt_InitOptions (void)
    up all allocated memory associated with o.  */
 
 extern "C" cgetopt_Options *
-cgetopt_KillOptions (cgetopt_Options *o)
+EXPORT(KillOptions) (cgetopt_Options *o)
 {
   free (o->cinfo);
   free (o);
@@ -108,8 +112,8 @@ cgetopt_KillOptions (cgetopt_Options *o)
 /* SetOption set option[index] with {name, has_arg, flag, val}.  */
 
 extern "C" void
-cgetopt_SetOption (cgetopt_Options *o, unsigned int index, char *name,
- 		   unsigned int has_arg, int *flag, int val)
+EXPORT(SetOption) (cgetopt_Options *o, unsigned int index, char *name,
+ 		   bool has_arg, int *flag, int val)
 {
   if (index > o->high)
     {
@@ -127,7 +131,7 @@ cgetopt_SetOption (cgetopt_Options *o, unsigned int index, char *name,
    long options.  */
 
 extern "C" struct option *
-cgetopt_GetLongOptionArray (cgetopt_Options *o)
+EXPORT(GetLongOptionArray) (cgetopt_Options *o)
 {
   return o->cinfo;
 }
@@ -135,23 +139,24 @@ cgetopt_GetLongOptionArray (cgetopt_Options *o)
 /* GNU Modula-2 linking fodder.  */
 
 extern "C" void
-_M2_cgetopt_init (int, char *argv[], char *env[])
+M2EXPORT(init) (int, char *argv[], char *env[])
 {
 }
 
 extern "C" void
-_M2_cgetopt_fini (int, char *argv[], char *env[])
+M2EXPORT(fini) (int, char *argv[], char *env[])
 {
 }
 
 extern "C" void
-_M2_cgetopt_dep (void)
+M2EXPORT(dep) (void)
 {
 }
 
 extern "C" void __attribute__((__constructor__))
-_M2_cgetopt_ctor (void)
+M2EXPORT(ctor) (void)
 {
-  M2RTS_RegisterModule ("cgetopt", _M2_cgetopt_init, _M2_cgetopt_fini,
-			_M2_cgetopt_dep);
+  m2pim_M2RTS_RegisterModule ("cgetopt", M2LIBNAME,
+			      M2EXPORT(init), M2EXPORT(fini),
+			      M2EXPORT(dep));
 }

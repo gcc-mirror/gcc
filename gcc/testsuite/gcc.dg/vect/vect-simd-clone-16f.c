@@ -1,5 +1,5 @@
 /* { dg-require-effective-target vect_simd_clones } */
-/* { dg-additional-options "-fopenmp-simd" } */
+/* { dg-additional-options "-fopenmp-simd --param vect-epilogues-nomask=0" } */
 /* { dg-additional-options "-mavx" { target avx_runtime } } */
 
 #define TYPE __INT64_TYPE__

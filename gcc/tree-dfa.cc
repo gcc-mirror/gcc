@@ -59,6 +59,25 @@ static void collect_dfa_stats (struct dfa_stats_d *);
 			Dataflow analysis (DFA) routines
 ---------------------------------------------------------------------------*/
 
+/* Renumber the gimple stmt uids in one block.  The caller is responsible
+   of calling set_gimple_stmt_max_uid (fun, 0) at some point.  */
+
+void
+renumber_gimple_stmt_uids_in_block (struct function *fun, basic_block bb)
+{
+  gimple_stmt_iterator bsi;
+  for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+    {
+      gimple *stmt = gsi_stmt (bsi);
+      gimple_set_uid (stmt, inc_gimple_stmt_max_uid (fun));
+    }
+  for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+    {
+      gimple *stmt = gsi_stmt (bsi);
+      gimple_set_uid (stmt, inc_gimple_stmt_max_uid (fun));
+    }
+}
+
 /* Renumber all of the gimple stmt uids.  */
 
 void
@@ -68,19 +87,7 @@ renumber_gimple_stmt_uids (struct function *fun)
 
   set_gimple_stmt_max_uid (fun, 0);
   FOR_ALL_BB_FN (bb, fun)
-    {
-      gimple_stmt_iterator bsi;
-      for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
-	{
-	  gimple *stmt = gsi_stmt (bsi);
-	  gimple_set_uid (stmt, inc_gimple_stmt_max_uid (fun));
-	}
-      for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
-	{
-	  gimple *stmt = gsi_stmt (bsi);
-	  gimple_set_uid (stmt, inc_gimple_stmt_max_uid (fun));
-	}
-    }
+    renumber_gimple_stmt_uids_in_block (fun, bb);
 }
 
 /* Like renumber_gimple_stmt_uids, but only do work on the basic blocks
@@ -93,20 +100,7 @@ renumber_gimple_stmt_uids_in_blocks (basic_block *blocks, int n_blocks)
 
   set_gimple_stmt_max_uid (cfun, 0);
   for (i = 0; i < n_blocks; i++)
-    {
-      basic_block bb = blocks[i];
-      gimple_stmt_iterator bsi;
-      for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
-	{
-	  gimple *stmt = gsi_stmt (bsi);
-	  gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
-	}
-      for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
-	{
-	  gimple *stmt = gsi_stmt (bsi);
-	  gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
-	}
-    }
+    renumber_gimple_stmt_uids_in_block (cfun, blocks[i]);
 }
 
 

@@ -1,2 +1,4 @@
-This directory contains the hand built C wrappers required to allow the
-libraries of mc to access the underlying host operating system.
+This directory contains a bootstrap C++ version of pge.
+Do not edit this code - the source is in Modula-2
+the library modules to pge are found in gcc/m2/gm2-libs
+and the program module is found in gcc/m2/gm2-compiler/ppg.mod.

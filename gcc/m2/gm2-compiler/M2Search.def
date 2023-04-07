@@ -42,11 +42,13 @@ FROM DynamicStrings IMPORT String ;
                     FullPath will be totally overwritten and should
                     not be initialized by InitString before this function
                     is called.
+                    FullPath is set to NIL if this function returns FALSE.
                     FindSourceFile sets FullPath to a new string if successful.
+                    The string FileName is not altered.
 *)
 
 PROCEDURE FindSourceFile (FileName: String;
-                          VAR FullPath: String) : BOOLEAN ;
+                          VAR FullPath, named: String) : BOOLEAN ;
 
 
 (*
@@ -56,7 +58,7 @@ PROCEDURE FindSourceFile (FileName: String;
                        then FALSE is returned and FullPath is set to NIL.
 *)
 
-PROCEDURE FindSourceDefFile (Stem: String; VAR FullPath: String) : BOOLEAN ;
+PROCEDURE FindSourceDefFile (Stem: String; VAR FullPath, named: String) : BOOLEAN ;
 
 
 (*
@@ -66,7 +68,7 @@ PROCEDURE FindSourceDefFile (Stem: String; VAR FullPath: String) : BOOLEAN ;
                        then FALSE is returned and FullPath is set to NIL.
 *)
 
-PROCEDURE FindSourceModFile (Stem: String; VAR FullPath: String) : BOOLEAN ;
+PROCEDURE FindSourceModFile (Stem: String; VAR FullPath, named: String) : BOOLEAN ;
 
 
 (*
@@ -85,6 +87,8 @@ PROCEDURE SetDefExtension (ext: String) ;
 *)
 
 PROCEDURE SetModExtension (ext: String) ;
+
+
 
 
 END M2Search.

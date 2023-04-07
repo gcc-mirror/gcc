@@ -599,6 +599,10 @@ Target Mask(STV) Save
 Disable Scalar to Vector optimization pass transforming 64-bit integer
 computations into a vector ones.
 
+-param=x86-stv-max-visits=
+Target Joined UInteger Var(x86_stv_max_visits) Init(10000) IntegerRange(1, 1000000) Param
+The maximum number of use and def visits when discovering a STV chain before the discovery is aborted.
+
 mdispatch-scheduler
 Target RejectNegative Var(flag_dispatch_scheduler)
 Do dispatch scheduling if processor is bdver1, bdver2, bdver3, bdver4

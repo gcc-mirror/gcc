@@ -197,17 +197,12 @@ extern (C++) abstract class AttribDeclaration : Dsymbol
 
     /****************************************
      */
-    override final void addLocalClass(ClassDeclarations* aclasses)
-    {
-        include(null).foreachDsymbol( s => s.addLocalClass(aclasses) );
-    }
-
     override final void addObjcSymbols(ClassDeclarations* classes, ClassDeclarations* categories)
     {
         objc.addSymbols(this, classes, categories);
     }
 
-    override final inout(AttribDeclaration) isAttribDeclaration() inout pure @safe
+    override inout(AttribDeclaration) isAttribDeclaration() inout pure @safe
     {
         return this;
     }
@@ -1078,6 +1073,11 @@ extern (C++) final class StaticIfDeclaration : ConditionalDeclaration
     override const(char)* kind() const
     {
         return "static if";
+    }
+
+    override inout(StaticIfDeclaration) isStaticIfDeclaration() inout pure @safe
+    {
+        return this;
     }
 
     override void accept(Visitor v)

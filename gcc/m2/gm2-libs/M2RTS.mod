@@ -70,10 +70,13 @@ VAR
                       module constructor in turn.
 *)
 
-PROCEDURE ConstructModules (applicationmodule: ADDRESS;
+PROCEDURE ConstructModules (applicationmodule, libname: ADDRESS;
+                            overrideliborder: ADDRESS;
                             argc: INTEGER; argv, envp: ADDRESS) ;
 BEGIN
-   M2Dependent.ConstructModules (applicationmodule, argc, argv, envp)
+   M2Dependent.ConstructModules (applicationmodule, libname,
+                                 overrideliborder,
+                                 argc, argv, envp)
 END ConstructModules ;
 
 
@@ -82,10 +85,11 @@ END ConstructModules ;
                         module constructor in turn.
 *)
 
-PROCEDURE DeconstructModules (applicationmodule: ADDRESS;
+PROCEDURE DeconstructModules (applicationmodule, libname: ADDRESS;
                               argc: INTEGER; argv, envp: ADDRESS) ;
 BEGIN
-   M2Dependent.DeconstructModules (applicationmodule, argc, argv, envp)
+   M2Dependent.DeconstructModules (applicationmodule, libname,
+                                   argc, argv, envp)
 END DeconstructModules ;
 
 
@@ -95,11 +99,11 @@ END DeconstructModules ;
                     explored to determine initialization order.
 *)
 
-PROCEDURE RegisterModule (name: ADDRESS;
+PROCEDURE RegisterModule (name, libname: ADDRESS;
                           init, fini:  ArgCVEnvP;
                           dependencies: PROC) ;
 BEGIN
-   M2Dependent.RegisterModule (name, init, fini, dependencies)
+   M2Dependent.RegisterModule (name, libname, init, fini, dependencies)
 END RegisterModule ;
 
 
@@ -108,9 +112,11 @@ END RegisterModule ;
                       module dependantmodule.
 *)
 
-PROCEDURE RequestDependant (modulename, dependantmodule: ADDRESS) ;
+PROCEDURE RequestDependant (modulename, libname,
+                            dependantmodule, dependantlibname: ADDRESS) ;
 BEGIN
-   M2Dependent.RequestDependant (modulename, dependantmodule)
+   M2Dependent.RequestDependant (modulename, libname,
+                                 dependantmodule, dependantlibname)
 END RequestDependant ;
 
 
@@ -332,8 +338,7 @@ END ErrorMessageC ;
            to stderr and calls exit (1).
 *)
 
-PROCEDURE HaltC (filename: ADDRESS; line: CARDINAL;
-                 function, description: ADDRESS) ;
+PROCEDURE HaltC (description, filename, function: ADDRESS; line: CARDINAL) ;
 BEGIN
    ErrorMessageC (description, filename, line, function)
 END HaltC ;
@@ -345,8 +350,7 @@ END HaltC ;
           to stderr and calls exit (1).
 *)
 
-PROCEDURE Halt (filename: ARRAY OF CHAR; line: CARDINAL;
-                function: ARRAY OF CHAR; description: ARRAY OF CHAR) ;
+PROCEDURE Halt (description, filename, function: ARRAY OF CHAR; line: CARDINAL) ;
 BEGIN
    ErrorMessage (description, filename, line, function)
 END Halt ;

@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -61,7 +62,7 @@ extern "C" {
                      abcdef are used, and if FALSE then ABCDEF are used.
 */
 
-EXTERN DynamicStrings_String StringConvert_IntegerToString (int i, unsigned int width, char padding, unsigned int sign, unsigned int base, unsigned int lower);
+EXTERN DynamicStrings_String StringConvert_IntegerToString (int i, unsigned int width, char padding, bool sign, unsigned int base, bool lower);
 
 /*
    CardinalToString - converts CARDINAL, c, into a String. The field
@@ -74,7 +75,7 @@ EXTERN DynamicStrings_String StringConvert_IntegerToString (int i, unsigned int 
                       abcdef are used, and if FALSE then ABCDEF are used.
 */
 
-EXTERN DynamicStrings_String StringConvert_CardinalToString (unsigned int c, unsigned int width, char padding, unsigned int base, unsigned int lower);
+EXTERN DynamicStrings_String StringConvert_CardinalToString (unsigned int c, unsigned int width, char padding, unsigned int base, bool lower);
 
 /*
    StringToInteger - converts a string, s, of, base, into an INTEGER.
@@ -84,7 +85,7 @@ EXTERN DynamicStrings_String StringConvert_CardinalToString (unsigned int c, uns
                      The parameter found is set TRUE if a number was found.
 */
 
-EXTERN int StringConvert_StringToInteger (DynamicStrings_String s, unsigned int base, unsigned int *found);
+EXTERN int StringConvert_StringToInteger (DynamicStrings_String s, unsigned int base, bool *found);
 
 /*
    StringToCardinal - converts a string, s, of, base, into a CARDINAL.
@@ -94,7 +95,7 @@ EXTERN int StringConvert_StringToInteger (DynamicStrings_String s, unsigned int 
                       The parameter found is set TRUE if a number was found.
 */
 
-EXTERN unsigned int StringConvert_StringToCardinal (DynamicStrings_String s, unsigned int base, unsigned int *found);
+EXTERN unsigned int StringConvert_StringToCardinal (DynamicStrings_String s, unsigned int base, bool *found);
 
 /*
    LongIntegerToString - converts LONGINT, i, into a String. The field with
@@ -108,7 +109,7 @@ EXTERN unsigned int StringConvert_StringToCardinal (DynamicStrings_String s, uns
                          abcdef are used, and if FALSE then ABCDEF are used.
 */
 
-EXTERN DynamicStrings_String StringConvert_LongIntegerToString (long int i, unsigned int width, char padding, unsigned int sign, unsigned int base, unsigned int lower);
+EXTERN DynamicStrings_String StringConvert_LongIntegerToString (long int i, unsigned int width, char padding, bool sign, unsigned int base, bool lower);
 
 /*
    StringToLongInteger - converts a string, s, of, base, into an LONGINT.
@@ -118,7 +119,7 @@ EXTERN DynamicStrings_String StringConvert_LongIntegerToString (long int i, unsi
                          The parameter found is set TRUE if a number was found.
 */
 
-EXTERN long int StringConvert_StringToLongInteger (DynamicStrings_String s, unsigned int base, unsigned int *found);
+EXTERN long int StringConvert_StringToLongInteger (DynamicStrings_String s, unsigned int base, bool *found);
 
 /*
    LongCardinalToString - converts LONGCARD, c, into a String. The field
@@ -131,7 +132,7 @@ EXTERN long int StringConvert_StringToLongInteger (DynamicStrings_String s, unsi
                           abcdef are used, and if FALSE then ABCDEF are used.
 */
 
-EXTERN DynamicStrings_String StringConvert_LongCardinalToString (long unsigned int c, unsigned int width, char padding, unsigned int base, unsigned int lower);
+EXTERN DynamicStrings_String StringConvert_LongCardinalToString (long unsigned int c, unsigned int width, char padding, unsigned int base, bool lower);
 
 /*
    StringToLongCardinal - converts a string, s, of, base, into a LONGCARD.
@@ -141,7 +142,7 @@ EXTERN DynamicStrings_String StringConvert_LongCardinalToString (long unsigned i
                           The parameter found is set TRUE if a number was found.
 */
 
-EXTERN long unsigned int StringConvert_StringToLongCardinal (DynamicStrings_String s, unsigned int base, unsigned int *found);
+EXTERN long unsigned int StringConvert_StringToLongCardinal (DynamicStrings_String s, unsigned int base, bool *found);
 
 /*
    ShortCardinalToString - converts SHORTCARD, c, into a String. The field
@@ -154,7 +155,7 @@ EXTERN long unsigned int StringConvert_StringToLongCardinal (DynamicStrings_Stri
                            abcdef are used, and if FALSE then ABCDEF are used.
 */
 
-EXTERN DynamicStrings_String StringConvert_ShortCardinalToString (short unsigned int c, unsigned int width, char padding, unsigned int base, unsigned int lower);
+EXTERN DynamicStrings_String StringConvert_ShortCardinalToString (short unsigned int c, unsigned int width, char padding, unsigned int base, bool lower);
 
 /*
    StringToShortCardinal - converts a string, s, of, base, into a SHORTCARD.
@@ -164,7 +165,7 @@ EXTERN DynamicStrings_String StringConvert_ShortCardinalToString (short unsigned
                            The parameter found is set TRUE if a number was found.
 */
 
-EXTERN short unsigned int StringConvert_StringToShortCardinal (DynamicStrings_String s, unsigned int base, unsigned int *found);
+EXTERN short unsigned int StringConvert_StringToShortCardinal (DynamicStrings_String s, unsigned int base, bool *found);
 
 /*
    stoi - decimal string to INTEGER
@@ -176,7 +177,7 @@ EXTERN int StringConvert_stoi (DynamicStrings_String s);
    itos - integer to decimal string.
 */
 
-EXTERN DynamicStrings_String StringConvert_itos (int i, unsigned int width, char padding, unsigned int sign);
+EXTERN DynamicStrings_String StringConvert_itos (int i, unsigned int width, char padding, bool sign);
 
 /*
    ctos - cardinal to decimal string.
@@ -231,7 +232,7 @@ EXTERN unsigned int StringConvert_bstoc (DynamicStrings_String s);
                       if a legal number is seen.
 */
 
-EXTERN long double StringConvert_StringToLongreal (DynamicStrings_String s, unsigned int *found);
+EXTERN long double StringConvert_StringToLongreal (DynamicStrings_String s, bool *found);
 
 /*
    LongrealToString - converts a LONGREAL number, Real, which has,

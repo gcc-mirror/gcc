@@ -73,7 +73,7 @@ range_tracer::print_prefix (unsigned idx, bool blanks)
 
 }
 // If dumping, return the next call index and print the prefix for the next
-// output line.  If not, retrurn 0.
+// output line.  If not, return 0.
 // Counter is static to monotonically increase across the compilation unit.
 
 unsigned

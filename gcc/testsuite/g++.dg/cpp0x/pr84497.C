@@ -34,6 +34,6 @@ extern thread_local Container container_obj;
 int main() { return !(&base_obj && &derived_obj && &container_obj);}
 #endif
 
-// { dg-final { scan-assembler ".weak\[ \t\]*_ZTH8base_obj" } }
-// { dg-final { scan-assembler ".weak\[ \t\]*_ZTH11derived_obj" } }
-// { dg-final { scan-assembler ".weak\[ \t\]*_ZTH13container_obj" } }
+// { dg-final { scan-assembler ".weak\[ \t\]*_?_ZTH8base_obj" } }
+// { dg-final { scan-assembler ".weak\[ \t\]*_?_ZTH11derived_obj" } }
+// { dg-final { scan-assembler ".weak\[ \t\]*_?_ZTH13container_obj" } }

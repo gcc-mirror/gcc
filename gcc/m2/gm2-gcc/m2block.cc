@@ -112,7 +112,7 @@ typedef struct stmt_tree_s *stmt_tree_t;
 #undef DEBUGGING
 
 static location_t pending_location;
-static int pending_statement = FALSE;
+static int pending_statement = false;
 
 /* assert_global_names asserts that the global_binding_level->names
    can be chained.  */
@@ -215,8 +215,8 @@ m2block_cur_stmt_list (void)
   return *t;
 }
 
-/* is_building_stmt_list returns TRUE if we are building a
-   statement list.  TRUE is returned if we are in a binding level and
+/* is_building_stmt_list returns true if we are building a
+   statement list.  true is returned if we are in a binding level and
    a statement list is under construction.  */
 
 int
@@ -280,7 +280,7 @@ findLevel (tree fndecl)
       b = newLevel ();
       b->fndecl = fndecl;
       b->context = fndecl;
-      b->is_global = FALSE;
+      b->is_global = false;
       b->list = head_binding_level;
       b->next = NULL;
     }
@@ -414,14 +414,14 @@ m2block_finishFunctionDecl (location_t location, tree fndecl)
     {
       block = make_node (BLOCK);
       DECL_INITIAL (fndecl) = block;
-      TREE_USED (block) = TRUE;
+      TREE_USED (block) = true;
       BLOCK_SUBBLOCKS (block) = NULL_TREE;
     }
   BLOCK_SUPERCONTEXT (block) = context;
 
   BLOCK_VARS (block)
       = chainon (BLOCK_VARS (block), current_binding_level->names);
-  TREE_USED (fndecl) = TRUE;
+  TREE_USED (fndecl) = true;
 
   if (bind_expr == NULL_TREE)
     {
@@ -647,16 +647,16 @@ m2block_RememberInitModuleFunction (tree t)
   return t;
 }
 
-/* toplevel return TRUE if we are in the global scope.  */
+/* toplevel return true if we are in the global scope.  */
 
-int
+bool
 m2block_toplevel (void)
 {
   if (current_binding_level == NULL)
-    return TRUE;
+    return true;
   if (current_binding_level->fndecl == NULL)
-    return TRUE;
-  return FALSE;
+    return true;
+  return false;
 }
 
 /* GetErrorNode returns the gcc error_mark_node.  */
@@ -711,12 +711,12 @@ flush_pending_note (void)
       tree note = build_stmt (pending_location, ASM_EXPR, string, NULL_TREE,
                               NULL_TREE, NULL_TREE, NULL_TREE);
 
-      ASM_INPUT_P (note) = FALSE;
-      ASM_VOLATILE_P (note) = FALSE;
+      ASM_INPUT_P (note) = false;
+      ASM_VOLATILE_P (note) = false;
 #else
       tree note = build_empty_stmt (pending_location);
 #endif
-      pending_statement = FALSE;
+      pending_statement = false;
       do_add_stmt (note);
     }
 }
@@ -732,7 +732,7 @@ m2block_add_stmt (location_t location, tree t)
   if (pending_statement && (pending_location != location))
     flush_pending_note ();
 
-  pending_statement = FALSE;
+  pending_statement = false;
   return do_add_stmt (t);
 }
 
@@ -746,14 +746,14 @@ m2block_addStmtNote (location_t location)
   if (pending_statement && (pending_location != location))
     flush_pending_note ();
 
-  pending_statement = TRUE;
+  pending_statement = true;
   pending_location = location;
 }
 
 void
 m2block_removeStmtNote (void)
 {
-  pending_statement = FALSE;
+  pending_statement = false;
 }
 
 /* init - initialize the data structures in this module.  */
@@ -763,7 +763,7 @@ m2block_init (void)
 {
   global_binding_level = newLevel ();
   global_binding_level->context = build_translation_unit_decl (NULL);
-  global_binding_level->is_global = TRUE;
+  global_binding_level->is_global = true;
   current_binding_level = NULL;
 }
 

@@ -860,6 +860,7 @@ struct GTY (()) aarch64_frame
   bool is_scs_enabled;
 };
 
+#ifdef hash_set_h
 typedef struct GTY (()) machine_function
 {
   struct aarch64_frame frame;
@@ -868,7 +869,11 @@ typedef struct GTY (()) machine_function
   /* One entry for each general purpose register.  */
   rtx call_via[SP_REGNUM];
   bool label_is_assembled;
+  /* A set of all decls that have been passed to a vld1 intrinsic in the
+     current function.  This is used to help guide the vector cost model.  */
+  hash_set<tree> *vector_load_decls;
 } machine_function;
+#endif
 #endif
 
 /* Which ABI to use.  */
@@ -1237,9 +1242,8 @@ extern const char *aarch64_rewrite_mcpu (int argc, const char **argv);
 extern GTY(()) tree aarch64_fp16_type_node;
 extern GTY(()) tree aarch64_fp16_ptr_type_node;
 
-/* This type is the user-visible __bf16, and a pointer to that type.  Defined
-   in aarch64-builtins.cc.  */
-extern GTY(()) tree aarch64_bf16_type_node;
+/* Pointer to the user-visible __bf16 type.  __bf16 itself is generic
+   bfloat16_type_node.  Defined in aarch64-builtins.cc.  */
 extern GTY(()) tree aarch64_bf16_ptr_type_node;
 
 /* The generic unwind code in libgcc does not initialize the frame pointer.

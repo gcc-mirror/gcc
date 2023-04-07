@@ -42,20 +42,20 @@ EXTERN tree m2treelib_DoCall2 (location_t location, tree rettype, tree funcptr,
 EXTERN tree m2treelib_DoCall3 (location_t location, tree rettype, tree funcptr,
                                tree arg0, tree arg1, tree arg2);
 EXTERN tree m2treelib_get_rvalue (location_t location, tree t, tree type,
-                                  int is_lvalue);
-EXTERN tree m2treelib_get_field_no (tree type, tree op, int is_const,
+                                  bool is_lvalue);
+EXTERN tree m2treelib_get_field_no (tree type, tree op, bool is_const,
                                     unsigned int fieldNo);
 EXTERN tree m2treelib_get_set_value (location_t location, tree p, tree field,
-                                     int is_const, int is_lvalue, tree op,
+                                     bool is_const, bool is_lvalue, tree op,
                                      unsigned int fieldNo);
 EXTERN tree m2treelib_get_set_address (location_t location, tree op1,
-                                       int is_lvalue);
+                                       bool is_lvalue);
 EXTERN tree m2treelib_get_set_field_lhs (location_t location, tree p,
                                          tree field);
 EXTERN tree m2treelib_get_set_field_rhs (location_t location, tree p,
                                          tree field);
 EXTERN tree m2treelib_get_set_address_if_var (location_t location, tree op,
-                                              int is_lvalue, int is_const);
+                                              bool is_lvalue, bool is_const);
 EXTERN tree m2treelib_get_set_field_des (location_t location, tree p,
                                          tree field);
 

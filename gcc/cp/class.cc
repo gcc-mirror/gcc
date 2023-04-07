@@ -6476,7 +6476,15 @@ end_of_class (tree t, eoc_mode mode)
 	     size of the type (usually 1) for computing nvsize.  */
 	  size = TYPE_SIZE_UNIT (TREE_TYPE (field));
 
-	offset = size_binop (PLUS_EXPR, byte_position (field), size);
+	if (DECL_BIT_FIELD_TYPE (field))
+	  {
+	    offset = size_binop (PLUS_EXPR, bit_position (field),
+				 DECL_SIZE (field));
+	    offset = size_binop (CEIL_DIV_EXPR, offset, bitsize_unit_node);
+	    offset = fold_convert (sizetype, offset);
+	  }
+	else
+	  offset = size_binop (PLUS_EXPR, byte_position (field), size);
 	if (tree_int_cst_lt (result, offset))
 	  result = offset;
       }
@@ -8727,6 +8735,8 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t complain)
   tree access_path = NULL_TREE;
 
   complain &= ~tf_ptrmem_ok;
+
+  STRIP_ANY_LOCATION_WRAPPER (rhs);
 
   if (lhstype == unknown_type_node)
     {

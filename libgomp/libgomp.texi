@@ -4454,13 +4454,15 @@ The implementation remark:
 @item I/O within OpenMP target regions and OpenACC parallel/kernels is supported
       using the C library @code{printf} functions and the Fortran
       @code{print}/@code{write} statements.
-@item Reverse offload (i.e. @code{target} regions with
+@item Reverse offload regions (i.e. @code{target} regions with
       @code{device(ancestor:1)}) are processed serially per @code{target} region
       such that the next reverse offload region is only executed after the previous
       one returned.
 @item OpenMP code that has a requires directive with @code{unified_address} or
       @code{unified_shared_memory} will remove any GCN device from the list of
       available devices (``host fallback'').
+@item The available stack size can be changed using the @code{GCN_STACK_SIZE}
+      environment variable; the default is 32 kiB per thread.
 @end itemize
 
 

@@ -94,6 +94,9 @@ pack_internal (gfc_array_char *ret, const gfc_array_char *array,
 
   dim = GFC_DESCRIPTOR_RANK (array);
 
+  sstride[0] = 0; /* Avoid warnings if not initialized.  */
+  mstride[0] = 0;
+
   sptr = array->base_addr;
   mptr = mask->base_addr;
 

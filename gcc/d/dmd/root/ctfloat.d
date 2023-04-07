@@ -50,7 +50,7 @@ extern (C++) struct CTFloat
     static real_t parse(const(char)* literal, out bool isOutOfRange);
 
     @system
-    static int sprint(char* str, char fmt, real_t x);
+    static int sprint(char* str, size_t size, char fmt, real_t x);
 
     // Constant real values 0, 1, -1 and 0.5.
     __gshared real_t zero;

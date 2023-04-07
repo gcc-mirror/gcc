@@ -1,5 +1,6 @@
 //  { dg-additional-options "-fsyntax-only " }
-#ifdef __clang__
+#if !__has_include(<coroutine>) \
+  && __has_include(<experimental/coroutine>) // for __clang__
 #include <experimental/coroutine>
 namespace std {
   using namespace std::experimental;

@@ -951,7 +951,7 @@ private void emitComment(Dsymbol s, ref OutBuffer buf, Scope* sc)
         OutBuffer* buf;
         Scope* sc;
 
-        extern (D) this(ref OutBuffer buf, Scope* sc)
+        extern (D) this(ref OutBuffer buf, Scope* sc) scope
         {
             this.buf = &buf;
             this.sc = sc;
@@ -1235,7 +1235,7 @@ private void toDocBuffer(Dsymbol s, ref OutBuffer buf, Scope* sc)
         OutBuffer* buf;
         Scope* sc;
 
-        extern (D) this(ref OutBuffer buf, Scope* sc)
+        extern (D) this(ref OutBuffer buf, Scope* sc) scope
         {
             this.buf = &buf;
             this.sc = sc;
@@ -5183,6 +5183,7 @@ private void highlightCode2(Scope* sc, Dsymbols* a, ref OutBuffer buf, size_t of
     uint errorsave = global.startGagging();
 
     scope Lexer lex = new Lexer(null, cast(char*)buf[].ptr, 0, buf.length - 1, 0, 1,
+        global.errorSink,
         global.vendor, global.versionNumber());
     OutBuffer res;
     const(char)* lastp = cast(char*)buf[].ptr;

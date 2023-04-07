@@ -26,3 +26,16 @@ GCC_11.0 {
   __mulhc3
   __trunctfhf2
 }
+
+%inherit GCC_13.0.0 GCC_11.0.0
+GCC_13.0.0 {
+  __extendbfsf2
+  __floatdibf
+  __floattibf
+  __floatundibf
+  __floatuntibf
+  __truncdfbf2
+  __truncsfbf2
+  __trunctfbf2
+  __trunchfbf2
+}

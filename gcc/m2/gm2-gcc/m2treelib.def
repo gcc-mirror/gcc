@@ -35,7 +35,7 @@ TYPE
                              NULL is returned if, op, is a constant.
 *)
 
-PROCEDURE get_set_address_if_var (location: location_t; op: Tree; is_lvalue: INTEGER; is_const: INTEGER) : Tree ;
+PROCEDURE get_set_address_if_var (location: location_t; op: Tree; is_lvalue, is_const: BOOLEAN) : Tree ;
 
 
 (*
@@ -56,7 +56,7 @@ PROCEDURE get_set_field_lhs (location: location_t; p: Tree; field: Tree) : Tree 
     get_set_address - returns the address of op1.
 *)
 
-PROCEDURE get_set_address (location: location_t; op1: Tree; is_lvalue: INTEGER) : Tree ;
+PROCEDURE get_set_address (location: location_t; op1: Tree; is_lvalue: BOOLEAN) : Tree ;
 
 
 (*
@@ -64,7 +64,7 @@ PROCEDURE get_set_address (location: location_t; op1: Tree; is_lvalue: INTEGER) 
                     Either p->field or the constant(op.fieldNo) is returned.
 *)
 
-PROCEDURE get_set_value (location: location_t; p: Tree; field: Tree; is_const: INTEGER; op: Tree; fieldNo: CARDINAL) : Tree ;
+PROCEDURE get_set_value (location: location_t; p: Tree; field: Tree; is_const: BOOLEAN; op: Tree; fieldNo: CARDINAL) : Tree ;
 
 
 (*
@@ -76,7 +76,7 @@ PROCEDURE get_set_value (location: location_t; p: Tree; field: Tree; is_const: I
                    appropriate field number.
 *)
 
-PROCEDURE get_field_no (type: Tree; op: Tree; is_const: INTEGER; fieldNo: CARDINAL) : Tree ;
+PROCEDURE get_field_no (type: Tree; op: Tree; is_const: BOOLEAN; fieldNo: CARDINAL) : Tree ;
 
 
 (*
@@ -84,7 +84,7 @@ PROCEDURE get_field_no (type: Tree; op: Tree; is_const: INTEGER; fieldNo: CARDIN
                  copied upon indirection.
 *)
 
-PROCEDURE get_rvalue (location: location_t; t: Tree; type: Tree; is_lvalue: INTEGER) : Tree ;
+PROCEDURE get_rvalue (location: location_t; t: Tree; type: Tree; is_lvalue: BOOLEAN) : Tree ;
 
 
 (*

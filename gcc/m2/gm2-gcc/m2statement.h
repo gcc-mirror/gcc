@@ -42,22 +42,22 @@ EXTERN tree m2statement_BuildStart (location_t location, char *name,
                                     int inner_module);
 EXTERN void m2statement_BuildIncludeVarVar (location_t location, tree type,
                                             tree varset, tree varel,
-                                            int is_lvalue, tree low);
+                                            bool is_lvalue, tree low);
 EXTERN void m2statement_BuildIncludeVarConst (location_t location, tree type,
                                               tree op1, tree op2,
-                                              int is_lvalue, int fieldno);
+                                              bool is_lvalue, int fieldno);
 EXTERN void m2statement_BuildExcludeVarVar (location_t location, tree type,
                                             tree varset, tree varel,
-                                            int is_lvalue, tree low);
+                                            bool is_lvalue, tree low);
 EXTERN void m2statement_BuildExcludeVarConst (location_t location, tree type,
                                               tree op1, tree op2,
-                                              int is_lvalue, int fieldno);
+                                              bool is_lvalue, int fieldno);
 EXTERN void m2statement_BuildUnaryForeachWordDo (
     location_t location, tree type, tree op1, tree op2,
-    tree (*unop) (location_t, tree, int), int is_op1lvalue, int is_op2lvalue,
-    int is_op1const, int is_op2const);
+    tree (*unop) (location_t, tree, bool), bool is_op1lvalue, bool is_op2lvalue,
+    bool is_op1const, bool is_op2const);
 EXTERN void m2statement_BuildAsm (location_t location, tree instr,
-                                  int isVolatile, int isSimple, tree inputs,
+                                  bool isVolatile, bool isSimple, tree inputs,
                                   tree outputs, tree trash, tree labels);
 EXTERN tree m2statement_BuildFunctValue (location_t location, tree value);
 EXTERN tree m2statement_BuildIndirectProcedureCallTree (location_t location,
@@ -84,10 +84,10 @@ EXTERN void m2statement_BuildPushFunctionContext (void);
 EXTERN void m2statement_BuildReturnValueCode (location_t location, tree fndecl,
                                               tree value);
 EXTERN void m2statement_BuildEndFunctionCode (location_t location, tree fndecl,
-                                              int nested);
+                                              bool nested);
 EXTERN void m2statement_BuildStartFunctionCode (location_t location,
-                                                tree fndecl, int isexported,
-                                                int isinline);
+                                                tree fndecl, bool isexported,
+                                                bool isinline);
 EXTERN void m2statement_DoJump (location_t location, tree exp,
                                 char *falselabel, char *truelabel);
 EXTERN tree m2statement_BuildCall2 (location_t location, tree function,

@@ -129,9 +129,57 @@ public:
 	    code_for_pred_indexed_store (unspec, e.vector_mode (),
 					 e.index_mode ()));
 	else
-	  return e.use_exact_insn (
-	    code_for_pred_indexed_load (unspec, e.vector_mode (),
-					e.index_mode ()));
+	  {
+	    unsigned src_eew_bitsize
+	      = GET_MODE_BITSIZE (GET_MODE_INNER (e.index_mode ()));
+	    unsigned dst_eew_bitsize
+	      = GET_MODE_BITSIZE (GET_MODE_INNER (e.vector_mode ()));
+	    if (dst_eew_bitsize == src_eew_bitsize)
+	      return e.use_exact_insn (
+		code_for_pred_indexed_load_same_eew (unspec, e.vector_mode ()));
+	    else if (dst_eew_bitsize > src_eew_bitsize)
+	      {
+		unsigned factor = dst_eew_bitsize / src_eew_bitsize;
+		switch (factor)
+		  {
+		  case 2:
+		    return e.use_exact_insn (
+		      code_for_pred_indexed_load_x2_greater_eew (
+			unspec, e.vector_mode ()));
+		  case 4:
+		    return e.use_exact_insn (
+		      code_for_pred_indexed_load_x4_greater_eew (
+			unspec, e.vector_mode ()));
+		  case 8:
+		    return e.use_exact_insn (
+		      code_for_pred_indexed_load_x8_greater_eew (
+			unspec, e.vector_mode ()));
+		  default:
+		    gcc_unreachable ();
+		  }
+	      }
+	    else
+	      {
+		unsigned factor = src_eew_bitsize / dst_eew_bitsize;
+		switch (factor)
+		  {
+		  case 2:
+		    return e.use_exact_insn (
+		      code_for_pred_indexed_load_x2_smaller_eew (
+			unspec, e.vector_mode ()));
+		  case 4:
+		    return e.use_exact_insn (
+		      code_for_pred_indexed_load_x4_smaller_eew (
+			unspec, e.vector_mode ()));
+		  case 8:
+		    return e.use_exact_insn (
+		      code_for_pred_indexed_load_x8_smaller_eew (
+			unspec, e.vector_mode ()));
+		  default:
+		    gcc_unreachable ();
+		  }
+	      }
+	  }
       }
     else if (LST_TYPE == LST_STRIDED)
       {
@@ -579,12 +627,11 @@ public:
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_vx)
-      return e.use_ternop_insn (true,
-				code_for_pred_mul_scalar (PLUS,
-							  e.vector_mode ()));
+      return e.use_ternop_insn (true, code_for_pred_mul_plus_scalar (
+					e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_ternop_insn (true,
-				code_for_pred_mul (PLUS, e.vector_mode ()));
+				code_for_pred_mul_plus (e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -597,12 +644,11 @@ public:
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_vx)
-      return e.use_ternop_insn (true,
-				code_for_pred_mul_scalar (MINUS,
-							  e.vector_mode ()));
+      return e.use_ternop_insn (true, code_for_pred_minus_mul_scalar (
+					e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_ternop_insn (true,
-				code_for_pred_mul (MINUS, e.vector_mode ()));
+				code_for_pred_minus_mul (e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -615,12 +661,11 @@ public:
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_vx)
-      return e.use_ternop_insn (false,
-				code_for_pred_mul_scalar (PLUS,
-							  e.vector_mode ()));
+      return e.use_ternop_insn (false, code_for_pred_mul_plus_scalar (
+					 e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_ternop_insn (false,
-				code_for_pred_mul (PLUS, e.vector_mode ()));
+				code_for_pred_mul_plus (e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -633,16 +678,14 @@ public:
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_vx)
-      return e.use_ternop_insn (false,
-				code_for_pred_mul_scalar (MINUS,
-							  e.vector_mode ()));
+      return e.use_ternop_insn (false, code_for_pred_minus_mul_scalar (
+					 e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_ternop_insn (false,
-				code_for_pred_mul (MINUS, e.vector_mode ()));
+				code_for_pred_minus_mul (e.vector_mode ()));
     gcc_unreachable ();
   }
 };
-
 
 /* Implements vwmacc<su><su>.  */
 class vwmacc : public function_base
@@ -925,12 +968,11 @@ public:
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_vf)
-      return e.use_ternop_insn (true,
-				code_for_pred_mul_scalar (MINUS,
-							  e.vector_mode ()));
+      return e.use_ternop_insn (
+	true, code_for_pred_mul_neg_scalar (PLUS, e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_ternop_insn (true,
-				code_for_pred_mul (MINUS, e.vector_mode ()));
+				code_for_pred_mul_neg (PLUS, e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -961,12 +1003,11 @@ public:
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_vf)
-      return e.use_ternop_insn (false,
-				code_for_pred_mul_scalar (MINUS,
-							  e.vector_mode ()));
+      return e.use_ternop_insn (
+	false, code_for_pred_mul_neg_scalar (PLUS, e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_ternop_insn (false,
-				code_for_pred_mul (MINUS, e.vector_mode ()));
+				code_for_pred_mul_neg (PLUS, e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -980,10 +1021,10 @@ public:
   {
     if (e.op_info->op == OP_TYPE_vf)
       return e.use_ternop_insn (
-	true, code_for_pred_neg_mul_scalar (PLUS, e.vector_mode ()));
+	true, code_for_pred_mul_neg_scalar (MINUS, e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_ternop_insn (true,
-				code_for_pred_neg_mul (PLUS, e.vector_mode ()));
+				code_for_pred_mul_neg (MINUS, e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -996,11 +1037,12 @@ public:
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_vf)
-      return e.use_ternop_insn (
-	true, code_for_pred_neg_mul_scalar (MINUS, e.vector_mode ()));
+      return e.use_ternop_insn (true,
+				code_for_pred_mul_scalar (MINUS,
+							  e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
-      return e.use_ternop_insn (true, code_for_pred_neg_mul (MINUS,
-							     e.vector_mode ()));
+      return e.use_ternop_insn (true,
+				code_for_pred_mul (MINUS, e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -1014,10 +1056,10 @@ public:
   {
     if (e.op_info->op == OP_TYPE_vf)
       return e.use_ternop_insn (
-	false, code_for_pred_neg_mul_scalar (PLUS, e.vector_mode ()));
+	false, code_for_pred_mul_neg_scalar (MINUS, e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_ternop_insn (false,
-				code_for_pred_neg_mul (PLUS, e.vector_mode ()));
+				code_for_pred_mul_neg (MINUS, e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -1030,12 +1072,12 @@ public:
   rtx expand (function_expander &e) const override
   {
     if (e.op_info->op == OP_TYPE_vf)
-      return e.use_ternop_insn (
-	false, code_for_pred_neg_mul_scalar (MINUS, e.vector_mode ()));
+      return e.use_ternop_insn (false,
+				code_for_pred_mul_scalar (MINUS,
+							  e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_ternop_insn (false,
-				code_for_pred_neg_mul (MINUS,
-						       e.vector_mode ()));
+				code_for_pred_mul (MINUS, e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -1066,10 +1108,10 @@ public:
   {
     if (e.op_info->op == OP_TYPE_vf)
       return e.use_widen_ternop_insn (
-	code_for_pred_widen_neg_mul_scalar (PLUS, e.vector_mode ()));
+	code_for_pred_widen_mul_neg_scalar (MINUS, e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_widen_ternop_insn (
-	code_for_pred_widen_neg_mul (PLUS, e.vector_mode ()));
+	code_for_pred_widen_mul_neg (MINUS, e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -1083,10 +1125,10 @@ public:
   {
     if (e.op_info->op == OP_TYPE_vf)
       return e.use_widen_ternop_insn (
-	code_for_pred_widen_neg_mul_scalar (MINUS, e.vector_mode ()));
+	code_for_pred_widen_mul_scalar (MINUS, e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_widen_ternop_insn (
-	code_for_pred_widen_neg_mul (MINUS, e.vector_mode ()));
+	code_for_pred_widen_mul (MINUS, e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -1100,10 +1142,10 @@ public:
   {
     if (e.op_info->op == OP_TYPE_vf)
       return e.use_widen_ternop_insn (
-	code_for_pred_widen_mul_scalar (MINUS, e.vector_mode ()));
+	code_for_pred_widen_mul_neg_scalar (PLUS, e.vector_mode ()));
     if (e.op_info->op == OP_TYPE_vv)
       return e.use_widen_ternop_insn (
-	code_for_pred_widen_mul (MINUS, e.vector_mode ()));
+	code_for_pred_widen_mul_neg (PLUS, e.vector_mode ()));
     gcc_unreachable ();
   }
 };
@@ -1341,6 +1383,296 @@ public:
   }
 };
 
+/* Implements vmv/vfmv instructions.  */
+class vmv : public function_base
+{
+public:
+  bool apply_vl_p () const override { return false; }
+  bool apply_tail_policy_p () const override { return false; }
+  bool apply_mask_policy_p () const override { return false; }
+  bool use_mask_predication_p () const override { return false; }
+  bool has_merge_operand_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_extract_first (e.vector_mode ()));
+  }
+};
+
+/* Implements vmv.s.x/vfmv.s.f.  */
+class vmv_s : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_scalar_move_insn (code_for_pred_broadcast (e.vector_mode ()));
+  }
+};
+
+template<int UNSPEC>
+class slideop : public function_base
+{
+public:
+  bool has_merge_operand_p () const override
+  {
+    if (UNSPEC == UNSPEC_VSLIDEUP)
+      return false;
+    return true;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_slide (UNSPEC, e.vector_mode ()));
+  }
+};
+
+class vrgather : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    switch (e.op_info->op)
+      {
+      case OP_TYPE_vx:
+	return e.use_exact_insn (
+	  code_for_pred_gather_scalar (e.vector_mode ()));
+      case OP_TYPE_vv:
+	return e.use_exact_insn (code_for_pred_gather (e.vector_mode ()));
+      default:
+	gcc_unreachable ();
+      }
+  }
+};
+
+class vrgatherei16 : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_gatherei16 (e.vector_mode ()));
+  }
+};
+
+class vcompress : public function_base
+{
+public:
+  bool apply_mask_policy_p () const override { return false; }
+  bool use_mask_predication_p () const override { return false; }
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_compress (e.vector_mode ()));
+  }
+};
+
+class vundefined : public function_base
+{
+public:
+  bool apply_vl_p () const override
+  {
+    return false;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.generate_insn (code_for_vundefined (e.vector_mode ()));
+  }
+};
+
+class vreinterpret : public function_base
+{
+public:
+  bool apply_vl_p () const override
+  {
+    return false;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    e.add_input_operand (0);
+    return e.generate_insn (code_for_vreinterpret (e.ret_mode ()));
+  }
+};
+
+class vlmul_ext : public function_base
+{
+public:
+  bool apply_vl_p () const override
+  {
+    return false;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    e.add_input_operand (0);
+    switch (e.op_info->ret.base_type)
+      {
+      case RVV_BASE_vlmul_ext_x2:
+	return e.generate_insn (
+	  code_for_vlmul_extx2 (e.vector_mode ()));
+      case RVV_BASE_vlmul_ext_x4:
+	return e.generate_insn (
+	  code_for_vlmul_extx4 (e.vector_mode ()));
+      case RVV_BASE_vlmul_ext_x8:
+	return e.generate_insn (
+	  code_for_vlmul_extx8 (e.vector_mode ()));
+      case RVV_BASE_vlmul_ext_x16:
+	return e.generate_insn (
+	  code_for_vlmul_extx16 (e.vector_mode ()));
+      case RVV_BASE_vlmul_ext_x32:
+	return e.generate_insn (
+	  code_for_vlmul_extx32 (e.vector_mode ()));
+      case RVV_BASE_vlmul_ext_x64:
+	return e.generate_insn (
+	  code_for_vlmul_extx64 (e.vector_mode ()));
+      default:
+	gcc_unreachable ();
+      }
+  }
+};
+
+class vlmul_trunc : public function_base
+{
+public:
+  bool apply_vl_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    rtx src = expand_normal (CALL_EXPR_ARG (e.exp, 0));
+    emit_move_insn (e.target, gen_lowpart (GET_MODE (e.target), src));
+    return e.target;
+  }
+};
+
+class vset : public function_base
+{
+public:
+  bool apply_vl_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    rtx dest = expand_normal (CALL_EXPR_ARG (e.exp, 0));
+    rtx index = expand_normal (CALL_EXPR_ARG (e.exp, 1));
+    rtx src = expand_normal (CALL_EXPR_ARG (e.exp, 2));
+    poly_int64 offset = INTVAL (index) * GET_MODE_SIZE (GET_MODE (src));
+    emit_move_insn (e.target, dest);
+    rtx subreg = simplify_gen_subreg (GET_MODE (src), e.target,
+				      GET_MODE (e.target), offset);
+    emit_move_insn (subreg, src);
+    return e.target;
+  }
+};
+
+class vget : public function_base
+{
+public:
+  bool apply_vl_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    rtx src = expand_normal (CALL_EXPR_ARG (e.exp, 0));
+    rtx index = expand_normal (CALL_EXPR_ARG (e.exp, 1));
+    poly_int64 offset = INTVAL (index) * GET_MODE_SIZE (GET_MODE (e.target));
+    rtx subreg
+      = simplify_gen_subreg (GET_MODE (e.target), src, GET_MODE (src), offset);
+    return subreg;
+  }
+};
+
+class read_vl : public function_base
+{
+public:
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_READ_CSR;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    if (Pmode == SImode)
+      emit_insn (gen_read_vlsi (e.target));
+    else
+      emit_insn (gen_read_vldi_zero_extend (e.target));
+    return e.target;
+  }
+};
+
+class vleff : public function_base
+{
+public:
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_READ_MEMORY | CP_WRITE_CSR;
+  }
+
+  gimple *fold (gimple_folder &f) const override
+  {
+    /* fold vleff (const *base, size_t *new_vl, size_t vl)
+
+       ====> vleff (const *base, size_t vl)
+	     new_vl = MEM_REF[read_vl ()].  */
+
+    auto_vec<tree> vargs (gimple_call_num_args (f.call) - 1);
+
+    for (unsigned i = 0; i < gimple_call_num_args (f.call); i++)
+      {
+	/* Exclude size_t *new_vl argument.  */
+	if (i == gimple_call_num_args (f.call) - 2)
+	  continue;
+
+	vargs.quick_push (gimple_call_arg (f.call, i));
+      }
+
+    gimple *repl = gimple_build_call_vec (gimple_call_fn (f.call), vargs);
+    gimple_call_set_lhs (repl, f.lhs);
+
+    /* Handle size_t *new_vl by read_vl.  */
+    tree new_vl = gimple_call_arg (f.call, gimple_call_num_args (f.call) - 2);
+    if (integer_zerop (new_vl))
+      {
+	/* This case happens when user passes the nullptr to new_vl argument.
+	   In this case, we just need to ignore the new_vl argument and return
+	   vleff instruction directly. */
+	return repl;
+      }
+
+    tree tmp_var = create_tmp_var (size_type_node, "new_vl");
+    tree decl = get_read_vl_decl ();
+    gimple *g = gimple_build_call (decl, 0);
+    gimple_call_set_lhs (g, tmp_var);
+    tree indirect
+      = fold_build2 (MEM_REF, size_type_node,
+		     gimple_call_arg (f.call,
+				      gimple_call_num_args (f.call) - 2),
+		     build_int_cst (build_pointer_type (size_type_node), 0));
+    gassign *assign = gimple_build_assign (indirect, tmp_var);
+
+    gsi_insert_after (f.gsi, assign, GSI_SAME_STMT);
+    gsi_insert_after (f.gsi, g, GSI_SAME_STMT);
+    return repl;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_contiguous_load_insn (
+      code_for_pred_fault_load (e.vector_mode ()));
+  }
+};
+
+/* Implements vlenb.  */
+class vlenb : public function_base
+{
+public:
+  bool apply_vl_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    machine_mode mode = GET_MODE (e.target);
+    rtx vlenb = gen_int_mode (BYTES_PER_RISCV_VECTOR, mode);
+    emit_move_insn (e.target, vlenb);
+    return e.target;
+  }
+};
+
 static CONSTEXPR const vsetvl<false> vsetvl_obj;
 static CONSTEXPR const vsetvl<true> vsetvlmax_obj;
 static CONSTEXPR const loadstore<false, LST_UNIT_STRIDE, false> vle_obj;
@@ -1530,6 +1862,28 @@ static CONSTEXPR const reducop<SMAX> vfredmax_obj;
 static CONSTEXPR const reducop<SMIN> vfredmin_obj;
 static CONSTEXPR const widen_freducop<UNSPEC_UNORDERED> vfwredusum_obj;
 static CONSTEXPR const widen_freducop<UNSPEC_ORDERED> vfwredosum_obj;
+static CONSTEXPR const vmv vmv_x_obj;
+static CONSTEXPR const vmv_s vmv_s_obj;
+static CONSTEXPR const vmv vfmv_f_obj;
+static CONSTEXPR const vmv_s vfmv_s_obj;
+static CONSTEXPR const slideop<UNSPEC_VSLIDEUP> vslideup_obj;
+static CONSTEXPR const slideop<UNSPEC_VSLIDEDOWN> vslidedown_obj;
+static CONSTEXPR const slideop<UNSPEC_VSLIDE1UP> vslide1up_obj;
+static CONSTEXPR const slideop<UNSPEC_VSLIDE1DOWN> vslide1down_obj;
+static CONSTEXPR const slideop<UNSPEC_VFSLIDE1UP> vfslide1up_obj;
+static CONSTEXPR const slideop<UNSPEC_VFSLIDE1DOWN> vfslide1down_obj;
+static CONSTEXPR const vrgather vrgather_obj;
+static CONSTEXPR const vrgatherei16 vrgatherei16_obj;
+static CONSTEXPR const vcompress vcompress_obj;
+static CONSTEXPR const vundefined vundefined_obj;
+static CONSTEXPR const vreinterpret vreinterpret_obj;
+static CONSTEXPR const vlmul_ext vlmul_ext_obj;
+static CONSTEXPR const vlmul_trunc vlmul_trunc_obj;
+static CONSTEXPR const vset vset_obj;
+static CONSTEXPR const vget vget_obj;
+static CONSTEXPR const read_vl read_vl_obj;
+static CONSTEXPR const vleff vleff_obj;
+static CONSTEXPR const vlenb vlenb_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -1725,5 +2079,27 @@ BASE (vfredmax)
 BASE (vfredmin)
 BASE (vfwredosum)
 BASE (vfwredusum)
+BASE (vmv_x)
+BASE (vmv_s)
+BASE (vfmv_f)
+BASE (vfmv_s)
+BASE (vslideup)
+BASE (vslidedown)
+BASE (vslide1up)
+BASE (vslide1down)
+BASE (vfslide1up)
+BASE (vfslide1down)
+BASE (vrgather)
+BASE (vrgatherei16)
+BASE (vcompress)
+BASE (vundefined)
+BASE (vreinterpret)
+BASE (vlmul_ext)
+BASE (vlmul_trunc)
+BASE (vset)
+BASE (vget)
+BASE (read_vl)
+BASE (vleff)
+BASE (vlenb)
 
 } // end namespace riscv_vector

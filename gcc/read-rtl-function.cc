@@ -622,10 +622,11 @@ function_reader::parse_block ()
 
      These can get out-of-sync when basic blocks are optimized away.
      They get back in sync by "compact_blocks".
-     We reconstruct cfun->cfg->x_basic_block_info->m_vecdata with NULL
-     values in it for any missing basic blocks, so that (a) == (b) for
-     all of the blocks we create.  The doubly-linked list of basic
-     blocks (next_bb/prev_bb) skips over these "holes".  */
+     We reconstruct cfun->cfg->x_basic_block_info->address () pointed
+     vector elements with NULL values in it for any missing basic blocks,
+     so that (a) == (b) for all of the blocks we create.  The
+     doubly-linked list of basic blocks (next_bb/prev_bb) skips over
+     these "holes".  */
 
   if (m_highest_bb_idx < bb_idx)
     m_highest_bb_idx = bb_idx;

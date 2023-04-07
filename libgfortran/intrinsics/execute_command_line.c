@@ -192,6 +192,8 @@ execute_command_line_i4 (const char *command, GFC_LOGICAL_4 *wait,
   bool w = wait ? *wait : true;
   int estat, estat_initial, cstat;
 
+  estat_initial = 0; /* Avoid nuisance warning if not initialized.  */
+
   if (exitstat)
     estat_initial = estat = *exitstat;
 
@@ -220,6 +222,8 @@ execute_command_line_i8 (const char *command, GFC_LOGICAL_8 *wait,
 {
   bool w = wait ? *wait : true;
   int estat, estat_initial, cstat;
+
+  estat_initial = 0; /* Avoid nuisance warning if not initialized.  */
 
   if (exitstat)
     estat_initial = estat = *exitstat;

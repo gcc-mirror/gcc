@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "fold-const.h"
 #include "intl.h"
+#include "toplev.h"
 
 static bool verify_constant (tree, bool, bool *, bool *);
 #define VERIFY_CONSTANT(X)						\
@@ -2868,7 +2869,11 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 
   /* We used to shortcut trivial constructor/op= here, but nowadays
      we can only get a trivial function here with -fno-elide-constructors.  */
-  gcc_checking_assert (!trivial_fn_p (fun) || !flag_elide_constructors);
+  gcc_checking_assert (!trivial_fn_p (fun)
+		       || !flag_elide_constructors
+		       /* We don't elide constructors when processing
+			  a noexcept-expression.  */
+		       || cp_noexcept_operand);
 
   bool non_constant_args = false;
   new_call.bindings
@@ -6028,7 +6033,8 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	  *valp = build_constructor (type, NULL);
 	  CONSTRUCTOR_NO_CLEARING (*valp) = no_zero_init;
 	}
-      else if (TREE_CODE (*valp) == STRING_CST)
+      else if (STRIP_ANY_LOCATION_WRAPPER (*valp),
+	       TREE_CODE (*valp) == STRING_CST)
 	{
 	  /* An array was initialized with a string constant, and now
 	     we're writing into one of its elements.  Explode the
@@ -7127,6 +7133,24 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    break;
 	  }
 
+	/* make_rtl_for_nonlocal_decl could have deferred emission of
+	   a local static var, but if it appears in a statement expression
+	   which is constant expression evaluated to e.g. just the address
+	   of the variable, its DECL_EXPR will never be seen during
+	   gimple lowering's record_vars_into as the statement expression
+	   will not be in the IL at all.  */
+	if (VAR_P (r)
+	    && TREE_STATIC (r)
+	    && !DECL_REALLY_EXTERN (r)
+	    && DECL_FUNCTION_SCOPE_P (r)
+	    && !var_in_maybe_constexpr_fn (r)
+	    && decl_constant_var_p (r))
+	  {
+	    varpool_node *node = varpool_node::get (r);
+	    if (node == NULL || !node->definition)
+	      rest_of_decl_compilation (r, 0, at_eof);
+	  }
+
 	if (AGGREGATE_TYPE_P (TREE_TYPE (r))
 	    || VECTOR_TYPE_P (TREE_TYPE (r)))
 	  {
@@ -7662,7 +7686,18 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  }
 
 	if (TREE_CODE (op) == PTRMEM_CST && !TYPE_PTRMEM_P (type))
-	  op = cplus_expand_constant (op);
+	  {
+	    op = cplus_expand_constant (op);
+	    if (TREE_CODE (op) == PTRMEM_CST)
+	      {
+		if (!ctx->quiet)
+		  error_at (loc, "%qE is not a constant expression when the "
+			    "class %qT is still incomplete", op,
+			    PTRMEM_CST_CLASS (op));
+		*non_constant_p = true;
+		return t;
+	      }
+	  }
 
 	if (TREE_CODE (op) == PTRMEM_CST && tcode == NOP_EXPR)
 	  {
@@ -8498,6 +8533,19 @@ fold_simple (tree t)
   return t;
 }
 
+/* Try folding the expression T to a simple constant.
+   Returns that constant, otherwise returns T.  */
+
+tree
+fold_to_constant (tree t)
+{
+  tree r = fold (t);
+  if (CONSTANT_CLASS_P (r) && !TREE_OVERFLOW (r))
+    return r;
+  else
+    return t;
+}
+
 /* If T is a constant expression, returns its reduced value.
    Otherwise, if T does not have TREE_CONSTANT set, returns T.
    Otherwise, returns a version of T without TREE_CONSTANT.
@@ -8523,6 +8571,11 @@ maybe_constant_value (tree t, tree decl /* = NULL_TREE */,
     /* No caching or evaluation needed.  */
     return t;
 
+  /* Don't constant evaluate an unevaluated non-manifestly-constant operand,
+     but at least try folding it to a simple constant.  */
+  if (cp_unevaluated_operand && manifestly_const_eval != mce_true)
+    return fold_to_constant (t);
+
   if (manifestly_const_eval != mce_unknown)
     return cxx_eval_outermost_constant_expr (t, true, true,
 					     manifestly_const_eval, false, decl);
@@ -8543,10 +8596,6 @@ maybe_constant_value (tree t, tree decl /* = NULL_TREE */,
 	}
       return r;
     }
-
-  /* Don't evaluate an unevaluated operand.  */
-  if (cp_unevaluated_operand)
-    return t;
 
   uid_sensitive_constexpr_evaluation_checker c;
   r = cxx_eval_outermost_constant_expr (t, true, true,
@@ -8611,9 +8660,14 @@ fold_non_dependent_expr_template (tree t, tsubst_flags_t complain,
 	    }
 	  return t;
 	}
-
-      if (cp_unevaluated_operand && !manifestly_const_eval)
+      else if (CONSTANT_CLASS_P (t))
+	/* No evaluation needed.  */
 	return t;
+
+      /* Don't constant evaluate an unevaluated non-manifestly-constant operand,
+	 but at least try folding it to a simple constant.  */
+      if (cp_unevaluated_operand && !manifestly_const_eval)
+	return fold_to_constant (t);
 
       tree r = cxx_eval_outermost_constant_expr (t, true, true,
 						 mce_value (manifestly_const_eval),
@@ -8740,6 +8794,12 @@ maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant,
 	 shouldn't bend the rules the same way for automatic variables.  */
       bool is_static = (decl && DECL_P (decl)
 			&& (TREE_STATIC (decl) || DECL_EXTERNAL (decl)));
+      if (is_static)
+	manifestly_const_eval = true;
+
+      if (cp_unevaluated_operand && !manifestly_const_eval)
+	return fold_to_constant (t);
+
       t = cxx_eval_outermost_constant_expr (t, allow_non_constant, !is_static,
 					    mce_value (manifestly_const_eval),
 					    false, decl);
@@ -9128,8 +9188,12 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	  }
 	else if (fun)
           {
-	    if (RECUR (fun, rval))
-	      /* Might end up being a constant function pointer.  */;
+	    if (RECUR (fun, FUNCTION_POINTER_TYPE_P (fun) ? rval : any))
+	      /* Might end up being a constant function pointer.  But it
+		 could also be a function object with constexpr op(), so
+		 we pass 'any' so that the underlying VAR_DECL is deemed
+		 as potentially-constant even though it wasn't declared
+		 constexpr.  */;
 	    else
 	      return false;
           }
@@ -9699,7 +9763,9 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		   (tmp, /*constexpr_context_p=*/true, flags))
 	    return false;
 	}
-      return RECUR (DECL_INITIAL (tmp), want_rval);
+      if (VAR_P (tmp))
+	return RECUR (DECL_INITIAL (tmp), want_rval);
+      return true;
 
     case TRY_FINALLY_EXPR:
       return (RECUR (TREE_OPERAND (t, 0), want_rval)

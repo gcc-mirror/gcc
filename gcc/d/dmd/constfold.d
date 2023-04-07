@@ -845,20 +845,8 @@ UnionExp Identity(EXP op, const ref Loc loc, Type type, Expression e1, Expressio
     }
     else
     {
-        if (e1.type.isreal())
-        {
-            cmp = CTFloat.isIdentical(e1.toReal(), e2.toReal());
-        }
-        else if (e1.type.isimaginary())
-        {
-            cmp = RealIdentical(e1.toImaginary(), e2.toImaginary());
-        }
-        else if (e1.type.iscomplex())
-        {
-            complex_t v1 = e1.toComplex();
-            complex_t v2 = e2.toComplex();
-            cmp = RealIdentical(creall(v1), creall(v2)) && RealIdentical(cimagl(v1), cimagl(v1));
-        }
+        if (e1.type.isfloating())
+            cmp = e1.isIdentical(e2);
         else
         {
             ue = Equal((op == EXP.identity) ? EXP.equal : EXP.notEqual, loc, type, e1, e2);

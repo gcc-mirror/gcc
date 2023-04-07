@@ -29,6 +29,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -58,7 +59,7 @@ typedef struct symbolKey_isSymbol_p symbolKey_isSymbol;
 
 typedef struct symbolKey_performOperation_p symbolKey_performOperation;
 
-typedef unsigned int (*symbolKey_isSymbol_t) (void *);
+typedef bool (*symbolKey_isSymbol_t) (void *);
 struct symbolKey_isSymbol_p { symbolKey_isSymbol_t proc; };
 
 typedef void (*symbolKey_performOperation_t) (void *);
@@ -102,7 +103,7 @@ EXTERN void symbolKey_delSymKey (symbolKey_symbolTree t, nameKey_Name name);
    isEmptyTree - returns true if symbolTree, t, is empty.
 */
 
-EXTERN unsigned int symbolKey_isEmptyTree (symbolKey_symbolTree t);
+EXTERN bool symbolKey_isEmptyTree (symbolKey_symbolTree t);
 
 /*
    doesTreeContainAny - returns true if symbolTree, t, contains any
@@ -110,7 +111,7 @@ EXTERN unsigned int symbolKey_isEmptyTree (symbolKey_symbolTree t);
                         p, is called with a symbol as its parameter.
 */
 
-EXTERN unsigned int symbolKey_doesTreeContainAny (symbolKey_symbolTree t, symbolKey_isSymbol p);
+EXTERN bool symbolKey_doesTreeContainAny (symbolKey_symbolTree t, symbolKey_isSymbol p);
 
 /*
    foreachNodeDo - for each node in symbolTree, t, a procedure, p,

@@ -2154,11 +2154,16 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
 
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
-    case COMPONENT_REF:
     case ARRAY_REF:
       if (cxx_dialect >= cxx17)
 	goto sequenced_binary;
       goto do_default;
+
+    case COMPONENT_REF:
+      /* Treat as unary, the other operands aren't evaluated.  */
+      x = TREE_OPERAND (x, 0);
+      writer = 0;
+      goto restart;
 
     default:
     do_default:
@@ -4576,8 +4581,11 @@ c_common_nodes_and_builtins (void)
   char32_array_type_node
     = build_array_type (char32_type_node, array_domain_type);
 
-  wint_type_node =
-    TREE_TYPE (identifier_global_value (get_identifier (WINT_TYPE)));
+  if (strcmp (WINT_TYPE, "wchar_t") == 0)
+    wint_type_node = wchar_type_node;
+  else
+    wint_type_node =
+      TREE_TYPE (identifier_global_value (get_identifier (WINT_TYPE)));
 
   intmax_type_node =
     TREE_TYPE (identifier_global_value (get_identifier (INTMAX_TYPE)));
@@ -5359,7 +5367,14 @@ c_stddef_cpp_builtins(void)
   builtin_define_with_value ("__SIZE_TYPE__", SIZE_TYPE, 0);
   builtin_define_with_value ("__PTRDIFF_TYPE__", PTRDIFF_TYPE, 0);
   builtin_define_with_value ("__WCHAR_TYPE__", MODIFIED_WCHAR_TYPE, 0);
-  builtin_define_with_value ("__WINT_TYPE__", WINT_TYPE, 0);
+  /* C++ has wchar_t as a builtin type, C doesn't, so if WINT_TYPE
+     maps to wchar_t, define it to the underlying WCHAR_TYPE in C, and
+     to wchar_t in C++, so the desired type equivalence holds.  */
+  if (!c_dialect_cxx ()
+      && strcmp (WINT_TYPE, "wchar_t") == 0)
+    builtin_define_with_value ("__WINT_TYPE__", WCHAR_TYPE, 0);
+  else
+    builtin_define_with_value ("__WINT_TYPE__", WINT_TYPE, 0);
   builtin_define_with_value ("__INTMAX_TYPE__", INTMAX_TYPE, 0);
   builtin_define_with_value ("__UINTMAX_TYPE__", UINTMAX_TYPE, 0);
   if (flag_char8_t)
@@ -9499,6 +9514,35 @@ c_common_finalize_early_debug (void)
 	&& (cnode->has_gimple_body_p ()
 	    || !DECL_IS_UNDECLARED_BUILTIN (cnode->decl)))
       (*debug_hooks->early_global_decl) (cnode->decl);
+}
+
+/* Get the LEVEL of the strict_flex_array for the ARRAY_FIELD based on the
+   values of attribute strict_flex_array and the flag_strict_flex_arrays.  */
+unsigned int
+c_strict_flex_array_level_of (tree array_field)
+{
+  gcc_assert (TREE_CODE (array_field) == FIELD_DECL);
+  unsigned int strict_flex_array_level = flag_strict_flex_arrays;
+
+  tree attr_strict_flex_array
+    = lookup_attribute ("strict_flex_array", DECL_ATTRIBUTES (array_field));
+  /* If there is a strict_flex_array attribute attached to the field,
+     override the flag_strict_flex_arrays.  */
+  if (attr_strict_flex_array)
+    {
+      /* Get the value of the level first from the attribute.  */
+      unsigned HOST_WIDE_INT attr_strict_flex_array_level = 0;
+      gcc_assert (TREE_VALUE (attr_strict_flex_array) != NULL_TREE);
+      attr_strict_flex_array = TREE_VALUE (attr_strict_flex_array);
+      gcc_assert (TREE_VALUE (attr_strict_flex_array) != NULL_TREE);
+      attr_strict_flex_array = TREE_VALUE (attr_strict_flex_array);
+      gcc_assert (tree_fits_uhwi_p (attr_strict_flex_array));
+      attr_strict_flex_array_level = tree_to_uhwi (attr_strict_flex_array);
+
+      /* The attribute has higher priority than flag_struct_flex_array.  */
+      strict_flex_array_level = attr_strict_flex_array_level;
+    }
+  return strict_flex_array_level;
 }
 
 #include "gt-c-family-c-common.h"

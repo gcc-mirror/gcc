@@ -29,6 +29,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -76,7 +77,7 @@ EXTERN void mcSearch_prependSearchPath (DynamicStrings_String path);
                     FindSourceFile sets FullPath to a new string if successful.
 */
 
-EXTERN unsigned int mcSearch_findSourceFile (DynamicStrings_String FileName, DynamicStrings_String *fullPath);
+EXTERN bool mcSearch_findSourceFile (DynamicStrings_String FileName, DynamicStrings_String *fullPath);
 
 /*
    findSourceDefFile - attempts to find the definition module for
@@ -85,7 +86,7 @@ EXTERN unsigned int mcSearch_findSourceFile (DynamicStrings_String FileName, Dyn
                        then FALSE is returned and FullPath is set to NIL.
 */
 
-EXTERN unsigned int mcSearch_findSourceDefFile (DynamicStrings_String stem, DynamicStrings_String *fullPath);
+EXTERN bool mcSearch_findSourceDefFile (DynamicStrings_String stem, DynamicStrings_String *fullPath);
 
 /*
    findSourceModFile - attempts to find the implementation module for
@@ -94,7 +95,7 @@ EXTERN unsigned int mcSearch_findSourceDefFile (DynamicStrings_String stem, Dyna
                        then FALSE is returned and FullPath is set to NIL.
 */
 
-EXTERN unsigned int mcSearch_findSourceModFile (DynamicStrings_String stem, DynamicStrings_String *fullPath);
+EXTERN bool mcSearch_findSourceModFile (DynamicStrings_String stem, DynamicStrings_String *fullPath);
 
 /*
    setDefExtension - sets the default extension for definition modules to, ext.

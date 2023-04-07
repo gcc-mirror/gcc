@@ -916,7 +916,8 @@ struct mips_cpu_info {
   {"synci", "%{!msynci:%{!mno-synci:-m%(VALUE)}}" },			\
   {"lxc1-sxc1", "%{!mlxc1-sxc1:%{!mno-lxc1-sxc1:-m%(VALUE)}}" }, \
   {"madd4", "%{!mmadd4:%{!mno-madd4:-m%(VALUE)}}" }, \
-  {"compact-branches", "%{!mcompact-branches=*:-mcompact-branches=%(VALUE)}" } \
+  {"compact-branches", "%{!mcompact-branches=*:-mcompact-branches=%(VALUE)}" }, \
+  {"msa", "%{!mmsa:%{!mno-msa:-m%(VALUE)}}" } \
 
 /* A spec that infers the:
    -mnan=2008 setting from a -mips argument,
@@ -3386,6 +3387,9 @@ struct GTY(())  machine_function {
 
   /* True if GCC stored callee saved registers in the frame header.  */
   bool use_frame_header_for_callee_saved_regs;
+
+  /* True if the function should generate hazard barrier return.  */
+  bool use_hazard_barrier_return_p;
 };
 #endif
 

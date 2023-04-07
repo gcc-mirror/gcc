@@ -26,7 +26,7 @@
  *  This is an internal header file, included by other library headers.
  *  Do not attempt to use it directly. @headername{string}
  *
- *  Defines the reference-counted COW string implentation.
+ *  Defines the reference-counted COW string implementation.
  */
 
 #ifndef _COW_STRING_H
@@ -907,17 +907,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       // Capacity:
+
       ///  Returns the number of characters in the string, not including any
       ///  null-termination.
       size_type
       size() const _GLIBCXX_NOEXCEPT
-      { return _M_rep()->_M_length; }
+      {
+#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0 && __OPTIMIZE__
+	if (_S_empty_rep()._M_length != 0)
+	  __builtin_unreachable();
+#endif
+	return _M_rep()->_M_length;
+      }
 
       ///  Returns the number of characters in the string, not including any
       ///  null-termination.
       size_type
       length() const _GLIBCXX_NOEXCEPT
-      { return _M_rep()->_M_length; }
+      { return size(); }
 
       ///  Returns the size() of the largest possible %string.
       size_type
@@ -3406,7 +3413,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	 }
        else
 	 {
-	   // Todo: overlapping case.
+	   // TODO: overlapping case.
 	   const basic_string __tmp(__s, __n2);
 	   return _M_replace_safe(__pos, __n1, __tmp._M_data(), __n2);
 	 }

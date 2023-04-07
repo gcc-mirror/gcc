@@ -34,6 +34,8 @@ make_a_list_of_random_ints_badly(PyObject *self,
 }
 
 /* 
+   { dg-final { verify-sarif-file } }
+
    { dg-final { scan-sarif-file "\"tool\": " } }
 
      We expect info about the plugin:

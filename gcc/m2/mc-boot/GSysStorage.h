@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -77,7 +78,7 @@ EXTERN void SysStorage_REALLOCATE (void * *a, unsigned int size);
    Available - returns TRUE if, size, bytes can be allocated.
 */
 
-EXTERN unsigned int SysStorage_Available (unsigned int size);
+EXTERN bool SysStorage_Available (unsigned int size);
 
 /*
    Init - initializes the heap.

@@ -16,7 +16,7 @@
    <http://www.gnu.org/licenses/>.
 
 
-   Copyright (C) 1991-2021 Unicode, Inc.  All rights reserved.
+   Copyright (C) 1991-2022 Unicode, Inc.  All rights reserved.
    Distributed under the Terms of Use in
    http://www.unicode.org/copyright.html.
 

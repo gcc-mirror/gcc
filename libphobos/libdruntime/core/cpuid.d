@@ -1080,7 +1080,7 @@ void cpuidSparc()
 }
 */
 
-shared static this()
+pragma(crt_constructor) void cpuid_initialization()
 {
     auto cf = getCpuFeatures();
 

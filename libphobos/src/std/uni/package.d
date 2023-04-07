@@ -712,6 +712,8 @@ import std.traits : isConvertibleToString, isIntegral, isSomeChar,
     isSomeString, Unqual, isDynamicArray;
 // debug = std_uni;
 
+import std.internal.unicode_tables; // generated file
+
 debug(std_uni) import std.stdio; // writefln, writeln
 
 private:
@@ -6962,23 +6964,192 @@ private:
 
 enum EMPTY_CASE_TRIE = ushort.max;// from what gen_uni uses internally
 
-// control - '\r'
-enum controlSwitch = `
-    case '\u0000':..case '\u0008':case '\u000E':..case '\u001F':case '\u007F':..
-    case '\u0084':case '\u0086':..case '\u009F': case '\u0009':..case '\u000C': case '\u0085':
-`;
 // TODO: redo the most of hangul stuff algorithmically in case of Graphemes too
-// kill unrolled switches
+// Use combined trie instead of checking for '\r' | '\n' | ccTrie,
+//   or extend | '\u200D' separately
 
 private static bool isRegionalIndicator(dchar ch) @safe pure @nogc nothrow
 {
     return ch >= '\U0001F1E6' && ch <= '\U0001F1FF';
 }
 
+// Our grapheme decoder is a state machine, this is list of all possible
+// states before each code point.
+private enum GraphemeState
+{
+    Start,
+    CR,
+    RI,
+    L,
+    V,
+    LVT,
+    Emoji,
+    EmojiZWJ,
+    Prepend,
+    End
+}
+
+// Message values whether end of grapheme is reached
+private enum TransformRes
+{
+    // No, unless the source range ends here
+    // (GB2 - break at end of text, unless text is empty)
+    goOn,
+    redo, // Run last character again with new state
+    retInclude, // Yes, after the just iterated character
+    retExclude // Yes, before the just iterated character
+}
+
+// The logic of the grapheme decoding is all here
+// GB# means Grapheme Breaking rule number # - see Unicode standard annex #29
+// Note, getting GB1 (break at start of text, unless text is empty) right
+// relies on the user starting grapheme walking from beginning of the text, and
+// not attempting to walk an empty text.
+private enum TransformRes
+    function(ref GraphemeState, dchar) @safe pure nothrow @nogc [] graphemeTransforms =
+[
+    GraphemeState.Start: (ref state, ch)
+    {
+        // GB4. Break after controls.
+        if (graphemeControlTrie[ch] || ch == '\n')
+            return TransformRes.retInclude;
+
+        with (GraphemeState) state =
+            ch == '\r' ? CR :
+            isRegionalIndicator(ch) ? RI :
+            isHangL(ch) ? L :
+            hangLV[ch] || isHangV(ch) ? V :
+            hangLVT[ch] || isHangT(ch) ? LVT :
+            prependTrie[ch] ? Prepend :
+            xpictoTrie[ch] ? Emoji :
+            End;
+
+        // No matter what we encountered, we always include the
+        // first code point in the grapheme.
+        return TransformRes.goOn;
+    },
+
+    // GB3, GB4. Do not break between a CR and LF.
+    // Otherwise, break after controls.
+    GraphemeState.CR: (ref state, ch) => ch == '\n' ?
+        TransformRes.retInclude :
+        TransformRes.retExclude,
+
+    // GB12 - GB13. Do not break within emoji flag sequences.
+    // That is, do not break between regional indicator (RI) symbols if
+    // there is an odd number of RI characters before the break point.
+    // This state applies if one and only one RI code point has been
+    // encountered.
+    GraphemeState.RI: (ref state, ch)
+    {
+        state = GraphemeState.End;
+
+        return isRegionalIndicator(ch) ?
+            TransformRes.goOn :
+            TransformRes.redo;
+    },
+
+    // GB6. Do not break Hangul syllable sequences.
+    GraphemeState.L: (ref state, ch)
+    {
+        if (isHangL(ch))
+            return TransformRes.goOn;
+        else if (isHangV(ch) || hangLV[ch])
+        {
+            state = GraphemeState.V;
+            return TransformRes.goOn;
+        }
+        else if (hangLVT[ch])
+        {
+            state = GraphemeState.LVT;
+            return TransformRes.goOn;
+        }
+
+        state = GraphemeState.End;
+        return TransformRes.redo;
+    },
+
+    // GB7. Do not break Hangul syllable sequences.
+    GraphemeState.V: (ref state, ch)
+    {
+        if (isHangV(ch))
+            return TransformRes.goOn;
+        else if (isHangT(ch))
+        {
+            state = GraphemeState.LVT;
+            return TransformRes.goOn;
+        }
+
+        state = GraphemeState.End;
+        return TransformRes.redo;
+    },
+
+    // GB8. Do not break Hangul syllable sequences.
+    GraphemeState.LVT: (ref state, ch)
+    {
+        if (isHangT(ch))
+            return TransformRes.goOn;
+
+        state = GraphemeState.End;
+        return TransformRes.redo;
+    },
+
+    // GB11. Do not break within emoji modifier sequences or emoji
+    // zwj sequences. This state applies when the last code point was
+    // NOT a ZWJ.
+    GraphemeState.Emoji: (ref state, ch)
+    {
+        if (graphemeExtendTrie[ch])
+            return TransformRes.goOn;
+
+        static assert(!graphemeExtendTrie['\u200D']);
+
+        if (ch == '\u200D')
+        {
+            state = GraphemeState.EmojiZWJ;
+            return TransformRes.goOn;
+        }
+
+        state = GraphemeState.End;
+        // There might still be spacing marks are
+        // at the end, which are not allowed in
+        // middle of emoji sequences
+        return TransformRes.redo;
+    },
+
+    // GB11. Do not break within emoji modifier sequences or emoji
+    // zwj sequences. This state applies when the last code point was
+    // a ZWJ.
+    GraphemeState.EmojiZWJ: (ref state, ch)
+    {
+        state = GraphemeState.Emoji;
+        if (xpictoTrie[ch])
+            return TransformRes.goOn;
+        return TransformRes.redo;
+    },
+
+    // GB9b. Do not break after Prepend characters.
+    GraphemeState.Prepend: (ref state, ch)
+    {
+        // GB5. Break before controls.
+        if (graphemeControlTrie[ch] || ch == '\r' || ch == '\n')
+            return TransformRes.retExclude;
+
+        state = GraphemeState.Start;
+        return TransformRes.redo;
+    },
+
+    // GB9, GB9a. Do not break before extending characters, ZWJ
+    // or SpacingMarks.
+    // GB999. Otherwise, break everywhere.
+    GraphemeState.End: (ref state, ch)
+        => !graphemeExtendTrie[ch] && !spacingMarkTrie[ch] && ch != '\u200D' ?
+            TransformRes.retExclude :
+            TransformRes.goOn
+];
+
 template genericDecodeGrapheme(bool getValue)
 {
-    alias graphemeExtend = graphemeExtendTrie;
-    alias spacingMark = mcTrie;
     static if (getValue)
         alias Value = Grapheme;
     else
@@ -6986,115 +7157,44 @@ template genericDecodeGrapheme(bool getValue)
 
     Value genericDecodeGrapheme(Input)(ref Input range)
     {
-        import std.internal.unicode_tables : isHangL, isHangT, isHangV; // generated file
-        enum GraphemeState {
-            Start,
-            CR,
-            RI,
-            L,
-            V,
-            LVT
-        }
         static if (getValue)
             Grapheme grapheme;
         auto state = GraphemeState.Start;
-        enum eat = q{
-            static if (getValue)
-                grapheme ~= ch;
-            range.popFront();
-        };
-
         dchar ch;
+
         assert(!range.empty, "Attempting to decode grapheme from an empty " ~ Input.stringof);
+    outer:
         while (!range.empty)
         {
             ch = range.front;
-            final switch (state) with(GraphemeState)
+
+        rerun:
+            final switch (graphemeTransforms[state](state, ch))
+                with(TransformRes)
             {
-            case Start:
-                mixin(eat);
-                if (ch == '\r')
-                    state = CR;
-                else if (isRegionalIndicator(ch))
-                    state = RI;
-                else if (isHangL(ch))
-                    state = L;
-                else if (hangLV[ch] || isHangV(ch))
-                    state = V;
-                else if (hangLVT[ch])
-                    state = LVT;
-                else if (isHangT(ch))
-                    state = LVT;
-                else
-                {
-                    switch (ch)
-                    {
-                    mixin(controlSwitch);
-                        goto L_End;
-                    default:
-                        goto L_End_Extend;
-                    }
-                }
-            break;
-            case CR:
-                if (ch == '\n')
-                    mixin(eat);
-                goto L_End_Extend;
-            case RI:
-                if (isRegionalIndicator(ch))
-                    mixin(eat);
-                goto L_End_Extend;
-            case L:
-                if (isHangL(ch))
-                    mixin(eat);
-                else if (isHangV(ch) || hangLV[ch])
-                {
-                    state = V;
-                    mixin(eat);
-                }
-                else if (hangLVT[ch])
-                {
-                    state = LVT;
-                    mixin(eat);
-                }
-                else
-                    goto L_End_Extend;
-            break;
-            case V:
-                if (isHangV(ch))
-                    mixin(eat);
-                else if (isHangT(ch))
-                {
-                    state = LVT;
-                    mixin(eat);
-                }
-                else
-                    goto L_End_Extend;
-            break;
-            case LVT:
-                if (isHangT(ch))
-                {
-                    mixin(eat);
-                }
-                else
-                    goto L_End_Extend;
-            break;
+            case goOn:
+                static if (getValue)
+                    grapheme ~= ch;
+                range.popFront();
+                continue;
+
+            case redo:
+                goto rerun;
+
+            case retInclude:
+                static if (getValue)
+                    grapheme ~= ch;
+                range.popFront();
+                break outer;
+
+            case retExclude:
+                break outer;
             }
         }
-    L_End_Extend:
-        while (!range.empty)
-        {
-            ch = range.front;
-            // extend & spacing marks
-            if (!graphemeExtend[ch] && !spacingMark[ch])
-                break;
-            mixin(eat);
-        }
-    L_End:
+
         static if (getValue)
             return grapheme;
     }
-
 }
 
 public: // Public API continues
@@ -7141,6 +7241,31 @@ if (is(C : dchar))
 
     enum c2 = graphemeStride("A\u0301", 0);
     static assert(c2 == 3); // \u0301 has 2 UTF-8 code units
+}
+
+// TODO: make this @nogc. Probably no big deal since the state machine is
+// already GC-free.
+@safe pure nothrow unittest
+{
+    // grinning face ~ emoji modifier fitzpatrick type-5 ~ grinning face
+    assert(graphemeStride("\U0001F600\U0001f3FE\U0001F600"d, 0) == 2);
+    // skier ~ female sign ~ '€'
+    assert(graphemeStride("\u26F7\u2640€"d, 0) == 1);
+    // skier ~ emoji modifier fitzpatrick type-5 ~ female sign ~ '€'
+    assert(graphemeStride("\u26F7\U0001f3FE\u2640€"d, 0) == 2);
+    // skier ~ zero-width joiner ~ female sign ~ '€'
+    assert(graphemeStride("\u26F7\u200D\u2640€"d, 0) == 3);
+    // skier ~ emoji modifier fitzpatrick type-5 ~ zero-width joiner
+    // ~ female sign ~ '€'
+    assert(graphemeStride("\u26F7\U0001f3FE\u200D\u2640€"d, 0) == 4);
+    // skier ~ zero-width joiner ~ '€'
+    assert(graphemeStride("\u26F7\u200D€"d, 0) == 2);
+    //'€' ~ zero-width joiner ~ skier
+    assert(graphemeStride("€\u200D\u26F7"d, 0) == 2);
+    // Kaithi number sign ~ Devanagari digit four ~ Devanagari digit two
+    assert(graphemeStride("\U000110BD\u096A\u0968"d, 0) == 2);
+    // Kaithi number sign ~ null
+    assert(graphemeStride("\U000110BD\0"d, 0) == 1);
 }
 
 /++
@@ -7283,6 +7408,13 @@ private static @safe struct InputRangeString
     auto nonForwardRange = InputRangeString("noe\u0308l").byGrapheme;
     static assert(!isForwardRange!(typeof(nonForwardRange)));
     assert(nonForwardRange.walkLength == 4);
+}
+
+// Issue 23474
+@safe pure unittest
+{
+    import std.range.primitives : walkLength;
+    assert(byGrapheme("\r\u0308").walkLength == 2);
 }
 
 /++
@@ -10530,8 +10662,6 @@ private:
 
 @safe pure nothrow @nogc @property
 {
-    import std.internal.unicode_tables; // generated file
-
     // It's important to use auto return here, so that the compiler
     // only runs semantic on the return type if the function gets
     // used. Also these are functions rather than templates to not
@@ -10578,10 +10708,10 @@ private:
     }
 
     //grapheme breaking algorithm tables
-    auto mcTrie()
+    auto spacingMarkTrie()
     {
-        import std.internal.unicode_grapheme : mcTrieEntries;
-        static immutable res = asTrie(mcTrieEntries);
+        import std.internal.unicode_grapheme : spacingMarkTrieEntries;
+        static immutable res = asTrie(spacingMarkTrieEntries);
         return res;
     }
 
@@ -10603,6 +10733,27 @@ private:
     {
         import std.internal.unicode_grapheme : hangulLVTTrieEntries;
         static immutable res = asTrie(hangulLVTTrieEntries);
+        return res;
+    }
+
+    auto prependTrie()
+    {
+        import std.internal.unicode_grapheme : prependTrieEntries;
+        static immutable res = asTrie(prependTrieEntries);
+        return res;
+    }
+
+    auto graphemeControlTrie()
+    {
+        import std.internal.unicode_grapheme : controlTrieEntries;
+        static immutable res = asTrie(controlTrieEntries);
+        return res;
+    }
+
+    auto xpictoTrie()
+    {
+        import std.internal.unicode_grapheme : Extended_PictographicTrieEntries;
+        static immutable res = asTrie(Extended_PictographicTrieEntries);
         return res;
     }
 

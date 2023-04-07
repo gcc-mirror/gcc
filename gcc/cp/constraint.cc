@@ -2705,7 +2705,7 @@ satisfaction_cache::get ()
   if (entry->evaluating)
     {
       /* If we get here, it means satisfaction is self-recursive.  */
-      gcc_checking_assert (!entry->result);
+      gcc_checking_assert (!entry->result || seen_error ());
       if (info.noisy ())
 	error_at (EXPR_LOCATION (ATOMIC_CONSTR_EXPR (entry->atom)),
 		  "satisfaction of atomic constraint %qE depends on itself",
@@ -3796,6 +3796,9 @@ diagnose_trait_expr (tree expr, tree args)
     case CPTK_REF_CONVERTS_FROM_TEMPORARY:
       inform (loc, "  %qT is not a reference that binds to a temporary "
 	      "object of type %qT (copy-initialization)", t1, t2);
+      break;
+    case CPTK_IS_DEDUCIBLE:
+      inform (loc, "  %qD is not deducible from %qT", t1, t2);
       break;
 #define DEFTRAIT_TYPE(CODE, NAME, ARITY) \
     case CPTK_##CODE:

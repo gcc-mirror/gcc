@@ -676,7 +676,7 @@ enum reg_class
    point values.  */
 
 #define GP_RETURN (GP_REG_FIRST + 4)
-#define FP_RETURN ((TARGET_SOFT_FLOAT) ? GP_RETURN : (FP_REG_FIRST + 0))
+#define FP_RETURN ((TARGET_SOFT_FLOAT_ABI) ? GP_RETURN : (FP_REG_FIRST + 0))
 
 #define MAX_ARGS_IN_REGISTERS 8
 
@@ -1154,6 +1154,6 @@ struct GTY (()) machine_function
 /* The largest type that can be passed in floating-point registers.  */
 /* TODO: according to mabi.  */
 #define UNITS_PER_FP_ARG  \
-  (TARGET_HARD_FLOAT ? (TARGET_DOUBLE_FLOAT ? 8 : 4) : 0)
+  (TARGET_HARD_FLOAT_ABI ? (TARGET_DOUBLE_FLOAT_ABI ? 8 : 4) : 0)
 
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == GP_RETURN || (N) == FP_RETURN)

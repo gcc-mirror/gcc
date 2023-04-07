@@ -27,6 +27,11 @@ extern unsigned int gcn_dwarf_register_number (unsigned int regno);
 extern rtx get_exec (int64_t);
 extern rtx get_exec (machine_mode mode);
 extern char * gcn_expand_dpp_shr_insn (machine_mode, const char *, int, int);
+extern char * gcn_expand_dpp_swap_pairs_insn (machine_mode, const char *, int);
+extern char * gcn_expand_dpp_distribute_even_insn (machine_mode, const char *,
+						   int unspec);
+extern char * gcn_expand_dpp_distribute_odd_insn (machine_mode, const char *,
+						  int unspec);
 extern void gcn_expand_epilogue ();
 extern rtx gcn_expand_scaled_offsets (addr_space_t as, rtx base, rtx offsets,
 				      rtx scale, bool unsigned_p, rtx exec);
@@ -70,6 +75,7 @@ extern reg_class gcn_regno_reg_class (int regno);
 extern bool gcn_scalar_flat_address_p (rtx);
 extern bool gcn_scalar_flat_mem_p (rtx);
 extern bool gcn_sgpr_move_p (rtx, rtx);
+extern bool gcn_stepped_zero_int_parallel_p (rtx op, int step);
 extern bool gcn_valid_move_p (machine_mode, rtx, rtx);
 extern rtx gcn_vec_constant (machine_mode, int);
 extern rtx gcn_vec_constant (machine_mode, rtx);

@@ -154,8 +154,12 @@ namespace __expected
 
   template<typename _Fn, typename _Tp>
     using __result = remove_cvref_t<invoke_result_t<_Fn&&, _Tp&&>>;
+  template<typename _Fn, typename _Tp>
+    using __result_xform = remove_cv_t<invoke_result_t<_Fn&&, _Tp&&>>;
   template<typename _Fn>
     using __result0 = remove_cvref_t<invoke_result_t<_Fn&&>>;
+  template<typename _Fn>
+    using __result0_xform = remove_cv_t<invoke_result_t<_Fn&&>>;
 
   template<typename _Er>
     concept __can_be_unexpected
@@ -732,7 +736,8 @@ namespace __expected
       {
 	if (_M_has_value) [[likely]]
 	  return _M_val;
-	_GLIBCXX_THROW_OR_ABORT(bad_expected_access<_Er>(_M_unex));
+	const auto& __unex = _M_unex;
+	_GLIBCXX_THROW_OR_ABORT(bad_expected_access<_Er>(__unex));
       }
 
       constexpr const _Tp&&
@@ -953,7 +958,7 @@ namespace __expected
 	constexpr auto
 	transform(_Fn&& __f) &
 	{
-	  using _Up = __expected::__result<_Fn, _Tp&>;
+	  using _Up = __expected::__result_xform<_Fn, _Tp&>;
 	  using _Res = expected<_Up, _Er>;
 
 	  if (has_value())
@@ -969,7 +974,7 @@ namespace __expected
 	constexpr auto
 	transform(_Fn&& __f) const &
 	{
-	  using _Up = __expected::__result<_Fn, const _Tp&>;
+	  using _Up = __expected::__result_xform<_Fn, const _Tp&>;
 	  using _Res = expected<_Up, _Er>;
 
 	  if (has_value())
@@ -985,7 +990,7 @@ namespace __expected
 	constexpr auto
 	transform(_Fn&& __f) &&
 	{
-	  using _Up = __expected::__result<_Fn, _Tp>;
+	  using _Up = __expected::__result_xform<_Fn, _Tp>;
 	  using _Res = expected<_Up, _Er>;
 
 	  if (has_value())
@@ -1001,7 +1006,7 @@ namespace __expected
 	constexpr auto
 	transform(_Fn&& __f) const &&
 	{
-	  using _Up = __expected::__result<_Fn, const _Tp>;
+	  using _Up = __expected::__result_xform<_Fn, const _Tp>;
 	  using _Res = expected<_Up, _Er>;
 
 	  if (has_value())
@@ -1017,7 +1022,7 @@ namespace __expected
 	constexpr auto
 	transform_error(_Fn&& __f) &
 	{
-	  using _Gr = __expected::__result<_Fn, _Er&>;
+	  using _Gr = __expected::__result_xform<_Fn, _Er&>;
 	  using _Res = expected<_Tp, _Gr>;
 
 	  if (has_value())
@@ -1033,7 +1038,7 @@ namespace __expected
 	constexpr auto
 	transform_error(_Fn&& __f) const &
 	{
-	  using _Gr = __expected::__result<_Fn, const _Er&>;
+	  using _Gr = __expected::__result_xform<_Fn, const _Er&>;
 	  using _Res = expected<_Tp, _Gr>;
 
 	  if (has_value())
@@ -1049,7 +1054,7 @@ namespace __expected
 	constexpr auto
 	transform_error(_Fn&& __f) &&
 	{
-	  using _Gr = __expected::__result<_Fn, _Er&&>;
+	  using _Gr = __expected::__result_xform<_Fn, _Er&&>;
 	  using _Res = expected<_Tp, _Gr>;
 
 	  if (has_value())
@@ -1065,7 +1070,7 @@ namespace __expected
 	constexpr auto
 	transform_error(_Fn&& __f) const &&
 	{
-	  using _Gr = __expected::__result<_Fn, const _Er&&>;
+	  using _Gr = __expected::__result_xform<_Fn, const _Er&&>;
 	  using _Res = expected<_Tp, _Gr>;
 
 	  if (has_value())
@@ -1302,11 +1307,10 @@ namespace __expected
 	: _M_unex(std::move(__u).error()), _M_has_value(false)
 	{ }
 
-      template<typename... _Args>
-	constexpr explicit
-	expected(in_place_t) noexcept
-	: expected()
-	{ }
+      constexpr explicit
+      expected(in_place_t) noexcept
+      : expected()
+      { }
 
       template<typename... _Args>
 	requires is_constructible_v<_Er, _Args...>
@@ -1631,7 +1635,7 @@ namespace __expected
 	constexpr auto
 	transform(_Fn&& __f) &
 	{
-	  using _Up = __expected::__result0<_Fn>;
+	  using _Up = __expected::__result0_xform<_Fn>;
 	  using _Res = expected<_Up, _Er>;
 
 	  if (has_value())
@@ -1644,7 +1648,7 @@ namespace __expected
 	constexpr auto
 	transform(_Fn&& __f) const &
 	{
-	  using _Up = __expected::__result0<_Fn>;
+	  using _Up = __expected::__result0_xform<_Fn>;
 	  using _Res = expected<_Up, _Er>;
 
 	  if (has_value())
@@ -1657,7 +1661,7 @@ namespace __expected
 	constexpr auto
 	transform(_Fn&& __f) &&
 	{
-	  using _Up = __expected::__result0<_Fn>;
+	  using _Up = __expected::__result0_xform<_Fn>;
 	  using _Res = expected<_Up, _Er>;
 
 	  if (has_value())
@@ -1670,7 +1674,7 @@ namespace __expected
 	constexpr auto
 	transform(_Fn&& __f) const &&
 	{
-	  using _Up = __expected::__result0<_Fn>;
+	  using _Up = __expected::__result0_xform<_Fn>;
 	  using _Res = expected<_Up, _Er>;
 
 	  if (has_value())
@@ -1683,7 +1687,7 @@ namespace __expected
 	constexpr auto
 	transform_error(_Fn&& __f) &
 	{
-	  using _Gr = __expected::__result<_Fn, _Er&>;
+	  using _Gr = __expected::__result_xform<_Fn, _Er&>;
 	  using _Res = expected<_Tp, _Gr>;
 
 	  if (has_value())
@@ -1699,7 +1703,7 @@ namespace __expected
 	constexpr auto
 	transform_error(_Fn&& __f) const &
 	{
-	  using _Gr = __expected::__result<_Fn, const _Er&>;
+	  using _Gr = __expected::__result_xform<_Fn, const _Er&>;
 	  using _Res = expected<_Tp, _Gr>;
 
 	  if (has_value())
@@ -1715,7 +1719,7 @@ namespace __expected
 	constexpr auto
 	transform_error(_Fn&& __f) &&
 	{
-	  using _Gr = __expected::__result<_Fn, _Er&&>;
+	  using _Gr = __expected::__result_xform<_Fn, _Er&&>;
 	  using _Res = expected<_Tp, _Gr>;
 
 	  if (has_value())
@@ -1731,7 +1735,7 @@ namespace __expected
 	constexpr auto
 	transform_error(_Fn&& __f) const &&
 	{
-	  using _Gr = __expected::__result<_Fn, const _Er&&>;
+	  using _Gr = __expected::__result_xform<_Fn, const _Er&&>;
 	  using _Res = expected<_Tp, _Gr>;
 
 	  if (has_value())

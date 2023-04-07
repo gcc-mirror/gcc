@@ -44,6 +44,7 @@
 #include <sstream>
 #include <cstdint>
 #include <experimental/string_view>
+#include <bits/charconv.h>
 #ifdef _GLIBCXX_HAVE_UNISTD_H
 # include <unistd.h>
 #endif
@@ -197,7 +198,12 @@ namespace ip
 
     constexpr
     address_v4(const bytes_type& __b)
-    : _M_addr((__b[0] << 24) | (__b[1] << 16) | (__b[2] << 8) | __b[3])
+#if __has_builtin(__builtin_bit_cast)
+    : _M_addr(__builtin_bit_cast(uint_type, __b))
+#else
+    : _M_addr(_S_hton_32((__b[0] << 24) | (__b[1] << 16)
+			   | (__b[2] << 8) | __b[3]))
+#endif
     { }
 
     explicit constexpr
@@ -226,12 +232,17 @@ namespace ip
     constexpr bytes_type
     to_bytes() const noexcept
     {
+#if __has_builtin(__builtin_bit_cast)
+      return __builtin_bit_cast(bytes_type, _M_addr);
+#else
+      auto __host = to_uint();
       return bytes_type{
-	  (_M_addr >> 24) & 0xFF,
-	  (_M_addr >> 16) & 0xFF,
-	  (_M_addr >> 8) & 0xFF,
-	  _M_addr & 0xFF
+	(__host >> 24) & 0xFF,
+	(__host >> 16) & 0xFF,
+	(__host >> 8) & 0xFF,
+	__host & 0xFF
       };
+#endif
     }
 
     constexpr uint_type
@@ -241,17 +252,28 @@ namespace ip
       __string_with<_Allocator>
       to_string(const _Allocator& __a = _Allocator()) const
       {
-#ifdef _GLIBCXX_HAVE_ARPA_INET_H
+	auto __write = [__addr = to_uint()](char* __p, size_t __n) {
+	  auto __to_chars = [](char* __p, uint8_t __v) {
+	    unsigned __n = __v >= 100u ? 3 : __v >= 10u ? 2 : 1;
+	    std::__detail::__to_chars_10_impl(__p, __n, __v);
+	    return __p + __n;
+	  };
+	  const auto __begin = __p;
+	  __p = __to_chars(__p, uint8_t(__addr >> 24));
+	  for (int __i = 2; __i >= 0; __i--) {
+	    *__p++ = '.';
+	    __p = __to_chars(__p, uint8_t(__addr >> (__i * 8)));
+	  }
+	  return __p - __begin;
+	};
 	__string_with<_Allocator> __str(__a);
-	__str.resize(INET_ADDRSTRLEN);
-	if (inet_ntop(AF_INET, &_M_addr, &__str.front(), __str.size()))
-	  __str.erase(__str.find('\0'));
-	else
-	  __str.resize(0);
-	return __str;
+#if __cpp_lib_string_resize_and_overwrite
+	__str.resize_and_overwrite(15, __write);
 #else
-	std::__throw_system_error((int)__unsupported_err());
+	__str.resize(15);
+	__str.resize(__write(&__str.front(), 15));
 #endif
+	return __str;
       }
 
     // static members:
@@ -955,7 +977,8 @@ namespace ip
   { return make_address(__str, __throw_on_error{"make_address"}); }
 
   inline address
-  make_address(const string& __str, error_code& __ec) noexcept; // TODO
+  make_address(const string& __str, error_code& __ec) noexcept
+  { return make_address(__str.c_str(), __ec); }
 
   inline address
   make_address(const string& __str)
@@ -1197,10 +1220,10 @@ namespace ip
 
   /// @}
 
-  bool
+  constexpr bool
   operator==(const network_v4& __a, const network_v4& __b) noexcept;
 
-  bool
+  constexpr bool
   operator==(const network_v6& __a, const network_v6& __b) noexcept;
 
 
@@ -1241,10 +1264,10 @@ namespace ip
     constexpr address_v4
     netmask() const noexcept
     {
-      address_v4::uint_type __val = address_v4::broadcast().to_uint();
-      __val >>= (32 - _M_prefix_len);
-      __val <<= (32 - _M_prefix_len);
-      return address_v4{__val};
+      address_v4 __m;
+      if (_M_prefix_len)
+	__m = address_v4(0xFFFFFFFFu << (32 - _M_prefix_len));
+      return __m;
     }
 
     constexpr address_v4
@@ -1253,7 +1276,12 @@ namespace ip
 
     constexpr address_v4
     broadcast() const noexcept
-    { return address_v4{_M_addr.to_uint() | ~netmask().to_uint()}; }
+    {
+      auto __b = _M_addr.to_uint();
+      if (_M_prefix_len < 32)
+	__b |= 0xFFFFFFFFu >> _M_prefix_len;
+      return address_v4{__b};
+    }
 
     address_v4_range
     hosts() const noexcept
@@ -1284,8 +1312,23 @@ namespace ip
       __string_with<_Allocator>
       to_string(const _Allocator& __a = _Allocator()) const
       {
-	return address().to_string(__a) + '/'
-	  + std::to_string(prefix_length());
+	auto __str = address().to_string(__a);
+	const unsigned __addrlen = __str.length();
+	const unsigned __preflen = prefix_length() >= 10 ? 2 : 1;
+	auto __write = [=](char* __p, size_t __n) {
+	  __p[__addrlen] = '/';
+	  std::__detail::__to_chars_10_impl(__p + __addrlen + 1, __preflen,
+					    (unsigned char)prefix_length());
+	  return __n;
+	};
+	const unsigned __len = __addrlen + 1 + __preflen;
+#if __cpp_lib_string_resize_and_overwrite
+	__str.resize_and_overwrite(__len, __write);
+#else
+	__str.resize(__len);
+	__write(&__str.front(), __len);
+#endif
+	return __str;
       }
 
   private:
@@ -1357,14 +1400,14 @@ namespace ip
    * @{
    */
 
-  inline bool
+  constexpr bool
   operator==(const network_v4& __a, const network_v4& __b) noexcept
   {
     return __a.address() == __b.address()
       && __a.prefix_length() == __b.prefix_length();
   }
 
-  inline bool
+  constexpr bool
   operator!=(const network_v4& __a, const network_v4& __b) noexcept
   { return !(__a == __b); }
 
@@ -1374,14 +1417,14 @@ namespace ip
    * @{
    */
 
-  inline bool
+  constexpr bool
   operator==(const network_v6& __a, const network_v6& __b) noexcept
   {
     return __a.address() == __b.address()
       && __a.prefix_length() == __b.prefix_length();
   }
 
-  inline bool
+  constexpr bool
   operator!=(const network_v6& __a, const network_v6& __b) noexcept
   { return !(__a == __b); }
 
@@ -1473,19 +1516,30 @@ namespace ip
       basic_endpoint() noexcept : _M_data()
       { _M_data._M_v4.sin_family = protocol_type::v4().family(); }
 
-      constexpr
+      _GLIBCXX20_CONSTEXPR
       basic_endpoint(const protocol_type& __proto,
 		     port_type __port_num) noexcept
       : _M_data()
       {
-	__glibcxx_assert(__proto == protocol_type::v4()
-			  || __proto == protocol_type::v6());
-
-	_M_data._M_v4.sin_family = __proto.family();
-	_M_data._M_v4.sin_port = address_v4::_S_hton_16(__port_num);
+	if (__proto == protocol_type::v4())
+	  {
+	    _M_data._M_v4.sin_family = __proto.family();
+	    _M_data._M_v4.sin_port = address_v4::_S_hton_16(__port_num);
+	  }
+	else if (__proto == protocol_type::v6())
+	  {
+	    std::_Construct(&_M_data._M_v6);
+	    _M_data._M_v6.sin6_family = __proto.family();
+	    _M_data._M_v6.sin6_port = address_v4::_S_hton_16(__port_num);
+	  }
+	else
+	  {
+	    __glibcxx_assert(__proto == protocol_type::v4()
+			       || __proto == protocol_type::v6());
+	  }
       }
 
-      constexpr
+      _GLIBCXX20_CONSTEXPR
       basic_endpoint(const ip::address& __addr,
 		     port_type __port_num) noexcept
       : _M_data()
@@ -1498,16 +1552,18 @@ namespace ip
 	  }
 	else
 	  {
-	    _M_data._M_v6 = {};
+	    std::_Construct(&_M_data._M_v6);
 	    _M_data._M_v6.sin6_family = protocol_type::v6().family();
 	    _M_data._M_v6.sin6_port = address_v4::_S_hton_16(__port_num);
-	    __builtin_memcpy(_M_data._M_v6.sin6_addr.s6_addr,
-			     __addr._M_v6._M_bytes.data(), 16);
+	    uint8_t* __s6a = _M_data._M_v6.sin6_addr.s6_addr;
+	    for (int __i = 0; __i < 16; ++__i)
+	      __s6a[__i] = __addr._M_v6._M_bytes[__i];
 	    _M_data._M_v6.sin6_scope_id = __addr._M_v6._M_scope_id;
 	  }
       }
 
       // members:
+
       constexpr protocol_type protocol() const noexcept
       {
 	return _M_is_v6() ? protocol_type::v6() : protocol_type::v4();
@@ -1516,19 +1572,21 @@ namespace ip
       constexpr ip::address
       address() const noexcept
       {
-	ip::address __addr;
 	if (_M_is_v6())
 	  {
-	    __builtin_memcpy(&__addr._M_v6._M_bytes,
-			     _M_data._M_v6.sin6_addr.s6_addr, 16);
-	    __addr._M_is_v4 = false;
+	    address_v6 __v6;
+	    const uint8_t* __s6a = _M_data._M_v6.sin6_addr.s6_addr;
+	    for (int __i = 0; __i < 16; ++__i)
+	      __v6._M_bytes[__i] = __s6a[__i];
+	    __v6._M_scope_id = _M_data._M_v6.sin6_scope_id;
+	    return __v6;
 	  }
 	else
 	  {
-	    __builtin_memcpy(&__addr._M_v4._M_addr,
-			     &_M_data._M_v4.sin_addr.s_addr, 4);
+	    address_v4 __v4;
+	    __v4._M_addr = _M_data._M_v4.sin_addr.s_addr;
+	    return __v4;
 	  }
-	return __addr;
       }
 
       void
@@ -1536,7 +1594,7 @@ namespace ip
       {
 	if (__addr.is_v6())
 	  {
-	    _M_data._M_v6 = {};
+	    std::_Construct(&_M_data._M_v6);
 	    _M_data._M_v6.sin6_family = protocol_type::v6().family();
 	    __builtin_memcpy(_M_data._M_v6.sin6_addr.s6_addr,
 			     __addr._M_v6._M_bytes.data(), 16);
@@ -1544,6 +1602,7 @@ namespace ip
 	  }
 	else
 	  {
+	    std::_Construct(&_M_data._M_v4);
 	    _M_data._M_v4.sin_family = protocol_type::v4().family();
 	    _M_data._M_v4.sin_addr.s_addr = __addr._M_v4._M_addr;
 	  }
@@ -1551,17 +1610,31 @@ namespace ip
 
       constexpr port_type
       port() const noexcept
-      { return address_v4::_S_ntoh_16(_M_data._M_v4.sin_port); }
+      {
+	port_type __p = 0;
+	if (_M_is_v6())
+	  __p = _M_data._M_v6.sin6_port;
+	else
+	  __p = _M_data._M_v4.sin_port;
+	return address_v4::_S_ntoh_16(__p);
+      }
 
       void
       port(port_type __port_num) noexcept
-      { _M_data._M_v4.sin_port = address_v4::_S_hton_16(__port_num); }
+      {
+	__port_num = address_v4::_S_hton_16(__port_num);
+	if (_M_is_v6())
+	  _M_data._M_v6.sin6_port = __port_num;
+	else
+	  _M_data._M_v4.sin_port = __port_num;
+      }
 
       void* data() noexcept { return &_M_data; }
 
       const void* data() const noexcept { return &_M_data; }
 
-      constexpr size_t size() const noexcept
+      constexpr size_t
+      size() const noexcept
       { return _M_is_v6() ? sizeof(sockaddr_in6) : sizeof(sockaddr_in); }
 
       void
@@ -1580,8 +1653,15 @@ namespace ip
 	sockaddr_in6	_M_v6;
       } _M_data;
 
-      constexpr bool _M_is_v6() const noexcept
-      { return _M_data._M_v4.sin_family == AF_INET6; }
+      constexpr bool
+      _M_is_v6() const noexcept
+      {
+	// For constexpr eval we can just detect which union member is active.
+	// i.e. emulate P2641R1's std::is_active_member(&_M_data._M_v6)).
+	if (std::__is_constant_evaluated())
+	  return __builtin_constant_p(_M_data._M_v6.sin6_family);
+	return _M_data._M_v6.sin6_family == AF_INET6;
+      }
     };
 
   /** basic_endpoint comparisons
@@ -1589,19 +1669,19 @@ namespace ip
    */
 
   template<typename _InternetProtocol>
-    inline bool
+    constexpr bool
     operator==(const basic_endpoint<_InternetProtocol>& __a,
 	       const basic_endpoint<_InternetProtocol>& __b)
     { return __a.address() == __b.address() && __a.port() == __b.port(); }
 
   template<typename _InternetProtocol>
-    inline bool
+    constexpr bool
     operator!=(const basic_endpoint<_InternetProtocol>& __a,
 	       const basic_endpoint<_InternetProtocol>& __b)
     { return !(__a == __b); }
 
   template<typename _InternetProtocol>
-    inline bool
+    constexpr bool
     operator< (const basic_endpoint<_InternetProtocol>& __a,
 	       const basic_endpoint<_InternetProtocol>& __b)
     {
@@ -1610,19 +1690,19 @@ namespace ip
     }
 
   template<typename _InternetProtocol>
-    inline bool
+    constexpr bool
     operator> (const basic_endpoint<_InternetProtocol>& __a,
 	       const basic_endpoint<_InternetProtocol>& __b)
     { return __b < __a; }
 
   template<typename _InternetProtocol>
-    inline bool
+    constexpr bool
     operator<=(const basic_endpoint<_InternetProtocol>& __a,
 	       const basic_endpoint<_InternetProtocol>& __b)
     { return !(__b < __a); }
 
   template<typename _InternetProtocol>
-    inline bool
+    constexpr bool
     operator>=(const basic_endpoint<_InternetProtocol>& __a,
 	       const basic_endpoint<_InternetProtocol>& __b)
     { return !(__a < __b); }

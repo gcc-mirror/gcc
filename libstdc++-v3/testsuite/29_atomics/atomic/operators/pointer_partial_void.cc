@@ -1,5 +1,6 @@
 // { dg-do run { target { c++11_only || c++14_only } } }
 // { dg-require-atomic-builtins "" }
+// { dg-require-effective-target hosted }
 
 // Copyright (C) 2012-2023 Free Software Foundation, Inc.
 //

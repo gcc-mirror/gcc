@@ -162,8 +162,8 @@ BEGIN
 (* ToOldState := TurnInterrupts(MAX(PROTECTION)) ;                (* disable interrupts *) *)
    IF e=NIL
    THEN
-      Halt(__FILE__, __LINE__, __FUNCTION__,
-           'event should never be NIL')
+      Halt ('event should never be NIL',
+            __FILE__, __FUNCTION__, __LINE__)
    ELSE
       WITH e^ DO
          (* we will just check to see whether someone has cancelled this    *)
@@ -215,8 +215,8 @@ BEGIN
          Cancelled := NOT WasCancelled ;
          IF WasCancelled
          THEN
-            Halt(__FILE__, __LINE__, __FUNCTION__,
-                 'inconsistancy event has been cancelled and it is on queue')
+            Halt ('inconsistancy event has been cancelled and it is on queue',
+                  __FILE__, __FUNCTION__, __LINE__)
          END ;
          OnSoloQueue(e) ;
          WasCancelled := TRUE ;
@@ -265,8 +265,8 @@ BEGIN
          NoOfTicks := t ;                             (* give it a new time *)
          OnActiveQueue(e)                             (* back on queue      *)
       ELSE
-         Halt(__FILE__, __LINE__, __FUNCTION__,
-              'ReArm should not be asked to ReArm a dead event')
+         Halt ('ReArm should not be asked to ReArm a dead event',
+               __FILE__, __FUNCTION__, __LINE__)
       END
    END ;
 (* ToOldState := TurnInterrupts(ToOldState) ;         (* restore interrupts *) *)
@@ -472,7 +472,8 @@ BEGIN
    THEN
       IF IsOnDeadQueue(e)
       THEN
-         Halt(__FILE__, __LINE__, __FUNCTION__, 'illegal state change')
+         Halt ('illegal state change',
+               __FILE__, __FUNCTION__, __LINE__)
       ELSIF IsOnSoloQueue(e)
       THEN
          RelativeAddToActive(e) ;

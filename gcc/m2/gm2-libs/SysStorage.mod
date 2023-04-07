@@ -33,8 +33,8 @@ FROM SYSTEM IMPORT ADR ;
 
 CONST
    enableDeallocation =  TRUE ;
-   enableZero         = FALSE ;
-   enableTrace        = FALSE ;
+   enableZero         =  TRUE ;
+   enableTrace        =  FALSE ;
 
 VAR
    callno: CARDINAL ;
@@ -47,7 +47,8 @@ BEGIN
    a := malloc (size) ;
    IF a = NIL
    THEN
-      Halt ('out of memory error', __LINE__, __FILE__)
+      Halt ('out of memory error',
+            __FILE__, __FUNCTION__, __LINE__)
    END ;
    IF enableTrace AND trace
    THEN
@@ -73,7 +74,8 @@ BEGIN
       END ;
       IF memset (a, 0, size) # a
       THEN
-         Halt ('memset should have returned the first parameter', __LINE__, __FILE__)
+         Halt ('memset should have returned the first parameter',
+               __FILE__, __FUNCTION__, __LINE__)
       END
    END ;
    IF enableDeallocation
@@ -116,7 +118,8 @@ BEGIN
       a := realloc (a, size) ;
       IF a = NIL
       THEN
-         Halt ('out of memory error', __LINE__, __FILE__)
+         Halt ('out of memory error',
+               __FILE__, __FUNCTION__, __LINE__)
       END ;
       IF enableTrace AND trace
       THEN

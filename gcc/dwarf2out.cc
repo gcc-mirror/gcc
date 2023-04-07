@@ -5894,6 +5894,7 @@ lookup_type_die (tree type)
   if (die && die->removed)
     {
       TYPE_SYMTAB_DIE (type) = NULL;
+      TREE_ASM_WRITTEN (type) = 0;
       return NULL;
     }
   return die;
@@ -27282,7 +27283,10 @@ dwarf2out_late_global_decl (tree decl)
       /* We may have to generate full debug late for LTO in case debug
          was not enabled at compile-time or the target doesn't support
 	 the LTO early debug scheme.  */
-      if (! die && in_lto_p)
+      if (! die && in_lto_p
+	  /* Function scope variables are emitted when emitting the
+	     DIE for the function.  */
+	  && ! local_function_static (decl))
 	dwarf2out_decl (decl);
       else if (die)
 	{

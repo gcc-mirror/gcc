@@ -271,7 +271,7 @@ extern void mips_declare_object (FILE *, const char *, const char *,
 extern void mips_declare_object_name (FILE *, const char *, tree);
 extern void mips_finish_declare_object (FILE *, tree, int, int);
 extern void mips_set_text_contents_type (FILE *, const char *,
-					 unsigned long, bool);
+					 unsigned HOST_WIDE_INT, bool);
 
 extern bool mips_small_data_pattern_p (rtx);
 extern rtx mips_rewrite_small_data (rtx);

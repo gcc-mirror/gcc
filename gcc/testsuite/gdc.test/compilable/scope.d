@@ -253,3 +253,12 @@ void main21209()
     testForeach(cs);
     testForeach(fs);
 }
+
+struct S23669
+{
+    string[] a;
+    @safe void reserve() scope
+    {
+        a.length += 1;
+    }
+}

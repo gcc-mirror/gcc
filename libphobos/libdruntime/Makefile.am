@@ -169,7 +169,7 @@ DRUNTIME_CSOURCES = core/stdc/errno_.c
 
 DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/builtins.d core/checkedint.d core/cpuid.d core/demangle.d \
-	core/exception.d core/gc/config.d core/gc/gcinterface.d \
+	core/exception.d core/factory.d core/gc/config.d core/gc/gcinterface.d \
 	core/gc/registry.d core/int128.d core/internal/abort.d \
 	core/internal/array/appending.d core/internal/array/arrayassign.d \
 	core/internal/array/capacity.d core/internal/array/casting.d \

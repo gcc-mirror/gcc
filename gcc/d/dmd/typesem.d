@@ -35,6 +35,7 @@ import dmd.dsymbol;
 import dmd.dsymbolsem;
 import dmd.dtemplate;
 import dmd.errors;
+import dmd.errorsink;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
@@ -285,54 +286,10 @@ private void resolveHelper(TypeQualified mt, const ref Loc loc, Scope* sc, Dsymb
                     return helper3();
             }
         }
+
         if (!sm)
-        {
-            if (!t)
-            {
-                if (s.isDeclaration()) // var, func, or tuple declaration?
-                {
-                    t = s.isDeclaration().type;
-                    if (!t && s.isTupleDeclaration()) // expression tuple?
-                        return helper3();
-                }
-                else if (s.isTemplateInstance() ||
-                         s.isImport() || s.isPackage() || s.isModule())
-                {
-                    return helper3();
-                }
-            }
-            if (t)
-            {
-                sm = t.toDsymbol(sc);
-                if (sm && id.dyncast() == DYNCAST.identifier)
-                {
-                    sm = sm.search(loc, cast(Identifier)id, IgnorePrivateImports);
-                    if (!sm)
-                        return helper3();
-                }
-                else
-                    return helper3();
-            }
-            else
-            {
-                if (id.dyncast() == DYNCAST.dsymbol)
-                {
-                    // searchX already handles errors for template instances
-                    assert(global.errors);
-                }
-                else
-                {
-                    assert(id.dyncast() == DYNCAST.identifier);
-                    sm = s.search_correct(cast(Identifier)id);
-                    if (sm)
-                        error(loc, "identifier `%s` of `%s` is not defined, did you mean %s `%s`?", id.toChars(), mt.toChars(), sm.kind(), sm.toChars());
-                    else
-                        error(loc, "identifier `%s` of `%s` is not defined", id.toChars(), mt.toChars());
-                }
-                pe = ErrorExp.get();
-                return;
-            }
-        }
+            return helper3();
+
         s = sm.toAlias();
     }
 
@@ -580,6 +537,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
         {
             auto errors = global.errors;
             mtype.dim = semanticLength(sc, tbn, mtype.dim);
+            mtype.dim = mtype.dim.implicitCastTo(sc, Type.tsize_t);
             if (errors != global.errors)
                 return error();
 
@@ -636,7 +594,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                  * run on them for the size, since they may be forward referenced.
                  */
                 bool overflow = false;
-                if (mulu(tbn.size(loc), d2, overflow) >= target.maxStaticDataSize || overflow)
+                if (mulu(tbn.size(loc), d2, overflow) > target.maxStaticDataSize || overflow)
                     return overflowError();
             }
         }
@@ -1285,20 +1243,7 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
 
                 if (fparam.storageClass & STC.return_)
                 {
-                    if (fparam.isReference())
-                    {
-                        // Disabled for the moment awaiting improvement to allow return by ref
-                        // to be transformed into return by scope.
-                        if (0 && !tf.isref)
-                        {
-                            auto stc = fparam.storageClass & (STC.ref_ | STC.out_);
-                            .error(loc, "parameter `%s` is `return %s` but function does not return by `ref`",
-                                fparam.ident ? fparam.ident.toChars() : "",
-                                stcToString(stc).ptr);
-                            errors = true;
-                        }
-                    }
-                    else
+                    if (!fparam.isReference())
                     {
                         if (!(fparam.storageClass & STC.scope_))
                             fparam.storageClass |= STC.scope_ | STC.scopeinferred; // 'return' implies 'scope'
@@ -1389,7 +1334,6 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
             // extended index), as we need to run semantic when `oidx` changes.
             size_t tupleOrigIdx = size_t.max;
             size_t tupleExtIdx = size_t.max;
-            bool hasDefault;
             foreach (oidx, oparam, eidx, eparam; tf.parameterList)
             {
                 // oparam (original param) will always have the default arg
@@ -1398,7 +1342,6 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                 // position to get the offset in it later on.
                 if (oparam.defaultArg)
                 {
-                    hasDefault = true;
                     // Get the obvious case out of the way
                     if (oparam is eparam)
                         errors |= !defaultArgSemantic(eparam, argsc);
@@ -1424,11 +1367,6 @@ extern(C++) Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                         if (te && te.exps && te.exps.length)
                             eparam.defaultArg = (*te.exps)[eidx - tupleExtIdx];
                     }
-                }
-                else if (hasDefault)
-                {
-                    .error(loc, "default argument expected for `%s`", oparam.toChars());
-                    errors = true;
                 }
 
                 // We need to know the default argument to resolve `auto ref`,
@@ -3912,8 +3850,15 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
             {
                 /* Rewrite as:
                  *  this.d
+                 *
+                 * only if the scope in which we are
+                 * has a `this` that matches the type
+                 * of the lhs of the dot expression.
+                 *
+                 * https://issues.dlang.org/show_bug.cgi?id=23617
                  */
-                if (hasThis(sc))
+                auto fd = hasThis(sc);
+                if (fd && fd.isThis() == mt.sym)
                 {
                     e = new DotVarExp(e.loc, new ThisExp(e.loc), d);
                     return e.expressionSemantic(sc);
@@ -4231,6 +4176,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
             }
             if (v.type.ty == Terror)
             {
+                e.error("type of variable `%s` has errors", v.toPrettyChars);
                 return ErrorExp.get();
             }
 
@@ -4973,7 +4919,7 @@ RootObject compileTypeMixin(TypeMixin tm, Loc loc, Scope* sc)
     const len = buf.length;
     buf.writeByte(0);
     const str = buf.extractSlice()[0 .. len];
-    scope p = new Parser!ASTCodegen(loc, sc._module, str, false);
+    scope p = new Parser!ASTCodegen(loc, sc._module, str, false, global.errorSink);
     p.nextToken();
     //printf("p.loc.linnum = %d\n", p.loc.linnum);
 

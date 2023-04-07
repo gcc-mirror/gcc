@@ -29,8 +29,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_M2Dependent_H)
 #   define _M2Dependent_H
 
-#include "config.h"
-#include "system.h"
 #   ifdef __cplusplus
 extern "C" {
 #   endif
@@ -53,8 +51,8 @@ typedef struct M2Dependent_ArgCVEnvP_p M2Dependent_ArgCVEnvP;
 typedef void (*M2Dependent_ArgCVEnvP_t) (int, void *, void *);
 struct M2Dependent_ArgCVEnvP_p { M2Dependent_ArgCVEnvP_t proc; };
 
-EXTERN void M2Dependent_ConstructModules (void * applicationmodule, int argc, void * argv, void * envp);
-EXTERN void M2Dependent_DeconstructModules (void * applicationmodule, int argc, void * argv, void * envp);
+EXTERN void M2Dependent_ConstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp);
+EXTERN void M2Dependent_DeconstructModules (void * applicationmodule, void * libname, int argc, void * argv, void * envp);
 
 /*
    RegisterModule - adds module name to the list of outstanding
@@ -62,14 +60,15 @@ EXTERN void M2Dependent_DeconstructModules (void * applicationmodule, int argc, 
                     explored to determine initialization order.
 */
 
-EXTERN void M2Dependent_RegisterModule (void * name, M2Dependent_ArgCVEnvP init, M2Dependent_ArgCVEnvP fini, PROC dependencies);
+EXTERN void M2Dependent_RegisterModule (void * modulename, void * libname, M2Dependent_ArgCVEnvP init, M2Dependent_ArgCVEnvP fini, PROC dependencies);
 
 /*
-   RequestDependant - used to specify that modulename is dependant upon
-                      module dependantmodule.
+   RequestDependant - used to specify that modulename:libname
+                      is dependant upon
+                      module dependantmodule:dependantlibname
 */
 
-EXTERN void M2Dependent_RequestDependant (void * modulename, void * dependantmodule);
+EXTERN void M2Dependent_RequestDependant (void * modulename, void * libname, void * dependantmodule, void * dependantlibname);
 #   ifdef __cplusplus
 }
 #   endif

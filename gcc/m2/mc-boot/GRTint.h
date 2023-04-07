@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -97,7 +98,7 @@ EXTERN void RTint_GetTimeVector (unsigned int vec, unsigned int *micro, unsigned
                   vector.
 */
 
-EXTERN void * RTint_AttachVector (unsigned int vec, void * p);
+EXTERN void * RTint_AttachVector (unsigned int vec, void * ptr);
 
 /*
    IncludeVector - includes, vec, into the dispatcher list of
@@ -122,7 +123,7 @@ EXTERN void RTint_ExcludeVector (unsigned int vec);
             It only listens for interrupts > pri.
 */
 
-EXTERN void RTint_Listen (unsigned int untilInterrupt, RTint_DispatchVector call, unsigned int pri);
+EXTERN void RTint_Listen (bool untilInterrupt, RTint_DispatchVector call, unsigned int pri);
 
 /*
    Init - allows the user to force the initialize order.

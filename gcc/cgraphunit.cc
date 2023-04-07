@@ -378,21 +378,15 @@ symbol_table::process_new_functions (void)
    inlined in others.
 
    ??? It may make more sense to use one body for inlining and other
-   body for expanding the function but this is difficult to do.  */
+   body for expanding the function but this is difficult to do.
+
+   This is also used to cancel C++ mangling aliases, which can be for
+   functions or variables.  */
 
 void
-cgraph_node::reset (void)
+symtab_node::reset (void)
 {
-  /* If process is set, then we have already begun whole-unit analysis.
-     This is *not* testing for whether we've already emitted the function.
-     That case can be sort-of legitimately seen with real function redefinition
-     errors.  I would argue that the front end should never present us with
-     such a case, but don't enforce that for now.  */
-  gcc_assert (!process);
-
   /* Reset our data structures so we can analyze the function again.  */
-  inlined_to = NULL;
-  memset (&rtl, 0, sizeof (rtl));
   analyzed = false;
   definition = false;
   alias = false;
@@ -400,8 +394,22 @@ cgraph_node::reset (void)
   weakref = false;
   cpp_implicit_alias = false;
 
-  remove_callees ();
   remove_all_references ();
+  remove_from_same_comdat_group ();
+
+  if (cgraph_node *cn = dyn_cast <cgraph_node *> (this))
+    {
+      /* If process is set, then we have already begun whole-unit analysis.
+	 This is *not* testing for whether we've already emitted the function.
+	 That case can be sort-of legitimately seen with real function
+	 redefinition errors.  I would argue that the front end should never
+	 present us with such a case, but don't enforce that for now.  */
+      gcc_assert (!cn->process);
+
+      memset (&cn->rtl, 0, sizeof (cn->rtl));
+      cn->inlined_to = NULL;
+      cn->remove_callees ();
+    }
 }
 
 /* Return true when there are references to the node.  INCLUDE_SELF is
@@ -1120,6 +1128,7 @@ check_global_declaration (symtab_node *snode)
       && (TREE_CODE (decl) != FUNCTION_DECL
 	  || (!DECL_STATIC_CONSTRUCTOR (decl)
 	      && !DECL_STATIC_DESTRUCTOR (decl)))
+      && (! VAR_P (decl) || !warning_suppressed_p (decl, OPT_Wunused_variable))
       /* Otherwise, ask the language.  */
       && lang_hooks.decls.warn_unused_global (decl))
     warning_at (DECL_SOURCE_LOCATION (decl),

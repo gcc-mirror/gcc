@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "gfortran.h"
 #include "intrinsic.h"
+#include "diagnostic.h" /* For errorcount.  */
 
 /* Namespace to hold the resolved symbols for intrinsic subroutines.  */
 static gfc_namespace *gfc_intrinsic_namespace;
@@ -4259,15 +4260,15 @@ remove_nullargs (gfc_actual_arglist **ap)
 }
 
 
-static gfc_dummy_arg *
-get_intrinsic_dummy_arg (gfc_intrinsic_arg *intrinsic)
+static void
+set_intrinsic_dummy_arg (gfc_dummy_arg *&dummy_arg,
+			 gfc_intrinsic_arg *intrinsic)
 {
-  gfc_dummy_arg * const dummy_arg = gfc_get_dummy_arg ();
+  if (dummy_arg == NULL)
+    dummy_arg = gfc_get_dummy_arg ();
 
   dummy_arg->intrinsicness = GFC_INTRINSIC_DUMMY_ARG;
   dummy_arg->u.intrinsic = intrinsic;
-
-  return dummy_arg;
 }
 
 
@@ -4430,7 +4431,7 @@ do_sort:
       if (a == NULL)
 	a = gfc_get_actual_arglist ();
 
-      a->associated_dummy = get_intrinsic_dummy_arg (f);
+      set_intrinsic_dummy_arg (a->associated_dummy, f);
 
       if (actual == NULL)
 	*ap = a;
@@ -4620,6 +4621,7 @@ do_simplify (gfc_intrinsic_sym *specific, gfc_expr *e)
 {
   gfc_expr *result, *a1, *a2, *a3, *a4, *a5, *a6;
   gfc_actual_arglist *arg;
+  int old_errorcount = errorcount;
 
   /* Max and min require special handling due to the variable number
      of args.  */
@@ -4708,7 +4710,12 @@ do_simplify (gfc_intrinsic_sym *specific, gfc_expr *e)
 
 finish:
   if (result == &gfc_bad_expr)
-    return false;
+    {
+      if (errorcount == old_errorcount
+	  && (!gfc_buffered_p () || !gfc_error_flag_test ()))
+       gfc_error ("Cannot simplify expression at %L", &e->where);
+      return false;
+    }
 
   if (result == NULL)
     resolve_intrinsic (specific, e);	/* Must call at run-time */

@@ -10289,6 +10289,7 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	  (current.lhs.get_location (),
 	   tree_strip_any_location_wrapper (current.lhs),
 	   current.loc,
+	   rhs.get_location (),
 	   tree_strip_any_location_wrapper (rhs));
 
       overload = NULL;
@@ -10960,10 +10961,22 @@ cp_parser_trait (cp_parser* parser, enum rid keyword)
   matching_parens parens;
   parens.require_open (parser);
 
-  {
-    type_id_in_expr_sentinel s (parser);
-    type1 = cp_parser_type_id (parser);
-  }
+  if (kind == CPTK_IS_DEDUCIBLE)
+    {
+      const cp_token* token = cp_lexer_peek_token (parser->lexer);
+      type1 = cp_parser_id_expression (parser,
+				       /*template_keyword_p=*/false,
+				       /*check_dependency_p=*/true,
+				       nullptr,
+				       /*declarator_p=*/false,
+				       /*optional_p=*/false);
+      type1 = cp_parser_lookup_name_simple (parser, type1, token->location);
+    }
+  else
+    {
+      type_id_in_expr_sentinel s (parser);
+      type1 = cp_parser_type_id (parser);
+    }
 
   if (type1 == error_mark_node)
     return error_mark_node;
@@ -26139,6 +26152,11 @@ cp_parser_class_specifier (cp_parser* parser)
   saved_in_unbraced_linkage_specification_p
     = parser->in_unbraced_linkage_specification_p;
   parser->in_unbraced_linkage_specification_p = false;
+  /* 'this' from an enclosing non-static member function is unavailable.  */
+  tree saved_ccp = current_class_ptr;
+  tree saved_ccr = current_class_ref;
+  current_class_ptr = NULL_TREE;
+  current_class_ref = NULL_TREE;
 
   /* Start the class.  */
   if (nested_name_specifier_p)
@@ -26357,8 +26375,6 @@ cp_parser_class_specifier (cp_parser* parser)
       /* If there are noexcept-specifiers that have not yet been processed,
 	 take care of them now.  Do this before processing NSDMIs as they
 	 may depend on noexcept-specifiers already having been processed.  */
-      tree save_ccp = current_class_ptr;
-      tree save_ccr = current_class_ref;
       FOR_EACH_VEC_SAFE_ELT (unparsed_noexcepts, ix, decl)
 	{
 	  tree ctx = DECL_CONTEXT (decl);
@@ -26423,11 +26439,12 @@ cp_parser_class_specifier (cp_parser* parser)
       /* Now parse any NSDMIs.  */
       FOR_EACH_VEC_SAFE_ELT (unparsed_nsdmis, ix, decl)
 	{
-	  if (class_type != DECL_CONTEXT (decl))
+	  tree ctx = type_context_for_name_lookup (decl);
+	  if (class_type != ctx)
 	    {
 	      if (pushed_scope)
 		pop_scope (pushed_scope);
-	      class_type = DECL_CONTEXT (decl);
+	      class_type = ctx;
 	      pushed_scope = push_scope (class_type);
 	    }
 	  inject_this_parameter (class_type, TYPE_UNQUALIFIED);
@@ -26484,8 +26501,8 @@ cp_parser_class_specifier (cp_parser* parser)
 	}
       vec_safe_truncate (unparsed_contracts, 0);
 
-      current_class_ptr = save_ccp;
-      current_class_ref = save_ccr;
+      current_class_ptr = NULL_TREE;
+      current_class_ref = NULL_TREE;
       if (pushed_scope)
 	pop_scope (pushed_scope);
 
@@ -26517,6 +26534,8 @@ cp_parser_class_specifier (cp_parser* parser)
     = saved_num_template_parameter_lists;
   parser->in_unbraced_linkage_specification_p
     = saved_in_unbraced_linkage_specification_p;
+  current_class_ptr = saved_ccp;
+  current_class_ref = saved_ccr;
 
   return type;
 }
@@ -33440,10 +33459,12 @@ cp_parser_set_decl_spec_type (cp_decl_specifier_seq *decl_specs,
      C++-safe.  */
   if (decl_spec_seq_has_spec_p (decl_specs, ds_typedef)
       && !type_definition_p
+      && TYPE_P (type_spec)
       && (type_spec == boolean_type_node
 	  || type_spec == char8_type_node
 	  || type_spec == char16_type_node
 	  || type_spec == char32_type_node
+	  || extended_float_type_p (type_spec)
 	  || type_spec == wchar_type_node)
       && (decl_specs->type
 	  || decl_spec_seq_has_spec_p (decl_specs, ds_long)
@@ -34473,14 +34494,32 @@ class_decl_loc_t::diag_mismatched_tags (tree type_decl)
 	 be (and inevitably is) at index zero.  */
       tree spec = specialization_of (type);
       cdlguide = class2loc.get (spec);
+      /* It's possible that we didn't find SPEC.  Consider:
+
+	   template<typename T> struct A {
+	     template<typename U> struct W { };
+	   };
+	   struct A<int>::W<int> w; // #1
+
+	 where while parsing A and #1 we've stashed
+	   A<T>
+	   A<T>::W<U>
+	   A<int>::W<int>
+	 into CLASS2LOC.  If TYPE is A<int>::W<int>, specialization_of
+	 will yield A<int>::W<U> which may be in CLASS2LOC if we had
+	 an A<int> class specialization, but otherwise won't be in it.
+	 So try to look up A<T>::W<U>.  */
+      if (!cdlguide)
+	{
+	  spec = DECL_TEMPLATE_RESULT (most_general_template (spec));
+	  cdlguide = class2loc.get (spec);
+	}
+      /* Now we really should have found something.  */
       gcc_assert (cdlguide != NULL);
     }
-  else
-    {
-      /* Skip declarations that consistently use the same class-key.  */
-      if (def_class_key != none_type)
-	return;
-    }
+  /* Skip declarations that consistently use the same class-key.  */
+  else if (def_class_key != none_type)
+    return;
 
   /* Set if a definition for the class has been seen.  */
   const bool def_p = cdlguide->def_p ();
@@ -43312,7 +43351,9 @@ cp_convert_omp_range_for (tree &this_pre_body, vec<tree, va_gc> *for_block,
 	     name but the DECL_VALUE_EXPR will be dependent.  Hide those
 	     from folding of other loop initializers e.g. for warning
 	     purposes until cp_finish_omp_range_for.  */
-	  gcc_checking_assert (DECL_HAS_VALUE_EXPR_P (decomp_first_name));
+	  gcc_checking_assert (DECL_HAS_VALUE_EXPR_P (decomp_first_name)
+			       || (TREE_TYPE (decomp_first_name)
+				   == error_mark_node));
 	  DECL_HAS_VALUE_EXPR_P (decomp_first_name) = 0;
 	}
       TREE_VEC_ELT (v, i + 3) = decomp_first_name;
@@ -43345,7 +43386,8 @@ cp_finish_omp_range_for (tree orig, tree begin)
 	  tree d = decomp_first_name;
 	  for (unsigned i = 0; i < decomp_cnt; i++)
 	    {
-	      DECL_HAS_VALUE_EXPR_P (d) = 1;
+	      if (TREE_TYPE (d) != error_mark_node)
+		DECL_HAS_VALUE_EXPR_P (d) = 1;
 	      d = DECL_CHAIN (d);
 	    }
 	}

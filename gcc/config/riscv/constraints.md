@@ -83,6 +83,14 @@
   (and (match_code "const_int")
        (match_test "SINGLE_BIT_MASK_OPERAND (~ival)")))
 
+(define_constraint "D03"
+  "0, 1, 2 or 3 immediate"
+  (match_test "IN_RANGE (ival, 0, 3)"))
+
+(define_constraint "DsA"
+  "0 - 10 immediate"
+  (match_test "IN_RANGE (ival, 0, 10)"))
+
 ;; Floating-point constant +0.0, used for FCVT-based moves when FMV is
 ;; not available in RV32.
 (define_constraint "G"
@@ -162,7 +170,21 @@
  (and (match_code "const_vector")
       (match_test "op == CONSTM1_RTX (GET_MODE (op))")))
 
+(define_constraint "Wb1"
+  "@internal
+ A constraint that matches a BOOL vector of {...,0,...0,1}"
+ (and (match_code "const_vector")
+      (match_test "rtx_equal_p (op, riscv_vector::gen_scalar_move_mask (GET_MODE (op)))")))
+
 (define_memory_constraint "Wdm"
   "Vector duplicate memory operand"
   (and (match_code "mem")
        (match_code "reg" "0")))
+
+;; Vendor ISA extension constraints.
+
+(define_register_constraint "th_f_fmv" "TARGET_XTHEADFMV ? FP_REGS : NO_REGS"
+  "A floating-point register for XTheadFmv.")
+
+(define_register_constraint "th_r_fmv" "TARGET_XTHEADFMV ? GR_REGS : NO_REGS"
+  "An integer register for XTheadFmv.")

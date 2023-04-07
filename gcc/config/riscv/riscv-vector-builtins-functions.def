@@ -36,6 +36,10 @@ along with GCC; see the file COPYING3. If not see
 #define DEF_RVV_FUNCTION(NAME, SHAPE, PREDS, OPS_INFO)
 #endif
 
+/* Internal helper functions for gimple fold use.  */
+DEF_RVV_FUNCTION (read_vl, read_vl, none_preds, p_none_void_ops)
+DEF_RVV_FUNCTION (vlenb, vlenb, none_preds, ul_none_void_ops)
+
 /* 6. Configuration-Setting Instructions.  */
 
 DEF_RVV_FUNCTION (vsetvl, vsetvl, none_preds, i_none_size_size_ops)
@@ -54,24 +58,26 @@ DEF_RVV_FUNCTION (vlse, loadstore, full_preds, all_v_scalar_const_ptr_ptrdiff_op
 DEF_RVV_FUNCTION (vsse, loadstore, none_m_preds, all_v_scalar_ptr_ptrdiff_ops)
 
 // 7.6. Vector Indexed Instructions
-DEF_RVV_FUNCTION (vluxei8, indexed_loadstore, full_preds, all_v_scalar_const_ptr_uint8_index_ops)
-DEF_RVV_FUNCTION (vluxei16, indexed_loadstore, full_preds, all_v_scalar_const_ptr_uint16_index_ops)
-DEF_RVV_FUNCTION (vluxei32, indexed_loadstore, full_preds, all_v_scalar_const_ptr_uint32_index_ops)
-DEF_RVV_FUNCTION (vluxei64, indexed_loadstore, full_preds, all_v_scalar_const_ptr_uint64_index_ops)
-DEF_RVV_FUNCTION (vloxei8, indexed_loadstore, full_preds, all_v_scalar_const_ptr_uint8_index_ops)
-DEF_RVV_FUNCTION (vloxei16, indexed_loadstore, full_preds, all_v_scalar_const_ptr_uint16_index_ops)
-DEF_RVV_FUNCTION (vloxei32, indexed_loadstore, full_preds, all_v_scalar_const_ptr_uint32_index_ops)
-DEF_RVV_FUNCTION (vloxei64, indexed_loadstore, full_preds, all_v_scalar_const_ptr_uint64_index_ops)
-DEF_RVV_FUNCTION (vsuxei8, indexed_loadstore, none_m_preds, all_v_scalar_ptr_uint8_index_ops)
-DEF_RVV_FUNCTION (vsuxei16, indexed_loadstore, none_m_preds, all_v_scalar_ptr_uint16_index_ops)
-DEF_RVV_FUNCTION (vsuxei32, indexed_loadstore, none_m_preds, all_v_scalar_ptr_uint32_index_ops)
-DEF_RVV_FUNCTION (vsuxei64, indexed_loadstore, none_m_preds, all_v_scalar_ptr_uint64_index_ops)
-DEF_RVV_FUNCTION (vsoxei8, indexed_loadstore, none_m_preds, all_v_scalar_ptr_uint8_index_ops)
-DEF_RVV_FUNCTION (vsoxei16, indexed_loadstore, none_m_preds, all_v_scalar_ptr_uint16_index_ops)
-DEF_RVV_FUNCTION (vsoxei32, indexed_loadstore, none_m_preds, all_v_scalar_ptr_uint32_index_ops)
-DEF_RVV_FUNCTION (vsoxei64, indexed_loadstore, none_m_preds, all_v_scalar_ptr_uint64_index_ops)
+DEF_RVV_FUNCTION (vluxei8, indexed_loadstore, full_preds, all_v_scalar_const_ptr_eew8_index_ops)
+DEF_RVV_FUNCTION (vluxei16, indexed_loadstore, full_preds, all_v_scalar_const_ptr_eew16_index_ops)
+DEF_RVV_FUNCTION (vluxei32, indexed_loadstore, full_preds, all_v_scalar_const_ptr_eew32_index_ops)
+DEF_RVV_FUNCTION (vluxei64, indexed_loadstore, full_preds, all_v_scalar_const_ptr_eew64_index_ops)
+DEF_RVV_FUNCTION (vloxei8, indexed_loadstore, full_preds, all_v_scalar_const_ptr_eew8_index_ops)
+DEF_RVV_FUNCTION (vloxei16, indexed_loadstore, full_preds, all_v_scalar_const_ptr_eew16_index_ops)
+DEF_RVV_FUNCTION (vloxei32, indexed_loadstore, full_preds, all_v_scalar_const_ptr_eew32_index_ops)
+DEF_RVV_FUNCTION (vloxei64, indexed_loadstore, full_preds, all_v_scalar_const_ptr_eew64_index_ops)
+DEF_RVV_FUNCTION (vsuxei8, indexed_loadstore, none_m_preds, all_v_scalar_ptr_eew8_index_ops)
+DEF_RVV_FUNCTION (vsuxei16, indexed_loadstore, none_m_preds, all_v_scalar_ptr_eew16_index_ops)
+DEF_RVV_FUNCTION (vsuxei32, indexed_loadstore, none_m_preds, all_v_scalar_ptr_eew32_index_ops)
+DEF_RVV_FUNCTION (vsuxei64, indexed_loadstore, none_m_preds, all_v_scalar_ptr_eew64_index_ops)
+DEF_RVV_FUNCTION (vsoxei8, indexed_loadstore, none_m_preds, all_v_scalar_ptr_eew8_index_ops)
+DEF_RVV_FUNCTION (vsoxei16, indexed_loadstore, none_m_preds, all_v_scalar_ptr_eew16_index_ops)
+DEF_RVV_FUNCTION (vsoxei32, indexed_loadstore, none_m_preds, all_v_scalar_ptr_eew32_index_ops)
+DEF_RVV_FUNCTION (vsoxei64, indexed_loadstore, none_m_preds, all_v_scalar_ptr_eew64_index_ops)
 
-// TODO: 7.7. Unit-stride Fault-Only-First Loads
+// 7.7. Unit-stride Fault-Only-First Loads
+DEF_RVV_FUNCTION (vleff, fault_load, full_preds, all_v_scalar_const_ptr_size_ptr_ops)
+
 // TODO: 7.8. Vector Load/Store Segment Instructions
 
 /* 11. Vector Integer Arithmetic Instructions.  */
@@ -464,6 +470,67 @@ DEF_RVV_FUNCTION (viota, mask_alu, full_preds, u_vm_ops)
 // 15.9. Vector Element Index Instruction
 DEF_RVV_FUNCTION (vid, alu, full_preds, u_v_ops)
 
-/* TODO: 16. Vector Permutation Instructions.  */
+/* 16. Vector Permutation Instructions.  */
+
+// 16.1. Integer Scalar Move Instructions
+DEF_RVV_FUNCTION (vmv_x, scalar_move, none_preds, iu_x_s_ops)
+DEF_RVV_FUNCTION (vmv_s, move, none_tu_preds, iu_s_x_ops)
+
+// 16.2. Floating-Point Scalar Move Instructions
+DEF_RVV_FUNCTION (vfmv_f, scalar_move, none_preds, f_f_s_ops)
+DEF_RVV_FUNCTION (vfmv_s, move, none_tu_preds, f_s_f_ops)
+
+// 16.3. Vector Slide Instructions
+DEF_RVV_FUNCTION (vslideup, alu, full_preds, all_vvvx_ops)
+DEF_RVV_FUNCTION (vslidedown, alu, full_preds, all_vvx_ops)
+DEF_RVV_FUNCTION (vslide1up, alu, full_preds, iu_vvx_ops)
+DEF_RVV_FUNCTION (vslide1down, alu, full_preds, iu_vvx_ops)
+DEF_RVV_FUNCTION (vfslide1up, alu, full_preds, f_vvf_ops)
+DEF_RVV_FUNCTION (vfslide1down, alu, full_preds, f_vvf_ops)
+
+// 16.4. Vector Register Gather Instructions
+DEF_RVV_FUNCTION (vrgather, alu, full_preds, all_gather_vvv_ops)
+DEF_RVV_FUNCTION (vrgather, alu, full_preds, all_gather_vvx_ops)
+DEF_RVV_FUNCTION (vrgatherei16, alu, full_preds, all_gatherei16_vvv_ops)
+
+// 16.5. Vector Compress Instruction
+DEF_RVV_FUNCTION (vcompress, alu, none_tu_preds, all_vvm_ops)
+
+/* Miscellaneous Vector Functions.  */
+DEF_RVV_FUNCTION (vundefined, vundefined, none_preds, all_none_void_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, i_v_u_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, u_v_i_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, f_v_i_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, f_v_u_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, i_v_f_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, u_v_f_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, iu_v_eew8_interpret_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, iu_v_eew16_interpret_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, iu_v_eew32_interpret_ops)
+DEF_RVV_FUNCTION (vreinterpret, misc, none_preds, iu_v_eew64_interpret_ops)
+DEF_RVV_FUNCTION (vlmul_ext, misc, none_preds, all_v_vlmul_ext_x2_ops)
+DEF_RVV_FUNCTION (vlmul_ext, misc, none_preds, all_v_vlmul_ext_x4_ops)
+DEF_RVV_FUNCTION (vlmul_ext, misc, none_preds, all_v_vlmul_ext_x8_ops)
+DEF_RVV_FUNCTION (vlmul_ext, misc, none_preds, all_v_vlmul_ext_x16_ops)
+DEF_RVV_FUNCTION (vlmul_ext, misc, none_preds, all_v_vlmul_ext_x32_ops)
+DEF_RVV_FUNCTION (vlmul_ext, misc, none_preds, all_v_vlmul_ext_x64_ops)
+DEF_RVV_FUNCTION (vlmul_trunc, misc, none_preds, all_v_vlmul_trunc_x2_ops)
+DEF_RVV_FUNCTION (vlmul_trunc, misc, none_preds, all_v_vlmul_trunc_x4_ops)
+DEF_RVV_FUNCTION (vlmul_trunc, misc, none_preds, all_v_vlmul_trunc_x8_ops)
+DEF_RVV_FUNCTION (vlmul_trunc, misc, none_preds, all_v_vlmul_trunc_x16_ops)
+DEF_RVV_FUNCTION (vlmul_trunc, misc, none_preds, all_v_vlmul_trunc_x32_ops)
+DEF_RVV_FUNCTION (vlmul_trunc, misc, none_preds, all_v_vlmul_trunc_x64_ops)
+DEF_RVV_FUNCTION (vset, vset, none_preds, all_v_vset_lmul1_x2_ops)
+DEF_RVV_FUNCTION (vset, vset, none_preds, all_v_vset_lmul1_x4_ops)
+DEF_RVV_FUNCTION (vset, vset, none_preds, all_v_vset_lmul1_x8_ops)
+DEF_RVV_FUNCTION (vset, vset, none_preds, all_v_vset_lmul2_x2_ops)
+DEF_RVV_FUNCTION (vset, vset, none_preds, all_v_vset_lmul2_x4_ops)
+DEF_RVV_FUNCTION (vset, vset, none_preds, all_v_vset_lmul4_x2_ops)
+DEF_RVV_FUNCTION (vget, vget, none_preds, all_v_vget_lmul1_x2_ops)
+DEF_RVV_FUNCTION (vget, vget, none_preds, all_v_vget_lmul1_x4_ops)
+DEF_RVV_FUNCTION (vget, vget, none_preds, all_v_vget_lmul1_x8_ops)
+DEF_RVV_FUNCTION (vget, vget, none_preds, all_v_vget_lmul2_x2_ops)
+DEF_RVV_FUNCTION (vget, vget, none_preds, all_v_vget_lmul2_x4_ops)
+DEF_RVV_FUNCTION (vget, vget, none_preds, all_v_vget_lmul4_x2_ops)
 
 #undef DEF_RVV_FUNCTION

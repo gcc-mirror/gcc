@@ -207,6 +207,8 @@ extern(C++, `ns1`)
 
 extern(C++)
 {
+    // https://issues.dlang.org/show_bug.cgi?id=19563
+
     struct SmallStruct
     {
         int i;
@@ -219,6 +221,50 @@ extern(C++)
         assert(p.i == 62);
     }
 }
+
+/*********************************************/
+// https://issues.dlang.org/show_bug.cgi?id=23195
+
+extern (C++)
+{
+    struct FF
+    {
+        float x, y;
+
+        ~this() { }
+    }
+
+    float draw(FF min, FF max);
+
+    void test23195()
+    {
+        FF a = { 1, 2 };
+        FF b = { 3, 4 };
+        float f = draw(a, b);
+        assert(f == 1234);
+    }
+
+    /*********************/
+
+    struct FF2
+    {
+        float x, y;
+
+        this(int i) { }
+    }
+
+    float draw2(FF2 min, FF2 max);
+
+    void test23195_2()
+    {
+        FF2 a; a.x = 1; a.y = 2;
+        FF2 b; b.x = 3; b.y = 4;
+        float f = draw2(a, b);
+        assert(f == 1234);
+    }
+}
+
+/*********************************************/
 
 void main()
 {
@@ -268,4 +314,6 @@ else
         doConsume2(sd);
         assert(Sdtor.counter == 2);
     }
+    test23195();
+    test23195_2();
 }

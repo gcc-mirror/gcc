@@ -1,0 +1,326 @@
+
+@example
+DEFINITION MODULE Builtins ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+(* floating point intrinsic procedure functions *)
+
+@findex isfinitef
+PROCEDURE __BUILTIN__ isfinitef (x: SHORTREAL) : INTEGER ;
+@findex isfinite
+PROCEDURE __BUILTIN__ isfinite (x: REAL) : INTEGER ;
+@findex isfinitel
+PROCEDURE __BUILTIN__ isfinitel (x: LONGREAL) : INTEGER ;
+
+@findex sinf
+PROCEDURE __BUILTIN__ sinf (x: SHORTREAL) : SHORTREAL ;
+@findex sin
+PROCEDURE __BUILTIN__ sin (x: REAL) : REAL ;
+@findex sinl
+PROCEDURE __BUILTIN__ sinl (x: LONGREAL) : LONGREAL ;
+
+@findex cosf
+PROCEDURE __BUILTIN__ cosf (x: SHORTREAL) : SHORTREAL ;
+@findex cos
+PROCEDURE __BUILTIN__ cos (x: REAL) : REAL ;
+@findex cosl
+PROCEDURE __BUILTIN__ cosl (x: LONGREAL) : LONGREAL ;
+
+@findex sqrtf
+PROCEDURE __BUILTIN__ sqrtf (x: SHORTREAL) : SHORTREAL ;
+@findex sqrt
+PROCEDURE __BUILTIN__ sqrt (x: REAL) : REAL ;
+@findex sqrtl
+PROCEDURE __BUILTIN__ sqrtl (x: LONGREAL) : LONGREAL ;
+
+@findex atan2f
+PROCEDURE __BUILTIN__ atan2f (x, y: SHORTREAL) : SHORTREAL ;
+@findex atan2
+PROCEDURE __BUILTIN__ atan2 (x, y: REAL) : REAL ;
+@findex atan2l
+PROCEDURE __BUILTIN__ atan2l (x, y: LONGREAL) : LONGREAL ;
+
+@findex fabsf
+PROCEDURE __BUILTIN__ fabsf (x: SHORTREAL) : SHORTREAL ;
+@findex fabs
+PROCEDURE __BUILTIN__ fabs (x: REAL) : REAL ;
+@findex fabsl
+PROCEDURE __BUILTIN__ fabsl (x: LONGREAL) : LONGREAL ;
+
+@findex logf
+PROCEDURE __BUILTIN__ logf (x: SHORTREAL) : SHORTREAL ;
+@findex log
+PROCEDURE __BUILTIN__ log (x: REAL) : REAL ;
+@findex logl
+PROCEDURE __BUILTIN__ logl (x: LONGREAL) : LONGREAL ;
+
+@findex expf
+PROCEDURE __BUILTIN__ expf (x: SHORTREAL) : SHORTREAL ;
+@findex exp
+PROCEDURE __BUILTIN__ exp (x: REAL) : REAL ;
+@findex expl
+PROCEDURE __BUILTIN__ expl (x: LONGREAL) : LONGREAL ;
+
+@findex log10f
+PROCEDURE __BUILTIN__ log10f (x: SHORTREAL) : SHORTREAL ;
+@findex log10
+PROCEDURE __BUILTIN__ log10 (x: REAL) : REAL ;
+@findex log10l
+PROCEDURE __BUILTIN__ log10l (x: LONGREAL) : LONGREAL ;
+
+@findex exp10f
+PROCEDURE __BUILTIN__ exp10f (x: SHORTREAL) : SHORTREAL ;
+@findex exp10
+PROCEDURE __BUILTIN__ exp10 (x: REAL) : REAL ;
+@findex exp10l
+PROCEDURE __BUILTIN__ exp10l (x: LONGREAL) : LONGREAL ;
+
+@findex ilogbf
+PROCEDURE __BUILTIN__ ilogbf (x: SHORTREAL) : INTEGER ;
+@findex ilogb
+PROCEDURE __BUILTIN__ ilogb (x: REAL) : INTEGER ;
+@findex ilogbl
+PROCEDURE __BUILTIN__ ilogbl (x: LONGREAL) : INTEGER ;
+
+@findex huge_val
+PROCEDURE __BUILTIN__ huge_val () : REAL ;
+@findex huge_valf
+PROCEDURE __BUILTIN__ huge_valf () : SHORTREAL ;
+@findex huge_vall
+PROCEDURE __BUILTIN__ huge_vall () : LONGREAL ;
+
+@findex modf
+PROCEDURE __BUILTIN__ modf (x: REAL; VAR y: REAL) : REAL ;
+@findex modff
+PROCEDURE __BUILTIN__ modff (x: SHORTREAL;
+                             VAR y: SHORTREAL) : SHORTREAL ;
+@findex modfl
+PROCEDURE __BUILTIN__ modfl (x: LONGREAL; VAR y: LONGREAL) : LONGREAL ;
+
+@findex signbit
+PROCEDURE __BUILTIN__ signbit (r: REAL) : INTEGER ;
+@findex signbitf
+PROCEDURE __BUILTIN__ signbitf (s: SHORTREAL) : INTEGER ;
+@findex signbitl
+PROCEDURE __BUILTIN__ signbitl (l: LONGREAL) : INTEGER ;
+
+@findex nextafter
+PROCEDURE __BUILTIN__ nextafter (x, y: REAL) : REAL ;
+@findex nextafterf
+PROCEDURE __BUILTIN__ nextafterf (x, y: SHORTREAL) : SHORTREAL ;
+@findex nextafterl
+PROCEDURE __BUILTIN__ nextafterl (x, y: LONGREAL) : LONGREAL ;
+
+@findex nexttoward
+PROCEDURE __BUILTIN__ nexttoward (x, y: REAL) : LONGREAL ;
+@findex nexttowardf
+PROCEDURE __BUILTIN__ nexttowardf (x, y: SHORTREAL) : LONGREAL ;
+@findex nexttowardl
+PROCEDURE __BUILTIN__ nexttowardl (x, y: LONGREAL) : LONGREAL ;
+
+@findex scalbln
+PROCEDURE __BUILTIN__ scalbln (x: REAL; n: LONGINT) : REAL ;
+@findex scalblnf
+PROCEDURE __BUILTIN__ scalblnf (x: SHORTREAL; n: LONGINT) : SHORTREAL ;
+@findex scalblnl
+PROCEDURE __BUILTIN__ scalblnl (x: LONGREAL; n: LONGINT) : LONGREAL ;
+
+@findex scalbn
+PROCEDURE __BUILTIN__ scalbn (x: REAL; n: INTEGER) : REAL ;
+@findex scalbnf
+PROCEDURE __BUILTIN__ scalbnf (x: SHORTREAL; n: INTEGER) : SHORTREAL ;
+@findex scalbnl
+PROCEDURE __BUILTIN__ scalbnl (x: LONGREAL; n: INTEGER) : LONGREAL ;
+
+(* complex arithmetic intrincic procedure functions *)
+
+@findex cabsf
+PROCEDURE __BUILTIN__ cabsf (z: SHORTCOMPLEX) : SHORTREAL ;
+@findex cabs
+PROCEDURE __BUILTIN__ cabs (z: COMPLEX) : REAL ;
+@findex cabsl
+PROCEDURE __BUILTIN__ cabsl (z: LONGCOMPLEX) : LONGREAL ;
+
+@findex cargf
+PROCEDURE __BUILTIN__ cargf (z: SHORTCOMPLEX) : SHORTREAL ;
+@findex carg
+PROCEDURE __BUILTIN__ carg (z: COMPLEX) : REAL ;
+@findex cargl
+PROCEDURE __BUILTIN__ cargl (z: LONGCOMPLEX) : LONGREAL ;
+
+@findex conjf
+PROCEDURE __BUILTIN__ conjf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+@findex conj
+PROCEDURE __BUILTIN__ conj (z: COMPLEX) : COMPLEX ;
+@findex conjl
+PROCEDURE __BUILTIN__ conjl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+@findex cpowerf
+PROCEDURE __BUILTIN__ cpowerf (base: SHORTCOMPLEX;
+                               exp: SHORTREAL) : SHORTCOMPLEX ;
+@findex cpower
+PROCEDURE __BUILTIN__ cpower (base: COMPLEX; exp: REAL) : COMPLEX ;
+@findex cpowerl
+PROCEDURE __BUILTIN__ cpowerl (base: LONGCOMPLEX;
+                               exp: LONGREAL) : LONGCOMPLEX ;
+
+@findex csqrtf
+PROCEDURE __BUILTIN__ csqrtf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+@findex csqrt
+PROCEDURE __BUILTIN__ csqrt (z: COMPLEX) : COMPLEX ;
+@findex csqrtl
+PROCEDURE __BUILTIN__ csqrtl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+@findex cexpf
+PROCEDURE __BUILTIN__ cexpf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+@findex cexp
+PROCEDURE __BUILTIN__ cexp (z: COMPLEX) : COMPLEX ;
+@findex cexpl
+PROCEDURE __BUILTIN__ cexpl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+@findex clnf
+PROCEDURE __BUILTIN__ clnf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+@findex cln
+PROCEDURE __BUILTIN__ cln (z: COMPLEX) : COMPLEX ;
+@findex clnl
+PROCEDURE __BUILTIN__ clnl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+@findex csinf
+PROCEDURE __BUILTIN__ csinf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+@findex csin
+PROCEDURE __BUILTIN__ csin (z: COMPLEX) : COMPLEX ;
+@findex csinl
+PROCEDURE __BUILTIN__ csinl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+@findex ccosf
+PROCEDURE __BUILTIN__ ccosf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+@findex ccos
+PROCEDURE __BUILTIN__ ccos (z: COMPLEX) : COMPLEX ;
+@findex ccosl
+PROCEDURE __BUILTIN__ ccosl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+@findex ctanf
+PROCEDURE __BUILTIN__ ctanf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+@findex ctan
+PROCEDURE __BUILTIN__ ctan (z: COMPLEX) : COMPLEX ;
+@findex ctanl
+PROCEDURE __BUILTIN__ ctanl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+@findex carcsinf
+PROCEDURE __BUILTIN__ carcsinf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+@findex carcsin
+PROCEDURE __BUILTIN__ carcsin (z: COMPLEX) : COMPLEX ;
+@findex carcsinl
+PROCEDURE __BUILTIN__ carcsinl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+@findex carccosf
+PROCEDURE __BUILTIN__ carccosf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+@findex carccos
+PROCEDURE __BUILTIN__ carccos (z: COMPLEX) : COMPLEX ;
+@findex carccosl
+PROCEDURE __BUILTIN__ carccosl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+@findex carctanf
+PROCEDURE __BUILTIN__ carctanf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
+@findex carctan
+PROCEDURE __BUILTIN__ carctan (z: COMPLEX) : COMPLEX ;
+@findex carctanl
+PROCEDURE __BUILTIN__ carctanl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+
+(* memory and string intrincic procedure functions *)
+
+@findex alloca
+PROCEDURE __BUILTIN__ alloca (i: CARDINAL) : ADDRESS ;
+@findex memcpy
+PROCEDURE __BUILTIN__ memcpy (dest, src: ADDRESS;
+                              nbytes: CARDINAL) : ADDRESS ;
+@findex index
+PROCEDURE __BUILTIN__ index (s: ADDRESS; c: INTEGER) : ADDRESS ;
+@findex rindex
+PROCEDURE __BUILTIN__ rindex (s: ADDRESS; c: INTEGER) : ADDRESS ;
+@findex memcmp
+PROCEDURE __BUILTIN__ memcmp (s1, s2: ADDRESS;
+                              nbytes: CARDINAL) : INTEGER ;
+@findex memset
+PROCEDURE __BUILTIN__ memset (s: ADDRESS; c: INTEGER;
+                              nbytes: CARDINAL) : ADDRESS ;
+@findex memmove
+PROCEDURE __BUILTIN__ memmove (s1, s2: ADDRESS;
+                               nbytes: CARDINAL) : ADDRESS ;
+@findex strcat
+PROCEDURE __BUILTIN__ strcat (dest, src: ADDRESS) : ADDRESS ;
+@findex strncat
+PROCEDURE __BUILTIN__ strncat (dest, src: ADDRESS;
+                               nbytes: CARDINAL) : ADDRESS ;
+@findex strcpy
+PROCEDURE __BUILTIN__ strcpy (dest, src: ADDRESS) : ADDRESS ;
+@findex strncpy
+PROCEDURE __BUILTIN__ strncpy (dest, src: ADDRESS;
+                               nbytes: CARDINAL) : ADDRESS ;
+@findex strcmp
+PROCEDURE __BUILTIN__ strcmp (s1, s2: ADDRESS) : INTEGER ;
+@findex strncmp
+PROCEDURE __BUILTIN__ strncmp (s1, s2: ADDRESS;
+                               nbytes: CARDINAL) : INTEGER ;
+@findex strlen
+PROCEDURE __BUILTIN__ strlen (s: ADDRESS) : INTEGER ;
+@findex strstr
+PROCEDURE __BUILTIN__ strstr (haystack, needle: ADDRESS) : ADDRESS ;
+@findex strpbrk
+PROCEDURE __BUILTIN__ strpbrk (s, accept: ADDRESS) : ADDRESS ;
+@findex strspn
+PROCEDURE __BUILTIN__ strspn (s, accept: ADDRESS) : CARDINAL ;
+@findex strcspn
+PROCEDURE __BUILTIN__ strcspn (s, accept: ADDRESS) : CARDINAL ;
+@findex strchr
+PROCEDURE __BUILTIN__ strchr (s: ADDRESS; c: INTEGER) : ADDRESS ;
+@findex strrchr
+PROCEDURE __BUILTIN__ strrchr (s: ADDRESS; c: INTEGER) : ADDRESS ;
+
+(*
+   longjmp - this GCC builtin restricts the val to always 1.
+*)
+(* do not use these two builtins, as gcc, only really
+   anticipates that the Ada front end should use them
+   and it only uses them in its runtime exception handling.
+   We leave them here in the hope that someday they will
+   behave more like their libc counterparts.  *)
+
+@findex longjmp
+PROCEDURE __BUILTIN__ longjmp (env: ADDRESS; val: INTEGER) ;
+@findex setjmp
+PROCEDURE __BUILTIN__ setjmp (env: ADDRESS) : INTEGER ;
+
+
+(*
+   frame_address - returns the address of the frame.
+                   The current frame is obtained if level is 0,
+                   the next level up if level is 1 etc.
+*)
+
+@findex frame_address
+PROCEDURE __BUILTIN__ frame_address (level: CARDINAL) : ADDRESS ;
+
+
+(*
+   return_address - returns the return address of function.
+                    The current function return address is
+                    obtained if level is 0,
+                    the next level up if level is 1 etc.
+*)
+
+@findex return_address
+PROCEDURE __BUILTIN__ return_address (level: CARDINAL) : ADDRESS ;
+
+
+(*
+   alloca_trace - this is a no-op which is used for internal debugging.
+*)
+
+@findex alloca_trace
+PROCEDURE alloca_trace (returned: ADDRESS; nBytes: CARDINAL) : ADDRESS ;
+
+
+END Builtins.
+@end example

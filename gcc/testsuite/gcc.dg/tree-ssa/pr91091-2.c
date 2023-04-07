@@ -12,4 +12,4 @@ void swap(struct s* p, struct t* q)
 
 /* The second statement is redundant.  */
 /* { dg-final { scan-tree-dump-times "x = " 1 "fre1" { xfail { ! natural_alignment_32 } } } } */
-/* { dg-final { scan-tree-dump-times " = \[^;\]*x;" 1 "fre1" { xfail { ! natural_alignment_32 } } } } */
+/* { dg-final { scan-tree-dump-times " = \[^;\]*x;" 1 "fre1" } } */

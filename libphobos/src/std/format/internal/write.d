@@ -50,27 +50,6 @@ if (is(BooleanTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
 
 @safe unittest
 {
-    class C1
-    {
-        bool val;
-        alias val this;
-        this(bool v){ val = v; }
-    }
-
-    class C2 {
-        bool val;
-        alias val this;
-        this(bool v){ val = v; }
-        override string toString() const { return "C"; }
-    }
-
-    () @trusted {
-        formatTest(new C1(false), "false");
-        formatTest(new C1(true),  "true");
-        formatTest(new C2(false), "C");
-        formatTest(new C2(true),  "C");
-    } ();
-
     struct S1
     {
         bool val;
@@ -411,26 +390,6 @@ private uint baseOfSpec(in char spec) @safe pure
 
 @safe unittest
 {
-    class C1
-    {
-        long val;
-        alias val this;
-        this(long v){ val = v; }
-    }
-
-    class C2
-    {
-        long val;
-        alias val this;
-        this(long v){ val = v; }
-        override string toString() const { return "C"; }
-    }
-
-    () @trusted {
-        formatTest(new C1(10), "10");
-        formatTest(new C2(10), "C");
-    } ();
-
     struct S1
     {
         long val;
@@ -708,26 +667,6 @@ if (is(FloatingPointTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
 @safe unittest
 {
     formatTest(2.25, "2.25");
-
-    class C1
-    {
-        double val;
-        alias val this;
-        this(double v){ val = v; }
-    }
-
-    class C2
-    {
-        double val;
-        alias val this;
-        this(double v){ val = v; }
-        override string toString() const { return "C"; }
-    }
-
-    () @trusted {
-        formatTest(new C1(2.25), "2.25");
-        formatTest(new C2(2.25), "C");
-    } ();
 
     struct S1
     {
@@ -1078,26 +1017,6 @@ if (is(CharTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
 
 @safe unittest
 {
-    class C1
-    {
-        char val;
-        alias val this;
-        this(char v){ val = v; }
-    }
-
-    class C2
-    {
-        char val;
-        alias val this;
-        this(char v){ val = v; }
-        override string toString() const { return "C"; }
-    }
-
-    () @trusted {
-        formatTest(new C1('c'), "c");
-        formatTest(new C2('c'), "C");
-    } ();
-
     struct S1
     {
         char val;
@@ -1165,26 +1084,6 @@ if (is(StringTypeOf!T) && !is(StaticArrayTypeOf!T) && !is(T == enum) && !hasToSt
 
 @safe unittest
 {
-    // Test for bug 5371 for classes
-    class C1
-    {
-        const string var;
-        alias var this;
-        this(string s){ var = s; }
-    }
-
-    class C2
-    {
-        string var;
-        alias var this;
-        this(string s){ var = s; }
-    }
-
-    () @trusted {
-        formatTest(new C1("c1"), "c1");
-        formatTest(new C2("c2"), "c2");
-    } ();
-
     // Test for bug 5371 for structs
     struct S1
     {
@@ -1204,16 +1103,6 @@ if (is(StringTypeOf!T) && !is(StaticArrayTypeOf!T) && !is(T == enum) && !hasToSt
 
 @safe unittest
 {
-    class C3
-    {
-        string val;
-        alias val this;
-        this(string s){ val = s; }
-        override string toString() const { return "C"; }
-    }
-
-    () @trusted { formatTest(new C3("c3"), "C"); } ();
-
     struct S3
     {
         string val; alias val this;
@@ -1436,36 +1325,6 @@ if (is(DynamicArrayTypeOf!T) && !is(StringTypeOf!T) && !is(T == enum) && !hasToS
     formatTest(S!0b101([0, 1, 2]), "S");                // Test for bug 7628
     formatTest(S!0b110([0, 1, 2]), "S");
     formatTest(S!0b111([0, 1, 2]), "S");
-
-    class C(uint flags)
-    {
-        int[] arr;
-        static if (flags & 1)
-            alias arr this;
-
-        this(int[] a) { arr = a; }
-
-        static if (flags & 2)
-        {
-            @property bool empty() const { return arr.length == 0; }
-            @property int front() const { return arr[0] * 2; }
-            void popFront() { arr = arr[1 .. $]; }
-        }
-
-        static if (flags & 4)
-            override string toString() const { return "C"; }
-    }
-
-    () @trusted {
-        formatTest(new C!0b000([0, 1, 2]), (new C!0b000([])).toString());
-        formatTest(new C!0b001([0, 1, 2]), "[0, 1, 2]");    // Test for bug 7628
-        formatTest(new C!0b010([0, 1, 2]), "[0, 2, 4]");
-        formatTest(new C!0b011([0, 1, 2]), "[0, 2, 4]");
-        formatTest(new C!0b100([0, 1, 2]), "C");
-        formatTest(new C!0b101([0, 1, 2]), "C");            // Test for bug 7628
-        formatTest(new C!0b110([0, 1, 2]), "C");
-        formatTest(new C!0b111([0, 1, 2]), "C");
-    } ();
 }
 
 @safe unittest
@@ -1901,26 +1760,6 @@ if (is(AssocArrayTypeOf!T) && !is(T == enum) && !hasToString!(T, Char))
 
 @safe unittest
 {
-    class C1
-    {
-        int[char] val;
-        alias val this;
-        this(int[char] v){ val = v; }
-    }
-
-    class C2
-    {
-        int[char] val;
-        alias val this;
-        this(int[char] v){ val = v; }
-        override string toString() const { return "C"; }
-    }
-
-    () @trusted {
-        formatTest(new C1(['c':1, 'd':2]), [`['c':1, 'd':2]`, `['d':2, 'c':1]`]);
-        formatTest(new C2(['c':1, 'd':2]), "C");
-    } ();
-
     struct S1
     {
         int[char] val;
@@ -1990,7 +1829,8 @@ enum HasToStringResult
     customPutWriterFormatSpec,
 }
 
-private enum hasPreviewIn = !is(typeof(mixin(q{(in ref int a) => a})));
+private alias DScannerBug895 = int[256];
+private immutable bool hasPreviewIn = ((in DScannerBug895 a) { return __traits(isRef, a); })(DScannerBug895.init);
 
 template hasToString(T, Char)
 {
@@ -3165,18 +3005,6 @@ if (isPointer!T && !is(T == enum) && !hasToString!(T, Char))
 
     S* q = () @trusted { return cast(S*) 0xFFEECCAA; } ();
     formatTest(q, "FFEECCAA");
-}
-
-// https://issues.dlang.org/show_bug.cgi?id=8186
-@system unittest
-{
-    class B
-    {
-        int* a;
-        this() { a = new int; }
-        alias a this;
-    }
-    formatTest(B.init, "null");
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=9336

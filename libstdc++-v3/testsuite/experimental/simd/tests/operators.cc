@@ -211,7 +211,14 @@ template <typename V>
     }
 
     // divides
-    constexpr bool is_iec559 = __GCC_IEC_559 >= 2;
+    constexpr bool is_iec559 =
+#ifdef __GCC_IEC_559
+      __GCC_IEC_559 >= 2;
+#elif defined __STDC_IEC_559__
+      true;
+#else
+      false;
+#endif
     if constexpr (std::is_floating_point_v<T> && !is_iec559)
       { // avoid testing subnormals and expect minor deltas for non-IEC559 float
 	V x = 2;

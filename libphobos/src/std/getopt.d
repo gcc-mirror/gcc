@@ -558,7 +558,7 @@ private template optionValidator(A...)
     import std.format : format;
 
     enum fmt = "getopt validator: %s (at position %d)";
-    enum isReceiver(T) = is(T : U*, U) || (is(T == function)) || (is(T == delegate));
+    enum isReceiver(T) = is(T == U*, U) || (is(T == function)) || (is(T == delegate));
     enum isOptionStr(T) = isSomeString!T || isSomeChar!T;
 
     auto validator()

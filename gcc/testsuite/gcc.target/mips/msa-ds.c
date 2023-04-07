@@ -27,5 +27,9 @@ int __attribute__ ((cold)) bar (v4si v , int a, int b)
    return b + c;
 }
 
-/* { dg-final { scan-assembler-not "foo:.*nop.*jr.*foo," } } */
-/* { dg-final { scan-assembler-not "bar:.*nop.*jr.*bar," } } */
+/* We need to avoid over matching here as we could have other
+   branches with unfilled slots.  So we verify that we do not have
+   an MSA branch with a NOP in its delay slot.  We need to match
+   both forms of the MSA branch that can occur in this test.  */
+/* { dg-final { scan-assembler-not "foo:.*bn\?z.w\[^\\n\\r\]*\\n\\tnop" } } */
+/* { dg-final { scan-assembler-not "bar:.*bn\?z.w\[^\\n\\r\]*\\n\\tnop" } } */

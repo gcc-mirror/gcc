@@ -48,7 +48,7 @@ void test1() {
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/failob2.d(205): Error: variable `failob2.foo4!int.foo4.p` is left dangling at return
+fail_compilation/failob2.d(205): Error: variable `failob2.foo4!int.foo4.p` is not disposed of before return
 fail_compilation/failob2.d(209): Error: template instance `failob2.foo4!int` error instantiating
 ---
 */

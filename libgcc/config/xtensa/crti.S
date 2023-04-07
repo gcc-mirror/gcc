@@ -26,6 +26,12 @@
 
 #include "xtensa-config-builtin.h"
 
+/* An executable stack is *not* required for these functions.  */
+#if defined(__ELF__) && defined(__linux__)
+.section .note.GNU-stack,"",%progbits
+.previous
+#endif
+
 	.section .init
 	.globl _init
 	.type _init,@function

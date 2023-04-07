@@ -1,0 +1,119 @@
+# Expect driver script for GCC Regression Tests
+# Copyright (C) 2023 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This file was written by Gaius Mulley (gaius.mulley@southwales.ac.uk)
+# for GNU Modula-2.
+
+if $tracelevel then {
+    strace $tracelevel
+}
+
+# load support procs
+# load_lib gm2-torture.exp
+load_lib gm2-simple.exp
+
+gm2_init_cor "${srcdir}/${subdir}" -g
+gm2_link_obj "advflex.o AdvCmd.o AdvIntroduction.o AdvMap.o AdvMath.o AdvParse.o AdvSound.o AdvSystem.o AdvTreasure.o AdvUtil.o DrawG.o DrawL.o Lock.o ProcArgs.o Screen.o Window.o SocketControl.o"
+
+set gm2_run_tower_test 0
+
+proc gm2-local-exec { testcase execname mapfile } {
+    global tool;
+    # puts stderr "about to run: ${execname} ${mapfile}"
+
+    set pid [fork]
+    switch $pid {
+	-1 {
+	    puts stderr "fork failed."
+	}
+	0 {
+	    # puts stderr "child running ${execname} ${mapfile}"
+	    set result [gm2_load "$execname" "$mapfile" ""];
+	    exit 0
+	}
+	default {
+	    # puts stderr "parent attempting to connect to the child"
+	    set port 7000;
+	    # wait for 3 seconds before attempting to connect.
+	    sleep 3
+	    # verbose "parent attempting to connect to ${execname} ${mapfile}" 1
+	    if {[catch {set chan [socket 127.0.0.1 ${port}]
+		puts ${chan} "quit\r"
+		flush ${chan}
+		close ${chan} }]} {
+		verbose "parent unable to connect to ${execname} ${mapfile}" 1
+		puts stderr "parent unable to connect to ${execname} ${mapfile}"
+		${tool}_fail ${testcase} ${mapfile}
+            } else {
+		# verbose "parent successfully able to connect to ${execname} ${mapfile}" 1
+		# puts stderr "parent successfully connected to ${execname} ${mapfile}"
+		${tool}_pass ${testcase} ${mapfile}
+	    }
+	    remote_file build delete $execname;
+	    # verbose "killing off child after successful test" 1
+	    puts stderr "parent successfully connected to child"
+	    puts stderr "now tidying up by killing the child"
+	    puts stderr "ignore next warning about sig term"
+	    set res [exec kill ${pid}];
+	}
+    }
+}
+
+# If we want these to be re-built for each torture option we need some different
+# logic.
+gm2_target_compile $srcdir/$subdir/AdvCmd.mod AdvCmd.o object "-c -g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/AdvIntroduction.mod AdvIntroduction.o object "-c -g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/AdvMap.mod AdvMap.o object "-c -g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/AdvMath.mod AdvMath.o object "-c -g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/AdvParse.mod AdvParse.o object "-c -g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/AdvSound.mod AdvSound.o object "-c -g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/AdvSystem.mod AdvSystem.o object "-c -g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/AdvTreasure.mod AdvTreasure.o object "-c -g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/AdvUtil.mod AdvUtil.o object "-c -g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/DrawG.mod DrawG.o object "-c -g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/DrawL.mod DrawL.o object "-c -g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/Lock.mod Lock.o object "-c -g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/ProcArgs.mod ProcArgs.o object "-c -g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/Screen.mod Screen.o object "-c -g -I$srcdir/$subdir/"
+gm2_target_compile $srcdir/$subdir/Window.mod Window.o object "-c -g -I$srcdir/$subdir/"
+
+set output [target_compile $srcdir/$subdir/SocketControl.c SocketControl.o object "-g"]
+set output [target_compile $srcdir/$subdir/advflex.c advflex.o object "-g"]
+
+foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/Dungeon.mod]] {
+    # If we're only testing specific files and this isn't one of them, skip it.
+    if ![runtest_file_p $runtests $testcase] then {
+	continue
+    }
+    set gm2_keep_executable 1
+    if { ${gm2_run_tower_test} } then {
+	gm2-simple-execute $testcase "" ""
+    } else {
+	verbose "not running simple tower execute test (with no map)" 1
+    }
+    set gm2_keep_executable 0
+
+    global tmpdir;
+    set executable $tmpdir/[file tail [file rootname $testcase].x];
+
+    if { ${gm2_run_tower_test} } then {
+        gm2-local-exec ${testcase} ${executable} $srcdir/$subdir/star
+    } else {
+	verbose "not running tower socket test" 1
+    }
+    remote_file build delete ${executable};
+}

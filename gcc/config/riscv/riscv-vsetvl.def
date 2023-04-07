@@ -1,0 +1,513 @@
+/* VSETVL pass def for RISC-V 'V' Extension for GNU compiler.
+   Copyright (C) 2023-2023 Free Software Foundation, Inc.
+   Contributed by Juzhe Zhong (juzhe.zhong@rivai.ai), RiVAI Technologies Ltd.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or(at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY, WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+#ifndef DEF_INCOMPATIBLE_COND
+#define DEF_INCOMPATIBLE_COND(AVL1, SEW1, LMUL1, RATIO1, NONZERO_AVL1,         \
+			      GE_SEW1, TAIL_POLICTY1, MASK_POLICY1, AVL2,      \
+			      SEW2, LMUL2, RATIO2, NONZERO_AVL2, GE_SEW2,      \
+			      TAIL_POLICTY2, MASK_POLICY2, COND)
+#endif
+
+#ifndef DEF_SEW_LMUL_FUSE_RULE
+#define DEF_SEW_LMUL_FUSE_RULE(DEMAND_SEW1, DEMAND_LMUL1, DEMAND_RATIO1,       \
+			       DEMAND_GE_SEW1, DEMAND_SEW2, DEMAND_LMUL2,      \
+			       DEMAND_RATIO2, DEMAND_GE_SEW2, NEW_DEMAND_SEW,  \
+			       NEW_DEMAND_LMUL, NEW_DEMAND_RATIO,              \
+			       NEW_DEMAND_GE_SEW, NEW_SEW, NEW_VLMUL,          \
+			       NEW_RATIO)
+#endif
+
+#ifndef DEF_UNAVAILABLE_COND
+#define DEF_UNAVAILABLE_COND(AVL1, SEW1, LMUL1, RATIO1, NONZERO_AVL1, GE_SEW1, \
+			     TAIL_POLICTY1, MASK_POLICY1, AVL2, SEW2, LMUL2,   \
+			     RATIO2, NONZERO_AVL2, GE_SEW2, TAIL_POLICTY2,     \
+			     MASK_POLICY2, COND)
+#endif
+
+/* Case 1: Demand compatible AVL.  */
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_TRUE, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_FALSE, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_TRUE, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_FALSE, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ incompatible_avl_p)
+
+/* Case 2: Demand same SEW.  */
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_FALSE,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_FALSE,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ different_sew_p)
+
+/* Case 3: Demand same LMUL.  */
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_TRUE, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_TRUE, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ different_lmul_p)
+
+/* Case 4: Demand same RATIO.  */
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_TRUE,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_TRUE,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ different_ratio_p)
+
+/* Case 5: Demand same TAIL_POLICY.  */
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_TRUE, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_TRUE, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ different_tail_policy_p)
+
+/* Case 6: Demand same MASK_POLICY.  */
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_TRUE,
+		       /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_TRUE,
+		       /*COND*/ different_mask_policy_p)
+
+/* Case 7: Demand non zero AVL.  */
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_TRUE, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_TRUE, /*GE_SEW*/ DEMAND_ANY,
+		       DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_TRUE, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_FALSE, /*GE_SEW*/ DEMAND_ANY,
+		       DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ possible_zero_avl_p)
+
+/* Case 8: First SEW/LMUL/GE_SEW <-> Second RATIO/SEW.  */
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_TRUE,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ second_ratio_invalid_for_first_sew_p)
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_TRUE, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_TRUE,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ second_ratio_invalid_for_first_lmul_p)
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_TRUE,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_FALSE,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ second_sew_less_than_first_sew_p)
+
+/* Case 9: First (GE_SEW + LMUL) <-> Second RATIO.  */
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		       /*LMUL*/ DEMAND_TRUE, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_TRUE,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_TRUE,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ second_ratio_less_than_first_ratio_p)
+/* Case 11: First (SEW + LMUL) <-> Second RATIO.  */
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		       /*LMUL*/ DEMAND_TRUE, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_FALSE,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_TRUE,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ different_ratio_p)
+/* Case 13: First (GE_SEW/SEW + RATIO) <-> Second LMUL.  */
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_TRUE,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_TRUE, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ different_lmul_p)
+/* Case 14: First (LMUL + RATIO) <-> Second SEW.  */
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_TRUE, /*RATIO*/ DEMAND_TRUE,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_FALSE,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ different_sew_p)
+/* Case 15: First (LMUL + RATIO) <-> Second GE_SEW.  */
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_TRUE, /*RATIO*/ DEMAND_TRUE,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_TRUE,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ first_sew_less_than_second_sew_p)
+
+/* Case 16: First SEW + Second LMUL <-> First RATIO.  */
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_TRUE,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_FALSE,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_TRUE, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ different_lmul_p)
+/* Case 17: First SEW + Second LMUL <-> Second RATIO.  */
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_FALSE,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_TRUE, /*RATIO*/ DEMAND_TRUE,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ different_sew_p)
+
+/* Case 18: First SEW + Second RATIO <-> First LMUL.  */
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		       /*LMUL*/ DEMAND_TRUE, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_FALSE,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_TRUE,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ different_ratio_p)
+
+/* Case 19: First GE_SEW + Second LMUL <-> First RATIO.  */
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_TRUE,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_FALSE,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_TRUE, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ second_lmul_less_than_first_lmul_p)
+/* Case 20: First GE_SEW + Second LMUL <-> Second RATIO.  */
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_FALSE,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_TRUE, /*RATIO*/ DEMAND_TRUE,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ second_sew_less_than_first_sew_p)
+
+/* Case 21: First GE_SEW + Second RATIO <-> First LMUL.  */
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		       /*LMUL*/ DEMAND_TRUE, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_FALSE,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_TRUE,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ second_ratio_less_than_first_ratio_p)
+
+/* Case 22: First GE_SEW + Second SEW + First LMUL + Second ratio.  */
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_TRUE, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_TRUE,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_TRUE,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_FALSE,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ different_lmul_p)
+
+/* Case 23: First GE_SEW + Second SEW + Second LMUL + First ratio.  */
+DEF_INCOMPATIBLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		       /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_TRUE,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_TRUE,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		       /*LMUL*/ DEMAND_TRUE, /*RATIO*/ DEMAND_ANY,
+		       /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_FALSE,
+		       /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		       /*COND*/ different_ratio_p)
+
+/* Merge rules.  */
+DEF_SEW_LMUL_FUSE_RULE (/*SEW*/ DEMAND_TRUE, /*LMUL*/ DEMAND_FALSE,
+			/*RATIO*/ DEMAND_FALSE, /*GE_SEW*/ DEMAND_TRUE,
+			/*SEW*/ DEMAND_TRUE, /*LMUL*/ DEMAND_FALSE,
+			/*RATIO*/ DEMAND_FALSE, /*GE_SEW*/ DEMAND_TRUE,
+			/*NEW_DEMAND_SEW*/ true,
+			/*NEW_DEMAND_LMUL*/ false,
+			/*NEW_DEMAND_RATIO*/ false,
+			/*NEW_DEMAND_GE_SEW*/ true, greatest_sew, first_vlmul,
+			first_ratio)
+
+DEF_SEW_LMUL_FUSE_RULE (/*SEW*/ DEMAND_TRUE, /*LMUL*/ DEMAND_ANY,
+			/*RATIO*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_FALSE,
+			/*SEW*/ DEMAND_ANY, /*LMUL*/ DEMAND_ANY,
+			/*RATIO*/ DEMAND_TRUE, /*GE_SEW*/ DEMAND_ANY,
+			/*NEW_DEMAND_SEW*/ true,
+			/*NEW_DEMAND_LMUL*/ true,
+			/*NEW_DEMAND_RATIO*/ false,
+			/*NEW_DEMAND_GE_SEW*/ false, first_sew,
+			vlmul_for_first_sew_second_ratio, second_ratio)
+DEF_SEW_LMUL_FUSE_RULE (/*SEW*/ DEMAND_ANY, /*LMUL*/ DEMAND_TRUE,
+			/*RATIO*/ DEMAND_FALSE, /*GE_SEW*/ DEMAND_ANY,
+			/*SEW*/ DEMAND_TRUE, /*LMUL*/ DEMAND_ANY,
+			/*RATIO*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_FALSE,
+			/*NEW_DEMAND_SEW*/ true,
+			/*NEW_DEMAND_LMUL*/ true,
+			/*NEW_DEMAND_RATIO*/ false,
+			/*NEW_DEMAND_GE_SEW*/ false, second_sew, first_vlmul,
+			ratio_for_second_sew_first_vlmul)
+DEF_SEW_LMUL_FUSE_RULE (/*SEW*/ DEMAND_TRUE, /*LMUL*/ DEMAND_FALSE,
+			/*RATIO*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_TRUE,
+			/*SEW*/ DEMAND_FALSE, /*LMUL*/ DEMAND_FALSE,
+			/*RATIO*/ DEMAND_TRUE, /*GE_SEW*/ DEMAND_FALSE,
+			/*NEW_DEMAND_SEW*/ true,
+			/*NEW_DEMAND_LMUL*/ false,
+			/*NEW_DEMAND_RATIO*/ false,
+			/*NEW_DEMAND_GE_SEW*/ true, first_sew,
+			vlmul_for_first_sew_second_ratio, second_ratio)
+DEF_SEW_LMUL_FUSE_RULE (/*SEW*/ DEMAND_TRUE, /*LMUL*/ DEMAND_FALSE,
+			/*RATIO*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_TRUE,
+			/*SEW*/ DEMAND_TRUE, /*LMUL*/ DEMAND_FALSE,
+			/*RATIO*/ DEMAND_TRUE, /*GE_SEW*/ DEMAND_TRUE,
+			/*NEW_DEMAND_SEW*/ true,
+			/*NEW_DEMAND_LMUL*/ false,
+			/*NEW_DEMAND_RATIO*/ true,
+			/*NEW_DEMAND_GE_SEW*/ true, greatest_sew, first_vlmul,
+			second_ratio)
+DEF_SEW_LMUL_FUSE_RULE (/*SEW*/ DEMAND_TRUE, /*LMUL*/ DEMAND_FALSE,
+			/*RATIO*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_TRUE,
+			/*SEW*/ DEMAND_FALSE, /*LMUL*/ DEMAND_TRUE,
+			/*RATIO*/ DEMAND_FALSE, /*GE_SEW*/ DEMAND_FALSE,
+			/*NEW_DEMAND_SEW*/ true,
+			/*NEW_DEMAND_LMUL*/ true,
+			/*NEW_DEMAND_RATIO*/ false,
+			/*NEW_DEMAND_GE_SEW*/ true, first_sew, second_vlmul,
+			second_ratio)
+DEF_SEW_LMUL_FUSE_RULE (/*SEW*/ DEMAND_TRUE, /*LMUL*/ DEMAND_FALSE,
+			/*RATIO*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_TRUE,
+			/*SEW*/ DEMAND_TRUE, /*LMUL*/ DEMAND_TRUE,
+			/*RATIO*/ DEMAND_FALSE, /*GE_SEW*/ DEMAND_FALSE,
+			/*NEW_DEMAND_SEW*/ true,
+			/*NEW_DEMAND_LMUL*/ true,
+			/*NEW_DEMAND_RATIO*/ false,
+			/*NEW_DEMAND_GE_SEW*/ false, second_sew, second_vlmul,
+			second_ratio)
+DEF_SEW_LMUL_FUSE_RULE (/*SEW*/ DEMAND_TRUE, /*LMUL*/ DEMAND_FALSE,
+			/*RATIO*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_TRUE,
+			/*SEW*/ DEMAND_TRUE, /*LMUL*/ DEMAND_TRUE,
+			/*RATIO*/ DEMAND_FALSE, /*GE_SEW*/ DEMAND_TRUE,
+			/*NEW_DEMAND_SEW*/ true,
+			/*NEW_DEMAND_LMUL*/ true,
+			/*NEW_DEMAND_RATIO*/ false,
+			/*NEW_DEMAND_GE_SEW*/ false, greatest_sew, second_vlmul,
+			second_ratio)
+
+DEF_SEW_LMUL_FUSE_RULE (/*SEW*/ DEMAND_TRUE, /*LMUL*/ DEMAND_FALSE,
+			/*RATIO*/ DEMAND_FALSE, /*GE_SEW*/ DEMAND_TRUE,
+			/*SEW*/ DEMAND_TRUE, /*LMUL*/ DEMAND_FALSE,
+			/*RATIO*/ DEMAND_FALSE, /*GE_SEW*/ DEMAND_FALSE,
+			/*NEW_DEMAND_SEW*/ true,
+			/*NEW_DEMAND_LMUL*/ false,
+			/*NEW_DEMAND_RATIO*/ false,
+			/*NEW_DEMAND_GE_SEW*/ false, second_sew, second_vlmul,
+			second_ratio)
+DEF_SEW_LMUL_FUSE_RULE (/*SEW*/ DEMAND_TRUE, /*LMUL*/ DEMAND_TRUE,
+			/*RATIO*/ DEMAND_FALSE, /*GE_SEW*/ DEMAND_TRUE,
+			/*SEW*/ DEMAND_TRUE, /*LMUL*/ DEMAND_FALSE,
+			/*RATIO*/ DEMAND_FALSE, /*GE_SEW*/ DEMAND_FALSE,
+			/*NEW_DEMAND_SEW*/ true,
+			/*NEW_DEMAND_LMUL*/ true,
+			/*NEW_DEMAND_RATIO*/ false,
+			/*NEW_DEMAND_GE_SEW*/ false, second_sew, first_vlmul,
+			second_ratio)
+DEF_SEW_LMUL_FUSE_RULE (/*SEW*/ DEMAND_TRUE, /*LMUL*/ DEMAND_FALSE,
+			/*RATIO*/ DEMAND_TRUE, /*GE_SEW*/ DEMAND_TRUE,
+			/*SEW*/ DEMAND_TRUE, /*LMUL*/ DEMAND_FALSE,
+			/*RATIO*/ DEMAND_FALSE, /*GE_SEW*/ DEMAND_FALSE,
+			/*NEW_DEMAND_SEW*/ true,
+			/*NEW_DEMAND_LMUL*/ false,
+			/*NEW_DEMAND_RATIO*/ true,
+			/*NEW_DEMAND_GE_SEW*/ false, second_sew, first_vlmul,
+			first_ratio)
+
+/* Define the unavailable cases for LCM.  */
+
+/* Case 1: Dem1 (Not demand AVL) is unavailable to Dem2 (Demand AVL).  */
+DEF_UNAVAILABLE_COND (/*AVL*/ DEMAND_FALSE, /*SEW*/ DEMAND_ANY,
+		      /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		      /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		      /*AVL*/ DEMAND_TRUE, /*SEW*/ DEMAND_ANY,
+		      /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		      /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		      /*COND*/ always_unavailable)
+/* Case 2: Dem1 (Demand AVL) is unavailable to Dem2 (Demand normal AVL).  */
+DEF_UNAVAILABLE_COND (/*AVL*/ DEMAND_TRUE, /*SEW*/ DEMAND_ANY,
+		      /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		      /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		      /*AVL*/ DEMAND_TRUE, /*SEW*/ DEMAND_ANY,
+		      /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		      /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		      /*COND*/ avl_unavailable_p)
+
+/* Case 3: Dem1 (Not demand TAIL) is unavailable to Dem2 (Demand TAIL).  */
+DEF_UNAVAILABLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		      /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		      /*TAIL_POLICTY*/ DEMAND_FALSE, /*MASK_POLICY*/ DEMAND_ANY,
+		      /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		      /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		      /*TAIL_POLICTY*/ DEMAND_TRUE, /*MASK_POLICY*/ DEMAND_ANY,
+		      /*COND*/ always_unavailable)
+
+/* Case 4: Dem1 (Not demand MASK) is unavailable to Dem2 (Demand MASK).  */
+DEF_UNAVAILABLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		      /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		      /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_FALSE,
+		      /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		      /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		      /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_TRUE,
+		      /*COND*/ always_unavailable)
+
+/* Case 5: Dem1 (Demand RATIO) is unavailable to Dem2 (Demand SEW/GE_SEW/LMUL).
+ */
+DEF_UNAVAILABLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_FALSE,
+		      /*LMUL*/ DEMAND_FALSE, /*RATIO*/ DEMAND_TRUE,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_FALSE,
+		      /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		      /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		      /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		      /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		      /*COND*/ always_unavailable)
+DEF_UNAVAILABLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_FALSE,
+		      /*LMUL*/ DEMAND_FALSE, /*RATIO*/ DEMAND_TRUE,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_FALSE,
+		      /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		      /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		      /*LMUL*/ DEMAND_TRUE, /*RATIO*/ DEMAND_ANY,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		      /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		      /*COND*/ always_unavailable)
+
+/* Case 6: Dem1 (Demand SEW).  */
+DEF_UNAVAILABLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		      /*LMUL*/ DEMAND_FALSE, /*RATIO*/ DEMAND_FALSE,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_FALSE,
+		      /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		      /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		      /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		      /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		      /*COND*/ sew_unavailable_p)
+
+/* Case 7: Dem1 (Demand LMUL).  */
+DEF_UNAVAILABLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_FALSE,
+		      /*LMUL*/ DEMAND_TRUE, /*RATIO*/ DEMAND_FALSE,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_FALSE,
+		      /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		      /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		      /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		      /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		      /*COND*/ lmul_unavailable_p)
+
+/* Case 8: Dem1 (Demand GE_SEW).  */
+DEF_UNAVAILABLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		      /*LMUL*/ DEMAND_FALSE, /*RATIO*/ DEMAND_FALSE,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_TRUE,
+		      /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		      /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		      /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		      /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		      /*COND*/ ge_sew_unavailable_p)
+
+/* Case 9: Dem1 (Demand GE_SEW + LMUL).  */
+DEF_UNAVAILABLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		      /*LMUL*/ DEMAND_TRUE, /*RATIO*/ DEMAND_FALSE,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_TRUE,
+		      /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		      /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		      /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		      /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		      /*COND*/ ge_sew_lmul_unavailable_p)
+
+/* Case 10: Dem1 (Demand GE_SEW + RATIO).  */
+DEF_UNAVAILABLE_COND (/*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_TRUE,
+		      /*LMUL*/ DEMAND_FALSE, /*RATIO*/ DEMAND_TRUE,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_TRUE,
+		      /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		      /*AVL*/ DEMAND_ANY, /*SEW*/ DEMAND_ANY,
+		      /*LMUL*/ DEMAND_ANY, /*RATIO*/ DEMAND_ANY,
+		      /*NONZERO_AVL*/ DEMAND_ANY, /*GE_SEW*/ DEMAND_ANY,
+		      /*TAIL_POLICTY*/ DEMAND_ANY, /*MASK_POLICY*/ DEMAND_ANY,
+		      /*COND*/ ge_sew_ratio_unavailable_p)
+
+#undef DEF_INCOMPATIBLE_COND
+#undef DEF_SEW_LMUL_FUSE_RULE
+#undef DEF_UNAVAILABLE_COND

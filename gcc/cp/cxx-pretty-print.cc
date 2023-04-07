@@ -2626,7 +2626,10 @@ pp_cxx_trait (cxx_pretty_printer *pp, tree t)
     }
 
   pp_cxx_left_paren (pp);
-  pp->type_id (type1);
+  if (TYPE_P (type1))
+    pp->type_id (type1);
+  else
+    pp->expression (type1);
   if (type2)
     {
       if (TREE_CODE (type2) != TREE_LIST)

@@ -172,8 +172,8 @@ The value of this variable is a pointer to a function that
 @code{obstack} uses when @code{obstack_chunk_alloc} fails to allocate
 memory.  The default action is to print a message and abort.
 You should supply a function that either calls @code{exit}
-(@pxref{Program Termination, , , libc, The GNU C Library Reference Manual}) or @code{longjmp} (@pxref{Non-Local
-Exits, , , libc, The GNU C Library Reference Manual}) and doesn't return.
+(@pxref{Program Termination, , , libc, The GNU C Library Reference Manual}) 
+or @code{longjmp} and doesn't return.
 
 @smallexample
 void my_obstack_alloc_failed (void)

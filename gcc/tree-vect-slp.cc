@@ -5951,8 +5951,6 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
       return true;
     }
 
-  gcc_assert (STMT_SLP_TYPE (stmt_info) != loop_vect);
-
   bool dummy;
   return vect_analyze_stmt (vinfo, stmt_info, &dummy,
 			    node, node_instance, cost_vec);

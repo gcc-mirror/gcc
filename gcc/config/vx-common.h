@@ -69,7 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef WINT_TYPE_SIZE
 #define WINT_TYPE_SIZE WCHAR_TYPE_SIZE
 #undef WINT_TYPE
-#define WINT_TYPE WCHAR_TYPE
+#define WINT_TYPE "wchar_t"
 
 /* ---------------------- Debug and unwind info formats ------------------  */
 

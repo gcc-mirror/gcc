@@ -341,7 +341,8 @@ class region_model
   function * get_current_function () const;
   void pop_frame (tree result_lvalue,
 		  const svalue **out_result,
-		  region_model_context *ctxt);
+		  region_model_context *ctxt,
+		  bool eval_return_svalue = true);
   int get_stack_depth () const;
   const frame_region *get_frame_at_index (int index) const;
 

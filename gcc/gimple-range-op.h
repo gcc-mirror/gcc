@@ -41,6 +41,7 @@ public:
 		 relation_trio = TRIO_VARYING);
 private:
   void maybe_builtin_call ();
+  void maybe_non_standard ();
   gimple *m_stmt;
   tree m_op1, m_op2;
 };

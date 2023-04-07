@@ -44,8 +44,8 @@ See also @ref{Search Path}.
 @end ifset
 @c man begin ENVIRONMENT
 
-@item DEPENDENCIES_OUTPUT
 @cindex dependencies for make as output
+@item DEPENDENCIES_OUTPUT
 If this variable is set, its value specifies how to output
 dependencies for Make based on the non-system header files processed
 by the compiler.  System header files are ignored in the dependency
@@ -67,8 +67,8 @@ the options @option{-MM} and @option{-MF}
 @end ifclear
 with an optional @option{-MT} switch too.
 
-@item SUNPRO_DEPENDENCIES
 @cindex dependencies for make as output
+@item SUNPRO_DEPENDENCIES
 This variable is the same as @env{DEPENDENCIES_OUTPUT} (see above),
 except that system header files are not ignored, so it implies
 @option{-M} rather than @option{-MM}.  However, the dependence on the

@@ -18,10 +18,20 @@ main (int argc, char *argv[])
     devptr[0] = &var;
     devptr[1] = &arr[2];
   }
-
   if (devptr[0] != &var)
     __builtin_abort ();
   if (devptr[1] != &arr[2])
+    __builtin_abort ();
+
+#pragma acc parallel no_create(var, arr[0:N]) copyout(devptr) async
+  {
+    devptr[0] = &arr[N - 2];
+    devptr[1] = &var;
+  }
+#pragma acc wait
+  if (devptr[0] != &arr[N - 2])
+    __builtin_abort ();
+  if (devptr[1] != &var)
     __builtin_abort ();
 
   free (arr);

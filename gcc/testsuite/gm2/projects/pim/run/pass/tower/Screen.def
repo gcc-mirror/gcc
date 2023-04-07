@@ -1,0 +1,55 @@
+DEFINITION MODULE Screen ;
+
+FROM DynamicStrings IMPORT String ;
+EXPORT QUALIFIED ClearScreen, WriteString, PromptString,
+                 InitScreen, WriteName, WriteFloor, WriteRoom,
+                 WriteWounds, WriteFatigue, WriteMagicArrows,
+                 WriteArrows, WriteTime, WriteCommand, WriteWeight,
+                 WriteCommentLine1, WriteCommentLine2, WriteCommentLine3,
+                 DelCommentLine1, DelCommentLine2, DelCommentLine3,
+                 Pause, AssignMapName, Quit, Flush,
+                 Width, Height,
+                 InnerX, OuterX, InnerY, OuterY, OffX, OffY ;
+
+
+CONST
+   Width = 29 ;   (* 0..29  Horizontal Width                *)
+   Height= 31 ;   (* 0..31  Vertical   Height               *)
+
+   InnerX= 5 ;               (* when do we adjust screen    *)
+   OuterX= Width-InnerX ;
+   InnerY= 5 ;
+   OuterY= Height-InnerY ;
+
+   OffX  = OuterX-InnerX ;   (* To redraw screen +- Off     *)
+   OffY  = OuterY-InnerY ;
+
+
+PROCEDURE ClearScreen (p: CARDINAL) ;
+PROCEDURE WriteString (p: CARDINAL; a: ARRAY OF CHAR) ;
+PROCEDURE PromptString (p: CARDINAL; a: ARRAY OF CHAR) ;
+
+PROCEDURE InitScreen (p: CARDINAL) ;
+PROCEDURE WriteName (p: CARDINAL; a: ARRAY OF CHAR) ;
+PROCEDURE WriteFloor (p: CARDINAL) ;
+PROCEDURE WriteRoom (p: CARDINAL; x: CARDINAL) ;
+PROCEDURE WriteWeight (p: CARDINAL; x: CARDINAL) ;
+PROCEDURE WriteWounds (p: CARDINAL; x: CARDINAL) ;
+PROCEDURE WriteFatigue (p: CARDINAL; x: CARDINAL) ;
+PROCEDURE WriteMagicArrows (p: CARDINAL; x: CARDINAL) ;
+PROCEDURE WriteArrows (p: CARDINAL; x: CARDINAL) ;
+PROCEDURE WriteTime (p: CARDINAL) ;
+PROCEDURE WriteCommand (p: CARDINAL; ch: CHAR) ;
+PROCEDURE WriteCommentLine1 (p: CARDINAL; a: ARRAY OF CHAR) ;
+PROCEDURE WriteCommentLine2 (p: CARDINAL; a: ARRAY OF CHAR) ;
+PROCEDURE WriteCommentLine3 (p: CARDINAL; a: ARRAY OF CHAR) ;
+PROCEDURE DelCommentLine1 (p: CARDINAL) ;
+PROCEDURE DelCommentLine2 (p: CARDINAL) ;
+PROCEDURE DelCommentLine3 (p: CARDINAL) ;
+PROCEDURE Pause (p: CARDINAL) ;
+PROCEDURE AssignMapName (s: String) ;
+PROCEDURE Quit (p: CARDINAL) ;
+PROCEDURE Flush (p: CARDINAL) ;
+
+
+END Screen.

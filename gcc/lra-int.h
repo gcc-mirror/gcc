@@ -428,7 +428,7 @@ lra_get_regno_hard_regno (int regno)
 
 /* Change class of pseudo REGNO to NEW_CLASS.  Print info about it
    using TITLE.  Output a new line if NL_P.  */
-static void inline
+inline void
 lra_change_class (int regno, enum reg_class new_class,
 		  const char *title, bool nl_p)
 {

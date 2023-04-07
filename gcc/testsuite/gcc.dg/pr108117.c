@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target nonlocal_goto } */
+/* { dg-require-effective-target scheduling } */
 /* { dg-options "-O2 -fschedule-insns" } */
 
 #include <stdio.h>

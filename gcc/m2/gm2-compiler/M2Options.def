@@ -94,7 +94,8 @@ EXPORT QUALIFIED SetReturnCheck, SetNilCheck, SetCaseCheck,
                  SetRuntimeModuleOverride, GetRuntimeModuleOverride,
                  SetGenModuleList, GetGenModuleFilename, SharedFlag,
                  SetB, GetB, SetMD, GetMD, SetMMD, GetMMD, SetObj, GetObj,
-                 GetMQ, SetMQ ;
+                 GetMQ, SetMQ, SetM2Prefix, GetM2Prefix,
+                 SetM2PathName, GetM2PathName ;
 
 
 VAR
@@ -176,6 +177,35 @@ VAR
    Optimizing,
    Coding,
    Profiling               : BOOLEAN ;
+
+
+(*
+   SetM2Prefix - assign arg to M2Prefix.
+*)
+
+PROCEDURE SetM2Prefix (arg: ADDRESS) ;
+
+
+(*
+   GetM2Prefix - return M2Prefix as a C string.
+*)
+
+PROCEDURE GetM2Prefix () : ADDRESS ;
+
+
+(*
+   SetM2PathName - assign arg to M2PathName.
+*)
+
+PROCEDURE SetM2PathName (arg: ADDRESS) ;
+
+
+(*
+   GetM2PathName - return M2PathName as a C string.
+*)
+
+PROCEDURE GetM2PathName () : ADDRESS ;
+
 
 (*
    SetPPOnly - set the PPonly to value (on E, M, MM).
@@ -352,7 +382,7 @@ PROCEDURE SetWholeProgram (value: BOOLEAN) ;
 (*
    SetAutoInit - set the auto initialization flag to value.  If the value
                  is true then all pointers are automatically
-                 initialized to NIL.
+                 initialized to NIL.  TRUE is returned.
 *)
 
 PROCEDURE SetAutoInit (value: BOOLEAN) : BOOLEAN ;
@@ -360,7 +390,7 @@ PROCEDURE SetAutoInit (value: BOOLEAN) : BOOLEAN ;
 
 (*
    SetReturnCheck - set return statement checking in procedure functions
-                    to value.
+                    to value.  TRUE is returned.
 *)
 
 PROCEDURE SetReturnCheck (value: BOOLEAN) : BOOLEAN ;
@@ -700,14 +730,16 @@ PROCEDURE SetStrictTypeChecking (value: BOOLEAN) ;
 
 
 (*
-   setdefextension -
+   setdefextension - set the source file definition module extension to arg.
+                     This should include the . and by default it is set to .def.
 *)
 
 PROCEDURE setdefextension (arg: ADDRESS) ;
 
 
 (*
-   setmodextension -
+   setmodextension - set the source file module extension to arg.
+                     This should include the . and by default it is set to .mod.
 *)
 
 PROCEDURE setmodextension (arg: ADDRESS) ;

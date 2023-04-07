@@ -29,6 +29,7 @@ import dmd.dscope;
 import dmd.dsymbol;
 import dmd.dsymbolsem;
 import dmd.errors;
+import dmd.errorsink;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.file_manager;
@@ -766,7 +767,7 @@ extern (C++) final class Module : Package
         {
             filetype = FileType.c;
 
-            scope p = new CParser!AST(this, buf, cast(bool) docfile, target.c, &defines);
+            scope p = new CParser!AST(this, buf, cast(bool) docfile, global.errorSink, target.c, &defines);
             p.nextToken();
             checkCompiledImport();
             members = p.parseModule();
@@ -775,7 +776,7 @@ extern (C++) final class Module : Package
         }
         else
         {
-            scope p = new Parser!AST(this, buf, cast(bool) docfile);
+            scope p = new Parser!AST(this, buf, cast(bool) docfile, global.errorSink);
             p.nextToken();
             p.parseModuleDeclaration();
             md = p.md;
@@ -1375,6 +1376,37 @@ extern (C++) struct ModuleDeclaration
     {
         return this.toChars().toDString;
     }
+}
+
+/****************************************
+ * Create array of the local classes in the Module, suitable
+ * for inclusion in ModuleInfo
+ * Params:
+ *      mod = the Module
+ *      aclasses = array to fill in
+ * Returns: array of local classes
+ */
+extern (C++) void getLocalClasses(Module mod, ref ClassDeclarations aclasses)
+{
+    //printf("members.length = %d\n", mod.members.length);
+    int pushAddClassDg(size_t n, Dsymbol sm)
+    {
+        if (!sm)
+            return 0;
+
+        if (auto cd = sm.isClassDeclaration())
+        {
+            // compatibility with previous algorithm
+            if (cd.parent && cd.parent.isTemplateMixin())
+                return 0;
+
+            if (cd.classKind != ClassKind.objc)
+                aclasses.push(cd);
+        }
+        return 0;
+    }
+
+    ScopeDsymbol._foreach(null, mod.members, &pushAddClassDg);
 }
 
 /**

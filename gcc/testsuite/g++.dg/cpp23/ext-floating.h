@@ -14,9 +14,8 @@ namespace std
   #ifdef __STDCPP_FLOAT128_T__
   using float128_t = _Float128;
   #endif
-  #undef __STDCPP_BFLOAT16_T__
   #ifdef __STDCPP_BFLOAT16_T__
-  using bfloat16_t = __bf16; // ???
+  using bfloat16_t = decltype (0.0bf16);
   #endif
   template<typename T, T v> struct integral_constant {
     static constexpr T value = v;

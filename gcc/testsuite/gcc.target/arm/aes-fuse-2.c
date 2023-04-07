@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_crypto_ok } */
 /* { dg-add-options arm_crypto } */
-/* { dg-additional-options "-mcpu=cortex-a72 -O3 -dp" } */
+/* { dg-additional-options "-mcpu=cortex-a53 -O3 -dp" } */
 
 #include <arm_neon.h>
 

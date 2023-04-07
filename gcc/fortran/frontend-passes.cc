@@ -2883,7 +2883,10 @@ do_subscript (gfc_expr **e)
 		have_do_end = false;
 
 	      if (!have_do_start && !have_do_end)
-		return 0;
+		{
+		  mpz_clear (do_step);
+		  return 0;
+		}
 
 	      /* No warning inside a zero-trip loop.  */
 	      if (have_do_start && have_do_end)

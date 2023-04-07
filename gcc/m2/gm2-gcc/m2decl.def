@@ -167,7 +167,8 @@ PROCEDURE RememberVariables (l: Tree) ;
 
 PROCEDURE DetermineSizeOfConstant (location: location_t;
                                    str: ADDRESS; base: CARDINAL;
-                                   VAR needsLong, needsUnsigned: BOOLEAN) ;
+                                   VAR needsLong, needsUnsigned: BOOLEAN;
+                                   issueError: BOOLEAN) : BOOLEAN ;
 
 
 (*
@@ -178,7 +179,8 @@ PROCEDURE DetermineSizeOfConstant (location: location_t;
 *)
 
 PROCEDURE BuildConstLiteralNumber (location: location_t;
-                                   str: ADDRESS; base: CARDINAL) : Tree ;
+                                   str: ADDRESS; base: CARDINAL;
+                                   issueError: BOOLEAN) : Tree ;
 
 
 (*

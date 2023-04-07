@@ -543,6 +543,8 @@ private:
   static const int builtin_const = 1 << 0;
   static const int builtin_noreturn = 1 << 1;
   static const int builtin_novops = 1 << 2;
+  static const int builtin_pure = 1 << 3;
+  static const int builtin_nothrow = 1 << 4;
 
   void
   define_builtin(built_in_function bcode, const char* name, const char* libname,
@@ -601,7 +603,7 @@ Gcc_backend::Gcc_backend()
 						const_ptr_type_node,
 						size_type_node,
 						NULL_TREE),
-		       0);
+		       builtin_pure | builtin_nothrow);
 
   // We use __builtin_memmove for copying data.
   this->define_builtin(BUILT_IN_MEMMOVE, "__builtin_memmove", "memmove",
@@ -3596,6 +3598,10 @@ Gcc_backend::define_builtin(built_in_function bcode, const char* name,
 				   libname, NULL_TREE);
   if ((flags & builtin_const) != 0)
     TREE_READONLY(decl) = 1;
+  if ((flags & builtin_pure) != 0)
+    DECL_PURE_P(decl) = 1;
+  if ((flags & builtin_nothrow) != 0)
+    TREE_NOTHROW (decl) = 1;
   if ((flags & builtin_noreturn) != 0)
     TREE_THIS_VOLATILE(decl) = 1;
   if ((flags & builtin_novops) != 0)
@@ -3608,6 +3614,10 @@ Gcc_backend::define_builtin(built_in_function bcode, const char* name,
 				  NULL, NULL_TREE);
       if ((flags & builtin_const) != 0)
 	TREE_READONLY(decl) = 1;
+      if ((flags & builtin_pure) != 0)
+	DECL_PURE_P(decl) = 1;
+      if ((flags & builtin_nothrow) != 0)
+	TREE_NOTHROW (decl) = 1;
       if ((flags & builtin_noreturn) != 0)
 	TREE_THIS_VOLATILE(decl) = 1;
       if ((flags & builtin_novops) != 0)

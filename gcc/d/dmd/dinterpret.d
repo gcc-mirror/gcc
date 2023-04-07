@@ -747,7 +747,7 @@ public:
     Expression result;
     UnionExp* pue;              // storage for `result`
 
-    extern (D) this(UnionExp* pue, InterState* istate, CTFEGoal goal)
+    extern (D) this(UnionExp* pue, InterState* istate, CTFEGoal goal) scope
     {
         this.pue = pue;
         this.istate = istate;
@@ -2036,7 +2036,7 @@ public:
         }
         auto er = interpret(e.e1, istate, CTFEGoal.LValue);
         if (auto ve = er.isVarExp())
-            if (ve.var == istate.fd.vthis)
+            if (istate && ve.var == istate.fd.vthis)
                 er = interpret(er, istate);
 
         if (exceptionOrCant(er))
@@ -2116,6 +2116,16 @@ public:
                 if (!e)
                     return CTFEExp.cantexp;
                 assert(e.type);
+
+                // There's a terrible hack in `dmd.dsymbolsem` that special case
+                // a struct with all zeros to an `ExpInitializer(BlitExp(IntegerExp(0)))`
+                // There's matching code for it in e2ir (toElem's visitAssignExp),
+                // so we need the same hack here.
+                // This does not trigger for global as they get a normal initializer.
+                if (auto ts = e.type.isTypeStruct())
+                    if (auto ae = e.isBlitExp())
+                        if (ae.e2.op == EXP.int64)
+                            e = ts.defaultInitLiteral(loc);
 
                 if (e.op == EXP.construct || e.op == EXP.blit)
                 {

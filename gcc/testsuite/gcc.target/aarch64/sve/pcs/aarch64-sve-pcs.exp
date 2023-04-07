@@ -37,11 +37,12 @@ if ![info exists DEFAULT_CFLAGS] then {
 # Initialize `dg'.
 dg-init
 
-# Force SVE if we're not testing it already.
+# Force SVE if we're not testing it already.  And, disable stack protector
+# to avoid test failures with --enable-default-ssp.
 if { [check_effective_target_aarch64_sve] } {
-    set sve_flags ""
+    set sve_flags "-fno-stack-protector"
 } else {
-    set sve_flags "-march=armv8.2-a+sve"
+    set sve_flags "-march=armv8.2-a+sve -fno-stack-protector"
 }
 
 # Main loop.

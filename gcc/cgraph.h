@@ -152,6 +152,9 @@ public:
   /* Remove symbol from symbol table.  */
   void remove (void);
 
+  /* Undo any definition or use of the symbol.  */
+  void reset (void);
+
   /* Dump symtab node to F.  */
   void dump (FILE *f);
 
@@ -1065,14 +1068,6 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 
   /* Expand function specified by node.  */
   void expand (void);
-
-  /* As an GCC extension we allow redefinition of the function.  The
-     semantics when both copies of bodies differ is not well defined.
-     We replace the old body with new body so in unit at a time mode
-     we always use new body, while in normal mode we may end up with
-     old body inlined into some functions and new body expanded and
-     inlined in others.  */
-  void reset (void);
 
   /* Creates a wrapper from cgraph_node to TARGET node. Thunk is used for this
      kind of wrapper method.  */

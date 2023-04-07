@@ -893,6 +893,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_t __e = __m.size();
       for (size_t __i=0; __i<__e; ++__i)
 	if (__m[__i]) ++__s;
+      __glibcxx_assert(__s <= _M_size);
       return valarray<_Tp>(mask_array<_Tp>(_Array<_Tp>(_M_data), __s,
 					   _Array<bool> (__m)));
     }
@@ -905,6 +906,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_t __e = __m.size();
       for (size_t __i=0; __i<__e; ++__i)
 	if (__m[__i]) ++__s;
+      __glibcxx_assert(__s <= _M_size);
       return mask_array<_Tp>(_Array<_Tp>(_M_data), __s, _Array<bool>(__m));
     }
 

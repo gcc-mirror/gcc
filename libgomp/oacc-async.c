@@ -410,9 +410,6 @@ goacc_wait (int async, int num_waits, va_list *ap)
 	  break;
 	}
 
-      if (acc_async_test (qid))
-	continue;
-
       if (async == acc_async_sync)
 	acc_wait (qid);
       else if (qid == async)

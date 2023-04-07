@@ -312,14 +312,6 @@ void test9()
 
 /********************************************************/
 
-void test10()
-{
-    assert(__traits(isVirtualFunction, C.bar) == true);
-    assert(__traits(isVirtualFunction, S.bar) == false);
-}
-
-/********************************************************/
-
 void test11()
 {
     assert(__traits(isAbstractFunction, C.bar) == false);
@@ -401,24 +393,6 @@ class D15
     ~this() { }
     void foo() { }
     int foo(int) { return 2; }
-}
-
-void test15()
-{
-    D15 d = new D15();
-
-    assert(__traits(getVirtualFunctions, D15, "foo").length == 2);
-    assert(typeid(typeof(__traits(getVirtualFunctions, D15, "foo")[0])).toString()
-           == "void function()");
-    assert(typeid(typeof(__traits(getVirtualFunctions, D15, "foo")[1])).toString()
-           == "int function(int)");
-
-    alias typeof(__traits(getVirtualFunctions, D15, "foo")) b;
-    assert(typeid(b[0]).toString() == "void function()");
-    assert(typeid(b[1]).toString() == "int function(int)");
-
-    auto i = __traits(getVirtualFunctions, d, "foo")[1](1);
-    assert(i == 2);
 }
 
 /********************************************************/
@@ -714,14 +688,6 @@ interface AA
      int YYY();
 }
 
-class CC : AA
-{
-    final int YYY() { return 4; }
-}
-
-static assert(__traits(isVirtualMethod, CC.YYY));
-static assert(__traits(getVirtualMethods, CC, "YYY").length == 1);
-
 class DD
 {
     final int YYY() { return 4; }
@@ -790,8 +756,6 @@ void test7858()
 
     static assert(__traits(isFinalFunction, C.ffunc) ==
                   __traits(isFinalFunction, __traits(getOverloads, C, "ffunc")[0]));    // NG
-    static assert(__traits(isVirtualFunction, C.vfunc) ==
-                  __traits(isVirtualFunction, __traits(getOverloads, C, "vfunc")[0]));  // NG
     static assert(__traits(isVirtualMethod, C.vfunc) ==
                   __traits(isVirtualMethod, __traits(getOverloads, C, "vfunc")[0]));    // NG
     static assert(__traits(isAbstractFunction, C.afunc) ==
@@ -1456,13 +1420,11 @@ int main()
     test7();
     test8();
     test9();
-    test10();
     test11();
     test12();
     test13();
     test7123();
     test14();
-    test15();
     test16();
     test17();
     test18();

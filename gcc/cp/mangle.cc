@@ -1389,6 +1389,28 @@ find_decomp_unqualified_name (tree decl, size_t *len)
   return p;
 }
 
+/* "For the purposes of mangling, the name of an anonymous union is considered
+   to be the name of the first named data member found by a pre-order,
+   depth-first, declaration-order walk of the data members of the anonymous
+   union. If there is no such data member (i.e., if all of the data members in
+   the union are unnamed), then there is no way for a program to refer to the
+   anonymous union, and there is therefore no need to mangle its name."  */
+
+static tree
+anon_aggr_naming_decl (tree type)
+{
+  tree field = next_aggregate_field (TYPE_FIELDS (type));
+  for (; field; field = next_aggregate_field (DECL_CHAIN (field)))
+    {
+      if (DECL_NAME (field))
+	return field;
+      if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+	if (tree sub = anon_aggr_naming_decl (TREE_TYPE (field)))
+	  return sub;
+    }
+  return NULL_TREE;
+}
+
 /* We don't need to handle thunks, vtables, or VTTs here.  Those are
    mangled through special entry points.
 
@@ -1432,7 +1454,10 @@ write_unqualified_name (tree decl)
 
   bool found = false;
 
-  if (DECL_NAME (decl) == NULL_TREE)
+  if (DECL_NAME (decl) == NULL_TREE
+      && ANON_AGGR_TYPE_P (TREE_TYPE (decl)))
+    decl = anon_aggr_naming_decl (TREE_TYPE (decl));
+  else if (DECL_NAME (decl) == NULL_TREE)
     {
       found = true;
       gcc_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
@@ -2732,11 +2757,11 @@ write_builtin_type (tree type)
 	write_char ('d');
       else if (type == long_double_type_node)
 	write_char ('e');
-      else if (type == dfloat32_type_node || type == fallback_dfloat32_type)
+      else if (type == dfloat32_type_node)
 	write_string ("Df");
-      else if (type == dfloat64_type_node || type == fallback_dfloat64_type)
+      else if (type == dfloat64_type_node)
 	write_string ("Dd");
-      else if (type == dfloat128_type_node || type == fallback_dfloat128_type)
+      else if (type == dfloat128_type_node)
 	write_string ("De");
       else if (type == float16_type_node)
 	write_string ("DF16_");
@@ -2752,6 +2777,8 @@ write_builtin_type (tree type)
 	write_string ("DF64x");
       else if (type == float128x_type_node)
 	write_string ("DF128x");
+      else if (type == bfloat16_type_node)
+	write_string ("DF16b");
       else
 	gcc_unreachable ();
       break;

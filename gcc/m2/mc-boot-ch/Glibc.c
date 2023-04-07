@@ -125,7 +125,43 @@ libc_printf (char *_format, unsigned int _format_high, ...)
   va_start (arg, _format_high);
   done = vfprintf (stdout, format, arg);
   va_end (arg);
+  return done;
+}
 
+EXTERN
+int
+libc_snprintf (char *dest, size_t length, char *_format, unsigned int _format_high, ...)
+{
+  va_list arg;
+  int done;
+  char format[_format_high + 1];
+  unsigned int i = 0;
+  unsigned int j = 0;
+  char *c;
+
+  do
+    {
+      c = index (&_format[i], '\\');
+      if (c == NULL)
+        strcpy (&format[j], &_format[i]);
+      else
+        {
+          memcpy (&format[j], &_format[i], (c - _format) - i);
+          i = c - _format;
+          j += c - _format;
+          if (_format[i + 1] == 'n')
+            format[j] = '\n';
+          else
+            format[j] = _format[i + 1];
+          j++;
+          i += 2;
+        }
+    }
+  while (c != NULL);
+
+  va_start (arg, _format_high);
+  done = vsnprintf (dest, length, format, arg);
+  va_end (arg);
   return done;
 }
 

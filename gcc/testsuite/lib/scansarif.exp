@@ -17,7 +17,10 @@
 # Various utilities for scanning SARIF output, used by gcc-dg.exp and
 # g++-dg.exp.
 #
-# This is largely borrowed from scanasm.exp.
+# This is largely borrowed from scanasm.exp, but tweaked to force Tcl
+# to treat the file as UTF-8: section 3.1 of SARIF 2.1.0
+# ("File Format" > "General") specifies: "A SARIF log file SHALL be
+# encoded in UTF-8 [RFC3629])".
 
 # Look for a pattern in the .sarif file produced by the compiler.  See
 # dg-scan for details.
@@ -27,6 +30,10 @@ proc scan-sarif-file { args } {
     # The name might include a list of options; extract the file name.
     set filename [lindex $testcase 0]
     set output_file "[file tail $filename].sarif"
+
+    # Treat the file as UTF-8 encoded when reading it.
+    set args [append_encoding_arg $args "utf-8"]
+
     dg-scan "scan-sarif-file" 1 $testcase $output_file $args
 }
 
@@ -38,5 +45,38 @@ proc scan-sarif-file-not { args } {
     # The name might include a list of options; extract the file name.
     set filename [lindex $testcase 0]
     set output_file "[file tail $filename].sarif"
+
+    # Treat the file as UTF-8 encoded when reading it.
+    set args [append_encoding_arg $args "utf-8"]
+
     dg-scan "scan-sarif-file-not" 0 $testcase $output_file $args
+}
+
+# Perform validity checks on the .sarif file produced by the compiler.
+#
+# Assuming python3 is available, use verify-sarif-file.py to check
+# that the .sarif file is UTF-8 encoded and is parseable as JSON.
+
+proc verify-sarif-file { args } {
+    global srcdir subdir
+
+    set testcase [testname-for-summary]
+    set filename [lindex $testcase 0]
+    set output_file "[file tail $filename].sarif"
+
+    if { ![check_effective_target_recent_python3] } {
+	unsupported "$testcase verify-sarif-file: python3 is missing"
+	return
+    }
+
+    # Verify that the file is correctly encoded and is parseable as JSON.
+    set script_name $srcdir/lib/verify-sarif-file.py
+    set what "$testcase (test .sarif output for UTF-8-encoded parseable JSON)"
+    if [catch {exec python3 $script_name $output_file} res ] {
+	verbose "verify-sarif-file: res: $res" 2
+	fail "$what"
+	return
+    } else {
+	pass "$what"
+    }
 }

@@ -29,6 +29,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -60,7 +61,7 @@ extern "C" {
 		 If onlySpaces is FALSE then an after statement comment is created.
 */
 
-EXTERN mcComment_commentDesc mcComment_initComment (unsigned int onlySpaces);
+EXTERN mcComment_commentDesc mcComment_initComment (bool onlySpaces);
 
 /*
    addText - cs is a C string (null terminated) which contains comment text.
@@ -110,19 +111,19 @@ EXTERN DynamicStrings_String mcComment_getInbodyStatementComment (mcComment_comm
    isProcedureComment - returns TRUE if, cd, is a procedure comment.
 */
 
-EXTERN unsigned int mcComment_isProcedureComment (mcComment_commentDesc cd);
+EXTERN bool mcComment_isProcedureComment (mcComment_commentDesc cd);
 
 /*
    isBodyComment - returns TRUE if, cd, is a body comment.
 */
 
-EXTERN unsigned int mcComment_isBodyComment (mcComment_commentDesc cd);
+EXTERN bool mcComment_isBodyComment (mcComment_commentDesc cd);
 
 /*
    isAfterComment - returns TRUE if, cd, is an after comment.
 */
 
-EXTERN unsigned int mcComment_isAfterComment (mcComment_commentDesc cd);
+EXTERN bool mcComment_isAfterComment (mcComment_commentDesc cd);
 #   ifdef __cplusplus
 }
 #   endif

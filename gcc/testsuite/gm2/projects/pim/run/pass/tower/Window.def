@@ -1,0 +1,16 @@
+DEFINITION MODULE Window ;
+
+
+EXPORT QUALIFIED ClipPoint, Clip ;
+
+
+PROCEDURE ClipPoint (VAR x, y: CARDINAL ; Sx, Sy: CARDINAL ; VAR ok: BOOLEAN) ;
+
+
+PROCEDURE Clip (VAR x1,y1,x2,y2: CARDINAL ;
+                          Sx,Sy: CARDINAL ;
+                         VAR ok: BOOLEAN) ;
+
+
+END Window.
+

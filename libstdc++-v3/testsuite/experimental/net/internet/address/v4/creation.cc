@@ -25,7 +25,17 @@
 namespace net = std::experimental::net;
 using net::ip::address_v4;
 
-void
+#if __cplusplus < 202002L
+// Naughty, but operator== for std::array is not constexpr until C++20.
+constexpr bool
+operator==(const address_v4::bytes_type& lhs, const address_v4::bytes_type& rhs)
+{
+  return lhs[0] == rhs[0] && lhs[1] == rhs[1]
+      && lhs[2] == rhs[2] && lhs[3] == rhs[3];
+}
+#endif
+
+constexpr void
 test01()
 {
   auto a0 = make_address_v4( address_v4::bytes_type{} );
@@ -34,18 +44,18 @@ test01()
 
   address_v4::bytes_type b1{ 1, 2, 3, 4 };
   auto a1 = make_address_v4( b1 );
-  VERIFY( a1.to_uint() == ntohl((1 << 24) | (2 << 16) | (3 << 8) | 4) );
+  VERIFY( a1.to_uint() == ((1 << 24) | (2 << 16) | (3 << 8) | 4) );
   VERIFY( a1.to_bytes() == b1 );
 }
 
-void
+constexpr void
 test02()
 {
   auto a0 = net::ip::make_address_v4(0u);
   VERIFY( a0.to_uint() == 0 );
   VERIFY( a0.to_bytes() == address_v4::bytes_type{} );
 
-  address_v4::uint_type u1 = ntohl((5 << 24) | (6 << 16) | (7 << 8) | 8);
+  address_v4::uint_type u1 = ((5 << 24) | (6 << 16) | (7 << 8) | 8);
   auto a1 = net::ip::make_address_v4( u1 );
   VERIFY( a1.to_uint() == u1 );
   VERIFY( a1.to_bytes() == address_v4::bytes_type( 5, 6, 7, 8 ) );
@@ -78,10 +88,20 @@ test03()
   VERIFY( ec == std::errc::invalid_argument );
 }
 
+constexpr bool
+test_constexpr()
+{
+  test01();
+  test02();
+  return true;
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+
+  static_assert( test_constexpr(), "valid in constant expressions" );
 }

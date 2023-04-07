@@ -999,10 +999,7 @@ extern (C++) class Dsymbol : ASTNode
                 sm = sm.toAlias();
                 TemplateDeclaration td = sm.isTemplateDeclaration();
                 if (!td)
-                {
-                    .error(loc, "`%s.%s` is not a template, it is a %s", s.toPrettyChars(), ti.name.toChars(), sm.kind());
-                    return null;
-                }
+                    return null; // error but handled later
                 ti.tempdecl = td;
                 if (!ti.semanticRun)
                     ti.dsymbolSemantic(sc);
@@ -1242,10 +1239,6 @@ extern (C++) class Dsymbol : ASTNode
         return false;
     }
 
-    void addLocalClass(ClassDeclarations*)
-    {
-    }
-
     void addObjcSymbols(ClassDeclarations* classes, ClassDeclarations* categories)
     {
     }
@@ -1416,6 +1409,7 @@ extern (C++) class Dsymbol : ASTNode
     inout(OverloadSet)                 isOverloadSet()                 inout { return null; }
     inout(CompileDeclaration)          isCompileDeclaration()          inout { return null; }
     inout(StaticAssert)                isStaticAssert()                inout { return null; }
+    inout(StaticIfDeclaration)         isStaticIfDeclaration()         inout { return null; }
 }
 
 /***********************************************************
@@ -2168,10 +2162,23 @@ extern (C++) final class ArrayScopeSymbol : ScopeDsymbol
                  * or a variable (in which case an expression is created in
                  * toir.c).
                  */
-                auto e = new VoidInitializer(Loc.initial);
-                e.type = Type.tsize_t;
-                v = new VarDeclaration(loc, Type.tsize_t, Id.dollar, e);
-                v.storage_class |= STC.temp | STC.ctfe; // it's never a true static variable
+
+                // https://issues.dlang.org/show_bug.cgi?id=16213
+                // For static arrays $ is known at compile time,
+                // so declare it as a manifest constant.
+                auto tsa = ce.type ? ce.type.isTypeSArray() : null;
+                if (tsa)
+                {
+                    auto e = new ExpInitializer(loc, tsa.dim);
+                    v = new VarDeclaration(loc, tsa.dim.type, Id.dollar, e, STC.manifest);
+                }
+                else
+                {
+                    auto e = new VoidInitializer(Loc.initial);
+                    e.type = Type.tsize_t;
+                    v = new VarDeclaration(loc, Type.tsize_t, Id.dollar, e);
+                    v.storage_class |= STC.temp | STC.ctfe; // it's never a true static variable
+                }
             }
             *pvar = v;
         }
@@ -2620,6 +2627,12 @@ Dsymbol handleSymbolRedeclarations(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsy
 
     auto vd = s.isVarDeclaration(); // new declaration
     auto vd2 = s2.isVarDeclaration(); // existing declaration
+
+    if (vd && vd.isCmacro())
+        return vd2;
+
+    assert(!(vd2 && vd2.isCmacro()));
+
     if (vd && vd2)
     {
         /* if one is `static` and the other isn't, the result is undefined

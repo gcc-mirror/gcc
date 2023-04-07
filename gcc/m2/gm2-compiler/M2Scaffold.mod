@@ -35,7 +35,8 @@ FROM SymbolTable IMPORT NulSym, MakeProcedure, PutFunction,
                         GetSymName, StartScope, EndScope,
                         GetModuleDefImportStatementList,
                         GetModuleModImportStatementList,
-                        GetImportModule, GetImportStatementList ;
+                        GetImportModule, GetImportStatementList,
+                        PutLibName ;
 
 FROM NameKey IMPORT NulName, Name, MakeKey, makekey, KeyToCharStar ;
 FROM M2Base IMPORT Integer, Cardinal ;
@@ -44,9 +45,11 @@ FROM M2LexBuf IMPORT GetTokenNo ;
 FROM Assertion IMPORT Assert ;
 FROM Lists IMPORT List, InitList, IncludeItemIntoList, NoOfItemsInList, GetItemFromList, KillList, IsItemInList ;
 FROM M2MetaError IMPORT MetaErrorT0, MetaErrorStringT0 ;
+FROM M2Search IMPORT FindSourceDefFile ;
 
 FROM SFIO IMPORT OpenToWrite, WriteS, ReadS, OpenToRead, Exists ;
 FROM FIO IMPORT File, EOF, IsNoError, Close ;
+FROM FormatStrings IMPORT Sprintf1 ;
 
 FROM M2Options IMPORT GetUselist, ScaffoldStatic, ScaffoldDynamic, GenModuleList,
                       GetGenModuleFilename, GetUselistFilename, GetUselist, cflag,
@@ -84,14 +87,14 @@ VAR
 
 static void _M2_init (int argc, char *argv[], char *envp[])
 {
-  M2RTS_ConstructModules (module_name, argc, argv, envp);
+  M2RTS_ConstructModules (module_name, libname, overrideliborder, argc, argv, envp);
 }
 
 
 static void _M2_fini (int argc, char *argv[], char *envp[])
 {
   M2RTS_Terminate ();
-  M2RTS_DeconstructModules (module_name, argc, argv, envp);
+  M2RTS_DeconstructModules (module_name, libname, argc, argv, envp);
 }
 
 
@@ -244,16 +247,29 @@ END PopulateCtorArray ;
 
 PROCEDURE LookupModuleSym (tok: CARDINAL; name: Name) : CARDINAL ;
 VAR
-   sym: CARDINAL ;
+   sym     : CARDINAL ;
+   FileName,
+   LibName : String ;
 BEGIN
    sym := Get (name) ;
    IF sym = NulSym
    THEN
-      sym := MakeDefImp (tok, name)
-   END ;
-   IF sym # GetMainModule ()
-   THEN
-      PutModuleCtorExtern (tok, sym, NOT WholeProgram)
+      LibName := NIL ;
+      FileName := NIL ;
+      IF FindSourceDefFile (InitStringCharStar (KeyToCharStar (name)),
+                            FileName, LibName)
+      THEN
+         sym := MakeDefImp (tok, name) ;
+         PutLibName (sym, makekey (string (LibName))) ;
+         IF sym # GetMainModule ()
+         THEN
+            PutModuleCtorExtern (tok, sym, NOT WholeProgram)
+         END
+      ELSE
+         MetaErrorStringT0 (tok,
+                            Sprintf1 (InitString ('the definition module file for {%%1a} cannot be found'),
+                                      name))
+      END
    END ;
    RETURN sym
 END LookupModuleSym ;

@@ -24,12 +24,13 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 #if defined(init_cpp)
 extern "C" {
+#endif
+
 void init_FrontEndInit (void);
 void init_PerCompilationInit (const char *filename);
+
+#if defined(init_cpp)
 }
-#else /* !init_cpp.  */
-void init_FrontEndInit (void);
-void init_PerCompilationInit (const char *filename);
 #endif /* !init_cpp.  */
 
 #endif /*! init_h.  */

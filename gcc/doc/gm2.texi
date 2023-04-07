@@ -484,8 +484,20 @@ where multiple @code{END} keywords are mapped onto a sequence of
 @item -fm2-lower-case
 render keywords in error messages using lower case.
 
+@item -fm2-pathname=
+specify the module mangled prefix name for all modules in the
+following include paths.
+
+@item -fm2-pathnameI
+for internal use only: used by the driver to copy the user facing -I
+option.
+
 @item -fm2-plugin
 insert plugin to identify run time errors at compile time (default on).
+
+@item -fm2-prefix=
+specify the module mangled prefix name.  All exported symbols from a
+definition module will have the prefix name.
 
 @item -fm2-statistics
 generates quadruple information: number of quadruples generated,
@@ -567,12 +579,13 @@ via @samp{-fno-return}.
 @item -fruntime-modules=
 specify, using a comma separated list, the run time modules and their
 order.  These modules will initialized first before any other modules
-in the application dependency.  By default the run time modules list is
-set to @code{Storage,SYSTEM,M2RTS,RTExceptions,IOLink}.  Note that
-these modules will only be linked into your executable if they are
-required.  So adding a long list of dependent modules will not effect
-the size of the executable it merely states the initialization order
-should they be required.
+in the application dependency.  By default the run time modules list
+is set to @code{m2iso:RTentity,m2iso:Storage,m2iso:SYSTEM,}
+@code{m2iso:M2RTS,m2iso:RTExceptions,m2iso:IOLink}.  Note that these
+modules will only be linked into your executable if they are required.
+Adding a long list of dependent modules will not effect the size of
+the executable it merely states the initialization order should they
+be required.
 
 @item -fscaffold-dynamic
 the option ensures that @samp{gm2} will generate a dynamic scaffold
@@ -740,6 +753,8 @@ value   | meaning
 =================
 all     | turn on all flags below
 module  | trace modules as they register themselves
+hex     | display the hex address of the init/fini functions
+warning | show any warnings
 pre     | generate module list prior to dependency resolution
 dep     | trace module dependency resolution
 post    | generate module list after dependency resolution
@@ -799,7 +814,7 @@ SHORTINT                  short int
 CARDINAL                  unsigned int
 LONGCARD                  long long unsigned int
 SHORTCARD                 short unsigned int
-BOOLEAN                   int
+BOOLEAN                   bool
 REAL                      double
 LONGREAL                  long double
 SHORTREAL                 float
@@ -2746,7 +2761,7 @@ The mailing list contents can be viewed
 These exist and can be found on the frontends web page on the
 @uref{http://gcc.gnu.org/frontends.html, gcc web site}.
 
-@node License, , ,
+@node License, Copying, Using, Top
 @section License of GNU Modula-2
 
 GNU Modula-2 is free software, the compiler is held under the GPL v3
@@ -2766,10 +2781,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 More information on how these licenses work is available
 @uref{http://www.gnu.org/licenses/licenses.html} on the GNU web site.
 
-@node Copying, , ,
+@node Copying, Contributing, License, Top
 @include gpl_v3_without_node.texi
 
-@node Contributing, , ,
+@node Contributing, EBNF, Copying, Top
 @section Contributing to GNU Modula-2
 
 Please do and please read the GNU Emacs info under
@@ -2793,7 +2808,7 @@ Many thanks and enjoy your coding!
 @c This section is still being written.
 @c @include gm2-internals.texi
 
-@node EBNF, , ,
+@node EBNF, Libraries, Contributing, Top
 @chapter EBNF of GNU Modula-2
 
 This chapter contains the EBNF of GNU Modula-2.  This grammar currently
@@ -2807,14 +2822,14 @@ phase.
 
 @include m2/gm2-ebnf.texi
 
-@node Libraries, , ,
+@node Libraries, Indices, EBNF, Top
 @chapter PIM and ISO library definitions
 
 This chapter contains M2F, PIM and ISO libraries.
 
 @include m2/gm2-libs.texi
 
-@node Indices, , ,
+@node Indices, , Libraries, Top
 @section Indices
 
 @ifhtml

@@ -161,3 +161,29 @@ void doConsume2(Sdtor& value)
 // fn0            passthrough_fn0   (fn0 value) { return value; }
 // typedef int (*fn1)(int);
 // fn1            passthrough_fn1   (fn1 value) { return value; }
+
+/******************************/
+
+struct FF
+{
+    float x, y;
+    ~FF();
+};
+
+float draw(FF min, FF max)
+{
+    return min.x * 1000 + min.y * 100 + max.x * 10 + max.y;
+}
+
+/******************************/
+
+struct FF2
+{
+    float x, y;
+    FF2(int i) { }
+};
+
+float draw2(FF2 min, FF2 max)
+{
+    return min.x * 1000 + min.y * 100 + max.x * 10 + max.y;
+}

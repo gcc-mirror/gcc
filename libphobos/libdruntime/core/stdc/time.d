@@ -30,19 +30,25 @@ nothrow:
 @nogc:
 
 ///
+pragma(mangle, muslRedirTime64Mangle!("difftime", "__difftime64"))
 pure double  difftime(time_t time1, time_t time0); // MT-Safe
 ///
+pragma(mangle, muslRedirTime64Mangle!("mktime", "__mktime64"))
 @system time_t  mktime(scope tm* timeptr); // @system: MT-Safe env locale
 ///
+pragma(mangle, muslRedirTime64Mangle!("time", "__time64"))
 time_t  time(scope time_t* timer);
 
 ///
 @system char*   asctime(const scope tm* timeptr); // @system: MT-Unsafe race:asctime locale
 ///
+pragma(mangle, muslRedirTime64Mangle!("ctime", "__ctime64"))
 @system char*   ctime(const scope time_t* timer); // @system: MT-Unsafe race:tmbuf race:asctime env locale
 ///
+pragma(mangle, muslRedirTime64Mangle!("gmtime", "__gmtime64"))
 @system tm*     gmtime(const scope time_t* timer); // @system: MT-Unsafe race:tmbuf env locale
 ///
+pragma(mangle, muslRedirTime64Mangle!("localtime", "__localtime64"))
 @system tm*     localtime(const scope time_t* timer); // @system: MT-Unsafe race:tmbuf env locale
 ///
 @system size_t  strftime(scope char* s, size_t maxsize, const scope char* format, const scope tm* timeptr); // @system: MT-Safe env locale

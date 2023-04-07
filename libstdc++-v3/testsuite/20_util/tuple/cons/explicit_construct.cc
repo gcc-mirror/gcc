@@ -45,11 +45,11 @@ std::tuple<int, int> f1b() {return {1,2};}
 std::tuple<int, int, int> f1c() {return {1,2,3};}
 
 std::tuple<Explicit> f2_a()
-{return {1};} // { dg-error "could not convert" }
+{return {1};} // { dg-error "explicit constructor" }
 std::tuple<Explicit, Explicit> f2_b()
-{return {1,2};} // { dg-error "could not convert" }
+{return {1,2};} // { dg-error "explicit constructor" }
 std::tuple<Explicit, Explicit, Explicit> f2_c()
-{return {1,2,3};} // { dg-error "could not convert" }
+{return {1,2,3};} // { dg-error "explicit constructor" }
 
 std::tuple<long> f3_a() {return std::tuple<int>{1};}
 std::tuple<long, long> f3_b() {return std::tuple<int, int>{1,2};}
@@ -73,22 +73,22 @@ std::tuple<long, long> f5_b() {return {1,2};}
 std::tuple<long, long, long> f5_c() {return {1,2,3};}
 
 std::tuple<ExplicitDefault> f6_a()
-{return {};} // { dg-error "could not convert" }
+{return {};} // { dg-error "explicit constructor" }
 std::tuple<ExplicitDefault, ExplicitDefault> f6_b()
-{return {};} // { dg-error "could not convert" }
+{return {};} // { dg-error "explicit constructor" }
 std::tuple<ExplicitDefault, ExplicitDefault, ExplicitDefault> f6_c()
-{return {};} // { dg-error "could not convert" }
+{return {};} // { dg-error "explicit constructor" }
 std::tuple<ExplicitDefault, int> f6_d()
-{return {};} // { dg-error "could not convert" }
+{return {};} // { dg-error "explicit constructor" }
 
 std::tuple<ExplicitDefaultDefault> f7_a()
-{return {};} // { dg-error "could not convert" }
+{return {};} // { dg-error "explicit constructor" }
 std::tuple<ExplicitDefaultDefault, ExplicitDefaultDefault> f7_b()
-{return {};} // { dg-error "could not convert" }
+{return {};} // { dg-error "explicit constructor" }
 std::tuple<ExplicitDefaultDefault,
            ExplicitDefaultDefault,
            ExplicitDefaultDefault> f7_c()
-{return {};} // { dg-error "could not convert" }
+{return {};} // { dg-error "explicit constructor" }
 
 std::tuple<int, int> fp1() {return std::pair<int, int>{1,2}; }
 std::tuple<long, long> fp2() {return std::pair<int, int>{1,2}; }
@@ -103,9 +103,9 @@ std::tuple<Explicit> v1_a{1};
 std::tuple<Explicit, Explicit> v1_b{1,2};
 std::tuple<Explicit, Explicit, Explicit> v1_c{1,2,3};
 
-std::tuple<Explicit> v2_a = {1}; // { dg-error "could not convert" }
-std::tuple<Explicit, Explicit> v2_b = {1,2}; // { dg-error "could not convert" }
-std::tuple<Explicit, Explicit, Explicit> v2_c = {1,2,3}; // { dg-error "could not convert" }
+std::tuple<Explicit> v2_a = {1}; // { dg-error "explicit constructor" }
+std::tuple<Explicit, Explicit> v2_b = {1,2}; // { dg-error "explicit constructor" }
+std::tuple<Explicit, Explicit, Explicit> v2_c = {1,2,3}; // { dg-error "explicit constructor" }
 
 std::tuple<Explicit> v3_a{std::tuple<int>{1}};
 std::tuple<Explicit, Explicit> v3_b{std::tuple<int,int>{1,2}};
@@ -196,11 +196,11 @@ std::tuple<long, long, long>
   v31_c{std::allocator_arg, std::allocator<int>{}, 1,2,3};
 
 std::tuple<Explicit> v32_a
-  = {std::allocator_arg, std::allocator<int>{ }, 1}; // { dg-error "could not convert" }
+  = {std::allocator_arg, std::allocator<int>{ }, 1}; // { dg-error "explicit constructor" }
 std::tuple<Explicit, Explicit> v32_b
-  = {std::allocator_arg, std::allocator<int>{}, 1, 2}; // { dg-error "could not convert" }
+  = {std::allocator_arg, std::allocator<int>{}, 1, 2}; // { dg-error "explicit constructor" }
 std::tuple<Explicit, Explicit, Explicit> v32_c
-  = {std::allocator_arg, std::allocator<int>{}, 1,2,3}; // { dg-error "could not convert" }
+  = {std::allocator_arg, std::allocator<int>{}, 1,2,3}; // { dg-error "explicit constructor" }
 
 std::tuple<int, int> v33{std::allocator_arg, std::allocator<int>{},
   std::pair<int, int>{1, 2}};
@@ -218,7 +218,7 @@ std::tuple<long, long> v37 = {std::allocator_arg, std::allocator<int>{},
   std::pair<int, int>{1, 2}};
 
 std::tuple<Explicit, Explicit> v38
-= {std::allocator_arg, std::allocator<int>{}, std::pair<int, int>{1, 2}}; // { dg-error "could not convert" }
+= {std::allocator_arg, std::allocator<int>{}, std::pair<int, int>{1, 2}}; // { dg-error "explicit constructor" }
 
 std::tuple<int, int> v39{std::allocator_arg, std::allocator<int>{}, v20};
 
@@ -232,18 +232,18 @@ std::tuple<int, int> v42 = {std::allocator_arg, std::allocator<int>{}, v20};
 std::tuple<long, long> v43 = {std::allocator_arg, std::allocator<int>{}, v20};
 
 std::tuple<Explicit, Explicit> v44
-= {std::allocator_arg, std::allocator<int>{ }, v20}; // { dg-error "could not convert" }
+= {std::allocator_arg, std::allocator<int>{ }, v20}; // { dg-error "explicit constructor" }
 std::tuple<ExplicitDefault> v45_a{};
 std::tuple<ExplicitDefault, int> v45_b{};
 
-std::tuple<ExplicitDefault> v46_a = {}; // { dg-error "could not convert" }
-std::tuple<ExplicitDefault, int> v46_b = {}; // { dg-error "could not convert" }
+std::tuple<ExplicitDefault> v46_a = {}; // { dg-error "explicit constructor" }
+std::tuple<ExplicitDefault, int> v46_b = {}; // { dg-error "explicit constructor" }
 
 std::tuple<ExplicitDefaultDefault> v47_a{};
 std::tuple<ExplicitDefaultDefault, int> v47_b{};
 
-std::tuple<ExplicitDefaultDefault> v48_a = {}; // { dg-error "could not convert" }
-std::tuple<ExplicitDefaultDefault, int> v48_b = { }; // { dg-error "could not convert" }
+std::tuple<ExplicitDefaultDefault> v48_a = {}; // { dg-error "explicit constructor" }
+std::tuple<ExplicitDefaultDefault, int> v48_b = { }; // { dg-error "explicit constructor" }
 
 
 struct DeletedCopy
@@ -295,9 +295,9 @@ void test_arg_passing()
   f8_b(v1_b);
   f8_c(v1_c);
 
-  f8_a({1}); // { dg-error "could not convert" }
-  f8_b({1,2}); // { dg-error "could not convert" }
-  f8_c({1,2,3}); // { dg-error "could not convert" }
+  f8_a({1}); // { dg-error "explicit constructor" }
+  f8_b({1,2}); // { dg-error "explicit constructor" }
+  f8_c({1,2,3}); // { dg-error "explicit constructor" }
 
   f8_a(std::tuple<Explicit>{});
   f8_b(std::tuple<Explicit, Explicit>{});
@@ -330,10 +330,10 @@ void test_arg_passing()
   f9_b(std::tuple<long, long>{});
   f9_c(std::tuple<long, long, long>{});
 
-  f10_a({}); // { dg-error "could not convert" }
-  f10_b({}); // { dg-error "could not convert" }
-  f11_a({}); // { dg-error "could not convert" }
-  f11_b({}); // { dg-error "could not convert" }
+  f10_a({}); // { dg-error "explicit constructor" }
+  f10_b({}); // { dg-error "explicit constructor" }
+  f11_a({}); // { dg-error "explicit constructor" }
+  f11_b({}); // { dg-error "explicit constructor" }
 
   f10_a(std::tuple<ExplicitDefault>{});
   f10_b(std::tuple<ExplicitDefault, int>{});

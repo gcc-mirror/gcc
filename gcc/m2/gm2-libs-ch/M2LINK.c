@@ -28,6 +28,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "system.h"
 #include "ansidecl.h"
 #include "math.h"
+#include <stdbool.h>
 
 #include "gm2-libs-host.h"
 
@@ -39,6 +40,6 @@ extern "C" {
      initialization features of M2RTS.  */
 
   char *M2LINK_ForcedModuleInitOrder = NULL;
-  int M2LINK_StaticInitialization = 1;
+  bool M2LINK_StaticInitialization = true;
 
 }

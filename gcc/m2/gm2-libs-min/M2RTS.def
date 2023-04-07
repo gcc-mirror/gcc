@@ -34,18 +34,36 @@ FROM SYSTEM IMPORT ADDRESS ;
 TYPE
    ArgCVEnvP = PROCEDURE (INTEGER, ADDRESS, ADDRESS) ;
 
+
 (*
    all these procedures do nothing except satisfy the linker.
 *)
 
-PROCEDURE ConstructModules (applicationmodule: ADDRESS;
+PROCEDURE ConstructModules (applicationmodule, libname: ADDRESS;
                             argc: INTEGER; argv, envp: ADDRESS) ;
-PROCEDURE DeconstructModules (applicationmodule: ADDRESS;
+
+PROCEDURE DeconstructModules (applicationmodule, libname: ADDRESS;
                               argc: INTEGER; argv, envp: ADDRESS) ;
-PROCEDURE RegisterModule (name: ADDRESS;
+
+
+(*
+   RegisterModule - adds module name to the list of outstanding
+                    modules which need to have their dependencies
+                    explored to determine initialization order.
+*)
+
+PROCEDURE RegisterModule (name, libname: ADDRESS;
                           init, fini:  ArgCVEnvP;
                           dependencies: PROC) ;
-PROCEDURE RequestDependant (modulename, dependantmodule: ADDRESS) ;
+
+(*
+   RequestDependant - used to specify that modulename is dependant upon
+                      module dependantmodule.
+*)
+
+PROCEDURE RequestDependant (modulename, libname,
+                            dependantmodule, dependantlibname: ADDRESS) ;
+
 PROCEDURE ExecuteTerminationProcedures ;
 PROCEDURE ExecuteInitialProcedures ;
 PROCEDURE HALT <* noreturn *> ;

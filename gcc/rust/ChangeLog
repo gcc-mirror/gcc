@@ -1,3 +1,17 @@
+2023-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* rust-lang.cc (grs_langhook_type_for_mode): Also consider all
+	'int_n' modes/types.
+
+2023-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* rust-lang.cc (grs_langhook_init): Do not initialize
+	void_list_node.
+
+2023-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config-lang.in (target_libs): Remove.
+
 2023-02-21  Raiki Tamura  <tamaron1203@gmail.com>
 
 	* backend/rust-builtins.cc (BuiltinsContext::setup_math_fns): New functions.

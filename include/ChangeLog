@@ -1,3 +1,12 @@
+2023-02-27  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* xtensa-dynconfig.h (xtensa_config_v3): New struct.
+	(xtensa_get_config_v3): New declaration.
+	(XCHAL_HAVE_CLAMPS, XCHAL_HAVE_DEPBITS, XCHAL_HAVE_EXCLUSIVE)
+	(XCHAL_HAVE_XEA3, XTENSA_CONFIG_V3_ENTRY_LIST): New definitions.
+	(XTENSA_CONFIG_INSTANCE_LIST): Add xtensa_config_v3 instance.
+	(XTENSA_CONFIG_ENTRY_LIST): Add XTENSA_CONFIG_V3_ENTRY_LIST.
+
 2023-02-02  Andrew Stubbs  <ams@codesourcery.com>
 
 	* gomp-constants.h (GOMP_VERSION_GCN): Bump.

@@ -33,10 +33,18 @@ MA 02111-1307, USA. */
 #define MAX(h,i) ((h) > (i) ? (h) : (i))
 #endif
 
+#if __SIZEOF_LONG__ == 4 && __SIZEOF_LONG_LONG__ == 8 \
+    && __SIZEOF_POINTER__ == 8
+/* Use 64-bit limbs on LLP64 targets.  */
+#define BITS_PER_MP_LIMB (__SIZEOF_LONG_LONG__ * __CHAR_BIT__)
+typedef unsigned long long int	mp_limb_t;
+typedef long long int		mp_limb_signed_t;
+#else
 #define BITS_PER_MP_LIMB (__SIZEOF_LONG__ * __CHAR_BIT__)
-#define BYTES_PER_MP_LIMB (BITS_PER_MP_LIMB / __CHAR_BIT__)
 typedef unsigned long int	mp_limb_t;
 typedef long int		mp_limb_signed_t;
+#endif
+#define BYTES_PER_MP_LIMB (BITS_PER_MP_LIMB / __CHAR_BIT__)
 
 typedef mp_limb_t *             mp_ptr;
 typedef const mp_limb_t *	mp_srcptr;

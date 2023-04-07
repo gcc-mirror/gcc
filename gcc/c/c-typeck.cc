@@ -4083,7 +4083,7 @@ parser_build_binary_op (location_t location, enum tree_code code,
       && arg2.m_decimal)
     check_for_xor_used_as_pow (arg1.get_location (), arg1.value,
 			       location,
-			       arg2.value);
+			       arg2.get_location (), arg2.value);
 
   return result;
 }

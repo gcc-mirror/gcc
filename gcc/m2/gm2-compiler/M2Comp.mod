@@ -59,14 +59,17 @@ FROM M2Batch IMPORT GetSource, GetModuleNo, GetDefinitionModuleFile, GetModuleFi
 FROM SymbolTable IMPORT GetSymName, IsDefImp, NulSym,
                         IsHiddenTypeDeclared, GetFirstUsed, GetMainModule, SetMainModule,
                         ResolveConstructorTypes, SanityCheckConstants, IsDefinitionForC,
-                        IsBuiltinInModule, PutModLink, IsDefLink, IsModLink ;
+                        IsBuiltinInModule, PutModLink, IsDefLink, IsModLink,
+                        PutLibName ;
 
 FROM FIO IMPORT StdErr, StdOut ;
 FROM NameKey IMPORT Name, GetKey, KeyToCharStar, makekey ;
 FROM M2Printf IMPORT fprintf1 ;
 FROM M2Quiet IMPORT qprintf0, qprintf1, qprintf2 ;
-FROM DynamicStrings IMPORT String, InitString, KillString, InitStringCharStar, Dup, Mark, string ;
-FROM M2Options IMPORT Verbose ;
+FROM DynamicStrings IMPORT String, InitString, KillString, InitStringCharStar, Dup, Mark, EqualArray, string ;
+FROM M2Options IMPORT Verbose, GetM2Prefix ;
+FROM PathName IMPORT DumpPathName ;
+
 
 CONST
    Debugging = FALSE ;
@@ -226,6 +229,19 @@ END PeepInto ;
 
 
 (*
+   qprintLibName - print the libname
+*)
+
+PROCEDURE qprintLibName (LibName: String) ;
+BEGIN
+   IF (LibName # NIL) AND (NOT EqualArray (LibName, ''))
+   THEN
+      qprintf1 (' [%s]', LibName)
+   END
+END qprintLibName ;
+
+
+(*
    DoPass0 -
 *)
 
@@ -236,6 +252,7 @@ VAR
    i       : CARDINAL ;
    SymName,
    FileName,
+   LibName,
    PPSource: String ;
 BEGIN
    P0Init ;
@@ -251,27 +268,34 @@ BEGIN
    i := 1 ;
    Sym := GetModuleNo(i) ;
    qprintf1('Compiling: %s\n', PPSource) ;
+   IF Debugging
+   THEN
+      DumpPathName ('DoPass0')
+   END ;
    IF Verbose
    THEN
-      fprintf1(StdOut, 'Compiling: %s\n', PPSource) ;
+      fprintf1 (StdOut, 'Compiling: %s\n', PPSource)
    END ;
    qprintf0('Pass 0: lexical analysis, parsing, modules and associated filenames\n') ;
    WHILE Sym#NulSym DO
-      SymName := InitStringCharStar(KeyToCharStar(GetSymName(Sym))) ;
-      IF IsDefImp(Sym)
+      SymName := InitStringCharStar (KeyToCharStar (GetSymName (Sym))) ;
+      IF IsDefImp (Sym)
       THEN
-         IF FindSourceDefFile(SymName, FileName)
+         LibName := NIL ;
+         IF FindSourceDefFile (SymName, FileName, LibName)
          THEN
             ModuleType := Definition ;
-            IF OpenSource(AssociateDefinition(PreprocessModule(FileName, FALSE), Sym))
+            IF OpenSource (AssociateDefinition (PreprocessModule (FileName, FALSE), Sym))
             THEN
-               IF NOT P0SyntaxCheck.CompilationUnit()
+               IF NOT P0SyntaxCheck.CompilationUnit ()
                THEN
-                  WriteFormat0('compilation failed') ;
+                  WriteFormat0 ('compilation failed') ;
                   CloseSource ;
                   RETURN
                END ;
                qprintf2 ('   Module %-20s : %s', SymName, FileName) ;
+               qprintLibName (LibName) ;
+               PutLibName (Sym, makekey (string (LibName))) ;
                IF IsDefinitionForC (Sym)
                THEN
                   qprintf0 (' (for C)')
@@ -295,29 +319,37 @@ BEGIN
       ELSE
          ModuleType := Program
       END ;
-      IF (Main=Sym) OR NeedToParseImplementation(Sym)
+      IF (Main=Sym) OR NeedToParseImplementation (Sym)
       THEN
-         (* only need to read implementation module if hidden types are declared or it is the main module *)
+         (* Only need to read implementation module if hidden types are declared or it is the main module *)
+         LibName := NIL ;
          IF Main=Sym
          THEN
-            FileName := Dup (PPSource)
+            FileName := Dup (PPSource) ;
+            LibName := InitStringCharStar (GetM2Prefix ()) ;
+            PutLibName (Sym, makekey (string (LibName)))
          ELSE
-            IF FindSourceModFile (SymName, FileName)
+            IF FindSourceModFile (SymName, FileName, LibName)
             THEN
-               FileName := PreprocessModule (FileName, FALSE)
+               FileName := PreprocessModule (FileName, FALSE) ;
+               PutLibName (Sym, makekey (string (LibName)))
+            ELSE
+               qprintf1 ('   Module %-20s : implementation source file not found\n', SymName)
             END
          END ;
+
          IF FileName#NIL
          THEN
             IF OpenSource (AssociateModule (Dup (FileName), Sym))
             THEN
-               IF NOT P0SyntaxCheck.CompilationUnit()
+               IF NOT P0SyntaxCheck.CompilationUnit ()
                THEN
                   WriteFormat0 ('compilation failed') ;
                   CloseSource ;
                   RETURN
                END ;
                qprintf2 ('   Module %-20s : %s', SymName, FileName) ;
+               qprintLibName (LibName) ;
                IF IsModLink (Sym)
                THEN
                   qprintf0 (' (linking)')
@@ -327,9 +359,9 @@ BEGIN
             ELSE
                (* It is quite legitimate to implement a module in C (and pretend it was a M2
                   implementation) providing that it is not the main program module and the
-                  definition module do not declare a hidden type when -fextended-opaque
+                  definition module does not declare a hidden type when -fextended-opaque
                   is used.  *)
-               IF (NOT WholeProgram) OR (Sym=Main) OR IsHiddenTypeDeclared(Sym)
+               IF (NOT WholeProgram) OR (Sym=Main) OR IsHiddenTypeDeclared (Sym)
                THEN
                   (* Unrecoverable error.  *)
                   MetaErrorString1 (Sprintf1 (InitString ('file {%%1EUAF%s} containing module {%%1a} cannot be found'),
@@ -343,9 +375,13 @@ BEGIN
          THEN
             (* The implementation is only useful if -fgen-module-list= is
                used and we do not insist upon it.  *)
-            IF FindSourceModFile (SymName, FileName)
+            LibName := NIL ;
+            IF FindSourceModFile (SymName, FileName, LibName)
             THEN
-               qprintf2 ('   Module %-20s : %s (linking)\n', SymName, FileName) ;
+               PutLibName (Sym, makekey (string (LibName))) ;
+               qprintf2 ('   Module %-20s : %s' , SymName, FileName) ;
+               qprintLibName (LibName) ;
+               qprintf0 (' (linking)\n') ;
                IF OpenSource (AssociateModule (PreprocessModule (FileName, FALSE), Sym))
                THEN
                   PutModLink (Sym, TRUE) ;   (* This source is only used to determine link time info.  *)
@@ -362,6 +398,7 @@ BEGIN
       END ;
       SymName := KillString (SymName) ;
       FileName := KillString (FileName) ;
+      LibName := KillString (LibName) ;
       INC (i) ;
       Sym := GetModuleNo (i)
    END ;

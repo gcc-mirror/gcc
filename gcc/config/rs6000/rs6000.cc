@@ -3662,14 +3662,17 @@ rs6000_option_override_internal (bool global_init_p)
 
   /* Without option powerpc64 specified explicitly, we need to ensure
      powerpc64 always enabled for 64 bit here, otherwise some following
-     checks can use unexpected TARGET_POWERPC64 value.  Meanwhile, we
-     need to ensure set_masks doesn't have OPTION_MASK_POWERPC64 on,
-     otherwise later processing can clear it.  */
+     checks can use unexpected TARGET_POWERPC64 value.  */
   if (!(rs6000_isa_flags_explicit & OPTION_MASK_POWERPC64)
       && TARGET_64BIT)
     {
       rs6000_isa_flags |= OPTION_MASK_POWERPC64;
-      set_masks &= ~OPTION_MASK_POWERPC64;
+      /* Need to stop powerpc64 from being unset in later processing,
+	 so clear it in set_masks.  But as PR108240 shows, to keep it
+	 consistent with before, we want to make this only if 64 bit
+	 is enabled explicitly.  This is a hack, revisit this later.  */
+      if (rs6000_isa_flags_explicit & OPTION_MASK_64BIT)
+	set_masks &= ~OPTION_MASK_POWERPC64;
     }
 
   /* Process the -mcpu=<xxx> and -mtune=<xxx> argument.  If the user changed
@@ -7234,23 +7237,29 @@ rs6000_expand_vector_set_var_p9 (rtx target, rtx val, rtx idx)
   machine_mode idx_mode = GET_MODE (idx);
 
   machine_mode shift_mode;
-  rtx (*gen_ashl)(rtx, rtx, rtx);
-  rtx (*gen_lvsl)(rtx, rtx);
-  rtx (*gen_lvsr)(rtx, rtx);
+  /* Gen function pointers for shifting left and generation of permutation
+     control vectors.  */
+  rtx (*gen_ashl) (rtx, rtx, rtx);
+  rtx (*gen_pcvr1) (rtx, rtx);
+  rtx (*gen_pcvr2) (rtx, rtx);
 
   if (TARGET_POWERPC64)
     {
       shift_mode = DImode;
       gen_ashl = gen_ashldi3;
-      gen_lvsl = gen_altivec_lvsl_reg_di;
-      gen_lvsr = gen_altivec_lvsr_reg_di;
+      gen_pcvr1 = BYTES_BIG_ENDIAN ? gen_altivec_lvsl_reg_di
+				   : gen_altivec_lvsr_reg_di;
+      gen_pcvr2 = BYTES_BIG_ENDIAN ? gen_altivec_lvsr_reg_di
+				   : gen_altivec_lvsl_reg_di;
     }
   else
     {
       shift_mode = SImode;
       gen_ashl = gen_ashlsi3;
-      gen_lvsl = gen_altivec_lvsl_reg_si;
-      gen_lvsr = gen_altivec_lvsr_reg_si;
+      gen_pcvr1 = BYTES_BIG_ENDIAN ? gen_altivec_lvsl_reg_si
+				   : gen_altivec_lvsr_reg_si;
+      gen_pcvr2 = BYTES_BIG_ENDIAN ? gen_altivec_lvsr_reg_si
+				   : gen_altivec_lvsl_reg_si;
     }
   /* Generate the IDX for permute shift, width is the vector element size.
      idx = idx * width.  */
@@ -7259,25 +7268,29 @@ rs6000_expand_vector_set_var_p9 (rtx target, rtx val, rtx idx)
 
   emit_insn (gen_ashl (tmp, idx, GEN_INT (shift)));
 
-  /*  lvsr    v1,0,idx.  */
-  rtx pcvr = gen_reg_rtx (V16QImode);
-  emit_insn (gen_lvsr (pcvr, tmp));
-
-  /*  lvsl    v2,0,idx.  */
-  rtx pcvl = gen_reg_rtx (V16QImode);
-  emit_insn (gen_lvsl (pcvl, tmp));
+  /* Generate one permutation control vector used for rotating the element
+     at to-insert position to element zero in target vector.  lvsl is
+     used for big endianness while lvsr is used for little endianness:
+     lvs[lr]    v1,0,idx.  */
+  rtx pcvr1 = gen_reg_rtx (V16QImode);
+  emit_insn (gen_pcvr1 (pcvr1, tmp));
 
   rtx sub_target = simplify_gen_subreg (V16QImode, target, mode, 0);
+  rtx perm1 = gen_altivec_vperm_v8hiv16qi (sub_target, sub_target, sub_target,
+					   pcvr1);
+  emit_insn (perm1);
 
-  rtx permr
-    = gen_altivec_vperm_v8hiv16qi (sub_target, sub_target, sub_target, pcvr);
-  emit_insn (permr);
-
+  /* Insert val into element 0 of target vector.  */
   rs6000_expand_vector_set (target, val, const0_rtx);
 
-  rtx perml
-    = gen_altivec_vperm_v8hiv16qi (sub_target, sub_target, sub_target, pcvl);
-  emit_insn (perml);
+  /* Rotate back with a reversed permutation control vector generated from:
+     lvs[rl]   v2,0,idx.  */
+  rtx pcvr2 = gen_reg_rtx (V16QImode);
+  emit_insn (gen_pcvr2 (pcvr2, tmp));
+
+  rtx perm2 = gen_altivec_vperm_v8hiv16qi (sub_target, sub_target, sub_target,
+					   pcvr2);
+  emit_insn (perm2);
 }
 
 /* Insert VAL into IDX of TARGET, VAL size is same of the vector element, IDX
@@ -11151,26 +11164,6 @@ init_float128_ibm (machine_mode mode)
     }
 }
 
-/* Create a decl for either complex long double multiply or complex long double
-   divide when long double is IEEE 128-bit floating point.  We can't use
-   __multc3 and __divtc3 because the original long double using IBM extended
-   double used those names.  The complex multiply/divide functions are encoded
-   as builtin functions with a complex result and 4 scalar inputs.  */
-
-static void
-create_complex_muldiv (const char *name, built_in_function fncode, tree fntype)
-{
-  tree fndecl = add_builtin_function (name, fntype, fncode, BUILT_IN_NORMAL,
-				      name, NULL_TREE);
-
-  set_builtin_decl (fncode, fndecl, true);
-
-  if (TARGET_DEBUG_BUILTIN)
-    fprintf (stderr, "create complex %s, fncode: %d\n", name, (int) fncode);
-
-  return;
-}
-
 /* Set up IEEE 128-bit floating point routines.  Use different names if the
    arguments can be passed in a vector register.  The historical PowerPC
    implementation of IEEE 128-bit floating point used _q_<op> for the names, so
@@ -11182,32 +11175,6 @@ init_float128_ieee (machine_mode mode)
 {
   if (FLOAT128_VECTOR_P (mode))
     {
-      static bool complex_muldiv_init_p = false;
-
-      /* Set up to call __mulkc3 and __divkc3 under -mabi=ieeelongdouble.  If
-	 we have clone or target attributes, this will be called a second
-	 time.  We want to create the built-in function only once.  */
-     if (mode == TFmode && TARGET_IEEEQUAD && !complex_muldiv_init_p)
-       {
-	 complex_muldiv_init_p = true;
-	 built_in_function fncode_mul =
-	   (built_in_function) (BUILT_IN_COMPLEX_MUL_MIN + TCmode
-				- MIN_MODE_COMPLEX_FLOAT);
-	 built_in_function fncode_div =
-	   (built_in_function) (BUILT_IN_COMPLEX_DIV_MIN + TCmode
-				- MIN_MODE_COMPLEX_FLOAT);
-
-	 tree fntype = build_function_type_list (complex_long_double_type_node,
-						 long_double_type_node,
-						 long_double_type_node,
-						 long_double_type_node,
-						 long_double_type_node,
-						 NULL_TREE);
-
-	 create_complex_muldiv ("__mulkc3", fncode_mul, fntype);
-	 create_complex_muldiv ("__divkc3", fncode_div, fntype);
-       }
-
       set_optab_libfunc (add_optab, mode, "__addkf3");
       set_optab_libfunc (sub_optab, mode, "__subkf3");
       set_optab_libfunc (neg_optab, mode, "__negkf2");
@@ -28225,6 +28192,27 @@ rs6000_starting_frame_offset (void)
   return RS6000_STARTING_FRAME_OFFSET;
 }
 
+/* Internal function to return the built-in function id for the complex
+   multiply operation for a given mode.  */
+
+static inline built_in_function
+complex_multiply_builtin_code (machine_mode mode)
+{
+  gcc_assert (IN_RANGE (mode, MIN_MODE_COMPLEX_FLOAT, MAX_MODE_COMPLEX_FLOAT));
+  int func = BUILT_IN_COMPLEX_MUL_MIN + mode - MIN_MODE_COMPLEX_FLOAT;
+  return (built_in_function) func;
+}
+
+/* Internal function to return the built-in function id for the complex divide
+   operation for a given mode.  */
+
+static inline built_in_function
+complex_divide_builtin_code (machine_mode mode)
+{
+  gcc_assert (IN_RANGE (mode, MIN_MODE_COMPLEX_FLOAT, MAX_MODE_COMPLEX_FLOAT));
+  int func = BUILT_IN_COMPLEX_DIV_MIN + mode - MIN_MODE_COMPLEX_FLOAT;
+  return (built_in_function) func;
+}
 
 /* On 64-bit Linux and Freebsd systems, possibly switch the long double library
    function names from <foo>l to <foo>f128 if the default long double type is
@@ -28243,11 +28231,53 @@ rs6000_starting_frame_offset (void)
    only do this transformation if the __float128 type is enabled.  This
    prevents us from doing the transformation on older 32-bit ports that might
    have enabled using IEEE 128-bit floating point as the default long double
-   type.  */
+   type.
+
+   We also use the TARGET_MANGLE_DECL_ASSEMBLER_NAME hook to change the
+   function names used for complex multiply and divide to the appropriate
+   names.  */
 
 static tree
 rs6000_mangle_decl_assembler_name (tree decl, tree id)
 {
+  /* Handle complex multiply/divide.  For IEEE 128-bit, use __mulkc3 or
+     __divkc3 and for IBM 128-bit use __multc3 and __divtc3.  */
+  if (TARGET_FLOAT128_TYPE
+      && TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_IS_UNDECLARED_BUILTIN (decl)
+      && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
+    {
+      built_in_function id = DECL_FUNCTION_CODE (decl);
+      const char *newname = NULL;
+
+      if (id == complex_multiply_builtin_code (KCmode))
+	newname = "__mulkc3";
+
+      else if (id == complex_multiply_builtin_code (ICmode))
+	newname = "__multc3";
+
+      else if (id == complex_multiply_builtin_code (TCmode))
+	newname = (TARGET_IEEEQUAD) ? "__mulkc3" : "__multc3";
+
+      else if (id == complex_divide_builtin_code (KCmode))
+	newname = "__divkc3";
+
+      else if (id == complex_divide_builtin_code (ICmode))
+	newname = "__divtc3";
+
+      else if (id == complex_divide_builtin_code (TCmode))
+	newname = (TARGET_IEEEQUAD) ? "__divkc3" : "__divtc3";
+
+      if (newname)
+	{
+	  if (TARGET_DEBUG_BUILTIN)
+	    fprintf (stderr, "Map complex mul/div => %s\n", newname);
+
+	  return get_identifier (newname);
+	}
+    }
+
+  /* Map long double built-in functions if long double is IEEE 128-bit.  */
   if (TARGET_FLOAT128_TYPE && TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128
       && TREE_CODE (decl) == FUNCTION_DECL
       && DECL_IS_UNDECLARED_BUILTIN (decl)

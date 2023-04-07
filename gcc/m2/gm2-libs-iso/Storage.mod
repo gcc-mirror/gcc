@@ -26,7 +26,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 IMPLEMENTATION MODULE Storage ;
 
-FROM libc IMPORT malloc, free, memcpy ;
+FROM libc IMPORT memcpy, abort, malloc, free, printf ;
+
+IMPORT SysStorage ;
+
 FROM M2RTS IMPORT Halt ;
 FROM SYSTEM IMPORT TSIZE ;
 FROM M2EXCEPTION IMPORT M2Exceptions ;
@@ -37,11 +40,28 @@ FROM EXCEPTIONS IMPORT ExceptionNumber, RAISE,
                        IsExceptionalExecution ;
 
 
+CONST
+   DebugTrace = FALSE ;
+   UseMallocFree = FALSE ;
+
 
 PROCEDURE ALLOCATE (VAR addr: SYSTEM.ADDRESS; amount: CARDINAL) ;
 BEGIN
    Init ;
-   addr := malloc (amount) ;
+   IF DebugTrace
+   THEN
+      printf ("request m2iso:Storage.ALLOCATE (..., %d bytes)\n", amount)
+   END ;
+   IF UseMallocFree
+   THEN
+      addr := malloc (amount)
+   ELSE
+      SysStorage.ALLOCATE (addr, amount)
+   END ;
+   IF DebugTrace
+   THEN
+      printf ("return m2iso:Storage.ALLOCATE (%p, %d bytes)\n", addr, amount)
+   END ;
    IF addr#NIL
    THEN
       PutKey (storageTree, addr, amount)
@@ -52,9 +72,18 @@ END ALLOCATE ;
 PROCEDURE DEALLOCATE (VAR addr: SYSTEM.ADDRESS; amount: CARDINAL) ;
 BEGIN
    assert (initialized) ;
+   IF DebugTrace
+   THEN
+      printf ("m2iso:Storage.DEALLOCATE (%p, %d bytes)\n", addr, amount)
+   END ;
    IF VerifyDeallocate (addr, amount)
    THEN
-      free (addr) ;
+      IF UseMallocFree
+      THEN
+         free (addr)
+      ELSE
+         SysStorage.DEALLOCATE (addr, amount)
+      END ;
       addr := NIL
    END
 END DEALLOCATE ;
@@ -115,7 +144,7 @@ PROCEDURE VerifyDeallocate (addr: SYSTEM.ADDRESS; amount: CARDINAL) : BOOLEAN ;
 VAR
    a: CARDINAL ;
 BEGIN
-
+   Init ;
    IF addr=NIL
    THEN
       RAISE (storageException, ORD(nilDeallocation), 'deallocating pointer whose value is NIL') ;
@@ -146,8 +175,8 @@ PROCEDURE assert (condition: BOOLEAN) ;
 BEGIN
    IF NOT condition
    THEN
-      Halt (__FILE__, __LINE__, __FUNCTION__,
-            'internal runtime error, module Storage has not been initialized yet')
+      Halt ('internal runtime error, module Storage has not been initialized yet',
+            __FILE__, __FUNCTION__, __LINE__)
    END
 END assert ;
 

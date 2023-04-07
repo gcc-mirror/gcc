@@ -35,12 +35,14 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #endif /* !__GNUG__.  */
 #endif /* !m2type_c.  */
 
+#include <stdbool.h>
+
 typedef void *m2type_Constructor;
 
-EXTERN int m2type_ValueInTypeRange (tree type, tree value);
-EXTERN int m2type_ExceedsTypeRange (tree type, tree low, tree high);
-EXTERN int m2type_ValueOutOfTypeRange (tree type, tree value);
-EXTERN int m2type_WithinTypeRange (tree type, tree low, tree high);
+EXTERN bool m2type_ValueInTypeRange (tree type, tree value);
+EXTERN bool m2type_ExceedsTypeRange (tree type, tree low, tree high);
+EXTERN bool m2type_ValueOutOfTypeRange (tree type, tree value);
+EXTERN bool m2type_WithinTypeRange (tree type, tree low, tree high);
 EXTERN tree m2type_BuildStartArrayType (tree index_type, tree elt_type,
                                         int type);
 EXTERN void m2type_PutArrayType (tree array, tree type);
@@ -62,7 +64,7 @@ EXTERN tree m2type_SetTypePacked (tree node);
 EXTERN tree m2type_SetDeclPacked (tree node);
 EXTERN tree m2type_SetAlignment (tree node, tree align);
 EXTERN tree m2type_BuildEndRecord (location_t location, tree record,
-                                   tree fieldlist, int isPacked);
+                                   tree fieldlist, bool isPacked);
 EXTERN tree m2type_AddStringToTreeList (tree list, tree string);
 EXTERN tree m2type_ChainOnParamValue (tree list, tree name, tree str,
                                       tree value);
@@ -73,10 +75,10 @@ EXTERN tree m2type_BuildStartFieldRecord (location_t location, char *name,
                                           tree type);
 EXTERN tree m2type_BuildEndFieldVarient (location_t location,
                                          tree varientField, tree varientList,
-                                         int isPacked);
+                                         bool isPacked);
 EXTERN tree m2type_BuildStartFieldVarient (location_t location, char *name);
 EXTERN tree m2type_BuildEndVarient (location_t location, tree varientField,
-                                    tree varientList, int isPacked);
+                                    tree varientList, bool isPacked);
 EXTERN tree m2type_BuildStartVarient (location_t location, char *name);
 EXTERN tree m2type_BuildStartUnion (location_t location, char *name);
 EXTERN tree m2type_BuildStartRecord (location_t location, char *name);
@@ -160,7 +162,7 @@ EXTERN tree m2type_BuildSmallestTypeRange (location_t location, tree low,
                                            tree high);
 EXTERN tree m2type_BuildSetTypeFromSubrange (location_t location, char *name,
                                              tree subrangeType, tree lowval,
-                                             tree highval, int ispacked);
+                                             tree highval, bool ispacked);
 EXTERN int m2type_GetBitsPerBitset (void);
 EXTERN tree m2type_GetM2RType (void);
 EXTERN tree m2type_GetM2ZType (void);
@@ -169,7 +171,7 @@ EXTERN tree m2type_DeclareKnownType (location_t location, char *name,
                                      tree type);
 EXTERN tree m2type_GetTreeType (tree type);
 EXTERN tree m2type_BuildEndFunctionType (tree func, tree type,
-                                         int uses_varargs);
+                                         bool uses_varargs);
 EXTERN tree m2type_BuildStartFunctionType (
     location_t location ATTRIBUTE_UNUSED, char *name ATTRIBUTE_UNUSED);
 EXTERN void m2type_InitFunctionTypeParameters (void);
@@ -185,7 +187,7 @@ EXTERN tree m2type_GetMinFrom (location_t location, tree type);
 EXTERN tree m2type_GetMaxFrom (location_t location, tree type);
 EXTERN void m2type_BuildTypeDeclaration (location_t location, tree type);
 EXTERN tree m2type_BuildStartEnumeration (location_t location, char *name,
-                                          int ispacked);
+                                          bool ispacked);
 EXTERN tree m2type_BuildEndEnumeration (location_t location, tree enumtype,
                                         tree enumvalues);
 EXTERN tree m2type_BuildEnumerator (location_t location, char *name,
@@ -193,7 +195,7 @@ EXTERN tree m2type_BuildEnumerator (location_t location, char *name,
 EXTERN tree m2type_BuildPointerType (tree totype);
 EXTERN tree m2type_BuildConstPointerType (tree totype);
 EXTERN tree m2type_BuildSetType (location_t location, char *name, tree type,
-                                 tree lowval, tree highval, int ispacked);
+                                 tree lowval, tree highval, bool ispacked);
 EXTERN void *m2type_BuildStartSetConstructor (tree type);
 EXTERN void m2type_BuildSetConstructorElement (void *p, tree value);
 EXTERN tree m2type_BuildEndSetConstructor (void *p);
@@ -214,7 +216,7 @@ EXTERN tree m2type_gm2_signed_or_unsigned_type (int unsignedp, tree type);
 EXTERN tree m2type_gm2_type_for_size (unsigned int bits, int unsignedp);
 EXTERN tree m2type_BuildProcTypeParameterDeclaration (location_t location,
                                                       tree type,
-                                                      int isreference);
+                                                      bool isreference);
 EXTERN int m2type_IsAddress (tree type);
 EXTERN tree m2type_GetCardinalAddressType (void);
 

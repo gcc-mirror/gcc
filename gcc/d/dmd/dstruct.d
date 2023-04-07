@@ -75,7 +75,7 @@ extern (C++) void semanticTypeInfo(Scope* sc, Type t)
     {
         if (sc.intypeof)
             return;
-        if (sc.flags & (SCOPE.ctfe | SCOPE.compile))
+        if (sc.flags & (SCOPE.ctfe | SCOPE.compile | SCOPE.ctfeBlock))
             return;
     }
 
@@ -478,6 +478,16 @@ extern (C++) class StructDeclaration : AggregateDeclaration
         }
 
         return (ispod == ThreeState.yes);
+    }
+
+    /***************************************
+     * Determine if struct has copy construction (copy constructor or postblit)
+     * Returns:
+     *     true if struct has copy construction
+     */
+    final bool hasCopyConstruction()
+    {
+        return postblit || hasCopyCtor;
     }
 
     override final inout(StructDeclaration) isStructDeclaration() inout @nogc nothrow pure @safe

@@ -1446,18 +1446,19 @@ apply_args_size (void)
 	  {
 	    fixed_size_mode mode = targetm.calls.get_raw_arg_mode (regno);
 
-	    gcc_assert (mode != VOIDmode);
-
-	    align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
-	    if (size % align != 0)
-	      size = CEIL (size, align) * align;
-	    size += GET_MODE_SIZE (mode);
-	    apply_args_mode[regno] = mode;
+	    if (mode != VOIDmode)
+	      {
+		align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
+		if (size % align != 0)
+		  size = CEIL (size, align) * align;
+		size += GET_MODE_SIZE (mode);
+		apply_args_mode[regno] = mode;
+	      }
+	    else
+	      apply_args_mode[regno] = as_a <fixed_size_mode> (VOIDmode);
 	  }
 	else
-	  {
-	    apply_args_mode[regno] = as_a <fixed_size_mode> (VOIDmode);
-	  }
+	  apply_args_mode[regno] = as_a <fixed_size_mode> (VOIDmode);
     }
   return size;
 }
@@ -1481,13 +1482,16 @@ apply_result_size (void)
 	  {
 	    fixed_size_mode mode = targetm.calls.get_raw_result_mode (regno);
 
-	    gcc_assert (mode != VOIDmode);
-
-	    align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
-	    if (size % align != 0)
-	      size = CEIL (size, align) * align;
-	    size += GET_MODE_SIZE (mode);
-	    apply_result_mode[regno] = mode;
+	    if (mode != VOIDmode)
+	      {
+		align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
+		if (size % align != 0)
+		  size = CEIL (size, align) * align;
+		size += GET_MODE_SIZE (mode);
+		apply_result_mode[regno] = mode;
+	      }
+	    else
+	      apply_result_mode[regno] = as_a <fixed_size_mode> (VOIDmode);
 	  }
 	else
 	  apply_result_mode[regno] = as_a <fixed_size_mode> (VOIDmode);
@@ -2087,6 +2091,14 @@ tree
 mathfn_built_in (tree type, combined_fn fn)
 {
   return mathfn_built_in_1 (type, fn, /*implicit=*/ 1);
+}
+
+/* Like mathfn_built_in_1, but always use the explicit array.  */
+
+tree
+mathfn_built_in_explicit (tree type, combined_fn fn)
+{
+  return mathfn_built_in_1 (type, fn, /*implicit=*/ 0);
 }
 
 /* Like mathfn_built_in_1, but take a built_in_function and
@@ -4204,7 +4216,7 @@ builtin_memset_read_str (void *data, void *prev,
 	return const_vec;
 
       /* Use the move expander with CONST_VECTOR.  */
-      target = targetm.gen_memset_scratch_rtx (mode);
+      target = gen_reg_rtx (mode);
       emit_move_insn (target, const_vec);
       return target;
     }
@@ -4248,7 +4260,7 @@ builtin_memset_gen_str (void *data, void *prev,
 	 the memset expander.  */
       insn_code icode = optab_handler (vec_duplicate_optab, mode);
 
-      target = targetm.gen_memset_scratch_rtx (mode);
+      target = gen_reg_rtx (mode);
       class expand_operand ops[2];
       create_output_operand (&ops[0], target, mode);
       create_input_operand (&ops[1], (rtx) data, QImode);
@@ -7134,8 +7146,16 @@ inline_string_cmp (rtx target, tree var_str, const char *const_str,
 
       op0 = convert_modes (mode, unit_mode, op0, 1);
       op1 = convert_modes (mode, unit_mode, op1, 1);
-      result = expand_simple_binop (mode, MINUS, op0, op1,
-				    result, 1, OPTAB_WIDEN);
+      rtx diff = expand_simple_binop (mode, MINUS, op0, op1,
+				      result, 1, OPTAB_WIDEN);
+
+      /* Force the difference into result register.  We cannot reassign
+	 result here ("result = diff") or we may end up returning
+	 uninitialized result when expand_simple_binop allocates a new
+	 pseudo-register for returning.  */
+      if (diff != result)
+	emit_move_insn (result, diff);
+
       if (i < length - 1)
 	emit_cmp_and_jump_insns (result, CONST0_RTX (mode), NE, NULL_RTX,
 	    			 mode, true, ne_label);
@@ -7162,8 +7182,8 @@ inline_expand_builtin_bytecmp (tree exp, rtx target)
   bool is_ncmp = (fcode == BUILT_IN_STRNCMP || fcode == BUILT_IN_MEMCMP);
 
   /* Do NOT apply this inlining expansion when optimizing for size or
-     optimization level below 2.  */
-  if (optimize < 2 || optimize_insn_for_size_p ())
+     optimization level below 2 or if unused *cmp hasn't been DCEd.  */
+  if (optimize < 2 || optimize_insn_for_size_p () || target == const0_rtx)
     return NULL_RTX;
 
   gcc_checking_assert (fcode == BUILT_IN_STRCMP

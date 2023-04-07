@@ -1520,6 +1520,8 @@ Type toStaticArrayType(SliceExp e)
  */
 Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
 {
+    //printf("castTo(e: %s from: %s to: %s\n", e.toChars(), e.type.toChars(), t.toChars());
+
     Expression visit(Expression e)
     {
         //printf("Expression::castTo(this=%s, t=%s)\n", e.toChars(), t.toChars());

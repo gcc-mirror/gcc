@@ -8,4 +8,4 @@ test_select (__fp16 a, __fp16 b, __fp16 c)
 {
   return (a < b) ? b : c;
 }
-/* { dg-final { scan-assembler "bmi" } } */
+/* { dg-final { scan-assembler "bx?(mi|pl)" } } */

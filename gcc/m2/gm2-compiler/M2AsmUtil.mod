@@ -24,14 +24,15 @@ IMPLEMENTATION MODULE M2AsmUtil ;
 
 FROM SFIO IMPORT WriteS ;
 FROM FIO IMPORT StdOut ;
-FROM DynamicStrings IMPORT String, string, ConCat, KillString, InitString, Mark, InitStringCharStar, ConCatChar ;
+FROM DynamicStrings IMPORT String, string, ConCat, KillString, InitString, Mark, InitStringCharStar, ConCatChar, EqualArray ;
 FROM StdIO IMPORT Write ;
 FROM StrIO IMPORT WriteString ;
-FROM NameKey IMPORT WriteKey, GetKey, MakeKey, makekey, KeyToCharStar ;
+FROM NameKey IMPORT WriteKey, GetKey, MakeKey, makekey, KeyToCharStar, NulName ;
 FROM M2Options IMPORT WholeProgram ;
+FROM M2Printf IMPORT printf1 ;
 
 FROM SymbolTable IMPORT NulSym,
-                        GetSymName,
+                        GetSymName, GetLibName,
                         GetScope,
                         GetBaseModule,
                         IsInnerModule,
@@ -39,12 +40,16 @@ FROM SymbolTable IMPORT NulSym,
                         IsProcedure,
                         IsModule,
                         IsDefImp,
-                        IsExportQualified,
+                        IsExportQualified, IsExportUnQualified,
                         IsExported, IsPublic, IsExtern, IsMonoName,
                         IsDefinitionForC ;
 
 FROM M2Error IMPORT InternalError ;
 FROM m2configure IMPORT UseUnderscoreForC ;
+
+
+CONST
+   Debugging = FALSE ;
 
 
 (*
@@ -97,8 +102,10 @@ END GetFullScopeAsmName ;
 
 PROCEDURE GetFullSymName (sym: CARDINAL) : Name ;
 VAR
-   module: String ;
-   scope : CARDINAL ;
+   libname,
+   fullsymname,
+   module     : String ;
+   scope      : CARDINAL ;
 BEGIN
    IF IsProcedure (sym) AND IsMonoName (sym)
    THEN
@@ -106,34 +113,59 @@ BEGIN
    ELSE
       scope := GetScope (sym) ;
       module := GetModulePrefix (InitString (''), sym, scope) ;
-      RETURN StringToKey (ConCat (module, InitStringCharStar (KeyToCharStar (GetSymName (sym)))))
+      fullsymname := ConCat (module, InitStringCharStar (KeyToCharStar (GetSymName (sym)))) ;
+      IF (IsVar (sym) OR IsProcedure (sym)) AND IsExportQualified (sym)
+      THEN
+         WHILE NOT IsDefImp (scope) DO
+            scope := GetScope (scope)
+         END ;
+         IF GetLibName (scope) # NulName
+         THEN
+            IF Debugging
+            THEN
+               printf1 ("before sym = %s  , ", fullsymname)
+            END ;
+            libname := InitStringCharStar (KeyToCharStar (GetLibName (scope))) ;
+            IF NOT EqualArray (libname, '')
+            THEN
+               IF Debugging
+               THEN
+                  printf1 ("libname = %s  , ", libname)
+               END ;
+               fullsymname := ConCat (ConCatChar (libname, '_'), fullsymname) ;
+            END ;
+            IF Debugging
+            THEN
+               printf1 ("after sym = %s\n", fullsymname)
+            END
+         END
+      END ;
+      RETURN StringToKey (fullsymname)
    END
 END GetFullSymName ;
 
 
 (*
-   SymNeedsModulePrefix -
+   SymNeedsModulePrefix - return TRUE if symbol mod is required to have a prefix.
 *)
 
 PROCEDURE SymNeedsModulePrefix (sym, mod: CARDINAL) : BOOLEAN ;
 BEGIN
-   IF IsDefImp(mod)
+   IF IsDefImp (mod)
    THEN
-      IF WholeProgram
+      IF IsExportUnQualified (sym)
       THEN
-         IF NOT IsDefinitionForC(mod)
-         THEN
-            RETURN( TRUE )
-         END
-      ELSIF IsExportQualified(sym)
-      THEN
-         RETURN( TRUE )
+         RETURN FALSE
+      ELSE
+         (* We need to force the prefix if whole program is used otherwise
+            local symbols from multipl modules might conflict.  *)
+         RETURN WholeProgram OR IsExportQualified (sym)
       END
-   ELSIF IsModule(mod)
+   ELSIF IsModule (mod)
    THEN
-      RETURN( WholeProgram )
+      RETURN WholeProgram
    END ;
-   RETURN( FALSE )
+   RETURN FALSE
 END SymNeedsModulePrefix ;
 
 
@@ -151,7 +183,7 @@ BEGIN
       THEN
          RETURN( ConCat(ConCatChar(InitStringCharStar(KeyToCharStar(GetSymName(ModSym))), '_'),
                         GetModulePrefix(Name, ModSym, GetScope(ModSym))) )
-      ELSIF SymNeedsModulePrefix(Sym, ModSym)
+      ELSIF SymNeedsModulePrefix (Sym, ModSym)
       THEN
          RETURN( ConCatChar(ConCat(InitStringCharStar(KeyToCharStar(GetSymName(ModSym))), Mark(Name)), '_') )
       END

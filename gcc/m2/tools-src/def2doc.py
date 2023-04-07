@@ -29,7 +29,7 @@ import sys
 Base_Libs = ['gm2-libs', 'Base libraries', 'Basic M2F compatible libraries']
 
 PIM_Log_Desc = 'PIM and Logitech 3.0 compatible libraries'
-PIM_Log = ['gm2-libs-pim', 'PIM and Logitech 3.0 Compatible', PIM_Log_Desc]
+PIM_Log = ['gm2-libs-log', 'PIM and Logitech 3.0 Compatible', PIM_Log_Desc]
 PIM_Cor_Desc = 'PIM compatible process support'
 PIM_Cor = ['gm2-libs-coroutines', 'PIM coroutine support', PIM_Cor_Desc]
 ISO_Libs = ['gm2-libs-iso', 'M2 ISO Libraries', 'ISO defined libraries']

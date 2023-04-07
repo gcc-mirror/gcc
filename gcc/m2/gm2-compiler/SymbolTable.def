@@ -336,6 +336,7 @@ EXPORT QUALIFIED NulSym,
                  PutModuleContainsBuiltin, IsBuiltinInModule,
 		 HasVarParameters,
                  GetErrorScope,
+                 GetLibName, PutLibName,
 
                  IsSizeSolved,
                  IsOffsetSolved,
@@ -588,7 +589,21 @@ PROCEDURE MakeProcedure (tok: CARDINAL; ProcedureName: Name) : CARDINAL ;
    MakeProcedureCtorExtern - creates an extern ctor procedure
 *)
 
-PROCEDURE MakeProcedureCtorExtern (tokenno: CARDINAL; modulename: Name) : CARDINAL ;
+PROCEDURE MakeProcedureCtorExtern (tokenno: CARDINAL; libname, modulename: Name) : CARDINAL ;
+
+
+(*
+   PutLibName - places libname into defimp or module sym.
+*)
+
+PROCEDURE PutLibName (sym: CARDINAL; libname: Name) ;
+
+
+(*
+   GetLibName - returns libname associated with a defimp or module sym.
+*)
+
+PROCEDURE GetLibName (sym: CARDINAL) : Name ;
 
 
 (*

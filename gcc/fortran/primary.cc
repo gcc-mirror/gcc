@@ -2640,7 +2640,6 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
       codimension = CLASS_DATA (sym)->attr.codimension;
       pointer = CLASS_DATA (sym)->attr.class_pointer;
       allocatable = CLASS_DATA (sym)->attr.allocatable;
-      optional |= CLASS_DATA (sym)->attr.optional;
     }
   else
     {

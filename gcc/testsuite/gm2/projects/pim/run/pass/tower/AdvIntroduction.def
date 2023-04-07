@@ -1,0 +1,7 @@
+DEFINITION MODULE AdvIntroduction ;
+
+EXPORT QUALIFIED StartGame ;
+
+PROCEDURE StartGame ;
+
+END AdvIntroduction.

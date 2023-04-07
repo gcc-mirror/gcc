@@ -22,4 +22,4 @@ void foo (int *p, int n)
   while (--n);
 }
 
-/* { dg-final { scan-tree-dump-not "baz" "fre1" } } */
+/* { dg-final { scan-tree-dump-not "baz" "fre1" { xfail { ! natural_alignment_32 } } } } */

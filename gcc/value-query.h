@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-relation.h"
 
 // The value_query class is used by optimization passes that require
-// valueizing SSA names in terms of a tree value, but have no neeed
+// valueizing SSA names in terms of a tree value, but have no need
 // for ranges.
 //
 // value_of_expr must be provided.  The default for value_on_edge and

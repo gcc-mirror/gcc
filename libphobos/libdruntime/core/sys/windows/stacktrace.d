@@ -30,6 +30,7 @@ extern(Windows) DWORD GetEnvironmentVariableA(LPCSTR lpName, LPSTR pBuffer, DWOR
 extern(Windows) alias USHORT function(ULONG FramesToSkip, ULONG FramesToCapture, PVOID *BackTrace, PULONG BackTraceHash) @nogc RtlCaptureStackBackTraceFunc;
 
 private __gshared RtlCaptureStackBackTraceFunc RtlCaptureStackBackTrace;
+private __gshared CRITICAL_SECTION mutex; // cannot use core.sync.mutex.Mutex unfortunately (cyclic dependency...)
 private __gshared immutable bool initialized;
 
 
@@ -63,11 +64,11 @@ public:
 
             skip += INTERNALFRAMES;
         }
-        if ( initialized )
+        if (initialized)
             m_trace = trace(tracebuf[], skip, context);
     }
 
-    int opApply( scope int delegate(ref const(char[])) dg ) const
+    override int opApply( scope int delegate(ref const(char[])) dg ) const
     {
         return opApply( (ref size_t, ref const(char[]) buf)
                         {
@@ -76,7 +77,7 @@ public:
     }
 
 
-    int opApply( scope int delegate(ref size_t, ref const(char[])) dg ) const
+    override int opApply( scope int delegate(ref size_t, ref const(char[])) dg ) const
     {
         int result;
         foreach ( i, e; resolve(m_trace) )
@@ -118,10 +119,10 @@ public:
     /// ditto
     static ulong[] trace(ulong[] buffer, size_t skip = 0, CONTEXT* context = null) @nogc
     {
-        synchronized( typeid(StackTrace) )
-        {
-            return traceNoSync(buffer, skip, context);
-        }
+        EnterCriticalSection(&mutex);
+        scope(exit) LeaveCriticalSection(&mutex);
+
+        return traceNoSync(buffer, skip, context);
     }
 
     /**
@@ -133,10 +134,15 @@ public:
      */
     @trusted static char[][] resolve(const(ulong)[] addresses)
     {
-        synchronized( typeid(StackTrace) )
-        {
-            return resolveNoSync(addresses);
-        }
+        // FIXME: make @nogc to avoid having to disable resolution within finalizers
+        import core.memory : GC;
+        if (GC.inFinalizer)
+            return null;
+
+        EnterCriticalSection(&mutex);
+        scope(exit) LeaveCriticalSection(&mutex);
+
+        return resolveNoSync(addresses);
     }
 
 private:
@@ -421,5 +427,6 @@ shared static this()
 
     dbghelp.SymRegisterCallback64(hProcess, &FixupDebugHeader, 0);
 
+    InitializeCriticalSection(&mutex);
     initialized = true;
 }

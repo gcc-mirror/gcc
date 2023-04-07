@@ -20,6 +20,8 @@
 load_lib file-format.exp
 load_lib gm2.exp
 
+set gm2_keep_executable 0
+
 #
 # gm2-simple-compile -- runs the compiler
 #
@@ -70,6 +72,7 @@ proc gm2-simple-execute { sources args option } {
     global gm2_link_libraries;
     global gm2_link_path;
     global gm2_link_objects;
+    global gm2_keep_executable;
 
     # Use the first source filename given as the filename under test.
     set src [lindex $sources 0];
@@ -111,7 +114,6 @@ proc gm2-simple-execute { sources args option } {
     # now append path -fno-libs=- and objects
     set options [concat "{additional_flags=$gm2_link_path} " $options]
     set options [concat "{additional_flags=-fno-libs=-} " $options]
-    set options [concat "{additional_flags=$gm2_link_objects} " $options]
 
     set comp_output [gm2_target_compile "${sources}" "${execname}" executable ${options}];
 
@@ -131,7 +133,10 @@ proc gm2-simple-execute { sources args option } {
     }
     if { $status == "pass" } {
 	${tool}_pass $testcase $option
-	remote_file build delete $execname;
+	# puts stderr $execname
+	if { ! $gm2_keep_executable } {
+	    remote_file build delete $execname;
+	}
     }
     return 1
 }

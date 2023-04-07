@@ -360,10 +360,6 @@ fpreview=dip1021
 D RejectNegative
 Implement DIP1021: Mutable function arguments.
 
-fpreview=dip25
-D RejectNegative
-Implement DIP25: Sealed references.
-
 fpreview=dtorfields
 D RejectNegative
 Destruct fields of partially constructed objects.
@@ -411,10 +407,6 @@ Turn off all revertable D language features.
 frevert=dip1000
 D RejectNegative
 Revert DIP1000: Scoped pointers.
-
-frevert=dip25
-D RejectNegative
-Revert DIP25: Sealed references.
 
 frevert=dtorfields
 D RejectNegative

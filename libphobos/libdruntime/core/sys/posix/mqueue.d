@@ -178,6 +178,7 @@ ssize_t mq_receive (mqd_t mqdes, char* msg_ptr, size_t msg_len, uint* msg_prio);
  *   On success, mq_receive() returns the number of bytes in the received
  *   message; on error, -1 is returned, with errno set to indicate the error
  */
+pragma(mangle, muslRedirTime64Mangle!("mq_timedreceive", "__mq_timedreceive_time64"))
 ssize_t mq_timedreceive (mqd_t mqdes, char* msg_ptr, size_t msg_len,
                          uint* msg_prio, const(timespec)* abs_timeout);
 
@@ -216,5 +217,6 @@ int mq_send (mqd_t mqdes, const(char)* msg_ptr, size_t msg_len, uint msg_prio);
  *   with errno set to indicate the error.
  *
  */
+pragma(mangle, muslRedirTime64Mangle!("mq_timedsend", "__mq_timedsend_time64"))
 int mq_timedsend (mqd_t mqdes, const(char)* msg_ptr, size_t msg_len,
                    uint msg_prio, const(timespec)* abs_timeout);

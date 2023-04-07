@@ -2505,7 +2505,7 @@ version (Windows)
     import std.exception : collectException;
     import std.typecons : tuple;
 
-    TestScript prog = ":Loop\ngoto Loop;";
+    TestScript prog = ":Loop\r\n" ~ "goto Loop";
     auto pid = spawnProcess(prog.path);
 
     // Doesn't block longer than one second
@@ -3658,7 +3658,7 @@ string escapeShellCommand(scope const(char[])[] args...) @safe pure
         {
             args    : ["foo bar", "hello"],
             windows : `"foo bar" hello`,
-            posix   : `'foo bar' 'hello'`
+            posix   : `'foo bar' hello`
         },
         {
             args    : ["foo bar", "hello world"],
@@ -3668,20 +3668,34 @@ string escapeShellCommand(scope const(char[])[] args...) @safe pure
         {
             args    : ["foo bar", "hello", "world"],
             windows : `"foo bar" hello world`,
-            posix   : `'foo bar' 'hello' 'world'`
+            posix   : `'foo bar' hello world`
         },
         {
             args    : ["foo bar", `'"^\`],
             windows : `"foo bar" ^"'\^"^^\\^"`,
             posix   : `'foo bar' ''\''"^\'`
         },
+        {
+            args    : ["foo bar", ""],
+            windows : `"foo bar" ^"^"`,
+            posix   : `'foo bar' ''`
+        },
+        {
+            args    : ["foo bar", "2"],
+            windows : `"foo bar" ^"2^"`,
+            posix   : `'foo bar' '2'`
+        },
     ];
 
     foreach (test; tests)
+    {
+        auto actual = escapeShellCommand(test.args);
         version (Windows)
-            assert(escapeShellCommand(test.args) == test.windows);
+            string expected = test.windows;
         else
-            assert(escapeShellCommand(test.args) == test.posix  );
+            string expected = test.posix;
+        assert(actual == expected, "\nExpected: " ~ expected ~ "\nGot: " ~ actual);
+    }
 }
 
 private string escapeShellCommandString(return scope string command) @safe pure
@@ -3922,6 +3936,37 @@ private char[] escapePosixArgumentImpl(alias allocator)(scope const(char)[] arg)
     @safe nothrow
 if (is(typeof(allocator(size_t.init)[0] = char.init)))
 {
+    bool needQuoting = {
+        import std.ascii : isAlphaNum, isDigit;
+        import std.algorithm.comparison : among;
+
+        // Empty arguments need to be specified as ''
+        if (arg.length == 0)
+            return true;
+        // Arguments ending with digits need to be escaped,
+        // to disambiguate with 1>file redirection syntax
+        if (isDigit(arg[$-1]))
+            return true;
+
+        // Obtained using:
+        // for n in $(seq 1 255) ; do
+        //     c=$(printf \\$(printf "%o" $n))
+        //     q=$(/bin/printf '%q' "$c")
+        //     if [[ "$q" == "$c" ]] ; then printf "%s, " "'$c'" ; fi
+        // done
+        // printf '\n'
+        foreach (char c; arg)
+            if (!isAlphaNum(c) && !c.among('%', '+', ',', '-', '.', '/', ':', '@', ']', '_'))
+                return true;
+        return false;
+    }();
+    if (!needQuoting)
+    {
+        auto buf = allocator(arg.length);
+        buf[] = arg;
+        return buf;
+    }
+
     // '\'' means: close quoted part of argument, append an escaped
     // single quote, and reopen quotes
 
@@ -3994,6 +4039,11 @@ version (unittest_burnin)
     // import std.stdio, std.array; void main(string[] args) { write(args.join("\0")); }
     // Then, test this module with:
     // rdmd --main -unittest -version=unittest_burnin process.d
+
+    import std.file : readText, remove;
+    import std.format : format;
+    import std.path : absolutePath;
+    import std.random : uniform;
 
     auto helper = absolutePath("std_process_unittest_helper");
     assert(executeShell(helper ~ " hello").output.split("\0")[1..$] == ["hello"], "Helper malfunction");

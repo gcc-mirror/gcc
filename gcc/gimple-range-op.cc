@@ -179,6 +179,8 @@ gimple_range_op_handler::gimple_range_op_handler (gimple *s)
   // statements.
   if (is_a <gcall *> (m_stmt))
     maybe_builtin_call ();
+  else
+    maybe_non_standard ();
 }
 
 // Calculate what we can determine of the range of this unary
@@ -306,6 +308,26 @@ public:
     return false;
   }
 } op_cfn_constant_p;
+
+// Implement range operator for integral/pointer functions returning
+// the first argument.
+class cfn_pass_through_arg1 : public range_operator
+{
+public:
+  using range_operator::fold_range;
+  virtual bool fold_range (irange &r, tree, const irange &lh,
+			   const irange &, relation_trio) const
+  {
+    r = lh;
+    return true;
+  }
+  virtual bool op1_range (irange &r, tree, const irange &lhs,
+			  const irange &, relation_trio) const
+  {
+    r = lhs;
+    return true;
+  }
+} op_cfn_pass_through_arg1;
 
 // Implement range operator for CFN_BUILT_IN_SIGNBIT.
 class cfn_signbit : public range_operator_float
@@ -521,7 +543,7 @@ cfn_clz::fold_range (irange &r, tree type, const irange &lh,
   // argument is 0, but that is undefined behavior.
   //
   // For __builtin_c[lt]z* consider argument of 0 always undefined
-  // behavior, for internal fns depending on C?Z_DEFINED_ALUE_AT_ZERO.
+  // behavior, for internal fns depending on C?Z_DEFINED_VALUE_AT_ZERO.
   if (lh.undefined_p ())
     return false;
   int prec = TYPE_PRECISION (lh.type ());
@@ -764,6 +786,57 @@ public:
   }
 } op_cfn_parity;
 
+// Set up a gimple_range_op_handler for any nonstandard function which can be
+// supported via range-ops.
+
+void
+gimple_range_op_handler::maybe_non_standard ()
+{
+  range_operator *signed_op = ptr_op_widen_mult_signed;
+  range_operator *unsigned_op = ptr_op_widen_mult_unsigned;
+  if (gimple_code (m_stmt) == GIMPLE_ASSIGN)
+    switch (gimple_assign_rhs_code (m_stmt))
+      {
+	case WIDEN_PLUS_EXPR:
+	{
+	  signed_op = ptr_op_widen_plus_signed;
+	  unsigned_op = ptr_op_widen_plus_unsigned;
+	}
+	gcc_fallthrough ();
+	case WIDEN_MULT_EXPR:
+	{
+	  m_valid = false;
+	  m_op1 = gimple_assign_rhs1 (m_stmt);
+	  m_op2 = gimple_assign_rhs2 (m_stmt);
+	  tree ret = gimple_assign_lhs (m_stmt);
+	  bool signed1 = TYPE_SIGN (TREE_TYPE (m_op1)) == SIGNED;
+	  bool signed2 = TYPE_SIGN (TREE_TYPE (m_op2)) == SIGNED;
+	  bool signed_ret = TYPE_SIGN (TREE_TYPE (ret)) == SIGNED;
+
+	  /* Normally these operands should all have the same sign, but
+	     some passes and violate this by taking mismatched sign args.  At
+	     the moment the only one that's possible is mismatch inputs and
+	     unsigned output.  Once ranger supports signs for the operands we
+	     can properly fix it,  for now only accept the case we can do
+	     correctly.  */
+	  if ((signed1 ^ signed2) && signed_ret)
+	    return;
+
+	  m_valid = true;
+	  if (signed2 && !signed1)
+	    std::swap (m_op1, m_op2);
+
+	  if (signed1 || signed2)
+	    m_int = signed_op;
+	  else
+	    m_int = unsigned_op;
+	  break;
+	}
+	default:
+	  break;
+      }
+}
+
 // Set up a gimple_range_op_handler for any built in function which can be
 // supported via range-ops.
 
@@ -911,6 +984,13 @@ gimple_range_op_handler::maybe_builtin_call ()
     CASE_CFN_PARITY:
       m_valid = true;
       m_int = &op_cfn_parity;
+      break;
+
+    case CFN_BUILT_IN_EXPECT:
+    case CFN_BUILT_IN_EXPECT_WITH_PROBABILITY:
+      m_valid = true;
+      m_op1 = gimple_call_arg (call, 0);
+      m_int = &op_cfn_pass_through_arg1;
       break;
 
     default:

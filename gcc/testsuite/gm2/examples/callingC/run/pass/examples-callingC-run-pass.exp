@@ -27,7 +27,7 @@ load_lib gm2-torture.exp
 
 set gm2src ${srcdir}/../m2
 
-gm2_init_iso "$srcdir/$subdir"
+gm2_init_iso "${srcdir}/${subdir}"
 gm2_link_obj "c.o"
 
 set output [target_compile $srcdir/$subdir/c.c c.o object "-g"]

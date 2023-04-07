@@ -6114,7 +6114,7 @@ gfc_simplify_nearest (gfc_expr *x, gfc_expr *s)
   kind = gfc_validate_kind (BT_REAL, x->ts.kind, 0);
   mpfr_set_emin ((mpfr_exp_t) gfc_real_kinds[kind].min_exponent -
 		mpfr_get_prec(result->value.real) + 1);
-  mpfr_set_emax ((mpfr_exp_t) gfc_real_kinds[kind].max_exponent - 1);
+  mpfr_set_emax ((mpfr_exp_t) gfc_real_kinds[kind].max_exponent);
   mpfr_check_range (result->value.real, 0, MPFR_RNDU);
 
   if (mpfr_sgn (s->value.real) > 0)
