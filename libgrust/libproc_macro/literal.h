@@ -25,6 +25,7 @@
 
 #include <cstdint>
 
+namespace Literal {
 enum UnsignedTag
 {
   UNSIGNED_8,
@@ -172,5 +173,6 @@ bool
 Literal__from_string (const unsigned char *str, std::uint64_t len,
 		      Literal *lit);
 }
+} // namespace Literal
 
 #endif /* ! LITERAL_H */
