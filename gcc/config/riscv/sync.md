@@ -26,6 +26,7 @@
   UNSPEC_SYNC_OLD_OP_SUBWORD
   UNSPEC_SYNC_EXCHANGE
   UNSPEC_SYNC_EXCHANGE_SUBWORD
+  UNSPEC_ATOMIC_LOAD
   UNSPEC_ATOMIC_STORE
   UNSPEC_MEMORY_BARRIER
 ])
@@ -66,8 +67,31 @@
 
 ;; Atomic memory operations.
 
-;; Implement atomic stores with conservative fences.  Fall back to fences for
-;; atomic loads.
+(define_insn "atomic_load<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+    (unspec_volatile:GPR
+      [(match_operand:GPR 1 "memory_operand" "A")
+       (match_operand:SI 2 "const_int_operand")]      ;; model
+      UNSPEC_ATOMIC_LOAD))]
+  "TARGET_ATOMIC"
+  {
+    enum memmodel model = (enum memmodel) INTVAL (operands[2]);
+    model = memmodel_base (model);
+
+    if (model == MEMMODEL_SEQ_CST)
+      return "fence\trw,rw\;"
+	     "l<amo>\t%0,%1\;"
+	     "fence\tr,rw";
+    if (model == MEMMODEL_ACQUIRE)
+      return "l<amo>\t%0,%1\;"
+	     "fence\tr,rw";
+    else
+      return "l<amo>\t%0,%1";
+  }
+  [(set_attr "type" "atomic")
+   (set (attr "length") (const_int 12))])
+
+;; Implement atomic stores with conservative fences.
 ;; This allows us to be compatible with the ISA manual Table A.6 and Table A.7.
 (define_insn "atomic_store<mode>"
   [(set (match_operand:GPR 0 "memory_operand" "=A")
