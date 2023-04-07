@@ -1978,7 +1978,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
       if (TREE_CODE (gnu_prefix) != TYPE_DECL)
 	{
 	  gnu_result = SUBSTITUTE_PLACEHOLDER_IN_EXPR (gnu_result, gnu_prefix);
-	  if (Present (gnat_smo))
+	  if (Present (gnat_smo)
+	      && Present (Storage_Model_Copy_From (gnat_smo)))
 	    gnu_result = INSTANTIATE_LOAD_IN_EXPR (gnu_result, gnat_smo);
 	}
       else if (CONTAINS_PLACEHOLDER_P (gnu_result))
@@ -2211,7 +2212,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	   handling.  Note that these attributes could not have been used on
 	   an unconstrained array type.  */
 	gnu_result = SUBSTITUTE_PLACEHOLDER_IN_EXPR (gnu_result, gnu_prefix);
-	if (Present (gnat_smo))
+	if (Present (gnat_smo)
+	    && Present (Storage_Model_Copy_From (gnat_smo)))
 	  gnu_result = INSTANTIATE_LOAD_IN_EXPR (gnu_result, gnat_smo);
 
 	/* Cache the expression we have just computed.  Since we want to do it
@@ -2373,7 +2375,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	/* If this has a PLACEHOLDER_EXPR, qualify it by the object we are
 	   handling.  */
 	gnu_result = SUBSTITUTE_PLACEHOLDER_IN_EXPR (gnu_result, gnu_prefix);
-	if (Present (gnat_smo))
+	if (Present (gnat_smo)
+	    && Present (Storage_Model_Copy_From (gnat_smo)))
 	  gnu_result = INSTANTIATE_LOAD_IN_EXPR (gnu_result, gnat_smo);
 	break;
       }
@@ -6701,7 +6704,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	    gnu_result
 	      = build_binary_op (ARRAY_REF, NULL_TREE, gnu_result, gnu_expr);
 
-	    if (Present (gnat_smo))
+	    if (Present (gnat_smo)
+	        && Present (Storage_Model_Copy_From (gnat_smo)))
 	      instantiate_load_in_array_ref (gnu_result, gnat_smo);
 	  }
 
@@ -6746,7 +6750,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	gnu_result = build_binary_op (ARRAY_RANGE_REF, gnu_result_type,
 				      gnu_array_object, gnu_expr);
 
-	if (Present (gnat_smo))
+	if (Present (gnat_smo)
+	    && Present (Storage_Model_Copy_From (gnat_smo)))
 	  instantiate_load_in_array_ref (gnu_result, gnat_smo);
 
 	/* If storage model access is required on the RHS, build the load.  */
