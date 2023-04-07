@@ -45,14 +45,24 @@
   DONE;
 })
 
-;; Until the RISC-V memory model (hence its mapping from C++) is finalized,
-;; conservatively emit a full FENCE.
 (define_insn "mem_thread_fence_1"
   [(set (match_operand:BLK 0 "" "")
 	(unspec:BLK [(match_dup 0)] UNSPEC_MEMORY_BARRIER))
    (match_operand:SI 1 "const_int_operand" "")] ;; model
   ""
-  "fence\tiorw,iorw")
+  {
+    enum memmodel model = (enum memmodel) INTVAL (operands[1]);
+    model = memmodel_base (model);
+    if (model == MEMMODEL_SEQ_CST)
+	return "fence\trw,rw";
+    else if (model == MEMMODEL_ACQ_REL)
+	return "fence.tso";
+    else if (model == MEMMODEL_ACQUIRE)
+	return "fence\tr,rw";
+    else if (model == MEMMODEL_RELEASE)
+	return "fence\trw,w";
+  }
+  [(set (attr "length") (const_int 4))])
 
 ;; Atomic memory operations.
 
