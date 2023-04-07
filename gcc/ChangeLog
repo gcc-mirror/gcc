@@ -1,3 +1,21 @@
+2023-04-06  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/107674
+	* config/arm/arm.cc (arm_effective_regno): New function.
+	(mve_vector_mem_operand): Use it.
+
+2023-04-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109417
+	* gimple-range-gori.cc (gori_compute::may_recompute_p): Check if
+	dependency is in SSA_NAME_FREE_LIST.
+
+2023-04-06  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/109427
+	* params.opt (-param=vect-induction-float=):
+	Fix option attribute typo for IntegerRange.
+
 2023-04-05  Jeff Law  <jlaw@ventanamicro>
 
 	PR target/108892

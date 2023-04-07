@@ -1,3 +1,7 @@
+2023-04-06  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* MAINTAINERS: Add myself.
+
 2023-03-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	* MAINTAINERS: Add myself as OpenMP and libgomp maintainer.

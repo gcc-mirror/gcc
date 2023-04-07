@@ -1,3 +1,301 @@
+2023-04-06  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/mve_intrinsic_type_overloads-fp.c: Remove unused variables.
+	* gcc.target/arm/mve/intrinsics/mve_intrinsic_type_overloads-int.c: Remove unused variables.
+
+2023-04-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109417
+	* gcc.dg/pr109417.c: New.
+
+2023-04-06  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/issue-1422.rs: New test.
+
+2023-04-06  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1361.rs: New test.
+
+2023-04-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* rust/compile/issue-1830_bytes.rs: Fix up DejaGnu directives.
+	* rust/compile/issue-1830_str.rs: Likewise.
+
+2023-04-06  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/empty.in: New test.
+	* rust/compile/include_empty.rs: New test.
+
+2023-04-06  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/torture/traits10.rs: Fix test-case
+
+2023-04-06  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1725-1.rs: New test.
+	* rust/compile/issue-1725-2.rs: New test.
+
+2023-04-06  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/builtin_macro_include_str.rs:
+	Include test of invalid UTF-8.
+	* rust/compile/invalid_utf8: File with invalid UTF-8.
+
+2023-04-06  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/parse_empty_tuple_pattern.rs: New test.
+
+2023-04-06  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/issue-1830_bytes.rs: New test.
+	* rust/compile/issue-1830_str.rs: New test.
+
+2023-04-06  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/variadic.rs: New test.
+
+2023-04-06  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/execute/torture/overflow1.rs: Fix test.
+
+2023-04-06  mxlol233  <mxlol233@outlook.com>
+
+	* rust/compile/const-issue1440.rs: Add crate feature: `intrinsics`.
+	* rust/compile/feature_intrinsics.rs: New file.
+	* rust/compile/issue-1031.rs: Add crate feature: `intrinsics`.
+	* rust/compile/issue-1130.rs: Add crate feature: `intrinsics`.
+	* rust/compile/issue-1131.rs: Add crate feature: `intrinsics`.
+	* rust/compile/issue-1237.rs: Add crate feature: `intrinsics`.
+	* rust/compile/issue-1289.rs: Add crate feature: `intrinsics`.
+	* rust/compile/rust-const-blog-issue.rs: Add crate feature: `intrinsics`.
+	* rust/compile/torture/intrinsics-3.rs: Add crate feature: `intrinsics`.
+	* rust/compile/torture/intrinsics-4.rs: Add crate feature: `intrinsics`.
+	* rust/compile/torture/intrinsics-5.rs: Add crate feature: `intrinsics`.
+	* rust/compile/torture/intrinsics-6.rs: Add crate feature: `intrinsics`.
+	* rust/compile/torture/intrinsics-7.rs: Add crate feature: `intrinsics`.
+	* rust/compile/torture/issue-1024.rs: Add crate feature: `intrinsics`.
+	* rust/compile/torture/issue-1075.rs: Add crate feature: `intrinsics`.
+	* rust/compile/torture/issue-1432.rs: Add crate feature: `intrinsics`.
+	* rust/compile/unsafe10.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/atomic_load.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/atomic_store.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/copy_nonoverlapping1.rs: Add crate feature:
+	`intrinsics`.
+	* rust/execute/torture/issue-1120.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/issue-1133.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/issue-1232.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/slice-magic.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/slice-magic2.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/str-layout1.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/transmute1.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/wrapping_op1.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/wrapping_op2.rs: Add crate feature: `intrinsics`.
+
+2023-04-06  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/macro17.rs: Fix testsuite for new recursion errors.
+	* rust/compile/macro44.rs: Fix invalid testcase assertions.
+	* rust/compile/builtin_macro_recurse.rs: Fix invalid test.
+	* rust/compile/builtin_macro_recurse2.rs: New test.
+	* rust/compile/macro46.rs: New test.
+	* rust/compile/builtin_macro_eager1.rs: New file.
+	* rust/compile/builtin_macro_eager2.rs: New file.
+
+2023-04-06  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/execute/torture/let-pattern-1.rs: New test.
+
+2023-04-06  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/torture/intrinsics-4.rs: implement Copy trait
+	* rust/compile/torture/intrinsics-5.rs: likewise
+	* rust/execute/torture/atomic_load.rs: likewise
+	* rust/execute/torture/atomic_store.rs: likewise
+	* rust/bounds1.rs: New test.
+
+2023-04-06  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/func3.rs: update test case
+
+2023-04-06  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1786.rs: New test.
+
+2023-04-06  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/never_type_err1.rs: Moved to...
+	* rust/compile/never_type1.rs: ...here. It now works
+
+2023-04-06  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1773.rs: New test.
+
+2023-04-06  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/execute/torture/issue-1720-2.rs: New test.
+
+2023-04-06  mxlol233  <mxlol233@outlook.com>
+
+	* rust/compile/feature.rs: New test.
+
+2023-04-06  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/closure_move_expr.rs: New test.
+
+2023-04-06  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/parse_complex_generic_application.rs: New test.
+	* rust/compile/parse_complex_generic_application2.rs: New test.
+
+2023-04-06  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/multi_reference_type.rs: New test.
+
+2023-04-06  Abdul Rafey  <abdulrafeyq@gmail.com>
+
+	* rust/compile/issue-867.rs: New test.
+
+2023-04-06  Lyra  <teromene@teromene.fr>
+
+	* rust/compile/macro45.rs: New test.
+
+2023-04-06  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/execute/torture/builtin_macro_cfg.rs: Handle carriage returns
+		properly.
+	* rust/execute/torture/builtin_macro_concat.rs: Likewise.
+	* rust/execute/torture/builtin_macro_env.rs: Likewise.
+	* rust/execute/torture/builtin_macro_include_bytes.rs: Likewise.
+	* rust/execute/torture/builtin_macro_include_str.rs: Likewise.
+	* rust/execute/torture/builtin_macro_line.rs: Likewise.
+	* rust/execute/torture/builtin_macros1.rs: Likewise.
+	* rust/execute/torture/builtin_macros3.rs: Likewise.
+	* rust/execute/torture/cfg1.rs: Likewise.
+	* rust/execute/torture/cfg2.rs: Likewise.
+	* rust/execute/torture/cfg3.rs: Likewise.
+	* rust/execute/torture/cfg4.rs: Likewise.
+	* rust/execute/torture/coercion1.rs: Likewise.
+	* rust/execute/torture/coercion2.rs: Likewise.
+	* rust/execute/torture/extern_mod4.rs: Likewise.
+	* rust/execute/torture/helloworld1.rs: Likewise.
+	* rust/execute/torture/helloworld2.rs: Likewise.
+	* rust/execute/torture/issue-1198.rs: Likewise.
+	* rust/execute/torture/issue-1231.rs: Likewise.
+	* rust/execute/torture/issue-1232.rs: Likewise.
+	* rust/execute/torture/issue-1249.rs: Likewise.
+	* rust/execute/torture/issue-1436.rs: Likewise.
+	* rust/execute/torture/issue-1496.rs: Likewise.
+	* rust/execute/torture/issue-647.rs: Likewise.
+	* rust/execute/torture/issue-845.rs: Likewise.
+	* rust/execute/torture/issue-851.rs: Likewise.
+	* rust/execute/torture/issue-858.rs: Likewise.
+	* rust/execute/torture/issue-976.rs: Likewise.
+	* rust/execute/torture/macros10.rs: Likewise.
+	* rust/execute/torture/macros11.rs: Likewise.
+	* rust/execute/torture/macros12.rs: Likewise.
+	* rust/execute/torture/macros13.rs: Likewise.
+	* rust/execute/torture/macros14.rs: Likewise.
+	* rust/execute/torture/macros2.rs: Likewise.
+	* rust/execute/torture/macros22.rs: Likewise.
+	* rust/execute/torture/macros29.rs: Likewise.
+	* rust/execute/torture/macros3.rs: Likewise.
+	* rust/execute/torture/macros30.rs: Likewise.
+	* rust/execute/torture/macros31.rs: Likewise.
+	* rust/execute/torture/macros7.rs: Likewise.
+	* rust/execute/torture/macros8.rs: Likewise.
+	* rust/execute/torture/macros9.rs: Likewise.
+	* rust/execute/torture/match1.rs: Likewise.
+	* rust/execute/torture/match2.rs: Likewise.
+	* rust/execute/torture/match3.rs: Likewise.
+	* rust/execute/torture/match_bool1.rs: Likewise.
+	* rust/execute/torture/match_byte1.rs: Likewise.
+	* rust/execute/torture/match_char1.rs: Likewise.
+	* rust/execute/torture/match_int1.rs: Likewise.
+	* rust/execute/torture/match_loop1.rs: Likewise.
+	* rust/execute/torture/match_range1.rs: Likewise.
+	* rust/execute/torture/match_range2.rs: Likewise.
+	* rust/execute/torture/match_tuple1.rs: Likewise.
+	* rust/execute/torture/method1.rs: Likewise.
+	* rust/execute/torture/method2.rs: Likewise.
+	* rust/execute/torture/method3.rs: Likewise.
+	* rust/execute/torture/method4.rs: Likewise.
+	* rust/execute/torture/operator_overload_1.rs: Likewise.
+	* rust/execute/torture/operator_overload_10.rs: Likewise.
+	* rust/execute/torture/operator_overload_11.rs: Likewise.
+	* rust/execute/torture/operator_overload_12.rs: Likewise.
+	* rust/execute/torture/operator_overload_2.rs: Likewise.
+	* rust/execute/torture/operator_overload_4.rs: Likewise.
+	* rust/execute/torture/operator_overload_5.rs: Likewise.
+	* rust/execute/torture/operator_overload_6.rs: Likewise.
+	* rust/execute/torture/operator_overload_7.rs: Likewise.
+	* rust/execute/torture/operator_overload_8.rs: Likewise.
+	* rust/execute/torture/operator_overload_9.rs: Likewise.
+	* rust/execute/torture/str-layout1.rs: Likewise.
+	* rust/execute/torture/str-zero.rs: Likewise.
+	* rust/execute/torture/trait1.rs: Likewise.
+	* rust/execute/torture/trait10.rs: Likewise.
+	* rust/execute/torture/trait11.rs: Likewise.
+	* rust/execute/torture/trait12.rs: Likewise.
+	* rust/execute/torture/trait13.rs: Likewise.
+	* rust/execute/torture/trait2.rs: Likewise.
+	* rust/execute/torture/trait3.rs: Likewise.
+	* rust/execute/torture/trait4.rs: Likewise.
+	* rust/execute/torture/trait5.rs: Likewise.
+	* rust/execute/torture/trait6.rs: Likewise.
+	* rust/execute/torture/trait7.rs: Likewise.
+	* rust/execute/torture/trait8.rs: Likewise.
+	* rust/execute/torture/trait9.rs: Likewise.
+	* rust/execute/torture/closure2.rs: Likewise.
+	* rust/execute/torture/closure3.rs: Likewise.
+	* rust/execute/torture/loop-condition-eval.rs: Likewise.
+	* rust/execute/torture/operator_overload_3.rs: Likewise.
+
+2023-04-06  mxlol233  <mxlol233@outlook.com>
+
+	* rust/compile/diagnostic_underline.rs: New test.
+
+2023-04-06  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/bounds.rs: change to use -fsyntax-only
+	* rust/execute/torture/issue-1720.rs: New test.
+
+2023-04-06  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* rust/compile/decl_macro1.rs: New test.
+	* rust/compile/decl_macro2.rs: New test.
+	* rust/compile/decl_macro3.rs: New test.
+	* rust/compile/decl_macro4.rs: New test.
+	* rust/compile/decl_macro5.rs: New test.
+	* rust/compile/decl_macro6.rs: New test.
+	* rust/compile/decl_macro7.rs: New test.
+	* rust/execute/torture/decl_macro1.rs: New test.
+	* rust/execute/torture/decl_macro2.rs: New test.
+	* rust/execute/torture/decl_macro3.rs: New test.
+	* rust/execute/torture/decl_macro4.rs: New test.
+
+2023-04-06  mxlol233  <mxlol233@outlook.com>
+
+	* rust/compile/bounds.rs: New test.
+
+2023-04-06  Dave  <dme2223@gmail.com>
+
+	* rust/compile/const10.rs: New test.
+
+2023-04-06  Prajwal S N  <prajwalnadig21@gmail.com>
+
+	* rust/compile/unsafe11.rs: New test.
+
+2023-04-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/signbit-2.c: Add -maltivec if supported.
+
+2023-04-06  Alexandre Oliva  <oliva@adacore.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/108899
+	* g++.dg/modules/modules.exp (unsupported): Drop renaming.
+	Fix quoting.
+
 2023-04-05  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109423
