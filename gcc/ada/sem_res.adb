@@ -111,10 +111,9 @@ package body Sem_Res is
    function Has_Applicable_User_Defined_Literal
      (N   : Node_Id;
       Typ : Entity_Id) return Boolean;
-   --  If N is a literal or a named number, check whether Typ
-   --  has a user-defined literal aspect that can apply to N.
-   --  If present, replace N with a call to the corresponding
-   --  function and return True.
+   --  Check whether N is a literal or a named number, and whether Typ has a
+   --  user-defined literal aspect that may apply to N. In this case, replace
+   --  N with a call to the corresponding function and return True.
 
    procedure Check_Discriminant_Use (N : Node_Id);
    --  Enforce the restrictions on the use of discriminants when constraining
@@ -306,11 +305,20 @@ package body Sem_Res is
    function Try_User_Defined_Literal
      (N   : Node_Id;
       Typ : Entity_Id) return Boolean;
-   --  If an operator node has a literal operand, check whether the type
-   --  of the context, or the type of the other operand has a user-defined
-   --  literal aspect that can be applied to the literal to resolve the node.
-   --  If such aspect exists, replace literal with a call to the
-   --  corresponding function and return True, return false otherwise.
+   --  If the node is a literal or a named number or a conditional expression
+   --  whose dependent expressions are all literals or named numbers, and the
+   --  context type has a user-defined literal aspect, then rewrite the node
+   --  or its leaf nodes as calls to the corresponding function, which plays
+   --  the role of an implicit conversion.
+
+   function Try_User_Defined_Literal_For_Operator
+     (N   : Node_Id;
+      Typ : Entity_Id) return Boolean;
+   --  If an operator node has a literal operand, check whether the type of the
+   --  context, or that of the other operand has a user-defined literal aspect
+   --  that can be applied to the literal to resolve the node. If such aspect
+   --  exists, replace literal with a call to the corresponding function and
+   --  return True, return false otherwise.
 
    function Unique_Fixed_Point_Type (N : Node_Id) return Entity_Id;
    --  A universal_fixed expression in an universal context is unambiguous if
@@ -600,6 +608,7 @@ package body Sem_Res is
 
          Analyze_And_Resolve (N, Typ);
          return True;
+
       else
          return False;
       end if;
@@ -3061,14 +3070,11 @@ package body Sem_Res is
                end;
             end if;
 
-            --  If node is a literal and context type has a user-defined
-            --  literal aspect, rewrite node as a call to the corresponding
-            --  function, which plays the role of an implicit conversion.
+            --  Check whether the node is a literal or a named number or a
+            --  conditional expression whose dependent expressions are all
+            --  literals or named numbers.
 
-            if Nkind (N) in N_Numeric_Or_String_Literal | N_Identifier
-              and then Has_Applicable_User_Defined_Literal (N, Typ)
-            then
-               Analyze_And_Resolve (N, Typ);
+            if Try_User_Defined_Literal (N, Typ) then
                return;
             end if;
 
@@ -3179,7 +3185,7 @@ package body Sem_Res is
                --  its operands may be a user-defined literal.
 
                elsif Nkind (N) in N_Op and then No (Entity (N)) then
-                  if Try_User_Defined_Literal (N, Typ) then
+                  if Try_User_Defined_Literal_For_Operator (N, Typ) then
                      return;
                   else
                      Unresolved_Operator (N);
@@ -13323,6 +13329,78 @@ package body Sem_Res is
       Typ : Entity_Id) return Boolean
    is
    begin
+      if Has_Applicable_User_Defined_Literal (N, Typ) then
+         return True;
+
+      elsif Nkind (N) = N_If_Expression then
+         --  Both dependent expressions must have the same type as the context
+
+         declare
+            Condition : constant Node_Id := First (Expressions (N));
+            Then_Expr : constant Node_Id := Next (Condition);
+            Else_Expr : constant Node_Id := Next (Then_Expr);
+
+         begin
+            if Has_Applicable_User_Defined_Literal (Then_Expr, Typ) then
+               Resolve (Else_Expr, Typ);
+               Analyze_And_Resolve (N, Typ);
+               return True;
+
+            elsif Has_Applicable_User_Defined_Literal (Else_Expr, Typ) then
+               Resolve (Then_Expr, Typ);
+               Analyze_And_Resolve (N, Typ);
+               return True;
+            end if;
+         end;
+
+      elsif Nkind (N) = N_Case_Expression then
+         --  All dependent expressions must have the same type as the context
+
+         declare
+            Alt : Node_Id;
+
+         begin
+            Alt := First (Alternatives (N));
+
+            while Present (Alt) loop
+               if Has_Applicable_User_Defined_Literal (Expression (Alt), Typ)
+               then
+                  declare
+                     Other_Alt : Node_Id;
+
+                  begin
+                     Other_Alt := First (Alternatives (N));
+
+                     while Present (Other_Alt) loop
+                        if Other_Alt /= Alt then
+                           Resolve (Expression (Other_Alt), Typ);
+                        end if;
+
+                        Next (Other_Alt);
+                     end loop;
+
+                     Analyze_And_Resolve (N, Typ);
+                     return True;
+                  end;
+               end if;
+
+               Next (Alt);
+            end loop;
+         end;
+      end if;
+
+      return False;
+   end Try_User_Defined_Literal;
+
+   -------------------------------------------
+   -- Try_User_Defined_Literal_For_Operator --
+   -------------------------------------------
+
+   function Try_User_Defined_Literal_For_Operator
+     (N   : Node_Id;
+      Typ : Entity_Id) return Boolean
+   is
+   begin
       if Nkind (N) in N_Op_Add
                     | N_Op_Divide
                     | N_Op_Mod
@@ -13348,9 +13426,6 @@ package body Sem_Res is
             Resolve (Right_Opnd (N), Typ);
             Analyze_And_Resolve (N, Typ);
             return True;
-
-         else
-            return False;
          end if;
 
       elsif Nkind (N) in N_Binary_Op then
@@ -13374,9 +13449,6 @@ package body Sem_Res is
          then
             Analyze_And_Resolve (N, Typ);
             return True;
-
-         else
-            return False;
          end if;
 
       elsif Nkind (N) in N_Unary_Op
@@ -13384,13 +13456,10 @@ package body Sem_Res is
       then
          Analyze_And_Resolve (N, Typ);
          return True;
-
-      else
-         --  Other operators
-
-         return False;
       end if;
-   end Try_User_Defined_Literal;
+
+      return False;
+   end Try_User_Defined_Literal_For_Operator;
 
    -----------------------------
    -- Unique_Fixed_Point_Type --
