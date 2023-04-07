@@ -42,12 +42,14 @@ module rt.deh;
 extern (C)
 {
     Throwable.TraceInfo _d_traceContext(void* ptr = null);
+    Throwable.TraceDeallocator rt_getTraceDeallocator();
     void _d_createTrace(Throwable t, void* context)
     {
         if (t !is null && t.info is null &&
             cast(byte*) t !is typeid(t).initializer.ptr)
         {
             t.info = _d_traceContext(context);
+            t.infoDeallocator = rt_getTraceDeallocator();
         }
     }
 }

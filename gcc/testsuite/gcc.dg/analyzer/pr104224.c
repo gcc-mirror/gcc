@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fno-analyzer-suppress-followups" } */
+
 #include <stdio.h>
 
 struct test {

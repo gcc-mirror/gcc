@@ -173,6 +173,10 @@ class pending_diagnostic
      having to generate feasible execution paths for them).  */
   virtual int get_controlling_option () const = 0;
 
+  /* Vfunc to give the diagnostic the chance to terminate the execution
+     path being explored.  By default, don't terminate the path.  */
+  virtual bool terminate_path_p () const { return false; }
+
   /* Vfunc for emitting the diagnostic.  The rich_location will have been
      populated with a diagnostic_path.
      Return true if a diagnostic is actually emitted.  */

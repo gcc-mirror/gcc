@@ -225,7 +225,10 @@ public:
     {
         if (_p !is null)
         {
-            destroy(_p);
+            static if (is(T == class) || is(T == interface))
+                destroy(_p);
+            else
+                destroy(*_p);
             _p = null;
         }
     }
@@ -259,7 +262,7 @@ private:
 ///
 @safe unittest
 {
-    static struct S
+    struct S
     {
         int i;
         this(int i){this.i = i;}
@@ -284,12 +287,31 @@ private:
     Unique!S u1;
     assert(u1.isEmpty);
     u1 = produce();
+    assert(u1.i == 5);
     increment(u1);
     assert(u1.i == 6);
     //consume(u1); // Error: u1 is not copyable
     // Transfer ownership of the resource
     consume(u1.release);
     assert(u1.isEmpty);
+}
+
+@safe unittest
+{
+    int i;
+    struct S
+    {
+        ~this()
+        {
+            // check context pointer still exists - dtor also called before GC frees struct
+            if (this.tupleof[0])
+                i++;
+        }
+    }
+    {
+        Unique!S u = new S;
+    }
+    assert(i == 1);
 }
 
 @system unittest

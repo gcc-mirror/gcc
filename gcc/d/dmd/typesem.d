@@ -1,7 +1,7 @@
 /**
  * Semantic analysis for D types.
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/typesem.d, _typesem.d)
@@ -46,6 +46,7 @@ import dmd.imphint;
 import dmd.importc;
 import dmd.init;
 import dmd.initsem;
+import dmd.location;
 import dmd.visitor;
 import dmd.mtype;
 import dmd.objc;
@@ -234,7 +235,7 @@ private void resolveHelper(TypeQualified mt, const ref Loc loc, Scope* sc, Dsymb
                 .error(loc, "`%s` is not visible from module `%s`", sm.toPrettyChars(), sc._module.toChars());
                 sm = null;
             }
-            // Same check as in Expression.semanticY(DotIdExp)
+            // Same check as in dotIdSemanticProp(DotIdExp)
             else if (sm.isPackage() && checkAccess(sc, sm.isPackage()))
             {
                 // @@@DEPRECATED_2.106@@@
@@ -3685,7 +3686,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
                  *  template opDispatch(name) if (isValid!name) { ... }
                  */
                 uint errors = gagError ? global.startGagging() : 0;
-                e = dti.semanticY(sc, 0);
+                e = dti.dotTemplateSemanticProp(sc, 0);
                 if (gagError && global.endGagging(errors))
                     e = null;
                 return returnExp(e);
@@ -3703,7 +3704,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
                 auto die = new DotIdExp(e.loc, alias_e, ident);
 
                 auto errors = gagError ? 0 : global.startGagging();
-                auto exp = die.semanticY(sc, gagError);
+                auto exp = die.dotIdSemanticProp(sc, gagError);
                 if (!gagError)
                 {
                     global.endGagging(errors);
@@ -3959,7 +3960,14 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, int flag)
         Dsymbol s = mt.sym.search(e.loc, ident);
         if (!s)
         {
-            if (ident == Id.max || ident == Id.min || ident == Id._init)
+            if (ident == Id._init)
+            {
+                return mt.getProperty(sc, e.loc, ident, flag & 1);
+            }
+
+            /* Allow special enums to not need a member list
+             */
+            if ((ident == Id.max || ident == Id.min) && (mt.sym.members || !mt.sym.isSpecial()))
             {
                 return mt.getProperty(sc, e.loc, ident, flag & 1);
             }
@@ -4880,13 +4888,6 @@ Expression getMaxMinValue(EnumDeclaration ed, const ref Loc loc, Identifier id)
         return errorReturn();
     if (!ed.members)
     {
-        if (ed.isSpecial())
-        {
-            /* Allow these special enums to not need a member list
-             */
-            return ed.memtype.getProperty(ed._scope, loc, id, 0);
-        }
-
         ed.error(loc, "is opaque and has no `.%s`", id.toChars());
         return errorReturn();
     }

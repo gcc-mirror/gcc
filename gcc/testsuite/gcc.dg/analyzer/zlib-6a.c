@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fno-analyzer-suppress-followups" } */
+
 typedef unsigned char Byte;
 typedef unsigned int uInt;
 typedef unsigned long uLong;

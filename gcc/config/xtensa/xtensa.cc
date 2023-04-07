@@ -3548,8 +3548,6 @@ xtensa_expand_epilogue (bool sibcall_p)
 			      gen_frame_mem (SImode, x));
 	    }
 	}
-      if (sibcall_p)
-	emit_use (gen_rtx_REG (SImode, A0_REG));
 
       if (cfun->machine->current_frame_size > 0)
 	{

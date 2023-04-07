@@ -182,6 +182,7 @@ extern (C) int rt_term()
  */
 alias Throwable.TraceInfo function(void* ptr) TraceHandler;
 private __gshared TraceHandler traceHandler = null;
+private __gshared Throwable.TraceDeallocator traceDeallocator = null;
 
 
 /**
@@ -189,10 +190,12 @@ private __gshared TraceHandler traceHandler = null;
  *
  * Params:
  *  h = The new trace handler.  Set to null to use the default handler.
+ *  d = The new dealloactor to use.
  */
-extern (C) void  rt_setTraceHandler(TraceHandler h)
+extern (C) void  rt_setTraceHandler(TraceHandler h, Throwable.TraceDeallocator d = null)
 {
     traceHandler = h;
+    traceDeallocator = d;
 }
 
 /**
@@ -201,6 +204,11 @@ extern (C) void  rt_setTraceHandler(TraceHandler h)
 extern (C) TraceHandler rt_getTraceHandler()
 {
     return traceHandler;
+}
+
+extern (C) Throwable.TraceDeallocator rt_getTraceDeallocator()
+{
+    return traceDeallocator;
 }
 
 /**

@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fno-analyzer-suppress-followups" } */
+
 #include "analyzer-decls.h"
 
 extern int pipe2(int pipefd[2], int flags);

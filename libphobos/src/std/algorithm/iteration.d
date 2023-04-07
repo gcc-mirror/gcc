@@ -7737,8 +7737,9 @@ if (isInputRange!R &&
 
 // uniq
 /**
-Lazily iterates unique consecutive elements of the given range (functionality
-akin to the $(HTTP wikipedia.org/wiki/_Uniq, _uniq) system
+Lazily iterates unique consecutive elements of the given range, which is
+assumed to be sorted (functionality akin to the
+$(HTTP wikipedia.org/wiki/_Uniq, _uniq) system
 utility). Equivalence of elements is assessed by using the predicate
 `pred`, by default `"a == b"`. The predicate is passed to
 $(REF binaryFun, std,functional), and can either accept a string, or any callable

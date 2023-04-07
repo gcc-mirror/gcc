@@ -1891,9 +1891,7 @@ if (!is(S : T) && isAssociativeArray!S &&
     }
     // test conversions floating => integral
     {
-        // AllInts[0 .. $ - 1] should be AllInts
-        // @@@ BUG IN COMPILER @@@
-        foreach (Integral; AllInts[0 .. $ - 1])
+        foreach (Integral; AllInts)
         {
             foreach (Floating; AllFloats)
             {
@@ -1903,7 +1901,7 @@ if (!is(S : T) && isAssociativeArray!S &&
     }
     // test conversion integral => floating
     {
-        foreach (Integral; AllInts[0 .. $ - 1])
+        foreach (Integral; AllInts)
         {
             foreach (Floating; AllFloats)
             {

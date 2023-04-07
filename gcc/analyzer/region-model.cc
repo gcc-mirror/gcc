@@ -505,6 +505,8 @@ public:
       }
   }
 
+  bool terminate_path_p () const final override { return true; }
+
   bool emit (rich_location *rich_loc) final override
   {
     switch (m_pkind)

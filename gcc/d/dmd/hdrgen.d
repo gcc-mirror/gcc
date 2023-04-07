@@ -3,7 +3,7 @@
  *
  * Also used to convert AST nodes to D code in general, e.g. for error messages or `printf` debugging.
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/hdrgen.d, _hdrgen.d)
@@ -823,10 +823,13 @@ public:
         buf.writestring(s.kind());
         buf.writeByte('(');
         s.exp.expressionToBuffer(buf, hgs);
-        if (s.msg)
+        if (s.msgs)
         {
-            buf.writestring(", ");
-            s.msg.expressionToBuffer(buf, hgs);
+            foreach (m; (*s.msgs)[])
+            {
+                buf.writestring(", ");
+                m.expressionToBuffer(buf, hgs);
+            }
         }
         buf.writestring(");");
         buf.writenl();

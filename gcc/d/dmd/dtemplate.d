@@ -28,7 +28,7 @@
  *   arguments, and uses it if found.
  * - Otherwise, the rest of semantic is run on the `TemplateInstance`.
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dtemplate.d, _dtemplate.d)
@@ -64,6 +64,7 @@ import dmd.identifier;
 import dmd.impcnvtab;
 import dmd.init;
 import dmd.initsem;
+import dmd.location;
 import dmd.mtype;
 import dmd.opover;
 import dmd.root.array;
@@ -567,7 +568,6 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
     bool isTrivialAlias;    /// matches pattern `template Alias(T) { alias Alias = qualifiers(T); }`
     bool deprecated_;       /// this template declaration is deprecated
     Visibility visibility;
-    int inuse;              /// for recursive expansion detection
 
     // threaded list of previous instantiation attempts on stack
     TemplatePrevious* previous;
@@ -1117,9 +1117,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                     printf("\tparameter[%d] is %s : %s\n", i, tp.ident.toChars(), ttp.specType ? ttp.specType.toChars() : "");
             }
 
-            inuse++;
             m2 = tp.matchArg(ti.loc, paramscope, ti.tiargs, i, parameters, dedtypes, &sparam);
-            inuse--;
             //printf("\tm2 = %d\n", m2);
             if (m2 == MATCH.nomatch)
             {
@@ -1783,9 +1781,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
                             }
                             else
                             {
-                                inuse++;
                                 oded = tparam.defaultArg(instLoc, paramscope);
-                                inuse--;
                                 if (oded)
                                     (*dedargs)[i] = declareParameter(paramscope, tparam, oded);
                             }
@@ -2166,9 +2162,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
             }
             else
             {
-                inuse++;
                 oded = tparam.defaultArg(instLoc, paramscope);
-                inuse--;
                 if (!oded)
                 {
                     // if tuple parameter and
@@ -2813,11 +2807,6 @@ void functionResolve(ref MatchAccumulator m, Dsymbol dstart, Loc loc, Scope* sc,
     int applyTemplate(TemplateDeclaration td)
     {
         //printf("applyTemplate()\n");
-        if (td.inuse)
-        {
-            td.error(loc, "recursive template expansion");
-            return 1;
-        }
         if (td == td_best)   // skip duplicates
             return 0;
 
@@ -3613,8 +3602,29 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, TemplateParameters* param
                 }
 
                 // Found the corresponding parameter tp
+                /+
+                    https://issues.dlang.org/show_bug.cgi?id=23578
+                    To pattern match:
+                    static if (is(S!int == S!av, alias av))
+
+                    We eventually need to deduce `int` (Tint32 [0]) and `av` (Tident).
+                    Previously this would not get pattern matched at all, but now we check if the
+                    template parameter `av` came from.
+
+                    This note has been left to serve as a hint for further explorers into
+                    how IsExp matching works.
+                +/
+                if (auto ta = tp.isTemplateAliasParameter())
+                {
+                    (*dedtypes)[i] = t;
+                    goto Lexact;
+                }
+                // (23578) - ensure previous behaviour for non-alias template params
                 if (!tp.isTemplateTypeParameter())
+                {
                     goto Lnomatch;
+                }
+
                 Type at = cast(Type)(*dedtypes)[i];
                 Type tt;
                 if (ubyte wx = wm ? deduceWildHelper(t, &tt, tparam) : 0)
@@ -4100,6 +4110,7 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, TemplateParameters* param
                         }
                         goto Lnomatch;
                     }
+
                     TemplateParameter tpx = (*parameters)[i];
                     if (!tpx.matchArg(sc, tempdecl, i, parameters, dedtypes, null))
                         goto Lnomatch;
@@ -4110,7 +4121,7 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, TemplateParameters* param
             L2:
                 for (size_t i = 0; 1; i++)
                 {
-                    //printf("\ttest: tempinst.tiargs[%d]\n", i);
+                    //printf("\ttest: tempinst.tiargs[%zu]\n", i);
                     RootObject o1 = null;
                     if (i < t.tempinst.tiargs.length)
                         o1 = (*t.tempinst.tiargs)[i];
@@ -4121,7 +4132,7 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, TemplateParameters* param
                     }
                     else if (i >= tp.tempinst.tiargs.length)
                         break;
-
+                    //printf("\ttest: o1 = %s\n", o1.toChars());
                     if (i >= tp.tempinst.tiargs.length)
                     {
                         size_t dim = tempdecl.parameters.length - (tempdecl.isVariadic() ? 1 : 0);
@@ -4136,7 +4147,7 @@ MATCH deduceType(RootObject o, Scope* sc, Type tparam, TemplateParameters* param
 
                     RootObject o2 = (*tp.tempinst.tiargs)[i];
                     Type t2 = isType(o2);
-
+                    //printf("\ttest: o2 = %s\n", o2.toChars());
                     size_t j = (t2 && t2.ty == Tident && i == tp.tempinst.tiargs.length - 1)
                         ? templateParameterLookup(t2, parameters) : IDX_NOTFOUND;
                     if (j != IDX_NOTFOUND && j == parameters.length - 1 &&
@@ -5571,15 +5582,25 @@ extern (C++) final class TemplateValueParameter : TemplateParameter
         if (e)
         {
             e = e.syntaxCopy();
-            uint olderrs = global.errors;
             if ((e = e.expressionSemantic(sc)) is null)
                 return null;
+            if (auto te = e.isTemplateExp())
+            {
+                assert(sc && sc.tinst);
+                if (te.td == sc.tinst.tempdecl)
+                {
+                    // defaultValue is a reference to its template declaration
+                    // i.e: `template T(int arg = T)`
+                    // Raise error now before calling resolveProperties otherwise we'll
+                    // start looping on the expansion of the template instance.
+                    sc.tinst.tempdecl.error("recursive template expansion");
+                    return ErrorExp.get();
+                }
+            }
             if ((e = resolveProperties(sc, e)) is null)
                 return null;
             e = e.resolveLoc(instLoc, sc); // use the instantiated loc
             e = e.optimize(WANTvalue);
-            if (global.errors != olderrs)
-                e = ErrorExp.get();
         }
         return e;
     }
@@ -6910,11 +6931,6 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                 auto td = s.isTemplateDeclaration();
                 if (!td)
                     return 0;
-                if (td.inuse)
-                {
-                    td.error(loc, "recursive template expansion");
-                    return 1;
-                }
                 if (td == td_best)   // skip duplicates
                     return 0;
 
@@ -7133,11 +7149,6 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                 auto td = s.isTemplateDeclaration();
                 if (!td)
                     return 0;
-                if (td.inuse)
-                {
-                    td.error(loc, "recursive template expansion");
-                    return 1;
-                }
 
                 /* If any of the overloaded template declarations need inference,
                  * then return true

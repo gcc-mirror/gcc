@@ -428,6 +428,7 @@ Objective-C and Objective-C++ Dialects}.
 -fanalyzer-fine-grained @gol
 -fno-analyzer-state-merge @gol
 -fno-analyzer-state-purge @gol
+-fno-analyzer-suppress-followups @gol
 -fanalyzer-transitivity @gol
 -fno-analyzer-undo-inlining @gol
 -fanalyzer-verbose-edges @gol
@@ -11011,6 +11012,30 @@ and which aren't relevant to leak analysis.
 
 With @option{-fno-analyzer-state-purge} this purging of state can
 be suppressed, for debugging state-handling issues.
+
+@item -fno-analyzer-suppress-followups
+@opindex fanalyzer-suppress-followups
+@opindex fno-analyzer-suppress-followups
+This option is intended for analyzer developers.
+
+By default the analyzer will stop exploring an execution path after
+encountering certain diagnostics, in order to avoid potentially issuing a
+cascade of follow-up diagnostics.
+
+The diagnostics that terminate analysis along a path are:
+
+@itemize
+@item @option{-Wanalyzer-null-argument}
+@item @option{-Wanalyzer-null-dereference}
+@item @option{-Wanalyzer-use-after-free}
+@item @option{-Wanalyzer-use-of-pointer-in-stale-stack-frame}
+@item @option{-Wanalyzer-use-of-uninitialized-value}
+@end itemize
+
+With @option{-fno-analyzer-suppress-followups} the analyzer will
+continue to explore such paths even after such diagnostics, which may
+be helpful for debugging issues in the analyzer, or for microbenchmarks
+for detecting undefined behavior.
 
 @item -fanalyzer-transitivity
 @opindex fanalyzer-transitivity

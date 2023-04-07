@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/lex.html#tokens, Tokens)
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/tokens.d, _tokens.d)
@@ -16,8 +16,8 @@ module dmd.tokens;
 import core.stdc.ctype;
 import core.stdc.stdio;
 import core.stdc.string;
-import dmd.globals;
 import dmd.identifier;
+import dmd.location;
 import dmd.root.ctfloat;
 import dmd.common.outbuffer;
 import dmd.root.rmem;
@@ -636,8 +636,8 @@ extern (C++) struct Token
     union
     {
         // Integers
-        sinteger_t intvalue;
-        uinteger_t unsvalue;
+        long intvalue;
+        ulong unsvalue;
         // Floats
         real_t floatvalue;
 

@@ -3,7 +3,7 @@
  *
  * Specification: ($LINK2 https://dlang.org/spec/expression.html, Expressions)
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/expressionsem.d, _expressionsem.d)
@@ -55,6 +55,7 @@ import dmd.init;
 import dmd.initsem;
 import dmd.inline;
 import dmd.intrange;
+import dmd.location;
 import dmd.mtype;
 import dmd.mustuse;
 import dmd.nspace;
@@ -512,7 +513,7 @@ private Expression resolveUFCS(Scope* sc, CallExp ce)
     {
         Identifier ident = die.ident;
 
-        Expression ex = die.semanticX(sc);
+        Expression ex = die.dotIdSemanticPropX(sc);
         if (ex != die)
         {
             ce.e1 = ex;
@@ -561,7 +562,7 @@ private Expression resolveUFCS(Scope* sc, CallExp ce)
         }
         else
         {
-            if (Expression ey = die.semanticY(sc, 1))
+            if (Expression ey = die.dotIdSemanticProp(sc, 1))
             {
                 if (ey.op == EXP.error)
                     return ey;
@@ -632,7 +633,7 @@ private Expression resolveUFCS(Scope* sc, CallExp ce)
     }
     else if (auto dti = ce.e1.isDotTemplateInstanceExp())
     {
-        if (Expression ey = dti.semanticY(sc, 1))
+        if (Expression ey = dti.dotTemplateSemanticProp(sc, 1))
         {
             ce.e1 = ey;
             return null;
@@ -2536,28 +2537,6 @@ Package resolveIsPackage(Dsymbol sym)
     return pkg;
 }
 
-private Module loadStdMath()
-{
-    __gshared Import impStdMath = null;
-    __gshared Identifier[1] stdID;
-    if (!impStdMath)
-    {
-        stdID[0] = Id.std;
-        auto s = new Import(Loc.initial, stdID[], Id.math, null, false);
-        // Module.load will call fatal() if there's no std.math available.
-        // Gag the error here, pushing the error handling to the caller.
-        uint errors = global.startGagging();
-        s.load(null);
-        if (s.mod)
-        {
-            s.mod.importAll(null);
-            s.mod.dsymbolSemantic(null);
-        }
-        global.endGagging(errors);
-        impStdMath = s;
-    }
-    return impStdMath.mod;
-}
 
 private extern (C++) final class ExpressionSemanticVisitor : Visitor
 {
@@ -3585,6 +3564,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         if (auto tc = tb.isTypeClass())
         {
             auto cd = tc.sym;
+            if (cd.errors)
+                return setError();
             cd.size(exp.loc);
             if (cd.sizeok != Sizeok.done)
                 return setError();
@@ -3630,21 +3611,25 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 {
                     if (!cdthis)
                     {
-                        if (!sc.hasThis)
+                        void noReferenceToOuterClass()
                         {
-                            string msg = "cannot construct " ~
-                            (cd.isAnonymous ? "anonymous nested class" : "nested class `%s`") ~
-                            " because no implicit `this` reference to outer class" ~
-                            (cdn.isAnonymous ? "" : " `%s`") ~ " is available\0";
-
-                            exp.error(msg.ptr, cd.toChars, cdn.toChars);
+                            if (cd.isAnonymous)
+                                exp.error("cannot construct anonymous nested class because no implicit `this` reference to outer class is available");
+                            else
+                                exp.error("cannot construct nested class `%s` because no implicit `this` reference to outer class `%s` is available",
+                                    cd.toChars(), cdn.toChars());
                             return setError();
                         }
+
+                        if (!sc.hasThis)
+                            return noReferenceToOuterClass();
 
                         // Supply an implicit 'this' and try again
                         exp.thisexp = new ThisExp(exp.loc);
                         for (Dsymbol sp = sc.parent; 1; sp = sp.toParentLocal())
                         {
+                            if (!sp)
+                                return noReferenceToOuterClass();
                             ClassDeclaration cdp = sp.isClassDeclaration();
                             if (!cdp)
                                 continue;
@@ -4671,8 +4656,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 else if (exp.arguments.length == 1)
                 {
                     e = (*exp.arguments)[0];
-                    if (!e.type.isTypeNoreturn())
-                        e = e.implicitCastTo(sc, t1);
+                    e = e.implicitCastTo(sc, t1);
+                    e = new CastExp(exp.loc, e, t1);
                 }
                 else
                 {
@@ -5851,8 +5836,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             dedtypes.zero();
 
             MATCH m = deduceType(e.targ, sc, e.tspec, e.parameters, &dedtypes, null, 0, e.tok == TOK.equal);
-            //printf("targ: %s\n", targ.toChars());
-            //printf("tspec: %s\n", tspec.toChars());
+
             if (m == MATCH.nomatch || (m != MATCH.exact && e.tok == TOK.equal))
             {
                 return no();
@@ -6557,7 +6541,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             }
         }
 
-        Expression e = exp.semanticY(sc, 1);
+        Expression e = exp.dotIdSemanticProp(sc, 1);
 
         if (e && isDotOpDispatch(e))
         {
@@ -6786,7 +6770,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             return;
         }
         // Indicate we need to resolve by UFCS.
-        Expression e = exp.semanticY(sc, 1);
+        Expression e = exp.dotTemplateSemanticProp(sc, 1);
         if (!e)
             e = resolveUFCSProperties(sc, exp);
         if (e is exp)
@@ -7528,11 +7512,6 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             return;
         }
 
-        if (exp.e1.type.isTypeNoreturn() && (!exp.to || !exp.to.isTypeNoreturn()))
-        {
-            result = exp.e1;
-            return;
-        }
         if (exp.to && !exp.to.isTypeSArray() && !exp.to.isTypeFunction())
             exp.e1 = exp.e1.arrayFuncConv(sc);
 
@@ -8069,22 +8048,12 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 Expression el = new ArrayLengthExp(exp.loc, exp.e1);
                 el = el.expressionSemantic(sc);
                 el = el.optimize(WANTvalue);
-                if (el.op == EXP.int64 && t1b.ty == Tsarray)
+                if (el.op == EXP.int64)
                 {
                     // Array length is known at compile-time. Upper is in bounds if it fits length.
                     dinteger_t length = el.toInteger();
                     auto bounds = IntRange(SignExtendedNumber(0), SignExtendedNumber(length));
                     exp.upperIsInBounds = bounds.contains(uprRange);
-                    if (exp.lwr.op == EXP.int64 && exp.upr.op == EXP.int64 && exp.lwr.toInteger() > exp.upr.toInteger())
-                    {
-                        exp.error("in slice `%s[%llu .. %llu]`, lower bound is greater than upper bound", exp.e1.toChars, exp.lwr.toInteger(), exp.upr.toInteger());
-                        return setError();
-                    }
-                    if (exp.upr.op == EXP.int64 && exp.upr.toInteger() > length)
-                    {
-                        exp.error("in slice `%s[%llu .. %llu]`, upper bound is greater than array length `%llu`", exp.e1.toChars, exp.lwr.toInteger(), exp.upr.toInteger(), length);
-                        return setError();
-                    }
                 }
                 else if (exp.upr.op == EXP.int64 && exp.upr.toInteger() == 0)
                 {
@@ -8884,7 +8853,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
              */
             if (auto dti = e1x.isDotTemplateInstanceExp())
             {
-                Expression e = dti.semanticY(sc, 1);
+                Expression e = dti.dotTemplateSemanticProp(sc, 1);
                 if (!e)
                 {
                     return setResult(resolveUFCSProperties(sc, e1x, exp.e2));
@@ -8899,7 +8868,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             }
             else if (auto die = e1x.isDotIdExp())
             {
-                Expression e = die.semanticY(sc, 1);
+                Expression e = die.dotIdSemanticProp(sc, 1);
                 if (e && isDotOpDispatch(e))
                 {
                     /* https://issues.dlang.org/show_bug.cgi?id=19687
@@ -11275,7 +11244,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             return;
         }
 
-        Module mmath = loadStdMath();
+        Module mmath = Module.loadStdMath();
         if (!mmath)
         {
             e.error("`%s` requires `std.math` for `^^` operators", e.toChars());
@@ -11823,8 +11792,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             return;
         }
 
-        if (t1.isTypeVector())
-            exp.type = t1;
+        if (auto tv = t1.isTypeVector())
+            exp.type = tv.toBooleanVector();
 
         result = exp;
         return;
@@ -12105,8 +12074,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             return;
         }
 
-        if (t1.isTypeVector())
-            exp.type = t1;
+        if (auto tv = t1.isTypeVector())
+            exp.type = tv.toBooleanVector();
 
         result = exp;
     }
@@ -12244,10 +12213,12 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         if (t1.ty == Tnoreturn)
         {
             exp.type = t2;
+            exp.e1 = specialNoreturnCast(exp.e1, exp.type);
         }
         else if (t2.ty == Tnoreturn)
         {
             exp.type = t1;
+            exp.e2 = specialNoreturnCast(exp.e2, exp.type);
         }
         // If either operand is void the result is void, we have to cast both
         // the expression to void so that we explicitly discard the expression
@@ -12541,7 +12512,7 @@ extern (C++) Expression expressionSemantic(Expression e, Scope* sc)
     return v.result;
 }
 
-Expression semanticX(DotIdExp exp, Scope* sc)
+private Expression dotIdSemanticPropX(DotIdExp exp, Scope* sc)
 {
     //printf("DotIdExp::semanticX(this = %p, '%s')\n", this, toChars());
     if (Expression ex = unaSemantic(exp, sc))
@@ -12649,7 +12620,7 @@ Expression semanticX(DotIdExp exp, Scope* sc)
  * Returns:
  *      resolved expression, null if error
  */
-Expression semanticY(DotIdExp exp, Scope* sc, int flag)
+Expression dotIdSemanticProp(DotIdExp exp, Scope* sc, int flag)
 {
     //printf("DotIdExp::semanticY(this = %p, '%s')\n", exp, exp.toChars());
 
@@ -12681,7 +12652,7 @@ Expression semanticY(DotIdExp exp, Scope* sc, int flag)
     }
 
     {
-        Expression e = semanticX(exp, sc);
+        Expression e = dotIdSemanticPropX(exp, sc);
         if (e != exp)
             return e;
     }
@@ -12983,7 +12954,7 @@ Expression semanticY(DotIdExp exp, Scope* sc, int flag)
 
 // Resolve e1.ident!tiargs without seeing UFCS.
 // If flag == 1, stop "not a property" error and return NULL.
-Expression semanticY(DotTemplateInstanceExp exp, Scope* sc, int flag)
+Expression dotTemplateSemanticProp(DotTemplateInstanceExp exp, Scope* sc, int flag)
 {
     static if (LOGSEMANTIC)
     {
@@ -13007,7 +12978,7 @@ Expression semanticY(DotTemplateInstanceExp exp, Scope* sc, int flag)
 
     auto die = new DotIdExp(exp.loc, e1, exp.ti.name);
 
-    Expression e = die.semanticX(sc);
+    Expression e = die.dotIdSemanticPropX(sc);
     if (e == die)
     {
         exp.e1 = die.e1; // take back
@@ -13020,7 +12991,7 @@ Expression semanticY(DotTemplateInstanceExp exp, Scope* sc, int flag)
             if (flag)
                 return null;
         }
-        e = die.semanticY(sc, flag);
+        e = die.dotIdSemanticProp(sc, flag);
         if (flag)
         {
             if (!e ||
@@ -13169,6 +13140,7 @@ Lerr:
 bool checkSharedAccess(Expression e, Scope* sc, bool returnRef = false)
 {
     if (global.params.noSharedAccess != FeatureState.enabled ||
+        !sc ||
         sc.intypeof ||
         sc.flags & SCOPE.ctfe)
     {

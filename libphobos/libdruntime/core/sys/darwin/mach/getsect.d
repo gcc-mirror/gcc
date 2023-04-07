@@ -148,7 +148,7 @@ version (CoreDdoc)
      *
      *      auto mph = _NSGetMachExecuteHeader();
      *      int size;
-     *      assert(getsectdata(mph, "__TEXT", "__text", &size));
+     *      assert(getsectiondata(mph, "__TEXT", "__text", &size));
      *      assert(size > 0);
      * }
      * ---

@@ -1,3 +1,12 @@
+2023-02-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/96025
+	* parse.cc (check_function_result_typed): Improve type check of
+	specification expression for character length and return status.
+	(parse_spec): Use status from above.
+	* resolve.cc (resolve_fntype): Prevent use of invalid specification
+	expression for character length.
+
 2023-02-16  Patrick Palka  <ppalka@redhat.com>
 
 	* gfortran.h: Mechanically drop static from static inline

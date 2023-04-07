@@ -1,3 +1,171 @@
+2023-02-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108830
+	* gcc.dg/analyzer/attribute-nonnull.c: Update for
+	-Wanalyzer-use-of-uninitialized-value terminating analysis along
+	a path.
+	* gcc.dg/analyzer/call-summaries-2.c: Likewise.
+	* gcc.dg/analyzer/data-model-1.c: Likewise.
+	* gcc.dg/analyzer/data-model-5.c: Likewise.
+	* gcc.dg/analyzer/doom-s_sound-pr108867.c: New test.
+	* gcc.dg/analyzer/memset-CVE-2017-18549-1.c: Add
+	-fno-analyzer-suppress-followups.
+	* gcc.dg/analyzer/null-deref-pr108830.c: New test.
+	* gcc.dg/analyzer/pipe-1.c: Add -fno-analyzer-suppress-followups.
+	* gcc.dg/analyzer/pipe-void-return.c: Likewise.
+	* gcc.dg/analyzer/pipe2-1.c: Likewise.
+	* gcc.dg/analyzer/pr101547.c: Update for
+	-Wanalyzer-use-of-uninitialized-value terminating analysis along
+	a path.
+	* gcc.dg/analyzer/pr101875.c: Likewise.
+	* gcc.dg/analyzer/pr104224-split.c: New test, based on...
+	* gcc.dg/analyzer/pr104224.c: Add
+	-fno-analyzer-suppress-followups.
+	* gcc.dg/analyzer/realloc-2.c: Add
+	-fno-analyzer-suppress-followups.
+	* gcc.dg/analyzer/realloc-3.c: Likewise.
+	* gcc.dg/analyzer/realloc-5.c: Likewise.
+	* gcc.dg/analyzer/stdarg-1-ms_abi.c: Likewise.
+	* gcc.dg/analyzer/stdarg-1-sysv_abi.c: Likewise.
+	* gcc.dg/analyzer/stdarg-1.c: Likewise.
+	* gcc.dg/analyzer/symbolic-1.c: Likewise.
+	* gcc.dg/analyzer/symbolic-7.c: Update for
+	-Wanalyzer-use-of-uninitialized-value terminating analysis along a
+	path.
+	* gcc.dg/analyzer/uninit-4.c: Likewise.
+	* gcc.dg/analyzer/uninit-8.c: New test.
+	* gcc.dg/analyzer/uninit-pr94713.c: Update for
+	-Wanalyzer-use-of-uninitialized-value terminating analysis along a
+	path.
+	* gcc.dg/analyzer/zlib-6a.c: Add -fno-analyzer-suppress-followups.
+
+2023-02-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/96025
+	* gfortran.dg/pr96025.f90: New test.
+
+2023-02-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/simd2a.d: Update.
+	* gdc.dg/simd2b.d: Update.
+	* gdc.dg/simd2c.d: Update.
+	* gdc.dg/simd2d.d: Update.
+	* gdc.dg/simd2e.d: Update.
+	* gdc.dg/simd2f.d: Update.
+	* gdc.dg/simd2g.d: Update.
+	* gdc.dg/simd2h.d: Update.
+	* gdc.dg/simd2i.d: Update.
+	* gdc.dg/simd2j.d: Update.
+
+2023-02-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/ctfeintrinsics.d: New test.
+
+2023-02-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108691
+	* gcc.dg/pr108691.c: New testcase.
+
+2023-02-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108793
+	* gcc.dg/torture/pr108793.c: New testcase.
+
+2023-02-21  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* rust/compile/torture/intrinsics-math.rs: New test.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* rust/debug/chartype.rs: Skip testcases on Darwin architectures.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* rust/execute/torture/closure3.rs: New test.
+
+2023-02-21  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* rust/compile/torture/phantom_data.rs: New test.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/torture/intrinsics-3.rs:
+	* rust/execute/torture/atomic_load.rs: New test.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/torture/intrinsics-5.rs: Fix error message.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/torture/intrinsics-6.rs: New test.
+	* rust/compile/torture/intrinsics-7.rs: New test.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/torture/intrinsics-4.rs: New test.
+	* rust/compile/torture/intrinsics-5.rs: New test.
+	* rust/execute/torture/atomic_store.rs: New test.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/torture/intrinsics-3.rs: New test.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* rust/execute/torture/closure2.rs: New test.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* rust/execute/torture/closure1.rs: New test.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* rust/compile/issue-1589.rs: New test.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* rust/compile/generics7.rs: Fix test with missing assertion.
+	* rust/execute/torture/operator_overload_9.rs: Fix test assertion.
+
+2023-02-21  Marc Poulhiès  <dkm@kataplop.net>
+
+	* rust/compile/missing_closing_paren.rs: New test.
+
+2023-02-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/execute/torture/prefetch_data.rs: New test.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* rust/compile/torture/issue-1555.rs: New test.
+
+2023-02-21  Faisal Abbas  <faisal.abbas@elastica.co>
+
+	* rust/compile/const9.rs: New test.
+
+2023-02-21  Philip Herron  <philip.herron@embecosm.com>
+
+	* rust/compile/issue-1272.rs: New test.
+
+2023-02-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108868
+	* gcc.dg/pr108868.c: New testcase.
+
+2023-02-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108855
+	* gcc.dg/pr108855.c: New testcase.
+
+2023-02-21  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2023-02-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108691
+	* gcc.dg/pr108691.c: New testcase.
+
 2023-02-20  Jakub Jelinek  <jakub2redhat.com>
 
 	PR target/108862

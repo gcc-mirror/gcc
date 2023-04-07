@@ -125,11 +125,20 @@ impl_region_model_context::warn (std::unique_ptr<pending_diagnostic> d)
       return false;
     }
   if (m_eg)
-    return m_eg->get_diagnostic_manager ().add_diagnostic
-      (m_enode_for_diag, m_enode_for_diag->get_supernode (),
-       m_stmt, m_stmt_finder, std::move (d));
-  else
-    return false;
+    {
+      bool terminate_path = d->terminate_path_p ();
+      if (m_eg->get_diagnostic_manager ().add_diagnostic
+	  (m_enode_for_diag, m_enode_for_diag->get_supernode (),
+	   m_stmt, m_stmt_finder, std::move (d)))
+	{
+	  if (m_path_ctxt
+	      && terminate_path
+	      && flag_analyzer_suppress_followups)
+	    m_path_ctxt->terminate_path ();
+	  return true;
+	}
+    }
+  return false;
 }
 
 void
@@ -378,9 +387,14 @@ public:
       = (var
 	 ? m_old_smap->get_state (var_old_sval, m_eg.get_ext_state ())
 	 : m_old_smap->get_global_state ());
+    bool terminate_path = d->terminate_path_p ();
     m_eg.get_diagnostic_manager ().add_diagnostic
       (&m_sm, m_enode_for_diag, snode, stmt, m_stmt_finder,
        var, var_old_sval, current, std::move (d));
+    if (m_path_ctxt
+	&& terminate_path
+	&& flag_analyzer_suppress_followups)
+      m_path_ctxt->terminate_path ();
   }
 
   void warn (const supernode *snode, const gimple *stmt,
@@ -393,9 +407,14 @@ public:
       = (sval
 	 ? m_old_smap->get_state (sval, m_eg.get_ext_state ())
 	 : m_old_smap->get_global_state ());
+    bool terminate_path = d->terminate_path_p ();
     m_eg.get_diagnostic_manager ().add_diagnostic
       (&m_sm, m_enode_for_diag, snode, stmt, m_stmt_finder,
        NULL_TREE, sval, current, std::move (d));
+    if (m_path_ctxt
+	&& terminate_path
+	&& flag_analyzer_suppress_followups)
+      m_path_ctxt->terminate_path ();
   }
 
   /* Hook for picking more readable trees for SSA names of temporaries,

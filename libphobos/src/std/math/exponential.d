@@ -2910,7 +2910,7 @@ private
             alias log10P = logP;
             alias log10Q = logQ;
 
-            // Coefficients for log(x) = z + z^^3 P(z^^2)/Q(z^^2)
+            // Coefficients for log(x) = z + z^^3 R(z^^2)/S(z^^2)
             // where z = 2(x-1)/(x+1)
             // Theoretical peak relative error = 1.1e-35
             static immutable real[6] logR = [
@@ -2931,7 +2931,8 @@ private
                 1.0
             ];
         }
-        else
+        else static if (floatTraits!T.realFormat == RealFormat.ieeeExtended ||
+                        floatTraits!T.realFormat == RealFormat.ieeeExtended53)
         {
             // Coefficients for log(1 + x) = x - x^^2/2 + x^^3 P(x)/Q(x)
             // Theoretical peak relative error = 2.32e-20
@@ -2980,7 +2981,7 @@ private
             alias log10P = log2P;
             alias log10Q = log2Q;
 
-            // Coefficients for log(x) = z + z^^3 P(z^^2)/Q(z^^2)
+            // Coefficients for log(x) = z + z^^3 R(z^^2)/S(z^^2)
             // where z = 2(x-1)/(x+1)
             // Theoretical peak relative error = 6.16e-22
             static immutable real[4] logR = [
@@ -2996,6 +2997,85 @@ private
                 1.0000000000000000000000E0L,
             ];
         }
+        else static if (floatTraits!T.realFormat == RealFormat.ieeeDouble)
+        {
+            // Coefficients for log(1 + x) = x - x^^2/2 + x^^3 P(x)/Q(x)
+            static immutable double[6] logP = [
+                7.70838733755885391666E0,
+                1.79368678507819816313E1,
+                1.44989225341610930846E1,
+                4.70579119878881725854E0,
+                4.97494994976747001425E-1,
+                1.01875663804580931796E-4,
+            ];
+            static immutable double[6] logQ = [
+                2.31251620126765340583E1,
+                7.11544750618563894466E1,
+                8.29875266912776603211E1,
+                4.52279145837532221105E1,
+                1.12873587189167450590E1,
+                1.00000000000000000000E0,
+            ];
+
+            // log2 uses the same coefficients as log.
+            alias log2P = logP;
+            alias log2Q = logQ;
+
+            // Coefficients for log(1 + x) = x - x^^2/2 + x^^3 P(x)/Q(x)
+            static immutable double[7] log10P = [
+                1.98892446572874072159E1,
+                5.67349287391754285487E1,
+                6.06127134467767258030E1,
+                2.97877425097986925891E1,
+                6.56312093769992875930E0,
+                4.98531067254050724270E-1,
+                4.58482948458143443514E-5,
+            ];
+            static immutable double[7] log10Q = [
+                5.96677339718622216300E1,
+                2.14955586696422947765E2,
+                3.07254189979530058263E2,
+                2.20664384982121929218E2,
+                8.27410449222435217021E1,
+                1.50314182634250003249E1,
+                1.00000000000000000000E0,
+            ];
+
+            // Coefficients for log(x) = z + z^^3 R(z)/S(z)
+            // where z = 2(x-1)/(x+1)
+            static immutable double[3] logR = [
+                -6.41409952958715622951E1,
+                1.63866645699558079767E1,
+                -7.89580278884799154124E-1,
+            ];
+            static immutable double[4] logS = [
+                -7.69691943550460008604E2,
+                3.12093766372244180303E2,
+                -3.56722798256324312549E1,
+                1.00000000000000000000E0,
+            ];
+        }
+        else static if (floatTraits!T.realFormat == RealFormat.ieeeSingle)
+        {
+            // Coefficients for log(1 + x) = x - x^^2/2 + x^^3 P(x)
+            static immutable float[9] logP = [
+                 3.3333331174E-1,
+                -2.4999993993E-1,
+                 2.0000714765E-1,
+                -1.6668057665E-1,
+                 1.4249322787E-1,
+                -1.2420140846E-1,
+                 1.1676998740E-1,
+                -1.1514610310E-1,
+                 7.0376836292E-2,
+            ];
+
+            // log2 and log10 uses the same coefficients as log.
+            alias log2P = logP;
+            alias log10P = logP;
+        }
+        else
+            static assert(0, "no coefficients for log()");
     }
 }
 
@@ -3009,6 +3089,7 @@ private
  *    $(TR $(TD +$(INFIN))    $(TD +$(INFIN)) $(TD no)           $(TD no))
  *    )
  */
+pragma(inline, true)
 real log(real x) @safe pure nothrow @nogc
 {
     version (INLINE_YL2X)
@@ -3019,6 +3100,31 @@ real log(real x) @safe pure nothrow @nogc
     else
         return logImpl(x);
 }
+
+/// ditto
+pragma(inline, true)
+double log(double x) @safe pure nothrow @nogc { return __ctfe ? cast(double) log(cast(real) x) : logImpl(x); }
+
+/// ditto
+pragma(inline, true)
+float log(float x) @safe pure nothrow @nogc { return __ctfe ? cast(float) log(cast(real) x) : logImpl(x); }
+
+// @@@DEPRECATED_[2.112.0]@@@
+deprecated("`std.math.exponential.log` called with argument types `(int)` matches both "
+           ~ "`log(real)`, `log(double)`, and `log(float)`. Cast argument to floating point type instead.")
+real log(int x) @safe pure nothrow @nogc { return log(cast(real) x); }
+// @@@DEPRECATED_[2.112.0]@@@
+deprecated("`std.math.exponential.log` called with argument types `(uint)` matches both "
+           ~ "`log(real)`, `log(double)`, and `log(float)`. Cast argument to floating point type instead.")
+real log(uint x) @safe pure nothrow @nogc { return log(cast(real) x); }
+// @@@DEPRECATED_[2.112.0]@@@
+deprecated("`std.math.exponential.log` called with argument types `(long)` matches both "
+           ~ "`log(real)`, `log(double)`, and `log(float)`. Cast argument to floating point type instead.")
+real log(long x) @safe pure nothrow @nogc { return log(cast(real) x); }
+// @@@DEPRECATED_[2.112.0]@@@
+deprecated("`std.math.exponential.log` called with argument types `(ulong)` matches both "
+           ~ "`log(real)`, `log(double)`, and `log(float)`. Cast argument to floating point type instead.")
+real log(ulong x) @safe pure nothrow @nogc { return log(cast(real) x); }
 
 ///
 @safe pure nothrow @nogc unittest
@@ -3034,12 +3140,31 @@ private T logImpl(T)(T x) @safe pure nothrow @nogc
     import std.math.constants : SQRT1_2;
     import std.math.algebraic : poly;
     import std.math.traits : isInfinity, isNaN, signbit;
+    import std.math : floatTraits, RealFormat;
 
     alias coeffs = LogCoeffs!T;
+    alias F = floatTraits!T;
 
-    // C1 + C2 = LN2.
-    enum T C1 = 6.93145751953125E-1L;
-    enum T C2 = 1.428606820309417232121458176568075500134E-6L;
+    static if (F.realFormat == RealFormat.ieeeExtended ||
+               F.realFormat == RealFormat.ieeeExtended53 ||
+               F.realFormat == RealFormat.ieeeQuadruple)
+    {
+        // C1 + C2 = LN2.
+        enum T C1 = 6.93145751953125E-1L;
+        enum T C2 = 1.428606820309417232121458176568075500134E-6L;
+    }
+    else static if (F.realFormat == RealFormat.ieeeDouble)
+    {
+        enum T C1 = 0.693359375;
+        enum T C2 = -2.121944400546905827679e-4;
+    }
+    else static if (F.realFormat == RealFormat.ieeeSingle)
+    {
+        enum T C1 = 0.693359375;
+        enum T C2 = -2.12194440e-4;
+    }
+    else
+        static assert(0, "Not implemented for this architecture");
 
     // Special cases.
     if (isNaN(x))
@@ -3058,30 +3183,36 @@ private T logImpl(T)(T x) @safe pure nothrow @nogc
 
     x = frexp(x, exp);
 
-    // Logarithm using log(x) = z + z^^3 R(z) / S(z),
-    // where z = 2(x - 1)/(x + 1)
-    if ((exp > 2) || (exp < -2))
+    static if (F.realFormat == RealFormat.ieeeDouble ||
+               F.realFormat == RealFormat.ieeeExtended ||
+               F.realFormat == RealFormat.ieeeExtended53 ||
+               F.realFormat == RealFormat.ieeeQuadruple)
     {
-        if (x < SQRT1_2)
-        {   // 2(2x - 1)/(2x + 1)
-            exp -= 1;
-            z = x - 0.5;
-            y = 0.5 * z + 0.5;
-        }
-        else
-        {   // 2(x - 1)/(x + 1)
-            z = x - 0.5;
-            z -= 0.5;
-            y = 0.5 * x  + 0.5;
-        }
-        x = z / y;
-        z = x * x;
-        z = x * (z * poly(z, coeffs.logR) / poly(z, coeffs.logS));
-        z += exp * C2;
-        z += x;
-        z += exp * C1;
+        // Logarithm using log(x) = z + z^^3 R(z) / S(z),
+        // where z = 2(x - 1)/(x + 1)
+        if ((exp > 2) || (exp < -2))
+        {
+            if (x < SQRT1_2)
+            {   // 2(2x - 1)/(2x + 1)
+                exp -= 1;
+                z = x - 0.5;
+                y = 0.5 * z + 0.5;
+            }
+            else
+            {   // 2(x - 1)/(x + 1)
+                z = x - 0.5;
+                z -= 0.5;
+                y = 0.5 * x  + 0.5;
+            }
+            x = z / y;
+            z = x * x;
+            z = x * (z * poly(z, coeffs.logR) / poly(z, coeffs.logS));
+            z += exp * C2;
+            z += x;
+            z += exp * C1;
 
-        return z;
+            return z;
+        }
     }
 
     // Logarithm using log(1 + x) = x - .5x^^2 + x^^3 P(x) / Q(x)
@@ -3095,7 +3226,10 @@ private T logImpl(T)(T x) @safe pure nothrow @nogc
         x = x - 1.0;
     }
     z = x * x;
-    y = x * (z * poly(x, coeffs.logP) / poly(x, coeffs.logQ));
+    static if (F.realFormat == RealFormat.ieeeSingle)
+        y = x * (z * poly(x, coeffs.logP));
+    else
+        y = x * (z * poly(x, coeffs.logP) / poly(x, coeffs.logQ));
     y += exp * C2;
     z = y - 0.5 * z;
 
@@ -3117,6 +3251,7 @@ private T logImpl(T)(T x) @safe pure nothrow @nogc
  *      $(TR $(TD +$(INFIN))    $(TD +$(INFIN)) $(TD no)           $(TD no))
  *      )
  */
+pragma(inline, true)
 real log10(real x) @safe pure nothrow @nogc
 {
     version (INLINE_YL2X)
@@ -3128,12 +3263,37 @@ real log10(real x) @safe pure nothrow @nogc
         return log10Impl(x);
 }
 
+/// ditto
+pragma(inline, true)
+double log10(double x) @safe pure nothrow @nogc { return __ctfe ? cast(double) log10(cast(real) x) : log10Impl(x); }
+
+/// ditto
+pragma(inline, true)
+float log10(float x) @safe pure nothrow @nogc { return __ctfe ? cast(float) log10(cast(real) x) : log10Impl(x); }
+
+// @@@DEPRECATED_[2.112.0]@@@
+deprecated("`std.math.exponential.log10` called with argument types `(int)` matches both "
+           ~ "`log10(real)`, `log10(double)`, and `log10(float)`. Cast argument to floating point type instead.")
+real log10(int x) @safe pure nothrow @nogc { return log10(cast(real) x); }
+// @@@DEPRECATED_[2.112.0]@@@
+deprecated("`std.math.exponential.log10` called with argument types `(uint)` matches both "
+           ~ "`log10(real)`, `log10(double)`, and `log10(float)`. Cast argument to floating point type instead.")
+real log10(uint x) @safe pure nothrow @nogc { return log10(cast(real) x); }
+// @@@DEPRECATED_[2.112.0]@@@
+deprecated("`std.math.exponential.log10` called with argument types `(long)` matches both "
+           ~ "`log10(real)`, `log10(double)`, and `log10(float)`. Cast argument to floating point type instead.")
+real log10(long x) @safe pure nothrow @nogc { return log10(cast(real) x); }
+// @@@DEPRECATED_[2.112.0]@@@
+deprecated("`std.math.exponential.log10` called with argument types `(ulong)` matches both "
+           ~ "`log10(real)`, `log10(double)`, and `log10(float)`. Cast argument to floating point type instead.")
+real log10(ulong x) @safe pure nothrow @nogc { return log10(cast(real) x); }
+
 ///
 @safe pure nothrow @nogc unittest
 {
     import std.math.algebraic : fabs;
 
-    assert(fabs(log10(1000) - 3) < .000001);
+    assert(fabs(log10(1000.0L) - 3) < .000001);
 }
 
 private T log10Impl(T)(T x) @safe pure nothrow @nogc
@@ -3141,16 +3301,34 @@ private T log10Impl(T)(T x) @safe pure nothrow @nogc
     import std.math.constants : SQRT1_2;
     import std.math.algebraic : poly;
     import std.math.traits : isNaN, isInfinity, signbit;
+    import std.math : floatTraits, RealFormat;
 
     alias coeffs = LogCoeffs!T;
+    alias F = floatTraits!T;
 
-    // log10(2) split into two parts.
-    enum T L102A =  0.3125L;
-    enum T L102B = -1.14700043360188047862611052755069732318101185E-2L;
+    static if (F.realFormat == RealFormat.ieeeExtended ||
+               F.realFormat == RealFormat.ieeeExtended53 ||
+               F.realFormat == RealFormat.ieeeQuadruple)
+    {
+        // log10(2) split into two parts.
+        enum T L102A =  0.3125L;
+        enum T L102B = -1.14700043360188047862611052755069732318101185E-2L;
 
-    // log10(e) split into two parts.
-    enum T L10EA =  0.5L;
-    enum T L10EB = -6.570551809674817234887108108339491770560299E-2L;
+        // log10(e) split into two parts.
+        enum T L10EA =  0.5L;
+        enum T L10EB = -6.570551809674817234887108108339491770560299E-2L;
+    }
+    else static if (F.realFormat == RealFormat.ieeeDouble ||
+                    F.realFormat == RealFormat.ieeeSingle)
+    {
+        enum T L102A =  3.0078125E-1;
+        enum T L102B = 2.48745663981195213739E-4;
+
+        enum T L10EA =  4.3359375E-1;
+        enum T L10EB = 7.00731903251827651129E-4;
+    }
+    else
+        static assert(0, "Not implemented for this architecture");
 
     // Special cases are the same as for log.
     if (isNaN(x))
@@ -3169,26 +3347,31 @@ private T log10Impl(T)(T x) @safe pure nothrow @nogc
 
     x = frexp(x, exp);
 
-    // Logarithm using log(x) = z + z^^3 R(z) / S(z),
-    // where z = 2(x - 1)/(x + 1)
-    if ((exp > 2) || (exp < -2))
+    static if (F.realFormat == RealFormat.ieeeExtended ||
+               F.realFormat == RealFormat.ieeeExtended53 ||
+               F.realFormat == RealFormat.ieeeQuadruple)
     {
-        if (x < SQRT1_2)
-        {   // 2(2x - 1)/(2x + 1)
-            exp -= 1;
-            z = x - 0.5;
-            y = 0.5 * z + 0.5;
+        // Logarithm using log(x) = z + z^^3 R(z) / S(z),
+        // where z = 2(x - 1)/(x + 1)
+        if ((exp > 2) || (exp < -2))
+        {
+            if (x < SQRT1_2)
+            {   // 2(2x - 1)/(2x + 1)
+                exp -= 1;
+                z = x - 0.5;
+                y = 0.5 * z + 0.5;
+            }
+            else
+            {   // 2(x - 1)/(x + 1)
+                z = x - 0.5;
+                z -= 0.5;
+                y = 0.5 * x  + 0.5;
+            }
+            x = z / y;
+            z = x * x;
+            y = x * (z * poly(z, coeffs.logR) / poly(z, coeffs.logS));
+            goto Ldone;
         }
-        else
-        {   // 2(x - 1)/(x + 1)
-            z = x - 0.5;
-            z -= 0.5;
-            y = 0.5 * x  + 0.5;
-        }
-        x = z / y;
-        z = x * x;
-        y = x * (z * poly(z, coeffs.logR) / poly(z, coeffs.logS));
-        goto Ldone;
     }
 
     // Logarithm using log(1 + x) = x - .5x^^2 + x^^3 P(x) / Q(x)
@@ -3201,7 +3384,10 @@ private T log10Impl(T)(T x) @safe pure nothrow @nogc
         x = x - 1.0;
 
     z = x * x;
-    y = x * (z * poly(x, coeffs.log10P) / poly(x, coeffs.log10Q));
+    static if (F.realFormat == RealFormat.ieeeSingle)
+        y = x * (z * poly(x, coeffs.log10P));
+    else
+        y = x * (z * poly(x, coeffs.log10P) / poly(x, coeffs.log10Q));
     y = y - 0.5 * z;
 
     // Multiply log of fraction by log10(e) and base 2 exponent by log10(2).
@@ -3232,6 +3418,7 @@ Ldone:
  *  $(TR $(TD +$(INFIN))    $(TD +$(INFIN))    $(TD no)           $(TD no))
  *  )
  */
+pragma(inline, true)
 real log1p(real x) @safe pure nothrow @nogc
 {
     version (INLINE_YL2X)
@@ -3244,6 +3431,31 @@ real log1p(real x) @safe pure nothrow @nogc
     else
         return log1pImpl(x);
 }
+
+/// ditto
+pragma(inline, true)
+double log1p(double x) @safe pure nothrow @nogc { return __ctfe ? cast(double) log1p(cast(real) x) : log1pImpl(x); }
+
+/// ditto
+pragma(inline, true)
+float log1p(float x) @safe pure nothrow @nogc { return __ctfe ? cast(float) log1p(cast(real) x) : log1pImpl(x); }
+
+// @@@DEPRECATED_[2.112.0]@@@
+deprecated("`std.math.exponential.log1p` called with argument types `(int)` matches both "
+           ~ "`log1p(real)`, `log1p(double)`, and `log1p(float)`. Cast argument to floating point type instead.")
+real log1p(int x) @safe pure nothrow @nogc { return log1p(cast(real) x); }
+// @@@DEPRECATED_[2.112.0]@@@
+deprecated("`std.math.exponential.log1p` called with argument types `(uint)` matches both "
+           ~ "`log1p(real)`, `log1p(double)`, and `log1p(float)`. Cast argument to floating point type instead.")
+real log1p(uint x) @safe pure nothrow @nogc { return log1p(cast(real) x); }
+// @@@DEPRECATED_[2.112.0]@@@
+deprecated("`std.math.exponential.log1p` called with argument types `(long)` matches both "
+           ~ "`log1p(real)`, `log1p(double)`, and `log1p(float)`. Cast argument to floating point type instead.")
+real log1p(long x) @safe pure nothrow @nogc { return log1p(cast(real) x); }
+// @@@DEPRECATED_[2.112.0]@@@
+deprecated("`std.math.exponential.log1p` called with argument types `(ulong)` matches both "
+           ~ "`log1p(real)`, `log1p(double)`, and `log1p(float)`. Cast argument to floating point type instead.")
+real log1p(ulong x) @safe pure nothrow @nogc { return log1p(cast(real) x); }
 
 ///
 @safe pure unittest
@@ -3289,6 +3501,7 @@ private T log1pImpl(T)(T x) @safe pure nothrow @nogc
  *  $(TR $(TD +$(INFIN))    $(TD +$(INFIN)) $(TD no)           $(TD no) )
  *  )
  */
+pragma(inline, true)
 real log2(real x) @safe pure nothrow @nogc
 {
     version (INLINE_YL2X)
@@ -3296,6 +3509,31 @@ real log2(real x) @safe pure nothrow @nogc
     else
         return log2Impl(x);
 }
+
+/// ditto
+pragma(inline, true)
+double log2(double x) @safe pure nothrow @nogc { return __ctfe ? cast(double) log2(cast(real) x) : log2Impl(x); }
+
+/// ditto
+pragma(inline, true)
+float log2(float x) @safe pure nothrow @nogc { return __ctfe ? cast(float) log2(cast(real) x) : log2Impl(x); }
+
+// @@@DEPRECATED_[2.112.0]@@@
+deprecated("`std.math.exponential.log2` called with argument types `(int)` matches both "
+           ~ "`log2(real)`, `log2(double)`, and `log2(float)`. Cast argument to floating point type instead.")
+real log2(int x) @safe pure nothrow @nogc { return log2(cast(real) x); }
+// @@@DEPRECATED_[2.112.0]@@@
+deprecated("`std.math.exponential.log2` called with argument types `(uint)` matches both "
+           ~ "`log2(real)`, `log2(double)`, and `log2(float)`. Cast argument to floating point type instead.")
+real log2(uint x) @safe pure nothrow @nogc { return log2(cast(real) x); }
+// @@@DEPRECATED_[2.112.0]@@@
+deprecated("`std.math.exponential.log2` called with argument types `(long)` matches both "
+           ~ "`log2(real)`, `log2(double)`, and `log2(float)`. Cast argument to floating point type instead.")
+real log2(long x) @safe pure nothrow @nogc { return log2(cast(real) x); }
+// @@@DEPRECATED_[2.112.0]@@@
+deprecated("`std.math.exponential.log2` called with argument types `(ulong)` matches both "
+           ~ "`log2(real)`, `log2(double)`, and `log2(float)`. Cast argument to floating point type instead.")
+real log2(ulong x) @safe pure nothrow @nogc { return log2(cast(real) x); }
 
 ///
 @safe unittest
@@ -3318,8 +3556,10 @@ private T log2Impl(T)(T x) @safe pure nothrow @nogc
     import std.math.traits : isNaN, isInfinity, signbit;
     import std.math.constants : SQRT1_2, LOG2E;
     import std.math.algebraic : poly;
+    import std.math : floatTraits, RealFormat;
 
     alias coeffs = LogCoeffs!T;
+    alias F = floatTraits!T;
 
     // Special cases are the same as for log.
     if (isNaN(x))
@@ -3338,26 +3578,32 @@ private T log2Impl(T)(T x) @safe pure nothrow @nogc
 
     x = frexp(x, exp);
 
-    // Logarithm using log(x) = z + z^^3 R(z) / S(z),
-    // where z = 2(x - 1)/(x + 1)
-    if ((exp > 2) || (exp < -2))
+    static if (F.realFormat == RealFormat.ieeeDouble ||
+               F.realFormat == RealFormat.ieeeExtended ||
+               F.realFormat == RealFormat.ieeeExtended53 ||
+               F.realFormat == RealFormat.ieeeQuadruple)
     {
-        if (x < SQRT1_2)
-        {   // 2(2x - 1)/(2x + 1)
-            exp -= 1;
-            z = x - 0.5;
-            y = 0.5 * z + 0.5;
+        // Logarithm using log(x) = z + z^^3 R(z) / S(z),
+        // where z = 2(x - 1)/(x + 1)
+        if ((exp > 2) || (exp < -2))
+        {
+            if (x < SQRT1_2)
+            {   // 2(2x - 1)/(2x + 1)
+                exp -= 1;
+                z = x - 0.5;
+                y = 0.5 * z + 0.5;
+            }
+            else
+            {   // 2(x - 1)/(x + 1)
+                z = x - 0.5;
+                z -= 0.5;
+                y = 0.5 * x  + 0.5;
+            }
+            x = z / y;
+            z = x * x;
+            y = x * (z * poly(z, coeffs.logR) / poly(z, coeffs.logS));
+            goto Ldone;
         }
-        else
-        {   // 2(x - 1)/(x + 1)
-            z = x - 0.5;
-            z -= 0.5;
-            y = 0.5 * x  + 0.5;
-        }
-        x = z / y;
-        z = x * x;
-        y = x * (z * poly(z, coeffs.logR) / poly(z, coeffs.logS));
-        goto Ldone;
     }
 
     // Logarithm using log(1 + x) = x - .5x^^2 + x^^3 P(x) / Q(x)
@@ -3370,7 +3616,10 @@ private T log2Impl(T)(T x) @safe pure nothrow @nogc
         x = x - 1.0;
 
     z = x * x;
-    y = x * (z * poly(x, coeffs.log2P) / poly(x, coeffs.log2Q));
+    static if (F.realFormat == RealFormat.ieeeSingle)
+        y = x * (z * poly(x, coeffs.log2P));
+    else
+        y = x * (z * poly(x, coeffs.log2P) / poly(x, coeffs.log2Q));
     y = y - 0.5 * z;
 
     // Multiply log of fraction by log10(e) and base 2 exponent by log10(2).

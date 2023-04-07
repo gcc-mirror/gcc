@@ -1150,6 +1150,8 @@ public:
     return OPT_Wanalyzer_null_dereference;
   }
 
+  bool terminate_path_p () const final override { return true; }
+
   bool emit (rich_location *rich_loc) final override
   {
     /* CWE-476: NULL Pointer Dereference.  */
@@ -1202,6 +1204,8 @@ public:
   {
     return OPT_Wanalyzer_null_argument;
   }
+
+  bool terminate_path_p () const final override { return true; }
 
   bool emit (rich_location *rich_loc) final override
   {

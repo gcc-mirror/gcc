@@ -303,7 +303,7 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   /* Warnings and deprecations are disabled by default.  */
   global.params.useDeprecated = DIAGNOSTICinform;
   global.params.warnings = DIAGNOSTICoff;
-  global.params.messageStyle = MESSAGESTYLEgnu;
+  global.params.messageStyle = MessageStyle::gnu;
 
   global.params.imppath = d_gc_malloc<Strings> ();
   global.params.fileImppath = d_gc_malloc<Strings> ();
@@ -939,6 +939,9 @@ d_post_options (const char ** fn)
   global.params.useInline = flag_inline_functions;
   global.params.showColumns = flag_show_column;
   global.params.printErrorContext = flag_diagnostics_show_caret;
+
+  /* Keep the front-end location type in sync with params.  */
+  Loc::set (global.params.showColumns, global.params.messageStyle);
 
   if (global.params.useInline)
     global.params.dihdr.fullOutput = true;

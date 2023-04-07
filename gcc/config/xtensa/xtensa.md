@@ -2369,8 +2369,10 @@
    (set_attr "length"	"3")])
 
 (define_expand "sibcall"
-  [(call (match_operand 0 "memory_operand" "")
-	 (match_operand 1 "" ""))]
+  [(parallel [
+    (call (match_operand 0 "memory_operand" "")
+	  (match_operand 1 "" ""))
+    (use (reg:SI A0_REG))])]
   "!TARGET_WINDOWED_ABI"
 {
   xtensa_prepare_expand_call (0, operands);
@@ -2378,7 +2380,8 @@
 
 (define_insn "sibcall_internal"
   [(call (mem:SI (match_operand:SI 0 "call_insn_operand" "nic"))
-	 (match_operand 1 "" "i"))]
+	 (match_operand 1 "" "i"))
+   (use (reg:SI A0_REG))]
   "!TARGET_WINDOWED_ABI && SIBLING_CALL_P (insn)"
 {
   return xtensa_emit_sibcall (0, operands);
@@ -2388,9 +2391,11 @@
    (set_attr "length"	"3")])
 
 (define_expand "sibcall_value"
-  [(set (match_operand 0 "register_operand" "")
-	(call (match_operand 1 "memory_operand" "")
-	      (match_operand 2 "" "")))]
+  [(parallel [
+    (set (match_operand 0 "register_operand" "")
+	 (call (match_operand 1 "memory_operand" "")
+	       (match_operand 2 "" "")))
+    (use (reg:SI A0_REG))])]
   "!TARGET_WINDOWED_ABI"
 {
   xtensa_prepare_expand_call (1, operands);
@@ -2399,7 +2404,8 @@
 (define_insn "sibcall_value_internal"
   [(set (match_operand 0 "register_operand" "=a")
 	(call (mem:SI (match_operand:SI 1 "call_insn_operand" "nic"))
-	      (match_operand 2 "" "i")))]
+	      (match_operand 2 "" "i")))
+   (use (reg:SI A0_REG))]
   "!TARGET_WINDOWED_ABI && SIBLING_CALL_P (insn)"
 {
   return xtensa_emit_sibcall (1, operands);

@@ -1,3 +1,33 @@
+2023-02-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/MERGE: Merge upstream phobos e5a521ab2.
+
+2023-02-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 09faa4eacd.
+	* src/MERGE: Merge upstream phobos 13ef27a56.
+	* testsuite/libphobos.exceptions/refcounted.d: Add test for chained
+	reference counted exceptions.
+	* testsuite/libphobos.shared/finalize.d: Add dg-warning for deprecated
+	factory interfaces.
+	* testsuite/libphobos.gc/issue22843.d: New test.
+
+2023-02-21  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/gcc/backtrace.d (simpleErrorCallback): Add @nogc.
+	(LibBacktrace.initLibBacktrace): Likewise.
+	(LibBacktrace.this): Likewise.
+	(UnwindBacktrace.this): Likewise.
+	(getBacktrace): Likewise.
+	(getBacktraceSymbols): Likewise.
+	* libdruntime/gcc/libbacktrace.d.in (backtrace_create_state):
+	Likewise.
+	(backtrace_full): Likewise.
+	(backtrace_simple): Likewise.
+	(backtrace_print): Likewise.
+	(backtrace_pcinfo): Likewise.
+	(backtrace_syminfo): Likewise.
+
 2023-02-13  Lorenzo Salvadore  <developer@lorenzosalvadore.it>
 
 	PR d/107469

@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fno-analyzer-suppress-followups" } */
+
 #include "analyzer-decls.h"
 
 typedef __SIZE_TYPE__ size_t;

@@ -829,8 +829,12 @@ public:
     /* Ensure all semantic passes have run.  */
     if (d->semanticRun < PASS::semantic3)
       {
+	gcc_assert (!doing_semantic_analysis_p);
+
+	doing_semantic_analysis_p = true;
 	d->functionSemantic3 ();
 	Module::runDeferredSemantic3 ();
+	doing_semantic_analysis_p = false;
       }
 
     if (global.errors)

@@ -1,3 +1,47 @@
+2023-02-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108830
+	* doc/invoke.texi: Document -fno-analyzer-suppress-followups.
+
+2023-02-21  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR target/108876
+	* config/xtensa/xtensa.cc (xtensa_expand_epilogue): Drop emit_use
+	for A0_REG.
+	* config/xtensa/xtensa.md (sibcall, sibcall_internal)
+	(sibcall_value, sibcall_value_internal): Add 'use' expression
+	for A0_REG.
+
+2023-02-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108691
+	* tree-ssa-dce.cc (eliminate_unnecessary_stmts): Remove
+	assert about calls_setjmp not becoming true when it was false.
+
+2023-02-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108793
+	* tree-ssa-loop-niter.cc (number_of_iterations_until_wrap):
+	Use convert operands to niter_type when computing num.
+
+2023-02-21  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2023-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108691
+	* tree-cfg.cc (notice_special_calls): When the CFG is built
+	honor gimple_call_ctrl_altering_p.
+	* cfgexpand.cc (expand_call_stmt): Clear cfun->calls_setjmp
+	temporarily if the call is not control-altering.
+	* calls.cc (emit_call_1): Do not add REG_SETJMP if
+	cfun->calls_setjmp is not set.  Do not alter cfun->calls_setjmp.
+
+2023-02-21  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_call_save_reg): Change to return
+	true if register A0 (return address register) when -Og is specified.
+
 2023-02-20  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/predicates.md

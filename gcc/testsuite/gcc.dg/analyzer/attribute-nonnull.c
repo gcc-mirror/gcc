@@ -16,8 +16,6 @@ void test_1 (void *p, void *q, void *r)
   foo(p, q, r);
   foo(NULL, q, r); /* { dg-warning "use of NULL where non-null expected" "warning" } */
   /* { dg-message "argument 1 NULL where non-null expected" "note" { target *-*-* } .-1 } */
-  foo(p, NULL, r);
-  foo(p, q, NULL); /* { dg-warning "use of NULL where non-null expected" } */
 }
 
 void test_1a (void *q, void *r)
@@ -27,12 +25,29 @@ void test_1a (void *q, void *r)
   /* { dg-message "argument 1 \\('p'\\) NULL where non-null expected" "note" { target *-*-* } .-1 } */
 }
 
-void test_2 (void *p, void *q, void *r)
+void test_1b (void *p, void *r)
+{
+  foo(p, NULL, r);
+}
+
+void test_1c (void *p, void *q, void *r)
+{
+  foo(p, q, NULL); /* { dg-warning "use of NULL where non-null expected" } */
+}
+
+void test_2a (void *p, void *q, void *r)
 {
   bar(p, q, r);
-  bar(NULL, q, r); /* { dg-warning "use of NULL where non-null expected" "warning" } */
+}
+
+void test_2b (void *p, void *q, void *r)
+{
   bar(p, NULL, r); /* { dg-warning "use of NULL where non-null expected" "warning" } */
   /* { dg-message "argument 2 NULL where non-null expected" "note" { target *-*-* } .-1 } */
+}
+
+void test_2c (void *p, void *q, void *r)
+{
   bar(p, q, NULL); /* { dg-warning "use of NULL where non-null expected" "warning" } */
 }
 

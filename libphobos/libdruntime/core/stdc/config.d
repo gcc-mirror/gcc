@@ -286,6 +286,22 @@ private struct _Complex(T)
 {
     T re;
     T im;
+
+    // Helper properties.
+    pragma(inline, true)
+    {
+        static @property epsilon()()    { return _Complex(T.epsilon, T.epsilon); }
+        static @property infinity()()   { return _Complex(T.infinity, T.infinity); }
+        static @property max()()        { return _Complex(T.max, T.max); }
+        static @property min_normal()() { return _Complex(T.min_normal, T.min_normal); }
+        static @property nan()()        { return _Complex(T.nan, T.nan); }
+        static @property dig()()        { return T.dig; }
+        static @property mant_dig()()   { return T.mant_dig; }
+        static @property max_10_exp()() { return T.max_10_exp; }
+        static @property max_exp()()    { return T.max_exp; }
+        static @property min_10_exp()() { return T.min_10_exp; }
+        static @property min_exp()()    { return T.min_exp; }
+    }
 }
 
 enum __c_complex_float  : _Complex!float;

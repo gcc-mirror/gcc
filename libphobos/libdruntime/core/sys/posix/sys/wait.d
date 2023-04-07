@@ -386,9 +386,15 @@ else version (NetBSD)
 else version (OpenBSD)
 {
     enum WCONTINUED     = 8;
-    // OpenBSD does not define the following:
-    //enum WSTOPPED
-    //enum WNOWAIT
+    enum WSTOPPED       = WUNTRACED;
+    enum WNOWAIT        = 16;
+
+    enum idtype_t
+    {
+        P_ALL,
+        P_PID,
+        P_PGID
+    }
 }
 else version (DragonFlyBSD)
 {

@@ -2172,7 +2172,6 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 
   /* Build the argument list for the call.  */
   vec <tree, va_gc> *args = NULL;
-  tree saved_args = NULL_TREE;
   bool noreturn_call = false;
 
   /* If this is a delegate call or a nested function being called as
@@ -2182,23 +2181,6 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 
   if (arguments)
     {
-      /* First pass, evaluated expanded tuples in function arguments.  */
-      for (size_t i = 0; i < arguments->length; ++i)
-	{
-	Lagain:
-	  Expression *arg = (*arguments)[i];
-	  gcc_assert (arg->op != EXP::tuple);
-
-	  if (arg->op == EXP::comma)
-	    {
-	      CommaExp *ce = arg->isCommaExp ();
-	      tree tce = build_expr (ce->e1);
-	      saved_args = compound_expr (saved_args, tce);
-	      (*arguments)[i] = ce->e2;
-	      goto Lagain;
-	    }
-	}
-
       const size_t nparams = tf->parameterList.length ();
       /* if _arguments[] is the first argument.  */
       const size_t varargs = tf->isDstyleVariadic ();
@@ -2257,17 +2239,12 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 	}
     }
 
-  /* Evaluate the callee before calling it.  */
-  if (TREE_SIDE_EFFECTS (callee))
-    {
-      callee = d_save_expr (callee);
-      saved_args = compound_expr (callee, saved_args);
-    }
-
   /* If we saw a `noreturn` parameter, any unreachable argument evaluations
      after it are discarded, as well as the function call itself.  */
   if (noreturn_call)
     {
+      tree saved_args = NULL_TREE;
+
       if (TREE_SIDE_EFFECTS (callee))
 	saved_args = compound_expr (callee, saved_args);
 
@@ -2297,7 +2274,7 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
       result = force_target_expr (result);
     }
 
-  return compound_expr (saved_args, result);
+  return result;
 }
 
 /* Build and return the correct call to fmod depending on TYPE.
