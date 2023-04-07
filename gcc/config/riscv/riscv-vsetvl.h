@@ -380,6 +380,7 @@ public:
   void fuse_mask_policy (const vector_insn_info &, const vector_insn_info &);
 
   bool compatible_p (const vector_insn_info &) const;
+  bool skip_avl_compatible_p (const vector_insn_info &) const;
   bool compatible_avl_p (const vl_vtype_info &) const;
   bool compatible_avl_p (const avl_info &) const;
   bool compatible_vtype_p (const vl_vtype_info &) const;
