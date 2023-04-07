@@ -29,6 +29,6 @@ compilers="crab1\$(exeext)"
 
 build_by_default="no"
 
-target_libs="target-libffi target-libbacktrace target-libgrust"
+target_libs="target-libgrust"
 
 gtfiles="\$(srcdir)/rust/rust-lang.cc"
