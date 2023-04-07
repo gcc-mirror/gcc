@@ -309,9 +309,9 @@
 ;; 14. Vector reduction operations
 ;; vired       vector single-width integer reduction instructions
 ;; viwred      vector widening integer reduction instructions
-;; vfred       vector single-width floating-point un-ordered reduction instruction
+;; vfredu      vector single-width floating-point un-ordered reduction instruction
 ;; vfredo      vector single-width floating-point ordered reduction instruction
-;; vfwred      vector widening floating-point un-ordered reduction instruction
+;; vfwredu      vector widening floating-point un-ordered reduction instruction
 ;; vfwredo     vector widening floating-point ordered reduction instruction
 ;; 15. Vector mask instructions
 ;; vmalu       vector mask-register logical instructions
@@ -344,7 +344,7 @@
    vfcmp,vfminmax,vfsgnj,vfclass,vfmerge,vfmov,
    vfcvtitof,vfcvtftoi,vfwcvtitof,vfwcvtftoi,
    vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,
-   vired,viwred,vfred,vfredo,vfwred,vfwredo,
+   vired,viwred,vfredu,vfredo,vfwredu,vfwredo,
    vmalu,vmpop,vmffs,vmsfs,vmiota,vmidx,vimovvx,vimovxv,vfmovvf,vfmovfv,
    vislide,vislide1,vfslide1,vgather,vcompress,vmov"
   (cond [(eq_attr "got" "load") (const_string "load")

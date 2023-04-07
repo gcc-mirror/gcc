@@ -197,22 +197,12 @@ struct alu_def : public build_base
 
     b.append_base_name (instance.base_name);
 
-    /* vop<sew> --> vop<sew>_<op>. According to rvv-intrinsic-doc, _vv/_vx/_v
-       API doesn't have OP suffix in overloaded function name, otherwise, we
-       always append OP suffix in function name. For example, vsext_vf2.  */
-    if (instance.op_info->op == OP_TYPE_vv || instance.op_info->op == OP_TYPE_vx
-	|| instance.op_info->op == OP_TYPE_v
-	|| instance.op_info->op == OP_TYPE_x_v)
-      {
-	if (!overloaded_p)
-	  b.append_name (operand_suffixes[instance.op_info->op]);
-      }
-    else
-      b.append_name (operand_suffixes[instance.op_info->op]);
-
     /* vop<sew>_<op> --> vop<sew>_<op>_<type>.  */
     if (!overloaded_p)
-      b.append_name (type_suffixes[instance.type.index].vector);
+      {
+	b.append_name (operand_suffixes[instance.op_info->op]);
+	b.append_name (type_suffixes[instance.type.index].vector);
+      }
 
     /* According to rvv-intrinsic-doc, it does not add "_m" suffix
        for vop_m C++ overloaded API.  */
@@ -333,9 +323,9 @@ struct move_def : public build_base
   char *get_name (function_builder &b, const function_instance &instance,
 		  bool overloaded_p) const override
   {
-    /* vmv.v.x (PRED_none) can not be overloaded.  */
-    if (instance.op_info->op == OP_TYPE_x && overloaded_p
-	&& instance.pred == PRED_TYPE_none)
+    /* vmv.v.x/vfmv.v.f (PRED_none) can not be overloaded.  */
+    if ((instance.op_info->op == OP_TYPE_x || instance.op_info->op == OP_TYPE_f)
+	&& overloaded_p && instance.pred == PRED_TYPE_none)
       return nullptr;
 
     b.append_base_name (instance.base_name);
@@ -384,6 +374,34 @@ struct mask_alu_def : public build_base
   }
 };
 
+/* reduc_alu_def class.  */
+struct reduc_alu_def : public build_base
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    b.append_base_name (instance.base_name);
+
+    /* vop_<op> --> vop<sew>_<op>_<type>.  */
+    if (!overloaded_p)
+      {
+	b.append_name (operand_suffixes[instance.op_info->op]);
+	b.append_name (type_suffixes[instance.type.index].vector);
+	vector_type_index ret_type_idx
+	  = instance.op_info->ret.get_base_vector_type (
+	    builtin_types[instance.type.index].vector);
+	b.append_name (type_suffixes[ret_type_idx].vector);
+      }
+
+    /* According to rvv-intrinsic-doc, it does not add "_m" suffix
+       for vop_m C++ overloaded API.  */
+    if (overloaded_p && instance.pred == PRED_TYPE_m)
+      return b.finish_name ();
+    b.append_name (predication_suffixes[instance.pred]);
+    return b.finish_name ();
+  }
+};
+
 SHAPE(vsetvl, vsetvl)
 SHAPE(vsetvl, vsetvlmax)
 SHAPE(loadstore, loadstore)
@@ -395,5 +413,6 @@ SHAPE(return_mask, return_mask)
 SHAPE(narrow_alu, narrow_alu)
 SHAPE(move, move)
 SHAPE(mask_alu, mask_alu)
+SHAPE(reduc_alu, reduc_alu)
 
 } // end namespace riscv_vector
