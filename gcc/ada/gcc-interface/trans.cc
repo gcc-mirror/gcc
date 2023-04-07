@@ -4264,8 +4264,16 @@ static inline bool
 node_is_component (Node_Id gnat_node)
 {
   const Node_Kind k = Nkind (gnat_node);
-  return
-    (k == N_Indexed_Component || k == N_Selected_Component || k == N_Slice);
+  return k == N_Indexed_Component || k == N_Selected_Component || k == N_Slice;
+}
+
+/* Return true if GNAT_NODE is a type conversion.  */
+
+static inline bool
+node_is_type_conversion (Node_Id gnat_node)
+{
+  const Node_Kind k = Nkind (gnat_node);
+  return k == N_Type_Conversion || k == N_Unchecked_Type_Conversion;
 }
 
 /* Compute whether GNAT_NODE requires atomic access and set TYPE to the type
@@ -4316,8 +4324,7 @@ get_atomic_access (Node_Id gnat_node, atomic_acces_t *type, bool *sync)
     }
 
   /* Now strip any type conversion from GNAT_NODE.  */
-  if (Nkind (gnat_node) == N_Type_Conversion
-      || Nkind (gnat_node) == N_Unchecked_Type_Conversion)
+  if (node_is_type_conversion (gnat_node))
     gnat_node = Expression (gnat_node);
 
   /* Up to Ada 2012, for Atomic itself, only reads and updates of the object as
@@ -4425,12 +4432,14 @@ get_storage_model_access (Node_Id gnat_node, Entity_Id *gnat_smo)
     }
 
   /* If we are the prefix of the parent, then the access is above us.  */
-  if (node_is_component (gnat_parent) && Prefix (gnat_parent) == gnat_node)
+  if ((node_is_component (gnat_parent) && Prefix (gnat_parent) == gnat_node)
+      || (node_is_type_conversion (gnat_parent)
+	  && node_is_component (Parent (gnat_parent))
+	  && Prefix (Parent (gnat_parent)) == gnat_parent))
     return;
 
   /* Now strip any type conversion from GNAT_NODE.  */
-  if (Nkind (gnat_node) == N_Type_Conversion
-      || Nkind (gnat_node) == N_Unchecked_Type_Conversion)
+  if (node_is_type_conversion (gnat_node))
     gnat_node = Expression (gnat_node);
 
   while (node_is_component (gnat_node))
@@ -6115,16 +6124,9 @@ lhs_or_actual_p (Node_Id gnat_node)
 static bool
 present_in_lhs_or_actual_p (Node_Id gnat_node)
 {
-  if (lhs_or_actual_p (gnat_node))
-    return true;
-
-  const Node_Kind kind = Nkind (Parent (gnat_node));
-
-  if ((kind == N_Type_Conversion || kind == N_Unchecked_Type_Conversion)
-      && lhs_or_actual_p (Parent (gnat_node)))
-    return true;
-
-  return false;
+  return lhs_or_actual_p (gnat_node)
+	 || (node_is_type_conversion (Parent (gnat_node))
+	     && lhs_or_actual_p (Parent (gnat_node)));
 }
 
 /* Return true if GNAT_NODE, an unchecked type conversion, is a no-op as far
