@@ -1,7 +1,7 @@
 ! { dg-do run }
 ! { dg-additional-sources bind-c-contiguous-5.c }
 ! { dg-additional-options "-fcheck=all" }
-! { dg-prune-output "command-line option '-fcheck=.*' is valid for Fortran but not for C" }
+! { dg-additional-options -Wno-complain-wrong-lang }
 !  ---- Same as bind-c-contiguous-1.f90 - but with kind=4 characters
 ! Fortran demands that with bind(C), the callee ensure that for
 ! * 'contiguous'

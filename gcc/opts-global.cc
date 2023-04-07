@@ -91,6 +91,9 @@ complain_wrong_lang (const struct cl_decoded_option *decoded,
   char *ok_langs = NULL, *bad_lang = NULL;
   unsigned int opt_flags = option->flags;
 
+  if (!warn_complain_wrong_lang)
+    return;
+
   if (!lang_hooks.complain_wrong_lang_p (option))
     return;
 
