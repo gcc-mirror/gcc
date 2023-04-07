@@ -22,6 +22,9 @@
 
 #include "literal.h"
 #include <cstring>
+#include <cstdlib>
+
+namespace Literal {
 
 extern "C" {
 
@@ -75,6 +78,8 @@ bool
 Literal__from_string (const unsigned char *str, std::uint64_t len, Literal *lit)
 {
   // FIXME: implement this function with parser
+  std::abort ();
   return false;
 }
 }
+} // namespace Literal
