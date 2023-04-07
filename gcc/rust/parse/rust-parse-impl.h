@@ -2081,6 +2081,7 @@ Parser<ManagedTokenSource>::parse_macro_match ()
 	  case WHILE:
 	  case YIELD:
 	  case IDENTIFIER:
+	  case UNDERSCORE:
 	    // macro fragment
 	    return parse_macro_match_fragment ();
 	  case LEFT_PAREN:
