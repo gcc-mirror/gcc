@@ -947,7 +947,7 @@ package body Sem_Res is
       --------------------------------------
 
       function Invoked_With_Different_Arguments (N : Node_Id) return Boolean is
-         Subp : constant Entity_Id := Entity (Name (N));
+         Subp : constant Entity_Id := Get_Called_Entity (N);
 
          Actual : Node_Id;
          Formal : Entity_Id;
@@ -956,7 +956,7 @@ package body Sem_Res is
          --  Determine whether the formals of the invoked subprogram are not
          --  used as actuals in the call.
 
-         Actual := First_Actual (Call);
+         Actual := First_Actual (N);
          Formal := First_Formal (Subp);
          while Present (Actual) and then Present (Formal) loop
 
