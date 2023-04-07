@@ -21,6 +21,16 @@ if { ![istarget powerpc*-*-*] && ![istarget rs6000-*-*] } then {
   return
 }
 
+# Make sure there is a fortran compiler to test.
+if { ![check_no_compiler_messages fortran_available assembly {
+! Fortran
+program P
+  stop
+end program P
+} ""] } {
+    return
+}
+
 # Load support procs.
 load_lib gfortran-dg.exp
 
