@@ -6,7 +6,7 @@ use std::str::FromStr;
 use LexError;
 
 extern "C" {
-    fn Literal__drop(literal: *const Literal);
+    fn Literal__drop(literal: *mut Literal);
     fn Literal__string(str: *const c_uchar, len: u64) -> Literal;
     fn Literal__byte_string(bytes: *const u8, len: u64) -> Literal;
     fn Literal__from_string(str: *const c_uchar, len: u64, lit: *mut Literal) -> bool;
@@ -230,7 +230,7 @@ impl Drop for Literal {
     fn drop(&mut self) {
         match self {
             Literal::String { .. } | Literal::ByteString { .. } => unsafe {
-                Literal__drop(self as *const Literal)
+                Literal__drop(self as *mut Literal)
             },
             _ => (),
         }
