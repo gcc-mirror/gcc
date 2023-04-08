@@ -1,4 +1,4 @@
-! { dg-compile }
+! { dg-do compile }
 !
 ! Reported by Vladimir Nikishkin
 ! at https://stackoverflow.com/questions/60972134/whats-wrong-with-the-following-fortran-code-gfortran-dtio-dummy-argument-at#

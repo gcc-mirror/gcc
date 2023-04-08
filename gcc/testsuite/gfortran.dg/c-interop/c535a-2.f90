@@ -1,4 +1,4 @@
-! { dg-do compile}
+! { dg-do compile }
 ! { dg-additional-options "-fcoarray=single" }
 !
 ! TS 29113
@@ -43,7 +43,7 @@ subroutine s0 (a)
     integer, dimension(..) :: badblocklocal2  ! { dg-error "Assumed.rank" }
     integer :: badblocklocal3  ! { dg-error "Assumed.rank" }
     dimension badblocklocal3(..)
-  end block    
+  end block
 
 end subroutine
 
@@ -62,7 +62,7 @@ module m
     integer, dimension(..) :: badcomponent2  ! { dg-error "must have an explicit shape" }
   end type
 end module
-  
+
 ! Check that diagnostics are issued when dimension(..) is used in combination
 ! with the forbidden attributes.
 

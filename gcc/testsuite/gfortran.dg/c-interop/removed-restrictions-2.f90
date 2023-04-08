@@ -1,8 +1,8 @@
-! { dg-do compile}
+! { dg-do compile }
 !
 ! TS 29113
 ! 8.1 Removed restrictions on ISO_C_BINDING module procedures
-! 
+!
 ! The function C_F_PROCPOINTER from the intrinsic module ISO_C_BINDING
 ! has the restriction in ISO/IEC 1539-1:2010 that CPTR and FPTR shall
 ! not be the C address and interface of a noninteroperable Fortran
