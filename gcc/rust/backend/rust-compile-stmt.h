@@ -29,8 +29,7 @@ class CompileStmt : private HIRCompileBase, protected HIR::HIRStmtVisitor
 public:
   static tree Compile (HIR::Stmt *stmt, Context *ctx);
 
-  void visit (HIR::ExprStmtWithBlock &stmt) override;
-  void visit (HIR::ExprStmtWithoutBlock &stmt) override;
+  void visit (HIR::ExprStmt &stmt) override;
   void visit (HIR::LetStmt &stmt) override;
 
   // Empty visit for unused Stmt HIR nodes.

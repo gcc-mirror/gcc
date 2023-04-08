@@ -68,8 +68,7 @@ public:
   void visit (HIR::Trait &) override {}
   void visit (HIR::EmptyStmt &) override {}
   void visit (HIR::LetStmt &) override {}
-  void visit (HIR::ExprStmtWithoutBlock &) override {}
-  void visit (HIR::ExprStmtWithBlock &) override {}
+  void visit (HIR::ExprStmt &) override {}
 
 protected:
   CompileItem (Context *ctx, TyTy::BaseType *concrete, Location ref_locus)

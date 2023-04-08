@@ -36,13 +36,7 @@ CompileStmt::Compile (HIR::Stmt *stmt, Context *ctx)
 }
 
 void
-CompileStmt::visit (HIR::ExprStmtWithBlock &stmt)
-{
-  translated = CompileExpr::Compile (stmt.get_expr (), ctx);
-}
-
-void
-CompileStmt::visit (HIR::ExprStmtWithoutBlock &stmt)
+CompileStmt::visit (HIR::ExprStmt &stmt)
 {
   translated = CompileExpr::Compile (stmt.get_expr (), ctx);
 }

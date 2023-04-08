@@ -821,13 +821,7 @@ ConstChecker::visit (LetStmt &stmt)
 }
 
 void
-ConstChecker::visit (ExprStmtWithoutBlock &stmt)
-{
-  stmt.get_expr ()->accept_vis (*this);
-}
-
-void
-ConstChecker::visit (ExprStmtWithBlock &stmt)
+ConstChecker::visit (ExprStmt &stmt)
 {
   stmt.get_expr ()->accept_vis (*this);
 }

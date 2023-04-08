@@ -649,14 +649,11 @@ Dump::visit (LetStmt &let_stmt)
   indentation.decrement ();
 }
 void
-Dump::visit (ExprStmtWithoutBlock &expr_stmt)
+Dump::visit (ExprStmt &expr_stmt)
 {
   auto expr = expr_stmt.get_expr ();
   expr->accept_vis (*this);
 }
-void
-Dump::visit (ExprStmtWithBlock &)
-{}
 
 void
 Dump::visit (TraitBound &)

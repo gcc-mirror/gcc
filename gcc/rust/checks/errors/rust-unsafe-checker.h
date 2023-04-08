@@ -168,8 +168,7 @@ private:
   virtual void visit (AltPattern &pattern) override;
   virtual void visit (EmptyStmt &stmt) override;
   virtual void visit (LetStmt &stmt) override;
-  virtual void visit (ExprStmtWithoutBlock &stmt) override;
-  virtual void visit (ExprStmtWithBlock &stmt) override;
+  virtual void visit (ExprStmt &stmt) override;
   virtual void visit (TraitBound &bound) override;
   virtual void visit (ImplTraitType &type) override;
   virtual void visit (TraitObjectType &type) override;

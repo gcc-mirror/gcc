@@ -138,8 +138,7 @@ public:
   virtual void visit (AltPattern &pattern) = 0;
   virtual void visit (EmptyStmt &stmt) = 0;
   virtual void visit (LetStmt &stmt) = 0;
-  virtual void visit (ExprStmtWithoutBlock &stmt) = 0;
-  virtual void visit (ExprStmtWithBlock &stmt) = 0;
+  virtual void visit (ExprStmt &stmt) = 0;
   virtual void visit (TraitBound &bound) = 0;
   virtual void visit (ImplTraitType &type) = 0;
   virtual void visit (TraitObjectType &type) = 0;
@@ -287,8 +286,7 @@ public:
 
   virtual void visit (EmptyStmt &) override {}
   virtual void visit (LetStmt &) override {}
-  virtual void visit (ExprStmtWithoutBlock &) override {}
-  virtual void visit (ExprStmtWithBlock &) override {}
+  virtual void visit (ExprStmt &) override {}
 
   virtual void visit (TraitBound &) override {}
   virtual void visit (ImplTraitType &) override {}
@@ -394,8 +392,7 @@ public:
   virtual void visit (ExternBlock &block) = 0;
   virtual void visit (EmptyStmt &stmt) = 0;
   virtual void visit (LetStmt &stmt) = 0;
-  virtual void visit (ExprStmtWithoutBlock &stmt) = 0;
-  virtual void visit (ExprStmtWithBlock &stmt) = 0;
+  virtual void visit (ExprStmt &stmt) = 0;
 };
 
 class HIRExpressionVisitor
