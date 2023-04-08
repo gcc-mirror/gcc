@@ -6960,6 +6960,12 @@ package body Sem_Res is
       --  want to create a transient scope (this could occur in the case of a
       --  static string-returning call).
 
+      --  h) If the subprogram is an ignored ghost entity, because it does not
+      --  return anything.
+
+      --  i) If the call is the expression of a simple return statement, since
+      --  it will be handled as a tail call by Expand_Simple_Function_Return.
+
       if Is_Inlined (Nam)
         and then Has_Pragma_Inline (Nam)
         and then Nkind (Unit_Declaration_Node (Nam)) = N_Subprogram_Declaration
@@ -6972,16 +6978,14 @@ package body Sem_Res is
         or else Is_Intrinsic_Subprogram (Nam)
         or else Is_Inlinable_Expression_Function (Nam)
         or else Is_Static_Function_Call (N)
+        or else Is_Ignored_Ghost_Entity (Nam)
+        or else Nkind (Parent (N)) = N_Simple_Return_Statement
       then
          null;
-
-      --  A return statement from an ignored Ghost function does not use the
-      --  secondary stack (or any other one).
 
       elsif Expander_Active
         and then Ekind (Nam) in E_Function | E_Subprogram_Type
         and then Requires_Transient_Scope (Etype (Nam))
-        and then not Is_Ignored_Ghost_Entity (Nam)
       then
          Establish_Transient_Scope (N, Needs_Secondary_Stack (Etype (Nam)));
 
