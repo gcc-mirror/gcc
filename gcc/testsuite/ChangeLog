@@ -1,3 +1,8 @@
+2023-04-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/powerpc/ppc-fortran/ppc-fortran.exp: Test for
+	fortran compiler, skip if missing.
+
 2023-04-06  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	* gcc.target/arm/mve/intrinsics/mve_intrinsic_type_overloads-fp.c: Remove unused variables.
