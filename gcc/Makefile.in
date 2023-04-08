@@ -945,7 +945,8 @@ TARGET_DEF_H = target-def.h target-hooks-def.h $(HOOKS_H) targhooks.h
 C_TARGET_DEF_H = c-family/c-target-def.h c-family/c-target-hooks-def.h \
   $(TREE_H) $(C_COMMON_H) $(HOOKS_H) common/common-targhooks.h
 CORETYPES_H = coretypes.h insn-modes.h signop.h wide-int.h wide-int-print.h \
-  insn-modes-inline.h $(MACHMODE_H) double-int.h
+  insn-modes-inline.h $(MACHMODE_H) double-int.h align.h poly-int.h \
+  poly-int-types.h
 RTL_BASE_H = $(CORETYPES_H) rtl.h rtl.def reg-notes.def \
   insn-notes.def $(INPUT_H) $(REAL_H) statistics.h $(VEC_H) \
   $(FIXED_VALUE_H) alias.h $(HASHTAB_H)
@@ -998,7 +999,8 @@ C_COMMON_H = c-family/c-common.h c-family/c-common.def $(TREE_H) \
 C_PRAGMA_H = c-family/c-pragma.h $(CPPLIB_H)
 C_TREE_H = c/c-tree.h $(C_COMMON_H) $(DIAGNOSTIC_H)
 SYSTEM_H = system.h hwint.h $(srcdir)/../include/libiberty.h \
-	$(srcdir)/../include/safe-ctype.h $(srcdir)/../include/filenames.h
+	$(srcdir)/../include/safe-ctype.h $(srcdir)/../include/filenames.h \
+	$(HASHTAB_H)
 PREDICT_H = predict.h predict.def
 CPPLIB_H = $(srcdir)/../libcpp/include/line-map.h \
 	$(srcdir)/../libcpp/include/cpplib.h
