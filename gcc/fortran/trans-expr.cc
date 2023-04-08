@@ -2124,6 +2124,7 @@ gfc_get_expr_charlen (gfc_expr *e)
 {
   gfc_ref *r;
   tree length;
+  tree previous = NULL_TREE;
   gfc_se se;
 
   gcc_assert (e->expr_type == EXPR_VARIABLE
@@ -2149,6 +2150,7 @@ gfc_get_expr_charlen (gfc_expr *e)
   /* Look through the reference chain for component references.  */
   for (r = e->ref; r; r = r->next)
     {
+      previous = length;
       switch (r->type)
 	{
 	case REF_COMPONENT:
@@ -2164,7 +2166,10 @@ gfc_get_expr_charlen (gfc_expr *e)
 	  gfc_init_se (&se, NULL);
 	  gfc_conv_expr_type (&se, r->u.ss.start, gfc_charlen_type_node);
 	  length = se.expr;
-	  gfc_conv_expr_type (&se, r->u.ss.end, gfc_charlen_type_node);
+	  if (r->u.ss.end)
+	    gfc_conv_expr_type (&se, r->u.ss.end, gfc_charlen_type_node);
+	  else
+	    se.expr = previous;
 	  length = fold_build2_loc (input_location, MINUS_EXPR,
 				    gfc_charlen_type_node,
 				    se.expr, length);
@@ -2554,23 +2559,25 @@ gfc_conv_string_length (gfc_charlen * cl, gfc_expr * expr, stmtblock_t * pblock)
       expr_flat = gfc_copy_expr (expr);
       flatten_array_ctors_without_strlen (expr_flat);
       gfc_resolve_expr (expr_flat);
-
-      gfc_conv_expr (&se, expr_flat);
-      gfc_add_block_to_block (pblock, &se.pre);
-      cl->backend_decl = convert (gfc_charlen_type_node, se.string_length);
-
+      if (expr_flat->rank)
+	gfc_conv_expr_descriptor (&se, expr_flat);
+      else
+	gfc_conv_expr (&se, expr_flat);
+      if (expr_flat->expr_type != EXPR_VARIABLE)
+	gfc_add_block_to_block (pblock, &se.pre);
+      se.expr = convert (gfc_charlen_type_node, se.string_length);
+      gfc_add_block_to_block (pblock, &se.post);
       gfc_free_expr (expr_flat);
-      return;
     }
-
-  /* Convert cl->length.  */
-
-  gcc_assert (cl->length);
-
-  gfc_conv_expr_type (&se, cl->length, gfc_charlen_type_node);
-  se.expr = fold_build2_loc (input_location, MAX_EXPR, gfc_charlen_type_node,
-			     se.expr, build_zero_cst (TREE_TYPE (se.expr)));
-  gfc_add_block_to_block (pblock, &se.pre);
+  else
+    {
+      /* Convert cl->length.  */
+      gfc_conv_expr_type (&se, cl->length, gfc_charlen_type_node);
+      se.expr = fold_build2_loc (input_location, MAX_EXPR,
+				 gfc_charlen_type_node, se.expr,
+				 build_zero_cst (TREE_TYPE (se.expr)));
+      gfc_add_block_to_block (pblock, &se.pre);
+    }
 
   if (cl->backend_decl && VAR_P (cl->backend_decl))
     gfc_add_modify (pblock, cl->backend_decl, se.expr);
@@ -7310,16 +7317,30 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       if (parmse.string_length && fsym && fsym->ts.deferred)
 	{
 	  if (INDIRECT_REF_P (parmse.string_length))
-	    /* In chains of functions/procedure calls the string_length already
-	       is a pointer to the variable holding the length.  Therefore
-	       remove the deref on call.  */
-	    parmse.string_length = TREE_OPERAND (parmse.string_length, 0);
+	    {
+	      /* In chains of functions/procedure calls the string_length already
+		 is a pointer to the variable holding the length.  Therefore
+		 remove the deref on call.  */
+	      tmp = parmse.string_length;
+	      parmse.string_length = TREE_OPERAND (parmse.string_length, 0);
+	    }
 	  else
 	    {
 	      tmp = parmse.string_length;
 	      if (!VAR_P (tmp) && TREE_CODE (tmp) != COMPONENT_REF)
 		tmp = gfc_evaluate_now (parmse.string_length, &se->pre);
 	      parmse.string_length = gfc_build_addr_expr (NULL_TREE, tmp);
+	    }
+
+	  if (e && e->expr_type == EXPR_VARIABLE
+	      && fsym->attr.allocatable
+	      && e->ts.u.cl->backend_decl
+	      && VAR_P (e->ts.u.cl->backend_decl))
+	    {
+	      if (INDIRECT_REF_P (tmp))
+		tmp = TREE_OPERAND (tmp, 0);
+	      gfc_add_modify (&se->post, e->ts.u.cl->backend_decl,
+			      fold_convert (gfc_charlen_type_node, tmp));
 	    }
 	}
 
@@ -8584,6 +8605,20 @@ gfc_trans_alloc_subarray_assign (tree dest, gfc_component * cm,
   gfc_conv_expr_descriptor (&se, expr);
   gfc_add_block_to_block (&block, &se.pre);
   gfc_add_modify (&block, dest, se.expr);
+  if (cm->ts.type == BT_CHARACTER
+      && gfc_deferred_strlen (cm, &tmp))
+    {
+      tmp = fold_build3_loc (input_location, COMPONENT_REF,
+			     TREE_TYPE (tmp),
+			     TREE_OPERAND (dest, 0),
+			     tmp, NULL_TREE);
+      gfc_add_modify (&block, tmp,
+			      fold_convert (TREE_TYPE (tmp),
+			      se.string_length));
+      cm->ts.u.cl->backend_decl = gfc_create_var (gfc_charlen_type_node,
+						  "slen");
+      gfc_add_modify (&block, cm->ts.u.cl->backend_decl, se.string_length);
+    }
 
   /* Deal with arrays of derived types with allocatable components.  */
   if (gfc_bt_struct (cm->ts.type)
@@ -8607,10 +8642,15 @@ gfc_trans_alloc_subarray_assign (tree dest, gfc_component * cm,
 					   tmp, expr->rank, NULL_TREE);
 	}
     }
+  else if (cm->ts.type == BT_CHARACTER && cm->ts.deferred)
+    tmp = gfc_duplicate_allocatable (dest, se.expr,
+				     gfc_typenode_for_spec (&cm->ts),
+				     cm->as->rank, NULL_TREE);
   else
     tmp = gfc_duplicate_allocatable (dest, se.expr,
 				     TREE_TYPE(cm->backend_decl),
 				     cm->as->rank, NULL_TREE);
+
 
   gfc_add_expr_to_block (&block, tmp);
   gfc_add_block_to_block (&block, &se.post);

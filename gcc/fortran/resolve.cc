@@ -9084,6 +9084,7 @@ static void
 resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 {
   gfc_expr* target;
+  bool parentheses = false;
 
   gcc_assert (sym->assoc);
   gcc_assert (sym->attr.flavor == FL_VARIABLE);
@@ -9095,6 +9096,16 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
   if (!target)
     return;
   gcc_assert (!sym->assoc->dangling);
+
+  if (target->expr_type == EXPR_OP
+      && target->value.op.op == INTRINSIC_PARENTHESES
+      && target->value.op.op1->expr_type == EXPR_VARIABLE)
+    {
+      sym->assoc->target = gfc_copy_expr (target->value.op.op1);
+      gfc_free_expr (target);
+      target = sym->assoc->target;
+      parentheses = true;
+    }
 
   if (resolve_target && !gfc_resolve_expr (target))
     return;
@@ -9177,6 +9188,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 
   /* See if this is a valid association-to-variable.  */
   sym->assoc->variable = (target->expr_type == EXPR_VARIABLE
+			  && !parentheses
 			  && !gfc_has_vector_subscript (target));
 
   /* Finally resolve if this is an array or not.  */
@@ -9190,7 +9202,6 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       sym->attr.dimension = 0;
       return;
     }
-
 
   /* We cannot deal with class selectors that need temporaries.  */
   if (target->ts.type == BT_CLASS
@@ -10885,11 +10896,6 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
 
 
 /* Resolve a BLOCK construct statement.  */
-static gfc_expr*
-get_temp_from_expr (gfc_expr *, gfc_namespace *);
-static gfc_code *
-build_assignment (gfc_exec_op, gfc_expr *, gfc_expr *,
-		  gfc_component *, gfc_component *, locus);
 
 static void
 resolve_block_construct (gfc_code* code)
