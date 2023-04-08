@@ -888,13 +888,7 @@ UnsafeChecker::visit (LetStmt &stmt)
 }
 
 void
-UnsafeChecker::visit (ExprStmtWithoutBlock &stmt)
-{
-  stmt.get_expr ()->accept_vis (*this);
-}
-
-void
-UnsafeChecker::visit (ExprStmtWithBlock &stmt)
+UnsafeChecker::visit (ExprStmt &stmt)
 {
   stmt.get_expr ()->accept_vis (*this);
 }

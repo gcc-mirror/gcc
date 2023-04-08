@@ -36,13 +36,7 @@ TypeCheckStmt::Resolve (HIR::Stmt *stmt)
 }
 
 void
-TypeCheckStmt::visit (HIR::ExprStmtWithBlock &stmt)
-{
-  infered = TypeCheckExpr::Resolve (stmt.get_expr ());
-}
-
-void
-TypeCheckStmt::visit (HIR::ExprStmtWithoutBlock &stmt)
+TypeCheckStmt::visit (HIR::ExprStmt &stmt)
 {
   infered = TypeCheckExpr::Resolve (stmt.get_expr ());
 }

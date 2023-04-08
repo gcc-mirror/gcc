@@ -29,8 +29,7 @@ class TypeCheckStmt : private TypeCheckBase, private HIR::HIRStmtVisitor
 public:
   static TyTy::BaseType *Resolve (HIR::Stmt *stmt);
 
-  void visit (HIR::ExprStmtWithBlock &stmt) override;
-  void visit (HIR::ExprStmtWithoutBlock &stmt) override;
+  void visit (HIR::ExprStmt &stmt) override;
   void visit (HIR::EmptyStmt &stmt) override;
   void visit (HIR::ExternBlock &extern_block) override;
   void visit (HIR::ConstantItem &constant) override;

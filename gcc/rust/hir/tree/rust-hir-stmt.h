@@ -166,6 +166,9 @@ public:
 
   Location get_locus () const override final { return locus; }
 
+  void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRStmtVisitor &vis) override;
+
   bool is_item () const override final { return false; }
 
   Expr *get_expr () { return expr.get (); }
@@ -206,9 +209,6 @@ public:
     : ExprStmt (std::move (mappings), std::move (expr), locus)
   {}
 
-  void accept_vis (HIRFullVisitor &vis) override;
-  void accept_vis (HIRStmtVisitor &vis) override;
-
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -230,9 +230,6 @@ public:
     : ExprStmt (std::move (mappings), std::move (expr), locus),
       must_be_unit (must_be_unit)
   {}
-
-  void accept_vis (HIRFullVisitor &vis) override;
-  void accept_vis (HIRStmtVisitor &vis) override;
 
   bool is_unit_check_needed () const override { return must_be_unit; }
 

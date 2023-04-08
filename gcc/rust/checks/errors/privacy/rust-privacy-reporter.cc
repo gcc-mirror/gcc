@@ -717,13 +717,7 @@ PrivacyReporter::visit (HIR::LetStmt &stmt)
 }
 
 void
-PrivacyReporter::visit (HIR::ExprStmtWithoutBlock &stmt)
-{
-  stmt.get_expr ()->accept_vis (*this);
-}
-
-void
-PrivacyReporter::visit (HIR::ExprStmtWithBlock &stmt)
+PrivacyReporter::visit (HIR::ExprStmt &stmt)
 {
   stmt.get_expr ()->accept_vis (*this);
 }

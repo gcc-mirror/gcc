@@ -4426,13 +4426,7 @@ LetStmt::accept_vis (HIRFullVisitor &vis)
 }
 
 void
-ExprStmtWithoutBlock::accept_vis (HIRFullVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-ExprStmtWithBlock::accept_vis (HIRFullVisitor &vis)
+ExprStmt::accept_vis (HIRFullVisitor &vis)
 {
   vis.visit (*this);
 }
@@ -4774,7 +4768,7 @@ QualifiedPathInType::accept_vis (HIRTypeVisitor &vis)
 }
 
 void
-ExprStmtWithoutBlock::accept_vis (HIRStmtVisitor &vis)
+ExprStmt::accept_vis (HIRStmtVisitor &vis)
 {
   vis.visit (*this);
 }
@@ -4949,12 +4943,6 @@ ReturnExpr::accept_vis (HIRExpressionVisitor &vis)
 
 void
 QualifiedPathInExpression::accept_vis (HIRPatternVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-ExprStmtWithBlock::accept_vis (HIRStmtVisitor &vis)
 {
   vis.visit (*this);
 }

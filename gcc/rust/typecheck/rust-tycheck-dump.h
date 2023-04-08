@@ -136,12 +136,7 @@ public:
       }
   }
 
-  void visit (HIR::ExprStmtWithBlock &stmt) override
-  {
-    stmt.get_expr ()->accept_vis (*this);
-  }
-
-  void visit (HIR::ExprStmtWithoutBlock &stmt) override
+  void visit (HIR::ExprStmt &stmt) override
   {
     stmt.get_expr ()->accept_vis (*this);
   }
