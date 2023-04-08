@@ -152,16 +152,25 @@ protected:
   LetStmt *clone_stmt_impl () const override { return new LetStmt (*this); }
 };
 
-/* Abstract base class for expression statements (statements containing an
- * expression) */
+/* class for expression statements (statements containing an expression) */
 class ExprStmt : public Stmt
 {
-  // TODO: add any useful virtual functions
-
   std::unique_ptr<Expr> expr;
   Location locus;
+  bool must_be_unit;
 
 public:
+  ExprStmt (Analysis::NodeMapping mappings, std::unique_ptr<Expr> expr,
+	    Location locus, bool must_be_unit)
+    : Stmt (std::move (mappings)), expr (std::move (expr)), locus (locus),
+      must_be_unit (must_be_unit)
+  {}
+
+  ExprStmt (Analysis::NodeMapping mappings, std::unique_ptr<Expr> expr,
+	    Location locus)
+    : ExprStmt (std::move (mappings), std::move (expr), locus, false)
+  {}
+
   std::string as_string () const override;
 
   Location get_locus () const override final { return locus; }
@@ -192,54 +201,12 @@ public:
   ExprStmt (ExprStmt &&other) = default;
   ExprStmt &operator= (ExprStmt &&other) = default;
 
-protected:
-  ExprStmt (Analysis::NodeMapping mappings, std::unique_ptr<Expr> expr, Location locus)
-    : Stmt (std::move (mappings)), expr (std::move (expr)), locus (locus)
-  {}
-};
-
-/* Statement containing an expression without a block (or, due to technical
- * difficulties, can only be guaranteed to hold an expression). */
-class ExprStmtWithoutBlock : public ExprStmt
-{
-
-public:
-  ExprStmtWithoutBlock (Analysis::NodeMapping mappings,
-			std::unique_ptr<Expr> expr, Location locus)
-    : ExprStmt (std::move (mappings), std::move (expr), locus)
-  {}
-
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  ExprStmtWithoutBlock *clone_stmt_impl () const override
-  {
-    return new ExprStmtWithoutBlock (*this);
-  }
-};
-
-// Statement containing an expression with a block
-class ExprStmtWithBlock : public ExprStmt
-{
-  bool must_be_unit;
-
-public:
-  ExprStmtWithBlock (Analysis::NodeMapping mappings,
-		     std::unique_ptr<ExprWithBlock> expr, Location locus,
-		     bool must_be_unit)
-    : ExprStmt (std::move (mappings), std::move (expr), locus),
-      must_be_unit (must_be_unit)
-  {}
-
   bool is_unit_check_needed () const override { return must_be_unit; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
-  ExprStmtWithBlock *clone_stmt_impl () const override
-  {
-    return new ExprStmtWithBlock (*this);
-  }
+  ExprStmt *clone_stmt_impl () const override { return new ExprStmt (*this); }
 };
 
 } // namespace HIR

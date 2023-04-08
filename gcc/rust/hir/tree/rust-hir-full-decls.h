@@ -129,8 +129,6 @@ class AsyncBlockExpr;
 class EmptyStmt;
 class LetStmt;
 class ExprStmt;
-class ExprStmtWithoutBlock;
-class ExprStmtWithBlock;
 
 // rust-item.h
 class TypeParam;

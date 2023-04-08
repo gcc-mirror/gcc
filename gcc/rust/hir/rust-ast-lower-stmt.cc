@@ -66,10 +66,8 @@ ASTLoweringStmt::visit (AST::ExprStmtWithBlock &stmt)
 				 mappings->get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
   translated
-    = new HIR::ExprStmtWithBlock (mapping,
-				  std::unique_ptr<HIR::ExprWithBlock> (expr),
-				  stmt.get_locus (),
-				  !stmt.is_semicolon_followed ());
+    = new HIR::ExprStmt (mapping, std::unique_ptr<HIR::ExprWithBlock> (expr),
+			 stmt.get_locus (), !stmt.is_semicolon_followed ());
 }
 
 void
@@ -82,9 +80,8 @@ ASTLoweringStmt::visit (AST::ExprStmtWithoutBlock &stmt)
   Analysis::NodeMapping mapping (crate_num, stmt.get_node_id (),
 				 mappings->get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
-  translated
-    = new HIR::ExprStmtWithoutBlock (mapping, std::unique_ptr<HIR::Expr> (expr),
-				     stmt.get_locus ());
+  translated = new HIR::ExprStmt (mapping, std::unique_ptr<HIR::Expr> (expr),
+				  stmt.get_locus ());
 }
 
 void
