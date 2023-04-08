@@ -4717,21 +4717,29 @@ package body Exp_Ch7 is
                   return Curr;
 
                when N_Simple_Return_Statement =>
+                  declare
+                     Fun_Id : constant Entity_Id :=
+                       Return_Applies_To (Return_Statement_Entity (Curr));
 
-                  --  A return statement is not a valid transient context when
-                  --  the function itself requires transient scope management
-                  --  because the result will be reclaimed too early.
+                  begin
+                     --  A transient context that must manage the secondary
+                     --  stack cannot be a return statement of a function that
+                     --  itself requires secondary stack management, because
+                     --  the function's result would be reclaimed too early.
+                     --  And returns of thunks never require transient scopes.
 
-                  if Requires_Transient_Scope (Etype
-                       (Return_Applies_To (Return_Statement_Entity (Curr))))
-                  then
-                     return Empty;
+                     if (Manage_Sec_Stack
+                          and then Needs_Secondary_Stack (Etype (Fun_Id)))
+                       or else Is_Thunk (Fun_Id)
+                     then
+                        return Empty;
 
-                  --  General case for return statements
+                     --  General case for return statements
 
-                  else
-                     return Curr;
-                  end if;
+                     else
+                        return Curr;
+                     end if;
+                  end;
 
                --  Special
 
