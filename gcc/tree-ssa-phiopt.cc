@@ -548,6 +548,7 @@ empty_bb_or_one_feeding_into_p (basic_block bb,
 {
   stmt = nullptr;
   gimple *stmt_to_move = nullptr;
+  tree lhs;
 
   if (empty_block_p (bb))
     return true;
@@ -592,17 +593,43 @@ empty_bb_or_one_feeding_into_p (basic_block bb,
   if (gimple_uses_undefined_value_p (stmt_to_move))
     return false;
 
-  /* Allow assignments and not no calls.
+  /* Allow assignments but allow some builtin/internal calls.
      As const calls don't match any of the above, yet they could
      still have some side-effects - they could contain
      gimple_could_trap_p statements, like floating point
      exceptions or integer division by zero.  See PR70586.
      FIXME: perhaps gimple_has_side_effects or gimple_could_trap_p
-     should handle this.  */
+     should handle this.
+     Allow some known builtin/internal calls that are known not to
+     trap: logical functions (e.g. bswap and bit counting). */
   if (!is_gimple_assign (stmt_to_move))
-    return false;
+    {
+      if (!is_gimple_call (stmt_to_move))
+	return false;
+      combined_fn cfn = gimple_call_combined_fn (stmt_to_move);
+      switch (cfn)
+	{
+	default:
+	  return false;
+	case CFN_BUILT_IN_BSWAP16:
+	case CFN_BUILT_IN_BSWAP32:
+	case CFN_BUILT_IN_BSWAP64:
+	case CFN_BUILT_IN_BSWAP128:
+	CASE_CFN_FFS:
+	CASE_CFN_PARITY:
+	CASE_CFN_POPCOUNT:
+	CASE_CFN_CLZ:
+	CASE_CFN_CTZ:
+	case CFN_BUILT_IN_CLRSB:
+	case CFN_BUILT_IN_CLRSBL:
+	case CFN_BUILT_IN_CLRSBLL:
+	  lhs = gimple_call_lhs (stmt_to_move);
+	  break;
+	}
+    }
+  else
+    lhs = gimple_assign_lhs (stmt_to_move);
 
-  tree lhs = gimple_assign_lhs (stmt_to_move);
   gimple *use_stmt;
   use_operand_p use_p;
 
