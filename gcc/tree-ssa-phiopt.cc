@@ -960,9 +960,27 @@ empty_bb_or_one_feeding_into_p (basic_block bb,
   if (!gimple_seq_empty_p (phi_nodes (bb)))
     return false;
 
-  stmt_to_move = last_and_only_stmt (bb);
+  gimple_stmt_iterator gsi;
+
+  gsi = gsi_start_nondebug_after_labels_bb (bb);
+  while (!gsi_end_p (gsi))
+    {
+      gimple *s = gsi_stmt (gsi);
+      gsi_next_nondebug (&gsi);
+      /* Skip over Predict and nop statements. */
+      if (gimple_code (s) == GIMPLE_PREDICT
+	  || gimple_code (s) == GIMPLE_NOP)
+	continue;
+      /* If there is more one statement return false. */
+      if (stmt_to_move)
+	return false;
+      stmt_to_move = s;
+    }
+
+  /* The only statement here was a Predict or a nop statement
+     so return true. */
   if (!stmt_to_move)
-    return false;
+    return true;
 
   if (gimple_vuse (stmt_to_move))
     return false;

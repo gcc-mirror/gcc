@@ -1,5 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-optimized-details-blocks --param logical-op-non-short-circuit=1" } */
+/* Disable phi-opt as it is no longer confused by predicate which had allowed ifcombine to work in the past.
+   Note this testcase is about ifcombine rather than phi-opt. */
+/* { dg-options "-O1 -fdump-tree-optimized-details-blocks --param logical-op-non-short-circuit=1 -fno-ssa-phiopt" } */
 
 _Bool f1(_Bool a, _Bool b)
 {
