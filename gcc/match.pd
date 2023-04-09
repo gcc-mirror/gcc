@@ -52,6 +52,8 @@ along with GCC; see the file COPYING3.  If not see
   gt   ge   eq ne le   lt   unordered ordered   ungt unge unlt unle uneq ltgt)
 (define_operator_list simple_comparison         lt   le   eq ne ge   gt)
 (define_operator_list swapped_simple_comparison gt   ge   eq ne le   lt)
+(define_operator_list BSWAP BUILT_IN_BSWAP16 BUILT_IN_BSWAP32
+	    BUILT_IN_BSWAP64 BUILT_IN_BSWAP128)
 
 #include "cfn-operators.pd"
 
@@ -4313,8 +4315,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (complex (convert:itype @0) (negate (convert:itype @1)))))
 
 /* BSWAP simplifications, transforms checked by gcc.dg/builtin-bswap-8.c.  */
-(for bswap (BUILT_IN_BSWAP16 BUILT_IN_BSWAP32
-	    BUILT_IN_BSWAP64 BUILT_IN_BSWAP128)
+(for bswap (BSWAP)
  (simplify
   (bswap (bswap @0))
   @0)
@@ -7779,6 +7780,42 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
   (bit_xor (PARITY:s @0) (PARITY:s @1))
   (PARITY (bit_xor @0 @1)))
+
+/* a != 0 ? FUN(a) : 0 -> Fun(a) for some builtin functions. */
+(for func (POPCOUNT BSWAP FFS PARITY)
+ (simplify
+  (cond (ne @0 integer_zerop@1) (func@4 (convert? @2)) integer_zerop@3)
+  @4))
+
+#if GIMPLE
+/* a != 0 ? CLZ(a) : CST -> .CLZ(a) where CST is the result of the internal function for 0. */
+(for func (CLZ)
+ (simplify
+  (cond (ne @0 integer_zerop@1) (func (convert?@4 @2)) INTEGER_CST@3)
+  (with { int val;
+	  internal_fn ifn = IFN_LAST;
+	  if (direct_internal_fn_supported_p (IFN_CLZ, type, OPTIMIZE_FOR_BOTH)
+	      && CLZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (type),
+					    val) == 2)
+	    ifn = IFN_CLZ;
+	}
+   (if (ifn == IFN_CLZ && wi::to_widest (@3) == val)
+    (IFN_CLZ @4)))))
+
+/* a != 0 ? CTZ(a) : CST -> .CTZ(a) where CST is the result of the internal function for 0. */
+(for func (CTZ)
+ (simplify
+  (cond (ne @0 integer_zerop@1) (func (convert?@4 @2)) INTEGER_CST@3)
+  (with { int val;
+	  internal_fn ifn = IFN_LAST;
+	  if (direct_internal_fn_supported_p (IFN_CTZ, type, OPTIMIZE_FOR_BOTH)
+	      && CTZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (type),
+					    val) == 2)
+	    ifn = IFN_CTZ;
+	}
+   (if (ifn == IFN_CTZ && wi::to_widest (@3) == val)
+    (IFN_CTZ @4)))))
+#endif
 
 /* Common POPCOUNT/PARITY simplifications.  */
 /* popcount(X&C1) is (X>>C2)&1 when C1 == 1<<C2.  Same for parity(X&C1).  */
