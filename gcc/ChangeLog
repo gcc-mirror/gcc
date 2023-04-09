@@ -1,3 +1,18 @@
+2023-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109392
+	* tree-vect-generic.cc (tree_vec_extract): Handle failure
+	of maybe_push_res_to_seq better.
+
+2023-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (CORETYPES_H): Depend on align.h, poly-int.h and
+	poly-int-types.h.
+	(SYSTEM_H): Depend on $(HASHTAB_H).
+	* config/riscv/t-riscv (build/genrvv-type-indexer.o): Remove unused
+	dependency on $(RTL_BASE_H), remove redundant dependency on
+	insn-modes.h.
+
 2023-04-06  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/107674

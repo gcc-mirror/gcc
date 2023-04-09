@@ -1,3 +1,66 @@
+2023-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109392
+	* gcc.dg/pr109392.c: New test.
+
+2023-04-08  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/pr84877.c: xfail on hppa*-*-*.
+
+2023-04-08  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/long_branch.c: Use timeout factor 2.0 on hppa*-*-*.
+
+2023-04-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87477
+	PR fortran/85686
+	PR fortran/88247
+	PR fortran/91941
+	PR fortran/92779
+	PR fortran/93339
+	PR fortran/93813
+	PR fortran/100948
+	PR fortran/102106
+	PR fortran/98408
+	PR fortran/105205
+	PR fortran/106918
+	* gfortran.dg/associate_47.f90 : Enable substring test.
+	* gfortran.dg/associate_51.f90 : Update an error message.
+	* gfortran.dg/goacc/array-with-dt-2.f90 : Add span to
+	uninitialzed dg-warnings.
+	* gfortran.dg/associate_60.f90 : New test
+	* gfortran.dg/pr98408.f90 : New test
+	* gfortran.dg/pr105205.f90 : New test
+	* gfortran.dg/pr106918.f90 : New test
+
+2023-04-08   Paul Thomas  <pault@gcc.gnu.org>
+
+	* gfortran.dg/c-interop/allocatable-optional-pointer.f90 : Fix
+	dg directive and remove trailing whitespace.
+	* gfortran.dg/c-interop/c407a-1.f90 : ditto
+	* gfortran.dg/c-interop/c407b-1.f90 : ditto
+	* gfortran.dg/c-interop/c407b-2.f90 : ditto
+	* gfortran.dg/c-interop/c407c-1.f90 : ditto
+	* gfortran.dg/c-interop/c535a-1.f90 : ditto
+	* gfortran.dg/c-interop/c535a-2.f90 : ditto
+	* gfortran.dg/c-interop/c535b-1.f90 : ditto
+	* gfortran.dg/c-interop/c535b-2.f90 : ditto
+	* gfortran.dg/c-interop/c535b-3.f90 : ditto
+	* gfortran.dg/c-interop/c535c-1.f90 : ditto
+	* gfortran.dg/c-interop/c535c-2.f90 : ditto
+	* gfortran.dg/c-interop/deferred-character-1.f90 : ditto
+	* gfortran.dg/c-interop/removed-restrictions-1.f90 : ditto
+	* gfortran.dg/c-interop/removed-restrictions-2.f90 : ditto
+	* gfortran.dg/c-interop/removed-restrictions-4.f90 : ditto
+	* gfortran.dg/c-interop/tkr.f90 : ditto
+	* gfortran.dg/class_result_10.f90 : ditto
+	* gfortran.dg/dtio_35.f90 : ditto
+	* gfortran.dg/gomp/affinity-clause-1.f90 : ditto
+	* gfortran.dg/pr103258.f90 : ditto
+	* gfortran.dg/pr59107.f90 : ditto
+	* gfortran.dg/pr93835.f08 : ditto
+
 2023-04-07  Alexandre Oliva  <oliva@adacore.com>
 
 	* gcc.target/powerpc/ppc-fortran/ppc-fortran.exp: Test for

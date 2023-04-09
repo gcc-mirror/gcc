@@ -1,3 +1,35 @@
+2023-04-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87477
+	* iresolve.cc (gfc_resolve_adjustl, gfc_resolve_adjustr): if
+	string length is deferred use the string typespec for result.
+	* resolve.cc (resolve_assoc_var): Handle parentheses around the
+	target expression.
+	(resolve_block_construct): Remove unnecessary static decls.
+	* trans-array.cc (gfc_conv_expr_descriptor): Guard string len
+	expression in condition. Improve handling of string length and
+	span, especially for substrings of the descriptor.
+	(duplicate_allocatable): Make element type more explicit with
+	'eltype'.
+	* trans-decl.cc (gfc_get_symbol_decl): Emit a fatal error with
+	appropriate message instead of ICE if symbol type is unknown.
+	(gfc_generate_function_code): Set current locus to proc_sym
+	declared_at.
+	* trans-expr.cc (gfc_get_expr_charlen): Retain last charlen in
+	'previous' and use if end expression in substring reference is
+	null.
+	(gfc_conv_string_length): Use gfc_conv_expr_descriptor if
+	'expr_flat' is an array. Add post block to catch deallocation
+	of temporaries.
+	(gfc_conv_procedure_call): Assign the parmse string length to
+	the expression string length, if it is deferred.
+	(gfc_trans_alloc_subarray_assign): If this is a deferred string
+	length component, store the string length in the hidden comp.
+	Update the typespec length accordingly. Generate a new type
+	spec for the call to gfc_duplicate-allocatable in this case.
+	* trans-io.cc (gfc_trans_transfer): Scalarize transfer of
+	deferred character array components.
+
 2023-04-04  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/104349
