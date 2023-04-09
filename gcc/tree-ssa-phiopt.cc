@@ -1094,11 +1094,10 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
 
       tree name = gimple_get_lhs (stmt_to_move);
       // Mark the name to be renamed if there is one.
-      if (name && TREE_CODE (name) == SSA_NAME)
-	bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (name));
+      bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (name));
       gimple_stmt_iterator gsi1 = gsi_for_stmt (stmt_to_move);
       gsi_move_before (&gsi1, &gsi);
-      reset_flow_sensitive_info (gimple_assign_lhs (stmt_to_move));
+      reset_flow_sensitive_info (name);
     }
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, result, inserted_exprs);
