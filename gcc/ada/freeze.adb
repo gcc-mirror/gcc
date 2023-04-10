@@ -6063,12 +6063,6 @@ package body Freeze is
          then
             --  Here we do the wrap
 
-            --  Note on calls to Copy_Separate_Tree. The trees we are copying
-            --  here are fully analyzed, but we definitely want fully syntactic
-            --  unanalyzed trees in the body we construct, so that the analysis
-            --  generates the right visibility, and that is exactly what the
-            --  calls to Copy_Separate_Tree give us.
-
             Prag := Copy_Import_Pragma;
 
             --  Fix up spec so it is no longer imported and has convention Ada
@@ -6127,7 +6121,7 @@ package body Freeze is
                 Specification              => Copy_Subprogram_Spec (Spec),
                 Declarations               => New_List (
                   Make_Subprogram_Declaration (Loc,
-                    Specification => Copy_Separate_Tree (Spec)),
+                    Specification => Copy_Subprogram_Spec (Spec)),
                   Prag),
                 Handled_Statement_Sequence =>
                   Make_Handled_Sequence_Of_Statements (Loc,
