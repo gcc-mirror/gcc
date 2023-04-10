@@ -3,7 +3,7 @@
  *
  * Not to be confused with the `scope` storage class.
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dscope.d, _dscope.d)
@@ -33,6 +33,7 @@ import dmd.func;
 import dmd.globals;
 import dmd.id;
 import dmd.identifier;
+import dmd.location;
 import dmd.common.outbuffer;
 import dmd.root.rmem;
 import dmd.root.speller;
@@ -63,13 +64,14 @@ enum SCOPE
     free          = 0x8000,   /// is on free list
 
     fullinst      = 0x10000,  /// fully instantiate templates
+    ctfeBlock     = 0x20000,  /// inside a `if (__ctfe)` block
 }
 
 /// Flags that are carried along with a scope push()
 private enum PersistentFlags =
     SCOPE.contract | SCOPE.debug_ | SCOPE.ctfe | SCOPE.compile | SCOPE.constraint |
     SCOPE.noaccesscheck | SCOPE.ignoresymbolvisibility |
-    SCOPE.Cfile;
+    SCOPE.Cfile | SCOPE.ctfeBlock;
 
 extern (C++) struct Scope
 {
@@ -271,6 +273,10 @@ extern (C++) struct Scope
              *   // To call x.toString in runtime, compiler should unspeculative S!int.
              *   assert(x.toString() == "instantiated");
              * }
+             *
+             * This results in an undefined reference to `RTInfoImpl`:
+             *  class C {  int a,b,c;   int* p,q; }
+             *  void test() {    C c = new C(); }
              */
             // If a template is instantiated from CT evaluated expression,
             // compiler can elide its code generation.

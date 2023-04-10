@@ -38,7 +38,8 @@ Note that these groups have no strict meaning, the category assignments are a bi
 | [dinifile.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/dinifile.d)   | Parse settings from .ini file (`sc.ini` / `dmd.conf`)                 |
 | [vsoptions.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/vsoptions.d) | Detect the Microsoft Visual Studio toolchain for linking              |
 | [frontend.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/frontend.d)   | An interface for using DMD as a library                               |
-| [errors.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/errors.d)       | Error reporting functionality                                         |
+| [errors.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/errors.d)       | Error reporting implementation                                        |
+| [errorsink.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/errorsink.d) | Error reporting interface                                             |
 | [target.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/target.d)       | Manage target-specific parameters for cross-compiling (for LDC/GDC)   |
 | [compiler.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/compiler.d)   | Describe a back-end compiler and implements compiler-specific actions |
 
@@ -47,6 +48,7 @@ Note that these groups have no strict meaning, the category assignments are a bi
 | File                                                                  | Purpose                                                              |
 |-----------------------------------------------------------------------|----------------------------------------------------------------------|
 | [lexer.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/lexer.d)   | Convert source code into tokens for the D and ImportC parsers        |
+| [location.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/location.d)| Encapsulate file/line/column info for error messages, etc.        |
 | [entity.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/entity.d) | Define "\\&Entity;" escape sequence for strings / character literals |
 | [tokens.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/tokens.d) | Define lexical tokens.                                               |
 | [parse.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/parse.d)   | D parser, converting tokens into an Abstract Syntax Tree (AST)       |

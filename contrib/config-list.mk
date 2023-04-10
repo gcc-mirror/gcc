@@ -50,7 +50,7 @@ LIST = aarch64-elf aarch64-freebsd13 aarch64-linux-gnu aarch64-rtems \
   i686-pc-linux-gnu i686-apple-darwin i686-apple-darwin9 i686-apple-darwin10 \
   i686-freebsd13 i686-kfreebsd-gnu \
   i686-netbsdelf9 \
-  i686-openbsd i686-elf i686-kopensolaris-gnu i686-symbolics-gnu \
+  i686-openbsd i686-elf i686-kopensolaris-gnu i686-gnu \
   i686-pc-msdosdjgpp i686-lynxos i686-nto-qnx \
   i686-rtems i686-solaris2.11 i686-wrs-vxworks \
   i686-wrs-vxworksae \

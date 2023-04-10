@@ -1,3 +1,96 @@
+2023-03-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/107002
+	* c-common.h (check_for_xor_used_as_pow): Add "rhs_loc" param.
+	* c-warn.cc (check_for_xor_used_as_pow): Add "rhs_loc" param.
+	Reject cases where involving macro expansions.
+
+2023-03-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107163
+	* c-common.cc (verify_tree): Don't use sequenced handling
+	for COMPONENT_REF.
+
+2023-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/109151
+	* c-ubsan.cc (ubsan_instrument_division): Handle all scalar integral
+	types rather than just INTEGER_TYPE.
+
+2023-03-10  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/108060
+	PR sanitizer/109050
+	* c-gimplify.cc (ubsan_walk_array_refs_r): For a MODIFY_EXPR, instrument
+	the RHS before the LHS.
+
+2023-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107465
+	* c-warn.cc (warn_for_sign_compare): Don't warn for unset bits
+	above innermost zero extension of BIT_NOT_EXPR result.
+
+2023-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107465
+	* c-warn.cc (warn_for_sign_compare): If c_common_get_narrower
+	doesn't return a narrower result, use TYPE_UNSIGNED to set unsignedp0
+	and unsignedp1.  For the one BIT_NOT_EXPR case vs. one without,
+	only check for constant in the non-BIT_NOT_EXPR operand, use std::swap
+	to simplify the code, only warn if BIT_NOT_EXPR operand is extended
+	from narrower unsigned, fix up computation of mask for the constant
+	cases and for unsigned other operand case handle differently
+	BIT_NOT_EXPR result being sign vs. zero extended.
+
+2023-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107846
+	* c-warn.cc: Include langhooks.h.
+	(maybe_warn_shift_overflow): Set type0 to what TREE_TYPE (op0)
+	promotes to rather than TREE_TYPE (op0) itself, if TREE_TYPE (op0)
+	is narrower than type0 and unsigned, use wi::min_precision with
+	UNSIGNED and fold_convert op0 to type0 before emitting the warning.
+
+2023-03-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-common.cc (c_common_nodes_and_builtins): Take
+	wchar_type_node for wint_type_node when aliased.
+	(c_stddef_cpp_builtins): Define __WINT_TYPE__, when aliased to
+	wchar_t, to the underlying type rather than wchar_t in
+	non-C++.
+	* c-cppbuiltin.cc (type_suffix): Handle wchar_type_node.
+
+2023-02-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/107938
+	* c-warn.cc (check_address_or_pointer_of_packed_member): Check
+	POINTER_TYPE_P.
+
+2023-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/108894
+	* c-common.h (c_strict_flex_array_level_of): Declare.
+	* c-common.cc (c_strict_flex_array_level_of): New function,
+	moved and renamed from c-decl.cc's strict_flex_array_level_of.
+	* c-ubsan.cc (ubsan_instrument_bounds): Fix comment typo.  For
+	C check c_strict_flex_array_level_of whether a trailing array
+	should be treated as flexible member like.  Handle C [0] arrays.
+	Add 1 + index_off_by_one rather than index_off_by_one to bounds
+	and use tree_int_cst_lt rather than tree_int_cst_le for idx vs.
+	bounds comparison.
+
+2023-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/108890
+	* c.opt (fcontracts): Fix description.
+
+2023-02-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c/108880
+	* c-gimplify.cc (c_genericize_control_stmt) <case STATEMENT_LIST>: Pass
+	pset to walk_tree_1.
+	(c_genericize): Call walk_tree with an explicit pset.
+
 2023-02-18  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/105660

@@ -154,8 +154,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   void
-  thread::_M_start_thread(_State_ptr state, void (*)())
+  thread::_M_start_thread(_State_ptr state, void (*depend)())
   {
+    // Make sure it's not optimized out, not even with LTO.
+    asm ("" : : "rm" (depend));
+
     if (!__gthread_active_p())
       {
 #if __cpp_exceptions
@@ -190,8 +193,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
   void
-  thread::_M_start_thread(__shared_base_type __b, void (*)())
+  thread::_M_start_thread(__shared_base_type __b, void (*depend)())
   {
+    // Make sure it's not optimized out, not even with LTO.
+    asm ("" : : "rm" (depend));
+
     auto ptr = __b.get();
     // Create a reference cycle that will be broken in the new thread.
     ptr->_M_this_ptr = std::move(__b);

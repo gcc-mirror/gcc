@@ -197,22 +197,12 @@ struct alu_def : public build_base
 
     b.append_base_name (instance.base_name);
 
-    /* vop<sew> --> vop<sew>_<op>. According to rvv-intrinsic-doc, _vv/_vx/_v
-       API doesn't have OP suffix in overloaded function name, otherwise, we
-       always append OP suffix in function name. For example, vsext_vf2.  */
-    if (instance.op_info->op == OP_TYPE_vv || instance.op_info->op == OP_TYPE_vx
-	|| instance.op_info->op == OP_TYPE_v
-	|| instance.op_info->op == OP_TYPE_x_v)
-      {
-	if (!overloaded_p)
-	  b.append_name (operand_suffixes[instance.op_info->op]);
-      }
-    else
-      b.append_name (operand_suffixes[instance.op_info->op]);
-
     /* vop<sew>_<op> --> vop<sew>_<op>_<type>.  */
     if (!overloaded_p)
-      b.append_name (type_suffixes[instance.type.index].vector);
+      {
+	b.append_name (operand_suffixes[instance.op_info->op]);
+	b.append_name (type_suffixes[instance.type.index].vector);
+      }
 
     /* According to rvv-intrinsic-doc, it does not add "_m" suffix
        for vop_m C++ overloaded API.  */
@@ -287,8 +277,7 @@ struct return_mask_def : public build_base
       {
 	b.append_name (type_suffixes[instance.type.index].vector);
 	vector_type_index ret_type_idx
-	  = instance.op_info->ret.get_base_vector_type (
-	    builtin_types[instance.type.index].vector);
+	  = instance.op_info->ret.get_function_type_index (instance.type.index);
 	b.append_name (type_suffixes[ret_type_idx].vector);
       }
 
@@ -313,8 +302,7 @@ struct narrow_alu_def : public build_base
 	b.append_name (operand_suffixes[instance.op_info->op]);
 	/* vop_<op> --> vop_<op>_<type>.  */
 	vector_type_index ret_type_idx
-	  = instance.op_info->ret.get_base_vector_type (
-	    builtin_types[instance.type.index].vector);
+	  = instance.op_info->ret.get_function_type_index (instance.type.index);
 	b.append_name (type_suffixes[ret_type_idx].vector);
       }
 
@@ -333,9 +321,9 @@ struct move_def : public build_base
   char *get_name (function_builder &b, const function_instance &instance,
 		  bool overloaded_p) const override
   {
-    /* vmv.v.x (PRED_none) can not be overloaded.  */
-    if (instance.op_info->op == OP_TYPE_x && overloaded_p
-	&& instance.pred == PRED_TYPE_none)
+    /* vmv.v.x/vfmv.v.f (PRED_none) can not be overloaded.  */
+    if ((instance.op_info->op == OP_TYPE_x || instance.op_info->op == OP_TYPE_f)
+	&& overloaded_p && instance.pred == PRED_TYPE_none)
       return nullptr;
 
     b.append_base_name (instance.base_name);
@@ -384,6 +372,211 @@ struct mask_alu_def : public build_base
   }
 };
 
+/* reduc_alu_def class.  */
+struct reduc_alu_def : public build_base
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    b.append_base_name (instance.base_name);
+
+    /* vop_<op> --> vop<sew>_<op>_<type>.  */
+    if (!overloaded_p)
+      {
+	b.append_name (operand_suffixes[instance.op_info->op]);
+	b.append_name (type_suffixes[instance.type.index].vector);
+	vector_type_index ret_type_idx
+	  = instance.op_info->ret.get_function_type_index (instance.type.index);
+	b.append_name (type_suffixes[ret_type_idx].vector);
+      }
+
+    /* According to rvv-intrinsic-doc, it does not add "_m" suffix
+       for vop_m C++ overloaded API.  */
+    if (overloaded_p && instance.pred == PRED_TYPE_m)
+      return b.finish_name ();
+    b.append_name (predication_suffixes[instance.pred]);
+    return b.finish_name ();
+  }
+};
+
+/* scalar_move_def class.  */
+struct scalar_move_def : public build_base
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    b.append_base_name (instance.base_name);
+    if (overloaded_p)
+      return b.finish_name ();
+    b.append_name (operand_suffixes[instance.op_info->op]);
+    b.append_name (type_suffixes[instance.type.index].vector);
+    b.append_name (type_suffixes[instance.type.index].scalar);
+    return b.finish_name ();
+  }
+};
+
+/* vundefined_def class.  */
+struct vundefined_def : public build_base
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    if (overloaded_p)
+      return nullptr;
+    b.append_base_name (instance.base_name);
+    b.append_name (type_suffixes[instance.type.index].vector);
+    return b.finish_name ();
+  }
+};
+
+/* misc_def class.  */
+struct misc_def : public build_base
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    b.append_base_name (instance.base_name);
+
+    if (!overloaded_p)
+      {
+	b.append_name (operand_suffixes[instance.op_info->op]);
+	vector_type_index arg0_type_idx
+	  = instance.op_info->args[0].get_function_type_index (
+	    instance.type.index);
+	b.append_name (type_suffixes[arg0_type_idx].vector);
+      }
+
+    vector_type_index ret_type_idx
+      = instance.op_info->ret.get_function_type_index (instance.type.index);
+    b.append_name (type_suffixes[ret_type_idx].vector);
+    return b.finish_name ();
+  }
+};
+
+/* vset_def class.  */
+struct vset_def : public build_base
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    b.append_base_name (instance.base_name);
+
+    if (!overloaded_p)
+      {
+	b.append_name (operand_suffixes[instance.op_info->op]);
+	vector_type_index arg_type_idx
+	  = instance.op_info->args[2].get_function_type_index (
+	    instance.type.index);
+	b.append_name (type_suffixes[arg_type_idx].vector);
+
+	vector_type_index ret_type_idx
+	  = instance.op_info->ret.get_function_type_index (instance.type.index);
+	b.append_name (type_suffixes[ret_type_idx].vector);
+      }
+    return b.finish_name ();
+  }
+
+  bool check (function_checker &c) const override
+  {
+    poly_int64 outer_size = GET_MODE_SIZE (c.arg_mode (0));
+    poly_int64 inner_size = GET_MODE_SIZE (c.arg_mode (2));
+    unsigned int nvecs = exact_div (outer_size, inner_size).to_constant ();
+    return c.require_immediate (1, 0, nvecs - 1);
+  }
+};
+
+/* vget_def class.  */
+struct vget_def : public misc_def
+{
+  bool check (function_checker &c) const override
+  {
+    poly_int64 outer_size = GET_MODE_SIZE (c.arg_mode (0));
+    poly_int64 inner_size = GET_MODE_SIZE (c.ret_mode ());
+    unsigned int nvecs = exact_div (outer_size, inner_size).to_constant ();
+    return c.require_immediate (1, 0, nvecs - 1);
+  }
+};
+
+/* read_vl_def class.  */
+struct read_vl_def : public function_shape
+{
+  void build (function_builder &b,
+	      const function_group_info &group) const override
+  {
+    auto_vec<tree> argument_types;
+    b.add_unique_function (get_read_vl_instance (), (*group.shape),
+			   size_type_node, argument_types);
+  }
+
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    if (overloaded_p)
+      return nullptr;
+    b.append_base_name (instance.base_name);
+    return b.finish_name ();
+  }
+};
+
+/* fault_load_def class.  */
+struct fault_load_def : public build_base
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    if (overloaded_p)
+      if (instance.pred == PRED_TYPE_none || instance.pred == PRED_TYPE_mu)
+	return nullptr;
+    tree type = builtin_types[instance.type.index].vector;
+    machine_mode mode = TYPE_MODE (type);
+    int sew = GET_MODE_BITSIZE (GET_MODE_INNER (mode));
+    b.append_name ("__riscv_");
+    b.append_name ("vle");
+    b.append_sew (sew);
+    b.append_name ("ff");
+
+    /* vop<sew>_v --> vop<sew>_v_<type>.  */
+    if (!overloaded_p)
+      {
+	/* vop<sew> --> vop<sew>_v.  */
+	b.append_name (operand_suffixes[instance.op_info->op]);
+	/* vop<sew>_v --> vop<sew>_v_<type>.  */
+	b.append_name (type_suffixes[instance.type.index].vector);
+      }
+
+    /* According to rvv-intrinsic-doc, it does not add "_m" suffix
+       for vop_m C++ overloaded API.  */
+    if (overloaded_p && instance.pred == PRED_TYPE_m)
+      return b.finish_name ();
+    b.append_name (predication_suffixes[instance.pred]);
+    return b.finish_name ();
+  }
+};
+
+/* vlenb_def class.  */
+struct vlenb_def : public function_shape
+{
+  void build (function_builder &b,
+	      const function_group_info &group) const override
+  {
+    auto_vec<tree> argument_types;
+    function_instance function_instance (group.base_name, *group.base,
+					 *group.shape, group.ops_infos.types[0],
+					 group.preds[0], &group.ops_infos);
+    b.add_unique_function (function_instance, (*group.shape),
+			   long_unsigned_type_node, argument_types);
+  }
+
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    if (overloaded_p)
+      return nullptr;
+    b.append_base_name (instance.base_name);
+    return b.finish_name ();
+  }
+};
+
 SHAPE(vsetvl, vsetvl)
 SHAPE(vsetvl, vsetvlmax)
 SHAPE(loadstore, loadstore)
@@ -395,5 +588,14 @@ SHAPE(return_mask, return_mask)
 SHAPE(narrow_alu, narrow_alu)
 SHAPE(move, move)
 SHAPE(mask_alu, mask_alu)
+SHAPE(reduc_alu, reduc_alu)
+SHAPE(scalar_move, scalar_move)
+SHAPE(vundefined, vundefined)
+SHAPE(misc, misc)
+SHAPE(vset, vset)
+SHAPE(vget, vget)
+SHAPE(read_vl, read_vl)
+SHAPE(fault_load, fault_load)
+SHAPE(vlenb, vlenb)
 
 } // end namespace riscv_vector

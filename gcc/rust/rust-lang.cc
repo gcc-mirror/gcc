@@ -124,10 +124,6 @@ grs_langhook_init (void)
    whether char is signed.  */
   build_common_tree_nodes (false);
 
-  // Creates a new TREE_LIST node with purpose NULL_TREE and value
-  // void_type_node
-  void_list_node = build_tree_list (NULL_TREE, void_type_node);
-
   // Builds built-ins for middle-end after all front-end built-ins are already
   // instantiated
   build_common_builtin_nodes ();
@@ -236,6 +232,21 @@ grs_langhook_type_for_mode (machine_mode mode, int unsignedp)
       if (mode == TYPE_MODE (complex_integer_type_node) && !unsignedp)
 	return complex_integer_type_node;
     }
+
+  /* See (a) <https://github.com/Rust-GCC/gccrs/issues/1713>
+     "Test failure on msp430-elfbare target", and
+     (b) <https://gcc.gnu.org/PR46805>
+     "ICE: SIGSEGV in optab_for_tree_code (optabs.c:407) with -O -fno-tree-scev-cprop -ftree-vectorize"
+     -- we have to support "random" modes/types here.
+     TODO Clean all this up (either locally, or preferably per PR46805:
+     "Ideally we'd never use lang_hooks.types.type_for_mode (or _for_size) in the
+     middle-end but had a pure middle-end based implementation".  */
+  for (size_t i = 0; i < NUM_INT_N_ENTS; i ++)
+    if (int_n_enabled_p[i]
+	&& mode == int_n_data[i].m)
+      return (unsignedp ? int_n_trees[i].unsigned_type
+	      : int_n_trees[i].signed_type);
+
   /* gcc_unreachable */
   return NULL;
 }

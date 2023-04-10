@@ -675,30 +675,41 @@ namespace views
   template<typename _Tp>
     inline constexpr empty_view<_Tp> empty{};
 
-  struct _Single
+  namespace __detail
   {
     template<typename _Tp>
-      [[nodiscard]]
+      concept __can_single_view
+	= requires { single_view<decay_t<_Tp>>(std::declval<_Tp>()); };
+  } // namespace __detail
+
+  struct _Single
+  {
+    template<__detail::__can_single_view _Tp>
       constexpr auto
-      operator()(_Tp&& __e) const
+      operator() [[nodiscard]] (_Tp&& __e) const
       noexcept(noexcept(single_view<decay_t<_Tp>>(std::forward<_Tp>(__e))))
       { return single_view<decay_t<_Tp>>(std::forward<_Tp>(__e)); }
   };
 
   inline constexpr _Single single{};
 
+  namespace __detail
+  {
+    template<typename... _Args>
+      concept __can_iota_view = requires { iota_view(std::declval<_Args>()...); };
+  } // namespace __detail
+
   struct _Iota
   {
-    template<typename _Tp>
-      [[nodiscard]]
+    template<__detail::__can_iota_view _Tp>
       constexpr auto
-      operator()(_Tp&& __e) const
+      operator() [[nodiscard]] (_Tp&& __e) const
       { return iota_view(std::forward<_Tp>(__e)); }
 
     template<typename _Tp, typename _Up>
-      [[nodiscard]]
+      requires __detail::__can_iota_view<_Tp, _Up>
       constexpr auto
-      operator()(_Tp&& __e, _Up&& __f) const
+      operator() [[nodiscard]] (_Tp&& __e, _Up&& __f) const
       { return iota_view(std::forward<_Tp>(__e), std::forward<_Up>(__f)); }
   };
 
@@ -796,13 +807,21 @@ namespace views
 
 namespace views
 {
+  namespace __detail
+  {
+    template<typename _Tp, typename _Up>
+    concept __can_istream_view = requires (_Up __e) {
+      basic_istream_view<_Tp, typename _Up::char_type, typename _Up::traits_type>(__e);
+    };
+  } // namespace __detail
+
   template<typename _Tp>
     struct _Istream
     {
       template<typename _CharT, typename _Traits>
-	[[nodiscard]]
 	constexpr auto
-	operator()(basic_istream<_CharT, _Traits>& __e) const
+	operator() [[nodiscard]] (basic_istream<_CharT, _Traits>& __e) const
+	requires __detail::__can_istream_view<_Tp, remove_reference_t<decltype(__e)>>
 	{ return basic_istream_view<_Tp, _CharT, _Traits>(__e); }
     };
 
@@ -6716,7 +6735,7 @@ namespace views::__adaptor
   class chunk_by_view : public view_interface<chunk_by_view<_Vp, _Pred>>
   {
     _Vp _M_base = _Vp();
-    __detail::__box<_Pred> _M_pred = _Pred();
+    __detail::__box<_Pred> _M_pred;
     __detail::_CachedPosition<_Vp> _M_cached_begin;
 
     constexpr iterator_t<_Vp>
@@ -7388,11 +7407,11 @@ namespace views::__adaptor
 #define __cpp_lib_ranges_repeat 202207L
 
   template<copy_constructible _Tp, semiregular _Bound = unreachable_sentinel_t>
-    requires (is_object_v<_Tp> && same_as<_Tp, remove_cv_t<_Tp>>
-      && (__detail::__is_integer_like<_Bound> || same_as<_Bound, unreachable_sentinel_t>))
+    requires is_object_v<_Tp> && same_as<_Tp, remove_cv_t<_Tp>>
+      && (__detail::__is_integer_like<_Bound> || same_as<_Bound, unreachable_sentinel_t>)
   class repeat_view : public view_interface<repeat_view<_Tp, _Bound>>
   {
-    __detail::__box<_Tp> _M_value = _Tp();
+    __detail::__box<_Tp> _M_value;
     [[no_unique_address]] _Bound _M_bound = _Bound();
 
     struct _Iterator;
@@ -7453,7 +7472,8 @@ namespace views::__adaptor
     repeat_view(_Tp, _Bound) -> repeat_view<_Tp, _Bound>;
 
   template<copy_constructible _Tp, semiregular _Bound>
-    requires __detail::__is_integer_like<_Bound> || same_as<_Bound, unreachable_sentinel_t>
+    requires is_object_v<_Tp> && same_as<_Tp, remove_cv_t<_Tp>>
+      && (__detail::__is_integer_like<_Bound> || same_as<_Bound, unreachable_sentinel_t>)
   class repeat_view<_Tp, _Bound>::_Iterator
   {
     using __index_type
@@ -8078,27 +8098,35 @@ namespace views::__adaptor
     end() requires ((!__detail::__simple_view<_First> || ... || !__detail::__simple_view<_Vs>)
 		    && __detail::__cartesian_product_is_common<_First, _Vs...>)
     {
-      bool __empty_tail = [this]<size_t... _Is>(index_sequence<_Is...>) {
-	return (ranges::empty(std::get<1 + _Is>(_M_bases)) || ...);
+      auto __its = [this]<size_t... _Is>(index_sequence<_Is...>) {
+	using _Ret = __detail::__tuple_or_pair_t<iterator_t<_First>,
+						 iterator_t<_Vs>...>;
+	bool __empty_tail = (ranges::empty(std::get<1 + _Is>(_M_bases)) || ...);
+	auto& __first = std::get<0>(_M_bases);
+	return _Ret{(__empty_tail
+		     ? ranges::begin(__first)
+		     : __detail::__cartesian_common_arg_end(__first)),
+		    ranges::begin(std::get<1 + _Is>(_M_bases))...};
       }(make_index_sequence<sizeof...(_Vs)>{});
 
-      auto __it = __detail::__tuple_transform(ranges::begin, _M_bases);
-      if (!__empty_tail)
-	std::get<0>(__it) = __detail::__cartesian_common_arg_end(std::get<0>(_M_bases));
-      return _Iterator<false>{*this, std::move(__it)};
+      return _Iterator<false>{*this, std::move(__its)};
     }
 
     constexpr _Iterator<true>
     end() const requires __detail::__cartesian_product_is_common<const _First, const _Vs...>
     {
-      bool __empty_tail = [this]<size_t... _Is>(index_sequence<_Is...>) {
-	return (ranges::empty(std::get<1 + _Is>(_M_bases)) || ...);
+      auto __its = [this]<size_t... _Is>(index_sequence<_Is...>) {
+	using _Ret = __detail::__tuple_or_pair_t<iterator_t<const _First>,
+						 iterator_t<const _Vs>...>;
+	bool __empty_tail = (ranges::empty(std::get<1 + _Is>(_M_bases)) || ...);
+	auto& __first = std::get<0>(_M_bases);
+	return _Ret{(__empty_tail
+		     ? ranges::begin(__first)
+		     : __detail::__cartesian_common_arg_end(__first)),
+		    ranges::begin(std::get<1 + _Is>(_M_bases))...};
       }(make_index_sequence<sizeof...(_Vs)>{});
 
-      auto __it = __detail::__tuple_transform(ranges::begin, _M_bases);
-      if (!__empty_tail)
-	std::get<0>(__it) = __detail::__cartesian_common_arg_end(std::get<0>(_M_bases));
-      return _Iterator<true>{*this, std::move(__it)};
+      return _Iterator<true>{*this, std::move(__its)};
     }
 
     constexpr default_sentinel_t
@@ -8197,7 +8225,7 @@ namespace views::__adaptor
 				    range_reference_t<__maybe_const_t<_Const, _Vs>>...>;
     using difference_type = decltype(cartesian_product_view::_S_difference_type());
 
-    _Iterator() requires forward_range<__maybe_const_t<_Const, _First>> = default;
+    _Iterator() = default;
 
     constexpr
     _Iterator(_Iterator<!_Const> __i)
@@ -8362,12 +8390,12 @@ namespace views::__adaptor
     _M_prev()
     {
       auto& __it = std::get<_Nm>(_M_current);
-      if (__it == ranges::begin(std::get<_Nm>(_M_parent->_M_bases)))
-	{
-	  __it = __detail::__cartesian_common_arg_end(std::get<_Nm>(_M_parent->_M_bases));
-	  if constexpr (_Nm > 0)
+      if constexpr (_Nm > 0)
+	if (__it == ranges::begin(std::get<_Nm>(_M_parent->_M_bases)))
+	  {
+	    __it = __detail::__cartesian_common_arg_end(std::get<_Nm>(_M_parent->_M_bases));
 	    _M_prev<_Nm - 1>();
-	}
+	  }
       --__it;
     }
 
@@ -8388,10 +8416,13 @@ namespace views::__adaptor
 	  if constexpr (_Nm == 0)
 	    {
 #ifdef _GLIBCXX_ASSERTIONS
-	      auto __size = ranges::ssize(__r);
-	      auto __begin = ranges::begin(__r);
-	      auto __offset = __it - __begin;
-	      __glibcxx_assert(__offset + __x >= 0 && __offset + __x <= __size);
+	      if constexpr (sized_range<__maybe_const_t<_Const, _First>>)
+		{
+		  auto __size = ranges::ssize(__r);
+		  auto __begin = ranges::begin(__r);
+		  auto __offset = __it - __begin;
+		  __glibcxx_assert(__offset + __x >= 0 && __offset + __x <= __size);
+		}
 #endif
 	      __it += __x;
 	    }

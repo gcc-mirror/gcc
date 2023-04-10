@@ -2933,7 +2933,7 @@ stv_expand_builtin (insn_code icode, rtx *op,
 
       rtx addr;
       if (op[1] == const0_rtx)
-	addr = gen_rtx_MEM (Pmode, op[2]);
+	addr = gen_rtx_MEM (tmode, op[2]);
       else
 	{
 	  op[1] = copy_to_mode_reg (Pmode, op[1]);

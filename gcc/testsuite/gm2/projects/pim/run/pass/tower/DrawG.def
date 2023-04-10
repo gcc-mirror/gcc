@@ -1,0 +1,36 @@
+DEFINITION MODULE DrawG ;
+
+FROM AdvSystem IMPORT PlayerSet ;
+EXPORT QUALIFIED DrawMan, EraseMan, DrawDoor, DrawTreasure,
+                 EraseTreasure, DrawArrow, EraseArrow,
+                 DisplayMessage ;
+
+
+(* All these procedures to draw on the screens - are Global *)
+(* Ie they will draw to all the screens that are within     *)
+(* the area of effect.                                      *)
+
+
+PROCEDURE DrawMan (p: CARDINAL) ;
+
+PROCEDURE EraseMan (p: CARDINAL) ;
+
+
+(* DrawDoor draws a door on every screen possible ie all that *)
+(* are in this particular area. Hence the coordinates need    *)
+(* to be absolute NOT relative!                               *)
+
+PROCEDURE DrawDoor (RoomOfDoor, IndexToDoor: CARDINAL) ;
+
+PROCEDURE DrawTreasure (room, x, y: CARDINAL) ;
+
+PROCEDURE EraseTreasure (room, x, y: CARDINAL) ;
+
+PROCEDURE DrawArrow (room, x, y, dir: CARDINAL ; VAR playerscreen: PlayerSet) ;
+
+PROCEDURE EraseArrow (x, y: CARDINAL ; playerscreen: PlayerSet; flush: BOOLEAN) ;
+
+PROCEDURE DisplayMessage (a1, a2, a3: ARRAY OF CHAR) ;
+
+      
+END DrawG.

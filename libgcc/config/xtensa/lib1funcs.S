@@ -25,6 +25,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "xtensa-config-builtin.h"
 
+/* An executable stack is *not* required for these functions.  */
+#if defined(__ELF__) && defined(__linux__)
+.section .note.GNU-stack,"",%progbits
+.previous
+#endif
+
 /* Define macros for the ABS and ADDX* instructions to handle cases
    where they are not included in the Xtensa processor configuration.  */
 

@@ -29,6 +29,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <config.h>
 #include <m2rts.h>
 
+#define EXPORT(FUNC) m2pim ## _dtoa_ ## FUNC
+#define M2EXPORT(FUNC) m2pim ## _M2_dtoa_ ## FUNC
+#define M2LIBNAME "m2pim"
+
 #if defined(HAVE_STRINGS)
 #include <strings.h>
 #endif
@@ -71,13 +75,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define NULL (void *)0
 #endif
 
-#if !defined(TRUE)
-#define TRUE (1 == 1)
-#endif
-#if !defined(FALSE)
-#define FALSE (1 == 0)
-#endif
-
 #if defined(HAVE_STDLIB_H)
 #if !defined(_ISOC99_SOURCE)
 #define _ISOC99_SOURCE
@@ -106,7 +103,7 @@ typedef enum Mode { maxsignicant, decimaldigits } Mode;
    contain ndigits past the decimal point (ndigits may be negative).  */
 
 extern "C" double
-dtoa_strtod (const char *s, int *error)
+EXPORT(strtod) (const char *s, bool *error)
 {
   char *endp;
   double d;
@@ -119,10 +116,10 @@ dtoa_strtod (const char *s, int *error)
 #if defined(HAVE_ERRNO_H)
     *error = (errno != 0);
 #else
-    *error = FALSE;
+    *error = false;
 #endif
   else
-    *error = TRUE;
+    *error = true;
   return d;
 }
 
@@ -130,7 +127,7 @@ dtoa_strtod (const char *s, int *error)
    it also removes the decimal point and exponent from string, p.  */
 
 extern "C" int
-dtoa_calcmaxsig (char *p, int ndigits)
+EXPORT(calcmaxsig) (char *p, int ndigits)
 {
   char *e;
   char *o;
@@ -161,7 +158,7 @@ dtoa_calcmaxsig (char *p, int ndigits)
    Ie ndigits is the number of digits after the '.'.  */
 
 extern "C" int
-dtoa_calcdecimal (char *p, int str_size, int ndigits)
+EXPORT(calcdecimal) (char *p, int str_size, int ndigits)
 {
   char *e;
   char *o;
@@ -194,20 +191,20 @@ dtoa_calcdecimal (char *p, int str_size, int ndigits)
   return x;
 }
 
-extern "C" int
-dtoa_calcsign (char *p, int str_size)
+extern "C" bool
+EXPORT(calcsign) (char *p, int str_size)
 {
   if (p[0] == '-')
     {
       memmove (p, p + 1, str_size - 1);
-      return TRUE;
+      return true;
     }
   else
-    return FALSE;
+    return false;
 }
 
 extern "C" char *
-dtoa_dtoa (double d, int mode, int ndigits, int *decpt, int *sign)
+EXPORT(dtoa) (double d, int mode, int ndigits, int *decpt, bool *sign)
 {
   char format[50];
   char *p;
@@ -220,15 +217,15 @@ dtoa_dtoa (double d, int mode, int ndigits, int *decpt, int *sign)
       p = (char *) malloc (ndigits);
       snprintf (format, 50, "%s%d%s", "%.", ndigits - 20, "E");
       snprintf (p, ndigits, format, d);
-      *sign = dtoa_calcsign (p, ndigits);
-      *decpt = dtoa_calcmaxsig (p, ndigits);
+      *sign = EXPORT(calcsign) (p, ndigits);
+      *decpt = EXPORT(calcmaxsig) (p, ndigits);
       return p;
     case decimaldigits:
       p = (char *) malloc (MAX_FP_DIGITS + 20);
       snprintf (format, 50, "%s%d%s", "%.", MAX_FP_DIGITS, "E");
       snprintf (p, MAX_FP_DIGITS + 20, format, d);
-      *sign = dtoa_calcsign (p, MAX_FP_DIGITS + 20);
-      *decpt = dtoa_calcdecimal (p, MAX_FP_DIGITS + 20, ndigits);
+      *sign = EXPORT(calcsign) (p, MAX_FP_DIGITS + 20);
+      *decpt = EXPORT(calcdecimal) (p, MAX_FP_DIGITS + 20, ndigits);
       return p;
     default:
       abort ();
@@ -241,24 +238,25 @@ dtoa_dtoa (double d, int mode, int ndigits, int *decpt, int *sign)
 /* GNU Modula-2 linking hooks.  */
 
 extern "C" void
-_M2_dtoa_init (int, char **, char **)
+M2EXPORT(init) (int, char **, char **)
 {
 }
 
 extern "C" void
-_M2_dtoa_fini (int, char **, char **)
+M2EXPORT(fini) (int, char **, char **)
 {
 }
 
 extern "C" void
-_M2_dtoa_dep (void)
+M2EXPORT(dep) (void)
 {
 }
 
 extern "C" void __attribute__((__constructor__))
-_M2_dtoa_ctor (void)
+M2EXPORT(ctor) (void)
 {
-  M2RTS_RegisterModule ("dtoa", _M2_dtoa_init, _M2_dtoa_fini,
-			_M2_dtoa_dep);
+  m2pim_M2RTS_RegisterModule ("dtoa", M2LIBNAME,
+			      M2EXPORT(init), M2EXPORT(fini),
+			      M2EXPORT(dep));
 }
 #endif

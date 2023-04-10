@@ -10,6 +10,8 @@ int test (struct s *ptr)
 }
 
 /* 
+   { dg-final { verify-sarif-file } }
+
        { dg-final { scan-sarif-file "\"level\": \"error\"" } }
 
        We expect a logical location for the error (within fn "test"):

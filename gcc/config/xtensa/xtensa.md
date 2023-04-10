@@ -447,6 +447,43 @@
    (set_attr "length"	"3")])
 
 
+;; Signed clamp.
+
+(define_insn_and_split "*xtensa_clamps"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(smax:SI (smin:SI (match_operand:SI 1 "register_operand" "r")
+			  (match_operand:SI 2 "const_int_operand" "i"))
+		 (match_operand:SI 3 "const_int_operand" "i")))]
+  "TARGET_CLAMPS
+   && xtensa_match_CLAMPS_imms_p (operands[3], operands[2])"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(smin:SI (smax:SI (match_dup 1)
+			  (match_dup 3))
+		 (match_dup 2)))]
+  ""
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])
+
+(define_insn "*xtensa_clamps"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(smin:SI (smax:SI (match_operand:SI 1 "register_operand" "r")
+			  (match_operand:SI 2 "const_int_operand" "i"))
+		 (match_operand:SI 3 "const_int_operand" "i")))]
+  "TARGET_CLAMPS
+   && xtensa_match_CLAMPS_imms_p (operands[2], operands[3])"
+{
+  static char result[64];
+  sprintf (result, "clamps\t%%0, %%1, %d", floor_log2 (-INTVAL (operands[2])));
+  return result;
+}
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])
+
+
 ;; Count redundant leading sign bits and leading/trailing zeros,
 ;; and find first bit.
 
@@ -2028,8 +2065,8 @@
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))
    (set (match_operand:SI 0 "register_operand" "=a")
-	(plus (match_dup 0)
-	      (const_int -1)))
+	(plus:SI (match_dup 0)
+		 (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_LSETUP_START)]
   "TARGET_LOOPS && optimize"
   "loop\t%0, %l1_LEND"
@@ -2044,8 +2081,8 @@
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))
    (set (match_operand:SI 0 "nonimmediate_operand" "=a,m")
-	(plus (match_dup 0)
-	      (const_int -1)))
+	(plus:SI (match_dup 0)
+		 (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_LSETUP_END)
    (clobber (match_scratch:SI 3 "=X,&r"))]
   "TARGET_LOOPS && optimize"
@@ -2061,8 +2098,8 @@
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))
    (set (match_operand:SI 0 "register_operand" "=a")
-	(plus (match_dup 0)
-	      (const_int -1)))
+	(plus:SI (match_dup 0)
+		 (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_LSETUP_END)]
   "TARGET_LOOPS && optimize"
 {
@@ -2333,7 +2370,8 @@
 	 (match_operand 1 "" ""))]
   ""
 {
-  xtensa_prepare_expand_call (0, operands);
+  xtensa_expand_call (0, operands);
+  DONE;
 })
 
 (define_insn "call_internal"
@@ -2353,7 +2391,8 @@
 	      (match_operand 2 "" "")))]
   ""
 {
-  xtensa_prepare_expand_call (1, operands);
+  xtensa_expand_call (1, operands);
+  DONE;
 })
 
 (define_insn "call_value_internal"
@@ -2373,7 +2412,8 @@
 	 (match_operand 1 "" ""))]
   "!TARGET_WINDOWED_ABI"
 {
-  xtensa_prepare_expand_call (0, operands);
+  xtensa_expand_call (0, operands);
+  DONE;
 })
 
 (define_insn "sibcall_internal"
@@ -2393,7 +2433,8 @@
 	      (match_operand 2 "" "")))]
   "!TARGET_WINDOWED_ABI"
 {
-  xtensa_prepare_expand_call (1, operands);
+  xtensa_expand_call (1, operands);
+  DONE;
 })
 
 (define_insn "sibcall_value_internal"
@@ -3049,4 +3090,50 @@ FALLTHRU:;
   imm0 = value - imm1 - 128;
   operands[1] = GEN_INT (imm0);
   operands[2] = GEN_INT (imm1);
+})
+
+(define_peephole2
+  [(set (match_operand 0 "register_operand")
+	(match_operand 1 "register_operand"))]
+  "REG_NREGS (operands[0]) == 1 && GP_REG_P (REGNO (operands[0]))
+   && REG_NREGS (operands[1]) == 1 && GP_REG_P (REGNO (operands[1]))
+   && peep2_reg_dead_p (1, operands[1])"
+  [(const_int 0)]
+{
+  basic_block bb = BLOCK_FOR_INSN (curr_insn);
+  rtx_insn *head = BB_HEAD (bb), *insn;
+  rtx dest = operands[0], src = operands[1], pattern, t_dest, dest_orig;
+  for (insn = PREV_INSN (curr_insn);
+       insn && insn != head;
+       insn = PREV_INSN (insn))
+    if (CALL_P (insn))
+      break;
+    else if (INSN_P (insn))
+      {
+	if (GET_CODE (pattern = PATTERN (insn)) == SET
+	    && REG_P (t_dest = SET_DEST (pattern))
+	    && REG_NREGS (t_dest) == 1
+	    && REGNO (t_dest) == REGNO (src))
+	{
+	  dest_orig = SET_DEST (pattern);
+	  SET_DEST (pattern) = gen_rtx_REG (GET_MODE (t_dest),
+					    REGNO (dest));
+	  extract_insn (insn);
+	  if (!constrain_operands (true, get_enabled_alternatives (insn)))
+	    {
+	      SET_DEST (pattern) = dest_orig;
+	      goto ABORT;
+	    }
+	  df_insn_rescan (insn);
+	  goto FALLTHRU;
+	}
+	if (reg_overlap_mentioned_p (dest, pattern)
+	    || reg_overlap_mentioned_p (src, pattern)
+	    || set_of (dest, insn)
+	    || set_of (src, insn))
+	  break;
+      }
+ABORT:
+  FAIL;
+FALLTHRU:;
 })

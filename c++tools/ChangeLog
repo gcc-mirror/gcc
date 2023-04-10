@@ -1,3 +1,12 @@
+2023-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR bootstrap/101834
+	* Makefile.in (INSTALL): Set variable.
+	(mostlyclean): Mark as a phony target.
+	(clean): Add mostlyclean as a prerequisite.
+	(distclean): Add clean as a prerequisite and remove more files.
+	(maintainer-clean): Add distclean as a prerequisite.
+
 2023-01-09  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR other/107616

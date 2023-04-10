@@ -1063,6 +1063,15 @@ expand_vector_condition (gimple_stmt_iterator *gsi, bitmap dce_ssa_names)
       return true;
     }
 
+  /* If a has vector boolean type and is a comparison, above
+     expand_vec_cond_expr_p might fail, even if both the comparison and
+     VEC_COND_EXPR could be supported individually.  See PR109176.  */
+  if (a_is_comparison
+      && VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (a))
+      && expand_vec_cond_expr_p (type, TREE_TYPE (a), SSA_NAME)
+      && expand_vec_cmp_expr_p (TREE_TYPE (a1), TREE_TYPE (a), code))
+    return true;
+
   /* Handle vector boolean types with bitmasks.  If there is a comparison
      and we can expand the comparison into the vector boolean bitmask,
      or otherwise if it is compatible with type, we can transform
@@ -1236,17 +1245,6 @@ expand_vector_operation (gimple_stmt_iterator *gsi, tree type, tree compute_type
 	  tree rhs1 = gimple_assign_rhs1 (assign);
 	  tree rhs2 = gimple_assign_rhs2 (assign);
 	  tree ret;
-
-	  /* Check if the target was going to handle it through the special
-	     division callback hook.  */
-	  tree cst = uniform_integer_cst_p (rhs2);
-	  if (cst &&
-	      targetm.vectorize.can_special_div_by_const (code, type,
-							  wi::to_wide (cst),
-							  NULL,
-							  NULL_RTX, NULL_RTX))
-	    return NULL_TREE;
-
 
 	  if (!optimize
 	      || !VECTOR_INTEGER_TYPE_P (type)

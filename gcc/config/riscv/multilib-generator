@@ -175,7 +175,7 @@ for cmodel in cmodels:
     # Drop duplicated entry.
     alts = unique(alts)
 
-    for alt in alts[1:]:
+    for alt in alts:
       if alt == arch:
         continue
       arches[alt] = 1

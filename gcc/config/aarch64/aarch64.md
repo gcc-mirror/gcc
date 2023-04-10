@@ -949,8 +949,8 @@
 
 (define_expand "tbranch_<code><mode>3"
   [(set (pc) (if_then_else
-              (EQL (match_operand:ALLI 0 "register_operand")
-                   (match_operand 1 "aarch64_simd_shift_imm_<mode>"))
+              (EQL (match_operand:SHORT 0 "register_operand")
+                   (match_operand 1 "const0_operand"))
               (label_ref (match_operand 2 ""))
               (pc)))]
   ""
@@ -4654,6 +4654,29 @@
   return "<LOGICAL:logical>\\t%<w>0, %<w>3, %<w>1, <SHIFT:shift> %2";
 }
   [(set_attr "type" "logic_shift_imm")]
+)
+
+(define_split
+  [(set (match_operand:GPI 0 "register_operand")
+	(LOGICAL_OR_PLUS:GPI
+	  (and:GPI
+	    (lshiftrt:GPI (match_operand:GPI 1 "register_operand")
+			  (match_operand:QI 2 "aarch64_shift_imm_<mode>"))
+	    (match_operand:GPI 3 "aarch64_logical_immediate"))
+	  (match_operand:GPI 4 "register_operand")))]
+  "can_create_pseudo_p ()
+   && aarch64_bitmask_imm (UINTVAL (operands[3]) << UINTVAL (operands[2]),
+			   <MODE>mode)"
+  [(set (match_dup 5) (and:GPI (match_dup 1) (match_dup 6)))
+   (set (match_dup 0) (LOGICAL_OR_PLUS:GPI
+		       (lshiftrt:GPI (match_dup 5) (match_dup 2))
+                       (match_dup 4)))]
+  {
+    operands[5] = gen_reg_rtx (<MODE>mode);
+    operands[6]
+      = gen_int_mode (UINTVAL (operands[3]) << UINTVAL (operands[2]),
+		      <MODE>mode);
+  }
 )
 
 (define_split

@@ -1171,7 +1171,7 @@ END IsReal ;
    PushString - pushes the numerical value of the string onto the stack.
 *)
 
-PROCEDURE PushString (tokenno: CARDINAL; s: Name) ;
+PROCEDURE PushString (tokenno: CARDINAL; s: Name; issueError: BOOLEAN) ;
 VAR
    ch      : CHAR ;
    a, b    : DynamicStrings.String ;
@@ -1192,26 +1192,27 @@ BEGIN
            b := DynamicStrings.Slice (a, 0, -1) ;
            PushIntegerTree (BuildConstLiteralNumber (location,
                                                      DynamicStrings.string (b),
-                                                     16)) |
+                                                     16, issueError)) |
       'A': (* binary *)
            b := DynamicStrings.Slice (a, 0, -1) ;
            PushIntegerTree (BuildConstLiteralNumber (location,
                                                      DynamicStrings.string (b),
-                                                     2)) |
+                                                     2, issueError)) |
       'C', (* --fixme-- question:
               should we type this as a char rather than an int? *)
       'B': (* octal *)
            b := DynamicStrings.Slice (a, 0, -1) ;
            PushIntegerTree (BuildConstLiteralNumber (location,
                                                      DynamicStrings.string (b),
-                                                     8))
+                                                     8, issueError))
 
       ELSE
          IF IsReal (a)
          THEN
             PushRealTree (RealToTree (KeyToCharStar (s)))
          ELSE
-            PushIntegerTree (BuildConstLiteralNumber (location, KeyToCharStar (s), 10))
+            PushIntegerTree (BuildConstLiteralNumber (location, KeyToCharStar (s),
+                                                      10, issueError))
          END
       END
    ELSE

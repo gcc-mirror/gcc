@@ -942,6 +942,7 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	}
       sc->args[i].orig_type = base_type;
       sc->args[i].arg_type = SIMD_CLONE_ARG_TYPE_MASK;
+      sc->args[i].vector_type = adj.type;
     }
 
   if (node->definition)

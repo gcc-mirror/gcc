@@ -26,7 +26,7 @@ FROM DynamicStrings IMPORT InitString, KillString, ConCat, ConCatChar,
                            Mark, string, InitStringCharStar ;
 FROM symbolKey IMPORT symbolTree, getSymKey, putSymKey, initTree, killTree ;
 FROM nameKey IMPORT makeKey, makekey, keyToCharStar ;
-FROM mcOptions IMPORT getHPrefix, getGccConfigSystem ;
+FROM mcOptions IMPORT getHPrefix, getGccConfigSystem, useBool ;
 
 
 TYPE
@@ -735,12 +735,26 @@ END fixNullPointerConst ;
 
 
 (*
+   genBool -
+*)
+
+PROCEDURE genBool (p: pretty) ;
+BEGIN
+   IF useBool ()
+   THEN
+      print (p, '#include <stdbool.h>\n') ;
+   END
+END genBool ;
+
+
+(*
    genDefs - generate definitions or includes for all
              macros and prototypes used.
 *)
 
 PROCEDURE genDefs (p: pretty) ;
 BEGIN
+   genBool (p) ;
    checkFreeMalloc (p) ;
    checkProc (p) ;
    checkTrue (p) ;

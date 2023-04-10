@@ -3,7 +3,7 @@
  *
  * Specification: ($LINK2 https://dlang.org/spec/expression.html, Expressions)
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/expression.d, _expression.d)
@@ -50,6 +50,7 @@ import dmd.id;
 import dmd.identifier;
 import dmd.init;
 import dmd.inline;
+import dmd.location;
 import dmd.mtype;
 import dmd.nspace;
 import dmd.objc;
@@ -248,17 +249,54 @@ bool isDotOpDispatch(Expression e)
 }
 
 /****************************************
- * Expand tuples.
- * Input:
- *      exps    aray of Expressions
- * Output:
- *      exps    rewritten in place
+ * Expand tuples in-place.
+ *
+ * Example:
+ *     When there's a call `f(10, pair: AliasSeq!(20, 30), single: 40)`, the input is:
+ *         `exps =  [10, (20, 30), 40]`
+ *         `names = [null, "pair", "single"]`
+ *     The arrays will be modified to:
+ *         `exps =  [10, 20, 30, 40]`
+ *         `names = [null, "pair", null, "single"]`
+ *
+ * Params:
+ *     exps  = array of Expressions
+ *     names = optional array of names corresponding to Expressions
  */
-extern (C++) void expandTuples(Expressions* exps)
+extern (C++) void expandTuples(Expressions* exps, Identifiers* names = null)
 {
     //printf("expandTuples()\n");
     if (exps is null)
         return;
+
+    if (names)
+    {
+        if (exps.length != names.length)
+        {
+            printf("exps.length = %d, names.length = %d\n", cast(int) exps.length, cast(int) names.length);
+            printf("exps = %s, names = %s\n", exps.toChars(), names.toChars());
+            if (exps.length > 0)
+                printf("%s\n", (*exps)[0].loc.toChars());
+            assert(0);
+        }
+    }
+
+    // At `index`, a tuple of length `length` is expanded. Insert corresponding nulls in `names`.
+    void expandNames(size_t index, size_t length)
+    {
+        if (names)
+        {
+            if (length == 0)
+            {
+                names.remove(index);
+                return;
+            }
+            foreach (i; 1 .. length)
+            {
+                names.insert(index + i, cast(Identifier) null);
+            }
+        }
+    }
 
     for (size_t i = 0; i < exps.length; i++)
     {
@@ -274,6 +312,7 @@ extern (C++) void expandTuples(Expressions* exps)
                 if (!tt.arguments || tt.arguments.length == 0)
                 {
                     exps.remove(i);
+                    expandNames(i, 0);
                     if (i == exps.length)
                         return;
                 }
@@ -284,6 +323,7 @@ extern (C++) void expandTuples(Expressions* exps)
                     foreach (j, a; *tt.arguments)
                         (*texps)[j] = new TypeExp(e.loc, a.type);
                     exps.insert(i, texps);
+                    expandNames(i, texps.length);
                 }
                 i--;
                 continue;
@@ -296,6 +336,7 @@ extern (C++) void expandTuples(Expressions* exps)
             TupleExp te = cast(TupleExp)arg;
             exps.remove(i); // remove arg
             exps.insert(i, te.exps); // replace with tuple contents
+            expandNames(i, te.exps.length);
             if (i == exps.length)
                 return; // empty tuple, no more arguments
             (*exps)[i] = Expression.combine(te.e0, (*exps)[i]);
@@ -681,11 +722,11 @@ extern (C++) abstract class Expression : ASTNode
 {
     const EXP op;   // to minimize use of dynamic_cast
     ubyte size;     // # of bytes in Expression so we can copy() it
-    ubyte parens;   // if this is a parenthesized expression
+    bool parens;    // if this is a parenthesized expression
     Type type;      // !=null means that semantic() has been run
     Loc loc;        // file location
 
-    extern (D) this(const ref Loc loc, EXP op, int size)
+    extern (D) this(const ref Loc loc, EXP op, int size) scope
     {
         //printf("Expression::Expression(op = %d) this = %p\n", op, this);
         this.loc = loc;
@@ -1291,12 +1332,16 @@ extern (C++) abstract class Expression : ASTNode
             return false; // ...or manifest constants
 
         // accessing empty structs is pure
+        // https://issues.dlang.org/show_bug.cgi?id=18694
+        // https://issues.dlang.org/show_bug.cgi?id=21464
+        // https://issues.dlang.org/show_bug.cgi?id=23589
         if (v.type.ty == Tstruct)
         {
             StructDeclaration sd = (cast(TypeStruct)v.type).sym;
             if (sd.members) // not opaque
             {
-                sd.determineSize(v.loc);
+                if (sd.semanticRun >= PASS.semanticdone)
+                    sd.determineSize(v.loc);
                 if (sd.hasNoFields)
                     return false;
             }
@@ -1388,7 +1433,7 @@ extern (C++) abstract class Expression : ASTNode
     */
     private static bool checkImpure(Scope* sc)
     {
-        return sc.func && (sc.flags & SCOPE.compile
+        return sc.func && (isRootTraitsCompilesScope(sc)
                 ? sc.func.isPureBypassingInference() >= PURE.weak
                 : sc.func.setImpure());
     }
@@ -1430,7 +1475,7 @@ extern (C++) abstract class Expression : ASTNode
 
         if (!f.isSafe() && !f.isTrusted())
         {
-            if (sc.flags & SCOPE.compile ? sc.func.isSafeBypassingInference() : sc.func.setUnsafeCall(f))
+            if (isRootTraitsCompilesScope(sc) ? sc.func.isSafeBypassingInference() : sc.func.setUnsafeCall(f))
             {
                 if (!loc.isValid()) // e.g. implicitly generated dtor
                     loc = sc.func.loc;
@@ -1483,7 +1528,7 @@ extern (C++) abstract class Expression : ASTNode
 
         if (!f.isNogc())
         {
-            if (sc.flags & SCOPE.compile ? sc.func.isNogcBypassingInference() : sc.func.setGC())
+            if (isRootTraitsCompilesScope(sc) ? sc.func.isNogcBypassingInference() : sc.func.setGC())
             {
                 if (loc.linnum == 0) // e.g. implicitly generated dtor
                     loc = sc.func.loc;
@@ -1491,7 +1536,8 @@ extern (C++) abstract class Expression : ASTNode
                 // Lowered non-@nogc'd hooks will print their own error message inside of nogc.d (NOGCVisitor.visit(CallExp e)),
                 // so don't print anything to avoid double error messages.
                 if (!(f.ident == Id._d_HookTraceImpl || f.ident == Id._d_arraysetlengthT
-                    || f.ident == Id._d_arrayappendT || f.ident == Id._d_arrayappendcTX))
+                    || f.ident == Id._d_arrayappendT || f.ident == Id._d_arrayappendcTX
+                    || f.ident == Id._d_newclassT))
                     error("`@nogc` %s `%s` cannot call non-@nogc %s `%s`",
                         sc.func.kind(), sc.func.toPrettyChars(), f.kind(), f.toPrettyChars());
 
@@ -1641,6 +1687,15 @@ extern (C++) abstract class Expression : ASTNode
     {
         return .isConst(this);
     }
+
+    /******
+     * Identical, not just equal. I.e. NaNs with different bit patterns are not identical
+     */
+    bool isIdentical(const Expression e) const
+    {
+        return equals(e);
+    }
+
 
     /// Statically evaluate this expression to a `bool` if possible
     /// Returns: an optional thath either contains the value or is empty
@@ -2132,6 +2187,13 @@ extern (C++) final class RealExp : Expression
         return false;
     }
 
+    override bool isIdentical(const Expression e) const
+    {
+        if (!equals(e))
+            return false;
+        return CTFloat.isIdentical(value, e.isRealExp().value);
+    }
+
     override dinteger_t toInteger()
     {
         return cast(sinteger_t)toReal();
@@ -2208,6 +2270,16 @@ extern (C++) final class ComplexExp : Expression
         return false;
     }
 
+    override bool isIdentical(const Expression e) const
+    {
+        if (!equals(e))
+            return false;
+        // equals() regards different NaN values as 'equals'
+        auto c = e.isComplexExp();
+        return CTFloat.isIdentical(creall(value), creall(c.value)) &&
+               CTFloat.isIdentical(cimagl(value), cimagl(c.value));
+    }
+
     override dinteger_t toInteger()
     {
         return cast(sinteger_t)toReal();
@@ -2256,7 +2328,7 @@ extern (C++) class IdentifierExp : Expression
 {
     Identifier ident;
 
-    extern (D) this(const ref Loc loc, Identifier ident)
+    extern (D) this(const ref Loc loc, Identifier ident) scope
     {
         super(loc, EXP.identifier, __traits(classInstanceSize, IdentifierExp));
         this.ident = ident;
@@ -2411,7 +2483,7 @@ extern (C++) final class SuperExp : ThisExp
  */
 extern (C++) final class NullExp : Expression
 {
-    extern (D) this(const ref Loc loc, Type type = null)
+    extern (D) this(const ref Loc loc, Type type = null) scope
     {
         super(loc, EXP.null_, __traits(classInstanceSize, NullExp));
         this.type = type;
@@ -2470,7 +2542,7 @@ extern (C++) final class StringExp : Expression
     char postfix = NoPostfix;   // 'c', 'w', 'd'
     OwnedBy ownedByCtfe = OwnedBy.code;
 
-    extern (D) this(const ref Loc loc, const(void)[] string)
+    extern (D) this(const ref Loc loc, const(void)[] string) scope
     {
         super(loc, EXP.string_, __traits(classInstanceSize, StringExp));
         this.string = cast(char*)string.ptr; // note that this.string should be const
@@ -2478,7 +2550,7 @@ extern (C++) final class StringExp : Expression
         this.sz = 1;                    // work around LDC bug #1286
     }
 
-    extern (D) this(const ref Loc loc, const(void)[] string, size_t len, ubyte sz, char postfix = NoPostfix)
+    extern (D) this(const ref Loc loc, const(void)[] string, size_t len, ubyte sz, char postfix = NoPostfix) scope
     {
         super(loc, EXP.string_, __traits(classInstanceSize, StringExp));
         this.string = cast(char*)string.ptr; // note that this.string should be const
@@ -3565,18 +3637,26 @@ extern (C++) final class NewExp : Expression
     Expression thisexp;         // if !=null, 'this' for class being allocated
     Type newtype;
     Expressions* arguments;     // Array of Expression's
+    Identifiers* names;         // Array of names corresponding to expressions
 
     Expression argprefix;       // expression to be evaluated just before arguments[]
     CtorDeclaration member;     // constructor function
     bool onstack;               // allocate on stack
     bool thrownew;              // this NewExp is the expression of a ThrowStatement
 
-    extern (D) this(const ref Loc loc, Expression thisexp, Type newtype, Expressions* arguments)
+    Expression lowering;        // lowered druntime hook: `_d_newclass`
+
+    /// Puts the `arguments` and `names` into an `ArgumentList` for easily passing them around.
+    /// The fields are still separate for backwards compatibility
+    extern (D) ArgumentList argumentList() { return ArgumentList(arguments, names); }
+
+    extern (D) this(const ref Loc loc, Expression thisexp, Type newtype, Expressions* arguments, Identifiers* names = null)
     {
         super(loc, EXP.new_, __traits(classInstanceSize, NewExp));
         this.thisexp = thisexp;
         this.newtype = newtype;
         this.arguments = arguments;
+        this.names = names;
     }
 
     static NewExp create(const ref Loc loc, Expression thisexp, Type newtype, Expressions* arguments)
@@ -3589,7 +3669,8 @@ extern (C++) final class NewExp : Expression
         return new NewExp(loc,
             thisexp ? thisexp.syntaxCopy() : null,
             newtype.syntaxCopy(),
-            arraySyntaxCopy(arguments));
+            arraySyntaxCopy(arguments),
+            names ? names.copy() : null);
     }
 
     override void accept(Visitor v)
@@ -3964,6 +4045,7 @@ extern (C++) final class FuncExp : Expression
                 Type t = pto.type;
                 if (t.ty == Terror)
                     return cannotInfer(this, to, flag);
+                tf.parameterList[u].storageClass = tof.parameterList[u].storageClass;
                 tiargs.push(t);
             }
 
@@ -4212,7 +4294,7 @@ extern (C++) final class IsExp : Expression
     TOK tok;            // ':' or '=='
     TOK tok2;           // 'struct', 'union', etc.
 
-    extern (D) this(const ref Loc loc, Type targ, Identifier id, TOK tok, Type tspec, TOK tok2, TemplateParameters* parameters)
+    extern (D) this(const ref Loc loc, Type targ, Identifier id, TOK tok, Type tspec, TOK tok2, TemplateParameters* parameters) scope
     {
         super(loc, EXP.is_, __traits(classInstanceSize, IsExp));
         this.targ = targ;
@@ -4252,7 +4334,7 @@ extern (C++) abstract class UnaExp : Expression
     Expression e1;
     Type att1;      // Save alias this type to detect recursion
 
-    extern (D) this(const ref Loc loc, EXP op, int size, Expression e1)
+    extern (D) this(const ref Loc loc, EXP op, int size, Expression e1) scope
     {
         super(loc, op, size);
         this.e1 = e1;
@@ -4325,7 +4407,7 @@ extern (C++) abstract class BinExp : Expression
     Type att1;      // Save alias this type to detect recursion
     Type att2;      // Save alias this type to detect recursion
 
-    extern (D) this(const ref Loc loc, EXP op, int size, Expression e1, Expression e2)
+    extern (D) this(const ref Loc loc, EXP op, int size, Expression e1, Expression e2) scope
     {
         super(loc, op, size);
         this.e1 = e1;
@@ -4616,7 +4698,7 @@ extern (C++) abstract class BinExp : Expression
  */
 extern (C++) class BinAssignExp : BinExp
 {
-    extern (D) this(const ref Loc loc, EXP op, int size, Expression e1, Expression e2)
+    extern (D) this(const ref Loc loc, EXP op, int size, Expression e1, Expression e2) scope
     {
         super(loc, op, size, e1, e2);
     }
@@ -5043,21 +5125,53 @@ extern (C++) final class DotTypeExp : UnaExp
     }
 }
 
+/**
+ * The arguments of a function call
+ *
+ * Contains a list of expressions. If it is a named argument, the `names`
+ * list has a non-null entry at the same index.
+ */
+struct ArgumentList
+{
+    Expressions* arguments; // function arguments
+    Identifiers* names;     // named argument identifiers
+
+    size_t length() const @nogc nothrow pure @safe { return arguments ? arguments.length : 0; }
+
+    /// Returns: whether this argument list contains any named arguments
+    bool hasNames() const @nogc nothrow pure @safe
+    {
+        if (names is null)
+            return false;
+        foreach (name; *names)
+            if (name !is null)
+                return true;
+
+        return false;
+    }
+}
+
 /***********************************************************
  */
 extern (C++) final class CallExp : UnaExp
 {
     Expressions* arguments; // function arguments
+    Identifiers* names;     // named argument identifiers
     FuncDeclaration f;      // symbol to call
     bool directcall;        // true if a virtual call is devirtualized
     bool inDebugStatement;  /// true if this was in a debug statement
     bool ignoreAttributes;  /// don't enforce attributes (e.g. call @gc function in @nogc code)
     VarDeclaration vthis2;  // container for multi-context
 
-    extern (D) this(const ref Loc loc, Expression e, Expressions* exps)
+    /// Puts the `arguments` and `names` into an `ArgumentList` for easily passing them around.
+    /// The fields are still separate for backwards compatibility
+    extern (D) ArgumentList argumentList() { return ArgumentList(arguments, names); }
+
+    extern (D) this(const ref Loc loc, Expression e, Expressions* exps, Identifiers* names = null)
     {
         super(loc, EXP.call, __traits(classInstanceSize, CallExp), e);
         this.arguments = exps;
+        this.names = names;
     }
 
     extern (D) this(const ref Loc loc, Expression e)
@@ -5124,7 +5238,7 @@ extern (C++) final class CallExp : UnaExp
 
     override CallExp syntaxCopy()
     {
-        return new CallExp(loc, e1.syntaxCopy(), arraySyntaxCopy(arguments));
+        return new CallExp(loc, e1.syntaxCopy(), arraySyntaxCopy(arguments), names ? names.copy() : null);
     }
 
     override bool isLvalue()
@@ -5320,7 +5434,7 @@ extern (C++) final class NegExp : UnaExp
  */
 extern (C++) final class UAddExp : UnaExp
 {
-    extern (D) this(const ref Loc loc, Expression e)
+    extern (D) this(const ref Loc loc, Expression e) scope
     {
         super(loc, EXP.uadd, __traits(classInstanceSize, UAddExp), e);
     }
@@ -6382,7 +6496,7 @@ extern (C++) final class MinExp : BinExp
  */
 extern (C++) final class CatExp : BinExp
 {
-    extern (D) this(const ref Loc loc, Expression e1, Expression e2)
+    extern (D) this(const ref Loc loc, Expression e1, Expression e2) scope
     {
         super(loc, EXP.concatenate, __traits(classInstanceSize, CatExp), e1, e2);
     }
@@ -6712,7 +6826,7 @@ extern (C++) final class CondExp : BinExp
 {
     Expression econd;
 
-    extern (D) this(const ref Loc loc, Expression econd, Expression e1, Expression e2)
+    extern (D) this(const ref Loc loc, Expression econd, Expression e1, Expression e2) scope
     {
         super(loc, EXP.question, __traits(classInstanceSize, CondExp), e1, e2);
         this.econd = econd;

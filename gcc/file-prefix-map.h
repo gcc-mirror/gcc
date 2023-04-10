@@ -22,6 +22,7 @@ void add_macro_prefix_map (const char *);
 void add_debug_prefix_map (const char *);
 void add_file_prefix_map (const char *);
 void add_profile_prefix_map (const char *);
+extern bool flag_canon_prefix_map;
 
 const char *remap_macro_filename (const char *);
 const char *remap_debug_filename (const char *);

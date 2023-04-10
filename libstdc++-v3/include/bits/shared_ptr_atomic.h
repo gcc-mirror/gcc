@@ -650,6 +650,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator=(shared_ptr<_Tp> __desired) noexcept
       { _M_impl.swap(__desired, memory_order_seq_cst); }
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3893. LWG 3661 broke atomic<shared_ptr<T>> a; a = nullptr;
+      void
+      operator=(nullptr_t) noexcept
+      { store(nullptr); }
+
       shared_ptr<_Tp>
       exchange(shared_ptr<_Tp> __desired,
 	       memory_order __o = memory_order_seq_cst) noexcept

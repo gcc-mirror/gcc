@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -58,7 +59,7 @@ EXTERN RTentity_Group RTentity_KillGroup (RTentity_Group g);
 EXTERN unsigned int RTentity_GetKey (RTentity_Group g, void * a);
 EXTERN void RTentity_PutKey (RTentity_Group g, void * a, unsigned int key);
 EXTERN void RTentity_DelKey (RTentity_Group g, void * a);
-EXTERN unsigned int RTentity_IsIn (RTentity_Group g, void * a);
+EXTERN bool RTentity_IsIn (RTentity_Group g, void * a);
 #   ifdef __cplusplus
 }
 #   endif

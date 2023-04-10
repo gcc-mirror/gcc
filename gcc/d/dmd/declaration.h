@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -229,7 +229,7 @@ class VarDeclaration : public Declaration
 public:
     Initializer *_init;
     FuncDeclarations nestedrefs; // referenced by these lexically nested functions
-    Dsymbol *aliassym;          // if redone as alias to another symbol
+    TupleDeclaration *aliasTuple;  // if `this` is really a tuple of declarations
     VarDeclaration *lastVar;    // Linked list of variables for goto-skips-init detection
     Expression *edtor;          // if !=NULL, does the destruction of the variable
     IntRange *range;            // if !NULL, the variable is known to be within the range
@@ -270,6 +270,14 @@ public:
     bool doNotInferReturn(bool v);
     bool isArgDtorVar() const; // temporary created to handle scope destruction of a function argument
     bool isArgDtorVar(bool v);
+    bool isCmacro() const; // if a C macro turned into a C variable
+    bool isCmacro(bool v);
+#if MARS
+    bool inClosure() const; // is inserted into a GC allocated closure
+    bool inClosure(bool v);
+    bool inAlignSection() const; // is inserted into aligned section on stack
+    bool inAlignSection(bool v);
+#endif
     static VarDeclaration *create(const Loc &loc, Type *t, Identifier *id, Initializer *init, StorageClass storage_class = STCundefined);
     VarDeclaration *syntaxCopy(Dsymbol *) override;
     void setFieldOffset(AggregateDeclaration *ad, FieldState& fieldState, bool isunion) override final;
@@ -634,8 +642,8 @@ public:
     bool inferScope(bool v);
     bool hasCatches() const;
     bool hasCatches(bool v);
-    bool isCompileTimeOnly() const;
-    bool isCompileTimeOnly(bool v);
+    bool skipCodegen() const;
+    bool skipCodegen(bool v);
     bool printf() const;
     bool printf(bool v);
     bool scanf() const;
@@ -680,7 +688,7 @@ public:
     BaseClass *overrideInterface();
     bool overloadInsert(Dsymbol *s) override;
     bool inUnittest();
-    MATCH leastAsSpecialized(FuncDeclaration *g);
+    MATCH leastAsSpecialized(FuncDeclaration *g, Identifiers *names);
     LabelDsymbol *searchLabel(Identifier *ident, const Loc &loc);
     int getLevel(FuncDeclaration *fd, int intypeof); // lexical nesting level difference
     int getLevelAndCheck(const Loc &loc, Scope *sc, FuncDeclaration *fd);

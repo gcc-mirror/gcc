@@ -24,7 +24,7 @@ contains
     allocate(x%i(1000))
   end subroutine
 
-end program 
+end program
 
 ! { dg-final { scan-tree-dump-times "__builtin_free" 4 "original" } }
-! { dg-final { scan-tree-dump-times "x->_vptr->_final \\(" 1 "original" } }
+! { dg-final { scan-tree-dump-times "_vptr->_final \\(&desc" 1 "original" } }

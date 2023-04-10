@@ -46,6 +46,8 @@ VAR
    caseRuntime,
    arrayRuntime,
    returnRuntime,
+   suppressNoReturn,
+   useBoolType,
    gccConfigSystem,
    ignoreFQ,
    debugTopological,
@@ -140,7 +142,8 @@ BEGIN
    printf0 ('  --automatic         generate a comment at the start of the file warning not to edit as it was automatically generated\n') ;
    printf0 ('  --scaffold-dynamic  generate dynamic module initialization code for C++\n') ;
    printf0 ('  --scaffold-main     generate main function which calls upon the dynamic initialization support in M2RTS\n') ;
-   printf0 ("  filename            the source file must be the last option\n") ;
+   printf0 ('  --suppress-noreturn suppress the emission of any attribute noreturn\n');
+   printf0 ('  filename            the source file must be the last option\n') ;
    exit (0)
 END displayHelp ;
 
@@ -440,6 +443,26 @@ END getExtendedOpaque ;
 
 
 (*
+   setSuppressNoReturn - set suppressNoReturn to value.
+*)
+
+PROCEDURE setSuppressNoReturn (value: BOOLEAN) ;
+BEGIN
+   suppressNoReturn := value
+END setSuppressNoReturn;
+
+
+(*
+   getSuppressNoReturn - return the suppressNoReturn value.
+*)
+
+PROCEDURE getSuppressNoReturn () : BOOLEAN ;
+BEGIN
+   RETURN suppressNoReturn
+END getSuppressNoReturn ;
+
+
+(*
    setSearchPath - set the search path for the module sources.
 *)
 
@@ -561,6 +584,16 @@ END getScaffoldMain ;
 
 
 (*
+   useBool - should mc use the bool type instead of int.
+*)
+
+PROCEDURE useBool () : BOOLEAN ;
+BEGIN
+   RETURN useBoolType
+END useBool ;
+
+
+(*
    optionIs - returns TRUE if the first len (right) characters
               match left.
 *)
@@ -675,6 +708,9 @@ BEGIN
    ELSIF optionIs ('--scaffold-dynamic', arg)
    THEN
       scaffoldDynamic := TRUE
+   ELSIF optionIs ('--suppress-noreturn', arg)
+   THEN
+      suppressNoReturn := TRUE
    END
 END handleOption ;
 
@@ -733,6 +769,8 @@ BEGIN
    gccConfigSystem := FALSE ;
    scaffoldMain := FALSE ;
    scaffoldDynamic := FALSE ;
+   suppressNoReturn := FALSE ;
+   useBoolType := TRUE ;
    hPrefix := InitString ('') ;
    cppArgs := InitString ('') ;
    cppProgram := InitString ('') ;

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -msse4.2" } */
+/* { dg-options "-O2 -msse4.2 -mno-avx2" } */
 
 typedef int v4si __attribute__((vector_size(16)));
 typedef float v4sf __attribute__((vector_size(16)));

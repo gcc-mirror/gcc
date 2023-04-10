@@ -1295,6 +1295,8 @@ pattern needs to support both a 32- and a 64-bit mode.
 
 @hook TARGET_MANGLE_TYPE
 
+@hook TARGET_EMIT_SUPPORT_TINFOS
+
 @node Type Layout
 @section Layout of Source Language Data Types
 
@@ -3543,9 +3545,9 @@ This section describes the macros that output function entry
 @hook TARGET_ASM_FUNCTION_EPILOGUE
 
 @itemize @bullet
-@item
 @findex pretend_args_size
 @findex crtl->args.pretend_args_size
+@item
 A region of @code{crtl->args.pretend_args_size} bytes of
 uninitialized space just underneath the first argument arriving on the
 stack.  (This may not be at the very start of the allocated stack region
@@ -3570,8 +3572,8 @@ boundary, to contain the local variables of the function.  On some machines,
 this region and the save area may occur in the opposite order, with the
 save area closer to the top of the stack.
 
-@item
 @cindex @code{ACCUMULATE_OUTGOING_ARGS} and stack frames
+@item
 Optionally, when @code{ACCUMULATE_OUTGOING_ARGS} is defined, a region of
 @code{crtl->outgoing_args_size} bytes to be used for outgoing
 argument lists of the function.  @xref{Stack Arguments}.
@@ -4182,7 +4184,7 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_VECTORIZE_VEC_PERM_CONST
 
-@hook TARGET_VECTORIZE_CAN_SPECIAL_DIV_BY_CONST
+@hook TARGET_VECTORIZE_PREFERRED_DIV_AS_SHIFTS_OVER_MULT
 
 @hook TARGET_VECTORIZE_BUILTIN_VECTORIZED_FUNCTION
 
@@ -7801,8 +7803,6 @@ lists.
 @hook TARGET_GEN_CCMP_FIRST
 
 @hook TARGET_GEN_CCMP_NEXT
-
-@hook TARGET_GEN_MEMSET_SCRATCH_RTX
 
 @hook TARGET_LOOP_UNROLL_ADJUST
 

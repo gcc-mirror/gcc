@@ -37,7 +37,7 @@ struct ExplicitDefaultDefault
 
 std::pair<int, int> f1() {return {1,2};}
 
-std::pair<Explicit, Explicit> f2() {return {1,2};} // { dg-error "could not convert" }
+std::pair<Explicit, Explicit> f2() {return {1,2};} // { dg-error "explicit constructor" }
 
 std::pair<long, long> f3() {return std::pair<int, int>{1,2};}
 
@@ -52,7 +52,7 @@ std::pair<int, int> v0{1,2};
 
 std::pair<Explicit, Explicit> v1{1,2};
 
-std::pair<Explicit, Explicit> v2 = {1,2}; // { dg-error "could not convert" }
+std::pair<Explicit, Explicit> v2 = {1,2}; // { dg-error "explicit constructor" }
 
 std::pair<Explicit, Explicit> v3{std::pair<int,int>{1,2}};
 
@@ -99,7 +99,7 @@ void test_arg_passing()
 {
   f6(v0); // { dg-error "could not convert" }
   f6(v1);
-  f6({1,2}); // { dg-error "could not convert" }
+  f6({1,2}); // { dg-error "explicit constructor" }
   f6(std::pair<Explicit, Explicit>{});
   f6(std::pair<int, int>{}); // { dg-error "could not convert" }
   f7(v0);
@@ -130,6 +130,6 @@ std::pair<int*, ExplicitMoveOnly> v14{nullptr, MoveOnly{}};
 std::pair<ExplicitMoveOnly, int*> v15{MoveOnly{}, nullptr};
 
 std::pair<int*, ExplicitMoveOnly> v16 =
-  {nullptr, MoveOnly{}}; // { dg-error "could not convert" }
+  {nullptr, MoveOnly{}}; // { dg-error "explicit constructor" }
 std::pair<ExplicitMoveOnly, int*> v17 =
-  {MoveOnly{}, nullptr}; // { dg-error "could not convert" }
+  {MoveOnly{}, nullptr}; // { dg-error "explicit constructor" }

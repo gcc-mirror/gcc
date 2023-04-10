@@ -56,7 +56,7 @@ https://issues.dlang.org/show_bug.cgi?id=21785
 
 TEST_OUTPUT:
 ---
-fail_compilation/enum_init.d(306): Error: variable `enum_init.fooOB.ob` no definition of struct `S`
+fail_compilation/enum_init.d(306): Error: variable `enum_init.fooOB.ob` - no definition of struct `S`
 fail_compilation/enum_init.d(302):        required by type `OpaqueBase`
 ---
 */

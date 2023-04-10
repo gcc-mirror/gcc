@@ -212,7 +212,7 @@ They met on 24/01/1970.
         names work like aliases in addition to direct numbers.
      )
     $(REG_TITLE Assertions, Match position rather than character )
-    $(REG_ROW ^, Matches at the begining of input or line (in multiline mode).)
+    $(REG_ROW ^, Matches at the beginning of input or line (in multiline mode).)
     $(REG_ROW $, Matches at the end of input or line (in multiline mode). )
     $(REG_ROW \b, Matches at word boundary. )
     $(REG_ROW \B, Matches when $(U not) at word boundary. )

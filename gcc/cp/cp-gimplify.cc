@@ -190,6 +190,12 @@ genericize_if_stmt (tree *stmt_p)
     }
   else if (IF_STMT_CONSTEXPR_P (stmt))
     stmt = integer_nonzerop (cond) ? then_ : else_;
+  /* ??? This optimization doesn't seem to belong here, but removing it
+     causes -Wreturn-type regressions (e.g. 107310).  */
+  else if (integer_nonzerop (cond) && !TREE_SIDE_EFFECTS (else_))
+    stmt = then_;
+  else if (integer_zerop (cond) && !TREE_SIDE_EFFECTS (then_))
+    stmt = else_;
   else
     stmt = build3 (COND_EXPR, void_type_node, cond, then_, else_);
   protected_set_expr_location_if_unset (stmt, locus);
@@ -1530,6 +1536,8 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 		tree using_directive = make_node (IMPORTED_DECL);
 		TREE_TYPE (using_directive) = void_type_node;
 		DECL_CONTEXT (using_directive) = current_function_decl;
+		DECL_SOURCE_LOCATION (using_directive)
+		  = cp_expr_loc_or_input_loc (stmt);
 
 		IMPORTED_DECL_ASSOCIATED_DECL (using_directive) = decl;
 		DECL_CHAIN (using_directive) = BLOCK_VARS (block);
@@ -2447,8 +2455,8 @@ cp_fold_rvalue (tree x)
 
 /* Perform folding on expression X.  */
 
-tree
-cp_fully_fold (tree x)
+static tree
+cp_fully_fold (tree x, mce_value manifestly_const_eval)
 {
   if (processing_template_decl)
     return x;
@@ -2456,7 +2464,7 @@ cp_fully_fold (tree x)
      have to call both.  */
   if (cxx_dialect >= cxx11)
     {
-      x = maybe_constant_value (x);
+      x = maybe_constant_value (x, /*decl=*/NULL_TREE, manifestly_const_eval);
       /* Sometimes we are given a CONSTRUCTOR but the call above wraps it into
 	 a TARGET_EXPR; undo that here.  */
       if (TREE_CODE (x) == TARGET_EXPR)
@@ -2466,7 +2474,16 @@ cp_fully_fold (tree x)
 	       && TREE_TYPE (TREE_OPERAND (x, 0)) == TREE_TYPE (x))
 	x = TREE_OPERAND (x, 0);
     }
-  return cp_fold_rvalue (x);
+  fold_flags_t flags = ff_none;
+  if (manifestly_const_eval == mce_false)
+    flags |= ff_mce_false;
+  return cp_fold_rvalue (x, flags);
+}
+
+tree
+cp_fully_fold (tree x)
+{
+  return cp_fully_fold (x, mce_unknown);
 }
 
 /* Likewise, but also fold recursively, which cp_fully_fold doesn't perform
@@ -2477,7 +2494,7 @@ cp_fully_fold_init (tree x)
 {
   if (processing_template_decl)
     return x;
-  x = cp_fully_fold (x);
+  x = cp_fully_fold (x, mce_false);
   cp_fold_data data (ff_mce_false);
   cp_walk_tree (&x, cp_fold_r, &data, NULL);
   return x;

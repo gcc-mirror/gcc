@@ -2666,13 +2666,13 @@
     VMSUMUDM altivec_vmsumudm {}
 
   const vsll __builtin_altivec_vprtybd (vsll);
-    VPRTYBD parityv2di2 {}
+    VPRTYBD rs6000_vprtybv2di2 {}
 
   const vsq __builtin_altivec_vprtybq (vsq);
-    VPRTYBQ parityv1ti2 {}
+    VPRTYBQ rs6000_vprtybv1ti2 {}
 
   const vsi __builtin_altivec_vprtybw (vsi);
-    VPRTYBW parityv4si2 {}
+    VPRTYBW rs6000_vprtybv4si2 {}
 
   const vsll __builtin_altivec_vrldmi (vsll, vsll, vsll);
     VRLDMI altivec_vrldmi {}

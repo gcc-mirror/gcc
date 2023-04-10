@@ -29,6 +29,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -57,19 +58,19 @@ EXTERN DynamicStrings_String mcOptions_handleOptions (void);
    getQuiet - return the value of quiet.
 */
 
-EXTERN unsigned int mcOptions_getQuiet (void);
+EXTERN bool mcOptions_getQuiet (void);
 
 /*
    getVerbose - return the value of verbose.
 */
 
-EXTERN unsigned int mcOptions_getVerbose (void);
+EXTERN bool mcOptions_getVerbose (void);
 
 /*
    getInternalDebugging - return the value of internalDebugging.
 */
 
-EXTERN unsigned int mcOptions_getInternalDebugging (void);
+EXTERN bool mcOptions_getInternalDebugging (void);
 EXTERN DynamicStrings_String mcOptions_getCppCommandLine (void);
 
 /*
@@ -82,20 +83,20 @@ EXTERN DynamicStrings_String mcOptions_getOutputFile (void);
    getExtendedOpaque - return the extendedOpaque value.
 */
 
-EXTERN unsigned int mcOptions_getExtendedOpaque (void);
+EXTERN bool mcOptions_getExtendedOpaque (void);
 
 /*
    setDebugTopological - sets the flag debugTopological to value.
 */
 
-EXTERN void mcOptions_setDebugTopological (unsigned int value);
+EXTERN void mcOptions_setDebugTopological (bool value);
 
 /*
    getDebugTopological - returns the flag value of the command
                          line option --debug-top.
 */
 
-EXTERN unsigned int mcOptions_getDebugTopological (void);
+EXTERN bool mcOptions_getDebugTopological (void);
 
 /*
    getHPrefix - saves the H file prefix.
@@ -107,31 +108,49 @@ EXTERN DynamicStrings_String mcOptions_getHPrefix (void);
    getIgnoreFQ - returns the ignorefq flag.
 */
 
-EXTERN unsigned int mcOptions_getIgnoreFQ (void);
+EXTERN bool mcOptions_getIgnoreFQ (void);
 
 /*
    getGccConfigSystem - return the value of the gccConfigSystem flag.
 */
 
-EXTERN unsigned int mcOptions_getGccConfigSystem (void);
+EXTERN bool mcOptions_getGccConfigSystem (void);
 
 /*
    getScaffoldDynamic - return true if the --scaffold-dynamic option was present.
 */
 
-EXTERN unsigned int mcOptions_getScaffoldDynamic (void);
+EXTERN bool mcOptions_getScaffoldDynamic (void);
 
 /*
    getScaffoldMain - return true if the --scaffold-main option was present.
 */
 
-EXTERN unsigned int mcOptions_getScaffoldMain (void);
+EXTERN bool mcOptions_getScaffoldMain (void);
 
 /*
    writeGPLheader - writes out the GPL or the GLPL as a comment.
 */
 
 EXTERN void mcOptions_writeGPLheader (FIO_File f);
+
+/*
+   setSuppressNoReturn - set suppressNoReturn to value.
+*/
+
+EXTERN void mcOptions_setSuppressNoReturn (bool value);
+
+/*
+   getSuppressNoReturn - return the suppressNoReturn value.
+*/
+
+EXTERN bool mcOptions_getSuppressNoReturn (void);
+
+/*
+   useBool - should mc use the bool type instead of int.
+*/
+
+EXTERN bool mcOptions_useBool (void);
 #   ifdef __cplusplus
 }
 #   endif

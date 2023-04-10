@@ -23,7 +23,7 @@ PROCEDURE promote (i: SHORTINT) ;
 BEGIN
    IF i#-1
    THEN
-      Halt(__FILE__, __LINE__, __FUNCTION__, 'promotion failed')
+      Halt ('promotion failed', __FILE__, __FUNCTION__, __LINE__)
    END
 END promote ;
 

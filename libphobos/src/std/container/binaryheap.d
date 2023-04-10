@@ -597,3 +597,43 @@ BinaryHeap!(Store, less) heapify(alias less = "a < b", Store)(Store s,
     heap.insert(6);
     assert(equal(heap, [6, 5]));
 }
+
+/**
+Example for unintuitive behaviour
+It is important not to use the Store after a Heap has been instantiated from
+it, at least in the cases of Dynamic Arrays. For example, inserting a new element
+in a Heap, which is using a Dyamic Array as a Store, will cause a reallocation of
+the Store, if the Store is already full. The Heap will not point anymore to the
+original Dyamic Array, but point to a new Dynamic Array.
+ */
+
+// https://issues.dlang.org/show_bug.cgi?id=18333
+@system unittest
+{
+    import std.stdio;
+    import std.algorithm.comparison : equal;
+    import std.container.binaryheap;
+
+    int[] a = [ 4, 1, 3, 2, 16, 9, 10, 14, 8, 7 ];
+    auto h = heapify(a);
+
+    // Internal representation of Binary Heap tree
+    assert(a.equal([16, 14, 10, 8, 7, 9, 3, 2, 4, 1]));
+
+    h.replaceFront(30);
+    // Value 16 was replaced by 30
+    assert(a.equal([30, 14, 10, 8, 7, 9, 3, 2, 4, 1]));
+
+    // Making changes to the Store will be seen in the Heap
+    a[0] = 40;
+    assert(h.front() == 40);
+
+    // Inserting a new element will reallocate the Store, leaving
+    // the original Store unchanged.
+    h.insert(20);
+    assert(a.equal([40, 14, 10, 8, 7, 9, 3, 2, 4, 1]));
+
+    // Making changes to the original Store will not affect the Heap anymore
+    a[0] = 60;
+    assert(h.front() == 40);
+}

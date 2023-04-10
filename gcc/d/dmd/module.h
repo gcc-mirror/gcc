@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -79,18 +79,18 @@ public:
     Package *pkg;       // if isPackageFile is true, the Package that contains this package.d
     Strings contentImportedFiles;  // array of files whose content was imported
     int needmoduleinfo;
-    int selfimports;            // 0: don't know, 1: does not, 2: does
+    ThreeState selfimports;
+    ThreeState rootimports;
     void* tagSymTab;            // ImportC: tag symbols that conflict with other symbols used as the index
     OutBuffer defines;          // collect all the #define lines here
     bool selfImports();         // returns true if module imports itself
 
-    int rootimports;            // 0: don't know, 1: does not, 2: does
     bool rootImports();         // returns true if module imports root module
 
-    int insearch;
     Identifier *searchCacheIdent;
     Dsymbol *searchCacheSymbol; // cached value of search
     int searchCacheFlags;       // cached flags
+    bool insearch;
 
     // module from command line we're imported from,
     // i.e. a module that will be taken all the
@@ -170,3 +170,5 @@ struct ModuleDeclaration
 
     const char *toChars() const;
 };
+
+extern void getLocalClasses(Module* mod, Array<ClassDeclaration* >& aclasses);

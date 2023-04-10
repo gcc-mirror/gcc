@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -278,11 +278,13 @@ enum class TOK : unsigned char
     _Thread_local_,
 
     // C only extended keywords
+    _assert,
     _import,
     cdecl_,
     declspec,
     stdcall,
     pragma,
+    int128_,
     attribute__,
 
     MAX,

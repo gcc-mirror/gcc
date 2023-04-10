@@ -36,7 +36,7 @@ if $tracelevel then {
 # load support procs
 load_lib gm2-torture.exp
 
-gm2_init_pim2 "${srcdir}/gm2/switches/auto-init/fail" -fsoft-check-all -O2 -fauto-init
+gm2_init_pim2 "${srcdir}/gm2/switches/auto-init/fail" -fsoft-check-all -O2 -fauto-init -fm2-pathname=- -I${srcdir}/gm2/switches/auto-init/fail
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {
     # If we're only testing specific files and this isn't one of them, skip it.

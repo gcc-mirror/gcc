@@ -1938,7 +1938,7 @@ _M2_termios_init (void)
 }
 
 void
-_M2_termios_finish (void)
+_M2_termios_fini (void)
 {
 }
 

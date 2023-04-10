@@ -25,3 +25,4 @@ void f2 (void * in, void *out, int32_t x)
 }
 
 /* { dg-final { scan-assembler-times {vmv} 2 } } */
+

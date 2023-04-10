@@ -315,6 +315,17 @@ proc module-check-requirements { tests } {
 # cleanup any detritus from previous run
 cleanup_module_files [find $DEFAULT_REPO *.gcm]
 
+# Override unsupported to set the second element of module_do to "N",
+# so that, after an unsupported result in dg-test, we can skip rather
+# than fail subsequent related tests.
+set module_do {"compile" "P"}
+rename unsupported modules-saved-unsupported
+proc unsupported { args } {
+    global module_do
+    lset module_do 1 "N"
+    return [uplevel 1 modules-saved-unsupported $args]
+}
+
 # not grouped tests, sadly tcl doesn't have negated glob
 foreach test [prune [lsort [find $srcdir/$subdir {*.[CH]}]] \
 		  "$srcdir/$subdir/*_?.\[CH\]"] {
@@ -327,6 +338,9 @@ foreach test [prune [lsort [find $srcdir/$subdir {*.[CH]}]] \
 	    set module_cmis {}
 	    verbose "Testing $nshort $std" 1
 	    dg-test $test "$std" $DEFAULT_MODFLAGS
+	    if { [lindex $module_do 1] == "N" } {
+		continue
+	    }
 	    set testcase [string range $test [string length "$srcdir/"] end]
 	    cleanup_module_files [module_cmi_p $testcase $module_cmis]
 	}
@@ -372,6 +386,9 @@ foreach src [lsort [find $srcdir/$subdir {*_a.[CHX}]] {
 			}
 		    }
 		    dg-test -keep-output $test "$std" $DEFAULT_MODFLAGS
+		    if { [lindex $module_do 1] == "N" } {
+			break
+		    }
 		    set testcase [string range $test [string length "$srcdir/"] end]
 		    lappend mod_files [module_cmi_p $testcase $module_cmis]
 		}
@@ -390,5 +407,11 @@ foreach src [lsort [find $srcdir/$subdir {*_a.[CHX}]] {
 	}
     }
 }
+
+# Restore the original unsupported proc, lest it will affect
+# subsequent test runs, or even fail renaming if we run modules.exp
+# for multiple targets/multilibs/options.
+rename unsupported {}
+rename modules-saved-unsupported unsupported
 
 dg-finish

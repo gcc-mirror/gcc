@@ -137,7 +137,7 @@ fur_edge::get_operand (vrange &r, tree expr)
 bool
 fur_edge::get_phi_operand (vrange &r, tree expr, edge e)
 {
-  // Edge to edge recalculations not supoprted yet, until we sort it out.
+  // Edge to edge recalculations not supported yet, until we sort it out.
   gcc_checking_assert (e == m_edge);
   return m_query->range_on_edge (r, e, expr);
 }
@@ -149,7 +149,7 @@ fur_stmt::fur_stmt (gimple *s, range_query *q) : fur_source (q)
   m_stmt = s;
 }
 
-// Retreive range of EXPR as it occurs as a use on stmt M_STMT.
+// Retrieve range of EXPR as it occurs as a use on stmt M_STMT.
 
 bool
 fur_stmt::get_operand (vrange &r, tree expr)
@@ -438,7 +438,7 @@ adjust_realpart_expr (vrange &res, const gimple *stmt)
 }
 
 // This function looks for situations when walking the use/def chains
-// may provide additonal contextual range information not exposed on
+// may provide additional contextual range information not exposed on
 // this statement.
 
 static void
@@ -809,7 +809,7 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
 	  }
       }
 
-  // If SCEV is available, query if this PHI has any knonwn values.
+  // If SCEV is available, query if this PHI has any known values.
   if (scev_initialized_p ()
       && !POINTER_TYPE_P (TREE_TYPE (phi_def)))
     {
@@ -1064,7 +1064,7 @@ fold_using_range::relation_fold_and_or (irange& lhs_range, gimple *s,
   if (is_and && relation_intersect (relation1, relation2) == VREL_UNDEFINED)
     lhs_range = int_range<2> (boolean_false_node, boolean_false_node);
   // x || y is true if the union of the true cases is NO-RELATION..
-  // ie, one or the other being true covers the full range of possibilties.
+  // ie, one or the other being true covers the full range of possibilities.
   else if (!is_and && relation_union (relation1, relation2) == VREL_VARYING)
     lhs_range = bool_one;
   else

@@ -2,11 +2,11 @@
 REQUIRED_ARGS:-preview=dip1021
 TEST_OUTPUT:
 ---
-fail_compilation/failob1.d(104): Error: variable `failob1.test1.a1` is left dangling at return
-fail_compilation/failob1.d(105): Error: variable `failob1.test2.a2` is left dangling at return
-fail_compilation/failob1.d(107): Error: variable `failob1.test4.s4` is left dangling at return
-fail_compilation/failob1.d(108): Error: variable `failob1.test5.dg5` is left dangling at return
-fail_compilation/failob1.d(115): Error: variable `failob1.test12.p12` is left dangling at return
+fail_compilation/failob1.d(104): Error: variable `failob1.test1.a1` is not disposed of before return
+fail_compilation/failob1.d(105): Error: variable `failob1.test2.a2` is not disposed of before return
+fail_compilation/failob1.d(107): Error: variable `failob1.test4.s4` is not disposed of before return
+fail_compilation/failob1.d(108): Error: variable `failob1.test5.dg5` is not disposed of before return
+fail_compilation/failob1.d(115): Error: variable `failob1.test12.p12` is not disposed of before return
 ---
 */
 

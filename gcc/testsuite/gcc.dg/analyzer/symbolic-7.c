@@ -31,16 +31,20 @@ void test_2 (int i)
   __analyzer_eval (arr[i] == 42); /* { dg-warning "UNKNOWN" } */
 }
 
-void test_3 (int i)
+void test_3_concrete_read (int i)
 {
   /* An array that can't have been touched.  */
   int arr[2];
   
   /* Concrete reads.  */
-  __analyzer_eval (arr[0] == 42); /* { dg-warning "UNKNOWN" "unknown" } */
-  /* { dg-warning "use of uninitialized value 'arr\\\[0\\\]'" "uninit" { target *-*-* } .-1 } */
+  __analyzer_eval (arr[0] == 42); /* { dg-warning "use of uninitialized value 'arr\\\[0\\\]'" } */
+}
 
+void test_3_symbolic_read (int i)
+{
+  /* An array that can't have been touched.  */
+  int arr[2];
+  
   /* Symbolic read.  */
-  __analyzer_eval (arr[i] == 42); /* { dg-warning "UNKNOWN" "unknown" } */
-  /* { dg-warning "use of uninitialized value 'arr\\\[i\\\]'" "uninit" { target *-*-* } .-1 } */
+  __analyzer_eval (arr[i] == 42); /* { dg-warning "use of uninitialized value 'arr\\\[i\\\]'" } */
 }

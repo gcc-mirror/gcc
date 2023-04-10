@@ -124,7 +124,7 @@ int goacc_default_dims[GOMP_DIM_MAX];
 
 #ifndef LIBGOMP_OFFLOADED_ONLY
 
-static int wait_policy;
+static int wait_policy = -1;
 static unsigned long stacksize = GOMP_DEFAULT_STACKSIZE;
 
 static void
@@ -1981,7 +1981,7 @@ initialize_icvs (struct gomp_initial_icvs *icvs)
   icvs->bind_var = gomp_default_icv_values.bind_var;
   icvs->nteams_var = gomp_default_icv_values.nteams_var;
   icvs->teams_thread_limit_var = gomp_default_icv_values.teams_thread_limit_var;
-  icvs->wait_policy = 0;
+  icvs->wait_policy = -1;
 }
 
 /* Helper function for initialize_env to add a device specific ICV value

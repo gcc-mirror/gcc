@@ -120,6 +120,13 @@ test04()
   return true;
 }
 
+void
+test05()
+{
+  // LWG 3796
+  ranges::repeat_view<int> r;
+}
+
 int
 main()
 {
@@ -127,4 +134,5 @@ main()
   static_assert(test02());
   static_assert(test03());
   static_assert(test04());
+  test05();
 }

@@ -235,7 +235,7 @@ enum bool_range_state { BRS_FALSE, BRS_TRUE, BRS_EMPTY, BRS_FULL };
 bool_range_state get_bool_state (vrange &r, const vrange &lhs, tree val_type);
 
 // If the range of either op1 or op2 is undefined, set the result to
-// varying and return TRUE.  If the caller truely cares about a result,
+// varying and return TRUE.  If the caller truly cares about a result,
 // they should pass in a varying if it has an undefined that it wants
 // treated as a varying.
 
@@ -311,4 +311,8 @@ private:
 // This holds the range op table for floating point operations.
 extern floating_op_table *floating_tree_table;
 
+extern range_operator *ptr_op_widen_mult_signed;
+extern range_operator *ptr_op_widen_mult_unsigned;
+extern range_operator *ptr_op_widen_plus_signed;
+extern range_operator *ptr_op_widen_plus_unsigned;
 #endif // GCC_RANGE_OP_H

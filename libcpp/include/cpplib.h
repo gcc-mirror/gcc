@@ -1600,5 +1600,6 @@ int cpp_wcwidth (cppchar_t c);
 
 bool cpp_input_conversion_is_trivial (const char *input_charset);
 int cpp_check_utf8_bom (const char *data, size_t data_length);
+bool cpp_valid_utf8_p (const char *data, size_t num_bytes);
 
 #endif /* ! LIBCPP_CPPLIB_H */

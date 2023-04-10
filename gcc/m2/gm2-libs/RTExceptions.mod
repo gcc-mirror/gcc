@@ -531,7 +531,7 @@ END PushHandler ;
 
 PROCEDURE PopHandler (e: EHBlock; number: CARDINAL) ;
 VAR
-   h, i: Handler ;
+   h: Handler ;
 BEGIN
    h := findHandler(e, number) ;
    IF h#NIL
@@ -596,7 +596,8 @@ PROCEDURE GetBaseExceptionBlock () : EHBlock ;
 BEGIN
    IF currentEHB=NIL
    THEN
-      Halt(__FILE__, __LINE__, __FUNCTION__, 'currentEHB has not been initialized yet')
+      Halt('currentEHB has not been initialized yet',
+           __FILE__, __FUNCTION__, __LINE__)
    ELSE
       RETURN( currentEHB )
    END

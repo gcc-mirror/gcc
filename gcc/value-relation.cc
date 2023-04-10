@@ -484,7 +484,7 @@ equiv_oracle::query_relation (basic_block bb, tree ssa1, tree ssa2)
   return partial_equiv (ssa1, ssa2);
 }
 
-// Query if thre is a relation (equivalence) between 2 SSA_NAMEs.
+// Query if there is a relation (equivalence) between 2 SSA_NAMEs.
 
 relation_kind
 equiv_oracle::query_relation (basic_block bb ATTRIBUTE_UNUSED, const_bitmap e1,
@@ -531,7 +531,7 @@ equiv_oracle::find_equiv_dom (tree name, basic_block bb) const
   return NULL;
 }
 
-// Register equivalance between ssa_name V and set EQUIV in block BB,
+// Register equivalence between ssa_name V and set EQUIV in block BB,
 
 bitmap
 equiv_oracle::register_equiv (basic_block bb, unsigned v, equiv_chain *equiv)
@@ -614,7 +614,7 @@ equiv_oracle::register_initial_def (tree ssa)
 
 // Register an equivalence between SSA1 and SSA2 in block BB.
 // The equivalence oracle maintains a vector of equivalencies indexed by basic
-// block. When an equivalence bteween SSA1 and SSA2 is registered in block BB,
+// block. When an equivalence between SSA1 and SSA2 is registered in block BB,
 // a query is made as to what equivalences both names have already, and
 // any preexisting equivalences are merged to create a single equivalence
 // containing all the ssa_names in this basic block.
@@ -678,7 +678,7 @@ equiv_oracle::register_relation (basic_block bb, relation_kind k, tree ssa1,
 }
 
 // Add an equivalency record in block BB containing bitmap EQUIV_SET.
-// Note the internal caller is responible for allocating EQUIV_SET properly.
+// Note the internal caller is responsible for allocating EQUIV_SET properly.
 
 void
 equiv_oracle::add_equiv_to_block (basic_block bb, bitmap equiv_set)
@@ -823,7 +823,7 @@ value_relation::apply_transitive (const value_relation &rel)
 {
   relation_kind k = VREL_VARYING;
 
-  // Idenity any common operand, and notrmalize the relations to
+  // Identify any common operand, and normalize the relations to
   // the form : A < B  B < C produces A < C
   if (rel.op1 () == name2)
     {
@@ -953,11 +953,11 @@ relation_chain_head::find_relation (const_bitmap b1, const_bitmap b2) const
   if (!m_names)
     return VREL_VARYING;
 
-  // If both b1 and b2 aren't referenced in thie block, cant be a relation
+  // If both b1 and b2 aren't referenced in this block, cant be a relation
   if (!bitmap_intersect_p (m_names, b1) || !bitmap_intersect_p (m_names, b2))
     return VREL_VARYING;
 
-  // Search for the fiorst relation that contains BOTH an element from B1
+  // Search for the first relation that contains BOTH an element from B1
   // and B2, and return that relation.
   for (relation_chain *ptr = m_head; ptr ; ptr = ptr->m_next)
     {
@@ -1285,7 +1285,7 @@ dom_oracle::query_relation (basic_block bb, const_bitmap b1,
   if (bitmap_equal_p (b1, b2))
     return VREL_EQ;
 
-  // If either name does not occur in a relation anywhere, there isnt one.
+  // If either name does not occur in a relation anywhere, there isn't one.
   if (!bitmap_intersect_p (m_relation_set, b1)
       || !bitmap_intersect_p (m_relation_set, b2))
     return VREL_VARYING;
@@ -1315,7 +1315,7 @@ dom_oracle::find_relation_block (int bb, unsigned v1, unsigned v2,
   if (!bm)
     return VREL_VARYING;
 
-  // If both b1 and b2 aren't referenced in thie block, cant be a relation
+  // If both b1 and b2 aren't referenced in this block, cant be a relation
   if (!bitmap_bit_p (bm, v1) || !bitmap_bit_p (bm, v2))
     return VREL_VARYING;
 
@@ -1348,7 +1348,7 @@ relation_kind
 dom_oracle::find_relation_dom (basic_block bb, unsigned v1, unsigned v2) const
 {
   relation_kind r;
-  // IF either name does not occur in a relation anywhere, there isnt one.
+  // IF either name does not occur in a relation anywhere, there isn't one.
   if (!bitmap_bit_p (m_relation_set, v1) || !bitmap_bit_p (m_relation_set, v2))
     return VREL_VARYING;
 
@@ -1477,7 +1477,7 @@ path_oracle::equiv_set (tree ssa, basic_block bb)
   return tmp;
 }
 
-// Register an equivalence between SSA1 and SSA2 resolving unkowns from
+// Register an equivalence between SSA1 and SSA2 resolving unknowns from
 // block BB.
 
 void

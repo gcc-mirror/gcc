@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/abi.html#name_mangling, Name Mangling)
  *
- * Copyright: Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright: Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors: Walter Bright, https://www.digitalmars.com
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dmangle.d, _dmangle.d)
@@ -14,17 +14,18 @@
 
 module dmd.dmangle;
 
-import dmd.astenums;
 
 /******************************************************************************
  * Returns exact mangled name of function.
  */
 extern (C++) const(char)* mangleExact(FuncDeclaration fd)
 {
+    //printf("mangleExact()\n");
     if (!fd.mangleString)
     {
         OutBuffer buf;
-        scope Mangler v = new Mangler(&buf);
+        auto backref = Backref(null);
+        scope Mangler v = new Mangler(&buf, &backref);
         v.mangleExact(fd);
         fd.mangleString = buf.extractChars();
     }
@@ -33,30 +34,38 @@ extern (C++) const(char)* mangleExact(FuncDeclaration fd)
 
 extern (C++) void mangleToBuffer(Type t, OutBuffer* buf)
 {
+    //printf("mangleToBuffer t()\n");
     if (t.deco)
         buf.writestring(t.deco);
     else
     {
-        scope Mangler v = new Mangler(buf, t);
-        v.visitWithMask(t, 0);
+        auto backref = Backref(t);
+        mangleType(t, 0, buf, backref);
+        //printf("%s\n", buf.peekChars());
     }
 }
 
 extern (C++) void mangleToBuffer(Expression e, OutBuffer* buf)
 {
-    scope Mangler v = new Mangler(buf);
+    //printf("mangleToBuffer e()\n");
+    auto backref = Backref(null);
+    scope Mangler v = new Mangler(buf, &backref);
     e.accept(v);
 }
 
 extern (C++) void mangleToBuffer(Dsymbol s, OutBuffer* buf)
 {
-    scope Mangler v = new Mangler(buf);
+    //printf("mangleToBuffer s(%s)\n", s.toChars());
+    auto backref = Backref(null);
+    scope Mangler v = new Mangler(buf, &backref);
     s.accept(v);
 }
 
 extern (C++) void mangleToBuffer(TemplateInstance ti, OutBuffer* buf)
 {
-    scope Mangler v = new Mangler(buf);
+    //printf("mangleToBuffer ti()\n");
+    auto backref = Backref(null);
+    scope Mangler v = new Mangler(buf, &backref);
     v.mangleTemplateInstance(ti);
 }
 
@@ -127,6 +136,7 @@ import core.stdc.string;
 
 import dmd.aggregate;
 import dmd.arraytypes;
+import dmd.astenums;
 import dmd.dclass;
 import dmd.declaration;
 import dmd.dmodule;
@@ -231,6 +241,320 @@ unittest
     }
 }
 
+/************************************************
+ * Append the mangling of type `t` to `buf`.
+ * Params:
+ *      t = type to mangle
+ *      modMask = mod bits currently applying to t
+ *      buf = buffer to append mangling to
+ *      backref = state of back references (updated)
+ */
+void mangleType(Type t, ubyte modMask, OutBuffer* buf, ref Backref backref)
+{
+    void visitWithMask(Type t, ubyte modMask)
+    {
+        void mangleSymbol(Dsymbol s)
+        {
+            scope Mangler v = new Mangler(buf, &backref);
+            v.mangleSymbol(s);
+        }
+
+        void visitType(Type t)
+        {
+            tyToDecoBuffer(buf, t.ty);
+        }
+
+        void visitTypeNext(TypeNext t)
+        {
+            visitType(t);
+            visitWithMask(t.next, t.mod);
+        }
+
+        void visitTypeVector(TypeVector t)
+        {
+            buf.writestring("Nh");
+            visitWithMask(t.basetype, t.mod);
+        }
+
+        void visitTypeSArray(TypeSArray t)
+        {
+            visitType(t);
+            if (t.dim)
+                buf.print(t.dim.toInteger());
+            if (t.next)
+                visitWithMask(t.next, t.mod);
+        }
+
+        void visitTypeDArray(TypeDArray t)
+        {
+            visitType(t);
+            if (t.next)
+                visitWithMask(t.next, t.mod);
+        }
+
+        void visitTypeAArray(TypeAArray t)
+        {
+            visitType(t);
+            visitWithMask(t.index, 0);
+            visitWithMask(t.next, t.mod);
+        }
+
+        void visitTypeFunction(TypeFunction t)
+        {
+            //printf("TypeFunction.toDecoBuffer() t = %p %s\n", t, t.toChars());
+            //static int nest; if (++nest == 50) *(char*)0=0;
+            mangleFuncType(t, t, t.mod, t.next, buf, backref);
+        }
+
+        void visitTypeIdentifier(TypeIdentifier t)
+        {
+            visitType(t);
+            auto name = t.ident.toString();
+            buf.print(cast(int)name.length);
+            buf.writestring(name);
+        }
+
+        void visitTypeEnum(TypeEnum t)
+        {
+            visitType(t);
+            mangleSymbol(t.sym);
+        }
+
+        void visitTypeStruct(TypeStruct t)
+        {
+            //printf("TypeStruct.toDecoBuffer('%s') = '%s'\n", t.toChars(), name);
+            visitType(t);
+            mangleSymbol(t.sym);
+        }
+
+        void visitTypeClass(TypeClass t)
+        {
+            //printf("TypeClass.toDecoBuffer('%s' mod=%x) = '%s'\n", t.toChars(), mod, name);
+            visitType(t);
+            mangleSymbol(t.sym);
+        }
+
+        void visitTypeTuple(TypeTuple t)
+        {
+            //printf("TypeTuple.toDecoBuffer() t = %p, %s\n", t, t.toChars());
+            visitType(t);
+            Parameter._foreach(t.arguments, (idx, param) {
+                    mangleParameter(param, buf, backref);
+                    return 0;
+            });
+            buf.writeByte('Z');
+        }
+
+        void visitTypeNull(TypeNull t)
+        {
+            visitType(t);
+        }
+
+        void visitTypeNoreturn(TypeNoreturn t)
+        {
+            buf.writestring("Nn");
+        }
+
+        if (modMask != t.mod)
+        {
+            MODtoDecoBuffer(buf, t.mod);
+        }
+        if (backref.addRefToType(buf, t))
+            return;
+
+        switch (t.ty)
+        {
+            case Tpointer:
+            case Treference:
+            case Tdelegate:
+            case Tslice:     visitTypeNext      (cast(TypeNext)t);      break;
+
+            case Tarray:     visitTypeDArray    (t.isTypeDArray());     break;
+            case Tsarray:    visitTypeSArray    (t.isTypeSArray());     break;
+            case Taarray:    visitTypeAArray    (t.isTypeAArray());     break;
+            case Tfunction:  visitTypeFunction  (t.isTypeFunction());   break;
+            case Tident:     visitTypeIdentifier(t.isTypeIdentifier()); break;
+            case Tclass:     visitTypeClass     (t.isTypeClass());      break;
+            case Tstruct:    visitTypeStruct    (t.isTypeStruct());     break;
+            case Tenum:      visitTypeEnum      (t.isTypeEnum());       break;
+            case Ttuple:     visitTypeTuple     (t.isTypeTuple());      break;
+            case Tnull:      visitTypeNull      (t.isTypeNull());       break;
+            case Tvector:    visitTypeVector    (t.isTypeVector());     break;
+            case Tnoreturn:  visitTypeNoreturn  (t.isTypeNoreturn);     break;
+
+            case Terror:
+                break;      // ignore errors
+
+            default:         visitType(t); break;
+        }
+    }
+
+    visitWithMask(t, modMask);
+}
+
+
+/*************************************************************
+ */
+void mangleFuncType(TypeFunction t, TypeFunction ta, ubyte modMask, Type tret, OutBuffer* buf, ref Backref backref)
+{
+    //printf("mangleFuncType() %s\n", t.toChars());
+    if (t.inuse && tret)
+    {
+        // printf("TypeFunction.mangleFuncType() t = %s inuse\n", t.toChars());
+        t.inuse = 2; // flag error to caller
+        return;
+    }
+    t.inuse++;
+    if (modMask != t.mod)
+        MODtoDecoBuffer(buf, t.mod);
+
+    char mc;
+    final switch (t.linkage)
+    {
+    case LINK.default_:
+    case LINK.d:
+        mc = 'F';
+        break;
+    case LINK.c:
+        mc = 'U';
+        break;
+    case LINK.windows:
+        mc = 'W';
+        break;
+    case LINK.cpp:
+        mc = 'R';
+        break;
+    case LINK.objc:
+        mc = 'Y';
+        break;
+    case LINK.system:
+        assert(0);
+    }
+    buf.writeByte(mc);
+
+    if (ta.purity)
+        buf.writestring("Na");
+    if (ta.isnothrow)
+        buf.writestring("Nb");
+    if (ta.isref)
+        buf.writestring("Nc");
+    if (ta.isproperty)
+        buf.writestring("Nd");
+    if (ta.isnogc)
+        buf.writestring("Ni");
+
+    // `return scope` must be in that order
+    if (ta.isreturnscope && !ta.isreturninferred)
+    {
+        buf.writestring("NjNl");
+    }
+    else
+    {
+        // when return ref, the order is `scope return`
+        if (ta.isScopeQual && !ta.isscopeinferred)
+            buf.writestring("Nl");
+
+        if (ta.isreturn && !ta.isreturninferred)
+            buf.writestring("Nj");
+    }
+
+    if (ta.islive)
+        buf.writestring("Nm");
+
+    switch (ta.trust)
+    {
+        case TRUST.trusted:
+            buf.writestring("Ne");
+            break;
+        case TRUST.safe:
+            buf.writestring("Nf");
+            break;
+        default:
+            break;
+    }
+
+    // Write argument types
+    foreach (idx, param; t.parameterList)
+        mangleParameter(param, buf, backref);
+    //if (buf.data[buf.length - 1] == '@') assert(0);
+    buf.writeByte('Z' - t.parameterList.varargs); // mark end of arg list
+    if (tret !is null)
+        mangleType(tret, 0, buf, backref);
+    t.inuse--;
+}
+
+/*************************************************************
+ */
+void mangleParameter(Parameter p, OutBuffer* buf, ref Backref backref)
+{
+    // https://dlang.org/spec/abi.html#Parameter
+
+    auto stc = p.storageClass;
+
+    // Inferred storage classes don't get mangled in
+    if (stc & STC.scopeinferred)
+        stc &= ~(STC.scope_ | STC.scopeinferred);
+    if (stc & STC.returninferred)
+        stc &= ~(STC.return_ | STC.returninferred);
+
+    // much like hdrgen.stcToBuffer()
+    string rrs;
+    const isout = (stc & STC.out_) != 0;
+    final switch (buildScopeRef(stc))
+    {
+        case ScopeRef.None:
+        case ScopeRef.Scope:
+        case ScopeRef.Ref:
+        case ScopeRef.Return:
+        case ScopeRef.RefScope:
+            break;
+
+        case ScopeRef.ReturnScope:     rrs = "NkM";                  goto L1;  // return scope
+        case ScopeRef.ReturnRef:       rrs = isout ? "NkJ"  : "NkK"; goto L1;  // return ref
+        case ScopeRef.ReturnRef_Scope: rrs = isout ? "MNkJ" : "MNkK"; goto L1; // scope return ref
+        case ScopeRef.Ref_ReturnScope: rrs = isout ? "NkMJ" : "NkMK"; goto L1; // return scope ref
+        L1:
+            buf.writestring(rrs);
+            stc &= ~(STC.out_ | STC.scope_ | STC.ref_ | STC.return_);
+            break;
+    }
+
+    if (stc & STC.scope_)
+        buf.writeByte('M');  // scope
+
+    if (stc & STC.return_)
+        buf.writestring("Nk"); // return
+
+    switch (stc & (STC.IOR | STC.lazy_))
+    {
+    case 0:
+        break;
+    case STC.in_:
+        buf.writeByte('I');
+        break;
+    case STC.in_ | STC.ref_:
+        buf.writestring("IK");
+        break;
+    case STC.out_:
+        buf.writeByte('J');
+        break;
+    case STC.ref_:
+        buf.writeByte('K');
+        break;
+    case STC.lazy_:
+        buf.writeByte('L');
+        break;
+    default:
+        debug
+        {
+            printf("storageClass = x%llx\n", stc & (STC.IOR | STC.lazy_));
+        }
+        assert(0);
+    }
+    mangleType(p.type, (stc & STC.in_) ? MODFlags.const_ : 0, buf, backref);
+}
+
+
 private extern (C++) final class Mangler : Visitor
 {
     alias visit = Visitor.visit;
@@ -238,12 +562,12 @@ public:
     static assert(Key.sizeof == size_t.sizeof);
 
     OutBuffer* buf;
-    Backref backref;
+    Backref* backref;
 
-    extern (D) this(OutBuffer* buf, Type rootType = null)
+    extern (D) this(OutBuffer* buf, Backref* backref)
     {
         this.buf = buf;
-        this.backref = Backref(rootType);
+        this.backref = backref;
     }
 
     void mangleSymbol(Dsymbol s)
@@ -251,213 +575,10 @@ public:
         s.accept(this);
     }
 
-    void mangleType(Type t)
-    {
-        if (!backref.addRefToType(buf, t))
-            t.accept(this);
-    }
-
     void mangleIdentifier(Identifier id, Dsymbol s)
     {
         if (!backref.addRefToIdentifier(buf, id))
             toBuffer(buf, id.toString(), s);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    /**************************************************
-     * Type mangling
-     */
-    void visitWithMask(Type t, ubyte modMask)
-    {
-        if (modMask != t.mod)
-        {
-            MODtoDecoBuffer(buf, t.mod);
-        }
-        mangleType(t);
-    }
-
-    override void visit(Type t)
-    {
-        tyToDecoBuffer(buf, t.ty);
-    }
-
-    override void visit(TypeNext t)
-    {
-        visit(cast(Type)t);
-        visitWithMask(t.next, t.mod);
-    }
-
-    override void visit(TypeVector t)
-    {
-        buf.writestring("Nh");
-        visitWithMask(t.basetype, t.mod);
-    }
-
-    override void visit(TypeSArray t)
-    {
-        visit(cast(Type)t);
-        if (t.dim)
-            buf.print(t.dim.toInteger());
-        if (t.next)
-            visitWithMask(t.next, t.mod);
-    }
-
-    override void visit(TypeDArray t)
-    {
-        visit(cast(Type)t);
-        if (t.next)
-            visitWithMask(t.next, t.mod);
-    }
-
-    override void visit(TypeAArray t)
-    {
-        visit(cast(Type)t);
-        visitWithMask(t.index, 0);
-        visitWithMask(t.next, t.mod);
-    }
-
-    override void visit(TypeFunction t)
-    {
-        //printf("TypeFunction.toDecoBuffer() t = %p %s\n", t, t.toChars());
-        //static int nest; if (++nest == 50) *(char*)0=0;
-        mangleFuncType(t, t, t.mod, t.next);
-    }
-
-    void mangleFuncType(TypeFunction t, TypeFunction ta, ubyte modMask, Type tret)
-    {
-        //printf("mangleFuncType() %s\n", t.toChars());
-        if (t.inuse && tret)
-        {
-            // printf("TypeFunction.mangleFuncType() t = %s inuse\n", t.toChars());
-            t.inuse = 2; // flag error to caller
-            return;
-        }
-        t.inuse++;
-        if (modMask != t.mod)
-            MODtoDecoBuffer(buf, t.mod);
-
-        char mc;
-        final switch (t.linkage)
-        {
-        case LINK.default_:
-        case LINK.d:
-            mc = 'F';
-            break;
-        case LINK.c:
-            mc = 'U';
-            break;
-        case LINK.windows:
-            mc = 'W';
-            break;
-        case LINK.cpp:
-            mc = 'R';
-            break;
-        case LINK.objc:
-            mc = 'Y';
-            break;
-        case LINK.system:
-            assert(0);
-        }
-        buf.writeByte(mc);
-
-        if (ta.purity)
-            buf.writestring("Na");
-        if (ta.isnothrow)
-            buf.writestring("Nb");
-        if (ta.isref)
-            buf.writestring("Nc");
-        if (ta.isproperty)
-            buf.writestring("Nd");
-        if (ta.isnogc)
-            buf.writestring("Ni");
-
-        // `return scope` must be in that order
-        if (ta.isreturnscope && !ta.isreturninferred)
-        {
-            buf.writestring("NjNl");
-        }
-        else
-        {
-            // when return ref, the order is `scope return`
-            if (ta.isScopeQual && !ta.isscopeinferred)
-                buf.writestring("Nl");
-
-            if (ta.isreturn && !ta.isreturninferred)
-                buf.writestring("Nj");
-        }
-
-        if (ta.islive)
-            buf.writestring("Nm");
-
-        switch (ta.trust)
-        {
-            case TRUST.trusted:
-                buf.writestring("Ne");
-                break;
-            case TRUST.safe:
-                buf.writestring("Nf");
-                break;
-            default:
-                break;
-        }
-
-        // Write argument types
-        foreach (idx, param; t.parameterList)
-            mangleParameter(param);
-        //if (buf.data[buf.length - 1] == '@') assert(0);
-        buf.writeByte('Z' - t.parameterList.varargs); // mark end of arg list
-        if (tret !is null)
-            visitWithMask(tret, 0);
-        t.inuse--;
-    }
-
-    override void visit(TypeIdentifier t)
-    {
-        visit(cast(Type)t);
-        auto name = t.ident.toString();
-        buf.print(cast(int)name.length);
-        buf.writestring(name);
-    }
-
-    override void visit(TypeEnum t)
-    {
-        visit(cast(Type)t);
-        mangleSymbol(t.sym);
-    }
-
-    override void visit(TypeStruct t)
-    {
-        //printf("TypeStruct.toDecoBuffer('%s') = '%s'\n", t.toChars(), name);
-        visit(cast(Type)t);
-        mangleSymbol(t.sym);
-    }
-
-    override void visit(TypeClass t)
-    {
-        //printf("TypeClass.toDecoBuffer('%s' mod=%x) = '%s'\n", t.toChars(), mod, name);
-        visit(cast(Type)t);
-        mangleSymbol(t.sym);
-    }
-
-    override void visit(TypeTuple t)
-    {
-        //printf("TypeTuple.toDecoBuffer() t = %p, %s\n", t, t.toChars());
-        visit(cast(Type)t);
-        Parameter._foreach(t.arguments, (idx, param) {
-                mangleParameter(param);
-                return 0;
-        });
-        buf.writeByte('Z');
-    }
-
-    override void visit(TypeNull t)
-    {
-        visit(cast(Type)t);
-    }
-
-    override void visit(TypeNoreturn t)
-    {
-        buf.writestring("Nn");
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -472,7 +593,7 @@ public:
         }
         else if (sthis.type)
         {
-            visitWithMask(sthis.type, 0);
+            mangleType(sthis.type, 0, buf, *backref);
         }
         else
             assert(0);
@@ -530,11 +651,11 @@ public:
         {
             TypeFunction tf = fd.type.isTypeFunction();
             TypeFunction tfo = fd.originalType.isTypeFunction();
-            mangleFuncType(tf, tfo, 0, null);
+            mangleFuncType(tf, tfo, 0, null, buf, *backref);
         }
         else
         {
-            visitWithMask(fd.type, 0);
+            mangleType(fd.type, 0, buf, *backref);
         }
     }
 
@@ -735,7 +856,7 @@ public:
             if (ta)
             {
                 buf.writeByte('T');
-                visitWithMask(ta, 0);
+                mangleType(ta, 0, buf, *backref);
             }
             else if (ea)
             {
@@ -778,7 +899,7 @@ public:
 
                 /* Use type mangling that matches what it would be for a function parameter
                 */
-                visitWithMask(ea.type, 0);
+                mangleType(ea.type, 0, buf, *backref);
                 ea.accept(this);
             }
             else if (sa)
@@ -1003,77 +1124,6 @@ public:
             mangleSymbol(e.td);
         else
             mangleSymbol(e.fd);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-
-    void mangleParameter(Parameter p)
-    {
-        // https://dlang.org/spec/abi.html#Parameter
-
-        auto stc = p.storageClass;
-
-        // Inferred storage classes don't get mangled in
-        if (stc & STC.scopeinferred)
-            stc &= ~(STC.scope_ | STC.scopeinferred);
-        if (stc & STC.returninferred)
-            stc &= ~(STC.return_ | STC.returninferred);
-
-        // much like hdrgen.stcToBuffer()
-        string rrs;
-        const isout = (stc & STC.out_) != 0;
-        final switch (buildScopeRef(stc))
-        {
-            case ScopeRef.None:
-            case ScopeRef.Scope:
-            case ScopeRef.Ref:
-            case ScopeRef.Return:
-            case ScopeRef.RefScope:
-                break;
-
-            case ScopeRef.ReturnScope:     rrs = "NkM";                  goto L1;  // return scope
-            case ScopeRef.ReturnRef:       rrs = isout ? "NkJ"  : "NkK"; goto L1;  // return ref
-            case ScopeRef.ReturnRef_Scope: rrs = isout ? "MNkJ" : "MNkK"; goto L1; // scope return ref
-            case ScopeRef.Ref_ReturnScope: rrs = isout ? "NkMJ" : "NkMK"; goto L1; // return scope ref
-            L1:
-                buf.writestring(rrs);
-                stc &= ~(STC.out_ | STC.scope_ | STC.ref_ | STC.return_);
-                break;
-        }
-
-        if (stc & STC.scope_)
-            buf.writeByte('M');  // scope
-
-        if (stc & STC.return_)
-            buf.writestring("Nk"); // return
-
-        switch (stc & (STC.IOR | STC.lazy_))
-        {
-        case 0:
-            break;
-        case STC.in_:
-            buf.writeByte('I');
-            break;
-        case STC.in_ | STC.ref_:
-            buf.writestring("IK");
-            break;
-        case STC.out_:
-            buf.writeByte('J');
-            break;
-        case STC.ref_:
-            buf.writeByte('K');
-            break;
-        case STC.lazy_:
-            buf.writeByte('L');
-            break;
-        default:
-            debug
-            {
-                printf("storageClass = x%llx\n", stc & (STC.IOR | STC.lazy_));
-            }
-            assert(0);
-        }
-        visitWithMask(p.type, (stc & STC.in_) ? MODFlags.const_ : 0);
     }
 }
 
@@ -1322,7 +1372,7 @@ void realToMangleBuffer(OutBuffer* buf, real_t value)
 
     char[36] buffer = void;
     // 'A' format yields [-]0xh.hhhhp+-d
-    const n = CTFloat.sprint(buffer.ptr, 'A', value);
+    const n = CTFloat.sprint(buffer.ptr, buffer.length, 'A', value);
     assert(n < buffer.length);
     foreach (const c; buffer[2 .. n])
     {

@@ -63,8 +63,6 @@ TmpPrm!(__traits(getMember, Foo, "MyInt")) tpt = TmpPrm!(__traits(getMember, Foo
     int virtual(int p){return p;}
     void test(this T)()
     {
-        alias vf = __traits(getVirtualFunctions, Class, "virtual");
-        assert(vf.length == 2);
         alias vm = __traits(getVirtualMethods, Class, "virtual");
         assert(vm.length == 1);
         assert(vm[0](42) == 42);

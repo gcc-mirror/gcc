@@ -46,7 +46,7 @@ static if (BACKTRACE_SUPPORTED && !BACKTRACE_USES_MALLOC)
     /*
      * Used for backtrace_create_state and backtrace_simple
      */
-    extern(C) void simpleErrorCallback(void* data, const(char)* msg, int errnum)
+    extern(C) void simpleErrorCallback(void* data, const(char)* msg, int errnum) @nogc
     {
         if (data) // context is not available in backtrace_create_state
         {
@@ -187,7 +187,7 @@ static if (BACKTRACE_SUPPORTED && !BACKTRACE_USES_MALLOC)
     // FIXME: state is never freed as libbacktrace doesn't provide a free function...
     public class LibBacktrace : Throwable.TraceInfo
     {
-        static void initLibBacktrace()
+        static void initLibBacktrace() @nogc
         {
             if (!initialized)
             {
@@ -196,7 +196,7 @@ static if (BACKTRACE_SUPPORTED && !BACKTRACE_USES_MALLOC)
             }
         }
 
-        this(int firstFrame)
+        this(int firstFrame) @nogc
         {
             _firstFrame = firstFrame;
 
@@ -345,7 +345,7 @@ else
      */
     public class UnwindBacktrace : Throwable.TraceInfo
     {
-        this(int firstFrame)
+        this(int firstFrame) @nogc
         {
             _firstFrame = firstFrame;
             _callstack = getBacktrace();
@@ -436,14 +436,14 @@ private:
         return _URC_NO_REASON;
     }
 
-    UnwindBacktraceData getBacktrace()
+    UnwindBacktraceData getBacktrace() @nogc
     {
         UnwindBacktraceData stackframe;
         _Unwind_Backtrace(&unwindCB, &stackframe);
         return stackframe;
     }
 
-    BTSymbolData getBacktraceSymbols(UnwindBacktraceData data)
+    BTSymbolData getBacktraceSymbols(UnwindBacktraceData data) @nogc
     {
         BTSymbolData symData;
 

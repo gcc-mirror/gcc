@@ -1864,6 +1864,33 @@ _cpp_valid_utf8 (cpp_reader *pfile,
   return true;
 }
 
+/* Return true iff BUFFER of size NUM_BYTES is validly-encoded UTF-8.  */
+
+extern bool
+cpp_valid_utf8_p (const char *buffer, size_t num_bytes)
+{
+  const uchar *iter = (const uchar *)buffer;
+  size_t bytesleft = num_bytes;
+  while (bytesleft > 0)
+    {
+      /* one_utf8_to_cppchar implements 5-byte and 6 byte sequences as per
+	 RFC 2279, but this has been superceded by RFC 3629, which
+	 restricts UTF-8 to 1-byte through 4-byte sequences, and
+	 states "the octet values C0, C1, F5 to FF never appear".
+
+	 Reject such values.  */
+      if (*iter >= 0xf4)
+	return false;
+
+      cppchar_t cp;
+      int err = one_utf8_to_cppchar (&iter, &bytesleft, &cp);
+      if (err)
+	return false;
+    }
+  /* No problems encountered.  */
+  return true;
+}
+
 /* Subroutine of convert_hex and convert_oct.  N is the representation
    in the execution character set of a numeric escape; write it into the
    string buffer TBUF and update the end-of-string pointer therein.  WIDE

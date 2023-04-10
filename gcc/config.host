@@ -232,19 +232,21 @@ case ${host} in
     ;;
   i[34567]86-*-mingw32*)
     host_xm_file=i386/xm-mingw32.h
-    host_xmake_file="${host_xmake_file} i386/x-mingw32"
+    host_xmake_file="${host_xmake_file} i386/x-mingw32 i386/x-mingw32-utf8"
     host_exeext=.exe
     out_host_hook_obj=host-mingw32.o
-    host_extra_gcc_objs="${host_extra_gcc_objs} driver-mingw32.o"
+    host_extra_objs="${host_extra_objs} utf8-mingw32.o"
+    host_extra_gcc_objs="${host_extra_gcc_objs} driver-mingw32.o utf8rc-mingw32.o"
     host_lto_plugin_soname=liblto_plugin.dll
     ;;
   x86_64-*-mingw*)
     use_long_long_for_widest_fast_int=yes
     host_xm_file=i386/xm-mingw32.h
-    host_xmake_file="${host_xmake_file} i386/x-mingw32"
+    host_xmake_file="${host_xmake_file} i386/x-mingw32 i386/x-mingw32-utf8"
     host_exeext=.exe
     out_host_hook_obj=host-mingw32.o
-    host_extra_gcc_objs="${host_extra_gcc_objs} driver-mingw32.o"
+    host_extra_objs="${host_extra_objs} utf8-mingw32.o"
+    host_extra_gcc_objs="${host_extra_gcc_objs} driver-mingw32.o utf8rc-mingw32.o"
     host_lto_plugin_soname=liblto_plugin.dll
     ;;
   aarch64*-*-darwin*)

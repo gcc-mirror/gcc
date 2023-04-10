@@ -36,6 +36,11 @@ int
 main()
 {
   using namespace std;
+  // Ensure debug info for std::string is issued in the local
+  // translation unit, so that GDB won't pick up any alternate
+  // std::string notion that might be present in libstdc++.so.
+  string bah = "hi";
+  (void)bah;
   unique_ptr<vector<unique_ptr<vector<int>*>>> p1;
   unique_ptr<vector<unique_ptr<set<int>*>>[]> p2;
   unique_ptr<set<unique_ptr<vector<int>*>>[10]> p3;

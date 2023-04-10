@@ -31,8 +31,11 @@ using namespace json;
 /* class json::value.  */
 
 /* Dump this json::value tree to OUTF.
-   No formatting is done.  There are no guarantees about the order
-   in which the key/value pairs of json::objects are printed.  */
+
+   No formatting is done.
+
+   The key/value pairs of json::objects are printed in the order
+   in which the keys were originally inserted.  */
 
 void
 value::dump (FILE *outf) const
@@ -44,7 +47,7 @@ value::dump (FILE *outf) const
 }
 
 /* class json::object, a subclass of json::value, representing
-   an unordered collection of key/value pairs.  */
+   an ordered collection of key/value pairs.  */
 
 /* json:object's dtor.  */
 
@@ -62,14 +65,17 @@ object::~object ()
 void
 object::print (pretty_printer *pp) const
 {
-  /* Note that the order is not guaranteed.  */
   pp_character (pp, '{');
-  for (map_t::iterator it = m_map.begin (); it != m_map.end (); ++it)
+
+  /* Iterate in the order that the keys were inserted.  */
+  unsigned i;
+  const char *key;
+  FOR_EACH_VEC_ELT (m_keys, i, key)
     {
-      if (it != m_map.begin ())
+      if (i > 0)
 	pp_string (pp, ", ");
-      const char *key = const_cast <char *>((*it).first);
-      value *value = (*it).second;
+      map_t &mut_map = const_cast<map_t &> (m_map);
+      value *value = *mut_map.get (key);
       pp_doublequote (pp);
       pp_string (pp, key); // FIXME: escaping?
       pp_doublequote (pp);
@@ -97,9 +103,13 @@ object::set (const char *key, value *v)
       *ptr = v;
     }
   else
-    /* If the key wasn't already present, take a copy of the key,
-       and store the value.  */
-    m_map.put (xstrdup (key), v);
+    {
+      /* If the key wasn't already present, take a copy of the key,
+	 and store the value.  */
+      char *owned_key = xstrdup (key);
+      m_map.put (owned_key, v);
+      m_keys.safe_push (owned_key);
+    }
 }
 
 /* Get the json::value * for KEY.
@@ -295,15 +305,17 @@ test_object_get ()
   ASSERT_EQ (obj.get ("not-present"), NULL);
 }
 
-/* Verify that JSON objects are written correctly.  We can't test more than
-   one key/value pair, as we don't impose a guaranteed ordering.  */
+/* Verify that JSON objects are written correctly.  */
 
 static void
 test_writing_objects ()
 {
   object obj;
   obj.set ("foo", new json::string ("bar"));
-  assert_print_eq (obj, "{\"foo\": \"bar\"}");
+  obj.set ("baz", new json::string ("quux"));
+  /* This test relies on json::object writing out key/value pairs
+     in key-insertion order.  */
+  assert_print_eq (obj, "{\"foo\": \"bar\", \"baz\": \"quux\"}");
 }
 
 /* Verify that JSON arrays are written correctly.  */

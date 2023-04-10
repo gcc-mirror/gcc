@@ -1,7 +1,7 @@
 /**
  * Most of the logic to implement scoped pointers and scoped references is here.
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/escape.d, _escape.d)
@@ -29,6 +29,7 @@ import dmd.globals;
 import dmd.id;
 import dmd.identifier;
 import dmd.init;
+import dmd.location;
 import dmd.mtype;
 import dmd.printast;
 import dmd.root.rootobject;
@@ -180,7 +181,7 @@ bool checkMutableArguments(Scope* sc, FuncDeclaration fd, TypeFunction tf,
         if (!(eb.isMutable || eb2.isMutable))
             return;
 
-        if (!(global.params.useDIP1000 == FeatureState.enabled && sc.setUnsafe()))
+        if (!tf.islive && !(global.params.useDIP1000 == FeatureState.enabled && sc.func.setUnsafe()))
             return;
 
         if (!gag)
@@ -557,6 +558,46 @@ bool checkConstructorEscape(Scope* sc, CallExp ce, bool gag)
     return false;
 }
 
+/// How a `return` parameter escapes its pointer value
+enum ReturnParamDest
+{
+    returnVal, /// through return statement: `return x`
+    this_,     /// assigned to a struct instance: `this.x = x`
+    firstArg,  /// assigned to first argument: `firstArg = x`
+}
+
+/****************************************
+ * Find out if instead of returning a `return` parameter via a return statement,
+ * it is returned via assignment to either `this` or the first parameter.
+ *
+ * This works the same as returning the value via a return statement.
+ * Although the first argument must be `ref`, it is not regarded as returning by `ref`.
+ *
+ * See_Also: https://dlang.org.spec/function.html#return-ref-parameters
+ *
+ * Params:
+ *   tf = function type
+ *   tthis = type of `this` parameter, or `null` if none
+ * Returns: What a `return` parameter should transfer the lifetime of the argument to
+ */
+ReturnParamDest returnParamDest(TypeFunction tf, Type tthis)
+{
+    assert(tf);
+    if (tf.isctor)
+        return ReturnParamDest.this_;
+
+    if (!tf.nextOf() || (tf.nextOf().ty != Tvoid))
+        return ReturnParamDest.returnVal;
+
+    if (tthis && tthis.toBasetype().ty == Tstruct) // class `this` is passed by value
+        return ReturnParamDest.this_;
+
+    if (tf.parameterList.length > 0 && tf.parameterList[0].isReference)
+        return ReturnParamDest.firstArg;
+
+    return ReturnParamDest.returnVal;
+}
+
 /****************************************
  * Given an `AssignExp`, determine if the lvalue will cause
  * the contents of the rvalue to escape.
@@ -607,6 +648,7 @@ bool checkAssignEscape(Scope* sc, Expression e, bool gag, bool byRef)
     if (e1.isStructLiteralExp())
         return false;
 
+    VarDeclaration va = expToVariable(e1);
     EscapeByResults er;
 
     if (byRef)
@@ -617,7 +659,6 @@ bool checkAssignEscape(Scope* sc, Expression e, bool gag, bool byRef)
     if (!er.byref.length && !er.byvalue.length && !er.byfunc.length && !er.byexp.length)
         return false;
 
-    VarDeclaration va = expToVariable(e1);
 
     if (va && e.op == EXP.concatenateElemAssign)
     {
@@ -652,30 +693,23 @@ bool checkAssignEscape(Scope* sc, Expression e, bool gag, bool byRef)
     const bool vaIsRef = va && va.isParameter() && va.isReference();
     if (log && vaIsRef) printf("va is ref `%s`\n", va.toChars());
 
-    /* Determine if va is the first parameter, through which other 'return' parameters
-     * can be assigned.
-     * This works the same as returning the value via a return statement.
-     * Although va is marked as `ref`, it is not regarded as returning by `ref`.
-     * https://dlang.org.spec/function.html#return-ref-parameters
-     */
-    bool isFirstRef()
+    // Determine if va is the first parameter, through which other 'return' parameters
+    // can be assigned.
+    bool vaIsFirstRef = false;
+    if (fd && fd.type)
     {
-        if (!vaIsRef)
-            return false;
-        Dsymbol p = va.toParent2();
-        if (p == fd && fd.type && fd.type.isTypeFunction())
+        final switch (returnParamDest(fd.type.isTypeFunction(), fd.vthis ? fd.vthis.type : null))
         {
-            TypeFunction tf = fd.type.isTypeFunction();
-            if (!tf.nextOf() || (tf.nextOf().ty != Tvoid && !fd.isCtorDeclaration()))
-                return false;
-            if (va == fd.vthis) // `this` of a non-static member function is considered to be the first parameter
-                return true;
-            if (!fd.vthis && fd.parameters && fd.parameters.length && (*fd.parameters)[0] == va) // va is first parameter
-                return true;
+            case ReturnParamDest.this_:
+                vaIsFirstRef = va == fd.vthis;
+                break;
+            case ReturnParamDest.firstArg:
+                vaIsFirstRef = (*fd.parameters)[0] == va;
+                break;
+            case ReturnParamDest.returnVal:
+                break;
         }
-        return false;
     }
-    const bool vaIsFirstRef = isFirstRef();
     if (log && vaIsFirstRef) printf("va is first ref `%s`\n", va.toChars());
 
     bool result = false;
@@ -1744,7 +1778,25 @@ void escapeByValue(Expression e, EscapeByResults* er, bool live = false, bool re
                     const stc = tf.parameterStorageClass(null, p);
                     ScopeRef psr = buildScopeRef(stc);
                     if (psr == ScopeRef.ReturnScope || psr == ScopeRef.Ref_ReturnScope)
-                        escapeByValue(arg, er, live, retRefTransition);
+                    {
+                        if (tf.isref)
+                        {
+                            /* ignore `ref` on struct constructor return because
+                             *   struct S { this(return scope int* q) { this.p = q; } int* p; }
+                             * is different from:
+                             *   ref char* front(return scope char** q) { return *q; }
+                             * https://github.com/dlang/dmd/pull/14869
+                             */
+                            if (auto dve = e.e1.isDotVarExp())
+                                if (auto fd = dve.var.isFuncDeclaration())
+                                    if (fd.isCtorDeclaration() && tf.next.toBasetype().isTypeStruct())
+                                    {
+                                        escapeByValue(arg, er, live, retRefTransition);
+                                    }
+                        }
+                        else
+                            escapeByValue(arg, er, live, retRefTransition);
+                    }
                     else if (psr == ScopeRef.ReturnRef || psr == ScopeRef.ReturnRef_Scope)
                     {
                         if (tf.isref)
@@ -1767,67 +1819,54 @@ void escapeByValue(Expression e, EscapeByResults* er, bool live = false, bool re
         {
             DotVarExp dve = e.e1.isDotVarExp();
             FuncDeclaration fd = dve.var.isFuncDeclaration();
-            if (1)
+            if (fd && fd.isThis())
             {
-                if (fd && fd.isThis())
+                /* Calling a non-static member function dve.var, which is returning `this`, and with dve.e1 representing `this`
+                 */
+
+                /*****************************
+                 * Concoct storage class for member function's implicit `this` parameter.
+                 * Params:
+                 *      fd = member function
+                 * Returns:
+                 *      storage class for fd's `this`
+                 */
+                StorageClass getThisStorageClass(FuncDeclaration fd)
                 {
-                    /* Calling a non-static member function dve.var, which is returning `this`, and with dve.e1 representing `this`
-                     */
-
-                    /*****************************
-                     * Concoct storage class for member function's implicit `this` parameter.
-                     * Params:
-                     *      fd = member function
-                     * Returns:
-                     *      storage class for fd's `this`
-                     */
-                    StorageClass getThisStorageClass(FuncDeclaration fd)
-                    {
-                        StorageClass stc;
-                        auto tf = fd.type.toBasetype().isTypeFunction();
-                        if (tf.isreturn)
-                            stc |= STC.return_;
-                        if (tf.isreturnscope)
-                            stc |= STC.returnScope;
-                        auto ad = fd.isThis();
-                        if (ad.isClassDeclaration() || tf.isScopeQual)
-                            stc |= STC.scope_;
-                        if (ad.isStructDeclaration())
-                            stc |= STC.ref_;        // `this` for a struct member function is passed by `ref`
-                        return stc;
-                    }
-
-                    const psr = buildScopeRef(getThisStorageClass(fd));
-                    if (psr == ScopeRef.ReturnScope || psr == ScopeRef.Ref_ReturnScope)
-                        escapeByValue(dve.e1, er, live, retRefTransition);
-                    else if (psr == ScopeRef.ReturnRef || psr == ScopeRef.ReturnRef_Scope)
-                    {
-                        if (tf.isref)
-                        {
-                            /* Treat calling:
-                             *   struct S { ref S foo() return; }
-                             * as:
-                             *   this;
-                             */
-                            escapeByValue(dve.e1, er, live, retRefTransition);
-                        }
-                        else
-                            escapeByRef(dve.e1, er, live, psr == ScopeRef.ReturnRef_Scope);
-                    }
+                    StorageClass stc;
+                    auto tf = fd.type.toBasetype().isTypeFunction();
+                    if (tf.isreturn)
+                        stc |= STC.return_;
+                    if (tf.isreturnscope)
+                        stc |= STC.returnScope | STC.scope_;
+                    auto ad = fd.isThis();
+                    if (ad.isClassDeclaration() || tf.isScopeQual)
+                        stc |= STC.scope_;
+                    if (ad.isStructDeclaration())
+                        stc |= STC.ref_;        // `this` for a struct member function is passed by `ref`
+                    return stc;
                 }
-            }
-            else
-            {
-                // Calling member function before dip1000
-                StorageClass stc = dve.var.storage_class & (STC.return_ | STC.scope_ | STC.ref_);
-                if (tf.isreturn)
-                    stc |= STC.return_;
 
-                const psr = buildScopeRef(stc);
+                const psr = buildScopeRef(getThisStorageClass(fd));
                 if (psr == ScopeRef.ReturnScope || psr == ScopeRef.Ref_ReturnScope)
-                    escapeByValue(dve.e1, er, live, retRefTransition);
+                {
+                    if (!tf.isref || tf.isctor)
+                        escapeByValue(dve.e1, er, live, retRefTransition);
+                }
                 else if (psr == ScopeRef.ReturnRef || psr == ScopeRef.ReturnRef_Scope)
-                    escapeByRef(dve.e1, er, live, retRefTransition);
+                {
+                    if (tf.isref)
+                    {
+                        /* Treat calling:
+                         *   struct S { ref S foo() return; }
+                         * as:
+                         *   this;
+                         */
+                        escapeByValue(dve.e1, er, live, retRefTransition);
+                    }
+                    else
+                        escapeByRef(dve.e1, er, live, psr == ScopeRef.ReturnRef_Scope);
+                }
             }
 
             // If it's also a nested function that is 'return scope'

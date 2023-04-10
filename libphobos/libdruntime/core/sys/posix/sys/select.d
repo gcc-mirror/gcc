@@ -501,7 +501,9 @@ else version (CRuntime_Musl)
     {
         fdset.fds_bits[0 .. $] = 0;
     }
+    pragma(mangle, muslRedirTime64Mangle!("pselect", "__pselect_time64"))
     int pselect(int, fd_set*, fd_set*, fd_set*, const scope timespec*, const scope sigset_t*);
+    pragma(mangle, muslRedirTime64Mangle!("select", "__select_time64"))
     int select(int, fd_set*, fd_set*, fd_set*, timeval*);
 }
 else version (CRuntime_UClibc)

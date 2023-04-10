@@ -1105,6 +1105,27 @@ program_state::on_edge (exploded_graph &eg,
 			const superedge *succ,
 			uncertainty_t *uncertainty)
 {
+  class my_path_context : public path_context
+  {
+  public:
+    my_path_context (bool &terminated) : m_terminated (terminated) {}
+    void bifurcate (std::unique_ptr<custom_edge_info>) final override
+    {
+      gcc_unreachable ();
+    }
+
+    void terminate_path () final override
+    {
+      m_terminated = true;
+    }
+
+    bool terminate_path_p () const final override
+    {
+      return m_terminated;
+    }
+    bool &m_terminated;
+  };
+
   /* Update state.  */
   const program_point &point = enode->get_point ();
   const gimple *last_stmt = point.get_supernode ()->get_last_stmt ();
@@ -1117,11 +1138,12 @@ program_state::on_edge (exploded_graph &eg,
      Adding the relevant conditions for the edge could also trigger
      sm-state transitions (e.g. transitions due to ptrs becoming known
      to be NULL or non-NULL) */
-
+  bool terminated = false;
+  my_path_context path_ctxt (terminated);
   impl_region_model_context ctxt (eg, enode,
 				  &enode->get_state (),
 				  this,
-				  uncertainty, NULL,
+				  uncertainty, &path_ctxt,
 				  last_stmt);
   if (!m_region_model->maybe_update_for_edge (*succ,
 					      last_stmt,
@@ -1134,6 +1156,8 @@ program_state::on_edge (exploded_graph &eg,
 		     succ->m_dest->m_index);
       return false;
     }
+  if (terminated)
+    return false;
 
   program_state::detect_leaks (enode->get_state (), *this,
 			       NULL, eg.get_ext_state (),

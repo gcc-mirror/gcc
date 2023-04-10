@@ -202,8 +202,8 @@ unittest
 // make it more difficult to call the function again, manually.
 private void initialize();
 pragma(crt_constructor)
-pragma(mangle, `_D` ~ initialize.mangleof)
-private extern (C) void initialize() @system
+pragma(mangle, initialize.mangleof)
+private extern (C) void _initialize() @system
 {
     version (Posix)
     {

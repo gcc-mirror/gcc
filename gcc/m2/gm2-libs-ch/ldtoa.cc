@@ -28,6 +28,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "system.h"
 #include "ansidecl.h"
 
+#define LIBNAME "m2pim"
+
 #include "gm2-libs-host.h"
 #include "m2rts.h"
 
@@ -41,7 +43,7 @@ typedef enum Mode { maxsignicant, decimaldigits } Mode;
 
 extern int dtoa_calcmaxsig (char *p, int ndigits);
 extern int dtoa_calcdecimal (char *p, int str_size, int ndigits);
-extern int dtoa_calcsign (char *p, int str_size);
+extern bool dtoa_calcsign (char *p, int str_size);
 
 /* maxsignicant: return a string containing max(1,ndigits)
    significant digits.  The return string contains the string
@@ -50,7 +52,7 @@ extern int dtoa_calcsign (char *p, int str_size);
    (ndigits may be negative).  */
 
 long double
-ldtoa_strtold (const char *s, int *error)
+ldtoa_strtold (const char *s, bool *error)
 {
   char *endp;
   long double d;
@@ -65,12 +67,12 @@ ldtoa_strtold (const char *s, int *error)
   if (endp != NULL && (*endp == '\0'))
     *error = (errno != 0);
   else
-    *error = TRUE;
+    *error = true;
   return d;
 }
 
 char *
-ldtoa_ldtoa (long double d, int mode, int ndigits, int *decpt, int *sign)
+ldtoa_ldtoa (long double d, int mode, int ndigits, int *decpt, bool *sign)
 {
   char format[50];
   char *p;
@@ -121,7 +123,7 @@ _M2_ldtoa_dep (void)
 extern "C" void __attribute__((__constructor__))
 _M2_ldtoa_ctor (void)
 {
-  M2RTS_RegisterModule ("ldtoa", _M2_ldtoa_init, _M2_ldtoa_finish,
+  M2RTS_RegisterModule ("ldtoa", LIBNAME, _M2_ldtoa_init, _M2_ldtoa_finish,
 			_M2_ldtoa_dep);
 }
 

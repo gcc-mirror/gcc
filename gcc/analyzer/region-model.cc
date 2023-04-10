@@ -505,6 +505,8 @@ public:
       }
   }
 
+  bool terminate_path_p () const final override { return true; }
+
   bool emit (rich_location *rich_loc) final override
   {
     switch (m_pkind)
@@ -1475,8 +1477,6 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 {
   call_details cd (call, this, ctxt);
 
-  bool unknown_side_effects = false;
-
   /* Special-case for IFN_DEFERRED_INIT.
      We want to report uninitialized variables with -fanalyzer (treating
      -ftrivial-auto-var-init= as purely a mitigation feature).
@@ -1485,7 +1485,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
      view of the analyzer.  */
   if (gimple_call_internal_p (call)
       && gimple_call_internal_fn (call) == IFN_DEFERRED_INIT)
-    return false;
+    return false; /* No side effects.  */
 
   /* Get svalues for all of the arguments at the callsite, to ensure that we
      complain about any uninitialized arguments.  This might lead to
@@ -1530,33 +1530,29 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 	  = get_known_function (gimple_call_internal_fn (call)))
       {
 	kf->impl_call_pre (cd);
-	return false;
+	return false; /* No further side effects.  */
       }
 
-  if (callee_fndecl)
+  if (!callee_fndecl)
+    return true; /* Unknown side effects.  */
+
+  if (const known_function *kf = get_known_function (callee_fndecl, cd))
     {
-      int callee_fndecl_flags = flags_from_decl_or_type (callee_fndecl);
-
-      if (const known_function *kf = get_known_function (callee_fndecl, cd))
-	{
-	  kf->impl_call_pre (cd);
-	  return false;
-	}
-      else if (fndecl_built_in_p (callee_fndecl, BUILT_IN_NORMAL)
-	  && gimple_builtin_call_types_compatible_p (call, callee_fndecl))
-	{
-	  if (!(callee_fndecl_flags & (ECF_CONST | ECF_PURE)))
-	    unknown_side_effects = true;
-	}
-      else if (!fndecl_has_gimple_body_p (callee_fndecl)
-	       && (!(callee_fndecl_flags & (ECF_CONST | ECF_PURE)))
-	       && !fndecl_built_in_p (callee_fndecl))
-	unknown_side_effects = true;
+      kf->impl_call_pre (cd);
+      return false; /* No further side effects.  */
     }
-  else
-    unknown_side_effects = true;
 
-  return unknown_side_effects;
+  const int callee_fndecl_flags = flags_from_decl_or_type (callee_fndecl);
+  if (callee_fndecl_flags & (ECF_CONST | ECF_PURE))
+    return false; /* No side effects.  */
+
+  if (fndecl_built_in_p (callee_fndecl))
+    return true; /* Unknown side effects.  */
+
+  if (!fndecl_has_gimple_body_p (callee_fndecl))
+    return true; /* Unknown side effects.  */
+
+  return false; /* No side effects.  */
 }
 
 /* Update this model for the CALL stmt, using CTXT to report any
@@ -1956,7 +1952,7 @@ region_model::on_longjmp (const gcall *longjmp_call, const gcall *setjmp_call,
      setjmp was called.  */
   gcc_assert (get_stack_depth () >= setjmp_stack_depth);
   while (get_stack_depth () > setjmp_stack_depth)
-    pop_frame (NULL, NULL, ctxt);
+    pop_frame (NULL, NULL, ctxt, false);
 
   gcc_assert (get_stack_depth () == setjmp_stack_depth);
 
@@ -2207,9 +2203,16 @@ region_model::get_rvalue_1 (path_var pv, region_model_context *ctxt) const
 	return get_rvalue_for_bits (TREE_TYPE (expr), reg, bits, ctxt);
       }
 
-    case SSA_NAME:
     case VAR_DECL:
+      if (DECL_HARD_REGISTER (pv.m_tree))
+	{
+	  /* If it has a hard register, it doesn't have a memory region
+	     and can't be referred to as an lvalue.  */
+	  return m_mgr->get_or_create_unknown_svalue (TREE_TYPE (pv.m_tree));
+	}
+      /* Fall through. */
     case PARM_DECL:
+    case SSA_NAME:
     case RESULT_DECL:
     case ARRAY_REF:
       {
@@ -3293,8 +3296,10 @@ void
 region_model::mark_region_as_unknown (const region *reg,
 				      uncertainty_t *uncertainty)
 {
+  svalue_set maybe_live_values;
   m_store.mark_region_as_unknown (m_mgr->get_store_manager(), reg,
-				  uncertainty);
+				  uncertainty, &maybe_live_values);
+  m_store.on_maybe_live_values (maybe_live_values);
 }
 
 /* Determine what is known about the condition "LHS_SVAL OP RHS_SVAL" within
@@ -4674,6 +4679,10 @@ region_model::get_current_function () const
    If OUT_RESULT is non-null, copy any return value from the frame
    into *OUT_RESULT.
 
+   If EVAL_RETURN_SVALUE is false, then don't evaluate the return value.
+   This is for use when unwinding frames e.g. due to longjmp, to suppress
+   erroneously reporting uninitialized return values.
+
    Purge the frame region and all its descendent regions.
    Convert any pointers that point into such regions into
    POISON_KIND_POPPED_STACK svalues.  */
@@ -4681,7 +4690,8 @@ region_model::get_current_function () const
 void
 region_model::pop_frame (tree result_lvalue,
 			 const svalue **out_result,
-			 region_model_context *ctxt)
+			 region_model_context *ctxt,
+			 bool eval_return_svalue)
 {
   gcc_assert (m_current_frame);
 
@@ -4695,7 +4705,9 @@ region_model::pop_frame (tree result_lvalue,
   tree fndecl = m_current_frame->get_function ()->decl;
   tree result = DECL_RESULT (fndecl);
   const svalue *retval = NULL;
-  if (result && TREE_TYPE (result) != void_type_node)
+  if (result
+      && TREE_TYPE (result) != void_type_node
+      && eval_return_svalue)
     {
       retval = get_rvalue (result, ctxt);
       if (out_result)
@@ -4707,6 +4719,8 @@ region_model::pop_frame (tree result_lvalue,
 
   if (result_lvalue && retval)
     {
+      gcc_assert (eval_return_svalue);
+
       /* Compute result_dst_reg using RESULT_LVALUE *after* popping
 	 the frame, but before poisoning pointers into the old frame.  */
       const region *result_dst_reg = get_lvalue (result_lvalue, ctxt);

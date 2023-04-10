@@ -49,9 +49,9 @@ PROCEDURE CalculateFileName (Module, Extension: String) : String ;
 BEGIN
    IF MaxFileName=0
    THEN
-      RETURN( ConCat(ConCatChar(Slice(Module, 0, MaxFileName), '.'), Extension) )
+      RETURN ConCat (Slice (Module, 0, MaxFileName), Extension)
    ELSE
-      RETURN( ConCat(ConCatChar(Slice(Module, 0, MaxFileName-Length(Extension)-1), '.'), Extension) )
+      RETURN ConCat (Slice (Module, 0, MaxFileName-Length (Extension)), Extension)
    END
 END CalculateFileName ;
 
@@ -64,7 +64,7 @@ END CalculateFileName ;
 
 PROCEDURE CalculateStemName (Module: String) : String ;
 BEGIN
-   RETURN( Slice(Module, 0, MaxStemName) )
+   RETURN Slice (Module, 0, MaxStemName)
 END CalculateStemName ;
 
 
@@ -75,11 +75,11 @@ END CalculateStemName ;
 
 PROCEDURE ExtractExtension (filename, ext: String) : String ;
 BEGIN
-   IF Equal(ext, Mark(Slice(filename, -Length(ext), 0)))
+   IF Equal (ext, Mark (Slice (filename, -Length (ext), 0)))
    THEN
-      RETURN( Slice(filename, 0, -Length(ext)) )
+      RETURN Slice (filename, 0, -Length (ext))
    ELSE
-      RETURN( filename )
+      RETURN filename
    END
 END ExtractExtension ;
 
@@ -93,12 +93,12 @@ PROCEDURE ExtractModule (filename: String) : String ;
 VAR
    i: INTEGER ;
 BEGIN
-   i := Index(filename, Directory, 0) ;
+   i := Index (filename, Directory, 0) ;
    IF i=-1
    THEN
-      RETURN( Dup(filename) )
+      RETURN Dup (filename)
    ELSE
-      RETURN( Slice(filename, i+1, 0) )
+      RETURN Slice (filename, i+1, 0)
    END
 END ExtractModule ;
 

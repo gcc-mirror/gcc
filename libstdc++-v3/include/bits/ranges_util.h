@@ -97,14 +97,26 @@ namespace ranges
       constexpr bool
       empty()
       noexcept(noexcept(_S_empty(_M_derived())))
-      requires forward_range<_Derived>
+      requires forward_range<_Derived> && (!sized_range<_Derived>)
       { return _S_empty(_M_derived()); }
+
+      constexpr bool
+      empty()
+      noexcept(noexcept(ranges::size(_M_derived()) == 0))
+      requires sized_range<_Derived>
+      { return ranges::size(_M_derived()) == 0; }
 
       constexpr bool
       empty() const
       noexcept(noexcept(_S_empty(_M_derived())))
-      requires forward_range<const _Derived>
+      requires forward_range<const _Derived> && (!sized_range<const _Derived>)
       { return _S_empty(_M_derived()); }
+
+      constexpr bool
+      empty() const
+      noexcept(noexcept(ranges::size(_M_derived()) == 0))
+      requires sized_range<const _Derived>
+      { return ranges::size(_M_derived()) == 0; }
 
       constexpr explicit
       operator bool() noexcept(noexcept(ranges::empty(_M_derived())))

@@ -24,5 +24,10 @@ int main()
 {
   __gnu_test::constexpr_default_constructible test;
   test.operator()<std::istream_iterator<char>>();
+
+  // LWG 3600. Making istream_iterator copy constructor trivial is an ABI break
+  __gnu_test::constexpr_single_value_constructible test2;
+  test2.operator()<std::istream_iterator<char>, std::istream_iterator<char>>();
+
   return 0;
 }

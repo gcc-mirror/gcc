@@ -1453,13 +1453,12 @@ build_boolop (tree_code code, tree arg0, tree arg1)
     {
       /* Build a vector comparison.
 	 VEC_COND_EXPR <e1 op e2, { -1, -1, -1, -1 }, { 0, 0, 0, 0 }>; */
-      tree type = TREE_TYPE (arg0);
-      tree cmptype = truth_type_for (type);
+      tree cmptype = truth_type_for (TREE_TYPE (arg0));
       tree cmp = fold_build2_loc (input_location, code, cmptype, arg0, arg1);
 
-      return fold_build3_loc (input_location, VEC_COND_EXPR, type, cmp,
-			      build_minus_one_cst (type),
-			      build_zero_cst (type));
+      return fold_build3_loc (input_location, VEC_COND_EXPR, cmptype, cmp,
+			      build_minus_one_cst (cmptype),
+			      build_zero_cst (cmptype));
     }
 
   if (code == EQ_EXPR || code == NE_EXPR)
@@ -2172,7 +2171,6 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 
   /* Build the argument list for the call.  */
   vec <tree, va_gc> *args = NULL;
-  tree saved_args = NULL_TREE;
   bool noreturn_call = false;
 
   /* If this is a delegate call or a nested function being called as
@@ -2182,23 +2180,6 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 
   if (arguments)
     {
-      /* First pass, evaluated expanded tuples in function arguments.  */
-      for (size_t i = 0; i < arguments->length; ++i)
-	{
-	Lagain:
-	  Expression *arg = (*arguments)[i];
-	  gcc_assert (arg->op != EXP::tuple);
-
-	  if (arg->op == EXP::comma)
-	    {
-	      CommaExp *ce = arg->isCommaExp ();
-	      tree tce = build_expr (ce->e1);
-	      saved_args = compound_expr (saved_args, tce);
-	      (*arguments)[i] = ce->e2;
-	      goto Lagain;
-	    }
-	}
-
       const size_t nparams = tf->parameterList.length ();
       /* if _arguments[] is the first argument.  */
       const size_t varargs = tf->isDstyleVariadic ();
@@ -2257,17 +2238,12 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
 	}
     }
 
-  /* Evaluate the callee before calling it.  */
-  if (TREE_SIDE_EFFECTS (callee))
-    {
-      callee = d_save_expr (callee);
-      saved_args = compound_expr (callee, saved_args);
-    }
-
   /* If we saw a `noreturn` parameter, any unreachable argument evaluations
      after it are discarded, as well as the function call itself.  */
   if (noreturn_call)
     {
+      tree saved_args = NULL_TREE;
+
       if (TREE_SIDE_EFFECTS (callee))
 	saved_args = compound_expr (callee, saved_args);
 
@@ -2297,7 +2273,7 @@ d_build_call (TypeFunction *tf, tree callable, tree object,
       result = force_target_expr (result);
     }
 
-  return compound_expr (saved_args, result);
+  return result;
 }
 
 /* Build and return the correct call to fmod depending on TYPE.
@@ -2730,6 +2706,11 @@ build_frame_type (tree ffi, FuncDeclaration *fd)
       TREE_ADDRESSABLE (field) = TREE_ADDRESSABLE (vsym);
       DECL_NONADDRESSABLE_P (field) = !TREE_ADDRESSABLE (vsym);
       TREE_THIS_VOLATILE (field) = TREE_THIS_VOLATILE (vsym);
+      SET_DECL_ALIGN (field, DECL_ALIGN (vsym));
+
+      /* Update alignment for frame record type.  */
+      if (TYPE_ALIGN (frame_rec_type) < DECL_ALIGN (field))
+	SET_TYPE_ALIGN (frame_rec_type, DECL_ALIGN (field));
 
       if (DECL_LANG_NRVO (vsym))
 	{

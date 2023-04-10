@@ -557,8 +557,8 @@ The following flags are passed into @command{lto1} and are not
 meant to be used directly from the command line.
 
 @itemize
-@item -fwpa
 @opindex fwpa
+@item -fwpa
 This option runs the serial part of the link-time optimizer
 performing the inter-procedural propagation (WPA mode).  The
 compiler reads in summary information from all inputs and
@@ -568,21 +568,21 @@ optimizer where individual object files are optimized using both
 summary information from the WPA mode and the actual function
 bodies.  It then drives the LTRANS phase.
 
-@item -fltrans
 @opindex fltrans
+@item -fltrans
 This option runs the link-time optimizer in the
 local-transformation (LTRANS) mode, which reads in output from a
 previous run of the LTO in WPA mode.  In the LTRANS mode, LTO
 optimizes an object and produces the final assembly.
 
-@item -fltrans-output-list=@var{file}
 @opindex fltrans-output-list
+@item -fltrans-output-list=@var{file}
 This option specifies a file to which the names of LTRANS output
 files are written.  This option is only meaningful in conjunction
 with @option{-fwpa}.
 
-@item -fresolution=@var{file}
 @opindex fresolution
+@item -fresolution=@var{file}
 This option specifies the linker resolution file.  This option is
 only meaningful in conjunction with @option{-fwpa} and as option
 to pass through to the LTO linker plugin.

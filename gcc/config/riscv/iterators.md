@@ -26,6 +26,10 @@
 ;; from the same template.
 (define_mode_iterator GPR [SI (DI "TARGET_64BIT")])
 
+;; A copy of GPR that can be used when a pattern has two independent
+;; modes.
+(define_mode_iterator GPR2 [SI (DI "TARGET_64BIT")])
+
 ;; This mode iterator allows :P to be used for patterns that operate on
 ;; pointer-sized quantities.  Exactly one of the two alternatives will match.
 (define_mode_iterator P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
@@ -175,7 +179,9 @@
 		     (gt "") (gtu "u")
 		     (ge "") (geu "u")
 		     (lt "") (ltu "u")
-		     (le "") (leu "u")])
+		     (le "") (leu "u")
+		     (fix "") (unsigned_fix "u")
+		     (float "") (unsigned_float "u")])
 
 ;; <su> is like <u>, but the signed form expands to "s" rather than "".
 (define_code_attr su [(sign_extend "s") (zero_extend "u")])
@@ -204,6 +210,8 @@
 			 (mult "mul")
 			 (not "one_cmpl")
 			 (neg "neg")
+			 (abs "abs")
+			 (sqrt "sqrt")
 			 (ss_plus "ssadd")
 			 (us_plus "usadd")
 			 (ss_minus "sssub")
@@ -235,6 +243,8 @@
 			(mult "mul")
 			(not "not")
 			(neg "neg")
+			(abs "abs")
+			(sqrt "sqrt")
 			(ss_plus "sadd")
 			(us_plus "saddu")
 			(ss_minus "ssub")

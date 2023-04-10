@@ -40,6 +40,6 @@ void foo (int8_t * restrict in, int8_t * restrict out, int n, int cond)
       *(vint32mf2_t*)(out + i + 700) = v6;
     }
 }
-/* { dg-final { scan-assembler-times {vsetvli} 7 { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-funroll-loops" no-opts "-g" } } } } */
-/* { dg-final { scan-assembler-times {vsetvli\s+[a-x0-9]+,\s*zero,\s*e32,\s*mf2,\s*t[au],\s*m[au]} 2 { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-funroll-loops" no-opts "-g" } } } } */
-/* { dg-final { scan-assembler-not {vsetvli\s+[a-x0-9]+,\s*zero,\s*e16\s*mf4,\s*t[au],\s*m[au]} { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-funroll-loops" no-opts "-g" } } } } */
+/* { dg-final { scan-assembler-times {vsetvli} 7 { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-Oz" no-opts "-funroll-loops" no-opts "-g" } } } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+[a-x0-9]+,\s*zero,\s*e32,\s*mf2,\s*t[au],\s*m[au]} 2 { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-Oz" no-opts "-funroll-loops" no-opts "-g" } } } } */
+/* { dg-final { scan-assembler-not {vsetvli\s+[a-x0-9]+,\s*zero,\s*e16\s*mf4,\s*t[au],\s*m[au]} { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-Oz" no-opts "-funroll-loops" no-opts "-g" } } } } */

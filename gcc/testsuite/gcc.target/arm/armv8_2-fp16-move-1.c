@@ -196,5 +196,4 @@ test_compare_5 (__fp16 a, __fp16 b)
 /* { dg-final { scan-assembler-not {vcmp\.f16} } }  */
 /* { dg-final { scan-assembler-not {vcmpe\.f16} } }  */
 
-/* { dg-final { scan-assembler-times {vcmp\.f32} 4 } }  */
-/* { dg-final { scan-assembler-times {vcmpe\.f32} 8 } }  */
+/* { dg-final { scan-assembler-times {vcmpe?\.f32} 12 } }  */

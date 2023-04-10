@@ -218,7 +218,17 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
       body_adj.modify_formal_parameters ();
     }
   else
-    new_decl = copy_node (thunk->decl);
+    {
+      new_decl = copy_node (thunk->decl);
+      for (tree *arg = &DECL_ARGUMENTS (new_decl);
+	   *arg; arg = &DECL_CHAIN (*arg))
+	{
+	  tree next = DECL_CHAIN (*arg);
+	  *arg = copy_node (*arg);
+	  DECL_CONTEXT (*arg) = new_decl;
+	  DECL_CHAIN (*arg) = next;
+	}
+    }
 
   gcc_checking_assert (!DECL_STRUCT_FUNCTION (new_decl));
   gcc_checking_assert (!DECL_INITIAL (new_decl));
@@ -425,7 +435,9 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
 	 version.  The only exception is when the edge was proved to
 	 be unreachable during the cloning procedure.  */
       if (!e->callee
-	  || !fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE))
+	  || !(fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE)
+	       || fndecl_built_in_p (e->callee->decl,
+				     BUILT_IN_UNREACHABLE_TRAP)))
         e->redirect_callee_duplicating_thunks (new_node);
     }
   new_node->expand_all_artificial_thunks ();

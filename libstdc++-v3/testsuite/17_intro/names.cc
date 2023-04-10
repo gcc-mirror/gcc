@@ -346,6 +346,8 @@
 #undef d
 #undef e
 #undef f
+// in sysLib.h, func appears as a formal parameter name
+#undef func
 #endif // __RTP__
 
 #endif // VxWorks Major >= 7

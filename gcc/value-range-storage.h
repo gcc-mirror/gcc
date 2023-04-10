@@ -83,7 +83,7 @@ private:
 
   // This is the maximum number of wide_int's allowed in the trailing
   // ints structure, without going over 16 bytes (128 bits) in the
-  // control word that preceeds the HOST_WIDE_INTs in
+  // control word that precedes the HOST_WIDE_INTs in
   // trailing_wide_ints::m_val[].
   static const unsigned MAX_INTS = 12;
 

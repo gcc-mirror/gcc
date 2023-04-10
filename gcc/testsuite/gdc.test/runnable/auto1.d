@@ -67,13 +67,13 @@ int ax;
 
 class A2
 {
-  this()
+  this() scope
   {
     printf("A2.this()\n");
     ax += 1;
   }
 
-  ~this()
+  ~this() scope
   {
     printf("A2.~this()\n");
     ax += 1000;
@@ -102,12 +102,12 @@ class Parent3
 
 class Child3 : Parent3
 {
-        this(){
+        this() scope {
                 assert(status3==0);
                 status3=1;
         }
 
-        ~this(){
+        ~this() scope {
                 assert(status3==1);
                 status3=2;
         }

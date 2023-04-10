@@ -1469,8 +1469,7 @@ YY_BUFFER_STATE yy_scan_bytes  (const char * yybytes, int  _yybytes_len )
 	 */
 	b->yy_is_our_buffer = 1;
 
-	return b;  /* { dg-bogus "leak" "" { xfail *-*-* } } */
-	/* TODO: leak false positive: PR analyzer/103546.  */
+	return b;  /* { dg-bogus "leak" } */
 }
 
 #ifndef YY_EXIT_FAILURE

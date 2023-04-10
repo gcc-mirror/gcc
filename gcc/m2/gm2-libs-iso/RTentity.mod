@@ -137,8 +137,8 @@ BEGIN
          entityKey := key
       END
    ELSE
-      Halt (__FILE__, __LINE__, __FUNCTION__,
-            'internal runtime error, entity already stored')
+      Halt ('internal runtime error, entity already stored',
+            __FILE__, __FUNCTION__, __LINE__)
    END ;
    signal (mutex)
 END PutKey ;
@@ -221,8 +221,8 @@ BEGIN
          free (child)
       END
    ELSE
-      Halt(__FILE__, __LINE__, __FUNCTION__,
-           'internal runtime error, trying to delete an entity which is not in the tree')
+      Halt('internal runtime error, trying to delete an entity which is not in the tree',
+           __FILE__, __FUNCTION__, __LINE__)
    END ;
    signal (mutex)
 END DelKey ;
@@ -241,8 +241,8 @@ BEGIN
    parent := t ;
    IF t = NIL
    THEN
-      Halt (__FILE__, __LINE__, __FUNCTION__,
-            'internal runtime error, RTentity is either corrupt or the module storage has not been initialized yet')
+      Halt ('internal runtime error, RTentity is either corrupt or the module storage has not been initialized yet',
+            __FILE__, __FUNCTION__, __LINE__)
    END ;
    child := t^.left ;
    IF child # NIL
@@ -270,8 +270,8 @@ PROCEDURE assert (condition: BOOLEAN) ;
 BEGIN
    IF NOT condition
    THEN
-      Halt (__FILE__, __LINE__, __FUNCTION__,
-            'internal runtime error, RTentity is either corrupt or the module storage has not been initialized yet')
+      Halt ('internal runtime error, RTentity is either corrupt or the module storage has not been initialized yet',
+            __FILE__, __FUNCTION__, __LINE__)
    END
 END assert ;
 

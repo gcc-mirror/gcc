@@ -1096,7 +1096,7 @@ get_loop_exit_edges_unique_dests (const class loop *loop)
   return edges;
 }
 
-static bool
+inline bool
 sel_bb_empty_or_nop_p (basic_block bb)
 {
   insn_t first = sel_bb_head (bb), last;

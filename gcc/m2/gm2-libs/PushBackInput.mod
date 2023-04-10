@@ -110,7 +110,7 @@ BEGIN
       DEC (i) ;
       IF PutCh (char (s, i)) # char (s, i)
       THEN
-         Halt('assert failed', __LINE__, __FILE__)
+         Halt('assert failed', __FILE__, __FUNCTION__, __LINE__)
       END
    END
 END PutStr ;
@@ -129,7 +129,7 @@ BEGIN
       DEC (l) ;
       IF PutCh (a[l]) # a[l]
       THEN
-         Halt ('assert failed', __LINE__, __FILE__)
+         Halt ('assert failed', __FILE__, __FUNCTION__, __LINE__)
       END
    END
 END PutString ;
@@ -147,7 +147,8 @@ BEGIN
       CharStack[StackPtr] := ch ;
       INC(StackPtr)
    ELSE
-      Halt('max push back stack exceeded, increase MaxPushBackStack', __LINE__, __FILE__)
+      Halt('max push back stack exceeded, increase MaxPushBackStack',
+           __FILE__, __FUNCTION__, __LINE__)
    END ;
    RETURN( ch )
 END PutCh ;

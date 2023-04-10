@@ -20,7 +20,6 @@ TM_H += $(srcdir)/../include/xtensa-config.h \
 	$(srcdir)/../include/xtensa-dynconfig.h
 $(out_object_file): gt-xtensa.h
 
-xtensa-dynconfig.o: $(srcdir)/config/xtensa/xtensa-dynconfig.c \
-  $(CONFIG_H) $(SYSTEM_H) $(srcdir)/../include/xtensa-dynconfig.h \
-  $(srcdir)/../include/xtensa-config.h
-	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $<
+xtensa-dynconfig.o: $(srcdir)/config/xtensa/xtensa-dynconfig.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)

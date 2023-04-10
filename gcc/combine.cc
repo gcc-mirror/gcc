@@ -1416,6 +1416,7 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
 		      statistics_counter_event (cfun, "insn-with-note combine", 1);
 		      goto retry;
 		    }
+		  INSN_CODE (temp) = -1;
 		  SET_SRC (set) = orig_src;
 		  SET_DEST (set) = orig_dest;
 		}

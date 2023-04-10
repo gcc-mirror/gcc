@@ -1,0 +1,104 @@
+DEFINITION MODULE PathName ;
+
+(*
+    Title      : PathName
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Wed Feb  8 09:59:46 2023
+    Revision   : $Version$
+    Description: maintains a dictionary of named paths.
+*)
+
+FROM DynamicStrings IMPORT String ;
+FROM DynamicPath IMPORT PathList ;
+
+
+TYPE
+   NamedPath ;
+
+
+(*
+   FindNamedPathFile - returns NIL if a file cannot be found otherwise
+                       it returns the path including the filename.
+                       It also returns the name of the path.
+*)
+
+PROCEDURE FindNamedPathFile (filename: String; VAR name: String) : String ;
+
+
+(*
+   AddInclude - adds include path to the named path.  If named path
+                is the same as the previous call then the include path
+                is appended to the named path PathList otherwise a new
+                named path is created and placed at the end of the
+                named path list.
+
+                However if named is NIL or empty string then this is treated
+                as a user path and it will be appended to the first user
+                named list entry.  The user entry will always be the
+                first node in the dictionary of named paths.
+*)
+
+PROCEDURE AddInclude (named, directory: String) ;
+
+
+(*
+   InitNamedPath - creates a new path name with an associated pathlist.
+*)
+
+PROCEDURE InitNamedPath (name: String; pl: PathList) : NamedPath ;
+
+
+(*
+   KillNamedPath - places list np onto the freelist.
+                   Postcondition: np will be NIL.
+*)
+
+PROCEDURE KillNamedPath (VAR np: NamedPath) ;
+
+
+(*
+   Cons - appends pl to the end of a named path.
+          If np is NIL a new list is created and returned
+          containing named and pl.
+*)
+
+PROCEDURE Cons (np: NamedPath; named: String; pl: PathList) : NamedPath ;
+
+
+(*
+   ConsList - concatenates named path left and right together.
+*)
+
+PROCEDURE ConsList (left, right: NamedPath) : NamedPath ;
+
+
+(*
+   Stash - returns np before setting np to NIL.
+*)
+
+PROCEDURE Stash (VAR np: NamedPath) : NamedPath ;
+
+
+(*
+   SetNamedPath - assigns the named path to the default path.
+*)
+
+PROCEDURE SetNamedPath (named: NamedPath) ;
+
+
+(*
+   GetNamedPath - returns the default named path.
+*)
+
+PROCEDURE GetNamedPath () : NamedPath ;
+
+
+(*
+   DumpPathName - display the dictionary of names and all path entries.
+*)
+
+PROCEDURE DumpPathName (name: ARRAY OF CHAR) ;
+
+
+END PathName.

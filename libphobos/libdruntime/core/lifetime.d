@@ -2385,21 +2385,24 @@ template _d_delstructImpl(T)
         }
     }
 
-    import core.internal.array.utils : _d_HookTraceImpl;
+    version (D_ProfileGC)
+    {
+        import core.internal.array.utils : _d_HookTraceImpl;
 
-    private enum errorMessage = "Cannot delete struct if compiling without support for runtime type information!";
+        private enum errorMessage = "Cannot delete struct if compiling without support for runtime type information!";
 
-    /**
-     * TraceGC wrapper around $(REF _d_delstruct, core,lifetime,_d_delstructImpl).
-     *
-     * Bugs:
-     *   This function template was ported from a much older runtime hook that
-     *   bypassed safety, purity, and throwabilty checks. To prevent breaking
-     *   existing code, this function template is temporarily declared
-     *   `@trusted` until the implementation can be brought up to modern D
-     *   expectations.
-     */
-    alias _d_delstructTrace = _d_HookTraceImpl!(T, _d_delstruct, errorMessage);
+        /**
+         * TraceGC wrapper around $(REF _d_delstruct, core,lifetime,_d_delstructImpl).
+         *
+         * Bugs:
+         *   This function template was ported from a much older runtime hook that
+         *   bypassed safety, purity, and throwabilty checks. To prevent breaking
+         *   existing code, this function template is temporarily declared
+         *   `@trusted` until the implementation can be brought up to modern D
+         *   expectations.
+         */
+        alias _d_delstructTrace = _d_HookTraceImpl!(T, _d_delstruct, errorMessage);
+    }
 }
 
 @system pure nothrow unittest
@@ -2708,4 +2711,109 @@ T _d_newThrowable(T)() @trusted
 
     assert(exc.refcount() == 1);
     assert(e.refcount() == 1);
+}
+
+/**
+ * Create a new class instance.
+ * Allocates memory and sets fields to their initial value, but does not call a
+ * constructor.
+ * ---
+ * new C() // _d_newclass!(C)()
+ * ---
+ * Returns: newly created object
+ */
+T _d_newclassT(T)() @trusted
+if (is(T == class))
+{
+    import core.internal.traits : hasIndirections;
+    import core.exception : onOutOfMemoryError;
+    import core.memory : GC, pureMalloc;
+
+    alias BlkAttr = GC.BlkAttr;
+
+    auto init = __traits(initSymbol, T);
+    void* p;
+
+    static if (__traits(getLinkage, T) == "Windows")
+    {
+        p = pureMalloc(init.length);
+        if (!p)
+            onOutOfMemoryError();
+    }
+    else
+    {
+        BlkAttr attr = BlkAttr.NONE;
+
+        /* `extern(C++)`` classes don't have a classinfo pointer in their vtable,
+         * so the GC can't finalize them.
+         */
+        static if (__traits(hasMember, T, "__dtor") && __traits(getLinkage, T) != "C++")
+            attr |= BlkAttr.FINALIZE;
+        static if (!hasIndirections!T)
+            attr |= BlkAttr.NO_SCAN;
+
+        p = GC.malloc(init.length, attr, typeid(T));
+        debug(PRINTF) printf(" p = %p\n", p);
+    }
+
+    debug(PRINTF)
+    {
+        printf("p = %p\n", p);
+        printf("init.ptr = %p, len = %llu\n", init.ptr, cast(ulong)init.length);
+        printf("vptr = %p\n", *cast(void**) init);
+        printf("vtbl[0] = %p\n", (*cast(void***) init)[0]);
+        printf("vtbl[1] = %p\n", (*cast(void***) init)[1]);
+        printf("init[0] = %x\n", (cast(uint*) init)[0]);
+        printf("init[1] = %x\n", (cast(uint*) init)[1]);
+        printf("init[2] = %x\n", (cast(uint*) init)[2]);
+        printf("init[3] = %x\n", (cast(uint*) init)[3]);
+        printf("init[4] = %x\n", (cast(uint*) init)[4]);
+    }
+
+    // initialize it
+    p[0 .. init.length] = init[];
+
+    debug(PRINTF) printf("initialization done\n");
+    return cast(T) p;
+}
+
+// Test allocation
+@safe unittest
+{
+    class C { }
+    C c = _d_newclassT!C();
+
+    assert(c !is null);
+}
+
+// Test initializers
+@safe unittest
+{
+    {
+        class C { int x, y; }
+        C c = _d_newclassT!C();
+
+        assert(c.x == 0);
+        assert(c.y == 0);
+    }
+    {
+        class C { int x = 2, y = 3; }
+        C c = _d_newclassT!C();
+
+        assert(c.x == 2);
+        assert(c.y == 3);
+    }
+}
+
+T _d_newclassTTrace(T)(string file, int line, string funcname) @trusted
+{
+    version (D_TypeInfo)
+    {
+        import core.internal.array.utils: TraceHook, gcStatsPure, accumulatePure;
+        mixin(TraceHook!(T.stringof, "_d_newclassT"));
+
+        return _d_newclassT!T();
+    }
+    else
+        assert(0, "Cannot create new class if compiling without support for runtime type information!");
 }

@@ -169,9 +169,9 @@ proc handle-multiline-outputs { text } {
 	# Use "regsub" to attempt to prune the pattern from $text
 	if {[regsub -line $rexp $text "" text]} {
 	    # The multiline pattern was pruned.
-	    ${maybe_x}pass "$title was found: \"$escaped_regex\""
+	    ${maybe_x}pass "$title"
 	} else {
-	    ${maybe_x}fail "$title not found: \"$escaped_regex\""
+	    ${maybe_x}fail "$title"
 	}
 
 	set index [expr $index + 1]
@@ -297,7 +297,7 @@ proc _get_lines { filename first_line last_line } {
 
 # Convert $multiline from a list of strings to a multiline regex
 # We need to support matching arbitrary followup text on each line,
-# to deal with comments containing containing DejaGnu directives.
+# to deal with comments containing DejaGnu directives.
 
 proc _build_multiline_regex { multiline index } {
     verbose "_build_multiline_regex: $multiline $index" 4
@@ -307,7 +307,10 @@ proc _build_multiline_regex { multiline index } {
 	verbose "  line: $line" 4
 
 	# We need to escape "^" and other regexp metacharacters.
-	set line [string map {"^" "\\^"
+	set line [string map {"\{re:" "("
+	                      ":re?\}" ")?"
+	                      ":re\}" ")"
+	                      "^" "\\^"
 	                      "(" "\\("
 	                      ")" "\\)"
 	                      "[" "\\["

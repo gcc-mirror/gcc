@@ -396,7 +396,8 @@ install the libraries.
 @table @asis
 @item GNU Multiple Precision Library (GMP) version 4.3.2 (or later)
 
-Necessary to build GCC@.  If a GMP source distribution is found in a
+Necessary to build GCC@.  It can be downloaded from
+@uref{https://gmplib.org/}.  If a GMP source distribution is found in a
 subdirectory of your GCC sources named @file{gmp}, it will be built
 together with GCC.  Alternatively, if GMP is already installed but it
 is not in your library search path, you will have to configure with the
@@ -542,13 +543,21 @@ They are included in releases.
 Necessary for running @command{makeinfo} when modifying @file{*.texi}
 files to test your changes.
 
-Necessary for running @command{make dvi} or @command{make pdf} to
-create printable documentation in DVI or PDF format.  Texinfo version
+Necessary for running @command{make dvi}, @command{make pdf},
+or @command{make html} to create formatted documentation.  Texinfo version
 4.8 or later is required for @command{make pdf}.
 
-Necessary to build GCC documentation during development because the
-generated output files are not included in the repository.  They are
-included in releases.
+Necessary to build GCC documentation in info format during development
+because the generated output files are not included in the repository.
+(They are included in release tarballs.)
+
+Note that the minimum requirement is for a very old version of
+Texinfo, but recent versions of Texinfo produce better-quality output,
+especially for HTML format.  The version of Texinfo packaged with any
+current operating system distribution is likely to be adequate for
+building the documentation without error, but you may still want to
+install a newer release to get the best appearance and usability of
+the generated manuals.
 
 @item @TeX{} (any working version)
 
@@ -1653,6 +1662,14 @@ unfused is normally expected).  Disabling these instructions is the
 only way to ensure compatible code is generated; this will incur
 a performance penalty.
 
+@item --with-msa
+On MIPS targets, make @option{-mmsa} the default when no
+@option{-mno-msa} option is passed.
+
+@item --without-msa
+On MIPS targets, make @option{-mno-msa} the default when no
+@option{-mmsa} option is passed. This is the default.
+
 @item --with-mips-plt
 On MIPS targets, make use of copy relocations and PLTs.
 These features are extensions to the traditional
@@ -2618,18 +2635,18 @@ script provides three variables for this:
 
 @table @code
 
-@item build_configargs
 @cindex @code{build_configargs}
+@item build_configargs
 The contents of this variable is passed to all build @command{configure}
 scripts.
 
-@item host_configargs
 @cindex @code{host_configargs}
+@item host_configargs
 The contents of this variable is passed to all host @command{configure}
 scripts.
 
-@item target_configargs
 @cindex @code{target_configargs}
+@item target_configargs
 The contents of this variable is passed to all target @command{configure}
 scripts.
 
@@ -3420,6 +3437,31 @@ You can install stripped programs and libraries with
 make install-strip
 @end smallexample
 
+By default, only the man pages and info-format GCC documentation
+are built and installed.  If you want to generate the GCC manuals in
+other formats, use commands like
+
+@smallexample
+make dvi
+make pdf
+make html
+@end smallexample
+
+@noindent
+to build the manuals in the corresponding formats, and
+
+@smallexample
+make install-dvi
+make install-pdf
+make install-html
+@end smallexample
+
+@noindent
+to install them.
+Alternatively, there are prebuilt online versions of the manuals for
+released versions of GCC on
+@uref{https://gcc.gnu.org/onlinedocs/,,the GCC web site}.
+
 If you are bootstrapping a released version of GCC then please
 quickly review the build status page for your release, available from
 @uref{https://gcc.gnu.org/buildstat.html}.
@@ -3438,13 +3480,6 @@ that file itself, just the one-line output from running it.
 The output of @samp{gcc -v} for your newly installed @command{gcc}.
 This tells us which version of GCC you built and the options you passed to
 configure.
-
-@item
-Whether you enabled all languages or a subset of them.  If you used a
-full distribution then this information is part of the configure
-options in the output of @samp{gcc -v}, but if you downloaded the
-``core'' compiler plus additional front ends then it isn't apparent
-which ones you built unless you tell us about it.
 
 @item
 If the build was for GNU/Linux, also include:
@@ -3484,22 +3519,6 @@ incomplete or out of date.  Send a note to
 
 If you find a bug, please report it following the
 @uref{../bugs/,,bug reporting guidelines}.
-
-If you want to print the GCC manuals, do @samp{cd @var{objdir}; make
-dvi}.  You will need to have @command{texi2dvi} (version at least 4.7)
-and @TeX{} installed.  This creates a number of @file{.dvi} files in
-subdirectories of @file{@var{objdir}}; these may be converted for
-printing with programs such as @command{dvips}.  Alternately, by using
-@samp{make pdf} in place of @samp{make dvi}, you can create documentation
-in the form of @file{.pdf} files; this requires @command{texi2pdf}, which
-is included with Texinfo version 4.8 and later.  You can also
-@uref{https://shop.fsf.org/,,buy printed manuals from the
-Free Software Foundation}, though such manuals may not be for the most
-recent version of GCC@.
-
-If you would like to generate online HTML documentation, do @samp{cd
-@var{objdir}; make html} and HTML will be generated for the gcc manuals in
-@file{@var{objdir}/gcc/HTML}.
 
 @html
 <hr />

@@ -1132,8 +1132,8 @@ namespace std::chrono
   pair<vector<leap_second>, bool>
   tzdb_list::_Node::_S_read_leap_seconds()
   {
-    // This list is valid until at least 2023-06-28 00:00:00 UTC.
-    auto expires = sys_days{2023y/6/28};
+    // This list is valid until at least 2023-12-28 00:00:00 UTC.
+    auto expires = sys_days{2023y/12/28};
     vector<leap_second> leaps
     {
       (leap_second)  78796800, // 1 Jul 1972
@@ -1692,18 +1692,15 @@ namespace std::chrono
     // https://www.ibm.com/support/pages/managing-time-zone-variable-posix
     if (const char* env = std::getenv("TZ"))
       {
-	string_view s(env);
-	if (s == "GMT0")
-	  s = "Etc/GMT";
-	else if (s.size() == 4 && s[3] == '0')
-	  s = "Etc/UTC";
-
-	// This will fail unless TZ contains an IANA time zone name,
-	// or one of the special cases above.
-	if (auto tz = do_locate_zone(this->zones, this->links, s))
+	// This will fail unless TZ contains an IANA time zone name.
+	if (auto tz = do_locate_zone(this->zones, this->links, env))
 	  return tz;
       }
 #endif
+
+    // Default to UTC.
+    if (auto tz = do_locate_zone(this->zones, this->links, "UTC"))
+      return tz;
 
     __throw_runtime_error("tzdb: cannot determine current zone");
   }

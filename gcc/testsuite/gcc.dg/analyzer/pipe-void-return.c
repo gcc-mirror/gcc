@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fno-analyzer-suppress-followups" } */
+
 extern void pipe(int pipefd[2]);
 extern int close(int fd);
 

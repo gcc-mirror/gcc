@@ -1,7 +1,7 @@
 /**
  * Provide the root object that classes in dmd inherit from.
  *
- * Copyright: Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright: Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:   Walter Bright, https://www.digitalmars.com
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/root/rootobject.d, root/_rootobject.d)
@@ -38,7 +38,7 @@ enum DYNCAST : int
 
 extern (C++) class RootObject
 {
-    this() nothrow pure @nogc @safe
+    this() nothrow pure @nogc @safe scope
     {
     }
 

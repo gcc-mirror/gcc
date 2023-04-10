@@ -2,7 +2,7 @@
  * This module contains the implementation of the C++ header generation available through
  * the command line switch -Hc.
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dtohd, _dtoh.d)
@@ -24,6 +24,7 @@ import dmd.errors;
 import dmd.globals;
 import dmd.hdrgen;
 import dmd.identifier;
+import dmd.location;
 import dmd.root.filename;
 import dmd.visitor;
 import dmd.tokens;
@@ -290,9 +291,23 @@ public:
 
     /// Informations about the current context in the AST
     Context context;
-    alias context this;
 
-    this(OutBuffer* fwdbuf, OutBuffer* donebuf, OutBuffer* buf)
+    // Generates getter-setter methods to replace the use of alias this
+    // This should be replaced by a `static foreach` once the gdc tester
+    // gets upgraded to version 10 (to support `static foreach`).
+    private extern(D) static string generateMembers()
+    {
+        string result = "";
+        foreach(member; __traits(allMembers, Context))
+        {
+            result ~= "ref auto " ~ member ~ "() { return context." ~ member ~ "; }\n";
+        }
+        return result;
+    }
+
+    mixin(generateMembers());
+
+    this(OutBuffer* fwdbuf, OutBuffer* donebuf, OutBuffer* buf) scope
     {
         this.fwdbuf = fwdbuf;
         this.donebuf = donebuf;
@@ -874,7 +889,7 @@ public:
         // (we'll visit them later)
         if (vd.type && vd.type.isTypeTuple())
         {
-            assert(vd.aliassym);
+            assert(vd.aliasTuple);
             vd.toAlias().accept(this);
             return;
         }

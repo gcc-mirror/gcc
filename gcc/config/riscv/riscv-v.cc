@@ -42,6 +42,7 @@
 #include "expr.h"
 #include "optabs.h"
 #include "tm-constrs.h"
+#include "rtx-vector-builder.h"
 
 using namespace riscv_vector;
 
@@ -97,6 +98,15 @@ private:
   expand_operand m_ops[MAX_OPERANDS];
 };
 
+static unsigned
+get_sew (machine_mode mode)
+{
+  unsigned int sew = GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL
+		       ? 8
+		       : GET_MODE_BITSIZE (GET_MODE_INNER (mode));
+  return sew;
+}
+
 /* Return true if X is a const_vector with all duplicate elements, which is in
    the range between MINVAL and MAXVAL.  */
 bool
@@ -108,13 +118,10 @@ const_vec_all_same_in_range_p (rtx x, HOST_WIDE_INT minval,
 	  && IN_RANGE (INTVAL (elt), minval, maxval));
 }
 
-static rtx
-emit_vlmax_vsetvl (machine_mode vmode)
+void
+emit_vlmax_vsetvl (machine_mode vmode, rtx vl)
 {
-  rtx vl = gen_reg_rtx (Pmode);
-  unsigned int sew = GET_MODE_CLASS (vmode) == MODE_VECTOR_BOOL
-		       ? 8
-		       : GET_MODE_BITSIZE (GET_MODE_INNER (vmode));
+  unsigned int sew = get_sew (vmode);
   enum vlmul_type vlmul = get_vlmul (vmode);
   unsigned int ratio = calculate_ratio (sew, vlmul);
 
@@ -124,8 +131,6 @@ emit_vlmax_vsetvl (machine_mode vmode)
 			   const0_rtx));
   else
     emit_insn (gen_vlmax_avl (Pmode, vl, gen_int_mode (ratio, Pmode)));
-
-  return vl;
 }
 
 /* Calculate SEW/LMUL ratio.  */
@@ -165,7 +170,7 @@ calculate_ratio (unsigned int sew, enum vlmul_type vlmul)
 /* Emit an RVV unmask && vl mov from SRC to DEST.  */
 static void
 emit_pred_op (unsigned icode, rtx mask, rtx dest, rtx src, rtx len,
-	      machine_mode mask_mode)
+	      machine_mode mask_mode, bool vlmax_p)
 {
   insn_expander<8> e;
   machine_mode mode = GET_MODE (dest);
@@ -185,17 +190,18 @@ emit_pred_op (unsigned icode, rtx mask, rtx dest, rtx src, rtx len,
     e.add_input_operand (len, Pmode);
   else
     {
-      rtx vlmax = emit_vlmax_vsetvl (mode);
+      rtx vlmax = gen_reg_rtx (Pmode);
+      emit_vlmax_vsetvl (mode, vlmax);
       e.add_input_operand (vlmax, Pmode);
     }
 
   if (GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
     e.add_policy_operand (get_prefer_tail_policy (), get_prefer_mask_policy ());
 
-  if (len)
-    e.add_avl_type_operand (avl_type::NONVLMAX);
-  else
+  if (vlmax_p)
     e.add_avl_type_operand (avl_type::VLMAX);
+  else
+    e.add_avl_type_operand (avl_type::NONVLMAX);
 
   e.expand ((enum insn_code) icode, MEM_P (dest) || MEM_P (src));
 }
@@ -203,14 +209,21 @@ emit_pred_op (unsigned icode, rtx mask, rtx dest, rtx src, rtx len,
 void
 emit_vlmax_op (unsigned icode, rtx dest, rtx src, machine_mode mask_mode)
 {
-  emit_pred_op (icode, NULL_RTX, dest, src, NULL_RTX, mask_mode);
+  emit_pred_op (icode, NULL_RTX, dest, src, NULL_RTX, mask_mode, true);
+}
+
+void
+emit_vlmax_op (unsigned icode, rtx dest, rtx src, rtx len,
+	       machine_mode mask_mode)
+{
+  emit_pred_op (icode, NULL_RTX, dest, src, len, mask_mode, true);
 }
 
 void
 emit_nonvlmax_op (unsigned icode, rtx dest, rtx src, rtx len,
 		  machine_mode mask_mode)
 {
-  emit_pred_op (icode, NULL_RTX, dest, src, len, mask_mode);
+  emit_pred_op (icode, NULL_RTX, dest, src, len, mask_mode, false);
 }
 
 static void
@@ -264,6 +277,20 @@ legitimize_move (rtx dest, rtx src, machine_mode mask_mode)
       expand_const_vector (dest, src, mask_mode);
       return true;
     }
+
+  /* In order to decrease the memory traffic, we don't use whole register
+   * load/store for the LMUL less than 1 and mask mode, so those case will
+   * require one extra general purpose register, but it's not allowed during LRA
+   * process, so we have a special move pattern used for LRA, which will defer
+   * the expansion after LRA.  */
+  if ((known_lt (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR)
+       || GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
+      && lra_in_progress)
+    {
+      emit_insn (gen_mov_lra (mode, Pmode, dest, src));
+      return true;
+    }
+
   if (known_ge (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR)
       && GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
     {
@@ -273,6 +300,13 @@ legitimize_move (rtx dest, rtx src, machine_mode mask_mode)
 
       return false;
     }
+
+  if (register_operand (src, mode) && register_operand (dest, mode))
+    {
+      emit_insn (gen_rtx_SET (dest, src));
+      return true;
+    }
+
   if (!register_operand (src, mode) && !register_operand (dest, mode))
     {
       rtx tmp = gen_reg_rtx (mode);
@@ -282,6 +316,10 @@ legitimize_move (rtx dest, rtx src, machine_mode mask_mode)
 	emit_move_insn (tmp, src);
       src = tmp;
     }
+
+  if (satisfies_constraint_vu (src))
+    return false;
+
   emit_vlmax_op (code_for_pred_mov (mode), dest, src, mask_mode);
   return true;
 }
@@ -482,6 +520,208 @@ sew64_scalar_helper (rtx *operands, rtx *scalar_op, rtx vl,
   emit_vector_func (operands, tmp);
 
   return true;
+}
+
+/* Get { ... ,0, 0, 0, ..., 0, 0, 0, 1 } mask.  */
+rtx
+gen_scalar_move_mask (machine_mode mode)
+{
+  rtx_vector_builder builder (mode, 1, 2);
+  builder.quick_push (const1_rtx);
+  builder.quick_push (const0_rtx);
+  return builder.build ();
+}
+
+static unsigned
+compute_vlmax (unsigned vector_bits, unsigned elt_size, unsigned min_size)
+{
+  // Original equation:
+  //   VLMAX = (VectorBits / EltSize) * LMUL
+  //   where LMUL = MinSize / TARGET_MIN_VLEN
+  // The following equations have been reordered to prevent loss of precision
+  // when calculating fractional LMUL.
+  return ((vector_bits / elt_size) * min_size) / TARGET_MIN_VLEN;
+}
+
+static unsigned
+get_unknown_min_value (machine_mode mode)
+{
+  enum vlmul_type vlmul = get_vlmul (mode);
+  switch (vlmul)
+    {
+    case LMUL_1:
+      return TARGET_MIN_VLEN;
+    case LMUL_2:
+      return TARGET_MIN_VLEN * 2;
+    case LMUL_4:
+      return TARGET_MIN_VLEN * 4;
+    case LMUL_8:
+      return TARGET_MIN_VLEN * 8;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static rtx
+force_vector_length_operand (rtx vl)
+{
+  if (CONST_INT_P (vl) && !satisfies_constraint_K (vl))
+    return force_reg (Pmode, vl);
+  return vl;
+}
+
+static rtx
+gen_no_side_effects_vsetvl_rtx (machine_mode vmode, rtx vl, rtx avl)
+{
+  unsigned int sew = get_sew (vmode);
+  return gen_vsetvl_no_side_effects (Pmode, vl, avl, gen_int_mode (sew, Pmode),
+				     gen_int_mode (get_vlmul (vmode), Pmode),
+				     const0_rtx, const0_rtx);
+}
+
+/* GET VL * 2 rtx.  */
+static rtx
+get_vl_x2_rtx (rtx avl, machine_mode mode, machine_mode demote_mode)
+{
+  rtx i32vl = NULL_RTX;
+  if (CONST_INT_P (avl))
+    {
+      unsigned elt_size = GET_MODE_BITSIZE (GET_MODE_INNER (mode));
+      unsigned min_size = get_unknown_min_value (mode);
+      unsigned vlen_max = RVV_65536;
+      unsigned vlmax_max = compute_vlmax (vlen_max, elt_size, min_size);
+      unsigned vlen_min = TARGET_MIN_VLEN;
+      unsigned vlmax_min = compute_vlmax (vlen_min, elt_size, min_size);
+
+      unsigned HOST_WIDE_INT avl_int = INTVAL (avl);
+      if (avl_int <= vlmax_min)
+	i32vl = gen_int_mode (2 * avl_int, Pmode);
+      else if (avl_int >= 2 * vlmax_max)
+	{
+	  // Just set i32vl to VLMAX in this situation
+	  i32vl = gen_reg_rtx (Pmode);
+	  emit_insn (
+	    gen_no_side_effects_vsetvl_rtx (demote_mode, i32vl, RVV_VLMAX));
+	}
+      else
+	{
+	  // For AVL between (MinVLMAX, 2 * MaxVLMAX), the actual working vl
+	  // is related to the hardware implementation.
+	  // So let the following code handle
+	}
+    }
+  if (!i32vl)
+    {
+      // Using vsetvli instruction to get actually used length which related to
+      // the hardware implementation
+      rtx i64vl = gen_reg_rtx (Pmode);
+      emit_insn (
+	gen_no_side_effects_vsetvl_rtx (mode, i64vl, force_reg (Pmode, avl)));
+      // scale 2 for 32-bit length
+      i32vl = gen_reg_rtx (Pmode);
+      emit_insn (
+	gen_rtx_SET (i32vl, gen_rtx_ASHIFT (Pmode, i64vl, const1_rtx)));
+    }
+
+  return force_vector_length_operand (i32vl);
+}
+
+bool
+slide1_sew64_helper (int unspec, machine_mode mode, machine_mode demote_mode,
+		     machine_mode demote_mask_mode, rtx *ops)
+{
+  rtx scalar_op = ops[4];
+  rtx avl = ops[5];
+  machine_mode scalar_mode = GET_MODE_INNER (mode);
+  if (rtx_equal_p (scalar_op, const0_rtx))
+    {
+      ops[5] = force_vector_length_operand (ops[5]);
+      return false;
+    }
+
+  if (TARGET_64BIT)
+    {
+      ops[4] = force_reg (scalar_mode, scalar_op);
+      ops[5] = force_vector_length_operand (ops[5]);
+      return false;
+    }
+
+  if (immediate_operand (scalar_op, Pmode))
+    {
+      ops[4] = gen_rtx_SIGN_EXTEND (scalar_mode, force_reg (Pmode, scalar_op));
+      ops[5] = force_vector_length_operand (ops[5]);
+      return false;
+    }
+
+  if (CONST_INT_P (scalar_op))
+    scalar_op = force_reg (scalar_mode, scalar_op);
+
+  rtx vl_x2 = get_vl_x2_rtx (avl, mode, demote_mode);
+
+  rtx demote_scalar_op1, demote_scalar_op2;
+  if (unspec == UNSPEC_VSLIDE1UP)
+    {
+      demote_scalar_op1 = gen_highpart (Pmode, scalar_op);
+      demote_scalar_op2 = gen_lowpart (Pmode, scalar_op);
+    }
+  else
+    {
+      demote_scalar_op1 = gen_lowpart (Pmode, scalar_op);
+      demote_scalar_op2 = gen_highpart (Pmode, scalar_op);
+    }
+
+  rtx temp = gen_reg_rtx (demote_mode);
+  rtx ta = gen_int_mode (get_prefer_tail_policy (), Pmode);
+  rtx ma = gen_int_mode (get_prefer_mask_policy (), Pmode);
+  rtx merge = RVV_VUNDEF (demote_mode);
+  /* Handle vslide1<ud>_tu.  */
+  if (register_operand (ops[2], mode)
+      && rtx_equal_p (ops[1], CONSTM1_RTX (GET_MODE (ops[1]))))
+    {
+      merge = gen_lowpart (demote_mode, ops[2]);
+      ta = ops[6];
+      ma = ops[7];
+    }
+
+  emit_insn (gen_pred_slide (unspec, demote_mode, temp,
+			     CONSTM1_RTX (demote_mask_mode), merge,
+			     gen_lowpart (demote_mode, ops[3]),
+			     demote_scalar_op1, vl_x2, ta, ma, ops[8]));
+  emit_insn (gen_pred_slide (unspec, demote_mode,
+			     gen_lowpart (demote_mode, ops[0]),
+			     CONSTM1_RTX (demote_mask_mode), merge, temp,
+			     demote_scalar_op2, vl_x2, ta, ma, ops[8]));
+
+  if (rtx_equal_p (ops[1], CONSTM1_RTX (GET_MODE (ops[1]))))
+    return true;
+  else
+    emit_insn (gen_pred_merge (mode, ops[0], ops[2], ops[2], ops[0], ops[1],
+			       force_vector_length_operand (ops[5]), ops[6],
+			       ops[8]));
+  return true;
+}
+
+rtx
+gen_avl_for_scalar_move (rtx avl)
+{
+  /* AVL for scalar move has different behavior between 0 and large than 0.  */
+  if (CONST_INT_P (avl))
+    {
+      /* So we could just set AVL to 1 for any constant other than 0.  */
+      if (rtx_equal_p (avl, const0_rtx))
+	return const0_rtx;
+      else
+	return const1_rtx;
+    }
+  else
+    {
+      /* For non-constant value, we set any non zero value to 1 by
+	 `sgtu new_avl,input_avl,zero` + `vsetvli`.  */
+      rtx tmp = gen_reg_rtx (Pmode);
+      emit_insn (
+	gen_rtx_SET (tmp, gen_rtx_fmt_ee (GTU, Pmode, avl, const0_rtx)));
+      return tmp;
+    }
 }
 
 } // namespace riscv_vector

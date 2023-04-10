@@ -25,7 +25,7 @@ if $tracelevel then {
 # load support procs
 load_lib gm2-torture.exp
 
-gm2_init_pim "$srcdir/$subdir" -g
+gm2_init_pim "${srcdir}/${subdir}" -g
 gm2_link_obj "WriteMap.o AdvMap.o BoxMap.o Chance.o Geometry.o MakeBoxes.o MapOptions.o Options.o RoomMap.o StoreCoords.o"
 
 # If we want these to be re-built for each torture option we need some different 

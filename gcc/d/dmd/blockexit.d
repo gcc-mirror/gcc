@@ -1,7 +1,7 @@
 /**
  * Find out in what ways control flow can exit a statement block.
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/blockexit.d, _blockexit.d)
@@ -23,6 +23,7 @@ import dmd.func;
 import dmd.globals;
 import dmd.id;
 import dmd.identifier;
+import dmd.location;
 import dmd.mtype;
 import dmd.statement;
 import dmd.tokens;
@@ -70,7 +71,7 @@ int blockExit(Statement s, FuncDeclaration func, bool mustNotThrow)
         bool mustNotThrow;
         int result;
 
-        extern (D) this(FuncDeclaration func, bool mustNotThrow)
+        extern (D) this(FuncDeclaration func, bool mustNotThrow) scope
         {
             this.func = func;
             this.mustNotThrow = mustNotThrow;

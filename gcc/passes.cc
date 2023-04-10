@@ -1845,6 +1845,13 @@ emergency_dump_function ()
   fprintf (dump_file, "\n\n\nEMERGENCY DUMP:\n\n");
   execute_function_dump (cfun, current_pass);
 
+  /* Normally the passmanager will close the graphs as a pass could be wanting
+     to print multiple digraphs. But during an emergency dump there can only be
+     one and we must finish the graph manually.  */
+  if ((cfun->curr_properties & PROP_cfg)
+      && (dump_flags & TDF_GRAPH))
+    finish_graph_dump_file (dump_file_name);
+
   if (symtab && current_pass->type == IPA_PASS)
     symtab->dump (dump_file);
 }

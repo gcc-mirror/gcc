@@ -252,6 +252,7 @@ set mips_option_groups {
     warnings "-w"
     dump "-fdump-.*"
     ins "HAS_INS"
+	clz "HAS_CLZ"
     dmul "NOT_HAS_DMUL"
     ldc "HAS_LDC"
     movn "HAS_MOVN"
@@ -1198,11 +1199,13 @@ proc mips-dg-options { args } {
 	#
         #   - paired-single instructions(*)
         #   - odd numbered single precision registers
+		#   - clz clo instructions
         #
 	# (*) Note that we don't support MIPS V at the moment.
 	} elseif { $isa_rev < 1
 		   && ([mips_have_test_option_p options "-mpaired-single"]
 		       || ([mips_have_test_option_p options "-modd-spreg"]
+			   || [mips_have_test_option_p options "HAS_CLZ"]
 			   && ![mips_have_test_option_p options "-mfp64"]))} {
 	    if { $gp_size == 32 } {
 		mips_make_test_option options "-mips32"
@@ -1464,6 +1467,7 @@ proc mips-dg-options { args } {
     mips_option_dependency options "-mfpxx" "-mno-paired-single"
     mips_option_dependency options "-msoft-float" "-mno-paired-single"
     mips_option_dependency options "-mno-paired-single" "-mno-mips3d"
+    mips_option_dependency options "-mmsa" "-mno-micromips"
     mips_option_dependency options "-mmsa" "-mno-mips16"
 
     # If the test requires an unsupported option, change run tests

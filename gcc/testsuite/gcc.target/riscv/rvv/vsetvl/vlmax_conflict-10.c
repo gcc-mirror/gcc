@@ -24,4 +24,4 @@ void f (int32_t * restrict in, int32_t * restrict out, size_t n, size_t m, size_
     }
 }
 
-/* { dg-final { scan-assembler-times {vsetvli} 5 { target { no-opts "-O0"  no-opts "-O1"  no-opts "-Os" no-opts "-funroll-loops" no-opts "-g" } } } } */
+/* { dg-final { scan-assembler-times {vsetvli} 5 { target { no-opts "-O0"  no-opts "-O1"  no-opts "-Os" no-opts "-Oz" no-opts "-funroll-loops" no-opts "-g" } } } } */

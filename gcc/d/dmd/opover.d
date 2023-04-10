@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/operatoroverloading.html, Operator Overloading)
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/opover.d, _opover.d)
@@ -32,6 +32,7 @@ import dmd.globals;
 import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
+import dmd.location;
 import dmd.mtype;
 import dmd.statement;
 import dmd.tokens;
@@ -710,7 +711,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 MatchAccumulator m;
                 if (s)
                 {
-                    functionResolve(m, s, e.loc, sc, tiargs, e.e1.type, &args2);
+                    functionResolve(m, s, e.loc, sc, tiargs, e.e1.type, ArgumentList(&args2));
                     if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                     {
                         return ErrorExp.get();
@@ -719,7 +720,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 FuncDeclaration lastf = m.lastf;
                 if (s_r)
                 {
-                    functionResolve(m, s_r, e.loc, sc, tiargs, e.e2.type, &args1);
+                    functionResolve(m, s_r, e.loc, sc, tiargs, e.e2.type, ArgumentList(&args1));
                     if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                     {
                         return ErrorExp.get();
@@ -792,7 +793,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                         MatchAccumulator m;
                         if (s_r)
                         {
-                            functionResolve(m, s_r, e.loc, sc, tiargs, e.e1.type, &args2);
+                            functionResolve(m, s_r, e.loc, sc, tiargs, e.e1.type, ArgumentList(&args2));
                             if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                             {
                                 return ErrorExp.get();
@@ -801,7 +802,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                         FuncDeclaration lastf = m.lastf;
                         if (s)
                         {
-                            functionResolve(m, s, e.loc, sc, tiargs, e.e2.type, &args1);
+                            functionResolve(m, s, e.loc, sc, tiargs, e.e2.type, ArgumentList(&args1));
                             if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                             {
                                 return ErrorExp.get();
@@ -931,6 +932,12 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                     /* Rewrite as:
                      *      .object.opEquals(e1, e2)
                      */
+                    if (!ClassDeclaration.object)
+                    {
+                        e.error("cannot compare classes for equality because `object.Object` was not declared");
+                        return null;
+                    }
+
                     Expression e1x = e.e1;
                     Expression e2x = e.e2;
 
@@ -1247,7 +1254,7 @@ Expression op_overload(Expression e, Scope* sc, EXP* pop = null)
                 args2[0] = e.e2;
                 expandTuples(&args2);
                 MatchAccumulator m;
-                functionResolve(m, s, e.loc, sc, tiargs, e.e1.type, &args2);
+                functionResolve(m, s, e.loc, sc, tiargs, e.e1.type, ArgumentList(&args2));
                 if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                 {
                     return ErrorExp.get();
@@ -1340,7 +1347,7 @@ private Expression compare_overload(BinExp e, Scope* sc, Identifier id, EXP* pop
         }
         if (s)
         {
-            functionResolve(m, s, e.loc, sc, tiargs, e.e1.type, &args2);
+            functionResolve(m, s, e.loc, sc, tiargs, e.e1.type, ArgumentList(&args2));
             if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                 return ErrorExp.get();
         }
@@ -1348,7 +1355,7 @@ private Expression compare_overload(BinExp e, Scope* sc, Identifier id, EXP* pop
         int count = m.count;
         if (s_r)
         {
-            functionResolve(m, s_r, e.loc, sc, tiargs, e.e2.type, &args1);
+            functionResolve(m, s_r, e.loc, sc, tiargs, e.e2.type, ArgumentList(&args1));
             if (m.lastf && (m.lastf.errors || m.lastf.hasSemantic3Errors()))
                 return ErrorExp.get();
         }
@@ -1739,7 +1746,10 @@ private FuncDeclaration findBestOpApplyMatch(Expression ethis, FuncDeclaration f
 
             // Found another overload with different attributes?
             // e.g. @system vs. @safe opApply
-            bool ambig = tf.attributesEqual(bestTf);
+            // @@@DEPRECATED_2.112@@@
+            // See semantic2.d Semantic2Visitor.visit(FuncDeclaration):
+            // Remove `false` after deprecation period is over.
+            bool ambig = tf.attributesEqual(bestTf, false);
 
             // opApplies with identical attributes could still accept
             // different function bodies as delegate

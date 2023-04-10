@@ -1,0 +1,57 @@
+DEFINITION MODULE AdvUtil ;
+
+
+EXPORT QUALIFIED InitialDisplay, TestIfLastLivePlayer,
+                 GetDoorOnPoint, PointOnWall, PointOnTreasure,
+                 Positioning, RandomRoom, PositionInRoom,
+                 FreeOfPlayersAndTreasure,
+                 MoveMan, Dead, Exit,
+                 OpenDoor, CloseDoor, ExamineDoor, HideDoor,
+                 MagicArrow, NormalArrow, HideTreasure,
+                 Parry, Thrust, Attack,
+                 Speak ;
+
+
+PROCEDURE InitialDisplay ;
+PROCEDURE Positioning ;
+PROCEDURE Dead (p, room: CARDINAL) ;
+PROCEDURE TestIfLastLivePlayer (VAR yes: BOOLEAN) ;
+PROCEDURE PointOnWall (RoomNo, x, y: CARDINAL ; VAR Success: BOOLEAN) ;
+
+PROCEDURE GetDoorOnPoint (RoomNo, x, y: CARDINAL ;
+                          VAR DoorNo: CARDINAL ; VAR Success: BOOLEAN) ;
+
+PROCEDURE PointOnTreasure (RoomNo, x, y: CARDINAL ;
+                           VAR TreasNo: CARDINAL ; VAR Success: BOOLEAN) ;
+
+PROCEDURE FreeOfPlayersAndTreasure (room, x, y: CARDINAL ;
+                                    VAR Success: BOOLEAN) ;
+
+PROCEDURE RandomRoom (CurrentRoom, NoOfRoomsApart: CARDINAL ;
+                      VAR room: CARDINAL) ;
+
+(*
+   HideTreasure - hides treasure, t, which is assummed to be absent from the
+                  data structures when this procedure is called.
+*)
+
+PROCEDURE HideTreasure (t: CARDINAL) ;
+
+PROCEDURE PositionInRoom (room: CARDINAL ;
+                          VAR x, y: CARDINAL ; VAR Success: BOOLEAN) ;
+
+PROCEDURE MoveMan (n: CARDINAL) ;
+PROCEDURE MagicArrow (p: CARDINAL) ;
+PROCEDURE NormalArrow (p: CARDINAL) ;
+PROCEDURE OpenDoor ;
+PROCEDURE CloseDoor ;
+PROCEDURE ExamineDoor ;
+PROCEDURE HideDoor ;
+PROCEDURE Parry ;
+PROCEDURE Attack ;
+PROCEDURE Thrust ;
+PROCEDURE Speak ;
+PROCEDURE Exit ;
+
+
+END AdvUtil.

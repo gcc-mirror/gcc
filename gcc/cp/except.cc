@@ -639,6 +639,8 @@ build_throw (location_t loc, tree exp)
       tree object, ptr;
       tree allocate_expr;
 
+      tsubst_flags_t complain = tf_warning_or_error;
+
       /* The CLEANUP_TYPE is the internal type of a destructor.  */
       if (!cleanup_type)
 	{
@@ -759,11 +761,15 @@ build_throw (location_t loc, tree exp)
       cleanup = NULL_TREE;
       if (type_build_dtor_call (TREE_TYPE (object)))
 	{
-	  tree dtor_fn = lookup_fnfields (TYPE_BINFO (TREE_TYPE (object)),
+	  tree binfo = TYPE_BINFO (TREE_TYPE (object));
+	  tree dtor_fn = lookup_fnfields (binfo,
 					  complete_dtor_identifier, 0,
 					  tf_warning_or_error);
 	  dtor_fn = BASELINK_FUNCTIONS (dtor_fn);
-	  mark_used (dtor_fn);
+	  if (!mark_used (dtor_fn)
+	      || !perform_or_defer_access_check (binfo, dtor_fn,
+						 dtor_fn, complain))
+	    return error_mark_node;
 	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (object)))
 	    {
 	      cxx_mark_addressable (dtor_fn);

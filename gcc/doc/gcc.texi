@@ -37,9 +37,12 @@
 
 @paragraphindent 1
 
+@documentlanguage en_US
 @c %**end of header
 
 @copying
+This file documents the use of the GNU compilers.
+
 Copyright @copyright{} 1988-2023 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
@@ -52,13 +55,17 @@ Texts being (a) (see below), and with the Back-Cover Texts being (b)
 
 (a) The FSF's Front-Cover Text is:
 
+@quotation
      A GNU Manual
+@end quotation
 
 (b) The FSF's Back-Cover Text is:
 
+@quotation
      You have freedom to copy and modify this GNU Manual, like GNU
      software.  Copies published by the Free Software Foundation raise
      funds for GNU development.
+@end quotation
 @end copying
 @ifnottex
 @dircategory Software development
@@ -71,7 +78,6 @@ Texts being (a) (see below), and with the Back-Cover Texts being (b)
 * lto-dump: (gcc) lto-dump.    @command{lto-dump}---Tool for
 dumping LTO object files.
 @end direntry
-This file documents the use of the GNU compilers.
 @sp 1
 @insertcopying
 @sp 1
@@ -159,8 +165,7 @@ object files.
 * GNU Free Documentation License:: How you can copy and share this manual.
 * Contributors::    People who have contributed to GCC.
 
-* Option Index::    Index to command line options.
-* Keyword Index::   Index of concepts and symbol names.
+* Indices::         List of indices in this manual.
 @end menu
 
 @include frontends.texi
@@ -196,19 +201,28 @@ object files.
 @c Indexes
 @c ---------------------------------------------------------------------
 
-@node Option Index
-@unnumbered Option Index
+@node Indices
+@appendix Indices
 
-GCC's command line options are indexed here without any initial @samp{-}
-or @samp{--}.  Where an option has both positive and negative forms
-(such as @option{-f@var{option}} and @option{-fno-@var{option}}),
-relevant entries in the manual are indexed under the most appropriate
-form; it may sometimes be useful to look up both forms.
+@menu
+* Option Index::                Index to command line options.
+* Concept and Symbol Index::    Index of concepts and symbols names.
+@end menu
+
+@node Option Index
+@appendixsec Option Index
+
+GCC's command line options are indexed here without any initial
+@samp{-} or @samp{--}.  Where an option has both positive and negative
+forms (such as @option{-f@var{option}} and
+@option{-fno-@var{option}}), relevant entries in the manual are
+indexed under the most appropriate form; it may sometimes be useful to
+look up both forms.
 
 @printindex op
 
-@node Keyword Index
-@unnumbered Keyword Index
+@node Concept and Symbol Index
+@appendixsec Concept and Symbol Index
 
 @printindex cp
 

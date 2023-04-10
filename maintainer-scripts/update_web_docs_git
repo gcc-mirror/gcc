@@ -24,6 +24,7 @@ MANUALS="cpp
   gdc
   gfortran
   gfc-internals
+  gm2
   gnat_ugn
   gnat-style
   gnat_rm
@@ -33,7 +34,8 @@ MANUALS="cpp
   libiberty
   porting"
 
-CSS=/gcc.css
+BUGURL="http://gcc.gnu.org/bugs/"
+CSS=/texinfo-manuals.css
 
 WWWBASE=${WWWBASE:-"/www/gcc/htdocs"}
 WWWBASE_PREFORMATTED=/www/gcc/htdocs-preformatted
@@ -154,11 +156,11 @@ includedir=gcc/gcc/doc/include
    fi
    echo "@set srcdir $WORKDIR/gcc/gcc"
    echo "@set VERSION_PACKAGE (GCC)"
-   echo "@set BUGURL @uref{http://gcc.gnu.org/bugs/}"
+   echo "@set BUGURL @uref{$BUGURL}"
 ) > $includedir/gcc-vers.texi
 
 # Generate libquadmath-vers.texi.
-echo "@set BUGURL @uref{http://gcc.gnu.org/bugs/}" \
+echo "@set BUGURL @uref{$BUGURL}" \
   > $includedir/libquadmath-vers.texi
 
 # Now convert the relevant files from texi to HTML, PDF and PostScript.
@@ -166,10 +168,13 @@ for file in $MANUALS; do
   filename=`find . -name ${file}.texi`
   if [ "${filename}" ]; then
     includes="-I ${includedir} -I `dirname ${filename}`"
-    if [ "$file" = "gnat_ugn" ]; then
+    if [ "$file" = "gm2" ]; then
+      includes="$includes -I gcc/gcc/m2/target-independent"
+      includes="$includes -I gcc/gcc/m2/target-independent/m2"
+    elif [ "$file" = "gnat_ugn" ]; then
       includes="$includes -I gcc/gcc/ada -I gcc/gcc/ada/doc/gnat_ugn"
     fi
-    makeinfo --html --css-ref $CSS $includes -o ${file} ${filename}
+    makeinfo --html -c CONTENTS_OUTPUT_LOCATION=inline --css-ref $CSS $includes -o ${file} ${filename}
     tar cf ${file}-html.tar ${file}/*.html
     texi2dvi $includes -o ${file}.dvi ${filename} </dev/null >/dev/null && dvips -o ${file}.ps ${file}.dvi
     texi2pdf $includes -o ${file}.pdf ${filename} </dev/null

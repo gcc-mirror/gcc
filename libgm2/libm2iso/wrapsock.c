@@ -25,6 +25,21 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#include <stdbool.h>
+
+#define EXPORT(FUNC) m2iso ## _wrapsock_ ## FUNC
+#define IMPORT(MODULE,FUNC) m2iso ## _ ## MODULE ## _ ## FUNC
+#define M2EXPORT(FUNC) m2iso ## _M2_wrapsock_ ## FUNC
+#define M2LIBNAME "m2iso"
+
+/* This module should be rewritten to use C++.  */
+
+typedef void (*proc_con) (int, char **, char **);
+typedef void (*proc_dep) (void);
+
+extern void m2iso_M2RTS_RequestDependant (const char *modulename, const char *libname, const char *dependancy);
+extern void m2iso_M2RTS_RegisterModule (const char *modulename, const char *libname,
+                                        proc_con init, proc_con fini, proc_dep dependencies);
 
 #if defined(HAVE_SYS_TYPES_H)
 #include "sys/types.h"
@@ -74,13 +89,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "stdlib.h"
 #endif
 
-#if !defined(TRUE)
-#define TRUE (1 == 1)
-#endif
-#if !defined(FALSE)
-#define FALSE (1 == 0)
-#endif
-
 #include "ChanConsts.h"
 
 #define MAXHOSTNAME 1024
@@ -106,7 +114,7 @@ static openResults clientConnect (clientInfo *c);
    structure, c, will have its fields initialized.  */
 
 openResults
-wrapsock_clientOpen (clientInfo *c, char *hostname, unsigned int length,
+EXPORT(clientOpen) (clientInfo *c, char *hostname, unsigned int length,
                      int portNo)
 {
   /* remove SIGPIPE which is raised on the server if the client is killed.  */
@@ -133,7 +141,7 @@ wrapsock_clientOpen (clientInfo *c, char *hostname, unsigned int length,
    structure, c, will have its fields initialized.  */
 
 openResults
-wrapsock_clientOpenIP (clientInfo *c, unsigned int ip, int portNo)
+EXPORT(clientOpenIP) (clientInfo *c, unsigned int ip, int portNo)
 {
   /* remove SIGPIPE which is raised on the server if the client is killed.  */
   signal (SIGPIPE, SIG_IGN);
@@ -166,7 +174,7 @@ clientConnect (clientInfo *c)
 /* getClientPortNo - returns the portNo from structure, c.  */
 
 int
-wrapsock_getClientPortNo (clientInfo *c)
+EXPORT(getClientPortNo) (clientInfo *c)
 {
   return c->portNo;
 }
@@ -175,7 +183,7 @@ wrapsock_getClientPortNo (clientInfo *c)
    which the client is connecting.  */
 
 void
-wrapsock_getClientHostname (clientInfo *c, char *hostname, unsigned int high)
+EXPORT(getClientHostname) (clientInfo *c, char *hostname, unsigned int high)
 {
   strncpy (hostname, c->hostname, high + 1);
 }
@@ -183,7 +191,7 @@ wrapsock_getClientHostname (clientInfo *c, char *hostname, unsigned int high)
 /* getClientSocketFd - returns the sockFd from structure, c.  */
 
 int
-wrapsock_getClientSocketFd (clientInfo *c)
+EXPORT(getClientSocketFd) (clientInfo *c)
 {
   return c->sockFd;
 }
@@ -191,7 +199,7 @@ wrapsock_getClientSocketFd (clientInfo *c)
 /* getClientIP - returns the sockFd from structure, s.  */
 
 unsigned int
-wrapsock_getClientIP (clientInfo *c)
+EXPORT(getClientIP) (clientInfo *c)
 {
 #if 0
   printf("client ip = %s\n", inet_ntoa (c->sa.sin_addr.s_addr));
@@ -199,52 +207,66 @@ wrapsock_getClientIP (clientInfo *c)
   return c->sa.sin_addr.s_addr;
 }
 
-/* getPushBackChar - returns TRUE if a pushed back character is
+/* getPushBackChar returns true if a pushed back character is
    available.  */
 
-unsigned int
-wrapsock_getPushBackChar (clientInfo *c, char *ch)
+bool
+EXPORT(getPushBackChar) (clientInfo *c, char *ch)
 {
   if (c->hasChar > 0)
     {
       c->hasChar--;
       *ch = c->pbChar[c->hasChar];
-      return TRUE;
+      return true;
     }
-  return FALSE;
+  return false;
 }
 
-/* setPushBackChar - returns TRUE if it is able to push back a
+/* setPushBackChar returns true if it is able to push back a
    character.  */
 
-unsigned int
-wrapsock_setPushBackChar (clientInfo *c, char ch)
+bool
+EXPORT(setPushBackChar) (clientInfo *c, char ch)
 {
   if (c->hasChar == MAXPBBUF)
-    return FALSE;
+    return false;
   c->pbChar[c->hasChar] = ch;
   c->hasChar++;
-  return TRUE;
+  return true;
 }
 
 /* getSizeOfClientInfo - returns the sizeof (opaque data type).  */
 
 unsigned int
-wrapsock_getSizeOfClientInfo (void)
+EXPORT(getSizeOfClientInfo) (void)
 {
   return sizeof (clientInfo);
 }
 
 #endif
 
-/* GNU Modula-2 link fodder.  */
+
+/* GNU Modula-2 linking hooks.  */
 
 void
-_M2_wrapsock_init (void)
+M2EXPORT(init) (int, char **, char **)
 {
 }
 
 void
-_M2_wrapsock_fini (void)
+M2EXPORT(fini) (int, char **, char **)
 {
+}
+
+void
+M2EXPORT(dep) (void)
+{
+}
+
+void __attribute__((__constructor__))
+M2EXPORT(ctor) (void)
+{
+  m2iso_M2RTS_RegisterModule ("wrapsock", M2LIBNAME,
+			      M2EXPORT(init), M2EXPORT(fini),
+			      M2EXPORT(dep));
 }

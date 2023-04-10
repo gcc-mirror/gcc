@@ -394,12 +394,108 @@ remap_enclosing_frame (const region *base_reg,
     }
 }
 
+/* Return true iff SVAL is unknown, or contains an unknown svalue.  */
+
+static bool
+contains_unknown_p (const svalue *sval)
+{
+  if (sval->get_kind () == SK_UNKNOWN)
+    return true;
+  if (const compound_svalue *compound_sval
+	= sval->dyn_cast_compound_svalue ())
+    for (auto iter : *compound_sval)
+      if (iter.second->get_kind () == SK_UNKNOWN)
+	return true;
+  return false;
+}
+
+/* Subroutine of sufficiently_different_p.  Compare the store bindings
+   for BASE_REG within NEW_ENTRY_ENODE and PREV_ENTRY_ENODE.
+
+   Return true if the state of NEW_ENTRY_ENODE is sufficiently different
+   from PREV_ENTRY_ENODE within BASE_REG to suggest that some variant is
+   being modified, and thus the recursion isn't infinite.
+
+   Return false if the states for BASE_REG are effectively the same.  */
+
+static bool
+sufficiently_different_region_binding_p (exploded_node *new_entry_enode,
+					 exploded_node *prev_entry_enode,
+					 const region *base_reg)
+{
+  /* Compare the stores of the two enodes.  */
+  const region_model &new_model
+    = *new_entry_enode->get_state ().m_region_model;
+  const region_model &prev_model
+    = *prev_entry_enode->get_state ().m_region_model;
+
+  /* Get the value within the new frame.  */
+  const svalue *new_sval
+    = new_model.get_store_value (base_reg, NULL);
+
+  /* If any part of the value is UNKNOWN (e.g. due to hitting
+     complexity limits) assume that it differs from the previous
+     value.  */
+  if (contains_unknown_p (new_sval))
+    return true;
+
+  /* Get the equivalent value within the old enode.  */
+  const svalue *prev_sval;
+
+  if (const frame_region *enclosing_frame
+      = base_reg->maybe_get_frame_region ())
+    {
+      /* We have a binding within a frame in the new entry enode.  */
+
+      /* Consider changes in bindings below the original entry
+	 to the recursion.  */
+      const int old_stack_depth = prev_entry_enode->get_stack_depth ();
+      if (enclosing_frame->get_stack_depth () < old_stack_depth)
+	prev_sval = prev_model.get_store_value (base_reg, NULL);
+      else
+	{
+	  /* Ignore bindings within frames below the new entry node.  */
+	  const int new_stack_depth = new_entry_enode->get_stack_depth ();
+	  if (enclosing_frame->get_stack_depth () < new_stack_depth)
+	    return false;
+
+	  /* We have a binding within the frame of the new entry node,
+	     presumably a parameter.  */
+
+	  /* Get the value within the equivalent frame of
+	     the old entrypoint; typically will be the initial_svalue
+	     of the parameter.  */
+	  const frame_region *equiv_prev_frame
+	    = prev_model.get_current_frame ();
+	  const region *equiv_prev_base_reg
+	    = remap_enclosing_frame (base_reg,
+				     enclosing_frame,
+				     equiv_prev_frame,
+				     new_model.get_manager ());
+	  prev_sval
+	    = prev_model.get_store_value (equiv_prev_base_reg, NULL);
+	}
+    }
+  else
+    prev_sval = prev_model.get_store_value (base_reg, NULL);
+
+  /* If the prev_sval contains UNKNOWN (e.g. due to hitting complexity limits)
+     assume that it will differ from any new value.  */
+  if (contains_unknown_p (prev_sval))
+    return true;
+
+  if (new_sval != prev_sval)
+    return true;
+
+  return false;
+}
+
 /* Compare the state of memory at NEW_ENTRY_ENODE and PREV_ENTRY_ENODE,
    both of which are entrypoints to the same function, where recursion has
    occurred.
 
    Return true if the state of NEW_ENTRY_ENODE is sufficiently different
-   from PREV_ENTRY_ENODE to suggests that some variant is being modified,
+   from PREV_ENTRY_ENODE to suggest that some variant is being modified,
    and thus the recursion isn't infinite.
 
    Return false if the states are effectively the same, suggesting that
@@ -459,64 +555,17 @@ sufficiently_different_p (exploded_node *new_entry_enode,
   gcc_assert (is_entrypoint_p (new_entry_enode));
   gcc_assert (is_entrypoint_p (prev_entry_enode));
 
-  const int new_stack_depth = new_entry_enode->get_stack_depth ();
-
   /* Compare the stores of the two enodes.  */
   const region_model &new_model
     = *new_entry_enode->get_state ().m_region_model;
-  const region_model &prev_model
-    = *prev_entry_enode->get_state ().m_region_model;
   const store &new_store = *new_model.get_store ();
 
   for (auto kv : new_store)
     {
       const region *base_reg = kv.first;
-
-      /* Get the value within the new frame.  */
-      const svalue *new_sval
-	= new_model.get_store_value (base_reg, NULL);
-
-      /* If the value is UNKNOWN (e.g. due to hitting complexity limits)
-	 assume that it differs from the previous value.  */
-      if (new_sval->get_kind () == SK_UNKNOWN)
-	return true;
-
-      /* Get the equivalent value within the old enode.  */
-      const svalue *prev_sval;
-
-      if (const frame_region *enclosing_frame
-	    = base_reg->maybe_get_frame_region ())
-	{
-	  /* We have a binding within a frame in the new entry enode.  */
-
-	  /* Ignore bindings within frames below the new entry node.  */
-	  if (enclosing_frame->get_stack_depth () < new_stack_depth)
-	    continue;
-
-	  /* We have a binding within the frame of the new entry node,
-	     presumably a parameter.  */
-
-	  /* Get the value within the equivalent frame of
-	     the old entrypoint; typically will be the initial_svalue
-	     of the parameter.  */
-	  const frame_region *equiv_prev_frame
-	    = prev_model.get_current_frame ();
-	  const region *equiv_prev_base_reg
-	    = remap_enclosing_frame (base_reg,
-				     enclosing_frame,
-				     equiv_prev_frame,
-				     new_model.get_manager ());
-	  prev_sval = prev_model.get_store_value (equiv_prev_base_reg, NULL);
-	}
-      else
-	prev_sval = prev_model.get_store_value (base_reg, NULL);
-
-      /* If the prev_sval is UNKNOWN (e.g. due to hitting complexity limits)
-	 assume that it will differ from any new value.  */
-      if (prev_sval->get_kind () == SK_UNKNOWN)
-	return true;
-
-      if (new_sval != prev_sval)
+      if (sufficiently_different_region_binding_p (new_entry_enode,
+						   prev_entry_enode,
+						   base_reg))
 	return true;
     }
 

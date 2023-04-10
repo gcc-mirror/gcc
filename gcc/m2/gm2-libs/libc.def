@@ -42,7 +42,8 @@ EXPORT UNQUALIFIED time_t, timeb, tm, ptrToTM,
                    memcpy, memset, memmove, printf, realloc,
                    rand, srand,
                    time, localtime, ftime,
-                   shutdown, rename, setjmp, longjmp, atexit,
+                   shutdown, snprintf,
+                   rename, setjmp, longjmp, atexit,
                    ttyname, sleep, execv ;
 
 
@@ -359,6 +360,13 @@ PROCEDURE memmove (dest, src: ADDRESS; size: CSIZE_T) : [ ADDRESS ] ;
 
 PROCEDURE printf (format: ARRAY OF CHAR; ...) : [ INTEGER ] ;
 
+
+(*
+   int snprintf(char *str, size_t size, const char *format, ...);
+*)
+
+PROCEDURE snprintf (dest: ADDRESS; size: CSIZE_T;
+                    format: ARRAY OF CHAR; ...) : [ INTEGER ] ;
 
 (*
    setenv - sets environment variable, name, to value.

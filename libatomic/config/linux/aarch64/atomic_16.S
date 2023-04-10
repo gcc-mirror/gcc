@@ -72,33 +72,38 @@ name:				\
 
 ENTRY (libat_load_16_i1)
 	cbnz	w1, 1f
+
+	/* RELAXED.  */
 	ldp	res0, res1, [x0]
 	ret
 1:
-	cmp	w1, ACQUIRE
-	b.hi	2f
+	cmp	w1, SEQ_CST
+	b.eq	2f
+
+	/* ACQUIRE/CONSUME (Load-AcquirePC semantics).  */
 	ldp	res0, res1, [x0]
 	dmb	ishld
 	ret
-2:
+
+	/* SEQ_CST.  */
+2:	ldar	tmp0, [x0]	/* Block reordering with Store-Release instr.  */
 	ldp	res0, res1, [x0]
-	dmb	ish
+	dmb	ishld
 	ret
 END (libat_load_16_i1)
 
 
 ENTRY (libat_store_16_i1)
 	cbnz	w4, 1f
+
+	/* RELAXED.  */
 	stp	in0, in1, [x0]
 	ret
-1:
-	dmb	ish
-	stp	in0, in1, [x0]
-	cmp	w4, SEQ_CST
-	beq	2f
-	ret
-2:
-	dmb	ish
+
+	/* RELEASE/SEQ_CST.  */
+1:	ldaxp	xzr, tmp0, [x0]
+	stlxp	w4, in0, in1, [x0]
+	cbnz	w4, 1b
 	ret
 END (libat_store_16_i1)
 
@@ -106,29 +111,33 @@ END (libat_store_16_i1)
 ENTRY (libat_exchange_16_i1)
 	mov	x5, x0
 	cbnz	w4, 2f
-1:
-	ldxp	res0, res1, [x5]
+
+	/* RELAXED.  */
+1:	ldxp	res0, res1, [x5]
 	stxp	w4, in0, in1, [x5]
 	cbnz	w4, 1b
 	ret
 2:
 	cmp	w4, ACQUIRE
 	b.hi	4f
-3:
-	ldaxp	res0, res1, [x5]
+
+	/* ACQUIRE/CONSUME.  */
+3:	ldaxp	res0, res1, [x5]
 	stxp	w4, in0, in1, [x5]
 	cbnz	w4, 3b
 	ret
 4:
 	cmp	w4, RELEASE
 	b.ne	6f
-5:
-	ldxp	res0, res1, [x5]
+
+	/* RELEASE.  */
+5:	ldxp	res0, res1, [x5]
 	stlxp	w4, in0, in1, [x5]
 	cbnz	w4, 5b
 	ret
-6:
-	ldaxp	res0, res1, [x5]
+
+	/* ACQ_REL/SEQ_CST.  */
+6:	ldaxp	res0, res1, [x5]
 	stlxp	w4, in0, in1, [x5]
 	cbnz	w4, 6b
 	ret
@@ -142,6 +151,8 @@ ENTRY (libat_compare_exchange_16_i1)
 	cbz	w4, 2f
 	cmp	w4, RELEASE
 	b.hs	3f
+
+	/* ACQUIRE/CONSUME.  */
 	caspa	exp0, exp1, in0, in1, [x0]
 0:
 	cmp	exp0, tmp0
@@ -153,15 +164,18 @@ ENTRY (libat_compare_exchange_16_i1)
 	stp	exp0, exp1, [x1]
 	mov	x0, 0
 	ret
-2:
-	casp	exp0, exp1, in0, in1, [x0]
+
+	/* RELAXED.  */
+2:	casp	exp0, exp1, in0, in1, [x0]
 	b	0b
-3:
-	b.hi	4f
+
+	/* RELEASE.  */
+3:	b.hi	4f
 	caspl	exp0, exp1, in0, in1, [x0]
 	b	0b
-4:
-	caspal	exp0, exp1, in0, in1, [x0]
+
+	/* ACQ_REL/SEQ_CST.  */
+4:	caspal	exp0, exp1, in0, in1, [x0]
 	b	0b
 END (libat_compare_exchange_16_i1)
 
@@ -169,15 +183,17 @@ END (libat_compare_exchange_16_i1)
 ENTRY (libat_fetch_add_16_i1)
 	mov	x5, x0
 	cbnz	w4, 2f
-1:
-	ldxp	res0, res1, [x5]
+
+	/* RELAXED.  */
+1:	ldxp	res0, res1, [x5]
 	adds	tmplo, reslo, inlo
 	adc	tmphi, reshi, inhi
 	stxp	w4, tmp0, tmp1, [x5]
 	cbnz	w4, 1b
 	ret
-2:
-	ldaxp	res0, res1, [x5]
+
+	/* ACQUIRE/CONSUME/RELEASE/ACQ_REL/SEQ_CST.  */
+2:	ldaxp	res0, res1, [x5]
 	adds	tmplo, reslo, inlo
 	adc	tmphi, reshi, inhi
 	stlxp	w4, tmp0, tmp1, [x5]
@@ -189,15 +205,17 @@ END (libat_fetch_add_16_i1)
 ENTRY (libat_add_fetch_16_i1)
 	mov	x5, x0
 	cbnz	w4, 2f
-1:
-	ldxp	res0, res1, [x5]
+
+	/* RELAXED.  */
+1:	ldxp	res0, res1, [x5]
 	adds	reslo, reslo, inlo
 	adc	reshi, reshi, inhi
 	stxp	w4, res0, res1, [x5]
 	cbnz	w4, 1b
 	ret
-2:
-	ldaxp	res0, res1, [x5]
+
+	/* ACQUIRE/CONSUME/RELEASE/ACQ_REL/SEQ_CST.  */
+2:	ldaxp	res0, res1, [x5]
 	adds	reslo, reslo, inlo
 	adc	reshi, reshi, inhi
 	stlxp	w4, res0, res1, [x5]
@@ -209,15 +227,17 @@ END (libat_add_fetch_16_i1)
 ENTRY (libat_fetch_sub_16_i1)
 	mov	x5, x0
 	cbnz	w4, 2f
-1:
-	ldxp	res0, res1, [x5]
+
+	/* RELAXED.  */
+1:	ldxp	res0, res1, [x5]
 	subs	tmplo, reslo, inlo
 	sbc	tmphi, reshi, inhi
 	stxp	w4, tmp0, tmp1, [x5]
 	cbnz	w4, 1b
 	ret
-2:
-	ldaxp	res0, res1, [x5]
+
+	/* ACQUIRE/CONSUME/RELEASE/ACQ_REL/SEQ_CST.  */
+2:	ldaxp	res0, res1, [x5]
 	subs	tmplo, reslo, inlo
 	sbc	tmphi, reshi, inhi
 	stlxp	w4, tmp0, tmp1, [x5]
@@ -229,15 +249,17 @@ END (libat_fetch_sub_16_i1)
 ENTRY (libat_sub_fetch_16_i1)
 	mov	x5, x0
 	cbnz	w4, 2f
-1:
-	ldxp	res0, res1, [x5]
+
+	/* RELAXED.  */
+1:	ldxp	res0, res1, [x5]
 	subs	reslo, reslo, inlo
 	sbc	reshi, reshi, inhi
 	stxp	w4, res0, res1, [x5]
 	cbnz	w4, 1b
 	ret
-2:
-	ldaxp	res0, res1, [x5]
+
+	/* ACQUIRE/CONSUME/RELEASE/ACQ_REL/SEQ_CST.  */
+2:	ldaxp	res0, res1, [x5]
 	subs	reslo, reslo, inlo
 	sbc	reshi, reshi, inhi
 	stlxp	w4, res0, res1, [x5]
@@ -249,15 +271,17 @@ END (libat_sub_fetch_16_i1)
 ENTRY (libat_fetch_or_16_i1)
 	mov	x5, x0
 	cbnz	w4, 2f
-1:
-	ldxp	res0, res1, [x5]
+
+	/* RELAXED.  */
+1:	ldxp	res0, res1, [x5]
 	orr	tmp0, res0, in0
 	orr	tmp1, res1, in1
 	stxp	w4, tmp0, tmp1, [x5]
 	cbnz	w4, 1b
 	ret
-2:
-	ldaxp	res0, res1, [x5]
+
+	/* ACQUIRE/CONSUME/RELEASE/ACQ_REL/SEQ_CST.  */
+2:	ldaxp	res0, res1, [x5]
 	orr	tmp0, res0, in0
 	orr	tmp1, res1, in1
 	stlxp	w4, tmp0, tmp1, [x5]
@@ -269,15 +293,17 @@ END (libat_fetch_or_16_i1)
 ENTRY (libat_or_fetch_16_i1)
 	mov	x5, x0
 	cbnz	w4, 2f
-1:
-	ldxp	res0, res1, [x5]
+
+	/* RELAXED.  */
+1:	ldxp	res0, res1, [x5]
 	orr	res0, res0, in0
 	orr	res1, res1, in1
 	stxp	w4, res0, res1, [x5]
 	cbnz	w4, 1b
 	ret
-2:
-	ldaxp	res0, res1, [x5]
+
+	/* ACQUIRE/CONSUME/RELEASE/ACQ_REL/SEQ_CST.  */
+2:	ldaxp	res0, res1, [x5]
 	orr	res0, res0, in0
 	orr	res1, res1, in1
 	stlxp	w4, res0, res1, [x5]
@@ -289,15 +315,17 @@ END (libat_or_fetch_16_i1)
 ENTRY (libat_fetch_and_16_i1)
 	mov	x5, x0
 	cbnz	w4, 2f
-1:
-	ldxp	res0, res1, [x5]
+
+	/* RELAXED.  */
+1:	ldxp	res0, res1, [x5]
 	and	tmp0, res0, in0
 	and	tmp1, res1, in1
 	stxp	w4, tmp0, tmp1, [x5]
 	cbnz	w4, 1b
 	ret
-2:
-	ldaxp	res0, res1, [x5]
+
+	/* ACQUIRE/CONSUME/RELEASE/ACQ_REL/SEQ_CST.  */
+2:	ldaxp	res0, res1, [x5]
 	and	tmp0, res0, in0
 	and	tmp1, res1, in1
 	stlxp	w4, tmp0, tmp1, [x5]
@@ -309,15 +337,17 @@ END (libat_fetch_and_16_i1)
 ENTRY (libat_and_fetch_16_i1)
 	mov	x5, x0
 	cbnz	w4, 2f
-1:
-	ldxp	res0, res1, [x5]
+
+	/* RELAXED.  */
+1:	ldxp	res0, res1, [x5]
 	and	res0, res0, in0
 	and	res1, res1, in1
 	stxp	w4, res0, res1, [x5]
 	cbnz	w4, 1b
 	ret
-2:
-	ldaxp	res0, res1, [x5]
+
+	/* ACQUIRE/CONSUME/RELEASE/ACQ_REL/SEQ_CST.  */
+2:	ldaxp	res0, res1, [x5]
 	and	res0, res0, in0
 	and	res1, res1, in1
 	stlxp	w4, res0, res1, [x5]
@@ -329,15 +359,17 @@ END (libat_and_fetch_16_i1)
 ENTRY (libat_fetch_xor_16_i1)
 	mov	x5, x0
 	cbnz	w4, 2f
-1:
-	ldxp	res0, res1, [x5]
+
+	/* RELAXED.  */
+1:	ldxp	res0, res1, [x5]
 	eor	tmp0, res0, in0
 	eor	tmp1, res1, in1
 	stxp	w4, tmp0, tmp1, [x5]
 	cbnz	w4, 1b
 	ret
-2:
-	ldaxp	res0, res1, [x5]
+
+	/* ACQUIRE/CONSUME/RELEASE/ACQ_REL/SEQ_CST.  */
+2:	ldaxp	res0, res1, [x5]
 	eor	tmp0, res0, in0
 	eor	tmp1, res1, in1
 	stlxp	w4, tmp0, tmp1, [x5]
@@ -349,15 +381,17 @@ END (libat_fetch_xor_16_i1)
 ENTRY (libat_xor_fetch_16_i1)
 	mov	x5, x0
 	cbnz	w4, 2f
-1:
-	ldxp	res0, res1, [x5]
+
+	/* RELAXED.  */
+1:	ldxp	res0, res1, [x5]
 	eor	res0, res0, in0
 	eor	res1, res1, in1
 	stxp	w4, res0, res1, [x5]
 	cbnz	w4, 1b
 	ret
-2:
-	ldaxp	res0, res1, [x5]
+
+	/* ACQUIRE/CONSUME/RELEASE/ACQ_REL/SEQ_CST.  */
+2:	ldaxp	res0, res1, [x5]
 	eor	res0, res0, in0
 	eor	res1, res1, in1
 	stlxp	w4, res0, res1, [x5]
@@ -371,15 +405,17 @@ ENTRY (libat_fetch_nand_16_i1)
 	mvn	in0, in0
 	mvn	in1, in1
 	cbnz	w4, 2f
-1:
-	ldxp	res0, res1, [x5]
+
+	/* RELAXED.  */
+1:	ldxp	res0, res1, [x5]
 	orn	tmp0, in0, res0
 	orn	tmp1, in1, res1
 	stxp	w4, tmp0, tmp1, [x5]
 	cbnz	w4, 1b
 	ret
-2:
-	ldaxp	res0, res1, [x5]
+
+	/* ACQUIRE/CONSUME/RELEASE/ACQ_REL/SEQ_CST.  */
+2:	ldaxp	res0, res1, [x5]
 	orn	tmp0, in0, res0
 	orn	tmp1, in1, res1
 	stlxp	w4, tmp0, tmp1, [x5]
@@ -393,15 +429,17 @@ ENTRY (libat_nand_fetch_16_i1)
 	mvn	in0, in0
 	mvn	in1, in1
 	cbnz	w4, 2f
-1:
-	ldxp	res0, res1, [x5]
+
+	/* RELAXED.  */
+1:	ldxp	res0, res1, [x5]
 	orn	res0, in0, res0
 	orn	res1, in1, res1
 	stxp	w4, res0, res1, [x5]
 	cbnz	w4, 1b
 	ret
-2:
-	ldaxp	res0, res1, [x5]
+
+	/* ACQUIRE/CONSUME/RELEASE/ACQ_REL/SEQ_CST.  */
+2:	ldaxp	res0, res1, [x5]
 	orn	res0, in0, res0
 	orn	res1, in1, res1
 	stlxp	w4, res0, res1, [x5]
@@ -413,9 +451,12 @@ END (libat_nand_fetch_16_i1)
 ENTRY (libat_test_and_set_16_i1)
 	mov	w2, 1
 	cbnz	w1, 2f
+
+	/* RELAXED.  */
 	swpb	w0, w2, [x0]
 	ret
 
+	/* ACQUIRE/CONSUME/RELEASE/ACQ_REL/SEQ_CST.  */
 2:	swpalb	w0, w2, [x0]
 	ret
 END (libat_test_and_set_16_i1)

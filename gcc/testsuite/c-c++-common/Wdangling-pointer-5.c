@@ -75,9 +75,9 @@ void nowarn_store_arg_store (void **vpp)
 
 void* nowarn_store_arg_store_arg (void **vpp1, void **vpp2)
 {
-  int x;
+  int x;              // { dg-message "'x' declared here" }
   void **p = (void**)sink (0);
-  *vpp1 = &x;         // warn here?
+  *vpp1 = &x;         // { dg-warning "storing the address of local variable 'x' in '\\*vpp1'" }
   *vpp2 = 0;          // might overwrite *vpp1
   return p;
 }

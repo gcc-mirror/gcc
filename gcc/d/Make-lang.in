@@ -124,6 +124,7 @@ D_FRONTEND_OBJS = \
 	d/dversion.o \
 	d/entity.o \
 	d/errors.o \
+	d/errorsink.o \
 	d/escape.o \
 	d/expression.o \
 	d/expressionsem.o \
@@ -147,6 +148,7 @@ D_FRONTEND_OBJS = \
 	d/json.o \
 	d/lambdacomp.o \
 	d/lexer.o \
+	d/location.o \
 	d/mtype.o \
 	d/mustuse.o \
 	d/nogc.o \

@@ -582,6 +582,10 @@ Wcast-align=strict
 Common Var(warn_cast_align,2) Warning
 Warn about pointer casts which increase alignment.
 
+Wcomplain-wrong-lang
+Common Var(warn_complain_wrong_lang) Init(1) Warning
+Complain when a command-line option is valid, but not applicable to the current front end.
+
 Wcpp
 Common Var(warn_cpp) Init(1) Warning
 Warn when a #warning directive is encountered.
@@ -1203,6 +1207,10 @@ Perform internal consistency checkings.
 fchecking=
 Common Joined RejectNegative UInteger Var(flag_checking)
 Perform internal consistency checkings.
+
+fcanon-prefix-map
+Common Var(common_deferred_options) Defer
+For -f*-prefix-map= options compare canonicalized pathnames rather than just strings.
 
 fcode-hoisting
 Common Var(flag_code_hoisting) Optimization
@@ -3341,11 +3349,11 @@ Common Driver RejectNegative JoinedOrMissing
 Generate BTF debug information at default level.
 
 gdwarf
-Common Driver JoinedOrMissing Negative(gdwarf-)
+Common Driver JoinedOrMissing RejectNegative
 Generate debug information in default version of DWARF format.
 
 gdwarf-
-Common Driver Joined UInteger Var(dwarf_version) Init(DWARF_VERSION_DEFAULT)
+Common Driver Joined UInteger Var(dwarf_version) Init(DWARF_VERSION_DEFAULT) RejectNegative
 Generate debug information in DWARF v2 (or later) format.
 
 gdwarf32
@@ -3357,7 +3365,7 @@ Common Driver Var(dwarf_offset_size,8) RejectNegative
 Use 64-bit DWARF format when emitting DWARF debug information.
 
 ggdb
-Common Driver JoinedOrMissing
+Common Driver JoinedOrMissing RejectNegative
 Generate debug information in default extended format.
 
 ginline-points
@@ -3424,7 +3432,7 @@ gvariable-location-views=incompat5
 Common Driver RejectNegative Var(debug_variable_location_views, -1) Init(2)
 
 gvms
-Common Driver JoinedOrMissing
+Common Driver JoinedOrMissing RejectNegative
 Generate debug information in VMS format.
 
 gxcoff

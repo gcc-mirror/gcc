@@ -103,9 +103,9 @@ if ![info exists TORTURE_OPTIONS] {
 # OPTION is the specific compiler flag we're testing (eg: -O2).
 #
 proc gm2-torture-compile { src option } {
-    global output
-    global srcdir tmpdir
-    global host_triplet
+    global output;
+    global srcdir tmpdir;
+    global host_triplet;
 
     set output "$tmpdir/[file tail [file rootname $src]].o"
 
@@ -137,7 +137,7 @@ proc gm2-torture-compile { src option } {
 #
 
 proc gm2_check_compile_fail {testcase option objname gcc_output} {
-    global tool
+    global tool;
     set fatal_signal "*cc: Internal compiler error: program*got fatal signal"
 
     if [string match "$fatal_signal 6" $gcc_output] then {
@@ -194,9 +194,9 @@ proc gm2_check_compile_fail {testcase option objname gcc_output} {
 # OPTION is the specific compiler flag we're testing (eg: -O2).
 #
 proc gm2-torture-compile-fail { src option } {
-    global output
-    global srcdir tmpdir
-    global host_triplet
+    global output;
+    global srcdir tmpdir;
+    global host_triplet;
 
     # puts stderr "gm2-torture-compile-fail:  ${option}\n"
     set output "$tmpdir/[file tail [file rootname $src]].o"
@@ -472,7 +472,7 @@ proc search_for { file pattern } {
 # to more than 14 chars.
 #
 proc gm2-torture { args } {
-    global srcdir subdir compiler_conditional_xfail_data TORTURE_OPTIONS
+    global srcdir subdir compiler_conditional_xfail_data TORTURE_OPTIONS;
 
     set src [lindex $args 0];
     if { [llength $args] > 1 } {
@@ -526,7 +526,7 @@ proc gm2-torture { args } {
 # to more than 14 chars.
 #
 proc gm2-torture-fail { args } {
-    global srcdir subdir compiler_conditional_xfail_data TORTURE_OPTIONS
+    global srcdir subdir compiler_conditional_xfail_data TORTURE_OPTIONS;
 
     set src [lindex $args 0];
     if { [llength $args] > 1 } {

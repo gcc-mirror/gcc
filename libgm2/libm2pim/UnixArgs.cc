@@ -27,10 +27,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <config.h>
 #include <m2rts.h>
 
+#define EXPORT(FUNC) m2pim ## _UnixArgs_ ## FUNC
+#define M2EXPORT(FUNC) m2pim ## _M2_UnixArgs_ ## FUNC
+#define M2LIBNAME "m2pim"
 
-extern "C" int UnixArgs_GetArgC (void);
-extern "C" char **UnixArgs_GetArgV (void);
-extern "C" char **UnixArgs_GetEnvV (void);
+extern "C" int EXPORT(GetArgC) (void);
+extern "C" char **EXPORT(GetArgV) (void);
+extern "C" char **EXPORT(GetEnvV) (void);
 
 static int UnixArgs_ArgC;
 static char **UnixArgs_ArgV;
@@ -40,7 +43,7 @@ static char **UnixArgs_EnvV;
 /* GetArgC returns argc.  */
 
 extern "C" int
-UnixArgs_GetArgC (void)
+EXPORT(GetArgC) (void)
 {
   return UnixArgs_ArgC;
 }
@@ -49,7 +52,7 @@ UnixArgs_GetArgC (void)
 /* GetArgV returns argv.  */
 
 extern "C" char **
-UnixArgs_GetArgV (void)
+EXPORT(GetArgV) (void)
 {
   return UnixArgs_ArgV;
 }
@@ -58,14 +61,16 @@ UnixArgs_GetArgV (void)
 /* GetEnvV returns envv.  */
 
 extern "C" char **
-UnixArgs_GetEnvV (void)
+EXPORT(GetEnvV) (void)
 {
   return UnixArgs_EnvV;
 }
 
 
+/* GNU Modula-2 linking hooks.  */
+
 extern "C" void
-_M2_UnixArgs_init (int argc, char *argv[], char *envp[])
+M2EXPORT(init) (int argc, char **argv, char **envp)
 {
   UnixArgs_ArgC = argc;
   UnixArgs_ArgV = argv;
@@ -73,18 +78,19 @@ _M2_UnixArgs_init (int argc, char *argv[], char *envp[])
 }
 
 extern "C" void
-_M2_UnixArgs_fini (int argc, char *argv[], char *envp[])
+M2EXPORT(fini) (int, char **, char **)
 {
 }
 
 extern "C" void
-_M2_UnixArgs_dep (void)
+M2EXPORT(dep) (void)
 {
 }
 
 extern "C" void __attribute__((__constructor__))
-_M2_UnixArgs_ctor (void)
+M2EXPORT(ctor) (void)
 {
-  M2RTS_RegisterModule ("UnixArgs", _M2_UnixArgs_init, _M2_UnixArgs_fini,
-			_M2_UnixArgs_dep);
+  m2pim_M2RTS_RegisterModule ("UnixArgs", M2LIBNAME,
+			      M2EXPORT(init), M2EXPORT(fini),
+			      M2EXPORT(dep));
 }

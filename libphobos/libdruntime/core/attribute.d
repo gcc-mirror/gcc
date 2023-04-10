@@ -236,9 +236,9 @@ version (UdaGNUAbiTag) struct gnuAbiTag
 {
     string[] tags;
 
-    this(string[] tags...)
+    this(string[] tags...) @safe pure nothrow
     {
-        this.tags = tags;
+        this.tags = tags.dup;
     }
 }
 

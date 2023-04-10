@@ -126,7 +126,6 @@ VAR
    LongReal, ShortReal,
    Complex, LongComplex,
    ShortComplex,
-   Unbounded,
    High, LengthS,
    Cap, Abs, Odd,
    Convert, Val,

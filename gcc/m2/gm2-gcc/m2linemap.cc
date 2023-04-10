@@ -35,6 +35,8 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "m2type.h"
 #define m2linemap_c
 #include "m2linemap.h"
+#include "m2color.h"
+#include <string>
 
 static int inFile = FALSE;
 
@@ -249,6 +251,128 @@ void
 m2linemap_internal_error (const char *message)
 {
   internal_error ("%s", message);
+}
+
+
+/* Code derived from rust.  */
+
+static std::string
+mformat_value ()
+{
+  return std::string (xstrerror (errno));
+}
+
+
+static std::string
+expand_format (const char *fmt)
+{
+  std::string result;
+  for (const char *c = fmt; *c; ++c)
+    {
+      if (*c != '%')
+	{
+	  result += *c;
+	  continue;
+	}
+      c++;
+      switch (*c)
+	{
+	  case '\0': {
+	    // malformed format string
+	    gcc_unreachable ();
+	  }
+	  case '%': {
+	    result += '%';
+	    break;
+	  }
+	  case 'm': {
+	    result += mformat_value ();
+	    break;
+	  }
+	  case '<': {
+	    result += m2color_open_quote ();
+	    break;
+	  }
+	  case '>': {
+	    result += m2color_close_quote ();
+	    break;
+	  }
+	  case 'q': {
+	    result += m2color_open_quote ();
+	    c++;
+	    if (*c == 'm')
+	      result += mformat_value ();
+	    else
+	      {
+		result += '%';
+		result += *c;
+	      }
+	    result += m2color_close_quote ();
+	    break;
+	  }
+	  default: {
+	    result += '%';
+	    result += *c;
+	  }
+	}
+    }
+  return result;
+}
+
+static std::string
+expand_message (const char *fmt, va_list ap)
+{
+  char *mbuf = 0;
+  std::string expanded_fmt = expand_format (fmt);
+  int nwr = vasprintf (&mbuf, expanded_fmt.c_str (), ap);
+  if (nwr == -1)
+    {
+      // memory allocation failed
+      error_at (UNKNOWN_LOCATION,
+		"memory allocation failed in vasprintf");
+      gcc_assert (0);
+    }
+  std::string rval = std::string (mbuf);
+  free (mbuf);
+  return rval;
+}
+
+
+static void
+gm2_internal_error_at (location_t location, const std::string &errmsg)
+{
+  expanded_location exp_loc = expand_location (location);
+  std::string loc_str;
+  std::string file_str;
+
+  if (exp_loc.file == NULL)
+    file_str.clear ();
+  else
+    file_str = std::string (exp_loc.file);
+
+  if (! file_str.empty ())
+    {
+      loc_str += file_str;
+      loc_str += ':';
+      loc_str += std::to_string (exp_loc.line);
+      loc_str += ':';
+      loc_str += std::to_string (exp_loc.column);
+    }
+  if (loc_str.empty ())
+    internal_error ("%s", errmsg.c_str ());
+  else
+    internal_error ("at %s, %s", loc_str.c_str (), errmsg.c_str ());
+}
+
+
+void
+m2linemap_internal_error_at (location_t location, const char *fmt, ...)
+{
+  va_list ap;
+
+  va_start (ap, fmt);
+  gm2_internal_error_at (location, expand_message (fmt, ap));
+  va_end (ap);
 }
 
 /* UnknownLocation - return the predefined location representing an

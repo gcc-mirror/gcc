@@ -18,9 +18,15 @@ testd_var (vector double vd2, signed int si)
   return vec_extract (vd2, si);
 }
 
+#ifdef __BIG_ENDIAN__
+#define LEFTMOST_ELEMENT_INDEX 0
+#else
+#define LEFTMOST_ELEMENT_INDEX 1
+#endif
+
 double
 testd_cst (vector double vd2)
 {
-  return vec_extract (vd2, 1);
+  return vec_extract (vd2, LEFTMOST_ELEMENT_INDEX);
 }
 

@@ -31,6 +31,8 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "gcc.h"
 #include "opts.h"
 #include "vec.h"
+#include <vector>
+#include <string>
 
 #include "m2/gm2config.h"
 
@@ -48,14 +50,16 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #endif
 #endif
 
+/* This bit is set if the arguments is a M2 source file.  */
+#define M2SOURCE	(1<<1)
 /* This bit is set if we saw a `-xfoo' language specification.  */
-#define LANGSPEC	(1<<1)
+#define LANGSPEC	(1<<2)
 /* This bit is set if they did `-lm' or `-lmath'.  */
-#define MATHLIB		(1<<2)
+#define MATHLIB		(1<<3)
 /* This bit is set if they did `-lc'.  */
-#define WITHLIBC	(1<<3)
+#define WITHLIBC	(1<<4)
 /* Skip this option.  */
-#define SKIPOPT		(1<<4)
+#define SKIPOPT		(1<<5)
 
 #ifndef MATH_LIBRARY
 #define MATH_LIBRARY "m"
@@ -149,7 +153,40 @@ static void append_arg (const struct cl_decoded_option *);
 static unsigned int gm2_newargc;
 static struct cl_decoded_option *gm2_new_decoded_options;
 static const char *libraries = NULL;  /* Abbreviated libraries.  */
+static const char *m2_path_name = "";
 
+typedef struct named_path_s {
+  std::vector<const char*>path;
+  const char *name;
+} named_path;
+
+static std::vector<named_path>Ipaths;
+
+
+static void
+push_back_Ipath (const char *arg)
+{
+  if (Ipaths.empty ())
+    {
+      named_path np;
+      np.path.push_back (arg);
+      np.name = m2_path_name;
+      Ipaths.push_back (np);
+    }
+  else
+    {
+      if (strcmp (Ipaths.back ().name,
+		  m2_path_name) == 0)
+	Ipaths.back ().path.push_back (arg);
+      else
+	{
+	  named_path np;
+	  np.path.push_back (arg);
+	  np.name = m2_path_name;
+	  Ipaths.push_back (np);
+	}
+    }
+}
 
 /* Return whether strings S1 and S2 are both NULL or both the same
    string.  */
@@ -342,6 +379,24 @@ convert_abbreviations (const char *libraries)
   return full_libraries;
 }
 
+/* add_m2_I_path appends -fm2-pathname and -fm2-pathnameI options to
+   the command line which are contructed in the saved Ipaths.  */
+
+static void
+add_m2_I_path (void)
+{
+  for (auto np : Ipaths)
+    {
+      if (strcmp (np.name, "") == 0)
+	append_option (OPT_fm2_pathname_, safe_strdup ("-"), 1);
+      else
+	append_option (OPT_fm2_pathname_, safe_strdup (np.name), 1);
+      for (auto *s : np.path)
+	append_option (OPT_fm2_pathnameI, safe_strdup (s), 1);
+    }
+  Ipaths.clear();
+}
+
 
 void
 lang_specific_driver (struct cl_decoded_option **in_decoded_options,
@@ -378,7 +433,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   int *args;
 
   /* Have we seen -fmod=?  */
-  bool seen_module_extension = false;
+  char *module_extension = NULL;
 
   /* Should the driver perform a link?  */
   bool linking = true;
@@ -396,7 +451,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   int need_math = (MATH_LIBRARY[0] != '\0');
 
   /* 1 if we should add -lpthread to the command-line.
-    FIXME: the default should be a configuration choice.  */
+     FIXME: the default should be a configuration choice.  */
   int need_pthread = 1;
 
   /* True if we saw -static.  */
@@ -407,6 +462,9 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
   /* Have we seen the -v flag?  */
   bool verbose = false;
+
+  /* Have we seen the -fm2-pathname flag?  */
+  bool seen_pathname = false;
 
   /* The number of libraries added in.  */
   int added_libraries;
@@ -429,6 +487,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   fprintf (stderr, "\n");
 #endif
 
+  // add_spec_function ("m2I", add_m2_I_path);
   gm2_xargc = argc;
   gm2_x_decoded_options = decoded_options;
   gm2_newargc = 0;
@@ -473,8 +532,10 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
 	  break;
 	case OPT_fmod_:
-	  seen_module_extension = true;
-	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
+	  module_extension = xstrdup (arg);
+#if defined(DEBUG_ARG)
+	  printf ("seen -fmod=%s\n", module_extension);
+#endif
 	  break;
         case OPT_fpthread:
           need_pthread = decoded_options[i].value;
@@ -514,7 +575,15 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  seen_uselist = true;
 	  uselist = decoded_options[i].value;
 	  break;
-
+	case OPT_fm2_pathname_:
+	  seen_pathname = true;
+	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
+	  m2_path_name = decoded_options[i].arg;
+	  break;
+	case OPT_I:
+	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
+	  push_back_Ipath (decoded_options[i].arg);
+	  break;
 	case OPT_nostdlib:
 	case OPT_nostdlib__:
 	case OPT_nodefaultlibs:
@@ -609,12 +678,44 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  which_library = (stdcxxlib_kind) decoded_options[i].value;
 	  break;
 
+	case OPT_SPECIAL_input_file:
+	  {
+	    const char *source_file = decoded_options[i].orig_option_with_args_text;
+#if defined(DEBUG_ARG)
+	    printf ("seen OPT_SPECIAL_input_file: %s\n", source_file);
+#endif
+	    if (source_file != NULL)
+	      {
+		/* Record that this is a Modula-2 source file.  */
+		const char *suffix = strrchr (source_file, '.');
+#if defined(DEBUG_ARG)
+		printf ("ext = %s\n", suffix);
+#endif
+		if ((suffix != NULL)
+		    && ((strcmp (suffix, ".mod") == 0)
+			|| ((module_extension != NULL)
+			    && (strcmp (suffix, module_extension) == 0))))
+		  {
+#if defined(DEBUG_ARG)
+		    printf ("modula-2 source file detected: %s\n", source_file);
+#endif
+		    args[i] |= M2SOURCE;
+		  }
+	      }
+	  }
+	  break;
+
 	default:
 	  break;
 	}
     }
   if (language != NULL && (strcmp (language, "modula-2") != 0))
     return;
+
+  if (! seen_pathname)
+    /* Not seen -fm2-pathname therefore make current working directory
+       the first place to look for modules.  */
+    push_back_Ipath (".");
 
   /* Override the default when the user specifies it.  */
   if (seen_scaffold_static && scaffold_static && !seen_scaffold_dynamic)
@@ -649,19 +750,49 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   for (i = 1; i < argc; ++i)
     {
 #if defined(DEBUG_ARG)
-      printf ("2nd pass: %s\n",
+      printf ("2nd pass: %s",
 	      decoded_options[i].orig_option_with_args_text);
+      if ((args[i] & SKIPOPT) != 0)
+	printf (" skipped");
+      if ((args[i] & M2SOURCE) != 0)
+	printf (" m2 source");
+      printf ("\n");
 #endif
       if ((args[i] & SKIPOPT) == 0)
 	{
-	  append_arg (&decoded_options[i]);
-	  /* Make sure -lstdc++ is before the math library, since libstdc++
-	     itself uses those math routines.  */
-	  if (!saw_math && (args[i] & MATHLIB) && library > 0)
-	    saw_math = &decoded_options[i];
+	  if ((args[i] & M2SOURCE) == 0)
+	    {
+	      append_arg (&decoded_options[i]);
+	      /* Make sure -lstdc++ is before the math library, since libstdc++
+		 itself uses those math routines.  */
+	      if (!saw_math && (args[i] & MATHLIB) && library > 0)
+		saw_math = &decoded_options[i];
 
-	  if (!saw_libc && (args[i] & WITHLIBC) && library > 0)
-	    saw_libc = &decoded_options[i];
+	      if (!saw_libc && (args[i] & WITHLIBC) && library > 0)
+		saw_libc = &decoded_options[i];
+	    }
+	  else
+	    {
+	      if ((! seen_x_flag) && module_extension)
+		{
+#if defined(DEBUG_ARG)
+		  printf (" adding: -x modula-2 ");
+#endif
+		  append_option (OPT_x, "modula-2", 1);
+		}
+	      append_arg (&decoded_options[i]);
+#if defined(DEBUG_ARG)
+	      printf (" adding: %s\n",
+		      decoded_options[i].orig_option_with_args_text);
+#endif
+	      if ((! seen_x_flag) && module_extension)
+		{
+#if defined(DEBUG_ARG)
+		  printf (" adding: -x none ");
+#endif
+		  append_option (OPT_x, "none", 1);
+		}
+	    }
 	}
 #if defined(DEBUG_ARG)
       else
@@ -670,6 +801,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 #endif
     }
 
+  add_m2_I_path ();
   /* We now add in extra arguments to facilitate a successful link.
      Note that the libraries are added to the end of the link here
      and also placed earlier into the link by lang-specs.h.  Possibly
@@ -710,16 +842,13 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	    libraries = xstrdup ("m2iso,m2cor,m2pim,m2log");
 	  else
 	    /* Default to pim libraries otherwise.  */
-	    libraries = xstrdup ("m2pim,m2iso,m2cor,m2log");
+	    libraries = xstrdup ("m2cor,m2log,m2pim,m2iso");
 	}
       libraries = convert_abbreviations (libraries);
       append_option (OPT_flibs_, xstrdup (libraries), 1);
     }
   else
     append_option (OPT_flibs_, xstrdup ("-"), 0); /* no system libs.  */
-
-  if ((! seen_x_flag) && seen_module_extension)
-    append_option (OPT_x, "modula-2", 1);
 
   if (need_plugin)
     append_option (OPT_fplugin_, "m2rte", 1);

@@ -13,6 +13,8 @@ read_from_pipe (int file)
   FILE *stream;
   int c;
   stream = fdopen (file, "r");
+  if (stream == NULL)
+    exit (EXIT_FAILURE);
   while ((c = fgetc (stream)) != EOF)
     putchar (c);
   fclose (stream);
@@ -25,6 +27,8 @@ write_to_pipe (int file)
 {
   FILE *stream;
   stream = fdopen (file, "w");
+  if (stream == NULL)
+    exit (EXIT_FAILURE);
   fprintf (stream, "hello, world!\n");
   fprintf (stream, "goodbye, world!\n");
   fclose (stream);

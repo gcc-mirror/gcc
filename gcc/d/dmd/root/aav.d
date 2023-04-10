@@ -1,7 +1,7 @@
 /**
  * Associative array implementation.
  *
- * Copyright: Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright: Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:   Walter Bright, https://www.digitalmars.com
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/root/aav.d, root/_aav.d)
@@ -149,7 +149,7 @@ private struct AARange(K,V)
     size_t bIndex;
     aaA* current;
 
-    this(AA* aa) pure nothrow @nogc
+    this(AA* aa) pure nothrow @nogc scope
     {
         if (aa)
         {

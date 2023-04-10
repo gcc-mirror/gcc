@@ -1,5 +1,6 @@
 /* As per stdarg-1.c, but using the ms_abi versions of the builtins.  */
 
+/* { dg-additional-options "-fno-analyzer-suppress-followups" } */
 /* { dg-do compile { target { x86_64-*-* && lp64 } } } */
 
 #include "analyzer-decls.h"

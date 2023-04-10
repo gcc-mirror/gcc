@@ -159,6 +159,7 @@
 
   ;; The `.insn' pseudo-op.
   UNSPEC_INSN_PSEUDO
+  UNSPEC_JRHB
 ])
 
 (define_constants
@@ -3162,6 +3163,15 @@
 	(clz:GPR (match_operand:GPR 1 "register_operand" "d")))]
   "ISA_HAS_CLZ_CLO"
   "<d>clz\t%0,%1"
+  [(set_attr "type" "clz")
+   (set_attr "mode" "<MODE>")])
+
+
+(define_insn "*clo<mode>2"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+	(clz:GPR (not:GPR (match_operand:GPR 1 "register_operand" "d"))))]
+  "ISA_HAS_CLZ_CLO"
+  "<d>clo\t%0,%1"
   [(set_attr "type" "clz")
    (set_attr "mode" "<MODE>")])
 
@@ -6669,6 +6679,20 @@
   }
   [(set_attr "type"	"jump")
    (set_attr "mode"	"none")])
+
+;; Insn to clear execution and instruction hazards while returning.
+;; However, it doesn't clear hazards created by the insn in its delay slot.
+;; Thus, explicitly place a nop in its delay slot.
+
+(define_insn "mips_hb_return_internal"
+  [(return)
+   (unspec_volatile [(match_operand 0 "pmode_register_operand" "")]
+		    UNSPEC_JRHB)]
+  ""
+  {
+    return "%(jr.hb\t$31%/%)";
+  }
+  [(set_attr "insn_count" "2")])
 
 ;; Normal return.
 

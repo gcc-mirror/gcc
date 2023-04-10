@@ -32,4 +32,4 @@ double foo()
 /* { dg-final { scan-tree-dump "temp1 = .DEFERRED_INIT \\(12, 2, \&\"temp1\"" "gimple" } } */
 /* { dg-final { scan-tree-dump "temp2 = .DEFERRED_INIT \\(24, 2, \&\"temp2\"" "gimple" } } */
 /* { dg-final { scan-tree-dump "temp3 = .DEFERRED_INIT \\(28, 2, \&\"temp3\"" "gimple" } } */
-/* { dg-final { scan-tree-dump "temp4 = .DEFERRED_INIT \\(8, 2, \&\"temp4\"" "gimple" } } */
+/* { dg-final { scan-tree-dump "temp4 = .DEFERRED_INIT \\((8|5), 2, \&\"temp4\"" "gimple" } } */

@@ -391,6 +391,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  return __result;
 	}
+
+      template<typename _Tp, typename _Up>
+	static void
+	__assign_one(_Tp* __to, _Up* __from)
+	{ *__to = *__from; }
     };
 
 #if __cplusplus >= 201103L
@@ -411,27 +416,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  return __result;
 	}
+
+      template<typename _Tp, typename _Up>
+	static void
+	__assign_one(_Tp* __to, _Up* __from)
+	{ *__to = std::move(*__from); }
     };
 #endif
 
   template<bool _IsMove>
     struct __copy_move<_IsMove, true, random_access_iterator_tag>
     {
-      template<typename _Tp>
+      template<typename _Tp, typename _Up>
 	_GLIBCXX20_CONSTEXPR
-	static _Tp*
-	__copy_m(const _Tp* __first, const _Tp* __last, _Tp* __result)
+	static _Up*
+	__copy_m(_Tp* __first, _Tp* __last, _Up* __result)
 	{
-#if __cplusplus >= 201103L
-	  using __assignable = __conditional_t<_IsMove,
-					       is_move_assignable<_Tp>,
-					       is_copy_assignable<_Tp>>;
-	  // trivial types can have deleted assignment
-	  static_assert( __assignable::value, "type must be assignable" );
-#endif
 	  const ptrdiff_t _Num = __last - __first;
-	  if (_Num)
+	  if (__builtin_expect(_Num > 1, true))
 	    __builtin_memmove(__result, __first, sizeof(_Tp) * _Num);
+	  else if (_Num == 1)
+	    std::__copy_move<_IsMove, false, random_access_iterator_tag>::
+	      __assign_one(__result, __first);
 	  return __result + _Num;
 	}
     };
@@ -732,21 +738,17 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
   template<bool _IsMove>
     struct __copy_move_backward<_IsMove, true, random_access_iterator_tag>
     {
-      template<typename _Tp>
+      template<typename _Tp, typename _Up>
 	_GLIBCXX20_CONSTEXPR
-	static _Tp*
-	__copy_move_b(const _Tp* __first, const _Tp* __last, _Tp* __result)
+	static _Up*
+	__copy_move_b(_Tp* __first, _Tp* __last, _Up* __result)
 	{
-#if __cplusplus >= 201103L
-	  using __assignable = __conditional_t<_IsMove,
-					       is_move_assignable<_Tp>,
-					       is_copy_assignable<_Tp>>;
-	  // trivial types can have deleted assignment
-	  static_assert( __assignable::value, "type must be assignable" );
-#endif
 	  const ptrdiff_t _Num = __last - __first;
-	  if (_Num)
+	  if (__builtin_expect(_Num > 1, true))
 	    __builtin_memmove(__result - _Num, __first, sizeof(_Tp) * _Num);
+	  else if (_Num == 1)
+	    std::__copy_move<_IsMove, false, random_access_iterator_tag>::
+	      __assign_one(__result - 1, __first);
 	  return __result - _Num;
 	}
     };

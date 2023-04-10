@@ -66,8 +66,8 @@ BEGIN
    localMain (p1) ;
    IF p1.context=p2.context
    THEN
-      Halt(__FILE__, __LINE__, __FUNCTION__,
-           'error when attempting to context switch to the same process')
+      Halt('error when attempting to context switch to the same process',
+           __FILE__, __FUNCTION__, __LINE__)
    END ;
    transfer (p1.context, p2.context)
 END TRANSFER ;
@@ -130,15 +130,15 @@ VAR
 BEGIN
    IF l=NIL
    THEN
-      Halt (__FILE__, __LINE__, __FUNCTION__,
-            'no processes attached to this interrupt vector which is associated with IOTRANSFER')
+      Halt ('no processes attached to this interrupt vector which is associated with IOTRANSFER',
+            __FILE__, __FUNCTION__, __LINE__)
    ELSE
       WITH l^ DO
          old := AttachVector (InterruptNo, next) ;
          IF old#l
          THEN
-            Halt (__FILE__, __LINE__, __FUNCTION__,
-                  'inconsistancy of return result')
+            Halt ('inconsistancy of return result',
+                  __FILE__, __FUNCTION__, __LINE__)
          END ;
          IF next=NIL
          THEN
@@ -210,7 +210,8 @@ END TurnInterrupts ;
 
 PROCEDURE Finished (p: ADDRESS) ;
 BEGIN
-   Halt(__FILE__, __LINE__, __FUNCTION__, 'process terminated illegally')
+   Halt('process terminated illegally',
+        __FILE__, __FUNCTION__, __LINE__)
 END Finished ;
 
 
@@ -225,7 +226,8 @@ BEGIN
       initGTh := TRUE ;
       IF init () # 0
       THEN
-         Halt (__FILE__, __LINE__, __FUNCTION__, "gthr did not initialize")
+         Halt ("gthr did not initialize",
+               __FILE__, __FUNCTION__, __LINE__)
       END ;
       RTint.Init
    END

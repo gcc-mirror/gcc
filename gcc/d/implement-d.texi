@@ -126,11 +126,11 @@ The following attributes are supported on most targets.
 
 @table @code
 
+@cindex @code{alloc_size} function attribute
+@cindex @code{alloc_size} variable attribute
 @item @@(gcc.attributes.alloc_size (@var{sizeArgIdx}))
 @itemx @@(gcc.attributes.alloc_size (@var{sizeArgIdx}, @var{numArgIdx}))
 @itemx @@(gcc.attributes.alloc_size (@var{sizeArgIdx}, @var{numArgIdx}, @var{zeroBasedNumbering}))
-@cindex @code{alloc_size} function attribute
-@cindex @code{alloc_size} variable attribute
 
 The @code{@@alloc_size} attribute may be applied to a function - or a function
 pointer variable -  that returns a pointer and takes at least one argument of
@@ -151,8 +151,8 @@ argument specifying the element count.
 void malloc_cb(@@alloc_size(1) void* function(size_t) ptr) @{ @}
 @end smallexample
 
-@item @@(gcc.attributes.always_inline)
 @cindex @code{always_inline} function attribute
+@item @@(gcc.attributes.always_inline)
 
 The @code{@@always_inline} attribute inlines the function independent of any
 restrictions that otherwise apply to inlining.  Failure to inline such a
@@ -162,8 +162,8 @@ function is diagnosed as an error.
 @@always_inline int func();
 @end smallexample
 
-@item @@(gcc.attributes.cold)
 @cindex @code{cold} function attribute
+@item @@(gcc.attributes.cold)
 
 The @code{@@cold} attribute on functions is used to inform the compiler that the
 function is unlikely to be executed.  The function is optimized for size
@@ -176,8 +176,8 @@ cold functions within code are considered to be cold too.
 @@cold int func();
 @end smallexample
 
-@item @@(gcc.attributes.flatten)
 @cindex @code{flatten} function attribute
+@item @@(gcc.attributes.flatten)
 
 The @code{@@flatten} attribute is used to inform the compiler that every call
 inside this function should be inlined, if possible.  Functions declared with
@@ -187,8 +187,8 @@ attribute @code{@@noinline} and similar are not inlined.
 @@flatten int func();
 @end smallexample
 
-@item @@(gcc.attributes.no_icf)
 @cindex @code{no_icf} function attribute
+@item @@(gcc.attributes.no_icf)
 
 The @code{@@no_icf} attribute prevents a function from being merged with
 another semantically equivalent function.
@@ -197,8 +197,8 @@ another semantically equivalent function.
 @@no_icf int func();
 @end smallexample
 
-@item @@(gcc.attributes.no_sanitize ("@var{sanitize_option}"))
 @cindex @code{no_sanitize} function attribute
+@item @@(gcc.attributes.no_sanitize ("@var{sanitize_option}"))
 
 The @code{@@no_sanitize} attribute on functions is used to inform the compiler
 that it should not do sanitization of any option mentioned in
@@ -210,8 +210,8 @@ option can be provided.
 @@no_sanitize("alignment,object-size") void func2() @{ @}
 @end smallexample
 
-@item @@(gcc.attributes.noclone)
 @cindex @code{noclone} function attribute
+@item @@(gcc.attributes.noclone)
 
 The @code{@@noclone} attribute prevents a function from being considered for
 cloning - a mechanism that produces specialized copies of functions and which
@@ -221,8 +221,8 @@ is (currently) performed by interprocedural constant propagation.
 @@noclone int func();
 @end smallexample
 
-@item @@(gcc.attributes.noinline)
 @cindex @code{noinline} function attribute
+@item @@(gcc.attributes.noinline)
 
 The @code{@@noinline} attribute prevents a function from being considered for
 inlining.  If the function does not have side effects, there are optimizations
@@ -234,8 +234,8 @@ the function call is live.  To keep such calls from being optimized away, put
 @@noinline int func();
 @end smallexample
 
-@item @@(gcc.attributes.noipa)
 @cindex @code{noipa} function attribute
+@item @@(gcc.attributes.noipa)
 
 The @code{@@noipa} attribute disables interprocedural optimizations between the
 function with this attribute and its callers, as if the body of the function is
@@ -253,8 +253,8 @@ This attribute is supported mainly for the purpose of testing the compiler.
 @@noipa int func();
 @end smallexample
 
-@item @@(gcc.attributes.noplt)
 @cindex @code{noplt} function attribute
+@item @@(gcc.attributes.noplt)
 
 The @code{@@noplt} attribute is the counterpart to option @option{-fno-plt}.
 Calls to functions marked with this attribute in position-independent code do
@@ -267,8 +267,8 @@ are marked to not use the PLT to use the GOT instead.
 @@noplt int func();
 @end smallexample
 
-@item @@(gcc.attributes.optimize (@var{arguments}))
 @cindex @code{optimize} function attribute
+@item @@(gcc.attributes.optimize (@var{arguments}))
 
 The @code{@@optimize} attribute is used to specify that a function is to be
 compiled with different optimization options than specified on the command
@@ -295,8 +295,8 @@ It is not suitable in production code.
 @@optimize("no-finite-math-only", 3) double fn7(double x);
 @end smallexample
 
-@item @@(gcc.attributes.register ("@var{registerName}"))
 @cindex @code{register} variable attribute
+@item @@(gcc.attributes.register ("@var{registerName}"))
 
 The @code{@@register} attribute specifies that a local or @code{__gshared}
 variable is to be given a register storage-class in the C99 sense of the term,
@@ -311,8 +311,8 @@ error to take the address of a register variable.
 void func() @{ @@register("r10") long r10 = 0x2a; @}
 @end smallexample
 
-@item @@(gcc.attributes.restrict)
 @cindex @code{restrict} parameter attribute
+@item @@(gcc.attributes.restrict)
 
 The @code{@@restrict} attribute specifies that a function parameter is to be
 restrict-qualified in the C99 sense of the term.  The parameter needs to boil
@@ -323,9 +323,9 @@ reference, or a @code{ref} parameter.
 void func(@@restrict ref const float[16] array);
 @end smallexample
 
-@item @@(gcc.attributes.section ("@var{sectionName}"))
 @cindex @code{section} function attribute
 @cindex @code{section} variable attribute
+@item @@(gcc.attributes.section ("@var{sectionName}"))
 
 The @code{@@section} attribute specifies that a function or variable lives in a
 particular section.  For when you need certain particular functions to appear
@@ -341,8 +341,8 @@ instead.
 @@section("stack") ubyte[10000] stack;
 @end smallexample
 
-@item @@(gcc.attributes.simd)
 @cindex @code{simd} function attribute
+@item @@(gcc.attributes.simd)
 
 The @code{@@simd} attribute enables creation of one or more function versions
 that can process multiple arguments using SIMD instructions from a single
@@ -355,8 +355,8 @@ Vector ABI document.
 @@simd double sqrt(double x);
 @end smallexample
 
-@item @@(gcc.attributes.simd_clones ("@var{mask}"))
 @cindex @code{simd_clones} function attribute
+@item @@(gcc.attributes.simd_clones ("@var{mask}"))
 
 The @code{@@simd_clones} attribute is the same as @code{@@simd}, but also
 includes a @var{mask} argument.  Valid masks values are @code{notinbranch} or
@@ -367,8 +367,8 @@ clones correspondingly.
 @@simd_clones("notinbranch") double atan2(double y, double x);
 @end smallexample
 
-@item @@(gcc.attributes.symver ("@var{arguments}"))
 @cindex @code{symver} function attribute
+@item @@(gcc.attributes.symver ("@var{arguments}"))
 
 The @code{@@symver} attribute creates a symbol version on ELF targets.
 The syntax of the string parameter is @code{"@var{name}@@@var{nodename}"}.
@@ -387,8 +387,8 @@ resolve @var{name} by the linker.
 @@symver("foo@@VERS_1") int foo_v1();
 @end smallexample
 
-@item @@(gcc.attributes.target ("@var{options}"))
 @cindex @code{target} function attribute
+@item @@(gcc.attributes.target ("@var{options}"))
 
 The @code{@@target} attribute is used to specify that a function is to be
 compiled with different target options than specified on the command line.  One
@@ -407,8 +407,8 @@ The options supported are specific to each target.
 @@target("sse3") void sse3_func();
 @end smallexample
 
-@item @@(gcc.attributes.target_clones ("@var{options}"))
 @cindex @code{target_clones} function attribute
+@item @@(gcc.attributes.target_clones ("@var{options}"))
 
 The @code{@@target_clones} attribute is used to specify that a function be
 cloned into multiple versions compiled with different target @var{options} than
@@ -423,9 +423,9 @@ a function with @code{@@target_clones} attribute.
 @@target_clones("sse4.1,avx,default") double func(double x);
 @end smallexample
 
-@item @@(gcc.attributes.used)
 @cindex @code{used} function attribute
 @cindex @code{used} variable attribute
+@item @@(gcc.attributes.used)
 
 The @code{@@used} attribute, annotated to a function or variable, means that
 code must be emitted for the function even if it appears that the function is
@@ -436,9 +436,9 @@ only in inline assembly.
 @@used __gshared int var = 0x1000;
 @end smallexample
 
-@item @@(gcc.attributes.visibility ("@var{visibilityName}"))
 @cindex @code{visibility} function attribute
 @cindex @code{visibility} variable attribute
+@item @@(gcc.attributes.visibility ("@var{visibilityName}"))
 
 The @code{@@visibility} attribute affects the linkage of the declaration to
 which it is attached.  It can be applied to variables, types, and functions.
@@ -450,9 +450,9 @@ There are four supported visibility_type values: @code{default}, @code{hidden},
 @@visibility("protected") void func() @{  @}
 @end smallexample
 
-@item @@(gcc.attributes.weak)
 @cindex @code{weak} function attribute
 @cindex @code{weak} variable attribute
+@item @@(gcc.attributes.weak)
 
 The @code{@@weak} attribute causes a declaration of an external symbol to be
 emitted as a weak symbol rather than a global.  This is primarily useful in
@@ -479,43 +479,43 @@ The following attributes are defined for compatibility with other compilers.
 
 @table @code
 
+@cindex @code{allocSize} function attribute
 @item @@(gcc.attributes.allocSize (@var{sizeArgIdx}))
 @itemx @@(gcc.attributes.allocSize (@var{sizeArgIdx}, @var{numArgIdx}))
 @item @@(gcc.attributes.allocSize (@var{sizeArgIdx}))
-@cindex @code{allocSize} function attribute
 
 These attributes are a synonym for
 @code{@@alloc_size(@var{sizeArgIdx}, @var{numArgIdx}, true)}.
 Unlike @code{@@alloc_size}, it uses 0-based index of the function arguments.
 
-@item @@(gcc.attributes.assumeUsed)
 @cindex @code{assumeUsed} function attribute
 @cindex @code{assumeUsed} variable attribute
+@item @@(gcc.attributes.assumeUsed)
 
 This attribute is a synonym for @code{@@used}.
 
+@cindex @code{dynamicCompile} function attribute
 @item @@(gcc.attributes.dynamicCompile)
 @itemx @@(gcc.attributes.dynamicCompileConst)
 @itemx @@(gcc.attributes.dynamicCompileEmit)
-@cindex @code{dynamicCompile} function attribute
 
 These attributes are accepted, but have no effect.
 
-@item @@(gcc.attributes.fastmath)
 @cindex @code{fastmath} function attribute
+@item @@(gcc.attributes.fastmath)
 
 This attribute is a synonym for @code{@@optimize("Ofast")}.  Explicitly sets
 "fast-math" for a function, enabling aggressive math optimizations.
 
-@item @@(gcc.attributes.hidden)
 @cindex @code{hidden} function attribute
 @cindex @code{hidden} variable attribute
+@item @@(gcc.attributes.hidden)
 
 This attribute is a synonym for @code{@@visibility("hidden")}.  Sets the
 visibility of a function or global variable to "hidden".
 
-@item @@(gcc.attributes.naked)
 @cindex @code{naked} function attribute
+@item @@(gcc.attributes.naked)
 
 This attribute is a synonym for @code{@@attribute("naked")}.  Adds GCC's
 "naked" attribute to a function, disabling function prologue / epilogue
@@ -524,14 +524,14 @@ While using extended @code{asm} or a mixture of basic @code{asm} and D code may
 appear to work, they cannot be depended upon to work reliably and are not
 supported.
 
-@item @@(gcc.attributes.noSanitize ("@var{sanitize_option}"))
 @cindex @code{noSanitize} function attribute
+@item @@(gcc.attributes.noSanitize ("@var{sanitize_option}"))
 
 This attribute is a synonym for @code{@@no_sanitize("sanitize_option")}.
 
 
-@item @@(gcc.attributes.optStrategy ("@var{strategy}"))
 @cindex @code{optStrategy} function attribute
+@item @@(gcc.attributes.optStrategy ("@var{strategy}"))
 
 This attribute is a synonym for @code{@@optimize("O0")} and
 @code{@@optimize("Os")}.  Sets the optimization strategy for a function.  Valid
@@ -2510,5 +2510,11 @@ version (GNU)
     __builtin_ia32_psllwi(op1, imm8);
 @}
 @end smallexample
+
+@item TypeInfo-based va_arg
+The Digital Mars D compiler implements a version of @code{core.vararg.va_arg}
+that accepts a run-time @code{TypeInfo} argument for use when the static type
+is not known.  This function is not implemented by GNU D.  It is more portable
+to use variadic template functions instead.
 
 @end table

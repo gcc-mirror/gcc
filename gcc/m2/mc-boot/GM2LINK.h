@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -50,7 +51,7 @@ extern "C" {
 typedef char *M2LINK_PtrToChar;
 
 EXTERN M2LINK_PtrToChar M2LINK_ForcedModuleInitOrder;
-EXTERN unsigned int M2LINK_StaticInitialization;
+EXTERN bool M2LINK_StaticInitialization;
 #   ifdef __cplusplus
 }
 #   endif

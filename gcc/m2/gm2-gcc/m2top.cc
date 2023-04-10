@@ -59,7 +59,7 @@ m2top_FinishBackend (void)
 /* SetFlagUnitAtATime - sets GCC flag_unit_at_a_time to b.  */
 
 void
-m2top_SetFlagUnitAtATime (int b)
+m2top_SetFlagUnitAtATime (bool b)
 {
   flag_unit_at_a_time = b;
 }

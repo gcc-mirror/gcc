@@ -1512,10 +1512,12 @@ eliminate_unnecessary_stmts (bool aggressive)
 	remove_edge (to_remove_edges[i]);
       cfg_altered = true;
     }
-  /* When we cleared calls_setjmp we can purge all abnormal edges.  Do so.  */
-  if (cfun->calls_setjmp != had_setjmp)
+  /* When we cleared calls_setjmp we can purge all abnormal edges.  Do so.
+     ???  We'd like to assert that setjmp calls do not pop out of nothing
+     but we currently lack a per-stmt way of noting whether a call was
+     recognized as returns-twice (or rather receives-control).  */
+  if (!cfun->calls_setjmp && had_setjmp)
     {
-      gcc_assert (!cfun->calls_setjmp);
       /* Make sure we only remove the edges, not dominated blocks.  Using
 	 gimple_purge_dead_abnormal_call_edges would do that and we
 	 cannot free dominators yet.  */

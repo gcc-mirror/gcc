@@ -1112,7 +1112,8 @@ cancel_option (int opt_idx, int next_opt_idx, int orig_next_opt_idx)
   return false;
 }
 
-/* Filter out options canceled by the ones after them.  */
+/* Filter out options canceled by the ones after them, and related
+   rearrangement.  */
 
 static void
 prune_options (struct cl_decoded_option **decoded_options,
@@ -1125,6 +1126,8 @@ prune_options (struct cl_decoded_option **decoded_options,
     = XNEWVEC (struct cl_decoded_option, old_decoded_options_count);
   unsigned int i;
   const struct cl_option *option;
+  unsigned int options_to_prepend = 0;
+  unsigned int Wcomplain_wrong_lang_idx = 0;
   unsigned int fdiagnostics_color_idx = 0;
 
   /* Remove arguments which are negated by others after them.  */
@@ -1146,8 +1149,17 @@ prune_options (struct cl_decoded_option **decoded_options,
 	case OPT_SPECIAL_input_file:
 	  goto keep;
 
-	/* Do not save OPT_fdiagnostics_color_, just remember the last one.  */
+	/* Do not handle the following yet, just remember the last one.  */
+	case OPT_Wcomplain_wrong_lang:
+	  gcc_checking_assert (i != 0);
+	  if (Wcomplain_wrong_lang_idx == 0)
+	    ++options_to_prepend;
+	  Wcomplain_wrong_lang_idx = i;
+	  continue;
 	case OPT_fdiagnostics_color_:
+	  gcc_checking_assert (i != 0);
+	  if (fdiagnostics_color_idx == 0)
+	    ++options_to_prepend;
 	  fdiagnostics_color_idx = i;
 	  continue;
 
@@ -1191,15 +1203,29 @@ keep:
 	}
     }
 
-  if (fdiagnostics_color_idx >= 1)
+  /* For those not yet handled, put (only) the last at a front position after
+     'argv[0]', so they can take effect immediately.  */
+  if (options_to_prepend)
     {
-      /* We put the last -fdiagnostics-color= at the first position
-	 after argv[0] so it can take effect immediately.  */
-      memmove (new_decoded_options + 2, new_decoded_options + 1,
-	       sizeof (struct cl_decoded_option) 
-	       * (new_decoded_options_count - 1));
-      new_decoded_options[1] = old_decoded_options[fdiagnostics_color_idx];
-      new_decoded_options_count++;
+      const unsigned int argv_0 = 1;
+      memmove (new_decoded_options + argv_0 + options_to_prepend,
+	       new_decoded_options + argv_0,
+	       sizeof (struct cl_decoded_option)
+	       * (new_decoded_options_count - argv_0));
+      unsigned int options_prepended = 0;
+      if (Wcomplain_wrong_lang_idx != 0)
+	{
+	  new_decoded_options[argv_0 + options_prepended++]
+	    = old_decoded_options[Wcomplain_wrong_lang_idx];
+	  new_decoded_options_count++;
+	}
+      if (fdiagnostics_color_idx != 0)
+	{
+	  new_decoded_options[argv_0 + options_prepended++]
+	    = old_decoded_options[fdiagnostics_color_idx];
+	  new_decoded_options_count++;
+	}
+      gcc_checking_assert (options_to_prepend == options_prepended);
     }
 
   free (old_decoded_options);

@@ -189,9 +189,10 @@ am__DEPENDENCIES_1 =
 am__dirstamp = $(am__leading_dot)dirstamp
 am__objects_1 = core/atomic.lo core/attribute.lo core/bitop.lo \
 	core/builtins.lo core/checkedint.lo core/cpuid.lo \
-	core/demangle.lo core/exception.lo core/gc/config.lo \
-	core/gc/gcinterface.lo core/gc/registry.lo core/int128.lo \
-	core/internal/abort.lo core/internal/array/appending.lo \
+	core/demangle.lo core/exception.lo core/factory.lo \
+	core/gc/config.lo core/gc/gcinterface.lo core/gc/registry.lo \
+	core/int128.lo core/internal/abort.lo \
+	core/internal/array/appending.lo \
 	core/internal/array/arrayassign.lo \
 	core/internal/array/capacity.lo core/internal/array/casting.lo \
 	core/internal/array/comparison.lo \
@@ -838,7 +839,7 @@ libgdruntime_convenience_la_LINK = $(libgdruntime_la_LINK)
 DRUNTIME_CSOURCES = core/stdc/errno_.c
 DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/builtins.d core/checkedint.d core/cpuid.d core/demangle.d \
-	core/exception.d core/gc/config.d core/gc/gcinterface.d \
+	core/exception.d core/factory.d core/gc/config.d core/gc/gcinterface.d \
 	core/gc/registry.d core/int128.d core/internal/abort.d \
 	core/internal/array/appending.d core/internal/array/arrayassign.d \
 	core/internal/array/capacity.d core/internal/array/casting.d \
@@ -1188,6 +1189,7 @@ core/checkedint.lo: core/$(am__dirstamp)
 core/cpuid.lo: core/$(am__dirstamp)
 core/demangle.lo: core/$(am__dirstamp)
 core/exception.lo: core/$(am__dirstamp)
+core/factory.lo: core/$(am__dirstamp)
 core/gc/$(am__dirstamp):
 	@$(MKDIR_P) core/gc
 	@: > core/gc/$(am__dirstamp)

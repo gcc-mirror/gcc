@@ -1537,6 +1537,8 @@ compare_lambda_template_head (tree tmpl_a, tree tmpl_b)
 	  if (parm_a == error_mark_node)
 	    return false;
 	  parm_a = TREE_VALUE (parm_a);
+	  if (parm_a == error_mark_node)
+	    return false;
 	  if (DECL_VIRTUAL_P (parm_a))
 	    parm_a = NULL_TREE;
 	}
@@ -1548,6 +1550,8 @@ compare_lambda_template_head (tree tmpl_a, tree tmpl_b)
 	  if (parm_b == error_mark_node)
 	    return false;
 	  parm_b = TREE_VALUE (parm_b);
+	  if (parm_b == error_mark_node)
+	    return false;
 	  if (DECL_VIRTUAL_P (parm_b))
 	    parm_b = NULL_TREE;
 	}
@@ -1755,6 +1759,9 @@ prune_lambda_captures (tree body)
     return;
   if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lam) == CPLD_NONE)
     /* No default captures, and we don't prune explicit captures.  */
+    return;
+  /* Don't bother pruning in a template, we'll prune at instantiation time.  */
+  if (dependent_type_p (TREE_TYPE (lam)))
     return;
 
   hash_map<tree,tree*> const_vars;

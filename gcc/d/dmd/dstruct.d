@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/struct.html, Structs, Unions)
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dstruct.d, _dstruct.d)
@@ -29,6 +29,7 @@ import dmd.func;
 import dmd.globals;
 import dmd.id;
 import dmd.identifier;
+import dmd.location;
 import dmd.mtype;
 import dmd.opover;
 import dmd.target;
@@ -74,7 +75,7 @@ extern (C++) void semanticTypeInfo(Scope* sc, Type t)
     {
         if (sc.intypeof)
             return;
-        if (sc.flags & (SCOPE.ctfe | SCOPE.compile))
+        if (sc.flags & (SCOPE.ctfe | SCOPE.compile | SCOPE.ctfeBlock))
             return;
     }
 
@@ -477,6 +478,16 @@ extern (C++) class StructDeclaration : AggregateDeclaration
         }
 
         return (ispod == ThreeState.yes);
+    }
+
+    /***************************************
+     * Determine if struct has copy construction (copy constructor or postblit)
+     * Returns:
+     *     true if struct has copy construction
+     */
+    final bool hasCopyConstruction()
+    {
+        return postblit || hasCopyCtor;
     }
 
     override final inout(StructDeclaration) isStructDeclaration() inout @nogc nothrow pure @safe

@@ -1,0 +1,3 @@
+#include <winuser.h>
+
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "winnt-utf8.manifest"

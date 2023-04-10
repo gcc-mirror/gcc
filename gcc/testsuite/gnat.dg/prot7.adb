@@ -1,4 +1,5 @@
 --  { dg-do compile }
+--  { dg-skip-if "not lock free" { hppa-*-* } }
 --  { dg-options "-gnatwa -gnatVa" }
 
 package body Prot7 is

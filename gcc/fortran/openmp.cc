@@ -1528,7 +1528,7 @@ gfc_omp_absent_contains_clause (gfc_omp_assumptions **assume, bool is_absent)
 	  if (st == ST_NONE)
 	    gfc_error ("Unknown directive at %L", &old_loc);
 	  else
-	    gfc_error ("Invalid combined or composit directive at %L",
+	    gfc_error ("Invalid combined or composite directive at %L",
 		       &old_loc);
 	  return MATCH_ERROR;
 	}

@@ -837,6 +837,9 @@ __transfer_from_trampoline ()					\
   assemble_name ((FILE), (NAME)),		\
   fprintf ((FILE), ",%u\n", (int)(ROUNDED)))
 
+#define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS) \
+  m68k_final_prescan_insn (INSN, OPVEC, NOPERANDS)
+
 /* On the 68000, we use several CODE characters:
    '.' for dot needed in Motorola-style opcode names.
    '-' for an operand pushing on the stack:

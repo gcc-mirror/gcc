@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-additional-sources ../on_device_arch.c }
-! { dg-prune-output "command-line option '-fintrinsic-modules-path=.*' is valid for Fortran but not for C" }
+! { dg-additional-options -Wno-complain-wrong-lang }
 
 module e_53_1_mod
   integer :: THRESHOLD = 20

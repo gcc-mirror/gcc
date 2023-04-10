@@ -29,6 +29,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <config.h>
 #include <m2rts.h>
 
+#define EXPORT(FUNC) m2pim ## _ldtoa_ ## FUNC
+#define IMPORT(MODULE,FUNC) m2pim ## _ ## MODULE ## _ ## FUNC
+#define M2EXPORT(FUNC) m2pim ## _M2_ldtoa_ ## FUNC
+#define M2LIBNAME "m2pim"
+
 #if defined(HAVE_STRINGS)
 #include <strings.h>
 #endif
@@ -86,20 +91,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define NULL (void *)0
 #endif
 
-#if !defined(TRUE)
-#define TRUE (1 == 1)
-#endif
-#if !defined(FALSE)
-#define FALSE (1 == 0)
-#endif
-
 #define MAX_FP_DIGITS 500
 
 typedef enum Mode { maxsignicant, decimaldigits } Mode;
 
-extern "C" int dtoa_calcmaxsig (char *p, int ndigits);
-extern "C" int dtoa_calcdecimal (char *p, int str_size, int ndigits);
-extern "C" int dtoa_calcsign (char *p, int str_size);
+extern "C" int IMPORT(dtoa,calcmaxsig) (char *p, int ndigits);
+extern "C" int IMPORT(dtoa,calcdecimal) (char *p, int str_size, int ndigits);
+extern "C" int IMPORT(dtoa,calcsign) (char *p, int str_size);
 
 /* maxsignicant return a string containing max(1,ndigits) significant
    digits.  The return string contains the string produced by snprintf.
@@ -108,7 +106,7 @@ extern "C" int dtoa_calcsign (char *p, int str_size);
    contain ndigits past the decimal point (ndigits may be negative).  */
 
 extern "C" long double
-ldtoa_strtold (const char *s, int *error)
+EXPORT(strtold) (const char *s, bool *error)
 {
   char *endp;
   long double d;
@@ -126,15 +124,15 @@ ldtoa_strtold (const char *s, int *error)
 #if defined(HAVE_ERRNO_H)
     *error = (errno != 0);
 #else
-    *error = FALSE;
+    *error = false;
 #endif
   else
-    *error = TRUE;
+    *error = true;
   return d;
 }
 
 extern "C" char *
-ldtoa_ldtoa (long double d, int mode, int ndigits, int *decpt, int *sign)
+EXPORT(ldtoa) (long double d, int mode, int ndigits, int *decpt, bool *sign)
 {
   char format[50];
   char *p;
@@ -147,15 +145,15 @@ ldtoa_ldtoa (long double d, int mode, int ndigits, int *decpt, int *sign)
       p = (char *) malloc (ndigits);
       snprintf (format, 50, "%s%d%s", "%.", ndigits - 20, "LE");
       snprintf (p, ndigits, format, d);
-      *sign = dtoa_calcsign (p, ndigits);
-      *decpt = dtoa_calcmaxsig (p, ndigits);
+      *sign = IMPORT(dtoa,calcsign) (p, ndigits);
+      *decpt = IMPORT(dtoa,calcmaxsig) (p, ndigits);
       return p;
     case decimaldigits:
       p = (char *) malloc (MAX_FP_DIGITS + 20);
       snprintf (format, 50, "%s%d%s", "%.", MAX_FP_DIGITS, "LE");
       snprintf (p, MAX_FP_DIGITS + 20, format, d);
-      *sign = dtoa_calcsign (p, MAX_FP_DIGITS + 20);
-      *decpt = dtoa_calcdecimal (p, MAX_FP_DIGITS + 20, ndigits);
+      *sign = IMPORT(dtoa,calcsign) (p, MAX_FP_DIGITS + 20);
+      *decpt = IMPORT(dtoa,calcdecimal) (p, MAX_FP_DIGITS + 20, ndigits);
       return p;
     default:
       abort ();
@@ -166,24 +164,25 @@ ldtoa_ldtoa (long double d, int mode, int ndigits, int *decpt, int *sign)
 /* GNU Modula-2 linking hooks.  */
 
 extern "C" void
-_M2_ldtoa_init (int, char **, char **)
+M2EXPORT(init) (int, char **, char **)
 {
 }
 
 extern "C" void
-_M2_ldtoa_fini (int, char **, char **)
+M2EXPORT(fini) (int, char **, char **)
 {
 }
 
 extern "C" void
-_M2_ldtoa_dep (void)
+M2EXPORT(dep) (void)
 {
 }
 
 extern "C" void __attribute__((__constructor__))
-_M2_ldtoa_ctor (void)
+M2EXPORT(ctor) (void)
 {
-  M2RTS_RegisterModule ("ldtoa", _M2_ldtoa_init, _M2_ldtoa_fini,
-			_M2_ldtoa_dep);
+  m2pim_M2RTS_RegisterModule ("ldtoa", M2LIBNAME,
+			      M2EXPORT(init), M2EXPORT(fini),
+			      M2EXPORT(dep));
 }
 #endif

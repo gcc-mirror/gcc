@@ -490,8 +490,9 @@ package mixin template ParseVisitMethods(AST)
     {
         //printf("Visiting StaticAssert\n");
         s.exp.accept(this);
-        if (s.msg)
-            s.msg.accept(this);
+        if (s.msgs)
+            foreach (m; (*s.msgs)[])
+                m.accept(this);
     }
 
     override void visit(AST.EnumMember em)

@@ -1,7 +1,7 @@
 /**
  * Perform constant folding.
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/optimize.d, _optimize.d)
@@ -25,6 +25,7 @@ import dmd.expression;
 import dmd.expressionsem;
 import dmd.globals;
 import dmd.init;
+import dmd.location;
 import dmd.mtype;
 import dmd.printast;
 import dmd.root.ctfloat;
@@ -586,7 +587,7 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                     Expression ex = new AddrExp(ae1.loc, ae1);  // &a[i]
                     ex.type = ae1.type.pointerTo();
 
-                    Expression add = new AddExp(ae.loc, ex, new IntegerExp(ae.loc, offset, e.type));
+                    Expression add = new AddExp(ae.loc, ex, new IntegerExp(ae.e2.loc, offset, ae.e2.type));
                     add.type = e.type;
                     ret = Expression_optimize(add, result, keepLvalue);
                     return;
@@ -862,7 +863,8 @@ Expression Expression_optimize(Expression e, int result, bool keepLvalue)
                 return returnE_e1();    // can always convert a class to Object
             // Need to determine correct offset before optimizing away the cast.
             // https://issues.dlang.org/show_bug.cgi?id=16980
-            cdfrom.size(e.loc);
+            if (cdfrom.size(e.loc) == SIZE_INVALID)
+                return error();
             assert(cdfrom.sizeok == Sizeok.done);
             assert(cdto.sizeok == Sizeok.done || !cdto.isBaseOf(cdfrom, null));
             int offset;

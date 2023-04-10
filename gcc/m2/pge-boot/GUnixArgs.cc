@@ -36,6 +36,8 @@ static int UnixArgs_ArgC;
 static char **UnixArgs_ArgV;
 static char **UnixArgs_EnvV;
 
+#define LIBNAME "m2pim"
+
 
 /* GetArgC returns argc.  */
 
@@ -73,7 +75,7 @@ _M2_UnixArgs_init (int argc, char *argv[], char *envp[])
 }
 
 extern "C" void
-_M2_UnixArgs_finish (int argc, char *argv[], char *envp[])
+_M2_UnixArgs_fini (int argc, char *argv[], char *envp[])
 {
 }
 
@@ -86,6 +88,6 @@ struct _M2_UnixArgs_ctor { _M2_UnixArgs_ctor (); } _M2_UnixArgs_ctor;
 
 _M2_UnixArgs_ctor::_M2_UnixArgs_ctor (void)
 {
-  M2RTS_RegisterModule ("UnixArgs", _M2_UnixArgs_init, _M2_UnixArgs_finish,
+  M2RTS_RegisterModule ("UnixArgs", LIBNAME, _M2_UnixArgs_init, _M2_UnixArgs_fini,
 			_M2_UnixArgs_dep);
 }

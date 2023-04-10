@@ -5,9 +5,9 @@ template <int> bool b;
 
 template <typename> 
 struct C {
-  template <typename> friend int foo() noexcept(b<1>); // { dg-error "not usable in a constant expression|different exception specifier" }
+  template <typename> friend int foo() noexcept(b<1>); // { dg-error "not usable in a constant expression" }
 };
 
-template <typename> int foo() noexcept(b<1>);
+template <typename> int foo() noexcept(b<1>); // { dg-error "not usable in a constant expression" }
 
 auto a = C<int>();

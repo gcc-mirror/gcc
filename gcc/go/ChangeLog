@@ -1,3 +1,17 @@
+2023-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/109258
+	* go-gcc.cc (Gcc_backend): Add new static data members builtin_pure
+	and builtin_nothrow.
+	(Gcc_backend::Gcc_backend): Pass builtin_pure | builtin_nothrow for
+	BUILT_IN_MEMCMP.
+	(Gcc_backend::define_builtin): Handle builtin_pure and builtin_nothrow
+	in flags.
+
+2023-02-23  Arsen Arsenović  <arsen@aarsen.me>
+
+	* gccgo.texi: Reorder index entries around @items.
+
 2023-01-17  Ian Lance Taylor  <iant@golang.org>
 
 	PR go/108426

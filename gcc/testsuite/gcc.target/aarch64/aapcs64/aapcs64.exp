@@ -27,17 +27,20 @@ if { ![istarget aarch64*-*-*] } then {
 
 torture-init
 set-torture-options $C_TORTURE_OPTIONS
-set additional_flags "-W -Wall -Wno-abi"
+set additional_flags "-W -Wall -Wno-abi -fno-pie -no-pie"
 
 # Test parameter passing.  This uses abitest.S which relies on weak
 # symbols.
 
-if { [check_weak_available] } {
+set additional_flags_for_abitest [add_options_for_weak_undefined ""]
+set additional_flags_for_abitest "$additional_flags $additional_flags_for_abitest"
+
+if { [check_effective_target_weak_undefined] } {
     foreach src [lsort [glob -nocomplain $srcdir/$subdir/test_*.c]] {
 	if {[runtest_file_p $runtests $src]} {
 	    c-torture-execute [list $src \
 				    $srcdir/$subdir/abitest.S] \
-				    $additional_flags
+		$additional_flags_for_abitest
 	}
     }
 }
@@ -54,28 +57,28 @@ foreach src [lsort [glob -nocomplain $srcdir/$subdir/rec_*.c]] {
 
 # Test unnamed argument retrieval via the va_arg macro.  This uses abitest.S
 # which relies on weak symbols.
-if { [check_weak_available] } {
+if { [check_effective_target_weak_undefined] } {
     foreach src [lsort [glob -nocomplain $srcdir/$subdir/va_arg-*.c]] {
 	if {[runtest_file_p $runtests $src]} {
 	    c-torture-execute [list $src \
 				    $srcdir/$subdir/abitest.S] \
-				    $additional_flags
+		$additional_flags_for_abitest
 	}
     }
 }
 
 # Test function return value.  This uses abitest.S which relies on
 # weak symbols.
-if { [check_weak_available] } {
+if { [check_effective_target_weak_undefined] } {
     #   Disable -fipa-ra to prevent the compiler from generating
     #   conflicting code.
-    set additional_flags_for_func_ret $additional_flags
+    set additional_flags_for_func_ret $additional_flags_for_abitest
     append additional_flags_for_func_ret " -fno-ipa-ra"
     foreach src [lsort [glob -nocomplain $srcdir/$subdir/func-ret-*.c]] {
 	if {[runtest_file_p $runtests $src]} {
 	    c-torture-execute [list $src \
 				    $srcdir/$subdir/abitest.S] \
-				    $additional_flags_for_func_ret
+		$additional_flags_for_func_ret
 	}
     }
 }

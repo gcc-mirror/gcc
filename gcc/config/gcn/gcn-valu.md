@@ -49,6 +49,13 @@
 		       V16QI V16HI V16SI V16HF V16SF
 		       V32QI V32HI V32SI V32HF V32SF
 		       V64QI V64HI V64SI V64HF V64SF])
+(define_mode_iterator V_1REG_ALT
+		      [V2QI V2HI V2SI V2HF V2SF
+		       V4QI V4HI V4SI V4HF V4SF
+		       V8QI V8HI V8SI V8HF V8SF
+		       V16QI V16HI V16SI V16HF V16SF
+		       V32QI V32HI V32SI V32HF V32SF
+		       V64QI V64HI V64SI V64HF V64SF])
 
 (define_mode_iterator V_INT_1REG
 		      [V2QI V2HI V2SI
@@ -74,6 +81,13 @@
 
 ; Vector modes for two vector registers
 (define_mode_iterator V_2REG
+		      [V2DI V2DF
+		       V4DI V4DF
+		       V8DI V8DF
+		       V16DI V16DF
+		       V32DI V32DF
+		       V64DI V64DF])
+(define_mode_iterator V_2REG_ALT
 		      [V2DI V2DF
 		       V4DI V4DF
 		       V8DI V8DF
@@ -788,11 +802,36 @@
    (set_attr "exec" "none")
    (set_attr "laneselect" "yes")])
 
+(define_insn "vec_extract<V_1REG:mode><V_1REG_ALT:mode>_nop"
+  [(set (match_operand:V_1REG_ALT 0 "register_operand" "=v,v")
+	(vec_select:V_1REG_ALT
+	  (match_operand:V_1REG 1 "register_operand"   " 0,v")
+	  (match_operand 2 "ascending_zero_int_parallel" "")))]
+  "MODE_VF (<V_1REG_ALT:MODE>mode) < MODE_VF (<V_1REG:MODE>mode)
+   && <V_1REG_ALT:SCALAR_MODE>mode == <V_1REG:SCALAR_MODE>mode"
+  "@
+  ; in-place extract %0
+  v_mov_b32\t%L0, %L1"
+  [(set_attr "type" "vmult")
+   (set_attr "length" "0,8")])
+  
+(define_insn "vec_extract<V_2REG:mode><V_2REG_ALT:mode>_nop"
+  [(set (match_operand:V_2REG_ALT 0 "register_operand" "=v,v")
+	(vec_select:V_2REG_ALT
+	  (match_operand:V_2REG 1 "register_operand"   " 0,v")
+	  (match_operand 2 "ascending_zero_int_parallel" "")))]
+  "MODE_VF (<V_2REG_ALT:MODE>mode) < MODE_VF (<V_2REG:MODE>mode)
+   && <V_2REG_ALT:SCALAR_MODE>mode == <V_2REG:SCALAR_MODE>mode"
+  "@
+  ; in-place extract %0
+  v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1"
+  [(set_attr "type" "vmult")
+   (set_attr "length" "0,8")])
+  
 (define_expand "vec_extract<V_ALL:mode><V_ALL_ALT:mode>"
-  [(set (match_operand:V_ALL_ALT 0 "register_operand")
-	(vec_select:V_ALL_ALT
-	  (match_operand:V_ALL 1 "register_operand")
-	  (parallel [(match_operand 2 "immediate_operand")])))]
+  [(match_operand:V_ALL_ALT 0 "register_operand")
+   (match_operand:V_ALL 1 "register_operand")
+   (match_operand 2 "immediate_operand")]
   "MODE_VF (<V_ALL_ALT:MODE>mode) < MODE_VF (<V_ALL:MODE>mode)
    && <V_ALL_ALT:SCALAR_MODE>mode == <V_ALL:SCALAR_MODE>mode"
   {
@@ -802,8 +841,12 @@
 
     if (firstlane == 0)
       {
-	/* A plain move will do.  */
-	tmp = operands[1];
+	rtx parallel = gen_rtx_PARALLEL (<V_ALL:MODE>mode,
+					  rtvec_alloc (numlanes));
+	for (int i = 0; i < numlanes; i++)
+	  XVECEXP (parallel, 0, i) = GEN_INT (i);
+	emit_insn (gen_vec_extract<V_ALL:mode><V_ALL_ALT:mode>_nop
+		   (operands[0], operands[1], parallel));
       } else {
         /* FIXME: optimize this by using DPP where available.  */
 
@@ -815,10 +858,10 @@
 	tmp = gen_reg_rtx (<V_ALL:MODE>mode);
 	emit_insn (gen_ds_bpermute<V_ALL:mode> (tmp, permutation, operands[1],
 						get_exec (<V_ALL:MODE>mode)));
-      }
 
-    emit_move_insn (operands[0],
-		    gen_rtx_SUBREG (<V_ALL_ALT:MODE>mode, tmp, 0));
+	emit_move_insn (operands[0],
+			gen_rtx_SUBREG (<V_ALL_ALT:MODE>mode, tmp, 0));
+      }
     DONE;
   })
 
@@ -1220,6 +1263,45 @@
   {
     return gcn_expand_dpp_shr_insn (<MODE>mode, "v_mov_b32",
 				    UNSPEC_MOV_DPP_SHR, INTVAL (operands[2]));
+  }
+  [(set_attr "type" "vop_dpp")
+   (set_attr "length" "16")])
+
+(define_insn "@dpp_swap_pairs<mode>"
+  [(set (match_operand:V_noHI 0 "register_operand"    "=v")
+	(unspec:V_noHI
+	  [(match_operand:V_noHI 1 "register_operand" " v")]
+	  UNSPEC_MOV_DPP_SWAP_PAIRS))]
+  ""
+  {
+    return gcn_expand_dpp_swap_pairs_insn (<MODE>mode, "v_mov_b32",
+	                                   UNSPEC_MOV_DPP_SWAP_PAIRS);
+  }
+  [(set_attr "type" "vop_dpp")
+   (set_attr "length" "16")])
+
+(define_insn "@dpp_distribute_even<mode>"
+  [(set (match_operand:V_noHI 0 "register_operand"    "=v")
+	(unspec:V_noHI
+	  [(match_operand:V_noHI 1 "register_operand" " v")]
+	  UNSPEC_MOV_DPP_DISTRIBUTE_EVEN))]
+  ""
+  {
+    return gcn_expand_dpp_distribute_even_insn (<MODE>mode, "v_mov_b32",
+						UNSPEC_MOV_DPP_DISTRIBUTE_EVEN);
+  }
+  [(set_attr "type" "vop_dpp")
+   (set_attr "length" "16")])
+
+(define_insn "@dpp_distribute_odd<mode>"
+  [(set (match_operand:V_noHI 0 "register_operand"    "=v")
+	(unspec:V_noHI
+	  [(match_operand:V_noHI 1 "register_operand" " v")]
+	  UNSPEC_MOV_DPP_DISTRIBUTE_EVEN))]
+  ""
+  {
+    return gcn_expand_dpp_distribute_odd_insn (<MODE>mode, "v_mov_b32",
+					       UNSPEC_MOV_DPP_DISTRIBUTE_ODD);
   }
   [(set_attr "type" "vop_dpp")
    (set_attr "length" "16")])
@@ -2185,6 +2267,180 @@
     DONE;
   })
 
+(define_int_iterator UNSPEC_CMUL_OP [UNSPEC_CMUL UNSPEC_CMUL_CONJ])
+(define_int_attr conj_op [(UNSPEC_CMUL "") (UNSPEC_CMUL_CONJ "_conj")])
+(define_int_attr cmul_subadd [(UNSPEC_CMUL "sub") (UNSPEC_CMUL_CONJ "add")])
+(define_int_attr cmul_addsub [(UNSPEC_CMUL "add") (UNSPEC_CMUL_CONJ "sub")])
+
+(define_expand "cmul<conj_op><mode>3"
+  [(set (match_operand:V_noHI 0 "register_operand"    "=&v")
+        (unspec:V_noHI
+	  [(match_operand:V_noHI 1 "register_operand" "v")
+	   (match_operand:V_noHI 2 "register_operand" "v")]
+	  UNSPEC_CMUL_OP))]
+  ""
+  {
+    // operands[1]                                                  a   b
+    // operands[2]                                                  c   d
+    rtx t1 = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_mul<mode>3 (t1, operands[1], operands[2]));   // a*c b*d
+
+    rtx s2_perm = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_dpp_swap_pairs<mode> (s2_perm, operands[2])); // d   c
+
+    rtx t2 = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_mul<mode>3 (t2, operands[1], s2_perm));       // a*d b*c
+
+    rtx t1_perm = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_dpp_swap_pairs<mode> (t1_perm, t1));          // b*d a*c
+
+    rtx even = gen_rtx_REG (DImode, EXEC_REG);
+    emit_move_insn (even, get_exec (0x5555555555555555UL));
+    rtx dest = operands[0];
+    emit_insn (gen_<cmul_subadd><mode>3_exec (dest, t1, t1_perm, dest, even));
+                                                             // a*c-b*d 0
+
+    rtx t2_perm = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_dpp_swap_pairs<mode> (t2_perm, t2));          // b*c a*d
+
+    rtx odd = gen_rtx_REG (DImode, EXEC_REG);
+    emit_move_insn (odd, get_exec (0xaaaaaaaaaaaaaaaaUL));
+    emit_insn (gen_<cmul_addsub><mode>3_exec (dest, t2, t2_perm, dest, odd));
+                                                                   // 0 a*d+b*c
+    DONE;
+  })
+
+(define_code_iterator addsub [plus minus])
+(define_code_attr addsub_as [(plus "a") (minus "s")])
+
+(define_expand "cml<addsub_as><mode>4"
+  [(set (match_operand:V_FP 0 "register_operand"      "=&v")
+	(addsub:V_FP
+	  (unspec:V_FP
+	    [(match_operand:V_FP 1 "register_operand" "v")
+	     (match_operand:V_FP 2 "register_operand" "v")]
+	    UNSPEC_CMUL)
+	  (match_operand:V_FP 3 "register_operand"    "v")))]
+  ""
+  {
+    rtx a = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_dpp_distribute_even<mode> (a, operands[1]));    // a   a
+
+    rtx t1 = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_fm<addsub_as><mode>4 (t1, a, operands[2], operands[3]));
+                                                                   // a*c a*d
+
+    rtx b = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_dpp_distribute_odd<mode> (b, operands[1]));     // b   b
+
+    rtx t2 = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_mul<mode>3 (t2, b, operands[2]));               // b*c b*d
+
+    rtx t2_perm = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_dpp_swap_pairs<mode> (t2_perm, t2));            // b*d b*c
+
+    rtx even = gen_rtx_REG (DImode, EXEC_REG);
+    emit_move_insn (even, get_exec (0x5555555555555555UL));
+    rtx dest = operands[0];
+    emit_insn (gen_sub<mode>3_exec (dest, t1, t2_perm, dest, even));
+
+    rtx odd = gen_rtx_REG (DImode, EXEC_REG);
+    emit_move_insn (odd, get_exec (0xaaaaaaaaaaaaaaaaUL));
+    emit_insn (gen_add<mode>3_exec (dest, t1, t2_perm, dest, odd));
+
+    DONE;
+  })
+
+(define_expand "vec_addsub<mode>3"
+  [(set (match_operand:V_noHI 0 "register_operand"     "=&v")
+        (vec_merge:V_noHI
+          (minus:V_noHI
+            (match_operand:V_noHI 1 "register_operand" "v")
+            (match_operand:V_noHI 2 "register_operand" "v"))
+          (plus:V_noHI (match_dup 1) (match_dup 2))
+          (const_int 6148914691236517205)))]
+  ""
+  {
+    rtx even = gen_rtx_REG (DImode, EXEC_REG);
+    emit_move_insn (even, get_exec (0x5555555555555555UL));
+    rtx dest = operands[0];
+    rtx x = operands[1];
+    rtx y = operands[2];
+    emit_insn (gen_sub<mode>3_exec (dest, x, y, dest, even));
+    rtx odd = gen_rtx_REG (DImode, EXEC_REG);
+    emit_move_insn (odd, get_exec (0xaaaaaaaaaaaaaaaaUL));
+    emit_insn (gen_add<mode>3_exec (dest, x, y, dest, odd));
+
+    DONE;
+  })
+
+(define_int_iterator CADD [UNSPEC_CADD90 UNSPEC_CADD270])
+(define_int_attr rot [(UNSPEC_CADD90 "90") (UNSPEC_CADD270 "270")])
+(define_int_attr cadd_subadd [(UNSPEC_CADD90 "sub") (UNSPEC_CADD270 "add")])
+(define_int_attr cadd_addsub [(UNSPEC_CADD90 "add") (UNSPEC_CADD270 "sub")])
+
+(define_expand "cadd<rot><mode>3"
+  [(set (match_operand:V_noHI 0 "register_operand"                 "=&v")
+        (unspec:V_noHI [(match_operand:V_noHI 1 "register_operand" "v")
+                        (match_operand:V_noHI 2 "register_operand" "v")]
+                        CADD))]
+  ""
+  {
+    rtx dest = operands[0];
+    rtx x = operands[1];
+    rtx y = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_dpp_swap_pairs<mode> (y, operands[2]));
+
+    rtx even = gen_rtx_REG (DImode, EXEC_REG);
+    emit_move_insn (even, get_exec (0x5555555555555555UL));
+    emit_insn (gen_<cadd_subadd><mode>3_exec (dest, x, y, dest, even));
+    rtx odd = gen_rtx_REG (DImode, EXEC_REG);
+    emit_move_insn (odd, get_exec (0xaaaaaaaaaaaaaaaaUL));
+    emit_insn (gen_<cadd_addsub><mode>3_exec (dest, x, y, dest, odd));
+
+    DONE;
+  })
+
+(define_expand "vec_fmaddsub<mode>4"
+  [(match_operand:V_noHI 0 "register_operand" "=&v")
+   (match_operand:V_noHI 1 "register_operand" "v")
+   (match_operand:V_noHI 2 "register_operand" "v")
+   (match_operand:V_noHI 3 "register_operand" "v")]
+  ""
+  {
+    rtx t1 = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_mul<mode>3 (t1, operands[1], operands[2]));
+    rtx even = gen_rtx_REG (DImode, EXEC_REG);
+    emit_move_insn (even, get_exec (0x5555555555555555UL));
+    rtx dest = operands[0];
+    emit_insn (gen_sub<mode>3_exec (dest, t1, operands[3], dest, even));
+    rtx odd = gen_rtx_REG (DImode, EXEC_REG);
+    emit_move_insn (odd, get_exec (0xaaaaaaaaaaaaaaaaUL));
+    emit_insn (gen_add<mode>3_exec (dest, t1, operands[3], dest, odd));
+
+    DONE;
+  })
+
+(define_expand "vec_fmsubadd<mode>4"
+  [(match_operand:V_noHI 0 "register_operand" "=&v")
+   (match_operand:V_noHI 1 "register_operand" "v")
+   (match_operand:V_noHI 2 "register_operand" "v")
+   (match_operand:V_noHI 3 "register_operand" "v")]
+  ""
+  {
+    rtx t1 = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_mul<mode>3 (t1, operands[1], operands[2]));
+    rtx even = gen_rtx_REG (DImode, EXEC_REG);
+    emit_move_insn (even, get_exec (0x5555555555555555UL));
+    rtx dest = operands[0];
+    emit_insn (gen_add<mode>3_exec (dest, t1, operands[3], dest, even));
+    rtx odd = gen_rtx_REG (DImode, EXEC_REG);
+    emit_move_insn (odd, get_exec (0xaaaaaaaaaaaaaaaaUL));
+    emit_insn (gen_add<mode>3_exec (dest, t1, operands[3], dest, odd));
+
+    DONE;
+  })
+
 ;; }}}
 ;; {{{ ALU generic case
 
@@ -2358,6 +2614,34 @@
     DONE;
   })
 
+(define_expand "<expander><mode>3_exec"
+  [(set (match_operand:V_QIHI 0 "gcn_valu_dst_operand")
+	(vec_merge:V_QIHI
+	  (minmaxop:V_QIHI
+	    (match_operand:V_QIHI 1 "gcn_valu_src0_operand")
+	    (match_operand:V_QIHI 2 "gcn_valu_src1com_operand"))
+	  (match_operand:V_QIHI 3 "gcn_register_or_unspec_operand" "U0")
+	  (match_operand:DI 4 "gcn_exec_reg_operand" "e")))]
+  ""
+  {
+    enum {smin, umin, smax, umax};
+    bool unsignedp = (<code> == umax || <code> == umin);
+    rtx insi1 = gen_reg_rtx (<VnSI>mode);
+    rtx insi2 = gen_reg_rtx (<VnSI>mode);
+    rtx outsi = gen_reg_rtx (<VnSI>mode);
+    rtx out = operands[0];
+    rtx exec = operands[4];
+    rtx tmp = gen_reg_rtx (<MODE>mode);
+
+    convert_move (insi1, operands[1], unsignedp);
+    convert_move (insi2, operands[2], unsignedp);
+    emit_insn (gen_<code><vnsi>3_exec (outsi, insi1, insi2,
+                                       gcn_gen_undef(<VnSI>mode), exec));
+    convert_move (tmp, outsi, unsignedp);
+    emit_insn (gen_mov<mode>_exec (out, tmp, operands[3], exec));
+    DONE;
+  })
+
 (define_insn "<expander><vnsi>3<exec>"
   [(set (match_operand:V_SI 0 "gcn_valu_dst_operand"	   "=  v,RD")
 	(minmaxop:V_SI
@@ -2369,6 +2653,71 @@
    ds_<mnemonic>0\t%A0, %2%O0"
   [(set_attr "type" "vop2,ds")
    (set_attr "length" "8,8")])
+
+(define_insn_and_split "<expander><mode>3"
+  [(set (match_operand:V_DI 0 "register_operand"      "=v")
+	(minmaxop:V_DI
+	  (match_operand:V_DI 1 "gcn_alu_operand"     " v")
+	  (match_operand:V_DI 2 "gcn_alu_operand"     " v")))
+    (clobber (reg:DI VCC_REG))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  {
+    rtx out = operands[0];
+    rtx vcc = gen_rtx_REG (DImode, VCC_REG);
+
+    enum {smin, smax, umin, umax};
+    bool minp = (<code> == smin || <code> == umin);
+    if (<code> == smin || <code> == smax)
+      emit_insn (gen_vec_cmp<mode>di (vcc, minp ? gen_rtx_LT (VOIDmode, 0, 0) :
+                                      gen_rtx_GT (VOIDmode, 0, 0), operands[1],
+                                      operands[2]));
+    else
+      emit_insn (gen_vec_cmp<mode>di (vcc, minp ? gen_rtx_LTU (VOIDmode, 0, 0) :
+                                      gen_rtx_GTU (VOIDmode, 0, 0), operands[1],
+                                      operands[2]));
+    emit_insn (gen_vcond_mask_<mode>di (out, operands[1], operands[2], vcc));
+  }
+  [(set_attr "type" "mult")])
+
+(define_insn_and_split "<expander><mode>3_exec"
+  [(set (match_operand:V_DI 0 "register_operand"                 "= v")
+	(vec_merge:V_DI
+          (minmaxop:V_DI
+            (match_operand:V_DI 1 "gcn_alu_operand"              "  v")
+            (match_operand:V_DI 2 "gcn_alu_operand"              "  v"))
+          (match_operand:V_DI 3 "gcn_register_or_unspec_operand" " U0")
+          (match_operand:DI 4 "gcn_exec_reg_operand"  "+e")))
+    (clobber (match_scratch:<VnDI> 5		      "= &v"))
+    (clobber (reg:DI VCC_REG))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  {
+    rtx out = operands[0];
+    rtx vcc = gen_rtx_REG (DImode, VCC_REG);
+    rtx exec = operands[4];
+    rtx tmp = operands[5];
+
+    enum {smin, smax, umin, umax};
+    bool minp = (<code> == smin || <code> == umin);
+    if (<code> == smin || <code> == smax)
+      emit_insn (gen_vec_cmp<mode>di_exec (vcc,
+                                           minp ? gen_rtx_LT (VOIDmode, 0, 0) :
+                                           gen_rtx_GT (VOIDmode, 0, 0),
+                                           operands[1], operands[2], exec));
+    else
+      emit_insn (gen_vec_cmp<mode>di_exec (vcc,
+                                           minp ? gen_rtx_LTU (VOIDmode, 0, 0) :
+                                           gen_rtx_GTU (VOIDmode, 0, 0),
+                                           operands[1], operands[2], exec));
+    emit_insn (gen_vcond_mask_<mode>di (tmp, operands[1], operands[2], vcc));
+    emit_insn (gen_mov<mode>_exec (out, tmp, operands[3], exec));
+  }
+  [(set_attr "type" "mult")])
 
 ;; }}}
 ;; {{{ Int unops
@@ -2382,6 +2731,23 @@
 			       operands[1]));
     DONE;
   })
+
+(define_insn_and_split "one_cmpl<mode>2<exec>"
+  [(set (match_operand:V_DI 0 "register_operand"  "=   v")
+        (not:V_DI
+          (match_operand:V_DI 1 "gcn_alu_operand" "vSvDB")))]
+  ""
+  "#"
+  "reload_completed"
+  [(set (match_dup 3) (not:<VnSI> (match_dup 5)))
+   (set (match_dup 4) (not:<VnSI> (match_dup 6)))]
+  {
+    operands[3] = gcn_operand_part (<VnDI>mode, operands[0], 0);
+    operands[4] = gcn_operand_part (<VnDI>mode, operands[0], 1);
+    operands[5] = gcn_operand_part (<VnDI>mode, operands[1], 0);
+    operands[6] = gcn_operand_part (<VnDI>mode, operands[1], 1);
+  }
+  [(set_attr "type" "mult")])
 
 ;; }}}
 ;; {{{ FP binops - special cases
@@ -2765,6 +3131,56 @@
 	  (match_operand:FP 3 "gcn_alu_operand"   "vSvA,  vA,  vA")))]
   ""
   "v_fma%i0\t%0, %1, -%2, %3"
+  [(set_attr "type" "vop3a")
+   (set_attr "length" "8")])
+
+(define_insn "fms<mode>4<exec>"
+  [(set (match_operand:V_FP 0 "register_operand"  "=  v,   v")
+	(fma:V_FP
+	  (match_operand:V_FP 1 "gcn_alu_operand" "% vA,  vA")
+	(match_operand:V_FP 2 "gcn_alu_operand"   "  vA,vSvA")
+	(neg:V_FP
+	  (match_operand:V_FP 3 "gcn_alu_operand" "vSvA,  vA"))))]
+  ""
+  "v_fma%i0\t%0, %1, %2, -%3"
+  [(set_attr "type" "vop3a")
+   (set_attr "length" "8")])
+
+(define_insn "fms<mode>4_negop2<exec>"
+  [(set (match_operand:V_FP 0 "register_operand"    "=  v,   v,   v")
+	(fma:V_FP
+	  (match_operand:V_FP 1 "gcn_alu_operand"   "  vA,  vA,vSvA")
+	  (neg:V_FP
+	    (match_operand:V_FP 2 "gcn_alu_operand" "  vA,vSvA,  vA"))
+	  (neg:V_FP
+	    (match_operand:V_FP 3 "gcn_alu_operand" "vSvA,  vA,  vA"))))]
+  ""
+  "v_fma%i0\t%0, %1, -%2, -%3"
+  [(set_attr "type" "vop3a")
+   (set_attr "length" "8")])
+
+(define_insn "fms<mode>4"
+  [(set (match_operand:FP 0 "register_operand"    "=  v,   v")
+	(fma:FP
+	  (match_operand:FP 1 "gcn_alu_operand"   "% vA,  vA")
+	  (match_operand:FP 2 "gcn_alu_operand"   "  vA,vSvA")
+	  (neg:FP
+	    (match_operand:FP 3 "gcn_alu_operand" "vSvA,  vA"))))]
+  ""
+  "v_fma%i0\t%0, %1, %2, -%3"
+  [(set_attr "type" "vop3a")
+   (set_attr "length" "8")])
+
+(define_insn "fms<mode>4_negop2"
+  [(set (match_operand:FP 0 "register_operand"    "=  v,   v,   v")
+	(fma:FP
+	  (match_operand:FP 1 "gcn_alu_operand"   "  vA,  vA,vSvA")
+	  (neg:FP
+	    (match_operand:FP 2 "gcn_alu_operand" "  vA,vSvA,  vA"))
+	  (neg:FP
+	    (match_operand:FP 3 "gcn_alu_operand" "vSvA,  vA,  vA"))))]
+  ""
+  "v_fma%i0\t%0, %1, -%2, -%3"
   [(set_attr "type" "vop3a")
    (set_attr "length" "8")])
 
@@ -3468,7 +3884,49 @@
     DONE;
   })
 
-;; TODO smin umin smax umax
+(define_code_iterator cond_fminmaxop [smin smax])
+
+(define_expand "cond_<fexpander><mode>"
+  [(match_operand:V_FP 0 "register_operand")
+   (match_operand:DI 1 "register_operand")
+   (cond_fminmaxop:V_FP
+     (match_operand:V_FP 2 "gcn_alu_operand")
+     (match_operand:V_FP 3 "gcn_alu_operand"))
+   (match_operand:V_FP 4 "register_operand")]
+  ""
+  {
+    operands[1] = force_reg (DImode, operands[1]);
+    operands[2] = force_reg (<MODE>mode, operands[2]);
+
+    emit_insn (gen_<fexpander><mode>3_exec (operands[0], operands[2],
+					    operands[3], operands[4],
+					    operands[1]));
+    DONE;
+  })
+
+(define_code_iterator cond_minmaxop [smin smax umin umax])
+
+(define_expand "cond_<expander><mode>"
+  [(match_operand:V_INT 0 "register_operand")
+   (match_operand:DI 1 "register_operand")
+   (cond_minmaxop:V_INT
+     (match_operand:V_INT 2 "gcn_alu_operand")
+     (match_operand:V_INT 3 "gcn_alu_operand"))
+   (match_operand:V_INT 4 "register_operand")]
+  ""
+  {
+    operands[1] = force_reg (DImode, operands[1]);
+    operands[2] = force_reg (<MODE>mode, operands[2]);
+    rtx tmp = gen_reg_rtx (<MODE>mode);
+
+    emit_insn (gen_<expander><mode>3_exec (tmp, operands[2], operands[3],
+                                           gcn_gen_undef(<MODE>mode),
+                                           operands[1]));
+    emit_insn (gen_vcond_mask_<mode>di (operands[0], tmp, operands[4],
+                                        operands[1]));
+    DONE;
+  })
+
 (define_code_iterator cond_bitop [and ior xor])
 
 (define_expand "cond_<expander><mode>"

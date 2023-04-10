@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 //
 // The general range_query object provided in value-query.h provides
 // access to an oracle, if one is available, via the oracle() method.
-// Thre are also a couple of access routines provided, which even if there is
+// There are also a couple of access routines provided, which even if there is
 // no oracle, will return the default VREL_VARYING no relation.
 //
 // Typically, when a ranger object is active, there will be an oracle, and
@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 // is totally transparent to the client, and they are free to make queries.
 //
 // relation_kind is a new enum which represents the different relations,
-// often with a direct mapping to treee codes. ie VREL_EQ is equivalent to
+// often with a direct mapping to tree codes. ie VREL_EQ is equivalent to
 // EQ_EXPR.
 //
 // A query is made requesting the relation between SSA1 and SSA@ in a basic
@@ -48,10 +48,10 @@ along with GCC; see the file COPYING3.  If not see
 //
 // The oracle maintains VREL_EQ relations with equivalency sets, so if a
 // relation comes back VREL_EQ, it is also possible to query the set of
-// equivlaencies.  These are basically bitmaps over ssa_names.  An iterator is
+// equivalencies.  These are basically bitmaps over ssa_names.  An iterator is
 // provided later for this activity.
 //
-// Relations are maintained via the dominace trees and are optimized assuming
+// Relations are maintained via the dominance trees and are optimized assuming
 // they are registered in dominance order.   When a new relation is added, it
 // is intersected with whatever existing relation exists in the dominance tree
 // and registered at the specified block.
@@ -148,7 +148,7 @@ public:
 // The equivalency oracle maintains equivalencies using the dominator tree.
 // Equivalencies apply to an entire basic block.  Equivalencies on edges
 // can be represented only on edges whose destination is a single-pred block,
-// and the equivalence is simply applied to that succesor block.
+// and the equivalence is simply applied to that successor block.
 
 class equiv_oracle : public relation_oracle
 {
@@ -350,7 +350,7 @@ protected:
 
 // These 3 classes are shortcuts for when a caller has a single relation to
 // pass as a trio, it can simply construct the appropriate one.  The other
-// unspecified realtions will be VREL_VARYING.
+// unspecified relations will be VREL_VARYING.
 
 inline relation_trio::relation_trio ()
 {
@@ -411,7 +411,7 @@ relation_trio::swap_op1_op2 ()
 
 // -----------------------------------------------------------------------
 
-// The value-relation class is used to encapsulate the represention of an
+// The value-relation class is used to encapsulate the representation of an
 // individual relation between 2 ssa-names, and to facilitate operating on
 // the relation.
 
@@ -445,13 +445,6 @@ value_relation::set_relation (relation_kind r, tree n1, tree n2)
 {
   gcc_checking_assert (TREE_CODE (n1) == SSA_NAME
 		       && TREE_CODE (n2) == SSA_NAME);
-  if (n1 == n2)
-    {
-      related = VREL_VARYING;
-      name1 = NULL_TREE;
-      name2 = NULL_TREE;
-      return;
-    }
   related = r;
   name1 = n1;
   name2 = n2;
@@ -467,7 +460,7 @@ value_relation::value_relation ()
   name2 = NULL_TREE;
 }
 
-// Constructor for relation R between SSA version N1 nd N2.
+// Constructor for relation R between SSA version N1 and N2.
 
 inline
 value_relation::value_relation (relation_kind kind, tree n1, tree n2)
@@ -517,7 +510,7 @@ bits_to_pe (int bits)
   }
 }
 
-// Given partial equivalencies T1 and T2, return the snmallest kind.
+// Given partial equivalencies T1 and T2, return the smallest kind.
 
 inline relation_kind
 pe_min (relation_kind t1, relation_kind t2)

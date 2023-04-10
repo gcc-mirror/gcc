@@ -4969,10 +4969,20 @@ update_profiling_info (struct cgraph_node *orig_node,
 					      false);
   new_sum = stats.count_sum;
 
+  bool orig_edges_processed = false;
   if (new_sum > orig_node_count)
     {
-      /* TODO: Perhaps this should be gcc_unreachable ()?  */
-      remainder = profile_count::zero ().guessed_local ();
+      /* TODO: Profile has alreay gone astray, keep what we have but lower it
+	 to global0 category.  */
+      remainder = orig_node->count.global0 ();
+
+      for (cgraph_edge *cs = orig_node->callees; cs; cs = cs->next_callee)
+	cs->count = cs->count.global0 ();
+      for (cgraph_edge *cs = orig_node->indirect_calls;
+	   cs;
+	   cs = cs->next_callee)
+	cs->count = cs->count.global0 ();
+      orig_edges_processed = true;
     }
   else if (stats.rec_count_sum.nonzero_p ())
     {
@@ -5070,11 +5080,16 @@ update_profiling_info (struct cgraph_node *orig_node,
   for (cgraph_edge *cs = new_node->indirect_calls; cs; cs = cs->next_callee)
     cs->count = cs->count.apply_scale (new_sum, orig_new_node_count);
 
-  profile_count::adjust_for_ipa_scaling (&remainder, &orig_node_count);
-  for (cgraph_edge *cs = orig_node->callees; cs; cs = cs->next_callee)
-    cs->count = cs->count.apply_scale (remainder, orig_node_count);
-  for (cgraph_edge *cs = orig_node->indirect_calls; cs; cs = cs->next_callee)
-    cs->count = cs->count.apply_scale (remainder, orig_node_count);
+  if (!orig_edges_processed)
+    {
+      profile_count::adjust_for_ipa_scaling (&remainder, &orig_node_count);
+      for (cgraph_edge *cs = orig_node->callees; cs; cs = cs->next_callee)
+	cs->count = cs->count.apply_scale (remainder, orig_node_count);
+      for (cgraph_edge *cs = orig_node->indirect_calls;
+	   cs;
+	   cs = cs->next_callee)
+	cs->count = cs->count.apply_scale (remainder, orig_node_count);
+    }
 
   if (dump_file)
     {
@@ -5093,22 +5108,24 @@ update_specialized_profile (struct cgraph_node *new_node,
 			    profile_count redirected_sum)
 {
   struct cgraph_edge *cs;
-  profile_count new_node_count, orig_node_count = orig_node->count;
+  profile_count new_node_count, orig_node_count = orig_node->count.ipa ();
 
   if (dump_file)
     {
       fprintf (dump_file, "    the sum of counts of redirected  edges is ");
       redirected_sum.dump (dump_file);
+      fprintf (dump_file, "\n    old ipa count of the original node is ");
+      orig_node_count.dump (dump_file);
       fprintf (dump_file, "\n");
     }
   if (!(orig_node_count > profile_count::zero ()))
     return;
 
-  gcc_assert (orig_node_count >= redirected_sum);
-
   new_node_count = new_node->count;
   new_node->count += redirected_sum;
-  orig_node->count -= redirected_sum;
+  orig_node->count
+    = lenient_count_portion_handling (orig_node->count - redirected_sum,
+				      orig_node);
 
   for (cs = new_node->callees; cs; cs = cs->next_callee)
     cs->count += cs->count.apply_scale (redirected_sum, new_node_count);

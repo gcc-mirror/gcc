@@ -1,5 +1,5 @@
 -- { dg-do run }
--- { dg-skip-if "divide does not trap" { powerpc*-*-* } }
+-- { dg-skip-if "divide does not trap" { aarch64*-*-* powerpc*-*-* } }
 
 -- This test requires architecture- and OS-specific support code for unwinding
 -- through signal frames (typically located in *-unwind.h) to pass.  Feel free

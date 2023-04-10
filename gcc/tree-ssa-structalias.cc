@@ -2775,8 +2775,15 @@ solve_graph (constraint_graph_t graph)
 	    continue;
 
 	  /* If the node has changed, we need to process the
-	     complex constraints and outgoing edges again.  */
-	  if (bitmap_clear_bit (changed, i))
+	     complex constraints and outgoing edges again.  For complex
+	     constraints that modify i itself, like the common group of
+	       callarg = callarg + UNKNOWN;
+	       callarg = *callarg + UNKNOWN;
+	       *callarg = callescape;
+	     make sure to iterate immediately because that maximizes
+	     cache reuse and expands the graph quickest, leading to
+	     better visitation order in the next iteration.  */
+	  while (bitmap_clear_bit (changed, i))
 	    {
 	      unsigned int j;
 	      constraint_t c;
@@ -2794,7 +2801,7 @@ solve_graph (constraint_graph_t graph)
 		     ???  But we shouldn't ended up with "changed" set ...  */
 		  if (vi->oldsolution
 		      && bitmap_bit_p (vi->oldsolution, anything_id))
-		    continue;
+		    break;
 		  bitmap_copy (pts, get_varinfo (find (anything_id))->solution);
 		}
 	      else if (vi->oldsolution)
@@ -2803,7 +2810,7 @@ solve_graph (constraint_graph_t graph)
 		bitmap_copy (pts, vi->solution);
 
 	      if (bitmap_empty_p (pts))
-		continue;
+		break;
 
 	      if (vi->oldsolution)
 		bitmap_ior_into (vi->oldsolution, pts);
@@ -4408,17 +4415,17 @@ handle_lhs_call (gcall *stmt, tree lhs, int flags, vec<ce_s> &rhsc,
       && (flags & ERF_RETURN_ARG_MASK) < gimple_call_num_args (stmt))
     {
       tree arg;
-      rhsc.create (0);
+      rhsc.truncate (0);
       arg = gimple_call_arg (stmt, flags & ERF_RETURN_ARG_MASK);
       get_constraint_for (arg, &rhsc);
       process_all_all_constraints (lhsc, rhsc);
-      rhsc.release ();
+      rhsc.truncate (0);
     }
   else if (flags & ERF_NOALIAS)
     {
       varinfo_t vi;
       struct constraint_expr tmpc;
-      rhsc.create (0);
+      rhsc.truncate (0);
       vi = make_heapvar ("HEAP", true);
       /* We are marking allocated storage local, we deal with it becoming
          global by escaping and setting of vars_contains_escaped_heap.  */
@@ -4435,7 +4442,7 @@ handle_lhs_call (gcall *stmt, tree lhs, int flags, vec<ce_s> &rhsc,
       tmpc.type = ADDRESSOF;
       rhsc.safe_push (tmpc);
       process_all_all_constraints (lhsc, rhsc);
-      rhsc.release ();
+      rhsc.truncate (0);
     }
   else
     process_all_all_constraints (lhsc, rhsc);

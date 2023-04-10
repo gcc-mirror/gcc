@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/function.html#lazy-params, Lazy Parameters)
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/delegatize.d, _delegatize.d)
@@ -25,6 +25,7 @@ import dmd.func;
 import dmd.globals;
 import dmd.init;
 import dmd.initsem;
+import dmd.location;
 import dmd.mtype;
 import dmd.statement;
 import dmd.tokens;
@@ -108,7 +109,7 @@ private void lambdaSetParent(Expression e, FuncDeclaration fd)
         }
 
     public:
-        extern (D) this(FuncDeclaration fd)
+        extern (D) this(FuncDeclaration fd) scope
         {
             this.fd = fd;
         }
@@ -204,7 +205,7 @@ bool lambdaCheckForNestedRef(Expression e, Scope* sc)
         Scope* sc;
         bool result;
 
-        extern (D) this(Scope* sc)
+        extern (D) this(Scope* sc) scope
         {
             this.sc = sc;
         }

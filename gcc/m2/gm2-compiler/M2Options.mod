@@ -25,13 +25,14 @@ IMPLEMENTATION MODULE M2Options ;
 IMPORT CmdArgs ;
 FROM SArgs IMPORT GetArg, Narg ;
 FROM M2Search IMPORT SetDefExtension, SetModExtension ;
-FROM DynamicStringPath IMPORT Cons, GetUserPath, SetUserPath, Cons ;
+FROM PathName IMPORT DumpPathName, AddInclude ;
 FROM M2Printf IMPORT printf0, printf1, fprintf1 ;
 FROM FIO IMPORT StdErr ;
 FROM libc IMPORT exit ;
 FROM Debug IMPORT Halt ;
 FROM m2linemap IMPORT location_t ;
 FROM m2configure IMPORT FullPathCPP ;
+
 
 FROM DynamicStrings IMPORT String, Length, InitString, Mark, Slice, EqualArray,
                            InitStringCharStar, ConCatChar, ConCat, KillString,
@@ -51,8 +52,11 @@ FROM DynamicStrings IMPORT String, Length, InitString, Mark, Slice, EqualArray,
 
 CONST
    Debugging = FALSE ;
+   DefaultRuntimeModuleOverride = "m2iso:RTentity,m2iso:Storage,m2iso:SYSTEM,m2iso:M2RTS,m2iso:RTExceptions,m2iso:IOLink" ;
 
 VAR
+   M2Prefix,
+   M2PathName,
    Barg,
    MDarg,
    MMDarg,
@@ -114,6 +118,49 @@ END DSdbExit ;
 #define DSdbEnter doDSdbEnter
 #define DSdbExit  doDSdbExit
 *)
+
+
+(*
+   SetM2Prefix - assign arg to M2Prefix.
+*)
+
+PROCEDURE SetM2Prefix (arg: ADDRESS) ;
+BEGIN
+   M2Prefix := KillString (M2Prefix) ;
+   M2Prefix := InitStringCharStar (arg)
+END SetM2Prefix ;
+
+
+(*
+   GetM2Prefix - return M2Prefix as a C string.
+*)
+
+PROCEDURE GetM2Prefix () : ADDRESS ;
+BEGIN
+   RETURN string (M2Prefix)
+END GetM2Prefix ;
+
+
+(*
+   SetM2PathName - assign arg to M2PathName.
+*)
+
+PROCEDURE SetM2PathName (arg: ADDRESS) ;
+BEGIN
+   M2PathName := KillString (M2PathName) ;
+   M2PathName := InitStringCharStar (arg) ;
+   (* fprintf1 (StdErr, "M2PathName = %s\n", M2PathName)  *)
+END SetM2PathName ;
+
+
+(*
+   GetM2PathName - return M2PathName as a C string.
+*)
+
+PROCEDURE GetM2PathName () : ADDRESS ;
+BEGIN
+   RETURN string (M2PathName)
+END GetM2PathName ;
 
 
 (*
@@ -373,6 +420,7 @@ END SetCheckAll ;
 
 (*
    SetAutoInit - -fauto-init turns on automatic initialization of pointers to NIL.
+                  TRUE is returned.
 *)
 
 PROCEDURE SetAutoInit (value: BOOLEAN) ;
@@ -900,41 +948,43 @@ PROCEDURE SetSearchPath (arg: ADDRESS) ;
 VAR
    s: String ;
 BEGIN
-   s := InitStringCharStar(arg) ;
+   s := InitStringCharStar (arg) ;
+   AddInclude (M2PathName, s) ;
    IF Debugging
    THEN
-      fprintf1 (StdErr, "M2Search.SetSearchPath setting search path to: %s\n", s)
+      DumpPathName ("path name entries: ")
    END ;
-   SetUserPath (Cons (GetUserPath (), s)) ;
    s := KillString (s)
 END SetSearchPath ;
 
 
 (*
-   setdefextension -
+   setdefextension - set the source file definition module extension to arg.
+                     This should include the . and by default it is set to .def.
 *)
 
 PROCEDURE setdefextension (arg: ADDRESS) ;
 VAR
    s: String ;
 BEGIN
-   s := InitStringCharStar(arg) ;
-   SetDefExtension(s) ;
-   s := KillString(s)
+   s := InitStringCharStar (arg) ;
+   SetDefExtension (s) ;
+   s := KillString (s)
 END setdefextension ;
 
 
 (*
-   setmodextension -
+   setmodextension - set the source file module extension to arg.
+                     This should include the . and by default it is set to .mod.
 *)
 
 PROCEDURE setmodextension (arg: ADDRESS) ;
 VAR
    s: String ;
 BEGIN
-   s := InitStringCharStar(arg) ;
-   SetModExtension(s) ;
-   s := KillString(s)
+   s := InitStringCharStar (arg) ;
+   SetModExtension (s) ;
+   s := KillString (s)
 END setmodextension ;
 
 
@@ -1315,7 +1365,7 @@ END SetShared ;
 
 BEGIN
    cflag                        := FALSE ;  (* -c.  *)
-   RuntimeModuleOverride        := NIL ;
+   RuntimeModuleOverride        := InitString (DefaultRuntimeModuleOverride) ;
    CppArgs                      := InitString ('') ;
    Pim                          :=  TRUE ;
    Pim2                         := FALSE ;
@@ -1382,5 +1432,7 @@ BEGIN
    MMDarg                       := NIL ;
    MQarg                        := NIL ;
    SaveTempsDir                 := NIL ;
-   DumpDir                      := NIL
+   DumpDir                      := NIL ;
+   M2Prefix                     := InitString ('') ;
+   M2PathName                   := InitString ('')
 END M2Options.

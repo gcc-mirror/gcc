@@ -87,7 +87,7 @@ range_query::value_of_expr (tree expr, gimple *stmt)
 
   if (range_of_expr (r, expr, stmt))
     {
-      // A constant used in an unreachable block oftens returns as UNDEFINED.
+      // A constant used in an unreachable block often returns as UNDEFINED.
       // If the result is undefined, check the global value for a constant.
       if (r.undefined_p ())
 	range_of_expr (r, expr);
@@ -107,7 +107,7 @@ range_query::value_on_edge (edge e, tree expr)
   Value_Range r (TREE_TYPE (expr));
   if (range_on_edge (r, e, expr))
     {
-      // A constant used in an unreachable block oftens returns as UNDEFINED.
+      // A constant used in an unreachable block often returns as UNDEFINED.
       // If the result is undefined, check the global value for a constant.
       if (r.undefined_p ())
 	range_of_expr (r, expr);
@@ -230,15 +230,21 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt)
     default:
       break;
     }
-  if (BINARY_CLASS_P (expr))
+  if (BINARY_CLASS_P (expr) || COMPARISON_CLASS_P (expr))
     {
-      range_op_handler op (TREE_CODE (expr), type);
+      tree op0 = TREE_OPERAND (expr, 0);
+      tree op1 = TREE_OPERAND (expr, 1);
+      if (COMPARISON_CLASS_P (expr)
+	  && !Value_Range::supports_type_p (TREE_TYPE (op0)))
+	return false;
+      range_op_handler op (TREE_CODE (expr),
+			   BINARY_CLASS_P (expr) ? type : TREE_TYPE (op0));
       if (op)
 	{
-	  Value_Range r0 (TREE_TYPE (TREE_OPERAND (expr, 0)));
-	  Value_Range r1 (TREE_TYPE (TREE_OPERAND (expr, 1)));
-	  range_of_expr (r0, TREE_OPERAND (expr, 0), stmt);
-	  range_of_expr (r1, TREE_OPERAND (expr, 1), stmt);
+	  Value_Range r0 (TREE_TYPE (op0));
+	  Value_Range r1 (TREE_TYPE (op1));
+	  range_of_expr (r0, op0, stmt);
+	  range_of_expr (r1, op1, stmt);
 	  if (!op.fold_range (r, type, r0, r1))
 	    r.set_varying (type);
 	}
@@ -410,7 +416,7 @@ global_range_query::range_of_expr (vrange &r, tree expr, gimple *stmt)
 
 // Return any known relation between SSA1 and SSA2 before stmt S is executed.
 // If GET_RANGE is true, query the range of both operands first to ensure
-// the defintions have been processed and any relations have be created.
+// the definitions have been processed and any relations have be created.
 
 relation_kind
 range_query::query_relation (gimple *s, tree ssa1, tree ssa2, bool get_range)
@@ -431,7 +437,7 @@ range_query::query_relation (gimple *s, tree ssa1, tree ssa2, bool get_range)
 
 // Return any known relation between SSA1 and SSA2 on edge E.
 // If GET_RANGE is true, query the range of both operands first to ensure
-// the defintions have been processed and any relations have be created.
+// the definitions have been processed and any relations have be created.
 
 relation_kind
 range_query::query_relation (edge e, tree ssa1, tree ssa2, bool get_range)

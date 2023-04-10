@@ -22,8 +22,6 @@ private extern (C) void[] _d_arraysetlengthiT(const TypeInfo ti, size_t newlengt
 /// Implementation of `_d_arraysetlengthT` and `_d_arraysetlengthTTrace`
 template _d_arraysetlengthTImpl(Tarr : T[], T)
 {
-    import core.internal.array.utils : _d_HookTraceImpl;
-
     private enum errorMessage = "Cannot resize arrays if compiling without support for runtime type information!";
 
     /**
@@ -54,14 +52,19 @@ template _d_arraysetlengthTImpl(Tarr : T[], T)
             assert(0, errorMessage);
     }
 
-    /**
-    * TraceGC wrapper around $(REF _d_arraysetlengthT, core,internal,array,core.internal.array.capacity).
-    * Bugs:
-    *  This function template was ported from a much older runtime hook that bypassed safety,
-    *  purity, and throwabilty checks. To prevent breaking existing code, this function template
-    *  is temporarily declared `@trusted pure nothrow` until the implementation can be brought up to modern D expectations.
-    */
-    alias _d_arraysetlengthTTrace = _d_HookTraceImpl!(Tarr, _d_arraysetlengthT, errorMessage);
+    version (D_ProfileGC)
+    {
+        import core.internal.array.utils : _d_HookTraceImpl;
+
+        /**
+         * TraceGC wrapper around $(REF _d_arraysetlengthT, core,internal,array,core.internal.array.capacity).
+         * Bugs:
+         *  This function template was ported from a much older runtime hook that bypassed safety,
+         *  purity, and throwabilty checks. To prevent breaking existing code, this function template
+         *  is temporarily declared `@trusted pure nothrow` until the implementation can be brought up to modern D expectations.
+         */
+        alias _d_arraysetlengthTTrace = _d_HookTraceImpl!(Tarr, _d_arraysetlengthT, errorMessage);
+    }
 }
 
 @safe unittest

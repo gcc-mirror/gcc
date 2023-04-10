@@ -30,6 +30,7 @@ struct file_prefix_map
   const char *new_prefix;
   size_t old_len;
   size_t new_len;
+  bool canonicalize;
   struct file_prefix_map *next;
 };
 
@@ -51,8 +52,16 @@ add_prefix_map (file_prefix_map *&maps, const char *arg, const char *opt)
       return;
     }
   map = XNEW (file_prefix_map);
+  map->canonicalize = flag_canon_prefix_map;
   map->old_prefix = xstrndup (arg, p - arg);
   map->old_len = p - arg;
+  if (map->canonicalize)
+    {
+      char *realname = lrealpath (map->old_prefix);
+      free (const_cast <char *> (map->old_prefix));
+      map->old_prefix = realname;
+      map->old_len = strlen (realname);
+    }
   p++;
   map->new_prefix = xstrdup (p);
   map->new_len = strlen (p);
@@ -70,34 +79,49 @@ remap_filename (file_prefix_map *maps, const char *filename)
   file_prefix_map *map;
   char *s;
   const char *name;
-  char *realname;
+  const char *realname = NULL;
   size_t name_len;
 
-  if (!filename || lbasename (filename) == filename)
+  if (!filename)
     return filename;
 
-  realname = lrealpath (filename);
-
   for (map = maps; map; map = map->next)
-    if (filename_ncmp (realname, map->old_prefix, map->old_len) == 0)
+    if (map->canonicalize)
+      {
+	if (realname == NULL)
+	  {
+	    if (lbasename (filename) == filename)
+	      realname = filename;
+	    else
+	      realname = lrealpath (filename);
+	  }
+	if (filename_ncmp (realname, map->old_prefix, map->old_len) == 0)
+	  break;
+      }
+    else if (filename_ncmp (filename, map->old_prefix, map->old_len) == 0)
       break;
   if (!map)
     {
-      free (realname);
+      if (realname != filename)
+	free (const_cast <char *> (realname));
       return filename;
     }
-  name = realname + map->old_len;
+  if (map->canonicalize)
+    name = realname + map->old_len;
+  else
+    name = filename + map->old_len;
   name_len = strlen (name) + 1;
 
   s = (char *) ggc_alloc_atomic (name_len + map->new_len);
   memcpy (s, map->new_prefix, map->new_len);
   memcpy (s + map->new_len, name, name_len);
-  free (realname);
+  if (realname != filename)
+    free (const_cast <char *> (realname));
   return s;
 }
 
 /* NOTE: if adding another -f*-prefix-map option then don't forget to
-   ignore it in DW_AT_producer (dwarf2out.cc).  */
+   ignore it in DW_AT_producer (gen_command_line_string in opts.cc).  */
 
 /* Linked lists of file_prefix_map structures.  */
 static file_prefix_map *macro_prefix_maps; /* -fmacro-prefix-map  */

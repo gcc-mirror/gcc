@@ -36,7 +36,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #endif /* m2convert_c.  */
 
 EXTERN tree m2convert_BuildConvert (location_t location, tree type, tree value,
-                                    int checkOverflow);
+                                    bool checkOverflow);
 EXTERN tree m2convert_ConvertToPtr (location_t location_t, tree p);
 EXTERN tree m2convert_ConvertString (tree type, tree expr);
 EXTERN tree m2convert_ConvertConstantAndCheck (location_t location, tree type,

@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  *)
 
-DEFINITION MODULE m2color ;
+DEFINITION MODULE FOR "C" m2color ;
 
 FROM SYSTEM IMPORT ADDRESS ;
 
@@ -33,8 +33,8 @@ TYPE
    note, range1, range2, quote, locus, fixit-insert, fixit-delete,
    diff-filename, diff-hunk, diff-delete, diff-insert, type-diff.  *)
 
-PROCEDURE colorize_start (show_color: BOOLEAN;
-                          name: ARRAY OF CHAR; name_len: CARDINAL) : PtrToChar ;
+PROCEDURE colorize_start (show_color: BOOLEAN; name: ADDRESS;
+                          _name_high: CARDINAL) : PtrToChar ;
 
 (* colorize_stop return a C string containing the escape sequences to
    stop text colorization.  *)

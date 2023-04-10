@@ -18,6 +18,10 @@
 # else
 #   define ALIGN_MAX_STATIC      ALIGN_MAX_HARD
 # endif
+#elif __CRIS__
+/* __BIGGEST_ALIGNMENT__ doesn't cover functions (16 bits for CRIS). */
+#  define ALIGN_MAX_STATIC      512
+#  define ALIGN_TOO_BIG_OFILE   (ALIGN_MAX_HARD << 1)
 #elif pdp11
 #  define ALIGN_MAX_STATIC      2
 /* Work around a pdp11 ICE (see PR target/87821).  */
@@ -29,7 +33,9 @@
 /* Is this processor- or operating-system specific?  */
 #  define ALIGN_MAX_STATIC      ALIGN_MAX_HARD
 #else
-   /* Guaranteed to be accepted regardless of the target.  */
+   /* Guaranteed to be accepted regardless of the target for objects.
+      This might not be true for alignment of functions though, so
+      may need to be set to a target-specific value above.  */
 #  define ALIGN_MAX_STATIC      __BIGGEST_ALIGNMENT__
    /* Guaranteed to be rejected regardless of the target.  */
 #  define ALIGN_TOO_BIG_OFILE   (ALIGN_MAX_HARD << 1)

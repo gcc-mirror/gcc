@@ -3,7 +3,7 @@
  *
  * Specification: ($LINK2 https://dlang.org/spec/function.html#interpretation, Compile Time Function Execution (CTFE))
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dinterpret.d, _dinterpret.d)
@@ -39,6 +39,7 @@ import dmd.id;
 import dmd.identifier;
 import dmd.init;
 import dmd.initsem;
+import dmd.location;
 import dmd.mtype;
 import dmd.printast;
 import dmd.root.rmem;
@@ -165,7 +166,7 @@ public Expression ctfeInterpretForPragmaMsg(Expression e)
     return e;
 }
 
-public extern (C++) Expression getValue(VarDeclaration vd)
+public Expression getValue(VarDeclaration vd)
 {
     return ctfeGlobals.stack.getValue(vd);
 }
@@ -280,25 +281,25 @@ private:
     Expression localThis;       // value of 'this', or NULL if none
 
 public:
-    extern (C++) size_t stackPointer()
+    size_t stackPointer()
     {
         return values.length;
     }
 
     // The current value of 'this', or NULL if none
-    extern (C++) Expression getThis()
+    Expression getThis()
     {
         return localThis;
     }
 
     // Largest number of stack positions we've used
-    extern (C++) size_t maxStackUsage()
+    size_t maxStackUsage()
     {
         return maxStackPointer;
     }
 
     // Start a new stack frame, using the provided 'this'.
-    extern (C++) void startFrame(Expression thisexp)
+    void startFrame(Expression thisexp)
     {
         frames.push(cast(void*)cast(size_t)framepointer);
         savedThis.push(localThis);
@@ -306,7 +307,7 @@ public:
         localThis = thisexp;
     }
 
-    extern (C++) void endFrame()
+    void endFrame()
     {
         size_t oldframe = cast(size_t)frames[frames.length - 1];
         localThis = savedThis[savedThis.length - 1];
@@ -316,14 +317,14 @@ public:
         savedThis.setDim(savedThis.length - 1);
     }
 
-    extern (C++) bool isInCurrentFrame(VarDeclaration v)
+    bool isInCurrentFrame(VarDeclaration v)
     {
         if (v.isDataseg() && !v.isCTFE())
             return false; // It's a global
         return v.ctfeAdrOnStack >= framepointer;
     }
 
-    extern (C++) Expression getValue(VarDeclaration v)
+    Expression getValue(VarDeclaration v)
     {
         //printf("getValue() %s\n", v.toChars());
         if ((v.isDataseg() || v.storage_class & STC.manifest) && !v.isCTFE())
@@ -335,7 +336,7 @@ public:
         return values[v.ctfeAdrOnStack];
     }
 
-    extern (C++) void setValue(VarDeclaration v, Expression e)
+    void setValue(VarDeclaration v, Expression e)
     {
         //printf("setValue() %s : %s\n", v.toChars(), e.toChars());
         assert(!v.isDataseg() || v.isCTFE());
@@ -343,7 +344,7 @@ public:
         values[v.ctfeAdrOnStack] = e;
     }
 
-    extern (C++) void push(VarDeclaration v)
+    void push(VarDeclaration v)
     {
         //printf("push() %s\n", v.toChars());
         assert(!v.isDataseg() || v.isCTFE());
@@ -359,7 +360,7 @@ public:
         values.push(null);
     }
 
-    extern (C++) void pop(VarDeclaration v)
+    void pop(VarDeclaration v)
     {
         assert(!v.isDataseg() || v.isCTFE());
         assert(!v.isReference());
@@ -373,7 +374,7 @@ public:
         }
     }
 
-    extern (C++) void popAll(size_t stackpointer)
+    void popAll(size_t stackpointer)
     {
         if (stackPointer() > maxStackPointer)
             maxStackPointer = stackPointer();
@@ -388,7 +389,7 @@ public:
         savedId.setDim(stackpointer);
     }
 
-    extern (C++) void saveGlobalConstant(VarDeclaration v, Expression e)
+    void saveGlobalConstant(VarDeclaration v, Expression e)
     {
         assert(v._init && (v.isConst() || v.isImmutable() || v.storage_class & STC.manifest) && !v.isCTFE());
         v.ctfeAdrOnStack = cast(uint)globalValues.length;
@@ -746,7 +747,7 @@ public:
     Expression result;
     UnionExp* pue;              // storage for `result`
 
-    extern (D) this(UnionExp* pue, InterState* istate, CTFEGoal goal)
+    extern (D) this(UnionExp* pue, InterState* istate, CTFEGoal goal) scope
     {
         this.pue = pue;
         this.istate = istate;
@@ -1529,7 +1530,7 @@ public:
         }
         // Little sanity check to make sure it's really a Throwable
         ClassReferenceExp boss = oldest.thrown;
-        const next = 4;                         // index of Throwable.next
+        const next = 5;                         // index of Throwable.next
         assert((*boss.value.elements)[next].type.ty == Tclass); // Throwable.next
         ClassReferenceExp collateral = newest.thrown;
         if (collateral.originalClass().isErrorException() && !boss.originalClass().isErrorException())
@@ -1849,10 +1850,27 @@ public:
         {
             printf("%s StringExp::interpret() %s\n", e.loc.toChars(), e.toChars());
         }
-        /* Attempts to modify string literals are prevented
-         * in BinExp::interpretAssignCommon.
-         */
-        result = e;
+        if (e.ownedByCtfe >= OwnedBy.ctfe) // We've already interpreted the string
+        {
+            result = e;
+            return;
+        }
+
+        if (e.type.ty != Tsarray ||
+            (cast(TypeNext)e.type).next.mod & (MODFlags.const_ | MODFlags.immutable_))
+        {
+            // If it's immutable, we don't need to dup it. Attempts to modify
+            // string literals are prevented in BinExp::interpretAssignCommon.
+            result = e;
+        }
+        else
+        {
+            // https://issues.dlang.org/show_bug.cgi?id=20811
+            // Create a copy of mutable string literals, so that any change in
+            // value via an index or slice will not survive CTFE.
+            *pue = copyLiteral(e);
+            result = pue.exp();
+        }
     }
 
     override void visit(FuncExp e)
@@ -2018,7 +2036,7 @@ public:
         }
         auto er = interpret(e.e1, istate, CTFEGoal.LValue);
         if (auto ve = er.isVarExp())
-            if (ve.var == istate.fd.vthis)
+            if (istate && ve.var == istate.fd.vthis)
                 er = interpret(er, istate);
 
         if (exceptionOrCant(er))
@@ -2098,6 +2116,16 @@ public:
                 if (!e)
                     return CTFEExp.cantexp;
                 assert(e.type);
+
+                // There's a terrible hack in `dmd.dsymbolsem` that special case
+                // a struct with all zeros to an `ExpInitializer(BlitExp(IntegerExp(0)))`
+                // There's matching code for it in e2ir (toElem's visitAssignExp),
+                // so we need the same hack here.
+                // This does not trigger for global as they get a normal initializer.
+                if (auto ts = e.type.isTypeStruct())
+                    if (auto ae = e.isBlitExp())
+                        if (ae.e2.op == EXP.int64)
+                            e = ts.defaultInitLiteral(loc);
 
                 if (e.op == EXP.construct || e.op == EXP.blit)
                 {
@@ -4287,12 +4315,12 @@ public:
                 bool needsPostblit;
                 bool needsDtor;
 
-                extern (C++) Expression assignTo(ArrayLiteralExp ae)
+                Expression assignTo(ArrayLiteralExp ae)
                 {
                     return assignTo(ae, 0, ae.elements.length);
                 }
 
-                extern (C++) Expression assignTo(ArrayLiteralExp ae, size_t lwr, size_t upr)
+                Expression assignTo(ArrayLiteralExp ae, size_t lwr, size_t upr)
                 {
                     Expressions* w = ae.elements;
                     assert(ae.type.ty == Tsarray || ae.type.ty == Tarray);
@@ -6178,7 +6206,7 @@ public:
     {
         debug (LOG)
         {
-            printf("%s ThrowExpression::interpret()\n", e.loc.toChars());
+            printf("%s ThrowExpression::interpret()\n", te.loc.toChars());
         }
         interpretThrow(te.e1, te.loc);
     }

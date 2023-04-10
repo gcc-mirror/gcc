@@ -90,10 +90,6 @@ void unref (base_obj *obj)
 {
   if (--obj->ob_refcnt == 0) /* { dg-bogus "dereference of uninitialized pointer 'obj'" } */
     obj->ob_type->tp_dealloc (obj);
-  /* { dg-warning "dereference of NULL 'obj'" "deref of NULL" { target *-*-* } .-2 } */
-  /* FIXME: ideally we wouldn't issue this, as we've already issued a
-     warning about str_obj which is now in the "stop" state; the cast
-     confuses things.  */
 }
 
 void test_1 (const char *str)

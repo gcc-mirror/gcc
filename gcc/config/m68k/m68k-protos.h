@@ -84,6 +84,7 @@ extern int emit_move_sequence (rtx *, machine_mode, rtx);
 extern bool m68k_movem_pattern_p (rtx, rtx, HOST_WIDE_INT, bool);
 extern const char *m68k_output_movem (rtx *, rtx, HOST_WIDE_INT, bool);
 extern bool m68k_epilogue_uses (int);
+extern void m68k_final_prescan_insn (rtx_insn *, rtx *, int);
 
 /* Functions from m68k.cc used in constraints.md.  */
 extern rtx m68k_unwrap_symbol (rtx, bool);

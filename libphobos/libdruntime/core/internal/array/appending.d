@@ -17,8 +17,6 @@ private enum isCopyingNothrow(T) = __traits(compiles, (ref T rhs) nothrow { T lh
 /// Implementation of `_d_arrayappendcTX` and `_d_arrayappendcTXTrace`
 template _d_arrayappendcTXImpl(Tarr : T[], T)
 {
-    import core.internal.array.utils : _d_HookTraceImpl;
-
     private enum errorMessage = "Cannot append to array if compiling without support for runtime type information!";
 
     /**
@@ -51,17 +49,22 @@ template _d_arrayappendcTXImpl(Tarr : T[], T)
             return px;
         }
         else
-            assert(0, "Cannot append arrays if compiling without support for runtime type information!");
+            assert(0, errorMessage);
     }
 
-    /**
-     * TraceGC wrapper around $(REF _d_arrayappendcTX, rt,array,appending,_d_arrayappendcTXImpl).
-     * Bugs:
-     *  This function template was ported from a much older runtime hook that bypassed safety,
-     *  purity, and throwabilty checks. To prevent breaking existing code, this function template
-     *  is temporarily declared `@trusted pure` until the implementation can be brought up to modern D expectations.
-     */
-    alias _d_arrayappendcTXTrace = _d_HookTraceImpl!(Tarr, _d_arrayappendcTX, errorMessage);
+    version (D_ProfileGC)
+    {
+        import core.internal.array.utils : _d_HookTraceImpl;
+
+        /**
+         * TraceGC wrapper around $(REF _d_arrayappendcTX, rt,array,appending,_d_arrayappendcTXImpl).
+         * Bugs:
+         *  This function template was ported from a much older runtime hook that bypassed safety,
+         *  purity, and throwabilty checks. To prevent breaking existing code, this function template
+         *  is temporarily declared `@trusted pure` until the implementation can be brought up to modern D expectations.
+         */
+        alias _d_arrayappendcTXTrace = _d_HookTraceImpl!(Tarr, _d_arrayappendcTX, errorMessage);
+    }
 }
 
 /// Implementation of `_d_arrayappendT`
@@ -71,7 +74,6 @@ ref Tarr _d_arrayappendT(Tarr : T[], T)(return ref scope Tarr x, scope Tarr y) @
 
     import core.stdc.string : memcpy;
     import core.internal.traits : hasElaborateCopyConstructor, Unqual;
-    import core.lifetime : copyEmplace;
 
     enum hasPostblit = __traits(hasPostblit, T);
     auto length = x.length;
@@ -81,6 +83,8 @@ ref Tarr _d_arrayappendT(Tarr : T[], T)(return ref scope Tarr x, scope Tarr y) @
     // Only call `copyEmplace` if `T` has a copy ctor and no postblit.
     static if (hasElaborateCopyConstructor!T && !hasPostblit)
     {
+        import core.lifetime : copyEmplace;
+
         foreach (i, ref elem; y)
             copyEmplace(elem, x[length + i]);
     }
@@ -107,20 +111,23 @@ ref Tarr _d_arrayappendT(Tarr : T[], T)(return ref scope Tarr x, scope Tarr y) @
     return x;
 }
 
-/**
- * TraceGC wrapper around $(REF _d_arrayappendT, core,internal,array,appending).
- */
-ref Tarr _d_arrayappendTTrace(Tarr : T[], T)(string file, int line, string funcname, return ref scope Tarr x, scope Tarr y) @trusted
+version (D_ProfileGC)
 {
-    version (D_TypeInfo)
+    /**
+     * TraceGC wrapper around $(REF _d_arrayappendT, core,internal,array,appending).
+     */
+    ref Tarr _d_arrayappendTTrace(Tarr : T[], T)(string file, int line, string funcname, return ref scope Tarr x, scope Tarr y) @trusted
     {
-        import core.internal.array.utils: TraceHook, gcStatsPure, accumulatePure;
-        mixin(TraceHook!(Tarr.stringof, "_d_arrayappendT"));
+        version (D_TypeInfo)
+        {
+            import core.internal.array.utils: TraceHook, gcStatsPure, accumulatePure;
+            mixin(TraceHook!(Tarr.stringof, "_d_arrayappendT"));
 
-        return _d_arrayappendT(x, y);
+            return _d_arrayappendT(x, y);
+        }
+        else
+            assert(0, "Cannot append to array if compiling without support for runtime type information!");
     }
-    else
-        assert(0, "Cannot append to array if compiling without support for runtime type information!");
 }
 
 @safe unittest

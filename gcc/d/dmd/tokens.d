@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/lex.html#tokens, Tokens)
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/tokens.d, _tokens.d)
@@ -16,8 +16,8 @@ module dmd.tokens;
 import core.stdc.ctype;
 import core.stdc.stdio;
 import core.stdc.string;
-import dmd.globals;
 import dmd.identifier;
+import dmd.location;
 import dmd.root.ctfloat;
 import dmd.common.outbuffer;
 import dmd.root.rmem;
@@ -269,11 +269,13 @@ enum TOK : ubyte
     _Thread_local,
 
     // C only extended keywords
+    _assert,
     _import,
     __cdecl,
     __declspec,
     __stdcall,
     __pragma,
+    __int128,
     __attribute__,
 }
 
@@ -579,11 +581,13 @@ private immutable TOK[] keywords =
     TOK._Thread_local,
 
     // C only extended keywords
+    TOK._assert,
     TOK._import,
     TOK.__cdecl,
     TOK.__declspec,
     TOK.__stdcall,
     TOK.__pragma,
+    TOK.__int128,
     TOK.__attribute__,
 ];
 
@@ -612,7 +616,9 @@ static immutable TOK[TOK.max + 1] Ckeywords =
                        restrict, return_, int16, signed, sizeof_, static_, struct_, switch_, typedef_,
                        union_, unsigned, void_, volatile, while_, asm_, typeof_,
                        _Alignas, _Alignof, _Atomic, _Bool, _Complex, _Generic, _Imaginary, _Noreturn,
-                       _Static_assert, _Thread_local, _import, __cdecl, __declspec, __stdcall, __pragma, __attribute__ ];
+                       _Static_assert, _Thread_local,
+                       _import, __cdecl, __declspec, __stdcall, __pragma, __int128, __attribute__,
+                       _assert ];
 
         foreach (kw; Ckwds)
             tab[kw] = cast(TOK) kw;
@@ -636,8 +642,8 @@ extern (C++) struct Token
     union
     {
         // Integers
-        sinteger_t intvalue;
-        uinteger_t unsvalue;
+        long intvalue;
+        ulong unsvalue;
         // Floats
         real_t floatvalue;
 
@@ -878,11 +884,13 @@ extern (C++) struct Token
         TOK._Thread_local  : "_Thread_local",
 
         // C only extended keywords
+        TOK._assert       : "__check",
         TOK._import       : "__import",
         TOK.__cdecl        : "__cdecl",
         TOK.__declspec     : "__declspec",
         TOK.__stdcall      : "__stdcall",
         TOK.__pragma       : "__pragma",
+        TOK.__int128       : "__int128",
         TOK.__attribute__  : "__attribute__",
     ];
 
@@ -942,16 +950,17 @@ nothrow:
 
     extern (C++) const(char)* toChars() const
     {
-        __gshared char[3 + 3 * floatvalue.sizeof + 1] buffer;
+        const bufflen = 3 + 3 * floatvalue.sizeof + 1;
+        __gshared char[bufflen] buffer;
         const(char)* p = &buffer[0];
         switch (value)
         {
         case TOK.int32Literal:
-            sprintf(&buffer[0], "%d", cast(int)intvalue);
+            snprintf(&buffer[0], bufflen, "%d", cast(int)intvalue);
             break;
         case TOK.uns32Literal:
         case TOK.wchar_tLiteral:
-            sprintf(&buffer[0], "%uU", cast(uint)unsvalue);
+            snprintf(&buffer[0], bufflen, "%uU", cast(uint)unsvalue);
             break;
         case TOK.wcharLiteral:
         case TOK.dcharLiteral:
@@ -960,36 +969,36 @@ nothrow:
                 OutBuffer buf;
                 buf.writeSingleCharLiteral(cast(dchar) intvalue);
                 buf.writeByte('\0');
-                p = buf.extractSlice().ptr;
+                p = buf.extractChars();
             }
             break;
         case TOK.int64Literal:
-            sprintf(&buffer[0], "%lldL", cast(long)intvalue);
+            snprintf(&buffer[0], bufflen, "%lldL", cast(long)intvalue);
             break;
         case TOK.uns64Literal:
-            sprintf(&buffer[0], "%lluUL", cast(ulong)unsvalue);
+            snprintf(&buffer[0], bufflen, "%lluUL", cast(ulong)unsvalue);
             break;
         case TOK.float32Literal:
-            CTFloat.sprint(&buffer[0], 'g', floatvalue);
+            CTFloat.sprint(&buffer[0], bufflen, 'g', floatvalue);
             strcat(&buffer[0], "f");
             break;
         case TOK.float64Literal:
-            CTFloat.sprint(&buffer[0], 'g', floatvalue);
+            CTFloat.sprint(&buffer[0], bufflen, 'g', floatvalue);
             break;
         case TOK.float80Literal:
-            CTFloat.sprint(&buffer[0], 'g', floatvalue);
+            CTFloat.sprint(&buffer[0], bufflen, 'g', floatvalue);
             strcat(&buffer[0], "L");
             break;
         case TOK.imaginary32Literal:
-            CTFloat.sprint(&buffer[0], 'g', floatvalue);
+            CTFloat.sprint(&buffer[0], bufflen, 'g', floatvalue);
             strcat(&buffer[0], "fi");
             break;
         case TOK.imaginary64Literal:
-            CTFloat.sprint(&buffer[0], 'g', floatvalue);
+            CTFloat.sprint(&buffer[0], bufflen, 'g', floatvalue);
             strcat(&buffer[0], "i");
             break;
         case TOK.imaginary80Literal:
-            CTFloat.sprint(&buffer[0], 'g', floatvalue);
+            CTFloat.sprint(&buffer[0], bufflen, 'g', floatvalue);
             strcat(&buffer[0], "Li");
             break;
         case TOK.string_:
@@ -1006,7 +1015,7 @@ nothrow:
                 if (postfix)
                     buf.writeByte(postfix);
                 buf.writeByte(0);
-                p = buf.extractSlice().ptr;
+                p = buf.extractChars();
             }
             break;
         case TOK.identifier:
@@ -1116,7 +1125,7 @@ unittest
     {
         writeCharLiteral(buf, d);
     }
-    assert(buf.extractSlice() == `a\n\r\t\b\f\0\x11\u7233\U00017233`);
+    assert(buf[] == `a\n\r\t\b\f\0\x11\u7233\U00017233`);
 }
 
 /**
@@ -1147,11 +1156,11 @@ unittest
 {
     OutBuffer buf;
     writeSingleCharLiteral(buf, '\'');
-    assert(buf.extractSlice() == `'\''`);
+    assert(buf[] == `'\''`);
     buf.reset();
     writeSingleCharLiteral(buf, '"');
-    assert(buf.extractSlice() == `'"'`);
+    assert(buf[] == `'"'`);
     buf.reset();
     writeSingleCharLiteral(buf, '\n');
-    assert(buf.extractSlice() == `'\n'`);
+    assert(buf[] == `'\n'`);
 }

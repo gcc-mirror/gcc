@@ -245,13 +245,3 @@ struct S22858
 static assert (S22858.arr.offsetof % size_t.sizeof == 0);
 static assert (S22858.arr2.offsetof == S22858.c.offsetof + 1);
 static assert (S22858.arr2.offsetof == S22858.c2.offsetof);
-
-// https://issues.dlang.org/show_bug.cgi?id=23331
-
-auto fun() { return double(new noreturn[](0)[0]); }
-auto gun() { return double(assert(0)); }
-auto hun() { return int(assert(0)); }
-
-// https://issues.dlang.org/show_bug.cgi?id=23379
-
-void casting_noreturn() { auto b = cast(double)(assert(0)); }

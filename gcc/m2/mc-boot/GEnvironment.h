@@ -34,6 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -55,7 +56,7 @@ extern "C" {
                     the processes environment.
 */
 
-EXTERN unsigned int Environment_GetEnvironment (const char *Env_, unsigned int _Env_high, char *dest, unsigned int _dest_high);
+EXTERN bool Environment_GetEnvironment (const char *Env_, unsigned int _Env_high, char *dest, unsigned int _dest_high);
 
 /*
    PutEnvironment - change or add an environment variable definition
@@ -64,7 +65,7 @@ EXTERN unsigned int Environment_GetEnvironment (const char *Env_, unsigned int _
                     set or changed successfully.
 */
 
-EXTERN unsigned int Environment_PutEnvironment (const char *EnvDef_, unsigned int _EnvDef_high);
+EXTERN bool Environment_PutEnvironment (const char *EnvDef_, unsigned int _EnvDef_high);
 #   ifdef __cplusplus
 }
 #   endif

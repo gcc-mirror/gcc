@@ -25,7 +25,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 #include <config.h>
-#include "m2rts.h"
+// #include "m2rts.h"
 
 
 extern "C" int UnixArgs_GetArgC (void);
@@ -80,12 +80,4 @@ _M2_UnixArgs_fini (int argc, char *argv[], char *envp[])
 extern "C" void
 _M2_UnixArgs_dep (void)
 {
-}
-
-struct _M2_UnixArgs_ctor { _M2_UnixArgs_ctor (); } _M2_UnixArgs_ctor;
-
-_M2_UnixArgs_ctor::_M2_UnixArgs_ctor (void)
-{
-  M2RTS_RegisterModule ("UnixArgs", _M2_UnixArgs_init, _M2_UnixArgs_fini,
-			_M2_UnixArgs_dep);
 }

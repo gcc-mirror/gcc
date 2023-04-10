@@ -43,12 +43,11 @@
 # endif
 #endif
 
-#if __cplusplus > 202002L && __cpp_constexpr_dynamic_alloc
-# if __cpp_lib_constexpr_memory < 202202L
-// Defined with older value in bits/ptr_traits.h for C++20
-#  undef __cpp_lib_constexpr_memory
-#  define __cpp_lib_constexpr_memory 202202L
-# endif
+/* Duplicate definition with ptr_traits.h.  */
+#if __cplusplus > 202002L && defined(__cpp_constexpr_dynamic_alloc)
+# define __cpp_lib_constexpr_memory 202202L
+#elif __cplusplus > 201703L
+# define __cpp_lib_constexpr_memory 201811L
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)

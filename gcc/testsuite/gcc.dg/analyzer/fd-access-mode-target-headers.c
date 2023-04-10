@@ -1,4 +1,4 @@
-/* { dg-skip-if "" { powerpc*-*-aix* } } */
+/* { dg-skip-if "" { powerpc*-*-aix* || newlib } } */
 
 #include <sys/stat.h>
 #include <fcntl.h>

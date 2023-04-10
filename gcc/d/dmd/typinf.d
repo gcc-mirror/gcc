@@ -1,7 +1,7 @@
 /**
  * Generate `TypeInfo` objects, which are needed for run-time introspection of types.
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/typeinf.d, _typeinf.d)
@@ -21,6 +21,7 @@ import dmd.errors;
 import dmd.expression;
 import dmd.globals;
 import dmd.gluelayer;
+import dmd.location;
 import dmd.mtype;
 import dmd.visitor;
 import core.stdc.stdio;
@@ -33,8 +34,9 @@ import core.stdc.stdio;
  *      loc   = the location for reporting line numbers in errors
  *      torig = the type to generate the `TypeInfo` object for
  *      sc    = the scope
+ *      genObjCode = if true, object code will be generated for the obtained TypeInfo
  */
-extern (C++) void genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope* sc)
+extern (C++) void genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope* sc, bool genObjCode = true)
 {
     // printf("genTypeInfo() %s\n", torig.toChars());
 
@@ -79,7 +81,7 @@ extern (C++) void genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope
 
         // generate a COMDAT for other TypeInfos not available as builtins in
         // druntime
-        if (!isUnqualifiedClassInfo && !builtinTypeInfo(t))
+        if (!isUnqualifiedClassInfo && !builtinTypeInfo(t) && genObjCode)
         {
             if (sc) // if in semantic() pass
             {
@@ -104,10 +106,11 @@ extern (C++) void genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope
  *      loc = the location for reporting line nunbers in errors
  *      t   = the type to get the type of the `TypeInfo` object for
  *      sc  = the scope
+ *      genObjCode = if true, object code will be generated for the obtained TypeInfo
  * Returns:
  *      The type of the `TypeInfo` object associated with `t`
  */
-extern (C++) Type getTypeInfoType(const ref Loc loc, Type t, Scope* sc);
+extern (C++) Type getTypeInfoType(const ref Loc loc, Type t, Scope* sc, bool genObjCode = true);
 
 private TypeInfoDeclaration getTypeInfoDeclaration(Type t)
 {

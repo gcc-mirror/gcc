@@ -606,3 +606,11 @@
        (and (match_code "reg")
 	    (match_test "reload_completed || reload_in_progress")
 	    (match_test "register_operand (op, GET_MODE (op))"))))
+
+; Bias value for LEN_LOAD and LEN_STORE.  The bias will be added to the
+; length (in bytes for s390) to be loaded.  vll/vstl expect the lowest byte
+; to load while LEN_LOAD/LEN_STORE use the actual length in bytes.  This implies
+; that we cannot load a length of 0.
+(define_predicate "vll_bias_operand"
+  (and (match_code "const_int")
+       (match_test "op == CONSTM1_RTX (QImode)")))

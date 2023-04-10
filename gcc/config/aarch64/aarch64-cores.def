@@ -29,7 +29,10 @@
    will be made, represented as an identifier.
    ARCH_IDENT is the architecture implemented by the chip as specified in
    aarch64-arches.def.
-   FLAGS are the bitwise-or of the traits that apply to that core.
+   FLAGS is a parentheses-enclosed, comma-separated list of architecture
+   features in the core that are present in addition to the base architecture.
+   The architecture feature names are as per the identifiers in
+   aarch64-option-extensions.def.
    This need not include flags implied by the architecture.
    COSTS is the name of the rtx_costs routine to use.
    IMP is the implementer ID of the CPU vendor.  On a GNU/Linux system it

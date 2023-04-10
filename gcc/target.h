@@ -51,7 +51,6 @@
 #include "insn-codes.h"
 #include "tm.h"
 #include "hard-reg-set.h"
-#include "tree-core.h"
 
 #if CHECKING_P
 
@@ -259,6 +258,8 @@ enum poly_value_estimate_kind
   POLY_VALUE_MAX,
   POLY_VALUE_LIKELY
 };
+
+typedef void (*emit_support_tinfos_callback) (tree);
 
 extern bool verify_type_context (location_t, type_context_kind, const_tree,
 				 bool = false);

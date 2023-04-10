@@ -31,7 +31,7 @@ extern(Windows)
     alias PVOID        function(HANDLE hProcess, DWORD64 AddrBase) SymFunctionTableAccess64Func;
     alias BOOL         function(DWORD MachineType, HANDLE hProcess, HANDLE hThread, STACKFRAME64 *StackFrame, PVOID ContextRecord,
                                 ReadProcessMemoryProc64 ReadMemoryRoutine, FunctionTableAccessProc64 FunctoinTableAccess,
-                                GetModuleBaseProc64 GetModuleBaseRoutine, TranslateAddressProc64 TranslateAddress) StackWalk64Func;
+                                GetModuleBaseProc64 GetModuleBaseRoutine, TranslateAddressProc64 TranslateAddress) @nogc StackWalk64Func;
     alias BOOL         function(HANDLE hProcess, DWORD64 dwAddr, PDWORD pdwDisplacement, IMAGEHLP_LINEA64 *line) SymGetLineFromAddr64Func;
     alias DWORD64      function(HANDLE hProcess, DWORD64 dwAddr) SymGetModuleBase64Func;
     alias BOOL         function(HANDLE hProcess, DWORD64 dwAddr, IMAGEHLP_MODULEA64 *ModuleInfo) SymGetModuleInfo64Func;
@@ -66,7 +66,7 @@ struct DbgHelp
     SymRegisterCallback64Func SymRegisterCallback64;
     ImagehlpApiVersionFunc   ImagehlpApiVersion;
 
-    static DbgHelp* get()
+    static DbgHelp* get() @nogc
     {
         if ( sm_hndl != sm_hndl.init )
             return &sm_inst;

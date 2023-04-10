@@ -24,7 +24,6 @@ if $tracelevel then {
 # load support procs
 load_lib gm2-torture.exp
 
-gm2_init "${srcdir}/gm2/switches/makeall/pass" -fmakeall
 gm2_init_pim4 "${srcdir}/gm2/switches/makeall/pass"
 
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/*.mod]] {

@@ -3,7 +3,7 @@
  *
  * Specification: $(LINK2 https://dlang.org/spec/arrays.html#array-operations, Array Operations)
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/arrayop.d, _arrayop.d)
@@ -26,6 +26,7 @@ import dmd.globals;
 import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
+import dmd.location;
 import dmd.mtype;
 import dmd.common.outbuffer;
 import dmd.statement;
@@ -148,7 +149,7 @@ Expression arrayOp(BinExp e, Scope* sc)
             ObjectNotFound(idArrayOp);   // fatal error
     }
 
-    auto fd = resolveFuncCall(e.loc, sc, arrayOp, tiargs, null, args, FuncResolveFlag.standard);
+    auto fd = resolveFuncCall(e.loc, sc, arrayOp, tiargs, null, ArgumentList(args), FuncResolveFlag.standard);
     if (!fd || fd.errors)
         return ErrorExp.get();
     return new CallExp(e.loc, new VarExp(e.loc, fd, false), args).expressionSemantic(sc);
@@ -193,7 +194,7 @@ private Expressions* buildArrayOp(Scope* sc, Expression e, Objects* tiargs)
         Expressions* args;
 
     public:
-        extern (D) this(Scope* sc, Objects* tiargs)
+        extern (D) this(Scope* sc, Objects* tiargs) scope
         {
             this.sc = sc;
             this.tiargs = tiargs;

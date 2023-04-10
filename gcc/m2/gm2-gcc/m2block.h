@@ -35,6 +35,8 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #endif /* !m2block_c.  */
 #endif /* !m2block_h.  */
 
+#include <stdbool.h>
+
 EXTERN tree m2block_getLabel (location_t location, char *name);
 EXTERN void m2block_pushFunctionScope (tree fndecl);
 EXTERN tree m2block_popFunctionScope (void);
@@ -55,7 +57,7 @@ EXTERN tree m2block_RememberConstant (tree t);
 EXTERN tree m2block_DumpGlobalConstants (void);
 EXTERN tree m2block_RememberInitModuleFunction (tree t);
 EXTERN tree m2block_global_constant (tree t);
-EXTERN int m2block_toplevel (void);
+EXTERN bool m2block_toplevel (void);
 EXTERN tree m2block_GetErrorNode (void);
 
 EXTERN void m2block_addStmtNote (location_t location);

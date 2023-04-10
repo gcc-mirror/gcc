@@ -1,7 +1,7 @@
 /**
  * CTFE for expressions involving pointers, slices, array concatenation etc.
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/ctfeexpr.d, _ctfeexpr.d)
@@ -27,6 +27,7 @@ import dmd.errors;
 import dmd.expression;
 import dmd.func;
 import dmd.globals;
+import dmd.location;
 import dmd.mtype;
 import dmd.root.complex;
 import dmd.root.ctfloat;
@@ -1280,12 +1281,12 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
     {
         return e1.toInteger() != e2.toInteger();
     }
+    if (identity && e1.type.isfloating())
+        return !e1.isIdentical(e2);
     if (e1.type.isreal() || e1.type.isimaginary())
     {
         real_t r1 = e1.type.isreal() ? e1.toReal() : e1.toImaginary();
         real_t r2 = e1.type.isreal() ? e2.toReal() : e2.toImaginary();
-        if (identity)
-            return !CTFloat.isIdentical(r1, r2);
         if (CTFloat.isNaN(r1) || CTFloat.isNaN(r2)) // if unordered
         {
             return 1;   // they are not equal
@@ -1297,13 +1298,7 @@ private int ctfeRawCmp(const ref Loc loc, Expression e1, Expression e2, bool ide
     }
     else if (e1.type.iscomplex())
     {
-        auto c1 = e1.toComplex();
-        auto c2 = e2.toComplex();
-        if (identity)
-        {
-            return !RealIdentical(c1.re, c2.re) && !RealIdentical(c1.im, c2.im);
-        }
-        return c1 != c2;
+        return e1.toComplex() != e2.toComplex();
     }
     if (e1.op == EXP.structLiteral && e2.op == EXP.structLiteral)
     {
@@ -1414,16 +1409,8 @@ bool ctfeIdentity(const ref Loc loc, EXP op, Expression e1, Expression e2)
         SymOffExp es2 = e2.isSymOffExp();
         cmp = (es1.var == es2.var && es1.offset == es2.offset);
     }
-    else if (e1.type.isreal())
-        cmp = CTFloat.isIdentical(e1.toReal(), e2.toReal());
-    else if (e1.type.isimaginary())
-        cmp = RealIdentical(e1.toImaginary(), e2.toImaginary());
-    else if (e1.type.iscomplex())
-    {
-        complex_t v1 = e1.toComplex();
-        complex_t v2 = e2.toComplex();
-        cmp = RealIdentical(creall(v1), creall(v2)) && RealIdentical(cimagl(v1), cimagl(v1));
-    }
+    else if (e1.type.isfloating())
+        cmp = e1.isIdentical(e2);
     else
     {
         cmp = !ctfeRawCmp(loc, e1, e2, true);

@@ -84,7 +84,7 @@ PROCEDURE GetTimeVector (vec: CARDINAL; VAR micro, secs: CARDINAL) ;
                   vector.
 *)
 
-PROCEDURE AttachVector (vec: CARDINAL; p: ADDRESS) : ADDRESS ;
+PROCEDURE AttachVector (vec: CARDINAL; ptr: ADDRESS) : ADDRESS ;
 
 
 (*

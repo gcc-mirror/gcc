@@ -1,5 +1,5 @@
 
-/* Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+/* Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -19,6 +19,7 @@ struct FileName
 private:
     DString str;
 public:
+    static FileName create(const char *name);
     static bool equals(const char *name1, const char *name2);
     static bool absolute(const char *name);
     static const char *toAbsolute(const char *name, const char *base = NULL);

@@ -1,7 +1,7 @@
 /**
  * Compile-time checks associated with the @mustuse attribute.
  *
- * Copyright: Copyright (C) 2022 by The D Language Foundation, All Rights Reserved
+ * Copyright: Copyright (C) 2022-2023 by The D Language Foundation, All Rights Reserved
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/mustuse.d, _mustuse.d)
  * Documentation:  https://dlang.org/phobos/dmd_mustuse.html
@@ -15,6 +15,7 @@ import dmd.dsymbol;
 import dmd.expression;
 import dmd.globals;
 import dmd.identifier;
+import dmd.location;
 
 // Used in isIncrementOrDecrement
 private static const StringExp plusPlus, minusMinus;
@@ -147,7 +148,7 @@ private bool isAssignmentOpId(Identifier id)
 private bool isIncrementOrDecrement(Expression e)
 {
     import dmd.dtemplate : isExpression;
-    import dmd.globals : Loc;
+    import dmd.location;
     import dmd.id : Id;
     import dmd.tokens : EXP;
 

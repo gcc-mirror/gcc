@@ -22,8 +22,12 @@
 #include <experimental/internet>
 #include <sstream>
 #include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
 
 using std::experimental::net::ip::address_v4;
+
+static_assert(std::is_standard_layout<address_v4::bytes_type>::value,
+    "net::ip::address_v4::bytes_type is a standard layout type");
 
 constexpr bool
 test01()
@@ -100,6 +104,16 @@ test04()
   VERIFY( address_v4::any().to_string() == "0.0.0.0" );
   VERIFY( address_v4::loopback().to_string() == "127.0.0.1" );
   VERIFY( address_v4::broadcast().to_string() == "255.255.255.255" );
+  using b = address_v4::bytes_type;
+  VERIFY( address_v4(b(1, 23, 45, 67)).to_string() == "1.23.45.67" );
+  VERIFY( address_v4(b(12, 34, 56, 78)).to_string() == "12.34.56.78" );
+  VERIFY( address_v4(b(123, 4, 5, 6)).to_string() == "123.4.5.6" );
+  VERIFY( address_v4(b(123, 234, 124, 235)).to_string() == "123.234.124.235" );
+
+  __gnu_test::uneq_allocator<char> alloc(123);
+  auto str = address_v4(b(12, 34, 56, 78)).to_string(alloc);
+  VERIFY(str.get_allocator().get_personality() == alloc.get_personality());
+  VERIFY( str == "12.34.56.78" );
 }
 
 void

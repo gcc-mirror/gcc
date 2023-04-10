@@ -29,6 +29,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -48,7 +49,7 @@ extern "C" {
                      in future passes.
 */
 
-EXTERN unsigned int mcp5_CompilationUnit (void);
+EXTERN bool mcp5_CompilationUnit (void);
 #   ifdef __cplusplus
 }
 #   endif

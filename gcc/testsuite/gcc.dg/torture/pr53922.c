@@ -1,11 +1,5 @@
-/* { dg-do run } */
-/* { dg-require-weak "" } */
-/* { dg-skip-if "No undefined" { *-*-mingw* } } */
-/* { dg-skip-if "No undefined weak" { *-*-aix* } } */
-/* { dg-skip-if "No undefined weak" { hppa*-*-hpux* && { ! lp64 } } } */
-/* { dg-skip-if "No undefined weak" { nvptx-*-* } } */
-/* { dg-options "-Wl,-undefined,dynamic_lookup" { target *-*-darwin* } } */
-/* { dg-additional-options "-Wl,-flat_namespace" { target *-*-darwin[89]* } } */
+/* { dg-do run { target { weak_undefined } } } */
+/* { dg-add-options weak_undefined } */
 
 int x(int a)
 {

@@ -1,3 +1,115 @@
+2023-03-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/libgomp.oacc-c-c++-common/routine-nohost-2.c: Add
+	weak_undefined options.
+
+2023-03-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (Offload-Target Specifics): Grammar fix.
+
+2023-03-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR fortran/104949
+	* target.c (gomp_map_vars_internal) <GOMP_MAP_FIRSTPRIVATE>: Add
+	caveat/safeguard.
+
+2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/90596
+	* target.c (gomp_map_vars_internal): Allow for
+	'param_kind == GOMP_MAP_VARS_OPENACC | GOMP_MAP_VARS_TARGET'.
+	* oacc-parallel.c (GOACC_parallel_keyed): Pass
+	'GOMP_MAP_VARS_TARGET' to 'goacc_map_vars'.
+	* plugin/plugin-gcn.c (alloc_by_agent, gcn_exec)
+	(GOMP_OFFLOAD_openacc_exec, GOMP_OFFLOAD_openacc_async_exec):
+	Adjust, simplify.
+	(gomp_offload_free): Remove.
+	* plugin/plugin-nvptx.c (nvptx_exec, GOMP_OFFLOAD_openacc_exec)
+	(GOMP_OFFLOAD_openacc_async_exec): Adjust, simplify.
+	(cuda_free_argmem): Remove.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-parallel-1.c:
+	Adjust.
+
+2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (gomp_copy_host2dev, gomp_map_vars_internal): Allow
+	libgomp 'cbuf' buffering with OpenACC 'async' for 'ephemeral'
+	data.
+
+2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (gomp_map_vars_internal): Use 'OFFSET_INLINED' for
+	'GOMP_MAP_IF_PRESENT'.
+	* plugin/plugin-gcn.c (gcn_exec, GOMP_OFFLOAD_openacc_exec)
+	(GOMP_OFFLOAD_openacc_async_exec): Adjust.
+	* plugin/plugin-nvptx.c (nvptx_exec, GOMP_OFFLOAD_openacc_exec)
+	(GOMP_OFFLOAD_openacc_async_exec): Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/no_create-1.c: Add 'async'
+	testing.
+	* testsuite/libgomp.oacc-c-c++-common/no_create-2.c: Likewise.
+
+2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-async.c (goacc_wait): Remove 'acc_async_test' -> skip
+	shortcut.
+
+2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/data-3.c: Document/verify
+	another aspect of OpenACC 'async' semantics.
+
+2023-03-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/plugin-gcn.c (gcn_exec): Fix 'acc_ev_enqueue_launch_end'
+	position.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-parallel-1.c:
+	Verify 'acc_ev_alloc', 'acc_ev_free'.
+
+2023-03-09  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR libgomp/109062
+	* env.c (wait_policy): Initialize to -1.
+	(initialize_icvs): Initialize icvs->wait_policy to -1.
+	* testsuite/libgomp.c-c++-common/pr109062.c: New test.
+
+2023-03-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	* libgomp.texi (Offload-Target Specifics): Mention GCN_STACK_SIZE.
+
+2023-03-02  Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Paul-Antoine Arras  <pa@codesourcery.com>
+
+	* testsuite/libgomp.c/simd-math-1.c: New testcase.
+
+2023-03-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/108546
+	* testsuite/libgomp.fortran/is_device_ptr-3.f90: New test.
+	* testsuite/libgomp.fortran/use_device_ptr-optional-4.f90: New test.
+
+2023-02-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.fortran/alloc-10.f90: Use
+	'-Wno-complain-wrong-lang'.
+	* testsuite/libgomp.fortran/alloc-11.f90: Likewise.
+	* testsuite/libgomp.fortran/alloc-7.f90: Likewise.
+	* testsuite/libgomp.fortran/alloc-9.f90: Likewise.
+	* testsuite/libgomp.fortran/allocate-1.f90: Likewise.
+	* testsuite/libgomp.fortran/depend-4.f90: Likewise.
+	* testsuite/libgomp.fortran/depend-5.f90: Likewise.
+	* testsuite/libgomp.fortran/depend-6.f90: Likewise.
+	* testsuite/libgomp.fortran/depend-7.f90: Likewise.
+	* testsuite/libgomp.fortran/depend-inoutset-1.f90: Likewise.
+	* testsuite/libgomp.fortran/examples-4/declare_target-1.f90:
+	Likewise.
+	* testsuite/libgomp.fortran/examples-4/declare_target-2.f90:
+	Likewise.
+	* testsuite/libgomp.fortran/order-reproducible-1.f90: Likewise.
+	* testsuite/libgomp.fortran/order-reproducible-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/parallel-dims.f90: Likewise.
+	* testsuite/libgomp.fortran/task-detach-6.f90: Remove left-over
+	'dg-prune-output'.
+
 2023-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.texi: Fix typos - theads -> threads.

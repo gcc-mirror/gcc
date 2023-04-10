@@ -1,7 +1,7 @@
 /**
  * Flow analysis for Ownership/Borrowing
  *
- * Copyright:   Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright:   Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/ob.d, _ob.d)
@@ -35,6 +35,7 @@ import dmd.func;
 import dmd.globals;
 import dmd.identifier;
 import dmd.init;
+import dmd.location;
 import dmd.mtype;
 import dmd.printast;
 import dmd.statement;
@@ -114,7 +115,7 @@ struct ObNode
     PtrVarState[] input;  /// variable states on entry to exp
     PtrVarState[] output; /// variable states on exit to exp
 
-    this(ObNode* tryBlock)
+    this(ObNode* tryBlock) scope
     {
         this.tryBlock = tryBlock;
     }
@@ -1352,7 +1353,7 @@ void genKill(ref ObState obstate, ObNode* ob)
 
             extern (D) this(void delegate(ObNode*, VarDeclaration, Expression, bool) dgWriteVar,
                             void delegate(const ref Loc loc, ObNode* ob, VarDeclaration v, bool mutable) dgReadVar,
-                            ObNode* ob, ref ObState obstate)
+                            ObNode* ob, ref ObState obstate) scope
             {
                 this.dgWriteVar = dgWriteVar;
                 this.dgReadVar  = dgReadVar;
@@ -2057,7 +2058,7 @@ void checkObErrors(ref ObState obstate)
 
             extern (D) this(void delegate(const ref Loc loc, ObNode* ob, VarDeclaration v, bool mutable, PtrVarState[]) dgReadVar,
                             void delegate(ObNode*, PtrVarState[], VarDeclaration, Expression) dgWriteVar,
-                            PtrVarState[] cpvs, ObNode* ob, ref ObState obstate)
+                            PtrVarState[] cpvs, ObNode* ob, ref ObState obstate) scope
             {
                 this.dgReadVar  = dgReadVar;
                 this.dgWriteVar = dgWriteVar;
@@ -2568,7 +2569,7 @@ void checkObErrors(ref ObState obstate)
                 {
                     auto v = obstate.vars[i];
                     if (v.type.hasPointers())
-                        v.error(v.loc, "is left dangling at return");
+                        v.error(v.loc, "is not disposed of before return");
                 }
             }
         }

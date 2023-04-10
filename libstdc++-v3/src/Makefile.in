@@ -1064,6 +1064,7 @@ compatibility-condvar.o: compatibility-condvar.cc
 	$(CXXCOMPILE) -std=gnu++11 -c $<
 
 # Symbol versioning for shared libraries.
+# See configure.host and configure.ac for port_specific_symbol_files.
 @ENABLE_SYMVERS_TRUE@libstdc++-symbols.ver:  ${glibcxx_srcdir}/$(SYMVER_FILE) \
 @ENABLE_SYMVERS_TRUE@		$(port_specific_symbol_files)
 @ENABLE_SYMVERS_TRUE@	cp ${glibcxx_srcdir}/$(SYMVER_FILE) $@.tmp

@@ -46,12 +46,12 @@ enum : short
     EVFILT_EXCEPT   = -15,
 }
 
-extern(D) void EV_SET(kevent_t* kevp, typeof(kevent_t.tupleof) args)
+extern(D) void EV_SET()(kevent_t* kevp, typeof(kevent_t.tupleof) args)
 {
     *kevp = kevent_t(args);
 }
 
-extern(D) void EV_SET64(kevent64_s* kevp, typeof(kevent64_s.tupleof) args)
+extern(D) void EV_SET64()(kevent64_s* kevp, typeof(kevent64_s.tupleof) args)
 {
     *kevp = kevent64_s(args);
 }

@@ -16,4 +16,4 @@ void f(int8_t *base, int8_t *out, size_t vl, size_t m, size_t n) {
   }
 }
 
-/* { dg-final { scan-assembler-times {vsetvli} 4 { target { no-opts "-O0" no-opts "-Os" no-opts "-g" no-opts "-funroll-loops" } } } } */
+/* { dg-final { scan-assembler-times {vsetvli} 3 { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-Oz" no-opts "-g" no-opts "-funroll-loops" } } } } */

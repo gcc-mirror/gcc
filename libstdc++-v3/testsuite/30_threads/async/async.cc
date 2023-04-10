@@ -20,6 +20,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include <iostream>
 
 #include <future>
 #include <thread>
@@ -133,6 +134,7 @@ void test04()
 {
   using namespace std::chrono;
 
+  auto const steady_start = steady_clock::now();
   auto const slow_start = slow_clock::now();
   future<void> f1 = async(launch::async, []() {
       std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -140,21 +142,26 @@ void test04()
 
   // Wait for ~1s
   {
-    auto const steady_begin = steady_clock::now();
     auto const status = f1.wait_until(slow_start + milliseconds(100));
     VERIFY(status == std::future_status::timeout);
-    auto const elapsed = steady_clock::now() - steady_begin;
+    auto const elapsed = steady_clock::now() - steady_start;
+    if (elapsed < seconds(1))
+      std::cout << elapsed.count () << "ns < 1s" << std::endl;
     VERIFY(elapsed >= seconds(1));
     VERIFY(elapsed < seconds(2));
   }
 
-  // Wait for up to ~2s more
+  // Wait for up to ~4s more, but since the async sleep completes, the
+  // actual wait may be shorter than 1s.  Tolerate 3s because 2s
+  // hasn't been enough in some extreme cases.
   {
     auto const steady_begin = steady_clock::now();
-    auto const status = f1.wait_until(slow_start + milliseconds(300));
+    auto const status = f1.wait_until(slow_start + milliseconds(500));
     VERIFY(status == std::future_status::ready);
     auto const elapsed = steady_clock::now() - steady_begin;
-    VERIFY(elapsed < seconds(2));
+    if (elapsed >= seconds(3))
+      std::cout << elapsed.count () << "ns > 2s" << std::endl;
+    VERIFY(elapsed < seconds(3));
   }
 }
 

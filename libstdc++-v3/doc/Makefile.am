@@ -24,6 +24,8 @@ include $(top_srcdir)/fragment.am
 
 # Documentation Overview
 #
+# See ./xml/manual/documentation_hacking.xml for full details.
+#
 # There are two main input materials for libstdc++ documentation.
 # The first is the doxygen markup in libstdc++ sources, which is a
 # reference to the API. And the second is the manual, via docbook markup in

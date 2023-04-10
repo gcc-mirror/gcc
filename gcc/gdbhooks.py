@@ -133,10 +133,10 @@ vector: attempting to do so instead gives you the vec itself (for vec[0]),
 or a (probably) invalid cast to vec<> for the memory after the vec (for
 vec[1] onwards).
 
-Instead (for now) you must access m_vecdata:
-  (gdb) p bb->preds->m_vecdata[0]
+Instead (for now) you must access the payload directly:
+  (gdb) p ((edge_def**)(bb->preds+1))[0]
   $20 = <edge 0x7ffff044d380 (3 -> 5)>
-  (gdb) p bb->preds->m_vecdata[1]
+  (gdb) p ((edge_def**)(bb->preds+1))[1]
   $21 = <edge 0x7ffff044d3b8 (4 -> 5)>
 """
 import os.path
@@ -220,13 +220,23 @@ class TreePrinter:
 
         val_TREE_CODE = self.node.TREE_CODE()
 
-        # extern const enum tree_code_class tree_code_type[];
+        # constexpr inline enum tree_code_class tree_code_type[] = { ... };
         # #define TREE_CODE_CLASS(CODE)	tree_code_type[(int) (CODE)]
+        # or
+        # template <int N>
+        # struct tree_code_type_tmpl {
+        # static constexpr enum tree_code_class tree_code_type[] = { ... };
+        # }; };
+        # #define TREE_CODE_CLASS(CODE) \
+        # tree_code_type_tmpl <0>::tree_code_type[(int) (CODE)]
 
         if val_TREE_CODE == 0xa5a5:
             return '<ggc_freed 0x%x>' % intptr(self.gdbval)
 
-        val_tree_code_type = gdb.parse_and_eval('tree_code_type')
+        try:
+            val_tree_code_type = gdb.parse_and_eval('tree_code_type')
+        except:
+            val_tree_code_type = gdb.parse_and_eval('tree_code_type_tmpl<0>::tree_code_type')
         val_tclass = val_tree_code_type[val_TREE_CODE]
 
         val_tree_code_name = gdb.parse_and_eval('tree_code_name')
@@ -461,9 +471,16 @@ class VecPrinter:
             return
         m_vecpfx = self.gdbval['m_vecpfx']
         m_num = m_vecpfx['m_num']
-        m_vecdata = self.gdbval['m_vecdata']
+        val = self.gdbval
+        typ = val.type
+        if typ.code == gdb.TYPE_CODE_PTR:
+            typ = typ.target()
+        else:
+            val = val.address
+        typ_T = typ.template_argument(0) # the type T
+        vecdata = (val + 1).cast(typ_T.pointer())
         for i in range(m_num):
-            yield ('[%d]' % i, m_vecdata[i])
+            yield ('[%d]' % i, vecdata[i])
 
 ######################################################################
 

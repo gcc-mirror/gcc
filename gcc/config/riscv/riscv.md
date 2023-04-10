@@ -100,6 +100,10 @@
 
   ;; Zihintpause unspec
   UNSPECV_PAUSE
+
+  ;; XTheadFmv unspec
+  UNSPEC_XTHEADFMV
+  UNSPEC_XTHEADFMV_HW
 ])
 
 (define_constants
@@ -242,6 +246,8 @@
 ;; bitmanip	bit manipulation instructions
 ;; rotate   rotation instructions
 ;; atomic   atomic instructions
+;; condmove	conditional moves
+;; crypto cryptography instructions
 ;; Classification of RVV instructions which will be added to each RVV .md pattern and used by scheduler.
 ;; rdvlenb     vector byte length vlenb csrr read
 ;; rdvl        vector length vl csrr read
@@ -309,9 +315,9 @@
 ;; 14. Vector reduction operations
 ;; vired       vector single-width integer reduction instructions
 ;; viwred      vector widening integer reduction instructions
-;; vfred       vector single-width floating-point un-ordered reduction instruction
+;; vfredu      vector single-width floating-point un-ordered reduction instruction
 ;; vfredo      vector single-width floating-point ordered reduction instruction
-;; vfwred      vector widening floating-point un-ordered reduction instruction
+;; vfwredu     vector widening floating-point un-ordered reduction instruction
 ;; vfwredo     vector widening floating-point ordered reduction instruction
 ;; 15. Vector mask instructions
 ;; vmalu       vector mask-register logical instructions
@@ -321,21 +327,24 @@
 ;; vmiota      vector iota
 ;; vmidx       vector element index instruction
 ;; 16. Vector permutation instructions
-;; vimovvx     integer scalar move instructions
-;; vimovxv     integer scalar move instructions
-;; vfmovvf     floating-point scalar move instructions
-;; vfmovfv     floating-point scalar move instructions
-;; vislide     vector slide instructions
-;; vislide1    vector slide instructions
-;; vfslide1    vector slide instructions
-;; vgather     vector register gather instructions
-;; vcompress   vector compress instruction
-;; vmov        whole vector register move
+;; vimovvx      integer scalar move instructions
+;; vimovxv      integer scalar move instructions
+;; vfmovvf      floating-point scalar move instructions
+;; vfmovfv      floating-point scalar move instructions
+;; vslideup     vector slide instructions
+;; vslidedown   vector slide instructions
+;; vislide1up   vector slide instructions
+;; vislide1down vector slide instructions
+;; vfslide1up   vector slide instructions
+;; vfslide1down vector slide instructions
+;; vgather      vector register gather instructions
+;; vcompress    vector compress instruction
+;; vmov         whole vector register move
 (define_attr "type"
   "unknown,branch,jump,call,load,fpload,store,fpstore,
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
    fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,ghost,bitmanip,rotate,
-   atomic,rdvlenb,rdvl,vsetvl,vlde,vste,vldm,vstm,vlds,vsts,
+   atomic,condmove,crypto,rdvlenb,rdvl,vsetvl,vlde,vste,vldm,vstm,vlds,vsts,
    vldux,vldox,vstux,vstox,vldff,vldr,vstr,
    vialu,viwalu,vext,vicalu,vshift,vnshift,vicmp,viminmax,
    vimul,vidiv,viwmul,vimuladd,viwmuladd,vimerge,vimov,
@@ -344,9 +353,10 @@
    vfcmp,vfminmax,vfsgnj,vfclass,vfmerge,vfmov,
    vfcvtitof,vfcvtftoi,vfwcvtitof,vfwcvtftoi,
    vfwcvtftof,vfncvtitof,vfncvtftoi,vfncvtftof,
-   vired,viwred,vfred,vfredo,vfwred,vfwredo,
+   vired,viwred,vfredu,vfredo,vfwredu,vfwredo,
    vmalu,vmpop,vmffs,vmsfs,vmiota,vmidx,vimovvx,vimovxv,vfmovvf,vfmovfv,
-   vislide,vislide1,vfslide1,vgather,vcompress,vmov"
+   vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,
+   vgather,vcompress,vmov"
   (cond [(eq_attr "got" "load") (const_string "load")
 
 	 ;; If a doubleword move uses these expensive instructions,
@@ -1358,7 +1368,9 @@
   [(set (match_operand:DI     0 "register_operand"     "=r,r")
 	(zero_extend:DI
 	    (match_operand:SI 1 "nonimmediate_operand" " r,m")))]
-  "TARGET_64BIT && !TARGET_ZBA"
+  "TARGET_64BIT && !TARGET_ZBA
+   && !(register_operand (operands[1], SImode)
+        && reg_or_subregno (operands[1]) == VL_REGNUM)"
   "@
    #
    lwu\t%0,%1"
@@ -1738,7 +1750,9 @@
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r, m,  *f,*f,*r,*m,r")
 	(match_operand:SI 1 "move_operand"         " r,T,m,rJ,*r*J,*m,*f,*f,vp"))]
   "(register_operand (operands[0], SImode)
-    || reg_or_0_operand (operands[1], SImode))"
+    || reg_or_0_operand (operands[1], SImode))
+    && !(register_operand (operands[1], SImode)
+         && reg_or_subregno (operands[1]) == VL_REGNUM)"
   { return riscv_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "move,const,load,store,mtc,fpload,mfc,fpstore,rdvlenb")
    (set_attr "mode" "SI")
@@ -1855,16 +1869,17 @@
     DONE;
 })
 
+
 ;; In RV32, we lack fmv.x.d and fmv.d.x.  Go through memory instead.
 ;; (However, we can still use fcvt.d.w to zero a floating-point register.)
 (define_insn "*movdf_hardfloat_rv32"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,f,m,m,  *r,*r,*m")
-	(match_operand:DF 1 "move_operand"         " f,G,m,f,G,*r*G,*m,*r"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,f,m,m,*th_f_fmv,*th_r_fmv,  *r,*r,*m")
+	(match_operand:DF 1 "move_operand"         " f,G,m,f,G,*th_r_fmv,*th_f_fmv,*r*G,*m,*r"))]
   "!TARGET_64BIT && TARGET_DOUBLE_FLOAT
    && (register_operand (operands[0], DFmode)
        || reg_or_0_operand (operands[1], DFmode))"
   { return riscv_output_move (operands[0], operands[1]); }
-  [(set_attr "move_type" "fmove,mtc,fpload,fpstore,store,move,load,store")
+  [(set_attr "move_type" "fmove,mtc,fpload,fpstore,store,mtc,mfc,move,load,store")
    (set_attr "mode" "DF")])
 
 (define_insn "*movdf_hardfloat_rv64"
@@ -2308,17 +2323,15 @@
 (define_expand "mov<mode>cc"
   [(set (match_operand:GPR 0 "register_operand")
 	(if_then_else:GPR (match_operand 1 "comparison_operator")
-			  (match_operand:GPR 2 "register_operand")
+			  (match_operand:GPR 2 "reg_or_0_operand")
 			  (match_operand:GPR 3 "sfb_alu_operand")))]
-  "TARGET_SFB_ALU"
+  "TARGET_SFB_ALU || TARGET_XTHEADCONDMOV"
 {
-  rtx cmp = operands[1];
-  /* We only handle word mode integer compares for now.  */
-  if (GET_MODE (XEXP (cmp, 0)) != word_mode)
+  if (riscv_expand_conditional_move (operands[0], operands[1],
+				     operands[2], operands[3]))
+    DONE;
+  else
     FAIL;
-  riscv_expand_conditional_move (operands[0], operands[2], operands[3],
-				 GET_CODE (cmp), XEXP (cmp, 0), XEXP (cmp, 1));
-  DONE;
 })
 
 (define_insn "*mov<GPR:mode><X:mode>cc"
@@ -3087,10 +3100,50 @@
   "prefetch.i\t%a0"
 )
 
+(define_expand "extv<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+	(sign_extract:GPR (match_operand:GPR 1 "register_operand" "r")
+			 (match_operand 2 "const_int_operand")
+			 (match_operand 3 "const_int_operand")))]
+  "TARGET_XTHEADBB"
+)
+
+(define_expand "extzv<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+	(zero_extract:GPR (match_operand:GPR 1 "register_operand" "r")
+			 (match_operand 2 "const_int_operand")
+			 (match_operand 3 "const_int_operand")))]
+  "TARGET_XTHEADBB"
+{
+  if (TARGET_XTHEADBB
+      && (INTVAL (operands[2]) < 8) && (INTVAL (operands[3]) == 0))
+    FAIL;
+})
+
+(define_expand "maddhisi4"
+  [(set (match_operand:SI 0 "register_operand")
+	(plus:SI
+	  (mult:SI (sign_extend:SI (match_operand:HI 1 "register_operand"))
+		   (sign_extend:SI (match_operand:HI 2 "register_operand")))
+	  (match_operand:SI 3 "register_operand")))]
+  "TARGET_XTHEADMAC"
+)
+
+(define_expand "msubhisi4"
+  [(set (match_operand:SI 0 "register_operand")
+	(minus:SI
+	  (match_operand:SI 3 "register_operand")
+	  (mult:SI (sign_extend:SI (match_operand:HI 1 "register_operand"))
+		   (sign_extend:SI (match_operand:HI 2 "register_operand")))))]
+  "TARGET_XTHEADMAC"
+)
+
 (include "bitmanip.md")
+(include "crypto.md")
 (include "sync.md")
 (include "peephole.md")
 (include "pic.md")
 (include "generic.md")
 (include "sifive-7.md")
+(include "thead.md")
 (include "vector.md")

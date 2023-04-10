@@ -278,7 +278,6 @@ class FinalizeError : Error
     this( TypeInfo ci, string file = __FILE__, size_t line = __LINE__, Throwable next = null ) @safe pure nothrow @nogc
     {
         super( "Finalization error", file, line, next );
-        super.info = SuppressTraceInfo.instance;
         info = ci;
     }
 
@@ -393,7 +392,6 @@ class InvalidMemoryOperationError : Error
     this(string file = __FILE__, size_t line = __LINE__, Throwable next = null ) @safe pure nothrow @nogc
     {
         super( "Invalid memory operation", file, line, next );
-        this.info = SuppressTraceInfo.instance;
     }
 
     override string toString() const @trusted

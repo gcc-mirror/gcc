@@ -22,4 +22,4 @@ void f (void * restrict in, void * restrict out, int n)
     }
 }
 
-/* { dg-final { scan-assembler-times {vsetvli} 2 { target { no-opts "-O0"  no-opts "-Os" no-opts "-flto" no-opts "-g" no-opts "-funroll-loops" } } } } */
+/* { dg-final { scan-assembler-times {vsetvli} 2 { target { no-opts "-O0"  no-opts "-Os" no-opts "-Oz" no-opts "-flto" no-opts "-g" no-opts "-funroll-loops" } } } } */

@@ -44,7 +44,7 @@ VAR
 BEGIN
    r := 0 ;
    a := 1.0 / 0.0 ;
-   IF NOT isfinite (a)
+   IF isfinite (a) = 0
    THEN
       printf ("detected infinite number\n")
    ELSE
@@ -52,7 +52,7 @@ BEGIN
       r := 1
    END ;
    a := 1.0 / 1.0 ;
-   IF isfinite (a)
+   IF isfinite (a) = 1
    THEN
       printf ("detected finite number\n")
    ELSE
@@ -64,5 +64,4 @@ BEGIN
       printf ("all tests passed\n")
    END ;
    exit (r)
-
 END limittests.

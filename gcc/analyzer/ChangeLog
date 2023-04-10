@@ -1,3 +1,126 @@
+2023-03-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109239
+	* program-point.cc: Include "analyzer/inlining-iterator.h".
+	(program_point::effectively_intraprocedural_p): New function.
+	* program-point.h (program_point::effectively_intraprocedural_p):
+	New decl.
+	* sm-malloc.cc (deref_before_check::emit): Use it when rejecting
+	interprocedural cases, so that we reject interprocedural cases
+	that have become intraprocedural due to inlining.
+
+2023-03-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109094
+	* region-model.cc (region_model::on_longjmp): Pass false for
+	new "eval_return_svalue" param of pop_frame.
+	(region_model::pop_frame): Add new "eval_return_svalue" param and
+	use it to suppress the call to get_rvalue on the result when
+	needed by on_longjmp.
+	* region-model.h (region_model::pop_frame): Add new
+	"eval_return_svalue" param.
+
+2023-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109059
+	* region-model.cc (region_model::mark_region_as_unknown): Gather a
+	set of maybe-live svalues and call on_maybe_live_values with it.
+	* store.cc (binding_map::remove_overlapping_bindings): Add new
+	"maybe_live_values" param; add any removed svalues to it.
+	(binding_cluster::clobber_region): Add NULL as new param of
+	remove_overlapping_bindings.
+	(binding_cluster::mark_region_as_unknown): Add "maybe_live_values"
+	param and pass it to remove_overlapping_bindings.
+	(binding_cluster::maybe_get_compound_binding): Add NULL for new
+	param of binding_map::remove_overlapping_bindings.
+	(binding_cluster::remove_overlapping_bindings): Add
+	"maybe_live_values" param and pass to
+	binding_map::remove_overlapping_bindings.
+	(store::set_value): Capture a set of maybe-live svalues, and call
+	on_maybe_live_values with it.
+	(store::on_maybe_live_values): New.
+	(store::mark_region_as_unknown): Add "maybe_live_values" param
+	and pass it to binding_cluster::mark_region_as_unknown.
+	(store::remove_overlapping_bindings): Pass NULL for new param of
+	binding_cluster::remove_overlapping_bindings.
+	* store.h (binding_map::remove_overlapping_bindings): Add
+	"maybe_live_values" param.
+	(binding_cluster::mark_region_as_unknown): Likewise.
+	(binding_cluster::remove_overlapping_bindings): Likewise.
+	(store::mark_region_as_unknown): Likewise.
+	(store::on_maybe_live_values): New decl.
+
+2023-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108475
+	PR analyzer/109060
+	* sm-malloc.cc (deref_before_check::deref_before_check):
+	Initialize new field m_deref_expr.  Assert that arg is non-NULL.
+	(deref_before_check::emit): Reject cases where the spelling of the
+	thing that was dereferenced differs from that of what is checked,
+	or if the dereference expression was not found.  Remove code to
+	handle NULL m_arg.
+	(deref_before_check::describe_state_change): Remove code to handle
+	NULL m_arg.
+	(deref_before_check::describe_final_event): Likewise.
+	(deref_before_check::sufficiently_similar_p): New.
+	(deref_before_check::m_deref_expr): New field.
+	(malloc_state_machine::maybe_complain_about_deref_before_check):
+	Don't warn if the diag_ptr is NULL.
+
+2023-03-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* kf.cc (class kf_sprintf): New.
+	(register_known_functions): Register it.
+
+2023-03-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108968
+	* region-model.cc (region_model::get_rvalue_1): Handle VAR_DECLs
+	with a DECL_HARD_REGISTER by returning UNKNOWN.
+
+2023-03-02  Hans-Peter Nilsson  <hp@axis.com>
+
+	* kf.cc (register_known_functions): Add __errno function for newlib.
+
+2023-03-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107565
+	* region-model.cc (region_model::on_call_pre): Flatten logic by
+	returning early.  Consolidate logic for detecting const and pure
+	functions.  When considering whether an unhandled built-in
+	function has side-effects, consider all kinds of builtin, rather
+	than just BUILT_IN_NORMAL, and don't require
+	gimple_builtin_call_types_compatible_p.
+
+2023-03-01  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108935
+	* infinite-recursion.cc (contains_unknown_p): New.
+	(sufficiently_different_region_binding_p): New function, splitting
+	out inner loop from...
+	(sufficiently_different_p): ...here.  Extend detection of unknown
+	svalues to also include svalues that contain unknown.  Treat
+	changes in frames below the entry to the recursion as being
+	sufficiently different to reject being an infinite recursion.
+
+2023-02-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/108830
+	* analyzer.opt (fanalyzer-suppress-followups): New option.
+	* engine.cc (impl_region_model_context::warn): Terminate the path
+	if the diagnostic's terminate_path_p vfunc returns true and
+	-fanalyzer-suppress-followups is true (the default).
+	(impl_sm_context::warn): Likewise, for both overloads.
+	* pending-diagnostic.h (pending_diagnostic::terminate_path_p): New
+	vfunc.
+	* program-state.cc (program_state::on_edge): Terminate the path if
+	the ctxt requests it during updating the edge.
+	* region-model.cc (poisoned_value_diagnostic::terminate_path_p):
+	New vfunc.
+	* sm-malloc.cc (null_deref::terminate_path_p): New vfunc.
+	(null_arg::terminate_path_p): New vfunc.
+
 2023-02-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/108806

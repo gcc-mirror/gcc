@@ -1601,8 +1601,14 @@ _mm_bslli_si128 (__m128i __A, const int __N)
   __v16qu __result;
   const __v16qu __zeros = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-  if (__N < 16)
+  if (__N == 0)
+    return __A;
+  else if (__N > 0 && __N < 16)
+#ifdef __LITTLE_ENDIAN__
     __result = vec_sld ((__v16qu) __A, __zeros, __N);
+#else
+    __result = vec_sld (__zeros, (__v16qu) __A, (16 - __N));
+#endif
   else
     __result = __zeros;
 
@@ -1615,7 +1621,9 @@ _mm_bsrli_si128 (__m128i __A, const int __N)
   __v16qu __result;
   const __v16qu __zeros = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-  if (__N < 16)
+  if (__N == 0)
+    return __A;
+  else if (__N > 0 && __N < 16)
 #ifdef __LITTLE_ENDIAN__
     if (__builtin_constant_p(__N))
       /* Would like to use Vector Shift Left Double by Octet
@@ -1645,21 +1653,9 @@ _mm_srli_si128 (__m128i __A, const int __N)
 }
 
 extern __inline  __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_mm_slli_si128 (__m128i __A, const int _imm5)
+_mm_slli_si128 (__m128i __A, const int __N)
 {
-  __v16qu __result;
-  const __v16qu __zeros = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
-  if (_imm5 < 16)
-#ifdef __LITTLE_ENDIAN__
-    __result = vec_sld ((__v16qu) __A, __zeros, _imm5);
-#else
-    __result = vec_sld (__zeros, (__v16qu) __A, (16 - _imm5));
-#endif
-  else
-    __result = __zeros;
-
-  return (__m128i) __result;
+  return _mm_bslli_si128 (__A, __N);
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))

@@ -74,7 +74,8 @@ struct simd_abi::_Scalar
   template <typename _Tp>
     static constexpr bool _S_is_valid_v = _IsValid<_Tp>::value;
 
-  _GLIBCXX_SIMD_INTRINSIC static constexpr bool _S_masked(bool __x)
+  _GLIBCXX_SIMD_INTRINSIC static constexpr bool
+  _S_masked(bool __x)
   { return __x; }
 
   using _CommonImpl = _CommonImplScalar;
@@ -110,7 +111,8 @@ struct _CommonImplScalar
 {
   // _S_store {{{
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static void _S_store(_Tp __x, void* __addr)
+    _GLIBCXX_SIMD_INTRINSIC static void
+    _S_store(_Tp __x, void* __addr)
     { __builtin_memcpy(__addr, &__x, sizeof(_Tp)); }
 
   // }}}
@@ -138,26 +140,26 @@ struct _SimdImplScalar
 
   // _S_broadcast {{{2
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static constexpr _Tp _S_broadcast(_Tp __x) noexcept
+    _GLIBCXX_SIMD_INTRINSIC static constexpr _Tp
+    _S_broadcast(_Tp __x) noexcept
     { return __x; }
 
   // _S_generator {{{2
   template <typename _Fp, typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static constexpr _Tp _S_generator(_Fp&& __gen,
-							      _TypeTag<_Tp>)
+    _GLIBCXX_SIMD_INTRINSIC static constexpr _Tp
+    _S_generator(_Fp&& __gen, _TypeTag<_Tp>)
     { return __gen(_SizeConstant<0>()); }
 
   // _S_load {{{2
   template <typename _Tp, typename _Up>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_load(const _Up* __mem,
-					       _TypeTag<_Tp>) noexcept
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_load(const _Up* __mem, _TypeTag<_Tp>) noexcept
     { return static_cast<_Tp>(__mem[0]); }
 
   // _S_masked_load {{{2
   template <typename _Tp, typename _Up>
-    _GLIBCXX_SIMD_INTRINSIC
-    static _Tp _S_masked_load(_Tp __merge, bool __k,
-				     const _Up* __mem) noexcept
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_masked_load(_Tp __merge, bool __k, const _Up* __mem) noexcept
     {
       if (__k)
 	__merge = static_cast<_Tp>(__mem[0]);
@@ -166,97 +168,95 @@ struct _SimdImplScalar
 
   // _S_store {{{2
   template <typename _Tp, typename _Up>
-    _GLIBCXX_SIMD_INTRINSIC
-    static void _S_store(_Tp __v, _Up* __mem, _TypeTag<_Tp>) noexcept
+    _GLIBCXX_SIMD_INTRINSIC static void
+    _S_store(_Tp __v, _Up* __mem, _TypeTag<_Tp>) noexcept
     { __mem[0] = static_cast<_Up>(__v); }
 
   // _S_masked_store {{{2
   template <typename _Tp, typename _Up>
-    _GLIBCXX_SIMD_INTRINSIC
-    static void _S_masked_store(const _Tp __v, _Up* __mem,
-				       const bool __k) noexcept
+    _GLIBCXX_SIMD_INTRINSIC static void
+    _S_masked_store(const _Tp __v, _Up* __mem, const bool __k) noexcept
     { if (__k) __mem[0] = __v; }
 
   // _S_negate {{{2
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC
-    static constexpr bool _S_negate(_Tp __x) noexcept
+    _GLIBCXX_SIMD_INTRINSIC static constexpr bool
+    _S_negate(_Tp __x) noexcept
     { return !__x; }
 
   // _S_reduce {{{2
   template <typename _Tp, typename _BinaryOperation>
-    _GLIBCXX_SIMD_INTRINSIC
-    static constexpr _Tp
+    _GLIBCXX_SIMD_INTRINSIC static constexpr _Tp
     _S_reduce(const simd<_Tp, simd_abi::scalar>& __x, const _BinaryOperation&)
     { return __x._M_data; }
 
   // _S_min, _S_max {{{2
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC
-    static constexpr _Tp _S_min(const _Tp __a, const _Tp __b)
+    _GLIBCXX_SIMD_INTRINSIC static constexpr _Tp
+    _S_min(const _Tp __a, const _Tp __b)
     { return std::min(__a, __b); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC
-    static constexpr _Tp _S_max(const _Tp __a, const _Tp __b)
+    _GLIBCXX_SIMD_INTRINSIC static constexpr _Tp
+    _S_max(const _Tp __a, const _Tp __b)
     { return std::max(__a, __b); }
 
   // _S_complement {{{2
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC
-    static constexpr _Tp _S_complement(_Tp __x) noexcept
+    _GLIBCXX_SIMD_INTRINSIC static constexpr _Tp
+    _S_complement(_Tp __x) noexcept
     { return static_cast<_Tp>(~__x); }
 
   // _S_unary_minus {{{2
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC
-    static constexpr _Tp _S_unary_minus(_Tp __x) noexcept
+    _GLIBCXX_SIMD_INTRINSIC static constexpr _Tp
+    _S_unary_minus(_Tp __x) noexcept
     { return static_cast<_Tp>(-__x); }
 
   // arithmetic operators {{{2
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC
-    static constexpr _Tp _S_plus(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC static constexpr _Tp
+    _S_plus(_Tp __x, _Tp __y)
     {
       return static_cast<_Tp>(__promote_preserving_unsigned(__x)
 			      + __promote_preserving_unsigned(__y));
     }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC
-    static constexpr _Tp _S_minus(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC static constexpr _Tp
+    _S_minus(_Tp __x, _Tp __y)
     {
       return static_cast<_Tp>(__promote_preserving_unsigned(__x)
 			      - __promote_preserving_unsigned(__y));
     }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC
-    static constexpr _Tp _S_multiplies(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC static constexpr _Tp
+    _S_multiplies(_Tp __x, _Tp __y)
     {
       return static_cast<_Tp>(__promote_preserving_unsigned(__x)
 			      * __promote_preserving_unsigned(__y));
     }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC
-    static constexpr _Tp _S_divides(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC static constexpr _Tp
+    _S_divides(_Tp __x, _Tp __y)
     {
       return static_cast<_Tp>(__promote_preserving_unsigned(__x)
 			      / __promote_preserving_unsigned(__y));
     }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC
-    static constexpr _Tp _S_modulus(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC static constexpr _Tp
+    _S_modulus(_Tp __x, _Tp __y)
     {
       return static_cast<_Tp>(__promote_preserving_unsigned(__x)
 			      % __promote_preserving_unsigned(__y));
     }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC
-    static constexpr _Tp _S_bit_and(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC static constexpr _Tp
+    _S_bit_and(_Tp __x, _Tp __y)
     {
       if constexpr (is_floating_point_v<_Tp>)
 	{
@@ -269,8 +269,8 @@ struct _SimdImplScalar
     }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC
-    static constexpr _Tp _S_bit_or(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC static constexpr _Tp
+    _S_bit_or(_Tp __x, _Tp __y)
     {
       if constexpr (is_floating_point_v<_Tp>)
 	{
@@ -283,8 +283,8 @@ struct _SimdImplScalar
     }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC
-    static constexpr _Tp _S_bit_xor(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC static constexpr _Tp
+    _S_bit_xor(_Tp __x, _Tp __y)
     {
       if constexpr (is_floating_point_v<_Tp>)
 	{
@@ -297,13 +297,13 @@ struct _SimdImplScalar
     }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC
-    static constexpr _Tp _S_bit_shift_left(_Tp __x, int __y)
+    _GLIBCXX_SIMD_INTRINSIC static constexpr _Tp
+    _S_bit_shift_left(_Tp __x, int __y)
     { return static_cast<_Tp>(__promote_preserving_unsigned(__x) << __y); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC
-    static constexpr _Tp _S_bit_shift_right(_Tp __x, int __y)
+    _GLIBCXX_SIMD_INTRINSIC static constexpr _Tp
+    _S_bit_shift_right(_Tp __x, int __y)
     { return static_cast<_Tp>(__promote_preserving_unsigned(__x) >> __y); }
 
   // math {{{2
@@ -312,300 +312,362 @@ struct _SimdImplScalar
     using _ST = _SimdTuple<_Tp, simd_abi::scalar>;
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_acos(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_acos(_Tp __x)
     { return std::acos(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_asin(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_asin(_Tp __x)
     { return std::asin(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_atan(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_atan(_Tp __x)
     { return std::atan(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_cos(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_cos(_Tp __x)
     { return std::cos(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_sin(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_sin(_Tp __x)
     { return std::sin(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_tan(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_tan(_Tp __x)
     { return std::tan(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_acosh(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_acosh(_Tp __x)
     { return std::acosh(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_asinh(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_asinh(_Tp __x)
     { return std::asinh(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_atanh(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_atanh(_Tp __x)
     { return std::atanh(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_cosh(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_cosh(_Tp __x)
     { return std::cosh(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_sinh(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_sinh(_Tp __x)
     { return std::sinh(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_tanh(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_tanh(_Tp __x)
     { return std::tanh(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_atan2(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_atan2(_Tp __x, _Tp __y)
     { return std::atan2(__x, __y); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_exp(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_exp(_Tp __x)
     { return std::exp(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_exp2(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_exp2(_Tp __x)
     { return std::exp2(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_expm1(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_expm1(_Tp __x)
     { return std::expm1(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_log(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_log(_Tp __x)
     { return std::log(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_log10(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_log10(_Tp __x)
     { return std::log10(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_log1p(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_log1p(_Tp __x)
     { return std::log1p(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_log2(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_log2(_Tp __x)
     { return std::log2(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_logb(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_logb(_Tp __x)
     { return std::logb(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _ST<int> _S_ilogb(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _ST<int>
+    _S_ilogb(_Tp __x)
     { return {std::ilogb(__x)}; }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_pow(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_pow(_Tp __x, _Tp __y)
     { return std::pow(__x, __y); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_abs(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_abs(_Tp __x)
     { return std::abs(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_fabs(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_fabs(_Tp __x)
     { return std::fabs(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_sqrt(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_sqrt(_Tp __x)
     { return std::sqrt(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_cbrt(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_cbrt(_Tp __x)
     { return std::cbrt(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_erf(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_erf(_Tp __x)
     { return std::erf(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_erfc(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_erfc(_Tp __x)
     { return std::erfc(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_lgamma(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_lgamma(_Tp __x)
     { return std::lgamma(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_tgamma(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_tgamma(_Tp __x)
     { return std::tgamma(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_trunc(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_trunc(_Tp __x)
     { return std::trunc(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_floor(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_floor(_Tp __x)
     { return std::floor(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_ceil(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_ceil(_Tp __x)
     { return std::ceil(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_nearbyint(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_nearbyint(_Tp __x)
     { return std::nearbyint(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_rint(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_rint(_Tp __x)
     { return std::rint(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _ST<long> _S_lrint(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _ST<long>
+    _S_lrint(_Tp __x)
     { return {std::lrint(__x)}; }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _ST<long long> _S_llrint(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _ST<long long>
+    _S_llrint(_Tp __x)
     { return {std::llrint(__x)}; }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_round(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_round(_Tp __x)
     { return std::round(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _ST<long> _S_lround(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _ST<long>
+    _S_lround(_Tp __x)
     { return {std::lround(__x)}; }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _ST<long long> _S_llround(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC static _ST<long long>
+    _S_llround(_Tp __x)
     { return {std::llround(__x)}; }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_ldexp(_Tp __x, _ST<int> __y)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_ldexp(_Tp __x, _ST<int> __y)
     { return std::ldexp(__x, __y.first); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_scalbn(_Tp __x, _ST<int> __y)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_scalbn(_Tp __x, _ST<int> __y)
     { return std::scalbn(__x, __y.first); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_scalbln(_Tp __x, _ST<long> __y)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_scalbln(_Tp __x, _ST<long> __y)
     { return std::scalbln(__x, __y.first); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_fmod(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_fmod(_Tp __x, _Tp __y)
     { return std::fmod(__x, __y); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_remainder(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_remainder(_Tp __x, _Tp __y)
     { return std::remainder(__x, __y); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_nextafter(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_nextafter(_Tp __x, _Tp __y)
     { return std::nextafter(__x, __y); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_fdim(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_fdim(_Tp __x, _Tp __y)
     { return std::fdim(__x, __y); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_fmax(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_fmax(_Tp __x, _Tp __y)
     { return std::fmax(__x, __y); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_fmin(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_fmin(_Tp __x, _Tp __y)
     { return std::fmin(__x, __y); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_fma(_Tp __x, _Tp __y, _Tp __z)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_fma(_Tp __x, _Tp __y, _Tp __z)
     { return std::fma(__x, __y, __z); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC static _Tp _S_remquo(_Tp __x, _Tp __y, _ST<int>* __z)
+    _GLIBCXX_SIMD_INTRINSIC static _Tp
+    _S_remquo(_Tp __x, _Tp __y, _ST<int>* __z)
     { return std::remquo(__x, __y, &__z->first); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC constexpr static _ST<int> _S_fpclassify(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC constexpr static _ST<int>
+    _S_fpclassify(_Tp __x)
     { return {std::fpclassify(__x)}; }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC constexpr static bool _S_isfinite(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC constexpr static bool
+    _S_isfinite(_Tp __x)
     { return std::isfinite(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC constexpr static bool _S_isinf(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC constexpr static bool
+    _S_isinf(_Tp __x)
     { return std::isinf(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC constexpr static bool _S_isnan(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC constexpr static bool
+    _S_isnan(_Tp __x)
     { return std::isnan(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC constexpr static bool _S_isnormal(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC constexpr static bool
+    _S_isnormal(_Tp __x)
     { return std::isnormal(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC constexpr static bool _S_signbit(_Tp __x)
+    _GLIBCXX_SIMD_INTRINSIC constexpr static bool
+    _S_signbit(_Tp __x)
     { return std::signbit(__x); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC constexpr static bool _S_isgreater(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC constexpr static bool
+    _S_isgreater(_Tp __x, _Tp __y)
     { return std::isgreater(__x, __y); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC constexpr static bool _S_isgreaterequal(_Tp __x,
-								    _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC constexpr static bool
+    _S_isgreaterequal(_Tp __x, _Tp __y)
     { return std::isgreaterequal(__x, __y); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC constexpr static bool _S_isless(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC constexpr static bool
+    _S_isless(_Tp __x, _Tp __y)
     { return std::isless(__x, __y); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC constexpr static bool _S_islessequal(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC constexpr static bool
+    _S_islessequal(_Tp __x, _Tp __y)
     { return std::islessequal(__x, __y); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC constexpr static bool _S_islessgreater(_Tp __x,
-								   _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC constexpr static bool
+    _S_islessgreater(_Tp __x, _Tp __y)
     { return std::islessgreater(__x, __y); }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC constexpr static bool _S_isunordered(_Tp __x,
-								 _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC constexpr static bool
+    _S_isunordered(_Tp __x, _Tp __y)
     { return std::isunordered(__x, __y); }
 
   // _S_increment & _S_decrement{{{2
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC
-    constexpr static void _S_increment(_Tp& __x)
+    _GLIBCXX_SIMD_INTRINSIC constexpr static void
+    _S_increment(_Tp& __x)
     { ++__x; }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC
-    constexpr static void _S_decrement(_Tp& __x)
+    _GLIBCXX_SIMD_INTRINSIC constexpr static void
+    _S_decrement(_Tp& __x)
     { --__x; }
 
 
   // compares {{{2
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC constexpr static bool _S_equal_to(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC constexpr static bool
+    _S_equal_to(_Tp __x, _Tp __y)
     { return __x == __y; }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC constexpr static bool _S_not_equal_to(_Tp __x,
-								  _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC constexpr static bool
+    _S_not_equal_to(_Tp __x, _Tp __y)
     { return __x != __y; }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC constexpr static bool _S_less(_Tp __x, _Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC constexpr static bool
+    _S_less(_Tp __x, _Tp __y)
     { return __x < __y; }
 
   template <typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC constexpr static bool _S_less_equal(_Tp __x,
-								_Tp __y)
+    _GLIBCXX_SIMD_INTRINSIC constexpr static bool
+    _S_less_equal(_Tp __x, _Tp __y)
     { return __x <= __y; }
 
   // smart_reference access {{{2
   template <typename _Tp, typename _Up>
-    _GLIBCXX_SIMD_INTRINSIC
-    constexpr static void _S_set(_Tp& __v, [[maybe_unused]] int __i,
-				 _Up&& __x) noexcept
+    _GLIBCXX_SIMD_INTRINSIC constexpr static void
+    _S_set(_Tp& __v, [[maybe_unused]] int __i, _Up&& __x) noexcept
     {
       _GLIBCXX_DEBUG_ASSERT(__i == 0);
       __v = static_cast<_Up&&>(__x);
@@ -625,8 +687,8 @@ struct _SimdImplScalar
 
   // _S_masked_unary {{{2
   template <template <typename> class _Op, typename _Tp>
-    _GLIBCXX_SIMD_INTRINSIC constexpr static _Tp _S_masked_unary(const bool __k,
-								 const _Tp __v)
+    _GLIBCXX_SIMD_INTRINSIC constexpr static _Tp
+    _S_masked_unary(const bool __k, const _Tp __v)
     { return static_cast<_Tp>(__k ? _Op<_Tp>{}(__v) : __v); }
 
   // }}}2
@@ -643,13 +705,15 @@ struct _MaskImplScalar
   // }}}
   // _S_broadcast {{{
   template <typename>
-    _GLIBCXX_SIMD_INTRINSIC static constexpr bool _S_broadcast(bool __x)
+    _GLIBCXX_SIMD_INTRINSIC static constexpr bool
+    _S_broadcast(bool __x)
     { return __x; }
 
   // }}}
   // _S_load {{{
   template <typename>
-    _GLIBCXX_SIMD_INTRINSIC static constexpr bool _S_load(const bool* __mem)
+    _GLIBCXX_SIMD_INTRINSIC static constexpr bool
+    _S_load(const bool* __mem)
     { return __mem[0]; }
 
   // }}}
@@ -687,7 +751,8 @@ struct _MaskImplScalar
   }
 
   // _S_store {{{2
-  _GLIBCXX_SIMD_INTRINSIC static void _S_store(bool __v, bool* __mem) noexcept
+  _GLIBCXX_SIMD_INTRINSIC static void
+  _S_store(bool __v, bool* __mem) noexcept
   { __mem[0] = __v; }
 
   // _S_masked_store {{{2
@@ -699,42 +764,41 @@ struct _MaskImplScalar
   }
 
   // logical and bitwise operators {{{2
-  _GLIBCXX_SIMD_INTRINSIC
-  static constexpr bool _S_logical_and(bool __x, bool __y)
+  _GLIBCXX_SIMD_INTRINSIC static constexpr bool
+  _S_logical_and(bool __x, bool __y)
   { return __x && __y; }
 
-  _GLIBCXX_SIMD_INTRINSIC
-  static constexpr bool _S_logical_or(bool __x, bool __y)
+  _GLIBCXX_SIMD_INTRINSIC static constexpr bool
+  _S_logical_or(bool __x, bool __y)
   { return __x || __y; }
 
-  _GLIBCXX_SIMD_INTRINSIC
-  static constexpr bool _S_bit_not(bool __x)
+  _GLIBCXX_SIMD_INTRINSIC static constexpr bool
+  _S_bit_not(bool __x)
   { return !__x; }
 
-  _GLIBCXX_SIMD_INTRINSIC
-  static constexpr bool _S_bit_and(bool __x, bool __y)
+  _GLIBCXX_SIMD_INTRINSIC static constexpr bool
+  _S_bit_and(bool __x, bool __y)
   { return __x && __y; }
 
-  _GLIBCXX_SIMD_INTRINSIC
-  static constexpr bool _S_bit_or(bool __x, bool __y)
+  _GLIBCXX_SIMD_INTRINSIC static constexpr bool
+  _S_bit_or(bool __x, bool __y)
   { return __x || __y; }
 
-  _GLIBCXX_SIMD_INTRINSIC
-  static constexpr bool _S_bit_xor(bool __x, bool __y)
+  _GLIBCXX_SIMD_INTRINSIC static constexpr bool
+  _S_bit_xor(bool __x, bool __y)
   { return __x != __y; }
 
   // smart_reference access {{{2
-  _GLIBCXX_SIMD_INTRINSIC
-  constexpr static void _S_set(bool& __k, [[maybe_unused]] int __i,
-			       bool __x) noexcept
+  _GLIBCXX_SIMD_INTRINSIC constexpr static void
+  _S_set(bool& __k, [[maybe_unused]] int __i, bool __x) noexcept
   {
     _GLIBCXX_DEBUG_ASSERT(__i == 0);
     __k = __x;
   }
 
   // _S_masked_assign {{{2
-  _GLIBCXX_SIMD_INTRINSIC static void _S_masked_assign(bool __k, bool& __lhs,
-						       bool __rhs)
+  _GLIBCXX_SIMD_INTRINSIC static void
+  _S_masked_assign(bool __k, bool& __lhs, bool __rhs)
   {
     if (__k)
       __lhs = __rhs;

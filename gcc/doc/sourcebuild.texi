@@ -465,10 +465,6 @@ that of @samp{@@option} but for man page output a different effect is
 wanted.
 @item @@gccoptlist
 Use for summary lists of options in manuals.
-@item @@gol
-Use at the end of each line inside @samp{@@gccoptlist}.  This is
-necessary to avoid problems with differences in how the
-@samp{@@gccoptlist} macro is handled by different Texinfo formatters.
 @end table
 
 FIXME: describe the @file{texi2pod.pl} input language and magic
@@ -2697,6 +2693,9 @@ Target supports Newlib.
 GCC was configured with @code{--enable-newlib-nano-formatted-io}, which reduces
 the code size of Newlib formatted I/O functions.
 
+@item posix_memalign
+Target supports @code{posix_memalign}.
+
 @item pow10
 Target provides @code{pow10} function.
 
@@ -2759,6 +2758,9 @@ Target is a VxWorks RTP.
 
 @item wchar
 Target supports wide characters.
+
+@item weak_undefined
+Target supports weak undefined symbols
 @end table
 
 @subsubsection Other attributes
@@ -2772,6 +2774,9 @@ Target supports automatic stack alignment.
 
 @item branch_cost
 Target supports @option{-branch-cost=N}.
+
+@item const_volatile_readonly_section
+Target places const volatile variables in readonly sections.
 
 @item cxa_atexit
 Target uses @code{__cxa_atexit}.
@@ -2843,6 +2848,9 @@ Target supports named sections.
 @item natural_alignment_32
 Target uses natural alignment (aligned to type size) for types of
 32 bits or less.
+
+@item tail_call
+Target supports tail-call optimizations.
 
 @item target_natural_alignment_64
 Target uses natural alignment (aligned to type size) for types of
@@ -3127,6 +3135,9 @@ instructions, if any.
 
 @item tls
 Add the target-specific flags needed to use thread-local storage.
+
+@item weak_undefined
+Add the flags needed to enable support for weak undefined symbols.
 @end table
 
 @node Require Support

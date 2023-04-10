@@ -55,3 +55,7 @@ int h10_3 = 0xa ^ 3;
 /* Don't complain if the RHS isn't literal decimal.  */
 int t2_x16 = 2^0x10;
 int h10_x3 = 10 ^ 0x3;
+
+/* Don't complain about uses in macros.  */
+#define AMT (10^2)
+int amt = AMT;

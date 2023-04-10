@@ -37,9 +37,9 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 EXTERN void m2expr_BuildBinaryForeachWordDo (
     location_t location, tree type, tree op1, tree op2, tree op3,
-    tree (*binop) (location_t, tree, tree, int), int is_op1lvalue,
-    int is_op2lvalue, int is_op3lvalue, int is_op1const, int is_op2const,
-    int is_op3const);
+    tree (*binop) (location_t, tree, tree, bool), bool is_op1lvalue,
+    bool is_op2lvalue, bool is_op3lvalue, bool is_op1const, bool is_op2const,
+    bool is_op3const);
 EXTERN tree m2expr_BuildCmplx (location_t location, tree type, tree real,
                                tree imag);
 EXTERN tree m2expr_BuildIm (tree op1);
@@ -47,10 +47,10 @@ EXTERN tree m2expr_BuildRe (tree op1);
 EXTERN tree m2expr_BuildAbs (location_t location, tree t);
 EXTERN tree m2expr_BuildCap (location_t location, tree t);
 EXTERN int m2expr_DetermineSign (tree e);
-EXTERN int m2expr_AreRealOrComplexConstantsEqual (tree e1, tree e2);
-EXTERN int m2expr_AreConstantsEqual (tree e1, tree e2);
-EXTERN int m2expr_IsFalse (tree t);
-EXTERN int m2expr_IsTrue (tree t);
+EXTERN bool m2expr_AreRealOrComplexConstantsEqual (tree e1, tree e2);
+EXTERN bool m2expr_AreConstantsEqual (tree e1, tree e2);
+EXTERN bool m2expr_IsFalse (tree t);
+EXTERN bool m2expr_IsTrue (tree t);
 EXTERN tree m2expr_BuildIndirect (location_t location, tree target, tree type);
 EXTERN tree m2expr_BuildComponentRef (location_t location, tree record,
                                       tree field);
@@ -61,23 +61,23 @@ EXTERN void m2expr_BuildIfNotInRangeGoto (location_t location, tree var,
 EXTERN void m2expr_BuildIfInRangeGoto (location_t location, tree var, tree low,
                                        tree high, char *label);
 EXTERN void m2expr_BuildForeachWordInSetDoIfExpr (
-    location_t location, tree type, tree op1, tree op2, int is_op1lvalue,
-    int is_op2lvalue, int is_op1const, int is_op2const,
+    location_t location, tree type, tree op1, tree op2, bool is_op1lvalue,
+    bool is_op2lvalue, bool is_op1const, bool is_op2const,
     tree (*expr) (location_t, tree, tree), char *label);
 EXTERN void m2expr_BuildIfNotVarInVar (location_t location, tree type,
-                                       tree varset, tree varel, int is_lvalue,
+                                       tree varset, tree varel, bool is_lvalue,
                                        tree low, tree high ATTRIBUTE_UNUSED,
                                        char *label);
 EXTERN void m2expr_BuildIfVarInVar (location_t location, tree type,
-                                    tree varset, tree varel, int is_lvalue,
+                                    tree varset, tree varel, bool is_lvalue,
                                     tree low, tree high ATTRIBUTE_UNUSED,
                                     char *label);
 EXTERN void m2expr_BuildIfNotConstInVar (location_t location, tree type,
                                          tree varset, tree constel,
-                                         int is_lvalue, int fieldno,
+                                         bool is_lvalue, int fieldno,
                                          char *label);
 EXTERN void m2expr_BuildIfConstInVar (location_t location, tree type,
-                                      tree varset, tree constel, int is_lvalue,
+                                      tree varset, tree constel, bool is_lvalue,
                                       int fieldno, char *label);
 EXTERN tree m2expr_BuildIsNotSubset (location_t location, tree op1, tree op2);
 EXTERN tree m2expr_BuildIsSubset (location_t location, tree op1, tree op2);
@@ -93,43 +93,45 @@ EXTERN tree m2expr_BuildLessThanOrEqual (location_t location, tree op1,
 EXTERN tree m2expr_BuildGreaterThan (location_t location, tree op1, tree op2);
 EXTERN tree m2expr_BuildLessThan (location_t location, tree op1, tree op2);
 EXTERN tree m2expr_BuildLogicalDifference (location_t location, tree op1,
-                                           tree op2, int needconvert);
+                                           tree op2, bool needconvert);
 EXTERN tree m2expr_BuildSymmetricDifference (location_t location, tree op1,
-                                             tree op2, int needconvert);
+                                             tree op2, bool needconvert);
 EXTERN tree m2expr_BuildLogicalAnd (location_t location, tree op1, tree op2,
-                                    int needconvert);
+                                    bool needconvert);
 EXTERN tree m2expr_BuildLogicalOr (location_t location, tree op1, tree op2,
-                                   int needconvert);
+                                   bool needconvert);
 EXTERN tree m2expr_BuildLogicalOrAddress (location_t location, tree op1,
-                                          tree op2, int needconvert);
+                                          tree op2, bool needconvert);
 EXTERN tree m2expr_BuildOffset (location_t location, tree record, tree field,
-                                int needconvert ATTRIBUTE_UNUSED);
+                                bool needconvert ATTRIBUTE_UNUSED);
 EXTERN tree m2expr_BuildOffset1 (location_t location, tree field,
-                                 int needconvert ATTRIBUTE_UNUSED);
-EXTERN tree m2expr_BuildAddr (location_t location, tree op1, int needconvert);
+                                 bool needconvert ATTRIBUTE_UNUSED);
+EXTERN tree m2expr_BuildAddr (location_t location, tree op1, bool needconvert);
 EXTERN tree m2expr_BuildSize (location_t location, tree op1,
-                              int needconvert ATTRIBUTE_UNUSED);
+                              bool needconvert ATTRIBUTE_UNUSED);
 EXTERN tree m2expr_BuildTBitSize (location_t location, tree type);
 EXTERN tree m2expr_BuildSetNegate (location_t location, tree op1,
-                                   int needconvert);
+                                   bool needconvert);
 EXTERN tree m2expr_BuildNegate (location_t location, tree op1,
-                                int needconvert);
+                                bool needconvert);
 EXTERN tree m2expr_BuildNegateCheck (location_t location, tree arg,
                                      tree lowest, tree min, tree max);
 EXTERN tree m2expr_BuildTrunc (tree op1);
 EXTERN tree m2expr_BuildCoerce (location_t location, tree des, tree type,
                                 tree expr);
 EXTERN tree m2expr_RemoveOverflow (tree t);
-EXTERN int m2expr_TreeOverflow (tree t);
+EXTERN bool m2expr_TreeOverflow (tree t);
 
 EXTERN unsigned int m2expr_StringLength (tree string);
 EXTERN tree m2expr_FoldAndStrip (tree t);
-EXTERN int m2expr_interpret_integer (const char *str, unsigned int base,
+EXTERN int m2expr_interpret_integer (location_t location,
+				     const char *str, unsigned int base,
                                      unsigned HOST_WIDE_INT *low,
                                      HOST_WIDE_INT *high);
-EXTERN int m2expr_interpret_m2_integer (const char *str, unsigned int base,
+EXTERN int m2expr_interpret_m2_integer (location_t location,
+					const char *str, unsigned int base,
                                         unsigned int *low, int *high,
-					int *needsLong, int *needsUnsigned);
+					bool *needsLong, bool *needsUnsigned);
 
 EXTERN tree m2expr_BuildAddCheck (location_t location, tree op1, tree op2,
                                   tree lowest, tree min, tree max);
@@ -139,30 +141,30 @@ EXTERN tree m2expr_BuildMultCheck (location_t location, tree op1, tree op2,
                                    tree lowest, tree min, tree max);
 
 EXTERN tree m2expr_BuildAdd (location_t location, tree op1, tree op2,
-                             int needconvert);
+                             bool needconvert);
 EXTERN tree m2expr_BuildSub (location_t location, tree op1, tree op2,
-                             int needconvert);
+                             bool needconvert);
 EXTERN tree m2expr_BuildDivTrunc (location_t location, tree op1, tree op2,
-                                  int needconvert);
+                                  bool needconvert);
 EXTERN tree m2expr_BuildDivTruncCheck (location_t location, tree op1, tree op2,
 				       tree lowest, tree min, tree max);
 EXTERN tree m2expr_BuildModTrunc (location_t location, tree op1, tree op2,
-                                  int needconvert);
+                                  bool needconvert);
 
 EXTERN tree m2expr_BuildDivCeil (location_t location, tree op1, tree op2,
-                                 int needconvert);
+                                 bool needconvert);
 EXTERN tree m2expr_BuildModCeil (location_t location, tree op1, tree op2,
-                                 int needconvert);
+                                 bool needconvert);
 
 EXTERN tree m2expr_BuildDivFloor (location_t location, tree op1, tree op2,
-                                  int needconvert);
+                                  bool needconvert);
 EXTERN tree m2expr_BuildModFloor (location_t location, tree op1, tree op2,
-                                  int needconvert);
+                                  bool needconvert);
 
 EXTERN tree m2expr_BuildDivM2 (location_t location, tree op1, tree op2,
-                               unsigned int needsconvert);
+                               bool needsconvert);
 EXTERN tree m2expr_BuildModM2 (location_t location, tree op1, tree op2,
-                               unsigned int needsconvert);
+                               bool needsconvert);
 EXTERN tree m2expr_BuildDivM2Check (location_t location, tree op1, tree op2,
 			            tree lowest, tree min, tree max);
 
@@ -170,40 +172,40 @@ EXTERN tree m2expr_BuildModM2Check (location_t location, tree op1, tree op2,
                                   tree lowest, tree min, tree max);
 
 EXTERN tree m2expr_BuildLSL (location_t location, tree op1, tree op2,
-                             int needconvert);
+                             bool needconvert);
 
 EXTERN tree m2expr_BuildLSR (location_t location, tree op1, tree op2,
-                             int needconvert);
+                             bool needconvert);
 
 EXTERN void m2expr_BuildLogicalShift (location_t location, tree op1, tree op2,
                                       tree op3, tree nBits ATTRIBUTE_UNUSED,
-                                      int needconvert);
+                                      bool needconvert);
 
 EXTERN tree m2expr_BuildLRL (location_t location, tree op1, tree op2,
-                             int needconvert);
+                             bool needconvert);
 
 EXTERN tree m2expr_BuildLRR (location_t location, tree op1, tree op2,
-                             int needconvert);
+                             bool needconvert);
 EXTERN tree m2expr_BuildMult (location_t location, tree op1, tree op2,
-                              int needconvert);
+                              bool needconvert);
 
 EXTERN tree m2expr_BuildRRotate (location_t location, tree op1, tree nBits,
-                                 int needconvert);
+                                 bool needconvert);
 EXTERN tree m2expr_BuildLRotate (location_t location, tree op1, tree nBits,
-                                 int needconvert);
+                                 bool needconvert);
 
 EXTERN tree m2expr_BuildMask (location_t location, tree nBits,
-                              int needconvert);
+                              bool needconvert);
 EXTERN tree m2expr_BuildLRLn (location_t location, tree op1, tree op2,
-                              tree nBits, int needconvert);
+                              tree nBits, bool needconvert);
 EXTERN tree m2expr_BuildLRRn (location_t location, tree op1, tree op2,
-                              tree nBits, int needconvert);
+                              tree nBits, bool needconvert);
 EXTERN void m2expr_BuildLogicalRotate (location_t location, tree op1, tree op2,
-                                       tree op3, tree nBits, int needconvert);
+                                       tree op3, tree nBits, bool needconvert);
 EXTERN void m2expr_BuildBinarySetDo (
     location_t location, tree settype, tree op1, tree op2, tree op3,
-    void (*binop) (location_t, tree, tree, tree, tree, int), int is_op1lvalue,
-    int is_op2lvalue, int is_op3lvalue, tree nBits, tree unbounded,
+    void (*binop) (location_t, tree, tree, tree, tree, bool), bool is_op1lvalue,
+    bool is_op2lvalue, bool is_op3lvalue, tree nBits, tree unbounded,
     tree varproc, tree leftproc, tree rightproc);
 
 EXTERN tree m2expr_GetSizeOf (location_t location, tree type);
@@ -218,11 +220,6 @@ EXTERN tree m2expr_GetWordOne (location_t location);
 EXTERN tree m2expr_GetPointerZero (location_t location);
 EXTERN tree m2expr_GetPointerOne (location_t location);
 
-#if 0
-EXTERN tree m2expr_GetBooleanTrue (void);
-EXTERN tree m2expr_GetBooleanFalse (void);
-#endif
-
 EXTERN int m2expr_CompareTrees (tree e1, tree e2);
 EXTERN tree m2expr_build_unary_op (location_t location ATTRIBUTE_UNUSED,
                                    enum tree_code code, tree arg,
@@ -231,12 +228,12 @@ EXTERN tree m2expr_build_binary_op (location_t location, enum tree_code code,
                                     tree op1, tree op2, int convert);
 EXTERN tree m2expr_build_binary_op_check (location_t location,
                                           enum tree_code code, tree op1,
-                                          tree op2, int needconvert,
+                                          tree op2, bool needconvert,
                                           tree lowest, tree min, tree max);
 EXTERN void m2expr_ConstantExpressionWarning (tree value);
 EXTERN tree m2expr_BuildAddAddress (location_t location, tree op1, tree op2);
 EXTERN tree m2expr_BuildRDiv (location_t location, tree op1, tree op2,
-                              int needconvert);
+                              bool needconvert);
 
 EXTERN void m2expr_init (location_t location);
 

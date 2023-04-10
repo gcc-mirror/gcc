@@ -216,6 +216,7 @@ else version (CRuntime_Bionic)
 }
 else version (CRuntime_Musl)
 {
+    pragma(mangle, muslRedirTime64Mangle!("sem_timedwait", "__sem_timedwait_time64"))
     int sem_timedwait(sem_t*, const scope timespec*);
 }
 else version (CRuntime_UClibc)

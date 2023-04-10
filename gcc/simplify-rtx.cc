@@ -1404,21 +1404,31 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
       break;
 
     case FFS:
-      /* (ffs (*_extend <X>)) = (ffs <X>) */
+      /* (ffs (*_extend <X>)) = (*_extend (ffs <X>)).  */
       if (GET_CODE (op) == SIGN_EXTEND
 	  || GET_CODE (op) == ZERO_EXTEND)
-	return simplify_gen_unary (FFS, mode, XEXP (op, 0),
-				   GET_MODE (XEXP (op, 0)));
+	{
+	  temp = simplify_gen_unary (FFS, GET_MODE (XEXP (op, 0)),
+				     XEXP (op, 0), GET_MODE (XEXP (op, 0)));
+	  return simplify_gen_unary (GET_CODE (op), mode, temp,
+				     GET_MODE (temp));
+	}
       break;
 
     case POPCOUNT:
       switch (GET_CODE (op))
 	{
 	case BSWAP:
-	case ZERO_EXTEND:
-	  /* (popcount (zero_extend <X>)) = (popcount <X>) */
+	  /* (popcount (bswap <X>)) = (popcount <X>).  */
 	  return simplify_gen_unary (POPCOUNT, mode, XEXP (op, 0),
 				     GET_MODE (XEXP (op, 0)));
+
+	case ZERO_EXTEND:
+	  /* (popcount (zero_extend <X>)) = (zero_extend (popcount <X>)).  */
+	  temp = simplify_gen_unary (POPCOUNT, GET_MODE (XEXP (op, 0)),
+				     XEXP (op, 0), GET_MODE (XEXP (op, 0)));
+	  return simplify_gen_unary (ZERO_EXTEND, mode, temp,
+				     GET_MODE (temp));
 
 	case ROTATE:
 	case ROTATERT:
@@ -1438,10 +1448,15 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
 	{
 	case NOT:
 	case BSWAP:
-	case ZERO_EXTEND:
-	case SIGN_EXTEND:
 	  return simplify_gen_unary (PARITY, mode, XEXP (op, 0),
 				     GET_MODE (XEXP (op, 0)));
+
+	case ZERO_EXTEND:
+	case SIGN_EXTEND:
+	  temp = simplify_gen_unary (PARITY, GET_MODE (XEXP (op, 0)),
+				     XEXP (op, 0), GET_MODE (XEXP (op, 0)));
+	  return simplify_gen_unary (GET_CODE (op), mode, temp,
+				     GET_MODE (temp));
 
 	case ROTATE:
 	case ROTATERT:
@@ -7652,10 +7667,10 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
 	}
     }
 
-  /* Try simplifying a SUBREG expression of a non-integer OUTERMODE by using a
-     NEW_OUTERMODE of the same size instead, other simplifications rely on
-     integer to integer subregs and we'd potentially miss out on optimizations
-     otherwise.  */
+  /* If the outer mode is not integral, try taking a subreg with the equivalent
+     integer outer mode and then bitcasting the result.
+     Other simplifications rely on integer to integer subregs and we'd
+     potentially miss out on optimizations otherwise.  */
   if (known_gt (GET_MODE_SIZE (innermode),
 		GET_MODE_SIZE (outermode))
       && SCALAR_INT_MODE_P (innermode)
@@ -7665,7 +7680,7 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
     {
       rtx tem = simplify_subreg (int_outermode, op, innermode, byte);
       if (tem)
-	return simplify_gen_subreg (outermode, tem, int_outermode, 0);
+	return simplify_gen_subreg (outermode, tem, int_outermode, byte);
     }
 
   /* If OP is a vector comparison and the subreg is not changing the

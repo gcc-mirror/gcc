@@ -36,15 +36,16 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #endif /* m2tree_c.  */
 
 #include "input.h"
+#include <stdbool.h>
 
-EXTERN int m2tree_is_var (tree var);
-EXTERN int m2tree_is_array (tree array);
-EXTERN int m2tree_is_type (tree type);
+EXTERN bool m2tree_is_var (tree var);
+EXTERN bool m2tree_is_array (tree array);
+EXTERN bool m2tree_is_type (tree type);
 EXTERN tree m2tree_skip_type_decl (tree type);
 EXTERN tree m2tree_skip_const_decl (tree exp);
-EXTERN int m2tree_IsTreeOverflow (tree value);
-EXTERN int m2tree_IsOrdinal (tree type);
-EXTERN int m2tree_IsAConstant (tree t);
+EXTERN bool m2tree_IsTreeOverflow (tree value);
+EXTERN bool m2tree_IsOrdinal (tree type);
+EXTERN bool m2tree_IsAConstant (tree t);
 EXTERN void m2tree_debug_tree (tree t);
 EXTERN tree m2tree_skip_reference_type (tree exp);
 

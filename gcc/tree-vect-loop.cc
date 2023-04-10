@@ -2125,6 +2125,14 @@ vect_get_datarefs_in_loop (loop_p loop, basic_block *bbs,
 	    if (is_gimple_call (stmt) && loop->safelen)
 	      {
 		tree fndecl = gimple_call_fndecl (stmt), op;
+		if (fndecl == NULL_TREE
+		    && gimple_call_internal_p (stmt, IFN_MASK_CALL))
+		  {
+		    fndecl = gimple_call_arg (stmt, 0);
+		    gcc_checking_assert (TREE_CODE (fndecl) == ADDR_EXPR);
+		    fndecl = TREE_OPERAND (fndecl, 0);
+		    gcc_checking_assert (TREE_CODE (fndecl) == FUNCTION_DECL);
+		  }
 		if (fndecl != NULL_TREE)
 		  {
 		    cgraph_node *node = cgraph_node::get (fndecl);
@@ -3886,6 +3894,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
           return NULL;
         }
 
+      /* Verify there is an inner cycle composed of the PHI phi_use_stmt
+	 and the latch definition op1.  */
       gimple *def1 = SSA_NAME_DEF_STMT (op1);
       if (gimple_bb (def1)
 	  && flow_bb_inside_loop_p (loop, gimple_bb (def_stmt))
@@ -3893,7 +3903,9 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 	  && flow_bb_inside_loop_p (loop->inner, gimple_bb (def1))
 	  && (is_gimple_assign (def1) || is_gimple_call (def1))
 	  && is_a <gphi *> (phi_use_stmt)
-	  && flow_bb_inside_loop_p (loop->inner, gimple_bb (phi_use_stmt)))
+	  && flow_bb_inside_loop_p (loop->inner, gimple_bb (phi_use_stmt))
+	  && (op1 == PHI_ARG_DEF_FROM_EDGE (phi_use_stmt,
+					    loop_latch_edge (loop->inner))))
         {
           if (dump_enabled_p ())
             report_vect_op (MSG_NOTE, def_stmt,
@@ -6782,6 +6794,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 			stmt_vector_for_cost *cost_vec)
 {
   tree vectype_in = NULL_TREE;
+  tree vectype_op[3] = { NULL_TREE, NULL_TREE, NULL_TREE };
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   enum vect_def_type cond_reduc_dt = vect_unknown_def_type;
   stmt_vec_info cond_stmt_vinfo = NULL;
@@ -6791,7 +6804,6 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   bool nested_cycle = false;
   bool double_reduc = false;
   int vec_num;
-  tree tem;
   tree cr_index_scalar_type = NULL_TREE, cr_index_vector_type = NULL_TREE;
   tree cond_reduc_val = NULL_TREE;
 
@@ -7029,7 +7041,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       enum vect_def_type dt;
       if (!vect_is_simple_use (loop_vinfo, stmt_info, slp_for_stmt_info,
 			       i + opno_adjust, &op.ops[i], &slp_op[i], &dt,
-			       &tem, &def_stmt_info))
+			       &vectype_op[i], &def_stmt_info))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -7044,15 +7056,20 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       if (VECTORIZABLE_CYCLE_DEF (dt))
 	return false;
 
+      if (!vectype_op[i])
+	vectype_op[i]
+	  = get_vectype_for_scalar_type (loop_vinfo,
+					 TREE_TYPE (op.ops[i]), slp_op[i]);
+
       /* To properly compute ncopies we are interested in the widest
 	 non-reduction input type in case we're looking at a widening
 	 accumulation that we later handle in vect_transform_reduction.  */
       if (lane_reduc_code_p
-	  && tem
+	  && vectype_op[i]
 	  && (!vectype_in
 	      || (GET_MODE_SIZE (SCALAR_TYPE_MODE (TREE_TYPE (vectype_in)))
-		  < GET_MODE_SIZE (SCALAR_TYPE_MODE (TREE_TYPE (tem))))))
-	vectype_in = tem;
+		  < GET_MODE_SIZE (SCALAR_TYPE_MODE (TREE_TYPE (vectype_op[i]))))))
+	vectype_in = vectype_op[i];
 
       if (op.code == COND_EXPR)
 	{
@@ -7407,7 +7424,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
     }
 
   /* Check extra constraints for variable-length unchained SLP reductions.  */
-  if (STMT_SLP_TYPE (stmt_info)
+  if (slp_node
       && !REDUC_GROUP_FIRST_ELEMENT (stmt_info)
       && !nunits_out.is_constant ())
     {
@@ -7573,7 +7590,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	   && !lane_reduc_code_p
 	   && reduction_type != FOLD_LEFT_REDUCTION))
     for (i = 0; i < (int) op.num_ops; i++)
-      if (!vect_maybe_update_slp_op_vectype (slp_op[i], vectype_in))
+      if (!vect_maybe_update_slp_op_vectype (slp_op[i], vectype_op[i]))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

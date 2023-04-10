@@ -1,4 +1,5 @@
-/* { dg-do link } */
+/* { dg-do link { target natural_alignment_32 } } */
+/* { dg-do compile { target { ! natural_alignment_32 } } } */
 /* { dg-options "-O3 -fdump-tree-cunrolli-optimized" } */
 
 extern void foo(void);

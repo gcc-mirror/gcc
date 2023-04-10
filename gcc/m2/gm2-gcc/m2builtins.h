@@ -36,6 +36,8 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #endif /* !__GNUG__.  */
 #endif /* !m2builtins_c.  */
 
+#include <stdbool.h>
+
 EXTERN tree m2builtins_GetBuiltinConst (char *name);
 EXTERN unsigned int m2builtins_GetBuiltinConstType (char *name);
 EXTERN unsigned int m2builtins_GetBuiltinTypeInfoType (const char *ident);
@@ -45,7 +47,7 @@ EXTERN tree m2builtins_BuiltInMemCopy (location_t location, tree dest,
                                        tree src, tree n);
 EXTERN tree m2builtins_BuiltInAlloca (location_t location, tree n);
 EXTERN tree m2builtins_BuiltInIsfinite (location_t location, tree e);
-EXTERN int m2builtins_BuiltinExists (char *name);
+EXTERN bool m2builtins_BuiltinExists (char *name);
 EXTERN tree m2builtins_BuildBuiltinTree (location_t location, char *name);
 EXTERN tree m2builtins_BuiltInHugeVal (location_t location);
 EXTERN tree m2builtins_BuiltInHugeValShort (location_t location);

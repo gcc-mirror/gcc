@@ -26,7 +26,6 @@ DEFINITION MODULE M2GCCDeclare ;
     Author     : Gaius Mulley
     System     : UNIX (gm2)
     Date       : Sat Jul 17 10:28:43 1999
-    Last edit  : Sat Jul 17 10:28:43 1999
     Description: declares Modula-2 types to GCC,
                  only declares a type once all subcomponents are known.
 *)
@@ -40,7 +39,6 @@ EXPORT QUALIFIED FoldConstants,
                  InitDeclarations, StartDeclareScope, EndDeclareScope,
                  DeclareModuleVariables, IsProcedureGccNested,
                  DeclareProcedure, PoisonSymbols, DeclareParameters,
-                 DeclareM2linkGlobals,
                  CompletelyResolved, MarkExported, PrintSym,
                  ConstantKnownAndUsed,
                  PutToBeSolvedByQuads,
@@ -143,15 +141,6 @@ PROCEDURE DeclareProcedure (sym: WORD) ;
 *)
 
 PROCEDURE DeclareModuleVariables (sym: CARDINAL) ;
-
-
-(*
-   DeclareM2linkGlobals - will create M2LINK.StaticInitialization
-                          and M2LINK.ForcedModuleInitOrder providing
-                          they have not already been created.
-*)
-
-PROCEDURE DeclareM2linkGlobals (tokenno: CARDINAL) ;
 
 
 (*

@@ -124,7 +124,8 @@ template <typename _Abi, typename>
 
     // _S_popcount {{{
     template <typename _Tp>
-      _GLIBCXX_SIMD_INTRINSIC static int _S_popcount(simd_mask<_Tp, _Abi> __k)
+      _GLIBCXX_SIMD_INTRINSIC static int
+      _S_popcount(simd_mask<_Tp, _Abi> __k)
       {
 	const auto __kv = __as_vector(__k);
 	if constexpr (__have_power10vec)

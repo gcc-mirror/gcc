@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2023 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * https://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -39,13 +39,6 @@ enum class Baseok : uint8_t
     in,           // in process of resolving base classes
     done,         // all base classes are resolved
     semanticdone  // all base classes semantic done
-};
-
-enum class ThreeState : uint8_t
-{
-    none,         // value not yet computed
-    no,           // value is false
-    yes,          // value is true
 };
 
 FuncDeclaration *search_toString(StructDeclaration *sd);
@@ -311,7 +304,6 @@ public:
     virtual int vtblOffset() const;
     const char *kind() const override;
 
-    void addLocalClass(ClassDeclarations *) override final;
     void addObjcSymbols(ClassDeclarations *classes, ClassDeclarations *categories) override final;
 
     // Back end

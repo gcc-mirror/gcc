@@ -29,6 +29,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -79,7 +80,7 @@ EXTERN mcComment_commentDesc mcLexBuf_getAfterComment (void);
                 The success of the operation is returned.
 */
 
-EXTERN unsigned int mcLexBuf_openSource (DynamicStrings_String s);
+EXTERN bool mcLexBuf_openSource (DynamicStrings_String s);
 
 /*
    closeSource - closes the current open file.

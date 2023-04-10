@@ -1,3 +1,20 @@
+2023-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/109306
+	* strstr.c: Revert the 2020-11-13 changes.
+	(strstr): Return s1 if len is 0.
+
+2023-03-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* obstacks.texi (Preparing for Obstacks): Remove a (broken)
+	reference to the Glibc manual.
+
+2023-03-03  Costas Argyris  <costas.argyris@gmail.com>
+
+	* pex-win32.c (win32_spawn): Fix memory leak of cmdline
+	buffer and refactor to have cleanup code appear once
+	for all exit cases.
+
 2023-02-11  niXman  <i.nixman@autistici.org>
 
 	* lrealpath.c (lrealpath): try to resolve symlink and

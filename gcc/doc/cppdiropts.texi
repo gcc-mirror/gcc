@@ -9,14 +9,14 @@
 @c If this file is included with the flag ``cppmanual'' set, it is
 @c formatted for inclusion in the CPP manual; otherwise the main GCC manual.
 
-@item -I @var{dir}
-@itemx -iquote @var{dir}
-@itemx -isystem @var{dir}
-@itemx -idirafter @var{dir}
 @opindex I
 @opindex iquote
 @opindex isystem
 @opindex idirafter
+@item -I @var{dir}
+@itemx -iquote @var{dir}
+@itemx -isystem @var{dir}
+@itemx -idirafter @var{dir}
 Add the directory @var{dir} to the list of directories to be searched
 for header files during preprocessing.
 @ifset cppmanual
@@ -90,8 +90,8 @@ use the @option{-nostdinc} and/or @option{-isystem} options.
 @xref{System Headers}.
 @end ifset
 
-@item -I-
 @opindex I-
+@item -I-
 Split the include path.
 This option has been deprecated.  Please use @option{-iquote} instead for
 @option{-I} directories before the @option{-I-} and remove the @option{-I-}
@@ -111,43 +111,43 @@ file directory as the first search directory for @code{@w{#include
 @xref{Search Path}.
 @end ifset
 
-@item -iprefix @var{prefix}
 @opindex iprefix
+@item -iprefix @var{prefix}
 Specify @var{prefix} as the prefix for subsequent @option{-iwithprefix}
 options.  If the prefix represents a directory, you should include the
 final @samp{/}.
 
-@item -iwithprefix @var{dir}
-@itemx -iwithprefixbefore @var{dir}
 @opindex iwithprefix
 @opindex iwithprefixbefore
+@item -iwithprefix @var{dir}
+@itemx -iwithprefixbefore @var{dir}
 Append @var{dir} to the prefix specified previously with
 @option{-iprefix}, and add the resulting directory to the include search
 path.  @option{-iwithprefixbefore} puts it in the same place @option{-I}
 would; @option{-iwithprefix} puts it where @option{-idirafter} would.
 
-@item -isysroot @var{dir}
 @opindex isysroot
+@item -isysroot @var{dir}
 This option is like the @option{--sysroot} option, but applies only to
 header files (except for Darwin targets, where it applies to both header
 files and libraries).  See the @option{--sysroot} option for more
 information.
 
-@item -imultilib @var{dir}
 @opindex imultilib
+@item -imultilib @var{dir}
 Use @var{dir} as a subdirectory of the directory containing
 target-specific C++ headers.
 
-@item -nostdinc
 @opindex nostdinc
+@item -nostdinc
 Do not search the standard system directories for header files.
 Only the directories explicitly specified with @option{-I},
 @option{-iquote}, @option{-isystem}, and/or @option{-idirafter}
 options (and the directory of the current file, if appropriate) 
 are searched.
 
-@item -nostdinc++
 @opindex nostdinc++
+@item -nostdinc++
 Do not search for header files in the C++-specific standard directories,
 but do still search the other standard directories.  (This option is
 used when building the C++ library.)

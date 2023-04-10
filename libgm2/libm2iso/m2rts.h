@@ -25,19 +25,24 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
 
+#define str(X)  #X
+
 typedef void (*proc_con) (int, char **, char **);
 typedef void (*proc_dep) (void);
 
-extern "C" void M2RTS_RequestDependant (const char *modulename, const char *dependancy);
-extern "C" void M2RTS_RegisterModule (const char *modulename,
+extern "C" void m2iso_M2RTS_RequestDependant (const char *modulename, const char *libname, const char *dependancy);
+extern "C" void m2iso_M2RTS_RegisterModule (const char *modulename, const char *libname,
+					    proc_con init, proc_con fini, proc_dep dependencies);
+extern "C" void m2pim_M2RTS_RegisterModule (const char *modulename, const char *libname,
+					    proc_con init, proc_con fini, proc_dep dependencies);
+extern "C" void M2RTS_RegisterModule (const char *modulename, const char *libname,
 				      proc_con init, proc_con fini, proc_dep dependencies);
-extern "C" void _M2_M2RTS_init (void);
+extern "C" void m2iso_M2_M2RTS_init (void);
 
-extern "C" void M2RTS_ConstructModules (const char *,
-					int argc, char *argv[], char *envp[]);
-extern "C" void M2RTS_Terminate (void);
-extern "C" void M2RTS_DeconstructModules (void);
+extern "C" void m2iso_M2RTS_ConstructModules (const char *modulename, const char *libname,
+					      int argc, char *argv[], char *envp[]);
+extern "C" void m2iso_M2RTS_Terminate (void);
+extern "C" void m2iso_M2RTS_DeconstructModules (void);
 
-extern "C" void M2RTS_HaltC (const char *filename, int line,
-			     const char *functionname, const char *desc)
-                             __attribute__ ((noreturn));
+extern "C" void m2iso_M2RTS_HaltC (const char *desc, const char *filename,
+				   const char *functionname, int line) __attribute__ ((noreturn));

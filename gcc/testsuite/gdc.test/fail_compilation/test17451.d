@@ -2,7 +2,7 @@
 ---
 fail_compilation/test17451.d(22): Error: undefined identifier `allocator`
 fail_compilation/test17451.d(23): Error: `false` has no effect
-fail_compilation/test17451.d(30): Error: variable `test17451.HashMap!(ThreadSlot).HashMap.__lambda2.v` size of type `ThreadSlot` is invalid
+fail_compilation/test17451.d(30): Error: variable `test17451.HashMap!(ThreadSlot).HashMap.__lambda2.v` - size of type `ThreadSlot` is invalid
 fail_compilation/test17451.d(44): Error: template instance `test17451.HashMap!(ThreadSlot)` error instantiating
 ---
 */

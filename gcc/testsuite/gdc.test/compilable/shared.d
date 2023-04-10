@@ -123,3 +123,10 @@ struct Parent
         ch = shared Child(i);
     }
 }
+
+// https://issues.dlang.org/show_bug.cgi?id=23732
+class Class {}
+void main()
+{
+    auto b = new shared Class();
+}

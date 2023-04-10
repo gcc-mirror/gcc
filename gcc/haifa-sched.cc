@@ -5686,7 +5686,7 @@ autopref_rank_for_schedule (const rtx_insn *insn1, const rtx_insn *insn2)
 
       if (!irrel1 && !irrel2)
 	/* Sort memory references from lowest offset to the largest.  */
-	r = data1->offset - data2->offset;
+	r = (data1->offset > data2->offset) - (data1->offset < data2->offset);
       else if (write)
 	/* Schedule "irrelevant" insns before memory stores to resolve
 	   as many producer dependencies of stores as possible.  */

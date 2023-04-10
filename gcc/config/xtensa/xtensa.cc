@@ -105,6 +105,7 @@ struct GTY(()) machine_function
   bool epilogue_done;
   bool inhibit_logues_a1_adjusts;
   rtx last_logues_a9_content;
+  HOST_WIDE_INT eliminated_callee_saved_bmp;
 };
 
 static void xtensa_option_override (void);
@@ -2182,8 +2183,10 @@ xtensa_emit_movcc (bool inverted, bool isfp, bool isbool, rtx *operands)
 
 
 void
-xtensa_prepare_expand_call (int callop, rtx *operands)
+xtensa_expand_call (int callop, rtx *operands)
 {
+  rtx call;
+  rtx_insn *call_insn;
   rtx addr = XEXP (operands[callop], 0);
 
   if (flag_pic && SYMBOL_REF_P (addr)
@@ -2200,6 +2203,27 @@ xtensa_prepare_expand_call (int callop, rtx *operands)
 				 gen_rtx_REG (Pmode, A8_REG),
 				 Pmode);
       XEXP (operands[callop], 0) = reg;
+    }
+
+  call = gen_rtx_CALL (VOIDmode, operands[callop], operands[callop + 1]);
+
+  if (callop)
+    call = gen_rtx_SET (operands[0], call);
+
+  call_insn = emit_call_insn (call);
+
+  if (TARGET_WINDOWED_ABI)
+    {
+      /*
+       * Windowed xtensa ABI specifies that static chain pointer is passed
+       * in memory below the caller's stack pointer, which means that the
+       * callee may clobber it if it's a non-leaf function.
+       * Add the clobber expression for the static chain to the function call
+       * expression list so that it is not assumed to be live across the call.
+       */
+      rtx clob = gen_rtx_CLOBBER (Pmode, xtensa_static_chain (NULL, false));
+      CALL_INSN_FUNCTION_USAGE (call_insn) =
+	gen_rtx_EXPR_LIST (Pmode, clob, CALL_INSN_FUNCTION_USAGE (call_insn));
     }
 }
 
@@ -2584,6 +2608,19 @@ xtensa_emit_add_imm (rtx dst, rtx src, HOST_WIDE_INT imm, rtx scratch,
     }
 
   return retval;
+}
+
+
+/* Return true if the constants used in the application of smin() following
+   smax() meet the specifications of the CLAMPS machine instruction.  */
+bool
+xtensa_match_CLAMPS_imms_p (rtx cst_max, rtx cst_min)
+{
+  int max, min;
+
+  return IN_RANGE (max = exact_log2 (-INTVAL (cst_max)), 7, 22)
+	 && IN_RANGE (min = exact_log2 (INTVAL (cst_min) + 1), 7, 22)
+	 && max == min;
 }
 
 
@@ -3346,6 +3383,66 @@ xtensa_emit_adjust_stack_ptr (HOST_WIDE_INT offset, int flags)
     cfun->machine->last_logues_a9_content = GEN_INT (offset);
 }
 
+static bool
+xtensa_can_eliminate_callee_saved_reg_p (unsigned int regno,
+					 rtx_insn **p_insnS,
+					 rtx_insn **p_insnR)
+{
+  df_ref ref;
+  rtx_insn *insn, *insnS = NULL, *insnR = NULL;
+  rtx pattern;
+
+  if (!optimize || !df || call_used_or_fixed_reg_p (regno))
+    return false;
+
+  for (ref = DF_REG_DEF_CHAIN (regno);
+       ref; ref = DF_REF_NEXT_REG (ref))
+    if (DF_REF_CLASS (ref) != DF_REF_REGULAR
+	|| DEBUG_INSN_P (insn = DF_REF_INSN (ref)))
+      continue;
+    else if (GET_CODE (pattern = PATTERN (insn)) == SET
+	     && REG_P (SET_DEST (pattern))
+	     && REGNO (SET_DEST (pattern)) == regno
+	     && REG_NREGS (SET_DEST (pattern)) == 1
+	     && REG_P (SET_SRC (pattern))
+	     && REGNO (SET_SRC (pattern)) != A1_REG)
+      {
+	if (insnS)
+	  return false;
+	insnS = insn;
+	continue;
+      }
+    else
+      return false;
+
+  for (ref = DF_REG_USE_CHAIN (regno);
+       ref; ref = DF_REF_NEXT_REG (ref))
+    if (DF_REF_CLASS (ref) != DF_REF_REGULAR
+	|| DEBUG_INSN_P (insn = DF_REF_INSN (ref)))
+      continue;
+    else if (GET_CODE (pattern = PATTERN (insn)) == SET
+	     && REG_P (SET_SRC (pattern))
+	     && REGNO (SET_SRC (pattern)) == regno
+	     && REG_NREGS (SET_SRC (pattern)) == 1
+	     && REG_P (SET_DEST (pattern))
+	     && REGNO (SET_DEST (pattern)) != A1_REG)
+      {
+	if (insnR)
+	  return false;
+	insnR = insn;
+	continue;
+      }
+    else
+      return false;
+
+  if (!insnS || !insnR)
+    return false;
+
+  *p_insnS = insnS, *p_insnR = insnR;
+
+  return true;
+}
+
 /* minimum frame = reg save area (4 words) plus static chain (1 word)
    and the total number of words must be a multiple of 128 bits.  */
 #define MIN_FRAME_SIZE (8 * UNITS_PER_WORD)
@@ -3385,6 +3482,7 @@ xtensa_expand_prologue (void)
       df_ref ref;
       bool stack_pointer_needed = frame_pointer_needed
 				  || crtl->calls_eh_return;
+      bool large_stack_needed;
 
       /* Check if the function body really needs the stack pointer.  */
       if (!stack_pointer_needed && df)
@@ -3433,23 +3531,41 @@ xtensa_expand_prologue (void)
 	    }
 	}
 
+      large_stack_needed = total_size > 1024
+			   || (!callee_save_size && total_size > 128);
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
-	{
-	  if (xtensa_call_save_reg(regno))
-	    {
-	      rtx x = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (offset));
-	      rtx mem = gen_frame_mem (SImode, x);
-	      rtx reg = gen_rtx_REG (SImode, regno);
+	if (xtensa_call_save_reg(regno))
+	  {
+	    rtx x = gen_rtx_PLUS (Pmode,
+				  stack_pointer_rtx, GEN_INT (offset));
+	    rtx mem = gen_frame_mem (SImode, x);
+	    rtx_insn *insnS, *insnR;
 
-	      offset -= UNITS_PER_WORD;
-	      insn = emit_move_insn (mem, reg);
-	      RTX_FRAME_RELATED_P (insn) = 1;
-	      add_reg_note (insn, REG_FRAME_RELATED_EXPR,
-			    gen_rtx_SET (mem, reg));
-	    }
-	}
-      if (total_size > 1024
-	  || (!callee_save_size && total_size > 128))
+	    if (!large_stack_needed
+		&& xtensa_can_eliminate_callee_saved_reg_p (regno,
+							    &insnS, &insnR))
+	      {
+		if (frame_pointer_needed)
+		  mem = replace_rtx (mem, stack_pointer_rtx,
+				     hard_frame_pointer_rtx);
+		SET_DEST (PATTERN (insnS)) = mem;
+		df_insn_rescan (insnS);
+		SET_SRC (PATTERN (insnR)) = copy_rtx (mem);
+		df_insn_rescan (insnR);
+		cfun->machine->eliminated_callee_saved_bmp |= 1 << regno;
+	      }
+	    else
+	      {
+		rtx reg = gen_rtx_REG (SImode, regno);
+
+		insn = emit_move_insn (mem, reg);
+		RTX_FRAME_RELATED_P (insn) = 1;
+		add_reg_note (insn, REG_FRAME_RELATED_EXPR,
+			      gen_rtx_SET (mem, reg));
+	      }
+	    offset -= UNITS_PER_WORD;
+	  }
+      if (large_stack_needed)
 	xtensa_emit_adjust_stack_ptr (callee_save_size - total_size,
 				      ADJUST_SP_NEED_NOTE);
     }
@@ -3538,18 +3654,18 @@ xtensa_expand_epilogue (bool sibcall_p)
 	emit_insn (gen_blockage ());
 
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
-	{
-	  if (xtensa_call_save_reg(regno))
-	    {
-	      rtx x = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (offset));
-
-	      offset -= UNITS_PER_WORD;
-	      emit_move_insn (gen_rtx_REG (SImode, regno),
-			      gen_frame_mem (SImode, x));
-	    }
-	}
-      if (sibcall_p)
-	emit_use (gen_rtx_REG (SImode, A0_REG));
+	if (xtensa_call_save_reg(regno))
+	  {
+	    if (! (cfun->machine->eliminated_callee_saved_bmp
+		   & (1 << regno)))
+	      {
+		rtx x = gen_rtx_PLUS (Pmode,
+				      stack_pointer_rtx, GEN_INT (offset));
+		emit_move_insn (gen_rtx_REG (SImode, regno),
+				gen_frame_mem (SImode, x));
+	      }
+	    offset -= UNITS_PER_WORD;
+	  }
 
       if (cfun->machine->current_frame_size > 0)
 	{
@@ -3575,7 +3691,9 @@ xtensa_expand_epilogue (bool sibcall_p)
 				  EH_RETURN_STACKADJ_RTX));
     }
   cfun->machine->epilogue_done = true;
-  if (!sibcall_p)
+  if (sibcall_p)
+    emit_use (gen_rtx_REG (SImode, A0_REG));
+  else
     emit_jump_insn (gen_return ());
 }
 

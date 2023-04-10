@@ -46,7 +46,7 @@
  *
  * This is a low-level messaging API upon which more structured or restrictive
  * APIs may be built.  The general idea is that every messageable entity is
- * represented by a common handle type called a Tid, which allows messages to
+ * represented by a common handle type called a `Tid`, which allows messages to
  * be sent to logical threads that are executing in both the current process
  * and in external processes using the same interface.  This is an important
  * aspect of scalability because it allows the components of a program to be
@@ -55,11 +55,11 @@
  *
  * A logical thread is an execution context that has its own stack and which
  * runs asynchronously to other logical threads.  These may be preemptively
- * scheduled kernel threads, fibers (cooperative user-space threads), or some
- * other concept with similar behavior.
+ * scheduled kernel threads, $(MREF_ALTTEXT fibers, core, thread, fiber)
+ * (cooperative user-space threads), or some other concept with similar behavior.
  *
  * The type of concurrency used when logical threads are created is determined
- * by the Scheduler selected at initialization time.  The default behavior is
+ * by the $(LREF Scheduler) selected at initialization time.  The default behavior is
  * currently to create a new kernel thread per call to spawn, but other
  * schedulers are available that multiplex fibers across the main thread or
  * use some combination of the two approaches.
@@ -274,7 +274,7 @@ static ~this()
 // Exceptions
 
 /**
- * Thrown on calls to `receiveOnly` if a message other than the type
+ * Thrown on calls to $(LREF receiveOnly) if a message other than the type
  * the receiving thread expected is sent.
  */
 class MessageMismatch : Exception
@@ -287,7 +287,7 @@ class MessageMismatch : Exception
 }
 
 /**
- * Thrown on calls to `receive` if the thread that spawned the receiving
+ * Thrown on calls to $(LREF receive) if the thread that spawned the receiving
  * thread has terminated and no more messages exist.
  */
 class OwnerTerminated : Exception
@@ -354,7 +354,7 @@ class MailboxFull : Exception
 }
 
 /**
- * Thrown when a Tid is missing, e.g. when `ownerTid` doesn't
+ * Thrown when a `Tid` is missing, e.g. when $(LREF ownerTid) doesn't
  * find an owner thread.
  */
 class TidMissingException : Exception
@@ -384,11 +384,11 @@ private:
 public:
 
     /**
-     * Generate a convenient string for identifying this Tid.  This is only
-     * useful to see if Tid's that are currently executing are the same or
+     * Generate a convenient string for identifying this `Tid`.  This is only
+     * useful to see if `Tid`'s that are currently executing are the same or
      * different, e.g. for logging and debugging.  It is potentially possible
-     * that a Tid executed in the future will have the same toString() output
-     * as another Tid that has already terminated.
+     * that a `Tid` executed in the future will have the same `toString()` output
+     * as another `Tid` that has already terminated.
      */
     void toString(W)(ref W w) const
     {
@@ -420,7 +420,7 @@ public:
 }
 
 /**
- * Returns: The $(LREF Tid) of the caller's thread.
+ * Returns: The `Tid` of the caller's thread.
  */
 @property Tid thisTid() @safe
 {
@@ -437,7 +437,7 @@ public:
 }
 
 /**
- * Return the Tid of the thread which spawned the caller's thread.
+ * Return the `Tid` of the thread which spawned the caller's thread.
  *
  * Throws: A `TidMissingException` exception if
  * there is no owner thread.
@@ -493,7 +493,7 @@ private template isSpawnable(F, T...)
 }
 
 /**
- * Starts fn(args) in a new logical thread.
+ * Starts `fn(args)` in a new logical thread.
  *
  * Executes the supplied function in a new logical thread represented by
  * `Tid`.  The calling thread is designated as the owner of the new thread.
@@ -506,7 +506,7 @@ private template isSpawnable(F, T...)
  *  args = Arguments to the function.
  *
  * Returns:
- *  A Tid representing the new logical thread.
+ *  A `Tid` representing the new logical thread.
  *
  * Notes:
  *  `args` must not have unshared aliasing.  In other words, all arguments
@@ -573,16 +573,16 @@ if (isSpawnable!(F, T))
 }
 
 /**
- * Starts fn(args) in a logical thread and will receive a LinkTerminated
+ * Starts `fn(args)` in a logical thread and will receive a `LinkTerminated`
  * message when the operation terminates.
  *
  * Executes the supplied function in a new logical thread represented by
- * Tid.  This new thread is linked to the calling thread so that if either
- * it or the calling thread terminates a LinkTerminated message will be sent
- * to the other, causing a LinkTerminated exception to be thrown on receive().
- * The owner relationship from spawn() is preserved as well, so if the link
+ * `Tid`.  This new thread is linked to the calling thread so that if either
+ * it or the calling thread terminates a `LinkTerminated` message will be sent
+ * to the other, causing a `LinkTerminated` exception to be thrown on `receive()`.
+ * The owner relationship from `spawn()` is preserved as well, so if the link
  * between threads is broken, owner termination will still result in an
- * OwnerTerminated exception to be thrown on receive().
+ * `OwnerTerminated` exception to be thrown on `receive()`.
  *
  * Params:
  *  fn   = The function to execute.
@@ -1021,7 +1021,7 @@ do
 enum OnCrowding
 {
     block, /// Wait until room is available.
-    throwException, /// Throw a MailboxFull exception.
+    throwException, /// Throw a $(LREF MailboxFull) exception.
     ignore /// Abort the send and return.
 }
 
@@ -1178,13 +1178,13 @@ bool unregister(string name)
 }
 
 /**
- * Gets the Tid associated with name.
+ * Gets the `Tid` associated with name.
  *
  * Params:
  *  name = The name to locate within the registry.
  *
  * Returns:
- *  The associated Tid or Tid.init if name is not registered.
+ *  The associated `Tid` or `Tid.init` if name is not registered.
  */
 Tid locate(string name)
 {
@@ -1199,7 +1199,7 @@ Tid locate(string name)
 /**
  * Encapsulates all implementation-level data needed for scheduling.
  *
- * When defining a Scheduler, an instance of this struct must be associated
+ * When defining a $(LREF Scheduler), an instance of this struct must be associated
  * with each logical thread.  It contains all implementation-level information
  * needed by the internal API.
  */
@@ -1210,11 +1210,11 @@ struct ThreadInfo
     Tid owner;
 
     /**
-     * Gets a thread-local instance of ThreadInfo.
+     * Gets a thread-local instance of `ThreadInfo`.
      *
-     * Gets a thread-local instance of ThreadInfo, which should be used as the
+     * Gets a thread-local instance of `ThreadInfo`, which should be used as the
      * default instance when info is requested for a thread not created by the
-     * Scheduler.
+     * `Scheduler`.
      */
     static @property ref thisInfo() nothrow
     {
@@ -1253,15 +1253,15 @@ struct ThreadInfo
 }
 
 /**
- * A Scheduler controls how threading is performed by spawn.
+ * A `Scheduler` controls how threading is performed by spawn.
  *
- * Implementing a Scheduler allows the concurrency mechanism used by this
+ * Implementing a `Scheduler` allows the concurrency mechanism used by this
  * module to be customized according to different needs.  By default, a call
  * to spawn will create a new kernel thread that executes the supplied routine
- * and terminates when finished.  But it is possible to create Schedulers that
- * reuse threads, that multiplex Fibers (coroutines) across a single thread,
- * or any number of other approaches.  By making the choice of Scheduler a
- * user-level option, std.concurrency may be used for far more types of
+ * and terminates when finished.  But it is possible to create `Scheduler`s that
+ * reuse threads, that multiplex `Fiber`s (coroutines) across a single thread,
+ * or any number of other approaches.  By making the choice of `Scheduler` a
+ * user-level option, `std.concurrency` may be used for far more types of
  * application than if this behavior were predefined.
  *
  * Example:
@@ -1280,25 +1280,25 @@ struct ThreadInfo
  * ---
  *
  * Some schedulers have a dispatching loop that must run if they are to work
- * properly, so for the sake of consistency, when using a scheduler, start()
- * must be called within main().  This yields control to the scheduler and
+ * properly, so for the sake of consistency, when using a scheduler, `start()`
+ * must be called within `main()`.  This yields control to the scheduler and
  * will ensure that any spawned threads are executed in an expected manner.
  */
 interface Scheduler
 {
     /**
-     * Spawns the supplied op and starts the Scheduler.
+     * Spawns the supplied op and starts the `Scheduler`.
      *
      * This is intended to be called at the start of the program to yield all
-     * scheduling to the active Scheduler instance.  This is necessary for
+     * scheduling to the active `Scheduler` instance.  This is necessary for
      * schedulers that explicitly dispatch threads rather than simply relying
      * on the operating system to do so, and so start should always be called
-     * within main() to begin normal program execution.
+     * within `main()` to begin normal program execution.
      *
      * Params:
      *  op = A wrapper for whatever the main thread would have done in the
      *       absence of a custom scheduler.  It will be automatically executed
-     *       via a call to spawn by the Scheduler.
+     *       via a call to spawn by the `Scheduler`.
      */
     void start(void delegate() op);
 
@@ -1307,8 +1307,8 @@ interface Scheduler
      *
      * This routine is called by spawn.  It is expected to instantiate a new
      * logical thread and run the supplied operation.  This thread must call
-     * thisInfo.cleanup() when the thread terminates if the scheduled thread
-     * is not a kernel thread--all kernel threads will have their ThreadInfo
+     * `thisInfo.cleanup()` when the thread terminates if the scheduled thread
+     * is not a kernel thread--all kernel threads will have their `ThreadInfo`
      * cleaned up automatically by a thread-local destructor.
      *
      * Params:
@@ -1329,36 +1329,36 @@ interface Scheduler
     void yield() nothrow;
 
     /**
-     * Returns an appropriate ThreadInfo instance.
+     * Returns an appropriate `ThreadInfo` instance.
      *
-     * Returns an instance of ThreadInfo specific to the logical thread that
+     * Returns an instance of `ThreadInfo` specific to the logical thread that
      * is calling this routine or, if the calling thread was not create by
-     * this scheduler, returns ThreadInfo.thisInfo instead.
+     * this scheduler, returns `ThreadInfo.thisInfo` instead.
      */
     @property ref ThreadInfo thisInfo() nothrow;
 
     /**
-     * Creates a Condition variable analog for signaling.
+     * Creates a `Condition` variable analog for signaling.
      *
-     * Creates a new Condition variable analog which is used to check for and
+     * Creates a new `Condition` variable analog which is used to check for and
      * to signal the addition of messages to a thread's message queue.  Like
      * yield, some schedulers may need to define custom behavior so that calls
-     * to Condition.wait() yield to another thread when no new messages are
+     * to `Condition.wait()` yield to another thread when no new messages are
      * available instead of blocking.
      *
      * Params:
-     *  m = The Mutex that will be associated with this condition.  It will be
+     *  m = The `Mutex` that will be associated with this condition.  It will be
      *      locked prior to any operation on the condition, and so in some
-     *      cases a Scheduler may need to hold this reference and unlock the
+     *      cases a `Scheduler` may need to hold this reference and unlock the
      *      mutex before yielding execution to another logical thread.
      */
     Condition newCondition(Mutex m) nothrow;
 }
 
 /**
- * An example Scheduler using kernel threads.
+ * An example `Scheduler` using kernel threads.
  *
- * This is an example Scheduler that mirrors the default scheduling behavior
+ * This is an example `Scheduler` that mirrors the default scheduling behavior
  * of creating one kernel thread per call to spawn.  It is fully functional
  * and may be instantiated and used, but is not a necessary part of the
  * default functioning of this module.
@@ -1392,8 +1392,8 @@ class ThreadScheduler : Scheduler
     }
 
     /**
-     * Returns ThreadInfo.thisInfo, since it is a thread-local instance of
-     * ThreadInfo, which is the correct behavior for this scheduler.
+     * Returns `ThreadInfo.thisInfo`, since it is a thread-local instance of
+     * `ThreadInfo`, which is the correct behavior for this scheduler.
      */
     @property ref ThreadInfo thisInfo() nothrow
     {
@@ -1401,7 +1401,7 @@ class ThreadScheduler : Scheduler
     }
 
     /**
-     * Creates a new Condition variable.  No custom behavior is needed here.
+     * Creates a new `Condition` variable.  No custom behavior is needed here.
      */
     Condition newCondition(Mutex m) nothrow
     {
@@ -1410,15 +1410,15 @@ class ThreadScheduler : Scheduler
 }
 
 /**
- * An example Scheduler using Fibers.
+ * An example `Scheduler` using $(MREF_ALTTEXT `Fiber`s, core, thread, fiber).
  *
- * This is an example scheduler that creates a new Fiber per call to spawn
+ * This is an example scheduler that creates a new `Fiber` per call to spawn
  * and multiplexes the execution of all fibers within the main thread.
  */
 class FiberScheduler : Scheduler
 {
     /**
-     * This creates a new Fiber for the supplied op and then starts the
+     * This creates a new `Fiber` for the supplied op and then starts the
      * dispatcher.
      */
     void start(void delegate() op)
@@ -1428,7 +1428,7 @@ class FiberScheduler : Scheduler
     }
 
     /**
-     * This created a new Fiber for the supplied op and adds it to the
+     * This created a new `Fiber` for the supplied op and adds it to the
      * dispatch list.
      */
     void spawn(void delegate() op) nothrow
@@ -1438,8 +1438,8 @@ class FiberScheduler : Scheduler
     }
 
     /**
-     * If the caller is a scheduled Fiber, this yields execution to another
-     * scheduled Fiber.
+     * If the caller is a scheduled `Fiber`, this yields execution to another
+     * scheduled `Fiber`.
      */
     void yield() nothrow
     {
@@ -1451,11 +1451,11 @@ class FiberScheduler : Scheduler
     }
 
     /**
-     * Returns an appropriate ThreadInfo instance.
+     * Returns an appropriate `ThreadInfo` instance.
      *
-     * Returns a ThreadInfo instance specific to the calling Fiber if the
-     * Fiber was created by this dispatcher, otherwise it returns
-     * ThreadInfo.thisInfo.
+     * Returns a `ThreadInfo` instance specific to the calling `Fiber` if the
+     * `Fiber` was created by this dispatcher, otherwise it returns
+     * `ThreadInfo.thisInfo`.
      */
     @property ref ThreadInfo thisInfo() nothrow
     {
@@ -1467,10 +1467,10 @@ class FiberScheduler : Scheduler
     }
 
     /**
-     * Returns a Condition analog that yields when wait or notify is called.
+     * Returns a `Condition` analog that yields when wait or notify is called.
      *
      * Bug:
-     * For the default implementation, `notifyAll`will behave like `notify`.
+     * For the default implementation, `notifyAll` will behave like `notify`.
      *
      * Params:
      *   m = A `Mutex` to use for locking if the condition needs to be waited on
@@ -1485,7 +1485,7 @@ class FiberScheduler : Scheduler
 
 protected:
     /**
-     * Creates a new Fiber which calls the given delegate.
+     * Creates a new `Fiber` which calls the given delegate.
      *
      * Params:
      *   op = The delegate the fiber should call
@@ -1505,7 +1505,7 @@ protected:
     }
 
     /**
-     * Fiber which embeds a ThreadInfo
+     * `Fiber` which embeds a `ThreadInfo`
      */
     static class InfoFiber : Fiber
     {
@@ -1650,10 +1650,10 @@ private:
 }
 
 /**
- * Sets the Scheduler behavior within the program.
+ * Sets the `Scheduler` behavior within the program.
  *
- * This variable sets the Scheduler behavior within this program.  Typically,
- * when setting a Scheduler, scheduler.start() should be called in main.  This
+ * This variable sets the `Scheduler` behavior within this program.  Typically,
+ * when setting a `Scheduler`, `scheduler.start()` should be called in `main`.  This
  * routine will not return until program execution is complete.
  */
 __gshared Scheduler scheduler;
@@ -1661,8 +1661,8 @@ __gshared Scheduler scheduler;
 // Generator
 
 /**
- * If the caller is a Fiber and is not a Generator, this function will call
- * scheduler.yield() or Fiber.yield(), as appropriate.
+ * If the caller is a `Fiber` and is not a $(LREF Generator), this function will call
+ * `scheduler.yield()` or `Fiber.yield()`, as appropriate.
  */
 void yield() nothrow
 {
@@ -1684,8 +1684,9 @@ private interface IsGenerator {}
 
 
 /**
- * A Generator is a Fiber that periodically returns values of type T to the
- * caller via yield.  This is represented as an InputRange.
+ * A Generator is a $(MREF_ALTTEXT Fiber, core, thread, fiber)
+ * that periodically returns values of type `T` to the
+ * caller via `yield`.  This is represented as an InputRange.
  */
 class Generator(T) :
     Fiber, IsGenerator, InputRange!T
@@ -1829,7 +1830,7 @@ class Generator(T) :
     /**
      * Returns the most recently generated value without executing a
      * copy contructor. Will not compile for element types defining a
-     * postblit, because Generator does not return by reference.
+     * postblit, because `Generator` does not return by reference.
      */
     final T moveFront()
     {

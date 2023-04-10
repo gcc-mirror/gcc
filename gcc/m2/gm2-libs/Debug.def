@@ -40,14 +40,15 @@ EXPORT QUALIFIED Halt, DebugString ;
 
 (*
    Halt - writes a message in the format:
-          Module:Line:Message
+          Module:Function:Line:Message
 
           It then terminates by calling HALT.
 *)
 
-PROCEDURE Halt (Message: ARRAY OF CHAR;
-                LineNo: CARDINAL;
-                Module: ARRAY OF CHAR) ;
+PROCEDURE Halt (Message,
+                Module,
+                Function: ARRAY OF CHAR ;
+                LineNo  : CARDINAL) ;
 
 
 (*

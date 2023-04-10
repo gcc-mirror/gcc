@@ -149,7 +149,7 @@ protected:
   relation_oracle *m_oracle;
 };
 
-// This class uses ranges to fold a gimple statement producinf a range for
+// This class uses ranges to fold a gimple statement producing a range for
 // the LHS.  The source of all operands is supplied via the fur_source class
 // which provides a range_query as well as a source location and any other
 // required information.

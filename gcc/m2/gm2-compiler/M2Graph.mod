@@ -29,8 +29,8 @@ FROM StrIO IMPORT WriteString, WriteLn ;
 FROM NameKey IMPORT Name, WriteKey ;
 FROM Lists IMPORT InitList, KillList, IncludeItemIntoList, RemoveItemFromList ;
 FROM Indexing IMPORT Index, HighIndice, IncludeIndiceIntoIndex, InitIndex, KillIndex, GetIndice ;
-FROM M2Printf IMPORT printf0, printf1, printf2 ;
-FROM SymbolTable IMPORT GetSymName, IsDefinitionForC, IsModule ;
+FROM M2Printf IMPORT printf0, printf1, printf2, printf3 ;
+FROM SymbolTable IMPORT GetSymName, GetLibName, IsDefinitionForC, IsModule ;
 
 
 CONST
@@ -189,18 +189,20 @@ END SortGraph ;
 
 PROCEDURE resolveImports (sorted: List; nptr: node) ;
 VAR
-     i, n: CARDINAL ;
-  name: Name ;
+   i, n: CARDINAL ;
+   libname,
+   name   : Name ;
 BEGIN
    IF nptr^.nstate = initial
    THEN
       nptr^.nstate := started ;
       name := GetSymName (nptr^.moduleSym) ;
+      libname := GetLibName (nptr^.moduleSym) ;
       i := 1 ;
       n := HighIndice (nptr^.deps) ;
       IF Debugging
       THEN
-         printf2 ("resolving %a  %d dependents\n", name, n)
+         printf3 ("resolving %a [%a] %d dependents\n", name, libname, n)
       END ;
       WHILE i <= n DO
          resolveImports (sorted, GetIndice (nptr^.deps, i)) ;

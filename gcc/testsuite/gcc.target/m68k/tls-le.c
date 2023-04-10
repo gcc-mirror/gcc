@@ -2,7 +2,7 @@
 /* { dg-skip-if "" { ! *-linux-* } } */
 /* { dg-options "-O2" } */
 /* { dg-final { scan-assembler "jsr __m68k_read_tp" } } */
-/* { dg-final { scan-assembler "lea \\(foo@TLSLE,\%a0\\)" } } */
+/* { dg-final { scan-assembler "foo@TLSLE,%a0" } } */
 
 static int __thread foo;
 

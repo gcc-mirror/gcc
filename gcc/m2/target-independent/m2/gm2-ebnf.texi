@@ -1,0 +1,847 @@
+@c Copyright (C) 2000-2023 Free Software Foundation, Inc.
+
+@c This file is part of GCC.
+@c Permission is granted to copy, distribute and/or modify this document
+@c under the terms of the GNU Free Documentation License, Version 1.2 or
+@c any later version published by the Free Software Foundation.
+@example
+Ident := @i{is a builtin and checks for an identifier}
+       =: 
+@findex Ident (ebnf)
+@end example
+
+@example
+Integer := @i{is a builtin and checks for an integer}
+         =: 
+@findex Integer (ebnf)
+@end example
+
+@example
+Real := @i{is a builtin and checks for an real constant}
+      =: 
+@findex Real (ebnf)
+@end example
+
+@example
+string := @i{is a builtin and checks for an string constant}
+        =: 
+@findex string (ebnf)
+@end example
+
+@example
+FileUnit := ( DefinitionModule  | 
+              ImplementationOrProgramModule  ) 
+          =: 
+@findex FileUnit (ebnf)
+@end example
+
+@example
+ProgramModule := 'MODULE' Ident [ Priority  ] ';' @{ 
+   Import  @} Block Ident '.' 
+               =: 
+@findex ProgramModule (ebnf)
+@end example
+
+@example
+ImplementationModule := 'IMPLEMENTATION' 'MODULE' Ident 
+                        [ Priority  ] ';' @{ Import 
+                                              @} Block 
+                        Ident '.' 
+                      =: 
+@findex ImplementationModule (ebnf)
+@end example
+
+@example
+ImplementationOrProgramModule := ImplementationModule  | 
+                                 ProgramModule 
+                               =: 
+@findex ImplementationOrProgramModule (ebnf)
+@end example
+
+@example
+Number := Integer  | Real 
+        =: 
+@findex Number (ebnf)
+@end example
+
+@example
+Qualident := Ident @{ '.' Ident  @} 
+           =: 
+@findex Qualident (ebnf)
+@end example
+
+@example
+ConstantDeclaration := Ident '=' ConstExpression 
+                     =: 
+@findex ConstantDeclaration (ebnf)
+@end example
+
+@example
+ConstExpression := SimpleConstExpr [ Relation SimpleConstExpr  ] 
+                 =: 
+@findex ConstExpression (ebnf)
+@end example
+
+@example
+Relation := '='  | '#'  | '<>'  | '<'  | '<='  | 
+            '>'  | '>='  | 'IN' 
+          =: 
+@findex Relation (ebnf)
+@end example
+
+@example
+SimpleConstExpr := UnaryOrConstTerm @{ AddOperator 
+                                       ConstTerm  @} 
+                 =: 
+@findex SimpleConstExpr (ebnf)
+@end example
+
+@example
+UnaryOrConstTerm := '+' ConstTerm  | 
+                    '-' ConstTerm  | 
+                    ConstTerm 
+                  =: 
+@findex UnaryOrConstTerm (ebnf)
+@end example
+
+@example
+AddOperator := '+'  | '-'  | 'OR' 
+             =: 
+@findex AddOperator (ebnf)
+@end example
+
+@example
+ConstTerm := ConstFactor @{ MulOperator ConstFactor  @} 
+           =: 
+@findex ConstTerm (ebnf)
+@end example
+
+@example
+MulOperator := '*'  | '/'  | 'DIV'  | 'MOD'  | 
+               'REM'  | 'AND'  | '&' 
+             =: 
+@findex MulOperator (ebnf)
+@end example
+
+@example
+ConstFactor := Number  | ConstString  | 
+               ConstSetOrQualidentOrFunction  | 
+               '(' ConstExpression ')'  | 
+               'NOT' ConstFactor  | 
+               ConstAttribute 
+             =: 
+@findex ConstFactor (ebnf)
+@end example
+
+@example
+ConstString := string 
+             =: 
+@findex ConstString (ebnf)
+@end example
+
+@example
+ComponentElement := ConstExpression [ '..' ConstExpression  ] 
+                  =: 
+@findex ComponentElement (ebnf)
+@end example
+
+@example
+ComponentValue := ComponentElement [ 'BY' ConstExpression  ] 
+                =: 
+@findex ComponentValue (ebnf)
+@end example
+
+@example
+ArraySetRecordValue := ComponentValue @{ ',' ComponentValue  @} 
+                     =: 
+@findex ArraySetRecordValue (ebnf)
+@end example
+
+@example
+Constructor := '@{' [ ArraySetRecordValue  ] '@}' 
+             =: 
+@findex Constructor (ebnf)
+@end example
+
+@example
+ConstSetOrQualidentOrFunction := Constructor  | 
+                                 Qualident [ Constructor  | 
+                                             ConstActualParameters  ] 
+                               =: 
+@findex ConstSetOrQualidentOrFunction (ebnf)
+@end example
+
+@example
+ConstActualParameters := '(' [ ExpList  ] ')' 
+                       =: 
+@findex ConstActualParameters (ebnf)
+@end example
+
+@example
+ConstAttribute := '__ATTRIBUTE__' '__BUILTIN__' '(' 
+                  '(' ConstAttributeExpression ')' 
+                  ')' 
+                =: 
+@findex ConstAttribute (ebnf)
+@end example
+
+@example
+ConstAttributeExpression := Ident  | '<' Qualident 
+                            ',' Ident '>' 
+                          =: 
+@findex ConstAttributeExpression (ebnf)
+@end example
+
+@example
+ByteAlignment := '<*' AttributeExpression '*>' 
+               =: 
+@findex ByteAlignment (ebnf)
+@end example
+
+@example
+Alignment := [ ByteAlignment  ] 
+           =: 
+@findex Alignment (ebnf)
+@end example
+
+@example
+TypeDeclaration := Ident '=' Type Alignment 
+                 =: 
+@findex TypeDeclaration (ebnf)
+@end example
+
+@example
+Type := SimpleType  | ArrayType  | RecordType  | 
+        SetType  | PointerType  | ProcedureType 
+      =: 
+@findex Type (ebnf)
+@end example
+
+@example
+SimpleType := Qualident [ SubrangeType  ]  | 
+              Enumeration  | SubrangeType 
+            =: 
+@findex SimpleType (ebnf)
+@end example
+
+@example
+Enumeration := '(' IdentList ')' 
+             =: 
+@findex Enumeration (ebnf)
+@end example
+
+@example
+IdentList := Ident @{ ',' Ident  @} 
+           =: 
+@findex IdentList (ebnf)
+@end example
+
+@example
+SubrangeType := '[' ConstExpression '..' ConstExpression 
+                ']' 
+              =: 
+@findex SubrangeType (ebnf)
+@end example
+
+@example
+ArrayType := 'ARRAY' SimpleType @{ ',' SimpleType  @} 
+             'OF' Type 
+           =: 
+@findex ArrayType (ebnf)
+@end example
+
+@example
+RecordType := 'RECORD' [ DefaultRecordAttributes  ] 
+              FieldListSequence 'END' 
+            =: 
+@findex RecordType (ebnf)
+@end example
+
+@example
+DefaultRecordAttributes := '<*' AttributeExpression 
+                           '*>' 
+                         =: 
+@findex DefaultRecordAttributes (ebnf)
+@end example
+
+@example
+RecordFieldPragma := [ '<*' FieldPragmaExpression @{ 
+   ',' FieldPragmaExpression  @} '*>'  ] 
+                   =: 
+@findex RecordFieldPragma (ebnf)
+@end example
+
+@example
+FieldPragmaExpression := Ident [ '(' ConstExpression 
+                                 ')'  ] 
+                       =: 
+@findex FieldPragmaExpression (ebnf)
+@end example
+
+@example
+AttributeExpression := Ident '(' ConstExpression ')' 
+                     =: 
+@findex AttributeExpression (ebnf)
+@end example
+
+@example
+FieldListSequence := FieldListStatement @{ ';' FieldListStatement  @} 
+                   =: 
+@findex FieldListSequence (ebnf)
+@end example
+
+@example
+FieldListStatement := [ FieldList  ] 
+                    =: 
+@findex FieldListStatement (ebnf)
+@end example
+
+@example
+FieldList := IdentList ':' Type RecordFieldPragma  | 
+             'CASE' CaseTag 'OF' Varient @{ '|' Varient  @} 
+             [ 'ELSE' FieldListSequence  ] 'END' 
+           =: 
+@findex FieldList (ebnf)
+@end example
+
+@example
+TagIdent := [ Ident  ] 
+          =: 
+@findex TagIdent (ebnf)
+@end example
+
+@example
+CaseTag := TagIdent [ ':' Qualident  ] 
+         =: 
+@findex CaseTag (ebnf)
+@end example
+
+@example
+Varient := [ VarientCaseLabelList ':' FieldListSequence  ] 
+         =: 
+@findex Varient (ebnf)
+@end example
+
+@example
+VarientCaseLabelList := VarientCaseLabels @{ ',' VarientCaseLabels  @} 
+                      =: 
+@findex VarientCaseLabelList (ebnf)
+@end example
+
+@example
+VarientCaseLabels := ConstExpression [ '..' ConstExpression  ] 
+                   =: 
+@findex VarientCaseLabels (ebnf)
+@end example
+
+@example
+CaseLabelList := CaseLabels @{ ',' CaseLabels  @} 
+               =: 
+@findex CaseLabelList (ebnf)
+@end example
+
+@example
+CaseLabels := ConstExpression [ '..' ConstExpression  ] 
+            =: 
+@findex CaseLabels (ebnf)
+@end example
+
+@example
+SetType := ( 'SET'  | 'PACKEDSET'  ) 'OF' SimpleType 
+         =: 
+@findex SetType (ebnf)
+@end example
+
+@example
+PointerType := 'POINTER' 'TO' Type 
+             =: 
+@findex PointerType (ebnf)
+@end example
+
+@example
+ProcedureType := 'PROCEDURE' [ FormalTypeList  ] 
+               =: 
+@findex ProcedureType (ebnf)
+@end example
+
+@example
+FormalTypeList := '(' ( ')' FormalReturn  | 
+                        ProcedureParameters ')' FormalReturn  ) 
+                =: 
+@findex FormalTypeList (ebnf)
+@end example
+
+@example
+FormalReturn := [ ':' OptReturnType  ] 
+              =: 
+@findex FormalReturn (ebnf)
+@end example
+
+@example
+OptReturnType := '[' Qualident ']'  | 
+                 Qualident 
+               =: 
+@findex OptReturnType (ebnf)
+@end example
+
+@example
+ProcedureParameters := ProcedureParameter @{ ',' ProcedureParameter  @} 
+                     =: 
+@findex ProcedureParameters (ebnf)
+@end example
+
+@example
+ProcedureParameter := '...'  | 'VAR' FormalType  | 
+                      FormalType 
+                    =: 
+@findex ProcedureParameter (ebnf)
+@end example
+
+@example
+VarIdent := Ident [ '[' ConstExpression ']'  ] 
+          =: 
+@findex VarIdent (ebnf)
+@end example
+
+@example
+VariableDeclaration := VarIdentList ':' Type Alignment 
+                     =: 
+@findex VariableDeclaration (ebnf)
+@end example
+
+@example
+VarIdentList := VarIdent @{ ',' VarIdent  @} 
+              =: 
+@findex VarIdentList (ebnf)
+@end example
+
+@example
+Designator := Qualident @{ SubDesignator  @} 
+            =: 
+@findex Designator (ebnf)
+@end example
+
+@example
+SubDesignator := '.' Ident  | '[' ExpList ']'  | 
+                 '^' 
+               =: 
+@findex SubDesignator (ebnf)
+@end example
+
+@example
+ExpList := Expression @{ ',' Expression  @} 
+         =: 
+@findex ExpList (ebnf)
+@end example
+
+@example
+Expression := SimpleExpression [ Relation SimpleExpression  ] 
+            =: 
+@findex Expression (ebnf)
+@end example
+
+@example
+SimpleExpression := [ '+'  | '-'  ] Term @{ AddOperator 
+                                            Term  @} 
+                  =: 
+@findex SimpleExpression (ebnf)
+@end example
+
+@example
+Term := Factor @{ MulOperator Factor  @} 
+      =: 
+@findex Term (ebnf)
+@end example
+
+@example
+Factor := Number  | string  | SetOrDesignatorOrFunction  | 
+          '(' Expression ')'  | 
+          'NOT' Factor  | ConstAttribute 
+        =: 
+@findex Factor (ebnf)
+@end example
+
+@example
+SetOrDesignatorOrFunction := ( Qualident [ Constructor  | 
+                                           SimpleDes 
+                                           [ ActualParameters  ]  ]  | 
+                               Constructor  ) 
+                           =: 
+@findex SetOrDesignatorOrFunction (ebnf)
+@end example
+
+@example
+SimpleDes := @{ '.' Ident  | '[' ExpList ']'  | 
+                '^'  @} 
+           =: 
+@findex SimpleDes (ebnf)
+@end example
+
+@example
+ActualParameters := '(' [ ExpList  ] ')' 
+                  =: 
+@findex ActualParameters (ebnf)
+@end example
+
+@example
+Statement := [ AssignmentOrProcedureCall  | 
+               IfStatement  | CaseStatement  | 
+               WhileStatement  | RepeatStatement  | 
+               LoopStatement  | ForStatement  | 
+               WithStatement  | AsmStatement  | 
+               'EXIT'  | 'RETURN' [ Expression  ]  | 
+               RetryStatement  ] 
+           =: 
+@findex Statement (ebnf)
+@end example
+
+@example
+RetryStatement := 'RETRY' 
+                =: 
+@findex RetryStatement (ebnf)
+@end example
+
+@example
+AssignmentOrProcedureCall := Designator ( ':=' Expression  | 
+                                          ActualParameters  | 
+                                           ) 
+                           =: 
+@findex AssignmentOrProcedureCall (ebnf)
+@end example
+
+@example
+StatementSequence := Statement @{ ';' Statement  @} 
+                   =: 
+@findex StatementSequence (ebnf)
+@end example
+
+@example
+IfStatement := 'IF' Expression 'THEN' StatementSequence 
+               @{ 'ELSIF' Expression 'THEN' StatementSequence  @} 
+               [ 'ELSE' StatementSequence  ] 'END' 
+             =: 
+@findex IfStatement (ebnf)
+@end example
+
+@example
+CaseStatement := 'CASE' Expression 'OF' Case @{ '|' 
+                                                Case  @} 
+                 [ 'ELSE' StatementSequence  ] 'END' 
+               =: 
+@findex CaseStatement (ebnf)
+@end example
+
+@example
+Case := [ CaseLabelList ':' StatementSequence  ] 
+      =: 
+@findex Case (ebnf)
+@end example
+
+@example
+WhileStatement := 'WHILE' Expression 'DO' StatementSequence 
+                  'END' 
+                =: 
+@findex WhileStatement (ebnf)
+@end example
+
+@example
+RepeatStatement := 'REPEAT' StatementSequence 'UNTIL' 
+                   Expression 
+                 =: 
+@findex RepeatStatement (ebnf)
+@end example
+
+@example
+ForStatement := 'FOR' Ident ':=' Expression 'TO' Expression 
+                [ 'BY' ConstExpression  ] 'DO' StatementSequence 
+                'END' 
+              =: 
+@findex ForStatement (ebnf)
+@end example
+
+@example
+LoopStatement := 'LOOP' StatementSequence 'END' 
+               =: 
+@findex LoopStatement (ebnf)
+@end example
+
+@example
+WithStatement := 'WITH' Designator 'DO' StatementSequence 
+                 'END' 
+               =: 
+@findex WithStatement (ebnf)
+@end example
+
+@example
+ProcedureDeclaration := ProcedureHeading ';' ( ProcedureBlock 
+                                               Ident 
+                                                ) 
+                      =: 
+@findex ProcedureDeclaration (ebnf)
+@end example
+
+@example
+DefineBuiltinProcedure := [ '__ATTRIBUTE__' '__BUILTIN__' 
+                            '(' '(' Ident ')' ')'  | 
+                            '__INLINE__'  ] 
+                        =: 
+@findex DefineBuiltinProcedure (ebnf)
+@end example
+
+@example
+ProcedureHeading := 'PROCEDURE' DefineBuiltinProcedure 
+                    ( Ident [ FormalParameters  ] AttributeNoReturn  ) 
+                  =: 
+@findex ProcedureHeading (ebnf)
+@end example
+
+@example
+AttributeNoReturn := [ '<*' Ident '*>'  ] 
+                   =: 
+@findex AttributeNoReturn (ebnf)
+@end example
+
+@example
+AttributeUnused := [ '<*' Ident '*>'  ] 
+                 =: 
+@findex AttributeUnused (ebnf)
+@end example
+
+@example
+Builtin := [ '__BUILTIN__'  | '__INLINE__'  ] 
+         =: 
+@findex Builtin (ebnf)
+@end example
+
+@example
+DefProcedureHeading := 'PROCEDURE' Builtin ( Ident 
+                                             [ DefFormalParameters  ] 
+                                             AttributeNoReturn  ) 
+                       
+                     =: 
+@findex DefProcedureHeading (ebnf)
+@end example
+
+@example
+ProcedureBlock := @{ Declaration  @} [ 'BEGIN' BlockBody  ] 
+                  'END' 
+                =: 
+@findex ProcedureBlock (ebnf)
+@end example
+
+@example
+Block := @{ Declaration  @} InitialBlock FinalBlock 
+         'END' 
+       =: 
+@findex Block (ebnf)
+@end example
+
+@example
+InitialBlock := [ 'BEGIN' BlockBody  ] 
+              =: 
+@findex InitialBlock (ebnf)
+@end example
+
+@example
+FinalBlock := [ 'FINALLY' BlockBody  ] 
+            =: 
+@findex FinalBlock (ebnf)
+@end example
+
+@example
+BlockBody := NormalPart [ 'EXCEPT' ExceptionalPart  ] 
+           =: 
+@findex BlockBody (ebnf)
+@end example
+
+@example
+NormalPart := StatementSequence 
+            =: 
+@findex NormalPart (ebnf)
+@end example
+
+@example
+ExceptionalPart := StatementSequence 
+                 =: 
+@findex ExceptionalPart (ebnf)
+@end example
+
+@example
+Declaration := 'CONST' @{ ConstantDeclaration ';'  @}  | 
+               'TYPE' @{ TypeDeclaration ';'  @}  | 
+               'VAR' @{ VariableDeclaration ';'  @}  | 
+               ProcedureDeclaration ';'  | 
+               ModuleDeclaration ';' 
+             =: 
+@findex Declaration (ebnf)
+@end example
+
+@example
+DefFormalParameters := '(' [ DefMultiFPSection  ] ')' 
+                       FormalReturn 
+                     =: 
+@findex DefFormalParameters (ebnf)
+@end example
+
+@example
+DefMultiFPSection := DefExtendedFP  | 
+                     FPSection [ ';' DefMultiFPSection  ] 
+                   =: 
+@findex DefMultiFPSection (ebnf)
+@end example
+
+@example
+FormalParameters := '(' [ MultiFPSection  ] ')' FormalReturn 
+                  =: 
+@findex FormalParameters (ebnf)
+@end example
+
+@example
+MultiFPSection := ExtendedFP  | FPSection [ ';' MultiFPSection  ] 
+                =: 
+@findex MultiFPSection (ebnf)
+@end example
+
+@example
+FPSection := NonVarFPSection  | VarFPSection 
+           =: 
+@findex FPSection (ebnf)
+@end example
+
+@example
+DefExtendedFP := DefOptArg  | '...' 
+               =: 
+@findex DefExtendedFP (ebnf)
+@end example
+
+@example
+ExtendedFP := OptArg  | '...' 
+            =: 
+@findex ExtendedFP (ebnf)
+@end example
+
+@example
+VarFPSection := 'VAR' IdentList ':' FormalType [ AttributeUnused  ] 
+              =: 
+@findex VarFPSection (ebnf)
+@end example
+
+@example
+NonVarFPSection := IdentList ':' FormalType [ AttributeUnused  ] 
+                 =: 
+@findex NonVarFPSection (ebnf)
+@end example
+
+@example
+OptArg := '[' Ident ':' FormalType [ '=' ConstExpression  ] 
+          ']' 
+        =: 
+@findex OptArg (ebnf)
+@end example
+
+@example
+DefOptArg := '[' Ident ':' FormalType '=' ConstExpression 
+             ']' 
+           =: 
+@findex DefOptArg (ebnf)
+@end example
+
+@example
+FormalType := @{ 'ARRAY' 'OF'  @} Qualident 
+            =: 
+@findex FormalType (ebnf)
+@end example
+
+@example
+ModuleDeclaration := 'MODULE' Ident [ Priority  ] ';' 
+                     @{ Import  @} [ Export  ] Block 
+                     Ident 
+                   =: 
+@findex ModuleDeclaration (ebnf)
+@end example
+
+@example
+Priority := '[' ConstExpression ']' 
+          =: 
+@findex Priority (ebnf)
+@end example
+
+@example
+Export := 'EXPORT' ( 'QUALIFIED' IdentList  | 
+                     'UNQUALIFIED' IdentList  | 
+                     IdentList  ) ';' 
+        =: 
+@findex Export (ebnf)
+@end example
+
+@example
+Import := 'FROM' Ident 'IMPORT' IdentList ';'  | 
+          'IMPORT' IdentList ';' 
+        =: 
+@findex Import (ebnf)
+@end example
+
+@example
+DefinitionModule := 'DEFINITION' 'MODULE' [ 'FOR' string 
+                                             ] Ident 
+                    ';' @{ Import  @} [ Export  ] @{ 
+   Definition  @} 'END' Ident '.' 
+                  =: 
+@findex DefinitionModule (ebnf)
+@end example
+
+@example
+Definition := 'CONST' @{ ConstantDeclaration ';'  @}  | 
+              'TYPE' @{ Ident ( ';'  | '=' Type Alignment 
+                                ';'  )  @}  | 
+              'VAR' @{ VariableDeclaration ';'  @}  | 
+              DefProcedureHeading ';' 
+            =: 
+@findex Definition (ebnf)
+@end example
+
+@example
+AsmStatement := 'ASM' [ 'VOLATILE'  ] '(' AsmOperands 
+                ')' 
+              =: 
+@findex AsmStatement (ebnf)
+@end example
+
+@example
+NamedOperand := '[' Ident ']' 
+              =: 
+@findex NamedOperand (ebnf)
+@end example
+
+@example
+AsmOperandName := [ NamedOperand  ] 
+                =: 
+@findex AsmOperandName (ebnf)
+@end example
+
+@example
+AsmOperands := string [ ':' AsmList [ ':' AsmList [ 
+   ':' TrashList  ]  ]  ] 
+             =: 
+@findex AsmOperands (ebnf)
+@end example
+
+@example
+AsmList := [ AsmElement  ] @{ ',' AsmElement  @} 
+         =: 
+@findex AsmList (ebnf)
+@end example
+
+@example
+AsmElement := AsmOperandName string '(' Expression 
+              ')' 
+            =: 
+@findex AsmElement (ebnf)
+@end example
+
+@example
+TrashList := [ string  ] @{ ',' string  @} 
+           =: 
+@findex TrashList (ebnf)
+@end example
+

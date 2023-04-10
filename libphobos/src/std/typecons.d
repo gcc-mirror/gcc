@@ -225,7 +225,10 @@ public:
     {
         if (_p !is null)
         {
-            destroy(_p);
+            static if (is(T == class) || is(T == interface))
+                destroy(_p);
+            else
+                destroy(*_p);
             _p = null;
         }
     }
@@ -259,7 +262,7 @@ private:
 ///
 @safe unittest
 {
-    static struct S
+    struct S
     {
         int i;
         this(int i){this.i = i;}
@@ -284,12 +287,31 @@ private:
     Unique!S u1;
     assert(u1.isEmpty);
     u1 = produce();
+    assert(u1.i == 5);
     increment(u1);
     assert(u1.i == 6);
     //consume(u1); // Error: u1 is not copyable
     // Transfer ownership of the resource
     consume(u1.release);
     assert(u1.isEmpty);
+}
+
+@safe unittest
+{
+    int i;
+    struct S
+    {
+        ~this()
+        {
+            // check context pointer still exists - dtor also called before GC frees struct
+            if (this.tupleof[0])
+                i++;
+        }
+    }
+    {
+        Unique!S u = new S;
+    }
+    assert(i == 1);
 }
 
 @system unittest
@@ -3138,12 +3160,6 @@ struct Nullable(T)
     }
 
     /// ditto
-    inout(typeof(this)) opIndex() inout
-    {
-        return this;
-    }
-
-    /// ditto
     inout(typeof(this)) opIndex(size_t[2] dim) inout
     in (dim[0] <= length && dim[1] <= length && dim[1] >= dim[0])
     {
@@ -3169,6 +3185,74 @@ struct Nullable(T)
     in (index < length)
     {
         return get();
+    }
+
+    /**
+     * Converts `Nullable` to a range. Works even when the contained type is `immutable`.
+     */
+    auto opSlice(this This)()
+    {
+        static struct NullableRange
+        {
+            private This value;
+
+            // starts out true if value is null
+            private bool empty_;
+
+            @property bool empty() const @safe pure nothrow
+            {
+                return empty_;
+            }
+
+            void popFront() @safe pure nothrow
+            {
+                empty_ = true;
+            }
+
+            alias popBack = popFront;
+
+            @property ref inout(typeof(value.get())) front() inout @safe pure nothrow
+            {
+                return value.get();
+            }
+
+            alias back = front;
+
+            @property inout(typeof(this)) save() inout
+            {
+                return this;
+            }
+
+            size_t[2] opSlice(size_t dim : 0)(size_t from, size_t to) const
+            {
+                return [from, to];
+            }
+
+            @property size_t length() const @safe pure nothrow
+            {
+                return !empty;
+            }
+
+            alias opDollar(size_t dim : 0) = length;
+
+            ref inout(typeof(value.get())) opIndex(size_t index) inout @safe pure nothrow
+            in (index < length)
+            {
+                return value.get();
+            }
+
+            inout(typeof(this)) opIndex(size_t[2] dim) inout
+            in (dim[0] <= length && dim[1] <= length && dim[1] >= dim[0])
+            {
+                return (dim[0] == 0 && dim[1] == 1) ? this : this.init;
+            }
+
+            auto opIndex() inout
+            {
+                return this;
+            }
+        }
+        return NullableRange(this, isNull);
     }
 }
 
@@ -3750,6 +3834,34 @@ auto nullable(T)(T t)
     assert(hasAssignableElements!(Nullable!int));
     assert(hasSwappableElements!(Nullable!int));
     assert(hasLvalueElements!(Nullable!int));
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=23640
+@safe pure nothrow unittest
+{
+    import std.algorithm.comparison : equal;
+    import std.range : only;
+    import std.range.primitives : hasLength, hasSlicing,
+        isRandomAccessRange;
+    static immutable struct S { int[] array; }
+    auto value = S([42]);
+    alias ImmutableNullable = immutable Nullable!S;
+    auto a = ImmutableNullable(value)[];
+    alias Range = typeof(a);
+    assert(isRandomAccessRange!Range);
+    assert(hasLength!Range);
+    assert(hasSlicing!Range);
+    assert(!a.empty);
+    assert(a.front == value);
+    assert(a.back == value);
+    assert(a[0] == value);
+    assert(a.equal(only(value)));
+    assert(a[0 .. $].equal(only(value)));
+    Range b = a.save();
+    assert(!b.empty);
+    b.popFront();
+    assert(!a.empty);
+    assert(b.empty);
 }
 
 /**
