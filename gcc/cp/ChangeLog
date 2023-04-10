@@ -1,3 +1,8 @@
+2023-04-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (coro_rewrite_function_body): Ensure that added
+	bind expressions have scope blocks.
+
 2023-04-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/107484
