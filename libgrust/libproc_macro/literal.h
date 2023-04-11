@@ -24,6 +24,8 @@
 #define LITERAL_H
 
 #include <cstdint>
+#include <string>
+#include <vector>
 
 namespace Literal {
 enum UnsignedTag
@@ -157,6 +159,35 @@ struct Literal
 {
   LiteralTag tag;
   LiteralPayload payload;
+
+public:
+  Literal clone () const;
+
+  static Literal make_u8 (std::uint8_t value, bool suffixed = false);
+  static Literal make_u16 (std::uint16_t value, bool suffixed = false);
+  static Literal make_u32 (std::uint32_t value, bool suffixed = false);
+  static Literal make_u64 (std::uint64_t value, bool suffixed = false);
+
+  static Literal make_i8 (std::int8_t value, bool suffixed = false);
+  static Literal make_i16 (std::int16_t value, bool suffixed = false);
+  static Literal make_i32 (std::int32_t value, bool suffixed = false);
+  static Literal make_i64 (std::int64_t value, bool suffixed = false);
+
+  static Literal make_string (const std::string &str);
+  static Literal make_string (const unsigned char *str, std::uint64_t len);
+  static Literal make_byte_string (const std::vector<std::uint8_t> &vec);
+  static Literal make_byte_string (const std::uint8_t *bytes,
+				   std::uint64_t len);
+
+  static Literal make_f32 (float value, bool suffixed = false);
+  static Literal make_f64 (double value, bool suffixed = false);
+
+  static Literal make_char (std::uint32_t ch);
+  static Literal make_usize (std::uint64_t value, bool suffixed = false);
+  static Literal make_isize (std::int64_t value, bool suffixed = false);
+
+  static Literal make_unsigned (UnsignedSuffixPayload p);
+  static Literal make_signed (SignedSuffixPayload p);
 };
 
 extern "C" {
