@@ -21,9 +21,8 @@ rm -rf autom4te.cache
 
 # libtoolize
 rm -f aclocal.m4
-# aclocal -I . -I config -I ../config
-aclocal -I . -I ../config
-autoreconf -I . -I ../config
+aclocal -I .. -I ../config
+autoreconf -I .. -I ../config
 automake --include-deps
 
 rm -rf autom4te.cache
