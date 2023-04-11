@@ -1,3 +1,26 @@
+2023-04-10   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/70243
+	* gcc.target/powerpc/pr70243.c: New test.
+
+2023-04-10  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -mamx-complex.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/amx-check.h: Add cpu check for AMX-COMPLEX.
+	* gcc.target/i386/amx-helper.h: Add amx-complex support.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/sse-12.c: Add -mamx-complex.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add amx-complex.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* lib/target-supports.exp (check_effective_target_amx_complex): New.
+	* gcc.target/i386/amxcomplex-asmatt-1.c: New test.
+	* gcc.target/i386/amxcomplex-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxcomplex-cmmimfp16ps-2.c: Ditto.
+	* gcc.target/i386/amxcomplex-cmmrlfp16ps-2.c: Ditto.
+
 2023-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/109392

@@ -1,3 +1,39 @@
+2023-04-10   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/70243
+	* config/rs6000/vsx.md (vsx_fmav4sf4): Do not generate vmaddfp.
+	(vsx_nfmsv4sf4): Do not generate vnmsubfp.
+
+2023-04-10  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386.h (PTA_GRANITERAPIDS): Add PTA_AMX_COMPLEX.
+
+2023-04-10  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Detect AMX-COMPLEX.
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_AMX_COMPLEX_SET,
+	OPTION_MASK_ISA2_AMX_COMPLEX_UNSET): New.
+	(ix86_handle_option): Handle -mamx-complex.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_AMX_COMPLEX.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for
+	amx-complex.
+	* config.gcc: Add amxcomplexintrin.h.
+	* config/i386/cpuid.h (bit_AMX_COMPLEX): New.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Define
+	__AMX_COMPLEX__.
+	* config/i386/i386-isa.def (AMX_COMPLEX): Add DEF_PTA(AMX_COMPLEX).
+	* config/i386/i386-options.cc (ix86_valid_target_attribute_inner_p):
+	Handle amx-complex.
+	* config/i386/i386.opt: Add option -mamx-complex.
+	* config/i386/immintrin.h: Include amxcomplexintrin.h.
+	* doc/extend.texi: Document amx-complex.
+	* doc/invoke.texi: Document -mamx-complex.
+	* doc/sourcebuild.texi: Document target amx-complex.
+	* config/i386/amxcomplexintrin.h: New file.
+
 2023-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/109392
