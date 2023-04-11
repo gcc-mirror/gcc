@@ -1,3 +1,13 @@
+2023-04-13  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/108888
+	* gcc.dg/vect/vect-simd-clone-16.c: Make simd clone inbranch only.
+	* gcc.dg/vect/vect-simd-clone-17.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-18.c: Likewise.
+
 2023-03-27  Frederik Harwath  <frederik@codesourcery.com>
 
 	* c-c++-common/gomp/loop-transforms/unroll-inner-1.c: New test.

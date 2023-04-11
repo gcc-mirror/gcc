@@ -1,3 +1,11 @@
+2023-04-13  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/108888
+	* tree-if-conv.cc (predicate_statements): Fix gimple call check.
+
 2023-04-03  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (one_cmpl<mode>2<exec>): New.
