@@ -111,6 +111,10 @@ package Ghost is
    --  Determine whether arbitrary node N denotes an assignment statement whose
    --  target is a Ghost entity.
 
+   function Is_Ghost_Attribute_Reference (N : Node_Id) return Boolean;
+   --  Determine whether arbitrary node N denotes an attribute reference which
+   --  denotes a Ghost attribute.
+
    function Is_Ghost_Declaration (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes a declaration which defines
    --  a Ghost entity.

@@ -41,6 +41,7 @@ with Exp_Dist;       use Exp_Dist;
 with Exp_Util;       use Exp_Util;
 with Expander;       use Expander;
 with Freeze;         use Freeze;
+with Ghost;          use Ghost;
 with Gnatvsn;        use Gnatvsn;
 with Itypes;         use Itypes;
 with Lib;            use Lib;
@@ -11066,6 +11067,12 @@ package body Sem_Attr is
 
       if Is_Universal_Numeric_Type (Etype (N)) then
          Set_Etype (N, Typ);
+      end if;
+
+      --  A Ghost attribute must appear in a specific context
+
+      if Is_Ghost_Attribute_Reference (N) then
+         Check_Ghost_Context (Empty, N);
       end if;
 
       --  Remaining processing depends on attribute
