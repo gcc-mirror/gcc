@@ -33,6 +33,12 @@ struct Ident
   unsigned char *val;
   // Length in bytes
   std::uint64_t len;
+
+public:
+  Ident clone () const;
+  static Ident make_ident (std::string str, bool raw = false);
+  static Ident make_ident (const unsigned char *str, std::uint64_t len,
+			   bool raw = false);
 };
 
 extern "C" {
