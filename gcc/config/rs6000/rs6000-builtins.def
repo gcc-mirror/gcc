@@ -2687,19 +2687,19 @@
     VRLWNM altivec_vrlwnm {}
 
   const vsll __builtin_altivec_vsignextsb2d (vsc);
-    VSIGNEXTSB2D vsignextend_qi_v2di {}
+    VSIGNEXTSB2D vsx_sign_extend_v16qi_v2di {}
 
   const vsi __builtin_altivec_vsignextsb2w (vsc);
-    VSIGNEXTSB2W vsignextend_qi_v4si {}
+    VSIGNEXTSB2W vsx_sign_extend_v16qi_v4si {}
 
   const vsll __builtin_altivec_visgnextsh2d (vss);
-    VSIGNEXTSH2D vsignextend_hi_v2di {}
+    VSIGNEXTSH2D vsx_sign_extend_v8hi_v2di {}
 
   const vsi __builtin_altivec_vsignextsh2w (vss);
-    VSIGNEXTSH2W vsignextend_hi_v4si {}
+    VSIGNEXTSH2W vsx_sign_extend_v8hi_v4si {}
 
   const vsll __builtin_altivec_vsignextsw2d (vsi);
-    VSIGNEXTSW2D vsignextend_si_v2di {}
+    VSIGNEXTSW2D vsx_sign_extend_v4si_v2di {}
 
   const vsc __builtin_altivec_vslv (vsc, vsc);
     VSLV vslv {}
@@ -3440,7 +3440,7 @@
     VRLQNM altivec_vrlqnm {}
 
   const vsq __builtin_altivec_vsignext (vsll);
-    VSIGNEXTSD2Q vsignextend_v2di_v1ti {}
+    VSIGNEXTSD2Q vsx_sign_extend_v2di_v1ti {}
 
   const vsc __builtin_altivec_vsldb_v16qi (vsc, vsc, const int<3>);
     VSLDB_V16QI vsldb_v16qi {}

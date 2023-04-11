@@ -34,7 +34,12 @@ int main ()
   /* test sign extend byte to word */
   vec_arg_qi = (vector signed char) {1, 2, 3, 4, 5, 6, 7, 8,
 				     -1, -2, -3, -4, -5, -6, -7, -8};
+
+#ifdef __BIG_ENDIAN__
+  vec_expected_wi = (vector signed int) {4, 8, -4, -8};
+#else
   vec_expected_wi = (vector signed int) {1, 5, -1, -5};
+#endif
 
   vec_result_wi = vec_signexti (vec_arg_qi);
 
@@ -54,7 +59,12 @@ int main ()
   /* test sign extend byte to double */
   vec_arg_qi = (vector signed char){1, 2, 3, 4, 5, 6, 7, 8,
 				    -1, -2, -3, -4, -5, -6, -7, -8};
+
+#ifdef __BIG_ENDIAN__
+  vec_expected_di = (vector signed long long int){8, -8};
+#else
   vec_expected_di = (vector signed long long int){1, -1};
+#endif
 
   vec_result_di = vec_signextll(vec_arg_qi);
 
@@ -72,7 +82,12 @@ int main ()
 
   /* test sign extend short to word */
   vec_arg_hi = (vector signed short int){1, 2, 3, 4, -1, -2, -3, -4};
+
+#ifdef __BIG_ENDIAN__
+  vec_expected_wi = (vector signed int){2, 4, -2, -4};
+#else
   vec_expected_wi = (vector signed int){1, 3, -1, -3};
+#endif
 
   vec_result_wi = vec_signexti(vec_arg_hi);
 
@@ -90,7 +105,12 @@ int main ()
 
   /* test sign extend short to double word */
   vec_arg_hi = (vector signed short int ){1, 3, 5, 7,  -1, -3, -5, -7};
+
+#ifdef __BIG_ENDIAN__
+  vec_expected_di = (vector signed long long int){7, -7};
+#else
   vec_expected_di = (vector signed long long int){1, -1};
+#endif
 
   vec_result_di = vec_signextll(vec_arg_hi);
 
@@ -108,7 +128,12 @@ int main ()
 
   /* test sign extend word to double word */
   vec_arg_wi = (vector signed int ){1, 3, -1, -3};
+
+#ifdef __BIG_ENDIAN__
+  vec_expected_di = (vector signed long long int){3, -3};
+#else
   vec_expected_di = (vector signed long long int){1, -1};
+#endif
 
   vec_result_di = vec_signextll(vec_arg_wi);
 
