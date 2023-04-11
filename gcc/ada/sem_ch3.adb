@@ -3224,6 +3224,7 @@ package body Sem_Ch3 is
 
                if Ada_Version >= Ada_2022
                  and then Present (Aspect_Specifications (N))
+                 and then Expander_Active
                then
                   Build_Access_Subprogram_Wrapper (N);
                end if;
@@ -6915,16 +6916,7 @@ package body Sem_Ch3 is
       --  may be handled as a dispatching operation and erroneously registered
       --  in a dispatch table.
 
-      if not GNATprove_Mode then
-         Append_Freeze_Action (Id, New_Decl);
-
-      --  Under GNATprove mode there is no such problem but we do not declare
-      --  it in the freezing actions since they are not analyzed under this
-      --  mode.
-
-      else
-         Insert_After (Decl, New_Decl);
-      end if;
+      Append_Freeze_Action (Id, New_Decl);
 
       Set_Access_Subprogram_Wrapper (Designated_Type (Id), Subp);
       Build_Access_Subprogram_Wrapper_Body (Decl, New_Decl);
