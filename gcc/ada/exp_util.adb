@@ -1853,7 +1853,15 @@ package body Exp_Util is
 
       begin
          pragma Assert (Present (DIC_Expr));
-         Expr := New_Copy_Tree (DIC_Expr);
+
+         --  We need to preanalyze the expression itself inside a generic to
+         --  be able to capture global references present in it.
+
+         if Inside_A_Generic then
+            Expr := DIC_Expr;
+         else
+            Expr := New_Copy_Tree (DIC_Expr);
+         end if;
 
          --  Perform the following substitution:
 
@@ -3111,7 +3119,14 @@ package body Exp_Util is
                   return;
                end if;
 
-               Expr := New_Copy_Tree (Prag_Expr);
+               --  We need to preanalyze the expression itself inside a generic
+               --  to be able to capture global references present in it.
+
+               if Inside_A_Generic then
+                  Expr := Prag_Expr;
+               else
+                  Expr := New_Copy_Tree (Prag_Expr);
+               end if;
 
                --  Substitute all references to type T with references to the
                --  _object formal parameter.
