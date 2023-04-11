@@ -1,5 +1,5 @@
 /* { dg-do compile { target { riscv64*-*-* } } } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -march=rv32i -mabi=ilp32" } */
 
 unsigned long
 foo2 (unsigned long a)
@@ -8,7 +8,7 @@ foo2 (unsigned long a)
 }
 
 /* { dg-final { scan-assembler-times "slli\t" 1 } } */
-/* { dg-final { scan-assembler-times "srli\t" 1 } } */
+/* { dg-final { scan-assembler-not "srli\t" } } */
 /* { dg-final { scan-assembler-not "\tli\t" } } */
 /* { dg-final { scan-assembler-not "addi\t" } } */
 /* { dg-final { scan-assembler-not "and\t" } } */
