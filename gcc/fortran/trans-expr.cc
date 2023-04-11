@@ -7800,6 +7800,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   */
   if (flag_f2c && sym->ts.type == BT_REAL
       && sym->ts.kind == gfc_default_real_kind
+      && !sym->attr.pointer
+      && !sym->attr.allocatable
       && !sym->attr.always_explicit)
     se->expr = fold_convert (gfc_get_real_type (sym->ts.kind), se->expr);
 

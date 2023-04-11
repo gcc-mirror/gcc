@@ -702,7 +702,8 @@ resolve_entries (gfc_namespace *ns)
   gfc_code *c;
   gfc_symbol *proc;
   gfc_entry_list *el;
-  char name[GFC_MAX_SYMBOL_LEN + 1];
+  /* Provide sufficient space to hold "master.%d.%s".  */
+  char name[GFC_MAX_SYMBOL_LEN + 1 + 18];
   static int master_count = 0;
 
   if (ns->proc_name == NULL)
@@ -827,6 +828,9 @@ resolve_entries (gfc_namespace *ns)
 			    "entries returning variables of different "
 			    "string lengths", ns->entries->sym->name,
 			    &ns->entries->sym->declared_at);
+	  else if (el->sym->result->attr.allocatable
+		   != ns->entries->sym->result->attr.allocatable)
+	    break;
 	}
 
       if (el == NULL)
@@ -838,6 +842,8 @@ resolve_entries (gfc_namespace *ns)
 	    gfc_set_array_spec (proc, gfc_copy_array_spec (sym->as), NULL);
 	  if (sym->attr.pointer)
 	    gfc_add_pointer (&proc->attr, NULL);
+	  if (sym->attr.allocatable)
+	    gfc_add_allocatable (&proc->attr, NULL);
 	}
       else
 	{
@@ -866,6 +872,17 @@ resolve_entries (gfc_namespace *ns)
 			       ns->entries->sym->name, &sym->declared_at);
 		  else
 		    gfc_error ("ENTRY result %s cannot be a POINTER in "
+			       "FUNCTION %s at %L", sym->name,
+			       ns->entries->sym->name, &sym->declared_at);
+		}
+	      else if (sym->attr.allocatable)
+		{
+		  if (el == ns->entries)
+		    gfc_error ("FUNCTION result %s cannot be ALLOCATABLE in "
+			       "FUNCTION %s at %L", sym->name,
+			       ns->entries->sym->name, &sym->declared_at);
+		  else
+		    gfc_error ("ENTRY result %s cannot be ALLOCATABLE in "
 			       "FUNCTION %s at %L", sym->name,
 			       ns->entries->sym->name, &sym->declared_at);
 		}
