@@ -93,7 +93,9 @@ static bitmap need_eh_cleanup;
 static bitmap need_ab_cleanup;
 
 /* STMT is a statement that may write into memory.  Analyze it and
-   initialize WRITE to describe how STMT affects memory.
+   initialize WRITE to describe how STMT affects memory.  When
+   MAY_DEF_OK is true then the function initializes WRITE to what
+   the stmt may define.
 
    Return TRUE if the statement was analyzed, FALSE otherwise.
 
@@ -101,7 +103,7 @@ static bitmap need_ab_cleanup;
    can be achieved by analyzing more statements.  */
 
 static bool
-initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write)
+initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write, bool may_def_ok = false)
 {
   /* It's advantageous to handle certain mem* functions.  */
   if (gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
@@ -148,7 +150,8 @@ initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write)
     }
   else if (tree lhs = gimple_get_lhs (stmt))
     {
-      if (TREE_CODE (lhs) != SSA_NAME)
+      if (TREE_CODE (lhs) != SSA_NAME
+	  && (may_def_ok || !stmt_could_throw_p (cfun, stmt)))
 	{
 	  ao_ref_init (write, lhs);
 	  return true;
@@ -1293,8 +1296,10 @@ dse_optimize_stmt (function *fun, gimple_stmt_iterator *gsi, sbitmap live_bytes)
 
   ao_ref ref;
   /* If this is not a store we can still remove dead call using
-     modref summary.  */
-  if (!initialize_ao_ref_for_dse (stmt, &ref))
+     modref summary.  Note we specifically allow ref to be initialized
+     to a conservative may-def since we are looking for followup stores
+     to kill all of it.  */
+  if (!initialize_ao_ref_for_dse (stmt, &ref, true))
     {
       dse_optimize_call (gsi, live_bytes);
       return;
