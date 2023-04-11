@@ -1669,7 +1669,7 @@
   [(const_int 0)]
 {
   riscv_move_integer (operands[2], operands[0], INTVAL (operands[1]),
-		      <GPR:MODE>mode, TRUE);
+		      <GPR:MODE>mode);
   DONE;
 })
 
@@ -1678,11 +1678,11 @@
   [(set (match_operand:P 0 "register_operand")
 	(match_operand:P 1))
    (clobber (match_operand:P 2 "register_operand"))]
-  "riscv_split_symbol (operands[2], operands[1], MAX_MACHINE_MODE, NULL, TRUE)"
+  "riscv_split_symbol (operands[2], operands[1], MAX_MACHINE_MODE, NULL)"
   [(set (match_dup 0) (match_dup 3))]
 {
   riscv_split_symbol (operands[2], operands[1],
-		      MAX_MACHINE_MODE, &operands[3], TRUE);
+		      MAX_MACHINE_MODE, &operands[3]);
 })
 
 ;; Pretend to have the ability to load complex const_int in order to get
@@ -1699,7 +1699,7 @@
   [(const_int 0)]
 {
   riscv_move_integer (operands[0], operands[0], INTVAL (operands[1]),
-                      <MODE>mode, TRUE);
+                      <MODE>mode);
   DONE;
 })
 
