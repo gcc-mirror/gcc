@@ -27,17 +27,13 @@ extern "C" {
 Ident
 Ident__new (unsigned char *str, std::uint64_t len)
 {
-  unsigned char *val = new unsigned char[len];
-  std::memcpy (val, str, len);
-  return {false, val, len};
+  return Ident::make_ident (str, len);
 }
 
 Ident
 Ident__new_raw (unsigned char *str, std::uint64_t len)
 {
-  unsigned char *val = new unsigned char[len];
-  std::memcpy (val, str, len);
-  return {true, val, len};
+  return Ident::make_ident (str, len, true);
 }
 
 void
@@ -49,8 +45,30 @@ Ident__drop (Ident *ident)
 Ident
 Ident__clone (const Ident *ident)
 {
-  unsigned char *val = new unsigned char[ident->len];
-  std::memcpy (val, ident->val, ident->len);
-  return {ident->is_raw, val, ident->len};
+  return ident->clone ();
 }
+}
+
+Ident
+Ident::clone () const
+{
+  unsigned char *val = new unsigned char[this->len];
+  std::memcpy (val, this->val, this->len);
+  return {this->is_raw, val, this->len};
+}
+
+Ident
+Ident::make_ident (std::string str, bool raw)
+{
+  return Ident::make_ident (reinterpret_cast<const unsigned char *> (
+			      str.c_str ()),
+			    str.length (), raw);
+}
+
+Ident
+Ident::make_ident (const unsigned char *str, std::uint64_t len, bool raw)
+{
+  unsigned char *val = new unsigned char[len];
+  std::memcpy (val, str, len);
+  return {raw, val, len};
 }
