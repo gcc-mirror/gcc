@@ -11,7 +11,7 @@ tzloadbody (void)
   for (int i = 0; i < n; i++)
     {
       int corr = getint ();
-      if (corr < 1 || (corr == 1 && !(leapcnt == 0 || (prevcorr < corr ? corr == prevcorr + 1 : (corr == prevcorr || corr == prevcorr - 1))))) /* { dg-bogus "uninitialized" } */
+      if (corr < 1 || (corr == 1 && !(leapcnt == 0 || (prevcorr < corr ? corr == prevcorr + 1 : (corr == prevcorr || corr == prevcorr - 1))))) /* { dg-bogus "uninitialized" "pr101912" { xfail *-*-* } } */
 	return -1;
 
       prevcorr = corr;

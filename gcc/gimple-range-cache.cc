@@ -1218,7 +1218,9 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 	  fprintf (dump_file, "\n");
 	}
       // See if any equivalences can refine it.
-      if (m_oracle)
+      // PR 109462, like 108139 below, a one way equivalence introduced
+      // by a PHI node can also be through the definition side.  Disallow it.
+      if (m_oracle && !is_a<gphi *> (SSA_NAME_DEF_STMT (name)))
 	{
 	  tree equiv_name;
 	  relation_kind rel;
