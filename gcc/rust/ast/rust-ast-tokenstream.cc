@@ -155,6 +155,8 @@ void
 TokenStream::visit (Attribute &attrib)
 {
   tokens.push_back (Rust::Token::make (HASH, attrib.get_locus ()));
+  if (attrib.is_inner_attribute ())
+    tokens.push_back (Rust::Token::make (EXCLAM, Location ()));
   tokens.push_back (Rust::Token::make (LEFT_SQUARE, Location ()));
   visit (attrib.get_path ());
 
