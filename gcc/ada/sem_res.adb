@@ -6923,69 +6923,62 @@ package body Sem_Res is
          return;
       end if;
 
-      --  Create a transient scope if the resulting type requires it
+      --  Create a transient scope if the expander is active and the resulting
+      --  type requires it.
 
       --  There are several notable exceptions:
 
-      --  a) In init procs, the transient scope overhead is not needed, and is
-      --  even incorrect when the call is a nested initialization call for a
-      --  component whose expansion may generate adjust calls. However, if the
-      --  call is some other procedure call within an initialization procedure
-      --  (for example a call to Create_Task in the init_proc of the task
-      --  run-time record) a transient scope must be created around this call.
-
-      --  b) Enumeration literal pseudo-calls need no transient scope
-
-      --  c) Intrinsic subprograms (Unchecked_Conversion and source info
+      --  a) Intrinsic subprograms (Unchecked_Conversion and source info
       --  functions) do not use the secondary stack even though the return
       --  type may be unconstrained.
 
-      --  d) Calls to a build-in-place function, since such functions may
+      --  b) Subprograms that are ignored ghost entities do not return anything
+
+      --  c) Calls to a build-in-place function, since such functions may
       --  allocate their result directly in a target object, and cases where
       --  the result does get allocated in the secondary stack are checked for
       --  within the specialized Exp_Ch6 procedures for expanding those
       --  build-in-place calls.
 
-      --  e) Calls to inlinable expression functions do not use the secondary
+      --  d) Calls to inlinable expression functions do not use the secondary
       --  stack (since the call will be replaced by its returned object).
 
-      --  f) If the subprogram is marked Inline_Always, then even if it returns
+      --  e) If the subprogram is marked Inline, then even if it returns
       --  an unconstrained type the call does not require use of the secondary
       --  stack. However, inlining will only take place if the body to inline
       --  is already present. It may not be available if e.g. the subprogram is
       --  declared in a child instance.
 
-      --  g) If the subprogram is a static expression function and the call is
+      --  f) If the subprogram is a static expression function and the call is
       --  a static call (the actuals are all static expressions), then we never
       --  want to create a transient scope (this could occur in the case of a
       --  static string-returning call).
 
-      --  h) If the subprogram is an ignored ghost entity, because it does not
-      --  return anything.
+      --  g) If the call is the expression of a simple return statement that
+      --  returns on the same stack, since it will be handled as a tail call
+      --  by Expand_Simple_Function_Return.
 
-      --  i) If the call is the expression of a simple return statement, since
-      --  it will be handled as a tail call by Expand_Simple_Function_Return.
-
-      if Is_Inlined (Nam)
-        and then Has_Pragma_Inline (Nam)
-        and then Nkind (Unit_Declaration_Node (Nam)) = N_Subprogram_Declaration
-        and then Present (Body_To_Inline (Unit_Declaration_Node (Nam)))
-      then
-         null;
-
-      elsif Ekind (Nam) = E_Enumeration_Literal
-        or else Is_Build_In_Place_Function (Nam)
-        or else Is_Intrinsic_Subprogram (Nam)
-        or else Is_Inlinable_Expression_Function (Nam)
-        or else Is_Static_Function_Call (N)
-        or else Is_Ignored_Ghost_Entity (Nam)
-        or else Nkind (Parent (N)) = N_Simple_Return_Statement
-      then
-         null;
-
-      elsif Expander_Active
+      if Expander_Active
         and then Ekind (Nam) in E_Function | E_Subprogram_Type
         and then Requires_Transient_Scope (Etype (Nam))
+        and then not Is_Intrinsic_Subprogram (Nam)
+        and then not Is_Ignored_Ghost_Entity (Nam)
+        and then not Is_Build_In_Place_Function (Nam)
+        and then not Is_Inlinable_Expression_Function (Nam)
+        and then not (Is_Inlined (Nam)
+                       and then Has_Pragma_Inline (Nam)
+                       and then Nkind (Unit_Declaration_Node (Nam)) =
+                                                       N_Subprogram_Declaration
+                       and then
+                        Present (Body_To_Inline (Unit_Declaration_Node (Nam))))
+        and then not Is_Static_Function_Call (N)
+        and then not (Nkind (Parent (N)) = N_Simple_Return_Statement
+                       and then
+                         Needs_Secondary_Stack
+                           (Etype
+                             (Return_Applies_To
+                               (Return_Statement_Entity (Parent (N))))) =
+                         Needs_Secondary_Stack (Etype (Nam)))
       then
          Establish_Transient_Scope (N, Needs_Secondary_Stack (Etype (Nam)));
 
