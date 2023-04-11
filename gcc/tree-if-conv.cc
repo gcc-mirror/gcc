@@ -2641,8 +2641,9 @@ predicate_statements (loop_p loop)
 	      gimple_assign_set_rhs1 (stmt, ifc_temp_var (type, rhs, &gsi));
 	      update_stmt (stmt);
 	    }
-	  else if (gimple_plf (stmt, GF_PLF_2)
-		   && is_gimple_call (stmt))
+
+	  if (gimple_plf (gsi_stmt (gsi), GF_PLF_2)
+	      && is_gimple_call (gsi_stmt (gsi)))
 	    {
 	      /* Convert functions that have a SIMD clone to IFN_MASK_CALL.
 		 This will cause the vectorizer to match the "in branch"
