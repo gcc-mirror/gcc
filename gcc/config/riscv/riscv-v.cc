@@ -118,6 +118,17 @@ const_vec_all_same_in_range_p (rtx x, HOST_WIDE_INT minval,
 	  && IN_RANGE (INTVAL (elt), minval, maxval));
 }
 
+/* Emit a vlmax vsetvl instruction.  This should only be used when
+   optimization is disabled or after vsetvl insertion pass.  */
+void
+emit_hard_vlmax_vsetvl (machine_mode vmode, rtx vl)
+{
+  unsigned int sew = get_sew (vmode);
+  emit_insn (gen_vsetvl (Pmode, vl, RVV_VLMAX, gen_int_mode (sew, Pmode),
+			 gen_int_mode (get_vlmul (vmode), Pmode), const0_rtx,
+			 const0_rtx));
+}
+
 void
 emit_vlmax_vsetvl (machine_mode vmode, rtx vl)
 {
@@ -126,9 +137,7 @@ emit_vlmax_vsetvl (machine_mode vmode, rtx vl)
   unsigned int ratio = calculate_ratio (sew, vlmul);
 
   if (!optimize)
-    emit_insn (gen_vsetvl (Pmode, vl, RVV_VLMAX, gen_int_mode (sew, Pmode),
-			   gen_int_mode (get_vlmul (vmode), Pmode), const0_rtx,
-			   const0_rtx));
+    emit_hard_vlmax_vsetvl (vmode, vl);
   else
     emit_insn (gen_vlmax_avl (Pmode, vl, gen_int_mode (ratio, Pmode)));
 }

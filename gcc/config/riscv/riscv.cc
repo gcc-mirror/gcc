@@ -7066,6 +7066,77 @@ riscv_shamt_matches_mask_p (int shamt, HOST_WIDE_INT mask)
   return shamt == ctz_hwi (mask);
 }
 
+static HARD_REG_SET
+vector_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
+{
+  HARD_REG_SET zeroed_hardregs;
+  CLEAR_HARD_REG_SET (zeroed_hardregs);
+
+  /* Find a register to hold vl.  */
+  unsigned vl_regno = INVALID_REGNUM;
+  /* Skip the first GPR, otherwise the existing vl is kept due to the same
+     between vl and avl.  */
+  for (unsigned regno = GP_REG_FIRST + 1; regno <= GP_REG_LAST; regno++)
+    {
+      if (TEST_HARD_REG_BIT (need_zeroed_hardregs, regno))
+	{
+	  vl_regno = regno;
+	  break;
+	}
+    }
+
+  if (vl_regno > GP_REG_LAST)
+    sorry ("cannot allocate vl register for %qs on this target",
+	   "-fzero-call-used-regs");
+
+  /* Vector configurations need not be saved and restored here.  The
+     -fzero-call-used-regs=* option will zero all vector registers and
+     return.  So there's no vector operations between them.  */
+
+  bool emitted_vlmax_vsetvl = false;
+  rtx vl = gen_rtx_REG (Pmode, vl_regno); /* vl is VLMAX.  */
+  for (unsigned regno = V_REG_FIRST; regno <= V_REG_LAST; ++regno)
+    {
+      if (TEST_HARD_REG_BIT (need_zeroed_hardregs, regno))
+	{
+	  rtx target = regno_reg_rtx[regno];
+	  machine_mode mode = GET_MODE (target);
+	  poly_uint16 nunits = GET_MODE_NUNITS (mode);
+	  machine_mode mask_mode
+	    = riscv_vector::get_vector_mode (BImode, nunits).require ();
+
+	  if (!emitted_vlmax_vsetvl)
+	    {
+	      riscv_vector::emit_hard_vlmax_vsetvl (mode, vl);
+	      emitted_vlmax_vsetvl = true;
+	    }
+
+	  riscv_vector::emit_vlmax_op (code_for_pred_mov (mode), target,
+				       CONST0_RTX (mode), vl, mask_mode);
+
+	  SET_HARD_REG_BIT (zeroed_hardregs, regno);
+	}
+    }
+
+  return zeroed_hardregs;
+}
+
+/* Generate a sequence of instructions that zero registers specified by
+   NEED_ZEROED_HARDREGS.  Return the ZEROED_HARDREGS that are actually
+   zeroed.  */
+HARD_REG_SET
+riscv_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
+{
+  HARD_REG_SET zeroed_hardregs;
+  CLEAR_HARD_REG_SET (zeroed_hardregs);
+
+  if (TARGET_VECTOR)
+    zeroed_hardregs |= vector_zero_call_used_regs (need_zeroed_hardregs);
+
+  return zeroed_hardregs | default_zero_call_used_regs (need_zeroed_hardregs
+							& ~zeroed_hardregs);
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -7316,6 +7387,9 @@ riscv_shamt_matches_mask_p (int shamt, HOST_WIDE_INT mask)
 
 #undef TARGET_DWARF_POLY_INDETERMINATE_VALUE
 #define TARGET_DWARF_POLY_INDETERMINATE_VALUE riscv_dwarf_poly_indeterminate_value
+
+#undef TARGET_ZERO_CALL_USED_REGS
+#define TARGET_ZERO_CALL_USED_REGS riscv_zero_call_used_regs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
