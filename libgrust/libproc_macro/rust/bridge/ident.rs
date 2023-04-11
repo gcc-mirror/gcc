@@ -6,7 +6,7 @@ use std::fmt;
 extern "C" {
     fn Ident__new(string: *const c_uchar, len: u64) -> Ident;
     fn Ident__new_raw(string: *const c_uchar, len: u64) -> Ident;
-    fn Ident__drop(ident: *const Ident);
+    fn Ident__drop(ident: *mut Ident);
     fn Ident__clone(ident: *const Ident) -> Ident;
 }
 
@@ -38,7 +38,7 @@ impl Ident {
 
 impl Drop for Ident {
     fn drop(&mut self) {
-        unsafe { Ident__drop(self as *const Ident) }
+        unsafe { Ident__drop(self as *mut Ident) }
     }
 }
 
