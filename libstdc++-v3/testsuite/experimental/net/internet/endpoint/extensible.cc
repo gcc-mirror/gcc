@@ -11,8 +11,12 @@ using namespace std::experimental::net;
 void
 test_extensible()
 {
+#if __cplusplus >= 202002L
   static_assert(ip::tcp::endpoint().capacity() == sizeof(sockaddr_in6),
 		"ip::tcp::endpoint::capacity() can store a sockaddr_in6");
+#else
+  VERIFY( ip::tcp::endpoint().capacity() == sizeof(sockaddr_in6) );
+#endif
 
   ip::tcp::endpoint t1(ip::tcp::v4(), 22);
   VERIFY(t1.size() == sizeof(sockaddr_in));

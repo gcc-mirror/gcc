@@ -1512,9 +1512,14 @@ namespace ip
 
       // constructors:
 
-      constexpr
+      _GLIBCXX20_CONSTEXPR
       basic_endpoint() noexcept : _M_data()
-      { _M_data._M_v4.sin_family = protocol_type::v4().family(); }
+      {
+	_M_data._M_v4.sin_family = protocol_type::v4().family();
+	// If in_addr contains a union, make the correct member active:
+	if (std::__is_constant_evaluated())
+	  std::_Construct(&_M_data._M_v4.sin_addr.s_addr);
+      }
 
       _GLIBCXX20_CONSTEXPR
       basic_endpoint(const protocol_type& __proto,
@@ -1523,19 +1528,25 @@ namespace ip
       {
 	if (__proto == protocol_type::v4())
 	  {
-	    _M_data._M_v4.sin_family = __proto.family();
+	    _M_data._M_v4.sin_family = protocol_type::v4().family();
 	    _M_data._M_v4.sin_port = address_v4::_S_hton_16(__port_num);
+	    if (std::__is_constant_evaluated())
+	      std::_Construct(&_M_data._M_v4.sin_addr.s_addr);
 	  }
 	else if (__proto == protocol_type::v6())
 	  {
 	    std::_Construct(&_M_data._M_v6);
 	    _M_data._M_v6.sin6_family = __proto.family();
 	    _M_data._M_v6.sin6_port = address_v4::_S_hton_16(__port_num);
+	    _M_data._M_v6.sin6_scope_id = 0;
+	    if (std::__is_constant_evaluated())
+	      std::_Construct(&_M_data._M_v6.sin6_addr.s6_addr);
 	  }
 	else
 	  {
 	    __glibcxx_assert(__proto == protocol_type::v4()
 			       || __proto == protocol_type::v6());
+
 	  }
       }
 
@@ -1548,13 +1559,16 @@ namespace ip
 	  {
 	    _M_data._M_v4.sin_family = protocol_type::v4().family();
 	    _M_data._M_v4.sin_port = address_v4::_S_hton_16(__port_num);
-	    _M_data._M_v4.sin_addr.s_addr = __addr._M_v4._M_addr;
+	    std::_Construct(&_M_data._M_v4.sin_addr.s_addr,
+			    __addr._M_v4._M_addr);
 	  }
 	else
 	  {
 	    std::_Construct(&_M_data._M_v6);
 	    _M_data._M_v6.sin6_family = protocol_type::v6().family();
 	    _M_data._M_v6.sin6_port = address_v4::_S_hton_16(__port_num);
+	    if (std::__is_constant_evaluated())
+	      std::_Construct(&_M_data._M_v6.sin6_addr.s6_addr);
 	    uint8_t* __s6a = _M_data._M_v6.sin6_addr.s6_addr;
 	    for (int __i = 0; __i < 16; ++__i)
 	      __s6a[__i] = __addr._M_v6._M_bytes[__i];
