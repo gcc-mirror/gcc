@@ -188,6 +188,8 @@ public:
 
   static Literal make_unsigned (UnsignedSuffixPayload p);
   static Literal make_signed (SignedSuffixPayload p);
+
+  static void drop (Literal *lit);
 };
 
 extern "C" {
