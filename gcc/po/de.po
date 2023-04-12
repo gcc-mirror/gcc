@@ -8,10 +8,10 @@
 # Roland Illig <roland.illig@gmx.de>, 2015, 2017-2023.
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 13.1-b20230212\n"
+"Project-Id-Version: gcc 13.1-b20230409\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2023-04-04 17:04+0000\n"
-"PO-Revision-Date: 2023-03-28 10:20+0200\n"
+"PO-Revision-Date: 2023-04-12 20:15+0200\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -2732,8 +2732,7 @@ msgid "-fconstexpr-ops-limit=<number>\tSpecify maximum number of constexpr opera
 msgstr "-fconstexpr-ops-limit=<Anzahl>\tHöchstzahl der constexpr-Operationen pro einzelner »constexpr« angeben."
 
 #: c-family/c.opt:1692
-#, fuzzy, no-c-format
-#| msgid "Enable certain features present drafts of C++ Contracts."
+#, no-c-format
 msgid "Enable certain features present in drafts of C++ Contracts."
 msgstr "Bestimmte Features aus aktuellen Entwürfen von C++-Verträgen einschalten."
 
@@ -3924,8 +3923,7 @@ msgid "turns on runtime subrange, array index and indirection via NIL pointer ch
 msgstr "schaltet Laufzeitüberprüfung für Teilabschnitte, Arrayindizes und NIL-Zeiger-Indirektion ein"
 
 #: m2/lang.opt:59
-#, fuzzy, no-c-format
-#| msgid "turns on runtime checking to check whether a CASE statement requires an ELSE clause when on was not specified"
+#, no-c-format
 msgid "turns on runtime checking to check whether a CASE statement requires an ELSE clause when one was not specified"
 msgstr "schaltet Laufzeitüberprüfung ein, ob eine CASE-Anweisung einen ELSE-Zweig benötigt, der jedoch nicht angegeben war"
 
@@ -3980,8 +3978,7 @@ msgid "allows opaque types to be implemented as any type (a GNU Modula-2 extensi
 msgstr "erlaubt, undurchlässige Typen durch beliebige Typen zu implementieren (eine GNU-Modula-2-Erweiterung)"
 
 #: m2/lang.opt:107
-#, fuzzy, no-c-format
-#| msgid "turns on runtime checking to check whether a floating point number is about to exceed range"
+#, no-c-format
 msgid "turns on runtime checking to check whether a floating point number will exceed range"
 msgstr "Laufzeitüberprüfung für Gleitkommazahlen, die den Gültigkeitsbereich verlassen, einschalten"
 
@@ -4001,10 +3998,9 @@ msgid "use ISO dialect of Modula-2"
 msgstr "ISO-Dialekt von Modula-2 verwenden"
 
 #: m2/lang.opt:123
-#, fuzzy, no-c-format
-#| msgid "specify the library order, currently legal entries include: log, min, pim, iso or their directory name equivalent m2log, m2min, m2pim, m2iso."
+#, no-c-format
 msgid "specify the library order, the libraries maybe specified by a comma separated abbreviation: log,min,pim,iso or by directory names: m2log,m2min,m2pim,m2iso."
-msgstr "Reihenfolge der Bibliotheken angeben, derzeit erlaubte Einträge sind: log, min, pim, iso oder deren entsprechende Verzeichnisnamen m2log, m2min, m2pim, m2iso."
+msgstr "Reihenfolge der Bibliotheken kommagetrennt angeben, erlaubte Einträge sind: log,min,pim,iso oder deren entsprechende Verzeichnisnamen m2log,m2min,m2pim,m2iso."
 
 #: m2/lang.opt:127
 #, no-c-format
@@ -4024,19 +4020,17 @@ msgstr "Fehlermeldungen erzeugen, die Schlüsselwörter in Kleinbuchstaben ausge
 #: m2/lang.opt:139
 #, no-c-format
 msgid "specify the module mangled prefix name for all modules in the following include paths"
-msgstr ""
+msgstr "den gemangelten Präfix für Modulnamen angeben, für alle Module in den folgenden Includepfaden"
 
 #: m2/lang.opt:147
-#, fuzzy, no-c-format
-#| msgid "insert plugin to identify runtime errors at compiletime (default on)"
+#, no-c-format
 msgid "insert plugin to identify runtime errors at compiletime"
-msgstr "Plugin aktivieren, das Laufzeitfehler bereits zur Compilezeit erkennt (Vorgabe: ein)"
+msgstr "Plugin aktivieren, das Laufzeitfehler bereits zur Compilezeit erkennt"
 
 #: m2/lang.opt:151
-#, fuzzy, no-c-format
-#| msgid "string expected for mangled name"
+#, no-c-format
 msgid "specify the module mangled prefix name"
-msgstr "Zeichenkette für gemangelten Namen erwartet"
+msgstr "Präfixname für gemangelte Modulnamen angeben"
 
 #: m2/lang.opt:155
 #, no-c-format
@@ -4109,8 +4103,7 @@ msgid "specify the list of runtime modules and their initialization order"
 msgstr "Liste der Laufzeitmodule und deren Initialisierungsreihenfolge angeben"
 
 #: m2/lang.opt:215
-#, fuzzy, no-c-format
-#| msgid "the modules initialization order is dynamically determined by M2RTS and application dependancies"
+#, no-c-format
 msgid "the modules initialization order is dynamically determined by M2RTS and application dependencies"
 msgstr "die Initialisierungsreihenfolge der Module wird dynamisch von M2RTS und den Anwendungsabhängigkeiten festgelegt"
 
@@ -4170,8 +4163,7 @@ msgid "turns on all division and modulus by zero checking for ordinal values"
 msgstr "alle Überprüfungen für Division und Modulus durch 0 für ordinale Werte einschalten"
 
 #: m2/lang.opt:267
-#, fuzzy, no-c-format
-#| msgid "turns on runtime checking to check whether a whole number is about to exceed range"
+#, no-c-format
 msgid "turns on runtime checking to check whether a whole number will exceed range"
 msgstr "Laufzeitüberprüfung einschalten für ganze Zahlen, die ihren Wertebereich verlassen"
 
@@ -4558,7 +4550,7 @@ msgstr "Zustände, die ähnlich genug sind, während der Analyse zusammenfassen.
 #: analyzer/analyzer.opt:267
 #, no-c-format
 msgid "Stop exploring an execution path after certain diagnostics."
-msgstr ""
+msgstr "Untersuchen eines Ausführungspfades bei bestimmten Meldungen stoppen."
 
 #: analyzer/analyzer.opt:271
 #, no-c-format
@@ -6959,7 +6951,7 @@ msgstr "Durchlauf für Skalar-nach-Vektor-Optimierung ausschalten, der 64-Bit-Ga
 #: config/i386/i386.opt:604
 #, no-c-format
 msgid "The maximum number of use and def visits when discovering a STV chain before the discovery is aborted."
-msgstr ""
+msgstr "Die Höchstanzahl der use- und def-Besuche beim Auskundschaften einer STV-Kette, bevor das Auskundschaften abgebrochen wird."
 
 #: config/i386/i386.opt:608
 #, no-c-format
@@ -13053,7 +13045,7 @@ msgstr "Warnen, wenn Zeigerumwandlungen die Ausrichtung vergrößern."
 #: common.opt:587
 #, no-c-format
 msgid "Complain when a command-line option is valid, but not applicable to the current front end."
-msgstr ""
+msgstr "Meckern, wenn eine Kommandozeilenoption gültig ist, aber nicht zum aktuellen Frontend gehört."
 
 #: common.opt:591
 #, no-c-format
@@ -13548,7 +13540,7 @@ msgstr "Interne Konsistenzprüfungen durchführen."
 #: common.opt:1213
 #, no-c-format
 msgid "For -f*-prefix-map= options compare canonicalized pathnames rather than just strings."
-msgstr ""
+msgstr "Bei den Optionen der Form »-f*-prefix-map=« die kanonischen Pfadnamen statt der angegebenen Zeichenketten vergleichen."
 
 #: common.opt:1217
 #, no-c-format
@@ -15653,7 +15645,7 @@ msgstr "Rückruffunktionen statt inline-Code generieren, wenn innerhalb der Funk
 #: params.opt:55
 #, no-c-format
 msgid "Prefix calls to memcpy, memset and memmove with __asan_ or __hwasan_ for -fsanitize=kernel-address or -fsanitize=kernel-hwaddress."
-msgstr ""
+msgstr "Aufrufen von memcpy, memset und memmove ein __asan_ oder __hwasan_ voranstellen, für -fsanitize=kernel-address oder -fsanitize=kernel-hwaddress."
 
 #: params.opt:59
 #, no-c-format
@@ -16626,10 +16618,9 @@ msgid "Maximum depth of logical expression evaluation ranger will look through w
 msgstr "Maximale Tiefe der logischen Ausdrücke, die von der Bereichsanalyse erfasst werden, um ausgehende Bereiche zu evaluieren."
 
 #: params.opt:913
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to consider to unroll in a loop on average."
+#, no-c-format
 msgid "Maximum depth of instruction chains to consider for recomputation in the outgoing range calculator."
-msgstr "Die Höchstzahl der zum Abrollen von Schleifen im Mittel zu betrachtenden Befehle."
+msgstr "Die maximale Tiefe der Befehlsketten, die für die Neuberechnung der ausgehenden Wertebereiche berücksichtigt werden."
 
 #: params.opt:918
 #, no-c-format
@@ -17038,10 +17029,9 @@ msgstr "Fehler: »%s« kann nicht zum Schreiben geöffnet werden: %s\n"
 #. indicating what's gone wrong (also for DejaGnu, for pruning
 #. those messages).
 #: diagnostic-format-sarif.cc:1630
-#, fuzzy, c-format
-#| msgid "internal compiler error: "
+#, c-format
 msgid "Internal compiler error:\n"
-msgstr "interner Compiler-Fehler: "
+msgstr "Interner Compilerfehler:\n"
 
 #: diagnostic.cc:160
 #, c-format
@@ -17660,8 +17650,7 @@ msgid "    -w, --weight <w1,w2>                Set weights (float point values)\
 msgstr "    -w, --weight <Gewicht1,Gewicht2>    Gewichtung festlegen (Gleitkommazahlen)\n"
 
 #: gcov-tool.cc:188
-#, fuzzy, c-format
-#| msgid "Merge subcomand usage:"
+#, c-format
 msgid "Merge subcommand usage:"
 msgstr "Aufruf des Teilbefehls »merge«:"
 
@@ -17675,8 +17664,7 @@ msgstr ""
 "                                        mit Inhalt der Coverage-Datei zusammenführen\n"
 
 #: gcov-tool.cc:258
-#, fuzzy, c-format
-#| msgid "Merge-stream subcomand usage:"
+#, c-format
 msgid "Merge-stream subcommand usage:"
 msgstr "Aufruf des Teilbefehls »merge-stream«:"
 
@@ -17746,8 +17734,7 @@ msgid "    -t <float>, --hot_threshold <float> Set the threshold for hotness\n"
 msgstr "    -t <Gleitkomma>, --hot_threshold <Gleitkomma>  Schwellwert für Heißheit festlegen\n"
 
 #: gcov-tool.cc:510
-#, fuzzy, c-format
-#| msgid "Overlap subcomand usage:"
+#, c-format
 msgid "Overlap subcommand usage:"
 msgstr "Aufruf des Teilbefehls »overlap«:"
 
@@ -19773,10 +19760,9 @@ msgid "unsupported memory expression:"
 msgstr "nicht unterstützter Speicherausdruck:"
 
 #: config/riscv/riscv.cc:4378
-#, fuzzy, c-format
-#| msgid "invalid %%r operand"
+#, c-format
 msgid "invalid vector operand"
-msgstr "ungültiger %%r-Operand"
+msgstr "ungültiger Vektoroperand"
 
 #: config/rl78/rl78.cc:1998 config/rl78/rl78.cc:2084
 #, c-format
@@ -30057,10 +30043,9 @@ msgid "%<-fstack-clash-protection%> is not supported on targets where the stack 
 msgstr "%<-fstack-clash-protection%> wird auf Architekturen, deren Stapel von klein nach groß wächst, nicht unterstützt"
 
 #: toplev.cc:1583
-#, fuzzy, gcc-internal-format
-#| msgid "%<-fstack-check=%> and %<-fstack-clash_protection%> are mutually exclusive; disabling %<-fstack-check=%>"
+#, gcc-internal-format
 msgid "%<-fstack-check=%> and %<-fstack-clash-protection%> are mutually exclusive; disabling %<-fstack-check=%>"
-msgstr "%<-fstack-check=%> und %<-fstack-clash_protection%> schließen einander aus. %<-fstack-check=%> wird deaktiviert"
+msgstr "%<-fstack-check=%> und %<-fstack-clash-protection%> schließen einander aus. %<-fstack-check=%> wird deaktiviert"
 
 #: toplev.cc:1593
 #, gcc-internal-format
@@ -36424,7 +36409,7 @@ msgstr "%<-march=%s%>: unerwartete ISA-Zeichenkette am Ende: %qs"
 #: common/config/riscv/riscv-common.cc:1157
 #, gcc-internal-format
 msgid "%<-march=%s%>: z*inx conflicts with floating-point extensions"
-msgstr ""
+msgstr "%<-march=%s%>: z*inx ist mit Gleitkommaerweiterungen unverträglich"
 
 #: common/config/riscv/riscv-common.cc:1358
 #, gcc-internal-format
@@ -38671,8 +38656,7 @@ msgid "BPF CO-RE does not support LTO"
 msgstr "BPF CO-RE unterstützt LTO nicht"
 
 #: config/bpf/bpf.cc:260
-#, fuzzy, gcc-internal-format
-#| msgid "%<-fstack-protector%> does not work  on this architecture"
+#, gcc-internal-format
 msgid "%<-fstack-protector%> does not work on this architecture"
 msgstr "%<-fstack-protector%> funktioniert auf dieser Architektur nicht"
 
@@ -50991,10 +50975,9 @@ msgid "cast from %qT is not allowed"
 msgstr "Cast von %qT ist nicht erlaubt"
 
 #: cp/constexpr.cc:7694
-#, fuzzy, gcc-internal-format
-#| msgid "%qs is not a constant expression because %qT is volatile"
+#, gcc-internal-format
 msgid "%qE is not a constant expression when the class %qT is still incomplete"
-msgstr "%qs ist kein konstanter Ausdruck, da %qT %<volatile%> ist"
+msgstr "%qE ist kein konstanter Ausdruck, solange die Klasse %qT noch unvollständig ist"
 
 #: cp/constexpr.cc:7728 rust/backend/rust-constexpr.cc:2504
 #, gcc-internal-format
@@ -51502,10 +51485,9 @@ msgid "  %qT is not a reference that binds to a temporary object of type %qT (co
 msgstr "  %qT ist keine Referenz, die mit einem temporären Objekt vom Typ %qT verbunden ist (copy-initialization)"
 
 #: cp/constraint.cc:3801
-#, fuzzy, gcc-internal-format
-#| msgid "  %qT is not derived from %qT"
+#, gcc-internal-format
 msgid "  %qD is not deducible from %qT"
-msgstr " %qT ist nicht vom Typ %qT abgeleitet"
+msgstr "  %qD lässt sich nicht vom Typ %qT schlussfolgern"
 
 #: cp/constraint.cc:3828
 #, gcc-internal-format
@@ -51619,22 +51601,19 @@ msgid "%<-fcontract-semantic=%> level must be default, audit, or axiom"
 msgstr "%<-fcontract-semantic=%>-Stufe muss default, audit oder axiom sein"
 
 #: cp/contracts.cc:643
-#, fuzzy, gcc-internal-format
-#| msgid "%s does not return a value to test"
+#, gcc-internal-format
 msgid "constructor does not return a value to test"
-msgstr "»%s« gibt keinen Wert zurück, der getestet werden könnte"
+msgstr "Konstruktor gibt keinen Wert zurück, der getestet werden könnte"
 
 #: cp/contracts.cc:645
-#, fuzzy, gcc-internal-format
-#| msgid "%s does not return a value to test"
+#, gcc-internal-format
 msgid "destructor does not return a value to test"
-msgstr "»%s« gibt keinen Wert zurück, der getestet werden könnte"
+msgstr "Destruktor gibt keinen Wert zurück, der getestet werden könnte"
 
 #: cp/contracts.cc:646
-#, fuzzy, gcc-internal-format
-#| msgid "%s does not return a value to test"
+#, gcc-internal-format
 msgid "function does not return a value to test"
-msgstr "»%s« gibt keinen Wert zurück, der getestet werden könnte"
+msgstr "Funktion gibt keinen Wert zurück, der getestet werden könnte"
 
 #: cp/contracts.cc:1144
 #, gcc-internal-format
@@ -52761,10 +52740,9 @@ msgid "%<typename %T::%D%> names %q#T, which is not a class template"
 msgstr "%<typename %T::%D%> benennt %q#T, was kein Klassentemplate ist"
 
 #: cp/decl.cc:4364
-#, fuzzy, gcc-internal-format
-#| msgid "%<typename %T::%D%> names %q#T, which is not a type"
+#, gcc-internal-format
 msgid "%<typename %T::%D%> names %q#D, which is not a type"
-msgstr "%<typename %T::%D%> benennt %q#T, was kein Typ ist"
+msgstr "%<typename %T::%D%> benennt %q#D, das ist jedoch kein Typ"
 
 #: cp/decl.cc:4438
 #, gcc-internal-format
@@ -54056,10 +54034,9 @@ msgid "%qs specified with %qT"
 msgstr "%qs mit %qT angegeben"
 
 #: cp/decl.cc:12471
-#, fuzzy, gcc-internal-format
-#| msgid "%qs specified with %qT"
+#, gcc-internal-format
 msgid "%qs specified with %qD"
-msgstr "%qs mit %qT angegeben"
+msgstr "%qs mit %qD angegeben"
 
 #: cp/decl.cc:12483
 #, gcc-internal-format
@@ -60651,10 +60628,9 @@ msgid "use %<template<>%> for an explicit specialization"
 msgstr "verwenden Sie %<template<>%> für eine explizite Spezialisierung"
 
 #: cp/pt.cc:6160
-#, fuzzy, gcc-internal-format
-#| msgid "redeclaration %q#D with different constraints"
+#, gcc-internal-format
 msgid "redeclaration of %qD with different constraints"
-msgstr "Redeklaration %q#D mit unterschiedlichen Constraints"
+msgstr "Redeklaration von %qD mit unterschiedlichen Einschränkungen"
 
 #: cp/pt.cc:6307
 #, gcc-internal-format
@@ -60706,10 +60682,9 @@ msgid "original declaration appeared here"
 msgstr "ursprüngliche Deklaration trat hier auf"
 
 #: cp/pt.cc:6411
-#, fuzzy, gcc-internal-format
-#| msgid "redeclaration %q#D with different constraints"
+#, gcc-internal-format
 msgid "redeclaration of %q#D with different constraints"
-msgstr "Redeklaration %q#D mit unterschiedlichen Constraints"
+msgstr "Redeklaration von %q#D mit unterschiedlichen Einschränkungen"
 
 #: cp/pt.cc:6770 cp/pt.cc:6839
 #, gcc-internal-format
@@ -60832,10 +60807,9 @@ msgid "  template argument %qE does not match %qE"
 msgstr " Template-Argument %qE passt nicht zu %qE"
 
 #: cp/pt.cc:7150
-#, fuzzy, gcc-internal-format
-#| msgid "%qE is not a valid template argument of type %qT because %qE is not a variable"
+#, gcc-internal-format
 msgid "%qE is not a valid template argument of type %qT because %qE is not a variable or function"
-msgstr "%qE ist kein gültiges Templateargument für Typ %qT, weil %qE keine Variable ist"
+msgstr "%qE ist kein gültiges Templateargument vom Typ %qT, weil %qE weder eine Variable noch eine Funktion ist"
 
 #: cp/pt.cc:7159
 #, gcc-internal-format
@@ -62297,10 +62271,9 @@ msgid "%<__builtin_is_corresponding_member%> argument is not pointer to member"
 msgstr "Argument von %<__builtin_is_corresponding_member%> muss ein Zeiger auf Member sein"
 
 #: cp/semantics.cc:12222
-#, fuzzy, gcc-internal-format
-#| msgid "%qE is not a class template"
+#, gcc-internal-format
 msgid "%qD is not a class or alias template"
-msgstr "%qE ist kein Klassentemplate"
+msgstr "%qD ist weder ein Klassen- noch ein Alias-Template"
 
 #: cp/semantics.cc:12433
 #, gcc-internal-format
@@ -69599,10 +69572,9 @@ msgid "do_simplify(): Too many args for intrinsic"
 msgstr "do_simplify(): Too many args for intrinsic"
 
 #: fortran/intrinsic.cc:4716
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "non-constant initialization expression at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot simplify expression at %L"
-msgstr "Nicht-konstanter Initialisierungsausdruck bei %L"
+msgstr "Ausdruck bei %L kann nicht vereinfacht werden"
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79596
 #: fortran/intrinsic.cc:4749
@@ -71845,8 +71817,7 @@ msgid "Unknown directive at %L"
 msgstr "Unbekannte Direktive bei %L"
 
 #: fortran/openmp.cc:1531
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Invalid combined or composit directive at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "Invalid combined or composite directive at %L"
 msgstr "Ungültige kombinierte oder zusammengesetzte Direktive bei %L"
 
@@ -76393,10 +76364,9 @@ msgid "%s between the MODULE PROCEDURE declaration in MODULE %qs and the declara
 msgstr "%s zwischen der MODULE-PROCEDURE-Deklaration in Modul %qs und der Deklaration bei %L in (SUB)MODULE %qs"
 
 #: fortran/resolve.cc:13904
-#, fuzzy, gcc-internal-format
-#| msgid "Interface %qs at %L must be explicit"
+#, gcc-internal-format
 msgid "Interface of %qs at %L must be explicit"
-msgstr "Schnittstelle %qs bei %L muss explizit sein"
+msgstr "Schnittstelle von %qs bei %L muss explizit sein"
 
 #: fortran/resolve.cc:13974
 #, gcc-internal-format
@@ -76416,7 +76386,7 @@ msgstr "Argument der FINAL-Prozedur bei %L muss Typ %qs haben"
 #: fortran/resolve.cc:13999
 #, gcc-internal-format, gfc-internal-format
 msgid "FINAL procedure at %L with assumed rank argument must be the only finalizer with the same kind/type (F2018: C790)"
-msgstr ""
+msgstr "FINAL-Prozedur bei %L mit angenommenem Rangargument muss der einzige Finalisierer mit derselben Art/Typ sein (F2018: C790)"
 
 #: fortran/resolve.cc:14016
 #, gcc-internal-format, gfc-internal-format
@@ -76449,10 +76419,9 @@ msgid "FINAL procedure %qs declared at %L has the same rank (%d) as %qs"
 msgstr "Bei %2$L deklarierte FINAL-Prozedur %1$qs hat denselben Rang (%3$d) wie %4$qs"
 
 #: fortran/resolve.cc:14104
-#, fuzzy, gcc-internal-format
-#| msgid "Only array FINAL procedures declared for derived type %qs defined at %L, suggest also scalar one"
+#, gcc-internal-format
 msgid "Only array FINAL procedures declared for derived type %qs defined at %L, suggest also scalar one unless an assumed rank finalizer has been declared"
-msgstr "Bei %2$L wurde nur FINAL-Feldprozedur für abgeleiteten Typ %1$qs definiert, skalare wird ebenfalls empfohlen"
+msgstr "Für den abgeleiteten Typ %qs, der bei %L definiert ist, sind ausschließlich Array-FINAL-Prozeduren deklariert. Empfohlen ist auch eine skalare, es sei denn, ein Finalisierer mit angenommenem Rang wurde deklariert"
 
 #: fortran/resolve.cc:14145
 #, gcc-internal-format
@@ -76605,10 +76574,9 @@ msgid "Character length of component %qs needs to be a constant specification ex
 msgstr "Zeichenlänge der Komponente %qs muss ein konstanter Spezifikationsausdruck bei %L sein"
 
 #: fortran/resolve.cc:15164
-#, fuzzy, gcc-internal-format
-#| msgid "Expression at %L must be of INTEGER type, found %s"
+#, gcc-internal-format
 msgid "Character length expression of component %qs at %L must be of INTEGER type, found %s"
-msgstr "Ausdruck bei %L muss INTEGER-Typ haben, %s gefunden"
+msgstr "Ausdruck für Zeichenlänge der Komponente %qs bei %L muss vom Typ INTEGER sein, nicht %s"
 
 #: fortran/resolve.cc:15177
 #, gcc-internal-format
@@ -78060,7 +78028,7 @@ msgstr "Überlappende ungleiche Initialisierungen in EQUIVALENCE bei %C"
 #: fortran/trans-array.cc:2318 fortran/trans-expr.cc:9462
 #, gcc-internal-format, gfc-internal-format
 msgid "The structure constructor at %C has been finalized. This feature was removed by f08/0011. Use -std=f2018 or -std=gnu to eliminate the finalization."
-msgstr ""
+msgstr "Der Strukturkonstruktor bei %C wurde finalisiert. Dieses Feature wurde von f08/0011 entfernt. Verwenden Sie -std=f2018 oder -std=gnu, um die Finalisierung zu entfernen."
 
 #. Problems occur when we get something like
 #. integer :: a(lots) = (/(i, i=1, lots)/)
@@ -78193,16 +78161,14 @@ msgid "Unused PRIVATE module variable %qs declared at %L"
 msgstr "Ungenutzte PRIVATE-Variable %qs bei %L deklariert"
 
 #: fortran/trans-decl.cc:5905
-#, fuzzy, gcc-internal-format
-#| msgid "%qs at %L cannot have the VALUE attribute because it is not a dummy argument"
+#, gcc-internal-format
 msgid "Symbol %qs at %L has the WEAK attribute but is a dummy argument"
-msgstr "%qs bei %L kann nicht das VALUE-Attribut haben, da es kein Scheinargument ist"
+msgstr "Symbol %qs bei %L hat das Attribut WEAK, ist aber ein Scheinargument"
 
 #: fortran/trans-decl.cc:5908
-#, fuzzy, gcc-internal-format
-#| msgid "Component %qs at %L has the CONTIGUOUS attribute but is not an array pointer"
+#, gcc-internal-format
 msgid "Symbol %qs at %L has the WEAK attribute but is a local variable"
-msgstr "Komponente %qs bei %L hat das CONTIGUOUS-Attribut, aber ist kein Feldzeiger"
+msgstr "Symbol %qs bei %L hat das Attribut WEAK, ist aber eine lokale Variable"
 
 #: fortran/trans-decl.cc:5923
 #, gcc-internal-format
@@ -78858,10 +78824,9 @@ msgid "the location value is corrupt"
 msgstr "der Wert der Ortsangabe ist beschädigt"
 
 #: m2/gm2-gcc/m2builtins.cc:43
-#, fuzzy, gcc-internal-format
-#| msgid "%s:%d:assertion of condition `%s' failed"
+#, gcc-internal-format
 msgid "%s:%d:assertion of condition %qs failed"
-msgstr "Interner Fehler: %s:%d:assertion of condition `%s' failed"
+msgstr "Interner Fehler: %s:%d:assertion of condition %qs failed"
 
 #: m2/gm2-gcc/m2builtins.cc:49
 #, gcc-internal-format, gfc-internal-format
@@ -78905,8 +78870,7 @@ msgid "storage size of %qD has not been resolved"
 msgstr "Speichergröße von %qD wurde nicht aufgelöst"
 
 #: m2/gm2-gcc/m2decl.cc:125
-#, fuzzy, gcc-internal-format
-#| msgid "inconsistant because %qs"
+#, gcc-internal-format
 msgid "inconsistent because %qs"
 msgstr "inkonsistent wegen %qs"
 
@@ -78941,10 +78905,9 @@ msgid "%qs applied to an incomplete type"
 msgstr "%qs wird auf einen unvollständigen Typ angewendet"
 
 #: m2/gm2-gcc/m2linemap.cc:332
-#, fuzzy, gcc-internal-format
-#| msgid "memory allocation failed while reading export data"
+#, gcc-internal-format
 msgid "memory allocation failed in vasprintf"
-msgstr "Speicherreservierung beim Lesen der Export-Daten gescheitert"
+msgstr "Speicherreservierung in vasprintf gescheitert"
 
 #: m2/gm2-gcc/m2linemap.cc:364 rust/rust-gcc-diagnostics.cc:33
 #, gcc-internal-format, gfc-internal-format
