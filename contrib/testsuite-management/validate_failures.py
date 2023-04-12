@@ -338,7 +338,13 @@ def ParseManifestWorker(result_set, manifest_path):
     elif IsInclude(line):
       ParseManifestWorker(result_set, GetIncludeFile(line, manifest_path))
     elif IsInterestingResult(line):
-      result_set.add(result_set.MakeTestResult(line))
+      result = result_set.MakeTestResult(line)
+      if result.HasExpired():
+        # Ignore expired manifest entries.
+        if _OPTIONS.verbosity >= 4:
+          print('WARNING: Expected failure "%s" has expired.' % line.strip())
+        continue
+      result_set.add(result)
     elif IsExpLine(orig_line):
       result_set.current_exp = _EXP_LINE_REX.match(orig_line).groups()[0]
     elif IsToolLine(orig_line):
@@ -369,6 +375,8 @@ def ParseSummary(sum_fname):
       result = result_set.MakeTestResult(line, ordinal)
       ordinal += 1
       if result.HasExpired():
+        # ??? What is the use-case for this?  How "expiry" annotations are
+        # ??? supposed to be added to .sum results?
         # Tests that have expired are not added to the set of expected
         # results. If they are still present in the set of actual results,
         # they will cause an error to be reported.
