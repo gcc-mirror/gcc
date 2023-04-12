@@ -49,6 +49,8 @@ public:
   static TokenStream make_tokenstream (std::vector<TokenTree::TokenTree> vec);
   static TokenStream make_tokenstream (std::uint64_t capacity
 				       = DEFAULT_CAPACITY);
+
+  static void drop (TokenStream *stream);
 };
 
 extern "C" TokenStream

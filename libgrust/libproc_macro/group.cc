@@ -30,4 +30,10 @@ Group::make_group (TokenStream::TokenStream stream, Delimiter delim)
   return {delim, stream};
 }
 
+void
+Group::drop (Group *g)
+{
+  TokenStream::TokenStream::drop (&g->stream);
+}
+
 } // namespace Group

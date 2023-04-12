@@ -56,6 +56,8 @@ public:
   static TokenTree make_tokentree (Ident::Ident ident);
   static TokenTree make_tokentree (Punct::Punct punct);
   static TokenTree make_tokentree (Literal::Literal literal);
+
+  static void drop (TokenTree *tt);
 };
 
 } // namespace TokenTree

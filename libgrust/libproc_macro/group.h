@@ -42,6 +42,8 @@ struct Group
 
 public:
   static Group make_group (TokenStream::TokenStream stream, Delimiter delim);
+
+  static void drop (Group *g);
 };
 
 } // namespace Group
