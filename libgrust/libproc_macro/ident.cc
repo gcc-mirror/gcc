@@ -42,7 +42,7 @@ Ident__new_raw (unsigned char *str, std::uint64_t len)
 void
 Ident__drop (Ident *ident)
 {
-  delete[] ident->val;
+  Ident::drop (ident);
 }
 
 Ident
@@ -74,6 +74,13 @@ Ident::make_ident (const unsigned char *str, std::uint64_t len, bool raw)
   unsigned char *val = new unsigned char[len];
   std::memcpy (val, str, len);
   return {raw, val, len};
+}
+
+void
+Ident::drop (Ident *ident)
+{
+  delete[] ident->val;
+  ident->len = 0;
 }
 
 } // namespace Ident
