@@ -103,10 +103,11 @@ static const unsigned int CP_WRITE_CSR = 1U << 5;
 
 /* Bit values used to identify required extensions for RVV intrinsics.  */
 #define RVV_REQUIRE_RV64BIT (1 << 0)	/* Require RV64.  */
-#define RVV_REQUIRE_ZVE64 (1 << 1)	/* Require TARGET_MIN_VLEN > 32.  */
+#define RVV_REQUIRE_ELEN_64 (1 << 1)	/* Require TARGET_VECTOR_ELEN_64.  */
 #define RVV_REQUIRE_ELEN_FP_32 (1 << 2) /* Require FP ELEN >= 32.  */
 #define RVV_REQUIRE_ELEN_FP_64 (1 << 3) /* Require FP ELEN >= 64.  */
 #define RVV_REQUIRE_FULL_V (1 << 4) /* Require Full 'V' extension.  */
+#define RVV_REQUIRE_MIN_VLEN_64 (1 << 5)	/* Require TARGET_MIN_VLEN >= 64.  */
 
 /* Enumerates the RVV operand types.  */
 enum operand_type_index
