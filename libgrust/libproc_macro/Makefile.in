@@ -138,8 +138,8 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
 	"$(DESTDIR)$(includedir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 libproc_macro_la_LIBADD =
-am_libproc_macro_la_OBJECTS = proc_macro.lo ident.lo punct.lo \
-	literal.lo
+am_libproc_macro_la_OBJECTS = proc_macro.lo ident.lo punct.lo group.lo \
+	tokentree.lo tokenstream.lo literal.lo
 libproc_macro_la_OBJECTS = $(am_libproc_macro_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -389,6 +389,9 @@ libproc_macro_la_SOURCES = \
 	proc_macro.cc \
 	ident.cc \
 	punct.cc \
+	group.cc \
+	tokentree.cc \
+	tokenstream.cc \
 	literal.cc
 
 include_HEADERS = \
@@ -472,10 +475,13 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/group.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ident.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/literal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/proc_macro.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/punct.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tokenstream.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tokentree.Plo@am__quote@
 
 .cc.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
