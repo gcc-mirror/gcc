@@ -1,4 +1,6 @@
 // { dg-do run { target c++17 } }
+// { dg-additional-options "-pthread" { target pthread } }
+// { dg-require-gthreads "" }
 
 #include <experimental/synchronized_value>
 #include <testsuite_hooks.h>
