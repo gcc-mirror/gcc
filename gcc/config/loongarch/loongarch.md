@@ -2488,7 +2488,8 @@
   ""
 {
   if (TARGET_DO_OPTIMIZE_BLOCK_MOVE_P
-      && loongarch_expand_block_move (operands[0], operands[1], operands[2]))
+      && loongarch_expand_block_move (operands[0], operands[1],
+				      operands[2], operands[3]))
     DONE;
   else
     FAIL;

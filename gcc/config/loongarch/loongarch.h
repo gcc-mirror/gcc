@@ -1062,13 +1062,13 @@ typedef struct {
 
 /* The maximum number of bytes that can be copied by one iteration of
    a cpymemsi loop; see loongarch_block_move_loop.  */
-#define LARCH_MAX_MOVE_BYTES_PER_LOOP_ITER (UNITS_PER_WORD * 4)
+#define LARCH_MAX_MOVE_OPS_PER_LOOP_ITER 4
 
 /* The maximum number of bytes that can be copied by a straight-line
    implementation of cpymemsi; see loongarch_block_move_straight.  We want
    to make sure that any loop-based implementation will iterate at
    least twice.  */
-#define LARCH_MAX_MOVE_BYTES_STRAIGHT (LARCH_MAX_MOVE_BYTES_PER_LOOP_ITER * 2)
+#define LARCH_MAX_MOVE_OPS_STRAIGHT (LARCH_MAX_MOVE_OPS_PER_LOOP_ITER * 2)
 
 /* The base cost of a memcpy call, for MOVE_RATIO and friends.  These
    values were determined experimentally by benchmarking with CSiBE.
@@ -1076,7 +1076,7 @@ typedef struct {
 #define LARCH_CALL_RATIO 8
 
 /* Any loop-based implementation of cpymemsi will have at least
-   LARCH_MAX_MOVE_BYTES_STRAIGHT / UNITS_PER_WORD memory-to-memory
+   LARCH_MAX_MOVE_OPS_PER_LOOP_ITER memory-to-memory
    moves, so allow individual copies of fewer elements.
 
    When cpymemsi is not available, use a value approximating
@@ -1087,9 +1087,7 @@ typedef struct {
    value of LARCH_CALL_RATIO to take that into account.  */
 
 #define MOVE_RATIO(speed) \
-  (HAVE_cpymemsi \
-   ? LARCH_MAX_MOVE_BYTES_PER_LOOP_ITER / UNITS_PER_WORD \
-   : CLEAR_RATIO (speed) / 2)
+  (HAVE_cpymemsi ? LARCH_MAX_MOVE_OPS_PER_LOOP_ITER : CLEAR_RATIO (speed) / 2)
 
 /* For CLEAR_RATIO, when optimizing for size, give a better estimate
    of the length of a memset call, but use the default otherwise.  */

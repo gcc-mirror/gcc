@@ -4459,41 +4459,46 @@ loongarch_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
    Assume that the areas do not overlap.  */
 
 static void
-loongarch_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
+loongarch_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length,
+			       HOST_WIDE_INT delta)
 {
-  HOST_WIDE_INT offset, delta;
-  unsigned HOST_WIDE_INT bits;
+  HOST_WIDE_INT offs, delta_cur;
   int i;
   machine_mode mode;
   rtx *regs;
 
-  bits = MIN (BITS_PER_WORD, MIN (MEM_ALIGN (src), MEM_ALIGN (dest)));
-
-  mode = int_mode_for_size (bits, 0).require ();
-  delta = bits / BITS_PER_UNIT;
+  /* Calculate how many registers we'll need for the block move.
+     We'll emit length / delta move operations with delta as the size
+     first.  Then we may still have length % delta bytes not copied.
+     We handle these remaining bytes by move operations with smaller
+     (halfed) sizes.  For example, if length = 21 and delta = 8, we'll
+     emit two ld.d/st.d pairs, one ld.w/st.w pair, and one ld.b/st.b
+     pair.  For each load/store pair we use a dedicated register to keep
+     the pipeline as populated as possible.  */
+  HOST_WIDE_INT num_reg = length / delta;
+  for (delta_cur = delta / 2; delta_cur != 0; delta_cur /= 2)
+    num_reg += !!(length & delta_cur);
 
   /* Allocate a buffer for the temporary registers.  */
-  regs = XALLOCAVEC (rtx, length / delta);
+  regs = XALLOCAVEC (rtx, num_reg);
 
-  /* Load as many BITS-sized chunks as possible.  Use a normal load if
-     the source has enough alignment, otherwise use left/right pairs.  */
-  for (offset = 0, i = 0; offset + delta <= length; offset += delta, i++)
+  for (delta_cur = delta, i = 0, offs = 0; offs < length; delta_cur /= 2)
     {
-      regs[i] = gen_reg_rtx (mode);
-      loongarch_emit_move (regs[i], adjust_address (src, mode, offset));
+      mode = int_mode_for_size (delta_cur * BITS_PER_UNIT, 0).require ();
+
+      for (; offs + delta_cur <= length; offs += delta_cur, i++)
+	{
+	  regs[i] = gen_reg_rtx (mode);
+	  loongarch_emit_move (regs[i], adjust_address (src, mode, offs));
+	}
     }
 
-  for (offset = 0, i = 0; offset + delta <= length; offset += delta, i++)
-    loongarch_emit_move (adjust_address (dest, mode, offset), regs[i]);
-
-  /* Mop up any left-over bytes.  */
-  if (offset < length)
+  for (delta_cur = delta, i = 0, offs = 0; offs < length; delta_cur /= 2)
     {
-      src = adjust_address (src, BLKmode, offset);
-      dest = adjust_address (dest, BLKmode, offset);
-      move_by_pieces (dest, src, length - offset,
-		      MIN (MEM_ALIGN (src), MEM_ALIGN (dest)),
-		      (enum memop_ret) 0);
+      mode = int_mode_for_size (delta_cur * BITS_PER_UNIT, 0).require ();
+
+      for (; offs + delta_cur <= length; offs += delta_cur, i++)
+	loongarch_emit_move (adjust_address (dest, mode, offs), regs[i]);
     }
 }
 
@@ -4523,10 +4528,11 @@ loongarch_adjust_block_mem (rtx mem, HOST_WIDE_INT length, rtx *loop_reg,
 
 static void
 loongarch_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
-			   HOST_WIDE_INT bytes_per_iter)
+			   HOST_WIDE_INT align)
 {
   rtx_code_label *label;
   rtx src_reg, dest_reg, final_src, test;
+  HOST_WIDE_INT bytes_per_iter = align * LARCH_MAX_MOVE_OPS_PER_LOOP_ITER;
   HOST_WIDE_INT leftover;
 
   leftover = length % bytes_per_iter;
@@ -4546,7 +4552,7 @@ loongarch_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
   emit_label (label);
 
   /* Emit the loop body.  */
-  loongarch_block_move_straight (dest, src, bytes_per_iter);
+  loongarch_block_move_straight (dest, src, bytes_per_iter, align);
 
   /* Move on to the next block.  */
   loongarch_emit_move (src_reg,
@@ -4563,7 +4569,7 @@ loongarch_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
 
   /* Mop up any left-over bytes.  */
   if (leftover)
-    loongarch_block_move_straight (dest, src, leftover);
+    loongarch_block_move_straight (dest, src, leftover, align);
   else
     /* Temporary fix for PR79150.  */
     emit_insn (gen_nop ());
@@ -4573,25 +4579,32 @@ loongarch_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
    memory reference SRC to memory reference DEST.  */
 
 bool
-loongarch_expand_block_move (rtx dest, rtx src, rtx length)
+loongarch_expand_block_move (rtx dest, rtx src, rtx r_length, rtx r_align)
 {
-  int max_move_bytes = LARCH_MAX_MOVE_BYTES_STRAIGHT;
+  if (!CONST_INT_P (r_length))
+    return false;
 
-  if (CONST_INT_P (length)
-      && INTVAL (length) <= loongarch_max_inline_memcpy_size)
+  HOST_WIDE_INT length = INTVAL (r_length);
+  if (length > loongarch_max_inline_memcpy_size)
+    return false;
+
+  HOST_WIDE_INT align = INTVAL (r_align);
+
+  if (!TARGET_STRICT_ALIGN || align > UNITS_PER_WORD)
+    align = UNITS_PER_WORD;
+
+  if (length <= align * LARCH_MAX_MOVE_OPS_STRAIGHT)
     {
-      if (INTVAL (length) <= max_move_bytes)
-	{
-	  loongarch_block_move_straight (dest, src, INTVAL (length));
-	  return true;
-	}
-      else if (optimize)
-	{
-	  loongarch_block_move_loop (dest, src, INTVAL (length),
-				     LARCH_MAX_MOVE_BYTES_PER_LOOP_ITER);
-	  return true;
-	}
+      loongarch_block_move_straight (dest, src, length, align);
+      return true;
     }
+
+  if (optimize)
+    {
+      loongarch_block_move_loop (dest, src, length, align);
+      return true;
+    }
+
   return false;
 }
 

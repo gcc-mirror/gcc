@@ -95,7 +95,7 @@ extern void loongarch_expand_conditional_trap (rtx);
 #endif
 extern void loongarch_set_return_address (rtx, rtx);
 extern bool loongarch_move_by_pieces_p (unsigned HOST_WIDE_INT, unsigned int);
-extern bool loongarch_expand_block_move (rtx, rtx, rtx);
+extern bool loongarch_expand_block_move (rtx, rtx, rtx, rtx);
 extern bool loongarch_do_optimize_block_move_p (void);
 
 extern bool loongarch_expand_ext_as_unaligned_load (rtx, rtx, HOST_WIDE_INT,
