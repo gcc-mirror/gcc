@@ -15,6 +15,7 @@ extern "C" {
     fn TokenStream__push(stream: *mut TokenStream, tree: TokenTree);
     fn TokenStream__from_string(str: *const c_uchar, len: u64, ts: *mut TokenStream) -> bool;
     fn TokenStream__clone(ts: *const TokenStream) -> TokenStream;
+    fn TokenStream__drop(stream: *mut TokenStream);
 }
 
 #[repr(C)]
@@ -152,5 +153,11 @@ impl FromStr for TokenStream {
 impl Clone for TokenStream {
     fn clone(&self) -> Self {
         unsafe { TokenStream__clone(self as *const TokenStream) }
+    }
+}
+
+impl Drop for TokenStream {
+    fn drop(&mut self) {
+        unsafe { TokenStream__drop(self as *mut TokenStream) }
     }
 }
