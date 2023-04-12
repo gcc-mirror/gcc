@@ -41,6 +41,8 @@ public:
   static Ident make_ident (std::string str, bool raw = false);
   static Ident make_ident (const unsigned char *str, std::uint64_t len,
 			   bool raw = false);
+
+  static void drop (Ident *ident);
 };
 
 extern "C" {
