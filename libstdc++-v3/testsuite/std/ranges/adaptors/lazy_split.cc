@@ -22,6 +22,7 @@
 #include <ranges>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
@@ -218,6 +219,20 @@ test11()
   static_assert(ranges::distance(views::lazy_split("text"sv, ""sv)) == 4);
 }
 
+constexpr bool
+test12()
+{
+  // LWG 3904
+  auto r = views::single(0) | views::lazy_split(0);
+  auto i = r.begin();
+  ++i;
+  VERIFY( i != r.end() );
+  decltype(std::as_const(r).begin()) j = i;
+  VERIFY( j != r.end() );
+
+  return true;
+}
+
 int
 main()
 {
@@ -232,4 +247,5 @@ main()
   test09();
   test10();
   test11();
+  static_assert(test12());
 }

@@ -3188,7 +3188,8 @@ namespace views::__adaptor
 	  _OuterIter(_OuterIter<!_Const> __i)
 	    requires _Const
 	      && convertible_to<iterator_t<_Vp>, iterator_t<_Base>>
-	    : _M_parent(__i._M_parent), _M_current(std::move(__i._M_current))
+	    : _M_parent(__i._M_parent), _M_current(std::move(__i._M_current)),
+	      _M_trailing_empty(__i._M_trailing_empty)
 	  { }
 
 	  constexpr value_type
