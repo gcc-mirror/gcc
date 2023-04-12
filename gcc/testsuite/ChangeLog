@@ -1,3 +1,41 @@
+2023-04-11  Lin Sinan  <mynameisxiaou@gmail.com>
+
+	* gcc.target/riscv/zbs-extra-bit-or-twobits.c: New test.
+
+2023-04-11  Yanzhang Wang  <yanzhang.wang@intel.com>
+	    Pan Li  <pan2.li@intel.com>
+	    Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+	    Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/109104
+	* gcc.target/riscv/zero-scratch-regs-1.c: New test.
+	* gcc.target/riscv/zero-scratch-regs-2.c: New test.
+	* gcc.target/riscv/zero-scratch-regs-3.c: New test.
+
+2023-04-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/affinity-clause-1.f90: Update scan-tree pattern
+	for -m32.
+
+2023-04-11  Martin Liska  <mliska@suse.cz>
+
+	PR driver/108241
+	* gcc.dg/pr108241.c: New test.
+	* gcc.dg/pr79570.c: Add also -g option.
+
+2023-04-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/vect/vect-simd-clone-16.c: Make simd clone inbranch only.
+	* gcc.dg/vect/vect-simd-clone-17.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-18.c: Likewise.
+
+2023-04-11  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/108812
+	* gcc.target/powerpc/p9-sign_extend-runnable.c: Set corresponding
+	expected vectors for Big Endian.
+	* gcc.target/powerpc/int_128bit-runnable.c: Likewise.
+
 2023-04-10   Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/70243

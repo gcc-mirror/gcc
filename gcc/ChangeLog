@@ -1,3 +1,70 @@
+2023-04-11  Lin Sinan  <mynameisxiaou@gmail.com>
+
+	* config/riscv/predicates.md (uimm_extra_bit_or_twobits): Adjust
+	predicate to avoid splitting arith constants.
+
+2023-04-11  Yanzhang Wang  <yanzhang.wang@intel.com>
+	    Pan Li  <pan2.li@intel.com>
+	    Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+	    Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/109104
+	* config/riscv/riscv-protos.h (emit_hard_vlmax_vsetvl): New.
+	* config/riscv/riscv-v.cc (emit_hard_vlmax_vsetvl): New.
+	(emit_vlmax_vsetvl): Use emit_hard_vlmax_vsetvl.
+	* config/riscv/riscv.cc (vector_zero_call_used_regs): New.
+	(riscv_zero_call_used_regs): New.
+	(TARGET_ZERO_CALL_USED_REGS): New.
+
+2023-04-11  Martin Liska  <mliska@suse.cz>
+
+	PR driver/108241
+	* opts.cc (finish_options): Drop also
+	x_flag_var_tracking_assignments.
+
+2023-04-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/108888
+	* tree-if-conv.cc (predicate_statements): Fix gimple call check.
+
+2023-04-11  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/108812
+	* config/rs6000/vsx.md (vsx_sign_extend_qi_<mode>): Rename to...
+	(vsx_sign_extend_v16qi_<mode>): ... this.
+	(vsx_sign_extend_hi_<mode>): Rename to...
+	(vsx_sign_extend_v8hi_<mode>): ... this.
+	(vsx_sign_extend_si_v2di): Rename to...
+	(vsx_sign_extend_v4si_v2di): ... this.
+	(vsignextend_qi_<mode>): Remove.
+	(vsignextend_hi_<mode>): Remove.
+	(vsignextend_si_v2di): Remove.
+	(vsignextend_v2di_v1ti): Remove.
+	(*xxspltib_<mode>_split): Replace gen_vsx_sign_extend_qi_v2di with
+	gen_vsx_sign_extend_v16qi_v2di and gen_vsx_sign_extend_qi_v4si
+	with gen_vsx_sign_extend_v16qi_v4si.
+	* config/rs6000/rs6000.md (split for DI constant generation):
+	Replace gen_vsx_sign_extend_qi_si with gen_vsx_sign_extend_v16qi_si.
+	(split for HSDI constant generation): Replace gen_vsx_sign_extend_qi_di
+	with gen_vsx_sign_extend_v16qi_di and gen_vsx_sign_extend_qi_si
+	with gen_vsx_sign_extend_v16qi_si.
+	* config/rs6000/rs6000-builtins.def (__builtin_altivec_vsignextsb2d):
+	Set bif-pattern to vsx_sign_extend_v16qi_v2di.
+	(__builtin_altivec_vsignextsb2w): Set bif-pattern to
+	vsx_sign_extend_v16qi_v4si.
+	(__builtin_altivec_visgnextsh2d): Set bif-pattern to
+	vsx_sign_extend_v8hi_v2di.
+	(__builtin_altivec_vsignextsh2w): Set bif-pattern to
+	vsx_sign_extend_v8hi_v4si.
+	(__builtin_altivec_vsignextsw2d): Set bif-pattern to
+	vsx_sign_extend_si_v2di.
+	(__builtin_altivec_vsignext): Set bif-pattern to
+	vsx_sign_extend_v2di_v1ti.
+	* config/rs6000/rs6000-builtin.cc (lxvrse_expand_builtin): Replace
+	gen_vsx_sign_extend_qi_v2di with gen_vsx_sign_extend_v16qi_v2di,
+	gen_vsx_sign_extend_hi_v2di with gen_vsx_sign_extend_v8hi_v2di and
+	gen_vsx_sign_extend_si_v2di with gen_vsx_sign_extend_v4si_v2di.
+
 2023-04-10   Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/70243
