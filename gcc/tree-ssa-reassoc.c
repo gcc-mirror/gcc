@@ -1495,6 +1495,15 @@ build_and_add_sum (tree type, tree op1, tree op2, enum tree_code opcode)
       && (!op2def || gimple_nop_p (op2def)))
     {
       gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
+      if (!gsi_end_p (gsi)
+	  && is_gimple_call (gsi_stmt (gsi))
+	  && (gimple_call_flags (gsi_stmt (gsi)) & ECF_RETURNS_TWICE))
+	{
+	  /* Don't add statements before a returns_twice call at the start
+	     of a function.  */
+	  split_edge (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
+	  gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
+	}
       if (gsi_end_p (gsi))
 	{
 	  gimple_stmt_iterator gsi2
