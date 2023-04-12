@@ -25,10 +25,9 @@
 #include <cstdlib>
 
 namespace Literal {
-extern "C" {
 
 void
-Literal__drop (Literal *lit)
+Literal::drop (Literal *lit)
 {
   switch (lit->tag)
     {
@@ -49,6 +48,14 @@ Literal__drop (Literal *lit)
     case FLOAT64:
       break;
     }
+}
+
+extern "C" {
+
+void
+Literal__drop (Literal *lit)
+{
+  Literal::drop (lit);
 }
 
 Literal
