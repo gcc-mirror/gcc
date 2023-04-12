@@ -1,3 +1,12 @@
+2023-04-11  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/109067
+	* gcc.target/powerpc/divic3-1.c: New test.  Backport from master,
+	3/20/2023.
+	* gcc.target/powerpc/divic3-2.c: Likewise.
+	* gcc.target/powerpc/mulic3-1.c: Likewise.
+	* gcc.target/powerpc/mulic3-2.c: Likewise.
+
 2023-03-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/20230328-1.c: New test.

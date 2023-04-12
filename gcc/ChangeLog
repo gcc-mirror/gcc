@@ -1,3 +1,14 @@
+2023-04-11  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/109067
+	* config/rs6000/rs6000.c (create_complex_muldiv): Delete.
+	(init_float128_ieee): Delete code to switch complex multiply and divide
+	for long double.  Backport from master, 3/20/2023.
+	(complex_multiply_builtin_code): New helper function.
+	(complex_divide_builtin_code): Likewise.
+	(rs6000_mangle_decl_assembler_name): Add support for mangling the name
+	of complex 128-bit multiply and divide built-in functions.
+
 2023-03-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/109140
