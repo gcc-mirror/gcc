@@ -5945,9 +5945,12 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	{
           new_temp = scalar_results[0];
 	  gcc_assert (TREE_CODE (TREE_TYPE (adjustment_def)) != VECTOR_TYPE);
-	  adjustment_def = gimple_convert (&stmts, scalar_type, adjustment_def);
-	  new_temp = gimple_build (&stmts, code, scalar_type,
+	  adjustment_def = gimple_convert (&stmts, TREE_TYPE (vectype),
+					   adjustment_def);
+	  new_temp = gimple_convert (&stmts, TREE_TYPE (vectype), new_temp);
+	  new_temp = gimple_build (&stmts, code, TREE_TYPE (vectype),
 				   new_temp, adjustment_def);
+	  new_temp = gimple_convert (&stmts, scalar_type, new_temp);
 	}
 
       epilog_stmt = gimple_seq_last_stmt (stmts);
