@@ -53,6 +53,7 @@ toolexeclib_LTLIBRARIES = libproc_macro.la
 libproc_macro_la_SOURCES = \
 	proc_macro.cc \
 	ident.cc \
+	punct.cc \
 	literal.cc
 
 include_HEADERS = \
