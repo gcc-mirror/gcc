@@ -523,6 +523,9 @@ HIRCompileBase::compile_function (
 
   // we don't mangle the main fn since we haven't implemented the main shim
   bool is_main_fn = fn_name.compare ("main") == 0;
+  if (is_main_fn)
+    /* So that 'MAIN_NAME_P' works.  */
+    ir_symbol_name = fn_name;
   std::string asm_name = fn_name;
 
   unsigned int flags = 0;
