@@ -6742,8 +6742,8 @@ namespace views::__adaptor
     _M_find_next(iterator_t<_Vp> __current)
     {
       __glibcxx_assert(_M_pred.has_value());
-      auto __pred = [this]<typename _Tp>(_Tp&& __x, _Tp&& __y) {
-	return !bool((*_M_pred)(std::forward<_Tp>(__x), std::forward<_Tp>(__y)));
+      auto __pred = [this]<typename _Tp, typename _Up>(_Tp&& __x, _Up&& __y) {
+	return !bool((*_M_pred)(std::forward<_Tp>(__x), std::forward<_Up>(__y)));
       };
       auto __it = ranges::adjacent_find(__current, ranges::end(_M_base), __pred);
       return ranges::next(__it, 1, ranges::end(_M_base));
@@ -6753,8 +6753,8 @@ namespace views::__adaptor
     _M_find_prev(iterator_t<_Vp> __current) requires bidirectional_range<_Vp>
     {
       __glibcxx_assert(_M_pred.has_value());
-      auto __pred = [this]<typename _Tp>(_Tp&& __x, _Tp&& __y) {
-	return !bool((*_M_pred)(std::forward<_Tp>(__y), std::forward<_Tp>(__x)));
+      auto __pred = [this]<typename _Tp, typename _Up>(_Tp&& __x, _Up&& __y) {
+	return !bool((*_M_pred)(std::forward<_Up>(__y), std::forward<_Tp>(__x)));
       };
       auto __rbegin = std::make_reverse_iterator(__current);
       auto __rend = std::make_reverse_iterator(ranges::begin(_M_base));
