@@ -64,6 +64,18 @@ TokenStream::push (TokenTree::TokenTree tree)
   size++;
 }
 
+void
+TokenStream::drop (TokenStream *stream)
+{
+  for (std::uint64_t i = 0; i < stream->size; i++)
+    {
+      TokenTree::TokenTree::drop (&stream->data[i]);
+    }
+  delete[] stream->data;
+  stream->capacity = 0;
+  stream->size = 0;
+}
+
 extern "C" TokenStream
 TokenStream__new ()
 {
@@ -101,10 +113,7 @@ TokenStream__clone (const TokenStream *ts)
 extern "C" void
 TokenStream__drop (TokenStream *stream)
 {
-  // FIXME: Also drop stream components
-  delete[] stream->data;
-  stream->capacity = 0;
-  stream->size = 0;
+  TokenStream::drop (stream);
 }
 
 } // namespace TokenStream

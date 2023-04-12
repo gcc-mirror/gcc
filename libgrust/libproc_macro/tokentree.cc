@@ -56,4 +56,23 @@ TokenTree::make_tokentree (Literal::Literal literal)
   return {LITERAL, payload};
 }
 
+void
+TokenTree::drop (TokenTree *tt)
+{
+  switch (tt->tag)
+    {
+    case GROUP:
+      Group::Group::drop (&tt->payload.group);
+      break;
+    case IDENT:
+      Ident::Ident::drop (&tt->payload.ident);
+      break;
+    case LITERAL:
+      Literal::Literal::drop (&tt->payload.literal);
+      break;
+    case PUNCT:
+      break;
+    }
+}
+
 } // namespace TokenTree
