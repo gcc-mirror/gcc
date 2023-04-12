@@ -4438,12 +4438,15 @@ get_storage_model_access (Node_Id gnat_node, Entity_Id *gnat_smo)
 	  && Prefix (Parent (gnat_parent)) == gnat_parent))
     return;
 
-  /* Now strip any type conversion from GNAT_NODE.  */
+  /* Find the innermost prefix in GNAT_NODE, stripping any type conversion.  */
   if (node_is_type_conversion (gnat_node))
     gnat_node = Expression (gnat_node);
-
   while (node_is_component (gnat_node))
-    gnat_node = Prefix (gnat_node);
+    {
+      gnat_node = Prefix (gnat_node);
+      if (node_is_type_conversion (gnat_node))
+	gnat_node = Expression (gnat_node);
+    }
 
   *gnat_smo = get_storage_model (gnat_node);
 }
