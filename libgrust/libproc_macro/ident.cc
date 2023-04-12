@@ -23,7 +23,10 @@
 
 #include <cstring>
 
+namespace Ident {
+
 extern "C" {
+
 Ident
 Ident__new (unsigned char *str, std::uint64_t len)
 {
@@ -72,3 +75,5 @@ Ident::make_ident (const unsigned char *str, std::uint64_t len, bool raw)
   std::memcpy (val, str, len);
   return {raw, val, len};
 }
+
+} // namespace Ident

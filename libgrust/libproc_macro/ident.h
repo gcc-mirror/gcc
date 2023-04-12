@@ -26,6 +26,8 @@
 #include <cstdint>
 #include <string>
 
+namespace Ident {
+
 struct Ident
 {
   bool is_raw;
@@ -55,5 +57,7 @@ Ident__drop (Ident *ident);
 Ident
 Ident__clone (const Ident *ident);
 }
+
+} // namespace Ident
 
 #endif /* ! IDENT_H */
