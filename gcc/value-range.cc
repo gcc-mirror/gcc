@@ -322,9 +322,10 @@ frange::flush_denormals_to_zero ()
   // Flush [x, -DENORMAL] to [x, -0.0].
   if (real_isdenormal (&m_max, mode) && real_isneg (&m_max))
     {
-      m_max = dconst0;
       if (HONOR_SIGNED_ZEROS (m_type))
-	m_max.sign = 1;
+	m_max = dconstm0;
+      else
+	m_max = dconst0;
     }
   // Flush [+DENORMAL, x] to [+0.0, x].
   if (real_isdenormal (&m_min, mode) && !real_isneg (&m_min))
@@ -837,8 +838,6 @@ frange::set_zero (tree type)
 {
   if (HONOR_SIGNED_ZEROS (type))
     {
-      REAL_VALUE_TYPE dconstm0 = dconst0;
-      dconstm0.sign = 1;
       set (type, dconstm0, dconst0);
       clear_nan ();
     }

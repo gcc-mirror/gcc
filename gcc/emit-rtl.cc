@@ -105,6 +105,7 @@ rtx const_true_rtx;
 REAL_VALUE_TYPE dconst0;
 REAL_VALUE_TYPE dconst1;
 REAL_VALUE_TYPE dconst2;
+REAL_VALUE_TYPE dconstm0;
 REAL_VALUE_TYPE dconstm1;
 REAL_VALUE_TYPE dconsthalf;
 REAL_VALUE_TYPE dconstinf;
@@ -6205,6 +6206,9 @@ init_emit_once (void)
   real_from_integer (&dconst0, double_mode, 0, SIGNED);
   real_from_integer (&dconst1, double_mode, 1, SIGNED);
   real_from_integer (&dconst2, double_mode, 2, SIGNED);
+
+  dconstm0 = dconst0;
+  dconstm0.sign = 1;
 
   dconstm1 = dconst1;
   dconstm1.sign = 1;

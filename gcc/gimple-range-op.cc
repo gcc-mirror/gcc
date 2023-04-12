@@ -360,8 +360,6 @@ public:
       }
     if (!lhs.contains_p (build_zero_cst (lhs.type ())))
       {
-	REAL_VALUE_TYPE dconstm0 = dconst0;
-	dconstm0.sign = 1;
 	r.set (type, frange_val_min (type), dconstm0);
 	r.update_nan (true);
 	return true;

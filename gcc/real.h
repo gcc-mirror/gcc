@@ -468,6 +468,7 @@ extern void real_ldexp (REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *, int);
 extern REAL_VALUE_TYPE dconst0;
 extern REAL_VALUE_TYPE dconst1;
 extern REAL_VALUE_TYPE dconst2;
+extern REAL_VALUE_TYPE dconstm0;
 extern REAL_VALUE_TYPE dconstm1;
 extern REAL_VALUE_TYPE dconsthalf;
 extern REAL_VALUE_TYPE dconstinf;
