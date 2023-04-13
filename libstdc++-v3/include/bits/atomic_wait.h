@@ -50,7 +50,8 @@
 # include <bits/functexcept.h>
 #endif
 
-# include <bits/std_mutex.h>  // std::mutex, std::__condvar
+#include <bits/stl_pair.h>
+#include <bits/std_mutex.h>  // std::mutex, std::__condvar
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -134,7 +135,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __thread_yield() noexcept
     {
 #if defined _GLIBCXX_HAS_GTHREADS && defined _GLIBCXX_USE_SCHED_YIELD
-     __gthread_yield();
+      __gthread_yield();
 #endif
     }
 
@@ -151,38 +152,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline constexpr auto __atomic_spin_count_relax = 12;
     inline constexpr auto __atomic_spin_count = 16;
 
-    struct __default_spin_policy
-    {
-      bool
-      operator()() const noexcept
-      { return false; }
-    };
-
-    template<typename _Pred,
-	     typename _Spin = __default_spin_policy>
-      bool
-      __atomic_spin(_Pred& __pred, _Spin __spin = _Spin{ }) noexcept
-      {
-	for (auto __i = 0; __i < __atomic_spin_count; ++__i)
-	  {
-	    if (__pred())
-	      return true;
-
-	    if (__i < __atomic_spin_count_relax)
-	      __detail::__thread_relax();
-	    else
-	      __detail::__thread_yield();
-	  }
-
-	while (__spin())
-	  {
-	    if (__pred())
-	      return true;
-	  }
-
-	return false;
-      }
-
     // return true if equal
     template<typename _Tp>
       bool __atomic_compare(const _Tp& __a, const _Tp& __b)
@@ -191,7 +160,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __builtin_memcmp(&__a, &__b, sizeof(_Tp)) == 0;
       }
 
-    struct __waiter_pool_base
+    struct __waiter_pool_impl
     {
       // Don't use std::hardware_destructive_interference_size here because we
       // don't want the layout of library types to depend on compiler options.
@@ -208,7 +177,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #ifndef _GLIBCXX_HAVE_PLATFORM_WAIT
       __condvar _M_cv;
 #endif
-      __waiter_pool_base() = default;
+      __waiter_pool_impl() = default;
 
       void
       _M_enter_wait() noexcept
@@ -226,256 +195,271 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __res != 0;
       }
 
-      void
-      _M_notify(__platform_wait_t* __addr, [[maybe_unused]] bool __all,
-		bool __bare) noexcept
-      {
-#ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
-	if (__addr == &_M_ver)
-	  {
-	    __atomic_fetch_add(__addr, 1, __ATOMIC_SEQ_CST);
-	    __all = true;
-	  }
-
-	if (__bare || _M_waiting())
-	  __platform_notify(__addr, __all);
-#else
-	{
-	  lock_guard<mutex> __l(_M_mtx);
-	  __atomic_fetch_add(__addr, 1, __ATOMIC_RELAXED);
-	}
-	if (__bare || _M_waiting())
-	  _M_cv.notify_all();
-#endif
-      }
-
-      static __waiter_pool_base&
-      _S_for(const void* __addr) noexcept
+      static __waiter_pool_impl&
+      _S_impl_for(const void* __addr) noexcept
       {
 	constexpr __UINTPTR_TYPE__ __ct = 16;
-	static __waiter_pool_base __w[__ct];
+	static __waiter_pool_impl __w[__ct];
 	auto __key = ((__UINTPTR_TYPE__)__addr >> 2) % __ct;
 	return __w[__key];
       }
     };
 
-    struct __waiter_pool : __waiter_pool_base
+    enum class __wait_flags : __UINT_LEAST32_TYPE__
     {
-      void
-      _M_do_wait(const __platform_wait_t* __addr, __platform_wait_t __old) noexcept
-      {
-#ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
-	__platform_wait(__addr, __old);
-#else
-	__platform_wait_t __val;
-	__atomic_load(__addr, &__val, __ATOMIC_SEQ_CST);
-	if (__val == __old)
-	  {
-	    lock_guard<mutex> __l(_M_mtx);
-	    __atomic_load(__addr, &__val, __ATOMIC_RELAXED);
-	    if (__val == __old)
-	      _M_cv.wait(_M_mtx);
-	  }
-#endif // __GLIBCXX_HAVE_PLATFORM_WAIT
-      }
+       __abi_version = 0,
+       __proxy_wait = 1,
+       __track_contention = 2,
+       __do_spin = 4,
+       __spin_only = 8 | __do_spin, // implies __do_spin
+       __abi_version_mask = 0xffff0000,
     };
 
-    template<typename _Tp>
-      struct __waiter_base
+    struct __wait_args
+    {
+      __platform_wait_t _M_old;
+      int _M_order = __ATOMIC_ACQUIRE;
+      __wait_flags _M_flags;
+
+      template<typename _Tp>
+	explicit __wait_args(const _Tp* __addr,
+			     bool __bare_wait = false) noexcept
+	    : _M_flags{ _S_flags_for(__addr, __bare_wait) }
+	{ }
+
+      __wait_args(const __platform_wait_t* __addr, __platform_wait_t __old,
+		  int __order, bool __bare_wait = false) noexcept
+	  : _M_old{ __old }
+	  , _M_order{ __order }
+	  , _M_flags{ _S_flags_for(__addr, __bare_wait) }
+	{ }
+
+      __wait_args(const __wait_args&) noexcept = default;
+      __wait_args&
+      operator=(const __wait_args&) noexcept = default;
+
+      bool
+      operator&(__wait_flags __flag) const noexcept
       {
-	using __waiter_type = _Tp;
+	 using __t = underlying_type_t<__wait_flags>;
+	 return static_cast<__t>(_M_flags)
+	     & static_cast<__t>(__flag);
+      }
 
-	__waiter_type& _M_w;
-	__platform_wait_t* _M_addr;
+      __wait_args
+      operator|(__wait_flags __flag) const noexcept
+      {
+	using __t = underlying_type_t<__wait_flags>;
+	__wait_args __res{ *this };
+	const auto __flags = static_cast<__t>(__res._M_flags)
+			     | static_cast<__t>(__flag);
+	__res._M_flags = __wait_flags{ __flags };
+	return __res;
+      }
 
-	template<typename _Up>
-	  static __platform_wait_t*
-	  _S_wait_addr(const _Up* __a, __platform_wait_t* __b)
-	  {
-	    if constexpr (__platform_wait_uses_type<_Up>)
-	      return reinterpret_cast<__platform_wait_t*>(const_cast<_Up*>(__a));
-	    else
-	      return __b;
-	  }
+    private:
+      static int
+      constexpr _S_default_flags() noexcept
+      {
+	using __t = underlying_type_t<__wait_flags>;
+	return static_cast<__t>(__wait_flags::__abi_version)
+		| static_cast<__t>(__wait_flags::__do_spin);
+      }
 
-	static __waiter_type&
-	_S_for(const void* __addr) noexcept
+      template<typename _Tp>
+	static int
+	constexpr _S_flags_for(const _Tp*, bool __bare_wait) noexcept
 	{
-	  static_assert(sizeof(__waiter_type) == sizeof(__waiter_pool_base));
-	  auto& res = __waiter_pool_base::_S_for(__addr);
-	  return reinterpret_cast<__waiter_type&>(res);
+	  auto __res = _S_default_flags();
+	  if (!__bare_wait)
+	    __res |= static_cast<int>(__wait_flags::__track_contention);
+	  if constexpr (!__platform_wait_uses_type<_Tp>)
+	    __res |= static_cast<int>(__wait_flags::__proxy_wait);
+	  return __res;
 	}
 
-	template<typename _Up>
-	  explicit __waiter_base(const _Up* __addr) noexcept
-	    : _M_w(_S_for(__addr))
-	    , _M_addr(_S_wait_addr(__addr, &_M_w._M_ver))
-	  { }
-
-	void
-	_M_notify(bool __all, bool __bare = false) noexcept
-	{ _M_w._M_notify(_M_addr, __all, __bare); }
-
-	template<typename _Up, typename _ValFn,
-		 typename _Spin = __default_spin_policy>
-	  static bool
-	  _S_do_spin_v(__platform_wait_t* __addr,
-		       const _Up& __old, _ValFn __vfn,
-		       __platform_wait_t& __val,
-		       _Spin __spin = _Spin{ })
-	  {
-	    auto const __pred = [=]
-	      { return !__detail::__atomic_compare(__old, __vfn()); };
-
-	    if constexpr (__platform_wait_uses_type<_Up>)
-	      {
-		__builtin_memcpy(&__val, &__old, sizeof(__val));
-	      }
-	    else
-	      {
-		__atomic_load(__addr, &__val, __ATOMIC_ACQUIRE);
-	      }
-	    return __atomic_spin(__pred, __spin);
-	  }
-
-	template<typename _Up, typename _ValFn,
-		 typename _Spin = __default_spin_policy>
-	  bool
-	  _M_do_spin_v(const _Up& __old, _ValFn __vfn,
-		       __platform_wait_t& __val,
-		       _Spin __spin = _Spin{ })
-	  { return _S_do_spin_v(_M_addr, __old, __vfn, __val, __spin); }
-
-	template<typename _Pred,
-		 typename _Spin = __default_spin_policy>
-	  static bool
-	  _S_do_spin(const __platform_wait_t* __addr,
-		     _Pred __pred,
-		     __platform_wait_t& __val,
-		     _Spin __spin = _Spin{ })
-	  {
-	    __atomic_load(__addr, &__val, __ATOMIC_ACQUIRE);
-	    return __atomic_spin(__pred, __spin);
-	  }
-
-	template<typename _Pred,
-		 typename _Spin = __default_spin_policy>
-	  bool
-	  _M_do_spin(_Pred __pred, __platform_wait_t& __val,
-		     _Spin __spin = _Spin{ })
-	  { return _S_do_spin(_M_addr, __pred, __val, __spin); }
-      };
-
-    template<typename _EntersWait>
-      struct __waiter : __waiter_base<__waiter_pool>
-      {
-	using __base_type = __waiter_base<__waiter_pool>;
-
-	template<typename _Tp>
-	  explicit __waiter(const _Tp* __addr) noexcept
-	    : __base_type(__addr)
-	  {
-	    if constexpr (_EntersWait::value)
-	      _M_w._M_enter_wait();
-	  }
-
-	~__waiter()
+      template<typename _Tp>
+	static int
+	_S_memory_order_for(const _Tp*, int __order) noexcept
 	{
-	  if constexpr (_EntersWait::value)
-	    _M_w._M_leave_wait();
+	  if constexpr (__platform_wait_uses_type<_Tp>)
+	    return __order;
+	  return __ATOMIC_ACQUIRE;
+	}
+    };
+
+    using __wait_result_type = pair<bool, __platform_wait_t>;
+    inline __wait_result_type
+    __spin_impl(const __platform_wait_t* __addr, __wait_args __args)
+    {
+      __platform_wait_t __val;
+      for (auto __i = 0; __i < __atomic_spin_count; ++__i)
+	{
+	  __atomic_load(__addr, &__val, __args._M_order);
+	  if (__val != __args._M_old)
+	    return make_pair(true, __val);
+	  if (__i < __atomic_spin_count_relax)
+	    __detail::__thread_relax();
+	  else
+	    __detail::__thread_yield();
+	}
+      return make_pair(false, __val);
+    }
+
+    inline __wait_result_type
+    __wait_impl(const __platform_wait_t* __addr, __wait_args __args)
+    {
+#ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
+      __waiter_pool_impl* __pool = nullptr;
+#else
+      // if we don't have __platform_wait, we always need the side-table
+      __waiter_pool_impl* __pool = &__waiter_pool_impl::_S_impl_for(__addr);
+#endif
+
+      __platform_wait_t* __wait_addr;
+      if (__args & __wait_flags::__proxy_wait)
+	{
+#ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
+	  __pool = &__waiter_pool_impl::_S_impl_for(__addr);
+#endif
+	  __wait_addr = &__pool->_M_ver;
+	  __atomic_load(__wait_addr, &__args._M_old, __args._M_order);
+	}
+      else
+	__wait_addr = const_cast<__platform_wait_t*>(__addr);
+
+      if (__args & __wait_flags::__do_spin)
+	{
+	  auto __res = __detail::__spin_impl(__wait_addr, __args);
+	  if (__res.first)
+	    return __res;
+	  if (__args & __wait_flags::__spin_only)
+	    return __res;
 	}
 
-	template<typename _Tp, typename _ValFn>
-	  void
-	  _M_do_wait_v(_Tp __old, _ValFn __vfn)
-	  {
-	    do
-	      {
-		__platform_wait_t __val;
-		if (__base_type::_M_do_spin_v(__old, __vfn, __val))
-		  return;
-		__base_type::_M_w._M_do_wait(__base_type::_M_addr, __val);
-	      }
-	    while (__detail::__atomic_compare(__old, __vfn()));
-	  }
+      if (!(__args & __wait_flags::__track_contention))
+	{
+	  // caller does not externally track contention
+#ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
+	  __pool = (__pool == nullptr) ? &__waiter_pool_impl::_S_impl_for(__addr)
+				       : __pool;
+#endif
+	  __pool->_M_enter_wait();
+	}
 
-	template<typename _Pred>
-	  void
-	  _M_do_wait(_Pred __pred) noexcept
-	  {
-	    do
-	      {
-		__platform_wait_t __val;
-		if (__base_type::_M_do_spin(__pred, __val))
-		  return;
-		__base_type::_M_w._M_do_wait(__base_type::_M_addr, __val);
-	      }
-	    while (!__pred());
-	  }
-      };
+      __wait_result_type __res;
+#ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
+      __platform_wait(__wait_addr, __args._M_old);
+      __res = make_pair(false, __args._M_old);
+#else
+      __platform_wait_t __val;
+      __atomic_load(__wait_addr, &__val, __args._M_order);
+      if (__val == __args._M_old)
+	{
+	    lock_guard<mutex> __l{ __pool->_M_mtx };
+	    __atomic_load(__wait_addr, &__val, __args._M_order);
+	    if (__val == __args._M_old)
+		__pool->_M_cv.wait(__pool->_M_mtx);
+	}
+      __res = make_pair(false, __val);
+#endif
 
-    using __enters_wait = __waiter<std::true_type>;
-    using __bare_wait = __waiter<std::false_type>;
+      if (!(__args & __wait_flags::__track_contention))
+	// caller does not externally track contention
+	__pool->_M_leave_wait();
+      return __res;
+    }
+
+    inline void
+    __notify_impl(const __platform_wait_t* __addr, [[maybe_unused]] bool __all,
+		  __wait_args __args)
+    {
+#ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
+      __waiter_pool_impl* __pool = nullptr;
+#else
+      // if we don't have __platform_notify, we always need the side-table
+      __waiter_pool_impl* __pool = &__waiter_pool_impl::_S_impl_for(__addr);
+#endif
+
+      if (!(__args & __wait_flags::__track_contention))
+	{
+#ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
+	  __pool = &__waiter_pool_impl::_S_impl_for(__addr);
+#endif
+	  if (!__pool->_M_waiting())
+	    return;
+	}
+
+      __platform_wait_t* __wait_addr;
+      if (__args & __wait_flags::__proxy_wait)
+	{
+#ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
+	   __pool = (__pool == nullptr) ? &__waiter_pool_impl::_S_impl_for(__addr)
+					: __pool;
+#endif
+	   __wait_addr = &__pool->_M_ver;
+	   __atomic_fetch_add(__wait_addr, 1, __ATOMIC_RELAXED);
+	   __all = true;
+	 }
+
+#ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
+      __platform_notify(__wait_addr, __all);
+#else
+      lock_guard<mutex> __l{ __pool->_M_mtx };
+      __pool->_M_cv.notify_all();
+#endif
+    }
   } // namespace __detail
+
+  template<typename _Tp,
+	   typename _Pred, typename _ValFn>
+    void
+    __atomic_wait_address(const _Tp* __addr,
+			  _Pred&& __pred, _ValFn&& __vfn,
+			  bool __bare_wait = false) noexcept
+    {
+      const auto __wait_addr =
+	  reinterpret_cast<const __detail::__platform_wait_t*>(__addr);
+      __detail::__wait_args __args{ __addr, __bare_wait };
+      _Tp __val = __vfn();
+      while (!__pred(__val))
+	{
+	  __detail::__wait_impl(__wait_addr, __args);
+	  __val = __vfn();
+	}
+      // C++26 will return __val
+    }
+
+  inline void
+  __atomic_wait_address_v(const __detail::__platform_wait_t* __addr,
+			  __detail::__platform_wait_t __old,
+			  int __order)
+  {
+    __detail::__wait_args __args{ __addr, __old, __order };
+    // C++26 will not ignore the return value here
+    __detail::__wait_impl(__addr, __args);
+  }
 
   template<typename _Tp, typename _ValFn>
     void
     __atomic_wait_address_v(const _Tp* __addr, _Tp __old,
 			    _ValFn __vfn) noexcept
     {
-      __detail::__enters_wait __w(__addr);
-      __w._M_do_wait_v(__old, __vfn);
-    }
-
-  template<typename _Tp, typename _Pred>
-    void
-    __atomic_wait_address(const _Tp* __addr, _Pred __pred) noexcept
-    {
-      __detail::__enters_wait __w(__addr);
-      __w._M_do_wait(__pred);
-    }
-
-  // This call is to be used by atomic types which track contention externally
-  template<typename _Pred>
-    void
-    __atomic_wait_address_bare(const __detail::__platform_wait_t* __addr,
-			       _Pred __pred) noexcept
-    {
-#ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
-      do
-	{
-	  __detail::__platform_wait_t __val;
-	  if (__detail::__bare_wait::_S_do_spin(__addr, __pred, __val))
-	    return;
-	  __detail::__platform_wait(__addr, __val);
-	}
-      while (!__pred());
-#else // !_GLIBCXX_HAVE_PLATFORM_WAIT
-      __detail::__bare_wait __w(__addr);
-      __w._M_do_wait(__pred);
-#endif
+      auto __pfn = [&](const _Tp& __val)
+	  { return !__detail::__atomic_compare(__old, __val); };
+      __atomic_wait_address(__addr, __pfn, forward<_ValFn>(__vfn));
     }
 
   template<typename _Tp>
     void
-    __atomic_notify_address(const _Tp* __addr, bool __all) noexcept
+    __atomic_notify_address(const _Tp* __addr, bool __all,
+			    bool __bare_wait = false) noexcept
     {
-      __detail::__bare_wait __w(__addr);
-      __w._M_notify(__all);
+      const auto __wait_addr =
+	  reinterpret_cast<const __detail::__platform_wait_t*>(__addr);
+      __detail::__wait_args __args{ __addr, __bare_wait };
+      __detail::__notify_impl(__wait_addr, __all, __args);
     }
-
-  // This call is to be used by atomic types which track contention externally
-  inline void
-  __atomic_notify_address_bare(const __detail::__platform_wait_t* __addr,
-			       bool __all) noexcept
-  {
-#ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
-    __detail::__platform_notify(__addr, __all);
-#else
-    __detail::__bare_wait __w(__addr);
-    __w._M_notify(__all, true);
-#endif
-  }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // __glibcxx_atomic_wait

@@ -54,8 +54,8 @@ main()
     atom->store(0);
   }
 
-  auto a = &std::__detail::__waiter_pool_base::_S_for(reinterpret_cast<char *>(atomics.a[0]));
-  auto b = &std::__detail::__waiter_pool_base::_S_for(reinterpret_cast<char *>(atomics.a[1]));
+  auto a = &std::__detail::__waiter_pool_impl::_S_impl_for(reinterpret_cast<char *>(atomics.a[0]));
+  auto b = &std::__detail::__waiter_pool_impl::_S_impl_for(reinterpret_cast<char *>(atomics.a[1]));
   VERIFY( a == b );
 
   auto fut0 = std::async(std::launch::async, [&] { atomics.a[0]->wait(0); });

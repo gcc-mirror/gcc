@@ -181,10 +181,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __atomic_semaphore(const __atomic_semaphore&) = delete;
     __atomic_semaphore& operator=(const __atomic_semaphore&) = delete;
 
-    static _GLIBCXX_ALWAYS_INLINE bool
-    _S_do_try_acquire(__detail::__platform_wait_t* __counter) noexcept
+    static _GLIBCXX_ALWAYS_INLINE __detail::__platform_wait_t
+    _S_get_current(__detail::__platform_wait_t* __counter) noexcept
     {
-      auto __old = __atomic_impl::load(__counter, memory_order::acquire);
+      return __atomic_impl::load(__counter, memory_order::acquire);
+    }
+
+    static _GLIBCXX_ALWAYS_INLINE bool
+    _S_do_try_acquire(__detail::__platform_wait_t* __counter,
+		      __detail::__platform_wait_t __old) noexcept
+    {
       if (__old == 0)
 	return false;
 
@@ -197,17 +203,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_ALWAYS_INLINE void
     _M_acquire() noexcept
     {
-      auto const __pred =
-	[this] { return _S_do_try_acquire(&this->_M_counter); };
-      std::__atomic_wait_address_bare(&_M_counter, __pred);
+      auto const __vfn = [this]{ return _S_get_current(&this->_M_counter); };
+      auto const __pred = [this](__detail::__platform_wait_t __cur)
+	{ return _S_do_try_acquire(&this->_M_counter, __cur); };
+      std::__atomic_wait_address(&_M_counter, __pred, __vfn, true);
     }
 
     bool
     _M_try_acquire() noexcept
     {
-      auto const __pred =
-	[this] { return _S_do_try_acquire(&this->_M_counter); };
-      return std::__detail::__atomic_spin(__pred);
+      auto const __vfn = [this]{ return _S_get_current(&this->_M_counter); };
+      auto const __pred = [this](__detail::__platform_wait_t __cur)
+	{ return _S_do_try_acquire(&this->_M_counter, __cur); };
+      return __atomic_wait_address_for(&_M_counter, __pred, __vfn,
+					 __detail::__wait_clock_t::duration(),
+					 true);
     }
 
     template<typename _Clock, typename _Duration>
@@ -215,21 +225,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_try_acquire_until(const chrono::time_point<_Clock,
 			   _Duration>& __atime) noexcept
       {
-	auto const __pred =
-	  [this] { return _S_do_try_acquire(&this->_M_counter); };
-
-	return __atomic_wait_address_until_bare(&_M_counter, __pred, __atime);
+	auto const __vfn = [this]{ return _S_get_current(&this->_M_counter); };
+	auto const __pred = [this](__detail::__platform_wait_t __cur)
+	 { return _S_do_try_acquire(&this->_M_counter, __cur); };
+	return std::__atomic_wait_address_until(&_M_counter,
+						__pred, __vfn, __atime, true);
       }
 
     template<typename _Rep, typename _Period>
       _GLIBCXX_ALWAYS_INLINE bool
-      _M_try_acquire_for(const chrono::duration<_Rep, _Period>& __rtime)
-	noexcept
+      _M_try_acquire_for(const chrono::duration<_Rep, _Period>& __rtime) noexcept
       {
-	auto const __pred =
-	  [this] { return _S_do_try_acquire(&this->_M_counter); };
-
-	return __atomic_wait_address_for_bare(&_M_counter, __pred, __rtime);
+	auto const __vfn = [this]{ return _S_get_current(&this->_M_counter); };
+	auto const __pred = [this](__detail::__platform_wait_t __cur)
+	 { return _S_do_try_acquire(&this->_M_counter, __cur); };
+	return std::__atomic_wait_address_for(&_M_counter,
+					      __pred, __vfn, __rtime, true);
       }
 
     _GLIBCXX_ALWAYS_INLINE void
@@ -238,9 +249,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (0 < __atomic_impl::fetch_add(&_M_counter, __update, memory_order_release))
 	return;
       if (__update > 1)
-	__atomic_notify_address_bare(&_M_counter, true);
+	__atomic_notify_address(&_M_counter, true, true);
       else
-	__atomic_notify_address_bare(&_M_counter, true);
+	__atomic_notify_address(&_M_counter, true, true);
 // FIXME - Figure out why this does not wake a waiting thread
 //	__atomic_notify_address_bare(&_M_counter, false);
     }
