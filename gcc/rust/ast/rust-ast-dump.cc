@@ -488,8 +488,20 @@ Dump::visit (QualifiedPathInExpression &path)
 }
 
 void
-Dump::visit (QualifiedPathInType &)
-{}
+Dump::visit (QualifiedPathInType &path)
+{
+  auto qualified_path_type = path.get_qualified_path_type ();
+  stream << "<";
+  visit (qualified_path_type.get_type ());
+  if (qualified_path_type.has_as_clause ())
+    {
+      stream << " as ";
+      visit (qualified_path_type.get_as_type_path ());
+    }
+  stream << ">::";
+  visit (path.get_associated_segment ());
+  visit_items_joined_by_separator (path.get_segments (), "::");
+}
 
 // rust-expr.h
 void
@@ -1153,7 +1165,6 @@ Dump::visit (TypeAlias &type_alias)
   // Visibility? type IDENTIFIER GenericParams? WhereClause? = Type;
 
   // Note: Associated types are handled by `AST::TraitItemType`.
-
   if (type_alias.has_visibility ())
     visit (type_alias.get_visibility ());
   stream << "type " << type_alias.get_new_type_name ();
@@ -1163,6 +1174,7 @@ Dump::visit (TypeAlias &type_alias)
     visit (type_alias.get_where_clause ());
   stream << " = ";
   visit (type_alias.get_type_aliased ());
+  stream << ";\n";
 }
 
 void
