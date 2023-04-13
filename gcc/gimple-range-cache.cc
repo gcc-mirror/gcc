@@ -79,7 +79,7 @@ ssa_block_ranges::dump (FILE *f)
 class sbr_vector : public ssa_block_ranges
 {
 public:
-  sbr_vector (tree t, vrange_allocator *allocator);
+  sbr_vector (tree t, vrange_allocator *allocator, bool zero_p = true);
 
   virtual bool set_bb_range (const_basic_block bb, const vrange &r) override;
   virtual bool get_bb_range (vrange &r, const_basic_block bb) override;
@@ -91,22 +91,25 @@ protected:
   vrange *m_undefined;
   tree m_type;
   vrange_allocator *m_range_allocator;
+  bool m_zero_p;
   void grow ();
 };
 
 
 // Initialize a block cache for an ssa_name of type T.
 
-sbr_vector::sbr_vector (tree t, vrange_allocator *allocator)
+sbr_vector::sbr_vector (tree t, vrange_allocator *allocator, bool zero_p)
   : ssa_block_ranges (t)
 {
   gcc_checking_assert (TYPE_P (t));
   m_type = t;
+  m_zero_p = zero_p;
   m_range_allocator = allocator;
   m_tab_size = last_basic_block_for_fn (cfun) + 1;
   m_tab = static_cast <vrange **>
     (allocator->alloc (m_tab_size * sizeof (vrange *)));
-  memset (m_tab, 0, m_tab_size * sizeof (vrange *));
+  if (zero_p)
+    memset (m_tab, 0, m_tab_size * sizeof (vrange *));
 
   // Create the cached type range.
   m_varying = m_range_allocator->alloc_vrange (t);
@@ -132,7 +135,8 @@ sbr_vector::grow ()
   vrange **t = static_cast <vrange **>
     (m_range_allocator->alloc (new_size * sizeof (vrange *)));
   memcpy (t, m_tab, m_tab_size * sizeof (vrange *));
-  memset (t + m_tab_size, 0, (new_size - m_tab_size) * sizeof (vrange *));
+  if (m_zero_p)
+    memset (t + m_tab_size, 0, (new_size - m_tab_size) * sizeof (vrange *));
 
   m_tab = t;
   m_tab_size = new_size;
@@ -181,6 +185,50 @@ sbr_vector::bb_range_p (const_basic_block bb)
   if (bb->index < m_tab_size)
     return m_tab[bb->index] != NULL;
   return false;
+}
+
+// Like an sbr_vector, except it uses a bitmap to manage whetehr  vale is set
+// or not rather than cleared memory.
+
+class sbr_lazy_vector : public sbr_vector
+{
+public:
+  sbr_lazy_vector (tree t, vrange_allocator *allocator, bitmap_obstack *bm);
+
+  virtual bool set_bb_range (const_basic_block bb, const vrange &r) override;
+  virtual bool get_bb_range (vrange &r, const_basic_block bb) override;
+  virtual bool bb_range_p (const_basic_block bb) override;
+protected:
+  bitmap m_has_value;
+};
+
+sbr_lazy_vector::sbr_lazy_vector (tree t, vrange_allocator *allocator,
+				  bitmap_obstack *bm)
+  : sbr_vector (t, allocator, false)
+{
+  m_has_value = BITMAP_ALLOC (bm);
+}
+
+bool
+sbr_lazy_vector::set_bb_range (const_basic_block bb, const vrange &r)
+{
+  sbr_vector::set_bb_range (bb, r);
+  bitmap_set_bit (m_has_value, bb->index);
+  return true;
+}
+
+bool
+sbr_lazy_vector::get_bb_range (vrange &r, const_basic_block bb)
+{
+  if (bitmap_bit_p (m_has_value, bb->index))
+    return sbr_vector::get_bb_range (r, bb);
+  return false;
+}
+
+bool
+sbr_lazy_vector::bb_range_p (const_basic_block bb)
+{
+  return bitmap_bit_p (m_has_value, bb->index);
 }
 
 // This class implements the on entry cache via a sparse bitmap.
@@ -347,20 +395,28 @@ block_range_cache::set_bb_range (tree name, const_basic_block bb,
 
   if (!m_ssa_ranges[v])
     {
-      // Use sparse representation if there are too many basic blocks.
-      if (last_basic_block_for_fn (cfun) > param_evrp_sparse_threshold)
+      // Use sparse bitmap representation if there are too many basic blocks.
+      if (last_basic_block_for_fn (cfun) > param_vrp_sparse_threshold)
 	{
 	  void *r = m_range_allocator->alloc (sizeof (sbr_sparse_bitmap));
 	  m_ssa_ranges[v] = new (r) sbr_sparse_bitmap (TREE_TYPE (name),
 						       m_range_allocator,
 						       &m_bitmaps);
 	}
-      else
+      else if (last_basic_block_for_fn (cfun) < param_vrp_vector_threshold)
 	{
-	  // Otherwise use the default vector implementation.
+	  // For small CFGs use the basic vector implemntation.
 	  void *r = m_range_allocator->alloc (sizeof (sbr_vector));
 	  m_ssa_ranges[v] = new (r) sbr_vector (TREE_TYPE (name),
 						m_range_allocator);
+	}
+      else
+	{
+	  // Otherwise use the sparse vector implementation.
+	  void *r = m_range_allocator->alloc (sizeof (sbr_lazy_vector));
+	  m_ssa_ranges[v] = new (r) sbr_lazy_vector (TREE_TYPE (name),
+						     m_range_allocator,
+						     &m_bitmaps);
 	}
     }
   return m_ssa_ranges[v]->set_bb_range (bb, r);
