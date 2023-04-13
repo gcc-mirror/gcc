@@ -11,6 +11,7 @@ void fxa2 (int16_t[2]) __attribute__ ((nonnull));
 void fas2 (int16_t[static 2]);
 
 void fvla (unsigned n, int16_t[n]);
+void fvlaS (unsigned n, int16_t[static n]);
 
 void test_array_1_dim (void)
 {
@@ -33,7 +34,8 @@ void test_array_1_dim (void)
   fas2 (a1);                  // { dg-warning "'fas2' accessing 4 bytes in a region of size 2 " }
   fas2 (&i);                  // { dg-warning "'fas2' accessing 4 bytes in a region of size 2 " }
 
-  fvla (1, 0);                // { dg-warning "\\\[-Wnonnull" }
+  fvla (1, 0);
+  fvlaS (1, 0);               // { dg-warning "\\\[-Wnonnull" }
   fvla (1, &i);
   fvla (2, a2);
   fvla (2, a1);               // { dg-warning "'fvla' accessing 4 bytes in a region of size 2 " }
@@ -47,6 +49,7 @@ void fxac2 (const int16_t[2]) __attribute__ ((nonnull));
 void facs2 (const int16_t[static 2]);
 
 void fvlac (unsigned n, const int16_t[n]);
+void fvlacS (unsigned n, const int16_t[static n]);
 
 void test_const_array_1_dim (void)
 {
@@ -69,7 +72,8 @@ void test_const_array_1_dim (void)
   facs2 (a1);                 // { dg-warning "'facs2' reading 4 bytes from a region of size 2 " }
   facs2 (&i);                 // { dg-warning "'facs2' reading 4 bytes from a region of size 2 " }
 
-  fvlac (1, 0);               // { dg-warning "\\\[-Wnonnull" }
+  fvlac (1, 0);
+  fvlacS (1, 0);              // { dg-warning "\\\[-Wnonnull" }
   fvlac (1, &i);
   fvlac (2, a2);
   fvlac (2, a1);              // { dg-warning "'fvlac' reading 4 bytes from a region of size 2 " }

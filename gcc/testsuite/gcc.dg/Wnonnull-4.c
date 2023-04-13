@@ -27,9 +27,9 @@ void test_fca_n (int r_m1)
   T (  0);
 
   // Verify positive bounds.
-  T (  1);          // { dg-warning "argument 2 of variable length array 'char\\\[n]' is null but the corresponding bound argument 1 value is 1" }
-  T (  9);          // { dg-warning "argument 2 of variable length array 'char\\\[n]' is null but the corresponding bound argument 1 value is 9" }
-  T (max);          // { dg-warning "argument 2 of variable length array 'char\\\[n]' is null but the corresponding bound argument 1 value is \\d+" }
+  T (  1);          // { dg-bogus "argument 2 of variable length array 'char\\\[n]' is null but the corresponding bound argument 1 value is 1" }
+  T (  9);          // { dg-bogus "argument 2 of variable length array 'char\\\[n]' is null but the corresponding bound argument 1 value is 9" }
+  T (max);          // { dg-bogus "argument 2 of variable length array 'char\\\[n]' is null but the corresponding bound argument 1 value is \\d+" }
 }
 
 
@@ -55,9 +55,9 @@ void test_fsa_x_n (int r_m1)
   T (  0);
 
   // Verify positive bounds.
-  T (  1);          // { dg-warning "argument 2 of variable length array 'short int\\\[]\\\[n]' is null but the corresponding bound argument 1 value is 1" }
-  T (  9);          // { dg-warning "argument 2 of variable length array 'short int\\\[]\\\[n]' is null but the corresponding bound argument 1 value is 9" }
-  T (max);          // { dg-warning "argument 2 of variable length array 'short int\\\[]\\\[n]' is null but the corresponding bound argument 1 value is \\d+" }
+  T (  1);          // { dg-bogus "argument 2 of variable length array 'short int\\\[]\\\[n]' is null but the corresponding bound argument 1 value is 1" }
+  T (  9);          // { dg-bogus "argument 2 of variable length array 'short int\\\[]\\\[n]' is null but the corresponding bound argument 1 value is 9" }
+  T (max);          // { dg-bogus "argument 2 of variable length array 'short int\\\[]\\\[n]' is null but the corresponding bound argument 1 value is \\d+" }
 }
 
 
@@ -83,9 +83,9 @@ void test_fia_1_n (int r_m1)
   T (  0);
 
   // Verify positive bounds.
-  T (  1);          // { dg-warning "argument 2 of variable length array 'int\\\[1]\\\[n]' is null but the corresponding bound argument 1 value is 1" }
-  T (  9);          // { dg-warning "argument 2 of variable length array 'int\\\[1]\\\[n]' is null but the corresponding bound argument 1 value is 9" }
-  T (max);          // { dg-warning "argument 2 of variable length array 'int\\\[1]\\\[n]' is null but the corresponding bound argument 1 value is \\d+" }
+  T (  1);          // { dg-bogus "argument 2 of variable length array 'int\\\[1]\\\[n]' is null but the corresponding bound argument 1 value is 1" }
+  T (  9);          // { dg-bogus "argument 2 of variable length array 'int\\\[1]\\\[n]' is null but the corresponding bound argument 1 value is 9" }
+  T (max);          // { dg-bogus "argument 2 of variable length array 'int\\\[1]\\\[n]' is null but the corresponding bound argument 1 value is \\d+" }
 }
 
 
@@ -111,9 +111,9 @@ void test_fla_3_n (int r_m1)
   T (  0);
 
   // Verify positive bounds.
-  T (  1);          // { dg-warning "argument 2 of variable length array 'long int\\\[3]\\\[n]' is null but the corresponding bound argument 1 value is 1" }
-  T (  9);          // { dg-warning "argument 2 of variable length array 'long int\\\[3]\\\[n]' is null but the corresponding bound argument 1 value is 9" }
-  T (max);          // { dg-warning "argument 2 of variable length array 'long int\\\[3]\\\[n]' is null but the corresponding bound argument 1 value is \\d+" }
+  T (  1);          // { dg-bogus "argument 2 of variable length array 'long int\\\[3]\\\[n]' is null but the corresponding bound argument 1 value is 1" }
+  T (  9);          // { dg-bogus "argument 2 of variable length array 'long int\\\[3]\\\[n]' is null but the corresponding bound argument 1 value is 9" }
+  T (max);          // { dg-bogus "argument 2 of variable length array 'long int\\\[3]\\\[n]' is null but the corresponding bound argument 1 value is \\d+" }
 }
 
 
@@ -139,9 +139,9 @@ void test_fda_n_5 (int r_m1)
   T (  0);
 
   // Verify positive bounds.
-  T (  1);          // { dg-warning "argument 2 of variable length array 'double\\\[n]\\\[5]' is null but the corresponding bound argument 1 value is 1" }
-  T (  9);          // { dg-warning "argument 2 of variable length array 'double\\\[n]\\\[5]' is null but the corresponding bound argument 1 value is 9" }
-  T (max);          // { dg-warning "argument 2 of variable length array 'double\\\[n]\\\[5]' is null but the corresponding bound argument 1 value is \\d+" }
+  T (  1);          // { dg-bogus "argument 2 of variable length array 'double\\\[n]\\\[5]' is null but the corresponding bound argument 1 value is 1" }
+  T (  9);          // { dg-bogus "argument 2 of variable length array 'double\\\[n]\\\[5]' is null but the corresponding bound argument 1 value is 9" }
+  T (max);          // { dg-bogus "argument 2 of variable length array 'double\\\[n]\\\[5]' is null but the corresponding bound argument 1 value is \\d+" }
 }
 
 
@@ -167,7 +167,7 @@ void test_fca_n_n (int r_m1)
   T (  0);
 
   // Verify positive bounds.
-  T (  1);          // { dg-warning "argument 2 of variable length array 'char\\\[n]\\\[n]' is null but the corresponding bound argument 1 value is 1" }
-  T (  9);          // { dg-warning "argument 2 of variable length array 'char\\\[n]\\\[n]' is null but the corresponding bound argument 1 value is 9" }
-  T (max);          // { dg-warning "argument 2 of variable length array 'char\\\[n]\\\[n]' is null but the corresponding bound argument 1 value is \\d+" }
+  T (  1);          // { dg-bogus "argument 2 of variable length array 'char\\\[n]\\\[n]' is null but the corresponding bound argument 1 value is 1" }
+  T (  9);          // { dg-bogus "argument 2 of variable length array 'char\\\[n]\\\[n]' is null but the corresponding bound argument 1 value is 9" }
+  T (max);          // { dg-bogus "argument 2 of variable length array 'char\\\[n]\\\[n]' is null but the corresponding bound argument 1 value is \\d+" }
 }
