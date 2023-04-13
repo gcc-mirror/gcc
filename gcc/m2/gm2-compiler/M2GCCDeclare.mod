@@ -47,7 +47,7 @@ FROM M2AsmUtil IMPORT GetFullSymName, GetFullScopeAsmName ;
 FROM M2Batch IMPORT MakeDefinitionSource ;
 FROM NameKey IMPORT Name, MakeKey, NulName, KeyToCharStar, makekey ;
 FROM M2FileName IMPORT CalculateFileName ;
-FROM DynamicStrings IMPORT String, string, InitString, KillString, InitStringCharStar, Mark ;
+FROM DynamicStrings IMPORT String, string, InitString, KillString, InitStringCharStar, InitStringChar, Mark ;
 FROM FormatStrings IMPORT Sprintf1 ;
 FROM M2LexBuf IMPORT TokenToLineNo, FindFileNameFromToken, TokenToLocation, UnknownTokenNo, BuiltinTokenNo ;
 FROM M2MetaError IMPORT MetaError1, MetaError3 ;
@@ -143,6 +143,7 @@ FROM M2Scope IMPORT ScopeBlock, InitScopeBlock, KillScopeBlock, ForeachScopeBloc
 
 FROM M2ALU IMPORT Addn, Sub, Equ, GreEqu, Gre, Less, PushInt, PushCard, ConvertToType,
                   PushIntegerTree, PopIntegerTree, PopRealTree, ConvertToInt, PopSetTree,
+                  PopChar,
                   IsConstructorDependants, WalkConstructorDependants,
                   PopConstructorTree, PopComplexTree, PutConstructorSolved,
                   ChangeToConstructor, EvaluateValue, TryEvaluateValue ;
@@ -1562,16 +1563,24 @@ END DeclareStringConstant ;
 PROCEDURE PromoteToString (tokenno: CARDINAL; sym: CARDINAL) : Tree ;
 VAR
    size: CARDINAL ;
+   ch  : CHAR ;
 BEGIN
    DeclareConstant (tokenno, sym) ;
-   size := GetStringLength (sym) ;
-   IF size > 1
+   IF IsConst (sym) AND (GetSType (sym) = Char)
    THEN
-      (* will be a string anyway *)
-      RETURN Tree (Mod2Gcc (sym))
+      PushValue (sym) ;
+      ch := PopChar (tokenno) ;
+      RETURN BuildCStringConstant (string (InitStringChar (ch)), 1)
    ELSE
-      RETURN BuildStringConstant (KeyToCharStar (GetString (sym)),
-                                  GetStringLength (sym))
+      size := GetStringLength (sym) ;
+      IF size > 1
+      THEN
+         (* will be a string anyway *)
+         RETURN Tree (Mod2Gcc (sym))
+      ELSE
+         RETURN BuildStringConstant (KeyToCharStar (GetString (sym)),
+                                     GetStringLength (sym))
+      END
    END
 END PromoteToString ;
 

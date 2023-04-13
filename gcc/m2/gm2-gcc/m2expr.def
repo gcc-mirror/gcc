@@ -584,6 +584,13 @@ PROCEDURE IsFalse (t: Tree) : BOOLEAN ;
 
 
 (*
+    GetCstInteger - return the integer value of the cst tree.
+*)
+
+PROCEDURE GetCstInteger (cst: Tree) : INTEGER ;
+
+
+(*
     AreConstantsEqual - maps onto tree.c (tree_int_cst_equal). It returns
                         TRUE if the value of e1 is the same as e2.
 *)
