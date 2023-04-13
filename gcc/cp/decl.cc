@@ -4307,7 +4307,17 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
      lookup will stop when we hit a dependent base.  */
   if (!dependent_scope_p (context))
     {
-      bool want_type = (complain & tf_qualifying_scope);
+      /* We generally don't ignore non-types during TYPENAME_TYPE lookup
+	 (as per [temp.res.general]/3), unless
+	   - the tag corresponds to a class-key or 'enum' so
+	     [basic.lookup.elab] applies, or
+	   - the tag corresponds to scope_type or tf_qualifying_scope is
+	     set so [basic.lookup.qual]/1 applies.
+	 TODO: If we'd set/track the scope_type tag thoroughly on all
+	 TYPENAME_TYPEs that are followed by :: then we wouldn't need the
+	 tf_qualifying_scope flag.  */
+      bool want_type = (tag_type != none_type && tag_type != typename_type)
+	|| (complain & tf_qualifying_scope);
       t = lookup_member (context, name, /*protect=*/2, want_type, complain);
     }
   else
