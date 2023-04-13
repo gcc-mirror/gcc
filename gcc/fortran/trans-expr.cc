@@ -3400,11 +3400,12 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
       && TREE_CODE (TREE_TYPE (rse.expr)) == INTEGER_TYPE)
     {
       wi::tree_to_wide_ref wlhs = wi::to_wide (lse.expr);
-      HOST_WIDE_INT v, w;
+      HOST_WIDE_INT v;
+      unsigned HOST_WIDE_INT w;
       int kind, ikind, bit_size;
 
       v = wlhs.to_shwi ();
-      w = abs (v);
+      w = absu_hwi (v);
 
       kind = expr->value.op.op1->ts.kind;
       ikind = gfc_validate_kind (BT_INTEGER, kind, false);
