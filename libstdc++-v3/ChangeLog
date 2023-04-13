@@ -1,3 +1,77 @@
+2023-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/using.xml: Document libstdc++exp.a library.
+	* doc/html/*: Regenerate.
+
+2023-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names.cc [_AIX]: Do not define policy.
+	* testsuite/19_diagnostics/error_code/cons/lwg3629.cc: Rename
+	namespace to avoid clashing with libc struct.
+	* testsuite/19_diagnostics/error_condition/cons/lwg3629.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/96088.cc: Skip on AIX.
+	* testsuite/23_containers/unordered_multimap/96088.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/96088.cc: Likewise.
+	* testsuite/23_containers/unordered_set/96088.cc: Likewise.
+	* testsuite/experimental/synchronized_value.cc: Require gthreads
+	and add missing option for pthreads targets.
+
+2023-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__cpp_lib_ranges_enumerate): Define
+	for C++23.
+	(__detail::__range_with_movable_reference): Likewise.
+	(enumerate_view): Likewise.
+	(enumerate_view::_Iterator): Likewise.
+	(enumerate_view::_Sentinel): Likewise.
+	(views::__detail::__can_enumerate_view): Likewise.
+	(views::_Enumerate, views::enumerate): Likewise.
+	* include/std/version (__cpp_lib_ranges_enumerate): Likewise.
+	* testsuite/std/ranges/version_c++23.cc: Verify value of
+	__cpp_lib_ranges_enumerate.
+	* testsuite/std/ranges/adaptors/enumerate/1.cc: New test.
+
+2023-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (lazy_split_view::_OuterIter::_OuterIter):
+	Propagate _M_trailing_empty in the const-converting constructor
+	as per LWG 3904.
+	* testsuite/std/ranges/adaptors/adjacent/1.cc (test04): Correct
+	assertion.
+	* testsuite/std/ranges/adaptors/lazy_split.cc (test12): New test.
+
+2023-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/floating_from_chars.cc: Include <algorithm>,
+	<iterator>, <limits> and <cstdint>.
+
+2023-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/108291
+	* include/std/ranges (chunk_by_view::_M_find_next): Generalize
+	parameter types of the lambda wrapper passed to adjacent_find.
+	(chunk_by_view::_M_find_prev): Likewise.
+	* testsuite/std/ranges/adaptors/chunk_by/1.cc (test04, test05):
+	New tests.
+
+2023-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109482
+	* include/experimental/internet (basic_endpoint::basic_endpoint()):
+	Ensure that the required union members are active. Only define
+	as constexpr for C++20 and later.
+	(basic_endpoint::basic_endpoint(const protocol_type&, port_type)):
+	Likewise.
+	* testsuite/experimental/net/internet/endpoint/cons.cc: Only
+	check constexpr default constructor for C++20 and later.
+	* testsuite/experimental/net/internet/endpoint/extensible.cc:
+	Likewise.
+
+2023-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdata.zi: Import new file from 2023c release.
+
 2023-04-05  Arsen Arsenović  <arsen@aarsen.me>
 
 	* include/precompiled/stdc++.h (C++17): Don't double-include

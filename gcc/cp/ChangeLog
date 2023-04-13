@@ -1,3 +1,11 @@
+2023-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (s-cp-module-version): New target.
+	(cp/module.o): Depend on it.
+	(MODULE_VERSION): Remove variable.
+	(CFLAGS-cp/module.o): For -DMODULE_VERSION= argument just
+	cat s-cp-module-version.
+
 2023-04-09  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (coro_rewrite_function_body): Ensure that added

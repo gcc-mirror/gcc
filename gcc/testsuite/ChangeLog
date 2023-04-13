@@ -1,3 +1,67 @@
+2023-04-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109479
+	* gcc.target/riscv/rvv/base/pr109479-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr109479-2.c: New test.
+	* gcc.target/riscv/rvv/base/pr109479-3.c: New test.
+	* gcc.target/riscv/rvv/base/pr109479-4.c: New test.
+	* gcc.target/riscv/rvv/base/pr109479-5.c: New test.
+	* gcc.target/riscv/rvv/base/pr109479-6.c: New test.
+
+2023-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109410
+	* gcc.dg/pr109410.c: New test.
+
+2023-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109458
+	* gcc.target/i386/pr109458.c: New test.
+
+2023-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109462
+	* g++.dg/opt/pr109462.C: New test.
+
+2023-04-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109462
+	* gcc.dg/uninit-pr101912.c: XFAIL the warning.
+
+2023-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109473
+	* gcc.dg/vect/pr109473.c: New testcase.
+
+2023-04-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104312
+	* gfortran.dg/entry_26.f90: New test.
+	* gfortran.dg/entry_27.f90: New test.
+
+2023-04-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/61615
+	PR fortran/99982
+	* gfortran.dg/interface_49.f90: New test.
+
+2023-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109469
+	* gcc.dg/torture/pr109469.c: New testcase.
+
+2023-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109434
+	* g++.dg/opt/pr109434.C: New testcase.
+
+2023-04-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/108815
+	* gcc.target/powerpc/pr83677.c (v_expand_u8, v_expand_u16,
+	v_load_deinterleave_f32, v_store_interleave_f32): Adjust some code by
+	considering BE.
+
 2023-04-11  Lin Sinan  <mynameisxiaou@gmail.com>
 
 	* gcc.target/riscv/zbs-extra-bit-or-twobits.c: New test.

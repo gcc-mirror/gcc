@@ -1,3 +1,78 @@
+2023-04-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109479
+	* config/riscv/riscv-vector-builtins-types.def (vint8mf8_t): Fix predicate.
+	(vint16mf4_t): Ditto.
+	(vint32mf2_t): Ditto.
+	(vint64m1_t): Ditto.
+	(vint64m2_t): Ditto.
+	(vint64m4_t): Ditto.
+	(vint64m8_t): Ditto.
+	(vuint8mf8_t): Ditto.
+	(vuint16mf4_t): Ditto.
+	(vuint32mf2_t): Ditto.
+	(vuint64m1_t): Ditto.
+	(vuint64m2_t): Ditto.
+	(vuint64m4_t): Ditto.
+	(vuint64m8_t): Ditto.
+	(vfloat32mf2_t): Ditto.
+	(vbool64_t): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (register_builtin_type): Add comments.
+	(register_vector_type): Ditto.
+	(check_required_extensions): Fix condition.
+	* config/riscv/riscv-vector-builtins.h (RVV_REQUIRE_ZVE64): Remove it.
+	(RVV_REQUIRE_ELEN_64): New define.
+	(RVV_REQUIRE_MIN_VLEN_64): Ditto.
+	* config/riscv/riscv-vector-switch.def (TARGET_VECTOR_FP32): Remove it.
+	(TARGET_VECTOR_FP64): Ditto.
+	(ENTRY): Fix predicate.
+	* config/riscv/vector-iterators.md: Fix predicate.
+
+2023-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109410
+	* tree-ssa-reassoc.cc (build_and_add_sum): Split edge from entry
+	block if first statement of the function is a call to returns_twice
+	function.
+
+2023-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109458
+	* config/i386/i386.cc: Include rtl-error.h.
+	(ix86_print_operand): For z modifier warning, use warning_for_asm
+	if this_is_asm_operands.  For Z modifier errors, use %c and code
+	instead of hardcoded Z.
+
+2023-04-12  Costas Argyris  <costas.argyris@gmail.com>
+
+	* config/i386/x-mingw32-utf8: Remove extrataneous $@
+
+2023-04-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109462
+	* gimple-range-cache.cc (ranger_cache::fill_block_cache): Don't
+	check for equivalences if NAME is a phi node.
+
+2023-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109473
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction):
+	Convert scalar result to the computation type before performing
+	the reduction adjustment.
+
+2023-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109469
+	* tree-vect-slp.cc (vect_slp_function): Skip region starts with
+	a returns-twice call.
+
+2023-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109434
+	* tree-ssa-dse.cc (initialize_ao_ref_for_dse): Properly
+	handle possibly throwing calls when processing the LHS
+	and may-defs are not OK.
+
 2023-04-11  Lin Sinan  <mynameisxiaou@gmail.com>
 
 	* config/riscv/predicates.md (uimm_extra_bit_or_twobits): Adjust

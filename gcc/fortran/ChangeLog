@@ -1,3 +1,21 @@
+2023-04-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104312
+	* resolve.cc (resolve_entries): Handle functions with ENTRY and
+	ALLOCATABLE results.
+	* trans-expr.cc (gfc_conv_procedure_call): Functions with a result
+	with the POINTER or ALLOCATABLE attribute shall not get any special
+	treatment with -ff2c, as they cannot be written in Fortran 77.
+	* trans-types.cc (gfc_return_by_reference): Likewise.
+	(gfc_get_function_type): Likewise.
+
+2023-04-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/61615
+	PR fortran/99982
+	* interface.cc (compare_parameter): Enable type and rank checks for
+	arguments of derived type from the intrinsic module ISO_C_BINDING.
+
 2023-04-08  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87477
