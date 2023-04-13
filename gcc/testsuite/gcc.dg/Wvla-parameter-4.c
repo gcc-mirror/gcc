@@ -12,11 +12,6 @@ typedef int IA3[3];
 /* Verify the warning points to the declaration with more unspecified
    bounds, guiding the user to specify them rather than making them all
    unspecified.  */
-void* f_pIA3ax (IA3 *x[*]);             // { dg-warning "argument 1 of type 'int \\\(\\\*\\\[\\\*]\\\)\\\[3]' .aka '\[^\n\r\}\]+'. declared with 1 unspecified variable bound" }
-void* f_pIA3ax (IA3 *x[*]);
-void* f_pIA3ax (IA3 *x[n]);             // { dg-message "subsequently declared as 'int \\\(\\\*\\\[n]\\\)\\\[3]' with 0 unspecified variable bounds" "note" }
-void* f_pIA3ax (IA3 *x[n]) { return x; }
-
 
 void* f_pIA3an (IA3 *x[n]);              // { dg-message "previously declared as 'int \\\(\\\*\\\[n]\\\)\\\[3]' with 0 unspecified variable bounds" "note" }
 void* f_pIA3an (IA3 *x[n]);

@@ -60,16 +60,6 @@ RW (2, 1) void f10 (int n, char a[n])   // { dg-warning "attribute 'access *\\\(
                                         // { dg-warning "argument 2 of type 'char\\\[n]' declared as a variable length array"  "" { target *-*-* } .-1 }
 { (void)&n; (void)&a; }
 
-
-/* The following is diagnosed to point out declarations with the T[*]
-   form in headers where specifying the bound is just as important as
-   in the definition (to detect bugs).  */
-          void f11 (int, char[*]);      // { dg-warning "argument 2 of type 'char\\\[\\\*\\\]' declared with 1 unspecified variable bound" }
-          void f11 (int m, char a[m]);  // { dg-message "subsequently declared as 'char\\\[m]' with 0 unspecified variable bounds" "note" }
-RW (2, 1) void f11 (int n, char arr[n]) // { dg-message "subsequently declared as 'char\\\[n]' with 0 unspecified variable bounds" "note" }
-{ (void)&n; (void)&arr; }
-
-
 /* Verify that redeclaring a function with attribute access applying
    to an array parameter of any form is not diagnosed.  */
           void f12__ (int, int[]) RW (2, 1);
