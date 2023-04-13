@@ -7484,7 +7484,20 @@ aarch64_function_arg_alignment (machine_mode mode, const_tree type,
   gcc_assert (TYPE_MODE (type) == mode);
 
   if (!AGGREGATE_TYPE_P (type))
-    return TYPE_ALIGN (TYPE_MAIN_VARIANT (type));
+    {
+      /* The ABI alignment is the natural alignment of the type, without
+	 any attributes applied.  Normally this is the alignment of the
+	 TYPE_MAIN_VARIANT, but not always; see PR108910 for a counterexample.
+	 For now we just handle the known exceptions explicitly.  */
+      type = TYPE_MAIN_VARIANT (type);
+      if (POINTER_TYPE_P (type))
+	{
+	  gcc_assert (known_eq (POINTER_SIZE, GET_MODE_BITSIZE (mode)));
+	  return POINTER_SIZE;
+	}
+      gcc_assert (!TYPE_USER_ALIGN (type));
+      return TYPE_ALIGN (type);
+    }
 
   if (TREE_CODE (type) == ARRAY_TYPE)
     return TYPE_ALIGN (TREE_TYPE (type));
