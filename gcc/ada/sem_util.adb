@@ -17582,21 +17582,6 @@ package body Sem_Util is
                   and then Is_Derived_Type (Etype (E)));
    end Is_Inherited_Operation;
 
-   -------------------------------------
-   -- Is_Inherited_Operation_For_Type --
-   -------------------------------------
-
-   function Is_Inherited_Operation_For_Type
-     (E   : Entity_Id;
-      Typ : Entity_Id) return Boolean
-   is
-   begin
-      --  Check that the operation has been created by the type declaration
-
-      return Is_Inherited_Operation (E)
-        and then Defining_Identifier (Parent (E)) = Typ;
-   end Is_Inherited_Operation_For_Type;
-
    --------------------------------------
    -- Is_Inlinable_Expression_Function --
    --------------------------------------
