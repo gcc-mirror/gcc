@@ -292,7 +292,7 @@ cxx_incomplete_type_inform (const_tree type)
    and TYPE is the type that was invalid.  DIAG_KIND indicates the
    type of diagnostic (see diagnostic.def).  */
 
-void
+bool
 cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
 				const_tree type, diagnostic_t diag_kind)
 {
@@ -304,7 +304,7 @@ cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
 
   /* Avoid duplicate error message.  */
   if (TREE_CODE (type) == ERROR_MARK)
-    return;
+    return false;
 
   if (value)
     {
@@ -336,7 +336,7 @@ cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
       break;
 
     case VOID_TYPE:
-      emit_diagnostic (diag_kind, loc, 0,
+      complained = emit_diagnostic (diag_kind, loc, 0,
 		       "invalid use of %qT", type);
       break;
 
@@ -346,7 +346,7 @@ cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
 	  type = TREE_TYPE (type);
 	  goto retry;
 	}
-      emit_diagnostic (diag_kind, loc, 0,
+      complained = emit_diagnostic (diag_kind, loc, 0,
 		       "invalid use of array with unspecified bounds");
       break;
 
@@ -365,12 +365,12 @@ cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
 	       add a fix-it hint.  */
 	    if (type_num_arguments (TREE_TYPE (member)) == 1)
 	      richloc.add_fixit_insert_after ("()");
-	    emit_diagnostic (diag_kind, &richloc, 0,
+	    complained = emit_diagnostic (diag_kind, &richloc, 0,
 			     "invalid use of member function %qD "
 			     "(did you forget the %<()%> ?)", member);
 	  }
 	else
-	  emit_diagnostic (diag_kind, loc, 0,
+	  complained = emit_diagnostic (diag_kind, loc, 0,
 			   "invalid use of member %qD "
 			   "(did you forget the %<&%> ?)", member);
       }
@@ -380,38 +380,38 @@ cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
       if (is_auto (type))
 	{
 	  if (CLASS_PLACEHOLDER_TEMPLATE (type))
-	    emit_diagnostic (diag_kind, loc, 0,
+	    complained = emit_diagnostic (diag_kind, loc, 0,
 			     "invalid use of placeholder %qT", type);
 	  else
-	    emit_diagnostic (diag_kind, loc, 0,
+	    complained = emit_diagnostic (diag_kind, loc, 0,
 			     "invalid use of %qT", type);
 	}
       else
-	emit_diagnostic (diag_kind, loc, 0,
+	complained = emit_diagnostic (diag_kind, loc, 0,
 			 "invalid use of template type parameter %qT", type);
       break;
 
     case BOUND_TEMPLATE_TEMPLATE_PARM:
-      emit_diagnostic (diag_kind, loc, 0,
+      complained = emit_diagnostic (diag_kind, loc, 0,
 		       "invalid use of template template parameter %qT",
 		       TYPE_NAME (type));
       break;
 
     case TYPE_PACK_EXPANSION:
-      emit_diagnostic (diag_kind, loc, 0,
+      complained = emit_diagnostic (diag_kind, loc, 0,
 		       "invalid use of pack expansion %qT", type);
       break;
 
     case TYPENAME_TYPE:
     case DECLTYPE_TYPE:
-      emit_diagnostic (diag_kind, loc, 0,
+      complained = emit_diagnostic (diag_kind, loc, 0,
 		       "invalid use of dependent type %qT", type);
       break;
 
     case LANG_TYPE:
       if (type == init_list_type_node)
 	{
-	  emit_diagnostic (diag_kind, loc, 0,
+	  complained = emit_diagnostic (diag_kind, loc, 0,
 			   "invalid use of brace-enclosed initializer list");
 	  break;
 	}
@@ -419,20 +419,22 @@ cxx_incomplete_type_diagnostic (location_t loc, const_tree value,
       if (value && TREE_CODE (value) == COMPONENT_REF)
 	goto bad_member;
       else if (value && TREE_CODE (value) == ADDR_EXPR)
-	emit_diagnostic (diag_kind, loc, 0,
+	complained = emit_diagnostic (diag_kind, loc, 0,
 			 "address of overloaded function with no contextual "
 			 "type information");
       else if (value && TREE_CODE (value) == OVERLOAD)
-	emit_diagnostic (diag_kind, loc, 0,
+	complained = emit_diagnostic (diag_kind, loc, 0,
 			 "overloaded function with no contextual type information");
       else
-	emit_diagnostic (diag_kind, loc, 0,
+	complained = emit_diagnostic (diag_kind, loc, 0,
 			 "insufficient contextual information to determine type");
       break;
 
     default:
       gcc_unreachable ();
     }
+
+  return complained;
 }
 
 /* Print an error message for invalid use of an incomplete type.

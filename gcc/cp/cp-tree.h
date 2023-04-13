@@ -8155,7 +8155,7 @@ extern void maybe_warn_pessimizing_move	     (tree, tree, bool);
 
 /* in typeck2.cc */
 extern void require_complete_eh_spec_types	(tree, tree);
-extern void cxx_incomplete_type_diagnostic	(location_t, const_tree,
+extern bool cxx_incomplete_type_diagnostic	(location_t, const_tree,
 						 const_tree, diagnostic_t);
 inline location_t
 loc_or_input_loc (location_t loc)
@@ -8178,12 +8178,12 @@ cp_expr_loc_or_input_loc (const_tree t)
   return cp_expr_loc_or_loc (t, input_location);
 }
 
-inline void
+inline bool
 cxx_incomplete_type_diagnostic (const_tree value, const_tree type,
 				diagnostic_t diag_kind)
 {
-  cxx_incomplete_type_diagnostic (cp_expr_loc_or_input_loc (value),
-				  value, type, diag_kind);
+  return cxx_incomplete_type_diagnostic (cp_expr_loc_or_input_loc (value),
+					 value, type, diag_kind);
 }
 
 extern void cxx_incomplete_type_error		(location_t, const_tree,
