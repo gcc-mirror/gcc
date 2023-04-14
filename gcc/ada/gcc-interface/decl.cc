@@ -4364,12 +4364,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       /* If the alignment has not already been processed and this is not
 	 an unconstrained array type, see if an alignment is specified.
 	 If not, we pick a default alignment for atomic objects.  */
-      if (align != 0 || TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE)
+      if (align > 0 || TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE)
 	;
       else if (Known_Alignment (gnat_entity))
 	{
 	  align = validate_alignment (Alignment (gnat_entity), gnat_entity,
 				      TYPE_ALIGN (gnu_type));
+
+	  /* Treat confirming clauses on scalar types like the default.  */
+	  if (align == TYPE_ALIGN (gnu_type) && !AGGREGATE_TYPE_P (gnu_type))
+	    align = 0;
 
 	  /* Warn on suspiciously large alignments.  This should catch
 	     errors about the (alignment,byte)/(size,bit) discrepancy.  */
@@ -4666,7 +4670,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    TYPE_BY_REFERENCE_P (gnu_type) = 1;
 
 	  /* Record whether an alignment clause was specified.  */
-	  if (Present (Alignment_Clause (gnat_entity)))
+	  if (align > 0 && Present (Alignment_Clause (gnat_entity)))
 	    TYPE_USER_ALIGN (gnu_type) = 1;
 
 	  /* Record whether a pragma Universal_Aliasing was specified.  */
