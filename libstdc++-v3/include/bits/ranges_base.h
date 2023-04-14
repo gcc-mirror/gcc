@@ -177,45 +177,6 @@ namespace ranges
 	}
     };
 
-    // If _To is an lvalue-reference, return const _Tp&, otherwise const _Tp&&.
-    template<typename _To, typename _Tp>
-      constexpr decltype(auto)
-      __as_const(_Tp& __t) noexcept
-      {
-	static_assert(std::is_same_v<_To&, _Tp&>);
-
-	if constexpr (is_lvalue_reference_v<_To>)
-	  return const_cast<const _Tp&>(__t);
-	else
-	  return static_cast<const _Tp&&>(__t);
-      }
-
-    struct _CBegin
-    {
-      template<typename _Tp>
-	[[nodiscard]]
-	constexpr auto
-	operator()(_Tp&& __e) const
-	noexcept(noexcept(_Begin{}(__cust_access::__as_const<_Tp>(__e))))
-	requires requires { _Begin{}(__cust_access::__as_const<_Tp>(__e)); }
-	{
-	  return _Begin{}(__cust_access::__as_const<_Tp>(__e));
-	}
-    };
-
-    struct _CEnd final
-    {
-      template<typename _Tp>
-	[[nodiscard]]
-	constexpr auto
-	operator()(_Tp&& __e) const
-	noexcept(noexcept(_End{}(__cust_access::__as_const<_Tp>(__e))))
-	requires requires { _End{}(__cust_access::__as_const<_Tp>(__e)); }
-	{
-	  return _End{}(__cust_access::__as_const<_Tp>(__e));
-	}
-    };
-
     template<typename _Tp>
       concept __member_rbegin = requires(_Tp& __t)
 	{
@@ -334,32 +295,6 @@ namespace ranges
 	    return rend(__t);
 	  else
 	    return std::make_reverse_iterator(_Begin{}(__t));
-	}
-    };
-
-    struct _CRBegin
-    {
-      template<typename _Tp>
-	[[nodiscard]]
-	constexpr auto
-	operator()(_Tp&& __e) const
-	noexcept(noexcept(_RBegin{}(__cust_access::__as_const<_Tp>(__e))))
-	requires requires { _RBegin{}(__cust_access::__as_const<_Tp>(__e)); }
-	{
-	  return _RBegin{}(__cust_access::__as_const<_Tp>(__e));
-	}
-    };
-
-    struct _CREnd
-    {
-      template<typename _Tp>
-	[[nodiscard]]
-	constexpr auto
-	operator()(_Tp&& __e) const
-	noexcept(noexcept(_REnd{}(__cust_access::__as_const<_Tp>(__e))))
-	requires requires { _REnd{}(__cust_access::__as_const<_Tp>(__e)); }
-	{
-	  return _REnd{}(__cust_access::__as_const<_Tp>(__e));
 	}
     };
 
@@ -547,36 +482,18 @@ namespace ranges
 	}
     };
 
-    struct _CData
-    {
-      template<typename _Tp>
-	[[nodiscard]]
-	constexpr auto
-	operator()(_Tp&& __e) const
-	noexcept(noexcept(_Data{}(__cust_access::__as_const<_Tp>(__e))))
-	requires requires { _Data{}(__cust_access::__as_const<_Tp>(__e)); }
-	{
-	  return _Data{}(__cust_access::__as_const<_Tp>(__e));
-	}
-    };
-
   } // namespace __cust_access
 
   inline namespace __cust
   {
     inline constexpr __cust_access::_Begin begin{};
     inline constexpr __cust_access::_End end{};
-    inline constexpr __cust_access::_CBegin cbegin{};
-    inline constexpr __cust_access::_CEnd cend{};
     inline constexpr __cust_access::_RBegin rbegin{};
     inline constexpr __cust_access::_REnd rend{};
-    inline constexpr __cust_access::_CRBegin crbegin{};
-    inline constexpr __cust_access::_CREnd crend{};
     inline constexpr __cust_access::_Size size{};
     inline constexpr __cust_access::_SSize ssize{};
     inline constexpr __cust_access::_Empty empty{};
     inline constexpr __cust_access::_Data data{};
-    inline constexpr __cust_access::_CData cdata{};
   }
 
   /// [range.range] The range concept.
@@ -689,6 +606,97 @@ namespace ranges
   template<typename _Tp>
     concept common_range
       = range<_Tp> && same_as<iterator_t<_Tp>, sentinel_t<_Tp>>;
+
+  namespace __cust_access
+  {
+    // If _To is an lvalue-reference, return const _Tp&, otherwise const _Tp&&.
+    template<typename _To, typename _Tp>
+      constexpr decltype(auto)
+      __as_const(_Tp& __t) noexcept
+      {
+	static_assert(std::is_same_v<_To&, _Tp&>);
+
+	if constexpr (is_lvalue_reference_v<_To>)
+	  return const_cast<const _Tp&>(__t);
+	else
+	  return static_cast<const _Tp&&>(__t);
+      }
+
+    struct _CBegin
+    {
+      template<typename _Tp>
+	[[nodiscard]]
+	constexpr auto
+	operator()(_Tp&& __e) const
+	noexcept(noexcept(_Begin{}(__cust_access::__as_const<_Tp>(__e))))
+	requires requires { _Begin{}(__cust_access::__as_const<_Tp>(__e)); }
+	{
+	  return _Begin{}(__cust_access::__as_const<_Tp>(__e));
+	}
+    };
+
+    struct _CEnd final
+    {
+      template<typename _Tp>
+	[[nodiscard]]
+	constexpr auto
+	operator()(_Tp&& __e) const
+	noexcept(noexcept(_End{}(__cust_access::__as_const<_Tp>(__e))))
+	requires requires { _End{}(__cust_access::__as_const<_Tp>(__e)); }
+	{
+	  return _End{}(__cust_access::__as_const<_Tp>(__e));
+	}
+    };
+
+    struct _CRBegin
+    {
+      template<typename _Tp>
+	[[nodiscard]]
+	constexpr auto
+	operator()(_Tp&& __e) const
+	noexcept(noexcept(_RBegin{}(__cust_access::__as_const<_Tp>(__e))))
+	requires requires { _RBegin{}(__cust_access::__as_const<_Tp>(__e)); }
+	{
+	  return _RBegin{}(__cust_access::__as_const<_Tp>(__e));
+	}
+    };
+
+    struct _CREnd
+    {
+      template<typename _Tp>
+	[[nodiscard]]
+	constexpr auto
+	operator()(_Tp&& __e) const
+	noexcept(noexcept(_REnd{}(__cust_access::__as_const<_Tp>(__e))))
+	requires requires { _REnd{}(__cust_access::__as_const<_Tp>(__e)); }
+	{
+	  return _REnd{}(__cust_access::__as_const<_Tp>(__e));
+	}
+    };
+
+    struct _CData
+    {
+      template<typename _Tp>
+	[[nodiscard]]
+	constexpr auto
+	operator()(_Tp&& __e) const
+	noexcept(noexcept(_Data{}(__cust_access::__as_const<_Tp>(__e))))
+	requires requires { _Data{}(__cust_access::__as_const<_Tp>(__e)); }
+	{
+	  return _Data{}(__cust_access::__as_const<_Tp>(__e));
+	}
+    };
+
+  } // namespace __cust_access
+
+  inline namespace __cust
+  {
+    inline constexpr __cust_access::_CBegin cbegin{};
+    inline constexpr __cust_access::_CEnd cend{};
+    inline constexpr __cust_access::_CRBegin crbegin{};
+    inline constexpr __cust_access::_CREnd crend{};
+    inline constexpr __cust_access::_CData cdata{};
+  }
 
   namespace __detail
   {
