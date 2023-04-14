@@ -7364,7 +7364,7 @@ gfc_simplify_set_exponent (gfc_expr *x, gfc_expr *i)
 {
   gfc_expr *result;
   mpfr_t exp, absv, log2, pow2, frac;
-  unsigned long exp2;
+  long exp2;
 
   if (x->expr_type != EXPR_CONSTANT || i->expr_type != EXPR_CONSTANT)
     return NULL;
@@ -7396,19 +7396,19 @@ gfc_simplify_set_exponent (gfc_expr *x, gfc_expr *i)
   mpfr_abs (absv, x->value.real, GFC_RND_MODE);
   mpfr_log2 (log2, absv, GFC_RND_MODE);
 
-  mpfr_trunc (log2, log2);
+  mpfr_floor (log2, log2);
   mpfr_add_ui (exp, log2, 1, GFC_RND_MODE);
 
   /* Old exponent value, and fraction.  */
   mpfr_ui_pow (pow2, 2, exp, GFC_RND_MODE);
 
-  mpfr_div (frac, absv, pow2, GFC_RND_MODE);
+  mpfr_div (frac, x->value.real, pow2, GFC_RND_MODE);
 
   /* New exponent.  */
-  exp2 = (unsigned long) mpz_get_d (i->value.integer);
-  mpfr_mul_2exp (result->value.real, frac, exp2, GFC_RND_MODE);
+  exp2 = mpz_get_si (i->value.integer);
+  mpfr_mul_2si (result->value.real, frac, exp2, GFC_RND_MODE);
 
-  mpfr_clears (absv, log2, pow2, frac, NULL);
+  mpfr_clears (absv, log2, exp, pow2, frac, NULL);
 
   return range_check (result, "SET_EXPONENT");
 }
