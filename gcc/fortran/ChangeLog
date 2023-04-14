@@ -1,3 +1,9 @@
+2023-04-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/109492
+	* trans-expr.cc (gfc_conv_power_op): Use absu_hwi and
+	unsigned HOST_WIDE_INT for portability.
+
 2023-04-12  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/104312

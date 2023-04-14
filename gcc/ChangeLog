@@ -1,3 +1,24 @@
+2023-04-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/108139
+	PR tree-optimization/109462
+	* gimple-range-cache.cc (ranger_cache::fill_block_cache): Remove
+	equivalency check for PHI nodes.
+	* gimple-range-fold.cc (fold_using_range::range_of_phi): Ensure def
+	does not dominate single-arg equivalency edges.
+
+2023-04-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/108910
+	* config/aarch64/aarch64.cc (aarch64_function_arg_alignment): Do
+	not trust TYPE_ALIGN for pointer types; use POINTER_SIZE instead.
+
+2023-04-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109491
+	* tree-ssa-sccvn.cc (expressions_equal_p): Restore the
+	NULL operands test.
+
 2023-04-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
 
 	PR target/109479

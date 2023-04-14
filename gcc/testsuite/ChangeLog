@@ -1,3 +1,25 @@
+2023-04-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109420
+	* g++.dg/template/typename27.C: New test.
+
+2023-04-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109277
+	* g++.dg/ext/is_convertible5.C: New test.
+
+2023-04-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109497
+	PR modula2/109496
+	* gm2/pim/run/pass/addcharconst.mod: New test.
+	* gm2/pim/run/pass/singlechar.mod: New test.
+
+2023-04-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/108910
+	* gcc.dg/torture/pr108910.c: New test.
+
 2023-04-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
 
 	PR target/109479

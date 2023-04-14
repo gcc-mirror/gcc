@@ -1,3 +1,23 @@
+2023-04-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109420
+	* decl.cc (make_typename_type): Also ignore non-types during the
+	lookup if tag_type corresponds to an elaborated-type-specifier.
+	* pt.cc (tsubst) <case TYPENAME_TYPE>: Pass class_type or
+	enum_type as tag_type to make_typename_type accordingly instead
+	of always passing typename_type.
+
+2023-04-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109277
+	* semantics.cc (check_trait_type): Handle incomplete type directly.
+	* typeck2.cc (cxx_incomplete_type_diagnostic): Remove assert.
+
+2023-04-13  Jason Merrill  <jason@redhat.com>
+
+	* typeck2.cc (cxx_incomplete_type_diagnostic): Return bool.
+	* cp-tree.h (cxx_incomplete_type_diagnostic): Adjust.
+
 2023-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in (s-cp-module-version): New target.
