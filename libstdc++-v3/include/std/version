@@ -339,6 +339,7 @@
 #define __cpp_lib_ranges_stride 202207L
 #define __cpp_lib_ranges_cartesian_product 202207L
 #define __cpp_lib_ranges_as_rvalue 202207L
+#define __cpp_lib_ranges_as_const 202207L
 #define __cpp_lib_ranges_enumerate 202302L
 #define __cpp_lib_fold 202207L
 #if __cpp_constexpr_dynamic_alloc

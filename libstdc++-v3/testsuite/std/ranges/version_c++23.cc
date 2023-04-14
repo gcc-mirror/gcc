@@ -45,6 +45,10 @@
 # error "Feature-test macro __cpp_lib_ranges_as_rvalue has wrong value in <version>"
 #endif
 
+#if __cpp_lib_ranges_as_const != 202207L
+# error "Feature-test macro __cpp_lib_ranges_as_const has wrong value in <version>"
+#endif
+
 #if __cpp_lib_ranges_enumerate != 202302L
 # error "Feature-test macro __cpp_lib_ranges_enumerate has wrong value in <version>"
 #endif

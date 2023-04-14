@@ -53,9 +53,7 @@ namespace ranges
       concept __has_arrow = input_iterator<_It>
 	&& (is_pointer_v<_It> || requires(_It __it) { __it.operator->(); });
 
-    template<typename _Tp, typename _Up>
-      concept __different_from
-	= !same_as<remove_cvref_t<_Tp>, remove_cvref_t<_Up>>;
+    using std::__detail::__different_from;
   } // namespace __detail
 
   /// The ranges::view_interface class template
@@ -192,6 +190,24 @@ namespace ranges
 	constexpr decltype(auto)
 	operator[](range_difference_t<_Range> __n) const
 	{ return ranges::begin(_M_derived())[__n]; }
+
+#if __cplusplus > 202002L
+      constexpr auto
+      cbegin() requires input_range<_Derived>
+      { return ranges::cbegin(_M_derived()); }
+
+      constexpr auto
+      cbegin() const requires input_range<const _Derived>
+      { return ranges::cbegin(_M_derived()); }
+
+      constexpr auto
+      cend() requires input_range<_Derived>
+      { return ranges::cend(_M_derived()); }
+
+      constexpr auto
+      cend() const requires input_range<const _Derived>
+      { return ranges::cend(_M_derived()); }
+#endif
     };
 
   namespace __detail

@@ -8929,6 +8929,112 @@ namespace views::__adaptor
 
     inline constexpr _Enumerate enumerate;
   }
+
+#define __cpp_lib_ranges_as_const 202207L
+
+  template<view _Vp>
+    requires input_range<_Vp>
+  class as_const_view : public view_interface<as_const_view<_Vp>>
+  {
+    _Vp _M_base = _Vp();
+
+  public:
+    as_const_view() requires default_initializable<_Vp> = default;
+
+    constexpr explicit
+    as_const_view(_Vp __base)
+    noexcept(is_nothrow_move_constructible_v<_Vp>)
+    : _M_base(std::move(__base))
+    { }
+
+    constexpr _Vp
+    base() const &
+    noexcept(is_nothrow_copy_constructible_v<_Vp>)
+    requires copy_constructible<_Vp>
+    { return _M_base; }
+
+    constexpr _Vp
+    base() &&
+    noexcept(is_nothrow_move_constructible_v<_Vp>)
+    { return std::move(_M_base); }
+
+    constexpr auto
+    begin() requires (!__detail::__simple_view<_Vp>)
+    { return ranges::cbegin(_M_base); }
+
+    constexpr auto
+    begin() const requires range<const _Vp>
+    { return ranges::cbegin(_M_base); }
+
+    constexpr auto
+    end() requires (!__detail::__simple_view<_Vp>)
+    { return ranges::cend(_M_base); }
+
+    constexpr auto
+    end() const requires range<const _Vp>
+    { return ranges::cend(_M_base); }
+
+    constexpr auto
+    size() requires sized_range<_Vp>
+    { return ranges::size(_M_base); }
+
+    constexpr auto
+    size() const requires sized_range<const _Vp>
+    { return ranges::size(_M_base); }
+  };
+
+  template<typename _Range>
+    as_const_view(_Range&&) -> as_const_view<views::all_t<_Range>>;
+
+  template<typename _Tp>
+    inline constexpr bool enable_borrowed_range<as_const_view<_Tp>>
+      = enable_borrowed_range<_Tp>;
+
+  namespace views
+  {
+    namespace __detail
+    {
+      template<typename _Tp>
+	inline constexpr bool __is_ref_view = false;
+
+      template<typename _Range>
+	inline constexpr bool __is_ref_view<ref_view<_Range>> = true;
+
+      template<typename _Range>
+	concept __can_as_const_view = requires { as_const_view(std::declval<_Range>()); };
+    }
+
+    struct _AsConst : __adaptor::_RangeAdaptorClosure
+    {
+      template<viewable_range _Range>
+      constexpr auto
+      operator()(_Range&& __r) const
+      noexcept(noexcept(as_const_view(std::declval<_Range>())))
+      requires __detail::__can_as_const_view<_Range>
+      {
+	using _Tp = remove_cvref_t<_Range>;
+	using element_type = remove_reference_t<range_reference_t<_Range>>;
+	if constexpr (constant_range<views::all_t<_Range>>)
+	  return views::all(std::forward<_Range>(__r));
+	else if constexpr (__detail::__is_empty_view<_Tp>)
+	  return views::empty<const element_type>;
+	else if constexpr (std::__detail::__is_span<_Tp>)
+	  return span<const element_type, _Tp::extent>(std::forward<_Range>(__r));
+	else if constexpr (__detail::__is_ref_view<_Tp>
+			   && constant_range<const element_type>)
+	  return ref_view(static_cast<const element_type&>
+			  (std::forward<_Range>(__r).base()));
+	else if constexpr (is_lvalue_reference_v<_Range>
+			   && constant_range<_Tp>
+			   && !view<_Tp>)
+	  return ref_view(static_cast<const _Tp&>(__r));
+	else
+	  return as_const_view(std::forward<_Range>(__r));
+      }
+    };
+
+    inline constexpr _AsConst as_const;
+  }
 #endif // C++23
 } // namespace ranges
 
