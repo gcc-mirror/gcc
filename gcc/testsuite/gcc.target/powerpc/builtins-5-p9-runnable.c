@@ -78,8 +78,13 @@ int main() {
    size = 8;
    vec_uc_result1 = vec_xl_len_r(data_uc, size);
 
+#ifdef __LITTLE_ENDIAN__
    vec_uc_expected1 = (vector unsigned char){8, 7, 6, 5, 4, 3, 2, 1,
 					     0, 0, 0, 0, 0, 0, 0, 0,};
+#else
+   vec_uc_expected1 = (vector unsigned char){0, 0, 0, 0, 0, 0, 0, 0,
+					     1, 2, 3, 4, 5, 6, 7, 8,};
+#endif
    
    if (result_wrong (vec_uc_expected1, vec_uc_result1))
      {
@@ -107,8 +112,13 @@ int main() {
    size = 4;
    vec_uc_result1 = vec_xl_len_r(data_uc, size);
 
+#ifdef __LITTLE_ENDIAN__
    vec_uc_expected1 = (vector unsigned char){ 4, 3, 2, 1, 0, 0, 0, 0,
                                               0, 0, 0, 0, 0, 0, 0, 0 };
+#else
+   vec_uc_expected1 = (vector unsigned char){ 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 1, 2, 3, 4 };
+#endif
    
    if (result_wrong (vec_uc_expected1, vec_uc_result1))
      {
@@ -135,8 +145,13 @@ int main() {
    size = 2;
    vec_uc_result1 = vec_xl_len_r(data_uc, size);
 
+#ifdef __LITTLE_ENDIAN__
    vec_uc_expected1 = (vector unsigned char){ 2, 1, 0, 0, 0, 0, 0, 0,
                                               0, 0, 0, 0, 0, 0, 0, 0 };
+#else
+   vec_uc_expected1 = (vector unsigned char){ 0, 0, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 1, 2 };
+#endif
    
    if (result_wrong (vec_uc_expected1, vec_uc_result1))
      {
@@ -231,8 +246,13 @@ int main() {
      }
 
    /* VEC_XST_LEN_R */
+#ifdef __LITTLE_ENDIAN__
    vec_uc_expected1 = (vector unsigned char){ 16, 15, 14, 13, 12, 11, 10, 9,
 					      8, 7, 6, 5, 4, 3, 2, 1 };
+#else
+   vec_uc_expected1 = (vector unsigned char){ 1, 2, 3, 4, 5, 6, 7, 8,
+					      9, 10, 11, 12, 13, 14, 15, 16 };
+#endif
    store_data_uc = (vector unsigned char){ 1, 2, 3, 4, 5, 6, 7, 8,
 					   9, 10, 11, 12, 13, 14, 15, 16 };
    vec_uc_result1 = (vector unsigned char){ 0, 0, 0, 0, 0, 0, 0, 0,
@@ -265,8 +285,13 @@ int main() {
 #endif
      }
 
+#ifdef __LITTLE_ENDIAN__
    vec_uc_expected1 = (vector unsigned char){ 2, 1, 0, 0, 0, 0, 0, 0,
                                               0, 0, 0, 0, 0, 0, 0, 0 };
+#else
+   vec_uc_expected1 = (vector unsigned char){ 15, 16, 0, 0, 0, 0, 0, 0,
+                                              0, 0, 0, 0, 0, 0, 0, 0 };
+#endif
    store_data_uc = (vector unsigned char){ 1, 2, 3, 4, 5, 6, 7, 8,
 					   9, 10, 11, 12, 13, 14, 15, 16 };
    vec_uc_result1 = (vector unsigned char){ 0, 0, 0, 0, 0, 0, 0, 0, 
@@ -299,8 +324,13 @@ int main() {
 #endif
      }
 
+#ifdef __LITTLE_ENDIAN__
    vec_uc_expected1 = (vector unsigned char){ 16, 15, 14, 13, 12, 11, 10, 9,
                                               8, 7, 6, 5, 4, 3, 2, 1 };
+#else
+   vec_uc_expected1 = (vector unsigned char){ 1, 2, 3, 4, 5, 6, 7, 8,
+					      9, 10, 11, 12, 13, 14, 15, 16 };
+#endif
    store_data_uc = (vector unsigned char){ 1, 2, 3, 4, 5, 6, 7, 8,
 					   9, 10, 11, 12, 13, 14, 15, 16 };
    vec_uc_result1 = (vector unsigned char){ 0, 0, 0, 0, 0, 0, 0, 0, 
@@ -333,8 +363,13 @@ int main() {
 #endif
      }
 
+#ifdef __LITTLE_ENDIAN__
    vec_uc_expected1 = (vector unsigned char){ 14, 13, 12, 11, 10, 9, 8, 7,
                                               6, 5, 4, 3, 2, 1, 0, 0 };
+#else
+   vec_uc_expected1 = (vector unsigned char){ 3, 4, 5, 6, 7, 8, 9, 10,
+                                              11, 12, 13, 14, 15, 16, 0, 0 };
+#endif
    store_data_uc = (vector unsigned char){ 1, 2, 3, 4, 5, 6, 7, 8,
 					   9, 10, 11, 12, 13, 14, 15, 16 };
    vec_uc_result1 = (vector unsigned char){ 0, 0, 0, 0, 0, 0, 0, 0, 
