@@ -2617,7 +2617,7 @@ iv_number_of_iterations (class loop *loop, rtx_insn *insn, rtx condition,
 	  d *= 2;
 	  size--;
 	}
-      bound = GEN_INT (((uint64_t) 1 << (size - 1 ) << 1) - 1);
+      bound = gen_int_mode (((uint64_t) 1 << (size - 1) << 1) - 1, mode);
 
       tmp1 = lowpart_subreg (mode, iv1.base, comp_mode);
       tmp = simplify_gen_binary (UMOD, mode, tmp1, gen_int_mode (d, mode));
