@@ -340,6 +340,7 @@
 #define __cpp_lib_ranges_cartesian_product 202207L
 #define __cpp_lib_ranges_as_rvalue 202207L
 #define __cpp_lib_ranges_enumerate 202302L
+#define __cpp_lib_fold 202207L
 #if __cpp_constexpr_dynamic_alloc
 # if _GLIBCXX_HOSTED
 #  define __cpp_lib_constexpr_bitset 202202L
