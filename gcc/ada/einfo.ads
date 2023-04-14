@@ -1677,6 +1677,10 @@ package Einfo is
 --       Exp_Dbug for a full description of the use of this flag and also the
 --       related flag Has_Qualified_Name.
 
+--    Has_Ghost_Predicate_Aspect
+--       Defined in all types and subtypes. Set if a Ghost_Predicate aspect
+--       was explicitly applied to the type.
+
 --    Has_Gigi_Rep_Item
 --       Defined in all entities. Set if the rep item chain (referenced by
 --       First_Rep_Item and linked through the Next_Rep_Item chain) contains a
@@ -5026,6 +5030,7 @@ package Einfo is
    --    Has_Delayed_Rep_Aspects
    --    Has_Discriminants
    --    Has_Dynamic_Predicate_Aspect
+   --    Has_Ghost_Predicate_Aspect
    --    Has_Independent_Components           (base type only)
    --    Has_Inheritable_Invariants           (base type only)
    --    Has_Inherited_DIC                    (base type only)

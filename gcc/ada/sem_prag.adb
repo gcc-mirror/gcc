@@ -21964,10 +21964,21 @@ package body Sem_Prag is
                return;
             end if;
 
-            --  A pragma that applies to a Ghost entity becomes Ghost for the
-            --  purposes of legality checks and removal of ignored Ghost code.
+            --  A Ghost_Predicate aspect is always Ghost with a mode inherited
+            --  from the context. A Predicate pragma that applies to a Ghost
+            --  entity becomes Ghost for the purposes of legality checks and
+            --  removal of ignored Ghost code.
 
-            Mark_Ghost_Pragma (N, Typ);
+            if From_Aspect_Specification (N)
+              and then Get_Aspect_Id
+                         (Chars (Identifier (Corresponding_Aspect (N))))
+                = Aspect_Ghost_Predicate
+            then
+               Mark_Ghost_Pragma
+                 (N, Name_To_Ghost_Mode (Policy_In_Effect (Name_Ghost)));
+            else
+               Mark_Ghost_Pragma (N, Typ);
+            end if;
 
             --  The remaining processing is simply to link the pragma on to
             --  the rep item chain, for processing when the type is frozen.
@@ -32462,6 +32473,7 @@ package body Sem_Prag is
             | Name_Debug
             | Name_Default_Initial_Condition
             | Name_Ghost
+            | Name_Ghost_Predicate
             | Name_Initial_Condition
             | Name_Invariant
             | Name_uInvariant

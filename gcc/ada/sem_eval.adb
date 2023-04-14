@@ -434,6 +434,7 @@ package body Sem_Eval is
 
       if Is_Static_Expression (Expr)
         and then not Has_Dynamic_Predicate_Aspect (Typ)
+        and then not Has_Ghost_Predicate_Aspect (Typ)
       then
          if Static_Failure_Is_Error then
             Error_Msg_NE
@@ -5673,12 +5674,15 @@ package body Sem_Eval is
       then
          return False;
 
-      --  If there is a dynamic predicate for the type (declared or inherited)
-      --  the expression is not static.
+      --  If there is a non-static predicate for the type (declared or
+      --  inherited) the expression is not static.
 
       elsif Has_Dynamic_Predicate_Aspect (Typ)
         or else (Is_Derived_Type (Typ)
                   and then Has_Aspect (Typ, Aspect_Dynamic_Predicate))
+        or else Has_Ghost_Predicate_Aspect (Typ)
+        or else (Is_Derived_Type (Typ)
+                 and then Has_Aspect (Typ, Aspect_Ghost_Predicate))
         or else (Has_Aspect (Typ, Aspect_Predicate)
                   and then not Has_Static_Predicate (Typ))
       then
@@ -6372,10 +6376,13 @@ package body Sem_Eval is
                     Etype (First_Formal (Entity (Name (Expr))));
 
          begin
-            --  If the inherited predicate is dynamic, just ignore it. We can't
-            --  go trying to evaluate a dynamic predicate as a static one!
+            --  If the inherited predicate is not static, just ignore it. We
+            --  can't go trying to evaluate a dynamic predicate as a static
+            --  one!
 
-            if Has_Dynamic_Predicate_Aspect (Typ) then
+            if Has_Dynamic_Predicate_Aspect (Typ)
+              or else Has_Ghost_Predicate_Aspect (Typ)
+            then
                return True;
 
             --  Otherwise inherited predicate is static, check for match

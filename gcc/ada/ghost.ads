@@ -26,6 +26,7 @@
 --  This package contains routines that deal with the static and runtime
 --  semantics of Ghost entities.
 
+with Namet; use Namet;
 with Opt;   use Opt;
 with Types; use Types;
 
@@ -214,12 +215,22 @@ package Ghost is
    --
    --    * The pragma is associated with Ghost entity Id
 
+   procedure Mark_Ghost_Pragma
+     (N    : Node_Id;
+      Mode : Ghost_Mode_Type);
+   --  Mark pragma N as Ghost with the corresponding Mode
+
    procedure Mark_Ghost_Renaming
      (N  : Node_Id;
       Id : Entity_Id);
    --  Mark renaming declaration N as Ghost when:
    --
    --    * Renamed entity Id denotes a Ghost entity
+
+   function Name_To_Ghost_Mode (Mode : Name_Id) return Ghost_Mode_Type;
+   pragma Inline (Name_To_Ghost_Mode);
+   --  Convert a Ghost mode denoted by name Mode into its respective enumerated
+   --  value.
 
    procedure Remove_Ignored_Ghost_Code;
    --  Remove all code marked as ignored Ghost from the trees of all qualifying

@@ -2969,7 +2969,8 @@ package body Sem_Ch5 is
            and then Has_Predicates (T)
            and then (not Has_Static_Predicate (T)
                       or else not Is_Static_Subtype (T)
-                      or else Has_Dynamic_Predicate_Aspect (T))
+                      or else Has_Dynamic_Predicate_Aspect (T)
+                      or else Has_Ghost_Predicate_Aspect (T))
          then
             --  Seems a confusing message for the case of a static predicate
             --  with a non-static subtype???

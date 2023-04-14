@@ -542,6 +542,7 @@ package body Aspects is
       --  ...except for these:
 
       Result (Aspect_Dynamic_Predicate)  := Aspect_Predicate;
+      Result (Aspect_Ghost_Predicate)    := Aspect_Predicate;
       Result (Aspect_Inline_Always)      := Aspect_Inline;
       Result (Aspect_Interrupt_Priority) := Aspect_Priority;
       Result (Aspect_Postcondition)      := Aspect_Post;

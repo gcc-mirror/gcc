@@ -578,6 +578,7 @@ package Gen_IL.Fields is
       Has_Expanded_Contract,
       Has_Forward_Instantiation,
       Has_Fully_Qualified_Name,
+      Has_Ghost_Predicate_Aspect,
       Has_Gigi_Rep_Item,
       Has_Homonym,
       Has_Implicit_Dereference,

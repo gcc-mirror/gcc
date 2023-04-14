@@ -3427,6 +3427,26 @@ package body Sem_Ch4 is
 
          Analyze_Set_Membership;
 
+         declare
+            Alt : Node_Id;
+         begin
+            Alt := First (Alternatives (N));
+            while Present (Alt) loop
+               if Is_Entity_Name (Alt) and then Is_Type (Entity (Alt)) then
+                  Check_Fully_Declared (Entity (Alt), Alt);
+
+                  if Has_Ghost_Predicate_Aspect (Entity (Alt)) then
+                     Error_Msg_NE
+                       ("subtype& has ghost predicate, "
+                        & "not allowed in membership test",
+                        Alt, Entity (Alt));
+                  end if;
+               end if;
+
+               Next (Alt);
+            end loop;
+         end;
+
       elsif Nkind (R) = N_Range
         or else (Nkind (R) = N_Attribute_Reference
                   and then Attribute_Name (R) = Name_Range)
@@ -3445,6 +3465,13 @@ package body Sem_Ch4 is
          if Is_Entity_Name (R) and then Is_Type (Entity (R)) then
             Find_Type (R);
             Check_Fully_Declared (Entity (R), R);
+
+            if Has_Ghost_Predicate_Aspect (Entity (R)) then
+               Error_Msg_NE
+                 ("subtype& has ghost predicate, "
+                  & "not allowed in membership test",
+                  R, Entity (R));
+            end if;
 
          elsif Ada_Version >= Ada_2012 and then Find_Interp then
             Op := Make_Op_Eq (Loc, Left_Opnd => L, Right_Opnd => R);

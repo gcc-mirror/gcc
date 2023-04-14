@@ -3530,7 +3530,7 @@ and the Ceiling_Locking locking policy is in effect, then the run-time
 actions associated with the Ceiling_Locking locking policy (described in
 Ada RM D.3) are not performed when a protected operation of the protected
 unit is executed.
-  
+
 Pragma Loop_Invariant
 =====================
 
