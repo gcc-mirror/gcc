@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -fno-schedule-insns -fno-schedule-insns2" } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 /*
 ** foo1:
