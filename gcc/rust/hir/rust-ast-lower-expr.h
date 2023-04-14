@@ -111,6 +111,7 @@ public:
   void visit (AST::ContinueExpr &expr) override;
   void visit (AST::BorrowExpr &expr) override;
   void visit (AST::DereferenceExpr &expr) override;
+  void visit (AST::ErrorPropagationExpr &expr) override;
   void visit (AST::MatchExpr &expr) override;
   void visit (AST::RangeFromToExpr &expr) override;
   void visit (AST::RangeFromExpr &expr) override;
