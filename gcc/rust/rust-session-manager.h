@@ -166,7 +166,6 @@ struct CompileOptions
   enum DumpOption
   {
     LEXER_DUMP,
-    PARSER_AST_DUMP,
     AST_DUMP_PRETTY,
     AST_DUMP_TOKENSTREAM,
     REGISTER_PLUGINS_DUMP,
@@ -226,7 +225,6 @@ struct CompileOptions
   void enable_all_dump_options ()
   {
     enable_dump_option (DumpOption::LEXER_DUMP);
-    enable_dump_option (DumpOption::PARSER_AST_DUMP);
     enable_dump_option (DumpOption::AST_DUMP_PRETTY);
     enable_dump_option (DumpOption::AST_DUMP_TOKENSTREAM);
     enable_dump_option (DumpOption::REGISTER_PLUGINS_DUMP);
@@ -343,10 +341,8 @@ private:
   bool enable_dump (std::string arg);
 
   void dump_lex (Parser<Lexer> &parser) const;
-  void dump_ast (Parser<Lexer> &parser, AST::Crate &crate) const;
   void dump_ast_pretty (AST::Crate &crate, bool expanded = false) const;
   void dump_tokenstream (AST::Crate &crate) const;
-  void dump_ast_expanded (Parser<Lexer> &parser, AST::Crate &crate) const;
   void dump_hir (HIR::Crate &crate) const;
   void dump_hir_pretty (HIR::Crate &crate) const;
   void dump_type_resolution (HIR::Crate &crate) const;

@@ -15189,13 +15189,4 @@ Parser<ManagedTokenSource>::done_end ()
   const_TokenPtr t = lexer.peek_token ();
   return (t->get_id () == RIGHT_CURLY || t->get_id () == END_OF_FILE);
 }
-
-// Parses crate and dumps AST to stderr, recursively.
-template <typename ManagedTokenSource>
-void
-Parser<ManagedTokenSource>::debug_dump_ast_output (AST::Crate &crate,
-						   std::ostream &out)
-{
-  out << crate.as_string ();
-}
 } // namespace Rust
