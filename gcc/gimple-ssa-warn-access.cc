@@ -4528,39 +4528,34 @@ pass_waccess::check_dangling_stores (basic_block bb,
       if (!m_ptr_qry.get_ref (lhs, stmt, &lhs_ref, 0))
 	continue;
 
-      if (auto_var_p (lhs_ref.ref))
-	continue;
-
-      if (DECL_P (lhs_ref.ref))
+      if (TREE_CODE (lhs_ref.ref) == MEM_REF)
 	{
-	  if (!POINTER_TYPE_P (TREE_TYPE (lhs_ref.ref))
-	      || lhs_ref.deref > 0)
-	    continue;
+	  lhs_ref.ref = TREE_OPERAND (lhs_ref.ref, 0);
+	  ++lhs_ref.deref;
 	}
-      else if (TREE_CODE (lhs_ref.ref) == SSA_NAME)
+      if (TREE_CODE (lhs_ref.ref) == ADDR_EXPR)
+	{
+	  lhs_ref.ref = TREE_OPERAND (lhs_ref.ref, 0);
+	  --lhs_ref.deref;
+	}
+      if (TREE_CODE (lhs_ref.ref) == SSA_NAME)
 	{
 	  gimple *def_stmt = SSA_NAME_DEF_STMT (lhs_ref.ref);
 	  if (!gimple_nop_p (def_stmt))
 	    /* Avoid looking at or before stores into unknown objects.  */
 	    return;
 
-	  tree var = SSA_NAME_VAR (lhs_ref.ref);
-	  if (TREE_CODE (var) == PARM_DECL && DECL_BY_REFERENCE (var))
-	    /* Avoid by-value arguments transformed into by-reference.  */
-	    continue;
+	  lhs_ref.ref = SSA_NAME_VAR (lhs_ref.ref);
+	}
 
-	}
-      else if (TREE_CODE (lhs_ref.ref) == MEM_REF)
-	{
-	  tree arg = TREE_OPERAND (lhs_ref.ref, 0);
-	  if (TREE_CODE (arg) == SSA_NAME)
-	    {
-	      gimple *def_stmt = SSA_NAME_DEF_STMT (arg);
-	      if (!gimple_nop_p (def_stmt))
-		return;
-	    }
-	}
+      if (TREE_CODE (lhs_ref.ref) == PARM_DECL
+	  && (lhs_ref.deref - DECL_BY_REFERENCE (lhs_ref.ref)) > 0)
+	/* Assignment through a (real) pointer/reference parameter.  */;
+      else if (TREE_CODE (lhs_ref.ref) == VAR_DECL
+	       && !auto_var_p (lhs_ref.ref))
+	/* Assignment to/through a non-local variable.  */;
       else
+	/* Something else, don't warn.  */
 	continue;
 
       if (stores.add (lhs_ref.ref))
@@ -4587,13 +4582,8 @@ pass_waccess::check_dangling_stores (basic_block bb,
 	  location_t loc = DECL_SOURCE_LOCATION (rhs_ref.ref);
 	  inform (loc, "%qD declared here", rhs_ref.ref);
 
-	  if (DECL_P (lhs_ref.ref))
-	    loc = DECL_SOURCE_LOCATION (lhs_ref.ref);
-	  else if (EXPR_HAS_LOCATION (lhs_ref.ref))
-	    loc = EXPR_LOCATION (lhs_ref.ref);
-
-	  if (loc != UNKNOWN_LOCATION)
-	    inform (loc, "%qE declared here", lhs_ref.ref);
+	  loc = DECL_SOURCE_LOCATION (lhs_ref.ref);
+	  inform (loc, "%qD declared here", lhs_ref.ref);
 	}
     }
 
