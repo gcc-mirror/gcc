@@ -5840,6 +5840,7 @@ gcn_md_reorg (void)
       attr_type itype = get_attr_type (insn);
       attr_unit iunit = get_attr_unit (insn);
       attr_delayeduse idelayeduse = get_attr_delayeduse (insn);
+      int ivccwait = get_attr_vccwait (insn);
       HARD_REG_SET ireads, iwrites;
       CLEAR_HARD_REG_SET (ireads);
       CLEAR_HARD_REG_SET (iwrites);
@@ -5917,6 +5918,14 @@ gcn_md_reorg (void)
 	      && ((hard_reg_set_intersect_p
 		   (prev_insn->reads, iwrites))))
 	    nops_rqd = 1 - prev_insn->age;
+
+	  /* Instruction that requires VCC is not written too close before
+	     using it.  */
+	  if (prev_insn->age < ivccwait
+	      && (hard_reg_set_intersect_p
+		  (prev_insn->writes,
+		   reg_class_contents[(int)VCC_CONDITIONAL_REG])))
+	    nops_rqd = ivccwait - prev_insn->age;
 	}
 
       /* Insert the required number of NOPs.  */
