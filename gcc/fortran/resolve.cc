@@ -8089,6 +8089,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
   if (!t)
     goto failure;
 
+  code->ext.alloc.expr3_not_explicit = 0;
   if (e->ts.type == BT_CLASS && CLASS_DATA (e)->attr.dimension
 	&& !code->expr3 && code->ext.alloc.ts.type == BT_DERIVED)
     {
@@ -8097,6 +8098,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
 	 when the allocated type is different from the declared type but
 	 no SOURCE exists by setting expr3.  */
       code->expr3 = gfc_default_initializer (&code->ext.alloc.ts);
+      code->ext.alloc.expr3_not_explicit = 1;
     }
   else if (flag_coarray != GFC_FCOARRAY_LIB && e->ts.type == BT_DERIVED
 	   && e->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
@@ -8104,6 +8106,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
     {
       /* We have to zero initialize the integer variable.  */
       code->expr3 = gfc_get_int_expr (gfc_default_integer_kind, &e->where, 0);
+      code->ext.alloc.expr3_not_explicit = 1;
     }
 
   if (e->ts.type == BT_CLASS && !unlimited && !UNLIMITED_POLY (code->expr3))

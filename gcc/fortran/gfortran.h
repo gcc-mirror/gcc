@@ -3005,6 +3005,8 @@ typedef struct gfc_code
       /* Take the array specification from expr3 to allocate arrays
 	 without an explicit array specification.  */
       unsigned arr_spec_from_expr3:1;
+      /* expr3 is not explicit  */
+      unsigned expr3_not_explicit:1;
     }
     alloc;
 
