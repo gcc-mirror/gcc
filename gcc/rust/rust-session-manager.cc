@@ -283,7 +283,7 @@ Session::enable_dump (std::string arg)
     {
       rust_error_at (
 	Location (),
-	"dump option was not given a name. choose %<lex%>, %<parse%>, "
+	"dump option was not given a name. choose %<lex%>, "
 	"%<register_plugins%>, %<injection%>, %<expansion%>, %<resolution%>,"
 	" %<target_options%>, %<hir%>, or %<all%>");
       return false;
@@ -296,10 +296,6 @@ Session::enable_dump (std::string arg)
   else if (arg == "lex")
     {
       options.enable_dump_option (CompileOptions::LEXER_DUMP);
-    }
-  else if (arg == "parse")
-    {
-      options.enable_dump_option (CompileOptions::PARSER_AST_DUMP);
     }
   else if (arg == "ast-pretty")
     {
@@ -495,10 +491,6 @@ Session::compile_crate (const char *filename)
   handle_crate_name (*ast_crate.get ());
 
   // dump options except lexer dump
-  if (options.dump_option_enabled (CompileOptions::PARSER_AST_DUMP))
-    {
-      dump_ast (parser, *ast_crate.get ());
-    }
   if (options.dump_option_enabled (CompileOptions::AST_DUMP_TOKENSTREAM))
     {
       dump_tokenstream (*ast_crate.get ());
@@ -572,7 +564,6 @@ Session::compile_crate (const char *filename)
     {
       // dump AST with expanded stuff
       rust_debug ("BEGIN POST-EXPANSION AST DUMP");
-      dump_ast_expanded (parser, parsed_crate);
       dump_ast_pretty (parsed_crate, true);
       rust_debug ("END POST-EXPANSION AST DUMP");
     }
@@ -895,22 +886,6 @@ Session::expansion (AST::Crate &crate)
 }
 
 void
-Session::dump_ast (Parser<Lexer> &parser, AST::Crate &crate) const
-{
-  std::ofstream out;
-  out.open (kASTDumpFile);
-  if (out.fail ())
-    {
-      rust_error_at (Linemap::unknown_location (), "cannot open %s:%m; ignored",
-		     kASTDumpFile);
-      return;
-    }
-
-  parser.debug_dump_ast_output (crate, out);
-  out.close ();
-}
-
-void
 Session::dump_ast_pretty (AST::Crate &crate, bool expanded) const
 {
   std::ofstream out;
@@ -947,22 +922,6 @@ Session::dump_tokenstream (AST::Crate &crate) const
     {
       out << token->as_string () << " ";
     }
-  out.close ();
-}
-
-void
-Session::dump_ast_expanded (Parser<Lexer> &parser, AST::Crate &crate) const
-{
-  std::ofstream out;
-  out.open (kASTExpandedDumpFile);
-  if (out.fail ())
-    {
-      rust_error_at (Linemap::unknown_location (), "cannot open %s:%m; ignored",
-		     kASTExpandedDumpFile);
-      return;
-    }
-
-  parser.debug_dump_ast_output (crate, out);
   out.close ();
 }
 
