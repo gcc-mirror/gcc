@@ -2071,7 +2071,7 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
     }
 
   /* Put element with max number of occurences to the end of ARGS.  */
-  if (max_ind != -1 && max_ind +1 != (int) args_len)
+  if (max_ind != -1 && max_ind + 1 != (int) args_len)
     std::swap (args[args_len - 1], args[max_ind]);
 
   /* Handle one special case when number of arguments with different values
@@ -2116,12 +2116,12 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
       vec<int> *indexes;
       tree type = TREE_TYPE (gimple_phi_result (phi));
       tree lhs;
-      arg1 = args[1];
-      for (i = 0; i < args_len; i++)
+      arg1 = args[args_len - 1];
+      for (i = args_len - 1; i > 0; i--)
 	{
-	  arg0 = args[i];
-	  indexes = phi_arg_map.get (args[i]);
-	  if (i != args_len - 1)
+	  arg0 = args[i - 1];
+	  indexes = phi_arg_map.get (args[i - 1]);
+	  if (i != 1)
 	    lhs = make_temp_ssa_name (type, NULL, "_ifc_");
 	  else
 	    lhs = res;
