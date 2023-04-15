@@ -1,3 +1,10 @@
+2023-04-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/109137
+	* config/i386/x86-tune.def (X86_TUNE_AVX256_MOVE_BY_PIECES):
+	Remove znver1-3.
+	(X86_TUNE_AVX256_STORE_BY_PIECES): Remove znver1-3.
+
 2023-04-13  Philipp Tomsich  <philipp.tomsich@vrull.eu>
 
 	Backported from master:
