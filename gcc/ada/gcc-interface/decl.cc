@@ -4371,10 +4371,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  align = validate_alignment (Alignment (gnat_entity), gnat_entity,
 				      TYPE_ALIGN (gnu_type));
 
-	  /* Treat confirming clauses on scalar types like the default.  */
-	  if (align == TYPE_ALIGN (gnu_type) && !AGGREGATE_TYPE_P (gnu_type))
-	    align = 0;
-
 	  /* Warn on suspiciously large alignments.  This should catch
 	     errors about the (alignment,byte)/(size,bit) discrepancy.  */
 	  if (align > BIGGEST_ALIGNMENT && Has_Alignment_Clause (gnat_entity))
@@ -4657,6 +4653,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       /* If this is not an unconstrained array type, set some flags.  */
       if (TREE_CODE (gnu_type) != UNCONSTRAINED_ARRAY_TYPE)
 	{
+	  bool align_clause;
+
 	  /* Record the property that objects of tagged types are guaranteed to
 	     be properly aligned.  This is necessary because conversions to the
 	     class-wide type are translated into conversions to the root type,
@@ -4669,8 +4667,20 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  if (is_by_ref && !VOID_TYPE_P (gnu_type))
 	    TYPE_BY_REFERENCE_P (gnu_type) = 1;
 
-	  /* Record whether an alignment clause was specified.  */
-	  if (align > 0 && Present (Alignment_Clause (gnat_entity)))
+	  /* Record whether an alignment clause was specified.  At this point
+	     scalar types with a non-confirming clause have been wrapped into
+	     a record type, so only scalar types with a confirming clause are
+	     left untouched; we do not set the flag on them except if they are
+	     types whose default alignment is specifically capped in order not
+	     to lose the specified alignment.  */
+	  if ((AGGREGATE_TYPE_P (gnu_type)
+	       && Present (Alignment_Clause (gnat_entity)))
+	      || (double_float_alignment > 0
+		  && is_double_float_or_array (gnat_entity, &align_clause)
+		  && align_clause)
+	      || (double_scalar_alignment > 0
+		  && is_double_scalar_or_array (gnat_entity, &align_clause)
+		  && align_clause))
 	    TYPE_USER_ALIGN (gnu_type) = 1;
 
 	  /* Record whether a pragma Universal_Aliasing was specified.  */
