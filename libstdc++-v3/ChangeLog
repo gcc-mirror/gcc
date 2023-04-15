@@ -1,3 +1,94 @@
+2023-04-14  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_base.h (const_iterator_t): Define for C++23.
+	(const_sentinel_t): Likewise.
+	(range_const_reference_t): Likewise.
+	(constant_range): Likewise.
+	(__cust_access::__possibly_const_range): Likewise, replacing ...
+	(__cust_access::__as_const): ... this.
+	(__cust_access::_CBegin::operator()): Redefine for C++23 as per P2278R4.
+	(__cust_access::_CEnd::operator()): Likewise.
+	(__cust_access::_CRBegin::operator()): Likewise.
+	(__cust_access::_CREnd::operator()): Likewise.
+	(__cust_access::_CData::operator()): Likewise.
+	* include/bits/ranges_util.h (ranges::__detail::__different_from):
+	Make it an alias of std::__detail::__different_from.
+	(view_interface::cbegin): Define for C++23.
+	(view_interface::cend): Likewise.
+	* include/bits/stl_iterator.h (__detail::__different_from): Define.
+	(iter_const_reference_t): Define for C++23.
+	(__detail::__constant_iterator): Likewise.
+	(__detail::__is_const_iterator): Likewise.
+	(__detail::__not_a_const_iterator): Likewise.
+	(__detail::__iter_const_rvalue_reference_t): Likewise.
+	(__detail::__basic_const_iter_cat):: Likewise.
+	(const_iterator): Likewise.
+	(__detail::__const_sentinel): Likewise.
+	(const_sentinel): Likewise.
+	(basic_const_iterator): Likewise.
+	(common_type<basic_const_iterator<_Tp>, _Up>): Likewise.
+	(common_type<_Up, basic_const_iterator<_Tp>>): Likewise.
+	(common_type<basic_const_iterator<_Tp>, basic_const_iterator<Up>>):
+	Likewise.
+	(make_const_iterator): Define for C++23.
+	(make_const_sentinel): Likewise.
+	* include/std/ranges (__cpp_lib_ranges_as_const): Likewise.
+	(as_const_view): Likewise.
+	(enable_borrowed_range<as_const_view>): Likewise.
+	(views::__detail::__is_ref_view): Likewise.
+	(views::__detail::__can_is_const_view): Likewise.
+	(views::_AsConst, views::as_const): Likewise.
+	* include/std/span (span::const_iterator): Likewise.
+	(span::const_reverse_iterator): Likewise.
+	(span::cbegin): Likewise.
+	(span::cend): Likewise.
+	(span::crbegin): Likewise.
+	(span::crend): Likewise.
+	* include/std/version (__cpp_lib_ranges_as_const): Likewise.
+	* testsuite/std/ranges/adaptors/join.cc (test06): Adjust to
+	behave independently of C++20 vs C++23.
+	* testsuite/std/ranges/version_c++23.cc: Verify value of
+	__cpp_lib_ranges_as_const macro.
+	* testsuite/24_iterators/const_iterator/1.cc: New test.
+	* testsuite/std/ranges/adaptors/as_const/1.cc: New test.
+
+2023-04-14  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_base.h (__cust_access::__as_const)
+	(__cust_access::_CBegin, __cust::cbegin)
+	(__cust_access::_CEnd, __cust::cend)
+	(__cust_access::_CRBegin, __cust::crbegin)
+	(__cust_access::_CREnd, __cust::crend)
+	(__cust_access::_CData, __cust::cdata): Move down definitions to
+	shortly after the definition of input_range.
+
+2023-04-14  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_algo.h: Include <optional> for C++23.
+	(__cpp_lib_fold): Define for C++23.
+	(in_value_result): Likewise.
+	(__detail::__flipped): Likewise.
+	(__detail::__indirectly_binary_left_foldable_impl): Likewise.
+	(__detail::__indirectly_binary_left_foldable): Likewise.
+	(___detail:__indirectly_binary_right_foldable): Likewise.
+	(fold_left_with_iter_result): Likewise.
+	(__fold_left_with_iter_fn, fold_left_with_iter): Likewise.
+	(__fold_left_fn, fold_left): Likewise.
+	(__fold_left_first_with_iter_fn, fold_left_first_with_iter):
+	Likewise.
+	(__fold_left_first_fn, fold_left_first): Likewise.
+	(__fold_right_fn, fold_right): Likewise.
+	(__fold_right_last_fn, fold_right_last): Likewise.
+	* include/std/version (__cpp_lib_fold): Likewise.
+	* testsuite/25_algorithms/fold_left/1.cc: New test.
+	* testsuite/25_algorithms/fold_right/1.cc: New test.
+
+2023-04-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (formatter): Add comment to deleted default
+	constructor of primary template.
+	(_Checking_scanner): Add static_assert.
+
 2023-04-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/using.xml: Document libstdc++exp.a library.

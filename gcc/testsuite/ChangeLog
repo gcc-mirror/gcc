@@ -1,3 +1,50 @@
+2023-04-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/109511
+	* gfortran.dg/set_exponent_1.f90: New test.
+
+2023-04-14  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-simd-clone-16e.c: Revert back to
+	checking avx_runtime in dump scanning.
+	* gcc.dg/vect/vect-simd-clone-17e.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-18e.c: Likewise.
+
+2023-04-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/104272
+	* gfortran.dg/class_result_8.f90 : Number of builtin_frees down
+	from 6 to 5 without memory leaks.
+	* gfortran.dg/finalize_52.f90: New test
+
+2023-04-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109502
+	* gcc.dg/vect/pr109502.c: New testcase.
+
+2023-04-14  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-simd-clone-16e.c: Fix x86 lp64 checking
+	and add missing avx guard.
+	* gcc.dg/vect/vect-simd-clone-17e.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-18e.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-16f.c: Fix x86 lp64 checking.
+	* gcc.dg/vect/vect-simd-clone-17f.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-18f.c: Likewise.
+
+2023-04-14  Jeff Law  <jlaw@ventanamicro.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108947
+	PR target/109040
+	* gcc.dg/pr108947.c: New test.
+	* gcc.c-torture/execute/pr109040.c: New test.
+
+2023-04-14  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR analyzer/108722
+	* gcc.dg/analyzer/file-CWE-1341-example.c: Update.
+
 2023-04-13  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/109420

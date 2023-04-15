@@ -1,3 +1,10 @@
+2023-04-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/109510
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <types>: Reset align
+	to zero if its value is equal to TYPE_ALIGN and the type is scalar.
+	Set TYPE_USER_ALIGN on the type only if align is positive.
+
 2023-03-06  Javier Miranda  <miranda@adacore.com>
 
 	PR ada/108858

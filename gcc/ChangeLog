@@ -1,3 +1,25 @@
+2023-04-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109502
+	* tree-vect-stmts.cc (vectorizable_assignment): Fix
+	check for conversion between mask and non-mask types.
+
+2023-04-14  Jeff Law  <jlaw@ventanamicro.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108947
+	PR target/109040
+	* combine.cc (simplify_and_const_int_1): Compute nonzero_bits in
+	word_mode rather than mode if WORD_REGISTER_OPERATIONS and mode is
+	smaller than word_mode.
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1)
+	<case AND>: Likewise.
+
+2023-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* loop-iv.cc (iv_number_of_iterations): Use gen_int_mode instead
+	of GEN_INT.
+
 2023-04-13  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/108139

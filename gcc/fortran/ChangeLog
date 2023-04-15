@@ -1,3 +1,19 @@
+2023-04-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/109511
+	* simplify.cc (gfc_simplify_set_exponent): Fix implementation of
+	compile-time simplification of intrinsic SET_EXPONENT for argument
+	X < 1 and for I < 0.
+
+2023-04-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/104272
+	* gfortran.h : Add expr3_not_explicit bit field to gfc_code.
+	* resolve.cc (resolve_allocate_expr): Set bit field when the
+	default initializer is applied to expr3.
+	* trans-stmt.cc (gfc_trans_allocate): If expr3_not_explicit is
+	set, do not deallocate expr3.
+
 2023-04-13  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/109492
