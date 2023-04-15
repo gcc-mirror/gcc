@@ -3566,6 +3566,7 @@ extern bool val_signbit_known_set_p (machine_mode,
 				     unsigned HOST_WIDE_INT);
 extern bool val_signbit_known_clear_p (machine_mode,
 				       unsigned HOST_WIDE_INT);
+extern bool reverse_rotate_by_imm_p (machine_mode, unsigned int, rtx);
 
 /* In reginfo.cc  */
 extern machine_mode choose_hard_reg_mode (unsigned int, unsigned int,

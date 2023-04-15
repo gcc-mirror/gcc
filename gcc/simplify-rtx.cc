@@ -2741,6 +2741,44 @@ simplify_context::simplify_distributive_operation (rtx_code code,
   return NULL_RTX;
 }
 
+/* Return TRUE if a rotate in mode MODE with a constant count in OP1
+   should be reversed.
+
+   If the rotate should not be reversed, return FALSE.
+
+   LEFT indicates if this is a rotate left or a rotate right.  */
+
+bool
+reverse_rotate_by_imm_p (machine_mode mode, unsigned int left, rtx op1)
+{
+  if (!CONST_INT_P (op1))
+    return false;
+
+  /* Some targets may only be able to rotate by a constant
+     in one direction.  So we need to query the optab interface
+     to see what is possible.  */
+  optab binoptab = left ? rotl_optab : rotr_optab;
+  optab re_binoptab = left ? rotr_optab : rotl_optab;
+  enum insn_code icode = optab_handler (binoptab, mode);
+  enum insn_code re_icode = optab_handler (re_binoptab, mode);
+
+  /* If the target can not support the reversed optab, then there
+     is nothing to do.  */
+  if (re_icode == CODE_FOR_nothing)
+    return false;
+
+  /* If the target does not support the requested rotate-by-immediate,
+     then we want to try reversing the rotate.  We also want to try
+     reversing to minimize the count.  */
+  if ((icode == CODE_FOR_nothing)
+      || (!insn_operand_matches (icode, 2, op1))
+      || (IN_RANGE (INTVAL (op1),
+		    GET_MODE_UNIT_PRECISION (mode) / 2 + left,
+		    GET_MODE_UNIT_PRECISION (mode) - 1)))
+    return (insn_operand_matches (re_icode, 2, op1));
+  return false;
+}
+
 /* Subroutine of simplify_binary_operation.  Simplify a binary operation
    CODE with result mode MODE, operating on OP0 and OP1.  If OP0 and/or
    OP1 are constant pool references, TRUEOP0 and TRUEOP1 represent the
@@ -4098,15 +4136,10 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
     case ROTATE:
       if (trueop1 == CONST0_RTX (mode))
 	return op0;
-      /* Canonicalize rotates by constant amount.  If op1 is bitsize / 2,
-	 prefer left rotation, if op1 is from bitsize / 2 + 1 to
-	 bitsize - 1, use other direction of rotate with 1 .. bitsize / 2 - 1
-	 amount instead.  */
+      /* Canonicalize rotates by constant amount.  If the condition of
+	 reversing direction is met, then reverse the direction. */
 #if defined(HAVE_rotate) && defined(HAVE_rotatert)
-      if (CONST_INT_P (trueop1)
-	  && IN_RANGE (INTVAL (trueop1),
-		       GET_MODE_UNIT_PRECISION (mode) / 2 + (code == ROTATE),
-		       GET_MODE_UNIT_PRECISION (mode) - 1))
+      if (reverse_rotate_by_imm_p (mode, (code == ROTATE), trueop1))
 	{
 	  int new_amount = GET_MODE_UNIT_PRECISION (mode) - INTVAL (trueop1);
 	  rtx new_amount_rtx = gen_int_shift_amount (mode, new_amount);

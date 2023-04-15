@@ -322,9 +322,9 @@
 (define_insn "*rotrsi3_sext"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI (rotatert:SI (match_operand:SI 1 "register_operand" "r")
-				     (match_operand:QI 2 "register_operand" "r"))))]
+                                 (match_operand:QI 2 "arith_operand" "rI"))))]
   "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
-  "rorw\t%0,%1,%2"
+  "ror%i2%~\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
 (define_insn "rotlsi3"
