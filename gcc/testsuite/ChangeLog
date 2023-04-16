@@ -1,3 +1,20 @@
+2023-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109357
+	* g++.dg/cpp2a/constexpr-dtor15.C: New test.
+
+2023-04-15  Alexandre Oliva  <oliva@adacore.com>
+	    Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/99708
+	* gcc.target/powerpc/pr99708.c: Accept lack of
+	__SIZEOF_IBM128__ when long double is 64-bit wide.
+
+2023-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109514
+	* g++.dg/warn/Wdangling-pointer-6.C: New test.
+
 2023-04-14  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/109511

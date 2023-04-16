@@ -1,3 +1,25 @@
+2023-04-15  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/104989
+	* config/pa/pa-protos.h (pa_function_arg_size): Update prototype.
+	* config/pa/pa.cc (pa_function_arg): Return NULL_RTX if argument
+	size is zero.
+	(pa_arg_partial_bytes): Don't call pa_function_arg_size twice.
+	(pa_function_arg_size): Change return type to int.  Return zero
+	for arguments larger than 1 GB.  Update comments.
+
+2023-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109154
+	* tree-if-conv.cc (predicate_scalar_phi): For complex PHIs, emit just
+	args_len - 1 COND_EXPRs rather than args_len.  Formatting fix.
+
+2023-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109514
+	* gimple-ssa-warn-access.cc (pass_waccess::check_dangling_stores):
+	Overhaul lhs_ref.ref analysis.
+
 2023-04-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/109502

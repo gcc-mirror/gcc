@@ -1,3 +1,9 @@
+2023-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109357
+	* constexpr.cc (cxx_eval_constant_expression) [TARGET_EXPR]:
+	Check for complex initializer.
+
 2023-04-13  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/109420

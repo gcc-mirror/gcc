@@ -1,3 +1,11 @@
+2023-04-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/109510
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <types>: Do not reset
+	align to zero in any case.  Set TYPE_USER_ALIGN on the type only if
+	it is an aggregate type, or else a type whose default alignment is
+	specifically capped on selected platforms.
+
 2023-04-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/109510
