@@ -3419,6 +3419,12 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
     {
       riscv_emit_int_compare (&code, &op0, &op1);
       rtx cond = gen_rtx_fmt_ee (code, GET_MODE (op0), op0, op1);
+
+      /* The expander allows (const_int 0) for CONS for the benefit of
+	 TARGET_XTHEADCONDMOV, but that case isn't supported for
+	 TARGET_SFB_ALU.  So force that operand into a register if
+	 necessary.  */
+      cons = force_reg (GET_MODE (dest), cons);
       emit_insn (gen_rtx_SET (dest, gen_rtx_IF_THEN_ELSE (GET_MODE (dest),
 							  cond, cons, alt)));
       return true;
