@@ -256,7 +256,7 @@ in_loop_p (gimple *stmt)
 unsigned int
 pass_walloca::execute (function *fun)
 {
-  gimple_ranger *ranger = enable_ranger (fun);
+  enable_ranger (fun);
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     {
@@ -379,7 +379,6 @@ pass_walloca::execute (function *fun)
 	    }
 	}
     }
-  ranger->export_global_ranges ();
   disable_ranger (fun);
   return 0;
 }
