@@ -90,7 +90,7 @@ public:
   bool lookup_type_by_node_id (NodeId ref, HirId *id);
 
   TyTy::BaseType *peek_return_type ();
-  TypeCheckContextItem &peek_context ();
+  TypeCheckContextItem peek_context ();
   void push_return_type (TypeCheckContextItem item,
 			 TyTy::BaseType *return_type);
   void pop_return_type ();

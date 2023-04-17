@@ -164,7 +164,7 @@ resolve_operator_overload_fn (
   // handle the case where we are within the impl block for this
   // lang_item otherwise we end up with a recursive operator overload
   // such as the i32 operator overload trait
-  TypeCheckContextItem &fn_context = context->peek_context ();
+  TypeCheckContextItem fn_context = context->peek_context ();
   if (fn_context.get_type () == TypeCheckContextItem::ItemType::IMPL_ITEM)
     {
       auto &impl_item = fn_context.get_impl_item ();
