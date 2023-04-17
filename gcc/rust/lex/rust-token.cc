@@ -148,7 +148,7 @@ Token::as_string () const
 	case BYTE_CHAR_LITERAL:
 	  return "b'" + get_str () + "'";
 	case LIFETIME:
-	  return "''" + get_str ();
+	  return "'" + get_str ();
 	case INT_LITERAL:
 	  if (get_type_hint () == CORETYPE_UNKNOWN)
 	    return get_str ();
