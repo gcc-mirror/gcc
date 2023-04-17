@@ -11140,8 +11140,6 @@ package body Exp_Ch3 is
             --  is a wrapper's body in order to get check suppression right.
 
             Set_Corresponding_Spec (Func_Body, Func_Id);
-
-            Override_Dispatching_Operation (Tag_Typ, Subp, New_Op => Func_Id);
          end if;
 
       <<Next_Prim>>
