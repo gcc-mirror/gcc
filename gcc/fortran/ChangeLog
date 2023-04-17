@@ -1,3 +1,13 @@
+2023-04-16  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-04-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/109511
+	* simplify.c (gfc_simplify_set_exponent): Fix implementation of
+	compile-time simplification of intrinsic SET_EXPONENT for argument
+	X < 1 and for I < 0.
+
 2023-04-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* dump-parse-tree.c (get_c_type_name): Fix "long_long"
