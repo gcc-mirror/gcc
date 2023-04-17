@@ -1,9 +1,9 @@
 /* { dg-do compile } */
 /* { dg-final { scan-assembler "and.w -137," } } */
-/* { dg-final { scan-assembler "and.b -64," } } */
+/* { dg-final { scan-assembler "and.b -62," } } */
 /* { dg-final { scan-assembler "and.w -139," } } */
 /* { dg-final { scan-assembler "and.b -63," } } */
-/* { dg-final { scan-assembler-not "and.d" } } */
+/* { dg-final { scan-assembler-not "and.d " } } */
 /* { dg-options "-O2" } */
 
 /* PR target/17984.  Test-case based on
@@ -18,7 +18,7 @@ andwlsr (unsigned int x)
 unsigned int
 andblsr (unsigned int x)
 {
-  return (x >> 24) & 0xc0;
+  return (x >> 24) & 0xc2;
 }
 
 int

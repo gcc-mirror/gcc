@@ -208,6 +208,9 @@
 ;; Ditto, commutative operators (i.e. not minus).
 (define_code_iterator plusumin [plus umin])
 
+;; For opsplit1.
+(define_code_iterator splitop [and])
+
 ;; The addsubbo and nd code-attributes form a hack.  We need to output
 ;; "addu.b", "subu.b" but "bound.b" (no "u"-suffix) which means we'd
 ;; need to refer to one iterator from the next.  But, that can't be
@@ -2886,6 +2889,29 @@
        : adjust_address (operands[2], zmode, 0));
   operands[3] = gen_rtx_ZERO_EXTEND (SImode, op1);
   operands[4] = GEN_INT (trunc_int_for_mode (INTVAL (operands[1]), QImode));
+})
+
+;; Large (read: non-quick) numbers can sometimes be AND:ed by other means.
+;; Testcase: gcc.target/cris/peep2-andsplit1.c
+(define_peephole2 ; opsplit1
+  [(parallel
+    [(set (match_operand 0 "register_operand")
+	  (splitop
+	   (match_operand 1 "register_operand")
+	   (match_operand 2 "const_int_operand")))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])]
+   ;; Operands 0 and 1 can be separate identical objects, at least
+   ;; after matching peepholes above.  */
+  "REGNO (operands[0]) == REGNO (operands[1])
+   && cris_splittable_constant_p (INTVAL (operands[2]), <CODE>,
+				  GET_MODE (operands[0]),
+				  optimize_function_for_speed_p (cfun))"
+  [(const_int 0)]
+{
+  cris_split_constant (INTVAL (operands[2]), <CODE>, GET_MODE (operands[0]),
+		       optimize_function_for_speed_p (cfun),
+		       true, operands[0], operands[0]);
+  DONE;
 })
 
 ;; Fix a decomposed szext: fuse it with the memory operand of the

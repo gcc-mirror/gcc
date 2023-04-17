@@ -2635,6 +2635,84 @@ cris_split_movdx (rtx *operands)
   return val;
 }
 
+/* Try to split the constant WVAL into a number of separate insns of less cost
+   for the rtx operation CODE and the metric SPEED than using val as-is.
+   Generate those insns if GENERATE.  DEST holds the destination, and OP holds
+   the other operand for binary operations; NULL when CODE is SET.  Return the
+   number of insns for the operation or 0 if the constant can't be usefully
+   split (because it's already minimal or is not within range for the known
+   methods).  Parts stolen from arm.cc.  */
+
+int
+cris_split_constant (HOST_WIDE_INT wval, enum rtx_code code,
+		     machine_mode mode, bool speed ATTRIBUTE_UNUSED,
+		     bool generate, rtx dest, rtx op)
+{
+  int32_t ival = (int32_t) wval;
+  uint32_t uval = (uint32_t) wval;
+
+  if (code != AND || IN_RANGE(ival, -32, 31)
+      /* Implemented using movu.[bw] elsewhere.  */
+      || ival == 255 || ival == 65535
+      /* Implemented using clear.[bw] elsewhere.  */
+      || uval == 0xffffff00 || uval == 0xffff0000)
+    return 0;
+
+  int i;
+
+  int msb_zeros = 0;
+  int lsb_zeros = 0;
+
+  /* Count number of leading zeros.  */
+  for (i = 31; i >= 0; i--)
+    {
+      if ((uval & (1 << i)) == 0)
+	msb_zeros++;
+      else
+	break;
+    }
+
+  /* Count number of trailing zero's.  */
+  for (i = 0; i <= 31; i++)
+    {
+      if ((uval & (1 << i)) == 0)
+	lsb_zeros++;
+      else
+	break;
+    }
+
+  /* Is there a lowest or highest part that is zero (but not both)
+     and the non-zero part is just ones?  */
+  if (exact_log2 ((uval >> lsb_zeros) + 1) > 0
+      && (lsb_zeros != 0) != (msb_zeros != 0))
+    {
+      /* If so, we can shift OP in the zero direction, then back.  We don't
+	 nominally win anything for uval < 256, except that the insns are split
+	 into slottable insns so it's always beneficial.  */
+      if (generate)
+	{
+	  if (mode != SImode)
+	    {
+	      dest = gen_rtx_REG (SImode, REGNO (dest));
+	      op = gen_rtx_REG (SImode, REGNO (op));
+	    }
+	  if (msb_zeros)
+	    {
+	      emit_insn (gen_ashlsi3 (dest, op, GEN_INT (msb_zeros)));
+	      emit_insn (gen_lshrsi3 (dest, op, GEN_INT (msb_zeros)));
+	    }
+	  else
+	    {
+	      emit_insn (gen_lshrsi3 (dest, op, GEN_INT (lsb_zeros)));
+	      emit_insn (gen_ashlsi3 (dest, op, GEN_INT (lsb_zeros)));
+	    }
+	}
+      return 2;
+    }
+
+  return 0;
+}
+
 /* Try to change a comparison against a constant to be against zero, and
    an unsigned compare against zero to be an equality test.  Beware:
    only valid for compares of integer-type operands.  Also, note that we
