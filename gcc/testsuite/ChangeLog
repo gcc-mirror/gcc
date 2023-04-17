@@ -1,3 +1,13 @@
+2023-04-16  Jeff Law  <jlaw@ventanamicro>
+
+	PR target/109508
+	* gcc.target/riscv/pr109508.c: New test.
+
+2023-04-16  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/54816
+	* gcc.target/avr/pr54816.c: New test case.
+
 2023-04-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/109357

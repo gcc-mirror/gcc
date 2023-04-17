@@ -1,3 +1,9 @@
+2023-04-16  Jeff Law  <jlaw@ventanamicro>
+
+	PR target/109508
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): For
+	TARGET_SFB_ALU, force the true arm into a register.
+
 2023-04-15  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/104989
