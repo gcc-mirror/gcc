@@ -1595,8 +1595,7 @@ TypeCheckExpr::resolve_operator_overload (
     return false;
 
   auto segment = HIR::PathIdentSegment (associated_item_name);
-  auto candidates
-    = MethodResolver::Probe (lhs, HIR::PathIdentSegment (associated_item_name));
+  auto candidates = MethodResolver::Probe (lhs, segment);
 
   bool have_implementation_for_lang_item = candidates.size () > 0;
   if (!have_implementation_for_lang_item)
