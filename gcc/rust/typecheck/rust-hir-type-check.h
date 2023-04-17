@@ -91,6 +91,7 @@ public:
   void insert_type_by_node_id (NodeId ref, HirId id);
   bool lookup_type_by_node_id (NodeId ref, HirId *id);
 
+  bool have_function_context () const;
   TyTy::BaseType *peek_return_type ();
   TypeCheckContextItem peek_context ();
   void push_return_type (TypeCheckContextItem item,
