@@ -1222,7 +1222,7 @@ Parser<ManagedTokenSource>::parse_outer_attribute ()
   auto input = std::move (std::get<1> (values));
   auto loc = std::get<2> (values);
   auto actual_attribute
-    = AST::Attribute (std::move (path), std::move (input), loc, true);
+    = AST::Attribute (std::move (path), std::move (input), loc, false);
 
   if (lexer.peek_token ()->get_id () != RIGHT_SQUARE)
     return AST::Attribute::create_empty ();
