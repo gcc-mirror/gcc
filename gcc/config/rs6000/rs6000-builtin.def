@@ -2881,9 +2881,9 @@ BU_P9V_AV_1 (VCTZB,		"vctzb",		CONST,  ctzv16qi2)
 BU_P9V_AV_1 (VCTZH,		"vctzh",		CONST,  ctzv8hi2)
 BU_P9V_AV_1 (VCTZW,		"vctzw",		CONST,  ctzv4si2)
 BU_P9V_AV_1 (VCTZD,		"vctzd",		CONST,  ctzv2di2)
-BU_P9V_AV_1 (VPRTYBD,		"vprtybd",		CONST,  parityv2di2)
-BU_P9V_AV_1 (VPRTYBQ,		"vprtybq",		CONST,  parityv1ti2)
-BU_P9V_AV_1 (VPRTYBW,		"vprtybw",		CONST,  parityv4si2)
+BU_P9V_AV_1 (VPRTYBD,		"vprtybd",		CONST,  rs6000_vprtybv2di2)
+BU_P9V_AV_1 (VPRTYBQ,		"vprtybq",		CONST,  rs6000_vprtybv1ti2)
+BU_P9V_AV_1 (VPRTYBW,		"vprtybw",		CONST,  rs6000_vprtybv4si2)
 
 /* ISA 3.0 vector overloaded 1 argument functions.  */
 BU_P9V_OVERLOAD_1 (VCTZ,	"vctz")
