@@ -51,6 +51,8 @@ public:
 
   TyTy::FnType *get_context_type ();
 
+  DefId get_defid () const;
+
 private:
   union Item
   {
