@@ -1060,6 +1060,7 @@ package body Exp_Aggr is
       Indexes     : List_Id := No_List) return List_Id
    is
       Loc          : constant Source_Ptr := Sloc (N);
+      Typ          : constant Entity_Id  := Etype (N);
       Index_Base   : constant Entity_Id  := Base_Type (Etype (Index));
       Index_Base_L : constant Node_Id := Type_Low_Bound (Index_Base);
       Index_Base_H : constant Node_Id := Type_High_Bound (Index_Base);
@@ -1460,7 +1461,7 @@ package body Exp_Aggr is
               and then not
                 (Is_Array_Type (Comp_Typ)
                   and then Needs_Finalization (Component_Type (Comp_Typ))
-                  and then Nkind (Expr) = N_Aggregate)
+                  and then Nkind (Unqualify (Init_Expr)) = N_Aggregate)
             then
                Adj_Call :=
                  Make_Adjust_Call
@@ -1522,9 +1523,10 @@ package body Exp_Aggr is
             Init_Expr : Node_Id;
             Stmts     : List_Id)
          is
+            Init_Expr_Q : constant Node_Id := Unqualify (Init_Expr);
+
             Act_Aggr   : Node_Id;
             Act_Stmts  : List_Id;
-            Expr       : Node_Id;
             Fin_Call   : Node_Id;
             Hook_Clear : Node_Id;
 
@@ -1533,29 +1535,20 @@ package body Exp_Aggr is
             --  in-place expansion.
 
          begin
-            --  Duplicate the initialization expression in case the context is
-            --  a multi choice list or an "others" choice which plugs various
-            --  holes in the aggregate. As a result the expression is no longer
-            --  shared between the various components and is reevaluated for
-            --  each such component.
-
-            Expr := New_Copy_Tree (Init_Expr);
-            Set_Parent (Expr, Parent (Init_Expr));
-
             --  Perform a preliminary analysis and resolution to determine what
             --  the initialization expression denotes. An unanalyzed function
             --  call may appear as an identifier or an indexed component.
 
-            if Nkind (Expr) in N_Function_Call
-                             | N_Identifier
-                             | N_Indexed_Component
-              and then not Analyzed (Expr)
+            if Nkind (Init_Expr_Q) in N_Function_Call
+                                    | N_Identifier
+                                    | N_Indexed_Component
+              and then not Analyzed (Init_Expr)
             then
-               Preanalyze_And_Resolve (Expr, Comp_Typ);
+               Preanalyze_And_Resolve (Init_Expr, Comp_Typ);
             end if;
 
             In_Place_Expansion :=
-              Nkind (Expr) = N_Function_Call
+              Nkind (Init_Expr_Q) = N_Function_Call
                 and then not Is_Build_In_Place_Result_Type (Comp_Typ);
 
             --  The initialization expression is a controlled function call.
@@ -1572,7 +1565,7 @@ package body Exp_Aggr is
                --  generation of a transient scope, which leads to out-of-order
                --  adjustment and finalization.
 
-               Set_No_Side_Effect_Removal (Expr);
+               Set_No_Side_Effect_Removal (Init_Expr);
 
                --  When the transient component initialization is related to a
                --  range or an "others", keep all generated statements within
@@ -1598,7 +1591,7 @@ package body Exp_Aggr is
                Process_Transient_Component
                  (Loc        => Loc,
                   Comp_Typ   => Comp_Typ,
-                  Init_Expr  => Expr,
+                  Init_Expr  => Init_Expr,
                   Fin_Call   => Fin_Call,
                   Hook_Clear => Hook_Clear,
                   Aggr       => Act_Aggr,
@@ -1613,7 +1606,7 @@ package body Exp_Aggr is
             Initialize_Array_Component
               (Arr_Comp  => Arr_Comp,
                Comp_Typ  => Comp_Typ,
-               Init_Expr => Expr,
+               Init_Expr => Init_Expr,
                Stmts     => Stmts);
 
             --  At this point the array element is fully initialized. Complete
@@ -1676,13 +1669,7 @@ package body Exp_Aggr is
          --  Ada 2005 (AI-287): In case of default initialized component, Expr
          --  is not present (and therefore we also initialize Expr_Q to empty).
 
-         if No (Expr) then
-            Expr_Q := Empty;
-         elsif Nkind (Expr) = N_Qualified_Expression then
-            Expr_Q := Expression (Expr);
-         else
-            Expr_Q := Expr;
-         end if;
+         Expr_Q := Unqualify (Expr);
 
          if Present (Etype (N)) and then Etype (N) /= Any_Composite then
             Comp_Typ := Component_Type (Etype (N));
@@ -1815,7 +1802,7 @@ package body Exp_Aggr is
 
             if Present (Comp_Typ)
               and then Needs_Finalization (Comp_Typ)
-              and then Nkind (Expr) /= N_Aggregate
+              and then Nkind (Expr_Q) /= N_Aggregate
             then
                Initialize_Ctrl_Array_Component
                  (Arr_Comp  => Indexed_Comp,
@@ -2298,7 +2285,6 @@ package body Exp_Aggr is
       Assoc  : Node_Id;
       Choice : Node_Id;
       Expr   : Node_Id;
-      Typ    : constant Entity_Id := Etype (N);
 
       Bounds : Range_Nodes;
       Low    : Node_Id renames Bounds.First;
@@ -3143,6 +3129,8 @@ package body Exp_Aggr is
          Init_Expr : Node_Id;
          Stmts     : List_Id)
       is
+         Init_Expr_Q : constant Node_Id := Unqualify (Init_Expr);
+
          Fin_Call   : Node_Id;
          Hook_Clear : Node_Id;
 
@@ -3155,16 +3143,16 @@ package body Exp_Aggr is
          --  the initialization expression denotes. Unanalyzed function calls
          --  may appear as identifiers or indexed components.
 
-         if Nkind (Init_Expr) in N_Function_Call
-                               | N_Identifier
-                               | N_Indexed_Component
+         if Nkind (Init_Expr_Q) in N_Function_Call
+                                 | N_Identifier
+                                 | N_Indexed_Component
            and then not Analyzed (Init_Expr)
          then
             Preanalyze_And_Resolve (Init_Expr, Comp_Typ);
          end if;
 
          In_Place_Expansion :=
-           Nkind (Init_Expr) = N_Function_Call
+           Nkind (Init_Expr_Q) = N_Function_Call
              and then not Is_Build_In_Place_Result_Type (Comp_Typ);
 
          --  The initialization expression is a controlled function call.
@@ -3919,11 +3907,7 @@ package body Exp_Aggr is
                 Prefix        => New_Copy_Tree (Target),
                 Selector_Name => New_Occurrence_Of (Selector, Loc));
 
-            if Nkind (Expression (Comp)) = N_Qualified_Expression then
-               Expr_Q := Expression (Expression (Comp));
-            else
-               Expr_Q := Expression (Comp);
-            end if;
+            Expr_Q := Unqualify (Expression (Comp));
 
             --  Now either create the assignment or generate the code for the
             --  inner aggregate top-down.
@@ -4319,15 +4303,11 @@ package body Exp_Aggr is
    --------------------------------
 
    procedure Convert_Aggr_In_Assignment (N : Node_Id) is
-      Aggr : Node_Id            := Expression (N);
+      Aggr : constant Node_Id   := Unqualify (Expression (N));
       Typ  : constant Entity_Id := Etype (Aggr);
       Occ  : constant Node_Id   := New_Copy_Tree (Name (N));
 
    begin
-      if Nkind (Aggr) = N_Qualified_Expression then
-         Aggr := Expression (Aggr);
-      end if;
-
       Insert_Actions_After (N, Late_Expansion (Aggr, Typ, Occ));
    end Convert_Aggr_In_Assignment;
 
@@ -4337,7 +4317,7 @@ package body Exp_Aggr is
 
    procedure Convert_Aggr_In_Object_Decl (N : Node_Id) is
       Obj  : constant Entity_Id  := Defining_Identifier (N);
-      Aggr : Node_Id             := Expression (N);
+      Aggr : constant Node_Id    := Unqualify (Expression (N));
       Loc  : constant Source_Ptr := Sloc (Aggr);
       Typ  : constant Entity_Id  := Etype (Aggr);
       Occ  : constant Node_Id    := New_Occurrence_Of (Obj, Loc);
@@ -4416,10 +4396,6 @@ package body Exp_Aggr is
 
    begin
       Set_Assignment_OK (Occ);
-
-      if Nkind (Aggr) = N_Qualified_Expression then
-         Aggr := Expression (Aggr);
-      end if;
 
       if Has_Discriminants (Typ)
         and then Typ /= Etype (Obj)
@@ -8682,11 +8658,7 @@ package body Exp_Aggr is
                return False;
             end if;
 
-            if Nkind (Expression (C)) = N_Qualified_Expression then
-               Expr_Q := Expression (Expression (C));
-            else
-               Expr_Q := Expression (C);
-            end if;
+            Expr_Q := Unqualify (Expression (C));
 
             --  Return False for array components whose bounds raise
             --  constraint error.
@@ -9085,17 +9057,11 @@ package body Exp_Aggr is
    --------------------------
 
    function Is_Delayed_Aggregate (N : Node_Id) return Boolean is
-      Node : Node_Id   := N;
-      Kind : Node_Kind := Nkind (Node);
+      Unqual_N : constant Node_Id := Unqualify (N);
 
    begin
-      if Kind = N_Qualified_Expression then
-         Node := Expression (Node);
-         Kind := Nkind (Node);
-      end if;
-
-      return Kind in N_Aggregate | N_Extension_Aggregate
-        and then Expansion_Delayed (Node);
+      return Nkind (Unqual_N) in N_Aggregate | N_Extension_Aggregate
+        and then Expansion_Delayed (Unqual_N);
    end Is_Delayed_Aggregate;
 
    --------------------------------
