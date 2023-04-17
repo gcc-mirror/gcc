@@ -745,8 +745,10 @@ TokenStream::visit (PathIdentSegment &segment)
 void
 TokenStream::visit (QualifiedPathInExpression &path)
 {
+  visit (path.get_qualified_path_type ());
   for (auto &segment : path.get_segments ())
     {
+      tokens.push_back (Rust::Token::make (SCOPE_RESOLUTION, Location ()));
       visit (segment);
     }
 }
