@@ -1,6 +1,7 @@
 /* { dg-require-effective-target vect_simd_clones } */
 /* { dg-additional-options "-fopenmp-simd --param vect-epilogues-nomask=0" } */
 /* { dg-additional-options "-mavx" { target avx_runtime } } */
+/* { dg-additional-options "-mno-avx512f" { target { { i?86*-*-* x86_64-*-* } && { ! lp64 } } } } */
 
 #define TYPE __INT64_TYPE__
 #include "vect-simd-clone-18.c"
