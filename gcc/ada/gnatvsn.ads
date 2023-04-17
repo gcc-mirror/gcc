@@ -32,7 +32,7 @@ package Gnatvsn is
    --  Static string identifying this version, that can be used as an argument
    --  to e.g. pragma Ident.
 
-   Library_Version : constant String := "13";
+   Library_Version : constant String := "14";
    --  Library version. It needs to be updated whenever the major version
    --  number is changed.
    --
