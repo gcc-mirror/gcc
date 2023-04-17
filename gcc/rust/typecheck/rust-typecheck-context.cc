@@ -576,5 +576,23 @@ TypeCheckContextItem::get_context_type ()
   return static_cast<TyTy::FnType *> (lookup);
 }
 
+DefId
+TypeCheckContextItem::get_defid () const
+{
+  switch (get_type ())
+    {
+    case ITEM:
+      return item.item->get_mappings ().get_defid ();
+
+    case IMPL_ITEM:
+      return item.impl_item.second->get_mappings ().get_defid ();
+
+    case TRAIT_ITEM:
+      return item.trait_item->get_mappings ().get_defid ();
+    }
+
+  return UNKNOWN_DEFID;
+}
+
 } // namespace Resolver
 } // namespace Rust
