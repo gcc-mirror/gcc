@@ -5280,12 +5280,12 @@ void
 riscv_expand_prologue (void)
 {
   struct riscv_frame_info *frame = &cfun->machine->frame;
-  poly_int64 size = frame->total_size;
+  poly_int64 remaining_size = frame->total_size;
   unsigned mask = frame->mask;
   rtx insn;
 
   if (flag_stack_usage_info)
-    current_function_static_stack_size = constant_lower_bound (size);
+    current_function_static_stack_size = constant_lower_bound (remaining_size);
 
   if (cfun->machine->naked_p)
     return;
@@ -5296,7 +5296,7 @@ riscv_expand_prologue (void)
       rtx dwarf = NULL_RTX;
       dwarf = riscv_adjust_libcall_cfi_prologue ();
 
-      size -= frame->save_libcall_adjustment;
+      remaining_size -= frame->save_libcall_adjustment;
       insn = emit_insn (riscv_gen_gpr_save_insn (frame));
       frame->mask = 0; /* Temporarily fib that we need not save GPRs.  */
 
@@ -5307,16 +5307,14 @@ riscv_expand_prologue (void)
   /* Save the registers.  */
   if ((frame->mask | frame->fmask) != 0)
     {
-      HOST_WIDE_INT step1 = riscv_first_stack_step (frame, frame->total_size);
-      if (size.is_constant ())
-	step1 = MIN (size.to_constant(), step1);
+      HOST_WIDE_INT step1 = riscv_first_stack_step (frame, remaining_size);
 
       insn = gen_add3_insn (stack_pointer_rtx,
 			    stack_pointer_rtx,
 			    GEN_INT (-step1));
       RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
-      size -= step1;
-      riscv_for_each_saved_reg (size, riscv_save_reg, false, false);
+      remaining_size -= step1;
+      riscv_for_each_saved_reg (remaining_size, riscv_save_reg, false, false);
     }
 
   frame->mask = mask; /* Undo the above fib.  */
@@ -5325,29 +5323,29 @@ riscv_expand_prologue (void)
   if (frame_pointer_needed)
     {
       insn = gen_add3_insn (hard_frame_pointer_rtx, stack_pointer_rtx,
-			    GEN_INT ((frame->hard_frame_pointer_offset - size).to_constant ()));
+			    GEN_INT ((frame->hard_frame_pointer_offset - remaining_size).to_constant ()));
       RTX_FRAME_RELATED_P (emit_insn (insn)) = 1;
 
       riscv_emit_stack_tie ();
     }
 
   /* Allocate the rest of the frame.  */
-  if (known_gt (size, 0))
+  if (known_gt (remaining_size, 0))
     {
       /* Two step adjustment:
 	 1.scalable frame. 2.constant frame.  */
       poly_int64 scalable_frame (0, 0);
-      if (!size.is_constant ())
+      if (!remaining_size.is_constant ())
 	{
 	  /* First for scalable frame.  */
-	  poly_int64 scalable_frame = size;
-	  scalable_frame.coeffs[0] = size.coeffs[1];
+	  poly_int64 scalable_frame = remaining_size;
+	  scalable_frame.coeffs[0] = remaining_size.coeffs[1];
 	  riscv_v_adjust_scalable_frame (stack_pointer_rtx, scalable_frame, false);
-	  size -= scalable_frame;
+	  remaining_size -= scalable_frame;
 	}
 
       /* Second step for constant frame.  */
-      HOST_WIDE_INT constant_frame = size.to_constant ();
+      HOST_WIDE_INT constant_frame = remaining_size.to_constant ();
       if (constant_frame == 0)
 	return;
 
@@ -5413,6 +5411,8 @@ riscv_expand_epilogue (int style)
   HOST_WIDE_INT step2 = 0;
   bool use_restore_libcall = ((style == NORMAL_RETURN)
 			      && riscv_use_save_libcall (frame));
+  unsigned libcall_size = (use_restore_libcall
+			   ? frame->save_libcall_adjustment : 0);
   rtx ra = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
   rtx insn;
 
@@ -5483,13 +5483,18 @@ riscv_expand_epilogue (int style)
       REG_NOTES (insn) = dwarf;
     }
 
+  if (use_restore_libcall)
+    frame->mask = 0; /* Temporarily fib for GPRs.  */
+
   /* If we need to restore registers, deallocate as much stack as
      possible in the second step without going out of range.  */
   if ((frame->mask | frame->fmask) != 0)
-    {
-      step2 = riscv_first_stack_step (frame, frame->total_size);
-      step1 -= step2;
-    }
+    step2 = riscv_first_stack_step (frame, frame->total_size - libcall_size);
+
+  if (use_restore_libcall)
+    frame->mask = mask; /* Undo the above fib.  */
+
+  step1 -= step2 + libcall_size;
 
   /* Set TARGET to BASE + STEP1.  */
   if (known_gt (step1, 0))
@@ -5543,15 +5548,12 @@ riscv_expand_epilogue (int style)
     frame->mask = 0; /* Temporarily fib that we need not save GPRs.  */
 
   /* Restore the registers.  */
-  riscv_for_each_saved_reg (frame->total_size - step2, riscv_restore_reg,
+  riscv_for_each_saved_reg (frame->total_size - step2 - libcall_size,
+			    riscv_restore_reg,
 			    true, style == EXCEPTION_RETURN);
 
   if (use_restore_libcall)
-    {
       frame->mask = mask; /* Undo the above fib.  */
-      gcc_assert (step2 >= frame->save_libcall_adjustment);
-      step2 -= frame->save_libcall_adjustment;
-    }
 
   if (need_barrier_p)
     riscv_emit_stack_tie ();
