@@ -9447,6 +9447,8 @@ omp_group_base (omp_mapping_group *grp, unsigned int *chained,
     case GOMP_MAP_FIRSTPRIVATE_INT:
     case GOMP_MAP_USE_DEVICE_PTR:
     case GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION:
+    case GOMP_MAP_DECLARE_ALLOCATE:
+    case GOMP_MAP_DECLARE_DEALLOCATE:
       return NULL_TREE;
 
     case GOMP_MAP_FIRSTPRIVATE_POINTER:

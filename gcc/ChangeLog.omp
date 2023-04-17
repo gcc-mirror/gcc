@@ -1,3 +1,8 @@
+2023-04-17  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gimplify.cc (omp_group_base): Handle GOMP_MAP_DECLARE_ALLOCATE
+	and GOMP_MAP_DECLARE_DEALLOCATE.
+
 2023-04-03  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* doc/invoke.texi (-foffload-memory=pinned): Document.
