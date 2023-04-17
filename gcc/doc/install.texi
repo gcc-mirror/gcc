@@ -2178,13 +2178,14 @@ forward to maintain the port.
 @itemx --enable-decimal-float=dpd
 @itemx --disable-decimal-float
 Enable (or disable) support for the C decimal floating point extension
-that is in the IEEE 754-2008 standard.  This is enabled by default only
-on PowerPC, i386, and x86_64 GNU/Linux systems.  Other systems may also
-support it, but require the user to specifically enable it.  You can
-optionally control which decimal floating point format is used (either
-@samp{bid} or @samp{dpd}).  The @samp{bid} (binary integer decimal)
-format is default on i386 and x86_64 systems, and the @samp{dpd}
-(densely packed decimal) format is default on PowerPC systems.
+that is in the IEEE 754-2008 standard.  This is enabled by default
+only on AArch64, PowerPC, i386, and x86_64 GNU/Linux systems.  Other
+systems may also support it, but require the user to specifically
+enable it.  You can optionally control which decimal floating point
+format is used (either @samp{bid} or @samp{dpd}).  The @samp{bid}
+(binary integer decimal) format is default on AArch64, i386 and x86_64
+systems, and the @samp{dpd} (densely packed decimal) format is default
+on PowerPC systems.
 
 @item --enable-fixed-point
 @itemx --disable-fixed-point
