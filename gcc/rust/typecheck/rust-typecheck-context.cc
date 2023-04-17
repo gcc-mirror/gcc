@@ -136,6 +136,12 @@ TypeCheckContext::lookup_type_by_node_id (NodeId ref, HirId *id)
   return true;
 }
 
+bool
+TypeCheckContext::have_function_context () const
+{
+  return !return_type_stack.empty ();
+}
+
 TyTy::BaseType *
 TypeCheckContext::peek_return_type ()
 {
