@@ -157,7 +157,7 @@ TypeCheckContext::pop_return_type ()
   return_type_stack.pop_back ();
 }
 
-TypeCheckContextItem &
+TypeCheckContextItem
 TypeCheckContext::peek_context ()
 {
   rust_assert (!return_type_stack.empty ());

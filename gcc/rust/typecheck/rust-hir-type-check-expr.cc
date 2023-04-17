@@ -1457,7 +1457,7 @@ TypeCheckExpr::visit (HIR::MatchExpr &expr)
 void
 TypeCheckExpr::visit (HIR::ClosureExpr &expr)
 {
-  TypeCheckContextItem &current_context = context->peek_context ();
+  TypeCheckContextItem current_context = context->peek_context ();
   TyTy::FnType *current_context_fndecl = current_context.get_context_type ();
 
   HirId ref = expr.get_mappings ().get_hirid ();
@@ -1624,7 +1624,7 @@ TypeCheckExpr::resolve_operator_overload (
   // handle the case where we are within the impl block for this lang_item
   // otherwise we end up with a recursive operator overload such as the i32
   // operator overload trait
-  TypeCheckContextItem &fn_context = context->peek_context ();
+  TypeCheckContextItem fn_context = context->peek_context ();
   if (fn_context.get_type () == TypeCheckContextItem::ItemType::IMPL_ITEM)
     {
       auto &impl_item = fn_context.get_impl_item ();
