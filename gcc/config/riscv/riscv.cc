@@ -4834,7 +4834,7 @@ riscv_save_libcall_count (unsigned mask)
    They decrease stack_pointer_rtx but leave frame_pointer_rtx and
    hard_frame_pointer_rtx unchanged.  */
 
-static HOST_WIDE_INT riscv_first_stack_step (struct riscv_frame_info *frame);
+static HOST_WIDE_INT riscv_first_stack_step (struct riscv_frame_info *frame, poly_int64 remaining_size);
 
 /* Handle stack align for poly_int.  */
 static poly_int64
@@ -4863,7 +4863,7 @@ riscv_compute_frame_info (void)
      save/restore t0.  We check for this before clearing the frame struct.  */
   if (cfun->machine->interrupt_handler_p)
     {
-      HOST_WIDE_INT step1 = riscv_first_stack_step (frame);
+      HOST_WIDE_INT step1 = riscv_first_stack_step (frame, frame->total_size);
       if (! POLY_SMALL_OPERAND_P ((frame->total_size - step1)))
 	interrupt_save_prologue_temp = true;
     }
@@ -5182,31 +5182,31 @@ riscv_for_each_saved_reg (poly_int64 sp_offset, riscv_save_restore_fn fn,
    without adding extra instructions.  */
 
 static HOST_WIDE_INT
-riscv_first_stack_step (struct riscv_frame_info *frame)
+riscv_first_stack_step (struct riscv_frame_info *frame, poly_int64 remaining_size)
 {
-  HOST_WIDE_INT frame_total_constant_size;
-  if (!frame->total_size.is_constant ())
-    frame_total_constant_size
-      = riscv_stack_align (frame->total_size.coeffs[0])
-	- riscv_stack_align (frame->total_size.coeffs[1]);
+  HOST_WIDE_INT remaining_const_size;
+  if (!remaining_size.is_constant ())
+    remaining_const_size
+      = riscv_stack_align (remaining_size.coeffs[0])
+	- riscv_stack_align (remaining_size.coeffs[1]);
   else
-    frame_total_constant_size = frame->total_size.to_constant ();
+    remaining_const_size = remaining_size.to_constant ();
 
-  if (SMALL_OPERAND (frame_total_constant_size))
-    return frame_total_constant_size;
+  if (SMALL_OPERAND (remaining_const_size))
+    return remaining_const_size;
 
   HOST_WIDE_INT min_first_step =
-    RISCV_STACK_ALIGN ((frame->total_size - frame->frame_pointer_offset).to_constant());
+    riscv_stack_align ((remaining_size - frame->frame_pointer_offset).to_constant());
   HOST_WIDE_INT max_first_step = IMM_REACH / 2 - PREFERRED_STACK_BOUNDARY / 8;
-  HOST_WIDE_INT min_second_step = frame_total_constant_size - max_first_step;
+  HOST_WIDE_INT min_second_step = remaining_const_size - max_first_step;
   gcc_assert (min_first_step <= max_first_step);
 
   /* As an optimization, use the least-significant bits of the total frame
      size, so that the second adjustment step is just LUI + ADD.  */
   if (!SMALL_OPERAND (min_second_step)
-      && frame_total_constant_size % IMM_REACH < IMM_REACH / 2
-      && frame_total_constant_size % IMM_REACH >= min_first_step)
-    return frame_total_constant_size % IMM_REACH;
+      && remaining_const_size % IMM_REACH < IMM_REACH / 2
+      && remaining_const_size % IMM_REACH >= min_first_step)
+    return remaining_const_size % IMM_REACH;
 
   if (TARGET_RVC)
     {
@@ -5214,13 +5214,13 @@ riscv_first_stack_step (struct riscv_frame_info *frame)
 	 loads and stores, then put that one first.  */
       if (IN_RANGE (min_second_step, 0,
 		    (TARGET_64BIT ? SDSP_REACH : SWSP_REACH)))
-	return MAX (min_second_step, min_first_step);
+       return MAX (min_second_step, min_first_step);
 
       /* If we need LUI + ADDI + ADD for the second adjustment step, then start
 	 with the minimum first step, so that we can get compressed loads and
 	 stores.  */
       else if (!SMALL_OPERAND (min_second_step))
-	return min_first_step;
+       return min_first_step;
     }
 
   return max_first_step;
@@ -5307,7 +5307,7 @@ riscv_expand_prologue (void)
   /* Save the registers.  */
   if ((frame->mask | frame->fmask) != 0)
     {
-      HOST_WIDE_INT step1 = riscv_first_stack_step (frame);
+      HOST_WIDE_INT step1 = riscv_first_stack_step (frame, frame->total_size);
       if (size.is_constant ())
 	step1 = MIN (size.to_constant(), step1);
 
@@ -5487,7 +5487,7 @@ riscv_expand_epilogue (int style)
      possible in the second step without going out of range.  */
   if ((frame->mask | frame->fmask) != 0)
     {
-      step2 = riscv_first_stack_step (frame);
+      step2 = riscv_first_stack_step (frame, frame->total_size);
       step1 -= step2;
     }
 
