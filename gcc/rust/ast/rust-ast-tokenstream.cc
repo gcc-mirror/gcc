@@ -771,11 +771,11 @@ TokenStream::visit (QualifiedPathInType &path)
 {
   visit (path.get_qualified_path_type ());
 
-  tokens.push_back (Rust::Token::make (COLON, Location ()));
+  tokens.push_back (Rust::Token::make (SCOPE_RESOLUTION, Location ()));
   visit (path.get_associated_segment ());
   for (auto &segment : path.get_segments ())
     {
-      tokens.push_back (Rust::Token::make (COLON, Location ()));
+      tokens.push_back (Rust::Token::make (SCOPE_RESOLUTION, Location ()));
       visit (segment);
     }
 }
