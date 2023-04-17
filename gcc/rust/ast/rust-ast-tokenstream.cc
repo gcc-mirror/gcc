@@ -1978,10 +1978,7 @@ TokenStream::visit_function_common (std::unique_ptr<Type> &return_type,
 
   if (block)
     {
-      if (return_type)
-	{
-	  visit (block);
-	}
+      visit (block);
     }
   else
     {
