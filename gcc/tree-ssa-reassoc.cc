@@ -5094,7 +5094,7 @@ maybe_optimize_range_tests (gimple *stmt)
 	      && bbinfo[idx].op == NULL_TREE
 	      && ops[bbinfo[idx].first_idx]->op != NULL_TREE)
 	    {
-	      gcond *cond_stmt = as_a <gcond *> (last_stmt (bb));
+	      gcond *cond_stmt = as_a <gcond *> (*gsi_last_bb (bb));
 
 	      if (idx > max_idx)
 		max_idx = idx;

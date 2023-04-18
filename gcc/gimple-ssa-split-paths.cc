@@ -267,8 +267,7 @@ is_feasible_trace (basic_block bb)
   if (single_pred_p (pred2) && single_pred (pred2) == pred1
       && num_stmts_in_pred2 == 0)
     {
-      gimple *cond_stmt = last_stmt (pred1);
-      if (cond_stmt && gimple_code (cond_stmt) == GIMPLE_COND)
+      if (gcond *cond_stmt = dyn_cast <gcond *> (*gsi_last_bb (pred1)))
 	{
 	  tree lhs = gimple_cond_lhs (cond_stmt);
 	  tree rhs = gimple_cond_rhs (cond_stmt);
@@ -369,7 +368,7 @@ is_feasible_trace (basic_block bb)
      an equivalence from to the joiner.  */
   bool found_cprop_opportunity = false;
   basic_block dom = get_immediate_dominator (CDI_DOMINATORS, bb);
-  gcond *cond = as_a <gcond *> (last_stmt (dom));
+  gcond *cond = as_a <gcond *> (*gsi_last_bb (dom));
   if (gimple_cond_code (cond) == EQ_EXPR
       || gimple_cond_code (cond) == NE_EXPR)
     for (unsigned i = 0; i < 2; ++i)

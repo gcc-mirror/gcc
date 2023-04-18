@@ -512,7 +512,7 @@ back_threader::maybe_thread_block (basic_block bb)
   if (EDGE_COUNT (bb->succs) <= 1)
     return;
 
-  gimple *stmt = last_stmt (bb);
+  gimple *stmt = *gsi_last_bb (bb);
   if (!stmt)
     return;
 
@@ -718,7 +718,7 @@ back_threader_profitability::possibly_profitable_path_p
 	     going to be able to eliminate its branch.  */
 	  if (j > 0)
 	    {
-	      gimple *last = last_stmt (bb);
+	      gimple *last = *gsi_last_bb (bb);
 	      if (last
 		  && (gimple_code (last) == GIMPLE_SWITCH
 		      || gimple_code (last) == GIMPLE_GOTO))

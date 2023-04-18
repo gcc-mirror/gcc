@@ -1531,7 +1531,7 @@ compute_complex_ancestor_jump_func (struct ipa_func_body_info *fbi,
 				    gcall *call, gphi *phi)
 {
   HOST_WIDE_INT offset;
-  gimple *assign, *cond;
+  gimple *assign;
   basic_block phi_bb, assign_bb, cond_bb;
   tree tmp, parm, expr, obj;
   int index, i;
@@ -1564,9 +1564,8 @@ compute_complex_ancestor_jump_func (struct ipa_func_body_info *fbi,
     return;
 
   cond_bb = single_pred (assign_bb);
-  cond = last_stmt (cond_bb);
+  gcond *cond = safe_dyn_cast <gcond *> (*gsi_last_bb (cond_bb));
   if (!cond
-      || gimple_code (cond) != GIMPLE_COND
       || gimple_cond_code (cond) != NE_EXPR
       || gimple_cond_lhs (cond) != parm
       || !integer_zerop (gimple_cond_rhs (cond)))
@@ -2681,8 +2680,8 @@ ipa_analyze_indirect_call_uses (struct ipa_func_body_info *fbi, gcall *call,
   /* Third, let's see that the branching is done depending on the least
      significant bit of the pfn. */
 
-  gimple *branch = last_stmt (bb);
-  if (!branch || gimple_code (branch) != GIMPLE_COND)
+  gcond *branch = safe_dyn_cast <gcond *> (*gsi_last_bb (bb));
+  if (!branch)
     return;
 
   if ((gimple_cond_code (branch) != NE_EXPR

@@ -4757,8 +4757,8 @@ vn_phi_eq (const_vn_phi_t const vp1, const_vn_phi_t const vp2)
 				 && EDGE_COUNT (idom2->succs) == 2);
 
 	    /* Verify the controlling stmt is the same.  */
-	    gcond *last1 = as_a <gcond *> (last_stmt (idom1));
-	    gcond *last2 = as_a <gcond *> (last_stmt (idom2));
+	    gcond *last1 = as_a <gcond *> (*gsi_last_bb (idom1));
+	    gcond *last2 = as_a <gcond *> (*gsi_last_bb (idom2));
 	    bool inverted_p;
 	    if (! cond_stmts_equal_p (last1, vp1->cclhs, vp1->ccrhs,
 				      last2, vp2->cclhs, vp2->ccrhs,
@@ -4859,7 +4859,7 @@ vn_phi_lookup (gimple *phi, bool backedges_varying_p)
     {
       basic_block idom1 = get_immediate_dominator (CDI_DOMINATORS, vp1->block);
       if (EDGE_COUNT (idom1->succs) == 2)
-	if (gcond *last1 = safe_dyn_cast <gcond *> (last_stmt (idom1)))
+	if (gcond *last1 = safe_dyn_cast <gcond *> (*gsi_last_bb (idom1)))
 	  {
 	    /* ???  We want to use SSA_VAL here.  But possibly not
 	       allow VN_TOP.  */
@@ -4914,7 +4914,7 @@ vn_phi_insert (gimple *phi, tree result, bool backedges_varying_p)
     {
       basic_block idom1 = get_immediate_dominator (CDI_DOMINATORS, vp1->block);
       if (EDGE_COUNT (idom1->succs) == 2)
-	if (gcond *last1 = safe_dyn_cast <gcond *> (last_stmt (idom1)))
+	if (gcond *last1 = safe_dyn_cast <gcond *> (*gsi_last_bb (idom1)))
 	  {
 	    /* ???  We want to use SSA_VAL here.  But possibly not
 	       allow VN_TOP.  */

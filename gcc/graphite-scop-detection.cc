@@ -277,17 +277,12 @@ single_pred_cond_non_loop_exit (basic_block bb)
 {
   if (single_pred_p (bb))
     {
-      edge e = single_pred_edge (bb);
-      basic_block pred = e->src;
-      gimple *stmt;
+      basic_block pred = single_pred (bb);
 
       if (loop_depth (pred->loop_father) > loop_depth (bb->loop_father))
 	return NULL;
 
-      stmt = last_stmt (pred);
-
-      if (stmt && gimple_code (stmt) == GIMPLE_COND)
-	return as_a<gcond *> (stmt);
+      return safe_dyn_cast <gcond *> (*gsi_last_bb (pred));
     }
 
   return NULL;

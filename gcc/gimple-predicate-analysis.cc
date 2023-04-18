@@ -1830,7 +1830,7 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
 		}
 	    }
 	  /* Get the conditional controlling the bb exit edge.  */
-	  gimple *cond_stmt = last_stmt (guard_bb);
+	  gimple *cond_stmt = *gsi_last_bb (guard_bb);
 	  if (gimple_code (cond_stmt) == GIMPLE_COND)
 	    {
 	      /* The true edge corresponds to the uninteresting condition.

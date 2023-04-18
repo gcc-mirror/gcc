@@ -3572,7 +3572,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
     {
       gcc_assert (scalar_loop);
       condition_bb = gimple_bb (loop_vectorized_call);
-      cond = as_a <gcond *> (last_stmt (condition_bb));
+      cond = as_a <gcond *> (*gsi_last_bb (condition_bb));
       gimple_cond_set_condition_from_tree (cond, cond_expr);
       update_stmt (cond);
 

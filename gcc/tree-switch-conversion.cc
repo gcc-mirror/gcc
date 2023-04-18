@@ -2489,8 +2489,7 @@ pass_convert_switch::execute (function *fun)
 
   FOR_EACH_BB_FN (bb, fun)
   {
-    gimple *stmt = last_stmt (bb);
-    if (stmt && gimple_code (stmt) == GIMPLE_SWITCH)
+    if (gswitch *stmt = safe_dyn_cast <gswitch *> (*gsi_last_bb (bb)))
       {
 	if (dump_file)
 	  {
@@ -2504,7 +2503,7 @@ pass_convert_switch::execute (function *fun)
 	  }
 
 	switch_conversion sconv;
-	sconv.expand (as_a <gswitch *> (stmt));
+	sconv.expand (stmt);
 	cfg_altered |= sconv.m_cfg_altered;
 	if (!sconv.m_reason)
 	  {
@@ -2594,9 +2593,7 @@ pass_lower_switch<O0>::execute (function *fun)
 
   FOR_EACH_BB_FN (bb, fun)
     {
-      gimple *stmt = last_stmt (bb);
-      gswitch *swtch;
-      if (stmt && (swtch = dyn_cast<gswitch *> (stmt)))
+      if (gswitch *swtch = safe_dyn_cast <gswitch *> (*gsi_last_bb (bb)))
 	{
 	  if (!O0)
 	    group_case_labels_stmt (swtch);

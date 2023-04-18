@@ -912,7 +912,7 @@ cfun_returns (tree decl)
   edge e;
   FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     {
-      greturn *ret = safe_dyn_cast <greturn *> (last_stmt (e->src));
+      greturn *ret = safe_dyn_cast <greturn *> (*gsi_last_bb (e->src));
       if (!ret)
 	continue;
       if (gimple_return_retval (ret) == decl)

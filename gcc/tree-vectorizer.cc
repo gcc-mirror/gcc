@@ -852,7 +852,7 @@ vect_loop_vectorized_call (class loop *loop, gcond **cond)
   gimple *g;
   do
     {
-      g = last_stmt (bb);
+      g = *gsi_last_bb (bb);
       if ((g && gimple_code (g) == GIMPLE_COND)
 	  || !single_succ_p (bb))
 	break;
@@ -888,8 +888,6 @@ vect_loop_dist_alias_call (class loop *loop, function *fun)
   basic_block bb;
   basic_block entry;
   class loop *outer, *orig;
-  gimple_stmt_iterator gsi;
-  gimple *g;
 
   if (loop->orig_loop_num == 0)
     return NULL;
@@ -914,16 +912,15 @@ vect_loop_dist_alias_call (class loop *loop, function *fun)
   for (; bb != entry && flow_bb_inside_loop_p (outer, bb);
        bb = get_immediate_dominator (CDI_DOMINATORS, bb))
     {
-      g = last_stmt (bb);
-      if (g == NULL || gimple_code (g) != GIMPLE_COND)
+      gimple_stmt_iterator gsi = gsi_last_bb (bb);
+      if (!safe_is_a <gcond *> (*gsi))
 	continue;
 
-      gsi = gsi_for_stmt (g);
       gsi_prev (&gsi);
       if (gsi_end_p (gsi))
 	continue;
 
-      g = gsi_stmt (gsi);
+      gimple *g = gsi_stmt (gsi);
       /* The guarding internal function call must have the same distribution
 	 alias id.  */
       if (gimple_call_internal_p (g, IFN_LOOP_DIST_ALIAS)
