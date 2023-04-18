@@ -54,6 +54,18 @@ private:
   }
 
   /**
+   * Accumulate all of the nested macros which escape their module through the
+   * use of the #[macro_use] attribute.
+   *
+   * This function recursively accumulates macros in all of the nested modules
+   * of an item container (an AST::Crate or an AST::Module) and returns this new
+   * list of items. You can then use the `take_items` and `set_items` functions
+   * on these containers to replace their list of items.
+   */
+  std::vector<std::unique_ptr<AST::Item>>
+  accumulate_escaped_macros (AST::Module &module);
+
+  /**
    * The "scope" we are currently in.
    *
    * This involves lexical scopes:
