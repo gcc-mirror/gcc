@@ -2512,9 +2512,8 @@ GLIBCXX_3.4.31 {
     _ZNKSt12__shared_ptrINSt10filesystem28recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE[012]EEcvbEv;
     _ZNKSt12__shared_ptrINSt10filesystem7__cxx1128recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE[012]EEcvbEv;
 
-#if defined(_GLIBCXX_SYMVER_GNU) && defined(_GLIBCXX_SHARED) \
-    && defined(_GLIBCXX_HAVE_AS_SYMVER_DIRECTIVE) \
-    && defined(_GLIBCXX_HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT)
+#if defined(HAVE_AS_SYMVER_DIRECTIVE) \
+    && defined(HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT)
     # See src/c++98/globals_io.cc
     _ZSt3cin;
     _ZSt4cout;
