@@ -1,3 +1,13 @@
+2023-04-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-04-04  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/108699
+	* gcc.target/powerpc/p9-vparity.c: Add scan-assembler-not for vpopcntb
+	to distinguish parity byte from parity.
+	* gcc.target/powerpc/pr108699.c: New test.
+
 2023-04-16  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
