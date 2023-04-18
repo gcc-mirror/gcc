@@ -398,10 +398,10 @@ multi_letter_subset_rank (const std::string &subset)
   char multiletter_class = subset[0];
   switch (multiletter_class)
     {
-    case 's':
+    case 'z':
       high_order = 0;
       break;
-    case 'z':
+    case 's':
       high_order = 1;
       break;
     case 'x':
@@ -1121,14 +1121,14 @@ riscv_subset_list::parse (const char *arch, location_t loc)
   if (p == NULL)
     goto fail;
 
-  /* Parsing supervisor extension.  */
-  p = subset_list->parse_multiletter_ext (p, "s", "supervisor extension");
+  /* Parsing sub-extensions.  */
+  p = subset_list->parse_multiletter_ext (p, "z", "sub-extension");
 
   if (p == NULL)
     goto fail;
 
-  /* Parsing sub-extensions.  */
-  p = subset_list->parse_multiletter_ext (p, "z", "sub-extension");
+  /* Parsing supervisor extension.  */
+  p = subset_list->parse_multiletter_ext (p, "s", "supervisor extension");
 
   if (p == NULL)
     goto fail;
