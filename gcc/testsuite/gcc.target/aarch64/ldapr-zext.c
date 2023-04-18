@@ -65,3 +65,11 @@ TEST(u8_u32, u8, unsigned)
 */
 TEST(u16_u32, u16, unsigned)
 
+/*
+**test_u8_u16:
+**...
+**	ldaprb	w0, \[x[0-9]+\]
+**	ret
+*/
+TEST(u8_u16, u8, unsigned short)
+
