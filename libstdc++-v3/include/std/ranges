@@ -1122,6 +1122,14 @@ namespace views::__adaptor
     };
 } // namespace views::__adaptor
 
+#if __cplusplus > 202002L
+  template<typename _Derived>
+    requires is_class_v<_Derived> && same_as<_Derived, remove_cv_t<_Derived>>
+    class range_adaptor_closure
+    : public views::__adaptor::_RangeAdaptorClosure
+    { };
+#endif
+
   template<range _Range> requires is_object_v<_Range>
     class ref_view : public view_interface<ref_view<_Range>>
     {
