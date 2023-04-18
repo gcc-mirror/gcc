@@ -4572,6 +4572,10 @@ driver_handle_option (struct gcc_options *opts,
       do_save = false;
       break;
 
+    case OPT_gcodeview:
+      add_infile ("--pdb=", "*");
+      break;
+
     default:
       /* Various driver options need no special processing at this
 	 point, having been handled in a prescan above or being
