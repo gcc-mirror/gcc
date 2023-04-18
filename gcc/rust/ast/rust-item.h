@@ -1114,6 +1114,16 @@ public:
   const std::vector<std::unique_ptr<Item>> &get_items () const { return items; }
   std::vector<std::unique_ptr<Item>> &get_items () { return items; }
 
+  std::vector<std::unique_ptr<AST::Item>> take_items ()
+  {
+    return std::move (items);
+  }
+
+  void set_items (std::vector<std::unique_ptr<AST::Item>> &&new_items)
+  {
+    items = std::move (new_items);
+  }
+
   // move constructors
   Module (Module &&other) = default;
   Module &operator= (Module &&other) = default;

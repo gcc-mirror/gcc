@@ -1931,6 +1931,16 @@ public:
 
   NodeId get_node_id () const { return node_id; }
   const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
+
+  std::vector<std::unique_ptr<AST::Item>> take_items ()
+  {
+    return std::move (items);
+  }
+
+  void set_items (std::vector<std::unique_ptr<AST::Item>> &&new_items)
+  {
+    items = std::move (new_items);
+  }
 };
 
 // Base path expression AST node - abstract
