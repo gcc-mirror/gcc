@@ -228,7 +228,9 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
 	      HIR::TraitBound *b
 		= static_cast<HIR::TraitBound *> (bound.get ());
 
-	      auto predicate = get_predicate_from_bound (b->get_path ());
+	      auto predicate = get_predicate_from_bound (
+		b->get_path (),
+		nullptr /*this will setup a PLACEHOLDER for self*/);
 	      if (predicate.is_error ())
 		return &TraitReference::error_node ();
 
@@ -484,26 +486,36 @@ AssociatedImplTrait::setup_associated_types (
 
   // infer the arguments on the predicate
   std::vector<TyTy::BaseType *> impl_trait_predicate_args;
-  for (const auto &arg : impl_predicate.get_substs ())
+
+  for (size_t i = 0; i < impl_predicate.get_substs ().size (); i++)
     {
-      const TyTy::ParamType *p = arg.get_param_ty ();
-      if (p->get_symbol ().compare ("Self") == 0)
+      const auto &arg = impl_predicate.get_substs ().at (i);
+      if (i == 0)
 	continue;
 
+      const TyTy::ParamType *p = arg.get_param_ty ();
       TyTy::BaseType *r = p->resolve ();
-      r = SubstMapperInternal::Resolve (r, infer_arguments);
+      if (!r->is_concrete ())
+	{
+	  r = SubstMapperInternal::Resolve (r, infer_arguments);
+	}
       impl_trait_predicate_args.push_back (r);
     }
 
   // unify the bounds arguments
   std::vector<TyTy::BaseType *> hrtb_bound_arguments;
-  for (const auto &arg : bound.get_substs ())
+  for (size_t i = 0; i < bound.get_substs ().size (); i++)
     {
-      const TyTy::ParamType *p = arg.get_param_ty ();
-      if (p->get_symbol ().compare ("Self") == 0)
+      const auto &arg = bound.get_substs ().at (i);
+      if (i == 0)
 	continue;
 
+      const TyTy::ParamType *p = arg.get_param_ty ();
       TyTy::BaseType *r = p->resolve ();
+      if (!r->is_concrete ())
+	{
+	  r = SubstMapperInternal::Resolve (r, infer_arguments);
+	}
       hrtb_bound_arguments.push_back (r);
     }
 

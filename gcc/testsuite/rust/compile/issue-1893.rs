@@ -1,3 +1,4 @@
+// { dg-additional-options "-frust-compile-until=nameresolution" }
 pub enum Option<T> {
     None,
     Some(T),

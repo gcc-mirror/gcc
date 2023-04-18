@@ -37,7 +37,8 @@ protected:
 
   TraitReference *resolve_trait_path (HIR::TypePath &);
 
-  TyTy::TypeBoundPredicate get_predicate_from_bound (HIR::TypePath &path);
+  TyTy::TypeBoundPredicate
+  get_predicate_from_bound (HIR::TypePath &path, HIR::Type *associated_self);
 
   bool check_for_unconstrained (
     const std::vector<TyTy::SubstitutionParamMapping> &params_to_constrain,

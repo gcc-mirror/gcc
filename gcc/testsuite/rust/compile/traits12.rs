@@ -10,7 +10,7 @@ struct Foo<T> {
 }
 
 impl<T> A for Foo<usize> {
-    // { dg-error "generic item takes at least 1 type arguments but 0 were supplied" "" { target *-*-* } .-1 }
+    // { dg-error "generic item takes at least 2 type arguments but 1 were supplied" "" { target *-*-* } .-1 }
     // { dg-error "unconstrained type parameter" "" { target *-*-* } .-2 }
     type Output = T;
 

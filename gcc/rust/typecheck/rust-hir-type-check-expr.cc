@@ -1572,7 +1572,7 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
   args.get_type_args ().push_back (std::unique_ptr<HIR::Type> (implicit_tuple));
 
   // apply the arguments
-  predicate.apply_generic_arguments (&args);
+  predicate.apply_generic_arguments (&args, false);
 
   // finally inherit the trait bound
   infered->inherit_bounds ({predicate});

@@ -501,7 +501,8 @@ TypeCheckItem::resolve_impl_block_substitutions (HIR::ImplBlock &impl_block,
 
       // we don't error out here see: gcc/testsuite/rust/compile/traits2.rs
       // for example
-      specified_bound = get_predicate_from_bound (*ref.get ());
+      specified_bound
+	= get_predicate_from_bound (*ref.get (), impl_block.get_type ().get ());
     }
 
   TyTy::BaseType *self = TypeCheckType::Resolve (impl_block.get_type ().get ());
@@ -537,7 +538,8 @@ TypeCheckItem::validate_trait_impl_block (
 
       // we don't error out here see: gcc/testsuite/rust/compile/traits2.rs
       // for example
-      specified_bound = get_predicate_from_bound (*ref.get ());
+      specified_bound
+	= get_predicate_from_bound (*ref.get (), impl_block.get_type ().get ());
     }
 
   bool is_trait_impl_block = !trait_reference->is_error ();
