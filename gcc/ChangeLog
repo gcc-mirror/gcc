@@ -1,3 +1,140 @@
+2023-04-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	Backported from master:
+	2023-01-31  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	PR target/108589
+	* config/aarch64/aarch64.cc (aarch_macro_fusion_pair_p): Check
+	REG_P on SET_DEST.
+
+2023-04-17  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	Backported from master:
+	2023-04-17  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+		    Di Zhao  <di.zhao@amperecomputing.com>
+
+	* config/aarch64/aarch64-tuning-flags.def (AARCH64_EXTRA_TUNING_OPTION):
+	Add AARCH64_EXTRA_TUNE_NO_LDP_COMBINE.
+	* config/aarch64/aarch64.cc (aarch64_operands_ok_for_ldpstp):
+	Check for the above tuning option when processing loads.
+
+2023-04-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-04-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/108910
+	* config/aarch64/aarch64.cc (aarch64_function_arg_alignment): Do
+	not trust TYPE_ALIGN for pointer types; use POINTER_SIZE instead.
+
+2023-04-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109434
+	* tree-ssa-dse.cc (initialize_ao_ref_for_dse): Properly
+	handle possibly throwing calls when processing the LHS
+	and may-defs are not OK.  Add mode to initialize a may-def.
+	(dse_optimize_stmt): Query may-defs.
+
+2023-04-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-04-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109502
+	* tree-vect-stmts.cc (vectorizable_assignment): Fix
+	check for conversion between mask and non-mask types.
+
+2023-04-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-04-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109491
+	* tree-ssa-sccvn.cc (expressions_equal_p): Restore the
+	NULL operands test.
+
+2023-04-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109473
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction):
+	Convert scalar result to the computation type before performing
+	the reduction adjustment.
+
+2023-04-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109469
+	* tree-vect-slp.cc (vect_slp_function): Skip region starts with
+	a returns-twice call.
+
+2023-04-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR lto/109263
+	* lto-wrapper.cc (run_gcc): Parse alternate debug options
+	as well, they always enable debug.
+
+2023-04-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109219
+	* tree-vect-loop.cc (vectorizable_reduction): Check
+	slp_node, not STMT_SLP_TYPE.
+	* tree-vect-stmts.cc (vectorizable_condition): Likewise.
+	* tree-vect-slp.cc (vect_slp_analyze_node_operations_1):
+	Remove assertion on STMT_SLP_TYPE.
+
+2023-04-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-03-29  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/106124
+	* dwarf2out.cc (lookup_type_die): Reset TREE_ASM_WRITTEN
+	so we can re-create the DIE for the type if required.
+
+2023-04-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-12-07  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/105676
+	* ipa-pure-const.cc (ipa_make_function_pure): Skip also
+	for functions already being const.
+
+2023-04-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-04-04  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/108699
+	* config/rs6000/altivec.md (*p9v_parity<mode>2): Rename to ...
+	(rs6000_vprtyb<mode>2): ... this.
+	* config/rs6000/rs6000-builtins.def (VPRTYBD): Replace parityv2di2 with
+	rs6000_vprtybv2di2.
+	(VPRTYBW): Replace parityv4si2 with rs6000_vprtybv4si2.
+	(VPRTYBQ): Replace parityv1ti2 with rs6000_vprtybv1ti2.
+	* config/rs6000/vector.md (parity<mode>2 with VEC_IP): Expand with
+	popcountv16qi2 and the corresponding rs6000_vprtyb<mode>2.
+
+2023-04-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-04-04  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/108807
+	* config/rs6000/rs6000.cc (rs6000_expand_vector_set_var_p9): Fix gen
+	function for permutation control vector by considering big endianness.
+
 2023-04-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR target/109137

@@ -1,3 +1,90 @@
+2023-04-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	Backported from master:
+	2023-01-31  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	PR target/108589
+	* gcc.target/aarch64/pr108589.c: New test.
+
+2023-04-17  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	Backported from master:
+	2023-04-17  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+		    Di Zhao  <di.zhao@amperecomputing.com>
+
+	* gcc.target/aarch64/ampere1-no_ldp_combine.c: New test.
+
+2023-04-17  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2023-04-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/108910
+	* gcc.dg/torture/pr108910.c: New test.
+
+2023-04-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109434
+	* g++.dg/opt/pr109434.C: New testcase.
+
+2023-04-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-04-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109502
+	* gcc.dg/vect/pr109502.c: New testcase.
+
+2023-04-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109473
+	* gcc.dg/vect/pr109473.c: New testcase.
+
+2023-04-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109469
+	* gcc.dg/torture/pr109469.c: New testcase.
+
+2023-04-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109219
+	* gcc.dg/torture/pr109219.c: New testcase.
+
+2023-04-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-03-29  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/106124
+	* g++.dg/gomp/pr106124.C: New testcase.
+
+2023-04-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-12-07  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/105676
+	* gcc.dg/pr105676.c: New testcase.
+
+2023-04-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-04-04  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/108699
+	* gcc.target/powerpc/p9-vparity.c: Add scan-assembler-not for vpopcntb
+	to distinguish parity byte from parity.
+	* gcc.target/powerpc/pr108699.c: New test.
+
 2023-04-15  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
