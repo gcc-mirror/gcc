@@ -1,3 +1,8 @@
+2023-04-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gimplify.cc (omp_group_base): Handle GOMP_MAP_NONCONTIG_ARRAY_*
+	map types.
+
 2023-04-17  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* gimplify.cc (omp_group_base): Handle GOMP_MAP_DECLARE_ALLOCATE
