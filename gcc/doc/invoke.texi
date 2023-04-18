@@ -509,7 +509,7 @@ Objective-C and Objective-C++ Dialects}.
 -gstrict-dwarf  -gno-strict-dwarf
 -gas-loc-support  -gno-as-loc-support
 -gas-locview-support  -gno-as-locview-support
--gcodeview @gol
+-gcodeview
 -gcolumn-info  -gno-column-info  -gdwarf32  -gdwarf64
 -gstatement-frontiers  -gno-statement-frontiers
 -gvariable-location-views  -gno-variable-location-views
