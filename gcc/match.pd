@@ -8074,63 +8074,76 @@ and,
    under IEEE 754 the fneg of the wider type will negate every even entry
    and when doing an add we get a sub of the even and add of every odd
    elements.  */
-(simplify
- (vec_perm (plus:c @0 @1) (minus @0 @1) VECTOR_CST@2)
- (if (!VECTOR_INTEGER_TYPE_P (type)
-      && !FLOAT_WORDS_BIG_ENDIAN)
-  (with
-   {
-     /* Build a vector of integers from the tree mask.  */
-     vec_perm_builder builder;
-   }
-   (if (tree_to_vec_perm_builder (&builder, @2))
-    (with
-     {
-       /* Create a vec_perm_indices for the integer vector.  */
-       poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (type);
-       vec_perm_indices sel (builder, 2, nelts);
-       machine_mode vec_mode = TYPE_MODE (type);
-       machine_mode wide_mode;
-       scalar_mode wide_elt_mode;
-       poly_uint64 wide_nunits;
-       scalar_mode inner_mode = GET_MODE_INNER (vec_mode);
-     }
-     (if (sel.series_p (0, 2, 0, 2)
-	  && sel.series_p (1, 2, nelts + 1, 2)
-	  && GET_MODE_2XWIDER_MODE (inner_mode).exists (&wide_elt_mode)
-	  && multiple_p (GET_MODE_NUNITS (vec_mode), 2, &wide_nunits)
-	  && related_vector_mode (vec_mode, wide_elt_mode,
-				  wide_nunits).exists (&wide_mode))
-	(with
-	 {
-	   tree stype
-	     = lang_hooks.types.type_for_mode (GET_MODE_INNER (wide_mode),
-					       TYPE_UNSIGNED (type));
-	   tree ntype = build_vector_type_for_mode (stype, wide_mode);
+(for plusminus (plus minus)
+     minusplus (minus plus)
+ (simplify
+  (vec_perm (plusminus @0 @1) (minusplus @2 @3) VECTOR_CST@4)
+   (if (!VECTOR_INTEGER_TYPE_P (type)
+	&& !FLOAT_WORDS_BIG_ENDIAN
+        /* plus is commutative, while minus is not, so :c can't be used.
+	   Do equality comparisons by hand and at the end pick the operands
+	   from the minus.  */
+	&& (operand_equal_p (@0, @2, 0)
+	    ? operand_equal_p (@1, @3, 0)
+	    : operand_equal_p (@0, @3, 0) && operand_equal_p (@1, @2, 0)))
+   (with
+    {
+      /* Build a vector of integers from the tree mask.  */
+      vec_perm_builder builder;
+    }
+    (if (tree_to_vec_perm_builder (&builder, @4))
+     (with
+      {
+	/* Create a vec_perm_indices for the integer vector.  */
+	poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (type);
+	vec_perm_indices sel (builder, 2, nelts);
+	machine_mode vec_mode = TYPE_MODE (type);
+	machine_mode wide_mode;
+	scalar_mode wide_elt_mode;
+	poly_uint64 wide_nunits;
+	scalar_mode inner_mode = GET_MODE_INNER (vec_mode);
+      }
+      (if (sel.series_p (0, 2, 0, 2)
+	   && sel.series_p (1, 2, nelts + 1, 2)
+	   && GET_MODE_2XWIDER_MODE (inner_mode).exists (&wide_elt_mode)
+	   && multiple_p (GET_MODE_NUNITS (vec_mode), 2, &wide_nunits)
+	   && related_vector_mode (vec_mode, wide_elt_mode,
+				   wide_nunits).exists (&wide_mode))
+       (with
+	{
+	  tree stype
+	    = lang_hooks.types.type_for_mode (GET_MODE_INNER (wide_mode),
+					      TYPE_UNSIGNED (type));
+	  tree ntype = build_vector_type_for_mode (stype, wide_mode);
 
-	   /* The format has to be a non-extended ieee format.  */
-	   const struct real_format *fmt_old = FLOAT_MODE_FORMAT (vec_mode);
-	   const struct real_format *fmt_new = FLOAT_MODE_FORMAT (wide_mode);
-	 }
-	 (if (TYPE_MODE (stype) != BLKmode
-	      && VECTOR_TYPE_P (ntype)
-	      && fmt_old != NULL
-	      && fmt_new != NULL)
-	  (with
-	   {
-	     /* If the target doesn't support v1xx vectors, try using
-		scalar mode xx instead.  */
+	  /* The format has to be a non-extended ieee format.  */
+	  const struct real_format *fmt_old = FLOAT_MODE_FORMAT (vec_mode);
+	  const struct real_format *fmt_new = FLOAT_MODE_FORMAT (wide_mode);
+	}
+	(if (TYPE_MODE (stype) != BLKmode
+	     && VECTOR_TYPE_P (ntype)
+	     && fmt_old != NULL
+	     && fmt_new != NULL)
+	 (with
+	  {
+	    /* If the target doesn't support v1xx vectors, try using
+	       scalar mode xx instead.  */
 	    if (known_eq (GET_MODE_NUNITS (wide_mode), 1)
 		&& !target_supports_op_p (ntype, NEGATE_EXPR, optab_vector))
 	      ntype = stype;
-	   }
-	   (if (fmt_new->signbit_rw
-	        == fmt_old->signbit_rw + GET_MODE_UNIT_BITSIZE (vec_mode)
-		&& fmt_new->signbit_rw == fmt_new->signbit_ro
-		&& targetm.can_change_mode_class (TYPE_MODE (ntype), TYPE_MODE (type), ALL_REGS)
-		&& ((optimize_vectors_before_lowering_p () && VECTOR_TYPE_P (ntype))
-		    || target_supports_op_p (ntype, NEGATE_EXPR, optab_vector)))
-	    (plus (view_convert:type (negate (view_convert:ntype @1))) @0)))))))))))
+	  }
+	  (if (fmt_new->signbit_rw
+	       == fmt_old->signbit_rw + GET_MODE_UNIT_BITSIZE (vec_mode)
+	       && fmt_new->signbit_rw == fmt_new->signbit_ro
+	       && targetm.can_change_mode_class (TYPE_MODE (ntype),
+						 TYPE_MODE (type), ALL_REGS)
+	       && ((optimize_vectors_before_lowering_p ()
+		    && VECTOR_TYPE_P (ntype))
+		   || target_supports_op_p (ntype, NEGATE_EXPR, optab_vector)))
+	   (if (plusminus == PLUS_EXPR)
+	    (plus (view_convert:type (negate (view_convert:ntype @3))) @2)
+	    (minus @0 (view_convert:type
+			(negate (view_convert:ntype @1))))))))))))))))
 
 (simplify
  (vec_perm @0 @1 VECTOR_CST@2)
