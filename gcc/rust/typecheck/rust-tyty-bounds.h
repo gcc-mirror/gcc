@@ -20,6 +20,7 @@
 #define RUST_TYTY_BOUNDS_H
 
 #include "rust-location.h"
+#include "rust-mapping-common.h"
 
 namespace Rust {
 
@@ -67,6 +68,8 @@ public:
   std::vector<TypeBoundPredicate> &get_specified_bounds ();
 
   const std::vector<TypeBoundPredicate> &get_specified_bounds () const;
+
+  TypeBoundPredicate lookup_predicate (DefId id);
 
   size_t num_specified_bounds () const;
 

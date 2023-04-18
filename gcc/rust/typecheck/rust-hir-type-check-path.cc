@@ -18,6 +18,7 @@
 
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-type.h"
+#include "rust-hir-type-check-item.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-substitution-mapper.h"
 #include "rust-hir-path-probe.h"
@@ -59,7 +60,9 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
     return;
 
   // get the predicate for the bound
-  auto specified_bound = get_predicate_from_bound (*trait_path_ref.get ());
+  auto specified_bound
+    = get_predicate_from_bound (*trait_path_ref.get (),
+				qual_path_type.get_type ().get ());
   if (specified_bound.is_error ())
     return;
 
@@ -396,33 +399,41 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 	  bool found_impl_trait
 	    = context->lookup_associated_trait_impl (impl_block_id,
 						     &associated);
-	  TyTy::BaseType *impl_block_ty = nullptr;
-	  if (found_impl_trait)
-	    {
-	      TyTy::TypeBoundPredicate predicate (*associated->get_trait (),
-						  seg.get_locus ());
-	      impl_block_ty
-		= associated->setup_associated_types (prev_segment, predicate);
-	    }
-	  else
-	    {
-	      // get the type of the parent Self
-	      HirId impl_ty_id = associated_impl_block->get_type ()
-				   ->get_mappings ()
-				   .get_hirid ();
+	  TyTy::BaseType *impl_block_ty
+	    = TypeCheckItem::ResolveImplBlockSelf (*associated_impl_block);
 
-	      bool ok = query_type (impl_ty_id, &impl_block_ty);
-	      rust_assert (ok);
-
-	      if (impl_block_ty->needs_generic_substitutions ())
-		impl_block_ty
-		  = SubstMapper::InferSubst (impl_block_ty, seg.get_locus ());
-	    }
+	  if (impl_block_ty->needs_generic_substitutions ())
+	    impl_block_ty
+	      = SubstMapper::InferSubst (impl_block_ty, seg.get_locus ());
 
 	  prev_segment = unify_site (seg.get_mappings ().get_hirid (),
 				     TyTy::TyWithLocation (prev_segment),
 				     TyTy::TyWithLocation (impl_block_ty),
 				     seg.get_locus ());
+
+	  if (found_impl_trait)
+	    {
+	      // we need to setup with apropriate bounds
+	      HIR::TypePath &bound_path
+		= *associated->get_impl_block ()->get_trait_ref ().get ();
+
+	      // generate an implicit HIR Type we can apply to the predicate
+	      HirId implicit_id = mappings->get_next_hir_id ();
+	      context->insert_implicit_type (implicit_id, impl_block_ty);
+
+	      Analysis::NodeMapping mappings (expr_mappings.get_crate_num (),
+					      expr_mappings.get_nodeid (),
+					      implicit_id,
+					      expr_mappings.get_local_defid ());
+	      HIR::TypePath *implicit_self_bound
+		= new HIR::TypePath (mappings, {},
+				     Linemap::predeclared_location (), false);
+
+	      TyTy::TypeBoundPredicate predicate
+		= get_predicate_from_bound (bound_path, implicit_self_bound);
+	      impl_block_ty
+		= associated->setup_associated_types (prev_segment, predicate);
+	    }
 	}
 
       if (tyseg->needs_generic_substitutions ())

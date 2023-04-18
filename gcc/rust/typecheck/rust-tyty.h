@@ -408,7 +408,8 @@ public:
   // https://doc.rust-lang.org/reference/items/traits.html#object-safety
   bool is_object_safe (bool emit_error, Location locus) const;
 
-  void apply_generic_arguments (HIR::GenericArgs *generic_args);
+  void apply_generic_arguments (HIR::GenericArgs *generic_args,
+				bool has_associated_self);
 
   bool contains_item (const std::string &search) const;
 

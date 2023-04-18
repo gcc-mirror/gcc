@@ -193,7 +193,8 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
 
   // get the predicate for the bound
   auto specified_bound
-    = get_predicate_from_bound (*qual_path_type.get_trait ().get ());
+    = get_predicate_from_bound (*qual_path_type.get_trait ().get (),
+				qual_path_type.get_type ().get ());
   if (specified_bound.is_error ())
     return;
 
@@ -559,8 +560,9 @@ TypeCheckType::visit (HIR::TraitObjectType &type)
       HIR::TypeParamBound &b = *bound.get ();
       HIR::TraitBound &trait_bound = static_cast<HIR::TraitBound &> (b);
 
-      TyTy::TypeBoundPredicate predicate
-	= get_predicate_from_bound (trait_bound.get_path ());
+      TyTy::TypeBoundPredicate predicate = get_predicate_from_bound (
+	trait_bound.get_path (),
+	nullptr /*this will setup a PLACEHOLDER for self*/);
 
       if (!predicate.is_error ()
 	  && predicate.is_object_safe (true, type.get_locus ()))
@@ -682,6 +684,30 @@ TypeResolveGenericParam::visit (HIR::TypeParam &param)
   if (param.has_type ())
     TypeCheckType::Resolve (param.get_type ().get ());
 
+  HIR::Type *implicit_self_bound = nullptr;
+  if (param.has_type_param_bounds ())
+    {
+      // We need two possible parameter types. One with no Bounds and one with
+      // the bounds. the Self type for the bounds cannot itself contain the
+      // bounds otherwise it will be a trait cycle
+      HirId implicit_id = mappings->get_next_hir_id ();
+      TyTy::ParamType *p
+	= new TyTy::ParamType (param.get_type_representation (),
+			       param.get_locus (), implicit_id, param,
+			       {} /*empty specified bounds*/);
+      context->insert_implicit_type (implicit_id, p);
+
+      // generate an implicit HIR Type we can apply to the predicate
+      Analysis::NodeMapping mappings (param.get_mappings ().get_crate_num (),
+				      param.get_mappings ().get_nodeid (),
+				      implicit_id,
+				      param.get_mappings ().get_local_defid ());
+      implicit_self_bound
+	= new HIR::TypePath (mappings, {}, Linemap::predeclared_location (),
+			     false);
+    }
+
+  // resolve the bounds
   std::vector<TyTy::TypeBoundPredicate> specified_bounds;
   if (param.has_type_param_bounds ())
     {
@@ -694,7 +720,8 @@ TypeResolveGenericParam::visit (HIR::TypeParam &param)
 		  = static_cast<HIR::TraitBound *> (bound.get ());
 
 		TyTy::TypeBoundPredicate predicate
-		  = get_predicate_from_bound (b->get_path ());
+		  = get_predicate_from_bound (b->get_path (),
+					      implicit_self_bound);
 		if (!predicate.is_error ())
 		  specified_bounds.push_back (std::move (predicate));
 	      }
@@ -738,6 +765,8 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
   auto &binding_type_path = item.get_bound_type ();
   TyTy::BaseType *binding = TypeCheckType::Resolve (binding_type_path.get ());
 
+  // FIXME double check there might be a trait cycle here see TypeParam handling
+
   std::vector<TyTy::TypeBoundPredicate> specified_bounds;
   for (auto &bound : item.get_type_param_bounds ())
     {
@@ -747,7 +776,8 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
 	    HIR::TraitBound *b = static_cast<HIR::TraitBound *> (bound.get ());
 
 	    TyTy::TypeBoundPredicate predicate
-	      = get_predicate_from_bound (b->get_path ());
+	      = get_predicate_from_bound (b->get_path (),
+					  binding_type_path.get ());
 	    if (!predicate.is_error ())
 	      specified_bounds.push_back (std::move (predicate));
 	  }

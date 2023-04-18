@@ -171,7 +171,8 @@ TypeCheckBase::resolve_trait_path (HIR::TypePath &path)
 }
 
 TyTy::TypeBoundPredicate
-TypeCheckBase::get_predicate_from_bound (HIR::TypePath &type_path)
+TypeCheckBase::get_predicate_from_bound (HIR::TypePath &type_path,
+					 HIR::Type *associated_self)
 {
   TyTy::TypeBoundPredicate lookup = TyTy::TypeBoundPredicate::error ();
   bool already_resolved
@@ -251,17 +252,33 @@ TypeCheckBase::get_predicate_from_bound (HIR::TypePath &type_path)
       break;
     }
 
+  if (associated_self != nullptr)
+    {
+      std::vector<std::unique_ptr<HIR::Type>> type_args;
+      type_args.push_back (
+	std::unique_ptr<HIR::Type> (associated_self->clone_type ()));
+      for (auto &arg : args.get_type_args ())
+	{
+	  type_args.push_back (std::unique_ptr<HIR::Type> (arg->clone_type ()));
+	}
+
+      args = HIR::GenericArgs (args.get_lifetime_args (), std::move (type_args),
+			       args.get_binding_args (), args.get_const_args (),
+			       args.get_locus ());
+    }
+
   // we try to apply generic arguments when they are non empty and or when the
   // predicate requires them so that we get the relevant Foo expects x number
   // arguments but got zero see test case rust/compile/traits12.rs
   if (!args.is_empty () || predicate.requires_generic_args ())
     {
       // this is applying generic arguments to a trait reference
-      predicate.apply_generic_arguments (&args);
+      predicate.apply_generic_arguments (&args, associated_self != nullptr);
     }
 
   context->insert_resolved_predicate (type_path.get_mappings ().get_hirid (),
 				      predicate);
+
   return predicate;
 }
 
@@ -416,12 +433,21 @@ TypeBoundPredicate::is_object_safe (bool emit_error, Location locus) const
 }
 
 void
-TypeBoundPredicate::apply_generic_arguments (HIR::GenericArgs *generic_args)
+TypeBoundPredicate::apply_generic_arguments (HIR::GenericArgs *generic_args,
+					     bool has_associated_self)
 {
-  // we need to get the substitutions argument mappings but also remember that
-  // we have an implicit Self argument which we must be careful to respect
-  rust_assert (!used_arguments.is_empty ());
   rust_assert (!substitutions.empty ());
+  if (has_associated_self)
+    {
+      used_arguments = SubstitutionArgumentMappings::empty ();
+    }
+  else
+    {
+      // we need to get the substitutions argument mappings but also remember
+      // that we have an implicit Self argument which we must be careful to
+      // respect
+      rust_assert (!used_arguments.is_empty ());
+    }
 
   // now actually perform a substitution
   used_arguments = get_mappings_from_generic_args (*generic_args);
@@ -688,6 +714,17 @@ const std::vector<TypeBoundPredicate> &
 TypeBoundsMappings::get_specified_bounds () const
 {
   return specified_bounds;
+}
+
+TypeBoundPredicate
+TypeBoundsMappings::lookup_predicate (DefId id)
+{
+  for (auto &b : specified_bounds)
+    {
+      if (b.get_id () == id)
+	return b;
+    }
+  return TypeBoundPredicate::error ();
 }
 
 size_t
