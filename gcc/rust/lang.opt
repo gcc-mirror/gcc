@@ -62,6 +62,10 @@ frust-crate=
 Rust Joined RejectNegative
 -frust-crate=<name>             Set the crate name for the compilation
 
+frust-extern=
+Rust RejectNegative Joined
+-frust-extern=              Specify where an external library is located
+
 frust-debug
 Rust Var(flag_rust_debug)
 Dump various Rust front end internals.

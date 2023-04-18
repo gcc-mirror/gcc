@@ -288,6 +288,7 @@ struct Session
   /* This should really be in a per-crate storage area but it is wiped with
    * every file so eh. */
   std::string injected_crate_name;
+  std::map<std::string, std::string> extern_crates;
 
   /* extra files get included during late stages of compilation (e.g. macro
    * expansion) */
@@ -366,6 +367,8 @@ private:
 
   // handle cfg_option
   bool handle_cfg_option (std::string &data);
+
+  bool handle_extern_option (std::string &data);
 };
 
 } // namespace Rust

@@ -190,6 +190,11 @@ Session::handle_option (
       }
       break;
 
+      case OPT_frust_extern_: {
+	std::string input (arg);
+	ret = handle_extern_option (input);
+      }
+      break;
     case OPT_frust_crate_:
       // set the crate name
       if (arg != nullptr)
@@ -247,6 +252,20 @@ Session::handle_option (
     }
 
   return ret;
+}
+
+bool
+Session::handle_extern_option (std::string &input)
+{
+  auto pos = input.find ('=');
+  if (std::string::npos == pos)
+    return false;
+
+  std::string libname = input.substr (0, pos);
+  std::string path = input.substr (pos + 1);
+
+  extern_crates.insert ({libname, path});
+  return true;
 }
 
 bool
