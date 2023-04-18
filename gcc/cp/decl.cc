@@ -12482,12 +12482,14 @@ grokdeclarator (const cp_declarator *declarator,
 		       key, typedef_decl);
 	      ok = !flag_pedantic_errors;
 	      if (is_typedef_decl (typedef_decl))
-		type = DECL_ORIGINAL_TYPE (typedef_decl);
+		{
+		  type = DECL_ORIGINAL_TYPE (typedef_decl);
+		  typedef_decl = NULL_TREE;
+		}
 	      else
 		/* PR108099: __int128_t comes from c_common_nodes_and_builtins,
 		   and is not built as a typedef.  */
 		type = TREE_TYPE (typedef_decl);
-	      typedef_decl = NULL_TREE;
 	    }
 	  else if (declspecs->decltype_p)
 	    error_at (loc, "%qs specified with %<decltype%>", key);
