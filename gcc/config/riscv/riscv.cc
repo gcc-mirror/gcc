@@ -5195,8 +5195,11 @@ riscv_first_stack_step (struct riscv_frame_info *frame, poly_int64 remaining_siz
   if (SMALL_OPERAND (remaining_const_size))
     return remaining_const_size;
 
+  poly_int64 callee_saved_first_step =
+    remaining_size - frame->frame_pointer_offset;
+  gcc_assert(callee_saved_first_step.is_constant ());
   HOST_WIDE_INT min_first_step =
-    riscv_stack_align ((remaining_size - frame->frame_pointer_offset).to_constant());
+    riscv_stack_align (callee_saved_first_step.to_constant ());
   HOST_WIDE_INT max_first_step = IMM_REACH / 2 - PREFERRED_STACK_BOUNDARY / 8;
   HOST_WIDE_INT min_second_step = remaining_const_size - max_first_step;
   gcc_assert (min_first_step <= max_first_step);
@@ -5204,7 +5207,7 @@ riscv_first_stack_step (struct riscv_frame_info *frame, poly_int64 remaining_siz
   /* As an optimization, use the least-significant bits of the total frame
      size, so that the second adjustment step is just LUI + ADD.  */
   if (!SMALL_OPERAND (min_second_step)
-      && remaining_const_size % IMM_REACH < IMM_REACH / 2
+      && remaining_const_size % IMM_REACH <= max_first_step
       && remaining_const_size % IMM_REACH >= min_first_step)
     return remaining_const_size % IMM_REACH;
 
@@ -5400,14 +5403,14 @@ riscv_adjust_libcall_cfi_epilogue ()
 void
 riscv_expand_epilogue (int style)
 {
-  /* Split the frame into two.  STEP1 is the amount of stack we should
-     deallocate before restoring the registers.  STEP2 is the amount we
-     should deallocate afterwards.
+  /* Split the frame into 3 steps. STEP1 is the amount of stack we should
+     deallocate before restoring the registers. STEP2 is the amount we
+     should deallocate afterwards including the callee saved regs. STEP3
+     is the amount deallocated by save-restore libcall.
 
      Start off by assuming that no registers need to be restored.  */
   struct riscv_frame_info *frame = &cfun->machine->frame;
   unsigned mask = frame->mask;
-  poly_int64 step1 = frame->total_size;
   HOST_WIDE_INT step2 = 0;
   bool use_restore_libcall = ((style == NORMAL_RETURN)
 			      && riscv_use_save_libcall (frame));
@@ -5494,7 +5497,7 @@ riscv_expand_epilogue (int style)
   if (use_restore_libcall)
     frame->mask = mask; /* Undo the above fib.  */
 
-  step1 -= step2 + libcall_size;
+  poly_int64 step1 = frame->total_size - step2 - libcall_size;
 
   /* Set TARGET to BASE + STEP1.  */
   if (known_gt (step1, 0))
