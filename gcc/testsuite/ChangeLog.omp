@@ -1,3 +1,15 @@
+2023-04-21  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	Andrew Stubbs  <ams@codesourcery.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_call_copysignf): Add amdgcn.
+	(check_effective_target_vect_call_sqrtf): Add amdgcn.
+	(check_effective_target_vect_call_ceilf): Add amdgcn.
+	(check_effective_target_vect_call_floor): Add amdgcn.
+	(check_effective_target_vect_logical_reduc): Add amdgcn.
+
 2023-04-20  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:
