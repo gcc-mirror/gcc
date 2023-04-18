@@ -3127,6 +3127,8 @@ Parser<ManagedTokenSource>::parse_generic_params (EndTokenPred is_end_token)
 	  generic_params.emplace_back (std::move (param));
 	  maybe_skip_token (COMMA);
 	}
+      else
+	break;
     }
 
   // FIXME: Add reordering hint
