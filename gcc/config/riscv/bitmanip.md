@@ -297,7 +297,7 @@
   [(set (match_operand:GPR 0 "register_operand")
 	(rotatert:GPR (match_operand:GPR 1 "register_operand")
 		     (match_operand:QI 2 "arith_operand")))]
-  "TARGET_ZBB || TARGET_XTHEADBB"
+  "TARGET_ZBB || TARGET_XTHEADBB || TARGET_ZBKB"
 {
   if (TARGET_XTHEADBB && !immediate_operand (operands[2], VOIDmode))
     FAIL;
@@ -362,12 +362,12 @@
 (define_expand "bswapdi2"
   [(set (match_operand:DI 0 "register_operand")
 	(bswap:DI (match_operand:DI 1 "register_operand")))]
-  "TARGET_64BIT && (TARGET_ZBB || TARGET_XTHEADBB)")
+  "TARGET_64BIT && (TARGET_ZBB || TARGET_XTHEADBB || TARGET_ZBKB)")
 
 (define_expand "bswapsi2"
   [(set (match_operand:SI 0 "register_operand")
 	(bswap:SI (match_operand:SI 1 "register_operand")))]
-  "(!TARGET_64BIT && TARGET_ZBB) || TARGET_XTHEADBB")
+  "(!TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)) || TARGET_XTHEADBB")
 
 (define_insn "*bswap<mode>2"
   [(set (match_operand:X 0 "register_operand" "=r")
