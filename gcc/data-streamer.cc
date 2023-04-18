@@ -113,3 +113,36 @@ bp_unpack_var_len_int (struct bitpack_d *bp)
 	}
     }
 }
+
+/* Pack REAL_VALUE_TYPE R into BP.  */
+
+void
+bp_pack_real_value (struct bitpack_d *bp, const REAL_VALUE_TYPE *r)
+{
+  bp_pack_value (bp, r->cl, 2);
+  bp_pack_value (bp, r->decimal, 1);
+  bp_pack_value (bp, r->sign, 1);
+  bp_pack_value (bp, r->signalling, 1);
+  bp_pack_value (bp, r->canonical, 1);
+  bp_pack_value (bp, r->uexp, EXP_BITS);
+  for (unsigned i = 0; i < SIGSZ; i++)
+    bp_pack_value (bp, r->sig[i], HOST_BITS_PER_LONG);
+}
+
+/* Unpack REAL_VALUE_TYPE R from BP.  */
+
+void
+bp_unpack_real_value (struct bitpack_d *bp, REAL_VALUE_TYPE *r)
+{
+  /* Clear all bits of the real value type so that we can later do
+     bitwise comparisons to see if two values are the same.  */
+  memset (r, 0, sizeof (*r));
+  r->cl = (unsigned) bp_unpack_value (bp, 2);
+  r->decimal = (unsigned) bp_unpack_value (bp, 1);
+  r->sign = (unsigned) bp_unpack_value (bp, 1);
+  r->signalling = (unsigned) bp_unpack_value (bp, 1);
+  r->canonical = (unsigned) bp_unpack_value (bp, 1);
+  r->uexp = (unsigned) bp_unpack_value (bp, EXP_BITS);
+  for (unsigned i = 0; i < SIGSZ; i++)
+    r->sig[i] = (unsigned long) bp_unpack_value (bp, HOST_BITS_PER_LONG);
+}

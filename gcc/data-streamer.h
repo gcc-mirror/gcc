@@ -46,6 +46,8 @@ struct bitpack_d
 /* In data-streamer.cc  */
 void bp_pack_var_len_unsigned (struct bitpack_d *, unsigned HOST_WIDE_INT);
 void bp_pack_var_len_int (struct bitpack_d *, HOST_WIDE_INT);
+void bp_pack_real_value (struct bitpack_d *, const REAL_VALUE_TYPE *);
+void bp_unpack_real_value (struct bitpack_d *, REAL_VALUE_TYPE *);
 unsigned HOST_WIDE_INT bp_unpack_var_len_unsigned (struct bitpack_d *);
 HOST_WIDE_INT bp_unpack_var_len_int (struct bitpack_d *);
 
