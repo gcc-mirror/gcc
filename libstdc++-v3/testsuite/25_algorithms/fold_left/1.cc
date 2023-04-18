@@ -5,8 +5,8 @@
 #include <ranges>
 #include <testsuite_iterators.h>
 
-#if __cpp_lib_fold != 202207L
-# error "Feature-test macro __cpp_lib_fold has wrong value in <algorithm>"
+#if __cpp_lib_ranges_fold != 202207L
+# error "Feature-test macro __cpp_lib_ranges_fold has wrong value in <algorithm>"
 #endif
 
 namespace ranges = std::ranges;
