@@ -24,6 +24,55 @@
 namespace Rust {
 namespace Resolver {
 
+// Check if a module contains the `#[macro_use]` attribute
+static bool
+is_macro_use_module (const AST::Module &mod)
+{
+  for (const auto &attr : mod.get_outer_attrs ())
+    if (attr.get_path ().as_string () == "macro_use")
+      return true;
+
+  return false;
+}
+
+std::vector<std::unique_ptr<AST::Item>>
+EarlyNameResolver::accumulate_escaped_macros (AST::Module &module)
+{
+  if (!is_macro_use_module (module))
+    return {};
+
+  // Parse the module's items if they haven't been expanded and the file
+  // should be parsed (i.e isn't hidden behind an untrue or impossible cfg
+  // directive)
+  if (module.get_kind () == AST::Module::UNLOADED)
+    module.load_items ();
+
+  std::vector<std::unique_ptr<AST::Item>> escaped_macros;
+
+  scoped (module.get_node_id (), [&module, &escaped_macros, this] {
+    for (auto &item : module.get_items ())
+      {
+	if (item->get_ast_kind () == AST::Kind::MODULE)
+	  {
+	    auto &module = *static_cast<AST::Module *> (item.get ());
+	    auto new_macros = accumulate_escaped_macros (module);
+
+	    std::move (new_macros.begin (), new_macros.end (),
+		       std::back_inserter (escaped_macros));
+
+	    continue;
+	  }
+
+	item->accept_vis (*this);
+
+	if (item->get_ast_kind () == AST::Kind::MACRO_RULES_DEFINITION)
+	  escaped_macros.emplace_back (item->clone_item ());
+      }
+  });
+
+  return escaped_macros;
+}
+
 EarlyNameResolver::EarlyNameResolver ()
   : current_scope (UNKNOWN_NODEID), resolver (*Resolver::get ()),
     mappings (*Analysis::Mappings::get ())
@@ -32,6 +81,29 @@ EarlyNameResolver::EarlyNameResolver ()
 void
 EarlyNameResolver::go (AST::Crate &crate)
 {
+  std::vector<std::unique_ptr<AST::Item>> new_items;
+  auto items = crate.take_items ();
+
+  scoped (crate.get_node_id (), [&items, &new_items, this] {
+    for (auto &&item : items)
+      {
+	if (item->get_ast_kind () == AST::Kind::MODULE)
+	  {
+	    auto macros = accumulate_escaped_macros (
+	      *static_cast<AST::Module *> (item.get ()));
+	    new_items.emplace_back (std::move (item));
+	    std::move (macros.begin (), macros.end (),
+		       std::back_inserter (new_items));
+	  }
+	else
+	  {
+	    new_items.emplace_back (std::move (item));
+	  }
+      }
+  });
+
+  crate.set_items (std::move (new_items));
+
   scoped (crate.get_node_id (), [&crate, this] () {
     for (auto &item : crate.items)
       item->accept_vis (*this);
@@ -550,11 +622,34 @@ EarlyNameResolver::visit (AST::Method &method)
 void
 EarlyNameResolver::visit (AST::Module &module)
 {
-  // Parse the module's items if they haven't been expanded and the file
-  // should be parsed (i.e isn't hidden behind an untrue or impossible cfg
-  // directive)
   if (module.get_kind () == AST::Module::UNLOADED)
     module.load_items ();
+
+  // so we need to only go "one scope down" for fetching macros. Macros within
+  // functions are still scoped only within that function. But we have to be
+  // careful because nested modules with #[macro_use] actually works!
+  std::vector<std::unique_ptr<AST::Item>> new_items;
+  auto items = module.take_items ();
+
+  scoped (module.get_node_id (), [&items, &new_items, this] {
+    for (auto &&item : items)
+      {
+	if (item->get_ast_kind () == AST::Kind::MODULE)
+	  {
+	    auto macros = accumulate_escaped_macros (
+	      *static_cast<AST::Module *> (item.get ()));
+	    new_items.emplace_back (std::move (item));
+	    std::move (macros.begin (), macros.end (),
+		       std::back_inserter (new_items));
+	  }
+	else
+	  {
+	    new_items.emplace_back (std::move (item));
+	  }
+      }
+  });
+
+  module.set_items (std::move (new_items));
 
   scoped (module.get_node_id (), [&module, this] () {
     for (auto &item : module.get_items ())
