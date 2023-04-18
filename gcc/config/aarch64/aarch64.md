@@ -6120,13 +6120,6 @@
   [(set_attr "type" "rev")]
 )
 
-(define_insn "@aarch64_rev16<mode>"
-  [(set (match_operand:GPI 0 "register_operand" "=r")
-	(unspec:GPI [(match_operand:GPI 1 "register_operand" "r")] UNSPEC_REV))]
-  ""
-  "rev16\\t%<w>0, %<w>1"
-  [(set_attr "type" "rev")])
-
 (define_insn "*aarch64_bfxil<mode>"
   [(set (match_operand:GPI 0 "register_operand" "=r,r")
     (ior:GPI (and:GPI (match_operand:GPI 1 "register_operand" "r,0")
@@ -6183,7 +6176,7 @@
 ;; operations within an IOR/AND RTX, therefore we have two patterns matching
 ;; each valid permutation.
 
-(define_insn "rev16<mode>2"
+(define_insn "aarch64_rev16<mode>2_alt1"
   [(set (match_operand:GPI 0 "register_operand" "=r")
         (ior:GPI (and:GPI (ashift:GPI (match_operand:GPI 1 "register_operand" "r")
                                       (const_int 8))
@@ -6197,7 +6190,7 @@
   [(set_attr "type" "rev")]
 )
 
-(define_insn "rev16<mode>2_alt"
+(define_insn "*aarch64_rev16<mode>2_alt2"
   [(set (match_operand:GPI 0 "register_operand" "=r")
         (ior:GPI (and:GPI (lshiftrt:GPI (match_operand:GPI 1 "register_operand" "r")
                                         (const_int 8))
@@ -6218,6 +6211,21 @@
   ""
   "rev\\t%w0, %w1"
   [(set_attr "type" "rev")]
+)
+
+;; Expander for __rev16 intrinsics.  We have organic RTL patterns for rev16 above.
+;; Use this expander to just create the shift constants needed.
+(define_expand "@aarch64_rev16<mode>"
+  [(match_operand:GPI 0 "register_operand")
+   (match_operand:GPI 1 "register_operand")]
+  ""
+  {
+    rtx left = gen_int_mode (HOST_WIDE_INT_C (0xff00ff00ff00ff00), <MODE>mode);
+    rtx right = gen_int_mode (HOST_WIDE_INT_C (0xff00ff00ff00ff), <MODE>mode);
+    emit_insn (gen_aarch64_rev16<mode>2_alt1 (operands[0], operands[1],
+					      right, left));
+    DONE;
+  }
 )
 
 ;; -------------------------------------------------------------------
