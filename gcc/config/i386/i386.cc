@@ -2661,7 +2661,8 @@ construct_container (machine_mode mode, machine_mode orig_mode,
 
   /* We allowed the user to turn off SSE for kernel mode.  Don't crash if
      some less clueful developer tries to use floating-point anyway.  */
-  if (needed_sseregs && !TARGET_SSE)
+  if (needed_sseregs
+      && (!TARGET_SSE || (VALID_SSE2_TYPE_MODE (mode) && !TARGET_SSE2)))
     {
       /* Return early if we shouldn't raise an error for invalid
 	 calls.  */
@@ -2671,13 +2672,19 @@ construct_container (machine_mode mode, machine_mode orig_mode,
 	{
 	  if (!issued_sse_ret_error)
 	    {
-	      error ("SSE register return with SSE disabled");
+	      if (VALID_SSE2_TYPE_MODE (mode))
+		error ("SSE register return with SSE2 disabled");
+	      else
+		error ("SSE register return with SSE disabled");
 	      issued_sse_ret_error = true;
 	    }
 	}
       else if (!issued_sse_arg_error)
 	{
-	  error ("SSE register argument with SSE disabled");
+	  if (VALID_SSE2_TYPE_MODE (mode))
+	    error ("SSE register argument with SSE2 disabled");
+	  else
+	    error ("SSE register argument with SSE disabled");
 	  issued_sse_arg_error = true;
 	}
       return NULL;
@@ -4032,13 +4039,26 @@ function_value_32 (machine_mode orig_mode, machine_mode mode,
 
   /* Return __bf16/ _Float16/_Complex _Foat16 by sse register.  */
   if (mode == HFmode || mode == BFmode)
-    regno = FIRST_SSE_REG;
+    {
+      if (!TARGET_SSE2)
+	{
+	  error ("SSE register return with SSE2 disabled");
+	  regno = AX_REG;
+	}
+      else
+	regno = FIRST_SSE_REG;
+    }
+
   if (mode == HCmode)
     {
+      if (!TARGET_SSE2)
+	error ("SSE register return with SSE2 disabled");
+
       rtx ret = gen_rtx_PARALLEL (mode, rtvec_alloc(1));
       XVECEXP (ret, 0, 0)
 	= gen_rtx_EXPR_LIST (VOIDmode,
-			     gen_rtx_REG (SImode, FIRST_SSE_REG),
+			     gen_rtx_REG (SImode,
+					  TARGET_SSE2 ? FIRST_SSE_REG : AX_REG),
 			     GEN_INT (0));
       return ret;
     }
@@ -22786,14 +22806,35 @@ x86_emit_floatuns (rtx operands[2])
 }
 
 /* Return the diagnostic message string if conversion from FROMTYPE to
-   TOTYPE is not allowed, NULL otherwise.
-   Currently it's used to warn for silent implicit conversion between __bf16
-   and short, since __bfloat16 is refined as real __bf16 instead of short
-   since GCC13.  */
+   TOTYPE is not allowed, NULL otherwise.  */
 
 static const char *
 ix86_invalid_conversion (const_tree fromtype, const_tree totype)
 {
+  machine_mode from_mode = element_mode (fromtype);
+  machine_mode to_mode = element_mode (totype);
+
+  if (!TARGET_SSE2 && from_mode != to_mode)
+    {
+      /* Do no allow conversions to/from BFmode/HFmode scalar types
+	 when TARGET_SSE2 is not available.  */
+      if (from_mode == BFmode)
+	return N_("invalid conversion from type %<__bf16%> "
+		  "without option %<-msse2%>");
+      if (from_mode == HFmode)
+	return N_("invalid conversion from type %<_Float16%> "
+		  "without option %<-msse2%>");
+      if (to_mode == BFmode)
+	return N_("invalid conversion to type %<__bf16%> "
+		  "without option %<-msse2%>");
+      if (to_mode == HFmode)
+	return N_("invalid conversion to type %<_Float16%> "
+		  "without option %<-msse2%>");
+    }
+
+  /* Warn for silent implicit conversion between __bf16 and short,
+     since __bfloat16 is refined as real __bf16 instead of short
+     since GCC13.  */
   if (element_mode (fromtype) != element_mode (totype)
       && (TARGET_AVX512BF16 || TARGET_AVXNECONVERT))
     {
@@ -22813,6 +22854,55 @@ ix86_invalid_conversion (const_tree fromtype, const_tree totype)
   return NULL;
 }
 
+/* Return the diagnostic message string if the unary operation OP is
+   not permitted on TYPE, NULL otherwise.  */
+
+static const char *
+ix86_invalid_unary_op (int op, const_tree type)
+{
+  machine_mode mmode = element_mode (type);
+  /* Reject all single-operand operations on BFmode/HFmode except for &
+     when TARGET_SSE2 is not available.  */
+  if (!TARGET_SSE2 && op != ADDR_EXPR)
+    {
+      if (mmode == BFmode)
+	return N_("operation not permitted on type %<__bf16%> "
+		  "without option %<-msse2%>");
+      if (mmode == HFmode)
+	return N_("operation not permitted on type %<_Float16%> "
+		  "without option %<-msse2%>");
+    }
+
+  /* Operation allowed.  */
+  return NULL;
+}
+
+/* Return the diagnostic message string if the binary operation OP is
+   not permitted on TYPE1 and TYPE2, NULL otherwise.  */
+
+static const char *
+ix86_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1,
+			const_tree type2)
+{
+  machine_mode type1_mode = element_mode (type1);
+  machine_mode type2_mode = element_mode (type2);
+  /* Reject all 2-operand operations on BFmode or HFmode
+     when TARGET_SSE2 is not available.  */
+  if (!TARGET_SSE2)
+    {
+      if (type1_mode == BFmode || type2_mode == BFmode)
+	return N_("operation not permitted on type %<__bf16%> "
+		  "without option %<-msse2%>");
+
+      if (type1_mode == HFmode || type2_mode == HFmode)
+	return N_("operation not permitted on type %<_Float16%> "
+		  "without option %<-msse2%>");
+    }
+
+  /* Operation allowed.  */
+  return NULL;
+}
+
 
 /* Target hook for scalar_mode_supported_p.  */
 static bool
@@ -22822,7 +22912,7 @@ ix86_scalar_mode_supported_p (scalar_mode mode)
     return default_decimal_float_supported_p ();
   else if (mode == TFmode)
     return true;
-  else if ((mode == HFmode || mode == BFmode) && TARGET_SSE2)
+  else if (mode == HFmode || mode == BFmode)
     return true;
   else
     return default_scalar_mode_supported_p (mode);
@@ -22838,7 +22928,7 @@ ix86_libgcc_floating_mode_supported_p (scalar_float_mode mode)
      be defined by the C front-end for AVX512FP16 intrinsics.  We will
      issue an error in ix86_expand_move for HFmode if AVX512FP16 isn't
      enabled.  */
-  return (((mode == HFmode || mode == BFmode) && TARGET_SSE2)
+  return ((mode == HFmode || mode == BFmode)
 	  ? true
 	  : default_libgcc_floating_mode_supported_p (mode));
 }
@@ -23168,9 +23258,10 @@ ix86_emit_support_tinfos (emit_support_tinfos_callback callback)
 
   if (!TARGET_SSE2)
     {
-      gcc_checking_assert (!float16_type_node && !bfloat16_type_node);
-      float16_type_node = ix86_float16_type_node;
-      bfloat16_type_node = ix86_bf16_type_node;
+      if (!float16_type_node)
+	float16_type_node = ix86_float16_type_node;
+      if (!bfloat16_type_node)
+	bfloat16_type_node = ix86_bf16_type_node;
       callback (float16_type_node);
       callback (bfloat16_type_node);
       float16_type_node = NULL_TREE;
@@ -25106,6 +25197,12 @@ ix86_run_selftests (void)
 
 #undef TARGET_INVALID_CONVERSION
 #define TARGET_INVALID_CONVERSION ix86_invalid_conversion
+
+#undef TARGET_INVALID_UNARY_OP
+#define TARGET_INVALID_UNARY_OP ix86_invalid_unary_op
+
+#undef TARGET_INVALID_BINARY_OP
+#define TARGET_INVALID_BINARY_OP ix86_invalid_binary_op
 
 #undef TARGET_COMP_TYPE_ATTRIBUTES
 #define TARGET_COMP_TYPE_ATTRIBUTES ix86_comp_type_attributes

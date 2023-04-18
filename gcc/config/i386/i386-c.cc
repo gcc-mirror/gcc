@@ -832,6 +832,21 @@ ix86_target_macros (void)
   if (!TARGET_80387)
     cpp_define (parse_in, "_SOFT_FLOAT");
 
+  /* HFmode/BFmode is supported without depending any isa
+     in scalar_mode_supported_p and libgcc_floating_mode_supported_p,
+     but according to psABI, they're really supported w/ SSE2 and above.
+     Since libstdc++ uses __STDCPP_FLOAT16_T__ and __STDCPP_BFLOAT16_T__
+     for backend support of the types, undef the macros to avoid
+     build failure, see PR109504.  */
+  if (!TARGET_SSE2)
+    {
+      if (c_dialect_cxx () && cxx_dialect > cxx20)
+	{
+	  cpp_undef (parse_in, "__STDCPP_FLOAT16_T__");
+	  cpp_undef (parse_in, "__STDCPP_BFLOAT16_T__");
+	}
+    }
+
   if (TARGET_LONG_DOUBLE_64)
     cpp_define (parse_in, "__LONG_DOUBLE_64__");
 

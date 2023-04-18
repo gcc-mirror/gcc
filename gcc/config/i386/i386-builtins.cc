@@ -1376,7 +1376,7 @@ ix86_register_float16_builtin_type (void)
   else
     ix86_float16_type_node = float16_type_node;
 
-  if (!maybe_get_identifier ("_Float16") && TARGET_SSE2)
+  if (!maybe_get_identifier ("_Float16"))
     lang_hooks.types.register_builtin_type (ix86_float16_type_node,
 					    "_Float16");
 }
@@ -1394,7 +1394,7 @@ ix86_register_bf16_builtin_type (void)
   else
     ix86_bf16_type_node = bfloat16_type_node;
 
-  if (!maybe_get_identifier ("__bf16") && TARGET_SSE2)
+  if (!maybe_get_identifier ("__bf16"))
     lang_hooks.types.register_builtin_type (ix86_bf16_type_node, "__bf16");
 }
 
