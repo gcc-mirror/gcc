@@ -151,7 +151,7 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 @GLIBCXX_LDBL_COMPAT_TRUE@am__objects_1 = compatibility-ldbl.lo
 am__objects_2 = compatibility.lo compatibility-debug_list.lo \
-	compatibility-debug_list-2.lo $(am__objects_1)
+	compatibility-debug_list-2.lo globals_io.lo $(am__objects_1)
 @ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@am__objects_3 = compatibility-atomic-c++0x.lo \
 @ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	compatibility-c++0x.lo \
 @ENABLE_SYMVERS_GNU_NAMESPACE_FALSE@	compatibility-chrono.lo \
@@ -534,6 +534,7 @@ cxx98_sources = \
 	compatibility.cc \
 	compatibility-debug_list.cc \
 	compatibility-debug_list-2.cc \
+	globals_io.cc \
 	${ldbl_compat_sources}
 
 cxx11_sources = \
