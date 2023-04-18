@@ -169,7 +169,7 @@ namespace __cxxabiv1
    *  @param __output_buffer A region of memory, allocated with
    *  malloc, of @a *__length bytes, into which the demangled name is
    *  stored.  If @a __output_buffer is not long enough, it is
-   *  expanded using realloc.  @a __output_buffer may instead be NULL;
+   *  expanded using realloc.  @a __output_buffer may instead be null;
    *  in that case, the demangled name is placed in a region of memory
    *  allocated with malloc.
    *
@@ -184,7 +184,7 @@ namespace __cxxabiv1
    *  -3: One of the arguments is invalid.
    *
    *  @return A pointer to the start of the NUL-terminated demangled
-   *  name, or NULL if the demangling fails.  The caller is
+   *  name, or a null pointer if the demangling fails.  The caller is
    *  responsible for deallocating this memory using @c free.
    *
    *  The demangling is performed using the C++ ABI mangling rules,
