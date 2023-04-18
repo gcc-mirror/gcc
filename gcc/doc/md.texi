@@ -9371,6 +9371,15 @@ If the preparation falls through (invokes neither @code{DONE} nor
 @code{FAIL}), then the @code{define_peephole2} uses the replacement
 template.
 
+Insns are scanned in forward order from beginning to end for each basic
+block.  Matches are attempted in order of @code{define_peephole2}
+appearance in the @file{md} file.  After a successful replacement,
+scanning for further opportunities for @code{define_peephole2}, resumes
+with the first generated replacement insn as the first insn to be
+matched against all @code{define_peephole2}.  For the example above,
+after its successful replacement, the first insn that can be matched by
+a @code{define_peephole2} is @code{(set (match_dup 4) (match_dup 1))}.
+
 @end ifset
 @ifset INTERNALS
 @node Insn Attributes
