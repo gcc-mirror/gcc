@@ -2150,6 +2150,18 @@ if test -d ${srcdir}/gcc; then
             ;;
         esac
 
+        # Disable Rust for GCC 13 release.
+        case ${add_this_lang}:${language} in
+          yes:rust)
+            # Specifically requested language; tell them.
+            AC_MSG_ERROR([Rust is not supported in GCC 13 release])
+           ;;
+          *:rust)
+            # Silently disable.
+            add_this_lang=unsupported
+            ;;
+        esac
+
         # Disable jit if -enable-host-shared not specified
         # but not if building for Mingw. All code in Windows
         # is position independent code (PIC).

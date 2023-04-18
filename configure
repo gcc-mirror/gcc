@@ -8909,6 +8909,18 @@ $as_echo "$as_me: WARNING: GDC is required to build $language" >&2;}
             ;;
         esac
 
+        # Disable Rust for GCC 13 release.
+        case ${add_this_lang}:${language} in
+          yes:rust)
+            # Specifically requested language; tell them.
+            as_fn_error $? "Rust is not supported in GCC 13 release" "$LINENO" 5
+           ;;
+          *:rust)
+            # Silently disable.
+            add_this_lang=unsupported
+            ;;
+        esac
+
         # Disable jit if -enable-host-shared not specified
         # but not if building for Mingw. All code in Windows
         # is position independent code (PIC).
