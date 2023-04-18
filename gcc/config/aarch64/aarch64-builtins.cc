@@ -1356,7 +1356,7 @@ aarch64_init_simd_intrinsics (void)
 	}
 
       tree ftype = build_function_type (return_type, args);
-      tree attrs = aarch64_get_attributes (FLAG_AUTO_FP, d->op_modes[0]);
+      tree attrs = aarch64_get_attributes (d->flags, d->op_modes[0]);
       unsigned int code
 	      = (d->fcode << AARCH64_BUILTIN_SHIFT | AARCH64_BUILTIN_GENERAL);
       tree fndecl = simulate_builtin_function_decl (input_location, d->name,
