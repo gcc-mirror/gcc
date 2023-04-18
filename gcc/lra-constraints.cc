@@ -3450,6 +3450,41 @@ skip_constraint_modifiers (const char *str)
       }
 }
 
+/* Takes a string of 0 or more comma-separated constraints.  When more
+   than one constraint is present, evaluate whether they all correspond
+   to a single, repeated constraint (e.g. "r,r") or whether we have
+   more than one distinct constraints (e.g. "r,m").  */
+static bool
+constraint_unique (const char *cstr)
+{
+  enum constraint_num ca, cb;
+  ca = CONSTRAINT__UNKNOWN;
+  for (;;)
+    {
+      cstr = skip_constraint_modifiers (cstr);
+      if (*cstr == '\0' || *cstr == ',')
+	cb = CONSTRAINT_X;
+      else
+	{
+	  cb = lookup_constraint (cstr);
+	  if (cb == CONSTRAINT__UNKNOWN)
+	    return false;
+	  cstr += CONSTRAINT_LEN (cstr[0], cstr);
+	}
+      /* Handle the first iteration of the loop.  */
+      if (ca == CONSTRAINT__UNKNOWN)
+	ca = cb;
+      /* Handle the general case of comparing ca with subsequent
+	 constraints.  */
+      else if (ca != cb)
+	return false;
+      if (*cstr == '\0')
+	return true;
+      if (*cstr == ',')
+	cstr += 1;
+    }
+}
+
 /* Major function to make reloads for an address in operand NOP or
    check its correctness (If CHECK_ONLY_P is true). The supported
    cases are:
@@ -3509,9 +3544,7 @@ process_address_1 (int nop, bool check_only_p,
      operand has one address constraint, probably all others constraints are
      address ones.  */
   if (constraint[0] != '\0' && get_constraint_type (cn) != CT_ADDRESS
-      && *skip_constraint_modifiers (constraint
-				     + CONSTRAINT_LEN (constraint[0],
-						       constraint)) != '\0')
+      && !constraint_unique (constraint))
     cn = CONSTRAINT__UNKNOWN;
   if (insn_extra_address_constraint (cn)
       /* When we find an asm operand with an address constraint that

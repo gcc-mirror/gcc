@@ -3234,7 +3234,8 @@ constrain_operands (int strict, alternative_mask alternatives)
 		  else if (constraint_satisfied_p (op, cn))
 		    win = 1;
 
-		  else if (insn_extra_memory_constraint (cn)
+		  else if ((insn_extra_memory_constraint (cn)
+			    || insn_extra_relaxed_memory_constraint (cn))
 			   /* Every memory operand can be reloaded to fit.  */
 			   && ((strict < 0 && MEM_P (op))
 			       /* Before reload, accept what reload can turn
