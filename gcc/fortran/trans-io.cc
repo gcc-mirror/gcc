@@ -2622,9 +2622,9 @@ gfc_trans_transfer (gfc_code * code)
 
       if (expr->ts.type != BT_CLASS
 	 && expr->expr_type == EXPR_VARIABLE
-	 && gfc_expr_attr (expr).pointer)
+	 && ((expr->symtree->n.sym->ts.type == BT_DERIVED && expr->ts.deferred)
+	     || gfc_expr_attr (expr).pointer))
 	goto scalarize;
-
 
       if (!(gfc_bt_struct (expr->ts.type)
 	      || expr->ts.type == BT_CLASS)

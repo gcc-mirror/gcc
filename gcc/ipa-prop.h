@@ -115,6 +115,9 @@ struct GTY(()) ipa_pass_through_data
      ipa_agg_jump_function).  The flag is used only when the operation is
      NOP_EXPR.  */
   unsigned agg_preserved : 1;
+  /* Set when the edge has already been used to decrement an appropriate
+     reference description counter and should not be decremented again.  */
+  unsigned refdesc_decremented : 1;
 };
 
 /* Structure holding data required to describe a load-value-from-aggregate
@@ -362,6 +365,15 @@ ipa_get_jf_constant_rdesc (struct ipa_jump_func *jfunc)
   return jfunc->value.constant.rdesc;
 }
 
+/* Make JFUNC not participate in any further reference counting.  */
+
+inline void
+ipa_zap_jf_refdesc (ipa_jump_func *jfunc)
+{
+  gcc_checking_assert (jfunc->type == IPA_JF_CONST);
+  jfunc->value.constant.rdesc = NULL;
+}
+
 /* Return the operand of a pass through jmp function JFUNC.  */
 
 inline tree
@@ -397,6 +409,26 @@ ipa_get_jf_pass_through_agg_preserved (struct ipa_jump_func *jfunc)
 {
   gcc_checking_assert (jfunc->type == IPA_JF_PASS_THROUGH);
   return jfunc->value.pass_through.agg_preserved;
+}
+
+/* Return the refdesc_decremented flag of a pass through jump function
+   JFUNC.  */
+
+inline bool
+ipa_get_jf_pass_through_refdesc_decremented (struct ipa_jump_func *jfunc)
+{
+  gcc_checking_assert (jfunc->type == IPA_JF_PASS_THROUGH);
+  return jfunc->value.pass_through.refdesc_decremented;
+}
+
+/* Set the refdesc_decremented flag of a pass through jump function JFUNC to
+   VALUE.  */
+
+inline void
+ipa_set_jf_pass_through_refdesc_decremented (ipa_jump_func *jfunc, bool value)
+{
+  gcc_checking_assert (jfunc->type == IPA_JF_PASS_THROUGH);
+  jfunc->value.pass_through.refdesc_decremented = value;
 }
 
 /* Return true if pass through jump function JFUNC preserves type

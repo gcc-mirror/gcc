@@ -1,3 +1,285 @@
+2023-04-16  Jeff Law  <jlaw@ventanamicro>
+
+	PR target/109508
+	* config/riscv/riscv.cc (riscv_expand_conditional_move): For
+	TARGET_SFB_ALU, force the true arm into a register.
+
+2023-04-15  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/104989
+	* config/pa/pa-protos.h (pa_function_arg_size): Update prototype.
+	* config/pa/pa.cc (pa_function_arg): Return NULL_RTX if argument
+	size is zero.
+	(pa_arg_partial_bytes): Don't call pa_function_arg_size twice.
+	(pa_function_arg_size): Change return type to int.  Return zero
+	for arguments larger than 1 GB.  Update comments.
+
+2023-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109154
+	* tree-if-conv.cc (predicate_scalar_phi): For complex PHIs, emit just
+	args_len - 1 COND_EXPRs rather than args_len.  Formatting fix.
+
+2023-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109514
+	* gimple-ssa-warn-access.cc (pass_waccess::check_dangling_stores):
+	Overhaul lhs_ref.ref analysis.
+
+2023-04-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109502
+	* tree-vect-stmts.cc (vectorizable_assignment): Fix
+	check for conversion between mask and non-mask types.
+
+2023-04-14  Jeff Law  <jlaw@ventanamicro.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108947
+	PR target/109040
+	* combine.cc (simplify_and_const_int_1): Compute nonzero_bits in
+	word_mode rather than mode if WORD_REGISTER_OPERATIONS and mode is
+	smaller than word_mode.
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1)
+	<case AND>: Likewise.
+
+2023-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* loop-iv.cc (iv_number_of_iterations): Use gen_int_mode instead
+	of GEN_INT.
+
+2023-04-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/108139
+	PR tree-optimization/109462
+	* gimple-range-cache.cc (ranger_cache::fill_block_cache): Remove
+	equivalency check for PHI nodes.
+	* gimple-range-fold.cc (fold_using_range::range_of_phi): Ensure def
+	does not dominate single-arg equivalency edges.
+
+2023-04-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/108910
+	* config/aarch64/aarch64.cc (aarch64_function_arg_alignment): Do
+	not trust TYPE_ALIGN for pointer types; use POINTER_SIZE instead.
+
+2023-04-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109491
+	* tree-ssa-sccvn.cc (expressions_equal_p): Restore the
+	NULL operands test.
+
+2023-04-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109479
+	* config/riscv/riscv-vector-builtins-types.def (vint8mf8_t): Fix predicate.
+	(vint16mf4_t): Ditto.
+	(vint32mf2_t): Ditto.
+	(vint64m1_t): Ditto.
+	(vint64m2_t): Ditto.
+	(vint64m4_t): Ditto.
+	(vint64m8_t): Ditto.
+	(vuint8mf8_t): Ditto.
+	(vuint16mf4_t): Ditto.
+	(vuint32mf2_t): Ditto.
+	(vuint64m1_t): Ditto.
+	(vuint64m2_t): Ditto.
+	(vuint64m4_t): Ditto.
+	(vuint64m8_t): Ditto.
+	(vfloat32mf2_t): Ditto.
+	(vbool64_t): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (register_builtin_type): Add comments.
+	(register_vector_type): Ditto.
+	(check_required_extensions): Fix condition.
+	* config/riscv/riscv-vector-builtins.h (RVV_REQUIRE_ZVE64): Remove it.
+	(RVV_REQUIRE_ELEN_64): New define.
+	(RVV_REQUIRE_MIN_VLEN_64): Ditto.
+	* config/riscv/riscv-vector-switch.def (TARGET_VECTOR_FP32): Remove it.
+	(TARGET_VECTOR_FP64): Ditto.
+	(ENTRY): Fix predicate.
+	* config/riscv/vector-iterators.md: Fix predicate.
+
+2023-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109410
+	* tree-ssa-reassoc.cc (build_and_add_sum): Split edge from entry
+	block if first statement of the function is a call to returns_twice
+	function.
+
+2023-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109458
+	* config/i386/i386.cc: Include rtl-error.h.
+	(ix86_print_operand): For z modifier warning, use warning_for_asm
+	if this_is_asm_operands.  For Z modifier errors, use %c and code
+	instead of hardcoded Z.
+
+2023-04-12  Costas Argyris  <costas.argyris@gmail.com>
+
+	* config/i386/x-mingw32-utf8: Remove extrataneous $@
+
+2023-04-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109462
+	* gimple-range-cache.cc (ranger_cache::fill_block_cache): Don't
+	check for equivalences if NAME is a phi node.
+
+2023-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109473
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction):
+	Convert scalar result to the computation type before performing
+	the reduction adjustment.
+
+2023-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109469
+	* tree-vect-slp.cc (vect_slp_function): Skip region starts with
+	a returns-twice call.
+
+2023-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109434
+	* tree-ssa-dse.cc (initialize_ao_ref_for_dse): Properly
+	handle possibly throwing calls when processing the LHS
+	and may-defs are not OK.
+
+2023-04-11  Lin Sinan  <mynameisxiaou@gmail.com>
+
+	* config/riscv/predicates.md (uimm_extra_bit_or_twobits): Adjust
+	predicate to avoid splitting arith constants.
+
+2023-04-11  Yanzhang Wang  <yanzhang.wang@intel.com>
+	    Pan Li  <pan2.li@intel.com>
+	    Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+	    Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/109104
+	* config/riscv/riscv-protos.h (emit_hard_vlmax_vsetvl): New.
+	* config/riscv/riscv-v.cc (emit_hard_vlmax_vsetvl): New.
+	(emit_vlmax_vsetvl): Use emit_hard_vlmax_vsetvl.
+	* config/riscv/riscv.cc (vector_zero_call_used_regs): New.
+	(riscv_zero_call_used_regs): New.
+	(TARGET_ZERO_CALL_USED_REGS): New.
+
+2023-04-11  Martin Liska  <mliska@suse.cz>
+
+	PR driver/108241
+	* opts.cc (finish_options): Drop also
+	x_flag_var_tracking_assignments.
+
+2023-04-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR tree-optimization/108888
+	* tree-if-conv.cc (predicate_statements): Fix gimple call check.
+
+2023-04-11  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/108812
+	* config/rs6000/vsx.md (vsx_sign_extend_qi_<mode>): Rename to...
+	(vsx_sign_extend_v16qi_<mode>): ... this.
+	(vsx_sign_extend_hi_<mode>): Rename to...
+	(vsx_sign_extend_v8hi_<mode>): ... this.
+	(vsx_sign_extend_si_v2di): Rename to...
+	(vsx_sign_extend_v4si_v2di): ... this.
+	(vsignextend_qi_<mode>): Remove.
+	(vsignextend_hi_<mode>): Remove.
+	(vsignextend_si_v2di): Remove.
+	(vsignextend_v2di_v1ti): Remove.
+	(*xxspltib_<mode>_split): Replace gen_vsx_sign_extend_qi_v2di with
+	gen_vsx_sign_extend_v16qi_v2di and gen_vsx_sign_extend_qi_v4si
+	with gen_vsx_sign_extend_v16qi_v4si.
+	* config/rs6000/rs6000.md (split for DI constant generation):
+	Replace gen_vsx_sign_extend_qi_si with gen_vsx_sign_extend_v16qi_si.
+	(split for HSDI constant generation): Replace gen_vsx_sign_extend_qi_di
+	with gen_vsx_sign_extend_v16qi_di and gen_vsx_sign_extend_qi_si
+	with gen_vsx_sign_extend_v16qi_si.
+	* config/rs6000/rs6000-builtins.def (__builtin_altivec_vsignextsb2d):
+	Set bif-pattern to vsx_sign_extend_v16qi_v2di.
+	(__builtin_altivec_vsignextsb2w): Set bif-pattern to
+	vsx_sign_extend_v16qi_v4si.
+	(__builtin_altivec_visgnextsh2d): Set bif-pattern to
+	vsx_sign_extend_v8hi_v2di.
+	(__builtin_altivec_vsignextsh2w): Set bif-pattern to
+	vsx_sign_extend_v8hi_v4si.
+	(__builtin_altivec_vsignextsw2d): Set bif-pattern to
+	vsx_sign_extend_si_v2di.
+	(__builtin_altivec_vsignext): Set bif-pattern to
+	vsx_sign_extend_v2di_v1ti.
+	* config/rs6000/rs6000-builtin.cc (lxvrse_expand_builtin): Replace
+	gen_vsx_sign_extend_qi_v2di with gen_vsx_sign_extend_v16qi_v2di,
+	gen_vsx_sign_extend_hi_v2di with gen_vsx_sign_extend_v8hi_v2di and
+	gen_vsx_sign_extend_si_v2di with gen_vsx_sign_extend_v4si_v2di.
+
+2023-04-10   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/70243
+	* config/rs6000/vsx.md (vsx_fmav4sf4): Do not generate vmaddfp.
+	(vsx_nfmsv4sf4): Do not generate vnmsubfp.
+
+2023-04-10  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386.h (PTA_GRANITERAPIDS): Add PTA_AMX_COMPLEX.
+
+2023-04-10  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features):
+	Detect AMX-COMPLEX.
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_AMX_COMPLEX_SET,
+	OPTION_MASK_ISA2_AMX_COMPLEX_UNSET): New.
+	(ix86_handle_option): Handle -mamx-complex.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features):
+	Add FEATURE_AMX_COMPLEX.
+	* common/config/i386/i386-isas.h: Add ISA_NAME_TABLE_ENTRY for
+	amx-complex.
+	* config.gcc: Add amxcomplexintrin.h.
+	* config/i386/cpuid.h (bit_AMX_COMPLEX): New.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Define
+	__AMX_COMPLEX__.
+	* config/i386/i386-isa.def (AMX_COMPLEX): Add DEF_PTA(AMX_COMPLEX).
+	* config/i386/i386-options.cc (ix86_valid_target_attribute_inner_p):
+	Handle amx-complex.
+	* config/i386/i386.opt: Add option -mamx-complex.
+	* config/i386/immintrin.h: Include amxcomplexintrin.h.
+	* doc/extend.texi: Document amx-complex.
+	* doc/invoke.texi: Document -mamx-complex.
+	* doc/sourcebuild.texi: Document target amx-complex.
+	* config/i386/amxcomplexintrin.h: New file.
+
+2023-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109392
+	* tree-vect-generic.cc (tree_vec_extract): Handle failure
+	of maybe_push_res_to_seq better.
+
+2023-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (CORETYPES_H): Depend on align.h, poly-int.h and
+	poly-int-types.h.
+	(SYSTEM_H): Depend on $(HASHTAB_H).
+	* config/riscv/t-riscv (build/genrvv-type-indexer.o): Remove unused
+	dependency on $(RTL_BASE_H), remove redundant dependency on
+	insn-modes.h.
+
+2023-04-06  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/107674
+	* config/arm/arm.cc (arm_effective_regno): New function.
+	(mve_vector_mem_operand): Use it.
+
+2023-04-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109417
+	* gimple-range-gori.cc (gori_compute::may_recompute_p): Check if
+	dependency is in SSA_NAME_FREE_LIST.
+
+2023-04-06  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/109427
+	* params.opt (-param=vect-induction-float=):
+	Fix option attribute typo for IntegerRange.
+
 2023-04-05  Jeff Law  <jlaw@ventanamicro>
 
 	PR target/108892

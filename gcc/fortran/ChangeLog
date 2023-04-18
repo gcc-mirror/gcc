@@ -1,3 +1,75 @@
+2023-04-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/109511
+	* simplify.cc (gfc_simplify_set_exponent): Fix implementation of
+	compile-time simplification of intrinsic SET_EXPONENT for argument
+	X < 1 and for I < 0.
+
+2023-04-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/104272
+	* gfortran.h : Add expr3_not_explicit bit field to gfc_code.
+	* resolve.cc (resolve_allocate_expr): Set bit field when the
+	default initializer is applied to expr3.
+	* trans-stmt.cc (gfc_trans_allocate): If expr3_not_explicit is
+	set, do not deallocate expr3.
+
+2023-04-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/109492
+	* trans-expr.cc (gfc_conv_power_op): Use absu_hwi and
+	unsigned HOST_WIDE_INT for portability.
+
+2023-04-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104312
+	* resolve.cc (resolve_entries): Handle functions with ENTRY and
+	ALLOCATABLE results.
+	* trans-expr.cc (gfc_conv_procedure_call): Functions with a result
+	with the POINTER or ALLOCATABLE attribute shall not get any special
+	treatment with -ff2c, as they cannot be written in Fortran 77.
+	* trans-types.cc (gfc_return_by_reference): Likewise.
+	(gfc_get_function_type): Likewise.
+
+2023-04-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/61615
+	PR fortran/99982
+	* interface.cc (compare_parameter): Enable type and rank checks for
+	arguments of derived type from the intrinsic module ISO_C_BINDING.
+
+2023-04-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87477
+	* iresolve.cc (gfc_resolve_adjustl, gfc_resolve_adjustr): if
+	string length is deferred use the string typespec for result.
+	* resolve.cc (resolve_assoc_var): Handle parentheses around the
+	target expression.
+	(resolve_block_construct): Remove unnecessary static decls.
+	* trans-array.cc (gfc_conv_expr_descriptor): Guard string len
+	expression in condition. Improve handling of string length and
+	span, especially for substrings of the descriptor.
+	(duplicate_allocatable): Make element type more explicit with
+	'eltype'.
+	* trans-decl.cc (gfc_get_symbol_decl): Emit a fatal error with
+	appropriate message instead of ICE if symbol type is unknown.
+	(gfc_generate_function_code): Set current locus to proc_sym
+	declared_at.
+	* trans-expr.cc (gfc_get_expr_charlen): Retain last charlen in
+	'previous' and use if end expression in substring reference is
+	null.
+	(gfc_conv_string_length): Use gfc_conv_expr_descriptor if
+	'expr_flat' is an array. Add post block to catch deallocation
+	of temporaries.
+	(gfc_conv_procedure_call): Assign the parmse string length to
+	the expression string length, if it is deferred.
+	(gfc_trans_alloc_subarray_assign): If this is a deferred string
+	length component, store the string length in the hidden comp.
+	Update the typespec length accordingly. Generate a new type
+	spec for the call to gfc_duplicate-allocatable in this case.
+	* trans-io.cc (gfc_trans_transfer): Scalarize transfer of
+	deferred character array components.
+
 2023-04-04  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/104349

@@ -1,3 +1,590 @@
+2023-04-16  Jeff Law  <jlaw@ventanamicro>
+
+	PR target/109508
+	* gcc.target/riscv/pr109508.c: New test.
+
+2023-04-16  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/54816
+	* gcc.target/avr/pr54816.c: New test case.
+
+2023-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109357
+	* g++.dg/cpp2a/constexpr-dtor15.C: New test.
+
+2023-04-15  Alexandre Oliva  <oliva@adacore.com>
+	    Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/99708
+	* gcc.target/powerpc/pr99708.c: Accept lack of
+	__SIZEOF_IBM128__ when long double is 64-bit wide.
+
+2023-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109514
+	* g++.dg/warn/Wdangling-pointer-6.C: New test.
+
+2023-04-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/109511
+	* gfortran.dg/set_exponent_1.f90: New test.
+
+2023-04-14  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-simd-clone-16e.c: Revert back to
+	checking avx_runtime in dump scanning.
+	* gcc.dg/vect/vect-simd-clone-17e.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-18e.c: Likewise.
+
+2023-04-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/104272
+	* gfortran.dg/class_result_8.f90 : Number of builtin_frees down
+	from 6 to 5 without memory leaks.
+	* gfortran.dg/finalize_52.f90: New test
+
+2023-04-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109502
+	* gcc.dg/vect/pr109502.c: New testcase.
+
+2023-04-14  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-simd-clone-16e.c: Fix x86 lp64 checking
+	and add missing avx guard.
+	* gcc.dg/vect/vect-simd-clone-17e.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-18e.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-16f.c: Fix x86 lp64 checking.
+	* gcc.dg/vect/vect-simd-clone-17f.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-18f.c: Likewise.
+
+2023-04-14  Jeff Law  <jlaw@ventanamicro.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/108947
+	PR target/109040
+	* gcc.dg/pr108947.c: New test.
+	* gcc.c-torture/execute/pr109040.c: New test.
+
+2023-04-14  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR analyzer/108722
+	* gcc.dg/analyzer/file-CWE-1341-example.c: Update.
+
+2023-04-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109420
+	* g++.dg/template/typename27.C: New test.
+
+2023-04-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109277
+	* g++.dg/ext/is_convertible5.C: New test.
+
+2023-04-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109497
+	PR modula2/109496
+	* gm2/pim/run/pass/addcharconst.mod: New test.
+	* gm2/pim/run/pass/singlechar.mod: New test.
+
+2023-04-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/108910
+	* gcc.dg/torture/pr108910.c: New test.
+
+2023-04-12  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109479
+	* gcc.target/riscv/rvv/base/pr109479-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr109479-2.c: New test.
+	* gcc.target/riscv/rvv/base/pr109479-3.c: New test.
+	* gcc.target/riscv/rvv/base/pr109479-4.c: New test.
+	* gcc.target/riscv/rvv/base/pr109479-5.c: New test.
+	* gcc.target/riscv/rvv/base/pr109479-6.c: New test.
+
+2023-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109410
+	* gcc.dg/pr109410.c: New test.
+
+2023-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109458
+	* gcc.target/i386/pr109458.c: New test.
+
+2023-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109462
+	* g++.dg/opt/pr109462.C: New test.
+
+2023-04-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109462
+	* gcc.dg/uninit-pr101912.c: XFAIL the warning.
+
+2023-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109473
+	* gcc.dg/vect/pr109473.c: New testcase.
+
+2023-04-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/104312
+	* gfortran.dg/entry_26.f90: New test.
+	* gfortran.dg/entry_27.f90: New test.
+
+2023-04-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/61615
+	PR fortran/99982
+	* gfortran.dg/interface_49.f90: New test.
+
+2023-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109469
+	* gcc.dg/torture/pr109469.c: New testcase.
+
+2023-04-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109434
+	* g++.dg/opt/pr109434.C: New testcase.
+
+2023-04-12  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR testsuite/108815
+	* gcc.target/powerpc/pr83677.c (v_expand_u8, v_expand_u16,
+	v_load_deinterleave_f32, v_store_interleave_f32): Adjust some code by
+	considering BE.
+
+2023-04-11  Lin Sinan  <mynameisxiaou@gmail.com>
+
+	* gcc.target/riscv/zbs-extra-bit-or-twobits.c: New test.
+
+2023-04-11  Yanzhang Wang  <yanzhang.wang@intel.com>
+	    Pan Li  <pan2.li@intel.com>
+	    Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+	    Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/109104
+	* gcc.target/riscv/zero-scratch-regs-1.c: New test.
+	* gcc.target/riscv/zero-scratch-regs-2.c: New test.
+	* gcc.target/riscv/zero-scratch-regs-3.c: New test.
+
+2023-04-11  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/affinity-clause-1.f90: Update scan-tree pattern
+	for -m32.
+
+2023-04-11  Martin Liska  <mliska@suse.cz>
+
+	PR driver/108241
+	* gcc.dg/pr108241.c: New test.
+	* gcc.dg/pr79570.c: Add also -g option.
+
+2023-04-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/vect/vect-simd-clone-16.c: Make simd clone inbranch only.
+	* gcc.dg/vect/vect-simd-clone-17.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-18.c: Likewise.
+
+2023-04-11  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/108812
+	* gcc.target/powerpc/p9-sign_extend-runnable.c: Set corresponding
+	expected vectors for Big Endian.
+	* gcc.target/powerpc/int_128bit-runnable.c: Likewise.
+
+2023-04-10   Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/70243
+	* gcc.target/powerpc/pr70243.c: New test.
+
+2023-04-10  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.dg/other/i386-2.C: Add -mamx-complex.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/amx-check.h: Add cpu check for AMX-COMPLEX.
+	* gcc.target/i386/amx-helper.h: Add amx-complex support.
+	* gcc.target/i386/funcspec-56.inc: Add new target attribute.
+	* gcc.target/i386/sse-12.c: Add -mamx-complex.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add amx-complex.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* lib/target-supports.exp (check_effective_target_amx_complex): New.
+	* gcc.target/i386/amxcomplex-asmatt-1.c: New test.
+	* gcc.target/i386/amxcomplex-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxcomplex-cmmimfp16ps-2.c: Ditto.
+	* gcc.target/i386/amxcomplex-cmmrlfp16ps-2.c: Ditto.
+
+2023-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109392
+	* gcc.dg/pr109392.c: New test.
+
+2023-04-08  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/pr84877.c: xfail on hppa*-*-*.
+
+2023-04-08  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/long_branch.c: Use timeout factor 2.0 on hppa*-*-*.
+
+2023-04-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87477
+	PR fortran/85686
+	PR fortran/88247
+	PR fortran/91941
+	PR fortran/92779
+	PR fortran/93339
+	PR fortran/93813
+	PR fortran/100948
+	PR fortran/102106
+	PR fortran/98408
+	PR fortran/105205
+	PR fortran/106918
+	* gfortran.dg/associate_47.f90 : Enable substring test.
+	* gfortran.dg/associate_51.f90 : Update an error message.
+	* gfortran.dg/goacc/array-with-dt-2.f90 : Add span to
+	uninitialzed dg-warnings.
+	* gfortran.dg/associate_60.f90 : New test
+	* gfortran.dg/pr98408.f90 : New test
+	* gfortran.dg/pr105205.f90 : New test
+	* gfortran.dg/pr106918.f90 : New test
+
+2023-04-08   Paul Thomas  <pault@gcc.gnu.org>
+
+	* gfortran.dg/c-interop/allocatable-optional-pointer.f90 : Fix
+	dg directive and remove trailing whitespace.
+	* gfortran.dg/c-interop/c407a-1.f90 : ditto
+	* gfortran.dg/c-interop/c407b-1.f90 : ditto
+	* gfortran.dg/c-interop/c407b-2.f90 : ditto
+	* gfortran.dg/c-interop/c407c-1.f90 : ditto
+	* gfortran.dg/c-interop/c535a-1.f90 : ditto
+	* gfortran.dg/c-interop/c535a-2.f90 : ditto
+	* gfortran.dg/c-interop/c535b-1.f90 : ditto
+	* gfortran.dg/c-interop/c535b-2.f90 : ditto
+	* gfortran.dg/c-interop/c535b-3.f90 : ditto
+	* gfortran.dg/c-interop/c535c-1.f90 : ditto
+	* gfortran.dg/c-interop/c535c-2.f90 : ditto
+	* gfortran.dg/c-interop/deferred-character-1.f90 : ditto
+	* gfortran.dg/c-interop/removed-restrictions-1.f90 : ditto
+	* gfortran.dg/c-interop/removed-restrictions-2.f90 : ditto
+	* gfortran.dg/c-interop/removed-restrictions-4.f90 : ditto
+	* gfortran.dg/c-interop/tkr.f90 : ditto
+	* gfortran.dg/class_result_10.f90 : ditto
+	* gfortran.dg/dtio_35.f90 : ditto
+	* gfortran.dg/gomp/affinity-clause-1.f90 : ditto
+	* gfortran.dg/pr103258.f90 : ditto
+	* gfortran.dg/pr59107.f90 : ditto
+	* gfortran.dg/pr93835.f08 : ditto
+
+2023-04-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/powerpc/ppc-fortran/ppc-fortran.exp: Test for
+	fortran compiler, skip if missing.
+
+2023-04-06  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/mve_intrinsic_type_overloads-fp.c: Remove unused variables.
+	* gcc.target/arm/mve/intrinsics/mve_intrinsic_type_overloads-int.c: Remove unused variables.
+
+2023-04-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109417
+	* gcc.dg/pr109417.c: New.
+
+2023-04-06  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/issue-1422.rs: New test.
+
+2023-04-06  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1361.rs: New test.
+
+2023-04-06  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* rust/compile/issue-1830_bytes.rs: Fix up DejaGnu directives.
+	* rust/compile/issue-1830_str.rs: Likewise.
+
+2023-04-06  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/empty.in: New test.
+	* rust/compile/include_empty.rs: New test.
+
+2023-04-06  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/torture/traits10.rs: Fix test-case
+
+2023-04-06  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1725-1.rs: New test.
+	* rust/compile/issue-1725-2.rs: New test.
+
+2023-04-06  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/builtin_macro_include_str.rs:
+	Include test of invalid UTF-8.
+	* rust/compile/invalid_utf8: File with invalid UTF-8.
+
+2023-04-06  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/parse_empty_tuple_pattern.rs: New test.
+
+2023-04-06  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/issue-1830_bytes.rs: New test.
+	* rust/compile/issue-1830_str.rs: New test.
+
+2023-04-06  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/variadic.rs: New test.
+
+2023-04-06  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/execute/torture/overflow1.rs: Fix test.
+
+2023-04-06  mxlol233  <mxlol233@outlook.com>
+
+	* rust/compile/const-issue1440.rs: Add crate feature: `intrinsics`.
+	* rust/compile/feature_intrinsics.rs: New file.
+	* rust/compile/issue-1031.rs: Add crate feature: `intrinsics`.
+	* rust/compile/issue-1130.rs: Add crate feature: `intrinsics`.
+	* rust/compile/issue-1131.rs: Add crate feature: `intrinsics`.
+	* rust/compile/issue-1237.rs: Add crate feature: `intrinsics`.
+	* rust/compile/issue-1289.rs: Add crate feature: `intrinsics`.
+	* rust/compile/rust-const-blog-issue.rs: Add crate feature: `intrinsics`.
+	* rust/compile/torture/intrinsics-3.rs: Add crate feature: `intrinsics`.
+	* rust/compile/torture/intrinsics-4.rs: Add crate feature: `intrinsics`.
+	* rust/compile/torture/intrinsics-5.rs: Add crate feature: `intrinsics`.
+	* rust/compile/torture/intrinsics-6.rs: Add crate feature: `intrinsics`.
+	* rust/compile/torture/intrinsics-7.rs: Add crate feature: `intrinsics`.
+	* rust/compile/torture/issue-1024.rs: Add crate feature: `intrinsics`.
+	* rust/compile/torture/issue-1075.rs: Add crate feature: `intrinsics`.
+	* rust/compile/torture/issue-1432.rs: Add crate feature: `intrinsics`.
+	* rust/compile/unsafe10.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/atomic_load.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/atomic_store.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/copy_nonoverlapping1.rs: Add crate feature:
+	`intrinsics`.
+	* rust/execute/torture/issue-1120.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/issue-1133.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/issue-1232.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/slice-magic.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/slice-magic2.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/str-layout1.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/transmute1.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/wrapping_op1.rs: Add crate feature: `intrinsics`.
+	* rust/execute/torture/wrapping_op2.rs: Add crate feature: `intrinsics`.
+
+2023-04-06  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/macro17.rs: Fix testsuite for new recursion errors.
+	* rust/compile/macro44.rs: Fix invalid testcase assertions.
+	* rust/compile/builtin_macro_recurse.rs: Fix invalid test.
+	* rust/compile/builtin_macro_recurse2.rs: New test.
+	* rust/compile/macro46.rs: New test.
+	* rust/compile/builtin_macro_eager1.rs: New file.
+	* rust/compile/builtin_macro_eager2.rs: New file.
+
+2023-04-06  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/execute/torture/let-pattern-1.rs: New test.
+
+2023-04-06  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/torture/intrinsics-4.rs: implement Copy trait
+	* rust/compile/torture/intrinsics-5.rs: likewise
+	* rust/execute/torture/atomic_load.rs: likewise
+	* rust/execute/torture/atomic_store.rs: likewise
+	* rust/bounds1.rs: New test.
+
+2023-04-06  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/func3.rs: update test case
+
+2023-04-06  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1786.rs: New test.
+
+2023-04-06  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/never_type_err1.rs: Moved to...
+	* rust/compile/never_type1.rs: ...here. It now works
+
+2023-04-06  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1773.rs: New test.
+
+2023-04-06  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/execute/torture/issue-1720-2.rs: New test.
+
+2023-04-06  mxlol233  <mxlol233@outlook.com>
+
+	* rust/compile/feature.rs: New test.
+
+2023-04-06  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/closure_move_expr.rs: New test.
+
+2023-04-06  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/parse_complex_generic_application.rs: New test.
+	* rust/compile/parse_complex_generic_application2.rs: New test.
+
+2023-04-06  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/multi_reference_type.rs: New test.
+
+2023-04-06  Abdul Rafey  <abdulrafeyq@gmail.com>
+
+	* rust/compile/issue-867.rs: New test.
+
+2023-04-06  Lyra  <teromene@teromene.fr>
+
+	* rust/compile/macro45.rs: New test.
+
+2023-04-06  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/execute/torture/builtin_macro_cfg.rs: Handle carriage returns
+		properly.
+	* rust/execute/torture/builtin_macro_concat.rs: Likewise.
+	* rust/execute/torture/builtin_macro_env.rs: Likewise.
+	* rust/execute/torture/builtin_macro_include_bytes.rs: Likewise.
+	* rust/execute/torture/builtin_macro_include_str.rs: Likewise.
+	* rust/execute/torture/builtin_macro_line.rs: Likewise.
+	* rust/execute/torture/builtin_macros1.rs: Likewise.
+	* rust/execute/torture/builtin_macros3.rs: Likewise.
+	* rust/execute/torture/cfg1.rs: Likewise.
+	* rust/execute/torture/cfg2.rs: Likewise.
+	* rust/execute/torture/cfg3.rs: Likewise.
+	* rust/execute/torture/cfg4.rs: Likewise.
+	* rust/execute/torture/coercion1.rs: Likewise.
+	* rust/execute/torture/coercion2.rs: Likewise.
+	* rust/execute/torture/extern_mod4.rs: Likewise.
+	* rust/execute/torture/helloworld1.rs: Likewise.
+	* rust/execute/torture/helloworld2.rs: Likewise.
+	* rust/execute/torture/issue-1198.rs: Likewise.
+	* rust/execute/torture/issue-1231.rs: Likewise.
+	* rust/execute/torture/issue-1232.rs: Likewise.
+	* rust/execute/torture/issue-1249.rs: Likewise.
+	* rust/execute/torture/issue-1436.rs: Likewise.
+	* rust/execute/torture/issue-1496.rs: Likewise.
+	* rust/execute/torture/issue-647.rs: Likewise.
+	* rust/execute/torture/issue-845.rs: Likewise.
+	* rust/execute/torture/issue-851.rs: Likewise.
+	* rust/execute/torture/issue-858.rs: Likewise.
+	* rust/execute/torture/issue-976.rs: Likewise.
+	* rust/execute/torture/macros10.rs: Likewise.
+	* rust/execute/torture/macros11.rs: Likewise.
+	* rust/execute/torture/macros12.rs: Likewise.
+	* rust/execute/torture/macros13.rs: Likewise.
+	* rust/execute/torture/macros14.rs: Likewise.
+	* rust/execute/torture/macros2.rs: Likewise.
+	* rust/execute/torture/macros22.rs: Likewise.
+	* rust/execute/torture/macros29.rs: Likewise.
+	* rust/execute/torture/macros3.rs: Likewise.
+	* rust/execute/torture/macros30.rs: Likewise.
+	* rust/execute/torture/macros31.rs: Likewise.
+	* rust/execute/torture/macros7.rs: Likewise.
+	* rust/execute/torture/macros8.rs: Likewise.
+	* rust/execute/torture/macros9.rs: Likewise.
+	* rust/execute/torture/match1.rs: Likewise.
+	* rust/execute/torture/match2.rs: Likewise.
+	* rust/execute/torture/match3.rs: Likewise.
+	* rust/execute/torture/match_bool1.rs: Likewise.
+	* rust/execute/torture/match_byte1.rs: Likewise.
+	* rust/execute/torture/match_char1.rs: Likewise.
+	* rust/execute/torture/match_int1.rs: Likewise.
+	* rust/execute/torture/match_loop1.rs: Likewise.
+	* rust/execute/torture/match_range1.rs: Likewise.
+	* rust/execute/torture/match_range2.rs: Likewise.
+	* rust/execute/torture/match_tuple1.rs: Likewise.
+	* rust/execute/torture/method1.rs: Likewise.
+	* rust/execute/torture/method2.rs: Likewise.
+	* rust/execute/torture/method3.rs: Likewise.
+	* rust/execute/torture/method4.rs: Likewise.
+	* rust/execute/torture/operator_overload_1.rs: Likewise.
+	* rust/execute/torture/operator_overload_10.rs: Likewise.
+	* rust/execute/torture/operator_overload_11.rs: Likewise.
+	* rust/execute/torture/operator_overload_12.rs: Likewise.
+	* rust/execute/torture/operator_overload_2.rs: Likewise.
+	* rust/execute/torture/operator_overload_4.rs: Likewise.
+	* rust/execute/torture/operator_overload_5.rs: Likewise.
+	* rust/execute/torture/operator_overload_6.rs: Likewise.
+	* rust/execute/torture/operator_overload_7.rs: Likewise.
+	* rust/execute/torture/operator_overload_8.rs: Likewise.
+	* rust/execute/torture/operator_overload_9.rs: Likewise.
+	* rust/execute/torture/str-layout1.rs: Likewise.
+	* rust/execute/torture/str-zero.rs: Likewise.
+	* rust/execute/torture/trait1.rs: Likewise.
+	* rust/execute/torture/trait10.rs: Likewise.
+	* rust/execute/torture/trait11.rs: Likewise.
+	* rust/execute/torture/trait12.rs: Likewise.
+	* rust/execute/torture/trait13.rs: Likewise.
+	* rust/execute/torture/trait2.rs: Likewise.
+	* rust/execute/torture/trait3.rs: Likewise.
+	* rust/execute/torture/trait4.rs: Likewise.
+	* rust/execute/torture/trait5.rs: Likewise.
+	* rust/execute/torture/trait6.rs: Likewise.
+	* rust/execute/torture/trait7.rs: Likewise.
+	* rust/execute/torture/trait8.rs: Likewise.
+	* rust/execute/torture/trait9.rs: Likewise.
+	* rust/execute/torture/closure2.rs: Likewise.
+	* rust/execute/torture/closure3.rs: Likewise.
+	* rust/execute/torture/loop-condition-eval.rs: Likewise.
+	* rust/execute/torture/operator_overload_3.rs: Likewise.
+
+2023-04-06  mxlol233  <mxlol233@outlook.com>
+
+	* rust/compile/diagnostic_underline.rs: New test.
+
+2023-04-06  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/bounds.rs: change to use -fsyntax-only
+	* rust/execute/torture/issue-1720.rs: New test.
+
+2023-04-06  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* rust/compile/decl_macro1.rs: New test.
+	* rust/compile/decl_macro2.rs: New test.
+	* rust/compile/decl_macro3.rs: New test.
+	* rust/compile/decl_macro4.rs: New test.
+	* rust/compile/decl_macro5.rs: New test.
+	* rust/compile/decl_macro6.rs: New test.
+	* rust/compile/decl_macro7.rs: New test.
+	* rust/execute/torture/decl_macro1.rs: New test.
+	* rust/execute/torture/decl_macro2.rs: New test.
+	* rust/execute/torture/decl_macro3.rs: New test.
+	* rust/execute/torture/decl_macro4.rs: New test.
+
+2023-04-06  mxlol233  <mxlol233@outlook.com>
+
+	* rust/compile/bounds.rs: New test.
+
+2023-04-06  Dave  <dme2223@gmail.com>
+
+	* rust/compile/const10.rs: New test.
+
+2023-04-06  Prajwal S N  <prajwalnadig21@gmail.com>
+
+	* rust/compile/unsafe11.rs: New test.
+
+2023-04-06  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/signbit-2.c: Add -maltivec if supported.
+
+2023-04-06  Alexandre Oliva  <oliva@adacore.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/108899
+	* g++.dg/modules/modules.exp (unsupported): Drop renaming.
+	Fix quoting.
+
 2023-04-05  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109423

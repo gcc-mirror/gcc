@@ -179,7 +179,8 @@ initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write, bool may_def_ok = false)
     }
   if (tree lhs = gimple_get_lhs (stmt))
     {
-      if (TREE_CODE (lhs) != SSA_NAME)
+      if (TREE_CODE (lhs) != SSA_NAME
+	  && (may_def_ok || !stmt_could_throw_p (cfun, stmt)))
 	{
 	  ao_ref_init (write, lhs);
 	  return true;

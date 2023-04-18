@@ -1,15 +1,15 @@
-! { dg-do compile}
+! { dg-do compile }
 !
 ! TS 29113
 ! C407b  An assumed-type variable name shall not appear in a designator
 ! or expression except as an actual argument corresponding to a dummy
 ! argument that is assumed-type, or as the first argument to any of
-! the intrinsic and intrinsic module functions IS_CONTIGUOUS, LBOUND, 
+! the intrinsic and intrinsic module functions IS_CONTIGUOUS, LBOUND,
 ! PRESENT, RANK, SHAPE, SIZE, UBOUND, and C_LOC.
 !
 ! This test file contains tests that are expected to all pass.
 
-! Check that passing an assumed-type variable as an actual argument 
+! Check that passing an assumed-type variable as an actual argument
 ! corresponding to an assumed-type dummy works.
 
 module m

@@ -2840,17 +2840,17 @@ lxvrse_expand_builtin (rtx target, insn_code icode, rtx *op,
   if (icode == CODE_FOR_vsx_lxvrbx)
     {
       temp1  = simplify_gen_subreg (V16QImode, tiscratch, TImode, 0);
-      emit_insn (gen_vsx_sign_extend_qi_v2di (discratch, temp1));
+      emit_insn (gen_vsx_sign_extend_v16qi_v2di (discratch, temp1));
     }
   else if (icode == CODE_FOR_vsx_lxvrhx)
     {
       temp1  = simplify_gen_subreg (V8HImode, tiscratch, TImode, 0);
-      emit_insn (gen_vsx_sign_extend_hi_v2di (discratch, temp1));
+      emit_insn (gen_vsx_sign_extend_v8hi_v2di (discratch, temp1));
     }
   else if (icode == CODE_FOR_vsx_lxvrwx)
     {
       temp1  = simplify_gen_subreg (V4SImode, tiscratch, TImode, 0);
-      emit_insn (gen_vsx_sign_extend_si_v2di (discratch, temp1));
+      emit_insn (gen_vsx_sign_extend_v4si_v2di (discratch, temp1));
     }
   else if (icode == CODE_FOR_vsx_lxvrdx)
     discratch = simplify_gen_subreg (V2DImode, tiscratch, TImode, 0);

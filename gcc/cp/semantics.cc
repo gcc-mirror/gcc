@@ -12107,7 +12107,12 @@ check_trait_type (tree type, int kind = 1)
   if (VOID_TYPE_P (type))
     return true;
 
-  return !!complete_type_or_else (strip_array_types (type), NULL_TREE);
+  type = complete_type (strip_array_types (type));
+  if (!COMPLETE_TYPE_P (type)
+      && cxx_incomplete_type_diagnostic (NULL_TREE, type, DK_PERMERROR)
+      && !flag_permissive)
+    return false;
+  return true;
 }
 
 /* Process a trait expression.  */

@@ -4283,6 +4283,16 @@ build_set_full_complement (location_t location)
   return value;
 }
 
+
+/* GetCstInteger return the integer value of the cst tree.  */
+
+int
+m2expr_GetCstInteger (tree cst)
+{
+  return TREE_INT_CST_LOW (cst);
+}
+
+
 /* init initialise this module.  */
 
 void

@@ -7,7 +7,10 @@
 
 using namespace std::experimental::net;
 
-constexpr void
+#if __cplusplus >= 202002
+constexpr
+#endif
+void
 test_default()
 {
   ip::tcp::endpoint t1;
@@ -57,23 +60,19 @@ test_addr()
   VERIFY( t2.port() == 80 );
 }
 
-constexpr bool
-test_constexpr()
-{
-  test_default();
-#if __cplusplus >= 202002
-  // Non-default basic_endpoint constructors are only constexpr in C++20.
-  test_proto();
-  test_addr();
-#endif
-  return true;
-}
-
 int main()
 {
   test_default();
   test_proto();
   test_addr();
 
-  static_assert( test_constexpr(), "valid in constant expressions" );
+#if __cplusplus >= 202002
+  // basic_endpoint constructors are only constexpr in C++20.
+  constexpr bool b = []{
+    test_default();
+    test_proto();
+    test_addr();
+    return true;
+  }();
+#endif
 }

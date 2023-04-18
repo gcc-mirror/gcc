@@ -1,3 +1,23 @@
+2023-04-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109488
+	* lang.opt: Fix typo "maybe" to "may be".
+
+2023-04-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2ALU.def (PopChar): New procedure function.
+	* gm2-compiler/M2ALU.mod (PopChar): New procedure function.
+	* gm2-compiler/M2GCCDeclare.mod (PromoteToString): Detect
+	a single constant char and build a C string.
+	* gm2-compiler/M2GenGCC.mod (IsConstStr): New procedure
+	function.
+	(GetStr): New procedure function.
+	(FoldAdd): Use IsConstStr.
+	* gm2-compiler/M2Quads.mod: Formatting changes.
+	* gm2-gcc/m2expr.cc (m2expr_GetCstInteger): New function.
+	* gm2-gcc/m2expr.def (GetCstInteger): New procedure function.
+	* gm2-gcc/m2expr.h (m2expr_GetCstInteger): New prototype.
+
 2023-04-05  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109423

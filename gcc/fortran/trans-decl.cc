@@ -1791,6 +1791,9 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       return decl;
     }
 
+  if (sym->ts.type == BT_UNKNOWN)
+    gfc_fatal_error ("%s at %C has no default type", sym->name);
+
   if (sym->attr.intrinsic)
     gfc_internal_error ("intrinsic variable which isn't a procedure");
 
@@ -7538,6 +7541,7 @@ gfc_generate_function_code (gfc_namespace * ns)
     }
 
   trans_function_start (sym);
+  gfc_current_locus = sym->declared_at;
 
   gfc_init_block (&init);
   gfc_init_block (&cleanup);

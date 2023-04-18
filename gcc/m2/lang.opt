@@ -120,7 +120,7 @@ use ISO dialect of Modula-2
 
 flibs=
 Modula-2 Joined
-specify the library order, the libraries maybe specified by a comma separated abbreviation: log,min,pim,iso or by directory names: m2log,m2min,m2pim,m2iso.
+specify the library order, the libraries may be specified by a comma separated abbreviation: log,min,pim,iso or by directory names: m2log,m2min,m2pim,m2iso.
 
 flocation=
 Modula-2 Joined

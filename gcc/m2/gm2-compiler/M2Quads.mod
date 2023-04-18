@@ -585,7 +585,7 @@ BEGIN
                        END
 
       END ;
-      i := GetNextQuad(i)
+      i := GetNextQuad (i)
    END ;
    InternalError ('fix this for the sake of efficiency..')
 END IsBackReference ;
@@ -686,7 +686,7 @@ BEGIN
                        END
 
       END ;
-      i := GetNextQuad(i)
+      i := GetNextQuad (i)
    END ;
    InternalError ('fix this for the sake of efficiency..')
 END IsBackReferenceConditional ;

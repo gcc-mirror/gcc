@@ -1,16 +1,16 @@
 ! PR 101337
-! { dg-do compile}
+! { dg-do compile }
 !
 ! TS 29113
 ! C407b  An assumed-type variable name shall not appear in a designator
 ! or expression except as an actual argument corresponding to a dummy
 ! argument that is assumed-type, or as the first argument to any of
-! the intrinsic and intrinsic module functions IS_CONTIGUOUS, LBOUND, 
+! the intrinsic and intrinsic module functions IS_CONTIGUOUS, LBOUND,
 ! PRESENT, RANK, SHAPE, SIZE, UBOUND, and C_LOC.
 !
 ! This file contains tests that are expected to give diagnostics.
 
-! Check that passing an assumed-type variable as an actual argument 
+! Check that passing an assumed-type variable as an actual argument
 ! corresponding to a non-assumed-type dummy gives a diagnostic.
 
 module m
@@ -72,35 +72,35 @@ subroutine s2 (x, y)
     type is (integer)
       i = 0
     type is (real)
-      i = 1 
+      i = 1
     class default
       i = -1
   end select
 
   ! relational operations
   if (x & ! { dg-error "Assumed.type" "pr101337" }
-      .eq. y) then  ! { dg-error "Assumed.type" } 
+      .eq. y) then  ! { dg-error "Assumed.type" }
     return
   end if
   if (.not. (x & ! { dg-error "Assumed.type" "pr101337" }
-             .ne. y)) then  ! { dg-error "Assumed.type" } 
+             .ne. y)) then  ! { dg-error "Assumed.type" }
     return
   end if
-  if (.not. x) then  ! { dg-error "Assumed.type" } 
+  if (.not. x) then  ! { dg-error "Assumed.type" }
     return
   end if
 
   ! assignment
-  x &  ! { dg-error "Assumed.type" } 
-    = y  ! { dg-error "Assumed.type" } 
-  i = x  ! { dg-error "Assumed.type" } 
-  y = i  ! { dg-error "Assumed.type" } 
+  x &  ! { dg-error "Assumed.type" }
+    = y  ! { dg-error "Assumed.type" }
+  i = x  ! { dg-error "Assumed.type" }
+  y = i  ! { dg-error "Assumed.type" }
 
   ! arithmetic
-  i = x + 1  ! { dg-error "Assumed.type" } 
-  i = -y  ! { dg-error "Assumed.type" } 
+  i = x + 1  ! { dg-error "Assumed.type" }
+  i = -y  ! { dg-error "Assumed.type" }
   i = (x & ! { dg-error "Assumed.type" "pr101337" }
-       + y)  ! { dg-error "Assumed.type" } 
+       + y)  ! { dg-error "Assumed.type" }
 
   ! computed go to
   goto (10, 20, 30), x  ! { dg-error "Assumed.type|must be a scalar integer" }
@@ -116,7 +116,7 @@ subroutine s2 (x, y)
     continue
   end do
 
-end subroutine  
+end subroutine
 
 ! Check that calls to disallowed intrinsic functions produce a diagnostic.
 ! Again, this isn't exhaustive, there are just too many intrinsics and
@@ -147,4 +147,4 @@ subroutine s3 (x, y)
 
   i = kind (x)  ! { dg-error "Assumed.type" }
 
-end subroutine  
+end subroutine

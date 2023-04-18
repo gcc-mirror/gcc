@@ -96,6 +96,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "i386-expand.h"
 #include "i386-features.h"
 #include "function-abi.h"
+#include "rtl-error.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -13218,7 +13219,13 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	    }
 
 	  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
-	    warning (0, "non-integer operand used with operand code %<z%>");
+	    {
+	      if (this_is_asm_operands)
+		warning_for_asm (this_is_asm_operands,
+				 "non-integer operand used with operand code %<z%>");
+	      else
+		warning (0, "non-integer operand used with operand code %<z%>");
+	    }
 	  /* FALLTHRU */
 
 	case 'Z':
@@ -13281,11 +13288,12 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	  else
 	    {
 	      output_operand_lossage ("invalid operand type used with "
-				      "operand code 'Z'");
+				      "operand code '%c'", code);
 	      return;
 	    }
 
-	  output_operand_lossage ("invalid operand size for operand code 'Z'");
+	  output_operand_lossage ("invalid operand size for operand code '%c'",
+				  code);
 	  return;
 
 	case 'd':

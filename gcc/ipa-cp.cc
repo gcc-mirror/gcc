@@ -4348,7 +4348,8 @@ ipcp_discover_new_direct_edges (struct cgraph_node *node,
 		    fprintf (dump_file, "     controlled uses count of param "
 			     "%i bumped down to %i\n", param_index, c);
 		  if (c == 0
-		      && (to_del = node->find_reference (cs->callee, NULL, 0)))
+		      && (to_del = node->find_reference (cs->callee, NULL, 0,
+							 IPA_REF_ADDR)))
 		    {
 		      if (dump_file && (dump_flags & TDF_DETAILS))
 			fprintf (dump_file, "       and even removing its "
@@ -5180,10 +5181,12 @@ adjust_references_in_caller (cgraph_edge *cs, symtab_node *symbol, int index)
   if (jfunc->type == IPA_JF_CONST)
     {
       ipa_ref *to_del = cs->caller->find_reference (symbol, cs->call_stmt,
-						    cs->lto_stmt_uid);
+						    cs->lto_stmt_uid,
+						    IPA_REF_ADDR);
       if (!to_del)
 	return;
       to_del->remove_reference ();
+      ipa_zap_jf_refdesc (jfunc);
       if (dump_file)
 	fprintf (dump_file, "    Removed a reference from %s to %s.\n",
 		 cs->caller->dump_name (), symbol->dump_name ());
@@ -5191,7 +5194,8 @@ adjust_references_in_caller (cgraph_edge *cs, symtab_node *symbol, int index)
     }
 
   if (jfunc->type != IPA_JF_PASS_THROUGH
-      || ipa_get_jf_pass_through_operation (jfunc) != NOP_EXPR)
+      || ipa_get_jf_pass_through_operation (jfunc) != NOP_EXPR
+      || ipa_get_jf_pass_through_refdesc_decremented (jfunc))
     return;
 
   int fidx = ipa_get_jf_pass_through_formal_id (jfunc);
@@ -5218,6 +5222,10 @@ adjust_references_in_caller (cgraph_edge *cs, symtab_node *symbol, int index)
   gcc_assert (cuses > 0);
   cuses--;
   ipa_set_controlled_uses (caller_info, fidx, cuses);
+  ipa_set_jf_pass_through_refdesc_decremented (jfunc, true);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "    Controlled uses of parameter %i of %s dropped "
+	     "to %i.\n", fidx, caller->dump_name (), cuses);
   if (cuses)
     return;
 
@@ -5225,8 +5233,8 @@ adjust_references_in_caller (cgraph_edge *cs, symtab_node *symbol, int index)
     {
       /* Cloning machinery has created a reference here, we need to either
 	 remove it or change it to a read one.  */
-      ipa_ref *to_del = caller->find_reference (symbol, NULL, 0);
-      if (to_del && to_del->use == IPA_REF_ADDR)
+      ipa_ref *to_del = caller->find_reference (symbol, NULL, 0, IPA_REF_ADDR);
+      if (to_del)
 	{
 	  to_del->remove_reference ();
 	  if (dump_file)

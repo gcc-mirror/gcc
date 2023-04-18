@@ -234,6 +234,7 @@ EXTERN void m2expr_ConstantExpressionWarning (tree value);
 EXTERN tree m2expr_BuildAddAddress (location_t location, tree op1, tree op2);
 EXTERN tree m2expr_BuildRDiv (location_t location, tree op1, tree op2,
                               bool needconvert);
+EXTERN int m2expr_GetCstInteger (tree cst);
 
 EXTERN void m2expr_init (location_t location);
 

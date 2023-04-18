@@ -399,7 +399,7 @@
 (define_predicate "uimm_extra_bit_or_twobits"
   (and (match_code "const_int")
        (ior (match_operand 0 "uimm_extra_bit_operand")
-	    (match_operand 0 "const_twobits_operand"))))
+	    (match_operand 0 "const_twobits_not_arith_operand"))))
 
 ;; A CONST_INT operand that fits into the negative half of a
 ;; signed-immediate after a single cleared top bit has been

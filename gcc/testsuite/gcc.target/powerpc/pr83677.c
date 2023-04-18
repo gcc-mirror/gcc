@@ -9,14 +9,24 @@
 
 void v_expand_u8(vector unsigned char* a, vector unsigned short* b0, vector unsigned short* b1)
 {
+#if __LITTLE_ENDIAN__
   *b0 = (vector unsigned short)vec_mergeh(*a, vec_splats((unsigned char)0));
   *b1 = (vector unsigned short)vec_mergel(*a, vec_splats((unsigned char)0));
+#else
+  *b0 = (vector unsigned short)vec_mergeh(vec_splats((unsigned char)0), *a);
+  *b1 = (vector unsigned short)vec_mergel(vec_splats((unsigned char)0), *a);
+#endif
 }
 
 void v_expand_u16(vector unsigned short* a, vector unsigned int* b0, vector unsigned int* b1)
 {
+#if __LITTLE_ENDIAN__
     *b0 = (vector unsigned int)vec_mergeh(*a, vec_splats((unsigned short)0));
     *b1 = (vector unsigned int)vec_mergel(*a, vec_splats((unsigned short)0));
+#else
+    *b0 = (vector unsigned int)vec_mergeh(vec_splats((unsigned short)0), *a);
+    *b1 = (vector unsigned int)vec_mergel(vec_splats((unsigned short)0), *a);
+#endif
 }
 
 void v_load_deinterleave_u8(unsigned char *ptr, vector unsigned char* a, vector unsigned char* b, vector unsigned char* c)
@@ -44,13 +54,23 @@ void v_load_deinterleave_f32(float *ptr, vector float* a, vector float* b, vecto
     vector float v2 = vec_xl(16, ptr);
     vector float v3 = vec_xl(32, ptr);
 
+#if __LITTLE_ENDIAN__
+    vector float t1 = vec_sld(v3, v2, 8);
+    vector float t2 = vec_sld(v1, v3, 8);
+    vector float t3 = vec_sld(v2, v1, 8);
+#else
+    vector float t1 = vec_sld(v2, v3, 8);
+    vector float t2 = vec_sld(v3, v1, 8);
+    vector float t3 = vec_sld(v1, v2, 8);
+#endif
+
     static const vector unsigned char flp = {0, 1, 2, 3, 12, 13, 14, 15, 16, 17, 18, 19, 28, 29, 30, 31};
-    *a = vec_perm(v1, vec_sld(v3, v2, 8), flp);
+    *a = vec_perm(v1, t1, flp);
 
     static const vector unsigned char flp2 = {28, 29, 30, 31, 0, 1, 2, 3, 12, 13, 14, 15, 16, 17, 18, 19};
-    *b = vec_perm(v2, vec_sld(v1, v3, 8), flp2);
+    *b = vec_perm(v2, t2, flp2);
 
-    *c = vec_perm(vec_sld(v2, v1, 8), v3, flp);
+    *c = vec_perm(t3, v3, flp);
 }
 
 void v_store_interleave_f32(float *ptr, vector float a, vector float b, vector float c)
@@ -61,7 +81,11 @@ void v_store_interleave_f32(float *ptr, vector float a, vector float b, vector f
     vec_xst(vec_perm(a, hbc, ahbc),  0, ptr);
 
     vector float lab = vec_mergel(a, b);
+#if __LITTLE_ENDIAN__
     vec_xst(vec_sld(lab, hbc, 8), 16, ptr);
+#else
+    vec_xst(vec_sld(hbc, lab, 8), 16, ptr);
+#endif
 
     static const vector unsigned char clab = {8, 9, 10, 11, 24, 25, 26, 27, 28, 29, 30, 31, 12, 13, 14, 15};
     vec_xst(vec_perm(c, lab, clab), 32, ptr);

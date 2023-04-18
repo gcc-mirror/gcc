@@ -67,7 +67,8 @@ FROM m2expr IMPORT BuildAdd, BuildSub, BuildMult,
                    BuildDivTrunc, BuildModTrunc, BuildDivFloor, BuildModFloor,
                    BuildLSL, BuildLSR,
                    BuildLogicalOr, BuildLogicalAnd, BuildSymmetricDifference,
-                   GetWordOne, GetCardinalZero, TreeOverflow, RemoveOverflow ;
+                   GetWordOne, GetCardinalZero, TreeOverflow, RemoveOverflow,
+                   GetCstInteger ;
 
 FROM m2decl IMPORT GetBitsPerBitset, BuildIntegerConstant, BuildConstLiteralNumber ;
 FROM m2misc IMPORT DebugTree ;
@@ -1155,6 +1156,30 @@ BEGIN
    END ;
    Push(v)
 END PushChar ;
+
+
+(*
+   PopChar - pops a char from the stack.
+*)
+
+PROCEDURE PopChar (tokenno: CARDINAL) : CHAR ;
+VAR
+   v : PtrToValue ;
+   ch: CHAR ;
+BEGIN
+   v := Pop () ;
+   ch := 0C ;
+   WITH v^ DO
+      IF type = integer
+      THEN
+         ch := VAL (CHAR, GetCstInteger (numberValue))
+      ELSE
+         MetaErrorT0 (tokenno, '{%E}cannot convert constant to a CHAR')
+      END
+   END ;
+   Push (v) ;
+   RETURN ch
+END PopChar ;
 
 
 (*

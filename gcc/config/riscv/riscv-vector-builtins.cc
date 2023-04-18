@@ -2312,6 +2312,10 @@ register_builtin_type (vector_type_index type, tree eltype, machine_mode mode)
   builtin_types[type].scalar = eltype;
   builtin_types[type].scalar_ptr = build_pointer_type (eltype);
   builtin_types[type].scalar_const_ptr = build_const_pointer (eltype);
+  /* TODO: We currently just skip the register of the illegal RVV type.
+     Ideally, we should report error message more friendly instead of
+     reporting "unknown" type. Support more friendly error message in
+     the future.  */
   if (!riscv_v_ext_vector_mode_p (mode))
     return;
 
@@ -2362,6 +2366,10 @@ register_vector_type (vector_type_index type)
 
   /* When vectype is NULL, the corresponding builtin type
      is disabled according to '-march'.  */
+  /* TODO: We currently just skip the register of the illegal RVV type.
+     Ideally, we should report error message more friendly instead of
+     reporting "unknown" type. Support more friendly error message in
+     the future.  */
   if (!vectype)
     return;
   tree id = get_identifier (vector_types[type].name);
@@ -2452,12 +2460,14 @@ check_required_extensions (const function_instance &instance)
     riscv_isa_flags |= RVV_REQUIRE_ELEN_FP_32;
   if (TARGET_VECTOR_ELEN_FP_64)
     riscv_isa_flags |= RVV_REQUIRE_ELEN_FP_64;
-  if (TARGET_MIN_VLEN > 32)
-    riscv_isa_flags |= RVV_REQUIRE_ZVE64;
+  if (TARGET_VECTOR_ELEN_64)
+    riscv_isa_flags |= RVV_REQUIRE_ELEN_64;
   if (TARGET_64BIT)
     riscv_isa_flags |= RVV_REQUIRE_RV64BIT;
   if (TARGET_FULL_V)
     riscv_isa_flags |= RVV_REQUIRE_FULL_V;
+  if (TARGET_MIN_VLEN > 32)
+    riscv_isa_flags |= RVV_REQUIRE_MIN_VLEN_64;
 
   uint64_t missing_extensions = required_extensions & ~riscv_isa_flags;
   if (missing_extensions != 0)

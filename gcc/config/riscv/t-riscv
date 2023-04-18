@@ -102,8 +102,8 @@ $(common_out_file): $(srcdir)/config/riscv/riscv-cores.def \
     $(srcdir)/config/riscv/riscv-protos.h \
     $(srcdir)/config/riscv/riscv-subset.h
 
-build/genrvv-type-indexer.o: $(srcdir)/config/riscv/genrvv-type-indexer.cc $(RTL_BASE_H) $(BCONFIG_H) $(SYSTEM_H)	\
-  $(CORETYPES_H) $(GTM_H) errors.h $(GENSUPPORT_H) insn-modes.h
+build/genrvv-type-indexer.o: $(srcdir)/config/riscv/genrvv-type-indexer.cc $(BCONFIG_H) $(SYSTEM_H)	\
+  $(CORETYPES_H) $(GTM_H) errors.h $(GENSUPPORT_H)
 
 build/genrvv-type-indexer$(build_exeext): build/genrvv-type-indexer.o
 	+$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ \

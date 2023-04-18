@@ -19,15 +19,6 @@ int16_t i6;
 int32_t i7;
 int64_t i8;
 
-const int ci1;
-const short ci2;
-const long ci3;
-const long long ci4;
-const int8_t ci5;
-const int16_t ci6;
-const int32_t ci7;
-const int64_t ci8;
-
 float16x8_t floatvec;
 int16x8_t intvec;
 

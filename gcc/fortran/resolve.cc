@@ -702,7 +702,8 @@ resolve_entries (gfc_namespace *ns)
   gfc_code *c;
   gfc_symbol *proc;
   gfc_entry_list *el;
-  char name[GFC_MAX_SYMBOL_LEN + 1];
+  /* Provide sufficient space to hold "master.%d.%s".  */
+  char name[GFC_MAX_SYMBOL_LEN + 1 + 18];
   static int master_count = 0;
 
   if (ns->proc_name == NULL)
@@ -827,6 +828,9 @@ resolve_entries (gfc_namespace *ns)
 			    "entries returning variables of different "
 			    "string lengths", ns->entries->sym->name,
 			    &ns->entries->sym->declared_at);
+	  else if (el->sym->result->attr.allocatable
+		   != ns->entries->sym->result->attr.allocatable)
+	    break;
 	}
 
       if (el == NULL)
@@ -838,6 +842,8 @@ resolve_entries (gfc_namespace *ns)
 	    gfc_set_array_spec (proc, gfc_copy_array_spec (sym->as), NULL);
 	  if (sym->attr.pointer)
 	    gfc_add_pointer (&proc->attr, NULL);
+	  if (sym->attr.allocatable)
+	    gfc_add_allocatable (&proc->attr, NULL);
 	}
       else
 	{
@@ -866,6 +872,17 @@ resolve_entries (gfc_namespace *ns)
 			       ns->entries->sym->name, &sym->declared_at);
 		  else
 		    gfc_error ("ENTRY result %s cannot be a POINTER in "
+			       "FUNCTION %s at %L", sym->name,
+			       ns->entries->sym->name, &sym->declared_at);
+		}
+	      else if (sym->attr.allocatable)
+		{
+		  if (el == ns->entries)
+		    gfc_error ("FUNCTION result %s cannot be ALLOCATABLE in "
+			       "FUNCTION %s at %L", sym->name,
+			       ns->entries->sym->name, &sym->declared_at);
+		  else
+		    gfc_error ("ENTRY result %s cannot be ALLOCATABLE in "
 			       "FUNCTION %s at %L", sym->name,
 			       ns->entries->sym->name, &sym->declared_at);
 		}
@@ -8072,6 +8089,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
   if (!t)
     goto failure;
 
+  code->ext.alloc.expr3_not_explicit = 0;
   if (e->ts.type == BT_CLASS && CLASS_DATA (e)->attr.dimension
 	&& !code->expr3 && code->ext.alloc.ts.type == BT_DERIVED)
     {
@@ -8080,6 +8098,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
 	 when the allocated type is different from the declared type but
 	 no SOURCE exists by setting expr3.  */
       code->expr3 = gfc_default_initializer (&code->ext.alloc.ts);
+      code->ext.alloc.expr3_not_explicit = 1;
     }
   else if (flag_coarray != GFC_FCOARRAY_LIB && e->ts.type == BT_DERIVED
 	   && e->ts.u.derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
@@ -8087,6 +8106,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
     {
       /* We have to zero initialize the integer variable.  */
       code->expr3 = gfc_get_int_expr (gfc_default_integer_kind, &e->where, 0);
+      code->ext.alloc.expr3_not_explicit = 1;
     }
 
   if (e->ts.type == BT_CLASS && !unlimited && !UNLIMITED_POLY (code->expr3))
@@ -9084,6 +9104,7 @@ static void
 resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 {
   gfc_expr* target;
+  bool parentheses = false;
 
   gcc_assert (sym->assoc);
   gcc_assert (sym->attr.flavor == FL_VARIABLE);
@@ -9095,6 +9116,16 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
   if (!target)
     return;
   gcc_assert (!sym->assoc->dangling);
+
+  if (target->expr_type == EXPR_OP
+      && target->value.op.op == INTRINSIC_PARENTHESES
+      && target->value.op.op1->expr_type == EXPR_VARIABLE)
+    {
+      sym->assoc->target = gfc_copy_expr (target->value.op.op1);
+      gfc_free_expr (target);
+      target = sym->assoc->target;
+      parentheses = true;
+    }
 
   if (resolve_target && !gfc_resolve_expr (target))
     return;
@@ -9177,6 +9208,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 
   /* See if this is a valid association-to-variable.  */
   sym->assoc->variable = (target->expr_type == EXPR_VARIABLE
+			  && !parentheses
 			  && !gfc_has_vector_subscript (target));
 
   /* Finally resolve if this is an array or not.  */
@@ -9190,7 +9222,6 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       sym->attr.dimension = 0;
       return;
     }
-
 
   /* We cannot deal with class selectors that need temporaries.  */
   if (target->ts.type == BT_CLASS
@@ -10885,11 +10916,6 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
 
 
 /* Resolve a BLOCK construct statement.  */
-static gfc_expr*
-get_temp_from_expr (gfc_expr *, gfc_namespace *);
-static gfc_code *
-build_assignment (gfc_exec_op, gfc_expr *, gfc_expr *,
-		  gfc_component *, gfc_component *, locus);
 
 static void
 resolve_block_construct (gfc_code* code)

@@ -109,7 +109,8 @@ FROM M2Bitset IMPORT Bitset ;
 FROM NameKey IMPORT Name, MakeKey, KeyToCharStar, LengthKey, makekey, NulName ;
 
 FROM DynamicStrings IMPORT string, InitString, KillString, String,
-                           InitStringCharStar, Mark, Slice, ConCat, ConCatChar ;
+                           InitStringCharStar, Mark, Slice, ConCat, ConCatChar,
+                           InitStringChar, Dup ;
 
 FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2, Sprintf3, Sprintf4 ;
 FROM M2System IMPORT Address, Word, System, TBitSize, MakeAdr, IsSystemType, IsGenericSystemType, IsRealN, IsComplexN, IsSetN, IsWordN, Loc, Byte ;
@@ -132,7 +133,7 @@ FROM M2ALU IMPORT PtrToValue,
                   PushSetTree, PopSetTree,
                   PopRealTree, PushCard,
                   PushRealTree,
-                  PopComplexTree,
+                  PopComplexTree, PopChar,
                   Gre, Sub, Equ, NotEqu, LessEqu,
                   BuildRange, SetOr, SetAnd, SetNegate,
                   SetSymmetricDifference, SetDifference,
@@ -3590,6 +3591,38 @@ END BinaryOperands ;
 
 
 (*
+   IsConstStr - returns TRUE if sym is a constant string or a char constant.
+*)
+
+PROCEDURE IsConstStr (sym: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN IsConstString (sym) OR (IsConst (sym) AND (GetSType (sym) = Char))
+END IsConstStr ;
+
+
+(*
+   GetStr - return a string containing a constant string value associated with sym.
+            A nul char constant will return an empty string.
+*)
+
+PROCEDURE GetStr (tokenno: CARDINAL; sym: CARDINAL) : String ;
+VAR
+   ch: CHAR ;
+BEGIN
+   Assert (IsConst (sym)) ;
+   IF IsConstString (sym)
+   THEN
+      RETURN InitStringCharStar (KeyToCharStar (GetString (sym)))
+   ELSE
+      Assert (GetSType (sym) = Char) ;
+      PushValue (sym) ;
+      ch := PopChar (tokenno) ;
+      RETURN InitStringChar (ch)
+   END
+END GetStr ;
+
+
+(*
    FoldAdd - check addition for constant folding.
 *)
 
@@ -3598,18 +3631,17 @@ PROCEDURE FoldAdd (tokenno: CARDINAL; p: WalkAction;
 VAR
    s: String ;
 BEGIN
-   IF IsConst(op2) AND IsConst(op3) AND IsConst(op3) AND
-      IsConstString(op2) AND IsConstString(op3)
+   IF IsConstStr (op2) AND IsConstStr (op3)
    THEN
-      (* handle special addition for constant strings *)
-      s := InitStringCharStar(KeyToCharStar(GetString(op2))) ;
-      s := ConCat(s, Mark(InitStringCharStar(KeyToCharStar(GetString(op3))))) ;
-      PutConstString(tokenno, op1, makekey(string(s))) ;
-      TryDeclareConstant(tokenno, op1) ;
-      p(op1) ;
+      (* Handle special addition for constant strings.  *)
+      s := Dup (GetStr (tokenno, op2)) ;
+      s := ConCat (s, GetStr (tokenno, op3)) ;
+      PutConstString (tokenno, op1, makekey (string (s))) ;
+      TryDeclareConstant (tokenno, op1) ;
+      p (op1) ;
       NoChange := FALSE ;
-      SubQuad(quad) ;
-      s := KillString(s)
+      SubQuad (quad) ;
+      s := KillString (s)
    ELSE
       IF BinaryOperands (quad, op2, op3)
       THEN
@@ -5675,11 +5707,11 @@ VAR
 BEGIN
    location := TokenToLocation (CurrentQuadToken) ;
 
-   DeclareConstant(CurrentQuadToken, array) ;
-   IF IsConstString(array)
+   DeclareConstant (CurrentQuadToken, array) ;
+   IF IsConstString (array) OR (IsConst (array) AND (GetSType (array) = Char))
    THEN
       BuildAssignmentStatement (location, Mod2Gcc (result), BuildAddr (location, PromoteToString (CurrentQuadToken, array), FALSE))
-   ELSIF IsConstructor(array)
+   ELSIF IsConstructor (array)
    THEN
       BuildAssignmentStatement (location, Mod2Gcc (result), BuildAddr (location, Mod2Gcc (array), TRUE))
    ELSIF IsUnbounded (GetType (array))

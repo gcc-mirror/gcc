@@ -1274,3 +1274,7 @@ Enum(lam_type) String(u48) Value(lam_u48)
 
 EnumValue
 Enum(lam_type) String(u57) Value(lam_u57)
+
+mamx-complex
+Target Mask(ISA2_AMX_COMPLEX) Var(ix86_isa_flags2) Save
+Support AMX-COMPLEX built-in functions and code generation.

@@ -16580,9 +16580,16 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      return error_mark_node;
 	  }
 
+	/* FIXME: TYPENAME_IS_CLASS_P conflates 'class' vs 'struct' vs 'union'
+	   tags.  TYPENAME_TYPE should probably remember the exact tag that
+	   was written.  */
+	enum tag_types tag_type
+	  = TYPENAME_IS_CLASS_P (t) ? class_type
+	  : TYPENAME_IS_ENUM_P (t) ? enum_type
+	  : typename_type;
 	tsubst_flags_t tcomplain = complain | tf_keep_type_decl;
 	tcomplain |= tst_ok_flag | qualifying_scope_flag;
-	f = make_typename_type (ctx, f, typename_type, tcomplain);
+	f = make_typename_type (ctx, f, tag_type, tcomplain);
 	if (f == error_mark_node)
 	  return f;
 	if (TREE_CODE (f) == TYPE_DECL)

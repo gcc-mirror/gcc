@@ -9,7 +9,7 @@
 #endif
 
 /* A simple function that will be cloned.  */
-#pragma omp declare simd uniform(b)
+#pragma omp declare simd inbranch uniform(b)
 TYPE __attribute__((noinline))
 foo (TYPE a, TYPE b)
 {

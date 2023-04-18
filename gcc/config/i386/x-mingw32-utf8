@@ -34,7 +34,7 @@ utf8rc-mingw32.o : $(srcdir)/config/i386/utf8-mingw32.rc \
 # Create an object file that just exports the global symbol
 # HOST_EXTRA_OBJS_SYMBOL
 sym-mingw32.o : $(srcdir)/config/i386/sym-mingw32.cc
-	$(COMPILER) -c $< $@
+	$(COMPILER) -c $<
 
 # Combine the two object files into one which has both the
 # compiled utf8 resource and the HOST_EXTRA_OBJS_SYMBOL symbol.
@@ -44,8 +44,10 @@ sym-mingw32.o : $(srcdir)/config/i386/sym-mingw32.cc
 # If nothing references it into libbackend.a, it will not
 # get linked into the compiler proper eventually.
 # Therefore we need to request the symbol at compiler link time.
+# -nostdlib is required for supporting old gcc versions that
+# don't apply it automatically with -r.
 utf8-mingw32.o : utf8rc-mingw32.o sym-mingw32.o
-	$(COMPILER) -r utf8rc-mingw32.o sym-mingw32.o -o $@
+	$(COMPILER) -r -nostdlib utf8rc-mingw32.o sym-mingw32.o -o $@
 
 # Force compilers to link against the utf8 resource by
 # requiring the symbol to be defined.

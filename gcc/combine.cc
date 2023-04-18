@@ -10055,9 +10055,12 @@ simplify_and_const_int_1 (scalar_int_mode mode, rtx varop,
 
   /* See what bits may be nonzero in VAROP.  Unlike the general case of
      a call to nonzero_bits, here we don't care about bits outside
-     MODE.  */
+     MODE unless WORD_REGISTER_OPERATIONS is true.  */
 
-  nonzero = nonzero_bits (varop, mode) & GET_MODE_MASK (mode);
+  scalar_int_mode tmode = mode;
+  if (WORD_REGISTER_OPERATIONS && GET_MODE_BITSIZE (mode) < BITS_PER_WORD)
+    tmode = word_mode;
+  nonzero = nonzero_bits (varop, tmode) & GET_MODE_MASK (tmode);
 
   /* Turn off all bits in the constant that are known to already be zero.
      Thus, if the AND isn't needed at all, we will have CONSTOP == NONZERO_BITS
@@ -10071,7 +10074,7 @@ simplify_and_const_int_1 (scalar_int_mode mode, rtx varop,
 
   /* If VAROP is a NEG of something known to be zero or 1 and CONSTOP is
      a power of two, we can replace this with an ASHIFT.  */
-  if (GET_CODE (varop) == NEG && nonzero_bits (XEXP (varop, 0), mode) == 1
+  if (GET_CODE (varop) == NEG && nonzero_bits (XEXP (varop, 0), tmode) == 1
       && (i = exact_log2 (constop)) >= 0)
     return simplify_shift_const (NULL_RTX, ASHIFT, mode, XEXP (varop, 0), i);
 

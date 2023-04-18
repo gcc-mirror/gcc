@@ -159,6 +159,7 @@ bool check_builtin_call (location_t, vec<location_t>, unsigned int,
 bool const_vec_all_same_in_range_p (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 bool legitimize_move (rtx, rtx, machine_mode);
 void emit_vlmax_vsetvl (machine_mode, rtx);
+void emit_hard_vlmax_vsetvl (machine_mode, rtx);
 void emit_vlmax_op (unsigned, rtx, rtx, machine_mode);
 void emit_vlmax_op (unsigned, rtx, rtx, rtx, machine_mode);
 void emit_nonvlmax_op (unsigned, rtx, rtx, rtx, machine_mode);

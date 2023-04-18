@@ -4364,7 +4364,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       /* If the alignment has not already been processed and this is not
 	 an unconstrained array type, see if an alignment is specified.
 	 If not, we pick a default alignment for atomic objects.  */
-      if (align != 0 || TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE)
+      if (align > 0 || TREE_CODE (gnu_type) == UNCONSTRAINED_ARRAY_TYPE)
 	;
       else if (Known_Alignment (gnat_entity))
 	{
@@ -4653,6 +4653,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       /* If this is not an unconstrained array type, set some flags.  */
       if (TREE_CODE (gnu_type) != UNCONSTRAINED_ARRAY_TYPE)
 	{
+	  bool align_clause;
+
 	  /* Record the property that objects of tagged types are guaranteed to
 	     be properly aligned.  This is necessary because conversions to the
 	     class-wide type are translated into conversions to the root type,
@@ -4665,8 +4667,20 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  if (is_by_ref && !VOID_TYPE_P (gnu_type))
 	    TYPE_BY_REFERENCE_P (gnu_type) = 1;
 
-	  /* Record whether an alignment clause was specified.  */
-	  if (Present (Alignment_Clause (gnat_entity)))
+	  /* Record whether an alignment clause was specified.  At this point
+	     scalar types with a non-confirming clause have been wrapped into
+	     a record type, so only scalar types with a confirming clause are
+	     left untouched; we do not set the flag on them except if they are
+	     types whose default alignment is specifically capped in order not
+	     to lose the specified alignment.  */
+	  if ((AGGREGATE_TYPE_P (gnu_type)
+	       && Present (Alignment_Clause (gnat_entity)))
+	      || (double_float_alignment > 0
+		  && is_double_float_or_array (gnat_entity, &align_clause)
+		  && align_clause)
+	      || (double_scalar_alignment > 0
+		  && is_double_scalar_or_array (gnat_entity, &align_clause)
+		  && align_clause))
 	    TYPE_USER_ALIGN (gnu_type) = 1;
 
 	  /* Record whether a pragma Universal_Aliasing was specified.  */
