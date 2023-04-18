@@ -1,5 +1,5 @@
 ! PR101333
-! { dg-do compile}
+! { dg-do compile }
 !
 ! TS 29113
 ! C407c An assumed-type actual argument that corresponds to an

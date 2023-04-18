@@ -6458,12 +6458,15 @@ gfc_trans_allocate (gfc_code * code)
       /* Deallocate any allocatable components in expressions that use a
 	 temporary object, i.e. are not a simple alias of to an EXPR_VARIABLE.
 	 E.g. temporaries of a function call need freeing of their components
-	 here.  */
+	 here. Explicit derived type allocation of class entities uses expr3
+	 to carry the default initializer. This must not be deallocated or
+	 finalized.  */
       if ((code->expr3->ts.type == BT_DERIVED
 	   || code->expr3->ts.type == BT_CLASS)
 	  && (code->expr3->expr_type != EXPR_VARIABLE || temp_obj_created)
 	  && code->expr3->ts.u.derived->attr.alloc_comp
-	  && !code->expr3->must_finalize)
+	  && !code->expr3->must_finalize
+	  && !code->ext.alloc.expr3_not_explicit)
 	{
 	  tmp = gfc_deallocate_alloc_comp (code->expr3->ts.u.derived,
 					   expr3, code->expr3->rank);

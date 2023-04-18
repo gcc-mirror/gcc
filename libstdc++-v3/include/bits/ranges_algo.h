@@ -32,6 +32,9 @@
 
 #if __cplusplus > 201703L
 
+#if __cplusplus > 202002L
+#include <optional>
+#endif
 #include <bits/ranges_algobase.h>
 #include <bits/ranges_util.h>
 #include <bits/uniform_int_dist.h> // concept uniform_random_bit_generator
@@ -3691,6 +3694,254 @@ namespace ranges
   };
 
   inline constexpr __find_last_if_not_fn find_last_if_not{};
+
+#define __cpp_lib_fold 202207L
+
+  template<typename _Iter, typename _Tp>
+    struct in_value_result
+    {
+      [[no_unique_address]] _Iter in;
+      [[no_unique_address]] _Tp value;
+
+      template<typename _Iter2, typename _Tp2>
+	requires convertible_to<const _Iter&, _Iter2>
+	  && convertible_to<const _Tp&, _Tp2>
+      constexpr
+      operator in_value_result<_Iter2, _Tp2>() const &
+      { return {in, value}; }
+
+      template<typename _Iter2, typename _Tp2>
+	requires convertible_to<_Iter, _Iter2>
+	  && convertible_to<_Tp, _Tp2>
+      constexpr
+      operator in_value_result<_Iter2, _Tp2>() &&
+      { return {std::move(in), std::move(value)}; }
+    };
+
+  namespace __detail
+  {
+    template<typename _Fp>
+      class __flipped
+      {
+	_Fp _M_f;
+
+      public:
+	template<typename _Tp, typename _Up>
+	  requires invocable<_Fp&, _Up, _Tp>
+	invoke_result_t<_Fp&, _Up, _Tp>
+	operator()(_Tp&&, _Up&&); // not defined
+      };
+
+      template<typename _Fp, typename _Tp, typename _Iter, typename _Up>
+      concept __indirectly_binary_left_foldable_impl = movable<_Tp> && movable<_Up>
+	&& convertible_to<_Tp, _Up>
+	&& invocable<_Fp&, _Up, iter_reference_t<_Iter>>
+	&& assignable_from<_Up&, invoke_result_t<_Fp&, _Up, iter_reference_t<_Iter>>>;
+
+      template<typename _Fp, typename _Tp, typename _Iter>
+      concept __indirectly_binary_left_foldable = copy_constructible<_Fp>
+	&& indirectly_readable<_Iter>
+	&& invocable<_Fp&, _Tp, iter_reference_t<_Iter>>
+	&& convertible_to<invoke_result_t<_Fp&, _Tp, iter_reference_t<_Iter>>,
+			  decay_t<invoke_result_t<_Fp&, _Tp, iter_reference_t<_Iter>>>>
+	&& __indirectly_binary_left_foldable_impl
+	    <_Fp, _Tp, _Iter, decay_t<invoke_result_t<_Fp&, _Tp, iter_reference_t<_Iter>>>>;
+
+      template <typename _Fp, typename _Tp, typename _Iter>
+      concept __indirectly_binary_right_foldable
+	= __indirectly_binary_left_foldable<__flipped<_Fp>, _Tp, _Iter>;
+  } // namespace __detail
+
+  template<typename _Iter, typename _Tp>
+    using fold_left_with_iter_result = in_value_result<_Iter, _Tp>;
+
+  struct __fold_left_with_iter_fn
+  {
+    template<typename _Ret_iter,
+	     typename _Iter, typename _Sent, typename _Tp, typename _Fp>
+      static constexpr auto
+      _S_impl(_Iter __first, _Sent __last, _Tp __init, _Fp __f)
+      {
+	using _Up = decay_t<invoke_result_t<_Fp&, _Tp, iter_reference_t<_Iter>>>;
+	using _Ret = fold_left_with_iter_result<_Ret_iter, _Up>;
+
+	if (__first == __last)
+	  return _Ret{std::move(__first), _Up(std::move(__init))};
+
+	_Up __accum = std::__invoke(__f, std::move(__init), *__first);
+	for (++__first; __first != __last; ++__first)
+	  __accum = std::__invoke(__f, std::move(__accum), *__first);
+	return _Ret{std::move(__first), std::move(__accum)};
+      }
+
+    template<input_iterator _Iter, sentinel_for<_Iter> _Sent, typename _Tp,
+	     __detail::__indirectly_binary_left_foldable<_Tp, _Iter> _Fp>
+      constexpr auto
+      operator()(_Iter __first, _Sent __last, _Tp __init, _Fp __f) const
+      {
+	using _Ret_iter = _Iter;
+	return _S_impl<_Ret_iter>(std::move(__first), __last,
+				  std::move(__init), std::move(__f));
+      }
+
+    template<input_range _Range, typename _Tp,
+	     __detail::__indirectly_binary_left_foldable<_Tp, iterator_t<_Range>> _Fp>
+      constexpr auto
+      operator()(_Range&& __r, _Tp __init, _Fp __f) const
+      {
+	using _Ret_iter = borrowed_iterator_t<_Range>;
+	return _S_impl<_Ret_iter>(ranges::begin(__r), ranges::end(__r),
+				  std::move(__init), std::move(__f));
+      }
+  };
+
+  inline constexpr __fold_left_with_iter_fn fold_left_with_iter{};
+
+  struct __fold_left_fn
+  {
+    template<input_iterator _Iter, sentinel_for<_Iter> _Sent, typename _Tp,
+	     __detail::__indirectly_binary_left_foldable<_Tp, _Iter> _Fp>
+      constexpr auto
+      operator()(_Iter __first, _Sent __last, _Tp __init, _Fp __f) const
+      {
+	return ranges::fold_left_with_iter(std::move(__first), __last,
+					   std::move(__init), std::move(__f)).value;
+      }
+
+    template<input_range _Range, typename _Tp,
+	     __detail::__indirectly_binary_left_foldable<_Tp, iterator_t<_Range>> _Fp>
+      constexpr auto
+      operator()(_Range&& __r, _Tp __init, _Fp __f) const
+      { return (*this)(ranges::begin(__r), ranges::end(__r), std::move(__init), std::move(__f)); }
+  };
+
+  inline constexpr __fold_left_fn fold_left{};
+
+  template<typename _Iter, typename _Tp>
+    using fold_left_first_with_iter_result = in_value_result<_Iter, _Tp>;
+
+  struct __fold_left_first_with_iter_fn
+  {
+    template<typename _Ret_iter, typename _Iter, typename _Sent, typename _Fp>
+      static constexpr auto
+      _S_impl(_Iter __first, _Sent __last, _Fp __f)
+      {
+	using _Up = decltype(ranges::fold_left(std::move(__first), __last,
+					       iter_value_t<_Iter>(*__first), __f));
+	using _Ret = fold_left_first_with_iter_result<_Ret_iter, optional<_Up>>;
+
+	if (__first == __last)
+	  return _Ret{std::move(__first), optional<_Up>()};
+
+	optional<_Up> __init(in_place, *__first);
+	for (++__first; __first != __last; ++__first)
+	  *__init = std::__invoke(__f, std::move(*__init), *__first);
+	return _Ret{std::move(__first), std::move(__init)};
+      }
+
+    template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
+	     __detail::__indirectly_binary_left_foldable<iter_value_t<_Iter>, _Iter> _Fp>
+      requires constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>>
+      constexpr auto
+      operator()(_Iter __first, _Sent __last, _Fp __f) const
+      {
+	using _Ret_iter = _Iter;
+	return _S_impl<_Ret_iter>(std::move(__first), __last, std::move(__f));
+      }
+
+    template<input_range _Range,
+	     __detail::__indirectly_binary_left_foldable<range_value_t<_Range>, iterator_t<_Range>> _Fp>
+      requires constructible_from<range_value_t<_Range>, range_reference_t<_Range>>
+      constexpr auto
+      operator()(_Range&& __r, _Fp __f) const
+      {
+	using _Ret_iter = borrowed_iterator_t<_Range>;
+	return _S_impl<_Ret_iter>(ranges::begin(__r), ranges::end(__r), std::move(__f));
+      }
+  };
+
+  inline constexpr __fold_left_first_with_iter_fn fold_left_first_with_iter{};
+
+  struct __fold_left_first_fn
+  {
+    template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
+	     __detail::__indirectly_binary_left_foldable<iter_value_t<_Iter>, _Iter> _Fp>
+      requires constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>>
+      constexpr auto
+      operator()(_Iter __first, _Sent __last, _Fp __f) const
+      {
+	return ranges::fold_left_first_with_iter(std::move(__first), __last,
+						 std::move(__f)).value;
+      }
+
+    template<input_range _Range,
+	     __detail::__indirectly_binary_left_foldable<range_value_t<_Range>, iterator_t<_Range>> _Fp>
+      requires constructible_from<range_value_t<_Range>, range_reference_t<_Range>>
+      constexpr auto
+      operator()(_Range&& __r, _Fp __f) const
+      { return (*this)(ranges::begin(__r), ranges::end(__r), std::move(__f)); }
+  };
+
+  inline constexpr __fold_left_first_fn fold_left_first{};
+
+  struct __fold_right_fn
+  {
+    template<bidirectional_iterator _Iter, sentinel_for<_Iter> _Sent, typename _Tp,
+	     __detail::__indirectly_binary_right_foldable<_Tp, _Iter> _Fp>
+      constexpr auto
+      operator()(_Iter __first, _Sent __last, _Tp __init, _Fp __f) const
+      {
+	using _Up = decay_t<invoke_result_t<_Fp&, iter_reference_t<_Iter>, _Tp>>;
+
+	if (__first == __last)
+	  return _Up(std::move(__init));
+
+	_Iter __tail = ranges::next(__first, __last);
+	_Up __accum = std::__invoke(__f, *--__tail, std::move(__init));
+	while (__first != __tail)
+	  __accum = std::__invoke(__f, *--__tail, std::move(__accum));
+	return __accum;
+      }
+
+    template<bidirectional_range _Range, typename _Tp,
+	     __detail::__indirectly_binary_right_foldable<_Tp, iterator_t<_Range>> _Fp>
+      constexpr auto
+      operator()(_Range&& __r, _Tp __init, _Fp __f) const
+      { return (*this)(ranges::begin(__r), ranges::end(__r), std::move(__init), std::move(__f)); }
+  };
+
+  inline constexpr __fold_right_fn fold_right{};
+
+  struct __fold_right_last_fn
+  {
+    template<bidirectional_iterator _Iter, sentinel_for<_Iter> _Sent,
+	     __detail::__indirectly_binary_right_foldable<iter_value_t<_Iter>, _Iter> _Fp>
+      requires constructible_from<iter_value_t<_Iter>, iter_reference_t<_Iter>>
+      constexpr auto
+      operator()(_Iter __first, _Sent __last, _Fp __f) const
+      {
+	using _Up = decltype(ranges::fold_right(__first, __last,
+						iter_value_t<_Iter>(*__first), __f));
+
+	if (__first == __last)
+	  return optional<_Up>();
+
+	_Iter __tail = ranges::prev(ranges::next(__first, std::move(__last)));
+	return optional<_Up>(in_place,
+			     ranges::fold_right(std::move(__first), __tail,
+						iter_value_t<_Iter>(*__tail),
+						std::move(__f)));
+      }
+
+    template<bidirectional_range _Range,
+	     __detail::__indirectly_binary_right_foldable<range_value_t<_Range>, iterator_t<_Range>> _Fp>
+      requires constructible_from<range_value_t<_Range>, range_reference_t<_Range>>
+      constexpr auto
+      operator()(_Range&& __r, _Fp __f) const
+      { return (*this)(ranges::begin(__r), ranges::end(__r), std::move(__f)); }
+  };
+
+  inline constexpr __fold_right_last_fn fold_right_last{};
 #endif // C++23
 } // namespace ranges
 

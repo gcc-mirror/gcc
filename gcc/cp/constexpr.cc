@@ -7230,16 +7230,23 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 					  non_constant_p, overflow_p);
 	if (*non_constant_p)
 	  break;
-	/* Adjust the type of the result to the type of the temporary.  */
-	r = adjust_temp_type (type, r);
+	/* If the initializer is complex, evaluate it to initialize slot.  */
+	bool is_complex = target_expr_needs_replace (t);
+	if (!is_complex)
+	  {
+	    r = unshare_constructor (r);
+	    /* Adjust the type of the result to the type of the temporary.  */
+	    r = adjust_temp_type (type, r);
+	    ctx->global->put_value (slot, r);
+	  }
 	if (TARGET_EXPR_CLEANUP (t) && !CLEANUP_EH_ONLY (t))
 	  ctx->global->cleanups->safe_push (TARGET_EXPR_CLEANUP (t));
-	r = unshare_constructor (r);
-	ctx->global->put_value (slot, r);
 	if (ctx->save_exprs)
 	  ctx->save_exprs->safe_push (slot);
 	if (lval)
 	  return slot;
+	if (is_complex)
+	  r = ctx->global->get_value (slot);
       }
       break;
 

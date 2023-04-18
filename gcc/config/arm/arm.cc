@@ -13639,6 +13639,19 @@ arm_coproc_mem_operand_no_writeback (rtx op)
   return arm_coproc_mem_operand_wb (op, 0);
 }
 
+/* In non-STRICT mode, return the register number; in STRICT mode return
+   the hard regno or the replacement if it won't be a mem.  Otherwise, return
+   the original pseudo number.  */
+static int
+arm_effective_regno (rtx op, bool strict)
+{
+  gcc_assert (REG_P (op));
+  if (!strict || REGNO (op) < FIRST_PSEUDO_REGISTER
+      || !reg_renumber || reg_renumber[REGNO (op)] < 0)
+    return REGNO (op);
+  return reg_renumber[REGNO (op)];
+}
+
 /* This function returns TRUE on matching mode and op.
 1. For given modes, check for [Rn], return TRUE for Rn <= LO_REGS.
 2. For other modes, check for [Rn], return TRUE for Rn < R15 (expect R13).  */
@@ -13651,7 +13664,7 @@ mve_vector_mem_operand (machine_mode mode, rtx op, bool strict)
   /* Match: (mem (reg)).  */
   if (REG_P (op))
     {
-      int reg_no = REGNO (op);
+      reg_no = arm_effective_regno (op, strict);
       return (((mode == E_V8QImode || mode == E_V4QImode || mode == E_V4HImode)
 	       ? reg_no <= LAST_LO_REGNUM
 	       : reg_no < LAST_ARM_REGNUM)
@@ -13662,7 +13675,7 @@ mve_vector_mem_operand (machine_mode mode, rtx op, bool strict)
   if (code == POST_INC || code == PRE_DEC
       || code == PRE_INC || code == POST_DEC)
     {
-      reg_no = REGNO (XEXP (op, 0));
+      reg_no = arm_effective_regno (XEXP (op, 0), strict);
       return (((mode == E_V8QImode || mode == E_V4QImode || mode == E_V4HImode)
 	       ? reg_no <= LAST_LO_REGNUM
 	       :(reg_no < LAST_ARM_REGNUM && reg_no != SP_REGNUM))
@@ -13678,7 +13691,7 @@ mve_vector_mem_operand (machine_mode mode, rtx op, bool strict)
 	   || (reload_completed && code == PLUS && REG_P (XEXP (op, 0))
 	       && GET_CODE (XEXP (op, 1)) == CONST_INT))
     {
-      reg_no = REGNO (XEXP (op, 0));
+      reg_no = arm_effective_regno (XEXP (op, 0), strict);
       if (code == PLUS)
 	val = INTVAL (XEXP (op, 1));
       else

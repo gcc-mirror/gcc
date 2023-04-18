@@ -1,9 +1,9 @@
-! { dg-do compile}
+! { dg-do compile }
 ! { dg-additional-options "-fcoarray=single" }
 !
 ! TS 29113
 ! C535b An assumed-rank variable name shall not appear in a designator
-! or expression except as an actual argument corresponding to a dummy 
+! or expression except as an actual argument corresponding to a dummy
 ! argument that is assumed-rank, the argument of the C_LOC function
 ! in the ISO_C_BINDING intrinsic module, or the first argument in a
 ! reference to an intrinsic inquiry function.
@@ -13,7 +13,7 @@
 !
 ! This test file contains tests that are expected to all pass.
 
-! Check that passing an assumed-rank variable as an actual argument 
+! Check that passing an assumed-rank variable as an actual argument
 ! corresponding to an assumed-rank dummy works.
 
 module m

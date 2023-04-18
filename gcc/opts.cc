@@ -1384,6 +1384,7 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	}
       opts->x_flag_var_tracking = 0;
       opts->x_flag_var_tracking_uninit = 0;
+      opts->x_flag_var_tracking_assignments = 0;
     }
 
   /* One could use EnabledBy, but it would lead to a circular dependency.  */

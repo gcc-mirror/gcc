@@ -1,10 +1,10 @@
 ! PR 54753
-! { dg-do compile}
+! { dg-do compile }
 !
 ! TS 29113
 ! C535c If an assumed-size or nonallocatable nonpointer assumed-rank
-! array is an actual argument corresponding to a dummy argument that 
-! is an INTENT(OUT) assumed-rank array, it shall not be [...] 
+! array is an actual argument corresponding to a dummy argument that
+! is an INTENT(OUT) assumed-rank array, it shall not be [...]
 ! finalizable [...].
 !
 ! This constraint is numbered C839 in the Fortran 2018 standard.
@@ -44,7 +44,7 @@ contains
   ! Calls with an assumed-size array argument should be rejected.
   subroutine test_assumed_size (a1, a2)
     type(t1) :: a1(*), a2(*)
-    
+
     call s1 (a1, a2)  !  { dg-error "(A|a)ssumed.rank" }
   end subroutine
 
@@ -61,7 +61,7 @@ contains
 
     call s1 (a1, a2)
   end subroutine
-  
+
   ! The call should be rejected with a nonallocatable nonpointer
   ! assumed-rank actual argument.
   subroutine test_assumed_rank_plain (a1, a2)

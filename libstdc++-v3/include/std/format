@@ -137,7 +137,7 @@ namespace __format
   template<typename _Tp, typename _CharT = char>
     struct formatter
     {
-      formatter() = delete;
+      formatter() = delete; // No std::formatter specialization for this type.
       formatter(const formatter&) = delete;
       formatter& operator=(const formatter&) = delete;
     };
@@ -3560,6 +3560,10 @@ namespace __format
   template<typename _CharT, typename... _Args>
     class _Checking_scanner : public _Scanner<_CharT>
     {
+      static_assert(
+	(is_default_constructible_v<formatter<_Args, _CharT>> && ...),
+	"std::formatter must be specialized for each type being formatted");
+
     public:
       constexpr
       _Checking_scanner(basic_string_view<_CharT> __str)
@@ -3581,17 +3585,17 @@ namespace __format
 	__builtin_unreachable();
       }
 
-      template<typename _Head, typename... _Tail>
+      template<typename _Tp, typename... _OtherArgs>
 	constexpr void
 	_M_parse_format_spec(size_t __id)
 	{
 	  if (__id == 0)
 	    {
-	      formatter<_Head, _CharT> __f;
+	      formatter<_Tp, _CharT> __f;
 	      this->_M_pc.advance_to(__f.parse(this->_M_pc));
 	    }
-	  else if constexpr (sizeof...(_Tail) != 0)
-	    _M_parse_format_spec<_Tail...>(__id - 1);
+	  else if constexpr (sizeof...(_OtherArgs) != 0)
+	    _M_parse_format_spec<_OtherArgs...>(__id - 1);
 	  else
 	    __builtin_unreachable();
 	}

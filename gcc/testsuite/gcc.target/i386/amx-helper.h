@@ -1,6 +1,6 @@
 #ifndef AMX_HELPER_H_INCLUDED
 #define AMX_HELPER_H_INCLUDED
-#if defined(AMX_FP16)
+#if defined(AMX_FP16) || defined(AMX_COMPLEX)
 #include <immintrin.h>
 #include <xmmintrin.h>
 #endif
@@ -12,7 +12,7 @@ typedef union
   uint16_t u;
 } union16f_uw;
 
-#if defined(AMX_FP16)
+#if defined(AMX_FP16) || defined(AMX_COMPLEX)
 /* Transformation functions between fp16/float */
 static uint16_t make_f32_fp16 (float f)
 {

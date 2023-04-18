@@ -6407,6 +6407,13 @@ expressions_equal_p (tree e1, tree e2, bool match_vn_top_optimistically)
       && (e1 == VN_TOP || e2 == VN_TOP))
     return true;
 
+  /* If only one of them is null, they cannot be equal.  While in general
+     this should not happen for operations like TARGET_MEM_REF some
+     operands are optional and an identity value we could substitute
+     has differing semantics.  */
+  if (!e1 || !e2)
+    return false;
+
   /* SSA_NAME compare pointer equal.  */
   if (TREE_CODE (e1) == SSA_NAME || TREE_CODE (e2) == SSA_NAME)
     return false;

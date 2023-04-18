@@ -2962,6 +2962,8 @@ gfc_return_by_reference (gfc_symbol * sym)
      require an explicit interface, as no compatibility problems can
      arise there.  */
   if (flag_f2c && sym->ts.type == BT_COMPLEX
+      && !sym->attr.pointer
+      && !sym->attr.allocatable
       && !sym->attr.intrinsic && !sym->attr.always_explicit)
     return 1;
 
@@ -3273,6 +3275,8 @@ arg_type_list_done:
     type = gfc_get_mixed_entry_union (sym->ns);
   else if (flag_f2c && sym->ts.type == BT_REAL
 	   && sym->ts.kind == gfc_default_real_kind
+	   && !sym->attr.pointer
+	   && !sym->attr.allocatable
 	   && !sym->attr.always_explicit)
     {
       /* Special case: f2c calling conventions require that (scalar)

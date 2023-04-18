@@ -1,3 +1,9 @@
+2023-04-08  Tetsuma Hoshino  <t-hoshino@pony-e.jp>
+
+	PR target/109402
+	* config/v850/lib1funcs.S (___muldi3): Remove unnecessary
+	stack manipulations.
+
 2023-04-05  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/109374

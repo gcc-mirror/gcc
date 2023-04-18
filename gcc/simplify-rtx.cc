@@ -3752,7 +3752,13 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	return op0;
       if (HWI_COMPUTABLE_MODE_P (mode))
 	{
-	  HOST_WIDE_INT nzop0 = nonzero_bits (trueop0, mode);
+	  /* When WORD_REGISTER_OPERATIONS is true, we need to know the
+	     nonzero bits in WORD_MODE rather than MODE.  */
+	  scalar_int_mode tmode = as_a <scalar_int_mode> (mode);
+	  if (WORD_REGISTER_OPERATIONS
+	      && GET_MODE_BITSIZE (tmode) < BITS_PER_WORD)
+	    tmode = word_mode;
+	  HOST_WIDE_INT nzop0 = nonzero_bits (trueop0, tmode);
 	  HOST_WIDE_INT nzop1;
 	  if (CONST_INT_P (trueop1))
 	    {

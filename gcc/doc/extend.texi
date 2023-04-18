@@ -7069,6 +7069,11 @@ Enable/disable the generation of the PREFETCHI instructions.
 @itemx no-raoint
 Enable/disable the generation of the RAOINT instructions.
 
+@cindex @code{target("amx-complex")} function attribute, x86
+@item amx-complex
+@itemx no-amx-complex
+Enable/disable the generation of the AMX-COMPLEX instructions.
+
 @cindex @code{target("cld")} function attribute, x86
 @item cld
 @itemx no-cld

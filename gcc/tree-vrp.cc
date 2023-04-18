@@ -75,7 +75,7 @@ public:
   ~remove_unreachable () { m_list.release (); }
   void maybe_register_block (basic_block bb);
   bool remove_and_update_globals (bool final_p);
-  vec<edge> m_list;
+  vec<std::pair<int, int> > m_list;
   gimple_ranger &m_ranger;
 };
 
@@ -103,9 +103,9 @@ remove_unreachable::maybe_register_block (basic_block bb)
     return;
 
   if (un0)
-    m_list.safe_push (e1);
+    m_list.safe_push (std::make_pair (e1->src->index, e1->dest->index));
   else
-    m_list.safe_push (e0);
+    m_list.safe_push (std::make_pair (e0->src->index, e0->dest->index));
 }
 
 // Process the edges in the list, change the conditions and removing any
@@ -132,7 +132,12 @@ remove_unreachable::remove_and_update_globals (bool final_p)
   auto_bitmap all_exports;
   for (i = 0; i < m_list.length (); i++)
     {
-      edge e = m_list[i];
+      auto eb = m_list[i];
+      basic_block src = BASIC_BLOCK_FOR_FN (cfun, eb.first);
+      basic_block dest = BASIC_BLOCK_FOR_FN (cfun, eb.second);
+      if (!src || !dest)
+	continue;
+      edge e = find_edge (src, dest);
       gimple *s = gimple_outgoing_range_stmt_p (e->src);
       gcc_checking_assert (gimple_code (s) == GIMPLE_COND);
       bool lhs_p = TREE_CODE (gimple_cond_lhs (s)) == SSA_NAME;

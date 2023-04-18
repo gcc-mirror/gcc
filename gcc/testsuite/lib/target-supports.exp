@@ -9750,6 +9750,17 @@ proc check_effective_target_raoint { } {
     } "-mraoint" ]
 }
 
+# Return 1 if amx-complex instructions can be compiled.
+proc check_effective_target_amx_complex { } {
+    return [check_no_compiler_messages amx_complex object {
+	void
+	foo ()
+	{
+	  __asm__ volatile ("tcmmimfp16ps\t%%tmm1, %%tmm2, %%tmm3" ::);
+	}
+    } "-mamx-complex" ]
+}
+
 # Return 1 if sse instructions can be compiled.
 proc check_effective_target_sse { } {
     return [check_no_compiler_messages sse object {

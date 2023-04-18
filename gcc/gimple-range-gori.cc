@@ -1314,7 +1314,9 @@ gori_compute::may_recompute_p (tree name, basic_block bb, int depth)
   tree dep2 = depend2 (name);
 
   // If the first dependency is not set, there is no recomputation.
-  if (!dep1)
+  // Dependencies reflect original IL, not current state.   Check if the
+  // SSA_NAME is still valid as well.
+  if (!dep1 || SSA_NAME_IN_FREE_LIST (dep1))
     return false;
 
   // Don't recalculate PHIs or statements with side_effects.

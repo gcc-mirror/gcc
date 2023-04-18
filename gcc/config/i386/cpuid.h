@@ -141,6 +141,7 @@
 #define bit_AMX_BF16    (1 << 22)
 #define bit_AMX_TILE    (1 << 24)
 #define bit_AMX_INT8    (1 << 25)
+#define bit_AMX_COMPLEX (1 << 8)
 
 /* Extended State Enumeration Sub-leaf (%eax == 0xd, %ecx == 1) */
 #define bit_XSAVEOPT	(1 << 0)

@@ -30,14 +30,18 @@
 // Prefer to use std::pmr::string if possible, which requires the cxx11 ABI.
 #define _GLIBCXX_USE_CXX11_ABI 1
 
+#include <algorithm>
 #include <array>
 #include <charconv>
 #include <bit>
+#include <iterator>
+#include <limits>
 #include <string>
 #include <memory_resource>
 #include <cfenv>
 #include <cfloat>
 #include <cmath>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <locale.h>
