@@ -255,6 +255,10 @@ misa-spec=
 Target RejectNegative Joined Enum(isa_spec_class) Var(riscv_isa_spec) Init(TARGET_DEFAULT_ISA_SPEC)
 Set the version of RISC-V ISA spec.
 
+minline-atomics
+Target Var(TARGET_INLINE_SUBWORD_ATOMIC) Init(1)
+Always inline subword atomic operations.
+
 Enum
 Name(riscv_autovec_preference) Type(enum riscv_autovec_preference_enum)
 The RISC-V auto-vectorization preference:
