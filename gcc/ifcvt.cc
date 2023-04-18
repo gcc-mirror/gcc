@@ -4353,7 +4353,7 @@ cond_move_process_if_block (struct noce_if_info *if_info)
       goto done;
     }
   seq = end_ifcvt_sequence (if_info);
-  if (!seq)
+  if (!seq || !targetm.noce_conversion_profitable_p (seq, if_info))
     goto done;
 
   loc_insn = first_active_insn (then_bb);
