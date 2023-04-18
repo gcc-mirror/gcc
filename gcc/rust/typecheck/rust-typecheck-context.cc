@@ -525,6 +525,71 @@ TypeCheckContextItem::TypeCheckContextItem (HIR::TraitItemFunc *trait_item)
   : type (ItemType::TRAIT_ITEM), item (trait_item)
 {}
 
+TypeCheckContextItem::TypeCheckContextItem (const TypeCheckContextItem &other)
+  : type (other.type), item (other.item)
+{
+  switch (other.type)
+    {
+    case ITEM:
+      item.item = other.item.item;
+      break;
+
+    case IMPL_ITEM:
+      item.impl_item = other.item.impl_item;
+      break;
+
+    case TRAIT_ITEM:
+      item.trait_item = other.item.trait_item;
+      break;
+
+    case ERROR:
+      item.item = nullptr;
+      break;
+    }
+}
+
+TypeCheckContextItem::TypeCheckContextItem ()
+  : type (ItemType::ERROR), item (static_cast<HIR::Function *> (nullptr))
+{}
+
+TypeCheckContextItem &
+TypeCheckContextItem::operator= (const TypeCheckContextItem &other)
+{
+  type = other.type;
+  switch (other.type)
+    {
+    case ITEM:
+      item.item = other.item.item;
+      break;
+
+    case IMPL_ITEM:
+      item.impl_item = other.item.impl_item;
+      break;
+
+    case TRAIT_ITEM:
+      item.trait_item = other.item.trait_item;
+      break;
+
+    case ERROR:
+      item.item = nullptr;
+      break;
+    }
+
+  return *this;
+}
+
+TypeCheckContextItem
+TypeCheckContextItem::get_error ()
+{
+  return TypeCheckContextItem ();
+}
+
+bool
+TypeCheckContextItem::is_error () const
+{
+  return type == ERROR;
+}
+
 HIR::Function *
 TypeCheckContextItem::get_item ()
 {
@@ -571,6 +636,10 @@ TypeCheckContextItem::get_context_type ()
     case TRAIT_ITEM:
       reference = get_trait_item ()->get_mappings ().get_hirid ();
       break;
+
+    case ERROR:
+      gcc_unreachable ();
+      return nullptr;
     }
 
   rust_assert (reference != UNKNOWN_HIRID);
@@ -595,6 +664,9 @@ TypeCheckContextItem::get_defid () const
 
     case TRAIT_ITEM:
       return item.trait_item->get_mappings ().get_defid ();
+
+    case ERROR:
+      return UNKNOWN_DEFID;
     }
 
   return UNKNOWN_DEFID;
