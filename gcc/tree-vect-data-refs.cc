@@ -5399,6 +5399,8 @@ vect_grouped_store_supported (tree vectype, unsigned HOST_WIDE_INT count)
 	  poly_uint64 nelt = GET_MODE_NUNITS (mode);
 
 	  /* The encoding has 2 interleaved stepped patterns.  */
+	  if(!multiple_p (nelt, 2))
+	    return false;
 	  vec_perm_builder sel (nelt, 2, 3);
 	  sel.quick_grow (6);
 	  for (i = 0; i < 3; i++)
