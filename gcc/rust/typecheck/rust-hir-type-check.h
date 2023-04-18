@@ -35,11 +35,19 @@ public:
     ITEM,
     IMPL_ITEM,
     TRAIT_ITEM,
+    ERROR
   };
 
   TypeCheckContextItem (HIR::Function *item);
   TypeCheckContextItem (HIR::ImplBlock *impl_block, HIR::Function *item);
   TypeCheckContextItem (HIR::TraitItemFunc *trait_item);
+  TypeCheckContextItem (const TypeCheckContextItem &other);
+
+  TypeCheckContextItem &operator= (const TypeCheckContextItem &other);
+
+  static TypeCheckContextItem get_error ();
+
+  bool is_error () const;
 
   ItemType get_type () const;
 
@@ -54,6 +62,8 @@ public:
   DefId get_defid () const;
 
 private:
+  TypeCheckContextItem ();
+
   union Item
   {
     HIR::Function *item;
