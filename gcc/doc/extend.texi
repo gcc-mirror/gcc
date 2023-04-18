@@ -14689,6 +14689,7 @@ instructions, but allow the compiler to schedule those calls.
 * PowerPC Matrix-Multiply Assist Built-in Functions::
 * PRU Built-in Functions::
 * RISC-V Built-in Functions::
+* RISC-V Vector Intrinsics::
 * RX Built-in Functions::
 * S/390 System z Built-in Functions::
 * SH Built-in Functions::
@@ -21247,6 +21248,14 @@ Generates the @code{pause} (hint) machine instruction.  This implies the
 Xgnuzihintpausestate extension, which redefines the @code{pause} instruction to
 change architectural state.
 @enddefbuiltin
+
+@node RISC-V Vector Intrinsics
+@subsection RISC-V Vector Intrinsics
+
+GCC supports vector intrinsics as specified in version 0.11 of the RISC-V
+vector intrinsic specification, which is available at the following link:
+@uref{https://github.com/riscv-non-isa/rvv-intrinsic-doc/tree/v0.11.x}.
+All of these functions are declared in the include file @file{riscv_vector.h}.
 
 @node RX Built-in Functions
 @subsection RX Built-in Functions
