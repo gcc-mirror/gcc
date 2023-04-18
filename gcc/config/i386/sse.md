@@ -38,7 +38,6 @@
   UNSPEC_INSERTQ
 
   ;; For SSE4.1 support
-  UNSPEC_INSERTPS
   UNSPEC_DP
   UNSPEC_MOVNTDQA
   UNSPEC_MPSADBW
@@ -10959,12 +10958,13 @@
   DONE;
 })
 
-(define_insn "sse4_1_insertps"
-  [(set (match_operand:V4SF 0 "register_operand" "=Yr,*x,v")
-	(unspec:V4SF [(match_operand:V4SF 2 "nonimmediate_operand" "Yrm,*xm,vm")
-		      (match_operand:V4SF 1 "register_operand" "0,0,v")
-		      (match_operand:SI 3 "const_0_to_255_operand")]
-		     UNSPEC_INSERTPS))]
+(define_insn "@sse4_1_insertps_<mode>"
+  [(set (match_operand:VI4F_128 0 "register_operand" "=Yr,*x,v")
+	(unspec:VI4F_128
+	  [(match_operand:VI4F_128 2 "nonimmediate_operand" "Yrm,*xm,vm")
+	   (match_operand:VI4F_128 1 "register_operand" "0,0,v")
+	   (match_operand:SI 3 "const_0_to_255_operand")]
+	  UNSPEC_INSERTPS))]
   "TARGET_SSE4_1"
 {
   if (MEM_P (operands[2]))
@@ -10972,7 +10972,8 @@
       unsigned count_s = INTVAL (operands[3]) >> 6;
       if (count_s)
 	operands[3] = GEN_INT (INTVAL (operands[3]) & 0x3f);
-      operands[2] = adjust_address_nv (operands[2], SFmode, count_s * 4);
+      operands[2] = adjust_address_nv (operands[2],
+				       <ssescalarmode>mode, count_s * 4);
     }
   switch (which_alternative)
     {

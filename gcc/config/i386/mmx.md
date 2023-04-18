@@ -106,6 +106,10 @@
 (define_mode_attr mmxintvecmodelower
   [(V2SF "v2si") (V2SI "v2si") (V4HI "v4hi") (V8QI "v8qi")])
 
+;; Mapping of vector modes back to the scalar modes
+(define_mode_attr mmxscalarmode
+  [(V2SI "SI") (V2SF "SF")])
+
 (define_mode_attr Yv_Yw
   [(V8QI "Yw") (V4HI "Yw") (V2SI "Yv") (V1DI "Yv") (V2SF "Yv")])
 
@@ -1153,6 +1157,42 @@
   gcc_assert (ok);
   DONE;
 })
+
+(define_insn "@sse4_1_insertps_<mode>"
+  [(set (match_operand:V2FI 0 "register_operand" "=Yr,*x,v")
+	(unspec:V2FI
+	  [(match_operand:V2FI 2 "nonimmediate_operand" "Yrm,*xm,vm")
+	   (match_operand:V2FI 1 "register_operand" "0,0,v")
+	   (match_operand:SI 3 "const_0_to_255_operand")]
+	  UNSPEC_INSERTPS))]
+  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+{
+  if (MEM_P (operands[2]))
+    {
+      unsigned count_s = INTVAL (operands[3]) >> 6;
+      if (count_s)
+	operands[3] = GEN_INT (INTVAL (operands[3]) & 0x3f);
+      operands[2] = adjust_address_nv (operands[2],
+				       <mmxscalarmode>mode, count_s * 4);
+    }
+  switch (which_alternative)
+    {
+    case 0:
+    case 1:
+      return "insertps\t{%3, %2, %0|%0, %2, %3}";
+    case 2:
+      return "vinsertps\t{%3, %2, %1, %0|%0, %1, %2, %3}";
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1,1,*")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "orig,orig,maybe_evex")
+   (set_attr "mode" "V4SF")])
 
 (define_insn "*mmx_blendps"
   [(set (match_operand:V2SF 0 "register_operand" "=Yr,*x,x")

@@ -18986,6 +18986,78 @@ expand_vec_perm_movs (struct expand_vec_perm_d *d)
 }
 
 /* A subroutine of ix86_expand_vec_perm_const_1.  Try to implement D
+   using insertps.  */
+static bool
+expand_vec_perm_insertps (struct expand_vec_perm_d *d)
+{
+  machine_mode vmode = d->vmode;
+  unsigned i, cnt_s, nelt = d->nelt;
+  int cnt_d = -1;
+  rtx src, dst;
+
+  if (d->one_operand_p)
+    return false;
+
+  if (!(TARGET_SSE4_1
+	&& (vmode == V4SFmode || vmode == V4SImode
+	    || (TARGET_MMX_WITH_SSE
+		&& (vmode == V2SFmode || vmode == V2SImode)))))
+    return false;
+
+  for (i = 0; i < nelt; ++i)
+    {
+      if (d->perm[i] == i)
+	continue;
+      if (cnt_d != -1)
+	{
+	  cnt_d = -1;
+	  break;
+	}
+      cnt_d = i;
+    }
+
+  if (cnt_d == -1)
+    {
+      for (i = 0; i < nelt; ++i)
+	{
+	  if (d->perm[i] == i + nelt)
+	    continue;
+	  if (cnt_d != -1)
+	    return false;
+	  cnt_d = i;
+	}
+
+      if (cnt_d == -1)
+	return false;
+    }
+
+  if (d->testing_p)
+    return true;
+
+  gcc_assert (cnt_d != -1);
+
+  cnt_s = d->perm[cnt_d];
+  if (cnt_s < nelt)
+    {
+      src = d->op0;
+      dst = d->op1;
+    }
+  else
+    {
+      cnt_s -= nelt;
+      src = d->op1;
+      dst = d->op0;
+     }
+  gcc_assert (cnt_s < nelt);
+
+  rtx x = gen_sse4_1_insertps (vmode, d->target, dst, src,
+			       GEN_INT (cnt_s << 6 | cnt_d << 4));
+  emit_insn (x);
+
+  return true;
+}
+
+/* A subroutine of ix86_expand_vec_perm_const_1.  Try to implement D
    in terms of blendp[sd] / pblendw / pblendvb / vpblendd.  */
 
 static bool
@@ -19916,6 +19988,10 @@ expand_vec_perm_1 (struct expand_vec_perm_d *d)
 
   /* Try movss/movsd instructions.  */
   if (expand_vec_perm_movs (d))
+    return true;
+
+  /* Try the SSE4.1 insertps instruction.  */
+  if (expand_vec_perm_insertps (d))
     return true;
 
   /* Try the fully general two operand permute.  */
