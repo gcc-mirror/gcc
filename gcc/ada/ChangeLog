@@ -1,3 +1,7 @@
+2023-04-17  Martin Liska  <mliska@suse.cz>
+
+	* gnatvsn.ads: Bump Library_Version to 14.
+
 2023-04-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/109510

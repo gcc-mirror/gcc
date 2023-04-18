@@ -1,3 +1,10 @@
+2023-04-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109531
+	* pt.cc (tsubst) <case BOUND_TEMPLATE_TEMPLATE_PARM>:
+	In the level-lowering case just use lookup_template_class
+	to rebuild the bound ttp.
+
 2023-04-15  Jason Merrill  <jason@redhat.com>
 
 	PR c++/109357

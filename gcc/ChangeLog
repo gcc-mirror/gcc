@@ -1,3 +1,91 @@
+2023-04-18  Fei Gao  <gaofei@eswincomputing.com>
+
+	* config/riscv/riscv.cc (riscv_first_stack_step): Make codes more
+	readable.
+	(riscv_expand_epilogue): Likewise.
+
+2023-04-17  Fei Gao  <gaofei@eswincomputing.com>
+
+	* config/riscv/riscv.cc (riscv_expand_prologue): Consider save-restore in
+	stack allocation.
+	(riscv_expand_epilogue): Consider save-restore in stack deallocation.
+
+2023-04-17  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc (gate_hoist_loads): Remove
+	prototype.
+
+2023-04-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-ssa-warn-alloca.cc (pass_walloca::execute): Do not export
+	global ranges.
+
+2023-04-17  Fei Gao  <gaofei@eswincomputing.com>
+
+	* config/riscv/riscv.cc (riscv_first_stack_step): Add a new function
+	parameter remaining_size.
+	(riscv_compute_frame_info): Adapt new riscv_first_stack_step interface.
+	(riscv_expand_prologue): Likewise.
+	(riscv_expand_epilogue): Likewise.
+
+2023-04-17  Feng Wang  <wangfeng@eswincomputing.com>
+
+	* config/riscv/bitmanip.md (rotrsi3_sext): Support generating
+	roriw for constant counts.
+	* rtl.h (reverse_rotate_by_imm_p): Add function declartion
+	* simplify-rtx.cc (reverse_rotate_by_imm_p): New function.
+	(simplify_context::simplify_binary_operation_1): Use it.
+	* expmed.cc (expand_shift_1): Likewise.
+
+2023-04-17  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/107769
+	PR ipa/109318
+	* cgraph.h (symtab_node::find_reference): Add parameter use_type.
+	* ipa-prop.h (ipa_pass_through_data): New flag refdesc_decremented.
+	(ipa_zap_jf_refdesc): New function.
+	(ipa_get_jf_pass_through_refdesc_decremented): Likewise.
+	(ipa_set_jf_pass_through_refdesc_decremented): Likewise.
+	* ipa-cp.cc (ipcp_discover_new_direct_edges): Provide a value for
+	the new parameter of find_reference.
+	(adjust_references_in_caller): Likewise. Make sure the constant jump
+	function is not used to decrement a refdec counter again.  Only
+	decrement refdesc counters when the pass_through jump function allows
+	it.  Added a detailed dump when decrementing refdesc counters.
+	* ipa-prop.cc (ipa_print_node_jump_functions_for_edge): Dump new flag.
+	(ipa_set_jf_simple_pass_through): Initialize the new flag.
+	(ipa_set_jf_unary_pass_through): Likewise.
+	(ipa_set_jf_arith_pass_through): Likewise.
+	(remove_described_reference): Provide a value for the new parameter of
+	find_reference.
+	(update_jump_functions_after_inlining): Zap refdesc of new jfunc if
+	the previous pass_through had a flag mandating that we do so.
+	(propagate_controlled_uses): Likewise.  Only decrement refdesc
+	counters when the pass_through jump function allows it.
+	(ipa_edge_args_sum_t::duplicate): Provide a value for the new
+	parameter of find_reference.
+	(ipa_write_jump_function): Assert the new flag does not have to be
+	streamed.
+	* symtab.cc (symtab_node::find_reference): Add parameter use_type, use
+	it in searching.
+
+2023-04-17  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+	    Di Zhao  <di.zhao@amperecomputing.com>
+
+	* config/aarch64/aarch64-tuning-flags.def (AARCH64_EXTRA_TUNING_OPTION):
+	Add AARCH64_EXTRA_TUNE_NO_LDP_COMBINE.
+	* config/aarch64/aarch64.cc (aarch64_operands_ok_for_ldpstp):
+	Check for the above tuning option when processing loads.
+
+2023-04-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109524
+	* tree-vrp.cc (remove_unreachable::m_list): Change to a
+	vector of pairs of block indices.
+	(remove_unreachable::maybe_register_block): Adjust.
+	(remove_unreachable::remove_and_update_globals): Likewise.
+	Deal with removed blocks.
+
 2023-04-16  Jeff Law  <jlaw@ventanamicro>
 
 	PR target/109508
