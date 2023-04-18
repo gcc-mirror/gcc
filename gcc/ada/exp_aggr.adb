@@ -105,6 +105,36 @@ package body Exp_Aggr is
    --  N is an aggregate (record or array). Checks the presence of default
    --  initialization (<>) in any component (Ada 2005: AI-287).
 
+   procedure Initialize_Component
+     (N         : Node_Id;
+      Comp      : Node_Id;
+      Comp_Typ  : Entity_Id;
+      Init_Expr : Node_Id;
+      Stmts     : List_Id);
+   --  Perform the initialization of component Comp with expected type Comp_Typ
+   --  of aggregate N. Init_Expr denotes the initialization expression of the
+   --  component. All generated code is added to Stmts.
+
+   procedure Initialize_Controlled_Component
+     (N         : Node_Id;
+      Comp      : Node_Id;
+      Comp_Typ  : Entity_Id;
+      Init_Expr : Node_Id;
+      Stmts     : List_Id);
+   --  Perform the initialization of controlled component Comp with expected
+   --  type Comp_Typ of aggregate N. Init_Expr denotes the initialization
+   --  expression of the component. All generated code is added to Stmts.
+
+   procedure Initialize_Simple_Component
+     (N         : Node_Id;
+      Comp      : Node_Id;
+      Comp_Typ  : Node_Id;
+      Init_Expr : Node_Id;
+      Stmts     : List_Id);
+    --  Perform the initialization of simple component Comp with expected
+    --  type Comp_Typ of aggregate N. Init_Expr denotes the initialization
+    --  expression of the component. All generated code is added to Stmts.
+
    function Is_CCG_Supported_Aggregate (N : Node_Id) return Boolean;
    --  Return True if aggregate N is located in a context supported by the
    --  CCG backend; False otherwise.
@@ -1081,16 +1111,14 @@ package body Exp_Aggr is
 
       function Gen_Assign
         (Ind     : Node_Id;
-         Expr    : Node_Id;
-         In_Loop : Boolean := False) return List_Id;
+         Expr    : Node_Id) return List_Id;
       --  Ind must be a side-effect-free expression. If the input aggregate N
       --  to Build_Loop contains no subaggregates, then this function returns
       --  the assignment statement:
       --
       --     Into (Indexes, Ind) := Expr;
       --
-      --  Otherwise we call Build_Code recursively. Flag In_Loop should be set
-      --  when the assignment appears within a generated loop.
+      --  Otherwise we call Build_Code recursively.
       --
       --  Ada 2005 (AI-287): In case of default initialized component, Expr
       --  is empty and we generate a call to the corresponding IP subprogram.
@@ -1310,34 +1338,12 @@ package body Exp_Aggr is
 
       function Gen_Assign
         (Ind     : Node_Id;
-         Expr    : Node_Id;
-         In_Loop : Boolean := False) return List_Id
+         Expr    : Node_Id) return List_Id
        is
          function Add_Loop_Actions (Lis : List_Id) return List_Id;
          --  Collect insert_actions generated in the construction of a loop,
          --  and prepend them to the sequence of assignments to complete the
          --  eventual body of the loop.
-
-         procedure Initialize_Array_Component
-           (Arr_Comp  : Node_Id;
-            Comp_Typ  : Node_Id;
-            Init_Expr : Node_Id;
-            Stmts     : List_Id);
-         --  Perform the initialization of array component Arr_Comp with
-         --  expected type Comp_Typ. Init_Expr denotes the initialization
-         --  expression of the array component. All generated code is added
-         --  to list Stmts.
-
-         procedure Initialize_Ctrl_Array_Component
-           (Arr_Comp  : Node_Id;
-            Comp_Typ  : Entity_Id;
-            Init_Expr : Node_Id;
-            Stmts     : List_Id);
-         --  Perform the initialization of array component Arr_Comp when its
-         --  expected type Comp_Typ needs finalization actions. Init_Expr is
-         --  the initialization expression of the array component. All hook-
-         --  related declarations are inserted prior to aggregate N. Remaining
-         --  code is added to list Stmts.
 
          ----------------------
          -- Add_Loop_Actions --
@@ -1365,263 +1371,6 @@ package body Exp_Aggr is
                return Lis;
             end if;
          end Add_Loop_Actions;
-
-         --------------------------------
-         -- Initialize_Array_Component --
-         --------------------------------
-
-         procedure Initialize_Array_Component
-           (Arr_Comp  : Node_Id;
-            Comp_Typ  : Node_Id;
-            Init_Expr : Node_Id;
-            Stmts     : List_Id)
-         is
-            Exceptions_OK : constant Boolean :=
-                              not Restriction_Active
-                                    (No_Exception_Propagation);
-
-            Finalization_OK : constant Boolean :=
-                                Present (Comp_Typ)
-                                  and then Needs_Finalization (Comp_Typ);
-
-            Full_Typ  : constant Entity_Id := Underlying_Type (Comp_Typ);
-            Adj_Call  : Node_Id;
-            Blk_Stmts : List_Id;
-            Init_Stmt : Node_Id;
-
-         begin
-            --  Protect the initialization statements from aborts. Generate:
-
-            --    Abort_Defer;
-
-            if Finalization_OK and Abort_Allowed then
-               if Exceptions_OK then
-                  Blk_Stmts := New_List;
-               else
-                  Blk_Stmts := Stmts;
-               end if;
-
-               Append_To (Blk_Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));
-
-            --  Otherwise aborts are not allowed. All generated code is added
-            --  directly to the input list.
-
-            else
-               Blk_Stmts := Stmts;
-            end if;
-
-            --  Initialize the array element. Generate:
-
-            --    Arr_Comp := Init_Expr;
-
-            --  Note that the initialization expression is replicated because
-            --  it has to be reevaluated within a generated loop.
-
-            Init_Stmt :=
-              Make_OK_Assignment_Statement (Loc,
-                Name       => New_Copy_Tree (Arr_Comp),
-                Expression => New_Copy_Tree (Init_Expr));
-            Set_No_Ctrl_Actions (Init_Stmt);
-
-            Append_To (Blk_Stmts, Init_Stmt);
-
-            --  Adjust the tag due to a possible view conversion. Generate:
-
-            --    Arr_Comp._tag := Full_TypP;
-
-            if Tagged_Type_Expansion
-              and then Present (Comp_Typ)
-              and then Is_Tagged_Type (Comp_Typ)
-            then
-               Append_To (Blk_Stmts,
-                 Make_OK_Assignment_Statement (Loc,
-                   Name       =>
-                     Make_Selected_Component (Loc,
-                       Prefix        => New_Copy_Tree (Arr_Comp),
-                       Selector_Name =>
-                         New_Occurrence_Of
-                           (First_Tag_Component (Full_Typ), Loc)),
-
-                   Expression =>
-                     Unchecked_Convert_To (RTE (RE_Tag),
-                       New_Occurrence_Of
-                         (Node (First_Elmt (Access_Disp_Table (Full_Typ))),
-                          Loc))));
-            end if;
-
-            --  Adjust the array component. Controlled subaggregates are not
-            --  considered because each of their individual elements will
-            --  receive an adjustment of its own. Generate:
-
-            --    [Deep_]Adjust (Arr_Comp);
-
-            if Finalization_OK
-              and then not Is_Limited_Type (Comp_Typ)
-              and then not Is_Build_In_Place_Function_Call (Init_Expr)
-              and then not
-                (Is_Array_Type (Comp_Typ)
-                  and then Needs_Finalization (Component_Type (Comp_Typ))
-                  and then Nkind (Unqualify (Init_Expr)) = N_Aggregate)
-            then
-               Adj_Call :=
-                 Make_Adjust_Call
-                   (Obj_Ref => New_Copy_Tree (Arr_Comp),
-                    Typ     => Comp_Typ);
-
-               --  Guard against a missing [Deep_]Adjust when the component
-               --  type was not frozen properly.
-
-               if Present (Adj_Call) then
-                  Append_To (Blk_Stmts, Adj_Call);
-               end if;
-            end if;
-
-            --  Complete the protection of the initialization statements
-
-            if Finalization_OK and Abort_Allowed then
-
-               --  Wrap the initialization statements in a block to catch a
-               --  potential exception. Generate:
-
-               --    begin
-               --       Abort_Defer;
-               --       Arr_Comp := Init_Expr;
-               --       Arr_Comp._tag := Full_TypP;
-               --       [Deep_]Adjust (Arr_Comp);
-               --    at end
-               --       Abort_Undefer_Direct;
-               --    end;
-
-               if Exceptions_OK then
-                  Append_To (Stmts,
-                    Build_Abort_Undefer_Block (Loc,
-                      Stmts   => Blk_Stmts,
-                      Context => N));
-
-               --  Otherwise exceptions are not propagated. Generate:
-
-               --    Abort_Defer;
-               --    Arr_Comp := Init_Expr;
-               --    Arr_Comp._tag := Full_TypP;
-               --    [Deep_]Adjust (Arr_Comp);
-               --    Abort_Undefer;
-
-               else
-                  Append_To (Blk_Stmts,
-                    Build_Runtime_Call (Loc, RE_Abort_Undefer));
-               end if;
-            end if;
-         end Initialize_Array_Component;
-
-         -------------------------------------
-         -- Initialize_Ctrl_Array_Component --
-         -------------------------------------
-
-         procedure Initialize_Ctrl_Array_Component
-           (Arr_Comp  : Node_Id;
-            Comp_Typ  : Entity_Id;
-            Init_Expr : Node_Id;
-            Stmts     : List_Id)
-         is
-            Init_Expr_Q : constant Node_Id := Unqualify (Init_Expr);
-
-            Act_Aggr   : Node_Id;
-            Act_Stmts  : List_Id;
-            Fin_Call   : Node_Id;
-            Hook_Clear : Node_Id;
-
-            In_Place_Expansion : Boolean;
-            --  Flag set when a nonlimited controlled function call requires
-            --  in-place expansion.
-
-         begin
-            --  Perform a preliminary analysis and resolution to determine what
-            --  the initialization expression denotes. An unanalyzed function
-            --  call may appear as an identifier or an indexed component.
-
-            if Nkind (Init_Expr_Q) in N_Function_Call
-                                    | N_Identifier
-                                    | N_Indexed_Component
-              and then not Analyzed (Init_Expr)
-            then
-               Preanalyze_And_Resolve (Init_Expr, Comp_Typ);
-            end if;
-
-            In_Place_Expansion :=
-              Nkind (Init_Expr_Q) = N_Function_Call
-                and then not Is_Build_In_Place_Result_Type (Comp_Typ);
-
-            --  The initialization expression is a controlled function call.
-            --  Perform in-place removal of side effects to avoid creating a
-            --  transient scope, which leads to premature finalization.
-
-            --  This in-place expansion is not performed for limited transient
-            --  objects, because the initialization is already done in place.
-
-            if In_Place_Expansion then
-
-               --  Suppress the removal of side effects by general analysis,
-               --  because this behavior is emulated here. This avoids the
-               --  generation of a transient scope, which leads to out-of-order
-               --  adjustment and finalization.
-
-               Set_No_Side_Effect_Removal (Init_Expr);
-
-               --  When the transient component initialization is related to a
-               --  range or an "others", keep all generated statements within
-               --  the enclosing loop. This way the controlled function call
-               --  will be evaluated at each iteration, and its result will be
-               --  finalized at the end of each iteration.
-
-               if In_Loop then
-                  Act_Aggr  := Empty;
-                  Act_Stmts := Stmts;
-
-               --  Otherwise this is a single component initialization. Hook-
-               --  related statements are inserted prior to the aggregate.
-
-               else
-                  Act_Aggr  := N;
-                  Act_Stmts := No_List;
-               end if;
-
-               --  Install all hook-related declarations and prepare the clean
-               --  up statements.
-
-               Process_Transient_Component
-                 (Loc        => Loc,
-                  Comp_Typ   => Comp_Typ,
-                  Init_Expr  => Init_Expr,
-                  Fin_Call   => Fin_Call,
-                  Hook_Clear => Hook_Clear,
-                  Aggr       => Act_Aggr,
-                  Stmts      => Act_Stmts);
-            end if;
-
-            --  Use the noncontrolled component initialization circuitry to
-            --  assign the result of the function call to the array element.
-            --  This also performs subaggregate wrapping, tag adjustment, and
-            --  [deep] adjustment of the array element.
-
-            Initialize_Array_Component
-              (Arr_Comp  => Arr_Comp,
-               Comp_Typ  => Comp_Typ,
-               Init_Expr => Init_Expr,
-               Stmts     => Stmts);
-
-            --  At this point the array element is fully initialized. Complete
-            --  the processing of the controlled array component by finalizing
-            --  the transient function result.
-
-            if In_Place_Expansion then
-               Process_Transient_Component_Completion
-                 (Loc        => Loc,
-                  Aggr       => N,
-                  Fin_Call   => Fin_Call,
-                  Hook_Clear => Hook_Clear,
-                  Stmts      => Stmts);
-            end if;
-         end Initialize_Ctrl_Array_Component;
 
          --  Local variables
 
@@ -1768,57 +1517,12 @@ package body Exp_Aggr is
          end if;
 
          if Present (Expr) then
-
-            --  Handle an initialization expression of a controlled type in
-            --  case it denotes a function call. In general such a scenario
-            --  will produce a transient scope, but this will lead to wrong
-            --  order of initialization, adjustment, and finalization in the
-            --  context of aggregates.
-
-            --    Target (1) := Ctrl_Func_Call;
-
-            --    begin                                  --  scope
-            --       Trans_Obj : ... := Ctrl_Func_Call;  --  object
-            --       Target (1) := Trans_Obj;
-            --       Finalize (Trans_Obj);
-            --    end;
-            --    Target (1)._tag := ...;
-            --    Adjust (Target (1));
-
-            --  In the example above, the call to Finalize occurs too early
-            --  and as a result it may leave the array component in a bad
-            --  state. Finalization of the transient object should really
-            --  happen after adjustment.
-
-            --  To avoid this scenario, perform in-place side-effect removal
-            --  of the function call. This eliminates the transient property
-            --  of the function result and ensures correct order of actions.
-
-            --    Res : ... := Ctrl_Func_Call;
-            --    Target (1) := Res;
-            --    Target (1)._tag := ...;
-            --    Adjust (Target (1));
-            --    Finalize (Res);
-
-            if Present (Comp_Typ)
-              and then Needs_Finalization (Comp_Typ)
-              and then Nkind (Expr_Q) /= N_Aggregate
-            then
-               Initialize_Ctrl_Array_Component
-                 (Arr_Comp  => Indexed_Comp,
-                  Comp_Typ  => Comp_Typ,
-                  Init_Expr => Expr,
-                  Stmts     => Stmts);
-
-            --  Otherwise perform simple component initialization
-
-            else
-               Initialize_Array_Component
-                 (Arr_Comp  => Indexed_Comp,
-                  Comp_Typ  => Comp_Typ,
-                  Init_Expr => Expr,
-                  Stmts     => Stmts);
-            end if;
+            Initialize_Component
+              (N          => N,
+               Comp       => Indexed_Comp,
+               Comp_Typ   => Comp_Typ,
+               Init_Expr  => Expr,
+               Stmts      => Stmts);
 
          --  Ada 2005 (AI-287): In case of default initialized component, call
          --  the initialization subprogram associated with the component type.
@@ -2070,8 +1774,7 @@ package body Exp_Aggr is
 
          --  Construct the statements to execute in the loop body
 
-         L_Body :=
-           Gen_Assign (New_Occurrence_Of (L_J, Loc), Expr, In_Loop => True);
+         L_Body := Gen_Assign (New_Occurrence_Of (L_J, Loc), Expr);
 
          --  Construct the final loop
 
@@ -2184,7 +1887,7 @@ package body Exp_Aggr is
          Append_To (W_Body, W_Increment);
 
          Append_List_To (W_Body,
-           Gen_Assign (New_Occurrence_Of (W_J, Loc), Expr, In_Loop => True));
+           Gen_Assign (New_Occurrence_Of (W_J, Loc), Expr));
 
          --  Construct the final loop
 
@@ -2605,26 +2308,6 @@ package body Exp_Aggr is
       --  discriminants inherited from ancestor, which are handled above.
       --  The type of the aggregate is a subtype created ealier using the
       --  given values of the discriminant components of the aggregate.
-
-      procedure Initialize_Ctrl_Record_Component
-        (Rec_Comp  : Node_Id;
-         Comp_Typ  : Entity_Id;
-         Init_Expr : Node_Id;
-         Stmts     : List_Id);
-      --  Perform the initialization of controlled record component Rec_Comp.
-      --  Comp_Typ is the component type. Init_Expr is the initialization
-      --  expression for the record component. Hook-related declarations are
-      --  inserted prior to aggregate N using Insert_Action. All remaining
-      --  generated code is added to list Stmts.
-
-      procedure Initialize_Record_Component
-        (Rec_Comp  : Node_Id;
-         Comp_Typ  : Entity_Id;
-         Init_Expr : Node_Id;
-         Stmts     : List_Id);
-      --  Perform the initialization of record component Rec_Comp. Comp_Typ
-      --  is the component type. Init_Expr is the initialization expression
-      --  of the record component. All generated code is added to list Stmts.
 
       function Is_Int_Range_Bounds (Bounds : Node_Id) return Boolean;
       --  Check whether Bounds is a range node and its lower and higher bounds
@@ -3119,236 +2802,6 @@ package body Exp_Aggr is
          end loop;
       end Init_Stored_Discriminants;
 
-      --------------------------------------
-      -- Initialize_Ctrl_Record_Component --
-      --------------------------------------
-
-      procedure Initialize_Ctrl_Record_Component
-        (Rec_Comp  : Node_Id;
-         Comp_Typ  : Entity_Id;
-         Init_Expr : Node_Id;
-         Stmts     : List_Id)
-      is
-         Init_Expr_Q : constant Node_Id := Unqualify (Init_Expr);
-
-         Fin_Call   : Node_Id;
-         Hook_Clear : Node_Id;
-
-         In_Place_Expansion : Boolean;
-         --  Flag set when a nonlimited controlled function call requires
-         --  in-place expansion.
-
-      begin
-         --  Perform a preliminary analysis and resolution to determine what
-         --  the initialization expression denotes. Unanalyzed function calls
-         --  may appear as identifiers or indexed components.
-
-         if Nkind (Init_Expr_Q) in N_Function_Call
-                                 | N_Identifier
-                                 | N_Indexed_Component
-           and then not Analyzed (Init_Expr)
-         then
-            Preanalyze_And_Resolve (Init_Expr, Comp_Typ);
-         end if;
-
-         In_Place_Expansion :=
-           Nkind (Init_Expr_Q) = N_Function_Call
-             and then not Is_Build_In_Place_Result_Type (Comp_Typ);
-
-         --  The initialization expression is a controlled function call.
-         --  Perform in-place removal of side effects to avoid creating a
-         --  transient scope.
-
-         --  This in-place expansion is not performed for limited transient
-         --  objects because the initialization is already done in place.
-
-         if In_Place_Expansion then
-
-            --  Suppress the removal of side effects by general analysis
-            --  because this behavior is emulated here. This avoids the
-            --  generation of a transient scope, which leads to out-of-order
-            --  adjustment and finalization.
-
-            Set_No_Side_Effect_Removal (Init_Expr);
-
-            --  Install all hook-related declarations and prepare the clean up
-            --  statements. The generated code follows the initialization order
-            --  of individual components and discriminants, rather than being
-            --  inserted prior to the aggregate. This ensures that a transient
-            --  component which mentions a discriminant has proper visibility
-            --  of the discriminant.
-
-            Process_Transient_Component
-              (Loc        => Loc,
-               Comp_Typ   => Comp_Typ,
-               Init_Expr  => Init_Expr,
-               Fin_Call   => Fin_Call,
-               Hook_Clear => Hook_Clear,
-               Stmts      => Stmts);
-         end if;
-
-         --  Use the noncontrolled component initialization circuitry to
-         --  assign the result of the function call to the record component.
-         --  This also performs tag adjustment and [deep] adjustment of the
-         --  record component.
-
-         Initialize_Record_Component
-           (Rec_Comp  => Rec_Comp,
-            Comp_Typ  => Comp_Typ,
-            Init_Expr => Init_Expr,
-            Stmts     => Stmts);
-
-         --  At this point the record component is fully initialized. Complete
-         --  the processing of the controlled record component by finalizing
-         --  the transient function result.
-
-         if In_Place_Expansion then
-            Process_Transient_Component_Completion
-              (Loc        => Loc,
-               Aggr       => N,
-               Fin_Call   => Fin_Call,
-               Hook_Clear => Hook_Clear,
-               Stmts      => Stmts);
-         end if;
-      end Initialize_Ctrl_Record_Component;
-
-      ---------------------------------
-      -- Initialize_Record_Component --
-      ---------------------------------
-
-      procedure Initialize_Record_Component
-        (Rec_Comp  : Node_Id;
-         Comp_Typ  : Entity_Id;
-         Init_Expr : Node_Id;
-         Stmts     : List_Id)
-      is
-         Exceptions_OK : constant Boolean :=
-                           not Restriction_Active (No_Exception_Propagation);
-
-         Finalization_OK : constant Boolean := Needs_Finalization (Comp_Typ);
-
-         Full_Typ  : constant Entity_Id := Underlying_Type (Comp_Typ);
-         Adj_Call  : Node_Id;
-         Blk_Stmts : List_Id;
-         Init_Stmt : Node_Id;
-
-      begin
-         pragma Assert (Nkind (Init_Expr) in N_Subexpr);
-
-         --  Protect the initialization statements from aborts. Generate:
-
-         --    Abort_Defer;
-
-         if Finalization_OK and Abort_Allowed then
-            if Exceptions_OK then
-               Blk_Stmts := New_List;
-            else
-               Blk_Stmts := Stmts;
-            end if;
-
-            Append_To (Blk_Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));
-
-         --  Otherwise aborts are not allowed. All generated code is added
-         --  directly to the input list.
-
-         else
-            Blk_Stmts := Stmts;
-         end if;
-
-         --  Initialize the record component. Generate:
-
-         --    Rec_Comp := Init_Expr;
-
-         --  Note that the initialization expression is NOT replicated because
-         --  only a single component may be initialized by it.
-
-         Init_Stmt :=
-           Make_OK_Assignment_Statement (Loc,
-             Name       => New_Copy_Tree (Rec_Comp),
-             Expression => Init_Expr);
-         Set_No_Ctrl_Actions (Init_Stmt);
-
-         Append_To (Blk_Stmts, Init_Stmt);
-
-         --  Adjust the tag due to a possible view conversion. Generate:
-
-         --    Rec_Comp._tag := Full_TypeP;
-
-         if Tagged_Type_Expansion and then Is_Tagged_Type (Comp_Typ) then
-            Append_To (Blk_Stmts,
-              Make_OK_Assignment_Statement (Loc,
-                Name       =>
-                  Make_Selected_Component (Loc,
-                    Prefix        => New_Copy_Tree (Rec_Comp),
-                    Selector_Name =>
-                      New_Occurrence_Of
-                        (First_Tag_Component (Full_Typ), Loc)),
-
-                Expression =>
-                  Unchecked_Convert_To (RTE (RE_Tag),
-                    New_Occurrence_Of
-                      (Node (First_Elmt (Access_Disp_Table (Full_Typ))),
-                       Loc))));
-         end if;
-
-         --  Adjust the component. Generate:
-
-         --    [Deep_]Adjust (Rec_Comp);
-
-         if Finalization_OK
-           and then not Is_Limited_Type (Comp_Typ)
-           and then not Is_Build_In_Place_Function_Call (Init_Expr)
-         then
-            Adj_Call :=
-              Make_Adjust_Call
-                (Obj_Ref => New_Copy_Tree (Rec_Comp),
-                 Typ     => Comp_Typ);
-
-            --  Guard against a missing [Deep_]Adjust when the component type
-            --  was not properly frozen.
-
-            if Present (Adj_Call) then
-               Append_To (Blk_Stmts, Adj_Call);
-            end if;
-         end if;
-
-         --  Complete the protection of the initialization statements
-
-         if Finalization_OK and Abort_Allowed then
-
-            --  Wrap the initialization statements in a block to catch a
-            --  potential exception. Generate:
-
-            --    begin
-            --       Abort_Defer;
-            --       Rec_Comp := Init_Expr;
-            --       Rec_Comp._tag := Full_TypP;
-            --       [Deep_]Adjust (Rec_Comp);
-            --    at end
-            --       Abort_Undefer_Direct;
-            --    end;
-
-            if Exceptions_OK then
-               Append_To (Stmts,
-                 Build_Abort_Undefer_Block (Loc,
-                   Stmts   => Blk_Stmts,
-                   Context => N));
-
-            --  Otherwise exceptions are not propagated. Generate:
-
-            --    Abort_Defer;
-            --    Rec_Comp := Init_Expr;
-            --    Rec_Comp._tag := Full_TypP;
-            --    [Deep_]Adjust (Rec_Comp);
-            --    Abort_Undefer;
-
-            else
-               Append_To (Blk_Stmts,
-                 Build_Runtime_Call (Loc, RE_Abort_Undefer));
-            end if;
-         end if;
-      end Initialize_Record_Component;
-
       -------------------------
       -- Is_Int_Range_Bounds --
       -------------------------
@@ -3828,8 +3281,9 @@ package body Exp_Aggr is
                 Prefix        => New_Copy_Tree (Target),
                 Selector_Name => New_Occurrence_Of (Selector, Loc));
 
-            Initialize_Record_Component
-              (Rec_Comp  => Comp_Expr,
+            Initialize_Simple_Component
+              (N         => N,
+               Comp      => Comp_Expr,
                Comp_Typ  => Etype (Selector),
                Init_Expr => Get_Simple_Init_Val
                               (Typ  => Etype (Selector),
@@ -4062,56 +3516,12 @@ package body Exp_Aggr is
                   end;
 
                else
-                  --  Handle an initialization expression of a controlled type
-                  --  in case it denotes a function call. In general such a
-                  --  scenario will produce a transient scope, but this will
-                  --  lead to wrong order of initialization, adjustment, and
-                  --  finalization in the context of aggregates.
-
-                  --    Target.Comp := Ctrl_Func_Call;
-
-                  --    begin                                  --  scope
-                  --       Trans_Obj : ... := Ctrl_Func_Call;  --  object
-                  --       Target.Comp := Trans_Obj;
-                  --       Finalize (Trans_Obj);
-                  --    end
-                  --    Target.Comp._tag := ...;
-                  --    Adjust (Target.Comp);
-
-                  --  In the example above, the call to Finalize occurs too
-                  --  early and as a result it may leave the record component
-                  --  in a bad state. Finalization of the transient object
-                  --  should really happen after adjustment.
-
-                  --  To avoid this scenario, perform in-place side-effect
-                  --  removal of the function call. This eliminates the
-                  --  transient property of the function result and ensures
-                  --  correct order of actions.
-
-                  --    Res : ... := Ctrl_Func_Call;
-                  --    Target.Comp := Res;
-                  --    Target.Comp._tag := ...;
-                  --    Adjust (Target.Comp);
-                  --    Finalize (Res);
-
-                  if Needs_Finalization (Comp_Type)
-                    and then Nkind (Expr_Q) /= N_Aggregate
-                  then
-                     Initialize_Ctrl_Record_Component
-                       (Rec_Comp   => Comp_Expr,
-                        Comp_Typ   => Etype (Selector),
-                        Init_Expr  => Expr_Q,
-                        Stmts      => L);
-
-                  --  Otherwise perform single component initialization
-
-                  else
-                     Initialize_Record_Component
-                       (Rec_Comp  => Comp_Expr,
-                        Comp_Typ  => Etype (Selector),
-                        Init_Expr => Expr_Q,
-                        Stmts     => L);
-                  end if;
+                  Initialize_Component
+                    (N         => N,
+                     Comp      => Comp_Expr,
+                     Comp_Typ  => Etype (Selector),
+                     Init_Expr => Expr_Q,
+                     Stmts     => L);
                end if;
             end if;
 
@@ -9024,6 +8434,316 @@ package body Exp_Aggr is
 
       return False;
    end Has_Default_Init_Comps;
+
+   --------------------------
+   -- Initialize_Component --
+   --------------------------
+
+   procedure Initialize_Component
+     (N         : Node_Id;
+      Comp      : Node_Id;
+      Comp_Typ  : Entity_Id;
+      Init_Expr : Node_Id;
+      Stmts     : List_Id) is
+   begin
+      --  Handle an initialization expression of a controlled type in
+      --  case it denotes a function call. In general such a scenario
+      --  will produce a transient scope, but this will lead to wrong
+      --  order of initialization, adjustment, and finalization in the
+      --  context of aggregates.
+
+      --    Comp := Ctrl_Func_Call;
+
+      --    begin                                  --  scope
+      --       Trans_Obj : ... := Ctrl_Func_Call;  --  object
+      --       Comp := Trans_Obj;
+      --       Finalize (Trans_Obj);
+      --    end;
+      --    Comp._tag := ...;
+      --    Adjust (Comp (1));
+
+      --  In the example above, the call to Finalize occurs too early
+      --  and as a result it may leave the array component in a bad
+      --  state. Finalization of the transient object should really
+      --  happen after adjustment.
+
+      --  To avoid this scenario, perform in-place side-effect removal
+      --  of the function call. This eliminates the transient property
+      --  of the function result and ensures correct order of actions.
+
+      --    Res : ... := Ctrl_Func_Call;
+      --    Comp := Res;
+      --    Comp._tag := ...;
+      --    Adjust (Comp);
+      --    Finalize (Res);
+
+      if Present (Comp_Typ)
+        and then Needs_Finalization (Comp_Typ)
+        and then Nkind (Unqualify (Init_Expr)) /= N_Aggregate
+      then
+         Initialize_Controlled_Component
+           (N         => N,
+            Comp      => Comp,
+            Comp_Typ  => Comp_Typ,
+            Init_Expr => Init_Expr,
+            Stmts     => Stmts);
+
+      --  Otherwise perform simple component initialization
+
+      else
+         Initialize_Simple_Component
+           (N         => N,
+            Comp      => Comp,
+            Comp_Typ  => Comp_Typ,
+            Init_Expr => Init_Expr,
+            Stmts     => Stmts);
+      end if;
+   end Initialize_Component;
+
+   -------------------------------------
+   -- Initialize_Controlled_Component --
+   -------------------------------------
+
+   procedure Initialize_Controlled_Component
+     (N         : Node_Id;
+      Comp      : Node_Id;
+      Comp_Typ  : Entity_Id;
+      Init_Expr : Node_Id;
+      Stmts     : List_Id)
+   is
+      Init_Expr_Q : constant Node_Id    := Unqualify (Init_Expr);
+      Loc         : constant Source_Ptr := Sloc (N);
+
+      Fin_Call   : Node_Id;
+      Hook_Clear : Node_Id;
+
+      In_Place_Expansion : Boolean;
+      --  Flag set when a nonlimited controlled function call requires
+      --  in-place expansion.
+
+   begin
+      --  Perform a preliminary analysis and resolution to determine what
+      --  the initialization expression denotes. Unanalyzed function calls
+      --  may appear as identifiers or indexed components.
+
+      if Nkind (Init_Expr_Q) in N_Function_Call
+                              | N_Identifier
+                              | N_Indexed_Component
+        and then not Analyzed (Init_Expr)
+      then
+         Preanalyze_And_Resolve (Init_Expr, Comp_Typ);
+      end if;
+
+      In_Place_Expansion :=
+        Nkind (Init_Expr_Q) = N_Function_Call
+          and then not Is_Build_In_Place_Result_Type (Comp_Typ);
+
+      --  The initialization expression is a controlled function call.
+      --  Perform in-place removal of side effects to avoid creating a
+      --  transient scope.
+
+      --  This in-place expansion is not performed for limited transient
+      --  objects because the initialization is already done in place.
+
+      if In_Place_Expansion then
+
+         --  Suppress the removal of side effects by general analysis
+         --  because this behavior is emulated here. This avoids the
+         --  generation of a transient scope, which leads to out-of-order
+         --  adjustment and finalization.
+
+         Set_No_Side_Effect_Removal (Init_Expr);
+
+         --  Install all hook-related declarations and prepare the clean up
+         --  statements. The generated code follows the initialization order
+         --  of individual components and discriminants, rather than being
+         --  inserted prior to the aggregate. This ensures that a transient
+         --  component which mentions a discriminant has proper visibility
+         --  of the discriminant.
+
+         Process_Transient_Component
+           (Loc        => Loc,
+            Comp_Typ   => Comp_Typ,
+            Init_Expr  => Init_Expr,
+            Fin_Call   => Fin_Call,
+            Hook_Clear => Hook_Clear,
+            Stmts      => Stmts);
+      end if;
+
+      --  Use the simple component initialization circuitry to assign the
+      --  result of the function call to the component. This also performs
+      --  tag adjustment and [deep] adjustment of the component.
+
+      Initialize_Simple_Component
+        (N         => N,
+         Comp      => Comp,
+         Comp_Typ  => Comp_Typ,
+         Init_Expr => Init_Expr,
+         Stmts     => Stmts);
+
+      --  At this point the component is fully initialized. Complete the
+      --  processing by finalizing the transient function result.
+
+      if In_Place_Expansion then
+         Process_Transient_Component_Completion
+           (Loc        => Loc,
+            Aggr       => N,
+            Fin_Call   => Fin_Call,
+            Hook_Clear => Hook_Clear,
+            Stmts      => Stmts);
+      end if;
+   end Initialize_Controlled_Component;
+
+   ---------------------------------
+   -- Initialize_Simple_Component --
+   ---------------------------------
+
+   procedure Initialize_Simple_Component
+     (N         : Node_Id;
+      Comp      : Node_Id;
+      Comp_Typ  : Node_Id;
+      Init_Expr : Node_Id;
+      Stmts     : List_Id)
+   is
+      Exceptions_OK   : constant Boolean :=
+                          not Restriction_Active (No_Exception_Propagation);
+      Finalization_OK : constant Boolean :=
+                          Present (Comp_Typ)
+                            and then Needs_Finalization (Comp_Typ);
+      Full_Typ        : constant Entity_Id  := Underlying_Type (Comp_Typ);
+      Loc             : constant Source_Ptr := Sloc (N);
+
+      Adj_Call  : Node_Id;
+      Blk_Stmts : List_Id;
+      Init_Stmt : Node_Id;
+
+   begin
+      pragma Assert (Nkind (Init_Expr) in N_Subexpr);
+
+      --  Protect the initialization statements from aborts. Generate:
+
+      --    Abort_Defer;
+
+      if Finalization_OK and Abort_Allowed then
+         if Exceptions_OK then
+            Blk_Stmts := New_List;
+         else
+            Blk_Stmts := Stmts;
+         end if;
+
+         Append_To (Blk_Stmts, Build_Runtime_Call (Loc, RE_Abort_Defer));
+
+      --  Otherwise aborts are not allowed. All generated code is added
+      --  directly to the input list.
+
+      else
+         Blk_Stmts := Stmts;
+      end if;
+
+      --  Initialize the component. Generate:
+
+      --    Comp := Init_Expr;
+
+      --  Note that the initialization expression is not duplicated because
+      --  either only a single component may be initialized by it (record)
+      --  or it has already been duplicated if need be (array).
+
+      Init_Stmt :=
+        Make_OK_Assignment_Statement (Loc,
+          Name       => New_Copy_Tree (Comp),
+          Expression => Relocate_Node (Init_Expr));
+      Set_No_Ctrl_Actions (Init_Stmt);
+
+      Append_To (Blk_Stmts, Init_Stmt);
+
+      --  Adjust the tag due to a possible view conversion. Generate:
+
+      --    Comp._tag := Full_TypeP;
+
+      if Tagged_Type_Expansion
+        and then Present (Comp_Typ)
+        and then Is_Tagged_Type (Comp_Typ)
+      then
+         Append_To (Blk_Stmts,
+           Make_OK_Assignment_Statement (Loc,
+             Name       =>
+               Make_Selected_Component (Loc,
+                 Prefix        => New_Copy_Tree (Comp),
+                 Selector_Name =>
+                   New_Occurrence_Of
+                     (First_Tag_Component (Full_Typ), Loc)),
+
+             Expression =>
+               Unchecked_Convert_To (RTE (RE_Tag),
+                 New_Occurrence_Of
+                   (Node (First_Elmt (Access_Disp_Table (Full_Typ))),
+                    Loc))));
+      end if;
+
+      --  Adjust the component. In the case of an array aggregate, controlled
+      --  subaggregates are not considered because each of their individual
+      --  elements will receive an adjustment of its own. Generate:
+
+      --    [Deep_]Adjust (Comp);
+
+      if Finalization_OK
+        and then not Is_Limited_Type (Comp_Typ)
+        and then not Is_Build_In_Place_Function_Call (Init_Expr)
+        and then not
+          (Is_Array_Type (Etype (N))
+            and then Is_Array_Type (Comp_Typ)
+            and then Needs_Finalization (Component_Type (Comp_Typ))
+            and then Nkind (Unqualify (Init_Expr)) = N_Aggregate)
+      then
+         Adj_Call :=
+           Make_Adjust_Call
+             (Obj_Ref => New_Copy_Tree (Comp),
+              Typ     => Comp_Typ);
+
+         --  Guard against a missing [Deep_]Adjust when the component type
+         --  was not properly frozen.
+
+         if Present (Adj_Call) then
+            Append_To (Blk_Stmts, Adj_Call);
+         end if;
+      end if;
+
+      --  Complete the protection of the initialization statements
+
+      if Finalization_OK and Abort_Allowed then
+
+         --  Wrap the initialization statements in a block to catch a
+         --  potential exception. Generate:
+
+         --    begin
+         --       Abort_Defer;
+         --       Comp := Init_Expr;
+         --       Comp._tag := Full_TypP;
+         --       [Deep_]Adjust (Comp);
+         --    at end
+         --       Abort_Undefer_Direct;
+         --    end;
+
+         if Exceptions_OK then
+            Append_To (Stmts,
+              Build_Abort_Undefer_Block (Loc,
+                Stmts   => Blk_Stmts,
+                Context => N));
+
+         --  Otherwise exceptions are not propagated. Generate:
+
+         --    Abort_Defer;
+         --    Comp := Init_Expr;
+         --    Comp._tag := Full_TypP;
+         --    [Deep_]Adjust (Comp);
+         --    Abort_Undefer;
+
+         else
+            Append_To (Blk_Stmts,
+              Build_Runtime_Call (Loc, RE_Abort_Undefer));
+         end if;
+      end if;
+   end Initialize_Simple_Component;
 
    ----------------------------------------
    -- Is_Build_In_Place_Aggregate_Return --
