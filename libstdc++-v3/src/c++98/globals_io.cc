@@ -43,22 +43,6 @@
 // In macro form:
 // _GLIBCXX_ASM_SYMVER(currentname, oldname, GLIBCXX_3.2)
 
-#if defined(_GLIBCXX_SYMVER_GNU) && defined(_GLIBCXX_SHARED) \
-    && defined(_GLIBCXX_HAVE_AS_SYMVER_DIRECTIVE) \
-    && defined(_GLIBCXX_HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT)
-// PR libstdc++/108969
-// Define std::cin as std::__io::cin and export it as std::cin@@GLIBCXX_3.4.31
-// and also as std::cin@GLIBCXX_3.4 for backwards compatibility.
-# define _GLIBCXX_IO_GLOBAL(type, X, N) \
-  namespace __io { \
-    type X __attribute__((symver("_ZSt" #N #X "@@GLIBCXX_3.4.31"))); \
-    extern type X ## 2 __attribute__((alias("_ZNSt4__io" #N #X "E"), \
-				      symver("_ZSt" #N #X "@GLIBCXX_3.4"))); \
-  }
-#else
-# define _GLIBCXX_IO_GLOBAL(type, X, N) type X;
-#endif
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -69,20 +53,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __attribute__ ((aligned(__alignof__(istream))));
   typedef char fake_ostream[sizeof(ostream)]
   __attribute__ ((aligned(__alignof__(ostream))));
-  _GLIBCXX_IO_GLOBAL(fake_istream, cin, 3);
-  _GLIBCXX_IO_GLOBAL(fake_ostream, cout, 4);
-  _GLIBCXX_IO_GLOBAL(fake_ostream, cerr, 4);
-  _GLIBCXX_IO_GLOBAL(fake_ostream, clog, 4);
+  fake_istream cin;
+  fake_ostream cout;
+  fake_ostream cerr;
+  fake_ostream clog;
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   typedef char fake_wistream[sizeof(wistream)]
   __attribute__ ((aligned(__alignof__(wistream))));
   typedef char fake_wostream[sizeof(wostream)]
   __attribute__ ((aligned(__alignof__(wostream))));
-  _GLIBCXX_IO_GLOBAL(fake_wistream, wcin, 4)
-  _GLIBCXX_IO_GLOBAL(fake_wostream, wcout, 5)
-  _GLIBCXX_IO_GLOBAL(fake_wostream, wcerr, 5)
-  _GLIBCXX_IO_GLOBAL(fake_wostream, wclog, 5)
+  fake_wistream wcin;
+  fake_wostream wcout;
+  fake_wostream wcerr;
+  fake_wostream wclog;
 #endif
 
 #include "ios_base_init.h"

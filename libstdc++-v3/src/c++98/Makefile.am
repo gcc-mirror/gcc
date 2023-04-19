@@ -118,6 +118,7 @@ sources = \
 	mt_allocator.cc \
 	codecvt.cc \
 	complex_io.cc \
+	globals_io.cc \
 	hash_tr1.cc \
 	hashtable_tr1.cc \
 	ios_failure.cc \

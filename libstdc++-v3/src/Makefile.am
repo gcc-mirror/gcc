@@ -122,7 +122,6 @@ cxx98_sources = \
 	compatibility.cc \
 	compatibility-debug_list.cc \
 	compatibility-debug_list-2.cc \
-	globals_io.cc \
 	${ldbl_compat_sources}
 
 cxx11_sources = \
