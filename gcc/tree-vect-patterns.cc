@@ -1501,7 +1501,7 @@ vect_recog_widen_minus_pattern (vec_info *vinfo, stmt_vec_info last_stmt_info,
 				      "vect_recog_widen_minus_pattern");
 }
 
-/* Function vect_recog_popcount_pattern
+/* Function vect_recog_popcount_clz_ctz_ffs_pattern
 
    Try to find the following pattern:
 
@@ -1530,16 +1530,20 @@ vect_recog_widen_minus_pattern (vec_info *vinfo, stmt_vec_info last_stmt_info,
    * Return value: A new stmt that will be used to replace the sequence of
    stmts that constitute the pattern. In this case it will be:
    B = .POPCOUNT (A);
+
+   Similarly for clz, ctz and ffs.
 */
 
 static gimple *
-vect_recog_popcount_pattern (vec_info *vinfo,
-			     stmt_vec_info stmt_vinfo, tree *type_out)
+vect_recog_popcount_clz_ctz_ffs_pattern (vec_info *vinfo,
+					 stmt_vec_info stmt_vinfo,
+					 tree *type_out)
 {
   gassign *last_stmt = dyn_cast <gassign *> (stmt_vinfo->stmt);
-  gimple *popcount_stmt, *pattern_stmt;
+  gimple *call_stmt, *pattern_stmt;
   tree rhs_oprnd, rhs_origin, lhs_oprnd, lhs_type, vec_type, new_var;
-  auto_vec<tree> vargs;
+  internal_fn ifn = IFN_LAST;
+  int addend = 0;
 
   /* Find B = (TYPE1) temp_out. */
   if (!last_stmt)
@@ -1557,51 +1561,137 @@ vect_recog_popcount_pattern (vec_info *vinfo,
   if (TREE_CODE (rhs_oprnd) != SSA_NAME
       || !has_single_use (rhs_oprnd))
     return NULL;
-  popcount_stmt = SSA_NAME_DEF_STMT (rhs_oprnd);
+  call_stmt = SSA_NAME_DEF_STMT (rhs_oprnd);
 
   /* Find temp_out = __builtin_popcount{,l,ll} (temp_in);  */
-  if (!is_gimple_call (popcount_stmt))
+  if (!is_gimple_call (call_stmt))
     return NULL;
-  switch (gimple_call_combined_fn (popcount_stmt))
+  switch (gimple_call_combined_fn (call_stmt))
     {
+      int val;
     CASE_CFN_POPCOUNT:
+      ifn = IFN_POPCOUNT;
+      break;
+    CASE_CFN_CLZ:
+      ifn = IFN_CLZ;
+      /* Punt if call result is unsigned and defined value at zero
+	 is negative, as the negative value doesn't extend correctly.  */
+      if (TYPE_UNSIGNED (TREE_TYPE (rhs_oprnd))
+	  && gimple_call_internal_p (call_stmt)
+	  && CLZ_DEFINED_VALUE_AT_ZERO
+	       (SCALAR_INT_TYPE_MODE (TREE_TYPE (rhs_oprnd)), val) == 2
+	  && val < 0)
+	return NULL;
+      break;
+    CASE_CFN_CTZ:
+      ifn = IFN_CTZ;
+      /* Punt if call result is unsigned and defined value at zero
+	 is negative, as the negative value doesn't extend correctly.  */
+      if (TYPE_UNSIGNED (TREE_TYPE (rhs_oprnd))
+	  && gimple_call_internal_p (call_stmt)
+	  && CTZ_DEFINED_VALUE_AT_ZERO
+	       (SCALAR_INT_TYPE_MODE (TREE_TYPE (rhs_oprnd)), val) == 2
+	  && val < 0)
+	return NULL;
+      break;
+    CASE_CFN_FFS:
+      ifn = IFN_FFS;
       break;
     default:
       return NULL;
     }
 
-  if (gimple_call_num_args (popcount_stmt) != 1)
+  if (gimple_call_num_args (call_stmt) != 1)
     return NULL;
 
-  rhs_oprnd = gimple_call_arg (popcount_stmt, 0);
+  rhs_oprnd = gimple_call_arg (call_stmt, 0);
   vect_unpromoted_value unprom_diff;
-  rhs_origin = vect_look_through_possible_promotion (vinfo, rhs_oprnd,
-						    &unprom_diff);
+  rhs_origin
+    = vect_look_through_possible_promotion (vinfo, rhs_oprnd, &unprom_diff);
 
   if (!rhs_origin)
     return NULL;
 
-  /* Input and output of .POPCOUNT should be same-precision integer.
-     Also A should be unsigned or same precision as temp_in,
-     otherwise there would be sign_extend from A to temp_in.  */
-  if (TYPE_PRECISION (unprom_diff.type) != TYPE_PRECISION (lhs_type)
-      || (!TYPE_UNSIGNED (unprom_diff.type)
-	  && (TYPE_PRECISION (unprom_diff.type)
-	      != TYPE_PRECISION (TREE_TYPE (rhs_oprnd)))))
+  /* Input and output of .POPCOUNT should be same-precision integer.  */
+  if (TYPE_PRECISION (unprom_diff.type) != TYPE_PRECISION (lhs_type))
     return NULL;
-  vargs.safe_push (unprom_diff.op);
 
-  vect_pattern_detected ("vec_regcog_popcount_pattern", popcount_stmt);
+  /* Also A should be unsigned or same precision as temp_in, otherwise
+     different builtins/internal functions have different behaviors.  */
+  if (TYPE_PRECISION (unprom_diff.type)
+      != TYPE_PRECISION (TREE_TYPE (rhs_oprnd)))
+    switch (ifn)
+      {
+      case IFN_POPCOUNT:
+	/* For popcount require zero extension, which doesn't add any
+	   further bits to the count.  */
+	if (!TYPE_UNSIGNED (unprom_diff.type))
+	  return NULL;
+	break;
+      case IFN_CLZ:
+	/* clzll (x) == clz (x) + 32 for unsigned x != 0, so ok
+	   if it is undefined at zero or if it matches also for the
+	   defined value there.  */
+	if (!TYPE_UNSIGNED (unprom_diff.type))
+	  return NULL;
+	if (!type_has_mode_precision_p (lhs_type)
+	    || !type_has_mode_precision_p (TREE_TYPE (rhs_oprnd)))
+	  return NULL;
+	addend = (TYPE_PRECISION (TREE_TYPE (rhs_oprnd))
+		  - TYPE_PRECISION (lhs_type));
+	if (gimple_call_internal_p (call_stmt))
+	  {
+	    int val1, val2;
+	    int d1
+	      = CLZ_DEFINED_VALUE_AT_ZERO
+		  (SCALAR_INT_TYPE_MODE (TREE_TYPE (rhs_oprnd)), val1);
+	    int d2
+	      = CLZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (lhs_type),
+					   val2);
+	    if (d1 != 2)
+	      break;
+	    if (d2 != 2 || val1 != val2 + addend)
+	      return NULL;
+	  }
+	break;
+      case IFN_CTZ:
+	/* ctzll (x) == ctz (x) for unsigned or signed x != 0, so ok
+	   if it is undefined at zero or if it matches also for the
+	   defined value there.  */
+	if (gimple_call_internal_p (call_stmt))
+	  {
+	    int val1, val2;
+	    int d1
+	      = CTZ_DEFINED_VALUE_AT_ZERO
+		  (SCALAR_INT_TYPE_MODE (TREE_TYPE (rhs_oprnd)), val1);
+	    int d2
+	      = CTZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (lhs_type),
+					   val2);
+	    if (d1 != 2)
+	      break;
+	    if (d2 != 2 || val1 != val2)
+	      return NULL;
+	  }
+	break;
+      case IFN_FFS:
+	/* ffsll (x) == ffs (x) for unsigned or signed x.  */
+	break;
+      default:
+	gcc_unreachable ();
+      }
+
+  vect_pattern_detected ("vec_recog_popcount_clz_ctz_ffs_pattern",
+			 call_stmt);
   vec_type = get_vectype_for_scalar_type (vinfo, lhs_type);
-  /* Do it only if the backend has popcount<vector_mode>2 pattern.  */
+  /* Do it only if the backend has popcount<vector_mode>2 etc. pattern.  */
   if (!vec_type
-      || !direct_internal_fn_supported_p (IFN_POPCOUNT, vec_type,
+      || !direct_internal_fn_supported_p (ifn, vec_type,
 					  OPTIMIZE_FOR_SPEED))
     return NULL;
 
   /* Create B = .POPCOUNT (A).  */
   new_var = vect_recog_temp_ssa_var (lhs_type, NULL);
-  pattern_stmt = gimple_build_call_internal_vec (IFN_POPCOUNT, vargs);
+  pattern_stmt = gimple_build_call_internal (ifn, 1, unprom_diff.op);
   gimple_call_set_lhs (pattern_stmt, new_var);
   gimple_set_location (pattern_stmt, gimple_location (last_stmt));
   *type_out = vec_type;
@@ -1609,6 +1699,14 @@ vect_recog_popcount_pattern (vec_info *vinfo,
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "created pattern stmt: %G", pattern_stmt);
+
+  if (addend)
+    {
+      append_pattern_def_seq (vinfo, stmt_vinfo, pattern_stmt, vec_type);
+      tree ret_var = vect_recog_temp_ssa_var (lhs_type, NULL);
+      pattern_stmt = gimple_build_assign (ret_var, PLUS_EXPR, new_var,
+					  build_int_cst (lhs_type, addend));
+    }
   return pattern_stmt;
 }
 
@@ -6051,7 +6149,7 @@ static vect_recog_func vect_vect_recog_func_ptrs[] = {
   { vect_recog_sad_pattern, "sad" },
   { vect_recog_widen_sum_pattern, "widen_sum" },
   { vect_recog_pow_pattern, "pow" },
-  { vect_recog_popcount_pattern, "popcount" },
+  { vect_recog_popcount_clz_ctz_ffs_pattern, "popcount_clz_ctz_ffs" },
   { vect_recog_widen_shift_pattern, "widen_shift" },
   { vect_recog_rotate_pattern, "rotate" },
   { vect_recog_vector_vector_shift_pattern, "vector_vector_shift" },
