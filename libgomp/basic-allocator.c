@@ -188,6 +188,7 @@ basic_alloc_free (char *heap, void *addr, size_t size)
 	  break;
 	}
       /* Spin.  */
+      BASIC_ALLOC_YIELD;
     }
   while (1);
 
@@ -267,6 +268,7 @@ basic_alloc_realloc (char *heap, void *addr, size_t oldsize,
 	  break;
 	}
       /* Spin.  */
+      BASIC_ALLOC_YIELD;
     }
   while (1);
 
