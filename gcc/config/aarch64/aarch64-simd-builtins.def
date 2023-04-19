@@ -848,9 +848,6 @@
   BUILTIN_VHSDF_HSDF (BINOP_USS, cmle, 0, FP)
   BUILTIN_VHSDF_HSDF (BINOP_USS, cmlt, 0, FP)
 
-  /* Implemented by neg<mode>2.  */
-  BUILTIN_VHSDF_HSDF (UNOP, neg, 2, ALL)
-
   /* Implemented by aarch64_fac<optab><mode>.  */
   BUILTIN_VHSDF_HSDF (BINOP_USS, faclt, 0, FP)
   BUILTIN_VHSDF_HSDF (BINOP_USS, facle, 0, FP)
