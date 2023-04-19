@@ -1,3 +1,9 @@
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107163
+	* c-common.cc (verify_tree): Don't use sequenced handling
+	for COMPONENT_REF.
+
 2023-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,149 @@
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109357
+	* g++.dg/cpp2a/constexpr-dtor15.C: New test.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107163
+	* g++.dg/warn/Wsequence-point-5.C: New test.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105481
+	* g++.dg/cpp0x/fntmpdefarg-partial1.C: New test.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105996
+	* g++.dg/cpp0x/constexpr-pmf3.C: New test.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106890
+	* g++.dg/cpp0x/nsdmi-template25.C: New test.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108975
+	* g++.dg/cpp0x/lambda/lambda-const11.C: New test.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69410
+	* g++.dg/lookup/friend24.C: New test.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105809
+	* g++.dg/cpp0x/constexpr-__func__3.C: New test.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108242
+	* g++.dg/cpp1y/lambda-generic-func2.C: New test.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101869
+	* g++.dg/cpp0x/enum43.C: New test.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105406
+	* g++.dg/coroutines/co-await-moveonly1.C: New test.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103871
+	PR c++/98056
+	* g++.dg/coroutines/co-await-initlist1.C: New test.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108468
+	* g++.dg/cpp1y/var-templ78.C: New test.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107310
+	* c-c++-common/Wimplicit-fallthrough-39.c: Adjust warning.
+	* g++.dg/warn/Wreturn-6.C: New test.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108566
+	* g++.dg/abi/anon6.C: New test.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107154
+	* g++.dg/debug/dwarf2/lineno-array1.C: New test.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108099
+	* g++.dg/ext/int128-7.C: New test.
+
+2023-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109410
+	* gcc.dg/pr109410.c: New test.
+
+2023-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109319
+	* g++.dg/cpp23/subscript14.C: New test.
+
+2023-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106190
+	* gcc.dg/asan/pr106190.c: New test.
+
+2023-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109276
+	* gcc.target/i386/pr109276.c: New test.
+
+2023-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/105685
+	* c-c++-common/cold-2.c: New test.
+
+2023-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109176
+	* gcc.target/aarch64/sve/pr109176.c: New test.
+
+2023-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109164
+	* g++.dg/tls/thread_local13.C: New test.
+	* g++.dg/tls/thread_local13-aux.cc: New file.
+	* g++.dg/tls/thread_local14.C: New test.
+	* g++.dg/tls/thread_local14-aux.cc: New file.
+
 2023-04-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
 
 	Backported from master:

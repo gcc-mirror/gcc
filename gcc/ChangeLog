@@ -1,3 +1,52 @@
+2023-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109410
+	* tree-ssa-reassoc.cc (build_and_add_sum): Split edge from entry
+	block if first statement of the function is a call to returns_twice
+	function.
+
+2023-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/106190
+	* sanopt.cc (pass_sanopt::execute): Return TODO_cleanup_cfg if any
+	of the IFN_{UB,HWA,A}SAN_* internal fns are lowered.
+
+2023-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109276
+	* config/i386/i386.cc (assign_386_stack_local): For DImode
+	with SLOT_FLOATxFDI_387 and -m32 -mpreferred-stack-boundary=2 pass
+	align 32 rather than 0 to assign_stack_local.
+
+2023-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/105685
+	* predict.cc (compute_function_frequency): Don't call
+	warn_function_cold if function already has cold attribute.
+
+2023-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109176
+	* tree-vect-generic.cc (expand_vector_condition): If a has
+	vector boolean type and is a comparison, also check if both
+	the comparison and VEC_COND_EXPR could be successfully expanded
+	individually.
+
 2023-04-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
 
 	Backported from master:

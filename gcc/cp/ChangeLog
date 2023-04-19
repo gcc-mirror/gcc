@@ -1,3 +1,129 @@
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109357
+	* constexpr.cc (cxx_eval_constant_expression) [TARGET_EXPR]:
+	Check for complex initializer.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105481
+	* pt.cc (type_unification_real): Adjust for partial ordering.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105996
+	* typeck.cc (build_ptrmemfunc): Drop 0-offset optimization
+	and location wrappers.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106890
+	* init.cc (maybe_instantiate_nsdmi_init): Don't leave
+	current_function_decl set to a constructor.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108975
+	* lambda.cc (prune_lambda_captures): Don't bother in a template.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69410
+	* friend.cc (do_friend): Handle namespace as scope argument.
+	* decl.cc (grokdeclarator): Pass down in_namespace.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105809
+	* init.cc (get_nsdmi): Split out...
+	(maybe_instantiate_nsdmi_init): ...this function.
+	* cp-tree.h: Declare it.
+	* pt.cc (tsubst_expr): Use it.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108242
+	* pt.cc (tsubst_expr) [TAG_DEFN]: Handle partial instantiation.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101869
+	* semantics.cc (finish_qualified_id_expr): Don't try to build a
+	pointer-to-member if the scope is an enumeration.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105406
+	* coroutines.cc (build_co_await): Handle lvalue 'o'.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/103871
+	PR c++/98056
+	* typeck.cc (cp_build_modify_expr): Allow array initialization of
+	DECL_ARTIFICIAL variable.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108468
+	* pt.cc (unify_pack_expansion): Check that TPARMS_PRIMARY_TEMPLATE
+	is non-null.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107310
+	* cp-gimplify.cc (genericize_if_stmt): Restore folding
+	of constant conditions.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108566
+	* mangle.cc (anon_aggr_naming_decl): New.
+	(write_unqualified_name): Use it.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107154
+	* cp-gimplify.cc (cp_genericize_init_expr): Use iloc_sentinel.
+	(cp_genericize_target_expr): Likewise.
+
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108099
+	* decl.cc (grokdeclarator): Handle non-typedef typedef_decl.
+
+2023-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (s-cp-module-version): New target.
+	(cp/module.o): Depend on it.
+	(MODULE_VERSION): Remove variable.
+	(CFLAGS-cp/module.o): For -DMODULE_VERSION= argument just
+	cat s-cp-module-version.
+
+2023-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109319
+	* decl2.cc (grok_array_decl): After emitting a pedwarn for
+	-Wcomma-subscript, if processing_template_decl set orig_index_exp
+	to compound expr from orig_index_exp_list.
+
+2023-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109164
+	* cp-tree.h (var_needs_tls_wrapper): Declare.
+	* decl2.cc (var_needs_tls_wrapper): No longer static.
+	* decl.cc (cp_finish_decl): Clear TREE_READONLY on TLS variables
+	for which a TLS wrapper will be needed.
+
 2023-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
