@@ -2512,20 +2512,6 @@ GLIBCXX_3.4.31 {
     _ZNKSt12__shared_ptrINSt10filesystem28recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE[012]EEcvbEv;
     _ZNKSt12__shared_ptrINSt10filesystem7__cxx1128recursive_directory_iterator10_Dir_stackELN9__gnu_cxx12_Lock_policyE[012]EEcvbEv;
 
-#if defined(_GLIBCXX_SYMVER_GNU) && defined(_GLIBCXX_SHARED) \
-    && defined(_GLIBCXX_HAVE_AS_SYMVER_DIRECTIVE) \
-    && defined(_GLIBCXX_HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT)
-    # See src/c++98/globals_io.cc
-    _ZSt3cin;
-    _ZSt4cout;
-    _ZSt4cerr;
-    _ZSt4clog;
-    _ZSt4wcin;
-    _ZSt5wcout;
-    _ZSt5wcerr;
-    _ZSt5wclog;
-#endif
-
 } GLIBCXX_3.4.30;
 
 # Symbols in the support library (libsupc++) have their own tag.
