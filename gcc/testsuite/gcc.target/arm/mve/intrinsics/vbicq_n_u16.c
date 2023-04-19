@@ -1,20 +1,41 @@
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
 /* { dg-additional-options "-O2" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include "arm_mve.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*
+**foo:
+**	...
+**	vbic.i16	q[0-9]+, #[0-9]+(?:	@.*|)
+**	...
+*/
 uint16x8_t
 foo (uint16x8_t a)
 {
   return vbicq_n_u16 (a, 1);
 }
 
+
+/*
+**foo1:
+**	...
+**	vbic.i16	q[0-9]+, #[0-9]+(?:	@.*|)
+**	...
+*/
 uint16x8_t
 foo1 (uint16x8_t a)
 {
   return vbicq (a, 1);
 }
 
-/* { dg-final { scan-assembler-times "vbic.i16" 2 }  } */
+#ifdef __cplusplus
+}
+#endif
+
 /* { dg-final { scan-assembler-not "__ARM_undef" } } */

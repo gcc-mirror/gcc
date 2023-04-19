@@ -213,7 +213,7 @@
 	 VCVTTQ_F32_F16))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcvtt.f32.f16 %q0, %q1"
+  "vcvtt.f32.f16\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -227,7 +227,7 @@
 	 VCVTBQ_F32_F16))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcvtb.f32.f16 %q0, %q1"
+  "vcvtb.f32.f16\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -241,7 +241,7 @@
 	 VCVTQ_TO_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcvt.f%#<V_sz_elem>.<supf>%#<V_sz_elem>       %q0, %q1"
+  "vcvt.f%#<V_sz_elem>.<supf>%#<V_sz_elem>\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -269,7 +269,7 @@
 	 VCVTQ_FROM_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcvt.<supf>%#<V_sz_elem>.f%#<V_sz_elem>       %q0, %q1"
+  "vcvt.<supf>%#<V_sz_elem>.f%#<V_sz_elem>\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -410,7 +410,7 @@
 	 VCVTPQ))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcvtp.<supf>%#<V_sz_elem>.f%#<V_sz_elem>      %q0, %q1"
+  "vcvtp.<supf>%#<V_sz_elem>.f%#<V_sz_elem>\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -424,7 +424,7 @@
 	 VCVTNQ))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcvtn.<supf>%#<V_sz_elem>.f%#<V_sz_elem>      %q0, %q1"
+  "vcvtn.<supf>%#<V_sz_elem>.f%#<V_sz_elem>\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -438,7 +438,7 @@
 	 VCVTMQ))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcvtm.<supf>%#<V_sz_elem>.f%#<V_sz_elem>      %q0, %q1"
+  "vcvtm.<supf>%#<V_sz_elem>.f%#<V_sz_elem>\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -452,7 +452,7 @@
 	 VCVTAQ))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcvta.<supf>%#<V_sz_elem>.f%#<V_sz_elem>      %q0, %q1"
+  "vcvta.<supf>%#<V_sz_elem>.f%#<V_sz_elem>\t%q0, %q1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -508,7 +508,7 @@
 	VCTP))
   ]
   "TARGET_HAVE_MVE"
-  "vctp.<MVE_vctp> %1"
+  "vctp.<MVE_vctp>\t%1"
   [(set_attr "type" "mve_move")
 ])
 
@@ -1219,7 +1219,7 @@
 		   (match_operand:MVE_0 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vand %q0, %q1, %q2"
+  "vand\t%q0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -1233,7 +1233,7 @@
 			      (match_operand:MVE_0 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vbic %q0, %q1, %q2"
+  "vbic\t%q0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -1307,7 +1307,7 @@
 	 VCTP_M))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vctpt.<MVE_vctp> %1"
+  "vpst\;vctpt.<MVE_vctp>\t%1"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -1322,7 +1322,7 @@
 	 VCVTBQ_F16_F32))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcvtb.f16.f32 %q0, %q2"
+  "vcvtb.f16.f32\t%q0, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -1337,7 +1337,7 @@
 	 VCVTTQ_F16_F32))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vcvtt.f16.f32 %q0, %q2"
+  "vcvtt.f16.f32\t%q0, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -1351,7 +1351,7 @@
 		   (match_operand:MVE_0 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "veor %q0, %q1, %q2"
+  "veor\t%q0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -1468,7 +1468,7 @@
 		   (match_operand:MVE_0 1 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vorn %q0, %q1, %q2"
+  "vorn\t%q0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -1482,7 +1482,7 @@
 		   (match_operand:MVE_0 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vorr %q0, %q1, %q2"
+  "vorr\t%q0, %q1, %q2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -1645,7 +1645,7 @@
 	 VCVTQ_M_TO_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vcvtt.f%#<V_sz_elem>.<supf>%#<V_sz_elem>	 %q0, %q2"
+  "vpst\;vcvtt.f%#<V_sz_elem>.<supf>%#<V_sz_elem>\t%q0, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -1754,7 +1754,7 @@
 		   (match_dup 4)]
 	VSHLCQ))]
  "TARGET_HAVE_MVE"
- "vshlc %q0, %1, %4")
+ "vshlc\t%q0, %1, %4")
 
 ;;
 ;; [vabsq_m_s]
@@ -2177,7 +2177,7 @@
 	 VCVTBQ_M_F16_F32))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vcvtbt.f16.f32 %q0, %q2"
+  "vpst\;vcvtbt.f16.f32\t%q0, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -2193,7 +2193,7 @@
 	 VCVTBQ_M_F32_F16))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vcvtbt.f32.f16 %q0, %q2"
+  "vpst\;vcvtbt.f32.f16\t%q0, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -2209,7 +2209,7 @@
 	 VCVTTQ_M_F16_F32))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vcvttt.f16.f32 %q0, %q2"
+  "vpst\;vcvttt.f16.f32\t%q0, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -2225,7 +2225,7 @@
 	 VCVTTQ_M_F32_F16))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vcvttt.f32.f16 %q0, %q2"
+  "vpst\;vcvttt.f32.f16\t%q0, %q2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -2420,7 +2420,7 @@
 	 MVE_INT_M_N_BINARY_LOGIC))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;<mve_insn>t.i%#<V_sz_elem>	%q0, %2"
+  "vpst\;<mve_insn>t.i%#<V_sz_elem>\t%q0, %2"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -2746,7 +2746,7 @@
 	 MVE_INT_M_BINARY))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;<mve_insn>t.i%#<V_sz_elem>	%q0, %q2, %q3"
+  "vpst\;<mve_insn>t.i%#<V_sz_elem>\t%q0, %q2, %q3"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -2766,7 +2766,7 @@
 	 MVE_INT_M_BINARY_LOGIC))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;<mve_insn>t %q0, %q2, %q3"
+  "vpst\;<mve_insn>t\t%q0, %q2, %q3"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -2917,7 +2917,7 @@
 	 VORNQ_M))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;vornt %q0, %q2, %q3"
+  "vpst\;vornt\t%q0, %q2, %q3"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -3225,7 +3225,7 @@
 	 MVE_FP_M_BINARY_LOGIC))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;<mve_insn>t %q0, %q2, %q3"
+  "vpst\;<mve_insn>t\t%q0, %q2, %q3"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -3429,7 +3429,7 @@
 	 VORNQ_M_F))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
-  "vpst\;vornt %q0, %q2, %q3"
+  "vpst\;vornt\t%q0, %q2, %q3"
   [(set_attr "type" "mve_move")
    (set_attr "length""8")])
 
@@ -4838,7 +4838,7 @@
 	   (match_operand:V2QI 3 "vpr_register_operand" "Up")]
 	  VSTRDSSOQ))]
   "TARGET_HAVE_MVE"
-  "vpst\;vstrdt.64\t%q2, [%0, %q1, UXTW #3]"
+  "vpst\;vstrdt.64\t%q2, [%0, %q1, uxtw #3]"
   [(set_attr "length" "8")])
 
 ;;
@@ -4867,7 +4867,7 @@
 	   (match_operand:V2DI 2 "s_register_operand" "w")]
 	  VSTRDSSOQ))]
   "TARGET_HAVE_MVE"
-  "vstrd.64\t%q2, [%0, %q1, UXTW #3]"
+  "vstrd.64\t%q2, [%0, %q1, uxtw #3]"
   [(set_attr "length" "4")])
 
 ;;
@@ -5791,7 +5791,7 @@
    ops[0] = operands[1];
    ops[1] = operands[2];
    ops[2] = operands[3];
-   output_asm_insn ("vpst;vstrdt.u64\t%q2, [%q0, %1]!",ops);
+   output_asm_insn ("vpst\;vstrdt.u64\t%q2, [%q0, %1]!",ops);
    return "";
 }
   [(set_attr "length" "8")])
