@@ -1861,9 +1861,9 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
   /* fallthru edges must be forwarded to the same destination.  */
   if (fallthru1)
     {
-      basic_block d1 = (forwarder_block_p (fallthru1->dest)
+      basic_block d1 = (FORWARDER_BLOCK_P (fallthru1->dest)
 			? single_succ (fallthru1->dest): fallthru1->dest);
-      basic_block d2 = (forwarder_block_p (fallthru2->dest)
+      basic_block d2 = (FORWARDER_BLOCK_P (fallthru2->dest)
 			? single_succ (fallthru2->dest): fallthru2->dest);
 
       if (d1 != d2)
