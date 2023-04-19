@@ -1,23 +1,49 @@
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
 /* { dg-additional-options "-O2" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include "arm_mve.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*
+**foo:
+**	...
+**	vmsr	p0, (?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+**	vpst(?:	@.*|)
+**	...
+**	vslit.32	q[0-9]+, q[0-9]+, #[0-9]+(?:	@.*|)
+**	...
+*/
 int32x4_t
 foo (int32x4_t a, int32x4_t b, mve_pred16_t p)
 {
-  return vsliq_m_n_s32 (a, b, 31, p);
+  return vsliq_m_n_s32 (a, b, 1, p);
 }
 
-/* { dg-final { scan-assembler "vpst" } } */
-/* { dg-final { scan-assembler "vslit.32"  }  } */
 
+/*
+**foo1:
+**	...
+**	vmsr	p0, (?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+**	vpst(?:	@.*|)
+**	...
+**	vslit.32	q[0-9]+, q[0-9]+, #[0-9]+(?:	@.*|)
+**	...
+*/
 int32x4_t
 foo1 (int32x4_t a, int32x4_t b, mve_pred16_t p)
 {
-  return vsliq_m (a, b, 31, p);
+  return vsliq_m (a, b, 1, p);
 }
 
-/* { dg-final { scan-assembler "vpst" } } */
-/* { dg-final { scan-assembler "vslit.32"  }  } */
+#ifdef __cplusplus
+}
+#endif
+
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */
