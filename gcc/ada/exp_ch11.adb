@@ -1819,62 +1819,60 @@ package body Exp_Ch11 is
                                          | SSE.Actions_To_Be_Wrapped (After)
                                          | SSE.Actions_To_Be_Wrapped (Cleanup)
          then
-            --  Loop through exception handlers
+            --  Loop through exception handlers and guard against pragmas
+            --  appearing among them.
 
-            H := First (Exception_Handlers (P));
+            H := First_Non_Pragma (Exception_Handlers (P));
             while Present (H) loop
 
                --  Guard against other constructs appearing in the list of
                --  exception handlers.
 
-               if Nkind (H) = N_Exception_Handler then
+               --  Loop through choices in one handler
 
-                  --  Loop through choices in one handler
+               C := First (Exception_Choices (H));
+               while Present (C) loop
 
-                  C := First (Exception_Choices (H));
-                  while Present (C) loop
+                  --  Deal with others case
 
-                     --  Deal with others case
+                  if Nkind (C) = N_Others_Choice then
 
-                     if Nkind (C) = N_Others_Choice then
+                     --  Matching others handler, but we need to ensure there
+                     --  is no choice parameter. If there is, then we don't
+                     --  have a local handler after all (since we do not allow
+                     --  choice parameters for local handlers).
 
-                        --  Matching others handler, but we need to ensure
-                        --  there is no choice parameter. If there is, then we
-                        --  don't have a local handler after all (since we do
-                        --  not allow choice parameters for local handlers).
+                     if No (Choice_Parameter (H)) then
+                        return H;
+                     else
+                        return Empty;
+                     end if;
 
+                  --  If not others must be entity name
+
+                  else
+                     pragma Assert (Is_Entity_Name (C));
+                     pragma Assert (Present (Entity (C)));
+
+                     --  Get exception being handled, dealing with renaming
+
+                     EHandle := Get_Renamed_Entity (Entity (C));
+
+                     --  If match, then check choice parameter
+
+                     if ERaise = EHandle then
                         if No (Choice_Parameter (H)) then
                            return H;
                         else
                            return Empty;
                         end if;
-
-                     --  If not others must be entity name
-
-                     else
-                        pragma Assert (Is_Entity_Name (C));
-                        pragma Assert (Present (Entity (C)));
-
-                        --  Get exception being handled, dealing with renaming
-
-                        EHandle := Get_Renamed_Entity (Entity (C));
-
-                        --  If match, then check choice parameter
-
-                        if ERaise = EHandle then
-                           if No (Choice_Parameter (H)) then
-                              return H;
-                           else
-                              return Empty;
-                           end if;
-                        end if;
                      end if;
+                  end if;
 
-                     Next (C);
-                  end loop;
-               end if;
+                  Next (C);
+               end loop;
 
-               Next (H);
+               Next_Non_Pragma (H);
             end loop;
          end if;
 
