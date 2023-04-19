@@ -3370,8 +3370,8 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
       if (((GET_CODE (op0) == NOT && rtx_equal_p (XEXP (op0, 0), op1))
 	   || (GET_CODE (op1) == NOT && rtx_equal_p (XEXP (op1, 0), op0)))
 	  && ! side_effects_p (op0)
-	  && SCALAR_INT_MODE_P (mode))
-	return constm1_rtx;
+	  && GET_MODE_CLASS (mode) != MODE_CC)
+	return CONSTM1_RTX (mode);
 
       /* (ior A C) is C if all bits of A that might be nonzero are on in C.  */
       if (CONST_INT_P (op1)
