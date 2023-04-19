@@ -1592,10 +1592,8 @@ package body Exp_Ch11 is
 
       else
          --  Bypass expansion to a run-time call when back-end exception
-         --  handling is active, unless the target is CodePeer or GNATprove.
-         --  In CodePeer, raising an exception is treated as an error, while in
-         --  GNATprove all code with exceptions falls outside the subset of
-         --  code which can be formally analyzed.
+         --  handling is active, unless the target is CodePeer, where
+         --  raising an exception is treated as an error.
 
          if not CodePeer_Mode then
             return;
@@ -1604,7 +1602,7 @@ package body Exp_Ch11 is
          --  Find innermost enclosing exception handler (there must be one,
          --  since the semantics has already verified that this raise statement
          --  is valid, and a raise with no arguments is only permitted in the
-         --  context of an exception handler.
+         --  context of an exception handler).
 
          Ehand := Parent (N);
          while Nkind (Ehand) /= N_Exception_Handler loop
