@@ -159,17 +159,13 @@ refine_value_range_using_guard (tree type, tree var,
 
       if (operand_equal_p (var, c0, 0))
 	{
-	  mpz_t valc1;
-
 	  /* Case of comparing VAR with its below/up bounds.  */
-	  mpz_init (valc1);
+	  auto_mpz valc1;
 	  wi::to_mpz (wi::to_wide (c1), valc1, TYPE_SIGN (type));
 	  if (mpz_cmp (valc1, below) == 0)
 	    cmp = GT_EXPR;
 	  if (mpz_cmp (valc1, up) == 0)
 	    cmp = LT_EXPR;
-
-	  mpz_clear (valc1);
 	}
       else
 	{
@@ -506,7 +502,6 @@ bound_difference_of_offsetted_base (tree type, mpz_t x, mpz_t y,
 {
   int rel = mpz_cmp (x, y);
   bool may_wrap = !nowrap_type_p (type);
-  mpz_t m;
 
   /* If X == Y, then the expressions are always equal.
      If X > Y, there are the following possibilities:
@@ -529,7 +524,7 @@ bound_difference_of_offsetted_base (tree type, mpz_t x, mpz_t y,
       return;
     }
 
-  mpz_init (m);
+  auto_mpz m;
   wi::to_mpz (wi::minus_one (TYPE_PRECISION (type)), m, UNSIGNED);
   mpz_add_ui (m, m, 1);
   mpz_sub (bnds->up, x, y);
@@ -542,8 +537,6 @@ bound_difference_of_offsetted_base (tree type, mpz_t x, mpz_t y,
       else
 	mpz_add (bnds->up, bnds->up, m);
     }
-
-  mpz_clear (m);
 }
 
 /* From condition C0 CMP C1 derives information regarding the
@@ -975,7 +968,6 @@ number_of_iterations_ne (class loop *loop, tree type, affine_iv *iv,
 {
   tree niter_type = unsigned_type_for (type);
   tree s, c, d, bits, assumption, tmp, bound;
-  mpz_t max;
 
   niter->control = *iv;
   niter->bound = final;
@@ -1003,12 +995,11 @@ number_of_iterations_ne (class loop *loop, tree type, affine_iv *iv,
 		       fold_convert (niter_type, iv->base));
     }
 
-  mpz_init (max);
+  auto_mpz max;
   number_of_iterations_ne_max (max, iv->no_overflow, c, s, bnds,
 			       exit_must_be_taken);
   niter->max = widest_int::from (wi::from_mpz (niter_type, max, false),
 				 TYPE_SIGN (niter_type));
-  mpz_clear (max);
 
   /* Compute no-overflow information for the control iv.  This can be
      proven when below two conditions are satisfied:
@@ -1155,9 +1146,8 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
   tree niter_type = TREE_TYPE (step);
   tree mod = fold_build2 (FLOOR_MOD_EXPR, niter_type, *delta, step);
   tree tmod;
-  mpz_t mmod;
   tree assumption = boolean_true_node, bound, noloop;
-  bool ret = false, fv_comp_no_overflow;
+  bool fv_comp_no_overflow;
   tree type1 = type;
   if (POINTER_TYPE_P (type))
     type1 = sizetype;
@@ -1168,7 +1158,7 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
     mod = fold_build2 (MINUS_EXPR, niter_type, step, mod);
   tmod = fold_convert (type1, mod);
 
-  mpz_init (mmod);
+  auto_mpz mmod;
   wi::to_mpz (wi::to_wide (mod), mmod, UNSIGNED);
   mpz_neg (mmod, mmod);
 
@@ -1200,7 +1190,7 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
 	  assumption = fold_build2 (LE_EXPR, boolean_type_node,
 				    iv1->base, bound);
 	  if (integer_zerop (assumption))
-	    goto end;
+	    return false;
 	}
       if (mpz_cmp (mmod, bnds->below) < 0)
 	noloop = boolean_false_node;
@@ -1226,7 +1216,7 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
 	  assumption = fold_build2 (GE_EXPR, boolean_type_node,
 				    iv0->base, bound);
 	  if (integer_zerop (assumption))
-	    goto end;
+	    return false;
 	}
       if (mpz_cmp (mmod, bnds->below) < 0)
 	noloop = boolean_false_node;
@@ -1254,10 +1244,7 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
   bounds_add (bnds, wi::to_widest (mod), type);
   *delta = fold_build2 (PLUS_EXPR, niter_type, *delta, mod);
 
-  ret = true;
-end:
-  mpz_clear (mmod);
-  return ret;
+  return true;
 }
 
 /* Add assertions to NITER that ensure that the control variable of the loop

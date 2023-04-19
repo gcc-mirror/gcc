@@ -11084,15 +11084,13 @@ do_mpfr_lgamma_r (tree arg, tree arg_sg, tree type)
 	  const int prec = fmt->p;
 	  const mpfr_rnd_t rnd = fmt->round_towards_zero? MPFR_RNDZ : MPFR_RNDN;
 	  int inexact, sg;
-	  mpfr_t m;
 	  tree result_lg;
 
-	  mpfr_init2 (m, prec);
+	  auto_mpfr m (prec);
 	  mpfr_from_real (m, ra, MPFR_RNDN);
 	  mpfr_clear_flags ();
 	  inexact = mpfr_lgamma (m, &sg, m, rnd);
 	  result_lg = do_mpfr_ckconv (m, type, inexact);
-	  mpfr_clear (m);
 	  if (result_lg)
 	    {
 	      tree result_sg;

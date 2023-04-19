@@ -32,6 +32,7 @@ public:
   ~auto_mpfr () { mpfr_clear (m_mpfr); }
 
   operator mpfr_t& () { return m_mpfr; }
+  mpfr_ptr operator-> () { return m_mpfr; }
 
   auto_mpfr (const auto_mpfr &) = delete;
   auto_mpfr &operator= (const auto_mpfr &) = delete;

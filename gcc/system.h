@@ -709,6 +709,7 @@ public:
   ~auto_mpz () { mpz_clear (m_mpz); }
 
   operator mpz_t& () { return m_mpz; }
+  mpz_ptr operator-> () { return m_mpz; }
 
   auto_mpz (const auto_mpz &) = delete;
   auto_mpz &operator= (const auto_mpz &) = delete;
