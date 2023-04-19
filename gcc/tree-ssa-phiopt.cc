@@ -209,8 +209,7 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 	    hoist_adjacent_loads (bb, bb1, bb2, bb3);
 	  continue;
 	}
-      else if (EDGE_SUCC (bb1, 0)->dest == EDGE_SUCC (bb2, 0)->dest
-	       && !empty_block_p (bb1))
+      else if (EDGE_SUCC (bb1, 0)->dest == EDGE_SUCC (bb2, 0)->dest)
 	{
 	  diamond_p = true;
 	  e2 = EDGE_SUCC (bb2, 0);
