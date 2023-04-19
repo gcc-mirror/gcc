@@ -8444,8 +8444,104 @@ package body Exp_Aggr is
       Comp      : Node_Id;
       Comp_Typ  : Entity_Id;
       Init_Expr : Node_Id;
-      Stmts     : List_Id) is
+      Stmts     : List_Id)
+   is
+      Init_Expr_Q : constant Node_Id    := Unqualify (Init_Expr);
+      Loc         : constant Source_Ptr := Sloc (N);
+
    begin
+      --  If the initialization expression of a component with controlled type
+      --  is a conditional expression that has a function call as one of its
+      --  dependent expressions, then we need to expand it immediately, so as
+      --  to trigger the special processing for function calls with controlled
+      --  type below and avoid a wrong order of initialization, adjustment and
+      --  finalization in the context of aggregates. For the sake of uniformity
+      --  we perform this expansion for all conditional expressions.
+
+      if Nkind (Init_Expr_Q) = N_If_Expression
+        and then Present (Comp_Typ)
+        and then Needs_Finalization (Comp_Typ)
+      then
+         declare
+            Cond       : constant Node_Id := First (Expressions (Init_Expr_Q));
+            Thenx      : constant Node_Id := Next (Cond);
+            Elsex      : constant Node_Id := Next (Thenx);
+            Then_Stmts : constant List_Id := New_List;
+            Else_Stmts : constant List_Id := New_List;
+
+            If_Stmt : Node_Id;
+
+         begin
+            Initialize_Component
+              (N         => N,
+               Comp      => Comp,
+               Comp_Typ  => Comp_Typ,
+               Init_Expr => Thenx,
+               Stmts     => Then_Stmts);
+
+            Initialize_Component
+              (N         => N,
+               Comp      => Comp,
+               Comp_Typ  => Comp_Typ,
+               Init_Expr => Elsex,
+               Stmts     => Else_Stmts);
+
+            If_Stmt :=
+              Make_Implicit_If_Statement (N,
+                Condition       => Relocate_Node (Cond),
+                Then_Statements => Then_Stmts,
+                Else_Statements => Else_Stmts);
+
+            Set_From_Conditional_Expression (If_Stmt);
+            Append_To (Stmts, If_Stmt);
+         end;
+
+      elsif Nkind (Init_Expr_Q) = N_Case_Expression
+        and then Present (Comp_Typ)
+        and then Needs_Finalization (Comp_Typ)
+      then
+         declare
+            Alt       : Node_Id;
+            Alt_Stmts : List_Id;
+            Case_Stmt : Node_Id;
+
+         begin
+            Case_Stmt :=
+               Make_Case_Statement (Loc,
+                 Expression   =>
+                   Relocate_Node (Expression (Init_Expr_Q)),
+                 Alternatives => New_List);
+
+            Alt := First (Alternatives (Init_Expr_Q));
+            while Present (Alt) loop
+               declare
+                  Alt_Expr : constant Node_Id    := Expression (Alt);
+                  Alt_Loc  : constant Source_Ptr := Sloc (Alt_Expr);
+
+               begin
+                  Alt_Stmts := New_List;
+
+                  Initialize_Component
+                    (N         => N,
+                     Comp      => Comp,
+                     Comp_Typ  => Comp_Typ,
+                     Init_Expr => Alt_Expr,
+                     Stmts     => Alt_Stmts);
+
+                  Append_To
+                    (Alternatives (Case_Stmt),
+                     Make_Case_Statement_Alternative (Alt_Loc,
+                     Discrete_Choices => Discrete_Choices (Alt),
+                     Statements       => Alt_Stmts));
+               end;
+
+               Next (Alt);
+            end loop;
+
+            Set_From_Conditional_Expression (Case_Stmt);
+            Append_To (Stmts, Case_Stmt);
+         end;
+
       --  Handle an initialization expression of a controlled type in
       --  case it denotes a function call. In general such a scenario
       --  will produce a transient scope, but this will lead to wrong
@@ -8477,9 +8573,9 @@ package body Exp_Aggr is
       --    Adjust (Comp);
       --    Finalize (Res);
 
-      if Present (Comp_Typ)
+      elsif Nkind (Init_Expr_Q) /= N_Aggregate
+        and then Present (Comp_Typ)
         and then Needs_Finalization (Comp_Typ)
-        and then Nkind (Unqualify (Init_Expr)) /= N_Aggregate
       then
          Initialize_Controlled_Component
            (N         => N,
