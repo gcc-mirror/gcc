@@ -1,3 +1,7 @@
+2023-04-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc-interface/utils.cc (unchecked_convert): Fixed typo.
+
 2023-04-17  Martin Liska  <mliska@suse.cz>
 
 	* gnatvsn.ads: Bump Library_Version to 14.

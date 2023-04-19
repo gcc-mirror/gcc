@@ -1,3 +1,279 @@
+2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi: Remove stray @gol.
+
+2023-04-18  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* ifcvt.cc (cond_move_process_if_block): Consider the result of
+	targetm.noce_conversion_profitable_p() when replacing the original
+	sequence with the converted one.
+
+2023-04-18  Mark Harmstone  <mark@harmstone.com>
+
+	* common.opt (gcodeview): Add new option.
+	* gcc.cc (driver_handle_option); Handle OPT_gcodeview.
+	* opts.cc (command_handle_option): Similarly.
+	* doc/invoke.texi: Add documentation for -gcodeview.
+
+2023-04-18  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc (tree_ssa_phiopt_worker): Remove declaration.
+	(make_pass_phiopt): Make execute out of line.
+	(tree_ssa_cs_elim): Move code into ...
+	(pass_cselim::execute): here.
+
+2023-04-18  Sam James  <sam@gentoo.org>
+
+	* system.h: Drop unused INCLUDE_PTHREAD_H.
+
+2023-04-18  Kevin Lee  <kevinl@rivosinc.com>
+
+	* tree-vect-data-refs.cc (vect_grouped_store_supported): Add new
+	condition.
+
+2023-04-18  Sinan Lin  <sinan.lin@linux.alibaba.com>
+
+	* config/riscv/bitmanip.md (rotr<mode>3 expander): Enable for ZBKB.
+	(bswapdi2, bswapsi2): Similarly.
+
+2023-04-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/94908
+	* config/i386/i386-builtin.def (__builtin_ia32_insertps128):
+	Use CODE_FOR_sse4_1_insertps_v4sf.
+	* config/i386/i386-expand.cc (expand_vec_perm_insertps): New.
+	(expand_vec_perm_1): Call expand_vec_per_insertps.
+	* config/i386/i386.md ("unspec"): Declare UNSPEC_INSERTPS here.
+	* config/i386/mmx.md (mmxscalarmode): New mode attribute.
+	(@sse4_1_insertps_<mode>): New insn pattern.
+	* config/i386/sse.md (@sse4_1_insertps_<mode>): Macroize insn
+	pattern from sse4_1_insertps using VI4F_128 mode iterator.
+
+2023-04-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (gt_ggc_mx): New.
+	(gt_pch_nx): New.
+	* value-range.h (class vrange): Add GTY marker.
+	(class frange): Same.
+	(gt_ggc_mx): Remove.
+	(gt_pch_nx): Remove.
+
+2023-04-18  Victor L. Do Nascimento  <victor.donascimento@arm.com>
+
+	* lra-constraints.cc (constraint_unique): New.
+	(process_address_1): Apply constraint_unique test.
+	* recog.cc (constrain_operands): Allow relaxed memory
+	constaints.
+
+2023-04-18  Kito Cheng  <kito.cheng@sifive.com>
+
+	* doc/extend.texi (Target Builtins): Add RISC-V Vector
+	Intrinsics.
+	(RISC-V Vector Intrinsics): Document GCC implemented which
+	version of RISC-V vector intrinsics and its reference.
+
+2023-04-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/108786
+	* bitmap.h (bitmap_clear_first_set_bit): New.
+	* bitmap.cc (bitmap_first_set_bit_worker): Rename from
+	bitmap_first_set_bit and add optional clearing of the bit.
+	(bitmap_first_set_bit): Wrap bitmap_first_set_bit_worker.
+	(bitmap_clear_first_set_bit): Likewise.
+	* df-core.cc (df_worklist_dataflow_doublequeue): Use
+	bitmap_clear_first_set_bit.
+	* graphite-scop-detection.cc (scop_detection::merge_sese):
+	Likewise.
+	* sanopt.cc (sanitize_asan_mark_unpoison): Likewise.
+	(sanitize_asan_mark_poison): Likewise.
+	* tree-cfgcleanup.cc (cleanup_tree_cfg_noloop): Likewise.
+	* tree-into-ssa.cc (rewrite_blocks): Likewise.
+	* tree-ssa-dce.cc (simple_dce_from_worklist): Likewise.
+	* tree-ssa-sccvn.cc (do_rpo_vn_1): Likewise.
+
+2023-04-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.cc (dump_sa_stats): Split out from...
+	(dump_sa_points_to_info): ... this function.
+	(compute_points_to_sets): Guard large dumps with TDF_DETAILS,
+	and call dump_sa_stats guarded with TDF_STATS.
+	(ipa_pta_execute): Likewise.
+	(compute_may_aliases): Guard dump_alias_info with
+	TDF_DETAILS|TDF_ALIAS.
+
+2023-04-18  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc (gimple_simplify_phiopt): Dump
+	the expression that is being tried when TDF_FOLDING
+	is true.
+	(phiopt_worker::match_simplify_replacement): Dump
+	the sequence which was created by gimple_simplify_phiopt
+	when TDF_FOLDING is true.
+
+2023-04-18  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc (match_simplify_replacement):
+	Simplify code that does the movement slightly.
+
+2023-04-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (@aarch64_rev16<mode>): Change to
+	define_expand.
+	(rev16<mode>2): Rename to...
+	(aarch64_rev16<mode>2_alt1): ... This.
+	(rev16<mode>2_alt): Rename to...
+	(*aarch64_rev16<mode>2_alt2): ... This.
+
+2023-04-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* emit-rtl.cc (init_emit_once): Initialize dconstm0.
+	* gimple-range-op.cc (class cfn_signbit): Remove dconstm0
+	declaration.
+	* range-op-float.cc (zero_range): Use dconstm0.
+	(zero_to_inf_range): Same.
+	* real.h (dconstm0): New.
+	* value-range.cc (frange::flush_denormals_to_zero): Use dconstm0.
+	(frange::set_zero): Do not declare dconstm0.
+
+2023-04-18  Richard Biener  <rguenther@suse.de>
+
+	* system.h (class auto_mpz): New,
+	* realmpfr.h (class auto_mpfr): Likewise.
+	* fold-const-call.cc (do_mpfr_arg1): Use auto_mpfr.
+	(do_mpfr_arg2): Likewise.
+	* tree-ssa-loop-niter.cc (bound_difference): Use auto_mpz;
+
+2023-04-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc (aarch64_init_simd_intrinsics): Take
+	builtin flags from intrinsic data rather than hardcoded FLAG_AUTO_FP.
+
+2023-04-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::operator==): Adjust for NAN.
+	(range_tests_nan): Remove some NAN tests.
+
+2023-04-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* inchash.cc (hash::add_real_value): New.
+	* inchash.h (class hash): Add add_real_value.
+	* value-range.cc (add_vrange): New.
+	* value-range.h (inchash::add_vrange): New.
+
+2023-04-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109539
+	* gimple-ssa-warn-access.cc (pass_waccess::check_pointer_uses):
+	Re-implement pointer relatedness for PHIs.
+
+2023-04-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (SV_SFDF): New iterator.
+	(SV_FP): New iterator.
+	(scalar_mode, SCALAR_MODE): Add identity mappings for scalar modes.
+	(recip<mode>2): Unify the two patterns using SV_FP.
+	(div_scale<mode><exec_vcc>): New insn.
+	(div_fmas<mode><exec>): New insn.
+	(div_fixup<mode><exec>): New insn.
+	(div<mode>3): Unify the two expanders and rewrite using hardfp.
+	* config/gcn/gcn.cc (gcn_md_reorg): Support "vccwait" attribute.
+	* config/gcn/gcn.md (unspec): Add UNSPEC_DIV_SCALE, UNSPEC_DIV_FMAS,
+	and UNSPEC_DIV_FIXUP.
+	(vccwait): New attribute.
+
+2023-04-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_validate_mcpu): Add hint to use -march
+	if the argument matches that.
+
+2023-04-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/atomics.md
+	(*aarch64_atomic_load<ALLX:mode>_rcpc_zext):
+	Use SD_HSDI for destination mode iterator.
+
+2023-04-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* common/config/riscv/riscv-common.cc (multi_letter_subset_rank): Swap the order
+	of z-extensions and s-extensions.
+	(riscv_subset_list::parse): Likewise.
+
+2023-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109240
+	* match.pd (fneg/fadd): Rewrite such that it handles both plus as
+	first vec_perm operand and minus as second using fneg/fadd and
+	minus as first vec_perm operand and plus as second using fneg/fsub.
+
+2023-04-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* data-streamer.cc (bp_pack_real_value): New.
+	(bp_unpack_real_value): New.
+	* data-streamer.h (bp_pack_real_value):  New.
+	(bp_unpack_real_value): New.
+	* tree-streamer-in.cc (unpack_ts_real_cst_value_fields): Use
+	bp_unpack_real_value.
+	* tree-streamer-out.cc (pack_ts_real_cst_value_fields): Use
+	bp_pack_real_value.
+
+2023-04-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* wide-int.h (WIDE_INT_MAX_HWIS): New.
+	(class fixed_wide_int_storage): Use it.
+	(trailing_wide_ints <N>::set_precision): Use it.
+	(trailing_wide_ints <N>::extra_size): Use it.
+
+2023-04-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch-protos.h
+	(loongarch_addu16i_imm12_operand_p): New function prototype.
+	(loongarch_split_plus_constant): Likewise.
+	* config/loongarch/loongarch.cc
+	(loongarch_addu16i_imm12_operand_p): New function.
+	(loongarch_split_plus_constant): Likewise.
+	* config/loongarch/loongarch.h (ADDU16I_OPERAND): New macro.
+	(DUAL_IMM12_OPERAND): Likewise.
+	(DUAL_ADDU16I_OPERAND): Likewise.
+	* config/loongarch/constraints.md (La, Lb, Lc, Ld, Le): New
+	constraint.
+	* config/loongarch/predicates.md (const_dual_imm12_operand): New
+	predicate.
+	(const_addu16i_operand): Likewise.
+	(const_addu16i_imm12_di_operand): Likewise.
+	(const_addu16i_imm12_si_operand): Likewise.
+	(plus_di_operand): Likewise.
+	(plus_si_operand): Likewise.
+	(plus_si_extend_operand): Likewise.
+	* config/loongarch/loongarch.md (add<mode>3): Convert to
+	define_insn_and_split.  Use plus_<mode>_operand predicate
+	instead of arith_operand.  Add alternatives for La, Lb, Lc, Ld,
+	and Le constraints.
+	(*addsi3_extended): Convert to define_insn_and_split.  Use
+	plus_si_extend_operand instead of arith_operand.  Add
+	alternatives for La and Le alternatives.
+
+2023-04-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (Value_Range::Value_Range): New.
+	(Value_Range::contains_p): New.
+
+2023-04-18  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (class vrange): Make m_discriminator const.
+	(class irange): Make m_max_ranges const.  Adjust constructors
+	accordingly.
+	(class unsupported_range): Construct vrange appropriately.
+	(class frange): Same.
+
+2023-04-18  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.h (LOGICAL_OP_NON_SHORT_CIRCUIT): Remove the macro
+	definition.
+
+2023-04-18  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* doc/extend.texi: Add section for LoongArch Base Built-in functions.
+
 2023-04-18  Fei Gao  <gaofei@eswincomputing.com>
 
 	* config/riscv/riscv.cc (riscv_first_stack_step): Make codes more

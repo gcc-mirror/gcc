@@ -1,3 +1,61 @@
+2023-04-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/94908
+	* gcc.target/i386/pr94908.c: New test.
+	* gcc.target/i386/sse4_1-insertps-5.c: New test.
+	* gcc.target/i386/vperm-v4sf-2-sse4.c: New test.
+
+2023-04-18  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/ipa/ipa-pta-16.c: Use -details for dump.
+	* gcc.dg/tm/alias-1.c: Likewise.
+	* gcc.dg/tm/alias-2.c: Likewise.
+	* gcc.dg/torture/ipa-pta-1.c: Likewise.
+	* gcc.dg/torture/pr39074-2.c: Likewise.
+	* gcc.dg/torture/pr39074.c: Likewise.
+	* gcc.dg/torture/pta-callused-1.c: Likewise.
+	* gcc.dg/torture/pta-escape-1.c: Likewise.
+	* gcc.dg/torture/pta-ptrarith-1.c: Likewise.
+	* gcc.dg/torture/pta-ptrarith-2.c: Likewise.
+	* gcc.dg/torture/pta-ptrarith-3.c: Likewise.
+	* gcc.dg/torture/pta-structcopy-1.c: Likewise.
+	* gcc.dg/torture/ssa-pta-fn-1.c: Likewise.
+	* gcc.dg/tree-ssa/alias-19.c: Likewise.
+	* gcc.dg/tree-ssa/pta-callused.c: Likewise.
+	* gcc.dg/tree-ssa/pta-fp.c: Likewise.
+	* gcc.dg/tree-ssa/pta-ptrarith-1.c: Likewise.
+	* gcc.dg/tree-ssa/pta-ptrarith-2.c: Likewise.
+
+2023-04-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.target/gcn/fpdiv.c: Remove the -ffast-math requirement.
+
+2023-04-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/spellcheck_11.c: New test.
+
+2023-04-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/ldapr-zext.c: Add test for u8 to u16
+	extension.
+
+2023-04-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/arch-5.c: Likewise.
+
+2023-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109240
+	* gcc.target/aarch64/simd/addsub_2.c: New test.
+	* gcc.target/aarch64/sve/addsub_2.c: New test.
+
+2023-04-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/add-const.c: New test.
+	* gcc.target/loongarch/stack-check-cfa-1.c: Adjust for stack
+	frame size change.
+	* gcc.target/loongarch/stack-check-cfa-2.c: Likewise.
+
 2023-04-17  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/109531

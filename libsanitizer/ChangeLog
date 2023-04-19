@@ -1,3 +1,8 @@
+2023-04-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.tgt: Unsupport Darwin22+ until a mechanism can be found
+	to locate dyld in the shared cache.
+
 2023-01-31  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR sanitizer/108106

@@ -1,3 +1,78 @@
+2023-04-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/extensions.xml: Fix example to declare and
+	qualify std::free, and use NULL instead of 0.
+	* doc/html/manual/ext_demangling.html: Regenerate.
+	* libsupc++/cxxabi.h: Adjust doxygen comments.
+
+2023-04-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108969
+	* config/abi/pre/gnu.ver: Fix preprocessor condition.
+
+2023-04-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108969
+	* src/Makefile.am: Move globals_io.cc to here.
+	* src/Makefile.in: Regenerate.
+	* src/c++98/Makefile.am: Remove globals_io.cc from here.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/c++98/globals_io.cc [_GLIBCXX_SYMVER_GNU] (cin): Adjust
+	symbol name and then export with GLIBCXX_3.4.31 symver.
+	(cout, cerr, clog, wcin, wcout, wcerr, wclog): Likewise.
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/pre/gnu.ver: Add iostream objects to new symver.
+
+2023-04-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/108827
+	* include/bits/ranges_cmp.h (__cpp_lib_ranges): Bump value
+	for C++23.
+	* include/std/ranges (range_adaptor_closure): Define for C++23.
+	* include/std/version (__cpp_lib_ranges): Bump value for
+	C++23.
+	* testsuite/std/ranges/version_c++23.cc: Bump expected value
+	of __cpp_lib_ranges.
+	* testsuite/std/ranges/range_adaptor_closure.cc: New test.
+
+2023-04-18  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_algo.h (__cpp_lib_ranges_contains):
+	Define for C++23.
+	(__cpp_lib_ranges_iota): Likewise.
+	(__cpp_lib_ranges_find_last): Likewise.
+	(__cpp_lib_fold): Rename to ...
+	(__cpp_lib_ranges_fold): ... this.
+	* include/std/version: As above.
+	* testsuite/25_algorithms/fold_left/1.cc: Adjust after
+	renaming __cpp_lib_fold.
+	* testsuite/std/ranges/version_c++23.cc: Verify values
+	of the above feature-test macros.
+
+2023-04-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/109525
+	* include/std/ranges (views::_AsConst::operator()): Add
+	missing const to constant_range test.
+	* testsuite/std/ranges/adaptors/as_const/1.cc (test02):
+	Improve formatting.  Adjust expected type of v2.
+	(test03): New test.
+
 2023-04-14  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/ranges_base.h (const_iterator_t): Define for C++23.
