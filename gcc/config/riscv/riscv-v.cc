@@ -340,14 +340,19 @@ struct mode_vtype_group
   uint8_t ratio_for_min_vlen32[NUM_MACHINE_MODES];
   enum vlmul_type vlmul_for_min_vlen64[NUM_MACHINE_MODES];
   uint8_t ratio_for_min_vlen64[NUM_MACHINE_MODES];
+  enum vlmul_type vlmul_for_for_vlen128[NUM_MACHINE_MODES];
+  uint8_t ratio_for_for_vlen128[NUM_MACHINE_MODES];
   mode_vtype_group ()
   {
 #define ENTRY(MODE, REQUIREMENT, VLMUL_FOR_MIN_VLEN32, RATIO_FOR_MIN_VLEN32,   \
-	      VLMUL_FOR_MIN_VLEN64, RATIO_FOR_MIN_VLEN64)                      \
+	      VLMUL_FOR_MIN_VLEN64, RATIO_FOR_MIN_VLEN64,                      \
+	      VLMUL_FOR_FOR_VLEN128, RATIO_FOR_FOR_VLEN128)                    \
   vlmul_for_min_vlen32[MODE##mode] = VLMUL_FOR_MIN_VLEN32;                     \
   ratio_for_min_vlen32[MODE##mode] = RATIO_FOR_MIN_VLEN32;                     \
   vlmul_for_min_vlen64[MODE##mode] = VLMUL_FOR_MIN_VLEN64;                     \
-  ratio_for_min_vlen64[MODE##mode] = RATIO_FOR_MIN_VLEN64;
+  ratio_for_min_vlen64[MODE##mode] = RATIO_FOR_MIN_VLEN64;                     \
+  vlmul_for_for_vlen128[MODE##mode] = VLMUL_FOR_FOR_VLEN128;                   \
+  ratio_for_for_vlen128[MODE##mode] = RATIO_FOR_FOR_VLEN128;
 #include "riscv-vector-switch.def"
   }
 };
@@ -358,7 +363,9 @@ static mode_vtype_group mode_vtype_infos;
 enum vlmul_type
 get_vlmul (machine_mode mode)
 {
-  if (TARGET_MIN_VLEN == 32)
+  if (TARGET_MIN_VLEN >= 128)
+    return mode_vtype_infos.vlmul_for_for_vlen128[mode];
+  else if (TARGET_MIN_VLEN == 32)
     return mode_vtype_infos.vlmul_for_min_vlen32[mode];
   else
     return mode_vtype_infos.vlmul_for_min_vlen64[mode];
@@ -368,7 +375,9 @@ get_vlmul (machine_mode mode)
 unsigned int
 get_ratio (machine_mode mode)
 {
-  if (TARGET_MIN_VLEN == 32)
+  if (TARGET_MIN_VLEN >= 128)
+    return mode_vtype_infos.ratio_for_for_vlen128[mode];
+  else if (TARGET_MIN_VLEN == 32)
     return mode_vtype_infos.ratio_for_min_vlen32[mode];
   else
     return mode_vtype_infos.ratio_for_min_vlen64[mode];

@@ -1974,6 +1974,8 @@ riscv_legitimize_poly_move (machine_mode mode, rtx dest, rtx tmp, rtx src)
     div_factor = 4;
   else if ((factor % (vlenb / 8)) == 0)
     div_factor = 8;
+  else if ((factor % (vlenb / 16)) == 0)
+    div_factor = 16;
   else
     gcc_unreachable ();
 
@@ -6192,7 +6194,15 @@ riscv_init_machine_status (void)
 static poly_uint16
 riscv_convert_vector_bits (void)
 {
-  if (TARGET_MIN_VLEN > 32)
+  if (TARGET_MIN_VLEN >= 128)
+    {
+      /* We have Full 'V' extension for application processors. It's specified
+	 by -march=rv64gcv/rv32gcv, The 'V' extension depends upon the Zvl128b
+	 and Zve64d extensions. Thus the number of bytes in a vector is 16 + 16
+	 * x1 which is riscv_vector_chunks * 16 = poly_int (16, 16).  */
+      riscv_bytes_per_vector_chunk = 16;
+    }
+  else if (TARGET_MIN_VLEN > 32)
     {
       /* When targetting minimum VLEN > 32, we should use 64-bit chunk size.
 	 Otherwise we can not include SEW = 64bits.
