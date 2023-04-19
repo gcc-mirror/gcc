@@ -1,3 +1,8 @@
+2023-04-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	* basic-allocator.c (basic_alloc_free): Use BASIC_ALLOC_YIELD.
+	(basic_alloc_realloc): Use BASIC_ALLOC_YIELD.
+
 2023-04-03  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* target.c (gomp_map_vars_internal)
