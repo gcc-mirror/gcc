@@ -14678,6 +14678,10 @@ cost_plus:
 	}
       return false;
 
+    case ROTATE:
+    case ROTATERT:
+    case LSHIFTRT:
+    case ASHIFTRT:
     case ASHIFT:
       op0 = XEXP (x, 0);
       op1 = XEXP (x, 1);
@@ -14693,8 +14697,8 @@ cost_plus:
 		}
 	      else
 		{
-		  /* LSL (immediate), UBMF, UBFIZ and friends.  These are all
-		     aliases.  */
+		  /* LSL (immediate), ASR (immediate), UBMF, UBFIZ and friends.
+		     These are all aliases.  */
 		  *cost += extra_cost->alu.shift;
 		}
 	    }
@@ -14718,9 +14722,13 @@ cost_plus:
 	  else
 	    {
 	      if (speed)
-		/* LSLV.  */
+		/* LSLV, ASRV.  */
 		*cost += extra_cost->alu.shift_reg;
 
+	       /* The register shift amount may be in a shorter mode expressed
+		  as a lowpart SUBREG.  For costing purposes just look inside.  */
+	      if (SUBREG_P (op1) && subreg_lowpart_p (op1))
+		op1 = SUBREG_REG (op1);
 	      if (GET_CODE (op1) == AND && REG_P (XEXP (op1, 0))
 		  && CONST_INT_P (XEXP (op1, 1))
 		  && known_eq (INTVAL (XEXP (op1, 1)),
@@ -14734,55 +14742,6 @@ cost_plus:
 	    }
 	  return false;  /* All arguments need to be in registers.  */
         }
-
-    case ROTATE:
-    case ROTATERT:
-    case LSHIFTRT:
-    case ASHIFTRT:
-      op0 = XEXP (x, 0);
-      op1 = XEXP (x, 1);
-
-      if (CONST_INT_P (op1))
-	{
-	  /* ASR (immediate) and friends.  */
-	  if (speed)
-	    {
-	      if (VECTOR_MODE_P (mode))
-		*cost += extra_cost->vect.alu;
-	      else
-		*cost += extra_cost->alu.shift;
-	    }
-
-	  *cost += rtx_cost (op0, mode, (enum rtx_code) code, 0, speed);
-	  return true;
-	}
-      else
-	{
-	  if (VECTOR_MODE_P (mode))
-	    {
-	      if (speed)
-		/* Vector shift (register).  */
-		*cost += extra_cost->vect.alu;
-	    }
-	  else
-	    {
-	      if (speed)
-		/* ASR (register) and friends.  */
-		*cost += extra_cost->alu.shift_reg;
-
-	      if (GET_CODE (op1) == AND && REG_P (XEXP (op1, 0))
-		  && CONST_INT_P (XEXP (op1, 1))
-		  && known_eq (INTVAL (XEXP (op1, 1)),
-			       GET_MODE_BITSIZE (mode) - 1))
-		{
-		  *cost += rtx_cost (op0, mode, (rtx_code) code, 0, speed);
-		  /* We already demanded XEXP (op1, 0) to be REG_P, so
-		     don't recurse into it.  */
-		  return true;
-		}
-	    }
-	  return false;  /* All arguments need to be in registers.  */
-	}
 
     case SYMBOL_REF:
 
