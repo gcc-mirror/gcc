@@ -10335,6 +10335,33 @@ package body Exp_Util is
               Constraints => List_Constr));
    end Make_Subtype_From_Expr;
 
+   -----------------------------------
+   -- Make_Tag_Assignment_From_Type --
+   -----------------------------------
+
+   function Make_Tag_Assignment_From_Type
+     (Loc    : Source_Ptr;
+      Target : Node_Id;
+      Typ    : Entity_Id) return Node_Id
+   is
+      Nam : constant Node_Id :=
+              Make_Selected_Component (Loc,
+                Prefix => Target,
+                Selector_Name =>
+                  New_Occurrence_Of (First_Tag_Component (Typ), Loc));
+
+   begin
+      Set_Assignment_OK (Nam);
+
+      return
+        Make_Assignment_Statement (Loc,
+          Name       => Nam,
+          Expression =>
+            Unchecked_Convert_To (RTE (RE_Tag),
+              New_Occurrence_Of
+                (Node (First_Elmt (Access_Disp_Table (Typ))), Loc)));
+   end Make_Tag_Assignment_From_Type;
+
    -----------------------------
    -- Make_Variant_Comparison --
    -----------------------------

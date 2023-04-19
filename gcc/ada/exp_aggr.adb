@@ -3095,22 +3095,9 @@ package body Exp_Aggr is
 
                if Tagged_Type_Expansion then
                   Instr :=
-                    Make_OK_Assignment_Statement (Loc,
-                      Name       =>
-                        Make_Selected_Component (Loc,
-                          Prefix        => New_Copy_Tree (Target),
-                          Selector_Name =>
-                            New_Occurrence_Of
-                              (First_Tag_Component (Base_Type (Typ)), Loc)),
+                    Make_Tag_Assignment_From_Type
+                      (Loc, New_Copy_Tree (Target), Base_Type (Typ));
 
-                      Expression =>
-                        Unchecked_Convert_To (RTE (RE_Tag),
-                          New_Occurrence_Of
-                            (Node (First_Elmt
-                               (Access_Disp_Table (Base_Type (Typ)))),
-                             Loc)));
-
-                  Set_Assignment_OK (Name (Instr));
                   Append_To (Assign, Instr);
 
                   --  Ada 2005 (AI-251): If tagged type has progenitors we must
@@ -3629,19 +3616,8 @@ package body Exp_Aggr is
 
       elsif Is_Tagged_Type (Typ) and then Tagged_Type_Expansion then
          Instr :=
-           Make_OK_Assignment_Statement (Loc,
-             Name =>
-               Make_Selected_Component (Loc,
-                 Prefix => New_Copy_Tree (Target),
-                 Selector_Name =>
-                   New_Occurrence_Of
-                     (First_Tag_Component (Base_Type (Typ)), Loc)),
-
-             Expression =>
-               Unchecked_Convert_To (RTE (RE_Tag),
-                 New_Occurrence_Of
-                   (Node (First_Elmt (Access_Disp_Table (Base_Type (Typ)))),
-                    Loc)));
+           Make_Tag_Assignment_From_Type
+             (Loc, New_Copy_Tree (Target), Base_Type (Typ));
 
          Append_To (L, Instr);
 
@@ -8761,19 +8737,8 @@ package body Exp_Aggr is
         and then Is_Tagged_Type (Comp_Typ)
       then
          Append_To (Blk_Stmts,
-           Make_OK_Assignment_Statement (Loc,
-             Name       =>
-               Make_Selected_Component (Loc,
-                 Prefix        => New_Copy_Tree (Comp),
-                 Selector_Name =>
-                   New_Occurrence_Of
-                     (First_Tag_Component (Full_Typ), Loc)),
-
-             Expression =>
-               Unchecked_Convert_To (RTE (RE_Tag),
-                 New_Occurrence_Of
-                   (Node (First_Elmt (Access_Disp_Table (Full_Typ))),
-                    Loc))));
+           Make_Tag_Assignment_From_Type
+             (Loc, New_Copy_Tree (Comp), Full_Typ));
       end if;
 
       --  Adjust the component. In the case of an array aggregate, controlled

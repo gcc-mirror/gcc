@@ -2150,21 +2150,10 @@ package body Exp_Ch3 is
            and then Nkind (Exp_Q) /= N_Raise_Expression
          then
             Append_To (Res,
-              Make_Assignment_Statement (Default_Loc,
-                Name       =>
-                  Make_Selected_Component (Default_Loc,
-                    Prefix        =>
-                      New_Copy_Tree (Lhs, New_Scope => Proc_Id),
-                    Selector_Name =>
-                      New_Occurrence_Of
-                        (First_Tag_Component (Typ), Default_Loc)),
-
-                Expression =>
-                  Unchecked_Convert_To (RTE (RE_Tag),
-                    New_Occurrence_Of
-                      (Node (First_Elmt (Access_Disp_Table (Underlying_Type
-                         (Typ)))),
-                       Default_Loc))));
+              Make_Tag_Assignment_From_Type
+                (Default_Loc,
+                 New_Copy_Tree (Lhs, New_Scope => Proc_Id),
+                 Underlying_Type (Typ)));
          end if;
 
          --  Adjust the component if controlled except if it is an aggregate
@@ -2791,17 +2780,8 @@ package body Exp_Ch3 is
                --  Initialize the primary tag component
 
                Init_Tags_List := New_List (
-                 Make_Assignment_Statement (Loc,
-                   Name =>
-                     Make_Selected_Component (Loc,
-                       Prefix        => Make_Identifier (Loc, Name_uInit),
-                       Selector_Name =>
-                         New_Occurrence_Of
-                           (First_Tag_Component (Rec_Type), Loc)),
-                   Expression =>
-                     New_Occurrence_Of
-                       (Node
-                         (First_Elmt (Access_Disp_Table (Rec_Type))), Loc)));
+                 Make_Tag_Assignment_From_Type
+                   (Loc, Make_Identifier (Loc, Name_uInit), Rec_Type));
 
                --  Ada 2005 (AI-251): Initialize the secondary tags components
                --  located at fixed positions (tags whose position depends on
@@ -2880,17 +2860,8 @@ package body Exp_Ch3 is
                --  Initialize the primary tag
 
                Init_Tags_List := New_List (
-                 Make_Assignment_Statement (Loc,
-                   Name =>
-                     Make_Selected_Component (Loc,
-                       Prefix        => Make_Identifier (Loc, Name_uInit),
-                       Selector_Name =>
-                         New_Occurrence_Of
-                           (First_Tag_Component (Rec_Type), Loc)),
-                   Expression =>
-                     New_Occurrence_Of
-                       (Node
-                         (First_Elmt (Access_Disp_Table (Rec_Type))), Loc)));
+                 Make_Tag_Assignment_From_Type
+                   (Loc, Make_Identifier (Loc, Name_uInit), Rec_Type));
 
                --  Ada 2005 (AI-251): Initialize the secondary tags components
                --  located at fixed positions (tags whose position depends on
@@ -12078,12 +12049,10 @@ package body Exp_Ch3 is
 
    function Make_Tag_Assignment (N : Node_Id) return Node_Id is
       Loc      : constant Source_Ptr := Sloc (N);
-      Def_If   : constant Entity_Id  := Defining_Identifier (N);
+      Def_Id   : constant Entity_Id  := Defining_Identifier (N);
       Expr     : constant Node_Id    := Expression (N);
-      Typ      : constant Entity_Id  := Etype (Def_If);
+      Typ      : constant Entity_Id  := Etype (Def_Id);
       Full_Typ : constant Entity_Id  := Underlying_Type (Typ);
-
-      New_Ref  : Node_Id;
 
    begin
       --  This expansion activity is called during analysis
@@ -12092,25 +12061,12 @@ package body Exp_Ch3 is
         and then not Is_Class_Wide_Type (Typ)
         and then not Is_CPP_Class (Typ)
         and then Tagged_Type_Expansion
-        and then Nkind (Expr) /= N_Aggregate
-        and then (Nkind (Expr) /= N_Qualified_Expression
-                   or else Nkind (Expression (Expr)) /= N_Aggregate)
+        and then Nkind (Unqualify (Expr)) /= N_Aggregate
       then
-         New_Ref :=
-           Make_Selected_Component (Loc,
-             Prefix        => New_Occurrence_Of (Def_If, Loc),
-             Selector_Name =>
-               New_Occurrence_Of (First_Tag_Component (Full_Typ), Loc));
-
-         Set_Assignment_OK (New_Ref);
-
          return
-           Make_Assignment_Statement (Loc,
-             Name       => New_Ref,
-             Expression =>
-               Unchecked_Convert_To (RTE (RE_Tag),
-                 New_Occurrence_Of
-                   (Node (First_Elmt (Access_Disp_Table (Full_Typ))), Loc)));
+           Make_Tag_Assignment_From_Type
+             (Loc, New_Occurrence_Of (Def_Id, Loc), Full_Typ);
+
       else
          return Empty;
       end if;

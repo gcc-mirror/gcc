@@ -925,6 +925,13 @@ package Exp_Util is
    --  wide type. Set Related_Id to request an external name for the subtype
    --  rather than an internal temporary.
 
+   function Make_Tag_Assignment_From_Type
+     (Loc    : Source_Ptr;
+      Target : Node_Id;
+      Typ    : Entity_Id) return Node_Id;
+   --  Return an assignment of the tag of tagged type Typ to prefix Target,
+   --  which must be a record object of a descendant of Typ.
+
    function Make_Variant_Comparison
      (Loc      : Source_Ptr;
       Typ      : Entity_Id;

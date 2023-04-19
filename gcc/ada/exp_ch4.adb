@@ -567,7 +567,6 @@ package body Exp_Ch4 is
       Adj_Call      : Node_Id;
       Aggr_In_Place : Boolean;
       Node          : Node_Id;
-      Tag_Assign    : Node_Id;
       Temp          : Entity_Id;
       Temp_Decl     : Node_Id;
 
@@ -923,30 +922,9 @@ package body Exp_Ch4 is
          end if;
 
          if Present (TagT) then
-            declare
-               Full_T : constant Entity_Id := Underlying_Type (TagT);
-
-            begin
-               Tag_Assign :=
-                 Make_Assignment_Statement (Loc,
-                   Name       =>
-                     Make_Selected_Component (Loc,
-                       Prefix        => TagR,
-                       Selector_Name =>
-                         New_Occurrence_Of
-                           (First_Tag_Component (Full_T), Loc)),
-
-                   Expression =>
-                     Unchecked_Convert_To (RTE (RE_Tag),
-                       New_Occurrence_Of
-                         (Elists.Node
-                           (First_Elmt (Access_Disp_Table (Full_T))), Loc)));
-            end;
-
-            --  The previous assignment has to be done in any case
-
-            Set_Assignment_OK (Name (Tag_Assign));
-            Insert_Action (N, Tag_Assign);
+            Insert_Action (N,
+              Make_Tag_Assignment_From_Type
+                (Loc, TagR, Underlying_Type (TagT)));
          end if;
 
          --  Generate an Adjust call if the object will be moved. In Ada 2005,
