@@ -64,7 +64,7 @@ Dump various Rust front end internals.
 
 frust-dump-
 Rust Joined RejectNegative
--frust-dump-<type>	Dump Rust frontend internal information.
+-frust-dump-<type>              Dump Rust frontend internal information.
 
 frust-incomplete-and-experimental-compiler-do-not-use
 Rust Var(flag_rust_experimental)
@@ -72,11 +72,11 @@ Enable experimental compilation of Rust files at your own risk
 
 frust-max-recursion-depth=
 Rust RejectNegative Type(int) Var(rust_max_recursion_depth) Init(64)
--frust-max-recursion-depth=integer
+-frust-max-recursion-depth=<integer>
 
 frust-mangling=
 Rust Joined RejectNegative Enum(frust_mangling) Var(flag_rust_mangling)
--frust-mangling=[legacy|v0]     Choose which version to use for name mangling
+-frust-mangling=[legacy|v0]     Version to use for name mangling
 
 Enum
 Name(frust_mangling) Type(int) UnknownError(unknown rust mangling option %qs)
@@ -93,7 +93,7 @@ Rust Joined RejectNegative
 
 frust-edition=
 Rust Joined RejectNegative Enum(frust_edition) Var(flag_rust_edition)
--frust-edition=[2015|2018|2021]             Choose which edition to use when compiling rust code
+-frust-edition=[2015|2018|2021]             Edition to use when compiling rust code
 
 Enum
 Name(frust_edition) Type(int) UnknownError(unknown rust edition %qs)
@@ -109,7 +109,7 @@ Enum(frust_edition) String(2021) Value(2)
 
 frust-embed-metadata
 Rust Var(flag_rust_embed_metadata)
-Flag to enable embeding metadata directly into object files
+Enable embedding metadata directly into object files
 
 frust-metadata-output=
 Rust Joined RejectNegative
@@ -121,7 +121,7 @@ Rust Joined Separate
 
 frust-compile-until=
 Rust Joined RejectNegative Enum(frust_compile_until) Var(flag_rust_compile_until)
--frust-compile-until=[ast|attributecheck|expansion|nameresolution|lowering|typecheck|privacy|unsafety|const|copimlation|end]             When to stop in the pipeline when compiling Rust code
+-frust-compile-until=[ast|attributecheck|expansion|nameresolution|lowering|typecheck|privacy|unsafety|const|compilation|end]             The pipeline will run up until this stage when compiling Rust code
 
 Enum
 Name(frust_compile_until) Type(int) UnknownError(unknown rust compile-until %qs)
