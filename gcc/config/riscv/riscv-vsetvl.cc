@@ -1592,6 +1592,18 @@ backward_propagate_worthwhile_p (const basic_block cfg_bb,
   return true;
 }
 
+/* Count the number of REGNO in RINSN.  */
+static int
+count_regno_occurrences (rtx_insn *rinsn, unsigned int regno)
+{
+  int count = 0;
+  extract_insn (rinsn);
+  for (int i = 0; i < recog_data.n_operands; i++)
+    if (refers_to_regno_p (regno, recog_data.operand[i]))
+      count++;
+  return count;
+}
+
 avl_info::avl_info (const avl_info &other)
 {
   m_value = other.get_value ();
@@ -3924,7 +3936,7 @@ pass_vsetvl::cleanup_insns (void) const
 	  if (!has_vl_op (rinsn) || !REG_P (get_vl (rinsn)))
 	    continue;
 	  rtx avl = get_vl (rinsn);
-	  if (count_occurrences (PATTERN (rinsn), avl, 0) == 1)
+	  if (count_regno_occurrences (rinsn, REGNO (avl)) == 1)
 	    {
 	      /* Get the list of uses for the new instruction.  */
 	      auto attempt = crtl->ssa->new_change_attempt ();
