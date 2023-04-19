@@ -1,3 +1,75 @@
+2023-04-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	Backported from master:
+	2023-01-31  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	PR target/108589
+	* config/aarch64/aarch64.c (aarch_macro_fusion_pair_p): Check
+	REG_P on SET_DEST.
+
+2023-04-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	Backported from master:
+	2023-04-17  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+		    Di Zhao  <di.zhao@amperecomputing.com>
+
+	* config/aarch64/aarch64-tuning-flags.def (AARCH64_EXTRA_TUNING_OPTION):
+	Add AARCH64_EXTRA_TUNE_NO_LDP_COMBINE.
+	* config/aarch64/aarch64.c (aarch64_operands_ok_for_ldpstp):
+	Check for the above tuning option when processing loads.
+
+2023-04-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	Backported from master:
+	2023-03-27  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+		    Jiangning Liu  <jiangning.liu@amperecomputing.com>
+		    Manolis Tsamis  <manolis.tsamis@vrull.eu>
+
+	* config/aarch64/aarch64.c: Update vector costs for ampere1.
+
+2023-04-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	Backported from master:
+	2022-11-14  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Add ampere1a.
+	* config/aarch64/aarch64-cost-tables.h: Add ampere1a_extra_costs.
+	* config/aarch64/aarch64-fusion-pairs.def (AARCH64_FUSION_PAIR):
+	Define a new fusion pair for A+B+1/A-B-1 (i.e., add/subtract two
+	registers and then +1/-1).
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/aarch64.c (aarch_macro_fusion_pair_p): Implement
+	idiom-matcher for the new fusion pair.
+	* doc/invoke.texi: Add ampere1a.
+
+2023-04-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	Backported from master:
+	2022-10-06  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Update
+	Ampere-1 core entry.
+
+2023-04-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	Backported from master:
+	2022-10-06  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/aarch64/driver-aarch64.c (readline): Fix off-by-one.
+
+2023-04-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	Backported from master:
+	2021-11-03  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): New Ampere-1
+	core.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* config/aarch64/aarch64-cost-tables.h: Add extra costs for
+	Ampere-1.
+	* config/aarch64/aarch64.c: Add tuning structures for Ampere-1.
+	* doc/invoke.texi: Add documentation for Ampere-1 core.
+
 2023-04-17  Kewen Lin  <linkw@linux.ibm.com>
 
 	Backported from master:
