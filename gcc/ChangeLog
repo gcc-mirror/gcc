@@ -1,3 +1,22 @@
+2023-04-18  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2023-04-18  Kito Cheng  <kito.cheng@sifive.com>
+
+	* doc/extend.texi (Target Builtins): Add RISC-V Vector
+	Intrinsics.
+	(RISC-V Vector Intrinsics): Document GCC implemented which
+	version of RISC-V vector intrinsics and its reference.
+
+2023-04-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-04-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109539
+	* gimple-ssa-warn-access.cc (pass_waccess::check_pointer_uses):
+	Re-implement pointer relatedness for PHIs.
+
 2023-04-17  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/107769
