@@ -1,21 +1,41 @@
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
 /* { dg-additional-options "-O2" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include "arm_mve.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*
+**foo:
+**	...
+**	vrshrnt.i32	q[0-9]+, q[0-9]+, #[0-9]+(?:	@.*|)
+**	...
+*/
 uint16x8_t
 foo (uint16x8_t a, uint32x4_t b)
 {
   return vrshrntq_n_u32 (a, b, 1);
 }
 
-/* { dg-final { scan-assembler "vrshrnt.i32"  }  } */
 
+/*
+**foo1:
+**	...
+**	vrshrnt.i32	q[0-9]+, q[0-9]+, #[0-9]+(?:	@.*|)
+**	...
+*/
 uint16x8_t
 foo1 (uint16x8_t a, uint32x4_t b)
 {
   return vrshrntq (a, b, 1);
 }
 
-/* { dg-final { scan-assembler "vrshrnt.i32"  }  } */
+#ifdef __cplusplus
+}
+#endif
+
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */

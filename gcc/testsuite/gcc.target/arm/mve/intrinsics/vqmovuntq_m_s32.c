@@ -1,22 +1,49 @@
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
 /* { dg-additional-options "-O2" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include "arm_mve.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*
+**foo:
+**	...
+**	vmsr	p0, (?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+**	vpst(?:	@.*|)
+**	...
+**	vqmovuntt.s32	q[0-9]+, q[0-9]+(?:	@.*|)
+**	...
+*/
 uint16x8_t
 foo (uint16x8_t a, int32x4_t b, mve_pred16_t p)
 {
   return vqmovuntq_m_s32 (a, b, p);
 }
 
-/* { dg-final { scan-assembler "vpst" } } */
-/* { dg-final { scan-assembler "vqmovuntt.s32"  }  } */
 
+/*
+**foo1:
+**	...
+**	vmsr	p0, (?:ip|fp|r[0-9]+)(?:	@.*|)
+**	...
+**	vpst(?:	@.*|)
+**	...
+**	vqmovuntt.s32	q[0-9]+, q[0-9]+(?:	@.*|)
+**	...
+*/
 uint16x8_t
 foo1 (uint16x8_t a, int32x4_t b, mve_pred16_t p)
 {
   return vqmovuntq_m (a, b, p);
 }
 
-/* { dg-final { scan-assembler "vpst" } } */
+#ifdef __cplusplus
+}
+#endif
+
+/* { dg-final { scan-assembler-not "__ARM_undef" } } */
