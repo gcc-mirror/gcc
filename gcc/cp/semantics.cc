@@ -4470,6 +4470,36 @@ finish_underlying_type (tree type)
   return underlying_type;
 }
 
+/* Implement the __type_pack_element keyword: Return the type
+   at index IDX within TYPES.  */
+
+static tree
+finish_type_pack_element (tree idx, tree types, tsubst_flags_t complain)
+{
+  idx = maybe_constant_value (idx);
+  if (TREE_CODE (idx) != INTEGER_CST || !INTEGRAL_TYPE_P (TREE_TYPE (idx)))
+    {
+      if (complain & tf_error)
+	error ("%<__type_pack_element%> index is not an integral constant");
+      return error_mark_node;
+    }
+  HOST_WIDE_INT val = tree_to_shwi (idx);
+  if (val < 0)
+    {
+      if (complain & tf_error)
+	error ("%<__type_pack_element%> index is negative");
+      return error_mark_node;
+    }
+  tree result = chain_index (val, types);
+  if (!result)
+    {
+      if (complain & tf_error)
+	error ("%<__type_pack_element%> index is out of range");
+      return error_mark_node;
+    }
+  return TREE_VALUE (result);
+}
+
 /* Implement the __direct_bases keyword: Return the direct base classes
    of type.  */
 
@@ -12245,7 +12275,8 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
 /* Process a trait type.  */
 
 tree
-finish_trait_type (cp_trait_kind kind, tree type1, tree type2)
+finish_trait_type (cp_trait_kind kind, tree type1, tree type2,
+		   tsubst_flags_t complain)
 {
   if (type1 == error_mark_node
       || type2 == error_mark_node)
@@ -12269,16 +12300,22 @@ finish_trait_type (cp_trait_kind kind, tree type1, tree type2)
     {
     case CPTK_UNDERLYING_TYPE:
       return finish_underlying_type (type1);
+
     case CPTK_REMOVE_CV:
       return cv_unqualified (type1);
+
     case CPTK_REMOVE_REFERENCE:
       if (TYPE_REF_P (type1))
 	type1 = TREE_TYPE (type1);
       return type1;
+
     case CPTK_REMOVE_CVREF:
       if (TYPE_REF_P (type1))
 	type1 = TREE_TYPE (type1);
       return cv_unqualified (type1);
+
+    case CPTK_TYPE_PACK_ELEMENT:
+      return finish_type_pack_element (type1, type2, complain);
 
 #define DEFTRAIT_EXPR(CODE, NAME, ARITY) \
     case CPTK_##CODE:

@@ -61,3 +61,4 @@ test03()
 
 // { dg-error "tuple index must be in range" "" { target *-*-* } 0 }
 // { dg-prune-output "no type named 'type' in .*_Nth_type" }
+// { dg-prune-output "'__type_pack_element' index is out of range" }

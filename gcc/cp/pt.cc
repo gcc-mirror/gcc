@@ -16696,9 +16696,13 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
     case TRAIT_TYPE:
       {
-	tree type1 = tsubst (TRAIT_TYPE_TYPE1 (t), args, complain, in_decl);
+	tree type1 = TRAIT_TYPE_TYPE1 (t);
+	if (TYPE_P (type1))
+	  type1 = tsubst (type1, args, complain, in_decl);
+	else
+	  type1 = tsubst_copy_and_build (type1, args, complain, in_decl);
 	tree type2 = tsubst (TRAIT_TYPE_TYPE2 (t), args, complain, in_decl);
-	type = finish_trait_type (TRAIT_TYPE_KIND (t), type1, type2);
+	type = finish_trait_type (TRAIT_TYPE_KIND (t), type1, type2, complain);
 	return cp_build_qualified_type (type,
 					cp_type_quals (t) | cp_type_quals (type),
 					complain | tf_ignore_bad_quals);

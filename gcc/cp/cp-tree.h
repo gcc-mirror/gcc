@@ -7761,7 +7761,7 @@ extern tree finish_decltype_type                (tree, bool, tsubst_flags_t);
 extern tree fold_builtin_is_corresponding_member (location_t, int, tree *);
 extern tree fold_builtin_is_pointer_inverconvertible_with_class (location_t, int, tree *);
 extern tree finish_trait_expr			(location_t, enum cp_trait_kind, tree, tree);
-extern tree finish_trait_type			(enum cp_trait_kind, tree, tree);
+extern tree finish_trait_type			(enum cp_trait_kind, tree, tree, tsubst_flags_t);
 extern tree build_lambda_expr                   (void);
 extern tree build_lambda_object			(tree);
 extern tree begin_lambda_type                   (tree);

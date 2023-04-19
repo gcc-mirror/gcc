@@ -1792,14 +1792,18 @@ strip_typedefs (tree t, bool *remove_attributes /* = NULL */,
       break;
     case TRAIT_TYPE:
       {
-	tree type1 = strip_typedefs (TRAIT_TYPE_TYPE1 (t),
-				     remove_attributes, flags);
+	tree type1 = TRAIT_TYPE_TYPE1 (t);
+	if (TYPE_P (type1))
+	  type1 = strip_typedefs (type1, remove_attributes, flags);
+	else
+	  type1 = strip_typedefs_expr (type1, remove_attributes, flags);
 	tree type2 = strip_typedefs (TRAIT_TYPE_TYPE2 (t),
 				     remove_attributes, flags);
 	if (type1 == TRAIT_TYPE_TYPE1 (t) && type2 == TRAIT_TYPE_TYPE2 (t))
 	  result = NULL_TREE;
 	else
-	  result = finish_trait_type (TRAIT_TYPE_KIND (t), type1, type2);
+	  result = finish_trait_type (TRAIT_TYPE_KIND (t), type1, type2,
+				      tf_warning_or_error);
       }
       break;
     case TYPE_PACK_EXPANSION:
