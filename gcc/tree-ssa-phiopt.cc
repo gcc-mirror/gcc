@@ -175,40 +175,6 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 	  std::swap (bb1, bb2);
 	  std::swap (e1, e2);
 	}
-      else if (do_store_elim
-	       && EDGE_SUCC (bb1, 0)->dest == EDGE_SUCC (bb2, 0)->dest)
-	{
-	  basic_block bb3 = EDGE_SUCC (bb1, 0)->dest;
-
-	  if (!single_succ_p (bb1)
-	      || (EDGE_SUCC (bb1, 0)->flags & EDGE_FALLTHRU) == 0
-	      || !single_succ_p (bb2)
-	      || (EDGE_SUCC (bb2, 0)->flags & EDGE_FALLTHRU) == 0
-	      || EDGE_COUNT (bb3->preds) != 2)
-	    continue;
-	  if (cond_if_else_store_replacement (bb1, bb2, bb3))
-	    cfgchanged = true;
-	  continue;
-	}
-      else if (do_hoist_loads
-	       && EDGE_SUCC (bb1, 0)->dest == EDGE_SUCC (bb2, 0)->dest)
-	{
-	  basic_block bb3 = EDGE_SUCC (bb1, 0)->dest;
-
-	  if (!FLOAT_TYPE_P (TREE_TYPE (gimple_cond_lhs (cond_stmt)))
-	      && single_succ_p (bb1)
-	      && single_succ_p (bb2)
-	      && single_pred_p (bb1)
-	      && single_pred_p (bb2)
-	      && EDGE_COUNT (bb->succs) == 2
-	      && EDGE_COUNT (bb3->preds) == 2
-	      /* If one edge or the other is dominant, a conditional move
-		 is likely to perform worse than the well-predicted branch.  */
-	      && !predictable_edge_p (EDGE_SUCC (bb, 0))
-	      && !predictable_edge_p (EDGE_SUCC (bb, 1)))
-	    hoist_adjacent_loads (bb, bb1, bb2, bb3);
-	  continue;
-	}
       else if (EDGE_SUCC (bb1, 0)->dest == EDGE_SUCC (bb2, 0)->dest)
 	{
 	  diamond_p = true;
@@ -222,7 +188,37 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
       /* Make sure that bb1 is just a fall through.  */
       if (!single_succ_p (bb1)
 	  || (e1->flags & EDGE_FALLTHRU) == 0)
-        continue;
+	continue;
+
+      if (do_store_elim && diamond_p)
+	{
+	  basic_block bb3 = e1->dest;
+
+	  if (!single_succ_p (bb2)
+	      || (e2->flags & EDGE_FALLTHRU) == 0
+	      || EDGE_COUNT (bb3->preds) != 2)
+	    continue;
+	  if (cond_if_else_store_replacement (bb1, bb2, bb3))
+	    cfgchanged = true;
+	  continue;
+	}
+      else if (do_hoist_loads && diamond_p)
+	{
+	  basic_block bb3 = e1->dest;
+
+	  if (!FLOAT_TYPE_P (TREE_TYPE (gimple_cond_lhs (cond_stmt)))
+	      && single_succ_p (bb2)
+	      && single_pred_p (bb1)
+	      && single_pred_p (bb2)
+	      && EDGE_COUNT (bb->succs) == 2
+	      && EDGE_COUNT (bb3->preds) == 2
+	      /* If one edge or the other is dominant, a conditional move
+		 is likely to perform worse than the well-predicted branch.  */
+	      && !predictable_edge_p (EDGE_SUCC (bb, 0))
+	      && !predictable_edge_p (EDGE_SUCC (bb, 1)))
+	    hoist_adjacent_loads (bb, bb1, bb2, bb3);
+	  continue;
+	}
 
       if (do_store_elim && !diamond_p)
 	{
