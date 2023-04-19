@@ -4713,52 +4713,26 @@
   [(set_attr "type" "neon_add_widen")]
 )
 
-(define_expand "aarch64_saddw2<mode>"
-  [(match_operand:<VWIDE> 0 "register_operand")
-   (match_operand:<VWIDE> 1 "register_operand")
-   (match_operand:VQW 2 "register_operand")]
+(define_expand "aarch64_<ANY_EXTEND:su><ADDSUB:optab>w2<mode>"
+  [(set (match_operand:<VWIDE> 0 "register_operand")
+	(ADDSUB:<VWIDE>
+	  (ANY_EXTEND:<VWIDE>
+	    (vec_select:<VHALF>
+	      (match_operand:VQW 2 "register_operand")
+	      (match_dup 3)))
+	  (match_operand:<VWIDE> 1 "register_operand")))]
   "TARGET_SIMD"
 {
-  rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
-  emit_insn (gen_aarch64_saddw2<mode>_internal (operands[0], operands[1],
-						operands[2], p));
-  DONE;
-})
-
-(define_expand "aarch64_uaddw2<mode>"
-  [(match_operand:<VWIDE> 0 "register_operand")
-   (match_operand:<VWIDE> 1 "register_operand")
-   (match_operand:VQW 2 "register_operand")]
-  "TARGET_SIMD"
-{
-  rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
-  emit_insn (gen_aarch64_uaddw2<mode>_internal (operands[0], operands[1],
-						operands[2], p));
-  DONE;
-})
-
-
-(define_expand "aarch64_ssubw2<mode>"
-  [(match_operand:<VWIDE> 0 "register_operand")
-   (match_operand:<VWIDE> 1 "register_operand")
-   (match_operand:VQW 2 "register_operand")]
-  "TARGET_SIMD"
-{
-  rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
-  emit_insn (gen_aarch64_ssubw2<mode>_internal (operands[0], operands[1],
-						operands[2], p));
-  DONE;
-})
-
-(define_expand "aarch64_usubw2<mode>"
-  [(match_operand:<VWIDE> 0 "register_operand")
-   (match_operand:<VWIDE> 1 "register_operand")
-   (match_operand:VQW 2 "register_operand")]
-  "TARGET_SIMD"
-{
-  rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
-  emit_insn (gen_aarch64_usubw2<mode>_internal (operands[0], operands[1],
-						operands[2], p));
+  /* We still do an emit_insn rather than relying on the pattern above
+     because for the MINUS case the operands would need to be swapped
+     around.  */
+  operands[3]
+    = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
+  emit_insn (gen_aarch64_<ANY_EXTEND:su><ADDSUB:optab>w2<mode>_internal(
+						       operands[0],
+						       operands[1],
+						       operands[2],
+						       operands[3]));
   DONE;
 })
 
