@@ -10949,7 +10949,7 @@ Parser<ManagedTokenSource>::parse_reference_pattern ()
     }
 
   // parse pattern to get reference of (required)
-  std::unique_ptr<AST::Pattern> pattern = parse_pattern ();
+  std::unique_ptr<AST::Pattern> pattern = parse_pattern_no_alt ();
   if (pattern == nullptr)
     {
       Error error (lexer.peek_token ()->get_locus (),
