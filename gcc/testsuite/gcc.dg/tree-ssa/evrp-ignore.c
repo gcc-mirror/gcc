@@ -25,4 +25,4 @@ void foo (int x, int y, int z)
     kill();
 
 }
-/* { dg-final { scan-tree-dump-not "kill" "evrp" } } */
+/* { dg-final { scan-tree-dump-not "kill" "evrp" { xfail *-*-* } } } */

@@ -771,16 +771,16 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
 
 	  if (gimple_range_ssa_p (arg) && src.gori ())
 	    src.gori ()->register_dependency (phi_def, arg);
-
-	  // Track if all arguments are the same.
-	  if (!seen_arg)
-	    {
-	      seen_arg = true;
-	      single_arg = arg;
-	    }
-	  else if (single_arg != arg)
-	    single_arg = NULL_TREE;
 	}
+
+      // Track if all arguments are the same.
+      if (!seen_arg)
+	{
+	  seen_arg = true;
+	  single_arg = arg;
+	}
+      else if (single_arg != arg)
+	single_arg = NULL_TREE;
 
       // Once the value reaches varying, stop looking.
       if (r.varying_p () && single_arg == NULL_TREE)
