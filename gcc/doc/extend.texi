@@ -3764,7 +3764,7 @@ take function pointer arguments.
 The @code{optimize} attribute is used to specify that a function is to
 be compiled with different optimization options than specified on the
 command line.  The optimize attribute arguments of a function behave
-behave as if appended to the command-line.
+as if appended to the command-line.
 
 Valid arguments are constant non-negative integers and
 strings.  Each numeric argument specifies an optimization @var{level}.
