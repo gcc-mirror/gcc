@@ -3180,8 +3180,8 @@ compute_fn_summary (struct cgraph_node *node, bool early)
 	       for (e = node->callees; e; e = e->next_callee)
 		 {
 		   tree cdecl = e->callee->decl;
-		   if (fndecl_built_in_p (cdecl, BUILT_IN_APPLY_ARGS)
-		       || fndecl_built_in_p (cdecl, BUILT_IN_VA_START))
+		   if (fndecl_built_in_p (cdecl, BUILT_IN_APPLY_ARGS,
+						 BUILT_IN_VA_START))
 		     break;
 		 }
 	       node->can_change_signature = !e;

@@ -6585,6 +6585,24 @@ type_has_mode_precision_p (const_tree t)
   return known_eq (TYPE_PRECISION (t), GET_MODE_PRECISION (TYPE_MODE (t)));
 }
 
+/* Helper functions for fndecl_built_in_p.  */
+
+inline bool
+built_in_function_equal_p (built_in_function name0, built_in_function name1)
+{
+  return name0 == name1;
+}
+
+/* Recursive case for two or more names.  */
+
+template <typename... F>
+inline bool
+built_in_function_equal_p (built_in_function name0, built_in_function name1,
+			   built_in_function name2, F... names)
+{
+  return name0 == name1 || built_in_function_equal_p (name0, name2, names...);
+}
+
 /* Return true if a FUNCTION_DECL NODE is a GCC built-in function.
 
    Note that it is different from the DECL_IS_UNDECLARED_BUILTIN
@@ -6616,13 +6634,16 @@ fndecl_built_in_p (const_tree node, unsigned int name, built_in_class klass)
 }
 
 /* Return true if a FUNCTION_DECL NODE is a GCC built-in function
-   of BUILT_IN_NORMAL class with name equal to NAME.  */
+   of BUILT_IN_NORMAL class with name equal to NAME1 (or other mentioned
+   NAMES).  */
 
+template <typename... F>
 inline bool
-fndecl_built_in_p (const_tree node, built_in_function name)
+fndecl_built_in_p (const_tree node, built_in_function name1, F... names)
 {
   return (fndecl_built_in_p (node, BUILT_IN_NORMAL)
-	  && DECL_FUNCTION_CODE (node) == name);
+	  && built_in_function_equal_p (DECL_FUNCTION_CODE (node),
+					name1, names...));
 }
 
 /* A struct for encapsulating location information about an operator

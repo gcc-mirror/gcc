@@ -8645,8 +8645,8 @@ fold_builtin_expect (location_t loc, tree arg0, tree arg1, tree arg2,
 
   if (TREE_CODE (inner) == CALL_EXPR
       && (fndecl = get_callee_fndecl (inner))
-      && (fndecl_built_in_p (fndecl, BUILT_IN_EXPECT)
-	  || fndecl_built_in_p (fndecl, BUILT_IN_EXPECT_WITH_PROBABILITY)))
+      && fndecl_built_in_p (fndecl, BUILT_IN_EXPECT,
+			    BUILT_IN_EXPECT_WITH_PROBABILITY))
     return arg0;
 
   inner = inner_arg0;

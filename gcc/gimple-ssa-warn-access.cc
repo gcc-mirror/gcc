@@ -1787,8 +1787,7 @@ matching_alloc_calls_p (tree alloc_decl, tree dealloc_decl)
 
       /* Return false for deallocation functions that are known not
 	 to match.  */
-      if (fndecl_built_in_p (dealloc_decl, BUILT_IN_FREE)
-	  || fndecl_built_in_p (dealloc_decl, BUILT_IN_REALLOC))
+      if (fndecl_built_in_p (dealloc_decl, BUILT_IN_FREE, BUILT_IN_REALLOC))
 	return false;
       /* Otherwise proceed below to check the deallocation function's
 	 "*dealloc" attributes to look for one that mentions this operator
@@ -1812,8 +1811,8 @@ matching_alloc_calls_p (tree alloc_decl, tree dealloc_decl)
 	  if (DECL_IS_OPERATOR_DELETE_P (dealloc_decl))
 	    return false;
 
-	  if (fndecl_built_in_p (dealloc_decl, BUILT_IN_FREE)
-	      || fndecl_built_in_p (dealloc_decl, BUILT_IN_REALLOC))
+	  if (fndecl_built_in_p (dealloc_decl, BUILT_IN_FREE,
+					       BUILT_IN_REALLOC))
 	    return true;
 
 	  alloc_dealloc_kind = alloc_kind_t::builtin;

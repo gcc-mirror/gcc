@@ -15830,8 +15830,8 @@ goa_stabilize_expr (tree *expr_p, gimple_seq *pre_p, tree lhs_addr,
       if (TREE_CODE (expr) == CALL_EXPR)
 	{
 	  if (tree fndecl = get_callee_fndecl (expr))
-	    if (fndecl_built_in_p (fndecl, BUILT_IN_CLEAR_PADDING)
-		|| fndecl_built_in_p (fndecl, BUILT_IN_MEMCMP))
+	    if (fndecl_built_in_p (fndecl, BUILT_IN_CLEAR_PADDING,
+					   BUILT_IN_MEMCMP))
 	      {
 		int nargs = call_expr_nargs (expr);
 		for (int i = 0; i < nargs; i++)
