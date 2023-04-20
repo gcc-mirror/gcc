@@ -318,10 +318,6 @@ public:
   SubstitutionArgumentMappings get_used_arguments () const;
 
 protected:
-  Resolver::AssociatedImplTrait *lookup_associated_impl (
-    const SubstitutionParamMapping &subst, const TypeBoundPredicate &bound,
-    const TyTy::BaseType *binding, bool *error_flag) const;
-
   std::vector<SubstitutionParamMapping> substitutions;
   SubstitutionArgumentMappings used_arguments;
 };

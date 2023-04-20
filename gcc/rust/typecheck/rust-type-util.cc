@@ -25,6 +25,7 @@
 #include "rust-casts.h"
 #include "rust-unify.h"
 #include "rust-coercion.h"
+#include "rust-hir-type-bounds.h"
 
 namespace Rust {
 namespace Resolver {
@@ -252,6 +253,113 @@ cast_site (HirId id, TyTy::TyWithLocation from, TyTy::TyWithLocation to,
 		  cast_locus);
   context->insert_cast_autoderef_mappings (id, std::move (result.adjustments));
   return casted;
+}
+
+AssociatedImplTrait *
+lookup_associated_impl_block (const TyTy::TypeBoundPredicate &bound,
+			      const TyTy::BaseType *binding, bool *ambigious)
+{
+  auto context = TypeCheckContext::get ();
+
+  // setup any associated type mappings for the specified bonds and this
+  // type
+  auto candidates = TypeBoundsProbe::Probe (binding);
+  std::vector<AssociatedImplTrait *> associated_impl_traits;
+  for (auto &probed_bound : candidates)
+    {
+      HIR::ImplBlock *associated_impl = probed_bound.second;
+
+      HirId impl_block_id = associated_impl->get_mappings ().get_hirid ();
+      AssociatedImplTrait *associated = nullptr;
+      bool found_impl_trait
+	= context->lookup_associated_trait_impl (impl_block_id, &associated);
+      if (found_impl_trait)
+	{
+	  // compare the bounds from here i think is what we can do:
+	  if (bound.is_equal (associated->get_predicate ()))
+	    {
+	      associated_impl_traits.push_back (associated);
+	    }
+	}
+    }
+
+  if (associated_impl_traits.empty ())
+    return nullptr;
+
+  // This code is important when you look at slices for example when
+  // you have a slice such as:
+  //
+  // let slice = &array[1..3]
+  //
+  // the higher ranked bounds will end up having an Index trait
+  // implementation for Range<usize> so we need this code to resolve
+  // that we have an integer inference variable that needs to become
+  // a usize
+  //
+  // The other complicated issue is that we might have an intrinsic
+  // which requires the :Clone or Copy bound but the libcore adds
+  // implementations for all the integral types so when there are
+  // multiple candidates we need to resolve to the default
+  // implementation for that type otherwise its an error for
+  // ambiguous type bounds
+
+  // if we have a non-general inference variable we need to be
+  // careful about the selection here
+  bool is_infer_var = binding->get_kind () == TyTy::TypeKind::INFER;
+  bool is_integer_infervar
+    = is_infer_var
+      && static_cast<const TyTy::InferType *> (binding)->get_infer_kind ()
+	   == TyTy::InferType::InferTypeKind::INTEGRAL;
+  bool is_float_infervar
+    = is_infer_var
+      && static_cast<const TyTy::InferType *> (binding)->get_infer_kind ()
+	   == TyTy::InferType::InferTypeKind::FLOAT;
+
+  AssociatedImplTrait *associate_impl_trait = nullptr;
+  if (associated_impl_traits.size () == 1)
+    {
+      // just go for it
+      associate_impl_trait = associated_impl_traits.at (0);
+    }
+  else if (is_integer_infervar)
+    {
+      TyTy::BaseType *type = nullptr;
+      bool ok = context->lookup_builtin ("i32", &type);
+      rust_assert (ok);
+
+      for (auto &impl : associated_impl_traits)
+	{
+	  bool found = impl->get_self ()->is_equal (*type);
+	  if (found)
+	    {
+	      associate_impl_trait = impl;
+	      break;
+	    }
+	}
+    }
+  else if (is_float_infervar)
+    {
+      TyTy::BaseType *type = nullptr;
+      bool ok = context->lookup_builtin ("f64", &type);
+      rust_assert (ok);
+
+      for (auto &impl : associated_impl_traits)
+	{
+	  bool found = impl->get_self ()->is_equal (*type);
+	  if (found)
+	    {
+	      associate_impl_trait = impl;
+	      break;
+	    }
+	}
+    }
+
+  if (associate_impl_trait == nullptr && ambigious != nullptr)
+    {
+      *ambigious = true;
+    }
+
+  return associate_impl_trait;
 }
 
 } // namespace Resolver

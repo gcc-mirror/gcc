@@ -238,11 +238,12 @@ private:
 class AssociatedImplTrait
 {
 public:
-  AssociatedImplTrait (TraitReference *trait, HIR::ImplBlock *impl,
+  AssociatedImplTrait (TraitReference *trait,
+		       TyTy::TypeBoundPredicate predicate, HIR::ImplBlock *impl,
 		       TyTy::BaseType *self,
 		       Resolver::TypeCheckContext *context);
 
-  TraitReference *get_trait ();
+  TyTy::TypeBoundPredicate &get_predicate ();
 
   HIR::ImplBlock *get_impl_block ();
 
@@ -257,6 +258,7 @@ public:
 
 private:
   TraitReference *trait;
+  TyTy::TypeBoundPredicate predicate;
   HIR::ImplBlock *impl;
   TyTy::BaseType *self;
   Resolver::TypeCheckContext *context;

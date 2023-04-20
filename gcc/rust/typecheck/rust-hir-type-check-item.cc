@@ -607,8 +607,8 @@ TypeCheckItem::validate_trait_impl_block (
     {
       trait_reference->clear_associated_types ();
 
-      AssociatedImplTrait associated (trait_reference, &impl_block, self,
-				      context);
+      AssociatedImplTrait associated (trait_reference, specified_bound,
+				      &impl_block, self, context);
       context->insert_associated_trait_impl (
 	impl_block.get_mappings ().get_hirid (), std::move (associated));
       context->insert_associated_impl_mapping (
