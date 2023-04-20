@@ -1562,7 +1562,8 @@ apply_identity_attributes (tree result, tree attribs, bool *remove_attributes)
 
 /* Builds a qualified variant of T that is either not a typedef variant
    (the default behavior) or not a typedef variant of a user-facing type
-   (if FLAGS contains STF_USER_FACING).
+   (if FLAGS contains STF_USER_FACING).  If T is not a type, then this
+   just dispatches to strip_typedefs_expr.
 
    E.g. consider the following declarations:
      typedef const int ConstInt;
@@ -1596,25 +1597,8 @@ strip_typedefs (tree t, bool *remove_attributes /* = NULL */,
   if (!t || t == error_mark_node)
     return t;
 
-  if (TREE_CODE (t) == TREE_LIST)
-    {
-      bool changed = false;
-      releasing_vec vec;
-      tree r = t;
-      for (; t; t = TREE_CHAIN (t))
-	{
-	  gcc_assert (!TREE_PURPOSE (t));
-	  tree elt = strip_typedefs (TREE_VALUE (t), remove_attributes, flags);
-	  if (elt != TREE_VALUE (t))
-	    changed = true;
-	  vec_safe_push (vec, elt);
-	}
-      if (changed)
-	r = build_tree_list_vec (vec);
-      return r;
-    }
-
-  gcc_assert (TYPE_P (t));
+  if (!TYPE_P (t))
+    return strip_typedefs_expr (t, remove_attributes, flags);
 
   if (t == TYPE_CANONICAL (t))
     return t;
@@ -1747,12 +1731,7 @@ strip_typedefs (tree t, bool *remove_attributes /* = NULL */,
 	    for (int i = 0; i < TREE_VEC_LENGTH (args); ++i)
 	      {
 		tree arg = TREE_VEC_ELT (args, i);
-		tree strip_arg;
-		if (TYPE_P (arg))
-		  strip_arg = strip_typedefs (arg, remove_attributes, flags);
-		else
-		  strip_arg = strip_typedefs_expr (arg, remove_attributes,
-						   flags);
+		tree strip_arg = strip_typedefs (arg, remove_attributes, flags);
 		TREE_VEC_ELT (new_args, i) = strip_arg;
 		if (strip_arg != arg)
 		  changed = true;
@@ -1792,11 +1771,8 @@ strip_typedefs (tree t, bool *remove_attributes /* = NULL */,
       break;
     case TRAIT_TYPE:
       {
-	tree type1 = TRAIT_TYPE_TYPE1 (t);
-	if (TYPE_P (type1))
-	  type1 = strip_typedefs (type1, remove_attributes, flags);
-	else
-	  type1 = strip_typedefs_expr (type1, remove_attributes, flags);
+	tree type1 = strip_typedefs (TRAIT_TYPE_TYPE1 (t),
+				     remove_attributes, flags);
 	tree type2 = strip_typedefs (TRAIT_TYPE_TYPE2 (t),
 				     remove_attributes, flags);
 	if (type1 == TRAIT_TYPE_TYPE1 (t) && type2 == TRAIT_TYPE_TYPE2 (t))
@@ -1883,7 +1859,8 @@ strip_typedefs (tree t, bool *remove_attributes /* = NULL */,
   return cp_build_qualified_type (result, cp_type_quals (t));
 }
 
-/* Like strip_typedefs above, but works on expressions, so that in
+/* Like strip_typedefs above, but works on expressions (and other
+   non-types such as TREE_VEC), so that in
 
    template<class T> struct A
    {
@@ -1907,11 +1884,6 @@ strip_typedefs_expr (tree t, bool *remove_attributes, unsigned int flags)
 
   if (DECL_P (t) || CONSTANT_CLASS_P (t))
     return t;
-
-  /* Some expressions have type operands, so let's handle types here rather
-     than check TYPE_P in multiple places below.  */
-  if (TYPE_P (t))
-    return strip_typedefs (t, remove_attributes, flags);
 
   code = TREE_CODE (t);
   switch (code)
@@ -1940,26 +1912,20 @@ strip_typedefs_expr (tree t, bool *remove_attributes, unsigned int flags)
 
     case TREE_LIST:
       {
-	releasing_vec vec;
 	bool changed = false;
-	tree it;
-	for (it = t; it; it = TREE_CHAIN (it))
+	releasing_vec vec;
+	r = t;
+	for (; t; t = TREE_CHAIN (t))
 	  {
-	    tree val = strip_typedefs_expr (TREE_VALUE (it),
-					    remove_attributes, flags);
-	    vec_safe_push (vec, val);
-	    if (val != TREE_VALUE (it))
+	    gcc_assert (!TREE_PURPOSE (t));
+	    tree elt = strip_typedefs (TREE_VALUE (t),
+				       remove_attributes, flags);
+	    if (elt != TREE_VALUE (t))
 	      changed = true;
-	    gcc_assert (TREE_PURPOSE (it) == NULL_TREE);
+	    vec_safe_push (vec, elt);
 	  }
 	if (changed)
-	  {
-	    r = NULL_TREE;
-	    FOR_EACH_VEC_ELT_REVERSE (*vec, i, it)
-	      r = tree_cons (NULL_TREE, it, r);
-	  }
-	else
-	  r = t;
+	  r = build_tree_list_vec (vec);
 	return r;
       }
 
@@ -1971,8 +1937,8 @@ strip_typedefs_expr (tree t, bool *remove_attributes, unsigned int flags)
 	vec_safe_reserve (vec, n);
 	for (i = 0; i < n; ++i)
 	  {
-	    tree op = strip_typedefs_expr (TREE_VEC_ELT (t, i),
-					   remove_attributes, flags);
+	    tree op = strip_typedefs (TREE_VEC_ELT (t, i),
+				      remove_attributes, flags);
 	    vec->quick_push (op);
 	    if (op != TREE_VEC_ELT (t, i))
 	      changed = true;
@@ -2000,15 +1966,15 @@ strip_typedefs_expr (tree t, bool *remove_attributes, unsigned int flags)
 	for (i = 0; i < n; ++i)
 	  {
 	    constructor_elt *e = &(*vec)[i];
-	    tree op = strip_typedefs_expr (e->value, remove_attributes, flags);
+	    tree op = strip_typedefs (e->value, remove_attributes, flags);
 	    if (op != e->value)
 	      {
 		changed = true;
 		e->value = op;
 	      }
 	    gcc_checking_assert
-	      (e->index == strip_typedefs_expr (e->index, remove_attributes,
-						flags));
+	      (e->index == strip_typedefs (e->index, remove_attributes,
+					   flags));
 	  }
 
 	if (!changed && type == TREE_TYPE (t))
@@ -2057,8 +2023,8 @@ strip_typedefs_expr (tree t, bool *remove_attributes, unsigned int flags)
 
     default:
       for (i = 0; i < n; ++i)
-	ops[i] = strip_typedefs_expr (TREE_OPERAND (t, i),
-				      remove_attributes, flags);
+	ops[i] = strip_typedefs (TREE_OPERAND (t, i),
+				 remove_attributes, flags);
       break;
     }
 
