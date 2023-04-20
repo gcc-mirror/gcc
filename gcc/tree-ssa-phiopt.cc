@@ -241,10 +241,7 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 		 is likely to perform worse than the well-predicted branch.  */
 	      && !predictable_edge_p (EDGE_SUCC (bb, 0))
 	      && !predictable_edge_p (EDGE_SUCC (bb, 1)))
-	    {
-	      hoist_adjacent_loads (bb, bb1, bb2, bb3);
-	      continue;
-	    }
+	    hoist_adjacent_loads (bb, bb1, bb2, bb3);
 	}
 
       gimple_stmt_iterator gsi;
