@@ -1,3 +1,21 @@
+2023-04-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (SV_SFDF): New iterator.
+	(SV_FP): New iterator.
+	(scalar_mode, SCALAR_MODE): Add identity mappings for scalar modes.
+	(recip<mode>2): Unify the two patterns using SV_FP.
+	(div_scale<mode><exec_vcc>): New insn.
+	(div_fmas<mode><exec>): New insn.
+	(div_fixup<mode><exec>): New insn.
+	(div<mode>3): Unify the two expanders and rewrite using hardfp.
+	* config/gcn/gcn.cc (gcn_md_reorg): Support "vccwait" attribute.
+	* config/gcn/gcn.md (unspec): Add UNSPEC_DIV_SCALE, UNSPEC_DIV_FMAS,
+	and UNSPEC_DIV_FIXUP.
+	(vccwait): New attribute.
+
 2023-04-13  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:
