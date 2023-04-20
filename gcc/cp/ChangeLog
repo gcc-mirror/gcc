@@ -1,3 +1,36 @@
+2023-04-19  Patrick Palka  <ppalka@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/100157
+	* cp-trait.def (TYPE_PACK_ELEMENT): Define.
+	* cp-tree.h (finish_trait_type): Add complain parameter.
+	* cxx-pretty-print.cc (pp_cxx_trait): Handle
+	CPTK_TYPE_PACK_ELEMENT.
+	* parser.cc (cp_parser_constant_expression): Document default
+	arguments.
+	(cp_parser_trait): Handle CPTK_TYPE_PACK_ELEMENT.  Pass
+	tf_warning_or_error to finish_trait_type.
+	* pt.cc (tsubst) <case TRAIT_TYPE>: Handle non-type first
+	argument.  Pass complain to finish_trait_type.
+	* semantics.cc (finish_type_pack_element): Define.
+	(finish_trait_type): Add complain parameter.  Handle
+	CPTK_TYPE_PACK_ELEMENT.
+	* tree.cc (strip_typedefs): Handle non-type first argument.
+	Pass tf_warning_or_error to finish_trait_type.
+	* typeck.cc (structural_comptypes) <case TRAIT_TYPE>: Use
+	cp_tree_equal instead of same_type_p for the first argument.
+
+2023-04-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109556
+	* pt.cc (try_class_unification): Don't ggc_free the copy of
+	'targs'.
+
+2023-04-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108099
+	* decl.cc (grokdeclarator): Keep typedef_decl for __int128_t.
+
 2023-04-17  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/109531

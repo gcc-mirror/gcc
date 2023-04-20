@@ -1,3 +1,13 @@
+2023-04-19  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* xtensa-dynconfig.h (xtensa_config_v4): New struct.
+	(XCHAL_DATA_WIDTH, XCHAL_UNALIGNED_LOAD_EXCEPTION)
+	(XCHAL_UNALIGNED_STORE_EXCEPTION, XCHAL_UNALIGNED_LOAD_HW)
+	(XCHAL_UNALIGNED_STORE_HW, XTENSA_CONFIG_V4_ENTRY_LIST): New
+	definitions.
+	(XTENSA_CONFIG_INSTANCE_LIST): Add xtensa_config_v4 instance.
+	(XTENSA_CONFIG_ENTRY_LIST): Add XTENSA_CONFIG_V4_ENTRY_LIST.
+
 2023-02-27  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* xtensa-dynconfig.h (xtensa_config_v3): New struct.

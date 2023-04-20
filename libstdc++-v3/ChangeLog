@@ -1,3 +1,51 @@
+2023-04-19  Patrick Palka  <ppalka@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/100157
+	* include/bits/utility.h (_Nth_type): Conditionally define in
+	terms of __type_pack_element if available.
+	* testsuite/20_util/tuple/element_access/get_neg.cc: Prune
+	additional errors from the new built-in.
+
+2023-04-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Revert:
+	2023-04-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108969
+	* src/Makefile.am: Move globals_io.cc to here.
+	* src/Makefile.in: Regenerate.
+	* src/c++98/Makefile.am: Remove globals_io.cc from here.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/c++98/globals_io.cc [_GLIBCXX_SYMVER_GNU] (cin): Adjust
+	symbol name and then export with GLIBCXX_3.4.31 symver.
+	(cout, cerr, clog, wcin, wcout, wcerr, wclog): Likewise.
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+	* config/abi/pre/gnu.ver: Add iostream objects to new symver.
+
+2023-04-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Revert:
+	2023-04-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108969
+	* config/abi/pre/gnu.ver: Fix preprocessor condition.
+
 2023-04-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/extensions.xml: Fix example to declare and

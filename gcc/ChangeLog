@@ -1,3 +1,317 @@
+2023-04-19  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa-opts.h: New header.
+	* config/xtensa/xtensa.h (STRICT_ALIGNMENT): Redefine as
+	xtensa_strict_align.
+	* config/xtensa/xtensa.cc (xtensa_option_override): When
+	-m[no-]strict-align is not specified in the command line set
+	xtensa_strict_align to 0 if the hardware supports both unaligned
+	loads and stores or to 1 otherwise.
+	* config/xtensa/xtensa.opt (mstrict-align): New option.
+	* doc/invoke.texi (Xtensa Options): Document -m[no-]strict-align.
+
+2023-04-19  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa-dynconfig.cc (xtensa_get_config_v4): New
+	function.
+
+2023-04-19  Andrew Pinski  <apinski@marvell.com>
+
+	* config/i386/i386.md (*movsicc_noc_zext_1): New pattern.
+
+2023-04-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-modes.def (FLOAT_MODE): Add chunk 128 support.
+	(VECTOR_BOOL_MODE): Ditto.
+	(ADJUST_NUNITS): Ditto.
+	(ADJUST_ALIGNMENT): Ditto.
+	(ADJUST_BYTESIZE): Ditto.
+	(ADJUST_PRECISION): Ditto.
+	(RVV_MODES): Ditto.
+	(VECTOR_MODE_WITH_PREFIX): Ditto.
+	* config/riscv/riscv-v.cc (ENTRY): Ditto.
+	(get_vlmul): Ditto.
+	(get_ratio): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_TYPE): Ditto.
+	* config/riscv/riscv-vector-builtins.def (DEF_RVV_TYPE): Ditto.
+	(vbool64_t): Ditto.
+	(vbool32_t): Ditto.
+	(vbool16_t): Ditto.
+	(vbool8_t): Ditto.
+	(vbool4_t): Ditto.
+	(vbool2_t): Ditto.
+	(vbool1_t): Ditto.
+	(vint8mf8_t): Ditto.
+	(vuint8mf8_t): Ditto.
+	(vint8mf4_t): Ditto.
+	(vuint8mf4_t): Ditto.
+	(vint8mf2_t): Ditto.
+	(vuint8mf2_t): Ditto.
+	(vint8m1_t): Ditto.
+	(vuint8m1_t): Ditto.
+	(vint8m2_t): Ditto.
+	(vuint8m2_t): Ditto.
+	(vint8m4_t): Ditto.
+	(vuint8m4_t): Ditto.
+	(vint8m8_t): Ditto.
+	(vuint8m8_t): Ditto.
+	(vint16mf4_t): Ditto.
+	(vuint16mf4_t): Ditto.
+	(vint16mf2_t): Ditto.
+	(vuint16mf2_t): Ditto.
+	(vint16m1_t): Ditto.
+	(vuint16m1_t): Ditto.
+	(vint16m2_t): Ditto.
+	(vuint16m2_t): Ditto.
+	(vint16m4_t): Ditto.
+	(vuint16m4_t): Ditto.
+	(vint16m8_t): Ditto.
+	(vuint16m8_t): Ditto.
+	(vint32mf2_t): Ditto.
+	(vuint32mf2_t): Ditto.
+	(vint32m1_t): Ditto.
+	(vuint32m1_t): Ditto.
+	(vint32m2_t): Ditto.
+	(vuint32m2_t): Ditto.
+	(vint32m4_t): Ditto.
+	(vuint32m4_t): Ditto.
+	(vint32m8_t): Ditto.
+	(vuint32m8_t): Ditto.
+	(vint64m1_t): Ditto.
+	(vuint64m1_t): Ditto.
+	(vint64m2_t): Ditto.
+	(vuint64m2_t): Ditto.
+	(vint64m4_t): Ditto.
+	(vuint64m4_t): Ditto.
+	(vint64m8_t): Ditto.
+	(vuint64m8_t): Ditto.
+	(vfloat32mf2_t): Ditto.
+	(vfloat32m1_t): Ditto.
+	(vfloat32m2_t): Ditto.
+	(vfloat32m4_t): Ditto.
+	(vfloat32m8_t): Ditto.
+	(vfloat64m1_t): Ditto.
+	(vfloat64m2_t): Ditto.
+	(vfloat64m4_t): Ditto.
+	(vfloat64m8_t): Ditto.
+	* config/riscv/riscv-vector-switch.def (ENTRY): Ditto.
+	* config/riscv/riscv.cc (riscv_legitimize_poly_move): Ditto.
+	(riscv_convert_vector_bits): Ditto.
+	* config/riscv/riscv.md:
+	* config/riscv/vector-iterators.md:
+	* config/riscv/vector.md
+	(@pred_indexed_<order>store<VNX32_QH:mode><VNX32_QHI:mode>): Ditto.
+	(@pred_indexed_<order>store<VNX32_QHS:mode><VNX32_QHSI:mode>): Ditto.
+	(@pred_indexed_<order>store<VNX64_Q:mode><VNX64_Q:mode>): Ditto.
+	(@pred_indexed_<order>store<VNX64_QH:mode><VNX64_QHI:mode>): Ditto.
+	(@pred_indexed_<order>store<VNX128_Q:mode><VNX128_Q:mode>): Ditto.
+	(@pred_reduc_<reduc><mode><vlmul1_zve64>): Ditto.
+	(@pred_widen_reduc_plus<v_su><mode><vwlmul1_zve64>): Ditto.
+	(@pred_reduc_plus<order><mode><vlmul1_zve64>): Ditto.
+	(@pred_widen_reduc_plus<order><mode><vwlmul1_zve64>): Ditto.
+
+2023-04-19  Pan Li  <pan2.li@intel.com>
+
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1):
+	Align IOR (A | (~A) -> -1) optimization MODE_CLASS condition to AND.
+
+2023-04-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78904
+	PR target/78952
+	* config/i386/i386.md (*cmpqi_ext<mode>_1_mem_rex64): New insn pattern.
+	(*cmpqi_ext<mode>_1): Use nonimmediate_operand predicate
+	for operand 0. Use any_extract code iterator.
+	(*cmpqi_ext<mode>_1 peephole2): New peephole2 pattern.
+	(*cmpqi_ext<mode>_2): Use any_extract code iterator.
+	(*cmpqi_ext<mode>_3_mem_rex64): New insn pattern.
+	(*cmpqi_ext<mode>_1): Use general_operand predicate
+	for operand 1. Use any_extract code iterator.
+	(*cmpqi_ext<mode>_3 peephole2): New peephole2 pattern.
+	(*cmpqi_ext<mode>_4): Use any_extract code iterator.
+
+2023-04-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_saddw2<mode>): Delete.
+	(aarch64_uaddw2<mode>): Delete.
+	(aarch64_ssubw2<mode>): Delete.
+	(aarch64_usubw2<mode>): Delete.
+	(aarch64_<ANY_EXTEND:su><ADDSUB:optab>w2<mode>): New define_expand.
+
+2023-04-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.cc (do_ds_constraint): Use
+	solve_add_graph_edge.
+
+2023-04-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.cc (solve_add_graph_edge): New function,
+	split out from ...
+	(do_sd_constraint): ... here.
+
+2023-04-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.cc (gimple_can_merge_blocks_p): Remove condition
+	rejecting the merge when A contains only a non-local label.
+
+2023-04-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* rtl.h (VIRTUAL_REGISTER_P): New predicate.
+	(VIRTUAL_REGISTER_NUM_P): Ditto.
+	(REGNO_PTR_FRAME_P): Use VIRTUAL_REGISTER_NUM_P predicate.
+	* expr.cc (force_operand): Use VIRTUAL_REGISTER_P predicate.
+	* function.cc (instantiate_decl_rtl): Ditto.
+	* rtlanal.cc (rtx_addr_can_trap_p_1): Ditto.
+	(nonzero_address_p): Ditto.
+	(refers_to_regno_p): Use VIRTUAL_REGISTER_NUM_P predicate.
+
+2023-04-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (Value_Range::Value_Range): Avoid pointer sharing.
+
+2023-04-19  Richard Biener  <rguenther@suse.de>
+
+	* system.h (auto_mpz::operator->()): New.
+	* realmpfr.h (auto_mpfr::operator->()): New.
+	* builtins.cc (do_mpfr_lgamma_r): Use auto_mpfr.
+	* real.cc (real_from_string): Likewise.
+	(dconst_e_ptr): Likewise.
+	(dconst_sqrt2_ptr): Likewise.
+	* tree-ssa-loop-niter.cc (refine_value_range_using_guard):
+	Use auto_mpz.
+	(bound_difference_of_offsetted_base): Likewise.
+	(number_of_iterations_ne): Likewise.
+	(number_of_iterations_lt_to_ne): Likewise.
+	* ubsan.cc: Include realmpfr.h.
+	(ubsan_instrument_float_cast): Use auto_mpfr.
+
+2023-04-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.cc (solve_graph): Remove self-copy
+	edges, remove edges from escaped after special-casing them.
+
+2023-04-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.cc (do_sd_constraint): Fixup escape
+	special casing.
+
+2023-04-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.cc (do_sd_constraint): Do not write
+	to the LHS varinfo solution member.
+
+2023-04-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-structalias.cc (topo_visit): Look at the real
+	destination of edges.
+
+2023-04-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/44794
+	* tree-ssa-loop-manip.cc (tree_transform_and_unroll_loop):
+	If an epilogue loop is required set its iteration upper bound.
+
+2023-04-19  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/109465
+	* config/loongarch/loongarch-protos.h
+	(loongarch_expand_block_move): Add a parameter as alignment RTX.
+	* config/loongarch/loongarch.h:
+	(LARCH_MAX_MOVE_BYTES_PER_LOOP_ITER): Remove.
+	(LARCH_MAX_MOVE_BYTES_STRAIGHT): Remove.
+	(LARCH_MAX_MOVE_OPS_PER_LOOP_ITER): Define.
+	(LARCH_MAX_MOVE_OPS_STRAIGHT): Define.
+	(MOVE_RATIO): Use LARCH_MAX_MOVE_OPS_PER_LOOP_ITER instead of
+	LARCH_MAX_MOVE_BYTES_PER_LOOP_ITER.
+	* config/loongarch/loongarch.cc (loongarch_expand_block_move):
+	Take the alignment from the parameter, but set it to
+	UNITS_PER_WORD if !TARGET_STRICT_ALIGN.  Limit the length of
+	straight-line implementation with LARCH_MAX_MOVE_OPS_STRAIGHT
+	instead of LARCH_MAX_MOVE_BYTES_STRAIGHT.
+	(loongarch_block_move_straight): When there are left-over bytes,
+	half the mode size instead of falling back to byte mode at once.
+	(loongarch_block_move_loop): Limit the length of loop body with
+	LARCH_MAX_MOVE_OPS_PER_LOOP_ITER instead of
+	LARCH_MAX_MOVE_BYTES_PER_LOOP_ITER.
+	* config/loongarch/loongarch.md (cpymemsi): Pass the alignment
+	to loongarch_expand_block_move.
+
+2023-04-19  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_setup_incoming_varargs): Don't save more GARs than
+	cfun->va_list_gpr_size / UNITS_PER_WORD.
+
+2023-04-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-manip.cc (determine_exit_conditions): Fix
+	no epilogue condition.
+
+2023-04-19  Richard Biener  <rguenther@suse.de>
+
+	* gimple.h (gimple_assign_load): Outline...
+	* gimple.cc (gimple_assign_load): ... here.  Avoid
+	get_base_address and instead just strip the outermost
+	handled component, treating a remaining handled component
+	as load.
+
+2023-04-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (neg): Delete builtins
+	definition.
+	* config/aarch64/arm_fp16.h (vnegh_f16): Reimplement using normal negation.
+
+2023-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109011
+	* tree-vect-patterns.cc (vect_recog_popcount_pattern): Rename to ...
+	(vect_recog_popcount_clz_ctz_ffs_pattern): ... this.  Handle also
+	CLZ, CTZ and FFS.  Remove vargs variable, use
+	gimple_build_call_internal rather than gimple_build_call_internal_vec.
+	(vect_vect_recog_func_ptrs): Adjust popcount entry.
+
+2023-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109040
+	* dse.cc (replace_read): If read_reg is a SUBREG of a word mode
+	REG, for WORD_REGISTER_OPERATIONS copy SUBREG_REG of it into
+	a new REG rather than the SUBREG.
+
+2023-04-19  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* config/aarch64/aarch64-simd.md (aarch64_simd_vec_set_zero<mode>):
+	New pattern.
+
+2023-04-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/108840
+	* config/aarch64/aarch64.cc (aarch64_rtx_costs): Merge ASHIFT and
+	ROTATE, ROTATERT, LSHIFTRT, ASHIFTRT cases.  Handle subregs in op1.
+
+2023-04-19  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/109237
+	* cse.cc (insn_live_p): Remove NEXT_INSN walk, instead check
+	TREE_VISITED on INSN_VAR_LOCATION_DECL.
+	(delete_trivially_dead_insns): Maintain TREE_VISITED on
+	active debug bind INSN_VAR_LOCATION_DECL.
+
+2023-04-19  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/109237
+	* cfgcleanup.cc (bb_is_just_return): Walk insns backwards.
+
+2023-04-19  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* doc/install.texi (enable-decimal-float): Add AArch64.
+
+2023-04-19  liuhongt  <hongtao.liu@intel.com>
+
+	PR rtl-optimization/109351
+	* ira.cc (setup_class_subset_and_memory_move_costs): Check
+	hard_regno_mode_ok before setting lowest memory move cost for
+	the mode with different reg classes.
+
 2023-04-18  Jason Merrill  <jason@redhat.com>
 
 	* doc/invoke.texi: Remove stray @gol.

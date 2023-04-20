@@ -1,3 +1,87 @@
+2023-04-19  Patrick Palka  <ppalka@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/100157
+	* g++.dg/ext/type_pack_element1.C: New test.
+	* g++.dg/ext/type_pack_element2.C: New test.
+	* g++.dg/ext/type_pack_element3.C: New test.
+
+2023-04-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109556
+	* g++.dg/cpp2a/concepts-placeholder13.C: New test.
+
+2023-04-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR testsuite/83904
+	PR fortran/100297
+	* gfortran.dg/allocatable_function_1.f90: Use "__builtin_free "
+	instead of the naive "free".
+	* gfortran.dg/reshape_8.f90: Extend pattern from a simple "data".
+
+2023-04-19  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.target/i386/cmov10.c: New test.
+	* gcc.target/i386/cmov11.c: New test.
+
+2023-04-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108099
+	* g++.dg/ext/int128-8.C: New test.
+
+2023-04-19  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/pr108185-4.c: Adapt testcase.
+	* gcc.target/riscv/rvv/base/spill-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/spill-11.c: Ditto.
+	* gcc.target/riscv/rvv/base/spill-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/spill-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/spill-5.c: Ditto.
+	* gcc.target/riscv/rvv/base/spill-9.c: Ditto.
+
+2023-04-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/mask_insn_shortcut.c: Update check
+	condition.
+	* gcc.target/riscv/simplify_ior_optimization.c: New test.
+
+2023-04-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78904
+	PR target/78952
+	* gcc.target/i386/pr78952-3.c: New test.
+
+2023-04-19  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/109465
+	* gcc.target/loongarch/pr109465-1.c: New test.
+	* gcc.target/loongarch/pr109465-2.c: New test.
+	* gcc.target/loongarch/pr109465-3.c: New test.
+
+2023-04-19  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/va_arg.c: New test.
+
+2023-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109011
+	* gcc.dg/vect/pr109011-1.c: New test.
+
+2023-04-19  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.target/aarch64/vec-set-zero.c: New test.
+
+2023-04-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/108840
+	* gcc.target/aarch64/pr108840.c: New test.
+
+2023-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109524
+	* g++.dg/pr109524.C (nn::nn): Change argument type from nn & to
+	const nn &.
+
 2023-04-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/94908
