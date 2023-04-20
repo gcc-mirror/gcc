@@ -1,3 +1,12 @@
+2023-04-21  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (vnsi, VnSI): Add scalar modes.
+	(ldexp<mode>3): Delete.
+	(ldexp<mode>3<exec>): Change "B" to "A".
+
 2023-04-20  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backport from mainline:
