@@ -1,3 +1,45 @@
+2023-04-19  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-04-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109556
+	* g++.dg/cpp2a/concepts-placeholder13.C: New test.
+
+2023-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109524
+	* g++.dg/pr109524.C (nn::nn): Change argument type from nn & to
+	const nn &.
+
+2023-04-19  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	Backported from master:
+	2023-04-17  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	* gcc.target/riscv/xtheadfmv-fmv.c: Force the ilp32d ABI.
+
+2023-04-19  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	Backported from master:
+	2023-04-17  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	* gcc.target/riscv/rvv/rvv.exp (gcc_mabi): New variable.
+
+2023-04-19  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	Backported from master:
+	2023-04-17  Palmer Dabbelt  <palmer@rivosinc.com>
+
+	PR target/106602
+	* gcc.target/riscv/pr106602.c: Moved to...
+	* gcc.target/riscv/pr106602-rv64i.c: ...here.
+	* gcc.target/riscv/pr106602-rv32i.c: New test.
+	* gcc.target/riscv/pr106602-rv64i_zba.c: New test.
+
 2023-04-17  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
