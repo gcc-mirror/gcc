@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv64gc -mabi=lp64 -O2" } */
 
-#include <stdint.h>
+#include "stdint-gcc.h"
 
 uint8_t test_simplify_ior_scalar_case_0 (uint8_t a)
 {
