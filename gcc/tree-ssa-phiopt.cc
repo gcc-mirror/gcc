@@ -218,6 +218,14 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 	  continue;
 	}
 
+      if (diamond_p)
+	{
+	  if (!single_pred_p (bb1)
+	      || !single_pred_p (bb2)
+	      || !single_succ_p (bb2))
+	    continue;
+	}
+
       if (do_store_elim && !diamond_p)
 	{
 	  /* Also make sure that bb1 only have one predecessor and that it
@@ -2028,12 +2036,6 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb, basic_block alt_
       tree lhs, op0, op1, bound;
       tree alt_lhs, alt_op0, alt_op1;
       bool invert = false;
-
-      if (!single_pred_p (middle_bb)
-	  || !single_pred_p (alt_middle_bb)
-	  || !single_succ_p (middle_bb)
-	  || !single_succ_p (alt_middle_bb))
-	return false;
 
       /* When THREEWAY_P then e1 will point to the edge of the final transition
 	 from middle-bb to end.  */
