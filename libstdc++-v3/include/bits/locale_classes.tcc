@@ -103,6 +103,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool
     has_facet(const locale& __loc) throw()
     {
+      if _GLIBCXX17_CONSTEXPR (__is_same(_Facet, ctype<char>)
+				 || __is_same(_Facet, num_get<char>)
+				 || __is_same(_Facet, num_put<char>))
+	return true;
+#ifdef _GLIBCXX_USE_WCHAR_T
+      else if _GLIBCXX17_CONSTEXPR (__is_same(_Facet, ctype<wchar_t>)
+				      || __is_same(_Facet, num_get<wchar_t>)
+				      || __is_same(_Facet, num_put<wchar_t>))
+	return true;
+#endif
+
       const size_t __i = _Facet::id._M_id();
       const locale::facet** __facets = __loc._M_impl->_M_facets;
       return (__i < __loc._M_impl->_M_facets_size
@@ -133,6 +144,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       const size_t __i = _Facet::id._M_id();
       const locale::facet** __facets = __loc._M_impl->_M_facets;
+
+      if _GLIBCXX17_CONSTEXPR (__is_same(_Facet, ctype<char>)
+				 || __is_same(_Facet, num_get<char>)
+				 || __is_same(_Facet, num_put<char>))
+	return static_cast<const _Facet&>(*__facets[__i]);
+#ifdef _GLIBCXX_USE_WCHAR_T
+      else if _GLIBCXX17_CONSTEXPR (__is_same(_Facet, ctype<wchar_t>)
+				      || __is_same(_Facet, num_get<wchar_t>)
+				      || __is_same(_Facet, num_put<wchar_t>))
+	return static_cast<const _Facet&>(*__facets[__i]);
+#endif
+
       if (__i >= __loc._M_impl->_M_facets_size || !__facets[__i])
         __throw_bad_cast();
 #if __cpp_rtti
