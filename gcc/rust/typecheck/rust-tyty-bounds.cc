@@ -680,6 +680,40 @@ TypeBoundPredicate::get_associated_type_items ()
   return items;
 }
 
+bool
+TypeBoundPredicate::is_equal (const TypeBoundPredicate &other) const
+{
+  // check they match the same trait reference
+  if (reference != other.reference)
+    return false;
+
+  // check that the generics match
+  if (get_num_substitutions () != other.get_num_substitutions ())
+    return false;
+
+  // then match the generics applied
+  for (size_t i = 0; i < get_num_substitutions (); i++)
+    {
+      const SubstitutionParamMapping &a = substitutions.at (i);
+      const SubstitutionParamMapping &b = other.substitutions.at (i);
+
+      const ParamType *ap = a.get_param_ty ();
+      const ParamType *bp = b.get_param_ty ();
+
+      const BaseType *apd = ap->destructure ();
+      const BaseType *bpd = bp->destructure ();
+
+      // FIXME use the unify_and infer inteface or try coerce
+      if (!apd->can_eq (bpd, false /*emit_errors*/))
+	{
+	  if (!bpd->can_eq (apd, false /*emit_errors*/))
+	    return false;
+	}
+    }
+
+  return true;
+}
+
 // trait item reference
 
 const Resolver::TraitItemReference *

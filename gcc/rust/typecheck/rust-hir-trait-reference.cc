@@ -442,16 +442,18 @@ TraitReference::satisfies_bound (const TraitReference &reference) const
 }
 
 AssociatedImplTrait::AssociatedImplTrait (TraitReference *trait,
+					  TyTy::TypeBoundPredicate predicate,
 					  HIR::ImplBlock *impl,
 					  TyTy::BaseType *self,
 					  Resolver::TypeCheckContext *context)
-  : trait (trait), impl (impl), self (self), context (context)
+  : trait (trait), predicate (predicate), impl (impl), self (self),
+    context (context)
 {}
 
-TraitReference *
-AssociatedImplTrait::get_trait ()
+TyTy::TypeBoundPredicate &
+AssociatedImplTrait::get_predicate ()
 {
-  return trait;
+  return predicate;
 }
 
 HIR::ImplBlock *
@@ -465,6 +467,7 @@ AssociatedImplTrait::get_self ()
 {
   return self;
 }
+
 const TyTy::BaseType *
 AssociatedImplTrait::get_self () const
 {

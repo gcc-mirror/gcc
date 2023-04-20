@@ -438,6 +438,8 @@ public:
   TypeBoundPredicateItem
   lookup_associated_type (const std::string &search) override final;
 
+  bool is_equal (const TypeBoundPredicate &other) const;
+
 private:
   DefId reference;
   Location locus;
