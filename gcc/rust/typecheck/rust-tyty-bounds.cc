@@ -360,6 +360,9 @@ TypeBoundPredicate::operator= (const TypeBoundPredicate &other)
   for (const auto &p : other.get_substs ())
     substitutions.push_back (p.clone ());
 
+  if (other.is_error ())
+    return *this;
+
   std::vector<SubstitutionArg> mappings;
   for (size_t i = 0; i < other.used_arguments.get_mappings ().size (); i++)
     {
