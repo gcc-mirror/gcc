@@ -1784,7 +1784,7 @@ TypeCheckExpr::resolve_operator_overload (
 
 HIR::PathIdentSegment
 TypeCheckExpr::resolve_possible_fn_trait_call_method_name (
-  const TyTy::BaseType &receiver)
+  TyTy::BaseType &receiver, TyTy::TypeBoundPredicate *associated_predicate)
 {
   // Question
   // do we need to probe possible bounds here? I think not, i think when we
@@ -1793,7 +1793,7 @@ TypeCheckExpr::resolve_possible_fn_trait_call_method_name (
   // FIXME
   // the logic to map the FnTrait to their respective call trait-item is
   // duplicated over in the backend/rust-compile-expr.cc
-  for (const auto &bound : receiver.get_specified_bounds ())
+  for (auto &bound : receiver.get_specified_bounds ())
     {
       bool found_fn = bound.get_name ().compare ("Fn") == 0;
       bool found_fn_mut = bound.get_name ().compare ("FnMut") == 0;
@@ -1801,19 +1801,23 @@ TypeCheckExpr::resolve_possible_fn_trait_call_method_name (
 
       if (found_fn)
 	{
+	  *associated_predicate = bound;
 	  return HIR::PathIdentSegment ("call");
 	}
       else if (found_fn_mut)
 	{
+	  *associated_predicate = bound;
 	  return HIR::PathIdentSegment ("call_mut");
 	}
       else if (found_fn_once)
 	{
+	  *associated_predicate = bound;
 	  return HIR::PathIdentSegment ("call_once");
 	}
     }
 
   // nothing
+  *associated_predicate = TyTy::TypeBoundPredicate::error ();
   return HIR::PathIdentSegment ("");
 }
 
@@ -1823,9 +1827,11 @@ TypeCheckExpr::resolve_fn_trait_call (HIR::CallExpr &expr,
 				      TyTy::BaseType **result)
 {
   // we turn this into a method call expr
+  auto associated_predicate = TyTy::TypeBoundPredicate::error ();
   HIR::PathIdentSegment method_name
-    = resolve_possible_fn_trait_call_method_name (*receiver_tyty);
-  if (method_name.is_error ())
+    = resolve_possible_fn_trait_call_method_name (*receiver_tyty,
+						  &associated_predicate);
+  if (method_name.is_error () || associated_predicate.is_error ())
     return false;
 
   auto candidates = MethodResolver::Probe (receiver_tyty, method_name);
