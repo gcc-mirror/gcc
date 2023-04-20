@@ -3638,6 +3638,18 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  goto match;
 	}
 
+      if (a->expr->expr_type == EXPR_FUNCTION
+	  && a->expr->value.function.esym
+	  && f->sym->attr.allocatable)
+	{
+	  if (where)
+	    gfc_error ("Actual argument for %qs at %L is a function result "
+		       "and the dummy argument is ALLOCATABLE",
+		       f->sym->name, &a->expr->where);
+	  ok = false;
+	  goto match;
+	}
+
       /* Check intent = OUT/INOUT for definable actual argument.  */
       if (!in_statement_function
 	  && (f->sym->attr.intent == INTENT_OUT
