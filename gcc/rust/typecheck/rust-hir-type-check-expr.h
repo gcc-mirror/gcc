@@ -97,8 +97,8 @@ protected:
 			      TyTy::BaseType *function_tyty,
 			      TyTy::BaseType **result);
 
-  HIR::PathIdentSegment
-  resolve_possible_fn_trait_call_method_name (const TyTy::BaseType &receiver);
+  HIR::PathIdentSegment resolve_possible_fn_trait_call_method_name (
+    TyTy::BaseType &receiver, TyTy::TypeBoundPredicate *associated_predicate);
 
 private:
   TypeCheckExpr ();
