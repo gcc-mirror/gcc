@@ -2690,6 +2690,59 @@
     = INTVAL (operands[2]) <= 0xff ? GEN_INT (0xff) :  GEN_INT (0xffff);
 })
 
+;; Avoid, after opsplit1 with AND (below), sequences of:
+;;  lsrq N,R
+;;  lslq M,R
+;;  lsrq M,R
+;; (N < M), where we can fold the first lsrq into the lslq-lsrq, like:
+;;  lslq M-N,R
+;;  lsrq M,R
+;; We have to match this before opsplit1 below and before other peephole2s of
+;; lesser value, since peephole2 matching resumes at the first generated insn,
+;; and thus wouldn't match a pattern of the three shifts after opsplit1/AND.
+;; Note that this lsrandsplit1 is in turn of lesser value than movulsr, since
+;; that one doesn't require the same operand for source and destination, but
+;; they happen to be the same hard-register at peephole2 time even if
+;; naturally separated like in peep2-movulsr2.c, thus this placement.  (Source
+;; and destination will be re-separated and the move optimized out in
+;; cprop_hardreg at time of this writing.)
+;; Testcase: gcc.target/cris/peep2-lsrandsplit1.c
+(define_peephole2 ; lsrandsplit1
+  [(parallel
+    [(set (match_operand:SI 0 "register_operand")
+	  (lshiftrt:SI
+	   (match_operand:SI 1 "register_operand")
+	   (match_operand:SI 2 "const_int_operand")))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])
+   (parallel
+    [(set (match_operand 3 "register_operand")
+	  (and
+	   (match_operand 4 "register_operand")
+	   (match_operand 5 "const_int_operand")))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])]
+  "REGNO (operands[0]) == REGNO (operands[1])
+   && REGNO (operands[0]) == REGNO (operands[3])
+   && REGNO (operands[0]) == REGNO (operands[4])
+   && (INTVAL (operands[2])
+       < (clz_hwi (INTVAL (operands[5])) - (HOST_BITS_PER_WIDE_INT - 32)))
+   && cris_splittable_constant_p (INTVAL (operands[5]), AND, SImode,
+				  optimize_function_for_speed_p (cfun)) == 2"
+  ;; We're guaranteed by the above hw_clz test (certainly non-zero) and the
+  ;; test for a two-insn return-value from cris_splittable_constant_p, that
+  ;; the cris_splittable_constant_p AND-replacement would be lslq-lsrq.
+  [(parallel
+    [(set (match_dup 0) (ashift:SI (match_dup 0) (match_dup 9)))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])
+   (parallel
+    [(set (match_dup 0) (lshiftrt:SI (match_dup 0) (match_dup 10)))
+     (clobber (reg:CC CRIS_CC0_REGNUM))])]
+{
+  HOST_WIDE_INT shiftval
+    = clz_hwi (INTVAL (operands[5])) - (HOST_BITS_PER_WIDE_INT - 32);
+  operands[9] = GEN_INT (shiftval - INTVAL (operands[2]));
+  operands[10] = GEN_INT (shiftval);
+})
+
 ;; Testcase for the following four peepholes: gcc.target/cris/peep2-xsrand.c
 
 (define_peephole2 ; asrandb
