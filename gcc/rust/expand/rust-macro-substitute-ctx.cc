@@ -147,15 +147,27 @@ SubstituteCtx::substitute_repetition (
 	{
 	  MatchedFragment sub_fragment;
 
+	  // Hack: A repeating meta variable might not be present in the new
+	  // macro. Don't include this match if the fragment doesn't have enough
+	  // items, as check_repetition_amount should prevent repetition amount
+	  // mismatches anyway.
+	  bool is_used = true;
+
 	  // FIXME: Hack: If a fragment is not repeated, how does it fit in the
 	  // submap? Do we really want to expand it? Is this normal behavior?
 	  if (kv_match.second.is_single_fragment ())
 	    sub_fragment = kv_match.second.get_single_fragment ();
 	  else
-	    sub_fragment = kv_match.second.get_fragments ()[i];
+	    {
+	      if (kv_match.second.get_fragments ().size () > i)
+		sub_fragment = kv_match.second.get_fragments ().at (i);
+	      else
+		is_used = false;
+	    }
 
-	  sub_map.insert (
-	    {kv_match.first, MatchedFragmentContainer::metavar (sub_fragment)});
+	  if (is_used)
+	    sub_map.insert ({kv_match.first,
+			     MatchedFragmentContainer::metavar (sub_fragment)});
 	}
 
       auto substitute_context = SubstituteCtx (input, new_macro, sub_map);
