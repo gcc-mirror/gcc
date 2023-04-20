@@ -10101,9 +10101,13 @@ package body Sem_Ch13 is
          --  Start of processing for Add_Predicate
 
          begin
-            --  A ghost predicate is checked only when Ghost mode is enabled
+            --  A ghost predicate is checked only when Ghost mode is enabled.
+            --  Add a condition for the presence of a predicate to be recorded,
+            --  which is needed to generate the corresponding predicate
+            --  function.
 
             if Is_Ignored_Ghost_Pragma (Prag) then
+               Add_Condition (New_Occurrence_Of (Standard_True, Sloc (Prag)));
                return;
             end if;
 

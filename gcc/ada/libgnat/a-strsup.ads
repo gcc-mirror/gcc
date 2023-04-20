@@ -69,7 +69,7 @@ package Ada.Strings.Superbounded with SPARK_Mode is
       --  Leaving it out is more efficient.
    end record
    with
-     Predicate =>
+     Ghost_Predicate =>
        Current_Length <= Max_Length
          and then Data (1 .. Current_Length)'Initialized,
      Put_Image => Put_Image;
