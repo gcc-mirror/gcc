@@ -54,6 +54,10 @@ Wunused-result
 Rust Var(warn_unused_result) Warning
 Warn if a caller of a function, marked with attribute warn_unused_result, does not use its return value.
 
+Winfinite-recursion
+Rust Var(warn_infinite_recursion) Warning
+Warn for infinitely recursive calls.
+
 frust-crate=
 Rust Joined RejectNegative
 -frust-crate=<name>             Set the crate name for the compilation
