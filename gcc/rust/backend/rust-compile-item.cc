@@ -147,18 +147,8 @@ CompileItem::visit (HIR::Function &function)
   if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup,
 				 fntype->get_id (), fntype, asm_name))
     {
-      // has this been added to the list then it must be finished
-      if (ctx->function_completed (lookup))
-	{
-	  tree dummy = NULL_TREE;
-	  if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &dummy))
-	    {
-	      ctx->insert_function_decl (fntype, lookup);
-	    }
-
-	  reference = address_expression (lookup, ref_locus);
-	  return;
-	}
+      reference = address_expression (lookup, ref_locus);
+      return;
     }
 
   if (fntype->has_subsititions_defined ())
