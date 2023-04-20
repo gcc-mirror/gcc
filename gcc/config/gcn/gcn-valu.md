@@ -208,7 +208,9 @@
    (V64HF "HF") (V64SF "SF") (V64DI "DI") (V64DF "DF")])
 
 (define_mode_attr vnsi
-  [(V2QI "v2si") (V2HI "v2si") (V2HF "v2si") (V2SI "v2si")
+  [(QI "si") (HI "si") (SI "si")
+   (HF "si") (SF "si") (DI "si") (DF "si")
+   (V2QI "v2si") (V2HI "v2si") (V2HF "v2si") (V2SI "v2si")
    (V2SF "v2si") (V2DI "v2si") (V2DF "v2si")
    (V4QI "v4si") (V4HI "v4si") (V4HF "v4si") (V4SI "v4si")
    (V4SF "v4si") (V4DI "v4si") (V4DF "v4si")
@@ -222,7 +224,9 @@
    (V64SF "v64si") (V64DI "v64si") (V64DF "v64si")])
 
 (define_mode_attr VnSI
-  [(V2QI "V2SI") (V2HI "V2SI") (V2HF "V2SI") (V2SI "V2SI")
+  [(QI "SI") (HI "SI") (SI "SI")
+   (HF "SI") (SF "SI") (DI "SI") (DF "SI")
+   (V2QI "V2SI") (V2HI "V2SI") (V2HF "V2SI") (V2SI "V2SI")
    (V2SF "V2SI") (V2DI "V2SI") (V2DF "V2SI")
    (V4QI "V4SI") (V4HI "V4SI") (V4HF "V4SI") (V4SI "V4SI")
    (V4SF "V4SI") (V4DI "V4SI") (V4DF "V4SI")
@@ -3043,21 +3047,10 @@
 
 ; Implement ldexp pattern
 
-(define_insn "ldexp<mode>3"
-  [(set (match_operand:FP 0 "register_operand"  "=v")
-	(unspec:FP
-	  [(match_operand:FP 1 "gcn_alu_operand" "vB")
-	   (match_operand:SI 2 "gcn_alu_operand" "vSvA")]
-	  UNSPEC_LDEXP))]
-  ""
-  "v_ldexp%i0\t%0, %1, %2"
-  [(set_attr "type" "vop3a")
-   (set_attr "length" "8")])
-
 (define_insn "ldexp<mode>3<exec>"
-  [(set (match_operand:V_FP 0 "register_operand"     "=  v")
-	(unspec:V_FP
-	  [(match_operand:V_FP 1 "gcn_alu_operand"   "  vB")
+  [(set (match_operand:SV_FP 0 "register_operand"     "=  v")
+	(unspec:SV_FP
+	  [(match_operand:SV_FP 1 "gcn_alu_operand"   "  vA")
 	   (match_operand:<VnSI> 2 "gcn_alu_operand" "vSvA")]
 	  UNSPEC_LDEXP))]
   ""
