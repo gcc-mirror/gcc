@@ -241,7 +241,7 @@
         (clz_ctz_pcnt:SI (match_operand:SI 1 "register_operand" "r")))]
   "TARGET_ZBB"
   "<bitmanip_insn>%~\t%0,%1"
-  [(set_attr "type" "bitmanip")
+  [(set_attr "type" "<bitmanip_insn>")
    (set_attr "mode" "SI")])
 
 (define_insn "*<bitmanip_optab>disi2"
@@ -250,7 +250,7 @@
           (clz_ctz_pcnt:SI (match_operand:SI 1 "register_operand" "r"))))]
   "TARGET_64BIT && TARGET_ZBB"
   "<bitmanip_insn>w\t%0,%1"
-  [(set_attr "type" "bitmanip")
+  [(set_attr "type" "<bitmanip_insn>")
    (set_attr "mode" "SI")])
 
 (define_insn "*<bitmanip_optab>di2"
@@ -258,7 +258,7 @@
         (clz_ctz_pcnt:DI (match_operand:DI 1 "register_operand" "r")))]
   "TARGET_64BIT && TARGET_ZBB"
   "<bitmanip_insn>\t%0,%1"
-  [(set_attr "type" "bitmanip")
+  [(set_attr "type" "<bitmanip_insn>")
    (set_attr "mode" "DI")])
 
 (define_insn "*zero_extendhi<GPR:mode>2_bitmanip"
@@ -357,7 +357,8 @@
   [(set (match_operand:X 0 "register_operand" "=r")
 	(unspec:X [(match_operand:X 1 "register_operand" "r")] UNSPEC_ORC_B))]
   "TARGET_ZBB"
-  "orc.b\t%0,%1")
+  "orc.b\t%0,%1"
+  [(set_attr "type" "bitmanip")])
 
 (define_expand "bswapdi2"
   [(set (match_operand:DI 0 "register_operand")
@@ -406,7 +407,7 @@
 			   (match_operand:X 2 "reg_or_0_operand" "rJ")))]
   "TARGET_ZBB"
   "<bitmanip_insn>\t%0,%1,%z2"
-  [(set_attr "type" "bitmanip")])
+  [(set_attr "type" "<bitmanip_insn>")])
 
 ;; Optimize the common case of a SImode min/max against a constant
 ;; that is safe both for sign- and zero-extension.
