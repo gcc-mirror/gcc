@@ -1630,7 +1630,7 @@ vect_recog_ctz_ffs_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
        && defined_at_zero_new
        && val == prec
        && val_new == prec)
-      || (ifnnew == IFN_POPCOUNT && ifn == IFN_CLZ))
+      || (ifnnew == IFN_POPCOUNT && ifn == IFN_CTZ))
     {
       /* .CTZ (X) = PREC - .CLZ ((X - 1) & ~X)
 	 .CTZ (X) = .POPCOUNT ((X - 1) & ~X).  */
