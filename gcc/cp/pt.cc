@@ -16228,33 +16228,24 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	/* If we get here, we must have been looking at a parm for a
 	   more deeply nested template.  Make a new version of this
 	   template parameter, but with a lower level.  */
+	int quals;
 	switch (code)
 	  {
 	  case TEMPLATE_TYPE_PARM:
 	  case TEMPLATE_TEMPLATE_PARM:
-	    if (cp_type_quals (t))
+	    quals = cp_type_quals (t);
+	    if (quals)
 	      {
-		r = tsubst (TYPE_MAIN_VARIANT (t), args, complain, in_decl);
-		r = cp_build_qualified_type
-		  (r, cp_type_quals (t),
-		   complain | (code == TEMPLATE_TYPE_PARM
-			       ? tf_ignore_bad_quals : 0));
+		gcc_checking_assert (code == TEMPLATE_TYPE_PARM);
+		t = TYPE_MAIN_VARIANT (t);
 	      }
-	    else if (TREE_CODE (t) == TEMPLATE_TYPE_PARM
-		     && PLACEHOLDER_TYPE_CONSTRAINTS_INFO (t)
-		     && (r = (TEMPLATE_PARM_DESCENDANTS
-			      (TEMPLATE_TYPE_PARM_INDEX (t))))
-		     && (r = TREE_TYPE (r))
-		     && !PLACEHOLDER_TYPE_CONSTRAINTS_INFO (r))
-	      /* Break infinite recursion when substituting the constraints
-		 of a constrained placeholder.  */;
-	    else if (TREE_CODE (t) == TEMPLATE_TYPE_PARM
-		     && !PLACEHOLDER_TYPE_CONSTRAINTS_INFO (t)
-		     && (arg = TEMPLATE_TYPE_PARM_INDEX (t),
-			 r = TEMPLATE_PARM_DESCENDANTS (arg))
-		     && (TEMPLATE_PARM_LEVEL (r)
-			 == TEMPLATE_PARM_LEVEL (arg) - levels))
-		/* Cache the simple case of lowering a type parameter.  */
+
+	    if (TREE_CODE (t) == TEMPLATE_TYPE_PARM
+		&& (arg = TEMPLATE_TYPE_PARM_INDEX (t),
+		    r = TEMPLATE_PARM_DESCENDANTS (arg))
+		&& (TEMPLATE_PARM_LEVEL (r)
+		    == TEMPLATE_PARM_LEVEL (arg) - levels))
+	      /* Cache the simple case of lowering a type parameter.  */
 	      r = TREE_TYPE (r);
 	    else
 	      {
@@ -16278,6 +16269,10 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		else
 		  TYPE_CANONICAL (r) = canonical_type_parameter (r);
 	      }
+
+	    if (quals)
+	      r = cp_build_qualified_type (r, quals,
+					   complain | tf_ignore_bad_quals);
 	    break;
 
 	  case BOUND_TEMPLATE_TEMPLATE_PARM:
