@@ -206,8 +206,7 @@
 {
   return (CONSTANT_ADDRESS_P (op)
 	  || (GET_CODE (op) == REG && op != arg_pointer_rtx
-	      && ! (REGNO (op) >= FIRST_PSEUDO_REGISTER
-		    && REGNO (op) <= LAST_VIRTUAL_REGISTER)));
+	      && ! VIRTUAL_REGISTER_P (op)));
 })
 
 ;; Return nonzero if OP is valid as a source operand for a move

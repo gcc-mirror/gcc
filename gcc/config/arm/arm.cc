@@ -9105,9 +9105,7 @@ thumb1_legitimate_address_p (machine_mode mode, rtx x, int strict_p)
       else if (REG_P (XEXP (x, 0))
 	       && (REGNO (XEXP (x, 0)) == FRAME_POINTER_REGNUM
 		   || REGNO (XEXP (x, 0)) == ARG_POINTER_REGNUM
-		   || (REGNO (XEXP (x, 0)) >= FIRST_VIRTUAL_REGISTER
-		       && REGNO (XEXP (x, 0))
-			  <= LAST_VIRTUAL_POINTER_REGISTER))
+		   || VIRTUAL_REGISTER_P (XEXP (x, 0)))
 	       && GET_MODE_SIZE (mode) >= 4
 	       && CONST_INT_P (XEXP (x, 1))
 	       && (INTVAL (XEXP (x, 1)) & 3) == 0)
@@ -13905,8 +13903,7 @@ arm_eliminable_register (rtx x)
 {
   return REG_P (x) && (REGNO (x) == FRAME_POINTER_REGNUM
 		       || REGNO (x) == ARG_POINTER_REGNUM
-		       || (REGNO (x) >= FIRST_VIRTUAL_REGISTER
-			   && REGNO (x) <= LAST_VIRTUAL_REGISTER));
+		       || VIRTUAL_REGISTER_P (x));
 }
 
 /* Return GENERAL_REGS if a scratch register required to reload x to/from
