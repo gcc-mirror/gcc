@@ -20,8 +20,6 @@
 #define RUST_COMPILE_IMPLITEM_H
 
 #include "rust-compile-item.h"
-#include "rust-compile-expr.h"
-#include "rust-compile-fnparam.h"
 
 namespace Rust {
 namespace Compile {
