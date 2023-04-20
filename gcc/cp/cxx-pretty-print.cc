@@ -2640,16 +2640,16 @@ pp_cxx_trait (cxx_pretty_printer *pp, tree t)
     }
   if (type2)
     {
-      if (TREE_CODE (type2) != TREE_LIST)
+      if (TREE_CODE (type2) != TREE_VEC)
 	{
 	  pp_cxx_separate_with (pp, ',');
 	  pp->type_id (type2);
 	}
       else
-	for (tree arg = type2; arg; arg = TREE_CHAIN (arg))
+	for (tree arg : tree_vec_range (type2))
 	  {
 	    pp_cxx_separate_with (pp, ',');
-	    pp->type_id (TREE_VALUE (arg));
+	    pp->type_id (arg);
 	  }
     }
   if (kind == CPTK_TYPE_PACK_ELEMENT)

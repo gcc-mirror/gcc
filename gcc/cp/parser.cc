@@ -10993,8 +10993,8 @@ cp_parser_trait (cp_parser* parser, enum rid keyword)
   if (kind == CPTK_TYPE_PACK_ELEMENT)
     {
       cp_parser_require (parser, CPP_COMMA, RT_COMMA);
-      tree rest = cp_parser_enclosed_template_argument_list (parser);
-      for (tree elt : tree_vec_range (rest))
+      tree trailing = cp_parser_enclosed_template_argument_list (parser);
+      for (tree elt : tree_vec_range (trailing))
 	{
 	  if (!TYPE_P (elt))
 	    {
@@ -11003,9 +11003,8 @@ cp_parser_trait (cp_parser* parser, enum rid keyword)
 			"is not a type");
 	      return error_mark_node;
 	    }
-	  type2 = tree_cons (NULL_TREE, elt, type2);
 	}
-      type2 = nreverse (type2);
+      type2 = trailing;
     }
   else if (binary)
     {
@@ -11021,6 +11020,7 @@ cp_parser_trait (cp_parser* parser, enum rid keyword)
     }
   else if (variadic)
     {
+      auto_vec<tree, 4> trailing;
       while (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
 	{
 	  cp_lexer_consume_token (parser->lexer);
@@ -11032,9 +11032,11 @@ cp_parser_trait (cp_parser* parser, enum rid keyword)
 	    }
 	  if (elt == error_mark_node)
 	    return error_mark_node;
-	  type2 = tree_cons (NULL_TREE, elt, type2);
+	  trailing.safe_push (elt);
 	}
-      type2 = nreverse (type2);
+      type2 = make_tree_vec (trailing.length ());
+      for (int i = 0; i < TREE_VEC_LENGTH (type2); ++i)
+	TREE_VEC_ELT (type2, i) = trailing[i];
     }
 
   location_t finish_loc = cp_lexer_peek_token (parser->lexer)->location;

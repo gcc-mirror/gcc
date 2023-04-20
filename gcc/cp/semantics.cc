@@ -4490,14 +4490,13 @@ finish_type_pack_element (tree idx, tree types, tsubst_flags_t complain)
 	error ("%<__type_pack_element%> index is negative");
       return error_mark_node;
     }
-  tree result = chain_index (val, types);
-  if (!result)
+  if (val >= TREE_VEC_LENGTH (types))
     {
       if (complain & tf_error)
 	error ("%<__type_pack_element%> index is out of range");
       return error_mark_node;
     }
-  return TREE_VALUE (result);
+  return TREE_VEC_ELT (types, val);
 }
 
 /* Implement the __direct_bases keyword: Return the direct base classes
@@ -12121,9 +12120,13 @@ check_trait_type (tree type, int kind = 1)
   if (type == NULL_TREE)
     return true;
 
-  if (TREE_CODE (type) == TREE_LIST)
-    return (check_trait_type (TREE_VALUE (type))
-	    && check_trait_type (TREE_CHAIN (type)));
+  if (TREE_CODE (type) == TREE_VEC)
+    {
+      for (tree arg : tree_vec_range (type))
+	if (!check_trait_type (arg, kind))
+	  return false;
+      return true;
+    }
 
   if (kind == 1 && TREE_CODE (type) == ARRAY_TYPE && !TYPE_DOMAIN (type))
     return true; // Array of unknown bound. Don't care about completeness.

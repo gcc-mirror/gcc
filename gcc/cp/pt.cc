@@ -28065,19 +28065,18 @@ value_dependent_expression_p (tree expression)
 
     case TRAIT_EXPR:
       {
-	tree type2 = TRAIT_EXPR_TYPE2 (expression);
-
 	if (dependent_type_p (TRAIT_EXPR_TYPE1 (expression)))
 	  return true;
 
+	tree type2 = TRAIT_EXPR_TYPE2 (expression);
 	if (!type2)
 	  return false;
 
-	if (TREE_CODE (type2) != TREE_LIST)
+	if (TREE_CODE (type2) != TREE_VEC)
 	  return dependent_type_p (type2);
 
-	for (; type2; type2 = TREE_CHAIN (type2))
-	  if (dependent_type_p (TREE_VALUE (type2)))
+	for (tree arg : tree_vec_range (type2))
+	  if (dependent_type_p (arg))
 	    return true;
 
 	return false;
