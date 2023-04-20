@@ -1191,9 +1191,11 @@ extern void riscv_remove_unneeded_save_restore_calls (void);
 #define OPTIMIZE_MODE_SWITCHING(ENTITY) (TARGET_VECTOR)
 #define NUM_MODES_FOR_MODE_SWITCHING {VXRM_MODE_NONE, riscv_vector::FRM_NONE}
 
-
 /* The size difference between different RVV modes can be up to 64 times.
    e.g. RVVMF64BI vs RVVMF1BI on zvl512b, which is [1, 1] vs [64, 64].  */
 #define MAX_POLY_VARIANT 64
+
+#define HAVE_POST_MODIFY_DISP TARGET_XTHEADMEMIDX
+#define HAVE_PRE_MODIFY_DISP  TARGET_XTHEADMEMIDX
 
 #endif /* ! GCC_RISCV_H */

@@ -25,11 +25,16 @@
 #include "coretypes.h"
 #include "target.h"
 #include "backend.h"
+#include "tree.h"
 #include "rtl.h"
+#include "explow.h"
 #include "memmodel.h"
 #include "emit-rtl.h"
+#include "optabs.h"
 #include "poly-int.h"
 #include "output.h"
+#include "regs.h"
+#include "riscv-protos.h"
 
 /* If MEM is in the form of "base+offset", extract the two parts
    of address and set to BASE and OFFSET, otherwise return false
@@ -429,4 +434,451 @@ th_mempair_save_restore_regs (rtx operands[4], bool load_p,
     th_mempair_restore_regs (operands);
   else
     th_mempair_save_regs (operands);
+}
+
+/* Return true if X can be represented as signed immediate of NBITS bits.
+   The immediate is assumed to be shifted by LSHAMT bits left.  */
+
+static bool
+valid_signed_immediate (rtx x, unsigned nbits, unsigned lshamt)
+{
+  if (GET_CODE (x) != CONST_INT)
+    return false;
+
+  HOST_WIDE_INT v = INTVAL (x);
+
+  HOST_WIDE_INT vunshifted = v >> lshamt;
+
+  /* Make sure we did not shift out any bits.  */
+  if (vunshifted << lshamt != v)
+    return false;
+
+  unsigned HOST_WIDE_INT imm_reach = 1LL << nbits;
+  return ((unsigned HOST_WIDE_INT) vunshifted + imm_reach/2 < imm_reach);
+}
+
+/* Return the address RTX of a move to/from memory
+   instruction.  */
+
+static rtx
+th_get_move_mem_addr (rtx dest, rtx src, bool load)
+{
+  rtx mem;
+
+  if (load)
+    mem = src;
+  else
+    mem = dest;
+
+  gcc_assert (GET_CODE (mem) == MEM);
+  return XEXP (mem, 0);
+}
+
+/* Return true if X is a valid address for T-Head's memory addressing modes
+   with pre/post modification for machine mode MODE.
+   If it is, fill in INFO appropriately (if non-NULL).
+   If STRICT_P is true then REG_OK_STRICT is in effect.  */
+
+static bool
+th_memidx_classify_address_modify (struct riscv_address_info *info, rtx x,
+				   machine_mode mode, bool strict_p)
+{
+  if (!TARGET_XTHEADMEMIDX)
+    return false;
+
+  if (!TARGET_64BIT && mode == DImode)
+    return false;
+
+  if (!(INTEGRAL_MODE_P (mode) && GET_MODE_SIZE (mode).to_constant () <= 8))
+    return false;
+
+  if (GET_CODE (x) != POST_MODIFY
+      && GET_CODE (x) != PRE_MODIFY)
+    return false;
+
+  rtx reg = XEXP (x, 0);
+  rtx exp = XEXP (x, 1);
+  rtx expreg = XEXP (exp, 0);
+  rtx expoff = XEXP (exp, 1);
+
+  if (GET_CODE (exp) != PLUS
+      || !rtx_equal_p (expreg, reg)
+      || !CONST_INT_P (expoff)
+      || !riscv_valid_base_register_p (reg, mode, strict_p))
+    return false;
+
+  /* The offset is calculated as (sign_extend(imm5) << imm2)  */
+  const int shamt_bits = 2;
+  for (int shamt = 0; shamt < (1 << shamt_bits); shamt++)
+    {
+      const int nbits = 5;
+      if (valid_signed_immediate (expoff, nbits, shamt))
+	{
+	  if (info)
+	    {
+	      info->type = ADDRESS_REG_WB;
+	      info->reg = reg;
+	      info->offset = expoff;
+	      info->shift = shamt;
+	    }
+	  return true;
+	}
+    }
+
+  return false;
+}
+
+/* Return TRUE if X is a MEM with a legitimate modify address.  */
+
+bool
+th_memidx_legitimate_modify_p (rtx x)
+{
+  if (!MEM_P (x))
+    return false;
+
+  /* Get the mode from the MEM and unpack it.  */
+  machine_mode mode = GET_MODE (x);
+  x = XEXP (x, 0);
+
+  return th_memidx_classify_address_modify (NULL, x, mode, reload_completed);
+}
+
+/* Return TRUE if X is a MEM with a legitimate modify address
+   and the address is POST_MODIFY (if POST is true) or a PRE_MODIFY
+   (otherwise).  */
+
+bool
+th_memidx_legitimate_modify_p (rtx x, bool post)
+{
+  if (!th_memidx_legitimate_modify_p (x))
+    return false;
+
+  /* Unpack the MEM and check the code.  */
+  x = XEXP (x, 0);
+  if (post)
+    return GET_CODE (x) == POST_MODIFY;
+  else
+    return GET_CODE (x) == PRE_MODIFY;
+}
+
+/* Provide a buffer for a th.lXia/th.lXib/th.sXia/th.sXib instruction
+   for the given MODE. If LOAD is true, a load instruction will be
+   provided (otherwise, a store instruction). If X is not suitable
+   return NULL.  */
+
+static const char *
+th_memidx_output_modify (rtx dest, rtx src, machine_mode mode, bool load)
+{
+  char format[24];
+  rtx output_operands[2];
+  rtx x = th_get_move_mem_addr (dest, src, load);
+
+  /* Validate x.  */
+  if (!th_memidx_classify_address_modify (NULL, x, mode, reload_completed))
+    return NULL;
+
+  int index = exact_log2 (GET_MODE_SIZE (mode).to_constant ());
+  bool post = GET_CODE (x) == POST_MODIFY;
+
+  const char *const insn[][4] = {
+    {
+      "th.sbi%s\t%%z1,%%0",
+      "th.shi%s\t%%z1,%%0",
+      "th.swi%s\t%%z1,%%0",
+      "th.sdi%s\t%%z1,%%0"
+    },
+    {
+      "th.lbui%s\t%%0,%%1",
+      "th.lhui%s\t%%0,%%1",
+      "th.lwi%s\t%%0,%%1",
+      "th.ldi%s\t%%0,%%1"
+    }
+  };
+
+  snprintf (format, sizeof (format), insn[load][index], post ? "a" : "b");
+  output_operands[0] = dest;
+  output_operands[1] = src;
+  output_asm_insn (format, output_operands);
+  return "";
+}
+
+static bool
+is_memidx_mode (machine_mode mode)
+{
+  if (mode == QImode || mode == HImode || mode == SImode)
+    return true;
+
+  if (mode == DImode && TARGET_64BIT)
+    return true;
+
+  return false;
+}
+
+/* Return true if X is a valid address for T-Head's memory addressing modes
+   with scaled register offsets for machine mode MODE.
+   If it is, fill in INFO appropriately (if non-NULL).
+   If STRICT_P is true then REG_OK_STRICT is in effect.  */
+
+static bool
+th_memidx_classify_address_index (struct riscv_address_info *info, rtx x,
+				  machine_mode mode, bool strict_p)
+{
+  /* Ensure that the mode is supported.  */
+  if (!(TARGET_XTHEADMEMIDX && is_memidx_mode (mode)))
+    return false;
+
+  if (GET_CODE (x) != PLUS)
+    return false;
+
+  rtx reg = XEXP (x, 0);
+  enum riscv_address_type type;
+  rtx offset = XEXP (x, 1);
+  int shift;
+
+  if (!riscv_valid_base_register_p (reg, mode, strict_p))
+    return false;
+
+  /* (reg:X) */
+  if (REG_P (offset)
+      && GET_MODE (offset) == Xmode)
+    {
+      type = ADDRESS_REG_REG;
+      shift = 0;
+      offset = offset;
+    }
+  /* (zero_extend:DI (reg:SI)) */
+  else if (GET_CODE (offset) == ZERO_EXTEND
+	   && GET_MODE (offset) == DImode
+	   && GET_MODE (XEXP (offset, 0)) == SImode)
+    {
+      type = ADDRESS_REG_UREG;
+      shift = 0;
+      offset = XEXP (offset, 0);
+    }
+  /* (ashift:X (reg:X) (const_int shift)) */
+  else if (GET_CODE (offset) == ASHIFT
+	   && GET_MODE (offset) == Xmode
+	   && REG_P (XEXP (offset, 0))
+	   && GET_MODE (XEXP (offset, 0)) == Xmode
+	   && CONST_INT_P (XEXP (offset, 1))
+	   && IN_RANGE (INTVAL (XEXP (offset, 1)), 0, 3))
+    {
+      type = ADDRESS_REG_REG;
+      shift = INTVAL (XEXP (offset, 1));
+      offset = XEXP (offset, 0);
+    }
+  /* (ashift:DI (zero_extend:DI (reg:SI)) (const_int shift)) */
+  else if (GET_CODE (offset) == ASHIFT
+	   && GET_MODE (offset) == DImode
+	   && GET_CODE (XEXP (offset, 0)) == ZERO_EXTEND
+	   && GET_MODE (XEXP (offset, 0)) == DImode
+	   && GET_MODE (XEXP (XEXP (offset, 0), 0)) == SImode
+	   && CONST_INT_P (XEXP (offset, 1))
+	   && IN_RANGE(INTVAL (XEXP (offset, 1)), 0, 3))
+    {
+      type = ADDRESS_REG_UREG;
+      shift = INTVAL (XEXP (offset, 1));
+      offset = XEXP (XEXP (offset, 0), 0);
+    }
+  else
+    return false;
+
+  if (!strict_p && GET_CODE (offset) == SUBREG)
+    offset = SUBREG_REG (offset);
+
+  if (!REG_P (offset)
+      || !riscv_regno_mode_ok_for_base_p (REGNO (offset), mode, strict_p))
+    return false;
+
+  if (info)
+    {
+      info->reg = reg;
+      info->type = type;
+      info->offset = offset;
+      info->shift = shift;
+    }
+  return true;
+}
+
+/* Return TRUE if X is a MEM with a legitimate indexed address.  */
+
+bool
+th_memidx_legitimate_index_p (rtx x)
+{
+  if (!MEM_P (x))
+    return false;
+
+  /* Get the mode from the MEM and unpack it.  */
+  machine_mode mode = GET_MODE (x);
+  x = XEXP (x, 0);
+
+  return th_memidx_classify_address_index (NULL, x, mode, reload_completed);
+}
+
+/* Return TRUE if X is a MEM with a legitimate indexed address
+   and the offset register is zero-extended (if UINDEX is true)
+   or sign-extended (otherwise).  */
+
+bool
+th_memidx_legitimate_index_p (rtx x, bool uindex)
+{
+  if (!MEM_P (x))
+    return false;
+
+  /* Get the mode from the MEM and unpack it.  */
+  machine_mode mode = GET_MODE (x);
+  x = XEXP (x, 0);
+
+  struct riscv_address_info info;
+  if (!th_memidx_classify_address_index (&info, x, mode, reload_completed))
+    return false;
+
+  if (uindex)
+    return info.type == ADDRESS_REG_UREG;
+  else
+    return info.type == ADDRESS_REG_REG;
+}
+
+/* Provide a buffer for a th.lrX/th.lurX/th.srX/th.surX instruction
+   for the given MODE. If LOAD is true, a load instruction will be
+   provided (otherwise, a store instruction). If X is not suitable
+   return NULL.  */
+
+static const char *
+th_memidx_output_index (rtx dest, rtx src, machine_mode mode, bool load)
+{
+  struct riscv_address_info info;
+  char format[24];
+  rtx output_operands[2];
+  rtx x = th_get_move_mem_addr (dest, src, load);
+
+  /* Validate x.  */
+  if (!th_memidx_classify_address_index (&info, x, mode, reload_completed))
+    return NULL;
+
+  int index = exact_log2 (GET_MODE_SIZE (mode).to_constant ());
+  bool uindex = info.type == ADDRESS_REG_UREG;
+
+  const char *const insn[][4] = {
+    {
+      "th.s%srb\t%%z1,%%0",
+      "th.s%srh\t%%z1,%%0",
+      "th.s%srw\t%%z1,%%0",
+      "th.s%srd\t%%z1,%%0"
+    },
+    {
+      "th.l%srbu\t%%0,%%1",
+      "th.l%srhu\t%%0,%%1",
+      "th.l%srw\t%%0,%%1",
+      "th.l%srd\t%%0,%%1"
+    }
+  };
+
+  snprintf (format, sizeof (format), insn[load][index], uindex ? "u" : "");
+  output_operands[0] = dest;
+  output_operands[1] = src;
+  output_asm_insn (format, output_operands);
+  return "";
+}
+
+/* Return true if X is a valid address for T-Head's memory addressing modes
+   for machine mode MODE.  If it is, fill in INFO appropriately (if non-NULL).
+   If STRICT_P is true then REG_OK_STRICT is in effect.  */
+
+bool
+th_classify_address (struct riscv_address_info *info, rtx x,
+		     machine_mode mode, bool strict_p)
+{
+  switch (GET_CODE (x))
+    {
+    case PLUS:
+      if (th_memidx_classify_address_index (info, x, mode, strict_p))
+	return true;
+      break;
+
+    case POST_MODIFY:
+    case PRE_MODIFY:
+      if (th_memidx_classify_address_modify (info, x, mode, strict_p))
+	return true;
+      break;
+
+    default:
+      return false;
+  }
+
+    return false;
+}
+
+/* Provide a string containing a XTheadMemIdx instruction for the given
+   MODE from the provided SRC to the provided DEST.
+   A pointer to a NULL-terminated string containing the instruction will
+   be returned if a suitable instruction is available. Otherwise, this
+   function returns NULL.  */
+
+const char *
+th_output_move (rtx dest, rtx src)
+{
+  enum rtx_code dest_code, src_code;
+  machine_mode mode;
+  const char *insn = NULL;
+
+  dest_code = GET_CODE (dest);
+  src_code = GET_CODE (src);
+  mode = GET_MODE (dest);
+
+  if (!(mode == GET_MODE (src) || src == CONST0_RTX (mode)))
+    return NULL;
+
+  if (dest_code == REG && src_code == MEM)
+    {
+      if (GET_MODE_CLASS (mode) == MODE_INT)
+	{
+	  if ((insn = th_memidx_output_index (dest, src, mode, true)))
+	    return insn;
+	  if ((insn = th_memidx_output_modify (dest, src, mode, true)))
+	    return insn;
+	}
+    }
+  else if (dest_code == MEM && (src_code == REG || src == CONST0_RTX (mode)))
+    {
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  || src == CONST0_RTX (mode))
+	{
+	  if ((insn = th_memidx_output_index (dest, src, mode, false)))
+	    return insn;
+	  if ((insn = th_memidx_output_modify (dest, src, mode, false)))
+	    return insn;
+	}
+    }
+  return NULL;
+}
+
+/* Implement TARGET_PRINT_OPERAND_ADDRESS for XTheadMemIdx.  */
+
+bool
+th_print_operand_address (FILE *file, machine_mode mode, rtx x)
+{
+  struct riscv_address_info addr;
+
+  if (!th_classify_address (&addr, x, mode, reload_completed))
+    return false;
+
+  switch (addr.type)
+    {
+    case ADDRESS_REG_REG:
+    case ADDRESS_REG_UREG:
+      fprintf (file, "%s,%s,%u", reg_names[REGNO (addr.reg)],
+	       reg_names[REGNO (addr.offset)], addr.shift);
+      return true;
+
+    case ADDRESS_REG_WB:
+      fprintf (file, "(%s),%ld,%u", reg_names[REGNO (addr.reg)],
+	       INTVAL (addr.offset) >> addr.shift, addr.shift);
+	return true;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  gcc_unreachable ();
 }

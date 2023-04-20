@@ -62,7 +62,7 @@
   [(set (match_operand:SUPERQI 0 "register_operand" "=r,r")
 	(sign_extend:SUPERQI
 	    (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
-  "TARGET_XTHEADBB"
+  "TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX"
   "@
    th.ext\t%0,%1,15,0
    lh\t%0,%1"
@@ -73,7 +73,7 @@
   [(set (match_operand:SUPERQI 0 "register_operand" "=r,r")
 	(sign_extend:SUPERQI
 	    (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
-  "TARGET_XTHEADBB"
+  "TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX"
   "@
    th.ext\t%0,%1,7,0
    lb\t%0,%1"
@@ -96,7 +96,7 @@
 (define_insn "*zero_extendsidi2_th_extu"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
 	(zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "r,m")))]
-  "TARGET_64BIT && TARGET_XTHEADBB"
+  "TARGET_64BIT && TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX"
   "@
    th.extu\t%0,%1,31,0
    lwu\t%0,%1"
@@ -106,7 +106,7 @@
 (define_insn "*zero_extendhi<GPR:mode>2_th_extu"
   [(set (match_operand:GPR 0 "register_operand" "=r,r")
 	(zero_extend:GPR (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
-  "TARGET_XTHEADBB"
+  "TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX"
   "@
    th.extu\t%0,%1,15,0
    lhu\t%0,%1"
@@ -386,5 +386,430 @@
    (set_attr "type" "load")
    (set_attr "mode" "DI")
    (set_attr "length" "8")])
+
+;; XTheadMemIdx
+
+;; Help reload to add a displacement for the base register.
+;; In the case `zext(*(uN*)(base+(zext(rN)<<1)))` LRA splits
+;; off two new instructions: a) `new_base = base + disp`, and
+;; b) `index = zext(rN)<<1`.  The index calculation has no
+;; corresponding instruction pattern and needs this insn_and_split
+;; to recover.
+
+(define_insn_and_split "*th_memidx_operand"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+     (ashift:DI
+       (zero_extend:DI (subreg:SI (match_operand:DI 1 "register_operand" "r") 0))
+       (match_operand 2 "const_int_operand" "n")))]
+  "TARGET_64BIT && TARGET_XTHEADMEMIDX && lra_in_progress"
+  "#"
+  ""
+  [(set (match_dup 0) (zero_extend:DI (subreg:SI (match_dup 1) 0)))
+   (set (match_dup 0) (ashift:DI (match_dup 0) (match_dup 2)))]
+  ""
+  [(set_attr "type" "bitmanip")])
+
+(define_insn "*th_memidx_zero_extendqi<SUPERQI:mode>2"
+  [(set (match_operand:SUPERQI 0 "register_operand" "=r,r,r,r,r,r")
+	(zero_extend:SUPERQI
+	    (match_operand:QI 1 "nonimmediate_operand"
+         " r,th_m_mia,th_m_mib,th_m_mir,th_m_miu,m")))]
+  "TARGET_XTHEADMEMIDX"
+  "@
+   andi\t%0,%1,0xff
+   th.lbuia\t%0,%1
+   th.lbuib\t%0,%1
+   th.lrbu\t%0,%1
+   th.lurbu\t%0,%1
+   lbu\t%0,%1"
+  [(set_attr "move_type" "andi,load,load,load,load,load")
+   (set_attr "mode" "<SUPERQI:MODE>")])
+
+(define_insn "*th_memidx_extendsidi2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r,r,r,r,r")
+	(sign_extend:DI
+	    (match_operand:SI 1 "nonimmediate_operand"
+         " r,th_m_mia,th_m_mib,th_m_mir,th_m_miu,m")))]
+  "TARGET_64BIT && TARGET_XTHEADMEMIDX"
+  "@
+   sext.w\t%0,%1
+   th.lwia\t%0,%1
+   th.lwib\t%0,%1
+   th.lrw\t%0,%1
+   th.lurw\t%0,%1
+   lw\t%0,%1"
+  [(set_attr "move_type" "move,load,load,load,load,load")
+   (set_attr "mode" "DI")])
+
+;; XTheadMemIdx (without XTheadBb)
+
+(define_insn_and_split "*th_memidx_zero_extendsidi2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r,r,r,r,r")
+	(zero_extend:DI
+	    (match_operand:SI 1 "nonimmediate_operand"
+         " r,th_m_mia,th_m_mib,th_m_mir,th_m_miu,m")))]
+  "TARGET_64BIT && TARGET_XTHEADMEMIDX && !TARGET_XTHEADBB"
+  "@
+   #
+   th.lwuia\t%0,%1
+   th.lwuib\t%0,%1
+   th.lrwu\t%0,%1
+   th.lurwu\t%0,%1
+   lwu\t%0,%1"
+  "&& reload_completed
+   && REG_P (operands[1])
+   && !paradoxical_subreg_p (operands[0])"
+  [(set (match_dup 0)
+	(ashift:DI (match_dup 1) (const_int 32)))
+   (set (match_dup 0)
+	(lshiftrt:DI (match_dup 0) (const_int 32)))]
+  { operands[1] = gen_lowpart (DImode, operands[1]); }
+  [(set_attr "move_type" "shift_shift,load,load,load,load,load")
+   (set_attr "mode" "DI")])
+
+(define_insn_and_split "*th_memidx_zero_extendhi<GPR:mode>2"
+  [(set (match_operand:GPR 0 "register_operand" "=r,r,r,r,r,r")
+	(zero_extend:GPR
+	    (match_operand:HI 1 "nonimmediate_operand"
+         " r,th_m_mia,th_m_mib,th_m_mir,th_m_miu,m")))]
+  "TARGET_XTHEADMEMIDX && !TARGET_XTHEADBB"
+  "@
+   #
+   th.lhuia\t%0,%1
+   th.lhuib\t%0,%1
+   th.lrhu\t%0,%1
+   th.lurhu\t%0,%1
+   lhu\t%0,%1"
+  "&& reload_completed
+   && REG_P (operands[1])
+   && !paradoxical_subreg_p (operands[0])"
+  [(set (match_dup 0)
+	(ashift:GPR (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+	(lshiftrt:GPR (match_dup 0) (match_dup 2)))]
+  {
+    operands[1] = gen_lowpart (<GPR:MODE>mode, operands[1]);
+    operands[2] = GEN_INT(GET_MODE_BITSIZE(<GPR:MODE>mode) - 16);
+  }
+  [(set_attr "move_type" "shift_shift,load,load,load,load,load")
+   (set_attr "mode" "<GPR:MODE>")])
+
+(define_insn_and_split "*th_memidx_extend<SHORT:mode><SUPERQI:mode>2"
+  [(set (match_operand:SUPERQI 0 "register_operand" "=r,r,r,r,r,r")
+	(sign_extend:SUPERQI
+	    (match_operand:SHORT 1 "nonimmediate_operand"
+         " r,th_m_mia,th_m_mib,th_m_mir,th_m_miu,m")))]
+  "TARGET_XTHEADMEMIDX && !TARGET_XTHEADBB"
+  "@
+   #
+   th.l<SHORT:size>ia\t%0,%1
+   th.l<SHORT:size>ib\t%0,%1
+   th.lr<SHORT:size>\t%0,%1
+   th.lur<SHORT:size>\t%0,%1
+   l<SHORT:size>\t%0,%1"
+  "&& reload_completed
+   && REG_P (operands[1])
+   && !paradoxical_subreg_p (operands[0])"
+  [(set (match_dup 0) (ashift:SI (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (ashiftrt:SI (match_dup 0) (match_dup 2)))]
+{
+  operands[0] = gen_lowpart (SImode, operands[0]);
+  operands[1] = gen_lowpart (SImode, operands[1]);
+  operands[2] = GEN_INT (GET_MODE_BITSIZE (SImode)
+			 - GET_MODE_BITSIZE (<SHORT:MODE>mode));
+}
+  [(set_attr "move_type" "shift_shift,load,load,load,load,load")
+   (set_attr "mode" "SI")])
+
+;; XTheadMemIdx (with XTheadBb)
+
+(define_insn "*th_memidx_bb_zero_extendsidi2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r,r,r,r,r")
+	(zero_extend:DI
+	    (match_operand:SI 1 "nonimmediate_operand"
+         " r,th_m_mia,th_m_mib,th_m_mir,th_m_miu,m")))]
+  "TARGET_64BIT && TARGET_XTHEADMEMIDX && TARGET_XTHEADBB"
+  "@
+   th.extu\t%0,%1,31,0
+   th.lwuia\t%0,%1
+   th.lwuib\t%0,%1
+   th.lrwu\t%0,%1
+   th.lurwu\t%0,%1
+   lwu\t%0,%1"
+  [(set_attr "move_type" "shift_shift,load,load,load,load,load")
+   (set_attr "mode" "DI")])
+
+(define_insn "*th_memidx_bb_zero_extendhi<GPR:mode>2"
+  [(set (match_operand:GPR 0 "register_operand" "=r,r,r,r,r,r")
+	(zero_extend:GPR
+	    (match_operand:HI 1 "nonimmediate_operand"
+         " r,th_m_mia,th_m_mib,th_m_mir,th_m_miu,m")))]
+  "TARGET_XTHEADMEMIDX && TARGET_XTHEADBB"
+  "@
+   th.extu\t%0,%1,15,0
+   th.lhuia\t%0,%1
+   th.lhuib\t%0,%1
+   th.lrhu\t%0,%1
+   th.lurhu\t%0,%1
+   lhu\t%0,%1"
+  [(set_attr "move_type" "shift_shift,load,load,load,load,load")
+   (set_attr "mode" "<GPR:MODE>")])
+
+(define_insn "*th_memidx_bb_extendhi<GPR:mode>2"
+  [(set (match_operand:GPR 0 "register_operand" "=r,r,r,r,r,r")
+	(sign_extend:GPR
+	    (match_operand:HI 1 "nonimmediate_operand"
+         " r,th_m_mia,th_m_mib,th_m_mir,th_m_miu,m")))]
+  "TARGET_XTHEADMEMIDX && TARGET_XTHEADBB"
+  "@
+   th.ext\t%0,%1,15,0
+   th.lhia\t%0,%1
+   th.lhib\t%0,%1
+   th.lrh\t%0,%1
+   th.lurh\t%0,%1
+   lh\t%0,%1"
+  [(set_attr "move_type" "shift_shift,load,load,load,load,load")
+   (set_attr "mode" "<GPR:MODE>")])
+
+(define_insn "*th_memidx_bb_extendqi<SUPERQI:mode>2"
+  [(set (match_operand:SUPERQI 0 "register_operand" "=r,r,r,r,r,r")
+	(sign_extend:SUPERQI
+	    (match_operand:QI 1 "nonimmediate_operand"
+         " r,th_m_mia,th_m_mib,th_m_mir,th_m_miu,m")))]
+  "TARGET_XTHEADMEMIDX && TARGET_XTHEADBB"
+  "@
+   th.ext\t%0,%1,7,0
+   th.lbia\t%0,%1
+   th.lbib\t%0,%1
+   th.lrb\t%0,%1
+   th.lurb\t%0,%1
+   lb\t%0,%1"
+  [(set_attr "move_type" "shift_shift,load,load,load,load,load")
+   (set_attr "mode" "<SUPERQI:MODE>")])
+
+(define_mode_iterator TH_M_ANYI [(QI "TARGET_XTHEADMEMIDX")
+                                 (HI "TARGET_XTHEADMEMIDX")
+                                 (SI "TARGET_XTHEADMEMIDX")
+                                 (DI "TARGET_64BIT && TARGET_XTHEADMEMIDX")])
+
+;; All non-extension modes that are supported by XTheadMemIdx
+(define_mode_iterator TH_M_NOEXTI [(SI "!TARGET_64BIT && TARGET_XTHEADMEMIDX")
+                                   (DI "TARGET_64BIT && TARGET_XTHEADMEMIDX")])
+
+;; XTheadMemIdx optimizations
+;; All optimizations attempt to improve the operand utilization of
+;; XTheadMemIdx instructions, where one sign or zero extended
+;; register-index-operand can be shifted left by a 2-bit immediate.
+;;
+;; The basic idea is the following optimization:
+;; (set (reg 0) (op (reg 1) (imm 2)))
+;; (set (reg 3) (mem (plus (reg 0) (reg 4)))
+;; ==>
+;; (set (reg 3) (mem (plus (reg 4) (op2 (reg 1) (imm 2))))
+;; This optimization only valid if (reg 0) has no further uses.
+;;
+;; The three-instruction case is as follows:
+;; (set (reg 0) (op1 (reg 1) (imm 2)))
+;; (set (reg 3) (op2 (reg 0) (imm 4)))
+;; (set (reg 5) (mem (plus (reg 3) (reg 6)))
+;; ==>
+;; (set (reg 5) (mem (plus (reg 6) (op2 (reg 1) (imm 2/4)))))
+;; This optimization is only valid if (reg 0) and (reg 3) have no further uses.
+;;
+;; The optimization cases are:
+;; I) fold 2-bit ashift of register offset into mem-plus RTX
+;; US) fold 32-bit zero-extended (shift) offset into mem-plus
+;; UZ) fold 32-bit zero-extended (zext) offset into mem-plus
+;;
+;; The first optimization case is targeting the th.lr<MODE> instructions.
+;; The other optimization cases are targeting the th.lur<MODE> instructions
+;; and have to consider two forms of zero-extensions:
+;; - ashift-32 + lshiftrt-{29..32} if there are no zero-extension instructions.
+;;   Left-shift amounts of 29..31 indicate a left-shifted zero-extended value.
+;; - zero-extend32 if there are zero-extension instructions (XTheadBb or Zbb).
+;;
+;; We always have three peephole passes per optimization case:
+;; a) no-extended (X) word-load
+;; b) any-extend (SUBX) word-load
+;; c) store
+;;
+;; Note, that SHIFTs will be converted to MULTs during combine.
+
+(define_insn_and_split "*th_memidx_I_a"
+  [(set (match_operand:TH_M_NOEXTI 0 "register_operand" "=r")
+        (mem:TH_M_NOEXTI (plus:X
+          (mult:X (match_operand:X 1 "register_operand" "r")
+                  (match_operand:QI 2 "immediate_operand" "i"))
+          (match_operand:X 3 "register_operand" "r"))))]
+  "TARGET_XTHEADMEMIDX
+   && CONST_INT_P (operands[2])
+   && pow2p_hwi (INTVAL (operands[2]))
+   && IN_RANGE (exact_log2 (INTVAL (operands[2])), 1, 3)"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+        (mem:TH_M_NOEXTI (plus:X
+          (match_dup 3)
+          (ashift:X (match_dup 1) (match_dup 2)))))]
+  { operands[2] = GEN_INT (exact_log2 (INTVAL (operands [2])));
+  }
+)
+
+(define_insn_and_split "*th_memidx_I_b"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (any_extend:X (mem:SUBX (plus:X
+          (mult:X (match_operand:X 1 "register_operand" "r")
+                  (match_operand:QI 2 "immediate_operand" "i"))
+          (match_operand:X 3 "register_operand" "r")))))]
+  "TARGET_XTHEADMEMIDX
+   && CONST_INT_P (operands[2])
+   && pow2p_hwi (INTVAL (operands[2]))
+   && IN_RANGE (exact_log2 (INTVAL (operands[2])), 1, 3)"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+        (any_extend:X (mem:SUBX (plus:X
+          (match_dup 3)
+          (ashift:X (match_dup 1) (match_dup 2))))))]
+  { operands[2] = GEN_INT (exact_log2 (INTVAL (operands [2])));
+  }
+)
+
+(define_insn_and_split "*th_memidx_I_c"
+  [(set (mem:TH_M_ANYI (plus:X
+          (mult:X (match_operand:X 1 "register_operand" "r")
+                  (match_operand:QI 2 "immediate_operand" "i"))
+          (match_operand:X 3 "register_operand" "r")))
+        (match_operand:TH_M_ANYI 0 "register_operand" "r"))]
+  "TARGET_XTHEADMEMIDX
+   && CONST_INT_P (operands[2])
+   && pow2p_hwi (INTVAL (operands[2]))
+   && IN_RANGE (exact_log2 (INTVAL (operands[2])), 1, 3)"
+  "#"
+  "&& 1"
+  [(set (mem:TH_M_ANYI (plus:X
+          (match_dup 3)
+          (ashift:X (match_dup 1) (match_dup 2))))
+        (match_dup 0))]
+  { operands[2] = GEN_INT (exact_log2 (INTVAL (operands [2])));
+  }
+)
+
+(define_insn_and_split "*th_memidx_US_a"
+  [(set (match_operand:TH_M_NOEXTI 0 "register_operand" "=r")
+        (mem:TH_M_NOEXTI (plus:DI
+          (and:DI
+            (mult:DI (match_operand:DI 1 "register_operand" "r")
+                     (match_operand:QI 2 "immediate_operand" "i"))
+            (match_operand:DI 3 "immediate_operand" "i"))
+          (match_operand:DI 4 "register_operand" "r"))))]
+  "TARGET_64BIT && TARGET_XTHEADMEMIDX
+   && CONST_INT_P (operands[2])
+   && pow2p_hwi (INTVAL (operands[2]))
+   && IN_RANGE (exact_log2 (INTVAL (operands[2])), 1, 3)
+   && CONST_INT_P (operands[3])
+   && (INTVAL (operands[3]) >> exact_log2 (INTVAL (operands[2]))) == 0xffffffff"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+        (mem:TH_M_NOEXTI (plus:DI
+          (match_dup 4)
+          (ashift:DI (zero_extend:DI (match_dup 1)) (match_dup 2)))))]
+  { operands[1] = gen_lowpart (SImode, operands[1]);
+    operands[2] = GEN_INT (exact_log2 (INTVAL (operands [2])));
+  }
+)
+
+(define_insn_and_split "*th_memidx_US_b"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (any_extend:X (mem:SUBX (plus:DI
+          (and:DI
+            (mult:DI (match_operand:DI 1 "register_operand" "r")
+                     (match_operand:QI 2 "immediate_operand" "i"))
+            (match_operand:DI 3 "immediate_operand" "i"))
+          (match_operand:DI 4 "register_operand" "r")))))]
+  "TARGET_64BIT && TARGET_XTHEADMEMIDX
+   && CONST_INT_P (operands[2])
+   && pow2p_hwi (INTVAL (operands[2]))
+   && IN_RANGE (exact_log2 (INTVAL (operands[2])), 1, 3)
+   && CONST_INT_P (operands[3])
+   && (INTVAL (operands[3]) >> exact_log2 (INTVAL (operands[2]))) == 0xffffffff"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+        (any_extend:X (mem:SUBX (plus:DI
+          (match_dup 4)
+          (ashift:DI (zero_extend:DI (match_dup 1)) (match_dup 2))))))]
+  { operands[1] = gen_lowpart (SImode, operands[1]);
+    operands[2] = GEN_INT (exact_log2 (INTVAL (operands [2])));
+  }
+)
+
+(define_insn_and_split "*th_memidx_US_c"
+  [(set (mem:TH_M_ANYI (plus:DI
+          (and:DI
+            (mult:DI (match_operand:DI 1 "register_operand" "r")
+                     (match_operand:QI 2 "immediate_operand" "i"))
+            (match_operand:DI 3 "immediate_operand" "i"))
+          (match_operand:DI 4 "register_operand" "r")))
+        (match_operand:TH_M_ANYI 0 "register_operand" "r"))]
+  "TARGET_64BIT && TARGET_XTHEADMEMIDX
+   && CONST_INT_P (operands[2])
+   && pow2p_hwi (INTVAL (operands[2]))
+   && IN_RANGE (exact_log2 (INTVAL (operands[2])), 1, 3)
+   && CONST_INT_P (operands[3])
+   && (INTVAL (operands[3]) >> exact_log2 (INTVAL (operands[2]))) == 0xffffffff"
+  "#"
+  "&& 1"
+  [(set (mem:TH_M_ANYI (plus:DI
+          (match_dup 4)
+          (ashift:DI (zero_extend:DI (match_dup 1)) (match_dup 2))))
+        (match_dup 0))]
+  { operands[1] = gen_lowpart (SImode, operands[1]);
+    operands[2] = GEN_INT (exact_log2 (INTVAL (operands [2])));
+  }
+)
+
+(define_insn_and_split "*th_memidx_UZ_a"
+  [(set (match_operand:TH_M_NOEXTI 0 "register_operand" "=r")
+        (mem:TH_M_NOEXTI (plus:DI
+          (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
+          (match_operand:DI 2 "register_operand" "r"))))]
+  "TARGET_64BIT && TARGET_XTHEADMEMIDX"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+        (mem:TH_M_NOEXTI (plus:DI
+          (match_dup 2)
+          (zero_extend:DI (match_dup 1)))))]
+)
+
+(define_insn_and_split "*th_memidx_UZ_b"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (any_extend:X (mem:SUBX (plus:DI
+          (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
+          (match_operand:DI 2 "register_operand" "r")))))]
+  "TARGET_64BIT && TARGET_XTHEADMEMIDX"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+        (any_extend:X (mem:SUBX (plus:DI
+          (match_dup 2)
+          (zero_extend:DI (match_dup 1))))))]
+)
+
+(define_insn_and_split "*th_memidx_UZ_c"
+  [(set (mem:TH_M_ANYI (plus:DI
+          (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
+          (match_operand:DI 2 "register_operand" "r")))
+        (match_operand:TH_M_ANYI 0 "register_operand" "r"))]
+  "TARGET_64BIT && TARGET_XTHEADMEMIDX"
+  "#"
+  "&& 1"
+  [(set (mem:TH_M_ANYI (plus:DI
+          (match_dup 2)
+          (zero_extend:DI (match_dup 1))))
+        (match_dup 0))]
+)
 
 (include "thead-peephole.md")
