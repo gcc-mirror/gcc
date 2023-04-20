@@ -1022,6 +1022,34 @@ match_reload (signed char out, signed char *ins, signed char *outs,
 	 are ordered.  */
       if (partial_subreg_p (outmode, inmode))
 	{
+	  bool asm_p = asm_noperands (PATTERN (curr_insn)) >= 0;
+	  int hr;
+	  HARD_REG_SET temp_hard_reg_set;
+	  
+	  if (asm_p && (hr = get_hard_regno (out_rtx)) >= 0
+	      && hard_regno_nregs (hr, inmode) > 1)
+	    {
+	      /* See gcc.c-torture/execute/20030222-1.c.
+		 Consider the code for 32-bit (e.g. BE) target:
+		   int i, v; long x; x = v; asm ("" : "=r" (i) : "0" (x));
+		 We generate the following RTL with reload insns:
+  		   1. subreg:si(x:di, 0) = 0;
+		   2. subreg:si(x:di, 4) = v:si;
+		   3. t:di = x:di, dead x;
+		   4. asm ("" : "=r" (subreg:si(t:di,4)) : "0" (t:di))
+		   5. i:si = subreg:si(t:di,4);
+		 If we assign hard reg of x to t, dead code elimination
+		 will remove insn #2 and we will use unitialized hard reg.
+		 So exclude the hard reg of x for t.  We could ignore this
+		 problem for non-empty asm using all x value but it is hard to
+		 check that the asm are expanded into insn realy using x
+		 and setting r.  */
+	      CLEAR_HARD_REG_SET (temp_hard_reg_set);
+	      if (exclude_start_hard_regs != NULL)
+		temp_hard_reg_set = *exclude_start_hard_regs;
+	      SET_HARD_REG_BIT (temp_hard_reg_set, hr);
+	      exclude_start_hard_regs = &temp_hard_reg_set;
+	    }
 	  reg = new_in_reg
 	    = lra_create_new_reg_with_unique_value (inmode, in_rtx, goal_class,
 						    exclude_start_hard_regs,
