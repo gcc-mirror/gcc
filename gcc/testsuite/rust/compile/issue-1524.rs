@@ -1,4 +1,4 @@
-// { dg-additional-options "-w" }
+// { dg-additional-options "-w -frust-compile-until=nameresolution" }
 // https://github.com/Rust-GCC/gccrs/issues/1524
 // https://github.com/rust-lang/rust/blob/673d0db5e393e9c64897005b470bfeb6d5aec61b/src/test/ui/methods/method-normalize-bounds-issue-20604.rs
 trait Hasher {

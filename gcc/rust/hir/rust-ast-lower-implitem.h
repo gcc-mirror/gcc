@@ -133,6 +133,14 @@ public:
   {
     // ignore for now and leave empty
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+    for (auto &item : function.get_where_clause ().get_items ())
+      {
+	HIR::WhereClauseItem *i
+	  = ASTLowerWhereClauseItem::translate (*item.get ());
+	where_clause_items.push_back (
+	  std::unique_ptr<HIR::WhereClauseItem> (i));
+      }
+
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::FunctionQualifiers qualifiers
       = lower_qualifiers (function.get_qualifiers ());
@@ -209,6 +217,14 @@ public:
   {
     // ignore for now and leave empty
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+    for (auto &item : method.get_where_clause ().get_items ())
+      {
+	HIR::WhereClauseItem *i
+	  = ASTLowerWhereClauseItem::translate (*item.get ());
+	where_clause_items.push_back (
+	  std::unique_ptr<HIR::WhereClauseItem> (i));
+      }
+
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::FunctionQualifiers qualifiers
       = lower_qualifiers (method.get_qualifiers ());
