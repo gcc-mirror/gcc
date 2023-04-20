@@ -1,5 +1,5 @@
 // PR c++/108099
-// { dg-do compile { target c++11 } }
+// { dg-do compile { target { c++11 && int128 } } }
 // { dg-options "" }
 
 using u128 = unsigned __int128_t;
