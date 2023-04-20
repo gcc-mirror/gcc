@@ -1,3 +1,8 @@
+2023-04-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108099
+	* g++.dg/ext/int128-8.C: New test.
+
 2023-04-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/109357

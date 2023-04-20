@@ -1,3 +1,8 @@
+2023-04-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108099
+	* decl.cc (grokdeclarator): Keep typedef_decl for __int128_t.
+
 2023-04-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/109357
