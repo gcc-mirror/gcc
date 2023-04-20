@@ -273,6 +273,8 @@ public:
   TypeBoundWhereClauseItem &operator= (TypeBoundWhereClauseItem &&other)
     = default;
 
+  Location get_locus () const { return locus; }
+
   std::string as_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
