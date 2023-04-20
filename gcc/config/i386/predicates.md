@@ -1684,6 +1684,9 @@
 (define_predicate "compare_operator"
   (match_code "compare"))
 
+(define_predicate "extract_operator"
+  (match_code "zero_extract,sign_extract"))
+
 ;; Return true if OP is a memory operand, aligned to
 ;; less than its natural alignment.
 (define_predicate "misaligned_operand"
