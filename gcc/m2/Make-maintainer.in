@@ -753,7 +753,7 @@ GM2_LIBS_PARANOID = m2/gm2-compiler-paranoid/gm2.a \
 gm2.paranoid: m2/m2obj3/cc1gm2$(exeext) gm2.verifyparanoid
 
 m2/m2obj3/cc1gm2$(exeext): m2/m2obj2/cc1gm2$(exeext) m2/gm2-compiler-paranoid/m2flex.o \
-                            $(P) $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) $(GM2_LIBS_PARANOID) \
+                            $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) $(GM2_LIBS_PARANOID) \
                             m2/gm2-gcc/rtegraph.o plugin/m2rte$(exeext).so m2/gm2-libs-boot/M2LINK.o
 	-test -d m2/m2obj3 || $(mkinstalldirs) m2/m2obj3
 	@$(call LINK_PROGRESS,$(INDEX.m2),start)
