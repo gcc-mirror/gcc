@@ -99,6 +99,9 @@
 ;; Double vector modes suitable for moving.  Includes BFmode.
 (define_mode_iterator VDMOV [V8QI V4HI V4HF V4BF V2SI V2SF])
 
+;; 64-bit modes for operations that implicitly clear the top bits of a Q reg.
+(define_mode_iterator VDZ [V8QI V4HI V4HF V4BF V2SI V2SF DI DF])
+
 ;; All modes stored in registers d0-d31.
 (define_mode_iterator DREG [V8QI V4HI V4HF V2SI V2SF DF])
 

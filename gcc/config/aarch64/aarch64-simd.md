@@ -18,6 +18,34 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
+;; The following define_subst rules are used to produce patterns representing
+;; the implicit zeroing effect of 64-bit Advanced SIMD operations, in effect
+;; a vec_concat with zeroes.  The order of the vec_concat operands differs
+;; for big-endian so we have a separate define_subst rule for each endianness.
+(define_subst "add_vec_concat_subst_le"
+  [(set (match_operand:VDZ 0)
+        (match_operand:VDZ 1))]
+  "!BYTES_BIG_ENDIAN"
+  [(set (match_operand:<VDBL> 0)
+        (vec_concat:<VDBL>
+         (match_dup 1)
+         (match_operand:VDZ 2 "aarch64_simd_or_scalar_imm_zero")))])
+
+(define_subst "add_vec_concat_subst_be"
+  [(set (match_operand:VDZ 0)
+        (match_operand:VDZ 1))]
+  "BYTES_BIG_ENDIAN"
+  [(set (match_operand:<VDBL> 0)
+        (vec_concat:<VDBL>
+         (match_operand:VDZ 2 "aarch64_simd_or_scalar_imm_zero")
+         (match_dup 1)))])
+
+;; The subst_attr definitions used to annotate patterns further in the file.
+;; Patterns that need to have the above substitutions added to them should
+;; have <vczle><vczbe> added to their name.
+(define_subst_attr "vczle" "add_vec_concat_subst_le" "" "_vec_concatz_le")
+(define_subst_attr "vczbe" "add_vec_concat_subst_be" "" "_vec_concatz_be")
+
 (define_expand "mov<mode>"
   [(set (match_operand:VALL_F16 0 "nonimmediate_operand")
 	(match_operand:VALL_F16 1 "general_operand"))]
@@ -403,7 +431,7 @@
   [(set_attr "type" "neon_logic<q>")]
 )
 
-(define_insn "add<mode>3"
+(define_insn "add<mode>3<vczle><vczbe>"
   [(set (match_operand:VDQ_I 0 "register_operand" "=w")
         (plus:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")
 		  (match_operand:VDQ_I 2 "register_operand" "w")))]
@@ -412,7 +440,7 @@
   [(set_attr "type" "neon_add<q>")]
 )
 
-(define_insn "sub<mode>3"
+(define_insn "sub<mode>3<vczle><vczbe>"
   [(set (match_operand:VDQ_I 0 "register_operand" "=w")
         (minus:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")
 		   (match_operand:VDQ_I 2 "register_operand" "w")))]
@@ -421,7 +449,7 @@
   [(set_attr "type" "neon_sub<q>")]
 )
 
-(define_insn "mul<mode>3"
+(define_insn "mul<mode>3<vczle><vczbe>"
   [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
         (mult:VDQ_BHSI (match_operand:VDQ_BHSI 1 "register_operand" "w")
 		   (match_operand:VDQ_BHSI 2 "register_operand" "w")))]
@@ -999,7 +1027,7 @@
 )
 
 ;; For AND (vector, register) and BIC (vector, immediate)
-(define_insn "and<mode>3"
+(define_insn "and<mode>3<vczle><vczbe>"
   [(set (match_operand:VDQ_I 0 "register_operand" "=w,w")
 	(and:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w,0")
 		   (match_operand:VDQ_I 2 "aarch64_reg_or_bic_imm" "w,Db")))]
@@ -1020,7 +1048,7 @@
 )
 
 ;; For ORR (vector, register) and ORR (vector, immediate)
-(define_insn "ior<mode>3"
+(define_insn "ior<mode>3<vczle><vczbe>"
   [(set (match_operand:VDQ_I 0 "register_operand" "=w,w")
 	(ior:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w,0")
 		   (match_operand:VDQ_I 2 "aarch64_reg_or_orr_imm" "w,Do")))]
@@ -1040,7 +1068,7 @@
   [(set_attr "type" "neon_logic<q>")]
 )
 
-(define_insn "xor<mode>3"
+(define_insn "xor<mode>3<vczle><vczbe>"
   [(set (match_operand:VDQ_I 0 "register_operand" "=w")
         (xor:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")
 		 (match_operand:VDQ_I 2 "register_operand" "w")))]
