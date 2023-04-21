@@ -150,7 +150,9 @@ remove_unreachable::remove_and_update_globals (bool final_p)
       // If this is already a constant condition, don't look either
       if (!lhs_p && !rhs_p)
 	continue;
-
+      // Do not remove addresses early. ie if (x == &y)
+      if (!final_p && lhs_p && TREE_CODE (gimple_cond_rhs (s)) == ADDR_EXPR)
+	continue;
       bool dominate_exit_p = true;
       FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori (), e->src, name)
 	{
