@@ -362,8 +362,11 @@ void
 TypeCheckPattern::visit (HIR::ReferencePattern &pattern)
 {
   if (parent->get_kind () != TyTy::TypeKind::REF)
-    rust_error_at (pattern.get_locus (), "expected %s, found reference",
-		   parent->as_string ().c_str ());
+    {
+      rust_error_at (pattern.get_locus (), "expected %s, found reference",
+		     parent->as_string ().c_str ());
+      return;
+    }
 
   TyTy::ReferenceType *ref_ty_ty = static_cast<TyTy::ReferenceType *> (parent);
   TyTy::BaseType *infered_base
