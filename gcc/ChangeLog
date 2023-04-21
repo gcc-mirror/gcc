@@ -1,3 +1,8 @@
+2023-04-20  Alejandro Colomar  <alx.manpages@gmail.com>
+
+	* doc/extend.texi (Common Function Attributes): Remove duplicate
+	word.
+
 2023-04-19  Christophe Lyon  <christophe.lyon@arm.com>
 
 	Backported from master:
