@@ -2435,6 +2435,8 @@
 			  (umax "max")
 			  (umin "min")])
 
+(define_code_attr maxminand [(smax "bic") (smin "and")])
+
 ;; MLA/MLS attributes.
 (define_code_attr as [(ss_plus "a") (ss_minus "s")])
 

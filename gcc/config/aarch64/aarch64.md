@@ -4412,17 +4412,6 @@
   [(set_attr "type" "csel")]
 )
 
-(define_insn "aarch64_umax<mode>3_insn"
-  [(set (match_operand:GPI 0 "register_operand" "=r,r")
-        (umax:GPI (match_operand:GPI 1 "register_operand" "r,r")
-		(match_operand:GPI 2 "aarch64_uminmax_operand" "r,Uum")))]
-  "TARGET_CSSC"
-  "@
-   umax\\t%<w>0, %<w>1, %<w>2
-   umax\\t%<w>0, %<w>1, %2"
-  [(set_attr "type" "alu_sreg,alu_imm")]
-)
-
 ;; If X can be loaded by a single CNT[BHWD] instruction,
 ;;
 ;;    A = UMAX (B, X)
@@ -4466,8 +4455,8 @@
 	operands[1] = force_reg (<MODE>mode, operands[1]);
 	if (!aarch64_uminmax_operand (operands[2], <MODE>mode))
 	  operands[2] = force_reg (<MODE>mode, operands[2]);
-	emit_insn (gen_aarch64_umax<mode>3_insn (operands[0], operands[1],
-						 operands[2]));
+	emit_move_insn (operands[0], gen_rtx_UMAX (<MODE>mode, operands[1],
+						   operands[2]));
 	DONE;
       }
     else
@@ -6759,15 +6748,46 @@
   [(set_attr "type" "ffarith<stype>")]
 )
 
-(define_insn "<optab><mode>3"
+;; Expander for integer smin, smax, umin.  Mainly used to generate
+;; straightforward RTL for TARGET_CSSC.  When that is not available
+;; FAIL and let the generic expanders generate the CMP + CSEL sequences,
+;; except for the SMIN and SMAX with zero cases, for which we have a
+;; single instruction even for the base architecture.
+(define_expand "<optab><mode>3"
+  [(set (match_operand:GPI 0 "register_operand")
+        (MAXMIN_NOUMAX:GPI
+	  (match_operand:GPI 1 "register_operand")
+	  (match_operand:GPI 2 "aarch64_<su>minmax_operand")))]
+  ""
+  {
+    if (!TARGET_CSSC)
+      {
+	if (operands[2] != CONST0_RTX (<MODE>mode)
+	    || !(<CODE> == SMAX || <CODE> == SMIN))
+	  FAIL;
+      }
+  }
+)
+
+(define_insn "*aarch64_<optab><mode>3_cssc"
   [(set (match_operand:GPI 0 "register_operand" "=r,r")
-        (MAXMIN_NOUMAX:GPI (match_operand:GPI 1 "register_operand" "r,r")
+        (MAXMIN:GPI (match_operand:GPI 1 "register_operand" "r,r")
 		(match_operand:GPI 2 "aarch64_<su>minmax_operand" "r,U<su>m")))]
   "TARGET_CSSC"
   "@
    <optab>\\t%<w>0, %<w>1, %<w>2
    <optab>\\t%<w>0, %<w>1, %2"
   [(set_attr "type" "alu_sreg,alu_imm")]
+)
+
+(define_insn "*aarch64_<optab><mode>3_zero"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+        (FMAXMIN:GPI
+	  (match_operand:GPI 1 "register_operand" "r")
+	  (const_int 0)))]
+  ""
+  "<maxminand>\\t%<w>0, %<w>1, %<w>1, asr <sizem1>";
+  [(set_attr "type" "logic_shift_imm")]
 )
 
 ;; Given that smax/smin do not specify the result when either input is NaN,
