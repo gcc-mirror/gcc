@@ -1259,14 +1259,18 @@ df_analyze (void)
 
   free (df->postorder);
   free (df->postorder_inverted);
-  df->postorder = XNEWVEC (int, last_basic_block_for_fn (cfun));
-  df->n_blocks = post_order_compute (df->postorder, true, true);
   /* For DF_FORWARD use a RPO on the forward graph.  Since we want to
      have unreachable blocks deleted use post_order_compute and reverse
      the order.  */
   df->postorder_inverted = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
-  for (int i = 0; i < df->n_blocks; ++i)
-    df->postorder_inverted[i] = df->postorder[df->n_blocks - 1 - i];
+  df->n_blocks = post_order_compute (df->postorder_inverted, true, true);
+  for (int i = 0; i < df->n_blocks / 2; ++i)
+    std::swap (df->postorder_inverted[i],
+	       df->postorder_inverted[df->n_blocks - 1 - i]);
+  /* For DF_BACKWARD use a RPO on the reverse graph.  */
+  df->postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+  int n = inverted_rev_post_order_compute (cfun, df->postorder);
+  gcc_assert (n == df->n_blocks);
 
   for (int i = 0; i < df->n_blocks; i++)
     bitmap_set_bit (current_all_blocks, df->postorder[i]);
@@ -1305,11 +1309,11 @@ df_analyze (void)
    Returns the number of blocks which is always loop->num_nodes.  */
 
 static int
-loop_post_order_compute (int *post_order, class loop *loop)
+loop_rev_post_order_compute (int *post_order, class loop *loop)
 {
   edge_iterator *stack;
   int sp;
-  int post_order_num = 0;
+  int post_order_num = loop->num_nodes - 1;
 
   /* Allocate stack for back-tracking up CFG.  */
   stack = XNEWVEC (edge_iterator, loop->num_nodes + 1);
@@ -1342,13 +1346,13 @@ loop_post_order_compute (int *post_order, class loop *loop)
 	       time, check its successors.  */
 	    stack[sp++] = ei_start (dest->succs);
 	  else
-	    post_order[post_order_num++] = dest->index;
+	    post_order[post_order_num--] = dest->index;
 	}
       else
 	{
 	  if (ei_one_before_end_p (ei)
 	      && src != loop_preheader_edge (loop)->src)
-	    post_order[post_order_num++] = src->index;
+	    post_order[post_order_num--] = src->index;
 
 	  if (!ei_one_before_end_p (ei))
 	    ei_next (&stack[sp - 1]);
@@ -1359,19 +1363,19 @@ loop_post_order_compute (int *post_order, class loop *loop)
 
   free (stack);
 
-  return post_order_num;
+  return loop->num_nodes;
 }
 
 /* Compute the reverse top sort order of the inverted sub-CFG specified
    by LOOP.  Returns the number of blocks which is always loop->num_nodes.  */
 
 static int
-loop_inverted_post_order_compute (int *post_order, class loop *loop)
+loop_inverted_rev_post_order_compute (int *post_order, class loop *loop)
 {
   basic_block bb;
   edge_iterator *stack;
   int sp;
-  int post_order_num = 0;
+  int post_order_num = loop->num_nodes - 1;
 
   /* Allocate stack for back-tracking up CFG.  */
   stack = XNEWVEC (edge_iterator, loop->num_nodes + 1);
@@ -1408,13 +1412,13 @@ loop_inverted_post_order_compute (int *post_order, class loop *loop)
 	       time, check its predecessors.  */
 	    stack[sp++] = ei_start (pred->preds);
 	  else
-	    post_order[post_order_num++] = pred->index;
+	    post_order[post_order_num--] = pred->index;
 	}
       else
 	{
 	  if (flow_bb_inside_loop_p (loop, bb)
 	      && ei_one_before_end_p (ei))
-	    post_order[post_order_num++] = bb->index;
+	    post_order[post_order_num--] = bb->index;
 
 	  if (!ei_one_before_end_p (ei))
 	    ei_next (&stack[sp - 1]);
@@ -1424,7 +1428,7 @@ loop_inverted_post_order_compute (int *post_order, class loop *loop)
     }
 
   free (stack);
-  return post_order_num;
+  return loop->num_nodes;
 }
 
 
@@ -1438,8 +1442,8 @@ df_analyze_loop (class loop *loop)
 
   df->postorder = XNEWVEC (int, loop->num_nodes);
   df->postorder_inverted = XNEWVEC (int, loop->num_nodes);
-  df->n_blocks = loop_post_order_compute (df->postorder, loop);
-  int n = loop_inverted_post_order_compute (df->postorder_inverted, loop);
+  df->n_blocks = loop_rev_post_order_compute (df->postorder_inverted, loop);
+  int n = loop_inverted_rev_post_order_compute (df->postorder, loop);
   gcc_assert ((unsigned) df->n_blocks == loop->num_nodes);
   gcc_assert ((unsigned) n == loop->num_nodes);
 
