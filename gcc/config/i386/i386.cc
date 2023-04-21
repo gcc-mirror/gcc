@@ -11035,8 +11035,9 @@ ix86_legitimate_address_p (machine_mode, rtx addr, bool strict)
       if (reg == NULL_RTX)
 	return false;
 
-      if ((strict && ! REG_OK_FOR_BASE_STRICT_P (reg))
-	  || (! strict && ! REG_OK_FOR_BASE_NONSTRICT_P (reg)))
+      unsigned int regno = REGNO (reg);
+      if ((strict && !REGNO_OK_FOR_BASE_P (regno))
+	  || (!strict && !REGNO_OK_FOR_BASE_NONSTRICT_P (regno)))
 	/* Base is not valid.  */
 	return false;
     }
@@ -11049,8 +11050,9 @@ ix86_legitimate_address_p (machine_mode, rtx addr, bool strict)
       if (reg == NULL_RTX)
 	return false;
 
-      if ((strict && ! REG_OK_FOR_INDEX_STRICT_P (reg))
-	  || (! strict && ! REG_OK_FOR_INDEX_NONSTRICT_P (reg)))
+      unsigned int regno = REGNO (reg);
+      if ((strict && !REGNO_OK_FOR_INDEX_P (regno))
+	  || (!strict && !REGNO_OK_FOR_INDEX_NONSTRICT_P (regno)))
 	/* Index is not valid.  */
 	return false;
     }

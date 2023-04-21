@@ -728,10 +728,11 @@
   if (SUBREG_P (op))
     op = SUBREG_REG (op);
 
+  unsigned int regno = REGNO (op);
   if (reload_completed)
-    return REG_OK_FOR_INDEX_STRICT_P (op);
+    return REGNO_OK_FOR_INDEX_P (regno);
   else
-    return REG_OK_FOR_INDEX_NONSTRICT_P (op);
+    return REGNO_OK_FOR_INDEX_NONSTRICT_P (regno);
 })
 
 ;; Return false if this is any eliminable register.  Otherwise general_operand.
