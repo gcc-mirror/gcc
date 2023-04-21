@@ -108,7 +108,7 @@ void
 ASTLoweringStmt::visit (AST::LetStmt &stmt)
 {
   HIR::Pattern *variables
-    = ASTLoweringPattern::translate (stmt.get_pattern ().get ());
+    = ASTLoweringPattern::translate (stmt.get_pattern ().get (), true);
   HIR::Type *type = stmt.has_type ()
 		      ? ASTLoweringType::translate (stmt.get_type ().get ())
 		      : nullptr;

@@ -25,9 +25,10 @@ namespace HIR {
 ASTLoweringPattern::ASTLoweringPattern () : translated (nullptr) {}
 
 HIR::Pattern *
-ASTLoweringPattern::translate (AST::Pattern *pattern)
+ASTLoweringPattern::translate (AST::Pattern *pattern, bool is_let_top_level)
 {
   ASTLoweringPattern resolver;
+  resolver.is_let_top_level = is_let_top_level;
   pattern->accept_vis (resolver);
 
   rust_assert (resolver.translated != nullptr);
@@ -315,6 +316,11 @@ ASTLoweringPattern::visit (AST::AltPattern &pattern)
 
   translated
     = new HIR::AltPattern (mapping, std::move (alts), pattern.get_locus ());
+
+  if (is_let_top_level)
+    rust_error_at (pattern.get_locus (),
+		   "top level alternate patterns are not allowed for %<let%> "
+		   "bindings - use an outer grouped pattern");
 }
 
 } // namespace HIR
