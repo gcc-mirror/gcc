@@ -3071,7 +3071,9 @@ esac
 # These force 'configure's to be done one at a time, to avoid problems
 # with contention over a shared config.cache.
 rm -f serdep.tmp
+if test "x${enable_serial_build_configure}" = xyes || test "x${enable_serial_host_configure}" = xyes || test "x${enable_serial_target_configure}" = xyes; then
 echo '# serdep.tmp' > serdep.tmp
+fi
 olditem=
 test "x${enable_serial_build_configure}" = xyes &&
 for item in ${build_configdirs} ; do
