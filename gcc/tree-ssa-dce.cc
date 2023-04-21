@@ -1095,7 +1095,7 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb,
      nothing to the program, then we not only remove it, but we need to update
      the CFG.  We can chose any of edges out of BB as long as we are sure to not
      close infinite loops.  This is done by always choosing the edge closer to
-     exit in inverted_post_order_compute order.  */
+     exit in inverted_rev_post_order_compute order.  */
   if (is_ctrl_stmt (stmt))
     {
       edge_iterator ei;
@@ -1111,17 +1111,18 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb,
 	{
 	  if (!bb_postorder)
 	    {
-	      auto_vec<int, 20> postorder;
-		 inverted_post_order_compute (&postorder,
-					      &bb_contains_live_stmts);
+	      int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+	      int n = inverted_rev_post_order_compute (cfun, rpo,
+						       &bb_contains_live_stmts);
 	      bb_postorder = XNEWVEC (int, last_basic_block_for_fn (cfun));
-	      for (unsigned int i = 0; i < postorder.length (); ++i)
-		 bb_postorder[postorder[i]] = i;
+	      for (int i = 0; i < n; ++i)
+		 bb_postorder[rpo[i]] = i;
+	      free (rpo);
 	    }
           FOR_EACH_EDGE (e2, ei, bb->succs)
 	    if (!e || e2->dest == EXIT_BLOCK_PTR_FOR_FN (cfun)
 		|| bb_postorder [e->dest->index]
-		   < bb_postorder [e2->dest->index])
+		   >= bb_postorder [e2->dest->index])
 	      e = e2;
 	}
       gcc_assert (e);

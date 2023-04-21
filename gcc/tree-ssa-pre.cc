@@ -2464,8 +2464,8 @@ compute_antic (void)
   /* For ANTIC computation we need a postorder that also guarantees that
      a block with a single successor is visited after its successor.
      RPO on the inverted CFG has this property.  */
-  auto_vec<int, 20> postorder;
-  inverted_post_order_compute (&postorder);
+  int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+  int n = inverted_rev_post_order_compute (cfun, rpo);
 
   auto_sbitmap worklist (last_basic_block_for_fn (cfun) + 1);
   bitmap_clear (worklist);
@@ -2481,11 +2481,11 @@ compute_antic (void)
 	 for PA ANTIC computation.  */
       num_iterations++;
       changed = false;
-      for (i = postorder.length () - 1; i >= 0; i--)
+      for (i = 0; i < n; ++i)
 	{
-	  if (bitmap_bit_p (worklist, postorder[i]))
+	  if (bitmap_bit_p (worklist, rpo[i]))
 	    {
-	      basic_block block = BASIC_BLOCK_FOR_FN (cfun, postorder[i]);
+	      basic_block block = BASIC_BLOCK_FOR_FN (cfun, rpo[i]);
 	      bitmap_clear_bit (worklist, block->index);
 	      if (compute_antic_aux (block,
 				     bitmap_bit_p (has_abnormal_preds,
@@ -2513,15 +2513,17 @@ compute_antic (void)
   if (do_partial_partial)
     {
       /* For partial antic we ignore backedges and thus we do not need
-         to perform any iteration when we process blocks in postorder.  */
-      for (i = postorder.length () - 1; i >= 0; i--)
+	 to perform any iteration when we process blocks in rpo.  */
+      for (i = 0; i < n; ++i)
 	{
-	  basic_block block = BASIC_BLOCK_FOR_FN (cfun, postorder[i]);
+	  basic_block block = BASIC_BLOCK_FOR_FN (cfun, rpo[i]);
 	  compute_partial_antic_aux (block,
 				     bitmap_bit_p (has_abnormal_preds,
 						   block->index));
 	}
     }
+
+  free (rpo);
 }
 
 

@@ -102,17 +102,18 @@ compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
      optimistic initialization of ANTIN above.  Use reverse postorder
      on the inverted graph to make the backward dataflow problem require
      less iterations.  */
-  auto_vec<int> postorder;
-  inverted_post_order_compute (&postorder);
-  for (int i = postorder.length () - 1; i >= 0; --i)
+  int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+  int n = inverted_rev_post_order_compute (cfun, rpo);
+  for (int i = 0; i < n; ++i)
     {
-      bb = BASIC_BLOCK_FOR_FN (cfun, postorder[i]);
+      bb = BASIC_BLOCK_FOR_FN (cfun, rpo[i]);
       if (bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
 	  || bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	continue;
       *qin++ = bb;
       bb->aux = bb;
     }
+  free (rpo);
 
   qin = worklist;
   qend = &worklist[n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS];
