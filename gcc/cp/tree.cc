@@ -5445,7 +5445,8 @@ tree
 cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
 		  void *data, hash_set<tree> *pset)
 {
-  enum tree_code code = TREE_CODE (*tp);
+  tree t = *tp;
+  enum tree_code code = TREE_CODE (t);
   tree result;
 
 #define WALK_SUBTREE(NODE)				\
@@ -5456,7 +5457,7 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     }							\
   while (0)
 
-  if (TYPE_P (*tp))
+  if (TYPE_P (t))
     {
       /* If *WALK_SUBTREES_P is 1, we're interested in the syntactic form of
 	 the argument, so don't look through typedefs, but do walk into
@@ -5468,15 +5469,15 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
 
 	 See find_abi_tags_r for an example of setting *WALK_SUBTREES_P to 2
 	 when that's the behavior the walk_tree_fn wants.  */
-      if (*walk_subtrees_p == 1 && typedef_variant_p (*tp))
+      if (*walk_subtrees_p == 1 && typedef_variant_p (t))
 	{
-	  if (tree ti = TYPE_ALIAS_TEMPLATE_INFO (*tp))
+	  if (tree ti = TYPE_ALIAS_TEMPLATE_INFO (t))
 	    WALK_SUBTREE (TI_ARGS (ti));
 	  *walk_subtrees_p = 0;
 	  return NULL_TREE;
 	}
 
-      if (tree ti = TYPE_TEMPLATE_INFO (*tp))
+      if (tree ti = TYPE_TEMPLATE_INFO (t))
 	WALK_SUBTREE (TI_ARGS (ti));
     }
 
@@ -5486,8 +5487,8 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
   switch (code)
     {
     case TEMPLATE_TYPE_PARM:
-      if (template_placeholder_p (*tp))
-	WALK_SUBTREE (CLASS_PLACEHOLDER_TEMPLATE (*tp));
+      if (template_placeholder_p (t))
+	WALK_SUBTREE (CLASS_PLACEHOLDER_TEMPLATE (t));
       /* Fall through.  */
     case DEFERRED_PARSE:
     case TEMPLATE_TEMPLATE_PARM:
@@ -5501,63 +5502,63 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
       break;
 
     case TYPENAME_TYPE:
-      WALK_SUBTREE (TYPE_CONTEXT (*tp));
-      WALK_SUBTREE (TYPENAME_TYPE_FULLNAME (*tp));
+      WALK_SUBTREE (TYPE_CONTEXT (t));
+      WALK_SUBTREE (TYPENAME_TYPE_FULLNAME (t));
       *walk_subtrees_p = 0;
       break;
 
     case BASELINK:
-      if (BASELINK_QUALIFIED_P (*tp))
-	WALK_SUBTREE (BINFO_TYPE (BASELINK_ACCESS_BINFO (*tp)));
-      WALK_SUBTREE (BASELINK_FUNCTIONS (*tp));
+      if (BASELINK_QUALIFIED_P (t))
+	WALK_SUBTREE (BINFO_TYPE (BASELINK_ACCESS_BINFO (t)));
+      WALK_SUBTREE (BASELINK_FUNCTIONS (t));
       *walk_subtrees_p = 0;
       break;
 
     case PTRMEM_CST:
-      WALK_SUBTREE (TREE_TYPE (*tp));
+      WALK_SUBTREE (TREE_TYPE (t));
       *walk_subtrees_p = 0;
       break;
 
     case TREE_LIST:
-      WALK_SUBTREE (TREE_PURPOSE (*tp));
+      WALK_SUBTREE (TREE_PURPOSE (t));
       break;
 
     case OVERLOAD:
-      WALK_SUBTREE (OVL_FUNCTION (*tp));
-      WALK_SUBTREE (OVL_CHAIN (*tp));
+      WALK_SUBTREE (OVL_FUNCTION (t));
+      WALK_SUBTREE (OVL_CHAIN (t));
       *walk_subtrees_p = 0;
       break;
 
     case USING_DECL:
-      WALK_SUBTREE (DECL_NAME (*tp));
-      WALK_SUBTREE (USING_DECL_SCOPE (*tp));
-      WALK_SUBTREE (USING_DECL_DECLS (*tp));
+      WALK_SUBTREE (DECL_NAME (t));
+      WALK_SUBTREE (USING_DECL_SCOPE (t));
+      WALK_SUBTREE (USING_DECL_DECLS (t));
       *walk_subtrees_p = 0;
       break;
 
     case RECORD_TYPE:
-      if (TYPE_PTRMEMFUNC_P (*tp))
-	WALK_SUBTREE (TYPE_PTRMEMFUNC_FN_TYPE_RAW (*tp));
+      if (TYPE_PTRMEMFUNC_P (t))
+	WALK_SUBTREE (TYPE_PTRMEMFUNC_FN_TYPE_RAW (t));
       break;
 
     case TYPE_ARGUMENT_PACK:
     case NONTYPE_ARGUMENT_PACK:
       {
-        tree args = ARGUMENT_PACK_ARGS (*tp);
+	tree args = ARGUMENT_PACK_ARGS (t);
 	for (tree arg : tree_vec_range (args))
 	  WALK_SUBTREE (arg);
       }
       break;
 
     case TYPE_PACK_EXPANSION:
-      WALK_SUBTREE (TREE_TYPE (*tp));
-      WALK_SUBTREE (PACK_EXPANSION_EXTRA_ARGS (*tp));
+      WALK_SUBTREE (TREE_TYPE (t));
+      WALK_SUBTREE (PACK_EXPANSION_EXTRA_ARGS (t));
       *walk_subtrees_p = 0;
       break;
       
     case EXPR_PACK_EXPANSION:
-      WALK_SUBTREE (TREE_OPERAND (*tp, 0));
-      WALK_SUBTREE (PACK_EXPANSION_EXTRA_ARGS (*tp));
+      WALK_SUBTREE (TREE_OPERAND (t, 0));
+      WALK_SUBTREE (PACK_EXPANSION_EXTRA_ARGS (t));
       *walk_subtrees_p = 0;
       break;
 
@@ -5568,54 +5569,55 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     case DYNAMIC_CAST_EXPR:
     case IMPLICIT_CONV_EXPR:
     case BIT_CAST_EXPR:
-      if (TREE_TYPE (*tp))
-	WALK_SUBTREE (TREE_TYPE (*tp));
+      if (TREE_TYPE (t))
+	WALK_SUBTREE (TREE_TYPE (t));
       break;
 
     case CONSTRUCTOR:
-      if (COMPOUND_LITERAL_P (*tp))
-	WALK_SUBTREE (TREE_TYPE (*tp));
+      if (COMPOUND_LITERAL_P (t))
+	WALK_SUBTREE (TREE_TYPE (t));
       break;
 
     case TRAIT_EXPR:
-      WALK_SUBTREE (TRAIT_EXPR_TYPE1 (*tp));
-      WALK_SUBTREE (TRAIT_EXPR_TYPE2 (*tp));
+      WALK_SUBTREE (TRAIT_EXPR_TYPE1 (t));
+      WALK_SUBTREE (TRAIT_EXPR_TYPE2 (t));
       *walk_subtrees_p = 0;
       break;
 
     case TRAIT_TYPE:
-      WALK_SUBTREE (TRAIT_TYPE_TYPE1 (*tp));
-      WALK_SUBTREE (TRAIT_TYPE_TYPE2 (*tp));
+      WALK_SUBTREE (TRAIT_TYPE_TYPE1 (t));
+      WALK_SUBTREE (TRAIT_TYPE_TYPE2 (t));
       *walk_subtrees_p = 0;
       break;
 
     case DECLTYPE_TYPE:
-      ++cp_unevaluated_operand;
-      /* We can't use WALK_SUBTREE here because of the goto.  */
-      result = cp_walk_tree (&DECLTYPE_TYPE_EXPR (*tp), func, data, pset);
-      --cp_unevaluated_operand;
-      *walk_subtrees_p = 0;
-      break;
+      {
+	cp_unevaluated u;
+	WALK_SUBTREE (DECLTYPE_TYPE_EXPR (t));
+	*walk_subtrees_p = 0;
+	break;
+      }
 
     case ALIGNOF_EXPR:
     case SIZEOF_EXPR:
     case NOEXCEPT_EXPR:
-      ++cp_unevaluated_operand;
-      result = cp_walk_tree (&TREE_OPERAND (*tp, 0), func, data, pset);
-      --cp_unevaluated_operand;
-      *walk_subtrees_p = 0;
-      break;
- 
+      {
+	cp_unevaluated u;
+	WALK_SUBTREE (TREE_OPERAND (t, 0));
+	*walk_subtrees_p = 0;
+	break;
+      }
+
     case REQUIRES_EXPR:
       {
 	cp_unevaluated u;
-	for (tree parm = REQUIRES_EXPR_PARMS (*tp); parm; parm = DECL_CHAIN (parm))
+	for (tree parm = REQUIRES_EXPR_PARMS (t); parm; parm = DECL_CHAIN (parm))
 	  /* Walk the types of each parameter, but not the parameter itself,
 	     since doing so would cause false positives in the unexpanded pack
 	     checker if the requires-expr introduces a function parameter pack,
 	     e.g. requires (Ts... ts) { }.   */
 	  WALK_SUBTREE (TREE_TYPE (parm));
-	WALK_SUBTREE (REQUIRES_EXPR_REQS (*tp));
+	WALK_SUBTREE (REQUIRES_EXPR_REQS (t));
 	*walk_subtrees_p = 0;
 	break;
       }
@@ -5626,12 +5628,12 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
 	 the containing BIND_EXPR.  Compiler temporaries are
 	 handled here.  And also normal variables in templates,
 	 since do_poplevel doesn't build a BIND_EXPR then.  */
-      if (VAR_P (TREE_OPERAND (*tp, 0))
+      if (VAR_P (TREE_OPERAND (t, 0))
 	  && (processing_template_decl
-	      || (DECL_ARTIFICIAL (TREE_OPERAND (*tp, 0))
-		  && !TREE_STATIC (TREE_OPERAND (*tp, 0)))))
+	      || (DECL_ARTIFICIAL (TREE_OPERAND (t, 0))
+		  && !TREE_STATIC (TREE_OPERAND (t, 0)))))
 	{
-	  tree decl = TREE_OPERAND (*tp, 0);
+	  tree decl = TREE_OPERAND (t, 0);
 	  WALK_SUBTREE (DECL_INITIAL (decl));
 	  WALK_SUBTREE (DECL_SIZE (decl));
 	  WALK_SUBTREE (DECL_SIZE_UNIT (decl));
@@ -5641,45 +5643,45 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     case LAMBDA_EXPR:
       /* Don't walk into the body of the lambda, but the capture initializers
 	 are part of the enclosing context.  */
-      for (tree cap = LAMBDA_EXPR_CAPTURE_LIST (*tp); cap;
+      for (tree cap = LAMBDA_EXPR_CAPTURE_LIST (t); cap;
 	   cap = TREE_CHAIN (cap))
 	WALK_SUBTREE (TREE_VALUE (cap));
       break;
 
     case CO_YIELD_EXPR:
-      if (TREE_OPERAND (*tp, 1))
+      if (TREE_OPERAND (t, 1))
 	/* Operand 1 is the tree for the relevant co_await which has any
 	   interesting sub-trees.  */
-	WALK_SUBTREE (TREE_OPERAND (*tp, 1));
+	WALK_SUBTREE (TREE_OPERAND (t, 1));
       break;
 
     case CO_AWAIT_EXPR:
-      if (TREE_OPERAND (*tp, 1))
+      if (TREE_OPERAND (t, 1))
 	/* Operand 1 is frame variable.  */
-	WALK_SUBTREE (TREE_OPERAND (*tp, 1));
-      if (TREE_OPERAND (*tp, 2))
+	WALK_SUBTREE (TREE_OPERAND (t, 1));
+      if (TREE_OPERAND (t, 2))
 	/* Operand 2 has the initialiser, and we need to walk any subtrees
 	   there.  */
-	WALK_SUBTREE (TREE_OPERAND (*tp, 2));
+	WALK_SUBTREE (TREE_OPERAND (t, 2));
       break;
 
     case CO_RETURN_EXPR:
-      if (TREE_OPERAND (*tp, 0))
+      if (TREE_OPERAND (t, 0))
 	{
-	  if (VOID_TYPE_P (TREE_OPERAND (*tp, 0)))
+	  if (VOID_TYPE_P (TREE_OPERAND (t, 0)))
 	    /* For void expressions, operand 1 is a trivial call, and any
 	       interesting subtrees will be part of operand 0.  */
-	    WALK_SUBTREE (TREE_OPERAND (*tp, 0));
-	  else if (TREE_OPERAND (*tp, 1))
+	    WALK_SUBTREE (TREE_OPERAND (t, 0));
+	  else if (TREE_OPERAND (t, 1))
 	    /* Interesting sub-trees will be in the return_value () call
 	       arguments.  */
-	    WALK_SUBTREE (TREE_OPERAND (*tp, 1));
+	    WALK_SUBTREE (TREE_OPERAND (t, 1));
 	}
       break;
 
     case STATIC_ASSERT:
-      WALK_SUBTREE (STATIC_ASSERT_CONDITION (*tp));
-      WALK_SUBTREE (STATIC_ASSERT_MESSAGE (*tp));
+      WALK_SUBTREE (STATIC_ASSERT_CONDITION (t));
+      WALK_SUBTREE (STATIC_ASSERT_MESSAGE (t));
       break;
 
     default:
