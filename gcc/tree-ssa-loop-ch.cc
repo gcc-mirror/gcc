@@ -542,6 +542,17 @@ ch_base::copy_headers (function *fun)
 	    }
 	}
 
+      /* Update header of the loop.  */
+      loop->header = header;
+      /* Find correct latch.  We only duplicate chain of conditionals so
+	 there should be precisely two edges to the new header.  One entry
+	 edge and one to latch.  */
+      FOR_EACH_EDGE (e, ei, loop->header->preds)
+	if (header != e->src)
+	  {
+	    loop->latch = e->src;
+	    break;
+	  }
       /* Ensure that the latch and the preheader is simple (we know that they
 	 are not now, since there was the loop exit condition.  */
       split_edge (loop_preheader_edge (loop));
@@ -561,6 +572,8 @@ ch_base::copy_headers (function *fun)
 
   if (changed)
     {
+      if (flag_checking)
+	verify_loop_structure ();
       update_ssa (TODO_update_ssa);
       /* After updating SSA form perform CSE on the loop header
 	 copies.  This is esp. required for the pass before
