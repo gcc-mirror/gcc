@@ -451,6 +451,8 @@ public:
   /* Return true if all expression set in bitmap are same ratio.  */
   bool all_same_ratio_p (sbitmap) const;
 
+  bool all_empty_predecessor_p (const basic_block) const;
+
   void release (void);
   void create_bitmap_vectors (void);
   void free_bitmap_vectors (void);
