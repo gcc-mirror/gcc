@@ -3039,8 +3039,6 @@ package body Exp_Aggr is
               and then Nkind (Unqualify (Ancestor)) in
                          N_Aggregate | N_Extension_Aggregate
             then
-               Ancestor_Is_Expression := True;
-
                --  Set up finalization data for enclosing record, because
                --  controlled subcomponents of the ancestor part will be
                --  attached to it.
