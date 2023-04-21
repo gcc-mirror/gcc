@@ -281,6 +281,8 @@ private:
 /* The current code model.  */
 enum aarch64_code_model aarch64_cmodel;
 
+enum aarch64_tp_reg aarch64_tpidr_register;
+
 /* The number of 64-bit elements in an SVE vector.  */
 poly_uint16 aarch64_sve_vg;
 
@@ -17889,6 +17891,7 @@ aarch64_override_options_internal (struct gcc_options *opts)
 
   initialize_aarch64_code_model (opts);
   initialize_aarch64_tls_size (opts);
+  aarch64_tpidr_register = opts->x_aarch64_tpidr_reg;
 
   int queue_depth = 0;
   switch (aarch64_tune_params.autoprefetcher_model)
@@ -27412,6 +27415,20 @@ aarch64_indirect_call_asm (rtx addr)
     }
   else
    output_asm_insn ("blr\t%0", &addr);
+  return "";
+}
+
+/* Emit the assembly instruction to load the thread pointer into DEST.
+   Select between different tpidr_elN registers depending on -mtp= setting.  */
+
+const char *
+aarch64_output_load_tp (rtx dest)
+{
+  const char *tpidrs[] = {"tpidr_el0", "tpidr_el1", "tpidr_el2", "tpidr_el3"};
+  char buffer[64];
+  snprintf (buffer, sizeof (buffer), "mrs\t%%0, %s",
+	    tpidrs[aarch64_tpidr_register]);
+  output_asm_insn (buffer, &dest);
   return "";
 }
 

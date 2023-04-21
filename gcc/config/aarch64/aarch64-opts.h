@@ -75,6 +75,15 @@ enum aarch64_code_model {
   AARCH64_CMODEL_LARGE
 };
 
+/* The register to use as a thread pointer for TLS accesses.
+   tpidr_el0 by default, but can be changed through the -mtp option.  */
+enum aarch64_tp_reg {
+  AARCH64_TPIDR_EL0 = 0,
+  AARCH64_TPIDR_EL1 = 1,
+  AARCH64_TPIDR_EL2 = 2,
+  AARCH64_TPIDR_EL3 = 3
+};
+
 /* SVE vector register sizes.  */
 enum aarch64_sve_vector_bits_enum {
   SVE_SCALABLE,

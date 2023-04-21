@@ -7077,7 +7077,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(unspec:DI [(const_int 0)] UNSPEC_TLS))]
   ""
-  "mrs\\t%0, tpidr_el0"
+  "* return aarch64_output_load_tp (operands[0]);"
   [(set_attr "type" "mrs")]
 )
 
