@@ -9175,6 +9175,7 @@ proc is-effective-target-keyword { arg } {
 	  "named_sections" { return 1 }
 	  "gc_sections"    { return 1 }
 	  "cxa_atexit"     { return 1 }
+	  "ppc_cpu_supports_hw" { return 1 }
 	  default          { return 0 }
 	}
     }
