@@ -21968,7 +21968,7 @@ aarch64_simd_dup_constant (rtx vals)
   /* We can load this constant by using DUP and a constant in a
      single ARM register.  This will be cheaper than a vector
      load.  */
-  x = copy_to_mode_reg (inner_mode, x);
+  x = force_reg (inner_mode, x);
   return gen_vec_duplicate (mode, x);
 }
 
@@ -22082,7 +22082,7 @@ aarch64_expand_vector_init (rtx target, rtx vals)
   /* Splat a single non-constant element if we can.  */
   if (all_same)
     {
-      rtx x = copy_to_mode_reg (inner_mode, v0);
+      rtx x = force_reg (inner_mode, v0);
       aarch64_emit_move (target, gen_vec_duplicate (mode, x));
       return;
     }
@@ -22190,12 +22190,12 @@ aarch64_expand_vector_init (rtx target, rtx vals)
 	     vector register.  For big-endian we want that position to hold
 	     the last element of VALS.  */
 	  maxelement = BYTES_BIG_ENDIAN ? n_elts - 1 : 0;
-	  rtx x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, maxelement));
+	  rtx x = force_reg (inner_mode, XVECEXP (vals, 0, maxelement));
 	  aarch64_emit_move (target, lowpart_subreg (mode, x, inner_mode));
 	}
       else
 	{
-	  rtx x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, maxelement));
+	  rtx x = force_reg (inner_mode, XVECEXP (vals, 0, maxelement));
 	  aarch64_emit_move (target, gen_vec_duplicate (mode, x));
 	}
 
@@ -22205,7 +22205,7 @@ aarch64_expand_vector_init (rtx target, rtx vals)
 	  rtx x = XVECEXP (vals, 0, i);
 	  if (matches[i][0] == maxelement)
 	    continue;
-	  x = copy_to_mode_reg (inner_mode, x);
+	  x = force_reg (inner_mode, x);
 	  emit_insn (GEN_FCN (icode) (target, x, GEN_INT (i)));
 	}
       return;
@@ -22249,7 +22249,7 @@ aarch64_expand_vector_init (rtx target, rtx vals)
       rtx x = XVECEXP (vals, 0, i);
       if (CONST_INT_P (x) || CONST_DOUBLE_P (x))
 	continue;
-      x = copy_to_mode_reg (inner_mode, x);
+      x = force_reg (inner_mode, x);
       emit_insn (GEN_FCN (icode) (target, x, GEN_INT (i)));
     }
 }
