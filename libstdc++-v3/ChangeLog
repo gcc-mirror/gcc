@@ -1,3 +1,82 @@
+2023-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107852
+	PR libstdc++/106199
+	PR libstdc++/100366
+	* include/bits/vector.tcc (vector::_M_fill_insert): Copy
+	_M_start and _M_finish members before allocating.
+	(vector::_M_default_append): Likewise.
+	(vector::_M_range_insert): Likewise.
+
+2023-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/extensions.xml: Remove std::bad_exception from
+	example program.
+	* doc/html/manual/ext_demangling.html: Regenerate.
+
+2023-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (sub_match::swap): New function.
+	* testsuite/28_regex/sub_match/lwg3204.cc: New test.
+
+2023-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103387
+	* include/bits/istream.tcc (istream::_M_extract(ValueT&)): Use
+	std::use_facet instead of cached _M_num_get facet.
+	(istream::operator>>(short&)): Likewise.
+	(istream::operator>>(int&)): Likewise.
+	* include/bits/ostream.tcc (ostream::_M_insert(ValueT)): Use
+	std::use_facet instead of cached _M_num_put facet.
+
+2023-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/jthread/jthread.cc: Remove -pthread from
+	dg-options.
+
+2023-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_atomic.h (atomic::operator=(nullptr_t)):
+	Add overload, as per LWG 3893.
+	* testsuite/20_util/shared_ptr/atomic/atomic_shared_ptr.cc:
+	Check assignment from nullptr.
+
+2023-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (expected::value() &): Use const lvalue
+	for unex member passed to bad_expected_access constructor, as
+	per LWG 3843.
+
+2023-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (variant::operator=): Implement resolution
+	of LWG 3585.
+	* testsuite/20_util/variant/lwg3585.cc: New test.
+
 2023-04-12  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

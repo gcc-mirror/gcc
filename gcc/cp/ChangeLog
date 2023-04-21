@@ -1,3 +1,11 @@
+2023-04-20  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108099
+	* decl.cc (grokdeclarator): Handle non-typedef typedef_decl.
+
 2023-04-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/108099
