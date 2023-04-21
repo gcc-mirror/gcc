@@ -2907,12 +2907,14 @@ package body Exp_Aggr is
 
       if Nkind (N) = N_Extension_Aggregate then
          declare
-            Ancestor : constant Node_Id := Ancestor_Part (N);
+            Ancestor   : constant Node_Id := Ancestor_Part (N);
+            Ancestor_Q : constant Node_Id := Unqualify (Ancestor);
+
             Adj_Call : Node_Id;
             Assign   : List_Id;
 
          begin
-            --  If the ancestor part is a subtype mark "T", we generate
+            --  If the ancestor part is a subtype mark T, we generate
 
             --     init-proc (T (tmp));  if T is constrained and
             --     init-proc (S (tmp));  where S applies an appropriate
@@ -3036,28 +3038,22 @@ package body Exp_Aggr is
             --  qualified).
 
             elsif Is_Limited_Type (Etype (Ancestor))
-              and then Nkind (Unqualify (Ancestor)) in
-                         N_Aggregate | N_Extension_Aggregate
+              and then Nkind (Ancestor_Q) in N_Aggregate
+                                           | N_Extension_Aggregate
             then
-               --  Set up finalization data for enclosing record, because
-               --  controlled subcomponents of the ancestor part will be
-               --  attached to it.
-
-               Generate_Finalization_Actions;
-
                Append_List_To (L,
                   Build_Record_Aggr_Code
-                    (N   => Unqualify (Ancestor),
-                     Typ => Etype (Unqualify (Ancestor)),
+                    (N   => Ancestor_Q,
+                     Typ => Etype (Ancestor_Q),
                      Lhs => Target));
 
-            --  If the ancestor part is an expression "E", we generate
+            --  If the ancestor part is an expression E of type T, we generate
 
             --     T (tmp) := E;
 
             --  In Ada 2005, this includes the case of a (possibly qualified)
-            --  limited function call. The assignment will turn into a
-            --  build-in-place function call (for further details, see
+            --  limited function call. The assignment will later be turned into
+            --  a build-in-place function call (for further details, see
             --  Make_Build_In_Place_Call_In_Assignment).
 
             else
@@ -3067,15 +3063,13 @@ package body Exp_Aggr is
                --  If the ancestor part is an aggregate, force its full
                --  expansion, which was delayed.
 
-               if Nkind (Unqualify (Ancestor)) in
-                    N_Aggregate | N_Extension_Aggregate
+               if Nkind (Ancestor_Q) in N_Aggregate | N_Extension_Aggregate
                then
                   Set_Analyzed (Ancestor, False);
                   Set_Analyzed (Expression (Ancestor), False);
                end if;
 
                Ref := Convert_To (Init_Typ, New_Copy_Tree (Target));
-               Set_Assignment_OK (Ref);
 
                --  Make the assignment without usual controlled actions, since
                --  we only want to Adjust afterwards, but not to Finalize
@@ -3112,14 +3106,14 @@ package body Exp_Aggr is
 
                --  Call Adjust manually
 
-               if Needs_Finalization (Etype (Ancestor))
-                 and then not Is_Limited_Type (Etype (Ancestor))
+               if Needs_Finalization (Init_Typ)
+                 and then not Is_Limited_Type (Init_Typ)
                  and then not Is_Build_In_Place_Function_Call (Ancestor)
                then
                   Adj_Call :=
                     Make_Adjust_Call
                       (Obj_Ref => New_Copy_Tree (Ref),
-                       Typ     => Etype (Ancestor));
+                       Typ     => Init_Typ);
 
                   --  Guard against a missing [Deep_]Adjust when the ancestor
                   --  type was not properly frozen.
