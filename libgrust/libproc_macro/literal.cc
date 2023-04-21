@@ -32,11 +32,11 @@ Literal::drop (Literal *lit)
   switch (lit->tag)
     {
     case STRING:
-      delete lit->payload.string_payload.data;
+      delete[] lit->payload.string_payload.data;
       lit->payload.string_payload.len = 0;
       break;
     case BYTE_STRING:
-      delete lit->payload.byte_string_payload.data;
+      delete[] lit->payload.byte_string_payload.data;
       lit->payload.byte_string_payload.size = 0;
       break;
     case CHAR:
