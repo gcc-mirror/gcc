@@ -57,8 +57,8 @@ along with GCC; see the file COPYING3.  If not see
 
 static bool two_value_replacement (basic_block, basic_block, edge, gphi *,
 				   tree, tree);
-static bool match_simplify_replacement (basic_block, basic_block,
-					edge, edge, gphi *, tree, tree, bool);
+static bool match_simplify_replacement (basic_block, basic_block, basic_block,
+					edge, edge, gphi *, tree, tree, bool, bool);
 static gphi *factor_out_conditional_conversion (edge, edge, gphi *, tree, tree,
 						gimple *);
 static int value_replacement (basic_block, basic_block,
@@ -302,9 +302,8 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 	  && !diamond_p
 	  && two_value_replacement (bb, bb1, e2, phi, arg0, arg1))
 	cfgchanged = true;
-      else if (!diamond_p
-	       && match_simplify_replacement (bb, bb1, e1, e2, phi,
-					      arg0, arg1, early_p))
+      else if (match_simplify_replacement (bb, bb1, bb2, e1, e2, phi,
+					   arg0, arg1, early_p, diamond_p))
 	cfgchanged = true;
       else if (!early_p
 	       && !diamond_p
@@ -1024,8 +1023,10 @@ empty_bb_or_one_feeding_into_p (basic_block bb,
 
 static bool
 match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
+			    basic_block middle_bb_alt,
 			    edge e0, edge e1, gphi *phi,
-			    tree arg0, tree arg1, bool early_p)
+			    tree arg0, tree arg1, bool early_p,
+			    bool threeway_p)
 {
   gimple *stmt;
   gimple_stmt_iterator gsi;
@@ -1033,6 +1034,7 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
   gimple_seq seq = NULL;
   tree result;
   gimple *stmt_to_move = NULL;
+  gimple *stmt_to_move_alt = NULL;
   auto_bitmap inserted_exprs;
 
   /* Special case A ? B : B as this will always simplify to B. */
@@ -1042,6 +1044,12 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
   /* If the basic block only has a cheap preparation statement,
      allow it and move it once the transformation is done. */
   if (!empty_bb_or_one_feeding_into_p (middle_bb, phi, stmt_to_move))
+    return false;
+
+  if (threeway_p
+      && middle_bb != middle_bb_alt
+      && !empty_bb_or_one_feeding_into_p (middle_bb_alt, phi,
+					  stmt_to_move_alt))
     return false;
 
     /* At this point we know we have a GIMPLE_COND with two successors.
@@ -1104,6 +1112,23 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
       // Mark the name to be renamed if there is one.
       bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (name));
       gimple_stmt_iterator gsi1 = gsi_for_stmt (stmt_to_move);
+      gsi_move_before (&gsi1, &gsi);
+      reset_flow_sensitive_info (name);
+    }
+
+  if (stmt_to_move_alt)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "statement un-sinked:\n");
+	  print_gimple_stmt (dump_file, stmt_to_move_alt, 0,
+			   TDF_VOPS|TDF_MEMSYMS);
+	}
+
+      tree name = gimple_get_lhs (stmt_to_move_alt);
+      // Mark the name to be renamed if there is one.
+      bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (name));
+      gimple_stmt_iterator gsi1 = gsi_for_stmt (stmt_to_move_alt);
       gsi_move_before (&gsi1, &gsi);
       reset_flow_sensitive_info (name);
     }
