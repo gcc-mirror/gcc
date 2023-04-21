@@ -361,3 +361,5 @@
   [(set_attr "move_type" "load")
    (set_attr "mode" "DI")
    (set_attr "length" "8")])
+
+(include "thead-peephole.md")
