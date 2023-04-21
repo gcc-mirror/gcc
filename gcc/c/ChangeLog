@@ -1,3 +1,9 @@
+2023-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107041
+	* c-decl.cc (diagnose_mismatched_decls): Avoid -Wenum-int-mismatch
+	warning on acc_on_device declaration.
+
 2023-03-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/107002

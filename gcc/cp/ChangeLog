@@ -1,3 +1,40 @@
+2023-04-20  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (tsubst) <case TEMPLATE_TYPE_PARM>: Don't recurse when
+	level lowering a cv-qualified type template parameter.  Remove
+	recursive loop breaker in the level lowering case for constrained
+	autos.  Use the TEMPLATE_PARM_DESCENDANTS cache in this case as
+	well.
+
+2023-04-20  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (diagnose_trait_expr): Convert a TREE_VEC
+	of arguments into a TREE_LIST for sake of pretty printing.
+	* cxx-pretty-print.cc (pp_cxx_trait): Handle TREE_VEC
+	instead of TREE_LIST of trailing variadic trait arguments.
+	* method.cc (constructible_expr): Likewise.
+	(is_xible_helper): Likewise.
+	* parser.cc (cp_parser_trait): Represent trailing variadic trait
+	arguments as a TREE_VEC instead of TREE_LIST.
+	* pt.cc (value_dependent_expression_p): Handle TREE_VEC
+	instead of TREE_LIST of trailing variadic trait arguments.
+	* semantics.cc (finish_type_pack_element): Likewise.
+	(check_trait_type): Likewise.
+
+2023-04-20  Patrick Palka  <ppalka@redhat.com>
+
+	* tree.cc (strip_typedefs): Move TREE_LIST handling to
+	strip_typedefs_expr.  Dispatch to strip_typedefs_expr for
+	non-type 't'.
+	<case TYPENAME_TYPE>: Remove manual dispatching to
+	strip_typedefs_expr.
+	<case TRAIT_TYPE>: Likewise.
+	(strip_typedefs_expr): Replaces calls to strip_typedefs_expr
+	with strip_typedefs throughout.  Don't dispatch to strip_typedefs
+	for type 't'.
+	<case TREE_LIST>: Replace this with the better version from
+	strip_typedefs.
+
 2023-04-19  Patrick Palka  <ppalka@redhat.com>
 	    Jonathan Wakely  <jwakely@redhat.com>
 

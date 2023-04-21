@@ -1,3 +1,326 @@
+2023-04-20  Alejandro Colomar  <alx.manpages@gmail.com>
+
+	* doc/extend.texi (Common Function Attributes): Remove duplicate
+	word.
+
+2023-04-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109564
+	* gimple-range-fold.cc (fold_using_range::range_of_phi): Do no ignore
+	UNDEFINED range names when deciding if all PHI arguments are the same,
+
+2023-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109011
+	* tree-vect-patterns.cc (vect_recog_ctz_ffs_pattern): Use
+	.CTZ (X) = .POPCOUNT ((X - 1) & ~X) in preference to
+	.CTZ (X) = PREC - .POPCOUNT (X | -X).
+
+2023-04-20  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.cc (match_reload): Exclude some hard regs for
+	multi-reg inout reload pseudos used in asm in different mode.
+
+2023-04-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/arm/arm.cc (thumb1_legitimate_address_p):
+	Use VIRTUAL_REGISTER_P predicate.
+	(arm_eliminable_register): Ditto.
+	* config/avr/avr.md (push<mode>_1): Ditto.
+	* config/bfin/predicates.md (register_no_elim_operand): Ditto.
+	* config/h8300/predicates.md (register_no_sp_elim_operand): Ditto.
+	* config/i386/predicates.md (register_no_elim_operand): Ditto.
+	* config/iq2000/predicates.md (call_insn_operand): Ditto.
+	* config/microblaze/microblaze.h (CALL_INSN_OP): Ditto.
+
+2023-04-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/78952
+	* config/i386/predicates.md (extract_operator): New predicate.
+	* config/i386/i386.md (any_extract): Remove code iterator.
+	(*cmpqi_ext<mode>_1_mem_rex64): Use extract_operator predicate.
+	(*cmpqi_ext<mode>_1): Ditto.
+	(*cmpqi_ext<mode>_2): Ditto.
+	(*cmpqi_ext<mode>_3_mem_rex64): Ditto.
+	(*cmpqi_ext<mode>_3): Ditto.
+	(*cmpqi_ext<mode>_4): Ditto.
+	(*extzvqi_mem_rex64): Ditto.
+	(*extzvqi): Ditto.
+	(*insvqi_2): Ditto.
+	(*extendqi<SWI24:mode>_ext_1): Ditto.
+	(*addqi_ext<mode>_0): Ditto.
+	(*addqi_ext<mode>_1): Ditto.
+	(*addqi_ext<mode>_2): Ditto.
+	(*subqi_ext<mode>_0): Ditto.
+	(*subqi_ext<mode>_2): Ditto.
+	(*testqi_ext<mode>_1): Ditto.
+	(*testqi_ext<mode>_2): Ditto.
+	(*andqi_ext<mode>_0): Ditto.
+	(*andqi_ext<mode>_1): Ditto.
+	(*andqi_ext<mode>_1_cc): Ditto.
+	(*andqi_ext<mode>_2): Ditto.
+	(*<any_or:code>qi_ext<mode>_0): Ditto.
+	(*<any_or:code>qi_ext<mode>_1): Ditto.
+	(*<any_or:code>qi_ext<mode>_2): Ditto.
+	(*xorqi_ext<mode>_1_cc): Ditto.
+	(*negqi_ext<mode>_2): Ditto.
+	(*ashlqi_ext<mode>_2): Ditto.
+	(*<any_shiftrt:insn>qi_ext<mode>_2): Ditto.
+
+2023-04-20  Raphael Zinsly  <rzinsly@ventanamicro.com>
+
+	PR target/108248
+	* config/riscv/bitmanip.md (clz, ctz, pcnt, min, max patterns): Use
+	<bitmanip_insn> as the type to allow for fine grained control of
+	scheduling these insns.
+	* config/riscv/generic.md (generic_alu): Add bitmanip, clz, ctz, pcnt,
+	min, max.
+	* config/riscv/riscv.md (type attribute): Add types for clz, ctz,
+	pcnt, signed and unsigned min/max.
+
+2023-04-20  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+	    kito-cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.h (enum reg_class): Fix RVV register order.
+
+2023-04-20  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+	    kito-cheng  <kito.cheng@sifive.com>
+
+	PR target/109535
+	* config/riscv/riscv-vsetvl.cc (count_regno_occurrences): New function.
+	(pass_vsetvl::cleanup_insns): Fix bug.
+
+2023-04-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (vnsi, VnSI): Add scalar modes.
+	(ldexp<mode>3): Delete.
+	(ldexp<mode>3<exec>): Change "B" to "A".
+
+2023-04-20  Jakub Jelinek  <jakub@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* tree.h (built_in_function_equal_p): New helper function.
+	(fndecl_built_in_p): Turn into variadic template to support
+	1 or more built_in_function arguments.
+	* builtins.cc (fold_builtin_expect): Use 3 argument fndecl_built_in_p.
+	* gimplify.cc (goa_stabilize_expr): Likewise.
+	* cgraphclones.cc (cgraph_node::create_clone): Likewise.
+	* ipa-fnsummary.cc (compute_fn_summary): Likewise.
+	* omp-low.cc (setjmp_or_longjmp_p): Likewise.
+	* cgraph.cc (cgraph_edge::redirect_call_stmt_to_callee,
+	cgraph_update_edges_for_call_stmt_node,
+	cgraph_edge::verify_corresponds_to_fndecl,
+	cgraph_node::verify_node): Likewise.
+	* tree-stdarg.cc (optimize_va_list_gpr_fpr_size): Likewise.
+	* gimple-ssa-warn-access.cc (matching_alloc_calls_p): Likewise.
+	* ipa-prop.cc (try_make_edge_direct_virtual_call): Likewise.
+
+2023-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109011
+	* tree-vect-patterns.cc (vect_recog_ctz_ffs_pattern): New function.
+	(vect_recog_popcount_clz_ctz_ffs_pattern): Move vect_pattern_detected
+	call later.  Don't punt for IFN_CTZ or IFN_FFS if it doesn't have
+	direct optab support, but has instead IFN_CLZ, IFN_POPCOUNT or
+	for IFN_FFS IFN_CTZ support, use vect_recog_ctz_ffs_pattern for that
+	case.
+	(vect_vect_recog_func_ptrs): Add ctz_ffs entry.
+
+2023-04-20  Richard Biener  <rguenther@suse.de>
+
+	* df-core.cc (rest_of_handle_df_initialize): Remove
+	computation of df->postorder, df->postorder_inverted and
+	df->n_blocks.
+
+2023-04-20  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_AVX_UNSET): Add OPTION_MASK_ISA2_VAES_UNSET.
+	(ix86_handle_option): Set AVX flag for VAES.
+	* config/i386/i386-builtins.cc (ix86_init_mmx_sse_builtins):
+	Add OPTION_MASK_ISA2_VAES_UNSET.
+	(def_builtin): Share builtin between AES and VAES.
+	* config/i386/i386-expand.cc (ix86_check_builtin_isa_match):
+	Ditto.
+	* config/i386/i386.md (aes): New isa attribute.
+	* config/i386/sse.md (aesenc): Add pattern for VAES with xmm.
+	(aesenclast): Ditto.
+	(aesdec): Ditto.
+	(aesdeclast): Ditto.
+	* config/i386/vaesintrin.h: Remove redundant avx target push.
+	* config/i386/wmmintrin.h (_mm_aesdec_si128): Change to macro.
+	(_mm_aesdeclast_si128): Ditto.
+	(_mm_aesenc_si128): Ditto.
+	(_mm_aesenclast_si128): Ditto.
+
+2023-04-20  Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/avx2intrin.h
+	(_MM_REDUCE_OPERATOR_BASIC_EPI16): New macro.
+	(_MM_REDUCE_OPERATOR_MAX_MIN_EP16): Ditto.
+	(_MM256_REDUCE_OPERATOR_BASIC_EPI16): Ditto.
+	(_MM256_REDUCE_OPERATOR_MAX_MIN_EP16): Ditto.
+	(_MM_REDUCE_OPERATOR_BASIC_EPI8): Ditto.
+	(_MM_REDUCE_OPERATOR_MAX_MIN_EP8): Ditto.
+	(_MM256_REDUCE_OPERATOR_BASIC_EPI8): Ditto.
+	(_MM256_REDUCE_OPERATOR_MAX_MIN_EP8): Ditto.
+	(_mm_reduce_add_epi16): New instrinsics.
+	(_mm_reduce_mul_epi16): Ditto.
+	(_mm_reduce_and_epi16): Ditto.
+	(_mm_reduce_or_epi16): Ditto.
+	(_mm_reduce_max_epi16): Ditto.
+	(_mm_reduce_max_epu16): Ditto.
+	(_mm_reduce_min_epi16): Ditto.
+	(_mm_reduce_min_epu16): Ditto.
+	(_mm256_reduce_add_epi16): Ditto.
+	(_mm256_reduce_mul_epi16): Ditto.
+	(_mm256_reduce_and_epi16): Ditto.
+	(_mm256_reduce_or_epi16): Ditto.
+	(_mm256_reduce_max_epi16): Ditto.
+	(_mm256_reduce_max_epu16): Ditto.
+	(_mm256_reduce_min_epi16): Ditto.
+	(_mm256_reduce_min_epu16): Ditto.
+	(_mm_reduce_add_epi8): Ditto.
+	(_mm_reduce_mul_epi8): Ditto.
+	(_mm_reduce_and_epi8): Ditto.
+	(_mm_reduce_or_epi8): Ditto.
+	(_mm_reduce_max_epi8): Ditto.
+	(_mm_reduce_max_epu8): Ditto.
+	(_mm_reduce_min_epi8): Ditto.
+	(_mm_reduce_min_epu8): Ditto.
+	(_mm256_reduce_add_epi8): Ditto.
+	(_mm256_reduce_mul_epi8): Ditto.
+	(_mm256_reduce_and_epi8): Ditto.
+	(_mm256_reduce_or_epi8): Ditto.
+	(_mm256_reduce_max_epi8): Ditto.
+	(_mm256_reduce_max_epu8): Ditto.
+	(_mm256_reduce_min_epi8): Ditto.
+	(_mm256_reduce_min_epu8): Ditto.
+	* config/i386/avx512vlbwintrin.h:
+	(_mm_mask_reduce_add_epi16): Ditto.
+	(_mm_mask_reduce_mul_epi16): Ditto.
+	(_mm_mask_reduce_and_epi16): Ditto.
+	(_mm_mask_reduce_or_epi16): Ditto.
+	(_mm_mask_reduce_max_epi16): Ditto.
+	(_mm_mask_reduce_max_epu16): Ditto.
+	(_mm_mask_reduce_min_epi16): Ditto.
+	(_mm_mask_reduce_min_epu16): Ditto.
+	(_mm256_mask_reduce_add_epi16): Ditto.
+	(_mm256_mask_reduce_mul_epi16): Ditto.
+	(_mm256_mask_reduce_and_epi16): Ditto.
+	(_mm256_mask_reduce_or_epi16): Ditto.
+	(_mm256_mask_reduce_max_epi16): Ditto.
+	(_mm256_mask_reduce_max_epu16): Ditto.
+	(_mm256_mask_reduce_min_epi16): Ditto.
+	(_mm256_mask_reduce_min_epu16): Ditto.
+	(_mm_mask_reduce_add_epi8): Ditto.
+	(_mm_mask_reduce_mul_epi8): Ditto.
+	(_mm_mask_reduce_and_epi8): Ditto.
+	(_mm_mask_reduce_or_epi8): Ditto.
+	(_mm_mask_reduce_max_epi8): Ditto.
+	(_mm_mask_reduce_max_epu8): Ditto.
+	(_mm_mask_reduce_min_epi8): Ditto.
+	(_mm_mask_reduce_min_epu8): Ditto.
+	(_mm256_mask_reduce_add_epi8): Ditto.
+	(_mm256_mask_reduce_mul_epi8): Ditto.
+	(_mm256_mask_reduce_and_epi8): Ditto.
+	(_mm256_mask_reduce_or_epi8): Ditto.
+	(_mm256_mask_reduce_max_epi8): Ditto.
+	(_mm256_mask_reduce_max_epu8): Ditto.
+	(_mm256_mask_reduce_min_epi8): Ditto.
+	(_mm256_mask_reduce_min_epu8): Ditto.
+
+2023-04-20  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA_VPCLMULQDQ_SET):
+	Add OPTION_MASK_ISA_PCLMUL_SET and OPTION_MASK_ISA_AVX_SET.
+	(OPTION_MASK_ISA_AVX_UNSET):
+	Add OPTION_MASK_ISA_VPCLMULQDQ_UNSET.
+	(OPTION_MASK_ISA_PCLMUL_UNSET): Ditto.
+	* config/i386/i386.md (vpclmulqdqvl): New.
+	* config/i386/sse.md (pclmulqdq): Add evex encoding.
+	* config/i386/vpclmulqdqintrin.h: Remove redudant avx target
+	push.
+
+2023-04-20  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx512vlbwintrin.h
+	(_mm_mask_blend_epi16): Remove __OPTIMIZE__ wrapper.
+	(_mm_mask_blend_epi8): Ditto.
+	(_mm256_mask_blend_epi16): Ditto.
+	(_mm256_mask_blend_epi8): Ditto.
+	* config/i386/avx512vlintrin.h
+	(_mm256_mask_blend_pd): Ditto.
+	(_mm256_mask_blend_ps): Ditto.
+	(_mm256_mask_blend_epi64): Ditto.
+	(_mm256_mask_blend_epi32): Ditto.
+	(_mm_mask_blend_pd): Ditto.
+	(_mm_mask_blend_ps): Ditto.
+	(_mm_mask_blend_epi64): Ditto.
+	(_mm_mask_blend_epi32): Ditto.
+	* config/i386/sse.md (VF_AVX512BWHFBF16): Removed.
+	(VF_AVX512HFBFVL): Move it before the first usage.
+	(<avx512>_blendm<mode>): Change iterator from VF_AVX512BWHFBF16
+	to VF_AVX512HFBFVL.
+
+2023-04-20  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA_AVX512VBMI2_SET): Change OPTION_MASK_ISA_AVX512F_SET
+	to OPTION_MASK_ISA_AVX512BW_SET.
+	(OPTION_MASK_ISA_AVX512F_UNSET):
+	Remove OPTION_MASK_ISA_AVX512VBMI2_UNSET.
+	(OPTION_MASK_ISA_AVX512BW_UNSET):
+	Add OPTION_MASK_ISA_AVX512VBMI2_UNSET.
+	* config/i386/avx512vbmi2intrin.h: Do not push avx512bw.
+	* config/i386/avx512vbmi2vlintrin.h: Ditto.
+	* config/i386/i386-builtin.def: Remove OPTION_MASK_ISA_AVX512BW.
+	* config/i386/sse.md (VI12_AVX512VLBW): Removed.
+	(VI12_VI48F_AVX512VLBW): Rename to VI12_VI48F_AVX512VL.
+	(compress<mode>_mask): Change iterator from VI12_AVX512VLBW to
+	VI12_AVX512VL.
+	(compressstore<mode>_mask): Ditto.
+	(expand<mode>_mask): Ditto.
+	(expand<mode>_maskz): Ditto.
+	(*expand<mode>_mask): Change iterator from VI12_VI48F_AVX512VLBW to
+	VI12_VI48F_AVX512VL.
+
+2023-04-20  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA_AVX512BITALG_SET):
+	Change OPTION_MASK_ISA_AVX512F_SET
+	to OPTION_MASK_ISA_AVX512BW_SET.
+	(OPTION_MASK_ISA_AVX512F_UNSET):
+	Remove OPTION_MASK_ISA_AVX512BITALG_SET.
+	(OPTION_MASK_ISA_AVX512BW_UNSET):
+	Add OPTION_MASK_ISA_AVX512BITALG_SET.
+	* config/i386/avx512bitalgintrin.h: Do not push avx512bw.
+	* config/i386/i386-builtin.def:
+	Remove redundant OPTION_MASK_ISA_AVX512BW.
+	* config/i386/sse.md (VI1_AVX512VLBW): Removed.
+	(avx512vl_vpshufbitqmb<mode><mask_scalar_merge_name>):
+	Change the iterator from VI1_AVX512VLBW to VI1_AVX512VL.
+
+2023-04-20  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386-expand.cc
+	(ix86_check_builtin_isa_match): Correct wrong comments.
+	Add a new macro SHARE_BUILTIN and refactor the current if
+	clauses to macro.
+
+2023-04-20  Mo, Zewei  <zewei.mo@intel.com>
+
+	* config/i386/cpuid.h: Open a new section for Extended Features
+	Leaf (%eax == 7, %ecx == 0) and Extended Features Sub-leaf (%eax == 7,
+	%ecx == 1).
+
+2023-04-20  Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/sse.md: Modify insn vperm{i,f}
+	and vshuf{i,f}.
+
 2023-04-19  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/xtensa-opts.h: New header.
