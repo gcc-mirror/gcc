@@ -1,3 +1,26 @@
+2023-04-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105996
+	* typeck.c (build_ptrmemfunc): Drop 0-offset optimization
+	and location wrappers.
+
+2023-04-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108975
+	* lambda.c (prune_lambda_captures): Don't bother in a template.
+
+2023-04-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69410
+	* friend.c (do_friend): Handle namespace as scope argument.
+	* decl.c (grokdeclarator): Pass down in_namespace.
+
+2023-04-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101869
+	* semantics.c (finish_qualified_id_expr): Don't try to build a
+	pointer-to-member if the scope is an enumeration.
+
 2022-12-16  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

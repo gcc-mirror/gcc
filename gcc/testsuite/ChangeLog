@@ -1,3 +1,28 @@
+2023-04-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/107163
+	* g++.dg/warn/Wsequence-point-5.C: New test.
+
+2023-04-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/105996
+	* g++.dg/cpp0x/constexpr-pmf3.C: New test.
+
+2023-04-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108975
+	* g++.dg/cpp0x/lambda/lambda-const11.C: New test.
+
+2023-04-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69410
+	* g++.dg/lookup/friend24.C: New test.
+
+2023-04-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101869
+	* g++.dg/cpp0x/enum43.C: New test.
+
 2023-04-18  Philipp Tomsich  <philipp.tomsich@vrull.eu>
 
 	Backported from master:
