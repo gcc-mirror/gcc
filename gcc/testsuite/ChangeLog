@@ -1,3 +1,69 @@
+2023-04-21  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109546
+	* gcc.dg/pr109546.c: New.
+
+2023-04-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108099
+	* g++.dg/ext/int128-8.C: Remove xfailed dg-bogus markers.
+	* g++.dg/ext/unsigned-typedef2.C: New test.
+	* g++.dg/ext/unsigned-typedef3.C: New test.
+
+2023-04-21  Jeff Law  <jlaw@ventanamicro>
+
+	PR testsuite/109549
+	* gcc.target/i386/cmov6.c: No longer expect this test to
+	generate 'cmov' instructions.
+
+2023-04-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/sminmax-asr_1.c: New test.
+
+2023-04-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/108779
+	* gcc.target/aarch64/mtp.c: New test.
+	* gcc.target/aarch64/mtp_1.c: New test.
+	* gcc.target/aarch64/mtp_2.c: New test.
+	* gcc.target/aarch64/mtp_3.c: New test.
+	* gcc.target/aarch64/mtp_4.c: New test.
+
+2023-04-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* gcc.target/aarch64/simd/pr99195_1.c: New test.
+
+2023-04-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109573
+	* g++.dg/vect/pr109573.cc: New testcase.
+
+2023-04-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/108270
+	* gcc.target/riscv/rvv/vsetvl/imm_bb_prop-1.c: Adapt testcase.
+	* gcc.target/riscv/rvv/vsetvl/imm_conflict-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/pr108270.c: New test.
+
+2023-04-21  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/108728
+	* gcc.dg/torture/float128-cmp-invalid.c: Add xfail.
+
+2023-04-21  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/108728
+	* lib/target-supports.exp (is-effective-target-keyword): Add
+	ppc_cpu_supports_hw.
+
+2023-04-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109547
+	* gcc.target/riscv/rvv/vsetvl/pr109547.c: New.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-17.c: Update scan
+	condition.
+
 2023-04-20  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/109564

@@ -1,3 +1,16 @@
+2023-04-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108099
+	* decl.cc (grokdeclarator): Don't clear typedef_decl after 'unsigned
+	typedef' pedwarn.  Use c_common_signed_or_unsigned_type.  Also
+	handle 'signed typedef'.
+
+2023-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	* tree.cc (cp_walk_subtrees): Avoid repeatedly dereferencing tp.
+	<case DECLTYPE_TYPE>: Use cp_unevaluated and WALK_SUBTREE.
+	<case ALIGNOF_EXPR etc>: Likewise.
+
 2023-04-20  Patrick Palka  <ppalka@redhat.com>
 
 	* pt.cc (tsubst) <case TEMPLATE_TYPE_PARM>: Don't recurse when

@@ -1,3 +1,199 @@
+2023-04-21  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109546
+	* tree-vrp.cc (remove_unreachable::remove_and_update_globals): Do
+	not fold conditions with ADDR_EXPR early.
+
+2023-04-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (aarch64_umax<mode>3_insn): Delete.
+	(umax<mode>3): Emit raw UMAX RTL instead of going through gen_ function
+	for umax.
+	(<optab><mode>3): New define_expand for MAXMIN_NOUMAX codes.
+	(*aarch64_<optab><mode>3_zero): Define.
+	(*aarch64_<optab><mode>3_cssc): Likewise.
+	* config/aarch64/iterators.md (maxminand): New code attribute.
+
+2023-04-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/108779
+	* config/aarch64/aarch64-opts.h (enum aarch64_tp_reg): Define.
+	* config/aarch64/aarch64-protos.h (aarch64_output_load_tp):
+	Define prototype.
+	* config/aarch64/aarch64.cc (aarch64_tpidr_register): Declare.
+	(aarch64_override_options_internal): Handle the above.
+	(aarch64_output_load_tp): New function.
+	* config/aarch64/aarch64.md (aarch64_load_tp_hard): Call
+	aarch64_output_load_tp.
+	* config/aarch64/aarch64.opt (aarch64_tp_reg): Define enum.
+	(mtp=): New option.
+	* doc/invoke.texi (AArch64 Options): Document -mtp=.
+
+2023-04-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* config/aarch64/aarch64-simd.md (add_vec_concat_subst_le): Define.
+	(add_vec_concat_subst_be): Likewise.
+	(vczle): Likewise.
+	(vczbe): Likewise.
+	(add<mode>3): Rename to...
+	(add<mode>3<vczle><vczbe>): ... This.
+	(sub<mode>3): Rename to...
+	(sub<mode>3<vczle><vczbe>): ... This.
+	(mul<mode>3): Rename to...
+	(mul<mode>3<vczle><vczbe>): ... This.
+	(and<mode>3): Rename to...
+	(and<mode>3<vczle><vczbe>): ... This.
+	(ior<mode>3): Rename to...
+	(ior<mode>3<vczle><vczbe>): ... This.
+	(xor<mode>3): Rename to...
+	(xor<mode>3<vczle><vczbe>): ... This.
+	* config/aarch64/iterators.md (VDZ): Define.
+
+2023-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	* tree.cc (walk_tree_1): Avoid repeatedly dereferencing tp
+	and type_p.
+
+2023-04-21  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-loop-ch.cc (ch_base::copy_headers): Fix previous
+	commit.
+
+2023-04-21  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* expmed.h (x_shift*_cost): convert to int [speed][mode][shift].
+	(shift*_cost_ptr ()): Access x_shift*_cost array directly.
+
+2023-04-21  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* config/aarch64/aarch64.cc (aarch64_simd_dup_constant): Use
+	force_reg instead of copy_to_mode_reg.
+	(aarch64_expand_vector_init): Likewise.
+
+2023-04-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (REG_OK_FOR_INDEX_P, REG_OK_FOR_BASE_P): Remove.
+	(REG_OK_FOR_INDEX_NONSTRICT_P,  REG_OK_FOR_BASE_NONSTRICT_P): Ditto.
+	(REG_OK_FOR_INDEX_STRICT_P, REG_OK_FOR_BASE_STRICT_P): Ditto.
+	(FIRST_INDEX_REG, LAST_INDEX_REG): New defines.
+	(LEGACY_INDEX_REG_P, LEGACY_INDEX_REGNO_P): New macros.
+	(INDEX_REG_P, INDEX_REGNO_P): Ditto.
+	(REGNO_OK_FOR_INDEX_P): Use INDEX_REGNO_P predicates.
+	(REGNO_OK_FOR_INDEX_NONSTRICT_P): New macro.
+	(EG_OK_FOR_BASE_NONSTRICT_P): Ditto.
+	* config/i386/predicates.md (index_register_operand):
+	Use REGNO_OK_FOR_INDEX_P and REGNO_OK_FOR_INDEX_NONSTRICT_P macros.
+	* config/i386/i386.cc (ix86_legitimate_address_p): Use
+	REGNO_OK_FOR_BASE_P, REGNO_OK_FOR_BASE_NONSTRICT_P,
+	REGNO_OK_FOR_INDEX_P and REGNO_OK_FOR_INDEX_NONSTRICT_P macros.
+
+2023-04-21  Jan Hubicka  <hubicka@ucw.cz>
+	    Ondrej Kubanek  <kubanek0ondrej@gmail.com>
+
+	* tree-ssa-loop-ch.cc (ch_base::copy_headers): Update loop header and
+	latch.
+
+2023-04-21  Richard Biener  <rguenther@suse.de>
+
+	* is-a.h (safe_is_a): New.
+
+2023-04-21  Richard Biener  <rguenther@suse.de>
+
+	* gimple-iterator.h (gimple_stmt_iterator::operator*): Add.
+	(gphi_iterator::operator*): Likewise.
+
+2023-04-21  Jan Hubicka  <hubicka@ucw.cz>
+	    Michal Jires  <michal@jires.eu>
+
+	* ipa-inline.cc (class inline_badness): New class.
+	(edge_heap_t, edge_heap_node_t): Use inline_badness for badness instead
+	of sreal.
+	(update_edge_key): Update.
+	(lookup_recursive_calls): Likewise.
+	(recursive_inlining): Likewise.
+	(add_new_edges_to_heap): Likewise.
+	(inline_small_functions): Likewise.
+
+2023-04-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-devirt.cc (odr_types_equivalent_p): Cleanup warned checks.
+
+2023-04-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109573
+	* tree-vect-loop.cc (vectorizable_live_operation): Allow
+	unhandled SSA copy as well.  Demote assert to checking only.
+
+2023-04-21  Richard Biener  <rguenther@suse.de>
+
+	* df-core.cc (df_analyze): Compute RPO on the reverse graph
+	for DF_BACKWARD problems.
+	(loop_post_order_compute): Rename to ...
+	(loop_rev_post_order_compute): ... this, compute a RPO.
+	(loop_inverted_post_order_compute): Rename to ...
+	(loop_inverted_rev_post_order_compute): ... this, compute a RPO.
+	(df_analyze_loop): Use RPO on the forward graph for DF_FORWARD
+	problems, RPO on the inverted graph for DF_BACKWARD.
+
+2023-04-21  Richard Biener  <rguenther@suse.de>
+
+	* cfganal.h (inverted_rev_post_order_compute): Rename
+	from ...
+	(inverted_post_order_compute): ... this.  Add struct function
+	argument, change allocation to a C array.
+	* cfganal.cc (inverted_rev_post_order_compute): Likewise.
+	* lcm.cc (compute_antinout_edge): Adjust.
+	* lra-lives.cc (lra_create_live_ranges_1): Likewise.
+	* tree-ssa-dce.cc (remove_dead_stmt): Likewise.
+	* tree-ssa-pre.cc (compute_antic): Likewise.
+
+2023-04-21  Richard Biener  <rguenther@suse.de>
+
+	* df.h (df_d::postorder_inverted): Change back to int *,
+	clarify comments.
+	* df-core.cc (rest_of_handle_df_finish): Adjust.
+	(df_analyze_1): Likewise.
+	(df_analyze): For DF_FORWARD problems use RPO on the forward
+	graph.  Adjust.
+	(loop_inverted_post_order_compute): Adjust API.
+	(df_analyze_loop): Adjust.
+	(df_get_n_blocks): Likewise.
+	(df_get_postorder): Likewise.
+
+2023-04-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/108270
+	* config/riscv/riscv-vsetvl.cc
+	(vector_infos_manager::all_empty_predecessor_p): New function.
+	(pass_vsetvl::backward_demand_fusion): Ditto.
+	* config/riscv/riscv-vsetvl.h: Ditto.
+
+2023-04-21  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/109582
+	* config/riscv/generic.md: Change standard names to insn names.
+
+2023-04-21  Richard Biener  <rguenther@suse.de>
+
+	* lcm.cc (compute_antinout_edge): Use RPO on the inverted graph.
+	(compute_laterin): Use RPO.
+	(compute_available): Likewise.
+
+2023-04-21  Peng Fan  <fanpeng@loongson.cn>
+
+	* config/loongarch/gnu-user.h (MUSL_DYNAMIC_LINKER): Redefine.
+
+2023-04-21  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109547
+	* config/riscv/riscv-vsetvl.cc (local_eliminate_vsetvl_insn): New function.
+	(vector_insn_info::skip_avl_compatible_p): Ditto.
+	(vector_insn_info::merge): Remove default value.
+	(pass_vsetvl::compute_local_backward_infos): Ditto.
+	(pass_vsetvl::cleanup_insns): Add local vsetvl elimination.
+	* config/riscv/riscv-vsetvl.h: Ditto.
+
 2023-04-20  Alejandro Colomar  <alx.manpages@gmail.com>
 
 	* doc/extend.texi (Common Function Attributes): Remove duplicate
