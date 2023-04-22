@@ -9,7 +9,7 @@ foo (long long *p, long long *q)
 {
 #pragma omp simd
   for (int i = 0; i < 2048; ++i)
-    p[i] = __builtin_ctzll (q[i]);
+    p[i] = 2 * q[i] + __builtin_ctzll (q[i]);
 }
 
 void
@@ -28,5 +28,5 @@ baz (long long *p, long long *q)
     p[i] = __builtin_ffsll (q[i]);
 }
 
-/* { dg-final { scan-tree-dump-times " = \.POPCOUNT \\\(" 3 "optimized" { target { { { { i?86-*-* x86_64-*-* } && avx512vpopcntdq } && lzcnt } && bmi } } } } */
-/* { dg-final { scan-tree-dump-times " = \.CLZ \\\(" 3 "optimized" { target powerpc_p8vector_ok } } } */
+/* { dg-final { scan-tree-dump-times " = \.POPCOUNT \\\(vect" 3 "optimized" { target { { { { i?86-*-* x86_64-*-* } && avx512vpopcntdq } && lzcnt } && bmi } } } } */
+/* { dg-final { scan-tree-dump-times " = \.CLZ \\\(vect" 3 "optimized" { target powerpc_p8vector_ok } } } */

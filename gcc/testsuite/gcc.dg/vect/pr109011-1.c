@@ -14,8 +14,8 @@ foo (long long *p, long long *q)
     p[i] = __builtin_popcountll (q[i]);
 }
 
-/* { dg-final { scan-tree-dump-times " = \.POPCOUNT \\\(" 1 "optimized" { target { { i?86-*-* x86_64-*-* } && avx512vpopcntdq } } } } */
-/* { dg-final { scan-tree-dump-times " = \.POPCOUNT \\\(" 1 "optimized" { target { powerpc_p8vector_ok || s390_vx } } } } */
+/* { dg-final { scan-tree-dump-times " = \.POPCOUNT \\\(vect" 1 "optimized" { target { { i?86-*-* x86_64-*-* } && avx512vpopcntdq } } } } */
+/* { dg-final { scan-tree-dump-times " = \.POPCOUNT \\\(vect" 1 "optimized" { target { powerpc_p8vector_ok || s390_vx } } } } */
 
 void
 bar (long long *p, long long *q)
@@ -25,5 +25,5 @@ bar (long long *p, long long *q)
     p[i] = __builtin_clzll (q[i]);
 }
 
-/* { dg-final { scan-tree-dump-times " = \.CLZ \\\(" 1 "optimized" { target { { i?86-*-* x86_64-*-* } && avx512cd } } } } */
-/* { dg-final { scan-tree-dump-times " = \.CLZ \\\(" 1 "optimized" { target { powerpc_p8vector_ok || s390_vx } } } } */
+/* { dg-final { scan-tree-dump-times " = \.CLZ \\\(vect" 1 "optimized" { target { { i?86-*-* x86_64-*-* } && avx512cd } } } } */
+/* { dg-final { scan-tree-dump-times " = \.CLZ \\\(vect" 1 "optimized" { target { powerpc_p8vector_ok || s390_vx } } } } */
