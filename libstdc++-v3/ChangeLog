@@ -1,3 +1,12 @@
+2023-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/103755
+	* include/bits/locale_classes.tcc (try_facet, use_facet): Do not
+	check array index or dynamic type when accessing required
+	specializations of std::ctype, std::num_get, or std::num_put.
+	* testsuite/22_locale/ctype/is/string/89728_neg.cc: Adjust
+	expected errors.
+
 2023-04-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

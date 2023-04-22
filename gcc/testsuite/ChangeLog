@@ -1,3 +1,18 @@
+2023-04-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108795
+	* g++.dg/ext/attr-tsafe1.C: New test.
+
+2023-04-21  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	Backported from master:
+	2023-04-11  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/108812
+	* gcc.target/powerpc/p9-sign_extend-runnable.c: Set corresponding
+	expected vectors for Big Endian.
+	* gcc.target/powerpc/int_128bit-runnable.c: Likewise.
+
 2023-04-20  Jason Merrill  <jason@redhat.com>
 
 	Revert:

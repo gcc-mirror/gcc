@@ -1,3 +1,9 @@
+2023-04-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108795
+	* semantics.cc (finish_id_expression_1): Check scope before
+	returning id_expression.
+
 2023-04-20  Jason Merrill  <jason@redhat.com>
 
 	Revert:

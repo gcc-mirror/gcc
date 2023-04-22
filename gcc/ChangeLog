@@ -1,3 +1,54 @@
+2023-04-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/109478
+	* config/pa/pa-protos.h (pa_function_arg_size): Update prototype.
+	* config/pa/pa.cc (pa_function_arg): Return NULL_RTX if argument
+	size is zero.
+	(pa_arg_partial_bytes): Don't call pa_function_arg_size twice.
+	(pa_function_arg_size): Change return type to int.  Return zero
+	for arguments larger than 1 GB.  Update comments.
+
+2023-04-21  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	Backported from master:
+	2023-04-11  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/108812
+	* config/rs6000/vsx.md (vsx_sign_extend_qi_<mode>): Rename to...
+	(vsx_sign_extend_v16qi_<mode>): ... this.
+	(vsx_sign_extend_hi_<mode>): Rename to...
+	(vsx_sign_extend_v8hi_<mode>): ... this.
+	(vsx_sign_extend_si_v2di): Rename to...
+	(vsx_sign_extend_v4si_v2di): ... this.
+	(vsignextend_qi_<mode>): Remove.
+	(vsignextend_hi_<mode>): Remove.
+	(vsignextend_si_v2di): Remove.
+	(vsignextend_v2di_v1ti): Remove.
+	(*xxspltib_<mode>_split): Replace gen_vsx_sign_extend_qi_v2di with
+	gen_vsx_sign_extend_v16qi_v2di and gen_vsx_sign_extend_qi_v4si
+	with gen_vsx_sign_extend_v16qi_v4si.
+	* config/rs6000/rs6000.md (split for DI constant generation):
+	Replace gen_vsx_sign_extend_qi_si with gen_vsx_sign_extend_v16qi_si.
+	(split for HSDI constant generation): Replace gen_vsx_sign_extend_qi_di
+	with gen_vsx_sign_extend_v16qi_di and gen_vsx_sign_extend_qi_si
+	with gen_vsx_sign_extend_v16qi_si.
+	* config/rs6000/rs6000-builtins.def (__builtin_altivec_vsignextsb2d):
+	Set bif-pattern to vsx_sign_extend_v16qi_v2di.
+	(__builtin_altivec_vsignextsb2w): Set bif-pattern to
+	vsx_sign_extend_v16qi_v4si.
+	(__builtin_altivec_visgnextsh2d): Set bif-pattern to
+	vsx_sign_extend_v8hi_v2di.
+	(__builtin_altivec_vsignextsh2w): Set bif-pattern to
+	vsx_sign_extend_v8hi_v4si.
+	(__builtin_altivec_vsignextsw2d): Set bif-pattern to
+	vsx_sign_extend_si_v2di.
+	(__builtin_altivec_vsignext): Set bif-pattern to
+	vsx_sign_extend_v2di_v1ti.
+	* config/rs6000/rs6000-builtin.cc (lxvrse_expand_builtin): Replace
+	gen_vsx_sign_extend_qi_v2di with gen_vsx_sign_extend_v16qi_v2di,
+	gen_vsx_sign_extend_hi_v2di with gen_vsx_sign_extend_v8hi_v2di and
+	gen_vsx_sign_extend_si_v2di with gen_vsx_sign_extend_v4si_v2di.
+
 2023-04-18  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
