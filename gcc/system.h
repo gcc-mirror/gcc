@@ -714,8 +714,11 @@ public:
   auto_mpz (const auto_mpz &) = delete;
   auto_mpz &operator= (const auto_mpz &) = delete;
 
+#if GCC_VERSION < 4008 || GCC_VERSION >= 5000
+  /* GCC 4.8 and 4.9 don't support this, only fixed in PR62101 for 5.0.  */
   friend void mpz_clear (auto_mpz&) = delete;
   friend void mpz_init (auto_mpz&) = delete;
+#endif
 
 private:
   mpz_t m_mpz;

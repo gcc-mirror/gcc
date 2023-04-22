@@ -37,9 +37,12 @@ public:
   auto_mpfr (const auto_mpfr &) = delete;
   auto_mpfr &operator= (const auto_mpfr &) = delete;
 
+#if GCC_VERSION < 4008 || GCC_VERSION >= 5000
+  /* GCC 4.8 and 4.9 don't support this, only fixed in PR62101 for 5.0.  */
   friend void mpfr_clear (auto_mpfr&) = delete;
   friend void mpfr_init (auto_mpfr&) = delete;
   friend void mpfr_init2 (auto_mpfr&, mpfr_prec_t) = delete;
+#endif
 
 private:
   mpfr_t m_mpfr;
