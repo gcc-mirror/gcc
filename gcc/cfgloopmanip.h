@@ -59,5 +59,6 @@ class loop * loop_version (class loop *, void *,
 			    basic_block *,
 			    profile_probability, profile_probability,
 			    profile_probability, profile_probability, bool);
+void adjust_loop_info_after_peeling (class loop *loop, int npeel, bool precise);
 
 #endif /* GCC_CFGLOOPMANIP_H */

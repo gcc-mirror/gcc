@@ -980,6 +980,56 @@ estimated_peeled_sequence_size (struct loop_size *size,
 			     	       - size->eliminated_by_peeling), 1);
 }
 
+/* Update loop estimates after peeling LOOP by NPEEL.
+   If PRECISE is false only likely exists were duplicated and thus
+   do not update any estimates that are supposed to be always reliable.  */
+void
+adjust_loop_info_after_peeling (class loop *loop, int npeel, bool precise)
+{
+  if (loop->any_estimate)
+    {
+      /* Since peeling is mostly about loops where first few
+	 iterations are special, it is not quite correct to
+	 assume that the remaining iterations will behave
+	 the same way.  However we do not have better info
+	 so update the esitmate, since it is likely better
+	 than keeping it as it is.
+
+	 Remove it if it looks wrong.
+
+	 TODO: We likely want to special case the situation where
+	 peeling is optimizing out exit edges and only update
+	 estimates here.  */
+      if (wi::leu_p (npeel, loop->nb_iterations_estimate))
+	loop->nb_iterations_estimate -= npeel;
+      else
+	loop->any_estimate = false;
+    }
+  if (loop->any_upper_bound && precise)
+    {
+      if (wi::leu_p (npeel, loop->nb_iterations_upper_bound))
+	loop->nb_iterations_upper_bound -= npeel;
+      else
+	{
+	  /* Peeling maximal number of iterations or more
+	     makes no sense and is a bug.
+	     We should peel completely.  */
+	  gcc_unreachable ();
+	}
+    }
+  if (loop->any_likely_upper_bound)
+    {
+      if (wi::leu_p (npeel, loop->nb_iterations_likely_upper_bound))
+	loop->nb_iterations_likely_upper_bound -= npeel;
+      else
+	{
+	  loop->any_estimate = true;
+	  loop->nb_iterations_estimate = 0;
+	  loop->nb_iterations_likely_upper_bound = 0;
+	}
+    }
+}
+
 /* If the loop is expected to iterate N times and is
    small enough, duplicate the loop body N+1 times before
    the loop itself.  This way the hot path will never
@@ -1109,31 +1159,7 @@ try_peel_loop (class loop *loop,
       fprintf (dump_file, "Peeled loop %d, %i times.\n",
 	       loop->num, (int) npeel);
     }
-  if (loop->any_estimate)
-    {
-      if (wi::ltu_p (npeel, loop->nb_iterations_estimate))
-        loop->nb_iterations_estimate -= npeel;
-      else
-	loop->nb_iterations_estimate = 0;
-    }
-  if (loop->any_upper_bound)
-    {
-      if (wi::ltu_p (npeel, loop->nb_iterations_upper_bound))
-        loop->nb_iterations_upper_bound -= npeel;
-      else
-        loop->nb_iterations_upper_bound = 0;
-    }
-  if (loop->any_likely_upper_bound)
-    {
-      if (wi::ltu_p (npeel, loop->nb_iterations_likely_upper_bound))
-	loop->nb_iterations_likely_upper_bound -= npeel;
-      else
-	{
-	  loop->any_estimate = true;
-	  loop->nb_iterations_estimate = 0;
-	  loop->nb_iterations_likely_upper_bound = 0;
-	}
-    }
+  adjust_loop_info_after_peeling (loop, npeel, true);
   profile_count entry_count = profile_count::zero ();
 
   edge e;
