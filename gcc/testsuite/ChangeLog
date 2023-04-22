@@ -1,3 +1,14 @@
+2023-04-21  Andrew MacLeod  <amacleod@redhat.com>
+
+	Backported from master:
+	2023-04-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109564
+	* gcc.dg/torture/pr109564-1.c: New testcase.
+	* gcc.dg/torture/pr109564-2.c: Likewise.
+	* gcc.dg/tree-ssa/evrp-ignore.c: XFAIL.
+	* gcc.dg/tree-ssa/vrp06.c: Likewise.
+
 2023-04-19  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
