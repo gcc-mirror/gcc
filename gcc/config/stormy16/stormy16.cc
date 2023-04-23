@@ -72,19 +72,23 @@ static GTY(()) section *bss100_section;
    scanned.  In either case, *TOTAL contains the cost result.  */
 
 static bool
-xstormy16_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
+xstormy16_rtx_costs (rtx x, machine_mode mode,
 		     int outer_code ATTRIBUTE_UNUSED,
-		     int opno ATTRIBUTE_UNUSED, int *total,
-		     bool speed ATTRIBUTE_UNUSED)
+		     int opno ATTRIBUTE_UNUSED, int *total, bool speed_p)
 {
-  int code = GET_CODE (x);
+  rtx_code code = GET_CODE (x);
 
   switch (code)
     {
     case CONST_INT:
-      if (INTVAL (x) < 16 && INTVAL (x) >= 0)
-        *total = COSTS_N_INSNS (1) / 2;
-      else if (INTVAL (x) < 256 && INTVAL (x) >= 0)
+      if (mode == SImode)
+	{
+	  HOST_WIDE_INT lo_word = INTVAL (x) & 0xffff;
+	  HOST_WIDE_INT hi_word = INTVAL (x) >> 16;
+	  *total = COSTS_N_INSNS (IN_RANGE (lo_word, 0, 255) ? 1 : 2);
+	  *total += COSTS_N_INSNS (IN_RANGE (hi_word, 0, 255) ? 1 : 2);
+	}
+      else if (mode == QImode || IN_RANGE(INTVAL (x), 0, 255))
 	*total = COSTS_N_INSNS (1);
       else
 	*total = COSTS_N_INSNS (2);
@@ -97,12 +101,152 @@ xstormy16_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED,
       *total = COSTS_N_INSNS (2);
       return true;
 
+    case PLUS:
+    case MINUS:
+      if (mode == SImode)
+	{
+	  if (CONST_INT_P (XEXP (x, 1)))
+	    {
+	      HOST_WIDE_INT lo_word = INTVAL (XEXP (x, 1)) & 0xffff;
+	      HOST_WIDE_INT hi_word = INTVAL (XEXP (x, 1)) >> 16;
+	      if (IN_RANGE (lo_word, 0, 16))
+		*total = COSTS_N_INSNS (1);
+	      else
+		*total = COSTS_N_INSNS (2);
+	      if (IN_RANGE (hi_word, 0, 16))
+		*total += COSTS_N_INSNS (1);
+	      else
+		*total += COSTS_N_INSNS (2);
+	    }
+	  else
+	    {
+	      *total = COSTS_N_INSNS (2);
+	      *total += rtx_cost (XEXP (x, 1), mode, code, 0, speed_p);
+	    }
+	  *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed_p);
+	  return true;
+	}
+      else
+	{
+	  if (CONST_INT_P (XEXP (x, 1)))
+	    {
+	      if (IN_RANGE (INTVAL (XEXP (x, 1)), 0, 16))
+		*total = COSTS_N_INSNS (1);
+	      else
+		*total = COSTS_N_INSNS (2);
+	    }
+	  else
+	    {
+	      *total = COSTS_N_INSNS (1);
+	      *total += rtx_cost (XEXP (x, 1), mode, code, 0, speed_p);
+	    }
+	  *total += rtx_cost (XEXP (x, 0), mode, code, 0, speed_p);
+	  return true;
+	}
+      return false;
+
     case MULT:
-      *total = COSTS_N_INSNS (35 + 6);
-      return true;
+      if (mode == QImode)
+        *total = COSTS_N_INSNS (speed_p ? 18 + 5 : 6);
+      else if (mode == SImode)
+	*total = COSTS_N_INSNS (speed_p ? 3 * 18 + 14 : 17);
+      else 
+        *total = COSTS_N_INSNS (speed_p ? 18 + 3 : 4);
+      return false;
+
     case DIV:
-      *total = COSTS_N_INSNS (51 - 6);
-      return true;
+    case MOD:
+      if (mode == QImode)
+        *total = COSTS_N_INSNS (speed_p ? 19 + 6 : 7);
+      else if (mode == SImode)
+	*total = COSTS_N_INSNS (speed_p ? 100 : 7);
+      else
+        *total = COSTS_N_INSNS (speed_p ? 19 + 3 : 4);
+      return false;
+
+    case UDIV:
+    case UMOD:
+      if (mode == QImode)
+        *total = COSTS_N_INSNS (speed_p ? 18 + 7 : 8);
+      else if (mode == SImode)
+	*total = COSTS_N_INSNS (speed_p ? 100 : 7);
+      else
+        *total = COSTS_N_INSNS (speed_p ? 18 + 3 : 4);
+      return false;
+
+    case ASHIFT:
+    case ASHIFTRT:
+    case LSHIFTRT:
+      if (REG_P (XEXP (x, 0))
+	  && CONST_INT_P (XEXP (x, 1)))
+	{
+	  if (mode == HImode)
+	    {
+	      /* asr/shl/shr.  */
+	      *total = COSTS_N_INSNS (1);
+	      return true;
+	    }
+	  else if (mode == QImode)
+	    {
+	      /* (shl+shr)+shr.  */
+	      *total = COSTS_N_INSNS (3);
+	      return true;
+	    }
+	  else if (mode == SImode)
+	    {
+	      if (IN_RANGE (INTVAL (XEXP (x, 1)), 16, 31))
+		*total = COSTS_N_INSNS (3);
+	      else
+	        *total = COSTS_N_INSNS (5);
+	      return true;
+	    }
+	}
+      return false;
+
+    case ZERO_EXTEND:
+      if (mode == HImode)
+	{
+	  if (GET_MODE (XEXP (x, 0)) == QImode)
+	    /* shl+shr.  */
+	    *total = COSTS_N_INSNS (2);
+	}
+      else if (mode == SImode)
+	{
+	  if (GET_MODE (XEXP (x, 0)) == HImode)
+	    /* mov+mov.  */
+	    *total = COSTS_N_INSNS (2);
+	  else if (GET_MODE (XEXP (x, 0)) == QImode)
+	    /* mov+shl+shr+mov.  */
+	    *total = COSTS_N_INSNS (4);
+	}
+      return false;
+
+    case SIGN_EXTEND:
+      if (mode == HImode)
+	{
+	  if (GET_MODE (XEXP (x, 0)) == QImode)
+	    /* cbw.  */
+	    *total = COSTS_N_INSNS (1);
+	}
+      else if (mode == SImode)
+	{
+	  if (GET_MODE (XEXP (x, 0)) == HImode)
+	    /* mov+asr.  */
+	    *total = COSTS_N_INSNS (2);
+	  else if (GET_MODE (XEXP (x, 0)) == QImode)
+	    /* mov+shl+shr+mov.  */
+	    *total = COSTS_N_INSNS (3);
+	}
+      return false;
+
+    case SET:
+      if (REG_P (XEXP (x, 0)))
+	{
+	  if (!REG_P (XEXP (x, 1)))
+	    *total = rtx_cost (XEXP (x, 1), mode, SET, 1, speed_p);
+	  return true;
+	}
+      return false;
 
     default:
       return false;
