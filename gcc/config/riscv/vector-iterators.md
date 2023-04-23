@@ -80,6 +80,7 @@
   UNSPEC_VRGATHEREI16
   UNSPEC_VCOMPRESS
   UNSPEC_VLEFF
+  UNSPEC_MODIFY_VL
 ])
 
 (define_mode_iterator V [

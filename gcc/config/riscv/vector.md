@@ -7414,7 +7414,15 @@
 	  (unspec:V
 	    [(match_operand:V 3 "memory_operand"         "    m,     m,     m,     m")] UNSPEC_VLEFF)
 	  (match_operand:V 2 "vector_merge_operand"      "   vu,     0,    vu,     0")))
-   (set (reg:SI VL_REGNUM) (unspec:SI [(match_dup 0)] UNSPEC_VLEFF))]
+   (set (reg:SI VL_REGNUM)
+	  (unspec:SI
+	    [(if_then_else:V
+	       (unspec:<VM>
+		[(match_dup 1) (match_dup 4) (match_dup 5)
+		 (match_dup 6) (match_dup 7)
+		 (reg:SI VL_REGNUM) (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	       (unspec:V [(match_dup 3)] UNSPEC_VLEFF)
+	       (match_dup 2))] UNSPEC_MODIFY_VL))]
   "TARGET_VECTOR"
   "vle<sew>ff.v\t%0,%3%p1"
   [(set_attr "type" "vldff")
