@@ -90,6 +90,8 @@ private:
 	      std::vector<InferenceSite> &infers);
 
   void emit_type_mismatch () const;
+  void emit_abi_mismatch (const TyTy::FnType &expected,
+			  const TyTy::FnType &got) const;
 
   TyTy::BaseType *go ();
 
