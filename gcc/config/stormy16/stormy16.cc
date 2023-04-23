@@ -2105,6 +2105,29 @@ xstormy16_output_shift (machine_mode mode, enum rtx_code code,
       return r;
     }
 
+  /* For shifts of size 2, we can use two shifts of size 1.  */
+  if (size == 2)
+    {
+      switch (code)
+	{
+	case ASHIFT:
+	  sprintf (r, "shl %s,#1 | rlc %s,#1 | shl %s,#1 | rlc %s,#1",
+		   r0, r1, r0, r1);
+	  break;
+	case ASHIFTRT:
+	  sprintf (r, "asr %s,#1 | rrc %s,#1 | asr %s,#1 | rrc %s,#1",
+		   r1, r0, r1, r0);
+	  break;
+	case LSHIFTRT:
+	  sprintf (r, "shr %s,#1 | rrc %s,#1 | shr %s,#1 | rrc %s,#1",
+		   r1, r0, r1, r0);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      return r;
+    }
+
   /* For large shifts, there are easy special cases.  */
   if (size == 16)
     {
