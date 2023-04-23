@@ -1471,25 +1471,20 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
   std::vector<TyTy::TyVar> parameter_types;
   for (auto &p : expr.get_params ())
     {
+      TyTy::BaseType *param_tyty = nullptr;
       if (p.has_type_given ())
 	{
-	  TyTy::BaseType *param_tyty
-	    = TypeCheckType::Resolve (p.get_type ().get ());
-	  TyTy::TyVar param_ty (param_tyty->get_ref ());
-	  parameter_types.push_back (param_ty);
-
-	  TypeCheckPattern::Resolve (p.get_pattern ().get (),
-				     param_ty.get_tyty ());
+	  param_tyty = TypeCheckType::Resolve (p.get_type ().get ());
 	}
       else
 	{
-	  TyTy::TyVar param_ty
-	    = TyTy::TyVar::get_implicit_infer_var (p.get_locus ());
-	  parameter_types.push_back (param_ty);
-
-	  TypeCheckPattern::Resolve (p.get_pattern ().get (),
-				     param_ty.get_tyty ());
+	  param_tyty = ClosureParamInfer::Resolve (p.get_pattern ().get ());
 	}
+
+      TyTy::TyVar param_ty (param_tyty->get_ref ());
+      parameter_types.push_back (param_ty);
+
+      TypeCheckPattern::Resolve (p.get_pattern ().get (), param_ty.get_tyty ());
     }
 
   // we generate an implicit hirid for the closure args

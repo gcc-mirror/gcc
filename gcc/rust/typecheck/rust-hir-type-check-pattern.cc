@@ -447,5 +447,116 @@ TypeCheckPattern::visit (HIR::AltPattern &pattern)
 		 "type checking alternate patterns not supported");
 }
 
+TyTy::BaseType *
+ClosureParamInfer::Resolve (HIR::Pattern *pattern)
+{
+  ClosureParamInfer resolver;
+  pattern->accept_vis (resolver);
+
+  if (resolver.infered->get_kind () != TyTy::TypeKind::ERROR)
+    {
+      resolver.context->insert_implicit_type (resolver.infered);
+      resolver.mappings->insert_location (resolver.infered->get_ref (),
+					  pattern->get_locus ());
+    }
+  return resolver.infered;
+}
+
+ClosureParamInfer::ClosureParamInfer ()
+  : TypeCheckBase (), infered (new TyTy::ErrorType (0))
+{}
+
+void
+ClosureParamInfer::visit (HIR::WildcardPattern &pattern)
+{
+  HirId id = pattern.get_pattern_mappings ().get_hirid ();
+  infered = new TyTy::InferType (id, TyTy::InferType::InferTypeKind::GENERAL,
+				 TyTy::InferType::TypeHint::Default (),
+				 pattern.get_locus ());
+}
+
+void
+ClosureParamInfer::visit (HIR::IdentifierPattern &pattern)
+{
+  HirId id = pattern.get_pattern_mappings ().get_hirid ();
+  infered = new TyTy::InferType (id, TyTy::InferType::InferTypeKind::GENERAL,
+				 TyTy::InferType::TypeHint::Default (),
+				 pattern.get_locus ());
+}
+
+void
+ClosureParamInfer::visit (HIR::ReferencePattern &pattern)
+{
+  TyTy::BaseType *element
+    = ClosureParamInfer::Resolve (pattern.get_referenced_pattern ().get ());
+
+  HirId id = pattern.get_pattern_mappings ().get_hirid ();
+  infered = new TyTy::ReferenceType (id, TyTy::TyVar (element->get_ref ()),
+				     pattern.get_mutability ());
+}
+
+void
+ClosureParamInfer::visit (HIR::PathInExpression &pattern)
+{
+  rust_sorry_at (pattern.get_locus (),
+		 "unable to infer this kind of parameter pattern");
+}
+
+void
+ClosureParamInfer::visit (HIR::StructPattern &pattern)
+{
+  rust_sorry_at (pattern.get_locus (),
+		 "unable to infer this kind of parameter pattern");
+}
+
+void
+ClosureParamInfer::visit (HIR::TupleStructPattern &pattern)
+{
+  rust_sorry_at (pattern.get_locus (),
+		 "unable to infer this kind of parameter pattern");
+}
+
+void
+ClosureParamInfer::visit (HIR::TuplePattern &pattern)
+{
+  rust_sorry_at (pattern.get_locus (),
+		 "unable to infer this kind of parameter pattern");
+}
+
+void
+ClosureParamInfer::visit (HIR::LiteralPattern &pattern)
+{
+  rust_sorry_at (pattern.get_locus (),
+		 "unable to infer this kind of parameter pattern");
+}
+
+void
+ClosureParamInfer::visit (HIR::RangePattern &pattern)
+{
+  rust_sorry_at (pattern.get_locus (),
+		 "unable to infer this kind of parameter pattern");
+}
+
+void
+ClosureParamInfer::visit (HIR::QualifiedPathInExpression &pattern)
+{
+  rust_sorry_at (pattern.get_locus (),
+		 "unable to infer this kind of parameter pattern");
+}
+
+void
+ClosureParamInfer::visit (HIR::SlicePattern &pattern)
+{
+  rust_sorry_at (pattern.get_locus (),
+		 "unable to infer this kind of parameter pattern");
+}
+
+void
+ClosureParamInfer::visit (HIR::AltPattern &pattern)
+{
+  rust_sorry_at (pattern.get_locus (),
+		 "unable to infer this kind of parameter pattern");
+}
+
 } // namespace Resolver
 } // namespace Rust

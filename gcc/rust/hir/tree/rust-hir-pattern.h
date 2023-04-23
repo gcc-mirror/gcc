@@ -462,6 +462,8 @@ public:
 
   bool is_mut () const { return mut == Mutability::Mut; }
 
+  Mutability get_mutability () const { return mut; }
+
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
 
