@@ -25,6 +25,8 @@ get_abi_from_string (const std::string &abi)
     return Rust::ABI::RUST;
   else if (abi.compare ("rust-call") == 0)
     return Rust::ABI::RUST;
+  else if (abi.compare ("Rust") == 0)
+    return Rust::ABI::RUST;
   else if (abi.compare ("rust-intrinsic") == 0)
     return Rust::ABI::INTRINSIC;
   else if (abi.compare ("C") == 0)
