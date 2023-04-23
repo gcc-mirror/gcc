@@ -58,6 +58,30 @@ private:
   TyTy::BaseType *infered;
 };
 
+class ClosureParamInfer : private TypeCheckBase, private HIR::HIRPatternVisitor
+{
+public:
+  static TyTy::BaseType *Resolve (HIR::Pattern *pattern);
+
+  void visit (HIR::PathInExpression &pattern) override;
+  void visit (HIR::StructPattern &pattern) override;
+  void visit (HIR::TupleStructPattern &pattern) override;
+  void visit (HIR::WildcardPattern &pattern) override;
+  void visit (HIR::TuplePattern &pattern) override;
+  void visit (HIR::LiteralPattern &pattern) override;
+  void visit (HIR::RangePattern &pattern) override;
+  void visit (HIR::IdentifierPattern &pattern) override;
+  void visit (HIR::QualifiedPathInExpression &pattern) override;
+  void visit (HIR::ReferencePattern &pattern) override;
+  void visit (HIR::SlicePattern &pattern) override;
+  void visit (HIR::AltPattern &pattern) override;
+
+private:
+  ClosureParamInfer ();
+
+  TyTy::BaseType *infered;
+};
+
 } // namespace Resolver
 } // namespace Rust
 
