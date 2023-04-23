@@ -20,7 +20,6 @@
 #define RUST_HIR_TYPE_CHECK_PATTERN
 
 #include "rust-hir-type-check-base.h"
-#include "rust-hir-full.h"
 
 namespace Rust {
 namespace Resolver {
