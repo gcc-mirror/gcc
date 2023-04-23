@@ -1,3 +1,61 @@
+2023-04-22  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/phi-opt-5.c: Remvoe some xfail.
+
+2023-04-22  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/54816
+	* gcc.target/avr/pr54816.c: Move to...
+	* gcc.target/avr/mmcu/pr54816.c: ... here.
+
+2023-04-22  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/109500
+	* gfortran.dg/allocatable_function_11.f90: New test.
+
+2023-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/109572
+	* gcc.dg/vect/pr109011-1.c: In scan-tree-dump-times regexps match also
+	vect prefix to make sure we only count vectorized calls.
+	* gcc.dg/vect/pr109011-2.c: Likewise.  On powerpc* expect just count 3
+	rather than 4.
+	* gcc.dg/vect/pr109011-3.c: In scan-tree-dump-times regexps match also
+	vect prefix to make sure we only count vectorized calls.
+	* gcc.dg/vect/pr109011-4.c: Likewise.  On powerpc* expect just count 3
+	rather than 4.
+	(foo): Add 2 further arithmetic ops to the loop to make it appear
+	worthwhile for vectorization heuristics on powerpc.
+	* gcc.dg/vect/pr109011-5.c: In scan-tree-dump-times regexps match also
+	vect prefix to make sure we only count vectorized calls.
+	(foo): Add 2 further arithmetic ops to the loop to make it appear
+	worthwhile for vectorization heuristics on powerpc.
+
+2023-04-22  Jeff Law  <jlaw@ventanamicro>
+
+	* gcc.target/rx/movsicc.c: Broken down into ...
+	* gcc.target/rx/movsicc-1.c: Here.
+	* gcc.target/rx/movsicc-2.c: Here.
+	* gcc.target/rx/movsicc-3.c: Here.  xfail one test.
+	* gcc.target/rx/movsicc-4.c: Here.
+	* gcc.target/rx/movsicc-5.c: Here.
+	* gcc.target/rx/movsicc-6.c: Here.
+	* gcc.target/rx/movsicc-7.c: Here.
+	* gcc.target/rx/movsicc-8.c: Here.
+
+2023-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109583
+	* gcc.dg/pr109583.c: New test.
+
+2023-04-22  Jan Hubicka  <hubicka@ucw.cz>
+	    Ondrej Kubanek  <kubanek0ondrej@gmail.com>
+
+	* gcc.dg/tree-ssa/peel1.c: Decrease number of peels by 1.
+	* gcc.dg/unroll-8.c: Decrease loop iteration estimate.
+	* gcc.dg/tree-prof/peel-2.c: New test.
+
 2023-04-21  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/109546

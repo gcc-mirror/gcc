@@ -1,3 +1,10 @@
+2023-04-22  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/109500
+	* interface.cc (gfc_compare_actual_formal): Reject allocatable
+	functions being used as actual argument for allocable dummy.
+
 2023-04-14  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/109511

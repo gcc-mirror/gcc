@@ -1,3 +1,37 @@
+2023-04-22  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc (tree_ssa_phiopt_worker):
+	Change the code around slightly to move diamond
+	handling for do_store_elim/do_hoist_loads out of
+	the big if/else.
+
+2023-04-22  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc (tree_ssa_phiopt_worker):
+	Remove check on empty_block_p.
+
+2023-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/109589
+	* system.h (class auto_mpz): Workaround PR62101 bug in GCC 4.8 and 4.9.
+	* realmpfr.h (class auto_mpfr): Likewise.
+
+2023-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109583
+	* match.pd (fneg/fadd simplify): Don't call related_vector_mode
+	if vec_mode is not VECTOR_MODE_P.
+
+2023-04-22  Jan Hubicka  <hubicka@ucw.cz>
+	    Ondrej Kubanek  <kubanek0ondrej@gmail.com>
+
+	* cfgloopmanip.h (adjust_loop_info_after_peeling): Declare.
+	* tree-ssa-loop-ch.cc (ch_base::copy_headers): Fix updating of
+	loop profile and bounds after header duplication.
+	* tree-ssa-loop-ivcanon.cc (adjust_loop_info_after_peeling):
+	Break out from try_peel_loop; fix handling of 0 iterations.
+	(try_peel_loop): Use adjust_loop_info_after_peeling.
+
 2023-04-21  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/109546
