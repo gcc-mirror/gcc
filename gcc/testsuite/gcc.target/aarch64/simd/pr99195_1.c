@@ -37,13 +37,18 @@ OPFOUR (T, IS, OS, S, OP2, OP3, OP4, OP5)
 FUNC (T, IS, OS, OP1, S)                \
 OPFIVE (T, IS, OS, S, OP2, OP3, OP4, OP5, OP6)
 
-OPSIX (int8, 8, 16, s8, add, sub, mul, and, orr, eor)
-OPSIX (int16, 4, 8, s16, add, sub, mul, and, orr, eor)
-OPSIX (int32, 2, 4, s32, add, sub, mul, and, orr, eor)
+#define OPSEVEN(T,IS,OS,S,OP1,OP2,OP3,OP4,OP5,OP6,OP7)        \
+FUNC (T, IS, OS, OP1, S)                \
+OPSIX (T, IS, OS, S, OP2, OP3, OP4, OP5, OP6, OP7)
 
-OPSIX (uint8, 8, 16, u8, add, sub, mul, and, orr, eor)
-OPSIX (uint16, 4, 8, u16, add, sub, mul, and, orr, eor)
-OPSIX (uint32, 2, 4, u32, add, sub, mul, and, orr, eor)
+
+OPSEVEN (int8, 8, 16, s8, padd, add, sub, mul, and, orr, eor)
+OPSEVEN (int16, 4, 8, s16, padd, add, sub, mul, and, orr, eor)
+OPSEVEN (int32, 2, 4, s32, padd, add, sub, mul, and, orr, eor)
+
+OPSEVEN (uint8, 8, 16, u8, padd, add, sub, mul, and, orr, eor)
+OPSEVEN (uint16, 4, 8, u16, padd, add, sub, mul, and, orr, eor)
+OPSEVEN (uint32, 2, 4, u32, padd, add, sub, mul, and, orr, eor)
 
 /* { dg-final { scan-assembler-not {\tfmov\t} } }  */
 /* { dg-final { scan-assembler-not {\tmov\t} } }  */

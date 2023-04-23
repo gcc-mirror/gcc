@@ -6767,7 +6767,7 @@
 
 ;; addp
 
-(define_insn "aarch64_addp<mode>"
+(define_insn "aarch64_addp<mode><vczle><vczbe>"
   [(set (match_operand:VDQ_I 0 "register_operand" "=w")
         (unspec:VDQ_I
           [(match_operand:VDQ_I 1 "register_operand" "w")
