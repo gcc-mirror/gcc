@@ -1,3 +1,12 @@
+2023-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109583
+	* match.pd (fneg/fadd simplify): Don't call related_vector_mode
+	if vec_mode is not VECTOR_MODE_P.
+
 2023-04-21  Lulu Cheng  <chenglulu@loongson.cn>
 
 	Backported from master:

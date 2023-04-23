@@ -1,3 +1,11 @@
+2023-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109583
+	* gcc.dg/pr109583.c: New test.
+
 2023-04-21  Andrew MacLeod  <amacleod@redhat.com>
 
 	Backported from master:
