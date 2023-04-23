@@ -3998,6 +3998,21 @@ pass_vsetvl::pre_vsetvl (void)
     commit_edge_insertions ();
 }
 
+/* Before VSETVL PASS, RVV instructions pattern is depending on AVL operand
+   implicitly. Since we will emit VSETVL instruction and make RVV instructions
+   depending on VL/VTYPE global status registers, we remove the such AVL operand
+   in the RVV instructions pattern here in order to remove AVL dependencies when
+   AVL operand is a register operand.
+
+   Before the VSETVL PASS:
+     li a5,32
+     ...
+     vadd.vv (..., a5)
+   After the VSETVL PASS:
+     li a5,32
+     vsetvli zero, a5, ...
+     ...
+     vadd.vv (..., const_int 0).  */
 void
 pass_vsetvl::cleanup_insns (void) const
 {
