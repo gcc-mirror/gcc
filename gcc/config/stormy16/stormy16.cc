@@ -1828,6 +1828,14 @@ xstormy16_print_operand (FILE *file, rtx x, int code)
 	return;
       }
 
+    case 'h':
+      /* Print the highpart register of an SI mode register pair.  */
+      if (REG_P (x) && GET_MODE (x) == SImode)
+        fputs (reg_names [REGNO (x) + 1], file);
+      else
+	output_operand_lossage ("'h' operand is not SImode register");
+      return;
+
     case 0:
       /* Handled below.  */
       break;

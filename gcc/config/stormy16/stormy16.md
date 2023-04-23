@@ -268,17 +268,34 @@
   ""
   "cbw %0")
 
+(define_insn "extendhisi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(sign_extend:SI (match_operand:HI 1 "register_operand" "0")))]
+  ""
+  "mov %h0,%0 | asr %h0,#15"
+  [(set_attr "length" "4")
+   (set_attr "psw_operand" "clobber")])
+
 (define_insn "zero_extendqihi2"
-  [(set (match_operand:HI                 0 "register_operand" 	   "=e,r")
-	(zero_extend:HI (match_operand:QI 1 "nonimmediate_operand" "m,0")))]
+  [(set (match_operand:HI                 0 "register_operand" 	   "=e,T,r")
+	(zero_extend:HI (match_operand:QI 1 "nonimmediate_operand" "m,0,0")))]
   ""
   "@
-   mov.b %0, %1
-   shl %0,#8\n\tshr %0,#8"
-  [(set_attr "psw_operand" "nop,0")
+   mov.b %0,%1
+   and Rx,#255
+   shl %0,#8 | shr %0,#8"
+  [(set_attr "psw_operand" "nop,nop,0")
    (set_attr_alternative "length"
-	     [(const_int 4)
-	      (const_int 8)])])
+	     [(const_int 2)
+	      (const_int 2)
+	      (const_int 4)])])
+
+(define_insn "zero_extendhisi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(zero_extend:SI (match_operand:HI 1 "register_operand" "0")))]
+  ""
+  "mov %h0,#0"
+  [(set_attr "psw_operand" "clobber")])
 
 ;; ::::::::::::::::::::
 ;; ::
