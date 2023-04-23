@@ -682,6 +682,16 @@ frange::operator== (const frange &src) const
       if (varying_p ())
 	return types_compatible_p (m_type, src.m_type);
 
+      bool nan1 = known_isnan ();
+      bool nan2 = src.known_isnan ();
+      if (nan1 || nan2)
+	{
+	  if (nan1 && nan2)
+	    return (m_pos_nan == src.m_pos_nan
+		    && m_neg_nan == src.m_neg_nan);
+	  return false;
+	}
+
       return (real_identical (&m_min, &src.m_min)
 	      && real_identical (&m_max, &src.m_max)
 	      && m_pos_nan == src.m_pos_nan
