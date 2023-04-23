@@ -2651,7 +2651,30 @@ cris_split_constant (HOST_WIDE_INT wval, enum rtx_code code,
   int32_t ival = (int32_t) wval;
   uint32_t uval = (uint32_t) wval;
 
-  if (code != AND || IN_RANGE(ival, -32, 31)
+  /* Can we do with two addq or two subq, improving chances of filling a
+     delay-slot?  At worst, we break even, both performance and
+     size-wise.  */
+  if (code == PLUS
+      && (IN_RANGE (ival, -63 * 2, -63 - 1)
+	  || IN_RANGE (ival, 63 + 1, 63 * 2)))
+    {
+      if (generate)
+	{
+	  int sign = ival < 0 ? -1 : 1;
+	  int aval = abs (ival);
+
+	  if (mode != SImode)
+	    {
+	      dest = gen_rtx_REG (SImode, REGNO (dest));
+	      op = gen_rtx_REG (SImode, REGNO (op));
+	    }
+	  emit_insn (gen_addsi3 (dest, op, GEN_INT (63 * sign)));
+	  emit_insn (gen_addsi3 (dest, op, GEN_INT ((aval - 63) * sign)));
+	}
+      return 2;
+    }
+
+  if (code != AND || IN_RANGE (ival, -32, 31)
       /* Implemented using movu.[bw] elsewhere.  */
       || ival == 255 || ival == 65535
       /* Implemented using clear.[bw] elsewhere.  */

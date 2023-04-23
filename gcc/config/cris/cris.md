@@ -209,7 +209,7 @@
 (define_code_iterator plusumin [plus umin])
 
 ;; For opsplit1.
-(define_code_iterator splitop [and])
+(define_code_iterator splitop [and plus])
 
 ;; The addsubbo and nd code-attributes form a hack.  We need to output
 ;; "addu.b", "subu.b" but "bound.b" (no "u"-suffix) which means we'd
@@ -2984,6 +2984,10 @@
 
 ;; Large (read: non-quick) numbers can sometimes be AND:ed by other means.
 ;; Testcase: gcc.target/cris/peep2-andsplit1.c
+;; 
+;; Another case is add<ext> N,rx with -126..-64,64..126: it has the same
+;; size and execution time as two addq or subq, but addq and subq can fill
+;; a delay-slot.
 (define_peephole2 ; opsplit1
   [(parallel
     [(set (match_operand 0 "register_operand")
