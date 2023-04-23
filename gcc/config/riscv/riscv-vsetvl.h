@@ -452,6 +452,7 @@ public:
   bool all_same_ratio_p (sbitmap) const;
 
   bool all_empty_predecessor_p (const basic_block) const;
+  bool all_avail_in_compatible_p (const basic_block) const;
 
   void release (void);
   void create_bitmap_vectors (void);

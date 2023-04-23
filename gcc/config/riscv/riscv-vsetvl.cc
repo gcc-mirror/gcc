@@ -2446,6 +2446,26 @@ vector_infos_manager::all_same_ratio_p (sbitmap bitdata) const
   return true;
 }
 
+/* Return TRUE if the incoming vector configuration state
+   to CFG_BB is compatible with the vector configuration
+   state in CFG_BB, FALSE otherwise.  */
+bool
+vector_infos_manager::all_avail_in_compatible_p (const basic_block cfg_bb) const
+{
+  const auto &info = vector_block_infos[cfg_bb->index].local_dem;
+  sbitmap avin = vector_avin[cfg_bb->index];
+  unsigned int bb_index;
+  sbitmap_iterator sbi;
+  EXECUTE_IF_SET_IN_BITMAP (avin, 0, bb_index, sbi)
+    {
+      const auto &avin_info
+	= static_cast<const vl_vtype_info &> (*vector_exprs[bb_index]);
+      if (!info.compatible_p (avin_info))
+	return false;
+    }
+  return true;
+}
+
 bool
 vector_infos_manager::all_same_avl_p (const basic_block cfg_bb,
 				      sbitmap bitdata) const
@@ -3816,9 +3836,27 @@ pass_vsetvl::refine_vsetvls (void) const
 	  m_vector_manager->to_refine_vsetvls.add (rinsn);
 	  continue;
 	}
-      rinsn = PREV_INSN (rinsn);
-      rtx new_pat = gen_vsetvl_pat (VSETVL_VTYPE_CHANGE_ONLY, info, NULL_RTX);
-      change_insn (rinsn, new_pat);
+
+      /* If all incoming edges to a block have a vector state that is compatbile
+	 with the block. In such a case we need not emit a vsetvl in the current
+	 block.  */
+
+      gcc_assert (has_vtype_op (insn->rtl ()));
+      rinsn = PREV_INSN (insn->rtl ());
+      gcc_assert (vector_config_insn_p (PREV_INSN (insn->rtl ())));
+      if (m_vector_manager->all_avail_in_compatible_p (cfg_bb))
+	{
+	  size_t id = m_vector_manager->get_expr_id (info);
+	  if (bitmap_bit_p (m_vector_manager->vector_del[cfg_bb->index], id))
+	    continue;
+	  eliminate_insn (rinsn);
+	}
+      else
+	{
+	  rtx new_pat
+	    = gen_vsetvl_pat (VSETVL_VTYPE_CHANGE_ONLY, info, NULL_RTX);
+	  change_insn (rinsn, new_pat);
+	}
     }
 }
 
