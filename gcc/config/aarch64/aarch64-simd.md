@@ -3331,7 +3331,7 @@
 }
 )
 
-(define_insn "aarch64_float_truncate_lo_<mode>"
+(define_insn "aarch64_float_truncate_lo_<mode><vczle><vczbe>"
   [(set (match_operand:VDF 0 "register_operand" "=w")
       (float_truncate:VDF
 	(match_operand:<VWIDE> 1 "register_operand" "w")))]
