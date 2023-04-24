@@ -1,3 +1,20 @@
+2023-04-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-04-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/61615
+	PR fortran/99982
+	* gfortran.dg/interface_49.f90: New test.
+
+2023-04-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-12-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108010
+	* gfortran.dg/pr108010.f90: New test.
+
 2023-04-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/108795

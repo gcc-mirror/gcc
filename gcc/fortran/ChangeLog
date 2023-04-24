@@ -1,3 +1,22 @@
+2023-04-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2023-04-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/61615
+	PR fortran/99982
+	* interface.cc (compare_parameter): Enable type and rank checks for
+	arguments of derived type from the intrinsic module ISO_C_BINDING.
+
+2023-04-23  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2022-12-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108010
+	* arith.cc (reduce_unary): Handle zero-sized arrays.
+	(reduce_binary_aa): Likewise.
+
 2023-04-15  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
