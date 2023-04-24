@@ -62,6 +62,11 @@ with Warnsw;         use Warnsw;
 
 package body Contracts is
 
+   Contract_Error : exception;
+   --  This exception is raised by Add_Contract_Item when it is invoked on an
+   --  invalid pragma. Note that clients of the package must filter them out
+   --  before invoking Add_Contract_Item, so it should not escape the package.
+
    procedure Analyze_Package_Instantiation_Contract (Inst_Id : Entity_Id);
    --  Analyze all delayed pragmas chained on the contract of package
    --  instantiation Inst_Id as if they appear at the end of a declarative
@@ -198,7 +203,7 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       --  Entry bodies, the applicable pragmas are:
@@ -216,7 +221,7 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       --  Entry or subprogram declarations, the applicable pragmas are:
@@ -268,7 +273,7 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       --  Packages or instantiations, the applicable pragmas are:
@@ -292,7 +297,7 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       --  Package bodies, the applicable pragmas are:
@@ -305,7 +310,7 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       --  The four volatility refinement pragmas are ok for all types.
@@ -343,7 +348,7 @@ package body Contracts is
 
                --  The pragma is not a proper contract item
 
-               raise Program_Error;
+               raise Contract_Error;
             end if;
          end;
 
@@ -367,7 +372,7 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       --  Task bodies, the applicable pragmas are:
@@ -381,7 +386,7 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       --  Task units, the applicable pragmas are:
@@ -416,11 +421,11 @@ package body Contracts is
          --  The pragma is not a proper contract item
 
          else
-            raise Program_Error;
+            raise Contract_Error;
          end if;
 
       else
-         raise Program_Error;
+         raise Contract_Error;
       end if;
    end Add_Contract_Item;
 
@@ -2225,6 +2230,12 @@ package body Contracts is
          else
             Add_Contract_Item (Prag, Templ_Id);
          end if;
+
+      exception
+         --  We do not stop the compilation at this point in the case of an
+         --  invalid pragma because it will be properly diagnosed afterward.
+
+         when Contract_Error => null;
       end Add_Generic_Contract_Pragma;
 
       --  Local variables
