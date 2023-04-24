@@ -598,6 +598,22 @@ package body Contracts is
          else
             Set_Analyzed (Items);
          end if;
+
+      --  When this is a subprogram body not coming from source, for example an
+      --  expression function, it does not cause freezing of previous contracts
+      --  (see Analyze_Subprogram_Body_Helper), in particular not of those on
+      --  its spec if it exists. In this case make sure they have been properly
+      --  analyzed before being expanded below, as we may be invoked during the
+      --  freezing of the subprogram in the middle of its enclosing declarative
+      --  part because the declarative part contains e.g. the declaration of a
+      --  variable initialized by means of a call to the subprogram.
+
+      elsif Nkind (Body_Decl) = N_Subprogram_Body
+        and then not Comes_From_Source (Original_Node (Body_Decl))
+        and then Present (Corresponding_Spec (Body_Decl))
+        and then Present (Contract (Corresponding_Spec (Body_Decl)))
+      then
+         Analyze_Entry_Or_Subprogram_Contract (Corresponding_Spec (Body_Decl));
       end if;
 
       --  Due to the timing of contract analysis, delayed pragmas may be
