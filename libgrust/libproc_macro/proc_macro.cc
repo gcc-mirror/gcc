@@ -21,3 +21,32 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "proc_macro.h"
+
+namespace ProcMacro {
+
+Procmacro
+Procmacro::make_derive (const char *trait_name, const char **attributes,
+			std::uint64_t size, CustomDeriveMacro macro)
+{
+  ProcmacroPayload payload;
+  payload.custom_derive = {trait_name, attributes, size, macro};
+  return {CUSTOM_DERIVE, payload};
+}
+
+Procmacro
+Procmacro::make_attribute (const char *name, AttributeMacro macro)
+{
+  ProcmacroPayload payload;
+  payload.attribute = {name, macro};
+  return {ATTR, payload};
+}
+
+Procmacro
+Procmacro::make_bang (const char *name, BangMacro macro)
+{
+  ProcmacroPayload payload;
+  payload.bang = {name, macro};
+  return {BANG, payload};
+}
+
+} // namespace ProcMacro
