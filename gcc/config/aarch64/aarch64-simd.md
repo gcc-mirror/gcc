@@ -969,15 +969,44 @@
   [(set_attr "type" "neon_arith_acc<q>")]
 )
 
-(define_insn "aarch64_<sur>abal2<mode>"
-  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-	(unspec:<VWIDE> [(match_operand:VQW 2 "register_operand" "w")
-			  (match_operand:VQW 3 "register_operand" "w")
-			 (match_operand:<VWIDE> 1 "register_operand" "0")]
-	ABAL2))]
+(define_insn "aarch64_<su>abal2<mode>_insn"
+  [(set (match_operand:<VDBLW> 0 "register_operand" "=w")
+	(plus:<VDBLW>
+	  (zero_extend:<VDBLW>
+	    (minus:<VHALF>
+	      (USMAX:<VHALF>
+		(vec_select:<VHALF>
+		  (match_operand:VQW 2 "register_operand" "w")
+		  (match_operand:VQW 4 "vect_par_cnst_hi_half" ""))
+		(vec_select:<VHALF>
+		  (match_operand:VQW 3 "register_operand" "w")
+		  (match_dup 4)))
+	      (<max_opp>:<VHALF>
+		(vec_select:<VHALF>
+		  (match_dup 2)
+		  (match_dup 4))
+		(vec_select:<VHALF>
+		  (match_dup 3)
+		  (match_dup 4)))))
+	  (match_operand:<VDBLW> 1 "register_operand" "0")))]
   "TARGET_SIMD"
-  "<sur>abal2\t%0.<Vwtype>, %2.<Vtype>, %3.<Vtype>"
+  "<su>abal2\t%0.<Vwtype>, %2.<Vtype>, %3.<Vtype>"
   [(set_attr "type" "neon_arith_acc<q>")]
+)
+
+(define_expand "aarch64_<su>abal2<mode>"
+  [(match_operand:<VDBLW> 0 "register_operand")
+   (match_operand:<VDBLW> 1 "register_operand")
+   (USMAX:VQW
+     (match_operand:VQW 2 "register_operand")
+     (match_operand:VQW 3 "register_operand"))]
+  "TARGET_SIMD"
+  {
+    rtx hi = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
+    emit_insn (gen_aarch64_<su>abal2<mode>_insn (operands[0], operands[1],
+						 operands[2], operands[3], hi));
+    DONE;
+  }
 )
 
 (define_insn "aarch64_<sur>adalp<mode>"

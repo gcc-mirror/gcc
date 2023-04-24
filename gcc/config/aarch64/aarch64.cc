@@ -13822,6 +13822,31 @@ aarch64_masks_and_shift_for_bfi_p (scalar_int_mode mode,
   return (t == (t & -t));
 }
 
+/* Return true if X is an RTX representing an operation in the ABD family
+   of instructions.  */
+
+static bool
+aarch64_abd_rtx_p (rtx x)
+{
+  if (GET_CODE (x) != MINUS)
+    return false;
+  rtx max_arm = XEXP (x, 0);
+  rtx min_arm = XEXP (x, 1);
+  if (GET_CODE (max_arm) != SMAX && GET_CODE (max_arm) != UMAX)
+    return false;
+  bool signed_p = GET_CODE (max_arm) == SMAX;
+  if (signed_p && GET_CODE (min_arm) != SMIN)
+    return false;
+  else if (!signed_p && GET_CODE (min_arm) != UMIN)
+    return false;
+
+  rtx maxop0 = XEXP (max_arm, 0);
+  rtx maxop1 = XEXP (max_arm, 1);
+  rtx minop0 = XEXP (min_arm, 0);
+  rtx minop1 = XEXP (min_arm, 1);
+  return rtx_equal_p (maxop0, minop0) && rtx_equal_p (maxop1, minop1);
+}
+
 /* Calculate the cost of calculating X, storing it in *COST.  Result
    is true if the total cost of the operation has now been calculated.  */
 static bool
@@ -14218,11 +14243,20 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 cost_minus:
 	if (VECTOR_MODE_P (mode))
 	  {
-	    /* SUBL2 and SUBW2.  */
 	    unsigned int vec_flags = aarch64_classify_vector_mode (mode);
 	    if (TARGET_SIMD && (vec_flags & VEC_ADVSIMD))
 	      {
-		/* The select-operand-high-half versions of the sub instruction
+		/* Recognise the SABD and UABD operation here.
+		   Recursion from the PLUS case will catch the accumulating
+		   forms.  */
+		if (aarch64_abd_rtx_p (x))
+		  {
+		    if (speed)
+		      *cost += extra_cost->vect.alu;
+		    return true;
+		  }
+		  /* SUBL2 and SUBW2.
+		   The select-operand-high-half versions of the sub instruction
 		   have the same cost as the regular three vector version -
 		   don't add the costs of the select into the costs of the sub.
 		   */
