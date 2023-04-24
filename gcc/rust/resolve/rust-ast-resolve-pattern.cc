@@ -131,8 +131,10 @@ PatternDeclaration::visit (AST::StructPattern &pattern)
 	  break;
 
 	  case AST::StructPatternField::ItemType::IDENT_PAT: {
-	    // TODO
-	    gcc_unreachable ();
+	    AST::StructPatternFieldIdentPat &ident
+	      = static_cast<AST::StructPatternFieldIdentPat &> (*field);
+
+	    ident.get_ident_pattern ()->accept_vis (*this);
 	  }
 	  break;
 
