@@ -3657,6 +3657,15 @@
 	  UNSPEC_PRED_X))]
   "TARGET_SVE"
   {
+    /* SVE2 supports the MUL (vectors, unpredicated) form.  Emit the simple
+       pattern for it here rather than splitting off the MULT expander
+       separately.  */
+    if (TARGET_SVE2 && <CODE> == MULT)
+      {
+	emit_move_insn (operands[0], gen_rtx_MULT (<MODE>mode,
+						   operands[1], operands[2]));
+	DONE;
+      }
     operands[3] = aarch64_ptrue_reg (<VPRED>mode);
   }
 )
