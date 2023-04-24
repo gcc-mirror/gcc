@@ -42,9 +42,9 @@ using BangMacro = TokenStream (*) (TokenStream);
 struct CustomDerivePayload
 {
   // TODO: UTF-8 function name
-  char *trait_name;
+  const char *trait_name;
   // TODO: UTF-8 attributes
-  char **attributes;
+  const char **attributes;
   std::uint64_t attr_size;
   CustomDeriveMacro macro;
 };
@@ -52,13 +52,13 @@ struct CustomDerivePayload
 struct AttrPayload
 {
   // TODO: UTF-8 function name
-  char *name;
+  const char *name;
   AttributeMacro macro;
 };
 
 struct BangPayload
 {
-  char *name;
+  const char *name;
   BangMacro macro;
 };
 }
@@ -81,6 +81,12 @@ struct Procmacro
 {
   ProcmacroTag tag;
   ProcmacroPayload payload;
+
+public:
+  Procmacro make_derive (const char *trait_name, const char **attribute,
+			 std::uint64_t size, CustomDeriveMacro macro);
+  Procmacro make_attribute (const char *name, AttributeMacro macro);
+  Procmacro make_bang (const char *name, BangMacro macro);
 };
 
 } // namespace ProcMacro
