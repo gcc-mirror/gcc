@@ -6221,30 +6221,6 @@ cp_tree_code_length (enum tree_code code)
     }
 }
 
-/* Like EXPR_LOCATION, but also handle some tcc_exceptional that have
-   locations.  */
-
-location_t
-cp_expr_location (const_tree t_)
-{
-  tree t = CONST_CAST_TREE (t_);
-  if (t == NULL_TREE)
-    return UNKNOWN_LOCATION;
-  switch (TREE_CODE (t))
-    {
-    case LAMBDA_EXPR:
-      return LAMBDA_EXPR_LOCATION (t);
-    case STATIC_ASSERT:
-      return STATIC_ASSERT_SOURCE_LOCATION (t);
-    case TRAIT_EXPR:
-      return TRAIT_EXPR_LOCATION (t);
-    case PTRMEM_CST:
-      return PTRMEM_CST_LOCATION (t);
-    default:
-      return EXPR_LOCATION (t);
-    }
-}
-
 /* Implement -Wzero_as_null_pointer_constant.  Return true if the
    conditions for the warning hold, false otherwise.  */
 bool

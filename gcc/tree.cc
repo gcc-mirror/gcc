@@ -7312,18 +7312,6 @@ build_array_type_nelts (tree elt_type, poly_uint64 nelts)
   return build_array_type (elt_type, build_index_type (size_int (nelts - 1)));
 }
 
-/* Recursively examines the array elements of TYPE, until a non-array
-   element type is found.  */
-
-tree
-strip_array_types (tree type)
-{
-  while (TREE_CODE (type) == ARRAY_TYPE)
-    type = TREE_TYPE (type);
-
-  return type;
-}
-
 /* Computes the canonical argument types from the argument type list
    ARGTYPES.
 
@@ -12211,23 +12199,6 @@ get_binfo_at_offset (tree binfo, poly_int64 offset, tree expected_type)
       type = TREE_TYPE (fld);
       offset -= pos;
     }
-}
-
-/* Returns true if X is a typedef decl.  */
-
-bool
-is_typedef_decl (const_tree x)
-{
-  return (x && TREE_CODE (x) == TYPE_DECL
-          && DECL_ORIGINAL_TYPE (x) != NULL_TREE);
-}
-
-/* Returns true iff TYPE is a type variant created for a typedef. */
-
-bool
-typedef_variant_p (const_tree type)
-{
-  return is_typedef_decl (TYPE_NAME (type));
 }
 
 /* PR 84195: Replace control characters in "unescaped" with their
