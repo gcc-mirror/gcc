@@ -4,7 +4,7 @@
 # Meng Jie <zuxy.meng@gmail.com>, 2005-2014.
 # Jeff Bai <jeffbai@aosc.xyz>, 2015.
 # Mingye Wang (Arthur2e5) <arthur200126@gmail.com>, 2015, 2016.
-# Boyuan Yang <073plan@gmail.com>, 2019.
+# Boyuan Yang <073plan@gmail.com>, 2019, 2023.
 # Zixing Zhou <zixingzhou@foxmail.com>, 2023.
 #
 # Fellow translatiors:
@@ -32,10 +32,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 12.2.0\n"
+"Project-Id-Version: gcc 13.1-b20230409\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2023-04-04 17:04+0000\n"
-"PO-Revision-Date: 2023-02-11 12:55+0800\n"
+"PO-Revision-Date: 2023-04-13 22:07-0400\n"
 "Last-Translator: Boyuan Yang <073plan@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
@@ -44,7 +44,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Lokalize 22.12.2\n"
+"X-Generator: Poedit 2.4.3\n"
 
 #: cif-code.def:39
 msgid "function not considered for inlining"
@@ -278,45 +278,36 @@ msgid "error"
 msgstr "错误"
 
 #: gcc.cc:839 gcc.cc:896
-#, fuzzy
 msgid "-gz is not supported in this configuration"
-msgstr "%s 不为这个配置所支持"
+msgstr "-gz 在此配置下不受支持"
 
 #: gcc.cc:845
-#, fuzzy
 msgid "-gz=zstd is not supported in this configuration"
-msgstr "%s 不为这个配置所支持"
+msgstr "-gz=zstd 在此配置下不受支持"
 
 #: gcc.cc:1079
-#, fuzzy
 msgid "-fuse-linker-plugin is not supported in this configuration"
-msgstr "弱引用在此配置下不受支持"
+msgstr "-fuse-linker-plugin 在此配置下不受支持"
 
 #: gcc.cc:1095
 msgid "cannot specify -static with -fsanitize=address"
-msgstr ""
+msgstr "不能同时指定 -static 和 -fsanitize=address"
 
 #: gcc.cc:1097
-#, fuzzy
-#| msgid "cannot specify -static with -fsanitize=thread"
 msgid "cannot specify -static with -fsanitize=hwaddress"
-msgstr "不能同时指定 -static 及 -fsanitize=thread"
+msgstr "不能同时指定 -static 和 -fsanitize=hwaddress"
 
 #: gcc.cc:1099
 msgid "cannot specify -static with -fsanitize=thread"
 msgstr "不能同时指定 -static 及 -fsanitize=thread"
 
 #: gcc.cc:1121
-#, fuzzy
-#| msgid "weakref is not supported in this configuration"
 msgid "-fvtable-verify=std is not supported in this configuration"
-msgstr "弱引用在此配置下不受支持"
+msgstr "-fvtable-verify=std 在此配置下不受支持"
 
 #: gcc.cc:1123
-#, fuzzy
-#| msgid "weakref is not supported in this configuration"
 msgid "-fvtable-verify=preinit is not supported in this configuration"
-msgstr "弱引用在此配置下不受支持"
+msgstr "-fvtable-verify=preinit 在此配置下不受支持"
 
 #: gcc.cc:1260 ada/gcc-interface/lang-specs.h:37
 msgid "-pg and -fomit-frame-pointer are incompatible"
@@ -353,10 +344,8 @@ msgid "-private_bundle not allowed with -dynamiclib"
 msgstr "-private_bundle 不能和 -dynamiclib 一起使用"
 
 #: config/darwin.h:177
-#, fuzzy
-#| msgid "-current_version only allowed with -dynamiclib"
 msgid "-compatibility_version only allowed with -dynamiclib"
-msgstr "-current_version 只能和 -dynamiclib 一起使用"
+msgstr "-compatibility_version 只能和 -dynamiclib 一起使用"
 
 #: config/darwin.h:179
 msgid "-current_version only allowed with -dynamiclib"
@@ -375,10 +364,8 @@ msgid "-force_flat_namespace not allowed with -dynamiclib"
 msgstr "-force_flat_namespace 不能和 -dynamiclib 一起使用"
 
 #: config/darwin.h:213 config/darwin.h:596
-#, fuzzy
-#| msgid "%qE attribute is not supported on this platform"
 msgid "gsplit-dwarf is not supported on this platform"
-msgstr "%qE属性在此平台上不受支持"
+msgstr "gsplit-dwarf 在此平台上不受支持"
 
 #: config/darwin.h:277
 msgid "rdynamic is not supported"
@@ -387,7 +374,6 @@ msgstr "不支持 rdynamic"
 #: config/dragonfly.h:76 config/i386/freebsd.h:82 config/i386/freebsd64.h:35
 #: config/ia64/freebsd.h:26 config/rs6000/sysv4.h:750
 #: config/sparc/freebsd.h:45
-#, fuzzy
 msgid "consider using '-pg' instead of '-p' with gprof(1)"
 msgstr "与 gprof(1) 一起使用时请考虑使用‘-pg’以代替‘-p’"
 
@@ -404,9 +390,8 @@ msgid "does not support multilib"
 msgstr "不支持 multilib"
 
 #: config/sol2.h:448
-#, fuzzy
 msgid "-pie is not supported in this configuration"
-msgstr "%s 不为这个配置所支持"
+msgstr "-pie 在此配置下不受支持"
 
 #: config/vxworks.h:219
 msgid "-Xbind-now and -Xbind-lazy are incompatible"
@@ -441,10 +426,8 @@ msgid "shared and mdll are not compatible"
 msgstr "shared 和 mdll 互不兼容"
 
 #: config/i386/darwin.h:93
-#, fuzzy
-#| msgid "%qD is not a template"
 msgid "Darwin is not an mx32 platform"
-msgstr "%qD不是一个模板"
+msgstr "Darwin 不是 mx32 平台"
 
 #: config/i386/darwin.h:94
 msgid "Darwin does not support -mfentry or associated options"
@@ -520,9 +503,8 @@ msgid "-mas100-syntax is incompatible with -gdwarf"
 msgstr "-mas100-syntax 与 -gdwarf 不兼容"
 
 #: config/rx/rx.h:81
-#, fuzzy
 msgid "rx100 cpu does not have FPU hardware"
-msgstr "RX200 CPU 没有 FPU 硬件"
+msgstr "rx100 cpu 没有 FPU 硬件"
 
 #: config/s390/tpf.h:119
 msgid "static is not supported on TPF-OS"
@@ -1569,10 +1551,9 @@ msgid "-Waligned-new=[none|global|all]\tWarn even if 'new' uses a class member a
 msgstr ""
 
 #: c-family/c.opt:316 ada/gcc-interface/lang.opt:57
-#, fuzzy, no-c-format
-#| msgid "Enable most warning messages"
+#, no-c-format
 msgid "Enable most warning messages."
-msgstr "启用大部分警告信息"
+msgstr "启用大部分警告信息。"
 
 #: c-family/c.opt:320
 #, fuzzy, no-c-format
@@ -2892,14 +2873,14 @@ msgid "Warn about xor operators where it appears the user meant exponentiation."
 msgstr ""
 
 #: c-family/c.opt:1477
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Warn when a literal '0' is used as null pointer."
-msgstr "有未使用的标号时警告"
+msgstr "在字面“0”被用作空指针时给出警告"
 
 #: c-family/c.opt:1481
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Warn about useless casts."
-msgstr "当类型转换丢失限定信息时给出警告"
+msgstr "对无用的类型转换给出警告"
 
 #: c-family/c.opt:1485
 #, no-c-format
@@ -2961,10 +2942,9 @@ msgid "Recognize the \"asm\" keyword."
 msgstr "识别“asm”关键字。"
 
 #: c-family/c.opt:1545
-#, fuzzy, no-c-format
-#| msgid "Recognize built-in functions"
+#, no-c-format
 msgid "Recognize built-in functions."
-msgstr "识别内建函数"
+msgstr "识别内建函数。"
 
 #: c-family/c.opt:1552
 #, no-c-format
@@ -2977,15 +2957,14 @@ msgid "Enable the char8_t fundamental type and use it as the type for UTF-8 stri
 msgstr ""
 
 #: c-family/c.opt:1644
-#, fuzzy, no-c-format
-#| msgid "Deprecated.  This switch has no effect"
+#, no-c-format
 msgid "Removed in GCC 8.  This switch has no effect."
-msgstr "已弃用。此开关不起作用。"
+msgstr "已在 GCC 8 中移除。此开关不起作用。"
 
 #: c-family/c.opt:1648
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Enable support for C++ concepts."
-msgstr "启用支持用于 GNU transactional 内存"
+msgstr "启用对 C++ concepts 的支持。"
 
 #: c-family/c.opt:1652
 #, fuzzy, no-c-format
@@ -3719,10 +3698,9 @@ msgid "Conform to the ISO 1998 C++ standard revised by the 2003 technical corrig
 msgstr "遵循 ISO 1998 C++ 标准于 2003 年的技术勘误版本"
 
 #: c-family/c.opt:2367
-#, fuzzy, no-c-format
-#| msgid "Conform to the ISO 2011 C++ standard"
+#, no-c-format
 msgid "Conform to the ISO 2011 C++ standard."
-msgstr "遵循 ISO 2011 C++ 标准"
+msgstr "遵循 ISO 2011 C++ 标准。"
 
 #: c-family/c.opt:2371
 #, fuzzy, no-c-format
@@ -3936,10 +3914,9 @@ msgid "Dump Source Coverage Obligations."
 msgstr ""
 
 #: ada/gcc-interface/lang.opt:65
-#, fuzzy, no-c-format
-#| msgid "Synonym of -gnatk8"
+#, no-c-format
 msgid "Synonym of -gnatk8."
-msgstr "-gnatk8 的同义词"
+msgstr "-gnatk8 的同义词。"
 
 #: ada/gcc-interface/lang.opt:73
 #, fuzzy, no-c-format
@@ -4055,9 +4032,9 @@ msgid "-fdebug=<ident>\tCompile in debug code identified by <ident>."
 msgstr ""
 
 #: d/lang.opt:256
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Generate documentation."
-msgstr "在函数序言中生成 cld 指令"
+msgstr "生成文档。"
 
 #: d/lang.opt:260
 #, no-c-format
@@ -41708,7 +41685,7 @@ msgstr "栈大小不能大于 64K"
 #: config/gcn/gcn.cc:162
 #, gcc-internal-format
 msgid "XNACK support"
-msgstr ""
+msgstr "XNACK 支持"
 
 #: config/gcn/gcn.cc:246
 #, fuzzy, gcc-internal-format
@@ -41823,7 +41800,7 @@ msgstr ""
 
 #: config/gcn/mkoffload.cc:996 config/gcn/mkoffload.cc:1143
 #: config/nvptx/mkoffload.cc:684
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot open '%s'"
 msgstr "无法打开“%s”"
 
@@ -41977,9 +41954,9 @@ msgid "the third argument must be comparison constant"
 msgstr "%<__builtin_prefetch%>的第三个实参必须是一个常量"
 
 #: config/i386/i386-expand.cc:11600
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "incorrect comparison mode"
-msgstr "不正确的格式：%s\n"
+msgstr "不正确的比较模式"
 
 #: config/i386/i386-expand.cc:11606 config/i386/i386-expand.cc:11930
 #, fuzzy, gcc-internal-format
@@ -42865,9 +42842,9 @@ msgid "profiling %<-mcmodel=large%> with PIC is not supported"
 msgstr "32 位系统不支持 -mcmodel="
 
 #: config/i386/i386.cc:23661
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "unknown architecture specific memory model"
-msgstr "未知的架构‘%s’"
+msgstr "未知的架构特定的内存模型"
 
 #: config/i386/i386.cc:23668
 #, gcc-internal-format
@@ -44521,7 +44498,7 @@ msgstr ""
 #: config/riscv/riscv.cc:6281
 #, gcc-internal-format
 msgid "rv32e requires ilp32e ABI"
-msgstr ""
+msgstr "rv32e 需要 ilp32e ABI"
 
 #: config/riscv/riscv.cc:6286
 #, gcc-internal-format
@@ -44628,14 +44605,12 @@ msgid "please use an explicit cpu name; valid cpu names are: %s"
 msgstr ""
 
 #: config/rs6000/host-darwin.cc:61
-#, fuzzy, gcc-internal-format
-#| msgid "Segmentation Fault (code)"
+#, gcc-internal-format
 msgid "segmentation fault (code)"
-msgstr "段错误(代码)"
+msgstr "段错误（代码）"
 
 #: config/rs6000/host-darwin.cc:131
-#, fuzzy, gcc-internal-format
-#| msgid "Segmentation Fault"
+#, gcc-internal-format
 msgid "segmentation fault"
 msgstr "段错误"
 
@@ -84272,10 +84247,9 @@ msgid "ignoring returned value of type %qT, that must be used"
 msgstr "忽略声明有 warn_unused_result 属性的%qD的返回值"
 
 #: rust/checks/lints/rust-lint-unused-var.cc:51
-#, fuzzy, gcc-internal-format
-#| msgid "unused parameter %q+D"
+#, gcc-internal-format
 msgid "unused name %qE"
-msgstr "未使用的参数%q+D"
+msgstr "未使用的名称 %qE"
 
 #, fuzzy
 #~ msgid "-gz=zlib is not supported in this configuration"
