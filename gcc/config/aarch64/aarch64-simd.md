@@ -899,14 +899,18 @@
   [(set_attr "type" "neon_abd<q>")]
 )
 
-
-(define_insn "aarch64_<sur>abdl<mode>"
+(define_insn "aarch64_<su>abdl<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-	(unspec:<VWIDE> [(match_operand:VD_BHSI 1 "register_operand" "w")
-			 (match_operand:VD_BHSI 2 "register_operand" "w")]
-	ABDL))]
+	(zero_extend:<VWIDE>
+	  (minus:VD_BHSI
+	    (USMAX:VD_BHSI
+	      (match_operand:VD_BHSI 1 "register_operand" "w")
+	      (match_operand:VD_BHSI 2 "register_operand" "w"))
+	    (<max_opp>:VD_BHSI
+	      (match_dup 1)
+	      (match_dup 2)))))]
   "TARGET_SIMD"
-  "<sur>abdl\t%0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
+  "<su>abdl\t%0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "type" "neon_abd<q>")]
 )
 
