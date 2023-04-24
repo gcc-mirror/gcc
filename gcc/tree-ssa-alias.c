@@ -1274,7 +1274,7 @@ aliasing_component_refs_p (tree ref1,
   /* If we didn't find a common base, try the other way around.  */
   if (cmp_outer <= 0 
       || (end_struct_ref1
-	  && compare_type_sizes (TREE_TYPE (end_struct_ref1), type1) <= 0))
+	  && compare_type_sizes (TREE_TYPE (end_struct_ref1), type2) <= 0))
     {
       int res = aliasing_component_refs_walk (ref2, type2, base2,
 					      offset2, max_size2,
