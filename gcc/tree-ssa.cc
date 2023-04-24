@@ -1572,13 +1572,29 @@ non_rewritable_mem_ref_base (tree ref)
   if (DECL_P (ref))
     return NULL_TREE;
 
-  if (! (base = CONST_CAST_TREE (strip_invariant_refs (ref))))
+  switch (TREE_CODE (ref))
     {
-      base = get_base_address (ref);
-      if (DECL_P (base))
-	return base;
-      return NULL_TREE;
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+    case BIT_FIELD_REF:
+      if (DECL_P (TREE_OPERAND (ref, 0)))
+	return NULL_TREE;
+      break;
+    case VIEW_CONVERT_EXPR:
+      if (DECL_P (TREE_OPERAND (ref, 0)))
+	{
+	  if (TYPE_SIZE (TREE_TYPE (ref))
+	      != TYPE_SIZE (TREE_TYPE (TREE_OPERAND  (ref, 0))))
+	    return TREE_OPERAND (ref, 0);
+	  return NULL_TREE;
+	}
+      break;
+    /* We would need to rewrite ARRAY_REFs or COMPONENT_REFs and even
+       more so multiple levels of handled components.  */
+    default:;
     }
+
+  base = ref;
 
   /* But watch out for MEM_REFs we cannot lower to a
      VIEW_CONVERT_EXPR or a BIT_FIELD_REF.  */
@@ -1630,9 +1646,14 @@ non_rewritable_mem_ref_base (tree ref)
       return decl;
     }
 
+  /* We cannot rewrite a decl in the base.  */
+  base = get_base_address (ref);
+  if (DECL_P (base))
+    return base;
+
   /* We cannot rewrite TARGET_MEM_REFs.  */
-  if (TREE_CODE (base) == TARGET_MEM_REF
-      && TREE_CODE (TREE_OPERAND (base, 0)) == ADDR_EXPR)
+  else if (TREE_CODE (base) == TARGET_MEM_REF
+	   && TREE_CODE (TREE_OPERAND (base, 0)) == ADDR_EXPR)
     {
       tree decl = TREE_OPERAND (TREE_OPERAND (base, 0), 0);
       if (! DECL_P (decl))
