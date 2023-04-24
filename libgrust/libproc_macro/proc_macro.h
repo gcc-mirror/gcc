@@ -23,11 +23,66 @@
 #ifndef PROC_MACRO_H
 #define PROC_MACRO_H
 
+#include <cstdint>
 #include "literal.h"
 #include "tokenstream.h"
 #include "tokentree.h"
 #include "group.h"
 #include "punct.h"
 #include "ident.h"
+
+namespace ProcMacro {
+
+extern "C" {
+
+using CustomDeriveMacro = TokenStream (*) (TokenStream);
+using AttributeMacro = TokenStream (*) (TokenStream, TokenStream);
+using BangMacro = TokenStream (*) (TokenStream);
+
+struct CustomDerivePayload
+{
+  // TODO: UTF-8 function name
+  char *trait_name;
+  // TODO: UTF-8 attributes
+  char **attributes;
+  std::uint64_t attr_size;
+  CustomDeriveMacro macro;
+};
+
+struct AttrPayload
+{
+  // TODO: UTF-8 function name
+  char *name;
+  AttributeMacro macro;
+};
+
+struct BangPayload
+{
+  char *name;
+  BangMacro macro;
+};
+}
+
+enum ProcmacroTag
+{
+  CUSTOM_DERIVE,
+  ATTR,
+  BANG,
+};
+
+union ProcmacroPayload
+{
+  CustomDerivePayload custom_derive;
+  AttrPayload attribute;
+  BangPayload bang;
+};
+
+struct Procmacro
+{
+  ProcmacroTag tag;
+  ProcmacroPayload payload;
+};
+
+} // namespace ProcMacro
 
 #endif /* ! PROC_MACRO_H */
