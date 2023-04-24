@@ -215,23 +215,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        __abi_version_mask = 0xffff0000,
     };
 
-    struct __wait_args
+    struct __wait_args_base
     {
-      __platform_wait_t _M_old;
-      int _M_order = __ATOMIC_ACQUIRE;
       __wait_flags _M_flags;
+      int _M_order = __ATOMIC_ACQUIRE;
+      __platform_wait_t _M_old = 0;
+    };
 
+    struct __wait_args : __wait_args_base
+    {
       template<typename _Tp>
 	explicit __wait_args(const _Tp* __addr,
 			     bool __bare_wait = false) noexcept
-	    : _M_flags{ _S_flags_for(__addr, __bare_wait) }
+	    : __wait_args_base{ _S_flags_for(__addr, __bare_wait) }
 	{ }
 
       __wait_args(const __platform_wait_t* __addr, __platform_wait_t __old,
 		  int __order, bool __bare_wait = false) noexcept
-	  : _M_old{ __old }
-	  , _M_order{ __order }
-	  , _M_flags{ _S_flags_for(__addr, __bare_wait) }
+	  : __wait_args_base{ _S_flags_for(__addr, __bare_wait), __order, __old }
+	{ }
+
+      explicit __wait_args(const __wait_args_base& __base)
+	  : __wait_args_base{ __base }
 	{ }
 
       __wait_args(const __wait_args&) noexcept = default;
@@ -257,6 +262,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __res;
       }
 
+      __wait_args&
+      operator|=(__wait_flags __flag) noexcept
+      {
+	using __t = underlying_type_t<__wait_flags>;
+	const auto __flags = static_cast<__t>(_M_flags)
+			     | static_cast<__t>(__flag);
+	_M_flags = __wait_flags{ __flags };
+	return *this;
+      }
+
     private:
       static int
       constexpr _S_default_flags() noexcept
@@ -267,7 +282,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       template<typename _Tp>
-	static int
+	static __wait_flags
 	constexpr _S_flags_for(const _Tp*, bool __bare_wait) noexcept
 	{
 	  auto __res = _S_default_flags();
@@ -275,7 +290,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __res |= static_cast<int>(__wait_flags::__track_contention);
 	  if constexpr (!__platform_wait_uses_type<_Tp>)
 	    __res |= static_cast<int>(__wait_flags::__proxy_wait);
-	  return __res;
+	  return static_cast<__wait_flags>(__res);
 	}
 
       template<typename _Tp>
@@ -290,13 +305,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     using __wait_result_type = pair<bool, __platform_wait_t>;
     inline __wait_result_type
-    __spin_impl(const __platform_wait_t* __addr, __wait_args __args)
+    __spin_impl(const __platform_wait_t* __addr, const __wait_args_base* __args)
     {
       __platform_wait_t __val;
       for (auto __i = 0; __i < __atomic_spin_count; ++__i)
 	{
-	  __atomic_load(__addr, &__val, __args._M_order);
-	  if (__val != __args._M_old)
+	  __atomic_load(__addr, &__val, __args->_M_order);
+	  if (__val != __args->_M_old)
 	    return make_pair(true, __val);
 	  if (__i < __atomic_spin_count_relax)
 	    __detail::__thread_relax();
@@ -307,8 +322,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     inline __wait_result_type
-    __wait_impl(const __platform_wait_t* __addr, __wait_args __args)
+    __wait_impl(const __platform_wait_t* __addr, const __wait_args_base* __a)
     {
+      __wait_args __args{ *__a };
 #ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
       __waiter_pool_impl* __pool = nullptr;
 #else
@@ -317,20 +333,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
       __platform_wait_t* __wait_addr;
+      __platform_wait_t __old;
       if (__args & __wait_flags::__proxy_wait)
 	{
 #ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
 	  __pool = &__waiter_pool_impl::_S_impl_for(__addr);
 #endif
 	  __wait_addr = &__pool->_M_ver;
-	  __atomic_load(__wait_addr, &__args._M_old, __args._M_order);
+	  __atomic_load(__wait_addr, &__old, __args._M_order);
 	}
       else
-	__wait_addr = const_cast<__platform_wait_t*>(__addr);
+	{
+	  __wait_addr = const_cast<__platform_wait_t*>(__addr);
+	  __old = __args._M_old;
+	}
+
 
       if (__args & __wait_flags::__do_spin)
 	{
-	  auto __res = __detail::__spin_impl(__wait_addr, __args);
+	  auto __res = __detail::__spin_impl(__wait_addr, __a);
 	  if (__res.first)
 	    return __res;
 	  if (__args & __wait_flags::__spin_only)
@@ -372,8 +393,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     inline void
     __notify_impl(const __platform_wait_t* __addr, [[maybe_unused]] bool __all,
-		  __wait_args __args)
+		  const __wait_args_base* __a)
     {
+      __wait_args __args{ __a };
 #ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
       __waiter_pool_impl* __pool = nullptr;
 #else
@@ -424,7 +446,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Tp __val = __vfn();
       while (!__pred(__val))
 	{
-	  __detail::__wait_impl(__wait_addr, __args);
+	  __detail::__wait_impl(__wait_addr, &__args);
 	  __val = __vfn();
 	}
       // C++26 will return __val
@@ -437,7 +459,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     __detail::__wait_args __args{ __addr, __old, __order };
     // C++26 will not ignore the return value here
-    __detail::__wait_impl(__addr, __args);
+    __detail::__wait_impl(__addr, &__args);
   }
 
   template<typename _Tp, typename _ValFn>
@@ -458,7 +480,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const auto __wait_addr =
 	  reinterpret_cast<const __detail::__platform_wait_t*>(__addr);
       __detail::__wait_args __args{ __addr, __bare_wait };
-      __detail::__notify_impl(__wait_addr, __all, __args);
+      __detail::__notify_impl(__wait_addr, __all, &__args);
     }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

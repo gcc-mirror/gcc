@@ -135,9 +135,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // _GLIBCXX_HAS_GTHREADS
 
     inline __wait_result_type
-    __spin_until_impl(const __platform_wait_t* __addr, __wait_args __args,
+    __spin_until_impl(const __platform_wait_t* __addr,
+		      const __wait_args_base* __a,
 		      const __wait_clock_t::time_point& __deadline)
     {
+      __wait_args __args{ *__a };
       auto __t0 = __wait_clock_t::now();
       using namespace literals::chrono_literals;
 
@@ -163,7 +165,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 	else
 	{
-	  auto __res = __detail::__spin_impl(__addr, __args);
+	  auto __res = __detail::__spin_impl(__addr, __a);
 	  if (__res.first)
 	    return __res;
 	}
@@ -176,9 +178,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     inline __wait_result_type
-    __wait_until_impl(const __platform_wait_t* __addr, __wait_args __args,
+    __wait_until_impl(const __platform_wait_t* __addr,
+		      const __wait_args_base* __a,
 		      const __wait_clock_t::time_point& __atime)
     {
+      __wait_args __args{ *__a };
 #ifdef _GLIBCXX_HAVE_PLATFORM_TIMED_WAIT
       __waiter_pool_impl* __pool = nullptr;
 #else
@@ -200,7 +204,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       if (__args & __wait_flags::__do_spin)
 	{
-	  auto __res = __detail::__spin_until_impl(__wait_addr, __args, __atime);
+	  auto __res = __detail::__spin_until_impl(__wait_addr, __a, __atime);
 	  if (__res.first)
 	    return __res;
 	  if (__args & __wait_flags::__spin_only)
@@ -246,7 +250,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<typename _Clock, typename _Dur>
       __wait_result_type
-      __wait_until(const __platform_wait_t* __addr, __wait_args __args,
+      __wait_until(const __platform_wait_t* __addr, const __wait_args* __args,
 		   const chrono::time_point<_Clock, _Dur>& __atime) noexcept
       {
 	if constexpr (is_same_v<__wait_clock_t, _Clock>)
@@ -269,15 +273,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<typename _Rep, typename _Period>
       __wait_result_type
-      __wait_for(const __platform_wait_t* __addr, __wait_args __args,
+      __wait_for(const __platform_wait_t* __addr, const __wait_args_base* __a,
 		 const chrono::duration<_Rep, _Period>& __rtime) noexcept
     {
+      __wait_args __args{ *__a };
       if (!__rtime.count())
-	// no rtime supplied, just spin a bit
-	return __detail::__wait_impl(__addr, __args | __wait_flags::__spin_only);
+	{
+	  // no rtime supplied, just spin a bit
+	  __args |= __wait_flags::__spin_only;
+	  return __detail::__wait_impl(__addr, &__args);
+	}
+
       auto const __reltime = chrono::ceil<__wait_clock_t::duration>(__rtime);
       auto const __atime = chrono::steady_clock::now() + __reltime;
-      return __detail::__wait_until(__addr, __args, __atime);
+      return __detail::__wait_until(__addr, &__args, __atime);
     }
   } // namespace __detail
 
@@ -297,7 +306,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        _Tp __val = __vfn();
        while (!__pred(__val))
 	 {
-	   auto __res = __detail::__wait_until(__wait_addr, __args, __atime);
+	   auto __res = __detail::__wait_until(__wait_addr, &__args, __atime);
 	   if (!__res.first)
 	     // timed out
 	     return __res.first; // C++26 will also return last observed __val
@@ -315,7 +324,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				  bool __bare_wait = false) noexcept
     {
       __detail::__wait_args __args{ __addr, __old, __order, __bare_wait };
-      auto __res = __detail::__wait_until(__addr, __args, __atime);
+      auto __res = __detail::__wait_until(__addr, &__args, __atime);
       return __res.first; // C++26 will also return last observed __val
     }
 
@@ -347,7 +356,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Tp __val = __vfn();
       while (!__pred(__val))
 	{
-	  auto __res = __detail::__wait_for(__wait_addr, __args, __rtime);
+	  auto __res = __detail::__wait_for(__wait_addr, &__args, __rtime);
 	  if (!__res.first)
 	    // timed out
 	    return __res.first; // C++26 will also return last observed __val
@@ -365,7 +374,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				bool __bare_wait = false) noexcept
   {
     __detail::__wait_args __args{ __addr, __old, __order, __bare_wait };
-    auto __res = __detail::__wait_for(__addr, __args, __rtime);
+    auto __res = __detail::__wait_for(__addr, &__args, __rtime);
     return __res.first; // C++26 will also return last observed __Val
   }
 
