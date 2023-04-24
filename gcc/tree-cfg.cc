@@ -3107,10 +3107,12 @@ verify_types_in_gimple_reference (tree expr, bool require_lvalue)
 
   if (TREE_CODE (expr) == REALPART_EXPR
       || TREE_CODE (expr) == IMAGPART_EXPR
-      || TREE_CODE (expr) == BIT_FIELD_REF)
+      || TREE_CODE (expr) == BIT_FIELD_REF
+      || TREE_CODE (expr) == VIEW_CONVERT_EXPR)
     {
       tree op = TREE_OPERAND (expr, 0);
-      if (!is_gimple_reg_type (TREE_TYPE (expr)))
+      if (TREE_CODE (expr) != VIEW_CONVERT_EXPR
+	  && !is_gimple_reg_type (TREE_TYPE (expr)))
 	{
 	  error ("non-scalar %qs", code_name);
 	  return true;
@@ -3172,11 +3174,39 @@ verify_types_in_gimple_reference (tree expr, bool require_lvalue)
 	  debug_generic_stmt (TREE_TYPE (TREE_TYPE (op)));
 	  return true;
 	}
+
+      if (TREE_CODE (expr) == VIEW_CONVERT_EXPR)
+	{
+	  /* For VIEW_CONVERT_EXPRs which are allowed here too, we only check
+	     that their operand is not a register an invariant when
+	     requiring an lvalue (this usually means there is a SRA or IPA-SRA
+	     bug).  Otherwise there is nothing to verify, gross mismatches at
+	     most invoke undefined behavior.  */
+	  if (require_lvalue
+	      && (is_gimple_reg (op) || is_gimple_min_invariant (op)))
+	    {
+	      error ("conversion of %qs on the left hand side of %qs",
+		     get_tree_code_name (TREE_CODE (op)), code_name);
+	      debug_generic_stmt (expr);
+	      return true;
+	    }
+	  else if (is_gimple_reg (op)
+		   && TYPE_SIZE (TREE_TYPE (expr)) != TYPE_SIZE (TREE_TYPE (op)))
+	    {
+	      error ("conversion of register to a different size in %qs",
+		     code_name);
+	      debug_generic_stmt (expr);
+	      return true;
+	    }
+	}
+
       expr = op;
     }
 
+  bool require_non_reg = false;
   while (handled_component_p (expr))
     {
+      require_non_reg = true;
       code_name = get_tree_code_name (TREE_CODE (expr));
 
       if (TREE_CODE (expr) == REALPART_EXPR
@@ -3242,34 +3272,6 @@ verify_types_in_gimple_reference (tree expr, bool require_lvalue)
 	    }
 	}
 
-      if (TREE_CODE (expr) == VIEW_CONVERT_EXPR)
-	{
-	  /* For VIEW_CONVERT_EXPRs which are allowed here too, we only check
-	     that their operand is not an SSA name or an invariant when
-	     requiring an lvalue (this usually means there is a SRA or IPA-SRA
-	     bug).  Otherwise there is nothing to verify, gross mismatches at
-	     most invoke undefined behavior.  */
-	  if (require_lvalue
-	      && (TREE_CODE (op) == SSA_NAME
-		  || is_gimple_min_invariant (op)))
-	    {
-	      error ("conversion of %qs on the left hand side of %qs",
-		     get_tree_code_name (TREE_CODE (op)), code_name);
-	      debug_generic_stmt (expr);
-	      return true;
-	    }
-	  else if (TREE_CODE (op) == SSA_NAME
-		   && TYPE_SIZE (TREE_TYPE (expr)) != TYPE_SIZE (TREE_TYPE (op)))
-	    {
-	      error ("conversion of register to a different size in %qs",
-		     code_name);
-	      debug_generic_stmt (expr);
-	      return true;
-	    }
-	  else if (!handled_component_p (op))
-	    return false;
-	}
-
       expr = op;
     }
 
@@ -3332,9 +3334,20 @@ verify_types_in_gimple_reference (tree expr, bool require_lvalue)
       debug_generic_stmt (expr);
       return true;
     }
+  else if (require_non_reg
+	   && (is_gimple_reg (expr)
+	       || (is_gimple_min_invariant (expr)
+		   /* STRING_CSTs are representatives of the string table
+		      entry which lives in memory.  */
+		   && TREE_CODE (expr) != STRING_CST)))
+    {
+      error ("%qs as base where non-register is required", code_name);
+      debug_generic_stmt (expr);
+      return true;
+    }
 
   if (!require_lvalue
-      && (TREE_CODE (expr) == SSA_NAME || is_gimple_min_invariant (expr)))
+      && (is_gimple_reg (expr) || is_gimple_min_invariant (expr)))
     return false;
 
   if (TREE_CODE (expr) != SSA_NAME && is_gimple_id (expr))
