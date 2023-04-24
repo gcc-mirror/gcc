@@ -7456,10 +7456,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 			     ? type
 			     : build_vector_type (TREE_TYPE (TREE_TYPE (ctor)),
 						  count * k));
+	      /* We used to build a CTOR in the non-constant case here
+		 but that's not a GIMPLE value.  We'd have to expose this
+		 operation somehow so the code generation can properly
+		 split it out to a separate stmt.  */
 	      res = (constant_p ? build_vector_from_ctor (evtype, vals)
-		     : build_constructor (evtype, vals));
+		     : (GIMPLE ? NULL_TREE : build_constructor (evtype, vals)));
 	    }
-	    (view_convert { res; }))))))
+	    (if (res)
+	     (view_convert { res; })))))))
       /* The bitfield references a single constructor element.  */
       (if (k.is_constant (&const_k)
 	   && idx + n <= (idx / const_k + 1) * const_k)
