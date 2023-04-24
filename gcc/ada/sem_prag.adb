@@ -11279,7 +11279,10 @@ package body Sem_Prag is
 
          --  Warn that suppress of Elaboration_Check has no effect in SPARK
 
-         if C = Elaboration_Check and then SPARK_Mode = On then
+         if C = Elaboration_Check
+           and then Suppress_Case
+           and then SPARK_Mode = On
+         then
             Error_Pragma_Arg
               ("Suppress of Elaboration_Check ignored in SPARK??",
                "\elaboration checking rules are statically enforced "

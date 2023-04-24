@@ -401,8 +401,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Function_Call, N_Subprogram_Call,
        (Sy (Name, Node_Id, Default_Empty),
         Sy (Parameter_Associations, List_Id, Default_No_List),
-        Sm (Is_Expanded_Build_In_Place_Call, Flag),
-        Sm (No_Side_Effect_Removal, Flag)));
+        Sm (Is_Expanded_Build_In_Place_Call, Flag)));
 
    Cc (N_Procedure_Call_Statement, N_Subprogram_Call,
        (Sy (Name, Node_Id, Default_Empty),
@@ -970,6 +969,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Is_Elaboration_Code, Flag),
         Sm (Is_SPARK_Mode_On_Node, Flag),
         Sm (No_Ctrl_Actions, Flag),
+        Sm (No_Finalize_Actions, Flag),
         Sm (Suppress_Assignment_Checks, Flag)));
 
    Cc (N_Asynchronous_Select, N_Statement_Other_Than_Procedure_Call,

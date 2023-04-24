@@ -11877,14 +11877,6 @@ package body Exp_Util is
       then
          return;
 
-      --  Nothing to do if prior expansion determined that a function call does
-      --  not require side effect removal.
-
-      elsif Nkind (Exp) = N_Function_Call
-        and then No_Side_Effect_Removal (Exp)
-      then
-         return;
-
       --  No action needed for side-effect free expressions
 
       elsif Check_Side_Effects
