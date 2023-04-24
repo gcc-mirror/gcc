@@ -914,14 +914,42 @@
   [(set_attr "type" "neon_abd<q>")]
 )
 
-(define_insn "aarch64_<sur>abdl2<mode>"
+(define_insn "aarch64_<su>abdl2<mode>_insn"
   [(set (match_operand:<VDBLW> 0 "register_operand" "=w")
-	(unspec:<VDBLW> [(match_operand:VQW 1 "register_operand" "w")
-			 (match_operand:VQW 2 "register_operand" "w")]
-	ABDL2))]
+	(zero_extend:<VDBLW>
+	  (minus:<VHALF>
+	    (USMAX:<VHALF>
+	      (vec_select:<VHALF>
+		(match_operand:VQW 1 "register_operand" "w")
+		(match_operand:VQW 3 "vect_par_cnst_hi_half" ""))
+	      (vec_select:<VHALF>
+		(match_operand:VQW 2 "register_operand" "w")
+		(match_dup 3)))
+	    (<max_opp>:<VHALF>
+	      (vec_select:<VHALF>
+		(match_dup 1)
+		(match_dup 3))
+	      (vec_select:<VHALF>
+		(match_dup 2)
+		(match_dup 3))))))]
+
   "TARGET_SIMD"
-  "<sur>abdl2\t%0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
+  "<su>abdl2\t%0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "type" "neon_abd<q>")]
+)
+
+(define_expand "aarch64_<su>abdl2<mode>"
+  [(match_operand:<VDBLW> 0 "register_operand")
+   (USMAX:VQW
+     (match_operand:VQW 1 "register_operand")
+     (match_operand:VQW 2 "register_operand"))]
+  "TARGET_SIMD"
+  {
+    rtx hi = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, true);
+    emit_insn (gen_aarch64_<su>abdl2<mode>_insn (operands[0], operands[1],
+						 operands[2], hi));
+    DONE;
+  }
 )
 
 (define_insn "aarch64_<sur>abal<mode>"
