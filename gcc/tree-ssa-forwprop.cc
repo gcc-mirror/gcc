@@ -2541,6 +2541,27 @@ is_combined_permutation_identity (tree mask1, tree mask2)
 
   gcc_checking_assert (TREE_CODE (mask1) == VECTOR_CST
 		       && TREE_CODE (mask2) == VECTOR_CST);
+
+  /* For VLA masks, check for the following pattern:
+     v1 = VEC_PERM_EXPR (v0, ..., mask1)
+     v2 = VEC_PERM_EXPR (v1, ..., mask2)
+     -->
+     v2 = v0
+     if mask1 == mask2 == {nelts - 1, nelts - 2, ...}.  */
+
+  if (operand_equal_p (mask1, mask2, 0)
+      && !VECTOR_CST_NELTS (mask1).is_constant ())
+    {
+      vec_perm_builder builder;
+      if (tree_to_vec_perm_builder (&builder, mask1))
+	{
+	  poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask1));
+	  vec_perm_indices sel (builder, 1, nelts);
+	  if (sel.series_p (0, 1, nelts - 1, -1))
+	    return 1;
+	}
+    }
+
   mask = fold_ternary (VEC_PERM_EXPR, TREE_TYPE (mask1), mask1, mask1, mask2);
   if (mask == NULL_TREE || TREE_CODE (mask) != VECTOR_CST)
     return 0;
