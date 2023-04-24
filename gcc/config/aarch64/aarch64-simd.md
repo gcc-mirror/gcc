@@ -3521,6 +3521,22 @@
   [(set_attr "type" "neon_reduc_add<q>")]
 )
 
+;; Zero-extending version of the above.  As these intrinsics produce a scalar
+;; value that may be used by further intrinsics we want to avoid moving the
+;; result into GP regs to do a zero-extension that ADDLV/ADDLP gives for free.
+
+(define_insn "*aarch64_<su>addlv<VDQV_L:mode>_ze<GPI:mode>"
+ [(set (match_operand:GPI 0 "register_operand" "=w")
+       (zero_extend:GPI
+	(unspec:<VWIDE_S>
+	  [(match_operand:VDQV_L 1 "register_operand" "w")]
+	    USADDLV)))]
+ "TARGET_SIMD
+  && (GET_MODE_SIZE (<GPI:MODE>mode) > GET_MODE_SIZE (<VWIDE_S>mode))"
+ "<su>addl<VDQV_L:vp>\\t%<VDQV_L:Vwstype>0<VDQV_L:Vwsuf>, %1.<VDQV_L:Vtype>"
+  [(set_attr "type" "neon_reduc_add<VDQV_L:q>")]
+)
+
 (define_insn "aarch64_<su>addlp<mode>"
  [(set (match_operand:<VDBLW> 0 "register_operand" "=w")
        (unspec:<VDBLW> [(match_operand:VDQV_L 1 "register_operand" "w")]
