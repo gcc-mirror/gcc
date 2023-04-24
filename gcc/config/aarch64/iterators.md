@@ -2567,9 +2567,6 @@
 ;; Int Iterators.
 ;; -------------------------------------------------------------------
 
-;; The unspec codes for the SABAL, UABAL AdvancedSIMD instructions.
-(define_int_iterator ABAL [UNSPEC_SABAL UNSPEC_UABAL])
-
 ;; The unspec codes for the SABAL2, UABAL2 AdvancedSIMD instructions.
 (define_int_iterator ABAL2 [UNSPEC_SABAL2 UNSPEC_UABAL2])
 
@@ -3354,7 +3351,6 @@
 		      (UNSPEC_SRHADD "sr") (UNSPEC_URHADD "ur")
 		      (UNSPEC_SHSUB "s") (UNSPEC_UHSUB "u")
 		      (UNSPEC_ADDHN "") (UNSPEC_RADDHN "r")
-		      (UNSPEC_SABAL "s") (UNSPEC_UABAL "u")
 		      (UNSPEC_SABAL2 "s") (UNSPEC_UABAL2 "u")
 		      (UNSPEC_SADALP "s") (UNSPEC_UADALP "u")
 		      (UNSPEC_SUBHN "") (UNSPEC_RSUBHN "r")

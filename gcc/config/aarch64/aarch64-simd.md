@@ -952,14 +952,20 @@
   }
 )
 
-(define_insn "aarch64_<sur>abal<mode>"
+(define_insn "aarch64_<su>abal<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
-	(unspec:<VWIDE> [(match_operand:VD_BHSI 2 "register_operand" "w")
-			  (match_operand:VD_BHSI 3 "register_operand" "w")
-			 (match_operand:<VWIDE> 1 "register_operand" "0")]
-	ABAL))]
+	(plus:<VWIDE>
+	  (zero_extend:<VWIDE>
+	    (minus:VD_BHSI
+	      (USMAX:VD_BHSI
+		(match_operand:VD_BHSI 2 "register_operand" "w")
+		(match_operand:VD_BHSI 3 "register_operand" "w"))
+	      (<max_opp>:VD_BHSI
+		(match_dup 2)
+		(match_dup 3))))
+	  (match_operand:<VWIDE> 1 "register_operand" "0")))]
   "TARGET_SIMD"
-  "<sur>abal\t%0.<Vwtype>, %2.<Vtype>, %3.<Vtype>"
+  "<su>abal\t%0.<Vwtype>, %2.<Vtype>, %3.<Vtype>"
   [(set_attr "type" "neon_arith_acc<q>")]
 )
 
@@ -1004,10 +1010,10 @@
 ;; but for TARGET_DOTPROD still emits a UDOT as the absolute difference is
 ;; unsigned.
 
-(define_expand "<sur>sadv16qi"
+(define_expand "<su>sadv16qi"
   [(use (match_operand:V4SI 0 "register_operand"))
-   (unspec:V16QI [(use (match_operand:V16QI 1 "register_operand"))
-		  (use (match_operand:V16QI 2 "register_operand"))] ABAL)
+   (USMAX:V16QI (match_operand:V16QI 1 "register_operand")
+		(match_operand:V16QI 2 "register_operand"))
    (use (match_operand:V4SI 3 "register_operand"))]
   "TARGET_SIMD"
   {
@@ -1015,18 +1021,18 @@
       {
 	rtx ones = force_reg (V16QImode, CONST1_RTX (V16QImode));
 	rtx abd = gen_reg_rtx (V16QImode);
-	emit_insn (gen_aarch64_<sur>abdv16qi (abd, operands[1], operands[2]));
+	emit_insn (gen_aarch64_<su>abdv16qi (abd, operands[1], operands[2]));
 	emit_insn (gen_udot_prodv16qi (operands[0], abd, ones, operands[3]));
 	DONE;
       }
     rtx reduc = gen_reg_rtx (V8HImode);
-    emit_insn (gen_aarch64_<sur>abdl2v16qi (reduc, operands[1],
+    emit_insn (gen_aarch64_<su>abdl2v16qi (reduc, operands[1],
 					    operands[2]));
-    emit_insn (gen_aarch64_<sur>abalv8qi (reduc, reduc,
-					  gen_lowpart (V8QImode, operands[1]),
-					  gen_lowpart (V8QImode,
-						       operands[2])));
-    emit_insn (gen_aarch64_<sur>adalpv8hi (operands[3], operands[3], reduc));
+    emit_insn (gen_aarch64_<su>abalv8qi (reduc, reduc,
+					 gen_lowpart (V8QImode, operands[1]),
+					 gen_lowpart (V8QImode,
+						      operands[2])));
+    emit_insn (gen_aarch64_<su>adalpv8hi (operands[3], operands[3], reduc));
     emit_move_insn (operands[0], operands[3]);
     DONE;
   }

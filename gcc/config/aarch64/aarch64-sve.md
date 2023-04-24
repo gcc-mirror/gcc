@@ -6955,16 +6955,16 @@
 ;; [SU]ABD	diff.b, p0/m, op1.b, op2.b
 ;; MOVPRFX	op0, op3	// If necessary
 ;; UDOT		op0.s, diff.b, ones.b
-(define_expand "<sur>sad<vsi2qi>"
+(define_expand "<su>sad<vsi2qi>"
   [(use (match_operand:SVE_FULL_SDI 0 "register_operand"))
-   (unspec:<VSI2QI> [(use (match_operand:<VSI2QI> 1 "register_operand"))
-		    (use (match_operand:<VSI2QI> 2 "register_operand"))] ABAL)
+   (USMAX:<VSI2QI> (match_operand:<VSI2QI> 1 "register_operand")
+		   (match_operand:<VSI2QI> 2 "register_operand"))
    (use (match_operand:SVE_FULL_SDI 3 "register_operand"))]
   "TARGET_SVE"
   {
     rtx ones = force_reg (<VSI2QI>mode, CONST1_RTX (<VSI2QI>mode));
     rtx diff = gen_reg_rtx (<VSI2QI>mode);
-    emit_insn (gen_<sur>abd<vsi2qi>_3 (diff, operands[1], operands[2]));
+    emit_insn (gen_<su>abd<vsi2qi>_3 (diff, operands[1], operands[2]));
     emit_insn (gen_udot_prod<vsi2qi> (operands[0], diff, ones, operands[3]));
     DONE;
   }
