@@ -846,6 +846,26 @@ riscv_regno_mode_ok_for_base_p (int regno,
   return GP_REG_P (regno);
 }
 
+/* Get valid index register class.
+   The RISC-V base instructions don't support index registers,
+   but extensions might support that.  */
+
+enum reg_class
+riscv_index_reg_class ()
+{
+  return NO_REGS;
+}
+
+/* Return true if register REGNO is a valid index register.
+   The RISC-V base instructions don't support index registers,
+   but extensions might support that.  */
+
+int
+riscv_regno_ok_for_index_p (int regno)
+{
+  return 0;
+}
+
 /* Return true if X is a valid base register for mode MODE.
    STRICT_P is true if REG_OK_STRICT is in effect.  */
 
