@@ -1,3 +1,43 @@
+2023-04-23  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* lib/gm2.exp (gm2_target_compile_default): Conditionally
+	append -lnsl -lsocket to ldflags.
+
+2023-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/float_truncate_zero.c: New test.
+
+2023-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* gcc.target/aarch64/simd/pr99195_1.c: Add testing for vpadd intrinsics.
+
+2023-04-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/xstormy16/mulhi.c: New test case.
+
+2023-04-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/xstormy16/extendhisi2.c: New test case.
+	* gcc.target/xstormy16/zextendhisi2.c: Likewise.
+
+2023-04-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/xstormy16/shiftsi.c: New test case.
+
+2023-04-23  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx2-dest-false-dep-for-glc.c: Rewrite
+	testcase to make the codegen more stable.
+	* gcc.target/i386/avx512dq-dest-false-dep-for-glc.c: Ditto
+	* gcc.target/i386/avx512f-dest-false-dep-for-glc.c: Ditto.
+	* gcc.target/i386/avx512fp16-dest-false-dep-for-glc.c: Ditto.
+	* gcc.target/i386/avx512vl-dest-false-dep-for-glc.c: Ditto.
+
+2023-04-23  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr108707.c: New test.
+
 2023-04-22  Andrew Pinski  <apinski@marvell.com>
 
 	* gcc.dg/tree-ssa/phi-opt-5.c: Remvoe some xfail.

@@ -1,3 +1,45 @@
+2023-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_float_truncate_lo_): Rename to...
+	(aarch64_float_truncate_lo_<mode><vczle><vczbe>): ... This.
+
+2023-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* config/aarch64/aarch64-simd.md (aarch64_addp<mode>): Rename to...
+	(aarch64_addp<mode><vczle><vczbe>): ... This.
+
+2023-04-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/stormy16/stormy16.cc (xstormy16_rtx_costs): Rewrite to
+	provide reasonable values for common arithmetic operations and
+	immediate operands (in several machine modes).
+
+2023-04-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/stormy16/stormy16.cc (xstormy16_print_operand): Add %h
+	format specifier to output high_part register name of SImode reg.
+	* config/stormy16/stormy16.md (extendhisi2): New define_insn.
+	(zero_extendqihi2): Fix lengths, consistent formatting and add
+	"and Rx,#255" alternative, for documentation purposes.
+	(zero_extendhisi2): New define_insn.
+
+2023-04-23  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/stormy16/stormy16.cc (xstormy16_output_shift): Implement
+	SImode shifts by two by performing a single bit SImode shift twice.
+
+2023-04-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/109593
+	* value-range.cc (frange::operator==): Handle NANs.
+
+2023-04-23  liuhongt  <hongtao.liu@intel.com>
+
+	PR rtl-optimization/108707
+	* ira-costs.cc (scan_one_insn): Use NO_REGS instead of
+	GENERAL_REGS when preferred reg_class is not known.
+
 2023-04-22  Andrew Pinski  <apinski@marvell.com>
 
 	* tree-ssa-phiopt.cc (tree_ssa_phiopt_worker):
