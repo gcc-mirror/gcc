@@ -55,11 +55,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "tree-ssa-dce.h"
 
-static bool cond_store_replacement (basic_block, basic_block, edge, edge,
-				    hash_set<tree> *);
-static bool cond_if_else_store_replacement (basic_block, basic_block, basic_block);
-static hash_set<tree> * get_non_trapping ();
-
 /* Return the singleton PHI in the SEQ of PHIs for edges E0 and E1. */
 
 static gphi *
@@ -85,130 +80,6 @@ single_non_singleton_phi_for_edges (gimple_seq seq, edge e0, edge e1)
       phi = p;
     }
   return phi;
-}
-
-/* The core routine of conditional store replacement.  */
-static unsigned int
-store_elim_worker (void)
-{
-  basic_block bb;
-  basic_block *bb_order;
-  unsigned n, i;
-  bool cfgchanged = false;
-  hash_set<tree> *nontrap = 0;
-
-  calculate_dominance_info (CDI_DOMINATORS);
-
-  /* Calculate the set of non-trapping memory accesses.  */
-  nontrap = get_non_trapping ();
-
-  /* Search every basic block for COND_EXPR we may be able to optimize.
-
-     We walk the blocks in order that guarantees that a block with
-     a single predecessor is processed before the predecessor.
-     This ensures that we collapse inner ifs before visiting the
-     outer ones, and also that we do not try to visit a removed
-     block.  */
-  bb_order = single_pred_before_succ_order ();
-  n = n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS;
-
-  for (i = 0; i < n; i++)
-    {
-      basic_block bb1, bb2;
-      edge e1, e2;
-      bool diamond_p = false;
-
-      bb = bb_order[i];
-
-      /* Check to see if the last statement is a GIMPLE_COND.  */
-      gcond *cond_stmt = safe_dyn_cast <gcond *> (*gsi_last_bb (bb));
-      if (!cond_stmt)
-	continue;
-
-      e1 = EDGE_SUCC (bb, 0);
-      bb1 = e1->dest;
-      e2 = EDGE_SUCC (bb, 1);
-      bb2 = e2->dest;
-
-      /* We cannot do the optimization on abnormal edges.  */
-      if ((e1->flags & EDGE_ABNORMAL) != 0
-	  || (e2->flags & EDGE_ABNORMAL) != 0)
-	continue;
-
-      /* If either bb1's succ or bb2 or bb2's succ is non NULL.  */
-      if (EDGE_COUNT (bb1->succs) == 0
-	  || EDGE_COUNT (bb2->succs) == 0)
-	continue;
-
-      /* Find the bb which is the fall through to the other.  */
-      if (EDGE_SUCC (bb1, 0)->dest == bb2)
-	;
-      else if (EDGE_SUCC (bb2, 0)->dest == bb1)
-	{
-	  std::swap (bb1, bb2);
-	  std::swap (e1, e2);
-	}
-      else if (EDGE_SUCC (bb1, 0)->dest == EDGE_SUCC (bb2, 0)->dest
-	       && single_succ_p (bb2))
-	{
-	  diamond_p = true;
-	  e2 = EDGE_SUCC (bb2, 0);
-	  /* Make sure bb2 is just a fall through. */
-	  if ((e2->flags & EDGE_FALLTHRU) == 0)
-	    continue;
-	}
-      else
-	continue;
-
-      e1 = EDGE_SUCC (bb1, 0);
-
-      /* Make sure that bb1 is just a fall through.  */
-      if (!single_succ_p (bb1)
-	  || (e1->flags & EDGE_FALLTHRU) == 0)
-	continue;
-
-      if (diamond_p)
-	{
-	  basic_block bb3 = e1->dest;
-
-	  /* Only handle sinking of store from 2 bbs only,
-	     The middle bbs don't need to come from the
-	     if always since we are sinking rather than
-	     hoisting. */
-	  if (EDGE_COUNT (bb3->preds) != 2)
-	    continue;
-	  if (cond_if_else_store_replacement (bb1, bb2, bb3))
-	    cfgchanged = true;
-	  continue;
-	}
-
-      /* Also make sure that bb1 only have one predecessor and that it
-	 is bb.  */
-      if (!single_pred_p (bb1)
-	  || single_pred (bb1) != bb)
-	continue;
-
-      /* bb1 is the middle block, bb2 the join block, bb the split block,
-	 e1 the fallthrough edge from bb1 to bb2.  We can't do the
-	 optimization if the join block has more than two predecessors.  */
-      if (EDGE_COUNT (bb2->preds) > 2)
-	continue;
-      if (cond_store_replacement (bb1, bb2, e1, e2, nontrap))
-	cfgchanged = true;
-    }
-
-  free (bb_order);
-
-  delete nontrap;
-  /* If the CFG has changed, we should cleanup the CFG.  */
-  if (cfgchanged)
-    {
-      /* In cond-store replacement we have added some loads on edges
-         and new VOPS (as we moved the store, and created a load).  */
-      gsi_commit_edge_inserts ();
-      return TODO_cleanup_cfg | TODO_update_ssa_only_virtuals;
-    }
-  return 0;
 }
 
 /* Replace PHI node element whose edge is E in block BB with variable NEW.
@@ -4394,13 +4265,130 @@ make_pass_cselim (gcc::context *ctxt)
 unsigned int
 pass_cselim::execute (function *)
 {
-  unsigned todo;
+  basic_block bb;
+  basic_block *bb_order;
+  unsigned n, i;
+  bool cfgchanged = false;
+  hash_set<tree> *nontrap = 0;
+  unsigned todo = 0;
+
   /* ???  We are not interested in loop related info, but the following
      will create it, ICEing as we didn't init loops with pre-headers.
      An interfacing issue of find_data_references_in_bb.  */
   loop_optimizer_init (LOOPS_NORMAL);
   scev_initialize ();
-  todo = store_elim_worker ();
+
+  calculate_dominance_info (CDI_DOMINATORS);
+
+  /* Calculate the set of non-trapping memory accesses.  */
+  nontrap = get_non_trapping ();
+
+  /* Search every basic block for COND_EXPR we may be able to optimize.
+
+     We walk the blocks in order that guarantees that a block with
+     a single predecessor is processed before the predecessor.
+     This ensures that we collapse inner ifs before visiting the
+     outer ones, and also that we do not try to visit a removed
+     block.  */
+  bb_order = single_pred_before_succ_order ();
+  n = n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS;
+
+  for (i = 0; i < n; i++)
+    {
+      basic_block bb1, bb2;
+      edge e1, e2;
+      bool diamond_p = false;
+
+      bb = bb_order[i];
+
+      /* Check to see if the last statement is a GIMPLE_COND.  */
+      gcond *cond_stmt = safe_dyn_cast <gcond *> (*gsi_last_bb (bb));
+      if (!cond_stmt)
+	continue;
+
+      e1 = EDGE_SUCC (bb, 0);
+      bb1 = e1->dest;
+      e2 = EDGE_SUCC (bb, 1);
+      bb2 = e2->dest;
+
+      /* We cannot do the optimization on abnormal edges.  */
+      if ((e1->flags & EDGE_ABNORMAL) != 0
+	  || (e2->flags & EDGE_ABNORMAL) != 0)
+	continue;
+
+      /* If either bb1's succ or bb2 or bb2's succ is non NULL.  */
+      if (EDGE_COUNT (bb1->succs) == 0
+	  || EDGE_COUNT (bb2->succs) == 0)
+	continue;
+
+      /* Find the bb which is the fall through to the other.  */
+      if (EDGE_SUCC (bb1, 0)->dest == bb2)
+	;
+      else if (EDGE_SUCC (bb2, 0)->dest == bb1)
+	{
+	  std::swap (bb1, bb2);
+	  std::swap (e1, e2);
+	}
+      else if (EDGE_SUCC (bb1, 0)->dest == EDGE_SUCC (bb2, 0)->dest
+	       && single_succ_p (bb2))
+	{
+	  diamond_p = true;
+	  e2 = EDGE_SUCC (bb2, 0);
+	  /* Make sure bb2 is just a fall through. */
+	  if ((e2->flags & EDGE_FALLTHRU) == 0)
+	    continue;
+	}
+      else
+	continue;
+
+      e1 = EDGE_SUCC (bb1, 0);
+
+      /* Make sure that bb1 is just a fall through.  */
+      if (!single_succ_p (bb1)
+	  || (e1->flags & EDGE_FALLTHRU) == 0)
+	continue;
+
+      if (diamond_p)
+	{
+	  basic_block bb3 = e1->dest;
+
+	  /* Only handle sinking of store from 2 bbs only,
+	     The middle bbs don't need to come from the
+	     if always since we are sinking rather than
+	     hoisting. */
+	  if (EDGE_COUNT (bb3->preds) != 2)
+	    continue;
+	  if (cond_if_else_store_replacement (bb1, bb2, bb3))
+	    cfgchanged = true;
+	  continue;
+	}
+
+      /* Also make sure that bb1 only have one predecessor and that it
+	 is bb.  */
+      if (!single_pred_p (bb1)
+	  || single_pred (bb1) != bb)
+	continue;
+
+      /* bb1 is the middle block, bb2 the join block, bb the split block,
+	 e1 the fallthrough edge from bb1 to bb2.  We can't do the
+	 optimization if the join block has more than two predecessors.  */
+      if (EDGE_COUNT (bb2->preds) > 2)
+	continue;
+      if (cond_store_replacement (bb1, bb2, e1, e2, nontrap))
+	cfgchanged = true;
+    }
+
+  free (bb_order);
+
+  delete nontrap;
+  /* If the CFG has changed, we should cleanup the CFG.  */
+  if (cfgchanged)
+    {
+      /* In cond-store replacement we have added some loads on edges
+	  and new VOPS (as we moved the store, and created a load).  */
+      gsi_commit_edge_inserts ();
+      todo = TODO_cleanup_cfg | TODO_update_ssa_only_virtuals;
+    }
   scev_finalize ();
   loop_optimizer_finalize ();
   return todo;
