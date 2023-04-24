@@ -2910,11 +2910,11 @@ BU_P9_OVERLOAD_2 (CMPRB2,	"byte_in_either_range")
 BU_P9_OVERLOAD_2 (CMPEQB,	"byte_in_set")
 
 
-BU_P9V_AV_1 (VSIGNEXTSB2W,	"vsignextsb2w",		CONST,  vsignextend_qi_v4si)
-BU_P9V_AV_1 (VSIGNEXTSH2W,	"vsignextsh2w",		CONST,  vsignextend_hi_v4si)
-BU_P9V_AV_1 (VSIGNEXTSB2D,	"vsignextsb2d",		CONST,  vsignextend_qi_v2di)
-BU_P9V_AV_1 (VSIGNEXTSH2D,	"vsignextsh2d",		CONST,  vsignextend_hi_v2di)
-BU_P9V_AV_1 (VSIGNEXTSW2D,	"vsignextsw2d",		CONST,  vsignextend_si_v2di)
+BU_P9V_AV_1 (VSIGNEXTSB2W,	"vsignextsb2w",		CONST,  vsx_sign_extend_v16qi_v4si)
+BU_P9V_AV_1 (VSIGNEXTSH2W,	"vsignextsh2w",		CONST,  vsx_sign_extend_v8hi_v4si)
+BU_P9V_AV_1 (VSIGNEXTSB2D,	"vsignextsb2d",		CONST,  vsx_sign_extend_v16qi_v2di)
+BU_P9V_AV_1 (VSIGNEXTSH2D,	"vsignextsh2d",		CONST,  vsx_sign_extend_v8hi_v2di)
+BU_P9V_AV_1 (VSIGNEXTSW2D,	"vsignextsw2d",		CONST,  vsx_sign_extend_v4si_v2di)
 
 /* Builtins for scalar instructions added in ISA 3.1 (power10).  */
 BU_P10V_AV_P (VCMPEQUT_P,	"vcmpequt_p",	CONST,	vector_eq_v1ti_p)
@@ -2954,7 +2954,7 @@ BU_P10V_AV_2 (VNOR_V1TI,	"vnor_v1ti",	CONST,	norv1ti3)
 BU_P10V_AV_2 (VCMPNET_P,	"vcmpnet_p",	CONST,	vector_ne_v1ti_p)
 BU_P10V_AV_2 (VCMPAET_P,	"vcmpaet_p",	CONST,	vector_ae_v1ti_p)
 
-BU_P10V_AV_1 (VSIGNEXTSD2Q,	"vsignext",     CONST,  vsignextend_v2di_v1ti)
+BU_P10V_AV_1 (VSIGNEXTSD2Q,	"vsignext",     CONST,  vsx_sign_extend_v2di_v1ti)
 
 BU_P10V_AV_2 (VMULEUD,	"vmuleud",	CONST,	vec_widen_umult_even_v2di)
 BU_P10V_AV_2 (VMULESD,	"vmulesd",	CONST,	vec_widen_smult_even_v2di)
