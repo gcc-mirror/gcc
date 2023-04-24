@@ -336,8 +336,8 @@ th_mempair_operands_p (rtx operands[4], bool load_p,
 }
 
 /* Given OPERANDS of consecutive load/store that can be merged,
-   swap them if they are not in ascending order.
-   Return true if swap was performed.  */
+   swap them if they are not in ascending order.  */
+
 void
 th_mempair_order_operands (rtx operands[4], bool load_p, machine_mode mode)
 {
