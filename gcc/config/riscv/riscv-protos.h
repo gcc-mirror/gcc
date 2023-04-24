@@ -37,6 +37,49 @@ enum riscv_symbol_type {
 };
 #define NUM_SYMBOL_TYPES (SYMBOL_TLS_GD + 1)
 
+/* Classifies an address.
+
+   ADDRESS_REG
+       A natural register + offset address.  The register satisfies
+       riscv_valid_base_register_p and the offset is a const_arith_operand.
+
+   ADDRESS_LO_SUM
+       A LO_SUM rtx.  The first operand is a valid base register and
+       the second operand is a symbolic address.
+
+   ADDRESS_CONST_INT
+       A signed 16-bit constant address.
+
+   ADDRESS_SYMBOLIC:
+       A constant symbolic address.  */
+enum riscv_address_type {
+  ADDRESS_REG,
+  ADDRESS_LO_SUM,
+  ADDRESS_CONST_INT,
+  ADDRESS_SYMBOLIC
+};
+
+/* Information about an address described by riscv_address_type.
+
+   ADDRESS_CONST_INT
+       No fields are used.
+
+   ADDRESS_REG
+       REG is the base register and OFFSET is the constant offset.
+
+   ADDRESS_LO_SUM
+       REG and OFFSET are the operands to the LO_SUM and SYMBOL_TYPE
+       is the type of symbol it references.
+
+   ADDRESS_SYMBOLIC
+       SYMBOL_TYPE is the type of symbol that the address references.  */
+struct riscv_address_info {
+  enum riscv_address_type type;
+  rtx reg;
+  rtx offset;
+  enum riscv_symbol_type symbol_type;
+};
+
 /* Routines implemented in riscv.cc.  */
 extern enum riscv_symbol_type riscv_classify_symbolic_expression (rtx);
 extern bool riscv_symbolic_constant_p (rtx, enum riscv_symbol_type *);
