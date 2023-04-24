@@ -21,6 +21,6 @@ jobs:
     - name: Check clang-format
       uses: DoozyX/clang-format-lint-action@v0.11
       with:
-        source: 'gcc/rust/'
+        source: 'gcc/rust/ libgrust/'
         extensions: 'h,cc'
         clangFormatVersion: 10
