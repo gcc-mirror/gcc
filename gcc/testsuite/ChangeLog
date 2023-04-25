@@ -1,3 +1,10 @@
+2023-04-24  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	PR target/108812
+	* gcc.target/powerpc/p9-sign_extend-runnable.c: Set corresponding
+	expected vectors for Big Endian.
+	* gcc.target/powerpc/int_128bit-runnable.c: Likewise.
+
 2023-04-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/107163
