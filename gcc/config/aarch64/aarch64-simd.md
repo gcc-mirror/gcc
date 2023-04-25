@@ -2867,6 +2867,27 @@
   [(set_attr "type" "neon_fp_div_<stype><q>")]
 )
 
+;; SVE has vector integer divisions, unlike Advanced SIMD.
+;; We can use it with Advanced SIMD modes to expose the V2DI and V4SI
+;; optabs to the midend.
+(define_expand "<su_optab>div<mode>3"
+  [(set (match_operand:VQDIV 0 "register_operand")
+	(ANY_DIV:VQDIV
+	  (match_operand:VQDIV 1 "register_operand")
+	  (match_operand:VQDIV 2 "register_operand")))]
+  "TARGET_SVE"
+  {
+    machine_mode sve_mode
+      = aarch64_full_sve_mode (GET_MODE_INNER (<MODE>mode)).require ();
+    rtx sve_op0 = simplify_gen_subreg (sve_mode, operands[0], <MODE>mode, 0);
+    rtx sve_op1 = simplify_gen_subreg (sve_mode, operands[1], <MODE>mode, 0);
+    rtx sve_op2 = simplify_gen_subreg (sve_mode, operands[2], <MODE>mode, 0);
+
+    emit_insn (gen_<su_optab>div<vnx>3 (sve_op0, sve_op1, sve_op2));
+    DONE;
+  }
+)
+
 (define_insn "neg<mode>2"
  [(set (match_operand:VHSDF 0 "register_operand" "=w")
        (neg:VHSDF (match_operand:VHSDF 1 "register_operand" "w")))]

@@ -108,6 +108,9 @@
 ;; Copy of the above.
 (define_mode_iterator DREG2 [V8QI V4HI V4HF V2SI V2SF DF])
 
+;; Advanced SIMD modes for integer divides.
+(define_mode_iterator VQDIV [V4SI V2DI])
+
 ;; All modes suitable to store/load pair (2 elements) using STP/LDP.
 (define_mode_iterator VP_2E [V2SI V2SF V2DI V2DF])
 
@@ -1420,6 +1423,8 @@
 			(VNx8HI  "v8hi") (VNx8HF "v8hf") (VNx8BF "v8bf")
 			(VNx4SI  "v4si") (VNx4SF "v4sf")
 			(VNx2DI  "v2di") (VNx2DF "v2df")])
+
+(define_mode_attr vnx [(V4SI "vnx4si") (V2DI "vnx2di")])
 
 ;; 64-bit container modes the inner or scalar source mode.
 (define_mode_attr VCOND [(HI "V4HI") (SI "V2SI")
