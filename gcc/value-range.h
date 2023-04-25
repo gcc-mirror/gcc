@@ -274,12 +274,12 @@ public:
   virtual void accept (const vrange_visitor &v) const override;
 };
 
-// The NAN state as an opaque object.  The default constructor is +-NAN.
+// The NAN state as an opaque object.
 
 class nan_state
 {
 public:
-  nan_state ();
+  nan_state (bool);
   nan_state (bool pos_nan, bool neg_nan);
   bool neg_p () const;
   bool pos_p () const;
@@ -288,13 +288,14 @@ private:
   bool m_neg_nan;
 };
 
-// Default constructor initializing the object to +-NAN.
+// Set NAN state to +-NAN if NAN_P is true.  Otherwise set NAN state
+// to false.
 
 inline
-nan_state::nan_state ()
+nan_state::nan_state (bool nan_p)
 {
-  m_pos_nan = true;
-  m_neg_nan = true;
+  m_pos_nan = nan_p;
+  m_neg_nan = nan_p;
 }
 
 // Constructor initializing the object to +NAN if POS_NAN is set, -NAN

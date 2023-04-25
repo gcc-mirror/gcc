@@ -426,8 +426,7 @@ frange::set (tree type,
 	     const REAL_VALUE_TYPE &min, const REAL_VALUE_TYPE &max,
 	     value_range_kind kind)
 {
-  nan_state nan;
-  set (type, min, max, nan, kind);
+  set (type, min, max, nan_state (true), kind);
 }
 
 void
