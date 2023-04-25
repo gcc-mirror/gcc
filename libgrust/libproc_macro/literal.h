@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 
+namespace ProcMacro {
 namespace Literal {
 enum UnsignedTag
 {
@@ -207,5 +208,6 @@ Literal__from_string (const unsigned char *str, std::uint64_t len,
 		      Literal *lit);
 }
 } // namespace Literal
+} // namespace ProcMacro
 
 #endif /* ! LITERAL_H */

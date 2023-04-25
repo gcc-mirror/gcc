@@ -22,6 +22,7 @@
 
 #include "tokentree.h"
 
+namespace ProcMacro {
 namespace TokenTree {
 
 TokenTree
@@ -76,3 +77,4 @@ TokenTree::drop (TokenTree *tt)
 }
 
 } // namespace TokenTree
+} // namespace ProcMacro

@@ -25,6 +25,7 @@
 
 #include <cstring>
 
+namespace ProcMacro {
 namespace TokenStream {
 
 TokenStream
@@ -117,3 +118,4 @@ TokenStream__drop (TokenStream *stream)
 }
 
 } // namespace TokenStream
+} // namespace ProcMacro

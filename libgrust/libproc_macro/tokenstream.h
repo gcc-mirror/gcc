@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <vector>
 
+namespace ProcMacro {
 namespace TokenTree {
 struct TokenTree;
 }
@@ -73,5 +74,6 @@ extern "C" void
 TokenStream__drop (TokenStream *stream);
 
 } // namespace TokenStream
+} // namespace ProcMacro
 
 #endif /* ! TOKENSTREAM_H */

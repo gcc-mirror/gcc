@@ -25,6 +25,7 @@
 
 #include <cstdint>
 
+namespace ProcMacro {
 namespace Punct {
 
 enum Spacing
@@ -43,5 +44,6 @@ public:
 };
 
 } // namespace Punct
+} // namespace ProcMacro
 
 #endif /* ! PUNCT_H */
