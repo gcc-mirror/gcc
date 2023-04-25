@@ -286,7 +286,7 @@
    shl %0,#8 | shr %0,#8"
   [(set_attr "psw_operand" "nop,nop,0")
    (set_attr_alternative "length"
-	     [(const_int 2)
+	     [(const_int 4)
 	      (const_int 2)
 	      (const_int 4)])])
 
