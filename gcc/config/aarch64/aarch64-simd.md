@@ -423,7 +423,7 @@
    (set_attr "length" "4")]
 )
 
-(define_insn "orn<mode>3"
+(define_insn "orn<mode>3<vczle><vczbe>"
  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
        (ior:VDQ_I (not:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w"))
 		(match_operand:VDQ_I 2 "register_operand" "w")))]
@@ -432,7 +432,7 @@
   [(set_attr "type" "neon_logic<q>")]
 )
 
-(define_insn "bic<mode>3"
+(define_insn "bic<mode>3<vczle><vczbe>"
  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
        (and:VDQ_I (not:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w"))
 		(match_operand:VDQ_I 2 "register_operand" "w")))]
@@ -1671,7 +1671,7 @@
 )
 
 ;; Max/Min operations.
-(define_insn "<su><maxmin><mode>3"
+(define_insn "<su><maxmin><mode>3<vczle><vczbe>"
  [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
        (MAXMIN:VDQ_BHSI (match_operand:VDQ_BHSI 1 "register_operand" "w")
 		    (match_operand:VDQ_BHSI 2 "register_operand" "w")))]
