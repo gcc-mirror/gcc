@@ -9,5 +9,5 @@ struct B : public A { };
 using APMF = void (A::*)();
 using BPMF = void (B::*)();
 
-constexpr APMF foo () { return &A::CB; };
+constexpr APMF foo () { return &A::CB; }
 static constexpr BPMF b = foo();
