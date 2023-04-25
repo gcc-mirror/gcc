@@ -8178,6 +8178,7 @@ package body Sem_Ch12 is
                     and then Is_Entity_Name (Name (Assoc))
                   then
                      Set_Entity (New_N, Entity (Name (Assoc)));
+                     Check_Private_View (N);
 
                   elsif Nkind (Assoc) in N_Entity
                     and then (Expander_Active
@@ -15716,6 +15717,13 @@ package body Sem_Ch12 is
       --  This is the recursive procedure that does the work, once the
       --  enclosing generic scope has been established.
 
+      procedure Set_Global_Type (N : Node_Id; N2 : Node_Id);
+      --  If the type of N2 is global to the generic unit, save the type in
+      --  the generic node. Just as we perform name capture for explicit
+      --  references within the generic, we must capture the global types
+      --  of local entities because they may participate in resolution in
+      --  the instance.
+
       ---------------
       -- Is_Global --
       ---------------
@@ -15909,66 +15917,11 @@ package body Sem_Ch12 is
       ------------------
 
       procedure Reset_Entity (N : Node_Id) is
-         procedure Set_Global_Type (N : Node_Id; N2 : Node_Id);
-         --  If the type of N2 is global to the generic unit, save the type in
-         --  the generic node. Just as we perform name capture for explicit
-         --  references within the generic, we must capture the global types
-         --  of local entities because they may participate in resolution in
-         --  the instance.
-
          function Top_Ancestor (E : Entity_Id) return Entity_Id;
          --  Find the ultimate ancestor of the current unit. If it is not a
          --  generic unit, then the name of the current unit in the prefix of
          --  an expanded name must be replaced with its generic homonym to
          --  ensure that it will be properly resolved in an instance.
-
-         ---------------------
-         -- Set_Global_Type --
-         ---------------------
-
-         procedure Set_Global_Type (N : Node_Id; N2 : Node_Id) is
-            Typ : constant Entity_Id := Etype (N2);
-
-         begin
-            Set_Etype (N, Typ);
-
-            --  If the entity of N is not the associated node, this is a
-            --  nested generic and it has an associated node as well, whose
-            --  type is already the full view (see below). Indicate that the
-            --  original node has a private view.
-
-            if Entity (N) /= N2 and then Has_Private_View (Entity (N)) then
-               Set_Has_Private_View (N);
-            end if;
-
-            --  If not a private type, nothing else to do
-
-            if not Is_Private_Type (Typ) then
-               null;
-
-            --  If it is a derivation of a private type in a context where no
-            --  full view is needed, nothing to do either.
-
-            elsif No (Full_View (Typ)) and then Typ /= Etype (Typ) then
-               null;
-
-            --  Otherwise mark the type for flipping and use the full view when
-            --  available.
-
-            else
-               Set_Has_Private_View (N);
-
-               if Present (Full_View (Typ)) then
-                  Set_Etype (N2, Full_View (Typ));
-               end if;
-            end if;
-
-            if Is_Floating_Point_Type (Typ)
-              and then Has_Dimension_System (Typ)
-            then
-               Copy_Dimensions (N2, N);
-            end if;
-         end Set_Global_Type;
 
          ------------------
          -- Top_Ancestor --
@@ -16678,7 +16631,7 @@ package body Sem_Ch12 is
                   E := Entity (Name (N2));
 
                   if Present (E) and then Is_Global (E) then
-                     Set_Etype (N, Etype (N2));
+                     Set_Global_Type (N, N2);
                   else
                      Set_Associated_Node (N, Empty);
                      Set_Etype           (N, Empty);
@@ -16844,6 +16797,54 @@ package body Sem_Ch12 is
             end if;
          end if;
       end Save_References;
+
+      ---------------------
+      -- Set_Global_Type --
+      ---------------------
+
+      procedure Set_Global_Type (N : Node_Id; N2 : Node_Id) is
+         Typ : constant Entity_Id := Etype (N2);
+
+      begin
+         Set_Etype (N, Typ);
+
+         --  If the entity of N is not the associated node, this is a
+         --  nested generic and it has an associated node as well, whose
+         --  type is already the full view (see below). Indicate that the
+         --  original node has a private view.
+
+         if Entity (N) /= N2 and then Has_Private_View (Entity (N)) then
+            Set_Has_Private_View (N);
+         end if;
+
+         --  If not a private type, nothing else to do
+
+         if not Is_Private_Type (Typ) then
+            null;
+
+         --  If it is a derivation of a private type in a context where no
+         --  full view is needed, nothing to do either.
+
+         elsif No (Full_View (Typ)) and then Typ /= Etype (Typ) then
+            null;
+
+         --  Otherwise mark the type for flipping and use the full view when
+         --  available.
+
+         else
+            Set_Has_Private_View (N);
+
+            if Present (Full_View (Typ)) then
+               Set_Etype (N2, Full_View (Typ));
+            end if;
+         end if;
+
+         if Is_Floating_Point_Type (Typ)
+           and then Has_Dimension_System (Typ)
+         then
+            Copy_Dimensions (N2, N);
+         end if;
+      end Set_Global_Type;
 
    --  Start of processing for Save_Global_References
 
