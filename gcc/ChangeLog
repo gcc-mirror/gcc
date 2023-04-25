@@ -1,3 +1,208 @@
+2023-04-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* tree-ssa-forwprop.cc (is_combined_permutation_identity): Try to
+	simplify two successive VEC_PERM_EXPRs with same VLA mask,
+	where mask chooses elements in reverse order.
+
+2023-04-24  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc (match_simplify_replacement): Add new arguments
+	and support diamond shaped basic block form.
+	(tree_ssa_phiopt_worker): Update call to match_simplify_replacement
+
+2023-04-24  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc (empty_bb_or_one_feeding_into_p):
+	Instead of calling last_and_only_stmt, look for the last statement
+	manually.
+
+2023-04-24  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc (empty_bb_or_one_feeding_into_p):
+	New function.
+	(match_simplify_replacement): Call
+	empty_bb_or_one_feeding_into_p instead of doing it inline.
+
+2023-04-24  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/68894
+	* tree-ssa-phiopt.cc (tree_ssa_phiopt_worker): Remove the
+	continue for the do_hoist_loads diamond case.
+
+2023-04-24  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc (tree_ssa_phiopt_worker): Rearrange
+	code for better code readability.
+
+2023-04-24  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/109604
+	* tree-ssa-phiopt.cc (tree_ssa_phiopt_worker): Move the
+	diamond form check from ...
+	(minmax_replacement): Here.
+
+2023-04-24  Patrick Palka  <ppalka@redhat.com>
+
+	* tree.cc (strip_array_types): Don't define here.
+	(is_typedef_decl): Don't define here.
+	(typedef_variant_p): Don't define here.
+	* tree.h (strip_array_types): Define here.
+	(is_typedef_decl): Define here.
+	(typedef_variant_p): Define here.
+
+2023-04-24  Frederik Harwath  <frederik@codesourcery.com>
+
+	* doc/generic.texi (OpenMP): Add != to allowed
+	conditions and state that vars can be unsigned.
+	* tree.def (OMP_FOR): Likewise.
+
+2023-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (mulv2di3): New expander.
+
+2023-04-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/install.texi: Consistently use Solaris rather than Solaris 2.
+	Remove explicit Solaris 11 references.
+	Markup fixes.
+	(Options specification, --with-gnu-as): as and gas always differ
+	on Solaris.
+	Remove /usr/ccs/bin reference.
+	(Installing GCC: Binaries, Solaris (SPARC, Intel)): Remove.
+	(i?86-*-solaris2*): Merge assembler, linker recommendations ...
+	(*-*-solaris2*): ... here.
+	Update bundled GCC versions.
+	Don't refer to pre-built binaries.
+	Remove /bin/sh warning.
+	Update assembler, linker recommendations.
+	Document GNAT bootstrap compiler.
+	(sparc-sun-solaris2*): Remove non-UltraSPARC reference.
+	(sparc64-*-solaris2*): Move content...
+	(sparcv9-*-solaris2*): ...here.
+	Add GDC for 64-bit bootstrap compilers.
+
+2023-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/109406
+	* config/aarch64/aarch64-sve.md (<optab><mode>3): Handle TARGET_SVE2 MUL
+	case.
+	* config/aarch64/aarch64-sve2.md (*aarch64_mul_unpredicated_<mode>): New
+	pattern.
+
+2023-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_<sur>abal2<mode>): Rename to...
+	(aarch64_<su>abal2<mode>_insn): ... This.  Use RTL codes instead of unspec.
+	(aarch64_<su>abal2<mode>): New define_expand.
+	* config/aarch64/aarch64.cc (aarch64_abd_rtx_p): New function.
+	(aarch64_rtx_costs): Handle ABD rtxes.
+	* config/aarch64/aarch64.md (UNSPEC_SABAL2, UNSPEC_UABAL2): Delete.
+	* config/aarch64/iterators.md (ABAL2): Delete.
+	(sur): Remove handling of UNSPEC_UABAL2 and UNSPEC_SABAL2.
+
+2023-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_<sur>abal<mode>): Rename to...
+	(aarch64_<su>abal<mode>): ... This.  Use RTL codes instead of unspec.
+	(<sur>sadv16qi): Rename to...
+	(<su>sadv16qi): ... This.  Adjust for the above.
+	* config/aarch64/aarch64-sve.md (<sur>sad<vsi2qi>): Rename to...
+	(<su>sad<vsi2qi>): ... This.  Adjust for the above.
+	* config/aarch64/aarch64.md (UNSPEC_SABAL, UNSPEC_UABAL): Delete.
+	* config/aarch64/iterators.md (ABAL): Delete.
+	(sur): Remove handling of UNSPEC_SABAL and UNSPEC_UABAL.
+
+2023-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_<sur>abdl2<mode>): Rename to...
+	(aarch64_<su>abdl2<mode>_insn): ... This.  Use RTL codes instead of unspec.
+	(aarch64_<su>abdl2<mode>): New define_expand.
+	* config/aarch64/aarch64.md (UNSPEC_SABDL2, UNSPEC_UABDL2): Delete.
+	* config/aarch64/iterators.md (ABDL2): Delete.
+	(sur): Remove handling of UNSPEC_SABDL2 and UNSPEC_UABDL2.
+
+2023-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_<sur>abdl<mode>): Rename to...
+	(aarch64_<su>abdl<mode>): ... This.  Use standard RTL ops instead of
+	unspec.
+	* config/aarch64/aarch64.md (UNSPEC_SABDL, UNSPEC_UABDL): Delete.
+	* config/aarch64/iterators.md (ABDL): Delete.
+	(sur): Remove handling of UNSPEC_SABDL and UNSPEC_UABDL.
+
+2023-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(*aarch64_<su>addlv<VDQV_L:mode>_ze<GPI:mode>): New pattern.
+
+2023-04-24  Richard Biener  <rguenther@suse.de>
+
+	* gimple-ssa-split-paths.cc (is_feasible_trace): Avoid
+	last_stmt.
+	* graphite-scop-detection.cc (single_pred_cond_non_loop_exit):
+	Likewise.
+	* ipa-fnsummary.cc (set_cond_stmt_execution_predicate): Likewise.
+	(set_switch_stmt_execution_predicate): Likewise.
+	(phi_result_unknown_predicate): Likewise.
+	* ipa-prop.cc (compute_complex_ancestor_jump_func): Likewise.
+	(ipa_analyze_indirect_call_uses): Likewise.
+	* predict.cc (predict_iv_comparison): Likewise.
+	(predict_extra_loop_exits): Likewise.
+	(predict_loops): Likewise.
+	(tree_predict_by_opcode): Likewise.
+	* gimple-predicate-analysis.cc (predicate::init_from_control_deps):
+	Likewise.
+	* gimple-pretty-print.cc (dump_implicit_edges): Likewise.
+	* tree-ssa-phiopt.cc (tree_ssa_phiopt_worker): Likewise.
+	(replace_phi_edge_with_variable): Likewise.
+	(two_value_replacement): Likewise.
+	(value_replacement): Likewise.
+	(minmax_replacement): Likewise.
+	(spaceship_replacement): Likewise.
+	(cond_removal_in_builtin_zero_pattern): Likewise.
+	* tree-ssa-reassoc.cc (maybe_optimize_range_tests): Likewise.
+	* tree-ssa-sccvn.cc (vn_phi_eq): Likewise.
+	(vn_phi_lookup): Likewise.
+	(vn_phi_insert): Likewise.
+	* tree-ssa-structalias.cc (compute_points_to_sets): Likewise.
+	* tree-ssa-threadbackward.cc (back_threader::maybe_thread_block):
+	Likewise.
+	(back_threader_profitability::possibly_profitable_path_p):
+	Likewise.
+	* tree-ssa-threadedge.cc (jump_threader::thread_outgoing_edges):
+	Likewise.
+	* tree-switch-conversion.cc (pass_convert_switch::execute):
+	Likewise.
+	(pass_lower_switch<O0>::execute): Likewise.
+	* tree-tailcall.cc (tree_optimize_tail_calls_1): Likewise.
+	* tree-vect-loop-manip.cc (vect_loop_versioning): Likewise.
+	* tree-vect-slp.cc (vect_slp_function): Likewise.
+	* tree-vect-stmts.cc (cfun_returns): Likewise.
+	* tree-vectorizer.cc (vect_loop_vectorized_call): Likewise.
+	(vect_loop_dist_alias_call): Likewise.
+
+2023-04-24  Richard Biener  <rguenther@suse.de>
+
+	* cfgcleanup.cc (outgoing_edges_match): Use FORWARDER_BLOCK_P.
+
+2023-04-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc
+	(vector_infos_manager::all_avail_in_compatible_p): New function.
+	(pass_vsetvl::refine_vsetvls): Optimize vsetvls.
+	* config/riscv/riscv-vsetvl.h: New function.
+
+2023-04-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vsetvl.cc (pass_vsetvl::pre_vsetvl): Add function
+	comment for cleanup_insns.
+
+2023-04-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector-iterators.md: New unspec to refine fault first load pattern.
+	* config/riscv/vector.md: Refine fault first load pattern to erase avl from instructions
+	with the fault first load property.
+
 2023-04-23  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_float_truncate_lo_): Rename to...

@@ -1,3 +1,12 @@
+2023-04-24  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/max_size_type.h (__max_diff_type::operator>>=):
+	Fix propagation of sign bit.
+	* testsuite/std/ranges/iota/max_size_type.cc: Avoid using the
+	non-standard 'signed typedef-name'.  Add some compile-time tests
+	for right-shifting a negative __max_diff_type value by more than
+	one.
+
 2023-04-19  Patrick Palka  <ppalka@redhat.com>
 	    Jonathan Wakely  <jwakely@redhat.com>
 

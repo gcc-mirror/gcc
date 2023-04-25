@@ -1,3 +1,8 @@
+2023-04-24  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (cp_expr_location): Define here.
+	* tree.cc (cp_expr_location): Don't define here.
+
 2023-04-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/108099

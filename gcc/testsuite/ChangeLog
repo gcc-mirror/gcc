@@ -1,3 +1,69 @@
+2023-04-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.target/aarch64/sve/acle/general/rev-1.c: New test.
+
+2023-04-24  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/phi-opt-23.c: Update testcase.
+	* gcc.dg/tree-ssa/phi-opt-24.c: Likewise.
+
+2023-04-24  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/ssa-ifcombine-13.c: Add -fno-ssa-phiopt.
+
+2023-04-24  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/109604
+	* gcc.c-torture/compile/pr109604-1.c: New test.
+	* gcc.c-torture/compile/pr109604-2.c: New test.
+
+2023-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/sve-neon-modes_1.c: New test.
+	* gcc.target/aarch64/sve-neon-modes_2.c: New test.
+
+2023-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/109406
+	* gcc.target/aarch64/sve2/div-by-bitmask_1.c: Adjust for unpredicated SVE2
+	MUL.
+	* gcc.target/aarch64/sve2/unpred_mul_1.c: New test.
+
+2023-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/vabal_combine.c: New test.
+
+2023-04-24  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/addlv_zext.c: New test.
+
+2023-04-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/avl_single-102.c: New test.
+
+2023-04-24  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/vsetvl/ffload-1.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/ffload-2.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/ffload-3.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/ffload-5.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/ffload-6.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/ffload-7.c: New test.
+
+2023-04-24  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/109011
+	* gcc.target/i386/pr109011-b1.c: New test.
+	* gcc.target/i386/pr109011-b2.c: New test.
+	* gcc.target/i386/pr109011-d1.c: New test.
+	* gcc.target/i386/pr109011-d2.c: New test.
+	* gcc.target/i386/pr109011-q1.c: New test.
+	* gcc.target/i386/pr109011-q2.c: New test.
+	* gcc.target/i386/pr109011-w1.c: New test.
+	* gcc.target/i386/pr109011-w2.c: New test.
+	* gcc.target/i386/pr109011-dq1.c: New file.
+	* gcc.target/i386/pr109011-dq2.c: New file.
+
 2023-04-23  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* lib/gm2.exp (gm2_target_compile_default): Conditionally

@@ -1,3 +1,7 @@
+2023-04-24  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Fix sorting.
+
 2023-04-21  Peter Foley  <pefoley2@pefoley.com>
 
 	* configure: Regenerate.
