@@ -27972,9 +27972,7 @@ value_dependent_expression_p (tree expression)
     case VAR_DECL:
        /* A constant with literal type and is initialized
 	  with an expression that is value-dependent.  */
-      if (DECL_DEPENDENT_INIT_P (expression)
-	  /* FIXME cp_finish_decl doesn't fold reference initializers.  */
-	  || TYPE_REF_P (TREE_TYPE (expression)))
+      if (DECL_DEPENDENT_INIT_P (expression))
 	return true;
       if (DECL_HAS_VALUE_EXPR_P (expression))
 	{
@@ -27989,6 +27987,9 @@ value_dependent_expression_p (tree expression)
 		  && value_expr == error_mark_node))
 	    return true;
 	}
+      else if (TYPE_REF_P (TREE_TYPE (expression)))
+	/* FIXME cp_finish_decl doesn't fold reference initializers.  */
+	return true;
       /* We have a constexpr variable and we're processing a template.  When
 	 there's lifetime extension involved (for which finish_compound_literal
 	 used to create a temporary), we'll not be able to evaluate the
