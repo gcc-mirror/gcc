@@ -933,6 +933,11 @@ public:
   // behavior that we have items that can also be expressions?
   bool is_item () const override { return true; }
 
+  virtual std::vector<Attribute> &get_outer_attrs () = 0;
+  virtual const std::vector<Attribute> &get_outer_attrs () const = 0;
+
+  virtual bool has_outer_attrs () const { return !get_outer_attrs ().empty (); }
+
 protected:
   // Clone function implementation as pure virtual method
   virtual Item *clone_item_impl () const = 0;

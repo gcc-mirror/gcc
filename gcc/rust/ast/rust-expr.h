@@ -2762,15 +2762,15 @@ protected:
 public:
   Location get_locus () const override final { return locus; }
 
-  // should never be called - error if called
-  void set_outer_attrs (std::vector<Attribute> /* new_attrs */) override
+  std::vector<Attribute> &get_outer_attrs () override final
   {
+    // RangeExpr cannot have any outer attributes
     rust_assert (false);
   }
 
-  std::vector<Attribute> &get_outer_attrs () override
+  // should never be called - error if called
+  void set_outer_attrs (std::vector<Attribute> /* new_attrs */) override
   {
-    // RangeExpr cannot have any outer attributes
     rust_assert (false);
   }
 };
