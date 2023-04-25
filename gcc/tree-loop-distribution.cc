@@ -453,7 +453,7 @@ create_edge_for_control_dependence (struct graph *rdg, basic_block bb,
 			    0, edge_n, bi)
     {
       basic_block cond_bb = cd->get_edge_src (edge_n);
-      gimple *stmt = last_stmt (cond_bb);
+      gimple *stmt = *gsi_last_bb (cond_bb);
       if (stmt && is_ctrl_stmt (stmt))
 	{
 	  struct graph_edge *e;
@@ -3587,7 +3587,7 @@ loop_distribution::transform_reduction_loop (loop_p loop)
   data_reference_p load_dr = NULL, store_dr = NULL;
 
   edge e = single_exit (loop);
-  gcond *cond = safe_dyn_cast <gcond *> (last_stmt (e->src));
+  gcond *cond = safe_dyn_cast <gcond *> (*gsi_last_bb (e->src));
   if (!cond)
     return false;
   /* Ensure loop condition is an (in)equality test and loop is exited either if

@@ -436,7 +436,6 @@ determine_value_range (class loop *loop, tree type, tree var, mpz_t off,
 	{
 	  edge e;
 	  tree c0, c1;
-	  gimple *cond;
 	  enum tree_code cmp;
 
 	  if (!single_pred_p (bb))
@@ -446,7 +445,7 @@ determine_value_range (class loop *loop, tree type, tree var, mpz_t off,
 	  if (!(e->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)))
 	    continue;
 
-	  cond = last_stmt (e->src);
+	  gcond *cond = as_a <gcond *> (*gsi_last_bb (e->src));
 	  c0 = gimple_cond_lhs (cond);
 	  cmp = gimple_cond_code (cond);
 	  c1 = gimple_cond_rhs (cond);
@@ -719,7 +718,6 @@ bound_difference (class loop *loop, tree x, tree y, bounds *bnds)
   edge e;
   basic_block bb;
   tree c0, c1;
-  gimple *cond;
   enum tree_code cmp;
 
   /* Get rid of unnecessary casts, but preserve the value of
@@ -771,7 +769,7 @@ bound_difference (class loop *loop, tree x, tree y, bounds *bnds)
       if (!(e->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)))
 	continue;
 
-      cond = last_stmt (e->src);
+      gcond *cond = as_a <gcond *> (*gsi_last_bb (e->src));
       c0 = gimple_cond_lhs (cond);
       cmp = gimple_cond_code (cond);
       c1 = gimple_cond_rhs (cond);
@@ -2100,9 +2098,8 @@ number_of_iterations_popcount (loop_p loop, edge exit,
 
   /* Check that condition for staying inside the loop is like
      if (iv != 0).  */
-  gimple *cond_stmt = last_stmt (exit->src);
+  gcond *cond_stmt = safe_dyn_cast <gcond *> (*gsi_last_bb (exit->src));
   if (!cond_stmt
-      || gimple_code (cond_stmt) != GIMPLE_COND
       || code != NE_EXPR
       || !integer_zerop (gimple_cond_rhs (cond_stmt))
       || TREE_CODE (gimple_cond_lhs (cond_stmt)) != SSA_NAME)
@@ -2320,9 +2317,8 @@ number_of_iterations_cltz (loop_p loop, edge exit,
 
   /* Check that condition for staying inside the loop is like
      if (iv == 0).  */
-  gimple *cond_stmt = last_stmt (exit->src);
+  gcond *cond_stmt = safe_dyn_cast <gcond *> (*gsi_last_bb (exit->src));
   if (!cond_stmt
-      || gimple_code (cond_stmt) != GIMPLE_COND
       || (code != EQ_EXPR && code != GE_EXPR)
       || !integer_zerop (gimple_cond_rhs (cond_stmt))
       || TREE_CODE (gimple_cond_lhs (cond_stmt)) != SSA_NAME)
@@ -2481,9 +2477,8 @@ number_of_iterations_cltz_complement (loop_p loop, edge exit,
 
   /* Check that condition for staying inside the loop is like
      if (iv != 0).  */
-  gimple *cond_stmt = last_stmt (exit->src);
+  gcond *cond_stmt = safe_dyn_cast <gcond *> (*gsi_last_bb (exit->src));
   if (!cond_stmt
-      || gimple_code (cond_stmt) != GIMPLE_COND
       || code != NE_EXPR
       || !integer_zerop (gimple_cond_rhs (cond_stmt))
       || TREE_CODE (gimple_cond_lhs (cond_stmt)) != SSA_NAME)
@@ -2964,7 +2959,6 @@ simplify_using_initial_conditions (class loop *loop, tree expr)
 {
   edge e;
   basic_block bb;
-  gimple *stmt;
   tree cond, expanded, backup;
   int cnt = 0;
 
@@ -2987,7 +2981,7 @@ simplify_using_initial_conditions (class loop *loop, tree expr)
       if (!(e->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE)))
 	continue;
 
-      stmt = last_stmt (e->src);
+      gcond *stmt = as_a <gcond *> (*gsi_last_bb (e->src));
       cond = fold_build2 (gimple_cond_code (stmt),
 			  boolean_type_node,
 			  gimple_cond_lhs (stmt),
@@ -3096,8 +3090,6 @@ number_of_iterations_exit_assumptions (class loop *loop, edge exit,
 				       gcond **at_stmt, bool every_iteration,
 				       basic_block *body)
 {
-  gimple *last;
-  gcond *stmt;
   tree type;
   tree op0, op1;
   enum tree_code code;
@@ -3122,10 +3114,7 @@ number_of_iterations_exit_assumptions (class loop *loop, edge exit,
   niter->control.base = NULL_TREE;
   niter->control.step = NULL_TREE;
   niter->control.no_overflow = false;
-  last = last_stmt (exit->src);
-  if (!last)
-    return false;
-  stmt = dyn_cast <gcond *> (last);
+  gcond *stmt = safe_dyn_cast <gcond *> (*gsi_last_bb (exit->src));
   if (!stmt)
     return false;
 
@@ -3536,12 +3525,11 @@ loop_niter_by_eval (class loop *loop, edge exit)
   tree acnd;
   tree op[2], val[2], next[2], aval[2];
   gphi *phi;
-  gimple *cond;
   unsigned i, j;
   enum tree_code cmp;
 
-  cond = last_stmt (exit->src);
-  if (!cond || gimple_code (cond) != GIMPLE_COND)
+  gcond *cond = safe_dyn_cast <gcond *> (*gsi_last_bb (exit->src));
+  if (!cond)
     return chrec_dont_know;
 
   cmp = gimple_cond_code (cond);
@@ -4808,7 +4796,7 @@ estimate_numbers_of_iterations (class loop *loop)
     {
       if (ex == likely_exit)
 	{
-	  gimple *stmt = last_stmt (ex->src);
+	  gimple *stmt = *gsi_last_bb (ex->src);
 	  if (stmt != NULL)
 	    {
 	      gcond *cond = dyn_cast<gcond *> (stmt);

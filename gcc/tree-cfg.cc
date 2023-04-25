@@ -479,8 +479,7 @@ bool
 assert_unreachable_fallthru_edge_p (edge e)
 {
   basic_block pred_bb = e->src;
-  gimple *last = last_stmt (pred_bb);
-  if (last && gimple_code (last) == GIMPLE_COND)
+  if (safe_is_a <gcond *> (*gsi_last_bb (pred_bb)))
     {
       basic_block other_bb = EDGE_SUCC (pred_bb, 0)->dest;
       if (other_bb == e->dest)
@@ -849,7 +848,7 @@ handle_abnormal_edges (basic_block *dispatcher_bbs, basic_block for_bb,
 static int
 make_edges_bb (basic_block bb, struct omp_region **pcur_region, int *pomp_index)
 {
-  gimple *last = last_stmt (bb);
+  gimple *last = *gsi_last_bb (bb);
   bool fallthru = false;
   int ret = 0;
 
@@ -1274,14 +1273,13 @@ assign_discriminators (void)
 static void
 make_cond_expr_edges (basic_block bb)
 {
-  gcond *entry = as_a <gcond *> (last_stmt (bb));
+  gcond *entry = as_a <gcond *> (*gsi_last_bb (bb));
   gimple *then_stmt, *else_stmt;
   basic_block then_bb, else_bb;
   tree then_label, else_label;
   edge e;
 
   gcc_assert (entry);
-  gcc_assert (gimple_code (entry) == GIMPLE_COND);
 
   /* Entry basic blocks for each component.  */
   then_label = gimple_cond_true_label (entry);
@@ -1357,9 +1355,8 @@ end_recording_case_labels (void)
       basic_block bb = BASIC_BLOCK_FOR_FN (cfun, i);
       if (bb)
 	{
-	  gimple *stmt = last_stmt (bb);
-	  if (stmt && gimple_code (stmt) == GIMPLE_SWITCH)
-	    group_case_labels_stmt (as_a <gswitch *> (stmt));
+	  if (gswitch *stmt = safe_dyn_cast <gswitch *> (*gsi_last_bb (bb)))
+	    group_case_labels_stmt (stmt);
 	}
     }
   BITMAP_FREE (touched_switch_bbs);
@@ -1478,7 +1475,7 @@ make_goto_expr_edges (basic_block bb)
 static void
 make_gimple_asm_edges (basic_block bb)
 {
-  gasm *stmt = as_a <gasm *> (last_stmt (bb));
+  gasm *stmt = as_a <gasm *> (*gsi_last_bb (bb));
   int i, n = gimple_asm_nlabels (stmt);
 
   for (i = 0; i < n; ++i)
@@ -1635,7 +1632,7 @@ cleanup_dead_labels (void)
      First do so for each block ending in a control statement.  */
   FOR_EACH_BB_FN (bb, cfun)
     {
-      gimple *stmt = last_stmt (bb);
+      gimple *stmt = *gsi_last_bb (bb);
       tree label, new_label;
 
       if (!stmt)
@@ -1923,9 +1920,8 @@ group_case_labels (void)
 
   FOR_EACH_BB_FN (bb, cfun)
     {
-      gimple *stmt = last_stmt (bb);
-      if (stmt && gimple_code (stmt) == GIMPLE_SWITCH)
-	changed |= group_case_labels_stmt (as_a <gswitch *> (stmt));
+      if (gswitch *stmt = safe_dyn_cast <gswitch *> (*gsi_last_bb (bb)))
+	changed |= group_case_labels_stmt (stmt);
     }
 
   return changed;
@@ -1956,7 +1952,7 @@ gimple_can_merge_blocks_p (basic_block a, basic_block b)
 
   /* If A ends by a statement causing exceptions or something similar, we
      cannot merge the blocks.  */
-  stmt = last_stmt (a);
+  stmt = *gsi_last_bb (a);
   if (stmt && stmt_ends_bb_p (stmt))
     return false;
 
@@ -2167,7 +2163,8 @@ gimple_merge_blocks (basic_block a, basic_block b)
   move_block_after (b, a);
 
   gcc_assert (single_succ_edge (a)->flags & EDGE_FALLTHRU);
-  gcc_assert (!last_stmt (a) || !stmt_ends_bb_p (last_stmt (a)));
+  gcc_assert (!*gsi_last_bb (a)
+	      || !stmt_ends_bb_p (*gsi_last_bb (a)));
 
   /* Remove labels from B and set gimple_bb to A for other statements.  */
   for (gsi = gsi_start_bb (b); !gsi_end_p (gsi);)
@@ -2428,19 +2425,19 @@ find_taken_edge (basic_block bb, tree val)
 {
   gimple *stmt;
 
-  stmt = last_stmt (bb);
+  stmt = *gsi_last_bb (bb);
 
   /* Handle ENTRY and EXIT.  */
   if (!stmt)
-    return NULL;
+    ;
 
-  if (gimple_code (stmt) == GIMPLE_COND)
+  else if (gimple_code (stmt) == GIMPLE_COND)
     return find_taken_edge_cond_expr (as_a <gcond *> (stmt), val);
 
-  if (gimple_code (stmt) == GIMPLE_SWITCH)
+  else if (gimple_code (stmt) == GIMPLE_SWITCH)
     return find_taken_edge_switch_expr (as_a <gswitch *> (stmt), val);
 
-  if (computed_goto_p (stmt))
+  else if (computed_goto_p (stmt))
     {
       /* Only optimize if the argument is a label, if the argument is
 	 not a label then we cannot construct a proper CFG.
@@ -6835,7 +6832,6 @@ gimple_duplicate_sese_tail (edge entry, edge exit,
 		exit_count = profile_count::uninitialized ();
   edge exits[2], nexits[2], e;
   gimple_stmt_iterator gsi;
-  gimple *cond_stmt;
   edge sorig, snew;
   basic_block exit_bb;
   gphi_iterator psi;
@@ -6897,18 +6893,17 @@ gimple_duplicate_sese_tail (edge entry, edge exit,
   /* Create the switch block, and put the exit condition to it.  */
   entry_bb = entry->dest;
   nentry_bb = get_bb_copy (entry_bb);
-  if (!last_stmt (entry->src)
-      || !stmt_ends_bb_p (last_stmt (entry->src)))
+  if (!*gsi_last_bb (entry->src)
+      || !stmt_ends_bb_p (*gsi_last_bb (entry->src)))
     switch_bb = entry->src;
   else
     switch_bb = split_edge (entry);
   set_immediate_dominator (CDI_DOMINATORS, nentry_bb, switch_bb);
 
-  gsi = gsi_last_bb (switch_bb);
-  cond_stmt = last_stmt (exit->src);
-  gcc_assert (gimple_code (cond_stmt) == GIMPLE_COND);
-  cond_stmt = gimple_copy (cond_stmt);
+  gcond *cond_stmt = as_a <gcond *> (*gsi_last_bb (exit->src));
+  cond_stmt = as_a <gcond *> (gimple_copy (cond_stmt));
 
+  gsi = gsi_last_bb (switch_bb);
   gsi_insert_after (&gsi, cond_stmt, GSI_NEW_STMT);
 
   sorig = single_succ_edge (switch_bb);
@@ -7671,16 +7666,15 @@ gather_ssa_name_hash_map_from (tree const &from, tree const &, void *data)
 static gimple *
 find_loop_dist_alias (basic_block bb)
 {
-  gimple *g = last_stmt (bb);
-  if (g == NULL || gimple_code (g) != GIMPLE_COND)
+  gimple_stmt_iterator gsi = gsi_last_bb (bb);
+  if (!safe_is_a <gcond *> (*gsi))
     return NULL;
 
-  gimple_stmt_iterator gsi = gsi_for_stmt (g);
   gsi_prev (&gsi);
   if (gsi_end_p (gsi))
     return NULL;
 
-  g = gsi_stmt (gsi);
+  gimple *g = gsi_stmt (gsi);
   if (gimple_call_internal_p (g, IFN_LOOP_DIST_ALIAS))
     return g;
   return NULL;
@@ -8655,8 +8649,7 @@ gimple_block_ends_with_call_p (basic_block bb)
 static bool
 gimple_block_ends_with_condjump_p (const_basic_block bb)
 {
-  gimple *stmt = last_stmt (CONST_CAST_BB (bb));
-  return (stmt && gimple_code (stmt) == GIMPLE_COND);
+  return safe_is_a <gcond *> (*gsi_last_bb (const_cast <basic_block> (bb)));
 }
 
 
@@ -8984,7 +8977,7 @@ gimple_purge_dead_eh_edges (basic_block bb)
   bool changed = false;
   edge e;
   edge_iterator ei;
-  gimple *stmt = last_stmt (bb);
+  gimple *stmt = *gsi_last_bb (bb);
 
   if (stmt && stmt_can_throw_internal (cfun, stmt))
     return false;
@@ -9034,7 +9027,7 @@ gimple_purge_dead_abnormal_call_edges (basic_block bb)
   bool changed = false;
   edge e;
   edge_iterator ei;
-  gimple *stmt = last_stmt (bb);
+  gimple *stmt = *gsi_last_bb (bb);
 
   if (stmt && stmt_can_make_abnormal_goto (stmt))
     return false;
@@ -9612,7 +9605,7 @@ pass_warn_function_return::execute (function *fun)
       for (ei = ei_start (EXIT_BLOCK_PTR_FOR_FN (fun)->preds);
 	   (e = ei_safe_edge (ei)); )
 	{
-	  last = last_stmt (e->src);
+	  last = *gsi_last_bb (e->src);
 	  if ((gimple_code (last) == GIMPLE_RETURN
 	       || gimple_call_builtin_p (last, BUILT_IN_RETURN))
 	      && location == UNKNOWN_LOCATION
@@ -9646,13 +9639,12 @@ pass_warn_function_return::execute (function *fun)
     {
       FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (fun)->preds)
 	{
-	  gimple *last = last_stmt (e->src);
-	  greturn *return_stmt = dyn_cast <greturn *> (last);
+	  greturn *return_stmt = dyn_cast <greturn *> (*gsi_last_bb (e->src));
 	  if (return_stmt
 	      && gimple_return_retval (return_stmt) == NULL
-	      && !warning_suppressed_p (last, OPT_Wreturn_type))
+	      && !warning_suppressed_p (return_stmt, OPT_Wreturn_type))
 	    {
-	      location = gimple_location (last);
+	      location = gimple_location (return_stmt);
 	      if (LOCATION_LOCUS (location) == UNKNOWN_LOCATION)
 		location = fun->function_end_locus;
 	      if (warning_at (location, OPT_Wreturn_type,
@@ -9669,7 +9661,7 @@ pass_warn_function_return::execute (function *fun)
 	FOR_EACH_BB_FN (bb, fun)
 	  if (EDGE_COUNT (bb->succs) == 0)
 	    {
-	      gimple *last = last_stmt (bb);
+	      gimple *last = *gsi_last_bb (bb);
 	      const enum built_in_function ubsan_missing_ret
 		= BUILT_IN_UBSAN_HANDLE_MISSING_RETURN;
 	      if (last
@@ -9934,7 +9926,7 @@ execute_fixup_cfg (void)
 
 	  gsi_next (&gsi);
 	}
-      if (gimple *last = last_stmt (bb))
+      if (gimple *last = *gsi_last_bb (bb))
 	{
 	  if (maybe_clean_eh_stmt (last)
 	      && gimple_purge_dead_eh_edges (bb))

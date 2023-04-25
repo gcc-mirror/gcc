@@ -1300,13 +1300,7 @@ get_loop_exit_condition (const class loop *loop)
     fprintf (dump_file, "(get_loop_exit_condition \n  ");
 
   if (exit_edge)
-    {
-      gimple *stmt;
-
-      stmt = last_stmt (exit_edge->src);
-      if (gcond *cond_stmt = safe_dyn_cast <gcond *> (stmt))
-	res = cond_stmt;
-    }
+    res = safe_dyn_cast <gcond *> (*gsi_last_bb (exit_edge->src));
 
   if (dump_file && (dump_flags & TDF_SCEV))
     {

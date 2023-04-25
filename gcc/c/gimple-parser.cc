@@ -294,8 +294,7 @@ c_parser_parse_gimple_body (c_parser *cparser, char *gimple_pass,
       FOR_EACH_BB_FN (bb, cfun)
 	if (EDGE_COUNT (bb->succs) == 0)
 	  {
-	    gimple *last = last_stmt (bb);
-	    if (gswitch *sw = safe_dyn_cast <gswitch *> (last))
+	    if (gswitch *sw = safe_dyn_cast <gswitch *> (*gsi_last_bb (bb)))
 	      for (unsigned i = 0; i < gimple_switch_num_labels (sw); ++i)
 		{
 		  basic_block label_bb = gimple_switch_label_bb (cfun, sw, i);

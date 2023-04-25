@@ -66,7 +66,7 @@ static bool
 entry_loop_condition_is_static (class loop *l, gimple_ranger *ranger)
 {
   edge e = loop_preheader_edge (l);
-  gcond *last = safe_dyn_cast <gcond *> (last_stmt (e->dest));
+  gcond *last = safe_dyn_cast <gcond *> (*gsi_last_bb (e->dest));
 
   if (!last)
     return false;
@@ -133,7 +133,7 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
       return false;
     }
 
-  gcond *last = safe_dyn_cast <gcond *> (last_stmt (header));
+  gcond *last = safe_dyn_cast <gcond *> (*gsi_last_bb (header));
   if (!last)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))

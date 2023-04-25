@@ -2934,11 +2934,9 @@ apply_return_prediction (void)
 
   FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     {
-      gimple *last = last_stmt (e->src);
-      if (last
-	  && gimple_code (last) == GIMPLE_RETURN)
+      if (greturn *last = safe_dyn_cast <greturn *> (*gsi_last_bb (e->src)))
 	{
-	  return_stmt = as_a <greturn *> (last);
+	  return_stmt = last;
 	  break;
 	}
     }

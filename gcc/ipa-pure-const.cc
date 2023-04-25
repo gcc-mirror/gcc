@@ -2379,16 +2379,15 @@ pass_nothrow::execute (function *)
   bool cfg_changed = false;
   if (self_recursive_p (node))
     FOR_EACH_BB_FN (this_block, cfun)
-      if (gimple *g = last_stmt (this_block))
-	if (is_gimple_call (g))
-	  {
-	    tree callee_t = gimple_call_fndecl (g);
-	    if (callee_t
-		&& recursive_call_p (current_function_decl, callee_t)
-		&& maybe_clean_eh_stmt (g)
-		&& gimple_purge_dead_eh_edges (this_block))
-	      cfg_changed = true;
-	  }
+      if (gcall *g = safe_dyn_cast <gcall *> (*gsi_last_bb (this_block)))
+	{
+	  tree callee_t = gimple_call_fndecl (g);
+	  if (callee_t
+	      && recursive_call_p (current_function_decl, callee_t)
+	      && maybe_clean_eh_stmt (g)
+	      && gimple_purge_dead_eh_edges (this_block))
+	    cfg_changed = true;
+	}
 
   if (dump_file)
     fprintf (dump_file, "Function found to be nothrow: %s\n",

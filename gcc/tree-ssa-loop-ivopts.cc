@@ -8131,7 +8131,8 @@ tree_ssa_iv_optimize_loop (struct ivopts_data *data, class loop *loop,
 	{
 	  fprintf (dump_file, "  single exit %d -> %d, exit condition ",
 		   exit->src->index, exit->dest->index);
-	  print_gimple_stmt (dump_file, last_stmt (exit->src), 0, TDF_SLIM);
+	  print_gimple_stmt (dump_file, *gsi_last_bb (exit->src),
+			     0, TDF_SLIM);
 	  fprintf (dump_file, "\n");
 	}
 

@@ -1157,8 +1157,7 @@ if_convertible_bb_p (class loop *loop, basic_block bb, basic_block exit_bb)
   if (EDGE_COUNT (bb->succs) > 2)
     return false;
 
-  gimple *last = last_stmt (bb);
-  if (gcall *call = safe_dyn_cast <gcall *> (last))
+  if (gcall *call = safe_dyn_cast <gcall *> (*gsi_last_bb (bb)))
     if (gimple_call_ctrl_altering_p (call))
       return false;
 
@@ -1302,7 +1301,6 @@ predicate_bbs (loop_p loop)
     {
       basic_block bb = ifc_bbs[i];
       tree cond;
-      gimple *stmt;
 
       /* The loop latch and loop exit block are always executed and
 	 have no extra conditions to be processed: skip them.  */
@@ -1314,8 +1312,7 @@ predicate_bbs (loop_p loop)
 	}
 
       cond = bb_predicate (bb);
-      stmt = last_stmt (bb);
-      if (stmt && gimple_code (stmt) == GIMPLE_COND)
+      if (gcond *stmt = safe_dyn_cast <gcond *> (*gsi_last_bb (bb)))
 	{
 	  tree c2;
 	  edge true_edge, false_edge;
@@ -3049,7 +3046,6 @@ ifcvt_split_critical_edges (class loop *loop, bool aggressive_if_conv)
   basic_block bb;
   unsigned int num = loop->num_nodes;
   unsigned int i;
-  gimple *stmt;
   edge e;
   edge_iterator ei;
   auto_vec<edge> critical_edges;
@@ -3077,9 +3073,8 @@ ifcvt_split_critical_edges (class loop *loop, bool aggressive_if_conv)
       if (bb == loop->latch || bb_with_exit_edge_p (loop, bb))
 	continue;
 
-      stmt = last_stmt (bb);
       /* Skip basic blocks not ending with conditional branch.  */
-      if (!stmt || gimple_code (stmt) != GIMPLE_COND)
+      if (!safe_is_a <gcond *> (*gsi_last_bb (bb)))
 	continue;
 
       FOR_EACH_EDGE (e, ei, bb->succs)

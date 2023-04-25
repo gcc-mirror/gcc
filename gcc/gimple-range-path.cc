@@ -794,7 +794,7 @@ path_range_query::compute_phi_relations (basic_block bb, basic_block prev)
 void
 path_range_query::compute_outgoing_relations (basic_block bb, basic_block next)
 {
-  if (gcond *cond = safe_dyn_cast <gcond *> (last_stmt (bb)))
+  if (gcond *cond = safe_dyn_cast <gcond *> (*gsi_last_bb (bb)))
     {
       int_range<2> r;
       edge e0 = EDGE_SUCC (bb, 0);

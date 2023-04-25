@@ -330,14 +330,13 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 static bool
 mark_last_stmt_necessary (basic_block bb)
 {
-  gimple *stmt = last_stmt (bb);
-
   if (!bitmap_set_bit (last_stmt_necessary, bb->index))
     return true;
 
   bitmap_set_bit (bb_contains_live_stmts, bb->index);
 
   /* We actually mark the statement only if it is a control statement.  */
+  gimple *stmt = *gsi_last_bb (bb);
   if (stmt && is_ctrl_stmt (stmt))
     {
       mark_stmt_necessary (stmt, true);
@@ -1523,7 +1522,7 @@ eliminate_unnecessary_stmts (bool aggressive)
 	 gimple_purge_dead_abnormal_call_edges would do that and we
 	 cannot free dominators yet.  */
       FOR_EACH_BB_FN (bb, cfun)
-	if (gcall *stmt = safe_dyn_cast <gcall *> (last_stmt (bb)))
+	if (gcall *stmt = safe_dyn_cast <gcall *> (*gsi_last_bb (bb)))
 	  if (!stmt_can_make_abnormal_goto (stmt))
 	    {
 	      edge_iterator ei;

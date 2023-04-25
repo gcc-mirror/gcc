@@ -1358,7 +1358,7 @@ dom_opt_dom_walker::set_global_ranges_from_unreachable_edges (basic_block bb)
   if (!pred_e)
     return;
 
-  gimple *stmt = last_stmt (pred_e->src);
+  gimple *stmt = *gsi_last_bb (pred_e->src);
   if (!stmt
       || gimple_code (stmt) != GIMPLE_COND
       || !assert_unreachable_fallthru_edge_p (pred_e))

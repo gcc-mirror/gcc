@@ -768,7 +768,6 @@ ip_end_pos (class loop *loop)
 basic_block
 ip_normal_pos (class loop *loop)
 {
-  gimple *last;
   basic_block bb;
   edge exit;
 
@@ -776,9 +775,7 @@ ip_normal_pos (class loop *loop)
     return NULL;
 
   bb = single_pred (loop->latch);
-  last = last_stmt (bb);
-  if (!last
-      || gimple_code (last) != GIMPLE_COND)
+  if (!safe_is_a <gcond *> (*gsi_last_bb (bb)))
     return NULL;
 
   exit = EDGE_SUCC (bb, 0);
@@ -1588,7 +1585,7 @@ canonicalize_loop_ivs (class loop *loop, tree *nit, bool bump_in_latch)
 
   rewrite_all_phi_nodes_with_iv (loop, var_before);
 
-  stmt = as_a <gcond *> (last_stmt (exit->src));
+  stmt = as_a <gcond *> (*gsi_last_bb (exit->src));
   /* Make the loop exit if the control condition is not satisfied.  */
   if (exit->flags & EDGE_TRUE_VALUE)
     {
