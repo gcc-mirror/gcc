@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_RANGE_H
 #define GCC_GIMPLE_RANGE_H
 
+#include "ssa.h"
 #include "range.h"
 #include "value-query.h"
 #include "gimple-range-op.h"

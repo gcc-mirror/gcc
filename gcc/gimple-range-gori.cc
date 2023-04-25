@@ -182,9 +182,9 @@ range_def_chain::register_dependency (tree name, tree dep, basic_block bb)
 
   // Set the direct dependency cache entries.
   if (!src.ssa1)
-    src.ssa1 = dep;
-  else if (!src.ssa2 && src.ssa1 != dep)
-    src.ssa2 = dep;
+    src.ssa1 = SSA_NAME_VERSION (dep);
+  else if (!src.ssa2 && src.ssa1 != SSA_NAME_VERSION (dep))
+    src.ssa2 = SSA_NAME_VERSION (dep);
 
   // Don't calculate imports or export/dep chains if BB is not provided.
   // This is usually the case for when the temporal cache wants the direct
@@ -1316,7 +1316,7 @@ gori_compute::may_recompute_p (tree name, basic_block bb, int depth)
   // If the first dependency is not set, there is no recomputation.
   // Dependencies reflect original IL, not current state.   Check if the
   // SSA_NAME is still valid as well.
-  if (!dep1 || SSA_NAME_IN_FREE_LIST (dep1))
+  if (!dep1)
     return false;
 
   // Don't recalculate PHIs or statements with side_effects.
