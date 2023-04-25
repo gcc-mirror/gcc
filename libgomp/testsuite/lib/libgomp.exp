@@ -9,6 +9,7 @@ proc load_gcc_lib { filename } {
 }
 
 load_lib dg.exp
+load_lib standard.exp
 
 # Required to use gcc-dg.exp - however, the latter should NOT be
 # loaded until ${tool}_target_compile is defined since it uses that
@@ -324,6 +325,34 @@ proc libgomp_option_proc { option } {
 	return 1
     } else {
 	return 0
+    }
+}
+
+if ![info exists ::env(GCC_RUNTEST_PARALLELIZE_DIR)] {
+    # No parallel testing.
+} elseif { $FLOCK == "" } {
+    # Using just one parallel slot.
+} else {
+    # Using several parallel slots.  Override DejaGnu
+    # 'standard.exp:${tool}_load'...
+    rename libgomp_load standard_libgomp_load
+    proc libgomp_load { program args } {
+	# ... in order to serialize execution testing via an exclusive lock.
+	set lock_file ../lock
+	set lock_kind --exclusive
+	set lock_fd [open $lock_file a+]
+	set lock_clock_begin [clock seconds]
+	global FLOCK
+	exec $FLOCK $lock_kind 0 <@ $lock_fd
+	set lock_clock_end [clock seconds]
+	verbose -log "Got ${FLOCK}('$lock_file', '$lock_kind') at [clock format $lock_clock_end] after [expr $lock_clock_end - $lock_clock_begin] s" 2
+
+	set result [standard_libgomp_load $program $args]
+
+	# Unlock (implicit with 'close').
+	close $lock_fd
+
+	return $result
     }
 }
 

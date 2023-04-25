@@ -162,6 +162,7 @@ EXEEXT = @EXEEXT@
 FC = @FC@
 FCFLAGS = @FCFLAGS@
 FGREP = @FGREP@
+FLOCK = @FLOCK@
 GREP = @GREP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -310,7 +311,8 @@ check_p_numbers4 := $(foreach i,$(check_p_numbers0),$(addprefix $(i),$(check_p_n
 check_p_numbers5 := $(addprefix 0,$(check_p_numbers3)) $(check_p_numbers4)
 check_p_numbers6 := $(foreach i,$(check_p_numbers0),$(addprefix $(i),$(check_p_numbers5)))
 check_p_numbers := $(check_p_numbers0) $(check_p_numbers2) $(check_p_numbers4) $(check_p_numbers6)
-gcc_test_parallel_slots := 1
+# If unable to serialize execution testing, use just one parallel slot.
+gcc_test_parallel_slots := $(if $(FLOCK),$(if $(GCC_TEST_PARALLEL_SLOTS),$(GCC_TEST_PARALLEL_SLOTS),19),1)
 check_p_subdirs = $(wordlist 1,$(gcc_test_parallel_slots),$(check_p_numbers))
 check_DEJAGNU_libgomp_targets = $(addprefix check-DEJAGNUlibgomp,$(check_p_subdirs))
 all: all-am
