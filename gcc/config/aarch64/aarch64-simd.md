@@ -257,6 +257,16 @@
   [(set_attr "type" "neon_stp")]
 )
 
+(define_insn "aarch64_simd_stp<mode>"
+  [(set (match_operand:VP_2E 0 "aarch64_mem_pair_lanes_operand" "=Umn,Umn")
+	(vec_duplicate:VP_2E (match_operand:<VEL> 1 "register_operand" "w,r")))]
+  "TARGET_SIMD"
+  "@
+   stp\\t%<Vetype>1, %<Vetype>1, %y0
+   stp\\t%<vw>1, %<vw>1, %y0"
+  [(set_attr "type" "neon_stp, store_<ldpstp_vel_sz>")]
+)
+
 (define_insn "load_pair<VQ:mode><VQ2:mode>"
   [(set (match_operand:VQ 0 "register_operand" "=w")
 	(match_operand:VQ 1 "aarch64_mem_pair_operand" "Ump"))

@@ -1020,6 +1020,9 @@
 ;; Likewise for load/store pair.
 (define_mode_attr ldpstp_sz [(SI "8") (DI "16")])
 
+;; Size of element access for STP/LDP-generated vectors.
+(define_mode_attr ldpstp_vel_sz [(V2SI "8") (V2SF "8") (V2DI "16") (V2DF "16")])
+
 ;; For inequal width int to float conversion
 (define_mode_attr w1 [(HF "w") (SF "w") (DF "x")])
 (define_mode_attr w2 [(HF "x") (SF "x") (DF "w")])

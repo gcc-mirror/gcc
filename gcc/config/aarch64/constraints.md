@@ -287,7 +287,7 @@
 ;; Used for storing or loading pairs in an AdvSIMD register using an STP/LDP
 ;; as a vector-concat.  The address mode uses the same constraints as if it
 ;; were for a single value.
-(define_memory_constraint "Umn"
+(define_relaxed_memory_constraint "Umn"
   "@internal
   A memory address suitable for a load/store pair operation."
   (and (match_code "mem")
