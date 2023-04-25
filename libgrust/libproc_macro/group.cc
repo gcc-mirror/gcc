@@ -23,10 +23,9 @@
 #include "group.h"
 
 namespace ProcMacro {
-namespace Group {
 
 Group
-Group::make_group (TokenStream::TokenStream stream, Delimiter delim)
+Group::make_group (TokenStream stream, Delimiter delim)
 {
   return {delim, stream};
 }
@@ -37,5 +36,4 @@ Group::drop (Group *g)
   TokenStream::TokenStream::drop (&g->stream);
 }
 
-} // namespace Group
 } // namespace ProcMacro

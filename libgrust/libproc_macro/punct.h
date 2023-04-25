@@ -26,12 +26,11 @@
 #include <cstdint>
 
 namespace ProcMacro {
-namespace Punct {
 
 enum Spacing
 {
-  Alone,
-  Joint
+  ALONE,
+  JOINT
 };
 
 struct Punct
@@ -40,10 +39,9 @@ struct Punct
   Spacing spacing;
 
 public:
-  static Punct make_punct (std::uint32_t ch, Spacing spacing = Spacing::Alone);
+  static Punct make_punct (std::uint32_t ch, Spacing spacing = Spacing::ALONE);
 };
 
-} // namespace Punct
 } // namespace ProcMacro
 
 #endif /* ! PUNCT_H */

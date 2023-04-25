@@ -29,7 +29,6 @@
 #include "literal.h"
 
 namespace ProcMacro {
-namespace TokenTree {
 
 enum TokenTreeTag
 {
@@ -41,10 +40,10 @@ enum TokenTreeTag
 
 union TokenTreePayload
 {
-  Group::Group group;
-  Ident::Ident ident;
-  Punct::Punct punct;
-  Literal::Literal literal;
+  Group group;
+  Ident ident;
+  Punct punct;
+  Literal literal;
 };
 
 struct TokenTree
@@ -53,15 +52,14 @@ struct TokenTree
   TokenTreePayload payload;
 
 public:
-  static TokenTree make_tokentree (Group::Group group);
-  static TokenTree make_tokentree (Ident::Ident ident);
-  static TokenTree make_tokentree (Punct::Punct punct);
-  static TokenTree make_tokentree (Literal::Literal literal);
+  static TokenTree make_tokentree (Group group);
+  static TokenTree make_tokentree (Ident ident);
+  static TokenTree make_tokentree (Punct punct);
+  static TokenTree make_tokentree (Literal literal);
 
   static void drop (TokenTree *tt);
 };
 
-} // namespace TokenTree
 } // namespace ProcMacro
 
 #endif /* ! TOKENTREE_H */

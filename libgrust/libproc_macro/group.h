@@ -26,28 +26,26 @@
 #include "tokenstream.h"
 
 namespace ProcMacro {
-namespace Group {
 
 enum Delimiter
 {
-  Parenthesis,
-  Brace,
-  Bracket,
-  None,
+  PARENTHESIS,
+  BRACE,
+  BRACKET,
+  NONE,
 };
 
 struct Group
 {
   Delimiter delimiter;
-  TokenStream::TokenStream stream;
+  TokenStream stream;
 
 public:
-  static Group make_group (TokenStream::TokenStream stream, Delimiter delim);
+  static Group make_group (TokenStream stream, Delimiter delim);
 
   static void drop (Group *g);
 };
 
-} // namespace Group
 } // namespace ProcMacro
 
 #endif /* ! GROUP_H */
