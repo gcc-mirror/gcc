@@ -800,6 +800,10 @@ typedef struct {
 
 #define Pmode word_mode
 
+/* Specify the machine mode that registers have.  */
+
+#define Xmode (TARGET_64BIT ? DImode : SImode)
+
 /* Give call MEMs SImode since it is the "most permissive" mode
    for both 32-bit and 64-bit targets.  */
 
