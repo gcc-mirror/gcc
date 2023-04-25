@@ -799,6 +799,26 @@ vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2)
 	   && (TYPE_PRECISION (vr2->type)
 	       != TREE_INT_CST_LOW (TYPE_SIZE (vr2->type))))
     return false;
+  else if (VECTOR_BOOLEAN_TYPE_P (vr1->type)
+	   && VECTOR_BOOLEAN_TYPE_P (vr2->type))
+    {
+      /* Vector boolean types can have padding, verify we are dealing with
+	 the same number of elements, aka the precision of the types.
+	 For example, In most architecture the precision_size of vbool*_t
+	 types are caculated like below:
+	 precision_size = type_size * 8
+
+	 Unfortunately, the RISC-V will adjust the precision_size for the
+	 vbool*_t in order to align the ISA as below:
+	 type_size      = [1, 1, 1, 1,  2,  4,  8]
+	 precision_size = [1, 2, 4, 8, 16, 32, 64]
+
+	 Then the precision_size of RISC-V vbool*_t will not be the multiple
+	 of the type_size.  We take care of this case consolidated here.  */
+      if (maybe_ne (TYPE_VECTOR_SUBPARTS (vr1->type),
+		    TYPE_VECTOR_SUBPARTS (vr2->type)))
+	return false;
+    }
 
   i = 0;
   j = 0;
