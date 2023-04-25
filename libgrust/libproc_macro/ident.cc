@@ -23,6 +23,7 @@
 
 #include <cstring>
 
+namespace ProcMacro {
 namespace Ident {
 
 extern "C" {
@@ -84,3 +85,4 @@ Ident::drop (Ident *ident)
 }
 
 } // namespace Ident
+} // namespace ProcMacro

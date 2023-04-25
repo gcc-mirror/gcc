@@ -22,6 +22,7 @@
 
 #include "group.h"
 
+namespace ProcMacro {
 namespace Group {
 
 Group
@@ -37,3 +38,4 @@ Group::drop (Group *g)
 }
 
 } // namespace Group
+} // namespace ProcMacro

@@ -23,6 +23,7 @@
 #include "punct.h"
 #include <cstdlib>
 
+namespace ProcMacro {
 namespace Punct {
 
 Punct
@@ -32,3 +33,4 @@ Punct::make_punct (std::uint32_t ch, Spacing spacing)
 }
 
 } // namespace Punct
+} // namespace ProcMacro

@@ -25,6 +25,7 @@
 
 #include "tokenstream.h"
 
+namespace ProcMacro {
 namespace Group {
 
 enum Delimiter
@@ -47,5 +48,6 @@ public:
 };
 
 } // namespace Group
+} // namespace ProcMacro
 
 #endif /* ! GROUP_H */

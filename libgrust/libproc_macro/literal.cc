@@ -24,6 +24,7 @@
 #include <cstring>
 #include <cstdlib>
 
+namespace ProcMacro {
 namespace Literal {
 
 void
@@ -289,3 +290,4 @@ Literal::make_isize (std::int64_t value, bool suffixed)
 }
 
 } // namespace Literal
+} // namespace ProcMacro

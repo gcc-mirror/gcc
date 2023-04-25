@@ -28,6 +28,7 @@
 #include "punct.h"
 #include "literal.h"
 
+namespace ProcMacro {
 namespace TokenTree {
 
 enum TokenTreeTag
@@ -61,5 +62,6 @@ public:
 };
 
 } // namespace TokenTree
+} // namespace ProcMacro
 
 #endif /* ! TOKENTREE_H */
