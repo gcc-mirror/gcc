@@ -31,7 +31,7 @@ bar (int a, int *c, int *d, int *e, int *f)
       [[omp::sequence (omp::directive (parallel), omp::directive (scan, exclusive (a)))]]	// { dg-error "must be the only specified attribute on a statement" }
 											// { dg-error "#pragma omp scan" "" { target *-*-* } .-1 }
       a += c[i];									// { dg-error "expected" }
-    }											// { dg-error "expected" }
+    }
   [[omp::directive (parallel for reduction (inscan, +: a))]]				// { dg-error "'a' specified in 'inscan' 'reduction' clause but not in 'scan' directive clause" }
   for (i = 0; i < 64; i++)
     {
@@ -39,7 +39,7 @@ bar (int a, int *c, int *d, int *e, int *f)
       [[omp::sequence (directive (scan inclusive (a)), directive (critical))]]		// { dg-error "must be the only specified attribute on a statement" }
 											// { dg-error "#pragma omp scan" "" { target *-*-* } .-1 }
       d[i] = a;										// { dg-error "expected" }
-    }											// { dg-error "expected" }
+    }
   [[omp::directive (parallel for reduction (inscan, +: a))]]				// { dg-error "'a' specified in 'inscan' 'reduction' clause but not in 'scan' directive clause" }
   for (i = 0; i < 64; i++)
     {
@@ -47,7 +47,7 @@ bar (int a, int *c, int *d, int *e, int *f)
       [[gnu::cold]] [[omp::directive (scan, exclusive (a))]]				// { dg-error "must be the only specified attribute on a statement" }
 											// { dg-error "#pragma omp scan" "" { target *-*-* } .-1 }
       a += c[i];									// { dg-error "expected" }
-    }											// { dg-error "expected" }
+    }
   [[omp::directive (parallel for reduction (inscan, +: a))]]				// { dg-error "'a' specified in 'inscan' 'reduction' clause but not in 'scan' directive clause" }
   for (i = 0; i < 64; i++)
     {
@@ -55,7 +55,7 @@ bar (int a, int *c, int *d, int *e, int *f)
       [[omp::directive (scan, exclusive (a)), gnu::cold]]				// { dg-error "must be the only specified attribute on a statement" }
 											// { dg-error "#pragma omp scan" "" { target *-*-* } .-1 }
       a += c[i];									// { dg-error "expected" }
-    }											// { dg-error "expected" }
+    }
   [[omp::directive (parallel for reduction (inscan, +: a))]]				// { dg-error "'a' specified in 'inscan' 'reduction' clause but not in 'scan' directive clause" }
   for (i = 0; i < 64; i++)
     {
