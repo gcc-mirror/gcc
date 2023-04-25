@@ -979,8 +979,11 @@ public:
   Visibility &get_visibility () { return visibility; }
   const Visibility &get_visibility () const { return visibility; }
 
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
-  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const override
+  {
+    return outer_attrs;
+  }
 };
 
 // Rust module item - abstract base class

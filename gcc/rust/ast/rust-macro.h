@@ -541,8 +541,11 @@ public:
   bool is_marked_for_strip () const override { return rule_name.empty (); }
 
   // TODO: this mutable getter seems really dodgy. Think up better way.
-  std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
-  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const override
+  {
+    return outer_attrs;
+  }
 
   std::vector<MacroRule> &get_macro_rules () { return rules; }
   const std::vector<MacroRule> &get_macro_rules () const { return rules; }
@@ -651,7 +654,10 @@ public:
     return invoc_data.is_marked_for_strip ();
   }
 
-  const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
+  const std::vector<Attribute> &get_outer_attrs () const override
+  {
+    return outer_attrs;
+  }
   std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
 
   void set_outer_attrs (std::vector<Attribute> new_attrs) override
