@@ -45,8 +45,7 @@ AM_MAKEFLAGS = \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" \
-        "TARGET_LIB_PATH=$(TARGET_LIB_PATH)" \
-        "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)"
+        "TARGET_LIB_PATH=$(TARGET_LIB_PATH)"
 
 toolexeclib_LTLIBRARIES = libproc_macro.la
 
