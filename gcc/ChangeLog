@@ -1,3 +1,24 @@
+2023-04-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/install.texi: Consistently use Solaris rather than Solaris 2.
+	Remove explicit Solaris 11 references.
+	Markup fixes.
+	(Options specification, --with-gnu-as): as and gas always differ
+	on Solaris.
+	Remove /usr/ccs/bin reference.
+	(Installing GCC: Binaries, Solaris (SPARC, Intel)): Remove.
+	(i?86-*-solaris2*): Merge assembler, linker recommendations ...
+	(*-*-solaris2*): ... here.
+	Update bundled GCC versions.
+	Don't refer to pre-built binaries.
+	Remove /bin/sh warning.
+	Update assembler, linker recommendations.
+	Document GNAT bootstrap compiler.
+	(sparc-sun-solaris2*): Remove non-UltraSPARC reference.
+	(sparc64-*-solaris2*): Move content...
+	(sparcv9-*-solaris2*): ...here.
+	Add GDC for 64-bit bootstrap compilers.
+
 2023-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
