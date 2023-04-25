@@ -22,10 +22,9 @@
 (define_insn "*th_addsl<mode>4"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(plus:X (ashift:X (match_operand:X 1 "register_operand" "r")
-			  (match_operand 2 "const_int_operand" "n"))
+			  (match_operand:QI 2 "imm123_operand" "Ds3"))
 		(match_operand:X 3 "register_operand" "r")))]
-  "TARGET_XTHEADBA
-   && (INTVAL (operands[2]) >= 0) && (INTVAL (operands[2]) <= 3)"
+  "TARGET_XTHEADBA"
   "th.addsl\t%0,%3,%1,%2"
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "<X:MODE>")])
