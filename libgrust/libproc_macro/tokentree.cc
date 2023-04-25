@@ -23,10 +23,9 @@
 #include "tokentree.h"
 
 namespace ProcMacro {
-namespace TokenTree {
 
 TokenTree
-TokenTree::make_tokentree (Group::Group group)
+TokenTree::make_tokentree (Group group)
 {
   TokenTreePayload payload;
   payload.group = group;
@@ -34,7 +33,7 @@ TokenTree::make_tokentree (Group::Group group)
 }
 
 TokenTree
-TokenTree::make_tokentree (Ident::Ident ident)
+TokenTree::make_tokentree (Ident ident)
 {
   TokenTreePayload payload;
   payload.ident = ident;
@@ -42,7 +41,7 @@ TokenTree::make_tokentree (Ident::Ident ident)
 }
 
 TokenTree
-TokenTree::make_tokentree (Punct::Punct punct)
+TokenTree::make_tokentree (Punct punct)
 {
   TokenTreePayload payload;
   payload.punct = punct;
@@ -50,7 +49,7 @@ TokenTree::make_tokentree (Punct::Punct punct)
 }
 
 TokenTree
-TokenTree::make_tokentree (Literal::Literal literal)
+TokenTree::make_tokentree (Literal literal)
 {
   TokenTreePayload payload;
   payload.literal = literal;
@@ -76,5 +75,4 @@ TokenTree::drop (TokenTree *tt)
     }
 }
 
-} // namespace TokenTree
 } // namespace ProcMacro

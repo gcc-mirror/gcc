@@ -26,10 +26,9 @@
 #include <cstring>
 
 namespace ProcMacro {
-namespace TokenStream {
 
 TokenStream
-TokenStream::make_tokenstream (std::vector<TokenTree::TokenTree> vec)
+TokenStream::make_tokenstream (std::vector<TokenTree> vec)
 {
   auto stream = make_tokenstream (vec.size ());
   for (auto tt : vec)
@@ -42,7 +41,7 @@ TokenStream::make_tokenstream (std::vector<TokenTree::TokenTree> vec)
 TokenStream
 TokenStream::make_tokenstream (std::uint64_t capacity)
 {
-  auto *data = new TokenTree::TokenTree[capacity];
+  auto *data = new TokenTree[capacity];
   return {data, 0, capacity};
 }
 
@@ -50,14 +49,14 @@ void
 TokenStream::grow (std::uint64_t delta)
 {
   auto new_capacity = capacity + delta;
-  auto *new_data = new TokenTree::TokenTree[new_capacity];
+  auto *new_data = new TokenTree[new_capacity];
   std::memcpy (new_data, data, size);
   delete[] data;
   data = new_data;
 }
 
 void
-TokenStream::push (TokenTree::TokenTree tree)
+TokenStream::push (TokenTree tree)
 {
   if (size == capacity)
     grow (capacity);
@@ -90,7 +89,7 @@ TokenStream__with_capacity (std::uint64_t capacity)
 }
 
 extern "C" void
-TokenSream__push (TokenStream *stream, TokenTree::TokenTree tree)
+TokenSream__push (TokenStream *stream, TokenTree tree)
 {
   stream->push (tree);
 }
@@ -106,7 +105,7 @@ TokenStream__from_string (unsigned char *str, std::uint64_t len,
 extern "C" TokenStream
 TokenStream__clone (const TokenStream *ts)
 {
-  auto *data = new TokenTree::TokenTree[ts->capacity];
+  auto *data = new TokenTree[ts->capacity];
   std::memcpy (data, ts->data, ts->size);
   return {data, ts->size, ts->capacity};
 }
@@ -117,5 +116,4 @@ TokenStream__drop (TokenStream *stream)
   TokenStream::drop (stream);
 }
 
-} // namespace TokenStream
 } // namespace ProcMacro

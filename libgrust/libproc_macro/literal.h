@@ -28,7 +28,6 @@
 #include <vector>
 
 namespace ProcMacro {
-namespace Literal {
 enum UnsignedTag
 {
   UNSIGNED_8,
@@ -187,10 +186,11 @@ public:
   static Literal make_usize (std::uint64_t value, bool suffixed = false);
   static Literal make_isize (std::int64_t value, bool suffixed = false);
 
+  static void drop (Literal *lit);
+
+private:
   static Literal make_unsigned (UnsignedSuffixPayload p);
   static Literal make_signed (SignedSuffixPayload p);
-
-  static void drop (Literal *lit);
 };
 
 extern "C" {
@@ -207,7 +207,6 @@ bool
 Literal__from_string (const unsigned char *str, std::uint64_t len,
 		      Literal *lit);
 }
-} // namespace Literal
 } // namespace ProcMacro
 
 #endif /* ! LITERAL_H */

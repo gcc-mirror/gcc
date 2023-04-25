@@ -24,7 +24,6 @@
 #include <cstdlib>
 
 namespace ProcMacro {
-namespace Punct {
 
 Punct
 Punct::make_punct (std::uint32_t ch, Spacing spacing)
@@ -32,5 +31,4 @@ Punct::make_punct (std::uint32_t ch, Spacing spacing)
   return {ch, spacing};
 }
 
-} // namespace Punct
 } // namespace ProcMacro

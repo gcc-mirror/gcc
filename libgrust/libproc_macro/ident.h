@@ -27,7 +27,6 @@
 #include <string>
 
 namespace ProcMacro {
-namespace Ident {
 
 struct Ident
 {
@@ -61,7 +60,6 @@ Ident
 Ident__clone (const Ident *ident);
 }
 
-} // namespace Ident
 } // namespace ProcMacro
 
 #endif /* ! IDENT_H */

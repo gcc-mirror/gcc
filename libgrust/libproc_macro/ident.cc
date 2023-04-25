@@ -24,7 +24,6 @@
 #include <cstring>
 
 namespace ProcMacro {
-namespace Ident {
 
 extern "C" {
 
@@ -84,5 +83,4 @@ Ident::drop (Ident *ident)
   ident->len = 0;
 }
 
-} // namespace Ident
 } // namespace ProcMacro

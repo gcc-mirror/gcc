@@ -25,7 +25,6 @@
 #include <cstdlib>
 
 namespace ProcMacro {
-namespace Literal {
 
 void
 Literal::drop (Literal *lit)
@@ -289,5 +288,4 @@ Literal::make_isize (std::int64_t value, bool suffixed)
   return {ISIZE, payload};
 }
 
-} // namespace Literal
 } // namespace ProcMacro
