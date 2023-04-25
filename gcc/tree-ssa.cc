@@ -412,8 +412,7 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
     {
       /* If there's a single use of VAR, and VAR is the entire debug
 	 expression (usecount would have been incremented again
-	 otherwise), and the definition involves only constants and
-	 SSA names, then we can propagate VALUE into this single use,
+	 otherwise), then we can propagate VALUE into this single use,
 	 avoiding the temp.
 
 	 We can also avoid using a temp if VALUE can be shared and
@@ -424,11 +423,9 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
 	 are deferred to a debug temp, although we could avoid temps
 	 at the expense of duplication of expressions.  */
 
-      if (CONSTANT_CLASS_P (value)
+      if (usecount == 1
 	  || gimple_code (def_stmt) == GIMPLE_PHI
-	  || (usecount == 1
-	      && (!gimple_assign_single_p (def_stmt)
-		  || is_gimple_min_invariant (value)))
+	  || CONSTANT_CLASS_P (value)
 	  || is_gimple_reg (value))
 	;
       else
@@ -466,11 +463,6 @@ insert_debug_temp_for_var_def (gimple_stmt_iterator *gsi, tree var)
       if (value)
 	{
 	  FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
-	    /* unshare_expr is not needed here.  vexpr is either a
-	       SINGLE_RHS, that can be safely shared, some other RHS
-	       that was unshared when we found it had a single debug
-	       use, or a DEBUG_EXPR_DECL, that can be safely
-	       shared.  */
 	    SET_USE (use_p, unshare_expr (value));
 	  /* If we didn't replace uses with a debug decl fold the
 	     resulting expression.  Otherwise we end up with invalid IL.  */
