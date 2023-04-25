@@ -69,7 +69,7 @@ module test_functions
     integer :: i,j
 
     sum = 0
-    !$omp parallel do collapse(2)
+    !$omp parallel do collapse(2) reduction(+:sum)
     !$omp tile sizes(6,10)
     do i = 1,10,3
        do j = 1,10,3

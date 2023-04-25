@@ -9,7 +9,8 @@ module test_functions
 
     integer :: i,j
 
-    !$omp simd
+    sum = 0
+    !$omp simd reduction(+:sum)
     do i = 1,10,3
        !$omp unroll full
        do j = 1,10,3

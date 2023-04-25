@@ -8,6 +8,7 @@ module test_functions
 
     integer :: i,j
 
+    sum = 0
     !$omp do
     do i = 1,10,3
        !$omp unroll full
@@ -22,6 +23,7 @@ module test_functions
 
     integer :: i,j
 
+    sum = 0
     !$omp parallel do reduction(+:sum)
     !$omp unroll partial(2)
     do i = 1,10,3
