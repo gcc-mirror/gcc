@@ -1,3 +1,10 @@
+2023-04-25  Frederik Harwath  <frederik@codesourcery.com>
+
+	* testsuite/libgomp.fortran/loop-transforms/tile-2.f90: Add reduction clause.
+	* testsuite/libgomp.fortran/loop-transforms/unroll-1.f90: Initialize var.
+	* testsuite/libgomp.fortran/loop-transforms/unroll-simd-1.f90: Add reduction
+	and initialization.
+
 2023-04-20  Andrew Stubbs  <ams@codesourcery.com>
 
 	* basic-allocator.c (basic_alloc_free): Use BASIC_ALLOC_YIELD.
