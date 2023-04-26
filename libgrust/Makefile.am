@@ -11,9 +11,6 @@ TOP_GCCDIR := $(shell cd $(top_srcdir) && cd .. && pwd)
 GCC_DIR = $(TOP_GCCDIR)/gcc
 RUST_SRC = $(GCC_DIR)/rust
 
-toolexeclibdir=@toolexeclibdir@
-toolexecdir=@toolexecdir@
-
 SUBDIRS = libproc_macro
 
 RUST_BUILDDIR := $(shell pwd)
@@ -62,7 +59,6 @@ AM_MAKEFLAGS = \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" \
         "TARGET_LIB_PATH=$(TARGET_LIB_PATH)" \
-        "TARGET_LIB_PATH_librust=$(TARGET_LIB_PATH_librust)" \
-	"LIBTOOL=$(RUST_BUILDDIR)/libtool"
+        "TARGET_LIB_PATH_librust=$(TARGET_LIB_PATH_librust)"
 
 include $(top_srcdir)/../multilib.am

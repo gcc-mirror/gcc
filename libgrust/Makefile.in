@@ -350,8 +350,7 @@ AM_MAKEFLAGS = \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" \
         "TARGET_LIB_PATH=$(TARGET_LIB_PATH)" \
-        "TARGET_LIB_PATH_librust=$(TARGET_LIB_PATH_librust)" \
-	"LIBTOOL=$(RUST_BUILDDIR)/libtool"
+        "TARGET_LIB_PATH_librust=$(TARGET_LIB_PATH_librust)"
 
 MULTISRCTOP = 
 MULTIBUILDTOP = 

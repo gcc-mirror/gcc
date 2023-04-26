@@ -182,11 +182,14 @@ RUST_ALL_OBJS = $(GRS_OBJS) $(RUST_TARGET_OBJS)
 
 rust_OBJS = $(RUST_ALL_OBJS) rust/rustspec.o
 
+RUST_LDFLAGS = $(LDFLAGS) -L./../libgrust/libproc_macro
+RUST_LIBDEPS = $(LIBDEPS) ../libgrust/libproc_macro/libproc_macro.a
+
 # The compiler itself is called crab1
-crab1$(exeext): $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBDEPS) $(rust.prev)
+crab1$(exeext): $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(RUST_LIBDEPS) $(rust.prev)
 	@$(call LINK_PROGRESS,$(INDEX.rust),start)
-	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-	      $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
+	+$(LLINKER) $(ALL_LINKERFLAGS) $(RUST_LDFLAGS) -o $@ \
+	      $(RUST_ALL_OBJS) attribs.o $(BACKEND) $(LIBS) ../libgrust/libproc_macro/libproc_macro.a $(BACKENDLIBS)
 	@$(call LINK_PROGRESS,$(INDEX.rust),end)
 
 # Build hooks.
@@ -355,7 +358,8 @@ RUST_INCLUDES = -I $(srcdir)/rust \
 	-I $(srcdir)/rust/checks/errors \
 	-I $(srcdir)/rust/checks/errors/privacy \
 	-I $(srcdir)/rust/util \
-        -I $(srcdir)/rust/metadata
+        -I $(srcdir)/rust/metadata \
+		-I $(srcdir)/../libgrust
 
 # add files that require cross-folder includes - currently rust-lang.o, rust-lex.o
 CFLAGS-rust/rust-lang.o += $(RUST_INCLUDES)
