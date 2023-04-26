@@ -4632,6 +4632,100 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   )
  )
 )
+
+/* Optimize
+   # x_5 in range [cst1, cst2] where cst2 = cst1 + 1
+   x_5 ? cstN ? cst4 : cst3
+   # op is == or != and N is 1 or 2
+   to r_6 = x_5 + (min (cst3, cst4) - cst1) or
+   r_6 = (min (cst3, cst4) + cst1) - x_5 depending on op, N and which
+   of cst3 and cst4 is smaller.
+   This was originally done by two_value_replacement in phiopt (PR 88676).  */
+(for eqne (ne eq)
+ (simplify
+  (cond (eqne SSA_NAME@0 INTEGER_CST@1) INTEGER_CST@2 INTEGER_CST@3)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && INTEGRAL_TYPE_P (type)
+       && (wi::to_widest (@2) + 1 == wi::to_widest (@3)
+           || wi::to_widest (@2) == wi::to_widest (@3) + 1))
+   (with {
+     value_range r;
+     get_range_query (cfun)->range_of_expr (r, @0);
+     if (r.undefined_p ())
+       r.set_varying (TREE_TYPE (@0));
+
+     wide_int min = r.lower_bound ();
+     wide_int max = r.upper_bound ();
+    }
+    (if (min + 1 == max
+	 && (wi::to_wide (@1) == min
+	     || wi::to_wide (@1) == max))
+     (with {
+       tree arg0 = @2, arg1 = @3;
+       tree type1;
+       if ((eqne == EQ_EXPR) ^ (wi::to_wide (@1) == min))
+         std::swap (arg0, arg1);
+       if (TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (type))
+	 {
+	   /* Avoid performing the arithmetics in bool type which has different
+	      semantics, otherwise prefer unsigned types from the two with
+	     the same precision.  */
+	   if (TREE_CODE (TREE_TYPE (arg0)) == BOOLEAN_TYPE
+	       || !TYPE_UNSIGNED (type))
+	     type1 = TREE_TYPE (@0);
+	   else
+	     type1 = TREE_TYPE (arg0);
+	 }
+       else if (TYPE_PRECISION (TREE_TYPE (@0)) > TYPE_PRECISION (type))
+	 type1 = TREE_TYPE (@0);
+       else
+	 type1 = type;
+       min = wide_int::from (min, TYPE_PRECISION (type1),
+			     TYPE_SIGN (TREE_TYPE (@0)));
+       wide_int a = wide_int::from (wi::to_wide (arg0), TYPE_PRECISION (type1),
+				    TYPE_SIGN (type));
+       enum tree_code code;
+       wi::overflow_type ovf;
+       if (tree_int_cst_lt (arg0, arg1))
+	 {
+	   code = PLUS_EXPR;
+	   a -= min;
+	   if (!TYPE_UNSIGNED (type1))
+	     {
+	       /* lhs is known to be in range [min, min+1] and we want to add a
+		  to it.  Check if that operation can overflow for those 2 values
+		  and if yes, force unsigned type.  */
+	       wi::add (min + (wi::neg_p (a) ? 0 : 1), a, SIGNED, &ovf);
+	       if (ovf)
+		 type1 = unsigned_type_for (type1);
+	     }
+	 }
+       else
+	 {
+	   code = MINUS_EXPR;
+	   a += min;
+	   if (!TYPE_UNSIGNED (type1))
+	     {
+	       /* lhs is known to be in range [min, min+1] and we want to subtract
+		  it from a.  Check if that operation can overflow for those 2
+		  values and if yes, force unsigned type.  */
+	       wi::sub (a, min + (wi::neg_p (min) ? 0 : 1), SIGNED, &ovf);
+	       if (ovf)
+		type1 = unsigned_type_for (type1);
+	     }
+	 }
+       tree arg = wide_int_to_tree (type1, a);
+      }
+      (if (code == PLUS_EXPR)
+       (convert (plus (convert:type1 @0) { arg; }))
+       (convert (minus { arg; } (convert:type1 @0)))
+      )
+     )
+    )
+   )
+  )
+ )
+)
 #endif
 
 (simplify
