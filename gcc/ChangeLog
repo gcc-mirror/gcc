@@ -1,3 +1,13 @@
+2023-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109566
+	* config/rs6000/rs6000.cc (rs6000_is_valid_rotate_dot_mask): For
+	!TARGET_64BIT, don't return true if UINTVAL (mask) << (63 - nb)
+	is larger than signed int maximum.
+
 2023-04-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/install.texi: Consistently use Solaris rather than Solaris 2.

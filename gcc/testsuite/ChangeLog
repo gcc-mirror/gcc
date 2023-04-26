@@ -1,3 +1,11 @@
+2023-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109566
+	* gcc.target/powerpc/pr109566.c: New test.
+
 2023-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
