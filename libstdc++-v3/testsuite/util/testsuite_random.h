@@ -26,6 +26,7 @@
 
 #include <cmath>
 #include <initializer_list>
+#include <system_error>
 #include <testsuite_hooks.h>
 
 namespace __gnu_test
@@ -204,7 +205,7 @@ namespace __gnu_test
     try {
       std::random_device dev(token);
       return true;
-    } catch (...) {
+    } catch (const std::system_error& /* See PR libstdc++/105081 */) {
       return false;
     }
   }
