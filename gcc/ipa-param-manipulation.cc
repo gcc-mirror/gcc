@@ -1825,7 +1825,8 @@ ipa_param_body_adjustments::replace_removed_params_ssa_names (tree old_name,
    necessary conversions.  */
 
 bool
-ipa_param_body_adjustments::modify_expression (tree *expr_p, bool convert)
+ipa_param_body_adjustments::modify_expression (tree *expr_p, bool convert,
+					       gimple_seq *extra_stmts)
 {
   tree expr = *expr_p;
 
@@ -1860,6 +1861,11 @@ ipa_param_body_adjustments::modify_expression (tree *expr_p, bool convert)
       gcc_checking_assert (tree_to_shwi (TYPE_SIZE (TREE_TYPE (expr)))
 			   == tree_to_shwi (TYPE_SIZE (TREE_TYPE (repl))));
       tree vce = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (expr), repl);
+      if (is_gimple_reg (repl))
+	{
+	  gcc_assert (extra_stmts);
+	  vce = force_gimple_operand (vce, extra_stmts, true, NULL_TREE);
+	}
       *expr_p = vce;
     }
   else
@@ -1887,7 +1893,7 @@ ipa_param_body_adjustments::modify_assignment (gimple *stmt,
   lhs_p = gimple_assign_lhs_ptr (stmt);
 
   any = modify_expression (lhs_p, false);
-  any |= modify_expression (rhs_p, false);
+  any |= modify_expression (rhs_p, false, extra_stmts);
   if (any
       && !useless_type_conversion_p (TREE_TYPE (*lhs_p), TREE_TYPE (*rhs_p)))
     {
