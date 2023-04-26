@@ -1,3 +1,7 @@
+2023-04-26  Release Manager
+
+	* GCC 13.1.0 released.
+
 2022-10-20  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* configure.ac (AC_CONFIG_MACRO_DIRS): Instantiate.

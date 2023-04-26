@@ -1,3 +1,7 @@
+2023-04-26  Release Manager
+
+	* GCC 13.1.0 released.
+
 2023-03-22  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* libm2pim/Makefile.am (M2DEFS): Remove M2LINK.def.

@@ -1,3 +1,7 @@
+2023-04-26  Release Manager
+
+	* GCC 13.1.0 released.
+
 2023-02-16  Patrick Palka  <ppalka@redhat.com>
 
 	* jit-dejagnu.h: Mechanically drop static from static inline
