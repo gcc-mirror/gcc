@@ -1990,11 +1990,15 @@
 (define_insn "aarch64_rshrn<mode>_insn_le"
   [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
 	(vec_concat:<VNARROWQ2>
-	  (unspec:<VNARROWQ> [(match_operand:VQN 1 "register_operand" "w")
-		(match_operand:VQN 2
-		  "aarch64_simd_shift_imm_vec_<vn_mode>")] UNSPEC_RSHRN)
-	  (match_operand:<VNARROWQ> 3 "aarch64_simd_or_scalar_imm_zero")))]
-  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
+	  (truncate:<VNARROWQ>
+	    (lshiftrt:VQN
+	      (plus:VQN (match_operand:VQN 1 "register_operand" "w")
+			(match_operand:VQN 3 "aarch64_simd_rshrn_imm_vec"))
+	      (match_operand:VQN 2 "aarch64_simd_shift_imm_vec_<vn_mode>")))
+	  (match_operand:<VNARROWQ> 4 "aarch64_simd_or_scalar_imm_zero")))]
+  "TARGET_SIMD && !BYTES_BIG_ENDIAN
+   && INTVAL (CONST_VECTOR_ELT (operands[3], 0))
+      == (HOST_WIDE_INT_1 << (INTVAL (CONST_VECTOR_ELT (operands[2], 0)) - 1))"
   "rshrn\\t%0.<Vntype>, %1.<Vtype>, %2"
   [(set_attr "type" "neon_shift_imm_narrow_q")]
 )
@@ -2002,11 +2006,15 @@
 (define_insn "aarch64_rshrn<mode>_insn_be"
   [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
 	(vec_concat:<VNARROWQ2>
-	  (match_operand:<VNARROWQ> 3 "aarch64_simd_or_scalar_imm_zero")
-	  (unspec:<VNARROWQ> [(match_operand:VQN 1 "register_operand" "w")
-		(match_operand:VQN 2 "aarch64_simd_shift_imm_vec_<vn_mode>")]
-		  UNSPEC_RSHRN)))]
-  "TARGET_SIMD && BYTES_BIG_ENDIAN"
+	  (match_operand:<VNARROWQ> 4 "aarch64_simd_or_scalar_imm_zero")
+	  (truncate:<VNARROWQ>
+	    (lshiftrt:VQN
+	      (plus:VQN (match_operand:VQN 1 "register_operand" "w")
+			(match_operand:VQN 3 "aarch64_simd_rshrn_imm_vec"))
+	      (match_operand:VQN 2 "aarch64_simd_shift_imm_vec_<vn_mode>")))))]
+  "TARGET_SIMD && BYTES_BIG_ENDIAN
+   && INTVAL (CONST_VECTOR_ELT (operands[3], 0))
+      == (HOST_WIDE_INT_1 << (INTVAL (CONST_VECTOR_ELT (operands[2], 0)) - 1))"
   "rshrn\\t%0.<Vntype>, %1.<Vtype>, %2"
   [(set_attr "type" "neon_shift_imm_narrow_q")]
 )
@@ -2024,18 +2032,22 @@
       }
     else
       {
+	rtx shft
+	  = aarch64_simd_gen_const_vector_dup (<MODE>mode,
+					       HOST_WIDE_INT_1U
+					        << (INTVAL (operands[2]) - 1));
 	rtx tmp = gen_reg_rtx (<VNARROWQ2>mode);
 	operands[2] = aarch64_simd_gen_const_vector_dup (<MODE>mode,
 						         INTVAL (operands[2]));
 	if (BYTES_BIG_ENDIAN)
 	  emit_insn (
 		gen_aarch64_rshrn<mode>_insn_be (tmp, operands[1],
-						 operands[2],
+						 operands[2], shft,
 						 CONST0_RTX (<VNARROWQ>mode)));
 	else
 	  emit_insn (
 		gen_aarch64_rshrn<mode>_insn_le (tmp, operands[1],
-						 operands[2],
+						 operands[2], shft,
 						 CONST0_RTX (<VNARROWQ>mode)));
 
 	/* The intrinsic expects a narrow result, so emit a subreg that will
