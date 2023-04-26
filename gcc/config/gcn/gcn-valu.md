@@ -2382,8 +2382,9 @@
     rtx even = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (even, get_exec (0x5555555555555555UL));
     rtx dest = operands[0];
-    emit_insn (gen_<cmul_subadd><mode>3_exec (dest, t1, t1_perm, dest, even));
-                                                             // a*c-b*d 0
+    emit_insn (gen_<cmul_subadd><mode>3_exec (dest, t1, t1_perm,
+                                              gcn_gen_undef (<MODE>mode),
+                                              even));            // a*c-b*d 0
 
     rtx t2_perm = gen_reg_rtx (<MODE>mode);
     emit_insn (gen_dpp_swap_pairs<mode> (t2_perm, t2));          // b*c a*d
@@ -2427,7 +2428,8 @@
     rtx even = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (even, get_exec (0x5555555555555555UL));
     rtx dest = operands[0];
-    emit_insn (gen_sub<mode>3_exec (dest, t1, t2_perm, dest, even));
+    emit_insn (gen_sub<mode>3_exec (dest, t1, t2_perm,
+                                    gcn_gen_undef (<MODE>mode), even));
 
     rtx odd = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (odd, get_exec (0xaaaaaaaaaaaaaaaaUL));
@@ -2451,7 +2453,8 @@
     rtx dest = operands[0];
     rtx x = operands[1];
     rtx y = operands[2];
-    emit_insn (gen_sub<mode>3_exec (dest, x, y, dest, even));
+    emit_insn (gen_sub<mode>3_exec (dest, x, y, gcn_gen_undef (<MODE>mode),
+                                    even));
     rtx odd = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (odd, get_exec (0xaaaaaaaaaaaaaaaaUL));
     emit_insn (gen_add<mode>3_exec (dest, x, y, dest, odd));
@@ -2478,7 +2481,9 @@
 
     rtx even = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (even, get_exec (0x5555555555555555UL));
-    emit_insn (gen_<cadd_subadd><mode>3_exec (dest, x, y, dest, even));
+    emit_insn (gen_<cadd_subadd><mode>3_exec (dest, x, y,
+                                              gcn_gen_undef (<MODE>mode),
+                                              even));
     rtx odd = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (odd, get_exec (0xaaaaaaaaaaaaaaaaUL));
     emit_insn (gen_<cadd_addsub><mode>3_exec (dest, x, y, dest, odd));
@@ -2498,7 +2503,8 @@
     rtx even = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (even, get_exec (0x5555555555555555UL));
     rtx dest = operands[0];
-    emit_insn (gen_sub<mode>3_exec (dest, t1, operands[3], dest, even));
+    emit_insn (gen_sub<mode>3_exec (dest, t1, operands[3],
+                                    gcn_gen_undef (<MODE>mode), even));
     rtx odd = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (odd, get_exec (0xaaaaaaaaaaaaaaaaUL));
     emit_insn (gen_add<mode>3_exec (dest, t1, operands[3], dest, odd));
@@ -2518,10 +2524,11 @@
     rtx even = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (even, get_exec (0x5555555555555555UL));
     rtx dest = operands[0];
-    emit_insn (gen_add<mode>3_exec (dest, t1, operands[3], dest, even));
+    emit_insn (gen_add<mode>3_exec (dest, t1, operands[3],
+                                    gcn_gen_undef (<MODE>mode), even));
     rtx odd = gen_rtx_REG (DImode, EXEC_REG);
     emit_move_insn (odd, get_exec (0xaaaaaaaaaaaaaaaaUL));
-    emit_insn (gen_add<mode>3_exec (dest, t1, operands[3], dest, odd));
+    emit_insn (gen_sub<mode>3_exec (dest, t1, operands[3], dest, odd));
 
     DONE;
   })
