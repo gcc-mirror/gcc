@@ -2,7 +2,7 @@ SUFFIXES = .cc .o .a .lo .la
 
 ACLOCAL_AMFLAGS = -I .. -I ../../config
 
-AR=@AR@
+AR = @AR@
 AR_FLAGS = rc
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
@@ -48,13 +48,11 @@ AM_MAKEFLAGS = \
         "TARGET_LIB_PATH=$(TARGET_LIB_PATH)"
 
 TARGETLIB = ./libproc_macro.a
-
 LIBOBJS = @LIBOBJS@
-
 objext = @OBJEXT@
 
 REQUIRED_OFILES =							\
-	./proc_macro.$(objext)
+	./proc_macro.$(objext) ./literal.$(objext) ./group.$(objext) ./ident.$(objext) ./punct.$(objext) ./tokenstream.$(objext) ./tokentree.$(objext)
 
 all: $(TARGETLIB)
 
@@ -62,4 +60,3 @@ $(TARGETLIB): $(REQUIRED_OFILES) $(LIBOBJS)
 	-rm -f $(TARGETLIB)
 	$(AR) $(AR_FLAGS) $(TARGETLIB) \
 	  $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS)
-
