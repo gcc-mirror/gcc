@@ -69,6 +69,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
    *
    *  @ingroup strings
    *  @ingroup sequences
+   *  @headerfile string
+   *  @since C++98
    *
    *  @tparam _CharT  Type of character
    *  @tparam _Traits  Traits for character type, defaults to

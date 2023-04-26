@@ -75,6 +75,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  the elements themselves.
    *
    *  @ingroup unordered_associative_containers
+   *  @headerfile unordered_set
+   *  @since C++11
    *
    *  @tparam  _Value  Type of key objects.
    *  @tparam  _Hash  Hashing function object type, defaults to hash<_Value>.
@@ -943,6 +945,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  elements' keys are the elements themselves.
    *
    *  @ingroup unordered_associative_containers
+   *  @headerfile unordered_set
+   *  @since C++11
    *
    *  @tparam  _Value  Type of key objects.
    *  @tparam  _Hash  Hashing function object type, defaults to hash<_Value>.

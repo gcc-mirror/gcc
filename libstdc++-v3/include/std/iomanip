@@ -455,6 +455,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @param __string String to quote.
    * @param __delim  Character to quote string with.
    * @param __escape Escape character to escape itself or quote character.
+   * @since C++14
    */
   template<typename _CharT>
     inline auto
