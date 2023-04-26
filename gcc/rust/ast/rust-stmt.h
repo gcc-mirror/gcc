@@ -198,6 +198,8 @@ public:
 
   bool is_item () const override final { return false; }
 
+  bool is_expr () const override final { return true; }
+
   virtual ExprStmtType get_type () const = 0;
 
 protected:

@@ -901,6 +901,8 @@ public:
 
   virtual bool is_item () const = 0;
 
+  virtual bool is_expr () const { return false; }
+
 protected:
   Stmt () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
 
