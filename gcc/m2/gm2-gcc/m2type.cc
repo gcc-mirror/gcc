@@ -364,6 +364,7 @@ build_m2_word64_type_node (location_t location, int loc)
                                       m2decl_BuildIntegerConstant (7), loc);
 }
 
+
 /* GetM2Complex32 return the fixed size complex type.  */
 
 tree
@@ -1475,6 +1476,22 @@ build_m2_long_real_node (void)
 }
 
 static tree
+build_m2_ztype_node (void)
+{
+  tree ztype_node;
+
+  /* Define `ZTYPE'.  */
+
+  if (targetm.scalar_mode_supported_p (TImode))
+    ztype_node = gm2_type_for_size (128, 0);
+  else
+    ztype_node = gm2_type_for_size (64, 0);
+  layout_type (ztype_node);
+
+  return ztype_node;
+}
+
+static tree
 build_m2_long_int_node (void)
 {
   tree c;
@@ -1761,7 +1778,7 @@ m2type_InitBaseTypes (location_t location)
   m2_long_card_type_node = build_m2_long_card_node ();
   m2_short_int_type_node = build_m2_short_int_node ();
   m2_short_card_type_node = build_m2_short_card_node ();
-  m2_z_type_node = build_m2_long_int_node ();
+  m2_z_type_node = build_m2_ztype_node ();
   m2_integer8_type_node = build_m2_integer8_type_node (location);
   m2_integer16_type_node = build_m2_integer16_type_node (location);
   m2_integer32_type_node = build_m2_integer32_type_node (location);

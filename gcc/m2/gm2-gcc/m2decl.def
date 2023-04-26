@@ -161,14 +161,12 @@ PROCEDURE RememberVariables (l: Tree) ;
 
 
 (*
-    DetermineSizeOfConstant - given, str, and, base, fill in
-                              needsLong and needsUnsigned appropriately.
+   ConstantStringExceedsZType - return TRUE if str exceeds the ZTYPE range.
 *)
 
-PROCEDURE DetermineSizeOfConstant (location: location_t;
-                                   str: ADDRESS; base: CARDINAL;
-                                   VAR needsLong, needsUnsigned: BOOLEAN;
-                                   issueError: BOOLEAN) : BOOLEAN ;
+PROCEDURE ConstantStringExceedsZType (location: location_t;
+                                      str: ADDRESS; base: CARDINAL;
+                                      issueError: BOOLEAN) : BOOLEAN ;
 
 
 (*

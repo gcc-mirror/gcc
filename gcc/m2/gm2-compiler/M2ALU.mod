@@ -2119,18 +2119,18 @@ VAR
    result: BOOLEAN ;
    res   : INTEGER ;
 BEGIN
-   v1 := Pop() ;
-   v2 := Pop() ;
-   IF (v1^.type=set) AND (v2^.type=set)
+   v1 := Pop () ;
+   v2 := Pop () ;
+   IF (v1^.type = set) AND (v2^.type = set)
    THEN
-      result := NOT IsSuperset(tokenno, v2, v1)
-   ELSIF (v1^.type=set) OR (v2^.type=set)
+      result := NOT IsSuperset (tokenno, v2, v1)
+   ELSIF (v1^.type = set) OR (v2^.type = set)
    THEN
       MetaErrorT0 (tokenno, 'cannot perform a comparison between a number and a set') ;
       result := FALSE
    ELSE
-      res := CompareTrees(v2^.numberValue, v1^.numberValue) ;
-      IF res=-1
+      res := CompareTrees (v2^.numberValue, v1^.numberValue) ;
+      IF res = -1
       THEN
          result := TRUE
       ELSE
@@ -2138,9 +2138,9 @@ BEGIN
       END ;
       (* result := (CompareTrees(v2^.numberValue, v1^.numberValue)=-1) *)
    END ;
-   Dispose(v1) ;
-   Dispose(v2) ;
-   RETURN( result )
+   Dispose (v1) ;
+   Dispose (v2) ;
+   RETURN result
 END Less ;
 
 
