@@ -53,6 +53,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 namespace pmr
 {
   /// Class memory_resource
+  /**
+   * @ingroup pmr
+   * @headerfile memory_resource
+   * @since C++17
+   */
   class memory_resource
   {
     static constexpr size_t _S_max_align = alignof(max_align_t);
@@ -104,6 +109,13 @@ namespace pmr
 #endif
 
   // C++17 23.12.3 Class template polymorphic_allocator
+
+  /// Class template polymorphic_allocator
+  /**
+   * @ingroup pmr
+   * @headerfile memory_resource
+   * @since C++17
+   */
   template<typename _Tp>
     class polymorphic_allocator
     {
