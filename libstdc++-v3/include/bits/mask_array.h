@@ -181,6 +181,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	std::__valarray_copy(__e, __e.size(), _M_array, _M_mask);
       }
 
+  /// @cond undocumented
 #undef _DEFINE_VALARRAY_OPERATOR
 #define _DEFINE_VALARRAY_OPERATOR(_Op, _Name)				\
   template<typename _Tp>						\
@@ -213,6 +214,7 @@ _DEFINE_VALARRAY_OPERATOR(<<, __shift_left)
 _DEFINE_VALARRAY_OPERATOR(>>, __shift_right)
 
 #undef _DEFINE_VALARRAY_OPERATOR
+  /// @endcond
 
   /// @} group numeric_arrays
 
