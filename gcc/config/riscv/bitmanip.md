@@ -508,7 +508,7 @@
 (define_insn_and_split "*bclri<mode>_nottwobits"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(and:X (match_operand:X 1 "register_operand" "r")
-	       (match_operand:X 2 "const_nottwobits_operand" "i")))]
+	       (match_operand:X 2 "const_nottwobits_not_arith_operand" "i")))]
   "TARGET_ZBS && !paradoxical_subreg_p (operands[1])"
   "#"
   "&& reload_completed"
@@ -527,7 +527,7 @@
 (define_insn_and_split "*bclridisi_nottwobits"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(and:DI (match_operand:DI 1 "register_operand" "r")
-		(match_operand:DI 2 "const_nottwobits_operand" "i")))]
+		(match_operand:DI 2 "const_nottwobits_not_arith_operand" "i")))]
   "TARGET_64BIT && TARGET_ZBS
    && clz_hwi (~UINTVAL (operands[2])) > 33"
   "#"
