@@ -56,7 +56,8 @@ namespace __tsan {
 
 #if !SANITIZER_GO
 struct MapUnmapCallback;
-#if defined(__mips64) || defined(__aarch64__) || defined(__powerpc__)
+#if defined(__mips64) || defined(__aarch64__) || defined(__loongarch__) || \
+    defined(__powerpc__)
 
 struct AP32 {
   static const uptr kSpaceBeg = 0;
@@ -219,7 +220,7 @@ struct ThreadState {
 #endif
 
   atomic_uintptr_t in_signal_handler;
-  ThreadSignalContext *signal_ctx;
+  atomic_uintptr_t signal_ctx;
 
 #if !SANITIZER_GO
   StackID last_sleep_stack_id;
@@ -483,6 +484,7 @@ void MapThreadTrace(uptr addr, uptr size, const char *name);
 void DontNeedShadowFor(uptr addr, uptr size);
 void UnmapShadow(ThreadState *thr, uptr addr, uptr size);
 void InitializeShadowMemory();
+void DontDumpShadow(uptr addr, uptr size);
 void InitializeInterceptors();
 void InitializeLibIgnore();
 void InitializeDynamicAnnotations();
@@ -678,8 +680,9 @@ ALWAYS_INLINE
 void LazyInitialize(ThreadState *thr) {
   // If we can use .preinit_array, assume that __tsan_init
   // called from .preinit_array initializes runtime before
-  // any instrumented code except ANDROID.
-#if (!SANITIZER_CAN_USE_PREINIT_ARRAY || defined(__ANDROID__))
+  // any instrumented code except when tsan is used as a 
+  // shared library.
+#if (!SANITIZER_CAN_USE_PREINIT_ARRAY || defined(SANITIZER_SHARED))
   if (UNLIKELY(!is_initialized))
     Initialize(thr);
 #endif
