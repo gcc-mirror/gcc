@@ -83,6 +83,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  with the keys.
    *
    *  @ingroup unordered_associative_containers
+   *  @headerfile unordered_map
+   *  @since C++11
    *
    *  @tparam  _Key    Type of key objects.
    *  @tparam  _Tp     Type of mapped objects.
@@ -1226,6 +1228,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  values of another type with the keys.
    *
    *  @ingroup unordered_associative_containers
+   *  @headerfile unordered_map
+   *  @since C++11
    *
    *  @tparam  _Key    Type of key objects.
    *  @tparam  _Tp     Type of mapped objects.

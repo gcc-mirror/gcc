@@ -403,6 +403,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
    *  individual elements in any order.
    *
    *  @ingroup sequences
+   *  @headerfile vector
+   *  @since C++98
    *
    *  @tparam _Tp  Type of element.
    *  @tparam _Alloc  Allocator type, defaults to allocator<_Tp>.
