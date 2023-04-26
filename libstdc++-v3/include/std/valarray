@@ -1076,6 +1076,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return _Expr<_Closure, _Tp>(_Closure(*this, func));
     }
 
+  /// @cond undocumented
 #define _DEFINE_VALARRAY_UNARY_OPERATOR(_Op, _Name)                     \
   template<typename _Tp>						\
     inline typename valarray<_Tp>::template _UnaryOp<_Name>::_Rt	\
@@ -1202,6 +1203,7 @@ _DEFINE_BINARY_OPERATOR(<=, __less_equal)
 _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
 
 #undef _DEFINE_BINARY_OPERATOR
+  /// @endcond
 
 #if __cplusplus >= 201103L
   /**
