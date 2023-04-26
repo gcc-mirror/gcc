@@ -861,7 +861,6 @@ machine_mode aarch64_hard_regno_caller_save_mode (unsigned, unsigned,
 						       machine_mode);
 int aarch64_uxt_size (int, HOST_WIDE_INT);
 int aarch64_vec_fpconst_pow_of_2 (rtx);
-rtx aarch64_eh_return_handler_rtx (void);
 rtx aarch64_mask_from_zextract_ops (rtx, rtx);
 const char *aarch64_output_move_struct (rtx *operands);
 rtx aarch64_return_addr_rtx (void);

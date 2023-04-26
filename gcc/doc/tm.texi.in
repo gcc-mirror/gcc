@@ -2743,6 +2743,18 @@ If you want to support call frame exception handling, you must
 define either this macro or the @code{eh_return} instruction pattern.
 @end defmac
 
+@defmac EH_RETURN_TAKEN_RTX
+A C expression whose value is RTL representing a location in which
+to store if the EH return path was taken instead of a normal return.
+This macro allows conditionally executing different code in the
+epilogue for the EH and normal return cases.
+
+When this macro is defined, the macros @code{EH_RETURN_STACKADJ_RTX}
+and @code{EH_RETURN_HANDLER_RTX} are only meaningful in the epilogue
+when 1 is stored to the specified location. The value 0 means normal
+return.
+@end defmac
+
 @defmac RETURN_ADDR_OFFSET
 If defined, an integer-valued C expression for which rtl will be generated
 to add it to the exception handler address before it is searched in the

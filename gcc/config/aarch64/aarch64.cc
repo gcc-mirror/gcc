@@ -6758,17 +6758,6 @@ aarch64_return_address_signing_enabled (void)
   /* This function should only be called after frame laid out.   */
   gcc_assert (cfun->machine->frame.laid_out);
 
-  /* Turn return address signing off in any function that uses
-     __builtin_eh_return.  The address passed to __builtin_eh_return
-     is not signed so either it has to be signed (with original sp)
-     or the code path that uses it has to avoid authenticating it.
-     Currently eh return introduces a return to anywhere gadget, no
-     matter what we do here since it uses ret with user provided
-     address. An ideal fix for that is to use indirect branch which
-     can be protected with BTI j (to some extent).  */
-  if (crtl->calls_eh_return)
-    return false;
-
   /* If signing scope is AARCH_FUNCTION_NON_LEAF, we only sign a leaf function
      if its LR is pushed onto stack.  */
   return (aarch_ra_sign_scope == AARCH_FUNCTION_ALL
@@ -8113,6 +8102,30 @@ aarch64_expand_epilogue (bool for_sibcall)
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
+  /* Stack adjustment for exception handler.  */
+  if (crtl->calls_eh_return && !for_sibcall)
+    {
+      /* If the EH_RETURN_TAKEN_RTX flag is set then we need
+	 to unwind the stack and jump to the handler, otherwise
+	 skip this eh_return logic and continue with normal
+	 return after the label.  We have already reset the CFA
+	 to be SP; letting the CFA move during this adjustment
+	 is just as correct as retaining the CFA from the body
+	 of the function.  Therefore, do nothing special.  */
+      rtx label = gen_label_rtx ();
+      rtx x = gen_rtx_EQ (VOIDmode, EH_RETURN_TAKEN_RTX, const0_rtx);
+      x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
+				gen_rtx_LABEL_REF (Pmode, label), pc_rtx);
+      rtx jump = emit_jump_insn (gen_rtx_SET (pc_rtx, x));
+      JUMP_LABEL (jump) = label;
+      LABEL_NUSES (label)++;
+      emit_insn (gen_add2_insn (stack_pointer_rtx,
+				EH_RETURN_STACKADJ_RTX));
+      emit_jump_insn (gen_indirect_jump (EH_RETURN_HANDLER_RTX));
+      emit_barrier ();
+      emit_label (label);
+    }
+
   /* We prefer to emit the combined return/authenticate instruction RETAA,
      however there are three cases in which we must instead emit an explicit
      authentication instruction.
@@ -8142,56 +8155,9 @@ aarch64_expand_epilogue (bool for_sibcall)
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
-  /* Stack adjustment for exception handler.  */
-  if (crtl->calls_eh_return && !for_sibcall)
-    {
-      /* We need to unwind the stack by the offset computed by
-	 EH_RETURN_STACKADJ_RTX.  We have already reset the CFA
-	 to be SP; letting the CFA move during this adjustment
-	 is just as correct as retaining the CFA from the body
-	 of the function.  Therefore, do nothing special.  */
-      emit_insn (gen_add2_insn (stack_pointer_rtx, EH_RETURN_STACKADJ_RTX));
-    }
-
   emit_use (gen_rtx_REG (DImode, LR_REGNUM));
   if (!for_sibcall)
     emit_jump_insn (ret_rtx);
-}
-
-/* Implement EH_RETURN_HANDLER_RTX.  EH returns need to either return
-   normally or return to a previous frame after unwinding.
-
-   An EH return uses a single shared return sequence.  The epilogue is
-   exactly like a normal epilogue except that it has an extra input
-   register (EH_RETURN_STACKADJ_RTX) which contains the stack adjustment
-   that must be applied after the frame has been destroyed.  An extra label
-   is inserted before the epilogue which initializes this register to zero,
-   and this is the entry point for a normal return.
-
-   An actual EH return updates the return address, initializes the stack
-   adjustment and jumps directly into the epilogue (bypassing the zeroing
-   of the adjustment).  Since the return address is typically saved on the
-   stack when a function makes a call, the saved LR must be updated outside
-   the epilogue.
-
-   This poses problems as the store is generated well before the epilogue,
-   so the offset of LR is not known yet.  Also optimizations will remove the
-   store as it appears dead, even after the epilogue is generated (as the
-   base or offset for loading LR is different in many cases).
-
-   To avoid these problems this implementation forces the frame pointer
-   in eh_return functions so that the location of LR is fixed and known early.
-   It also marks the store volatile, so no optimization is permitted to
-   remove the store.  */
-rtx
-aarch64_eh_return_handler_rtx (void)
-{
-  rtx tmp = gen_frame_mem (Pmode,
-    plus_constant (Pmode, hard_frame_pointer_rtx, UNITS_PER_WORD));
-
-  /* Mark the store volatile, so no optimization is permitted to remove it.  */
-  MEM_VOLATILE_P (tmp) = true;
-  return tmp;
 }
 
 /* Output code to add DELTA to the first argument, and then jump
