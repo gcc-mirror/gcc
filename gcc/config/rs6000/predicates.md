@@ -798,6 +798,43 @@
 	    (and (match_test "easy_altivec_constant (op, mode)")
 		 (match_test "vspltis_shifted (op) != 0")))))
 
+;; Return true if this is a vector constant and each byte in
+;; it is the same.
+(define_predicate "const_vector_each_byte_same"
+  (match_code "const_vector")
+{
+  rtx elt;
+  if (!const_vec_duplicate_p (op, &elt))
+    return false;
+
+  machine_mode emode = GET_MODE_INNER (mode);
+  unsigned HOST_WIDE_INT eval;
+  if (CONST_INT_P (elt))
+    eval = INTVAL (elt);
+  else if (CONST_DOUBLE_AS_FLOAT_P (elt))
+    {
+      gcc_assert (emode == SFmode || emode == DFmode);
+      long l[2];
+      real_to_target (l, CONST_DOUBLE_REAL_VALUE (elt), emode);
+      /* real_to_target puts 32-bit pieces in each long.  */
+      eval = zext_hwi (l[0], 32);
+      eval |= zext_hwi (l[1], 32) << 32;
+    }
+  else
+    return false;
+
+  unsigned int esize = GET_MODE_SIZE (emode);
+  unsigned char byte0 = eval & 0xff;
+  for (unsigned int i = 1; i < esize; i++)
+    {
+      eval >>= BITS_PER_UNIT;
+      if (byte0 != (eval & 0xff))
+	return false;
+    }
+
+  return true;
+})
+
 ;; Return 1 if operand is a vector int register or is either a vector constant
 ;; of all 0 bits of a vector constant of all 1 bits.
 (define_predicate "vector_int_reg_or_same_bit"
