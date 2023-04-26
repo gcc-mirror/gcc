@@ -3388,6 +3388,17 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  gfc_add_block_to_block (block, &se.post);
 		  if (pointer || allocatable)
 		    {
+		      /* If it's a bare attach/detach clause, we just want
+			 to perform a single attach/detach operation, of the
+			 pointer itself, not of the pointed-to object.  */
+		      if (openacc
+			  && (n->u.map_op == OMP_MAP_ATTACH
+			      || n->u.map_op == OMP_MAP_DETACH))
+			{
+			  OMP_CLAUSE_SIZE (node) = size_zero_node;
+			  goto finalize_map_clause;
+			}
+
 		      node2 = build_omp_clause (input_location,
 						OMP_CLAUSE_MAP);
 		      gomp_map_kind kind
@@ -3458,6 +3469,19 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		    {
 		      if (pointer || (openacc && allocatable))
 			{
+			  /* If it's a bare attach/detach clause, we just want
+			     to perform a single attach/detach operation, of the
+			     pointer itself, not of the pointed-to object.  */
+			  if (openacc
+			      && (n->u.map_op == OMP_MAP_ATTACH
+				  || n->u.map_op == OMP_MAP_DETACH))
+			    {
+			      OMP_CLAUSE_DECL (node)
+				= build_fold_addr_expr (inner);
+			      OMP_CLAUSE_SIZE (node) = size_zero_node;
+			      goto finalize_map_clause;
+			    }
+
 			  tree data, size;
 
 			  if (lastref->u.c.component->ts.type == BT_CLASS)
@@ -3494,12 +3518,18 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  else if (lastref->type == REF_ARRAY
 			   && lastref->u.ar.type == AR_FULL)
 		    {
-		      /* Just pass the (auto-dereferenced) decl through for
-			 bare attach and detach clauses.  */
+		      /* Bare attach and detach clauses don't want any
+			 additional nodes.  */
 		      if (n->u.map_op == OMP_MAP_ATTACH
 			  || n->u.map_op == OMP_MAP_DETACH)
 			{
-			  OMP_CLAUSE_DECL (node) = inner;
+			  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (inner)))
+			    {
+			      tree ptr = gfc_conv_descriptor_data_get (inner);
+			      OMP_CLAUSE_DECL (node) = ptr;
+			    }
+			  else
+			    OMP_CLAUSE_DECL (node) = inner;
 			  OMP_CLAUSE_SIZE (node) = size_zero_node;
 			  goto finalize_map_clause;
 			}
