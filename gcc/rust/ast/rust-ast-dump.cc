@@ -554,13 +554,14 @@ Dump::visit (NegationExpr &expr)
   switch (expr.get_expr_type ())
     {
     case NegationOperator::NEGATE:
-      stream << '-';
+      stream << "-(";
       break;
     case NegationOperator::NOT:
-      stream << '!';
+      stream << "!(";
       break;
     }
   visit (expr.get_negated_expr ());
+  stream << ')';
 }
 
 void
