@@ -41,6 +41,8 @@
  *
  * Utilities for performing operations on file systems and their components,
  * such as paths, regular files, and directories.
+ *
+ * @since C++17
  */
 
 #include <bits/fs_fwd.h>
