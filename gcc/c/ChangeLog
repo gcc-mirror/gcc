@@ -1,3 +1,8 @@
+2023-04-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-parser.cc (c_parser_omp_scan_loop_body): Handle
+	zero exec statements before/after 'omp scan'.
+
 2023-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/107041

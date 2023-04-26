@@ -1,3 +1,15 @@
+2023-04-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108975
+	* pt.cc (value_dependent_expression_p) <case VAR_DECL>:
+	Suppress conservative early exit for reference variables
+	when DECL_HAS_VALUE_EXPR_P.
+
+2023-04-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parser.cc (cp_parser_omp_scan_loop_body): Handle
+	zero exec statements before/after 'omp scan'.
+
 2023-04-24  Patrick Palka  <ppalka@redhat.com>
 
 	* cp-tree.h (cp_expr_location): Define here.

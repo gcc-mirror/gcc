@@ -1,3 +1,9 @@
+2023-04-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.cc (gfc_resolve_omp_do_blocks): Handle zero
+	or more than one exec statements before/after 'omp scan'.
+	* trans-openmp.cc (gfc_trans_omp_do): Likewise.
+
 2023-04-22  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

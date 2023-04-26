@@ -1,3 +1,7 @@
+2023-04-25  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.pot: Regenerate.
+
 2023-04-24  Joseph Myers  <joseph@codesourcery.com>
 
 	* hr.po, sv.po, zh_CN.po: Update.

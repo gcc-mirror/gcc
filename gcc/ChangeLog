@@ -1,3 +1,93 @@
+2023-04-25  Hans-Peter Nilsson  <hp@axis.com>
+
+	* recog.cc (peep2_attempt, peep2_update_life): Correct
+	head-comment description of parameter match_len.
+
+2023-04-25  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/riscv.md: riscv_move_integer() drop in_splitter arg.
+	riscv_split_symbol() drop in_splitter arg.
+	* config/riscv/riscv.cc: riscv_move_integer() drop in_splitter arg.
+	riscv_split_symbol() drop in_splitter arg.
+	riscv_force_temporary() drop in_splitter arg.
+	* config/riscv/riscv-protos.h: riscv_move_integer() drop in_splitter arg.
+	riscv_split_symbol() drop in_splitter arg.
+
+2023-04-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa.cc (insert_debug_temp_for_var_def): Do not create
+	superfluous debug temporaries for single GIMPLE assignments.
+
+2023-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109609
+	* attr-fnspec.h (arg_max_access_size_given_by_arg_p):
+	Clarify semantics.
+	* tree-ssa-alias.cc (check_fnspec): Correctly interpret
+	the size given by arg_max_access_size_given_by_arg_p as
+	maximum, not exact, size.
+
+2023-04-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* config/aarch64/aarch64-simd.md (orn<mode>3): Rename to...
+	(orn<mode>3<vczle><vczbe>): ... This.
+	(bic<mode>3): Rename to...
+	(bic<mode>3<vczle><vczbe>): ... This.
+	(<su><maxmin><mode>3): Rename to...
+	(<su><maxmin><mode>3<vczle><vczbe>): ... This.
+
+2023-04-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (<su_optab>div<mode>3): New define_expand.
+	* config/aarch64/iterators.md (VQDIV): New mode iterator.
+	(vnx2di): New mode attribute.
+
+2023-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/109585
+	* tree-ssa-alias.cc (aliasing_component_refs_p): Fix typo.
+
+2023-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109566
+	* config/rs6000/rs6000.cc (rs6000_is_valid_rotate_dot_mask): For
+	!TARGET_64BIT, don't return true if UINTVAL (mask) << (63 - nb)
+	is larger than signed int maximum.
+
+2023-04-25  Martin Liska  <mliska@suse.cz>
+
+	* doc/gcov.texi: Document the new "calls" field and document
+	the API bump. Mention also "block_ids" for lines.
+	* gcov.cc (output_intermediate_json_line): Output info about
+	calls and extend branches as well.
+	(generate_results): Bump version to 2.
+	(output_line_details): Use block ID instead of a non-sensual
+	index.
+
+2023-04-25  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/stormy16/stormy16.md (zero_extendqihi2): Restore/fix
+	length attribute for the first (memory operand) alternative.
+
+2023-04-25  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* config/aarch64/aarch64-simd.md(aarch64_simd_stp<mode>): New.
+	* config/aarch64/constraints.md: Make "Umn" relaxed memory
+	constraint.
+	* config/aarch64/iterators.md(ldpstp_vel_sz): New.
+
+2023-04-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (frange::set): Adjust constructor.
+	* value-range.h (nan_state::nan_state): Replace default
+	constructor with one taking an argument.
+
+2023-04-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ipa-cp.cc (ipa_range_contains_p): New.
+	(decide_whether_version_node): Use it.
+
 2023-04-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* tree-ssa-forwprop.cc (is_combined_permutation_identity): Try to

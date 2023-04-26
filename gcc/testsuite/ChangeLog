@@ -1,3 +1,73 @@
+2023-04-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/108975
+	* g++.dg/cpp0x/lambda/lambda-const11a.C: New test.
+
+2023-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109609
+	* gcc.dg/torture/pr109609.c: New testcase.
+
+2023-04-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	* g++.dg/gomp/attrs-7.C: Update dg-error/dg-warning.
+	* gfortran.dg/gomp/loop-2.f90: Likewise.
+	* gfortran.dg/gomp/reduction5.f90: Likewise.
+	* gfortran.dg/gomp/reduction6.f90: Likewise.
+	* gfortran.dg/gomp/scan-1.f90: Likewise.
+	* gfortran.dg/gomp/taskloop-2.f90: Likewise.
+	* c-c++-common/gomp/scan-6.c: New test.
+	* gfortran.dg/gomp/scan-8.f90: New test.
+
+2023-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp23/ext-floating2.C: Add dg-add-options for
+	float16, float32, float64 and float128.
+
+2023-04-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* gcc.target/aarch64/simd/pr99195_1.c: Add tests for orn, bic, max and min.
+
+2023-04-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/sve-neon-modes_3.c: New test.
+
+2023-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109278
+	* g++.dg/cpp23/ext-floating15.C: Add dg-add-options float128.
+
+2023-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/109585
+	* gcc.dg/torture/pr109585.c: New testcase.
+
+2023-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109566
+	* gcc.target/powerpc/pr109566.c: New test.
+
+2023-04-25  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/gcov/gcov-17.C: Add call to a noreturn function.
+	* g++.dg/gcov/test-gcov-17.py: Cover new format.
+	* lib/gcov.exp: Add options for gcov that emit the extra info.
+
+2023-04-25  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* gcc.target/aarch64/stp_vec_dup_32_64-1.c: New.
+
+2023-04-25  Sam James   <sam@gentoo.org>
+
+	PR tree-optimization/105312
+	PR target/105573
+	* gcc.target/sparc/pr105573.c: New test.
+
+2023-04-25  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/phi-opt-25a.c: New test.
+
 2023-04-24  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* gcc.target/aarch64/sve/acle/general/rev-1.c: New test.
