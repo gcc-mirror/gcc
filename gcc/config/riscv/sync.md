@@ -128,10 +128,10 @@
 {
   /* We have no QImode/HImode atomics, so form a mask, then use
      subword_atomic_fetch_strong_nand to implement a LR/SC version of the
-     operation. */
+     operation.  */
 
   /* Logic duplicated in gcc/libgcc/config/riscv/atomic.c for use when inlining
-     is disabled */
+     is disabled.  */
 
   rtx old = gen_reg_rtx (SImode);
   rtx mem = operands[1];
@@ -193,10 +193,10 @@
 {
   /* We have no QImode/HImode atomics, so form a mask, then use
      subword_atomic_fetch_strong_<mode> to implement a LR/SC version of the
-     operation. */
+     operation.  */
 
   /* Logic duplicated in gcc/libgcc/config/riscv/atomic.c for use when inlining
-     is disabled */
+     is disabled.  */
 
   rtx old = gen_reg_rtx (SImode);
   rtx mem = operands[1];
@@ -367,7 +367,7 @@
     {
       rtx difference = gen_rtx_MINUS (SImode, val, exp);
       compare = gen_reg_rtx (SImode);
-      emit_move_insn  (compare, difference);
+      emit_move_insn (compare, difference);
     }
 
   if (word_mode != SImode)
@@ -393,10 +393,10 @@
 {
   /* We have no QImode/HImode atomics, so form a mask, then use
      subword_atomic_cas_strong<mode> to implement a LR/SC version of the
-     operation. */
+     operation.  */
 
   /* Logic duplicated in gcc/libgcc/config/riscv/atomic.c for use when inlining
-     is disabled */
+     is disabled.  */
 
   rtx old = gen_reg_rtx (SImode);
   rtx mem = operands[1];
@@ -461,7 +461,7 @@
   "TARGET_ATOMIC"
 {
   /* We have no QImode atomics, so use the address LSBs to form a mask,
-     then use an aligned SImode atomic. */
+     then use an aligned SImode atomic.  */
   rtx result = operands[0];
   rtx mem = operands[1];
   rtx model = operands[2];
