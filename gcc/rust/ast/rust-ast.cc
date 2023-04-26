@@ -4213,6 +4213,31 @@ Attribute::is_parsed_to_meta_item () const
   return has_attr_input () && attr_input->is_meta_item ();
 }
 
+void
+BlockExpr::strip_tail_expr ()
+{
+  if (expr)
+    {
+      expr = nullptr;
+
+      // HACK: try to turn the last statement into a tail expression
+      if (statements.size () && statements.back ()->is_expr ())
+	{
+	  auto &stmt = static_cast<ExprStmt &> (*statements.back ());
+
+	  if (stmt.get_type () == ExprStmt::ExprStmtType::WITH_BLOCK)
+	    {
+	      auto &stmt_block = static_cast<ExprStmtWithBlock &> (stmt);
+	      if (!stmt_block.is_semicolon_followed ())
+		{
+		  expr = std::move (stmt_block.get_expr ());
+		  statements.pop_back ();
+		}
+	    }
+	}
+    }
+}
+
 /* Visitor implementations - these are short but inlining can't happen anyway
  * due to virtual functions and I didn't want to make the ast header includes
  * any longer than they already are. */

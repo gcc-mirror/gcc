@@ -2446,7 +2446,7 @@ public:
   }
 
   // Removes the tail expression from the block.
-  void strip_tail_expr () { expr = nullptr; }
+  void strip_tail_expr ();
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
   std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
