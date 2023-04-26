@@ -2450,15 +2450,15 @@
    (set (attr "avl_type") (symbol_ref "INTVAL (operands[7])"))])
 
 (define_insn "@pred_madc<mode>"
-  [(set (match_operand:<VM> 0 "register_operand"        "=&vr, &vr")
+  [(set (match_operand:<VM> 0 "register_operand"         "=vr, &vr, &vr")
 	(unspec:<VM>
 	   [(plus:VI
-	     (match_operand:VI 1 "register_operand"     "  vr,  vr")
-	     (match_operand:VI 2 "vector_arith_operand" "  vr,  vi"))
-	    (match_operand:<VM> 3 "register_operand"    "  vm,  vm")
+	     (match_operand:VI 1 "register_operand"     "  %0,  vr,  vr")
+	     (match_operand:VI 2 "vector_arith_operand" "vrvi,  vr,  vi"))
+	    (match_operand:<VM> 3 "register_operand"    "  vm,  vm,  vm")
 	    (unspec:<VM>
-	      [(match_operand 4 "vector_length_operand" "  rK,  rK")
-	       (match_operand 5 "const_int_operand"     "   i,   i")
+	      [(match_operand 4 "vector_length_operand" "  rK,  rK,  rK")
+	       (match_operand 5 "const_int_operand"     "   i,   i,   i")
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMADC))]
   "TARGET_VECTOR"
@@ -2469,15 +2469,15 @@
    (set (attr "avl_type") (symbol_ref "INTVAL (operands[5])"))])
 
 (define_insn "@pred_msbc<mode>"
-  [(set (match_operand:<VM> 0 "register_operand"        "=&vr")
+  [(set (match_operand:<VM> 0 "register_operand"        "=vr, vr, &vr")
 	(unspec:<VM>
 	   [(minus:VI
-	     (match_operand:VI 1 "register_operand"     "  vr")
-	     (match_operand:VI 2 "register_operand"     "  vr"))
-	    (match_operand:<VM> 3 "register_operand"    "  vm")
+	     (match_operand:VI 1 "register_operand"     "  0, vr,  vr")
+	     (match_operand:VI 2 "register_operand"     " vr,  0,  vr"))
+	    (match_operand:<VM> 3 "register_operand"    " vm, vm,  vm")
 	    (unspec:<VM>
-	      [(match_operand 4 "vector_length_operand" "  rK")
-	       (match_operand 5 "const_int_operand"     "   i")
+	      [(match_operand 4 "vector_length_operand" " rK, rK,  rK")
+	       (match_operand 5 "const_int_operand"     "  i,  i,   i")
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMSBC))]
   "TARGET_VECTOR"
@@ -2488,16 +2488,16 @@
    (set (attr "avl_type") (symbol_ref "INTVAL (operands[5])"))])
 
 (define_insn "@pred_madc<mode>_scalar"
-  [(set (match_operand:<VM> 0 "register_operand"         "=&vr")
+  [(set (match_operand:<VM> 0 "register_operand"         "=vr, &vr")
 	(unspec:<VM>
 	   [(plus:VI_QHS
 	     (vec_duplicate:VI_QHS
-	       (match_operand:<VEL> 2 "register_operand" "   r"))
-	     (match_operand:VI_QHS 1 "register_operand"  "  vr"))
-	    (match_operand:<VM> 3 "register_operand"     "  vm")
+	       (match_operand:<VEL> 2 "register_operand" "  r,   r"))
+	     (match_operand:VI_QHS 1 "register_operand"  "  0,  vr"))
+	    (match_operand:<VM> 3 "register_operand"     " vm,  vm")
 	    (unspec:<VM>
-	      [(match_operand 4 "vector_length_operand"  "  rK")
-	       (match_operand 5 "const_int_operand"      "   i")
+	      [(match_operand 4 "vector_length_operand"  " rK,  rK")
+	       (match_operand 5 "const_int_operand"      "  i,   i")
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMADC))]
   "TARGET_VECTOR"
@@ -2508,16 +2508,16 @@
    (set (attr "avl_type") (symbol_ref "INTVAL (operands[5])"))])
 
 (define_insn "@pred_msbc<mode>_scalar"
-  [(set (match_operand:<VM> 0 "register_operand"         "=&vr")
+  [(set (match_operand:<VM> 0 "register_operand"         "=vr, &vr")
 	(unspec:<VM>
 	   [(minus:VI_QHS
 	     (vec_duplicate:VI_QHS
-	       (match_operand:<VEL> 2 "reg_or_0_operand" "  rJ"))
-	     (match_operand:VI_QHS 1 "register_operand"  "  vr"))
-	    (match_operand:<VM> 3 "register_operand"     "  vm")
+	       (match_operand:<VEL> 2 "reg_or_0_operand" " rJ,  rJ"))
+	     (match_operand:VI_QHS 1 "register_operand"  "  0,  vr"))
+	    (match_operand:<VM> 3 "register_operand"     " vm,  vm")
 	    (unspec:<VM>
-	      [(match_operand 4 "vector_length_operand"  "  rK")
-	       (match_operand 5 "const_int_operand"      "   i")
+	      [(match_operand 4 "vector_length_operand"  " rK,  rK")
+	       (match_operand 5 "const_int_operand"      "  i,   i")
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMSBC))]
   "TARGET_VECTOR"
@@ -2557,16 +2557,16 @@
 })
 
 (define_insn "*pred_madc<mode>_scalar"
-  [(set (match_operand:<VM> 0 "register_operand"         "=&vr")
+  [(set (match_operand:<VM> 0 "register_operand"         "=vr, &vr")
 	(unspec:<VM>
 	   [(plus:VI_D
 	     (vec_duplicate:VI_D
-	       (match_operand:<VEL> 2 "reg_or_0_operand" "  rJ"))
-	     (match_operand:VI_D 1 "register_operand"    "  vr"))
-	    (match_operand:<VM> 3 "register_operand"     "  vm")
+	       (match_operand:<VEL> 2 "reg_or_0_operand" " rJ,  rJ"))
+	     (match_operand:VI_D 1 "register_operand"    "  0,  vr"))
+	    (match_operand:<VM> 3 "register_operand"     " vm,  vm")
 	    (unspec:<VM>
-	      [(match_operand 4 "vector_length_operand"  "  rK")
-	       (match_operand 5 "const_int_operand"      "   i")
+	      [(match_operand 4 "vector_length_operand"  " rK,  rK")
+	       (match_operand 5 "const_int_operand"      "  i,   i")
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMADC))]
   "TARGET_VECTOR"
@@ -2577,17 +2577,17 @@
    (set (attr "avl_type") (symbol_ref "INTVAL (operands[5])"))])
 
 (define_insn "*pred_madc<mode>_extended_scalar"
-  [(set (match_operand:<VM> 0 "register_operand"             "=&vr")
+  [(set (match_operand:<VM> 0 "register_operand"             "=vr, &vr")
 	(unspec:<VM>
 	   [(plus:VI_D
 	     (vec_duplicate:VI_D
 	       (sign_extend:<VEL>
-	         (match_operand:<VSUBEL> 2 "reg_or_0_operand" "  rJ")))
-	     (match_operand:VI_D 1 "register_operand"         "  vr"))
-	    (match_operand:<VM> 3 "register_operand"          "  vm")
+	         (match_operand:<VSUBEL> 2 "reg_or_0_operand" " rJ,  rJ")))
+	     (match_operand:VI_D 1 "register_operand"         "  0,  vr"))
+	    (match_operand:<VM> 3 "register_operand"          " vm,  vm")
 	    (unspec:<VM>
-	      [(match_operand 4 "vector_length_operand"       "  rK")
-	       (match_operand 5 "const_int_operand"           "   i")
+	      [(match_operand 4 "vector_length_operand"       " rK,  rK")
+	       (match_operand 5 "const_int_operand"           "  i,   i")
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMADC))]
   "TARGET_VECTOR"
@@ -2627,16 +2627,16 @@
 })
 
 (define_insn "*pred_msbc<mode>_scalar"
-  [(set (match_operand:<VM> 0 "register_operand"         "=&vr")
+  [(set (match_operand:<VM> 0 "register_operand"         "=vr, &vr")
 	(unspec:<VM>
 	   [(minus:VI_D
 	     (vec_duplicate:VI_D
-	       (match_operand:<VEL> 2 "reg_or_0_operand" "  rJ"))
-	     (match_operand:VI_D 1 "register_operand"    "  vr"))
-	    (match_operand:<VM> 3 "register_operand"     "  vm")
+	       (match_operand:<VEL> 2 "reg_or_0_operand" " rJ,  rJ"))
+	     (match_operand:VI_D 1 "register_operand"    "  0,  vr"))
+	    (match_operand:<VM> 3 "register_operand"     " vm,  vm")
 	    (unspec:<VM>
-	      [(match_operand 4 "vector_length_operand"  "  rK")
-	       (match_operand 5 "const_int_operand"      "   i")
+	      [(match_operand 4 "vector_length_operand"  " rK,  rK")
+	       (match_operand 5 "const_int_operand"      "  i,   i")
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMSBC))]
   "TARGET_VECTOR"
@@ -2647,17 +2647,17 @@
    (set (attr "avl_type") (symbol_ref "INTVAL (operands[5])"))])
 
 (define_insn "*pred_msbc<mode>_extended_scalar"
-  [(set (match_operand:<VM> 0 "register_operand"             "=&vr")
+  [(set (match_operand:<VM> 0 "register_operand"              "=vr, &vr")
 	(unspec:<VM>
 	   [(minus:VI_D
 	     (vec_duplicate:VI_D
 	       (sign_extend:<VEL>
-	         (match_operand:<VSUBEL> 2 "reg_or_0_operand" "  rJ")))
-	     (match_operand:VI_D 1 "register_operand"         "  vr"))
-	    (match_operand:<VM> 3 "register_operand"          "  vm")
+	         (match_operand:<VSUBEL> 2 "reg_or_0_operand" " rJ,  rJ")))
+	     (match_operand:VI_D 1 "register_operand"         "  0,  vr"))
+	    (match_operand:<VM> 3 "register_operand"          " vm,  vm")
 	    (unspec:<VM>
-	      [(match_operand 4 "vector_length_operand"       "  rK")
-	       (match_operand 5 "const_int_operand"           "   i")
+	      [(match_operand 4 "vector_length_operand"       " rK,  rK")
+	       (match_operand 5 "const_int_operand"           "  i,   i")
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_VMSBC))]
   "TARGET_VECTOR"
@@ -2668,14 +2668,14 @@
    (set (attr "avl_type") (symbol_ref "INTVAL (operands[5])"))])
 
 (define_insn "@pred_madc<mode>_overflow"
-  [(set (match_operand:<VM> 0 "register_operand"        "=&vr, &vr")
+  [(set (match_operand:<VM> 0 "register_operand"         "=vr, &vr, &vr")
 	(unspec:<VM>
 	   [(plus:VI
-	     (match_operand:VI 1 "register_operand"     "  vr,  vr")
-	     (match_operand:VI 2 "vector_arith_operand" "  vr,  vi"))
+	     (match_operand:VI 1 "register_operand"     "  %0,  vr,  vr")
+	     (match_operand:VI 2 "vector_arith_operand" "vrvi,  vr,  vi"))
 	    (unspec:<VM>
-	      [(match_operand 3 "vector_length_operand" "  rK,  rK")
-	       (match_operand 4 "const_int_operand"     "   i,   i")
+	      [(match_operand 3 "vector_length_operand" "  rK,  rK,  rK")
+	       (match_operand 4 "const_int_operand"     "   i,   i,   i")
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
   "TARGET_VECTOR"
@@ -2686,14 +2686,14 @@
    (set (attr "avl_type") (symbol_ref "INTVAL (operands[4])"))])
 
 (define_insn "@pred_msbc<mode>_overflow"
-  [(set (match_operand:<VM> 0 "register_operand"        "=&vr")
+  [(set (match_operand:<VM> 0 "register_operand"         "=vr, vr, &vr, &vr")
 	(unspec:<VM>
 	   [(minus:VI
-	     (match_operand:VI 1 "register_operand"     "  vr")
-	     (match_operand:VI 2 "register_operand"     "  vr"))
+	     (match_operand:VI 1 "register_operand"     "   0,  vr,  vr,  vr")
+	     (match_operand:VI 2 "register_operand"     "  vr,   0,  vr,  vi"))
 	    (unspec:<VM>
-	      [(match_operand 3 "vector_length_operand" "  rK")
-	       (match_operand 4 "const_int_operand"     "   i")
+	      [(match_operand 3 "vector_length_operand" "  rK,  rK,  rK,  rK")
+	       (match_operand 4 "const_int_operand"     "   i,   i,   i,   i")
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
   "TARGET_VECTOR"
@@ -2704,15 +2704,15 @@
    (set (attr "avl_type") (symbol_ref "INTVAL (operands[4])"))])
 
 (define_insn "@pred_madc<mode>_overflow_scalar"
-  [(set (match_operand:<VM> 0 "register_operand"         "=&vr")
+  [(set (match_operand:<VM> 0 "register_operand"         "=vr, &vr")
 	(unspec:<VM>
 	   [(plus:VI_QHS
 	     (vec_duplicate:VI_QHS
-	       (match_operand:<VEL> 2 "reg_or_0_operand" "  rJ"))
-	     (match_operand:VI_QHS 1 "register_operand"  "  vr"))
+	       (match_operand:<VEL> 2 "reg_or_0_operand" " rJ,  rJ"))
+	     (match_operand:VI_QHS 1 "register_operand"  "  0,  vr"))
 	    (unspec:<VM>
-	      [(match_operand 3 "vector_length_operand"  "  rK")
-	       (match_operand 4 "const_int_operand"      "   i")
+	      [(match_operand 3 "vector_length_operand"  " rK,  rK")
+	       (match_operand 4 "const_int_operand"      "  i,   i")
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
   "TARGET_VECTOR"
@@ -2723,15 +2723,15 @@
    (set (attr "avl_type") (symbol_ref "INTVAL (operands[4])"))])
 
 (define_insn "@pred_msbc<mode>_overflow_scalar"
-  [(set (match_operand:<VM> 0 "register_operand"         "=&vr")
+  [(set (match_operand:<VM> 0 "register_operand"         "=vr, &vr")
 	(unspec:<VM>
 	   [(minus:VI_QHS
 	     (vec_duplicate:VI_QHS
-	       (match_operand:<VEL> 2 "reg_or_0_operand" "  rJ"))
-	     (match_operand:VI_QHS 1 "register_operand"  "  vr"))
+	       (match_operand:<VEL> 2 "reg_or_0_operand" " rJ,  rJ"))
+	     (match_operand:VI_QHS 1 "register_operand"  "  0,  vr"))
 	    (unspec:<VM>
-	      [(match_operand 3 "vector_length_operand"  "  rK")
-	       (match_operand 4 "const_int_operand"      "   i")
+	      [(match_operand 3 "vector_length_operand"  " rK,  rK")
+	       (match_operand 4 "const_int_operand"      "  i,   i")
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
   "TARGET_VECTOR"
@@ -2770,15 +2770,15 @@
 })
 
 (define_insn "*pred_madc<mode>_overflow_scalar"
-  [(set (match_operand:<VM> 0 "register_operand"         "=&vr")
+  [(set (match_operand:<VM> 0 "register_operand"         "=vr, &vr")
 	(unspec:<VM>
 	   [(plus:VI_D
 	     (vec_duplicate:VI_D
-	       (match_operand:<VEL> 2 "reg_or_0_operand" "  rJ"))
-	     (match_operand:VI_D 1 "register_operand"    "  vr"))
+	       (match_operand:<VEL> 2 "reg_or_0_operand" " rJ,  rJ"))
+	     (match_operand:VI_D 1 "register_operand"    "  0,  vr"))
 	    (unspec:<VM>
-	      [(match_operand 3 "vector_length_operand"  "  rK")
-	       (match_operand 4 "const_int_operand"      "   i")
+	      [(match_operand 3 "vector_length_operand"  " rK,  rK")
+	       (match_operand 4 "const_int_operand"      "  i,   i")
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
   "TARGET_VECTOR"
@@ -2789,16 +2789,16 @@
    (set (attr "avl_type") (symbol_ref "INTVAL (operands[4])"))])
 
 (define_insn "*pred_madc<mode>_overflow_extended_scalar"
-  [(set (match_operand:<VM> 0 "register_operand"             "=&vr")
+  [(set (match_operand:<VM> 0 "register_operand"             "=vr, &vr")
 	(unspec:<VM>
 	   [(plus:VI_D
 	     (vec_duplicate:VI_D
 	       (sign_extend:<VEL>
-	         (match_operand:<VSUBEL> 2 "reg_or_0_operand" "  rJ")))
-	     (match_operand:VI_D 1 "register_operand"         "  vr"))
+	         (match_operand:<VSUBEL> 2 "reg_or_0_operand" " rJ,  rJ")))
+	     (match_operand:VI_D 1 "register_operand"         "  0,  vr"))
 	    (unspec:<VM>
-	      [(match_operand 3 "vector_length_operand"       "  rK")
-	       (match_operand 4 "const_int_operand"           "   i")
+	      [(match_operand 3 "vector_length_operand"       " rK,  rK")
+	       (match_operand 4 "const_int_operand"           "  i,   i")
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
   "TARGET_VECTOR"
@@ -2837,15 +2837,15 @@
 })
 
 (define_insn "*pred_msbc<mode>_overflow_scalar"
-  [(set (match_operand:<VM> 0 "register_operand"         "=&vr")
+  [(set (match_operand:<VM> 0 "register_operand"         "=vr, &vr")
 	(unspec:<VM>
 	   [(minus:VI_D
 	     (vec_duplicate:VI_D
-	       (match_operand:<VEL> 2 "reg_or_0_operand" "  rJ"))
-	     (match_operand:VI_D 1 "register_operand"    "  vr"))
+	       (match_operand:<VEL> 2 "reg_or_0_operand" " rJ,  rJ"))
+	     (match_operand:VI_D 1 "register_operand"    "  0,  vr"))
 	    (unspec:<VM>
-	      [(match_operand 3 "vector_length_operand"  "  rK")
-	       (match_operand 4 "const_int_operand"      "   i")
+	      [(match_operand 3 "vector_length_operand"  " rK,  rK")
+	       (match_operand 4 "const_int_operand"      "  i,   i")
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
   "TARGET_VECTOR"
@@ -2856,16 +2856,16 @@
    (set (attr "avl_type") (symbol_ref "INTVAL (operands[4])"))])
 
 (define_insn "*pred_msbc<mode>_overflow_extended_scalar"
-  [(set (match_operand:<VM> 0 "register_operand"             "=&vr")
+  [(set (match_operand:<VM> 0 "register_operand"             "=vr, &vr")
 	(unspec:<VM>
 	   [(minus:VI_D
 	     (vec_duplicate:VI_D
 	       (sign_extend:<VEL>
-	         (match_operand:<VSUBEL> 2 "reg_or_0_operand" "  rJ")))
-	     (match_operand:VI_D 1 "register_operand"         "  vr"))
+	         (match_operand:<VSUBEL> 2 "reg_or_0_operand" " rJ,  rJ")))
+	     (match_operand:VI_D 1 "register_operand"         "  0,  vr"))
 	    (unspec:<VM>
-	      [(match_operand 3 "vector_length_operand"       "  rK")
-	       (match_operand 4 "const_int_operand"           "   i")
+	      [(match_operand 3 "vector_length_operand"      " rK,  rK")
+	       (match_operand 4 "const_int_operand"          "  i,   i")
 	       (reg:SI VL_REGNUM)
 	       (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)] UNSPEC_OVERFLOW))]
   "TARGET_VECTOR"
