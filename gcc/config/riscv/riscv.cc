@@ -1088,9 +1088,22 @@ riscv_classify_address (struct riscv_address_info *info, rtx x,
 	      && riscv_valid_lo_sum_p (info->symbol_type, mode, info->offset));
 
     case CONST_INT:
-      /* RVV load/store disallow CONST_INT.  */
+      /* We only allow the const0_rtx for the RVV load/store.  For example:
+	 +----------------------------------------------------------+
+	 | li      a5,0						    |
+	 | vsetvli zero,a1,e32,m1,ta,ma				    |
+	 | vle32.v v24,0(a5)  <- propagate the const 0 to a5 here.  |
+	 | vs1r.v  v24,0(a0)					    |
+	 +----------------------------------------------------------+
+	 It can be folded to:
+	 +----------------------------------------------------------+
+	 | vsetvli zero,a1,e32,m1,ta,ma				    |
+	 | vle32.v v24,0(zero)					    |
+	 | vs1r.v  v24,0(a0)					    |
+	 +----------------------------------------------------------+
+	 This behavior will benefit the underlying RVV auto vectorization.  */
       if (riscv_v_ext_vector_mode_p (mode))
-	return false;
+	return x == const0_rtx;
 
       /* Small-integer addresses don't occur very often, but they
 	 are legitimate if x0 is a valid base register.  */
