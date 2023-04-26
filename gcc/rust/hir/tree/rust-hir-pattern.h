@@ -631,6 +631,10 @@ public:
 
   ItemType get_item_type () const override final { return ItemType::IDENT_PAT; }
 
+  Identifier get_identifier () const { return ident; }
+
+  std::unique_ptr<Pattern> &get_pattern () { return ident_pattern; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
