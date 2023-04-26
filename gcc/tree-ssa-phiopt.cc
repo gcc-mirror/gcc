@@ -4087,7 +4087,7 @@ pass_phiopt::execute (function *)
 
       gphi *newphi;
       if (single_pred_p (bb1)
-	  && !diamond_p
+	  && EDGE_COUNT (merge->preds) == 2
 	  && (newphi = factor_out_conditional_conversion (e1, e2, phi,
 							  arg0, arg1,
 							  cond_stmt)))
