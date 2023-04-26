@@ -1705,6 +1705,9 @@ struct line *thisline = (struct line *)
 thisline->length = this_length;
 @end smallexample
 
+In this example, @code{thisline->contents} is an array of @code{char} that
+can hold up to @code{thisline->length} bytes.
+
 Although the size of a zero-length array is zero, an array member of
 this kind may increase the size of the enclosing type as a result of tail
 padding.  The offset of a zero-length array member from the beginning
