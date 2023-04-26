@@ -283,9 +283,10 @@ Session::enable_dump (std::string arg)
     {
       rust_error_at (
 	Location (),
-	"dump option was not given a name. choose %<lex%>, "
-	"%<register_plugins%>, %<injection%>, %<expansion%>, %<resolution%>,"
-	" %<target_options%>, %<hir%>, or %<all%>");
+	"dump option was not given a name. choose %<lex%>, %<ast-pretty%>, "
+	"%<ast-tokenstream%>, %<register_plugins%>, %<injection%>, "
+	"%<expansion%>, %<resolution%>, %<target_options%>, %<hir%>, "
+	"%<hir-pretty%>, or %<all%>");
       return false;
     }
 
@@ -337,9 +338,10 @@ Session::enable_dump (std::string arg)
     {
       rust_error_at (
 	Location (),
-	"dump option %qs was unrecognised. choose %<lex%>, %<parse%>, "
-	"%<register_plugins%>, %<injection%>, %<expansion%>, %<resolution%>,"
-	" %<target_options%>, or %<hir%>",
+	"dump option %qs was unrecognised. choose %<lex%>, %<ast-pretty%>, "
+	"%<ast-tokenstream%>, %<register_plugins%>, %<injection%>, "
+	"%<expansion%>, %<resolution%>, %<target_options%>, %<hir%>, "
+	"%<hir-pretty%>, or %<all%>",
 	arg.c_str ());
       return false;
     }
