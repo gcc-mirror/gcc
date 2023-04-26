@@ -1265,3 +1265,39 @@
   "bp %1,#7,%l0"
   [(set_attr "length" "4")
    (set_attr "psw_operand" "nop")])
+
+(define_insn "bswaphi2"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(bswap:HI (match_operand:HI 1 "register_operand" "0")))]
+  ""
+  "swpb %0")
+
+(define_insn "bswapsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(bswap:SI (match_operand:SI 1 "register_operand" "0")))]
+  ""
+  "swpb %0 | swpb %h0 | swpw %0,%h0"
+  [(set_attr "length" "6")])
+
+(define_insn "swaphi"
+  [(set (match_operand:HI 0 "register_operand" "+r")
+	(match_operand:HI 1 "register_operand" "+r"))
+   (set (match_dup 1)
+	(match_dup 0))]
+  ""
+  "swpw %0,%1")
+
+(define_peephole2
+  [(set (match_operand:HI 0 "register_operand")
+	(match_operand:HI 1 "register_operand"))
+   (set (match_dup 1)
+	(match_operand:HI 2 "register_operand"))
+   (set (match_dup 2)
+	(match_dup 0))]
+  "REGNO (operands[0]) != REGNO (operands[1])
+   && REGNO (operands[0]) != REGNO (operands[2])
+   && REGNO (operands[1]) != REGNO (operands[2])
+   && peep2_reg_dead_p (3, operands[0])"
+  [(parallel [(set (match_dup 2) (match_dup 1))
+              (set (match_dup 1) (match_dup 2))])])
+
