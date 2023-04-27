@@ -52,6 +52,13 @@ namespace __gnu_cxx
 /// @endcond
 #endif
 
+#define __glibcxx_want_bit_cast
+#define __glibcxx_want_byteswap
+#define __glibcxx_want_bitops
+#define __glibcxx_want_int_pow2
+#define __glibcxx_want_endian
+#include <bits/version.h>
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -65,8 +72,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-#if __cplusplus > 201703l && __has_builtin(__builtin_bit_cast)
-#define __cpp_lib_bit_cast 201806L
+#ifdef __cpp_lib_bit_cast // C++ >= 20
 
   /// Create a value of type `To` from the bits of `from`.
   /**
@@ -86,10 +92,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       return __builtin_bit_cast(_To, __from);
     }
-#endif
+#endif // __cpp_lib_bit_cast
 
-#if __cplusplus > 202002L
-#define __cpp_lib_byteswap 202110L
+#ifdef __cpp_lib_byteswap // C++ >= 23
 
   /// Reverse order of bytes in the object representation of `value`.
   /**
@@ -142,7 +147,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       return __val;
     }
-#endif
+#endif // __cpp_lib_byteswap
 
   /// @cond undocumented
 
@@ -370,9 +375,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @endcond
 
-#if __cplusplus > 201703L
-
-#define __cpp_lib_bitops 201907L
+#ifdef __cpp_lib_bitops // C++ >= 20
 
   /// @cond undocumented
   template<typename _Tp, typename _Up = _Tp>
@@ -425,10 +428,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr _If_is_unsigned_integer<_Tp, int>
     popcount(_Tp __x) noexcept
     { return std::__popcount(__x); }
+#endif // __cpp_lib_bitops
 
+#ifdef __cpp_lib_int_pow2 // C++ >= 20
   // [bit.pow.two], integral powers of 2
-
-#define __cpp_lib_int_pow2 202002L
 
   /// True if `x` is a power of two, false otherwise.
   template<typename _Tp>
@@ -455,8 +458,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr _If_is_unsigned_integer<_Tp, int>
     bit_width(_Tp __x) noexcept
     { return std::__bit_width(__x); }
+#endif // defined (__cpp_lib_int_pow2)
 
-#define __cpp_lib_endian 201907L
+#ifdef __cpp_lib_endian // C++ >= 20
 
   /// Byte order constants
   /**
@@ -471,7 +475,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     big    = __ORDER_BIG_ENDIAN__,
     native = __BYTE_ORDER__
   };
-#endif // C++2a
+#endif // __cpp_lib_endian
 
   /// @}
 

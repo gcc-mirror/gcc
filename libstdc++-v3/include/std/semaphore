@@ -36,12 +36,13 @@
 #if __cplusplus > 201703L
 #include <bits/semaphore_base.h>
 
-#if __cpp_lib_atomic_wait || _GLIBCXX_HAVE_POSIX_SEMAPHORE
+#define __glibcxx_want_semaphore
+#include <bits/version.h>
+
+#ifdef __cpp_lib_semaphore // C++ >= 20 && hosted && (atomic_wait || posix_sem)
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-#define __cpp_lib_semaphore 201907L
 
   template<ptrdiff_t __least_max_value = __semaphore_impl::_S_max>
     class counting_semaphore
@@ -93,5 +94,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 #endif // cpp_lib_atomic_wait || _GLIBCXX_HAVE_POSIX_SEMAPHORE
-#endif // C++20
+#endif // __cpp_lib_semaphore
 #endif // _GLIBCXX_SEMAPHORE

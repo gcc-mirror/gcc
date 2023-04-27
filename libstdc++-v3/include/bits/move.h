@@ -37,6 +37,9 @@
 # include <type_traits> // Brings in std::declval too.
 #endif
 
+#define __glibcxx_want_addressof_constexpr
+#include <bits/version.h>
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -120,11 +123,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // declval, from type_traits.
 
-#if __cplusplus > 201402L
-  // _GLIBCXX_RESOLVE_LIB_DEFECTS
-  // 2296. std::addressof should be constexpr
-# define __cpp_lib_addressof_constexpr 201603L
-#endif
   /**
    *  @brief Returns the actual address of the object or function
    *         referenced by r, even in the presence of an overloaded

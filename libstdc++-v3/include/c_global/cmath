@@ -51,6 +51,10 @@
 #ifndef _GLIBCXX_CMATH
 #define _GLIBCXX_CMATH 1
 
+#define __glibcxx_want_hypot
+#define __glibcxx_want_interpolate
+#include <bits/version.h>
+
 // Get rid of those macros defined in <math.h> in lieu of real functions.
 #undef div
 #undef acos
@@ -3544,11 +3548,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // _GLIBCXX_USE_C99_MATH_FUNCS
 #endif // C++11
 
-#if __cplusplus >= 201703L
-
+#ifdef __cpp_lib_hypot // C++ >= 17 && HOSTED
   // [c.math.hypot3], three-dimensional hypotenuse
-#define __cpp_lib_hypot 201603L
-
   template<typename _Tp>
     inline _Tp
     __hypot3(_Tp __x, _Tp __y, _Tp __z)
@@ -3616,12 +3617,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return std::__hypot3<__gnu_cxx::__bfloat16_t>(__x, __y, __z); }
 #endif
 
-#endif // C++17
+#endif // __cpp_lib_hypot
 
-#if __cplusplus >= 202002L
+#ifdef __cpp_lib_interpolate // C++ >= 20
   // linear interpolation
-# define __cpp_lib_interpolate 201902L
-
   template<typename _Fp>
     constexpr _Fp
     __lerp(_Fp __a, _Fp __b, _Fp __t) noexcept
@@ -3691,8 +3690,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   lerp(__gnu_cxx::__bfloat16_t __x, __gnu_cxx::__bfloat16_t __y, __gnu_cxx::__bfloat16_t __z) noexcept
   { return std::__lerp<__gnu_cxx::__bfloat16_t>(__x, __y, __z); }
 #endif
-
-#endif // C++20
+#endif // __cpp_lib_interpolate
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

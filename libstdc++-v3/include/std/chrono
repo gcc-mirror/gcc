@@ -50,11 +50,6 @@
 # include <bits/unique_ptr.h>
 #endif
 
-#if __cplusplus >= 202002L
-# undef __cpp_lib_chrono
-# define __cpp_lib_chrono 201907L
-#endif
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION

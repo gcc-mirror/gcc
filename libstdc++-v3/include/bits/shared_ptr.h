@@ -52,6 +52,10 @@
 #include <iosfwd>           	  // std::basic_ostream
 #include <bits/shared_ptr_base.h>
 
+#define __glibcxx_want_shared_ptr_weak_type
+#define __glibcxx_want_enable_shared_from_this
+#include <bits/version.h>
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -189,8 +193,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /// The type pointed to by the stored pointer, remove_extent_t<_Tp>
       using element_type = typename __shared_ptr<_Tp>::element_type;
 
-#if __cplusplus >= 201703L
-# define __cpp_lib_shared_ptr_weak_type 201606L
+#ifdef __cpp_lib_shared_ptr_weak_type // C++ >= 17 && HOSTED
       /// The corresponding weak_ptr type for this shared_ptr
       /// @since C++17
       using weak_type = weak_ptr<_Tp>;
@@ -938,8 +941,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       shared_from_this() const
       { return shared_ptr<const _Tp>(this->_M_weak_this); }
 
-#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++11
-#define __cpp_lib_enable_shared_from_this 201603L
+#ifdef __cpp_lib_enable_shared_from_this // C++ >= 17 && HOSTED
       /** @{
        * Get a `weak_ptr` referring to the object that has `*this` as its base.
        * @since C++17

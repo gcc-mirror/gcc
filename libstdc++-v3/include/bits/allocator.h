@@ -49,7 +49,8 @@
 #include <type_traits>
 #endif
 
-#define __cpp_lib_incomplete_container_elements 201505L
+#define __glibcxx_want_incomplete_container_elements
+#include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

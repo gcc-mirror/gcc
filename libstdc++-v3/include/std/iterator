@@ -67,9 +67,8 @@
 #endif
 #include <bits/range_access.h>
 
-#if __cplusplus >= 201402L && ! defined _GLIBCXX_DEBUG // PR libstdc++/70303
-# define __cpp_lib_null_iterators 201304L
-#endif
+#define __glibcxx_want_null_iterators
+#include <bits/version.h>
 
 #if __cplusplus >= 202002L
 #include <bits/ranges_base.h> // ranges::distance, ranges::next, ranges::prev

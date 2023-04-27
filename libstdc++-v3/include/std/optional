@@ -32,7 +32,10 @@
 
 #pragma GCC system_header
 
-#if __cplusplus >= 201703L
+#define __glibcxx_want_optional
+#include <bits/version.h>
+
+#ifdef __cpp_lib_optional // C++ >= 17
 
 #include <type_traits>
 #include <exception>
@@ -59,14 +62,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @addtogroup utilities
    *  @{
    */
-
-#if __cplusplus > 202002L && __cpp_lib_concepts
-# define __cpp_lib_optional 202110L
-#elif __cplusplus >= 202002L
-# define __cpp_lib_optional 202106L
-#else
-# define __cpp_lib_optional 201606L
-#endif
 
   template<typename _Tp>
     class optional;
@@ -1507,6 +1502,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#endif // C++17
+#endif // __cpp_lib_optional
 
 #endif // _GLIBCXX_OPTIONAL

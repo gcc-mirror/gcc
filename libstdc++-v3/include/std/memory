@@ -91,11 +91,9 @@
 #  include <bits/uses_allocator_args.h>
 #endif
 
-/* As a hack, we declare __cpp_lib_atomic_value_initialization here even though
-   we don't include the bit that actually declares it, for consistency.  */
-#if !defined(__cpp_lib_atomic_value_initialization) && __cplusplus >= 202002L
-# define __cpp_lib_atomic_value_initialization 201911L
-#endif
+#define __glibcxx_want_atomic_value_initialization
+#define __glibcxx_want_parallel_algorithm
+#include <bits/version.h>
 
 #if __cplusplus >= 201103L && __cplusplus <= 202002L && _GLIBCXX_HOSTED
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -144,7 +142,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 #endif // C++11 to C++20
 
-#if __cplusplus >= 201703L && _GLIBCXX_HOSTED
+#ifdef __cpp_lib_parallel_algorithm // C++ >= 17 && HOSTED
 // Parallel STL algorithms
 # if _PSTL_EXECUTION_POLICIES_DEFINED
 // If <execution> has already been included, pull in implementations
@@ -153,9 +151,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
 // Otherwise just pull in forward declarations
 #  include <pstl/glue_memory_defs.h>
 # endif
-
-// Feature test macro for parallel algorithms
-# define __cpp_lib_parallel_algorithm 201603L
-#endif // C++17
+#endif // __cpp_lib_parallel_algorithm
 
 #endif /* _GLIBCXX_MEMORY */

@@ -36,6 +36,10 @@
 
 #include <bits/requires_hosted.h> // polymorphic allocation
 
+#define __glibcxx_want_polymorphic_allocator
+#define __glibcxx_want_memory_resource
+#include <bits/version.h>
+
 #if __cplusplus >= 201703L
 
 /**
@@ -68,16 +72,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 namespace pmr
 {
-#ifdef _GLIBCXX_HAS_GTHREADS
-  // Header and all contents are present.
-# define __cpp_lib_memory_resource 201603L
-#else
-  // The pmr::synchronized_pool_resource type is missing.
-# define __cpp_lib_memory_resource 1
-#endif
 
-#if __cplusplus >= 202002L
-# define __cpp_lib_polymorphic_allocator 201902L
+#ifdef __cpp_lib_polymorphic_allocator // C++ >= 20 && HOSTED
   template<typename _Tp = std::byte>
     class polymorphic_allocator;
 #endif
@@ -111,7 +107,7 @@ namespace pmr
 
   // Pool resource classes
   struct pool_options;
-#ifdef _GLIBCXX_HAS_GTHREADS
+#if __cpp_lib_memory_resource >= 201603L // C++ >= 17 && hosted && gthread
   class synchronized_pool_resource;
 #endif
   class unsynchronized_pool_resource;
@@ -182,7 +178,7 @@ namespace pmr
     const int _M_npools;
   };
 
-#ifdef _GLIBCXX_HAS_GTHREADS
+#if __cpp_lib_memory_resource >= 201603L // C++ >= 17 && hosted && gthread
   /// A thread-safe memory resource that manages pools of fixed-size blocks.
   /**
    * @ingroup pmr
@@ -252,7 +248,7 @@ namespace pmr
     _TPools* _M_tpools = nullptr;
     mutable shared_mutex _M_mx;
   };
-#endif
+#endif // __cpp_lib_memory_resource >= 201603L
 
   /// A non-thread-safe memory resource that manages pools of fixed-size blocks.
   /**

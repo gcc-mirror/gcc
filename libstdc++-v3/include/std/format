@@ -33,7 +33,10 @@
 
 #include <bits/requires_hosted.h> // for std::string
 
-#if __cplusplus >= 202002L
+#define __glibcxx_want_format
+#include <bits/version.h>
+
+#ifdef __cpp_lib_format // C++ >= 20 && HOSTED
 
 #include <array>
 #include <charconv>
@@ -59,18 +62,6 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-// 201907 Text Formatting, Integration of chrono, printf corner cases.
-// 202106 std::format improvements.
-// 202110 Fixing locale handling in chrono formatters, generator-like types.
-// 202207 Encodings in localized formatting of chrono, basic-format-string.
-#define __cpp_lib_format 202106L
-
-#if __cplusplus > 202002L
-// 202207 P2286R8 Formatting Ranges
-// 202207 P2585R1 Improving default container formatting
-// TODO: #define __cpp_lib_format_ranges 202207L
-#endif
 
   // [format.context], class template basic_format_context
   template<typename _Out, typename _CharT> class basic_format_context;
@@ -4048,5 +4039,5 @@ namespace __format
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-#endif // C++20
+#endif // __cpp_lib_format
 #endif // _GLIBCXX_FORMAT

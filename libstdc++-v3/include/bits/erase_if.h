@@ -32,17 +32,15 @@
 
 #pragma GCC system_header
 
-#if __cplusplus >= 201402L
-
 #include <bits/c++config.h>
 
+#define __glibcxx_want_erase_if
+#include <bits/version.h>
+
+#if __cplusplus >= 201402L
 namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-#if __cplusplus > 201703L
-# define __cpp_lib_erase_if 202002L
-#endif
 
   namespace __detail
   {
@@ -70,7 +68,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-
 #endif // C++14
 
 #endif // _GLIBCXX_ERASE_IF_H

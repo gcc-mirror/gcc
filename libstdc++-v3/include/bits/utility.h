@@ -35,6 +35,11 @@
 
 #pragma GCC system_header
 
+#define __glibcxx_want_tuple_element_t
+#define __glibcxx_want_integer_sequence
+#define __glibcxx_want_ranges_zip
+#include <bits/version.h>
+
 #if __cplusplus >= 201103L
 
 #include <type_traits>
@@ -123,17 +128,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       return __n;
     }
+#endif // C++14
 
 // The standard says this macro and alias template should be in <tuple> but we
 // define them here, to be available in <array>, <utility> and <ranges> too.
 // _GLIBCXX_RESOLVE_LIB_DEFECTS
 // 3378. tuple_size_v/tuple_element_t should be available when
 //       tuple_size/tuple_element are
-#define __cpp_lib_tuple_element_t 201402L
-
+#ifdef __cpp_lib_tuple_element_t // C++ >= 14
   template<size_t __i, typename _Tp>
     using tuple_element_t = typename tuple_element<__i, _Tp>::type;
-#endif // C++14
+#endif
 
   // Stores a tuple of indices.  Used by tuple and pair, and by bind() to
   // extract the elements in a tuple.
@@ -155,9 +160,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
     };
 
-#if __cplusplus >= 201402L
-
-#define __cpp_lib_integer_sequence 201304L
+#ifdef __cpp_lib_integer_sequence // C++ >= 14
 
   /// Class template integer_sequence
   template<typename _Tp, _Tp... _Idx>
@@ -187,6 +190,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Alias template index_sequence_for
   template<typename... _Types>
     using index_sequence_for = make_index_sequence<sizeof...(_Types)>;
+#endif // __cpp_lib_integer_sequence
 
 #if __cplusplus >= 201703L
 
@@ -222,7 +226,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using __is_in_place_type = bool_constant<__is_in_place_type_v<_Tp>>;
 
 #endif // C++17
-#endif // C++14
 
 #if __has_builtin(__type_pack_element)
   template<size_t _Np, typename... _Types>
@@ -267,10 +270,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct _Nth_type<1, _Tp0, _Tp1, _Tp2, _Rest...>
     { using type = _Tp1; };
 #endif
-#endif
-
-#if __cplusplus > 202002L
-#define __cpp_lib_ranges_zip 202110L // for <tuple> and <utility>
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION

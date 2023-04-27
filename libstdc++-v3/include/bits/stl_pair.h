@@ -63,8 +63,11 @@
 #endif
 #if __cplusplus >= 202002L
 # include <compare>
-# define __cpp_lib_constexpr_utility 201811L
 #endif
+
+#define __glibcxx_want_constexpr_utility
+#define __glibcxx_want_tuples_by_type
+#include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -1050,10 +1053,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     get(const pair<_Tp1, _Tp2>&& __in) noexcept
     { return __pair_get<_Int>::__const_move_get(std::move(__in)); }
 
-#if __cplusplus >= 201402L
 
-#define __cpp_lib_tuples_by_type 201304L
-
+#ifdef __cpp_lib_tuples_by_type // C++ >= 14
   template <typename _Tp, typename _Up>
     constexpr _Tp&
     get(pair<_Tp, _Up>& __p) noexcept
@@ -1093,6 +1094,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr const _Tp&&
     get(const pair<_Up, _Tp>&& __p) noexcept
     { return std::move(__p.second); }
+#endif // __cpp_lib_tuples_by_type
+
 
 #if __cplusplus > 202002L
   template<typename _T1, typename _T2, typename _U1, typename _U2,
@@ -1111,7 +1114,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { using type = pair<common_type_t<_T1, _U1>, common_type_t<_T2, _U2>>; };
 #endif // C++23
 
-#endif // C++14
   /// @}
 #endif // C++11
 

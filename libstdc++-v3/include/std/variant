@@ -31,8 +31,10 @@
 
 #pragma GCC system_header
 
-#if __cplusplus >= 201703L
+#define __glibcxx_want_variant
+#include <bits/version.h>
 
+#ifdef __cpp_lib_variant // C++ >= 17
 #include <initializer_list>
 #include <type_traits>
 #include <bits/enable_special_members.h>
@@ -47,13 +49,11 @@
 # include <compare>
 #endif
 
-#if __cpp_concepts >= 202002L && __cpp_constexpr >= 201811L
-// P2231R1 constexpr needs constexpr unions and constrained destructors.
-# define __cpp_lib_variant 202106L
-#else
+// C++ < 20 || __cpp_concepts < 202002L || __cpp_constexpr < 201811L
+#if __cpp_lib_variant < 202106L
 # include <ext/aligned_buffer.h> // Use __aligned_membuf instead of union.
-# define __cpp_lib_variant 202102L
 #endif
+
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -1941,6 +1941,5 @@ namespace __variant
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#endif // C++17
-
+#endif // __cpp_lib_variant
 #endif // _GLIBCXX_VARIANT

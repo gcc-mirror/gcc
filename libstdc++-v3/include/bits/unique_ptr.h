@@ -1,3 +1,4 @@
+
 // unique_ptr implementation -*- C++ -*-
 
 // Copyright (C) 2008-2023 Free Software Foundation, Inc.
@@ -43,12 +44,9 @@
 # endif
 #endif
 
-/* Duplicate definition with ptr_traits.h.  */
-#if __cplusplus > 202002L && defined(__cpp_constexpr_dynamic_alloc)
-# define __cpp_lib_constexpr_memory 202202L
-#elif __cplusplus > 201703L
-# define __cpp_lib_constexpr_memory 201811L
-#endif
+#define __glibcxx_want_constexpr_memory
+#define __glibcxx_want_make_unique
+#include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -1029,9 +1027,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       public __uniq_ptr_hash<unique_ptr<_Tp, _Dp>>
     { };
 
-#if __cplusplus >= 201402L && _GLIBCXX_HOSTED
-#define __cpp_lib_make_unique 201304L
-
+#ifdef __cpp_lib_make_unique // C++ >= 14 && HOSTED
   /// @cond undocumented
 namespace __detail
 {

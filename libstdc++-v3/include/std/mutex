@@ -56,6 +56,9 @@
 # include <bits/std_function.h>  // std::function
 #endif
 
+#define __glibcxx_want_scoped_lock
+#include <bits/version.h>
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -728,8 +731,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
-#if __cplusplus >= 201703L
-#define __cpp_lib_scoped_lock 201703L
+#ifdef __cpp_lib_scoped_lock // C++ >= 17 && hosted && gthread
   /** @brief A scoped lock type for multiple lockable objects.
    *
    * A scoped_lock controls mutex ownership within a scope, releasing
@@ -793,7 +795,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       mutex_type&  _M_device;
     };
-#endif // C++17
+#endif // __cpp_lib_scoped_lock
 
 #ifdef _GLIBCXX_HAS_GTHREADS
   /// Flag type used by std::call_once

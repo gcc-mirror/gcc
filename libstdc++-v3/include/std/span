@@ -36,19 +36,17 @@
 
 #pragma GCC system_header
 
-#if __cplusplus > 201703L
+#define __glibcxx_want_span
+#include <bits/version.h>
 
+#ifdef __cpp_lib_span // C++ >= 20 && concepts
 #include <array>
 #include <cstddef>
 #include <bits/stl_iterator.h>
 #include <bits/ranges_base.h>
-
-#if __cpp_lib_concepts
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-#define __cpp_lib_span 202002L
 
   inline constexpr size_t dynamic_extent = static_cast<size_t>(-1);
 
@@ -476,6 +474,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-#endif // concepts
-#endif // C++20
+#endif // __cpp_lib_span
 #endif // _GLIBCXX_SPAN

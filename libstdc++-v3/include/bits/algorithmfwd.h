@@ -39,6 +39,9 @@
 #include <initializer_list>
 #endif
 
+#define __glibcxx_want_constexpr_algorithms
+#include <bits/version.h>
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -190,10 +193,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
 
   // adjacent_find
-
-#if __cplusplus > 201703L
-#  define __cpp_lib_constexpr_algorithms 201806L
-#endif
 
 #if __cplusplus >= 201103L
   template<typename _IIter, typename _Predicate>

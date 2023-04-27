@@ -68,6 +68,14 @@
 #include <bits/stl_relops.h>
 #include <bits/stl_pair.h>
 
+#define __glibcxx_want_exchange_function
+#define __glibcxx_want_constexpr_algorithms
+#define __glibcxx_want_as_const
+#define __glibcxx_want_integer_comparison_functions
+#define __glibcxx_want_to_underlying
+#define __glibcxx_want_unreachable
+#include <bits/version.h>
+
 #if __cplusplus >= 201103L
 
 #include <initializer_list>
@@ -83,13 +91,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#if __cplusplus >= 201402L
-#define __cpp_lib_exchange_function 201304L
-
-#if __cplusplus > 201703L
-# define __cpp_lib_constexpr_algorithms 201806L
-#endif
-
+#ifdef __cpp_lib_exchange_function // C++ >= 14
   /// Assign @p __new_val to @p __obj and return its previous value.
   template <typename _Tp, typename _Up = _Tp>
     _GLIBCXX20_CONSTEXPR
@@ -98,10 +100,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     noexcept(__and_<is_nothrow_move_constructible<_Tp>,
 		    is_nothrow_assignable<_Tp&, _Up>>::value)
     { return std::__exchange(__obj, std::forward<_Up>(__new_val)); }
+#endif
 
-#if __cplusplus >= 201703L
-
-#define  __cpp_lib_as_const 201510L
+#ifdef  __cpp_lib_as_const // C++ >= 17
   template<typename _Tp>
     [[nodiscard]]
     constexpr add_const_t<_Tp>&
@@ -110,10 +111,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     void as_const(const _Tp&&) = delete;
+#endif
 
-#if __cplusplus > 201703L
-#define __cpp_lib_integer_comparison_functions 202002L
-
+#ifdef __cpp_lib_integer_comparison_functions // C++ >= 20
   template<typename _Tp, typename _Up>
     constexpr bool
     cmp_equal(_Tp __t, _Up __u) noexcept
@@ -181,17 +181,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       else
 	return __t <= make_unsigned_t<_Up>(__int_traits<_Up>::__max);
     }
+#endif // __cpp_lib_integer_comparison_functions
 
-#if __cplusplus > 202002L
-#define __cpp_lib_to_underlying 202102L
+#ifdef __cpp_lib_to_underlying // C++ >= 23
   /// Convert an object of enumeration type to its underlying type.
   template<typename _Tp>
     [[nodiscard]]
     constexpr underlying_type_t<_Tp>
     to_underlying(_Tp __value) noexcept
     { return static_cast<underlying_type_t<_Tp>>(__value); }
+#endif
 
-#define __cpp_lib_unreachable 202202L
+#ifdef __cpp_lib_unreachable // C++ >= 23
   /// Informs the compiler that program control flow never reaches this point.
   /**
    * Evaluating a call to this function results in undefined behaviour.
@@ -216,10 +217,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __builtin_unreachable();
 #endif
   }
-#endif // C++23
-#endif // C++20
-#endif // C++17
-#endif // C++14
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

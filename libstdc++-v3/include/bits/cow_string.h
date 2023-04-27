@@ -36,13 +36,8 @@
 
 #include <ext/atomicity.h> // _Atomic_word, __is_single_threaded
 
-#ifdef __cpp_lib_is_constant_evaluated
-// Support P1032R1 in C++20 (but not P0980R1 for COW strings).
-# define __cpp_lib_constexpr_string 201811L
-#elif __cplusplus >= 201703L && _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED
-// Support P0426R1 changes to char_traits in C++17.
-# define __cpp_lib_constexpr_string 201611L
-#endif
+#define __glibcxx_want_constexpr_string
+#include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

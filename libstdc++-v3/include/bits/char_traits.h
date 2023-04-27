@@ -61,6 +61,9 @@
 # define _GLIBCXX_ALWAYS_INLINE inline __attribute__((__always_inline__))
 #endif
 
+#define __glibcxx_want_constexpr_char_traits
+#include <bits/version.h>
+
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -315,14 +318,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-#ifdef __cpp_lib_is_constant_evaluated
-// Unofficial macro indicating P1032R1 support in C++20
-# define __cpp_lib_constexpr_char_traits 201811L
-#elif __cplusplus >= 201703L && _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED
-// Unofficial macro indicating P0426R1 support in C++17
-# define __cpp_lib_constexpr_char_traits 201611L
-#endif
 
   // 21.1
   /**

@@ -33,19 +33,19 @@
 
 #include <bits/requires_hosted.h> // iostreams
 
-#if __cplusplus > 202002L
+#define __glibcxx_want_spanstream
+#include <bits/version.h>
+
+#ifdef __cpp_lib_spanstream // C++ >= 23 && hosted && lib_span
 #include <span>
 #include <streambuf>
 #include <istream>
 #include <ostream>
 #include <bits/ranges_base.h>
 
-#if __cpp_lib_span
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-#define __cpp_lib_spanstream 202106L
 
 template<typename _CharT, typename _Traits>
   class basic_spanbuf
@@ -451,6 +451,5 @@ using wspanstream = basic_spanstream<wchar_t>;
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-#endif // __cpp_lib_span
-#endif // C++23
+#endif // __cpp_lib_spanstream
 #endif // _GLIBCXX_SPANSTREAM

@@ -32,9 +32,9 @@
 
 #include <bits/c++config.h>
 
-#define __STDCPP_MATH_SPEC_FUNCS__ 201003L
-
-#define __cpp_lib_math_special_functions 201603L
+#define __glibcxx_want_math_spec_funcs
+#define __glibcxx_want_math_special_functions
+#include <bits/version.h>
 
 #if __cplusplus <= 201403L && __STDCPP_WANT_MATH_SPEC_FUNCS__ == 0
 # error include <cmath> and define __STDCPP_WANT_MATH_SPEC_FUNCS__

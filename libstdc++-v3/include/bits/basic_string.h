@@ -47,21 +47,19 @@
 # include <string_view>
 #endif
 
+#define __glibcxx_want_constexpr_string
+#define __glibcxx_want_string_resize_and_overwrite
+#define __glibcxx_want_string_udls
+#include <bits/version.h>
+
 #if ! _GLIBCXX_USE_CXX11_ABI
 # include "cow_string.h"
 #else
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
-
-#ifdef __cpp_lib_is_constant_evaluated
-// Support P0980R1 in C++20.
-# define __cpp_lib_constexpr_string 201907L
-#elif __cplusplus >= 201703L && _GLIBCXX_HAVE_IS_CONSTANT_EVALUATED
-// Support P0426R1 changes to char_traits in C++17.
-# define __cpp_lib_constexpr_string 201611L
-#endif
 
   /**
    *  @class basic_string basic_string.h <string>
@@ -1118,8 +1116,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #pragma GCC diagnostic pop
 #endif
 
-#if __cplusplus > 202002L
-#define __cpp_lib_string_resize_and_overwrite 202110L
+#ifdef __cpp_lib_string_resize_and_overwrite // C++ >= 23
       /** Resize the string and call a function to fill it.
        *
        * @param __n   The maximum size requested.
@@ -4491,10 +4488,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 #endif
 
-#if __cplusplus >= 201402L
-
-#define __cpp_lib_string_udls 201304L
-
+#ifdef __cpp_lib_string_udls // C++ >= 14
   inline namespace literals
   {
   inline namespace string_literals
@@ -4539,6 +4533,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #pragma GCC diagnostic pop
   } // inline namespace string_literals
   } // inline namespace literals
+#endif // __cpp_lib_string_udls
 
 #if __cplusplus >= 201703L
   namespace __detail::__variant
@@ -4556,7 +4551,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { };
   }  // namespace __detail::__variant
 #endif // C++17
-#endif // C++14
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

@@ -40,6 +40,11 @@
 #include <bits/c++config.h>
 #include <bits/exception.h>
 
+#define __glibcxx_want_launder
+#define __glibcxx_want_hardware_interference_size
+#define __glibcxx_want_destroying_delete
+#include <bits/version.h>
+
 #pragma GCC visibility push(default)
 
 extern "C++" {
@@ -185,8 +190,7 @@ inline void operator delete[](void*, void*) _GLIBCXX_USE_NOEXCEPT { }
 #if __cplusplus >= 201703L
 namespace std
 {
-#ifdef _GLIBCXX_HAVE_BUILTIN_LAUNDER
-#define __cpp_lib_launder 201606L
+#ifdef __cpp_lib_launder // C++ >= 17 && HAVE_BUILTIN_LAUNDER
   /// Pointer optimization barrier [ptr.launder]
   template<typename _Tp>
     [[nodiscard]] constexpr _Tp*
@@ -205,16 +209,16 @@ namespace std
   void launder(const void*) = delete;
   void launder(volatile void*) = delete;
   void launder(const volatile void*) = delete;
-#endif // _GLIBCXX_HAVE_BUILTIN_LAUNDER
+#endif // __cpp_lib_launder
 
-#ifdef __GCC_DESTRUCTIVE_SIZE
-# define __cpp_lib_hardware_interference_size 201703L
+#ifdef __cpp_lib_hardware_interference_size // C++ >= 17 && defined(gcc_dest_sz)
   inline constexpr size_t hardware_destructive_interference_size = __GCC_DESTRUCTIVE_SIZE;
   inline constexpr size_t hardware_constructive_interference_size = __GCC_CONSTRUCTIVE_SIZE;
-#endif // __GCC_DESTRUCTIVE_SIZE
+#endif // __cpp_lib_hardware_interference_size
 }
 #endif // C++17
 
+// Emitted despite the FTM potentially being undefined.
 #if __cplusplus > 201703L
 namespace std
 {
@@ -227,10 +231,6 @@ namespace std
   /// Tag variable of type destroying_delete_t.
   inline constexpr destroying_delete_t destroying_delete{};
 }
-// Only define the feature test macro if the compiler supports the feature:
-#if __cpp_impl_destroying_delete
-# define __cpp_lib_destroying_delete 201806L
-#endif
 #endif // C++20
 
 #pragma GCC visibility pop

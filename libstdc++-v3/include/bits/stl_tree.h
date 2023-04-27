@@ -72,13 +72,12 @@
 # include <bits/node_handle.h>
 #endif
 
+#define __glibcxx_want_generic_associative_lookup
+#include <bits/version.h>
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-#if __cplusplus > 201103L
-# define __cpp_lib_generic_associative_lookup 201304L
-#endif
 
   // Red-black tree class, designed for use in implementing STL
   // associative containers (set, multiset, map, and multimap). The

@@ -31,8 +31,14 @@
 
 #pragma GCC system_header
 
-// It is very likely that earlier versions would work, but they are untested.
-#if __cplusplus >= 201402L
+#define __glibcxx_want_coroutine
+#include <bits/version.h>
+
+#if !__cpp_impl_coroutine
+# error "the <coroutine> header requires -fcoroutines"
+#endif
+
+#ifdef __cpp_lib_coroutine // C++ >= 14 && impl_coroutine
 
 #include <type_traits>
 #if __cplusplus > 201703L
@@ -54,10 +60,6 @@
 namespace std _GLIBCXX_VISIBILITY (default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-#if __cpp_impl_coroutine
-
-#define __cpp_lib_coroutine 201902L
 
   inline namespace __n4861 {
 
@@ -351,13 +353,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     };
 
-#else
-#error "the <coroutine> header requires -fcoroutines"
-#endif
-
   _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#endif // C++14 (we are allowing use from at least this)
+#endif // __cpp_lib_coroutine
 
 #endif // _GLIBCXX_COROUTINE

@@ -41,6 +41,10 @@
 #include <bits/move.h>        // move, __exchange
 #include <bits/std_mutex.h>   // defer_lock_t
 
+#define __glibcxx_want_shared_mutex
+#define __glibcxx_want_shared_timed_mutex
+#include <bits/version.h>
+
 #if ! (_GLIBCXX_USE_PTHREAD_RWLOCK_T && _GTHREAD_USE_MUTEX_TIMEDLOCK)
 # include <condition_variable>
 #endif
@@ -56,12 +60,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef _GLIBCXX_HAS_GTHREADS
 
-#if __cplusplus >= 201703L
-#define __cpp_lib_shared_mutex 201505L
+#ifdef __cpp_lib_shared_mutex // C++ >= 17 && hosted && gthread
   class shared_mutex;
 #endif
 
-#define __cpp_lib_shared_timed_mutex 201402L
   class shared_timed_mutex;
 
   /// @cond undocumented
@@ -407,7 +409,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
   /// @endcond
 
-#if __cplusplus >= 201703L
+#ifdef __cpp_lib_shared_mutex
   /// The standard shared mutex type.
   class shared_mutex
   {
@@ -441,7 +443,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __shared_mutex_cv _M_impl;
 #endif
   };
-#endif // C++17
+#endif // __cpp_lib_shared_mutex
 
   /// @cond undocumented
 #if _GLIBCXX_USE_PTHREAD_RWLOCK_T && _GTHREAD_USE_MUTEX_TIMEDLOCK

@@ -46,6 +46,10 @@
 #define _GLIBCXX_ALWAYS_INLINE inline __attribute__((__always_inline__))
 #endif
 
+#define __glibcxx_want_atomic_value_initialization
+#define __glibcxx_want_atomic_flag_test
+#include <bits/version.h>
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -156,10 +160,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __ret;
     }
 
-#if __cplusplus >= 202002L
-# define __cpp_lib_atomic_value_initialization 201911L
-#endif
-
 /// @cond undocumented
 #if __cpp_lib_atomic_value_initialization
 # define _GLIBCXX20_INIT(I) = I
@@ -234,9 +234,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __atomic_test_and_set (&_M_i, int(__m));
     }
 
-#if __cplusplus > 201703L
-#define __cpp_lib_atomic_flag_test 201907L
-
+#ifdef __cpp_lib_atomic_flag_test // C++ >= 20
     _GLIBCXX_ALWAYS_INLINE bool
     test(memory_order __m = memory_order_seq_cst) const noexcept
     {
@@ -252,8 +250,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __atomic_load(&_M_i, &__v, int(__m));
       return __v == __GCC_ATOMIC_TEST_AND_SET_TRUEVAL;
     }
+#endif
 
-#if __cpp_lib_atomic_wait
+#if __cpp_lib_atomic_wait // C++ >= 20 && (linux_futex || gthread)
     _GLIBCXX_ALWAYS_INLINE void
     wait(bool __old,
 	memory_order __m = memory_order_seq_cst) const noexcept
@@ -279,7 +278,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // TODO add const volatile overload
 #endif // __cpp_lib_atomic_wait
-#endif // C++20
 
     _GLIBCXX_ALWAYS_INLINE void
     clear(memory_order __m = memory_order_seq_cst) noexcept

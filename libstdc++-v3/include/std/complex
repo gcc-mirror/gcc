@@ -52,9 +52,9 @@
 #pragma clang diagnostic ignored "-Wc99-extensions"
 #endif
 
-#if __cplusplus > 201703L
-# define __cpp_lib_constexpr_complex 201711L
-#endif
+#define __glibcxx_want_constexpr_complex
+#define __glibcxx_want_complex_udls
+#include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -2604,13 +2604,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::complex<__type>(__x, -__type());
     }
 
-#if __cplusplus > 201103L
+#ifdef __cpp_lib_complex_udls // C++ >= 14
 
 inline namespace literals {
 inline namespace complex_literals {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wliteral-suffix"
-#define __cpp_lib_complex_udls 201309L
 
   constexpr std::complex<float>
   operator""if(long double __num)
@@ -2640,7 +2639,7 @@ inline namespace complex_literals {
 } // inline namespace complex_literals
 } // inline namespace literals
 
-#endif // C++14
+#endif // __cpp_lib_complex_udls
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
