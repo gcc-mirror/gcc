@@ -43,6 +43,10 @@ extern edge create_empty_if_region_on_edge (edge, tree);
 extern class loop *create_empty_loop_on_edge (edge, tree, tree, tree, tree,
 					       tree *, tree *, class loop *);
 extern void unloop (class loop *, bool *, bitmap);
+extern void unloop_loops (vec<class loop *> &loops_to_unloop,
+			  vec<int> &loops_to_unloop_nunroll,
+			  bitmap loop_closed_ssa_invalidated,
+			  bool *irred_invalidated);
 extern void copy_loop_info (class loop *loop, class loop *target);
 extern class loop * duplicate_loop (class loop *, class loop *,
 				     class loop * = NULL);

@@ -618,8 +618,10 @@ static bitmap peeled_loops;
    LOOP_CLOSED_SSA_INVALIDATED is used to bookkepp the case
    when we need to go into loop closed SSA form.  */
 
-static void
-unloop_loops (bitmap loop_closed_ssa_invalidated,
+void
+unloop_loops (vec<class loop *> &loops_to_unloop,
+	      vec<int> &loops_to_unloop_nunroll,
+	      bitmap loop_closed_ssa_invalidated,
 	      bool *irred_invalidated)
 {
   while (loops_to_unloop.length ())
@@ -653,8 +655,6 @@ unloop_loops (bitmap loop_closed_ssa_invalidated,
       gsi = gsi_start_bb (latch_edge->dest);
       gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
     }
-  loops_to_unloop.release ();
-  loops_to_unloop_nunroll.release ();
 
   /* Remove edges in peeled copies.  Given remove_path removes dominated
      regions we need to cope with removal of already removed paths.  */
@@ -1326,7 +1326,10 @@ canonicalize_induction_variables (void)
     }
   gcc_assert (!need_ssa_update_p (cfun));
 
-  unloop_loops (loop_closed_ssa_invalidated, &irred_invalidated);
+  unloop_loops (loops_to_unloop, loops_to_unloop_nunroll,
+		loop_closed_ssa_invalidated, &irred_invalidated);
+  loops_to_unloop.release ();
+  loops_to_unloop_nunroll.release ();
   if (irred_invalidated
       && loops_state_satisfies_p (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS))
     mark_irreducible_loops ();
@@ -1473,7 +1476,12 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 	{
 	  unsigned i;
 
-          unloop_loops (loop_closed_ssa_invalidated, &irred_invalidated);
+	  unloop_loops (loops_to_unloop,
+			loops_to_unloop_nunroll,
+			loop_closed_ssa_invalidated,
+			&irred_invalidated);
+	  loops_to_unloop.release ();
+	  loops_to_unloop_nunroll.release ();
 
 	  /* We cannot use TODO_update_ssa_no_phi because VOPS gets confused.  */
 	  if (loop_closed_ssa_invalidated
