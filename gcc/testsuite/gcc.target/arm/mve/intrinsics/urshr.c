@@ -12,7 +12,7 @@ extern "C" {
 /*
 **foo:
 **	...
-**	urshr	(?:ip|fp|r[0-9]+), #shift(?:	@.*|)
+**	urshr	(?:ip|fp|r[0-9]+), #1(?:	@.*|)
 **	...
 */
 uint32_t
@@ -24,7 +24,7 @@ foo (uint32_t value)
 /*
 **foo1:
 **	...
-**	urshr	(?:ip|fp|r[0-9]+), #shift(?:	@.*|)
+**	urshr	(?:ip|fp|r[0-9]+), #1(?:	@.*|)
 **	...
 */
 uint32_t

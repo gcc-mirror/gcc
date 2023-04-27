@@ -12,25 +12,13 @@ extern "C" {
 /*
 **foo:
 **	...
-**	uqshll	(?:ip|fp|r[0-9]+), (?:ip|fp|r[0-9]+), #shift(?:	@.*|)
+**	uqshll	(?:ip|fp|r[0-9]+), (?:ip|fp|r[0-9]+), #1(?:	@.*|)
 **	...
 */
 uint64_t
 foo (uint64_t value)
 {
   return uqshll (value, 1);
-}
-
-/*
-**foo1:
-**	...
-**	uqshll	(?:ip|fp|r[0-9]+), (?:ip|fp|r[0-9]+), #shift(?:	@.*|)
-**	...
-*/
-uint64_t
-foo1 ()
-{
-  return uqshll (1, 1);
 }
 
 #ifdef __cplusplus

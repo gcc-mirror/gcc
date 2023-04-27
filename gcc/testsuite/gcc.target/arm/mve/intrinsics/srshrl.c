@@ -12,7 +12,7 @@ extern "C" {
 /*
 **foo:
 **	...
-**	srshrl	(?:ip|fp|r[0-9]+), (?:ip|fp|r[0-9]+), #shift(?:	@.*|)
+**	srshrl	(?:ip|fp|r[0-9]+), (?:ip|fp|r[0-9]+), #1(?:	@.*|)
 **	...
 */
 int64_t
