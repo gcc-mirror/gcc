@@ -12230,8 +12230,10 @@ compute_goto_targets (gfc_code *code, hash_set <gfc_st_label *> *goto_targets)
 	  gcc_fallthrough ();
 
 	case EXEC_ARITHMETIC_IF:
-	  goto_targets->add (code->label2);
-	  goto_targets->add (code->label3);
+	  if (code->label2)
+	    goto_targets->add (code->label2);
+	  if (code->label3)
+	    goto_targets->add (code->label3);
 	  gcc_fallthrough ();
 
 	default:

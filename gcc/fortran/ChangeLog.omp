@@ -1,3 +1,8 @@
+2023-04-27  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* openmp.cc (compute_goto_targets): Check label before adding to
+	goto_targets.
+
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
 	* openmp.cc (omp_unroll_removes_loop_nest): Move down in file.
