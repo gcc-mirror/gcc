@@ -3817,6 +3817,47 @@ gcn_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 					      TRAMPOLINE_SIZE)));
 }
 
+/* Implement TARGET_EXPAND_DIVMOD_LIBFUNC.
+
+   There are divmod libfuncs for all modes except TImode.  They return the
+   two values packed into a larger integer/vector.  */
+
+void
+gcn_expand_divmod_libfunc (rtx libfunc, machine_mode mode, rtx op0, rtx op1,
+			   rtx *quot, rtx *rem)
+{
+  machine_mode innermode = (VECTOR_MODE_P (mode)
+			    ? GET_MODE_INNER (mode) : mode);
+  machine_mode wideinnermode = VOIDmode;
+  machine_mode widemode = VOIDmode;
+
+  switch (innermode)
+    {
+    case E_QImode:
+    case E_HImode:
+    case E_SImode:
+      wideinnermode = DImode;
+      break;
+    case E_DImode:
+      wideinnermode = TImode;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (VECTOR_MODE_P (mode))
+    widemode = VnMODE (GET_MODE_NUNITS (mode), wideinnermode);
+  else
+    widemode = wideinnermode;
+
+  emit_library_call_value (libfunc, gen_rtx_REG (widemode, RETURN_VALUE_REG),
+			   LCT_NORMAL, widemode, op0, mode, op1, mode);
+
+  *quot = gen_rtx_REG (mode, RETURN_VALUE_REG);
+  *rem = gen_rtx_REG (mode,
+		      RETURN_VALUE_REG + (wideinnermode == TImode ? 2 : 1));
+}
+
 /* }}}  */
 /* {{{ Miscellaneous.  */
 
@@ -4255,6 +4296,207 @@ gcn_init_libfuncs (void)
   set_optab_libfunc (popcount_optab, TImode, "__popcountti2");
   set_optab_libfunc (parity_optab, TImode, "__parityti2");
   set_optab_libfunc (bswap_optab, TImode, "__bswapti2");
+
+  set_optab_libfunc (sdivmod_optab, SImode, "__divmodsi4");
+  set_optab_libfunc (udivmod_optab, SImode, "__udivmodsi4");
+  set_optab_libfunc (sdivmod_optab, DImode, "__divmoddi4");
+  set_optab_libfunc (udivmod_optab, DImode, "__udivmoddi4");
+
+  set_optab_libfunc (sdiv_optab, V2QImode, "__divv2qi3");
+  set_optab_libfunc (udiv_optab, V2QImode, "__udivv2qi3");
+  set_optab_libfunc (smod_optab, V2QImode, "__modv2qi3");
+  set_optab_libfunc (umod_optab, V2QImode, "__umodv2qi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V2QImode, "__divmodv2qi4");
+  set_optab_libfunc (udivmod_optab, V2QImode, "__udivmodv2qi4");
+#endif
+  set_optab_libfunc (sdiv_optab, V4QImode, "__divv4qi3");
+  set_optab_libfunc (udiv_optab, V4QImode, "__udivv4qi3");
+  set_optab_libfunc (smod_optab, V4QImode, "__modv4qi3");
+  set_optab_libfunc (umod_optab, V4QImode, "__umodv4qi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V4QImode, "__divmodv4qi4");
+  set_optab_libfunc (udivmod_optab, V4QImode, "__udivmodv4qi4");
+#endif
+  set_optab_libfunc (sdiv_optab, V8QImode, "__divv8qi3");
+  set_optab_libfunc (udiv_optab, V8QImode, "__udivv8qi3");
+  set_optab_libfunc (smod_optab, V8QImode, "__modv8qi3");
+  set_optab_libfunc (umod_optab, V8QImode, "__umodv8qi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V8QImode, "__divmodv8qi4");
+  set_optab_libfunc (udivmod_optab, V8QImode, "__udivmodv8qi4");
+#endif
+  set_optab_libfunc (sdiv_optab, V16QImode, "__divv16qi3");
+  set_optab_libfunc (udiv_optab, V16QImode, "__udivv16qi3");
+  set_optab_libfunc (smod_optab, V16QImode, "__modv16qi3");
+  set_optab_libfunc (umod_optab, V16QImode, "__umodv16qi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V16QImode, "__divmodv16qi4");
+  set_optab_libfunc (udivmod_optab, V16QImode, "__udivmodv16qi4");
+#endif
+  set_optab_libfunc (sdiv_optab, V32QImode, "__divv32qi3");
+  set_optab_libfunc (udiv_optab, V32QImode, "__udivv32qi3");
+  set_optab_libfunc (smod_optab, V32QImode, "__modv32qi3");
+  set_optab_libfunc (umod_optab, V32QImode, "__umodv32qi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V32QImode, "__divmodv32qi4");
+  set_optab_libfunc (udivmod_optab, V32QImode, "__udivmodv32qi4");
+#endif
+  set_optab_libfunc (sdiv_optab, V64QImode, "__divv64qi3");
+  set_optab_libfunc (udiv_optab, V64QImode, "__udivv64qi3");
+  set_optab_libfunc (smod_optab, V64QImode, "__modv64qi3");
+  set_optab_libfunc (umod_optab, V64QImode, "__umodv64qi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V64QImode, "__divmodv64qi4");
+  set_optab_libfunc (udivmod_optab, V64QImode, "__udivmodv64qi4");
+#endif
+
+  set_optab_libfunc (sdiv_optab, V2HImode, "__divv2hi3");
+  set_optab_libfunc (udiv_optab, V2HImode, "__udivv2hi3");
+  set_optab_libfunc (smod_optab, V2HImode, "__modv2hi3");
+  set_optab_libfunc (umod_optab, V2HImode, "__umodv2hi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V2HImode, "__divmodv2hi4");
+  set_optab_libfunc (udivmod_optab, V2HImode, "__udivmodv2hi4");
+#endif
+  set_optab_libfunc (sdiv_optab, V4HImode, "__divv4hi3");
+  set_optab_libfunc (udiv_optab, V4HImode, "__udivv4hi3");
+  set_optab_libfunc (smod_optab, V4HImode, "__modv4hi3");
+  set_optab_libfunc (umod_optab, V4HImode, "__umodv4hi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V4HImode, "__divmodv4hi4");
+  set_optab_libfunc (udivmod_optab, V4HImode, "__udivmodv4hi4");
+#endif
+  set_optab_libfunc (sdiv_optab, V8HImode, "__divv8hi3");
+  set_optab_libfunc (udiv_optab, V8HImode, "__udivv8hi3");
+  set_optab_libfunc (smod_optab, V8HImode, "__modv8hi3");
+  set_optab_libfunc (umod_optab, V8HImode, "__umodv8hi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V8HImode, "__divmodv8hi4");
+  set_optab_libfunc (udivmod_optab, V8HImode, "__udivmodv8hi4");
+#endif
+  set_optab_libfunc (sdiv_optab, V16HImode, "__divv16hi3");
+  set_optab_libfunc (udiv_optab, V16HImode, "__udivv16hi3");
+  set_optab_libfunc (smod_optab, V16HImode, "__modv16hi3");
+  set_optab_libfunc (umod_optab, V16HImode, "__umodv16hi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V16HImode, "__divmodv16hi4");
+  set_optab_libfunc (udivmod_optab, V16HImode, "__udivmodv16hi4");
+#endif
+  set_optab_libfunc (sdiv_optab, V32HImode, "__divv32hi3");
+  set_optab_libfunc (udiv_optab, V32HImode, "__udivv32hi3");
+  set_optab_libfunc (smod_optab, V32HImode, "__modv32hi3");
+  set_optab_libfunc (umod_optab, V32HImode, "__umodv32hi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V32HImode, "__divmodv32hi4");
+  set_optab_libfunc (udivmod_optab, V32HImode, "__udivmodv32hi4");
+#endif
+  set_optab_libfunc (sdiv_optab, V64HImode, "__divv64hi3");
+  set_optab_libfunc (udiv_optab, V64HImode, "__udivv64hi3");
+  set_optab_libfunc (smod_optab, V64HImode, "__modv64hi3");
+  set_optab_libfunc (umod_optab, V64HImode, "__umodv64hi3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V64HImode, "__divmodv64hi4");
+  set_optab_libfunc (udivmod_optab, V64HImode, "__udivmodv64hi4");
+#endif
+
+  set_optab_libfunc (sdiv_optab, V2SImode, "__divv2si3");
+  set_optab_libfunc (udiv_optab, V2SImode, "__udivv2si3");
+  set_optab_libfunc (smod_optab, V2SImode, "__modv2si3");
+  set_optab_libfunc (umod_optab, V2SImode, "__umodv2si3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V2SImode, "__divmodv2si4");
+  set_optab_libfunc (udivmod_optab, V2SImode, "__udivmodv2si4");
+#endif
+  set_optab_libfunc (sdiv_optab, V4SImode, "__divv4si3");
+  set_optab_libfunc (udiv_optab, V4SImode, "__udivv4si3");
+  set_optab_libfunc (smod_optab, V4SImode, "__modv4si3");
+  set_optab_libfunc (umod_optab, V4SImode, "__umodv4si3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V4SImode, "__divmodv4si4");
+  set_optab_libfunc (udivmod_optab, V4SImode, "__udivmodv4si4");
+#endif
+  set_optab_libfunc (sdiv_optab, V8SImode, "__divv8si3");
+  set_optab_libfunc (udiv_optab, V8SImode, "__udivv8si3");
+  set_optab_libfunc (smod_optab, V8SImode, "__modv8si3");
+  set_optab_libfunc (umod_optab, V8SImode, "__umodv8si3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V8SImode, "__divmodv8si4");
+  set_optab_libfunc (udivmod_optab, V8SImode, "__udivmodv8si4");
+#endif
+  set_optab_libfunc (sdiv_optab, V16SImode, "__divv16si3");
+  set_optab_libfunc (udiv_optab, V16SImode, "__udivv16si3");
+  set_optab_libfunc (smod_optab, V16SImode, "__modv16si3");
+  set_optab_libfunc (umod_optab, V16SImode, "__umodv16si3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V16SImode, "__divmodv16si4");
+  set_optab_libfunc (udivmod_optab, V16SImode, "__udivmodv16si4");
+#endif
+  set_optab_libfunc (sdiv_optab, V32SImode, "__divv32si3");
+  set_optab_libfunc (udiv_optab, V32SImode, "__udivv32si3");
+  set_optab_libfunc (smod_optab, V32SImode, "__modv32si3");
+  set_optab_libfunc (umod_optab, V32SImode, "__umodv32si3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V32SImode, "__divmodv32si4");
+  set_optab_libfunc (udivmod_optab, V32SImode, "__udivmodv32si4");
+#endif
+  set_optab_libfunc (sdiv_optab, V64SImode, "__divv64si3");
+  set_optab_libfunc (udiv_optab, V64SImode, "__udivv64si3");
+  set_optab_libfunc (smod_optab, V64SImode, "__modv64si3");
+  set_optab_libfunc (umod_optab, V64SImode, "__umodv64si3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V64SImode, "__divmodv64si4");
+  set_optab_libfunc (udivmod_optab, V64SImode, "__udivmodv64si4");
+#endif
+
+  set_optab_libfunc (sdiv_optab, V2DImode, "__divv2di3");
+  set_optab_libfunc (udiv_optab, V2DImode, "__udivv2di3");
+  set_optab_libfunc (smod_optab, V2DImode, "__modv2di3");
+  set_optab_libfunc (umod_optab, V2DImode, "__umodv2di3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V2DImode, "__divmodv2di4");
+  set_optab_libfunc (udivmod_optab, V2DImode, "__udivmodv2di4");
+#endif
+  set_optab_libfunc (sdiv_optab, V4DImode, "__divv4di3");
+  set_optab_libfunc (udiv_optab, V4DImode, "__udivv4di3");
+  set_optab_libfunc (smod_optab, V4DImode, "__modv4di3");
+  set_optab_libfunc (umod_optab, V4DImode, "__umodv4di3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V4DImode, "__divmodv4di4");
+  set_optab_libfunc (udivmod_optab, V4DImode, "__udivmodv4di4");
+#endif
+  set_optab_libfunc (sdiv_optab, V8DImode, "__divv8di3");
+  set_optab_libfunc (udiv_optab, V8DImode, "__udivv8di3");
+  set_optab_libfunc (smod_optab, V8DImode, "__modv8di3");
+  set_optab_libfunc (umod_optab, V8DImode, "__umodv8di3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V8DImode, "__divmodv8di4");
+  set_optab_libfunc (udivmod_optab, V8DImode, "__udivmodv8di4");
+#endif
+  set_optab_libfunc (sdiv_optab, V16DImode, "__divv16di3");
+  set_optab_libfunc (udiv_optab, V16DImode, "__udivv16di3");
+  set_optab_libfunc (smod_optab, V16DImode, "__modv16di3");
+  set_optab_libfunc (umod_optab, V16DImode, "__umodv16di3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V16DImode, "__divmodv16di4");
+  set_optab_libfunc (udivmod_optab, V16DImode, "__udivmodv16di4");
+#endif
+  set_optab_libfunc (sdiv_optab, V32DImode, "__divv32di3");
+  set_optab_libfunc (udiv_optab, V32DImode, "__udivv32di3");
+  set_optab_libfunc (smod_optab, V32DImode, "__modv32di3");
+  set_optab_libfunc (umod_optab, V32DImode, "__umodv32di3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V32DImode, "__divmodv32di4");
+  set_optab_libfunc (udivmod_optab, V32DImode, "__udivmodv32di4");
+#endif
+  set_optab_libfunc (sdiv_optab, V64DImode, "__divv64di3");
+  set_optab_libfunc (udiv_optab, V64DImode, "__udivv64di3");
+  set_optab_libfunc (smod_optab, V64DImode, "__modv64di3");
+  set_optab_libfunc (umod_optab, V64DImode, "__umodv64di3");
+#if 0
+  set_optab_libfunc (sdivmod_optab, V64DImode, "__divmodv64di4");
+  set_optab_libfunc (udivmod_optab, V64DImode, "__udivmodv64di4");
+#endif
 }
 
 /* Expand the CMP_SWAP GCN builtins.  We have our own versions that do
@@ -7541,6 +7783,8 @@ gcn_dwarf_register_span (rtx rtl)
 #define TARGET_EMUTLS_VAR_INIT gcn_emutls_var_init
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN gcn_expand_builtin
+#undef  TARGET_EXPAND_DIVMOD_LIBFUNC
+#define TARGET_EXPAND_DIVMOD_LIBFUNC gcn_expand_divmod_libfunc
 #undef  TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED gcn_frame_pointer_rqd
 #undef  TARGET_FUNCTION_ARG

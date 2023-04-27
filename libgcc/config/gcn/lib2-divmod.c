@@ -24,11 +24,20 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* 32-bit SI divide and modulo as used in gcn.  */
 
-static USItype
-udivmodsi4 (USItype num, USItype den, word_type modwanted)
+union pack {
+  UDItype di;
+  struct {SItype quot, rem;} pair;
+};
+union upack {
+  UDItype di;
+  struct {USItype quot, rem;} pair;
+};
+
+UDItype
+__udivmodsi4 (USItype num, USItype den)
 {
   USItype bit = 1;
-  USItype res = 0;
+  union upack res = {0};
 
   while (den < num && bit && !(den & (1L<<31)))
     {
@@ -40,78 +49,75 @@ udivmodsi4 (USItype num, USItype den, word_type modwanted)
       if (num >= den)
 	{
 	  num -= den;
-	  res |= bit;
+	  res.pair.quot |= bit;
 	}
       bit >>=1;
       den >>=1;
     }
-  if (modwanted)
-    return num;
-  return res;
+  res.pair.rem = num;
+  return res.di;
+}
+
+UDItype
+__divmodsi4 (SItype a, SItype b)
+{
+  word_type nega = 0, negb = 0;
+  union pack res;
+
+  if (a < 0)
+    {
+      a = -a;
+      nega = 1;
+    }
+
+  if (b < 0)
+    {
+      b = -b;
+      negb = 1;
+    }
+
+  res.di = __udivmodsi4 (a, b);
+
+  if (nega)
+    res.pair.rem = -res.pair.rem;
+  if (nega ^ negb)
+    res.pair.quot = -res.pair.quot;
+
+  return res.di;
 }
 
 
 SItype
 __divsi3 (SItype a, SItype b)
 {
-  word_type neg = 0;
-  SItype res;
-
-  if (a < 0)
-    {
-      a = -a;
-      neg = !neg;
-    }
-
-  if (b < 0)
-    {
-      b = -b;
-      neg = !neg;
-    }
-
-  res = udivmodsi4 (a, b, 0);
-
-  if (neg)
-    res = -res;
-
-  return res;
+  union pack u;
+  u.di = __divmodsi4 (a, b);
+  return u.pair.quot;
 }
-
 
 SItype
 __modsi3 (SItype a, SItype b)
 {
-  word_type neg = 0;
-  SItype res;
-
-  if (a < 0)
-    {
-      a = -a;
-      neg = 1;
-    }
-
-  if (b < 0)
-    b = -b;
-
-  res = udivmodsi4 (a, b, 1);
-
-  if (neg)
-    res = -res;
-
-  return res;
+  union pack u;
+  u.di = __divmodsi4 (a, b);
+  return u.pair.rem;
 }
 
 
 USItype
 __udivsi3 (USItype a, USItype b)
 {
-  return udivmodsi4 (a, b, 0);
+  union pack u;
+  u.di = __udivmodsi4 (a, b);
+  return u.pair.quot;
 }
 
 
 USItype
 __umodsi3 (USItype a, USItype b)
 {
-  return udivmodsi4 (a, b, 1);
+  union pack u;
+ u.di = __udivmodsi4 (a, b);
+ return u.pair.rem;
 }
 

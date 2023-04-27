@@ -3,6 +3,16 @@
 	Backport from mainline:
 	2023-06-19  Andrew Stubbs  <ams@codesourcery.com>
 
+	* config/gcn/gcn.cc (gcn_expand_divmod_libfunc): New function.
+	(gcn_init_libfuncs): Add div and mod functions for all modes.
+	Add placeholders for divmod functions.
+	(TARGET_EXPAND_DIVMOD_LIBFUNC): Define.
+
+2023-06-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	2023-06-19  Andrew Stubbs  <ams@codesourcery.com>
+
 	* tree-vect-generic.cc: Include optabs-libfuncs.h.
 	(get_compute_type): Check optab_libfunc.
 	* tree-vect-stmts.cc: Include optabs-libfuncs.h.

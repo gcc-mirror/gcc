@@ -1,3 +1,111 @@
+2023-06-20  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backport from mainline:
+	2023-06-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* gcc.dg/tree-ssa/predcom-2.c: Avoid vectors on amdgcn.
+	* gcc.dg/unroll-8.c: Likewise.
+	* gcc.dg/vect/slp-26.c: Change expected results on amdgdn.
+	* lib/target-supports.exp
+	(check_effective_target_vect_int_mod): Add amdgcn.
+	(check_effective_target_divmod): Likewise.
+	* gcc.target/gcn/simd-math-3-16.c: New test.
+	* gcc.target/gcn/simd-math-3-2.c: New test.
+	* gcc.target/gcn/simd-math-3-32.c: New test.
+	* gcc.target/gcn/simd-math-3-4.c: New test.
+	* gcc.target/gcn/simd-math-3-8.c: New test.
+	* gcc.target/gcn/simd-math-3-char-16.c: New test.
+	* gcc.target/gcn/simd-math-3-char-2.c: New test.
+	* gcc.target/gcn/simd-math-3-char-32.c: New test.
+	* gcc.target/gcn/simd-math-3-char-4.c: New test.
+	* gcc.target/gcn/simd-math-3-char-8.c: New test.
+	* gcc.target/gcn/simd-math-3-char-run-16.c: New test.
+	* gcc.target/gcn/simd-math-3-char-run-2.c: New test.
+	* gcc.target/gcn/simd-math-3-char-run-32.c: New test.
+	* gcc.target/gcn/simd-math-3-char-run-4.c: New test.
+	* gcc.target/gcn/simd-math-3-char-run-8.c: New test.
+	* gcc.target/gcn/simd-math-3-char-run.c: New test.
+	* gcc.target/gcn/simd-math-3-char.c: New test.
+	* gcc.target/gcn/simd-math-3-long-16.c: New test.
+	* gcc.target/gcn/simd-math-3-long-2.c: New test.
+	* gcc.target/gcn/simd-math-3-long-32.c: New test.
+	* gcc.target/gcn/simd-math-3-long-4.c: New test.
+	* gcc.target/gcn/simd-math-3-long-8.c: New test.
+	* gcc.target/gcn/simd-math-3-long-run-16.c: New test.
+	* gcc.target/gcn/simd-math-3-long-run-2.c: New test.
+	* gcc.target/gcn/simd-math-3-long-run-32.c: New test.
+	* gcc.target/gcn/simd-math-3-long-run-4.c: New test.
+	* gcc.target/gcn/simd-math-3-long-run-8.c: New test.
+	* gcc.target/gcn/simd-math-3-long-run.c: New test.
+	* gcc.target/gcn/simd-math-3-long.c: New test.
+	* gcc.target/gcn/simd-math-3-run-16.c: New test.
+	* gcc.target/gcn/simd-math-3-run-2.c: New test.
+	* gcc.target/gcn/simd-math-3-run-32.c: New test.
+	* gcc.target/gcn/simd-math-3-run-4.c: New test.
+	* gcc.target/gcn/simd-math-3-run-8.c: New test.
+	* gcc.target/gcn/simd-math-3-run.c: New test.
+	* gcc.target/gcn/simd-math-3-short-16.c: New test.
+	* gcc.target/gcn/simd-math-3-short-2.c: New test.
+	* gcc.target/gcn/simd-math-3-short-32.c: New test.
+	* gcc.target/gcn/simd-math-3-short-4.c: New test.
+	* gcc.target/gcn/simd-math-3-short-8.c: New test.
+	* gcc.target/gcn/simd-math-3-short-run-16.c: New test.
+	* gcc.target/gcn/simd-math-3-short-run-2.c: New test.
+	* gcc.target/gcn/simd-math-3-short-run-32.c: New test.
+	* gcc.target/gcn/simd-math-3-short-run-4.c: New test.
+	* gcc.target/gcn/simd-math-3-short-run-8.c: New test.
+	* gcc.target/gcn/simd-math-3-short-run.c: New test.
+	* gcc.target/gcn/simd-math-3-short.c: New test.
+	* gcc.target/gcn/simd-math-3.c: New test.
+	* gcc.target/gcn/simd-math-4-char-run.c: New test.
+	* gcc.target/gcn/simd-math-4-char.c: New test.
+	* gcc.target/gcn/simd-math-4-long-run.c: New test.
+	* gcc.target/gcn/simd-math-4-long.c: New test.
+	* gcc.target/gcn/simd-math-4-run.c: New test.
+	* gcc.target/gcn/simd-math-4-short-run.c: New test.
+	* gcc.target/gcn/simd-math-4-short.c: New test.
+	* gcc.target/gcn/simd-math-4.c: New test.
+	* gcc.target/gcn/simd-math-5-16.c: New test.
+	* gcc.target/gcn/simd-math-5-32.c: New test.
+	* gcc.target/gcn/simd-math-5-4.c: New test.
+	* gcc.target/gcn/simd-math-5-8.c: New test.
+	* gcc.target/gcn/simd-math-5-char-16.c: New test.
+	* gcc.target/gcn/simd-math-5-char-32.c: New test.
+	* gcc.target/gcn/simd-math-5-char-4.c: New test.
+	* gcc.target/gcn/simd-math-5-char-8.c: New test.
+	* gcc.target/gcn/simd-math-5-char-run-16.c: New test.
+	* gcc.target/gcn/simd-math-5-char-run-32.c: New test.
+	* gcc.target/gcn/simd-math-5-char-run-4.c: New test.
+	* gcc.target/gcn/simd-math-5-char-run-8.c: New test.
+	* gcc.target/gcn/simd-math-5-char-run.c: New test.
+	* gcc.target/gcn/simd-math-5-char.c: New test.
+	* gcc.target/gcn/simd-math-5-long-16.c: New test.
+	* gcc.target/gcn/simd-math-5-long-32.c: New test.
+	* gcc.target/gcn/simd-math-5-long-4.c: New test.
+	* gcc.target/gcn/simd-math-5-long-8.c: New test.
+	* gcc.target/gcn/simd-math-5-long-run-16.c: New test.
+	* gcc.target/gcn/simd-math-5-long-run-32.c: New test.
+	* gcc.target/gcn/simd-math-5-long-run-4.c: New test.
+	* gcc.target/gcn/simd-math-5-long-run-8.c: New test.
+	* gcc.target/gcn/simd-math-5-long-run.c: New test.
+	* gcc.target/gcn/simd-math-5-long.c: New test.
+	* gcc.target/gcn/simd-math-5-run-16.c: New test.
+	* gcc.target/gcn/simd-math-5-run-32.c: New test.
+	* gcc.target/gcn/simd-math-5-run-4.c: New test.
+	* gcc.target/gcn/simd-math-5-run-8.c: New test.
+	* gcc.target/gcn/simd-math-5-run.c: New test.
+	* gcc.target/gcn/simd-math-5-short-16.c: New test.
+	* gcc.target/gcn/simd-math-5-short-32.c: New test.
+	* gcc.target/gcn/simd-math-5-short-4.c: New test.
+	* gcc.target/gcn/simd-math-5-short-8.c: New test.
+	* gcc.target/gcn/simd-math-5-short-run-16.c: New test.
+	* gcc.target/gcn/simd-math-5-short-run-32.c: New test.
+	* gcc.target/gcn/simd-math-5-short-run-4.c: New test.
+	* gcc.target/gcn/simd-math-5-short-run-8.c: New test.
+	* gcc.target/gcn/simd-math-5-short-run.c: New test.
+	* gcc.target/gcn/simd-math-5-short.c: New test.
+	* gcc.target/gcn/simd-math-5.c: New test.
+
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
 	* c-c++-common/goacc/combined-reduction.c: Adjust scan output.

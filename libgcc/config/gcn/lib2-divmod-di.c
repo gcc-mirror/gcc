@@ -22,14 +22,101 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "lib2-gcn.h"
 
-/* We really want DImode here: override LIBGCC2_UNITS_PER_WORD.  */
-#define LIBGCC2_UNITS_PER_WORD 4
-#define TARGET_HAS_NO_HW_DIVIDE
+/* 64-bit SI divide and modulo as used in gcn.  */
 
-#define L_divmoddi4
-#define L_divdi3
-#define L_moddi3
-#define L_udivdi3
-#define L_umoddi3
+union pack {
+  UTItype ti;
+  struct {DItype quot, rem;} pair;
+};
+union upack {
+  UTItype ti;
+  struct {UDItype quot, rem;} pair;
+};
 
-#include "libgcc2.c"
+UTItype
+__udivmoddi4 (UDItype num, UDItype den)
+{
+  UDItype bit = 1;
+  union upack res = {0};
+
+  while (den < num && bit && !(den & (1L<<63)))
+    {
+      den <<=1;
+      bit <<=1;
+    }
+  while (bit)
+    {
+      if (num >= den)
+	{
+	  num -= den;
+	  res.pair.quot |= bit;
+	}
+      bit >>=1;
+      den >>=1;
+    }
+  res.pair.rem = num;
+  return res.ti;
+}
+
+UTItype
+__divmoddi4 (DItype a, DItype b)
+{
+  word_type nega = 0, negb = 0;
+  union pack res;
+
+  if (a < 0)
+    {
+      a = -a;
+      nega = 1;
+    }
+
+  if (b < 0)
+    {
+      b = -b;
+      negb = 1;
+    }
+
+  res.ti = __udivmoddi4 (a, b);
+
+  if (nega)
+    res.pair.rem = -res.pair.rem;
+  if (nega ^ negb)
+    res.pair.quot = -res.pair.quot;
+
+  return res.ti;
+}
+
+
+DItype
+__divdi3 (DItype a, DItype b)
+{
+  union pack u;
+  u.ti = __divmoddi4 (a, b);
+  return u.pair.quot;
+}
+
+DItype
+__moddi3 (DItype a, DItype b)
+{
+  union pack u;
+  u.ti = __divmoddi4 (a, b);
+  return u.pair.rem;
+}
+
+
+UDItype
+__udivdi3 (UDItype a, UDItype b)
+{
+  union pack u;
+  u.ti = __udivmoddi4 (a, b);
+  return u.pair.quot;
+}
+
+UDItype
+__umoddi3 (UDItype a, UDItype b)
+{
+  union pack u;
+ u.ti = __udivmoddi4 (a, b);
+ return u.pair.rem;
+}
+
