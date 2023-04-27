@@ -16,6 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 #include "rust-ast-tokenstream.h"
+#include "libproc_macro/proc_macro.h"
 
 namespace Rust {
 namespace AST {
@@ -27,6 +28,47 @@ std::vector<TokenPtr>
 TokenStream::collect_tokens () const
 {
   return tokens;
+}
+
+static void
+pop_group (std::vector<ProcMacro::TokenStream> &streams,
+	   ProcMacro::Delimiter delim)
+{
+  auto g = ProcMacro::Group::make_group (streams.back (), delim);
+  streams.pop_back ();
+  auto tt = ProcMacro::TokenTree::make_tokentree (g);
+
+  streams.back ().push (tt);
+}
+
+ProcMacro::TokenStream
+TokenStream::collect () const
+{
+  std::vector<ProcMacro::TokenStream> trees;
+  trees.push_back (ProcMacro::TokenStream::make_tokenstream ());
+  for (auto &token : collect_tokens ())
+    {
+      switch (token->get_id ())
+	{
+	case RIGHT_PAREN:
+	  pop_group (trees, ProcMacro::PARENTHESIS);
+	  break;
+	case RIGHT_CURLY:
+	  pop_group (trees, ProcMacro::BRACE);
+	  break;
+	case RIGHT_SQUARE:
+	  pop_group (trees, ProcMacro::BRACKET);
+	  break;
+	case LEFT_SQUARE:
+	case LEFT_CURLY:
+	case LEFT_PAREN:
+	  trees.push_back (ProcMacro::TokenStream::make_tokenstream ());
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  return trees.back ();
 }
 
 void
