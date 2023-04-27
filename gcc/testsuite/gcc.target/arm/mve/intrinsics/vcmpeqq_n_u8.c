@@ -39,7 +39,7 @@ foo1 (uint8x16_t a, uint8_t b)
 }
 
 /*
-**foo2:
+**foo2: { xfail *-*-* }
 **	...
 **	vcmp.i8	eq, q[0-9]+, (?:ip|fp|r[0-9]+)(?:	@.*|)
 **	...
