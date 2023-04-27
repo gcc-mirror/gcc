@@ -50,6 +50,42 @@ TokenStream::collect () const
     {
       switch (token->get_id ())
 	{
+	// Joint punct
+	case OR:
+	case PIPE_EQ:
+	case CARET_EQ:
+	case RIGHT_SHIFT_EQ:
+	case RIGHT_SHIFT:
+	case GREATER_OR_EQUAL:
+	case MATCH_ARROW:
+	case LESS_OR_EQUAL:
+	case LEFT_SHIFT_EQ:
+	case LEFT_SHIFT:
+	case DIV_EQ:
+	case ELLIPSIS:
+	case DOT_DOT_EQ:
+	case DOT_DOT:
+	case RETURN_TYPE:
+	case MINUS_EQ:
+	case PLUS_EQ:
+	case ASTERISK_EQ:
+	case LOGICAL_AND:
+	case AMP_EQ:
+	case PERCENT_EQ:
+	case SCOPE_RESOLUTION:
+	case NOT_EQUAL:
+	  case EQUAL_EQUAL: {
+	    auto str = token->as_string ();
+	    auto it = str.cbegin ();
+	    for (; it != str.cend () - 1; it++)
+	      {
+		trees.back ().push (ProcMacro::TokenTree::make_tokentree (
+		  ProcMacro::Punct::make_punct (*it, ProcMacro::JOINT)));
+	      }
+	    trees.back ().push (ProcMacro::TokenTree::make_tokentree (
+	      ProcMacro::Punct::make_punct (*it, ProcMacro::ALONE)));
+	  }
+	  break;
 	// Alone punct tokens
 	case EQUAL:
 	case RIGHT_ANGLE:
