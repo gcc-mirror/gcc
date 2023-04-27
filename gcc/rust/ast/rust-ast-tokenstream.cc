@@ -50,6 +50,22 @@ TokenStream::collect () const
     {
       switch (token->get_id ())
 	{
+	// Literals
+	case CHAR_LITERAL: // TODO: UTF-8 handling
+	  trees.back ().push (ProcMacro::TokenTree::make_tokentree (
+	    ProcMacro::Literal::make_char (token->as_string ()[0])));
+	  break;
+	case STRING_LITERAL:
+	  trees.back ().push (ProcMacro::TokenTree::make_tokentree (
+	    ProcMacro::Literal::make_string (token->as_string ())));
+	  break;
+	  case BYTE_STRING_LITERAL: {
+	    auto str = token->as_string ();
+	    std::vector<uint8_t> data (str.begin (), str.end ());
+	    trees.back ().push (ProcMacro::TokenTree::make_tokentree (
+	      ProcMacro::Literal::make_byte_string (data)));
+	  }
+	  break;
 	// Ident
 	case IDENTIFIER:
 	case ABSTRACT:
