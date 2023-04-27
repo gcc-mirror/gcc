@@ -4085,20 +4085,23 @@ pass_phiopt::execute (function *)
 	  node.  */
       gcc_assert (arg0 != NULL_TREE && arg1 != NULL_TREE);
 
-      gphi *newphi;
       if (single_pred_p (bb1)
-	  && EDGE_COUNT (merge->preds) == 2
-	  && (newphi = factor_out_conditional_conversion (e1, e2, phi,
-							  arg0, arg1,
-							  cond_stmt)))
+	  && EDGE_COUNT (merge->preds) == 2)
 	{
-	  phi = newphi;
-	  /* factor_out_conditional_conversion may create a new PHI in
-	     BB2 and eliminate an existing PHI in BB2.  Recompute values
-	     that may be affected by that change.  */
-	  arg0 = gimple_phi_arg_def (phi, e1->dest_idx);
-	  arg1 = gimple_phi_arg_def (phi, e2->dest_idx);
-	  gcc_assert (arg0 != NULL_TREE && arg1 != NULL_TREE);
+	  gphi *newphi = phi;
+	  while (newphi)
+	    {
+	      phi = newphi;
+	      /* factor_out_conditional_conversion may create a new PHI in
+		 BB2 and eliminate an existing PHI in BB2.  Recompute values
+		 that may be affected by that change.  */
+	      arg0 = gimple_phi_arg_def (phi, e1->dest_idx);
+	      arg1 = gimple_phi_arg_def (phi, e2->dest_idx);
+	      gcc_assert (arg0 != NULL_TREE && arg1 != NULL_TREE);
+	      newphi = factor_out_conditional_conversion (e1, e2, phi,
+							  arg0, arg1,
+							  cond_stmt);
+	    }
 	}
 
       /* Do the replacement of conditional if it can be done.  */
