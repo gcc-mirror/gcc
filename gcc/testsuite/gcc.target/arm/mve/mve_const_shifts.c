@@ -10,15 +10,28 @@ extern "C" {
 #endif
 
 /*
-**foo:
-**	...
-**	uqshl	(?:ip|fp|r[0-9]+), #1(?:	@.*|)
-**	...
+**foo11:
+**     ...
+**     movs	r0, #2
+**     ...
 */
 uint32_t
-foo (uint32_t value)
+foo11 ()
 {
-  return uqshl (value, 1);
+  return uqshl (1, 1);
+}
+
+/*
+**foo12:
+**     ...
+**	movs	r0, #2
+**	movs	r1, #0
+**     ...
+*/
+uint64_t
+foo12 ()
+{
+  return uqshll (1, 1);
 }
 
 #ifdef __cplusplus
