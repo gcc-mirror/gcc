@@ -6100,7 +6100,7 @@
 
 (define_insn "get_fpscr_nzcvqc"
  [(set (match_operand:SI 0 "register_operand" "=r")
-   (unspec:SI [(reg:SI VFPCC_REGNUM)] UNSPEC_GET_FPSCR_NZCVQC))]
+   (unspec_volatile:SI [(reg:SI VFPCC_REGNUM)] UNSPEC_GET_FPSCR_NZCVQC))]
  "TARGET_HAVE_MVE"
  "vmrs\\t%0, FPSCR_nzcvqc"
   [(set_attr "type" "mve_move")])
