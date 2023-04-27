@@ -1074,6 +1074,9 @@ irange::set (tree min, tree max, value_range_kind kind)
       return;
     }
 
+  gcc_checking_assert (TREE_CODE (min) == INTEGER_CST);
+  gcc_checking_assert (TREE_CODE (max) == INTEGER_CST);
+
   if (TREE_OVERFLOW_P (min))
     min = drop_tree_overflow (min);
   if (TREE_OVERFLOW_P (max))

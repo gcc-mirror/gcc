@@ -1963,8 +1963,10 @@ ipa_value_range_from_jfunc (ipa_node_params *info, cgraph_edge *cs,
 	{
 	  value_range op_res, res;
 	  tree op = ipa_get_jf_pass_through_operand (jfunc);
-	  value_range op_vr (op, op);
+	  value_range op_vr;
 	  range_op_handler handler (operation, vr_type);
+
+	  ipa_range_set_and_normalize (op_vr, op);
 
 	  if (!handler
 	      || !op_res.supports_type_p (vr_type)
@@ -2757,9 +2759,11 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
       else if (!ipa_edge_within_scc (cs))
 	{
 	  tree op = ipa_get_jf_pass_through_operand (jfunc);
-	  value_range op_vr (op, op);
+	  value_range op_vr;
 	  value_range op_res,res;
 	  range_op_handler handler (operation, operand_type);
+
+	  ipa_range_set_and_normalize (op_vr, op);
 
 	  if (!handler
 	      || !op_res.supports_type_p (operand_type)

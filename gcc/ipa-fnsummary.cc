@@ -500,8 +500,10 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 		    }
 		  else if (!op->val[1])
 		    {
-		      value_range op0 (op->val[0], op->val[0]);
+		      value_range op0;
 		      range_op_handler handler (op->code, op->type);
+
+		      ipa_range_set_and_normalize (op0, op->val[0]);
 
 		      if (!handler
 			  || !res.supports_type_p (op->type)
@@ -518,11 +520,9 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 		{
 		  value_range res;
 		  value_range val_vr;
-		  if (TREE_CODE (c->val) == INTEGER_CST)
-		    val_vr.set (c->val, c->val);
-		  else
-		    val_vr.set_varying (TREE_TYPE (c->val));
 		  range_op_handler handler (c->code, boolean_type_node);
+
+		  ipa_range_set_and_normalize (val_vr, c->val);
 
 		  if (!handler
 		      || !res.supports_type_p (boolean_type_node)
