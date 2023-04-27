@@ -128,8 +128,23 @@ ASTLoweringPattern::visit (AST::StructPattern &pattern)
 	  break;
 
 	  case AST::StructPatternField::ItemType::IDENT_PAT: {
-	    // TODO
-	    gcc_unreachable ();
+	    AST::StructPatternFieldIdentPat &ident
+	      = static_cast<AST::StructPatternFieldIdentPat &> (*field);
+
+	    auto crate_num = mappings->get_current_crate ();
+	    Analysis::NodeMapping mapping (crate_num, ident.get_node_id (),
+					   mappings->get_next_hir_id (
+					     crate_num),
+					   UNKNOWN_LOCAL_DEFID);
+
+	    std::unique_ptr<HIR::Pattern> pat (ASTLoweringPattern::translate (
+	      ident.get_ident_pattern ().get ()));
+
+	    f = new HIR::StructPatternFieldIdentPat (mapping,
+						     ident.get_identifier (),
+						     std::move (pat),
+						     ident.get_outer_attrs (),
+						     ident.get_locus ());
 	  }
 	  break;
 
