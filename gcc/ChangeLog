@@ -1,3 +1,77 @@
+2023-04-26  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2023-04-17  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/107769
+	PR ipa/109318
+	* cgraph.h (symtab_node::find_reference): Add parameter use_type.
+	* ipa-prop.h (ipa_pass_through_data): New flag refdesc_decremented.
+	(ipa_zap_jf_refdesc): New function.
+	(ipa_get_jf_pass_through_refdesc_decremented): Likewise.
+	(ipa_set_jf_pass_through_refdesc_decremented): Likewise.
+	* ipa-cp.cc (ipcp_discover_new_direct_edges): Provide a value for
+	the new parameter of find_reference.
+	(adjust_references_in_caller): Likewise. Make sure the constant jump
+	function is not used to decrement a refdec counter again.  Only
+	decrement refdesc counters when the pass_through jump function allows
+	it.  Added a detailed dump when decrementing refdesc counters.
+	* ipa-prop.cc (ipa_print_node_jump_functions_for_edge): Dump new flag.
+	(ipa_set_jf_simple_pass_through): Initialize the new flag.
+	(ipa_set_jf_unary_pass_through): Likewise.
+	(ipa_set_jf_arith_pass_through): Likewise.
+	(remove_described_reference): Provide a value for the new parameter of
+	find_reference.
+	(update_jump_functions_after_inlining): Zap refdesc of new jfunc if
+	the previous pass_through had a flag mandating that we do so.
+	(propagate_controlled_uses): Likewise.  Only decrement refdesc
+	counters when the pass_through jump function allows it.
+	(ipa_edge_args_sum_t::duplicate): Provide a value for the new
+	parameter of find_reference.
+	(ipa_write_jump_function): Assert the new flag does not have to be
+	streamed.
+	* symtab.cc (symtab_node::find_reference): Add parameter use_type, use
+	it in searching.
+
+2023-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/109566
+	* config/rs6000/rs6000.cc (rs6000_is_valid_rotate_dot_mask): For
+	!TARGET_64BIT, don't return true if UINTVAL (mask) << (63 - nb)
+	is larger than signed int maximum.
+
+2023-04-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109609
+	* attr-fnspec.h (arg_max_access_size_given_by_arg_p):
+	Clarify semantics.
+	* tree-ssa-alias.cc (check_fnspec): Correctly interpret
+	the size given by arg_max_access_size_given_by_arg_p as
+	maximum, not exact, size.
+
+2023-04-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-04-25  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/109585
+	* tree-ssa-alias.cc (aliasing_component_refs_p): Fix typo.
+
+2023-04-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-04-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109573
+	* tree-vect-loop.cc (vectorizable_live_operation): Allow
+	unhandled SSA copy as well.  Demote assert to checking only.
+
 2023-04-21  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/109478
