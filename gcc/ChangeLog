@@ -1,3 +1,512 @@
+2023-04-26  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/riscv.cc: Fix whitespace.
+	* config/riscv/sync.md: Fix whitespace.
+
+2023-04-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/108697
+	* gimple-range-cache.cc (ssa_global_cache::clear_range): Do
+	not clear the vector on an out of range query.
+	(ssa_cache::dump): Use dump_range_query instead of get_range.
+	(ssa_cache::dump_range_query): New.
+	(ssa_lazy_cache::dump_range_query): New.
+	(ssa_lazy_cache::set_range): New.
+	* gimple-range-cache.h (ssa_cache::dump_range_query): New.
+	(class ssa_lazy_cache): New.
+	(ssa_lazy_cache::ssa_lazy_cache): New.
+	(ssa_lazy_cache::~ssa_lazy_cache): New.
+	(ssa_lazy_cache::get_range): New.
+	(ssa_lazy_cache::clear_range): New.
+	(ssa_lazy_cache::clear): New.
+	(ssa_lazy_cache::dump): New.
+	* gimple-range-path.cc (path_range_query::path_range_query): Do
+	not allocate a ssa_cache object nor has_cache bitmap.
+	(path_range_query::~path_range_query): Do not free objects.
+	(path_range_query::clear_cache): Remove.
+	(path_range_query::get_cache): Adjust.
+	(path_range_query::set_cache): Remove.
+	(path_range_query::dump): Don't call through a pointer.
+	(path_range_query::internal_range_of_expr): Set cache directly.
+	(path_range_query::reset_path): Clear cache directly.
+	(path_range_query::ssa_range_in_phi): Fold with globals only.
+	(path_range_query::compute_ranges_in_phis): Simply set range.
+	(path_range_query::compute_ranges_in_block): Call cache directly.
+	* gimple-range-path.h (class path_range_query): Replace bitmap
+	and cache pointer with lazy cache object.
+	* gimple-range.h (class assume_query): Use ssa_lazy_cache.
+
+2023-04-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ssa_cache::ssa_cache): Rename.
+	(ssa_cache::~ssa_cache): Rename.
+	(ssa_cache::has_range): New.
+	(ssa_cache::get_range): Rename.
+	(ssa_cache::set_range): Rename.
+	(ssa_cache::clear_range): Rename.
+	(ssa_cache::clear): Rename.
+	(ssa_cache::dump): Rename and use get_range.
+	(ranger_cache::get_global_range): Use get_range and set_range.
+	(ranger_cache::range_of_def): Use get_range.
+	* gimple-range-cache.h (class ssa_cache): Rename class and methods.
+	(class ranger_cache): Use ssa_cache.
+	* gimple-range-path.cc (path_range_query::path_range_query): Use
+	ssa_cache.
+	(path_range_query::get_cache): Use get_range.
+	(path_range_query::set_cache): Use set_range.
+	* gimple-range-path.h (class path_range_query): Use ssa_cache.
+	* gimple-range.cc (assume_query::assume_range_p): Use get_range.
+	(assume_query::range_of_expr): Use get_range.
+	(assume_query::assume_query): Use set_range.
+	(assume_query::calculate_op): Use get_range and set_range.
+	* gimple-range.h (class assume_query): Use ssa_cache.
+
+2023-04-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (sbr_vector::sbr_vector): Add parameter
+	and local to optionally zero memory.
+	(br_vector::grow): Only zero memory if flag is set.
+	(class sbr_lazy_vector): New.
+	(sbr_lazy_vector::sbr_lazy_vector): New.
+	(sbr_lazy_vector::set_bb_range): New.
+	(sbr_lazy_vector::get_bb_range): New.
+	(sbr_lazy_vector::bb_range_p): New.
+	(block_range_cache::set_bb_range): Check flags and Use sbr_lazy_vector.
+	* gimple-range-gori.cc (gori_map::calculate_gori): Use
+	param_vrp_switch_limit.
+	(gori_compute::gori_compute): Use param_vrp_switch_limit.
+	* params.opt (vrp_sparse_threshold): Rename from evrp_sparse_threshold.
+	(vrp_switch_limit): Rename from evrp_switch_limit.
+	(vrp_vector_threshold): New.
+
+2023-04-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (dom_oracle::query_relation): Check early for lack
+	of any relation.
+	* value-relation.h (equiv_oracle::has_equiv_p): New.
+
+2023-04-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/109417
+	* gimple-range-gori.cc (range_def_chain::register_dependency):
+	Save the ssa version number, not the pointer.
+	(gori_compute::may_recompute_p): No need to check if a dependency
+	is in the free list.
+	* gimple-range-gori.h (class range_def_chain): Change ssa1 and ssa2
+	fields to be unsigned int instead of trees.
+	(ange_def_chain::depend1): Adjust.
+	(ange_def_chain::depend2): Adjust.
+	* gimple-range.h: Include "ssa.h" to inline ssa_name().
+
+2023-04-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix72.h (TARGET_DEFAULT): Use ISA_2_6_MASKS_SERVER.
+	* config/rs6000/aix73.h (TARGET_DEFAULT): Use ISA_2_7_MASKS_SERVER.
+	(PROCESSOR_DEFAULT): Use PROCESSOR_POWER8.
+
+2023-04-26  Patrick O'Neill  <patrick@rivosinc.com>
+
+	PR target/104338
+	* config/riscv/riscv-protos.h: Add helper function stubs.
+	* config/riscv/riscv.cc: Add helper functions for subword masking.
+	* config/riscv/riscv.opt: Add command-line flag.
+	* config/riscv/sync.md: Add masking logic and inline asm for fetch_and_op,
+	fetch_and_nand, CAS, and exchange ops.
+	* doc/invoke.texi: Add blurb regarding command-line flag.
+
+2023-04-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_rshrn2<mode>_insn_le):
+	Reimplement using standard RTL codes instead of unspec.
+	(aarch64_rshrn2<mode>_insn_be): Likewise.
+	(aarch64_rshrn2<mode>): Adjust for the above.
+	* config/aarch64/aarch64.md (UNSPEC_RSHRN): Delete.
+
+2023-04-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_rshrn<mode>_insn_le): Reimplement
+	with standard RTL codes instead of an UNSPEC.
+	(aarch64_rshrn<mode>_insn_be): Likewise.
+	(aarch64_rshrn<mode>): Adjust for the above.
+	* config/aarch64/predicates.md (aarch64_simd_rshrn_imm_vec): Define.
+
+2023-04-26  Pan Li  <pan2.li@intel.com>
+	    Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_classify_address): Allow
+	const0_rtx for the RVV load/store.
+
+2023-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (range_op_cast_tests): Remove legacy support.
+	* value-range-storage.h (vrange_allocator::alloc_irange): Same.
+	* value-range.cc (irange::operator=): Same.
+	(get_legacy_range): Same.
+	(irange::copy_legacy_to_multi_range): Delete.
+	(irange::copy_to_legacy): Delete.
+	(irange::irange_set_anti_range): Delete.
+	(irange::set): Remove legacy support.
+	(irange::verify_range): Same.
+	(irange::legacy_lower_bound): Delete.
+	(irange::legacy_upper_bound): Delete.
+	(irange::legacy_equal_p): Delete.
+	(irange::operator==): Remove legacy support.
+	(irange::singleton_p): Same.
+	(irange::value_inside_range): Same.
+	(irange::contains_p): Same.
+	(intersect_ranges): Delete.
+	(irange::legacy_intersect): Delete.
+	(union_ranges): Delete.
+	(irange::legacy_union): Delete.
+	(irange::legacy_verbose_union_): Delete.
+	(irange::legacy_verbose_intersect): Delete.
+	(irange::irange_union): Remove legacy support.
+	(irange::irange_intersect): Same.
+	(irange::intersect): Same.
+	(irange::invert): Same.
+	(ranges_from_anti_range): Delete.
+	(gt_pch_nx): Adjust for legacy removal.
+	(gt_ggc_mx): Same.
+	(range_tests_legacy): Delete.
+	(range_tests_misc): Adjust for legacy removal.
+	(range_tests): Same.
+	* value-range.h (class irange): Same.
+	(irange::legacy_mode_p): Delete.
+	(ranges_from_anti_range): Delete.
+	(irange::nonzero_p): Adjust for legacy removal.
+	(irange::lower_bound): Same.
+	(irange::upper_bound): Same.
+	(irange::union_): Same.
+	(irange::intersect): Same.
+	(irange::set_nonzero): Same.
+	(irange::set_zero): Same.
+	* vr-values.cc (simplify_using_ranges::legacy_fold_cond_overflow): Same.
+
+2023-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::copy_legacy_to_multi_range): Rewrite use
+	of range_has_numeric_bounds_p with irange API.
+	(range_has_numeric_bounds_p): Delete.
+	* value-range.h (range_has_numeric_bounds_p): Delete.
+
+2023-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-data-ref.cc (compute_distributive_range): Replace uses of
+	range_int_cst_p with irange API.
+	* tree-ssa-strlen.cc (get_range_strlen_dynamic): Same.
+	* tree-vrp.h (range_int_cst_p): Delete.
+	* vr-values.cc (check_for_binary_op_overflow): Replace usees of
+	range_int_cst_p with irange API.
+	(vr_set_zero_nonzero_bits): Same.
+	(range_fits_type_p): Same.
+	(simplify_using_ranges::simplify_casted_cond): Same.
+	* tree-vrp.cc (range_int_cst_p): Remove.
+
+2023-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-strlen.cc (compare_nonzero_chars): Convert to wide_ints.
+
+2023-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* builtins.cc (expand_builtin_strnlen): Rewrite deprecated irange
+	API uses to new API.
+	* gimple-predicate-analysis.cc (find_var_cmp_const): Same.
+	* internal-fn.cc (get_min_precision): Same.
+	* match.pd: Same.
+	* tree-affine.cc (expr_to_aff_combination): Same.
+	* tree-data-ref.cc (dr_step_indicator): Same.
+	* tree-dfa.cc (get_ref_base_and_extent): Same.
+	* tree-scalar-evolution.cc (iv_can_overflow_p): Same.
+	* tree-ssa-phiopt.cc (two_value_replacement): Same.
+	* tree-ssa-pre.cc (insert_into_preds_of_block): Same.
+	* tree-ssa-reassoc.cc (optimize_range_tests_to_bit_test): Same.
+	* tree-ssa-strlen.cc (compare_nonzero_chars): Same.
+	* tree-switch-conversion.cc (bit_test_cluster::emit): Same.
+	* tree-vect-patterns.cc (vect_recog_divmod_pattern): Same.
+	* tree.cc (get_range_pos_neg): Same.
+
+2023-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ipa-prop.cc (ipa_print_node_jump_functions_for_edge): Use
+	vrange::dump instead of ad-hoc dumper.
+	* tree-ssa-strlen.cc (dump_strlen_info): Same.
+	* value-range-pretty-print.cc (visit): Pass TDF_NOUID to
+	dump_generic_node.
+
+2023-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (operator_cast::op1_range): Use
+	create_possibly_reversed_range.
+	(operator_bitwise_and::simple_op1_range_solver): Same.
+	* value-range.cc (swap_out_of_order_endpoints): Delete.
+	(irange::set): Remove call to swap_out_of_order_endpoints.
+
+2023-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* builtins.cc (determine_block_size): Convert use of legacy API to
+	get_legacy_range.
+	* gimple-array-bounds.cc (check_out_of_bounds_and_warn): Same.
+	(array_bounds_checker::check_array_ref): Same.
+	* gimple-ssa-warn-restrict.cc
+	(builtin_memref::extend_offset_range): Same.
+	* ipa-cp.cc (ipcp_store_vr_results): Same.
+	* ipa-fnsummary.cc (set_switch_stmt_execution_predicate): Same.
+	* ipa-prop.cc (struct ipa_vr_ggc_hash_traits): Same.
+	(ipa_write_jump_function): Same.
+	* pointer-query.cc (get_size_range): Same.
+	* tree-data-ref.cc (split_constant_offset): Same.
+	* tree-ssa-strlen.cc (get_range): Same.
+	(maybe_diag_stxncpy_trunc): Same.
+	(strlen_pass::get_len_or_size): Same.
+	(strlen_pass::count_nonzero_bytes_addr): Same.
+	* tree-vect-patterns.cc (vect_get_range_info): Same.
+	* value-range.cc (irange::maybe_anti_range): Remove.
+	(get_legacy_range): New.
+	(irange::copy_to_legacy): Use get_legacy_range.
+	(ranges_from_anti_range): Same.
+	* value-range.h (class irange): Remove maybe_anti_range.
+	(get_legacy_range): New.
+	* vr-values.cc (check_for_binary_op_overflow): Convert use of
+	legacy API to get_legacy_range.
+	(compare_ranges): Same.
+	(compare_range_with_value): Same.
+	(bounds_of_var_in_loop): Same.
+	(find_case_label_ranges): Same.
+	(simplify_using_ranges::simplify_switch_using_ranges): Same.
+
+2023-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range-pretty-print.cc (vrange_printer::visit): Remove
+	constant_p use.
+	* value-range.cc (irange::constant_p): Remove.
+	(irange::get_nonzero_bits_from_range): Remove constant_p use.
+	* value-range.h (class irange): Remove constant_p.
+	(irange::num_pairs): Remove constant_p use.
+
+2023-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::copy_legacy_to_multi_range): Remove
+	symbolics support.
+	(irange::set): Same.
+	(irange::legacy_lower_bound): Same.
+	(irange::legacy_upper_bound): Same.
+	(irange::contains_p): Same.
+	(range_tests_legacy): Same.
+	(irange::normalize_addresses): Remove.
+	(irange::normalize_symbolics): Remove.
+	(irange::symbolic_p): Remove.
+	* value-range.h (class irange): Remove symbolic_p,
+	normalize_symbolics, and normalize_addresses.
+	* vr-values.cc (simplify_using_ranges::two_valued_val_range_p):
+	Remove symbolics support.
+
+2023-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::may_contain_p): Remove.
+	* value-range.h (range_includes_zero_p):  Rewrite may_contain_p
+	usage with contains_p.
+	* vr-values.cc (compare_range_with_value): Same.
+
+2023-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.cc (supported_types_p): Remove.
+	(defined_ranges_p): Remove.
+	(range_fold_binary_expr): Remove.
+	(range_fold_unary_expr): Remove.
+	* tree-vrp.h (range_fold_unary_expr): Remove.
+	(range_fold_binary_expr): Remove.
+
+2023-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ipa-cp.cc (ipa_vr_operation_and_type_effects): Convert to ranger API.
+	(ipa_value_range_from_jfunc): Same.
+	(propagate_vr_across_jump_function): Same.
+	* ipa-fnsummary.cc (evaluate_conditions_for_known_args): Same.
+	* ipa-prop.cc (ipa_compute_jump_functions_for_edge): Same.
+	* vr-values.cc (bounds_of_var_in_loop): Same.
+
+2023-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-array-bounds.cc (array_bounds_checker::get_value_range):
+	Add irange argument.
+	(check_out_of_bounds_and_warn): Remove check for vr.
+	(array_bounds_checker::check_array_ref): Remove pointer qualifier
+	for vr and adjust accordingly.
+	* gimple-array-bounds.h (get_value_range): Add irange argument.
+	* value-query.cc (class equiv_allocator): Delete.
+	(range_query::get_value_range): Delete.
+	(range_query::range_query): Remove allocator access.
+	(range_query::~range_query): Same.
+	* value-query.h (get_value_range): Delete.
+	* vr-values.cc
+	(simplify_using_ranges::op_with_boolean_value_range_p): Remove
+	call to get_value_range.
+	(check_for_binary_op_overflow): Same.
+	(simplify_using_ranges::legacy_fold_cond_overflow): Same.
+	(simplify_using_ranges::simplify_abs_using_ranges): Same.
+	(simplify_using_ranges::simplify_cond_using_ranges_1): Same.
+	(simplify_using_ranges::simplify_casted_cond): Same.
+	(simplify_using_ranges::simplify_switch_using_ranges): Same.
+	(simplify_using_ranges::two_valued_val_range_p): Same.
+
+2023-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* vr-values.cc
+	(simplify_using_ranges::vrp_evaluate_conditional_warnv_with_ops):
+	Rename to...
+	(simplify_using_ranges::legacy_fold_cond_overflow): ...this.
+	(simplify_using_ranges::vrp_visit_cond_stmt): Rename to...
+	(simplify_using_ranges::legacy_fold_cond): ...this.
+	(simplify_using_ranges::fold_cond): Rename
+	vrp_evaluate_conditional_warnv_with_ops to
+	legacy_fold_cond_overflow.
+	* vr-values.h (class vr_values): Replace vrp_visit_cond_stmt and
+	vrp_evaluate_conditional_warnv_with_ops with legacy_fold_cond and
+	legacy_fold_cond_overflow respectively.
+
+2023-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* vr-values.cc (get_vr_for_comparison): Remove.
+	(compare_name_with_value): Same.
+	(vrp_evaluate_conditional_warnv_with_ops): Remove calls to
+	compare_name_with_value.
+	* vr-values.h: Remove compare_name_with_value.
+	Remove get_vr_for_comparison.
+
+2023-04-26  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/stormy16/stormy16.md (bswaphi2): New define_insn.
+	(bswapsi2): New define_insn.
+	(swaphi): New define_insn to exchange two registers (swpw).
+	(define_peephole2): Recognize exchange of registers as swaphi.
+
+2023-04-26  Richard Biener  <rguenther@suse.de>
+
+	* gimple-range-path.cc (path_range_query::compute_outgoing_relations):
+	Avoid last_stmt.
+	* ipa-pure-const.cc (pass_nothrow::execute): Likewise.
+	* predict.cc (apply_return_prediction): Likewise.
+	* sese.cc (set_ifsese_condition): Likewise.  Simplify.
+	* tree-cfg.cc (assert_unreachable_fallthru_edge_p): Avoid last_stmt.
+	(make_edges_bb): Likewise.
+	(make_cond_expr_edges): Likewise.
+	(end_recording_case_labels): Likewise.
+	(make_gimple_asm_edges): Likewise.
+	(cleanup_dead_labels): Likewise.
+	(group_case_labels): Likewise.
+	(gimple_can_merge_blocks_p): Likewise.
+	(gimple_merge_blocks): Likewise.
+	(find_taken_edge): Likewise.  Also handle empty fallthru blocks.
+	(gimple_duplicate_sese_tail): Avoid last_stmt.
+	(find_loop_dist_alias): Likewise.
+	(gimple_block_ends_with_condjump_p): Likewise.
+	(gimple_purge_dead_eh_edges): Likewise.
+	(gimple_purge_dead_abnormal_call_edges): Likewise.
+	(pass_warn_function_return::execute): Likewise.
+	(execute_fixup_cfg): Likewise.
+	* tree-eh.cc (redirect_eh_edge_1): Likewise.
+	(pass_lower_resx::execute): Likewise.
+	(pass_lower_eh_dispatch::execute): Likewise.
+	(cleanup_empty_eh): Likewise.
+	* tree-if-conv.cc (if_convertible_bb_p): Likewise.
+	(predicate_bbs): Likewise.
+	(ifcvt_split_critical_edges): Likewise.
+	* tree-loop-distribution.cc (create_edge_for_control_dependence):
+	Likewise.
+	(loop_distribution::transform_reduction_loop): Likewise.
+	* tree-parloops.cc (transform_to_exit_first_loop_alt): Likewise.
+	(try_transform_to_exit_first_loop_alt): Likewise.
+	(transform_to_exit_first_loop): Likewise.
+	(create_parallel_loop): Likewise.
+	* tree-scalar-evolution.cc (get_loop_exit_condition): Likewise.
+	* tree-ssa-dce.cc (mark_last_stmt_necessary): Likewise.
+	(eliminate_unnecessary_stmts): Likewise.
+	* tree-ssa-dom.cc
+	(dom_opt_dom_walker::set_global_ranges_from_unreachable_edges):
+	Likewise.
+	* tree-ssa-ifcombine.cc (ifcombine_ifandif): Likewise.
+	(pass_tree_ifcombine::execute): Likewise.
+	* tree-ssa-loop-ch.cc (entry_loop_condition_is_static): Likewise.
+	(should_duplicate_loop_header_p): Likewise.
+	* tree-ssa-loop-ivcanon.cc (create_canonical_iv): Likewise.
+	(tree_estimate_loop_size): Likewise.
+	(try_unroll_loop_completely): Likewise.
+	* tree-ssa-loop-ivopts.cc (tree_ssa_iv_optimize_loop): Likewise.
+	* tree-ssa-loop-manip.cc (ip_normal_pos): Likewise.
+	(canonicalize_loop_ivs): Likewise.
+	* tree-ssa-loop-niter.cc (determine_value_range): Likewise.
+	(bound_difference): Likewise.
+	(number_of_iterations_popcount): Likewise.
+	(number_of_iterations_cltz): Likewise.
+	(number_of_iterations_cltz_complement): Likewise.
+	(simplify_using_initial_conditions): Likewise.
+	(number_of_iterations_exit_assumptions): Likewise.
+	(loop_niter_by_eval): Likewise.
+	(estimate_numbers_of_iterations): Likewise.
+
+2023-04-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Refine vmadc/vmsbc RA constraint.
+
+2023-04-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/108758
+	* config/rs6000/rs6000-builtins.def
+	(__builtin_vsx_scalar_cmp_exp_qp_eq, __builtin_vsx_scalar_cmp_exp_qp_gt
+	__builtin_vsx_scalar_cmp_exp_qp_lt,
+	__builtin_vsx_scalar_cmp_exp_qp_unordered): Move from stanza ieee128-hw
+	to power9-vector.
+
+2023-04-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/109069
+	* config/rs6000/altivec.md (sldoi_to_mov<mode>): Replace predicate
+	easy_vector_constant with const_vector_each_byte_same, add
+	handlings in preparation for !easy_vector_constant, and update
+	VECTOR_UNIT_ALTIVEC_OR_VSX_P with VECTOR_MEM_ALTIVEC_OR_VSX_P.
+	* config/rs6000/predicates.md (const_vector_each_byte_same): New
+	predicate.
+
+2023-04-26  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md (*pred_cmp<mode>_merge_tie_mask): New pattern.
+	(*pred_ltge<mode>_merge_tie_mask): Ditto.
+	(*pred_cmp<mode>_scalar_merge_tie_mask): Ditto.
+	(*pred_eqne<mode>_scalar_merge_tie_mask): Ditto.
+	(*pred_cmp<mode>_extended_scalar_merge_tie_mask): Ditto.
+	(*pred_eqne<mode>_extended_scalar_merge_tie_mask): Ditto.
+	(*pred_cmp<mode>_narrow_merge_tie_mask): Ditto.
+
+2023-04-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Fix redundant vmv1r.v.
+
+2023-04-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/vector.md: Fix RA constraint.
+
+2023-04-26  Pan Li  <pan2.li@intel.com>
+
+	PR target/109272
+	* tree-ssa-sccvn.cc (vn_reference_eq): add type vector subparts
+	check for vn_reference equal.
+
+2023-04-26  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-opts.h (enum riscv_autovec_preference_enum): Add enum for
+	auto-vectorization preference.
+	(enum riscv_autovec_lmul_enum): Add enum for choosing LMUL of RVV
+	auto-vectorization.
+	* config/riscv/riscv.opt: Add compile option for RVV auto-vectorization.
+
+2023-04-26  Jivan Hakobyan  <jivanhakobyan9@gmail.com>
+
+	* config/riscv/bitmanip.md: Updated predicates of bclri<mode>_nottwobits
+	and bclridisi_nottwobits patterns.
+	* config/riscv/predicates.md: (not_uimm_extra_bit_or_nottwobits): Adjust
+	predicate to avoid splitting arith constants.
+	(const_nottwobits_not_arith_operand): New predicate.
+
 2023-04-25  Hans-Peter Nilsson  <hp@axis.com>
 
 	* recog.cc (peep2_attempt, peep2_update_life): Correct

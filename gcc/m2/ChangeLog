@@ -1,3 +1,30 @@
+2023-04-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/108121
+	* gm2-compiler/M2ALU.mod (Less): Reformatted.
+	* gm2-compiler/SymbolTable.mod (DetermineSizeOfConstant): Remove
+	from import.
+	(ConstantStringExceedsZType): Import.
+	(GetConstLitType): Re-implement using ConstantStringExceedsZType.
+	* gm2-gcc/m2decl.cc (m2decl_DetermineSizeOfConstant): Remove.
+	(m2decl_ConstantStringExceedsZType): New function.
+	(m2decl_BuildConstLiteralNumber): Re-implement.
+	* gm2-gcc/m2decl.def (DetermineSizeOfConstant): Remove.
+	(ConstantStringExceedsZType): New function.
+	* gm2-gcc/m2decl.h (m2decl_DetermineSizeOfConstant): Remove.
+	(m2decl_ConstantStringExceedsZType): New function.
+	* gm2-gcc/m2expr.cc (append_digit): Remove.
+	(m2expr_interpret_integer): Remove.
+	(append_m2_digit): Remove.
+	(m2expr_StrToWideInt): New function.
+	(m2expr_interpret_m2_integer): Remove.
+	* gm2-gcc/m2expr.def (CheckConstStrZtypeRange): New function.
+	* gm2-gcc/m2expr.h (m2expr_StrToWideInt): New function.
+	* gm2-gcc/m2type.cc (build_m2_word64_type_node): New function.
+	(build_m2_ztype_node): New function.
+	(m2type_InitBaseTypes): Call build_m2_ztype_node.
+	* gm2-lang.cc (gm2_type_for_size): Re-write using early returns.
+
 2023-04-21  Arsen Arsenović  <arsen@aarsen.me>
 
 	* Make-lang.in: Remove references to $(P).

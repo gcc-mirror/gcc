@@ -1,3 +1,7 @@
+2023-04-26  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Change revision.
+
 2023-04-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* configure.tgt: Unsupport Darwin22+ until a mechanism can be found

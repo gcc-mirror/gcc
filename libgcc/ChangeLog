@@ -1,3 +1,13 @@
+2023-04-27  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/t-cris (HOST_LIBGCC2_CFLAGS): Add
+	-DTARGET_HAS_NO_HW_DIVIDE.
+
+2023-04-26  Patrick O'Neill  <patrick@rivosinc.com>
+
+	PR target/104338
+	* config/riscv/atomic.c: Add reference to duplicate logic.
+
 2023-04-08  Tetsuma Hoshino  <t-hoshino@pony-e.jp>
 
 	PR target/109402

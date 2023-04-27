@@ -1,3 +1,11 @@
+2023-04-26  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* MAINTAINERS: Add myself.
+
+2023-04-26  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: fix sorting
+
 2023-04-25  Victor Do Nascimento  <victor.donascimento@arm.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

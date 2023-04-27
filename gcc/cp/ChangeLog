@@ -1,3 +1,26 @@
+2023-04-26  Jason Merrill  <jason@redhat.com>
+
+	* init.cc (nsdmi_inst): Remove.
+	(maybe_instantiate_nsdmi_init): Use DECL_INITIAL instead.
+
+2023-04-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109241
+	* pt.cc (instantiate_class_template): Do partially instantiate.
+	(tsubst_expr): Do call complete_type for partial instantiations.
+
+2023-04-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/69836
+	* pt.cc (regenerate_decl_from_template): Skip unique friends.
+
+2023-04-26  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (most_specialized_partial_spec): Exit early when
+	DECL_TEMPLATE_SPECIALIZATIONS is empty.  Move local variable
+	declarations closer to their first use.  Remove redundant
+	flag_concepts test.  Remove redundant forward declaration.
+
 2023-04-25  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/108975
