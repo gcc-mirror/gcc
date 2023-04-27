@@ -50,6 +50,66 @@ TokenStream::collect () const
     {
       switch (token->get_id ())
 	{
+	// Ident
+	case IDENTIFIER:
+	case ABSTRACT:
+	case AS:
+	case ASYNC:
+	case AUTO:
+	case BECOME:
+	case BOX:
+	case BREAK:
+	case CONST:
+	case CONTINUE:
+	case CRATE:
+	case DO:
+	case DYN:
+	case ELSE:
+	case ENUM_TOK:
+	case EXTERN_TOK:
+	case FINAL_TOK:
+	case FN_TOK:
+	case FOR:
+	case IF:
+	case IMPL:
+	case IN:
+	case LET:
+	case LOOP:
+	case MACRO:
+	case MATCH_TOK:
+	case MOD:
+	case MOVE:
+	case MUT:
+	case OVERRIDE_TOK:
+	case PRIV:
+	case PUB:
+	case REF:
+	case RETURN_TOK:
+	case SELF_ALIAS:
+	case SELF:
+	case STATIC_TOK:
+	case STRUCT_TOK:
+	case SUPER:
+	case TRAIT:
+	case TRY:
+	case TYPE:
+	case TYPEOF:
+	case UNSAFE:
+	case UNSIZED:
+	case USE:
+	case VIRTUAL:
+	case WHERE:
+	case WHILE:
+	case YIELD:
+	// Underscore is not a Punct, considered as an Ident
+	case UNDERSCORE:
+	// True and false are idents, not literals
+	// (https://doc.rust-lang.org/proc_macro/struct.Literal.html)
+	case FALSE_LITERAL:
+	case TRUE_LITERAL:
+	  trees.back ().push (ProcMacro::TokenTree::make_tokentree (
+	    ProcMacro::Ident::make_ident (token->as_string ())));
+	  break;
 	// Joint punct
 	case OR:
 	case PIPE_EQ:
