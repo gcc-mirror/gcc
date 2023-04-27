@@ -197,8 +197,23 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 	  break;
 
 	  case HIR::StructPatternField::ItemType::IDENT_PAT: {
-	    // TODO
-	    gcc_unreachable ();
+	    HIR::StructPatternFieldIdentPat &ident
+	      = static_cast<HIR::StructPatternFieldIdentPat &> (*field.get ());
+
+	    TyTy::StructFieldType *field = nullptr;
+	    if (!variant->lookup_field (ident.get_identifier (), &field,
+					nullptr))
+	      {
+		rust_error_at (ident.get_locus (),
+			       "variant %s does not have a field named %s",
+			       variant->get_identifier ().c_str (),
+			       ident.get_identifier ().c_str ());
+		break;
+	      }
+	    named_fields.push_back (ident.get_identifier ());
+
+	    TyTy::BaseType *fty = field->get_field_type ();
+	    TypeCheckPattern::Resolve (ident.get_pattern ().get (), fty);
 	  }
 	  break;
 
