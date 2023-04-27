@@ -16,13 +16,15 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#ifndef RUST_AST_TOKENSTREAM_H
+#define RUST_AST_TOKENSTREAM_H
+
 #include "rust-token.h"
 #include "rust-ast-visitor.h"
 #include "rust-ast.h"
 #include "rust-ast-full.h"
 
-#ifndef RUST_AST_TOKENSTREAM_H
-#define RUST_AST_TOKENSTREAM_H
+#include "libproc_macro/tokenstream.h"
 
 namespace Rust {
 namespace AST {
@@ -37,6 +39,8 @@ public:
   void visit (AST::Item &item);
 
   std::vector<TokenPtr> collect_tokens () const;
+
+  ProcMacro::TokenStream collect () const;
 
 private:
   std::vector<TokenPtr> &tokens;
