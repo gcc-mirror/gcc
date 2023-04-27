@@ -16,5 +16,5 @@ test_abs(int *cur)
 
 /* We should figure out that test_abs has an ABS_EXPR in it. */
 /* { dg-final { scan-tree-dump " = ABS_EXPR" "phiopt1"} } */
-/* { dg-final { scan-tree-dump-times "changed to factor conversion out from" 1 "phiopt1"} } */
+/* { dg-final { scan-tree-dump-times "changed to factor operation out from" 1 "phiopt1"} } */
 

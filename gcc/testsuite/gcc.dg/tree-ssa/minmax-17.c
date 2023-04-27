@@ -18,4 +18,4 @@ unsigned long long test_max(int c, int d, int e)
 
 /* We should figure out that test_max has an MAX_EXPR in it. */
 /* { dg-final { scan-tree-dump " = MAX_EXPR" "phiopt1"} } */
-/* { dg-final { scan-tree-dump-times "changed to factor conversion out from" 2 "phiopt1"} } */
+/* { dg-final { scan-tree-dump-times "changed to factor operation out from" 2 "phiopt1"} } */

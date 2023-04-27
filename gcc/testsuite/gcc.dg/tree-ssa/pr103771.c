@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fdump-tree-phiopt1-details" } */
-/* { dg-final { scan-tree-dump-times "changed to factor conversion out from COND_EXPR." 1 "phiopt1" } } */
+/* { dg-final { scan-tree-dump-times "changed to factor operation out from COND_EXPR." 1 "phiopt1" } } */
 
 typedef unsigned char uint8_t;
 

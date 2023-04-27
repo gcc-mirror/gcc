@@ -209,13 +209,13 @@ replace_phi_edge_with_variable (basic_block cond_block,
 	      bb->index);
 }
 
-/* PR66726: Factor conversion out of COND_EXPR.  If the arguments of the PHI
+/* PR66726: Factor operations out of COND_EXPR.  If the arguments of the PHI
    stmt are CONVERT_STMT, factor out the conversion and perform the conversion
    to the result of PHI stmt.  COND_STMT is the controlling predicate.
    Return the newly-created PHI, if any.  */
 
 static gphi *
-factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
+factor_out_conditional_operation (edge e0, edge e1, gphi *phi,
 				   tree arg0, tree arg1, gimple *cond_stmt)
 {
   gimple *arg0_def_stmt = NULL, *arg1_def_stmt = NULL, *new_stmt;
@@ -224,7 +224,7 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
   gphi *newphi;
   gimple_stmt_iterator gsi, gsi_for_def;
   location_t locus = gimple_location (phi);
-  enum tree_code convert_code;
+  enum tree_code op_code;
 
   /* Handle only PHI statements with two arguments.  TODO: If all
      other arguments to PHI are INTEGER_CST or if their defining
@@ -246,15 +246,17 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
     return NULL;
 
   /* Check if arg0 is an SSA_NAME and the stmt which defines arg0 is
-     a conversion.  */
+     an unary operation.  */
   arg0_def_stmt = SSA_NAME_DEF_STMT (arg0);
-  if (!gimple_assign_cast_p (arg0_def_stmt))
+  if (!is_gimple_assign (arg0_def_stmt)
+      || (gimple_assign_rhs_class (arg0_def_stmt) != GIMPLE_UNARY_RHS
+	  && gimple_assign_rhs_code (arg0_def_stmt) != VIEW_CONVERT_EXPR))
     return NULL;
 
   /* Use the RHS as new_arg0.  */
-  convert_code = gimple_assign_rhs_code (arg0_def_stmt);
+  op_code = gimple_assign_rhs_code (arg0_def_stmt);
   new_arg0 = gimple_assign_rhs1 (arg0_def_stmt);
-  if (convert_code == VIEW_CONVERT_EXPR)
+  if (op_code == VIEW_CONVERT_EXPR)
     {
       new_arg0 = TREE_OPERAND (new_arg0, 0);
       if (!is_gimple_reg_type (TREE_TYPE (new_arg0)))
@@ -267,10 +269,10 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
   if (TREE_CODE (arg1) == SSA_NAME)
     {
       /* Check if arg1 is an SSA_NAME and the stmt which defines arg1
-	 is a conversion.  */
+	 is an unary operation.  */
       arg1_def_stmt = SSA_NAME_DEF_STMT (arg1);
-      if (!is_gimple_assign (arg1_def_stmt)
-	  || gimple_assign_rhs_code (arg1_def_stmt) != convert_code)
+       if (!is_gimple_assign (arg1_def_stmt)
+	   || gimple_assign_rhs_code (arg1_def_stmt) != op_code)
 	return NULL;
 
       /* Either arg1_def_stmt or arg0_def_stmt should be conditional.  */
@@ -281,7 +283,7 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
 
       /* Use the RHS as new_arg1.  */
       new_arg1 = gimple_assign_rhs1 (arg1_def_stmt);
-      if (convert_code == VIEW_CONVERT_EXPR)
+      if (op_code == VIEW_CONVERT_EXPR)
 	new_arg1 = TREE_OPERAND (new_arg1, 0);
       if (TREE_CODE (new_arg1) == SSA_NAME
 	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_arg1))
@@ -289,6 +291,10 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
     }
   else
     {
+      /* TODO: handle more than just casts here. */
+      if (!gimple_assign_cast_p (arg0_def_stmt))
+	return NULL;
+
       /* arg0_def_stmt should be conditional.  */
       if (dominated_by_p (CDI_DOMINATORS, gimple_bb (phi), gimple_bb (arg0_def_stmt)))
 	return NULL;
@@ -366,13 +372,13 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
       fprintf (dump_file, "PHI ");
       print_generic_expr (dump_file, gimple_phi_result (phi));
       fprintf (dump_file,
-	       " changed to factor conversion out from COND_EXPR.\n");
-      fprintf (dump_file, "New stmt with CAST that defines ");
+	       " changed to factor operation out from COND_EXPR.\n");
+      fprintf (dump_file, "New stmt with OPERATION that defines ");
       print_generic_expr (dump_file, result);
       fprintf (dump_file, ".\n");
     }
 
-  /* Remove the old cast(s) that has single use.  */
+  /* Remove the old operation(s) that has single use.  */
   gsi_for_def = gsi_for_stmt (arg0_def_stmt);
   gsi_remove (&gsi_for_def, true);
   release_defs (arg0_def_stmt);
@@ -387,14 +393,14 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
   add_phi_arg (newphi, new_arg0, e0, locus);
   add_phi_arg (newphi, new_arg1, e1, locus);
 
-  /* Create the conversion stmt and insert it.  */
-  if (convert_code == VIEW_CONVERT_EXPR)
+  /* Create the operation stmt and insert it.  */
+  if (op_code == VIEW_CONVERT_EXPR)
     {
       temp = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (result), temp);
       new_stmt = gimple_build_assign (result, temp);
     }
   else
-    new_stmt = gimple_build_assign (result, convert_code, temp);
+    new_stmt = gimple_build_assign (result, op_code, temp);
   gsi = gsi_after_labels (gimple_bb (phi));
   gsi_insert_before (&gsi, new_stmt, GSI_SAME_STMT);
 
@@ -402,7 +408,7 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
   gsi = gsi_for_stmt (phi);
   gsi_remove (&gsi, true);
 
-  statistics_counter_event (cfun, "factored out cast", 1);
+  statistics_counter_event (cfun, "factored out operation", 1);
 
   return newphi;
 }
@@ -3847,11 +3853,11 @@ gate_hoist_loads (void)
    This pass also performs a fifth transformation of a slightly different
    flavor.
 
-   Factor conversion in COND_EXPR
+   Factor operations in COND_EXPR
    ------------------------------
 
-   This transformation factors the conversion out of COND_EXPR with
-   factor_out_conditional_conversion.
+   This transformation factors the unary operations out of COND_EXPR with
+   factor_out_conditional_operation.
 
    For example:
    if (a <= CST) goto <bb 3>; else goto <bb 4>;
@@ -4092,15 +4098,15 @@ pass_phiopt::execute (function *)
 	  while (newphi)
 	    {
 	      phi = newphi;
-	      /* factor_out_conditional_conversion may create a new PHI in
+	      /* factor_out_conditional_operation may create a new PHI in
 		 BB2 and eliminate an existing PHI in BB2.  Recompute values
 		 that may be affected by that change.  */
 	      arg0 = gimple_phi_arg_def (phi, e1->dest_idx);
 	      arg1 = gimple_phi_arg_def (phi, e2->dest_idx);
 	      gcc_assert (arg0 != NULL_TREE && arg1 != NULL_TREE);
-	      newphi = factor_out_conditional_conversion (e1, e2, phi,
-							  arg0, arg1,
-							  cond_stmt);
+	      newphi = factor_out_conditional_operation (e1, e2, phi,
+							 arg0, arg1,
+							 cond_stmt);
 	    }
 	}
 
