@@ -4801,7 +4801,7 @@ riscv_print_operand_address (FILE *file, machine_mode mode ATTRIBUTE_UNUSED, rtx
     switch (addr.type)
       {
       case ADDRESS_REG:
-	riscv_print_operand (file, addr.offset, 0);
+	output_addr_const (file, riscv_strip_unspec_address (addr.offset));
 	fprintf (file, "(%s)", reg_names[REGNO (addr.reg)]);
 	return;
 
