@@ -24,5 +24,10 @@
 #define PROC_MACRO_H
 
 #include "literal.h"
+#include "tokenstream.h"
+#include "tokentree.h"
+#include "group.h"
+#include "punct.h"
+#include "ident.h"
 
 #endif /* ! PROC_MACRO_H */
