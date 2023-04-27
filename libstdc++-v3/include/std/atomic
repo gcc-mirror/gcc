@@ -1282,6 +1282,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using __atomic_val_t = __type_identity_t<_Tp>;
   template<typename _Tp>
     using __atomic_diff_t = typename atomic<_Tp>::difference_type;
+  /// @endcond
 
   // [atomics.nonmembers] Non-member functions.
   // Function templates generally applicable to atomic types.
