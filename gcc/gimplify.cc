@@ -3281,15 +3281,21 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   if (need_non_reg && (fallback & fb_rvalue))
     prepare_gimple_addressable (p, pre_p);
 
-  /* Step 3: gimplify size expressions and the indices and operands of
-     ARRAY_REF.  During this loop we also remove any useless conversions.  */
 
+  /* Step 3: gimplify size expressions and the indices and operands of
+     ARRAY_REF.  During this loop we also remove any useless conversions.
+     If we operate on a register also make sure to properly gimplify
+     to individual operations.  */
+
+  bool reg_operations = is_gimple_reg (*p);
   for (; expr_stack.length () > 0; )
     {
       tree t = expr_stack.pop ();
 
       if (TREE_CODE (t) == ARRAY_REF || TREE_CODE (t) == ARRAY_RANGE_REF)
 	{
+	  gcc_assert (!reg_operations);
+
 	  /* Gimplify the low bound and element type size. */
 	  tret = gimplify_expr (&TREE_OPERAND (t, 2), pre_p, post_p,
 				is_gimple_reg, fb_rvalue);
@@ -3306,8 +3312,16 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	}
       else if (TREE_CODE (t) == COMPONENT_REF)
 	{
+	  gcc_assert (!reg_operations);
+
 	  tret = gimplify_expr (&TREE_OPERAND (t, 2), pre_p, post_p,
 				is_gimple_reg, fb_rvalue);
+	  ret = MIN (ret, tret);
+	}
+      else if (reg_operations)
+	{
+	  tret = gimplify_expr (&TREE_OPERAND (t, 0), pre_p, post_p,
+				is_gimple_val, fb_rvalue);
 	  ret = MIN (ret, tret);
 	}
 
