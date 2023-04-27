@@ -50,6 +50,33 @@ TokenStream::collect () const
     {
       switch (token->get_id ())
 	{
+	// Alone punct tokens
+	case EQUAL:
+	case RIGHT_ANGLE:
+	case LEFT_ANGLE:
+	case EXCLAM:
+	case TILDE:
+	case PLUS:
+	case MINUS:
+	case ASTERISK:
+	case DIV:
+	case PERCENT:
+	case CARET:
+	case AMP:
+	case PIPE:
+	case PATTERN_BIND:
+	case DOT:
+	case COMMA:
+	case SEMICOLON:
+	case COLON:
+	case HASH:
+	case DOLLAR_SIGN:
+	case QUESTION_MARK:
+	case SINGLE_QUOTE:
+	  trees.back ().push (ProcMacro::TokenTree::make_tokentree (
+	    ProcMacro::Punct::make_punct (token->as_string ()[0],
+					  ProcMacro::ALONE)));
+	  break;
 	case RIGHT_PAREN:
 	  pop_group (trees, ProcMacro::PARENTHESIS);
 	  break;
