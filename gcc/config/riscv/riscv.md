@@ -297,6 +297,15 @@
 ;; vldff       vector unit-stride fault-only-first load instructions
 ;; vldr        vector whole register load instructions
 ;; vstr        vector whole register store instructions
+;; vlsegde     vector segment unit-stride load instructions
+;; vssegte     vector segment unit-stride store instructions
+;; vlsegds     vector segment strided load instructions
+;; vssegts     vector segment strided store instructions
+;; vlsegdux    vector segment unordered indexed load instructions
+;; vlsegdox    vector segment ordered indexed load instructions
+;; vssegtux    vector segment unordered indexed store instructions
+;; vssegtox    vector segment ordered indexed store instructions
+;; vlsegdff    vector segment unit-stride fault-only-first load instructions
 ;; 11. Vector integer arithmetic instructions
 ;; vialu       vector single-width integer add and subtract and logical nstructions
 ;; viwalu      vector widening integer add/subtract
@@ -378,6 +387,7 @@
    clmul,min,max,minu,maxu,clz,ctz,cpop,
    atomic,condmove,crypto,rdvlenb,rdvl,vsetvl,vlde,vste,vldm,vstm,vlds,vsts,
    vldux,vldox,vstux,vstox,vldff,vldr,vstr,
+   vlsegde,vssegte,vlsegds,vssegts,vlsegdux,vlsegdox,vssegtux,vssegtox,vlsegdff,
    vialu,viwalu,vext,vicalu,vshift,vnshift,vicmp,viminmax,
    vimul,vidiv,viwmul,vimuladd,viwmuladd,vimerge,vimov,
    vsalu,vaalu,vsmul,vsshift,vnclip,

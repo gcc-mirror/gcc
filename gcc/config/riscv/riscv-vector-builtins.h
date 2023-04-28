@@ -280,6 +280,7 @@ public:
   void append_name (const char *);
   void append_base_name (const char *);
   void append_sew (int);
+  void append_nf (int);
   char *finish_name ();
 
 private:

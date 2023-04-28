@@ -496,13 +496,13 @@ DEF_RVV_TUPLE_TYPE (vfloat32mf2x8_t, 20, __rvv_float32mf2x8_t, vfloat32mf2_t, fl
 DEF_RVV_TYPE (vfloat32m1_t, 17, __rvv_float32m1_t, float, VNx4SF, VNx2SF, VNx1SF,
 	      _f32m1, _f32, _e32m1)
 /* Define tuple types for SEW = 32, LMUL = M1.  */
-DEF_RVV_TUPLE_TYPE (vfloat32m1x2_t, 19, __rvv_float32m1x2_t, vfloat32m1_t, double, 2, _f32m1x2)
-DEF_RVV_TUPLE_TYPE (vfloat32m1x3_t, 19, __rvv_float32m1x3_t, vfloat32m1_t, double, 3, _f32m1x3)
-DEF_RVV_TUPLE_TYPE (vfloat32m1x4_t, 19, __rvv_float32m1x4_t, vfloat32m1_t, double, 4, _f32m1x4)
-DEF_RVV_TUPLE_TYPE (vfloat32m1x5_t, 19, __rvv_float32m1x5_t, vfloat32m1_t, double, 5, _f32m1x5)
-DEF_RVV_TUPLE_TYPE (vfloat32m1x6_t, 19, __rvv_float32m1x6_t, vfloat32m1_t, double, 6, _f32m1x6)
-DEF_RVV_TUPLE_TYPE (vfloat32m1x7_t, 19, __rvv_float32m1x7_t, vfloat32m1_t, double, 7, _f32m1x7)
-DEF_RVV_TUPLE_TYPE (vfloat32m1x8_t, 19, __rvv_float32m1x8_t, vfloat32m1_t, double, 8, _f32m1x8)
+DEF_RVV_TUPLE_TYPE (vfloat32m1x2_t, 19, __rvv_float32m1x2_t, vfloat32m1_t, float, 2, _f32m1x2)
+DEF_RVV_TUPLE_TYPE (vfloat32m1x3_t, 19, __rvv_float32m1x3_t, vfloat32m1_t, float, 3, _f32m1x3)
+DEF_RVV_TUPLE_TYPE (vfloat32m1x4_t, 19, __rvv_float32m1x4_t, vfloat32m1_t, float, 4, _f32m1x4)
+DEF_RVV_TUPLE_TYPE (vfloat32m1x5_t, 19, __rvv_float32m1x5_t, vfloat32m1_t, float, 5, _f32m1x5)
+DEF_RVV_TUPLE_TYPE (vfloat32m1x6_t, 19, __rvv_float32m1x6_t, vfloat32m1_t, float, 6, _f32m1x6)
+DEF_RVV_TUPLE_TYPE (vfloat32m1x7_t, 19, __rvv_float32m1x7_t, vfloat32m1_t, float, 7, _f32m1x7)
+DEF_RVV_TUPLE_TYPE (vfloat32m1x8_t, 19, __rvv_float32m1x8_t, vfloat32m1_t, float, 8, _f32m1x8)
 /* LMUL = 2:
    Machine mode = VNx8SFmode when TARGET_MIN_VLEN >= 128.
    Machine mode = VNx4SFmode when TARGET_MIN_VLEN > 32.
@@ -510,9 +510,9 @@ DEF_RVV_TUPLE_TYPE (vfloat32m1x8_t, 19, __rvv_float32m1x8_t, vfloat32m1_t, doubl
 DEF_RVV_TYPE (vfloat32m2_t, 17, __rvv_float32m2_t, float, VNx8SF, VNx4SF, VNx2SF,
 	      _f32m2, _f32, _e32m2)
 /* Define tuple types for SEW = 32, LMUL = M2.  */
-DEF_RVV_TUPLE_TYPE (vfloat32m2x2_t, 19, __rvv_float32m2x2_t, vfloat32m2_t, double, 2, _f32m2x2)
-DEF_RVV_TUPLE_TYPE (vfloat32m2x3_t, 19, __rvv_float32m2x3_t, vfloat32m2_t, double, 3, _f32m2x3)
-DEF_RVV_TUPLE_TYPE (vfloat32m2x4_t, 19, __rvv_float32m2x4_t, vfloat32m2_t, double, 4, _f32m2x4)
+DEF_RVV_TUPLE_TYPE (vfloat32m2x2_t, 19, __rvv_float32m2x2_t, vfloat32m2_t, float, 2, _f32m2x2)
+DEF_RVV_TUPLE_TYPE (vfloat32m2x3_t, 19, __rvv_float32m2x3_t, vfloat32m2_t, float, 3, _f32m2x3)
+DEF_RVV_TUPLE_TYPE (vfloat32m2x4_t, 19, __rvv_float32m2x4_t, vfloat32m2_t, float, 4, _f32m2x4)
 /* LMUL = 4:
    Machine mode = VNx16SFmode when TARGET_MIN_VLEN >= 128.
    Machine mode = VNx8SFmode when TARGET_MIN_VLEN > 32.
@@ -520,7 +520,7 @@ DEF_RVV_TUPLE_TYPE (vfloat32m2x4_t, 19, __rvv_float32m2x4_t, vfloat32m2_t, doubl
 DEF_RVV_TYPE (vfloat32m4_t, 17, __rvv_float32m4_t, float, VNx16SF, VNx8SF, VNx4SF,
 	      _f32m4, _f32, _e32m4)
 /* Define tuple types for SEW = 32, LMUL = M4.  */
-DEF_RVV_TUPLE_TYPE (vfloat32m4x2_t, 19, __rvv_float32m4x2_t, vfloat32m4_t, double, 2, _f32m4x2)
+DEF_RVV_TUPLE_TYPE (vfloat32m4x2_t, 19, __rvv_float32m4x2_t, vfloat32m4_t, float, 2, _f32m4x2)
 /* LMUL = 8:
    Machine mode = VNx32SFmode when TARGET_MIN_VLEN >= 128.
    Machine mode = VNx16SFmode when TARGET_MIN_VLEN > 32.

@@ -58,6 +58,54 @@ enum lst_type
   LST_INDEXED,
 };
 
+/* Helper function to fold vleff and vlsegff.  */
+static gimple *
+fold_fault_load (gimple_folder &f)
+{
+  /* fold fault_load (const *base, size_t *new_vl, size_t vl)
+
+     ====> fault_load (const *base, size_t vl)
+	   new_vl = MEM_REF[read_vl ()].  */
+
+  auto_vec<tree> vargs (gimple_call_num_args (f.call) - 1);
+
+  for (unsigned i = 0; i < gimple_call_num_args (f.call); i++)
+    {
+      /* Exclude size_t *new_vl argument.  */
+      if (i == gimple_call_num_args (f.call) - 2)
+	continue;
+
+      vargs.quick_push (gimple_call_arg (f.call, i));
+    }
+
+  gimple *repl = gimple_build_call_vec (gimple_call_fn (f.call), vargs);
+  gimple_call_set_lhs (repl, f.lhs);
+
+  /* Handle size_t *new_vl by read_vl.  */
+  tree new_vl = gimple_call_arg (f.call, gimple_call_num_args (f.call) - 2);
+  if (integer_zerop (new_vl))
+    {
+      /* This case happens when user passes the nullptr to new_vl argument.
+	 In this case, we just need to ignore the new_vl argument and return
+	 fault_load instruction directly. */
+      return repl;
+    }
+
+  tree tmp_var = create_tmp_var (size_type_node, "new_vl");
+  tree decl = get_read_vl_decl ();
+  gimple *g = gimple_build_call (decl, 0);
+  gimple_call_set_lhs (g, tmp_var);
+  tree indirect
+    = fold_build2 (MEM_REF, size_type_node,
+		   gimple_call_arg (f.call, gimple_call_num_args (f.call) - 2),
+		   build_int_cst (build_pointer_type (size_type_node), 0));
+  gassign *assign = gimple_build_assign (indirect, tmp_var);
+
+  gsi_insert_after (f.gsi, assign, GSI_SAME_STMT);
+  gsi_insert_after (f.gsi, g, GSI_SAME_STMT);
+  return repl;
+}
+
 /* Implements vsetvl<mode> && vsetvlmax<mode>.  */
 template<bool VLMAX_P>
 class vsetvl : public function_base
@@ -1655,49 +1703,7 @@ public:
 
   gimple *fold (gimple_folder &f) const override
   {
-    /* fold vleff (const *base, size_t *new_vl, size_t vl)
-
-       ====> vleff (const *base, size_t vl)
-	     new_vl = MEM_REF[read_vl ()].  */
-
-    auto_vec<tree> vargs (gimple_call_num_args (f.call) - 1);
-
-    for (unsigned i = 0; i < gimple_call_num_args (f.call); i++)
-      {
-	/* Exclude size_t *new_vl argument.  */
-	if (i == gimple_call_num_args (f.call) - 2)
-	  continue;
-
-	vargs.quick_push (gimple_call_arg (f.call, i));
-      }
-
-    gimple *repl = gimple_build_call_vec (gimple_call_fn (f.call), vargs);
-    gimple_call_set_lhs (repl, f.lhs);
-
-    /* Handle size_t *new_vl by read_vl.  */
-    tree new_vl = gimple_call_arg (f.call, gimple_call_num_args (f.call) - 2);
-    if (integer_zerop (new_vl))
-      {
-	/* This case happens when user passes the nullptr to new_vl argument.
-	   In this case, we just need to ignore the new_vl argument and return
-	   vleff instruction directly. */
-	return repl;
-      }
-
-    tree tmp_var = create_tmp_var (size_type_node, "new_vl");
-    tree decl = get_read_vl_decl ();
-    gimple *g = gimple_build_call (decl, 0);
-    gimple_call_set_lhs (g, tmp_var);
-    tree indirect
-      = fold_build2 (MEM_REF, size_type_node,
-		     gimple_call_arg (f.call,
-				      gimple_call_num_args (f.call) - 2),
-		     build_int_cst (build_pointer_type (size_type_node), 0));
-    gassign *assign = gimple_build_assign (indirect, tmp_var);
-
-    gsi_insert_after (f.gsi, assign, GSI_SAME_STMT);
-    gsi_insert_after (f.gsi, g, GSI_SAME_STMT);
-    return repl;
+    return fold_fault_load (f);
   }
 
   rtx expand (function_expander &e) const override
@@ -1719,6 +1725,166 @@ public:
     rtx vlenb = gen_int_mode (BYTES_PER_RISCV_VECTOR, mode);
     emit_move_insn (e.target, vlenb);
     return e.target;
+  }
+};
+
+/* Implements vlseg.v.  */
+class vlseg : public function_base
+{
+public:
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_READ_MEMORY;
+  }
+
+  bool can_be_overloaded_p (enum predication_type_index pred) const override
+  {
+    return pred != PRED_TYPE_none && pred != PRED_TYPE_mu;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (
+      code_for_pred_unit_strided_load (e.vector_mode ()));
+  }
+};
+
+/* Implements vsseg.v.  */
+class vsseg : public function_base
+{
+public:
+  bool apply_tail_policy_p () const override { return false; }
+  bool apply_mask_policy_p () const override { return false; }
+
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_WRITE_MEMORY;
+  }
+
+  bool can_be_overloaded_p (enum predication_type_index) const override
+  {
+    return true;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (
+      code_for_pred_unit_strided_store (e.vector_mode ()));
+  }
+};
+
+/* Implements vlsseg.v.  */
+class vlsseg : public function_base
+{
+public:
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_READ_MEMORY;
+  }
+
+  bool can_be_overloaded_p (enum predication_type_index pred) const override
+  {
+    return pred != PRED_TYPE_none && pred != PRED_TYPE_mu;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (
+      code_for_pred_strided_load (e.vector_mode ()));
+  }
+};
+
+/* Implements vssseg.v.  */
+class vssseg : public function_base
+{
+public:
+  bool apply_tail_policy_p () const override { return false; }
+  bool apply_mask_policy_p () const override { return false; }
+
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_WRITE_MEMORY;
+  }
+
+  bool can_be_overloaded_p (enum predication_type_index) const override
+  {
+    return true;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (
+      code_for_pred_strided_store (e.vector_mode ()));
+  }
+};
+
+template<int UNSPEC>
+class seg_indexed_load : public function_base
+{
+public:
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_READ_MEMORY;
+  }
+
+  bool can_be_overloaded_p (enum predication_type_index) const override
+  {
+    return true;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (
+      code_for_pred_indexed_load (UNSPEC, e.vector_mode (), e.index_mode ()));
+  }
+};
+
+template<int UNSPEC>
+class seg_indexed_store : public function_base
+{
+public:
+  bool apply_tail_policy_p () const override { return false; }
+  bool apply_mask_policy_p () const override { return false; }
+
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_WRITE_MEMORY;
+  }
+
+  bool can_be_overloaded_p (enum predication_type_index) const override
+  {
+    return true;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (
+      code_for_pred_indexed_store (UNSPEC, e.vector_mode (), e.index_mode ()));
+  }
+};
+
+/* Implements vlsegff.v.  */
+class vlsegff : public function_base
+{
+public:
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_READ_MEMORY | CP_WRITE_CSR;
+  }
+
+  bool can_be_overloaded_p (enum predication_type_index pred) const override
+  {
+    return pred != PRED_TYPE_none && pred != PRED_TYPE_mu;
+  }
+
+  gimple *fold (gimple_folder &f) const override
+  {
+    return fold_fault_load (f);
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_fault_load (e.vector_mode ()));
   }
 };
 
@@ -1933,6 +2099,15 @@ static CONSTEXPR const vget vget_obj;
 static CONSTEXPR const read_vl read_vl_obj;
 static CONSTEXPR const vleff vleff_obj;
 static CONSTEXPR const vlenb vlenb_obj;
+static CONSTEXPR const vlseg vlseg_obj;
+static CONSTEXPR const vsseg vsseg_obj;
+static CONSTEXPR const vlsseg vlsseg_obj;
+static CONSTEXPR const vssseg vssseg_obj;
+static CONSTEXPR const seg_indexed_load<UNSPEC_UNORDERED> vluxseg_obj;
+static CONSTEXPR const seg_indexed_load<UNSPEC_ORDERED> vloxseg_obj;
+static CONSTEXPR const seg_indexed_store<UNSPEC_UNORDERED> vsuxseg_obj;
+static CONSTEXPR const seg_indexed_store<UNSPEC_ORDERED> vsoxseg_obj;
+static CONSTEXPR const vlsegff vlsegff_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -2150,5 +2325,14 @@ BASE (vget)
 BASE (read_vl)
 BASE (vleff)
 BASE (vlenb)
+BASE (vlseg)
+BASE (vsseg)
+BASE (vlsseg)
+BASE (vssseg)
+BASE (vluxseg)
+BASE (vloxseg)
+BASE (vsuxseg)
+BASE (vsoxseg)
+BASE (vlsegff)
 
 } // end namespace riscv_vector

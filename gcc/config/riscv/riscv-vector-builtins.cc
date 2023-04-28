@@ -2170,6 +2170,110 @@ static CONSTEXPR const rvv_op_info all_v_vget_tuple_ops
      rvv_arg_type_info (RVV_BASE_tuple_subpart), /* Return type */
      v_size_args /* Args */};
 
+/* A static operand information for vector_type func (const scalar_type *)
+ * function registration. */
+static CONSTEXPR const rvv_op_info tuple_v_scalar_const_ptr_ops
+  = {tuple_ops,				  /* Types */
+     OP_TYPE_v,				  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     scalar_const_ptr_args /* Args */};
+
+/* A static operand information for void func (scalar_type *, vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info tuple_v_scalar_ptr_ops
+  = {tuple_ops,				/* Types */
+     OP_TYPE_v,				/* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     scalar_ptr_args /* Args */};
+
+/* A static operand information for vector_type func (const scalar_type *,
+ * ptrdiff_t) function registration. */
+static CONSTEXPR const rvv_op_info tuple_v_scalar_const_ptr_ptrdiff_ops
+  = {tuple_ops,				  /* Types */
+     OP_TYPE_v,				  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     scalar_const_ptr_ptrdiff_args /* Args */};
+
+/* A static operand information for void func (scalar_type *, ptrdiff_t,
+ * vector_type) function registration. */
+static CONSTEXPR const rvv_op_info tuple_v_scalar_ptr_ptrdiff_ops
+  = {tuple_ops,				/* Types */
+     OP_TYPE_v,				/* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     scalar_ptr_ptrdiff_args /* Args */};
+
+/* A static operand information for vector_type func (const scalar_type *,
+ * eew8_index_type) function registration. */
+static CONSTEXPR const rvv_op_info tuple_v_scalar_const_ptr_eew8_index_ops
+  = {tuple_ops,				  /* Types */
+     OP_TYPE_v,				  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     scalar_const_ptr_eew8_index_args /* Args */};
+
+/* A static operand information for vector_type func (const scalar_type *,
+ * eew16_index_type) function registration. */
+static CONSTEXPR const rvv_op_info tuple_v_scalar_const_ptr_eew16_index_ops
+  = {tuple_ops,				  /* Types */
+     OP_TYPE_v,				  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     scalar_const_ptr_eew16_index_args /* Args */};
+
+/* A static operand information for vector_type func (const scalar_type *,
+ * eew32_index_type) function registration. */
+static CONSTEXPR const rvv_op_info tuple_v_scalar_const_ptr_eew32_index_ops
+  = {tuple_ops,				  /* Types */
+     OP_TYPE_v,				  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     scalar_const_ptr_eew32_index_args /* Args */};
+
+/* A static operand information for vector_type func (const scalar_type *,
+ * eew64_index_type) function registration. */
+static CONSTEXPR const rvv_op_info tuple_v_scalar_const_ptr_eew64_index_ops
+  = {tuple_ops,				  /* Types */
+     OP_TYPE_v,				  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     scalar_const_ptr_eew64_index_args /* Args */};
+
+/* A static operand information for void func (scalar_type *, eew8_index_type,
+ * vector_type) function registration. */
+static CONSTEXPR const rvv_op_info tuple_v_scalar_ptr_eew8_index_ops
+  = {tuple_ops,				/* Types */
+     OP_TYPE_v,				/* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     scalar_ptr_eew8_index_args /* Args */};
+
+/* A static operand information for void func (scalar_type *, eew16_index_type,
+ * vector_type) function registration. */
+static CONSTEXPR const rvv_op_info tuple_v_scalar_ptr_eew16_index_ops
+  = {tuple_ops,				/* Types */
+     OP_TYPE_v,				/* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     scalar_ptr_eew16_index_args /* Args */};
+
+/* A static operand information for void func (scalar_type *, eew32_index_type,
+ * vector_type) function registration. */
+static CONSTEXPR const rvv_op_info tuple_v_scalar_ptr_eew32_index_ops
+  = {tuple_ops,				/* Types */
+     OP_TYPE_v,				/* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     scalar_ptr_eew32_index_args /* Args */};
+
+/* A static operand information for void func (scalar_type *, eew64_index_type,
+ * vector_type) function registration. */
+static CONSTEXPR const rvv_op_info tuple_v_scalar_ptr_eew64_index_ops
+  = {tuple_ops,				/* Types */
+     OP_TYPE_v,				/* Suffix */
+     rvv_arg_type_info (RVV_BASE_void), /* Return type */
+     scalar_ptr_eew64_index_args /* Args */};
+
+/* A static operand information for vector_type func (const scalar_type *)
+ * function registration. */
+static CONSTEXPR const rvv_op_info tuple_v_scalar_const_ptr_size_ptr_ops
+  = {tuple_ops,				  /* Types */
+     OP_TYPE_v,				  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     scalar_const_ptr_size_ptr_args /* Args */};
+
 /* A list of all RVV base function types.  */
 static CONSTEXPR const function_type_info function_types[] = {
 #define DEF_RVV_TYPE_INDEX(                                                    \
@@ -2905,6 +3009,38 @@ function_builder::append_sew (int sew)
       break;
     case 64:
       append_name ("64");
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Add NF into function name.  */
+void
+function_builder::append_nf (int nf)
+{
+  switch (nf)
+    {
+    case 2:
+      append_name ("2");
+      break;
+    case 3:
+      append_name ("3");
+      break;
+    case 4:
+      append_name ("4");
+      break;
+    case 5:
+      append_name ("5");
+      break;
+    case 6:
+      append_name ("6");
+      break;
+    case 7:
+      append_name ("7");
+      break;
+    case 8:
+      append_name ("8");
       break;
     default:
       gcc_unreachable ();

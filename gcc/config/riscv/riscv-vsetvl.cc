@@ -200,7 +200,9 @@ scalar_move_insn_p (rtx_insn *rinsn)
 static bool
 fault_first_load_p (rtx_insn *rinsn)
 {
-  return recog_memoized (rinsn) >= 0 && get_attr_type (rinsn) == TYPE_VLDFF;
+  return recog_memoized (rinsn) >= 0
+	 && (get_attr_type (rinsn) == TYPE_VLDFF
+	     || get_attr_type (rinsn) == TYPE_VLSEGDFF);
 }
 
 /* Return true if the instruction is read vl instruction.  */

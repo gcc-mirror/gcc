@@ -577,6 +577,142 @@ struct vlenb_def : public function_shape
   }
 };
 
+/* seg_loadstore_def class.  */
+struct seg_loadstore_def : public build_base
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    /* Return nullptr if it can not be overloaded.  */
+    if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
+      return nullptr;
+
+    b.append_base_name (instance.base_name);
+
+    tree type = builtin_types[instance.type.index].vector;
+    machine_mode mode = TYPE_MODE (type);
+
+    int nf = get_nf (mode);
+    /* vop --> vop<nf>.  */
+    b.append_nf (nf);
+
+    /* vop<nf> --> vop<nf>e.  */
+    b.append_name ("e");
+
+    int sew = GET_MODE_BITSIZE (GET_MODE_INNER (mode));
+    /* vop<nf>e --> vop<nf>e<sew>.  */
+    b.append_sew (sew);
+
+    if (!overloaded_p)
+      {
+	/* vop<nf>e<sew> --> vop<nf>e<sew>_v.  */
+	b.append_name (operand_suffixes[instance.op_info->op]);
+	/* vop<nf>e<sew>_v --> vop<nf>e<sew>_v_<type>.  */
+	b.append_name (type_suffixes[instance.type.index].vector);
+      }
+
+    /* According to rvv-intrinsic-doc, it does not add "_m" suffix
+       for vop_m C++ overloaded API.  */
+    if (overloaded_p && instance.pred == PRED_TYPE_m)
+      return b.finish_name ();
+    b.append_name (predication_suffixes[instance.pred]);
+    return b.finish_name ();
+  }
+};
+
+/* seg_indexed_loadstore_def class.  */
+struct seg_indexed_loadstore_def : public indexed_loadstore_def
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    /* Return nullptr if it can not be overloaded.  */
+    if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
+      return nullptr;
+
+    b.append_base_name (instance.base_name);
+
+    tree type = builtin_types[instance.type.index].vector;
+    machine_mode mode = TYPE_MODE (type);
+
+    int nf = get_nf (mode);
+    /* vop --> vop<nf>.  */
+    b.append_nf (nf);
+
+    /* vop<nf> --> vop<nf>ei.  */
+    b.append_name ("ei");
+
+    /* vop<nf>ei --> vop<nf>ei<eew>.  */
+    vector_type_index arg1_type_idx
+      = instance.op_info->args[1].get_function_type_index (instance.type.index);
+    tree index_type = builtin_types[arg1_type_idx].vector;
+    machine_mode index_mode = TYPE_MODE (index_type);
+    int eew = GET_MODE_BITSIZE (GET_MODE_INNER (index_mode));
+    b.append_sew (eew);
+
+    if (!overloaded_p)
+      {
+	/* vop<sew> --> vop<sew>_v.  */
+	b.append_name (operand_suffixes[instance.op_info->op]);
+	/* vop<sew>_v --> vop<sew>_v_<type>.  */
+	b.append_name (type_suffixes[instance.type.index].vector);
+      }
+
+    /* According to rvv-intrinsic-doc, it does not add "_m" suffix
+       for vop_m C++ overloaded API.  */
+    if (overloaded_p && instance.pred == PRED_TYPE_m)
+      return b.finish_name ();
+    b.append_name (predication_suffixes[instance.pred]);
+    return b.finish_name ();
+  }
+};
+
+/* seg_fault_load_def class.  */
+struct seg_fault_load_def : public build_base
+{
+  char *get_name (function_builder &b, const function_instance &instance,
+		  bool overloaded_p) const override
+  {
+    /* Return nullptr if it can not be overloaded.  */
+    if (overloaded_p && !instance.base->can_be_overloaded_p (instance.pred))
+      return nullptr;
+
+    b.append_name ("__riscv_vlseg");
+
+    tree type = builtin_types[instance.type.index].vector;
+    machine_mode mode = TYPE_MODE (type);
+
+    int nf = get_nf (mode);
+    /* vop --> vop<nf>.  */
+    b.append_nf (nf);
+
+    /* vop<nf> --> vop<nf>e.  */
+    b.append_name ("e");
+
+    int sew = GET_MODE_BITSIZE (GET_MODE_INNER (mode));
+    /* vop<nf>e --> vop<nf>e<sew>.  */
+    b.append_sew (sew);
+
+    /* vop<nf>e<sew> --> vop<nf>e<sew>ff.  */
+    b.append_name ("ff");
+
+    if (!overloaded_p)
+      {
+	/* vop<nf>e<sew>ff --> vop<nf>e<sew>ff_v.  */
+	b.append_name (operand_suffixes[instance.op_info->op]);
+	/* vop<nf>e<sew>ff_v --> vop<nf>e<sew>ff_v_<type>.  */
+	b.append_name (type_suffixes[instance.type.index].vector);
+      }
+
+    /* According to rvv-intrinsic-doc, it does not add "_m" suffix
+       for vop_m C++ overloaded API.  */
+    if (overloaded_p && instance.pred == PRED_TYPE_m)
+      return b.finish_name ();
+    b.append_name (predication_suffixes[instance.pred]);
+    return b.finish_name ();
+  }
+};
+
 SHAPE(vsetvl, vsetvl)
 SHAPE(vsetvl, vsetvlmax)
 SHAPE(loadstore, loadstore)
@@ -597,5 +733,8 @@ SHAPE(vget, vget)
 SHAPE(read_vl, read_vl)
 SHAPE(fault_load, fault_load)
 SHAPE(vlenb, vlenb)
+SHAPE(seg_loadstore, seg_loadstore)
+SHAPE(seg_indexed_loadstore, seg_indexed_loadstore)
+SHAPE(seg_fault_load, seg_fault_load)
 
 } // end namespace riscv_vector
