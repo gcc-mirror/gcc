@@ -65,6 +65,11 @@
 
   ;; OR-COMBINE
   UNSPEC_ORC_B
+
+  ;; Zbc unspecs
+  UNSPEC_CLMUL
+  UNSPEC_CLMULH
+  UNSPEC_CLMULR
 ])
 
 (define_c_enum "unspecv" [
@@ -244,6 +249,7 @@
 ;; nop		no operation
 ;; ghost	an instruction that produces no real code
 ;; bitmanip	bit manipulation instructions
+;; clmul    clmul, clmulh, clmulr
 ;; rotate   rotation instructions
 ;; atomic   atomic instructions
 ;; condmove	conditional moves
@@ -344,7 +350,7 @@
   "unknown,branch,jump,call,load,fpload,store,fpstore,
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
    fmadd,fdiv,fcmp,fcvt,fsqrt,multi,auipc,sfb_alu,nop,ghost,bitmanip,rotate,
-   min,max,minu,maxu,clz,ctz,cpop,
+   clmul,min,max,minu,maxu,clz,ctz,cpop,
    atomic,condmove,crypto,rdvlenb,rdvl,vsetvl,vlde,vste,vldm,vstm,vlds,vsts,
    vldux,vldox,vstux,vstox,vldff,vldr,vstr,
    vialu,viwalu,vext,vicalu,vshift,vnshift,vicmp,viminmax,

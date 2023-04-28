@@ -52,7 +52,7 @@
 
 (define_insn_reservation "generic_imul" 10
   (and (eq_attr "tune" "generic")
-       (eq_attr "type" "imul"))
+       (eq_attr "type" "imul,clmul"))
   "imuldiv*10")
 
 (define_insn_reservation "generic_idivsi" 34

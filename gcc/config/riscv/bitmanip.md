@@ -719,3 +719,32 @@
    operands[8] = GEN_INT (setbit);
    operands[9] = GEN_INT (clearbit);
 })
+
+;; ZBKC or ZBC extension
+(define_insn "riscv_clmul_<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (unspec:X [(match_operand:X 1 "register_operand" "r")
+                  (match_operand:X 2 "register_operand" "r")]
+                  UNSPEC_CLMUL))]
+  "TARGET_ZBKC || TARGET_ZBC"
+  "clmul\t%0,%1,%2"
+  [(set_attr "type" "clmul")])
+
+(define_insn "riscv_clmulh_<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (unspec:X [(match_operand:X 1 "register_operand" "r")
+                  (match_operand:X 2 "register_operand" "r")]
+                  UNSPEC_CLMULH))]
+  "TARGET_ZBKC || TARGET_ZBC"
+  "clmulh\t%0,%1,%2"
+  [(set_attr "type" "clmul")])
+
+;; ZBC extension
+(define_insn "riscv_clmulr_<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+        (unspec:X [(match_operand:X 1 "register_operand" "r")
+                  (match_operand:X 2 "register_operand" "r")]
+                  UNSPEC_CLMULR))]
+  "TARGET_ZBC"
+  "clmulr\t%0,%1,%2"
+  [(set_attr "type" "clmul")])
