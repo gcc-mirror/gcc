@@ -1,3 +1,114 @@
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-09-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/intro.xml: Document LWG 1203.
+	* doc/html/*: Regenerate.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-09-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/barrier: Add missing runtime exception.
+
+2023-04-27  François Dumont  <fdumont@gcc.gnu.org>
+
+	Backported from master:
+	2022-05-26  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (StdSpanPrinter.__init__):
+	Strip typename from version namespace.
+
+2023-04-27  Philipp Fent  <fent@in.tum.de>
+
+	Backported from master:
+	2022-04-25  Philipp Fent  <fent@in.tum.de>
+
+	* python/libstdcxx/v6/printers.py (StdSpanPrinter._iterator):
+	Rename as iterator.
+	(StdInitializerListPrinter): Define new printer.
+	(build_libstdcxx_dictionary): Register new printer.
+	* testsuite/libstdc++-prettyprinters/cxx11.cc: Check printer for
+	initializer_list.
+
+2023-04-27  Philipp Fent  <fent@in.tum.de>
+
+	Backported from master:
+	2022-04-19  Philipp Fent  <fent@in.tum.de>
+
+	* python/libstdcxx/v6/printers.py (StdSpanPrinter): Define.
+	* testsuite/libstdc++-prettyprinters/cxx20.cc: Test it.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/atomic: Add missing @endcond doxygen comment.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/extensions.xml: Remove std::bad_exception from
+	example program.
+	* doc/html/manual/ext_demangling.html: Regenerate.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (SOURCE_BROWSER): Only set to YES for
+	HTML docs.
+	* include/bits/gslice_array.h (_DEFINE_VALARRAY_OPERATOR): Omit
+	from doxygen docs.
+	* include/bits/indirect_array.h (_DEFINE_VALARRAY_OPERATOR):
+	Likewise.
+	* include/bits/mask_array.h (_DEFINE_VALARRAY_OPERATOR):
+	Likewise.
+	* include/bits/slice_array.h (_DEFINE_VALARRAY_OPERATOR):
+	Likewise.
+	* include/std/valarray (_DEFINE_VALARRAY_UNARY_OPERATOR)
+	(_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT)
+	(_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT)
+	(_DEFINE_BINARY_OPERATOR): Likewise.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (path::filename()): Fix dangling
+	reference.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109064
+	* python/libstdcxx/v6/xmethods.py (SharedPtrUseCountWorker):
+	Remove self-recursion in __init__. Add missing _supports.
+	* testsuite/libstdc++-xmethods/shared_ptr.cc: Check use_count()
+	and unique().
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108952
+	* include/bits/uses_allocator_args.h
+	(uses_allocator_construction_args): Implement LWG 3527.
+	* testsuite/20_util/pair/astuple/get-2.cc: New test.
+	* testsuite/20_util/scoped_allocator/108952.cc: New test.
+	* testsuite/20_util/uses_allocator/lwg3527.cc: New test.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/optional: Fix header name in comment.
+
 2023-03-21  Matthias Kretz  <m.kretz@gsi.de>
 
 	Backported from master:
