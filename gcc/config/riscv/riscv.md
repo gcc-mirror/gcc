@@ -1063,6 +1063,22 @@
   [(set_attr "type" "idiv")
    (set_attr "mode" "DI")])
 
+(define_expand "<u>divmod<mode>4"
+  [(parallel
+     [(set (match_operand:GPR 0 "register_operand")
+           (only_div:GPR (match_operand:GPR 1 "register_operand")
+                         (match_operand:GPR 2 "register_operand")))
+      (set (match_operand:GPR 3 "register_operand")
+           (<paired_mod>:GPR (match_dup 1) (match_dup 2)))])]
+  "TARGET_DIV && riscv_use_divmod_expander ()"
+  {
+      rtx tmp = gen_reg_rtx (<MODE>mode);
+      emit_insn (gen_<u>div<GPR:mode>3 (operands[0], operands[1], operands[2]));
+      emit_insn (gen_mul<GPR:mode>3 (tmp, operands[0], operands[2]));
+      emit_insn (gen_sub<GPR:mode>3 (operands[3], operands[1], tmp));
+      DONE;
+  })
+
 (define_insn "*<optab>si3_extended"
   [(set (match_operand:DI                 0 "register_operand" "=r")
 	(sign_extend:DI

@@ -236,6 +236,7 @@ struct riscv_tune_param
   unsigned short memory_cost;
   unsigned short fmv_cost;
   bool slow_unaligned_access;
+  bool use_divmod_expansion;
 };
 
 /* Information about one micro-arch we know about.  */
@@ -323,6 +324,7 @@ static const struct riscv_tune_param rocket_tune_info = {
   5,						/* memory_cost */
   8,						/* fmv_cost */
   true,						/* slow_unaligned_access */
+  false,					/* use_divmod_expansion */
 };
 
 /* Costs to use when optimizing for Sifive 7 Series.  */
@@ -337,6 +339,7 @@ static const struct riscv_tune_param sifive_7_tune_info = {
   3,						/* memory_cost */
   8,						/* fmv_cost */
   true,						/* slow_unaligned_access */
+  false,					/* use_divmod_expansion */
 };
 
 /* Costs to use when optimizing for T-HEAD c906.  */
@@ -351,6 +354,7 @@ static const struct riscv_tune_param thead_c906_tune_info = {
   5,            /* memory_cost */
   8,		/* fmv_cost */
   false,            /* slow_unaligned_access */
+  false		/* use_divmod_expansion */
 };
 
 /* Costs to use when optimizing for size.  */
@@ -365,6 +369,7 @@ static const struct riscv_tune_param optimize_size_tune_info = {
   2,						/* memory_cost */
   8,						/* fmv_cost */
   false,					/* slow_unaligned_access */
+  false,					/* use_divmod_expansion */
 };
 
 static tree riscv_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
@@ -7208,6 +7213,16 @@ riscv_lshift_subword (machine_mode mode, rtx value, rtx shift,
 
   emit_move_insn (*shifted_value, gen_rtx_ASHIFT (SImode, value_reg,
 						  gen_lowpart (QImode, shift)));
+}
+
+/* Return TRUE if we should use the divmod expander, FALSE otherwise.  This
+   allows the behavior to be tuned for specific implementations as well as
+   when optimizing for size.  */
+
+bool
+riscv_use_divmod_expander (void)
+{
+  return tune_param->use_divmod_expansion;
 }
 
 /* Initialize the GCC target structure.  */
