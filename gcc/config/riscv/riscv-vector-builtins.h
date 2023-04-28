@@ -185,6 +185,7 @@ struct rvv_arg_type_info
   tree get_scalar_type (vector_type_index) const;
   tree get_vector_type (vector_type_index) const;
   tree get_tree_type (vector_type_index) const;
+  tree get_tuple_subpart_type (vector_type_index) const;
 };
 
 /* Static information for each operand.  */
@@ -654,6 +655,16 @@ inline bool
 function_base::can_be_overloaded_p (enum predication_type_index) const
 {
   return true;
+}
+
+/* Return the single field in tuple type TYPE.  */
+inline tree
+tuple_type_field (tree type)
+{
+  for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+    if (TREE_CODE (field) == FIELD_DECL)
+      return field;
+  gcc_unreachable ();
 }
 
 } // end namespace riscv_vector

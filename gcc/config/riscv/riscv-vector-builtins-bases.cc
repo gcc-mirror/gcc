@@ -1548,9 +1548,40 @@ class vset : public function_base
 public:
   bool apply_vl_p () const override { return false; }
 
+  gimple *fold (gimple_folder &f) const override
+  {
+    tree rhs_tuple = gimple_call_arg (f.call, 0);
+    /* LMUL > 1 non-tuple vector types are not structure,
+       we can't use __val[index] to set the subpart.  */
+    if (!riscv_v_ext_tuple_mode_p (TYPE_MODE (TREE_TYPE (rhs_tuple))))
+      return NULL;
+    tree index = gimple_call_arg (f.call, 1);
+    tree rhs_vector = gimple_call_arg (f.call, 2);
+
+    /* Replace the call with two statements: a copy of the full tuple
+       to the call result, followed by an update of the individual vector.
+
+       The fold routines expect the replacement statement to have the
+       same lhs as the original call, so return the copy statement
+       rather than the field update.  */
+    gassign *copy = gimple_build_assign (unshare_expr (f.lhs), rhs_tuple);
+
+    /* Get a reference to the individual vector.  */
+    tree field = tuple_type_field (TREE_TYPE (f.lhs));
+    tree lhs_array
+      = build3 (COMPONENT_REF, TREE_TYPE (field), f.lhs, field, NULL_TREE);
+    tree lhs_vector = build4 (ARRAY_REF, TREE_TYPE (rhs_vector), lhs_array,
+			      index, NULL_TREE, NULL_TREE);
+    gassign *update = gimple_build_assign (lhs_vector, rhs_vector);
+    gsi_insert_after (f.gsi, update, GSI_SAME_STMT);
+
+    return copy;
+  }
+
   rtx expand (function_expander &e) const override
   {
     rtx dest = expand_normal (CALL_EXPR_ARG (e.exp, 0));
+    gcc_assert (riscv_v_ext_vector_mode_p (GET_MODE (dest)));
     rtx index = expand_normal (CALL_EXPR_ARG (e.exp, 1));
     rtx src = expand_normal (CALL_EXPR_ARG (e.exp, 2));
     poly_int64 offset = INTVAL (index) * GET_MODE_SIZE (GET_MODE (src));
@@ -1567,9 +1598,27 @@ class vget : public function_base
 public:
   bool apply_vl_p () const override { return false; }
 
+  gimple *fold (gimple_folder &f) const override
+  {
+    /* Fold into a normal gimple component access.  */
+    tree rhs_tuple = gimple_call_arg (f.call, 0);
+    /* LMUL > 1 non-tuple vector types are not structure,
+       we can't use __val[index] to get the subpart.  */
+    if (!riscv_v_ext_tuple_mode_p (TYPE_MODE (TREE_TYPE (rhs_tuple))))
+      return NULL;
+    tree index = gimple_call_arg (f.call, 1);
+    tree field = tuple_type_field (TREE_TYPE (rhs_tuple));
+    tree rhs_array
+      = build3 (COMPONENT_REF, TREE_TYPE (field), rhs_tuple, field, NULL_TREE);
+    tree rhs_vector = build4 (ARRAY_REF, TREE_TYPE (f.lhs), rhs_array, index,
+			      NULL_TREE, NULL_TREE);
+    return gimple_build_assign (f.lhs, rhs_vector);
+  }
+
   rtx expand (function_expander &e) const override
   {
     rtx src = expand_normal (CALL_EXPR_ARG (e.exp, 0));
+    gcc_assert (riscv_v_ext_vector_mode_p (GET_MODE (src)));
     rtx index = expand_normal (CALL_EXPR_ARG (e.exp, 1));
     poly_int64 offset = INTVAL (index) * GET_MODE_SIZE (GET_MODE (e.target));
     rtx subreg

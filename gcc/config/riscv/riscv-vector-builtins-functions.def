@@ -533,4 +533,8 @@ DEF_RVV_FUNCTION (vget, vget, none_preds, all_v_vget_lmul2_x2_ops)
 DEF_RVV_FUNCTION (vget, vget, none_preds, all_v_vget_lmul2_x4_ops)
 DEF_RVV_FUNCTION (vget, vget, none_preds, all_v_vget_lmul4_x2_ops)
 
+// Tuple types
+DEF_RVV_FUNCTION (vset, vset, none_preds, all_v_vset_tuple_ops)
+DEF_RVV_FUNCTION (vget, vget, none_preds, all_v_vget_tuple_ops)
+
 #undef DEF_RVV_FUNCTION

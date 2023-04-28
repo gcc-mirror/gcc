@@ -378,6 +378,12 @@ static const rvv_type_info lmul4_ops[] = {
 #include "riscv-vector-builtins-types.def"
   {NUM_VECTOR_TYPES, 0}};
 
+/* A list of Tuple types will be registered for intrinsic functions.  */
+static const rvv_type_info tuple_ops[] = {
+#define DEF_RVV_TUPLE_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
 static CONSTEXPR const rvv_arg_type_info rvv_arg_type_info_end
   = rvv_arg_type_info (NUM_BASE_TYPES);
 
@@ -758,6 +764,11 @@ static CONSTEXPR const rvv_arg_type_info ext_x4_vget_args[]
 static CONSTEXPR const rvv_arg_type_info ext_x8_vget_args[]
   = {rvv_arg_type_info (RVV_BASE_vlmul_ext_x8),
      rvv_arg_type_info (RVV_BASE_size), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type) function.  */
+static CONSTEXPR const rvv_arg_type_info tuple_vset_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info (RVV_BASE_size),
+     rvv_arg_type_info (RVV_BASE_tuple_subpart), rvv_arg_type_info_end};
 
 /* A list of none preds that will be registered for intrinsic functions.  */
 static CONSTEXPR const predication_type_index none_preds[]
@@ -2143,17 +2154,32 @@ static CONSTEXPR const rvv_op_info ul_none_void_ops
      rvv_arg_type_info (RVV_BASE_unsigned_long), /* Return type */
      void_args /* Args */};
 
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info all_v_vset_tuple_ops
+  = {tuple_ops,				  /* Types */
+     OP_TYPE_v,				  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     tuple_vset_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info all_v_vget_tuple_ops
+  = {tuple_ops,					 /* Types */
+     OP_TYPE_v,					 /* Suffix */
+     rvv_arg_type_info (RVV_BASE_tuple_subpart), /* Return type */
+     v_size_args /* Args */};
+
 /* A list of all RVV base function types.  */
 static CONSTEXPR const function_type_info function_types[] = {
-#define DEF_RVV_TYPE_INDEX(VECTOR, MASK, SIGNED, UNSIGNED, EEW8_INDEX, EEW16_INDEX, \
-		      EEW32_INDEX, EEW64_INDEX, SHIFT, DOUBLE_TRUNC,           \
-		      QUAD_TRUNC, OCT_TRUNC, DOUBLE_TRUNC_SCALAR,              \
-		      DOUBLE_TRUNC_SIGNED, DOUBLE_TRUNC_UNSIGNED,              \
-		      DOUBLE_TRUNC_UNSIGNED_SCALAR, DOUBLE_TRUNC_FLOAT, FLOAT, \
-		      LMUL1, WLMUL1, EEW8_INTERPRET, EEW16_INTERPRET,          \
-		      EEW32_INTERPRET, EEW64_INTERPRET, X2_VLMUL_EXT,          \
-		      X4_VLMUL_EXT, X8_VLMUL_EXT, X16_VLMUL_EXT,               \
-		      X32_VLMUL_EXT, X64_VLMUL_EXT)                            \
+#define DEF_RVV_TYPE_INDEX(                                                    \
+  VECTOR, MASK, SIGNED, UNSIGNED, EEW8_INDEX, EEW16_INDEX, EEW32_INDEX,        \
+  EEW64_INDEX, SHIFT, DOUBLE_TRUNC, QUAD_TRUNC, OCT_TRUNC,                     \
+  DOUBLE_TRUNC_SCALAR, DOUBLE_TRUNC_SIGNED, DOUBLE_TRUNC_UNSIGNED,             \
+  DOUBLE_TRUNC_UNSIGNED_SCALAR, DOUBLE_TRUNC_FLOAT, FLOAT, LMUL1, WLMUL1,      \
+  EEW8_INTERPRET, EEW16_INTERPRET, EEW32_INTERPRET, EEW64_INTERPRET,           \
+  X2_VLMUL_EXT, X4_VLMUL_EXT, X8_VLMUL_EXT, X16_VLMUL_EXT, X32_VLMUL_EXT,      \
+  X64_VLMUL_EXT, TUPLE_SUBPART)                                                \
   {                                                                            \
     VECTOR_TYPE_##VECTOR,                                                      \
     VECTOR_TYPE_INVALID,                                                       \
@@ -2196,6 +2222,7 @@ static CONSTEXPR const function_type_info function_types[] = {
     VECTOR_TYPE_##X32_VLMUL_EXT,                                               \
     VECTOR_TYPE_##X64_VLMUL_EXT,                                               \
     VECTOR_TYPE_INVALID,                                                       \
+    VECTOR_TYPE_##TUPLE_SUBPART,                                               \
   },
 #include "riscv-vector-builtins.def"
 }; // namespace riscv_vector
@@ -2638,6 +2665,21 @@ rvv_arg_type_info::get_tree_type (vector_type_index type_idx) const
 #define DEF_RVV_BASE_TYPE(NAME, TYPE)                                          \
   case RVV_BASE_##NAME:                                                        \
     return TYPE;
+#include "riscv-vector-builtins.def"
+    default:
+      gcc_unreachable ();
+    }
+  gcc_unreachable ();
+}
+
+tree
+rvv_arg_type_info::get_tuple_subpart_type (vector_type_index type_idx) const
+{
+  switch (type_idx)
+    {
+#define DEF_RVV_TUPLE_TYPE(NAME, NCHARS, ABI_NAME, SUBPART_TYPE, ARGS...)      \
+  case VECTOR_TYPE_##NAME:                                                     \
+    return builtin_types[VECTOR_TYPE_##SUBPART_TYPE].vector;
 #include "riscv-vector-builtins.def"
     default:
       gcc_unreachable ();

@@ -60,6 +60,28 @@ valid_type (unsigned sew, int lmul_log2, bool float_p)
     }
 }
 
+bool
+valid_type (unsigned sew, int lmul_log2, unsigned nf, bool float_p)
+{
+  if (!valid_type (sew, lmul_log2, float_p))
+    return false;
+
+  if (nf > 8 || nf < 1)
+    return false;
+
+  switch (lmul_log2)
+    {
+    case 1:
+      return nf < 5;
+    case 2:
+      return nf < 3;
+    case 3:
+      return nf == 1;
+    default:
+      return true;
+    }
+}
+
 std::string
 inttype (unsigned sew, int lmul_log2, bool unsigned_p)
 {
@@ -75,6 +97,23 @@ inttype (unsigned sew, int lmul_log2, bool unsigned_p)
 }
 
 std::string
+inttype (unsigned sew, int lmul_log2, unsigned nf, bool unsigned_p)
+{
+  if (!valid_type (sew, lmul_log2, nf, /*float_t*/ false))
+    return "INVALID";
+
+  std::stringstream mode;
+  mode << "v";
+  if (unsigned_p)
+    mode << "u";
+  mode << "int" << sew << to_lmul (lmul_log2);
+  if (nf > 1)
+    mode << "x" << nf;
+  mode << "_t";
+  return mode.str ();
+}
+
+std::string
 floattype (unsigned sew, int lmul_log2)
 {
   if (!valid_type (sew, lmul_log2, /*float_t*/ true))
@@ -82,6 +121,20 @@ floattype (unsigned sew, int lmul_log2)
 
   std::stringstream mode;
   mode << "vfloat" << sew << to_lmul (lmul_log2) << "_t";
+  return mode.str ();
+}
+
+std::string
+floattype (unsigned sew, int lmul_log2, unsigned nf)
+{
+  if (!valid_type (sew, lmul_log2, nf, /*float_t*/ true))
+    return "INVALID";
+
+  std::stringstream mode;
+  mode << "vfloat" << sew << to_lmul (lmul_log2);
+  if (nf > 1)
+    mode << "x" << nf;
+  mode << "_t";
   return mode.str ();
 }
 
@@ -168,24 +221,104 @@ main (int argc, const char **argv)
       for (unsigned lmul_log2_offset : {1, 2, 3, 4, 5, 6})
 	{
 	  unsigned multiple_of_lmul = 1 << lmul_log2_offset;
-	  const char *comma = lmul_log2_offset == 6 ? "" : ",";
-	  fprintf (fp, "  /*X%d_INTERPRET*/ INVALID%s\n", multiple_of_lmul,
-		   comma);
+	  fprintf (fp, "  /*X%d_INTERPRET*/ INVALID,\n", multiple_of_lmul);
 	}
+      fprintf (fp, "  /*TUPLE_SUBPART*/ INVALID\n");
       fprintf (fp, ")\n");
     }
 
   // Build for vint and vuint
   for (unsigned sew : {8, 16, 32, 64})
     for (int lmul_log2 : {-3, -2, -1, 0, 1, 2, 3})
-      for (bool unsigned_p : {false, true})
+      for (unsigned nf : {1, 2, 3, 4, 5, 6, 7, 8})
+	for (bool unsigned_p : {false, true})
+	  {
+	    if (!valid_type (sew, lmul_log2, nf, /*float_t*/ false))
+	      continue;
+
+	    fprintf (fp, "DEF_RVV_TYPE_INDEX (\n");
+	    fprintf (fp, "  /*VECTOR*/ %s,\n",
+		     inttype (sew, lmul_log2, nf, unsigned_p).c_str ());
+	    fprintf (fp, "  /*MASK*/ %s,\n",
+		     maskmode (sew, lmul_log2).c_str ());
+	    fprintf (fp, "  /*SIGNED*/ %s,\n",
+		     inttype (sew, lmul_log2, /*unsigned_p*/ false).c_str ());
+	    fprintf (fp, "  /*UNSIGNED*/ %s,\n",
+		     inttype (sew, lmul_log2, /*unsigned_p*/ true).c_str ());
+	    for (unsigned eew : {8, 16, 32, 64})
+	      fprintf (fp, "  /*EEW%d_INDEX*/ %s,\n", eew,
+		       same_ratio_eew_type (sew, lmul_log2, eew,
+					    /*unsigned_p*/ true, false)
+			 .c_str ());
+	    fprintf (fp, "  /*SHIFT*/ %s,\n",
+		     inttype (sew, lmul_log2, /*unsigned_p*/ true).c_str ());
+	    fprintf (fp, "  /*DOUBLE_TRUNC*/ %s,\n",
+		     same_ratio_eew_type (sew, lmul_log2, sew / 2, unsigned_p,
+					  false)
+		       .c_str ());
+	    fprintf (fp, "  /*QUAD_TRUNC*/ %s,\n",
+		     same_ratio_eew_type (sew, lmul_log2, sew / 4, unsigned_p,
+					  false)
+		       .c_str ());
+	    fprintf (fp, "  /*OCT_TRUNC*/ %s,\n",
+		     same_ratio_eew_type (sew, lmul_log2, sew / 8, unsigned_p,
+					  false)
+		       .c_str ());
+	    fprintf (fp, "  /*DOUBLE_TRUNC_SCALAR*/ %s,\n",
+		     same_ratio_eew_type (sew, lmul_log2, sew / 2, unsigned_p,
+					  false)
+		       .c_str ());
+	    fprintf (fp, "  /*DOUBLE_TRUNC_SIGNED*/ INVALID,\n");
+	    fprintf (fp, "  /*DOUBLE_TRUNC_UNSIGNED*/ %s,\n",
+		     same_ratio_eew_type (sew, lmul_log2, sew / 2, true, false)
+		       .c_str ());
+	    if (unsigned_p)
+	      fprintf (fp, "  /*DOUBLE_TRUNC_UNSIGNED_SCALAR*/ INVALID,\n");
+	    else
+	      fprintf (fp, "  /*DOUBLE_TRUNC_UNSIGNED_SCALAR*/ %s,\n",
+		       same_ratio_eew_type (sew, lmul_log2, sew / 2, true,
+					    false)
+			 .c_str ());
+	    fprintf (fp, "  /*DOUBLE_TRUNC_FLOAT*/ %s,\n",
+		     same_ratio_eew_type (sew, lmul_log2, sew / 2, false, true)
+		       .c_str ());
+	    fprintf (fp, "  /*FLOAT*/ %s,\n",
+		     floattype (sew, lmul_log2).c_str ());
+	    fprintf (fp, "  /*LMUL1*/ %s,\n",
+		     inttype (sew, /*lmul_log2*/ 0, unsigned_p).c_str ());
+	    fprintf (fp, "  /*WLMUL1*/ %s,\n",
+		     inttype (sew * 2, /*lmul_log2*/ 0, unsigned_p).c_str ());
+	    for (unsigned eew : {8, 16, 32, 64})
+	      {
+		if (eew == sew)
+		  fprintf (fp, "  /*EEW%d_INTERPRET*/ INVALID,\n", eew);
+		else
+		  fprintf (fp, "  /*EEW%d_INTERPRET*/ %s,\n", eew,
+			   inttype (eew, lmul_log2, unsigned_p).c_str ());
+	      }
+
+	    for (unsigned lmul_log2_offset : {1, 2, 3, 4, 5, 6})
+	      {
+		unsigned multiple_of_lmul = 1 << lmul_log2_offset;
+		fprintf (fp, "  /*X%d_VLMUL_EXT*/ %s,\n", multiple_of_lmul,
+			 inttype (sew, lmul_log2 + lmul_log2_offset, unsigned_p)
+			   .c_str ());
+	      }
+	    fprintf (fp, "  /*TUPLE_SUBPART*/ %s\n",
+		     inttype (sew, lmul_log2, 1, unsigned_p).c_str ());
+	    fprintf (fp, ")\n");
+	  }
+  // Build for vfloat
+  for (unsigned sew : {32, 64})
+    for (int lmul_log2 : {-3, -2, -1, 0, 1, 2, 3})
+      for (unsigned nf : {1, 2, 3, 4, 5, 6, 7, 8})
 	{
-	  if (!valid_type (sew, lmul_log2, /*float_t*/ false))
+	  if (!valid_type (sew, lmul_log2, nf, /*float_t*/ true))
 	    continue;
 
 	  fprintf (fp, "DEF_RVV_TYPE_INDEX (\n");
 	  fprintf (fp, "  /*VECTOR*/ %s,\n",
-		   inttype (sew, lmul_log2, unsigned_p).c_str ());
+		   floattype (sew, lmul_log2, nf).c_str ());
 	  fprintf (fp, "  /*MASK*/ %s,\n", maskmode (sew, lmul_log2).c_str ());
 	  fprintf (fp, "  /*SIGNED*/ %s,\n",
 		   inttype (sew, lmul_log2, /*unsigned_p*/ false).c_str ());
@@ -196,118 +329,42 @@ main (int argc, const char **argv)
 		     same_ratio_eew_type (sew, lmul_log2, eew,
 					  /*unsigned_p*/ true, false)
 		       .c_str ());
-	  fprintf (fp, "  /*SHIFT*/ %s,\n",
-		   inttype (sew, lmul_log2, /*unsigned_p*/ true).c_str ());
+	  fprintf (fp, "  /*SHIFT*/ INVALID,\n");
 	  fprintf (fp, "  /*DOUBLE_TRUNC*/ %s,\n",
-		   same_ratio_eew_type (sew, lmul_log2, sew / 2, unsigned_p,
-					false)
+		   same_ratio_eew_type (sew, lmul_log2, sew / 2, false, true)
 		     .c_str ());
-	  fprintf (fp, "  /*QUAD_TRUNC*/ %s,\n",
-		   same_ratio_eew_type (sew, lmul_log2, sew / 4, unsigned_p,
-					false)
-		     .c_str ());
-	  fprintf (fp, "  /*OCT_TRUNC*/ %s,\n",
-		   same_ratio_eew_type (sew, lmul_log2, sew / 8, unsigned_p,
-					false)
-		     .c_str ());
+	  fprintf (fp, "  /*QUAD_TRUNC*/ INVALID,\n");
+	  fprintf (fp, "  /*OCT_TRUNC*/ INVALID,\n");
 	  fprintf (fp, "  /*DOUBLE_TRUNC_SCALAR*/ %s,\n",
-		   same_ratio_eew_type (sew, lmul_log2, sew / 2, unsigned_p,
-					false)
+		   same_ratio_eew_type (sew, lmul_log2, sew / 2, false, true)
 		     .c_str ());
-	  fprintf (fp, "  /*DOUBLE_TRUNC_SIGNED*/ INVALID,\n");
+	  fprintf (fp, "  /*DOUBLE_TRUNC_SIGNED*/ %s,\n",
+		   same_ratio_eew_type (sew, lmul_log2, sew / 2, false, false)
+		     .c_str ());
 	  fprintf (fp, "  /*DOUBLE_TRUNC_UNSIGNED*/ %s,\n",
 		   same_ratio_eew_type (sew, lmul_log2, sew / 2, true, false)
 		     .c_str ());
-	  if (unsigned_p)
-	    fprintf (fp, "  /*DOUBLE_TRUNC_UNSIGNED_SCALAR*/ INVALID,\n");
-	  else
-	    fprintf (fp, "  /*DOUBLE_TRUNC_UNSIGNED_SCALAR*/ %s,\n",
-		     same_ratio_eew_type (sew, lmul_log2, sew / 2, true, false)
-		       .c_str ());
+	  fprintf (fp, "  /*DOUBLE_TRUNC_UNSIGNED_SCALAR*/ INVALID,\n");
 	  fprintf (fp, "  /*DOUBLE_TRUNC_FLOAT*/ %s,\n",
 		   same_ratio_eew_type (sew, lmul_log2, sew / 2, false, true)
 		     .c_str ());
-	  fprintf (fp, "  /*FLOAT*/ %s,\n",
-		   floattype (sew, lmul_log2).c_str ());
+	  fprintf (fp, "  /*FLOAT*/ INVALID,\n");
 	  fprintf (fp, "  /*LMUL1*/ %s,\n",
-		   inttype (sew, /*lmul_log2*/ 0, unsigned_p).c_str ());
+		   floattype (sew, /*lmul_log2*/ 0).c_str ());
 	  fprintf (fp, "  /*WLMUL1*/ %s,\n",
-		   inttype (sew * 2, /*lmul_log2*/ 0, unsigned_p).c_str ());
+		   floattype (sew * 2, /*lmul_log2*/ 0).c_str ());
 	  for (unsigned eew : {8, 16, 32, 64})
-	    {
-	      if (eew == sew)
-		fprintf (fp, "  /*EEW%d_INTERPRET*/ INVALID,\n", eew);
-	      else
-		fprintf (fp, "  /*EEW%d_INTERPRET*/ %s,\n", eew,
-			 inttype (eew, lmul_log2, unsigned_p).c_str ());
-	    }
-
+	    fprintf (fp, "  /*EEW%d_INTERPRET*/ INVALID,\n", eew);
 	  for (unsigned lmul_log2_offset : {1, 2, 3, 4, 5, 6})
 	    {
 	      unsigned multiple_of_lmul = 1 << lmul_log2_offset;
-	      const char *comma = lmul_log2_offset == 6 ? "" : ",";
-	      fprintf (fp, "  /*X%d_VLMUL_EXT*/ %s%s\n", multiple_of_lmul,
-		       inttype (sew, lmul_log2 + lmul_log2_offset, unsigned_p)
-			 .c_str (),
-		       comma);
+	      fprintf (fp, "  /*X%d_VLMUL_EXT*/ %s,\n", multiple_of_lmul,
+		       floattype (sew, lmul_log2 + lmul_log2_offset).c_str ());
 	    }
+	  fprintf (fp, "  /*TUPLE_SUBPART*/ %s\n",
+		   floattype (sew, lmul_log2, 1).c_str ());
 	  fprintf (fp, ")\n");
 	}
-  // Build for vfloat
-  for (unsigned sew : {32, 64})
-    for (int lmul_log2 : {-3, -2, -1, 0, 1, 2, 3})
-      {
-	if (!valid_type (sew, lmul_log2, /*float_t*/ true))
-	  continue;
-
-	fprintf (fp, "DEF_RVV_TYPE_INDEX (\n");
-	fprintf (fp, "  /*VECTOR*/ %s,\n", floattype (sew, lmul_log2).c_str ());
-	fprintf (fp, "  /*MASK*/ %s,\n", maskmode (sew, lmul_log2).c_str ());
-	fprintf (fp, "  /*SIGNED*/ %s,\n",
-		 inttype (sew, lmul_log2, /*unsigned_p*/ false).c_str ());
-	fprintf (fp, "  /*UNSIGNED*/ %s,\n",
-		 inttype (sew, lmul_log2, /*unsigned_p*/ true).c_str ());
-	for (unsigned eew : {8, 16, 32, 64})
-	  fprintf (fp, "  /*EEW%d_INDEX*/ %s,\n", eew,
-		   same_ratio_eew_type (sew, lmul_log2, eew,
-					/*unsigned_p*/ true, false)
-		     .c_str ());
-	fprintf (fp, "  /*SHIFT*/ INVALID,\n");
-	fprintf (
-	  fp, "  /*DOUBLE_TRUNC*/ %s,\n",
-	  same_ratio_eew_type (sew, lmul_log2, sew / 2, false, true).c_str ());
-	fprintf (fp, "  /*QUAD_TRUNC*/ INVALID,\n");
-	fprintf (fp, "  /*OCT_TRUNC*/ INVALID,\n");
-	fprintf (
-	  fp, "  /*DOUBLE_TRUNC_SCALAR*/ %s,\n",
-	  same_ratio_eew_type (sew, lmul_log2, sew / 2, false, true).c_str ());
-	fprintf (
-	  fp, "  /*DOUBLE_TRUNC_SIGNED*/ %s,\n",
-	  same_ratio_eew_type (sew, lmul_log2, sew / 2, false, false).c_str ());
-	fprintf (
-	  fp, "  /*DOUBLE_TRUNC_UNSIGNED*/ %s,\n",
-	  same_ratio_eew_type (sew, lmul_log2, sew / 2, true, false).c_str ());
-	fprintf (fp, "  /*DOUBLE_TRUNC_UNSIGNED_SCALAR*/ INVALID,\n");
-	fprintf (
-	  fp, "  /*DOUBLE_TRUNC_FLOAT*/ %s,\n",
-	  same_ratio_eew_type (sew, lmul_log2, sew / 2, false, true).c_str ());
-	fprintf (fp, "  /*FLOAT*/ INVALID,\n");
-	fprintf (fp, "  /*LMUL1*/ %s,\n",
-		 floattype (sew, /*lmul_log2*/ 0).c_str ());
-	fprintf (fp, "  /*WLMUL1*/ %s,\n",
-		 floattype (sew * 2, /*lmul_log2*/ 0).c_str ());
-	for (unsigned eew : {8, 16, 32, 64})
-	  fprintf (fp, "  /*EEW%d_INTERPRET*/ INVALID,\n", eew);
-	for (unsigned lmul_log2_offset : {1, 2, 3, 4, 5, 6})
-	  {
-	    unsigned multiple_of_lmul = 1 << lmul_log2_offset;
-	    const char *comma = lmul_log2_offset == 6 ? "" : ",";
-	    fprintf (fp, "  /*X%d_VLMUL_EXT*/ %s%s\n", multiple_of_lmul,
-		     floattype (sew, lmul_log2 + lmul_log2_offset).c_str (),
-		     comma);
-	  }
-	fprintf (fp, ")\n");
-      }
 
   return 0;
 }
