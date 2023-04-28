@@ -496,7 +496,7 @@
   [(set_attr "type" "neon_rev<q>")]
 )
 
-(define_insn "aarch64_rbit<mode>"
+(define_insn "aarch64_rbit<mode><vczle><vczbe>"
   [(set (match_operand:VB 0 "register_operand" "=w")
 	(unspec:VB [(match_operand:VB 1 "register_operand" "w")]
 		   UNSPEC_RBIT))]
@@ -881,7 +881,7 @@
   [(set_attr "type" "neon_fp_mul_d_scalar_q")]
 )
 
-(define_insn "neg<mode>2"
+(define_insn "neg<mode>2<vczle><vczbe>"
   [(set (match_operand:VDQ_I 0 "register_operand" "=w")
 	(neg:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")))]
   "TARGET_SIMD"
@@ -889,7 +889,7 @@
   [(set_attr "type" "neon_neg<q>")]
 )
 
-(define_insn "abs<mode>2"
+(define_insn "abs<mode>2<vczle><vczbe>"
   [(set (match_operand:VDQ_I 0 "register_operand" "=w")
         (abs:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")))]
   "TARGET_SIMD"
@@ -900,7 +900,7 @@
 ;; The intrinsic version of integer ABS must not be allowed to
 ;; combine with any operation with an integrated ABS step, such
 ;; as SABD.
-(define_insn "aarch64_abs<mode>"
+(define_insn "aarch64_abs<mode><vczle><vczbe>"
   [(set (match_operand:VSDQ_I_DI 0 "register_operand" "=w")
 	  (unspec:VSDQ_I_DI
 	    [(match_operand:VSDQ_I_DI 1 "register_operand" "w")]
@@ -1174,7 +1174,7 @@
   [(set_attr "type" "neon_logic<q>")]
 )
 
-(define_insn "one_cmpl<mode>2"
+(define_insn "one_cmpl<mode>2<vczle><vczbe>"
   [(set (match_operand:VDQ_I 0 "register_operand" "=w")
         (not:VDQ_I (match_operand:VDQ_I 1 "register_operand" "w")))]
   "TARGET_SIMD"
@@ -3691,7 +3691,7 @@
   [(set_attr "type" "neon_reduc_add<q>")]
 )
 
-(define_insn "clrsb<mode>2"
+(define_insn "clrsb<mode>2<vczle><vczbe>"
   [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
         (clrsb:VDQ_BHSI (match_operand:VDQ_BHSI 1 "register_operand" "w")))]
   "TARGET_SIMD"
@@ -3699,7 +3699,7 @@
   [(set_attr "type" "neon_cls<q>")]
 )
 
-(define_insn "clz<mode>2"
+(define_insn "clz<mode>2<vczle><vczbe>"
  [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
        (clz:VDQ_BHSI (match_operand:VDQ_BHSI 1 "register_operand" "w")))]
  "TARGET_SIMD"
@@ -3707,7 +3707,7 @@
   [(set_attr "type" "neon_cls<q>")]
 )
 
-(define_insn "popcount<mode>2"
+(define_insn "popcount<mode>2<vczle><vczbe>"
   [(set (match_operand:VB 0 "register_operand" "=w")
         (popcount:VB (match_operand:VB 1 "register_operand" "w")))]
   "TARGET_SIMD"
