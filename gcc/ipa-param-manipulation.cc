@@ -1836,9 +1836,11 @@ ipa_param_body_adjustments::modify_expression (tree *expr_p, bool convert,
       || TREE_CODE (expr) == IMAGPART_EXPR
       || TREE_CODE (expr) == REALPART_EXPR)
     {
+      /* For a BIT_FIELD_REF do not bother to VIEW_CONVERT the base,
+	 instead reference the replacement directly.  */
+      convert = TREE_CODE (expr) != BIT_FIELD_REF;
       expr_p = &TREE_OPERAND (expr, 0);
       expr = *expr_p;
-      convert = true;
     }
 
   ipa_param_body_replacement *pbr = get_expr_replacement (expr, false);
@@ -1861,7 +1863,8 @@ ipa_param_body_adjustments::modify_expression (tree *expr_p, bool convert,
       gcc_checking_assert (tree_to_shwi (TYPE_SIZE (TREE_TYPE (expr)))
 			   == tree_to_shwi (TYPE_SIZE (TREE_TYPE (repl))));
       tree vce = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (expr), repl);
-      if (is_gimple_reg (repl))
+      if (is_gimple_reg (repl)
+	  && is_gimple_reg_type (TREE_TYPE (expr)))
 	{
 	  gcc_assert (extra_stmts);
 	  vce = force_gimple_operand (vce, extra_stmts, true, NULL_TREE);
