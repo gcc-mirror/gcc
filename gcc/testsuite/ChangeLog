@@ -1,3 +1,20 @@
+2023-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/109409
+	* gcc.dg/pr109409.c: New test.
+
+2023-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107682
+	PR c/109412
+	* gcc.dg/pr109412.c: New test.
+
 2023-04-26  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backported from master:

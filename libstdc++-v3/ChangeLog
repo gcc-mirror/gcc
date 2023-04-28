@@ -1,3 +1,31 @@
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/mofunc_impl.h: Fix typo in doxygen comment.
+	* include/std/format: Likewise.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (SOURCE_BROWSER): Only set to YES for
+	HTML docs.
+	* include/bits/gslice_array.h (_DEFINE_VALARRAY_OPERATOR): Omit
+	from doxygen docs.
+	* include/bits/indirect_array.h (_DEFINE_VALARRAY_OPERATOR):
+	Likewise.
+	* include/bits/mask_array.h (_DEFINE_VALARRAY_OPERATOR):
+	Likewise.
+	* include/bits/slice_array.h (_DEFINE_VALARRAY_OPERATOR):
+	Likewise.
+	* include/std/valarray (_DEFINE_VALARRAY_UNARY_OPERATOR)
+	(_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT)
+	(_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT)
+	(_DEFINE_BINARY_OPERATOR): Likewise.
+
 2023-04-26  Release Manager
 
 	* GCC 13.1.0 released.
