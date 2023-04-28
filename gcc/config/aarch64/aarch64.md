@@ -4194,6 +4194,27 @@
   [(set_attr "type" "csel, csel, csel, csel, csel, mov_imm, mov_imm")]
 )
 
+;; There are two canonical forms for `cmp ? -1 : a`.
+;; This is the second form and is here to help combine.
+;; Support `-(cmp) | a` into `cmp ? -1 : a` to be canonical in the backend.
+(define_insn_and_split "*cmov<mode>_insn_m1"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+        (ior:GPI
+	 (neg:GPI
+	  (match_operator:GPI 1 "aarch64_comparison_operator"
+	   [(match_operand 2 "cc_register" "") (const_int 0)]))
+	 (match_operand 3 "register_operand" "r")))]
+  ""
+  "#"
+  "&& true"
+  [(set (match_dup 0)
+	(if_then_else:GPI (match_dup 1)
+			  (const_int -1)
+			  (match_dup 3)))]
+  {}
+  [(set_attr "type" "csel")]
+)
+
 (define_insn "*cmovdi_insn_uxtw"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(if_then_else:DI
