@@ -42,6 +42,32 @@ pop_group (std::vector<ProcMacro::TokenStream> &streams,
 }
 
 static void
+dispatch_float_literals (ProcMacro::TokenStream &ts, TokenPtr &token)
+{
+  std::string::size_type sz;
+  auto str = token->as_string ();
+  switch (token->get_type_hint ())
+    {
+      case CORETYPE_F32: {
+	auto value = std::stof (str, &sz);
+	bool suffixed = sz == str.length ();
+	ts.push (ProcMacro::TokenTree::make_tokentree (
+	  ProcMacro::Literal::make_f32 (value, suffixed)));
+      }
+      break;
+      case CORETYPE_F64: {
+	auto value = std::stod (str, &sz);
+	bool suffixed = sz == str.length ();
+	ts.push (ProcMacro::TokenTree::make_tokentree (
+	  ProcMacro::Literal::make_f64 (value, suffixed)));
+      }
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static void
 dispatch_integer_literals (ProcMacro::TokenStream &ts, TokenPtr &token)
 {
   std::string::size_type sz;
@@ -134,6 +160,9 @@ TokenStream::collect () const
       switch (token->get_id ())
 	{
 	// Literals
+	case FLOAT_LITERAL:
+	  dispatch_float_literals (trees.back (), token);
+	  break;
 	case INT_LITERAL:
 	  dispatch_integer_literals (trees.back (), token);
 	  break;
