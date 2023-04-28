@@ -144,7 +144,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #endif
 
-  /// @cond undoc
+  /// @cond undocumented
 
   template<typename _Tp>
     constexpr _Tp
@@ -374,7 +374,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #define __cpp_lib_bitops 201907L
 
-  /// @cond undoc
+  /// @cond undocumented
   template<typename _Tp, typename _Up = _Tp>
     using _If_is_unsigned_integer
       = enable_if_t<__is_unsigned_integer<_Tp>::value, _Up>;
