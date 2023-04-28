@@ -7711,6 +7711,22 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 				     &n->where);
 		      }
 		  }
+		if (openacc
+		    && list == OMP_LIST_MAP
+		    && (n->u.map_op == OMP_MAP_ATTACH
+			|| n->u.map_op == OMP_MAP_DETACH))
+		  {
+		    symbol_attribute attr;
+		    if (n->expr)
+		      attr = gfc_expr_attr (n->expr);
+		    else
+		      attr = n->sym->attr;
+		    if (!attr.pointer && !attr.allocatable)
+		      gfc_error ("%qs clause argument must be ALLOCATABLE or "
+				 "a POINTER at %L",
+				 (n->u.map_op == OMP_MAP_ATTACH) ? "attach"
+				 : "detach", &n->where);
+		  }
 		if (lastref
 		    || (n->expr
 			&& (!resolved || n->expr->expr_type != EXPR_VARIABLE)))

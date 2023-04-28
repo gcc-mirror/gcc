@@ -1,5 +1,7 @@
 ! { dg-do run }
 
+implicit none
+
 type t
 integer :: value
 type(t), pointer :: chain
@@ -18,6 +20,7 @@ nullify(var2%chain)
 !$acc enter data attach(var%chain)
 
 !$acc serial
+! { dg-warning "using .vector_length \\(32\\)., ignoring 1" "" { target openacc_nvidia_accel_selected } .-1 }
 var%value = 5
 var%chain%value = 7
 !$acc end serial
