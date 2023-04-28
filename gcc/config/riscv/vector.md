@@ -7689,3 +7689,35 @@
   "vle<sew>ff.v\t%0,%3%p1"
   [(set_attr "type" "vldff")
    (set_attr "mode" "<MODE>")])
+
+;; -----------------------------------------------------------------------------
+;; ---- Integer Compare Instructions Simplification
+;; -----------------------------------------------------------------------------
+;; Simplify to VMCLR.m Includes:
+;; - 1.  VMSNE
+;; - 2.  VMSLT
+;; - 3.  VMSLTU
+;; - 4.  VMSGT
+;; - 5.  VMSGTU
+;; -----------------------------------------------------------------------------
+(define_split
+  [(set (match_operand:VB      0 "register_operand")
+	(if_then_else:VB
+	  (unspec:VB
+	    [(match_operand:VB 1 "vector_all_trues_mask_operand")
+	     (match_operand    4 "vector_length_operand")
+	     (match_operand    5 "const_int_operand")
+	     (match_operand    6 "const_int_operand")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (match_operand:VB    3 "vector_move_operand")
+	  (match_operand:VB    2 "vector_undef_operand")))]
+  "TARGET_VECTOR"
+  [(const_int 0)]
+  {
+    emit_insn (gen_pred_mov (<MODE>mode, operands[0], CONST1_RTX (<MODE>mode),
+			     RVV_VUNDEF (<MODE>mode), operands[3],
+			     operands[4], operands[5]));
+    DONE;
+  }
+)
