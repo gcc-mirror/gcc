@@ -1388,4 +1388,7 @@ frange::nan_signbit_p (bool &signbit) const
   return true;
 }
 
+void frange_nextafter (enum machine_mode, REAL_VALUE_TYPE &,
+		       const REAL_VALUE_TYPE &);
+
 #endif // GCC_VALUE_RANGE_H

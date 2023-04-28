@@ -401,6 +401,89 @@ public:
   }
 } op_cfn_copysign;
 
+class cfn_sincos : public range_operator_float
+{
+public:
+  using range_operator_float::fold_range;
+  using range_operator_float::op1_range;
+  cfn_sincos (combined_fn cfn) { m_cfn = cfn; }
+  virtual bool fold_range (frange &r, tree type,
+			   const frange &lh, const frange &,
+			   relation_trio) const final override
+  {
+    if (lh.undefined_p ())
+      return false;
+    if (lh.known_isnan () || lh.known_isinf ())
+      {
+	r.set_nan (type);
+	return true;
+      }
+    unsigned bulps = targetm.libm_function_max_error (m_cfn, TYPE_MODE (type),
+						      true);
+    if (bulps == ~0U)
+      r.set_varying (type);
+    else if (bulps == 0)
+      r.set (type, dconstm1, dconst1);
+    else
+      {
+	REAL_VALUE_TYPE boundmin, boundmax;
+	boundmax = dconst1;
+	while (bulps--)
+	  frange_nextafter (TYPE_MODE (type), boundmax, dconstinf);
+	real_arithmetic (&boundmin, NEGATE_EXPR, &boundmax, NULL);
+	r.set (type, boundmin, boundmax);
+      }
+    if (!lh.maybe_isnan () && !lh.maybe_isinf ())
+      r.clear_nan ();
+    return true;
+  }
+  virtual bool op1_range (frange &r, tree type,
+			  const frange &lhs, const frange &,
+			  relation_trio) const final override
+  {
+    if (lhs.undefined_p ())
+      return false;
+
+    // A known NAN means the input is [-INF,-INF][+INF,+INF] U +-NAN,
+    // which we can't currently represent.
+    if (lhs.known_isnan ())
+      {
+	r.set_varying (type);
+	return true;
+      }
+
+    // Results outside of [-1.0, +1.0] are impossible.
+    REAL_VALUE_TYPE lb = lhs.lower_bound ();
+    REAL_VALUE_TYPE ub = lhs.upper_bound ();
+    if (real_less (&ub, &dconstm1) || real_less (&dconst1, &lb))
+      {
+	if (!lhs.maybe_isnan ())
+	  r.set_undefined ();
+	else
+	  /* If lhs could be NAN and finite result is impossible,
+	     the range is like lhs.known_isnan () above,
+	     [-INF,-INF][+INF,+INF] U +-NAN.  */
+	  r.set_varying (type);
+	return true;
+      }
+
+    if (!lhs.maybe_isnan ())
+      {
+	// If NAN is not valid result, the input cannot include either
+	// a NAN nor a +-INF.
+	lb = real_min_representable (type);
+	ub = real_max_representable (type);
+	r.set (type, lb, ub, nan_state (false, false));
+	return true;
+      }
+
+    r.set_varying (type);
+    return true;
+  }
+private:
+  combined_fn m_cfn;
+} op_cfn_sin (CFN_SIN), op_cfn_cos (CFN_COS);
+
 // Implement range operator for CFN_BUILT_IN_TOUPPER and CFN_BUILT_IN_TOLOWER.
 class cfn_toupper_tolower : public range_operator
 {
@@ -876,6 +959,20 @@ gimple_range_op_handler::maybe_builtin_call ()
       m_op1 = gimple_call_arg (call, 0);
       m_op2 = gimple_call_arg (call, 1);
       m_float = &op_cfn_copysign;
+      m_valid = true;
+      break;
+
+    CASE_CFN_SIN:
+    CASE_CFN_SIN_FN:
+      m_op1 = gimple_call_arg (call, 0);
+      m_float = &op_cfn_sin;
+      m_valid = true;
+      break;
+
+    CASE_CFN_COS:
+    CASE_CFN_COS_FN:
+      m_op1 = gimple_call_arg (call, 0);
+      m_float = &op_cfn_cos;
       m_valid = true;
       break;
 
