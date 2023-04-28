@@ -1,3 +1,101 @@
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/extensions.xml: Remove std::bad_exception from
+	example program.
+	* doc/html/manual/ext_demangling.html: Regenerate.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (SOURCE_BROWSER): Only set to YES for
+	HTML docs.
+	* include/bits/gslice_array.h (_DEFINE_VALARRAY_OPERATOR): Omit
+	from doxygen docs.
+	* include/bits/indirect_array.h (_DEFINE_VALARRAY_OPERATOR):
+	Likewise.
+	* include/bits/mask_array.h (_DEFINE_VALARRAY_OPERATOR):
+	Likewise.
+	* include/bits/slice_array.h (_DEFINE_VALARRAY_OPERATOR):
+	Likewise.
+	* include/std/valarray (_DEFINE_VALARRAY_UNARY_OPERATOR)
+	(_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT)
+	(_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT)
+	(_DEFINE_BINARY_OPERATOR): Likewise.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (path::filename()): Fix dangling
+	reference.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109064
+	* python/libstdcxx/v6/xmethods.py (SharedPtrUseCountWorker):
+	Remove self-recursion in __init__. Add missing _supports.
+	* testsuite/libstdc++-xmethods/shared_ptr.cc: Check use_count()
+	and unique().
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108952
+	* include/std/memory (uses_allocator_construction_args):
+	Implement LWG 3527.
+	* testsuite/20_util/pair/astuple/get-2.cc: New test.
+	* testsuite/20_util/scoped_allocator/108952.cc: New test.
+	* testsuite/20_util/uses_allocator/lwg3527.cc: New test.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/optional: Fix header name in comment.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100823
+	* include/bits/stl_iterator.h (common_iterator): Define move
+	constructor and move assignment operator.
+	(common_iterator::_M_assign): New function implementing
+	assignment.
+	(common_iterator::operator=): Use _M_assign.
+	(common_iterator::_S_valueless): New constant.
+	* testsuite/24_iterators/common_iterator/100823.cc: New test.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-07-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (common_iterator): Fix incorrect
+	uses of is_nothrow_assignable_v. Fix inconsistent constraints on
+	friend declaration. Do not move argument in copy constructor.
+	* testsuite/24_iterators/common_iterator/1.cc: Check for
+	noexcept constructibnle/assignable.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107814
+	* testsuite/experimental/filesystem/iterators/error_reporting.cc:
+	Use a static buffer with space after it.
+
 2023-03-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
