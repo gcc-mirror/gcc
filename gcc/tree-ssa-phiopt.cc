@@ -643,6 +643,28 @@ empty_bb_or_one_feeding_into_p (basic_block bb,
   return true;
 }
 
+/* Move STMT to before GSI and insert its defining
+   name into INSERTED_EXPRS bitmap. */
+static void
+move_stmt (gimple *stmt, gimple_stmt_iterator *gsi, auto_bitmap &inserted_exprs)
+{
+  if (!stmt)
+    return;
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "statement un-sinked:\n");
+      print_gimple_stmt (dump_file, stmt, 0,
+			 TDF_VOPS|TDF_MEMSYMS);
+    }
+
+  tree name = gimple_get_lhs (stmt);
+  // Mark the name to be renamed if there is one.
+  bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (name));
+  gimple_stmt_iterator gsi1 = gsi_for_stmt (stmt);
+  gsi_move_before (&gsi1, gsi);
+  reset_flow_sensitive_info (name);
+}
+
 /*  The function match_simplify_replacement does the main work of doing the
     replacement using match and simplify.  Return true if the replacement is done.
     Otherwise return false.
@@ -727,39 +749,8 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
 
   /* If there was a statement to move, move it to right before
      the original conditional.  */
-  if (stmt_to_move)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "statement un-sinked:\n");
-	  print_gimple_stmt (dump_file, stmt_to_move, 0,
-			   TDF_VOPS|TDF_MEMSYMS);
-	}
-
-      tree name = gimple_get_lhs (stmt_to_move);
-      // Mark the name to be renamed if there is one.
-      bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (name));
-      gimple_stmt_iterator gsi1 = gsi_for_stmt (stmt_to_move);
-      gsi_move_before (&gsi1, &gsi);
-      reset_flow_sensitive_info (name);
-    }
-
-  if (stmt_to_move_alt)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "statement un-sinked:\n");
-	  print_gimple_stmt (dump_file, stmt_to_move_alt, 0,
-			   TDF_VOPS|TDF_MEMSYMS);
-	}
-
-      tree name = gimple_get_lhs (stmt_to_move_alt);
-      // Mark the name to be renamed if there is one.
-      bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (name));
-      gimple_stmt_iterator gsi1 = gsi_for_stmt (stmt_to_move_alt);
-      gsi_move_before (&gsi1, &gsi);
-      reset_flow_sensitive_info (name);
-    }
+  move_stmt (stmt_to_move, &gsi, inserted_exprs);
+  move_stmt (stmt_to_move_alt, &gsi, inserted_exprs);
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, result, inserted_exprs);
 
