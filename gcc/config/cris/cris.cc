@@ -433,7 +433,7 @@ cris_postdbr_cmpelim ()
 		  machine_mode ccmode = GET_MODE (src);
 		  rtx modeadjusted_dccr
 		    = (ccmode == CCmode ? dccr
-		       : gen_rtx_REG (CCmode, CRIS_CC0_REGNUM));
+		       : gen_rtx_REG (ccmode, CRIS_CC0_REGNUM));
 		  rtx compare
 		    /* We don't need to copy_rtx pat: we're going to
 		       delete that insn. */
