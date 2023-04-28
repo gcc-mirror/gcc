@@ -1,3 +1,13 @@
+2023-04-27  Jason Merrill  <jason@redhat.com>
+
+	* call.cc (print_conversion_rejection): Use iloc_sentinel.
+
+2023-04-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/61445
+	* pt.cc (instantiate_decl): Assert !defer_ok for local
+	class members.
+
 2023-04-26  Jason Merrill  <jason@redhat.com>
 
 	* init.cc (nsdmi_inst): Remove.

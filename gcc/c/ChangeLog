@@ -1,3 +1,17 @@
+2023-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/109409
+	* c-parser.cc (c_parser_initializer): Move diagnostics about
+	initialization of variable sized object with non-empty initializer
+	after c_parser_expr_no_commas call and ret.set_error (); after it.
+
+2023-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107682
+	PR c/109412
+	* c-typeck.cc (pop_init_level): If constructor_type is FUNCTION_TYPE,
+	reject empty initializer as invalid.
+
 2023-04-26  Richard Biener  <rguenther@suse.de>
 
 	* gimple-parser.cc (c_parser_parse_gimple_body): Avoid

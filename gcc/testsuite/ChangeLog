@@ -1,3 +1,40 @@
+2023-04-27  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/copy1.C: Adjust error lines.
+
+2023-04-27  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/read-thread-pointer.c: Add required tls.
+
+2023-04-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/109639
+	* gcc.dg/tree-ssa/pr109639.c: New file.
+	* gcc.dg/tree-ssa/pr109643.c: New file.
+
+2023-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/109607
+	* g++.dg/torture/pr109607.C: New testcase.
+
+2023-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/109409
+	* gcc.dg/pr109409.c: New test.
+
+2023-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107682
+	PR c/109412
+	* gcc.dg/pr109412.c: New test.
+
+2023-04-27  Jan Beulich  <jbeulich@suse.com>
+
+	* c-c++-common/patchable_function_entry-decl.c: Special-case
+	RISC-V.
+	* c-c++-common/patchable_function_entry-default.c: Likewise.
+	* c-c++-common/patchable_function_entry-definition.c: Likewise.
+
 2023-04-26  Jason Merrill  <jason@redhat.com>
 
 	PR c++/69836

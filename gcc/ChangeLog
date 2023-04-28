@@ -1,3 +1,121 @@
+2023-04-27  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (cmul<conj_op><mode>3): Use gcn_gen_undef.
+	(cml<addsub_as><mode>4): Likewise.
+	(vec_addsub<mode>3): Likewise.
+	(cadd<rot><mode>3): Likewise.
+	(vec_fmaddsub<mode>4): Likewise.
+	(vec_fmsubadd<mode>4): Likewise, and use sub for the odd lanes.
+
+2023-04-27  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc (phiopt_early_allow): Allow for
+	up to 2 min/max expressions in the sequence/match code.
+
+2023-04-27  Andrew Pinski  <apinski@marvell.com>
+
+	* rtlanal.cc (may_trap_p_1): Treat SMIN/SMAX similar as
+	COMPARISON.
+	* tree-eh.cc (operation_could_trap_helper_p): Treate
+	MIN_EXPR/MAX_EXPR similar as other comparisons.
+
+2023-04-27  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc (cond_store_replacement): Remove
+	prototype.
+	(cond_if_else_store_replacement): Likewise.
+	(get_non_trapping): Likewise.
+	(store_elim_worker): Move into ...
+	(pass_cselim::execute): This.
+
+2023-04-27  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc (two_value_replacement): Remove
+	prototype.
+	(match_simplify_replacement): Likewise.
+	(factor_out_conditional_conversion): Likewise.
+	(value_replacement): Likewise.
+	(minmax_replacement): Likewise.
+	(spaceship_replacement): Likewise.
+	(cond_removal_in_builtin_zero_pattern): Likewise.
+	(hoist_adjacent_loads): Likewise.
+	(tree_ssa_phiopt_worker): Move into ...
+	(pass_phiopt::execute): this.
+
+2023-04-27  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc (tree_ssa_phiopt_worker): Remove
+	do_store_elim argument and split that part out to ...
+	(store_elim_worker): This new function.
+	(pass_cselim::execute): Call store_elim_worker.
+	(pass_phiopt::execute): Update call to tree_ssa_phiopt_worker.
+
+2023-04-27  Jan Hubicka  <jh@suse.cz>
+
+	* cfgloopmanip.h (unloop_loops): Export.
+	* tree-ssa-loop-ch.cc (ch_base::copy_headers): Unloop loops
+	that no longer loop.
+	* tree-ssa-loop-ivcanon.cc (unloop_loops): Export; do not free
+	vectors of loops to unloop.
+	(canonicalize_induction_variables): Free vectors here.
+	(tree_unroll_loops_completely): Free vectors here.
+
+2023-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109170
+	* gimple-range-op.cc (gimple_range_op_handler::maybe_builtin_call):
+	Handle __builtin_expect and similar via cfn_pass_through_arg1
+	and inspecting the calls fnspec.
+	* builtins.cc (builtin_fnspec): Handle BUILT_IN_EXPECT
+	and BUILT_IN_EXPECT_WITH_PROBABILITY.
+
+2023-04-27  Alexandre Oliva  <oliva@adacore.com>
+
+	* genmultilib: Use CONFIG_SHELL to run sub-scripts.
+
+2023-04-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/109639
+	* ipa-cp.cc (ipa_value_range_from_jfunc): Normalize range.
+	(propagate_vr_across_jump_function): Same.
+	* ipa-fnsummary.cc (evaluate_conditions_for_known_args): Same.
+	* ipa-prop.h (ipa_range_set_and_normalize): New.
+	* value-range.cc (irange::set): Assert min and max are INTEGER_CST.
+
+2023-04-27  Richard Biener  <rguenther@suse.de>
+
+	* match.pd (BIT_FIELD_REF CONSTRUCTOR@0 @1 @2): Do not
+	create a CTOR operand in the result when simplifying GIMPLE.
+
+2023-04-27  Richard Biener  <rguenther@suse.de>
+
+	* gimplify.cc (gimplify_compound_lval): When the base
+	gimplified to a register make sure to split up chains
+	of operations.
+
+2023-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/109607
+	* ipa-param-manipulation.h
+	(ipa_param_body_adjustments::modify_expression): Add extra_stmts
+	argument.
+	* ipa-param-manipulation.cc
+	(ipa_param_body_adjustments::modify_expression): Likewise.
+	When we need a conversion and the replacement is a register
+	split the conversion out.
+	(ipa_param_body_adjustments::modify_assignment): Pass
+	extra_stmts to RHS modify_expression.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi (Zero Length): Describe example.
+
+2023-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109594
+	* tree-ssa.cc (non_rewritable_mem_ref_base): Constrain
+	what we rewrite to a register based on the above.
+
 2023-04-26  Patrick O'Neill  <patrick@rivosinc.com>
 
 	* config/riscv/riscv.cc: Fix whitespace.
