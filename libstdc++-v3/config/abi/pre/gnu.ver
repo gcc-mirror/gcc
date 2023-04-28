@@ -2514,6 +2514,10 @@ GLIBCXX_3.4.31 {
 
 } GLIBCXX_3.4.30;
 
+GLIBCXX_3.4.32 {
+    _ZSt21ios_base_library_initv;
+} GLIBCXX_3.4.31;
+
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
 
