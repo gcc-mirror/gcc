@@ -901,10 +901,12 @@
 	PR target/104338
 	* config/riscv/riscv-protos.h: Add helper function stubs.
 	* config/riscv/riscv.cc: Add helper functions for subword masking.
-	* config/riscv/riscv.opt: Add command-line flag.
+	* config/riscv/riscv.opt: Add command-line flags -minline-atomics and
+	-mno-inline-atomics.
 	* config/riscv/sync.md: Add masking logic and inline asm for fetch_and_op,
 	fetch_and_nand, CAS, and exchange ops.
-	* doc/invoke.texi: Add blurb regarding command-line flag.
+	* doc/invoke.texi: Add blurb regarding new command-line flags
+	-minline-atomics and -mno-inline-atomics.
 
 2023-04-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
