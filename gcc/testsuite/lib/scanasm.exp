@@ -791,7 +791,7 @@ proc parse_function_bodies { filename result } {
     set terminator {^\s*\.size}
 
     # Regexp for lines that aren't interesting.
-    set fluff {^\s*(?:\.|//|@)}
+    set fluff {^\s*(?:\.|//|@|$)}
 
     set fd [open $filename r]
     set in_function 0
