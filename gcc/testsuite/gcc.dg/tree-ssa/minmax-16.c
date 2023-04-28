@@ -25,11 +25,8 @@ main (void)
   return 0;
 }
 
-/* After phiopt1, there really should be only 3 MIN_EXPR in the IR (including debug statements).
-   But the way phiopt does not cleanup the CFG all the time, the PHI might still reference the
-   alternative bb's moved statement.
-   Note in the end, we do dce the statement and other debug statements to end up with only 2 MIN_EXPR.
-   So check that too. */
-/* { dg-final { scan-tree-dump-times "MIN_EXPR" 4 "phiopt1" } } */
+/* After phiopt1, will be only 2 MIN_EXPR in the IR (including debug statements). */
+/* xk will only have the final result so the extra debug info does not change anything. */
+/* { dg-final { scan-tree-dump-times "MIN_EXPR" 2 "phiopt1" } } */
 /* { dg-final { scan-tree-dump-times "MIN_EXPR" 2 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "MAX_EXPR" 0 "phiopt1" } } */

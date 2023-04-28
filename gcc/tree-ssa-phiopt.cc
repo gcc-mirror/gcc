@@ -94,6 +94,7 @@ replace_phi_edge_with_variable (basic_block cond_block,
   basic_block bb = gimple_bb (phi);
   gimple_stmt_iterator gsi;
   tree phi_result = PHI_RESULT (phi);
+  bool deleteboth = false;
 
   /* Duplicate range info if they are the only things setting the target PHI.
      This is needed as later on, the new_tree will be replacing
@@ -137,7 +138,14 @@ replace_phi_edge_with_variable (basic_block cond_block,
       keep_edge = EDGE_SUCC (cond_block, 1);
     }
   else if ((keep_edge = find_edge (cond_block, e->src)))
-    ;
+    {
+      basic_block bb1 = EDGE_SUCC (cond_block, 0)->dest;
+      basic_block bb2 = EDGE_SUCC (cond_block, 1)->dest;
+      if (single_pred_p (bb1) && single_pred_p (bb2)
+	  && single_succ_p (bb1) && single_succ_p (bb2)
+	  && empty_block_p (bb1) && empty_block_p (bb2))
+	deleteboth = true;
+    }
   else
     gcc_unreachable ();
 
@@ -147,6 +155,31 @@ replace_phi_edge_with_variable (basic_block cond_block,
       e->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
       e->probability = profile_probability::always ();
       delete_basic_block (edge_to_remove->dest);
+
+      /* Eliminate the COND_EXPR at the end of COND_BLOCK.  */
+      gsi = gsi_last_bb (cond_block);
+      gsi_remove (&gsi, true);
+    }
+  else if (deleteboth)
+    {
+      basic_block bb1 = EDGE_SUCC (cond_block, 0)->dest;
+      basic_block bb2 = EDGE_SUCC (cond_block, 1)->dest;
+
+      edge newedge = redirect_edge_and_branch (keep_edge, bb);
+
+      /* The new edge should be the same. */
+      gcc_assert (newedge == keep_edge);
+
+      keep_edge->flags |= EDGE_FALLTHRU;
+      keep_edge->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
+      keep_edge->probability = profile_probability::always ();
+
+      /* Copy the edge's phi entry from the old one. */
+      copy_phi_arg_into_existing_phi (e, keep_edge);
+
+      /* Delete the old 2 empty basic blocks */
+      delete_basic_block (bb1);
+      delete_basic_block (bb2);
 
       /* Eliminate the COND_EXPR at the end of COND_BLOCK.  */
       gsi = gsi_last_bb (cond_block);
