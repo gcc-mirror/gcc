@@ -3264,6 +3264,11 @@ gimplify_compound_lval (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	    }
 	  need_non_reg = true;
 	}
+      else if (!is_gimple_reg_type (TREE_TYPE (t)))
+	/* When the result of an operation, in particular a VIEW_CONVERT_EXPR
+	   is a non-register type then require the base object to be a
+	   non-register as well.  */
+	need_non_reg = true;
     }
 
   /* Step 2 is to gimplify the base expression.  Make sure lvalue is set
