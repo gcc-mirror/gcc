@@ -185,6 +185,139 @@ VECTOR_MODE_WITH_PREFIX (VNx, INT, QI, 1, 0);
 ADJUST_NUNITS (VNx1QI, riscv_v_adjust_nunits (VNx1QImode, 1));
 ADJUST_ALIGNMENT (VNx1QI, 1);
 
+/* Tuple modes for segment loads/stores according to NF, NF value can be 2 ~ 8.  */
+
+/*
+   | Mode           | MIN_VLEN=32 | MIN_VLEN=32 | MIN_VLEN=64 | MIN_VLEN=64 | MIN_VLEN=128 | MIN_VLEN=128 |
+   |                | LMUL        | SEW/LMUL    | LMUL        | SEW/LMUL    | LMUL         | SEW/LMUL     |
+   | VNxNFx1QI      | MF4         | 32          | MF8         | 64          | N/A          | N/A          |
+   | VNxNFx2QI      | MF2         | 16          | MF4         | 32          | MF8          | 64           |
+   | VNxNFx4QI      | M1          | 8           | MF2         | 16          | MF4          | 32           |
+   | VNxNFx8QI      | M2          | 4           | M1          | 8           | MF2          | 16           |
+   | VNxNFx16QI     | M4          | 2           | M2          | 4           | M1           | 8            |
+   | VNxNFx32QI     | M8          | 1           | M4          | 2           | M2           | 4            |
+   | VNxNFx64QI     | N/A         | N/A         | M8          | 1           | M4           | 2            |
+   | VNxNFx128QI    | N/A         | N/A         | N/A         | N/A         | M8           | 1            |
+   | VNxNFx1(HI|HF) | MF2         | 32          | MF4         | 64          | N/A          | N/A          |
+   | VNxNFx2(HI|HF) | M1          | 16          | MF2         | 32          | MF4          | 64           |
+   | VNxNFx4(HI|HF) | M2          | 8           | M1          | 16          | MF2          | 32           |
+   | VNxNFx8(HI|HF) | M4          | 4           | M2          | 8           | M1           | 16           |
+   | VNxNFx16(HI|HF)| M8          | 2           | M4          | 4           | M2           | 8            |
+   | VNxNFx32(HI|HF)| N/A         | N/A         | M8          | 2           | M4           | 4            |
+   | VNxNFx64(HI|HF)| N/A         | N/A         | N/A         | N/A         | M8           | 2            |
+   | VNxNFx1(SI|SF) | M1          | 32          | MF2         | 64          | MF2          | 64           |
+   | VNxNFx2(SI|SF) | M2          | 16          | M1          | 32          | M1           | 32           |
+   | VNxNFx4(SI|SF) | M4          | 8           | M2          | 16          | M2           | 16           |
+   | VNxNFx8(SI|SF) | M8          | 4           | M4          | 8           | M4           | 8            |
+   | VNxNFx16(SI|SF)| N/A         | N/A         | M8          | 4           | M8           | 4            |
+   | VNxNFx1(DI|DF) | N/A         | N/A         | M1          | 64          | N/A          | N/A          |
+   | VNxNFx2(DI|DF) | N/A         | N/A         | M2          | 32          | M1           | 64           |
+   | VNxNFx4(DI|DF) | N/A         | N/A         | M4          | 16          | M2           | 32           |
+   | VNxNFx8(DI|DF) | N/A         | N/A         | M8          | 8           | M4           | 16           |
+   | VNxNFx16(DI|DF)| N/A         | N/A         | N/A         | N/A         | M8           | 8            |
+*/
+
+#define RVV_TUPLE_MODES(NBYTES, NSUBPARTS, VB, VH, VS, VD)                     \
+  VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, INT, QI, NBYTES, 1);             \
+  VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, INT, HI, NBYTES / 2, 1);         \
+  VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, INT, SI, NBYTES / 4, 1);         \
+  VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, FLOAT, SF, NBYTES / 4, 1);       \
+  VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, INT, DI, NBYTES / 8, 1);         \
+  VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, FLOAT, DF, NBYTES / 8, 1);       \
+  ADJUST_NUNITS (VNx##NSUBPARTS##x##VB##QI,                                    \
+		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x##VB##QI##mode,       \
+					VB * NSUBPARTS));                      \
+  ADJUST_NUNITS (VNx##NSUBPARTS##x##VH##HI,                                    \
+		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x##VH##HI##mode,       \
+					VH * NSUBPARTS));                      \
+  ADJUST_NUNITS (VNx##NSUBPARTS##x##VS##SI,                                    \
+		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x##VS##SI##mode,       \
+					VS * NSUBPARTS));                      \
+  ADJUST_NUNITS (VNx##NSUBPARTS##x##VD##DI,                                    \
+		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x##VD##DI##mode,       \
+					VD * NSUBPARTS));                      \
+  ADJUST_NUNITS (VNx##NSUBPARTS##x##VS##SF,                                    \
+		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x##VS##SF##mode,       \
+					VS * NSUBPARTS));                      \
+  ADJUST_NUNITS (VNx##NSUBPARTS##x##VD##DF,                                    \
+		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x##VD##DF##mode,       \
+					VD * NSUBPARTS));                      \
+                                                                               \
+  ADJUST_ALIGNMENT (VNx##NSUBPARTS##x##VB##QI, 1);                             \
+  ADJUST_ALIGNMENT (VNx##NSUBPARTS##x##VH##HI, 2);                             \
+  ADJUST_ALIGNMENT (VNx##NSUBPARTS##x##VS##SI, 4);                             \
+  ADJUST_ALIGNMENT (VNx##NSUBPARTS##x##VD##DI, 8);                             \
+  ADJUST_ALIGNMENT (VNx##NSUBPARTS##x##VS##SF, 4);                             \
+  ADJUST_ALIGNMENT (VNx##NSUBPARTS##x##VD##DF, 8);
+
+RVV_TUPLE_MODES (8, 2, 8, 4, 2, 1)
+RVV_TUPLE_MODES (8, 3, 8, 4, 2, 1)
+RVV_TUPLE_MODES (8, 4, 8, 4, 2, 1)
+RVV_TUPLE_MODES (8, 5, 8, 4, 2, 1)
+RVV_TUPLE_MODES (8, 6, 8, 4, 2, 1)
+RVV_TUPLE_MODES (8, 7, 8, 4, 2, 1)
+RVV_TUPLE_MODES (8, 8, 8, 4, 2, 1)
+
+RVV_TUPLE_MODES (16, 2, 16, 8, 4, 2)
+RVV_TUPLE_MODES (16, 3, 16, 8, 4, 2)
+RVV_TUPLE_MODES (16, 4, 16, 8, 4, 2)
+RVV_TUPLE_MODES (16, 5, 16, 8, 4, 2)
+RVV_TUPLE_MODES (16, 6, 16, 8, 4, 2)
+RVV_TUPLE_MODES (16, 7, 16, 8, 4, 2)
+RVV_TUPLE_MODES (16, 8, 16, 8, 4, 2)
+
+RVV_TUPLE_MODES (32, 2, 32, 16, 8, 4)
+RVV_TUPLE_MODES (32, 3, 32, 16, 8, 4)
+RVV_TUPLE_MODES (32, 4, 32, 16, 8, 4)
+
+RVV_TUPLE_MODES (64, 2, 64, 32, 16, 8)
+
+#define RVV_TUPLE_PARTIAL_MODES(NSUBPARTS)                                     \
+  VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, INT, QI, 1, 1);                  \
+  VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, INT, HI, 1, 1);                  \
+  VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, INT, SI, 1, 1);                  \
+  VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, FLOAT, SF, 1, 1);                \
+  VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, INT, QI, 2, 1);                  \
+  VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, INT, HI, 2, 1);                  \
+  VECTOR_MODE_WITH_PREFIX (VNx##NSUBPARTS##x, INT, QI, 4, 1);                  \
+                                                                               \
+  ADJUST_NUNITS (VNx##NSUBPARTS##x1QI,                                         \
+		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x1QI##mode,            \
+					NSUBPARTS));                           \
+  ADJUST_NUNITS (VNx##NSUBPARTS##x1HI,                                         \
+		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x1HI##mode,            \
+					NSUBPARTS));                           \
+  ADJUST_NUNITS (VNx##NSUBPARTS##x1SI,                                         \
+		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x1SI##mode,            \
+					NSUBPARTS));                           \
+  ADJUST_NUNITS (VNx##NSUBPARTS##x1SF,                                         \
+		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x1SF##mode,            \
+					NSUBPARTS));                           \
+  ADJUST_NUNITS (VNx##NSUBPARTS##x2QI,                                         \
+		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x2QI##mode,            \
+					2 * NSUBPARTS));                       \
+  ADJUST_NUNITS (VNx##NSUBPARTS##x2HI,                                         \
+		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x2HI##mode,            \
+					2 * NSUBPARTS));                       \
+  ADJUST_NUNITS (VNx##NSUBPARTS##x4QI,                                         \
+		 riscv_v_adjust_nunits (VNx##NSUBPARTS##x4QI##mode,            \
+					4 * NSUBPARTS));                       \
+  ADJUST_ALIGNMENT (VNx##NSUBPARTS##x1QI, 1);                                  \
+  ADJUST_ALIGNMENT (VNx##NSUBPARTS##x1HI, 2);                                  \
+  ADJUST_ALIGNMENT (VNx##NSUBPARTS##x1SI, 4);                                  \
+  ADJUST_ALIGNMENT (VNx##NSUBPARTS##x1SF, 4);                                  \
+  ADJUST_ALIGNMENT (VNx##NSUBPARTS##x2QI, 1);                                  \
+  ADJUST_ALIGNMENT (VNx##NSUBPARTS##x2HI, 2);                                  \
+  ADJUST_ALIGNMENT (VNx##NSUBPARTS##x4QI, 1);
+
+RVV_TUPLE_PARTIAL_MODES (2)
+RVV_TUPLE_PARTIAL_MODES (3)
+RVV_TUPLE_PARTIAL_MODES (4)
+RVV_TUPLE_PARTIAL_MODES (5)
+RVV_TUPLE_PARTIAL_MODES (6)
+RVV_TUPLE_PARTIAL_MODES (7)
+RVV_TUPLE_PARTIAL_MODES (8)
+
 /* TODO: According to RISC-V 'V' ISA spec, the maximun vector length can
    be 65536 for a single vector register which means the vector mode in
    GCC can be maximum = 65536 * 8 bits (LMUL=8).

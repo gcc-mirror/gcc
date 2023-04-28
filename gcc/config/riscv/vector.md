@@ -708,6 +708,50 @@
   DONE;
 })
 
+;; Define tuple modes data movement.
+;; operands[2] is used to save the offset of each subpart.
+;; operands[3] is used to calculate the address for each subpart.
+;; operands[4] is VL of vsevli instruction.
+(define_expand "mov<mode>"
+  [(parallel [(set (match_operand:VT 0 "reg_or_mem_operand")
+                   (match_operand:VT 1 "general_operand"))
+     (clobber (match_dup 2))
+     (clobber (match_dup 3))
+     (clobber (match_dup 4))])]
+  "TARGET_VECTOR"
+  {
+    /* Need to force register if mem <- !reg.  */
+    if (MEM_P (operands[0]) && !REG_P (operands[1]))
+      operands[1] = force_reg (<MODE>mode, operands[1]);
+
+    if (GET_CODE (operands[1]) == CONST_VECTOR)
+      {
+        riscv_vector::expand_tuple_move (<VM>mode, operands);
+        DONE;
+      }
+
+    operands[2] = gen_rtx_SCRATCH (Pmode);
+    operands[3] = gen_rtx_SCRATCH (Pmode);
+    operands[4] = gen_rtx_SCRATCH (Pmode);
+  })
+
+(define_insn_and_split "*mov<VT:mode>_<P:mode>"
+  [(set (match_operand:VT 0 "reg_or_mem_operand" "=vr,vr, m")
+        (match_operand:VT 1 "reg_or_mem_operand" " vr, m,vr"))
+   (clobber (match_scratch:P 2 "=X,&r,&r"))
+   (clobber (match_scratch:P 3 "=X,&r,&r"))
+   (clobber (match_scratch:P 4 "=X,&r,&r"))]
+  "TARGET_VECTOR"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+  {
+    riscv_vector::expand_tuple_move (<VM>mode, operands);
+    DONE;
+  }
+  [(set_attr "type" "vmov,vlde,vste")
+   (set_attr "mode" "<VT:MODE>")])
+
 ;; -----------------------------------------------------------------
 ;; ---- Duplicate Operations
 ;; -----------------------------------------------------------------

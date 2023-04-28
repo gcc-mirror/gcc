@@ -80,6 +80,7 @@ extern bool riscv_gpr_save_operation_p (rtx);
 extern void riscv_reinit (void);
 extern poly_uint64 riscv_regmode_natural_size (machine_mode);
 extern bool riscv_v_ext_vector_mode_p (machine_mode);
+extern bool riscv_v_ext_tuple_mode_p (machine_mode);
 extern bool riscv_shamt_matches_mask_p (int, HOST_WIDE_INT);
 extern void riscv_subword_address (rtx, rtx *, rtx *, rtx *, rtx *);
 extern void riscv_lshift_subword (machine_mode, rtx, rtx, rtx *);
@@ -170,6 +171,8 @@ void emit_vlmax_op (unsigned, rtx, rtx, rtx, machine_mode);
 void emit_nonvlmax_op (unsigned, rtx, rtx, rtx, machine_mode);
 enum vlmul_type get_vlmul (machine_mode);
 unsigned int get_ratio (machine_mode);
+unsigned int get_nf (machine_mode);
+machine_mode get_subpart_mode (machine_mode);
 int get_ta (rtx);
 int get_ma (rtx);
 int get_avl_type (rtx);
@@ -191,6 +194,7 @@ enum tail_policy get_prefer_tail_policy ();
 enum mask_policy get_prefer_mask_policy ();
 rtx get_avl_type_rtx (enum avl_type);
 opt_machine_mode get_vector_mode (scalar_mode, poly_uint64);
+opt_machine_mode get_tuple_mode (machine_mode, unsigned int);
 bool simm5_p (rtx);
 bool neg_simm5_p (rtx);
 #ifdef RTX_CODE
@@ -212,6 +216,7 @@ enum vlen_enum
 bool slide1_sew64_helper (int, machine_mode, machine_mode,
 			  machine_mode, rtx *);
 rtx gen_avl_for_scalar_move (rtx);
+void expand_tuple_move (machine_mode, rtx *);
 }
 
 /* We classify builtin types into two classes:

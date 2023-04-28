@@ -95,6 +95,8 @@ struct registered_function_hasher : nofree_ptr_hash<registered_function>
 static CONSTEXPR const vector_type_info vector_types[] = {
 #define DEF_RVV_TYPE(NAME, NCHARS, ABI_NAME, ARGS...)                          \
   {#NAME, #ABI_NAME, "u" #NCHARS #ABI_NAME},
+#define DEF_RVV_TUPLE_TYPE(NAME, NCHARS, ABI_NAME, ARGS...)                    \
+  {#NAME, #ABI_NAME, "u" #NCHARS #ABI_NAME},
 #include "riscv-vector-builtins.def"
 };
 
@@ -112,6 +114,9 @@ const rvv_builtin_suffixes type_suffixes[NUM_VECTOR_TYPES + 1] = {
 		     VECTOR_MODE_MIN_VLEN_32, VECTOR_SUFFIX, SCALAR_SUFFIX,    \
 		     VSETVL_SUFFIX)                                            \
   {#VECTOR_SUFFIX, #SCALAR_SUFFIX, #VSETVL_SUFFIX},
+#define DEF_RVV_TUPLE_TYPE(NAME, NCHARS, ABI_NAME, SUBPART_TYPE, SCALAR_TYPE,  \
+			   NF, VECTOR_SUFFIX)                                  \
+  {#VECTOR_SUFFIX, "", ""},
 #include "riscv-vector-builtins.def"
 };
 
@@ -2336,6 +2341,75 @@ register_builtin_type (vector_type_index type, tree eltype, machine_mode mode)
   lang_hooks.types.register_builtin_type (vectype, vector_types[type].abi_name);
 }
 
+/* Register the tuple type that contains NUM_VECTORS vectors of type TYPE.  */
+static void
+register_tuple_type (vector_type_index type, vector_type_index subpart_type,
+		     tree eltype, unsigned int nf)
+{
+  /* TODO: We currently just skip the register of the illegal RVV type.
+    Ideally, we should report error message more friendly instead of
+    reporting "unknown" type. Support more friendly error message in
+    the future.  */
+  if (!abi_vector_types[subpart_type])
+    return;
+  tree tuple_type = lang_hooks.types.make_type (RECORD_TYPE);
+
+  /* The contents of the type are opaque, so we can define them in any
+     way that maps to the correct ABI type.
+
+     Here we choose to use the same layout as for riscv_vector.h, with
+     "__val":
+
+	struct vfooxN_t { vfoo_t __val[N]; };
+
+     (It wouldn't be possible to write that directly in C or C++ for
+     sizeless types, but that's not a problem for this function.)
+
+     Using arrays simplifies the handling of vget and vset for variable
+     arguments.  */
+  tree array_type = build_array_type_nelts (abi_vector_types[subpart_type], nf);
+  gcc_assert (array_type);
+  gcc_assert (VECTOR_MODE_P (TYPE_MODE (array_type))
+	      && TYPE_MODE_RAW (array_type) == TYPE_MODE (array_type));
+
+  tree field = build_decl (input_location, FIELD_DECL, get_identifier ("__val"),
+			   array_type);
+  DECL_FIELD_CONTEXT (field) = tuple_type;
+  TYPE_FIELDS (tuple_type) = field;
+  add_vector_type_attribute (tuple_type, vector_types[type].mangled_name);
+  make_type_sizeless (tuple_type);
+  layout_type (tuple_type);
+  gcc_assert (VECTOR_MODE_P (TYPE_MODE (tuple_type))
+	      && TYPE_MODE_RAW (tuple_type) == TYPE_MODE (tuple_type));
+
+  tree decl
+    = build_decl (input_location, TYPE_DECL,
+		  get_identifier (vector_types[type].abi_name), tuple_type);
+  TYPE_NAME (tuple_type) = decl;
+  TYPE_STUB_DECL (tuple_type) = decl;
+  lang_hooks.decls.pushdecl (decl);
+  /* ??? Undo the effect of set_underlying_type for C.  The C frontend
+     doesn't recognize DECL as a built-in because (as intended) the decl has
+     a real location instead of BUILTINS_LOCATION.  The frontend therefore
+     treats the decl like a normal C "typedef struct foo foo;", expecting
+     the type for tag "struct foo" to have a dummy unnamed TYPE_DECL instead
+     of the named one we attached above.  It then sets DECL_ORIGINAL_TYPE
+     on the supposedly unnamed decl, creating a circularity that upsets
+     dwarf2out.
+
+     We don't want to follow the normal C model and create "struct foo"
+     tags for tuple types since (a) the types are supposed to be opaque
+     and (b) they couldn't be defined as a real struct anyway.  Treating
+     the TYPE_DECLs as "typedef struct foo foo;" without creating
+     "struct foo" would lead to confusing error messages.  */
+  DECL_ORIGINAL_TYPE (decl) = NULL_TREE;
+
+  builtin_types[type].scalar = eltype;
+  builtin_types[type].scalar_ptr = build_pointer_type (eltype);
+  builtin_types[type].scalar_const_ptr = build_const_pointer (eltype);
+  abi_vector_types[type] = tuple_type;
+}
+
 /* Register the built-in RVV ABI types, such as __rvv_int32m1_t.  */
 static void
 register_builtin_types ()
@@ -2358,6 +2432,10 @@ register_builtin_types ()
 	 : TARGET_MIN_VLEN >= 64 ? VECTOR_MODE_MIN_VLEN_64##mode               \
 				 : VECTOR_MODE_MIN_VLEN_32##mode;              \
   register_builtin_type (VECTOR_TYPE_##NAME, SCALAR_TYPE##_type_node, mode);
+#define DEF_RVV_TUPLE_TYPE(NAME, NCHARS, ABI_NAME, SUBPART_TYPE, SCALAR_TYPE,  \
+			   NF, VECTOR_SUFFIX)                                  \
+  register_tuple_type (VECTOR_TYPE_##NAME, VECTOR_TYPE_##SUBPART_TYPE,         \
+		       SCALAR_TYPE##_type_node, NF);
 #include "riscv-vector-builtins.def"
 }
 

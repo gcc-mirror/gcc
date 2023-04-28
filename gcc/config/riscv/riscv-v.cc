@@ -342,17 +342,32 @@ struct mode_vtype_group
   uint8_t ratio_for_min_vlen64[NUM_MACHINE_MODES];
   enum vlmul_type vlmul_for_for_vlen128[NUM_MACHINE_MODES];
   uint8_t ratio_for_for_vlen128[NUM_MACHINE_MODES];
+  machine_mode subpart_mode[NUM_MACHINE_MODES];
+  uint8_t nf[NUM_MACHINE_MODES];
   mode_vtype_group ()
   {
 #define ENTRY(MODE, REQUIREMENT, VLMUL_FOR_MIN_VLEN32, RATIO_FOR_MIN_VLEN32,   \
 	      VLMUL_FOR_MIN_VLEN64, RATIO_FOR_MIN_VLEN64,                      \
-	      VLMUL_FOR_FOR_VLEN128, RATIO_FOR_FOR_VLEN128)                    \
+	      VLMUL_FOR_MIN_VLEN128, RATIO_FOR_MIN_VLEN128)                    \
   vlmul_for_min_vlen32[MODE##mode] = VLMUL_FOR_MIN_VLEN32;                     \
   ratio_for_min_vlen32[MODE##mode] = RATIO_FOR_MIN_VLEN32;                     \
   vlmul_for_min_vlen64[MODE##mode] = VLMUL_FOR_MIN_VLEN64;                     \
   ratio_for_min_vlen64[MODE##mode] = RATIO_FOR_MIN_VLEN64;                     \
-  vlmul_for_for_vlen128[MODE##mode] = VLMUL_FOR_FOR_VLEN128;                   \
-  ratio_for_for_vlen128[MODE##mode] = RATIO_FOR_FOR_VLEN128;
+  vlmul_for_for_vlen128[MODE##mode] = VLMUL_FOR_MIN_VLEN128;                   \
+  ratio_for_for_vlen128[MODE##mode] = RATIO_FOR_MIN_VLEN128;
+#include "riscv-vector-switch.def"
+#define TUPLE_ENTRY(MODE, REQUIREMENT, SUBPART_MODE, NF, VLMUL_FOR_MIN_VLEN32, \
+		    RATIO_FOR_MIN_VLEN32, VLMUL_FOR_MIN_VLEN64,                \
+		    RATIO_FOR_MIN_VLEN64, VLMUL_FOR_MIN_VLEN128,               \
+		    RATIO_FOR_MIN_VLEN128)                                     \
+  subpart_mode[MODE##mode] = SUBPART_MODE##mode;                               \
+  nf[MODE##mode] = NF;                                                         \
+  vlmul_for_min_vlen32[MODE##mode] = VLMUL_FOR_MIN_VLEN32;                     \
+  ratio_for_min_vlen32[MODE##mode] = RATIO_FOR_MIN_VLEN32;                     \
+  vlmul_for_min_vlen64[MODE##mode] = VLMUL_FOR_MIN_VLEN64;                     \
+  ratio_for_min_vlen64[MODE##mode] = RATIO_FOR_MIN_VLEN64;                     \
+  vlmul_for_for_vlen128[MODE##mode] = VLMUL_FOR_MIN_VLEN128;                   \
+  ratio_for_for_vlen128[MODE##mode] = RATIO_FOR_MIN_VLEN128;
 #include "riscv-vector-switch.def"
   }
 };
@@ -369,6 +384,26 @@ get_vlmul (machine_mode mode)
     return mode_vtype_infos.vlmul_for_min_vlen32[mode];
   else
     return mode_vtype_infos.vlmul_for_min_vlen64[mode];
+}
+
+/* Return the NF value of the corresponding mode.  */
+unsigned int
+get_nf (machine_mode mode)
+{
+  /* We don't allow non-tuple modes go through this function.  */
+  gcc_assert (riscv_v_ext_tuple_mode_p (mode));
+  return mode_vtype_infos.nf[mode];
+}
+
+/* Return the subpart mode of the tuple mode. For VNx2x1SImode,
+   the subpart mode is VNx1SImode. This will help to build
+   array/struct type in builtins.  */
+machine_mode
+get_subpart_mode (machine_mode mode)
+{
+  /* We don't allow non-tuple modes go through this function.  */
+  gcc_assert (riscv_v_ext_tuple_mode_p (mode));
+  return mode_vtype_infos.subpart_mode[mode];
 }
 
 /* Get ratio according to machine mode.  */
@@ -448,6 +483,24 @@ get_vector_mode (scalar_mode inner_mode, poly_uint64 nunits)
     if (inner_mode == GET_MODE_INNER (mode)
 	&& known_eq (nunits, GET_MODE_NUNITS (mode))
 	&& riscv_v_ext_vector_mode_p (mode))
+      return mode;
+  return opt_machine_mode ();
+}
+
+/* Return the RVV tuple mode if we can find the legal tuple mode for the
+   corresponding subpart mode and NF.  */
+opt_machine_mode
+get_tuple_mode (machine_mode subpart_mode, unsigned int nf)
+{
+  poly_uint64 nunits = GET_MODE_NUNITS (subpart_mode) * nf;
+  scalar_mode inner_mode = GET_MODE_INNER (subpart_mode);
+  enum mode_class mclass = GET_MODE_CLASS (subpart_mode);
+  machine_mode mode;
+  FOR_EACH_MODE_IN_CLASS (mode, mclass)
+    if (inner_mode == GET_MODE_INNER (mode)
+	&& known_eq (nunits, GET_MODE_NUNITS (mode))
+	&& riscv_v_ext_tuple_mode_p (mode)
+	&& get_subpart_mode (mode) == subpart_mode)
       return mode;
   return opt_machine_mode ();
 }
@@ -739,6 +792,135 @@ gen_avl_for_scalar_move (rtx avl)
       emit_insn (
 	gen_rtx_SET (tmp, gen_rtx_fmt_ee (GTU, Pmode, avl, const0_rtx)));
       return tmp;
+    }
+}
+
+/* Expand tuple modes data movement for.  */
+void
+expand_tuple_move (machine_mode mask_mode, rtx *ops)
+{
+  unsigned int i;
+  machine_mode tuple_mode = GET_MODE (ops[0]);
+  machine_mode subpart_mode = get_subpart_mode (tuple_mode);
+  poly_int64 subpart_size = GET_MODE_SIZE (subpart_mode);
+  unsigned int nf = get_nf (tuple_mode);
+  bool fractional_p = known_lt (subpart_size, BYTES_PER_RISCV_VECTOR);
+
+  if (REG_P (ops[0]) && CONST_VECTOR_P (ops[1]))
+    {
+      rtx val;
+      gcc_assert (can_create_pseudo_p ()
+		  && const_vec_duplicate_p (ops[1], &val));
+      for (i = 0; i < nf; ++i)
+	{
+	  poly_int64 offset = i * subpart_size;
+	  rtx subreg
+	    = simplify_gen_subreg (subpart_mode, ops[0], tuple_mode, offset);
+	  rtx dup = gen_const_vec_duplicate (subpart_mode, val);
+	  emit_move_insn (subreg, dup);
+	}
+    }
+  else if (REG_P (ops[0]) && REG_P (ops[1]))
+    {
+      for (i = 0; i < nf; ++i)
+	{
+	  int index = i;
+
+	  /* Take NF = 2 and LMUL = 1 for example:
+
+	      - move v8 to v9:
+		 vmv1r v10,v9
+		 vmv1r v9,v8
+
+	      - move v8 to v7:
+		 vmv1r v7,v8
+		 vmv1r v8,v9  */
+	  if (REGNO (ops[0]) > REGNO (ops[1]))
+	    index = nf - 1 - i;
+	  poly_int64 offset = index * subpart_size;
+	  rtx dst_subreg
+	    = simplify_gen_subreg (subpart_mode, ops[0], tuple_mode, offset);
+	  rtx src_subreg
+	    = simplify_gen_subreg (subpart_mode, ops[1], tuple_mode, offset);
+	  emit_insn (gen_rtx_SET (dst_subreg, src_subreg));
+	}
+    }
+  else
+    {
+      /* Expand tuple memory data movement.  */
+      gcc_assert (MEM_P (ops[0]) || MEM_P (ops[1]));
+      rtx offset = gen_int_mode (subpart_size, Pmode);
+      if (!subpart_size.is_constant ())
+	{
+	  emit_move_insn (ops[2], gen_int_mode (BYTES_PER_RISCV_VECTOR, Pmode));
+	  if (fractional_p)
+	    {
+	      unsigned int factor
+		= exact_div (BYTES_PER_RISCV_VECTOR, subpart_size)
+		    .to_constant ();
+	      rtx pat
+		= gen_rtx_ASHIFTRT (Pmode, ops[2],
+				    gen_int_mode (exact_log2 (factor), Pmode));
+	      emit_insn (gen_rtx_SET (ops[2], pat));
+	    }
+
+	  if (known_gt (subpart_size, BYTES_PER_RISCV_VECTOR))
+	    {
+	      unsigned int factor
+		= exact_div (subpart_size, BYTES_PER_RISCV_VECTOR)
+		    .to_constant ();
+	      rtx pat
+		= gen_rtx_ASHIFT (Pmode, ops[2],
+				  gen_int_mode (exact_log2 (factor), Pmode));
+	      emit_insn (gen_rtx_SET (ops[2], pat));
+	    }
+	  offset = ops[2];
+	}
+
+      if (MEM_P (ops[1]))
+	{
+	  /* Load operations.  */
+	  emit_move_insn (ops[3], XEXP (ops[1], 0));
+	  for (i = 0; i < nf; i++)
+	    {
+	      rtx subreg = simplify_gen_subreg (subpart_mode, ops[0],
+						tuple_mode, i * subpart_size);
+	      if (i != 0)
+		{
+		  rtx new_addr = gen_rtx_PLUS (Pmode, ops[3], offset);
+		  emit_insn (gen_rtx_SET (ops[3], new_addr));
+		}
+	      rtx mem = gen_rtx_MEM (subpart_mode, ops[3]);
+
+	      if (fractional_p)
+		emit_vlmax_op (code_for_pred_mov (subpart_mode), subreg, mem,
+			       ops[4], mask_mode);
+	      else
+		emit_move_insn (subreg, mem);
+	    }
+	}
+      else
+	{
+	  /* Store operations.  */
+	  emit_move_insn (ops[3], XEXP (ops[0], 0));
+	  for (i = 0; i < nf; i++)
+	    {
+	      rtx subreg = simplify_gen_subreg (subpart_mode, ops[1],
+						tuple_mode, i * subpart_size);
+	      if (i != 0)
+		{
+		  rtx new_addr = gen_rtx_PLUS (Pmode, ops[3], offset);
+		  emit_insn (gen_rtx_SET (ops[3], new_addr));
+		}
+	      rtx mem = gen_rtx_MEM (subpart_mode, ops[3]);
+
+	      if (fractional_p)
+		emit_vlmax_op (code_for_pred_mov (subpart_mode), mem, subreg,
+			       ops[4], mask_mode);
+	      else
+		emit_move_insn (mem, subreg);
+	    }
+	}
     }
 }
 
