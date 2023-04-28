@@ -401,6 +401,83 @@ public:
   }
 } op_cfn_copysign;
 
+class cfn_sqrt : public range_operator_float
+{
+public:
+  using range_operator_float::fold_range;
+  using range_operator_float::op1_range;
+  virtual bool fold_range (frange &r, tree type,
+			   const frange &lh, const frange &,
+			   relation_trio) const final override
+  {
+    if (lh.undefined_p ())
+      return false;
+    if (lh.known_isnan () || real_less (&lh.upper_bound (), &dconstm0))
+      {
+	r.set_nan (type);
+	return true;
+      }
+    unsigned bulps
+      = targetm.libm_function_max_error (CFN_SQRT, TYPE_MODE (type), true);
+    if (bulps == ~0U)
+      r.set_varying (type);
+    else if (bulps == 0)
+      r.set (type, dconstm0, dconstinf);
+    else
+      {
+	REAL_VALUE_TYPE boundmin = dconstm0;
+	while (bulps--)
+	  frange_nextafter (TYPE_MODE (type), boundmin, dconstninf);
+	r.set (type, boundmin, dconstinf);
+      }
+    if (!lh.maybe_isnan () && !real_less (&lh.lower_bound (), &dconst0))
+      r.clear_nan ();
+    return true;
+  }
+  virtual bool op1_range (frange &r, tree type,
+			  const frange &lhs, const frange &,
+			  relation_trio) const final override
+  {
+    if (lhs.undefined_p ())
+      return false;
+
+    // A known NAN means the input is [-INF,-0.) U +-NAN.
+    if (lhs.known_isnan ())
+      {
+      known_nan:
+	REAL_VALUE_TYPE ub = dconstm0;
+	frange_nextafter (TYPE_MODE (type), ub, dconstninf);
+	r.set (type, dconstninf, ub);
+	// No r.flush_denormals_to_zero (); here - it is a reverse op.
+	return true;
+      }
+
+    // Results outside of [-0.0, +Inf] are impossible.
+    const REAL_VALUE_TYPE &ub = lhs.upper_bound ();
+    if (real_less (&ub, &dconstm0))
+      {
+	if (!lhs.maybe_isnan ())
+	  r.set_undefined ();
+	else
+	  // If lhs could be NAN and finite result is impossible,
+	  // the range is like lhs.known_isnan () above.
+	  goto known_nan;
+	return true;
+      }
+
+    if (!lhs.maybe_isnan ())
+      {
+	// If NAN is not valid result, the input cannot include either
+	// a NAN nor values smaller than -0.
+	r.set (type, dconstm0, dconstinf, nan_state (false, false));
+	return true;
+      }
+
+    r.set_varying (type);
+    return true;
+  }
+} op_cfn_sqrt;
+
 class cfn_sincos : public range_operator_float
 {
 public:
@@ -959,6 +1036,13 @@ gimple_range_op_handler::maybe_builtin_call ()
       m_op1 = gimple_call_arg (call, 0);
       m_op2 = gimple_call_arg (call, 1);
       m_float = &op_cfn_copysign;
+      m_valid = true;
+      break;
+
+    CASE_CFN_SQRT:
+    CASE_CFN_SQRT_FN:
+      m_op1 = gimple_call_arg (call, 0);
+      m_float = &op_cfn_sqrt;
       m_valid = true;
       break;
 
