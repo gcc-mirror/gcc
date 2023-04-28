@@ -283,9 +283,5 @@ vbool64_t test_shortcut_for_riscv_vmsgeu_case_6(vuint8mf8_t v1, size_t vl) {
   return __riscv_vmsgeu_vv_u8mf8_b64(v1, v1, vl);
 }
 
-/* { dg-final { scan-assembler-times {vmseq\.vv\sv[0-9],\s*v[0-9],\s*v[0-9]} 7 } } */
-/* { dg-final { scan-assembler-times {vmsle\.vv\sv[0-9],\s*v[0-9],\s*v[0-9]} 7 } } */
-/* { dg-final { scan-assembler-times {vmsleu\.vv\sv[0-9],\s*v[0-9],\s*v[0-9]} 7 } } */
-/* { dg-final { scan-assembler-times {vmsge\.vv\sv[0-9],\s*v[0-9],\s*v[0-9]} 7 } } */
-/* { dg-final { scan-assembler-times {vmsgeu\.vv\sv[0-9],\s*v[0-9],\s*v[0-9]} 7 } } */
 /* { dg-final { scan-assembler-times {vmclr\.m\sv[0-9]} 35 } } */
+/* { dg-final { scan-assembler-times {vmset\.m\sv[0-9]} 35 } } */
