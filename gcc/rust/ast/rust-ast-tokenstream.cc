@@ -41,6 +41,89 @@ pop_group (std::vector<ProcMacro::TokenStream> &streams,
   streams.back ().push (tt);
 }
 
+static void
+dispatch_integer_literals (ProcMacro::TokenStream &ts, TokenPtr &token)
+{
+  std::string::size_type sz;
+  auto str = token->as_string ();
+  unsigned long long uvalue;
+  long long svalue;
+  bool suffixed = false;
+
+  switch (token->get_type_hint ())
+    {
+    case CORETYPE_U8:
+      uvalue = std::stoull (str, &sz);
+      suffixed = sz == str.length ();
+      ts.push (ProcMacro::TokenTree::make_tokentree (
+	ProcMacro::Literal::make_u8 (uvalue, suffixed)));
+      break;
+    case CORETYPE_U16:
+      uvalue = std::stoull (str, &sz);
+      suffixed = sz == str.length ();
+      ts.push (ProcMacro::TokenTree::make_tokentree (
+	ProcMacro::Literal::make_u16 (uvalue, suffixed)));
+      break;
+    case CORETYPE_U32:
+      uvalue = std::stoull (str, &sz);
+      suffixed = sz == str.length ();
+      ts.push (ProcMacro::TokenTree::make_tokentree (
+	ProcMacro::Literal::make_u32 (uvalue, suffixed)));
+      break;
+    case CORETYPE_U64:
+      uvalue = std::stoull (str, &sz);
+      suffixed = sz == str.length ();
+      ts.push (ProcMacro::TokenTree::make_tokentree (
+	ProcMacro::Literal::make_u32 (uvalue, suffixed)));
+      break;
+    case CORETYPE_I8:
+      svalue = std::stoll (str, &sz);
+      suffixed = sz == str.length ();
+      ts.push (ProcMacro::TokenTree::make_tokentree (
+	ProcMacro::Literal::make_i8 (svalue, suffixed)));
+      break;
+    case CORETYPE_I16:
+      svalue = std::stoll (str, &sz);
+      suffixed = sz == str.length ();
+      ts.push (ProcMacro::TokenTree::make_tokentree (
+	ProcMacro::Literal::make_i16 (svalue, suffixed)));
+      break;
+    case CORETYPE_I32:
+      svalue = std::stoll (str, &sz);
+      suffixed = sz == str.length ();
+      ts.push (ProcMacro::TokenTree::make_tokentree (
+	ProcMacro::Literal::make_i32 (svalue, suffixed)));
+      break;
+    case CORETYPE_I64:
+      svalue = std::stoll (str, &sz);
+      suffixed = sz == str.length ();
+      ts.push (ProcMacro::TokenTree::make_tokentree (
+	ProcMacro::Literal::make_i32 (svalue, suffixed)));
+      break;
+    case CORETYPE_INT:
+      svalue = std::stoll (str, &sz);
+      suffixed = sz == str.length ();
+      ts.push (ProcMacro::TokenTree::make_tokentree (
+	ProcMacro::Literal::make_isize (svalue, suffixed)));
+      break;
+    case CORETYPE_UINT:
+      uvalue = std::stoull (str, &sz);
+      suffixed = sz == str.length ();
+      ts.push (ProcMacro::TokenTree::make_tokentree (
+	ProcMacro::Literal::make_usize (uvalue, suffixed)));
+      break;
+    case CORETYPE_UNKNOWN:
+      svalue = std::stoll (str, &sz);
+      suffixed = sz == str.length ();
+      ts.push (ProcMacro::TokenTree::make_tokentree (
+	ProcMacro::Literal::make_i32 (svalue, false)));
+      break;
+    default:
+      gcc_unreachable ();
+      break;
+    }
+}
+
 ProcMacro::TokenStream
 TokenStream::collect () const
 {
@@ -51,6 +134,10 @@ TokenStream::collect () const
       switch (token->get_id ())
 	{
 	// Literals
+	case INT_LITERAL:
+	  dispatch_integer_literals (trees.back (), token);
+	  break;
+	// FIXME: Why does BYTE_CHAR_LITERAL is not handled by rustc ?
 	case CHAR_LITERAL: // TODO: UTF-8 handling
 	  trees.back ().push (ProcMacro::TokenTree::make_tokentree (
 	    ProcMacro::Literal::make_char (token->as_string ()[0])));
