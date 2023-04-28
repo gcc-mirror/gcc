@@ -1,5 +1,7 @@
 ! { dg-do run }
 
+implicit none
+
 type t
 integer :: foo
 integer, pointer :: bar(:)
@@ -18,6 +20,7 @@ tgt = 199
 !$acc enter data attach(var%bar)
 
 !$acc serial
+! { dg-warning "using .vector_length \\(32\\)., ignoring 1" "" { target openacc_nvidia_accel_selected } .-1 }
 var%foo = 5
 var%bar = 7
 !$acc end serial

@@ -3395,6 +3395,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			  && (n->u.map_op == OMP_MAP_ATTACH
 			      || n->u.map_op == OMP_MAP_DETACH))
 			{
+			  OMP_CLAUSE_DECL (node)
+			    = build_fold_addr_expr (OMP_CLAUSE_DECL (node));
 			  OMP_CLAUSE_SIZE (node) = size_zero_node;
 			  goto finalize_map_clause;
 			}
@@ -3520,8 +3522,10 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		    {
 		      /* Bare attach and detach clauses don't want any
 			 additional nodes.  */
-		      if (n->u.map_op == OMP_MAP_ATTACH
-			  || n->u.map_op == OMP_MAP_DETACH)
+		      if ((n->u.map_op == OMP_MAP_ATTACH
+			   || n->u.map_op == OMP_MAP_DETACH)
+			  && (POINTER_TYPE_P (TREE_TYPE (inner))
+			      || GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (inner))))
 			{
 			  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (inner)))
 			    {
