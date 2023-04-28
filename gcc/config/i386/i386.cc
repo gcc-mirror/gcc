@@ -25250,7 +25250,8 @@ ix86_libgcc_floating_mode_supported_p
 #undef TARGET_MEMTAG_TAG_SIZE
 #define TARGET_MEMTAG_TAG_SIZE ix86_memtag_tag_size
 
-static bool ix86_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
+static bool
+ix86_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
 {
 #ifdef OPTION_GLIBC
   if (OPTION_GLIBC)
@@ -25264,6 +25265,58 @@ static bool ix86_libc_has_fast_function (int fcode ATTRIBUTE_UNUSED)
 
 #undef TARGET_LIBC_HAS_FAST_FUNCTION
 #define TARGET_LIBC_HAS_FAST_FUNCTION ix86_libc_has_fast_function
+
+static unsigned
+ix86_libm_function_max_error (unsigned cfn, machine_mode mode,
+			      bool boundary_p)
+{
+#ifdef OPTION_GLIBC
+  bool glibc_p = OPTION_GLIBC;
+#else
+  bool glibc_p = false;
+#endif
+  if (glibc_p)
+    {
+      /* If __FAST_MATH__ is defined, glibc provides libmvec.  */
+      unsigned int libmvec_ret = 0;
+      if (!flag_trapping_math
+	  && flag_unsafe_math_optimizations
+	  && flag_finite_math_only
+	  && !flag_signed_zeros
+	  && !flag_errno_math)
+	switch (cfn)
+	  {
+	  CASE_CFN_COS:
+	  CASE_CFN_COS_FN:
+	  CASE_CFN_SIN:
+	  CASE_CFN_SIN_FN:
+	    if (!boundary_p)
+	      {
+		/* With non-default rounding modes, libmvec provides
+		   complete garbage in results.  E.g.
+		   _ZGVcN8v_sinf for 1.40129846e-45f in FE_UPWARD
+		   returns 0.00333309174f rather than 1.40129846e-45f.  */
+		if (flag_rounding_math)
+		  return ~0U;
+		/* https://www.gnu.org/software/libc/manual/html_node/Errors-in-Math-Functions.html
+		   claims libmvec maximum error is 4ulps.
+		   My own random testing indicates 2ulps for SFmode and
+		   0.5ulps for DFmode, but let's go with the 4ulps.  */
+		libmvec_ret = 4;
+	      }
+	    break;
+	  default:
+	    break;
+	  }
+      unsigned int ret = glibc_linux_libm_function_max_error (cfn, mode,
+							      boundary_p);
+      return MAX (ret, libmvec_ret);
+    }
+  return default_libm_function_max_error (cfn, mode, boundary_p);
+}
+
+#undef TARGET_LIBM_FUNCTION_MAX_ERROR
+#define TARGET_LIBM_FUNCTION_MAX_ERROR ix86_libm_function_max_error
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

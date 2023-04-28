@@ -20,3 +20,5 @@ along with GCC; see the file COPYING3.  If not see
 extern bool linux_has_ifunc_p (void);
 
 extern bool linux_libc_has_function (enum function_class fn_class, tree);
+
+extern unsigned linux_libm_function_max_error (unsigned, machine_mode, bool);

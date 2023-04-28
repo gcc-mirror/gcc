@@ -4004,6 +4004,8 @@ macro, a reasonable default is used.
 
 @hook TARGET_LIBC_HAS_FAST_FUNCTION
 
+@hook TARGET_LIBM_FUNCTION_MAX_ERROR
+
 @defmac NEXT_OBJC_RUNTIME
 Set this macro to 1 to use the "NeXT" Objective-C message sending conventions
 by default.  This calling convention involves passing the object, the selector

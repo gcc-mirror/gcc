@@ -2670,6 +2670,23 @@ DEFHOOK
  bool, (int fcode),
  default_libc_has_fast_function)
 
+DEFHOOK
+(libm_function_max_error,
+ "This hook determines expected maximum errors for math functions measured\n\
+in ulps (units of the last place).  0 means 0.5ulps precision (correctly\n\
+rounded).  ~0U means unknown errors.  The @code{combined_fn} @var{cfn}\n\
+argument should identify just which math built-in function it is rather than\n\
+its variant, @var{mode} the variant in terms of floating-point machine mode.\n\
+The hook should also take into account @code{flag_rounding_math} whether it\n\
+is maximum error just in default rounding mode, or in all possible rounding\n\
+modes.  @var{boundary_p} is @code{true} for maximum errors on intrinsic math\n\
+boundaries of functions rather than errors inside of the usual result ranges\n\
+of the functions.  E.g.@ the sin/cos function finite result is in between\n\
+-1.0 and 1.0 inclusive, with @var{boundary_p} true the function returns how\n\
+many ulps below or above those boundaries result could be.",
+ unsigned, (unsigned cfn, machine_mode mode, bool boundary_p),
+ default_libm_function_max_error)
+
 /* True if new jumps cannot be created, to replace existing ones or
    not, at the current point in the compilation.  */
 DEFHOOK
