@@ -3310,7 +3310,7 @@ add_functions (void)
   make_generic ("loc", GFC_ISYM_LOC, GFC_STD_GNU);
 
 
-  /* The next of intrinsic subprogram are the degree trignometric functions.
+  /* The next of intrinsic subprogram are the degree trigonometric functions.
      These were hidden behind the -fdec-math option, but are now simply
      included as extensions to the set of intrinsic subprograms.  */
 

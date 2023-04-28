@@ -4130,11 +4130,11 @@ simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
 	  /* For {L,U}BOUND, the value depends on whether the array
 	     is empty.  We can nevertheless simplify if the declared bound
 	     has the same value as that of an empty array, in which case
-	     the result isn't dependent on the array emptyness.  */
+	     the result isn't dependent on the array emptiness.  */
 	  if (mpz_cmp_si (declared_bound->value.integer, empty_bound) == 0)
 	    mpz_set_si (result->value.integer, empty_bound);
 	  else if (!constant_lbound || !constant_ubound)
-	    /* Array emptyness can't be determined, we can't simplify.  */
+	    /* Array emptiness can't be determined, we can't simplify.  */
 	    goto returnNull;
 	  else if (mpz_cmp (l->value.integer, u->value.integer) > 0)
 	    mpz_set_si (result->value.integer, empty_bound);

@@ -424,9 +424,9 @@ copy_walk_reduction_arg (gfc_constructor *c, gfc_expr *fn)
   return fcn;
 }
 
-/* Callback function for optimzation of reductions to scalars.  Transform ANY
+/* Callback function for optimization of reductions to scalars.  Transform ANY
    ([f1,f2,f3, ...]) to f1 .or. f2 .or. f3 .or. ..., with ANY, SUM and PRODUCT
-   correspondingly.  Handly only the simple cases without MASK and DIM.  */
+   correspondingly.  Handle only the simple cases without MASK and DIM.  */
 
 static int
 callback_reduction (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
@@ -1455,7 +1455,7 @@ simplify_io_impl_do (gfc_code **code, int *walk_subtrees,
 }
 
 /* Optimize a namespace, including all contained namespaces.
-  flag_frontend_optimize and flag_fronend_loop_interchange are
+  flag_frontend_optimize and flag_frontend_loop_interchange are
   handled separately.  */
 
 static void

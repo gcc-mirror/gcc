@@ -83,7 +83,7 @@ gfc_omp_is_optional_argument (const_tree decl)
 
 /* Check whether this DECL belongs to a Fortran optional argument.
    With 'for_present_check' set to false, decls which are optional parameters
-   themselve are returned as tree - or a NULL_TREE otherwise. Those decls are
+   themselves are returned as tree - or a NULL_TREE otherwise. Those decls are
    always pointers.  With 'for_present_check' set to true, the decl for checking
    whether an argument is present is returned; for arguments with value
    attribute this is the hidden argument and of BOOLEAN_TYPE.  If the decl is
@@ -6068,7 +6068,7 @@ gfc_add_clause_implicitly (gfc_omp_clauses *clauses_out,
 	    }
 	  if (n_firstp && n_lastp)
 	    {
-	      /* For parallel do, GCC puts firstprivatee/lastprivate
+	      /* For parallel do, GCC puts firstprivate/lastprivate
 		 on the parallel.  */
 	      if (is_parallel_do)
 		continue;
@@ -6635,7 +6635,7 @@ gfc_split_omp_clauses (gfc_code *code,
     clausesa[GFC_OMP_SPLIT_DO].nowait = true;
 
    /* Distribute allocate clause to do, parallel, distribute, teams, target
-      and taskloop.  The code below itereates over variables in the
+      and taskloop.  The code below iterates over variables in the
       allocate list and checks if that available is also in any
       privatization clause on those construct.  If yes, then we add it
       to the list of 'allocate'ed variables for that construct.  If a

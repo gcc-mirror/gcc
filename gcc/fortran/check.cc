@@ -93,7 +93,7 @@ illegal_boz_arg (gfc_expr *x)
   return false;
 }
 
-/* Some precedures take two arguments such that both cannot be BOZ.  */
+/* Some procedures take two arguments such that both cannot be BOZ.  */
 
 static bool
 boz_args_check(gfc_expr *i, gfc_expr *j)

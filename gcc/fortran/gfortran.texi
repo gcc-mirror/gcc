@@ -1407,7 +1407,7 @@ When omitted, the count is implicitly assumed to be one.
 To support legacy codes, GNU Fortran allows the comma separator
 to be omitted immediately before and after character string edit
 descriptors in @code{FORMAT} statements.  A comma with no following format
-decriptor is permited if the @option{-fdec-blank-format-item} is given on
+descriptor is permitted if the @option{-fdec-blank-format-item} is given on
 the command line. This is considered non-conforming code and is
 discouraged.
 
@@ -3893,7 +3893,7 @@ typedef enum caf_deregister_t {
 caf_deregister_t;
 @end verbatim
 
-Allows to specifiy the type of deregistration of a coarray object.  The
+Allows to specify the type of deregistration of a coarray object.  The
 @code{CAF_DEREGTYPE_COARRAY_DEALLOCATE_ONLY} flag is only allowed for
 allocatable components in derived type coarrays.
 
@@ -4858,7 +4858,7 @@ an error message; may be NULL.
 @item @emph{NOTES}
 This acts like an atomic add of one to the remote image's event variable.
 The statement is an image-control statement but does not imply sync memory.
-Still, all preceeding push communications of this image to the specified
+Still, all preceding push communications of this image to the specified
 remote image have to be completed before @code{event_wait} on the remote
 image returns.
 @end table
@@ -4903,7 +4903,7 @@ cores) followed by another waiting strategy such as a sleeping wait (possibly
 with an increasing number of sleep time) or, if possible, a futex wait.
 
 The statement is an image-control statement but does not imply sync memory.
-Still, all preceeding push communications of this image to the specified
+Still, all preceding push communications of this image to the specified
 remote image have to be completed before @code{event_wait} on the remote
 image returns.
 @end table

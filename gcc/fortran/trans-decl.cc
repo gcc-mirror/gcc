@@ -7621,7 +7621,7 @@ gfc_generate_function_code (gfc_namespace * ns)
 	  desc = desc_p;
 	else if (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_TYPE (desc_p))))
 	  {
-	    /* Character(len=*) explict-size/assumed-size array. */
+	    /* Character(len=*) explicit-size/assumed-size array. */
 	    desc = desc_p;
 	    gfc_build_qualified_array (desc, fsym);
 	  }
