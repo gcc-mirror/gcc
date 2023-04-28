@@ -1,3 +1,43 @@
+2023-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109392
+	* gcc.dg/pr109392.c: New test.
+
+2023-04-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108791
+	* gcc.dg/torture/pr108791.c: New testcase.
+
+2023-04-27  Roger Sayle  <roger@nextmovesoftware.com>
+
+	Backported from master:
+	2023-01-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/106421
+	* gcc.dg/pr106421.c: New test case.
+
+2023-04-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2023-01-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/105980
+	* g++.target/i386/pr105980.C: New test.
+
+2023-04-27  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2022-08-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/106057
+	* g++.dg/tree-ssa/pr101839.C: New test.
+
 2023-04-26  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:

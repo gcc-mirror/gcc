@@ -1,3 +1,105 @@
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/atomic: Add missing @endcond doxygen comment.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107850
+	* include/bits/erase_if.h (__erase_nodes_if): Use non-const
+	reference to the container.
+	* include/experimental/map (erase_if): Likewise.
+	* include/experimental/set (erase_if): Likewise.
+	* include/experimental/unordered_map (erase_if): Likewise.
+	* include/experimental/unordered_set (erase_if): Likewise.
+	* include/std/map (erase_if): Likewise.
+	* include/std/set (erase_if): Likewise.
+	* include/std/unordered_map (erase_if): Likewise.
+	* include/std/unordered_set (erase_if): Likewise.
+	* testsuite/23_containers/map/erasure.cc: Check with
+	const-incorrect predicate.
+	* testsuite/23_containers/set/erasure.cc: Likewise.
+	* testsuite/23_containers/unordered_map/erasure.cc: Likewise.
+	* testsuite/23_containers/unordered_set/erasure.cc: Likewise.
+	* testsuite/experimental/map/erasure.cc: Likewise.
+	* testsuite/experimental/set/erasure.cc: Likewise.
+	* testsuite/experimental/unordered_map/erasure.cc: Likewise.
+	* testsuite/experimental/unordered_set/erasure.cc: Likewise.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/random/subtract_with_carry_engine/cons/lwg3809.cc:
+	Replace non-ASCII character.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108952
+	* include/bits/uses_allocator_args.h
+	(uses_allocator_construction_args): Implement LWG 3527.
+	* testsuite/20_util/pair/astuple/get-2.cc: New test.
+	* testsuite/20_util/scoped_allocator/108952.cc: New test.
+	* testsuite/20_util/uses_allocator/lwg3527.cc: New test.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109339
+	* include/std/stop_token (_Stop_state_ptr(const stop_source&)):
+	Add attribute access with access-mode 'none'.
+	* testsuite/30_threads/stop_token/stop_source/109339.cc: New test.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107466
+	* include/bits/random.h (subtract_with_carry_engine): Use 32-bit
+	type for default seed. Use 0u as default argument for
+	subtract_with_carry_engine(result_type) constructor and
+	seed(result_type) member function.
+	* include/bits/random.tcc (subtract_with_carry_engine): Use
+	32-bit type for default seed and engine used for initial state.
+	* testsuite/26_numerics/random/subtract_with_carry_engine/cons/lwg3809.cc:
+	New test.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/mofunc_impl.h: Fix typo in doxygen comment.
+
+2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (SOURCE_BROWSER): Only set to YES for
+	HTML docs.
+	* include/bits/gslice_array.h (_DEFINE_VALARRAY_OPERATOR): Omit
+	from doxygen docs.
+	* include/bits/indirect_array.h (_DEFINE_VALARRAY_OPERATOR):
+	Likewise.
+	* include/bits/mask_array.h (_DEFINE_VALARRAY_OPERATOR):
+	Likewise.
+	* include/bits/slice_array.h (_DEFINE_VALARRAY_OPERATOR):
+	Likewise.
+	* include/std/valarray (_DEFINE_VALARRAY_UNARY_OPERATOR)
+	(_DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT)
+	(_DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT)
+	(_DEFINE_BINARY_OPERATOR): Likewise.
+
 2023-04-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/103755

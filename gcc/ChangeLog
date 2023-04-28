@@ -1,3 +1,50 @@
+2023-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109392
+	* tree-vect-generic.cc (tree_vec_extract): Handle failure
+	of maybe_push_res_to_seq better.
+
+2023-04-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-02-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108791
+	* tree-ssa-forwprop.cc (optimize_vector_load): Build
+	the ADDR_EXPR of a TARGET_MEM_REF using a more meaningful
+	type.
+
+2023-04-27  Roger Sayle  <roger@nextmovesoftware.com>
+
+	Backported from master:
+	2023-01-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/106421
+	* cprop.cc (bypass_block): Check that DEST is local to this
+	function (non-NULL) before calling find_edge.
+
+2023-04-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2023-01-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/105980
+	* config/i386/i386.cc (x86_output_mi_thunk): Disable
+	-mforce-indirect-call for PIC in 32-bit mode.
+
+2023-04-27  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2022-08-12  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/106057
+	* ipa-devirt.cc (type_or_derived_type_possibly_instantiated_p): New
+	function.
+	(possible_polymorphic_call_targets): Use it.
+
 2023-04-26  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
