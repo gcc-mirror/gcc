@@ -7787,6 +7787,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cond (ne @0 integer_zerop@1) (func@3 (convert? @0)) integer_zerop@2)
   @3))
 
+/* a != 0 ? FUN(a) : CST -> Fun(a) for some CLRSB builtins
+   where CST is precision-1. */
+(for func (CLRSB)
+ (simplify
+  (cond (ne @0 integer_zerop@1) (func@4 (convert?@3 @0)) INTEGER_CST@2)
+  (if (wi::to_widest (@2) == TYPE_PRECISION (TREE_TYPE (@3)) - 1)
+   @4)))
+
 #if GIMPLE
 /* a != 0 ? CLZ(a) : CST -> .CLZ(a) where CST is the result of the internal function for 0. */
 (for func (CLZ)
