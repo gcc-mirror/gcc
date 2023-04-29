@@ -1,3 +1,12 @@
+2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/67791
+	* src/c++11/thread.cc (thread::_M_start_thread(_State_ptr, void (*)())):
+	Check that gthreads is available before calling __gthread_create.
+
 2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
