@@ -1,3 +1,29 @@
+2023-04-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-03-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106969
+	* parser.cc (cp_parser_class_specifier): Clear current_class_ptr
+	and current_class_ref sooner, before parsing a class definition.
+
+2023-04-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-03-01  Patrick Palka  <ppalka@redhat.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/108219
+	PR c++/108218
+	* constexpr.cc (fold_to_constant): Define.
+	(maybe_constant_value): Move up early exit test for unevaluated
+	operands.  Try reducing an unevaluated operand to a constant via
+	fold_to_constant.
+	(fold_non_dependent_expr_template): Add early exit test for
+	CONSTANT_CLASS_P nodes.  Try reducing an unevaluated operand
+	to a constant via fold_to_constant.
+	* cp-tree.h (fold_to_constant): Declare.
+
 2023-04-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/108795

@@ -1,3 +1,24 @@
+2023-04-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-03-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106969
+	* g++.dg/lookup/name-clash11.C: Fix ASSERT macro definition in
+	C++98 mode.
+	* g++.dg/lookup/this2.C: New test.
+
+2023-04-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-03-01  Patrick Palka  <ppalka@redhat.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/108219
+	PR c++/108218
+	* g++.dg/cpp0x/new6.C: New test.
+	* g++.dg/cpp2a/concepts-new1.C: New test.
+
 2023-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
