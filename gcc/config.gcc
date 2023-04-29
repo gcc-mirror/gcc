@@ -2287,7 +2287,7 @@ lm32-*-rtems*)
 	tmake_file="${tmake_file} lm32/t-rtems"
          ;;
 lm32-*-uclinux*)
-        tm_file="elfos.h ${tm_file} gnu-user.h linux.h lm32/uclinux-elf.h"
+        tm_file="elfos.h ${tm_file} gnu-user.h linux.h glibc-stdint.h lm32/uclinux-elf.h"
 	tmake_file="${tmake_file} lm32/t-lm32"
         ;;
 m32r-*-elf*)
@@ -3488,7 +3488,7 @@ v850*-*-*)
 	use_gcc_stdint=wrap
 	;;
 vax-*-linux*)
-	tm_file="${tm_file} elfos.h gnu-user.h linux.h vax/elf.h vax/linux.h"
+	tm_file="${tm_file} elfos.h gnu-user.h linux.h glibc-stdint.h vax/elf.h vax/linux.h"
 	extra_options="${extra_options} vax/elf.opt"
 	;;
 vax-*-netbsdelf*)
