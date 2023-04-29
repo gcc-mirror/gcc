@@ -48,6 +48,10 @@
     (CARRY_REG 16)
   ]
 )
+
+(define_code_iterator any_lshift [ashift lshiftrt])
+(define_code_iterator any_or_plus [plus ior xor])
+(define_code_iterator any_rotate [rotate rotatert])
 
 ;; ::::::::::::::::::::
 ;; ::
@@ -1300,4 +1304,87 @@
    && peep2_reg_dead_p (3, operands[0])"
   [(parallel [(set (match_dup 2) (match_dup 1))
               (set (match_dup 1) (match_dup 2))])])
+
+;; Recognize shl+and and shr+and as macro instructions.
+(define_insn_and_split "*<code>_and_internal"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+        (and:HI (any_lshift:HI (match_operand 1 "register_operand" "0")
+			       (match_operand 2 "const_int_operand" "i"))
+		(match_operand 3 "const_int_operand" "i")))
+   (clobber (reg:BI CARRY_REG))]
+  "IN_RANGE (INTVAL (operands[2]), 0, 15)"
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0) (any_lshift:HI (match_dup 1) (match_dup 2)))
+	      (clobber (reg:BI CARRY_REG))])
+   (set (match_dup 0) (and:HI (match_dup 0) (match_dup 3)))])
+
+;; Swap nibbles instruction
+(define_insn "*swpn"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(any_or_plus:HI
+	  (any_or_plus:HI
+	    (and:HI (ashift:HI (match_operand:HI 1 "register_operand" "0")
+			       (const_int 4))
+		    (const_int 240))
+	    (and:HI (lshiftrt:HI (match_dup 1) (const_int 4))
+		    (const_int 15)))
+	  (and:HI (match_dup 1) (const_int -256))))]
+  ""
+  "swpn %0")
+
+(define_insn "*swpn_zext"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(any_or_plus:HI
+	  (and:HI (ashift:HI (match_operand:HI 1 "register_operand" "0")
+			     (const_int 4))
+		  (const_int 240))
+	  (and:HI (lshiftrt:HI (match_dup 1) (const_int 4))
+		  (const_int 15))))]
+  ""
+  "swpn %0 | and %0,#255"
+  [(set_attr "length" "6")])
+
+(define_insn "*swpn_sext"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(sign_extend:HI
+	  (rotate:QI (subreg:QI (match_operand:HI 1 "register_operand" "0") 0)
+		     (const_int 4))))]
+  ""
+  "swpn %0 | cbw %0"
+  [(set_attr "length" "4")])
+
+(define_insn "*swpn_sext_2"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(sign_extend:HI
+	  (subreg:QI
+	    (any_or_plus:HI
+	      (ashift:HI (match_operand:HI 1 "register_operand" "0")
+			 (const_int 4))
+	      (subreg:HI (lshiftrt:QI (subreg:QI (match_dup 1) 0)
+				      (const_int 4)) 0)) 0)))]
+  ""
+  "swpn %0 | cbw %0"
+  [(set_attr "length" "4")])
+
+;; Recognize swpn_zext+ior as a macro instruction.
+(define_insn_and_split "*swpn_zext_ior"
+  [(set (match_operand:HI 0 "register_operand")
+	(any_or_plus:HI
+	  (any_or_plus:HI
+	    (and:HI (ashift:HI (match_operand:HI 1 "register_operand")
+			       (const_int 4))
+		    (const_int 240))
+	    (and:HI (lshiftrt:HI (match_dup 1) (const_int 4))
+		    (const_int 15)))
+	  (match_operand:HI 2 "nonmemory_operand")))]
+  "can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+ [(set (match_dup 3) (ior:HI (and:HI (ashift:HI (match_dup 1) (const_int 4))
+				     (const_int 240))
+			     (and:HI (lshiftrt:HI (match_dup 1) (const_int 4))
+				     (const_int 15))))
+  (set (match_dup 0) (ior:HI (match_dup 3) (match_dup 2)))]
+  "operands[3] = gen_reg_rtx (HImode);")
 
