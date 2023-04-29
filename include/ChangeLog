@@ -1,3 +1,7 @@
+2023-04-28  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* ctf.h: Import latest version from binutils/libctf.
+
 2023-04-19  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* xtensa-dynconfig.h (xtensa_config_v4): New struct.

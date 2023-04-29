@@ -1,3 +1,45 @@
+2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (gamma_distribution): Add to the right
+	doxygen group.
+	(discrete_distribution, piecewise_constant_distribution)
+	(piecewise_linear_distribution): Create a new doxygen group and
+	fix the incomplete doxygen comments.
+	* include/bits/uniform_int_dist.h (uniform_int_distribution):
+	Add to doxygen group.
+
+2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/uses_allocator.h: Add missing @file comment.
+	* include/bits/regex.tcc: Remove stray doxygen comments.
+	* include/experimental/memory_resource: Likewise.
+	* include/std/bit: Tweak doxygen @cond comments.
+	* include/std/expected: Likewise.
+	* include/std/numbers: Likewise.
+
+2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (STRIP_FROM_PATH): Remove prefixes
+	from header paths.
+
+2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/move.h: Simplify opening/closing namespace std.
+
+2023-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/108969
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.32): Export
+	_ZSt21ios_base_library_initv.
+	* testsuite/util/testsuite_abi.cc (check_version): Add GLIBCXX_3.4.32
+	symver and make it the latestp.
+	* src/c++98/ios_init.cc (ios_base_library_init): New alias.
+	* acinclude.m4 (libtool_VERSION): Change to 6:32:0.
+	* include/std/iostream: If init_priority attribute is supported
+	and _GLIBCXX_SYMVER_GNU, force undefined _ZSt21ios_base_library_initv
+	symbol into the object.
+	* configure: Regenerated.
+
 2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/mofunc_impl.h: Fix typo in doxygen comment.

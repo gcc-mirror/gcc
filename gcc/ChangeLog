@@ -1,3 +1,200 @@
+2023-04-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* doc/install.texi: Fix documentation typo
+
+2023-04-28  Matevos Mehrabyan  <matevosmehrabyan@gmail.com>
+
+	* config/riscv/iterators.md (only_div, paired_mod): New iterators.
+	(u): Add div/udiv cases.
+	* config/riscv/riscv-protos.h (riscv_use_divmod_expander): Prototype.
+	* config/riscv/riscv.cc (struct riscv_tune_param): Add field for
+	divmod expansion.
+	(rocket_tune_info, sifive_7_tune_info): Initialize new field.
+	(thead_c906_tune_info): Likewise.
+	(optimize_size_tune_info): Likewise.
+	(riscv_use_divmod_expander): New function.
+	* config/riscv/riscv.md (<u>divmod<mode>4): New expander.
+
+2023-04-28  Karen Sargsyan  <karen1999411@gmail.com>
+
+	* config/riscv/bitmanip.md: Added clmulr instruction.
+	* config/riscv/riscv-builtins.cc (AVAIL): Add new.
+	* config/riscv/riscv.md: (UNSPEC_CLMULR): Add new unspec type.
+	(type): Add clmul
+	* config/riscv/riscv-cmo.def: Added built-in function for clmulr.
+	* config/riscv/crypto.md: Move clmul[h] instructions to bitmanip.md.
+	* config/riscv/riscv-scalar-crypto.def: Move clmul[h] built-in
+	functions to riscv-cmo.def.
+	* config/riscv/generic.md: Add clmul to list of instructions
+	using the generic_imul reservation.
+
+2023-04-28  Jivan Hakobyan  <jivanhakobyan9@gmail.com>
+
+	* config/riscv/bitmanip.md: Added expanders for minu/maxu instructions
+
+2023-04-28  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/100958
+	* tree-ssa-phiopt.cc (two_value_replacement): Remove.
+	(pass_phiopt::execute): Don't call two_value_replacement.
+	* match.pd (a !=/== CST1 ? CST2 : CST3): Add pattern to
+	handle what two_value_replacement did.
+
+2023-04-28  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd: Add patterns for
+	"(A CMP B) ? MIN/MAX<A, C> : MIN/MAX <B, C>".
+
+2023-04-28  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd: Factor out the deciding the min/max from
+	the "(cond (cmp (convert1? x) c1) (convert2? x) c2)"
+	pattern to ...
+	* fold-const.cc (minmax_from_comparison): this new function.
+	* fold-const.h (minmax_from_comparison): New prototype.
+
+2023-04-28  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/109476
+	* lower-subreg.cc: Include explow.h for force_reg.
+	(find_decomposable_shift_zext): Pass an additional SPEED_P argument.
+	If decomposing a suitable LSHIFTRT and we're not splitting
+	ZERO_EXTEND (based on the current SPEED_P), then use a ZERO_EXTEND
+	instead of setting a high part SUBREG to zero, which helps combine.
+	(decompose_multiword_subregs): Update call to resolve_shift_zext.
+
+2023-04-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-data-refs.cc (vect_analyze_data_refs): Always
+	consider scatters.
+	* tree-vect-stmts.cc (vect_model_store_cost): Pass in the
+	gather-scatter info and cost emulated scatters accordingly.
+	(get_load_store_type): Support emulated scatters.
+	(vectorizable_store): Likewise.  Emulate them by extracting
+	scalar offsets and data, doing scalar stores.
+
+2023-04-28  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost):
+	Tame down element extracts and scalar loads for gather/scatter
+	similar to elementwise strided accesses.
+
+2023-04-28  Pan Li  <pan2.li@intel.com>
+	    kito-cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/vector.md: Add new define split to perform
+	the simplification.
+
+2023-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/109652
+	* ipa-param-manipulation.cc
+	(ipa_param_body_adjustments::modify_expression): Allow
+	conversion of a register to a non-register type.  Elide
+	conversions inside BIT_FIELD_REFs.
+
+2023-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109644
+	* tree-cfg.cc (verify_types_in_gimple_reference): Check
+	register constraints on the outermost VIEW_CONVERT_EXPR
+	only.  Do not allow register or invariant bases on
+	multi-level or possibly variable index handled components.
+
+2023-04-28  Richard Biener  <rguenther@suse.de>
+
+	* gimplify.cc (gimplify_compound_lval): When there's a
+	non-register type produced by one of the handled component
+	operations make sure we get a non-register base.
+
+2023-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108752
+	* tree-vect-generic.cc (build_replicated_const): Rename
+	to build_replicated_int_cst and move to tree.{h,cc}.
+	(do_plus_minus): Adjust.
+	(do_negate): Likewise.
+	* tree-vect-stmts.cc (vectorizable_operation): Emit emulated
+	arithmetic vector operations in lowered form.
+	* tree.h (build_replicated_int_cst): Declare.
+	* tree.cc (build_replicated_int_cst): Moved from
+	tree-vect-generic.cc build_replicated_const.
+
+2023-04-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* config/aarch64/aarch64-simd.md (aarch64_rbit<mode>): Rename to...
+	(aarch64_rbit<mode><vczle><vczbe>): ... This.
+	(neg<mode>2): Rename to...
+	(neg<mode>2<vczle><vczbe>): ... This.
+	(abs<mode>2): Rename to...
+	(abs<mode>2<vczle><vczbe>): ... This.
+	(aarch64_abs<mode>): Rename to...
+	(aarch64_abs<mode><vczle><vczbe>): ... This.
+	(one_cmpl<mode>2): Rename to...
+	(one_cmpl<mode>2<vczle><vczbe>): ... This.
+	(clrsb<mode>2): Rename to...
+	(clrsb<mode>2<vczle><vczbe>): ... This.
+	(clz<mode>2): Rename to...
+	(clz<mode>2<vczle><vczbe>): ... This.
+	(popcount<mode>2): Rename to...
+	(popcount<mode>2<vczle><vczbe>): ... This.
+
+2023-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-range-op.cc (class cfn_sqrt): New type.
+	(op_cfn_sqrt): New variable.
+	(gimple_range_op_handler::maybe_builtin_call): Handle
+	CASE_CFN_SQRT{,_FN}.
+
+2023-04-28  Aldy Hernandez  <aldyh@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* value-range.h (frange_nextafter): Declare.
+	* gimple-range-op.cc (class cfn_sincos): New.
+	(op_cfn_sin, op_cfn_cos): New variables.
+	(gimple_range_op_handler::maybe_builtin_call): Handle
+	CASE_CFN_{SIN,COS}{,_FN}.
+
+2023-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* target.def (libm_function_max_error): New target hook.
+	* doc/tm.texi.in (TARGET_LIBM_FUNCTION_MAX_ERROR): Add.
+	* doc/tm.texi: Regenerated.
+	* targhooks.h (default_libm_function_max_error,
+	glibc_linux_libm_function_max_error): Declare.
+	* targhooks.cc: Include case-cfn-macros.h.
+	(default_libm_function_max_error,
+	glibc_linux_libm_function_max_error): New functions.
+	* config/linux.h (TARGET_LIBM_FUNCTION_MAX_ERROR): Redefine.
+	* config/linux-protos.h (linux_libm_function_max_error): Declare.
+	* config/linux.cc: Include target.h and targhooks.h.
+	(linux_libm_function_max_error): New function.
+	* config/arc/arc.cc: Include targhooks.h and case-cfn-macros.h.
+	(arc_libm_function_max_error): New function.
+	(TARGET_LIBM_FUNCTION_MAX_ERROR): Redefine.
+	* config/i386/i386.cc (ix86_libc_has_fast_function): Formatting fix.
+	(ix86_libm_function_max_error): New function.
+	(TARGET_LIBM_FUNCTION_MAX_ERROR): Redefine.
+	* config/rs6000/rs6000-protos.h
+	(rs6000_linux_libm_function_max_error): Declare.
+	* config/rs6000/rs6000-linux.cc: Include target.h, targhooks.h, tree.h
+	and case-cfn-macros.h.
+	(rs6000_linux_libm_function_max_error): New function.
+	* config/rs6000/linux.h (TARGET_LIBM_FUNCTION_MAX_ERROR): Redefine.
+	* config/rs6000/linux64.h (TARGET_LIBM_FUNCTION_MAX_ERROR): Redefine.
+	* config/or1k/or1k.cc: Include targhooks.h and case-cfn-macros.h.
+	(or1k_libm_function_max_error): New function.
+	(TARGET_LIBM_FUNCTION_MAX_ERROR): Redefine.
+
+2023-04-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* gimple-harden-conditionals.cc (insert_edge_check_and_trap):
+	Move detach value calls...
+	(pass_harden_conditional_branches::execute): ... here.
+	(pass_harden_compares::execute): Detach values before
+	compares.
+
 2023-04-27  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (cmul<conj_op><mode>3): Use gcn_gen_undef.

@@ -1,3 +1,7 @@
+2023-04-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Make-lang.in: Merge perf data collected when compiling cc1plus and runtime libraries
+
 2023-04-27  Jason Merrill  <jason@redhat.com>
 
 	* call.cc (print_conversion_rejection): Use iloc_sentinel.

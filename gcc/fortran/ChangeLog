@@ -1,3 +1,33 @@
+2023-04-28  Julian Brown  <julian@codesourcery.com>
+
+	PR fortran/109622
+	* trans-openmp.cc (gfc_trans_omp_clauses): Attach/detach clause fixes.
+
+2023-04-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.texi: Fix typos.
+	* decl.cc: Fix typos in comments and in a variable name.
+	* arith.cc: Fix comment typos.
+	* check.cc: Likewise.
+	* class.cc: Likewise.
+	* dependency.cc: Likewise.
+	* expr.cc: Likewise.
+	* frontend-passes.cc: Likewise.
+	* gfortran.h: Likewise.
+	* intrinsic.cc: Likewise.
+	* iresolve.cc: Likewise.
+	* match.cc: Likewise.
+	* module.cc: Likewise.
+	* primary.cc: Likewise.
+	* resolve.cc: Likewise.
+	* simplify.cc: Likewise.
+	* trans-array.cc: Likewise.
+	* trans-decl.cc: Likewise.
+	* trans-expr.cc: Likewise.
+	* trans-intrinsic.cc: Likewise.
+	* trans-openmp.cc: Likewise.
+	* trans-stmt.cc: Likewise.
+
 2023-04-25  Tobias Burnus  <tobias@codesourcery.com>
 
 	* openmp.cc (gfc_resolve_omp_do_blocks): Handle zero

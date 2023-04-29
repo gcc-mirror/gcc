@@ -1,3 +1,97 @@
+2023-04-28  Hans-Peter Nilsson  <hp@axis.com>
+
+	* lib/scanasm.exp (parse_function_bodies): Set fluff to include
+	empty lines (besides optionally leading whitespace).
+
+2023-04-28  Matevos Mehrabyan  <matevosmehrabyan@gmail.com>
+
+	* gcc.target/riscv/divmod-1.c: New testcase.
+	* gcc.target/riscv/divmod-2.c: New testcase.
+
+2023-04-28  Karen Sargsyan  <karen1999411@gmail.com>
+
+	* gcc.target/riscv/zbc32.c: New test.
+	* gcc.target/riscv/zbc64.c: New test.
+
+2023-04-28  Jivan Hakobyan  <jivanhakobyan9@gmail.com>
+
+	* gcc.target/riscv/zbb-min-max-02.c: Updated scanning check.
+	* gcc.target/riscv/zbb-min-max-03.c: New tests.
+
+2023-04-28  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/minmax-16.c: Update testcase slightly.
+	* gcc.dg/tree-ssa/split-path-1.c: Also disable tree-loop-if-convert
+	as that now does the combining.
+
+2023-04-28  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/109476
+	* gcc.target/avr/mmcu/pr109476.c: New test case.
+
+2023-04-28  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/pr25413a.c: Un-XFAIL everywhere.
+	* gcc.dg/vect/vect-71.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s4113.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-s491.c: Likewise.
+	* gcc.dg/vect/tsvc/vect-tsvc-vas.c: Likewise.
+
+2023-04-28  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/pr89618-2.c: New testcase.
+	* gcc.target/i386/pr88531-2b.c: Adjust.
+	* gcc.target/i386/pr88531-2c.c: Likewise.
+
+2023-04-28  Pan Li  <pan2.li@intel.com>
+	    kito-cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/base/integer_compare_insn_shortcut.c: New test.
+
+2023-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/109652
+	* gcc.dg/torture/pr109652.c: New testcase.
+
+2023-04-28  Julian Brown  <julian@codesourcery.com>
+
+	PR fortran/109622
+	* gfortran.dg/goacc/attach-descriptor.f90: Adjust expected output.
+
+2023-04-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* gcc.target/aarch64/simd/pr99195_1.c: Add tests for unary integer ops.
+
+2023-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tree-ssa/range-sqrt.c: New test.
+	* gfortran.dg/ieee/ieee_6.f90: Make x volatile to avoid
+	ranger optimizing sqrt (-1) call away because it is only used in
+	test for whether it returns NaN.
+
+2023-04-28  Aldy Hernandez  <aldyh@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tree-ssa/range-sincos.c: New test.
+
+2023-04-28  Jan Beulich  <jbeulich@suse.com>
+
+	* g++.dg/modules/alias-1_b.C: Add -fno-canonical-system-headers.
+	* g++.dg/modules/alias-1_d.C: Likewise.
+	* g++.dg/modules/alias-1_e.C: Likewise.
+	* g++.dg/modules/alias-1_f.C: Likewise.
+	* g++.dg/modules/cpp-6_c.C: Likewise.
+	* g++.dg/modules/dir-only-2_b.C: Likewise.
+
+2023-04-28  Jan Beulich  <jbeulich@suse.com>
+
+	* g++.dg/modules/bad-mapper-3.C: Relax failure pattern.
+
+2023-04-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* c-c++-common/torture/harden-cond-comp.c: New.
+
 2023-04-27  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/template/copy1.C: Adjust error lines.

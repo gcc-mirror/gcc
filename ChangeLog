@@ -1,3 +1,8 @@
+2023-04-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Makefile.in: Define PROFILE_MERGER
+	* Makefile.tpl: Define PROFILE_MERGER
+
 2023-04-27  Robin Dapp  <rdapp@ventanamicro.com>
 
 	* MAINTAINERS: Change my email address.

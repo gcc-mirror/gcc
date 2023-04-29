@@ -1,3 +1,7 @@
+2023-04-28  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* Make-lang.in: Merge perf data collected when compiling cc1 and runtime libraries
+
 2023-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/109409
