@@ -518,13 +518,13 @@
 
 ;; Negation
 
-(define_expand "neghi2"
-  [(set (match_operand:HI 0 "register_operand" "")
-	(not:HI (match_operand:HI 1 "register_operand" "")))
-   (parallel [(set (match_dup 0) (plus:HI (match_dup 0) (const_int 1)))
+(define_insn "neghi2"
+  [(parallel [(set (match_operand:HI 0 "register_operand" "=r")
+		   (neg:HI (match_operand:HI 1 "register_operand" "0")))
 	      (clobber (reg:BI CARRY_REG))])]
   ""
-  "")
+  "not %0 | add %0,#1"
+  [(set_attr "length" "4")])
 
 ;; ::::::::::::::::::::
 ;; ::
@@ -558,6 +558,24 @@
    (clobber (reg:BI CARRY_REG))]
   ""
   "shr %0,%2")
+
+;; HImode rotate left by 1 bit
+(define_insn "*rotatehi_1"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(rotate:HI (match_operand:HI 1 "register_operand" "0")
+		   (const_int 1)))
+   (clobber (reg:BI CARRY_REG))]
+  ""
+  "shl %0,#1 | adc %0,#0"
+  [(set_attr "length" "4")])
+
+;; HImode rotate left by 8 bits
+(define_insn "*<code>hi_8"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(any_rotate:HI (match_operand:HI 1 "register_operand" "0")
+		       (const_int 8)))]
+  ""
+  "swpb %0")
 
 ;; ::::::::::::::::::::
 ;; ::
