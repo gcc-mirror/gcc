@@ -1,3 +1,15 @@
+2023-04-28  Andrew Stubbs  <ams@codesourcery.com>
+
+	Backported from master:
+	2023-04-27  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn-valu.md (cmul<conj_op><mode>3): Use gcn_gen_undef.
+	(cml<addsub_as><mode>4): Likewise.
+	(vec_addsub<mode>3): Likewise.
+	(cadd<rot><mode>3): Likewise.
+	(vec_fmaddsub<mode>4): Likewise.
+	(vec_fmsubadd<mode>4): Likewise, and use sub for the odd lanes.
+
 2023-04-26  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backported from master:

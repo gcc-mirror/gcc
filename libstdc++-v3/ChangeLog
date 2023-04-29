@@ -1,3 +1,86 @@
+2023-04-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-04-24  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/max_size_type.h (__max_diff_type::operator>>=):
+	Fix propagation of sign bit.
+	* testsuite/std/ranges/iota/max_size_type.cc: Avoid using the
+	non-standard 'signed typedef-name'.  Add some compile-time tests
+	for right-shifting a negative __max_diff_type value by more than
+	one.
+
+2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (gamma_distribution): Add to the right
+	doxygen group.
+	(discrete_distribution, piecewise_constant_distribution)
+	(piecewise_linear_distribution): Create a new doxygen group and
+	fix the incomplete doxygen comments.
+	* include/bits/uniform_int_dist.h (uniform_int_distribution):
+	Add to doxygen group.
+
+2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/uses_allocator.h: Add missing @file comment.
+	* include/bits/regex.tcc: Remove stray doxygen comments.
+	* include/experimental/memory_resource: Likewise.
+	* include/std/bit: Tweak doxygen @cond comments.
+	* include/std/expected: Likewise.
+	* include/std/numbers: Likewise.
+
+2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (STRIP_FROM_PATH): Remove prefixes
+	from header paths.
+
+2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/move.h: Simplify opening/closing namespace std.
+
+2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/memory_resource.h: Improve doxygen comments.
+	* include/std/memory_resource: Likewise.
+
+2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/40380
+	* include/bits/basic_string.h: Improve doxygen comments.
+	* include/bits/cow_string.h: Likewise.
+	* include/bits/forward_list.h: Likewise.
+	* include/bits/fs_dir.h: Likewise.
+	* include/bits/fs_path.h: Likewise.
+	* include/bits/quoted_string.h: Likewise.
+	* include/bits/stl_bvector.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* include/bits/unordered_map.h: Likewise.
+	* include/bits/unordered_set.h: Likewise.
+	* include/std/filesystem: Likewise.
+	* include/std/iomanip: Likewise.
+
 2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
