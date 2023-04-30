@@ -5,4 +5,4 @@ short neg(short x)
 {
   return -x;
 }
-/* { dg-final { scan-assembler "not r2 | add r2,#1" } } */
+/* { dg-final { scan-assembler "not r2 | inc r2" } } */

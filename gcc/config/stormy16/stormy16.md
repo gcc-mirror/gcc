@@ -519,11 +519,10 @@
 ;; Negation
 
 (define_insn "neghi2"
-  [(parallel [(set (match_operand:HI 0 "register_operand" "=r")
-		   (neg:HI (match_operand:HI 1 "register_operand" "0")))
-	      (clobber (reg:BI CARRY_REG))])]
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(neg:HI (match_operand:HI 1 "register_operand" "0")))]
   ""
-  "not %0 | add %0,#1"
+  "not %0 | inc %0"
   [(set_attr "length" "4")])
 
 ;; ::::::::::::::::::::
