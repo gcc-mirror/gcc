@@ -1,9 +1,9 @@
 /* Test -Wno-builtin-macro-redefined warnings.  */
 
 /* { dg-do compile } */
-/* { dg-options "-Wno-builtin-macro-redefined -U__DATE__ -D__TIME__=X" } */
+/* { dg-options "-Wno-builtin-macro-redefined -U__DATE__ -D__TIME__=X -D__LINE__=0" } */
 
-/* Check date, time, and datestamp built-ins warnings may be suppressed.  */
+/* Check date, time, datestamp and line built-ins warnings may be suppressed.  */
 
 #if defined(__DATE__)
 #error "__DATE__ is defined, but should not be (-U command line error)"
@@ -13,6 +13,11 @@
 #if __TIME__ != X
 #error "__TIME__ is not defined as expected (-D command line error)"
 /* { dg-bogus "__TIME__ is not defined" "" { target *-*-* } .-1 } */
+#endif
+
+#if __LINE__ != 0
+#error "__LINE__ is not defined as expected (-D command line error)"
+/* { dg-bogus "__LINE__ is not defined" "" { target *-*-* } .-1 } */
 #endif
 
 #if !defined(__TIMESTAMP__)
@@ -53,6 +58,18 @@
 #undef __TIMESTAMP__         /* Undefine while defined.  */
 
 
+#undef __LINE__              /* Undefine while defined.  */
+#undef __LINE__              /* Undefine while already undefined.  */
+
+#define __LINE__ "1"         /* Define while undefined.  */
+#define __LINE__ "1"         /* Re-define while defined.  */ /* { dg-line line_prev } */
+
+#define __LINE__ "2"         /* { dg-warning "-:\"__LINE__\" redefined" } */
+/* { dg-message "-:previous definition" "" { target *-*-* } line_prev } */
+
+#undef __LINE__              /* Undefine while defined.  */
+
+
 /* Check other built-ins with warnings that may be suppressed.  */
 
 #if !defined(__FILE__) || !defined(__BASE_FILE__)
@@ -66,12 +83,11 @@
 
 /* Check selected built-ins not affected by warning suppression. */
 
-#if !defined(__LINE__) || !defined(__INCLUDE_LEVEL__) || !defined(__COUNTER__)
+#if !defined(__INCLUDE_LEVEL__) || !defined(__COUNTER__)
 #error "Expected built-in is not defined (built-in macro expectation error)"
 /* { dg-bogus "Expected built-in is not defined" "" { target *-*-* } .-1 } */
 #endif
 
-#define __LINE__ 0           /* { dg-warning "-:\"__LINE__\" redef" } */
 #define __INCLUDE_LEVEL__ 0  /* { dg-warning "-:\"__INCLUDE_LEVEL__\" redef" } */
 #define __COUNTER__ 0        /* { dg-warning "-:\"__COUNTER__\" redef" } */
 
