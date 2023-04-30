@@ -66,6 +66,7 @@ public:
   // rust-expr.h
   virtual void visit (LiteralExpr &expr) = 0;
   virtual void visit (AttrInputLiteral &attr_input) = 0;
+  virtual void visit (AttrInputMacro &attr_input) = 0;
   virtual void visit (MetaItemLitExpr &meta_item) = 0;
   virtual void visit (MetaItemPathLit &meta_item) = 0;
   virtual void visit (BorrowExpr &expr) = 0;

@@ -222,6 +222,10 @@ EarlyNameResolver::visit (AST::AttrInputLiteral &)
 {}
 
 void
+EarlyNameResolver::visit (AST::AttrInputMacro &)
+{}
+
+void
 EarlyNameResolver::visit (AST::MetaItemLitExpr &)
 {}
 

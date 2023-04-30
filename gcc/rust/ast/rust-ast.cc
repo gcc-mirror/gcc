@@ -3266,6 +3266,12 @@ AttrInputMetaItemContainer::as_string () const
   return str + ")";
 }
 
+std::string
+AttrInputMacro::as_string () const
+{
+  return " = " + macro->as_string ();
+}
+
 /* Override that calls the function recursively on all items contained within
  * the module. */
 void
@@ -4220,6 +4226,18 @@ BlockExpr::strip_tail_expr ()
     }
 }
 
+// needed here because "rust-expr.h" doesn't include "rust-macro.h"
+AttrInputMacro::AttrInputMacro (const AttrInputMacro &oth)
+  : macro (oth.macro->clone_macro_invocation_impl ())
+{}
+
+void
+AttrInputMacro::operator= (const AttrInputMacro &oth)
+{
+  macro = std::unique_ptr<MacroInvocation> (
+    oth.macro->clone_macro_invocation_impl ());
+}
+
 /* Visitor implementations - these are short but inlining can't happen anyway
  * due to virtual functions and I didn't want to make the ast header includes
  * any longer than they already are. */
@@ -4262,6 +4280,12 @@ LiteralExpr::accept_vis (ASTVisitor &vis)
 
 void
 AttrInputLiteral::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+AttrInputMacro::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }

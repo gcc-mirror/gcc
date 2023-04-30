@@ -515,6 +515,10 @@ Dump::visit (AttrInputLiteral &)
 {}
 
 void
+Dump::visit (AttrInputMacro &)
+{}
+
+void
 Dump::visit (MetaItemLitExpr &)
 {}
 

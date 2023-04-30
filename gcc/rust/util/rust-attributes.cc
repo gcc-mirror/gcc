@@ -163,6 +163,7 @@ check_doc_attribute (const AST::Attribute &attribute)
   switch (attribute.get_attr_input ().get_attr_input_type ())
     {
     case AST::AttrInput::LITERAL:
+    case AST::AttrInput::MACRO:
     case AST::AttrInput::META_ITEM:
       break;
       // FIXME: Handle them as well
@@ -278,6 +279,10 @@ AttributeChecker::visit (AST::LiteralExpr &)
 
 void
 AttributeChecker::visit (AST::AttrInputLiteral &)
+{}
+
+void
+AttributeChecker::visit (AST::AttrInputMacro &)
 {}
 
 void

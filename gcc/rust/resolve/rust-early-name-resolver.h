@@ -142,6 +142,7 @@ private:
   virtual void visit (AST::QualifiedPathInType &path);
   virtual void visit (AST::LiteralExpr &expr);
   virtual void visit (AST::AttrInputLiteral &attr_input);
+  virtual void visit (AST::AttrInputMacro &attr_input);
   virtual void visit (AST::MetaItemLitExpr &meta_item);
   virtual void visit (AST::MetaItemPathLit &meta_item);
   virtual void visit (AST::BorrowExpr &expr);

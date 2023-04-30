@@ -324,6 +324,12 @@ ExpandVisitor::visit (AST::AttrInputLiteral &)
 {}
 
 void
+ExpandVisitor::visit (AST::AttrInputMacro &macro)
+{
+  rust_sorry_at (Location (), "macros in attributes not supported");
+}
+
+void
 ExpandVisitor::visit (AST::MetaItemLitExpr &)
 {}
 
