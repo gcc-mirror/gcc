@@ -793,6 +793,21 @@ Parser<ManagedTokenSource>::parse_attr_input ()
 
 	t = lexer.peek_token ();
 
+	// attempt to parse macro
+	// TODO: macros may/may not be allowed in attributes
+	// this is needed for "#[doc = include_str!(...)]"
+	if (is_simple_path_segment (t->get_id ()))
+	  {
+	    std::unique_ptr<AST::MacroInvocation> invoke
+	      = parse_macro_invocation ({});
+
+	    if (!invoke)
+	      return nullptr;
+
+	    return std::unique_ptr<AST::AttrInput> (
+	      new AST::AttrInputMacro (std::move (invoke)));
+	  }
+
 	/* Ensure token is a "literal expression" (literally only a literal
 	 * token of any type) */
 	if (!t->is_literal ())
