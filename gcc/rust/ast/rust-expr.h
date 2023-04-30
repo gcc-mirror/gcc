@@ -139,6 +139,48 @@ protected:
   }
 };
 
+// Like an AttrInputLiteral, but stores a MacroInvocation
+class AttrInputMacro : public AttrInput
+{
+  std::unique_ptr<MacroInvocation> macro;
+
+public:
+  AttrInputMacro (std::unique_ptr<MacroInvocation> macro)
+    : macro (std::move (macro))
+  {}
+
+  AttrInputMacro (const AttrInputMacro &oth);
+
+  AttrInputMacro (AttrInputMacro &&oth) : macro (std::move (oth.macro)) {}
+
+  void operator= (const AttrInputMacro &oth);
+
+  void operator= (AttrInputMacro &&oth) { macro = std::move (oth.macro); }
+
+  std::string as_string () const override;
+
+  void accept_vis (ASTVisitor &vis) override;
+
+  // assuming this can't be a cfg predicate
+  bool check_cfg_predicate (const Session &) const override { return false; }
+
+  // assuming this is like AttrInputLiteral
+  bool is_meta_item () const override { return false; }
+
+  std::unique_ptr<MacroInvocation> &get_macro () { return macro; }
+
+  AttrInputType get_attr_input_type () const final override
+  {
+    return AttrInput::AttrInputType::MACRO;
+  }
+
+protected:
+  AttrInputMacro *clone_attr_input_impl () const override
+  {
+    return new AttrInputMacro (*this);
+  }
+};
+
 /* literal expr only meta item inner - TODO possibly replace with inheritance of
  * LiteralExpr itself? */
 class MetaItemLitExpr : public MetaItemInner

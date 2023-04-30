@@ -149,6 +149,7 @@ private:
   // rust-expr.h
   void visit (LiteralExpr &expr);
   void visit (AttrInputLiteral &attr_input);
+  void visit (AttrInputMacro &attr_input);
   void visit (MetaItemLitExpr &meta_item);
   void visit (MetaItemPathLit &meta_item);
   void visit (BorrowExpr &expr);

@@ -107,6 +107,10 @@ ResolverBase::visit (AST::AttrInputLiteral &)
 {}
 
 void
+ResolverBase::visit (AST::AttrInputMacro &)
+{}
+
+void
 ResolverBase::visit (AST::MetaItemLitExpr &)
 {}
 

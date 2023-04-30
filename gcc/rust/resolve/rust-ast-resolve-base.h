@@ -48,6 +48,7 @@ public:
   void visit (AST::QualifiedPathInType &);
   void visit (AST::LiteralExpr &);
   void visit (AST::AttrInputLiteral &);
+  void visit (AST::AttrInputMacro &);
   void visit (AST::MetaItemLitExpr &);
   void visit (AST::MetaItemPathLit &);
   void visit (AST::BorrowExpr &);

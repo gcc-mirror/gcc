@@ -597,6 +597,7 @@ public:
   enum AttrInputType
   {
     LITERAL,
+    MACRO,
     META_ITEM,
     TOKEN_TREE,
   };

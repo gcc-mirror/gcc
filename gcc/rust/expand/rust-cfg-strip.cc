@@ -604,6 +604,11 @@ CfgStrip::visit (AST::AttrInputLiteral &)
   // shouldn't require?
 }
 void
+CfgStrip::visit (AST::AttrInputMacro &)
+{
+  // shouldn't require?
+}
+void
 CfgStrip::visit (AST::MetaItemLitExpr &)
 {
   // shouldn't require?
