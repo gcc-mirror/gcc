@@ -1,3 +1,49 @@
+2023-04-29  Hans-Peter Nilsson  <hp@axis.com>
+
+	* reload1.cc (emit_insn_if_valid_for_reload_1): Rename from
+	emit_insn_if_valid_for_reload.
+	(emit_insn_if_valid_for_reload): Call new helper, and if a SET fails
+	to be recognized, also try emitting a parallel that clobbers
+	TARGET_FLAGS_REGNUM, as applicable.
+
+2023-04-29  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/stormy16/stormy16.md (neghi2): Convert from a define_expand
+	to a define_insn.
+	(*rotatehi_1): New define_insn for efficient 2 insn sequence.
+	(*rotatehi_8, *rotaterthi_8): New define_insn to emit a swpb.
+
+2023-04-29  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/stormy16/stormy16.md (any_lshift): New code iterator.
+	(any_or_plus): Likewise.
+	(any_rotate): Likewise.
+	(*<any_lshift>_and_internal): New define_insn_and_split to
+	recognize a logical shift followed by an AND, and split it
+	again after reload.
+	(*swpn): New define_insn matching xstormy16's swpn.
+	(*swpn_zext): New define_insn recognizing swpn followed by
+	zero_extendqihi2, i.e. with the high byte set to zero.
+	(*swpn_sext): Likewise, for swpn followed by cbw.
+	(*swpn_sext_2): Likewise, for an alternate RTL form.
+	(*swpn_zext_ior): A pre-reload splitter so that an swpn+zext+ior
+	sequence is split in the correct place to recognize the *swpn_zext
+	followed by any_or_plus (ior, xor or plus) instruction.
+
+2023-04-29  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	PR target/105525
+	* config.gcc (vax-*-linux*): Add glibc-stdint.h.
+	(lm32-*-uclinux*): Likewise.
+
+2023-04-29  Fei Gao  <gaofei@eswincomputing.com>
+
+	* config/riscv/riscv.cc (riscv_avoid_save_libcall): helper function
+	for riscv_use_save_libcall.
+	(riscv_use_save_libcall): call riscv_avoid_save_libcall.
+	(riscv_compute_frame_info): restructure to decouple stack allocation
+	for rv32e w/o save-restore.
+
 2023-04-28  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* doc/install.texi: Fix documentation typo

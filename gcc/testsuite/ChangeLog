@@ -1,3 +1,25 @@
+2023-04-29  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/xstormy16/neghi2.c: New test case.
+	* gcc.target/xstormy16/rotatehi-1.c: Likewise.
+
+2023-04-29  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/xstormy16/swpn-1.c: New QImode test case.
+	* gcc.target/xstormy16/swpn-2.c: New zero_extend test case.
+	* gcc.target/xstormy16/swpn-3.c: New sign_extend test case.
+	* gcc.target/xstormy16/swpn-4.c: New HImode test case.
+
+2023-04-29  Jeff Law  <jlaw@ventanamicro>
+
+	* gcc.target/mips/mips-ps-type-2.c: Adjust branch cost to
+	encourage if-conversion.  Skip for -Os.
+	* gcc.target/mips/movcc-3.c: Similarly.
+
+2023-04-29  Fei Gao  <gaofei@eswincomputing.com>
+
+	* gcc.target/riscv/rv32e_stack.c: New test.
+
 2023-04-28  Hans-Peter Nilsson  <hp@axis.com>
 
 	* lib/scanasm.exp (parse_function_bodies): Set fluff to include
