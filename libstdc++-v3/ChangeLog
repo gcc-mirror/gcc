@@ -1,3 +1,47 @@
+2023-04-29  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (lazy_split_view::_OuterIter::_OuterIter):
+	Propagate _M_trailing_empty in the const-converting constructor
+	as per LWG 3904.
+	* testsuite/std/ranges/adaptors/lazy_split.cc (test12): New test.
+
+2023-04-29  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-03-14  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_iterator.h (move_iterator::_S_iter_concept):
+	Define.
+	(__cpp_lib_move_iterator_concept): Define for C++20.
+	(move_iterator::iterator_concept): Strengthen as per P2520R0.
+	* include/std/version (__cpp_lib_move_iterator_concept): Define
+	for C++20.
+	* testsuite/24_iterators/move_iterator/p2520r0.cc: New test.
+
+2023-04-29  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-03-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/108362
+	* include/std/ranges (__detail::__can_single_view): New concept.
+	(_Single::operator()): Constrain it.  Move [[nodiscard]] to the
+	end of the function declarator.
+	(__detail::__can_iota_view): New concept.
+	(_Iota::operator()): Constrain it.  Move [[nodiscard]] to the
+	end of the function declarator.
+	(__detail::__can_istream_view): New concept.
+	(_Istream::operator()): Constrain it.  Move [[nodiscard]] to the
+	end of the function declarator.
+	* testsuite/std/ranges/iota/lwg3292_neg.cc: Prune "in
+	requirements" diagnostic.
+	* testsuite/std/ranges/iota/iota_view.cc (test07): New test.
+	* testsuite/std/ranges/istream_view.cc (test08): New test.
+	* testsuite/std/ranges/single_view.cc (test07): New test.
+
 2023-04-28  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
