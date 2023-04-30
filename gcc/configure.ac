@@ -3187,16 +3187,19 @@ elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x ; then
   echo '.byte 0' >> conftest3.s
   if $gcc_cv_as -o conftest1.o conftest1.s > /dev/null 2>&1 \
      && $gcc_cv_as -o conftest2.o conftest2.s > /dev/null 2>&1 \
-     && $gcc_cv_as -o conftest3.o conftest3.s > /dev/null 2>&1 \
-     && $gcc_cv_ld -shared -o conftest1.so conftest1.o \
-	conftest2.o conftest3.o > /dev/null 2>&1; then
-    gcc_cv_ld_ro_rw_mix=`$gcc_cv_objdump -h conftest1.so \
-			 | sed -e '/myfoosect/!d' -e N`
-    if echo "$gcc_cv_ld_ro_rw_mix" | grep CONTENTS > /dev/null; then
-      if echo "$gcc_cv_ld_ro_rw_mix" | grep READONLY > /dev/null; then
-	gcc_cv_ld_ro_rw_mix=read-only
-      else
-	gcc_cv_ld_ro_rw_mix=read-write
+     && $gcc_cv_as -o conftest3.o conftest3.s > /dev/null 2>&1; then
+    if $gcc_cv_ld -shared -o conftest1.so conftest1.o \
+       conftest2.o conftest3.o > /dev/null 2>&1 \
+       || $gcc_cv_ld -r -o conftest1.so conftest1.o \
+	  conftest2.o conftest3.o > /dev/null 2>&1; then
+      gcc_cv_ld_ro_rw_mix=`$gcc_cv_objdump -h conftest1.so \
+			   | sed -e '/myfoosect/!d' -e N`
+      if echo "$gcc_cv_ld_ro_rw_mix" | grep CONTENTS > /dev/null; then
+	if echo "$gcc_cv_ld_ro_rw_mix" | grep READONLY > /dev/null; then
+	  gcc_cv_ld_ro_rw_mix=read-only
+	else
+	  gcc_cv_ld_ro_rw_mix=read-write
+	fi
       fi
     fi
   fi
