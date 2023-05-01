@@ -216,11 +216,6 @@ public:
 protected:
   int_range (tree, tree, value_range_kind = VR_RANGE);
 private:
-  template <unsigned X> friend void gt_ggc_mx (int_range<X> *);
-  template <unsigned X> friend void gt_pch_nx (int_range<X> *);
-  template <unsigned X> friend void gt_pch_nx (int_range<X> *,
-					       gt_pointer_operator, void *);
-
   wide_int m_ranges[N*2];
 };
 
