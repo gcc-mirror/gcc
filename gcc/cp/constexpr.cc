@@ -5446,6 +5446,19 @@ cxx_fold_indirect_ref_1 (const constexpr_ctx *ctx, location_t loc, tree type,
 		  return ret;
 	      }
 	  }
+
+      /* Handle conversion to an empty base class, which is represented with a
+	 NOP_EXPR.  Do this before spelunking into the non-empty subobjects,
+	 which is likely to be a waste of time (109678).  */
+      if (is_empty_class (type)
+	  && CLASS_TYPE_P (optype)
+	  && DERIVED_FROM_P (type, optype))
+	{
+	  if (empty_base)
+	    *empty_base = true;
+	  return op;
+	}
+
       for (tree field = TYPE_FIELDS (optype);
 	   field; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL
@@ -5468,16 +5481,6 @@ cxx_fold_indirect_ref_1 (const constexpr_ctx *ctx, location_t loc, tree type,
 		  return ret;
 	      }
 	  }
-      /* Also handle conversion to an empty base class, which
-	 is represented with a NOP_EXPR.  */
-      if (is_empty_class (type)
-	  && CLASS_TYPE_P (optype)
-	  && DERIVED_FROM_P (type, optype))
-	{
-	  if (empty_base)
-	    *empty_base = true;
-	  return op;
-	}
     }
 
   return NULL_TREE;
