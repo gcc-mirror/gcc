@@ -1,3 +1,12 @@
+2023-04-30  Andrew Pinski  <pinskia@gmail.com>
+
+	Backported from master:
+	2022-12-16  Andrew Pinski  <pinskia@gmail.com>
+		    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/107768
+	* g++.dg/coroutines/pr107768.C: New test.
+
 2023-04-28  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

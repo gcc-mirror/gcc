@@ -1,3 +1,30 @@
+2023-04-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-04-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (coro_rewrite_function_body): Ensure that added
+	bind expressions have scope blocks.
+
+2023-04-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2023-04-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/101118
+	* coroutines.cc (flatten_await_stmt): Use the current count of
+	promoted temporaries to build a unique name for the frame entries.
+
+2023-04-30  Andrew Pinski  <pinskia@gmail.com>
+
+	Backported from master:
+	2022-12-16  Andrew Pinski  <pinskia@gmail.com>
+		    Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/107768
+	* coroutines.cc (coro_rewrite_function_body): Initialize pointers
+	from nullptr_node.  (morph_fn_to_coro): Likewise.
+
 2023-04-28  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
