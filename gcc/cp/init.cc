@@ -610,15 +610,9 @@ maybe_instantiate_nsdmi_init (tree member, tsubst_flags_t complain)
 	  bool pushed = false;
 	  tree ctx = DECL_CONTEXT (member);
 
-	  processing_template_decl_sentinel ptds (/*reset*/false);
+	  bool push_to_top = maybe_push_to_top_level (member);
 	  if (!currently_open_class (ctx))
 	    {
-	      if (!LOCAL_CLASS_P (ctx))
-		push_to_top_level ();
-	      else
-		/* push_to_top_level would lose the necessary function context,
-		   just reset processing_template_decl.  */
-		processing_template_decl = 0;
 	      push_nested_class (ctx);
 	      push_deferring_access_checks (dk_no_deferred);
 	      pushed = true;
@@ -646,9 +640,8 @@ maybe_instantiate_nsdmi_init (tree member, tsubst_flags_t complain)
 	    {
 	      pop_deferring_access_checks ();
 	      pop_nested_class ();
-	      if (!LOCAL_CLASS_P (ctx))
-		pop_from_top_level ();
 	    }
+	  maybe_pop_from_top_level (push_to_top);
 
 	  input_location = sloc;
 	}
