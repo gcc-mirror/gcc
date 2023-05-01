@@ -1,3 +1,14 @@
+2023-04-30  Andrew Pinski  <apinski@marvell.com>
+
+	* c-typeck.cc (process_init_element): Print out array type
+	for excessive elements.
+
+2023-04-30  Andrew Pinski  <apinski@marvell.com>
+
+	PR c/107926
+	* c-typeck.cc (process_init_element): Move the check
+	for string cst until after the error message.
+
 2023-04-28  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* Make-lang.in: Merge perf data collected when compiling cc1 and runtime libraries

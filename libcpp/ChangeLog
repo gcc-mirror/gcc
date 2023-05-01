@@ -1,3 +1,16 @@
+2023-04-30  Jeff Law  <jlaw@ventanamicro>
+
+	Revert:
+	2023-04-30  Longjun Luo  <luolongjuna@gmail.com>
+
+	* init.cc (builtin_array): Do not always warn for a redefinition
+	of __LINE__.
+
+2023-04-30  Longjun Luo  <luolongjuna@gmail.com>
+
+	* init.cc (builtin_array): Do not always warn for a redefinition
+	of __LINE__.
+
 2023-03-25  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/109098

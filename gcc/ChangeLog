@@ -1,3 +1,26 @@
+2023-04-30  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/stormy16/stormy16.md (neghi2): Rewrite pattern using
+	inc to avoid clobbering the carry flag.
+
+2023-04-30  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd: Add patterns for "a != 0 ? FUNC(a) : CST"
+	for FUNC of POPCOUNT BSWAP FFS PARITY CLZ and CTZ.
+
+2023-04-30  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc (empty_bb_or_one_feeding_into_p):
+	Allow some builtin/internal function calls which
+	are known not to trap/throw.
+	(phiopt_worker::match_simplify_replacement):
+	Use name instead of getting the lhs again.
+
+2023-04-30  Joakim Nohlgård  <joakim@nohlgard.se>
+
+	* configure: Regenerate.
+	* configure.ac: Use ld -r in the check for HAVE_LD_RO_RW_SECTION_MIXING
+
 2023-04-29  Hans-Peter Nilsson  <hp@axis.com>
 
 	* reload1.cc (emit_insn_if_valid_for_reload_1): Rename from

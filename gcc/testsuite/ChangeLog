@@ -1,3 +1,47 @@
+2023-04-30  Jeff Law  <jlaw@ventanamicro>
+
+	Revert:
+	2023-04-30  Longjun Luo  <luolongjuna@gmail.com>
+
+	* gcc.dg/builtin-redefine.c: Test for redefintion warnings
+	for __LINE__.
+	* gcc.dg/builtin-redefine-1.c: New test.
+
+2023-04-30  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/xstormy16/neghi2.c: Update expected implementation.
+
+2023-04-30  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/init-bad-1.c: Update error message.
+	* gcc.dg/init-bad-2.c: Likewise.
+	* gcc.dg/init-bad-3.c: Likewise.
+	* gcc.dg/init-excess-3.c: Likewise.
+	* gcc.dg/pr61096-1.c: Likewise.
+
+2023-04-30  Andrew Pinski  <apinski@marvell.com>
+
+	PR c/107926
+	* gcc.dg/init-excess-3.c: New test.
+
+2023-04-30  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/hwasan/asan-pr70541.c: Adjust wording of expected
+	output.
+	* c-c++-common/hwasan/heap-overflow.c: Likewise.
+	* c-c++-common/hwasan/sanity-check-pure-c.c: Likewise.
+	* c-c++-common/hwasan/use-after-free.c: Likewise.
+
+2023-04-30  Longjun Luo  <luolongjuna@gmail.com>
+
+	* gcc.dg/builtin-redefine.c: Test for redefintion warnings
+	for __LINE__.
+	* gcc.dg/builtin-redefine-1.c: New test.
+
+2023-04-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/pim/run/pass/constlitbase.mod: New test.
+
 2023-04-29  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* gcc.target/xstormy16/neghi2.c: New test case.

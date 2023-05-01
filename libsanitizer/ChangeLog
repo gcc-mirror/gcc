@@ -1,3 +1,13 @@
+2023-04-30  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/109674
+	* hwasan/Makefile.am: Depend on liblsan.
+	* hwasan/Makefile.in: Re-generate.
+
+2023-04-30  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Update revision.
+
 2023-04-26  Martin Liska  <mliska@suse.cz>
 
 	* LOCAL_PATCHES: Change revision.
