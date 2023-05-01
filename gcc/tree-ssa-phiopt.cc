@@ -3685,31 +3685,55 @@ gate_hoist_loads (void)
 }
 
 /* This pass tries to replaces an if-then-else block with an
-   assignment.  We have four kinds of transformations.  Some of these
-   transformations are also performed by the ifcvt RTL optimizer.
+   assignment.  We have different kinds of transformations.
+   Some of these transformations are also performed by the ifcvt
+   RTL optimizer.
 
-   Conditional Replacement
+   PHI-OPT using Match-and-simplify infrastructure
    -----------------------
 
-   This transformation, implemented in match_simplify_replacement,
-   replaces
+   The PHI-OPT pass will try to use match-and-simplify infrastructure
+   (gimple_simplify) to do transformations. This is implemented in
+   match_simplify_replacement.
 
+   The way it works is it replaces:
      bb0:
       if (cond) goto bb2; else goto bb1;
      bb1:
      bb2:
-      x = PHI <0 (bb1), 1 (bb0), ...>;
+      x = PHI <a (bb1), b (bb0), ...>;
 
-   with
+   with a statement if it gets simplified from `cond ? b : a`.
 
      bb0:
-      x' = cond;
-      goto bb2;
+      x1 = cond ? b : a;
      bb2:
-      x = PHI <x' (bb0), ...>;
+      x = PHI <a (bb1), x1 (bb0), ...>;
+   Bb1 might be removed as it becomes unreachable when doing the replacement.
+   Though bb1 does not have to be considered a forwarding basic block from bb0.
 
-   We remove bb1 as it becomes unreachable.  This occurs often due to
-   gimplification of conditionals.
+   Will try to see if `(!cond) ? a : b` gets simplified (iff !cond simplifies);
+   this is done not to have an explosion of patterns in match.pd.
+   Note bb1 does not need to be completely empty, it can contain
+   one statement which is known not to trap.
+
+   It also can handle the case where we have two forwarding bbs (diamond):
+     bb0:
+      if (cond) goto bb2; else goto bb1;
+     bb1: goto bb3;
+     bb2: goto bb3;
+     bb3:
+      x = PHI <a (bb1), b (bb2), ...>;
+   And that is replaced with a statement if it is simplified
+   from `cond ? b : a`.
+   Again bb1 and bb2 does not have to be completely empty but
+   each can contain one statement which is known not to trap.
+   But in this case bb1/bb2 can only be forwarding basic blocks.
+
+   This fully replaces the old "Conditional Replacement",
+   "ABS Replacement" transformations as they are now
+   implmeneted in match.pd.
+   Some parts of the "MIN/MAX Replacement" are re-implemented in match.pd.
 
    Value Replacement
    -----------------
@@ -3750,25 +3774,6 @@ gate_hoist_loads (void)
        t2 = b > c;
        t3 = t1 & t2;
        x = a;
-
-   ABS Replacement
-   ---------------
-
-   This transformation, implemented in match_simplify_replacement, replaces
-
-     bb0:
-       if (a >= 0) goto bb2; else goto bb1;
-     bb1:
-       x = -a;
-     bb2:
-       x = PHI <x (bb1), a (bb0), ...>;
-
-   with
-
-     bb0:
-       x' = ABS_EXPR< a >;
-     bb2:
-       x = PHI <x' (bb0), ...>;
 
    MIN/MAX Replacement
    -------------------
