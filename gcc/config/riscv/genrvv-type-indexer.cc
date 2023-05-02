@@ -115,9 +115,9 @@ same_ratio_eew_type (unsigned sew, int lmul_log2, unsigned eew, bool unsigned_p,
   if (sew == eew)
     elmul_log2 = lmul_log2;
   else if (sew > eew)
-    elmul_log2 = lmul_log2 - std::log2 (sew / eew);
+    elmul_log2 = lmul_log2 - log2 (sew / eew);
   else /* sew < eew */
-    elmul_log2 = lmul_log2 + std::log2 (eew / sew);
+    elmul_log2 = lmul_log2 + log2 (eew / sew);
 
   if (float_p)
     return floattype (eew, elmul_log2);
