@@ -1,3 +1,12 @@
+2023-05-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109666
+	* name-lookup.cc (maybe_push_to_top_level)
+	(maybe_pop_from_top_level): Split out...
+	* pt.cc (instantiate_body): ...from here.
+	* init.cc (maybe_instantiate_nsdmi_init): Use them.
+	* name-lookup.h: Declare them..
+
 2023-04-28  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* Make-lang.in: Merge perf data collected when compiling cc1plus and runtime libraries

@@ -1,3 +1,8 @@
+2023-05-01  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/t-pru (HOST_LIBGCC2_CFLAGS): Add
+	-DTARGET_HAS_NO_HW_DIVIDE.
+
 2023-04-27  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/t-cris (HOST_LIBGCC2_CFLAGS): Add

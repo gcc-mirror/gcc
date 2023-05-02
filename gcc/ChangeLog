@@ -1,3 +1,411 @@
+2023-05-01  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc: Update comment about
+	how the transformation are implemented.
+
+2023-05-01  Jeff Law  <jlaw@ventanamicro>
+
+	* config/stormy16/stormy16.cc (TARGET_LRA_P): Remove defintion.
+
+2023-05-01  Jeff Law  <jlaw@ventanamicro>
+
+	* config/cris/cris.cc (TARGET_LRA_P): Remove.
+	* config/epiphany/epiphany.cc (TARGET_LRA_P): Remove.
+	* config/iq2000/iq2000.cc (TARGET_LRA_P): Remove.
+	* config/m32r/m32r.cc (TARGET_LRA_P): Remove.
+	* config/microblaze/microblaze.cc (TARGET_LRA_P): Remove.
+	* config/mmix/mmix.cc (TARGET_LRA_P): Remove.
+
+2023-05-01  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
+
+	* print-tree.h (PRINT_DECL_REMAP_DEBUG): New flag.
+	* print-tree.cc (print_decl_identifier): Implement it.
+	* toplev.cc (output_stack_usage_1): Use it.
+
+2023-05-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (class int_range): Remove gt_ggc_mx and gt_pch_nx
+	friends.
+
+2023-05-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (irange::set_nonzero): Inline.
+
+2023-05-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-op.cc (cfn_ffs::fold_range): Use the correct
+	precision.
+	* gimple-ssa-warn-alloca.cc (alloca_call_type): Use <2> for
+	invalid_range, as it is an inverse range.
+	* tree-vrp.cc (find_case_label_range): Avoid trees.
+	* value-range.cc (irange::irange_set): Delete.
+	(irange::irange_set_1bit_anti_range): Delete.
+	(irange::irange_set_anti_range): Delete.
+	(irange::set): Cleanup.
+	* value-range.h (class irange): Remove irange_set,
+	irange_set_anti_range, irange_set_1bit_anti_range.
+	(irange::set_undefined): Remove set to m_type.
+
+2023-05-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* range-op.cc (update_known_bitmask): Adjust for irange containing
+	wide_ints internally.
+	* tree-ssanames.cc (set_nonzero_bits): Same.
+	* tree-ssanames.h (set_nonzero_bits): Same.
+	* value-range-storage.cc (irange_storage::set_irange): Same.
+	(irange_storage::get_irange): Same.
+	* value-range.cc (irange::operator=): Same.
+	(irange::irange_set): Same.
+	(irange::irange_set_1bit_anti_range): Same.
+	(irange::irange_set_anti_range): Same.
+	(irange::set): Same.
+	(irange::verify_range): Same.
+	(irange::contains_p): Same.
+	(irange::irange_single_pair_union): Same.
+	(irange::union_): Same.
+	(irange::irange_contains_p): Same.
+	(irange::intersect): Same.
+	(irange::invert): Same.
+	(irange::set_range_from_nonzero_bits): Same.
+	(irange::set_nonzero_bits): Same.
+	(mask_to_wi): Same.
+	(irange::intersect_nonzero_bits): Same.
+	(irange::union_nonzero_bits): Same.
+	(gt_ggc_mx): Same.
+	(gt_pch_nx): Same.
+	(tree_range): Same.
+	(range_tests_strict_enum): Same.
+	(range_tests_misc): Same.
+	(range_tests_nonzero_bits): Same.
+	* value-range.h (irange::type): Same.
+	(irange::varying_compatible_p): Same.
+	(irange::irange): Same.
+	(int_range::int_range): Same.
+	(irange::set_undefined): Same.
+	(irange::set_varying): Same.
+	(irange::lower_bound): Same.
+	(irange::upper_bound): Same.
+
+2023-05-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.cc (tree_lower_bound): Delete.
+	(tree_upper_bound): Delete.
+	(vrp_val_max): Delete.
+	(vrp_val_min): Delete.
+	(fold_using_range::range_of_ssa_name_with_loop_info): Call
+	range_of_var_in_loop.
+	* vr-values.cc (valid_value_p): Delete.
+	(fix_overflow): Delete.
+	(get_scev_info): New.
+	(bounds_of_var_in_loop): Refactor into...
+	(induction_variable_may_overflow_p): ...this,
+	(range_from_loop_direction): ...and this,
+	(range_of_var_in_loop): ...and this.
+	* vr-values.h (bounds_of_var_in_loop): Delete.
+	(range_of_var_in_loop): New.
+
+2023-05-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-fold.cc (adjust_pointer_diff_expr): Rewrite with
+	irange_val*.
+	(vrp_val_max): New.
+	(vrp_val_min): New.
+	* gimple-range-op.cc (cfn_strlen::fold_range): Use irange_val_*.
+	* range-op.cc (max_limit): Same.
+	(min_limit): Same.
+	(plus_minus_ranges): Same.
+	(operator_rshift::op1_range): Same.
+	(operator_cast::inside_domain_p): Same.
+	* value-range.cc (vrp_val_is_max): Delete.
+	(vrp_val_is_min): Delete.
+	(range_tests_misc): Use irange_val_*.
+	* value-range.h (vrp_val_is_min): Delete.
+	(vrp_val_is_max): Delete.
+	(vrp_val_max): Delete.
+	(irange_val_min): New.
+	(vrp_val_min): Delete.
+	(irange_val_max): New.
+	* vr-values.cc (check_for_binary_op_overflow): Use irange_val_*.
+
+2023-05-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* fold-const.cc (expr_not_equal_to): Convert to irange wide_int API.
+	* gimple-fold.cc (size_must_be_zero_p): Same.
+	* gimple-loop-versioning.cc
+	(loop_versioning::prune_loop_conditions): Same.
+	* gimple-range-edge.cc (gcond_edge_range): Same.
+	(gimple_outgoing_range::calc_switch_ranges): Same.
+	* gimple-range-fold.cc (adjust_imagpart_expr): Same.
+	(adjust_realpart_expr): Same.
+	(fold_using_range::range_of_address): Same.
+	(fold_using_range::relation_fold_and_or): Same.
+	* gimple-range-gori.cc (gori_compute::gori_compute): Same.
+	(range_is_either_true_or_false): Same.
+	* gimple-range-op.cc (cfn_toupper_tolower::get_letter_range): Same.
+	(cfn_clz::fold_range): Same.
+	(cfn_ctz::fold_range): Same.
+	* gimple-range-tests.cc (class test_expr_eval): Same.
+	* gimple-ssa-warn-alloca.cc (alloca_call_type): Same.
+	* ipa-cp.cc (ipa_value_range_from_jfunc): Same.
+	(propagate_vr_across_jump_function): Same.
+	(decide_whether_version_node): Same.
+	* ipa-prop.cc (ipa_get_value_range): Same.
+	* ipa-prop.h (ipa_range_set_and_normalize): Same.
+	* range-op.cc (get_shift_range): Same.
+	(value_range_from_overflowed_bounds): Same.
+	(value_range_with_overflow): Same.
+	(create_possibly_reversed_range): Same.
+	(equal_op1_op2_relation): Same.
+	(not_equal_op1_op2_relation): Same.
+	(lt_op1_op2_relation): Same.
+	(le_op1_op2_relation): Same.
+	(gt_op1_op2_relation): Same.
+	(ge_op1_op2_relation): Same.
+	(operator_mult::op1_range): Same.
+	(operator_exact_divide::op1_range): Same.
+	(operator_lshift::op1_range): Same.
+	(operator_rshift::op1_range): Same.
+	(operator_cast::op1_range): Same.
+	(operator_logical_and::fold_range): Same.
+	(set_nonzero_range_from_mask): Same.
+	(operator_bitwise_or::op1_range): Same.
+	(operator_bitwise_xor::op1_range): Same.
+	(operator_addr_expr::fold_range): Same.
+	(pointer_plus_operator::wi_fold): Same.
+	(pointer_or_operator::op1_range): Same.
+	(INT): Same.
+	(UINT): Same.
+	(INT16): Same.
+	(UINT16): Same.
+	(SCHAR): Same.
+	(UCHAR): Same.
+	(range_op_cast_tests): Same.
+	(range_op_lshift_tests): Same.
+	(range_op_rshift_tests): Same.
+	(range_op_bitwise_and_tests): Same.
+	(range_relational_tests): Same.
+	* range.cc (range_zero): Same.
+	(range_nonzero): Same.
+	* range.h (range_true): Same.
+	(range_false): Same.
+	(range_true_and_false): Same.
+	* tree-data-ref.cc (split_constant_offset_1): Same.
+	* tree-ssa-loop-ch.cc (entry_loop_condition_is_static): Same.
+	* tree-ssa-loop-unswitch.cc (struct unswitch_predicate): Same.
+	(find_unswitching_predicates_for_bb): Same.
+	* tree-ssa-phiopt.cc (value_replacement): Same.
+	* tree-ssa-threadbackward.cc
+	(back_threader::find_taken_edge_cond): Same.
+	* tree-ssanames.cc (ssa_name_has_boolean_range): Same.
+	* tree-vrp.cc (find_case_label_range): Same.
+	* value-query.cc (range_query::get_tree_range): Same.
+	* value-range.cc (irange::set_nonnegative): Same.
+	(frange::contains_p): Same.
+	(frange::singleton_p): Same.
+	(frange::internal_singleton_p): Same.
+	(irange::irange_set): Same.
+	(irange::irange_set_1bit_anti_range): Same.
+	(irange::irange_set_anti_range): Same.
+	(irange::set): Same.
+	(irange::operator==): Same.
+	(irange::singleton_p): Same.
+	(irange::contains_p): Same.
+	(irange::set_range_from_nonzero_bits): Same.
+	(DEFINE_INT_RANGE_INSTANCE): Same.
+	(INT): Same.
+	(UINT): Same.
+	(SCHAR): Same.
+	(UINT128): Same.
+	(UCHAR): Same.
+	(range): New.
+	(tree_range): New.
+	(range_int): New.
+	(range_uint): New.
+	(range_uint128): New.
+	(range_uchar): New.
+	(range_char): New.
+	(build_range3): Convert to irange wide_int API.
+	(range_tests_irange3): Same.
+	(range_tests_int_range_max): Same.
+	(range_tests_strict_enum): Same.
+	(range_tests_misc): Same.
+	(range_tests_nonzero_bits): Same.
+	(range_tests_nan): Same.
+	(range_tests_signed_zeros): Same.
+	* value-range.h (Value_Range::Value_Range): Same.
+	(irange::set): Same.
+	(irange::nonzero_p): Same.
+	(irange::contains_p): Same.
+	(range_includes_zero_p): Same.
+	(irange::set_nonzero): Same.
+	(irange::set_zero): Same.
+	(contains_zero_p): Same.
+	(frange::contains_p): Same.
+	* vr-values.cc
+	(simplify_using_ranges::op_with_boolean_value_range_p): Same.
+	(bounds_of_var_in_loop): Same.
+	(simplify_using_ranges::legacy_fold_cond_overflow): Same.
+
+2023-05-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::irange_union): Rename to...
+	(irange::union_): ...this.
+	(irange::irange_intersect): Rename to...
+	(irange::intersect): ...this.
+	* value-range.h (irange::union_): Delete.
+	(irange::intersect): Delete.
+
+2023-05-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* vr-values.cc (bounds_of_var_in_loop): Convert to irange API.
+
+2023-05-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* vr-values.cc (check_for_binary_op_overflow): Tidy up by using
+	ranger API.
+	(compare_ranges): Delete.
+	(compare_range_with_value): Delete.
+	(bounds_of_var_in_loop): Tidy up by using ranger API.
+	(simplify_using_ranges::fold_cond_with_ops): Cleanup and rename
+	from vrp_evaluate_conditional_warnv_with_ops_using_ranges.
+	(simplify_using_ranges::legacy_fold_cond_overflow): Remove
+	strict_overflow_p and only_ranges.
+	(simplify_using_ranges::legacy_fold_cond): Adjust call to
+	legacy_fold_cond_overflow.
+	(simplify_using_ranges::simplify_abs_using_ranges): Adjust for
+	rename.
+	(range_fits_type_p): Rename value_range to irange.
+	* vr-values.h (range_fits_type_p): Adjust prototype.
+
+2023-05-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::irange_set_anti_range): Remove uses of
+	tree_lower_bound and tree_upper_bound.
+	(irange::verify_range): Same.
+	(irange::operator==): Same.
+	(irange::singleton_p): Same.
+	* value-range.h (irange::tree_lower_bound): Delete.
+	(irange::tree_upper_bound): Delete.
+	(irange::lower_bound): Delete.
+	(irange::upper_bound): Delete.
+	(irange::zero_p): Remove uses of tree_lower_bound and
+	tree_upper_bound.
+
+2023-05-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-loop-niter.cc (refine_value_range_using_guard): Remove
+	kind() call.
+	(determine_value_range): Same.
+	(record_nonwrapping_iv): Same.
+	(infer_loop_bounds_from_signedness): Same.
+	(scev_var_range_cant_overflow): Same.
+	* tree-vrp.cc (operand_less_p): Delete.
+	* tree-vrp.h (operand_less_p): Delete.
+	* value-range.cc (get_legacy_range): Remove uses of deprecated API.
+	(irange::value_inside_range): Delete.
+	* value-range.h (vrange::kind): Delete.
+	(irange::num_pairs): Remove check of m_kind.
+	(irange::min): Delete.
+	(irange::max): Delete.
+
+2023-05-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-fold.cc (maybe_fold_comparisons_from_match_pd): Adjust
+	for vrange_storage.
+	* gimple-range-cache.cc (sbr_vector::sbr_vector): Same.
+	(sbr_vector::grow): Same.
+	(sbr_vector::set_bb_range): Same.
+	(sbr_vector::get_bb_range): Same.
+	(sbr_sparse_bitmap::sbr_sparse_bitmap): Same.
+	(sbr_sparse_bitmap::set_bb_range): Same.
+	(sbr_sparse_bitmap::get_bb_range): Same.
+	(block_range_cache::block_range_cache): Same.
+	(ssa_global_cache::ssa_global_cache): Same.
+	(ssa_global_cache::get_global_range): Same.
+	(ssa_global_cache::set_global_range): Same.
+	* gimple-range-cache.h: Same.
+	* gimple-range-edge.cc
+	(gimple_outgoing_range::gimple_outgoing_range): Same.
+	(gimple_outgoing_range::switch_edge_range): Same.
+	(gimple_outgoing_range::calc_switch_ranges): Same.
+	* gimple-range-edge.h: Same.
+	* gimple-range-infer.cc
+	(infer_range_manager::infer_range_manager): Same.
+	(infer_range_manager::get_nonzero): Same.
+	(infer_range_manager::maybe_adjust_range): Same.
+	(infer_range_manager::add_range): Same.
+	* gimple-range-infer.h: Rename obstack_vrange_allocator to
+	vrange_allocator.
+	* tree-core.h (struct irange_storage_slot): Remove.
+	(struct tree_ssa_name): Remove irange_info and frange_info.  Make
+	range_info a pointer to vrange_storage.
+	* tree-ssanames.cc (range_info_fits_p): Adjust for vrange_storage.
+	(range_info_alloc): Same.
+	(range_info_free): Same.
+	(range_info_get_range): Same.
+	(range_info_set_range): Same.
+	(get_nonzero_bits): Same.
+	* value-query.cc (get_ssa_name_range_info): Same.
+	* value-range-storage.cc (class vrange_internal_alloc): New.
+	(class vrange_obstack_alloc): New.
+	(class vrange_ggc_alloc): New.
+	(vrange_allocator::vrange_allocator): New.
+	(vrange_allocator::~vrange_allocator): New.
+	(vrange_storage::alloc_slot): New.
+	(vrange_allocator::alloc): New.
+	(vrange_allocator::free): New.
+	(vrange_allocator::clone): New.
+	(vrange_allocator::clone_varying): New.
+	(vrange_allocator::clone_undefined): New.
+	(vrange_storage::alloc): New.
+	(vrange_storage::set_vrange): Remove slot argument.
+	(vrange_storage::get_vrange): Same.
+	(vrange_storage::fits_p): Same.
+	(vrange_storage::equal_p): New.
+	(irange_storage::write_lengths_address): New.
+	(irange_storage::lengths_address): New.
+	(irange_storage_slot::alloc_slot): Remove.
+	(irange_storage::alloc): New.
+	(irange_storage_slot::irange_storage_slot): Remove.
+	(irange_storage::irange_storage): New.
+	(write_wide_int): New.
+	(irange_storage_slot::set_irange): Remove.
+	(irange_storage::set_irange): New.
+	(read_wide_int): New.
+	(irange_storage_slot::get_irange): Remove.
+	(irange_storage::get_irange): New.
+	(irange_storage_slot::size): Remove.
+	(irange_storage::equal_p): New.
+	(irange_storage_slot::num_wide_ints_needed): Remove.
+	(irange_storage::size): New.
+	(irange_storage_slot::fits_p): Remove.
+	(irange_storage::fits_p): New.
+	(irange_storage_slot::dump): Remove.
+	(irange_storage::dump): New.
+	(frange_storage_slot::alloc_slot): Remove.
+	(frange_storage::alloc): New.
+	(frange_storage_slot::set_frange): Remove.
+	(frange_storage::set_frange): New.
+	(frange_storage_slot::get_frange): Remove.
+	(frange_storage::get_frange): New.
+	(frange_storage_slot::fits_p): Remove.
+	(frange_storage::equal_p): New.
+	(frange_storage::fits_p): New.
+	(ggc_vrange_allocator): New.
+	(ggc_alloc_vrange_storage): New.
+	* value-range-storage.h (class vrange_storage): Rewrite.
+	(class irange_storage): Rewrite.
+	(class frange_storage): Rewrite.
+	(class obstack_vrange_allocator): Remove.
+	(class ggc_vrange_allocator): Remove.
+	(vrange_allocator::alloc_vrange): Remove.
+	(vrange_allocator::alloc_irange): Remove.
+	(vrange_allocator::alloc_frange): Remove.
+	(ggc_alloc_vrange_storage): New.
+	* value-range.h (class irange): Rename vrange_allocator to
+	irange_storage.
+	(class frange): Same.
+
 2023-04-30  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* config/stormy16/stormy16.md (neghi2): Rewrite pattern using
