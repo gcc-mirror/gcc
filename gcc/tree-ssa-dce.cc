@@ -2097,7 +2097,7 @@ make_pass_cd_dce (gcc::context *ctxt)
    use operands number.  */
 
 void
-simple_dce_from_worklist (bitmap worklist)
+simple_dce_from_worklist (bitmap worklist, bitmap need_eh_cleanup)
 {
   int phiremoved = 0;
   int stmtremoved = 0;
@@ -2126,6 +2126,11 @@ simple_dce_from_worklist (bitmap worklist)
 	 eh to work.  */
       if (stmt_unremovable_because_of_non_call_eh_p (cfun, t))
 	continue;
+
+      /* Tell the caller that we removed a statement that might
+	 throw so it could cleanup the cfg for that block. */
+      if (need_eh_cleanup && stmt_could_throw_p (cfun, t))
+	bitmap_set_bit (need_eh_cleanup, gimple_bb (t)->index);
 
       /* Add uses to the worklist.  */
       ssa_op_iter iter;

@@ -38,6 +38,7 @@
 #include "cfgloop.h"
 #include "tree-cfgcleanup.h"
 #include "cfganal.h"
+#include "tree-ssa-dce.h"
 
 /* This file implements a generic value propagation engine based on
    the same propagation used by the SSA-CCP algorithm [1].
@@ -527,7 +528,6 @@ struct prop_stats_d
   long num_const_prop;
   long num_copy_prop;
   long num_stmts_folded;
-  long num_dce;
 };
 
 static struct prop_stats_d prop_stats;
@@ -641,14 +641,14 @@ public:
           something_changed (false),
 	  substitute_and_fold_engine (engine)
     {
-      stmts_to_remove.create (0);
+      dceworklist = BITMAP_ALLOC (NULL);
       stmts_to_fixup.create (0);
       need_eh_cleanup = BITMAP_ALLOC (NULL);
       need_ab_cleanup = BITMAP_ALLOC (NULL);
     }
     ~substitute_and_fold_dom_walker ()
     {
-      stmts_to_remove.release ();
+      BITMAP_FREE (dceworklist);
       stmts_to_fixup.release ();
       BITMAP_FREE (need_eh_cleanup);
       BITMAP_FREE (need_ab_cleanup);
@@ -661,7 +661,7 @@ public:
     }
 
     bool something_changed;
-    vec<gimple *> stmts_to_remove;
+    bitmap dceworklist;
     vec<gimple *> stmts_to_fixup;
     bitmap need_eh_cleanup;
     bitmap need_ab_cleanup;
@@ -760,7 +760,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 		  print_generic_expr (dump_file, sprime);
 		  fprintf (dump_file, "\n");
 		}
-	      stmts_to_remove.safe_push (phi);
+	      bitmap_set_bit (dceworklist, SSA_NAME_VERSION (res));
 	      continue;
 	    }
 	}
@@ -802,7 +802,7 @@ substitute_and_fold_dom_walker::before_dom_children (basic_block bb)
 		  print_generic_expr (dump_file, sprime);
 		  fprintf (dump_file, "\n");
 		}
-	      stmts_to_remove.safe_push (stmt);
+	      bitmap_set_bit (dceworklist, SSA_NAME_VERSION (lhs));
 	      continue;
 	    }
 	}
@@ -970,30 +970,7 @@ substitute_and_fold_engine::substitute_and_fold (basic_block block)
   substitute_and_fold_dom_walker walker (CDI_DOMINATORS, this);
   walker.walk (block ? block : ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
-  /* We cannot remove stmts during the BB walk, especially not release
-     SSA names there as that destroys the lattice of our callers.
-     Remove stmts in reverse order to make debug stmt creation possible.  */
-  while (!walker.stmts_to_remove.is_empty ())
-    {
-      gimple *stmt = walker.stmts_to_remove.pop ();
-      if (dump_file && dump_flags & TDF_DETAILS)
-	{
-	  fprintf (dump_file, "Removing dead stmt ");
-	  print_gimple_stmt (dump_file, stmt, 0);
-	  fprintf (dump_file, "\n");
-	}
-      prop_stats.num_dce++;
-      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
-      if (gimple_code (stmt) == GIMPLE_PHI)
-	remove_phi_node (&gsi, true);
-      else
-	{
-	  unlink_stmt_vdef (stmt);
-	  gsi_remove (&gsi, true);
-	  release_defs (stmt);
-	}
-    }
-
+  simple_dce_from_worklist (walker.dceworklist, walker.need_eh_cleanup);
   if (!bitmap_empty_p (walker.need_eh_cleanup))
     gimple_purge_all_dead_eh_edges (walker.need_eh_cleanup);
   if (!bitmap_empty_p (walker.need_ab_cleanup))
@@ -1021,8 +998,6 @@ substitute_and_fold_engine::substitute_and_fold (basic_block block)
 			    prop_stats.num_copy_prop);
   statistics_counter_event (cfun, "Statements folded",
 			    prop_stats.num_stmts_folded);
-  statistics_counter_event (cfun, "Statements deleted",
-			    prop_stats.num_dce);
 
   return walker.something_changed;
 }
