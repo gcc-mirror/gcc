@@ -610,17 +610,9 @@ remove_forwarder_block (basic_block bb)
 
       if (s == e)
 	{
-	  /* Create arguments for the phi nodes, since the edge was not
+	  /* Copy arguments for the phi nodes, since the edge was not
 	     here before.  */
-	  for (gphi_iterator psi = gsi_start_phis (dest);
-	       !gsi_end_p (psi);
-	       gsi_next (&psi))
-	    {
-	      gphi *phi = psi.phi ();
-	      location_t l = gimple_phi_arg_location_from_edge (phi, succ);
-	      tree def = gimple_phi_arg_def (phi, succ->dest_idx);
-	      add_phi_arg (phi, unshare_expr (def), s, l);
-	    }
+	  copy_phi_arg_into_existing_phi (succ, s);
 	}
     }
 
