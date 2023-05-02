@@ -78,7 +78,7 @@ GRS_OBJS = \
     rust/rust-pattern.o \
     rust/rust-ast-fragment.o \
     rust/rust-ast-dump.o \
-    rust/rust-ast-tokenstream.o \
+    rust/rust-ast-collector.o \
     rust/rust-hir-dump.o \
     rust/rust-session-manager.o \
     rust/rust-compile.o \

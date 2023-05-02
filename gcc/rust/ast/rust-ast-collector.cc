@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
-#include "rust-ast-tokenstream.h"
+#include "rust-ast-collector.h"
 #include "libproc_macro/proc_macro.h"
 
 namespace Rust {
