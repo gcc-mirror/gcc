@@ -109,9 +109,9 @@ package body Contracts is
    procedure Expand_Subprogram_Contract (Body_Id : Entity_Id);
    --  Expand the contracts of a subprogram body and its correspoding spec (if
    --  any). This routine processes all [refined] pre- and postconditions as
-   --  well as Contract_Cases, Exceptional_Cases, Subprogram_Variant,
-   --  invariants and predicates. Body_Id denotes the entity of the
-   --  subprogram body.
+   --  well as Always_Terminates, Contract_Cases, Exceptional_Cases,
+   --  Subprogram_Variant, invariants and predicates. Body_Id denotes the
+   --  entity of the subprogram body.
 
    procedure Preanalyze_Condition
      (Subp : Entity_Id;
@@ -225,6 +225,7 @@ package body Contracts is
          end if;
 
       --  Entry or subprogram declarations, the applicable pragmas are:
+      --    Always_Terminates
       --    Attach_Handler
       --    Contract_Cases
       --    Depends
@@ -260,7 +261,8 @@ package body Contracts is
          then
             Add_Classification;
 
-         elsif Prag_Nam in Name_Contract_Cases
+         elsif Prag_Nam in Name_Always_Terminates
+                         | Name_Contract_Cases
                          | Name_Exceptional_Cases
                          | Name_Subprogram_Variant
                          | Name_Test_Case
@@ -663,10 +665,10 @@ package body Contracts is
             Gen_Id => Spec_Id);
       end if;
 
-      --  Deal with preconditions, [refined] postconditions, Contract_Cases,
-      --  Exceptional_Cases, Subprogram_Variant, invariants and predicates
-      --  associated with body and its spec. Do not expand the contract of
-      --  subprogram body stubs.
+      --  Deal with preconditions, [refined] postconditions, Always_Terminates,
+      --  Contract_Cases, Exceptional_Cases, Subprogram_Variant, invariants and
+      --  predicates associated with body and its spec. Do not expand the
+      --  contract of subprogram body stubs.
 
       if Nkind (Body_Decl) = N_Subprogram_Body then
          Expand_Subprogram_Contract (Body_Id);
@@ -789,7 +791,10 @@ package body Contracts is
          while Present (Prag) loop
             Prag_Nam := Pragma_Name (Prag);
 
-            if Prag_Nam = Name_Contract_Cases then
+            if Prag_Nam = Name_Always_Terminates then
+               Analyze_Always_Terminates_In_Decl_Part (Prag);
+
+            elsif Prag_Nam = Name_Contract_Cases then
 
                --  Do not analyze the contract cases of an entry declaration
                --  unless annotating the original tree for GNATprove.
@@ -1533,6 +1538,7 @@ package body Contracts is
          Analyze_Entry_Or_Subprogram_Body_Contract (Stub_Id);
 
       --  The stub acts as its own spec, the applicable pragmas are:
+      --    Always_Terminates
       --    Contract_Cases
       --    Depends
       --    Exceptional_Cases
@@ -2879,7 +2885,10 @@ package body Contracts is
                Prag := Contract_Test_Cases (Items);
                while Present (Prag) loop
                   if Is_Checked (Prag) then
-                     if Pragma_Name (Prag) = Name_Contract_Cases then
+                     if Pragma_Name (Prag) = Name_Always_Terminates then
+                        Expand_Pragma_Always_Terminates (Prag);
+
+                     elsif Pragma_Name (Prag) = Name_Contract_Cases then
                         Expand_Pragma_Contract_Cases
                           (CCs     => Prag,
                            Subp_Id => Subp_Id,

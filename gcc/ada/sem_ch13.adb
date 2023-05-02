@@ -1407,6 +1407,7 @@ package body Sem_Ch13 is
          Is_Instance : Boolean := False);
       --  Subsidiary to the analysis of aspects
       --    Abstract_State
+      --    Always_Terminates
       --    Attach_Handler
       --    Contract_Cases
       --    Depends
@@ -1667,10 +1668,11 @@ package body Sem_Ch13 is
       --  analyzed right now.
 
       --  Note that there is a special handling for Pre, Post, Test_Case,
-      --  Contract_Cases, Exceptional_Cases and Subprogram_Variant aspects.
-      --  In these cases, we do not have to worry about delay issues, since the
-      --  pragmas themselves deal with delay of visibility for the expression
-      --  analysis. Thus, we just insert the pragma after the node N.
+      --  Contract_Cases, Always_Terminates, Exceptional_Cases and
+      --  Subprogram_Variant aspects. In these cases, we do not have to worry
+      --  about delay issues, since the pragmas themselves deal with delay of
+      --  visibility for the expression analysis. Thus, we just insert the
+      --  pragma after the node N.
 
       --  Loop through aspects
 
@@ -4297,9 +4299,9 @@ package body Sem_Ch13 is
 
                --  Case 4: Aspects requiring special handling
 
-               --  Pre/Post/Test_Case/Contract_Cases/Exceptional_Cases and
-               --  Subprogram_Variant whose corresponding pragmas take care
-               --  of the delay.
+               --  Pre/Post/Test_Case/Contract_Cases/Always_Terminates/
+               --  Exceptional_Cases and Subprogram_Variant whose corresponding
+               --  pragmas take care of the delay.
 
                --  Pre/Post
 
@@ -4526,6 +4528,19 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Contract_Cases);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
+               --  Always_Terminates
+
+               when Aspect_Always_Terminates =>
+                  Aitem := Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Always_Terminates);
 
                   Decorate (Aspect, Aitem);
                   Insert_Pragma (Aitem);
@@ -11315,6 +11330,7 @@ package body Sem_Ch13 is
          --  Here is the list of aspects that don't require delay analysis
 
          when Aspect_Abstract_State
+            | Aspect_Always_Terminates
             | Aspect_Annotate
             | Aspect_Async_Readers
             | Aspect_Async_Writers

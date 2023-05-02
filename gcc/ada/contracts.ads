@@ -37,6 +37,7 @@ package Contracts is
    --  The following are valid pragmas:
    --
    --    Abstract_State
+   --    Always_Terminates
    --    Async_Readers
    --    Async_Writers
    --    Attach_Handler
@@ -81,6 +82,7 @@ package Contracts is
    --  subprogram body Body_Id as if they appeared at the end of a declarative
    --  region. Pragmas in question are:
    --
+   --    Always_Terminates  (stand alone subprogram body)
    --    Contract_Cases     (stand alone subprogram body)
    --    Depends            (stand alone subprogram body)
    --    Exceptional_Cases  (stand alone subprogram body)
@@ -100,6 +102,7 @@ package Contracts is
    --  subprogram Subp_Id as if they appeared at the end of a declarative
    --  region. The pragmas in question are:
    --
+   --    Always_Terminates
    --    Contract_Cases
    --    Depends
    --    Exceptional_Cases
@@ -175,6 +178,7 @@ package Contracts is
    --  stub Stub_Id as if they appeared at the end of a declarative region. The
    --  pragmas in question are:
    --
+   --    Always_Terminates
    --    Contract_Cases
    --    Depends
    --    Exceptional_Cases

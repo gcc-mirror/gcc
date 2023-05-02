@@ -2349,6 +2349,7 @@ package Sem_Util is
    function Is_Subprogram_Contract_Annotation (Item : Node_Id) return Boolean;
    --  Determine whether aspect specification or pragma Item is one of the
    --  following subprogram contract annotations:
+   --    Always_Terminates
    --    Contract_Cases
    --    Depends
    --    Exceptional_Cases

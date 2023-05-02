@@ -503,6 +503,7 @@ package Snames is
    Name_Abort_Defer                    : constant Name_Id := N + $; -- GNAT
    Name_Abstract_State                 : constant Name_Id := N + $; -- GNAT
    Name_All_Calls_Remote               : constant Name_Id := N + $;
+   Name_Always_Terminates              : constant Name_Id := N + $; -- GNAT
    Name_Assert                         : constant Name_Id := N + $; -- Ada 05
    Name_Assert_And_Cut                 : constant Name_Id := N + $; -- GNAT
    Name_Assume                         : constant Name_Id := N + $; -- GNAT
@@ -1813,6 +1814,7 @@ package Snames is
       Pragma_Abort_Defer,
       Pragma_Abstract_State,
       Pragma_All_Calls_Remote,
+      Pragma_Always_Terminates,
       Pragma_Assert,
       Pragma_Assert_And_Cut,
       Pragma_Assume,

@@ -72,6 +72,7 @@ package Aspects is
       Aspect_Address,
       Aspect_Aggregate,
       Aspect_Alignment,
+      Aspect_Always_Terminates,             -- GNAT
       Aspect_Annotate,                      -- GNAT
       Aspect_Async_Readers,                 -- GNAT
       Aspect_Async_Writers,                 -- GNAT
@@ -261,6 +262,7 @@ package Aspects is
 
    Implementation_Defined_Aspect : constant array (Aspect_Id) of Boolean :=
      (Aspect_Abstract_State             => True,
+      Aspect_Always_Terminates          => True,
       Aspect_Annotate                   => True,
       Aspect_Async_Readers              => True,
       Aspect_Async_Writers              => True,
@@ -370,6 +372,7 @@ package Aspects is
       Aspect_Address                    => Expression,
       Aspect_Aggregate                  => Expression,
       Aspect_Alignment                  => Expression,
+      Aspect_Always_Terminates          => Expression,
       Aspect_Annotate                   => Expression,
       Aspect_Async_Readers              => Optional_Expression,
       Aspect_Async_Writers              => Optional_Expression,
@@ -477,6 +480,7 @@ package Aspects is
       Aspect_Address                      => True,
       Aspect_Aggregate                    => False,
       Aspect_Alignment                    => True,
+      Aspect_Always_Terminates            => False,
       Aspect_Annotate                     => False,
       Aspect_Async_Readers                => False,
       Aspect_Async_Writers                => False,
@@ -630,6 +634,7 @@ package Aspects is
       Aspect_Aggregate                    => Name_Aggregate,
       Aspect_Alignment                    => Name_Alignment,
       Aspect_All_Calls_Remote             => Name_All_Calls_Remote,
+      Aspect_Always_Terminates            => Name_Always_Terminates,
       Aspect_Annotate                     => Name_Annotate,
       Aspect_Async_Readers                => Name_Async_Readers,
       Aspect_Async_Writers                => Name_Async_Writers,
@@ -980,6 +985,7 @@ package Aspects is
       Aspect_Write                        => Always_Delay,
 
       Aspect_Abstract_State               => Never_Delay,
+      Aspect_Always_Terminates            => Never_Delay,
       Aspect_Annotate                     => Never_Delay,
       Aspect_Async_Readers                => Never_Delay,
       Aspect_Async_Writers                => Never_Delay,

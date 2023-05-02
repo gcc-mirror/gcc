@@ -1711,6 +1711,7 @@ package Sinfo is
    --    a source construct, applies to a generic unit or its body, and denotes
    --    one of the following contract-related annotations:
    --      Abstract_State
+   --      Always_Terminates
    --      Contract_Cases
    --      Depends
    --      Exceptional_Cases
@@ -7978,6 +7979,7 @@ package Sinfo is
       --  establish dependencies between subprogram or package inputs and
       --  outputs. Currently the following pragmas appear in this list:
       --    Abstract_States
+      --    Always_Terminates
       --    Async_Readers
       --    Async_Writers
       --    Constant_After_Elaboration

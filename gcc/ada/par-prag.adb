@@ -1315,6 +1315,7 @@ begin
          | Pragma_Aggregate_Individually_Assign
          | Pragma_All_Calls_Remote
          | Pragma_Allow_Integer_Address
+         | Pragma_Always_Terminates
          | Pragma_Annotate
          | Pragma_Assert
          | Pragma_Assert_And_Cut

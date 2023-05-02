@@ -20558,7 +20558,8 @@ package body Sem_Util is
          Nam := Pragma_Name (Item);
       end if;
 
-      return    Nam = Name_Contract_Cases
+      return    Nam = Name_Always_Terminates
+        or else Nam = Name_Contract_Cases
         or else Nam = Name_Depends
         or else Nam = Name_Exceptional_Cases
         or else Nam = Name_Extensions_Visible

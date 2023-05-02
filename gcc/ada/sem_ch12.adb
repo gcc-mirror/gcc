@@ -261,9 +261,10 @@ package body Sem_Ch12 is
    --  as annotations:
 
    --     package                  subprogram [body]
-   --       Abstract_State           Contract_Cases
-   --       Initial_Condition        Depends
-   --       Initializes              Exceptional_Cases
+   --       Abstract_State           Always_Terminates
+   --       Initial_Condition        Contract_Cases
+   --       Initializes              Depends
+   --                                Exceptional_Cases
    --                                Extensions_Visible
    --                                Global
    --     package body               Post
