@@ -241,6 +241,12 @@ __deregister_frame_info_bases (const void *begin)
   // And remove
   ob = btree_remove (&registered_frames, range[0]);
   bool empty_table = (range[1] - range[0]) == 0;
+
+  // Deallocate the sort array if any.
+  if (ob && ob->s.b.sorted)
+    {
+      free (ob->u.sort);
+    }
 #else
   init_object_mutex_once ();
   __gthread_mutex_lock (&object_mutex);
