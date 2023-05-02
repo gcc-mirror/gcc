@@ -6384,27 +6384,24 @@ vectorizable_operation (vec_info *vinfo,
     }
 
   bool using_emulated_vectors_p = vect_emulated_vector_p (vectype);
-  if (!target_support_p)
+  if (!target_support_p || using_emulated_vectors_p)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "op not supported by target.\n");
+			 "op not supported by target.\n");
       /* Check only during analysis.  */
-      if (maybe_ne (GET_MODE_SIZE (vec_mode), UNITS_PER_WORD)
+      if (((code == PLUS_EXPR || code == MINUS_EXPR || code == NEGATE_EXPR)
+	   && maybe_ne (GET_MODE_SIZE (vec_mode), UNITS_PER_WORD))
 	  || (!vec_stmt && !vect_can_vectorize_without_simd_p (code)))
-        return false;
+	{
+	  if (dump_enabled_p ())
+	    dump_printf (MSG_NOTE, "using word mode not possible.\n");
+	  return false;
+	}
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
                          "proceeding using word mode.\n");
       using_emulated_vectors_p = true;
-    }
-
-  if (using_emulated_vectors_p
-      && !vect_can_vectorize_without_simd_p (code))
-    {
-      if (dump_enabled_p ())
-	dump_printf (MSG_NOTE, "using word mode not possible.\n");
-      return false;
     }
 
   int reduc_idx = STMT_VINFO_REDUC_IDX (stmt_info);
