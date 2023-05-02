@@ -7515,7 +7515,8 @@ extern tree build_if_nonnull			(tree, tree, tsubst_flags_t);
 extern tree get_parent_with_private_access 	(tree decl, tree binfo);
 extern bool accessible_base_p			(tree, tree, bool);
 extern tree lookup_base                         (tree, tree, base_access,
-						 base_kind *, tsubst_flags_t);
+						 base_kind *, tsubst_flags_t,
+						 HOST_WIDE_INT = -1);
 extern tree dcast_base_hint			(tree, tree);
 extern int accessible_p				(tree, tree, bool);
 extern int accessible_in_template_p		(tree, tree);

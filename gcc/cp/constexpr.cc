@@ -5452,7 +5452,7 @@ cxx_fold_indirect_ref_1 (const constexpr_ctx *ctx, location_t loc, tree type,
 	 which is likely to be a waste of time (109678).  */
       if (is_empty_class (type)
 	  && CLASS_TYPE_P (optype)
-	  && DERIVED_FROM_P (type, optype))
+	  && lookup_base (optype, type, ba_any, NULL, tf_none, off))
 	{
 	  if (empty_base)
 	    *empty_base = true;
