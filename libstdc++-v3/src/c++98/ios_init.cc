@@ -200,6 +200,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
 #ifdef _GLIBCXX_SYMVER_GNU
+#pragma GCC diagnostic ignored "-Wattribute-alias"
+
   void ios_base_library_init (void)
   __attribute__((alias ("_ZNSt8ios_base4InitC1Ev")));
 #endif
