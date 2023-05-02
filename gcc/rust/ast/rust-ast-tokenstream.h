@@ -29,10 +29,10 @@
 namespace Rust {
 namespace AST {
 
-class TokenStream : public ASTVisitor
+class TokenCollector : public ASTVisitor
 {
 public:
-  TokenStream (std::vector<TokenPtr> &container);
+  TokenCollector (std::vector<TokenPtr> &container);
   bool output_trailing_commas = false;
 
   void visit (AST::Crate &crate);
