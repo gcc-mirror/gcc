@@ -2099,6 +2099,8 @@ make_pass_cd_dce (gcc::context *ctxt)
 void
 simple_dce_from_worklist (bitmap worklist)
 {
+  int phiremoved = 0;
+  int stmtremoved = 0;
   while (! bitmap_empty_p (worklist))
     {
       /* Pop item.  */
@@ -2144,12 +2146,20 @@ simple_dce_from_worklist (bitmap worklist)
 	}
       gimple_stmt_iterator gsi = gsi_for_stmt (t);
       if (gimple_code (t) == GIMPLE_PHI)
-	remove_phi_node (&gsi, true);
+	{
+	  remove_phi_node (&gsi, true);
+	  phiremoved++;
+	}
       else
 	{
 	  unlink_stmt_vdef (t);
 	  gsi_remove (&gsi, true);
 	  release_defs (t);
+	  stmtremoved++;
 	}
     }
+  statistics_counter_event (cfun, "PHIs removed",
+			    phiremoved);
+  statistics_counter_event (cfun, "Statements removed",
+			    stmtremoved);
 }
