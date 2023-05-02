@@ -16,8 +16,8 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#ifndef RUST_AST_TOKENSTREAM_H
-#define RUST_AST_TOKENSTREAM_H
+#ifndef RUST_AST_COLLECTOR_H
+#define RUST_AST_COLLECTOR_H
 
 #include "rust-token.h"
 #include "rust-ast-visitor.h"
@@ -314,4 +314,4 @@ private:
 
 } // namespace Rust
 
-#endif // !RUST_AST_TOKENSTREAM_H
+#endif // !RUST_AST_COLLECTOR_H
