@@ -3781,7 +3781,7 @@ where @code{std::minmax} returns @code{std::pair<const int&, const int&>}, and
 both references dangle after the end of the full expression that contains
 the call to @code{std::minmax}.
 
-This warning is enabled by @option{-Wall}.
+This warning is enabled by @option{-Wextra}.
 
 @opindex Wdelete-non-virtual-dtor
 @opindex Wno-delete-non-virtual-dtor
@@ -6126,6 +6126,7 @@ name is still supported, but the newer name is more descriptive.)
 
 @gccoptlist{-Wclobbered
 -Wcast-function-type
+-Wdangling-reference @r{(C++ only)}
 -Wdeprecated-copy @r{(C++ only)}
 -Wempty-body
 -Wenum-conversion @r{(C only)}
