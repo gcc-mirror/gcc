@@ -21,11 +21,12 @@
 namespace Rust {
 namespace AST {
 
-TokenStream::TokenStream (std::vector<TokenPtr> &container) : tokens (container)
+TokenCollector::TokenCollector (std::vector<TokenPtr> &container)
+  : tokens (container)
 {}
 
 std::vector<TokenPtr>
-TokenStream::collect_tokens () const
+TokenCollector::collect_tokens () const
 {
   return tokens;
 }
@@ -151,7 +152,7 @@ dispatch_integer_literals (ProcMacro::TokenStream &ts, TokenPtr &token)
 }
 
 ProcMacro::TokenStream
-TokenStream::collect () const
+TokenCollector::collect () const
 {
   std::vector<ProcMacro::TokenStream> trees;
   trees.push_back (ProcMacro::TokenStream::make_tokenstream ());
@@ -327,37 +328,38 @@ TokenStream::collect () const
 }
 
 void
-TokenStream::visit (AST::Crate &crate)
+TokenCollector::visit (AST::Crate &crate)
 {
   visit_items_as_lines (crate.inner_attrs);
   visit_items_as_lines (crate.items);
 }
 
 void
-TokenStream::visit (AST::Item &item)
+TokenCollector::visit (AST::Item &item)
 {
   item.accept_vis (*this);
 }
 
 template <typename T>
 void
-TokenStream::visit (std::unique_ptr<T> &node)
+TokenCollector::visit (std::unique_ptr<T> &node)
 {
   node->accept_vis (*this);
 }
 
 template <typename T>
 void
-TokenStream::visit (T &node)
+TokenCollector::visit (T &node)
 {
   node.accept_vis (*this);
 }
 
 template <typename T>
 void
-TokenStream::visit_items_joined_by_separator (T &collection, TokenId separator,
-					      size_t start_offset,
-					      size_t end_offset)
+TokenCollector::visit_items_joined_by_separator (T &collection,
+						 TokenId separator,
+						 size_t start_offset,
+						 size_t end_offset)
 {
   if (collection.size () > start_offset)
     {
@@ -373,7 +375,7 @@ TokenStream::visit_items_joined_by_separator (T &collection, TokenId separator,
 
 template <typename T>
 void
-TokenStream::visit_as_line (T &item, std::vector<TokenPtr> trailing)
+TokenCollector::visit_as_line (T &item, std::vector<TokenPtr> trailing)
 {
   indentation ();
   visit (item);
@@ -384,8 +386,8 @@ TokenStream::visit_as_line (T &item, std::vector<TokenPtr> trailing)
 
 template <typename T>
 void
-TokenStream::visit_items_as_lines (T &collection,
-				   std::vector<TokenPtr> trailing)
+TokenCollector::visit_items_as_lines (T &collection,
+				      std::vector<TokenPtr> trailing)
 {
   for (auto &item : collection)
     visit_as_line (item, trailing);
@@ -393,9 +395,9 @@ TokenStream::visit_items_as_lines (T &collection,
 
 template <typename T>
 void
-TokenStream::visit_items_as_block (T &collection,
-				   std::vector<TokenPtr> trailing,
-				   TokenId left_brace, TokenId right_brace)
+TokenCollector::visit_items_as_block (T &collection,
+				      std::vector<TokenPtr> trailing,
+				      TokenId left_brace, TokenId right_brace)
 {
   tokens.push_back (Rust::Token::make (left_brace, Location ()));
   if (collection.empty ())
@@ -416,7 +418,7 @@ TokenStream::visit_items_as_block (T &collection,
 }
 
 void
-TokenStream::trailing_comma ()
+TokenCollector::trailing_comma ()
 {
   if (output_trailing_commas)
     {
@@ -425,23 +427,23 @@ TokenStream::trailing_comma ()
 }
 
 void
-TokenStream::newline ()
+TokenCollector::newline ()
 {}
 
 void
-TokenStream::indentation ()
+TokenCollector::indentation ()
 {}
 
 void
-TokenStream::increment_indentation ()
+TokenCollector::increment_indentation ()
 {}
 
 void
-TokenStream::decrement_indentation ()
+TokenCollector::decrement_indentation ()
 {}
 
 void
-TokenStream::visit (FunctionParam &param)
+TokenCollector::visit (FunctionParam &param)
 {
   visit (param.get_pattern ());
   tokens.push_back (Rust::Token::make (COLON, Location ()));
@@ -449,7 +451,7 @@ TokenStream::visit (FunctionParam &param)
 }
 
 void
-TokenStream::visit (Attribute &attrib)
+TokenCollector::visit (Attribute &attrib)
 {
   tokens.push_back (Rust::Token::make (HASH, attrib.get_locus ()));
   if (attrib.is_inner_attribute ())
@@ -482,7 +484,7 @@ TokenStream::visit (Attribute &attrib)
 }
 
 void
-TokenStream::visit (SimplePath &path)
+TokenCollector::visit (SimplePath &path)
 {
   if (path.has_opening_scope_resolution ())
     {
@@ -493,7 +495,7 @@ TokenStream::visit (SimplePath &path)
 }
 
 void
-TokenStream::visit (SimplePathSegment &segment)
+TokenCollector::visit (SimplePathSegment &segment)
 {
   auto name = segment.get_segment_name ();
   if (segment.is_crate_path_seg ())
@@ -520,7 +522,7 @@ TokenStream::visit (SimplePathSegment &segment)
 }
 
 void
-TokenStream::visit (Visibility &vis)
+TokenCollector::visit (Visibility &vis)
 {
   switch (vis.get_vis_type ())
     {
@@ -558,7 +560,7 @@ TokenStream::visit (Visibility &vis)
 }
 
 void
-TokenStream::visit (NamedFunctionParam &param)
+TokenCollector::visit (NamedFunctionParam &param)
 {
   auto name = param.get_name ();
   tokens.push_back (
@@ -568,7 +570,7 @@ TokenStream::visit (NamedFunctionParam &param)
 }
 
 void
-TokenStream::visit (std::vector<std::unique_ptr<GenericParam>> &params)
+TokenCollector::visit (std::vector<std::unique_ptr<GenericParam>> &params)
 {
   tokens.push_back (Rust::Token::make (LEFT_ANGLE, Location ()));
   visit_items_joined_by_separator (params, COMMA);
@@ -576,7 +578,7 @@ TokenStream::visit (std::vector<std::unique_ptr<GenericParam>> &params)
 }
 
 void
-TokenStream::visit (TupleField &field)
+TokenCollector::visit (TupleField &field)
 {
   for (auto attr : field.get_outer_attrs ())
     {
@@ -587,7 +589,7 @@ TokenStream::visit (TupleField &field)
 }
 
 void
-TokenStream::visit (StructField &field)
+TokenCollector::visit (StructField &field)
 {
   for (auto attr : field.get_outer_attrs ())
     {
@@ -602,7 +604,7 @@ TokenStream::visit (StructField &field)
 }
 
 void
-TokenStream::visit (std::vector<LifetimeParam> &for_lifetimes)
+TokenCollector::visit (std::vector<LifetimeParam> &for_lifetimes)
 {
   tokens.push_back (Rust::Token::make (FOR, Location ()));
   tokens.push_back (Rust::Token::make (LEFT_ANGLE, Location ()));
@@ -611,7 +613,7 @@ TokenStream::visit (std::vector<LifetimeParam> &for_lifetimes)
 }
 
 void
-TokenStream::visit (FunctionQualifiers &qualifiers)
+TokenCollector::visit (FunctionQualifiers &qualifiers)
 {
   // Syntax:
   //    `const`? `async`? `unsafe`? (`extern` Abi?)?
@@ -647,7 +649,7 @@ TokenStream::visit (FunctionQualifiers &qualifiers)
 }
 
 void
-TokenStream::visit (MaybeNamedParam &param)
+TokenCollector::visit (MaybeNamedParam &param)
 {
   // Syntax:
   //     OuterAttribute* ( ( IDENTIFIER | _ ) : )? Type
@@ -675,7 +677,7 @@ TokenStream::visit (MaybeNamedParam &param)
 }
 
 void
-TokenStream::visit (Token &tok)
+TokenCollector::visit (Token &tok)
 {
   std::string data = tok.get_tok_ptr ()->has_str () ? tok.get_str () : "";
   switch (tok.get_id ())
@@ -730,7 +732,7 @@ TokenStream::visit (Token &tok)
 }
 
 void
-TokenStream::visit (DelimTokenTree &delim_tok_tree)
+TokenCollector::visit (DelimTokenTree &delim_tok_tree)
 {
   increment_indentation ();
   newline ();
@@ -745,7 +747,7 @@ TokenStream::visit (DelimTokenTree &delim_tok_tree)
 }
 
 void
-TokenStream::visit (AttrInputMetaItemContainer &container)
+TokenCollector::visit (AttrInputMetaItemContainer &container)
 {
   for (auto &item : container.get_items ())
     {
@@ -754,7 +756,7 @@ TokenStream::visit (AttrInputMetaItemContainer &container)
 }
 
 void
-TokenStream::visit (IdentifierExpr &ident_expr)
+TokenCollector::visit (IdentifierExpr &ident_expr)
 {
   auto ident = ident_expr.get_ident ();
   tokens.push_back (
@@ -762,7 +764,7 @@ TokenStream::visit (IdentifierExpr &ident_expr)
 }
 
 void
-TokenStream::visit (Lifetime &lifetime)
+TokenCollector::visit (Lifetime &lifetime)
 {
   // Syntax:
   // Lifetime :
@@ -789,7 +791,7 @@ TokenStream::visit (Lifetime &lifetime)
 }
 
 void
-TokenStream::visit (LifetimeParam &lifetime_param)
+TokenCollector::visit (LifetimeParam &lifetime_param)
 {
   // Syntax:
   //   LIFETIME_OR_LABEL ( : LifetimeBounds )?
@@ -812,7 +814,7 @@ TokenStream::visit (LifetimeParam &lifetime_param)
 }
 
 void
-TokenStream::visit (ConstGenericParam &param)
+TokenCollector::visit (ConstGenericParam &param)
 {
   // Syntax:
   // const IDENTIFIER : Type ( = Block | IDENTIFIER | -?LITERAL )?
@@ -830,7 +832,7 @@ TokenStream::visit (ConstGenericParam &param)
 }
 
 void
-TokenStream::visit (PathExprSegment &segment)
+TokenCollector::visit (PathExprSegment &segment)
 {
   visit (segment.get_ident_segment ());
   if (segment.has_generic_args ())
@@ -866,7 +868,7 @@ TokenStream::visit (PathExprSegment &segment)
 }
 
 void
-TokenStream::visit (PathInExpression &path)
+TokenCollector::visit (PathInExpression &path)
 {
   if (path.opening_scope_resolution ())
     {
@@ -878,7 +880,7 @@ TokenStream::visit (PathInExpression &path)
 }
 
 void
-TokenStream::visit (TypePathSegment &segment)
+TokenCollector::visit (TypePathSegment &segment)
 {
   // Syntax:
   //    PathIdentSegment
@@ -889,7 +891,7 @@ TokenStream::visit (TypePathSegment &segment)
 }
 
 void
-TokenStream::visit (TypePathSegmentGeneric &segment)
+TokenCollector::visit (TypePathSegmentGeneric &segment)
 {
   // Syntax:
   //    PathIdentSegment `::`? (GenericArgs)?
@@ -926,7 +928,7 @@ TokenStream::visit (TypePathSegmentGeneric &segment)
 }
 
 void
-TokenStream::visit (GenericArgsBinding &binding)
+TokenCollector::visit (GenericArgsBinding &binding)
 {
   // Syntax:
   //    IDENTIFIER `=` Type
@@ -939,7 +941,7 @@ TokenStream::visit (GenericArgsBinding &binding)
 }
 
 void
-TokenStream::visit (GenericArg &arg)
+TokenCollector::visit (GenericArg &arg)
 {
   // `GenericArg` implements `accept_vis` but it is not useful for this case as
   // it ignores unresolved cases (`Kind::Either`).
@@ -963,7 +965,7 @@ TokenStream::visit (GenericArg &arg)
 }
 
 void
-TokenStream::visit (TypePathSegmentFunction &segment)
+TokenCollector::visit (TypePathSegmentFunction &segment)
 {
   // Syntax:
   //   PathIdentSegment `::`? (TypePathFn)?
@@ -981,7 +983,7 @@ TokenStream::visit (TypePathSegmentFunction &segment)
 }
 
 void
-TokenStream::visit (TypePathFunction &type_path_fn)
+TokenCollector::visit (TypePathFunction &type_path_fn)
 {
   // Syntax:
   //   `(` TypePathFnInputs? `)` (`->` Type)?
@@ -1001,7 +1003,7 @@ TokenStream::visit (TypePathFunction &type_path_fn)
 }
 
 void
-TokenStream::visit (TypePath &path)
+TokenCollector::visit (TypePath &path)
 {
   // Syntax:
   //    `::`? TypePathSegment (`::` TypePathSegment)*
@@ -1013,7 +1015,7 @@ TokenStream::visit (TypePath &path)
 }
 
 void
-TokenStream::visit (PathIdentSegment &segment)
+TokenCollector::visit (PathIdentSegment &segment)
 {
   if (segment.is_super_segment ())
     {
@@ -1040,7 +1042,7 @@ TokenStream::visit (PathIdentSegment &segment)
 }
 
 void
-TokenStream::visit (QualifiedPathInExpression &path)
+TokenCollector::visit (QualifiedPathInExpression &path)
 {
   visit (path.get_qualified_path_type ());
   for (auto &segment : path.get_segments ())
@@ -1051,7 +1053,7 @@ TokenStream::visit (QualifiedPathInExpression &path)
 }
 
 void
-TokenStream::visit (QualifiedPathType &path)
+TokenCollector::visit (QualifiedPathType &path)
 {
   tokens.push_back (Rust::Token::make (LEFT_ANGLE, path.get_locus ()));
   visit (path.get_type ());
@@ -1064,7 +1066,7 @@ TokenStream::visit (QualifiedPathType &path)
 }
 
 void
-TokenStream::visit (QualifiedPathInType &path)
+TokenCollector::visit (QualifiedPathInType &path)
 {
   visit (path.get_qualified_path_type ());
 
@@ -1078,7 +1080,7 @@ TokenStream::visit (QualifiedPathInType &path)
 }
 
 void
-TokenStream::visit (Literal &lit, Location locus)
+TokenCollector::visit (Literal &lit, Location locus)
 {
   auto value = lit.as_string ();
   switch (lit.get_lit_type ())
@@ -1121,28 +1123,28 @@ TokenStream::visit (Literal &lit, Location locus)
 }
 
 void
-TokenStream::visit (LiteralExpr &expr)
+TokenCollector::visit (LiteralExpr &expr)
 {
   auto lit = expr.get_literal ();
   visit (lit, expr.get_locus ());
 }
 
 void
-TokenStream::visit (AttrInputLiteral &literal)
+TokenCollector::visit (AttrInputLiteral &literal)
 {
   tokens.push_back (Rust::Token::make (EQUAL, Location ()));
   visit (literal.get_literal ());
 }
 
 void
-TokenStream::visit (MetaItemLitExpr &item)
+TokenCollector::visit (MetaItemLitExpr &item)
 {
   auto lit = item.get_literal ();
   visit (lit);
 }
 
 void
-TokenStream::visit (MetaItemPathLit &item)
+TokenCollector::visit (MetaItemPathLit &item)
 {
   auto path = item.get_path ();
   auto lit = item.get_literal ();
@@ -1152,7 +1154,7 @@ TokenStream::visit (MetaItemPathLit &item)
 }
 
 void
-TokenStream::visit (BorrowExpr &expr)
+TokenCollector::visit (BorrowExpr &expr)
 {
   tokens.push_back (Rust::Token::make (AMP, expr.get_locus ()));
   if (expr.get_is_double_borrow ())
@@ -1164,21 +1166,21 @@ TokenStream::visit (BorrowExpr &expr)
 }
 
 void
-TokenStream::visit (DereferenceExpr &expr)
+TokenCollector::visit (DereferenceExpr &expr)
 {
   tokens.push_back (Rust::Token::make (ASTERISK, expr.get_locus ()));
   visit (expr.get_dereferenced_expr ());
 }
 
 void
-TokenStream::visit (ErrorPropagationExpr &expr)
+TokenCollector::visit (ErrorPropagationExpr &expr)
 {
   visit (expr.get_propagating_expr ());
   tokens.push_back (Rust::Token::make (QUESTION_MARK, expr.get_locus ()));
 }
 
 void
-TokenStream::visit (NegationExpr &expr)
+TokenCollector::visit (NegationExpr &expr)
 {
   switch (expr.get_expr_type ())
     {
@@ -1193,7 +1195,7 @@ TokenStream::visit (NegationExpr &expr)
 }
 
 void
-TokenStream::visit (ArithmeticOrLogicalExpr &expr)
+TokenCollector::visit (ArithmeticOrLogicalExpr &expr)
 {
   visit (expr.get_left_expr ());
   switch (expr.get_expr_type ())
@@ -1243,7 +1245,7 @@ TokenStream::visit (ArithmeticOrLogicalExpr &expr)
 }
 
 void
-TokenStream::visit (ComparisonExpr &expr)
+TokenCollector::visit (ComparisonExpr &expr)
 {
   visit (expr.get_left_expr ());
 
@@ -1274,7 +1276,7 @@ TokenStream::visit (ComparisonExpr &expr)
 }
 
 void
-TokenStream::visit (LazyBooleanExpr &expr)
+TokenCollector::visit (LazyBooleanExpr &expr)
 {
   visit (expr.get_left_expr ());
 
@@ -1292,7 +1294,7 @@ TokenStream::visit (LazyBooleanExpr &expr)
 }
 
 void
-TokenStream::visit (TypeCastExpr &expr)
+TokenCollector::visit (TypeCastExpr &expr)
 {
   visit (expr.get_casted_expr ());
   tokens.push_back (Rust::Token::make (AS, expr.get_locus ()));
@@ -1300,7 +1302,7 @@ TokenStream::visit (TypeCastExpr &expr)
 }
 
 void
-TokenStream::visit (AssignmentExpr &expr)
+TokenCollector::visit (AssignmentExpr &expr)
 {
   expr.visit_lhs (*this);
   tokens.push_back (Rust::Token::make (EQUAL, expr.get_locus ()));
@@ -1308,7 +1310,7 @@ TokenStream::visit (AssignmentExpr &expr)
 }
 
 void
-TokenStream::visit (CompoundAssignmentExpr &expr)
+TokenCollector::visit (CompoundAssignmentExpr &expr)
 {
   visit (expr.get_left_expr ());
 
@@ -1349,7 +1351,7 @@ TokenStream::visit (CompoundAssignmentExpr &expr)
 }
 
 void
-TokenStream::visit (GroupedExpr &expr)
+TokenCollector::visit (GroupedExpr &expr)
 {
   tokens.push_back (Rust::Token::make (LEFT_PAREN, expr.get_locus ()));
   visit (expr.get_expr_in_parens ());
@@ -1357,13 +1359,13 @@ TokenStream::visit (GroupedExpr &expr)
 }
 
 void
-TokenStream::visit (ArrayElemsValues &elems)
+TokenCollector::visit (ArrayElemsValues &elems)
 {
   visit_items_joined_by_separator (elems.get_values (), COMMA);
 }
 
 void
-TokenStream::visit (ArrayElemsCopied &elems)
+TokenCollector::visit (ArrayElemsCopied &elems)
 {
   visit (elems.get_elem_to_copy ());
   tokens.push_back (Rust::Token::make (SEMICOLON, Location ()));
@@ -1371,7 +1373,7 @@ TokenStream::visit (ArrayElemsCopied &elems)
 }
 
 void
-TokenStream::visit (ArrayExpr &expr)
+TokenCollector::visit (ArrayExpr &expr)
 {
   tokens.push_back (Rust::Token::make (LEFT_SQUARE, expr.get_locus ()));
   visit (expr.get_array_elems ());
@@ -1379,7 +1381,7 @@ TokenStream::visit (ArrayExpr &expr)
 }
 
 void
-TokenStream::visit (ArrayIndexExpr &expr)
+TokenCollector::visit (ArrayIndexExpr &expr)
 {
   visit (expr.get_array_expr ());
   tokens.push_back (Rust::Token::make (LEFT_SQUARE, expr.get_locus ()));
@@ -1388,7 +1390,7 @@ TokenStream::visit (ArrayIndexExpr &expr)
 }
 
 void
-TokenStream::visit (TupleExpr &expr)
+TokenCollector::visit (TupleExpr &expr)
 {
   visit_items_as_lines (expr.get_outer_attrs ());
   tokens.push_back (Rust::Token::make (LEFT_PAREN, expr.get_locus ()));
@@ -1397,7 +1399,7 @@ TokenStream::visit (TupleExpr &expr)
 }
 
 void
-TokenStream::visit (TupleIndexExpr &expr)
+TokenCollector::visit (TupleIndexExpr &expr)
 {
   visit (expr.get_tuple_expr ());
   tokens.push_back (Rust::Token::make (DOT, expr.get_locus ()));
@@ -1407,13 +1409,13 @@ TokenStream::visit (TupleIndexExpr &expr)
 }
 
 void
-TokenStream::visit (StructExprStruct &expr)
+TokenCollector::visit (StructExprStruct &expr)
 {
   visit (expr.get_struct_name ());
 }
 
 void
-TokenStream::visit (StructExprFieldIdentifier &expr)
+TokenCollector::visit (StructExprFieldIdentifier &expr)
 {
   // TODO: Add attributes
   // visit_items_as_lines (expr.get_attrs ());
@@ -1423,7 +1425,7 @@ TokenStream::visit (StructExprFieldIdentifier &expr)
 }
 
 void
-TokenStream::visit (StructExprFieldIdentifierValue &expr)
+TokenCollector::visit (StructExprFieldIdentifierValue &expr)
 {
   // TODO: Add attributes
   // visit_items_as_lines (expr.get_attrs ());
@@ -1435,7 +1437,7 @@ TokenStream::visit (StructExprFieldIdentifierValue &expr)
 }
 
 void
-TokenStream::visit (StructExprFieldIndexValue &expr)
+TokenCollector::visit (StructExprFieldIndexValue &expr)
 {
   // TODO: Add attributes
   // visit_items_as_lines (expr.get_attrs ());
@@ -1446,14 +1448,14 @@ TokenStream::visit (StructExprFieldIndexValue &expr)
 }
 
 void
-TokenStream::visit (StructBase &base)
+TokenCollector::visit (StructBase &base)
 {
   tokens.push_back (Rust::Token::make (DOT_DOT, Location ()));
   visit (base.get_base_struct ());
 }
 
 void
-TokenStream::visit (StructExprStructFields &expr)
+TokenCollector::visit (StructExprStructFields &expr)
 {
   visit (expr.get_struct_name ());
   tokens.push_back (Rust::Token::make (LEFT_CURLY, expr.get_locus ()));
@@ -1471,14 +1473,14 @@ TokenStream::visit (StructExprStructFields &expr)
 }
 
 void
-TokenStream::visit (StructExprStructBase &)
+TokenCollector::visit (StructExprStructBase &)
 {
   // FIXME: Implement this node
   gcc_unreachable ();
 }
 
 void
-TokenStream::visit (CallExpr &expr)
+TokenCollector::visit (CallExpr &expr)
 {
   visit (expr.get_function_expr ());
 
@@ -1490,7 +1492,7 @@ TokenStream::visit (CallExpr &expr)
 }
 
 void
-TokenStream::visit (MethodCallExpr &expr)
+TokenCollector::visit (MethodCallExpr &expr)
 {
   visit (expr.get_receiver_expr ());
   tokens.push_back (Rust::Token::make (DOT, expr.get_locus ()));
@@ -1502,7 +1504,7 @@ TokenStream::visit (MethodCallExpr &expr)
 }
 
 void
-TokenStream::visit (FieldAccessExpr &expr)
+TokenCollector::visit (FieldAccessExpr &expr)
 {
   visit (expr.get_receiver_expr ());
   tokens.push_back (Rust::Token::make (DOT, expr.get_locus ()));
@@ -1512,7 +1514,7 @@ TokenStream::visit (FieldAccessExpr &expr)
 }
 
 void
-TokenStream::visit (ClosureParam &param)
+TokenCollector::visit (ClosureParam &param)
 {
   visit_items_as_lines (param.get_outer_attrs ());
   visit (param.get_pattern ());
@@ -1524,7 +1526,7 @@ TokenStream::visit (ClosureParam &param)
 }
 
 void
-TokenStream::visit_closure_common (ClosureExpr &expr)
+TokenCollector::visit_closure_common (ClosureExpr &expr)
 {
   if (expr.get_has_move ())
     {
@@ -1536,14 +1538,14 @@ TokenStream::visit_closure_common (ClosureExpr &expr)
 }
 
 void
-TokenStream::visit (ClosureExprInner &expr)
+TokenCollector::visit (ClosureExprInner &expr)
 {
   visit_closure_common (expr);
   visit (expr.get_definition_expr ());
 }
 
 void
-TokenStream::visit (BlockExpr &expr)
+TokenCollector::visit (BlockExpr &expr)
 {
   tokens.push_back (Rust::Token::make (LEFT_CURLY, expr.get_locus ()));
   newline ();
@@ -1565,7 +1567,7 @@ TokenStream::visit (BlockExpr &expr)
 }
 
 void
-TokenStream::visit (ClosureExprInnerTyped &expr)
+TokenCollector::visit (ClosureExprInnerTyped &expr)
 {
   visit_closure_common (expr);
   tokens.push_back (Rust::Token::make (RETURN_TYPE, expr.get_locus ()));
@@ -1574,7 +1576,7 @@ TokenStream::visit (ClosureExprInnerTyped &expr)
 }
 
 void
-TokenStream::visit (ContinueExpr &expr)
+TokenCollector::visit (ContinueExpr &expr)
 {
   tokens.push_back (Rust::Token::make (CONTINUE, expr.get_locus ()));
   if (expr.has_label ())
@@ -1582,7 +1584,7 @@ TokenStream::visit (ContinueExpr &expr)
 }
 
 void
-TokenStream::visit (BreakExpr &expr)
+TokenCollector::visit (BreakExpr &expr)
 {
   tokens.push_back (Rust::Token::make (BREAK, expr.get_locus ()));
   if (expr.has_label ())
@@ -1592,7 +1594,7 @@ TokenStream::visit (BreakExpr &expr)
 }
 
 void
-TokenStream::visit (RangeFromToExpr &expr)
+TokenCollector::visit (RangeFromToExpr &expr)
 {
   visit (expr.get_from_expr ());
   tokens.push_back (Rust::Token::make (DOT_DOT, expr.get_locus ()));
@@ -1600,27 +1602,27 @@ TokenStream::visit (RangeFromToExpr &expr)
 }
 
 void
-TokenStream::visit (RangeFromExpr &expr)
+TokenCollector::visit (RangeFromExpr &expr)
 {
   visit (expr.get_from_expr ());
   tokens.push_back (Rust::Token::make (DOT_DOT, expr.get_locus ()));
 }
 
 void
-TokenStream::visit (RangeToExpr &expr)
+TokenCollector::visit (RangeToExpr &expr)
 {
   tokens.push_back (Rust::Token::make (DOT_DOT, expr.get_locus ()));
   visit (expr.get_to_expr ());
 }
 
 void
-TokenStream::visit (RangeFullExpr &expr)
+TokenCollector::visit (RangeFullExpr &expr)
 {
   tokens.push_back (Rust::Token::make (DOT_DOT, expr.get_locus ()));
 }
 
 void
-TokenStream::visit (RangeFromToInclExpr &expr)
+TokenCollector::visit (RangeFromToInclExpr &expr)
 {
   visit (expr.get_from_expr ());
   tokens.push_back (Rust::Token::make (DOT_DOT_EQ, expr.get_locus ()));
@@ -1628,14 +1630,14 @@ TokenStream::visit (RangeFromToInclExpr &expr)
 }
 
 void
-TokenStream::visit (RangeToInclExpr &expr)
+TokenCollector::visit (RangeToInclExpr &expr)
 {
   tokens.push_back (Rust::Token::make (DOT_DOT_EQ, expr.get_locus ()));
   visit (expr.get_to_expr ());
 }
 
 void
-TokenStream::visit (ReturnExpr &expr)
+TokenCollector::visit (ReturnExpr &expr)
 {
   tokens.push_back (Rust::Token::make (RETURN_TOK, expr.get_locus ()));
   if (expr.has_returned_expr ())
@@ -1643,28 +1645,28 @@ TokenStream::visit (ReturnExpr &expr)
 }
 
 void
-TokenStream::visit (UnsafeBlockExpr &expr)
+TokenCollector::visit (UnsafeBlockExpr &expr)
 {
   tokens.push_back (Rust::Token::make (UNSAFE, expr.get_locus ()));
   visit (expr.get_block_expr ());
 }
 
 void
-TokenStream::visit (LoopLabel &label)
+TokenCollector::visit (LoopLabel &label)
 {
   visit (label.get_lifetime ());
   tokens.push_back (Rust::Token::make (COLON, label.get_locus ()));
 }
 
 void
-TokenStream::visit_loop_common (BaseLoopExpr &expr)
+TokenCollector::visit_loop_common (BaseLoopExpr &expr)
 {
   if (expr.has_loop_label ())
     visit (expr.get_loop_label ());
 }
 
 void
-TokenStream::visit (LoopExpr &expr)
+TokenCollector::visit (LoopExpr &expr)
 {
   visit_loop_common (expr);
   tokens.push_back (Rust::Token::make (LOOP, expr.get_locus ()));
@@ -1672,7 +1674,7 @@ TokenStream::visit (LoopExpr &expr)
 }
 
 void
-TokenStream::visit (WhileLoopExpr &expr)
+TokenCollector::visit (WhileLoopExpr &expr)
 {
   visit_loop_common (expr);
   tokens.push_back (Rust::Token::make (WHILE, expr.get_locus ()));
@@ -1681,7 +1683,7 @@ TokenStream::visit (WhileLoopExpr &expr)
 }
 
 void
-TokenStream::visit (WhileLetLoopExpr &expr)
+TokenCollector::visit (WhileLetLoopExpr &expr)
 {
   visit_loop_common (expr);
   tokens.push_back (Rust::Token::make (WHILE, expr.get_locus ()));
@@ -1697,7 +1699,7 @@ TokenStream::visit (WhileLetLoopExpr &expr)
 }
 
 void
-TokenStream::visit (ForLoopExpr &expr)
+TokenCollector::visit (ForLoopExpr &expr)
 {
   visit_loop_common (expr);
   tokens.push_back (Rust::Token::make (FOR, expr.get_locus ()));
@@ -1708,7 +1710,7 @@ TokenStream::visit (ForLoopExpr &expr)
 }
 
 void
-TokenStream::visit (IfExpr &expr)
+TokenCollector::visit (IfExpr &expr)
 {
   tokens.push_back (Rust::Token::make (IF, expr.get_locus ()));
   visit (expr.get_condition_expr ());
@@ -1716,7 +1718,7 @@ TokenStream::visit (IfExpr &expr)
 }
 
 void
-TokenStream::visit (IfExprConseqElse &expr)
+TokenCollector::visit (IfExprConseqElse &expr)
 {
   visit (static_cast<IfExpr &> (expr));
   indentation ();
@@ -1725,7 +1727,7 @@ TokenStream::visit (IfExprConseqElse &expr)
 }
 
 void
-TokenStream::visit (IfLetExpr &expr)
+TokenCollector::visit (IfLetExpr &expr)
 {
   tokens.push_back (Rust::Token::make (IF, expr.get_locus ()));
   tokens.push_back (Rust::Token::make (LET, Location ()));
@@ -1739,7 +1741,7 @@ TokenStream::visit (IfLetExpr &expr)
 }
 
 void
-TokenStream::visit (IfLetExprConseqElse &expr)
+TokenCollector::visit (IfLetExprConseqElse &expr)
 {
   visit (static_cast<IfLetExpr &> (expr));
   indentation ();
@@ -1748,7 +1750,7 @@ TokenStream::visit (IfLetExprConseqElse &expr)
 }
 
 void
-TokenStream::visit (MatchArm &arm)
+TokenCollector::visit (MatchArm &arm)
 {
   visit_items_as_lines (arm.get_outer_attrs ());
   for (auto &pattern : arm.get_patterns ())
@@ -1763,7 +1765,7 @@ TokenStream::visit (MatchArm &arm)
 }
 
 void
-TokenStream::visit (MatchCase &match_case)
+TokenCollector::visit (MatchCase &match_case)
 {
   visit (match_case.get_arm ());
   tokens.push_back (Rust::Token::make (MATCH_ARROW, Location ()));
@@ -1772,7 +1774,7 @@ TokenStream::visit (MatchCase &match_case)
 }
 
 void
-TokenStream::visit (MatchExpr &expr)
+TokenCollector::visit (MatchExpr &expr)
 {
   tokens.push_back (Rust::Token::make (MATCH_TOK, expr.get_locus ()));
   visit (expr.get_scrutinee_expr ());
@@ -1786,7 +1788,7 @@ TokenStream::visit (MatchExpr &expr)
 }
 
 void
-TokenStream::visit (AwaitExpr &expr)
+TokenCollector::visit (AwaitExpr &expr)
 {
   visit (expr.get_awaited_expr ());
   tokens.push_back (Rust::Token::make (DOT, expr.get_locus ()));
@@ -1795,7 +1797,7 @@ TokenStream::visit (AwaitExpr &expr)
 }
 
 void
-TokenStream::visit (AsyncBlockExpr &expr)
+TokenCollector::visit (AsyncBlockExpr &expr)
 {
   tokens.push_back (Rust::Token::make (ASYNC, expr.get_locus ()));
   if (expr.get_has_move ())
@@ -1806,7 +1808,7 @@ TokenStream::visit (AsyncBlockExpr &expr)
 // rust-item.h
 
 void
-TokenStream::visit (TypeParam &param)
+TokenCollector::visit (TypeParam &param)
 {
   // Syntax:
   //    IDENTIFIER( : TypeParamBounds? )? ( = Type )?
@@ -1829,7 +1831,7 @@ TokenStream::visit (TypeParam &param)
 }
 
 void
-TokenStream::visit (WhereClause &rule)
+TokenCollector::visit (WhereClause &rule)
 {
   // Syntax:
   // 	where ( WhereClauseItem , )* WhereClauseItem ?
@@ -1845,7 +1847,7 @@ TokenStream::visit (WhereClause &rule)
 }
 
 void
-TokenStream::visit (LifetimeWhereClauseItem &item)
+TokenCollector::visit (LifetimeWhereClauseItem &item)
 {
   // Syntax:
   // 	Lifetime : LifetimeBounds
@@ -1858,7 +1860,7 @@ TokenStream::visit (LifetimeWhereClauseItem &item)
 }
 
 void
-TokenStream::visit (TypeBoundWhereClauseItem &item)
+TokenCollector::visit (TypeBoundWhereClauseItem &item)
 {
   // Syntax:
   // 	ForLifetimes? Type : TypeParamBounds?
@@ -1877,7 +1879,7 @@ TokenStream::visit (TypeBoundWhereClauseItem &item)
 }
 
 void
-TokenStream::visit (Method &method)
+TokenCollector::visit (Method &method)
 {
   visit (method.get_visibility ());
   auto method_name = method.get_method_name ();
@@ -1910,7 +1912,7 @@ TokenStream::visit (Method &method)
 }
 
 void
-TokenStream::visit (Module &module)
+TokenCollector::visit (Module &module)
 {
   //  Syntax:
   //	mod IDENTIFIER ;
@@ -1947,7 +1949,7 @@ TokenStream::visit (Module &module)
 }
 
 void
-TokenStream::visit (ExternCrate &crate)
+TokenCollector::visit (ExternCrate &crate)
 {
   tokens.push_back (Rust::Token::make (EXTERN_TOK, crate.get_locus ()));
   tokens.push_back (Rust::Token::make (CRATE, Location ()));
@@ -1966,7 +1968,7 @@ TokenStream::visit (ExternCrate &crate)
 }
 
 void
-TokenStream::visit (UseTreeGlob &use_tree)
+TokenCollector::visit (UseTreeGlob &use_tree)
 {
   switch (use_tree.get_glob_type ())
     {
@@ -1986,7 +1988,7 @@ TokenStream::visit (UseTreeGlob &use_tree)
 }
 
 void
-TokenStream::visit (UseTreeList &use_tree)
+TokenCollector::visit (UseTreeList &use_tree)
 {
   switch (use_tree.get_path_type ())
     {
@@ -2012,7 +2014,7 @@ TokenStream::visit (UseTreeList &use_tree)
 }
 
 void
-TokenStream::visit (UseTreeRebind &use_tree)
+TokenCollector::visit (UseTreeRebind &use_tree)
 {
   auto path = use_tree.get_path ();
   visit (path);
@@ -2035,7 +2037,7 @@ TokenStream::visit (UseTreeRebind &use_tree)
 }
 
 void
-TokenStream::visit (UseDeclaration &decl)
+TokenCollector::visit (UseDeclaration &decl)
 {
   tokens.push_back (Rust::Token::make (USE, decl.get_locus ()));
   visit (*decl.get_tree ());
@@ -2044,7 +2046,7 @@ TokenStream::visit (UseDeclaration &decl)
 }
 
 void
-TokenStream::visit (Function &function)
+TokenCollector::visit (Function &function)
 {
   // Syntax:
   //   FunctionQualifiers fn IDENTIFIER GenericParams?
@@ -2083,7 +2085,7 @@ TokenStream::visit (Function &function)
 }
 
 void
-TokenStream::visit (TypeAlias &type_alias)
+TokenCollector::visit (TypeAlias &type_alias)
 {
   // Syntax:
   // Visibility? type IDENTIFIER GenericParams? WhereClause? = Type;
@@ -2106,7 +2108,7 @@ TokenStream::visit (TypeAlias &type_alias)
 }
 
 void
-TokenStream::visit (StructStruct &struct_item)
+TokenCollector::visit (StructStruct &struct_item)
 {
   if (struct_item.has_visibility ())
     visit (struct_item.get_visibility ());
@@ -2130,7 +2132,7 @@ TokenStream::visit (StructStruct &struct_item)
 }
 
 void
-TokenStream::visit (TupleStruct &tuple_struct)
+TokenCollector::visit (TupleStruct &tuple_struct)
 {
   auto struct_name = tuple_struct.get_identifier ();
   tokens.push_back (Rust::Token::make (STRUCT_TOK, tuple_struct.get_locus ()));
@@ -2149,7 +2151,7 @@ TokenStream::visit (TupleStruct &tuple_struct)
 }
 
 void
-TokenStream::visit (EnumItem &item)
+TokenCollector::visit (EnumItem &item)
 {
   auto id = item.get_identifier ();
   tokens.push_back (
@@ -2157,7 +2159,7 @@ TokenStream::visit (EnumItem &item)
 }
 
 void
-TokenStream::visit (EnumItemTuple &item)
+TokenCollector::visit (EnumItemTuple &item)
 {
   auto id = item.get_identifier ();
   tokens.push_back (
@@ -2168,7 +2170,7 @@ TokenStream::visit (EnumItemTuple &item)
 }
 
 void
-TokenStream::visit (EnumItemStruct &item)
+TokenCollector::visit (EnumItemStruct &item)
 {
   auto id = item.get_identifier ();
   tokens.push_back (
@@ -2178,7 +2180,7 @@ TokenStream::visit (EnumItemStruct &item)
 }
 
 void
-TokenStream::visit (EnumItemDiscriminant &item)
+TokenCollector::visit (EnumItemDiscriminant &item)
 {
   auto id = item.get_identifier ();
   tokens.push_back (
@@ -2188,7 +2190,7 @@ TokenStream::visit (EnumItemDiscriminant &item)
 }
 
 void
-TokenStream::visit (Enum &enumeration)
+TokenCollector::visit (Enum &enumeration)
 {
   if (enumeration.has_visibility ())
     visit (enumeration.get_visibility ());
@@ -2206,7 +2208,7 @@ TokenStream::visit (Enum &enumeration)
 }
 
 void
-TokenStream::visit (Union &union_item)
+TokenCollector::visit (Union &union_item)
 {
   visit_items_as_lines (union_item.get_outer_attrs ());
   auto id = union_item.get_identifier ();
@@ -2223,7 +2225,7 @@ TokenStream::visit (Union &union_item)
 }
 
 void
-TokenStream::visit (ConstantItem &item)
+TokenCollector::visit (ConstantItem &item)
 {
   tokens.push_back (Rust::Token::make (CONST, item.get_locus ()));
   if (item.is_unnamed ())
@@ -2247,7 +2249,7 @@ TokenStream::visit (ConstantItem &item)
 }
 
 void
-TokenStream::visit (StaticItem &item)
+TokenCollector::visit (StaticItem &item)
 {
   tokens.push_back (Rust::Token::make (STATIC_TOK, item.get_locus ()));
   if (item.is_mutable ())
@@ -2265,8 +2267,8 @@ TokenStream::visit (StaticItem &item)
 }
 
 void
-TokenStream::visit_function_common (std::unique_ptr<Type> &return_type,
-				    std::unique_ptr<BlockExpr> &block)
+TokenCollector::visit_function_common (std::unique_ptr<Type> &return_type,
+				       std::unique_ptr<BlockExpr> &block)
 {
   // FIXME: This should format the `<vis> fn <name> ( [args] )` as well
   if (return_type)
@@ -2287,7 +2289,7 @@ TokenStream::visit_function_common (std::unique_ptr<Type> &return_type,
 }
 
 void
-TokenStream::visit (TraitItemFunc &item)
+TokenCollector::visit (TraitItemFunc &item)
 {
   auto func = item.get_trait_function_decl ();
   auto id = func.get_identifier ();
@@ -2303,7 +2305,7 @@ TokenStream::visit (TraitItemFunc &item)
 }
 
 void
-TokenStream::visit (SelfParam &param)
+TokenCollector::visit (SelfParam &param)
 {
   if (param.get_has_ref ())
     {
@@ -2324,7 +2326,7 @@ TokenStream::visit (SelfParam &param)
 }
 
 void
-TokenStream::visit (TraitItemMethod &item)
+TokenCollector::visit (TraitItemMethod &item)
 {
   auto method = item.get_trait_method_decl ();
   auto id = method.get_identifier ();
@@ -2347,7 +2349,7 @@ TokenStream::visit (TraitItemMethod &item)
 }
 
 void
-TokenStream::visit (TraitItemConst &item)
+TokenCollector::visit (TraitItemConst &item)
 {
   auto id = item.get_identifier ();
   indentation ();
@@ -2360,7 +2362,7 @@ TokenStream::visit (TraitItemConst &item)
 }
 
 void
-TokenStream::visit (TraitItemType &item)
+TokenCollector::visit (TraitItemType &item)
 {
   auto id = item.get_identifier ();
   indentation ();
@@ -2371,7 +2373,7 @@ TokenStream::visit (TraitItemType &item)
 }
 
 void
-TokenStream::visit (Trait &trait)
+TokenCollector::visit (Trait &trait)
 {
   for (auto &attr : trait.get_outer_attrs ())
     {
@@ -2399,7 +2401,7 @@ TokenStream::visit (Trait &trait)
 }
 
 void
-TokenStream::visit (InherentImpl &impl)
+TokenCollector::visit (InherentImpl &impl)
 {
   tokens.push_back (Rust::Token::make (IMPL, impl.get_locus ()));
   // FIXME: Handle generics
@@ -2415,7 +2417,7 @@ TokenStream::visit (InherentImpl &impl)
 }
 
 void
-TokenStream::visit (TraitImpl &impl)
+TokenCollector::visit (TraitImpl &impl)
 {
   tokens.push_back (Rust::Token::make (IMPL, impl.get_locus ()));
   visit (impl.get_trait_path ());
@@ -2440,7 +2442,7 @@ TokenStream::visit (TraitImpl &impl)
 }
 
 void
-TokenStream::visit (ExternalTypeItem &type)
+TokenCollector::visit (ExternalTypeItem &type)
 {
   visit (type.get_visibility ());
 
@@ -2451,7 +2453,7 @@ TokenStream::visit (ExternalTypeItem &type)
 }
 
 void
-TokenStream::visit (ExternalStaticItem &item)
+TokenCollector::visit (ExternalStaticItem &item)
 {
   auto id = item.get_identifier ();
   visit_items_as_lines (item.get_outer_attrs ());
@@ -2469,7 +2471,7 @@ TokenStream::visit (ExternalStaticItem &item)
 }
 
 void
-TokenStream::visit (ExternalFunctionItem &function)
+TokenCollector::visit (ExternalFunctionItem &function)
 {
   visit (function.get_visibility ());
 
@@ -2489,7 +2491,7 @@ TokenStream::visit (ExternalFunctionItem &function)
 }
 
 void
-TokenStream::visit (ExternBlock &block)
+TokenCollector::visit (ExternBlock &block)
 {
   tokens.push_back (Rust::Token::make (EXTERN_TOK, block.get_locus ()));
 
@@ -2520,7 +2522,7 @@ get_delimiters (DelimType delim)
 }
 
 void
-TokenStream::visit (MacroMatchFragment &match)
+TokenCollector::visit (MacroMatchFragment &match)
 {
   auto id = match.get_ident ();
   auto frag_spec = match.get_frag_spec ().as_string ();
@@ -2532,7 +2534,7 @@ TokenStream::visit (MacroMatchFragment &match)
 }
 
 void
-TokenStream::visit (MacroMatchRepetition &repetition)
+TokenCollector::visit (MacroMatchRepetition &repetition)
 {
   tokens.push_back (Rust::Token::make (DOLLAR_SIGN, Location ()));
   tokens.push_back (Rust::Token::make (LEFT_PAREN, Location ()));
@@ -2564,7 +2566,7 @@ TokenStream::visit (MacroMatchRepetition &repetition)
 }
 
 void
-TokenStream::visit (MacroMatcher &matcher)
+TokenCollector::visit (MacroMatcher &matcher)
 {
   auto delimiters = get_delimiters (matcher.get_delim_type ());
 
@@ -2579,7 +2581,7 @@ TokenStream::visit (MacroMatcher &matcher)
 }
 
 void
-TokenStream::visit (MacroRule &rule)
+TokenCollector::visit (MacroRule &rule)
 {
   visit (rule.get_matcher ());
   tokens.push_back (Rust::Token::make (MATCH_ARROW, rule.get_locus ()));
@@ -2588,7 +2590,7 @@ TokenStream::visit (MacroRule &rule)
 }
 
 void
-TokenStream::visit (MacroRulesDefinition &rules_def)
+TokenCollector::visit (MacroRulesDefinition &rules_def)
 {
   for (auto &outer_attr : rules_def.get_outer_attrs ())
     visit (outer_attr);
@@ -2606,7 +2608,7 @@ TokenStream::visit (MacroRulesDefinition &rules_def)
 }
 
 void
-TokenStream::visit (MacroInvocation &invocation)
+TokenCollector::visit (MacroInvocation &invocation)
 {
   auto data = invocation.get_invoc_data ();
   visit (data.get_path ());
@@ -2617,14 +2619,14 @@ TokenStream::visit (MacroInvocation &invocation)
 }
 
 void
-TokenStream::visit (MetaItemPath &item)
+TokenCollector::visit (MetaItemPath &item)
 {
   auto path = item.to_path_item ();
   visit (path);
 }
 
 void
-TokenStream::visit (MetaItemSeq &item)
+TokenCollector::visit (MetaItemSeq &item)
 {
   visit (item.get_path ());
   // TODO: Double check this, there is probably a mistake.
@@ -2634,7 +2636,7 @@ TokenStream::visit (MetaItemSeq &item)
 }
 
 void
-TokenStream::visit (MetaWord &word)
+TokenCollector::visit (MetaWord &word)
 {
   auto id = word.get_ident ();
   tokens.push_back (
@@ -2642,7 +2644,7 @@ TokenStream::visit (MetaWord &word)
 }
 
 void
-TokenStream::visit (MetaNameValueStr &name)
+TokenCollector::visit (MetaNameValueStr &name)
 {
   auto pair = name.get_name_value_pair ();
   auto id = std::get<0> (pair);
@@ -2657,7 +2659,7 @@ TokenStream::visit (MetaNameValueStr &name)
 }
 
 void
-TokenStream::visit (MetaListPaths &list)
+TokenCollector::visit (MetaListPaths &list)
 {
   auto id = list.get_ident ();
   tokens.push_back (
@@ -2668,7 +2670,7 @@ TokenStream::visit (MetaListPaths &list)
 }
 
 void
-TokenStream::visit (MetaListNameValueStr &list)
+TokenCollector::visit (MetaListNameValueStr &list)
 {
   auto id = list.get_ident ();
   tokens.push_back (
@@ -2680,13 +2682,13 @@ TokenStream::visit (MetaListNameValueStr &list)
 
 // rust-pattern.h
 void
-TokenStream::visit (LiteralPattern &pattern)
+TokenCollector::visit (LiteralPattern &pattern)
 {
   visit (pattern.get_literal (), pattern.get_locus ());
 }
 
 void
-TokenStream::visit (IdentifierPattern &pattern)
+TokenCollector::visit (IdentifierPattern &pattern)
 {
   if (pattern.get_is_ref ())
     {
@@ -2706,21 +2708,21 @@ TokenStream::visit (IdentifierPattern &pattern)
 }
 
 void
-TokenStream::visit (WildcardPattern &pattern)
+TokenCollector::visit (WildcardPattern &pattern)
 {
   tokens.push_back (Rust::Token::make (UNDERSCORE, pattern.get_locus ()));
 }
 
 void
-TokenStream::visit (RestPattern &pattern)
+TokenCollector::visit (RestPattern &pattern)
 {
   tokens.push_back (Rust::Token::make (DOT_DOT, pattern.get_locus ()));
 }
 
-// void TokenStream::visit(RangePatternBound& ){}
+// void TokenCollector::visit(RangePatternBound& ){}
 
 void
-TokenStream::visit (RangePatternBoundLiteral &pattern)
+TokenCollector::visit (RangePatternBoundLiteral &pattern)
 {
   if (pattern.get_has_minus ())
     {
@@ -2731,19 +2733,19 @@ TokenStream::visit (RangePatternBoundLiteral &pattern)
 }
 
 void
-TokenStream::visit (RangePatternBoundPath &pattern)
+TokenCollector::visit (RangePatternBoundPath &pattern)
 {
   visit (pattern.get_path ());
 }
 
 void
-TokenStream::visit (RangePatternBoundQualPath &pattern)
+TokenCollector::visit (RangePatternBoundQualPath &pattern)
 {
   visit (pattern.get_qualified_path ());
 }
 
 void
-TokenStream::visit (RangePattern &pattern)
+TokenCollector::visit (RangePattern &pattern)
 {
   if (pattern.get_has_lower_bound () && pattern.get_has_upper_bound ())
     {
@@ -2767,7 +2769,7 @@ TokenStream::visit (RangePattern &pattern)
 }
 
 void
-TokenStream::visit (ReferencePattern &pattern)
+TokenCollector::visit (ReferencePattern &pattern)
 {
   if (pattern.is_double_reference ())
     {
@@ -2786,10 +2788,10 @@ TokenStream::visit (ReferencePattern &pattern)
   visit (pattern.get_referenced_pattern ());
 }
 
-// void TokenStream::visit(StructPatternField& ){}
+// void TokenCollector::visit(StructPatternField& ){}
 
 void
-TokenStream::visit (StructPatternFieldTuplePat &pattern)
+TokenCollector::visit (StructPatternFieldTuplePat &pattern)
 {
   visit_items_as_lines (pattern.get_outer_attrs ());
   tokens.push_back (
@@ -2800,7 +2802,7 @@ TokenStream::visit (StructPatternFieldTuplePat &pattern)
 }
 
 void
-TokenStream::visit (StructPatternFieldIdentPat &pattern)
+TokenCollector::visit (StructPatternFieldIdentPat &pattern)
 {
   visit_items_as_lines (pattern.get_outer_attrs ());
   auto id = pattern.get_identifier ();
@@ -2810,7 +2812,7 @@ TokenStream::visit (StructPatternFieldIdentPat &pattern)
 }
 
 void
-TokenStream::visit (StructPatternFieldIdent &pattern)
+TokenCollector::visit (StructPatternFieldIdent &pattern)
 {
   visit_items_as_lines (pattern.get_outer_attrs ());
   if (pattern.is_ref ())
@@ -2823,7 +2825,7 @@ TokenStream::visit (StructPatternFieldIdent &pattern)
 }
 
 void
-TokenStream::visit (StructPattern &pattern)
+TokenCollector::visit (StructPattern &pattern)
 {
   visit (pattern.get_path ());
   tokens.push_back (Rust::Token::make (LEFT_CURLY, pattern.get_locus ()));
@@ -2845,10 +2847,10 @@ TokenStream::visit (StructPattern &pattern)
   tokens.push_back (Rust::Token::make (RIGHT_CURLY, Location ()));
 }
 
-// void TokenStream::visit(TupleStructItems& ){}
+// void TokenCollector::visit(TupleStructItems& ){}
 
 void
-TokenStream::visit (TupleStructItemsNoRange &pattern)
+TokenCollector::visit (TupleStructItemsNoRange &pattern)
 {
   for (auto &pat : pattern.get_patterns ())
     {
@@ -2857,7 +2859,7 @@ TokenStream::visit (TupleStructItemsNoRange &pattern)
 }
 
 void
-TokenStream::visit (TupleStructItemsRange &pattern)
+TokenCollector::visit (TupleStructItemsRange &pattern)
 {
   for (auto &lower : pattern.get_lower_patterns ())
     {
@@ -2871,7 +2873,7 @@ TokenStream::visit (TupleStructItemsRange &pattern)
 }
 
 void
-TokenStream::visit (TupleStructPattern &pattern)
+TokenCollector::visit (TupleStructPattern &pattern)
 {
   visit (pattern.get_path ());
   tokens.push_back (Rust::Token::make (LEFT_PAREN, pattern.get_locus ()));
@@ -2881,17 +2883,17 @@ TokenStream::visit (TupleStructPattern &pattern)
 }
 
 // void
-// TokenStream::visit (TuplePatternItems &)
+// TokenCollector::visit (TuplePatternItems &)
 // {}
 
 void
-TokenStream::visit (TuplePatternItemsMultiple &pattern)
+TokenCollector::visit (TuplePatternItemsMultiple &pattern)
 {
   visit_items_joined_by_separator (pattern.get_patterns (), COMMA);
 }
 
 void
-TokenStream::visit (TuplePatternItemsRanged &pattern)
+TokenCollector::visit (TuplePatternItemsRanged &pattern)
 {
   for (auto &lower : pattern.get_lower_patterns ())
     {
@@ -2905,7 +2907,7 @@ TokenStream::visit (TuplePatternItemsRanged &pattern)
 }
 
 void
-TokenStream::visit (TuplePattern &pattern)
+TokenCollector::visit (TuplePattern &pattern)
 {
   tokens.push_back (Rust::Token::make (LEFT_PAREN, pattern.get_locus ()));
   visit (pattern.get_items ());
@@ -2913,7 +2915,7 @@ TokenStream::visit (TuplePattern &pattern)
 }
 
 void
-TokenStream::visit (GroupedPattern &pattern)
+TokenCollector::visit (GroupedPattern &pattern)
 {
   tokens.push_back (Rust::Token::make (LEFT_PAREN, pattern.get_locus ()));
   visit (pattern.get_pattern_in_parens ());
@@ -2921,7 +2923,7 @@ TokenStream::visit (GroupedPattern &pattern)
 }
 
 void
-TokenStream::visit (SlicePattern &pattern)
+TokenCollector::visit (SlicePattern &pattern)
 {
   tokens.push_back (Rust::Token::make (LEFT_SQUARE, pattern.get_locus ()));
   visit_items_joined_by_separator (pattern.get_items (), COMMA);
@@ -2929,18 +2931,18 @@ TokenStream::visit (SlicePattern &pattern)
 }
 
 void
-TokenStream::visit (AltPattern &pattern)
+TokenCollector::visit (AltPattern &pattern)
 {
   visit_items_joined_by_separator (pattern.get_alts (), PIPE);
 }
 
 // rust-stmt.h
 void
-TokenStream::visit (EmptyStmt &)
+TokenCollector::visit (EmptyStmt &)
 {}
 
 void
-TokenStream::visit (LetStmt &stmt)
+TokenCollector::visit (LetStmt &stmt)
 {
   tokens.push_back (Rust::Token::make (LET, stmt.get_locus ()));
   auto &pattern = stmt.get_pattern ();
@@ -2961,20 +2963,20 @@ TokenStream::visit (LetStmt &stmt)
 }
 
 void
-TokenStream::visit (ExprStmtWithoutBlock &stmt)
+TokenCollector::visit (ExprStmtWithoutBlock &stmt)
 {
   visit (stmt.get_expr ());
 }
 
 void
-TokenStream::visit (ExprStmtWithBlock &stmt)
+TokenCollector::visit (ExprStmtWithBlock &stmt)
 {
   visit (stmt.get_expr ());
 }
 
 // rust-type.h
 void
-TokenStream::visit (TraitBound &bound)
+TokenCollector::visit (TraitBound &bound)
 {
   // Syntax:
   //      ?? ForLifetimes? TypePath
@@ -2990,7 +2992,7 @@ TokenStream::visit (TraitBound &bound)
 }
 
 void
-TokenStream::visit (ImplTraitType &type)
+TokenCollector::visit (ImplTraitType &type)
 {
   // Syntax:
   //    impl TypeParamBounds
@@ -3002,7 +3004,7 @@ TokenStream::visit (ImplTraitType &type)
 }
 
 void
-TokenStream::visit (TraitObjectType &type)
+TokenCollector::visit (TraitObjectType &type)
 {
   // Syntax:
   //   dyn? TypeParamBounds
@@ -3015,7 +3017,7 @@ TokenStream::visit (TraitObjectType &type)
 }
 
 void
-TokenStream::visit (ParenthesisedType &type)
+TokenCollector::visit (ParenthesisedType &type)
 {
   // Syntax:
   //    ( Type )
@@ -3026,7 +3028,7 @@ TokenStream::visit (ParenthesisedType &type)
 }
 
 void
-TokenStream::visit (ImplTraitTypeOneBound &type)
+TokenCollector::visit (ImplTraitTypeOneBound &type)
 {
   // Syntax:
   //    impl TraitBound
@@ -3036,7 +3038,7 @@ TokenStream::visit (ImplTraitTypeOneBound &type)
 }
 
 void
-TokenStream::visit (TraitObjectTypeOneBound &type)
+TokenCollector::visit (TraitObjectTypeOneBound &type)
 {
   // Syntax:
   //    dyn? TraitBound
@@ -3047,7 +3049,7 @@ TokenStream::visit (TraitObjectTypeOneBound &type)
 }
 
 void
-TokenStream::visit (TupleType &type)
+TokenCollector::visit (TupleType &type)
 {
   // Syntax:
   //   ( )
@@ -3059,7 +3061,7 @@ TokenStream::visit (TupleType &type)
 }
 
 void
-TokenStream::visit (NeverType &type)
+TokenCollector::visit (NeverType &type)
 {
   // Syntax:
   //  !
@@ -3068,7 +3070,7 @@ TokenStream::visit (NeverType &type)
 }
 
 void
-TokenStream::visit (RawPointerType &type)
+TokenCollector::visit (RawPointerType &type)
 {
   // Syntax:
   //    * ( mut | const ) TypeNoBounds
@@ -3083,7 +3085,7 @@ TokenStream::visit (RawPointerType &type)
 }
 
 void
-TokenStream::visit (ReferenceType &type)
+TokenCollector::visit (ReferenceType &type)
 {
   // Syntax:
   //    & Lifetime? mut? TypeNoBounds
@@ -3102,7 +3104,7 @@ TokenStream::visit (ReferenceType &type)
 }
 
 void
-TokenStream::visit (ArrayType &type)
+TokenCollector::visit (ArrayType &type)
 {
   // Syntax:
   //    [ Type ; Expression ]
@@ -3115,7 +3117,7 @@ TokenStream::visit (ArrayType &type)
 }
 
 void
-TokenStream::visit (SliceType &type)
+TokenCollector::visit (SliceType &type)
 {
   // Syntax:
   //    [ Type ]
@@ -3126,7 +3128,7 @@ TokenStream::visit (SliceType &type)
 }
 
 void
-TokenStream::visit (InferredType &type)
+TokenCollector::visit (InferredType &type)
 {
   // Syntax:
   //    _
@@ -3135,7 +3137,7 @@ TokenStream::visit (InferredType &type)
 }
 
 void
-TokenStream::visit (BareFunctionType &type)
+TokenCollector::visit (BareFunctionType &type)
 {
   // Syntax:
   //    ForLifetimes? FunctionTypeQualifiers fn
