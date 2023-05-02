@@ -35,7 +35,7 @@
 #include "rust-lint-unused-var.h"
 #include "rust-hir-dump.h"
 #include "rust-ast-dump.h"
-#include "rust-ast-tokenstream.h"
+#include "rust-ast-collector.h"
 #include "rust-export-metadata.h"
 #include "rust-imports.h"
 #include "rust-extern-crate.h"
