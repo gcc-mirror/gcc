@@ -2487,7 +2487,7 @@ The following attributes are supported on most targets.
 @table @code
 @c Keep this table alphabetized by attribute name.  Treat _ as space.
 
-@itemx access (@var{access-mode}, @var{ref-index})
+@item access (@var{access-mode}, @var{ref-index})
 @itemx access (@var{access-mode}, @var{ref-index}, @var{size-index})
 
 The @code{access} attribute enables the detection of invalid or unsafe
