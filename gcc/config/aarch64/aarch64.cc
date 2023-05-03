@@ -7467,17 +7467,21 @@ aarch64_vfp_is_call_candidate (cumulative_args_t pcum_v, machine_mode mode,
    4.1).  ABI_BREAK_GCC_9 is set to the old alignment if the alignment
    was incorrectly calculated in versions of GCC prior to GCC 9.
    ABI_BREAK_GCC_13 is set to the old alignment if it was incorrectly
-   calculated in versions between GCC 9 and GCC 13.
+   calculated in versions between GCC 9 and GCC 13.  If the alignment
+   might have changed between GCC 13 and GCC 14, ABI_BREAK_GCC_14
+   is the old GCC 13 alignment, otherwise it is zero.
 
    This is a helper function for local use only.  */
 
 static unsigned int
 aarch64_function_arg_alignment (machine_mode mode, const_tree type,
 				unsigned int *abi_break_gcc_9,
-				unsigned int *abi_break_gcc_13)
+				unsigned int *abi_break_gcc_13,
+				unsigned int *abi_break_gcc_14)
 {
   *abi_break_gcc_9 = 0;
   *abi_break_gcc_13 = 0;
+  *abi_break_gcc_14 = 0;
   if (!type)
     return GET_MODE_ALIGNMENT (mode);
 
@@ -7497,6 +7501,11 @@ aarch64_function_arg_alignment (machine_mode mode, const_tree type,
 	{
 	  gcc_assert (known_eq (POINTER_SIZE, GET_MODE_BITSIZE (mode)));
 	  return POINTER_SIZE;
+	}
+      if (TREE_CODE (type) == ENUMERAL_TYPE && TREE_TYPE (type))
+	{
+	  *abi_break_gcc_14 = TYPE_ALIGN (type);
+	  type = TYPE_MAIN_VARIANT (TREE_TYPE (type));
 	}
       gcc_assert (!TYPE_USER_ALIGN (type));
       return TYPE_ALIGN (type);
@@ -7576,6 +7585,7 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
   HOST_WIDE_INT size;
   unsigned int abi_break_gcc_9;
   unsigned int abi_break_gcc_13;
+  unsigned int abi_break_gcc_14;
 
   /* We need to do this once per argument.  */
   if (pcum->aapcs_arg_processed)
@@ -7715,7 +7725,7 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 
   unsigned int alignment
     = aarch64_function_arg_alignment (mode, type, &abi_break_gcc_9,
-				      &abi_break_gcc_13);
+				      &abi_break_gcc_13, &abi_break_gcc_14);
 
   gcc_assert ((allocate_nvrn || alignment <= 16 * BITS_PER_UNIT)
 	      && (!alignment || abi_break_gcc_9 < alignment)
@@ -7799,6 +7809,13 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 	    inform (input_location, "parameter passing for argument of type "
 		    "%qT changed in GCC 13.1", type);
 
+	  if (warn_pcs_change
+	      && abi_break_gcc_14
+	      && ((abi_break_gcc_14 == 16 * BITS_PER_UNIT)
+		  != (alignment == 16 * BITS_PER_UNIT)))
+	    inform (input_location, "parameter passing for argument of type "
+		    "%qT changed in GCC 14.1", type);
+
 	  /* The == 16 * BITS_PER_UNIT instead of >= 16 * BITS_PER_UNIT
 	     comparison is there because for > 16 * BITS_PER_UNIT
 	     alignment nregs should be > 2 and therefore it should be
@@ -7869,6 +7886,13 @@ on_stack:
 	  != (alignment >= 16 * BITS_PER_UNIT)))
     inform (input_location, "parameter passing for argument of type "
 	    "%qT changed in GCC 13.1", type);
+
+  if (warn_pcs_change
+      && abi_break_gcc_14
+      && ((abi_break_gcc_14 >= 16 * BITS_PER_UNIT)
+	  != (alignment >= 16 * BITS_PER_UNIT)))
+    inform (input_location, "parameter passing for argument of type "
+	    "%qT changed in GCC 14.1", type);
 
   if (alignment == 16 * BITS_PER_UNIT)
     {
@@ -7994,9 +8018,11 @@ aarch64_function_arg_boundary (machine_mode mode, const_tree type)
 {
   unsigned int abi_break_gcc_9;
   unsigned int abi_break_gcc_13;
+  unsigned int abi_break_gcc_14;
   unsigned int alignment = aarch64_function_arg_alignment (mode, type,
 							   &abi_break_gcc_9,
-							   &abi_break_gcc_13);
+							   &abi_break_gcc_13,
+							   &abi_break_gcc_14);
   /* We rely on aarch64_layout_arg and aarch64_gimplify_va_arg_expr
      to emit warnings about ABI incompatibility.  */
   alignment = MIN (MAX (alignment, PARM_BOUNDARY), STACK_BOUNDARY);
@@ -19765,9 +19791,10 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 
   unsigned int abi_break_gcc_9;
   unsigned int abi_break_gcc_13;
+  unsigned int abi_break_gcc_14;
   align
     = aarch64_function_arg_alignment (mode, type, &abi_break_gcc_9,
-				      &abi_break_gcc_13)
+				      &abi_break_gcc_13, &abi_break_gcc_14)
     / BITS_PER_UNIT;
 
   dw_align = false;
@@ -19814,6 +19841,12 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
       if (align <= 8 && abi_break_gcc_13 && warn_psabi)
 	inform (input_location, "parameter passing for argument of type "
 		"%qT changed in GCC 13.1", type);
+
+      if (warn_psabi
+	  && abi_break_gcc_14
+	  && (abi_break_gcc_14 > 8 * BITS_PER_UNIT) != (align > 8))
+	inform (input_location, "parameter passing for argument of type "
+		"%qT changed in GCC 14.1", type);
 
       if (align > 8)
 	{
