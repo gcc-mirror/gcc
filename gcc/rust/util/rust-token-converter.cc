@@ -307,8 +307,144 @@ from_ident (ProcMacro::Ident ident, std::vector<const_TokenPtr> &result)
 {}
 
 static void
-from_literal (ProcMacro::Literal literal, std::vector<const_TokenPtr> &result)
-{}
+string_literal (const ProcMacro::StringPayload &payload,
+		std::vector<const_TokenPtr> &result)
+{
+  // TODO: UTF-8 string
+  result.push_back (Token::make_string (
+    Location (),
+    std::string (reinterpret_cast<const char *> (payload.data), payload.len)));
+}
+
+static void
+byte_string_literal (const ProcMacro::ByteStringPayload &payload,
+		     std::vector<const_TokenPtr> &result)
+{
+  result.push_back (Token::make_byte_string (
+    Location (),
+    std::string (reinterpret_cast<const char *> (payload.data), payload.size)));
+}
+
+static void
+unsigned_literal (const ProcMacro::Unsigned &lit,
+		  std::vector<const_TokenPtr> &result)
+{
+  switch (lit.tag)
+    {
+    case ProcMacro::UNSIGNED_8:
+      result.push_back (Token::make_int (Location (),
+					 std::to_string (lit.payload.unsigned8),
+					 CORETYPE_U8));
+      break;
+    case ProcMacro::UNSIGNED_16:
+      result.push_back (
+	Token::make_int (Location (), std::to_string (lit.payload.unsigned16),
+			 CORETYPE_U16));
+      break;
+    case ProcMacro::UNSIGNED_32:
+      result.push_back (
+	Token::make_int (Location (), std::to_string (lit.payload.unsigned32),
+			 CORETYPE_U32));
+      break;
+    case ProcMacro::UNSIGNED_64:
+      result.push_back (
+	Token::make_int (Location (), std::to_string (lit.payload.unsigned64),
+			 CORETYPE_U64));
+      break;
+    case ProcMacro::UNSIGNED_128:
+      // TODO: Handle 128 bits
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static void
+signed_literal (const ProcMacro::Signed &lit,
+		std::vector<const_TokenPtr> &result)
+{
+  switch (lit.tag)
+    {
+    case ProcMacro::SIGNED_8:
+      result.push_back (Token::make_int (Location (),
+					 std::to_string (lit.payload.signed8),
+					 CORETYPE_I8));
+      break;
+    case ProcMacro::SIGNED_16:
+      result.push_back (Token::make_int (Location (),
+					 std::to_string (lit.payload.signed16),
+					 CORETYPE_I16));
+      break;
+    case ProcMacro::SIGNED_32:
+      result.push_back (Token::make_int (Location (),
+					 std::to_string (lit.payload.signed32),
+					 CORETYPE_I32));
+      break;
+    case ProcMacro::SIGNED_64:
+      result.push_back (Token::make_int (Location (),
+					 std::to_string (lit.payload.signed64),
+					 CORETYPE_I64));
+      break;
+    case ProcMacro::SIGNED_128:
+      // TODO: Handle 128 bits
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/**
+ * Append the token corresponding to a given Literal to a vector.
+ *
+ * @param literal Reference to the Literal to convert.
+ * @param result Reference to the vector tokens should be appended to.
+ */
+static void
+from_literal (const ProcMacro::Literal &literal,
+	      std::vector<const_TokenPtr> &result)
+{
+  switch (literal.tag)
+    {
+    case ProcMacro::STRING:
+      string_literal (literal.payload.string_payload, result);
+      break;
+    case ProcMacro::BYTE_STRING:
+      byte_string_literal (literal.payload.byte_string_payload, result);
+      break;
+    case ProcMacro::CHAR:
+      result.push_back (
+	Token::make_char (Location (), literal.payload.char_payload));
+      break;
+    case ProcMacro::UNSIGNED:
+      unsigned_literal (literal.payload.unsigned_payload.value, result);
+      break;
+    case ProcMacro::SIGNED:
+      signed_literal (literal.payload.signed_payload.value, result);
+      break;
+    case ProcMacro::USIZE:
+      result.push_back (
+	Token::make_int (Location (),
+			 std::to_string (literal.payload.usize_payload.value),
+			 CORETYPE_USIZE));
+      break;
+    case ProcMacro::ISIZE:
+      result.push_back (
+	Token::make_int (Location (),
+			 std::to_string (literal.payload.isize_payload.value),
+			 CORETYPE_ISIZE));
+      break;
+    case ProcMacro::FLOAT32:
+      result.push_back (Token::make_float (
+	Location (), std::to_string (literal.payload.float32_payload.value),
+	CORETYPE_F32));
+      break;
+    case ProcMacro::FLOAT64:
+      result.push_back (Token::make_float (
+	Location (), std::to_string (literal.payload.float64_payload.value),
+	CORETYPE_F64));
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
 
 /**
  * Accumulate through successive calls multiple Punct until one is tagged
