@@ -254,13 +254,17 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 #define AARCH64_ISA_PAUTH	   (aarch64_isa_flags & AARCH64_FL_PAUTH)
 #define AARCH64_ISA_V8_7A	   (aarch64_isa_flags & AARCH64_FL_V8_7A)
 #define AARCH64_ISA_V8_8A	   (aarch64_isa_flags & AARCH64_FL_V8_8A)
+#define AARCH64_ISA_V8_9A	   (aarch64_isa_flags & AARCH64_FL_V8_9A)
 #define AARCH64_ISA_V9A		   (aarch64_isa_flags & AARCH64_FL_V9A)
 #define AARCH64_ISA_V9_1A          (aarch64_isa_flags & AARCH64_FL_V9_1A)
 #define AARCH64_ISA_V9_2A          (aarch64_isa_flags & AARCH64_FL_V9_2A)
 #define AARCH64_ISA_V9_3A          (aarch64_isa_flags & AARCH64_FL_V9_3A)
+#define AARCH64_ISA_V9_4A	   (aarch64_isa_flags & AARCH64_FL_V9_4A)
 #define AARCH64_ISA_MOPS	   (aarch64_isa_flags & AARCH64_FL_MOPS)
 #define AARCH64_ISA_LS64	   (aarch64_isa_flags & AARCH64_FL_LS64)
 #define AARCH64_ISA_CSSC	   (aarch64_isa_flags & AARCH64_FL_CSSC)
+#define AARCH64_ISA_D128	   (aarch64_isa_flags & AARCH64_FL_D128)
+#define AARCH64_ISA_THE		   (aarch64_isa_flags & AARCH64_FL_THE)
 
 /* The current function is a normal non-streaming function.  */
 #define TARGET_NON_STREAMING (AARCH64_ISA_SM_OFF)
@@ -449,6 +453,17 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE = AARCH64_FL_SM_OFF;
 
 /* ARMv8.1-A Adv.SIMD support.  */
 #define TARGET_SIMD_RDMA (TARGET_SIMD && AARCH64_ISA_RDMA)
+
+/* Armv9.4-A features.  */
+#define TARGET_ARMV9_4 (AARCH64_ISA_V9_4A)
+
+/*  128-bit System Registers and Instructions from Armv9.4-a are enabled
+    through +d128.  */
+#define TARGET_D128 (AARCH64_ISA_D128)
+
+/*  Armv8.9-A/9.4-A Translation Hardening Extension system registers are
+    enabled through +the.  */
+#define TARGET_THE (AARCH64_ISA_THE)
 
 /* Standard register usage.  */
 

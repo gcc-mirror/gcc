@@ -21045,10 +21045,12 @@ and the features that they enable by default:
 @item @samp{armv8.6-a} @tab Armv8.6-A @tab @samp{armv8.5-a}, @samp{+bf16}, @samp{+i8mm}
 @item @samp{armv8.7-a} @tab Armv8.7-A @tab @samp{armv8.6-a}, @samp{+ls64}
 @item @samp{armv8.8-a} @tab Armv8.8-a @tab @samp{armv8.7-a}, @samp{+mops}
+@item @samp{armv8.9-a} @tab Armv8.9-a @tab @samp{armv8.8-a}
 @item @samp{armv9-a} @tab Armv9-A @tab @samp{armv8.5-a}, @samp{+sve}, @samp{+sve2}
 @item @samp{armv9.1-a} @tab Armv9.1-A @tab @samp{armv9-a}, @samp{+bf16}, @samp{+i8mm}
 @item @samp{armv9.2-a} @tab Armv9.2-A @tab @samp{armv9.1-a}, @samp{+ls64}
 @item @samp{armv9.3-a} @tab Armv9.3-A @tab @samp{armv9.2-a}, @samp{+mops}
+@item @samp{armv9.4-a} @tab Armv9.4-A @tab @samp{armv9.3-a}
 @item @samp{armv8-r} @tab Armv8-R @tab @samp{armv8-r}
 @end multitable
 
@@ -21359,6 +21361,11 @@ Enable the FEAT_SME_I16I64 extension to SME.
 Enable the FEAT_SME_F64F64 extension to SME.
 +@item sme2
 Enable the Scalable Matrix Extension 2.  This also enables SME instructions.
+@item d128
+Enable support for 128-bit system register read/write instructions.
+@item the
+Enable support for Armv8.9-a/9.4-a translation hardening extension.
+
 @end table
 
 Feature @option{crypto} implies @option{aes}, @option{sha2}, and @option{simd},

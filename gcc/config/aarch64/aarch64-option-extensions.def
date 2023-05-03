@@ -159,4 +159,8 @@ AARCH64_OPT_EXTENSION("sme-f64f64", SME_F64F64, (SME), (), (), "")
 
 AARCH64_OPT_EXTENSION("sme2", SME2, (SME), (), (), "sme2")
 
+AARCH64_OPT_EXTENSION("d128", D128, (), (), (), "d128")
+
+AARCH64_OPT_EXTENSION("the", THE, (), (), (), "the")
+
 #undef AARCH64_OPT_EXTENSION
