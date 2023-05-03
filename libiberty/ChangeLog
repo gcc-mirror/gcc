@@ -1,3 +1,12 @@
+2023-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/109306
+	* strstr.c: Revert the 2020-11-13 changes.
+	(strstr): Return s1 if len is 0.
+
 2023-01-04  Florian Weimer  <fweimer@redhat.com>
 
 	Backported from master:

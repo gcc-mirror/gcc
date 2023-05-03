@@ -1,3 +1,18 @@
+2023-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-02  niXman  <i.nixman@autistici.org>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR libquadmath/87204
+	PR libquadmath/94756
+	* strtod/strtod_l.c (round_and_return): Cherry-pick glibc
+	9310c284ae9 BZ #16151, 4406c41c1d6 BZ #16965 and fcd6b5ac36a
+	BZ #23279 fixes.
+	(____STRTOF_INTERNAL): Cherry-pick glibc b0debe14fcf BZ #23007,
+	5556d30caee BZ #18247, 09555b9721d and c6aac3bf366 BZ #26137 and
+	d84f25c7d87 fixes.
+
 2022-04-21  Release Manager
 
 	* GCC 11.3.0 released.

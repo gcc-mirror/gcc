@@ -1,3 +1,26 @@
+2023-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.texi: Fix typos - theads -> threads.
+
+2023-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/108459
+	* testsuite/libgomp.c/pr108459.c: New test.
+
+2023-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-12-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/108180
+	* testsuite/libgomp.c++/pr108180.C: New test.
+
 2023-03-09  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

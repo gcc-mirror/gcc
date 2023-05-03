@@ -1,3 +1,46 @@
+2023-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/109151
+	* c-ubsan.c (ubsan_instrument_division): Handle all scalar integral
+	types rather than just INTEGER_TYPE.
+
+2023-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107465
+	* c-warn.c (warn_for_sign_compare): Don't warn for unset bits
+	above innermost zero extension of BIT_NOT_EXPR result.
+
+2023-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107465
+	* c-warn.c (warn_for_sign_compare): If c_common_get_narrower
+	doesn't return a narrower result, use TYPE_UNSIGNED to set unsignedp0
+	and unsignedp1.  For the one BIT_NOT_EXPR case vs. one without,
+	only check for constant in the non-BIT_NOT_EXPR operand, use std::swap
+	to simplify the code, only warn if BIT_NOT_EXPR operand is extended
+	from narrower unsigned, fix up computation of mask for the constant
+	cases and for unsigned other operand case handle differently
+	BIT_NOT_EXPR result being sign vs. zero extended.
+
+2023-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2022-11-23  Andrew Pinski  <apinski@marvell.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/107127
+	* c-gimplify.c (c_genericize): Use walk_tree_without_duplicates
+	instead of walk_tree for c_genericize_control_r.
+
 2023-04-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/107163
