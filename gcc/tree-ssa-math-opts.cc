@@ -3605,9 +3605,8 @@ maybe_optimize_guarding_check (vec<gimple *> &mul_stmts, gimple *cond_stmt,
     }
   else if (!single_succ_p (bb) || other_edge->dest != single_succ (bb))
     return;
-  gimple *zero_cond = last_stmt (pred_bb);
+  gcond *zero_cond = safe_dyn_cast <gcond *> (*gsi_last_bb (pred_bb));
   if (zero_cond == NULL
-      || gimple_code (zero_cond) != GIMPLE_COND
       || (gimple_cond_code (zero_cond)
 	  != ((pred_edge->flags & EDGE_TRUE_VALUE) ? NE_EXPR : EQ_EXPR))
       || !integer_zerop (gimple_cond_rhs (zero_cond)))
@@ -3726,11 +3725,10 @@ maybe_optimize_guarding_check (vec<gimple *> &mul_stmts, gimple *cond_stmt,
       else if (!integer_onep (other_val))
 	return;
     }
-  gcond *zero_gcond = as_a <gcond *> (zero_cond);
   if (pred_edge->flags & EDGE_TRUE_VALUE)
-    gimple_cond_make_true (zero_gcond);
+    gimple_cond_make_true (zero_cond);
   else
-    gimple_cond_make_false (zero_gcond);
+    gimple_cond_make_false (zero_cond);
   update_stmt (zero_cond);
   *cfg_changed = true;
 }
@@ -4778,7 +4776,7 @@ convert_mult_to_highpart (gassign *stmt, gimple_stmt_iterator *gsi)
    conditional jump sequence.  */
 
 static void
-optimize_spaceship (gimple *stmt)
+optimize_spaceship (gcond *stmt)
 {
   enum tree_code code = gimple_cond_code (stmt);
   if (code != EQ_EXPR && code != NE_EXPR)
@@ -4797,9 +4795,8 @@ optimize_spaceship (gimple *stmt)
   if (((EDGE_SUCC (bb0, 0)->flags & EDGE_TRUE_VALUE) != 0) ^ (code == EQ_EXPR))
     bb1 = EDGE_SUCC (bb0, 0)->dest;
 
-  gimple *g = last_stmt (bb1);
+  gcond *g = safe_dyn_cast <gcond *> (*gsi_last_bb (bb1));
   if (g == NULL
-      || gimple_code (g) != GIMPLE_COND
       || !single_pred_p (bb1)
       || (operand_equal_p (gimple_cond_lhs (g), arg1, 0)
 	  ? !operand_equal_p (gimple_cond_rhs (g), arg2, 0)
@@ -4833,9 +4830,8 @@ optimize_spaceship (gimple *stmt)
 	continue;
 
       bb2 = EDGE_SUCC (bb1, i)->dest;
-      g = last_stmt (bb2);
+      g = safe_dyn_cast <gcond *> (*gsi_last_bb (bb2));
       if (g == NULL
-	  || gimple_code (g) != GIMPLE_COND
 	  || !single_pred_p (bb2)
 	  || (operand_equal_p (gimple_cond_lhs (g), arg1, 0)
 	      ? !operand_equal_p (gimple_cond_rhs (g), arg2, 0)
@@ -4899,19 +4895,17 @@ optimize_spaceship (gimple *stmt)
 	}
     }
 
-  g = gimple_build_call_internal (IFN_SPACESHIP, 2, arg1, arg2);
+  gcall *gc = gimple_build_call_internal (IFN_SPACESHIP, 2, arg1, arg2);
   tree lhs = make_ssa_name (integer_type_node);
-  gimple_call_set_lhs (g, lhs);
+  gimple_call_set_lhs (gc, lhs);
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
-  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  gsi_insert_before (&gsi, gc, GSI_SAME_STMT);
 
-  gcond *cond = as_a <gcond *> (stmt);
-  gimple_cond_set_lhs (cond, lhs);
-  gimple_cond_set_rhs (cond, integer_zero_node);
+  gimple_cond_set_lhs (stmt, lhs);
+  gimple_cond_set_rhs (stmt, integer_zero_node);
   update_stmt (stmt);
 
-  g = last_stmt (bb1);
-  cond = as_a <gcond *> (g);
+  gcond *cond = as_a <gcond *> (*gsi_last_bb (bb1));
   gimple_cond_set_lhs (cond, lhs);
   if (em1->src == bb1 && e2 != em1)
     {
@@ -4926,12 +4920,11 @@ optimize_spaceship (gimple *stmt)
       gimple_cond_set_code (cond, (e1->flags & EDGE_TRUE_VALUE)
 				  ? EQ_EXPR : NE_EXPR);
     }
-  update_stmt (g);
+  update_stmt (cond);
 
   if (e2 != e1 && e2 != em1)
     {
-      g = last_stmt (bb2);
-      cond = as_a <gcond *> (g);
+      cond = as_a <gcond *> (*gsi_last_bb (bb2));
       gimple_cond_set_lhs (cond, lhs);
       if (em1->src == bb2)
 	gimple_cond_set_rhs (cond, integer_minus_one_node);
@@ -4942,7 +4935,7 @@ optimize_spaceship (gimple *stmt)
 	}
       gimple_cond_set_code (cond,
 			    (e2->flags & EDGE_TRUE_VALUE) ? NE_EXPR : EQ_EXPR);
-      update_stmt (g);
+      update_stmt (cond);
     }
 
   wide_int wm1 = wi::minus_one (TYPE_PRECISION (integer_type_node));
@@ -5113,7 +5106,7 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	    }
 	}
       else if (gimple_code (stmt) == GIMPLE_COND)
-	optimize_spaceship (stmt);
+	optimize_spaceship (as_a <gcond *> (stmt));
       gsi_next (&gsi);
     }
   if (fma_state.m_deferring_p
