@@ -19,12 +19,15 @@
 
 #include <vector>
 #include "rust-token.h"
-#include "libproc_macro/tokenstream.h"
+#include "libproc_macro/proc_macro.h"
 
 namespace Rust {
 
 ProcMacro::TokenStream
-to_tokenstream (std::vector<TokenPtr> tokens);
+convert (std::vector<TokenPtr> tokens);
+
+std::vector<TokenPtr>
+convert (ProcMacro::TokenStream ts);
 
 } // namespace Rust
 

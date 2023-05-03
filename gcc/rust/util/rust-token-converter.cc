@@ -122,7 +122,7 @@ dispatch_integer_literals (ProcMacro::TokenStream &ts, TokenPtr &token)
 }
 
 ProcMacro::TokenStream
-to_tokenstream (std::vector<TokenPtr> tokens)
+convert (std::vector<TokenPtr> tokens)
 {
   std::vector<ProcMacro::TokenStream> trees;
   trees.push_back (ProcMacro::TokenStream::make_tokenstream ());
@@ -295,6 +295,59 @@ to_tokenstream (std::vector<TokenPtr> tokens)
 	}
     }
   return trees.back ();
+}
+
+static void
+from_tokenstream (ProcMacro::TokenStream ts, std::vector<TokenPtr> &result);
+
+static void
+from_ident (ProcMacro::Ident ident, std::vector<TokenPtr> &result)
+{}
+
+static void
+from_literal (ProcMacro::Literal literal, std::vector<TokenPtr> &result)
+{}
+
+static void
+from_punct (ProcMacro::Punct punct, std::vector<TokenPtr> &result)
+{}
+
+static void
+from_group (ProcMacro::Group g, std::vector<TokenPtr> &result)
+{}
+
+static void
+from_tokenstream (ProcMacro::TokenStream ts, std::vector<TokenPtr> &result)
+{
+  for (std::uint64_t i = 0; i < ts.size; i++)
+    {
+      ProcMacro::TokenTree &tt = ts.data[i];
+      switch (tt.tag)
+	{
+	case ProcMacro::GROUP:
+	  from_group (tt.payload.group, result);
+	  break;
+	case ProcMacro::IDENT:
+	  from_ident (tt.payload.ident, result);
+	  break;
+	case ProcMacro::PUNCT:
+	  from_punct (tt.payload.punct, result);
+	  break;
+	case ProcMacro::LITERAL:
+	  from_literal (tt.payload.literal, result);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+}
+
+std::vector<TokenPtr>
+convert (ProcMacro::TokenStream ts)
+{
+  std::vector<TokenPtr> result;
+  from_tokenstream (ts, result);
+  return result;
 }
 
 } // namespace Rust
