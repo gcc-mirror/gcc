@@ -14,6 +14,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-lex.h"
 #include "rust-token-converter.h"
 #include "libproc_macro/proc_macro.h"
 
@@ -310,13 +311,27 @@ from_literal (ProcMacro::Literal literal, std::vector<const_TokenPtr> &result)
 {}
 
 /**
+ * Accumulate through successive calls multiple Punct until one is tagged
+ * "Alone", then append the formed token to a given result vector.
  *
+ * @param punct Reference to the Punct to convert.
  * @param acc Reference to an accumulator for joined Punct.
+ * @param result Reference to the output token vector.
  */
 static void
 from_punct (const ProcMacro::Punct &punct, std::vector<std::uint32_t> &acc,
 	    std::vector<const_TokenPtr> &result)
-{}
+{
+  acc.push_back (punct.ch);
+  if (ProcMacro::ALONE == punct.spacing) /* Last punct of a chain */
+    {
+      // TODO: UTF-8 string
+      std::string whole (acc.begin (), acc.end ());
+      auto lexer = Lexer (whole);
+      result.push_back (lexer.peek_token ());
+      acc.clear ();
+    }
+}
 
 /**
  * Iterate over a Group and append all inner tokens to a vector enclosed by its
