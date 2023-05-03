@@ -156,7 +156,7 @@ namespace __detail
       template<typename _Kt, typename _Arg, typename _NodeGenerator>
 	static auto
 	_S_build(_Kt&& __k, _Arg&& __arg, const _NodeGenerator& __node_gen)
-	-> typename _NodeGenerator::__node_type*
+	-> typename _NodeGenerator::__node_ptr
 	{
 	  return __node_gen(std::forward<_Kt>(__k),
 			    std::forward<_Arg>(__arg).second);
@@ -169,7 +169,7 @@ namespace __detail
       template<typename _Kt, typename _Arg, typename _NodeGenerator>
 	static auto
 	_S_build(_Kt&& __k, _Arg&&, const _NodeGenerator& __node_gen)
-	-> typename _NodeGenerator::__node_type*
+	-> typename _NodeGenerator::__node_ptr
 	{ return __node_gen(std::forward<_Kt>(__k)); }
     };
 
@@ -188,9 +188,9 @@ namespace __detail
 	typename __hashtable_alloc::__node_alloc_traits;
 
     public:
-      using __node_type = typename __hashtable_alloc::__node_type;
+      using __node_ptr = typename __hashtable_alloc::__node_ptr;
 
-      _ReuseOrAllocNode(__node_type* __nodes, __hashtable_alloc& __h)
+      _ReuseOrAllocNode(__node_ptr __nodes, __hashtable_alloc& __h)
       : _M_nodes(__nodes), _M_h(__h) { }
       _ReuseOrAllocNode(const _ReuseOrAllocNode&) = delete;
 
@@ -198,12 +198,12 @@ namespace __detail
       { _M_h._M_deallocate_nodes(_M_nodes); }
 
       template<typename... _Args>
-	__node_type*
+	__node_ptr
 	operator()(_Args&&... __args) const
 	{
 	  if (_M_nodes)
 	    {
-	      __node_type* __node = _M_nodes;
+	      __node_ptr __node = _M_nodes;
 	      _M_nodes = _M_nodes->_M_next();
 	      __node->_M_nxt = nullptr;
 	      auto& __a = _M_h._M_node_allocator();
@@ -224,7 +224,7 @@ namespace __detail
 	}
 
     private:
-      mutable __node_type* _M_nodes;
+      mutable __node_ptr _M_nodes;
       __hashtable_alloc& _M_h;
     };
 
@@ -237,13 +237,13 @@ namespace __detail
       using __hashtable_alloc = _Hashtable_alloc<_NodeAlloc>;
 
     public:
-      using __node_type = typename __hashtable_alloc::__node_type;
+      using __node_ptr = typename __hashtable_alloc::__node_ptr;
 
       _AllocNode(__hashtable_alloc& __h)
       : _M_h(__h) { }
 
       template<typename... _Args>
-	__node_type*
+	__node_ptr
 	operator()(_Args&&... __args) const
 	{ return _M_h._M_allocate_node(std::forward<_Args>(__args)...); }
 
@@ -1809,22 +1809,22 @@ namespace __detail
 	      _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits, true>::
     _M_equal(const __hashtable& __other) const
     {
-      using __node_type = typename __hashtable::__node_type;
+      using __node_ptr = typename __hashtable::__node_ptr;
       const __hashtable* __this = static_cast<const __hashtable*>(this);
       if (__this->size() != __other.size())
 	return false;
 
-      for (auto __itx = __this->begin(); __itx != __this->end(); ++__itx)
+      for (auto __x_n = __this->_M_begin(); __x_n; __x_n = __x_n->_M_next())
 	{
-	  std::size_t __ybkt = __other._M_bucket_index(*__itx._M_cur);
+	  std::size_t __ybkt = __other._M_bucket_index(*__x_n);
 	  auto __prev_n = __other._M_buckets[__ybkt];
 	  if (!__prev_n)
 	    return false;
 
-	  for (__node_type* __n = static_cast<__node_type*>(__prev_n->_M_nxt);;
+	  for (__node_ptr __n = static_cast<__node_ptr>(__prev_n->_M_nxt);;
 	       __n = __n->_M_next())
 	    {
-	      if (__n->_M_v() == *__itx)
+	      if (__n->_M_v() == __x_n->_M_v())
 		break;
 
 	      if (!__n->_M_nxt
@@ -1861,31 +1861,32 @@ namespace __detail
 	      _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits, false>::
     _M_equal(const __hashtable& __other) const
     {
-      using __node_type = typename __hashtable::__node_type;
+      using __node_ptr = typename __hashtable::__node_ptr;
+      using const_iterator = typename __hashtable::const_iterator;
       const __hashtable* __this = static_cast<const __hashtable*>(this);
       if (__this->size() != __other.size())
 	return false;
 
-      for (auto __itx = __this->begin(); __itx != __this->end();)
+      for (auto __x_n = __this->_M_begin(); __x_n;)
 	{
 	  std::size_t __x_count = 1;
-	  auto __itx_end = __itx;
-	  for (++__itx_end; __itx_end != __this->end()
-		 && __this->key_eq()(_ExtractKey{}(*__itx),
-				     _ExtractKey{}(*__itx_end));
-	       ++__itx_end)
+	  auto __x_n_end = __x_n->_M_next();
+	  for (; __x_n_end
+		 && __this->key_eq()(_ExtractKey{}(__x_n->_M_v()),
+				     _ExtractKey{}(__x_n_end->_M_v()));
+	       __x_n_end = __x_n_end->_M_next())
 	    ++__x_count;
 
-	  std::size_t __ybkt = __other._M_bucket_index(*__itx._M_cur);
+	  std::size_t __ybkt = __other._M_bucket_index(*__x_n);
 	  auto __y_prev_n = __other._M_buckets[__ybkt];
 	  if (!__y_prev_n)
 	    return false;
 
-	  __node_type* __y_n = static_cast<__node_type*>(__y_prev_n->_M_nxt);
+	  __node_ptr __y_n = static_cast<__node_ptr>(__y_prev_n->_M_nxt);
 	  for (;;)
 	    {
 	      if (__this->key_eq()(_ExtractKey{}(__y_n->_M_v()),
-				   _ExtractKey{}(*__itx)))
+				   _ExtractKey{}(__x_n->_M_v())))
 		break;
 
 	      auto __y_ref_n = __y_n;
@@ -1897,18 +1898,20 @@ namespace __detail
 		return false;
 	    }
 
-	  typename __hashtable::const_iterator __ity(__y_n);
-	  for (auto __ity_end = __ity; __ity_end != __other.end(); ++__ity_end)
+	  auto __y_n_end = __y_n;
+	  for (; __y_n_end; __y_n_end = __y_n_end->_M_next())
 	    if (--__x_count == 0)
 	      break;
 
 	  if (__x_count != 0)
 	    return false;
 
+	  const_iterator __itx(__x_n), __itx_end(__x_n_end);
+	  const_iterator __ity(__y_n);
 	  if (!std::is_permutation(__itx, __itx_end, __ity))
 	    return false;
 
-	  __itx = __itx_end;
+	  __x_n = __x_n_end;
 	}
       return true;
     }
