@@ -302,9 +302,26 @@ static void
 from_tokenstream (const ProcMacro::TokenStream &ts,
 		  std::vector<const_TokenPtr> &result);
 
+/**
+ * Append the token corresponding to a given Ident to a vector.
+ *
+ * @param literal Reference to the Ident to convert.
+ * @param result Reference to the output vector.
+ */
 static void
-from_ident (ProcMacro::Ident ident, std::vector<const_TokenPtr> &result)
-{}
+from_ident (const ProcMacro::Ident &ident, std::vector<const_TokenPtr> &result)
+{
+  std::string value (reinterpret_cast<const char *> (ident.val), ident.len);
+  if (ident.is_raw)
+    {
+      value = "r#" + value;
+    }
+
+  // TODO: Inject span -> for now spans are not stored in Ident, once changed
+  // the span should be injected in the built token below.
+  Lexer lexer (value);
+  result.push_back (lexer.peek_token ());
+}
 
 static void
 string_literal (const ProcMacro::StringPayload &payload,
