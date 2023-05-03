@@ -73,7 +73,7 @@ default : all
 # Now figure out from those variables how to compile and link.
 
 .c.o:
-	$(CC) -c $(CFLAGS) $(WARN_CFLAGS) $(CPPFLAGS) $(FIXINC_CFLAGS) $<
+	$(CC) -c $(CFLAGS) $(PICFLAG) $(WARN_CFLAGS) $(CPPFLAGS) $(FIXINC_CFLAGS) $<
 
 # The only suffixes we want for implicit rules are .c and .o.
 .SUFFIXES:
@@ -87,7 +87,11 @@ default : all
 ##
 ## # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
+ifeq ($(PICFLAG),)
 LIBIBERTY=../libiberty/libiberty.a
+else
+LIBIBERTY=../libiberty/pic/libiberty.a
+endif
 
 ALLOBJ = fixincl.o fixtests.o fixfixes.o server.o procopen.o \
       fixlib.o fixopts.o
@@ -107,15 +111,15 @@ oneprocess : full-stamp
 twoprocess : test-stamp $(AF)
 
 full-stamp : $(ALLOBJ) $(LIBIBERTY)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(FI) $(ALLOBJ) $(LIBIBERTY)
+	$(CC) $(CFLAGS) $(PICFLAG) $(LDFLAGS) $(LD_PICFLAG) -o $(FI) $(ALLOBJ) $(LIBIBERTY)
 	$(STAMP) $@
 
 test-stamp : $(TESTOBJ) $(LIBIBERTY)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(FI) $(TESTOBJ) $(LIBIBERTY)
+	$(CC) $(CFLAGS) $(PICFLAG) $(LDFLAGS) $(LD_PICFLAG) -o $(FI) $(TESTOBJ) $(LIBIBERTY)
 	$(STAMP) $@
 
 $(AF): $(FIXOBJ) $(LIBIBERTY)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(FIXOBJ) $(LIBIBERTY)
+	$(CC) $(CFLAGS) $(PICFLAG) $(LDFLAGS) $(LD_PICFLAG) -o $@ $(FIXOBJ) $(LIBIBERTY)
 
 $(ALLOBJ)   : $(HDR)
 fixincl.o   : fixincl.c  $(srcdir)/fixincl.x

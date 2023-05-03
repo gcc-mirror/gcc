@@ -625,6 +625,8 @@ ac_includes_default="\
 ac_subst_vars='LTLIBOBJS
 CET_HOST_FLAGS
 PICFLAG
+enable_host_pie
+enable_host_shared
 MAINT
 USED_CATALOGS
 PACKAGE
@@ -738,6 +740,7 @@ enable_maintainer_mode
 enable_checking
 enable_canonical_system_headers
 enable_host_shared
+enable_host_pie
 enable_cet
 enable_valgrind_annotations
 '
@@ -1379,6 +1382,7 @@ Optional Features:
   --enable-canonical-system-headers
                           enable or disable system headers canonicalization
   --enable-host-shared    build host code as shared libraries
+  --enable-host-pie       build host code as PIE
   --enable-cet            enable Intel CET in host libraries [default=auto]
   --enable-valgrind-annotations
                           enable valgrind runtime interaction
@@ -7605,7 +7609,23 @@ esac
 # Enable --enable-host-shared.
 # Check whether --enable-host-shared was given.
 if test "${enable_host_shared+set}" = set; then :
-  enableval=$enable_host_shared; PICFLAG=-fPIC
+  enableval=$enable_host_shared;
+fi
+
+
+
+# Enable --enable-host-pie.
+# Check whether --enable-host-pie was given.
+if test "${enable_host_pie+set}" = set; then :
+  enableval=$enable_host_pie;
+fi
+
+
+
+if test x$enable_host_shared = xyes; then
+  PICFLAG=-fPIC
+elif test x$enable_host_pie = xyes; then
+  PICFLAG=-fPIE
 else
   PICFLAG=
 fi

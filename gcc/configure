@@ -632,10 +632,10 @@ ac_includes_default="\
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 CET_HOST_FLAGS
-NO_PIE_FLAG
-NO_PIE_CFLAGS
-enable_default_pie
+LD_PICFLAG
 PICFLAG
+enable_default_pie
+enable_host_pie
 enable_host_shared
 enable_plugin
 pluginlibs
@@ -1030,6 +1030,7 @@ enable_link_serialization
 enable_version_specific_runtime_libs
 enable_plugin
 enable_host_shared
+enable_host_pie
 enable_libquadmath_support
 with_linker_hash_style
 with_diagnostics_color
@@ -1792,6 +1793,7 @@ Optional Features:
                           in a compiler-specific directory
   --enable-plugin         enable plugin support
   --enable-host-shared    build host code as shared libraries
+  --enable-host-pie       build host code as PIE
   --disable-libquadmath-support
                           disable libquadmath support for Fortran
   --enable-default-pie    enable Position Independent Executable as default
@@ -32085,12 +32087,16 @@ fi
 # Enable --enable-host-shared
 # Check whether --enable-host-shared was given.
 if test "${enable_host_shared+set}" = set; then :
-  enableval=$enable_host_shared; PICFLAG=-fPIC
-else
-  PICFLAG=
+  enableval=$enable_host_shared;
 fi
 
 
+
+# Enable --enable-host-pie
+# Check whether --enable-host-pie was given.
+if test "${enable_host_pie+set}" = set; then :
+  enableval=$enable_host_pie;
+fi
 
 
 
@@ -32245,10 +32251,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_c_no_fpie" >&5
 $as_echo "$gcc_cv_c_no_fpie" >&6; }
-if test "$gcc_cv_c_no_fpie" = "yes"; then
-  NO_PIE_CFLAGS="-fno-PIE"
-fi
-
 
 # Check if -no-pie works.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -no-pie option" >&5
@@ -32273,9 +32275,26 @@ rm -f core conftest.err conftest.$ac_objext \
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_no_pie" >&5
 $as_echo "$gcc_cv_no_pie" >&6; }
-if test "$gcc_cv_no_pie" = "yes"; then
-  NO_PIE_FLAG="-no-pie"
+
+if test x$enable_host_shared = xyes; then
+  PICFLAG=-fPIC
+elif test x$enable_host_pie = xyes; then
+  PICFLAG=-fPIE
+elif test x$gcc_cv_c_no_fpie = xyes; then
+  PICFLAG=-fno-PIE
+else
+  PICFLAG=
 fi
+
+if test x$enable_host_pie = xyes; then
+  LD_PICFLAG=-pie
+elif test x$gcc_cv_no_pie = xyes; then
+  LD_PICFLAG=-no-pie
+else
+  LD_PICFLAG=
+fi
+
+
 
 
 # Enable Intel CET on Intel CET enabled host if jit is enabled.

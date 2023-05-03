@@ -29,8 +29,9 @@ AUTOCONF := @AUTOCONF@
 AUTOHEADER := @AUTOHEADER@
 CXX := @CXX@
 CXXFLAGS := @CXXFLAGS@
-PIEFLAG := @PIEFLAG@
-CXXOPTS := $(CXXFLAGS) $(PIEFLAG) -fno-exceptions -fno-rtti
+PICFLAG := @PICFLAG@
+LD_PICFLAG := @LD_PICFLAG@
+CXXOPTS := $(CXXFLAGS) $(PICFLAG) -fno-exceptions -fno-rtti
 LDFLAGS := @LDFLAGS@
 exeext := @EXEEXT@
 LIBIBERTY := ../libiberty/libiberty.a
@@ -90,11 +91,15 @@ ifeq (@CXX_AUX_TOOLS@,yes)
 
 all::g++-mapper-server$(exeext)
 
+ifneq ($(PICFLAG),)
+override LIBIBERTY := ../libiberty/pic/libiberty.a
+endif
+
 MAPPER.O := server.o resolver.o
 CODYLIB = ../libcody/libcody.a
 CXXINC += -I$(srcdir)/../libcody -I$(srcdir)/../include -I$(srcdir)/../gcc -I. -I../gcc
 g++-mapper-server$(exeext): $(MAPPER.O) $(CODYLIB)
-	+$(CXX) $(LDFLAGS) $(PIEFLAG) -o $@ $^ $(LIBIBERTY) $(NETLIBS)
+	+$(CXX) $(LDFLAGS) $(PICFLAG) $(LD_PICFLAG) -o $@ $^ $(LIBIBERTY) $(NETLIBS)
 
 # copy to gcc dir so tests there can run
 all::../gcc/g++-mapper-server$(exeext)

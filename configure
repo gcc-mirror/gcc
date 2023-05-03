@@ -687,7 +687,9 @@ extra_host_zlib_configure_flags
 extra_host_libiberty_configure_flags
 stage1_languages
 host_libs_picflag
+PICFLAG
 host_shared
+host_pie
 extra_linker_plugin_flags
 extra_linker_plugin_configure_flags
 islinc
@@ -830,6 +832,7 @@ enable_isl_version_check
 enable_lto
 enable_linker_plugin_configure_flags
 enable_linker_plugin_flags
+enable_host_pie
 enable_host_shared
 enable_stage1_languages
 enable_objc_gc
@@ -1558,6 +1561,7 @@ Optional Features:
   --enable-linker-plugin-flags=FLAGS
                           additional flags for configuring and building linker
                           plugins [none]
+  --enable-host-pie       build position independent host executables
   --enable-host-shared    build host code as shared libraries
   --enable-stage1-languages[=all]
                           choose additional languages to build during stage1.
@@ -8645,6 +8649,30 @@ fi
 
 
 
+# Enable --enable-host-pie.
+# Checked early to determine whether jit is an 'all' language
+# Check whether --enable-host-pie was given.
+if test "${enable_host_pie+set}" = set; then :
+  enableval=$enable_host_pie; host_pie=$enableval
+ case $host in
+   x86_64-*-darwin* | aarch64-*-darwin*)
+     if test x$host_pie != xyes ; then
+       # PIC is the default, and actually cannot be switched off.
+       echo configure.ac: warning: PIC code is required for the configured target, host-shared setting ignored. 1>&2
+       host_pie=yes
+     fi ;;
+  *) ;;
+ esac
+else
+  case $host in
+  *-*-darwin2*) host_pie=yes ;;
+  *) host_pie=no ;;
+ esac
+fi
+
+
+
+
 # Enable --enable-host-shared.
 # Checked early to determine whether jit is an 'all' language
 # Check whether --enable-host-shared was given.
@@ -8657,15 +8685,32 @@ if test "${enable_host_shared+set}" = set; then :
        echo configure.ac: warning: PIC code is required for the configured target, host-shared setting ignored. 1>&2
        host_shared=yes
      fi ;;
+   *-*-darwin*)
+     if test x$host_pie == xyes ; then
+       echo configure.ac: warning: PIC code is required for PIE executables. 1>&2
+       host_shared=yes
+     fi ;;
   *) ;;
  esac
 else
   case $host in
   x86_64-*-darwin* | aarch64-*-darwin*) host_shared=yes ;;
-  *) host_shared=no ;;
+  # Darwin needs PIC objects to link PIE executables.
+  *-*-darwin*) host_shared=host_pie ;;
+  *) host_shared=no;;
  esac
 fi
 
+
+
+
+if test x$host_shared = xyes; then
+  PICFLAG=-fPIC
+elif test x$host_pie = xyes; then
+  PICFLAG=-fPIE
+else
+  PICFLAG=
+fi
 
 
 
@@ -8673,7 +8718,7 @@ fi
 # libs (e.g. GMP) in-tree those libs need to be configured to generate PIC
 # code.
 host_libs_picflag=
-if test "$host_shared" = "yes";then
+if test "$host_shared" = "yes" -o "$host_pie" = "yes"; then
 host_libs_picflag='--with-pic'
 fi
 

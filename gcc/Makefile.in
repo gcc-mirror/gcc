@@ -158,6 +158,9 @@ LDFLAGS = @LDFLAGS@
 # Should we build position-independent host code?
 PICFLAG = @PICFLAG@
 
+# The linker flag for the above.
+LD_PICFLAG = @LD_PICFLAG@
+
 # Flags to determine code coverage. When coverage is disabled, this will
 # contain the optimization flags, as you normally want code coverage
 # without optimization.
@@ -283,19 +286,19 @@ LINKER = $(CC)
 LINKER_FLAGS = $(CFLAGS)
 endif
 
+enable_host_pie = @enable_host_pie@
+
 # Enable Intel CET on Intel CET enabled host if needed.
 CET_HOST_FLAGS = @CET_HOST_FLAGS@
 COMPILER += $(CET_HOST_FLAGS)
 
-NO_PIE_CFLAGS = @NO_PIE_CFLAGS@
-NO_PIE_FLAG = @NO_PIE_FLAG@
 DO_LINK_MUTEX = @DO_LINK_MUTEX@
 
-# We don't want to compile the compilers with -fPIE, it make PCH fail.
-COMPILER += $(NO_PIE_CFLAGS)
+# Maybe compile the compilers with -fPIE or -fPIC.
+COMPILER += $(PICFLAG)
 
-# Link with -no-pie since we compile the compiler with -fno-PIE.
-LINKER += $(NO_PIE_FLAG)
+# Link with -pie, or -no-pie, depending on the above.
+LINKER += $(LD_PICFLAG)
 
 # Like LINKER, but use a mutex for serializing front end links.
 ifeq (@DO_LINK_MUTEX@,true)
@@ -1067,7 +1070,7 @@ RTL_SSA_H = $(PRETTY_PRINT_H) insn-config.h splay-tree-utils.h \
 # programs built during a bootstrap.
 # autoconf inserts -DCROSS_DIRECTORY_STRUCTURE if we are building a
 # cross compiler which does not use the native headers and libraries.
-INTERNAL_CFLAGS = -DIN_GCC $(PICFLAG) @CROSS@
+INTERNAL_CFLAGS = -DIN_GCC @CROSS@
 
 # This is the variable actually used when we compile. If you change this,
 # you probably want to update BUILD_CFLAGS in configure.ac
@@ -1085,21 +1088,24 @@ ALL_CXXFLAGS = $(T_CFLAGS) $(CFLAGS-$@) $(CXXFLAGS) $(INTERNAL_CFLAGS) \
 ALL_CPPFLAGS = $(INCLUDES) $(CPPFLAGS)
 
 # This is the variable to use when using $(COMPILER).
-ALL_COMPILERFLAGS = $(ALL_CXXFLAGS)
+ALL_COMPILERFLAGS = $(ALL_CXXFLAGS) $(PICFLAG)
 
 # This is the variable to use when using $(LINKER).
-ALL_LINKERFLAGS = $(ALL_CXXFLAGS)
+ALL_LINKERFLAGS = $(ALL_CXXFLAGS) $(LD_PICFLAG)
 
 # Build and host support libraries.
 
-# Use the "pic" build of libiberty if --enable-host-shared, unless we are
-# building for mingw.
+# Use the "pic" build of libiberty if --enable-host-shared or --enable-host-pie,
+# unless we are building for mingw.
 LIBIBERTY_PICDIR=$(if $(findstring mingw,$(target)),,pic)
-ifeq ($(enable_host_shared),yes)
+ifneq ($(enable_host_shared)$(enable_host_pie),)
 LIBIBERTY = ../libiberty/$(LIBIBERTY_PICDIR)/libiberty.a
-BUILD_LIBIBERTY = $(build_libobjdir)/libiberty/$(LIBIBERTY_PICDIR)/libiberty.a
 else
 LIBIBERTY = ../libiberty/libiberty.a
+endif
+ifeq ($(enable_host_shared),yes)
+BUILD_LIBIBERTY = $(build_libobjdir)/libiberty/$(LIBIBERTY_PICDIR)/libiberty.a
+else
 BUILD_LIBIBERTY = $(build_libobjdir)/libiberty/libiberty.a
 endif
 
