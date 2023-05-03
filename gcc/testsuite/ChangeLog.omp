@@ -1,3 +1,7 @@
+2023-05-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gfortran.dg/gomp/map-10a.f90: Update expected outputs.
+
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
 	* c-c++-common/gomp/loop-transforms/unroll-inner-1.c: New test.
