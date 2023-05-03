@@ -298,7 +298,8 @@ convert (std::vector<TokenPtr> tokens)
 }
 
 static void
-from_tokenstream (ProcMacro::TokenStream ts, std::vector<TokenPtr> &result);
+from_tokenstream (const ProcMacro::TokenStream &ts,
+		  std::vector<TokenPtr> &result);
 
 static void
 from_ident (ProcMacro::Ident ident, std::vector<TokenPtr> &result)
@@ -313,7 +314,7 @@ from_punct (ProcMacro::Punct punct, std::vector<TokenPtr> &result)
 {}
 
 /**
- * Iterate over a Group and append all inner tokens to a vector enclosed by it's
+ * Iterate over a Group and append all inner tokens to a vector enclosed by its
  * delimiters.
  *
  * @param g Reference to the Group to convert.
@@ -347,29 +348,47 @@ from_group (const ProcMacro::Group &g, std::vector<TokenPtr> &result)
     }
 }
 
+/**
+ * Dispatch TokenTree's conversion to its inner type depending on its tag.
+ *
+ * @param tt Reference to the TokenTree.
+ * @param result Reference to the vector tokens should be appended to.
+ */
 static void
-from_tokenstream (ProcMacro::TokenStream ts, std::vector<TokenPtr> &result)
+from_tokentree (const ProcMacro::TokenTree &tt, std::vector<TokenPtr> &result)
+{
+  switch (tt.tag)
+    {
+    case ProcMacro::GROUP:
+      from_group (tt.payload.group, result);
+      break;
+    case ProcMacro::IDENT:
+      from_ident (tt.payload.ident, result);
+      break;
+    case ProcMacro::PUNCT:
+      from_punct (tt.payload.punct, result);
+      break;
+    case ProcMacro::LITERAL:
+      from_literal (tt.payload.literal, result);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/**
+ * Iterate over a TokenStream and append all inner tokens to a vector.
+ *
+ * @param ts Reference to the TokenStream.
+ * @param result Reference to the vector tokens should be appended to.
+ */
+static void
+from_tokenstream (const ProcMacro::TokenStream &ts,
+		  std::vector<TokenPtr> &result)
 {
   for (std::uint64_t i = 0; i < ts.size; i++)
     {
-      ProcMacro::TokenTree &tt = ts.data[i];
-      switch (tt.tag)
-	{
-	case ProcMacro::GROUP:
-	  from_group (tt.payload.group, result);
-	  break;
-	case ProcMacro::IDENT:
-	  from_ident (tt.payload.ident, result);
-	  break;
-	case ProcMacro::PUNCT:
-	  from_punct (tt.payload.punct, result);
-	  break;
-	case ProcMacro::LITERAL:
-	  from_literal (tt.payload.literal, result);
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
+      from_tokentree (ts.data[i], result);
     }
 }
 
