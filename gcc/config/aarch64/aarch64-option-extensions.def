@@ -165,4 +165,5 @@ AARCH64_OPT_EXTENSION("the", THE, (), (), (), "the")
 
 AARCH64_OPT_EXTENSION("gcs", GCS, (), (), (), "gcs")
 
+AARCH64_OPT_EXTENSION("rcpc3", RCPC3, (), (), (), "rcpc3")
 #undef AARCH64_OPT_EXTENSION

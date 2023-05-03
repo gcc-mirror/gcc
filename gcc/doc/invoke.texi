@@ -21381,6 +21381,8 @@ Enable support for 128-bit system register read/write instructions.
 Enable support for Armv9.4-a Guarded Control Stack extension.
 @item the
 Enable support for Armv8.9-a/9.4-a translation hardening extension.
+@item rcpc3
+Enable the RCpc3 (Release Consistency) extension.
 
 @end table
 
