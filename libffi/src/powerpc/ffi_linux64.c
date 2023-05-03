@@ -680,7 +680,7 @@ ffi_prep_args64 (extended_cif *ecif, unsigned long *const stack)
                     {
                       if (vecarg_count < NUM_VEC_ARG_REGISTERS64
                           && i < nfixedargs)
-		        memcpy (vec_base.f128++, arg.f128, sizeof (float128));
+		        memcpy (vec_base.f128++, arg.f128++, sizeof (float128));
                       else
 		        memcpy (next_arg.f128, arg.f128++, sizeof (float128));
                       if (++next_arg.f128 == gpr_end.f128)
