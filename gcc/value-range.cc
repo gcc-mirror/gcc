@@ -1057,6 +1057,13 @@ irange::verify_range ()
       return;
     }
   gcc_checking_assert (m_num_ranges <= m_max_ranges);
+
+  // Legacy allowed these to represent VARYING for unknown types.
+  // Leave this in for now, until all users are converted.  Eventually
+  // we should abort in set_varying.
+  if (m_kind == VR_VARYING && m_type == error_mark_node)
+    return;
+
   unsigned prec = TYPE_PRECISION (m_type);
   if (m_kind == VR_VARYING)
     {
