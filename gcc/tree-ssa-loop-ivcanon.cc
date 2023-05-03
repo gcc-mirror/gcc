@@ -1207,7 +1207,7 @@ canonicalize_loop_induction_variables (class loop *loop,
 	= niter_desc.may_be_zero && !integer_zerop (niter_desc.may_be_zero);
     }
   if (TREE_CODE (niter) == INTEGER_CST)
-    locus = last_stmt (exit->src);
+    locus = last_nondebug_stmt (exit->src);
   else
     {
       /* For non-constant niter fold may_be_zero into niter again.  */
@@ -1234,7 +1234,7 @@ canonicalize_loop_induction_variables (class loop *loop,
 	niter = find_loop_niter_by_eval (loop, &exit);
 
       if (exit)
-        locus = last_stmt (exit->src);
+	locus = last_nondebug_stmt (exit->src);
 
       if (TREE_CODE (niter) != INTEGER_CST)
 	exit = NULL;

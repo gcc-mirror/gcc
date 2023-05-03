@@ -2835,7 +2835,7 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
   operand_entry *oe = (*ops)[idx];
   tree op = oe->op;
   gimple *stmt = op ? SSA_NAME_DEF_STMT (op)
-		    : last_stmt (BASIC_BLOCK_FOR_FN (cfun, oe->id));
+		    : last_nondebug_stmt (BASIC_BLOCK_FOR_FN (cfun, oe->id));
   location_t loc = gimple_location (stmt);
   tree optype = op ? TREE_TYPE (op) : boolean_type_node;
   tree tem = build_range_check (loc, optype, unshare_expr (exp),
@@ -3400,7 +3400,8 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
 	  operand_entry *oe = (*ops)[ranges[i].idx];
 	  tree op = oe->op;
 	  gimple *stmt = op ? SSA_NAME_DEF_STMT (op)
-			    : last_stmt (BASIC_BLOCK_FOR_FN (cfun, oe->id));
+			    : last_nondebug_stmt (BASIC_BLOCK_FOR_FN
+							  (cfun, oe->id));
 	  location_t loc = gimple_location (stmt);
 	  tree optype = op ? TREE_TYPE (op) : boolean_type_node;
 
@@ -3831,7 +3832,7 @@ optimize_range_tests_var_bound (enum tree_code opcode, int first, int length,
       else
 	{
 	  operand_entry *oe = (*ops)[ranges[i].idx];
-	  stmt = last_stmt (BASIC_BLOCK_FOR_FN (cfun, oe->id));
+	  stmt = last_nondebug_stmt (BASIC_BLOCK_FOR_FN (cfun, oe->id));
 	  if (gimple_code (stmt) != GIMPLE_COND)
 	    continue;
 	  ccode = gimple_cond_code (stmt);
@@ -4096,7 +4097,7 @@ optimize_range_tests (enum tree_code opcode,
       init_range_entry (ranges + i, oe->op,
 			oe->op
 			? NULL
-			: last_stmt (BASIC_BLOCK_FOR_FN (cfun, oe->id)));
+			: last_nondebug_stmt (BASIC_BLOCK_FOR_FN (cfun, oe->id)));
       /* For | invert it now, we will invert it again before emitting
 	 the optimized expression.  */
       if (opcode == BIT_IOR_EXPR
@@ -4443,7 +4444,7 @@ suitable_cond_bb (basic_block bb, basic_block test_bb, basic_block *other_bb,
   if (test_bb == bb)
     return false;
   /* Check last stmt first.  */
-  stmt = last_stmt (bb);
+  stmt = last_nondebug_stmt (bb);
   if (stmt == NULL
       || (gimple_code (stmt) != GIMPLE_COND
 	  && (backward || !final_range_test_p (stmt)))
@@ -4521,7 +4522,7 @@ suitable_cond_bb (basic_block bb, basic_block test_bb, basic_block *other_bb,
 	    }
 	  else
 	    {
-	      gimple *test_last = last_stmt (test_bb);
+	      gimple *test_last = last_nondebug_stmt (test_bb);
 	      if (gimple_code (test_last) == GIMPLE_COND)
 		{
 		  if (backward ? e2->src != test_bb : e->src != bb)
@@ -4589,7 +4590,7 @@ no_side_effect_bb (basic_block bb)
 
   if (!gimple_seq_empty_p (phi_nodes (bb)))
     return false;
-  last = last_stmt (bb);
+  last = last_nondebug_stmt (bb);
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple *stmt = gsi_stmt (gsi);
@@ -4784,7 +4785,7 @@ maybe_optimize_range_tests (gimple *stmt)
 	  return cfg_cleanup_needed;
 	else if (single_pred_p (e->dest))
 	  {
-	    stmt = last_stmt (e->dest);
+	    stmt = last_nondebug_stmt (e->dest);
 	    if (stmt
 		&& gimple_code (stmt) == GIMPLE_COND
 		&& EDGE_COUNT (e->dest->succs) == 2)
@@ -4842,7 +4843,7 @@ maybe_optimize_range_tests (gimple *stmt)
       bb_ent.first_idx = ops.length ();
       bb_ent.last_idx = bb_ent.first_idx;
       e = find_edge (bb, other_bb);
-      stmt = last_stmt (bb);
+      stmt = last_nondebug_stmt (bb);
       gimple_set_visited (stmt, true);
       if (gimple_code (stmt) != GIMPLE_COND)
 	{
@@ -5018,7 +5019,7 @@ maybe_optimize_range_tests (gimple *stmt)
 	      tree new_op;
 
 	      max_idx = idx;
-	      stmt = last_stmt (bb);
+	      stmt = last_nondebug_stmt (bb);
 	      new_op = update_ops (bbinfo[idx].op,
 				   (enum tree_code)
 				   ops[bbinfo[idx].first_idx]->rank,
@@ -6660,7 +6661,7 @@ reassociate_bb (basic_block bb)
 {
   gimple_stmt_iterator gsi;
   basic_block son;
-  gimple *stmt = last_stmt (bb);
+  gimple *stmt = last_nondebug_stmt (bb);
   bool cfg_cleanup_needed = false;
 
   if (stmt && !gimple_visited_p (stmt))

@@ -711,7 +711,7 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
      So, given the condition COND, and the two PHI arguments, match and simplify
      can happen on (COND) ? arg0 : arg1. */
 
-  stmt = last_stmt (cond_bb);
+  stmt = last_nondebug_stmt (cond_bb);
 
   /* We need to know which is the true edge and which is the false
      edge so that we know when to invert the condition below.  */
@@ -1832,7 +1832,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb, basic_block alt_
 	return false;
 
       /* Emit the statement to compute min/max.  */
-      location_t locus = gimple_location (last_stmt (cond_bb));
+      location_t locus = gimple_location (last_nondebug_stmt (cond_bb));
       gimple_seq stmts = NULL;
       tree phi_result = PHI_RESULT (phi);
       result = gimple_build (&stmts, locus, minmax, TREE_TYPE (phi_result),

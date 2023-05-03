@@ -3168,7 +3168,7 @@ gen_parallel_loop (class loop *loop,
 
   /* Create the parallel constructs.  */
   loc = UNKNOWN_LOCATION;
-  cond_stmt = last_stmt (loop->header);
+  cond_stmt = last_nondebug_stmt (loop->header);
   if (cond_stmt)
     loc = gimple_location (cond_stmt);
   create_parallel_loop (loop, create_loop_fn (loc), arg_struct, new_arg_struct,

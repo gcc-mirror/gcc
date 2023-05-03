@@ -942,7 +942,7 @@ public:
     for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
 	 gsi_next (&gsi))
       m_ranger->register_inferred_ranges (gsi.phi ());
-    m_last_bb_stmt = last_stmt (bb);
+    m_last_bb_stmt = last_nondebug_stmt (bb);
   }
 
   void post_fold_bb (basic_block bb) override

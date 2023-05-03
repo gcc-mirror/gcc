@@ -1236,7 +1236,7 @@ assign_discriminators (void)
 	    curr_discr = next_discriminator_for_locus (curr_locus);
 	}
 
-      gimple *last = last_stmt (bb);
+      gimple *last = last_nondebug_stmt (bb);
       location_t locus = last ? gimple_location (last) : UNKNOWN_LOCATION;
       if (locus == UNKNOWN_LOCATION)
 	continue;
@@ -1246,7 +1246,7 @@ assign_discriminators (void)
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
 	  gimple *first = first_non_label_stmt (e->dest);
-	  gimple *last = last_stmt (e->dest);
+	  gimple *last = last_nondebug_stmt (e->dest);
 
 	  gimple *stmt_on_same_line = NULL;
 	  if (first && same_line_p (locus, &locus_e,
@@ -1860,7 +1860,7 @@ group_case_labels_stmt (gswitch *stmt)
 	     -Wreturn-type can be diagnosed.  We'll optimize it later
 	     during switchconv pass or any other cfg cleanup.  */
 	  && (gimple_in_ssa_p (cfun)
-	      || (LOCATION_LOCUS (gimple_location (last_stmt (base_bb)))
+	      || (LOCATION_LOCUS (gimple_location (last_nondebug_stmt (base_bb)))
 		  != BUILTINS_LOCATION)))
 	{
 	  edge base_edge = find_edge (gimple_bb (stmt), base_bb);
@@ -2941,7 +2941,7 @@ first_non_label_stmt (basic_block bb)
 /* Return the last statement in basic block BB.  */
 
 gimple *
-last_stmt (basic_block bb)
+last_nondebug_stmt (basic_block bb)
 {
   gimple_stmt_iterator i = gsi_last_bb (bb);
   gimple *stmt = NULL;
@@ -6409,7 +6409,7 @@ gimple_split_block_before_cond_jump (basic_block bb)
 static bool
 gimple_can_duplicate_bb_p (const_basic_block bb)
 {
-  gimple *last = last_stmt (CONST_CAST_BB (bb));
+  gimple *last = last_nondebug_stmt (CONST_CAST_BB (bb));
 
   /* Do checks that can only fail for the last stmt, to minimize the work in the
      stmt loop.  */
@@ -9954,7 +9954,7 @@ execute_fixup_cfg (void)
 	 when inlining a noreturn call that does in fact return.  */
       if (EDGE_COUNT (bb->succs) == 0)
 	{
-	  gimple *stmt = last_stmt (bb);
+	  gimple *stmt = last_nondebug_stmt (bb);
 	  if (!stmt
 	      || (!is_ctrl_stmt (stmt)
 		  && (!is_gimple_call (stmt)

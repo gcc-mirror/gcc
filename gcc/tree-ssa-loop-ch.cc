@@ -244,7 +244,7 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
 static bool
 do_while_loop_p (class loop *loop)
 {
-  gimple *stmt = last_stmt (loop->latch);
+  gimple *stmt = last_nondebug_stmt (loop->latch);
 
   /* If the latch of the loop is not empty, it is not a do-while loop.  */
   if (stmt

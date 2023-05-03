@@ -937,7 +937,7 @@ stmt_after_ip_normal_pos (class loop *loop, gimple *stmt)
   if (sbb != bb)
     return false;
 
-  return stmt == last_stmt (bb);
+  return stmt == last_nondebug_stmt (bb);
 }
 
 /* Returns true if STMT if after the place where the original induction
@@ -5397,7 +5397,7 @@ may_eliminate_iv (struct ivopts_data *data,
   /* For now works only for exits that dominate the loop latch.
      TODO: extend to other conditions inside loop body.  */
   ex_bb = gimple_bb (use->stmt);
-  if (use->stmt != last_stmt (ex_bb)
+  if (use->stmt != last_nondebug_stmt (ex_bb)
       || gimple_code (use->stmt) != GIMPLE_COND
       || !dominated_by_p (CDI_DOMINATORS, loop->latch, ex_bb))
     return false;

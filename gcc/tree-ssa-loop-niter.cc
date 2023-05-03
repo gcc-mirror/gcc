@@ -3864,7 +3864,7 @@ do_warn_aggressive_loop_optimizations (class loop *loop,
   if (e == NULL)
     return;
 
-  gimple *estmt = last_stmt (e->src);
+  gimple *estmt = last_nondebug_stmt (e->src);
   char buf[WIDE_INT_PRINT_BUFFER_SIZE];
   print_dec (i_bound, buf, TYPE_UNSIGNED (TREE_TYPE (loop->nb_iterations))
 	     ? UNSIGNED : SIGNED);
@@ -4832,7 +4832,7 @@ estimate_numbers_of_iterations (class loop *loop)
 			build_int_cst (type, 0),
 			niter);
       record_estimate (loop, niter, niter_desc.max,
-		       last_stmt (ex->src),
+		       last_nondebug_stmt (ex->src),
 		       true, ex == likely_exit, true);
       record_control_iv (loop, &niter_desc);
     }

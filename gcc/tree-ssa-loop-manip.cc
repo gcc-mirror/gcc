@@ -798,7 +798,7 @@ standard_iv_increment_position (class loop *loop, gimple_stmt_iterator *bsi,
 				bool *insert_after)
 {
   basic_block bb = ip_normal_pos (loop), latch = ip_end_pos (loop);
-  gimple *last = last_stmt (latch);
+  gimple *last = last_nondebug_stmt (latch);
 
   if (!bb
       || (last && gimple_code (last) != GIMPLE_LABEL))

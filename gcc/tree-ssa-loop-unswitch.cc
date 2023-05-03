@@ -236,7 +236,7 @@ static void clean_up_after_unswitching (int);
 static vec<unswitch_predicate *> &
 get_predicates_for_bb (basic_block bb)
 {
-  gimple *last = last_stmt (bb);
+  gimple *last = last_nondebug_stmt (bb);
   return (*bb_predicates)[last == NULL ? 0 : gimple_uid (last)];
 }
 
@@ -245,7 +245,7 @@ get_predicates_for_bb (basic_block bb)
 static void
 set_predicates_for_bb (basic_block bb, vec<unswitch_predicate *> predicates)
 {
-  gimple_set_uid (last_stmt (bb), bb_predicates->length ());
+  gimple_set_uid (last_nondebug_stmt (bb), bb_predicates->length ());
   bb_predicates->safe_push (predicates);
 }
 
@@ -283,7 +283,7 @@ init_loop_unswitch_info (class loop *&loop, unswitch_predicate *&hottest,
       else
 	{
 	  candidates.release ();
-	  gimple *last = last_stmt (bbs[i]);
+	  gimple *last = last_nondebug_stmt (bbs[i]);
 	  if (last != NULL)
 	    gimple_set_uid (last, 0);
 	}
@@ -305,7 +305,7 @@ init_loop_unswitch_info (class loop *&loop, unswitch_predicate *&hottest,
       /* No predicates to unswitch on in the outer loops.  */
       if (!flow_bb_inside_loop_p (loop, bbs[i]))
 	{
-	  gimple *last = last_stmt (bbs[i]);
+	  gimple *last = last_nondebug_stmt (bbs[i]);
 	  if (last != NULL)
 	    gimple_set_uid (last, 0);
 	}
@@ -1472,7 +1472,7 @@ hoist_guard (class loop *loop, edge guard)
     gimple_cond_make_true (cond_stmt);
   update_stmt (cond_stmt);
   /* Create new loop pre-header.  */
-  e = split_block (pre_header, last_stmt (pre_header));
+  e = split_block (pre_header, last_nondebug_stmt (pre_header));
 
   dump_user_location_t loc = find_loop_location (loop);
 

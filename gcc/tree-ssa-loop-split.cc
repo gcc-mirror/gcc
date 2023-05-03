@@ -1390,7 +1390,7 @@ compute_added_num_insns (struct loop *loop, const_edge branch_edge)
 
   auto_vec<gimple *> worklist;
   hash_set<gimple *> removed;
-  gimple *stmt = last_stmt (cond_bb);
+  gimple *stmt = last_nondebug_stmt (cond_bb);
 
   worklist.safe_push (stmt);
   removed.add (stmt);

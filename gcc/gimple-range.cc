@@ -181,7 +181,7 @@ gimple_ranger::range_on_exit (vrange &r, basic_block bb, tree name)
   // If this is not the definition block, get the range on the last stmt in
   // the block... if there is one.
   if (def_bb != bb)
-    s = last_stmt (bb);
+    s = last_nondebug_stmt (bb);
   // If there is no statement provided, get the range_on_entry for this block.
   if (s)
     range_of_expr (r, name, s);

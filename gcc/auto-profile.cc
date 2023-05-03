@@ -1303,7 +1303,7 @@ afdo_propagate_circuit (const bb_set &annotated_bb)
   {
     gimple *def_stmt;
     tree cmp_rhs, cmp_lhs;
-    gimple *cmp_stmt = last_stmt (bb);
+    gimple *cmp_stmt = last_nondebug_stmt (bb);
     edge e;
     edge_iterator ei;
 
