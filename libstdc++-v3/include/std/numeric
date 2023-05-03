@@ -161,6 +161,11 @@ namespace __detail
 #endif
 
       bool __overflow = __builtin_mul_overflow(__r, __n2, &__r);
+#if defined _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+      if (__builtin_is_constant_evaluated())
+	if (__overflow)
+	  _GLIBCXX_THROW_OR_ABORT("std::lcm result is out of range of type");
+#endif
       __glibcxx_assert(!__overflow);
       return __r;
     }

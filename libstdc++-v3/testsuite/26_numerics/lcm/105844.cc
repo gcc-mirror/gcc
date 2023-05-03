@@ -19,6 +19,6 @@ constexpr int d = std::lcm(49999, 50000); // { dg-error "overflow" }
 // Similarly for unsigned, but the diagnostic is a failed assertion instead.
 constexpr int e = std::lcm(500000u, 499999); // { dg-error "in 'constexpr'" }
 constexpr int f = std::lcm(499999u, 500000); // { dg-error "in 'constexpr'" }
-// { dg-error "unreachable" "" { target *-*-* } 0 }
+// { dg-error "throw.* not a constant expression" "" { target *-*-* } 0 }
 
 // { dg-prune-output "in 'constexpr' expansion" }
