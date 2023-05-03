@@ -24,10 +24,10 @@
 namespace Rust {
 
 ProcMacro::TokenStream
-convert (std::vector<const_TokenPtr> tokens);
+convert (const std::vector<const_TokenPtr> &tokens);
 
 std::vector<const_TokenPtr>
-convert (ProcMacro::TokenStream ts);
+convert (const ProcMacro::TokenStream &ts);
 
 } // namespace Rust
 

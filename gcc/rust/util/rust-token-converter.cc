@@ -32,7 +32,8 @@ pop_group (std::vector<ProcMacro::TokenStream> &streams,
 }
 
 static void
-dispatch_float_literals (ProcMacro::TokenStream &ts, const_TokenPtr &token)
+dispatch_float_literals (ProcMacro::TokenStream &ts,
+			 const const_TokenPtr &token)
 {
   std::string::size_type sz;
   auto str = token->as_string ();
@@ -56,7 +57,8 @@ dispatch_float_literals (ProcMacro::TokenStream &ts, const_TokenPtr &token)
 }
 
 static void
-dispatch_integer_literals (ProcMacro::TokenStream &ts, const_TokenPtr &token)
+dispatch_integer_literals (ProcMacro::TokenStream &ts,
+			   const const_TokenPtr &token)
 {
   std::string::size_type sz;
   auto str = token->as_string ();
@@ -123,7 +125,7 @@ dispatch_integer_literals (ProcMacro::TokenStream &ts, const_TokenPtr &token)
 }
 
 ProcMacro::TokenStream
-convert (std::vector<const_TokenPtr> tokens)
+convert (const std::vector<const_TokenPtr> &tokens)
 {
   std::vector<ProcMacro::TokenStream> trees;
   trees.push_back (ProcMacro::TokenStream::make_tokenstream ());
@@ -570,7 +572,7 @@ from_tokenstream (const ProcMacro::TokenStream &ts,
 }
 
 std::vector<const_TokenPtr>
-convert (ProcMacro::TokenStream ts)
+convert (const ProcMacro::TokenStream &ts)
 {
   std::vector<const_TokenPtr> result;
   from_tokenstream (ts, result);
