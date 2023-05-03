@@ -4730,10 +4730,14 @@ get_initial_def_for_reduction (loop_vec_info loop_vinfo,
         else
           def_for_init = build_int_cst (scalar_type, int_init_val);
 
-	if (adjustment_def || operand_equal_p (def_for_init, init_val, 0))
+	bool same_p = operand_equal_p (def_for_init, init_val, 0);
+	init_val = gimple_convert (&stmts, TREE_TYPE (vectype), init_val);
+	def_for_init = gimple_convert (&stmts, TREE_TYPE (vectype), def_for_init);
+
+	if (adjustment_def || same_p)
 	  {
 	    /* Option1: the first element is '0' or '1' as well.  */
-	    if (!operand_equal_p (def_for_init, init_val, 0))
+	    if (!same_p)
 	      *adjustment_def = init_val;
 	    init_def = gimple_build_vector_from_val (&stmts, vectype,
 						     def_for_init);
