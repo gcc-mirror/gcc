@@ -312,9 +312,40 @@ static void
 from_punct (ProcMacro::Punct punct, std::vector<TokenPtr> &result)
 {}
 
+/**
+ * Iterate over a Group and append all inner tokens to a vector enclosed by it's
+ * delimiters.
+ *
+ * @param g Reference to the Group to convert.
+ * @param result Reference to the vector tokens should be appended to.
+ */
 static void
-from_group (ProcMacro::Group g, std::vector<TokenPtr> &result)
-{}
+from_group (const ProcMacro::Group &g, std::vector<TokenPtr> &result)
+{
+  switch (g.delimiter)
+    {
+    case ProcMacro::PARENTHESIS:
+      result.push_back (Token::make (LEFT_PAREN, Location ()));
+      from_tokenstream (g.stream, result);
+      result.push_back (Token::make (RIGHT_PAREN, Location ()));
+      break;
+    case ProcMacro::BRACE:
+      result.push_back (Token::make (LEFT_CURLY, Location ()));
+      from_tokenstream (g.stream, result);
+      result.push_back (Token::make (RIGHT_CURLY, Location ()));
+      break;
+    case ProcMacro::BRACKET:
+      result.push_back (Token::make (LEFT_SQUARE, Location ()));
+      from_tokenstream (g.stream, result);
+      result.push_back (Token::make (RIGHT_SQUARE, Location ()));
+      break;
+    case ProcMacro::NONE:
+      from_tokenstream (g.stream, result);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
 
 static void
 from_tokenstream (ProcMacro::TokenStream ts, std::vector<TokenPtr> &result)
