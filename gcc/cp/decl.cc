@@ -14428,6 +14428,15 @@ grokdeclarator (const cp_declarator *declarator,
 		cplus_decl_attributes (&decl, *attrlist, 0);
 		*attrlist = NULL_TREE;
 
+		if (template_class_depth (current_class_type) == 0)
+		  {
+		    decl = check_explicit_specialization
+		      (unqualified_id, decl, template_count,
+		       2 * funcdef_flag + 4);
+		    if (decl == error_mark_node)
+		      return error_mark_node;
+		  }
+
 		tree scope = ctype ? ctype : in_namespace;
 		decl = do_friend (scope, unqualified_id, decl,
 				  flags, funcdef_flag);
