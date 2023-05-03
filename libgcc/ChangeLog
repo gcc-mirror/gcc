@@ -1,3 +1,8 @@
+2023-05-02  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/atomic.c: Change LR.aq/SC.rl pairs into
+	sequentially consistent LR.aqrl/SC.rl pairs.
+
 2023-05-01  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* config/pru/t-pru (HOST_LIBGCC2_CFLAGS): Add

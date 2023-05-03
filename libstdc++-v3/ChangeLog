@@ -1,3 +1,20 @@
+2023-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Update.
+
+2023-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/109694
+	* src/c++98/ios_init.cc: Add #pragma GCC diagnostic ignored for
+	-Wattribute-alias.
+
 2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/random.h (gamma_distribution): Add to the right

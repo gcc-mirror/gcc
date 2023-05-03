@@ -1,3 +1,102 @@
+2023-05-02  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc (move_stmt): New function.
+	(match_simplify_replacement): Use move_stmt instead
+	of the inlined version.
+
+2023-05-02  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd (a != 0 ? CLRSB(a) : CST -> CLRSB(a)): New
+	pattern.
+
+2023-05-02  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/109702
+	* match.pd: Fix "a != 0 ? FUNC(a) : CST" patterns
+	for FUNC of POPCOUNT BSWAP FFS PARITY CLZ and CTZ.
+
+2023-05-02  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/109657
+	* config/aarch64/aarch64.md (*cmov<mode>_insn_m1): New
+	insn_and_split pattern.
+
+2023-05-02  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/sync.md (atomic_load<mode>): Implement atomic
+	load mapping.
+
+2023-05-02  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/sync.md (mem_thread_fence_1): Change fence
+	depending on the given memory model.
+
+2023-05-02  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/riscv-protos.h (riscv_union_memmodels): Expose
+	riscv_union_memmodels function to sync.md.
+	* config/riscv/riscv.cc (riscv_union_memmodels): Add function to
+	get the union of two memmodels in sync.md.
+	(riscv_print_operand): Add %I and %J flags that output the
+	optimal LR/SC flag bits for a given memory model.
+	* config/riscv/sync.md: Remove static .aqrl bits on LR op/.rl
+	bits on SC op and replace with optimized %I, %J flags.
+
+2023-05-02  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/riscv.cc
+	(riscv_memmodel_needs_amo_release): Change function name.
+	(riscv_print_operand): Remove unneeded %F case.
+	* config/riscv/sync.md: Remove unneeded fences.
+
+2023-05-02  Patrick O'Neill  <patrick@rivosinc.com>
+
+	PR target/89835
+	* config/riscv/sync.md (atomic_store<mode>): Use simple store
+	instruction in combination with fence(s).
+
+2023-05-02  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/riscv.cc (riscv_print_operand): Change behavior
+	of %A to include release bits.
+
+2023-05-02  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/sync.md (atomic_cas_value_strong<mode>): Change
+	FENCE/LR.aq/SC.aq into sequentially consistent LR.aqrl/SC.rl
+	pair.
+
+2023-05-02  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/sync.md: Change LR.aq/SC.rl pairs into
+	sequentially consistent LR.aqrl/SC.rl pairs.
+
+2023-05-02  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* config/riscv/riscv.cc: Remove MEMMODEL_SYNC_* cases and
+	sanitize memmodel input with memmodel_base.
+
+2023-05-02  Yanzhang Wang  <yanzhang.wang@intel.com>
+	    Pan Li  <pan2.li@intel.com>
+
+	PR target/109617
+	* config/riscv/vector-iterators.md: Support VNx2HI and VNX4DI when MIN_VLEN >= 128.
+
+2023-05-02  Romain Naour  <romain.naour@gmail.com>
+
+	* config/riscv/genrvv-type-indexer.cc: Use log2 from the C header, without
+	the namespace.
+
+2023-05-02  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Update documentation based on param.opt file.
+
+2023-05-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109672
+	* tree-vect-stmts.cc (vectorizable_operation): For plus,
+	minus and negate always check the vector mode is word mode.
+
 2023-05-01  Andrew Pinski  <apinski@marvell.com>
 
 	* tree-ssa-phiopt.cc: Update comment about

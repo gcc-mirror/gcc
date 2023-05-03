@@ -1,3 +1,28 @@
+2023-05-02  Jason Merrill  <jason@redhat.com>
+
+	* pt.cc (instantiate_class_template): Skip the RECORD_TYPE
+	of a class template.
+	(tsubst_template_decl): Clear CLASSTYPE_USE_TEMPLATE.
+
+2023-05-02  Jason Merrill  <jason@redhat.com>
+
+	* name-lookup.cc (pop_from_top_level): Don't
+	invalidate_class_lookup_cache.
+
+2023-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109678
+	* cp-tree.h (lookup_base): Add offset parm.
+	* constexpr.cc (cxx_fold_indirect_ref_1): Pass it.
+	* search.cc (struct lookup_base_data_s): Add offset.
+	(dfs_lookup_base): Handle it.
+	(lookup_base): Pass it.
+
+2023-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109678
+	* constexpr.cc (cxx_fold_indirect_ref_1): Handle empty base first.
+
 2023-05-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/109666

@@ -1,3 +1,72 @@
+2023-05-02  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/109702
+	* gcc.dg/tree-ssa/phi-opt-25b.c: New test.
+
+2023-05-02  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/109657
+	* gcc.target/aarch64/csinv-2.c: New test.
+
+2023-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109678
+	* g++.dg/cpp1z/variant1.C: New test.
+
+2023-05-02  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/amo-table-a-6-amo-add-1.c: New test.
+	* gcc.target/riscv/amo-table-a-6-amo-add-2.c: New test.
+	* gcc.target/riscv/amo-table-a-6-amo-add-3.c: New test.
+	* gcc.target/riscv/amo-table-a-6-amo-add-4.c: New test.
+	* gcc.target/riscv/amo-table-a-6-amo-add-5.c: New test.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-1.c: New test.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-2.c: New test.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-3.c: New test.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-4.c: New test.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-5.c: New test.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-6.c: New test.
+	* gcc.target/riscv/amo-table-a-6-compare-exchange-7.c: New test.
+	* gcc.target/riscv/amo-table-a-6-fence-1.c: New test.
+	* gcc.target/riscv/amo-table-a-6-fence-2.c: New test.
+	* gcc.target/riscv/amo-table-a-6-fence-3.c: New test.
+	* gcc.target/riscv/amo-table-a-6-fence-4.c: New test.
+	* gcc.target/riscv/amo-table-a-6-fence-5.c: New test.
+	* gcc.target/riscv/amo-table-a-6-load-1.c: New test.
+	* gcc.target/riscv/amo-table-a-6-load-2.c: New test.
+	* gcc.target/riscv/amo-table-a-6-load-3.c: New test.
+	* gcc.target/riscv/amo-table-a-6-store-1.c: New test.
+	* gcc.target/riscv/amo-table-a-6-store-2.c: New test.
+	* gcc.target/riscv/amo-table-a-6-store-compat-3.c: New test.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-1.c: New test.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-2.c: New test.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-3.c: New test.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-4.c: New test.
+	* gcc.target/riscv/amo-table-a-6-subword-amo-add-5.c: New test.
+
+2023-05-02  Patrick O'Neill  <patrick@rivosinc.com>
+
+	PR target/89835
+	* gcc.target/riscv/pr89835.c: New test.
+
+2023-05-02  Yanzhang Wang  <yanzhang.wang@intel.com>
+	    Pan Li  <pan2.li@intel.com>
+
+	PR target/109617
+	* gcc.target/riscv/rvv/base/vlmul_ext-1.c: New test.
+
+2023-05-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109506
+	* g++.dg/cpp0x/nsdmi-template26.C: New test.
+
+2023-05-02  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/pr88531-2a.c: Skip scanning for ia32.
+	* gcc.target/i386/pr88531-2b.c: Likewise.
+	* gcc.target/i386/pr88531-2c.c: Likewise.
+	* gcc.target/i386/pr89618-2.c: Likewise.  Disable AVX512.
+
 2023-05-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/109666
