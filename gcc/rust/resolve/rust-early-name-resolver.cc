@@ -19,6 +19,7 @@
 #include "rust-early-name-resolver.h"
 #include "rust-ast-full.h"
 #include "rust-name-resolver.h"
+#include "rust-macro-builtins.h"
 
 namespace Rust {
 namespace Resolver {
@@ -873,7 +874,7 @@ EarlyNameResolver::visit (AST::MacroInvocation &invoc)
   if (is_builtin)
     {
       auto builtin_kind
-	= AST::builtin_macro_from_string (rules_def->get_rule_name ());
+	= builtin_macro_from_string (rules_def->get_rule_name ());
       invoc.map_to_builtin (builtin_kind);
     }
 
