@@ -320,7 +320,7 @@ sbr_sparse_bitmap::set_bb_range (const_basic_block bb, const vrange &r)
 
   // Loop thru the values to see if R is already present.
   for (int x = 0; x < SBR_NUM; x++)
-    if (!m_range[x] || m_range[x]->equal_p (r, m_type))
+    if (!m_range[x] || m_range[x]->equal_p (r))
       {
 	if (!m_range[x])
 	  m_range[x] = m_range_allocator->clone (r);
