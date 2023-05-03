@@ -32,54 +32,91 @@
 #include "bi-map.h"
 
 namespace Rust {
+static const BiMap<std::string, BuiltinMacro> builtins = {{
+  {"assert", BuiltinMacro::Assert},
+  {"file", BuiltinMacro::File},
+  {"line", BuiltinMacro::Line},
+  {"column", BuiltinMacro::Column},
+  {"include_bytes", BuiltinMacro::IncludeBytes},
+  {"include_str", BuiltinMacro::IncludeStr},
+  {"stringify", BuiltinMacro::Stringify},
+  {"compile_error", BuiltinMacro::CompileError},
+  {"concat", BuiltinMacro::Concat},
+  {"env", BuiltinMacro::Env},
+  {"option_env", BuiltinMacro::OptionEnv},
+  {"cfg", BuiltinMacro::Cfg},
+  {"include", BuiltinMacro::Include},
+  {"format_args", BuiltinMacro::FormatArgs},
+  {"format_args_nl", BuiltinMacro::FormatArgsNl},
+  {"concat_idents", BuiltinMacro::ConcatIdents},
+  {"module_path", BuiltinMacro::ModulePath},
+  {"asm", BuiltinMacro::Asm},
+  {"llvm_asm", BuiltinMacro::LlvmAsm},
+  {"global_asm", BuiltinMacro::GlobalAsm},
+  {"log_syntax", BuiltinMacro::LogSyntax},
+  {"trace_macros", BuiltinMacro::TraceMacros},
+  {"test", BuiltinMacro::Test},
+  {"bench", BuiltinMacro::Bench},
+  {"test_case", BuiltinMacro::TestCase},
+  {"global_allocator", BuiltinMacro::GlobalAllocator},
+  {"cfg_accessible", BuiltinMacro::CfgAccessible},
+  {"RustcEncodable", BuiltinMacro::RustcDecodable},
+  {"RustcDecodable", BuiltinMacro::RustcEncodable},
+}};
+
+std::unordered_map<
+  std::string, std::function<AST::Fragment (Location, AST::MacroInvocData &)>>
+  MacroBuiltin::builtin_transcribers = {
+    {"assert", MacroBuiltin::assert_handler},
+    {"file", MacroBuiltin::file_handler},
+    {"line", MacroBuiltin::line_handler},
+    {"column", MacroBuiltin::column_handler},
+    {"include_bytes", MacroBuiltin::include_bytes_handler},
+    {"include_str", MacroBuiltin::include_str_handler},
+    {"stringify", MacroBuiltin::stringify_handler},
+    {"compile_error", MacroBuiltin::compile_error_handler},
+    {"concat", MacroBuiltin::concat_handler},
+    {"env", MacroBuiltin::env_handler},
+    {"cfg", MacroBuiltin::cfg_handler},
+    {"include", MacroBuiltin::include_handler},
+    /* Unimplemented macro builtins */
+    {"format_args", MacroBuiltin::sorry},
+    {"option_env", MacroBuiltin::sorry},
+    {"format_args_nl", MacroBuiltin::sorry},
+    {"concat_idents", MacroBuiltin::sorry},
+    {"module_path", MacroBuiltin::sorry},
+    {"asm", MacroBuiltin::sorry},
+    {"llvm_asm", MacroBuiltin::sorry},
+    {"global_asm", MacroBuiltin::sorry},
+    {"log_syntax", MacroBuiltin::sorry},
+    {"trace_macros", MacroBuiltin::sorry},
+    {"test", MacroBuiltin::sorry},
+    {"bench", MacroBuiltin::sorry},
+    {"test_case", MacroBuiltin::sorry},
+    {"global_allocator", MacroBuiltin::sorry},
+    {"cfg_accessible", MacroBuiltin::sorry},
+    {"RustcEncodable", MacroBuiltin::sorry},
+    {"RustcDecodable", MacroBuiltin::sorry},
+};
+
+// FIXME: This should return an Optional
+BuiltinMacro
+builtin_macro_from_string (const std::string &identifier)
+{
+  auto macro = builtins.lookup (identifier);
+  rust_assert (builtins.is_iter_ok (macro));
+
+  return macro->second;
+}
+
 namespace {
 std::string
-make_macro_path_str (AST::BuiltinMacro kind)
+make_macro_path_str (BuiltinMacro kind)
 {
-  std::string path_str;
+  auto str = builtins.lookup (kind);
+  rust_assert (builtins.is_iter_ok (str));
 
-  switch (kind)
-    {
-    // TODO: Should this be a table lookup?
-    case AST::BuiltinMacro::Assert:
-      path_str = "assert";
-      break;
-    case AST::BuiltinMacro::File:
-      path_str = "file";
-      break;
-    case AST::BuiltinMacro::Line:
-      path_str = "line";
-      break;
-    case AST::BuiltinMacro::Column:
-      path_str = "column";
-      break;
-    case AST::BuiltinMacro::IncludeBytes:
-      path_str = "include_bytes";
-      break;
-    case AST::BuiltinMacro::IncludeStr:
-      path_str = "include_str";
-      break;
-    case AST::BuiltinMacro::Stringify:
-      path_str = "stringify";
-      break;
-    case AST::BuiltinMacro::CompileError:
-      path_str = "compile_error";
-      break;
-    case AST::BuiltinMacro::Concat:
-      path_str = "concat";
-      break;
-    case AST::BuiltinMacro::Env:
-      path_str = "env";
-      break;
-    case AST::BuiltinMacro::Cfg:
-      path_str = "cfg";
-      break;
-    case AST::BuiltinMacro::Include:
-      path_str = "include";
-      break;
-    }
-
-  return path_str;
+  return str->second;
 }
 
 static std::vector<std::unique_ptr<AST::MacroInvocation>>
@@ -116,7 +153,7 @@ make_string (Location locus, std::string value)
 // TODO: Is this correct?
 static AST::Fragment
 make_eager_builtin_invocation (
-  AST::BuiltinMacro kind, Location locus, AST::DelimTokenTree arguments,
+  BuiltinMacro kind, Location locus, AST::DelimTokenTree arguments,
   std::vector<std::unique_ptr<AST::MacroInvocation>> &&pending_invocations)
 {
   auto path_str = make_macro_path_str (kind);
@@ -224,7 +261,7 @@ try_expand_many_expr (Parser<MacroInvocLexer> &parser,
    but otherwise enforce that these are the only tokens.  */
 
 std::unique_ptr<AST::Expr>
-parse_single_string_literal (AST::BuiltinMacro kind,
+parse_single_string_literal (BuiltinMacro kind,
 			     AST::DelimTokenTree &invoc_token_tree,
 			     Location invoc_locus, MacroExpander *expander)
 {
@@ -384,7 +421,7 @@ MacroBuiltin::include_bytes_handler (Location invoc_locus,
   /* Get target filename from the macro invocation, which is treated as a path
      relative to the include!-ing file (currently being compiled).  */
   auto lit_expr
-    = parse_single_string_literal (AST::BuiltinMacro::IncludeBytes,
+    = parse_single_string_literal (BuiltinMacro::IncludeBytes,
 				   invoc.get_delim_tok_tree (), invoc_locus,
 				   invoc.get_expander ());
   if (lit_expr == nullptr)
@@ -444,7 +481,7 @@ MacroBuiltin::include_str_handler (Location invoc_locus,
   /* Get target filename from the macro invocation, which is treated as a path
      relative to the include!-ing file (currently being compiled).  */
   auto lit_expr
-    = parse_single_string_literal (AST::BuiltinMacro::IncludeStr,
+    = parse_single_string_literal (BuiltinMacro::IncludeStr,
 				   invoc.get_delim_tok_tree (), invoc_locus,
 				   invoc.get_expander ());
   if (lit_expr == nullptr)
@@ -527,7 +564,7 @@ MacroBuiltin::compile_error_handler (Location invoc_locus,
 				     AST::MacroInvocData &invoc)
 {
   auto lit_expr
-    = parse_single_string_literal (AST::BuiltinMacro::CompileError,
+    = parse_single_string_literal (BuiltinMacro::CompileError,
 				   invoc.get_delim_tok_tree (), invoc_locus,
 				   invoc.get_expander ());
   if (lit_expr == nullptr)
@@ -605,8 +642,7 @@ MacroBuiltin::concat_handler (Location invoc_locus, AST::MacroInvocData &invoc)
 
   auto pending_invocations = check_for_eager_invocations (expanded_expr);
   if (!pending_invocations.empty ())
-    return make_eager_builtin_invocation (AST::BuiltinMacro::Concat,
-					  invoc_locus,
+    return make_eager_builtin_invocation (BuiltinMacro::Concat, invoc_locus,
 					  invoc.get_delim_tok_tree (),
 					  std::move (pending_invocations));
 
@@ -672,7 +708,7 @@ MacroBuiltin::env_handler (Location invoc_locus, AST::MacroInvocData &invoc)
 
   auto pending = check_for_eager_invocations (expanded_expr);
   if (!pending.empty ())
-    return make_eager_builtin_invocation (AST::BuiltinMacro::Env, invoc_locus,
+    return make_eager_builtin_invocation (BuiltinMacro::Env, invoc_locus,
 					  invoc_token_tree,
 					  std::move (pending));
 
@@ -770,7 +806,7 @@ MacroBuiltin::include_handler (Location invoc_locus, AST::MacroInvocData &invoc)
   /* Get target filename from the macro invocation, which is treated as a path
      relative to the include!-ing file (currently being compiled).  */
   auto lit_expr
-    = parse_single_string_literal (AST::BuiltinMacro::Include,
+    = parse_single_string_literal (BuiltinMacro::Include,
 				   invoc.get_delim_tok_tree (), invoc_locus,
 				   invoc.get_expander ());
   if (lit_expr == nullptr)
@@ -877,6 +913,15 @@ MacroBuiltin::stringify_handler (Location invoc_locus,
   auto token
     = make_token (Token::make_string (invoc_locus, std::move (content)));
   return AST::Fragment ({node}, std::move (token));
-} // namespace Rust
+}
+
+AST::Fragment
+MacroBuiltin::sorry (Location invoc_locus, AST::MacroInvocData &invoc)
+{
+  rust_sorry_at (invoc_locus, "unimplemented builtin macro: %qs",
+		 invoc.get_path ().as_string ().c_str ());
+
+  return AST::Fragment::create_error ();
+}
 
 } // namespace Rust

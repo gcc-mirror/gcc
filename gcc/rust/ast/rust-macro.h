@@ -25,6 +25,7 @@
 #include "rust-location.h"
 #include "rust-item.h"
 #include "rust-make-unique.h"
+#include "rust-macro-builtins.h"
 
 namespace Rust {
 namespace AST {
@@ -577,28 +578,6 @@ protected:
     return new MacroRulesDefinition (*this);
   }
 };
-
-/**
- * All builtin macros possible
- */
-enum class BuiltinMacro
-{
-  Assert,
-  File,
-  Line,
-  Column,
-  IncludeBytes,
-  IncludeStr,
-  Stringify,
-  CompileError,
-  Concat,
-  Env,
-  Cfg,
-  Include
-};
-
-BuiltinMacro
-builtin_macro_from_string (const std::string &identifier);
 
 /* AST node of a macro invocation, which is replaced by the macro result at
  * compile time. This is technically a sum-type/tagged-union, which represents
