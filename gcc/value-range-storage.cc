@@ -80,7 +80,6 @@ public:
 };
 
 vrange_allocator::vrange_allocator (bool gc)
-  : m_gc (gc)
 {
   if (gc)
     m_alloc = new vrange_ggc_alloc;

@@ -38,7 +38,6 @@ public:
 private:
   DISABLE_COPY_AND_ASSIGN (vrange_allocator);
   class vrange_internal_alloc *m_alloc;
-  bool m_gc;
 };
 
 // Efficient memory storage for a vrange.
