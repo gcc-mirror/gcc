@@ -1851,6 +1851,23 @@ to_chars(char* first, char* last, __float128 value, chars_format fmt,
 {
   return __floating_to_chars_precision(first, last, value, fmt, precision);
 }
+
+extern "C" to_chars_result
+_ZSt8to_charsPcS_DF128_(char* first, char* last, __float128 value) noexcept
+  __attribute__((alias ("_ZSt8to_charsPcS_u9__ieee128")));
+
+extern "C" to_chars_result
+_ZSt8to_charsPcS_DF128_St12chars_format(char* first, char* last,
+					__float128 value,
+					chars_format fmt) noexcept
+  __attribute__((alias ("_ZSt8to_charsPcS_u9__ieee128St12chars_format")));
+
+extern "C" to_chars_result
+_ZSt8to_charsPcS_DF128_St12chars_formati(char* first, char* last,
+					 __float128 value,
+					 chars_format fmt,
+					 int precision) noexcept
+  __attribute__((alias ("_ZSt8to_charsPcS_u9__ieee128St12chars_formati")));
 #else
 to_chars_result
 to_chars(char* first, char* last, _Float128 value) noexcept
