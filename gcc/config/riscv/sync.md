@@ -62,6 +62,8 @@
 	return "fence\tr,rw";
     else if (model == MEMMODEL_RELEASE)
 	return "fence\trw,w";
+    else
+	gcc_unreachable ();
   }
   [(set (attr "length") (const_int 4))])
 
