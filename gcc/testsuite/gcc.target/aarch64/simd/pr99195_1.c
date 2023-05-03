@@ -53,13 +53,17 @@ OPFIVE (T, IS, OS, S, OP6, OP7, OP8, OP9, OP10)
 OPFIVE (T, IS, OS, S, OP1, OP2, OP3, OP4, OP5)                \
 OPSIX (T, IS, OS, S, OP6, OP7, OP8, OP9, OP10, OP11)
 
-OPELEVEN (int8, 8, 16, s8, padd, add, sub, mul, and, orr, eor, orn, bic, max, min)
-OPELEVEN (int16, 4, 8, s16, padd, add, sub, mul, and, orr, eor, orn, bic, max, min)
-OPELEVEN (int32, 2, 4, s32, padd, add, sub, mul, and, orr, eor, orn, bic, max, min)
+#define OPFOURTEEN(T,IS,OS,S,OP1,OP2,OP3,OP4,OP5,OP6,OP7,OP8,OP9,OP10,OP11,OP12,OP13,OP14)        \
+OPSEVEN (T, IS, OS, S, OP1, OP2, OP3, OP4, OP5, OP6, OP7)                \
+OPSEVEN (T, IS, OS, S, OP8, OP9, OP10, OP11, OP12, OP13, OP14)
 
-OPELEVEN (uint8, 8, 16, u8, padd, add, sub, mul, and, orr, eor, orn, bic, max, min)
-OPELEVEN (uint16, 4, 8, u16, padd, add, sub, mul, and, orr, eor, orn, bic, max, min)
-OPELEVEN (uint32, 2, 4, u32, padd, add, sub, mul, and, orr, eor, orn, bic, max, min)
+OPFOURTEEN (int8, 8, 16, s8, padd, add, sub, mul, and, orr, eor, orn, bic, max, min, hadd, rhadd, hsub)
+OPFOURTEEN (int16, 4, 8, s16, padd, add, sub, mul, and, orr, eor, orn, bic, max, min, hadd, rhadd, hsub)
+OPFOURTEEN (int32, 2, 4, s32, padd, add, sub, mul, and, orr, eor, orn, bic, max, min, hadd, rhadd, hsub)
+
+OPFOURTEEN (uint8, 8, 16, u8, padd, add, sub, mul, and, orr, eor, orn, bic, max, min, hadd, rhadd, hsub)
+OPFOURTEEN (uint16, 4, 8, u16, padd, add, sub, mul, and, orr, eor, orn, bic, max, min, hadd, rhadd, hsub)
+OPFOURTEEN (uint32, 2, 4, u32, padd, add, sub, mul, and, orr, eor, orn, bic, max, min, hadd, rhadd, hsub)
 
 OPEIGHT (float32, 2, 4, f32, add, sub, mul, div, max, maxnm, min, minnm)
 

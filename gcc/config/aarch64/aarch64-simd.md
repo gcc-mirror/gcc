@@ -4943,7 +4943,7 @@
   "TARGET_SIMD"
 )
 
-(define_insn "aarch64_<sur>h<addsub><mode>"
+(define_insn "aarch64_<sur>h<addsub><mode><vczle><vczbe>"
   [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
         (unspec:VDQ_BHSI [(match_operand:VDQ_BHSI 1 "register_operand" "w")
 		      (match_operand:VDQ_BHSI 2 "register_operand" "w")]
