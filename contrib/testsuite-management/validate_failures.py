@@ -217,11 +217,17 @@ class ResultSet(set):
   Attributes:
     current_tool: Name of the current top-level DejaGnu testsuite.
     current_exp: Name of the current .exp testsuite file.
+    testsuites: A set of (tool, exp) tuples representing encountered testsuites.
   """
 
   def __init__(self):
     super().__init__()
     self.ResetToolExp()
+    self.testsuites=set()
+
+  def update(self, other):
+    super().update(other)
+    self.testsuites.update(other.testsuites)
 
   def ResetToolExp(self):
     self.current_tool = None
@@ -246,6 +252,10 @@ class ResultSet(set):
 
     outfile.write(_SUMMARY_LINE_FORMAT % 'Results')
 
+  # Check if testsuite of expected_result is present in current results.
+  # This is used to compare partial test results against a full manifest.
+  def HasTestsuite(self, expected_result):
+    return (expected_result.tool, expected_result.exp) in self.testsuites
 
 def GetMakefileValue(makefile_name, value_name):
   if os.path.exists(makefile_name):
@@ -391,6 +401,8 @@ def ParseSummary(sum_fname):
       result_set.add(result)
     elif IsExpLine(line):
       result_set.current_exp = _EXP_LINE_REX.match(line).groups()[0]
+      result_set.testsuites.add((result_set.current_tool,
+                                 result_set.current_exp))
     elif IsToolLine(line):
       result_set.current_tool = _TOOL_LINE_REX.match(line).groups()[0]
       result_set.current_exp = None
@@ -433,7 +445,7 @@ def GetResults(sum_files, build_results = None):
   for sum_fname in sum_files:
     if _OPTIONS.verbosity >= 3:
       print('\t%s' % sum_fname)
-    build_results |= ParseSummary(sum_fname)
+    build_results.update(ParseSummary(sum_fname))
   return build_results
 
 
@@ -458,7 +470,11 @@ def CompareResults(manifest, actual):
     # Ignore tests marked flaky.
     if 'flaky' in expected_result.attrs:
       continue
-    if expected_result not in actual:
+    # We try to support comparing partial results vs full manifest
+    # (e.g., manifest has failures for gcc, g++, gfortran, but we ran only
+    # g++ testsuite).  To achieve this we record encountered testsuites in
+    # actual.testsuites set, and then we check it here using HasTestsuite().
+    if expected_result not in actual and actual.HasTestsuite(expected_result):
       manifest_vs_actual.add(expected_result)
 
   return actual_vs_manifest, manifest_vs_actual
@@ -519,6 +535,13 @@ def GetSumFiles(results, build_dir):
 
 def PerformComparison(expected, actual):
   actual_vs_expected, expected_vs_actual = CompareResults(expected, actual)
+
+  if _OPTIONS.inverse_match:
+    # Switch results if inverse comparison is requested.
+    # This is useful in detecting flaky tests that FAILed in expected set,
+    # but PASSed in actual set.
+    actual_vs_expected, expected_vs_actual \
+      = expected_vs_actual, actual_vs_expected
 
   tests_ok = True
   if len(actual_vs_expected) > 0:
@@ -612,6 +635,13 @@ def Main(argv):
   parser.add_option('--force', action='store_true', dest='force',
                     default=False, help='When used with --produce_manifest, '
                     'it will overwrite an existing manifest file '
+                    '(default = False)')
+  parser.add_option('--inverse_match', action='store_true',
+                    dest='inverse_match', default=False,
+                    help='Inverse result sets in comparison. '
+                    'Output unexpected passes as unexpected failures and '
+                    'unexpected failures as unexpected passes. '
+                    'This is used to catch FAIL->PASS flaky tests. '
                     '(default = False)')
   parser.add_option('--manifest', action='store', type='string',
                     dest='manifest', default=None,
