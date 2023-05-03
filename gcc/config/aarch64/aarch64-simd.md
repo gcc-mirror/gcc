@@ -2846,7 +2846,7 @@
 
 ;; FP arithmetic operations.
 
-(define_insn "add<mode>3"
+(define_insn "add<mode>3<vczle><vczbe>"
  [(set (match_operand:VHSDF 0 "register_operand" "=w")
        (plus:VHSDF (match_operand:VHSDF 1 "register_operand" "w")
 		   (match_operand:VHSDF 2 "register_operand" "w")))]
@@ -2855,7 +2855,7 @@
   [(set_attr "type" "neon_fp_addsub_<stype><q>")]
 )
 
-(define_insn "sub<mode>3"
+(define_insn "sub<mode>3<vczle><vczbe>"
  [(set (match_operand:VHSDF 0 "register_operand" "=w")
        (minus:VHSDF (match_operand:VHSDF 1 "register_operand" "w")
 		    (match_operand:VHSDF 2 "register_operand" "w")))]
@@ -2864,7 +2864,7 @@
   [(set_attr "type" "neon_fp_addsub_<stype><q>")]
 )
 
-(define_insn "mul<mode>3"
+(define_insn "mul<mode>3<vczle><vczbe>"
  [(set (match_operand:VHSDF 0 "register_operand" "=w")
        (mult:VHSDF (match_operand:VHSDF 1 "register_operand" "w")
 		   (match_operand:VHSDF 2 "register_operand" "w")))]
@@ -2885,7 +2885,7 @@
   operands[1] = force_reg (<MODE>mode, operands[1]);
 })
 
-(define_insn "*div<mode>3"
+(define_insn "*div<mode>3<vczle><vczbe>"
  [(set (match_operand:VHSDF 0 "register_operand" "=w")
        (div:VHSDF (match_operand:VHSDF 1 "register_operand" "w")
 		 (match_operand:VHSDF 2 "register_operand" "w")))]
@@ -2915,7 +2915,7 @@
   }
 )
 
-(define_insn "neg<mode>2"
+(define_insn "neg<mode>2<vczle><vczbe>"
  [(set (match_operand:VHSDF 0 "register_operand" "=w")
        (neg:VHSDF (match_operand:VHSDF 1 "register_operand" "w")))]
  "TARGET_SIMD"
@@ -2923,7 +2923,7 @@
   [(set_attr "type" "neon_fp_neg_<stype><q>")]
 )
 
-(define_insn "abs<mode>2"
+(define_insn "abs<mode>2<vczle><vczbe>"
  [(set (match_operand:VHSDF 0 "register_operand" "=w")
        (abs:VHSDF (match_operand:VHSDF 1 "register_operand" "w")))]
  "TARGET_SIMD"
@@ -3228,7 +3228,7 @@
 
 ;; Vector versions of the floating-point frint patterns.
 ;; Expands to btrunc, ceil, floor, nearbyint, rint, round, frintn.
-(define_insn "<frint_pattern><mode>2"
+(define_insn "<frint_pattern><mode>2<vczle><vczbe>"
   [(set (match_operand:VHSDF 0 "register_operand" "=w")
 	(unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")]
 		       FRINT))]
@@ -3583,7 +3583,7 @@
 ;; Vector forms for fmax, fmin, fmaxnm, fminnm.
 ;; fmaxnm and fminnm are used for the fmax<mode>3 standard pattern names,
 ;; which implement the IEEE fmax ()/fmin () functions.
-(define_insn "<fmaxmin><mode>3"
+(define_insn "<fmaxmin><mode>3<vczle><vczbe>"
   [(set (match_operand:VHSDF 0 "register_operand" "=w")
        (unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")
 		      (match_operand:VHSDF 2 "register_operand" "w")]
@@ -6960,7 +6960,7 @@
     DONE;
 })
 
-(define_insn "*sqrt<mode>2"
+(define_insn "*sqrt<mode>2<vczle><vczbe>"
   [(set (match_operand:VHSDF 0 "register_operand" "=w")
 	(sqrt:VHSDF (match_operand:VHSDF 1 "register_operand" "w")))]
   "TARGET_SIMD"
