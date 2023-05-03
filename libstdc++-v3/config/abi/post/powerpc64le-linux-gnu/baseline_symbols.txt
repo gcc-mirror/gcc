@@ -4491,6 +4491,7 @@ FUNC:_ZNSt9type_infoD1Ev@@GLIBCXX_3.4
 FUNC:_ZNSt9type_infoD2Ev@@GLIBCXX_3.4
 FUNC:_ZNVSt9__atomic011atomic_flag12test_and_setESt12memory_order@@GLIBCXX_3.4.11
 FUNC:_ZNVSt9__atomic011atomic_flag5clearESt12memory_order@@GLIBCXX_3.4.11
+FUNC:_ZSt10from_charsPKcS0_RDF128_St12chars_format@@GLIBCXX_3.4.31
 FUNC:_ZSt10from_charsPKcS0_RdSt12chars_format@@GLIBCXX_3.4.29
 FUNC:_ZSt10from_charsPKcS0_ReSt12chars_format@@GLIBCXX_3.4.29
 FUNC:_ZSt10from_charsPKcS0_RfSt12chars_format@@GLIBCXX_3.4.29
@@ -4641,6 +4642,9 @@ FUNC:_ZSt7getlineIwSt11char_traitsIwESaIwEERSt13basic_istreamIT_T0_ES7_RNSt7__cx
 FUNC:_ZSt7getlineIwSt11char_traitsIwESaIwEERSt13basic_istreamIT_T0_ES7_RNSt7__cxx1112basic_stringIS4_S5_T1_EES4_@@GLIBCXX_3.4.21
 FUNC:_ZSt7getlineIwSt11char_traitsIwESaIwEERSt13basic_istreamIT_T0_ES7_RSbIS4_S5_T1_E@@GLIBCXX_3.4
 FUNC:_ZSt7getlineIwSt11char_traitsIwESaIwEERSt13basic_istreamIT_T0_ES7_RSbIS4_S5_T1_ES4_@@GLIBCXX_3.4
+FUNC:_ZSt8to_charsPcS_DF128_@@GLIBCXX_3.4.31
+FUNC:_ZSt8to_charsPcS_DF128_St12chars_format@@GLIBCXX_3.4.31
+FUNC:_ZSt8to_charsPcS_DF128_St12chars_formati@@GLIBCXX_3.4.31
 FUNC:_ZSt8to_charsPcS_d@@GLIBCXX_3.4.29
 FUNC:_ZSt8to_charsPcS_dSt12chars_format@@GLIBCXX_3.4.29
 FUNC:_ZSt8to_charsPcS_dSt12chars_formati@@GLIBCXX_3.4.29
