@@ -1,3 +1,10 @@
+2023-05-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109642
+	PR c++/109640
+	PR c++/109671
+	* c.opt (Wdangling-reference): Move from -Wall to -Wextra.
+
 2023-04-26  Release Manager
 
 	* GCC 13.1.0 released.

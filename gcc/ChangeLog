@@ -1,3 +1,11 @@
+2023-05-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109642
+	PR c++/109640
+	PR c++/109671
+	* doc/invoke.texi: Document that -Wdangling-reference is
+	enabled by -Wextra.
+
 2023-04-28  Andrew Stubbs  <ams@codesourcery.com>
 
 	Backported from master:

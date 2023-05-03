@@ -1,3 +1,22 @@
+2023-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109666
+	* g++.dg/cpp0x/nsdmi-array2.C: New test.
+
+2023-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/108099
+	* g++.dg/ext/int128-8.C: New test.
+	* g++.dg/ext/unsigned-typedef2.C: New test.
+	* g++.dg/ext/unsigned-typedef3.C: New test.
+
+2023-05-02  Jan Beulich  <jbeulich@suse.com>
+
+	* c-c++-common/patchable_function_entry-decl.c: Special-case
+	RISC-V.
+	* c-c++-common/patchable_function_entry-default.c: Likewise.
+	* c-c++-common/patchable_function_entry-definition.c: Likewise.
+
 2023-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
