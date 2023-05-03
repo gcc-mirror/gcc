@@ -1,20 +1,3 @@
-// Copyright (C) 2013-2023 Free Software Foundation, Inc.
-//
-// This file is part of the GNU ISO C++ Library.  This library is free
-// software; you can redistribute it and/or modify it under the
-// terms of the GNU General Public License as published by the
-// Free Software Foundation; either version 3, or (at your option)
-// any later version.
-
-// This library is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License along
-// with this library; see the file COPYING3.  If not see
-// <http://www.gnu.org/licenses/>.
-
 // { dg-do run { target c++11 } }
 
 #include <testsuite_performance.h>
@@ -55,18 +38,18 @@ namespace
   };
 
   template<typename _Hash>
-    using ums_t = std::unordered_multiset<std::string, _Hash>;
+    using us_t = std::unordered_set<std::string, _Hash>;
 
   template<typename _Hash>
     void
     insert_with_perfect_hint(const std::vector<std::string>& strs,
-			     ums_t<_Hash>& ms)
+			     us_t<_Hash>& s)
     {
-      auto hint = ms.end();
+      auto hint = s.end();
       for (auto str : strs)
 	{
-	  auto insert_pos = ms.insert(hint, str);
-	  if (std::next(insert_pos) == ms.end())
+	  auto insert_pos = s.insert(hint, str);
+	  if (std::next(insert_pos) == s.end())
 	    hint = insert_pos;
 	}
     }
@@ -74,31 +57,31 @@ namespace
   template<typename _Hash>
     void
     insert_with_bad_hint(const std::vector<std::string>& strs,
-			 ums_t<_Hash>& ms)
+			 us_t<_Hash>& s)
     {
-      auto hint = ms.begin();
+      auto hint = s.begin();
       for (auto str : strs)
 	{
-	  auto insert_pos = ms.insert(hint, str);
+	  auto insert_pos = s.insert(hint, str);
 	  if (std::next(insert_pos) == hint)
-	    hint = ms.begin();
+	    hint = s.begin();
 	}
     }
 
   template<typename _Hash>
     void
     insert_without_hint(const std::vector<std::string>& strs,
-			ums_t<_Hash>& ms)
+			us_t<_Hash>& s)
     {
       for (auto str : strs)
-	ms.insert(str);
+	s.insert(str);
     }
 
   template<typename _Hash>
     void
     insert_range(const std::vector<std::string>& strs,
-		 ums_t<_Hash>& ms)
-    { ms.insert(strs.begin(), strs.end()); }
+		 us_t<_Hash>& s)
+    { s.insert(strs.begin(), strs.end()); }
 }
 
 template<typename _Hash>
@@ -118,13 +101,13 @@ template<typename _Hash>
 	strs.push_back(osstr.str());
       }
 
-    ums_t<_Hash> ms;
-    ms.reserve(sz);
+    us_t<_Hash> s;
+    s.reserve(sz);
 
     // Warm up.
     {
       for (auto str : strs)
-	ms.insert(str);
+	s.insert(str);
     }
 
     time_counter time_no_hint, time_bad_hint, time_perfect_hint,
@@ -136,33 +119,33 @@ template<typename _Hash>
       {
 	// Bad hint
 	{
-	  ms.clear();
+	  s.clear();
 	  start_counters(time_bad_hint, resource_bad_hint);
-	  insert_with_bad_hint(strs, ms);
+	  insert_with_bad_hint(strs, s);
 	  stop_counters(time_bad_hint, resource_bad_hint);
 	}
 
 	// No hint
 	{
-	  ms.clear();
+	  s.clear();
 	  start_counters(time_no_hint, resource_no_hint);
-	  insert_without_hint(strs, ms);
+	  insert_without_hint(strs, s);
 	  stop_counters(time_no_hint, resource_no_hint);
 	}
 
 	// Perfect hint
 	{
-	  ms.clear();
+	  s.clear();
 	  start_counters(time_perfect_hint, resource_perfect_hint);
-	  insert_with_perfect_hint(strs, ms);
+	  insert_with_perfect_hint(strs, s);
 	  stop_counters(time_perfect_hint, resource_perfect_hint);
 	}
 
 	// Range insert
 	{
-	  ms.clear();
+	  s.clear();
 	  start_counters(time_range, resource_range);
-	  insert_range(strs, ms);
+	  insert_range(strs, s);
 	  stop_counters(time_range, resource_range);
 	}
       }
