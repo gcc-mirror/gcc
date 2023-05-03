@@ -5938,6 +5938,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
 
 	 So tell check_explicit_specialization to look for a match.  */
       SET_DECL_IMPLICIT_INSTANTIATION (decl);
+      DECL_TEMPLATE_INFO (decl) = build_template_info (old, NULL_TREE);
       return;
     }
 

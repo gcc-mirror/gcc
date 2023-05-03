@@ -855,6 +855,7 @@ check_classfn (tree ctype, tree function, tree template_parms)
 
 	 So tell check_explicit_specialization to look for a match.  */
       SET_DECL_IMPLICIT_INSTANTIATION (function);
+      DECL_TEMPLATE_INFO (function) = build_template_info (fns, NULL_TREE);
       matched = function;
     }
 
