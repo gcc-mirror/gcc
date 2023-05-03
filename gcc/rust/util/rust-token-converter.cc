@@ -299,18 +299,23 @@ convert (std::vector<TokenPtr> tokens)
 
 static void
 from_tokenstream (const ProcMacro::TokenStream &ts,
-		  std::vector<TokenPtr> &result);
+		  std::vector<const_TokenPtr> &result);
 
 static void
-from_ident (ProcMacro::Ident ident, std::vector<TokenPtr> &result)
+from_ident (ProcMacro::Ident ident, std::vector<const_TokenPtr> &result)
 {}
 
 static void
-from_literal (ProcMacro::Literal literal, std::vector<TokenPtr> &result)
+from_literal (ProcMacro::Literal literal, std::vector<const_TokenPtr> &result)
 {}
 
+/**
+ *
+ * @param acc Reference to an accumulator for joined Punct.
+ */
 static void
-from_punct (ProcMacro::Punct punct, std::vector<TokenPtr> &result)
+from_punct (const ProcMacro::Punct &punct, std::vector<std::uint32_t> &acc,
+	    std::vector<const_TokenPtr> &result)
 {}
 
 /**
@@ -321,7 +326,7 @@ from_punct (ProcMacro::Punct punct, std::vector<TokenPtr> &result)
  * @param result Reference to the vector tokens should be appended to.
  */
 static void
-from_group (const ProcMacro::Group &g, std::vector<TokenPtr> &result)
+from_group (const ProcMacro::Group &g, std::vector<const_TokenPtr> &result)
 {
   switch (g.delimiter)
     {
@@ -352,10 +357,13 @@ from_group (const ProcMacro::Group &g, std::vector<TokenPtr> &result)
  * Dispatch TokenTree's conversion to its inner type depending on its tag.
  *
  * @param tt Reference to the TokenTree.
+ * @param punct_accumulator Reference to an accumulator for joined Punct.
  * @param result Reference to the vector tokens should be appended to.
  */
 static void
-from_tokentree (const ProcMacro::TokenTree &tt, std::vector<TokenPtr> &result)
+from_tokentree (const ProcMacro::TokenTree &tt,
+		std::vector<std::uint32_t> &punct_accumulator,
+		std::vector<const_TokenPtr> &result)
 {
   switch (tt.tag)
     {
@@ -366,7 +374,7 @@ from_tokentree (const ProcMacro::TokenTree &tt, std::vector<TokenPtr> &result)
       from_ident (tt.payload.ident, result);
       break;
     case ProcMacro::PUNCT:
-      from_punct (tt.payload.punct, result);
+      from_punct (tt.payload.punct, punct_accumulator, result);
       break;
     case ProcMacro::LITERAL:
       from_literal (tt.payload.literal, result);
@@ -384,18 +392,19 @@ from_tokentree (const ProcMacro::TokenTree &tt, std::vector<TokenPtr> &result)
  */
 static void
 from_tokenstream (const ProcMacro::TokenStream &ts,
-		  std::vector<TokenPtr> &result)
+		  std::vector<const_TokenPtr> &result)
 {
+  std::vector<std::uint32_t> punct_accumulator;
   for (std::uint64_t i = 0; i < ts.size; i++)
     {
-      from_tokentree (ts.data[i], result);
+      from_tokentree (ts.data[i], punct_accumulator, result);
     }
 }
 
-std::vector<TokenPtr>
+std::vector<const_TokenPtr>
 convert (ProcMacro::TokenStream ts)
 {
-  std::vector<TokenPtr> result;
+  std::vector<const_TokenPtr> result;
   from_tokenstream (ts, result);
   return result;
 }
