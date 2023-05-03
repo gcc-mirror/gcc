@@ -89,7 +89,7 @@ single_non_singleton_phi_for_edges (gimple_seq seq, edge e0, edge e1)
 static void
 replace_phi_edge_with_variable (basic_block cond_block,
 				edge e, gphi *phi, tree new_tree,
-				bitmap dce_ssa_names = auto_bitmap())
+				bitmap dce_ssa_names = nullptr)
 {
   basic_block bb = gimple_bb (phi);
   gimple_stmt_iterator gsi;
@@ -164,7 +164,8 @@ replace_phi_edge_with_variable (basic_block cond_block,
 	gimple_cond_make_true (cond);
     }
 
-  simple_dce_from_worklist (dce_ssa_names);
+  if (dce_ssa_names)
+    simple_dce_from_worklist (dce_ssa_names);
 
   statistics_counter_event (cfun, "Replace PHI with variable", 1);
 
