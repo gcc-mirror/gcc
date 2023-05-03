@@ -1862,14 +1862,7 @@ package body Sem_Aggr is
 
          Expr := Expression (N);
 
-         if Nkind (Expr) = N_Aggregate then
-            --  If the expression is an aggregate, this is a multidimensional
-            --  aggregate where the component type must be propagated downward.
-
-            Dummy := Resolve_Aggr_Expr (Expr, Single_Elmt => False);
-         else
-            Preanalyze_And_Resolve (Expr, Component_Typ);
-         end if;
+         Dummy := Resolve_Aggr_Expr (Expr, Single_Elmt => False);
 
          if Operating_Mode /= Check_Semantics then
             Remove_References (Expr);
