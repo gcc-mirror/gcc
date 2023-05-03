@@ -1299,7 +1299,9 @@ all-host: maybe-all-libctf
 @if libsframe-no-bootstrap
 all-host: maybe-all-libsframe
 @endif libsframe-no-bootstrap
+@if libgrust-no-bootstrap
 all-host: maybe-all-libgrust
+@endif libgrust-no-bootstrap
 
 .PHONY: all-target
 
@@ -43623,7 +43625,6 @@ configure-libgrust: stage_current
 @if libgrust
 maybe-configure-libgrust: configure-libgrust
 configure-libgrust: 
-	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	test ! -f $(HOST_SUBDIR)/libgrust/Makefile || exit 0; \
@@ -43647,6 +43648,304 @@ configure-libgrust:
 
 
 
+.PHONY: configure-stage1-libgrust maybe-configure-stage1-libgrust
+maybe-configure-stage1-libgrust:
+@if libgrust-bootstrap
+maybe-configure-stage1-libgrust: configure-stage1-libgrust
+configure-stage1-libgrust:
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libgrust
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE1_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libgrust/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	CFLAGS="$(STAGE1_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE1_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(LIBCFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 1 in $(HOST_SUBDIR)/libgrust; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libgrust; \
+	cd $(HOST_SUBDIR)/libgrust || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libgrust/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libgrust; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	   \
+	  $(STAGE1_CONFIGURE_FLAGS)
+@endif libgrust-bootstrap
+
+.PHONY: configure-stage2-libgrust maybe-configure-stage2-libgrust
+maybe-configure-stage2-libgrust:
+@if libgrust-bootstrap
+maybe-configure-stage2-libgrust: configure-stage2-libgrust
+configure-stage2-libgrust:
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libgrust
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE2_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libgrust/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE2_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 2 in $(HOST_SUBDIR)/libgrust; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libgrust; \
+	cd $(HOST_SUBDIR)/libgrust || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libgrust/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libgrust; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE2_CONFIGURE_FLAGS)
+@endif libgrust-bootstrap
+
+.PHONY: configure-stage3-libgrust maybe-configure-stage3-libgrust
+maybe-configure-stage3-libgrust:
+@if libgrust-bootstrap
+maybe-configure-stage3-libgrust: configure-stage3-libgrust
+configure-stage3-libgrust:
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libgrust
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE3_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libgrust/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE3_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 3 in $(HOST_SUBDIR)/libgrust; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libgrust; \
+	cd $(HOST_SUBDIR)/libgrust || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libgrust/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libgrust; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE3_CONFIGURE_FLAGS)
+@endif libgrust-bootstrap
+
+.PHONY: configure-stage4-libgrust maybe-configure-stage4-libgrust
+maybe-configure-stage4-libgrust:
+@if libgrust-bootstrap
+maybe-configure-stage4-libgrust: configure-stage4-libgrust
+configure-stage4-libgrust:
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libgrust
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE4_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libgrust/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGE4_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage 4 in $(HOST_SUBDIR)/libgrust; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libgrust; \
+	cd $(HOST_SUBDIR)/libgrust || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libgrust/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libgrust; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGE4_CONFIGURE_FLAGS)
+@endif libgrust-bootstrap
+
+.PHONY: configure-stageprofile-libgrust maybe-configure-stageprofile-libgrust
+maybe-configure-stageprofile-libgrust:
+@if libgrust-bootstrap
+maybe-configure-stageprofile-libgrust: configure-stageprofile-libgrust
+configure-stageprofile-libgrust:
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libgrust
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEprofile_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libgrust/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGEprofile_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGEprofile_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGEprofile_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage profile in $(HOST_SUBDIR)/libgrust; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libgrust; \
+	cd $(HOST_SUBDIR)/libgrust || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libgrust/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libgrust; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEprofile_CONFIGURE_FLAGS)
+@endif libgrust-bootstrap
+
+.PHONY: configure-stagetrain-libgrust maybe-configure-stagetrain-libgrust
+maybe-configure-stagetrain-libgrust:
+@if libgrust-bootstrap
+maybe-configure-stagetrain-libgrust: configure-stagetrain-libgrust
+configure-stagetrain-libgrust:
+	@[ $(current_stage) = stagetrain ] || $(MAKE) stagetrain-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libgrust
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEtrain_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libgrust/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGEtrain_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGEtrain_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGEtrain_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage train in $(HOST_SUBDIR)/libgrust; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libgrust; \
+	cd $(HOST_SUBDIR)/libgrust || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libgrust/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libgrust; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEtrain_CONFIGURE_FLAGS)
+@endif libgrust-bootstrap
+
+.PHONY: configure-stagefeedback-libgrust maybe-configure-stagefeedback-libgrust
+maybe-configure-stagefeedback-libgrust:
+@if libgrust-bootstrap
+maybe-configure-stagefeedback-libgrust: configure-stagefeedback-libgrust
+configure-stagefeedback-libgrust:
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libgrust
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libgrust/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGEfeedback_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGEfeedback_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGEfeedback_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage feedback in $(HOST_SUBDIR)/libgrust; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libgrust; \
+	cd $(HOST_SUBDIR)/libgrust || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libgrust/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libgrust; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEfeedback_CONFIGURE_FLAGS)
+@endif libgrust-bootstrap
+
+.PHONY: configure-stageautoprofile-libgrust maybe-configure-stageautoprofile-libgrust
+maybe-configure-stageautoprofile-libgrust:
+@if libgrust-bootstrap
+maybe-configure-stageautoprofile-libgrust: configure-stageautoprofile-libgrust
+configure-stageautoprofile-libgrust:
+	@[ $(current_stage) = stageautoprofile ] || $(MAKE) stageautoprofile-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libgrust
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEautoprofile_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libgrust/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGEautoprofile_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGEautoprofile_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage autoprofile in $(HOST_SUBDIR)/libgrust; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libgrust; \
+	cd $(HOST_SUBDIR)/libgrust || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libgrust/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libgrust; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEautoprofile_CONFIGURE_FLAGS)
+@endif libgrust-bootstrap
+
+.PHONY: configure-stageautofeedback-libgrust maybe-configure-stageautofeedback-libgrust
+maybe-configure-stageautofeedback-libgrust:
+@if libgrust-bootstrap
+maybe-configure-stageautofeedback-libgrust: configure-stageautofeedback-libgrust
+configure-stageautofeedback-libgrust:
+	@[ $(current_stage) = stageautofeedback ] || $(MAKE) stageautofeedback-start
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libgrust
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEautofeedback_TFLAGS)"; \
+	test ! -f $(HOST_SUBDIR)/libgrust/Makefile || exit 0; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS) \
+	CFLAGS="$(STAGEautofeedback_CFLAGS)"; export CFLAGS; \
+	CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)"; export CXXFLAGS; \
+	LIBCFLAGS="$(STAGEautofeedback_CFLAGS)"; export LIBCFLAGS;  \
+	echo Configuring stage autofeedback in $(HOST_SUBDIR)/libgrust; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/libgrust; \
+	cd $(HOST_SUBDIR)/libgrust || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(HOST_SUBDIR)/libgrust/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libgrust; \
+	$(SHELL) $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
+	  --target=${target_alias} \
+	  --with-build-libsubdir=$(HOST_SUBDIR) \
+	  $(STAGEautofeedback_CONFIGURE_FLAGS)
+@endif libgrust-bootstrap
+
+
+
 
 
 .PHONY: all-libgrust maybe-all-libgrust
@@ -43658,7 +43957,6 @@ all-libgrust: stage_current
 TARGET-libgrust=all
 maybe-all-libgrust: all-libgrust
 all-libgrust: configure-libgrust
-	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
@@ -43666,6 +43964,396 @@ all-libgrust: configure-libgrust
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
 		$(TARGET-libgrust))
 @endif libgrust
+
+
+
+.PHONY: all-stage1-libgrust maybe-all-stage1-libgrust
+.PHONY: clean-stage1-libgrust maybe-clean-stage1-libgrust
+maybe-all-stage1-libgrust:
+maybe-clean-stage1-libgrust:
+@if libgrust-bootstrap
+maybe-all-stage1-libgrust: all-stage1-libgrust
+all-stage1: all-stage1-libgrust
+TARGET-stage1-libgrust = $(TARGET-libgrust)
+all-stage1-libgrust: configure-stage1-libgrust
+	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE1_TFLAGS)"; \
+	$(HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libgrust && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE1_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
+		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
+		LIBCFLAGS="$(LIBCFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS)  \
+		$(STAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE1_TFLAGS)"  \
+		$(TARGET-stage1-libgrust)
+
+maybe-clean-stage1-libgrust: clean-stage1-libgrust
+clean-stage1: clean-stage1-libgrust
+clean-stage1-libgrust:
+	@if [ $(current_stage) = stage1 ]; then \
+	  [ -f $(HOST_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage1-libgrust/Makefile ] || exit 0; \
+	  $(MAKE) stage1-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libgrust && \
+	$(MAKE) $(EXTRA_HOST_FLAGS)  \
+	$(STAGE1_FLAGS_TO_PASS)  clean
+@endif libgrust-bootstrap
+
+
+.PHONY: all-stage2-libgrust maybe-all-stage2-libgrust
+.PHONY: clean-stage2-libgrust maybe-clean-stage2-libgrust
+maybe-all-stage2-libgrust:
+maybe-clean-stage2-libgrust:
+@if libgrust-bootstrap
+maybe-all-stage2-libgrust: all-stage2-libgrust
+all-stage2: all-stage2-libgrust
+TARGET-stage2-libgrust = $(TARGET-libgrust)
+all-stage2-libgrust: configure-stage2-libgrust
+	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE2_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libgrust && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE2_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
+		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGE2_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE2_TFLAGS)"  \
+		$(TARGET-stage2-libgrust)
+
+maybe-clean-stage2-libgrust: clean-stage2-libgrust
+clean-stage2: clean-stage2-libgrust
+clean-stage2-libgrust:
+	@if [ $(current_stage) = stage2 ]; then \
+	  [ -f $(HOST_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage2-libgrust/Makefile ] || exit 0; \
+	  $(MAKE) stage2-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libgrust && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif libgrust-bootstrap
+
+
+.PHONY: all-stage3-libgrust maybe-all-stage3-libgrust
+.PHONY: clean-stage3-libgrust maybe-clean-stage3-libgrust
+maybe-all-stage3-libgrust:
+maybe-clean-stage3-libgrust:
+@if libgrust-bootstrap
+maybe-all-stage3-libgrust: all-stage3-libgrust
+all-stage3: all-stage3-libgrust
+TARGET-stage3-libgrust = $(TARGET-libgrust)
+all-stage3-libgrust: configure-stage3-libgrust
+	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE3_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libgrust && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE3_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
+		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGE3_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE3_TFLAGS)"  \
+		$(TARGET-stage3-libgrust)
+
+maybe-clean-stage3-libgrust: clean-stage3-libgrust
+clean-stage3: clean-stage3-libgrust
+clean-stage3-libgrust:
+	@if [ $(current_stage) = stage3 ]; then \
+	  [ -f $(HOST_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage3-libgrust/Makefile ] || exit 0; \
+	  $(MAKE) stage3-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libgrust && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif libgrust-bootstrap
+
+
+.PHONY: all-stage4-libgrust maybe-all-stage4-libgrust
+.PHONY: clean-stage4-libgrust maybe-clean-stage4-libgrust
+maybe-all-stage4-libgrust:
+maybe-clean-stage4-libgrust:
+@if libgrust-bootstrap
+maybe-all-stage4-libgrust: all-stage4-libgrust
+all-stage4: all-stage4-libgrust
+TARGET-stage4-libgrust = $(TARGET-libgrust)
+all-stage4-libgrust: configure-stage4-libgrust
+	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGE4_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libgrust && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGE4_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
+		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGE4_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGE4_TFLAGS)"  \
+		$(TARGET-stage4-libgrust)
+
+maybe-clean-stage4-libgrust: clean-stage4-libgrust
+clean-stage4: clean-stage4-libgrust
+clean-stage4-libgrust:
+	@if [ $(current_stage) = stage4 ]; then \
+	  [ -f $(HOST_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stage4-libgrust/Makefile ] || exit 0; \
+	  $(MAKE) stage4-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libgrust && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif libgrust-bootstrap
+
+
+.PHONY: all-stageprofile-libgrust maybe-all-stageprofile-libgrust
+.PHONY: clean-stageprofile-libgrust maybe-clean-stageprofile-libgrust
+maybe-all-stageprofile-libgrust:
+maybe-clean-stageprofile-libgrust:
+@if libgrust-bootstrap
+maybe-all-stageprofile-libgrust: all-stageprofile-libgrust
+all-stageprofile: all-stageprofile-libgrust
+TARGET-stageprofile-libgrust = $(TARGET-libgrust)
+all-stageprofile-libgrust: configure-stageprofile-libgrust
+	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEprofile_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libgrust && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGEprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
+		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGEprofile_TFLAGS)"  \
+		$(TARGET-stageprofile-libgrust)
+
+maybe-clean-stageprofile-libgrust: clean-stageprofile-libgrust
+clean-stageprofile: clean-stageprofile-libgrust
+clean-stageprofile-libgrust:
+	@if [ $(current_stage) = stageprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageprofile-libgrust/Makefile ] || exit 0; \
+	  $(MAKE) stageprofile-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libgrust && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif libgrust-bootstrap
+
+
+.PHONY: all-stagetrain-libgrust maybe-all-stagetrain-libgrust
+.PHONY: clean-stagetrain-libgrust maybe-clean-stagetrain-libgrust
+maybe-all-stagetrain-libgrust:
+maybe-clean-stagetrain-libgrust:
+@if libgrust-bootstrap
+maybe-all-stagetrain-libgrust: all-stagetrain-libgrust
+all-stagetrain: all-stagetrain-libgrust
+TARGET-stagetrain-libgrust = $(TARGET-libgrust)
+all-stagetrain-libgrust: configure-stagetrain-libgrust
+	@[ $(current_stage) = stagetrain ] || $(MAKE) stagetrain-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEtrain_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libgrust && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGEtrain_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
+		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGEtrain_TFLAGS)"  \
+		$(TARGET-stagetrain-libgrust)
+
+maybe-clean-stagetrain-libgrust: clean-stagetrain-libgrust
+clean-stagetrain: clean-stagetrain-libgrust
+clean-stagetrain-libgrust:
+	@if [ $(current_stage) = stagetrain ]; then \
+	  [ -f $(HOST_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagetrain-libgrust/Makefile ] || exit 0; \
+	  $(MAKE) stagetrain-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libgrust && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif libgrust-bootstrap
+
+
+.PHONY: all-stagefeedback-libgrust maybe-all-stagefeedback-libgrust
+.PHONY: clean-stagefeedback-libgrust maybe-clean-stagefeedback-libgrust
+maybe-all-stagefeedback-libgrust:
+maybe-clean-stagefeedback-libgrust:
+@if libgrust-bootstrap
+maybe-all-stagefeedback-libgrust: all-stagefeedback-libgrust
+all-stagefeedback: all-stagefeedback-libgrust
+TARGET-stagefeedback-libgrust = $(TARGET-libgrust)
+all-stagefeedback-libgrust: configure-stagefeedback-libgrust
+	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libgrust && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGEfeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
+		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGEfeedback_TFLAGS)"  \
+		$(TARGET-stagefeedback-libgrust)
+
+maybe-clean-stagefeedback-libgrust: clean-stagefeedback-libgrust
+clean-stagefeedback: clean-stagefeedback-libgrust
+clean-stagefeedback-libgrust:
+	@if [ $(current_stage) = stagefeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-libgrust/Makefile ] || exit 0; \
+	  $(MAKE) stagefeedback-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libgrust && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif libgrust-bootstrap
+
+
+.PHONY: all-stageautoprofile-libgrust maybe-all-stageautoprofile-libgrust
+.PHONY: clean-stageautoprofile-libgrust maybe-clean-stageautoprofile-libgrust
+maybe-all-stageautoprofile-libgrust:
+maybe-clean-stageautoprofile-libgrust:
+@if libgrust-bootstrap
+maybe-all-stageautoprofile-libgrust: all-stageautoprofile-libgrust
+all-stageautoprofile: all-stageautoprofile-libgrust
+TARGET-stageautoprofile-libgrust = $(TARGET-libgrust)
+all-stageautoprofile-libgrust: configure-stageautoprofile-libgrust
+	@[ $(current_stage) = stageautoprofile ] || $(MAKE) stageautoprofile-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEautoprofile_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libgrust && \
+	$$s/gcc/config/i386/$(AUTO_PROFILE) \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
+		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGEautoprofile_TFLAGS)"  \
+		$(TARGET-stageautoprofile-libgrust)
+
+maybe-clean-stageautoprofile-libgrust: clean-stageautoprofile-libgrust
+clean-stageautoprofile: clean-stageautoprofile-libgrust
+clean-stageautoprofile-libgrust:
+	@if [ $(current_stage) = stageautoprofile ]; then \
+	  [ -f $(HOST_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageautoprofile-libgrust/Makefile ] || exit 0; \
+	  $(MAKE) stageautoprofile-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libgrust && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif libgrust-bootstrap
+
+
+.PHONY: all-stageautofeedback-libgrust maybe-all-stageautofeedback-libgrust
+.PHONY: clean-stageautofeedback-libgrust maybe-clean-stageautofeedback-libgrust
+maybe-all-stageautofeedback-libgrust:
+maybe-clean-stageautofeedback-libgrust:
+@if libgrust-bootstrap
+maybe-all-stageautofeedback-libgrust: all-stageautofeedback-libgrust
+all-stageautofeedback: all-stageautofeedback-libgrust
+TARGET-stageautofeedback-libgrust = $(TARGET-libgrust)
+all-stageautofeedback-libgrust: configure-stageautofeedback-libgrust
+	@[ $(current_stage) = stageautofeedback ] || $(MAKE) stageautofeedback-start
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	TFLAGS="$(STAGEautofeedback_TFLAGS)"; \
+	$(HOST_EXPORTS) \
+	$(POSTSTAGE1_HOST_EXPORTS)  \
+	cd $(HOST_SUBDIR)/libgrust && \
+	 \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) \
+		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
+		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
+		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
+		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
+		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
+		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
+		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
+		TFLAGS="$(STAGEautofeedback_TFLAGS)" PERF_DATA=perf.data \
+		$(TARGET-stageautofeedback-libgrust)
+
+maybe-clean-stageautofeedback-libgrust: clean-stageautofeedback-libgrust
+clean-stageautofeedback: clean-stageautofeedback-libgrust
+clean-stageautofeedback-libgrust:
+	@if [ $(current_stage) = stageautofeedback ]; then \
+	  [ -f $(HOST_SUBDIR)/libgrust/Makefile ] || exit 0; \
+	else \
+	  [ -f $(HOST_SUBDIR)/stageautofeedback-libgrust/Makefile ] || exit 0; \
+	  $(MAKE) stageautofeedback-start; \
+	fi; \
+	cd $(HOST_SUBDIR)/libgrust && \
+	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
+@endif libgrust-bootstrap
+
 
 
 
@@ -43679,9 +44367,9 @@ check-libgrust:
 	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS)  \
+	$(HOST_EXPORTS) $(EXTRA_HOST_EXPORTS) \
 	(cd $(HOST_SUBDIR)/libgrust && \
-	  $(MAKE) $(FLAGS_TO_PASS)  check)
+	  $(MAKE) $(FLAGS_TO_PASS)  $(EXTRA_BOOTSTRAP_FLAGS) check)
 
 @endif libgrust
 
@@ -43724,7 +44412,6 @@ maybe-info-libgrust: info-libgrust
 
 info-libgrust: \
     configure-libgrust 
-	@: $(MAKE); $(unstage)
 	@[ -f ./libgrust/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -43750,7 +44437,6 @@ maybe-dvi-libgrust: dvi-libgrust
 
 dvi-libgrust: \
     configure-libgrust 
-	@: $(MAKE); $(unstage)
 	@[ -f ./libgrust/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -43776,7 +44462,6 @@ maybe-pdf-libgrust: pdf-libgrust
 
 pdf-libgrust: \
     configure-libgrust 
-	@: $(MAKE); $(unstage)
 	@[ -f ./libgrust/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -43802,7 +44487,6 @@ maybe-html-libgrust: html-libgrust
 
 html-libgrust: \
     configure-libgrust 
-	@: $(MAKE); $(unstage)
 	@[ -f ./libgrust/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -43828,7 +44512,6 @@ maybe-TAGS-libgrust: TAGS-libgrust
 
 TAGS-libgrust: \
     configure-libgrust 
-	@: $(MAKE); $(unstage)
 	@[ -f ./libgrust/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -43855,7 +44538,6 @@ maybe-install-info-libgrust: install-info-libgrust
 install-info-libgrust: \
     configure-libgrust \
     info-libgrust 
-	@: $(MAKE); $(unstage)
 	@[ -f ./libgrust/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -43882,7 +44564,6 @@ maybe-install-dvi-libgrust: install-dvi-libgrust
 install-dvi-libgrust: \
     configure-libgrust \
     dvi-libgrust 
-	@: $(MAKE); $(unstage)
 	@[ -f ./libgrust/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -43909,7 +44590,6 @@ maybe-install-pdf-libgrust: install-pdf-libgrust
 install-pdf-libgrust: \
     configure-libgrust \
     pdf-libgrust 
-	@: $(MAKE); $(unstage)
 	@[ -f ./libgrust/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -43936,7 +44616,6 @@ maybe-install-html-libgrust: install-html-libgrust
 install-html-libgrust: \
     configure-libgrust \
     html-libgrust 
-	@: $(MAKE); $(unstage)
 	@[ -f ./libgrust/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -43962,7 +44641,6 @@ maybe-installcheck-libgrust: installcheck-libgrust
 
 installcheck-libgrust: \
     configure-libgrust 
-	@: $(MAKE); $(unstage)
 	@[ -f ./libgrust/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -43987,7 +44665,6 @@ maybe-mostlyclean-libgrust:
 maybe-mostlyclean-libgrust: mostlyclean-libgrust
 
 mostlyclean-libgrust: 
-	@: $(MAKE); $(unstage)
 	@[ -f ./libgrust/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -44012,7 +44689,6 @@ maybe-clean-libgrust:
 maybe-clean-libgrust: clean-libgrust
 
 clean-libgrust: 
-	@: $(MAKE); $(unstage)
 	@[ -f ./libgrust/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -44037,7 +44713,6 @@ maybe-distclean-libgrust:
 maybe-distclean-libgrust: distclean-libgrust
 
 distclean-libgrust: 
-	@: $(MAKE); $(unstage)
 	@[ -f ./libgrust/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -44062,7 +44737,6 @@ maybe-maintainer-clean-libgrust:
 maybe-maintainer-clean-libgrust: maintainer-clean-libgrust
 
 maintainer-clean-libgrust: 
-	@: $(MAKE); $(unstage)
 	@[ -f ./libgrust/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -62960,6 +63634,11 @@ stage1-start::
 	  mkdir stage1-libsframe; \
 	mv stage1-libsframe libsframe
 @endif libsframe
+@if libgrust
+	@cd $(HOST_SUBDIR); [ -d stage1-libgrust ] || \
+	  mkdir stage1-libgrust; \
+	mv stage1-libgrust libgrust
+@endif libgrust
 	@[ -d stage1-$(TARGET_SUBDIR) ] || \
 	  mkdir stage1-$(TARGET_SUBDIR); \
 	mv stage1-$(TARGET_SUBDIR) $(TARGET_SUBDIR)
@@ -63085,6 +63764,11 @@ stage1-end::
 	  cd $(HOST_SUBDIR); mv libsframe stage1-libsframe; \
 	fi
 @endif libsframe
+@if libgrust
+	@if test -d $(HOST_SUBDIR)/libgrust; then \
+	  cd $(HOST_SUBDIR); mv libgrust stage1-libgrust; \
+	fi
+@endif libgrust
 	@if test -d $(TARGET_SUBDIR); then \
 	  mv $(TARGET_SUBDIR) stage1-$(TARGET_SUBDIR); \
 	fi
@@ -63277,6 +63961,12 @@ stage2-start::
 	mv stage2-libsframe libsframe; \
 	mv stage1-libsframe prev-libsframe || test -f stage1-lean 
 @endif libsframe
+@if libgrust
+	@cd $(HOST_SUBDIR); [ -d stage2-libgrust ] || \
+	  mkdir stage2-libgrust; \
+	mv stage2-libgrust libgrust; \
+	mv stage1-libgrust prev-libgrust || test -f stage1-lean 
+@endif libgrust
 	@[ -d stage2-$(TARGET_SUBDIR) ] || \
 	  mkdir stage2-$(TARGET_SUBDIR); \
 	mv stage2-$(TARGET_SUBDIR) $(TARGET_SUBDIR); \
@@ -63427,6 +64117,12 @@ stage2-end::
 	  mv prev-libsframe stage1-libsframe; : ; \
 	fi
 @endif libsframe
+@if libgrust
+	@if test -d $(HOST_SUBDIR)/libgrust; then \
+	  cd $(HOST_SUBDIR); mv libgrust stage2-libgrust; \
+	  mv prev-libgrust stage1-libgrust; : ; \
+	fi
+@endif libgrust
 	@if test -d $(TARGET_SUBDIR); then \
 	  mv $(TARGET_SUBDIR) stage2-$(TARGET_SUBDIR); \
 	  mv prev-$(TARGET_SUBDIR) stage1-$(TARGET_SUBDIR); : ; \
@@ -63643,6 +64339,12 @@ stage3-start::
 	mv stage3-libsframe libsframe; \
 	mv stage2-libsframe prev-libsframe || test -f stage2-lean 
 @endif libsframe
+@if libgrust
+	@cd $(HOST_SUBDIR); [ -d stage3-libgrust ] || \
+	  mkdir stage3-libgrust; \
+	mv stage3-libgrust libgrust; \
+	mv stage2-libgrust prev-libgrust || test -f stage2-lean 
+@endif libgrust
 	@[ -d stage3-$(TARGET_SUBDIR) ] || \
 	  mkdir stage3-$(TARGET_SUBDIR); \
 	mv stage3-$(TARGET_SUBDIR) $(TARGET_SUBDIR); \
@@ -63793,6 +64495,12 @@ stage3-end::
 	  mv prev-libsframe stage2-libsframe; : ; \
 	fi
 @endif libsframe
+@if libgrust
+	@if test -d $(HOST_SUBDIR)/libgrust; then \
+	  cd $(HOST_SUBDIR); mv libgrust stage3-libgrust; \
+	  mv prev-libgrust stage2-libgrust; : ; \
+	fi
+@endif libgrust
 	@if test -d $(TARGET_SUBDIR); then \
 	  mv $(TARGET_SUBDIR) stage3-$(TARGET_SUBDIR); \
 	  mv prev-$(TARGET_SUBDIR) stage2-$(TARGET_SUBDIR); : ; \
@@ -64065,6 +64773,12 @@ stage4-start::
 	mv stage4-libsframe libsframe; \
 	mv stage3-libsframe prev-libsframe || test -f stage3-lean 
 @endif libsframe
+@if libgrust
+	@cd $(HOST_SUBDIR); [ -d stage4-libgrust ] || \
+	  mkdir stage4-libgrust; \
+	mv stage4-libgrust libgrust; \
+	mv stage3-libgrust prev-libgrust || test -f stage3-lean 
+@endif libgrust
 	@[ -d stage4-$(TARGET_SUBDIR) ] || \
 	  mkdir stage4-$(TARGET_SUBDIR); \
 	mv stage4-$(TARGET_SUBDIR) $(TARGET_SUBDIR); \
@@ -64215,6 +64929,12 @@ stage4-end::
 	  mv prev-libsframe stage3-libsframe; : ; \
 	fi
 @endif libsframe
+@if libgrust
+	@if test -d $(HOST_SUBDIR)/libgrust; then \
+	  cd $(HOST_SUBDIR); mv libgrust stage4-libgrust; \
+	  mv prev-libgrust stage3-libgrust; : ; \
+	fi
+@endif libgrust
 	@if test -d $(TARGET_SUBDIR); then \
 	  mv $(TARGET_SUBDIR) stage4-$(TARGET_SUBDIR); \
 	  mv prev-$(TARGET_SUBDIR) stage3-$(TARGET_SUBDIR); : ; \
@@ -64475,6 +65195,12 @@ stageprofile-start::
 	mv stageprofile-libsframe libsframe; \
 	mv stage1-libsframe prev-libsframe || test -f stage1-lean 
 @endif libsframe
+@if libgrust
+	@cd $(HOST_SUBDIR); [ -d stageprofile-libgrust ] || \
+	  mkdir stageprofile-libgrust; \
+	mv stageprofile-libgrust libgrust; \
+	mv stage1-libgrust prev-libgrust || test -f stage1-lean 
+@endif libgrust
 	@[ -d stageprofile-$(TARGET_SUBDIR) ] || \
 	  mkdir stageprofile-$(TARGET_SUBDIR); \
 	mv stageprofile-$(TARGET_SUBDIR) $(TARGET_SUBDIR); \
@@ -64625,6 +65351,12 @@ stageprofile-end::
 	  mv prev-libsframe stage1-libsframe; : ; \
 	fi
 @endif libsframe
+@if libgrust
+	@if test -d $(HOST_SUBDIR)/libgrust; then \
+	  cd $(HOST_SUBDIR); mv libgrust stageprofile-libgrust; \
+	  mv prev-libgrust stage1-libgrust; : ; \
+	fi
+@endif libgrust
 	@if test -d $(TARGET_SUBDIR); then \
 	  mv $(TARGET_SUBDIR) stageprofile-$(TARGET_SUBDIR); \
 	  mv prev-$(TARGET_SUBDIR) stage1-$(TARGET_SUBDIR); : ; \
@@ -64818,6 +65550,12 @@ stagetrain-start::
 	mv stagetrain-libsframe libsframe; \
 	mv stageprofile-libsframe prev-libsframe || test -f stageprofile-lean 
 @endif libsframe
+@if libgrust
+	@cd $(HOST_SUBDIR); [ -d stagetrain-libgrust ] || \
+	  mkdir stagetrain-libgrust; \
+	mv stagetrain-libgrust libgrust; \
+	mv stageprofile-libgrust prev-libgrust || test -f stageprofile-lean 
+@endif libgrust
 	@[ -d stagetrain-$(TARGET_SUBDIR) ] || \
 	  mkdir stagetrain-$(TARGET_SUBDIR); \
 	mv stagetrain-$(TARGET_SUBDIR) $(TARGET_SUBDIR); \
@@ -64968,6 +65706,12 @@ stagetrain-end::
 	  mv prev-libsframe stageprofile-libsframe; : ; \
 	fi
 @endif libsframe
+@if libgrust
+	@if test -d $(HOST_SUBDIR)/libgrust; then \
+	  cd $(HOST_SUBDIR); mv libgrust stagetrain-libgrust; \
+	  mv prev-libgrust stageprofile-libgrust; : ; \
+	fi
+@endif libgrust
 	@if test -d $(TARGET_SUBDIR); then \
 	  mv $(TARGET_SUBDIR) stagetrain-$(TARGET_SUBDIR); \
 	  mv prev-$(TARGET_SUBDIR) stageprofile-$(TARGET_SUBDIR); : ; \
@@ -65161,6 +65905,12 @@ stagefeedback-start::
 	mv stagefeedback-libsframe libsframe; \
 	mv stagetrain-libsframe prev-libsframe || test -f stagetrain-lean 
 @endif libsframe
+@if libgrust
+	@cd $(HOST_SUBDIR); [ -d stagefeedback-libgrust ] || \
+	  mkdir stagefeedback-libgrust; \
+	mv stagefeedback-libgrust libgrust; \
+	mv stagetrain-libgrust prev-libgrust || test -f stagetrain-lean 
+@endif libgrust
 	@[ -d stagefeedback-$(TARGET_SUBDIR) ] || \
 	  mkdir stagefeedback-$(TARGET_SUBDIR); \
 	mv stagefeedback-$(TARGET_SUBDIR) $(TARGET_SUBDIR); \
@@ -65311,6 +66061,12 @@ stagefeedback-end::
 	  mv prev-libsframe stagetrain-libsframe; : ; \
 	fi
 @endif libsframe
+@if libgrust
+	@if test -d $(HOST_SUBDIR)/libgrust; then \
+	  cd $(HOST_SUBDIR); mv libgrust stagefeedback-libgrust; \
+	  mv prev-libgrust stagetrain-libgrust; : ; \
+	fi
+@endif libgrust
 	@if test -d $(TARGET_SUBDIR); then \
 	  mv $(TARGET_SUBDIR) stagefeedback-$(TARGET_SUBDIR); \
 	  mv prev-$(TARGET_SUBDIR) stagetrain-$(TARGET_SUBDIR); : ; \
@@ -65527,6 +66283,12 @@ stageautoprofile-start::
 	mv stageautoprofile-libsframe libsframe; \
 	mv stage1-libsframe prev-libsframe || test -f stage1-lean 
 @endif libsframe
+@if libgrust
+	@cd $(HOST_SUBDIR); [ -d stageautoprofile-libgrust ] || \
+	  mkdir stageautoprofile-libgrust; \
+	mv stageautoprofile-libgrust libgrust; \
+	mv stage1-libgrust prev-libgrust || test -f stage1-lean 
+@endif libgrust
 	@[ -d stageautoprofile-$(TARGET_SUBDIR) ] || \
 	  mkdir stageautoprofile-$(TARGET_SUBDIR); \
 	mv stageautoprofile-$(TARGET_SUBDIR) $(TARGET_SUBDIR); \
@@ -65677,6 +66439,12 @@ stageautoprofile-end::
 	  mv prev-libsframe stage1-libsframe; : ; \
 	fi
 @endif libsframe
+@if libgrust
+	@if test -d $(HOST_SUBDIR)/libgrust; then \
+	  cd $(HOST_SUBDIR); mv libgrust stageautoprofile-libgrust; \
+	  mv prev-libgrust stage1-libgrust; : ; \
+	fi
+@endif libgrust
 	@if test -d $(TARGET_SUBDIR); then \
 	  mv $(TARGET_SUBDIR) stageautoprofile-$(TARGET_SUBDIR); \
 	  mv prev-$(TARGET_SUBDIR) stage1-$(TARGET_SUBDIR); : ; \
@@ -65870,6 +66638,12 @@ stageautofeedback-start::
 	mv stageautofeedback-libsframe libsframe; \
 	mv stageautoprofile-libsframe prev-libsframe || test -f stageautoprofile-lean 
 @endif libsframe
+@if libgrust
+	@cd $(HOST_SUBDIR); [ -d stageautofeedback-libgrust ] || \
+	  mkdir stageautofeedback-libgrust; \
+	mv stageautofeedback-libgrust libgrust; \
+	mv stageautoprofile-libgrust prev-libgrust || test -f stageautoprofile-lean 
+@endif libgrust
 	@[ -d stageautofeedback-$(TARGET_SUBDIR) ] || \
 	  mkdir stageautofeedback-$(TARGET_SUBDIR); \
 	mv stageautofeedback-$(TARGET_SUBDIR) $(TARGET_SUBDIR); \
@@ -66020,6 +66794,12 @@ stageautofeedback-end::
 	  mv prev-libsframe stageautoprofile-libsframe; : ; \
 	fi
 @endif libsframe
+@if libgrust
+	@if test -d $(HOST_SUBDIR)/libgrust; then \
+	  cd $(HOST_SUBDIR); mv libgrust stageautofeedback-libgrust; \
+	  mv prev-libgrust stageautoprofile-libgrust; : ; \
+	fi
+@endif libgrust
 	@if test -d $(TARGET_SUBDIR); then \
 	  mv $(TARGET_SUBDIR) stageautofeedback-$(TARGET_SUBDIR); \
 	  mv prev-$(TARGET_SUBDIR) stageautoprofile-$(TARGET_SUBDIR); : ; \

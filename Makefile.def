@@ -147,7 +147,7 @@ host_modules= { module= libcc1; extra_configure_flags=--enable-shared; };
 host_modules= { module= gotools; };
 host_modules= { module= libctf; bootstrap=true; };
 host_modules= { module= libsframe; bootstrap=true; };
-host_modules= { module= libgrust; };
+host_modules= { module= libgrust; bootstrap=true; };
 
 target_modules = { module= libstdc++-v3;
 		   bootstrap=true;
