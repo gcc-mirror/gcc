@@ -43,6 +43,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "opts.h"
 
+struct cp_fold_data
+{
+  hash_set<tree> pset;
+  bool genericize; // called from cp_fold_function?
+
+  cp_fold_data (bool g): genericize (g) {}
+};
+
 /* Forward declarations.  */
 
 static tree cp_genericize_r (tree *, int *, void *);
@@ -487,8 +495,8 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	*expr_p = expand_vec_init_expr (NULL_TREE, *expr_p,
 					tf_warning_or_error);
 
-	hash_set<tree> pset;
-	cp_walk_tree (expr_p, cp_fold_r, &pset, NULL);
+	cp_fold_data data (/*genericize*/true);
+	cp_walk_tree (expr_p, cp_fold_r, &data, NULL);
 	cp_genericize_tree (expr_p, false);
 	copy_if_shared (expr_p);
 	ret = GS_OK;
@@ -962,14 +970,6 @@ struct cp_genericize_data
      the middle-end.  As for now we have most foldings only on GENERIC
      in fold-const, we need to perform this before transformation to
      GIMPLE-form.  */
-
-struct cp_fold_data
-{
-  hash_set<tree> pset;
-  bool genericize; // called from cp_fold_function?
-
-  cp_fold_data (bool g): genericize (g) {}
-};
 
 static tree
 cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
