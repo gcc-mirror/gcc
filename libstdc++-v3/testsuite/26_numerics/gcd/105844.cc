@@ -19,3 +19,5 @@ constexpr int b = std::gcd(1, INT_MIN); // { dg-error "overflow" }
 // And |LLONG_MIN| cannot be represented in long.
 constexpr long long c = std::gcd(LLONG_MIN, 1); // { dg-error "overflow" }
 constexpr long long d = std::gcd(1, LLONG_MIN); // { dg-error "overflow" }
+
+// { dg-prune-output "in 'constexpr' expansion" }

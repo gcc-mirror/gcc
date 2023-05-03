@@ -189,9 +189,11 @@ namespace __detail
 	return 0;
       _Ct __r = __m2 / __detail::__gcd<make_unsigned_t<_Ct>>(__m2, __n2);
 
+#if defined _GLIBCXX_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
       if constexpr (is_signed_v<_Ct>)
-	if (__is_constant_evaluated())
+	if (__builtin_is_constant_evaluated())
 	  return __r * __n2; // constant evaluation can detect overflow here.
+#endif
 
       bool __overflow = __builtin_mul_overflow(__r, __n2, &__r);
       __glibcxx_assert(!__overflow);
