@@ -720,6 +720,7 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
   gimple *stmt_to_move = NULL;
   gimple *stmt_to_move_alt = NULL;
   auto_bitmap inserted_exprs;
+  tree arg_true, arg_false;
 
   /* Special case A ? B : B as this will always simplify to B. */
   if (operand_equal_for_phi_arg_p (arg0, arg1))
@@ -750,12 +751,34 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
   /* We need to know which is the true edge and which is the false
      edge so that we know when to invert the condition below.  */
   extract_true_false_edges_from_block (cond_bb, &true_edge, &false_edge);
-  if (e1 == true_edge || e0 == false_edge)
-    std::swap (arg0, arg1);
+
+  /* Forward the edges over the middle basic block.  */
+  if (true_edge->dest == middle_bb)
+    true_edge = EDGE_SUCC (true_edge->dest, 0);
+  if (false_edge->dest == middle_bb)
+    false_edge = EDGE_SUCC (false_edge->dest, 0);
+
+  /* When THREEWAY_P then e1 will point to the edge of the final transition
+     from middle-bb to end.  */
+  if (true_edge == e0)
+    {
+      if (!threeway_p)
+	gcc_assert (false_edge == e1);
+      arg_true = arg0;
+      arg_false = arg1;
+    }
+  else
+    {
+      gcc_assert (false_edge == e0);
+      if (!threeway_p)
+	gcc_assert (true_edge == e1);
+      arg_true = arg1;
+      arg_false = arg0;
+    }
 
   tree type = TREE_TYPE (gimple_phi_result (phi));
   result = gimple_simplify_phiopt (early_p, type, stmt,
-				   arg0, arg1,
+				   arg_true, arg_false,
 				   &seq);
   if (!result)
     return false;
