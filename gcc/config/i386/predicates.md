@@ -32,6 +32,11 @@
   (and (match_code "reg")
        (match_test "GENERAL_REGNO_P (REGNO (op))")))
 
+;; True if the operand is an INDEX class register.
+(define_predicate "index_reg_operand"
+  (and (match_code "reg")
+       (match_test "INDEX_REGNO_P (REGNO (op))")))
+
 ;; True if the operand is a nonimmediate operand with GENERAL class register.
 (define_predicate "nonimmediate_gr_operand"
   (if_then_else (match_code "reg")
