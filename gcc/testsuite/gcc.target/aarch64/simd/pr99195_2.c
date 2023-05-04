@@ -53,7 +53,11 @@ OPFIVE (T, IS, OS, S, OP6, OP7, OP8, OP9, OP10)
 OPFIVE (T, IS, OS, S, OP1, OP2, OP3, OP4, OP5)                \
 OPSIX (T, IS, OS, S, OP6, OP7, OP8, OP9, OP10, OP11)
 
-OPEIGHT (float16, 4, 8, f16, add, sub, mul, div, max, maxnm, min, minnm)
+#define OPTHIRTEEN(T,IS,OS,S,OP1,OP2,OP3,OP4,OP5,OP6,OP7,OP8,OP9,OP10,OP11,OP12,OP13)        \
+OPSIX (T, IS, OS, S, OP1, OP2, OP3, OP4, OP5, OP6)                \
+OPSEVEN (T, IS, OS, S, OP7, OP8, OP9, OP10, OP11, OP12, OP13)
+
+OPTHIRTEEN (float16, 4, 8, f16, add, sub, mul, div, max, maxnm, min, minnm, abd, pmax, pmin, pmaxnm, pminnm)
 
 #define UNARY(OT,IT,OP,S)			\
 OT                                              \

@@ -57,15 +57,19 @@ OPSIX (T, IS, OS, S, OP6, OP7, OP8, OP9, OP10, OP11)
 OPSEVEN (T, IS, OS, S, OP1, OP2, OP3, OP4, OP5, OP6, OP7)                \
 OPSEVEN (T, IS, OS, S, OP8, OP9, OP10, OP11, OP12, OP13, OP14)
 
-OPFOURTEEN (int8, 8, 16, s8, padd, add, sub, mul, and, orr, eor, orn, bic, max, min, hadd, rhadd, hsub)
-OPFOURTEEN (int16, 4, 8, s16, padd, add, sub, mul, and, orr, eor, orn, bic, max, min, hadd, rhadd, hsub)
-OPFOURTEEN (int32, 2, 4, s32, padd, add, sub, mul, and, orr, eor, orn, bic, max, min, hadd, rhadd, hsub)
+#define OPSEVENTEEN(T,IS,OS,S,OP1,OP2,OP3,OP4,OP5,OP6,OP7,OP8,OP9,OP10,OP11,OP12,OP13,OP14,OP15,OP16,OP17)        \
+OPSEVEN (T, IS, OS, S, OP1, OP2, OP3, OP4, OP5, OP6, OP7)                \
+OPTEN (T, IS, OS, S, OP8, OP9, OP10, OP11, OP12, OP13, OP14, OP15, OP16, OP17)
 
-OPFOURTEEN (uint8, 8, 16, u8, padd, add, sub, mul, and, orr, eor, orn, bic, max, min, hadd, rhadd, hsub)
-OPFOURTEEN (uint16, 4, 8, u16, padd, add, sub, mul, and, orr, eor, orn, bic, max, min, hadd, rhadd, hsub)
-OPFOURTEEN (uint32, 2, 4, u32, padd, add, sub, mul, and, orr, eor, orn, bic, max, min, hadd, rhadd, hsub)
+OPSEVENTEEN (int8, 8, 16, s8, padd, add, sub, mul, and, orr, eor, orn, bic, max, min, hadd, rhadd, hsub, abd, pmax, pmin)
+OPSEVENTEEN (int16, 4, 8, s16, padd, add, sub, mul, and, orr, eor, orn, bic, max, min, hadd, rhadd, hsub, abd, pmax, pmin)
+OPSEVENTEEN (int32, 2, 4, s32, padd, add, sub, mul, and, orr, eor, orn, bic, max, min, hadd, rhadd, hsub, abd, pmax, pmin)
 
-OPEIGHT (float32, 2, 4, f32, add, sub, mul, div, max, maxnm, min, minnm)
+OPSEVENTEEN (uint8, 8, 16, u8, padd, add, sub, mul, and, orr, eor, orn, bic, max, min, hadd, rhadd, hsub, abd, pmax, pmin)
+OPSEVENTEEN (uint16, 4, 8, u16, padd, add, sub, mul, and, orr, eor, orn, bic, max, min, hadd, rhadd, hsub, abd, pmax, pmin)
+OPSEVENTEEN (uint32, 2, 4, u32, padd, add, sub, mul, and, orr, eor, orn, bic, max, min, hadd, rhadd, hsub, abd, pmax, pmin)
+
+OPFOURTEEN (float32, 2, 4, f32, add, padd, sub, mul, div, max, maxnm, min, minnm, abd, pmax, pmin, pmaxnm, pminnm)
 
 #define UNARY(OT,IT,OP,S)			\
 OT                                              \

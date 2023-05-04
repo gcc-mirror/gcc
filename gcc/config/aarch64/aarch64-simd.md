@@ -915,7 +915,7 @@
 ;; So (ABS:QI (minus:QI 64 -128)) == (ABS:QI (192 or -64 signed)) == 64.
 ;; Whereas SABD would return 192 (-64 signed) on the above example.
 ;; Use MINUS ([us]max (op1, op2), [us]min (op1, op2)) instead.
-(define_insn "aarch64_<su>abd<mode>"
+(define_insn "aarch64_<su>abd<mode><vczle><vczbe>"
   [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
 	(minus:VDQ_BHSI
 	  (USMAX:VDQ_BHSI
@@ -1112,7 +1112,7 @@
   [(set_attr "type" "neon_arith_acc<q>")]
 )
 
-(define_insn "fabd<mode>3"
+(define_insn "fabd<mode>3<vczle><vczbe>"
   [(set (match_operand:VHSDF_HSDF 0 "register_operand" "=w")
 	(abs:VHSDF_HSDF
 	  (minus:VHSDF_HSDF
@@ -1714,7 +1714,7 @@
 })
 
 ;; Pairwise Integer Max/Min operations.
-(define_insn "aarch64_<optab>p<mode>"
+(define_insn "aarch64_<optab>p<mode><vczle><vczbe>"
  [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
        (unspec:VDQ_BHSI [(match_operand:VDQ_BHSI 1 "register_operand" "w")
 			 (match_operand:VDQ_BHSI 2 "register_operand" "w")]
@@ -1725,7 +1725,7 @@
 )
 
 ;; Pairwise FP Max/Min operations.
-(define_insn "aarch64_<optab>p<mode>"
+(define_insn "aarch64_<optab>p<mode><vczle><vczbe>"
  [(set (match_operand:VHSDF 0 "register_operand" "=w")
        (unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")
 		      (match_operand:VHSDF 2 "register_operand" "w")]
@@ -3595,7 +3595,7 @@
 
 ;; 'across lanes' add.
 
-(define_insn "aarch64_faddp<mode>"
+(define_insn "aarch64_faddp<mode><vczle><vczbe>"
  [(set (match_operand:VHSDF 0 "register_operand" "=w")
        (unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")
 		      (match_operand:VHSDF 2 "register_operand" "w")]
