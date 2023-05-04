@@ -1,3 +1,5 @@
+/* { dg-additional-options { -Wall -Wno-unknown-pragmas } } */
+
 #include <stdio.h>
 
 int compute_sum1 ()
@@ -11,7 +13,7 @@ int compute_sum1 ()
     sum++;
 
   if (j != 7)
-    __builtin_abort;
+    __builtin_abort ();
 
   return sum;
 }
@@ -27,7 +29,7 @@ int compute_sum2()
     sum++;
 
   if (j != 7)
-    __builtin_abort;
+    __builtin_abort ();
 
   return sum;
 }
@@ -43,7 +45,7 @@ int compute_sum3()
     sum++;
 
   if (j != 7)
-    __builtin_abort;
+    __builtin_abort ();
 
   return sum;
 }

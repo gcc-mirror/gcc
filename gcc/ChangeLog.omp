@@ -1,3 +1,7 @@
+2023-05-04  Frederik Harwath  <frederik@codesourcery.com>
+
+	* omp-transform-loops.cc (full_unroll): Add initialization of index variable.
+
 2023-04-18  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* gimplify.cc (omp_group_base): Handle GOMP_MAP_NONCONTIG_ARRAY_*
