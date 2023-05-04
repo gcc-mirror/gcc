@@ -613,18 +613,6 @@ maybe_instantiate_nsdmi_init (tree member, tsubst_flags_t complain)
 	      pushed = true;
 	    }
 
-	  /* If we didn't push_to_top_level, still step out of constructor
-	     scope so build_base_path doesn't try to use its __in_chrg.  */
-	  tree cfd = current_function_decl;
-	  auto cbl = current_binding_level;
-	  if (at_function_scope_p ())
-	    {
-	      current_function_decl
-		= decl_function_context (current_function_decl);
-	      while (current_binding_level->kind != sk_class)
-		current_binding_level = current_binding_level->level_chain;
-	    }
-
 	  inject_this_parameter (ctx, TYPE_UNQUALIFIED);
 
 	  start_lambda_scope (member);
@@ -643,8 +631,6 @@ maybe_instantiate_nsdmi_init (tree member, tsubst_flags_t complain)
 	  if (init != error_mark_node)
 	    hash_map_safe_put<hm_ggc> (nsdmi_inst, member, init);
 
-	  current_function_decl = cfd;
-	  current_binding_level = cbl;
 	  if (pushed)
 	    {
 	      pop_deferring_access_checks ();
