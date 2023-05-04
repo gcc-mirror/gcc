@@ -25,6 +25,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -61,10 +62,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   include "GM2RTS.h"
 
 #   define MaxBuf 127
-#   define PoisonOn FALSE
-#   define DebugOn FALSE
-#   define CheckOn FALSE
-#   define TraceOn FALSE
+#   define PoisonOn false
+#   define DebugOn false
+#   define CheckOn false
+#   define TraceOn false
 typedef struct DynamicStrings_Contents_r DynamicStrings_Contents;
 
 typedef struct DynamicStrings_DebugInfo_r DynamicStrings_DebugInfo;
@@ -93,10 +94,10 @@ struct DynamicStrings_DebugInfo_r {
                                   };
 
 struct DynamicStrings_descriptor_r {
-                                     unsigned int charStarUsed;
+                                     bool charStarUsed;
                                      void *charStar;
                                      unsigned int charStarSize;
-                                     unsigned int charStarValid;
+                                     bool charStarValid;
                                      DynamicStrings_desState state;
                                      DynamicStrings_String garbage;
                                    };
@@ -120,7 +121,7 @@ struct DynamicStrings_stringRecord_r {
                                        DynamicStrings_DebugInfo debug;
                                      };
 
-static unsigned int Initialized;
+static bool Initialized;
 static DynamicStrings_frame frameHead;
 static DynamicStrings_String captured;
 
@@ -205,21 +206,21 @@ extern "C" DynamicStrings_String DynamicStrings_Add (DynamicStrings_String a, Dy
    Equal - returns TRUE if String, a, and, b, are equal.
 */
 
-extern "C" unsigned int DynamicStrings_Equal (DynamicStrings_String a, DynamicStrings_String b);
+extern "C" bool DynamicStrings_Equal (DynamicStrings_String a, DynamicStrings_String b);
 
 /*
    EqualCharStar - returns TRUE if contents of String, s, is the same as the
                    string, a.
 */
 
-extern "C" unsigned int DynamicStrings_EqualCharStar (DynamicStrings_String s, void * a);
+extern "C" bool DynamicStrings_EqualCharStar (DynamicStrings_String s, void * a);
 
 /*
    EqualArray - returns TRUE if contents of String, s, is the same as the
                 string, a.
 */
 
-extern "C" unsigned int DynamicStrings_EqualArray (DynamicStrings_String s, const char *a_, unsigned int _a_high);
+extern "C" bool DynamicStrings_EqualArray (DynamicStrings_String s, const char *a_, unsigned int _a_high);
 
 /*
    Mult - returns a new string which is n concatenations of String, s.
@@ -366,19 +367,19 @@ extern "C" void DynamicStrings_PushAllocation (void);
                    with an exit code of 1.
 */
 
-extern "C" void DynamicStrings_PopAllocation (unsigned int halt);
+extern "C" void DynamicStrings_PopAllocation (bool halt);
 
 /*
    PopAllocationExemption - test to see that all strings are deallocated, except
-                            string, e, since the last push.
-                            Then it pops to the previous allocation/deallocation
+                            string e since the last push.
+                            Post-condition: it pops to the previous allocation/deallocation
                             lists.
 
                             If halt is true then the application terminates
                             with an exit code of 1.
 */
 
-extern "C" DynamicStrings_String DynamicStrings_PopAllocationExemption (unsigned int halt, DynamicStrings_String e);
+extern "C" DynamicStrings_String DynamicStrings_PopAllocationExemption (bool halt, DynamicStrings_String e);
 
 /*
  writeStringDesc write out debugging information about string, s.  */
@@ -465,7 +466,7 @@ static void writeCard (unsigned int c);
 static void writeLongcard (long unsigned int l);
 
 /*
-   writeAddress -
+   writeAddress - writes out the address of a with a C style hex prefix.
 */
 
 static void writeAddress (void * a);
@@ -486,7 +487,7 @@ static DynamicStrings_String AssignDebug (DynamicStrings_String s, const char *f
    IsOn - returns TRUE if, s, is on one of the debug lists.
 */
 
-static unsigned int IsOn (DynamicStrings_String list, DynamicStrings_String s);
+static bool IsOn (DynamicStrings_String list, DynamicStrings_String s);
 
 /*
    AddTo - adds string, s, to, list.
@@ -516,13 +517,13 @@ static void AddDeallocated (DynamicStrings_String s);
    IsOnAllocated - returns TRUE if the string, s, has ever been allocated.
 */
 
-static unsigned int IsOnAllocated (DynamicStrings_String s);
+static bool IsOnAllocated (DynamicStrings_String s);
 
 /*
    IsOnDeallocated - returns TRUE if the string, s, has ever been deallocated.
 */
 
-static unsigned int IsOnDeallocated (DynamicStrings_String s);
+static bool IsOnDeallocated (DynamicStrings_String s);
 
 /*
    SubAllocated - removes string, s, from the list of allocated strings.
@@ -592,13 +593,13 @@ static DynamicStrings_String AddToGarbage (DynamicStrings_String a, DynamicStrin
    IsOnGarbage - returns TRUE if, s, is on string, e, garbage list.
 */
 
-static unsigned int IsOnGarbage (DynamicStrings_String e, DynamicStrings_String s);
+static bool IsOnGarbage (DynamicStrings_String e, DynamicStrings_String s);
 
 /*
    IsWhite - returns TRUE if, ch, is a space or a tab.
 */
 
-static unsigned int IsWhite (char ch);
+static bool IsWhite (char ch);
 
 /*
    DumpState -
@@ -686,8 +687,6 @@ static void writeNspace (unsigned int n)
 
 static void DumpStringInfo (DynamicStrings_String s, unsigned int i)
 {
-  DynamicStrings_String t;
-
   if (s != NULL)
     {
       writeNspace (i);
@@ -738,7 +737,7 @@ static void doDSdbExit (DynamicStrings_String s)
 {
   if (CheckOn)
     {
-      s = DynamicStrings_PopAllocationExemption (TRUE, s);
+      s = DynamicStrings_PopAllocationExemption (true, s);
     }
 }
 
@@ -903,12 +902,18 @@ static void writeLongcard (long unsigned int l)
 
 
 /*
-   writeAddress -
+   writeAddress - writes out the address of a with a C style hex prefix.
 */
 
 static void writeAddress (void * a)
 {
-  writeLongcard ((long unsigned int ) (a));
+  typedef struct writeAddress__T4_a writeAddress__T4;
+
+  struct writeAddress__T4_a { char array[30+1]; };
+  writeAddress__T4 buffer;
+
+  libc_snprintf (&buffer, static_cast<size_t> (sizeof (buffer)), (const char *) "0x%", 3, a);
+  writeString ((const char *) &buffer.array[0], 30);
 }
 
 
@@ -960,7 +965,7 @@ static DynamicStrings_String AssignDebug (DynamicStrings_String s, const char *f
    IsOn - returns TRUE if, s, is on one of the debug lists.
 */
 
-static unsigned int IsOn (DynamicStrings_String list, DynamicStrings_String s)
+static bool IsOn (DynamicStrings_String list, DynamicStrings_String s)
 {
   while ((list != s) && (list != NULL))
     {
@@ -1050,7 +1055,7 @@ static void AddDeallocated (DynamicStrings_String s)
    IsOnAllocated - returns TRUE if the string, s, has ever been allocated.
 */
 
-static unsigned int IsOnAllocated (DynamicStrings_String s)
+static bool IsOnAllocated (DynamicStrings_String s)
 {
   DynamicStrings_frame f;
 
@@ -1059,14 +1064,14 @@ static unsigned int IsOnAllocated (DynamicStrings_String s)
   do {
     if (IsOn (f->alloc, s))
       {
-        return TRUE;
+        return true;
       }
     else
       {
         f = f->next;
       }
   } while (! (f == NULL));
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1076,7 +1081,7 @@ static unsigned int IsOnAllocated (DynamicStrings_String s)
    IsOnDeallocated - returns TRUE if the string, s, has ever been deallocated.
 */
 
-static unsigned int IsOnDeallocated (DynamicStrings_String s)
+static bool IsOnDeallocated (DynamicStrings_String s)
 {
   DynamicStrings_frame f;
 
@@ -1085,14 +1090,14 @@ static unsigned int IsOnDeallocated (DynamicStrings_String s)
   do {
     if (IsOn (f->dealloc, s))
       {
-        return TRUE;
+        return true;
       }
     else
       {
         f = f->next;
       }
   } while (! (f == NULL));
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1238,10 +1243,10 @@ static void DeallocateCharStar (DynamicStrings_String s)
         {
           Storage_DEALLOCATE (&s->head->charStar, s->head->charStarSize);
         }
-      s->head->charStarUsed = FALSE;
+      s->head->charStarUsed = false;
       s->head->charStar = NULL;
       s->head->charStarSize = 0;
-      s->head->charStarValid = FALSE;
+      s->head->charStarValid = false;
     }
 }
 
@@ -1275,7 +1280,7 @@ static void MarkInvalid (DynamicStrings_String s)
     }
   if (s->head != NULL)
     {
-      s->head->charStarValid = FALSE;
+      s->head->charStarValid = false;
     }
 }
 
@@ -1371,7 +1376,7 @@ static DynamicStrings_String AddToGarbage (DynamicStrings_String a, DynamicStrin
    IsOnGarbage - returns TRUE if, s, is on string, e, garbage list.
 */
 
-static unsigned int IsOnGarbage (DynamicStrings_String e, DynamicStrings_String s)
+static bool IsOnGarbage (DynamicStrings_String e, DynamicStrings_String s)
 {
   if ((e != NULL) && (s != NULL))
     {
@@ -1379,7 +1384,7 @@ static unsigned int IsOnGarbage (DynamicStrings_String e, DynamicStrings_String 
         {
           if (e->head->garbage == s)
             {
-              return TRUE;
+              return true;
             }
           else
             {
@@ -1387,7 +1392,7 @@ static unsigned int IsOnGarbage (DynamicStrings_String e, DynamicStrings_String 
             }
         }
     }
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1397,7 +1402,7 @@ static unsigned int IsOnGarbage (DynamicStrings_String e, DynamicStrings_String 
    IsWhite - returns TRUE if, ch, is a space or a tab.
 */
 
-static unsigned int IsWhite (char ch)
+static bool IsWhite (char ch)
 {
   return (ch == ' ') || (ch == ASCII_tab);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1506,7 +1511,7 @@ static void Init (void)
 {
   if (! Initialized)
     {
-      Initialized = TRUE;
+      Initialized = true;
       frameHead = NULL;
       DynamicStrings_PushAllocation ();
     }
@@ -1531,10 +1536,10 @@ extern "C" DynamicStrings_String DynamicStrings_InitString (const char *a_, unsi
   s->contents.next = NULL;
   ConcatContents (&s->contents, (const char *) a, _a_high, StrLib_StrLen ((const char *) a, _a_high), 0);
   Storage_ALLOCATE ((void **) &s->head, sizeof (DynamicStrings_descriptor));
-  s->head->charStarUsed = FALSE;
+  s->head->charStarUsed = false;
   s->head->charStar = NULL;
   s->head->charStarSize = 0;
-  s->head->charStarValid = FALSE;
+  s->head->charStarValid = false;
   s->head->garbage = NULL;
   s->head->state = DynamicStrings_inuse;
   AddDebugInfo (s);
@@ -1634,10 +1639,10 @@ extern "C" DynamicStrings_String DynamicStrings_InitStringCharStar (void * a)
       ConcatContentsAddress (&s->contents, a, static_cast<unsigned int> (libc_strlen (a)));
     }
   Storage_ALLOCATE ((void **) &s->head, sizeof (DynamicStrings_descriptor));
-  s->head->charStarUsed = FALSE;
+  s->head->charStarUsed = false;
   s->head->charStar = NULL;
   s->head->charStarSize = 0;
-  s->head->charStarValid = FALSE;
+  s->head->charStarValid = false;
   s->head->garbage = NULL;
   s->head->state = DynamicStrings_inuse;
   AddDebugInfo (s);
@@ -1657,10 +1662,10 @@ extern "C" DynamicStrings_String DynamicStrings_InitStringCharStar (void * a)
 
 extern "C" DynamicStrings_String DynamicStrings_InitStringChar (char ch)
 {
-  typedef struct InitStringChar__T4_a InitStringChar__T4;
+  typedef struct InitStringChar__T5_a InitStringChar__T5;
 
-  struct InitStringChar__T4_a { char array[1+1]; };
-  InitStringChar__T4 a;
+  struct InitStringChar__T5_a { char array[1+1]; };
+  InitStringChar__T5 a;
   DynamicStrings_String s;
 
   a.array[0] = ch;
@@ -1765,10 +1770,10 @@ extern "C" DynamicStrings_String DynamicStrings_ConCat (DynamicStrings_String a,
 
 extern "C" DynamicStrings_String DynamicStrings_ConCatChar (DynamicStrings_String a, char ch)
 {
-  typedef struct ConCatChar__T5_a ConCatChar__T5;
+  typedef struct ConCatChar__T6_a ConCatChar__T6;
 
-  struct ConCatChar__T5_a { char array[1+1]; };
-  ConCatChar__T5 b;
+  struct ConCatChar__T6_a { char array[1+1]; };
+  ConCatChar__T6 b;
   DynamicStrings_String t;
 
   if (PoisonOn)
@@ -1860,7 +1865,7 @@ extern "C" DynamicStrings_String DynamicStrings_Add (DynamicStrings_String a, Dy
    Equal - returns TRUE if String, a, and, b, are equal.
 */
 
-extern "C" unsigned int DynamicStrings_Equal (DynamicStrings_String a, DynamicStrings_String b)
+extern "C" bool DynamicStrings_Equal (DynamicStrings_String a, DynamicStrings_String b)
 {
   unsigned int i;
 
@@ -1879,18 +1884,18 @@ extern "C" unsigned int DynamicStrings_Equal (DynamicStrings_String a, DynamicSt
             {
               if (a->contents.buf.array[i] != b->contents.buf.array[i])
                 {
-                  return FALSE;
+                  return false;
                 }
               i += 1;
             }
           a = a->contents.next;
           b = b->contents.next;
         }
-      return TRUE;
+      return true;
     }
   else
     {
-      return FALSE;
+      return false;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -1902,7 +1907,7 @@ extern "C" unsigned int DynamicStrings_Equal (DynamicStrings_String a, DynamicSt
                    string, a.
 */
 
-extern "C" unsigned int DynamicStrings_EqualCharStar (DynamicStrings_String s, void * a)
+extern "C" bool DynamicStrings_EqualCharStar (DynamicStrings_String s, void * a)
 {
   DynamicStrings_String t;
 
@@ -1919,12 +1924,12 @@ extern "C" unsigned int DynamicStrings_EqualCharStar (DynamicStrings_String s, v
   if (DynamicStrings_Equal (t, s))
     {
       t = DynamicStrings_KillString (t);
-      return TRUE;
+      return true;
     }
   else
     {
       t = DynamicStrings_KillString (t);
-      return FALSE;
+      return false;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -1936,7 +1941,7 @@ extern "C" unsigned int DynamicStrings_EqualCharStar (DynamicStrings_String s, v
                 string, a.
 */
 
-extern "C" unsigned int DynamicStrings_EqualArray (DynamicStrings_String s, const char *a_, unsigned int _a_high)
+extern "C" bool DynamicStrings_EqualArray (DynamicStrings_String s, const char *a_, unsigned int _a_high)
 {
   DynamicStrings_String t;
   char a[_a_high+1];
@@ -1957,12 +1962,12 @@ extern "C" unsigned int DynamicStrings_EqualArray (DynamicStrings_String s, cons
   if (DynamicStrings_Equal (t, s))
     {
       t = DynamicStrings_KillString (t);
-      return TRUE;
+      return true;
     }
   else
     {
       t = DynamicStrings_KillString (t);
-      return FALSE;
+      return false;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -2438,7 +2443,7 @@ extern "C" void * DynamicStrings_string (DynamicStrings_String s)
               DeallocateCharStar (s);
               Storage_ALLOCATE (&s->head->charStar, l+1);
               s->head->charStarSize = l+1;
-              s->head->charStarUsed = TRUE;
+              s->head->charStarUsed = true;
             }
           p = static_cast<string__T2> (s->head->charStar);
           a = s;
@@ -2454,7 +2459,7 @@ extern "C" void * DynamicStrings_string (DynamicStrings_String s)
               a = a->contents.next;
             }
           (*p) = ASCII_nul;
-          s->head->charStarValid = TRUE;
+          s->head->charStarValid = true;
         }
       return s->head->charStar;
     }
@@ -2599,7 +2604,7 @@ extern "C" void DynamicStrings_PushAllocation (void)
                    with an exit code of 1.
 */
 
-extern "C" void DynamicStrings_PopAllocation (unsigned int halt)
+extern "C" void DynamicStrings_PopAllocation (bool halt)
 {
   if (CheckOn)
     {
@@ -2611,19 +2616,18 @@ extern "C" void DynamicStrings_PopAllocation (unsigned int halt)
 
 /*
    PopAllocationExemption - test to see that all strings are deallocated, except
-                            string, e, since the last push.
-                            Then it pops to the previous allocation/deallocation
+                            string e since the last push.
+                            Post-condition: it pops to the previous allocation/deallocation
                             lists.
 
                             If halt is true then the application terminates
                             with an exit code of 1.
 */
 
-extern "C" DynamicStrings_String DynamicStrings_PopAllocationExemption (unsigned int halt, DynamicStrings_String e)
+extern "C" DynamicStrings_String DynamicStrings_PopAllocationExemption (bool halt, DynamicStrings_String e)
 {
   DynamicStrings_String s;
-  DynamicStrings_frame f;
-  unsigned int b;
+  bool b;
 
   Init ();
   if (CheckOn)
@@ -2632,14 +2636,14 @@ extern "C" DynamicStrings_String DynamicStrings_PopAllocationExemption (unsigned
       if (frameHead == NULL)
         {
           stop ();
-          /* writeString ("mismatched number of PopAllocation's compared to PushAllocation's")  */
-          M2RTS_Halt ((const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, 176, (const char *) "PopAllocationExemption", 22, (const char *) "mismatched number of PopAllocation's compared to PushAllocation's", 65);
+          M2RTS_Halt ((const char *) "mismatched number of PopAllocation's compared to PushAllocation's", 65, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/DynamicStrings.mod", 55, (const char *) "PopAllocationExemption", 22, 174);
         }
       else
         {
+          /* writeString ("mismatched number of PopAllocation's compared to PushAllocation's")  */
           if (frameHead->alloc != NULL)
             {
-              b = FALSE;
+              b = false;
               s = frameHead->alloc;
               while (s != NULL)
                 {
@@ -2649,7 +2653,7 @@ extern "C" DynamicStrings_String DynamicStrings_PopAllocationExemption (unsigned
                         {
                           writeString ((const char *) "the following strings have been lost", 36);
                           writeLn ();
-                          b = TRUE;
+                          b = true;
                         }
                       DumpStringInfo (s, 0);
                     }
@@ -2670,7 +2674,7 @@ extern "C" DynamicStrings_String DynamicStrings_PopAllocationExemption (unsigned
 
 extern "C" void _M2_DynamicStrings_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
 {
-  Initialized = FALSE;
+  Initialized = false;
   Init ();
 }
 

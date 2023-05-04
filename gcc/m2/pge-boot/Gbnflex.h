@@ -29,6 +29,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #   ifdef __cplusplus
 extern "C" {
 #   endif
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -51,7 +52,7 @@ typedef enum {bnflex_identtok, bnflex_literaltok, bnflex_codetok, bnflex_lbecome
                 The success of the operation is returned.
 */
 
-EXTERN unsigned int bnflex_OpenSource (const char *a_, unsigned int _a_high);
+EXTERN bool bnflex_OpenSource (const char *a_, unsigned int _a_high);
 
 /*
    CloseSource - Closes the current open file.
@@ -77,14 +78,14 @@ EXTERN char bnflex_PutChar (char ch);
            and true is returned, otherwise false is returned.
 */
 
-EXTERN unsigned int bnflex_SymIs (bnflex_TokenType t);
+EXTERN bool bnflex_SymIs (bnflex_TokenType t);
 
 /*
    IsSym - returns the result of the comparison between the current token
            type and t.
 */
 
-EXTERN unsigned int bnflex_IsSym (bnflex_TokenType t);
+EXTERN bool bnflex_IsSym (bnflex_TokenType t);
 
 /*
    GetCurrentTokenType - returns the type of current token.
@@ -126,7 +127,7 @@ EXTERN void bnflex_AdvanceToken (void);
    IsReserved - returns TRUE if the name is a reserved word.
 */
 
-EXTERN unsigned int bnflex_IsReserved (NameKey_Name name);
+EXTERN bool bnflex_IsReserved (NameKey_Name name);
 
 /*
    PushBackToken - pushes a token back onto input.
@@ -138,7 +139,7 @@ EXTERN void bnflex_PushBackToken (NameKey_Name t);
    SetDebugging - sets the debugging flag.
 */
 
-EXTERN void bnflex_SetDebugging (unsigned int flag);
+EXTERN void bnflex_SetDebugging (bool flag);
 #   ifdef __cplusplus
 }
 #   endif

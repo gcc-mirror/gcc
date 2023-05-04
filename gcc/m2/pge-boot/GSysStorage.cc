@@ -25,6 +25,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -52,12 +53,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   include "GDebug.h"
 #   include "GSYSTEM.h"
 
-#   define enableDeallocation TRUE
-#   define enableZero FALSE
-#   define enableTrace FALSE
+#   define enableDeallocation true
+#   define enableZero true
+#   define enableTrace false
 static unsigned int callno;
-static unsigned int zero;
-static unsigned int trace;
+static bool zero;
+static bool trace;
 extern "C" void SysStorage_ALLOCATE (void * *a, unsigned int size);
 extern "C" void SysStorage_DEALLOCATE (void * *a, unsigned int size);
 
@@ -79,7 +80,7 @@ extern "C" void SysStorage_REALLOCATE (void * *a, unsigned int size);
                 is resized accordingly.
 */
 
-extern "C" unsigned int SysStorage_Available (unsigned int size);
+extern "C" bool SysStorage_Available (unsigned int size);
 
 /*
    Init - initializes the heap.  This does nothing on a GNU/Linux system.
@@ -93,7 +94,7 @@ extern "C" void SysStorage_ALLOCATE (void * *a, unsigned int size)
   (*a) = libc_malloc (static_cast<size_t> (size));
   if ((*a) == NULL)
     {
-      Debug_Halt ((const char *) "out of memory error", 19, 50, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/SysStorage.mod", 51);
+      Debug_Halt ((const char *) "out of memory error", 19, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/SysStorage.mod", 51, (const char *) "ALLOCATE", 8, 51);
     }
   if (enableTrace && trace)
     {
@@ -118,7 +119,7 @@ extern "C" void SysStorage_DEALLOCATE (void * *a, unsigned int size)
         }
       if ((libc_memset ((*a), 0, static_cast<size_t> (size))) != (*a))
         {
-          Debug_Halt ((const char *) "memset should have returned the first parameter", 47, 76, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/SysStorage.mod", 51);
+          Debug_Halt ((const char *) "memset should have returned the first parameter", 47, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/SysStorage.mod", 51, (const char *) "DEALLOCATE", 10, 78);
         }
     }
   if (enableDeallocation)
@@ -163,7 +164,7 @@ extern "C" void SysStorage_REALLOCATE (void * *a, unsigned int size)
       (*a) = libc_realloc ((*a), static_cast<size_t> (size));
       if ((*a) == NULL)
         {
-          Debug_Halt ((const char *) "out of memory error", 19, 119, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/SysStorage.mod", 51);
+          Debug_Halt ((const char *) "out of memory error", 19, (const char *) "../../gcc-read-write/gcc/m2/gm2-libs/SysStorage.mod", 51, (const char *) "REALLOCATE", 10, 122);
         }
       if (enableTrace && trace)
         {
@@ -182,7 +183,7 @@ extern "C" void SysStorage_REALLOCATE (void * *a, unsigned int size)
                 is resized accordingly.
 */
 
-extern "C" unsigned int SysStorage_Available (unsigned int size)
+extern "C" bool SysStorage_Available (unsigned int size)
 {
   void * a;
 
@@ -198,7 +199,7 @@ extern "C" unsigned int SysStorage_Available (unsigned int size)
         {
           libc_printf ((const char *) "   no\\n", 7, size);
         }
-      return FALSE;
+      return false;
     }
   else
     {
@@ -207,7 +208,7 @@ extern "C" unsigned int SysStorage_Available (unsigned int size)
           libc_printf ((const char *) "   yes\\n", 8, size);
         }
       libc_free (a);
-      return TRUE;
+      return true;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -232,7 +233,7 @@ extern "C" void _M2_SysStorage_init (__attribute__((unused)) int argc,__attribut
     }
   else
     {
-      trace = FALSE;
+      trace = false;
     }
   if (enableZero)
     {
@@ -240,7 +241,7 @@ extern "C" void _M2_SysStorage_init (__attribute__((unused)) int argc,__attribut
     }
   else
     {
-      zero = FALSE;
+      zero = false;
     }
 }
 

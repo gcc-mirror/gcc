@@ -1161,7 +1161,6 @@ MC-LIB-DEFS = \
    IO.def \
    M2Dependent.def \
    M2EXCEPTION.def \
-   M2LINK.def \
    M2RTS.def \
    MemUtils.def \
    NumberIO.def \
@@ -1710,7 +1709,6 @@ BUILD-PGE-O = \
    m2/pge-boot/Glibc.o \
    m2/pge-boot/Gerrno.o \
    m2/pge-boot/GUnixArgs.o \
-   m2/pge-boot/GM2LINK.o \
    m2/pge-boot/Gtermios.o \
    m2/pge-boot/GSysExceptions.o \
    m2/pge-boot/Gabort.o \

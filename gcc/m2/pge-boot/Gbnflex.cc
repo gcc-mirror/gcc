@@ -20,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -56,8 +57,8 @@ static FIO_File f;
 static SymbolKey_SymbolTree ReservedWords;
 static NameKey_Name CurrentToken;
 static bnflex_TokenType CurrentType;
-static unsigned int Debugging;
-static unsigned int InQuote;
+static bool Debugging;
+static bool InQuote;
 static char QuoteChar;
 
 /*
@@ -65,7 +66,7 @@ static char QuoteChar;
                 The success of the operation is returned.
 */
 
-extern "C" unsigned int bnflex_OpenSource (const char *a_, unsigned int _a_high);
+extern "C" bool bnflex_OpenSource (const char *a_, unsigned int _a_high);
 
 /*
    CloseSource - Closes the current open file.
@@ -91,14 +92,14 @@ extern "C" char bnflex_PutChar (char ch);
            and true is returned, otherwise false is returned.
 */
 
-extern "C" unsigned int bnflex_SymIs (bnflex_TokenType t);
+extern "C" bool bnflex_SymIs (bnflex_TokenType t);
 
 /*
    IsSym - returns the result of the comparison between the current token
            type and t.
 */
 
-extern "C" unsigned int bnflex_IsSym (bnflex_TokenType t);
+extern "C" bool bnflex_IsSym (bnflex_TokenType t);
 
 /*
    GetCurrentTokenType - returns the type of current token.
@@ -140,7 +141,7 @@ extern "C" void bnflex_AdvanceToken (void);
    IsReserved - returns TRUE if the name is a reserved word.
 */
 
-extern "C" unsigned int bnflex_IsReserved (NameKey_Name name);
+extern "C" bool bnflex_IsReserved (NameKey_Name name);
 
 /*
    PushBackToken - pushes a token back onto input.
@@ -152,7 +153,7 @@ extern "C" void bnflex_PushBackToken (NameKey_Name t);
    SetDebugging - sets the debugging flag.
 */
 
-extern "C" void bnflex_SetDebugging (unsigned int flag);
+extern "C" void bnflex_SetDebugging (bool flag);
 
 /*
    EatChar - consumes the next character in the input.
@@ -164,7 +165,7 @@ static void EatChar (void);
    IsWhite - returns TRUE if, ch, is a space or a tab.
 */
 
-static unsigned int IsWhite (char ch);
+static bool IsWhite (char ch);
 
 /*
    SkipComments - consumes comments.
@@ -200,7 +201,7 @@ static void EatChar (void)
    IsWhite - returns TRUE if, ch, is a space or a tab.
 */
 
-static unsigned int IsWhite (char ch)
+static bool IsWhite (char ch)
 {
   return ((ch == ' ') || (ch == ASCII_tab)) || (ch == ASCII_lf);
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -257,7 +258,7 @@ static void Init (void)
   Init__T1 a;
 
   SymbolKey_InitTree (&ReservedWords);
-  Debugging = FALSE;
+  Debugging = false;
   a.array[0] = ASCII_nul;
   SymbolKey_PutSymKey (ReservedWords, NameKey_MakeKey ((const char *) &a.array[0], 1), ((unsigned int) (bnflex_eoftok)));
   SymbolKey_PutSymKey (ReservedWords, NameKey_MakeKey ((const char *) "%", 1), ((unsigned int) (bnflex_codetok)));
@@ -291,7 +292,7 @@ static void Init (void)
   SymbolKey_PutSymKey (ReservedWords, NameKey_MakeKey ((const char *) "FNB", 3), ((unsigned int) (bnflex_FNBtok)));
   CurrentToken = NameKey_NulName;
   CurrentType = bnflex_identtok;
-  InQuote = FALSE;
+  InQuote = false;
 }
 
 
@@ -300,7 +301,7 @@ static void Init (void)
                 The success of the operation is returned.
 */
 
-extern "C" unsigned int bnflex_OpenSource (const char *a_, unsigned int _a_high)
+extern "C" bool bnflex_OpenSource (const char *a_, unsigned int _a_high)
 {
   char a[_a_high+1];
 
@@ -354,16 +355,16 @@ extern "C" char bnflex_PutChar (char ch)
            and true is returned, otherwise false is returned.
 */
 
-extern "C" unsigned int bnflex_SymIs (bnflex_TokenType t)
+extern "C" bool bnflex_SymIs (bnflex_TokenType t)
 {
   if (CurrentType == t)
     {
       bnflex_AdvanceToken ();
-      return TRUE;
+      return true;
     }
   else
     {
-      return FALSE;
+      return false;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -375,7 +376,7 @@ extern "C" unsigned int bnflex_SymIs (bnflex_TokenType t)
            type and t.
 */
 
-extern "C" unsigned int bnflex_IsSym (bnflex_TokenType t)
+extern "C" bool bnflex_IsSym (bnflex_TokenType t)
 {
   return t == CurrentType;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -470,7 +471,7 @@ extern "C" void bnflex_AdvanceToken (void)
           if ((bnflex_PutChar (bnflex_GetChar ())) == QuoteChar)
             {
               a.array[i] = bnflex_GetChar ();
-              InQuote = FALSE;
+              InQuote = false;
               i += 1;
               a.array[i] = ASCII_nul;
               CurrentToken = NameKey_MakeKey ((const char *) &a.array[0], MaxNameLength);
@@ -486,7 +487,7 @@ extern "C" void bnflex_AdvanceToken (void)
                 {
                   PushBackInput_WarnError ((const char *) "missing ' at the end of a literal", 33);
                 }
-              InQuote = FALSE;  /* to avoid a contineous list of the same error message  */
+              InQuote = false;  /* to avoid a contineous list of the same error message  */
             }
         }
       else
@@ -512,7 +513,7 @@ extern "C" void bnflex_AdvanceToken (void)
                 {
                   PushBackInput_WarnError ((const char *) "missing ' at the end of a literal", 33);
                 }
-              InQuote = FALSE;  /* to avoid a contineous list of the same error message  */
+              InQuote = false;  /* to avoid a contineous list of the same error message  */
             }
         }
     }
@@ -524,7 +525,7 @@ extern "C" void bnflex_AdvanceToken (void)
           a.array[i] = bnflex_GetChar ();
           QuoteChar = a.array[i];
           i += 1;
-          InQuote = TRUE;
+          InQuote = true;
           a.array[i] = ASCII_nul;
           CurrentToken = NameKey_MakeKey ((const char *) &a.array[0], MaxNameLength);
           CurrentType = (bnflex_TokenType) (SymbolKey_GetSymKey (ReservedWords, CurrentToken));
@@ -559,7 +560,7 @@ extern "C" void bnflex_AdvanceToken (void)
    IsReserved - returns TRUE if the name is a reserved word.
 */
 
-extern "C" unsigned int bnflex_IsReserved (NameKey_Name name)
+extern "C" bool bnflex_IsReserved (NameKey_Name name)
 {
   return (SymbolKey_GetSymKey (ReservedWords, name)) != 0;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -587,7 +588,7 @@ extern "C" void bnflex_PushBackToken (NameKey_Name t)
    SetDebugging - sets the debugging flag.
 */
 
-extern "C" void bnflex_SetDebugging (unsigned int flag)
+extern "C" void bnflex_SetDebugging (bool flag)
 {
   Debugging = flag;
 }

@@ -25,6 +25,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
        typedef void (*PROC_t) (void);
@@ -98,7 +99,7 @@ struct FIO_NameInfo_r {
                       };
 
 struct FIO_buf_r {
-                   unsigned int valid;
+                   bool valid;
                    long int bufstart;
                    unsigned int position;
                    void *address;
@@ -114,7 +115,7 @@ struct FIO_fds_r {
                    FIO_NameInfo name;
                    FIO_FileStatus state;
                    FIO_FileUsage usage;
-                   unsigned int output;
+                   bool output;
                    FIO_Buffer buffer;
                    long int abspos;
                  };
@@ -126,17 +127,17 @@ static FIO_File Error;
    IsNoError - returns a TRUE if no error has occured on file, f.
 */
 
-extern "C" unsigned int FIO_IsNoError (FIO_File f);
+extern "C" bool FIO_IsNoError (FIO_File f);
 
 /*
    IsActive - returns TRUE if the file, f, is still active.
 */
 
-extern "C" unsigned int FIO_IsActive (FIO_File f);
-extern "C" unsigned int FIO_Exists (const char *fname_, unsigned int _fname_high);
+extern "C" bool FIO_IsActive (FIO_File f);
+extern "C" bool FIO_Exists (const char *fname_, unsigned int _fname_high);
 extern "C" FIO_File FIO_OpenToRead (const char *fname_, unsigned int _fname_high);
 extern "C" FIO_File FIO_OpenToWrite (const char *fname_, unsigned int _fname_high);
-extern "C" FIO_File FIO_OpenForRandom (const char *fname_, unsigned int _fname_high, unsigned int towrite, unsigned int newfile);
+extern "C" FIO_File FIO_OpenForRandom (const char *fname_, unsigned int _fname_high, bool towrite, bool newfile);
 
 /*
    Close - close a file which has been previously opened using:
@@ -150,7 +151,7 @@ extern "C" void FIO_Close (FIO_File f);
    exists - returns TRUE if a file named, fname exists for reading.
 */
 
-extern "C" unsigned int FIO_exists (void * fname, unsigned int flength);
+extern "C" bool FIO_exists (void * fname, unsigned int flength);
 
 /*
    openToRead - attempts to open a file, fname, for reading and
@@ -179,7 +180,7 @@ extern "C" FIO_File FIO_openToWrite (void * fname, unsigned int flength);
                    opened for writing or reading.
 */
 
-extern "C" FIO_File FIO_openForRandom (void * fname, unsigned int flength, unsigned int towrite, unsigned int newfile);
+extern "C" FIO_File FIO_openForRandom (void * fname, unsigned int flength, bool towrite, bool newfile);
 
 /*
    FlushBuffer - flush contents of file, f.
@@ -232,20 +233,20 @@ extern "C" void FIO_WriteChar (FIO_File f, char ch);
    EOF - tests to see whether a file, f, has reached end of file.
 */
 
-extern "C" unsigned int FIO_EOF (FIO_File f);
+extern "C" bool FIO_EOF (FIO_File f);
 
 /*
    EOLN - tests to see whether a file, f, is upon a newline.
           It does NOT consume the newline.
 */
 
-extern "C" unsigned int FIO_EOLN (FIO_File f);
+extern "C" bool FIO_EOLN (FIO_File f);
 
 /*
    WasEOLN - tests to see whether a file, f, has just seen a newline.
 */
 
-extern "C" unsigned int FIO_WasEOLN (FIO_File f);
+extern "C" bool FIO_WasEOLN (FIO_File f);
 
 /*
    ReadChar - returns a character read from file f.
@@ -384,13 +385,13 @@ static void SetState (FIO_File f, FIO_FileStatus s);
    InitializeFile - initialize a file descriptor
 */
 
-static FIO_File InitializeFile (FIO_File f, void * fname, unsigned int flength, FIO_FileStatus fstate, FIO_FileUsage use, unsigned int towrite, unsigned int buflength);
+static FIO_File InitializeFile (FIO_File f, void * fname, unsigned int flength, FIO_FileStatus fstate, FIO_FileUsage use, bool towrite, unsigned int buflength);
 
 /*
    ConnectToUnix - connects a FIO file to a UNIX file descriptor.
 */
 
-static void ConnectToUnix (FIO_File f, unsigned int towrite, unsigned int newfile);
+static void ConnectToUnix (FIO_File f, bool towrite, bool newfile);
 
 /*
    ReadFromBuffer - attempts to read, nBytes, from file, f.
@@ -459,7 +460,7 @@ static void FormatError2 (const char *a_, unsigned int _a_high, const unsigned c
                  opened for read/write.
 */
 
-static void CheckAccess (FIO_File f, FIO_FileUsage use, unsigned int towrite);
+static void CheckAccess (FIO_File f, FIO_FileUsage use, bool towrite);
 
 /*
    SetEndOfLine -
@@ -481,7 +482,7 @@ static int BufferedWrite (FIO_File f, unsigned int nBytes, void * a);
    PreInitialize - preinitialize the file descriptor.
 */
 
-static void PreInitialize (FIO_File f, const char *fname_, unsigned int _fname_high, FIO_FileStatus state, FIO_FileUsage use, unsigned int towrite, int osfd, unsigned int bufsize);
+static void PreInitialize (FIO_File f, const char *fname_, unsigned int _fname_high, FIO_FileStatus state, FIO_FileUsage use, bool towrite, int osfd, unsigned int bufsize);
 
 /*
    Init - initialize the modules, global variables.
@@ -580,7 +581,7 @@ static void SetState (FIO_File f, FIO_FileStatus s)
    InitializeFile - initialize a file descriptor
 */
 
-static FIO_File InitializeFile (FIO_File f, void * fname, unsigned int flength, FIO_FileStatus fstate, FIO_FileUsage use, unsigned int towrite, unsigned int buflength)
+static FIO_File InitializeFile (FIO_File f, void * fname, unsigned int flength, FIO_FileStatus fstate, FIO_FileUsage use, bool towrite, unsigned int buflength)
 {
   FIO_PtrToChar p;
   FIO_FileDescriptor fd;
@@ -618,7 +619,7 @@ static FIO_File InitializeFile (FIO_File f, void * fname, unsigned int flength, 
         }
       else
         {
-          fd->buffer->valid = FALSE;
+          fd->buffer->valid = false;
           fd->buffer->bufstart = 0;
           fd->buffer->size = buflength;
           fd->buffer->position = 0;
@@ -658,7 +659,7 @@ static FIO_File InitializeFile (FIO_File f, void * fname, unsigned int flength, 
    ConnectToUnix - connects a FIO file to a UNIX file descriptor.
 */
 
-static void ConnectToUnix (FIO_File f, unsigned int towrite, unsigned int newfile)
+static void ConnectToUnix (FIO_File f, bool towrite, bool newfile)
 {
   FIO_FileDescriptor fd;
 
@@ -729,7 +730,7 @@ static int ReadFromBuffer (FIO_File f, void * a, unsigned int nBytes)
                   (*p) = static_cast<unsigned char> ((*fd->buffer->contents).array[fd->buffer->position]);
                   fd->buffer->left -= 1;  /* remove consumed bytes  */
                   fd->buffer->position += 1;  /* move onwards n bytes  */
-                  nBytes = 0;
+                  nBytes = 0;  /* reduce the amount for future direct  */
                   /* read  */
                   return 1;
                 }
@@ -764,7 +765,7 @@ static int ReadFromBuffer (FIO_File f, void * a, unsigned int nBytes)
               /* now disable the buffer as we read directly into, a.  */
               if (fd->buffer != NULL)
                 {
-                  fd->buffer->valid = FALSE;
+                  fd->buffer->valid = false;
                 }
             }
           else
@@ -781,7 +782,7 @@ static int ReadFromBuffer (FIO_File f, void * a, unsigned int nBytes)
               /* indicate buffer is empty  */
               if (fd->buffer != NULL)
                 {
-                  fd->buffer->valid = FALSE;
+                  fd->buffer->valid = false;
                   fd->buffer->left = 0;
                   fd->buffer->position = 0;
                   if (fd->buffer->address != NULL)
@@ -816,7 +817,6 @@ static int BufferedRead (FIO_File f, unsigned int nBytes, void * a)
   typedef unsigned char *BufferedRead__T3;
 
   void * t;
-  int result;
   int total;
   int n;
   BufferedRead__T3 p;
@@ -867,7 +867,7 @@ static int BufferedRead (FIO_File f, unsigned int nBytes, void * a)
                       if (n >= 0)
                         {
                           /* avoid dangling else.  */
-                          fd->buffer->valid = TRUE;
+                          fd->buffer->valid = true;
                           fd->buffer->position = 0;
                           fd->buffer->left = n;
                           fd->buffer->filled = n;
@@ -882,7 +882,7 @@ static int BufferedRead (FIO_File f, unsigned int nBytes, void * a)
                         }
                       else
                         {
-                          fd->buffer->valid = FALSE;
+                          fd->buffer->valid = false;
                           fd->buffer->position = 0;
                           fd->buffer->left = 0;
                           fd->buffer->filled = 0;
@@ -1141,7 +1141,7 @@ static void FormatError2 (const char *a_, unsigned int _a_high, const unsigned c
                  opened for read/write.
 */
 
-static void CheckAccess (FIO_File f, FIO_FileUsage use, unsigned int towrite)
+static void CheckAccess (FIO_File f, FIO_FileUsage use, bool towrite)
 {
   FIO_FileDescriptor fd;
 
@@ -1215,7 +1215,7 @@ static void SetEndOfLine (FIO_File f, char ch)
 {
   FIO_FileDescriptor fd;
 
-  CheckAccess (f, FIO_openedforread, FALSE);
+  CheckAccess (f, FIO_openedforread, false);
   if (f != Error)
     {
       fd = static_cast<FIO_FileDescriptor> (Indexing_GetIndice (FileInfo, f));
@@ -1244,7 +1244,6 @@ static int BufferedWrite (FIO_File f, unsigned int nBytes, void * a)
   typedef unsigned char *BufferedWrite__T5;
 
   void * t;
-  int result;
   int total;
   int n;
   BufferedWrite__T5 p;
@@ -1310,7 +1309,7 @@ static int BufferedWrite (FIO_File f, unsigned int nBytes, void * a)
    PreInitialize - preinitialize the file descriptor.
 */
 
-static void PreInitialize (FIO_File f, const char *fname_, unsigned int _fname_high, FIO_FileStatus state, FIO_FileUsage use, unsigned int towrite, int osfd, unsigned int bufsize)
+static void PreInitialize (FIO_File f, const char *fname_, unsigned int _fname_high, FIO_FileStatus state, FIO_FileUsage use, bool towrite, int osfd, unsigned int bufsize)
 {
   FIO_FileDescriptor fd;
   FIO_FileDescriptor fe;
@@ -1356,13 +1355,13 @@ static void Init (void)
 {
   FileInfo = Indexing_InitIndex (0);
   Error = 0;
-  PreInitialize (Error, (const char *) "error", 5, FIO_toomanyfilesopen, FIO_unused, FALSE, -1, 0);
+  PreInitialize (Error, (const char *) "error", 5, FIO_toomanyfilesopen, FIO_unused, false, -1, 0);
   FIO_StdIn = 1;
-  PreInitialize (FIO_StdIn, (const char *) "<stdin>", 7, FIO_successful, FIO_openedforread, FALSE, 0, MaxBufferLength);
+  PreInitialize (FIO_StdIn, (const char *) "<stdin>", 7, FIO_successful, FIO_openedforread, false, 0, MaxBufferLength);
   FIO_StdOut = 2;
-  PreInitialize (FIO_StdOut, (const char *) "<stdout>", 8, FIO_successful, FIO_openedforwrite, TRUE, 1, MaxBufferLength);
+  PreInitialize (FIO_StdOut, (const char *) "<stdout>", 8, FIO_successful, FIO_openedforwrite, true, 1, MaxBufferLength);
   FIO_StdErr = 3;
-  PreInitialize (FIO_StdErr, (const char *) "<stderr>", 8, FIO_successful, FIO_openedforwrite, TRUE, 2, MaxBufferLength);
+  PreInitialize (FIO_StdErr, (const char *) "<stderr>", 8, FIO_successful, FIO_openedforwrite, true, 2, MaxBufferLength);
   if (! (M2RTS_InstallTerminationProcedure ((PROC ) {(PROC_t) FIO_FlushOutErr})))
     {
       M2RTS_HALT (-1);
@@ -1375,13 +1374,13 @@ static void Init (void)
    IsNoError - returns a TRUE if no error has occured on file, f.
 */
 
-extern "C" unsigned int FIO_IsNoError (FIO_File f)
+extern "C" bool FIO_IsNoError (FIO_File f)
 {
   FIO_FileDescriptor fd;
 
   if (f == Error)
     {
-      return FALSE;
+      return false;
     }
   else
     {
@@ -1397,11 +1396,11 @@ extern "C" unsigned int FIO_IsNoError (FIO_File f)
    IsActive - returns TRUE if the file, f, is still active.
 */
 
-extern "C" unsigned int FIO_IsActive (FIO_File f)
+extern "C" bool FIO_IsActive (FIO_File f)
 {
   if (f == Error)
     {
-      return FALSE;
+      return false;
     }
   else
     {
@@ -1411,7 +1410,7 @@ extern "C" unsigned int FIO_IsActive (FIO_File f)
   __builtin_unreachable ();
 }
 
-extern "C" unsigned int FIO_Exists (const char *fname_, unsigned int _fname_high)
+extern "C" bool FIO_Exists (const char *fname_, unsigned int _fname_high)
 {
   char fname[_fname_high+1];
 
@@ -1450,7 +1449,7 @@ extern "C" FIO_File FIO_OpenToWrite (const char *fname_, unsigned int _fname_hig
   __builtin_unreachable ();
 }
 
-extern "C" FIO_File FIO_OpenForRandom (const char *fname_, unsigned int _fname_high, unsigned int towrite, unsigned int newfile)
+extern "C" FIO_File FIO_OpenForRandom (const char *fname_, unsigned int _fname_high, bool towrite, bool newfile)
 {
   char fname[_fname_high+1];
 
@@ -1514,7 +1513,7 @@ extern "C" void FIO_Close (FIO_File f)
    exists - returns TRUE if a file named, fname exists for reading.
 */
 
-extern "C" unsigned int FIO_exists (void * fname, unsigned int flength)
+extern "C" bool FIO_exists (void * fname, unsigned int flength)
 {
   FIO_File f;
 
@@ -1522,12 +1521,12 @@ extern "C" unsigned int FIO_exists (void * fname, unsigned int flength)
   if (FIO_IsNoError (f))
     {
       FIO_Close (f);
-      return TRUE;
+      return true;
     }
   else
     {
       FIO_Close (f);
-      return FALSE;
+      return false;
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -1552,8 +1551,8 @@ extern "C" FIO_File FIO_openToRead (void * fname, unsigned int flength)
     }
   else
     {
-      f = InitializeFile (f, fname, flength, FIO_successful, FIO_openedforread, FALSE, MaxBufferLength);
-      ConnectToUnix (f, FALSE, FALSE);
+      f = InitializeFile (f, fname, flength, FIO_successful, FIO_openedforread, false, MaxBufferLength);
+      ConnectToUnix (f, false, false);
     }
   return f;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1579,8 +1578,8 @@ extern "C" FIO_File FIO_openToWrite (void * fname, unsigned int flength)
     }
   else
     {
-      f = InitializeFile (f, fname, flength, FIO_successful, FIO_openedforwrite, TRUE, MaxBufferLength);
-      ConnectToUnix (f, TRUE, TRUE);
+      f = InitializeFile (f, fname, flength, FIO_successful, FIO_openedforwrite, true, MaxBufferLength);
+      ConnectToUnix (f, true, true);
     }
   return f;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -1597,7 +1596,7 @@ extern "C" FIO_File FIO_openToWrite (void * fname, unsigned int flength)
                    opened for writing or reading.
 */
 
-extern "C" FIO_File FIO_openForRandom (void * fname, unsigned int flength, unsigned int towrite, unsigned int newfile)
+extern "C" FIO_File FIO_openForRandom (void * fname, unsigned int flength, bool towrite, bool newfile)
 {
   FIO_File f;
 
@@ -1666,7 +1665,7 @@ extern "C" unsigned int FIO_ReadNBytes (FIO_File f, unsigned int nBytes, void * 
 
   if (f != Error)
     {
-      CheckAccess (f, FIO_openedforread, FALSE);
+      CheckAccess (f, FIO_openedforread, false);
       n = ReadFromBuffer (f, dest, nBytes);
       if (n <= 0)
         {
@@ -1697,7 +1696,7 @@ extern "C" unsigned int FIO_ReadNBytes (FIO_File f, unsigned int nBytes, void * 
 
 extern "C" void FIO_ReadAny (FIO_File f, unsigned char *a, unsigned int _a_high)
 {
-  CheckAccess (f, FIO_openedforread, FALSE);
+  CheckAccess (f, FIO_openedforread, false);
   if ((BufferedRead (f, _a_high, a)) == ((int ) (_a_high)))
     {
       SetEndOfLine (f, static_cast<char> (a[_a_high]));
@@ -1718,7 +1717,7 @@ extern "C" unsigned int FIO_WriteNBytes (FIO_File f, unsigned int nBytes, void *
   int total;
   FIO_FileDescriptor fd;
 
-  CheckAccess (f, FIO_openedforwrite, TRUE);
+  CheckAccess (f, FIO_openedforwrite, true);
   FIO_FlushBuffer (f);
   if (f != Error)
     {
@@ -1756,7 +1755,7 @@ extern "C" unsigned int FIO_WriteNBytes (FIO_File f, unsigned int nBytes, void *
 
 extern "C" void FIO_WriteAny (FIO_File f, unsigned char *a, unsigned int _a_high)
 {
-  CheckAccess (f, FIO_openedforwrite, TRUE);
+  CheckAccess (f, FIO_openedforwrite, true);
   if ((BufferedWrite (f, _a_high, a)) == ((int ) (_a_high)))
     {}  /* empty.  */
 }
@@ -1768,7 +1767,7 @@ extern "C" void FIO_WriteAny (FIO_File f, unsigned char *a, unsigned int _a_high
 
 extern "C" void FIO_WriteChar (FIO_File f, char ch)
 {
-  CheckAccess (f, FIO_openedforwrite, TRUE);
+  CheckAccess (f, FIO_openedforwrite, true);
   if ((BufferedWrite (f, sizeof (ch), &ch)) == ((int ) (sizeof (ch))))
     {}  /* empty.  */
 }
@@ -1778,11 +1777,11 @@ extern "C" void FIO_WriteChar (FIO_File f, char ch)
    EOF - tests to see whether a file, f, has reached end of file.
 */
 
-extern "C" unsigned int FIO_EOF (FIO_File f)
+extern "C" bool FIO_EOF (FIO_File f)
 {
   FIO_FileDescriptor fd;
 
-  CheckAccess (f, FIO_openedforread, FALSE);
+  CheckAccess (f, FIO_openedforread, false);
   if (f != Error)
     {
       fd = static_cast<FIO_FileDescriptor> (Indexing_GetIndice (FileInfo, f));
@@ -1791,7 +1790,7 @@ extern "C" unsigned int FIO_EOF (FIO_File f)
           return fd->state == FIO_endoffile;
         }
     }
-  return TRUE;
+  return true;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1802,12 +1801,12 @@ extern "C" unsigned int FIO_EOF (FIO_File f)
           It does NOT consume the newline.
 */
 
-extern "C" unsigned int FIO_EOLN (FIO_File f)
+extern "C" bool FIO_EOLN (FIO_File f)
 {
   char ch;
   FIO_FileDescriptor fd;
 
-  CheckAccess (f, FIO_openedforread, FALSE);
+  CheckAccess (f, FIO_openedforread, false);
   /* 
       we will read a character and then push it back onto the input stream,
       having noted the file status, we also reset the status.
@@ -1828,7 +1827,7 @@ extern "C" unsigned int FIO_EOLN (FIO_File f)
             }
         }
     }
-  return FALSE;
+  return false;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
@@ -1838,14 +1837,14 @@ extern "C" unsigned int FIO_EOLN (FIO_File f)
    WasEOLN - tests to see whether a file, f, has just seen a newline.
 */
 
-extern "C" unsigned int FIO_WasEOLN (FIO_File f)
+extern "C" bool FIO_WasEOLN (FIO_File f)
 {
   FIO_FileDescriptor fd;
 
-  CheckAccess (f, FIO_openedforread, FALSE);
+  CheckAccess (f, FIO_openedforread, false);
   if (f == Error)
     {
-      return FALSE;
+      return false;
     }
   else
     {
@@ -1867,7 +1866,7 @@ extern "C" char FIO_ReadChar (FIO_File f)
 {
   char ch;
 
-  CheckAccess (f, FIO_openedforread, FALSE);
+  CheckAccess (f, FIO_openedforread, false);
   if ((BufferedRead (f, sizeof (ch), &ch)) == ((int ) (sizeof (ch))))
     {
       SetEndOfLine (f, ch);
@@ -1900,7 +1899,7 @@ extern "C" void FIO_UnReadChar (FIO_File f, char ch)
   void * a;
   void * b;
 
-  CheckAccess (f, FIO_openedforread, FALSE);
+  CheckAccess (f, FIO_openedforread, false);
   if (f != Error)
     {
       fd = static_cast<FIO_FileDescriptor> (Indexing_GetIndice (FileInfo, f));
@@ -1990,7 +1989,7 @@ extern "C" void FIO_ReadString (FIO_File f, char *a, unsigned int _a_high)
   unsigned int i;
   char ch;
 
-  CheckAccess (f, FIO_openedforread, FALSE);
+  CheckAccess (f, FIO_openedforread, false);
   high = _a_high;
   i = 0;
   do {
@@ -2081,7 +2080,7 @@ extern "C" void FIO_SetPositionFromBeginning (FIO_File f, long int pos)
         {
           /* always force the lseek, until we are confident that abspos is always correct,
                basically it needs some hard testing before we should remove the OR TRUE.  */
-          if ((fd->abspos != pos) || TRUE)
+          if ((fd->abspos != pos) || true)
             {
               FIO_FlushBuffer (f);
               if (fd->buffer != NULL)
@@ -2109,7 +2108,7 @@ extern "C" void FIO_SetPositionFromBeginning (FIO_File f, long int pos)
                 }
               if (fd->buffer != NULL)
                 {
-                  fd->buffer->valid = FALSE;
+                  fd->buffer->valid = false;
                   fd->buffer->bufstart = fd->abspos;
                 }
             }
@@ -2159,7 +2158,7 @@ extern "C" void FIO_SetPositionFromEnd (FIO_File f, long int pos)
             }
           if (fd->buffer != NULL)
             {
-              fd->buffer->valid = FALSE;
+              fd->buffer->valid = false;
               fd->buffer->bufstart = offset;
             }
         }
