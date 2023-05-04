@@ -1,3 +1,11 @@
+2023-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/109306
+	* strstr.c (strstr): Return s1 if len is 0.
+
 2022-06-28  Release Manager
 
 	* GCC 10.4.0 released.
