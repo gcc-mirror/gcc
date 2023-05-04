@@ -28079,18 +28079,18 @@ aarch64_test_fractional_cost ()
   ASSERT_EQ (cf (2, 3) * 5, cf (10, 3));
   ASSERT_EQ (14 * cf (11, 21), cf (22, 3));
 
-  ASSERT_TRUE (cf (4, 15) < cf (5, 15));
-  ASSERT_FALSE (cf (5, 15) < cf (5, 15));
-  ASSERT_FALSE (cf (6, 15) < cf (5, 15));
-  ASSERT_TRUE (cf (1, 3) < cf (2, 5));
-  ASSERT_TRUE (cf (1, 12) < cf (1, 6));
-  ASSERT_FALSE (cf (5, 3) < cf (5, 3));
-  ASSERT_TRUE (cf (239, 240) < 1);
-  ASSERT_FALSE (cf (240, 240) < 1);
-  ASSERT_FALSE (cf (241, 240) < 1);
-  ASSERT_FALSE (2 < cf (207, 104));
-  ASSERT_FALSE (2 < cf (208, 104));
-  ASSERT_TRUE (2 < cf (209, 104));
+  ASSERT_TRUE (cf (4, 15) <= cf (5, 15));
+  ASSERT_TRUE (cf (5, 15) <= cf (5, 15));
+  ASSERT_FALSE (cf (6, 15) <= cf (5, 15));
+  ASSERT_TRUE (cf (1, 3) <= cf (2, 5));
+  ASSERT_TRUE (cf (1, 12) <= cf (1, 6));
+  ASSERT_TRUE (cf (5, 3) <= cf (5, 3));
+  ASSERT_TRUE (cf (239, 240) <= 1);
+  ASSERT_TRUE (cf (240, 240) <= 1);
+  ASSERT_FALSE (cf (241, 240) <= 1);
+  ASSERT_FALSE (2 <= cf (207, 104));
+  ASSERT_TRUE (2 <= cf (208, 104));
+  ASSERT_TRUE (2 <= cf (209, 104));
 
   ASSERT_TRUE (cf (4, 15) < cf (5, 15));
   ASSERT_FALSE (cf (5, 15) < cf (5, 15));
