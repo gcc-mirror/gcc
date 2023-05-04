@@ -1097,7 +1097,7 @@
   }
 )
 
-(define_insn "aarch64_<su>aba<mode>"
+(define_insn "aarch64_<su>aba<mode><vczle><vczbe>"
   [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
 	(plus:VDQ_BHSI (minus:VDQ_BHSI
 			 (USMAX:VDQ_BHSI
@@ -1551,7 +1551,7 @@
 )
 
 
-(define_insn "aarch64_mla<mode>"
+(define_insn "aarch64_mla<mode><vczle><vczbe>"
  [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
        (plus:VDQ_BHSI (mult:VDQ_BHSI
 			(match_operand:VDQ_BHSI 2 "register_operand" "w")
@@ -1562,7 +1562,7 @@
   [(set_attr "type" "neon_mla_<Vetype><q>")]
 )
 
-(define_insn "*aarch64_mla_elt<mode>"
+(define_insn "*aarch64_mla_elt<mode><vczle><vczbe>"
  [(set (match_operand:VDQHS 0 "register_operand" "=w")
        (plus:VDQHS
 	 (mult:VDQHS
@@ -1580,7 +1580,7 @@
   [(set_attr "type" "neon_mla_<Vetype>_scalar<q>")]
 )
 
-(define_insn "*aarch64_mla_elt_<vswap_width_name><mode>"
+(define_insn "*aarch64_mla_elt_<vswap_width_name><mode><vczle><vczbe>"
  [(set (match_operand:VDQHS 0 "register_operand" "=w")
        (plus:VDQHS
 	 (mult:VDQHS
@@ -1598,7 +1598,7 @@
   [(set_attr "type" "neon_mla_<Vetype>_scalar<q>")]
 )
 
-(define_insn "aarch64_mla_n<mode>"
+(define_insn "aarch64_mla_n<mode><vczle><vczbe>"
  [(set (match_operand:VDQHS 0 "register_operand" "=w")
 	(plus:VDQHS
 	  (mult:VDQHS
@@ -1611,7 +1611,7 @@
   [(set_attr "type" "neon_mla_<Vetype>_scalar<q>")]
 )
 
-(define_insn "aarch64_mls<mode>"
+(define_insn "aarch64_mls<mode><vczle><vczbe>"
  [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
        (minus:VDQ_BHSI (match_operand:VDQ_BHSI 1 "register_operand" "0")
 		   (mult:VDQ_BHSI (match_operand:VDQ_BHSI 2 "register_operand" "w")
@@ -1621,7 +1621,7 @@
   [(set_attr "type" "neon_mla_<Vetype><q>")]
 )
 
-(define_insn "*aarch64_mls_elt<mode>"
+(define_insn "*aarch64_mls_elt<mode><vczle><vczbe>"
  [(set (match_operand:VDQHS 0 "register_operand" "=w")
        (minus:VDQHS
 	 (match_operand:VDQHS 4 "register_operand" "0")
@@ -1639,7 +1639,7 @@
   [(set_attr "type" "neon_mla_<Vetype>_scalar<q>")]
 )
 
-(define_insn "*aarch64_mls_elt_<vswap_width_name><mode>"
+(define_insn "*aarch64_mls_elt_<vswap_width_name><mode><vczle><vczbe>"
  [(set (match_operand:VDQHS 0 "register_operand" "=w")
        (minus:VDQHS
 	 (match_operand:VDQHS 4 "register_operand" "0")
@@ -1657,7 +1657,7 @@
   [(set_attr "type" "neon_mla_<Vetype>_scalar<q>")]
 )
 
-(define_insn "aarch64_mls_n<mode>"
+(define_insn "aarch64_mls_n<mode><vczle><vczbe>"
   [(set (match_operand:VDQHS 0 "register_operand" "=w")
 	(minus:VDQHS
 	  (match_operand:VDQHS 1 "register_operand" "0")
@@ -3077,7 +3077,7 @@
   }
 )
 
-(define_insn "fma<mode>4"
+(define_insn "fma<mode>4<vczle><vczbe>"
   [(set (match_operand:VHSDF 0 "register_operand" "=w")
        (fma:VHSDF (match_operand:VHSDF 1 "register_operand" "w")
 		  (match_operand:VHSDF 2 "register_operand" "w")
@@ -3087,7 +3087,7 @@
   [(set_attr "type" "neon_fp_mla_<stype><q>")]
 )
 
-(define_insn "*aarch64_fma4_elt<mode>"
+(define_insn "*aarch64_fma4_elt<mode><vczle><vczbe>"
   [(set (match_operand:VDQF 0 "register_operand" "=w")
     (fma:VDQF
       (vec_duplicate:VDQF
@@ -3104,7 +3104,7 @@
   [(set_attr "type" "neon_fp_mla_<Vetype>_scalar<q>")]
 )
 
-(define_insn "*aarch64_fma4_elt_<vswap_width_name><mode>"
+(define_insn "*aarch64_fma4_elt_<vswap_width_name><mode><vczle><vczbe>"
   [(set (match_operand:VDQSF 0 "register_operand" "=w")
     (fma:VDQSF
       (vec_duplicate:VDQSF
@@ -3121,7 +3121,7 @@
   [(set_attr "type" "neon_fp_mla_<Vetype>_scalar<q>")]
 )
 
-(define_insn "*aarch64_fma4_elt_from_dup<mode>"
+(define_insn "*aarch64_fma4_elt_from_dup<mode><vczle><vczbe>"
   [(set (match_operand:VMUL 0 "register_operand" "=w")
     (fma:VMUL
       (vec_duplicate:VMUL
@@ -3149,7 +3149,7 @@
   [(set_attr "type" "neon_fp_mla_d_scalar_q")]
 )
 
-(define_insn "fnma<mode>4"
+(define_insn "fnma<mode>4<vczle><vczbe>"
   [(set (match_operand:VHSDF 0 "register_operand" "=w")
 	(fma:VHSDF
 	  (neg:VHSDF (match_operand:VHSDF 1 "register_operand" "w"))
@@ -3160,7 +3160,7 @@
   [(set_attr "type" "neon_fp_mla_<stype><q>")]
 )
 
-(define_insn "*aarch64_fnma4_elt<mode>"
+(define_insn "*aarch64_fnma4_elt<mode><vczle><vczbe>"
   [(set (match_operand:VDQF 0 "register_operand" "=w")
     (fma:VDQF
       (neg:VDQF
@@ -3178,7 +3178,7 @@
   [(set_attr "type" "neon_fp_mla_<Vetype>_scalar<q>")]
 )
 
-(define_insn "*aarch64_fnma4_elt_<vswap_width_name><mode>"
+(define_insn "*aarch64_fnma4_elt_<vswap_width_name><mode><vczle><vczbe>"
   [(set (match_operand:VDQSF 0 "register_operand" "=w")
     (fma:VDQSF
       (neg:VDQSF
@@ -3196,7 +3196,7 @@
   [(set_attr "type" "neon_fp_mla_<Vetype>_scalar<q>")]
 )
 
-(define_insn "*aarch64_fnma4_elt_from_dup<mode>"
+(define_insn "*aarch64_fnma4_elt_from_dup<mode><vczle><vczbe>"
   [(set (match_operand:VMUL 0 "register_operand" "=w")
     (fma:VMUL
       (neg:VMUL
@@ -3808,7 +3808,7 @@
 ;; Some forms of straight-line code may generate the equivalent form
 ;; in *aarch64_simd_bsl<mode>_alt.
 
-(define_insn "aarch64_simd_bsl<mode>_internal"
+(define_insn "aarch64_simd_bsl<mode>_internal<vczle><vczbe>"
   [(set (match_operand:VDQ_I 0 "register_operand" "=w,w,w")
 	(xor:VDQ_I
 	   (and:VDQ_I
@@ -3832,7 +3832,7 @@
 ;; the first.  The two are equivalent but since recog doesn't try all
 ;; permutations of commutative operations, we have to have a separate pattern.
 
-(define_insn "*aarch64_simd_bsl<mode>_alt"
+(define_insn "*aarch64_simd_bsl<mode>_alt<vczle><vczbe>"
   [(set (match_operand:VDQ_I 0 "register_operand" "=w,w,w")
 	(xor:VDQ_I
 	   (and:VDQ_I
