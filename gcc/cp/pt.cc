@@ -27061,12 +27061,6 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
 	pattern_defined = ! DECL_EXTERNAL (code_pattern);
     }
 
-  /* Any local class members should be instantiated from the TAG_DEFN
-     with defer_ok == 0.  */
-  gcc_checking_assert (!defer_ok || !pattern_defined
-		       || !decl_function_context (d)
-		       || LAMBDA_TYPE_P (DECL_CONTEXT (d)));
-
   /* We may be in the middle of deferred access check.  Disable it now.  */
   push_deferring_access_checks (dk_no_deferred);
 
