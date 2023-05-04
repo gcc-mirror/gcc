@@ -1,3 +1,41 @@
+2023-05-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105844
+	* include/experimental/numeric (lcm): Use built-in instead of
+	__is_constant_evaluated.
+	* include/std/numeric (__abs_r, lcm): Likewise.
+	* testsuite/26_numerics/gcd/105844.cc: Add dg-prune-output.
+	* testsuite/26_numerics/lcm/105844.cc: Likewise.
+
+2023-05-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-06-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105844
+	* include/experimental/numeric (experimental::gcd): Simplify
+	assertions. Use __abs_r instead of __absu.
+	(experimental::lcm): Likewise. Remove use of __detail::__lcm so
+	overflow can be detected.
+	* include/std/numeric (__detail::__absu): Rename to __abs_r and
+	change to allow signed result type, so overflow can be detected.
+	(__detail::__lcm): Remove.
+	(gcd): Simplify assertions. Use __abs_r instead of __absu.
+	(lcm): Likewise. Remove use of __detail::__lcm so overflow can
+	be detected.
+	* testsuite/26_numerics/gcd/gcd_neg.cc: Adjust dg-error lines.
+	* testsuite/26_numerics/lcm/lcm_neg.cc: Likewise.
+	* testsuite/26_numerics/gcd/105844.cc: New test.
+	* testsuite/26_numerics/lcm/105844.cc: New test.
+
+2023-05-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-04-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (STRIP_FROM_PATH): Remove prefixes
+	from header paths.
+
 2023-04-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

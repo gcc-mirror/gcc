@@ -1,3 +1,21 @@
+2023-05-03  Arsen Arsenović  <arsen@aarsen.me>
+
+	* doc/extend.texi: Replace @itemx not being preceded by @item.
+
+2023-05-03  Anthony Sharp  <anthonysharp15@gmail.com>
+
+	Backported from master:
+	2021-08-27  Anthony Sharp  <anthonysharp15@gmail.com>
+
+	* symbol-summary.h: Added missing template keyword.
+
+2023-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109473
+	* tree-vect-loop.c (get_initial_def_for_reduction):
+	Convert the scalar values to the vector component type
+	before using it to build the vector for the initial value.
+
 2023-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
