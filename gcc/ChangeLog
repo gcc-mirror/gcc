@@ -1,3 +1,2363 @@
+2023-05-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.cc (cris_side_effect_mode_ok): Use
+	lra_in_progress, not reload_in_progress.
+	* config/cris/cris.md ("movdi", "*addi_reload"): Ditto.
+	* config/cris/constraints.md ("Q"): Ditto.
+
+2023-05-03  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-dce.cc (simple_dce_from_worklist): Record
+	stats on removed number of statements and phis.
+
+2023-05-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/109711
+	* value-range.cc (irange::verify_range): Allow types of
+	error_mark_node.
+
+2023-05-03  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR sanitizer/90746
+	* calls.cc (can_implement_as_sibling_call_p): Reject calls
+	to __sanitizer_cov_trace_pc.
+
+2023-05-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/109661
+	* config/aarch64/aarch64.cc (aarch64_function_arg_alignment): Add
+	a new ABI break parameter for GCC 14.  Set it to the alignment
+	of enums that have an underlying type.  Take the true alignment
+	of such enums from the TYPE_ALIGN of the underlying type's
+	TYPE_MAIN_VARIANT.
+	(aarch64_function_arg_boundary): Update accordingly.
+	(aarch64_layout_arg, aarch64_gimplify_va_arg_expr): Likewise.
+	Warn about ABI differences.
+
+2023-05-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/109661
+	* config/aarch64/aarch64.cc (aarch64_function_arg_alignment): Rename
+	ABI break variables to abi_break_gcc_9 and abi_break_gcc_13.
+	(aarch64_layout_arg, aarch64_function_arg_boundary): Likewise.
+	(aarch64_gimplify_va_arg_expr): Likewise.
+
+2023-05-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-base.cc (FUNCTION_WITH_M_N_NO_F)
+	(FUNCTION_WITHOUT_N_NO_F, FUNCTION_WITH_M_N_NO_U_F): New.
+	(vhaddq, vhsubq, vmulhq, vqaddq, vqsubq, vqdmulhq, vrhaddq)
+	(vrmulhq): New.
+	* config/arm/arm-mve-builtins-base.def (vhaddq, vhsubq, vmulhq)
+	(vqaddq, vqsubq, vqdmulhq, vrhaddq, vrmulhq): New.
+	* config/arm/arm-mve-builtins-base.h (vhaddq, vhsubq, vmulhq)
+	(vqaddq, vqsubq, vqdmulhq, vrhaddq, vrmulhq): New.
+	* config/arm/arm_mve.h (vhsubq): Remove.
+	(vhaddq): Remove.
+	(vhaddq_m): Remove.
+	(vhsubq_m): Remove.
+	(vhaddq_x): Remove.
+	(vhsubq_x): Remove.
+	(vhsubq_u8): Remove.
+	(vhsubq_n_u8): Remove.
+	(vhaddq_u8): Remove.
+	(vhaddq_n_u8): Remove.
+	(vhsubq_s8): Remove.
+	(vhsubq_n_s8): Remove.
+	(vhaddq_s8): Remove.
+	(vhaddq_n_s8): Remove.
+	(vhsubq_u16): Remove.
+	(vhsubq_n_u16): Remove.
+	(vhaddq_u16): Remove.
+	(vhaddq_n_u16): Remove.
+	(vhsubq_s16): Remove.
+	(vhsubq_n_s16): Remove.
+	(vhaddq_s16): Remove.
+	(vhaddq_n_s16): Remove.
+	(vhsubq_u32): Remove.
+	(vhsubq_n_u32): Remove.
+	(vhaddq_u32): Remove.
+	(vhaddq_n_u32): Remove.
+	(vhsubq_s32): Remove.
+	(vhsubq_n_s32): Remove.
+	(vhaddq_s32): Remove.
+	(vhaddq_n_s32): Remove.
+	(vhaddq_m_n_s8): Remove.
+	(vhaddq_m_n_s32): Remove.
+	(vhaddq_m_n_s16): Remove.
+	(vhaddq_m_n_u8): Remove.
+	(vhaddq_m_n_u32): Remove.
+	(vhaddq_m_n_u16): Remove.
+	(vhaddq_m_s8): Remove.
+	(vhaddq_m_s32): Remove.
+	(vhaddq_m_s16): Remove.
+	(vhaddq_m_u8): Remove.
+	(vhaddq_m_u32): Remove.
+	(vhaddq_m_u16): Remove.
+	(vhsubq_m_n_s8): Remove.
+	(vhsubq_m_n_s32): Remove.
+	(vhsubq_m_n_s16): Remove.
+	(vhsubq_m_n_u8): Remove.
+	(vhsubq_m_n_u32): Remove.
+	(vhsubq_m_n_u16): Remove.
+	(vhsubq_m_s8): Remove.
+	(vhsubq_m_s32): Remove.
+	(vhsubq_m_s16): Remove.
+	(vhsubq_m_u8): Remove.
+	(vhsubq_m_u32): Remove.
+	(vhsubq_m_u16): Remove.
+	(vhaddq_x_n_s8): Remove.
+	(vhaddq_x_n_s16): Remove.
+	(vhaddq_x_n_s32): Remove.
+	(vhaddq_x_n_u8): Remove.
+	(vhaddq_x_n_u16): Remove.
+	(vhaddq_x_n_u32): Remove.
+	(vhaddq_x_s8): Remove.
+	(vhaddq_x_s16): Remove.
+	(vhaddq_x_s32): Remove.
+	(vhaddq_x_u8): Remove.
+	(vhaddq_x_u16): Remove.
+	(vhaddq_x_u32): Remove.
+	(vhsubq_x_n_s8): Remove.
+	(vhsubq_x_n_s16): Remove.
+	(vhsubq_x_n_s32): Remove.
+	(vhsubq_x_n_u8): Remove.
+	(vhsubq_x_n_u16): Remove.
+	(vhsubq_x_n_u32): Remove.
+	(vhsubq_x_s8): Remove.
+	(vhsubq_x_s16): Remove.
+	(vhsubq_x_s32): Remove.
+	(vhsubq_x_u8): Remove.
+	(vhsubq_x_u16): Remove.
+	(vhsubq_x_u32): Remove.
+	(__arm_vhsubq_u8): Remove.
+	(__arm_vhsubq_n_u8): Remove.
+	(__arm_vhaddq_u8): Remove.
+	(__arm_vhaddq_n_u8): Remove.
+	(__arm_vhsubq_s8): Remove.
+	(__arm_vhsubq_n_s8): Remove.
+	(__arm_vhaddq_s8): Remove.
+	(__arm_vhaddq_n_s8): Remove.
+	(__arm_vhsubq_u16): Remove.
+	(__arm_vhsubq_n_u16): Remove.
+	(__arm_vhaddq_u16): Remove.
+	(__arm_vhaddq_n_u16): Remove.
+	(__arm_vhsubq_s16): Remove.
+	(__arm_vhsubq_n_s16): Remove.
+	(__arm_vhaddq_s16): Remove.
+	(__arm_vhaddq_n_s16): Remove.
+	(__arm_vhsubq_u32): Remove.
+	(__arm_vhsubq_n_u32): Remove.
+	(__arm_vhaddq_u32): Remove.
+	(__arm_vhaddq_n_u32): Remove.
+	(__arm_vhsubq_s32): Remove.
+	(__arm_vhsubq_n_s32): Remove.
+	(__arm_vhaddq_s32): Remove.
+	(__arm_vhaddq_n_s32): Remove.
+	(__arm_vhaddq_m_n_s8): Remove.
+	(__arm_vhaddq_m_n_s32): Remove.
+	(__arm_vhaddq_m_n_s16): Remove.
+	(__arm_vhaddq_m_n_u8): Remove.
+	(__arm_vhaddq_m_n_u32): Remove.
+	(__arm_vhaddq_m_n_u16): Remove.
+	(__arm_vhaddq_m_s8): Remove.
+	(__arm_vhaddq_m_s32): Remove.
+	(__arm_vhaddq_m_s16): Remove.
+	(__arm_vhaddq_m_u8): Remove.
+	(__arm_vhaddq_m_u32): Remove.
+	(__arm_vhaddq_m_u16): Remove.
+	(__arm_vhsubq_m_n_s8): Remove.
+	(__arm_vhsubq_m_n_s32): Remove.
+	(__arm_vhsubq_m_n_s16): Remove.
+	(__arm_vhsubq_m_n_u8): Remove.
+	(__arm_vhsubq_m_n_u32): Remove.
+	(__arm_vhsubq_m_n_u16): Remove.
+	(__arm_vhsubq_m_s8): Remove.
+	(__arm_vhsubq_m_s32): Remove.
+	(__arm_vhsubq_m_s16): Remove.
+	(__arm_vhsubq_m_u8): Remove.
+	(__arm_vhsubq_m_u32): Remove.
+	(__arm_vhsubq_m_u16): Remove.
+	(__arm_vhaddq_x_n_s8): Remove.
+	(__arm_vhaddq_x_n_s16): Remove.
+	(__arm_vhaddq_x_n_s32): Remove.
+	(__arm_vhaddq_x_n_u8): Remove.
+	(__arm_vhaddq_x_n_u16): Remove.
+	(__arm_vhaddq_x_n_u32): Remove.
+	(__arm_vhaddq_x_s8): Remove.
+	(__arm_vhaddq_x_s16): Remove.
+	(__arm_vhaddq_x_s32): Remove.
+	(__arm_vhaddq_x_u8): Remove.
+	(__arm_vhaddq_x_u16): Remove.
+	(__arm_vhaddq_x_u32): Remove.
+	(__arm_vhsubq_x_n_s8): Remove.
+	(__arm_vhsubq_x_n_s16): Remove.
+	(__arm_vhsubq_x_n_s32): Remove.
+	(__arm_vhsubq_x_n_u8): Remove.
+	(__arm_vhsubq_x_n_u16): Remove.
+	(__arm_vhsubq_x_n_u32): Remove.
+	(__arm_vhsubq_x_s8): Remove.
+	(__arm_vhsubq_x_s16): Remove.
+	(__arm_vhsubq_x_s32): Remove.
+	(__arm_vhsubq_x_u8): Remove.
+	(__arm_vhsubq_x_u16): Remove.
+	(__arm_vhsubq_x_u32): Remove.
+	(__arm_vhsubq): Remove.
+	(__arm_vhaddq): Remove.
+	(__arm_vhaddq_m): Remove.
+	(__arm_vhsubq_m): Remove.
+	(__arm_vhaddq_x): Remove.
+	(__arm_vhsubq_x): Remove.
+	(vmulhq): Remove.
+	(vmulhq_m): Remove.
+	(vmulhq_x): Remove.
+	(vmulhq_u8): Remove.
+	(vmulhq_s8): Remove.
+	(vmulhq_u16): Remove.
+	(vmulhq_s16): Remove.
+	(vmulhq_u32): Remove.
+	(vmulhq_s32): Remove.
+	(vmulhq_m_s8): Remove.
+	(vmulhq_m_s32): Remove.
+	(vmulhq_m_s16): Remove.
+	(vmulhq_m_u8): Remove.
+	(vmulhq_m_u32): Remove.
+	(vmulhq_m_u16): Remove.
+	(vmulhq_x_s8): Remove.
+	(vmulhq_x_s16): Remove.
+	(vmulhq_x_s32): Remove.
+	(vmulhq_x_u8): Remove.
+	(vmulhq_x_u16): Remove.
+	(vmulhq_x_u32): Remove.
+	(__arm_vmulhq_u8): Remove.
+	(__arm_vmulhq_s8): Remove.
+	(__arm_vmulhq_u16): Remove.
+	(__arm_vmulhq_s16): Remove.
+	(__arm_vmulhq_u32): Remove.
+	(__arm_vmulhq_s32): Remove.
+	(__arm_vmulhq_m_s8): Remove.
+	(__arm_vmulhq_m_s32): Remove.
+	(__arm_vmulhq_m_s16): Remove.
+	(__arm_vmulhq_m_u8): Remove.
+	(__arm_vmulhq_m_u32): Remove.
+	(__arm_vmulhq_m_u16): Remove.
+	(__arm_vmulhq_x_s8): Remove.
+	(__arm_vmulhq_x_s16): Remove.
+	(__arm_vmulhq_x_s32): Remove.
+	(__arm_vmulhq_x_u8): Remove.
+	(__arm_vmulhq_x_u16): Remove.
+	(__arm_vmulhq_x_u32): Remove.
+	(__arm_vmulhq): Remove.
+	(__arm_vmulhq_m): Remove.
+	(__arm_vmulhq_x): Remove.
+	(vqsubq): Remove.
+	(vqaddq): Remove.
+	(vqaddq_m): Remove.
+	(vqsubq_m): Remove.
+	(vqsubq_u8): Remove.
+	(vqsubq_n_u8): Remove.
+	(vqaddq_u8): Remove.
+	(vqaddq_n_u8): Remove.
+	(vqsubq_s8): Remove.
+	(vqsubq_n_s8): Remove.
+	(vqaddq_s8): Remove.
+	(vqaddq_n_s8): Remove.
+	(vqsubq_u16): Remove.
+	(vqsubq_n_u16): Remove.
+	(vqaddq_u16): Remove.
+	(vqaddq_n_u16): Remove.
+	(vqsubq_s16): Remove.
+	(vqsubq_n_s16): Remove.
+	(vqaddq_s16): Remove.
+	(vqaddq_n_s16): Remove.
+	(vqsubq_u32): Remove.
+	(vqsubq_n_u32): Remove.
+	(vqaddq_u32): Remove.
+	(vqaddq_n_u32): Remove.
+	(vqsubq_s32): Remove.
+	(vqsubq_n_s32): Remove.
+	(vqaddq_s32): Remove.
+	(vqaddq_n_s32): Remove.
+	(vqaddq_m_n_s8): Remove.
+	(vqaddq_m_n_s32): Remove.
+	(vqaddq_m_n_s16): Remove.
+	(vqaddq_m_n_u8): Remove.
+	(vqaddq_m_n_u32): Remove.
+	(vqaddq_m_n_u16): Remove.
+	(vqaddq_m_s8): Remove.
+	(vqaddq_m_s32): Remove.
+	(vqaddq_m_s16): Remove.
+	(vqaddq_m_u8): Remove.
+	(vqaddq_m_u32): Remove.
+	(vqaddq_m_u16): Remove.
+	(vqsubq_m_n_s8): Remove.
+	(vqsubq_m_n_s32): Remove.
+	(vqsubq_m_n_s16): Remove.
+	(vqsubq_m_n_u8): Remove.
+	(vqsubq_m_n_u32): Remove.
+	(vqsubq_m_n_u16): Remove.
+	(vqsubq_m_s8): Remove.
+	(vqsubq_m_s32): Remove.
+	(vqsubq_m_s16): Remove.
+	(vqsubq_m_u8): Remove.
+	(vqsubq_m_u32): Remove.
+	(vqsubq_m_u16): Remove.
+	(__arm_vqsubq_u8): Remove.
+	(__arm_vqsubq_n_u8): Remove.
+	(__arm_vqaddq_u8): Remove.
+	(__arm_vqaddq_n_u8): Remove.
+	(__arm_vqsubq_s8): Remove.
+	(__arm_vqsubq_n_s8): Remove.
+	(__arm_vqaddq_s8): Remove.
+	(__arm_vqaddq_n_s8): Remove.
+	(__arm_vqsubq_u16): Remove.
+	(__arm_vqsubq_n_u16): Remove.
+	(__arm_vqaddq_u16): Remove.
+	(__arm_vqaddq_n_u16): Remove.
+	(__arm_vqsubq_s16): Remove.
+	(__arm_vqsubq_n_s16): Remove.
+	(__arm_vqaddq_s16): Remove.
+	(__arm_vqaddq_n_s16): Remove.
+	(__arm_vqsubq_u32): Remove.
+	(__arm_vqsubq_n_u32): Remove.
+	(__arm_vqaddq_u32): Remove.
+	(__arm_vqaddq_n_u32): Remove.
+	(__arm_vqsubq_s32): Remove.
+	(__arm_vqsubq_n_s32): Remove.
+	(__arm_vqaddq_s32): Remove.
+	(__arm_vqaddq_n_s32): Remove.
+	(__arm_vqaddq_m_n_s8): Remove.
+	(__arm_vqaddq_m_n_s32): Remove.
+	(__arm_vqaddq_m_n_s16): Remove.
+	(__arm_vqaddq_m_n_u8): Remove.
+	(__arm_vqaddq_m_n_u32): Remove.
+	(__arm_vqaddq_m_n_u16): Remove.
+	(__arm_vqaddq_m_s8): Remove.
+	(__arm_vqaddq_m_s32): Remove.
+	(__arm_vqaddq_m_s16): Remove.
+	(__arm_vqaddq_m_u8): Remove.
+	(__arm_vqaddq_m_u32): Remove.
+	(__arm_vqaddq_m_u16): Remove.
+	(__arm_vqsubq_m_n_s8): Remove.
+	(__arm_vqsubq_m_n_s32): Remove.
+	(__arm_vqsubq_m_n_s16): Remove.
+	(__arm_vqsubq_m_n_u8): Remove.
+	(__arm_vqsubq_m_n_u32): Remove.
+	(__arm_vqsubq_m_n_u16): Remove.
+	(__arm_vqsubq_m_s8): Remove.
+	(__arm_vqsubq_m_s32): Remove.
+	(__arm_vqsubq_m_s16): Remove.
+	(__arm_vqsubq_m_u8): Remove.
+	(__arm_vqsubq_m_u32): Remove.
+	(__arm_vqsubq_m_u16): Remove.
+	(__arm_vqsubq): Remove.
+	(__arm_vqaddq): Remove.
+	(__arm_vqaddq_m): Remove.
+	(__arm_vqsubq_m): Remove.
+	(vqdmulhq): Remove.
+	(vqdmulhq_m): Remove.
+	(vqdmulhq_s8): Remove.
+	(vqdmulhq_n_s8): Remove.
+	(vqdmulhq_s16): Remove.
+	(vqdmulhq_n_s16): Remove.
+	(vqdmulhq_s32): Remove.
+	(vqdmulhq_n_s32): Remove.
+	(vqdmulhq_m_n_s8): Remove.
+	(vqdmulhq_m_n_s32): Remove.
+	(vqdmulhq_m_n_s16): Remove.
+	(vqdmulhq_m_s8): Remove.
+	(vqdmulhq_m_s32): Remove.
+	(vqdmulhq_m_s16): Remove.
+	(__arm_vqdmulhq_s8): Remove.
+	(__arm_vqdmulhq_n_s8): Remove.
+	(__arm_vqdmulhq_s16): Remove.
+	(__arm_vqdmulhq_n_s16): Remove.
+	(__arm_vqdmulhq_s32): Remove.
+	(__arm_vqdmulhq_n_s32): Remove.
+	(__arm_vqdmulhq_m_n_s8): Remove.
+	(__arm_vqdmulhq_m_n_s32): Remove.
+	(__arm_vqdmulhq_m_n_s16): Remove.
+	(__arm_vqdmulhq_m_s8): Remove.
+	(__arm_vqdmulhq_m_s32): Remove.
+	(__arm_vqdmulhq_m_s16): Remove.
+	(__arm_vqdmulhq): Remove.
+	(__arm_vqdmulhq_m): Remove.
+	(vrhaddq): Remove.
+	(vrhaddq_m): Remove.
+	(vrhaddq_x): Remove.
+	(vrhaddq_u8): Remove.
+	(vrhaddq_s8): Remove.
+	(vrhaddq_u16): Remove.
+	(vrhaddq_s16): Remove.
+	(vrhaddq_u32): Remove.
+	(vrhaddq_s32): Remove.
+	(vrhaddq_m_s8): Remove.
+	(vrhaddq_m_s32): Remove.
+	(vrhaddq_m_s16): Remove.
+	(vrhaddq_m_u8): Remove.
+	(vrhaddq_m_u32): Remove.
+	(vrhaddq_m_u16): Remove.
+	(vrhaddq_x_s8): Remove.
+	(vrhaddq_x_s16): Remove.
+	(vrhaddq_x_s32): Remove.
+	(vrhaddq_x_u8): Remove.
+	(vrhaddq_x_u16): Remove.
+	(vrhaddq_x_u32): Remove.
+	(__arm_vrhaddq_u8): Remove.
+	(__arm_vrhaddq_s8): Remove.
+	(__arm_vrhaddq_u16): Remove.
+	(__arm_vrhaddq_s16): Remove.
+	(__arm_vrhaddq_u32): Remove.
+	(__arm_vrhaddq_s32): Remove.
+	(__arm_vrhaddq_m_s8): Remove.
+	(__arm_vrhaddq_m_s32): Remove.
+	(__arm_vrhaddq_m_s16): Remove.
+	(__arm_vrhaddq_m_u8): Remove.
+	(__arm_vrhaddq_m_u32): Remove.
+	(__arm_vrhaddq_m_u16): Remove.
+	(__arm_vrhaddq_x_s8): Remove.
+	(__arm_vrhaddq_x_s16): Remove.
+	(__arm_vrhaddq_x_s32): Remove.
+	(__arm_vrhaddq_x_u8): Remove.
+	(__arm_vrhaddq_x_u16): Remove.
+	(__arm_vrhaddq_x_u32): Remove.
+	(__arm_vrhaddq): Remove.
+	(__arm_vrhaddq_m): Remove.
+	(__arm_vrhaddq_x): Remove.
+	(vrmulhq): Remove.
+	(vrmulhq_m): Remove.
+	(vrmulhq_x): Remove.
+	(vrmulhq_u8): Remove.
+	(vrmulhq_s8): Remove.
+	(vrmulhq_u16): Remove.
+	(vrmulhq_s16): Remove.
+	(vrmulhq_u32): Remove.
+	(vrmulhq_s32): Remove.
+	(vrmulhq_m_s8): Remove.
+	(vrmulhq_m_s32): Remove.
+	(vrmulhq_m_s16): Remove.
+	(vrmulhq_m_u8): Remove.
+	(vrmulhq_m_u32): Remove.
+	(vrmulhq_m_u16): Remove.
+	(vrmulhq_x_s8): Remove.
+	(vrmulhq_x_s16): Remove.
+	(vrmulhq_x_s32): Remove.
+	(vrmulhq_x_u8): Remove.
+	(vrmulhq_x_u16): Remove.
+	(vrmulhq_x_u32): Remove.
+	(__arm_vrmulhq_u8): Remove.
+	(__arm_vrmulhq_s8): Remove.
+	(__arm_vrmulhq_u16): Remove.
+	(__arm_vrmulhq_s16): Remove.
+	(__arm_vrmulhq_u32): Remove.
+	(__arm_vrmulhq_s32): Remove.
+	(__arm_vrmulhq_m_s8): Remove.
+	(__arm_vrmulhq_m_s32): Remove.
+	(__arm_vrmulhq_m_s16): Remove.
+	(__arm_vrmulhq_m_u8): Remove.
+	(__arm_vrmulhq_m_u32): Remove.
+	(__arm_vrmulhq_m_u16): Remove.
+	(__arm_vrmulhq_x_s8): Remove.
+	(__arm_vrmulhq_x_s16): Remove.
+	(__arm_vrmulhq_x_s32): Remove.
+	(__arm_vrmulhq_x_u8): Remove.
+	(__arm_vrmulhq_x_u16): Remove.
+	(__arm_vrmulhq_x_u32): Remove.
+	(__arm_vrmulhq): Remove.
+	(__arm_vrmulhq_m): Remove.
+	(__arm_vrmulhq_x): Remove.
+
+2023-05-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/iterators.md (MVE_INT_SU_BINARY): New.
+	(mve_insn): Add vabdq, vhaddq, vhsubq, vmulhq, vqaddq, vqdmulhq,
+	vqrdmulhq, vqrshlq, vqshlq, vqsubq, vrhaddq, vrmulhq, vrshlq.
+	(supf): Add VQDMULHQ_S, VQRDMULHQ_S.
+	* config/arm/mve.md (mve_vabdq_<supf><mode>)
+	(@mve_vhaddq_<supf><mode>, mve_vhsubq_<supf><mode>)
+	(mve_vmulhq_<supf><mode>, mve_vqaddq_<supf><mode>)
+	(mve_vqdmulhq_s<mode>, mve_vqrdmulhq_s<mode>)
+	(mve_vqrshlq_<supf><mode>, mve_vqshlq_<supf><mode>)
+	(mve_vqsubq_<supf><mode>, @mve_vrhaddq_<supf><mode>)
+	(mve_vrmulhq_<supf><mode>, mve_vrshlq_<supf><mode>): Merge into
+	...
+	(@mve_<mve_insn>q_<supf><mode>): ... this.
+	* config/arm/vec-common.md (avg<mode>3_floor, uavg<mode>3_floor)
+	(avg<mode>3_ceil, uavg<mode>3_ceil): Use gen_mve_q instead of
+	gen_mve_vhaddq / gen_mve_vrhaddq.
+
+2023-05-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/iterators.md (MVE_INT_SU_M_N_BINARY): New.
+	(mve_insn): Add vhaddq, vhsubq, vmlaq, vmlasq, vqaddq, vqdmlahq,
+	vqdmlashq, vqdmulhq, vqrdmlahq, vqrdmlashq, vqrdmulhq, vqsubq.
+	(supf): Add VQDMLAHQ_M_N_S, VQDMLASHQ_M_N_S, VQRDMLAHQ_M_N_S,
+	VQRDMLASHQ_M_N_S, VQDMULHQ_M_N_S, VQRDMULHQ_M_N_S.
+	* config/arm/mve.md (mve_vhaddq_m_n_<supf><mode>)
+	(mve_vhsubq_m_n_<supf><mode>, mve_vmlaq_m_n_<supf><mode>)
+	(mve_vmlasq_m_n_<supf><mode>, mve_vqaddq_m_n_<supf><mode>)
+	(mve_vqdmlahq_m_n_s<mode>, mve_vqdmlashq_m_n_s<mode>)
+	(mve_vqrdmlahq_m_n_s<mode>, mve_vqrdmlashq_m_n_s<mode>)
+	(mve_vqsubq_m_n_<supf><mode>, mve_vqdmulhq_m_n_s<mode>)
+	(mve_vqrdmulhq_m_n_s<mode>): Merge into ...
+	(@mve_<mve_insn>q_m_n_<supf><mode>): ... this.
+
+2023-05-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/iterators.md (MVE_INT_SU_N_BINARY): New.
+	(mve_insn): Add vhaddq, vhsubq, vqaddq, vqdmulhq, vqrdmulhq,
+	vqsubq.
+	(supf): Add VQDMULHQ_N_S, VQRDMULHQ_N_S.
+	* config/arm/mve.md (mve_vhaddq_n_<supf><mode>)
+	(mve_vhsubq_n_<supf><mode>, mve_vqaddq_n_<supf><mode>)
+	(mve_vqdmulhq_n_s<mode>, mve_vqrdmulhq_n_s<mode>)
+	(mve_vqsubq_n_<supf><mode>): Merge into ...
+	(@mve_<mve_insn>q_n_<supf><mode>): ... this.
+
+2023-05-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/iterators.md (MVE_INT_SU_M_BINARY): New.
+	(mve_insn): Add vabdq, vhaddq, vhsubq, vmaxq, vminq, vmulhq,
+	vqaddq, vqdmladhq, vqdmladhxq, vqdmlsdhq, vqdmlsdhxq, vqdmulhq,
+	vqrdmladhq, vqrdmladhxq, vqrdmlsdhq, vqrdmlsdhxq, vqrdmulhq,
+	vqrshlq, vqshlq, vqsubq, vrhaddq, vrmulhq, vrshlq, vshlq.
+	(supf): Add VQDMLADHQ_M_S, VQDMLADHXQ_M_S, VQDMLSDHQ_M_S,
+	VQDMLSDHXQ_M_S, VQDMULHQ_M_S, VQRDMLADHQ_M_S, VQRDMLADHXQ_M_S,
+	VQRDMLSDHQ_M_S, VQRDMLSDHXQ_M_S, VQRDMULHQ_M_S.
+	* config/arm/mve.md (@mve_<mve_insn>q_m_<supf><mode>): New.
+	(mve_vshlq_m_<supf><mode>): Merged into
+	@mve_<mve_insn>q_m_<supf><mode>.
+	(mve_vabdq_m_<supf><mode>): Likewise.
+	(mve_vhaddq_m_<supf><mode>): Likewise.
+	(mve_vhsubq_m_<supf><mode>): Likewise.
+	(mve_vmaxq_m_<supf><mode>): Likewise.
+	(mve_vminq_m_<supf><mode>): Likewise.
+	(mve_vmulhq_m_<supf><mode>): Likewise.
+	(mve_vqaddq_m_<supf><mode>): Likewise.
+	(mve_vqrshlq_m_<supf><mode>): Likewise.
+	(mve_vqshlq_m_<supf><mode>): Likewise.
+	(mve_vqsubq_m_<supf><mode>): Likewise.
+	(mve_vrhaddq_m_<supf><mode>): Likewise.
+	(mve_vrmulhq_m_<supf><mode>): Likewise.
+	(mve_vrshlq_m_<supf><mode>): Likewise.
+	(mve_vqdmladhq_m_s<mode>): Likewise.
+	(mve_vqdmladhxq_m_s<mode>): Likewise.
+	(mve_vqdmlsdhq_m_s<mode>): Likewise.
+	(mve_vqdmlsdhxq_m_s<mode>): Likewise.
+	(mve_vqdmulhq_m_s<mode>): Likewise.
+	(mve_vqrdmladhq_m_s<mode>): Likewise.
+	(mve_vqrdmladhxq_m_s<mode>): Likewise.
+	(mve_vqrdmlsdhq_m_s<mode>): Likewise.
+	(mve_vqrdmlsdhxq_m_s<mode>): Likewise.
+	(mve_vqrdmulhq_m_s<mode>): Likewise.
+
+2023-05-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-base.cc (FUNCTION_WITHOUT_M_N): New. (vcreateq): New.
+	* config/arm/arm-mve-builtins-base.def (vcreateq): New.
+	* config/arm/arm-mve-builtins-base.h (vcreateq): New.
+	* config/arm/arm_mve.h (vcreateq_f16): Remove.
+	(vcreateq_f32): Remove.
+	(vcreateq_u8): Remove.
+	(vcreateq_u16): Remove.
+	(vcreateq_u32): Remove.
+	(vcreateq_u64): Remove.
+	(vcreateq_s8): Remove.
+	(vcreateq_s16): Remove.
+	(vcreateq_s32): Remove.
+	(vcreateq_s64): Remove.
+	(__arm_vcreateq_u8): Remove.
+	(__arm_vcreateq_u16): Remove.
+	(__arm_vcreateq_u32): Remove.
+	(__arm_vcreateq_u64): Remove.
+	(__arm_vcreateq_s8): Remove.
+	(__arm_vcreateq_s16): Remove.
+	(__arm_vcreateq_s32): Remove.
+	(__arm_vcreateq_s64): Remove.
+	(__arm_vcreateq_f16): Remove.
+	(__arm_vcreateq_f32): Remove.
+
+2023-05-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/iterators.md (MVE_FP_CREATE_ONLY): New.
+	(mve_insn): Add VCREATEQ_S, VCREATEQ_U, VCREATEQ_F.
+	* config/arm/mve.md (mve_vcreateq_f<mode>): Rename into ...
+	(@mve_<mve_insn>q_f<mode>): ... this.
+	(mve_vcreateq_<supf><mode>): Rename into ...
+	(@mve_<mve_insn>q_<supf><mode>): ... this.
+
+2023-05-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-shapes.cc (create): New.
+	* config/arm/arm-mve-builtins-shapes.h: (create): New.
+
+2023-05-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-functions.h (class
+	unspec_mve_function_exact_insn): New.
+
+2023-05-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-base.cc (FUNCTION_WITH_RTX_M_N_NO_N_F): New.
+	(vorrq): New.
+	* config/arm/arm-mve-builtins-base.def (vorrq): New.
+	* config/arm/arm-mve-builtins-base.h (vorrq): New.
+	* config/arm/arm-mve-builtins.cc
+	(function_instance::has_inactive_argument): Handle vorrq.
+	* config/arm/arm_mve.h (vorrq): Remove.
+	(vorrq_m_n): Remove.
+	(vorrq_m): Remove.
+	(vorrq_x): Remove.
+	(vorrq_u8): Remove.
+	(vorrq_s8): Remove.
+	(vorrq_u16): Remove.
+	(vorrq_s16): Remove.
+	(vorrq_u32): Remove.
+	(vorrq_s32): Remove.
+	(vorrq_n_u16): Remove.
+	(vorrq_f16): Remove.
+	(vorrq_n_s16): Remove.
+	(vorrq_n_u32): Remove.
+	(vorrq_f32): Remove.
+	(vorrq_n_s32): Remove.
+	(vorrq_m_n_s16): Remove.
+	(vorrq_m_n_u16): Remove.
+	(vorrq_m_n_s32): Remove.
+	(vorrq_m_n_u32): Remove.
+	(vorrq_m_s8): Remove.
+	(vorrq_m_s32): Remove.
+	(vorrq_m_s16): Remove.
+	(vorrq_m_u8): Remove.
+	(vorrq_m_u32): Remove.
+	(vorrq_m_u16): Remove.
+	(vorrq_m_f32): Remove.
+	(vorrq_m_f16): Remove.
+	(vorrq_x_s8): Remove.
+	(vorrq_x_s16): Remove.
+	(vorrq_x_s32): Remove.
+	(vorrq_x_u8): Remove.
+	(vorrq_x_u16): Remove.
+	(vorrq_x_u32): Remove.
+	(vorrq_x_f16): Remove.
+	(vorrq_x_f32): Remove.
+	(__arm_vorrq_u8): Remove.
+	(__arm_vorrq_s8): Remove.
+	(__arm_vorrq_u16): Remove.
+	(__arm_vorrq_s16): Remove.
+	(__arm_vorrq_u32): Remove.
+	(__arm_vorrq_s32): Remove.
+	(__arm_vorrq_n_u16): Remove.
+	(__arm_vorrq_n_s16): Remove.
+	(__arm_vorrq_n_u32): Remove.
+	(__arm_vorrq_n_s32): Remove.
+	(__arm_vorrq_m_n_s16): Remove.
+	(__arm_vorrq_m_n_u16): Remove.
+	(__arm_vorrq_m_n_s32): Remove.
+	(__arm_vorrq_m_n_u32): Remove.
+	(__arm_vorrq_m_s8): Remove.
+	(__arm_vorrq_m_s32): Remove.
+	(__arm_vorrq_m_s16): Remove.
+	(__arm_vorrq_m_u8): Remove.
+	(__arm_vorrq_m_u32): Remove.
+	(__arm_vorrq_m_u16): Remove.
+	(__arm_vorrq_x_s8): Remove.
+	(__arm_vorrq_x_s16): Remove.
+	(__arm_vorrq_x_s32): Remove.
+	(__arm_vorrq_x_u8): Remove.
+	(__arm_vorrq_x_u16): Remove.
+	(__arm_vorrq_x_u32): Remove.
+	(__arm_vorrq_f16): Remove.
+	(__arm_vorrq_f32): Remove.
+	(__arm_vorrq_m_f32): Remove.
+	(__arm_vorrq_m_f16): Remove.
+	(__arm_vorrq_x_f16): Remove.
+	(__arm_vorrq_x_f32): Remove.
+	(__arm_vorrq): Remove.
+	(__arm_vorrq_m_n): Remove.
+	(__arm_vorrq_m): Remove.
+	(__arm_vorrq_x): Remove.
+
+2023-05-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-shapes.cc (binary_orrq): New.
+	* config/arm/arm-mve-builtins-shapes.h (binary_orrq): New.
+	* config/arm/arm-mve-builtins.cc (preds_m_or_none): Remove static.
+	* config/arm/arm-mve-builtins.h (preds_m_or_none): Declare.
+
+2023-05-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-base.cc (FUNCTION_WITH_RTX_M): New.
+	(vandq,veorq): New.
+	* config/arm/arm-mve-builtins-base.def (vandq, veorq): New.
+	* config/arm/arm-mve-builtins-base.h (vandq, veorq): New.
+	* config/arm/arm_mve.h (vandq): Remove.
+	(vandq_m): Remove.
+	(vandq_x): Remove.
+	(vandq_u8): Remove.
+	(vandq_s8): Remove.
+	(vandq_u16): Remove.
+	(vandq_s16): Remove.
+	(vandq_u32): Remove.
+	(vandq_s32): Remove.
+	(vandq_f16): Remove.
+	(vandq_f32): Remove.
+	(vandq_m_s8): Remove.
+	(vandq_m_s32): Remove.
+	(vandq_m_s16): Remove.
+	(vandq_m_u8): Remove.
+	(vandq_m_u32): Remove.
+	(vandq_m_u16): Remove.
+	(vandq_m_f32): Remove.
+	(vandq_m_f16): Remove.
+	(vandq_x_s8): Remove.
+	(vandq_x_s16): Remove.
+	(vandq_x_s32): Remove.
+	(vandq_x_u8): Remove.
+	(vandq_x_u16): Remove.
+	(vandq_x_u32): Remove.
+	(vandq_x_f16): Remove.
+	(vandq_x_f32): Remove.
+	(__arm_vandq_u8): Remove.
+	(__arm_vandq_s8): Remove.
+	(__arm_vandq_u16): Remove.
+	(__arm_vandq_s16): Remove.
+	(__arm_vandq_u32): Remove.
+	(__arm_vandq_s32): Remove.
+	(__arm_vandq_m_s8): Remove.
+	(__arm_vandq_m_s32): Remove.
+	(__arm_vandq_m_s16): Remove.
+	(__arm_vandq_m_u8): Remove.
+	(__arm_vandq_m_u32): Remove.
+	(__arm_vandq_m_u16): Remove.
+	(__arm_vandq_x_s8): Remove.
+	(__arm_vandq_x_s16): Remove.
+	(__arm_vandq_x_s32): Remove.
+	(__arm_vandq_x_u8): Remove.
+	(__arm_vandq_x_u16): Remove.
+	(__arm_vandq_x_u32): Remove.
+	(__arm_vandq_f16): Remove.
+	(__arm_vandq_f32): Remove.
+	(__arm_vandq_m_f32): Remove.
+	(__arm_vandq_m_f16): Remove.
+	(__arm_vandq_x_f16): Remove.
+	(__arm_vandq_x_f32): Remove.
+	(__arm_vandq): Remove.
+	(__arm_vandq_m): Remove.
+	(__arm_vandq_x): Remove.
+	(veorq_m): Remove.
+	(veorq_x): Remove.
+	(veorq_u8): Remove.
+	(veorq_s8): Remove.
+	(veorq_u16): Remove.
+	(veorq_s16): Remove.
+	(veorq_u32): Remove.
+	(veorq_s32): Remove.
+	(veorq_f16): Remove.
+	(veorq_f32): Remove.
+	(veorq_m_s8): Remove.
+	(veorq_m_s32): Remove.
+	(veorq_m_s16): Remove.
+	(veorq_m_u8): Remove.
+	(veorq_m_u32): Remove.
+	(veorq_m_u16): Remove.
+	(veorq_m_f32): Remove.
+	(veorq_m_f16): Remove.
+	(veorq_x_s8): Remove.
+	(veorq_x_s16): Remove.
+	(veorq_x_s32): Remove.
+	(veorq_x_u8): Remove.
+	(veorq_x_u16): Remove.
+	(veorq_x_u32): Remove.
+	(veorq_x_f16): Remove.
+	(veorq_x_f32): Remove.
+	(__arm_veorq_u8): Remove.
+	(__arm_veorq_s8): Remove.
+	(__arm_veorq_u16): Remove.
+	(__arm_veorq_s16): Remove.
+	(__arm_veorq_u32): Remove.
+	(__arm_veorq_s32): Remove.
+	(__arm_veorq_m_s8): Remove.
+	(__arm_veorq_m_s32): Remove.
+	(__arm_veorq_m_s16): Remove.
+	(__arm_veorq_m_u8): Remove.
+	(__arm_veorq_m_u32): Remove.
+	(__arm_veorq_m_u16): Remove.
+	(__arm_veorq_x_s8): Remove.
+	(__arm_veorq_x_s16): Remove.
+	(__arm_veorq_x_s32): Remove.
+	(__arm_veorq_x_u8): Remove.
+	(__arm_veorq_x_u16): Remove.
+	(__arm_veorq_x_u32): Remove.
+	(__arm_veorq_f16): Remove.
+	(__arm_veorq_f32): Remove.
+	(__arm_veorq_m_f32): Remove.
+	(__arm_veorq_m_f16): Remove.
+	(__arm_veorq_x_f16): Remove.
+	(__arm_veorq_x_f32): Remove.
+	(__arm_veorq): Remove.
+	(__arm_veorq_m): Remove.
+	(__arm_veorq_x): Remove.
+
+2023-05-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/iterators.md (MVE_INT_M_BINARY_LOGIC)
+	(MVE_FP_M_BINARY_LOGIC): New.
+	(MVE_INT_M_N_BINARY_LOGIC): New.
+	(MVE_INT_N_BINARY_LOGIC): New.
+	(mve_insn): Add vand, veor, vorr, vbic.
+	* config/arm/mve.md (mve_vandq_m_<supf><mode>)
+	(mve_veorq_m_<supf><mode>, mve_vorrq_m_<supf><mode>)
+	(mve_vbicq_m_<supf><mode>): Merge into ...
+	(@mve_<mve_insn>q_m_<supf><mode>): ... this.
+	(mve_vandq_m_f<mode>, mve_veorq_m_f<mode>, mve_vorrq_m_f<mode>)
+	(mve_vbicq_m_f<mode>): Merge into ...
+	(@mve_<mve_insn>q_m_f<mode>): ... this.
+	(mve_vorrq_n_<supf><mode>)
+	(mve_vbicq_n_<supf><mode>): Merge into ...
+	(@mve_<mve_insn>q_n_<supf><mode>): ... this.
+	(mve_vorrq_m_n_<supf><mode>, mve_vbicq_m_n_<supf><mode>): Merge
+	into ...
+	(@mve_<mve_insn>q_m_n_<supf><mode>): ... this.
+
+2023-05-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-shapes.cc (binary): New.
+	* config/arm/arm-mve-builtins-shapes.h (binary): New.
+
+2023-05-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-base.cc (FUNCTION_WITH_RTX_M_N):
+	New.
+	(vaddq, vmulq, vsubq): New.
+	* config/arm/arm-mve-builtins-base.def (vaddq, vmulq, vsubq): New.
+	* config/arm/arm-mve-builtins-base.h (vaddq, vmulq, vsubq): New.
+	* config/arm/arm_mve.h (vaddq): Remove.
+	(vaddq_m): Remove.
+	(vaddq_x): Remove.
+	(vaddq_n_u8): Remove.
+	(vaddq_n_s8): Remove.
+	(vaddq_n_u16): Remove.
+	(vaddq_n_s16): Remove.
+	(vaddq_n_u32): Remove.
+	(vaddq_n_s32): Remove.
+	(vaddq_n_f16): Remove.
+	(vaddq_n_f32): Remove.
+	(vaddq_m_n_s8): Remove.
+	(vaddq_m_n_s32): Remove.
+	(vaddq_m_n_s16): Remove.
+	(vaddq_m_n_u8): Remove.
+	(vaddq_m_n_u32): Remove.
+	(vaddq_m_n_u16): Remove.
+	(vaddq_m_s8): Remove.
+	(vaddq_m_s32): Remove.
+	(vaddq_m_s16): Remove.
+	(vaddq_m_u8): Remove.
+	(vaddq_m_u32): Remove.
+	(vaddq_m_u16): Remove.
+	(vaddq_m_f32): Remove.
+	(vaddq_m_f16): Remove.
+	(vaddq_m_n_f32): Remove.
+	(vaddq_m_n_f16): Remove.
+	(vaddq_s8): Remove.
+	(vaddq_s16): Remove.
+	(vaddq_s32): Remove.
+	(vaddq_u8): Remove.
+	(vaddq_u16): Remove.
+	(vaddq_u32): Remove.
+	(vaddq_f16): Remove.
+	(vaddq_f32): Remove.
+	(vaddq_x_s8): Remove.
+	(vaddq_x_s16): Remove.
+	(vaddq_x_s32): Remove.
+	(vaddq_x_n_s8): Remove.
+	(vaddq_x_n_s16): Remove.
+	(vaddq_x_n_s32): Remove.
+	(vaddq_x_u8): Remove.
+	(vaddq_x_u16): Remove.
+	(vaddq_x_u32): Remove.
+	(vaddq_x_n_u8): Remove.
+	(vaddq_x_n_u16): Remove.
+	(vaddq_x_n_u32): Remove.
+	(vaddq_x_f16): Remove.
+	(vaddq_x_f32): Remove.
+	(vaddq_x_n_f16): Remove.
+	(vaddq_x_n_f32): Remove.
+	(__arm_vaddq_n_u8): Remove.
+	(__arm_vaddq_n_s8): Remove.
+	(__arm_vaddq_n_u16): Remove.
+	(__arm_vaddq_n_s16): Remove.
+	(__arm_vaddq_n_u32): Remove.
+	(__arm_vaddq_n_s32): Remove.
+	(__arm_vaddq_m_n_s8): Remove.
+	(__arm_vaddq_m_n_s32): Remove.
+	(__arm_vaddq_m_n_s16): Remove.
+	(__arm_vaddq_m_n_u8): Remove.
+	(__arm_vaddq_m_n_u32): Remove.
+	(__arm_vaddq_m_n_u16): Remove.
+	(__arm_vaddq_m_s8): Remove.
+	(__arm_vaddq_m_s32): Remove.
+	(__arm_vaddq_m_s16): Remove.
+	(__arm_vaddq_m_u8): Remove.
+	(__arm_vaddq_m_u32): Remove.
+	(__arm_vaddq_m_u16): Remove.
+	(__arm_vaddq_s8): Remove.
+	(__arm_vaddq_s16): Remove.
+	(__arm_vaddq_s32): Remove.
+	(__arm_vaddq_u8): Remove.
+	(__arm_vaddq_u16): Remove.
+	(__arm_vaddq_u32): Remove.
+	(__arm_vaddq_x_s8): Remove.
+	(__arm_vaddq_x_s16): Remove.
+	(__arm_vaddq_x_s32): Remove.
+	(__arm_vaddq_x_n_s8): Remove.
+	(__arm_vaddq_x_n_s16): Remove.
+	(__arm_vaddq_x_n_s32): Remove.
+	(__arm_vaddq_x_u8): Remove.
+	(__arm_vaddq_x_u16): Remove.
+	(__arm_vaddq_x_u32): Remove.
+	(__arm_vaddq_x_n_u8): Remove.
+	(__arm_vaddq_x_n_u16): Remove.
+	(__arm_vaddq_x_n_u32): Remove.
+	(__arm_vaddq_n_f16): Remove.
+	(__arm_vaddq_n_f32): Remove.
+	(__arm_vaddq_m_f32): Remove.
+	(__arm_vaddq_m_f16): Remove.
+	(__arm_vaddq_m_n_f32): Remove.
+	(__arm_vaddq_m_n_f16): Remove.
+	(__arm_vaddq_f16): Remove.
+	(__arm_vaddq_f32): Remove.
+	(__arm_vaddq_x_f16): Remove.
+	(__arm_vaddq_x_f32): Remove.
+	(__arm_vaddq_x_n_f16): Remove.
+	(__arm_vaddq_x_n_f32): Remove.
+	(__arm_vaddq): Remove.
+	(__arm_vaddq_m): Remove.
+	(__arm_vaddq_x): Remove.
+	(vmulq): Remove.
+	(vmulq_m): Remove.
+	(vmulq_x): Remove.
+	(vmulq_u8): Remove.
+	(vmulq_n_u8): Remove.
+	(vmulq_s8): Remove.
+	(vmulq_n_s8): Remove.
+	(vmulq_u16): Remove.
+	(vmulq_n_u16): Remove.
+	(vmulq_s16): Remove.
+	(vmulq_n_s16): Remove.
+	(vmulq_u32): Remove.
+	(vmulq_n_u32): Remove.
+	(vmulq_s32): Remove.
+	(vmulq_n_s32): Remove.
+	(vmulq_n_f16): Remove.
+	(vmulq_f16): Remove.
+	(vmulq_n_f32): Remove.
+	(vmulq_f32): Remove.
+	(vmulq_m_n_s8): Remove.
+	(vmulq_m_n_s32): Remove.
+	(vmulq_m_n_s16): Remove.
+	(vmulq_m_n_u8): Remove.
+	(vmulq_m_n_u32): Remove.
+	(vmulq_m_n_u16): Remove.
+	(vmulq_m_s8): Remove.
+	(vmulq_m_s32): Remove.
+	(vmulq_m_s16): Remove.
+	(vmulq_m_u8): Remove.
+	(vmulq_m_u32): Remove.
+	(vmulq_m_u16): Remove.
+	(vmulq_m_f32): Remove.
+	(vmulq_m_f16): Remove.
+	(vmulq_m_n_f32): Remove.
+	(vmulq_m_n_f16): Remove.
+	(vmulq_x_s8): Remove.
+	(vmulq_x_s16): Remove.
+	(vmulq_x_s32): Remove.
+	(vmulq_x_n_s8): Remove.
+	(vmulq_x_n_s16): Remove.
+	(vmulq_x_n_s32): Remove.
+	(vmulq_x_u8): Remove.
+	(vmulq_x_u16): Remove.
+	(vmulq_x_u32): Remove.
+	(vmulq_x_n_u8): Remove.
+	(vmulq_x_n_u16): Remove.
+	(vmulq_x_n_u32): Remove.
+	(vmulq_x_f16): Remove.
+	(vmulq_x_f32): Remove.
+	(vmulq_x_n_f16): Remove.
+	(vmulq_x_n_f32): Remove.
+	(__arm_vmulq_u8): Remove.
+	(__arm_vmulq_n_u8): Remove.
+	(__arm_vmulq_s8): Remove.
+	(__arm_vmulq_n_s8): Remove.
+	(__arm_vmulq_u16): Remove.
+	(__arm_vmulq_n_u16): Remove.
+	(__arm_vmulq_s16): Remove.
+	(__arm_vmulq_n_s16): Remove.
+	(__arm_vmulq_u32): Remove.
+	(__arm_vmulq_n_u32): Remove.
+	(__arm_vmulq_s32): Remove.
+	(__arm_vmulq_n_s32): Remove.
+	(__arm_vmulq_m_n_s8): Remove.
+	(__arm_vmulq_m_n_s32): Remove.
+	(__arm_vmulq_m_n_s16): Remove.
+	(__arm_vmulq_m_n_u8): Remove.
+	(__arm_vmulq_m_n_u32): Remove.
+	(__arm_vmulq_m_n_u16): Remove.
+	(__arm_vmulq_m_s8): Remove.
+	(__arm_vmulq_m_s32): Remove.
+	(__arm_vmulq_m_s16): Remove.
+	(__arm_vmulq_m_u8): Remove.
+	(__arm_vmulq_m_u32): Remove.
+	(__arm_vmulq_m_u16): Remove.
+	(__arm_vmulq_x_s8): Remove.
+	(__arm_vmulq_x_s16): Remove.
+	(__arm_vmulq_x_s32): Remove.
+	(__arm_vmulq_x_n_s8): Remove.
+	(__arm_vmulq_x_n_s16): Remove.
+	(__arm_vmulq_x_n_s32): Remove.
+	(__arm_vmulq_x_u8): Remove.
+	(__arm_vmulq_x_u16): Remove.
+	(__arm_vmulq_x_u32): Remove.
+	(__arm_vmulq_x_n_u8): Remove.
+	(__arm_vmulq_x_n_u16): Remove.
+	(__arm_vmulq_x_n_u32): Remove.
+	(__arm_vmulq_n_f16): Remove.
+	(__arm_vmulq_f16): Remove.
+	(__arm_vmulq_n_f32): Remove.
+	(__arm_vmulq_f32): Remove.
+	(__arm_vmulq_m_f32): Remove.
+	(__arm_vmulq_m_f16): Remove.
+	(__arm_vmulq_m_n_f32): Remove.
+	(__arm_vmulq_m_n_f16): Remove.
+	(__arm_vmulq_x_f16): Remove.
+	(__arm_vmulq_x_f32): Remove.
+	(__arm_vmulq_x_n_f16): Remove.
+	(__arm_vmulq_x_n_f32): Remove.
+	(__arm_vmulq): Remove.
+	(__arm_vmulq_m): Remove.
+	(__arm_vmulq_x): Remove.
+	(vsubq): Remove.
+	(vsubq_m): Remove.
+	(vsubq_x): Remove.
+	(vsubq_n_f16): Remove.
+	(vsubq_n_f32): Remove.
+	(vsubq_u8): Remove.
+	(vsubq_n_u8): Remove.
+	(vsubq_s8): Remove.
+	(vsubq_n_s8): Remove.
+	(vsubq_u16): Remove.
+	(vsubq_n_u16): Remove.
+	(vsubq_s16): Remove.
+	(vsubq_n_s16): Remove.
+	(vsubq_u32): Remove.
+	(vsubq_n_u32): Remove.
+	(vsubq_s32): Remove.
+	(vsubq_n_s32): Remove.
+	(vsubq_f16): Remove.
+	(vsubq_f32): Remove.
+	(vsubq_m_s8): Remove.
+	(vsubq_m_u8): Remove.
+	(vsubq_m_s16): Remove.
+	(vsubq_m_u16): Remove.
+	(vsubq_m_s32): Remove.
+	(vsubq_m_u32): Remove.
+	(vsubq_m_n_s8): Remove.
+	(vsubq_m_n_s32): Remove.
+	(vsubq_m_n_s16): Remove.
+	(vsubq_m_n_u8): Remove.
+	(vsubq_m_n_u32): Remove.
+	(vsubq_m_n_u16): Remove.
+	(vsubq_m_f32): Remove.
+	(vsubq_m_f16): Remove.
+	(vsubq_m_n_f32): Remove.
+	(vsubq_m_n_f16): Remove.
+	(vsubq_x_s8): Remove.
+	(vsubq_x_s16): Remove.
+	(vsubq_x_s32): Remove.
+	(vsubq_x_n_s8): Remove.
+	(vsubq_x_n_s16): Remove.
+	(vsubq_x_n_s32): Remove.
+	(vsubq_x_u8): Remove.
+	(vsubq_x_u16): Remove.
+	(vsubq_x_u32): Remove.
+	(vsubq_x_n_u8): Remove.
+	(vsubq_x_n_u16): Remove.
+	(vsubq_x_n_u32): Remove.
+	(vsubq_x_f16): Remove.
+	(vsubq_x_f32): Remove.
+	(vsubq_x_n_f16): Remove.
+	(vsubq_x_n_f32): Remove.
+	(__arm_vsubq_u8): Remove.
+	(__arm_vsubq_n_u8): Remove.
+	(__arm_vsubq_s8): Remove.
+	(__arm_vsubq_n_s8): Remove.
+	(__arm_vsubq_u16): Remove.
+	(__arm_vsubq_n_u16): Remove.
+	(__arm_vsubq_s16): Remove.
+	(__arm_vsubq_n_s16): Remove.
+	(__arm_vsubq_u32): Remove.
+	(__arm_vsubq_n_u32): Remove.
+	(__arm_vsubq_s32): Remove.
+	(__arm_vsubq_n_s32): Remove.
+	(__arm_vsubq_m_s8): Remove.
+	(__arm_vsubq_m_u8): Remove.
+	(__arm_vsubq_m_s16): Remove.
+	(__arm_vsubq_m_u16): Remove.
+	(__arm_vsubq_m_s32): Remove.
+	(__arm_vsubq_m_u32): Remove.
+	(__arm_vsubq_m_n_s8): Remove.
+	(__arm_vsubq_m_n_s32): Remove.
+	(__arm_vsubq_m_n_s16): Remove.
+	(__arm_vsubq_m_n_u8): Remove.
+	(__arm_vsubq_m_n_u32): Remove.
+	(__arm_vsubq_m_n_u16): Remove.
+	(__arm_vsubq_x_s8): Remove.
+	(__arm_vsubq_x_s16): Remove.
+	(__arm_vsubq_x_s32): Remove.
+	(__arm_vsubq_x_n_s8): Remove.
+	(__arm_vsubq_x_n_s16): Remove.
+	(__arm_vsubq_x_n_s32): Remove.
+	(__arm_vsubq_x_u8): Remove.
+	(__arm_vsubq_x_u16): Remove.
+	(__arm_vsubq_x_u32): Remove.
+	(__arm_vsubq_x_n_u8): Remove.
+	(__arm_vsubq_x_n_u16): Remove.
+	(__arm_vsubq_x_n_u32): Remove.
+	(__arm_vsubq_n_f16): Remove.
+	(__arm_vsubq_n_f32): Remove.
+	(__arm_vsubq_f16): Remove.
+	(__arm_vsubq_f32): Remove.
+	(__arm_vsubq_m_f32): Remove.
+	(__arm_vsubq_m_f16): Remove.
+	(__arm_vsubq_m_n_f32): Remove.
+	(__arm_vsubq_m_n_f16): Remove.
+	(__arm_vsubq_x_f16): Remove.
+	(__arm_vsubq_x_f32): Remove.
+	(__arm_vsubq_x_n_f16): Remove.
+	(__arm_vsubq_x_n_f32): Remove.
+	(__arm_vsubq): Remove.
+	(__arm_vsubq_m): Remove.
+	(__arm_vsubq_x): Remove.
+	* config/arm/arm_mve_builtins.def (vsubq_u, vsubq_s, vsubq_f):
+	Remove.
+	(vmulq_u, vmulq_s, vmulq_f): Remove.
+	* config/arm/mve.md (mve_vsubq_<supf><mode>): Remove.
+	(mve_vmulq_<supf><mode>): Remove.
+
+2023-05-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/iterators.md (MVE_INT_BINARY_RTX, MVE_INT_M_BINARY)
+	(MVE_INT_M_N_BINARY, MVE_INT_N_BINARY, MVE_FP_M_BINARY)
+	(MVE_FP_M_N_BINARY, MVE_FP_N_BINARY, mve_addsubmul, mve_insn): New
+	iterators.
+	* config/arm/mve.md
+	(mve_vsubq_n_f<mode>, mve_vaddq_n_f<mode>, mve_vmulq_n_f<mode>):
+	Factorize into ...
+	(@mve_<mve_insn>q_n_f<mode>): ... this.
+	(mve_vaddq_n_<supf><mode>, mve_vmulq_n_<supf><mode>)
+	(mve_vsubq_n_<supf><mode>): Factorize into ...
+	(@mve_<mve_insn>q_n_<supf><mode>): ... this.
+	(mve_vaddq<mode>, mve_vmulq<mode>, mve_vsubq<mode>): Factorize
+	into ...
+	(mve_<mve_addsubmul>q<mode>): ... this.
+	(mve_vaddq_f<mode>, mve_vmulq_f<mode>, mve_vsubq_f<mode>):
+	Factorize into ...
+	(mve_<mve_addsubmul>q_f<mode>): ... this.
+	(mve_vaddq_m_<supf><mode>, mve_vmulq_m_<supf><mode>)
+	(mve_vsubq_m_<supf><mode>): Factorize into ...
+	(@mve_<mve_insn>q_m_<supf><mode>): ... this,
+	(mve_vaddq_m_n_<supf><mode>, mve_vmulq_m_n_<supf><mode>)
+	(mve_vsubq_m_n_<supf><mode>): Factorize into ...
+	(@mve_<mve_insn>q_m_n_<supf><mode>): ... this.
+	(mve_vaddq_m_f<mode>, mve_vmulq_m_f<mode>, mve_vsubq_m_f<mode>):
+	Factorize into ...
+	(@mve_<mve_insn>q_m_f<mode>): ... this.
+	(mve_vaddq_m_n_f<mode>, mve_vmulq_m_n_f<mode>)
+	(mve_vsubq_m_n_f<mode>): Factorize into ...
+	(@mve_<mve_insn>q_m_n_f<mode>): ... this.
+
+2023-05-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-functions.h (class
+	unspec_based_mve_function_base): New.
+	(class unspec_based_mve_function_exact_insn): New.
+
+2023-05-03  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-shapes.cc (binary_opt_n): New.
+	* config/arm/arm-mve-builtins-shapes.h (binary_opt_n): New.
+
+2023-05-03  Murray Steele  <murray.steele@arm.com>
+	    Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-base.cc (class
+	vuninitializedq_impl): New.
+	* config/arm/arm-mve-builtins-base.def (vuninitializedq): New.
+	* config/arm/arm-mve-builtins-base.h (vuninitializedq): New
+	declaration.
+	* config/arm/arm-mve-builtins-shapes.cc	(inherent): New.
+	* config/arm/arm-mve-builtins-shapes.h (inherent): New
+	declaration.
+	* config/arm/arm_mve_types.h (__arm_vuninitializedq): Move to ...
+	* config/arm/arm_mve.h (__arm_vuninitializedq): ... here.
+	(__arm_vuninitializedq_u8): Remove.
+	(__arm_vuninitializedq_u16): Remove.
+	(__arm_vuninitializedq_u32): Remove.
+	(__arm_vuninitializedq_u64): Remove.
+	(__arm_vuninitializedq_s8): Remove.
+	(__arm_vuninitializedq_s16): Remove.
+	(__arm_vuninitializedq_s32): Remove.
+	(__arm_vuninitializedq_s64): Remove.
+	(__arm_vuninitializedq_f16): Remove.
+	(__arm_vuninitializedq_f32): Remove.
+
+2023-05-03  Murray Steele  <murray.steele@arm.com>
+	    Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-base.cc (vreinterpretq_impl): New class.
+	* config/arm/arm-mve-builtins-base.def: Define vreinterpretq.
+	* config/arm/arm-mve-builtins-base.h (vreinterpretq): New declaration.
+	* config/arm/arm-mve-builtins-shapes.cc (parse_element_type): New function.
+	(parse_type): Likewise.
+	(parse_signature): Likewise.
+	(build_one): Likewise.
+	(build_all): Likewise.
+	(overloaded_base): New struct.
+	(unary_convert_def): Likewise.
+	* config/arm/arm-mve-builtins-shapes.h (unary_convert): Declare.
+	* config/arm/arm-mve-builtins.cc (TYPES_reinterpret_signed1): New
+	macro.
+	(TYPES_reinterpret_unsigned1): Likewise.
+	(TYPES_reinterpret_integer): Likewise.
+	(TYPES_reinterpret_integer1): Likewise.
+	(TYPES_reinterpret_float1): Likewise.
+	(TYPES_reinterpret_float): Likewise.
+	(reinterpret_integer): New.
+	(reinterpret_float): New.
+	(handle_arm_mve_h): Register builtins.
+	* config/arm/arm_mve.h (vreinterpretq_s16): Remove.
+	(vreinterpretq_s32): Likewise.
+	(vreinterpretq_s64): Likewise.
+	(vreinterpretq_s8): Likewise.
+	(vreinterpretq_u16): Likewise.
+	(vreinterpretq_u32): Likewise.
+	(vreinterpretq_u64): Likewise.
+	(vreinterpretq_u8): Likewise.
+	(vreinterpretq_f16): Likewise.
+	(vreinterpretq_f32): Likewise.
+	(vreinterpretq_s16_s32): Likewise.
+	(vreinterpretq_s16_s64): Likewise.
+	(vreinterpretq_s16_s8): Likewise.
+	(vreinterpretq_s16_u16): Likewise.
+	(vreinterpretq_s16_u32): Likewise.
+	(vreinterpretq_s16_u64): Likewise.
+	(vreinterpretq_s16_u8): Likewise.
+	(vreinterpretq_s32_s16): Likewise.
+	(vreinterpretq_s32_s64): Likewise.
+	(vreinterpretq_s32_s8): Likewise.
+	(vreinterpretq_s32_u16): Likewise.
+	(vreinterpretq_s32_u32): Likewise.
+	(vreinterpretq_s32_u64): Likewise.
+	(vreinterpretq_s32_u8): Likewise.
+	(vreinterpretq_s64_s16): Likewise.
+	(vreinterpretq_s64_s32): Likewise.
+	(vreinterpretq_s64_s8): Likewise.
+	(vreinterpretq_s64_u16): Likewise.
+	(vreinterpretq_s64_u32): Likewise.
+	(vreinterpretq_s64_u64): Likewise.
+	(vreinterpretq_s64_u8): Likewise.
+	(vreinterpretq_s8_s16): Likewise.
+	(vreinterpretq_s8_s32): Likewise.
+	(vreinterpretq_s8_s64): Likewise.
+	(vreinterpretq_s8_u16): Likewise.
+	(vreinterpretq_s8_u32): Likewise.
+	(vreinterpretq_s8_u64): Likewise.
+	(vreinterpretq_s8_u8): Likewise.
+	(vreinterpretq_u16_s16): Likewise.
+	(vreinterpretq_u16_s32): Likewise.
+	(vreinterpretq_u16_s64): Likewise.
+	(vreinterpretq_u16_s8): Likewise.
+	(vreinterpretq_u16_u32): Likewise.
+	(vreinterpretq_u16_u64): Likewise.
+	(vreinterpretq_u16_u8): Likewise.
+	(vreinterpretq_u32_s16): Likewise.
+	(vreinterpretq_u32_s32): Likewise.
+	(vreinterpretq_u32_s64): Likewise.
+	(vreinterpretq_u32_s8): Likewise.
+	(vreinterpretq_u32_u16): Likewise.
+	(vreinterpretq_u32_u64): Likewise.
+	(vreinterpretq_u32_u8): Likewise.
+	(vreinterpretq_u64_s16): Likewise.
+	(vreinterpretq_u64_s32): Likewise.
+	(vreinterpretq_u64_s64): Likewise.
+	(vreinterpretq_u64_s8): Likewise.
+	(vreinterpretq_u64_u16): Likewise.
+	(vreinterpretq_u64_u32): Likewise.
+	(vreinterpretq_u64_u8): Likewise.
+	(vreinterpretq_u8_s16): Likewise.
+	(vreinterpretq_u8_s32): Likewise.
+	(vreinterpretq_u8_s64): Likewise.
+	(vreinterpretq_u8_s8): Likewise.
+	(vreinterpretq_u8_u16): Likewise.
+	(vreinterpretq_u8_u32): Likewise.
+	(vreinterpretq_u8_u64): Likewise.
+	(vreinterpretq_s32_f16): Likewise.
+	(vreinterpretq_s32_f32): Likewise.
+	(vreinterpretq_u16_f16): Likewise.
+	(vreinterpretq_u16_f32): Likewise.
+	(vreinterpretq_u32_f16): Likewise.
+	(vreinterpretq_u32_f32): Likewise.
+	(vreinterpretq_u64_f16): Likewise.
+	(vreinterpretq_u64_f32): Likewise.
+	(vreinterpretq_u8_f16): Likewise.
+	(vreinterpretq_u8_f32): Likewise.
+	(vreinterpretq_f16_f32): Likewise.
+	(vreinterpretq_f16_s16): Likewise.
+	(vreinterpretq_f16_s32): Likewise.
+	(vreinterpretq_f16_s64): Likewise.
+	(vreinterpretq_f16_s8): Likewise.
+	(vreinterpretq_f16_u16): Likewise.
+	(vreinterpretq_f16_u32): Likewise.
+	(vreinterpretq_f16_u64): Likewise.
+	(vreinterpretq_f16_u8): Likewise.
+	(vreinterpretq_f32_f16): Likewise.
+	(vreinterpretq_f32_s16): Likewise.
+	(vreinterpretq_f32_s32): Likewise.
+	(vreinterpretq_f32_s64): Likewise.
+	(vreinterpretq_f32_s8): Likewise.
+	(vreinterpretq_f32_u16): Likewise.
+	(vreinterpretq_f32_u32): Likewise.
+	(vreinterpretq_f32_u64): Likewise.
+	(vreinterpretq_f32_u8): Likewise.
+	(vreinterpretq_s16_f16): Likewise.
+	(vreinterpretq_s16_f32): Likewise.
+	(vreinterpretq_s64_f16): Likewise.
+	(vreinterpretq_s64_f32): Likewise.
+	(vreinterpretq_s8_f16): Likewise.
+	(vreinterpretq_s8_f32): Likewise.
+	(__arm_vreinterpretq_f16): Likewise.
+	(__arm_vreinterpretq_f32): Likewise.
+	(__arm_vreinterpretq_s16): Likewise.
+	(__arm_vreinterpretq_s32): Likewise.
+	(__arm_vreinterpretq_s64): Likewise.
+	(__arm_vreinterpretq_s8): Likewise.
+	(__arm_vreinterpretq_u16): Likewise.
+	(__arm_vreinterpretq_u32): Likewise.
+	(__arm_vreinterpretq_u64): Likewise.
+	(__arm_vreinterpretq_u8): Likewise.
+	* config/arm/arm_mve_types.h (__arm_vreinterpretq_s16_s32): Remove.
+	(__arm_vreinterpretq_s16_s64): Likewise.
+	(__arm_vreinterpretq_s16_s8): Likewise.
+	(__arm_vreinterpretq_s16_u16): Likewise.
+	(__arm_vreinterpretq_s16_u32): Likewise.
+	(__arm_vreinterpretq_s16_u64): Likewise.
+	(__arm_vreinterpretq_s16_u8): Likewise.
+	(__arm_vreinterpretq_s32_s16): Likewise.
+	(__arm_vreinterpretq_s32_s64): Likewise.
+	(__arm_vreinterpretq_s32_s8): Likewise.
+	(__arm_vreinterpretq_s32_u16): Likewise.
+	(__arm_vreinterpretq_s32_u32): Likewise.
+	(__arm_vreinterpretq_s32_u64): Likewise.
+	(__arm_vreinterpretq_s32_u8): Likewise.
+	(__arm_vreinterpretq_s64_s16): Likewise.
+	(__arm_vreinterpretq_s64_s32): Likewise.
+	(__arm_vreinterpretq_s64_s8): Likewise.
+	(__arm_vreinterpretq_s64_u16): Likewise.
+	(__arm_vreinterpretq_s64_u32): Likewise.
+	(__arm_vreinterpretq_s64_u64): Likewise.
+	(__arm_vreinterpretq_s64_u8): Likewise.
+	(__arm_vreinterpretq_s8_s16): Likewise.
+	(__arm_vreinterpretq_s8_s32): Likewise.
+	(__arm_vreinterpretq_s8_s64): Likewise.
+	(__arm_vreinterpretq_s8_u16): Likewise.
+	(__arm_vreinterpretq_s8_u32): Likewise.
+	(__arm_vreinterpretq_s8_u64): Likewise.
+	(__arm_vreinterpretq_s8_u8): Likewise.
+	(__arm_vreinterpretq_u16_s16): Likewise.
+	(__arm_vreinterpretq_u16_s32): Likewise.
+	(__arm_vreinterpretq_u16_s64): Likewise.
+	(__arm_vreinterpretq_u16_s8): Likewise.
+	(__arm_vreinterpretq_u16_u32): Likewise.
+	(__arm_vreinterpretq_u16_u64): Likewise.
+	(__arm_vreinterpretq_u16_u8): Likewise.
+	(__arm_vreinterpretq_u32_s16): Likewise.
+	(__arm_vreinterpretq_u32_s32): Likewise.
+	(__arm_vreinterpretq_u32_s64): Likewise.
+	(__arm_vreinterpretq_u32_s8): Likewise.
+	(__arm_vreinterpretq_u32_u16): Likewise.
+	(__arm_vreinterpretq_u32_u64): Likewise.
+	(__arm_vreinterpretq_u32_u8): Likewise.
+	(__arm_vreinterpretq_u64_s16): Likewise.
+	(__arm_vreinterpretq_u64_s32): Likewise.
+	(__arm_vreinterpretq_u64_s64): Likewise.
+	(__arm_vreinterpretq_u64_s8): Likewise.
+	(__arm_vreinterpretq_u64_u16): Likewise.
+	(__arm_vreinterpretq_u64_u32): Likewise.
+	(__arm_vreinterpretq_u64_u8): Likewise.
+	(__arm_vreinterpretq_u8_s16): Likewise.
+	(__arm_vreinterpretq_u8_s32): Likewise.
+	(__arm_vreinterpretq_u8_s64): Likewise.
+	(__arm_vreinterpretq_u8_s8): Likewise.
+	(__arm_vreinterpretq_u8_u16): Likewise.
+	(__arm_vreinterpretq_u8_u32): Likewise.
+	(__arm_vreinterpretq_u8_u64): Likewise.
+	(__arm_vreinterpretq_s32_f16): Likewise.
+	(__arm_vreinterpretq_s32_f32): Likewise.
+	(__arm_vreinterpretq_s16_f16): Likewise.
+	(__arm_vreinterpretq_s16_f32): Likewise.
+	(__arm_vreinterpretq_s64_f16): Likewise.
+	(__arm_vreinterpretq_s64_f32): Likewise.
+	(__arm_vreinterpretq_s8_f16): Likewise.
+	(__arm_vreinterpretq_s8_f32): Likewise.
+	(__arm_vreinterpretq_u16_f16): Likewise.
+	(__arm_vreinterpretq_u16_f32): Likewise.
+	(__arm_vreinterpretq_u32_f16): Likewise.
+	(__arm_vreinterpretq_u32_f32): Likewise.
+	(__arm_vreinterpretq_u64_f16): Likewise.
+	(__arm_vreinterpretq_u64_f32): Likewise.
+	(__arm_vreinterpretq_u8_f16): Likewise.
+	(__arm_vreinterpretq_u8_f32): Likewise.
+	(__arm_vreinterpretq_f16_f32): Likewise.
+	(__arm_vreinterpretq_f16_s16): Likewise.
+	(__arm_vreinterpretq_f16_s32): Likewise.
+	(__arm_vreinterpretq_f16_s64): Likewise.
+	(__arm_vreinterpretq_f16_s8): Likewise.
+	(__arm_vreinterpretq_f16_u16): Likewise.
+	(__arm_vreinterpretq_f16_u32): Likewise.
+	(__arm_vreinterpretq_f16_u64): Likewise.
+	(__arm_vreinterpretq_f16_u8): Likewise.
+	(__arm_vreinterpretq_f32_f16): Likewise.
+	(__arm_vreinterpretq_f32_s16): Likewise.
+	(__arm_vreinterpretq_f32_s32): Likewise.
+	(__arm_vreinterpretq_f32_s64): Likewise.
+	(__arm_vreinterpretq_f32_s8): Likewise.
+	(__arm_vreinterpretq_f32_u16): Likewise.
+	(__arm_vreinterpretq_f32_u32): Likewise.
+	(__arm_vreinterpretq_f32_u64): Likewise.
+	(__arm_vreinterpretq_f32_u8): Likewise.
+	(__arm_vreinterpretq_s16): Likewise.
+	(__arm_vreinterpretq_s32): Likewise.
+	(__arm_vreinterpretq_s64): Likewise.
+	(__arm_vreinterpretq_s8): Likewise.
+	(__arm_vreinterpretq_u16): Likewise.
+	(__arm_vreinterpretq_u32): Likewise.
+	(__arm_vreinterpretq_u64): Likewise.
+	(__arm_vreinterpretq_u8): Likewise.
+	(__arm_vreinterpretq_f16): Likewise.
+	(__arm_vreinterpretq_f32): Likewise.
+	* config/arm/mve.md (@arm_mve_reinterpret<mode>): New pattern.
+	* config/arm/unspecs.md: (REINTERPRET): New unspec.
+
+2023-05-03  Murray Steele  <murray.steele@arm.com>
+	    Christophe Lyon  <christophe.lyon@arm.com>
+	    Christophe Lyon   <christophe.lyon@arm.com
+
+	* config.gcc: Add arm-mve-builtins-base.o and
+	arm-mve-builtins-shapes.o to extra_objs.
+	* config/arm/arm-builtins.cc (arm_builtin_decl): Handle MVE builtin
+	numberspace.
+	(arm_expand_builtin): Likewise
+	(arm_check_builtin_call): Likewise
+	(arm_describe_resolver): Likewise.
+	* config/arm/arm-builtins.h (enum resolver_ident): Add
+	arm_mve_resolver.
+	* config/arm/arm-c.cc (arm_pragma_arm): Handle new pragma.
+	(arm_resolve_overloaded_builtin): Handle MVE builtins.
+	(arm_register_target_pragmas): Register arm_check_builtin_call.
+	* config/arm/arm-mve-builtins.cc (class registered_function): New
+	class.
+	(struct registered_function_hasher): New struct.
+	(pred_suffixes): New table.
+	(mode_suffixes): New table.
+	(type_suffix_info): New table.
+	(TYPES_float16): New.
+	(TYPES_all_float): New.
+	(TYPES_integer_8): New.
+	(TYPES_integer_8_16): New.
+	(TYPES_integer_16_32): New.
+	(TYPES_integer_32): New.
+	(TYPES_signed_16_32): New.
+	(TYPES_signed_32): New.
+	(TYPES_all_signed): New.
+	(TYPES_all_unsigned): New.
+	(TYPES_all_integer): New.
+	(TYPES_all_integer_with_64): New.
+	(DEF_VECTOR_TYPE): New.
+	(DEF_DOUBLE_TYPE): New.
+	(DEF_MVE_TYPES_ARRAY): New.
+	(all_integer): New.
+	(all_integer_with_64): New.
+	(float16): New.
+	(all_float): New.
+	(all_signed): New.
+	(all_unsigned): New.
+	(integer_8): New.
+	(integer_8_16): New.
+	(integer_16_32): New.
+	(integer_32): New.
+	(signed_16_32): New.
+	(signed_32): New.
+	(register_vector_type): Use void_type_node for mve.fp-only types when
+	mve.fp is not enabled.
+	(register_builtin_tuple_types): Likewise.
+	(handle_arm_mve_h): New function..
+	(matches_type_p): Likewise..
+	(report_out_of_range): Likewise.
+	(report_not_enum): Likewise.
+	(report_missing_float): Likewise.
+	(report_non_ice): Likewise.
+	(check_requires_float): Likewise.
+	(function_instance::hash): Likewise
+	(function_instance::call_properties): Likewise.
+	(function_instance::reads_global_state_p): Likewise.
+	(function_instance::modifies_global_state_p): Likewise.
+	(function_instance::could_trap_p): Likewise.
+	(function_instance::has_inactive_argument): Likewise.
+	(registered_function_hasher::hash): Likewise.
+	(registered_function_hasher::equal): Likewise.
+	(function_builder::function_builder): Likewise.
+	(function_builder::~function_builder): Likewise.
+	(function_builder::append_name): Likewise.
+	(function_builder::finish_name): Likewise.
+	(function_builder::get_name): Likewise.
+	(add_attribute): Likewise.
+	(function_builder::get_attributes): Likewise.
+	(function_builder::add_function): Likewise.
+	(function_builder::add_unique_function): Likewise.
+	(function_builder::add_overloaded_function): Likewise.
+	(function_builder::add_overloaded_functions): Likewise.
+	(function_builder::register_function_group): Likewise.
+	(function_call_info::function_call_info): Likewise.
+	(function_resolver::function_resolver): Likewise.
+	(function_resolver::get_vector_type): Likewise.
+	(function_resolver::get_scalar_type_name): Likewise.
+	(function_resolver::get_argument_type): Likewise.
+	(function_resolver::scalar_argument_p): Likewise.
+	(function_resolver::report_no_such_form): Likewise.
+	(function_resolver::lookup_form): Likewise.
+	(function_resolver::resolve_to): Likewise.
+	(function_resolver::infer_vector_or_tuple_type): Likewise.
+	(function_resolver::infer_vector_type): Likewise.
+	(function_resolver::require_vector_or_scalar_type): Likewise.
+	(function_resolver::require_vector_type): Likewise.
+	(function_resolver::require_matching_vector_type): Likewise.
+	(function_resolver::require_derived_vector_type): Likewise.
+	(function_resolver::require_derived_scalar_type): Likewise.
+	(function_resolver::require_integer_immediate): Likewise.
+	(function_resolver::require_scalar_type): Likewise.
+	(function_resolver::check_num_arguments): Likewise.
+	(function_resolver::check_gp_argument): Likewise.
+	(function_resolver::finish_opt_n_resolution): Likewise.
+	(function_resolver::resolve_unary): Likewise.
+	(function_resolver::resolve_unary_n): Likewise.
+	(function_resolver::resolve_uniform): Likewise.
+	(function_resolver::resolve_uniform_opt_n): Likewise.
+	(function_resolver::resolve): Likewise.
+	(function_checker::function_checker): Likewise.
+	(function_checker::argument_exists_p): Likewise.
+	(function_checker::require_immediate): Likewise.
+	(function_checker::require_immediate_enum): Likewise.
+	(function_checker::require_immediate_range): Likewise.
+	(function_checker::check): Likewise.
+	(gimple_folder::gimple_folder): Likewise.
+	(gimple_folder::fold): Likewise.
+	(function_expander::function_expander): Likewise.
+	(function_expander::direct_optab_handler): Likewise.
+	(function_expander::get_fallback_value): Likewise.
+	(function_expander::get_reg_target): Likewise.
+	(function_expander::add_output_operand): Likewise.
+	(function_expander::add_input_operand): Likewise.
+	(function_expander::add_integer_operand): Likewise.
+	(function_expander::generate_insn): Likewise.
+	(function_expander::use_exact_insn): Likewise.
+	(function_expander::use_unpred_insn): Likewise.
+	(function_expander::use_pred_x_insn): Likewise.
+	(function_expander::use_cond_insn): Likewise.
+	(function_expander::map_to_rtx_codes): Likewise.
+	(function_expander::expand): Likewise.
+	(resolve_overloaded_builtin): Likewise.
+	(check_builtin_call): Likewise.
+	(gimple_fold_builtin): Likewise.
+	(expand_builtin): Likewise.
+	(gt_ggc_mx): Likewise.
+	(gt_pch_nx): Likewise.
+	(gt_pch_nx): Likewise.
+	* config/arm/arm-mve-builtins.def(s8): Define new type suffix.
+	(s16): Likewise.
+	(s32): Likewise.
+	(s64): Likewise.
+	(u8): Likewise.
+	(u16): Likewise.
+	(u32): Likewise.
+	(u64): Likewise.
+	(f16): Likewise.
+	(f32): Likewise.
+	(n): New mode.
+	(offset): New mode.
+	* config/arm/arm-mve-builtins.h (MAX_TUPLE_SIZE): New constant.
+	(CP_READ_FPCR): Likewise.
+	(CP_RAISE_FP_EXCEPTIONS): Likewise.
+	(CP_READ_MEMORY): Likewise.
+	(CP_WRITE_MEMORY): Likewise.
+	(enum units_index): New enum.
+	(enum predication_index): New.
+	(enum type_class_index): New.
+	(enum mode_suffix_index): New enum.
+	(enum type_suffix_index): New.
+	(struct mode_suffix_info): New struct.
+	(struct type_suffix_info): New.
+	(struct function_group_info): Likewise.
+	(class function_instance): Likewise.
+	(class registered_function): Likewise.
+	(class function_builder): Likewise.
+	(class function_call_info): Likewise.
+	(class function_resolver): Likewise.
+	(class function_checker): Likewise.
+	(class gimple_folder): Likewise.
+	(class function_expander): Likewise.
+	(get_mve_pred16_t): Likewise.
+	(find_mode_suffix): New function.
+	(class function_base): Likewise.
+	(class function_shape): Likewise.
+	(function_instance::operator==): New function.
+	(function_instance::operator!=): Likewise.
+	(function_instance::vectors_per_tuple): Likewise.
+	(function_instance::mode_suffix): Likewise.
+	(function_instance::type_suffix): Likewise.
+	(function_instance::scalar_type): Likewise.
+	(function_instance::vector_type): Likewise.
+	(function_instance::tuple_type): Likewise.
+	(function_instance::vector_mode): Likewise.
+	(function_call_info::function_returns_void_p): Likewise.
+	(function_base::call_properties): Likewise.
+	* config/arm/arm-protos.h (enum arm_builtin_class): Add
+	ARM_BUILTIN_MVE.
+	(handle_arm_mve_h): New.
+	(resolve_overloaded_builtin): New.
+	(check_builtin_call): New.
+	(gimple_fold_builtin): New.
+	(expand_builtin): New.
+	* config/arm/arm.cc (TARGET_GIMPLE_FOLD_BUILTIN): Define as
+	arm_gimple_fold_builtin.
+	(arm_gimple_fold_builtin): New function.
+	* config/arm/arm_mve.h: Use new arm_mve.h pragma.
+	* config/arm/predicates.md (arm_any_register_operand): New predicate.
+	* config/arm/t-arm: (arm-mve-builtins.o): Add includes.
+	(arm-mve-builtins-shapes.o): New target.
+	(arm-mve-builtins-base.o): New target.
+	* config/arm/arm-mve-builtins-base.cc: New file.
+	* config/arm/arm-mve-builtins-base.def: New file.
+	* config/arm/arm-mve-builtins-base.h: New file.
+	* config/arm/arm-mve-builtins-functions.h: New file.
+	* config/arm/arm-mve-builtins-shapes.cc: New file.
+	* config/arm/arm-mve-builtins-shapes.h: New file.
+
+2023-05-03  Murray Steele  <murray.steele@arm.com>
+	    Christophe Lyon  <christophe.lyon@arm.com>
+	    Christophe Lyon   <christophe.lyon@arm.com>
+
+	* config/arm/arm-builtins.cc (arm_general_add_builtin_function):
+	New function.
+	(arm_init_builtin): Use arm_general_add_builtin_function instead
+	of arm_add_builtin_function.
+	(arm_init_acle_builtins): Likewise.
+	(arm_init_mve_builtins): Likewise.
+	(arm_init_crypto_builtins): Likewise.
+	(arm_init_builtins): Likewise.
+	(arm_general_builtin_decl): New function.
+	(arm_builtin_decl): Defer to numberspace-specialized functions.
+	(arm_expand_builtin_args): Rename into arm_general_expand_builtin_args.
+	(arm_expand_builtin_1): Rename into arm_general_expand_builtin_1 and ...
+	(arm_general_expand_builtin_1): ... specialize for general builtins.
+	(arm_expand_acle_builtin): Use arm_general_expand_builtin
+	instead of arm_expand_builtin.
+	(arm_expand_mve_builtin): Likewise.
+	(arm_expand_neon_builtin): Likewise.
+	(arm_expand_vfp_builtin): Likewise.
+	(arm_general_expand_builtin): New function.
+	(arm_expand_builtin): Specialize for general builtins.
+	(arm_general_check_builtin_call): New function.
+	(arm_check_builtin_call): Specialize for general builtins.
+	(arm_describe_resolver): Validate numberspace.
+	(arm_cde_end_args): Likewise.
+	* config/arm/arm-protos.h (enum arm_builtin_class): New enum.
+	(ARM_BUILTIN_SHIFT, ARM_BUILTIN_CLASS): New constants.
+
+2023-05-03  Martin Liska  <mliska@suse.cz>
+
+	PR target/109713
+	* config/riscv/sync.md: Add gcc_unreachable to a switch.
+
+2023-05-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-split.cc (split_at_bb_p): Avoid last_stmt.
+	(patch_loop_exit): Likewise.
+	(connect_loops): Likewise.
+	(split_loop): Likewise.
+	(control_dep_semi_invariant_p): Likewise.
+	(do_split_loop_on_cond): Likewise.
+	(split_loop_on_cond): Likewise.
+	* tree-ssa-loop-unswitch.cc (find_unswitching_predicates_for_bb):
+	Likewise.
+	(simplify_loop_version): Likewise.
+	(evaluate_bbs): Likewise.
+	(find_loop_guard): Likewise.
+	(clean_up_after_unswitching): Likewise.
+	* tree-ssa-math-opts.cc (maybe_optimize_guarding_check):
+	Likewise.
+	(optimize_spaceship): Take a gcond * argument, avoid
+	last_stmt.
+	(math_opts_dom_walker::after_dom_children): Adjust call to
+	optimize_spaceship.
+	* tree-vrp.cc (maybe_set_nonzero_bits): Avoid last_stmt.
+	* value-pointer-equiv.cc (pointer_equiv_analyzer::visit_edge):
+	Likewise.
+
+2023-05-03  Andreas Schwab  <schwab@suse.de>
+
+	* config/riscv/linux.h (LIB_SPEC): Don't redefine.
+
+2023-05-03  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins-bases.cc (fold_fault_load):
+	New function.
+	(class vlseg): New class.
+	(class vsseg): Ditto.
+	(class vlsseg): Ditto.
+	(class vssseg): Ditto.
+	(class seg_indexed_load): Ditto.
+	(class seg_indexed_store): Ditto.
+	(class vlsegff): Ditto.
+	(BASE): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (vlseg):
+	Ditto.
+	(vsseg): Ditto.
+	(vlsseg): Ditto.
+	(vssseg): Ditto.
+	(vluxseg): Ditto.
+	(vloxseg): Ditto.
+	(vsuxseg): Ditto.
+	(vsoxseg): Ditto.
+	(vlsegff): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct
+	seg_loadstore_def): Ditto.
+	(struct seg_indexed_loadstore_def): Ditto.
+	(struct seg_fault_load_def): Ditto.
+	(SHAPE): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.h: Ditto.
+	* config/riscv/riscv-vector-builtins.cc
+	(function_builder::append_nf): New function.
+	* config/riscv/riscv-vector-builtins.def (vfloat32m1x2_t):
+	Change ptr from double into float.
+	(vfloat32m1x3_t): Ditto.
+	(vfloat32m1x4_t): Ditto.
+	(vfloat32m1x5_t): Ditto.
+	(vfloat32m1x6_t): Ditto.
+	(vfloat32m1x7_t): Ditto.
+	(vfloat32m1x8_t): Ditto.
+	(vfloat32m2x2_t): Ditto.
+	(vfloat32m2x3_t): Ditto.
+	(vfloat32m2x4_t): Ditto.
+	(vfloat32m4x2_t): Ditto.
+	* config/riscv/riscv-vector-builtins.h: Add segment intrinsics.
+	* config/riscv/riscv-vsetvl.cc (fault_first_load_p): Adapt for
+	segment ff load.
+	* config/riscv/riscv.md: Add segment instructions.
+	* config/riscv/vector-iterators.md: Support segment intrinsics.
+	* config/riscv/vector.md (@pred_unit_strided_load<mode>): New
+	pattern.
+	(@pred_unit_strided_store<mode>): Ditto.
+	(@pred_strided_load<mode>): Ditto.
+	(@pred_strided_store<mode>): Ditto.
+	(@pred_fault_load<mode>): Ditto.
+	(@pred_indexed_<order>load<V1T:mode><V1I:mode>): Ditto.
+	(@pred_indexed_<order>load<V2T:mode><V2I:mode>): Ditto.
+	(@pred_indexed_<order>load<V4T:mode><V4I:mode>): Ditto.
+	(@pred_indexed_<order>load<V8T:mode><V8I:mode>): Ditto.
+	(@pred_indexed_<order>load<V16T:mode><V16I:mode>): Ditto.
+	(@pred_indexed_<order>load<V32T:mode><V32I:mode>): Ditto.
+	(@pred_indexed_<order>load<V64T:mode><V64I:mode>): Ditto.
+	(@pred_indexed_<order>store<V1T:mode><V1I:mode>): Ditto.
+	(@pred_indexed_<order>store<V2T:mode><V2I:mode>): Ditto.
+	(@pred_indexed_<order>store<V4T:mode><V4I:mode>): Ditto.
+	(@pred_indexed_<order>store<V8T:mode><V8I:mode>): Ditto.
+	(@pred_indexed_<order>store<V16T:mode><V16I:mode>): Ditto.
+	(@pred_indexed_<order>store<V32T:mode><V32I:mode>): Ditto.
+	(@pred_indexed_<order>store<V64T:mode><V64I:mode>): Ditto.
+
+2023-05-03  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/genrvv-type-indexer.cc (valid_type): Adapt for
+	tuple type support.
+	(inttype): Ditto.
+	(floattype): Ditto.
+	(main): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.cc: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (vset): Add
+	tuple type vset.
+	(vget): Add tuple type vget.
+	* config/riscv/riscv-vector-builtins-types.def
+	(DEF_RVV_TUPLE_OPS): New macro.
+	(vint8mf8x2_t): Ditto.
+	(vuint8mf8x2_t): Ditto.
+	(vint8mf8x3_t): Ditto.
+	(vuint8mf8x3_t): Ditto.
+	(vint8mf8x4_t): Ditto.
+	(vuint8mf8x4_t): Ditto.
+	(vint8mf8x5_t): Ditto.
+	(vuint8mf8x5_t): Ditto.
+	(vint8mf8x6_t): Ditto.
+	(vuint8mf8x6_t): Ditto.
+	(vint8mf8x7_t): Ditto.
+	(vuint8mf8x7_t): Ditto.
+	(vint8mf8x8_t): Ditto.
+	(vuint8mf8x8_t): Ditto.
+	(vint8mf4x2_t): Ditto.
+	(vuint8mf4x2_t): Ditto.
+	(vint8mf4x3_t): Ditto.
+	(vuint8mf4x3_t): Ditto.
+	(vint8mf4x4_t): Ditto.
+	(vuint8mf4x4_t): Ditto.
+	(vint8mf4x5_t): Ditto.
+	(vuint8mf4x5_t): Ditto.
+	(vint8mf4x6_t): Ditto.
+	(vuint8mf4x6_t): Ditto.
+	(vint8mf4x7_t): Ditto.
+	(vuint8mf4x7_t): Ditto.
+	(vint8mf4x8_t): Ditto.
+	(vuint8mf4x8_t): Ditto.
+	(vint8mf2x2_t): Ditto.
+	(vuint8mf2x2_t): Ditto.
+	(vint8mf2x3_t): Ditto.
+	(vuint8mf2x3_t): Ditto.
+	(vint8mf2x4_t): Ditto.
+	(vuint8mf2x4_t): Ditto.
+	(vint8mf2x5_t): Ditto.
+	(vuint8mf2x5_t): Ditto.
+	(vint8mf2x6_t): Ditto.
+	(vuint8mf2x6_t): Ditto.
+	(vint8mf2x7_t): Ditto.
+	(vuint8mf2x7_t): Ditto.
+	(vint8mf2x8_t): Ditto.
+	(vuint8mf2x8_t): Ditto.
+	(vint8m1x2_t): Ditto.
+	(vuint8m1x2_t): Ditto.
+	(vint8m1x3_t): Ditto.
+	(vuint8m1x3_t): Ditto.
+	(vint8m1x4_t): Ditto.
+	(vuint8m1x4_t): Ditto.
+	(vint8m1x5_t): Ditto.
+	(vuint8m1x5_t): Ditto.
+	(vint8m1x6_t): Ditto.
+	(vuint8m1x6_t): Ditto.
+	(vint8m1x7_t): Ditto.
+	(vuint8m1x7_t): Ditto.
+	(vint8m1x8_t): Ditto.
+	(vuint8m1x8_t): Ditto.
+	(vint8m2x2_t): Ditto.
+	(vuint8m2x2_t): Ditto.
+	(vint8m2x3_t): Ditto.
+	(vuint8m2x3_t): Ditto.
+	(vint8m2x4_t): Ditto.
+	(vuint8m2x4_t): Ditto.
+	(vint8m4x2_t): Ditto.
+	(vuint8m4x2_t): Ditto.
+	(vint16mf4x2_t): Ditto.
+	(vuint16mf4x2_t): Ditto.
+	(vint16mf4x3_t): Ditto.
+	(vuint16mf4x3_t): Ditto.
+	(vint16mf4x4_t): Ditto.
+	(vuint16mf4x4_t): Ditto.
+	(vint16mf4x5_t): Ditto.
+	(vuint16mf4x5_t): Ditto.
+	(vint16mf4x6_t): Ditto.
+	(vuint16mf4x6_t): Ditto.
+	(vint16mf4x7_t): Ditto.
+	(vuint16mf4x7_t): Ditto.
+	(vint16mf4x8_t): Ditto.
+	(vuint16mf4x8_t): Ditto.
+	(vint16mf2x2_t): Ditto.
+	(vuint16mf2x2_t): Ditto.
+	(vint16mf2x3_t): Ditto.
+	(vuint16mf2x3_t): Ditto.
+	(vint16mf2x4_t): Ditto.
+	(vuint16mf2x4_t): Ditto.
+	(vint16mf2x5_t): Ditto.
+	(vuint16mf2x5_t): Ditto.
+	(vint16mf2x6_t): Ditto.
+	(vuint16mf2x6_t): Ditto.
+	(vint16mf2x7_t): Ditto.
+	(vuint16mf2x7_t): Ditto.
+	(vint16mf2x8_t): Ditto.
+	(vuint16mf2x8_t): Ditto.
+	(vint16m1x2_t): Ditto.
+	(vuint16m1x2_t): Ditto.
+	(vint16m1x3_t): Ditto.
+	(vuint16m1x3_t): Ditto.
+	(vint16m1x4_t): Ditto.
+	(vuint16m1x4_t): Ditto.
+	(vint16m1x5_t): Ditto.
+	(vuint16m1x5_t): Ditto.
+	(vint16m1x6_t): Ditto.
+	(vuint16m1x6_t): Ditto.
+	(vint16m1x7_t): Ditto.
+	(vuint16m1x7_t): Ditto.
+	(vint16m1x8_t): Ditto.
+	(vuint16m1x8_t): Ditto.
+	(vint16m2x2_t): Ditto.
+	(vuint16m2x2_t): Ditto.
+	(vint16m2x3_t): Ditto.
+	(vuint16m2x3_t): Ditto.
+	(vint16m2x4_t): Ditto.
+	(vuint16m2x4_t): Ditto.
+	(vint16m4x2_t): Ditto.
+	(vuint16m4x2_t): Ditto.
+	(vint32mf2x2_t): Ditto.
+	(vuint32mf2x2_t): Ditto.
+	(vint32mf2x3_t): Ditto.
+	(vuint32mf2x3_t): Ditto.
+	(vint32mf2x4_t): Ditto.
+	(vuint32mf2x4_t): Ditto.
+	(vint32mf2x5_t): Ditto.
+	(vuint32mf2x5_t): Ditto.
+	(vint32mf2x6_t): Ditto.
+	(vuint32mf2x6_t): Ditto.
+	(vint32mf2x7_t): Ditto.
+	(vuint32mf2x7_t): Ditto.
+	(vint32mf2x8_t): Ditto.
+	(vuint32mf2x8_t): Ditto.
+	(vint32m1x2_t): Ditto.
+	(vuint32m1x2_t): Ditto.
+	(vint32m1x3_t): Ditto.
+	(vuint32m1x3_t): Ditto.
+	(vint32m1x4_t): Ditto.
+	(vuint32m1x4_t): Ditto.
+	(vint32m1x5_t): Ditto.
+	(vuint32m1x5_t): Ditto.
+	(vint32m1x6_t): Ditto.
+	(vuint32m1x6_t): Ditto.
+	(vint32m1x7_t): Ditto.
+	(vuint32m1x7_t): Ditto.
+	(vint32m1x8_t): Ditto.
+	(vuint32m1x8_t): Ditto.
+	(vint32m2x2_t): Ditto.
+	(vuint32m2x2_t): Ditto.
+	(vint32m2x3_t): Ditto.
+	(vuint32m2x3_t): Ditto.
+	(vint32m2x4_t): Ditto.
+	(vuint32m2x4_t): Ditto.
+	(vint32m4x2_t): Ditto.
+	(vuint32m4x2_t): Ditto.
+	(vint64m1x2_t): Ditto.
+	(vuint64m1x2_t): Ditto.
+	(vint64m1x3_t): Ditto.
+	(vuint64m1x3_t): Ditto.
+	(vint64m1x4_t): Ditto.
+	(vuint64m1x4_t): Ditto.
+	(vint64m1x5_t): Ditto.
+	(vuint64m1x5_t): Ditto.
+	(vint64m1x6_t): Ditto.
+	(vuint64m1x6_t): Ditto.
+	(vint64m1x7_t): Ditto.
+	(vuint64m1x7_t): Ditto.
+	(vint64m1x8_t): Ditto.
+	(vuint64m1x8_t): Ditto.
+	(vint64m2x2_t): Ditto.
+	(vuint64m2x2_t): Ditto.
+	(vint64m2x3_t): Ditto.
+	(vuint64m2x3_t): Ditto.
+	(vint64m2x4_t): Ditto.
+	(vuint64m2x4_t): Ditto.
+	(vint64m4x2_t): Ditto.
+	(vuint64m4x2_t): Ditto.
+	(vfloat32mf2x2_t): Ditto.
+	(vfloat32mf2x3_t): Ditto.
+	(vfloat32mf2x4_t): Ditto.
+	(vfloat32mf2x5_t): Ditto.
+	(vfloat32mf2x6_t): Ditto.
+	(vfloat32mf2x7_t): Ditto.
+	(vfloat32mf2x8_t): Ditto.
+	(vfloat32m1x2_t): Ditto.
+	(vfloat32m1x3_t): Ditto.
+	(vfloat32m1x4_t): Ditto.
+	(vfloat32m1x5_t): Ditto.
+	(vfloat32m1x6_t): Ditto.
+	(vfloat32m1x7_t): Ditto.
+	(vfloat32m1x8_t): Ditto.
+	(vfloat32m2x2_t): Ditto.
+	(vfloat32m2x3_t): Ditto.
+	(vfloat32m2x4_t): Ditto.
+	(vfloat32m4x2_t): Ditto.
+	(vfloat64m1x2_t): Ditto.
+	(vfloat64m1x3_t): Ditto.
+	(vfloat64m1x4_t): Ditto.
+	(vfloat64m1x5_t): Ditto.
+	(vfloat64m1x6_t): Ditto.
+	(vfloat64m1x7_t): Ditto.
+	(vfloat64m1x8_t): Ditto.
+	(vfloat64m2x2_t): Ditto.
+	(vfloat64m2x3_t): Ditto.
+	(vfloat64m2x4_t): Ditto.
+	(vfloat64m4x2_t): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_TUPLE_OPS):
+	Ditto.
+	(DEF_RVV_TYPE_INDEX): Ditto.
+	(rvv_arg_type_info::get_tuple_subpart_type): New function.
+	(DEF_RVV_TUPLE_TYPE): New macro.
+	* config/riscv/riscv-vector-builtins.def (DEF_RVV_TYPE_INDEX):
+	Adapt for tuple vget/vset support.
+	(vint8mf4_t): Ditto.
+	(vuint8mf4_t): Ditto.
+	(vint8mf2_t): Ditto.
+	(vuint8mf2_t): Ditto.
+	(vint8m1_t): Ditto.
+	(vuint8m1_t): Ditto.
+	(vint8m2_t): Ditto.
+	(vuint8m2_t): Ditto.
+	(vint8m4_t): Ditto.
+	(vuint8m4_t): Ditto.
+	(vint8m8_t): Ditto.
+	(vuint8m8_t): Ditto.
+	(vint16mf4_t): Ditto.
+	(vuint16mf4_t): Ditto.
+	(vint16mf2_t): Ditto.
+	(vuint16mf2_t): Ditto.
+	(vint16m1_t): Ditto.
+	(vuint16m1_t): Ditto.
+	(vint16m2_t): Ditto.
+	(vuint16m2_t): Ditto.
+	(vint16m4_t): Ditto.
+	(vuint16m4_t): Ditto.
+	(vint16m8_t): Ditto.
+	(vuint16m8_t): Ditto.
+	(vint32mf2_t): Ditto.
+	(vuint32mf2_t): Ditto.
+	(vint32m1_t): Ditto.
+	(vuint32m1_t): Ditto.
+	(vint32m2_t): Ditto.
+	(vuint32m2_t): Ditto.
+	(vint32m4_t): Ditto.
+	(vuint32m4_t): Ditto.
+	(vint32m8_t): Ditto.
+	(vuint32m8_t): Ditto.
+	(vint64m1_t): Ditto.
+	(vuint64m1_t): Ditto.
+	(vint64m2_t): Ditto.
+	(vuint64m2_t): Ditto.
+	(vint64m4_t): Ditto.
+	(vuint64m4_t): Ditto.
+	(vint64m8_t): Ditto.
+	(vuint64m8_t): Ditto.
+	(vfloat32mf2_t): Ditto.
+	(vfloat32m1_t): Ditto.
+	(vfloat32m2_t): Ditto.
+	(vfloat32m4_t): Ditto.
+	(vfloat32m8_t): Ditto.
+	(vfloat64m1_t): Ditto.
+	(vfloat64m2_t): Ditto.
+	(vfloat64m4_t): Ditto.
+	(vfloat64m8_t): Ditto.
+	(tuple_subpart): Add tuple subpart base type.
+	* config/riscv/riscv-vector-builtins.h (struct
+	rvv_arg_type_info): Ditto.
+	(tuple_type_field): New function.
+
+2023-05-03  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-modes.def (RVV_TUPLE_MODES): New macro.
+	(RVV_TUPLE_PARTIAL_MODES): Ditto.
+	* config/riscv/riscv-protos.h (riscv_v_ext_tuple_mode_p): New
+	function.
+	(get_nf): Ditto.
+	(get_subpart_mode): Ditto.
+	(get_tuple_mode): Ditto.
+	(expand_tuple_move): Ditto.
+	* config/riscv/riscv-v.cc (ENTRY): New macro.
+	(TUPLE_ENTRY): Ditto.
+	(get_nf): New function.
+	(get_subpart_mode): Ditto.
+	(get_tuple_mode): Ditto.
+	(expand_tuple_move): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_TUPLE_TYPE):
+	New macro.
+	(register_tuple_type): New function
+	* config/riscv/riscv-vector-builtins.def (DEF_RVV_TUPLE_TYPE):
+	New macro.
+	(vint8mf8x2_t): New macro.
+	(vuint8mf8x2_t): Ditto.
+	(vint8mf8x3_t): Ditto.
+	(vuint8mf8x3_t): Ditto.
+	(vint8mf8x4_t): Ditto.
+	(vuint8mf8x4_t): Ditto.
+	(vint8mf8x5_t): Ditto.
+	(vuint8mf8x5_t): Ditto.
+	(vint8mf8x6_t): Ditto.
+	(vuint8mf8x6_t): Ditto.
+	(vint8mf8x7_t): Ditto.
+	(vuint8mf8x7_t): Ditto.
+	(vint8mf8x8_t): Ditto.
+	(vuint8mf8x8_t): Ditto.
+	(vint8mf4x2_t): Ditto.
+	(vuint8mf4x2_t): Ditto.
+	(vint8mf4x3_t): Ditto.
+	(vuint8mf4x3_t): Ditto.
+	(vint8mf4x4_t): Ditto.
+	(vuint8mf4x4_t): Ditto.
+	(vint8mf4x5_t): Ditto.
+	(vuint8mf4x5_t): Ditto.
+	(vint8mf4x6_t): Ditto.
+	(vuint8mf4x6_t): Ditto.
+	(vint8mf4x7_t): Ditto.
+	(vuint8mf4x7_t): Ditto.
+	(vint8mf4x8_t): Ditto.
+	(vuint8mf4x8_t): Ditto.
+	(vint8mf2x2_t): Ditto.
+	(vuint8mf2x2_t): Ditto.
+	(vint8mf2x3_t): Ditto.
+	(vuint8mf2x3_t): Ditto.
+	(vint8mf2x4_t): Ditto.
+	(vuint8mf2x4_t): Ditto.
+	(vint8mf2x5_t): Ditto.
+	(vuint8mf2x5_t): Ditto.
+	(vint8mf2x6_t): Ditto.
+	(vuint8mf2x6_t): Ditto.
+	(vint8mf2x7_t): Ditto.
+	(vuint8mf2x7_t): Ditto.
+	(vint8mf2x8_t): Ditto.
+	(vuint8mf2x8_t): Ditto.
+	(vint8m1x2_t): Ditto.
+	(vuint8m1x2_t): Ditto.
+	(vint8m1x3_t): Ditto.
+	(vuint8m1x3_t): Ditto.
+	(vint8m1x4_t): Ditto.
+	(vuint8m1x4_t): Ditto.
+	(vint8m1x5_t): Ditto.
+	(vuint8m1x5_t): Ditto.
+	(vint8m1x6_t): Ditto.
+	(vuint8m1x6_t): Ditto.
+	(vint8m1x7_t): Ditto.
+	(vuint8m1x7_t): Ditto.
+	(vint8m1x8_t): Ditto.
+	(vuint8m1x8_t): Ditto.
+	(vint8m2x2_t): Ditto.
+	(vuint8m2x2_t): Ditto.
+	(vint8m2x3_t): Ditto.
+	(vuint8m2x3_t): Ditto.
+	(vint8m2x4_t): Ditto.
+	(vuint8m2x4_t): Ditto.
+	(vint8m4x2_t): Ditto.
+	(vuint8m4x2_t): Ditto.
+	(vint16mf4x2_t): Ditto.
+	(vuint16mf4x2_t): Ditto.
+	(vint16mf4x3_t): Ditto.
+	(vuint16mf4x3_t): Ditto.
+	(vint16mf4x4_t): Ditto.
+	(vuint16mf4x4_t): Ditto.
+	(vint16mf4x5_t): Ditto.
+	(vuint16mf4x5_t): Ditto.
+	(vint16mf4x6_t): Ditto.
+	(vuint16mf4x6_t): Ditto.
+	(vint16mf4x7_t): Ditto.
+	(vuint16mf4x7_t): Ditto.
+	(vint16mf4x8_t): Ditto.
+	(vuint16mf4x8_t): Ditto.
+	(vint16mf2x2_t): Ditto.
+	(vuint16mf2x2_t): Ditto.
+	(vint16mf2x3_t): Ditto.
+	(vuint16mf2x3_t): Ditto.
+	(vint16mf2x4_t): Ditto.
+	(vuint16mf2x4_t): Ditto.
+	(vint16mf2x5_t): Ditto.
+	(vuint16mf2x5_t): Ditto.
+	(vint16mf2x6_t): Ditto.
+	(vuint16mf2x6_t): Ditto.
+	(vint16mf2x7_t): Ditto.
+	(vuint16mf2x7_t): Ditto.
+	(vint16mf2x8_t): Ditto.
+	(vuint16mf2x8_t): Ditto.
+	(vint16m1x2_t): Ditto.
+	(vuint16m1x2_t): Ditto.
+	(vint16m1x3_t): Ditto.
+	(vuint16m1x3_t): Ditto.
+	(vint16m1x4_t): Ditto.
+	(vuint16m1x4_t): Ditto.
+	(vint16m1x5_t): Ditto.
+	(vuint16m1x5_t): Ditto.
+	(vint16m1x6_t): Ditto.
+	(vuint16m1x6_t): Ditto.
+	(vint16m1x7_t): Ditto.
+	(vuint16m1x7_t): Ditto.
+	(vint16m1x8_t): Ditto.
+	(vuint16m1x8_t): Ditto.
+	(vint16m2x2_t): Ditto.
+	(vuint16m2x2_t): Ditto.
+	(vint16m2x3_t): Ditto.
+	(vuint16m2x3_t): Ditto.
+	(vint16m2x4_t): Ditto.
+	(vuint16m2x4_t): Ditto.
+	(vint16m4x2_t): Ditto.
+	(vuint16m4x2_t): Ditto.
+	(vint32mf2x2_t): Ditto.
+	(vuint32mf2x2_t): Ditto.
+	(vint32mf2x3_t): Ditto.
+	(vuint32mf2x3_t): Ditto.
+	(vint32mf2x4_t): Ditto.
+	(vuint32mf2x4_t): Ditto.
+	(vint32mf2x5_t): Ditto.
+	(vuint32mf2x5_t): Ditto.
+	(vint32mf2x6_t): Ditto.
+	(vuint32mf2x6_t): Ditto.
+	(vint32mf2x7_t): Ditto.
+	(vuint32mf2x7_t): Ditto.
+	(vint32mf2x8_t): Ditto.
+	(vuint32mf2x8_t): Ditto.
+	(vint32m1x2_t): Ditto.
+	(vuint32m1x2_t): Ditto.
+	(vint32m1x3_t): Ditto.
+	(vuint32m1x3_t): Ditto.
+	(vint32m1x4_t): Ditto.
+	(vuint32m1x4_t): Ditto.
+	(vint32m1x5_t): Ditto.
+	(vuint32m1x5_t): Ditto.
+	(vint32m1x6_t): Ditto.
+	(vuint32m1x6_t): Ditto.
+	(vint32m1x7_t): Ditto.
+	(vuint32m1x7_t): Ditto.
+	(vint32m1x8_t): Ditto.
+	(vuint32m1x8_t): Ditto.
+	(vint32m2x2_t): Ditto.
+	(vuint32m2x2_t): Ditto.
+	(vint32m2x3_t): Ditto.
+	(vuint32m2x3_t): Ditto.
+	(vint32m2x4_t): Ditto.
+	(vuint32m2x4_t): Ditto.
+	(vint32m4x2_t): Ditto.
+	(vuint32m4x2_t): Ditto.
+	(vint64m1x2_t): Ditto.
+	(vuint64m1x2_t): Ditto.
+	(vint64m1x3_t): Ditto.
+	(vuint64m1x3_t): Ditto.
+	(vint64m1x4_t): Ditto.
+	(vuint64m1x4_t): Ditto.
+	(vint64m1x5_t): Ditto.
+	(vuint64m1x5_t): Ditto.
+	(vint64m1x6_t): Ditto.
+	(vuint64m1x6_t): Ditto.
+	(vint64m1x7_t): Ditto.
+	(vuint64m1x7_t): Ditto.
+	(vint64m1x8_t): Ditto.
+	(vuint64m1x8_t): Ditto.
+	(vint64m2x2_t): Ditto.
+	(vuint64m2x2_t): Ditto.
+	(vint64m2x3_t): Ditto.
+	(vuint64m2x3_t): Ditto.
+	(vint64m2x4_t): Ditto.
+	(vuint64m2x4_t): Ditto.
+	(vint64m4x2_t): Ditto.
+	(vuint64m4x2_t): Ditto.
+	(vfloat32mf2x2_t): Ditto.
+	(vfloat32mf2x3_t): Ditto.
+	(vfloat32mf2x4_t): Ditto.
+	(vfloat32mf2x5_t): Ditto.
+	(vfloat32mf2x6_t): Ditto.
+	(vfloat32mf2x7_t): Ditto.
+	(vfloat32mf2x8_t): Ditto.
+	(vfloat32m1x2_t): Ditto.
+	(vfloat32m1x3_t): Ditto.
+	(vfloat32m1x4_t): Ditto.
+	(vfloat32m1x5_t): Ditto.
+	(vfloat32m1x6_t): Ditto.
+	(vfloat32m1x7_t): Ditto.
+	(vfloat32m1x8_t): Ditto.
+	(vfloat32m2x2_t): Ditto.
+	(vfloat32m2x3_t): Ditto.
+	(vfloat32m2x4_t): Ditto.
+	(vfloat32m4x2_t): Ditto.
+	(vfloat64m1x2_t): Ditto.
+	(vfloat64m1x3_t): Ditto.
+	(vfloat64m1x4_t): Ditto.
+	(vfloat64m1x5_t): Ditto.
+	(vfloat64m1x6_t): Ditto.
+	(vfloat64m1x7_t): Ditto.
+	(vfloat64m1x8_t): Ditto.
+	(vfloat64m2x2_t): Ditto.
+	(vfloat64m2x3_t): Ditto.
+	(vfloat64m2x4_t): Ditto.
+	(vfloat64m4x2_t): Ditto.
+	* config/riscv/riscv-vector-builtins.h (DEF_RVV_TUPLE_TYPE):
+	Ditto.
+	* config/riscv/riscv-vector-switch.def (TUPLE_ENTRY): Ditto.
+	* config/riscv/riscv.cc (riscv_v_ext_tuple_mode_p): New
+	function.
+	(TUPLE_ENTRY): Ditto.
+	(riscv_v_ext_mode_p): New function.
+	(riscv_v_adjust_nunits): Add tuple mode adjustment.
+	(riscv_classify_address): Ditto.
+	(riscv_binary_cost): Ditto.
+	(riscv_rtx_costs): Ditto.
+	(riscv_secondary_memory_needed): Ditto.
+	(riscv_hard_regno_nregs): Ditto.
+	(riscv_hard_regno_mode_ok): Ditto.
+	(riscv_vector_mode_supported_p): Ditto.
+	(riscv_regmode_natural_size): Ditto.
+	(riscv_array_mode): New function.
+	(TARGET_ARRAY_MODE): New target hook.
+	* config/riscv/riscv.md: Add tuple modes.
+	* config/riscv/vector-iterators.md: Ditto.
+	* config/riscv/vector.md (mov<mode>): Add tuple modes data
+	movement.
+	(*mov<VT:mode>_<P:mode>): Ditto.
+
+2023-05-03  Richard Biener  <rguenther@suse.de>
+
+	* cse.cc (cse_insn): Track an equivalence to the destination
+	separately and delay using src_related for it.
+
+2023-05-03  Richard Biener  <rguenther@suse.de>
+
+	* cse.cc (HASH): Turn into inline function and mix
+	in another HASH_SHIFT bits.
+	(SAFE_HASH): Likewise.
+
+2023-05-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* config/aarch64/aarch64-simd.md (aarch64_<sur>h<addsub><mode>): Rename to...
+	(aarch64_<sur>h<addsub><mode><vczle><vczbe>): ... This.
+
+2023-05-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* config/aarch64/aarch64-simd.md (add<mode>3): Rename to...
+	(add<mode>3<vczle><vczbe>): ... This.
+	(sub<mode>3): Rename to...
+	(sub<mode>3<vczle><vczbe>): ... This.
+	(mul<mode>3): Rename to...
+	(mul<mode>3<vczle><vczbe>): ... This.
+	(*div<mode>3): Rename to...
+	(*div<mode>3<vczle><vczbe>): ... This.
+	(neg<mode>2): Rename to...
+	(neg<mode>2<vczle><vczbe>): ... This.
+	(abs<mode>2): Rename to...
+	(abs<mode>2<vczle><vczbe>): ... This.
+	(<frint_pattern><mode>2): Rename to...
+	(<frint_pattern><mode>2<vczle><vczbe>): ... This.
+	(<fmaxmin><mode>3): Rename to...
+	(<fmaxmin><mode>3<vczle><vczbe>): ... This.
+	(*sqrt<mode>2): Rename to...
+	(*sqrt<mode>2<vczle><vczbe>): ... This.
+
+2023-05-03  Kito Cheng  <kito.cheng@sifive.com>
+
+	* doc/md.texi (RISC-V): Add vr, vm, vd constarint.
+
+2023-05-03  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/109693
+	* value-range-storage.cc (vrange_allocator::vrange_allocator):
+	Remove unused field.
+	* value-range-storage.h: Likewise.
+
 2023-05-02  Andrew Pinski  <apinski@marvell.com>
 
 	* tree-ssa-phiopt.cc (move_stmt): New function.

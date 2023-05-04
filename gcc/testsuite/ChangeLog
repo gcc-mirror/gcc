@@ -1,3 +1,102 @@
+2023-05-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91618
+	PR c++/109649
+	* g++.dg/template/friend77.C: New test.
+
+2023-05-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/109711
+	* gcc.dg/tree-ssa/pr109711-1.c: New file.
+	* gcc.dg/tree-ssa/pr109711-2.c: New file.
+
+2023-05-03  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR sanitizer/90746
+	* gcc.dg/sancov/basic0.c: Verify absence of tailcall.
+
+2023-05-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/pr109661-1.C: New test.
+	* g++.target/aarch64/pr109661-2.C: Likewise.
+	* g++.target/aarch64/pr109661-3.C: Likewise.
+	* g++.target/aarch64/pr109661-4.C: Likewise.
+	* gcc.target/aarch64/pr109661-1.c: Likewise.
+
+2023-05-03  Murray Steele  <murray.steele@arm.com>
+	    Christophe Lyon  <christophe.lyon@arm.com>
+
+	* g++.target/arm/mve.exp: Add general-c++ and general directories.
+	* g++.target/arm/mve/general-c++/nomve_fp_1.c: New test.
+	* g++.target/arm/mve/general-c++/vreinterpretq_1.C: New test.
+	* gcc.target/arm/mve/general-c/nomve_fp_1.c: New test.
+	* gcc.target/arm/mve/general-c/vreinterpretq_1.c: New test.
+
+2023-05-03  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/abi-10.c: New test.
+	* gcc.target/riscv/rvv/base/abi-11.c: New test.
+	* gcc.target/riscv/rvv/base/abi-12.c: New test.
+	* gcc.target/riscv/rvv/base/abi-13.c: New test.
+	* gcc.target/riscv/rvv/base/abi-14.c: New test.
+	* gcc.target/riscv/rvv/base/abi-15.c: New test.
+	* gcc.target/riscv/rvv/base/abi-16.c: New test.
+	* gcc.target/riscv/rvv/base/abi-8.c: New test.
+	* gcc.target/riscv/rvv/base/abi-9.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-1.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-10.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-11.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-12.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-13.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-14.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-15.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-16.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-17.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-18.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-19.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-2.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-20.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-21.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-22.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-23.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-24.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-25.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-26.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-27.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-3.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-4.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-5.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-6.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-7.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-8.c: New test.
+	* gcc.target/riscv/rvv/base/tuple-9.c: New test.
+	* gcc.target/riscv/rvv/base/user-10.c: New test.
+	* gcc.target/riscv/rvv/base/user-11.c: New test.
+	* gcc.target/riscv/rvv/base/user-12.c: New test.
+	* gcc.target/riscv/rvv/base/user-13.c: New test.
+	* gcc.target/riscv/rvv/base/user-14.c: New test.
+	* gcc.target/riscv/rvv/base/user-15.c: New test.
+	* gcc.target/riscv/rvv/base/user-7.c: New test.
+	* gcc.target/riscv/rvv/base/user-8.c: New test.
+	* gcc.target/riscv/rvv/base/user-9.c: New test.
+
+2023-05-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* gcc.target/aarch64/simd/pr99195_1.c: Add tests for halving and rounding
+	add/sub intrinsics.
+
+2023-05-03  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* gcc.target/aarch64/simd/pr99195_1.c: Add testing for some unary
+	and binary floating-point ops.
+	* gcc.target/aarch64/simd/pr99195_2.c: New test.
+
+2023-05-03  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/nontype12.C: Check for duplicate error.
+
 2023-05-02  Andrew Pinski  <apinski@marvell.com>
 
 	PR tree-optimization/109702

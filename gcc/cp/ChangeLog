@@ -1,3 +1,23 @@
+2023-05-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91618
+	PR c++/109649
+	* friend.cc (do_friend): Don't call check_explicit_specialization if
+	DECL_TEMPLATE_INFO is already set.
+	* decl2.cc (check_classfn): Set DECL_TEMPLATE_INFO.
+	* name-lookup.cc (set_decl_namespace): Likewise.
+
+2023-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.cc (cp_fold_data): Move definition earlier.
+	(cp_gimplify_expr): Pass address of ff_genericize | ff_mce_false
+	constructed data rather than &pset to cp_walk_tree with cp_fold_r.
+
+2023-05-03  Jason Merrill  <jason@redhat.com>
+
+	* pt.cc (reduce_template_parm_level): Fix comparison of
+	template template parm to cached version.
+
 2023-05-02  Jason Merrill  <jason@redhat.com>
 
 	* pt.cc (instantiate_class_template): Skip the RECORD_TYPE

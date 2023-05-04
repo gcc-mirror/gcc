@@ -1,3 +1,34 @@
+2023-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* src/c++17/floating_from_chars.cc
+	(_ZSt10from_charsPKcS0_RDF128_St12chars_format): New alias to
+	_ZSt10from_charsPKcS0_Ru9__ieee128St12chars_format.
+	* src/c++17/floating_to_chars.cc (_ZSt8to_charsPcS_DF128_): New alias to
+	_ZSt8to_charsPcS_u9__ieee128.
+	(_ZSt8to_charsPcS_DF128_St12chars_format): New alias to
+	_ZSt8to_charsPcS_u9__ieee128St12chars_format.
+	(_ZSt8to_charsPcS_DF128_St12chars_formati): New alias to
+	_ZSt8to_charsPcS_u9__ieee128St12chars_formati.
+	* config/abi/post/powerpc64le-linux-gnu/baseline_symbols.txt: Updated.
+
+2023-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.host (abi_baseline_pair): Use powerpc64le-linux-gnu
+	rather than powerpc64-linux-gnu for powerpc64le*-linux*.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Remove
+	_ZTI*DF128_, _ZTI*DF64x symbols and symbols in
+	GLIBCXX_IEEE128_3.4.{29,30,31} and CXXABI_IEEE128_1.3.13 symbol
+	versions.
+	* config/abi/post/powerpc64le-linux-gnu/baseline_symbols.txt: New
+	file.
+
+2023-05-03  Kefu Chai  <kefu.chai@scylladb.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109703
+	* include/bits/basic_string.h (basic_string(Iter, Iter, Alloc)):
+	Initialize _M_string_length.
+
 2023-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.
