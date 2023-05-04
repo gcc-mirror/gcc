@@ -1,3 +1,13 @@
+2023-05-03  Kefu Chai  <kefu.chai@scylladb.com>
+
+	Backported from master:
+	2023-05-03  Kefu Chai  <kefu.chai@scylladb.com>
+		    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109703
+	* include/bits/basic_string.h (basic_string(Iter, Iter, Alloc)):
+	Initialize _M_string_length.
+
 2023-04-28  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
