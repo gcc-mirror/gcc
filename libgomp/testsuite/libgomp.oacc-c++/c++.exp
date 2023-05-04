@@ -72,9 +72,8 @@ if { $lang_test_file_found } {
 
     set flags_file "${blddir}/../libstdc++-v3/scripts/testsuite_flags"
     if { [file exists $flags_file] } {
-	set libstdcxx_includes [exec sh $flags_file --build-includes]
-    } else {
-	set libstdcxx_includes ""
+	set lang_source_re {^.*\.[cC]$}
+	set lang_include_flags [exec sh $flags_file --build-includes]
     }
 
     # Test with all available offload targets, and with offloading disabled.
@@ -147,7 +146,7 @@ if { $lang_test_file_found } {
 	    }
 	}
 
-	gcc-dg-runtest $tests "$tagopt" "$libstdcxx_includes"
+	gcc-dg-runtest $tests "$tagopt" ""
     }
     unset offload_target
 } else {
