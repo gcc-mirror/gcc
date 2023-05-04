@@ -634,10 +634,6 @@
     UNSPEC_URHADD	; Used in aarch64-simd.md.
     UNSPEC_SHSUB	; Used in aarch64-simd.md.
     UNSPEC_UHSUB	; Used in aarch64-simd.md.
-    UNSPEC_ADDHN	; Used in aarch64-simd.md.
-    UNSPEC_RADDHN	; Used in aarch64-simd.md.
-    UNSPEC_SUBHN	; Used in aarch64-simd.md.
-    UNSPEC_RSUBHN	; Used in aarch64-simd.md.
     UNSPEC_SQDMULH	; Used in aarch64-simd.md.
     UNSPEC_SQRDMULH	; Used in aarch64-simd.md.
     UNSPEC_PMUL		; Used in aarch64-simd.md.
@@ -2609,9 +2605,6 @@
 (define_int_iterator DOTPROD_I8MM [UNSPEC_USDOT UNSPEC_SUDOT])
 (define_int_iterator DOTPROD_US_ONLY [UNSPEC_USDOT])
 
-(define_int_iterator ADDSUBHN [UNSPEC_ADDHN UNSPEC_RADDHN
-			       UNSPEC_SUBHN UNSPEC_RSUBHN])
-
 (define_int_iterator FMAXMIN_UNS [UNSPEC_FMAX UNSPEC_FMIN
 				  UNSPEC_FMAXNM UNSPEC_FMINNM])
 
@@ -3355,9 +3348,7 @@
 (define_int_attr sur [(UNSPEC_SHADD "s") (UNSPEC_UHADD "u")
 		      (UNSPEC_SRHADD "sr") (UNSPEC_URHADD "ur")
 		      (UNSPEC_SHSUB "s") (UNSPEC_UHSUB "u")
-		      (UNSPEC_ADDHN "") (UNSPEC_RADDHN "r")
 		      (UNSPEC_SADALP "s") (UNSPEC_UADALP "u")
-		      (UNSPEC_SUBHN "") (UNSPEC_RSUBHN "r")
 		      (UNSPEC_USQADD "us") (UNSPEC_SUQADD "su")
 		      (UNSPEC_SSLI  "s") (UNSPEC_USLI  "u")
 		      (UNSPEC_SSRI  "s") (UNSPEC_USRI  "u")
@@ -3416,11 +3407,7 @@
 			 (UNSPEC_SRHADD "add")
 			 (UNSPEC_URHADD "add")
 			 (UNSPEC_SHSUB "sub")
-			 (UNSPEC_UHSUB "sub")
-			 (UNSPEC_ADDHN "add")
-			 (UNSPEC_SUBHN "sub")
-			 (UNSPEC_RADDHN "add")
-			 (UNSPEC_RSUBHN "sub")])
+			 (UNSPEC_UHSUB "sub")])
 
 ;; BSL variants: first commutative operand.
 (define_int_attr bsl_1st [(1 "w") (2 "0")])
