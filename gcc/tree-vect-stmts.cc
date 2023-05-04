@@ -6389,9 +6389,15 @@ vectorizable_operation (vec_info *vinfo,
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "op not supported by target.\n");
-      /* Check only during analysis.  */
-      if (((code == PLUS_EXPR || code == MINUS_EXPR || code == NEGATE_EXPR)
+      /* When vec_mode is not a vector mode and we verified ops we
+	 do not have to lower like AND are natively supported let
+	 those through even when the mode isn't word_mode.  For
+	 ops we have to lower the lowering code assumes we are
+	 dealing with word_mode.  */
+      if ((((code == PLUS_EXPR || code == MINUS_EXPR || code == NEGATE_EXPR)
+	    || !target_support_p)
 	   && maybe_ne (GET_MODE_SIZE (vec_mode), UNITS_PER_WORD))
+	  /* Check only during analysis.  */
 	  || (!vec_stmt && !vect_can_vectorize_without_simd_p (code)))
 	{
 	  if (dump_enabled_p ())
