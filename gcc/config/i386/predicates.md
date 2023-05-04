@@ -686,22 +686,6 @@
   return true;
 })
 
-;; P6 processors will jump to the address after the decrement when %esp
-;; is used as a call operand, so they will execute return address as a code.
-;; See Pentium Pro errata 70, Pentium 2 errata A33 and Pentium 3 errata E17.
-
-(define_predicate "call_register_no_elim_operand"
-  (match_operand 0 "register_operand")
-{
-  if (SUBREG_P (op))
-    op = SUBREG_REG (op);
-
-  if (!TARGET_64BIT && op == stack_pointer_rtx)
-    return false;
-
-  return register_no_elim_operand (op, mode);
-})
-
 ;; True for any non-virtual and non-eliminable register.  Used in places where
 ;; instantiation of such a register may cause the pattern to not be recognized.
 (define_predicate "register_no_elim_operand"
@@ -720,20 +704,33 @@
 	   || VIRTUAL_REGISTER_P (op));
 })
 
-;; Similarly, but include the stack pointer.  This is used to prevent esp
-;; from being used as an index reg.
+;; Similarly, but include the stack pointer.  This is used
+;; to prevent esp from being used as an index reg.
 (define_predicate "index_register_operand"
   (match_operand 0 "register_operand")
 {
   if (SUBREG_P (op))
     op = SUBREG_REG (op);
 
-  unsigned int regno = REGNO (op);
-  if (reload_completed)
-    return REGNO_OK_FOR_INDEX_P (regno);
-  else
-    return REGNO_OK_FOR_INDEX_NONSTRICT_P (regno);
+  /* Before reload, we can allow (SUBREG (MEM...)) as a register operand
+     because it is guaranteed to be reloaded into one.  */
+  if (MEM_P (op))
+    return true;
+
+  return !(op == arg_pointer_rtx
+	   || op == frame_pointer_rtx
+	   || op == stack_pointer_rtx
+	   || VIRTUAL_REGISTER_P (op));
 })
+
+;; P6 processors will jump to the address after the decrement when %esp
+;; is used as a call operand, so they will execute return address as a code.
+;; See Pentium Pro errata 70, Pentium 2 errata A33 and Pentium 3 errata E17.
+
+(define_predicate "call_register_operand"
+  (if_then_else (match_test "TARGET_64BIT")
+    (match_operand 0 "register_operand")
+    (match_operand 0 "index_register_operand")))
 
 ;; Return false if this is any eliminable register.  Otherwise general_operand.
 (define_predicate "general_no_elim_operand"
@@ -790,7 +787,7 @@
 (define_special_predicate "call_insn_operand"
   (ior (match_test "constant_call_address_operand
 		     (op, mode == VOIDmode ? mode : Pmode)")
-       (match_operand 0 "call_register_no_elim_operand")
+       (match_operand 0 "call_register_operand")
        (and (not (match_test "TARGET_INDIRECT_BRANCH_REGISTER"))
 	    (ior (and (not (match_test "TARGET_X32"))
 		      (match_operand 0 "memory_operand"))
