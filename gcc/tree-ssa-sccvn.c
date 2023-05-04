@@ -4509,44 +4509,41 @@ dominated_by_p_w_unex (basic_block bb1, basic_block bb2, bool allow_back)
     }
 
   /* Iterate to the single executable bb2 successor.  */
-  if (EDGE_COUNT (bb2->succs) > 1)
-    {
-      edge succe = NULL;
-      FOR_EACH_EDGE (e, ei, bb2->succs)
-	if ((e->flags & EDGE_EXECUTABLE)
-	    || (!allow_back && (e->flags & EDGE_DFS_BACK)))
+  edge succe = NULL;
+  FOR_EACH_EDGE (e, ei, bb2->succs)
+    if ((e->flags & EDGE_EXECUTABLE)
+	|| (!allow_back && (e->flags & EDGE_DFS_BACK)))
+      {
+	if (succe)
 	  {
-	    if (succe)
+	    succe = NULL;
+	    break;
+	  }
+	succe = e;
+      }
+  if (succe)
+    {
+      /* Verify the reached block is only reached through succe.
+	 If there is only one edge we can spare us the dominator
+	 check and iterate directly.  */
+      if (EDGE_COUNT (succe->dest->preds) > 1)
+	{
+	  FOR_EACH_EDGE (e, ei, succe->dest->preds)
+	    if (e != succe
+		&& ((e->flags & EDGE_EXECUTABLE)
+		    || (!allow_back && (e->flags & EDGE_DFS_BACK))))
 	      {
 		succe = NULL;
 		break;
 	      }
-	    succe = e;
-	  }
+	}
       if (succe)
 	{
-	  /* Verify the reached block is only reached through succe.
-	     If there is only one edge we can spare us the dominator
-	     check and iterate directly.  */
-	  if (EDGE_COUNT (succe->dest->preds) > 1)
-	    {
-	      FOR_EACH_EDGE (e, ei, succe->dest->preds)
-		if (e != succe
-		    && ((e->flags & EDGE_EXECUTABLE)
-			|| (!allow_back && (e->flags & EDGE_DFS_BACK))))
-		  {
-		    succe = NULL;
-		    break;
-		  }
-	    }
-	  if (succe)
-	    {
-	      bb2 = succe->dest;
+	  bb2 = succe->dest;
 
-	      /* Re-do the dominance check with changed bb2.  */
-	      if (dominated_by_p (CDI_DOMINATORS, bb1, bb2))
-		return true;
-	    }
+	  /* Re-do the dominance check with changed bb2.  */
+	  if (dominated_by_p (CDI_DOMINATORS, bb1, bb2))
+	    return true;
 	}
     }
 
