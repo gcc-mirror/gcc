@@ -542,6 +542,7 @@ full_unroll (gomp_for *omp_for, location_t loc, walk_ctx *ctx ATTRIBUTE_UNUSED)
 
   gimple_seq unrolled = NULL;
   gimple_seq_add_seq (&unrolled, gimple_omp_for_pre_body (omp_for));
+  gimplify_assign (index, init, &unrolled);
   push_gimplify_context ();
   gimple_seq_add_seq (&unrolled,
 		      build_unroll_body (body, unroll_factor, index, incr));

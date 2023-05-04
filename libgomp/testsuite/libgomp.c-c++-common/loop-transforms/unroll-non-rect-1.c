@@ -1,3 +1,5 @@
+/* { dg-additional-options { -Wall -Wno-unknown-pragmas } } */
+
 #include <stdio.h>
 #include <stdlib.h>
 

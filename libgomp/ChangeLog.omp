@@ -1,3 +1,38 @@
+2023-05-04  Frederik Harwath  <frederik@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-no-directive-unroll-full-1.c:
+	Use -Wall and add -Wno-unknown-pragmas to disable warnings about empty pragmas.
+	Use -O2.
+	* testsuite/libgomp.c++/loop-transforms/matrix-no-directive-unroll-full-1.C:
+	Copy of testsuite/libgomp.c-c++-common/matrix-no-directive-unroll-full-1.c,
+	but using -O0 which works only for C++.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-no-directive-1.c: Use -Wall
+	and use -Wno-unknown-pragmas to disable warnings about empty pragmas.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-omp-distribute-parallel-for-1.c:
+	Likewise.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-omp-for-1.c:
+	Likewise.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-omp-parallel-for-1.c:
+	Likewise.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-omp-parallel-masked-taskloop-1.c:
+	Likewise.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-omp-parallel-masked-taskloop-simd-1.c:
+	Likewise.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-omp-target-parallel-for-1.c:
+	Likewise.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-omp-target-teams-distribute-parallel-for-1.c:
+	Likewise.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-omp-taskloop-1.c:
+	Likewise.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-omp-teams-distribute-parallel-for-1.c:
+	Likewise.
+	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-simd-1.c:
+	Likewise.
+	* testsuite/libgomp.c-c++-common/loop-transforms/unroll-non-rect-1.c:
+	Likewise.
+	* testsuite/libgomp.c-c++-common/loop-transforms/unroll-1.c:
+	Likewise and fix broken function calls found by -Wall.
+
 2023-04-25  Frederik Harwath  <frederik@codesourcery.com>
 
 	* testsuite/libgomp.fortran/loop-transforms/tile-2.f90: Add reduction clause.

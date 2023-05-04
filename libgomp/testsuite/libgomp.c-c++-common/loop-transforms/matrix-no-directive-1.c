@@ -1,4 +1,4 @@
-/* { dg-additional-options {-fdump-tree-original} } */
+/* { dg-additional-options { -fdump-tree-original -Wall -Wno-unknown-pragmas } } */
 
 #define COMMON_DIRECTIVE
 #define COLLAPSE_1 collapse(1)

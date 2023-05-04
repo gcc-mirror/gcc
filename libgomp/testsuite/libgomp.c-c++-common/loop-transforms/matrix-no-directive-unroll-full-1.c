@@ -1,4 +1,4 @@
-/* { dg-additional-options {-fdump-tree-original} } */
+/* { dg-additional-options { -O2 -fdump-tree-original -Wall -Wno-unknown-pragmas } } */
 
 #define COMMON_DIRECTIVE
 #define COMMON_TOP_TRANSFORM omp unroll full

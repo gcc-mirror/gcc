@@ -1,4 +1,4 @@
-/* { dg-additional-options {-fdump-tree-original} } */
+/* { dg-additional-options { -fdump-tree-original -Wall -Wno-unknown-pragmas } } */
 
 #define COMMON_DIRECTIVE omp target parallel for map(tofrom:result[0:dim0*dim1]) map(to:matrix1[0:dim0*dim1], matrix2[0:dim0*dim1])
 #define COLLAPSE_1 collapse(1)

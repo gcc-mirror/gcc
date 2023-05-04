@@ -1,3 +1,7 @@
+2023-05-04  Frederik Harwath  <frederik@codesourcery.com>
+
+	* omp-transform-loops.cc (full_unroll): Add initialization of index variable.
+
 2023-04-27  Andrew Stubbs  <ams@codesourcery.com>
 
 	* config/gcn/gcn-valu.md (cmul<conj_op><mode>3): Use gcn_gen_undef.
