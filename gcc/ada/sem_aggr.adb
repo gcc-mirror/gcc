@@ -1331,9 +1331,9 @@ package body Sem_Aggr is
       --  In this event we do not resolve Expr unless expansion is disabled.
       --  To know why, see the DELAYED COMPONENT RESOLUTION note above.
       --
-      --  NOTE: In the case of "... => <>", we pass the in the
-      --  N_Component_Association node as Expr, since there is no Expression in
-      --  that case, and we need a Sloc for the error message.
+      --  NOTE: In the case of "... => <>", we pass the N_Component_Association
+      --  node as Expr, since there is no Expression and we need a Sloc for the
+      --  error message.
 
       procedure Resolve_Iterated_Component_Association
         (N         : Node_Id;
@@ -1790,7 +1790,7 @@ package body Sem_Aggr is
          Choice : Node_Id;
          Dummy  : Boolean;
          Scop   : Entity_Id;
-         Expr   : Node_Id;
+         Expr   : constant Node_Id := Expression (N);
 
       --  Start of processing for Resolve_Iterated_Component_Association
 
@@ -1854,13 +1854,11 @@ package body Sem_Aggr is
             Set_Scope (Id, Scop);
          end if;
 
-         --  Analyze  expression without expansion, to verify legality.
+         --  Analyze expression without expansion, to verify legality.
          --  When generating code, we then remove references to the index
          --  variable, because the expression will be analyzed anew after
          --  rewritting as a loop with a new index variable; when not
          --  generating code we leave the analyzed expression as it is.
-
-         Expr := Expression (N);
 
          Dummy := Resolve_Aggr_Expr (Expr, Single_Elmt => False);
 
