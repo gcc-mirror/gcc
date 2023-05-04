@@ -5807,11 +5807,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (if (tem && !TREE_OVERFLOW (tem))
      (scmp @0 { tem; }))))))
 
-/* Convert ABS_EXPR<x> == 0 or ABS_EXPR<x> != 0 to x == 0 or x != 0.  */
-(for op (eq ne)
- (simplify
-  (op (abs @0) zerop@1)
-  (op @0 @1)))
+/* Convert ABS[U]_EXPR<x> == 0 or ABS[U]_EXPR<x> != 0 to x == 0 or x != 0.  */
+(for op (abs absu)
+ (for eqne (eq ne)
+  (simplify
+   (eqne (op @0) zerop@1)
+   (eqne @0 { build_zero_cst (TREE_TYPE (@0)); }))))
 
 /* From fold_sign_changed_comparison and fold_widened_comparison.
    FIXME: the lack of symmetry is disturbing.  */
