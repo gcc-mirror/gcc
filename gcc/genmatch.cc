@@ -183,31 +183,37 @@ fprintf_indent (FILE *f, unsigned int indent, const char *format, ...)
   va_end (ap);
 }
 
-/* Like fprintf, but print to two files, one header one C implementation.  */
-FILE *header_file = NULL;
+/* Secondary stream for fp_decl.  */
+static FILE *header_file;
 
+/* Start or continue emitting a declaration in fprintf-like manner,
+   printing both to F and global header_file, if non-null.  */
 static void
 #if GCC_VERSION >= 4001
-__attribute__((format (printf, 4, 5)))
+__attribute__((format (printf, 2, 3)))
 #endif
-emit_func (FILE *f, bool open, bool close, const char *format, ...)
+fp_decl (FILE *f, const char *format, ...)
 {
-  va_list ap1, ap2;
-  if (header_file != NULL)
-    {
-      if (open)
-	fprintf (header_file, "extern ");
-      va_start (ap2, format);
-      vfprintf (header_file, format, ap2);
-      va_end (ap2);
-      if (close)
-	fprintf (header_file, ";\n");
-    }
+  va_list ap;
+  va_start (ap, format);
+  vfprintf (f, format, ap);
+  va_end (ap);
 
-  va_start (ap1, format);
-  vfprintf (f, format, ap1);
-  va_end (ap1);
-  fputc ('\n', f);
+  if (!header_file)
+    return;
+
+  va_start (ap, format);
+  vfprintf (header_file, format, ap);
+  va_end (ap);
+}
+
+/* Finish a declaration being emitted by fp_decl.  */
+static void
+fp_decl_done (FILE *f, const char *trailer)
+{
+  fprintf (f, "%s\n", trailer);
+  if (header_file)
+    fprintf (header_file, "%s;", trailer);
 }
 
 static void
@@ -3924,35 +3930,35 @@ decision_tree::gen (vec <FILE *> &files, bool gimple)
       s->fname = xasprintf ("%s_simplify_%u", gimple ? "gimple" : "generic",
 			    fcnt++);
       if (gimple)
-	emit_func (f, true, false, "\nbool\n"
+	fp_decl (f, "\nbool\n"
 		 "%s (gimple_match_op *res_op, gimple_seq *seq,\n"
 		 "                 tree (*valueize)(tree) ATTRIBUTE_UNUSED,\n"
 		 "                 const tree ARG_UNUSED (type), tree *ARG_UNUSED "
-		 "(captures)\n",
+		 "(captures)",
 		 s->fname);
       else
 	{
-	  emit_func (f, true, false, "\ntree\n"
+	  fp_decl (f, "\ntree\n"
 		   "%s (location_t ARG_UNUSED (loc), const tree ARG_UNUSED (type),\n",
 		   (*iter).second->fname);
 	  for (unsigned i = 0;
 	       i < as_a <expr *>(s->s->s->match)->ops.length (); ++i)
-	    emit_func (f, false, false, " tree ARG_UNUSED (_p%d),", i);
-	  emit_func (f, false, false, " tree *captures\n");
+	    fp_decl (f, " tree ARG_UNUSED (_p%d),", i);
+	  fp_decl (f, " tree *captures");
 	}
       for (unsigned i = 0; i < s->s->s->for_subst_vec.length (); ++i)
 	{
 	  if (! s->s->s->for_subst_vec[i].first->used)
 	    continue;
 	  if (is_a <operator_id *> (s->s->s->for_subst_vec[i].second))
-	    emit_func (f, false, false, ", const enum tree_code ARG_UNUSED (%s)",
+	    fp_decl (f, ",\n const enum tree_code ARG_UNUSED (%s)",
 		     s->s->s->for_subst_vec[i].first->id);
 	  else if (is_a <fn_id *> (s->s->s->for_subst_vec[i].second))
-	    emit_func (f, false, false, ", const combined_fn ARG_UNUSED (%s)",
+	    fp_decl (f, ",\n const combined_fn ARG_UNUSED (%s)",
 		     s->s->s->for_subst_vec[i].first->id);
 	}
 
-      emit_func (f, false, true, ")");
+      fp_decl_done (f, ")");
       fprintf (f, "{\n");
       fprintf_indent (f, 2, "const bool debug_dump = "
 			    "dump_file && (dump_flags & TDF_FOLDING);\n");
@@ -3988,22 +3994,22 @@ decision_tree::gen (vec <FILE *> &files, bool gimple)
 	  FILE *f = get_out_file (files);
 
 	  if (gimple)
-	    emit_func (f, true, false,"\nbool\n"
+	    fp_decl (f, "\nbool\n"
 		     "gimple_simplify_%s (gimple_match_op *res_op,"
 		     " gimple_seq *seq,\n"
 		     "                 tree (*valueize)(tree) "
 		     "ATTRIBUTE_UNUSED,\n"
 		     "                 code_helper ARG_UNUSED (code), tree "
-		     "ARG_UNUSED (type)\n",
+		     "ARG_UNUSED (type)",
 		     e->operation->id);
 	  else
-	    emit_func (f, true, false, "\ntree\n"
+	    fp_decl (f, "\ntree\n"
 		     "generic_simplify_%s (location_t ARG_UNUSED (loc), enum "
 		     "tree_code ARG_UNUSED (code), const tree ARG_UNUSED (type)",
 		     e->operation->id);
 	  for (unsigned i = 0; i < n; ++i)
-	    emit_func (f, false, false,", tree _p%d", i);
-	  emit_func (f, false, true, ")");
+	    fp_decl (f, ", tree _p%d", i);
+	  fp_decl_done (f, ")");
 	  fprintf (f, "{\n");
 	  fprintf_indent (f, 2, "const bool debug_dump = "
 				"dump_file && (dump_flags & TDF_FOLDING);\n");
@@ -4025,17 +4031,17 @@ decision_tree::gen (vec <FILE *> &files, bool gimple)
 	  FILE *f = get_out_file (files);
 
 	  if (gimple)
-	    emit_func (f, true, false, "\nbool\n"
+	    fp_decl (f, "\nbool\n"
 			"gimple_simplify (gimple_match_op*, gimple_seq*,\n"
 			"                 tree (*)(tree), code_helper,\n"
 			"                 const tree");
 	  else
-	    emit_func (f, true, false,"\ntree\n"
+	    fp_decl (f, "\ntree\n"
 			"generic_simplify (location_t, enum tree_code,\n"
 			"                  const tree");
 	  for (unsigned i = 0; i < n; ++i)
-	    emit_func (f, false, false, ", tree");
-	  emit_func (f, false, true, ")");
+	    fp_decl (f, ", tree");
+	  fp_decl_done (f, ")");
 	  fprintf (f, "{\n");
 	  if (gimple)
 	    fprintf (f, "  return false;\n");
@@ -4052,17 +4058,17 @@ decision_tree::gen (vec <FILE *> &files, bool gimple)
       /* Then generate the main entry with the outermost switch and
          tail-calls to the split-out functions.  */
       if (gimple)
-	emit_func (f, true, false, "\nbool\n"
+	fp_decl (f, "\nbool\n"
 		 "gimple_simplify (gimple_match_op *res_op, gimple_seq *seq,\n"
 		 "                 tree (*valueize)(tree) ATTRIBUTE_UNUSED,\n"
 		 "                 code_helper code, const tree type");
       else
-	emit_func (f, true, false, "\ntree\n"
+	fp_decl (f, "\ntree\n"
 		 "generic_simplify (location_t loc, enum tree_code code, "
 		 "const tree type ATTRIBUTE_UNUSED");
       for (unsigned i = 0; i < n; ++i)
-	emit_func (f, false, false, ", tree _p%d", i);
-      emit_func (f, false, true, ")");
+	fp_decl (f, ", tree _p%d", i);
+      fp_decl_done (f, ")");
       fprintf (f, "{\n");
 
       if (gimple)
@@ -4117,10 +4123,11 @@ decision_tree::gen (vec <FILE *> &files, bool gimple)
 void
 write_predicate (FILE *f, predicate_id *p, decision_tree &dt, bool gimple)
 {
-  emit_func (f, true, true, "\nbool\n%s%s (tree t%s%s)",
-		gimple ? "gimple_" : "tree_", p->id,
-		p->nargs > 0 ? ", tree *res_ops" : "",
-		gimple ? ", tree (*valueize)(tree) ATTRIBUTE_UNUSED" : "");
+  fp_decl (f, "\nbool\n%s%s (tree t%s%s)",
+	   gimple ? "gimple_" : "tree_", p->id,
+	   p->nargs > 0 ? ", tree *res_ops" : "",
+	   gimple ? ", tree (*valueize)(tree) ATTRIBUTE_UNUSED" : "");
+  fp_decl_done (f, "");
   fprintf (f, "{\n");
   /* Conveniently make 'type' available.  */
   fprintf_indent (f, 2, "const tree type = TREE_TYPE (t);\n");
@@ -5484,7 +5491,7 @@ main (int argc, char **argv)
 
   if (header_file)
     {
-      fprintf (header_file, "#endif /* GCC_GIMPLE_MATCH_AUTO_H.  */\n");
+      fprintf (header_file, "\n#endif /* GCC_GIMPLE_MATCH_AUTO_H.  */\n");
       fclose (header_file);
     }
 
