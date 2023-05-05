@@ -1,3 +1,19 @@
+2023-05-04  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109724
+	* g++.dg/torture/pr109724.C: New testcase.
+
+2023-05-04  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2023-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106809
+	* gcc.dg/torture/pr106809.c: New testcase.
+
 2023-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

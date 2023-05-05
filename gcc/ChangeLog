@@ -1,3 +1,12 @@
+2023-05-04  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2023-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/106809
+	* tree-ssa-sccvn.c (dominaged_by_p_w_unex): Check we have
+	more than one successor before doing extra work.
+
 2023-05-03  Anthony Sharp  <anthonysharp15@gmail.com>
 
 	Backported from master:
