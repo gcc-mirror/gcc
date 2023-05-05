@@ -10911,7 +10911,7 @@ do_mpfr_ckconv (mpfr_srcptr m, tree type, int inexact)
       real_from_mpfr (&rr, m, type, MPFR_RNDN);
       /* Proceed iff GCC's REAL_VALUE_TYPE can hold the MPFR value,
 	 check for overflow/underflow.  If the REAL_VALUE_TYPE is zero
-	 but the mpft_t is not, then we underflowed in the
+	 but the mpfr_t is not, then we underflowed in the
 	 conversion.  */
       if (real_isfinite (&rr)
 	  && (rr.cl == rvc_zero) == (mpfr_zero_p (m) != 0))
@@ -10952,7 +10952,7 @@ do_mpc_ckconv (mpc_srcptr m, tree type, int inexact, int force_convert)
       real_from_mpfr (&im, mpc_imagref (m), TREE_TYPE (type), MPFR_RNDN);
       /* Proceed iff GCC's REAL_VALUE_TYPE can hold the MPFR values,
 	 check for overflow/underflow.  If the REAL_VALUE_TYPE is zero
-	 but the mpft_t is not, then we underflowed in the
+	 but the mpfr_t is not, then we underflowed in the
 	 conversion.  */
       if (force_convert
 	  || (real_isfinite (&re) && real_isfinite (&im)

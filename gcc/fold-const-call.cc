@@ -101,7 +101,7 @@ do_mpfr_ckconv (real_value *result, mpfr_srcptr m, bool inexact,
   real_from_mpfr (&tmp, m, format, MPFR_RNDN);
 
   /* Proceed iff GCC's REAL_VALUE_TYPE can hold the MPFR values.
-     If the REAL_VALUE_TYPE is zero but the mpft_t is not, then we
+     If the REAL_VALUE_TYPE is zero but the mpfr_t is not, then we
      underflowed in the conversion.  */
   if (!real_isfinite (&tmp)
       || ((tmp.cl == rvc_zero) != (mpfr_zero_p (m) != 0)))
@@ -295,7 +295,7 @@ do_mpc_ckconv (real_value *result_real, real_value *result_imag,
   real_from_mpfr (&tmp_imag, mpc_imagref (m), format, MPFR_RNDN);
 
   /* Proceed iff GCC's REAL_VALUE_TYPE can hold the MPFR values.
-     If the REAL_VALUE_TYPE is zero but the mpft_t is not, then we
+     If the REAL_VALUE_TYPE is zero but the mpfr_t is not, then we
      underflowed in the conversion.  */
   if (!real_isfinite (&tmp_real)
       || !real_isfinite (&tmp_imag)
