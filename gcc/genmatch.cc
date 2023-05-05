@@ -5301,13 +5301,12 @@ round_alloc_size (size_t s)
 /* Construct and display the help menu.  */
 
 static void
-showUsage ()
+usage ()
 {
-  fprintf (stderr, "Usage: genmatch [--gimple] [--generic] "
-		   "[--header=<filename>] [--include=<filename>] [-v[v]] input "
-		   "[<outputfile>...]\n");
-  fprintf (stderr, "\nWhen more then one outputfile is specified --header "
-		   "is required.\n");
+  const char *usage = "Usage:\n"
+    " %s [--gimple|--generic] [-v[v]] <input>\n"
+    " %s [options] [--include=FILE] --header=FILE <input> <output>...\n";
+  fprintf (stderr, usage, progname, progname);
 }
 
 /* Write out the correct include to the match-head fle containing the helper
@@ -5331,9 +5330,6 @@ main (int argc, char **argv)
   cpp_reader *r;
 
   progname = "genmatch";
-
-  if (argc < 2)
-    return 1;
 
   bool gimple = true;
   char *s_header_file = NULL;
@@ -5359,14 +5355,17 @@ main (int argc, char **argv)
 	files.safe_push (argv[i]);
       else
 	{
-	  showUsage ();
+	  usage ();
 	  return 1;
 	}
     }
 
   /* Validate if the combinations are valid.  */
   if ((files.length () > 1 && !s_header_file) || files.is_empty ())
-    showUsage ();
+    {
+      usage ();
+      return 1;
+    }
 
   if (!s_include_file)
     s_include_file = s_header_file;
