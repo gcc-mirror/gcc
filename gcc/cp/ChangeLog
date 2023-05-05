@@ -1,3 +1,12 @@
+2023-05-04  Jason Merrill  <jason@redhat.com>
+
+	Revert:
+	2023-04-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106890
+	* init.cc (maybe_instantiate_nsdmi_init): Don't leave
+	current_function_decl set to a constructor.
+
 2023-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
