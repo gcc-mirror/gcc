@@ -42,13 +42,13 @@ dispatch_float_literals (ProcMacro::TokenStream &ts,
       case CORETYPE_F32: {
 	auto value = std::stof (str, &sz);
 	ts.push (ProcMacro::TokenTree::make_tokentree (
-	  ProcMacro::Literal::make_f32 (value, sz == str.length ())));
+	  ProcMacro::Literal::make_f32 (value, sz != str.length ())));
       }
       break;
       case CORETYPE_F64: {
 	auto value = std::stod (str, &sz);
 	ts.push (ProcMacro::TokenTree::make_tokentree (
-	  ProcMacro::Literal::make_f64 (value, sz == str.length ())));
+	  ProcMacro::Literal::make_f64 (value, sz != str.length ())));
       }
       break;
     default:
@@ -70,52 +70,52 @@ dispatch_integer_literals (ProcMacro::TokenStream &ts,
     case CORETYPE_U8:
       uvalue = std::stoull (str, &sz);
       ts.push (ProcMacro::TokenTree::make_tokentree (
-	ProcMacro::Literal::make_u8 (uvalue, sz == str.length ())));
+	ProcMacro::Literal::make_u8 (uvalue, sz != str.length ())));
       break;
     case CORETYPE_U16:
       uvalue = std::stoull (str, &sz);
       ts.push (ProcMacro::TokenTree::make_tokentree (
-	ProcMacro::Literal::make_u16 (uvalue, sz == str.length ())));
+	ProcMacro::Literal::make_u16 (uvalue, sz != str.length ())));
       break;
     case CORETYPE_U32:
       uvalue = std::stoull (str, &sz);
       ts.push (ProcMacro::TokenTree::make_tokentree (
-	ProcMacro::Literal::make_u32 (uvalue, sz == str.length ())));
+	ProcMacro::Literal::make_u32 (uvalue, sz != str.length ())));
       break;
     case CORETYPE_U64:
       uvalue = std::stoull (str, &sz);
       ts.push (ProcMacro::TokenTree::make_tokentree (
-	ProcMacro::Literal::make_u32 (uvalue, sz == str.length ())));
+	ProcMacro::Literal::make_u32 (uvalue, sz != str.length ())));
       break;
     case CORETYPE_I8:
       svalue = std::stoll (str, &sz);
       ts.push (ProcMacro::TokenTree::make_tokentree (
-	ProcMacro::Literal::make_i8 (svalue, sz == str.length ())));
+	ProcMacro::Literal::make_i8 (svalue, sz != str.length ())));
       break;
     case CORETYPE_I16:
       svalue = std::stoll (str, &sz);
       ts.push (ProcMacro::TokenTree::make_tokentree (
-	ProcMacro::Literal::make_i16 (svalue, sz == str.length ())));
+	ProcMacro::Literal::make_i16 (svalue, sz != str.length ())));
       break;
     case CORETYPE_I32:
       svalue = std::stoll (str, &sz);
       ts.push (ProcMacro::TokenTree::make_tokentree (
-	ProcMacro::Literal::make_i32 (svalue, sz == str.length ())));
+	ProcMacro::Literal::make_i32 (svalue, sz != str.length ())));
       break;
     case CORETYPE_I64:
       svalue = std::stoll (str, &sz);
       ts.push (ProcMacro::TokenTree::make_tokentree (
-	ProcMacro::Literal::make_i32 (svalue, sz == str.length ())));
+	ProcMacro::Literal::make_i32 (svalue, sz != str.length ())));
       break;
     case CORETYPE_INT:
       svalue = std::stoll (str, &sz);
       ts.push (ProcMacro::TokenTree::make_tokentree (
-	ProcMacro::Literal::make_isize (svalue, sz == str.length ())));
+	ProcMacro::Literal::make_isize (svalue, sz != str.length ())));
       break;
     case CORETYPE_UINT:
       uvalue = std::stoull (str, &sz);
       ts.push (ProcMacro::TokenTree::make_tokentree (
-	ProcMacro::Literal::make_usize (uvalue, sz == str.length ())));
+	ProcMacro::Literal::make_usize (uvalue, sz != str.length ())));
       break;
     case CORETYPE_UNKNOWN:
     default:
