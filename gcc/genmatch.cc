@@ -209,7 +209,7 @@ output_line_directive (FILE *f, location_t location,
       else
 	fprintf (f, "%s:%d", file, loc.line);
     }
-  else
+  else if (verbose >= 2)
     /* Other gen programs really output line directives here, at least for
        development it's right now more convenient to have line information
        from the generated file.  Still keep the directives as comment for now
