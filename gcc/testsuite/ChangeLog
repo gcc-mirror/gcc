@@ -1,3 +1,29 @@
+2023-05-04  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109724
+	* g++.dg/torture/pr109724.C: New testcase.
+
+2023-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/109676
+	* g++.target/i386/pr109676.C: New test.
+
+2023-05-04  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	Backported from master:
+	2023-04-20  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+		    kito-cheng  <kito.cheng@sifive.com>
+
+	PR target/109535
+	* g++.target/riscv/rvv/base/pr109535.C: New test.
+	* gcc.target/riscv/rvv/base/pr109535.c: New test.
+
 2023-05-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/109666

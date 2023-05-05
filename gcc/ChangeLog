@@ -1,3 +1,31 @@
+2023-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/109676
+	* config/i386/i386-features.cc (timode_scalar_chain::convert_insn):
+	If src is REG, change its mode to V1TImode and call fix_debug_reg_uses
+	for it only if it still has TImode.  Don't decide whether to call
+	fix_debug_reg_uses based on whether SRC is ever set or not.
+
+2023-05-04  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2023-05-03  Kito Cheng  <kito.cheng@sifive.com>
+
+	* doc/md.texi (RISC-V): Add vr, vm, vd constarint.
+
+2023-05-04  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	Backported from master:
+	2023-04-20  Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+		    kito-cheng  <kito.cheng@sifive.com>
+
+	PR target/109535
+	* config/riscv/riscv-vsetvl.cc (count_regno_occurrences): New function.
+	(pass_vsetvl::cleanup_insns): Fix bug.
+
 2023-05-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/109642
