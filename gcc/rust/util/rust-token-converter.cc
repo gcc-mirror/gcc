@@ -244,10 +244,8 @@ convert (const std::vector<const_TokenPtr> &tokens)
 	    auto str = token->as_string ();
 	    auto it = str.cbegin ();
 	    for (; it != str.cend () - 1; it++)
-	      {
-		trees.back ().push (ProcMacro::TokenTree::make_tokentree (
-		  ProcMacro::Punct::make_punct (*it, ProcMacro::JOINT)));
-	      }
+	      trees.back ().push (ProcMacro::TokenTree::make_tokentree (
+		ProcMacro::Punct::make_punct (*it, ProcMacro::JOINT)));
 	    trees.back ().push (ProcMacro::TokenTree::make_tokentree (
 	      ProcMacro::Punct::make_punct (*it, ProcMacro::ALONE)));
 	  }
@@ -315,9 +313,7 @@ from_ident (const ProcMacro::Ident &ident, std::vector<const_TokenPtr> &result)
 {
   std::string value (reinterpret_cast<const char *> (ident.val), ident.len);
   if (ident.is_raw)
-    {
-      value = "r#" + value;
-    }
+    value = "r#" + value;
 
   // TODO: Inject span -> for now spans are not stored in Ident, once changed
   // the span should be injected in the built token below.
