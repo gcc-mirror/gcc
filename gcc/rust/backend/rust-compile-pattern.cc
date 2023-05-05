@@ -359,11 +359,7 @@ CompilePatternLet::visit (HIR::IdentifierPattern &pattern)
     {
       ctx->add_statement (init_expr);
 
-      tree stmt_type = TyTyResolveCompile::compile (ctx, ty);
-
-      auto unit_type_init_expr
-	= ctx->get_backend ()->constructor_expression (stmt_type, false, {}, -1,
-						       rval_locus);
+      auto unit_type_init_expr = unit_expression (ctx, rval_locus);
       auto s = ctx->get_backend ()->init_statement (fnctx.fndecl, var,
 						    unit_type_init_expr);
       ctx->add_statement (s);

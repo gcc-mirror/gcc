@@ -86,6 +86,20 @@ TyTyResolveCompile::get_implicit_enumeral_node_type (Context *ctx)
   return enum_node;
 }
 
+tree
+TyTyResolveCompile::get_unit_type (Context *ctx)
+{
+  static tree unit_type;
+  if (unit_type == nullptr)
+    {
+      auto unit_type_node = ctx->get_backend ()->struct_type ({});
+      unit_type
+	= ctx->get_backend ()->named_type ("()", unit_type_node,
+					   Linemap::predeclared_location ());
+    }
+  return unit_type;
+}
+
 void
 TyTyResolveCompile::visit (const TyTy::ErrorType &)
 {
@@ -163,14 +177,11 @@ TyTyResolveCompile::visit (const TyTy::FnType &type)
   std::vector<Backend::typed_identifier> parameters;
   std::vector<Backend::typed_identifier> results;
 
-  if (!type.get_return_type ()->is_unit ())
-    {
-      auto hir_type = type.get_return_type ();
-      auto ret = TyTyResolveCompile::compile (ctx, hir_type, trait_object_mode);
-      results.push_back (Backend::typed_identifier (
-	"_", ret,
-	ctx->get_mappings ()->lookup_location (hir_type->get_ref ())));
-    }
+  auto hir_type = type.get_return_type ();
+  auto ret = TyTyResolveCompile::compile (ctx, hir_type, trait_object_mode);
+  Location return_type_locus
+    = ctx->get_mappings ()->lookup_location (hir_type->get_ref ());
+  results.push_back (Backend::typed_identifier ("_", ret, return_type_locus));
 
   for (auto &param_pair : type.get_params ())
     {
@@ -362,7 +373,7 @@ TyTyResolveCompile::visit (const TyTy::TupleType &type)
 {
   if (type.num_fields () == 0)
     {
-      translated = ctx->get_backend ()->unit_type ();
+      translated = get_unit_type (ctx);
       return;
     }
 
@@ -651,7 +662,7 @@ TyTyResolveCompile::visit (const TyTy::StrType &type)
 void
 TyTyResolveCompile::visit (const TyTy::NeverType &)
 {
-  translated = ctx->get_backend ()->unit_type ();
+  translated = get_unit_type (ctx);
 }
 
 void

@@ -65,12 +65,8 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
 	return error_mark_node;
 
       TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (lookup);
-
-      // it might be a unit-struct
       if (adt->is_unit ())
-	{
-	  return ctx->get_backend ()->unit_expression ();
-	}
+	return unit_expression (ctx, expr_locus);
 
       if (!adt->is_enum ())
 	return error_mark_node;

@@ -86,6 +86,23 @@ protected:
 			       const Analysis::NodeMapping &expr_mappings,
 			       Location expr_locus);
 
+  void compile_function_body (tree fndecl, HIR::BlockExpr &function_body,
+			      TyTy::BaseType *fn_return_ty);
+
+  tree compile_constant_item (TyTy::BaseType *resolved_type,
+			      const Resolver::CanonicalPath *canonical_path,
+			      HIR::Expr *const_value_expr, Location locus);
+
+  tree compile_function (const std::string &fn_name, HIR::SelfParam &self_param,
+			 std::vector<HIR::FunctionParam> &function_params,
+			 const HIR::FunctionQualifiers &qualifiers,
+			 HIR::Visibility &visibility, AST::AttrVec &outer_attrs,
+			 Location locus, HIR::BlockExpr *function_body,
+			 const Resolver::CanonicalPath *canonical_path,
+			 TyTy::FnType *fntype);
+
+  static tree unit_expression (Context *ctx, Location locus);
+
   static void setup_fndecl (tree fndecl, bool is_main_entry_point,
 			    bool is_generic_fn, HIR::Visibility &visibility,
 			    const HIR::FunctionQualifiers &qualifiers,
@@ -120,23 +137,6 @@ protected:
 
   static std::vector<Bvariable *>
   compile_locals_for_block (Context *ctx, Resolver::Rib &rib, tree fndecl);
-
-  static void compile_function_body (Context *ctx, tree fndecl,
-				     HIR::BlockExpr &function_body,
-				     bool has_return_type);
-
-  static tree compile_function (
-    Context *ctx, const std::string &fn_name, HIR::SelfParam &self_param,
-    std::vector<HIR::FunctionParam> &function_params,
-    const HIR::FunctionQualifiers &qualifiers, HIR::Visibility &visibility,
-    AST::AttrVec &outer_attrs, Location locus, HIR::BlockExpr *function_body,
-    const Resolver::CanonicalPath *canonical_path, TyTy::FnType *fntype,
-    bool function_has_return);
-
-  static tree
-  compile_constant_item (Context *ctx, TyTy::BaseType *resolved_type,
-			 const Resolver::CanonicalPath *canonical_path,
-			 HIR::Expr *const_value_expr, Location locus);
 
   static tree named_constant_expression (tree type_tree,
 					 const std::string &name,

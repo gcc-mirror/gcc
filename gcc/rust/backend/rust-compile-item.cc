@@ -49,7 +49,7 @@ CompileItem::visit (HIR::StaticItem &var)
 
   HIR::Expr *const_value_expr = var.get_expr ();
   ctx->push_const_context ();
-  tree value = compile_constant_item (ctx, resolved_type, canonical_path,
+  tree value = compile_constant_item (resolved_type, canonical_path,
 				      const_value_expr, var.get_locus ());
   ctx->pop_const_context ();
 
@@ -97,8 +97,8 @@ CompileItem::visit (HIR::ConstantItem &constant)
   HIR::Expr *const_value_expr = constant.get_expr ();
   ctx->push_const_context ();
   tree const_expr
-    = compile_constant_item (ctx, resolved_type, canonical_path,
-			     const_value_expr, constant.get_locus ());
+    = compile_constant_item (resolved_type, canonical_path, const_value_expr,
+			     constant.get_locus ());
   ctx->pop_const_context ();
 
   ctx->push_const (const_expr);
@@ -161,13 +161,13 @@ CompileItem::visit (HIR::Function &function)
     ctx->push_const_context ();
 
   tree fndecl
-    = compile_function (ctx, function.get_function_name (),
+    = compile_function (function.get_function_name (),
 			function.get_self_param (),
 			function.get_function_params (),
 			function.get_qualifiers (), function.get_visibility (),
 			function.get_outer_attrs (), function.get_locus (),
 			function.get_definition ().get (), canonical_path,
-			fntype, function.has_function_return_type ());
+			fntype);
   reference = address_expression (fndecl, ref_locus);
 
   if (function.get_qualifiers ().is_const ())

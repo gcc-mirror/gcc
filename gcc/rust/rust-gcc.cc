@@ -98,19 +98,6 @@ public:
 
   // Types.
 
-  tree unit_type ()
-  {
-    static tree unit_type;
-    if (unit_type == nullptr)
-      {
-	auto unit_type_node = struct_type ({});
-	unit_type = named_type ("()", unit_type_node,
-				::Linemap::predeclared_location ());
-      }
-
-    return unit_type;
-  }
-
   tree bool_type () { return boolean_type_node; }
 
   tree char_type () { return char_type_node; }
@@ -169,8 +156,6 @@ public:
   // Expressions.
 
   tree zero_expression (tree);
-
-  tree unit_expression () { return integer_zero_node; }
 
   tree var_expression (Bvariable *var, Location);
 
@@ -236,7 +221,7 @@ public:
 
   tree assignment_statement (tree lhs, tree rhs, Location);
 
-  tree return_statement (tree, const std::vector<tree> &, Location);
+  tree return_statement (tree fndecl, tree val, Location locus);
 
   tree if_statement (tree, tree condition, tree then_block, tree else_block,
 		     Location);
@@ -720,14 +705,6 @@ Gcc_backend::function_type (const typed_identifier &receiver,
   if (result == error_mark_node)
     return error_mark_node;
 
-  // The libffi library cannot represent a zero-sized object.  To
-  // avoid causing confusion on 32-bit SPARC, we treat a function that
-  // returns a zero-sized value as returning void.  That should do no
-  // harm since there is no actual value to be returned.  See
-  // https://gcc.gnu.org/PR72814 for details.
-  if (result != void_type_node && int_size_in_bytes (result) == 0)
-    result = void_type_node;
-
   tree fntype = build_function_type (result, args);
   if (fntype == error_mark_node)
     return error_mark_node;
@@ -775,14 +752,6 @@ Gcc_backend::function_type_varadic (
     }
   if (result == error_mark_node)
     return error_mark_node;
-
-  // The libffi library cannot represent a zero-sized object.  To
-  // avoid causing confusion on 32-bit SPARC, we treat a function that
-  // returns a zero-sized value as returning void.  That should do no
-  // harm since there is no actual value to be returned.  See
-  // https://gcc.gnu.org/PR72814 for details.
-  if (result != void_type_node && int_size_in_bytes (result) == 0)
-    result = void_type_node;
 
   tree fntype = build_varargs_function_type_array (result, n, args);
   if (fntype == error_mark_node)
@@ -1988,90 +1957,21 @@ Gcc_backend::assignment_statement (tree lhs, tree rhs, Location location)
 // Return.
 
 tree
-Gcc_backend::return_statement (tree fntree, const std::vector<tree> &vals,
-			       Location location)
+Gcc_backend::return_statement (tree fntree, tree val, Location location)
 {
   if (fntree == error_mark_node)
     return error_mark_node;
+
   tree result = DECL_RESULT (fntree);
   if (result == error_mark_node)
     return error_mark_node;
 
-  // If the result size is zero bytes, we have set the function type
-  // to have a result type of void, so don't return anything.
-  // See the function_type method.
-  tree res_type = TREE_TYPE (result);
-  if (res_type == void_type_node || int_size_in_bytes (res_type) == 0)
-    {
-      tree stmt_list = NULL_TREE;
-      for (std::vector<tree>::const_iterator p = vals.begin ();
-	   p != vals.end (); p++)
-	{
-	  tree val = (*p);
-	  if (val == error_mark_node)
-	    return error_mark_node;
-	  append_to_statement_list (val, &stmt_list);
-	}
-      tree ret = fold_build1_loc (location.gcc_location (), RETURN_EXPR,
-				  void_type_node, NULL_TREE);
-      append_to_statement_list (ret, &stmt_list);
-      return stmt_list;
-    }
+  if (val == error_mark_node)
+    return error_mark_node;
 
-  tree ret;
-  if (vals.empty ())
-    ret = fold_build1_loc (location.gcc_location (), RETURN_EXPR,
-			   void_type_node, NULL_TREE);
-  else if (vals.size () == 1)
-    {
-      tree val = vals.front ();
-      if (val == error_mark_node)
-	return error_mark_node;
-      tree set = fold_build2_loc (location.gcc_location (), MODIFY_EXPR,
-				  void_type_node, result, vals.front ());
-      ret = fold_build1_loc (location.gcc_location (), RETURN_EXPR,
-			     void_type_node, set);
-    }
-  else
-    {
-      // To return multiple values, copy the values into a temporary
-      // variable of the right structure type, and then assign the
-      // temporary variable to the DECL_RESULT in the return
-      // statement.
-      tree stmt_list = NULL_TREE;
-      tree rettype = TREE_TYPE (result);
-
-      if (DECL_STRUCT_FUNCTION (fntree) == NULL)
-	push_struct_function (fntree);
-      else
-	push_cfun (DECL_STRUCT_FUNCTION (fntree));
-      tree rettmp = create_tmp_var (rettype, "RESULT");
-      pop_cfun ();
-
-      tree field = TYPE_FIELDS (rettype);
-      for (std::vector<tree>::const_iterator p = vals.begin ();
-	   p != vals.end (); p++, field = DECL_CHAIN (field))
-	{
-	  gcc_assert (field != NULL_TREE);
-	  tree ref
-	    = fold_build3_loc (location.gcc_location (), COMPONENT_REF,
-			       TREE_TYPE (field), rettmp, field, NULL_TREE);
-	  tree val = (*p);
-	  if (val == error_mark_node)
-	    return error_mark_node;
-	  tree set = fold_build2_loc (location.gcc_location (), MODIFY_EXPR,
-				      void_type_node, ref, (*p));
-	  append_to_statement_list (set, &stmt_list);
-	}
-      gcc_assert (field == NULL_TREE);
-      tree set = fold_build2_loc (location.gcc_location (), MODIFY_EXPR,
-				  void_type_node, result, rettmp);
-      tree ret_expr = fold_build1_loc (location.gcc_location (), RETURN_EXPR,
-				       void_type_node, set);
-      append_to_statement_list (ret_expr, &stmt_list);
-      ret = stmt_list;
-    }
-  return ret;
+  auto locus = location.gcc_location ();
+  tree set = fold_build2_loc (locus, MODIFY_EXPR, void_type_node, result, val);
+  return fold_build1_loc (locus, RETURN_EXPR, void_type_node, set);
 }
 
 // Create a statement that attempts to execute BSTAT and calls EXCEPT_STMT if an

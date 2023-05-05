@@ -76,7 +76,7 @@ CompileExpr::visit (HIR::TupleExpr &expr)
 {
   if (expr.is_unit ())
     {
-      translated = ctx->get_backend ()->unit_expression ();
+      translated = unit_expression (ctx, expr.get_locus ());
       return;
     }
 
@@ -110,18 +110,13 @@ CompileExpr::visit (HIR::ReturnExpr &expr)
 {
   auto fncontext = ctx->peek_fn ();
 
-  std::vector<tree> retstmts;
-  if (expr.has_return_expr ())
-    {
-      tree compiled_expr = CompileExpr::Compile (expr.return_expr.get (), ctx);
-      rust_assert (compiled_expr != nullptr);
-
-      retstmts.push_back (compiled_expr);
-    }
-
-  auto s = ctx->get_backend ()->return_statement (fncontext.fndecl, retstmts,
-						  expr.get_locus ());
-  ctx->add_statement (s);
+  tree return_value = expr.has_return_expr ()
+			? CompileExpr::Compile (expr.return_expr.get (), ctx)
+			: unit_expression (ctx, expr.get_locus ());
+  tree return_stmt
+    = ctx->get_backend ()->return_statement (fncontext.fndecl, return_value,
+					     expr.get_locus ());
+  ctx->add_statement (return_stmt);
 }
 
 void
@@ -318,28 +313,23 @@ CompileExpr::visit (HIR::IfExprConseqElse &expr)
     }
 
   Bvariable *tmp = NULL;
-  bool needs_temp = !if_type->is_unit ();
-  if (needs_temp)
-    {
-      fncontext fnctx = ctx->peek_fn ();
-      tree enclosing_scope = ctx->peek_enclosing_scope ();
-      tree block_type = TyTyResolveCompile::compile (ctx, if_type);
+  fncontext fnctx = ctx->peek_fn ();
+  tree enclosing_scope = ctx->peek_enclosing_scope ();
+  tree block_type = TyTyResolveCompile::compile (ctx, if_type);
 
-      bool is_address_taken = false;
-      tree ret_var_stmt = nullptr;
-      tmp = ctx->get_backend ()->temporary_variable (
-	fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
-	expr.get_locus (), &ret_var_stmt);
-      ctx->add_statement (ret_var_stmt);
-    }
+  bool is_address_taken = false;
+  tree ret_var_stmt = nullptr;
+  tmp = ctx->get_backend ()->temporary_variable (fnctx.fndecl, enclosing_scope,
+						 block_type, NULL,
+						 is_address_taken,
+						 expr.get_locus (),
+						 &ret_var_stmt);
+  ctx->add_statement (ret_var_stmt);
 
   auto stmt = CompileConditionalBlocks::compile (&expr, ctx, tmp);
   ctx->add_statement (stmt);
 
-  if (tmp != NULL)
-    {
-      translated = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
-    }
+  translated = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
 }
 
 void
@@ -354,29 +344,24 @@ CompileExpr::visit (HIR::BlockExpr &expr)
     }
 
   Bvariable *tmp = NULL;
-  bool needs_temp = !block_tyty->is_unit ();
-  if (needs_temp)
-    {
-      fncontext fnctx = ctx->peek_fn ();
-      tree enclosing_scope = ctx->peek_enclosing_scope ();
-      tree block_type = TyTyResolveCompile::compile (ctx, block_tyty);
+  fncontext fnctx = ctx->peek_fn ();
+  tree enclosing_scope = ctx->peek_enclosing_scope ();
+  tree block_type = TyTyResolveCompile::compile (ctx, block_tyty);
 
-      bool is_address_taken = false;
-      tree ret_var_stmt = nullptr;
-      tmp = ctx->get_backend ()->temporary_variable (
-	fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
-	expr.get_locus (), &ret_var_stmt);
-      ctx->add_statement (ret_var_stmt);
-    }
+  bool is_address_taken = false;
+  tree ret_var_stmt = nullptr;
+  tmp = ctx->get_backend ()->temporary_variable (fnctx.fndecl, enclosing_scope,
+						 block_type, NULL,
+						 is_address_taken,
+						 expr.get_locus (),
+						 &ret_var_stmt);
+  ctx->add_statement (ret_var_stmt);
 
   auto block_stmt = CompileBlock::compile (&expr, ctx, tmp);
   rust_assert (TREE_CODE (block_stmt) == BIND_EXPR);
   ctx->add_statement (block_stmt);
 
-  if (tmp != NULL)
-    {
-      translated = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
-    }
+  translated = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
 }
 
 void
@@ -397,7 +382,7 @@ CompileExpr::visit (HIR::StructExprStruct &struct_expr)
     }
 
   rust_assert (tyty->is_unit ());
-  translated = ctx->get_backend ()->unit_expression ();
+  translated = unit_expression (ctx, struct_expr.get_locus ());
 }
 
 void
@@ -1318,19 +1303,17 @@ CompileExpr::visit (HIR::MatchExpr &expr)
 
   fncontext fnctx = ctx->peek_fn ();
   Bvariable *tmp = NULL;
-  bool needs_temp = !expr_tyty->is_unit ();
-  if (needs_temp)
-    {
-      tree enclosing_scope = ctx->peek_enclosing_scope ();
-      tree block_type = TyTyResolveCompile::compile (ctx, expr_tyty);
+  tree enclosing_scope = ctx->peek_enclosing_scope ();
+  tree block_type = TyTyResolveCompile::compile (ctx, expr_tyty);
 
-      bool is_address_taken = false;
-      tree ret_var_stmt = nullptr;
-      tmp = ctx->get_backend ()->temporary_variable (
-	fnctx.fndecl, enclosing_scope, block_type, NULL, is_address_taken,
-	expr.get_locus (), &ret_var_stmt);
-      ctx->add_statement (ret_var_stmt);
-    }
+  bool is_address_taken = false;
+  tree ret_var_stmt = nullptr;
+  tmp = ctx->get_backend ()->temporary_variable (fnctx.fndecl, enclosing_scope,
+						 block_type, NULL,
+						 is_address_taken,
+						 expr.get_locus (),
+						 &ret_var_stmt);
+  ctx->add_statement (ret_var_stmt);
 
   // lets compile the scrutinee expression
   tree match_scrutinee_expr
@@ -1450,7 +1433,6 @@ CompileExpr::visit (HIR::MatchExpr &expr)
   // setup the switch-body-block
   Location start_location; // FIXME
   Location end_location;   // FIXME
-  tree enclosing_scope = ctx->peek_enclosing_scope ();
   tree switch_body_block
     = ctx->get_backend ()->block (fndecl, enclosing_scope, {}, start_location,
 				  end_location);
@@ -1481,16 +1463,12 @@ CompileExpr::visit (HIR::MatchExpr &expr)
 
       // compile the expr and setup the assignment if required when tmp != NULL
       tree kase_expr_tree = CompileExpr::Compile (kase.get_expr ().get (), ctx);
-      if (tmp != NULL)
-	{
-	  tree result_reference
-	    = ctx->get_backend ()->var_expression (tmp, arm_locus);
-	  tree assignment
-	    = ctx->get_backend ()->assignment_statement (result_reference,
-							 kase_expr_tree,
-							 arm_locus);
-	  ctx->add_statement (assignment);
-	}
+      tree result_reference
+	= ctx->get_backend ()->var_expression (tmp, arm_locus);
+      tree assignment
+	= ctx->get_backend ()->assignment_statement (result_reference,
+						     kase_expr_tree, arm_locus);
+      ctx->add_statement (assignment);
 
       // go to end label
       tree goto_end_label = build1_loc (arm_locus.gcc_location (), GOTO_EXPR,
@@ -1507,10 +1485,7 @@ CompileExpr::visit (HIR::MatchExpr &expr)
   ctx->add_statement (match_expr_stmt);
   ctx->add_statement (end_label_decl_statement);
 
-  if (tmp != NULL)
-    {
-      translated = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
-    }
+  translated = ctx->get_backend ()->var_expression (tmp, expr.get_locus ());
 }
 
 void
@@ -2824,34 +2799,32 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
   ctx->push_block (code_block);
 
   TyTy::BaseType *tyret = &closure_tyty.get_result_type ();
-  bool function_has_return = !closure_tyty.get_result_type ().is_unit ();
   Bvariable *return_address = nullptr;
-  if (function_has_return)
-    {
-      tree return_type = TyTyResolveCompile::compile (ctx, tyret);
 
-      bool address_is_taken = false;
-      tree ret_var_stmt = NULL_TREE;
+  tree return_type = TyTyResolveCompile::compile (ctx, tyret);
+  bool address_is_taken = false;
+  tree ret_var_stmt = NULL_TREE;
 
-      return_address = ctx->get_backend ()->temporary_variable (
-	fndecl, code_block, return_type, NULL, address_is_taken,
-	expr.get_locus (), &ret_var_stmt);
+  return_address
+    = ctx->get_backend ()->temporary_variable (fndecl, code_block, return_type,
+					       NULL, address_is_taken,
+					       expr.get_locus (),
+					       &ret_var_stmt);
 
-      ctx->add_statement (ret_var_stmt);
-    }
+  ctx->add_statement (ret_var_stmt);
 
   ctx->push_fn (fndecl, return_address);
 
   if (is_block_expr)
     {
       HIR::BlockExpr *body = static_cast<HIR::BlockExpr *> (function_body);
-      compile_function_body (ctx, fndecl, *body, true);
+      compile_function_body (fndecl, *body, tyret);
     }
   else
     {
       tree value = CompileExpr::Compile (function_body, ctx);
       tree return_expr
-	= ctx->get_backend ()->return_statement (fndecl, {value},
+	= ctx->get_backend ()->return_statement (fndecl, value,
 						 function_body->get_locus ());
       ctx->add_statement (return_expr);
     }

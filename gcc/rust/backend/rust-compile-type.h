@@ -32,6 +32,8 @@ public:
 
   static tree get_implicit_enumeral_node_type (Context *ctx);
 
+  static tree get_unit_type (Context *ctx);
+
   void visit (const TyTy::InferType &) override;
   void visit (const TyTy::ADTType &) override;
   void visit (const TyTy::TupleType &) override;

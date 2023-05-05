@@ -35,6 +35,7 @@
 #include "stringpool.h"
 #include "attribs.h"
 #include "tree.h"
+#include "print-tree.h"
 
 namespace Rust {
 namespace Compile {
@@ -466,9 +467,9 @@ HIRCompileBase::compile_locals_for_block (Context *ctx, Resolver::Rib &rib,
 }
 
 void
-HIRCompileBase::compile_function_body (Context *ctx, tree fndecl,
+HIRCompileBase::compile_function_body (tree fndecl,
 				       HIR::BlockExpr &function_body,
-				       bool has_return_type)
+				       TyTy::BaseType *fn_return_ty)
 {
   for (auto &s : function_body.get_statements ())
     {
@@ -482,40 +483,48 @@ HIRCompileBase::compile_function_body (Context *ctx, tree fndecl,
 
   if (function_body.has_expr ())
     {
-      // the previous passes will ensure this is a valid return
-      // or a valid trailing expression
-      tree compiled_expr
-	= CompileExpr::Compile (function_body.expr.get (), ctx);
+      Location locus = function_body.get_final_expr ()->get_locus ();
+      tree return_value = CompileExpr::Compile (function_body.expr.get (), ctx);
 
-      if (compiled_expr != nullptr)
+      // we can only return this if non unit value return type
+      if (!fn_return_ty->is_unit ())
 	{
-	  if (has_return_type)
-	    {
-	      std::vector<tree> retstmts;
-	      retstmts.push_back (compiled_expr);
-
-	      auto ret = ctx->get_backend ()->return_statement (
-		fndecl, retstmts,
-		function_body.get_final_expr ()->get_locus ());
-	      ctx->add_statement (ret);
-	    }
-	  else
-	    {
-	      // FIXME can this actually happen?
-	      ctx->add_statement (compiled_expr);
-	    }
+	  tree return_stmt
+	    = ctx->get_backend ()->return_statement (fndecl, return_value,
+						     locus);
+	  ctx->add_statement (return_stmt);
 	}
+      else
+	{
+	  // just add the stmt expression
+	  ctx->add_statement (return_value);
+
+	  // now just return unit expression
+	  tree unit_expr = unit_expression (ctx, locus);
+	  tree return_stmt
+	    = ctx->get_backend ()->return_statement (fndecl, unit_expr, locus);
+	  ctx->add_statement (return_stmt);
+	}
+    }
+  else if (fn_return_ty->is_unit ())
+    {
+      // we can only do this if the function is of unit type otherwise other
+      // errors should have occurred
+      Location locus = function_body.get_locus ();
+      tree return_value = unit_expression (ctx, locus);
+      tree return_stmt
+	= ctx->get_backend ()->return_statement (fndecl, return_value, locus);
+      ctx->add_statement (return_stmt);
     }
 }
 
 tree
 HIRCompileBase::compile_function (
-  Context *ctx, const std::string &fn_name, HIR::SelfParam &self_param,
+  const std::string &fn_name, HIR::SelfParam &self_param,
   std::vector<HIR::FunctionParam> &function_params,
   const HIR::FunctionQualifiers &qualifiers, HIR::Visibility &visibility,
   AST::AttrVec &outer_attrs, Location locus, HIR::BlockExpr *function_body,
-  const Resolver::CanonicalPath *canonical_path, TyTy::FnType *fntype,
-  bool function_has_return)
+  const Resolver::CanonicalPath *canonical_path, TyTy::FnType *fntype)
 {
   tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
   std::string ir_symbol_name
@@ -606,24 +615,19 @@ HIRCompileBase::compile_function (
   ctx->push_block (code_block);
 
   Bvariable *return_address = nullptr;
-  if (function_has_return)
-    {
-      tree return_type = TyTyResolveCompile::compile (ctx, tyret);
+  tree return_type = TyTyResolveCompile::compile (ctx, tyret);
 
-      bool address_is_taken = false;
-      tree ret_var_stmt = NULL_TREE;
+  bool address_is_taken = false;
+  tree ret_var_stmt = NULL_TREE;
+  return_address
+    = ctx->get_backend ()->temporary_variable (fndecl, code_block, return_type,
+					       NULL, address_is_taken, locus,
+					       &ret_var_stmt);
 
-      return_address
-	= ctx->get_backend ()->temporary_variable (fndecl, code_block,
-						   return_type, NULL,
-						   address_is_taken, locus,
-						   &ret_var_stmt);
-
-      ctx->add_statement (ret_var_stmt);
-    }
+  ctx->add_statement (ret_var_stmt);
 
   ctx->push_fn (fndecl, return_address);
-  compile_function_body (ctx, fndecl, *function_body, function_has_return);
+  compile_function_body (fndecl, *function_body, tyret);
   tree bind_tree = ctx->pop_block ();
 
   gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
@@ -642,14 +646,13 @@ HIRCompileBase::compile_function (
 
 tree
 HIRCompileBase::compile_constant_item (
-  Context *ctx, TyTy::BaseType *resolved_type,
-  const Resolver::CanonicalPath *canonical_path, HIR::Expr *const_value_expr,
-  Location locus)
+  TyTy::BaseType *resolved_type, const Resolver::CanonicalPath *canonical_path,
+  HIR::Expr *const_value_expr, Location locus)
 {
   const std::string &ident = canonical_path->get ();
+
   tree type = TyTyResolveCompile::compile (ctx, resolved_type);
   tree const_type = build_qualified_type (type, TYPE_QUAL_CONST);
-
   bool is_block_expr
     = const_value_expr->get_expression_type () == HIR::Expr::ExprType::Block;
 
@@ -661,7 +664,6 @@ HIRCompileBase::compile_constant_item (
   tree compiled_fn_type = ctx->get_backend ()->function_type (
     receiver, {}, {Backend::typed_identifier ("_", const_type, locus)}, NULL,
     locus);
-
   tree fndecl
     = ctx->get_backend ()->function (compiled_fn_type, ident, "", 0, locus);
   TREE_READONLY (fndecl) = 1;
@@ -703,13 +705,14 @@ HIRCompileBase::compile_constant_item (
     {
       HIR::BlockExpr *function_body
 	= static_cast<HIR::BlockExpr *> (const_value_expr);
-      compile_function_body (ctx, fndecl, *function_body, true);
+      compile_function_body (fndecl, *function_body, resolved_type);
     }
   else
     {
       tree value = CompileExpr::Compile (const_value_expr, ctx);
+
       tree return_expr = ctx->get_backend ()->return_statement (
-	fndecl, {value}, const_value_expr->get_locus ());
+	fndecl, value, const_value_expr->get_locus ());
       ctx->add_statement (return_expr);
     }
 
@@ -829,6 +832,14 @@ HIRCompileBase::resolve_method_address (
     }
 
   return CompileInherentImplItem::Compile (impl_item, ctx, monomorphized);
+}
+
+tree
+HIRCompileBase::unit_expression (Context *ctx, Location locus)
+{
+  tree unit_type = TyTyResolveCompile::get_unit_type (ctx);
+  return ctx->get_backend ()->constructor_expression (unit_type, false, {}, -1,
+						      locus);
 }
 
 } // namespace Compile
