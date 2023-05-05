@@ -1,3 +1,17 @@
+2023-05-04  Julian Brown  <julian@codesourcery.com>
+
+	PR fortran/109622
+	* testsuite/libgomp.fortran/pr109622.f90: Move test...
+	* testsuite/libgomp.oacc-fortran/pr109622.f90: ...to here. Ignore
+	vector length warning.
+	* testsuite/libgomp.fortran/pr109622-2.f90: Move test...
+	* testsuite/libgomp.oacc-fortran/pr109622-2.f90: ...to here.  Add
+	missing copyin/copyout variable. Ignore vector length warnings.
+	* testsuite/libgomp.fortran/pr109622-3.f90: Move test...
+	* testsuite/libgomp.oacc-fortran/pr109622-3.f90: ...to here.  Ignore
+	vector length warnings.
+	* testsuite/libgomp.oacc-fortran/pr109622-4.f90: New test.
+
 2023-04-28  Julian Brown  <julian@codesourcery.com>
 
 	PR fortran/109622

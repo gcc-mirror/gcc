@@ -1,3 +1,57 @@
+2023-05-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109729
+	* gm2/pim/run/pass/ForChar.mod: New test.
+
+2023-05-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/pr99195_4.c: New test.
+
+2023-05-04  Julian Brown  <julian@codesourcery.com>
+
+	PR fortran/109622
+	* gfortran.dg/goacc/pr109622-5.f90: New test.
+	* gfortran.dg/goacc/pr109622-6.f90: New test.
+
+2023-05-04  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/minmax-15.c: Update test.
+	* gcc.dg/tree-ssa/minmax-16.c: Update test.
+	* gcc.dg/tree-ssa/minmax-3.c: Update test.
+	* gcc.dg/tree-ssa/minmax-4.c: Update test.
+	* gcc.dg/tree-ssa/minmax-5.c: Update test.
+	* gcc.dg/tree-ssa/minmax-8.c: Update test.
+
+2023-05-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* gcc.target/aarch64/simd/pr99195_3.c: New test.
+
+2023-05-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* gcc.target/aarch64/simd/pr99195_1.c: Add testing for more binary ops.
+	* gcc.target/aarch64/simd/pr99195_2.c: Add testing for more binary ops.
+
+2023-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109724
+	* g++.dg/torture/pr109724.C: New testcase.
+
+2023-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/109676
+	* g++.target/i386/pr109676.C: New test.
+
+2023-05-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/peep2-andsplit1.c: New test.
+	* gcc.target/cris/peep2-andu1.c, gcc.target/cris/peep2-andu2.c,
+	gcc.target/cris/peep2-xsrand.c, gcc.target/cris/peep2-xsrand2.c:
+	Adjust values to avoid interference with "opsplit1" with AND.  Add
+	whitespace to match-strings that may be confused with identifiers
+	or file names.
+
 2023-05-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/91618

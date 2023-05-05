@@ -1,3 +1,219 @@
+2023-05-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/109733
+	* config/i386/predicates.md (index_reg_operand): New predicate.
+	* config/i386/i386.md (ashift to lea spliter): Use
+	general_reg_operand and index_reg_operand predicates.
+
+2023-05-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_<sur><addsub>hn2<mode>_insn_le):
+	Rename and reimplement with RTL codes to...
+	(aarch64_<optab>hn2<mode>_insn_le): .. This.
+	(aarch64_r<optab>hn2<mode>_insn_le): New pattern.
+	(aarch64_<sur><addsub>hn2<mode>_insn_be): Rename and reimplement with RTL
+	codes to...
+	(aarch64_<optab>hn2<mode>_insn_be): ... This.
+	(aarch64_r<optab>hn2<mode>_insn_be): New pattern.
+	(aarch64_<sur><addsub>hn2<mode>): Rename and adjust expander to...
+	(aarch64_<optab>hn2<mode>): ... This.
+	(aarch64_r<optab>hn2<mode>): New expander.
+	* config/aarch64/iterators.md (UNSPEC_ADDHN, UNSPEC_RADDHN,
+	UNSPEC_SUBHN, UNSPEC_RSUBHN): Delete unspecs.
+	(ADDSUBHN): Delete.
+	(sur): Remove handling of the above.
+	(addsub): Likewise.
+
+2023-05-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_<sur><addsub>hn<mode>_insn_le):
+	Delete.
+	(aarch64_<optab>hn<mode>_insn<vczle><vczbe>): New define_insn.
+	(aarch64_<sur><addsub>hn<mode>_insn_be): Delete.
+	(aarch64_r<optab>hn<mode>_insn<vczle><vczbe>): New define_insn.
+	(aarch64_<sur><addsub>hn<mode>): Delete.
+	(aarch64_<optab>hn<mode>): New define_expand.
+	(aarch64_r<optab>hn<mode>): Likewise.
+	* config/aarch64/predicates.md (aarch64_simd_raddsubhn_imm_vec):
+	New predicate.
+
+2023-05-04  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc (replace_phi_edge_with_variable): Handle
+	diamond form bb with forwarder only empty blocks better.
+
+2023-05-04  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-threadupdate.cc (copy_phi_arg_into_existing_phi): Move to ...
+	* tree-cfg.cc (copy_phi_arg_into_existing_phi): Here and remove static.
+	(gimple_duplicate_sese_tail): Use copy_phi_arg_into_existing_phi instead
+	of an inline version of it.
+	* tree-cfgcleanup.cc (remove_forwarder_block): Likewise.
+	* tree-cfg.h (copy_phi_arg_into_existing_phi): New declaration.
+
+2023-05-04  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-phiopt.cc (replace_phi_edge_with_variable): Change
+	the default argument value for dce_ssa_names to nullptr.
+	Check to make sure dce_ssa_names is a non-nullptr before
+	calling simple_dce_from_worklist.
+
+2023-05-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (index_register_operand): Reject
+	arg_pointer_rtx, frame_pointer_rtx, stack_pointer_rtx and
+	VIRTUAL_REGISTER_P operands.  Allow subregs of memory before reload.
+	(call_register_no_elim_operand): Rewrite as ...
+	(call_register_operand): ... this.
+	(call_insn_operand): Use call_register_operand predicate.
+
+2023-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109721
+	* tree-vect-stmts.cc (vectorizable_operation): Make sure
+	to test word_mode for all !target_support_p operations.
+
+2023-05-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* config/aarch64/aarch64-simd.md (aarch64_<su>aba<mode>): Rename to...
+	(aarch64_<su>aba<mode><vczle><vczbe>): ... This.
+	(aarch64_mla<mode>): Rename to...
+	(aarch64_mla<mode><vczle><vczbe>): ... This.
+	(*aarch64_mla_elt<mode>): Rename to...
+	(*aarch64_mla_elt<mode><vczle><vczbe>): ... This.
+	(*aarch64_mla_elt_<vswap_width_name><mode>): Rename to...
+	(*aarch64_mla_elt_<vswap_width_name><mode><vczle><vczbe>): ... This.
+	(aarch64_mla_n<mode>): Rename to...
+	(aarch64_mla_n<mode><vczle><vczbe>): ... This.
+	(aarch64_mls<mode>): Rename to...
+	(aarch64_mls<mode><vczle><vczbe>): ... This.
+	(*aarch64_mls_elt<mode>): Rename to...
+	(*aarch64_mls_elt<mode><vczle><vczbe>): ... This.
+	(*aarch64_mls_elt_<vswap_width_name><mode>): Rename to...
+	(*aarch64_mls_elt_<vswap_width_name><mode><vczle><vczbe>): ... This.
+	(aarch64_mls_n<mode>): Rename to...
+	(aarch64_mls_n<mode><vczle><vczbe>): ... This.
+	(fma<mode>4): Rename to...
+	(fma<mode>4<vczle><vczbe>): ... This.
+	(*aarch64_fma4_elt<mode>): Rename to...
+	(*aarch64_fma4_elt<mode><vczle><vczbe>): ... This.
+	(*aarch64_fma4_elt_<vswap_width_name><mode>): Rename to...
+	(*aarch64_fma4_elt_<vswap_width_name><mode><vczle><vczbe>): ... This.
+	(*aarch64_fma4_elt_from_dup<mode>): Rename to...
+	(*aarch64_fma4_elt_from_dup<mode><vczle><vczbe>): ... This.
+	(fnma<mode>4): Rename to...
+	(fnma<mode>4<vczle><vczbe>): ... This.
+	(*aarch64_fnma4_elt<mode>): Rename to...
+	(*aarch64_fnma4_elt<mode><vczle><vczbe>): ... This.
+	(*aarch64_fnma4_elt_<vswap_width_name><mode>): Rename to...
+	(*aarch64_fnma4_elt_<vswap_width_name><mode><vczle><vczbe>): ... This.
+	(*aarch64_fnma4_elt_from_dup<mode>): Rename to...
+	(*aarch64_fnma4_elt_from_dup<mode><vczle><vczbe>): ... This.
+	(aarch64_simd_bsl<mode>_internal): Rename to...
+	(aarch64_simd_bsl<mode>_internal<vczle><vczbe>): ... This.
+	(*aarch64_simd_bsl<mode>_alt): Rename to...
+	(*aarch64_simd_bsl<mode>_alt<vczle><vczbe>): ... This.
+
+2023-05-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* config/aarch64/aarch64-simd.md (aarch64_<su>abd<mode>): Rename to...
+	(aarch64_<su>abd<mode><vczle><vczbe>): ... This.
+	(fabd<mode>3): Rename to...
+	(fabd<mode>3<vczle><vczbe>): ... This.
+	(aarch64_<optab>p<mode>): Rename to...
+	(aarch64_<optab>p<mode><vczle><vczbe>): ... This.
+	(aarch64_faddp<mode>): Rename to...
+	(aarch64_faddp<mode><vczle><vczbe>): ... This.
+
+2023-05-04  Martin Liska  <mliska@suse.cz>
+
+	* gcov.cc (GCOV_JSON_FORMAT_VERSION): New definition.
+	(print_version): Use it.
+	(generate_results): Likewise.
+
+2023-05-04  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.h (last_stmt): Rename to ...
+	(last_nondebug_stmt): ... this.
+	* tree-cfg.cc (last_stmt): Rename to ...
+	(last_nondebug_stmt): ... this.
+	(assign_discriminators): Adjust.
+	(group_case_labels_stmt): Likewise.
+	(gimple_can_duplicate_bb_p): Likewise.
+	(execute_fixup_cfg): Likewise.
+	* auto-profile.cc (afdo_propagate_circuit): Likewise.
+	* gimple-range.cc (gimple_ranger::range_on_exit): Likewise.
+	* omp-expand.cc (workshare_safe_to_combine_p): Likewise.
+	(determine_parallel_type): Likewise.
+	(adjust_context_and_scope): Likewise.
+	(expand_task_call): Likewise.
+	(remove_exit_barrier): Likewise.
+	(expand_omp_taskreg): Likewise.
+	(expand_omp_for_init_counts): Likewise.
+	(expand_omp_for_init_vars): Likewise.
+	(expand_omp_for_static_chunk): Likewise.
+	(expand_omp_simd): Likewise.
+	(expand_oacc_for): Likewise.
+	(expand_omp_for): Likewise.
+	(expand_omp_sections): Likewise.
+	(expand_omp_atomic_fetch_op): Likewise.
+	(expand_omp_atomic_cas): Likewise.
+	(expand_omp_atomic): Likewise.
+	(expand_omp_target): Likewise.
+	(expand_omp): Likewise.
+	(omp_make_gimple_edges): Likewise.
+	* trans-mem.cc (tm_region_init): Likewise.
+	* tree-inline.cc (redirect_all_calls): Likewise.
+	* tree-parloops.cc (gen_parallel_loop): Likewise.
+	* tree-ssa-loop-ch.cc (do_while_loop_p): Likewise.
+	* tree-ssa-loop-ivcanon.cc (canonicalize_loop_induction_variables):
+	Likewise.
+	* tree-ssa-loop-ivopts.cc (stmt_after_ip_normal_pos): Likewise.
+	(may_eliminate_iv): Likewise.
+	* tree-ssa-loop-manip.cc (standard_iv_increment_position): Likewise.
+	* tree-ssa-loop-niter.cc (do_warn_aggressive_loop_optimizations):
+	Likewise.
+	(estimate_numbers_of_iterations): Likewise.
+	* tree-ssa-loop-split.cc (compute_added_num_insns): Likewise.
+	* tree-ssa-loop-unswitch.cc (get_predicates_for_bb): Likewise.
+	(set_predicates_for_bb): Likewise.
+	(init_loop_unswitch_info): Likewise.
+	(hoist_guard): Likewise.
+	* tree-ssa-phiopt.cc (match_simplify_replacement): Likewise.
+	(minmax_replacement): Likewise.
+	* tree-ssa-reassoc.cc (update_range_test): Likewise.
+	(optimize_range_tests_to_bit_test): Likewise.
+	(optimize_range_tests_var_bound): Likewise.
+	(optimize_range_tests): Likewise.
+	(no_side_effect_bb): Likewise.
+	(suitable_cond_bb): Likewise.
+	(maybe_optimize_range_tests): Likewise.
+	(reassociate_bb): Likewise.
+	* tree-vrp.cc (rvrp_folder::pre_fold_bb): Likewise.
+
+2023-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/109676
+	* config/i386/i386-features.cc (timode_scalar_chain::convert_insn):
+	If src is REG, change its mode to V1TImode and call fix_debug_reg_uses
+	for it only if it still has TImode.  Don't decide whether to call
+	fix_debug_reg_uses based on whether SRC is ever set or not.
+
+2023-05-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.cc (cris_split_constant): New function.
+	* config/cris/cris.md (splitop): New iterator.
+	(opsplit1): New define_peephole2.
+	* config/cris/cris-protos.h (cris_split_constant): Declare.
+	(cris_splittable_constant_p): New macro.
+
+2023-05-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.cc (TARGET_SPILL_CLASS): Define
+	to ALL_REGS.
+
 2023-05-04  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.cc (cris_side_effect_mode_ok): Use

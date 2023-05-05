@@ -1,3 +1,15 @@
+2023-05-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/abi.xml (abi.versioning.history): Document
+	libstdc++.so.6.0.32 and GLIBCXX_3.4.32 version.
+	* doc/html/manual/abi.html: Regenerate.
+
+2023-05-04  Florian Weimer  <fweimer@redhat.com>
+
+	* doc/xml/manual/abi.xml (abi.versioning.history): Add
+	GCC_7.0.0, GCC_9.0.0, GCC_11.0, GCC_12.0.0, GCC_13.0.0 for
+	libgcc_s.
+
 2023-05-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* src/c++17/floating_from_chars.cc
