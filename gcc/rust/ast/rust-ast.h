@@ -95,7 +95,7 @@ public:
 
   /* Converts token tree to a flat token stream. Tokens must be pointer to avoid
    * mutual dependency with Token. */
-  virtual std::vector<std::unique_ptr<Token> > to_token_stream () const = 0;
+  virtual std::vector<std::unique_ptr<Token>> to_token_stream () const = 0;
 
 protected:
   // pure virtual clone implementation
@@ -229,7 +229,7 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // Return copy of itself but in token stream form.
-  std::vector<std::unique_ptr<Token> > to_token_stream () const override;
+  std::vector<std::unique_ptr<Token>> to_token_stream () const override;
 
   TokenId get_id () const { return tok_ref->get_id (); }
   const std::string &get_str () const { return tok_ref->get_str (); }
@@ -671,11 +671,10 @@ public:
 // Container used to store MetaItems as AttrInput (bridge-ish kinda thing)
 class AttrInputMetaItemContainer : public AttrInput
 {
-  std::vector<std::unique_ptr<MetaItemInner> > items;
+  std::vector<std::unique_ptr<MetaItemInner>> items;
 
 public:
-  AttrInputMetaItemContainer (
-    std::vector<std::unique_ptr<MetaItemInner> > items)
+  AttrInputMetaItemContainer (std::vector<std::unique_ptr<MetaItemInner>> items)
     : items (std::move (items))
   {}
 
@@ -729,8 +728,8 @@ public:
   bool is_meta_item () const override { return true; }
 
   // TODO: this mutable getter seems dodgy
-  std::vector<std::unique_ptr<MetaItemInner> > &get_items () { return items; }
-  const std::vector<std::unique_ptr<MetaItemInner> > &get_items () const
+  std::vector<std::unique_ptr<MetaItemInner>> &get_items () { return items; }
+  const std::vector<std::unique_ptr<MetaItemInner>> &get_items () const
   {
     return items;
   }
@@ -752,7 +751,7 @@ protected:
 class DelimTokenTree : public TokenTree, public AttrInput
 {
   DelimType delim_type;
-  std::vector<std::unique_ptr<TokenTree> > token_trees;
+  std::vector<std::unique_ptr<TokenTree>> token_trees;
   Location locus;
 
 protected:
@@ -777,8 +776,8 @@ protected:
 
 public:
   DelimTokenTree (DelimType delim_type,
-		  std::vector<std::unique_ptr<TokenTree> > token_trees
-		  = std::vector<std::unique_ptr<TokenTree> > (),
+		  std::vector<std::unique_ptr<TokenTree>> token_trees
+		  = std::vector<std::unique_ptr<TokenTree>> (),
 		  Location locus = Location ())
     : delim_type (delim_type), token_trees (std::move (token_trees)),
       locus (locus)
@@ -827,7 +826,7 @@ public:
 
   AttrInputMetaItemContainer *parse_to_meta_item () const override;
 
-  std::vector<std::unique_ptr<Token> > to_token_stream () const override;
+  std::vector<std::unique_ptr<Token>> to_token_stream () const override;
 
   std::unique_ptr<DelimTokenTree> clone_delim_token_tree () const
   {
@@ -841,7 +840,7 @@ public:
     return AttrInput::AttrInputType::TOKEN_TREE;
   }
 
-  std::vector<std::unique_ptr<TokenTree> > &get_token_trees ()
+  std::vector<std::unique_ptr<TokenTree>> &get_token_trees ()
   {
     return token_trees;
   }
@@ -1479,7 +1478,7 @@ private:
   DelimTokenTree token_tree;
 
   // One way of parsing the macro. Probably not applicable for all macros.
-  std::vector<std::unique_ptr<MetaItemInner> > parsed_items;
+  std::vector<std::unique_ptr<MetaItemInner>> parsed_items;
   bool parsed_to_meta_item = false;
   MacroExpander *expander = nullptr;
 
@@ -1546,16 +1545,16 @@ public:
   }
 
   void
-  set_meta_item_output (std::vector<std::unique_ptr<MetaItemInner> > new_items)
+  set_meta_item_output (std::vector<std::unique_ptr<MetaItemInner>> new_items)
   {
     parsed_items = std::move (new_items);
   }
   // TODO: mutable getter seems kinda dodgy
-  std::vector<std::unique_ptr<MetaItemInner> > &get_meta_items ()
+  std::vector<std::unique_ptr<MetaItemInner>> &get_meta_items ()
   {
     return parsed_items;
   }
-  const std::vector<std::unique_ptr<MetaItemInner> > &get_meta_items () const
+  const std::vector<std::unique_ptr<MetaItemInner>> &get_meta_items () const
   {
     return parsed_items;
   }
@@ -1875,13 +1874,13 @@ struct Crate
   // dodgy spacing required here
   /* TODO: is it better to have a vector of items here or a module (implicit
    * top-level one)? */
-  std::vector<std::unique_ptr<Item> > items;
+  std::vector<std::unique_ptr<Item>> items;
 
   NodeId node_id;
 
 public:
   // Constructor
-  Crate (std::vector<std::unique_ptr<Item> > items,
+  Crate (std::vector<std::unique_ptr<Item>> items,
 	 std::vector<Attribute> inner_attrs)
     : inner_attrs (std::move (inner_attrs)), items (std::move (items)),
       node_id (Analysis::Mappings::get ()->get_next_node_id ())
