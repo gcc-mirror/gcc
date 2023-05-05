@@ -3431,7 +3431,7 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
       needs_label = true;
     }
 
-  fprintf_indent (f, indent, "if (UNLIKELY (dump_file && (dump_flags & TDF_FOLDING))) "
+  fprintf_indent (f, indent, "if (UNLIKELY (debug_dump)) "
 	   "fprintf (dump_file, \"%s ",
 	   s->kind == simplify::SIMPLIFY
 	   ? "Applying pattern" : "Matching expression");
@@ -3892,6 +3892,8 @@ decision_tree::gen (FILE *f, bool gimple)
 	}
 
       fprintf (f, ")\n{\n");
+      fprintf_indent (f, 2, "const bool debug_dump = "
+			    "dump_file && (dump_flags & TDF_FOLDING);\n");
       s->s->gen_1 (f, 2, gimple, s->s->s->result);
       if (gimple)
 	fprintf (f, "  return false;\n");
@@ -3937,6 +3939,8 @@ decision_tree::gen (FILE *f, bool gimple)
 	    fprintf (f, ", tree _p%d", i);
 	  fprintf (f, ")\n");
 	  fprintf (f, "{\n");
+	  fprintf_indent (f, 2, "const bool debug_dump = "
+				"dump_file && (dump_flags & TDF_FOLDING);\n");
 	  dop->gen_kids (f, 2, gimple, 0);
 	  if (gimple)
 	    fprintf (f, "  return false;\n");
@@ -4046,6 +4050,8 @@ write_predicate (FILE *f, predicate_id *p, decision_tree &dt, bool gimple)
 	   gimple ? ", tree (*valueize)(tree) ATTRIBUTE_UNUSED" : "");
   /* Conveniently make 'type' available.  */
   fprintf_indent (f, 2, "const tree type = TREE_TYPE (t);\n");
+  fprintf_indent (f, 2, "const bool debug_dump = "
+			"dump_file && (dump_flags & TDF_FOLDING);\n");
 
   if (!gimple)
     fprintf_indent (f, 2, "if (TREE_SIDE_EFFECTS (t)) return false;\n");
