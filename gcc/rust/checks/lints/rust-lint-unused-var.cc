@@ -17,7 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-lint-unused-var.h"
-#include "print-tree.h"
+#include "rust-gcc.h"
 
 namespace Rust {
 namespace Analysis {
@@ -84,8 +84,8 @@ UnusedVariables::Lint (Compile::Context &ctx)
 
   for (auto &var : ctx.get_var_decls ())
     {
-      tree t = ctx.get_backend ()->var_expression (var, Location ());
-      check_decl (&t);
+      tree decl = var->get_decl ();
+      check_decl (&decl);
     }
 
   for (auto &const_decl : ctx.get_const_decls ())
