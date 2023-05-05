@@ -240,7 +240,6 @@ gengtype-lex.o-warn = -Wno-error
 libgcov-util.o-warn = -Wno-error
 libgcov-driver-tool.o-warn = -Wno-error
 libgcov-merge-tool.o-warn = -Wno-error
-gimple-match-head.o-warn = -Wno-unused
 gimple-match-exports.o-warn = -Wno-unused
 dfp.o-warn = -Wno-strict-aliasing
 
@@ -2684,12 +2683,10 @@ s-tm-texi: build/genhooks$(build_exeext) $(srcdir)/doc/tm.texi.in
 	  false; \
 	fi
 
-$(GIMPLE_MATCH_PD_SEQ_SRC): s-gimple-match gimple-match-head.cc \
-		    gimple-match-exports.cc; @true
-gimple-match-auto.h: s-gimple-match gimple-match-head.cc \
-		    gimple-match-exports.cc; @true
+$(GIMPLE_MATCH_PD_SEQ_SRC): s-gimple-match gimple-match-head.cc; @true
+gimple-match-auto.h: s-gimple-match; @true
 $(GENERIC_MATCH_PD_SEQ_SRC): s-generic-match generic-match-head.cc; @true
-generic-match-auto.h: s-generic-match generic-match-head.cc; @true
+generic-match-auto.h: s-generic-match; @true
 
 s-gimple-match: build/genmatch$(build_exeext) \
 	    $(srcdir)/match.pd cfn-operators.pd
