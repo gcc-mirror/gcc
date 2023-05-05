@@ -70,9 +70,6 @@ public:
 
   // Types.
 
-  // get unit-type
-  virtual tree unit_type () = 0;
-
   // Get the unnamed boolean type.
   virtual tree bool_type () = 0;
 
@@ -172,8 +169,6 @@ public:
   // used for cases such as local variable initialization and
   // converting nil to other types.
   virtual tree zero_expression (tree) = 0;
-
-  virtual tree unit_expression () = 0;
 
   // Create a reference to a variable.
   virtual tree var_expression (Bvariable *var, Location) = 0;
@@ -302,9 +297,9 @@ public:
   // Create an assignment statement within the specified function.
   virtual tree assignment_statement (tree lhs, tree rhs, Location) = 0;
 
-  // Create a return statement, passing the representation of the
-  // function and the list of values to return.
-  virtual tree return_statement (tree, const std::vector<tree> &, Location) = 0;
+  // Create return statement for an decl for a value (can be NULL_TREE) at a
+  // location
+  virtual tree return_statement (tree fndecl, tree val, Location) = 0;
 
   // Create an if statement within a function.  ELSE_BLOCK may be NULL.
   virtual tree if_statement (tree, tree condition, tree then_block,

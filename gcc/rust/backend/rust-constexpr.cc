@@ -2248,7 +2248,6 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	/* Don't VERIFY_CONSTANT here.  */
 	if (*non_constant_p)
 	  return t;
-	gcc_checking_assert (TREE_CODE (op) != CONSTRUCTOR);
 	/* This function does more aggressive folding than fold itself.  */
 	r = build_fold_addr_expr_with_type (op, TREE_TYPE (t));
 	if (TREE_CODE (r) == ADDR_EXPR && TREE_OPERAND (r, 0) == oldop)

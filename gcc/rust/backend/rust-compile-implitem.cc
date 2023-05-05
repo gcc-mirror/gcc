@@ -17,8 +17,6 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-compile-implitem.h"
-#include "rust-compile-expr.h"
-#include "rust-compile-fnparam.h"
 
 namespace Rust {
 namespace Compile {
@@ -36,8 +34,8 @@ CompileTraitItem::visit (HIR::TraitItemConst &constant)
 
   HIR::Expr *const_value_expr = constant.get_expr ().get ();
   tree const_expr
-    = compile_constant_item (ctx, resolved_type, canonical_path,
-			     const_value_expr, constant.get_locus ());
+    = compile_constant_item (resolved_type, canonical_path, const_value_expr,
+			     constant.get_locus ());
   ctx->push_const (const_expr);
   ctx->insert_const_decl (constant.get_mappings ().get_hirid (), const_expr);
 
@@ -88,12 +86,11 @@ CompileTraitItem::visit (HIR::TraitItemFunc &func)
   auto vis = HIR::Visibility (HIR::Visibility::VisType::PUBLIC);
   HIR::TraitFunctionDecl &function = func.get_decl ();
   tree fndecl
-    = compile_function (ctx, function.get_function_name (),
-			function.get_self (), function.get_function_params (),
+    = compile_function (function.get_function_name (), function.get_self (),
+			function.get_function_params (),
 			function.get_qualifiers (), vis,
 			func.get_outer_attrs (), func.get_locus (),
-			func.get_block_expr ().get (), canonical_path, fntype,
-			function.has_return_type ());
+			func.get_block_expr ().get (), canonical_path, fntype);
   reference = address_expression (fndecl, ref_locus);
 }
 

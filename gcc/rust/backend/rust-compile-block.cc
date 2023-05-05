@@ -71,27 +71,32 @@ CompileBlock::visit (HIR::BlockExpr &expr)
 
   if (expr.has_expr ())
     {
-      // the previous passes will ensure this is a valid return or
-      // a valid trailing expression
       tree compiled_expr = CompileExpr::Compile (expr.expr.get (), ctx);
-      if (compiled_expr != nullptr)
+      if (result != nullptr)
 	{
-	  if (result == nullptr)
-	    {
-	      ctx->add_statement (compiled_expr);
-	    }
-	  else
-	    {
-	      tree result_reference = ctx->get_backend ()->var_expression (
-		result, expr.get_final_expr ()->get_locus ());
+	  Location locus = expr.get_final_expr ()->get_locus ();
+	  tree result_reference
+	    = ctx->get_backend ()->var_expression (result, locus);
 
-	      tree assignment
-		= ctx->get_backend ()->assignment_statement (result_reference,
-							     compiled_expr,
-							     expr.get_locus ());
-	      ctx->add_statement (assignment);
-	    }
+	  tree assignment
+	    = ctx->get_backend ()->assignment_statement (result_reference,
+							 compiled_expr,
+							 expr.get_locus ());
+	  ctx->add_statement (assignment);
 	}
+    }
+  else if (result != nullptr)
+    {
+      Location locus = expr.get_locus ();
+      tree compiled_expr = unit_expression (ctx, expr.get_locus ());
+      tree result_reference
+	= ctx->get_backend ()->var_expression (result, locus);
+
+      tree assignment
+	= ctx->get_backend ()->assignment_statement (result_reference,
+						     compiled_expr,
+						     expr.get_locus ());
+      ctx->add_statement (assignment);
     }
 
   ctx->pop_block ();
