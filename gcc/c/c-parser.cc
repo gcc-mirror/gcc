@@ -5764,7 +5764,9 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p,
   gcc_obstack_init (&braced_init_obstack);
   gcc_assert (c_parser_next_token_is (parser, CPP_OPEN_BRACE));
   bool save_c_omp_array_section_p = c_omp_array_section_p;
+  bool save_c_omp_array_shaping_op_p = c_omp_array_shaping_op_p;
   c_omp_array_section_p = false;
+  c_omp_array_shaping_op_p = false;
   matching_braces braces;
   braces.consume_open (parser);
   if (nested_p)
@@ -5804,6 +5806,7 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p,
 	}
     }
   c_omp_array_section_p = save_c_omp_array_section_p;
+  c_omp_array_shaping_op_p = save_c_omp_array_shaping_op_p;
   c_token *next_tok = c_parser_peek_token (parser);
   if (next_tok->type != CPP_CLOSE_BRACE)
     {
@@ -8310,6 +8313,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
   struct c_expr cond, exp1, exp2, ret;
   location_t start, cond_loc, colon_loc;
   bool save_c_omp_array_section_p = c_omp_array_section_p;
+  bool save_c_omp_array_shaping_op_p = c_omp_array_shaping_op_p;
 
   gcc_assert (!after || c_dialect_objc ());
 
@@ -8318,6 +8322,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
   if (c_parser_next_token_is_not (parser, CPP_QUERY))
     return cond;
   c_omp_array_section_p = false;
+  c_omp_array_shaping_op_p = false;
   if (cond.value != error_mark_node)
     start = cond.get_start ();
   else
@@ -8371,6 +8376,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
       ret.original_code = ERROR_MARK;
       ret.original_type = NULL;
       c_omp_array_section_p = save_c_omp_array_section_p;
+      c_omp_array_shaping_op_p = save_c_omp_array_shaping_op_p;
       return ret;
     }
   {
@@ -8418,6 +8424,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
   set_c_expr_source_range (&ret, start, exp2.get_finish ());
   ret.m_decimal = 0;
   c_omp_array_section_p = save_c_omp_array_section_p;
+  c_omp_array_shaping_op_p = save_c_omp_array_shaping_op_p;
   return ret;
 }
 
@@ -8799,6 +8806,8 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
   if (after)
     return c_parser_postfix_expression_after_primary (parser,
 						      cast_loc, *after);
+  bool save_c_omp_has_array_shape_p = c_omp_has_array_shape_p;
+  c_omp_has_array_shape_p = false;
   /* If the expression begins with a parenthesized type name, it may
      be either a cast or a compound literal; we need to see whether
      the next character is '{' to tell the difference.  If not, it is
@@ -8807,6 +8816,10 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
   if (c_parser_next_token_is (parser, CPP_OPEN_PAREN)
       && c_token_starts_compound_literal (c_parser_peek_2nd_token (parser)))
     {
+      bool save_c_omp_array_section_p = c_omp_array_section_p;
+      bool save_c_omp_array_shaping_op_p = c_omp_array_shaping_op_p;
+      c_omp_array_section_p = false;
+      c_omp_array_shaping_op_p = false;
       struct c_declspecs *scspecs;
       struct c_type_name *type_name;
       struct c_expr ret;
@@ -8818,6 +8831,8 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
       parens.skip_until_found_close (parser);
       if (type_name == NULL)
 	{
+	  c_omp_array_section_p = save_c_omp_array_section_p;
+	  c_omp_array_shaping_op_p = save_c_omp_array_shaping_op_p;
 	  ret.set_error ();
 	  ret.original_code = ERROR_MARK;
 	  ret.original_type = NULL;
@@ -8828,9 +8843,15 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
       used_types_insert (type_name->specs->type);
 
       if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
-	return c_parser_postfix_expression_after_paren_type (parser, scspecs,
-							     type_name,
-							     cast_loc);
+	{
+	  c_expr r = c_parser_postfix_expression_after_paren_type (parser,
+								   scspecs,
+								   type_name,
+								   cast_loc);
+	  c_omp_array_section_p = save_c_omp_array_section_p;
+	  c_omp_array_shaping_op_p = save_c_omp_array_shaping_op_p;
+	  return r;
+	}
       if (scspecs)
 	error_at (cast_loc, "storage class specifier in cast");
       if (type_name->specs->alignas_p)
@@ -8847,10 +8868,61 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
       ret.original_code = ERROR_MARK;
       ret.original_type = NULL;
       ret.m_decimal = 0;
+      c_omp_array_section_p = save_c_omp_array_section_p;
+      c_omp_array_shaping_op_p = save_c_omp_array_shaping_op_p;
+      return ret;
+    }
+  else if (c_omp_array_shaping_op_p
+	   && c_parser_next_token_is (parser, CPP_OPEN_PAREN)
+	   && c_parser_peek_2nd_token (parser)->type == CPP_OPEN_SQUARE)
+    {
+      bool save_c_omp_array_section_p = c_omp_array_section_p;
+      bool save_c_omp_array_shaping_op_p = c_omp_array_shaping_op_p;
+      c_omp_array_section_p = false;
+      c_omp_array_shaping_op_p = false;
+      auto_vec<tree, 4> omp_shape_dims;
+      struct c_expr expr, ret;
+      matching_parens parens;
+      parens.consume_open (parser);
+      while (c_parser_next_token_is (parser, CPP_OPEN_SQUARE))
+	{
+	  c_parser_consume_token (parser);
+	  c_expr e = c_parser_expression (parser);
+	  if (e.value == error_mark_node)
+	    break;
+	  omp_shape_dims.safe_push (e.value);
+	  if (!c_parser_require (parser, CPP_CLOSE_SQUARE,
+				 "expected %<]%>"))
+	    break;
+	}
+      parens.require_close (parser);
+      c_omp_array_section_p = save_c_omp_array_section_p;
+      c_omp_array_shaping_op_p = save_c_omp_array_shaping_op_p;
+      {
+	location_t expr_loc = c_parser_peek_token (parser)->location;
+	bool save_c_omp_has_array_shape_p = c_omp_has_array_shape_p;
+	c_omp_has_array_shape_p = true;
+	expr = c_parser_cast_expression (parser, NULL);
+	c_omp_has_array_shape_p = save_c_omp_has_array_shape_p;
+	/* NOTE: We don't want to introduce conversions here.  */
+	expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+      }
+      tree arrtype
+	= create_omp_arrayshape_type (expr.value, &omp_shape_dims);
+      ret.value = build1_loc (cast_loc, VIEW_CONVERT_EXPR, arrtype,
+			      expr.value);
+      if (ret.value && expr.value)
+	set_c_expr_source_range (&ret, cast_loc, expr.get_finish ());
+      ret.original_code = ERROR_MARK;
+      ret.original_type = NULL;
+      ret.m_decimal = 0;
       return ret;
     }
   else
-    return c_parser_unary_expression (parser);
+    {
+      c_omp_has_array_shape_p = save_c_omp_has_array_shape_p;
+      return c_parser_unary_expression (parser);
+    }
 }
 
 /* Parse an unary expression (C90 6.3.3, C99 6.5.3, C11 6.5.3).
@@ -9860,6 +9932,7 @@ c_parser_postfix_expression (c_parser *parser)
 	  tree stmt;
 	  location_t brace_loc;
 	  bool save_c_omp_array_section_p = c_omp_array_section_p;
+	  bool save_c_omp_array_shaping_op_p = c_omp_array_shaping_op_p;
 	  c_parser_consume_token (parser);
 	  brace_loc = c_parser_peek_token (parser)->location;
 	  c_parser_consume_token (parser);
@@ -9877,6 +9950,7 @@ c_parser_postfix_expression (c_parser *parser)
 	      break;
 	    }
 	  c_omp_array_section_p = false;
+	  c_omp_array_shaping_op_p = false;
 	  stmt = c_begin_stmt_expr ();
 	  c_parser_compound_statement_nostart (parser);
 	  location_t close_loc = c_parser_peek_token (parser)->location;
@@ -9888,6 +9962,7 @@ c_parser_postfix_expression (c_parser *parser)
 	  set_c_expr_source_range (&expr, loc, close_loc);
 	  mark_exp_read (expr.value);
 	  c_omp_array_section_p = save_c_omp_array_section_p;
+	  c_omp_array_shaping_op_p = save_c_omp_array_shaping_op_p;
 	}
       else
 	{
@@ -11373,20 +11448,26 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	  if (c_omp_array_section_p
 	      && c_parser_next_token_is (parser, CPP_COLON))
 	    {
+	      tree stride = NULL_TREE;
+
 	      c_parser_consume_token (parser);
 	      if (c_parser_next_token_is_not (parser, CPP_CLOSE_SQUARE))
 		len = c_parser_expression (parser).value;
 
+	      if (c_parser_next_token_is (parser, CPP_COLON))
+		{
+		  c_parser_consume_token (parser);
+		  if (c_parser_next_token_is_not (parser, CPP_CLOSE_SQUARE))
+		    stride = c_parser_expression (parser).value;
+		}
+
 	      c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE,
 					 "expected %<]%>");
 
-	     /* NOTE: We are reusing using the type of the whole array as the
-		type of the array section here, which isn't necessarily
-		entirely correct.  Might need revisiting.  */
 	      start = expr.get_start ();
 	      finish = parser->tokens_buf[0].location;
 	      expr.value = build_omp_array_section (op_loc, expr.value, idx,
-						    len, NULL_TREE /* fixme */);
+						    len, stride);
 	      set_c_expr_source_range (&expr, start, finish);
 	      expr.original_code = ERROR_MARK;
 	      expr.original_type = NULL;
@@ -11397,7 +11478,20 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 					 "expected %<]%>");
 	      start = expr.get_start ();
 	      finish = parser->tokens_buf[0].location;
-	      expr.value = build_array_ref (op_loc, expr.value, idx);
+	      if (c_omp_has_array_shape_p)
+		/* If we have an array-shaping operator, we may not be able to
+		   represent a well-formed ARRAY_REF here, because we are
+		   coercing the type of the innermost array base and the
+		   original type may not be compatible.  Use the
+		   OMP_ARRAY_SECTION code instead.  We also want to explicitly
+		   avoid creating INDIRECT_REFs for pointer bases, because
+		   that can lead to parsing ambiguities (see
+		   c_parser_omp_variable_list).  */
+		expr.value
+		  = build_omp_array_section (op_loc, expr.value, idx,
+					     size_one_node, NULL_TREE);
+	      else
+		expr.value = build_array_ref (op_loc, expr.value, idx);
 	      set_c_expr_source_range (&expr, start, finish);
 	      expr.original_code = ERROR_MARK;
 	      expr.original_type = NULL;
@@ -11694,7 +11788,9 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
   struct c_expr expr;
   unsigned int idx = 0;
   bool save_c_omp_array_section_p = c_omp_array_section_p;
+  bool save_c_omp_array_shaping_op_p = c_omp_array_shaping_op_p;
   c_omp_array_section_p = false;
+  c_omp_array_shaping_op_p = false;
 
   ret = make_tree_vector ();
   if (p_orig_types == NULL)
@@ -11749,6 +11845,7 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
   if (orig_types)
     *p_orig_types = orig_types;
   c_omp_array_section_p = save_c_omp_array_section_p;
+  c_omp_array_shaping_op_p = save_c_omp_array_shaping_op_p;
   return ret;
 }
 
@@ -13939,6 +14036,35 @@ c_parser_oacc_wait_list (c_parser *parser, location_t clause_loc, tree list)
   return list;
 }
 
+/* Return, as an INTEGER_CST node, the number of elements for TYPE
+   (which is an ARRAY_TYPE).  This counts only elements of the top
+   array.  (From cp/tree.cc).  */
+
+static tree
+c_array_type_nelts_top (tree type)
+{
+  return fold_build2_loc (input_location, PLUS_EXPR, sizetype,
+			  array_type_nelts (type), size_one_node);
+}
+
+/* Return, as an INTEGER_CST node, the number of elements for TYPE
+   (which is an ARRAY_TYPE).  This one is a recursive count of all
+   ARRAY_TYPEs that are clumped together.  (From cp/tree.cc).  */
+
+static tree
+c_array_type_nelts_total (tree type)
+{
+  tree sz = c_array_type_nelts_top (type);
+  type = TREE_TYPE (type);
+  while (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      tree n = c_array_type_nelts_top (type);
+      sz = fold_build2_loc (input_location, MULT_EXPR, sizetype, sz, n);
+      type = TREE_TYPE (type);
+    }
+  return sz;
+}
+
 /* OpenACC 2.0, OpenMP 2.5:
    variable-list:
      identifier
@@ -14067,12 +14193,24 @@ c_parser_omp_variable_list (c_parser *parser,
 	{
 	  location_t loc = c_parser_peek_token (parser)->location;
 	  bool save_c_omp_array_section_p = c_omp_array_section_p;
+	  bool save_c_omp_array_shaping_op_p = c_omp_array_shaping_op_p;
 	  c_omp_array_section_p = true;
+	  c_omp_array_shaping_op_p
+	    = (kind == OMP_CLAUSE_TO || kind == OMP_CLAUSE_FROM);
 	  c_expr expr = c_parser_expr_no_commas (parser, NULL);
 	  if (expr.value != error_mark_node)
 	    mark_exp_read (expr.value);
 	  c_omp_array_section_p = save_c_omp_array_section_p;
+	  c_omp_array_shaping_op_p = save_c_omp_array_shaping_op_p;
 	  tree decl = expr.value;
+	  tree reshaped_to = NULL_TREE;
+
+	  if (TREE_CODE (decl) == VIEW_CONVERT_EXPR
+	      && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
+	    {
+	      reshaped_to = TREE_TYPE (decl);
+	      decl = TREE_OPERAND (decl, 0);
+	    }
 
 	 /* This code rewrites a parsed expression containing various tree
 	    codes used to represent array accesses into a more uniform nest of
@@ -14085,6 +14223,31 @@ c_parser_omp_variable_list (c_parser *parser,
 	  dims.truncate (0);
 	  if (TREE_CODE (decl) == OMP_ARRAY_SECTION)
 	    {
+	      size_t sections = 0;
+	      tree orig_decl = decl;
+	      bool update_p = (kind == OMP_CLAUSE_TO
+			       || kind == OMP_CLAUSE_FROM);
+	      bool maybe_ptr_based_noncontig_update = false;
+
+	      while (update_p
+		     && !reshaped_to
+		     && (TREE_CODE (decl) == OMP_ARRAY_SECTION
+			 || TREE_CODE (decl) == ARRAY_REF
+			 || TREE_CODE (decl) == COMPOUND_EXPR))
+		{
+		  if (TREE_CODE (decl) == COMPOUND_EXPR)
+		    decl = TREE_OPERAND (decl, 1);
+		  else
+		    {
+		      if (TREE_CODE (decl) == OMP_ARRAY_SECTION)
+			maybe_ptr_based_noncontig_update = true;
+		      decl = TREE_OPERAND (decl, 0);
+		      sections++;
+		    }
+		}
+
+	      decl = orig_decl;
+
 	      while (TREE_CODE (decl) == OMP_ARRAY_SECTION)
 		{
 		  tree low_bound = TREE_OPERAND (decl, 1);
@@ -14093,18 +14256,63 @@ c_parser_omp_variable_list (c_parser *parser,
 		  dims.safe_push (omp_dim (low_bound, length, stride, loc,
 					   false));
 		  decl = TREE_OPERAND (decl, 0);
+		  if (sections > 0)
+		    sections--;
 		}
 
+	      /* The handling of INDIRECT_REF here in the presence of
+		 array-shaping operations is a little tricky.  We need to
+		 avoid treating a pointer dereference as a unit-sized array
+		 section when we have an array shaping operation, because we
+		 don't want an indirection to consume one of the user's
+		 requested array dimensions.  E.g. if we have a
+		 double-indirect pointer like:
+
+		   int **foopp;
+		   #pragma omp target update from(([N][N]) (*foopp)[0:X][0:Y])
+
+		 We don't want to interpret this as:
+
+		   foopp[0:1][0:X][0:Y]
+
+		 else the array shape [N][N] won't match.  Also we can't match
+		 the array sections right-to-left instead, else this:
+
+		   #pragma omp target update from(([N][N]) (*foopp)[0:X])
+
+		 would not copy the dimensions:
+
+		   (*foopp)[0:X][0:N]
+
+		 as required.  So, avoid descending through INDIRECT_REFs if
+		 we have an array-shaping op.
+
+		 If we *don't* have an array-shaping op, but we have a
+		 multiply-indirected pointer and an array section like this:
+
+		   int ***fooppp;
+		   #pragma omp target update from((**fooppp)[0:X:S]
+
+		 also avoid descending through more indirections than we have
+		 array sections, since the noncontiguous update processing code
+		 won't understand them (and doesn't need to traverse them
+		 anyway).  */
+
 	      while (TREE_CODE (decl) == ARRAY_REF
-		     || TREE_CODE (decl) == INDIRECT_REF
+		     || (TREE_CODE (decl) == INDIRECT_REF
+			 && !reshaped_to)
 		     || TREE_CODE (decl) == COMPOUND_EXPR)
 		{
+		  if (maybe_ptr_based_noncontig_update && sections == 0)
+		    break;
+
 		  if (TREE_CODE (decl) == COMPOUND_EXPR)
 		    {
 		      decl = TREE_OPERAND (decl, 1);
 		      STRIP_NOPS (decl);
 		    }
-		  else if (TREE_CODE (decl) == INDIRECT_REF)
+		  else if (TREE_CODE (decl) == INDIRECT_REF
+			   && !reshaped_to)
 		    {
 		      dims.safe_push (omp_dim (integer_zero_node,
 					       integer_one_node, NULL_TREE, loc,
@@ -14117,6 +14325,35 @@ c_parser_omp_variable_list (c_parser *parser,
 		      dims.safe_push (omp_dim (index, integer_one_node,
 					       NULL_TREE, loc, true));
 		      decl = TREE_OPERAND (decl, 0);
+		      if (sections > 0)
+			sections--;
+		    }
+		}
+
+	      if (reshaped_to)
+		{
+		  unsigned reshaped_dims = 0;
+
+		  for (tree t = reshaped_to;
+		       TREE_CODE (t) == ARRAY_TYPE;
+		       t = TREE_TYPE (t))
+		    reshaped_dims++;
+
+		  if (dims.length () > reshaped_dims)
+		    {
+		      error_at (loc, "too many array section specifiers "
+				"for %qT", reshaped_to);
+		      decl = error_mark_node;
+		    }
+		  else
+		    {
+		      /* We have a pointer DECL whose target should be
+			 interpreted as an array with particular dimensions,
+			 not "the pointer itself".  So, add an indirection
+			 here.  */
+		      decl = build_indirect_ref (loc, decl, RO_UNARY_STAR);
+		      decl = build1_loc (loc, VIEW_CONVERT_EXPR, reshaped_to,
+					 decl);
 		    }
 		}
 
@@ -14142,6 +14379,14 @@ c_parser_omp_variable_list (c_parser *parser,
 	      STRIP_NOPS (decl);
 
 	      decl = build_omp_array_section (loc, decl, idx, integer_one_node,
+					      NULL_TREE);
+	    }
+	  else if (reshaped_to)
+	    {
+	      /* We're copying the whole of a reshaped array, originally a
+		 base pointer.  Rewrite as an array section.  */
+	      tree elems = c_array_type_nelts_total (reshaped_to);
+	      decl = build_omp_array_section (loc, decl, size_zero_node, elems,
 					      NULL_TREE);
 	    }
 	  else if (TREE_CODE (decl) == NON_LVALUE_EXPR
@@ -22777,8 +23022,38 @@ c_parser_omp_target_update (location_t loc, c_parser *parser,
   tree clauses
     = c_parser_omp_all_clauses (parser, OMP_TARGET_UPDATE_CLAUSE_MASK,
 				"#pragma omp target update");
-  if (omp_find_clause (clauses, OMP_CLAUSE_TO) == NULL_TREE
-      && omp_find_clause (clauses, OMP_CLAUSE_FROM) == NULL_TREE)
+  bool to_clause = false, from_clause = false;
+  for (tree c = clauses;
+       c && !to_clause && !from_clause;
+       c = OMP_CLAUSE_CHAIN (c))
+    {
+      switch (OMP_CLAUSE_CODE (c))
+       {
+       case OMP_CLAUSE_TO:
+	 to_clause = true;
+	 break;
+       case OMP_CLAUSE_FROM:
+	 from_clause = true;
+	 break;
+       case OMP_CLAUSE_MAP:
+	 switch (OMP_CLAUSE_MAP_KIND (c))
+	   {
+	   case GOMP_MAP_TO_GRID:
+	     to_clause = true;
+	     break;
+	   case GOMP_MAP_FROM_GRID:
+	     from_clause = true;
+	     break;
+	   default:
+	     ;
+	   }
+	 break;
+       default:
+	 ;
+       }
+    }
+
+  if (!to_clause && !from_clause)
     {
       error_at (loc,
 		"%<#pragma omp target update%> must contain at least one "

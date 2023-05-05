@@ -1,5 +1,14 @@
 2023-07-03  Julian Brown  <julian@codesourcery.com>
 
+	* testsuite/libgomp.c/array-shaping-1.c: New test.
+	* testsuite/libgomp.c/array-shaping-2.c: New test.
+	* testsuite/libgomp.c/array-shaping-3.c: New test.
+	* testsuite/libgomp.c/array-shaping-4.c: New test.
+	* testsuite/libgomp.c/array-shaping-5.c: New test.
+	* testsuite/libgomp.c/array-shaping-6.c: New test.
+
+2023-07-03  Julian Brown  <julian@codesourcery.com>
+
 	* libgomp.h (omp_noncontig_array_desc): Add span field.
 	* target.c (omp_target_memcpy_rect_worker): Add span parameter. Update
 	forward declaration. Handle span != element_size.

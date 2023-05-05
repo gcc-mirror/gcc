@@ -1,5 +1,38 @@
 2023-07-03  Julian Brown  <julian@codesourcery.com>
 
+	* c-parser.cc (c_parser_braced_init): Disallow array-shaping operator
+	in braced init.
+	(c_parser_conditional_expression): Disallow array-shaping operator in
+	conditional expression.
+	(c_parser_cast_expression): Add array-shaping operator support.
+	(c_parser_postfix_expression): Disallow array-shaping operator in
+	statement expressions.
+	(c_parser_postfix_expression_after_primary): Add OpenMP array section
+	stride support.
+	(c_parser_expr_list): Disallow array-shaping operator in expression
+	lists.
+	(c_array_type_nelts_top, c_array_type_nelts_total): New functions.
+	(c_parser_omp_variable_list): Support array-shaping operator.
+	(c_parser_omp_target_update): Recognize GOMP_MAP_TO_GRID and
+	GOMP_MAP_FROM_GRID map kinds as well as OMP_CLAUSE_TO/OMP_CLAUSE_FROM.
+	* c-tree.h (c_omp_array_shaping_op_p, c_omp_has_array_shape_p): New
+	extern declarations.
+	(create_omp_arrayshape_type): Add prototype.
+	* c-typeck.cc (c_omp_array_shaping_op_p, c_omp_has_array_shape_p): New
+	globals.
+	(build_omp_array_section): Permit integral types, not just integer
+	constants, when creating array types for array sections.
+	(create_omp_arrayshape_type): New function.
+	(handle_omp_array_sections_1): Add DISCONTIGUOUS parameter.  Add
+	strided/rectangular array section support.
+	(omp_array_section_low_bound): New function.
+	(handle_omp_array_sections): Add DISCONTIGUOUS parameter.  Add
+	strided/rectangular array section support.
+	(c_finish_omp_clauses): Update calls to handle_omp_array_sections.
+	Handle discontiguous updates.
+
+2023-07-03  Julian Brown  <julian@codesourcery.com>
+
 	* c-parser.cc (c_parser_postfix_expression_after_primary): Dummy stride
 	support (for now).
 	(struct omp_dim): Add stride support.
