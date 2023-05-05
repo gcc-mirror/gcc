@@ -5361,8 +5361,6 @@ gcn_vectorize_builtin_vectorized_function (unsigned int fn, tree type_out,
 
   machine_mode out_mode = TYPE_MODE (TREE_TYPE (type_out));
   int out_n = TYPE_VECTOR_SUBPARTS (type_out);
-  machine_mode in_mode = TYPE_MODE (TREE_TYPE (type_in));
-  int in_n = TYPE_VECTOR_SUBPARTS (type_in);
   combined_fn cfn = combined_fn (fn);
 
   /* Keep this consistent with the list of vectorized math routines.  */
