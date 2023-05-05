@@ -3955,7 +3955,7 @@ decision_tree::gen (FILE *f, bool gimple)
       if (! has_kids_p)
 	{
 	  if (gimple)
-	    fprintf (f, "\nstatic bool\n"
+	    fprintf (f, "\nbool\n"
 			"gimple_simplify (gimple_match_op*, gimple_seq*,\n"
 			"                 tree (*)(tree), code_helper,\n"
 			"                 const tree");
@@ -3978,7 +3978,7 @@ decision_tree::gen (FILE *f, bool gimple)
       /* Then generate the main entry with the outermost switch and
          tail-calls to the split-out functions.  */
       if (gimple)
-	fprintf (f, "\nstatic bool\n"
+	fprintf (f, "\nbool\n"
 		 "gimple_simplify (gimple_match_op *res_op, gimple_seq *seq,\n"
 		 "                 tree (*valueize)(tree) ATTRIBUTE_UNUSED,\n"
 		 "                 code_helper code, const tree type");

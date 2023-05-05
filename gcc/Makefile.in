@@ -223,6 +223,7 @@ libgcov-util.o-warn = -Wno-error
 libgcov-driver-tool.o-warn = -Wno-error
 libgcov-merge-tool.o-warn = -Wno-error
 gimple-match.o-warn = -Wno-unused
+gimple-match-exports.o-warn = -Wno-unused
 generic-match.o-warn = -Wno-unused
 dfp.o-warn = -Wno-strict-aliasing
 
@@ -1312,6 +1313,7 @@ ANALYZER_OBJS = \
 # the last objects to finish building.
 OBJS = \
 	gimple-match.o \
+	gimple-match-exports.o \
 	generic-match.o \
 	insn-attrtab.o \
 	insn-automata.o \
@@ -2663,7 +2665,7 @@ s-tm-texi: build/genhooks$(build_exeext) $(srcdir)/doc/tm.texi.in
 	  false; \
 	fi
 
-gimple-match.cc: s-match gimple-match-head.cc ; @true
+gimple-match.cc: s-match gimple-match-head.cc gimple-match-exports.cc ; @true
 generic-match.cc: s-match generic-match-head.cc ; @true
 
 s-match: build/genmatch$(build_exeext) $(srcdir)/match.pd cfn-operators.pd
