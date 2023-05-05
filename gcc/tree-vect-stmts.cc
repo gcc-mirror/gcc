@@ -6657,8 +6657,8 @@ vectorizable_operation (vec_info *vinfo,
 	  new_stmt = gimple_build_assign (NULL_TREE, VIEW_CONVERT_EXPR,
 					  build1 (VIEW_CONVERT_EXPR,
 						  vectype, result_low));
-	  result_low = make_ssa_name (vectype);
-	  gimple_assign_set_lhs (new_stmt, result_low);
+	  new_temp = make_ssa_name (vectype);
+	  gimple_assign_set_lhs (new_stmt, new_temp);
 	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	}
       else if (masked_loop_p && mask_out_inactive)
@@ -6734,18 +6734,19 @@ vectorizable_operation (vec_info *vinfo,
 	     AND it with a loop mask again.  */
 	  if (mask)
 	    loop_vinfo->vec_cond_masked_set.add ({ new_temp, mask });
-
-	  if (vec_cvt_dest)
-	    {
-	      new_temp = build1 (VIEW_CONVERT_EXPR, vectype_out, new_temp);
-	      new_stmt = gimple_build_assign (vec_cvt_dest, VIEW_CONVERT_EXPR,
-					      new_temp);
-	      new_temp = make_ssa_name (vec_cvt_dest, new_stmt);
-	      gimple_assign_set_lhs (new_stmt, new_temp);
-	      vect_finish_stmt_generation (vinfo, stmt_info,
-					   new_stmt, gsi);
-	    }
 	}
+
+      if (vec_cvt_dest)
+	{
+	  new_temp = build1 (VIEW_CONVERT_EXPR, vectype_out, new_temp);
+	  new_stmt = gimple_build_assign (vec_cvt_dest, VIEW_CONVERT_EXPR,
+					  new_temp);
+	  new_temp = make_ssa_name (vec_cvt_dest, new_stmt);
+	  gimple_assign_set_lhs (new_stmt, new_temp);
+	  vect_finish_stmt_generation (vinfo, stmt_info,
+				       new_stmt, gsi);
+	}
+
       if (slp_node)
 	SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
       else
