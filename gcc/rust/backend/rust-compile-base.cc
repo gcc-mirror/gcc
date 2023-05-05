@@ -666,8 +666,8 @@ HIRCompileBase::compile_constant_item (
     = ctx->get_backend ()->function (compiled_fn_type, ident, "", 0, locus);
   TREE_READONLY (fndecl) = 1;
 
+  std::vector<Bvariable *> locals;
   tree enclosing_scope = NULL_TREE;
-
   Location start_location = const_value_expr->get_locus ();
   Location end_location = const_value_expr->get_locus ();
   if (is_block_expr)
@@ -676,9 +676,16 @@ HIRCompileBase::compile_constant_item (
 	= static_cast<HIR::BlockExpr *> (const_value_expr);
       start_location = function_body->get_locus ();
       end_location = function_body->get_end_locus ();
+
+      Resolver::Rib *rib = nullptr;
+      bool ok = ctx->get_resolver ()->find_name_rib (
+	function_body->get_mappings ().get_nodeid (), &rib);
+      rust_assert (ok);
+
+      locals = compile_locals_for_block (ctx, *rib, fndecl);
     }
 
-  tree code_block = ctx->get_backend ()->block (fndecl, enclosing_scope, {},
+  tree code_block = ctx->get_backend ()->block (fndecl, enclosing_scope, locals,
 						start_location, end_location);
   ctx->push_block (code_block);
 
