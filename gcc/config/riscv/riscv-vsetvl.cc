@@ -1676,72 +1676,29 @@ avl_info::single_source_equal_p (const avl_info &other) const
 bool
 avl_info::multiple_source_equal_p (const avl_info &other) const
 {
-  /* TODO: We don't do too much optimization here since it's
-     too complicated in case of analyzing the PHI node.
+  /* When the def info is same in RTL_SSA namespace, it's safe
+     to consider they are avl compatible.  */
+  if (m_source == other.get_source ())
+    return true;
 
-     For example:
-       void f (void * restrict in, void * restrict out, int n, int m, int cond)
-	{
-	  size_t vl;
-	  switch (cond)
-	  {
-	  case 1:
-	    vl = 100;
-	    break;
-	  case 2:
-	    vl = *(size_t*)(in + 100);
-	    break;
-	  case 3:
-	    {
-	      size_t new_vl = *(size_t*)(in + 500);
-	      size_t new_vl2 = *(size_t*)(in + 600);
-	      vl = new_vl + new_vl2 + 777;
-	      break;
-	    }
-	  default:
-	    vl = 4000;
-	    break;
-	  }
-	  for (size_t i = 0; i < n; i++)
-	    {
-	      vint8mf8_t v = __riscv_vle8_v_i8mf8 (in + i, vl);
-	      __riscv_vse8_v_i8mf8 (out + i, v, vl);
+  /* We only consider handle PHI node.  */
+  if (!m_source->insn ()->is_phi () || !other.get_source ()->insn ()->is_phi ())
+    return false;
 
-	      vint8mf8_t v2 = __riscv_vle8_v_i8mf8_tu (v, in + i + 100, vl);
-	      __riscv_vse8_v_i8mf8 (out + i + 100, v2, vl);
-	    }
+  phi_info *phi1 = as_a<phi_info *> (m_source);
+  phi_info *phi2 = as_a<phi_info *> (other.get_source ());
 
-	  size_t vl2;
-	  switch (cond)
-	  {
-	  case 1:
-	    vl2 = 100;
-	    break;
-	  case 2:
-	    vl2 = *(size_t*)(in + 100);
-	    break;
-	  case 3:
-	    {
-	      size_t new_vl = *(size_t*)(in + 500);
-	      size_t new_vl2 = *(size_t*)(in + 600);
-	      vl2 = new_vl + new_vl2 + 777;
-	      break;
-	    }
-	  default:
-	    vl2 = 4000;
-	    break;
-	  }
-	  for (size_t i = 0; i < m; i++)
-	    {
-	      vint8mf8_t v = __riscv_vle8_v_i8mf8 (in + i + 300, vl2);
-	      __riscv_vse8_v_i8mf8 (out + i + 300, v, vl2);
-	      vint8mf8_t v2 = __riscv_vle8_v_i8mf8_tu (v, in + i + 200, vl2);
-	      __riscv_vse8_v_i8mf8 (out + i + 200, v2, vl2);
-	    }
-	}
-     Such case may not be necessary to optimize since the codes of defining
-     vl and vl2 are redundant.  */
-  return m_source == other.get_source ();
+  if (phi1->is_degenerate () && phi2->is_degenerate ())
+    {
+      /* Degenerate PHI means the PHI node only have one input.  */
+
+      /* If both PHI nodes have the same single input in use list.
+	 We consider they are AVL compatible.  */
+      if (phi1->input_value (0) == phi2->input_value (0))
+	return true;
+    }
+  /* TODO: We can support more optimization cases in the future.  */
+  return false;
 }
 
 avl_info &
