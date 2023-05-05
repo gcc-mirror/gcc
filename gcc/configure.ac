@@ -921,6 +921,21 @@ fi
 AC_DEFINE_UNQUOTED(DEFAULT_STK_CLASH_GUARD_SIZE, $DEFAULT_STK_CLASH_GUARD_SIZE,
 	[Define to larger than zero set the default stack clash protector size.])
 
+# Specify the number of splits of match.pd to generate.
+AC_ARG_WITH(matchpd-partitions,
+[AS_HELP_STRING([--with-matchpd-partitions=num],
+[Set the number of partitions to make for gimple and generic when splitting match.pd. [default=10]])],
+[DEFAULT_MATCHPD_PARTITIONS="$with_matchpd_partitions"], [DEFAULT_MATCHPD_PARTITIONS=10])
+if (test $DEFAULT_MATCHPD_PARTITIONS -lt 1); then
+  AC_MSG_ERROR(m4_normalize([
+		Invalid value $DEFAULT_MATCHPD_PARTITIONS for --with-matchpd-partitions. \
+		Cannot be negative.]))
+fi
+
+AC_DEFINE_UNQUOTED(DEFAULT_MATCHPD_PARTITIONS, $DEFAULT_MATCHPD_PARTITIONS,
+	[Define to larger than one set the number of match.pd partitions to make.])
+AC_SUBST(DEFAULT_MATCHPD_PARTITIONS)
+
 # Enable __cxa_atexit for C++.
 AC_ARG_ENABLE(__cxa_atexit,
 [AS_HELP_STRING([--enable-__cxa_atexit], [enable __cxa_atexit for C++])],

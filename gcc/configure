@@ -838,6 +838,7 @@ enable_gcov
 enable_shared
 enable_fixed_point
 enable_decimal_float
+DEFAULT_MATCHPD_PARTITIONS
 with_float
 with_cpu
 enable_multiarch
@@ -965,6 +966,7 @@ enable_valgrind_annotations
 enable_multilib
 enable_multiarch
 with_stack_clash_protection_guard_size
+with_matchpd_partitions
 enable___cxa_atexit
 enable_decimal_float
 enable_fixed_point
@@ -1826,6 +1828,9 @@ Optional Packages:
   --with-stack-clash-protection-guard-size=size
                           Set the default stack clash protection guard size
                           for specific targets as a power of two in bytes.
+  --with-matchpd-partitions=num
+                          Set the number of partitions to make for gimple and
+                          generic when splitting match.pd. [default=10]
   --with-dwarf2           force the default debug format to be DWARF 2 (or
                           later)
   --with-specs=SPECS      add SPECS to driver command-line processing
@@ -7887,6 +7892,26 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define DEFAULT_STK_CLASH_GUARD_SIZE $DEFAULT_STK_CLASH_GUARD_SIZE
 _ACEOF
+
+
+# Specify the number of splits of match.pd to generate.
+
+# Check whether --with-matchpd-partitions was given.
+if test "${with_matchpd_partitions+set}" = set; then :
+  withval=$with_matchpd_partitions; DEFAULT_MATCHPD_PARTITIONS="$with_matchpd_partitions"
+else
+  DEFAULT_MATCHPD_PARTITIONS=10
+fi
+
+if (test $DEFAULT_MATCHPD_PARTITIONS -lt 1); then
+  as_fn_error $? "Invalid value $DEFAULT_MATCHPD_PARTITIONS for --with-matchpd-partitions. Cannot be negative." "$LINENO" 5
+fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define DEFAULT_MATCHPD_PARTITIONS $DEFAULT_MATCHPD_PARTITIONS
+_ACEOF
+
 
 
 # Enable __cxa_atexit for C++.
@@ -19825,7 +19850,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19828 "configure"
+#line 19853 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19931,7 +19956,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19934 "configure"
+#line 19959 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

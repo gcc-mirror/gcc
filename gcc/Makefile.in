@@ -214,6 +214,14 @@ rtl-ssa-warn = $(STRICT_WARN)
 GCC_WARN_CFLAGS = $(LOOSE_WARN) $(C_LOOSE_WARN) $($(@D)-warn) $(if $(filter-out $(STRICT_WARN),$($(@D)-warn)),,$(C_STRICT_WARN)) $(NOCOMMON_FLAG) $($@-warn)
 GCC_WARN_CXXFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $($@-warn)
 
+# The number of splits to be made for the match.pd files.
+NUM_MATCH_SPLITS = @DEFAULT_MATCHPD_PARTITIONS@
+MATCH_SPLITS_SEQ = $(shell seq 1 $(NUM_MATCH_SPLITS))
+GIMPLE_MATCH_PD_SEQ_SRC = $(patsubst %, gimple-match-%.cc, $(MATCH_SPLITS_SEQ))
+GIMPLE_MATCH_PD_SEQ_O = $(patsubst %, gimple-match-%.o, $(MATCH_SPLITS_SEQ))
+GENERIC_MATCH_PD_SEQ_SRC = $(patsubst %, generic-match-%.cc, $(MATCH_SPLITS_SEQ))
+GENERIC_MATCH_PD_SEQ_O = $(patsubst %, generic-match-%.o, $(MATCH_SPLITS_SEQ))
+
 # These files are to have specific diagnostics suppressed, or are not to
 # be subject to -Werror:
 # flex output may yield harmless "no previous prototype" warnings
@@ -222,9 +230,8 @@ gengtype-lex.o-warn = -Wno-error
 libgcov-util.o-warn = -Wno-error
 libgcov-driver-tool.o-warn = -Wno-error
 libgcov-merge-tool.o-warn = -Wno-error
-gimple-match.o-warn = -Wno-unused
+gimple-match-head.o-warn = -Wno-unused
 gimple-match-exports.o-warn = -Wno-unused
-generic-match.o-warn = -Wno-unused
 dfp.o-warn = -Wno-strict-aliasing
 
 # All warnings have to be shut off in stage1 if the compiler used then
@@ -1312,9 +1319,9 @@ ANALYZER_OBJS = \
 # will build them sooner, because they are large and otherwise tend to be
 # the last objects to finish building.
 OBJS = \
-	gimple-match.o \
+	$(GIMPLE_MATCH_PD_SEQ_O) \
 	gimple-match-exports.o \
-	generic-match.o \
+	$(GENERIC_MATCH_PD_SEQ_O) \
 	insn-attrtab.o \
 	insn-automata.o \
 	insn-dfatab.o \
@@ -1807,7 +1814,8 @@ MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
  insn-output.cc insn-recog.cc insn-emit.cc insn-extract.cc insn-peep.cc \
  insn-attr.h insn-attr-common.h insn-attrtab.cc insn-dfatab.cc \
  insn-latencytab.cc insn-opinit.cc insn-opinit.h insn-preds.cc insn-constants.h \
- tm-preds.h tm-constrs.h checksum-options gimple-match.cc generic-match.cc \
+ tm-preds.h tm-constrs.h checksum-options $(GIMPLE_MATCH_PD_SEQ_SRC) \
+ $(GENERIC_MATCH_PD_SEQ_SRC) gimple-match-auto.h generic-match-auto.h \
  tree-check.h min-insn-modes.cc insn-modes.cc insn-modes.h insn-modes-inline.h \
  genrtl.h gt-*.h gtype-*.h gtype-desc.cc gtyp-input.list \
  case-cfn-macros.h cfn-operators.pd \
@@ -2422,7 +2430,8 @@ $(common_out_object_file): $(common_out_file)
 .PRECIOUS: insn-config.h insn-flags.h insn-codes.h insn-constants.h \
   insn-emit.cc insn-recog.cc insn-extract.cc insn-output.cc insn-peep.cc \
   insn-attr.h insn-attr-common.h insn-attrtab.cc insn-dfatab.cc \
-  insn-latencytab.cc insn-preds.cc gimple-match.cc generic-match.cc \
+  insn-latencytab.cc insn-preds.cc $(GIMPLE_MATCH_PD_SEQ_SRC) \
+  $(GENERIC_MATCH_PD_SEQ_SRC) gimple-match-auto.h generic-match-auto.h \
   insn-target-def.h
 
 # Dependencies for the md file.  The first time through, we just assume
@@ -2665,19 +2674,36 @@ s-tm-texi: build/genhooks$(build_exeext) $(srcdir)/doc/tm.texi.in
 	  false; \
 	fi
 
-gimple-match.cc: s-match gimple-match-head.cc gimple-match-exports.cc ; @true
-generic-match.cc: s-match generic-match-head.cc ; @true
+$(GIMPLE_MATCH_PD_SEQ_SRC): s-gimple-match gimple-match-head.cc \
+		    gimple-match-exports.cc; @true
+gimple-match-auto.h: s-gimple-match gimple-match-head.cc \
+		    gimple-match-exports.cc; @true
+$(GENERIC_MATCH_PD_SEQ_SRC): s-generic-match generic-match-head.cc; @true
+generic-match-auto.h: s-generic-match generic-match-head.cc; @true
 
-s-match: build/genmatch$(build_exeext) $(srcdir)/match.pd cfn-operators.pd
-	$(RUN_GEN) build/genmatch$(build_exeext) --gimple $(srcdir)/match.pd \
-	    > tmp-gimple-match.cc
-	$(RUN_GEN) build/genmatch$(build_exeext) --generic $(srcdir)/match.pd \
-	    > tmp-generic-match.cc
-	$(SHELL) $(srcdir)/../move-if-change tmp-gimple-match.cc \
-	    					gimple-match.cc
-	$(SHELL) $(srcdir)/../move-if-change tmp-generic-match.cc \
-	    					generic-match.cc
-	$(STAMP) s-match
+s-gimple-match: build/genmatch$(build_exeext) \
+	    $(srcdir)/match.pd cfn-operators.pd
+	$(RUN_GEN) build/genmatch$(build_exeext) --gimple \
+	    --header=tmp-gimple-match-auto.h --include=gimple-match-auto.h \
+	    $(srcdir)/match.pd $(patsubst %, tmp-%, $(GIMPLE_MATCH_PD_SEQ_SRC))
+	$(foreach id, $(MATCH_SPLITS_SEQ), \
+	  $(SHELL) $(srcdir)/../move-if-change tmp-gimple-match-$(id).cc \
+	    gimple-match-$(id).cc;)
+	$(SHELL) $(srcdir)/../move-if-change tmp-gimple-match-auto.h \
+						gimple-match-auto.h
+	$(STAMP) s-gimple-match
+
+s-generic-match: build/genmatch$(build_exeext) \
+	    $(srcdir)/match.pd cfn-operators.pd
+	$(RUN_GEN) build/genmatch$(build_exeext) --generic \
+	    --header=tmp-generic-match-auto.h --include=generic-match-auto.h \
+	    $(srcdir)/match.pd $(patsubst %, tmp-%, $(GENERIC_MATCH_PD_SEQ_SRC))
+	$(foreach id, $(MATCH_SPLITS_SEQ), \
+	  $(SHELL) $(srcdir)/../move-if-change tmp-generic-match-$(id).cc \
+	    generic-match-$(id).cc;)
+	$(SHELL) $(srcdir)/../move-if-change tmp-generic-match-auto.h \
+						generic-match-auto.h
+	$(STAMP) s-generic-match
 
 GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(host_xm_file_list) \
@@ -2812,7 +2838,8 @@ generated_files = config.h tm.h $(TM_P_H) $(TM_D_H) $(TM_H) multilib.h \
        $(ALL_GTFILES_H) gtype-desc.cc gtype-desc.h version.h \
        options.h target-hooks-def.h insn-opinit.h \
        common/common-target-hooks-def.h pass-instances.def \
-       gimple-match.cc generic-match.cc \
+       $(GIMPLE_MATCH_PD_SEQ_SRC) $(GENERIC_MATCH_PD_SEQ_SRC) \
+       gimple-match-auto.h generic-match-auto.h \
        c-family/c-target-hooks-def.h d/d-target-hooks-def.h \
        case-cfn-macros.h \
        cfn-operators.pd omp-device-properties.h
