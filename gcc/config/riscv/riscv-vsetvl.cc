@@ -1056,51 +1056,6 @@ change_vsetvl_insn (const insn_info *insn, const vector_insn_info &info)
   change_insn (rinsn, new_pat);
 }
 
-static void
-local_eliminate_vsetvl_insn (const vector_insn_info &dem)
-{
-  const insn_info *insn = dem.get_insn ();
-  if (!insn || insn->is_artificial ())
-    return;
-  rtx_insn *rinsn = insn->rtl ();
-  const bb_info *bb = insn->bb ();
-  if (vsetvl_insn_p (rinsn))
-    {
-      rtx vl = get_vl (rinsn);
-      for (insn_info *i = insn->next_nondebug_insn ();
-	   real_insn_and_same_bb_p (i, bb); i = i->next_nondebug_insn ())
-	{
-	  if (i->is_call () || i->is_asm ()
-	      || find_access (i->defs (), VL_REGNUM)
-	      || find_access (i->defs (), VTYPE_REGNUM))
-	    return;
-
-	  if (has_vtype_op (i->rtl ()))
-	    {
-	      if (!vsetvl_discard_result_insn_p (PREV_INSN (i->rtl ())))
-		return;
-	      rtx avl = get_avl (i->rtl ());
-	      if (avl != vl)
-		return;
-	      set_info *def = find_access (i->uses (), REGNO (avl))->def ();
-	      if (def->insn () != insn)
-		return;
-
-	      vector_insn_info new_info;
-	      new_info.parse_insn (i);
-	      if (!new_info.skip_avl_compatible_p (dem))
-		return;
-
-	      new_info.set_avl_info (dem.get_avl_info ());
-	      new_info = dem.merge (new_info, LOCAL_MERGE);
-	      change_vsetvl_insn (insn, new_info);
-	      eliminate_insn (PREV_INSN (i->rtl ()));
-	      return;
-	    }
-	}
-    }
-}
-
 static bool
 source_equal_p (insn_info *insn1, insn_info *insn2)
 {
@@ -2674,6 +2629,7 @@ private:
   void pre_vsetvl (void);
 
   /* Phase 5.  */
+  void local_eliminate_vsetvl_insn (const vector_insn_info &) const;
   void cleanup_insns (void) const;
 
   /* Phase 6.  */
@@ -3993,6 +3949,62 @@ pass_vsetvl::pre_vsetvl (void)
   bool need_commit = commit_vsetvls ();
   if (need_commit)
     commit_edge_insertions ();
+}
+
+/* Local user vsetvl optimizaiton:
+
+     Case 1:
+       vsetvl a5,a4,e8,mf8
+       ...
+       vsetvl zero,a5,e8,mf8 --> Eliminate directly.
+
+     Case 2:
+       vsetvl a5,a4,e8,mf8    --> vsetvl a5,a4,e32,mf2
+       ...
+       vsetvl zero,a5,e32,mf2 --> Eliminate directly.  */
+void
+pass_vsetvl::local_eliminate_vsetvl_insn (const vector_insn_info &dem) const
+{
+  const insn_info *insn = dem.get_insn ();
+  if (!insn || insn->is_artificial ())
+    return;
+  rtx_insn *rinsn = insn->rtl ();
+  const bb_info *bb = insn->bb ();
+  if (vsetvl_insn_p (rinsn))
+    {
+      rtx vl = get_vl (rinsn);
+      for (insn_info *i = insn->next_nondebug_insn ();
+	   real_insn_and_same_bb_p (i, bb); i = i->next_nondebug_insn ())
+	{
+	  if (i->is_call () || i->is_asm ()
+	      || find_access (i->defs (), VL_REGNUM)
+	      || find_access (i->defs (), VTYPE_REGNUM))
+	    return;
+
+	  if (has_vtype_op (i->rtl ()))
+	    {
+	      if (!vsetvl_discard_result_insn_p (PREV_INSN (i->rtl ())))
+		return;
+	      rtx avl = get_avl (i->rtl ());
+	      if (avl != vl)
+		return;
+	      set_info *def = find_access (i->uses (), REGNO (avl))->def ();
+	      if (def->insn () != insn)
+		return;
+
+	      vector_insn_info new_info
+		= m_vector_manager->vector_insn_infos[i->uid ()];
+	      if (!new_info.skip_avl_compatible_p (dem))
+		return;
+
+	      new_info.set_avl_info (dem.get_avl_info ());
+	      new_info = dem.merge (new_info, LOCAL_MERGE);
+	      change_vsetvl_insn (insn, new_info);
+	      eliminate_insn (PREV_INSN (i->rtl ()));
+	      return;
+	    }
+	}
+    }
 }
 
 /* Before VSETVL PASS, RVV instructions pattern is depending on AVL operand
