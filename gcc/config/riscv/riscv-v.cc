@@ -43,6 +43,7 @@
 #include "optabs.h"
 #include "tm-constrs.h"
 #include "rtx-vector-builder.h"
+#include "targhooks.h"
 
 using namespace riscv_vector;
 
@@ -922,6 +923,56 @@ expand_tuple_move (machine_mode mask_mode, rtx *ops)
 	    }
 	}
     }
+}
+
+/* SCALABLE means that the vector-length is agnostic (run-time invariant and
+   compile-time unknown). FIXED meands that the vector-length is specific
+   (compile-time known). Both RVV_SCALABLE and RVV_FIXED_VLMAX are doing
+   auto-vectorization using VLMAX vsetvl configuration.  */
+static bool
+autovec_use_vlmax_p (void)
+{
+  return riscv_autovec_preference == RVV_SCALABLE
+	 || riscv_autovec_preference == RVV_FIXED_VLMAX;
+}
+
+/* Return the vectorization machine mode for RVV according to LMUL.  */
+machine_mode
+preferred_simd_mode (scalar_mode mode)
+{
+  /* We will disable auto-vectorization when TARGET_MIN_VLEN < 128 &&
+     riscv_autovec_lmul < RVV_M2. Since GCC loop vectorizer report ICE when we
+     enable -march=rv64gc_zve32* and -march=rv32gc_zve64*. in the
+     'can_duplicate_and_interleave_p' of tree-vect-slp.cc. Since we have
+     VNx1SImode in -march=*zve32* and VNx1DImode in -march=*zve64*, they are
+     enabled in targetm. vector_mode_supported_p and SLP vectorizer will try to
+     use them. Currently, we can support auto-vectorization in
+     -march=rv32_zve32x_zvl128b. Wheras, -march=rv32_zve32x_zvl32b or
+     -march=rv32_zve32x_zvl64b are disabled.
+ */
+  if (autovec_use_vlmax_p ())
+    {
+      /* If TARGET_MIN_VLEN < 128, we don't allow LMUL < 2
+	 auto-vectorization since Loop Vectorizer may use VNx1SImode or
+	 VNx1DImode to vectorize which will create ICE in the
+	 'can_duplicate_and_interleave_p' of tree-vect-slp.cc.  */
+      if (TARGET_MIN_VLEN < 128 && riscv_autovec_lmul < RVV_M2)
+	return word_mode;
+      /* We use LMUL = 1 as base bytesize which is BYTES_PER_RISCV_VECTOR and
+	 riscv_autovec_lmul as multiply factor to calculate the the NUNITS to
+	 get the auto-vectorization mode.  */
+      poly_uint64 nunits;
+      poly_uint64 vector_size
+	= BYTES_PER_RISCV_VECTOR * ((int) riscv_autovec_lmul);
+      poly_uint64 scalar_size = GET_MODE_SIZE (mode);
+      gcc_assert (multiple_p (vector_size, scalar_size, &nunits));
+      machine_mode rvv_mode;
+      if (get_vector_mode (mode, nunits).exists (&rvv_mode))
+	return rvv_mode;
+    }
+  /* TODO: We will support minimum length VLS auto-vectorization in the future.
+   */
+  return word_mode;
 }
 
 } // namespace riscv_vector

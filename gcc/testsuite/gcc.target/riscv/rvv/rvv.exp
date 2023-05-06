@@ -46,6 +46,22 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/base/*.\[cS\]]] \
 	"" $CFLAGS
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/vsetvl/*.\[cS\]]] \
 	"" $CFLAGS
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/*.\[cS\]]] \
+	"-O3 -ftree-vectorize" $CFLAGS
+
+set AUTOVEC_TEST_OPTS [list \
+  {-ftree-vectorize -O3 --param riscv-autovec-lmul=m1} \
+  {-ftree-vectorize -O3 --param riscv-autovec-lmul=m2} \
+  {-ftree-vectorize -O3 --param riscv-autovec-lmul=m4} \
+  {-ftree-vectorize -O3 --param riscv-autovec-lmul=m8} \
+  {-ftree-vectorize -O2 --param riscv-autovec-lmul=m1} \
+  {-ftree-vectorize -O2 --param riscv-autovec-lmul=m2} \
+  {-ftree-vectorize -O2 --param riscv-autovec-lmul=m4} \
+  {-ftree-vectorize -O2 --param riscv-autovec-lmul=m8} ]
+foreach op $AUTOVEC_TEST_OPTS {
+  dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/partial/*.\[cS\]]] \
+    "" "$op"
+}
 
 # All done.
 dg-finish

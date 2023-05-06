@@ -3791,6 +3791,13 @@ riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
   info->gpr_offset = cum->num_gprs;
   info->fpr_offset = cum->num_fprs;
 
+  /* TODO: Currently, it will cause an ICE for --param
+     riscv-autovec-preference=fixed-vlmax. So, we just return NULL_RTX here
+     let GCC generate loads/stores. Ideally, we should either warn the user not
+     to use an RVV vector type as function argument or support the calling
+     convention directly.  */
+  if (riscv_v_ext_mode_p (mode))
+    return NULL_RTX;
   if (named)
     {
       riscv_aggregate_field fields[2];
@@ -6334,7 +6341,15 @@ riscv_convert_vector_bits (void)
      to set RVV mode size. The RVV machine modes size are run-time constant if
      TARGET_VECTOR is enabled. The RVV machine modes size remains default
      compile-time constant if TARGET_VECTOR is disabled.  */
-  return TARGET_VECTOR ? poly_uint16 (1, 1) : 1;
+  if (TARGET_VECTOR)
+    {
+      if (riscv_autovec_preference == RVV_FIXED_VLMAX)
+	return (int) TARGET_MIN_VLEN / (riscv_bytes_per_vector_chunk * 8);
+      else
+	return poly_uint16 (1, 1);
+    }
+  else
+    return 1;
 }
 
 /* Implement TARGET_OPTION_OVERRIDE.  */
@@ -7345,6 +7360,17 @@ riscv_use_divmod_expander (void)
   return tune_param->use_divmod_expansion;
 }
 
+/* Implement TARGET_VECTORIZE_PREFERRED_SIMD_MODE.  */
+
+static machine_mode
+riscv_preferred_simd_mode (scalar_mode mode)
+{
+  if (TARGET_VECTOR)
+    return riscv_vector::preferred_simd_mode (mode);
+
+  return word_mode;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -7601,6 +7627,9 @@ riscv_use_divmod_expander (void)
 
 #undef TARGET_ARRAY_MODE
 #define TARGET_ARRAY_MODE riscv_array_mode
+
+#undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
+#define TARGET_VECTORIZE_PREFERRED_SIMD_MODE riscv_preferred_simd_mode
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
