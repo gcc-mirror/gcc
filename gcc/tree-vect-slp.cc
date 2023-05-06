@@ -423,10 +423,13 @@ can_duplicate_and_interleave_p (vec_info *vinfo, unsigned int count,
 	    (GET_MODE_BITSIZE (int_mode), 1);
 	  tree vector_type
 	    = get_vectype_for_scalar_type (vinfo, int_type, count);
+	  poly_int64 half_nelts;
 	  if (vector_type
 	      && VECTOR_MODE_P (TYPE_MODE (vector_type))
 	      && known_eq (GET_MODE_SIZE (TYPE_MODE (vector_type)),
-			   GET_MODE_SIZE (base_vector_mode)))
+			   GET_MODE_SIZE (base_vector_mode))
+	      && multiple_p (GET_MODE_NUNITS (TYPE_MODE (vector_type)),
+			     2, &half_nelts))
 	    {
 	      /* Try fusing consecutive sequences of COUNT / NVECTORS elements
 		 together into elements of type INT_TYPE and using the result
@@ -434,7 +437,7 @@ can_duplicate_and_interleave_p (vec_info *vinfo, unsigned int count,
 	      poly_uint64 nelts = GET_MODE_NUNITS (TYPE_MODE (vector_type));
 	      vec_perm_builder sel1 (nelts, 2, 3);
 	      vec_perm_builder sel2 (nelts, 2, 3);
-	      poly_int64 half_nelts = exact_div (nelts, 2);
+
 	      for (unsigned int i = 0; i < 3; ++i)
 		{
 		  sel1.quick_push (i);
