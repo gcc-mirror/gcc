@@ -5973,6 +5973,9 @@ case ${target} in
 	visium-*-*)
 		target_cpu_default2="TARGET_CPU_$with_cpu"
 		;;
+	x86_64-*-gnu*)
+		tmake_file="$tmake_file i386/t-gnu64"
+		;;
 esac
 
 t=
