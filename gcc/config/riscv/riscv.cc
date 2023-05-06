@@ -60,6 +60,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "tm-constrs.h"
 #include "rtl-iter.h"
+#include "gimple.h"
+#include "cfghooks.h"
+#include "cfgloop.h"
+#include "cfgrtl.h"
+#include "sel-sched.h"
+#include "fold-const.h"
+#include "gimple-iterator.h"
+#include "gimple-expr.h"
+#include "tree-vectorizer.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -7208,6 +7217,101 @@ riscv_dwarf_poly_indeterminate_value (unsigned int i, unsigned int *factor,
   return RISCV_DWARF_VLENB;
 }
 
+/* Implement TARGET_ESTIMATED_POLY_VALUE.
+   Look into the tuning structure for an estimate.
+   KIND specifies the type of requested estimate: min, max or likely.
+   For cores with a known RVV width all three estimates are the same.
+   For generic RVV tuning we want to distinguish the maximum estimate from
+   the minimum and likely ones.
+   The likely estimate is the same as the minimum in that case to give a
+   conservative behavior of auto-vectorizing with RVV when it is a win
+   even for 128-bit RVV.
+   When RVV width information is available VAL.coeffs[1] is multiplied by
+   the number of VQ chunks over the initial Advanced SIMD 128 bits.  */
+
+static HOST_WIDE_INT
+riscv_estimated_poly_value (poly_int64 val,
+			    poly_value_estimate_kind kind = POLY_VALUE_LIKELY)
+{
+  unsigned int width_source = BITS_PER_RISCV_VECTOR.is_constant ()
+    ? (unsigned int) BITS_PER_RISCV_VECTOR.to_constant ()
+    : (unsigned int) RVV_SCALABLE;
+
+  /* If there is no core-specific information then the minimum and likely
+     values are based on 128-bit vectors and the maximum is based on
+     the architectural maximum of 65536 bits.  */
+  if (width_source == RVV_SCALABLE)
+    switch (kind)
+      {
+      case POLY_VALUE_MIN:
+      case POLY_VALUE_LIKELY:
+	return val.coeffs[0];
+
+      case POLY_VALUE_MAX:
+	return val.coeffs[0] + val.coeffs[1] * 15;
+      }
+
+  /* Allow BITS_PER_RISCV_VECTOR to be a bitmask of different VL, treating the
+     lowest as likely.  This could be made more general if future -mtune
+     options need it to be.  */
+  if (kind == POLY_VALUE_MAX)
+    width_source = 1 << floor_log2 (width_source);
+  else
+    width_source = least_bit_hwi (width_source);
+
+  /* If the core provides width information, use that.  */
+  HOST_WIDE_INT over_128 = width_source - 128;
+  return val.coeffs[0] + val.coeffs[1] * over_128 / 128;
+}
+
+bool
+riscv_support_vector_misalignment (machine_mode mode,
+				   const_tree type ATTRIBUTE_UNUSED,
+				   int misalignment,
+				   bool is_packed ATTRIBUTE_UNUSED)
+{
+  if (TARGET_VECTOR)
+    {
+      if (STRICT_ALIGNMENT)
+	{
+	  /* Return if movmisalign pattern is not supported for this mode.  */
+	  if (optab_handler (movmisalign_optab, mode) == CODE_FOR_nothing)
+	    return false;
+
+	  /* Misalignment factor is unknown at compile time.  */
+	  if (misalignment == -1)
+	    return false;
+	}
+      return true;
+    }
+
+  return default_builtin_support_vector_misalignment (mode, type, misalignment,
+						      is_packed);
+}
+
+/* Implement TARGET_VECTORIZE_GET_MASK_MODE.  */
+
+static opt_machine_mode
+riscv_get_mask_mode (machine_mode mode)
+{
+  machine_mode mask_mode = VOIDmode;
+  if (TARGET_VECTOR
+      && riscv_vector::riscv_vector_get_mask_mode (mode).exists (&mask_mode))
+    return mask_mode;
+
+  return default_get_mask_mode (mode);
+}
+
+/* Implement TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE.  Assume for now that
+   it isn't worth branching around empty masked ops (including masked
+   stores).  */
+
+static bool
+riscv_empty_mask_is_expensive (unsigned)
+{
+  return false;
+}
+
 /* Return true if a shift-amount matches the trailing cleared bits on
    a bitmask.  */
 
@@ -7616,8 +7720,20 @@ riscv_preferred_simd_mode (scalar_mode mode)
 #undef TARGET_VERIFY_TYPE_CONTEXT
 #define TARGET_VERIFY_TYPE_CONTEXT riscv_verify_type_context
 
+#undef TARGET_ESTIMATED_POLY_VALUE
+#define TARGET_ESTIMATED_POLY_VALUE riscv_estimated_poly_value
+
+#undef TARGET_VECTORIZE_GET_MASK_MODE
+#define TARGET_VECTORIZE_GET_MASK_MODE riscv_get_mask_mode
+
+#undef TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE
+#define TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE riscv_empty_mask_is_expensive
+
 #undef TARGET_VECTOR_ALIGNMENT
 #define TARGET_VECTOR_ALIGNMENT riscv_vector_alignment
+
+#undef TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT
+#define TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT riscv_support_vector_misalignment
 
 #undef TARGET_DWARF_POLY_INDETERMINATE_VALUE
 #define TARGET_DWARF_POLY_INDETERMINATE_VALUE riscv_dwarf_poly_indeterminate_value
