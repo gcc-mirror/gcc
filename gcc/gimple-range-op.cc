@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-query.h"
 #include "gimple-range.h"
 #include "attr-fnspec.h"
+#include "realmpfr.h"
 
 // Given stmt S, fill VEC, up to VEC_SIZE elements, with relevant ssa-names
 // on the statement.  For efficiency, it is an error to not pass in enough
@@ -403,6 +404,66 @@ public:
   }
 } op_cfn_copysign;
 
+/* Compute FUNC (ARG) where FUNC is a mpfr function.  If RES_LOW is non-NULL,
+   set it to low bound of possible range if the function is expected to have
+   ULPS precision and similarly if RES_HIGH is non-NULL, set it to high bound.
+   If the function returns false, the results weren't set.  */
+
+static bool
+frange_mpfr_arg1 (REAL_VALUE_TYPE *res_low, REAL_VALUE_TYPE *res_high,
+		  int (*func) (mpfr_ptr, mpfr_srcptr, mpfr_rnd_t),
+		  const REAL_VALUE_TYPE &arg, tree type, unsigned ulps)
+{
+  if (ulps == ~0U || !real_isfinite (&arg))
+    return false;
+  machine_mode mode = TYPE_MODE (type);
+  const real_format *format = REAL_MODE_FORMAT (mode);
+  auto_mpfr m (format->p);
+  mpfr_from_real (m, &arg, MPFR_RNDN);
+  mpfr_clear_flags ();
+  bool inexact = func (m, m, MPFR_RNDN);
+  if (!mpfr_number_p (m) || mpfr_overflow_p () || mpfr_underflow_p ())
+    return false;
+
+  REAL_VALUE_TYPE value, result;
+  real_from_mpfr (&value, m, format, MPFR_RNDN);
+  if (!real_isfinite (&value))
+    return false;
+  if ((value.cl == rvc_zero) != (mpfr_zero_p (m) != 0))
+    inexact = true;
+
+  real_convert (&result, format, &value);
+  if (!real_isfinite (&result))
+    return false;
+  bool round_low = false;
+  bool round_high = false;
+  if (!ulps && flag_rounding_math)
+    ++ulps;
+  if (inexact || !real_identical (&result, &value))
+    {
+      if (MODE_COMPOSITE_P (mode))
+	round_low = round_high = true;
+      else
+	{
+	  round_low = !real_less (&result, &value);
+	  round_high = !real_less (&value, &result);
+	}
+    }
+  if (res_low)
+    {
+      *res_low = result;
+      for (unsigned int i = 0; i < ulps + round_low; ++i)
+	frange_nextafter (mode, *res_low, dconstninf);
+    }
+  if (res_high)
+    {
+      *res_high = result;
+      for (unsigned int i = 0; i < ulps + round_high; ++i)
+	frange_nextafter (mode, *res_high, dconstinf);
+    }
+  return true;
+}
+
 class cfn_sqrt : public range_operator_float
 {
 public:
@@ -434,6 +495,21 @@ public:
       }
     if (!lh.maybe_isnan () && !real_less (&lh.lower_bound (), &dconst0))
       r.clear_nan ();
+
+    unsigned ulps
+      = targetm.libm_function_max_error (CFN_SQRT, TYPE_MODE (type), false);
+    if (ulps == ~0U)
+      return true;
+    REAL_VALUE_TYPE lb = lh.lower_bound ();
+    REAL_VALUE_TYPE ub = lh.upper_bound ();
+    if (!frange_mpfr_arg1 (&lb, NULL, mpfr_sqrt, lb, type, ulps))
+      lb = dconstninf;
+    if (!frange_mpfr_arg1 (NULL, &ub, mpfr_sqrt, ub, type, ulps))
+      ub = dconstinf;
+    frange r2;
+    r2.set (type, lb, ub);
+    r2.flush_denormals_to_zero ();
+    r.intersect (r2);
     return true;
   }
   virtual bool op1_range (frange &r, tree type,
@@ -455,27 +531,70 @@ public:
       }
 
     // Results outside of [-0.0, +Inf] are impossible.
-    const REAL_VALUE_TYPE &ub = lhs.upper_bound ();
-    if (real_less (&ub, &dconstm0))
+    unsigned bulps
+      = targetm.libm_function_max_error (CFN_SQRT, TYPE_MODE (type), true);
+    if (bulps != ~0U)
       {
-	if (!lhs.maybe_isnan ())
-	  r.set_undefined ();
-	else
-	  // If lhs could be NAN and finite result is impossible,
-	  // the range is like lhs.known_isnan () above.
-	  goto known_nan;
-	return true;
+	const REAL_VALUE_TYPE &ub = lhs.upper_bound ();
+	REAL_VALUE_TYPE m0 = dconstm0;
+	while (bulps--)
+	  frange_nextafter (TYPE_MODE (type), m0, dconstninf);
+	if (real_less (&ub, &m0))
+	  {
+	    if (!lhs.maybe_isnan ())
+	      r.set_undefined ();
+	    else
+	      // If lhs could be NAN and finite result is impossible,
+	      // the range is like lhs.known_isnan () above.
+	      goto known_nan;
+	    return true;
+	  }
       }
 
     if (!lhs.maybe_isnan ())
-      {
-	// If NAN is not valid result, the input cannot include either
-	// a NAN nor values smaller than -0.
-	r.set (type, dconstm0, dconstinf, nan_state (false, false));
-	return true;
-      }
+      // If NAN is not valid result, the input cannot include either
+      // a NAN nor values smaller than -0.
+      r.set (type, dconstm0, dconstinf, nan_state (false, false));
+    else
+      r.set_varying (type);
 
-    r.set_varying (type);
+    unsigned ulps
+      = targetm.libm_function_max_error (CFN_SQRT, TYPE_MODE (type), false);
+    if (ulps == ~0U)
+      return true;
+    REAL_VALUE_TYPE lb = lhs.lower_bound ();
+    REAL_VALUE_TYPE ub = lhs.upper_bound ();
+    if (!lhs.maybe_isnan () && real_less (&dconst0, &lb))
+      {
+	for (unsigned i = 0; i < ulps; ++i)
+	  frange_nextafter (TYPE_MODE (type), lb, dconstninf);
+	if (real_less (&dconst0, &lb))
+	  {
+	    REAL_VALUE_TYPE op = lb;
+	    frange_arithmetic (MULT_EXPR, type, lb, op, op, dconstninf);
+	  }
+	else
+	  lb = dconstninf;
+      }
+    else
+      lb = dconstninf;
+    if (real_isfinite (&ub) && real_less (&dconst0, &ub))
+      {
+	for (unsigned i = 0; i < ulps; ++i)
+	  frange_nextafter (TYPE_MODE (type), ub, dconstinf);
+	if (real_isfinite (&ub))
+	  {
+	    REAL_VALUE_TYPE op = ub;
+	    frange_arithmetic (MULT_EXPR, type, ub, op, op, dconstinf);
+	  }
+	else
+	  ub = dconstinf;
+      }
+    else
+      ub = dconstinf;
+    frange r2;
+    r2.set (type, lb, ub);
+    r.intersect (r2);
     return true;
   }
 } op_cfn_sqrt;

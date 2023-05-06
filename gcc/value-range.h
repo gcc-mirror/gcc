@@ -1294,5 +1294,8 @@ frange::nan_signbit_p (bool &signbit) const
 
 void frange_nextafter (enum machine_mode, REAL_VALUE_TYPE &,
 		       const REAL_VALUE_TYPE &);
+void frange_arithmetic (enum tree_code, tree, REAL_VALUE_TYPE &,
+			const REAL_VALUE_TYPE &, const REAL_VALUE_TYPE &,
+			const REAL_VALUE_TYPE &);
 
 #endif // GCC_VALUE_RANGE_H

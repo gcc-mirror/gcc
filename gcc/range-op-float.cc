@@ -305,7 +305,7 @@ frange_nextafter (enum machine_mode mode,
 // SF/DFmode (when storing into memory from the 387 stack).  Maybe
 // this is ok as well though it is just occasionally more precise. ??
 
-static void
+void
 frange_arithmetic (enum tree_code code, tree type,
 		   REAL_VALUE_TYPE &result,
 		   const REAL_VALUE_TYPE &op1,
