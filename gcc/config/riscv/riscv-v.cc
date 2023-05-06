@@ -1015,17 +1015,6 @@ expand_tuple_move (machine_mode mask_mode, rtx *ops)
     }
 }
 
-/* SCALABLE means that the vector-length is agnostic (run-time invariant and
-   compile-time unknown). FIXED meands that the vector-length is specific
-   (compile-time known). Both RVV_SCALABLE and RVV_FIXED_VLMAX are doing
-   auto-vectorization using VLMAX vsetvl configuration.  */
-static bool
-autovec_use_vlmax_p (void)
-{
-  return riscv_autovec_preference == RVV_SCALABLE
-	 || riscv_autovec_preference == RVV_FIXED_VLMAX;
-}
-
 /* Return the vectorization machine mode for RVV according to LMUL.  */
 machine_mode
 preferred_simd_mode (scalar_mode mode)
