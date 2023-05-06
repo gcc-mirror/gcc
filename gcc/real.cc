@@ -2475,6 +2475,26 @@ dconst_e_ptr (void)
   return &value;
 }
 
+/* Returns the special REAL_VALUE_TYPE corresponding to 'pi'.  */
+
+const REAL_VALUE_TYPE *
+dconst_pi_ptr (void)
+{
+  static REAL_VALUE_TYPE value;
+
+  /* Initialize mathematical constants for constant folding builtins.
+     These constants need to be given to at least 160 bits precision.  */
+  if (value.cl == rvc_zero)
+    {
+      auto_mpfr m (SIGNIFICAND_BITS);
+      mpfr_set_si (m, -1, MPFR_RNDN);
+      mpfr_acos (m, m, MPFR_RNDN);
+      real_from_mpfr (&value, m, NULL_TREE, MPFR_RNDN);
+
+    }
+  return &value;
+}
+
 /* Returns a cached REAL_VALUE_TYPE corresponding to 1/n, for various n.  */
 
 #define CACHED_FRACTION(NAME, N)					\

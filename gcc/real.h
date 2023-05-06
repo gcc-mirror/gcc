@@ -480,9 +480,13 @@ extern REAL_VALUE_TYPE dconstninf;
 #define dconst_sixth() (*dconst_sixth_ptr ())
 #define dconst_ninth() (*dconst_ninth_ptr ())
 #define dconst_sqrt2() (*dconst_sqrt2_ptr ())
+#define dconst_pi() (*dconst_pi_ptr ())
 
 /* Function to return the real value special constant 'e'.  */
-extern const REAL_VALUE_TYPE * dconst_e_ptr (void);
+extern const REAL_VALUE_TYPE *dconst_e_ptr (void);
+
+/* Function to return the real value special constant 'pi'.  */
+extern const REAL_VALUE_TYPE *dconst_pi_ptr (void);
 
 /* Returns a cached REAL_VALUE_TYPE corresponding to 1/n, for various n.  */
 extern const REAL_VALUE_TYPE *dconst_third_ptr (void);

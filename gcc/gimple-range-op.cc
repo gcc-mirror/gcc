@@ -633,6 +633,98 @@ public:
       }
     if (!lh.maybe_isnan () && !lh.maybe_isinf ())
       r.clear_nan ();
+
+    unsigned ulps
+      = targetm.libm_function_max_error (m_cfn, TYPE_MODE (type), false);
+    if (ulps == ~0U)
+      return true;
+    REAL_VALUE_TYPE lb = lh.lower_bound ();
+    REAL_VALUE_TYPE ub = lh.upper_bound ();
+    REAL_VALUE_TYPE diff;
+    real_arithmetic (&diff, MINUS_EXPR, &ub, &lb);
+    if (!real_isfinite (&diff))
+      return true;
+    REAL_VALUE_TYPE pi = dconst_pi ();
+    REAL_VALUE_TYPE pix2;
+    real_arithmetic (&pix2, PLUS_EXPR, &pi, &pi);
+    // We can only try to narrow the range further if ub-lb < 2*pi.
+    if (!real_less (&diff, &pix2))
+      return true;
+    REAL_VALUE_TYPE lb_lo, lb_hi, ub_lo, ub_hi;
+    REAL_VALUE_TYPE lb_deriv_lo, lb_deriv_hi, ub_deriv_lo, ub_deriv_hi;
+    if (!frange_mpfr_arg1 (&lb_lo, &lb_hi,
+			   m_cfn == CFN_SIN ? mpfr_sin : mpfr_cos, lb,
+			   type, ulps)
+	|| !frange_mpfr_arg1 (&ub_lo, &ub_hi,
+			      m_cfn == CFN_SIN ? mpfr_sin : mpfr_cos, ub,
+			      type, ulps)
+	|| !frange_mpfr_arg1 (&lb_deriv_lo, &lb_deriv_hi,
+			      m_cfn == CFN_SIN ? mpfr_cos : mpfr_sin, lb,
+			      type, 0)
+	|| !frange_mpfr_arg1 (&ub_deriv_lo, &ub_deriv_hi,
+			      m_cfn == CFN_SIN ? mpfr_cos : mpfr_sin, ub,
+			      type, 0))
+      return true;
+    if (m_cfn == CFN_COS)
+      {
+	// Derivative of cos is -sin, so negate.
+	lb_deriv_lo.sign ^= 1;
+	lb_deriv_hi.sign ^= 1;
+	ub_deriv_lo.sign ^= 1;
+	ub_deriv_hi.sign ^= 1;
+      }
+
+    if (real_less (&lb_lo, &ub_lo))
+      lb = lb_lo;
+    else
+      lb = ub_lo;
+    if (real_less (&lb_hi, &ub_hi))
+      ub = ub_hi;
+    else
+      ub = lb_hi;
+
+    // The range between the function result on the boundaries may need
+    // to be extended to +1 (+Inf) or -1 (-Inf) or both depending on the
+    // derivative or length of the argument range (diff).
+
+    // First handle special case, where the derivative has different signs,
+    // so the bound must be roughly -1 or +1.
+    if (real_isneg (&lb_deriv_lo) != real_isneg (&lb_deriv_hi))
+      {
+	if (real_isneg (&lb_lo))
+	  lb = dconstninf;
+	else
+	  ub = dconstinf;
+      }
+    if (real_isneg (&ub_deriv_lo) != real_isneg (&ub_deriv_hi))
+      {
+	if (real_isneg (&ub_lo))
+	  lb = dconstninf;
+	else
+	  ub = dconstinf;
+      }
+
+    // If derivative at lower_bound and upper_bound have the same sign,
+    // the function grows or declines on the whole range if diff < pi, so
+    // [lb, ub] is correct, and if diff >= pi the result range must include
+    // both the minimum and maximum.
+    if (real_isneg (&lb_deriv_lo) == real_isneg (&ub_deriv_lo))
+      {
+	if (!real_less (&diff, &pi))
+	  return true;
+      }
+    // If function declines at lower_bound and grows at upper_bound,
+    // the result range must include the minimum, so set lb to -Inf.
+    else if (real_isneg (&lb_deriv_lo))
+      lb = dconstninf;
+    // If function grows at lower_bound and declines at upper_bound,
+    // the result range must include the maximum, so set ub to +Inf.
+    else
+      ub = dconstinf;
+    frange r2;
+    r2.set (type, lb, ub);
+    r2.flush_denormals_to_zero ();
+    r.intersect (r2);
     return true;
   }
   virtual bool op1_range (frange &r, tree type,
@@ -651,31 +743,42 @@ public:
       }
 
     // Results outside of [-1.0, +1.0] are impossible.
-    REAL_VALUE_TYPE lb = lhs.lower_bound ();
-    REAL_VALUE_TYPE ub = lhs.upper_bound ();
-    if (real_less (&ub, &dconstm1) || real_less (&dconst1, &lb))
+    unsigned bulps
+      = targetm.libm_function_max_error (m_cfn, TYPE_MODE (type), true);
+    if (bulps != ~0U)
       {
-	if (!lhs.maybe_isnan ())
-	  r.set_undefined ();
-	else
-	  /* If lhs could be NAN and finite result is impossible,
-	     the range is like lhs.known_isnan () above,
-	     [-INF,-INF][+INF,+INF] U +-NAN.  */
-	  r.set_varying (type);
-	return true;
+	const REAL_VALUE_TYPE &lb = lhs.lower_bound ();
+	const REAL_VALUE_TYPE &ub = lhs.upper_bound ();
+	REAL_VALUE_TYPE m1 = dconstm1;
+	REAL_VALUE_TYPE p1 = dconst1;
+	while (bulps--)
+	  {
+	    frange_nextafter (TYPE_MODE (type), m1, dconstninf);
+	    frange_nextafter (TYPE_MODE (type), p1, dconstinf);
+	  }
+	if (real_less (&ub, &m1) || real_less (&p1, &lb))
+	  {
+	    if (!lhs.maybe_isnan ())
+	      r.set_undefined ();
+	    else
+	      /* If lhs could be NAN and finite result is impossible,
+		 the range is like lhs.known_isnan () above,
+		 [-INF,-INF][+INF,+INF] U +-NAN.  */
+	      r.set_varying (type);
+	    return true;
+	  }
       }
 
     if (!lhs.maybe_isnan ())
       {
 	// If NAN is not valid result, the input cannot include either
 	// a NAN nor a +-INF.
-	lb = real_min_representable (type);
-	ub = real_max_representable (type);
+	REAL_VALUE_TYPE lb = real_min_representable (type);
+	REAL_VALUE_TYPE ub = real_max_representable (type);
 	r.set (type, lb, ub, nan_state (false, false));
-	return true;
       }
-
-    r.set_varying (type);
+    else
+      r.set_varying (type);
     return true;
   }
 private:
