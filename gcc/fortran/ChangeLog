@@ -1,3 +1,15 @@
+2023-05-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/109641
+	* arith.cc (eval_intrinsic): Check conformability of ranks of operands
+	for intrinsic binary operators before performing type conversions.
+	* gfortran.h (gfc_op_rank_conformable): Add prototype.
+	* resolve.cc (resolve_operator): Check conformability of ranks of
+	operands for intrinsic binary operators before performing type
+	conversions.
+	(gfc_op_rank_conformable): New helper function to compare ranks of
+	operands of binary operator.
+
 2023-05-04  Julian Brown  <julian@codesourcery.com>
 
 	PR fortran/109622

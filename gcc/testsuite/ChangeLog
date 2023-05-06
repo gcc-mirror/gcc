@@ -1,3 +1,54 @@
+2023-05-06  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/peep2-addsplit1.c: New test.
+
+2023-05-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/peep2-movandsplit1.c: New test.
+
+2023-05-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/peep2-lsrandsplit1.c,
+	gcc.target/cris/peep2-movulsr2.c: New tests.
+
+2023-05-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/109641
+	* gfortran.dg/overload_5.f90: New test.
+
+2023-05-05  Pan Li  <pan2.li@intel.com>
+	    Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/zero_base_load_store_optimization.c:
+	Adjust indexed load/store check condition.
+
+2023-05-05  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/integer_compare_insn_shortcut.c:
+	Adjust test check condition.
+
+2023-05-05  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109615
+	* gcc.target/riscv/rvv/vsetvl/avl_single-74.c: Adapt testcase.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-11.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/pr109615.c: New test.
+
+2023-05-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/sse2-mmx-mult-vec.c: New test.
+
+2023-05-05  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/109732
+	* gcc.dg/pr109732.c: New test.
+	* gcc.dg/pr109732-1.c: New test.
+
+2023-05-05  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/109722
+	* gcc.dg/tree-ssa/abs-1.c: New test.
+
 2023-05-04  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109729

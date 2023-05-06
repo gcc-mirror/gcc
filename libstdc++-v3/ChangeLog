@@ -1,3 +1,10 @@
+2023-05-05  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/20_util/from_chars/4.cc: Skip long double test06
+	on aarch64-vxworks.
+	* testsuite/20_util/to_chars/long_double.cc: Xfail run on
+	aarch64-vxworks.
+
 2023-05-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/abi.xml (abi.versioning.history): Document
