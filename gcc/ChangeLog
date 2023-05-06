@@ -1,3 +1,13 @@
+2023-05-05  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2022-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/107898
+	* gimple-ssa-warn-alloca.c (alloca_call_type): Check
+	the type of the alloca argument is compatible with size_t
+	before querying ranges.
+
 2023-05-03  Arsen Arsenović  <arsen@aarsen.me>
 
 	* doc/extend.texi: Replace @itemx not being preceded by @item.
