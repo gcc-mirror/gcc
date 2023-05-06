@@ -1539,6 +1539,7 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
   mpz_init_set_ui (delta_mpz, one);
   mpz_init_set_ui (nelts, one);
   mpz_init (tmp_mpz);
+  mpz_init (ptr);
 
   /* Do the initialization now, so that we can cleanup without
      keeping track of where we were.  */
@@ -1682,7 +1683,6 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
       mpz_mul (delta_mpz, delta_mpz, tmp_mpz);
     }
 
-  mpz_init (ptr);
   cons = gfc_constructor_first (base);
 
   /* Now clock through the array reference, calculating the index in
@@ -1735,7 +1735,8 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
 		     "at %L requires an increase of the allowed %d "
 		     "upper limit.  See %<-fmax-array-constructor%> "
 		     "option", &expr->where, flag_max_array_constructor);
-	  return false;
+	  t = false;
+	  goto cleanup;
 	}
 
       cons = gfc_constructor_lookup (base, limit);
@@ -1750,8 +1751,6 @@ find_array_section (gfc_expr *expr, gfc_ref *ref)
 				   gfc_copy_expr (cons->expr), NULL);
     }
 
-  mpz_clear (ptr);
-
 cleanup:
 
   mpz_clear (delta_mpz);
@@ -1765,6 +1764,7 @@ cleanup:
       mpz_clear (ctr[d]);
       mpz_clear (stride[d]);
     }
+  mpz_clear (ptr);
   gfc_constructor_free (base);
   return t;
 }
