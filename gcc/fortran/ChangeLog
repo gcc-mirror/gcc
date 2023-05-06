@@ -1,3 +1,23 @@
+2023-05-05  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2023-05-04  Julian Brown  <julian@codesourcery.com>
+
+	PR fortran/109622
+	* openmp.cc (resolve_omp_clauses): Add diagnostic for
+	non-pointer/non-allocatable attach/detach.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Remove dereference for
+	pointer-to-scalar derived type component attach/detach.  Fix
+	attach/detach handling for descriptors.
+
+2023-05-05  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2023-04-28  Julian Brown  <julian@codesourcery.com>
+
+	PR fortran/109622
+	* trans-openmp.cc (gfc_trans_omp_clauses): Attach/detach clause fixes.
+
 2023-04-26  Release Manager
 
 	* GCC 13.1.0 released.

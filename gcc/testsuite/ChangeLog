@@ -1,3 +1,28 @@
+2023-05-05  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-05-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109506
+	* g++.dg/cpp0x/nsdmi-template26.C: New test.
+
+2023-05-05  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2023-05-04  Julian Brown  <julian@codesourcery.com>
+
+	PR fortran/109622
+	* gfortran.dg/goacc/pr109622-5.f90: New test.
+	* gfortran.dg/goacc/pr109622-6.f90: New test.
+
+2023-05-05  Julian Brown  <julian@codesourcery.com>
+
+	Backported from master:
+	2023-04-28  Julian Brown  <julian@codesourcery.com>
+
+	PR fortran/109622
+	* gfortran.dg/goacc/attach-descriptor.f90: Adjust expected output.
+
 2023-05-04  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
