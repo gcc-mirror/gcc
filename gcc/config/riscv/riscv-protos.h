@@ -218,6 +218,10 @@ bool slide1_sew64_helper (int, machine_mode, machine_mode,
 rtx gen_avl_for_scalar_move (rtx);
 void expand_tuple_move (machine_mode, rtx *);
 machine_mode preferred_simd_mode (scalar_mode);
+extern bool riscv_vector_mask_mode_p (machine_mode);
+extern opt_machine_mode riscv_vector_get_mask_mode (machine_mode mode);
+extern rtx get_mask_policy_no_pred (void);
+extern rtx get_tail_policy_no_pred (void);
 }
 
 /* We classify builtin types into two classes:
