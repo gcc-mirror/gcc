@@ -2705,7 +2705,7 @@ use_real_merge_p (enum predication_type_index pred)
 
 /* Get TAIL policy for predication. If predication indicates TU, return the TU.
    Otherwise, return the prefer default configuration.  */
-static rtx
+rtx
 get_tail_policy_for_pred (enum predication_type_index pred)
 {
   if (pred == PRED_TYPE_tu || pred == PRED_TYPE_tum || pred == PRED_TYPE_tumu)
@@ -2715,7 +2715,7 @@ get_tail_policy_for_pred (enum predication_type_index pred)
 
 /* Get MASK policy for predication. If predication indicates MU, return the MU.
    Otherwise, return the prefer default configuration.  */
-static rtx
+rtx
 get_mask_policy_for_pred (enum predication_type_index pred)
 {
   if (pred == PRED_TYPE_tumu || pred == PRED_TYPE_mu)
