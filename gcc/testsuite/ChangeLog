@@ -1,3 +1,62 @@
+2023-05-06  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/shrink-wrap.c: New test.
+
+2023-05-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/rvv.exp: Add testcases for RVV auto-vectorization.
+	* gcc.target/riscv/rvv/autovec/fixed-vlmax-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/single_rgroup-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/partial/single_rgroup-1.h: New test.
+	* gcc.target/riscv/rvv/autovec/partial/single_rgroup_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/scalable-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/template-1.h: New test.
+	* gcc.target/riscv/rvv/autovec/v-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/v-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve32f-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve32f-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve32f-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve32f_zvl128b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve32f_zvl128b-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve32x-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve32x-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve32x-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve32x_zvl128b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve32x_zvl128b-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64d-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64d-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64d-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64d_zvl128b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64d_zvl128b-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64f-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64f-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64f-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64f_zvl128b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64f_zvl128b-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64x-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64x-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64x-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64x_zvl128b-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/zve64x_zvl128b-2.c: New test.
+
+2023-05-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/109662
+	* gfortran.dg/pr109662.f90: New test.
+
+2023-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tree-ssa/range-sincos-2.c: New test.
+
+2023-05-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109748
+	* gcc.target/riscv/rvv/vsetvl/pr109748.c: New test.
+
+2023-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tree-ssa/range-sqrt-2.c: New test.
+
 2023-05-06  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.target/cris/peep2-addsplit1.c: New test.

@@ -1,3 +1,152 @@
+2023-05-06  Jeff Law  <jlaw@ventanamicro>
+
+	* config/riscv/riscv-v.cc (riscv_vector_preferred_simd_mode): Delete.
+
+2023-05-06  Michael Collison  <collison@rivosinc.com>
+
+	* tree-vect-slp.cc (can_duplicate_and_interleave_p):
+	Check that GET_MODE_NUNITS is a multiple of 2.
+
+2023-05-06  Michael Collison  <collison@rivosinc.com>
+
+	* config/riscv/riscv.cc
+	(riscv_estimated_poly_value): Implement
+	TARGET_ESTIMATED_POLY_VALUE.
+	(riscv_preferred_simd_mode): Implement
+	TARGET_VECTORIZE_PREFERRED_SIMD_MODE.
+	(riscv_get_mask_mode): Implement TARGET_VECTORIZE_GET_MASK_MODE.
+	(riscv_empty_mask_is_expensive): Implement
+	TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE.
+	(riscv_vectorize_create_costs): Implement
+	TARGET_VECTORIZE_CREATE_COSTS.
+	(riscv_support_vector_misalignment): Implement
+	TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT.
+	(TARGET_ESTIMATED_POLY_VALUE): Register target macro.
+	(TARGET_VECTORIZE_GET_MASK_MODE): Ditto.
+	(TARGET_VECTORIZE_EMPTY_MASK_IS_EXPENSIVE): Ditto.
+	(TARGET_VECTORIZE_SUPPORT_VECTOR_MISALIGNMENT): Ditto.
+
+2023-05-06  Jeff Law  <jlaw@ventanamicro>
+
+	* config/riscv/riscv-v.cc (autovec_use_vlmax_p): Remove
+	duplicate definition.
+
+2023-05-06  Michael Collison  <collison@rivosinc.com>
+
+	* config/riscv/riscv-v.cc (autovec_use_vlmax_p): New function.
+	(riscv_vector_preferred_simd_mode): Ditto.
+	(get_mask_policy_no_pred): Ditto.
+	(get_tail_policy_no_pred): Ditto.
+	(riscv_vector_mask_mode_p): Ditto.
+	(riscv_vector_get_mask_mode): Ditto.
+
+2023-05-06  Michael Collison  <collison@rivosinc.com>
+
+	* config/riscv/riscv-vector-builtins.cc (get_tail_policy_for_pred):
+	Remove static declaration to to make externally visible.
+	(get_mask_policy_for_pred): Ditto.
+	* config/riscv/riscv-vector-builtins.h (get_tail_policy_for_pred):
+	New external declaration.
+	(get_mask_policy_for_pred): Ditto.
+
+2023-05-06  Michael Collison  <collison@rivosinc.com>
+
+	* config/riscv/riscv-protos.h (riscv_vector_mask_mode_p): New.
+	(riscv_vector_get_mask_mode): Ditto.
+	(get_mask_policy_no_pred): Ditto.
+	(get_tail_policy_no_pred): Ditto.
+
+2023-05-06  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.h (struct machine_function): Add
+	reg_is_wrapped_separately array for register wrapping
+	information.
+	* config/loongarch/loongarch.cc
+	(loongarch_get_separate_components): New function.
+	(loongarch_components_for_bb): Likewise.
+	(loongarch_disqualify_components): Likewise.
+	(loongarch_process_components): Likewise.
+	(loongarch_emit_prologue_components): Likewise.
+	(loongarch_emit_epilogue_components): Likewise.
+	(loongarch_set_handled_components): Likewise.
+	(TARGET_SHRINK_WRAP_GET_SEPARATE_COMPONENTS): Define.
+	(TARGET_SHRINK_WRAP_COMPONENTS_FOR_BB): Likewise.
+	(TARGET_SHRINK_WRAP_DISQUALIFY_COMPONENTS): Likewise.
+	(TARGET_SHRINK_WRAP_EMIT_PROLOGUE_COMPONENTS): Likewise.
+	(TARGET_SHRINK_WRAP_EMIT_EPILOGUE_COMPONENTS): Likewise.
+	(TARGET_SHRINK_WRAP_SET_HANDLED_COMPONENTS): Likewise.
+	(loongarch_for_each_saved_reg): Skip registers that are wrapped
+	separately.
+
+2023-05-06  Xi Ruoyao  <xry111@xry111.site>
+
+	PR other/109522
+	* Makefile.in (s-macro_list): Pass -nostdinc to
+	$(GCC_FOR_TARGET).
+
+2023-05-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (preferred_simd_mode): New function.
+	* config/riscv/riscv-v.cc (autovec_use_vlmax_p): Ditto.
+	(preferred_simd_mode): Ditto.
+	* config/riscv/riscv.cc (riscv_get_arg_info): Handle RVV type in function arg.
+	(riscv_convert_vector_bits): Adjust for RVV auto-vectorization.
+	(riscv_preferred_simd_mode): New function.
+	(TARGET_VECTORIZE_PREFERRED_SIMD_MODE): New target hook support.
+	* config/riscv/vector.md: Add autovec.md.
+	* config/riscv/autovec.md: New file.
+
+2023-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* real.h (dconst_pi): Define.
+	(dconst_e_ptr): Formatting fix.
+	(dconst_pi_ptr): Declare.
+	* real.cc (dconst_pi_ptr): New function.
+	* gimple-range-op.cc (cfn_sincos::fold_range): Intersect the generic
+	boundaries range with range computed from sin/cos of the particular
+	bounds if the argument range is shorter than 2*pi.
+	(cfn_sincos::op1_range): Take bulps into account when determining
+	which result ranges are always invalid or behave like known NAN.
+
+2023-05-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range-cache.cc (sbr_sparse_bitmap::set_bb_range): Do not
+	pass type to vrange_storage::equal_p.
+	* value-range-storage.cc (vrange_storage::equal_p): Remove type.
+	(irange_storage::equal_p): Same.
+	(frange_storage::equal_p): Same.
+	* value-range-storage.h (class frange_storage): Same.
+
+2023-05-06  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109748
+	* config/riscv/riscv-vsetvl.cc (local_eliminate_vsetvl_insn): Remove it.
+	(pass_vsetvl::local_eliminate_vsetvl_insn): New function.
+
+2023-05-06  liuhongt  <hongtao.liu@intel.com>
+
+	* combine.cc (maybe_swap_commutative_operands): Canonicalize
+	vec_merge when mask is constant.
+	* doc/md.texi: Document vec_merge canonicalization.
+
+2023-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* value-range.h (frange_arithmetic): Declare.
+	* range-op-float.cc (frange_arithmetic): No longer static.
+	* gimple-range-op.cc (frange_mpfr_arg1): New function.
+	(cfn_sqrt::fold_range): Intersect the generic boundaries range
+	with range computed from sqrt of the particular bounds.
+	(cfn_sqrt::op1_range): Intersect the generic boundaries range
+	with range computed from squared particular bounds.
+
+2023-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (check_p_numbers): Rename to one_to_9999, move
+	earlier with helper variables also renamed.
+	(MATCH_SPLUT_SEQ): Use $(wordlist 1,$(NUM_MATCH_SPLITS),$(one_to_9999))
+	instead of $(shell seq 1 $(NUM_MATCH_SPLITS)).
+	(check_p_subdirs): Use $(one_to_9999) instead of $(check_p_numbers).
+
 2023-05-06  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.md (splitop): Add PLUS.
