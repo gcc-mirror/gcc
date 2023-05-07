@@ -69,7 +69,7 @@ enum bad_spec_place {
 
 static const char *redeclaration_error_message (tree, tree);
 
-static int decl_jump_unsafe (tree);
+static bool decl_jump_unsafe (tree);
 static void require_complete_types_for_parms (tree);
 static tree grok_reference_init (tree, tree, tree, int);
 static tree grokvardecl (tree, tree, tree, const cp_decl_specifier_seq *,
@@ -3548,10 +3548,9 @@ declare_local_label (tree id)
   return ent ? ent->label_decl : NULL_TREE;
 }
 
-/* Returns nonzero if it is ill-formed to jump past the declaration of
-   DECL.  Returns 2 if it's also a real problem.  */
+/* Returns true if it is ill-formed to jump past the declaration of DECL.  */
 
-static int
+static bool
 decl_jump_unsafe (tree decl)
 {
   /* [stmt.dcl]/3: A program that jumps from a point where a local variable
@@ -3562,18 +3561,11 @@ decl_jump_unsafe (tree decl)
      preceding types and is declared without an initializer (8.5).  */
   tree type = TREE_TYPE (decl);
 
-  if (!VAR_P (decl) || TREE_STATIC (decl)
-      || type == error_mark_node)
-    return 0;
-
-  if (DECL_NONTRIVIALLY_INITIALIZED_P (decl)
-      || variably_modified_type_p (type, NULL_TREE))
-    return 2;
-
-  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
-    return 1;
-
-  return 0;
+  return (type != error_mark_node
+	  && VAR_P (decl)
+	  && !TREE_STATIC (decl)
+	  && (DECL_NONTRIVIALLY_INITIALIZED_P (decl)
+	      || variably_modified_type_p (type, NULL_TREE)));
 }
 
 /* A subroutine of check_previous_goto_1 and check_goto to identify a branch
@@ -3625,27 +3617,18 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 	   new_decls = (DECL_P (new_decls) ? DECL_CHAIN (new_decls)
 			: TREE_CHAIN (new_decls)))
 	{
-	  int problem = decl_jump_unsafe (new_decls);
+	  bool problem = decl_jump_unsafe (new_decls);
 	  if (! problem)
 	    continue;
 
 	  if (!identified)
 	    {
-	      complained = identify_goto (decl, input_location, locus,
-					  problem > 1
-					  ? DK_ERROR : DK_PERMERROR);
+	      complained = identify_goto (decl, input_location, locus, DK_ERROR);
 	      identified = 1;
 	    }
 	  if (complained)
-	    {
-	      if (problem > 1)
-		inform (DECL_SOURCE_LOCATION (new_decls),
-			"  crosses initialization of %q#D", new_decls);
-	      else
-		inform (DECL_SOURCE_LOCATION (new_decls),
-			"  enters scope of %q#D, which has "
-			"non-trivial destructor", new_decls);
-	    }
+	    inform (DECL_SOURCE_LOCATION (new_decls),
+		    "  crosses initialization of %q#D", new_decls);
 	}
 
       if (b == level)
@@ -3790,9 +3773,9 @@ check_goto (tree decl)
 
   FOR_EACH_VEC_SAFE_ELT (ent->bad_decls, ix, bad)
     {
-      int u = decl_jump_unsafe (bad);
+      bool problem = decl_jump_unsafe (bad);
 
-      if (u > 1 && DECL_ARTIFICIAL (bad))
+      if (problem && DECL_ARTIFICIAL (bad))
 	{
 	  /* Can't skip init of __exception_info.  */
 	  if (identified == 1)
@@ -3806,15 +3789,8 @@ check_goto (tree decl)
 	  saw_catch = true;
 	}
       else if (complained)
-	{
-	  if (u > 1)
-	    inform (DECL_SOURCE_LOCATION (bad),
-		    "  skips initialization of %q#D", bad);
-	  else
-	    inform (DECL_SOURCE_LOCATION (bad),
-		    "  enters scope of %q#D which has "
-		    "non-trivial destructor", bad);
-	}
+	inform (DECL_SOURCE_LOCATION (bad),
+		"  skips initialization of %q#D", bad);
     }
 
   if (complained)
