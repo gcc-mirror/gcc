@@ -9135,6 +9135,10 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 
 	if (fun && is_overloaded_fn (fun))
 	  {
+	    if (!RECUR (fun, true))
+	      return false;
+	    fun = get_fns (fun);
+
 	    if (TREE_CODE (fun) == FUNCTION_DECL)
 	      {
 		if (builtin_valid_in_constant_expr_p (fun))
@@ -9165,36 +9169,12 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		      explain_invalid_constexpr_fn (fun);
 		    return false;
 		  }
-		/* A call to a non-static member function takes the address
-		   of the object as the first argument.  But in a constant
-		   expression the address will be folded away, so look
-		   through it now.  */
-		if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fun)
-		    && !DECL_CONSTRUCTOR_P (fun))
-		  {
-		    tree x = get_nth_callarg (t, 0);
-		    if (is_this_parameter (x))
-		      return true;
-		    /* Don't require an immediately constant value, as
-		       constexpr substitution might not use the value.  */
-		    bool sub_now = false;
-		    if (!potential_constant_expression_1 (x, rval, strict,
-							  sub_now, fundef_p,
-							  flags, jump_target))
-		      return false;
-		    i = 1;
-		  }
 	      }
-	    else
-	      {
-		if (!RECUR (fun, true))
-		  return false;
-		fun = get_first_fn (fun);
-	      }
+
+	    fun = OVL_FIRST (fun);
 	    /* Skip initial arguments to base constructors.  */
 	    if (DECL_BASE_CONSTRUCTOR_P (fun))
 	      i = num_artificial_parms_for (fun);
-	    fun = DECL_ORIGIN (fun);
 	  }
 	else if (fun)
           {
