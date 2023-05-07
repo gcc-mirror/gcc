@@ -346,7 +346,7 @@ enforce_access (tree basetype_path, tree decl, tree diag_decl,
     }
 
   tree cs = current_scope ();
-  if (processing_template_decl
+  if (current_template_parms
       && (CLASS_TYPE_P (cs) || TREE_CODE (cs) == FUNCTION_DECL))
     if (tree template_info = get_template_info (cs))
       {
