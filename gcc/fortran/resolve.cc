@@ -9931,8 +9931,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
   gfc_resolve_blocks (code->block, gfc_current_ns);
   gfc_current_ns = old_ns;
 
-  if (ref)
-    free (ref);
+  free(ref);
 }
 
 
