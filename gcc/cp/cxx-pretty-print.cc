@@ -1364,8 +1364,9 @@ cxx_pretty_printer::simple_type_specifier (tree t)
     case TEMPLATE_PARM_INDEX:
     case BOUND_TEMPLATE_TEMPLATE_PARM:
       pp_cxx_unqualified_id (this, t);
-      if (tree c = PLACEHOLDER_TYPE_CONSTRAINTS (t))
-        pp_cxx_constrained_type_spec (this, c);
+      if (TREE_CODE (t) == TEMPLATE_TYPE_PARM)
+	if (tree c = PLACEHOLDER_TYPE_CONSTRAINTS (t))
+	  pp_cxx_constrained_type_spec (this, c);
       break;
 
     case TYPENAME_TYPE:
