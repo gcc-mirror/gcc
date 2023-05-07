@@ -733,11 +733,11 @@ const unsigned int AARCH64_BUILTIN_CLASS = (1 << AARCH64_BUILTIN_SHIFT) - 1;
 class aarch64_simd_switcher
 {
 public:
-  aarch64_simd_switcher (unsigned int extra_flags = 0);
+  aarch64_simd_switcher (aarch64_feature_flags extra_flags = 0);
   ~aarch64_simd_switcher ();
 
 private:
-  unsigned long m_old_asm_isa_flags;
+  aarch64_feature_flags m_old_asm_isa_flags;
   bool m_old_general_regs_only;
 };
 
