@@ -5036,6 +5036,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (if (code == MAX_EXPR)
       (minmax (max @1 @2) @4)))))))
 
+/* Optimize (a CMP CST1) ? max<a,CST2> : a */
+(for cmp    (gt  ge  lt  le)
+     minmax (min min max max)
+ (simplify
+  (cond (cmp @0 @1) (minmax:c@2 @0 @3) @4)
+   (with
+    {
+      tree_code code = minmax_from_comparison (cmp, @0, @1, @0, @4);
+    }
+    (if ((cmp == LT_EXPR || cmp == LE_EXPR)
+	 && code == MIN_EXPR
+         && integer_nonzerop (fold_build2 (LE_EXPR, boolean_type_node, @3, @1)))
+     (min @2 @4)
+     (if ((cmp == GT_EXPR || cmp == GE_EXPR)
+	  && code == MAX_EXPR
+          && integer_nonzerop (fold_build2 (GE_EXPR, boolean_type_node, @3, @1)))
+      (max @2 @4))))))
+
 /* X != C1 ? -X : C2 simplifies to -X when -C1 == C2.  */
 (simplify
  (cond (ne @0 INTEGER_CST@1) (negate@3 @0) INTEGER_CST@2)
