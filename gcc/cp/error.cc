@@ -2840,11 +2840,10 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
     case ALIGNOF_EXPR:
       if (TREE_CODE (t) == SIZEOF_EXPR)
 	pp_cxx_ws_string (pp, "sizeof");
+      else if (ALIGNOF_EXPR_STD_P (t))
+	pp_cxx_ws_string (pp, "alignof");
       else
-	{
-	  gcc_assert (TREE_CODE (t) == ALIGNOF_EXPR);
-	  pp_cxx_ws_string (pp, "__alignof__");
-	}
+	pp_cxx_ws_string (pp, "__alignof__");
       op = TREE_OPERAND (t, 0);
       if (PACK_EXPANSION_P (op))
 	{

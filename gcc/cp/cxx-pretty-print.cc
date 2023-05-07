@@ -844,7 +844,12 @@ cxx_pretty_printer::unary_expression (tree t)
       /* Fall through  */
 
     case ALIGNOF_EXPR:
-      pp_cxx_ws_string (this, code == SIZEOF_EXPR ? "sizeof" : "__alignof__");
+      if (code == SIZEOF_EXPR)
+	pp_cxx_ws_string (this, "sizeof");
+      else if (ALIGNOF_EXPR_STD_P (t))
+	pp_cxx_ws_string (this, "alignof");
+      else
+	pp_cxx_ws_string (this, "__alignof__");
       pp_cxx_whitespace (this);
       if (TREE_CODE (t) == SIZEOF_EXPR && SIZEOF_EXPR_TYPE_P (t))
 	{
