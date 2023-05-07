@@ -1086,9 +1086,6 @@ resolve_simple_move (rtx set, rtx_insn *insn)
     {
       unsigned int i;
 
-      if (REG_P (dest) && !HARD_REGISTER_NUM_P (REGNO (dest)))
-	emit_clobber (dest);
-
       for (i = 0; i < words; ++i)
 	{
 	  rtx t = simplify_gen_subreg_concatn (word_mode, dest,
