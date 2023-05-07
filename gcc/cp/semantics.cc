@@ -2070,7 +2070,7 @@ finish_mem_initializers (tree mem_inits)
    right result.  If EVEN_UNEVAL, do this even in unevaluated context.  */
 
 tree
-force_paren_expr (tree expr, bool even_uneval)
+force_paren_expr (tree expr, bool even_uneval /* = false */)
 {
   /* This is only needed for decltype(auto) in C++14.  */
   if (cxx_dialect < cxx14)

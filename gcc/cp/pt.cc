@@ -21520,8 +21520,8 @@ tsubst_copy_and_build (tree t,
 	r = finish_class_member_access_expr (object, member,
 					     /*template_p=*/false,
 					     complain);
-	if (TREE_CODE (r) == COMPONENT_REF)
-	  REF_PARENTHESIZED_P (r) = REF_PARENTHESIZED_P (t);
+	if (REF_PARENTHESIZED_P (t))
+	  r = force_paren_expr (r);
 	RETURN (r);
       }
 
