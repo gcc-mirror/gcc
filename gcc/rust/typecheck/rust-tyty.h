@@ -1147,6 +1147,36 @@ public:
   BaseType *clone () const final override;
 };
 
+class DynamicObjectType : public BaseType
+{
+public:
+  DynamicObjectType (HirId ref, RustIdent ident,
+		     std::vector<TypeBoundPredicate> specified_bounds,
+		     std::set<HirId> refs = std::set<HirId> ());
+
+  DynamicObjectType (HirId ref, HirId ty_ref, RustIdent ident,
+		     std::vector<TypeBoundPredicate> specified_bounds,
+		     std::set<HirId> refs = std::set<HirId> ());
+
+  void accept_vis (TyVisitor &vis) override;
+  void accept_vis (TyConstVisitor &vis) const override;
+
+  std::string as_string () const override;
+
+  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+
+  bool is_equal (const BaseType &other) const override;
+
+  BaseType *clone () const final override;
+
+  std::string get_name () const override final;
+
+  // this returns a flat list of items including super trait bounds
+  const std::vector<
+    std::pair<const Resolver::TraitItemReference *, const TypeBoundPredicate *>>
+  get_object_items () const;
+};
+
 class ReferenceType : public BaseType
 {
 public:
@@ -1179,6 +1209,7 @@ public:
   bool is_dyn_object () const;
   bool is_dyn_slice_type (const TyTy::SliceType **slice = nullptr) const;
   bool is_dyn_str_type (const TyTy::StrType **str = nullptr) const;
+  bool is_dyn_obj_type (const TyTy::DynamicObjectType **dyn = nullptr) const;
 
 private:
   TyVar base;
@@ -1216,6 +1247,7 @@ public:
   bool is_dyn_object () const;
   bool is_dyn_slice_type (const TyTy::SliceType **slice = nullptr) const;
   bool is_dyn_str_type (const TyTy::StrType **str = nullptr) const;
+  bool is_dyn_obj_type (const TyTy::DynamicObjectType **dyn = nullptr) const;
 
 private:
   TyVar base;
@@ -1326,36 +1358,6 @@ private:
   BaseType *base;
   const Resolver::TraitReference *trait;
   DefId item;
-};
-
-class DynamicObjectType : public BaseType
-{
-public:
-  DynamicObjectType (HirId ref, RustIdent ident,
-		     std::vector<TypeBoundPredicate> specified_bounds,
-		     std::set<HirId> refs = std::set<HirId> ());
-
-  DynamicObjectType (HirId ref, HirId ty_ref, RustIdent ident,
-		     std::vector<TypeBoundPredicate> specified_bounds,
-		     std::set<HirId> refs = std::set<HirId> ());
-
-  void accept_vis (TyVisitor &vis) override;
-  void accept_vis (TyConstVisitor &vis) const override;
-
-  std::string as_string () const override;
-
-  bool can_eq (const BaseType *other, bool emit_errors) const override final;
-
-  bool is_equal (const BaseType &other) const override;
-
-  BaseType *clone () const final override;
-
-  std::string get_name () const override final;
-
-  // this returns a flat list of items including super trait bounds
-  const std::vector<
-    std::pair<const Resolver::TraitItemReference *, const TypeBoundPredicate *>>
-  get_object_items () const;
 };
 
 } // namespace TyTy

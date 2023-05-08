@@ -29,6 +29,7 @@
 #include "fold-const.h"
 #include "realmpfr.h"
 #include "convert.h"
+#include "print-tree.h"
 
 namespace Rust {
 namespace Compile {
@@ -791,7 +792,7 @@ void
 CompileExpr::visit (HIR::BorrowExpr &expr)
 {
   tree main_expr = CompileExpr::Compile (expr.get_expr ().get (), ctx);
-  if (SLICE_TYPE_P (TREE_TYPE (main_expr)))
+  if (RS_DST_FLAG_P (TREE_TYPE (main_expr)))
     {
       translated = main_expr;
       return;
@@ -836,7 +837,7 @@ CompileExpr::visit (HIR::DereferenceExpr &expr)
     }
 
   tree expected_type = TyTyResolveCompile::compile (ctx, tyty);
-  if (SLICE_TYPE_P (TREE_TYPE (main_expr)) && SLICE_TYPE_P (expected_type))
+  if (RS_DST_FLAG_P (TREE_TYPE (main_expr)) && RS_DST_FLAG_P (expected_type))
     {
       translated = main_expr;
       return;
@@ -907,6 +908,10 @@ CompileExpr::visit (HIR::AssignmentExpr &expr)
   rvalue = coercion_site (expr.get_mappings ().get_hirid (), rvalue, actual,
 			  expected, expr.get_lhs ()->get_locus (),
 			  expr.get_rhs ()->get_locus ());
+
+  // rust_debug_loc (expr.get_locus (), "XXXXXX assignment");
+  // debug_tree (rvalue);
+  // debug_tree (lvalue);
 
   tree assignment
     = ctx->get_backend ()->assignment_statement (lvalue, rvalue,
@@ -1810,13 +1815,6 @@ CompileExpr::get_fn_addr_from_dyn (const TyTy::DynamicObjectType *dyn,
   if (ref == nullptr)
     return error_mark_node;
 
-  // get any indirection sorted out
-  if (receiver->get_kind () == TyTy::TypeKind::REF)
-    {
-      tree indirect = indirect_expression (receiver_ref, expr_locus);
-      receiver_ref = indirect;
-    }
-
   // cast it to the correct fntype
   tree expected_fntype = TyTyResolveCompile::compile (ctx, fntype, true);
   tree idx = build_int_cst (size_type_node, offs);
@@ -1841,13 +1839,6 @@ CompileExpr::get_receiver_from_dyn (const TyTy::DynamicObjectType *dyn,
 				    TyTy::FnType *fntype, tree receiver_ref,
 				    Location expr_locus)
 {
-  // get any indirection sorted out
-  if (receiver->get_kind () == TyTy::TypeKind::REF)
-    {
-      tree indirect = indirect_expression (receiver_ref, expr_locus);
-      receiver_ref = indirect;
-    }
-
   // access the offs + 1 for the fnptr and offs=0 for the reciever obj
   return ctx->get_backend ()->struct_field_expression (receiver_ref, 0,
 						       expr_locus);
@@ -2130,7 +2121,7 @@ CompileExpr::type_cast_expression (tree type_to_cast_to, tree expr_tree,
 			      type_to_cast_to, expr_tree);
     }
   else if (TREE_CODE (type_to_cast_to) == POINTER_TYPE
-	   && SLICE_TYPE_P (TREE_TYPE (expr_tree)))
+	   && RS_DST_FLAG (TREE_TYPE (expr_tree)))
     {
       // returning a raw cast using NOP_EXPR seems to resut in an ICE:
       //
@@ -2327,7 +2318,7 @@ HIRCompileBase::resolve_adjustements (
 
 	case Resolver::Adjustment::AdjustmentType::IMM_REF:
 	  case Resolver::Adjustment::AdjustmentType::MUT_REF: {
-	    if (!SLICE_TYPE_P (TREE_TYPE (e)))
+	    if (!RS_DST_FLAG (TREE_TYPE (e)))
 	      {
 		e = address_expression (e, locus);
 	      }

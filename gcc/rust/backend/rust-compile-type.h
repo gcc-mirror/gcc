@@ -65,6 +65,7 @@ public:
 protected:
   tree create_slice_type_record (const TyTy::SliceType &type);
   tree create_str_type_record (const TyTy::StrType &type);
+  tree create_dyn_obj_record (const TyTy::DynamicObjectType &type);
 
 private:
   TyTyResolveCompile (Context *ctx, bool trait_object_mode);

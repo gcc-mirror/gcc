@@ -78,7 +78,7 @@ HIRCompileBase::coercion_site1 (tree rvalue, TyTy::BaseType *rval,
   if (expected->get_kind () == TyTy::TypeKind::REF)
     {
       // this is a dyn object
-      if (SLICE_TYPE_P (TREE_TYPE (rvalue)))
+      if (RS_DST_FLAG_P (TREE_TYPE (rvalue)))
 	{
 	  return rvalue;
 	}
@@ -96,7 +96,7 @@ HIRCompileBase::coercion_site1 (tree rvalue, TyTy::BaseType *rval,
       tree coerced
 	= coercion_site1 (deref_rvalue, act->get_base (), exp->get_base (),
 			  lvalue_locus, rvalue_locus);
-      if (exp->is_dyn_object () && SLICE_TYPE_P (TREE_TYPE (coerced)))
+      if (exp->is_dyn_object () && RS_DST_FLAG_P (TREE_TYPE (coerced)))
 	return coerced;
 
       return address_expression (coerced, rvalue_locus);
@@ -104,7 +104,7 @@ HIRCompileBase::coercion_site1 (tree rvalue, TyTy::BaseType *rval,
   else if (expected->get_kind () == TyTy::TypeKind::POINTER)
     {
       // this is a dyn object
-      if (SLICE_TYPE_P (TREE_TYPE (rvalue)))
+      if (RS_DST_FLAG_P (TREE_TYPE (rvalue)))
 	{
 	  return rvalue;
 	}
@@ -140,7 +140,7 @@ HIRCompileBase::coercion_site1 (tree rvalue, TyTy::BaseType *rval,
 	= coercion_site1 (deref_rvalue, actual_base, exp->get_base (),
 			  lvalue_locus, rvalue_locus);
 
-      if (exp->is_dyn_object () && SLICE_TYPE_P (TREE_TYPE (coerced)))
+      if (exp->is_dyn_object () && RS_DST_FLAG_P (TREE_TYPE (coerced)))
 	return coerced;
 
       return address_expression (coerced, rvalue_locus);
@@ -183,7 +183,11 @@ HIRCompileBase::coerce_to_dyn_object (tree compiled_ref,
 				      const TyTy::DynamicObjectType *ty,
 				      Location locus)
 {
-  tree dynamic_object = TyTyResolveCompile::compile (ctx, ty);
+  // DST's get wrapped in a pseudo reference that doesnt exist...
+  const TyTy::ReferenceType r (ctx->get_mappings ()->get_next_hir_id (),
+			       TyTy::TyVar (ty->get_ref ()), Mutability::Imm);
+
+  tree dynamic_object = TyTyResolveCompile::compile (ctx, &r);
   tree dynamic_object_fields = TYPE_FIELDS (dynamic_object);
   tree vtable_field = DECL_CHAIN (dynamic_object_fields);
   rust_assert (TREE_CODE (TREE_TYPE (vtable_field)) == ARRAY_TYPE);

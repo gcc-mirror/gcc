@@ -2961,7 +2961,7 @@ ReferenceType::is_mutable () const
 bool
 ReferenceType::is_dyn_object () const
 {
-  return is_dyn_slice_type () || is_dyn_str_type ();
+  return is_dyn_slice_type () || is_dyn_str_type () || is_dyn_obj_type ();
 }
 
 bool
@@ -2987,6 +2987,19 @@ ReferenceType::is_dyn_str_type (const TyTy::StrType **str) const
     return true;
 
   *str = static_cast<const TyTy::StrType *> (element);
+  return true;
+}
+
+bool
+ReferenceType::is_dyn_obj_type (const TyTy::DynamicObjectType **dyn) const
+{
+  const TyTy::BaseType *element = get_base ()->destructure ();
+  if (element->get_kind () != TyTy::TypeKind::DYNAMIC)
+    return false;
+  if (dyn == nullptr)
+    return true;
+
+  *dyn = static_cast<const TyTy::DynamicObjectType *> (element);
   return true;
 }
 
@@ -3112,7 +3125,7 @@ PointerType::is_const () const
 bool
 PointerType::is_dyn_object () const
 {
-  return is_dyn_slice_type () || is_dyn_str_type ();
+  return is_dyn_slice_type () || is_dyn_str_type () || is_dyn_obj_type ();
 }
 
 bool
@@ -3138,6 +3151,19 @@ PointerType::is_dyn_str_type (const TyTy::StrType **str) const
     return true;
 
   *str = static_cast<const TyTy::StrType *> (element);
+  return true;
+}
+
+bool
+PointerType::is_dyn_obj_type (const TyTy::DynamicObjectType **dyn) const
+{
+  const TyTy::BaseType *element = get_base ()->destructure ();
+  if (element->get_kind () != TyTy::TypeKind::DYNAMIC)
+    return false;
+  if (dyn == nullptr)
+    return true;
+
+  *dyn = static_cast<const TyTy::DynamicObjectType *> (element);
   return true;
 }
 
