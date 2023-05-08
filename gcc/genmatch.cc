@@ -255,28 +255,21 @@ output_line_directive (FILE *f, location_t location,
 
 #define SIZED_BASED_CHUNKS 1
 
-int current_file = 0;
-FILE *get_out_file (vec <FILE *> &parts)
+static FILE *
+choose_output (const vec<FILE *> &parts)
 {
 #ifdef SIZED_BASED_CHUNKS
-   if (parts.length () == 1)
-     return parts[0];
-
-   FILE *f = NULL;
-   long min = 0;
-   /* We've started writing all the files at pos 0, so ftell is equivalent
-      to the size and should be much faster.  */
-   for (unsigned i = 0; i < parts.length (); i++)
-     {
-	long res = ftell (parts[i]);
-	if (!f || res < min)
-	  {
-	    min = res;
-	    f = parts[i];
-	  }
-     }
-  return f;
+  FILE *shortest = NULL;
+  long min = 0;
+  for (FILE *part : parts)
+    {
+      long len = ftell (part);
+      if (!shortest || min > len)
+	shortest = part, min = len;
+    }
+  return shortest;
 #else
+  static int current_file;
   return parts[current_file++ % parts.length ()];
 #endif
 }
@@ -3924,7 +3917,7 @@ decision_tree::gen (vec <FILE *> &files, bool gimple)
 	}
 
       /* Cycle the file buffers.  */
-      FILE *f = get_out_file (files);
+      FILE *f = choose_output (files);
 
       /* Generate a split out function with the leaf transform code.  */
       s->fname = xasprintf ("%s_simplify_%u", gimple ? "gimple" : "generic",
@@ -3991,7 +3984,7 @@ decision_tree::gen (vec <FILE *> &files, bool gimple)
 
 
 	  /* Cycle the file buffers.  */
-	  FILE *f = get_out_file (files);
+	  FILE *f = choose_output (files);
 
 	  if (gimple)
 	    fp_decl (f, "\nbool\n"
@@ -4028,7 +4021,7 @@ decision_tree::gen (vec <FILE *> &files, bool gimple)
 	{
 
 	  /* Cycle the file buffers.  */
-	  FILE *f = get_out_file (files);
+	  FILE *f = choose_output (files);
 
 	  if (gimple)
 	    fp_decl (f, "\nbool\n"
@@ -4053,7 +4046,7 @@ decision_tree::gen (vec <FILE *> &files, bool gimple)
 
 
       /* Cycle the file buffers.  */
-      FILE *f = get_out_file (files);
+      FILE *f = choose_output (files);
 
       /* Then generate the main entry with the outermost switch and
          tail-calls to the split-out functions.  */
@@ -5461,7 +5454,7 @@ main (int argc, char **argv)
 	dt.print (stderr);
 
       /* Cycle the file buffers.  */
-      FILE *f = get_out_file (parts);
+      FILE *f = choose_output (parts);
 
       write_predicate (f, pred, dt, gimple);
     }
