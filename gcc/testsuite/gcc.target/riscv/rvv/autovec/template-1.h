@@ -1,5 +1,5 @@
 #include <stddef.h>
-#include <stdint.h>
+#include <stdint-gcc.h>
 
 void
 foo0 (int8_t *__restrict f, int16_t *__restrict d, int n)
