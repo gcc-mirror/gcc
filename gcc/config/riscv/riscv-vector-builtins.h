@@ -486,9 +486,6 @@ extern rvv_builtin_types_t builtin_types[NUM_VECTOR_TYPES + 1];
 extern function_instance get_read_vl_instance (void);
 extern tree get_read_vl_decl (void);
 
-extern rtx get_tail_policy_for_pred (enum predication_type_index pred);
-extern rtx get_mask_policy_for_pred (enum predication_type_index pred);
-
 inline tree
 rvv_arg_type_info::get_scalar_type (vector_type_index type_idx) const
 {

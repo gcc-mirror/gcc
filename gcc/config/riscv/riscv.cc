@@ -7295,8 +7295,7 @@ static opt_machine_mode
 riscv_get_mask_mode (machine_mode mode)
 {
   machine_mode mask_mode = VOIDmode;
-  if (TARGET_VECTOR
-      && riscv_vector::riscv_vector_get_mask_mode (mode).exists (&mask_mode))
+  if (TARGET_VECTOR && riscv_vector::get_mask_mode (mode).exists (&mask_mode))
     return mask_mode;
 
   return default_get_mask_mode (mode);

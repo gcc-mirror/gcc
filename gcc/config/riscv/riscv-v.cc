@@ -43,7 +43,6 @@
 #include "expr.h"
 #include "optabs.h"
 #include "tm-constrs.h"
-#include "riscv-vector-builtins.h"
 #include "rtx-vector-builder.h"
 #include "targhooks.h"
 
@@ -479,43 +478,12 @@ get_avl_type_rtx (enum avl_type type)
   return gen_int_mode (type, Pmode);
 }
 
-/* Return the mask policy for no predication.  */
-rtx
-get_mask_policy_no_pred (void)
-{
-  return get_mask_policy_for_pred (PRED_TYPE_none);
-}
-
-/* Return the tail policy for no predication.  */
-rtx
-get_tail_policy_no_pred (void)
-{
-  return get_tail_policy_for_pred (PRED_TYPE_none);
-}
-
-/* Return true if it is a RVV mask mode.  */
-bool
-riscv_vector_mask_mode_p (machine_mode mode)
-{
-  return (mode == VNx1BImode || mode == VNx2BImode || mode == VNx4BImode
-	  || mode == VNx8BImode || mode == VNx16BImode || mode == VNx32BImode
-	  || mode == VNx64BImode);
-}
-
 /* Return the appropriate mask mode for MODE.  */
 
 opt_machine_mode
-riscv_vector_get_mask_mode (machine_mode mode)
+get_mask_mode (machine_mode mode)
 {
-  machine_mode mask_mode;
-  int nf = 1;
-
-  FOR_EACH_MODE_IN_CLASS (mask_mode, MODE_VECTOR_BOOL)
-    if (GET_MODE_INNER (mask_mode) == BImode
-	&& known_eq (GET_MODE_NUNITS (mask_mode) * nf, GET_MODE_NUNITS (mode))
-	&& riscv_vector_mask_mode_p (mask_mode))
-      return mask_mode;
-  return default_get_mask_mode (mode);
+  return get_vector_mode (BImode, GET_MODE_NUNITS (mode));
 }
 
 /* Return the RVV vector mode that has NUNITS elements of mode INNER_MODE.
