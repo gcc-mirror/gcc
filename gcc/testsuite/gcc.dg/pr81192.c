@@ -22,21 +22,21 @@ void __GIMPLE(ssa, startwith("pre")) fn2   ()
   goto __BB7;
 
   __BB(3):
-  if (j_6(D) != 2147483647)
+  if (j_6(D) != _Literal (int)2147483647)
     goto __BB4;
   else
     goto __BB5;
 
   __BB(4):
-  iftmp2_8 = j_6(D) + 1;
+  iftmp2_8 = j_6(D) + _Literal (int)1;
   goto __BB5;
 
   __BB(5):
-  b_lsm6_10 = 2147483647;
+  b_lsm6_10 = _Literal (int)2147483647;
   goto __BB6;
 
   __BB(6):
-  if (c0_1 != 0)
+  if (c0_1 != _Literal (int) 0)
     goto __BB3;
   else
     goto __BB8;
