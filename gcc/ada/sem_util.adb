@@ -16153,9 +16153,25 @@ package body Sem_Util is
    -----------------------------
 
    function Is_CPP_Constructor_Call (N : Node_Id) return Boolean is
+      Ret_Typ : Entity_Id;
+
    begin
-      return Nkind (N) = N_Function_Call
-        and then Is_CPP_Class (Etype (Etype (N)))
+      if Nkind (N) /= N_Function_Call then
+         return False;
+      end if;
+
+      Ret_Typ := Base_Type (Etype (N));
+
+      if Is_Class_Wide_Type (Ret_Typ) then
+         Ret_Typ := Root_Type (Ret_Typ);
+      end if;
+
+      if Is_Private_Type (Ret_Typ) then
+         Ret_Typ := Underlying_Type (Ret_Typ);
+      end if;
+
+      return Present (Ret_Typ)
+        and then Is_CPP_Class (Ret_Typ)
         and then Is_Constructor (Entity (Name (N)))
         and then Is_Imported (Entity (Name (N)));
    end Is_CPP_Constructor_Call;
