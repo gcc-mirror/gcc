@@ -78,8 +78,8 @@
 
 // this is a helper to differentiate RECORD types between actual records and
 // slices
-#define SLICE_FLAG TREE_LANG_FLAG_0
-#define SLICE_TYPE_P(TYPE)                                                     \
+#define RS_DST_FLAG TREE_LANG_FLAG_0
+#define RS_DST_FLAG_P(TYPE)                                                    \
   (TREE_CODE (TYPE) == RECORD_TYPE && TREE_LANG_FLAG_0 (TYPE))
 
 // lambda?

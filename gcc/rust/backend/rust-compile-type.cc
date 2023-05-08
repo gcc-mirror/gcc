@@ -576,6 +576,7 @@ TyTyResolveCompile::visit (const TyTy::ReferenceType &type)
 {
   const TyTy::SliceType *slice = nullptr;
   const TyTy::StrType *str = nullptr;
+  const TyTy::DynamicObjectType *dyn = nullptr;
   if (type.is_dyn_slice_type (&slice))
     {
       tree type_record = create_slice_type_record (*slice);
@@ -601,6 +602,18 @@ TyTyResolveCompile::visit (const TyTy::ReferenceType &type)
 
       return;
     }
+  else if (type.is_dyn_obj_type (&dyn))
+    {
+      tree type_record = create_dyn_obj_record (*dyn);
+      std::string dyn_str_type_str
+	= std::string (type.is_mutable () ? "&mut " : "& ") + dyn->get_name ();
+
+      translated
+	= ctx->get_backend ()->named_type (dyn_str_type_str, type_record,
+					   dyn->get_locus ());
+
+      return;
+    }
 
   tree base_compiled_type
     = TyTyResolveCompile::compile (ctx, type.get_base (), trait_object_mode);
@@ -620,6 +633,7 @@ TyTyResolveCompile::visit (const TyTy::PointerType &type)
 {
   const TyTy::SliceType *slice = nullptr;
   const TyTy::StrType *str = nullptr;
+  const TyTy::DynamicObjectType *dyn = nullptr;
   if (type.is_dyn_slice_type (&slice))
     {
       tree type_record = create_slice_type_record (*slice);
@@ -642,6 +656,19 @@ TyTyResolveCompile::visit (const TyTy::PointerType &type)
       translated
 	= ctx->get_backend ()->named_type (dyn_str_type_str, type_record,
 					   str->get_locus ());
+
+      return;
+    }
+  else if (type.is_dyn_obj_type (&dyn))
+    {
+      tree type_record = create_dyn_obj_record (*dyn);
+      std::string dyn_str_type_str
+	= std::string (type.is_mutable () ? "*mut " : "*const ")
+	  + dyn->get_name ();
+
+      translated
+	= ctx->get_backend ()->named_type (dyn_str_type_str, type_record,
+					   dyn->get_locus ());
 
       return;
     }
@@ -684,6 +711,14 @@ TyTyResolveCompile::visit (const TyTy::DynamicObjectType &type)
       return;
     }
 
+  tree type_record = create_dyn_obj_record (type);
+  translated = ctx->get_backend ()->named_type (type.get_name (), type_record,
+						type.get_ident ().locus);
+}
+
+tree
+TyTyResolveCompile::create_dyn_obj_record (const TyTy::DynamicObjectType &type)
+{
   // create implicit struct
   auto items = type.get_object_items ();
   std::vector<Backend::typed_identifier> fields;
@@ -704,9 +739,11 @@ TyTyResolveCompile::visit (const TyTy::DynamicObjectType &type)
 				   type.get_ty_ref ()));
   fields.push_back (std::move (vtf));
 
-  tree type_record = ctx->get_backend ()->struct_type (fields);
-  translated = ctx->get_backend ()->named_type (type.get_name (), type_record,
-						type.get_ident ().locus);
+  tree record = ctx->get_backend ()->struct_type (fields);
+  RS_DST_FLAG (record) = 1;
+  TYPE_MAIN_VARIANT (record) = ctx->insert_main_variant (record);
+
+  return record;
 }
 
 tree
@@ -727,7 +764,7 @@ TyTyResolveCompile::create_slice_type_record (const TyTy::SliceType &type)
   Backend::typed_identifier len_field ("len", len_field_ty, type.get_locus ());
 
   tree record = ctx->get_backend ()->struct_type ({data_field, len_field});
-  SLICE_FLAG (record) = 1;
+  RS_DST_FLAG (record) = 1;
   TYPE_MAIN_VARIANT (record) = ctx->insert_main_variant (record);
 
   return record;
@@ -753,7 +790,7 @@ TyTyResolveCompile::create_str_type_record (const TyTy::StrType &type)
   Backend::typed_identifier len_field ("len", len_field_ty, type.get_locus ());
 
   tree record = ctx->get_backend ()->struct_type ({data_field, len_field});
-  SLICE_FLAG (record) = 1;
+  RS_DST_FLAG (record) = 1;
   TYPE_MAIN_VARIANT (record) = ctx->insert_main_variant (record);
 
   return record;
