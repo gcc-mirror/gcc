@@ -177,11 +177,20 @@ TyTyResolveCompile::visit (const TyTy::FnType &type)
   std::vector<Backend::typed_identifier> parameters;
   std::vector<Backend::typed_identifier> results;
 
-  auto hir_type = type.get_return_type ();
-  auto ret = TyTyResolveCompile::compile (ctx, hir_type, trait_object_mode);
-  Location return_type_locus
-    = ctx->get_mappings ()->lookup_location (hir_type->get_ref ());
-  results.push_back (Backend::typed_identifier ("_", ret, return_type_locus));
+  // we can only return unit-type if its not the C ABI because it will expect
+  // void
+  auto hir_type = type.get_return_type ()->destructure ();
+  bool return_is_unit = hir_type->is_unit ();
+  bool is_c_abi = type.get_abi () == ABI::C;
+  bool should_be_void = is_c_abi && return_is_unit;
+  if (!should_be_void)
+    {
+      auto ret = TyTyResolveCompile::compile (ctx, hir_type, trait_object_mode);
+      Location return_type_locus
+	= ctx->get_mappings ()->lookup_location (hir_type->get_ref ());
+      results.push_back (
+	Backend::typed_identifier ("_", ret, return_type_locus));
+    }
 
   for (auto &param_pair : type.get_params ())
     {
