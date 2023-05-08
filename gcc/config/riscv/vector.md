@@ -8161,12 +8161,19 @@
 ;; -----------------------------------------------------------------------------
 ;; ---- Integer Compare Instructions Simplification
 ;; -----------------------------------------------------------------------------
-;; Simplify to VMCLR.m Includes:
+;; Simplify OP(V, V) Instructions to VMCLR.m Includes:
 ;; - 1.  VMSNE
 ;; - 2.  VMSLT
 ;; - 3.  VMSLTU
 ;; - 4.  VMSGT
 ;; - 5.  VMSGTU
+;; -----------------------------------------------------------------------------
+;; Simplify OP(V, V) Instructions to VMSET.m Includes:
+;; - 1.  VMSEQ
+;; - 2.  VMSLE
+;; - 3.  VMSLEU
+;; - 4.  VMSGE
+;; - 5.  VMSGEU
 ;; -----------------------------------------------------------------------------
 (define_split
   [(set (match_operand:VB      0 "register_operand")
