@@ -3598,9 +3598,9 @@ find_nml_name:
 
   /* A trailing space is required, we allow a comma with std=gnu.  */
   c = next_char (dtp);
-  if (c == ',' && !(compile_options.allow_std & GFC_STD_GNU))
+  if ((c == ',' && !(compile_options.allow_std & GFC_STD_GNU)) || c == ';')
     generate_error (&dtp->common, LIBERROR_READ_VALUE,
-		    "Comma after namelist name not allowed");
+		    "Non blank after namelist name not allowed");
 
   if (!is_separator(c) && c != '!')
     {
