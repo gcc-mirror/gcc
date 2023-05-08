@@ -1,3 +1,15 @@
+2023-05-07  Andrew Pinski  <apinski@marvell.com>
+
+	Backported from master:
+	2023-05-07  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/109762
+	* config/aarch64/aarch64-builtins.cc (aarch64_simd_switcher::aarch64_simd_switcher):
+	Change argument type to aarch64_feature_flags.
+	* config/aarch64/aarch64-protos.h (aarch64_simd_switcher): Change
+	constructor argument type to aarch64_feature_flags.
+	Change m_old_asm_isa_flags to be aarch64_feature_flags.
+
 2023-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
