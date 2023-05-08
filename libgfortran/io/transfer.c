@@ -4522,7 +4522,7 @@ st_read_done_worker (st_parameter_dt *dtp, bool unlock)
 	    {
 	      free (dtp->u.p.current_unit->filename);
 	      dtp->u.p.current_unit->filename = NULL;
-	      free(dtp->u.p.current_unit->ls);
+	      free (dtp->u.p.current_unit->ls);
 	      dtp->u.p.current_unit->ls = NULL;
 	    }
 	  free_newunit = true;
@@ -4618,7 +4618,7 @@ st_write_done_worker (st_parameter_dt *dtp, bool unlock)
 	    {
 	      free (dtp->u.p.current_unit->filename);
 	      dtp->u.p.current_unit->filename = NULL;
-	      free(dtp->u.p.current_unit->ls);
+	      free (dtp->u.p.current_unit->ls);
 	      dtp->u.p.current_unit->ls = NULL;
 	    }
 	  free_newunit = true;
