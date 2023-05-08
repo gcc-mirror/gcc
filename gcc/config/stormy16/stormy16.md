@@ -299,7 +299,8 @@
 	(zero_extend:SI (match_operand:HI 1 "register_operand" "0")))]
   ""
   "mov %h0,#0"
-  [(set_attr "psw_operand" "clobber")])
+  [(set_attr "length" "4")
+   (set_attr "psw_operand" "clobber")])
 
 ;; ::::::::::::::::::::
 ;; ::
