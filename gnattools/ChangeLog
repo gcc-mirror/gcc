@@ -1,3 +1,7 @@
+2023-05-08  Release Manager
+
+	* GCC 12.3.0 released.
+
 2023-04-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac (TOOLS_TARGET_PAIRS): Remove obsolete settings.

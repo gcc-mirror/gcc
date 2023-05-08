@@ -1,3 +1,7 @@
+2023-05-08  Release Manager
+
+	* GCC 12.3.0 released.
+
 2022-12-13  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/core/stdc/fenv.d: Compile in MIPS uClibc bindings on
