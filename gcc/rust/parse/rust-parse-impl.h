@@ -5686,9 +5686,6 @@ Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
   // - template?
   Location locus = lexer.peek_token ()->get_locus ();
 
-  // parse function or method qualifiers
-  AST::FunctionQualifiers qualifiers = parse_function_qualifiers ();
-
   auto is_default = false;
   auto t = lexer.peek_token ();
   if (t->get_id () == IDENTIFIER && t->get_str () == "default")
@@ -5696,6 +5693,9 @@ Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
       is_default = true;
       lexer.skip_token ();
     }
+
+  // parse function or method qualifiers
+  AST::FunctionQualifiers qualifiers = parse_function_qualifiers ();
 
   skip_token (FN_TOK);
 
