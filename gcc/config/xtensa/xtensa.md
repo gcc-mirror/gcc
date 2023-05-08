@@ -1244,7 +1244,7 @@
 (define_split
   [(set (match_operand:DI 0 "register_operand")
 	(match_operand:DI 1 "const_int_operand"))]
-  "!TARGET_CONST16 && !TARGET_AUTO_LITPOOLS
+  "!TARGET_CONST16
    && ! xtensa_split1_finished_p ()"
   [(set (match_dup 0)
 	(match_dup 1))
@@ -1328,8 +1328,8 @@
 })
 
 (define_insn "movhi_internal"
-  [(set (match_operand:HI 0 "nonimmed_operand" "=D,D,a,a,a,a,U,*a,*A")
-	(match_operand:HI 1 "move_operand" "M,d,r,I,Y,U,r,*A,*r"))]
+  [(set (match_operand:HI 0 "nonimmed_operand" "=D,D,a,a,a,a,a,U,*a,*A")
+	(match_operand:HI 1 "move_operand" "M,d,r,I,Y,T,U,r,*A,*r"))]
   "xtensa_valid_move (HImode, operands)"
   "@
    movi.n\t%0, %x1
@@ -1337,13 +1337,14 @@
    mov\t%0, %1
    movi\t%0, %x1
    movi\t%0, %1
+   %v1l32r\t%0, %1
    %v1l16ui\t%0, %1
    %v0s16i\t%1, %0
    rsr\t%0, ACCLO
    wsr\t%1, ACCLO"
-  [(set_attr "type"	"move,move,move,move,move,load,store,rsr,wsr")
+  [(set_attr "type"	"move,move,move,move,move,load,load,store,rsr,wsr")
    (set_attr "mode"	"HI")
-   (set_attr "length"	"2,2,3,3,3,3,3,3,3")])
+   (set_attr "length"	"2,2,3,3,3,3,3,3,3,3")])
 
 ;; 8-bit Integer moves
 
@@ -1420,7 +1421,7 @@
   if ((!register_operand (operands[0], SFmode)
        && !register_operand (operands[1], SFmode))
       || (FP_REG_P (xt_true_regnum (operands[0]))
-	  && !(reload_in_progress | reload_completed)
+	  && can_create_pseudo_p ()
 	  && (constantpool_mem_p (operands[1])
 	      || CONSTANT_P (operands[1]))))
     operands[1] = force_reg (SFmode, operands[1]);
@@ -2368,14 +2369,12 @@
 	      (set (match_dup 0)
 		   (plus:SI (match_dup 0)
 			    (const_int -1)))
-	      (unspec [(const_int 0)] UNSPEC_LSETUP_END)
-	      (clobber (match_dup 2))])] ; match_scratch
+	      (unspec [(const_int 0)] UNSPEC_LSETUP_END)])]
   "TARGET_LOOPS && optimize"
 {
   /* The loop optimizer doesn't check the predicates... */
   if (GET_MODE (operands[0]) != SImode)
     FAIL;
-  operands[2] = gen_rtx_SCRATCH (SImode);
 })
 
 
