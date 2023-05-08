@@ -1409,20 +1409,37 @@ package body Sem_Ch13 is
       --    Abstract_State
       --    Always_Terminates
       --    Attach_Handler
+      --    Async_Readers
+      --    Async_Writers
+      --    Constant_After_Elaboration
       --    Contract_Cases
+      --    Convention
+      --    Default_Initial_Condition
+      --    Default_Storage_Pool
       --    Depends
+      --    Effective_Reads
+      --    Effective_Writes
       --    Exceptional_Cases
+      --    Extensions_Visible
       --    Ghost
       --    Global
       --    Initial_Condition
       --    Initializes
+      --    Max_Entry_Queue_Depth
+      --    Max_Entry_Queue_Length
+      --    Max_Queue_Length
+      --    No_Caching
+      --    Part_Of
       --    Post
       --    Pre
       --    Refined_Depends
       --    Refined_Global
+      --    Refined_Post
       --    Refined_State
       --    SPARK_Mode
+      --    Secondary_Stack_Size
       --    Subprogram_Variant
+      --    Volatile_Function
       --    Warnings
       --  Insert pragma Prag such that it mimics the placement of a source
       --  pragma of the same kind. Flag Is_Generic should be set when the
@@ -3064,16 +3081,11 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Linker_Section);
 
-                  --  Linker_Section does not need delaying, as its argument
-                  --  must be a static string. Furthermore, if applied to
-                  --  an object with an explicit initialization, the object
-                  --  must be frozen in order to elaborate the initialization
-                  --  code. (This is already done for types with implicit
-                  --  initialization, such as protected types.)
+                  --  No need to delay the processing if the entity is already
+                  --  frozen. This should only happen for subprogram bodies.
 
-                  if Nkind (N) = N_Object_Declaration
-                    and then Has_Init_Expression (N)
-                  then
+                  if Is_Frozen (E) then
+                     pragma Assert (Nkind (N) = N_Subprogram_Body);
                      Delay_Required := False;
                   end if;
 
@@ -4763,9 +4775,7 @@ package body Sem_Ch13 is
             --  For an aspect that applies to a type, indicate whether it
             --  appears on a partial view of the type.
 
-            if Is_Type (E)
-              and then Is_Private_Type (E)
-            then
+            if Is_Type (E) and then Is_Private_Type (E) then
                Set_Aspect_On_Partial_View (Aspect);
             end if;
 
