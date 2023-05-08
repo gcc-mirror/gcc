@@ -1,3 +1,78 @@
+2023-05-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/85979
+	* cxx-pretty-print.cc (cxx_pretty_printer::unary_expression)
+	<case ALIGNOF_EXPR>: Consider ALIGNOF_EXPR_STD_P.
+	* error.cc (dump_expr) <case ALIGNOF_EXPR>: Likewise.
+
+2023-05-07  Patrick Palka  <ppalka@redhat.com>
+
+	DR 2256
+	PR c++/103091
+	* decl.cc (decl_jump_unsafe): Return bool instead of int.
+	Don't consider TYPE_HAS_NONTRIVIAL_DESTRUCTOR.
+	(check_previous_goto_1): Simplify now that decl_jump_unsafe
+	returns bool instead of int.
+	(check_goto): Likewise.
+
+2023-05-07  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.cc (instantiate_alias_template): Exit early upon
+	error from coerce_template_parms.  Remove dependence test
+	guarding constraints_satisfied_p.
+
+2023-05-07  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (PLACEHOLDER_TYPE_CONSTRAINTS_INFO): Harden via
+	TEMPLATE_TYPE_PARM_CHECK.
+	(TPARMS_PRIMARY_TEMPLATE): Harden via TREE_VEC_CHECK.
+	(TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL): Harden via
+	TEMPLATE_TEMPLATE_PARM_CHECK.
+	* cxx-pretty-print.cc (cxx_pretty_printer::simple_type_specifier):
+	Guard PLACEHOLDER_TYPE_CONSTRAINTS access.
+	* error.cc (dump_type) <case TEMPLATE_TYPE_PARM>: Use separate
+	variable to store CLASS_PLACEHOLDER_TEMPLATE result.
+	* pt.cc (outer_template_args): Use strip_innermost_template_args.
+	(any_type_dependent_arguments_p): Exit early if
+	!processing_template_decl.  Use range-based for.
+	(any_dependent_template_arguments_p): Likewise.
+
+2023-05-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98283
+	* pt.cc (tsubst_copy_and_build) <case COMPONENT_REF>: Propagate
+	REF_PARENTHESIZED_P more generally via force_paren_expr.
+	* semantics.cc (force_paren_expr): Document default argument.
+
+2023-05-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109651
+	* pt.cc (coerce_template_args_for_ttp): Mention we can hit the
+	current_template_parms fallback when level-lowering a bound ttp.
+	(tsubst_template_decl): Add lambda_tparms parameter.  Prefer to
+	use lambda_tparms instead of substituting DECL_TEMPLATE_PARMS.
+	(tsubst_decl) <case TEMPLATE_DECL>: Pass NULL_TREE as lambda_tparms
+	to tsubst_template_decl.
+	(tsubst_lambda_expr): For a generic lambda, substitute
+	DECL_TEMPLATE_PARMS and set current_template_parms to it
+	before substituting the function type.  Pass the substituted
+	DECL_TEMPLATE_PARMS as lambda_tparms to tsubst_template_decl.
+
+2023-05-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109480
+	* semantics.cc (enforce_access): Check current_template_parms
+	instead of processing_template_decl when deciding whether to
+	defer the access check.
+
+2023-05-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109480
+	* constexpr.cc (potential_constant_expression_1) <case CALL_EXPR>:
+	Reorganize to call get_fns sooner.  Remove special handling of
+	the object argument of a non-static member function call.  Remove
+	dead store to 'fun'.
+
 2023-05-05  Jason Merrill  <jason@redhat.com>
 
 	Revert:

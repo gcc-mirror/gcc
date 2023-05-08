@@ -1,3 +1,53 @@
+2023-05-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/85979
+	* g++.dg/diagnostic/alignof4.C: New test.
+
+2023-05-07  Patrick Palka  <ppalka@redhat.com>
+
+	DR 2256
+	PR c++/103091
+	* g++.old-deja/g++.other/init9.C: Don't expect diagnostics for
+	goto made valid by DR 2256.
+	* g++.dg/init/goto4.C: New test.
+
+2023-05-07  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp2a/concepts-alias6.C: New test.
+
+2023-05-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98283
+	* g++.dg/cpp1y/paren6.C: New test.
+
+2023-05-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109651
+	* g++.dg/cpp2a/lambda-generic-ttp1.C: New test.
+	* g++.dg/cpp2a/lambda-generic-ttp2.C: New test.
+
+2023-05-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109480
+	* g++.dg/template/non-dependent25a.C: New test.
+
+2023-05-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109480
+	* g++.dg/cpp0x/noexcept59.C: Make e() constexpr so that the
+	expected "without object" diagnostic isn't replaced by a
+	"call to non-constexpr function" diagnostic.
+	* g++.dg/template/non-dependent25.C: New test.
+
+2023-05-07  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* gcc.target/powerpc/parall_5insn_const.c: New test.
+
+2023-05-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/43644
+	* gcc.target/i386/pr43644.c: New test case.
+
 2023-05-06  Xi Ruoyao  <xry111@xry111.site>
 
 	* gcc.target/loongarch/shrink-wrap.c: New test.

@@ -1,3 +1,23 @@
+2023-05-07  Andrew Pinski  <apinski@marvell.com>
+
+	PR target/109762
+	* config/aarch64/aarch64-builtins.cc (aarch64_simd_switcher::aarch64_simd_switcher):
+	Change argument type to aarch64_feature_flags.
+	* config/aarch64/aarch64-protos.h (aarch64_simd_switcher): Change
+	constructor argument type to aarch64_feature_flags.
+	Change m_old_asm_isa_flags to be aarch64_feature_flags.
+
+2023-05-07  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (rs6000_emit_set_long_const): Generate
+	more parallel code if can_create_pseudo_p.
+
+2023-05-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/43644
+	* lower-subreg.cc (resolve_simple_move): Don't emit a clobber
+	immediately before moving a multi-word register by parts.
+
 2023-05-06  Jeff Law  <jlaw@ventanamicro>
 
 	* config/riscv/riscv-v.cc (riscv_vector_preferred_simd_mode): Delete.
