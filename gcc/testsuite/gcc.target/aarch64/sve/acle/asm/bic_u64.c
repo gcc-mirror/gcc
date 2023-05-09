@@ -127,7 +127,7 @@ TEST_UNIFORM_ZX (bic_x0_u64_z_tied1, svuint64_t, uint64_t,
 		 z0 = svbic_z (p0, z0, x0))
 
 /*
-** bic_x0_u64_z_untied: { xfail *-*-* }
+** bic_x0_u64_z_untied:
 **	mov	(z[0-9]+\.d), x0
 **	movprfx	z0\.d, p0/z, z1\.d
 **	bic	z0\.d, p0/m, z0\.d, \1

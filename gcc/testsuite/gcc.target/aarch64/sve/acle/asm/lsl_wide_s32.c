@@ -155,7 +155,7 @@ TEST_UNIFORM_ZX (lsl_wide_x0_s32_z_tied1, svint32_t, uint64_t,
 		 z0 = svlsl_wide_z (p0, z0, x0))
 
 /*
-** lsl_wide_x0_s32_z_untied: { xfail *-*-* }
+** lsl_wide_x0_s32_z_untied:
 **	mov	(z[0-9]+\.d), x0
 **	movprfx	z0\.s, p0/z, z1\.s
 **	lsl	z0\.s, p0/m, z0\.s, \1

@@ -127,7 +127,7 @@ TEST_UNIFORM_ZX (scale_x0_f64_z_tied1, svfloat64_t, int64_t,
 		 z0 = svscale_z (p0, z0, x0))
 
 /*
-** scale_x0_f64_z_untied: { xfail *-*-* }
+** scale_x0_f64_z_untied:
 **	mov	(z[0-9]+\.d), x0
 **	movprfx	z0\.d, p0/z, z1\.d
 **	fscale	z0\.d, p0/m, z0\.d, \1

@@ -127,7 +127,7 @@ TEST_UNIFORM_ZX (scale_w0_f32_z_tied1, svfloat32_t, int32_t,
 		 z0 = svscale_z (p0, z0, x0))
 
 /*
-** scale_w0_f32_z_untied: { xfail *-*-* }
+** scale_w0_f32_z_untied:
 **	mov	(z[0-9]+\.s), w0
 **	movprfx	z0\.s, p0/z, z1\.s
 **	fscale	z0\.s, p0/m, z0\.s, \1
