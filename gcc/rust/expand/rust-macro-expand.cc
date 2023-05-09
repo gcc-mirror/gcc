@@ -378,7 +378,7 @@ MacroExpander::match_fragment (Parser<MacroInvocLexer> &parser,
       break;
 
     case AST::MacroFragSpec::IDENT:
-      parser.parse_identifier_pattern ();
+      parser.parse_identifier_or_keyword_token ();
       break;
 
     case AST::MacroFragSpec::LITERAL:
