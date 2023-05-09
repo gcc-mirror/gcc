@@ -3267,6 +3267,16 @@ process_stmt_assume_attribute (tree std_attrs, tree statement,
   for (; attr; attr = lookup_attribute ("gnu", "assume", TREE_CHAIN (attr)))
     {
       tree args = TREE_VALUE (attr);
+      if (args && PACK_EXPANSION_P (args))
+	{
+	  auto_diagnostic_group d;
+	  error_at (attrs_loc, "pack expansion of %qE attribute",
+		    get_attribute_name (attr));
+	  if (cxx_dialect >= cxx17)
+	    inform (attrs_loc, "use fold expression in the attribute "
+			       "argument instead");
+	  continue;
+	}
       int nargs = list_length (args);
       if (nargs != 1)
 	{
