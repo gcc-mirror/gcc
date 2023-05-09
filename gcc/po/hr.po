@@ -17922,7 +17922,7 @@ msgstr "  -w, --verbose                   daje opširnije informacije\n"
 #: gcov.cc:952
 #, c-format
 msgid "  -x, --hash-filenames            Hash long pathnames\n"
-msgstr "  -x, --hash-filenames            hašira (hash) dugačka imena staza\n"
+msgstr "  -x, --hash-filenames            hašira (hash) duga imena staza\n"
 
 #: gcov.cc:953
 #, c-format
@@ -18051,7 +18051,7 @@ msgstr "%s:nepodudaranje profila za ‘%s’\n"
 #: gcov.cc:2106
 #, c-format
 msgid "%s:overflowed\n"
-msgstr "%s:prelijevanje\n"
+msgstr "%s:prekoračenje\n"
 
 #: gcov.cc:2154
 #, c-format
@@ -60530,7 +60530,7 @@ msgstr ""
 #: cp/pt.cc:6160
 #, gcc-internal-format
 msgid "redeclaration of %qD with different constraints"
-msgstr "ponovna deklaracija %qD s drugačijim ograničenjima"
+msgstr "ponovna deklaracija %qD s drukčijim ograničenjima"
 
 #: cp/pt.cc:6307
 #, gcc-internal-format
