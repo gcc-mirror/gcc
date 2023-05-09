@@ -35,6 +35,7 @@ struct fncontext
 {
   tree fndecl;
   ::Bvariable *ret_addr;
+  TyTy::BaseType *retty;
 };
 
 class Context
@@ -267,9 +268,9 @@ public:
     return true;
   }
 
-  void push_fn (tree fn, ::Bvariable *ret_addr)
+  void push_fn (tree fn, ::Bvariable *ret_addr, TyTy::BaseType *retty)
   {
-    fn_stack.push_back (fncontext{fn, ret_addr});
+    fn_stack.push_back (fncontext{fn, ret_addr, retty});
   }
   void pop_fn () { fn_stack.pop_back (); }
 

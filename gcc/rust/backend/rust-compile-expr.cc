@@ -114,6 +114,25 @@ CompileExpr::visit (HIR::ReturnExpr &expr)
   tree return_value = expr.has_return_expr ()
 			? CompileExpr::Compile (expr.return_expr.get (), ctx)
 			: unit_expression (ctx, expr.get_locus ());
+
+  if (expr.has_return_expr ())
+    {
+      HirId id = expr.get_mappings ().get_hirid ();
+      Location rvalue_locus = expr.return_expr->get_locus ();
+
+      TyTy::BaseType *expected = fncontext.retty;
+      Location lvalue_locus
+	= ctx->get_mappings ()->lookup_location (expected->get_ref ());
+
+      TyTy::BaseType *actual = nullptr;
+      bool ok = ctx->get_tyctx ()->lookup_type (
+	expr.return_expr->get_mappings ().get_hirid (), &actual);
+      rust_assert (ok);
+
+      return_value = coercion_site (id, return_value, actual, expected,
+				    lvalue_locus, rvalue_locus);
+    }
+
   tree return_stmt
     = ctx->get_backend ()->return_statement (fncontext.fndecl, return_value,
 					     expr.get_locus ());
@@ -2804,7 +2823,7 @@ CompileExpr::generate_closure_function (HIR::ClosureExpr &expr,
 
   ctx->add_statement (ret_var_stmt);
 
-  ctx->push_fn (fndecl, return_address);
+  ctx->push_fn (fndecl, return_address, tyret);
 
   if (is_block_expr)
     {
