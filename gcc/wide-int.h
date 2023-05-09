@@ -3167,9 +3167,11 @@ wi::lrotate (const T1 &x, const T2 &y, unsigned int width)
     width = precision;
   WI_UNARY_RESULT (T2) ymod = umod_trunc (y, width);
   WI_UNARY_RESULT (T1) left = wi::lshift (x, ymod);
-  WI_UNARY_RESULT (T1) right = wi::lrshift (x, wi::sub (width, ymod));
+  WI_UNARY_RESULT (T1) right
+    = wi::lrshift (width != precision ? wi::zext (x, width) : x,
+		   wi::sub (width, ymod));
   if (width != precision)
-    return wi::zext (left, width) | wi::zext (right, width);
+    return wi::zext (left, width) | right;
   return left | right;
 }
 
@@ -3184,10 +3186,11 @@ wi::rrotate (const T1 &x, const T2 &y, unsigned int width)
   if (width == 0)
     width = precision;
   WI_UNARY_RESULT (T2) ymod = umod_trunc (y, width);
-  WI_UNARY_RESULT (T1) right = wi::lrshift (x, ymod);
+  WI_UNARY_RESULT (T1) right
+    = wi::lrshift (width != precision ? wi::zext (x, width) : x, ymod);
   WI_UNARY_RESULT (T1) left = wi::lshift (x, wi::sub (width, ymod));
   if (width != precision)
-    return wi::zext (left, width) | wi::zext (right, width);
+    return wi::zext (left, width) | right;
   return left | right;
 }
 
