@@ -1290,13 +1290,7 @@ ExpandVisitor::visit (AST::LetStmt &stmt)
 }
 
 void
-ExpandVisitor::visit (AST::ExprStmtWithoutBlock &stmt)
-{
-  visit (stmt.get_expr ());
-}
-
-void
-ExpandVisitor::visit (AST::ExprStmtWithBlock &stmt)
+ExpandVisitor::visit (AST::ExprStmt &stmt)
 {
   visit (stmt.get_expr ());
 }

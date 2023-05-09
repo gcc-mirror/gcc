@@ -245,8 +245,7 @@ private:
   // rust-stmt.h
   void visit (AST::EmptyStmt &stmt);
   void visit (AST::LetStmt &stmt);
-  void visit (AST::ExprStmtWithoutBlock &stmt);
-  void visit (AST::ExprStmtWithBlock &stmt);
+  void visit (AST::ExprStmt &stmt);
 
   // rust-type.h
   void visit (AST::TraitBound &bound);

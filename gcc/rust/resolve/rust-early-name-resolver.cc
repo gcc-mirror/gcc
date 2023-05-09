@@ -1157,13 +1157,7 @@ EarlyNameResolver::visit (AST::LetStmt &stmt)
 }
 
 void
-EarlyNameResolver::visit (AST::ExprStmtWithoutBlock &stmt)
-{
-  stmt.get_expr ()->accept_vis (*this);
-}
-
-void
-EarlyNameResolver::visit (AST::ExprStmtWithBlock &stmt)
+EarlyNameResolver::visit (AST::ExprStmt &stmt)
 {
   stmt.get_expr ()->accept_vis (*this);
 }

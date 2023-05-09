@@ -467,10 +467,7 @@ void
 ASTLoweringBase::visit (AST::LetStmt &)
 {}
 void
-ASTLoweringBase::visit (AST::ExprStmtWithoutBlock &)
-{}
-void
-ASTLoweringBase::visit (AST::ExprStmtWithBlock &)
+ASTLoweringBase::visit (AST::ExprStmt &)
 {}
 
 // rust-type.h

@@ -587,11 +587,7 @@ ResolverBase::visit (AST::LetStmt &)
 {}
 
 void
-ResolverBase::visit (AST::ExprStmtWithoutBlock &)
-{}
-
-void
-ResolverBase::visit (AST::ExprStmtWithBlock &)
+ResolverBase::visit (AST::ExprStmt &)
 {}
 
 void

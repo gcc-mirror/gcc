@@ -55,23 +55,7 @@ ASTLoweringStmt::translate (AST::Stmt *stmt, bool *terminated)
 }
 
 void
-ASTLoweringStmt::visit (AST::ExprStmtWithBlock &stmt)
-{
-  HIR::ExprWithBlock *expr
-    = ASTLoweringExprWithBlock::translate (stmt.get_expr ().get (),
-					   &terminated);
-
-  auto crate_num = mappings->get_current_crate ();
-  Analysis::NodeMapping mapping (crate_num, stmt.get_node_id (),
-				 mappings->get_next_hir_id (crate_num),
-				 UNKNOWN_LOCAL_DEFID);
-  translated
-    = new HIR::ExprStmt (mapping, std::unique_ptr<HIR::ExprWithBlock> (expr),
-			 stmt.get_locus (), !stmt.is_semicolon_followed ());
-}
-
-void
-ASTLoweringStmt::visit (AST::ExprStmtWithoutBlock &stmt)
+ASTLoweringStmt::visit (AST::ExprStmt &stmt)
 {
   HIR::Expr *expr
     = ASTLoweringExpr::translate (stmt.get_expr ().get (), &terminated);
@@ -80,8 +64,9 @@ ASTLoweringStmt::visit (AST::ExprStmtWithoutBlock &stmt)
   Analysis::NodeMapping mapping (crate_num, stmt.get_node_id (),
 				 mappings->get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
-  translated = new HIR::ExprStmt (mapping, std::unique_ptr<HIR::Expr> (expr),
-				  stmt.get_locus ());
+  translated
+    = new HIR::ExprStmt (mapping, std::unique_ptr<HIR::Expr> (expr),
+			 stmt.get_locus (), !stmt.is_semicolon_followed ());
 }
 
 void

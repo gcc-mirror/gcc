@@ -1689,13 +1689,7 @@ Dump::visit (LetStmt &stmt)
 }
 
 void
-Dump::visit (ExprStmtWithoutBlock &stmt)
-{
-  visit (stmt.get_expr ());
-}
-
-void
-Dump::visit (ExprStmtWithBlock &stmt)
+Dump::visit (ExprStmt &stmt)
 {
   visit (stmt.get_expr ());
 }

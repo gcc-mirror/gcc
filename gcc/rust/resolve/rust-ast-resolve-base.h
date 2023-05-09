@@ -180,8 +180,7 @@ public:
 
   void visit (AST::EmptyStmt &);
   void visit (AST::LetStmt &);
-  void visit (AST::ExprStmtWithoutBlock &);
-  void visit (AST::ExprStmtWithBlock &);
+  void visit (AST::ExprStmt &);
 
   void visit (AST::TraitBound &);
   void visit (AST::ImplTraitType &);
