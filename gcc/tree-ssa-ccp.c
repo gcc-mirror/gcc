@@ -1412,6 +1412,8 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 		  *mask = wi::lrotate (r1mask, shift, width);
 		  *val = wi::lrotate (r1val, shift, width);
 		}
+	      *mask = wi::ext (*mask, width, sgn);
+	      *val = wi::ext (*val, width, sgn);
 	    }
 	}
       break;
