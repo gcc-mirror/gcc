@@ -7264,27 +7264,20 @@ riscv_estimated_poly_value (poly_int64 val,
   return val.coeffs[0] + val.coeffs[1] * over_128 / 128;
 }
 
+/* Return true if the vector misalignment factor is supported by the
+   target.  */
 bool
 riscv_support_vector_misalignment (machine_mode mode,
 				   const_tree type ATTRIBUTE_UNUSED,
 				   int misalignment,
 				   bool is_packed ATTRIBUTE_UNUSED)
 {
-  if (TARGET_VECTOR)
-    {
-      if (STRICT_ALIGNMENT)
-	{
-	  /* Return if movmisalign pattern is not supported for this mode.  */
-	  if (optab_handler (movmisalign_optab, mode) == CODE_FOR_nothing)
-	    return false;
+  /* TODO: For RVV scalable vector auto-vectorization, we should allow
+     movmisalign<mode> pattern to handle misalign data movement to unblock
+     possible auto-vectorization.
 
-	  /* Misalignment factor is unknown at compile time.  */
-	  if (misalignment == -1)
-	    return false;
-	}
-      return true;
-    }
-
+     RVV VLS auto-vectorization or SIMD auto-vectorization can be supported here
+     in the future.  */
   return default_builtin_support_vector_misalignment (mode, type, misalignment,
 						      is_packed);
 }
