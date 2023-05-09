@@ -999,6 +999,24 @@ Parser<ManagedTokenSource>::parse_delim_token_tree ()
     }
 }
 
+// Parses an identifier/keyword as a Token
+template <typename ManagedTokenSource>
+std::unique_ptr<AST::Token>
+Parser<ManagedTokenSource>::parse_identifier_or_keyword_token ()
+{
+  const_TokenPtr t = lexer.peek_token ();
+
+  if (t->get_id () == IDENTIFIER || token_id_is_keyword (t->get_id ()))
+    {
+      lexer.skip_token ();
+      return std::unique_ptr<AST::Token> (new AST::Token (std::move (t)));
+    }
+  else
+    {
+      return nullptr;
+    }
+}
+
 /* Parses a TokenTree syntactical production. This is either a delimited token
  * tree or a non-delimiter token. */
 template <typename ManagedTokenSource>

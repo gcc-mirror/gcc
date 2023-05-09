@@ -148,6 +148,7 @@ public:
   std::vector<std::unique_ptr<AST::LifetimeParam> > parse_lifetime_params ();
   AST::Visibility parse_visibility ();
   std::unique_ptr<AST::IdentifierPattern> parse_identifier_pattern ();
+  std::unique_ptr<AST::Token> parse_identifier_or_keyword_token ();
   std::unique_ptr<AST::TokenTree> parse_token_tree ();
   std::tuple<AST::SimplePath, std::unique_ptr<AST::AttrInput>, Location>
   parse_attribute_body ();

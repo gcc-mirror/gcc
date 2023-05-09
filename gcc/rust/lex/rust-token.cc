@@ -57,6 +57,40 @@ token_id_to_str (TokenId id)
     }
 }
 
+/* checks if a token is a keyword */
+bool
+token_id_is_keyword (TokenId id)
+{
+  switch (id)
+    {
+#define RS_TOKEN_KEYWORD(name, _) case name:
+#define RS_TOKEN(a, b)
+      RS_TOKEN_LIST return true;
+#undef RS_TOKEN_KEYWORD
+#undef RS_TOKEN
+    default:
+      return false;
+    }
+}
+
+/* gets the string associated with a keyword */
+const char *
+token_id_keyword_string (TokenId id)
+{
+  switch (id)
+    {
+#define RS_TOKEN_KEYWORD(id, str)                                              \
+  case id:                                                                     \
+    return str;
+#define RS_TOKEN(a, b)
+      RS_TOKEN_LIST
+#undef RS_TOKEN_KEYWORD
+#undef RS_TOKEN
+    default:
+      return nullptr;
+    }
+}
+
 const char *
 get_type_hint_string (PrimitiveCoreType type)
 {
