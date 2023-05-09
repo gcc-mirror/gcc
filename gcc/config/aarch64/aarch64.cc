@@ -6137,8 +6137,7 @@ aarch64_output_probe_sve_stack_clash (rtx base, rtx adjustment,
 static bool
 aarch64_needs_frame_chain (void)
 {
-  /* Force a frame chain for EH returns so the return address is at FP+8.  */
-  if (frame_pointer_needed || crtl->calls_eh_return)
+  if (frame_pointer_needed)
     return true;
 
   /* A leaf function cannot have calls or write LR.  */
