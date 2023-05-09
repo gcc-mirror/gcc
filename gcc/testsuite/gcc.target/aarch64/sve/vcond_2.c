@@ -145,10 +145,10 @@
 TEST_VAR_ALL (DEF_VCOND_VAR)
 TEST_IMM_ALL (DEF_VCOND_IMM)
 
-/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.b, p[0-7], z[0-9]+\.b, z[0-9]+\.b\n} 66 } } */
-/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.h, p[0-7], z[0-9]+\.h, z[0-9]+\.h\n} 132 } } */
-/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.s, p[0-7], z[0-9]+\.s, z[0-9]+\.s\n} 132 } } */
-/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.d, p[0-7], z[0-9]+\.d, z[0-9]+\.d\n} 132 } } */
+/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.b, p[0-9]+, z[0-9]+\.b, z[0-9]+\.b\n} 66 } } */
+/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.h, p[0-9]+, z[0-9]+\.h, z[0-9]+\.h\n} 132 } } */
+/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.s, p[0-9]+, z[0-9]+\.s, z[0-9]+\.s\n} 132 } } */
+/* { dg-final { scan-assembler-times {\tsel\tz[0-9]+\.d, p[0-9]+, z[0-9]+\.d, z[0-9]+\.d\n} 132 } } */
 
 /* There are two signed ordered register comparisons for .b, one for a
    variable comparison and one for one of the two out-of-range constant
@@ -157,162 +157,162 @@ TEST_IMM_ALL (DEF_VCOND_IMM)
 
    The same pattern appears twice for .h, .s and .d, once for integer data
    and once for floating-point data.  */
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 4 } } */
 
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 4 } } */
 
-/* { dg-final { scan-assembler-times {\tcmplt\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmplt\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmplt\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmplt\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmplt\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmplt\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmplt\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmplt\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 4 } } */
 
-/* { dg-final { scan-assembler-times {\tcmpge\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpge\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpge\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpge\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpge\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpge\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpge\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpge\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 4 } } */
 
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 4 } } */
 
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 4 } } */
 
 /* Out-of-range >= is converted to in-range >.  */
-/* { dg-final { scan-assembler-times {\tcmphs\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmphs\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmphs\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmphs\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmphs\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmphs\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmphs\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmphs\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 2 } } */
 
 /* Out-of-range < is converted to in-range <=.  */
-/* { dg-final { scan-assembler-times {\tcmplo\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmplo\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmplo\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmplo\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmplo\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmplo\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmplo\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmplo\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 2 } } */
 
 /* 6 for .b: {signed, unsigned\n} x {variable, too high, too low}.  */
 /* 12 for .h,.s and .d: the above 6 repeated for integer and floating-point
    data.  */
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 6 } } */
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 12 } } */
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 12 } } */
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 12 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 6 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 12 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 12 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 12 } } */
 
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 6 } } */
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 12 } } */
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 12 } } */
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 12 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 6 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 12 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 12 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 12 } } */
 
 /* Also used for >= 16. */
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #15\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #15\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #15\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #15\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #15\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #15\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #15\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #15\n} 4 } } */
 
 /* gcc converts "a < 15" into "a <= 14".  */
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #14\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #14\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #14\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #14\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #14\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #14\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #14\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #14\n} 2 } } */
 
 /* gcc converts "a >= 15" into "a > 14".  */
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #14\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #14\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #14\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #14\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #14\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #14\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #14\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #14\n} 2 } } */
 
 /* Also used for < 16.  */
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #15\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #15\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #15\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #15\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #15\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #15\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #15\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #15\n} 4 } } */
 
 /* Appears once for each signedness.  */
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #15\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #15\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #15\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #15\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #15\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #15\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #15\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #15\n} 4 } } */
 
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #15\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #15\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #15\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #15\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #15\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #15\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #15\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #15\n} 4 } } */
 
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #-16\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #-16\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #-16\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #-16\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #-16\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #-16\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #-16\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #-16\n} 4 } } */
 
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #-16\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #-16\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #-16\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #-16\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #-16\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #-16\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #-16\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #-16\n} 4 } } */
 
 /* gcc converts "a > -16" into "a >= -15".  */
-/* { dg-final { scan-assembler-times {\tcmpge\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #-15\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmpge\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #-15\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpge\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #-15\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpge\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #-15\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpge\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #-15\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpge\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #-15\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpge\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #-15\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpge\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #-15\n} 2 } } */
 
 /* Also used for <= -17.  */
-/* { dg-final { scan-assembler-times {\tcmplt\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #-16\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmplt\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #-16\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmplt\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #-16\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmplt\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #-16\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmplt\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #-16\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmplt\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #-16\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmplt\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #-16\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmplt\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #-16\n} 4 } } */
 
 /* Also used for > -17.  */
-/* { dg-final { scan-assembler-times {\tcmpge\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #-16\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpge\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #-16\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpge\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #-16\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpge\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #-16\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpge\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #-16\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpge\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #-16\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpge\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #-16\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpge\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #-16\n} 4 } } */
 
 /* gcc converts "a <= -16" into "a < -15".  */
-/* { dg-final { scan-assembler-times {\tcmplt\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #-15\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmplt\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #-15\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmplt\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #-15\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmplt\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #-15\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmplt\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #-15\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmplt\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #-15\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmplt\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #-15\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmplt\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #-15\n} 2 } } */
 
 /* gcc converts "a > 0" into "a != 0".  */
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #0\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #0\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #0\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #0\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #0\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #0\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #0\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #0\n} 2 } } */
 
 /* gcc converts "a <= 0" into "a == 0".  */
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #0\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #0\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #0\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #0\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #0\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #0\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #0\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #0\n} 2 } } */
 
 /* Also used for >= 128.  */
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #127\n} 2 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #127\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #127\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #127\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #127\n} 2 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #127\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #127\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #127\n} 4 } } */
 
 /* gcc converts "a < 127" into "a <= 126".  */
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #126\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #126\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #126\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #126\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #126\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #126\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #126\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #126\n} 2 } } */
 
 /* gcc converts "a >= 127" into "a > 126".  */
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #126\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #126\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #126\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #126\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #126\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #126\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #126\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #126\n} 2 } } */
 
 /* Also used for < 128.  */
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #127\n} 2 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #127\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #127\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #127\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #127\n} 2 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #127\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #127\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #127\n} 4 } } */

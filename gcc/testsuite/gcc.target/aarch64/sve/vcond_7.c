@@ -62,105 +62,105 @@ FOR_EACH_TYPE (DEF_LOOP)
 
 /* { dg-final { scan-assembler-not {\tand\t} } } */
 
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 4 } } */
 
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #2\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #3\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #4\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #5\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #2\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #3\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #4\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpeq\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #5\n} 2 } } */
 
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 4 } } */
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 4 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 4 } } */
 
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #2\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #3\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #4\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tcmpne\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #5\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #2\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #3\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #4\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tcmpne\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #5\n} 2 } } */
 
-/* { dg-final { scan-assembler-times {\tcmplt\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmplt\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmplt\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmplt\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmplt\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmplt\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmplt\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmplt\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #1\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #2\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #3\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #4\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #1\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #2\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #3\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #4\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 3 } } */
 
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #2\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #3\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #4\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmple\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #5\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #2\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #3\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #4\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmple\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #5\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 3 } } */
 
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #2\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #3\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #4\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #5\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #2\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #3\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #4\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #5\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tcmpge\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmpge\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmpge\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmpge\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpge\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpge\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpge\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpge\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #1\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #2\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #3\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #4\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #1\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #2\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #3\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpgt\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #4\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tcmplo\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmplo\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmplo\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmplo\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmplo\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmplo\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmplo\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmplo\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #1\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #2\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #3\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #4\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #1\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #2\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #3\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #4\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 3 } } */
 
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #2\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #3\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #4\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmpls\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #5\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #2\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #3\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #4\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmpls\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #5\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 3 } } */
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 3 } } */
 
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #2\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #3\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #4\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #5\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #2\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #3\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #4\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #5\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tcmphs\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmphs\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmphs\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmphs\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmphs\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, z[0-9]+\.b\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmphs\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmphs\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, z[0-9]+\.s\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmphs\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, z[0-9]+\.d\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.b, p[0-7]/z, z[0-9]+\.b, #1\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, #2\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.s, p[0-7]/z, z[0-9]+\.s, #3\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tcmphi\tp[0-7]\.d, p[0-7]/z, z[0-9]+\.d, #4\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.b, p[0-7]/z, z[0-9]+\.b, #1\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.h, p[0-7]/z, z[0-9]+\.h, #2\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.s, p[0-7]/z, z[0-9]+\.s, #3\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tcmphi\tp[0-9]+\.d, p[0-7]/z, z[0-9]+\.d, #4\n} 1 } } */
 
 
 /* { dg-final { scan-assembler-times {\tfcmeq\tp[0-7]\.h, p[0-7]/z, z[0-9]+\.h, z[0-9]+\.h\n} 2 } } */
