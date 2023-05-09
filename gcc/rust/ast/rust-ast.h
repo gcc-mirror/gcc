@@ -984,6 +984,8 @@ public:
 
   virtual std::vector<Attribute> &get_outer_attrs () = 0;
 
+  virtual Expr *to_stmt () const { return clone_expr_impl (); }
+
 protected:
   // Constructor
   Expr () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
@@ -1028,8 +1030,6 @@ public:
   {
     return clone_expr_without_block_impl ();
   }
-
-  virtual ExprWithoutBlock *to_stmt () const { return clone_expr_impl (); }
 };
 
 /* HACK: IdentifierExpr, delete when figure out identifier vs expr problem in

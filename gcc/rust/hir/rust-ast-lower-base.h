@@ -234,8 +234,7 @@ public:
   // rust-stmt.h
   virtual void visit (AST::EmptyStmt &stmt);
   virtual void visit (AST::LetStmt &stmt);
-  virtual void visit (AST::ExprStmtWithoutBlock &stmt);
-  virtual void visit (AST::ExprStmtWithBlock &stmt);
+  virtual void visit (AST::ExprStmt &stmt);
 
   // rust-type.h
   virtual void visit (AST::TraitBound &bound);

@@ -43,12 +43,7 @@ public:
     stmt->accept_vis (resolver);
   }
 
-  void visit (AST::ExprStmtWithBlock &stmt) override
-  {
-    ResolveExpr::go (stmt.get_expr ().get (), prefix, canonical_prefix);
-  }
-
-  void visit (AST::ExprStmtWithoutBlock &stmt) override
+  void visit (AST::ExprStmt &stmt) override
   {
     ResolveExpr::go (stmt.get_expr ().get (), prefix, canonical_prefix);
   }

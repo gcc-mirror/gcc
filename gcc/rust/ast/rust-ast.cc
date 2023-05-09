@@ -1261,9 +1261,9 @@ MacroInvocData::as_string () const
 }
 
 std::string
-ExprStmtWithBlock::as_string () const
+ExprStmt::as_string () const
 {
-  std::string str = indent_spaces (enter) + "ExprStmtWithBlock: \n";
+  std::string str = indent_spaces (enter) + "ExprStmt: \n";
 
   if (expr == nullptr)
     {
@@ -1273,6 +1273,8 @@ ExprStmtWithBlock::as_string () const
     {
       indent_spaces (enter);
       str += expr->as_string ();
+      if (semicolon_followed)
+	str += ";";
       indent_spaces (out);
     }
 
@@ -2038,22 +2040,6 @@ TupleExpr::as_string () const
       for (const auto &elem : tuple_elems)
 	str += "\n  " + elem->as_string ();
     }
-
-  return str;
-}
-
-std::string
-ExprStmtWithoutBlock::as_string () const
-{
-  std::string str ("ExprStmtWithoutBlock:\n");
-  indent_spaces (enter);
-  str += indent_spaces (stay);
-
-  if (expr == nullptr)
-    str += "none (this shouldn't happen and is probably an error)";
-  else
-    str += expr->as_string ();
-  indent_spaces (out);
 
   return str;
 }
@@ -4225,14 +4211,10 @@ BlockExpr::strip_tail_expr ()
 	{
 	  auto &stmt = static_cast<ExprStmt &> (*statements.back ());
 
-	  if (stmt.get_type () == ExprStmt::ExprStmtType::WITH_BLOCK)
+	  if (!stmt.is_semicolon_followed ())
 	    {
-	      auto &stmt_block = static_cast<ExprStmtWithBlock &> (stmt);
-	      if (!stmt_block.is_semicolon_followed ())
-		{
-		  expr = std::move (stmt_block.get_expr ());
-		  statements.pop_back ();
-		}
+	      expr = std::move (stmt.get_expr ());
+	      statements.pop_back ();
 	    }
 	}
     }
@@ -4831,13 +4813,7 @@ LetStmt::accept_vis (ASTVisitor &vis)
 }
 
 void
-ExprStmtWithoutBlock::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-ExprStmtWithBlock::accept_vis (ASTVisitor &vis)
+ExprStmt::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }

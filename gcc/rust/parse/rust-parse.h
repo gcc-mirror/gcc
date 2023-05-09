@@ -637,9 +637,9 @@ private:
   std::unique_ptr<AST::ExprStmt> parse_expr_stmt (AST::AttrVec outer_attrs,
 						  ParseRestrictions restrictions
 						  = ParseRestrictions ());
-  std::unique_ptr<AST::ExprStmtWithBlock>
+  std::unique_ptr<AST::ExprStmt>
   parse_expr_stmt_with_block (AST::AttrVec outer_attrs);
-  std::unique_ptr<AST::ExprStmtWithoutBlock>
+  std::unique_ptr<AST::ExprStmt>
   parse_expr_stmt_without_block (AST::AttrVec outer_attrs,
 				 ParseRestrictions restrictions
 				 = ParseRestrictions ());

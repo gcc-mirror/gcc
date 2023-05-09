@@ -206,8 +206,7 @@ public:
   // rust-stmt.h
   virtual void visit (EmptyStmt &stmt) = 0;
   virtual void visit (LetStmt &stmt) = 0;
-  virtual void visit (ExprStmtWithoutBlock &stmt) = 0;
-  virtual void visit (ExprStmtWithBlock &stmt) = 0;
+  virtual void visit (ExprStmt &stmt) = 0;
 
   // rust-type.h
   virtual void visit (TraitBound &bound) = 0;

@@ -3010,25 +3010,7 @@ CfgStrip::visit (AST::LetStmt &stmt)
     }
 }
 void
-CfgStrip::visit (AST::ExprStmtWithoutBlock &stmt)
-{
-  // outer attributes associated with expr, so rely on expr
-
-  // guard - should prevent null pointer expr
-  if (stmt.is_marked_for_strip ())
-    return;
-
-  // strip if expr is to be stripped
-  auto &expr = stmt.get_expr ();
-  expr->accept_vis (*this);
-  if (expr->is_marked_for_strip ())
-    {
-      stmt.mark_for_strip ();
-      return;
-    }
-}
-void
-CfgStrip::visit (AST::ExprStmtWithBlock &stmt)
+CfgStrip::visit (AST::ExprStmt &stmt)
 {
   // outer attributes associated with expr, so rely on expr
 

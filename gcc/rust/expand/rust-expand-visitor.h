@@ -291,8 +291,7 @@ public:
 
   void visit (AST::EmptyStmt &) override;
   void visit (AST::LetStmt &stmt) override;
-  void visit (AST::ExprStmtWithoutBlock &stmt) override;
-  void visit (AST::ExprStmtWithBlock &stmt) override;
+  void visit (AST::ExprStmt &stmt) override;
 
   void visit (AST::TraitBound &bound) override;
   void visit (AST::ImplTraitType &type) override;

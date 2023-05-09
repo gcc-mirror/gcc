@@ -7387,7 +7387,7 @@ Parser<ManagedTokenSource>::parse_expr_with_block (AST::AttrVec outer_attrs)
 /* Parses a expression statement containing an expression with block.
  * Disambiguates internally. */
 template <typename ManagedTokenSource>
-std::unique_ptr<AST::ExprStmtWithBlock>
+std::unique_ptr<AST::ExprStmt>
 Parser<ManagedTokenSource>::parse_expr_stmt_with_block (
   AST::AttrVec outer_attrs)
 {
@@ -7395,15 +7395,15 @@ Parser<ManagedTokenSource>::parse_expr_stmt_with_block (
   auto locus = expr_parsed->get_locus ();
 
   // return expr stmt created from expr
-  return std::unique_ptr<AST::ExprStmtWithBlock> (
-    new AST::ExprStmtWithBlock (std::move (expr_parsed), locus,
-				lexer.peek_token ()->get_id () == SEMICOLON));
+  return std::unique_ptr<AST::ExprStmt> (
+    new AST::ExprStmt (std::move (expr_parsed), locus,
+		       lexer.peek_token ()->get_id () == SEMICOLON));
 }
 
 /* Parses an expression statement containing an expression without block.
  * Disambiguates further. */
 template <typename ManagedTokenSource>
-std::unique_ptr<AST::ExprStmtWithoutBlock>
+std::unique_ptr<AST::ExprStmt>
 Parser<ManagedTokenSource>::parse_expr_stmt_without_block (
   AST::AttrVec outer_attrs, ParseRestrictions restrictions)
 {
@@ -7432,8 +7432,8 @@ Parser<ManagedTokenSource>::parse_expr_stmt_without_block (
     if (!skip_token (SEMICOLON))
       return nullptr;
 
-  return std::unique_ptr<AST::ExprStmtWithoutBlock> (
-    new AST::ExprStmtWithoutBlock (std::move (expr), locus));
+  return std::unique_ptr<AST::ExprStmt> (
+    new AST::ExprStmt (std::move (expr), locus, true));
 }
 
 /* Parses an expression without a block associated with it (further
@@ -8683,8 +8683,10 @@ Parser<ManagedTokenSource>::parse_match_expr (AST::AttrVec outer_attrs,
       restrictions.expr_can_be_stmt = true;
       restrictions.consume_semi = false;
 
-      std::unique_ptr<AST::ExprStmt> expr = parse_expr_stmt ({}, restrictions);
-      if (expr == nullptr)
+      std::unique_ptr<AST::ExprStmt> expr_stmt
+	= parse_expr_stmt ({}, restrictions);
+
+      if (expr_stmt == nullptr)
 	{
 	  Error error (lexer.peek_token ()->get_locus (),
 		       "failed to parse expr in match arm in match expr");
@@ -8693,30 +8695,12 @@ Parser<ManagedTokenSource>::parse_match_expr (AST::AttrVec outer_attrs,
 	  // skip somewhere?
 	  return nullptr;
 	}
+
+      std::unique_ptr<AST::Expr> expr = expr_stmt->get_expr ()->clone_expr ();
       bool is_expr_without_block
-	= expr->get_type () == AST::ExprStmt::ExprStmtType::WITHOUT_BLOCK;
+	= expr_stmt->get_expr ()->is_expr_without_block ();
 
-      // construct match case expr and add to cases
-      switch (expr->get_type ())
-	{
-	  case AST::ExprStmt::ExprStmtType::WITH_BLOCK: {
-	    AST::ExprStmtWithBlock *cast
-	      = static_cast<AST::ExprStmtWithBlock *> (expr.get ());
-	    std::unique_ptr<AST::Expr> e = cast->get_expr ()->clone_expr ();
-	    match_arms.push_back (
-	      AST::MatchCase (std::move (arm), std::move (e)));
-	  }
-	  break;
-
-	  case AST::ExprStmt::ExprStmtType::WITHOUT_BLOCK: {
-	    AST::ExprStmtWithoutBlock *cast
-	      = static_cast<AST::ExprStmtWithoutBlock *> (expr.get ());
-	    std::unique_ptr<AST::Expr> e = cast->get_expr ()->clone_expr ();
-	    match_arms.push_back (
-	      AST::MatchCase (std::move (arm), std::move (e)));
-	  }
-	  break;
-	}
+      match_arms.push_back (AST::MatchCase (std::move (arm), std::move (expr)));
 
       // handle comma presence
       if (lexer.peek_token ()->get_id () != COMMA)
@@ -11793,9 +11777,8 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr_with_block (
   // internal block expr must either have semicolons followed, or evaluate to
   // ()
   auto locus = expr->get_locus ();
-  std::unique_ptr<AST::ExprStmtWithBlock> stmt (
-    new AST::ExprStmtWithBlock (std::move (expr), locus,
-				tok->get_id () == SEMICOLON));
+  std::unique_ptr<AST::ExprStmt> stmt (
+    new AST::ExprStmt (std::move (expr), locus, tok->get_id () == SEMICOLON));
   if (tok->get_id () == SEMICOLON)
     lexer.skip_token ();
 
@@ -11920,9 +11903,8 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr_without_block ()
 	    // must be expression statement
 	    lexer.skip_token ();
 
-	    std::unique_ptr<AST::ExprStmtWithoutBlock> stmt (
-	      new AST::ExprStmtWithoutBlock (std::move (expr),
-					     t->get_locus ()));
+	    std::unique_ptr<AST::ExprStmt> stmt (
+	      new AST::ExprStmt (std::move (expr), t->get_locus (), true));
 	    return ExprOrStmt (std::move (stmt));
 	  }
 
@@ -11965,9 +11947,8 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr_without_block ()
 		// must be expression statement
 		lexer.skip_token ();
 
-		std::unique_ptr<AST::ExprStmtWithoutBlock> stmt (
-		  new AST::ExprStmtWithoutBlock (std::move (expr),
-						 t->get_locus ()));
+		std::unique_ptr<AST::ExprStmt> stmt (
+		  new AST::ExprStmt (std::move (expr), t->get_locus (), true));
 		return ExprOrStmt (std::move (stmt));
 	      }
 
@@ -12010,9 +11991,8 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr_without_block ()
 	      // must be expression statement
 	      lexer.skip_token ();
 
-	      std::unique_ptr<AST::ExprStmtWithoutBlock> stmt (
-		new AST::ExprStmtWithoutBlock (std::move (expr),
-					       t->get_locus ()));
+	      std::unique_ptr<AST::ExprStmt> stmt (
+		new AST::ExprStmt (std::move (expr), t->get_locus (), true));
 	      return ExprOrStmt (std::move (stmt));
 	    }
 
@@ -12035,9 +12015,8 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr_without_block ()
 
 	    if (expr)
 	      {
-		std::unique_ptr<AST::ExprStmtWithoutBlock> stmt (
-		  new AST::ExprStmtWithoutBlock (std::move (expr),
-						 t->get_locus ()));
+		std::unique_ptr<AST::ExprStmt> stmt (
+		  new AST::ExprStmt (std::move (expr), t->get_locus (), true));
 		return ExprOrStmt (std::move (stmt));
 	      }
 	    else
@@ -12238,9 +12217,8 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 	  {
 	    // statement
 	    lexer.skip_token ();
-	    std::unique_ptr<AST::ExprStmtWithoutBlock> stmt (
-	      new AST::ExprStmtWithoutBlock (std::move (expr),
-					     stmt_or_expr_loc));
+	    std::unique_ptr<AST::ExprStmt> stmt (
+	      new AST::ExprStmt (std::move (expr), stmt_or_expr_loc, true));
 	    return ExprOrStmt (std::move (stmt));
 	  }
 
@@ -12266,9 +12244,9 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 	  {
 	    // statement
 	    lexer.skip_token ();
-	    std::unique_ptr<AST::ExprStmtWithoutBlock> stmt (
-	      new AST::ExprStmtWithoutBlock (std::move (struct_expr),
-					     stmt_or_expr_loc));
+	    std::unique_ptr<AST::ExprStmt> stmt (
+	      new AST::ExprStmt (std::move (struct_expr), stmt_or_expr_loc,
+				 true));
 	    return ExprOrStmt (std::move (stmt));
 	  }
 
@@ -12288,9 +12266,8 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 	  {
 	    lexer.skip_token ();
 
-	    std::unique_ptr<AST::ExprStmtWithoutBlock> stmt (
-	      new AST::ExprStmtWithoutBlock (std::move (expr),
-					     stmt_or_expr_loc));
+	    std::unique_ptr<AST::ExprStmt> stmt (
+	      new AST::ExprStmt (std::move (expr), stmt_or_expr_loc, true));
 	    return ExprOrStmt (std::move (stmt));
 	  }
 

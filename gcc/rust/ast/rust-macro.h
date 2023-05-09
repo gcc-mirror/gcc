@@ -802,7 +802,7 @@ protected:
     return clone_macro_invocation_impl ();
   }
 
-  ExprWithoutBlock *to_stmt () const override
+  Expr *to_stmt () const override
 
   {
     auto new_impl = clone_macro_invocation_impl ();

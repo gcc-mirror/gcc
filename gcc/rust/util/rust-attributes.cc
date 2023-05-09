@@ -775,11 +775,7 @@ AttributeChecker::visit (AST::LetStmt &)
 {}
 
 void
-AttributeChecker::visit (AST::ExprStmtWithoutBlock &)
-{}
-
-void
-AttributeChecker::visit (AST::ExprStmtWithBlock &)
+AttributeChecker::visit (AST::ExprStmt &)
 {}
 
 // rust-type.h

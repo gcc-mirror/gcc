@@ -262,8 +262,7 @@ private:
   virtual void visit (AST::AltPattern &pattern);
   virtual void visit (AST::EmptyStmt &stmt);
   virtual void visit (AST::LetStmt &stmt);
-  virtual void visit (AST::ExprStmtWithoutBlock &stmt);
-  virtual void visit (AST::ExprStmtWithBlock &stmt);
+  virtual void visit (AST::ExprStmt &stmt);
   virtual void visit (AST::TraitBound &bound);
   virtual void visit (AST::ImplTraitType &type);
   virtual void visit (AST::TraitObjectType &type);

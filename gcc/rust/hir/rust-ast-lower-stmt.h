@@ -31,8 +31,7 @@ class ASTLoweringStmt : public ASTLoweringBase
 public:
   static HIR::Stmt *translate (AST::Stmt *stmt, bool *terminated);
 
-  void visit (AST::ExprStmtWithBlock &stmt) override;
-  void visit (AST::ExprStmtWithoutBlock &stmt) override;
+  void visit (AST::ExprStmt &stmt) override;
   void visit (AST::ConstantItem &constant) override;
   void visit (AST::LetStmt &stmt) override;
   void visit (AST::TupleStruct &struct_decl) override;

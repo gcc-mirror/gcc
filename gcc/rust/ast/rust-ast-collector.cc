@@ -2666,13 +2666,7 @@ TokenCollector::visit (LetStmt &stmt)
 }
 
 void
-TokenCollector::visit (ExprStmtWithoutBlock &stmt)
-{
-  visit (stmt.get_expr ());
-}
-
-void
-TokenCollector::visit (ExprStmtWithBlock &stmt)
+TokenCollector::visit (ExprStmt &stmt)
 {
   visit (stmt.get_expr ());
 }
