@@ -1,3 +1,25 @@
+2023-05-08  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* caf/single.c (_gfortran_caf_register): Fix coding style.
+	* io/async.c (update_pdt, async_io): Likewise.
+	* io/format.c (free_format_data): Likewise.
+	* io/transfer.c (st_read_done_worker, st_write_done_worker): Likewise.
+	* io/unix.c (mem_close): Likewise.
+
+2023-05-08  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* caf/single.c (_gfortran_caf_register): Call free() unconditionally.
+	* io/async.c (update_pdt, async_io): Likewise.
+	* io/format.c (free_format_data): Likewise.
+	* io/transfer.c (st_read_done_worker, st_write_done_worker): Likewise.
+	* io/unix.c (mem_close): Likewise.
+
+2023-05-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/109662
+	* io/list_read.c: Add check for a semicolon after a namelist
+	name in read input. Issue a runtime error message.
+
 2023-05-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/109662

@@ -1,3 +1,11 @@
+2023-05-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106214
+	PR c++/93107
+	* pt.cc (do_auto_deduction): Move up resolve_nondeduced_context
+	calls to happen before do_class_deduction.  Add some
+	error_mark_node tests.
+
 2023-05-07  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/85979

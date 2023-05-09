@@ -1,3 +1,81 @@
+2023-05-08  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/insvti_highpart-1.c: New test case.
+
+2023-05-08  Andrew Pinski  <apinski@marvell.com>
+
+	PR testsuite/109776
+	* gcc.dg/pr81192.c: Fix integer constants for int16 targets.
+
+2023-05-08  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/autovec/partial/single_rgroup-1.h: Change
+	stdint.h to stdint-gcc.h.
+	* gcc.target/riscv/rvv/autovec/template-1.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/riscv_vector.h: New.
+
+2023-05-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/guality/guality.exp: Move 'torture-init' earlier.
+	* gcc.dg/guality/guality.exp: Likewise.
+	* gfortran.dg/guality/guality.exp: Likewise.
+	* lib/c-torture.exp (LTO_TORTURE_OPTIONS): Don't set.
+	* lib/gcc-dg.exp (LTO_TORTURE_OPTIONS): Don't set.
+	* lib/lto.exp (lto_init, lto_finish): Let each 'lto_init'
+	determine the default 'LTO_OPTIONS'.
+	* lib/torture-options.exp (torture-init, torture-finish): Let each
+	'torture-init' determine the 'LTO_TORTURE_OPTIONS'.
+
+2023-05-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/106214
+	PR c++/93107
+	* g++.dg/cpp1z/class-deduction114.C: New test.
+
+2023-05-08  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/abs-2.c: Update tree scan for
+	details change in wording.
+	* gcc.dg/tree-ssa/minmax-17.c: Likewise.
+	* gcc.dg/tree-ssa/pr103771.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-18.c: New test.
+	* gcc.dg/tree-ssa/minmax-19.c: New test.
+
+2023-05-08  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/minmax-17.c: New test.
+
+2023-05-08  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/49959
+	PR tree-optimization/103771
+	* c-c++-common/torture/harden-cond-comp.c: Change testcase
+	slightly to avoid the new phiopt optimization.
+	* gcc.dg/tree-ssa/abs-2.c: New test.
+	* gcc.dg/tree-ssa/pr103771.c: New test.
+
+2023-05-08  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/fixed-vlmax-1.c: Fix typo.
+
+2023-05-08  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/evrp7.c: Update for output change.
+	* gcc.dg/tree-ssa/evrp8.c: Likewise.
+	* gcc.dg/tree-ssa/vrp35.c: Likewise.
+	* gcc.dg/tree-ssa/vrp36.c: Likewise.
+	* gcc.dg/tree-ssa/pr98737-1.c: Update scan-tree-dump-not
+	to check for assignment too instead of just a call.
+	* c-c++-common/goacc/kernels-alias-8.c: Update test
+	for removal of load.
+	* gcc.dg/pr81192.c: Rewrite testcase in gimple based test.
+
+2023-05-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/109662
+	* gfortran.dg/pr109662-a.f90: New test.
+
 2023-05-07  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/85979

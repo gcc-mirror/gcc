@@ -1,3 +1,18 @@
+2023-05-08  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* resolve.cc (resolve_select_type): Fix coding style.
+
+2023-05-08  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* resolve.cc (resolve_select_type): Call free() unconditionally.
+
+2023-05-08  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR fortran/68800
+	* expr.cc (find_array_section): Fix mpz memory leak.
+	* simplify.cc (gfc_simplify_reshape): Fix mpz memory leaks in
+	error paths.
+
 2023-05-05  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/109641

@@ -1,3 +1,25 @@
+2023-05-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* autogen.sh: Remove.
+
+2023-05-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* autogen.sh: For 'aclocal', 'autoreconf', remove '-I .',
+	add '-I ..'.
+	* Makefile.am (ACLOCAL_AMFLAGS): Remove '-I .'.
+	* libm2cor/Makefile.am (ACLOCAL_AMFLAGS): Likewise.
+	* libm2iso/Makefile.am (ACLOCAL_AMFLAGS): Likewise.
+	* libm2log/Makefile.am (ACLOCAL_AMFLAGS): Likewise.
+	* libm2min/Makefile.am (ACLOCAL_AMFLAGS): Likewise.
+	* libm2pim/Makefile.am (ACLOCAL_AMFLAGS): Likewise.
+	* aclocal.m4: Regenerate.
+	* Makefile.in: Likewise.
+	* libm2cor/Makefile.in: Likewise.
+	* libm2iso/Makefile.in: Likewise.
+	* libm2log/Makefile.in: Likewise.
+	* libm2min/Makefile.in: Likewise.
+	* libm2pim/Makefile.in: Likewise.
+
 2023-03-22  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* libm2pim/Makefile.am (M2DEFS): Remove M2LINK.def.

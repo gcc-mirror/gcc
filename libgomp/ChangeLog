@@ -1,3 +1,21 @@
+2023-05-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c++/c++.exp: Use 'lang_include_flags' instead
+	of 'libstdcxx_includes'.
+	* testsuite/libgomp.oacc-c++/c++.exp: Likewise.
+
+2023-05-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* target.c (gomp_target_rev): Instead of 'dev_to_host_cpy',
+	'host_to_dev_cpy', 'token', take a single 'goacc_asyncqueue'.
+	* libgomp.h (gomp_target_rev): Adjust.
+	* libgomp-plugin.c (GOMP_PLUGIN_target_rev): Adjust.
+	* libgomp-plugin.h (GOMP_PLUGIN_target_rev): Adjust.
+	* plugin/plugin-gcn.c (process_reverse_offload): Adjust.
+	* plugin/plugin-nvptx.c (rev_off_dev_to_host_cpy)
+	(rev_off_host_to_dev_cpy): Remove.
+	(GOMP_OFFLOAD_run): Adjust.
+
 2023-05-04  Julian Brown  <julian@codesourcery.com>
 
 	PR fortran/109622
