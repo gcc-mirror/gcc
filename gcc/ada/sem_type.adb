@@ -2229,7 +2229,7 @@ package body Sem_Type is
                 Is_Immediately_Visible (Base_Type (Etype (Right_Opnd (N))))
               and then Is_Potentially_Use_Visible (User_Subp)
             then
-               if It2.Nam = Predef_Subp then
+               if It1.Nam = Predef_Subp then
                   return It1;
                else
                   return It2;
