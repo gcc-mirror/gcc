@@ -14,5 +14,4 @@ int foo ()
   return var.internal1;
 }
 
-/* { dg-final { scan-assembler-times "stp\tq0, q0," 2 } } */
-
+/* { dg-final { scan-assembler-times {stp\tq[0-9]+, q[0-9]+,} 2 } } */

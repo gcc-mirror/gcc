@@ -7,21 +7,21 @@
 /*
 ** callee:
 **	addvl	sp, sp, #-1
-**	str	p4, \[sp\]
-**	ptrue	p4\.b, all
+**	str	(p[4-7]), \[sp\]
+**	ptrue	\1\.b, all
 ** (
-**	ld1w	(z[0-9]+\.s), p4/z, \[x1, #1, mul vl\]
-**	ld1w	(z[0-9]+\.s), p4/z, \[x1\]
-**	st2w	{\2 - \1}, p0, \[x0\]
+**	ld1w	(z[0-9]+\.s), \1/z, \[x1, #1, mul vl\]
+**	ld1w	(z[0-9]+\.s), \1/z, \[x1\]
+**	st2w	{\3 - \2}, p0, \[x0\]
 ** |
-**	ld1w	(z[0-9]+\.s), p4/z, \[x1\]
-**	ld1w	(z[0-9]+\.s), p4/z, \[x1, #1, mul vl\]
-**	st2w	{\3 - \4}, p0, \[x0\]
+**	ld1w	(z[0-9]+\.s), \1/z, \[x1\]
+**	ld1w	(z[0-9]+\.s), \1/z, \[x1, #1, mul vl\]
+**	st2w	{\4 - \5}, p0, \[x0\]
 ** )
 **	st4w	{z0\.s - z3\.s}, p1, \[x0\]
 **	st3w	{z4\.s - z6\.s}, p2, \[x0\]
 **	st1w	z7\.s, p3, \[x0\]
-**	ldr	p4, \[sp\]
+**	ldr	\1, \[sp\]
 **	addvl	sp, sp, #1
 **	ret
 */

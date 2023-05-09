@@ -9,8 +9,8 @@
 /*
 **test:
 **	...
-**	addv	s0, v0.4s
-**	fmov	w0, s0
+**	addv	(s[0-9]+), v[0-9]+.4s
+**	fmov	w0, \1
 **	and	w1, w0, 65535
 **	add	w0, w1, w0, lsr 16
 **	lsr	w0, w0, 1
