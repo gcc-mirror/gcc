@@ -1,16 +1,5 @@
 # This whole file adapted from libgomp.c/c.exp.
 
-if [info exists lang_library_path] then {
-    unset lang_library_path
-    unset lang_link_flags
-}
-if [info exists lang_test_file_found] then {
-    unset lang_test_file_found
-}
-if [info exists lang_include_flags] then {
-    unset lang_include_flags
-}
-
 load_lib libgomp-dg.exp
 load_gcc_lib gcc-dg.exp
 load_gcc_lib torture-options.exp

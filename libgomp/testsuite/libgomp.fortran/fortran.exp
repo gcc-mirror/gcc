@@ -8,12 +8,7 @@ global ALWAYS_CFLAGS
 set shlib_ext [get_shlib_extension]
 set lang_library_path	"../libgfortran/.libs"
 set lang_link_flags	"-lgfortran -foffload=-lgfortran"
-if [info exists lang_include_flags] then {
-    unset lang_include_flags
-}
 set lang_test_file_found 0
-set quadmath_library_path "../libquadmath/.libs"
-
 
 # Initialize dg.
 dg-init
@@ -44,6 +39,7 @@ if { $lang_test_file_found } {
     set tests [lsort [find $srcdir/$subdir *.\[fF\]{,90,95,03,08}]]
 
     if { $blddir != "" } {
+	set quadmath_library_path "../libquadmath/.libs"
 	if { [file exists "${blddir}/${quadmath_library_path}/libquadmath.a"]
 	     || [file exists "${blddir}/${quadmath_library_path}/libquadmath.${shlib_ext}"] } {
 	    lappend ALWAYS_CFLAGS "ldflags=-L${blddir}/${quadmath_library_path}/"
@@ -54,6 +50,7 @@ if { $lang_test_file_found } {
 	} else {
 	    set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}"
 	}
+	unset quadmath_library_path
     } else {
         set ld_library_path "$always_ld_library_path"
         if { [check_no_compiler_messages has_libquadmath executable {
@@ -70,6 +67,14 @@ if { $lang_test_file_found } {
     # typically not the case for C/C++.
     gfortran-dg-runtest $tests "" ""
 }
+
+if { $blddir != "" } {
+    unset lang_source_re
+    unset lang_include_flags
+}
+unset lang_library_path
+unset lang_link_flags
+unset lang_test_file_found
 
 # All done.
 dg-finish
