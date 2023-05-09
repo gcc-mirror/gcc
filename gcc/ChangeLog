@@ -1,3 +1,14 @@
+2023-05-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-05-05  Tobias Burnus  <tobias@codesourcery.com>
+		    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR libgomp/108098
+	* config/nvptx/mkoffload.cc (process): Emit dummy procedure
+	alongside reverse-offload function table to prevent NULL values
+	of the function addresses.
+
 2023-05-07  Andrew Pinski  <apinski@marvell.com>
 
 	Backported from master:
