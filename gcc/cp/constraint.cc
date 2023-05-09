@@ -2687,9 +2687,16 @@ satisfaction_cache
       *slot = entry;
     }
   else
-    /* We shouldn't get here, but if we do, let's just leave 'entry'
-       empty, effectively disabling the cache.  */
-    return;
+    {
+      /* We're evaluating this atom for the first time, and doing so noisily.
+	 This shouldn't happen outside of error recovery situations involving
+	 unstable satisfaction.  Let's just leave 'entry' empty, effectively
+	 disabling the cache, and remove the empty slot.  */
+      gcc_checking_assert (seen_error ());
+      /* Appease hash_table::check_complete_insertion.  */
+      *slot = ggc_alloc<sat_entry> ();
+      sat_cache->clear_slot (slot);
+    }
 }
 
 /* Returns the cached satisfaction result if we have one and we're not
