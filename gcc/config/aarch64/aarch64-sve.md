@@ -7624,7 +7624,7 @@
 (define_insn "*vcond_mask_<mode><vpred>"
   [(set (match_operand:SVE_ALL 0 "register_operand" "=w, w, w, w, ?w, ?&w, ?&w")
 	(unspec:SVE_ALL
-	  [(match_operand:<VPRED> 3 "register_operand" "Upa, Upa, Upa, Upa, Upl, Upl, Upl")
+	  [(match_operand:<VPRED> 3 "register_operand" "Upa, Upa, Upa, Upa, Upl, Upa, Upa")
 	   (match_operand:SVE_ALL 1 "aarch64_sve_reg_or_dup_imm" "w, vss, vss, Ufc, Ufc, vss, Ufc")
 	   (match_operand:SVE_ALL 2 "aarch64_simd_reg_or_zero" "w, 0, Dz, 0, Dz, w, w")]
 	  UNSPEC_SEL))]

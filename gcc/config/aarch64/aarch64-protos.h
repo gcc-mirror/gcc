@@ -1067,4 +1067,6 @@ extern bool aarch64_harden_sls_blr_p (void);
 
 extern void aarch64_output_patchable_area (unsigned int, bool);
 
+extern void aarch64_adjust_reg_alloc_order ();
+
 #endif /* GCC_AARCH64_PROTOS_H */

@@ -64,7 +64,7 @@ TEST_UNIFORM_Z (orr_1_s64_m_tied1, svint64_t,
 		z0 = svorr_m (p0, z0, 1))
 
 /*
-** orr_1_s64_m_untied: { xfail *-*-* }
+** orr_1_s64_m_untied:
 **	mov	(z[0-9]+\.d), #1
 **	movprfx	z0, z1
 **	orr	z0\.d, p0/m, z0\.d, \1

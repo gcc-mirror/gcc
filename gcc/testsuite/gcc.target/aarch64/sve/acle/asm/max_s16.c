@@ -43,7 +43,7 @@ TEST_UNIFORM_ZX (max_w0_s16_m_tied1, svint16_t, int16_t,
 		 z0 = svmax_m (p0, z0, x0))
 
 /*
-** max_w0_s16_m_untied: { xfail *-*-* }
+** max_w0_s16_m_untied:
 **	mov	(z[0-9]+\.h), w0
 **	movprfx	z0, z1
 **	smax	z0\.h, p0/m, z0\.h, \1
@@ -64,7 +64,7 @@ TEST_UNIFORM_Z (max_1_s16_m_tied1, svint16_t,
 		z0 = svmax_m (p0, z0, 1))
 
 /*
-** max_1_s16_m_untied: { xfail *-*-* }
+** max_1_s16_m_untied:
 **	mov	(z[0-9]+\.h), #1
 **	movprfx	z0, z1
 **	smax	z0\.h, p0/m, z0\.h, \1

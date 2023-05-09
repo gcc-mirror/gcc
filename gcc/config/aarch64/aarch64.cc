@@ -27501,6 +27501,44 @@ aarch64_output_load_tp (rtx dest)
   return "";
 }
 
+/* Set up the value of REG_ALLOC_ORDER from scratch.
+
+   It was previously good practice to put call-clobbered registers ahead
+   of call-preserved registers, but that isn't necessary these days.
+   IRA's model of register save/restore costs is much more sophisticated
+   than the model that a simple ordering could provide.  We leave
+   HONOR_REG_ALLOC_ORDER undefined so that we can get the full benefit
+   of IRA's model.
+
+   However, it is still useful to list registers that are members of
+   multiple classes after registers that are members of fewer classes.
+   For example, we have:
+
+   - FP_LO8_REGS: v0-v7
+   - FP_LO_REGS: v0-v15
+   - FP_REGS: v0-v31
+
+   If, as a tie-breaker, we allocate FP_REGS in the order v0-v31,
+   we run the risk of starving other (lower-priority) pseudos that
+   require FP_LO8_REGS or FP_LO_REGS.  Allocating FP_LO_REGS in the
+   order v0-v15 could similarly starve pseudos that require FP_LO8_REGS.
+   Allocating downwards rather than upwards avoids this problem, at least
+   in code that has reasonable register pressure.
+
+   The situation for predicate registers is similar.  */
+
+void
+aarch64_adjust_reg_alloc_order ()
+{
+  for (int i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
+    if (IN_RANGE (i, V0_REGNUM, V31_REGNUM))
+      reg_alloc_order[i] = V31_REGNUM - (i - V0_REGNUM);
+    else if (IN_RANGE (i, P0_REGNUM, P15_REGNUM))
+      reg_alloc_order[i] = P15_REGNUM - (i - P0_REGNUM);
+    else
+      reg_alloc_order[i] = i;
+}
+
 /* Target-specific selftests.  */
 
 #if CHECKING_P

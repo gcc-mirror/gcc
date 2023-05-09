@@ -163,7 +163,7 @@ TEST_UNIFORM_ZX (qadd_w0_u8_m_tied1, svuint8_t, uint8_t,
 		 z0 = svqadd_m (p0, z0, x0))
 
 /*
-** qadd_w0_u8_m_untied: { xfail *-*-* }
+** qadd_w0_u8_m_untied:
 **	mov	(z[0-9]+\.b), w0
 **	movprfx	z0, z1
 **	uqadd	z0\.b, p0/m, z0\.b, \1
@@ -184,7 +184,7 @@ TEST_UNIFORM_Z (qadd_1_u8_m_tied1, svuint8_t,
 		z0 = svqadd_m (p0, z0, 1))
 
 /*
-** qadd_1_u8_m_untied: { xfail *-*-* }
+** qadd_1_u8_m_untied:
 **	mov	(z[0-9]+\.b), #1
 **	movprfx	z0, z1
 **	uqadd	z0\.b, p0/m, z0\.b, \1

@@ -75,7 +75,7 @@ TEST_UNIFORM_Z (nmad_2_f16_m_tied1, svfloat16_t,
 		z0 = svnmad_m (p0, z0, z1, 2))
 
 /*
-** nmad_2_f16_m_untied: { xfail *-*-* }
+** nmad_2_f16_m_untied:
 **	fmov	(z[0-9]+\.h), #2\.0(?:e\+0)?
 **	movprfx	z0, z1
 **	fnmad	z0\.h, p0/m, z2\.h, \1

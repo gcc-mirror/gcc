@@ -187,7 +187,7 @@ TEST_UNIFORM_Z (qadd_1_u32_m_tied1, svuint32_t,
 		z0 = svqadd_m (p0, z0, 1))
 
 /*
-** qadd_1_u32_m_untied: { xfail *-*-* }
+** qadd_1_u32_m_untied:
 **	mov	(z[0-9]+\.s), #1
 **	movprfx	z0, z1
 **	uqadd	z0\.s, p0/m, z0\.s, \1

@@ -64,7 +64,7 @@ TEST_UNIFORM_Z (div_2_s32_m_tied1, svint32_t,
 		z0 = svdiv_m (p0, z0, 2))
 
 /*
-** div_2_s32_m_untied: { xfail *-*-* }
+** div_2_s32_m_untied:
 **	mov	(z[0-9]+\.s), #2
 **	movprfx	z0, z1
 **	sdiv	z0\.s, p0/m, z0\.s, \1

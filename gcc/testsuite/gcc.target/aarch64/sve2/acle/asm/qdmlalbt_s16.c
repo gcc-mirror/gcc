@@ -54,7 +54,7 @@ TEST_DUAL_ZX (qdmlalbt_w0_s16_tied1, svint16_t, svint8_t, int8_t,
 	      z0 = svqdmlalbt (z0, z4, x0))
 
 /*
-** qdmlalbt_w0_s16_untied: { xfail *-*-*}
+** qdmlalbt_w0_s16_untied:
 **	mov	(z[0-9]+\.b), w0
 **	movprfx	z0, z1
 **	sqdmlalbt	z0\.h, z4\.b, \1
@@ -75,7 +75,7 @@ TEST_DUAL_Z (qdmlalbt_11_s16_tied1, svint16_t, svint8_t,
 	     z0 = svqdmlalbt (z0, z4, 11))
 
 /*
-** qdmlalbt_11_s16_untied: { xfail *-*-*}
+** qdmlalbt_11_s16_untied:
 **	mov	(z[0-9]+\.b), #11
 **	movprfx	z0, z1
 **	sqdmlalbt	z0\.h, z4\.b, \1

@@ -75,7 +75,7 @@ TEST_UNIFORM_Z (mls_11_u64_m_tied1, svuint64_t,
 		z0 = svmls_m (p0, z0, z1, 11))
 
 /*
-** mls_11_u64_m_untied: { xfail *-*-* }
+** mls_11_u64_m_untied:
 **	mov	(z[0-9]+\.d), #11
 **	movprfx	z0, z1
 **	mls	z0\.d, p0/m, z2\.d, \1

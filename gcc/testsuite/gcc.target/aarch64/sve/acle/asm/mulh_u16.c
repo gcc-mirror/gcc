@@ -43,7 +43,7 @@ TEST_UNIFORM_ZX (mulh_w0_u16_m_tied1, svuint16_t, uint16_t,
 		 z0 = svmulh_m (p0, z0, x0))
 
 /*
-** mulh_w0_u16_m_untied: { xfail *-*-* }
+** mulh_w0_u16_m_untied:
 **	mov	(z[0-9]+\.h), w0
 **	movprfx	z0, z1
 **	umulh	z0\.h, p0/m, z0\.h, \1
@@ -64,7 +64,7 @@ TEST_UNIFORM_Z (mulh_11_u16_m_tied1, svuint16_t,
 		z0 = svmulh_m (p0, z0, 11))
 
 /*
-** mulh_11_u16_m_untied: { xfail *-*-* }
+** mulh_11_u16_m_untied:
 **	mov	(z[0-9]+\.h), #11
 **	movprfx	z0, z1
 **	umulh	z0\.h, p0/m, z0\.h, \1
