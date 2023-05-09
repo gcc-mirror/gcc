@@ -489,6 +489,19 @@ HIRCompileBase::compile_function_body (tree fndecl,
       // we can only return this if non unit value return type
       if (!fn_return_ty->is_unit ())
 	{
+	  HirId id = function_body.get_mappings ().get_hirid ();
+	  Location lvalue_locus = function_body.get_locus ();
+	  Location rvalue_locus = locus;
+
+	  TyTy::BaseType *expected = fn_return_ty;
+	  TyTy::BaseType *actual = nullptr;
+	  bool ok = ctx->get_tyctx ()->lookup_type (
+	    function_body.expr->get_mappings ().get_hirid (), &actual);
+	  rust_assert (ok);
+
+	  return_value = coercion_site (id, return_value, actual, expected,
+					lvalue_locus, rvalue_locus);
+
 	  tree return_stmt
 	    = ctx->get_backend ()->return_statement (fndecl, return_value,
 						     locus);
