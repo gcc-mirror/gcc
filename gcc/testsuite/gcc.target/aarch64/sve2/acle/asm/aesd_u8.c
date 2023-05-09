@@ -28,13 +28,13 @@ TEST_UNIFORM_Z (aesd_u8_tied2, svuint8_t,
 **	mov	z0\.d, z1\.d
 **	aesd	z0\.b, z0\.b, z2\.b
 ** |
-**	aesd	z1\.b, z0\.b, z2\.b
+**	aesd	z1\.b, z1\.b, z2\.b
 **	mov	z0\.d, z1\.d
 ** |
 **	mov	z0\.d, z2\.d
 **	aesd	z0\.b, z0\.b, z1\.b
 ** |
-**	aesd	z2\.b, z0\.b, z1\.b
+**	aesd	z2\.b, z2\.b, z1\.b
 **	mov	z0\.d, z2\.d
 ** )
 **	ret
