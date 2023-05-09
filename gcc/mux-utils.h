@@ -34,7 +34,7 @@
 // and having a separate tag bit to indicate which alternative is active.
 // However, using this class can have two advantages over a union:
 //
-// - It avoides the need to find somewhere to store the tag bit.
+// - It avoids the need to find somewhere to store the tag bit.
 //
 // - The compiler is aware that B cannot be null, which can make checks
 //   of the form:
