@@ -126,6 +126,16 @@ void debug (gfc_ref *p)
 }
 
 void
+debug (gfc_namespace *ns)
+{
+  FILE *tmp = dumpfile;
+  dumpfile = stderr;
+  show_namespace (ns);
+  fputc ('\n', dumpfile);
+  dumpfile = tmp;
+}
+
+void
 gfc_debug_expr (gfc_expr *e)
 {
   FILE *tmp = dumpfile;
@@ -136,7 +146,6 @@ gfc_debug_expr (gfc_expr *e)
 }
 
 /* Allow for dumping of a piece of code in the debugger.  */
-void gfc_debug_code (gfc_code *c);
 
 void
 gfc_debug_code (gfc_code *c)
@@ -758,12 +767,13 @@ show_expr (gfc_expr *p)
 static void
 show_attr (symbol_attribute *attr, const char * module)
 {
+  fputc ('(', dumpfile);
   if (attr->flavor != FL_UNKNOWN)
     {
       if (attr->flavor == FL_DERIVED && attr->pdt_template)
-	fputs (" (PDT-TEMPLATE", dumpfile);
+	fputs ("PDT-TEMPLATE ", dumpfile);
       else
-    fprintf (dumpfile, "(%s ", gfc_code2string (flavors, attr->flavor));
+	fprintf (dumpfile, "%s ", gfc_code2string (flavors, attr->flavor));
     }
   if (attr->access != ACCESS_UNKNOWN)
     fprintf (dumpfile, "%s ", gfc_code2string (access_types, attr->access));
