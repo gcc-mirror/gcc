@@ -164,10 +164,9 @@ TypeCheckExpr::visit (HIR::ReturnExpr &expr)
 	? TypeCheckExpr::Resolve (expr.get_expr ())
 	: TyTy::TupleType::get_unit_type (expr.get_mappings ().get_hirid ());
 
-  infered = unify_site (expr.get_mappings ().get_hirid (),
-			TyTy::TyWithLocation (fn_return_tyty),
-			TyTy::TyWithLocation (expr_ty, expr_locus),
-			expr.get_locus ());
+  coercion_site (expr.get_mappings ().get_hirid (),
+		 TyTy::TyWithLocation (fn_return_tyty),
+		 TyTy::TyWithLocation (expr_ty, expr_locus), expr.get_locus ());
 
   infered = new TyTy::NeverType (expr.get_mappings ().get_hirid ());
 }
