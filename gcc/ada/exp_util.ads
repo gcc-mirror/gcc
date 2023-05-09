@@ -372,9 +372,9 @@ package Exp_Util is
       Ptr_Decl     : out Node_Id;
       Finalize_Obj : Boolean := True);
    --  Subsidiary to the processing of transient objects in transient scopes,
-   --  if expressions, case expressions, expression_with_action nodes, array
-   --  aggregates, and record aggregates. Obj_Decl denotes the declaration of
-   --  the transient object. Generate the following nodes:
+   --  if expressions, case expressions, and expression_with_action nodes.
+   --  Obj_Decl denotes the declaration of the transient object. Generate the
+   --  following nodes:
    --
    --    * Fin_Call - the call to [Deep_]Finalize which cleans up the transient
    --    object if flag Finalize_Obj is set to True, or finalizes the hook when
