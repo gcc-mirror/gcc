@@ -372,7 +372,7 @@ package Aspects is
       Aspect_Address                    => Expression,
       Aspect_Aggregate                  => Expression,
       Aspect_Alignment                  => Expression,
-      Aspect_Always_Terminates          => Expression,
+      Aspect_Always_Terminates          => Optional_Expression,
       Aspect_Annotate                   => Expression,
       Aspect_Async_Readers              => Optional_Expression,
       Aspect_Async_Writers              => Optional_Expression,
