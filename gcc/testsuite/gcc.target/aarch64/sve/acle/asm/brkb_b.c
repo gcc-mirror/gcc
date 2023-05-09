@@ -27,8 +27,13 @@ TEST_UNIFORM_P (brkb_b_m_tied2,
 
 /*
 ** brkb_b_m_untied:
+** (
 **	mov	p0\.b, p2\.b
 **	brkb	p0\.b, p3/m, p1\.b
+** |
+**	brkb	p2\.b, p3/m, p1\.b
+**	mov	p0\.b, p2\.b
+** )
 **	ret
 */
 TEST_UNIFORM_P (brkb_b_m_untied,

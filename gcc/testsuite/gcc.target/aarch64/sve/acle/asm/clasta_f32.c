@@ -43,8 +43,13 @@ TEST_FOLD_LEFT_D (clasta_d0_f32, float32_t, svfloat32_t,
 
 /*
 ** clasta_d1_f32:
+** (
 **	fmov	s0, s1
 **	clasta	s0, p0, s0, z2\.s
+** |
+**	clasta	s1, p0, s1, z2\.s
+**	fmov	s0, s1
+** )
 **	ret
 */
 TEST_FOLD_LEFT_D (clasta_d1_f32, float32_t, svfloat32_t,
