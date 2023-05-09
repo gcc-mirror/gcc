@@ -8353,7 +8353,8 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
       non_constant_p = true;
     }
 
-  if (!global_ctx.heap_vars.is_empty ())
+  if (!non_constant_p && cxx_dialect >= cxx20
+      && !global_ctx.heap_vars.is_empty ())
     {
       tree heap_var = cp_walk_tree_without_duplicates (&r, find_heap_var_refs,
 						       NULL);
@@ -8384,15 +8385,22 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 
   /* Check that immediate invocation does not return an expression referencing
      any immediate function decls.  */
-  if (is_consteval || in_immediate_context ())
+  if (!non_constant_p && cxx_dialect >= cxx20)
     if (tree immediate_fndecl
 	= cp_walk_tree_without_duplicates (&r, find_immediate_fndecl,
 					   NULL))
     {
       if (!allow_non_constant && !non_constant_p)
-	error_at (cp_expr_loc_or_input_loc (t),
-		  "immediate evaluation returns address of immediate "
-		  "function %qD", immediate_fndecl);
+	{
+	  if (is_consteval)
+	    error_at (cp_expr_loc_or_input_loc (t),
+		      "immediate evaluation returns address of immediate "
+		      "function %qD", immediate_fndecl);
+	  else
+	    error_at (cp_expr_loc_or_input_loc (t),
+		      "constant evaluation returns address of immediate "
+		      "function %qD", immediate_fndecl);
+	}
       r = t;
       non_constant_p = true;
     }
@@ -8795,8 +8803,8 @@ maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant,
     t = TARGET_EXPR_INITIAL (t);
   if (!is_nondependent_static_init_expression (t))
     /* Don't try to evaluate it.  */;
-  else if (CONSTANT_CLASS_P (t) && allow_non_constant)
-    /* No evaluation needed.  */;
+  else if (CONSTANT_CLASS_P (t) && TREE_CODE (t) != PTRMEM_CST)
+    /* No evaluation needed.  PTRMEM_CST needs the immediate fn check.  */;
   else
     {
       /* [basic.start.static] allows constant-initialization of variables with
