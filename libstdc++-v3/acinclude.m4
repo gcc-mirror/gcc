@@ -4314,7 +4314,7 @@ AC_DEFUN([GLIBCXX_CHECK_PTHREAD_MUTEX_CLOCKLOCK], [
       [glibcxx_cv_PTHREAD_MUTEX_CLOCKLOCK=no])
   ])
   if test $glibcxx_cv_PTHREAD_MUTEX_CLOCKLOCK = yes; then
-    AC_DEFINE(_GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK, 1, [Define if pthread_mutex_clocklock is available in <pthread.h>.])
+    AC_DEFINE(_GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK, (_GLIBCXX_TSAN==0), [Define if pthread_mutex_clocklock is available in <pthread.h>.])
   fi
 
   CXXFLAGS="$ac_save_CXXFLAGS"

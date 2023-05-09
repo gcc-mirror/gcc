@@ -21364,7 +21364,7 @@ fi
 $as_echo "$glibcxx_cv_PTHREAD_MUTEX_CLOCKLOCK" >&6; }
   if test $glibcxx_cv_PTHREAD_MUTEX_CLOCKLOCK = yes; then
 
-$as_echo "#define _GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK 1" >>confdefs.h
+$as_echo "#define _GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK (_GLIBCXX_TSAN==0)" >>confdefs.h
 
   fi
 
