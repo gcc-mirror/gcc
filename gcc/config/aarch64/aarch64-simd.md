@@ -5327,48 +5327,13 @@
    [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
 )
 
-(define_insn "aarch64_sqmovun<mode>_insn_le"
-  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
-	(vec_concat:<VNARROWQ2>
-	  (unspec:<VNARROWQ> [(match_operand:VQN 1 "register_operand" "w")]
-			     UNSPEC_SQXTUN)
-	  (match_operand:<VNARROWQ> 2 "aarch64_simd_or_scalar_imm_zero")))]
-  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
-  "sqxtun\\t%<vn2>0<Vmntype>, %<v>1<Vmtype>"
-  [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
-)
-
-(define_insn "aarch64_sqmovun<mode>_insn_be"
-  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
-	(vec_concat:<VNARROWQ2>
-	  (match_operand:<VNARROWQ> 2 "aarch64_simd_or_scalar_imm_zero")
-	  (unspec:<VNARROWQ> [(match_operand:VQN 1 "register_operand" "w")]
-			     UNSPEC_SQXTUN)))]
-  "TARGET_SIMD && BYTES_BIG_ENDIAN"
-  "sqxtun\\t%<vn2>0<Vmntype>, %<v>1<Vmtype>"
-  [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
-)
-
-(define_expand "aarch64_sqmovun<mode>"
-  [(set (match_operand:<VNARROWQ> 0 "register_operand")
-	(unspec:<VNARROWQ> [(match_operand:VQN 1 "register_operand")]
-			   UNSPEC_SQXTUN))]
+(define_insn "aarch64_sqmovun<mode><vczle><vczbe>"
+  [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
+	(unspec:<VNARROWQ> [(match_operand:VQN 1 "register_operand" "w")]
+	  UNSPEC_SQXTUN))]
   "TARGET_SIMD"
-  {
-    rtx tmp = gen_reg_rtx (<VNARROWQ2>mode);
-    if (BYTES_BIG_ENDIAN)
-      emit_insn (gen_aarch64_sqmovun<mode>_insn_be (tmp, operands[1],
-				CONST0_RTX (<VNARROWQ>mode)));
-    else
-      emit_insn (gen_aarch64_sqmovun<mode>_insn_le (tmp, operands[1],
-				CONST0_RTX (<VNARROWQ>mode)));
-
-    /* The intrinsic expects a narrow result, so emit a subreg that will get
-       optimized away as appropriate.  */
-    emit_move_insn (operands[0], lowpart_subreg (<VNARROWQ>mode, tmp,
-						 <VNARROWQ2>mode));
-    DONE;
-  }
+  "sqxtun\\t%<vn2>0<Vmntype>, %<v>1<Vmtype>"
+  [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
 )
 
 (define_insn "aarch64_sqxtun2<mode>_le"

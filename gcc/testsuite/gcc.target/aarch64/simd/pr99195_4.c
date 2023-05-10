@@ -50,6 +50,14 @@ MYOP (uint32x4_t, uint64x2_t, uint32x2_t, OP, u64, u32)	\
 FUNC (movn)
 FUNC (qmovn)
 
+#undef FUNC
+#define FUNC(OP)					\
+MYOP (uint8x16_t, int16x8_t, uint8x8_t, OP, s16, u8)	\
+MYOP (uint16x8_t, int32x4_t, uint16x4_t, OP, s32, u16)	\
+MYOP (uint32x4_t, int64x2_t, uint32x2_t, OP, s64, u32)	\
+
+FUNC (qmovun)
+
 /* { dg-final { scan-assembler-not {\tfmov\t} } }  */
 /* { dg-final { scan-assembler-not {\tmov\t} } }  */
 
