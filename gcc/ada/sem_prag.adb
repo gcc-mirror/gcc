@@ -30974,9 +30974,10 @@ package body Sem_Prag is
          --  All other cases require Part_Of
 
          else
+            Error_Msg_Code := GEC_Required_Part_Of;
             Error_Msg_N
-              ("indicator Part_Of is required in this context "
-               & "(SPARK RM 7.2.6(2))", Item_Id);
+              ("indicator Part_Of is required in this context '[[]']",
+               Item_Id);
             Error_Msg_Name_1 := Chars (Pack_Id);
             Error_Msg_N
               ("\& is declared in the private part of package %", Item_Id);

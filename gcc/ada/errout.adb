@@ -1447,6 +1447,22 @@ package body Errout is
             raise Unrecoverable_Error;
          end if;
       end if;
+
+      if Has_Error_Code then
+         declare
+            Msg : constant String :=
+              "launch ""gnatprove --explain=[]"" for more information";
+         begin
+            Prescan_Message (Msg);
+            Has_Error_Code := False;
+            Error_Msg_Internal
+              (Msg      => Msg,
+               Span     => Span,
+               Opan     => Opan,
+               Msg_Cont => True,
+               Node     => Node);
+         end;
+      end if;
    end Error_Msg_Internal;
 
    -----------------
@@ -4338,21 +4354,29 @@ package body Errout is
 
             when '[' =>
 
-               --  Switch the message from a warning to an error if the flag
-               --  -gnatwE is specified to treat run-time exception warnings
-               --  as errors.
+               --  "[]" (insertion of error code)
 
-               if Is_Warning_Msg
-                 and then Warning_Mode = Treat_Run_Time_Warnings_As_Errors
-               then
-                  Is_Warning_Msg   := False;
-                  Is_Runtime_Raise := True;
-               end if;
+               if P <= Text'Last and then Text (P) = ']' then
+                  P := P + 1;
+                  Set_Msg_Insertion_Code;
 
-               if Is_Warning_Msg then
-                  Set_Msg_Str ("will be raised at run time");
                else
-                  Set_Msg_Str ("would have been raised at run time");
+                  --  Switch the message from a warning to an error if the flag
+                  --  -gnatwE is specified to treat run-time exception warnings
+                  --  as errors.
+
+                  if Is_Warning_Msg
+                    and then Warning_Mode = Treat_Run_Time_Warnings_As_Errors
+                  then
+                     Is_Warning_Msg   := False;
+                     Is_Runtime_Raise := True;
+                  end if;
+
+                  if Is_Warning_Msg then
+                     Set_Msg_Str ("will be raised at run time");
+                  else
+                     Set_Msg_Str ("would have been raised at run time");
+                  end if;
                end if;
 
             --   ']' (may be/might have been raised at run time)
