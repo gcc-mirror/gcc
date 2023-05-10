@@ -78,6 +78,36 @@ _GCC_ARM_ACLE_DATA_FN (revll, bswap64, uint64_t, uint64_t)
 
 #undef _GCC_ARM_ACLE_DATA_FN
 
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__pld (void const volatile *__addr)
+{
+  return __builtin_aarch64_pld (__addr);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__pli (void const volatile *__addr)
+{
+  return __builtin_aarch64_pli (__addr);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__plix (unsigned int __cache, unsigned int __rettn,
+	void const volatile *__addr)
+{
+  return __builtin_aarch64_plix (__cache, __rettn, __addr);
+}
+
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__pldx (unsigned int __access, unsigned int __cache, unsigned int __rettn,
+	void const volatile *__addr)
+{
+  return __builtin_aarch64_pldx (__access, __cache, __rettn, __addr);
+}
+
 __extension__ extern __inline unsigned long
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __revl (unsigned long __value)
