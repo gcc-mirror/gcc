@@ -2147,7 +2147,7 @@ ipa_get_callee_param_type (struct cgraph_edge *e, int i)
         break;
       t = TREE_CHAIN (t);
     }
-  if (t)
+  if (t && t != void_list_node)
     return TREE_VALUE (t);
   if (!e->callee)
     return NULL;
