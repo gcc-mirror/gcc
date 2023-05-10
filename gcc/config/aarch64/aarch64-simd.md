@@ -1743,47 +1743,6 @@
 
 ;; Narrowing operations.
 
-(define_insn "aarch64_xtn<mode>_insn_le"
-  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
-	(vec_concat:<VNARROWQ2>
-	  (truncate:<VNARROWQ> (match_operand:VQN 1 "register_operand" "w"))
-	  (match_operand:<VNARROWQ> 2 "aarch64_simd_or_scalar_imm_zero")))]
-  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
-  "xtn\\t%0.<Vntype>, %1.<Vtype>"
-  [(set_attr "type" "neon_move_narrow_q")]
-)
-
-(define_insn "aarch64_xtn<mode>_insn_be"
-  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
-	(vec_concat:<VNARROWQ2>
-	  (match_operand:<VNARROWQ> 2 "aarch64_simd_or_scalar_imm_zero")
-	  (truncate:<VNARROWQ> (match_operand:VQN 1 "register_operand" "w"))))]
-  "TARGET_SIMD && BYTES_BIG_ENDIAN"
-  "xtn\\t%0.<Vntype>, %1.<Vtype>"
-  [(set_attr "type" "neon_move_narrow_q")]
-)
-
-(define_expand "aarch64_xtn<mode>"
-  [(set (match_operand:<VNARROWQ> 0 "register_operand")
-	(truncate:<VNARROWQ> (match_operand:VQN 1 "register_operand")))]
-  "TARGET_SIMD"
-  {
-    rtx tmp = gen_reg_rtx (<VNARROWQ2>mode);
-    if (BYTES_BIG_ENDIAN)
-      emit_insn (gen_aarch64_xtn<mode>_insn_be (tmp, operands[1],
-				CONST0_RTX (<VNARROWQ>mode)));
-    else
-      emit_insn (gen_aarch64_xtn<mode>_insn_le (tmp, operands[1],
-				CONST0_RTX (<VNARROWQ>mode)));
-
-    /* The intrinsic expects a narrow result, so emit a subreg that will get
-       optimized away as appropriate.  */
-    emit_move_insn (operands[0], lowpart_subreg (<VNARROWQ>mode, tmp,
-						 <VNARROWQ2>mode));
-    DONE;
-  }
-)
-
 (define_insn "aarch64_xtn2<mode>_insn_le"
   [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
 	(vec_concat:<VNARROWQ2>
@@ -5300,7 +5259,7 @@
 
 ;; sqmovn and uqmovn
 
-(define_insn "aarch64_<su>qmovn<mode>"
+(define_insn "aarch64_<su>qmovn<mode><vczle><vczbe>"
   [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
 	(SAT_TRUNC:<VNARROWQ>
 	  (match_operand:SD_HSDI 1 "register_operand" "w")))]
@@ -5309,48 +5268,13 @@
   [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
 )
 
-(define_insn "aarch64_<su>qmovn<mode>_insn_le"
-  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
-	(vec_concat:<VNARROWQ2>
-	  (SAT_TRUNC:<VNARROWQ>
-	    (match_operand:VQN 1 "register_operand" "w"))
-	  (match_operand:<VNARROWQ> 2 "aarch64_simd_or_scalar_imm_zero")))]
-  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
-  "<su>qxtn\\t%<vn2>0<Vmntype>, %<v>1<Vmtype>"
-  [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
-)
-
-(define_insn "aarch64_<su>qmovn<mode>_insn_be"
-  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
-	(vec_concat:<VNARROWQ2>
-	  (match_operand:<VNARROWQ> 2 "aarch64_simd_or_scalar_imm_zero")
-	  (SAT_TRUNC:<VNARROWQ>
-	    (match_operand:VQN 1 "register_operand" "w"))))]
-  "TARGET_SIMD && BYTES_BIG_ENDIAN"
-  "<su>qxtn\\t%<vn2>0<Vmntype>, %<v>1<Vmtype>"
-  [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
-)
-
-(define_expand "aarch64_<su>qmovn<mode>"
-  [(set (match_operand:<VNARROWQ> 0 "register_operand")
+(define_insn "aarch64_<su>qmovn<mode><vczle><vczbe>"
+  [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
 	(SAT_TRUNC:<VNARROWQ>
-	  (match_operand:VQN 1 "register_operand")))]
+	  (match_operand:VQN 1 "register_operand" "w")))]
   "TARGET_SIMD"
-  {
-    rtx tmp = gen_reg_rtx (<VNARROWQ2>mode);
-    if (BYTES_BIG_ENDIAN)
-      emit_insn (gen_aarch64_<su>qmovn<mode>_insn_be (tmp, operands[1],
-				CONST0_RTX (<VNARROWQ>mode)));
-    else
-      emit_insn (gen_aarch64_<su>qmovn<mode>_insn_le (tmp, operands[1],
-				CONST0_RTX (<VNARROWQ>mode)));
-
-    /* The intrinsic expects a narrow result, so emit a subreg that will get
-       optimized away as appropriate.  */
-    emit_move_insn (operands[0], lowpart_subreg (<VNARROWQ>mode, tmp,
-						 <VNARROWQ2>mode));
-    DONE;
-  }
+  "<su>qxtn\\t%<vn2>0<Vmntype>, %<v>1<Vmtype>"
+  [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
 )
 
 (define_insn "aarch64_<su>qxtn2<mode>_le"
@@ -9281,12 +9205,21 @@
 )
 
 ;; Truncate a 128-bit integer vector to a 64-bit vector.
-(define_insn "trunc<mode><Vnarrowq>2"
+(define_insn "trunc<mode><Vnarrowq>2<vczle><vczbe>"
   [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
 	(truncate:<VNARROWQ> (match_operand:VQN 1 "register_operand" "w")))]
   "TARGET_SIMD"
   "xtn\t%0.<Vntype>, %1.<Vtype>"
   [(set_attr "type" "neon_move_narrow_q")]
+)
+
+;; Expander for the intrinsics that only takes one mode unlike the two-mode
+;; trunc optab.
+(define_expand "aarch64_xtn<mode>"
+  [(set (match_operand:<VNARROWQ> 0 "register_operand")
+       (truncate:<VNARROWQ> (match_operand:VQN 1 "register_operand")))]
+  "TARGET_SIMD"
+  {}
 )
 
 (define_insn "aarch64_bfdot<mode>"
