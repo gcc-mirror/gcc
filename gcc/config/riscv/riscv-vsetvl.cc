@@ -618,6 +618,11 @@ static rtx
 gen_vsetvl_pat (enum vsetvl_type insn_type, const vl_vtype_info &info, rtx vl)
 {
   rtx avl = info.get_avl ();
+  /* if optimization == 0 and the instruction is vmv.x.s/vfmv.f.s,
+     set the value of avl to (const_int 0) so that VSETVL PASS will
+     insert vsetvl correctly.*/
+  if (info.has_avl_no_reg ())
+    avl = GEN_INT (0);
   rtx sew = gen_int_mode (info.get_sew (), Pmode);
   rtx vlmul = gen_int_mode (info.get_vlmul (), Pmode);
   rtx ta = gen_int_mode (info.get_ta (), Pmode);
