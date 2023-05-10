@@ -3543,6 +3543,18 @@
    (set_attr "prefix" "orig,orig,maybe_evex")
    (set_attr "mode" "TI")])
 
+(define_expand "<insn>v4qiv4hi2"
+  [(set (match_operand:V4HI 0 "register_operand")
+	(any_extend:V4HI
+	  (match_operand:V4QI 1 "register_operand")))]
+  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+{
+  rtx op1 = force_reg (V4QImode, operands[1]);
+  op1 = lowpart_subreg (V8QImode, op1, V4QImode);
+  emit_insn (gen_sse4_1_<code>v4qiv4hi2 (operands[0], op1));
+  DONE;
+})
+
 (define_insn "sse4_1_<code>v2hiv2si2"
   [(set (match_operand:V2SI 0 "register_operand" "=Yr,*x,v")
 	(any_extend:V2SI
@@ -3557,6 +3569,44 @@
    (set_attr "prefix" "orig,orig,maybe_evex")
    (set_attr "mode" "TI")])
 
+(define_expand "<insn>v2hiv2si2"
+  [(set (match_operand:V2SI 0 "register_operand")
+	(any_extend:V2SI
+	  (match_operand:V2HI 1 "register_operand")))]
+  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+{
+  rtx op1 = force_reg (V2HImode, operands[1]);
+  op1 = lowpart_subreg (V4HImode, op1, V2HImode);
+  emit_insn (gen_sse4_1_<code>v2hiv2si2 (operands[0], op1));
+  DONE;
+})
+
+(define_insn "sse4_1_<code>v2qiv2si2"
+  [(set (match_operand:V2SI 0 "register_operand" "=Yr,*x,v")
+	(any_extend:V2SI
+	  (vec_select:V2QI
+	    (match_operand:V4QI 1 "register_operand" "Yr,*x,v")
+	    (parallel [(const_int 0) (const_int 1)]))))]
+  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+  "%vpmov<extsuffix>bd\t{%1, %0|%0, %1}"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "ssemov")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "orig,orig,maybe_evex")
+   (set_attr "mode" "TI")])
+
+(define_expand "<insn>v2qiv2si2"
+  [(set (match_operand:V2SI 0 "register_operand")
+	(any_extend:V2SI
+	  (match_operand:V2QI 1 "register_operand")))]
+  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+{
+  rtx op1 = force_reg (V2QImode, operands[1]);
+  op1 = lowpart_subreg (V4QImode, op1, V2QImode);
+  emit_insn (gen_sse4_1_<code>v2qiv2si2 (operands[0], op1));
+  DONE;
+})
+
 (define_insn "sse4_1_<code>v2qiv2hi2"
   [(set (match_operand:V2HI 0 "register_operand" "=Yr,*x,Yw")
 	(any_extend:V2HI
@@ -3570,6 +3620,18 @@
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "orig,orig,maybe_evex")
    (set_attr "mode" "TI")])
+
+(define_expand "<insn>v2qiv2hi2"
+  [(set (match_operand:V2HI 0 "register_operand")
+	(any_extend:V2HI
+	  (match_operand:V2QI 1 "register_operand")))]
+  "TARGET_SSE4_1"
+{
+  rtx op1 = force_reg (V2QImode, operands[1]);
+  op1 = lowpart_subreg (V4QImode, op1, V2QImode);
+  emit_insn (gen_sse4_1_<code>v2qiv2hi2 (operands[0], op1));
+  DONE;
+})
 
 ;; Pack/unpack vector modes
 (define_mode_attr mmxpackmode
