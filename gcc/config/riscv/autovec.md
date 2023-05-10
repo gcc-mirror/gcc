@@ -31,8 +31,8 @@
    (match_operand 3 "const_0_operand")]
   "TARGET_VECTOR"
 {
-  riscv_vector::emit_nonvlmax_op (code_for_pred_mov (<MODE>mode), operands[0],
-				  operands[1], operands[2], <VM>mode);
+  riscv_vector::emit_len_op (code_for_pred_mov (<MODE>mode), operands[0],
+			     operands[1], operands[2], <VM>mode);
   DONE;
 })
 
@@ -43,8 +43,8 @@
    (match_operand 3 "const_0_operand")]
   "TARGET_VECTOR"
 {
-  riscv_vector::emit_nonvlmax_op (code_for_pred_mov (<MODE>mode), operands[0],
-				  operands[1], operands[2], <VM>mode);
+  riscv_vector::emit_len_op (code_for_pred_mov (<MODE>mode), operands[0],
+			     operands[1], operands[2], <VM>mode);
   DONE;
 })
 
@@ -106,16 +106,16 @@
     {
       rtx cst;
       gcc_assert (const_vec_duplicate_p(operands[2], &cst));
-      riscv_vector::emit_nonvlmax_binop (code_for_pred_scalar
-					 (<CODE>, <MODE>mode),
-					 operands[0], operands[1], cst,
-					 NULL, <VM>mode,
-					 <VEL>mode);
+      riscv_vector::emit_len_binop (code_for_pred_scalar
+				    (<CODE>, <MODE>mode),
+				    operands[0], operands[1], cst,
+				    NULL, <VM>mode,
+				    <VEL>mode);
     }
   else
-    riscv_vector::emit_nonvlmax_binop (code_for_pred
-				       (<CODE>, <MODE>mode),
-				       operands[0], operands[1], operands[2],
-				       NULL, <VM>mode);
+    riscv_vector::emit_len_binop (code_for_pred
+				  (<CODE>, <MODE>mode),
+				  operands[0], operands[1], operands[2],
+				  NULL, <VM>mode);
   DONE;
 })

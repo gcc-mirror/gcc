@@ -721,8 +721,9 @@
   else
     {
       riscv_vector::emit_vlmax_vsetvl (<V_FRACT:MODE>mode, operands[2]);
-      riscv_vector::emit_vlmax_op (code_for_pred_mov (<V_FRACT:MODE>mode),
-      		operands[0], operands[1], operands[2], <VM>mode);
+      riscv_vector::emit_vlmax_reg_op (code_for_pred_mov (<V_FRACT:MODE>mode),
+				       operands[0], operands[1], operands[2],
+				       <VM>mode);
     }
   DONE;
 })
@@ -741,8 +742,9 @@
   else
     {
       riscv_vector::emit_vlmax_vsetvl (<VB:MODE>mode, operands[2]);
-      riscv_vector::emit_vlmax_op (code_for_pred_mov (<VB:MODE>mode),
-      		operands[0], operands[1], operands[2], <VB:MODE>mode);
+      riscv_vector::emit_vlmax_reg_op (code_for_pred_mov (<VB:MODE>mode),
+				       operands[0], operands[1], operands[2],
+				       <VB:MODE>mode);
     }
   DONE;
 })
@@ -806,7 +808,7 @@
   "TARGET_VECTOR"
   {
     riscv_vector::emit_vlmax_op (code_for_pred_broadcast (<MODE>mode),
-		operands[0], operands[1], <VM>mode);
+				 operands[0], operands[1], <VM>mode);
     DONE;
   }
 )

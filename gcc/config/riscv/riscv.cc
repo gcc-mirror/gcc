@@ -7383,8 +7383,8 @@ vector_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
 	      emitted_vlmax_vsetvl = true;
 	    }
 
-	  riscv_vector::emit_vlmax_op (code_for_pred_mov (mode), target,
-				       CONST0_RTX (mode), vl, mask_mode);
+	  riscv_vector::emit_vlmax_reg_op (code_for_pred_mov (mode), target,
+					   CONST0_RTX (mode), vl, mask_mode);
 
 	  SET_HARD_REG_BIT (zeroed_hardregs, regno);
 	}
