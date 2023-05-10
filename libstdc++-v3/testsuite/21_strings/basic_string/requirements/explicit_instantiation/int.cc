@@ -20,7 +20,7 @@
 
 #include <string>
 
-// { dg-do compile }
+// { dg-do compile { target c++17_down } }
 
 // libstdc++/21770
 template class std::basic_string<int, std::char_traits<int>,

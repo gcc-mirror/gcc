@@ -19,7 +19,7 @@
 
 #include <debug/string>
 
-// { dg-do compile }
+// { dg-do compile { target c++17_down } }
 
 // libstdc++/21770
 namespace debug = __gnu_debug;
