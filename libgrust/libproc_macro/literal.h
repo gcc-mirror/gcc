@@ -26,183 +26,82 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include "ffistring.h"
 
 namespace ProcMacro {
-enum UnsignedTag
-{
-  UNSIGNED_8,
-  UNSIGNED_16,
-  UNSIGNED_32,
-  UNSIGNED_64,
-  UNSIGNED_128
-};
 
-struct Payload128
+enum LitKindTag
 {
-  std::uint64_t low;
-  std::uint64_t high;
-};
-
-union UnsignedPayload
-{
-  std::uint8_t unsigned8;
-  std::uint16_t unsigned16;
-  std::uint32_t unsigned32;
-  std::uint64_t unsigned64;
-  Payload128 unsigned128;
-};
-
-struct Unsigned
-{
-  UnsignedTag tag;
-  UnsignedPayload payload;
-};
-
-enum SignedTag
-{
-  SIGNED_8,
-  SIGNED_16,
-  SIGNED_32,
-  SIGNED_64,
-  SIGNED_128
-};
-
-union SignedPayload
-{
-  std::int8_t signed8;
-  std::int16_t signed16;
-  std::int32_t signed32;
-  std::int64_t signed64;
-};
-
-struct Signed
-{
-  SignedTag tag;
-  SignedPayload payload;
-};
-
-enum LiteralTag
-{
-  STRING,
-  BYTE_STRING,
+  BYTE,
   CHAR,
-  UNSIGNED,
-  SIGNED,
-  USIZE,
-  ISIZE,
-  FLOAT32,
-  FLOAT64
+  INTEGER,
+  FLOAT,
+  STR,
+  STR_RAW,
+  BYTE_STR,
+  BYTE_STR_RAW,
 };
 
-struct StringPayload
+union LitKindPayload
 {
-  unsigned char *data;
-  std::uint64_t len;
+  std::uint8_t str_raw;
+  std::uint8_t byte_str_raw;
 };
 
-struct ByteStringPayload
+struct LitKind
 {
-  std::uint8_t *data;
-  std::uint64_t size;
-};
+  LitKindTag tag;
+  LitKindPayload payload;
 
-struct UnsignedSuffixPayload
-{
-  Unsigned value;
-  bool suffix;
-};
-
-struct SignedSuffixPayload
-{
-  Signed value;
-  bool suffix;
-};
-
-struct UsizePayload
-{
-  std::uint64_t value;
-  bool suffix;
-};
-
-struct IsizePayload
-{
-  std::int64_t value;
-  bool suffix;
-};
-
-struct Float32Payload
-{
-  float value;
-  bool suffix;
-};
-
-struct Float64Payload
-{
-  double value;
-  bool suffix;
-};
-
-union LiteralPayload
-{
-  StringPayload string_payload;
-  ByteStringPayload byte_string_payload;
-  std::uint32_t char_payload;
-  UnsignedSuffixPayload unsigned_payload;
-  SignedSuffixPayload signed_payload;
-  UsizePayload usize_payload;
-  IsizePayload isize_payload;
-  Float32Payload float32_payload;
-  Float64Payload float64_payload;
+private:
+public:
+  static LitKind make_byte ();
+  static LitKind make_char ();
+  static LitKind make_integer ();
+  static LitKind make_float ();
+  static LitKind make_str ();
+  static LitKind make_str_raw (std::uint8_t val);
+  static LitKind make_byte_str ();
+  static LitKind make_byte_str_raw (std::uint8_t val);
 };
 
 struct Literal
 {
-  LiteralTag tag;
-  LiteralPayload payload;
+  LitKind kind;
+  FFIString text;
+  bool has_suffix;
+  FFIString suffix;
+  // TODO: Add span once done in rust interface
 
 public:
   Literal clone () const;
 
-  static Literal make_u8 (std::uint8_t value, bool suffixed = false);
-  static Literal make_u16 (std::uint16_t value, bool suffixed = false);
-  static Literal make_u32 (std::uint32_t value, bool suffixed = false);
-  static Literal make_u64 (std::uint64_t value, bool suffixed = false);
+  static Literal make_literal (const LitKind kind, const std::string &text,
+			       const std::string &suffix = "");
+  static Literal make_u8 (std::uint8_t value, bool suffixed = true);
+  static Literal make_u16 (std::uint16_t value, bool suffixed = true);
+  static Literal make_u32 (std::uint32_t value, bool suffixed = true);
+  static Literal make_u64 (std::uint64_t value, bool suffixed = true);
 
-  static Literal make_i8 (std::int8_t value, bool suffixed = false);
-  static Literal make_i16 (std::int16_t value, bool suffixed = false);
-  static Literal make_i32 (std::int32_t value, bool suffixed = false);
-  static Literal make_i64 (std::int64_t value, bool suffixed = false);
+  static Literal make_i8 (std::int8_t value, bool suffixed = true);
+  static Literal make_i16 (std::int16_t value, bool suffixed = true);
+  static Literal make_i32 (std::int32_t value, bool suffixed = true);
+  static Literal make_i64 (std::int64_t value, bool suffixed = true);
 
   static Literal make_string (const std::string &str);
-  static Literal make_string (const unsigned char *str, std::uint64_t len);
   static Literal make_byte_string (const std::vector<std::uint8_t> &vec);
-  static Literal make_byte_string (const std::uint8_t *bytes,
-				   std::uint64_t len);
 
   static Literal make_f32 (float value, bool suffixed = false);
   static Literal make_f64 (double value, bool suffixed = false);
 
   static Literal make_char (std::uint32_t ch);
-  static Literal make_usize (std::uint64_t value, bool suffixed = false);
-  static Literal make_isize (std::int64_t value, bool suffixed = false);
+  static Literal make_usize (std::uint64_t value, bool suffixed = true);
+  static Literal make_isize (std::int64_t value, bool suffixed = true);
 
   static void drop (Literal *lit);
-
-private:
-  static Literal make_unsigned (UnsignedSuffixPayload p);
-  static Literal make_signed (SignedSuffixPayload p);
 };
 
 extern "C" {
-void
-Literal__drop (Literal *lit);
-
-Literal
-Literal__string (const unsigned char *str, std::uint64_t len);
-
-Literal
-Literal__byte_string (const std::uint8_t *bytes, std::uint64_t len);
-
 bool
 Literal__from_string (const unsigned char *str, std::uint64_t len,
 		      Literal *lit);
