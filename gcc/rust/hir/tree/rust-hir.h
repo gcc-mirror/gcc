@@ -288,10 +288,6 @@ public:
     return std::unique_ptr<Expr> (clone_expr_impl ());
   }
 
-  /* HACK: downcasting without dynamic_cast (if possible) via polymorphism -
-   * overrided in subclasses of ExprWithoutBlock */
-  virtual ExprWithoutBlock *as_expr_without_block () const { return nullptr; }
-
   // TODO: make pure virtual if move out outer attributes to derived classes
   virtual std::string as_string () const;
 
@@ -352,13 +348,6 @@ public:
   std::unique_ptr<ExprWithoutBlock> clone_expr_without_block () const
   {
     return std::unique_ptr<ExprWithoutBlock> (clone_expr_without_block_impl ());
-  }
-
-  /* downcasting hack from expr to use pratt parsing with
-   * parse_expr_without_block */
-  ExprWithoutBlock *as_expr_without_block () const override
-  {
-    return clone_expr_without_block_impl ();
   }
 
   BlockType get_block_expr_type () const final override
