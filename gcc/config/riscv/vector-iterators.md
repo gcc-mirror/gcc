@@ -1409,6 +1409,10 @@
 
 (define_code_iterator any_non_commutative_binop [minus div udiv mod umod])
 
+(define_code_iterator any_int_binop_no_shift
+ [plus minus and ior xor smax umax smin umin mult div udiv mod umod
+])
+
 (define_code_iterator any_sat_int_binop [ss_plus ss_minus us_plus us_minus])
 (define_code_iterator sat_int_plus_binop [ss_plus us_plus])
 (define_code_iterator sat_int_minus_binop [ss_minus us_minus])
