@@ -5236,7 +5236,7 @@
 )
 ;; <su>q<addsub>
 
-(define_insn "aarch64_<su_optab>q<addsub><mode>"
+(define_insn "aarch64_<su_optab>q<addsub><mode><vczle><vczbe>"
   [(set (match_operand:VSDQ_I 0 "register_operand" "=w")
 	(BINQOPS:VSDQ_I (match_operand:VSDQ_I 1 "register_operand" "w")
 			(match_operand:VSDQ_I 2 "register_operand" "w")))]
@@ -5247,7 +5247,7 @@
 
 ;; suqadd and usqadd
 
-(define_insn "aarch64_<sur>qadd<mode>"
+(define_insn "aarch64_<sur>qadd<mode><vczle><vczbe>"
   [(set (match_operand:VSDQ_I 0 "register_operand" "=w")
 	(unspec:VSDQ_I [(match_operand:VSDQ_I 1 "register_operand" "0")
 			(match_operand:VSDQ_I 2 "register_operand" "w")]
