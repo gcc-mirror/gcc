@@ -248,6 +248,111 @@ emit_nonvlmax_op (unsigned icode, rtx dest, rtx src, rtx len,
   emit_pred_op (icode, NULL_RTX, dest, src, len, mask_mode, false);
 }
 
+/* Emit binary operations.  */
+
+static void
+emit_binop (unsigned icode, rtx *ops, machine_mode mask_mode,
+	    machine_mode scalar_mode)
+{
+  insn_expander<9> e;
+  machine_mode mode = GET_MODE (ops[0]);
+  e.add_output_operand (ops[0], mode);
+  e.add_all_one_mask_operand (mask_mode);
+  e.add_vundef_operand (mode);
+  if (VECTOR_MODE_P (GET_MODE (ops[1])))
+    e.add_input_operand (ops[1], GET_MODE (ops[1]));
+  else
+    e.add_input_operand (ops[1], scalar_mode);
+  if (VECTOR_MODE_P (GET_MODE (ops[2])))
+    e.add_input_operand (ops[2], GET_MODE (ops[2]));
+  else
+    e.add_input_operand (ops[2], scalar_mode);
+  rtx vlmax = gen_reg_rtx (Pmode);
+  emit_vlmax_vsetvl (mode, vlmax);
+  e.add_input_operand (vlmax, Pmode);
+  e.add_policy_operand (get_prefer_tail_policy (), get_prefer_mask_policy ());
+  e.add_avl_type_operand (avl_type::VLMAX);
+  e.expand ((enum insn_code) icode, false);
+}
+
+/* Emit vid.v instruction.  */
+
+static void
+emit_index_op (rtx target, machine_mode mask_mode)
+{
+  insn_expander<7> e;
+  machine_mode mode = GET_MODE (target);
+  e.add_output_operand (target, mode);
+  e.add_all_one_mask_operand (mask_mode);
+  e.add_vundef_operand (mode);
+  rtx vlmax = gen_reg_rtx (Pmode);
+  emit_vlmax_vsetvl (mode, vlmax);
+  e.add_input_operand (vlmax, Pmode);
+  e.add_policy_operand (get_prefer_tail_policy (), get_prefer_mask_policy ());
+  e.add_avl_type_operand (avl_type::VLMAX);
+  e.expand (code_for_pred_series (mode), false);
+}
+
+/* Expand series const vector.  */
+
+void
+expand_vec_series (rtx dest, rtx base, rtx step)
+{
+  machine_mode mode = GET_MODE (dest);
+  machine_mode inner_mode = GET_MODE_INNER (mode);
+  machine_mode mask_mode;
+  gcc_assert (get_mask_mode (mode).exists (&mask_mode));
+
+  /* VECT_IV = BASE + I * STEP.  */
+
+  /* Step 1: Generate I = { 0, 1, 2, ... } by vid.v.  */
+  rtx vid = gen_reg_rtx (mode);
+  emit_index_op (vid, mask_mode);
+
+  /* Step 2: Generate I * STEP.
+     - STEP is 1, we don't emit any instructions.
+     - STEP is power of 2, we use vsll.vi/vsll.vx.
+     - STEP is non-power of 2, we use vmul.vx.  */
+  rtx step_adj;
+  if (rtx_equal_p (step, const1_rtx))
+    step_adj = vid;
+  else
+    {
+      step_adj = gen_reg_rtx (mode);
+      if (CONST_INT_P (step) && pow2p_hwi (INTVAL (step)))
+	{
+	  /* Emit logical left shift operation.  */
+	  int shift = exact_log2 (INTVAL (step));
+	  rtx shift_amount = gen_int_mode (shift, Pmode);
+	  rtx ops[3] = {step_adj, vid, shift_amount};
+	  insn_code icode = code_for_pred_scalar (ASHIFT, mode);
+	  emit_binop (icode, ops, mask_mode, Pmode);
+	}
+      else
+	{
+	  rtx ops[3] = {step_adj, vid, step};
+	  insn_code icode = code_for_pred_scalar (MULT, mode);
+	  emit_binop (icode, ops, mask_mode, inner_mode);
+	}
+    }
+
+  /* Step 3: Generate BASE + I * STEP.
+     - BASE is 0, use result of vid.
+     - BASE is not 0, we use vadd.vx/vadd.vi.  */
+  if (rtx_equal_p (base, const0_rtx))
+    {
+      emit_move_insn (dest, step_adj);
+    }
+  else
+    {
+      rtx result = gen_reg_rtx (mode);
+      rtx ops[3] = {result, step_adj, base};
+      insn_code icode = code_for_pred_scalar (PLUS, mode);
+      emit_binop (icode, ops, mask_mode, inner_mode);
+      emit_move_insn (dest, result);
+    }
+}
+
 static void
 expand_const_vector (rtx target, rtx src, machine_mode mask_mode)
 {
@@ -280,12 +385,19 @@ expand_const_vector (rtx target, rtx src, machine_mode mask_mode)
       return;
     }
 
+  /* Support scalable const series vector.  */
+  rtx base, step;
+  if (const_vec_series_p (src, &base, &step))
+    {
+      emit_insn (gen_vec_series (mode, target, base, step));
+      return;
+    }
+
   /* TODO: We only support const duplicate vector for now. More cases
      will be supported when we support auto-vectorization:
 
-       1. series vector.
-       2. multiple elts duplicate vector.
-       3. multiple patterns with multiple elts.  */
+       1. multiple elts duplicate vector.
+       2. multiple patterns with multiple elts.  */
 }
 
 /* Expand a pre-RA RVV data move from SRC to DEST.

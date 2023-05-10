@@ -1266,9 +1266,34 @@ riscv_const_insns (rtx x)
       }
 
     case CONST_DOUBLE:
-    case CONST_VECTOR:
       /* We can use x0 to load floating-point zero.  */
       return x == CONST0_RTX (GET_MODE (x)) ? 1 : 0;
+    case CONST_VECTOR:
+      {
+	/* TODO: This is not accurate, we will need to
+	   adapt the COST of CONST_VECTOR in the future
+	   for the following cases:
+
+	  - 1. const duplicate vector with element value
+	       in range of [-16, 15].
+	  - 2. const duplicate vector with element value
+	       out range of [-16, 15].
+	  - 3. const series vector.
+	  ...etc.  */
+	if (riscv_v_ext_vector_mode_p (GET_MODE (x)))
+	  {
+	    /* const series vector.  */
+	    rtx base, step;
+	    if (const_vec_series_p (x, &base, &step))
+	      {
+		/* This is not accurate, we will need to adapt the COST
+		 * accurately according to BASE && STEP.  */
+		return 1;
+	      }
+	  }
+	/* TODO: We may support more const vector in the future.  */
+	return x == CONST0_RTX (GET_MODE (x)) ? 1 : 0;
+      }
 
     case CONST:
       /* See if we can refer to X directly.  */

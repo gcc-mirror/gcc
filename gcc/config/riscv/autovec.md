@@ -58,3 +58,27 @@
     DONE;
   }
 )
+
+;; =========================================================================
+;; == Vector creation
+;; =========================================================================
+
+;; -------------------------------------------------------------------------
+;; ---- [INT] Linear series
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - vid.v
+;; - vmul.vx
+;; - vadd.vx/vadd.vi
+;; -------------------------------------------------------------------------
+
+(define_expand "@vec_series<mode>"
+  [(match_operand:VI 0 "register_operand")
+   (match_operand:<VEL> 1 "reg_or_int_operand")
+   (match_operand:<VEL> 2 "reg_or_int_operand")]
+  "TARGET_VECTOR"
+  {
+    riscv_vector::expand_vec_series (operands[0], operands[1], operands[2]);
+    DONE;
+  }
+)
