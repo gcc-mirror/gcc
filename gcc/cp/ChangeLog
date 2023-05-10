@@ -1,3 +1,30 @@
+2023-05-09  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-04-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109160
+	* cp-tree.h (do_auto_deduction): Add defaulted tmpl parameter.
+	* pt.cc (convert_template_argument): Pass 'in_decl' as 'tmpl' to
+	do_auto_deduction.
+	(tsubst_decl) <case VAR_/TYPE_DECL>: Pass 'tmpl' instead of 't' as
+	'in_decl' to coerce_template_parms.
+	(unify) <case TEMPLATE_PARM_INDEX>: Pass TPARMS_PRIMARY_TEMPLATE
+	as 'tmpl' to do_auto_deduction.
+	(do_auto_deduction): Document default arguments.  Rename local
+	variable 'tmpl' to 'ctmpl'.  Use 'tmpl' to obtain a full set of
+	template arguments for satisfaction in the adc_unify case.
+
+2023-05-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106740
+	PR c++/105852
+	* decl.cc (duplicate_decls): Change non-templated friend
+	check to an assert.
+	* pt.cc	(tsubst_function_decl): Don't set DECL_TEMPLATE_INFO
+	on non-templated friends.
+	(tsubst_friend_function): Adjust.
+
 2023-05-08  Release Manager
 
 	* GCC 12.3.0 released.

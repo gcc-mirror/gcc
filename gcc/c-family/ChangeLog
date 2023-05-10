@@ -1,3 +1,14 @@
+2023-05-09  Martin Uecker  <uecker@tugraz.at>
+
+	Backported from master:
+	2023-02-18  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/105660
+	* c-attribs.cc (append_access_attr): Use order of arguments when
+	construction string.
+	(append_access_attr_idxs): Rename and make static.
+	* c-warn.cc (warn_parm_array_mismatch): Add assertion.
+
 2023-05-08  Release Manager
 
 	* GCC 12.3.0 released.
