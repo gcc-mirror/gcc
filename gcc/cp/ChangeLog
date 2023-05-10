@@ -1,3 +1,12 @@
+2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109756
+	* cp-gimplify.cc (process_stmt_assume_attribute): Diagnose pack
+	expansion of assume attribute.
+
 2023-05-03  Jason Merrill  <jason@redhat.com>
 
 	Revert:

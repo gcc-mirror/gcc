@@ -1,3 +1,40 @@
+2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109778
+	* wide-int.h (wi::lrotate, wi::rrotate): Call wi::lrshift on
+	wi::zext (x, width) rather than x if width != precision, rather
+	than using wi::zext (right, width) after the shift.
+	* tree-ssa-ccp.cc (bit_value_binop): Call wi::ext on the results
+	of wi::lrotate or wi::rrotate.
+
+2023-05-09  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-04-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/108758
+	* config/rs6000/rs6000-builtins.def
+	(__builtin_vsx_scalar_cmp_exp_qp_eq, __builtin_vsx_scalar_cmp_exp_qp_gt
+	__builtin_vsx_scalar_cmp_exp_qp_lt,
+	__builtin_vsx_scalar_cmp_exp_qp_unordered): Move from stanza ieee128-hw
+	to power9-vector.
+
+2023-05-09  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-04-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/109069
+	* config/rs6000/altivec.md (sldoi_to_mov<mode>): Replace predicate
+	easy_vector_constant with const_vector_each_byte_same, add
+	handlings in preparation for !easy_vector_constant, and update
+	VECTOR_UNIT_ALTIVEC_OR_VSX_P with VECTOR_MEM_ALTIVEC_OR_VSX_P.
+	* config/rs6000/predicates.md (const_vector_each_byte_same): New
+	predicate.
+
 2023-05-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

@@ -1,3 +1,39 @@
+2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109756
+	* g++.dg/cpp23/attr-assume11.C: New test.
+
+2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109778
+	* gcc.dg/lto/pr109778_0.c: New test.
+	* gcc.dg/lto/pr109778_1.c: New file.
+
+2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109778
+	* gcc.c-torture/execute/pr109778.c: New test.
+
+2023-05-09  Kewen Lin  <linkw@linux.ibm.com>
+
+	Backported from master:
+	2023-04-26  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR target/109069
+	* gcc.target/powerpc/pr109069-1.c: New test.
+	* gcc.target/powerpc/pr109069-2-run.c: New test.
+	* gcc.target/powerpc/pr109069-2.c: New test.
+	* gcc.target/powerpc/pr109069-2.h: New test.
+
 2023-05-05  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
