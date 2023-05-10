@@ -1,3 +1,473 @@
+2023-05-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109752
+	* g++.dg/cpp2a/concepts-pr109752.C: New test.
+
+2023-05-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109761
+	* g++.dg/cpp0x/noexcept78.C: New test.
+
+2023-05-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/asm/abd_f16.c: Remove XFAILs.
+	* gcc.target/aarch64/sve/acle/asm/abd_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/abd_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/abd_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/abd_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/abd_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/abd_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/abd_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/abd_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/abd_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/abd_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/add_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/add_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/add_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/add_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/add_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/add_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/add_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/add_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/and_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/and_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/and_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/and_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/and_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/and_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/and_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/and_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/asr_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/asr_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/bic_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/bic_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/bic_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/bic_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/bic_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/bic_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/bic_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/bic_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/div_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/div_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/div_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/div_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/div_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/div_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/div_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/divr_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/divr_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/divr_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/divr_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/divr_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/divr_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/divr_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dot_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dot_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dot_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dot_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/eor_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/eor_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/eor_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/eor_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/eor_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/eor_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/eor_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/eor_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_wide_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_wide_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_wide_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_wide_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_wide_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_wide_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsr_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsr_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mad_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mad_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mad_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mad_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mad_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mad_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mad_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mad_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mad_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mad_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mad_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/max_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/max_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/max_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/max_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/max_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/max_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/max_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/max_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/min_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/min_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/min_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/min_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/min_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/min_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/min_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/min_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mla_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mla_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mla_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mla_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mla_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mla_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mla_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mla_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mla_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mla_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mla_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mls_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mls_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mls_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mls_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mls_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mls_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mls_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mls_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mls_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mls_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mls_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/msb_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/msb_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/msb_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/msb_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/msb_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/msb_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/msb_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/msb_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/msb_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/msb_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/msb_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_f16_notrap.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_f32_notrap.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_f64_notrap.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mul_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mulh_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mulh_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mulh_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mulh_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mulh_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mulh_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mulh_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mulh_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mulx_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mulx_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/mulx_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmad_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmad_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmad_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmla_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmla_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmla_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmls_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmls_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmls_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmsb_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmsb_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/nmsb_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/orr_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/orr_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/orr_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/orr_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/orr_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/orr_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/orr_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/orr_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/scale_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/scale_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/scale_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/sub_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/sub_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/sub_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/sub_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/sub_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/sub_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/sub_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/sub_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/subr_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/subr_f16_notrap.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/subr_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/subr_f32_notrap.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/subr_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/subr_f64_notrap.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/subr_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/subr_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/subr_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/subr_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/subr_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/subr_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/subr_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/subr_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/bcax_s16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/bcax_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/bcax_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/bcax_s8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/bcax_u16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/bcax_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/bcax_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/bcax_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qadd_s16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qadd_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qadd_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qadd_s8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qadd_u16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qadd_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qadd_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qadd_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qdmlalb_s16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qdmlalb_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qdmlalb_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qdmlalbt_s16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qdmlalbt_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qdmlalbt_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qsub_s16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qsub_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qsub_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qsub_s8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qsub_u16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qsub_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qsub_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qsub_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qsubr_s16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qsubr_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qsubr_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qsubr_s8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qsubr_u16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qsubr_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qsubr_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/qsubr_u8.c: Likewise.
+
+2023-05-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve2/acle/aarch64-sve2-acle-asm.exp: Use
+	sve2_flags instead of sve_flags.
+
+2023-05-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109779
+	* gm2/isolib/run/pass/skiplinetest.mod: New test.
+
+2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109756
+	* g++.dg/cpp23/attr-assume11.C: New test.
+
+2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109778
+	* gcc.dg/lto/pr109778_0.c: New test.
+	* gcc.dg/lto/pr109778_1.c: New file.
+
+2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109778
+	* gcc.c-torture/execute/pr109778.c: New test.
+
+2023-05-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/asimd-mul-to-shl-sub.c: Allow any register
+	allocation for temporary results, rather than requiring specific
+	registers.
+	* gcc.target/aarch64/auto-init-padding-1.c: Likewise.
+	* gcc.target/aarch64/auto-init-padding-2.c: Likewise.
+	* gcc.target/aarch64/auto-init-padding-3.c: Likewise.
+	* gcc.target/aarch64/auto-init-padding-4.c: Likewise.
+	* gcc.target/aarch64/auto-init-padding-9.c: Likewise.
+	* gcc.target/aarch64/memset-corner-cases.c: Likewise.
+	* gcc.target/aarch64/memset-q-reg.c: Likewise.
+	* gcc.target/aarch64/simd/vaddlv_1.c: Likewise.
+	* gcc.target/aarch64/sve-neon-modes_1.c: Likewise.
+	* gcc.target/aarch64/sve-neon-modes_3.c: Likewise.
+	* gcc.target/aarch64/sve/load_scalar_offset_1.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_6_256.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_6_512.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_6_1024.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_6_2048.c: Likewise.
+	* gcc.target/aarch64/sve/pr89007-1.c: Likewise.
+	* gcc.target/aarch64/sve/pr89007-2.c: Likewise.
+	* gcc.target/aarch64/sve/store_scalar_offset_1.c: Likewise.
+	* gcc.target/aarch64/vadd_reduc-1.c: Likewise.
+	* gcc.target/aarch64/vadd_reduc-2.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_bf16.c: Allow the temporary
+	predicate register to be any of p4-p7, rather than requiring p4
+	specifically.
+	* gcc.target/aarch64/sve/pcs/args_5_be_f16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_f32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_f64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_s8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_s16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_s32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_s64.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_u8.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_u16.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_u32.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/args_5_be_u64.c: Likewise.
+
+2023-05-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vshl-opt-6.c: Allow any
+	FP/vector register, not just register 0-9.
+	* gcc.target/aarch64/fmul_fcvt_2.c: Likewise.
+	* gcc.target/aarch64/ldp_stp_8.c: Likewise.
+	* gcc.target/aarch64/ldp_stp_17.c: Likewise.
+	* gcc.target/aarch64/ldp_stp_21.c: Likewise.
+	* gcc.target/aarch64/simd/vpaddd_f64.c: Likewise.
+	* gcc.target/aarch64/simd/vpaddd_s64.c: Likewise.
+	* gcc.target/aarch64/simd/vpaddd_u64.c: Likewise.
+	* gcc.target/aarch64/sve/adr_1.c: Likewise.
+	* gcc.target/aarch64/sve/adr_2.c: Likewise.
+	* gcc.target/aarch64/sve/adr_3.c: Likewise.
+	* gcc.target/aarch64/sve/adr_4.c: Likewise.
+	* gcc.target/aarch64/sve/adr_5.c: Likewise.
+	* gcc.target/aarch64/sve/extract_1.c: Likewise.
+	* gcc.target/aarch64/sve/extract_2.c: Likewise.
+	* gcc.target/aarch64/sve/extract_3.c: Likewise.
+	* gcc.target/aarch64/sve/extract_4.c: Likewise.
+	* gcc.target/aarch64/sve/slp_4.c: Likewise.
+	* gcc.target/aarch64/sve/spill_3.c: Likewise.
+	* gcc.target/aarch64/vfp-1.c: Likewise.
+	* gcc.target/aarch64/asm-x-constraint-1.c: Allow s0-s15, not just
+	s0-s7.
+	* gcc.target/aarch64/sve/pcs/return_9.c: Allow z24-z31 as well as
+	z2-z7.
+
+2023-05-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/vcond_1.C: Allow any predicate
+	register for the temporary results, not just p0-p7.
+	* gcc.target/aarch64/sve/acle/asm/dupq_b8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dupq_b16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dupq_b32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dupq_b64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/whilele_5.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/whilele_6.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/whilele_7.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/whilele_9.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/whilele_10.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/whilelt_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/whilelt_2.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/whilelt_3.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/varargs_1.c: Likewise.
+	* gcc.target/aarch64/sve/peel_ind_2.c: Likewise.
+	* gcc.target/aarch64/sve/mask_gather_load_6.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_2.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_3.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_7.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_18.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_19.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_20.c: Likewise.
+
+2023-05-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/asm/dup_s16.c: When using SEL to select
+	between two constant vectors, allow the constant moves to appear in
+	either order.
+	* gcc.target/aarch64/sve/acle/asm/dup_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_u64.c: Likewise.
+
+2023-05-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/bfcvtnq2-untied.c: Allow
+	moves to occur after the intrinsic instruction, rather than requiring
+	them to happen before.
+	* gcc.target/aarch64/advsimd-intrinsics/bfdot-1.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-3-1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/adda_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/adda_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/adda_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/brka_b.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/brkb_b.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/brkn_b.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/clasta_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/clasta_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/clasta_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/clasta_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/clastb_bf16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/clastb_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/clastb_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/clastb_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/pfirst_b.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/pnext_b16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/pnext_b32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/pnext_b64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/pnext_b8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/sli_s16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/sli_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/sli_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/sli_s8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/sli_u16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/sli_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/sli_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/sli_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/sri_s16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/sri_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/sri_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/sri_s8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/sri_u16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/sri_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/sri_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/sri_u8.c: Likewise.
+
+2023-05-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve2/acle/asm/aesd_u8.c: Fix expected register
+	allocation in the case where a move occurs after the intrinsic
+	instruction.
+	* gcc.target/aarch64/sve2/acle/asm/aese_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/aesimc_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/aesmc_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/sm4e_u32.c: Likewise.
+
+2023-05-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/asm/asr_wide_s16.c: Remove XFAILs.
+	* gcc.target/aarch64/sve/acle/asm/asr_wide_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/asr_wide_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/bic_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/bic_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/bic_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/bic_u64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_wide_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_wide_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_wide_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_wide_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_wide_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsl_wide_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsr_wide_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsr_wide_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/lsr_wide_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/scale_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/scale_f64.c: Likewise.
+
+2023-05-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106740
+	* g++.dg/template/friend78.C: New test.
+
 2023-05-08  Roger Sayle  <roger@nextmovesoftware.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 

@@ -1,3 +1,977 @@
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-base.cc (vmaxaq, vminaq): New.
+	* config/arm/arm-mve-builtins-base.def (vmaxaq, vminaq): New.
+	* config/arm/arm-mve-builtins-base.h (vmaxaq, vminaq): New.
+	* config/arm/arm-mve-builtins.cc
+	(function_instance::has_inactive_argument): Handle vmaxaq and
+	vminaq.
+	* config/arm/arm_mve.h (vminaq): Remove.
+	(vmaxaq): Remove.
+	(vminaq_m): Remove.
+	(vmaxaq_m): Remove.
+	(vminaq_s8): Remove.
+	(vmaxaq_s8): Remove.
+	(vminaq_s16): Remove.
+	(vmaxaq_s16): Remove.
+	(vminaq_s32): Remove.
+	(vmaxaq_s32): Remove.
+	(vminaq_m_s8): Remove.
+	(vmaxaq_m_s8): Remove.
+	(vminaq_m_s16): Remove.
+	(vmaxaq_m_s16): Remove.
+	(vminaq_m_s32): Remove.
+	(vmaxaq_m_s32): Remove.
+	(__arm_vminaq_s8): Remove.
+	(__arm_vmaxaq_s8): Remove.
+	(__arm_vminaq_s16): Remove.
+	(__arm_vmaxaq_s16): Remove.
+	(__arm_vminaq_s32): Remove.
+	(__arm_vmaxaq_s32): Remove.
+	(__arm_vminaq_m_s8): Remove.
+	(__arm_vmaxaq_m_s8): Remove.
+	(__arm_vminaq_m_s16): Remove.
+	(__arm_vmaxaq_m_s16): Remove.
+	(__arm_vminaq_m_s32): Remove.
+	(__arm_vmaxaq_m_s32): Remove.
+	(__arm_vminaq): Remove.
+	(__arm_vmaxaq): Remove.
+	(__arm_vminaq_m): Remove.
+	(__arm_vmaxaq_m): Remove.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/iterators.md (MVE_VMAXAVMINAQ, MVE_VMAXAVMINAQ_M):
+	New.
+	(mve_insn): Add vmaxa, vmina.
+	(supf): Add VMAXAQ_S, VMAXAQ_M_S, VMINAQ_S, VMINAQ_M_S.
+	* config/arm/mve.md (mve_vmaxaq_s<mode>, mve_vminaq_s<mode>):
+	Merge into ...
+	(@mve_<mve_insn>q_<supf><mode>): ... this.
+	(mve_vmaxaq_m_s<mode>, mve_vminaq_m_s<mode>): Merge into ...
+	(@mve_<mve_insn>q_m_<supf><mode>): ... this.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-shapes.cc (binary_maxamina): New.
+	* config/arm/arm-mve-builtins-shapes.h (binary_maxamina): New.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-base.cc (vmaxnmaq, vminnmaq): New.
+	* config/arm/arm-mve-builtins-base.def (vmaxnmaq, vminnmaq): New.
+	* config/arm/arm-mve-builtins-base.h (vmaxnmaq, vminnmaq): New.
+	* config/arm/arm-mve-builtins.cc
+	(function_instance::has_inactive_argument): Handle vmaxnmaq and
+	vminnmaq.
+	* config/arm/arm_mve.h (vminnmaq): Remove.
+	(vmaxnmaq): Remove.
+	(vmaxnmaq_m): Remove.
+	(vminnmaq_m): Remove.
+	(vminnmaq_f16): Remove.
+	(vmaxnmaq_f16): Remove.
+	(vminnmaq_f32): Remove.
+	(vmaxnmaq_f32): Remove.
+	(vmaxnmaq_m_f16): Remove.
+	(vminnmaq_m_f16): Remove.
+	(vmaxnmaq_m_f32): Remove.
+	(vminnmaq_m_f32): Remove.
+	(__arm_vminnmaq_f16): Remove.
+	(__arm_vmaxnmaq_f16): Remove.
+	(__arm_vminnmaq_f32): Remove.
+	(__arm_vmaxnmaq_f32): Remove.
+	(__arm_vmaxnmaq_m_f16): Remove.
+	(__arm_vminnmaq_m_f16): Remove.
+	(__arm_vmaxnmaq_m_f32): Remove.
+	(__arm_vminnmaq_m_f32): Remove.
+	(__arm_vminnmaq): Remove.
+	(__arm_vmaxnmaq): Remove.
+	(__arm_vmaxnmaq_m): Remove.
+	(__arm_vminnmaq_m): Remove.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/iterators.md (MVE_VMAXNMA_VMINNMAQ)
+	(MVE_VMAXNMA_VMINNMAQ_M): New.
+	(mve_insn): Add vmaxnma, vminnma.
+	* config/arm/mve.md (mve_vmaxnmaq_f<mode>, mve_vminnmaq_f<mode>):
+	Merge into ...
+	(@mve_<mve_insn>q_f<mode>): ... this.
+	(mve_vmaxnmaq_m_f<mode>, mve_vminnmaq_m_f<mode>): Merge into ...
+	(@mve_<mve_insn>q_m_f<mode>): ... this.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-base.cc (FUNCTION_PRED_P_F): New.
+	(vmaxnmavq, vmaxnmvq, vminnmavq, vminnmvq): New.
+	* config/arm/arm-mve-builtins-base.def (vmaxnmavq, vmaxnmvq)
+	(vminnmavq, vminnmvq): New.
+	* config/arm/arm-mve-builtins-base.h (vmaxnmavq, vmaxnmvq)
+	(vminnmavq, vminnmvq): New.
+	* config/arm/arm_mve.h (vminnmvq): Remove.
+	(vminnmavq): Remove.
+	(vmaxnmvq): Remove.
+	(vmaxnmavq): Remove.
+	(vmaxnmavq_p): Remove.
+	(vmaxnmvq_p): Remove.
+	(vminnmavq_p): Remove.
+	(vminnmvq_p): Remove.
+	(vminnmvq_f16): Remove.
+	(vminnmavq_f16): Remove.
+	(vmaxnmvq_f16): Remove.
+	(vmaxnmavq_f16): Remove.
+	(vminnmvq_f32): Remove.
+	(vminnmavq_f32): Remove.
+	(vmaxnmvq_f32): Remove.
+	(vmaxnmavq_f32): Remove.
+	(vmaxnmavq_p_f16): Remove.
+	(vmaxnmvq_p_f16): Remove.
+	(vminnmavq_p_f16): Remove.
+	(vminnmvq_p_f16): Remove.
+	(vmaxnmavq_p_f32): Remove.
+	(vmaxnmvq_p_f32): Remove.
+	(vminnmavq_p_f32): Remove.
+	(vminnmvq_p_f32): Remove.
+	(__arm_vminnmvq_f16): Remove.
+	(__arm_vminnmavq_f16): Remove.
+	(__arm_vmaxnmvq_f16): Remove.
+	(__arm_vmaxnmavq_f16): Remove.
+	(__arm_vminnmvq_f32): Remove.
+	(__arm_vminnmavq_f32): Remove.
+	(__arm_vmaxnmvq_f32): Remove.
+	(__arm_vmaxnmavq_f32): Remove.
+	(__arm_vmaxnmavq_p_f16): Remove.
+	(__arm_vmaxnmvq_p_f16): Remove.
+	(__arm_vminnmavq_p_f16): Remove.
+	(__arm_vminnmvq_p_f16): Remove.
+	(__arm_vmaxnmavq_p_f32): Remove.
+	(__arm_vmaxnmvq_p_f32): Remove.
+	(__arm_vminnmavq_p_f32): Remove.
+	(__arm_vminnmvq_p_f32): Remove.
+	(__arm_vminnmvq): Remove.
+	(__arm_vminnmavq): Remove.
+	(__arm_vmaxnmvq): Remove.
+	(__arm_vmaxnmavq): Remove.
+	(__arm_vmaxnmavq_p): Remove.
+	(__arm_vmaxnmvq_p): Remove.
+	(__arm_vminnmavq_p): Remove.
+	(__arm_vminnmvq_p): Remove.
+	(__arm_vmaxnmavq_m): Remove.
+	(__arm_vmaxnmvq_m): Remove.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-functions.h
+	(unspec_mve_function_exact_insn_pred_p): Use code_for_mve_q_p_f.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/iterators.md (MVE_VMAXNMxV_MINNMxVQ)
+	(MVE_VMAXNMxV_MINNMxVQ_P): New.
+	(mve_insn): Add vmaxnmav, vmaxnmv, vminnmav, vminnmv.
+	* config/arm/mve.md (mve_vmaxnmavq_f<mode>, mve_vmaxnmvq_f<mode>)
+	(mve_vminnmavq_f<mode>, mve_vminnmvq_f<mode>): Merge into ...
+	(@mve_<mve_insn>q_f<mode>): ... this.
+	(mve_vmaxnmavq_p_f<mode>, mve_vmaxnmvq_p_f<mode>)
+	(mve_vminnmavq_p_f<mode>, mve_vminnmvq_p_f<mode>): Merge into ...
+	(@mve_<mve_insn>q_p_f<mode>): ... this.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-base.cc (vmaxnmq, vminnmq): New.
+	* config/arm/arm-mve-builtins-base.def (vmaxnmq, vminnmq): New.
+	* config/arm/arm-mve-builtins-base.h (vmaxnmq, vminnmq): New.
+	* config/arm/arm_mve.h (vminnmq): Remove.
+	(vmaxnmq): Remove.
+	(vmaxnmq_m): Remove.
+	(vminnmq_m): Remove.
+	(vminnmq_x): Remove.
+	(vmaxnmq_x): Remove.
+	(vminnmq_f16): Remove.
+	(vmaxnmq_f16): Remove.
+	(vminnmq_f32): Remove.
+	(vmaxnmq_f32): Remove.
+	(vmaxnmq_m_f32): Remove.
+	(vmaxnmq_m_f16): Remove.
+	(vminnmq_m_f32): Remove.
+	(vminnmq_m_f16): Remove.
+	(vminnmq_x_f16): Remove.
+	(vminnmq_x_f32): Remove.
+	(vmaxnmq_x_f16): Remove.
+	(vmaxnmq_x_f32): Remove.
+	(__arm_vminnmq_f16): Remove.
+	(__arm_vmaxnmq_f16): Remove.
+	(__arm_vminnmq_f32): Remove.
+	(__arm_vmaxnmq_f32): Remove.
+	(__arm_vmaxnmq_m_f32): Remove.
+	(__arm_vmaxnmq_m_f16): Remove.
+	(__arm_vminnmq_m_f32): Remove.
+	(__arm_vminnmq_m_f16): Remove.
+	(__arm_vminnmq_x_f16): Remove.
+	(__arm_vminnmq_x_f32): Remove.
+	(__arm_vmaxnmq_x_f16): Remove.
+	(__arm_vmaxnmq_x_f32): Remove.
+	(__arm_vminnmq): Remove.
+	(__arm_vmaxnmq): Remove.
+	(__arm_vmaxnmq_m): Remove.
+	(__arm_vminnmq_m): Remove.
+	(__arm_vminnmq_x): Remove.
+	(__arm_vmaxnmq_x): Remove.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/iterators.md (MAX_MIN_F): New.
+	(MVE_FP_M_BINARY): Add VMAXNMQ_M_F, VMINNMQ_M_F.
+	(mve_insn): Add vmaxnm, vminnm.
+	(max_min_f_str): New.
+	* config/arm/mve.md (mve_vmaxnmq_f<mode>, mve_vminnmq_f<mode>):
+	Merge into ...
+	(@mve_<max_min_f_str>q_f<mode>): ... this.
+	(mve_vmaxnmq_m_f<mode>, mve_vminnmq_m_f<mode>): Merge into ...
+	(@mve_<mve_insn>q_m_f<mode>): ... this.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/vec-common.md (smin<mode>3): Use VDQWH iterator.
+	(smax<mode>3): Likewise.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-base.cc (FUNCTION_PRED_P_S_U)
+	(FUNCTION_PRED_P_S): New.
+	(vmaxavq, vminavq, vmaxvq, vminvq): New.
+	* config/arm/arm-mve-builtins-base.def (vmaxavq, vminavq, vmaxvq)
+	(vminvq): New.
+	* config/arm/arm-mve-builtins-base.h (vmaxavq, vminavq, vmaxvq)
+	(vminvq): New.
+	* config/arm/arm_mve.h (vminvq): Remove.
+	(vmaxvq): Remove.
+	(vminvq_p): Remove.
+	(vmaxvq_p): Remove.
+	(vminvq_u8): Remove.
+	(vmaxvq_u8): Remove.
+	(vminvq_s8): Remove.
+	(vmaxvq_s8): Remove.
+	(vminvq_u16): Remove.
+	(vmaxvq_u16): Remove.
+	(vminvq_s16): Remove.
+	(vmaxvq_s16): Remove.
+	(vminvq_u32): Remove.
+	(vmaxvq_u32): Remove.
+	(vminvq_s32): Remove.
+	(vmaxvq_s32): Remove.
+	(vminvq_p_u8): Remove.
+	(vmaxvq_p_u8): Remove.
+	(vminvq_p_s8): Remove.
+	(vmaxvq_p_s8): Remove.
+	(vminvq_p_u16): Remove.
+	(vmaxvq_p_u16): Remove.
+	(vminvq_p_s16): Remove.
+	(vmaxvq_p_s16): Remove.
+	(vminvq_p_u32): Remove.
+	(vmaxvq_p_u32): Remove.
+	(vminvq_p_s32): Remove.
+	(vmaxvq_p_s32): Remove.
+	(__arm_vminvq_u8): Remove.
+	(__arm_vmaxvq_u8): Remove.
+	(__arm_vminvq_s8): Remove.
+	(__arm_vmaxvq_s8): Remove.
+	(__arm_vminvq_u16): Remove.
+	(__arm_vmaxvq_u16): Remove.
+	(__arm_vminvq_s16): Remove.
+	(__arm_vmaxvq_s16): Remove.
+	(__arm_vminvq_u32): Remove.
+	(__arm_vmaxvq_u32): Remove.
+	(__arm_vminvq_s32): Remove.
+	(__arm_vmaxvq_s32): Remove.
+	(__arm_vminvq_p_u8): Remove.
+	(__arm_vmaxvq_p_u8): Remove.
+	(__arm_vminvq_p_s8): Remove.
+	(__arm_vmaxvq_p_s8): Remove.
+	(__arm_vminvq_p_u16): Remove.
+	(__arm_vmaxvq_p_u16): Remove.
+	(__arm_vminvq_p_s16): Remove.
+	(__arm_vmaxvq_p_s16): Remove.
+	(__arm_vminvq_p_u32): Remove.
+	(__arm_vmaxvq_p_u32): Remove.
+	(__arm_vminvq_p_s32): Remove.
+	(__arm_vmaxvq_p_s32): Remove.
+	(__arm_vminvq): Remove.
+	(__arm_vmaxvq): Remove.
+	(__arm_vminvq_p): Remove.
+	(__arm_vmaxvq_p): Remove.
+	(vminavq): Remove.
+	(vmaxavq): Remove.
+	(vminavq_p): Remove.
+	(vmaxavq_p): Remove.
+	(vminavq_s8): Remove.
+	(vmaxavq_s8): Remove.
+	(vminavq_s16): Remove.
+	(vmaxavq_s16): Remove.
+	(vminavq_s32): Remove.
+	(vmaxavq_s32): Remove.
+	(vminavq_p_s8): Remove.
+	(vmaxavq_p_s8): Remove.
+	(vminavq_p_s16): Remove.
+	(vmaxavq_p_s16): Remove.
+	(vminavq_p_s32): Remove.
+	(vmaxavq_p_s32): Remove.
+	(__arm_vminavq_s8): Remove.
+	(__arm_vmaxavq_s8): Remove.
+	(__arm_vminavq_s16): Remove.
+	(__arm_vmaxavq_s16): Remove.
+	(__arm_vminavq_s32): Remove.
+	(__arm_vmaxavq_s32): Remove.
+	(__arm_vminavq_p_s8): Remove.
+	(__arm_vmaxavq_p_s8): Remove.
+	(__arm_vminavq_p_s16): Remove.
+	(__arm_vmaxavq_p_s16): Remove.
+	(__arm_vminavq_p_s32): Remove.
+	(__arm_vmaxavq_p_s32): Remove.
+	(__arm_vminavq): Remove.
+	(__arm_vmaxavq): Remove.
+	(__arm_vminavq_p): Remove.
+	(__arm_vmaxavq_p): Remove.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/iterators.md (MVE_VMAXVQ_VMINVQ, MVE_VMAXVQ_VMINVQ_P): New.
+	(mve_insn): Add vmaxav, vmaxv, vminav, vminv.
+	(supf): Add VMAXAVQ_S, VMAXAVQ_P_S, VMINAVQ_S, VMINAVQ_P_S.
+	* config/arm/mve.md (mve_vmaxavq_s<mode>, mve_vmaxvq_<supf><mode>)
+	(mve_vminavq_s<mode>, mve_vminvq_<supf><mode>): Merge into ...
+	(@mve_<mve_insn>q_<supf><mode>): ... this.
+	(mve_vmaxavq_p_s<mode>, mve_vmaxvq_p_<supf><mode>)
+	(mve_vminavq_p_s<mode>, mve_vminvq_p_<supf><mode>): Merge into ...
+	(@mve_<mve_insn>q_p_<supf><mode>): ... this.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-functions.h (class
+	unspec_mve_function_exact_insn_pred_p): New.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-shapes.cc (binary_maxavminav): New.
+	* config/arm/arm-mve-builtins-shapes.h (binary_maxavminav): New.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-shapes.cc (binary_maxvminv): New.
+	* config/arm/arm-mve-builtins-shapes.h (binary_maxvminv): New.
+
+2023-05-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_adjust_reg_alloc_order):
+	Declare.
+	* config/aarch64/aarch64.h (REG_ALLOC_ORDER): Define.
+	(ADJUST_REG_ALLOC_ORDER): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_adjust_reg_alloc_order): New
+	function.
+	* config/aarch64/aarch64-sve.md (*vcond_mask_<mode><vpred>): Use
+	Upa rather than Upl for unpredicated movprfx alternatives.
+
+2023-05-09  Jeff Law  <jlaw@ventanamicro>
+
+	* config/h8300/testcompare.md: Add peephole2 which uses a memory
+	load to set flags, thus eliminating a compare against zero.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-base.cc (vshllbq, vshlltq): New.
+	* config/arm/arm-mve-builtins-base.def (vshllbq, vshlltq): New.
+	* config/arm/arm-mve-builtins-base.h (vshllbq, vshlltq): New.
+	* config/arm/arm_mve.h (vshlltq): Remove.
+	(vshllbq): Remove.
+	(vshllbq_m): Remove.
+	(vshlltq_m): Remove.
+	(vshllbq_x): Remove.
+	(vshlltq_x): Remove.
+	(vshlltq_n_u8): Remove.
+	(vshllbq_n_u8): Remove.
+	(vshlltq_n_s8): Remove.
+	(vshllbq_n_s8): Remove.
+	(vshlltq_n_u16): Remove.
+	(vshllbq_n_u16): Remove.
+	(vshlltq_n_s16): Remove.
+	(vshllbq_n_s16): Remove.
+	(vshllbq_m_n_s8): Remove.
+	(vshllbq_m_n_s16): Remove.
+	(vshllbq_m_n_u8): Remove.
+	(vshllbq_m_n_u16): Remove.
+	(vshlltq_m_n_s8): Remove.
+	(vshlltq_m_n_s16): Remove.
+	(vshlltq_m_n_u8): Remove.
+	(vshlltq_m_n_u16): Remove.
+	(vshllbq_x_n_s8): Remove.
+	(vshllbq_x_n_s16): Remove.
+	(vshllbq_x_n_u8): Remove.
+	(vshllbq_x_n_u16): Remove.
+	(vshlltq_x_n_s8): Remove.
+	(vshlltq_x_n_s16): Remove.
+	(vshlltq_x_n_u8): Remove.
+	(vshlltq_x_n_u16): Remove.
+	(__arm_vshlltq_n_u8): Remove.
+	(__arm_vshllbq_n_u8): Remove.
+	(__arm_vshlltq_n_s8): Remove.
+	(__arm_vshllbq_n_s8): Remove.
+	(__arm_vshlltq_n_u16): Remove.
+	(__arm_vshllbq_n_u16): Remove.
+	(__arm_vshlltq_n_s16): Remove.
+	(__arm_vshllbq_n_s16): Remove.
+	(__arm_vshllbq_m_n_s8): Remove.
+	(__arm_vshllbq_m_n_s16): Remove.
+	(__arm_vshllbq_m_n_u8): Remove.
+	(__arm_vshllbq_m_n_u16): Remove.
+	(__arm_vshlltq_m_n_s8): Remove.
+	(__arm_vshlltq_m_n_s16): Remove.
+	(__arm_vshlltq_m_n_u8): Remove.
+	(__arm_vshlltq_m_n_u16): Remove.
+	(__arm_vshllbq_x_n_s8): Remove.
+	(__arm_vshllbq_x_n_s16): Remove.
+	(__arm_vshllbq_x_n_u8): Remove.
+	(__arm_vshllbq_x_n_u16): Remove.
+	(__arm_vshlltq_x_n_s8): Remove.
+	(__arm_vshlltq_x_n_s16): Remove.
+	(__arm_vshlltq_x_n_u8): Remove.
+	(__arm_vshlltq_x_n_u16): Remove.
+	(__arm_vshlltq): Remove.
+	(__arm_vshllbq): Remove.
+	(__arm_vshllbq_m): Remove.
+	(__arm_vshlltq_m): Remove.
+	(__arm_vshllbq_x): Remove.
+	(__arm_vshlltq_x): Remove.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/iterators.md (mve_insn): Add vshllb, vshllt.
+	(VSHLLBQ_N, VSHLLTQ_N): Remove.
+	(VSHLLxQ_N): New.
+	(VSHLLBQ_M_N, VSHLLTQ_M_N): Remove.
+	(VSHLLxQ_M_N): New.
+	* config/arm/mve.md (mve_vshllbq_n_<supf><mode>)
+	(mve_vshlltq_n_<supf><mode>): Merge into ...
+	(@mve_<mve_insn>q_n_<supf><mode>): ... this.
+	(mve_vshllbq_m_n_<supf><mode>, mve_vshlltq_m_n_<supf><mode>):
+	Merge into ...
+	(@mve_<mve_insn>q_m_n_<supf><mode>): ... this.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-shapes.cc (binary_widen_n): New.
+	* config/arm/arm-mve-builtins-shapes.h (binary_widen_n): New.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-base.cc (vmovnbq, vmovntq, vqmovnbq)
+	(vqmovntq, vqmovunbq, vqmovuntq): New.
+	* config/arm/arm-mve-builtins-base.def (vmovnbq, vmovntq)
+	(vqmovnbq, vqmovntq, vqmovunbq, vqmovuntq): New.
+	* config/arm/arm-mve-builtins-base.h (vmovnbq, vmovntq, vqmovnbq)
+	(vqmovntq, vqmovunbq, vqmovuntq): New.
+	* config/arm/arm-mve-builtins.cc
+	(function_instance::has_inactive_argument): Handle vmovnbq,
+	vmovntq, vqmovnbq, vqmovntq, vqmovunbq, vqmovuntq.
+	* config/arm/arm_mve.h (vqmovntq): Remove.
+	(vqmovnbq): Remove.
+	(vqmovnbq_m): Remove.
+	(vqmovntq_m): Remove.
+	(vqmovntq_u16): Remove.
+	(vqmovnbq_u16): Remove.
+	(vqmovntq_s16): Remove.
+	(vqmovnbq_s16): Remove.
+	(vqmovntq_u32): Remove.
+	(vqmovnbq_u32): Remove.
+	(vqmovntq_s32): Remove.
+	(vqmovnbq_s32): Remove.
+	(vqmovnbq_m_s16): Remove.
+	(vqmovntq_m_s16): Remove.
+	(vqmovnbq_m_u16): Remove.
+	(vqmovntq_m_u16): Remove.
+	(vqmovnbq_m_s32): Remove.
+	(vqmovntq_m_s32): Remove.
+	(vqmovnbq_m_u32): Remove.
+	(vqmovntq_m_u32): Remove.
+	(__arm_vqmovntq_u16): Remove.
+	(__arm_vqmovnbq_u16): Remove.
+	(__arm_vqmovntq_s16): Remove.
+	(__arm_vqmovnbq_s16): Remove.
+	(__arm_vqmovntq_u32): Remove.
+	(__arm_vqmovnbq_u32): Remove.
+	(__arm_vqmovntq_s32): Remove.
+	(__arm_vqmovnbq_s32): Remove.
+	(__arm_vqmovnbq_m_s16): Remove.
+	(__arm_vqmovntq_m_s16): Remove.
+	(__arm_vqmovnbq_m_u16): Remove.
+	(__arm_vqmovntq_m_u16): Remove.
+	(__arm_vqmovnbq_m_s32): Remove.
+	(__arm_vqmovntq_m_s32): Remove.
+	(__arm_vqmovnbq_m_u32): Remove.
+	(__arm_vqmovntq_m_u32): Remove.
+	(__arm_vqmovntq): Remove.
+	(__arm_vqmovnbq): Remove.
+	(__arm_vqmovnbq_m): Remove.
+	(__arm_vqmovntq_m): Remove.
+	(vmovntq): Remove.
+	(vmovnbq): Remove.
+	(vmovnbq_m): Remove.
+	(vmovntq_m): Remove.
+	(vmovntq_u16): Remove.
+	(vmovnbq_u16): Remove.
+	(vmovntq_s16): Remove.
+	(vmovnbq_s16): Remove.
+	(vmovntq_u32): Remove.
+	(vmovnbq_u32): Remove.
+	(vmovntq_s32): Remove.
+	(vmovnbq_s32): Remove.
+	(vmovnbq_m_s16): Remove.
+	(vmovntq_m_s16): Remove.
+	(vmovnbq_m_u16): Remove.
+	(vmovntq_m_u16): Remove.
+	(vmovnbq_m_s32): Remove.
+	(vmovntq_m_s32): Remove.
+	(vmovnbq_m_u32): Remove.
+	(vmovntq_m_u32): Remove.
+	(__arm_vmovntq_u16): Remove.
+	(__arm_vmovnbq_u16): Remove.
+	(__arm_vmovntq_s16): Remove.
+	(__arm_vmovnbq_s16): Remove.
+	(__arm_vmovntq_u32): Remove.
+	(__arm_vmovnbq_u32): Remove.
+	(__arm_vmovntq_s32): Remove.
+	(__arm_vmovnbq_s32): Remove.
+	(__arm_vmovnbq_m_s16): Remove.
+	(__arm_vmovntq_m_s16): Remove.
+	(__arm_vmovnbq_m_u16): Remove.
+	(__arm_vmovntq_m_u16): Remove.
+	(__arm_vmovnbq_m_s32): Remove.
+	(__arm_vmovntq_m_s32): Remove.
+	(__arm_vmovnbq_m_u32): Remove.
+	(__arm_vmovntq_m_u32): Remove.
+	(__arm_vmovntq): Remove.
+	(__arm_vmovnbq): Remove.
+	(__arm_vmovnbq_m): Remove.
+	(__arm_vmovntq_m): Remove.
+	(vqmovuntq): Remove.
+	(vqmovunbq): Remove.
+	(vqmovunbq_m): Remove.
+	(vqmovuntq_m): Remove.
+	(vqmovuntq_s16): Remove.
+	(vqmovunbq_s16): Remove.
+	(vqmovuntq_s32): Remove.
+	(vqmovunbq_s32): Remove.
+	(vqmovunbq_m_s16): Remove.
+	(vqmovuntq_m_s16): Remove.
+	(vqmovunbq_m_s32): Remove.
+	(vqmovuntq_m_s32): Remove.
+	(__arm_vqmovuntq_s16): Remove.
+	(__arm_vqmovunbq_s16): Remove.
+	(__arm_vqmovuntq_s32): Remove.
+	(__arm_vqmovunbq_s32): Remove.
+	(__arm_vqmovunbq_m_s16): Remove.
+	(__arm_vqmovuntq_m_s16): Remove.
+	(__arm_vqmovunbq_m_s32): Remove.
+	(__arm_vqmovuntq_m_s32): Remove.
+	(__arm_vqmovuntq): Remove.
+	(__arm_vqmovunbq): Remove.
+	(__arm_vqmovunbq_m): Remove.
+	(__arm_vqmovuntq_m): Remove.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/iterators.md (MVE_MOVN, MVE_MOVN_M): New.
+	(mve_insn): Add vmovnb, vmovnt, vqmovnb, vqmovnt, vqmovunb,
+	vqmovunt.
+	(isu): Likewise.
+	(supf): Add VQMOVUNBQ_M_S, VQMOVUNBQ_S, VQMOVUNTQ_M_S,
+	VQMOVUNTQ_S.
+	* config/arm/mve.md (mve_vmovnbq_<supf><mode>)
+	(mve_vmovntq_<supf><mode>, mve_vqmovnbq_<supf><mode>)
+	(mve_vqmovntq_<supf><mode>, mve_vqmovunbq_s<mode>)
+	(mve_vqmovuntq_s<mode>): Merge into ...
+	(@mve_<mve_insn>q_<supf><mode>): ... this.
+	(mve_vmovnbq_m_<supf><mode>, mve_vmovntq_m_<supf><mode>)
+	(mve_vqmovnbq_m_<supf><mode>, mve_vqmovntq_m_<supf><mode>)
+	(mve_vqmovunbq_m_s<mode>, mve_vqmovuntq_m_s<mode>): Merge into ...
+	(@mve_<mve_insn>q_m_<supf><mode>): ... this.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-shapes.cc (binary_move_narrow): New.
+	(binary_move_narrow_unsigned): New.
+	* config/arm/arm-mve-builtins-shapes.h (binary_move_narrow): New.
+	(binary_move_narrow_unsigned): New.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-base.cc (FUNCTION_ONLY_F): New.
+	(vrndaq, vrndmq, vrndnq, vrndpq, vrndq, vrndxq): New.
+	* config/arm/arm-mve-builtins-base.def (vrndaq, vrndmq, vrndnq)
+	(vrndpq, vrndq, vrndxq): New.
+	* config/arm/arm-mve-builtins-base.h (vrndaq, vrndmq, vrndnq)
+	(vrndpq, vrndq, vrndxq): New.
+	* config/arm/arm_mve.h (vrndxq): Remove.
+	(vrndq): Remove.
+	(vrndpq): Remove.
+	(vrndnq): Remove.
+	(vrndmq): Remove.
+	(vrndaq): Remove.
+	(vrndaq_m): Remove.
+	(vrndmq_m): Remove.
+	(vrndnq_m): Remove.
+	(vrndpq_m): Remove.
+	(vrndq_m): Remove.
+	(vrndxq_m): Remove.
+	(vrndq_x): Remove.
+	(vrndnq_x): Remove.
+	(vrndmq_x): Remove.
+	(vrndpq_x): Remove.
+	(vrndaq_x): Remove.
+	(vrndxq_x): Remove.
+	(vrndxq_f16): Remove.
+	(vrndxq_f32): Remove.
+	(vrndq_f16): Remove.
+	(vrndq_f32): Remove.
+	(vrndpq_f16): Remove.
+	(vrndpq_f32): Remove.
+	(vrndnq_f16): Remove.
+	(vrndnq_f32): Remove.
+	(vrndmq_f16): Remove.
+	(vrndmq_f32): Remove.
+	(vrndaq_f16): Remove.
+	(vrndaq_f32): Remove.
+	(vrndaq_m_f16): Remove.
+	(vrndmq_m_f16): Remove.
+	(vrndnq_m_f16): Remove.
+	(vrndpq_m_f16): Remove.
+	(vrndq_m_f16): Remove.
+	(vrndxq_m_f16): Remove.
+	(vrndaq_m_f32): Remove.
+	(vrndmq_m_f32): Remove.
+	(vrndnq_m_f32): Remove.
+	(vrndpq_m_f32): Remove.
+	(vrndq_m_f32): Remove.
+	(vrndxq_m_f32): Remove.
+	(vrndq_x_f16): Remove.
+	(vrndq_x_f32): Remove.
+	(vrndnq_x_f16): Remove.
+	(vrndnq_x_f32): Remove.
+	(vrndmq_x_f16): Remove.
+	(vrndmq_x_f32): Remove.
+	(vrndpq_x_f16): Remove.
+	(vrndpq_x_f32): Remove.
+	(vrndaq_x_f16): Remove.
+	(vrndaq_x_f32): Remove.
+	(vrndxq_x_f16): Remove.
+	(vrndxq_x_f32): Remove.
+	(__arm_vrndxq_f16): Remove.
+	(__arm_vrndxq_f32): Remove.
+	(__arm_vrndq_f16): Remove.
+	(__arm_vrndq_f32): Remove.
+	(__arm_vrndpq_f16): Remove.
+	(__arm_vrndpq_f32): Remove.
+	(__arm_vrndnq_f16): Remove.
+	(__arm_vrndnq_f32): Remove.
+	(__arm_vrndmq_f16): Remove.
+	(__arm_vrndmq_f32): Remove.
+	(__arm_vrndaq_f16): Remove.
+	(__arm_vrndaq_f32): Remove.
+	(__arm_vrndaq_m_f16): Remove.
+	(__arm_vrndmq_m_f16): Remove.
+	(__arm_vrndnq_m_f16): Remove.
+	(__arm_vrndpq_m_f16): Remove.
+	(__arm_vrndq_m_f16): Remove.
+	(__arm_vrndxq_m_f16): Remove.
+	(__arm_vrndaq_m_f32): Remove.
+	(__arm_vrndmq_m_f32): Remove.
+	(__arm_vrndnq_m_f32): Remove.
+	(__arm_vrndpq_m_f32): Remove.
+	(__arm_vrndq_m_f32): Remove.
+	(__arm_vrndxq_m_f32): Remove.
+	(__arm_vrndq_x_f16): Remove.
+	(__arm_vrndq_x_f32): Remove.
+	(__arm_vrndnq_x_f16): Remove.
+	(__arm_vrndnq_x_f32): Remove.
+	(__arm_vrndmq_x_f16): Remove.
+	(__arm_vrndmq_x_f32): Remove.
+	(__arm_vrndpq_x_f16): Remove.
+	(__arm_vrndpq_x_f32): Remove.
+	(__arm_vrndaq_x_f16): Remove.
+	(__arm_vrndaq_x_f32): Remove.
+	(__arm_vrndxq_x_f16): Remove.
+	(__arm_vrndxq_x_f32): Remove.
+	(__arm_vrndxq): Remove.
+	(__arm_vrndq): Remove.
+	(__arm_vrndpq): Remove.
+	(__arm_vrndnq): Remove.
+	(__arm_vrndmq): Remove.
+	(__arm_vrndaq): Remove.
+	(__arm_vrndaq_m): Remove.
+	(__arm_vrndmq_m): Remove.
+	(__arm_vrndnq_m): Remove.
+	(__arm_vrndpq_m): Remove.
+	(__arm_vrndq_m): Remove.
+	(__arm_vrndxq_m): Remove.
+	(__arm_vrndq_x): Remove.
+	(__arm_vrndnq_x): Remove.
+	(__arm_vrndmq_x): Remove.
+	(__arm_vrndpq_x): Remove.
+	(__arm_vrndaq_x): Remove.
+	(__arm_vrndxq_x): Remove.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-base.cc (FUNCTION_WITHOUT_N_NO_U_F): New.
+	(vabsq, vnegq, vclsq, vclzq, vqabsq, vqnegq): New.
+	* config/arm/arm-mve-builtins-base.def (vabsq, vnegq, vclsq)
+	(vclzq, vqabsq, vqnegq): New.
+	* config/arm/arm-mve-builtins-base.h (vabsq, vnegq, vclsq, vclzq)
+	(vqabsq, vqnegq): New.
+	* config/arm/arm_mve.h (vabsq): Remove.
+	(vabsq_m): Remove.
+	(vabsq_x): Remove.
+	(vabsq_f16): Remove.
+	(vabsq_f32): Remove.
+	(vabsq_s8): Remove.
+	(vabsq_s16): Remove.
+	(vabsq_s32): Remove.
+	(vabsq_m_s8): Remove.
+	(vabsq_m_s16): Remove.
+	(vabsq_m_s32): Remove.
+	(vabsq_m_f16): Remove.
+	(vabsq_m_f32): Remove.
+	(vabsq_x_s8): Remove.
+	(vabsq_x_s16): Remove.
+	(vabsq_x_s32): Remove.
+	(vabsq_x_f16): Remove.
+	(vabsq_x_f32): Remove.
+	(__arm_vabsq_s8): Remove.
+	(__arm_vabsq_s16): Remove.
+	(__arm_vabsq_s32): Remove.
+	(__arm_vabsq_m_s8): Remove.
+	(__arm_vabsq_m_s16): Remove.
+	(__arm_vabsq_m_s32): Remove.
+	(__arm_vabsq_x_s8): Remove.
+	(__arm_vabsq_x_s16): Remove.
+	(__arm_vabsq_x_s32): Remove.
+	(__arm_vabsq_f16): Remove.
+	(__arm_vabsq_f32): Remove.
+	(__arm_vabsq_m_f16): Remove.
+	(__arm_vabsq_m_f32): Remove.
+	(__arm_vabsq_x_f16): Remove.
+	(__arm_vabsq_x_f32): Remove.
+	(__arm_vabsq): Remove.
+	(__arm_vabsq_m): Remove.
+	(__arm_vabsq_x): Remove.
+	(vnegq): Remove.
+	(vnegq_m): Remove.
+	(vnegq_x): Remove.
+	(vnegq_f16): Remove.
+	(vnegq_f32): Remove.
+	(vnegq_s8): Remove.
+	(vnegq_s16): Remove.
+	(vnegq_s32): Remove.
+	(vnegq_m_s8): Remove.
+	(vnegq_m_s16): Remove.
+	(vnegq_m_s32): Remove.
+	(vnegq_m_f16): Remove.
+	(vnegq_m_f32): Remove.
+	(vnegq_x_s8): Remove.
+	(vnegq_x_s16): Remove.
+	(vnegq_x_s32): Remove.
+	(vnegq_x_f16): Remove.
+	(vnegq_x_f32): Remove.
+	(__arm_vnegq_s8): Remove.
+	(__arm_vnegq_s16): Remove.
+	(__arm_vnegq_s32): Remove.
+	(__arm_vnegq_m_s8): Remove.
+	(__arm_vnegq_m_s16): Remove.
+	(__arm_vnegq_m_s32): Remove.
+	(__arm_vnegq_x_s8): Remove.
+	(__arm_vnegq_x_s16): Remove.
+	(__arm_vnegq_x_s32): Remove.
+	(__arm_vnegq_f16): Remove.
+	(__arm_vnegq_f32): Remove.
+	(__arm_vnegq_m_f16): Remove.
+	(__arm_vnegq_m_f32): Remove.
+	(__arm_vnegq_x_f16): Remove.
+	(__arm_vnegq_x_f32): Remove.
+	(__arm_vnegq): Remove.
+	(__arm_vnegq_m): Remove.
+	(__arm_vnegq_x): Remove.
+	(vclsq): Remove.
+	(vclsq_m): Remove.
+	(vclsq_x): Remove.
+	(vclsq_s8): Remove.
+	(vclsq_s16): Remove.
+	(vclsq_s32): Remove.
+	(vclsq_m_s8): Remove.
+	(vclsq_m_s16): Remove.
+	(vclsq_m_s32): Remove.
+	(vclsq_x_s8): Remove.
+	(vclsq_x_s16): Remove.
+	(vclsq_x_s32): Remove.
+	(__arm_vclsq_s8): Remove.
+	(__arm_vclsq_s16): Remove.
+	(__arm_vclsq_s32): Remove.
+	(__arm_vclsq_m_s8): Remove.
+	(__arm_vclsq_m_s16): Remove.
+	(__arm_vclsq_m_s32): Remove.
+	(__arm_vclsq_x_s8): Remove.
+	(__arm_vclsq_x_s16): Remove.
+	(__arm_vclsq_x_s32): Remove.
+	(__arm_vclsq): Remove.
+	(__arm_vclsq_m): Remove.
+	(__arm_vclsq_x): Remove.
+	(vclzq): Remove.
+	(vclzq_m): Remove.
+	(vclzq_x): Remove.
+	(vclzq_s8): Remove.
+	(vclzq_s16): Remove.
+	(vclzq_s32): Remove.
+	(vclzq_u8): Remove.
+	(vclzq_u16): Remove.
+	(vclzq_u32): Remove.
+	(vclzq_m_u8): Remove.
+	(vclzq_m_s8): Remove.
+	(vclzq_m_u16): Remove.
+	(vclzq_m_s16): Remove.
+	(vclzq_m_u32): Remove.
+	(vclzq_m_s32): Remove.
+	(vclzq_x_s8): Remove.
+	(vclzq_x_s16): Remove.
+	(vclzq_x_s32): Remove.
+	(vclzq_x_u8): Remove.
+	(vclzq_x_u16): Remove.
+	(vclzq_x_u32): Remove.
+	(__arm_vclzq_s8): Remove.
+	(__arm_vclzq_s16): Remove.
+	(__arm_vclzq_s32): Remove.
+	(__arm_vclzq_u8): Remove.
+	(__arm_vclzq_u16): Remove.
+	(__arm_vclzq_u32): Remove.
+	(__arm_vclzq_m_u8): Remove.
+	(__arm_vclzq_m_s8): Remove.
+	(__arm_vclzq_m_u16): Remove.
+	(__arm_vclzq_m_s16): Remove.
+	(__arm_vclzq_m_u32): Remove.
+	(__arm_vclzq_m_s32): Remove.
+	(__arm_vclzq_x_s8): Remove.
+	(__arm_vclzq_x_s16): Remove.
+	(__arm_vclzq_x_s32): Remove.
+	(__arm_vclzq_x_u8): Remove.
+	(__arm_vclzq_x_u16): Remove.
+	(__arm_vclzq_x_u32): Remove.
+	(__arm_vclzq): Remove.
+	(__arm_vclzq_m): Remove.
+	(__arm_vclzq_x): Remove.
+	(vqabsq): Remove.
+	(vqnegq): Remove.
+	(vqnegq_m): Remove.
+	(vqabsq_m): Remove.
+	(vqabsq_s8): Remove.
+	(vqabsq_s16): Remove.
+	(vqabsq_s32): Remove.
+	(vqnegq_s8): Remove.
+	(vqnegq_s16): Remove.
+	(vqnegq_s32): Remove.
+	(vqnegq_m_s8): Remove.
+	(vqabsq_m_s8): Remove.
+	(vqnegq_m_s16): Remove.
+	(vqabsq_m_s16): Remove.
+	(vqnegq_m_s32): Remove.
+	(vqabsq_m_s32): Remove.
+	(__arm_vqabsq_s8): Remove.
+	(__arm_vqabsq_s16): Remove.
+	(__arm_vqabsq_s32): Remove.
+	(__arm_vqnegq_s8): Remove.
+	(__arm_vqnegq_s16): Remove.
+	(__arm_vqnegq_s32): Remove.
+	(__arm_vqnegq_m_s8): Remove.
+	(__arm_vqabsq_m_s8): Remove.
+	(__arm_vqnegq_m_s16): Remove.
+	(__arm_vqabsq_m_s16): Remove.
+	(__arm_vqnegq_m_s32): Remove.
+	(__arm_vqabsq_m_s32): Remove.
+	(__arm_vqabsq): Remove.
+	(__arm_vqnegq): Remove.
+	(__arm_vqnegq_m): Remove.
+	(__arm_vqabsq_m): Remove.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/iterators.md (MVE_INT_M_UNARY, MVE_INT_UNARY)
+	(MVE_FP_UNARY, MVE_FP_M_UNARY): New.
+	(mve_insn): Add vabs, vcls, vclz, vneg, vqabs, vqneg, vrnda,
+	vrndm, vrndn, vrndp, vrnd, vrndx.
+	(isu): Add VABSQ_M_S, VCLSQ_M_S, VCLZQ_M_S, VCLZQ_M_U, VNEGQ_M_S,
+	VQABSQ_M_S, VQNEGQ_M_S.
+	(mve_mnemo): New.
+	* config/arm/mve.md (mve_vrndq_m_f<mode>, mve_vrndxq_f<mode>)
+	(mve_vrndq_f<mode>, mve_vrndpq_f<mode>, mve_vrndnq_f<mode>)
+	(mve_vrndmq_f<mode>, mve_vrndaq_f<mode>): Merge into ...
+	(@mve_<mve_insn>q_f<mode>): ... this.
+	(mve_vnegq_f<mode>, mve_vabsq_f<mode>): Merge into ...
+	(mve_v<absneg_str>q_f<mode>): ... this.
+	(mve_vnegq_s<mode>, mve_vabsq_s<mode>): Merge into ...
+	(mve_v<absneg_str>q_s<mode>): ... this.
+	(mve_vclsq_s<mode>, mve_vqnegq_s<mode>, mve_vqabsq_s<mode>): Merge into ...
+	(@mve_<mve_insn>q_<supf><mode>): ... this.
+	(mve_vabsq_m_s<mode>, mve_vclsq_m_s<mode>)
+	(mve_vclzq_m_<supf><mode>, mve_vnegq_m_s<mode>)
+	(mve_vqabsq_m_s<mode>, mve_vqnegq_m_s<mode>): Merge into ...
+	(@mve_<mve_insn>q_m_<supf><mode>): ... this.
+	(mve_vabsq_m_f<mode>, mve_vnegq_m_f<mode>, mve_vrndaq_m_f<mode>)
+	(mve_vrndmq_m_f<mode>, mve_vrndnq_m_f<mode>, mve_vrndpq_m_f<mode>)
+	(mve_vrndxq_m_f<mode>): Merge into ...
+	(@mve_<mve_insn>q_m_f<mode>): ... this.
+
+2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* config/arm/arm-mve-builtins-shapes.cc (unary): New.
+	* config/arm/arm-mve-builtins-shapes.h (unary): New.
+
+2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* mux-utils.h: Fix comment typo, avoides -> avoids.
+
+2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109778
+	* wide-int.h (wi::lrotate, wi::rrotate): Call wi::lrshift on
+	wi::zext (x, width) rather than x if width != precision, rather
+	than using wi::zext (right, width) after the shift.
+	* tree-ssa-ccp.cc (bit_value_binop): Call wi::ext on the results
+	of wi::lrotate or wi::rrotate.
+
+2023-05-09  Alexander Monakov  <amonakov@ispras.ru>
+
+	* genmatch.cc (get_out_file): Make static and rename to ...
+	(choose_output): ... this. Reimplement. Update all uses ...
+	(decision_tree::gen): ... here and ...
+	(main): ... here.
+
+2023-05-09  Alexander Monakov  <amonakov@ispras.ru>
+
+	* genmatch.cc (showUsage): Reimplement as ...
+	(usage): ...this.  Adjust all uses.
+	(main): Print usage when no arguments.  Add missing 'return 1'.
+
+2023-05-09  Alexander Monakov  <amonakov@ispras.ru>
+
+	* genmatch.cc (header_file): Make static.
+	(emit_func): Rename to...
+	(fp_decl): ... this.  Adjust all uses.
+	(fp_decl_done): New function.  Use it...
+	(decision_tree::gen): ... here and...
+	(write_predicate): ... here.
+	(main): Adjust.
+
+2023-05-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* ira-conflicts.cc (can_use_same_reg_p): Skip over non-matching
+	earlyclobbers.
+
 2023-05-08  Roger Sayle  <roger@nextmovesoftware.com>
 	    Uros Bizjak  <ubizjak@gmail.com>
 

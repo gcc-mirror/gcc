@@ -1,3 +1,24 @@
+2023-05-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109752
+	* constraint.cc (satisfaction_cache::satisfaction_cache): In the
+	unexpected case of evaluating an atom for the first time noisily,
+	remove the cache slot that we inserted.
+
+2023-05-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109761
+	* parser.cc (cp_parser_class_specifier): Don't pass a class
+	context to noexcept_override_late_checks.
+	(noexcept_override_late_checks): Remove 'type' parameter
+	and use DECL_CONTEXT of 'fndecl' instead.
+
+2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109756
+	* cp-gimplify.cc (process_stmt_assume_attribute): Diagnose pack
+	expansion of assume attribute.
+
 2023-05-08  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/106214

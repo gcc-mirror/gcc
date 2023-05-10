@@ -1,3 +1,20 @@
+2023-05-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109779
+	* gm2-libs-iso/RTgen.mod (doLook): Remove old.
+	Remove re-assignment of result.
+	* gm2-libs-iso/TextIO.mod (CanRead): Rename into ...
+	(CharAvailable): ... this.
+	(DumpState): New procedure.
+	(SetResult): Rename as SetNul.
+	(WasGoodChar): Rename into ...
+	(EofOrEoln): ... this.
+	(SkipLine): Skip over the newline.
+	(ReadString): Flip THEN ELSE statements after testing for
+	EofOrEoln.
+	(ReadRestLine): Flip THEN ELSE statements after testing for
+	EofOrEoln.
+
 2023-05-04  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109729

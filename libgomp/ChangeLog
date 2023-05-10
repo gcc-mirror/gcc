@@ -1,3 +1,28 @@
+2023-05-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c++/c++.exp: Don't set 'lang_test_file'.
+	* testsuite/libgomp.fortran/fortran.exp: Likewise.
+	* testsuite/libgomp.oacc-c++/c++.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+	* testsuite/libgomp.c/c.exp: Unset 'lang_test_file_found' instead of
+	'lang_test_file'.
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.graphite/graphite.exp: Likewise.
+	* testsuite/lib/libgomp.exp (libgomp_target_compile): Look for
+	'lang_test_file_found' instead of 'lang_test_file'.
+
+2023-05-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp (libgomp_init): Only use 'blddir' if
+	set.
+	* testsuite/libgomp.c++/c++.exp: Likewise.
+	* testsuite/libgomp.oacc-c++/c++.exp: Likewise.
+
+2023-05-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c++/c++.exp (blddir): Don't set.
+	* testsuite/libgomp.oacc-c++/c++.exp (blddir): Likewise.
+
 2023-05-08  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.c++/c++.exp: Use 'lang_include_flags' instead
