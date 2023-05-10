@@ -1,3 +1,4 @@
+pub mod ffistring;
 pub mod group;
 pub mod ident;
 pub mod literal;
