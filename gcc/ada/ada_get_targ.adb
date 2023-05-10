@@ -209,15 +209,6 @@ package body Get_Targ is
    end Get_Double_Scalar_Alignment;
 
    -----------------------------
-   -- Get_Max_Unaligned_Field --
-   -----------------------------
-
-   function Get_Max_Unaligned_Field return Pos is
-   begin
-      return 64;  -- Can be different on some targets
-   end Get_Max_Unaligned_Field;
-
-   -----------------------------
    -- Register_Back_End_Types --
    -----------------------------
 

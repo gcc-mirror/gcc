@@ -185,10 +185,6 @@ package Ttypes is
                                   Set_Targ.System_Allocator_Alignment;
    --  The alignment in storage units of addresses returned by malloc
 
-   Max_Unaligned_Field : constant Pos := Set_Targ.Max_Unaligned_Field;
-   --  The maximum supported size in bits for a field that is not aligned
-   --  on a storage unit boundary.
-
    Bytes_Big_Endian : Boolean := Set_Targ.Bytes_BE /= 0;
    --  Important note: for Ada purposes, the important setting is the bytes
    --  endianness (Bytes_Big_Endian), not the bits value (Bits_Big_Endian).
