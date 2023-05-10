@@ -276,6 +276,7 @@ private:
   template <typename EndTokenPred>
   std::vector<AST::Lifetime> parse_lifetime_bounds (EndTokenPred is_end_token);
   AST::Lifetime parse_lifetime ();
+  AST::Lifetime lifetime_from_token (const_TokenPtr tok);
   std::unique_ptr<AST::ExternalTypeItem>
   parse_external_type_item (AST::Visibility vis, AST::AttrVec outer_attrs);
   std::unique_ptr<AST::TypeAlias> parse_type_alias (AST::Visibility vis,
@@ -531,13 +532,6 @@ private:
     AST::AttrVec outer_attrs,
     ParseRestrictions restrictions = ParseRestrictions ());
 
-  // Expression-related (non-Pratt parsed)
-  std::unique_ptr<AST::ExprWithBlock>
-  parse_expr_with_block (AST::AttrVec outer_attrs);
-  std::unique_ptr<AST::ExprWithoutBlock>
-  parse_expr_without_block (AST::AttrVec outer_attrs = AST::AttrVec (),
-			    ParseRestrictions restrictions
-			    = ParseRestrictions ());
   // When given a pratt_parsed_loc, use it as the location of the
   // first token parsed in the expression (the parsing of that first
   // token should be skipped).
@@ -569,8 +563,9 @@ private:
   std::vector<std::unique_ptr<AST::Pattern> >
   parse_match_arm_patterns (TokenId end_token_id);
   std::unique_ptr<AST::BaseLoopExpr>
-  parse_labelled_loop_expr (AST::AttrVec outer_attrs = AST::AttrVec ());
-  AST::LoopLabel parse_loop_label ();
+  parse_labelled_loop_expr (const_TokenPtr tok,
+			    AST::AttrVec outer_attrs = AST::AttrVec ());
+  AST::LoopLabel parse_loop_label (const_TokenPtr tok);
   std::unique_ptr<AST::AsyncBlockExpr>
   parse_async_block_expr (AST::AttrVec outer_attrs = AST::AttrVec ());
   std::unique_ptr<AST::GroupedExpr> parse_grouped_expr (AST::AttrVec outer_attrs
@@ -637,14 +632,7 @@ private:
   std::unique_ptr<AST::ExprStmt> parse_expr_stmt (AST::AttrVec outer_attrs,
 						  ParseRestrictions restrictions
 						  = ParseRestrictions ());
-  std::unique_ptr<AST::ExprStmt>
-  parse_expr_stmt_with_block (AST::AttrVec outer_attrs);
-  std::unique_ptr<AST::ExprStmt>
-  parse_expr_stmt_without_block (AST::AttrVec outer_attrs,
-				 ParseRestrictions restrictions
-				 = ParseRestrictions ());
-  ExprOrStmt parse_stmt_or_expr_without_block ();
-  ExprOrStmt parse_stmt_or_expr_with_block (AST::AttrVec outer_attrs);
+  ExprOrStmt parse_stmt_or_expr ();
   ExprOrStmt parse_macro_invocation_maybe_semi (AST::AttrVec outer_attrs);
   ExprOrStmt parse_path_based_stmt_or_expr (AST::AttrVec outer_attrs);
 

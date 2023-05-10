@@ -1034,6 +1034,8 @@ MacroExpander::transcribe_rule (
   bool reached_end_of_stream = did_delimit && parser.skip_token (END_OF_FILE);
   if (!reached_end_of_stream)
     {
+      // FIXME: rustc has some cases it accepts this with a warning due to
+      // backwards compatibility.
       const_TokenPtr current_token = parser.peek_current_token ();
       rust_error_at (current_token->get_locus (),
 		     "tokens here and after are unparsed");

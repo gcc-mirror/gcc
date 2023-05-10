@@ -960,10 +960,6 @@ public:
    * for some?
    *  - evaluate() - evaluates expression if constant? can_evaluate()? */
 
-  /* HACK: downcasting without dynamic_cast (if possible) via polymorphism -
-   * overrided in subclasses of ExprWithoutBlock */
-  virtual ExprWithoutBlock *as_expr_without_block () const { return nullptr; }
-
   virtual std::string as_string () const = 0;
 
   virtual ~Expr () {}
@@ -986,16 +982,16 @@ public:
 
   virtual Expr *to_stmt () const { return clone_expr_impl (); }
 
+  // TODO: think of less hacky way to implement this kind of thing
+  // Sets outer attributes.
+  virtual void set_outer_attrs (std::vector<Attribute>) = 0;
+
 protected:
   // Constructor
   Expr () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
 
   // Clone function implementation as pure virtual method
   virtual Expr *clone_expr_impl () const = 0;
-
-  // TODO: think of less hacky way to implement this kind of thing
-  // Sets outer attributes.
-  virtual void set_outer_attrs (std::vector<Attribute>) = 0;
 
   NodeId node_id;
 };
@@ -1022,13 +1018,6 @@ public:
   std::unique_ptr<ExprWithoutBlock> clone_expr_without_block () const
   {
     return std::unique_ptr<ExprWithoutBlock> (clone_expr_without_block_impl ());
-  }
-
-  /* downcasting hack from expr to use pratt parsing with
-   * parse_expr_without_block */
-  ExprWithoutBlock *as_expr_without_block () const final override
-  {
-    return clone_expr_without_block_impl ();
   }
 };
 
