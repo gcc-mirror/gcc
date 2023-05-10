@@ -1,3 +1,34 @@
+2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109778
+	* gcc.dg/lto/pr109778_0.c: New test.
+	* gcc.dg/lto/pr109778_1.c: New file.
+
+2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109778
+	* gcc.c-torture/execute/pr109778.c: New test.
+
+2023-05-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108950
+	* gcc.dg/vect/pr108950.c: New testcase.
+
+2023-05-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106740
+	PR c++/105852
+	* g++.dg/template/friend78.C: New test.
+
 2023-05-04  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

@@ -1,3 +1,27 @@
+2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/109778
+	* wide-int.h (wi::lrotate, wi::rrotate): Call wi::lrshift on
+	wi::zext (x, width) rather than x if width != precision, rather
+	than using wi::zext (right, width) after the shift.
+	* tree-ssa-ccp.c (bit_value_binop): Call wi::ext on the results
+	of wi::lrotate or wi::rrotate.
+
+2023-05-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-03-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/108950
+	* tree-vect-patterns.c (vect_recog_widen_sum_pattern):
+	Check oprnd0 is defined in the loop.
+	* tree-vect-loop.c (vectorizable_reduction): Record all
+	operands vector types, compute that of invariants and
+	properly update their SLP nodes.
+
 2023-05-05  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

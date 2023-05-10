@@ -1,3 +1,13 @@
+2023-05-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/106740
+	PR c++/105852
+	* decl.c (duplicate_decls): Change non-templated friend
+	check to an assert.
+	* pt.c	(tsubst_function_decl): Don't set DECL_TEMPLATE_INFO
+	on non-templated friends.
+	(tsubst_friend_function): Adjust.
+
 2023-05-02  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
