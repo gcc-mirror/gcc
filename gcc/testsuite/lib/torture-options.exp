@@ -51,6 +51,12 @@ proc torture-init { args } {
     }
 }
 
+# Return 1 if 'torture-init' has already been done, 0 otherwise.
+proc torture-init-done { args } {
+    global LTO_TORTURE_OPTIONS
+    return [info exists LTO_TORTURE_OPTIONS]
+}
+
 # Return 1 if torture options have already been set, 0 otherwise.
 proc torture-options-exist { args } {
     global torture_with_loops
