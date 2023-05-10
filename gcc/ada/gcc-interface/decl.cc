@@ -1076,9 +1076,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		|| EXPRESSION_CLASS_P (inner)
 		/* We need to detect the case where a temporary is created to
 		   hold the return value, since we cannot safely rename it at
-		   top level as it lives only in the elaboration routine.  */
+		   top level because it lives only in the elaboration routine.
+		   But, at a lower level, an object initialized by a function
+		   call may be (implicitly) renamed as this temporary by the
+		   front-end and, in this case, we cannot make a copy.  */
 		|| (VAR_P (inner)
-		    && DECL_RETURN_VALUE_P (inner))
+		    && DECL_RETURN_VALUE_P (inner)
+		    && global_bindings_p ())
 		/* We also need to detect the case where the front-end creates
 		   a dangling 'reference to a function call at top level and
 		   substitutes it in the renaming, for example:
@@ -1092,12 +1096,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		     q__b : boolean renames q__R1s.all.e (1);
 
 		   We cannot safely rename the rewritten expression since the
-		   underlying object lives only in the elaboration routine.  */
+		   underlying object lives only in the elaboration routine but,
+		   as above, this cannot be done at a lower level.  */
 		|| (INDIRECT_REF_P (inner)
 		    && (inner
 			= remove_conversions (TREE_OPERAND (inner, 0), true))
 		    && VAR_P (inner)
-		    && DECL_RETURN_VALUE_P (inner)))
+		    && DECL_RETURN_VALUE_P (inner)
+		    && global_bindings_p ()))
 	      ;
 
 	    /* Otherwise, this is an lvalue being renamed, so it needs to be
