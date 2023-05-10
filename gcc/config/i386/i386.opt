@@ -416,6 +416,10 @@ mpc80
 Target RejectNegative
 Set 80387 floating-point precision to 80-bit.
 
+mdaz-ftz
+Target
+Set the FTZ and DAZ Flags.
+
 mpreferred-stack-boundary=
 Target RejectNegative Joined UInteger Var(ix86_preferred_stack_boundary_arg)
 Attempt to keep stack aligned to this power of 2.
