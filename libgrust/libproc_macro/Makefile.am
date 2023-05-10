@@ -53,7 +53,14 @@ LIBOBJS = @LIBOBJS@
 objext = @OBJEXT@
 
 REQUIRED_OFILES =							\
-	./proc_macro.$(objext) ./literal.$(objext) ./group.$(objext) ./ident.$(objext) ./punct.$(objext) ./tokenstream.$(objext) ./tokentree.$(objext)
+	./proc_macro.$(objext) \
+	./literal.$(objext) \
+	./group.$(objext) \
+	./ident.$(objext) \
+	./punct.$(objext) \
+	./tokenstream.$(objext) \
+	./tokentree.$(objext) \
+	./ffistring.$(objext)
 
 all: $(TARGETLIB)
 

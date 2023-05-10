@@ -17,8 +17,27 @@
 #include "rust-lex.h"
 #include "rust-token-converter.h"
 #include "libproc_macro/proc_macro.h"
+#include "bi-map.h"
+
+#include <string>
 
 namespace Rust {
+
+static const BiMap<PrimitiveCoreType, std::string> suffixes
+  = {{{CORETYPE_F32, "f32"},
+      {CORETYPE_F64, "f64"},
+      {CORETYPE_U8, "u8"},
+      {CORETYPE_U16, "u16"},
+      {CORETYPE_U32, "u32"},
+      {CORETYPE_U64, "u64"},
+      {CORETYPE_U128, "u128"},
+      {CORETYPE_I8, "i8"},
+      {CORETYPE_I16, "i16"},
+      {CORETYPE_I32, "i32"},
+      {CORETYPE_I64, "i64"},
+      {CORETYPE_I128, "i128"},
+      {CORETYPE_ISIZE, "isize"},
+      {CORETYPE_USIZE, "usize"}}};
 
 static void
 pop_group (std::vector<ProcMacro::TokenStream> &streams,
@@ -35,93 +54,24 @@ static void
 dispatch_float_literals (ProcMacro::TokenStream &ts,
 			 const const_TokenPtr &token)
 {
-  std::string::size_type sz;
   auto str = token->as_string ();
-  switch (token->get_type_hint ())
-    {
-      case CORETYPE_F32: {
-	auto value = std::stof (str, &sz);
-	ts.push (ProcMacro::TokenTree::make_tokentree (
-	  ProcMacro::Literal::make_f32 (value, sz != str.length ())));
-      }
-      break;
-      case CORETYPE_F64: {
-	auto value = std::stod (str, &sz);
-	ts.push (ProcMacro::TokenTree::make_tokentree (
-	  ProcMacro::Literal::make_f64 (value, sz != str.length ())));
-      }
-      break;
-    default:
-      gcc_unreachable ();
-    }
+  auto kind = ProcMacro::LitKind::make_float ();
+  auto lookup = suffixes.lookup (token->get_type_hint ());
+  auto suffix = suffixes.is_iter_ok (lookup) ? lookup->second : "";
+  ts.push (ProcMacro::TokenTree::make_tokentree (
+    ProcMacro::Literal::make_literal (kind, str, suffix)));
 }
 
 static void
 dispatch_integer_literals (ProcMacro::TokenStream &ts,
 			   const const_TokenPtr &token)
 {
-  std::string::size_type sz;
   auto str = token->as_string ();
-  unsigned long long uvalue;
-  long long svalue;
-
-  switch (token->get_type_hint ())
-    {
-    case CORETYPE_U8:
-      uvalue = std::stoull (str, &sz);
-      ts.push (ProcMacro::TokenTree::make_tokentree (
-	ProcMacro::Literal::make_u8 (uvalue, sz != str.length ())));
-      break;
-    case CORETYPE_U16:
-      uvalue = std::stoull (str, &sz);
-      ts.push (ProcMacro::TokenTree::make_tokentree (
-	ProcMacro::Literal::make_u16 (uvalue, sz != str.length ())));
-      break;
-    case CORETYPE_U32:
-      uvalue = std::stoull (str, &sz);
-      ts.push (ProcMacro::TokenTree::make_tokentree (
-	ProcMacro::Literal::make_u32 (uvalue, sz != str.length ())));
-      break;
-    case CORETYPE_U64:
-      uvalue = std::stoull (str, &sz);
-      ts.push (ProcMacro::TokenTree::make_tokentree (
-	ProcMacro::Literal::make_u32 (uvalue, sz != str.length ())));
-      break;
-    case CORETYPE_I8:
-      svalue = std::stoll (str, &sz);
-      ts.push (ProcMacro::TokenTree::make_tokentree (
-	ProcMacro::Literal::make_i8 (svalue, sz != str.length ())));
-      break;
-    case CORETYPE_I16:
-      svalue = std::stoll (str, &sz);
-      ts.push (ProcMacro::TokenTree::make_tokentree (
-	ProcMacro::Literal::make_i16 (svalue, sz != str.length ())));
-      break;
-    case CORETYPE_I32:
-      svalue = std::stoll (str, &sz);
-      ts.push (ProcMacro::TokenTree::make_tokentree (
-	ProcMacro::Literal::make_i32 (svalue, sz != str.length ())));
-      break;
-    case CORETYPE_I64:
-      svalue = std::stoll (str, &sz);
-      ts.push (ProcMacro::TokenTree::make_tokentree (
-	ProcMacro::Literal::make_i32 (svalue, sz != str.length ())));
-      break;
-    case CORETYPE_INT:
-      svalue = std::stoll (str, &sz);
-      ts.push (ProcMacro::TokenTree::make_tokentree (
-	ProcMacro::Literal::make_isize (svalue, sz != str.length ())));
-      break;
-    case CORETYPE_UINT:
-      uvalue = std::stoull (str, &sz);
-      ts.push (ProcMacro::TokenTree::make_tokentree (
-	ProcMacro::Literal::make_usize (uvalue, sz != str.length ())));
-      break;
-    case CORETYPE_UNKNOWN:
-    default:
-      gcc_unreachable ();
-      break;
-    }
+  auto kind = ProcMacro::LitKind::make_integer ();
+  auto lookup = suffixes.lookup (token->get_type_hint ());
+  auto suffix = suffixes.is_iter_ok (lookup) ? lookup->second : "";
+  ts.push (ProcMacro::TokenTree::make_tokentree (
+    ProcMacro::Literal::make_literal (kind, str, suffix)));
 }
 
 ProcMacro::TokenStream
@@ -140,21 +90,25 @@ convert (const std::vector<const_TokenPtr> &tokens)
 	case INT_LITERAL:
 	  dispatch_integer_literals (trees.back (), token);
 	  break;
-	// FIXME: Why does BYTE_CHAR_LITERAL is not handled by rustc ?
-	case CHAR_LITERAL: // TODO: UTF-8 handling
+	case CHAR_LITERAL:
 	  trees.back ().push (ProcMacro::TokenTree::make_tokentree (
-	    ProcMacro::Literal::make_char (token->as_string ()[0])));
+	    ProcMacro::Literal::make_literal (ProcMacro::LitKind::make_char (),
+					      token->as_string ())));
 	  break;
 	case STRING_LITERAL:
 	  trees.back ().push (ProcMacro::TokenTree::make_tokentree (
-	    ProcMacro::Literal::make_string (token->as_string ())));
+	    ProcMacro::Literal::make_literal (ProcMacro::LitKind::make_str (),
+					      token->as_string ())));
 	  break;
-	  case BYTE_STRING_LITERAL: {
-	    auto str = token->as_string ();
-	    std::vector<uint8_t> data (str.begin (), str.end ());
-	    trees.back ().push (ProcMacro::TokenTree::make_tokentree (
-	      ProcMacro::Literal::make_byte_string (data)));
-	  }
+	case BYTE_CHAR_LITERAL:
+	  trees.back ().push (ProcMacro::TokenTree::make_tokentree (
+	    ProcMacro::Literal::make_literal (ProcMacro::LitKind::make_byte (),
+					      token->as_string ())));
+	  break;
+	case BYTE_STRING_LITERAL:
+	  trees.back ().push (ProcMacro::TokenTree::make_tokentree (
+	    ProcMacro::Literal::make_literal (
+	      ProcMacro::LitKind::make_byte_str (), token->as_string ())));
 	  break;
 	// Ident
 	case IDENTIFIER:
@@ -321,91 +275,6 @@ from_ident (const ProcMacro::Ident &ident, std::vector<const_TokenPtr> &result)
   result.push_back (lexer.peek_token ());
 }
 
-static void
-string_literal (const ProcMacro::StringPayload &payload,
-		std::vector<const_TokenPtr> &result)
-{
-  // TODO: UTF-8 string
-  result.push_back (Token::make_string (
-    Location (),
-    std::string (reinterpret_cast<const char *> (payload.data), payload.len)));
-}
-
-static void
-byte_string_literal (const ProcMacro::ByteStringPayload &payload,
-		     std::vector<const_TokenPtr> &result)
-{
-  result.push_back (Token::make_byte_string (
-    Location (),
-    std::string (reinterpret_cast<const char *> (payload.data), payload.size)));
-}
-
-static void
-unsigned_literal (const ProcMacro::Unsigned &lit,
-		  std::vector<const_TokenPtr> &result)
-{
-  switch (lit.tag)
-    {
-    case ProcMacro::UNSIGNED_8:
-      result.push_back (Token::make_int (Location (),
-					 std::to_string (lit.payload.unsigned8),
-					 CORETYPE_U8));
-      break;
-    case ProcMacro::UNSIGNED_16:
-      result.push_back (
-	Token::make_int (Location (), std::to_string (lit.payload.unsigned16),
-			 CORETYPE_U16));
-      break;
-    case ProcMacro::UNSIGNED_32:
-      result.push_back (
-	Token::make_int (Location (), std::to_string (lit.payload.unsigned32),
-			 CORETYPE_U32));
-      break;
-    case ProcMacro::UNSIGNED_64:
-      result.push_back (
-	Token::make_int (Location (), std::to_string (lit.payload.unsigned64),
-			 CORETYPE_U64));
-      break;
-    case ProcMacro::UNSIGNED_128:
-      // TODO: Handle 128 bits
-    default:
-      gcc_unreachable ();
-    }
-}
-
-static void
-signed_literal (const ProcMacro::Signed &lit,
-		std::vector<const_TokenPtr> &result)
-{
-  switch (lit.tag)
-    {
-    case ProcMacro::SIGNED_8:
-      result.push_back (Token::make_int (Location (),
-					 std::to_string (lit.payload.signed8),
-					 CORETYPE_I8));
-      break;
-    case ProcMacro::SIGNED_16:
-      result.push_back (Token::make_int (Location (),
-					 std::to_string (lit.payload.signed16),
-					 CORETYPE_I16));
-      break;
-    case ProcMacro::SIGNED_32:
-      result.push_back (Token::make_int (Location (),
-					 std::to_string (lit.payload.signed32),
-					 CORETYPE_I32));
-      break;
-    case ProcMacro::SIGNED_64:
-      result.push_back (Token::make_int (Location (),
-					 std::to_string (lit.payload.signed64),
-					 CORETYPE_I64));
-      break;
-    case ProcMacro::SIGNED_128:
-      // TODO: Handle 128 bits
-    default:
-      gcc_unreachable ();
-    }
-}
-
 /**
  * Append the token corresponding to a given Literal to a vector.
  *
@@ -416,46 +285,39 @@ static void
 from_literal (const ProcMacro::Literal &literal,
 	      std::vector<const_TokenPtr> &result)
 {
-  switch (literal.tag)
+  auto lookup = suffixes.lookup (literal.suffix.to_string ());
+  auto suffix
+    = suffixes.is_iter_ok (lookup) ? lookup->second : CORETYPE_UNKNOWN;
+  // FIXME: Add spans instead of empty locations
+  switch (literal.kind.tag)
     {
-    case ProcMacro::STRING:
-      string_literal (literal.payload.string_payload, result);
-      break;
-    case ProcMacro::BYTE_STRING:
-      byte_string_literal (literal.payload.byte_string_payload, result);
+    case ProcMacro::BYTE:
+      result.push_back (
+	Token::make_byte_char (Location (), literal.text.to_string ()[0]));
       break;
     case ProcMacro::CHAR:
       result.push_back (
-	Token::make_char (Location (), literal.payload.char_payload));
+	Token::make_char (Location (), literal.text.to_string ()[0]));
       break;
-    case ProcMacro::UNSIGNED:
-      unsigned_literal (literal.payload.unsigned_payload.value, result);
-      break;
-    case ProcMacro::SIGNED:
-      signed_literal (literal.payload.signed_payload.value, result);
-      break;
-    case ProcMacro::USIZE:
+    case ProcMacro::INTEGER:
       result.push_back (
-	Token::make_int (Location (),
-			 std::to_string (literal.payload.usize_payload.value),
-			 CORETYPE_USIZE));
+	Token::make_int (Location (), literal.text.to_string (), suffix));
       break;
-    case ProcMacro::ISIZE:
+    case ProcMacro::FLOAT:
       result.push_back (
-	Token::make_int (Location (),
-			 std::to_string (literal.payload.isize_payload.value),
-			 CORETYPE_ISIZE));
+	Token::make_float (Location (), literal.text.to_string (), suffix));
       break;
-    case ProcMacro::FLOAT32:
-      result.push_back (Token::make_float (
-	Location (), std::to_string (literal.payload.float32_payload.value),
-	CORETYPE_F32));
+    case ProcMacro::STR:
+      result.push_back (
+	Token::make_string (Location (), literal.text.to_string ()));
       break;
-    case ProcMacro::FLOAT64:
-      result.push_back (Token::make_float (
-	Location (), std::to_string (literal.payload.float64_payload.value),
-	CORETYPE_F64));
+    case ProcMacro::BYTE_STR:
+      result.push_back (
+	Token::make_byte_string (Location (), literal.text.to_string ()));
       break;
+    // FIXME: Handle raw string
+    case ProcMacro::STR_RAW:
+    case ProcMacro::BYTE_STR_RAW:
     default:
       gcc_unreachable ();
     }

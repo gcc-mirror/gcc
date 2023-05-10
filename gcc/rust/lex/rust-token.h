@@ -456,4 +456,16 @@ return *str;
 };
 } // namespace Rust
 
+namespace std {
+template <> struct hash<Rust::PrimitiveCoreType>
+{
+  size_t operator() (const Rust::PrimitiveCoreType &coretype) const noexcept
+  {
+    return hash<std::underlying_type<Rust::PrimitiveCoreType>::type> () (
+      static_cast<std::underlying_type<Rust::PrimitiveCoreType>::type> (
+	coretype));
+  }
+};
+} // namespace std
+
 #endif
