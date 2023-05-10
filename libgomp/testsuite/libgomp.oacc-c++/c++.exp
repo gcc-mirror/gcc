@@ -26,6 +26,11 @@ if { $blddir != "" } {
     return
 }
 set lang_link_flags "-lstdc++"
+# Switch into C++ mode.  Otherwise, the 'libgomp.oacc-c-c++-common/*.c'
+# files would be compiled as C files.
+set SAVE_GCC_UNDER_TEST "$GCC_UNDER_TEST"
+set GCC_UNDER_TEST "$GCC_UNDER_TEST -x c++"
+lappend ALWAYS_CFLAGS "compiler=$GCC_UNDER_TEST"
 
 # Initialize dg.
 dg-init
@@ -33,11 +38,6 @@ torture-init
 
 # Turn on OpenACC.
 lappend ALWAYS_CFLAGS "additional_flags=-fopenacc"
-
-# Switch into C++ mode.  Otherwise, the libgomp.oacc-c-c++-common/*.c
-# files would be compiled as C files.
-set SAVE_GCC_UNDER_TEST "$GCC_UNDER_TEST"
-set GCC_UNDER_TEST "$GCC_UNDER_TEST -x c++"
 
 # Gather a list of all tests.
 set tests [lsort [concat \

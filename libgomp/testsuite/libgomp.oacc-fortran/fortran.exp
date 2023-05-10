@@ -31,6 +31,7 @@ if { $blddir != "" } {
     set lang_include_flags "-fintrinsic-modules-path=${blddir}"
 }
 set lang_link_flags "-lgfortran -foffload=-lgfortran"
+lappend ALWAYS_CFLAGS "compiler=$GCC_UNDER_TEST"
 
 # Initialize dg.
 dg-init

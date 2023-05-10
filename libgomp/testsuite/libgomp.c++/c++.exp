@@ -16,6 +16,11 @@ if { $blddir != "" } {
     return
 }
 set lang_link_flags "-lstdc++"
+# Switch into C++ mode.  Otherwise, the 'libgomp.c-c++-common/*.c'
+# files would be compiled as C files.
+set SAVE_GCC_UNDER_TEST "$GCC_UNDER_TEST"
+set GCC_UNDER_TEST "$GCC_UNDER_TEST -x c++"
+lappend ALWAYS_CFLAGS "compiler=$GCC_UNDER_TEST"
 
 # If a testcase doesn't have special options, use these.
 if ![info exists DEFAULT_CFLAGS] then {
@@ -27,11 +32,6 @@ dg-init
 
 # Turn on OpenMP.
 lappend ALWAYS_CFLAGS "additional_flags=-fopenmp"
-
-# Switch into C++ mode.  Otherwise, the libgomp.c-c++-common/*.c
-# files would be compiled as C files.
-set SAVE_GCC_UNDER_TEST "$GCC_UNDER_TEST"
-set GCC_UNDER_TEST "$GCC_UNDER_TEST -x c++"
 
 # Gather a list of all tests.
 set tests [lsort [concat \

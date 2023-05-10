@@ -1,6 +1,8 @@
 load_lib libgomp-dg.exp
 load_gcc_lib gcc-dg.exp
 
+lappend ALWAYS_CFLAGS "compiler=$GCC_UNDER_TEST"
+
 # If a testcase doesn't have special options, use these.
 if ![info exists DEFAULT_CFLAGS] then {
     set DEFAULT_CFLAGS "-O2"

@@ -25,6 +25,7 @@ if ![check_effective_target_fgraphite] {
   return
 }
 
+lappend ALWAYS_CFLAGS "compiler=$GCC_UNDER_TEST"
 # Flags for force-parallel-*.c testcases.
 set PARALLEL_CFLAGS "-ansi -pedantic-errors -O2 \
 -ftree-parallelize-loops=4 -floop-parallelize-all \
