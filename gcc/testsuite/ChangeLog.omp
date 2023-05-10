@@ -1,3 +1,7 @@
+2023-05-10  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gfortran.dg/gomp/target-exit-data.f90: Update expected outputs.
+
 2023-05-03  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* gfortran.dg/gomp/map-10a.f90: Update expected outputs.
