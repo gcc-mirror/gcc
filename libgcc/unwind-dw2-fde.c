@@ -634,8 +634,6 @@ fde_radixsort (struct object *ob, fde_extractor_t fde_extractor,
       // Stop if we are already sorted.
       if (!violations)
 	{
-	  // The sorted data is in a1 now.
-	  a2 = a1;
 	  break;
 	}
 
@@ -670,9 +668,9 @@ fde_radixsort (struct object *ob, fde_extractor_t fde_extractor,
 #undef FANOUT
 #undef FANOUTBITS
 
-  // The data is in a2 now, move in place if needed.
-  if (a2 != v1->array)
-    memcpy (v1->array, a2, sizeof (const fde *) * n);
+  // The data is in a1 now, move in place if needed.
+  if (a1 != v1->array)
+    memcpy (v1->array, a1, sizeof (const fde *) * n);
 }
 
 static inline void
