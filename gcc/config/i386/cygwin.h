@@ -57,7 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
-  "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s}\
+  "%{mdaz-ftz:crtfastmath.o%s;Ofast|ffast-math|funsafe-math-optimizations:%{!mno-daz-ftz:crtfastmath.o%s}} \
    %{!shared:%:if-exists(default-manifest.o%s)}\
    %{fvtable-verify=none:%s; \
     fvtable-verify=preinit:vtv_end.o%s; \

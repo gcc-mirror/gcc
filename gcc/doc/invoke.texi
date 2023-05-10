@@ -1434,7 +1434,7 @@ See RS/6000 and PowerPC Options.
 -m96bit-long-double  -mlong-double-64  -mlong-double-80  -mlong-double-128 @gol
 -mregparm=@var{num}  -msseregparm @gol
 -mveclibabi=@var{type}  -mvect8-ret-in-mem @gol
--mpc32  -mpc64  -mpc80  -mstackrealign @gol
+-mpc32  -mpc64  -mpc80 -mdaz-ftz -mstackrealign @gol
 -momit-leaf-frame-pointer  -mno-red-zone  -mno-tls-direct-seg-refs @gol
 -mcmodel=@var{code-model}  -mabi=@var{name}  -maddress-mode=@var{mode} @gol
 -m32  -m64  -mx32  -m16  -miamcu  -mlarge-data-threshold=@var{num} @gol
@@ -32077,6 +32077,15 @@ libraries assume that extended-precision (80-bit) floating-point operations
 are enabled by default; routines in such libraries could suffer significant
 loss of accuracy, typically through so-called ``catastrophic cancellation'',
 when this option is used to set the precision to less than extended precision.
+
+@item -mdaz-ftz
+@opindex mdaz-ftz
+
+The flush-to-zero (FTZ) and denormals-are-zero (DAZ) flags in the MXCSR register
+are used to control floating-point calculations.SSE and AVX instructions
+including scalar and vector instructions could benefit from enabling the FTZ
+and DAZ flags when @option{-mdaz-ftz} is specified. Don't set FTZ/DAZ flags
+when @option{-mno-daz-ftz} is specified.
 
 @item -mstackrealign
 @opindex mstackrealign
