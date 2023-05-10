@@ -144,7 +144,7 @@
        (match_test "op == CONST0_RTX (SFmode)")))
 
 ;; Extra constraints.
-(define_constraint "Q"
+(define_special_memory_constraint "Q"
   "@internal"
   (and (match_test "TARGET_H8300SX")
        (match_operand 0 "memory_operand")))
@@ -211,7 +211,7 @@
   (and (match_code "const_int")
        (match_test "exact_log2 (ival & 0xff) != -1")))
 
-(define_constraint "Zz"
+(define_special_memory_constraint "Zz"
   "@internal"
   (and (match_test "TARGET_H8300SX")
        (match_code "mem")
