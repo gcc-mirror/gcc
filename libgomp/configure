@@ -678,6 +678,7 @@ libtool_VERSION
 ac_ct_FC
 FCFLAGS
 FC
+CXX
 MAINT
 MAINTAINER_MODE_FALSE
 MAINTAINER_MODE_TRUE
@@ -11418,7 +11419,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11421 "configure"
+#line 11422 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11524,7 +11525,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11527 "configure"
+#line 11528 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11810,11 +11811,22 @@ fi
 
 
 
+# We optionally test libgomp C++ support, and for that want to use the proper
+# C++ driver, 'g++' (or 'xg++' for build-tree testing).  Given that build of
+# target libstdc++-v3 depends on target libgomp (see '../Makefile.def'), we
+# cannot make build of target libgomp depend on target libstdc++-v3: circular
+# dependency.  We thus cannot instantiate 'AC_PROG_CXX' here: we'd get
+# '-funconfigured-libstdc++-v3' (see '../configure.ac').  Therefore, just
+# capture 'CXX', and we'll fix this up at 'make check' time (see
+# 'testsuite/lib/libgomp.exp:libgomp_init').
+
+
 # Create a spec file, so that compile/link tests don't fail
 test -f libgfortran.spec || touch libgfortran.spec
 FCFLAGS="$FCFLAGS -L."
 
-# We need gfortran to compile parts of the library
+# We need 'gfortran' to compile parts of the library, and test libgomp Fortran
+# support.
 # We can't use AC_PROG_FC because it expects a fully working gfortran.
 #AC_PROG_FC(gfortran)
 case `echo $GFORTRAN` in

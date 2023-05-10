@@ -25,12 +25,7 @@ if { $blddir != "" } {
     verbose -log "GXX_UNDER_TEST not defined, will not execute c++ tests"
     return
 }
-set lang_link_flags "-lstdc++"
-# Switch into C++ mode.  Otherwise, the 'libgomp.oacc-c-c++-common/*.c'
-# files would be compiled as C files.
-set SAVE_GCC_UNDER_TEST "$GCC_UNDER_TEST"
-set GCC_UNDER_TEST "$GCC_UNDER_TEST -x c++"
-lappend ALWAYS_CFLAGS "compiler=$GCC_UNDER_TEST"
+lappend ALWAYS_CFLAGS "compiler=$GXX_UNDER_TEST"
 
 # Initialize dg.
 dg-init
@@ -50,13 +45,6 @@ if { $blddir != "" } {
 }
 append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
 set_ld_library_path_env_vars
-
-set flags_file "${blddir}/../libstdc++-v3/scripts/testsuite_flags"
-if { $blddir != ""
-     && [file exists $flags_file] } {
-    set lang_source_re {^.*\.[cC]$}
-    set lang_include_flags [exec sh $flags_file --build-includes]
-}
 
 # Test with all available offload targets, and with offloading disabled.
 foreach offload_target [concat [split $offload_targets ","] "disable"] {
@@ -132,18 +120,10 @@ foreach offload_target [concat [split $offload_targets ","] "disable"] {
 }
 unset offload_target
 
-# See above.
-set GCC_UNDER_TEST "$SAVE_GCC_UNDER_TEST"
-
-if [info exists lang_include_flags] then {
-    unset lang_source_re
-    unset lang_include_flags
-}
 if { $blddir != "" } {
     unset libstdc++_library_path
     unset lang_library_paths
 }
-unset lang_link_flags
 
 # All done.
 torture-finish

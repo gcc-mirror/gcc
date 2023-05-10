@@ -28,8 +28,8 @@ if { $blddir != "" } {
     set lang_source_re {^.*\.[fF](|90|95|03|08)$}
     set lang_include_flags "-fintrinsic-modules-path=${blddir}"
 }
-set lang_link_flags "-lgfortran -foffload=-lgfortran"
-lappend ALWAYS_CFLAGS "compiler=$GCC_UNDER_TEST"
+set lang_link_flags "-foffload=-lgfortran"
+lappend ALWAYS_CFLAGS "compiler=$GFORTRAN_UNDER_TEST"
 
 # Initialize dg.
 dg-init
@@ -46,13 +46,6 @@ if { $blddir != "" } {
 
     if { $libquadmath_library_path != "" } {
 	append ld_library_path ":${blddir}/${libquadmath_library_path}"
-	append lang_link_flags " -lquadmath"
-    }
-} else {
-    if { [check_no_compiler_messages has_libquadmath executable {
-             int main() {return 0;}
-          } "-lgfortran -lquadmath"] } then {
-	append lang_link_flags " -lquadmath"
     }
 }
 append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]

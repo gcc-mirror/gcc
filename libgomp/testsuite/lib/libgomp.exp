@@ -66,7 +66,7 @@ proc libgomp_init { args } {
     global ALWAYS_CFLAGS
     global CFLAGS
     global TOOL_EXECUTABLE TOOL_OPTIONS
-    global GCC_UNDER_TEST
+    global GCC_UNDER_TEST GXX_UNDER_TEST GFORTRAN_UNDER_TEST
     global TESTING_IN_BUILD_TREE
     global target_triplet
     global always_ld_library_path
@@ -85,11 +85,44 @@ proc libgomp_init { args } {
       setenv LANG C.ASCII
     }
 
+    if { $blddir != "" } {
+	# Fix up '-funconfigured-libstdc++-v3' in 'GXX_UNDER_TEST' (see
+	# '../../configure.ac').
+	set flags_file "${blddir}/../libstdc++-v3/scripts/testsuite_flags"
+	if { [file exists $flags_file] } {
+	    set flags [exec sh $flags_file --build-includes]
+	    verbose -log "GXX_UNDER_TEST = $GXX_UNDER_TEST"
+	    set GXX_UNDER_TEST [string map [list \
+	      " -funconfigured-libstdc++-v3 " " $flags " \
+					   ] $GXX_UNDER_TEST]
+	    verbose -log "GXX_UNDER_TEST = $GXX_UNDER_TEST"
+	}
+    }
     if ![info exists GCC_UNDER_TEST] then {
 	if [info exists TOOL_EXECUTABLE] {
 	    set GCC_UNDER_TEST $TOOL_EXECUTABLE
 	} else {
 	    set GCC_UNDER_TEST "[find_gcc]"
+	}
+	# Only if we're guessing 'GCC_UNDER_TEST', we're also going to guess
+	# 'GXX_UNDER_TEST', 'GFORTRAN_UNDER_TEST'.
+	if ![info exists GXX_UNDER_TEST] then {
+	    if [info exists TOOL_EXECUTABLE] {
+		set GXX_UNDER_TEST $TOOL_EXECUTABLE
+	    } else {
+		set GXX_UNDER_TEST "[find_g++]"
+	    }
+	} else {
+	    error "GXX_UNDER_TEST set but not GCC_UNDER_TEST"
+	}
+	if ![info exists GFORTRAN_UNDER_TEST] then {
+	    if [info exists TOOL_EXECUTABLE] {
+		set GFORTRAN_UNDER_TEST $TOOL_EXECUTABLE
+	    } else {
+		set GFORTRAN_UNDER_TEST "[find_gfortran]"
+	    }
+	} else {
+	    error "GFORTRAN_UNDER_TEST set but not GCC_UNDER_TEST"
 	}
     }
 
