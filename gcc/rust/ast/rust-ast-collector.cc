@@ -809,10 +809,12 @@ TokenCollector::visit (Literal &lit, Location locus)
 	Rust::Token::make_byte_string (locus, std::move (value)));
       break;
     case Literal::LitType::INT:
-      tokens.push_back (Rust::Token::make_int (locus, std::move (value)));
+      tokens.push_back (
+	Rust::Token::make_int (locus, std::move (value), lit.get_type_hint ()));
       break;
     case Literal::LitType::FLOAT:
-      tokens.push_back (Rust::Token::make_float (locus, std::move (value)));
+      tokens.push_back (Rust::Token::make_float (locus, std::move (value),
+						 lit.get_type_hint ()));
       break;
       case Literal::LitType::BOOL: {
 	if (value == "false")
