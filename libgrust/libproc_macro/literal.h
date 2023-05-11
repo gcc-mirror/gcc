@@ -69,12 +69,12 @@ struct Literal
 {
   LitKind kind;
   FFIString text;
-  bool has_suffix;
   FFIString suffix;
   // TODO: Add span once done in rust interface
 
 public:
   Literal clone () const;
+  bool has_suffix () const { return suffix.len != 0; };
 
   static Literal make_literal (const LitKind kind, const std::string &text,
 			       const std::string &suffix = "");

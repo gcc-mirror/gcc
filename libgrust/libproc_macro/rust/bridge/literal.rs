@@ -28,7 +28,6 @@ pub enum LitKind {
 pub struct Literal {
     kind: LitKind,
     text: FFIString,
-    has_suffix: bool,
     suffix: FFIString,
     // FIXME: Add span, cannot add whilst Span remain an empty type
 }
@@ -39,7 +38,6 @@ macro_rules! suffixed_int_literals {
             Literal {
                 kind : LitKind::Integer,
                 text: FFIString::new(&n.to_string()),
-                has_suffix : true,
                 suffix: FFIString::new(stringify!($kind))
             }
         }
@@ -52,7 +50,6 @@ macro_rules! unsuffixed_int_literals {
             Literal {
                 kind : LitKind::Integer,
                 text: FFIString::new(&n.to_string()),
-                has_suffix : false,
                 suffix: FFIString::new("")
             }
         }
@@ -99,7 +96,6 @@ impl Literal {
         Literal {
             kind: LitKind::Float,
             text: FFIString::new(&repr),
-            has_suffix: false,
             suffix: FFIString::new(""),
         }
     }
@@ -108,7 +104,6 @@ impl Literal {
         Literal {
             kind: LitKind::Float,
             text: FFIString::new(&n.to_string()),
-            has_suffix: true,
             suffix: FFIString::new("f32"),
         }
     }
@@ -122,7 +117,6 @@ impl Literal {
         Literal {
             kind: LitKind::Float,
             text: FFIString::new(&repr),
-            has_suffix: false,
             suffix: FFIString::new(""),
         }
     }
@@ -131,7 +125,6 @@ impl Literal {
         Literal {
             kind: LitKind::Float,
             text: FFIString::new(&n.to_string()),
-            has_suffix: true,
             suffix: FFIString::new("f64"),
         }
     }
@@ -140,7 +133,6 @@ impl Literal {
         Literal {
             kind: LitKind::Str,
             text: FFIString::new(string),
-            has_suffix: false,
             suffix: FFIString::new(""),
         }
     }
@@ -149,7 +141,6 @@ impl Literal {
         Literal {
             kind: LitKind::Char,
             text: FFIString::new(&c.to_string()),
-            has_suffix: false,
             suffix: FFIString::new(""),
         }
     }
@@ -158,7 +149,6 @@ impl Literal {
         Literal {
             kind: LitKind::ByteStr,
             text: FFIString::new(&bytes.escape_ascii().to_string()),
-            has_suffix: false,
             suffix: FFIString::new(""),
         }
     }
@@ -217,9 +207,7 @@ impl fmt::Display for Literal {
             _ => f.write_str(text)?,
         }
 
-        if self.has_suffix {
-            f.write_str(&self.suffix.to_string())?;
-        }
+        f.write_str(&self.suffix.to_string())?;
         Ok(())
     }
 }
@@ -232,7 +220,6 @@ impl FromStr for Literal {
         let mut lit = Literal {
             kind: LitKind::Err,
             text: FFIString::new(""),
-            has_suffix: false,
             suffix: FFIString::new(""),
         };
         // TODO: We might want to pass a LexError by reference to retrieve
