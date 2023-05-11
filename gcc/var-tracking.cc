@@ -116,6 +116,7 @@
 #include "fibonacci_heap.h"
 #include "print-rtl.h"
 #include "function-abi.h"
+#include "mux-utils.h"
 
 typedef fibonacci_heap <long, basic_block_def> bb_heap_t;
 
@@ -197,14 +198,14 @@ struct micro_operation
 
 
 /* A declaration of a variable, or an RTL value being handled like a
-   declaration.  */
-typedef void *decl_or_value;
+   declaration by pointer_mux.  */
+typedef pointer_mux<tree_node, rtx_def> decl_or_value;
 
 /* Return true if a decl_or_value DV is a DECL or NULL.  */
 static inline bool
 dv_is_decl_p (decl_or_value dv)
 {
-  return !dv || (int) TREE_CODE ((tree) dv) != (int) VALUE;
+  return dv.is_first ();
 }
 
 /* Return true if a decl_or_value is a VALUE rtl.  */
@@ -219,7 +220,7 @@ static inline tree
 dv_as_decl (decl_or_value dv)
 {
   gcc_checking_assert (dv_is_decl_p (dv));
-  return (tree) dv;
+  return dv.known_first ();
 }
 
 /* Return the value in the decl_or_value.  */
@@ -227,14 +228,7 @@ static inline rtx
 dv_as_value (decl_or_value dv)
 {
   gcc_checking_assert (dv_is_value_p (dv));
-  return (rtx)dv;
-}
-
-/* Return the opaque pointer in the decl_or_value.  */
-static inline void *
-dv_as_opaque (decl_or_value dv)
-{
-  return dv;
+  return dv.known_second ();
 }
 
 
@@ -483,9 +477,9 @@ static void variable_htab_free (void *);
 
 struct variable_hasher : pointer_hash <variable>
 {
-  typedef void *compare_type;
+  typedef decl_or_value compare_type;
   static inline hashval_t hash (const variable *);
-  static inline bool equal (const variable *, const void *);
+  static inline bool equal (const variable *, const decl_or_value);
   static inline void remove (variable *);
 };
 
@@ -501,11 +495,9 @@ variable_hasher::hash (const variable *v)
 /* Compare the declaration of variable X with declaration Y.  */
 
 inline bool
-variable_hasher::equal (const variable *v, const void *y)
+variable_hasher::equal (const variable *v, const decl_or_value y)
 {
-  decl_or_value dv = CONST_CAST2 (decl_or_value, const void *, y);
-
-  return (dv_as_opaque (v->dv) == dv_as_opaque (dv));
+  return v->dv == y;
 }
 
 /* Free the element of VARIABLE_HTAB (its type is struct variable_def).  */
@@ -1396,8 +1388,7 @@ onepart_pool_allocate (onepart_enum onepart)
 static inline decl_or_value
 dv_from_decl (tree decl)
 {
-  decl_or_value dv;
-  dv = decl;
+  decl_or_value dv = decl;
   gcc_checking_assert (dv_is_decl_p (dv));
   return dv;
 }
@@ -1406,8 +1397,7 @@ dv_from_decl (tree decl)
 static inline decl_or_value
 dv_from_value (rtx value)
 {
-  decl_or_value dv;
-  dv = value;
+  decl_or_value dv = value;
   gcc_checking_assert (dv_is_value_p (dv));
   return dv;
 }
@@ -1519,7 +1509,7 @@ static attrs *
 attrs_list_member (attrs *list, decl_or_value dv, HOST_WIDE_INT offset)
 {
   for (; list; list = list->next)
-    if (dv_as_opaque (list->dv) == dv_as_opaque (dv) && list->offset == offset)
+    if (list->dv == dv && list->offset == offset)
       return list;
   return NULL;
 }
@@ -1831,8 +1821,7 @@ vars_copy (variable_table_type *dst, variable_table_type *src)
     {
       variable **dstp;
       var->refcount++;
-      dstp = dst->find_slot_with_hash (var->dv, dv_htab_hash (var->dv),
-				       INSERT);
+      dstp = dst->find_slot_with_hash (var->dv, dv_htab_hash (var->dv), INSERT);
       *dstp = var;
     }
 }
@@ -1866,8 +1855,7 @@ var_reg_decl_set (dataflow_set *set, rtx loc, enum var_init_status initialized,
     dv = dv_from_decl (var_debug_decl (dv_as_decl (dv)));
 
   for (node = set->regs[REGNO (loc)]; node; node = node->next)
-    if (dv_as_opaque (node->dv) == dv_as_opaque (dv)
-	&& node->offset == offset)
+    if (node->dv == dv && node->offset == offset)
       break;
   if (!node)
     attrs_list_insert (&set->regs[REGNO (loc)], dv, offset, loc);
@@ -1966,7 +1954,7 @@ var_reg_delete_and_set (dataflow_set *set, rtx loc, bool modify,
   for (node = *nextp; node; node = next)
     {
       next = node->next;
-      if (dv_as_opaque (node->dv) != decl || node->offset != offset)
+      if (node->dv != decl || node->offset != offset)
 	{
 	  delete_variable_part (set, node->loc, node->dv, node->offset);
 	  delete node;
@@ -3242,7 +3230,7 @@ find_loc_in_1pdv (rtx loc, variable *var, variable_table_type *vars)
   if (!var->n_var_parts)
     return NULL;
 
-  gcc_checking_assert (loc != dv_as_opaque (var->dv));
+  gcc_checking_assert (var->dv != loc);
 
   loc_code = GET_CODE (loc);
   for (node = var->var_part[0].loc_chain; node; node = node->next)
@@ -3832,16 +3820,14 @@ canonicalize_values_star (variable **slot, dataflow_set *set)
 
 	    while (list)
 	      {
-		if (list->offset == 0
-		    && (dv_as_opaque (list->dv) == dv_as_opaque (dv)
-			|| dv_as_opaque (list->dv) == dv_as_opaque (cdv)))
+		if (list->offset == 0 && (list->dv == dv || list->dv == cdv))
 		  break;
 
 		list = list->next;
 	      }
 
 	    gcc_assert (list);
-	    if (dv_as_opaque (list->dv) == dv_as_opaque (dv))
+	    if (list->dv == dv)
 	      {
 		list->dv = cdv;
 		for (listp = &list->next; (list = *listp); listp = &list->next)
@@ -3849,7 +3835,7 @@ canonicalize_values_star (variable **slot, dataflow_set *set)
 		    if (list->offset)
 		      continue;
 
-		    if (dv_as_opaque (list->dv) == dv_as_opaque (cdv))
+		    if (list->dv == cdv)
 		      {
 			*listp = list->next;
 			delete list;
@@ -3857,17 +3843,17 @@ canonicalize_values_star (variable **slot, dataflow_set *set)
 			break;
 		      }
 
-		    gcc_assert (dv_as_opaque (list->dv) != dv_as_opaque (dv));
+		    gcc_assert (list->dv != dv);
 		  }
 	      }
-	    else if (dv_as_opaque (list->dv) == dv_as_opaque (cdv))
+	    else if (list->dv == cdv)
 	      {
 		for (listp = &list->next; (list = *listp); listp = &list->next)
 		  {
 		    if (list->offset)
 		      continue;
 
-		    if (dv_as_opaque (list->dv) == dv_as_opaque (dv))
+		    if (list->dv == dv)
 		      {
 			*listp = list->next;
 			delete list;
@@ -3875,7 +3861,7 @@ canonicalize_values_star (variable **slot, dataflow_set *set)
 			break;
 		      }
 
-		    gcc_assert (dv_as_opaque (list->dv) != dv_as_opaque (cdv));
+		    gcc_assert (list->dv != cdv);
 		  }
 	      }
 	    else
@@ -3884,9 +3870,7 @@ canonicalize_values_star (variable **slot, dataflow_set *set)
 	    if (flag_checking)
 	      while (list)
 		{
-		  if (list->offset == 0
-		      && (dv_as_opaque (list->dv) == dv_as_opaque (dv)
-			  || dv_as_opaque (list->dv) == dv_as_opaque (cdv)))
+		  if (list->offset == 0 && (list->dv == dv || list->dv == cdv))
 		    gcc_unreachable ();
 
 		  list = list->next;
@@ -4475,7 +4459,7 @@ variable_post_merge_new_vals (variable **slot, dfset_post_merge *dfpm)
 			check_dupes = true;
 			break;
 		      }
-		    else if (dv_as_opaque (att->dv) == dv_as_opaque (var->dv))
+		    else if (att->dv == var->dv)
 		      curp = attp;
 		  }
 
@@ -4485,7 +4469,7 @@ variable_post_merge_new_vals (variable **slot, dfset_post_merge *dfpm)
 		  while (*curp)
 		    if ((*curp)->offset == 0
 			&& GET_MODE ((*curp)->loc) == GET_MODE (node->loc)
-			&& dv_as_opaque ((*curp)->dv) == dv_as_opaque (var->dv))
+			&& (*curp)->dv == var->dv)
 		      break;
 		    else
 		      curp = &(*curp)->next;
@@ -4989,7 +4973,7 @@ dump_onepart_variable_differences (variable *var1, variable *var2)
 
   gcc_assert (var1 != var2);
   gcc_assert (dump_file);
-  gcc_assert (dv_as_opaque (var1->dv) == dv_as_opaque (var2->dv));
+  gcc_assert (var1->dv == var2->dv);
   gcc_assert (var1->n_var_parts == 1
 	      && var2->n_var_parts == 1);
 
@@ -5054,8 +5038,7 @@ variable_different_p (variable *var1, variable *var2)
 
   if (var1->onepart && var1->n_var_parts)
     {
-      gcc_checking_assert (dv_as_opaque (var1->dv) == dv_as_opaque (var2->dv)
-			   && var1->n_var_parts == 1);
+      gcc_checking_assert (var1->dv == var2->dv && var1->n_var_parts == 1);
       /* One-part values have locations in a canonical order.  */
       return onepart_variable_different_p (var1, var2);
     }
@@ -7656,7 +7639,7 @@ set_slot_part (dataflow_set *set, rtx loc, variable **slot,
     onepart = dv_onepart_p (dv);
 
   gcc_checking_assert (offset == 0 || !onepart);
-  gcc_checking_assert (loc != dv_as_opaque (dv));
+  gcc_checking_assert (dv != loc);
 
   if (! flag_var_tracking_uninit)
     initialized = VAR_INIT_STATUS_INITIALIZED;
@@ -7684,7 +7667,7 @@ set_slot_part (dataflow_set *set, rtx loc, variable **slot,
     {
       int r = -1, c = 0;
 
-      gcc_assert (dv_as_opaque (var->dv) == dv_as_opaque (dv));
+      gcc_assert (var->dv == dv);
 
       pos = 0;
 
@@ -7950,8 +7933,7 @@ clobber_slot_part (dataflow_set *set, rtx loc, variable **slot,
 		  for (anode = *anextp; anode; anode = anext)
 		    {
 		      anext = anode->next;
-		      if (dv_as_opaque (anode->dv) == dv_as_opaque (var->dv)
-			  && anode->offset == offset)
+		      if (anode->dv == var->dv && anode->offset == offset)
 			{
 			  delete anode;
 			  *anextp = anext;
@@ -7980,8 +7962,7 @@ clobber_variable_part (dataflow_set *set, rtx loc, decl_or_value dv,
 {
   variable **slot;
 
-  if (!dv_as_opaque (dv)
-      || (!dv_is_value_p (dv) && ! DECL_P (dv_as_decl (dv))))
+  if (!dv || (!dv_is_value_p (dv) && ! DECL_P (dv_as_decl (dv))))
     return;
 
   slot = shared_hash_find_slot_noinsert (set->vars, dv);

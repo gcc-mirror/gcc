@@ -117,6 +117,10 @@ public:
   //      ...use ptr.known_second ()...
   T2 *second_or_null () const;
 
+  bool operator == (const pointer_mux &pm) const { return m_ptr == pm.m_ptr; }
+
+  bool operator != (const pointer_mux &pm) const { return m_ptr != pm.m_ptr; }
+
   // Return true if the pointer is a T.
   //
   // This is only valid if T1 and T2 are distinct and if T can be
