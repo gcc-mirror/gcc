@@ -241,6 +241,24 @@ case ${host} in
       ;;
   esac
   tmake_file="$tmake_file t-slibgcc-darwin"
+  # newer toolsets produce warnings when building for unsupported versions.
+  case ${host} in
+    *-*-darwin1[89]* | *-*-darwin2* )
+      tmake_file="t-darwin-min-8 $tmake_file"
+      ;;
+    *-*-darwin9* | *-*-darwin1[0-7]*)
+      tmake_file="t-darwin-min-5 $tmake_file"
+      ;;
+    *-*-darwin[4-8]*)
+      tmake_file="t-darwin-min-1 $tmake_file"
+      ;;
+    *)
+      # Fall back to configuring for the oldest system known to work with
+      # all archs and the current sources.
+      tmake_file="t-darwin-min-5 $tmake_file"
+      echo "Warning: libgcc configured to support macOS 10.5" 1>&2
+      ;;
+  esac
   extra_parts="crt3.o libd10-uwfef.a crttms.o crttme.o libemutls_w.a"
   ;;
 *-*-dragonfly*)
