@@ -44,7 +44,6 @@ macro_rules! impl_uint {
                 }
 
                 pub fn to_le(self) -> Self {
-                    #[cfg(target_endian = "little")]
                     {
                         self
                     }
