@@ -7797,6 +7797,25 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (bit_and (POPCOUNT @0) integer_onep)
   (PARITY @0))
 
+/* popcount(X&Y) + popcount(X|Y) is popcount(x) + popcount(Y).  */
+(simplify
+  (plus:c (POPCOUNT:s (bit_and:s @0 @1)) (POPCOUNT:s (bit_ior:cs @0 @1)))
+  (plus (POPCOUNT @0) (POPCOUNT @1)))
+
+/* popcount(X) + popcount(Y) - popcount(X&Y) is popcount(X|Y).  */
+/* popcount(X) + popcount(Y) - popcount(X|Y) is popcount(X&Y).  */
+(for popcount (POPCOUNT)
+  (for log1 (bit_and bit_ior)
+       log2 (bit_ior bit_and)
+    (simplify
+      (minus (plus:s (popcount:s @0) (popcount:s @1))
+	     (popcount:s (log1:cs @0 @1)))
+      (popcount (log2 @0 @1)))
+    (simplify
+      (plus:c (minus:s (popcount:s @0) (popcount:s (log1:cs @0 @1)))
+	      (popcount:s @1))
+      (popcount (log2 @0 @1)))))
+
 /* PARITY simplifications.  */
 /* parity(~X) is parity(X).  */
 (simplify
