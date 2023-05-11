@@ -775,11 +775,13 @@ protected:
     return clone_macro_invocation_impl ();
   }
 
+public:
   /*virtual*/ MacroInvocation *clone_macro_invocation_impl () const
   {
     return new MacroInvocation (*this);
   }
 
+protected:
   Item *clone_item_impl () const override
   {
     return clone_macro_invocation_impl ();
