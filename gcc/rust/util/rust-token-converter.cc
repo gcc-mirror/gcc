@@ -51,23 +51,10 @@ pop_group (std::vector<ProcMacro::TokenStream> &streams,
 }
 
 static void
-dispatch_float_literals (ProcMacro::TokenStream &ts,
-			 const const_TokenPtr &token)
+handle_suffix (ProcMacro::TokenStream &ts, const const_TokenPtr &token,
+	       ProcMacro::LitKind kind)
 {
   auto str = token->as_string ();
-  auto kind = ProcMacro::LitKind::make_float ();
-  auto lookup = suffixes.lookup (token->get_type_hint ());
-  auto suffix = suffixes.is_iter_ok (lookup) ? lookup->second : "";
-  ts.push (ProcMacro::TokenTree::make_tokentree (
-    ProcMacro::Literal::make_literal (kind, str, suffix)));
-}
-
-static void
-dispatch_integer_literals (ProcMacro::TokenStream &ts,
-			   const const_TokenPtr &token)
-{
-  auto str = token->as_string ();
-  auto kind = ProcMacro::LitKind::make_integer ();
   auto lookup = suffixes.lookup (token->get_type_hint ());
   auto suffix = suffixes.is_iter_ok (lookup) ? lookup->second : "";
   ts.push (ProcMacro::TokenTree::make_tokentree (
@@ -85,10 +72,12 @@ convert (const std::vector<const_TokenPtr> &tokens)
 	{
 	// Literals
 	case FLOAT_LITERAL:
-	  dispatch_float_literals (trees.back (), token);
+	  handle_suffix (trees.back (), token,
+			 ProcMacro::LitKind::make_float ());
 	  break;
 	case INT_LITERAL:
-	  dispatch_integer_literals (trees.back (), token);
+	  handle_suffix (trees.back (), token,
+			 ProcMacro::LitKind::make_integer ());
 	  break;
 	case CHAR_LITERAL:
 	  trees.back ().push (ProcMacro::TokenTree::make_tokentree (
