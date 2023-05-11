@@ -2241,6 +2241,39 @@ vector_insn_info::update_fault_first_load_avl (insn_info *insn)
   return false;
 }
 
+static const char *
+vlmul_to_str (vlmul_type vlmul)
+{
+  switch (vlmul)
+    {
+    case LMUL_1:
+      return "m1";
+    case LMUL_2:
+      return "m2";
+    case LMUL_4:
+      return "m4";
+    case LMUL_8:
+      return "m8";
+    case LMUL_RESERVED:
+      return "INVALID LMUL";
+    case LMUL_F8:
+      return "mf8";
+    case LMUL_F4:
+      return "mf4";
+    case LMUL_F2:
+      return "mf2";
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
+static const char *
+policy_to_str (bool agnostic_p)
+{
+  return agnostic_p ? "agnostic" : "undisturbed";
+}
+
 void
 vector_insn_info::dump (FILE *file) const
 {
@@ -2272,10 +2305,10 @@ vector_insn_info::dump (FILE *file) const
   fprintf (file, "AVL=");
   print_rtl_single (file, get_avl ());
   fprintf (file, "SEW=%d,", get_sew ());
-  fprintf (file, "VLMUL=%d,", get_vlmul ());
+  fprintf (file, "VLMUL=%s,", vlmul_to_str (get_vlmul ()));
   fprintf (file, "RATIO=%d,", get_ratio ());
-  fprintf (file, "TAIL_POLICY=%d,", get_ta ());
-  fprintf (file, "MASK_POLICY=%d", get_ma ());
+  fprintf (file, "TAIL_POLICY=%s,", policy_to_str (get_ta ()));
+  fprintf (file, "MASK_POLICY=%s", policy_to_str (get_ma ()));
   fprintf (file, "]\n");
 
   if (valid_p ())
