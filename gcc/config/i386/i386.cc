@@ -20417,12 +20417,14 @@ ix86_widen_mult_cost (const struct processor_costs *cost,
   int basic_cost = 0;
   switch (mode)
     {
+    case V4HImode:
     case V8HImode:
     case V16HImode:
       if (!uns_p || mode == V16HImode)
 	extra_cost = cost->sse_op * 2;
       basic_cost = cost->mulss * 2 + cost->sse_op * 4;
       break;
+    case V2SImode:
     case V4SImode:
     case V8SImode:
       /* pmulhw/pmullw can be used.  */
