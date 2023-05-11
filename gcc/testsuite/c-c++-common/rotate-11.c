@@ -1,6 +1,6 @@
 /* PR tree-optimization/108440 */
 /* { dg-do compile { target { { ilp32 || lp64 } || llp64 } } } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdump-tree-optimized --param logical-op-non-short-circuit=1" } */
 /* { dg-final { scan-tree-dump-times " r<< " 5 "optimized" } } */
 /* { dg-final { scan-tree-dump-times " \\\& 7;" 4 "optimized" } } */
 
