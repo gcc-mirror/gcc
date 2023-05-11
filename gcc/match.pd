@@ -7766,6 +7766,32 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (cmp (popcount @0) integer_zerop)
       (rep @0 { build_zero_cst (TREE_TYPE (@0)); }))))
 
+/* popcount(bswap(x)) is popcount(x).  */
+(for popcount (POPCOUNT)
+  (for bswap (BUILT_IN_BSWAP16 BUILT_IN_BSWAP32
+	      BUILT_IN_BSWAP64 BUILT_IN_BSWAP128)
+    (simplify
+      (popcount (convert?@0 (bswap:s@1 @2)))
+      (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	   && INTEGRAL_TYPE_P (TREE_TYPE (@1)))
+	(with { unsigned int prec0 = TYPE_PRECISION (TREE_TYPE (@0));
+		unsigned int prec1 = TYPE_PRECISION (TREE_TYPE (@1)); }
+	  (if (prec0 == prec1 || (prec0 > prec1 && TYPE_UNSIGNED (@1)))
+	    (popcount @2)))))))
+
+/* popcount(rotate(X Y)) is popcount(X).  */
+(for popcount (POPCOUNT)
+  (for rot (lrotate rrotate)
+    (simplify
+      (popcount (convert?@0 (rot:s@1 @2 @3)))
+      (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	   && INTEGRAL_TYPE_P (TREE_TYPE (@1))	
+	   && (GIMPLE || !TREE_SIDE_EFFECTS (@3)))
+	(with { unsigned int prec0 = TYPE_PRECISION (TREE_TYPE (@0));
+		unsigned int prec1 = TYPE_PRECISION (TREE_TYPE (@1)); }
+	  (if (prec0 == prec1 || (prec0 > prec1 && TYPE_UNSIGNED (@1)))
+	    (popcount @2)))))))
+
 /* Canonicalize POPCOUNT(x)&1 as PARITY(X).  */
 (simplify
   (bit_and (POPCOUNT @0) integer_onep)
@@ -7776,6 +7802,30 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
   (PARITY (bit_not @0))
   (PARITY @0))
+
+/* parity(bswap(x)) is parity(x).  */
+(for parity (PARITY)
+  (for bswap (BUILT_IN_BSWAP16 BUILT_IN_BSWAP32
+	      BUILT_IN_BSWAP64 BUILT_IN_BSWAP128)
+    (simplify
+      (parity (convert?@0 (bswap:s@1 @2)))
+      (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	   && INTEGRAL_TYPE_P (TREE_TYPE (@1))
+	   && TYPE_PRECISION (TREE_TYPE (@0))
+	      >= TYPE_PRECISION (TREE_TYPE (@1)))
+	(parity @2)))))
+
+/* parity(rotate(X Y)) is parity(X).  */
+(for parity (PARITY)
+  (for rot (lrotate rrotate)
+    (simplify
+      (parity (convert?@0 (rot:s@1 @2 @3)))
+      (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	   && INTEGRAL_TYPE_P (TREE_TYPE (@1))
+	   && (GIMPLE || !TREE_SIDE_EFFECTS (@3))
+	   && TYPE_PRECISION (TREE_TYPE (@0))
+	      >= TYPE_PRECISION (TREE_TYPE (@1)))
+	(parity @2)))))
 
 /* parity(X)^parity(Y) is parity(X^Y).  */
 (simplify
