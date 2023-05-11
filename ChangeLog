@@ -1,3 +1,7 @@
+2023-05-10  Pan Li  <pan2.li@intel.com>
+
+	* MAINTAINERS: Add myself.
+
 2023-04-28  Eugene Rozenfeld  <erozen@microsoft.com>
 
 	* Makefile.in: Define PROFILE_MERGER

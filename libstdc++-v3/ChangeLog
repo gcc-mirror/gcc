@@ -1,3 +1,22 @@
+2023-05-10  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h
+	(_NodeBuilder<>::_S_build): Use __node_ptr.
+	(_ReuseOrAllocNode<>): Use __node_ptr in place of __node_type*.
+	(_AllocNode<>): Likewise.
+	(_Equality<>::_M_equal): Remove const_iterator usages. Only preserved
+	to call std::is_permutation in the non-unique key implementation.
+	* include/bits/hashtable.h (_Hashtable<>::_M_update_begin()): Capture
+	_M_begin() once.
+	(_Hashtable<>::_M_bucket_begin(size_type)): Implement implicitly inline.
+	(_Hashtable<>::_M_insert_bucket_begin): Likewise.
+	(_Hashtable<>::_M_remove_bucket_begin): Likewise.
+	(_Hashtable<>::_M_compute_hash_code): Use __node_ptr rather than
+	const_iterator.
+	(_Hashtable<>::find): Likewise.
+	(_Hashtable<>::_M_emplace): Likewise.
+	(_Hashtable<>::_M_insert_unique): Likewise.
+
 2023-05-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* python/libstdcxx/v6/printers.py (StdChronoDurationPrinter):

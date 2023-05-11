@@ -1,3 +1,16 @@
+2023-05-10  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* dump-parse-tree.cc (gfc_debug_expr): Remove forward declaration.
+	(debug): Add DEBUG_FUNCTION.
+	(show_code_node): Remove erroneous whitespace.
+
+2023-05-10  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR fortran/109624
+	* dump-parse-tree.cc (debug): New function for gfc_namespace.
+	(gfc_debug_code): Delete forward declaration.
+	(show_attr): Make sure to print balanced braces.
+
 2023-05-08  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* resolve.cc (resolve_select_type): Fix coding style.

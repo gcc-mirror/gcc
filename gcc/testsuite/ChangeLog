@@ -1,3 +1,97 @@
+2023-05-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109680
+	* g++.dg/ext/is_convertible6.C: New test.
+
+2023-05-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/92658
+	* gcc.target/i386/pr92658-sse4-4b.c: New test.
+	* gcc.target/i386/pr92658-sse4-8b.c: New test.
+
+2023-05-10  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.c-torture/execute/20230510-1.c: New test.
+
+2023-05-10  Jason Merrill  <jason@redhat.com>
+
+	DR 2543
+	* g++.dg/DRs/dr2543.C: New test.
+
+2023-05-10  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/DRs/dr2478.C: Handle -fimplicit-constexpr.
+	* g++.dg/cpp23/consteval-if12.C: Adjust diagnostics.
+	* g++.dg/cpp2a/consteval20.C: Likewise.
+	* g++.dg/cpp2a/consteval24.C: Likewise.
+	* g++.dg/cpp2a/srcloc20.C: Likewise.
+
+2023-05-10  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/torture/pr106922.C: Force _GLIBCXX_USE_CXX11_ABI to 1.
+
+2023-05-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/pr99195_4.c: Add tests for sqmovun.
+
+2023-05-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* gcc.target/aarch64/simd/pr99195_1.c: Add tests for zip and rev
+	intrinsics.
+
+2023-05-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* gcc.target/aarch64/simd/pr99195_1.c: Add testing for qadd, qsub.
+	* gcc.target/aarch64/simd/pr99195_6.c: New test.
+
+2023-05-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/simd/pr99195_5.c: New test.
+
+2023-05-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* gcc.target/aarch64/simd/pr99195_4.c: Add tests for vmovn, vqmovn.
+
+2023-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109756
+	* g++.dg/cpp0x/gen-attrs-78.C: New test.
+
+2023-05-10  Li Xu  <xuli1@eswincomputing.com>
+
+	* gcc.target/riscv/rvv/base/scalar_move-10.c: New test.
+	* gcc.target/riscv/rvv/base/scalar_move-11.c: New test.
+
+2023-05-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/v-2.c: Adapt testcase.
+	* gcc.target/riscv/rvv/autovec/zve32f-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve32f-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve32x-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve32x-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve64d-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve64d-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve64d_zvl128b-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve64f-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve64f-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve64f_zvl128b-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve64x-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve64x-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve64x_zvl128b-2.c: Ditto.
+
+2023-05-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109773
+	* gcc.target/riscv/rvv/vsetvl/pr109773-1.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/pr109773-2.c: New test.
+
+2023-05-10  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.c-torture/execute/20230509-1.c: New test.
+
 2023-05-09  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/109752

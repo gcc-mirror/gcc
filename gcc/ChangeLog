@@ -1,3 +1,102 @@
+2023-05-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386.md (*concat<mode><dwi>3_1): Use preferred
+	[(const_int 0)] idiom, instead of [(clobber (const_int 0))].
+	(*concat<mode><dwi>3_2): Likewise.
+	(*concat<mode><dwi>3_3): Likewise.
+	(*concat<mode><dwi>3_4): Likewise.
+	(*concat<mode><dwi>3_5): Likewise.
+	(*concat<mode><dwi>3_6): Likewise.
+	(*concat<mode><dwi>3_7): Likewise.
+
+2023-05-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/92658
+	* config/i386/mmx.md (sse4_1_<code>v2qiv2si2): New insn pattern.
+	(<insn>v4qiv4hi2): New expander.
+	(<insn>v2hiv2si2): Ditto.
+	(<insn>v2qiv2si2): Ditto.
+	(<insn>v2qiv2hi2): Ditto.
+
+2023-05-10  Jeff Law  <jlaw@ventanamicro>
+
+	* config/h8300/constraints.md (Q): Make this a special memory
+	constraint.
+	(Zz): Similarly.
+
+2023-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/109788
+	* ipa-prop.cc (ipa_get_callee_param_type): Don't return TREE_VALUE (t)
+	if t is void_list_node.
+
+2023-05-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_sqmovun<mode>_insn_le): Delete.
+	(aarch64_sqmovun<mode>_insn_be): Delete.
+	(aarch64_sqmovun<mode><vczle><vczbe>): New define_insn.
+	(aarch64_sqmovun<mode>): Delete expander.
+
+2023-05-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* config/aarch64/aarch64-simd.md (aarch64_<PERMUTE:perm_insn><mode>):
+	Rename to...
+	(aarch64_<PERMUTE:perm_insn><mode><vczle><vczbe>): ... This.
+	(aarch64_rev<REVERSE:rev_op><mode>): Rename to...
+	(aarch64_rev<REVERSE:rev_op><mode><vczle><vczbe>): ... This.
+
+2023-05-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* config/aarch64/aarch64-simd.md (aarch64_<su_optab>q<addsub><mode>):
+	Rename to...
+	(aarch64_<su_optab>q<addsub><mode><vczle><vczbe>): ... This.
+	(aarch64_<sur>qadd<mode>): Rename to...
+	(aarch64_<sur>qadd<mode><vczle><vczbe>): ... This.
+
+2023-05-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_<sur>q<r>shr<u>n_n<mode>_insn_le): Delete.
+	(aarch64_<sur>q<r>shr<u>n_n<mode>_insn_be): Delete.
+	(aarch64_<sur>q<r>shr<u>n_n<mode>_insn<vczle><vczbe>): New define_insn.
+	(aarch64_<sur>q<r>shr<u>n_n<mode>): Simplify expander.
+
+2023-05-10  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* config/aarch64/aarch64-simd.md (aarch64_xtn<mode>_insn_le): Delete.
+	(aarch64_xtn<mode>_insn_be): Likewise.
+	(trunc<mode><Vnarrowq>2): Rename to...
+	(trunc<mode><Vnarrowq>2<vczle><vczbe>): ... This.
+	(aarch64_xtn<mode>): Move under the above.  Just emit the truncate RTL.
+	(aarch64_<su>qmovn<mode>): Likewise.
+	(aarch64_<su>qmovn<mode><vczle><vczbe>): New define_insn.
+	(aarch64_<su>qmovn<mode>_insn_le): Delete.
+	(aarch64_<su>qmovn<mode>_insn_be): Likewise.
+
+2023-05-10  Li Xu  <xuli1@eswincomputing.com>
+
+	* config/riscv/riscv-vsetvl.cc (gen_vsetvl_pat): For vfmv.f.s/vmv.x.s
+	intruction replace null avl with (const_int 0).
+
+2023-05-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc (riscv_support_vector_misalignment): Fix
+	incorrect codes.
+
+2023-05-10  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109773
+	* config/riscv/riscv-vsetvl.cc (avl_source_has_vsetvl_p): New function.
+	(source_equal_p): Fix dead loop in vsetvl avl checking.
+
+2023-05-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.cc (cris_postdbr_cmpelim): Correct mode
+	of modeadjusted_dccr.
+
 2023-05-09  Christophe Lyon  <christophe.lyon@arm.com>
 
 	* config/arm/arm-mve-builtins-base.cc (vmaxaq, vminaq): New.

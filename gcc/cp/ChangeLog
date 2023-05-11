@@ -1,3 +1,41 @@
+2023-05-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109680
+	* method.cc (build_trait_object): New.
+	(assignable_expr): Use it.
+	(ref_xes_from_temporary): Likewise.
+	(is_convertible_helper): Likewise.  Check FUNC_OR_METHOD_TYPE_P.
+
+2023-05-10  Jason Merrill  <jason@redhat.com>
+
+	* call.cc (convert_like_internal): Share ck_ref_bind handling
+	between all bad conversions.
+
+2023-05-10  Jason Merrill  <jason@redhat.com>
+
+	DR 2543
+	* constexpr.cc (cxx_eval_outermost_constant_expr): Preserve
+	TARGET_EXPR flags.
+	(potential_constant_expression_1): Check TARGET_EXPR_ELIDING_P.
+	* typeck2.cc (store_init_value): Diagnose constinit sooner.
+
+2023-05-10  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (cxx_eval_outermost_constant_expr): Always check
+	for address of immediate fn.
+	(maybe_constant_init_1): Evaluate PTRMEM_CST.
+
+2023-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109756
+	* parser.cc (cp_parser_std_attribute): For unknown attributes with
+	arguments set TREE_VALUE (attribute) to error_mark_node after skipping
+	the balanced tokens.
+	(cp_parser_std_attribute_list): If ... is used after attribute without
+	arguments, diagnose it and return error_mark_node.  If
+	TREE_VALUE (attribute) is error_mark_node, don't call
+	make_pack_expansion nor return early error_mark_node.
+
 2023-05-09  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/109752
