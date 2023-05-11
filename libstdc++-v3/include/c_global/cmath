@@ -1771,6 +1771,205 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
 
+#undef acosf
+#undef acosl
+#undef asinf
+#undef asinl
+#undef atanf
+#undef atanl
+#undef atan2f
+#undef atan2l
+#undef ceilf
+#undef ceill
+#undef cosf
+#undef cosl
+#undef coshf
+#undef coshl
+#undef expf
+#undef expl
+#undef fabsf
+#undef fabsl
+#undef floorf
+#undef floorl
+#undef fmodf
+#undef fmodl
+#undef frexpf
+#undef frexpl
+#undef ldexpf
+#undef ldexpl
+#undef logf
+#undef logl
+#undef log10f
+#undef log10l
+#undef modff
+#undef modfl
+#undef powf
+#undef powl
+#undef sinf
+#undef sinl
+#undef sinhf
+#undef sinhl
+#undef sqrtf
+#undef sqrtl
+#undef tanf
+#undef tanl
+#undef tanhf
+#undef tanhl
+
+#ifdef _GLIBCXX_HAVE_ACOSF
+  using ::acosf;
+#endif
+#ifdef _GLIBCXX_HAVE_ACOSL
+  using ::acosl;
+#endif
+
+#ifdef _GLIBCXX_HAVE_ASINF
+  using ::asinf;
+#endif
+#ifdef _GLIBCXX_HAVE_ASINL
+  using ::asinl;
+#endif
+
+#ifdef _GLIBCXX_HAVE_ATANF
+  using ::atanf;
+#endif
+#ifdef _GLIBCXX_HAVE_ATANL
+  using ::atanl;
+#endif
+
+#ifdef _GLIBCXX_HAVE_ATAN2F
+  using ::atan2f;
+#endif
+#ifdef _GLIBCXX_HAVE_ATAN2L
+  using ::atan2l;
+#endif
+
+#ifdef _GLIBCXX_HAVE_CEILF
+  using ::ceilf;
+#endif
+#ifdef _GLIBCXX_HAVE_CEILL
+  using ::ceill;
+#endif
+
+#ifdef _GLIBCXX_HAVE_COSF
+  using ::cosf;
+#endif
+#ifdef _GLIBCXX_HAVE_COSL
+  using ::cosl;
+#endif
+
+#ifdef _GLIBCXX_HAVE_COSHF
+  using ::coshf;
+#endif
+#ifdef _GLIBCXX_HAVE_COSHL
+  using ::coshl;
+#endif
+
+#ifdef _GLIBCXX_HAVE_EXPF
+  using ::expf;
+#endif
+#ifdef _GLIBCXX_HAVE_EXPL
+  using ::expl;
+#endif
+
+#ifdef _GLIBCXX_HAVE_FABSF
+  using ::fabsf;
+#endif
+#ifdef _GLIBCXX_HAVE_FABSL
+  using ::fabsl;
+#endif
+
+#ifdef _GLIBCXX_HAVE_FLOORF
+  using ::floorf;
+#endif
+#ifdef _GLIBCXX_HAVE_FLOORL
+  using ::floorl;
+#endif
+
+#ifdef _GLIBCXX_HAVE_FMODF
+  using ::fmodf;
+#endif
+#ifdef _GLIBCXX_HAVE_FMODL
+  using ::fmodl;
+#endif
+
+#ifdef _GLIBCXX_HAVE_FREXPF
+  using ::frexpf;
+#endif
+#ifdef _GLIBCXX_HAVE_FREXPL
+  using ::frexpl;
+#endif
+
+#ifdef _GLIBCXX_HAVE_LDEXPF
+  using ::ldexpf;
+#endif
+#ifdef _GLIBCXX_HAVE_LDEXPL
+  using ::ldexpl;
+#endif
+
+#ifdef _GLIBCXX_HAVE_LOGF
+  using ::logf;
+#endif
+#ifdef _GLIBCXX_HAVE_LOGL
+  using ::logl;
+#endif
+
+#ifdef _GLIBCXX_HAVE_LOG10F
+  using ::log10f;
+#endif
+#ifdef _GLIBCXX_HAVE_LOG10L
+  using ::log10l;
+#endif
+
+#ifdef _GLIBCXX_HAVE_MODFF
+  using ::modff;
+#endif
+#ifdef _GLIBCXX_HAVE_MODFL
+  using ::modfl;
+#endif
+
+#ifdef _GLIBCXX_HAVE_POWF
+  using ::powf;
+#endif
+#ifdef _GLIBCXX_HAVE_POWL
+  using ::powl;
+#endif
+
+#ifdef _GLIBCXX_HAVE_SINF
+  using ::sinf;
+#endif
+#ifdef _GLIBCXX_HAVE_SINL
+  using ::sinl;
+#endif
+
+#ifdef _GLIBCXX_HAVE_SINHF
+  using ::sinhf;
+#endif
+#ifdef _GLIBCXX_HAVE_SINHL
+  using ::sinhl;
+#endif
+
+#ifdef _GLIBCXX_HAVE_SQRTF
+  using ::sqrtf;
+#endif
+#ifdef _GLIBCXX_HAVE_SQRTL
+  using ::sqrtl;
+#endif
+
+#ifdef _GLIBCXX_HAVE_TANF
+  using ::tanf;
+#endif
+#ifdef _GLIBCXX_HAVE_TANL
+  using ::tanl;
+#endif
+
+#ifdef _GLIBCXX_HAVE_TANHF
+  using ::tanhf;
+#endif
+#ifdef _GLIBCXX_HAVE_TANHL
+  using ::tanhl;
+#endif
+
 #ifdef _GLIBCXX_USE_C99_MATH_FUNCS
 
 #undef acosh
