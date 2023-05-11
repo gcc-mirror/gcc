@@ -19739,7 +19739,10 @@ bool scalar_test_neg (double source);
 bool scalar_test_neg (__ieee128 source);
 @end smallexample
 
-The @code{scalar_extract_exp} and @code{scalar_extract_sig}
+The @code{scalar_extract_exp} with a 64-bit source argument
+function requires an environment supporting ISA 3.0 or later.
+The @code{scalar_extract_exp} with a 128-bit source argument
+and @code{scalar_extract_sig}
 functions require a 64-bit environment supporting ISA 3.0 or later.
 The @code{scalar_extract_exp} and @code{scalar_extract_sig} built-in
 functions return the significand and the biased exponent value

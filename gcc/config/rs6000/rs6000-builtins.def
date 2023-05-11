@@ -2846,6 +2846,8 @@
   const signed int __builtin_dtstsfi_ov_td (const int<6>, _Decimal128);
     TSTSFI_OV_TD dfptstsfi_unordered_td {}
 
+  const signed int  __builtin_vsx_scalar_extract_exp (double);
+    VSEEDP xsxexpdp_si {}
 
 [power9-64]
   void __builtin_altivec_xst_len_r (vsc, void *, long);
@@ -2859,9 +2861,6 @@
 
   pure vsc __builtin_vsx_lxvl (const void *, signed long);
     LXVL lxvl {}
-
-  const signed long __builtin_vsx_scalar_extract_exp (double);
-    VSEEDP xsxexpdp {}
 
   const signed long __builtin_vsx_scalar_extract_sig (double);
     VSESDP xsxsigdp {}
