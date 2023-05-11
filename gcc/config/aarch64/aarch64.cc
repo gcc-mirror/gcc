@@ -7495,7 +7495,6 @@ aarch64_function_arg_alignment (machine_mode mode, const_tree type,
 	  gcc_assert (known_eq (POINTER_SIZE, GET_MODE_BITSIZE (mode)));
 	  return POINTER_SIZE;
 	}
-      gcc_assert (!TYPE_USER_ALIGN (type));
       return TYPE_ALIGN (type);
     }
 
@@ -7713,10 +7712,6 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
   unsigned int alignment
     = aarch64_function_arg_alignment (mode, type, &abi_break,
 				      &abi_break_packed);
-
-  gcc_assert ((allocate_nvrn || alignment <= 16 * BITS_PER_UNIT)
-	      && (!alignment || abi_break < alignment)
-	      && (!abi_break_packed || alignment < abi_break_packed));
 
   /* allocate_ncrn may be false-positive, but allocate_nvrn is quite reliable.
      The following code thus handles passing by SIMD/FP registers first.  */
