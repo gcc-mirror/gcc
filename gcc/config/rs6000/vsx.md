@@ -5065,22 +5065,22 @@
   [(set_attr "type" "vecmove")])
 
 ;; VSX Scalar Insert Exponent Double-Precision
-(define_insn "xsiexpdp"
+(define_insn "xsiexpdp_<mode>"
   [(set (match_operand:DF 0 "vsx_register_operand" "=wa")
 	(unspec:DF [(match_operand:DI 1 "register_operand" "r")
-		    (match_operand:DI 2 "register_operand" "r")]
+		    (match_operand:GPR 2 "register_operand" "r")]
 	 UNSPEC_VSX_SIEXPDP))]
-  "TARGET_P9_VECTOR && TARGET_64BIT"
+  "TARGET_P9_VECTOR && TARGET_POWERPC64"
   "xsiexpdp %x0,%1,%2"
   [(set_attr "type" "fpsimple")])
 
 ;; VSX Scalar Insert Exponent Double-Precision Floating Point Argument
-(define_insn "xsiexpdpf"
+(define_insn "xsiexpdpf_<mode>"
   [(set (match_operand:DF 0 "vsx_register_operand" "=wa")
 	(unspec:DF [(match_operand:DF 1 "register_operand" "r")
-		    (match_operand:DI 2 "register_operand" "r")]
+		    (match_operand:GPR 2 "register_operand" "r")]
 	 UNSPEC_VSX_SIEXPDP))]
-  "TARGET_P9_VECTOR && TARGET_64BIT"
+  "TARGET_P9_VECTOR && TARGET_POWERPC64"
   "xsiexpdp %x0,%1,%2"
   [(set_attr "type" "fpsimple")])
 

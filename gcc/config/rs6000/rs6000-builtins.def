@@ -2867,10 +2867,10 @@
 
   const double __builtin_vsx_scalar_insert_exp (unsigned long long, \
                                                 unsigned long long);
-    VSIEDP xsiexpdp {}
+    VSIEDP xsiexpdp_di {}
 
   const double __builtin_vsx_scalar_insert_exp_dp (double, unsigned long long);
-    VSIEDPF xsiexpdpf {}
+    VSIEDPF xsiexpdpf_di {}
 
   pure vsc __builtin_vsx_xl_len_r (void *, signed long);
     XL_LEN_R xl_len_r {}
