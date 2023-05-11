@@ -440,10 +440,10 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn_and_split "<optab><mode>3"
-  [(set (match_operand:V_VLSI 0 "register_operand" "=vr")
+  [(set (match_operand:V_VLSI 0 "register_operand"        "=vr")
     (any_shift:V_VLSI
-     (match_operand:V_VLSI 1 "register_operand"    " vr")
-     (match_operand:<VEL> 2 "csr_operand"      " rK")))]
+     (match_operand:V_VLSI 1 "register_operand"           " vr")
+     (match_operand:<VEL> 2 "vector_scalar_shift_operand" " rK")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
