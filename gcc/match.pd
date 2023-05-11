@@ -2573,6 +2573,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Try folding difference of addresses.  */
 (simplify
+ (minus (convert ADDR_EXPR@0) (convert (pointer_plus @1 @2)))
+ (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+  (with { poly_int64 diff; }
+   (if (ptr_difference_const (@0, @1, &diff))
+    (minus { build_int_cst_type (type, diff); } (convert @2))))))
+(simplify
+ (minus (convert (pointer_plus @0 @2)) (convert ADDR_EXPR@1))
+ (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+  (with { poly_int64 diff; }
+   (if (ptr_difference_const (@0, @1, &diff))
+    (plus (convert @2) { build_int_cst_type (type, diff); })))))
+(simplify
  (minus (convert ADDR_EXPR@0) (convert @1))
  (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
   (with { poly_int64 diff; }
