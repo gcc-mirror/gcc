@@ -776,6 +776,27 @@ split_nonconstant_init (tree dest, tree init)
   return code;
 }
 
+/* T is the initializer of a constexpr variable.  Set CONSTRUCTOR_MUTABLE_POISON
+   for any CONSTRUCTOR within T that contains (directly or indirectly) a mutable
+   member, thereby poisoning it so it can't be copied to another a constexpr
+   variable or read during constexpr evaluation.  */
+
+static void
+poison_mutable_constructors (tree t)
+{
+  if (TREE_CODE (t) != CONSTRUCTOR)
+    return;
+
+  if (cp_has_mutable_p (TREE_TYPE (t)))
+    {
+      CONSTRUCTOR_MUTABLE_POISON (t) = true;
+
+      if (vec<constructor_elt, va_gc> *elts = CONSTRUCTOR_ELTS (t))
+	for (const constructor_elt &ce : *elts)
+	  poison_mutable_constructors (ce.value);
+    }
+}
+
 /* Perform appropriate conversions on the initial value of a variable,
    store it in the declaration DECL,
    and print any error messages that are appropriate.
@@ -886,10 +907,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
       else
 	value = fold_non_dependent_init (value, tf_warning_or_error,
 					 /*manifestly_const_eval=*/true, decl);
-      if (TREE_CODE (value) == CONSTRUCTOR && cp_has_mutable_p (type))
-	/* Poison this CONSTRUCTOR so it can't be copied to another
-	   constexpr variable.  */
-	CONSTRUCTOR_MUTABLE_POISON (value) = true;
+      poison_mutable_constructors (value);
       const_init = (reduced_constant_expression_p (value)
 		    || error_operand_p (value));
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = const_init;
