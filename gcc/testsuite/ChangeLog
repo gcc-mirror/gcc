@@ -1,3 +1,10 @@
+2023-05-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2023-05-10  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/torture/pr106922.C: Force _GLIBCXX_USE_CXX11_ABI to 1.
+
 2023-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
