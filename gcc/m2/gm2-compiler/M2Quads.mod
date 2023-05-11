@@ -260,7 +260,7 @@ IMPORT M2Error ;
 CONST
    DebugStackOn = TRUE ;
    DebugVarients = FALSE ;
-   BreakAtQuad = 4423 ;
+   BreakAtQuad = 133 ;
    DebugTokPos = FALSE ;
 
 TYPE
@@ -301,8 +301,8 @@ TYPE
                              RecordSym   : CARDINAL ;
                              RecordType  : CARDINAL ;
                              RecordRef   : CARDINAL ;
-                             rw          : CARDINAL ;  (* The record variable.  *)
-                             RecordTokPos: CARDINAL ;  (* Token of the record.  *)
+                             rw          : CARDINAL ;          (* The record variable.  *)
+                             RecordTokPos: CARDINAL ;          (* Token of the record.  *)
                           END ;
 
    ForLoopInfo = POINTER TO RECORD
@@ -333,8 +333,9 @@ VAR
    WhileStack,
    ForStack,
    ExitStack,
-   ReturnStack          : StackOfWord ;   (* Return quadruple of the procedure.       *)
-   PriorityStack        : StackOfWord ;   (* Temporary variable holding old priority. *)
+   ReturnStack          : StackOfWord ;   (* Return quadruple of the procedure.  *)
+   PriorityStack        : StackOfWord ;   (* Temporary variable holding old      *)
+                                          (* priority.                           *)
    SuppressWith         : BOOLEAN ;
    QuadArray            : Index ;
    NextQuad             : CARDINAL ;  (* Next quadruple number to be created.    *)
@@ -3195,7 +3196,7 @@ BEGIN
    IF IsConstString(Exp) AND IsConst(Des)
    THEN
       GenQuadOtok (tokno, BecomesOp, Des, NulSym, Exp, TRUE,
-                   tokno, destok, exptok) ;
+                   destok, UnknownTokenNo, exptok) ;
       PutConstString (tokno, Des, GetString (Exp))
    ELSE
       IF GetMode(Des)=RightValue
@@ -3206,7 +3207,7 @@ BEGIN
             doIndrX (tokno, Des, Exp)
          ELSE
             GenQuadOtok (tokno, BecomesOp, Des, NulSym, Exp, TRUE,
-                         tokno, destok, exptok)
+                         destok, UnknownTokenNo, exptok)
          END
       ELSIF GetMode(Des)=LeftValue
       THEN
@@ -3227,7 +3228,7 @@ BEGIN
          END
       ELSE
          GenQuadOtok (tokno, BecomesOp, Des, NulSym, Exp, TRUE,
-                      tokno, destok, exptok)
+                      destok, UnknownTokenNo, exptok)
       END
    END
 END MoveWithMode ;
@@ -3542,6 +3543,17 @@ BEGIN
       MarkAsWrite (w) ;
       CheckCompatibleWithBecomes (Des, Exp, destok, exptok) ;
       combinedtok := MakeVirtualTok (becomesTokNo, destok, exptok) ;
+      IF DebugTokPos
+      THEN
+         MetaErrorT1 (becomesTokNo, 'becomestok {%1Oad}', Des) ;
+         MetaErrorT1 (destok, 'destok {%1Oad}', Des) ;
+         MetaErrorT1 (exptok, 'exptok {%1Oad}', Exp)
+      END ;
+      combinedtok := MakeVirtualTok (becomesTokNo, destok, exptok) ;
+      IF DebugTokPos
+      THEN
+         MetaErrorT1 (combinedtok, 'combined {%1Oad}', Des)
+      END ;
       IF (GetSType (Des) # NulSym) AND (NOT IsSet (GetDType (Des)))
       THEN
          (* Tell code generator to test runtime values of assignment so ensure we
@@ -3552,7 +3564,7 @@ BEGIN
       THEN
          CheckBecomesMeta (Des, Exp, combinedtok, destok, exptok)
       END ;
-      (* Traditional Assignment.  *)
+      (* Simple assignment.  *)
       MoveWithMode (becomesTokNo, Des, Exp, Array, destok, exptok, checkOverflow) ;
       IF checkTypes
       THEN
@@ -10925,7 +10937,7 @@ END CheckReturnType ;
 
 (*
    BuildReturn - Builds the Return part of the procedure.
-                 tokno is the location of the RETURN keyword.
+                 tokreturn is the location of the RETURN keyword.
                  The Stack is expected to contain:
 
 
@@ -10938,48 +10950,53 @@ END CheckReturnType ;
                  |------------|
 *)
 
-PROCEDURE BuildReturn (tokno: CARDINAL) ;
+PROCEDURE BuildReturn (tokreturn: CARDINAL) ;
 VAR
+   tokcombined,
+   tokexpr    : CARDINAL ;
    e2, t2,
    e1, t1,
    t, f,
-   Des   : CARDINAL ;
+   Des        : CARDINAL ;
 BEGIN
    IF IsBoolean (1)
    THEN
-      PopBool(t, f) ;
+      PopBooltok (t, f, tokexpr) ;
       (* Des will be a boolean type *)
-      Des := MakeTemporary (tokno, RightValue) ;
+      Des := MakeTemporary (tokexpr, RightValue) ;
       PutVar (Des, Boolean) ;
-      PushTF (Des, Boolean) ;
-      PushBool (t, f) ;
-      BuildAssignmentWithoutBounds (tokno, FALSE, TRUE) ;
-      PushTF (Des, Boolean)
+      PushTFtok (Des, Boolean, tokexpr) ;
+      PushBooltok (t, f, tokexpr) ;
+      BuildAssignmentWithoutBounds (tokreturn, FALSE, TRUE) ;
+      PushTFtok (Des, Boolean, tokexpr)
    END ;
-   PopTF (e1, t1) ;
+   PopTFtok (e1, t1, tokexpr) ;
+   tokcombined := MakeVirtualTok (tokreturn, tokreturn, tokexpr) ;
    IF e1 # NulSym
    THEN
       (* this will check that the type returned is compatible with
          the formal return type of the procedure.  *)
-      CheckReturnType (tokno, CurrentProc, e1, t1) ;
+      CheckReturnType (tokcombined, CurrentProc, e1, t1) ;
       (* dereference LeftValue if necessary *)
       IF GetMode (e1) = LeftValue
       THEN
          t2 := GetSType (CurrentProc) ;
-         e2 := MakeTemporary (tokno, RightValue) ;
+         e2 := MakeTemporary (tokexpr, RightValue) ;
          PutVar(e2, t2) ;
-         CheckPointerThroughNil (tokno, e1) ;
-         doIndrX (tokno, e2, e1) ;
+         CheckPointerThroughNil (tokexpr, e1) ;
+         doIndrX (tokexpr, e2, e1) ;
 	 (* here we check the data contents to ensure no overflow.  *)
-         BuildRange (InitReturnRangeCheck (tokno, CurrentProc, e2)) ;
-         GenQuadO (tokno, ReturnValueOp, e2, NulSym, CurrentProc, FALSE)
+         BuildRange (InitReturnRangeCheck (tokcombined, CurrentProc, e2)) ;
+         GenQuadOtok (tokcombined, ReturnValueOp, e2, NulSym, CurrentProc, FALSE,
+                      tokcombined, UnknownTokenNo, GetDeclaredMod (CurrentProc))
       ELSE
 	 (* here we check the data contents to ensure no overflow.  *)
-         BuildRange (InitReturnRangeCheck (tokno, CurrentProc, e1)) ;
-         GenQuadO (tokno, ReturnValueOp, e1, NulSym, CurrentProc, FALSE)
+         BuildRange (InitReturnRangeCheck (tokcombined, CurrentProc, e1)) ;
+         GenQuadOtok (tokcombined, ReturnValueOp, e1, NulSym, CurrentProc, FALSE,
+                      tokcombined, UnknownTokenNo, GetDeclaredMod (CurrentProc))
       END
    END ;
-   GenQuadO (tokno, GotoOp, NulSym, NulSym, PopWord(ReturnStack), FALSE) ;
+   GenQuadO (tokcombined, GotoOp, NulSym, NulSym, PopWord (ReturnStack), FALSE) ;
    PushWord (ReturnStack, NextQuad-1)
 END BuildReturn ;
 

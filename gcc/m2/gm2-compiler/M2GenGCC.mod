@@ -80,7 +80,10 @@ FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
                         NulSym ;
 
 FROM M2Batch IMPORT MakeDefinitionSource ;
-FROM M2LexBuf IMPORT FindFileNameFromToken, TokenToLineNo, TokenToLocation, MakeVirtualTok ;
+
+FROM M2LexBuf IMPORT FindFileNameFromToken, TokenToLineNo, TokenToLocation,
+                     MakeVirtualTok, UnknownTokenNo ;
+
 FROM M2Code IMPORT CodeBlock ;
 FROM M2Debug IMPORT Assert ;
 FROM M2Error IMPORT InternalError, WriteFormat0, WriteFormat1, WriteFormat2, WarnStringAt ;
@@ -167,6 +170,7 @@ FROM m2expr IMPORT GetIntegerZero, GetIntegerOne,
                    CompareTrees,
                    StringLength,
                    AreConstantsEqual,
+                   GetCstInteger,
                    BuildForeachWordInSetDoIfExpr,
                    BuildIfConstInVar,
                    BuildIfVarInVar,
@@ -467,7 +471,7 @@ BEGIN
    KillLocalVarOp     : CodeKillLocalVar (op3) |
    ProcedureScopeOp   : CodeProcedureScope (op3) |
    ReturnOp           : (* Not used as return is achieved by KillLocalVar.  *)  |
-   ReturnValueOp      : CodeReturnValue (op1, op3) |
+   ReturnValueOp      : CodeReturnValue (q) |
    TryOp              : CodeTry |
    ThrowOp            : CodeThrow (op3) |
    CatchBeginOp       : CodeCatchBegin |
@@ -507,7 +511,7 @@ BEGIN
    IfInOp             : CodeIfIn (q, op1, op2, op3) |
    IfNotInOp          : CodeIfNotIn (q, op1, op2, op3) |
    IndrXOp            : CodeIndrX (q, op1, op2, op3) |
-   XIndrOp            : CodeXIndr (q, op1, op2, op3) |
+   XIndrOp            : CodeXIndr (q) |
    CallOp             : CodeCall (CurrentQuadToken, op3) |
    ParamOp            : CodeParam (q, op1, op2, op3) |
    FunctValueOp       : CodeFunctValue (location, op1) |
@@ -1832,66 +1836,37 @@ END CodeProcedureScope ;
                      allocated by the function call.
 *)
 
-PROCEDURE CodeReturnValue (res, Procedure: CARDINAL) ;
+PROCEDURE CodeReturnValue (quad: CARDINAL) ;
 VAR
-   value, length, op3t : Tree ;
-   location: location_t ;
+   op                                  : QuadOperator ;
+   expr, none, procedure               : CARDINAL ;
+   combinedpos,
+   returnpos, exprpos, nonepos, procpos: CARDINAL ;
+   value, length                       : Tree ;
+   location                            : location_t ;
 BEGIN
-   location := TokenToLocation (CurrentQuadToken) ;
-   TryDeclareConstant (CurrentQuadToken, res) ;  (* checks to see whether it is a constant and declares it *)
-   TryDeclareConstructor (CurrentQuadToken, res) ;
-   IF IsConstString (res) AND (SkipTypeAndSubrange (GetType (Procedure)) # Char)
+   GetQuadOtok (quad, returnpos, op, expr, none, procedure,
+                exprpos, nonepos, procpos) ;
+   combinedpos := MakeVirtualTok (returnpos, returnpos, exprpos) ;
+   location := TokenToLocation (combinedpos) ;
+   TryDeclareConstant (exprpos, expr) ;  (* checks to see whether it is a constant and declares it *)
+   TryDeclareConstructor (exprpos, expr) ;
+   IF IsConstString (expr) AND (SkipTypeAndSubrange (GetType (procedure)) # Char)
    THEN
-      DoCopyString (CurrentQuadToken, length, op3t, GetType (Procedure), res) ;
-      value := BuildArrayStringConstructor (location,
-                                            Mod2Gcc (GetType (Procedure)), op3t, length)
-   ELSE
-      value := Mod2Gcc (res)
-   END ;
-   BuildReturnValueCode (location, Mod2Gcc (Procedure), value)
-END CodeReturnValue ;
-
-
-(* *******************************
-(*
-   GenerateCleanup - generates a try/catch/clobber tree containing the call to ptree
-*)
-
-PROCEDURE GenerateCleanup (location: location_t; procedure: CARDINAL; p, call: Tree) : Tree ;
-VAR
-   i, n: CARDINAL ;
-   t   : Tree ;
-BEGIN
-   t := push_statement_list (begin_statement_list ()) ;
-   i := 1 ;
-   n := NoOfParam (procedure) ;
-   WHILE i<=n DO
-      IF IsParameterVar (GetNthParam (procedure, i))
+      IF NOT PrepareCopyString (returnpos, length, value, expr, GetType (procedure))
       THEN
-         AddStatement (location, BuildCleanUp (GetParamTree (call, i-1)))
+         MetaErrorT3 (MakeVirtualTok (returnpos, returnpos, exprpos),
+                      'string constant {%1Ea} is too large to be returned from procedure {%2a} via the {%3d} {%3a}',
+                      expr, procedure, GetType (procedure))
       END ;
-      INC(i)
-   END ;
-   RETURN BuildTryFinally (location, p, pop_statement_list ())
-END GenerateCleanup ;
-
-
-(*
-   CheckCleanup - checks whether a cleanup is required for a procedure with
-                  VAR parameters.  The final tree is returned.
-*)
-
-PROCEDURE CheckCleanup (location: location_t; procedure: CARDINAL; tree, call: Tree) : Tree ;
-BEGIN
-   IF HasVarParameters(procedure)
-   THEN
-      RETURN tree ;
-      (* RETURN GenerateCleanup(location, procedure, tree, call) *)
+      value := BuildArrayStringConstructor (location,
+                                            Mod2Gcc (GetType (procedure)),
+                                            value, length)
    ELSE
-      RETURN tree
-   END
-END CheckCleanup ;
-************************************** *)
+      value := Mod2Gcc (expr)
+   END ;
+   BuildReturnValueCode (location, Mod2Gcc (procedure), value)
+END CodeReturnValue ;
 
 
 (*
@@ -1920,7 +1895,6 @@ BEGIN
    THEN
       location := TokenToLocation (tokenno) ;
       AddStatement (location, tree)
-      (* was AddStatement(location, CheckCleanup(location, procedure, tree, tree))  *)
    ELSE
       (* leave tree alone - as it will be picked up when processing FunctValue *)
    END
@@ -2882,57 +2856,67 @@ END FoldConstBecomes ;
 
 
 (*
-   DoCopyString - returns trees:
-                  length    number of bytes to be copied (including the nul)
-                  op1t the new string _type_ (with the extra nul character).
-                  op3t the actual string with the extra nul character.
+   PrepareCopyString - returns two trees:
+                       length    number of bytes to be copied (including the nul if room)
+                       srcTreeType the new string type (with the extra nul character).
+
+                       Pre condition:  destStrType the dest type string.
+                                       src is the original string (without a nul)
+                                       to be copied.
+                       Post condition: TRUE or FALSE is returned.
+                                       if true length and srcTreeType will be assigned
+                                       else length is set to the maximum length to be
+                                            copied and srcTree is set to the max length
+                                            which fits in dest.
 *)
 
-PROCEDURE DoCopyString (tokenno: CARDINAL; VAR length, op3t: Tree; op1t, op3: CARDINAL) ;
+PROCEDURE PrepareCopyString (tokenno: CARDINAL; VAR length, srcTree: Tree;
+                             src, destStrType: CARDINAL) : BOOLEAN ;
 VAR
-   location: location_t ;
+   location : location_t ;
+   intLength: INTEGER ;
 BEGIN
-   location := TokenToLocation(tokenno) ;
-   Assert(IsArray(SkipType(op1t))) ;
-   (* handle string assignments:
+   location := TokenToLocation (tokenno) ;
+   Assert (IsArray (SkipType (destStrType))) ;
+   (* Handle string assignments:
       VAR
          str: ARRAY [0..10] OF CHAR ;
          ch : CHAR ;
 
          str := 'abcde' but not ch := 'a'
    *)
-   IF GetType (op3) = Char
+   IF GetType (src) = Char
    THEN
       (*
-       *  create string from char and add nul to the end, nul is
+       *  Create string from char and add nul to the end, nul is
        *  added by BuildStringConstant
        *)
-      op3t := BuildStringConstant (KeyToCharStar (GetString (op3)), 1)
+      srcTree := BuildStringConstant (KeyToCharStar (GetString (src)), 1)
    ELSE
-      op3t := Mod2Gcc (op3)
+      srcTree := Mod2Gcc (src)
    END ;
-   op3t := ConvertString (Mod2Gcc (op1t), op3t) ;
-
-   PushIntegerTree(FindSize(tokenno, op3)) ;
-   PushIntegerTree(FindSize(tokenno, op1t)) ;
-   IF Less(tokenno)
+   srcTree := ConvertString (Mod2Gcc (destStrType), srcTree) ;
+   PushIntegerTree (FindSize (tokenno, src)) ;
+   PushIntegerTree (FindSize (tokenno, destStrType)) ;
+   IF Less (tokenno)
    THEN
-      (* there is room for the extra <nul> character *)
-      length := BuildAdd(location, FindSize(tokenno, op3), GetIntegerOne(location), FALSE)
+      (* There is room for the extra <nul> character.  *)
+      length := BuildAdd (location, FindSize (tokenno, src),
+                          GetIntegerOne (location), FALSE)
    ELSE
-      PushIntegerTree(FindSize(tokenno, op3)) ;
-      PushIntegerTree(FindSize(tokenno, op1t)) ;
+      length := FindSize (tokenno, destStrType) ;
+      PushIntegerTree (FindSize (tokenno, src)) ;
+      PushIntegerTree (length) ;
+      (* Greater or Equal so return max characters in the array.  *)
       IF Gre (tokenno)
       THEN
-         WarnStringAt (InitString('string constant is too large to be assigned to the array'),
-                       tokenno) ;
-         length := FindSize (tokenno, op1t)
-      ELSE
-         (* equal so return max characters in the array *)
-         length := FindSize (tokenno, op1t)
+         intLength := GetCstInteger (length) ;
+         srcTree := BuildStringConstant (KeyToCharStar (GetString (src)), intLength) ;
+         RETURN FALSE
       END
-   END
-END DoCopyString ;
+   END ;
+   RETURN TRUE
+END PrepareCopyString ;
 
 
 (*
@@ -3104,7 +3088,8 @@ VAR
    location  : location_t ;
 BEGIN
    GetQuadOtok (quad, becomespos, op, op1, op2, op3, op1pos, op2pos, op3pos) ;
-   DeclareConstant (CurrentQuadToken, op3) ;  (* checks to see whether it is a constant and declares it *)
+   Assert (op2pos = UnknownTokenNo) ;
+   DeclareConstant (CurrentQuadToken, op3) ;  (* Check to see whether op3 is a constant and declare it.  *)
    DeclareConstructor (CurrentQuadToken, quad, op3) ;
    location := TokenToLocation (CurrentQuadToken) ;
 
@@ -3121,7 +3106,12 @@ BEGIN
    ELSIF IsConstString (op3) AND (SkipTypeAndSubrange (GetType (op1)) # Char)
    THEN
       checkDeclare (op1) ;
-      DoCopyString (CurrentQuadToken, length, op3t, SkipType (GetType (op1)), op3) ;
+      IF NOT PrepareCopyString (becomespos, length, op3t, op3, SkipType (GetType (op1)))
+      THEN
+         MetaErrorT2 (MakeVirtualTok (becomespos, op1pos, op3pos),
+                      'string constant {%1Ea} is too large to be assigned to the array {%2ad}',
+                      op3, op1)
+      END ;
       AddStatement (location,
                     MaybeDebugBuiltinMemcpy (location, CurrentQuadToken,
                                              BuildAddr (location, Mod2Gcc (op1), FALSE),
@@ -7177,17 +7167,28 @@ END CodeIndrX ;
    (op2 is the type of the data being indirectly copied)
 *)
 
-PROCEDURE CodeXIndr (quad: CARDINAL; op1, type, op3: CARDINAL) ;
+PROCEDURE CodeXIndr (quad: CARDINAL) ;
 VAR
+   op      : QuadOperator ;
+   tokenno,
+   op1,
+   type,
+   op3,
+   op1pos,
+   op3pos,
+   typepos,
+   xindrpos: CARDINAL ;
    length,
    newstr  : Tree ;
    location: location_t ;
 BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
+   GetQuadOtok (quad, xindrpos, op, op1, type, op3, op1pos, typepos, op3pos) ;
+   tokenno := MakeVirtualTok (xindrpos, op1pos, op3pos) ;
+   location := TokenToLocation (tokenno) ;
 
    type := SkipType (type) ;
-   DeclareConstant(CurrentQuadToken, op3) ;
-   DeclareConstructor(CurrentQuadToken, quad, op3) ;
+   DeclareConstant (op3pos, op3) ;
+   DeclareConstructor (op3pos, quad, op3) ;
    (*
       Follow the Quadruple rule:
 
@@ -7195,8 +7196,8 @@ BEGIN
    *)
    IF IsProcType(SkipType(type))
    THEN
-      BuildAssignmentStatement (location, BuildIndirect(location, Mod2Gcc(op1), GetPointerType()), Mod2Gcc(op3))
-   ELSIF IsConstString(op3) AND (GetStringLength(op3)=0) AND (GetMode(op1)=LeftValue)
+      BuildAssignmentStatement (location, BuildIndirect (location, Mod2Gcc (op1), GetPointerType ()), Mod2Gcc (op3))
+   ELSIF IsConstString (op3) AND (GetStringLength (op3) = 0) AND (GetMode (op1) = LeftValue)
    THEN
       (*
          no need to check for type errors,
@@ -7205,13 +7206,18 @@ BEGIN
          contents.
       *)
       BuildAssignmentStatement (location,
-                                BuildIndirect(location, LValueToGenericPtr(location, op1), Mod2Gcc(Char)),
-                                StringToChar(Mod2Gcc(op3), Char, op3))
-   ELSIF IsConstString(op3) AND (SkipTypeAndSubrange(GetType(op1))#Char)
+                                BuildIndirect (location, LValueToGenericPtr (location, op1), Mod2Gcc (Char)),
+                                StringToChar (Mod2Gcc (op3), Char, op3))
+   ELSIF IsConstString (op3) AND (SkipTypeAndSubrange (GetType (op1)) # Char)
    THEN
-      DoCopyString (CurrentQuadToken, length, newstr, type, op3) ;
+      IF NOT PrepareCopyString (tokenno, length, newstr, op3, type)
+      THEN
+         MetaErrorT2 (MakeVirtualTok (xindrpos, op1pos, op3pos),
+                      'string constant {%1Ea} is too large to be assigned to the array {%2ad}',
+                      op3, op1)
+      END ;
       AddStatement (location,
-                    MaybeDebugBuiltinMemcpy (location, CurrentQuadToken,
+                    MaybeDebugBuiltinMemcpy (location, tokenno,
                                              Mod2Gcc (op1),
                                              BuildAddr (location, newstr, FALSE),
                                              length))
