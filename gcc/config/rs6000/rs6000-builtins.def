@@ -2862,7 +2862,7 @@
   pure vsc __builtin_vsx_lxvl (const void *, signed long);
     LXVL lxvl {}
 
-  const signed long __builtin_vsx_scalar_extract_sig (double);
+  const signed long long __builtin_vsx_scalar_extract_sig (double);
     VSESDP xsxsigdp {}
 
   const double __builtin_vsx_scalar_insert_exp (unsigned long long, \
