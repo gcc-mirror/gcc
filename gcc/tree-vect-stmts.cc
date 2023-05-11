@@ -8286,7 +8286,7 @@ vectorizable_store (vec_info *vinfo,
 
       stride_base = cse_and_gimplify_to_preheader (loop_vinfo, stride_base);
       ivstep = cse_and_gimplify_to_preheader (loop_vinfo, ivstep);
-      create_iv (stride_base, ivstep, NULL,
+      create_iv (stride_base, PLUS_EXPR, ivstep, NULL,
 		 loop, &incr_gsi, insert_after,
 		 &offvar, NULL);
       incr = gsi_stmt (incr_gsi);
@@ -9457,7 +9457,7 @@ vectorizable_load (vec_info *vinfo,
 
       stride_base = cse_and_gimplify_to_preheader (loop_vinfo, stride_base);
       ivstep = cse_and_gimplify_to_preheader (loop_vinfo, ivstep);
-      create_iv (stride_base, ivstep, NULL,
+      create_iv (stride_base, PLUS_EXPR, ivstep, NULL,
 		 loop, &incr_gsi, insert_after,
 		 &offvar, NULL);
 

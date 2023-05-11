@@ -47,7 +47,9 @@ along with GCC; see the file COPYING3.  If not see
    so that we can free them all at once.  */
 static bitmap_obstack loop_renamer_obstack;
 
-/* Creates an induction variable with value BASE + STEP * iteration in LOOP.
+/* Creates an induction variable with value BASE (+/-) STEP * iteration in LOOP.
+   If INCR_OP is PLUS_EXPR, the induction variable is BASE + STEP * iteration.
+   If INCR_OP is MINUS_EXPR, the induction variable is BASE - STEP * iteration.
    It is expected that neither BASE nor STEP are shared with other expressions
    (unless the sharing rules allow this).  Use VAR as a base var_decl for it
    (if NULL, a new temporary will be created).  The increment will occur at
@@ -57,16 +59,16 @@ static bitmap_obstack loop_renamer_obstack;
    VAR_AFTER (unless they are NULL).  */
 
 void
-create_iv (tree base, tree step, tree var, class loop *loop,
-	   gimple_stmt_iterator *incr_pos, bool after,
-	   tree *var_before, tree *var_after)
+create_iv (tree base, tree_code incr_op, tree step, tree var, class loop *loop,
+	   gimple_stmt_iterator *incr_pos, bool after, tree *var_before,
+	   tree *var_after)
 {
   gassign *stmt;
   gphi *phi;
   tree initial, step1;
   gimple_seq stmts;
   tree vb, va;
-  enum tree_code incr_op = PLUS_EXPR;
+  gcc_assert (incr_op == PLUS_EXPR || incr_op == MINUS_EXPR);
   edge pe = loop_preheader_edge (loop);
 
   if (var != NULL_TREE)
@@ -93,7 +95,7 @@ create_iv (tree base, tree step, tree var, class loop *loop,
 	  step1 = fold_build1 (NEGATE_EXPR, TREE_TYPE (step), step);
 	  if (tree_int_cst_lt (step1, step))
 	    {
-	      incr_op = MINUS_EXPR;
+	      incr_op = (incr_op == PLUS_EXPR ? MINUS_EXPR : PLUS_EXPR);
 	      step = step1;
 	    }
 	}
@@ -104,7 +106,7 @@ create_iv (tree base, tree step, tree var, class loop *loop,
 	  if (!tree_expr_nonnegative_warnv_p (step, &ovf)
 	      && may_negate_without_overflow_p (step))
 	    {
-	      incr_op = MINUS_EXPR;
+	      incr_op = (incr_op == PLUS_EXPR ? MINUS_EXPR : PLUS_EXPR);
 	      step = fold_build1 (NEGATE_EXPR, TREE_TYPE (step), step);
 	    }
 	}
@@ -1365,7 +1367,7 @@ tree_transform_and_unroll_loop (class loop *loop, unsigned factor,
       tree ctr_before, ctr_after;
       gimple_stmt_iterator bsi = gsi_last_nondebug_bb (new_exit->src);
       exit_if = as_a <gcond *> (gsi_stmt (bsi));
-      create_iv (exit_base, exit_step, NULL_TREE, loop,
+      create_iv (exit_base, PLUS_EXPR, exit_step, NULL_TREE, loop,
 		 &bsi, false, &ctr_before, &ctr_after);
       gimple_cond_set_code (exit_if, exit_cmp);
       gimple_cond_set_lhs (exit_if, ctr_after);
@@ -1580,8 +1582,8 @@ canonicalize_loop_ivs (class loop *loop, tree *nit, bool bump_in_latch)
     gsi = gsi_last_bb (loop->latch);
   else
     gsi = gsi_last_nondebug_bb (loop->header);
-  create_iv (build_int_cst_type (type, 0), build_int_cst (type, 1), NULL_TREE,
-	     loop, &gsi, bump_in_latch, &var_before, NULL);
+  create_iv (build_int_cst_type (type, 0), PLUS_EXPR, build_int_cst (type, 1),
+	     NULL_TREE, loop, &gsi, bump_in_latch, &var_before, NULL);
 
   rewrite_all_phi_nodes_with_iv (loop, var_before);
 

@@ -1185,7 +1185,7 @@ tree_loop_interchange::map_inductions_to_loop (loop_cand &src, loop_cand &tgt)
 	  tree var_before, var_after;
 	  tree base = unshare_expr (iv->init_expr);
 	  tree step = unshare_expr (iv->step);
-	  create_iv (base, step, SSA_NAME_VAR (iv->var),
+	  create_iv (base, PLUS_EXPR, step, SSA_NAME_VAR (iv->var),
 		     tgt.m_loop, &incr_pos, false, &var_before, &var_after);
 	  bitmap_set_bit (m_dce_seeds, SSA_NAME_VERSION (var_before));
 	  bitmap_set_bit (m_dce_seeds, SSA_NAME_VERSION (var_after));

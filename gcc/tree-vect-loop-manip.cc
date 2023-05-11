@@ -468,8 +468,9 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
   gimple_stmt_iterator incr_gsi;
   bool insert_after;
   standard_iv_increment_position (loop, &incr_gsi, &insert_after);
-  create_iv (build_int_cst (iv_type, 0), nitems_step, NULL_TREE, loop,
-	     &incr_gsi, insert_after, &index_before_incr, &index_after_incr);
+  create_iv (build_int_cst (iv_type, 0), PLUS_EXPR, nitems_step, NULL_TREE,
+	     loop, &incr_gsi, insert_after, &index_before_incr,
+	     &index_after_incr);
 
   tree zero_index = build_int_cst (compare_type, 0);
   tree test_index, test_limit, first_limit;
@@ -893,7 +894,7 @@ vect_set_loop_condition_normal (class loop *loop, tree niters, tree step,
     }
 
   standard_iv_increment_position (loop, &incr_gsi, &insert_after);
-  create_iv (init, step, NULL_TREE, loop,
+  create_iv (init, PLUS_EXPR, step, NULL_TREE, loop,
              &incr_gsi, insert_after, &indx_before_incr, &indx_after_incr);
   indx_after_incr = force_gimple_operand_gsi (&loop_cond_gsi, indx_after_incr,
 					      true, NULL_TREE, true,

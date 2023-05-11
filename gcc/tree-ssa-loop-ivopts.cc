@@ -7267,7 +7267,7 @@ create_new_iv (struct ivopts_data *data, struct iv_cand *cand)
 
   base = unshare_expr (cand->iv->base);
 
-  create_iv (base, unshare_expr (cand->iv->step),
+  create_iv (base, PLUS_EXPR, unshare_expr (cand->iv->step),
 	     cand->var_before, data->current_loop,
 	     &incr_pos, after, &cand->var_before, &cand->var_after);
 }
