@@ -2107,9 +2107,35 @@ simple_dce_from_worklist (bitmap worklist, bitmap need_eh_cleanup)
       unsigned i = bitmap_clear_first_set_bit (worklist);
 
       tree def = ssa_name (i);
-      /* Removed by somebody else or still in use.  */
-      if (! def || ! has_zero_uses (def))
+      /* Removed by somebody else or still in use.
+	 Note use in itself for a phi node is not counted as still in use.  */
+      if (!def)
 	continue;
+      if (!has_zero_uses (def))
+	{
+	  gimple *def_stmt = SSA_NAME_DEF_STMT (def);
+
+	  if (gimple_code (def_stmt) != GIMPLE_PHI)
+	    continue;
+
+	  gimple *use_stmt;
+	  imm_use_iterator use_iter;
+	  bool canremove = true;
+
+	  FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, def)
+	    {
+	      /* Ignore debug statements. */
+	      if (is_gimple_debug (use_stmt))
+		continue;
+	      if (use_stmt != def_stmt)
+		{
+		  canremove = false;
+		  break;
+		}
+	    }
+	  if (!canremove)
+	    continue;
+	}
 
       gimple *t = SSA_NAME_DEF_STMT (def);
       if (gimple_has_side_effects (t))
