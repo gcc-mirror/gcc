@@ -26,7 +26,7 @@ int main ()
     static void fn2 () {}
   };
   call<&B1::fn1> ();
-  call<&B2::fn2> ();	// { dg-error "linkage|no matching" "" { target c++14_down } }
+  call<&B2::fn2> ();	// { dg-error "linkage|no matching" "PR83258" { target c++14_down } }
   call<&fn3> ();
   call<&B1::fn4> ();
   call<&fn5> ();	// { dg-error "linkage|no matching" "" { target { ! c++11 } } }
