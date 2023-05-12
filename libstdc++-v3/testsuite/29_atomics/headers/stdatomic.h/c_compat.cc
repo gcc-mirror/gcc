@@ -79,6 +79,7 @@ static_assert(is_same<atomic_int32_t,  _Atomic(int32_t)>);
 static_assert(is_same<atomic_uint32_t, _Atomic(uint32_t)>);
 static_assert(is_same<atomic_int64_t,  _Atomic(int64_t)>);
 static_assert(is_same<atomic_uint64_t, _Atomic(uint64_t)>);
+#endif
 static_assert(is_same<atomic_int_least8_t,   _Atomic(int_least8_t)>);
 static_assert(is_same<atomic_uint_least8_t,  _Atomic(uint_least8_t)>);
 static_assert(is_same<atomic_int_least16_t,  _Atomic(int_least16_t)>);
@@ -95,13 +96,10 @@ static_assert(is_same<atomic_int_fast32_t,  _Atomic(int_fast32_t)>);
 static_assert(is_same<atomic_uint_fast32_t, _Atomic(uint_fast32_t)>);
 static_assert(is_same<atomic_int_fast64_t,  _Atomic(int_fast64_t)>);
 static_assert(is_same<atomic_uint_fast64_t, _Atomic(uint_fast64_t)>);
-#endif
 static_assert(is_same<atomic_intptr_t,  _Atomic(intptr_t)>);
 static_assert(is_same<atomic_uintptr_t, _Atomic(uintptr_t)>);
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
 static_assert(is_same<atomic_intmax_t,  _Atomic(intmax_t)>);
 static_assert(is_same<atomic_uintmax_t, _Atomic(uintmax_t)>);
-#endif
 #include <stddef.h>
 static_assert(is_same<atomic_size_t,    _Atomic(size_t)>);
 static_assert(is_same<atomic_ptrdiff_t, _Atomic(ptrdiff_t)>);
