@@ -1620,7 +1620,7 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
 
-  # Use -std=c++98 because the default (-std=gnu++98) leaves __STRICT_ANSI__
+  # Use -std=c++98 because -std=gnu++98 leaves __STRICT_ANSI__
   # undefined and fake C99 facilities may be spuriously enabled.
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -std=c++98"
@@ -1885,9 +1885,9 @@ AC_DEFUN([GLIBCXX_CHECK_C99_TR1], [
 		  lround(0.0);
 		  lroundf(0.0f);
 		  lroundl(0.0l);
-		  nan(0);
-		  nanf(0);
-		  nanl(0);
+		  nan("");
+		  nanf("");
+		  nanl("");
 		  nearbyint(0.0);
 		  nearbyintf(0.0f);
 		  nearbyintl(0.0l);
