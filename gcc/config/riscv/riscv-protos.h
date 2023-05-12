@@ -222,6 +222,7 @@ void expand_tuple_move (machine_mode, rtx *);
 machine_mode preferred_simd_mode (scalar_mode);
 opt_machine_mode get_mask_mode (machine_mode);
 void expand_vec_series (rtx, rtx, rtx);
+void expand_vec_init (rtx, rtx);
 }
 
 /* We classify builtin types into two classes:

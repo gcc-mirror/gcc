@@ -83,6 +83,22 @@
   }
 )
 
+;; -------------------------------------------------------------------------
+;; ---- [INT,FP] Initialize from individual elements
+;; -------------------------------------------------------------------------
+;; This is the pattern initialize the vector
+;; -------------------------------------------------------------------------
+
+(define_expand "vec_init<mode><vel>"
+  [(match_operand:V 0 "register_operand")
+   (match_operand 1 "")]
+  "TARGET_VECTOR"
+  {
+    riscv_vector::expand_vec_init (operands[0], operands[1]);
+    DONE;
+  }
+)
+
 ;; ========================================================================
 ;; == Vector operations
 ;; =========================================================================

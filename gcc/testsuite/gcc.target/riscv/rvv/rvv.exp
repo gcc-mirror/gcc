@@ -65,5 +65,9 @@ foreach op $AUTOVEC_TEST_OPTS {
     "" "$op"
 }
 
+# VLS-VLMAX tests
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/vls-vlmax/*.\[cS\]]] \
+	"-std=c99 -O3 -ftree-vectorize --param riscv-autovec-preference=fixed-vlmax" $CFLAGS
+
 # All done.
 dg-finish

@@ -1131,4 +1131,131 @@ preferred_simd_mode (scalar_mode mode)
   return word_mode;
 }
 
+class rvv_builder : public rtx_vector_builder
+{
+public:
+  rvv_builder () : rtx_vector_builder () {}
+  rvv_builder (machine_mode mode, unsigned int npatterns,
+	       unsigned int nelts_per_pattern)
+    : rtx_vector_builder (mode, npatterns, nelts_per_pattern)
+  {
+    m_inner_mode = GET_MODE_INNER (mode);
+    m_inner_size = GET_MODE_BITSIZE (m_inner_mode).to_constant ();
+  }
+
+  bool can_duplicate_repeating_sequence_p ();
+  rtx get_merged_repeating_sequence ();
+
+  machine_mode new_mode () const { return m_new_mode; }
+
+private:
+  machine_mode m_inner_mode;
+  machine_mode m_new_mode;
+  scalar_int_mode m_new_inner_mode;
+  unsigned int m_inner_size;
+};
+
+/* Return true if the vector duplicated by a super element which is the fusion
+   of consecutive elements.
+
+     v = { a, b, a, b } super element = ab, v = { ab, ab }  */
+bool
+rvv_builder::can_duplicate_repeating_sequence_p ()
+{
+  poly_uint64 new_size = exact_div (full_nelts (), npatterns ());
+  unsigned int new_inner_size = m_inner_size * npatterns ();
+  if (!int_mode_for_size (new_inner_size, 0).exists (&m_new_inner_mode)
+      || GET_MODE_SIZE (m_new_inner_mode) > UNITS_PER_WORD
+      || !get_vector_mode (m_new_inner_mode, new_size).exists (&m_new_mode))
+    return false;
+  return repeating_sequence_p (0, full_nelts ().to_constant (), npatterns ());
+}
+
+/* Merge the repeating sequence into a single element and return the RTX.  */
+rtx
+rvv_builder::get_merged_repeating_sequence ()
+{
+  scalar_int_mode mode = Pmode;
+  rtx target = gen_reg_rtx (mode);
+  emit_move_insn (target, const0_rtx);
+  rtx imm = gen_int_mode ((1ULL << m_inner_size) - 1, mode);
+  /* { a, b, a, b }: Generate duplicate element = b << bits | a.  */
+  for (unsigned int i = 0; i < npatterns (); i++)
+    {
+      unsigned int loc = m_inner_size * i;
+      rtx shift = gen_int_mode (loc, mode);
+      rtx ele = gen_lowpart (mode, elt (i));
+      rtx tmp = expand_simple_binop (mode, AND, ele, imm, NULL_RTX, false,
+				     OPTAB_DIRECT);
+      rtx tmp2 = expand_simple_binop (mode, ASHIFT, tmp, shift, NULL_RTX, false,
+				      OPTAB_DIRECT);
+      rtx tmp3 = expand_simple_binop (mode, IOR, tmp2, target, NULL_RTX, false,
+				      OPTAB_DIRECT);
+      emit_move_insn (target, tmp3);
+    }
+  if (GET_MODE_SIZE (m_new_inner_mode) < UNITS_PER_WORD)
+    return gen_lowpart (m_new_inner_mode, target);
+  return target;
+}
+
+/* Subroutine of riscv_vector_expand_vector_init.
+   Works as follows:
+   (a) Initialize TARGET by broadcasting element NELTS_REQD - 1 of BUILDER.
+   (b) Skip leading elements from BUILDER, which are the same as
+       element NELTS_REQD - 1.
+   (c) Insert earlier elements in reverse order in TARGET using vslide1down.  */
+
+static void
+expand_vector_init_insert_elems (rtx target, const rvv_builder &builder,
+				 int nelts_reqd)
+{
+  machine_mode mode = GET_MODE (target);
+  scalar_mode elem_mode = GET_MODE_INNER (mode);
+  machine_mode mask_mode;
+  gcc_assert (get_mask_mode (mode).exists (&mask_mode));
+  rtx dup = expand_vector_broadcast (mode, builder.elt (0));
+  emit_move_insn (target, dup);
+  int ndups = builder.count_dups (0, nelts_reqd - 1, 1);
+  for (int i = ndups; i < nelts_reqd; i++)
+    {
+      unsigned int unspec
+	= FLOAT_MODE_P (mode) ? UNSPEC_VFSLIDE1DOWN : UNSPEC_VSLIDE1DOWN;
+      insn_code icode = code_for_pred_slide (unspec, mode);
+      emit_len_binop (icode, target, target, builder.elt (i), NULL, mask_mode,
+		      elem_mode);
+    }
+}
+
+/* Initialize register TARGET from the elements in PARALLEL rtx VALS.  */
+
+void
+expand_vec_init (rtx target, rtx vals)
+{
+  machine_mode mode = GET_MODE (target);
+  int nelts = XVECLEN (vals, 0);
+
+  rvv_builder v (mode, nelts, 1);
+  for (int i = 0; i < nelts; i++)
+    v.quick_push (XVECEXP (vals, 0, i));
+  v.finalize ();
+
+  if (nelts > 3)
+    {
+      /* Case 1: Convert v = { a, b, a, b } into v = { ab, ab }.  */
+      if (v.can_duplicate_repeating_sequence_p ())
+	{
+	  rtx ele = v.get_merged_repeating_sequence ();
+	  rtx dup = expand_vector_broadcast (v.new_mode (), ele);
+	  emit_move_insn (target, gen_lowpart (mode, dup));
+	  return;
+	}
+      /* TODO: We will support more Initialization of vector in the future.  */
+    }
+
+  /* Handle common situation by vslide1down. This function can handle any
+     situation of vec_init<mode>. Only the cases that are not optimized above
+     will fall through here.  */
+  expand_vector_init_insert_elems (target, v, nelts);
+}
+
 } // namespace riscv_vector
