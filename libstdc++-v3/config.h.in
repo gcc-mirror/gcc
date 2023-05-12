@@ -902,9 +902,17 @@
    library functions to be present. */
 #undef _GLIBCXX_USE_C99_COMPLEX_TR1
 
+/* Define if C99 functions in <ctype.h> should be imported in <cctype> in
+   namespace std for C++11. */
+#undef _GLIBCXX_USE_C99_CTYPE
+
 /* Define if C99 functions in <ctype.h> should be imported in <tr1/cctype> in
    namespace std::tr1. */
 #undef _GLIBCXX_USE_C99_CTYPE_TR1
+
+/* Define if C99 functions in <fenv.h> should be imported in <cfenv> in
+   namespace std for C++11. */
+#undef _GLIBCXX_USE_C99_FENV
 
 /* Define if C99 functions in <fenv.h> should be imported in <tr1/cfenv> in
    namespace std::tr1. */

@@ -1476,6 +1476,52 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
       fi
     fi
 
+    # Check for the existence of <ctype.h> functions.
+    AC_CACHE_CHECK([for ISO C99 support for C++11 in <ctype.h>],
+    glibcxx_cv_c99_ctype, [
+    AC_TRY_COMPILE([#include <ctype.h>],
+		   [int ch;
+		    int ret;
+		    ret = isblank(ch);
+		   ],[glibcxx_cv_c99_ctype=yes],
+		     [glibcxx_cv_c99_ctype=no])
+    ])
+    if test x"$glibcxx_cv_c99_ctype" = x"yes"; then
+      AC_DEFINE(_GLIBCXX_USE_C99_CTYPE, 1,
+		[Define if C99 functions in <ctype.h> should be imported in
+		<cctype> in namespace std for C++11.])
+    fi
+
+    # Check for the existence of <fenv.h> functions.
+    AC_CHECK_HEADERS(fenv.h, ac_has_fenv_h=yes, ac_has_fenv_h=no)
+    ac_c99_fenv=no;
+    if test x"$ac_has_fenv_h" = x"yes"; then
+      AC_MSG_CHECKING([for ISO C99 support for C++11 in <fenv.h>])
+      AC_TRY_COMPILE([#include <fenv.h>],
+		     [int except, mode;
+		      fexcept_t* pflag;
+		      fenv_t* penv;
+		      int ret;
+		      ret = feclearexcept(except);
+		      ret = fegetexceptflag(pflag, except);
+		      ret = feraiseexcept(except);
+		      ret = fesetexceptflag(pflag, except);
+		      ret = fetestexcept(except);
+		      ret = fegetround();
+		      ret = fesetround(mode);
+		      ret = fegetenv(penv);
+		      ret = feholdexcept(penv);
+		      ret = fesetenv(penv);
+		      ret = feupdateenv(penv);
+		     ],[ac_c99_fenv=yes], [ac_c99_fenv=no])
+      AC_MSG_RESULT($ac_c99_fenv)
+    fi
+    if test x"$ac_c99_fenv" = x"yes"; then
+      AC_DEFINE(_GLIBCXX_USE_C99_FENV, 1,
+		[Define if C99 functions in <fenv.h> should be imported in
+		<cfenv> in namespace std for C++11.])
+    fi
+
     gcc_no_link="$ac_save_gcc_no_link"
     LIBS="$ac_save_LIBS"
     CXXFLAGS="$ac_save_CXXFLAGS"

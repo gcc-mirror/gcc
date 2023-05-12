@@ -18824,6 +18824,103 @@ $as_echo "#define _GLIBCXX11_USE_C99_WCHAR 1" >>confdefs.h
       fi
     fi
 
+    # Check for the existence of <ctype.h> functions.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 support for C++11 in <ctype.h>" >&5
+$as_echo_n "checking for ISO C99 support for C++11 in <ctype.h>... " >&6; }
+if ${glibcxx_cv_c99_ctype+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <ctype.h>
+int
+main ()
+{
+int ch;
+		    int ret;
+		    ret = isblank(ch);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_c99_ctype=yes
+else
+  glibcxx_cv_c99_ctype=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_ctype" >&5
+$as_echo "$glibcxx_cv_c99_ctype" >&6; }
+    if test x"$glibcxx_cv_c99_ctype" = x"yes"; then
+
+$as_echo "#define _GLIBCXX_USE_C99_CTYPE 1" >>confdefs.h
+
+    fi
+
+    # Check for the existence of <fenv.h> functions.
+    for ac_header in fenv.h
+do :
+  ac_fn_cxx_check_header_mongrel "$LINENO" "fenv.h" "ac_cv_header_fenv_h" "$ac_includes_default"
+if test "x$ac_cv_header_fenv_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_FENV_H 1
+_ACEOF
+ ac_has_fenv_h=yes
+else
+  ac_has_fenv_h=no
+fi
+
+done
+
+    ac_c99_fenv=no;
+    if test x"$ac_has_fenv_h" = x"yes"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 support for C++11 in <fenv.h>" >&5
+$as_echo_n "checking for ISO C99 support for C++11 in <fenv.h>... " >&6; }
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <fenv.h>
+int
+main ()
+{
+int except, mode;
+		      fexcept_t* pflag;
+		      fenv_t* penv;
+		      int ret;
+		      ret = feclearexcept(except);
+		      ret = fegetexceptflag(pflag, except);
+		      ret = feraiseexcept(except);
+		      ret = fesetexceptflag(pflag, except);
+		      ret = fetestexcept(except);
+		      ret = fegetround();
+		      ret = fesetround(mode);
+		      ret = fegetenv(penv);
+		      ret = feholdexcept(penv);
+		      ret = fesetenv(penv);
+		      ret = feupdateenv(penv);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_c99_fenv=yes
+else
+  ac_c99_fenv=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_c99_fenv" >&5
+$as_echo "$ac_c99_fenv" >&6; }
+    fi
+    if test x"$ac_c99_fenv" = x"yes"; then
+
+$as_echo "#define _GLIBCXX_USE_C99_FENV 1" >>confdefs.h
+
+    fi
+
     gcc_no_link="$ac_save_gcc_no_link"
     LIBS="$ac_save_LIBS"
     CXXFLAGS="$ac_save_CXXFLAGS"
