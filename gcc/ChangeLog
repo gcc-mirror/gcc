@@ -1,3 +1,10 @@
+2023-05-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/109661
+	* config/aarch64/aarch64.cc (aarch64_function_arg_alignment): Remove
+	assertion.
+	(aarch64_layout_arg): Likewise.
+
 2023-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

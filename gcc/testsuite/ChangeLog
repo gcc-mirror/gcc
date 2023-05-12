@@ -1,3 +1,12 @@
+2023-05-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/109661
+	* g++.target/aarch64/pr109661-1.C: New test.
+	* g++.target/aarch64/pr109661-2.C: Likewise.
+	* g++.target/aarch64/pr109661-3.C: Likewise.
+	* g++.target/aarch64/pr109661-4.C: Likewise.
+	* gcc.target/aarch64/pr109661-1.c: Likewise.
+
 2023-05-10  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
