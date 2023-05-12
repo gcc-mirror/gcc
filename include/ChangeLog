@@ -1,3 +1,11 @@
+2023-05-11  Joseph Myers  <joseph@codesourcery.com>
+
+	PR middle-end/109128
+	* plugin-api.h (ld_plugin_claim_file_handler_v2)
+	(ld_plugin_register_claim_file_v2)
+	(LDPT_REGISTER_CLAIM_FILE_HOOK_V2): New.
+	(struct ld_plugin_tv): Add tv_register_claim_file_v2.
+
 2023-04-28  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* ctf.h: Import latest version from binutils/libctf.

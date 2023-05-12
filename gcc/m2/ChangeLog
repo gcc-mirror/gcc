@@ -1,3 +1,28 @@
+2023-05-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109810
+	* gm2-compiler/M2ALU.mod (ConvertConstToType): Use
+	PrepareCopyString in place of DoCopyString.
+	* gm2-compiler/M2GenGCC.def (DoCopyString): Rename to ...
+	(PrepareCopyString): ... this.
+	* gm2-compiler/M2GenGCC.mod (CodeStatement): Call CodeReturnValue
+	with a single parameter.  Call CodeXIndr with a single parameter.
+	(CodeReturnValue): Remove parameters and replace with a single
+	quadno.  Reimplement using PrepareCopyString.  Issue error
+	if the string exceeds designator space.
+	(DoCopyString): Reimplement and rename to ...
+	(PrepareCopyString): ... this.
+	(CodeXIndr): Remove parameters and replace with a single
+	quadno.  Reimplement using PrepareCopyString.  Issue error
+	if the string exceeds designator space.
+	(CodeBecomes): Remove parameters and replace with a single
+	quadno.  Reimplement using PrepareCopyString.  Issue error
+	if the string exceeds designator space.
+	* gm2-compiler/M2Quads.def (BuildReturn): Rename parameter to
+	tokreturn.
+	* gm2-compiler/M2Quads.mod (BuildReturn): Rename parameter to
+	tokreturn.  Rename tokno to tokcombined.
+
 2023-05-09  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109779

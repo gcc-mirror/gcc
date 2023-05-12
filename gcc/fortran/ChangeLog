@@ -1,3 +1,7 @@
+2023-05-11  Xi Ruoyao  <xry111@xry111.site>
+
+	* Make-lang.in: Use grep instead of fgrep.
+
 2023-05-10  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* dump-parse-tree.cc (gfc_debug_expr): Remove forward declaration.

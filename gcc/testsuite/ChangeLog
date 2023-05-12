@@ -1,3 +1,151 @@
+2023-05-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109810
+	* gm2/pim/fail/highice.mod: New test.
+
+2023-05-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109745
+	* g++.dg/cpp0x/constexpr-mutable4.C: New test.
+	* g++.dg/cpp0x/constexpr-mutable5.C: New test.
+	* g++.dg/cpp1y/constexpr-mutable2.C: New test.
+
+2023-05-11  mtsamis  <manolis.tsamis@vrull.eu>
+
+	* gcc.target/aarch64/swar_to_vec_cmp.c: New test.
+
+2023-05-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/109807
+	* gcc.target/i386/pr109807.c: New test.
+
+2023-05-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103807
+	* g++.dg/cpp2a/lambda-targ1.C: New test.
+
+2023-05-11  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/vmv-imm-rv32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vmv-imm-rv64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vmv-imm-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/vmv-imm-run.c: New test.
+
+2023-05-11  Patrick Palka  <ppalka@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/83258
+	PR c++/80488
+	PR c++/97700
+	* g++.dg/ext/visibility/anon8.C: Don't expect a "no linkage"
+	error for the template argument &B2:fn in C++17 mode.
+	* g++.dg/cpp0x/lambda/lambda-conv15.C: New test.
+	* g++.dg/cpp2a/nontype-class56.C: New test.
+	* g++.dg/template/function2.C: New test.
+
+2023-05-11  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/aarch64/sve/pred-not-gen-4.c: Drop math.h
+	include, call builtin.
+
+2023-05-11  Robin Dapp  <rdapp@ventanamicro.com>
+	    Michael Collison  <collison@rivosinc.com>
+
+	* gcc.target/riscv/rvv/autovec/shift-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/shift-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/shift-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/shift-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/shift-scalar-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/shift-scalar-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/shift-scalar-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/shift-scalar-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/vadd-run-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/vadd-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/vadd-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/vadd-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/vand-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/vand-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/vand-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/vand-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/vdiv-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/vdiv-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/vdiv-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/vdiv-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/vmax-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/vmax-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/vmax-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/vmax-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/vmin-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/vmin-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/vmin-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/vmin-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/vmul-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/vmul-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/vmul-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/vmul-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/vor-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/vor-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/vor-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/vor-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/vrem-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/vrem-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/vrem-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/vrem-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/vsub-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/vsub-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/vsub-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/vsub-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/vxor-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/vxor-rv32gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/vxor-rv64gcv.c: New test.
+	* gcc.target/riscv/rvv/autovec/vxor-template.h: New test.
+	* gcc.target/riscv/rvv/autovec/shift-run-template.h: New file.
+	* gcc.target/riscv/rvv/autovec/vadd-run.c: New file.
+	* gcc.target/riscv/rvv/autovec/vand-run-template.h: New file.
+	* gcc.target/riscv/rvv/autovec/vdiv-run-template.h: New file.
+	* gcc.target/riscv/rvv/autovec/vmax-run-template.h: New file.
+	* gcc.target/riscv/rvv/autovec/vmin-run-template.h: New file.
+	* gcc.target/riscv/rvv/autovec/vmul-run-template.h: New file.
+	* gcc.target/riscv/rvv/autovec/vor-run-template.h: New file.
+	* gcc.target/riscv/rvv/autovec/vrem-run-template.h: New file.
+	* gcc.target/riscv/rvv/autovec/vsub-run-template.h: New file.
+	* gcc.target/riscv/rvv/autovec/vxor-run-template.h: New file.
+
+2023-05-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/torture-options.exp (torture-init-done): Add.
+	* lib/gcc-dg.exp (gcc-dg-runtest): Use it to conditionalize
+	implicit 'torture-init'.
+	* lib/gfortran-dg.exp (gfortran-dg-runtest): Likewise.
+	* lib/obj-c++-dg.exp (obj-c++-dg-runtest): Likewise.
+	* lib/objc-dg.exp (objc-dg-runtest): Likewise.
+
+2023-05-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.target/arm/acle/acle.exp: Add missing
+	'torture-init'/'torture-finish' around 'LTO_TORTURE_OPTIONS'
+	usage.
+	* gcc.target/arm/cmse/cmse.exp: Likewise.
+	* gcc.target/arm/pure-code/pure-code.exp: Likewise.
+
+2023-05-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.dg/fold-popcount-8.c: New test case.
+	* gcc.dg/fold-popcount-9.c: Likewise.
+	* gcc.dg/fold-popcount-10.c: Likewise.
+
+2023-05-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.dg/fold-parity-6.c: New test.
+	* gcc.dg/fold-parity-7.c: Likewise.
+	* gcc.dg/fold-popcount-6.c: Likewise.
+	* gcc.dg/fold-popcount-7.c: Likewise.
+
+2023-05-11  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/series-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/series_run-1.c: New test.
+
 2023-05-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/109680

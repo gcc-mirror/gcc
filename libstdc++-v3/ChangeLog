@@ -1,3 +1,43 @@
+2023-05-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/floating_from_chars.cc [USE_STRTOD_FOR_FROM_CHARS]
+	(auto_locale, auto_ferounding): New class types.
+	(from_chars_impl): Use auto_locale and auto_ferounding.
+
+2023-05-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109772
+	* include/std/chrono (hh_mm_ss::__fits): Remove variable
+	template.
+	(hh_mm_ss::__subseconds): Remove __fits from constraints.
+	* testsuite/std/time/hh_mm_ss/109772.cc: New test.
+	* testsuite/std/time/hh_mm_ss/1.cc: Adjust expected size for
+	hh_mm_ss<duration<int, std::pico>>.
+
+2023-05-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Export basic_string::_S_allocate.
+	* include/bits/basic_ios.h: Add static assertion checking
+	traits_type::value_type.
+	* include/bits/basic_string.h: Likewise. Do not rebind
+	allocator, and add static assertion checking its value_type.
+	(basic_string::_Alloc_traits_impl): Remove class template.
+	(basic_string::_S_allocate): New static member function.
+	(basic_string::assign): Use _S_allocate.
+	* include/bits/basic_string.tcc (basic_string::_M_create)
+	(basic_string::reserve, basic_string::_M_replace): Likewise.
+	* testsuite/21_strings/basic_string/requirements/explicit_instantiation/debug.cc:
+	Disable for C++20 and later.
+	* testsuite/21_strings/basic_string/requirements/explicit_instantiation/int.cc:
+	Likweise.
+
+2023-05-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109758
+	* include/bits/std_abs.h (abs(__float128)): Handle negative NaN
+	and negative zero correctly.
+	* testsuite/26_numerics/headers/cmath/109758.cc: New test.
+
 2023-05-10  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable_policy.h
