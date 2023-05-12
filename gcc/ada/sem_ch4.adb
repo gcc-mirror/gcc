@@ -1540,8 +1540,14 @@ package body Sem_Ch4 is
 
                Set_Etype (N, Full_View (Etype (N)));
 
+            --  If the call is within a thunk, the nonlimited view should be
+            --  analyzed eventually (see also Analyze_Return_Type).
+
             elsif From_Limited_With (Etype (N))
               and then Present (Non_Limited_View (Etype (N)))
+              and then
+                (Ekind (Non_Limited_View (Etype (N))) /= E_Incomplete_Type
+                  or else Is_Thunk (Current_Scope))
             then
                Set_Etype (N, Non_Limited_View (Etype (N)));
 
