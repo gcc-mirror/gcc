@@ -7849,7 +7849,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   && INTEGRAL_TYPE_P (TREE_TYPE (@1)))
 	(with { unsigned int prec0 = TYPE_PRECISION (TREE_TYPE (@0));
 		unsigned int prec1 = TYPE_PRECISION (TREE_TYPE (@1)); }
-	  (if (prec0 == prec1 || (prec0 > prec1 && TYPE_UNSIGNED (@1)))
+	  (if (prec0 == prec1 || (prec0 > prec1 && TYPE_UNSIGNED (TREE_TYPE (@1))))
 	    (popcount @2)))))))
 
 /* popcount(rotate(X Y)) is popcount(X).  */
@@ -7862,7 +7862,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   && (GIMPLE || !TREE_SIDE_EFFECTS (@3)))
 	(with { unsigned int prec0 = TYPE_PRECISION (TREE_TYPE (@0));
 		unsigned int prec1 = TYPE_PRECISION (TREE_TYPE (@1)); }
-	  (if (prec0 == prec1 || (prec0 > prec1 && TYPE_UNSIGNED (@1)))
+	  (if (prec0 == prec1 || (prec0 > prec1 && TYPE_UNSIGNED (TREE_TYPE (@1))))
 	    (popcount @2)))))))
 
 /* Canonicalize POPCOUNT(x)&1 as PARITY(X).  */
