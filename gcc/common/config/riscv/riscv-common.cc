@@ -1596,10 +1596,8 @@ riscv_check_conds (
 
 static const char *
 riscv_select_multilib_by_abi (
-  const std::string &riscv_current_arch_str,
   const std::string &riscv_current_abi_str,
-  const riscv_subset_list *subset_list, const struct switchstr *switches,
-  int n_switches, const std::vector<riscv_multi_lib_info_t> &multilib_infos)
+  const std::vector<riscv_multi_lib_info_t> &multilib_infos)
 {
   for (size_t i = 0; i < multilib_infos.size (); ++i)
     if (riscv_current_abi_str == multilib_infos[i].abi_str)
@@ -1610,7 +1608,6 @@ riscv_select_multilib_by_abi (
 
 static const char *
 riscv_select_multilib (
-  const std::string &riscv_current_arch_str,
   const std::string &riscv_current_abi_str,
   const riscv_subset_list *subset_list, const struct switchstr *switches,
   int n_switches, const std::vector<riscv_multi_lib_info_t> &multilib_infos)
@@ -1780,13 +1777,10 @@ riscv_compute_multilib (
   switch (select_kind)
     {
     case select_by_abi:
-      return riscv_select_multilib (riscv_current_arch_str,
-				    riscv_current_abi_str, subset_list,
+      return riscv_select_multilib (riscv_current_abi_str, subset_list,
 				    switches, n_switches, multilib_infos);
     case select_by_abi_arch_cmodel:
-      return riscv_select_multilib_by_abi (riscv_current_arch_str,
-					   riscv_current_abi_str, subset_list,
-					   switches, n_switches,
+      return riscv_select_multilib_by_abi (riscv_current_abi_str,
 					   multilib_infos);
     case select_by_builtin:
       gcc_unreachable ();
