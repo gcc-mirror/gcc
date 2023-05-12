@@ -70,7 +70,7 @@ static_assert(is_same<atomic_char32_t, _Atomic(char32_t)>);
 static_assert(is_same<atomic_wchar_t,  _Atomic(wchar_t)>);
 
 #include <stdint.h>
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+#ifdef _GLIBCXX_USE_C99_STDINT
 static_assert(is_same<atomic_int8_t,   _Atomic(int8_t)>);
 static_assert(is_same<atomic_uint8_t,  _Atomic(uint8_t)>);
 static_assert(is_same<atomic_int16_t,  _Atomic(int16_t)>);

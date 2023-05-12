@@ -1063,7 +1063,7 @@ proc check_v3_target_parallel_mode { } {
 # Return 1 if the C99 stdint facilities are available, 0 otherwise.
 proc check_v3_target_cstdint { } {
     return [check_v3_target_prop_cached et_cstdint {
-	set cond "defined _GLIBCXX_USE_C99_STDINT_TR1"
+	set cond "defined _GLIBCXX_USE_C99_STDINT"
 	return [v3_check_preprocessor_condition cstdint $cond]
     }]
 }

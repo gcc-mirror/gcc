@@ -910,9 +910,17 @@
    namespace std::tr1. */
 #undef _GLIBCXX_USE_C99_FENV_TR1
 
+/* Define if C99 functions in <inttypes.h> should be imported in <cinttypes>
+   in namespace std in C++11. */
+#undef _GLIBCXX_USE_C99_INTTYPES
+
 /* Define if C99 functions in <inttypes.h> should be imported in
    <tr1/cinttypes> in namespace std::tr1. */
 #undef _GLIBCXX_USE_C99_INTTYPES_TR1
+
+/* Define if wchar_t C99 functions in <inttypes.h> should be imported in
+   <cinttypes> in namespace std in C++11. */
+#undef _GLIBCXX_USE_C99_INTTYPES_WCHAR_T
 
 /* Define if wchar_t C99 functions in <inttypes.h> should be imported in
    <tr1/cinttypes> in namespace std::tr1. */
@@ -921,6 +929,10 @@
 /* Define if C99 functions or macros in <math.h> should be imported in
    <tr1/cmath> in namespace std::tr1. */
 #undef _GLIBCXX_USE_C99_MATH_TR1
+
+/* Define if C99 types in <stdint.h> should be imported in <cstdint> in
+   namespace std for C++11. */
+#undef _GLIBCXX_USE_C99_STDINT
 
 /* Define if C99 types in <stdint.h> should be imported in <tr1/cstdint> in
    namespace std::tr1. */
