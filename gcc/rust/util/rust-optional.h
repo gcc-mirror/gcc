@@ -228,6 +228,18 @@ public:
 
 } // namespace Rust
 
+namespace std {
+
+template <typename T> struct hash<Rust::Optional<T>>
+{
+  size_t operator() (const Rust::Optional<T> &op) const
+  {
+    return op.is_some () ? std::hash<T> () (op.get ()) : 0;
+  }
+};
+
+} // namespace std
+
 #ifdef CHECKING_P
 
 void
