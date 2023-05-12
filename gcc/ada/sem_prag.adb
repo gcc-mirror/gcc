@@ -13376,6 +13376,19 @@ package body Sem_Prag is
 
             Spec_Id := Unique_Defining_Entity (Subp_Decl);
 
+            --  Pragma Always_Terminates is not allowed on functions
+
+            if Ekind (Spec_Id) = E_Function then
+               Error_Msg_N (Fix_Error
+                 ("pragma % cannot apply to function"), N);
+                  return;
+
+            elsif Ekind (Spec_Id) = E_Generic_Function then
+               Error_Msg_N (Fix_Error
+                 ("pragma % cannot apply to generic function"), N);
+               return;
+            end if;
+
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
