@@ -2021,7 +2021,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::complex<_Tp>(__pi_2 - __t.real(), -__t.imag());
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX_TR1
+#if _GLIBCXX_USE_C99_COMPLEX_ARC
 #if defined(__STDCPP_FLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
   inline __complex__ _Float16
   __complex_acos(__complex__ _Float16 __z)
@@ -2177,7 +2177,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif
 
-#if _GLIBCXX_USE_C99_COMPLEX_TR1
+#if _GLIBCXX_USE_C99_COMPLEX_ARC
   inline __complex__ float
   __complex_acos(__complex__ float __z)
   { return __builtin_cacosf(__z); }
@@ -2213,7 +2213,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::complex<_Tp>(__t.imag(), -__t.real());
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX_TR1
+#if _GLIBCXX_USE_C99_COMPLEX_ARC
   inline __complex__ float
   __complex_asin(__complex__ float __z)
   { return __builtin_casinf(__z); }
@@ -2257,7 +2257,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			       _Tp(0.25) * log(__num / __den));
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX_TR1
+#if _GLIBCXX_USE_C99_COMPLEX_ARC
   inline __complex__ float
   __complex_atan(__complex__ float __z)
   { return __builtin_catanf(__z); }
@@ -2293,7 +2293,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				 + std::sqrt(_Tp(0.5) * (__z - _Tp(1.0))));
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX_TR1
+#if _GLIBCXX_USE_C99_COMPLEX_ARC
   inline __complex__ float
   __complex_acosh(__complex__ float __z)
   { return __builtin_cacoshf(__z); }
@@ -2332,7 +2332,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::log(__t + __z);
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX_TR1
+#if _GLIBCXX_USE_C99_COMPLEX_ARC
   inline __complex__ float
   __complex_asinh(__complex__ float __z)
   { return __builtin_casinhf(__z); }
@@ -2376,7 +2376,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			       _Tp(0.5) * atan2(_Tp(2.0) * __z.imag(), __x));
     }
 
-#if _GLIBCXX_USE_C99_COMPLEX_TR1
+#if _GLIBCXX_USE_C99_COMPLEX_ARC
   inline __complex__ float
   __complex_atanh(__complex__ float __z)
   { return __builtin_catanhf(__z); }

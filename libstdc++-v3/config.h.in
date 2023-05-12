@@ -892,6 +892,11 @@
    <stdio.h>, and <stdlib.h> can be used or exposed. */
 #undef _GLIBCXX_USE_C99
 
+/* Define if C99 inverse trig functions in <complex.h> should be used in
+   <complex>. Using compiler builtins for these functions requires
+   corresponding C99 library functions to be present. */
+#undef _GLIBCXX_USE_C99_COMPLEX_ARC
+
 /* Define if C99 functions in <complex.h> should be used in <tr1/complex>.
    Using compiler builtins for these functions requires corresponding C99
    library functions to be present. */

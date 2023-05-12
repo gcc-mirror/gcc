@@ -1200,6 +1200,43 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
         requires corresponding C99 library functions to be present.])
     fi
 
+    # Check for the existence of <complex.h> complex inverse trigonometric
+    # math functions used by <complex> for C++11 and later.
+    ac_c99_complex_arc=no;
+    if test x"$ac_has_complex_h" = x"yes"; then
+      AC_MSG_CHECKING([for ISO C99 support for inverse trig functions in <complex.h>])
+      AC_TRY_COMPILE([#include <complex.h>],
+		     [typedef __complex__ float float_type; float_type tmpf;
+		      cacosf(tmpf);
+		      casinf(tmpf);
+		      catanf(tmpf);
+		      cacoshf(tmpf);
+		      casinhf(tmpf);
+		      catanhf(tmpf);
+		      typedef __complex__ double double_type; double_type tmpd;
+		      cacos(tmpd);
+		      casin(tmpd);
+		      catan(tmpd);
+		      cacosh(tmpd);
+		      casinh(tmpd);
+		      catanh(tmpd);
+		      typedef __complex__ long double ld_type; ld_type tmpld;
+		      cacosl(tmpld);
+		      casinl(tmpld);
+		      catanl(tmpld);
+		      cacoshl(tmpld);
+		      casinhl(tmpld);
+		      catanhl(tmpld);
+		     ],[ac_c99_complex_arc=yes], [ac_c99_complex_arc=no])
+    fi
+    AC_MSG_RESULT($ac_c99_complex_arc)
+    if test x"$ac_c99_complex_arc" = x"yes"; then
+      AC_DEFINE(_GLIBCXX_USE_C99_COMPLEX_ARC, 1,
+		[Define if C99 inverse trig functions in <complex.h> should be
+		used in <complex>. Using compiler builtins for these functions
+		requires corresponding C99 library functions to be present.])
+    fi
+
     # Check for the existence in <stdio.h> of vscanf, et. al.
     AC_CACHE_CHECK([for ISO C99 support in <stdio.h> for C++11],
       glibcxx_cv_c99_stdio_cxx11, [

@@ -2352,6 +2352,7 @@ PREDEFINED             = __cplusplus=202002L \
                          _GLIBCXX_USE_NOEXCEPT=noexcept \
                          _GLIBCXX_USE_WCHAR_T \
                          _GLIBCXX_USE_LONG_LONG \
+			 _GLIBCXX_USE_C99_COMPLEX_ARC \
                          _GLIBCXX_USE_C99_STDINT_TR1 \
                          _GLIBCXX_USE_SCHED_YIELD \
                          _GLIBCXX_USE_NANOSLEEP \

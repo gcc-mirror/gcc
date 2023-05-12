@@ -18266,6 +18266,59 @@ $as_echo "#define _GLIBCXX11_USE_C99_COMPLEX 1" >>confdefs.h
 
     fi
 
+    # Check for the existence of <complex.h> complex inverse trigonometric
+    # math functions used by <complex> for C++11 and later.
+    ac_c99_complex_arc=no;
+    if test x"$ac_has_complex_h" = x"yes"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 support for inverse trig functions in <complex.h>" >&5
+$as_echo_n "checking for ISO C99 support for inverse trig functions in <complex.h>... " >&6; }
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <complex.h>
+int
+main ()
+{
+typedef __complex__ float float_type; float_type tmpf;
+		      cacosf(tmpf);
+		      casinf(tmpf);
+		      catanf(tmpf);
+		      cacoshf(tmpf);
+		      casinhf(tmpf);
+		      catanhf(tmpf);
+		      typedef __complex__ double double_type; double_type tmpd;
+		      cacos(tmpd);
+		      casin(tmpd);
+		      catan(tmpd);
+		      cacosh(tmpd);
+		      casinh(tmpd);
+		      catanh(tmpd);
+		      typedef __complex__ long double ld_type; ld_type tmpld;
+		      cacosl(tmpld);
+		      casinl(tmpld);
+		      catanl(tmpld);
+		      cacoshl(tmpld);
+		      casinhl(tmpld);
+		      catanhl(tmpld);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_c99_complex_arc=yes
+else
+  ac_c99_complex_arc=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_c99_complex_arc" >&5
+$as_echo "$ac_c99_complex_arc" >&6; }
+    if test x"$ac_c99_complex_arc" = x"yes"; then
+
+$as_echo "#define _GLIBCXX_USE_C99_COMPLEX_ARC 1" >>confdefs.h
+
+    fi
+
     # Check for the existence in <stdio.h> of vscanf, et. al.
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 support in <stdio.h> for C++11" >&5
 $as_echo_n "checking for ISO C99 support in <stdio.h> for C++11... " >&6; }
