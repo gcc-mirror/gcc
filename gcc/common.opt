@@ -1908,7 +1908,7 @@ fcf-protection
 Common RejectNegative Alias(fcf-protection=,full)
 
 fcf-protection=
-Common Joined RejectNegative Enum(cf_protection_level) Var(flag_cf_protection) Init(CF_NONE)
+Common Joined RejectNegative Enum(cf_protection_level) EnumSet Var(flag_cf_protection) Init(CF_NONE)
 -fcf-protection=[full|branch|return|none|check]	Instrument functions with checks to verify jump/call/return control-flow transfer
 instructions have valid targets.
 
@@ -1916,19 +1916,19 @@ Enum
 Name(cf_protection_level) Type(enum cf_protection_level) UnknownError(unknown Control-Flow Protection Level %qs)
 
 EnumValue
-Enum(cf_protection_level) String(full) Value(CF_FULL)
+Enum(cf_protection_level) String(full) Value(CF_FULL) Set(1)
 
 EnumValue
-Enum(cf_protection_level) String(branch) Value(CF_BRANCH)
+Enum(cf_protection_level) String(branch) Value(CF_BRANCH) Set(2)
 
 EnumValue
-Enum(cf_protection_level) String(return) Value(CF_RETURN)
+Enum(cf_protection_level) String(return) Value(CF_RETURN) Set(3)
 
 EnumValue
-Enum(cf_protection_level) String(check) Value(CF_CHECK)
+Enum(cf_protection_level) String(check) Value(CF_CHECK) Set(4)
 
 EnumValue
-Enum(cf_protection_level) String(none) Value(CF_NONE)
+Enum(cf_protection_level) String(none) Value(CF_NONE) Set(1)
 
 finstrument-functions
 Common Var(flag_instrument_function_entry_exit,1)
