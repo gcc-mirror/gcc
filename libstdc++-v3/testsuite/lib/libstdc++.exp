@@ -1071,7 +1071,7 @@ proc check_v3_target_cstdint { } {
 # Return 1 if the C99 math facilities are available, 0 otherwise.
 proc check_v3_target_cmath { } {
     return [check_v3_target_prop_cached et_c99_math {
-	set cond "defined _GLIBCXX_USE_C99_MATH_TR1"
+	set cond "defined _GLIBCXX_USE_C99_MATH_FUNCS"
 	return [v3_check_preprocessor_condition cmath $cond]
     }]
 }

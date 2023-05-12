@@ -1267,7 +1267,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     poisson_distribution<_IntType>::param_type::
     _M_initialize()
     {
-#if _GLIBCXX_USE_C99_MATH_TR1
+#if _GLIBCXX_USE_C99_MATH_FUNCS
       if (_M_mean >= 12)
 	{
 	  const double __m = std::floor(_M_mean);
@@ -1295,7 +1295,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    * A rejection algorithm when mean >= 12 and a simple method based
    * upon the multiplication of uniform random variates otherwise.
-   * NB: The former is available only if _GLIBCXX_USE_C99_MATH_TR1
+   * NB: The former is available only if _GLIBCXX_USE_C99_MATH_FUNCS
    * is defined.
    *
    * Reference:
@@ -1311,7 +1311,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	__detail::_Adaptor<_UniformRandomNumberGenerator, double>
 	  __aurng(__urng);
-#if _GLIBCXX_USE_C99_MATH_TR1
+#if _GLIBCXX_USE_C99_MATH_FUNCS
 	if (__param.mean() >= 12)
 	  {
 	    double __x;
@@ -1479,7 +1479,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _M_easy = true;
 
-#if _GLIBCXX_USE_C99_MATH_TR1
+#if _GLIBCXX_USE_C99_MATH_FUNCS
       if (_M_t * __p12 >= 8)
 	{
 	  _M_easy = false;
@@ -1550,7 +1550,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    * A rejection algorithm when t * p >= 8 and a simple waiting time
    * method - the second in the referenced book - otherwise.
-   * NB: The former is available only if _GLIBCXX_USE_C99_MATH_TR1
+   * NB: The former is available only if _GLIBCXX_USE_C99_MATH_FUNCS
    * is defined.
    *
    * Reference:
@@ -1571,7 +1571,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__detail::_Adaptor<_UniformRandomNumberGenerator, double>
 	  __aurng(__urng);
 
-#if _GLIBCXX_USE_C99_MATH_TR1
+#if _GLIBCXX_USE_C99_MATH_FUNCS
 	if (!__param._M_easy)
 	  {
 	    double __x;
@@ -3367,7 +3367,7 @@ namespace __detail
       __ret = __sum / __tmp;
       if (__builtin_expect(__ret >= _RealType(1), 0))
 	{
-#if _GLIBCXX_USE_C99_MATH_TR1
+#if _GLIBCXX_USE_C99_MATH_FUNCS
 	  __ret = std::nextafter(_RealType(1), _RealType(0));
 #else
 	  __ret = _RealType(1)

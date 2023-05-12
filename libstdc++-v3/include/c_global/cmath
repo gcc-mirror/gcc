@@ -1767,7 +1767,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201103L
 
-#ifdef _GLIBCXX_USE_C99_MATH_TR1
+#ifdef _GLIBCXX_USE_C99_MATH_FUNCS
 
 #undef acosh
 #undef acoshf
@@ -3539,7 +3539,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #endif
 
-#endif // _GLIBCXX_USE_C99_MATH_TR1
+#endif // _GLIBCXX_USE_C99_MATH_FUNCS
 #endif // C++11
 
 #if __cplusplus >= 201703L

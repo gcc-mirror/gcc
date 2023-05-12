@@ -18187,9 +18187,9 @@ $as_echo "#define _GLIBCXX_USE_C99_INTTYPES_WCHAR_T 1" >>confdefs.h
 
     fi
 
-    # Check for the existence of <math.h> functions used if C99 is enabled.
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 support in <math.h> for C++11" >&5
-$as_echo_n "checking for ISO C99 support in <math.h> for C++11... " >&6; }
+    # Check for the existence of <math.h> generic macros used if C99 is enabled.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 generic macro support in <math.h> for C++11" >&5
+$as_echo_n "checking for ISO C99 generic macro support in <math.h> for C++11... " >&6; }
 if ${glibcxx_cv_c99_math_cxx11+:} false; then :
   $as_echo_n "(cached) " >&6
 else
@@ -18273,6 +18273,202 @@ $as_echo "$glibcxx_cv_c99_math_cxx11" >&6; }
 
 $as_echo "#define _GLIBCXX11_USE_C99_MATH 1" >>confdefs.h
 
+    fi
+
+    # Check for the existence of <math.h> functions.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 function support for C++11 in <math.h>" >&5
+$as_echo_n "checking for ISO C99 function support for C++11 in <math.h>... " >&6; }
+if ${glibcxx_cv_c99_math_funcs+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <math.h>
+int
+main ()
+{
+// Types
+		    typedef double_t  my_double_t;
+		    typedef float_t   my_float_t;
+		    // Hyperbolic
+		    acosh(0.0);
+		    acoshf(0.0f);
+		    acoshl(0.0l);
+		    asinh(0.0);
+		    asinhf(0.0f);
+		    asinhl(0.0l);
+		    atanh(0.0);
+		    atanhf(0.0f);
+		    atanhl(0.0l);
+		    // Exponential and logarithmic
+		    exp2(0.0);
+		    exp2f(0.0f);
+		    exp2l(0.0l);
+		    expm1(0.0);
+		    expm1f(0.0f);
+		    expm1l(0.0l);
+		    ilogb(0.0);
+		    ilogbf(0.0f);
+		    ilogbl(0.0l);
+		    log1p(0.0);
+		    log1pf(0.0f);
+		    log1pl(0.0l);
+		    log2(0.0);
+		    log2f(0.0f);
+		    log2l(0.0l);
+		    logb(0.0);
+		    logbf(0.0f);
+		    logbl(0.0l);
+		    scalbln(0.0, 0l);
+		    scalblnf(0.0f, 0l);
+		    scalblnl(0.0l, 0l);
+		    scalbn(0.0, 0);
+		    scalbnf(0.0f, 0);
+		    scalbnl(0.0l, 0);
+		    // Power and absolute-value
+		    cbrt(0.0);
+		    cbrtf(0.0f);
+		    cbrtl(0.0l);
+		    hypot(0.0, 0.0);
+		    hypotf(0.0f, 0.0f);
+		    hypotl(0.0l, 0.0l);
+		    // Error and gamma
+		    erf(0.0);
+		    erff(0.0f);
+		    erfl(0.0l);
+		    erfc(0.0);
+		    erfcf(0.0f);
+		    erfcl(0.0l);
+		    lgamma(0.0);
+		    lgammaf(0.0f);
+		    lgammal(0.0l);
+		    tgamma(0.0);
+		    tgammaf(0.0f);
+		    tgammal(0.0l);
+		    // Nearest integer
+		    nearbyint(0.0);
+		    nearbyintf(0.0f);
+		    nearbyintl(0.0l);
+		    rint(0.0);
+		    rintf(0.0f);
+		    rintl(0.0l);
+		    round(0.0);
+		    roundf(0.0f);
+		    roundl(0.0l);
+		    lrint(0.0);
+		    lrintf(0.0f);
+		    lrintl(0.0l);
+		    lround(0.0);
+		    lroundf(0.0f);
+		    lroundl(0.0l);
+		    #ifndef __APPLE__ /* see below */
+		    llrint(0.0);
+		    llrintf(0.0f);
+		    llrintl(0.0l);
+		    llround(0.0);
+		    llroundf(0.0f);
+		    llroundl(0.0l);
+		    #endif
+		    trunc(0.0);
+		    truncf(0.0f);
+		    truncl(0.0l);
+		    // Remainder
+		    remainder(0.0, 0.0);
+		    remainderf(0.0f, 0.0f);
+		    remainderl(0.0l, 0.0l);
+		    remquo(0.0, 0.0, 0);
+		    remquof(0.0f, 0.0f, 0);
+		    remquol(0.0l, 0.0l, 0);
+		    // Manipulation
+		    copysign(0.0, 0.0);
+		    copysignf(0.0f, 0.0f);
+		    copysignl(0.0l, 0.0l);
+		    nan("");
+		    nanf("");
+		    nanl("");
+		    nextafter(0.0, 0.0);
+		    nextafterf(0.0f, 0.0f);
+		    nextafterl(0.0l, 0.0l);
+		    nexttoward(0.0, 0.0);
+		    nexttowardf(0.0f, 0.0f);
+		    nexttowardl(0.0l, 0.0l);
+		    // Max, min, positive difference
+		    fdim(0.0, 0.0);
+		    fdimf(0.0f, 0.0f);
+		    fdiml(0.0l, 0.0l);
+		    fmax(0.0, 0.0);
+		    fmaxf(0.0f, 0.0f);
+		    fmaxl(0.0l, 0.0l);
+		    fmin(0.0, 0.0);
+		    fminf(0.0f, 0.0f);
+		    fminl(0.0l, 0.0l);
+		    // FP Multiply-add
+		    fma(0.0, 0.0, 0.0);
+		    fmaf(0.0f, 0.0f, 0.0f);
+		    fmal(0.0l, 0.0l, 0.0l);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_c99_math_funcs=yes
+else
+  glibcxx_cv_c99_math_funcs=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_math_funcs" >&5
+$as_echo "$glibcxx_cv_c99_math_funcs" >&6; }
+    if test x"$glibcxx_cv_c99_math_funcs" = x"yes"; then
+
+$as_echo "#define _GLIBCXX_USE_C99_MATH_FUNCS 1" >>confdefs.h
+
+
+      case "${target_os}" in
+	darwin*)
+	  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 rounding functions in <math.h>" >&5
+$as_echo_n "checking for ISO C99 rounding functions in <math.h>... " >&6; }
+if ${glibcxx_cv_c99_math_llround+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+	    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <math.h>
+int
+main ()
+{
+llrint(0.0);
+		    llrintf(0.0f);
+		    llrintl(0.0l);
+		    llround(0.0);
+		    llroundf(0.0f);
+		    llroundl(0.0l);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_cv_c99_math_llround=yes
+else
+  glibcxx_cv_c99_math_llround=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_math_llround" >&5
+$as_echo "$glibcxx_cv_c99_math_llround" >&6; }
+	  ;;
+      esac
+      if test x"$glibcxx_cv_c99_math_llround" = x"no"; then
+
+$as_echo "#define _GLIBCXX_NO_C99_ROUNDING_FUNCS 1" >>confdefs.h
+
+      fi
     fi
 
     # Check for the existence of <complex.h> complex math functions.
@@ -20507,49 +20703,6 @@ $as_echo "$glibcxx_cv_c99_math_tr1" >&6; }
 
 $as_echo "#define _GLIBCXX_USE_C99_MATH_TR1 1" >>confdefs.h
 
-
-    case "${target_os}" in
-      darwin*)
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ISO C99 rounding functions in <math.h>" >&5
-$as_echo_n "checking for ISO C99 rounding functions in <math.h>... " >&6; }
-if ${glibcxx_cv_c99_math_llround+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-          cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <math.h>
-int
-main ()
-{
-llrint(0.0);
-		  llrintf(0.0f);
-		  llrintl(0.0l);
-		  llround(0.0);
-		  llroundf(0.0f);
-		  llroundl(0.0l);
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  glibcxx_cv_c99_math_llround=yes
-else
-  glibcxx_cv_c99_math_llround=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_c99_math_llround" >&5
-$as_echo "$glibcxx_cv_c99_math_llround" >&6; }
-        ;;
-    esac
-    if test x"$glibcxx_cv_c99_math_llround" = x"no"; then
-
-$as_echo "#define _GLIBCXX_NO_C99_ROUNDING_FUNCS 1" >>confdefs.h
-
-    fi
   fi
 
   # Check for the existence of <inttypes.h> functions (NB: doesn't make

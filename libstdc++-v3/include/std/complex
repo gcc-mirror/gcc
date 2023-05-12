@@ -2534,7 +2534,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __complex_proj(__z.__rep()); }
 #endif
 
-#elif defined _GLIBCXX_USE_C99_MATH_TR1
+#elif defined _GLIBCXX_USE_C99_MATH_FUNCS
   inline complex<float>
   __complex_proj(const complex<float>& __z)
   {

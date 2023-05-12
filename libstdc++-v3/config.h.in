@@ -779,8 +779,8 @@
    C99 library functions to be present. */
 #undef _GLIBCXX11_USE_C99_COMPLEX
 
-/* Define if C99 functions or macros in <math.h> should be imported in <cmath>
-   in namespace std for C++11. */
+/* Define if C99 generic macros in <math.h> should be imported in <cmath> in
+   namespace std for C++11. */
 #undef _GLIBCXX11_USE_C99_MATH
 
 /* Define if C99 functions or macros in <stdio.h> should be imported in
@@ -937,6 +937,10 @@
 /* Define if wchar_t C99 functions in <inttypes.h> should be imported in
    <tr1/cinttypes> in namespace std::tr1. */
 #undef _GLIBCXX_USE_C99_INTTYPES_WCHAR_T_TR1
+
+/* Define if C99 functions in <math.h> should be imported in <cmath> in
+   namespace std for C++11. */
+#undef _GLIBCXX_USE_C99_MATH_FUNCS
 
 /* Define if C99 functions or macros in <math.h> should be imported in
    <tr1/cmath> in namespace std::tr1. */

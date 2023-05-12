@@ -23,7 +23,7 @@
 
 namespace test
 {
-#ifdef _GLIBCXX_USE_C99_MATH_TR1
+#ifdef _GLIBCXX_USE_C99_MATH_FUNCS
   using std::copysign;
 #else
   bool copysign(float x, float y)
@@ -405,7 +405,7 @@ main()
      normal ways to skip tests may not work: we don't have a test for
      C99_COMPLEX, and these macros may vary depending on -std=*, but
      macro tests wouldn't take them into account.  */
-#if ! (_GLIBCXX_USE_C99_COMPLEX || _GLIBCXX_USE_C99_MATH_TR1)
+#if ! (_GLIBCXX_USE_C99_COMPLEX || _GLIBCXX_USE_C99_MATH_FUNCS)
   if (true)
     return 0;
 #endif

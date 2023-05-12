@@ -21,7 +21,7 @@
 
 void test01()
 {
-#if _GLIBCXX_USE_C99_MATH_TR1
+#if _GLIBCXX_USE_C99_MATH_FUNCS
 
   typedef std::double_t  my_double_t;
   typedef std::float_t   my_float_t;
