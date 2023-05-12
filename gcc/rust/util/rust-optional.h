@@ -74,48 +74,72 @@ namespace Rust {
 template <typename T> class Optional
 {
 private:
-  struct Empty
+  struct tag_some
+  {
+  };
+  struct tag_none
   {
   };
 
-  enum Kind
-  {
-    Some,
-    None
-  } kind;
+  bool field_is_some;
 
-  union Content
+  union
   {
-    Empty empty;
     T value;
+  };
 
-    Content () = default;
-  } content;
+  Optional (tag_some, const T &value) : field_is_some (true), value (value) {}
+  Optional (tag_some, T &&value) : field_is_some (true), value (value) {}
 
-  Optional<T> (Kind kind, Content content) : kind (kind), content (content) {}
+  Optional (tag_none) : field_is_some (false) {}
 
 public:
-  Optional (const Optional &other) = default;
-  Optional &operator= (const Optional &other) = default;
-  Optional (Optional &&other) = default;
-
-  static Optional<T> some (T value)
+  Optional (const Optional &other)
   {
-    Content content;
-    content.value = value;
-
-    return Optional (Kind::Some, content);
+    if ((field_is_some = other.field_is_some))
+      new (&value) T (other.value);
   }
 
-  static Optional<T> none ()
+  Optional (Optional &&other)
   {
-    Content content;
-    content.empty = Empty ();
-
-    return Optional (Kind::None, content);
+    if ((field_is_some = other.field_is_some))
+      new (&value) T (other.value);
   }
 
-  bool is_some () const { return kind == Kind::Some; }
+  Optional &operator= (const Optional &other)
+  {
+    if (is_some ())
+      value.~T ();
+    if ((field_is_some = other.field_is_some))
+      new (&value) T (other.value);
+    return *this;
+  }
+
+  Optional &operator= (Optional &&other)
+  {
+    if (is_some ())
+      value.~T ();
+    if ((field_is_some = other.field_is_some))
+      new (&value) T (other.value);
+    return *this;
+  }
+
+  ~Optional ()
+  {
+    if (is_some ())
+      value.~T ();
+  }
+
+  static Optional some (const T &value)
+  {
+    return Optional (tag_some (), value);
+  }
+
+  static Optional some (T &&value) { return Optional (tag_some (), value); }
+
+  static Optional none () { return Optional (tag_none ()); }
+
+  bool is_some () const { return field_is_some; }
   bool is_none () const { return !is_some (); }
 
   /**
@@ -135,24 +159,24 @@ public:
   {
     rust_assert (is_some ());
 
-    return content.value;
+    return value;
   }
 
   T &get ()
   {
     rust_assert (is_some ());
 
-    return content.value;
+    return value;
   }
 
   T take ()
   {
     rust_assert (is_some ());
 
-    auto to_return = std::move (content.value);
+    T to_return = std::move (value);
+    value.~T ();
 
-    content.empty = Empty ();
-    kind = Kind::None;
+    field_is_some = false;
 
     return to_return;
   }
