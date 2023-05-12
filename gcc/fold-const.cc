@@ -1284,6 +1284,13 @@ poly_int_binop (poly_wide_int &res, enum tree_code code,
 	return false;
       break;
 
+    case BIT_AND_EXPR:
+      if (TREE_CODE (arg2) != INTEGER_CST
+	  || !can_and_p (wi::to_poly_wide (arg1), wi::to_wide (arg2),
+			 &res))
+	return false;
+      break;
+
     case BIT_IOR_EXPR:
       if (TREE_CODE (arg2) != INTEGER_CST
 	  || !can_ior_p (wi::to_poly_wide (arg1), wi::to_wide (arg2),
