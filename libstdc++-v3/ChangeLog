@@ -1,3 +1,11 @@
+2023-05-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdExpAnyPrinter): Make
+	expansion of std::string in manager name more robust.
+
 2023-05-08  Release Manager
 
 	* GCC 12.3.0 released.
