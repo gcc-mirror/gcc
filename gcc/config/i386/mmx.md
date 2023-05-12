@@ -2092,39 +2092,7 @@
    (set_attr "type" "sseadd")
    (set_attr "mode" "TI")])
 
-(define_expand "mulv2si3"
-  [(set (match_operand:V2SI 0 "register_operand")
-	(mult:V2SI
-	  (match_operand:V2SI 1 "register_operand")
-	  (match_operand:V2SI 2 "register_operand")))]
-  "TARGET_MMX_WITH_SSE"
-{
-  if (!TARGET_SSE4_1)
-    {
-      rtx op1 = lowpart_subreg (V4SImode, force_reg (V2SImode, operands[1]),
-				V2SImode);
-      rtx op2 = lowpart_subreg (V4SImode, force_reg (V2SImode, operands[2]),
-				V2SImode);
-
-      rtx tmp1 = gen_reg_rtx (V4SImode);
-      emit_insn (gen_vec_interleave_lowv4si (tmp1, op1, op1));
-      rtx tmp2 = gen_reg_rtx (V4SImode);
-      emit_insn (gen_vec_interleave_lowv4si (tmp2, op2, op2));
-
-      rtx res = gen_reg_rtx (V2DImode);
-      emit_insn (gen_vec_widen_umult_even_v4si (res, tmp1, tmp2));
-
-      rtx op0 = gen_reg_rtx (V4SImode);
-      emit_insn (gen_sse2_pshufd_1 (op0, gen_lowpart (V4SImode, res),
-				    const0_rtx, const2_rtx,
-				    const0_rtx, const2_rtx));
-
-      emit_move_insn (operands[0], lowpart_subreg (V2SImode, op0, V4SImode));
-      DONE;
-    }
-})
-
-(define_insn "*mulv2si3"
+(define_insn "mulv2si3"
   [(set (match_operand:V2SI 0 "register_operand" "=Yr,*x,v")
 	(mult:V2SI
 	  (match_operand:V2SI 1 "register_operand" "%0,0,v")
