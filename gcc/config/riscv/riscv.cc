@@ -1295,7 +1295,7 @@ riscv_const_insns (rtx x)
 	   The Wc0, Wc1 constraints are already covered by the
 	   vi constraint so we do not need to check them here
 	   separately.  */
-	else if (TARGET_VECTOR && satisfies_constraint_vi (x))
+	if (TARGET_VECTOR && satisfies_constraint_vi (x))
 	  return 1;
 
 	/* TODO: We may support more const vector in the future.  */
