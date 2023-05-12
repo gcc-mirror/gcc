@@ -60,11 +60,10 @@ package Ttypes is
    --  Two approaches are used for handling target dependent values in the
    --  standard library packages. Package Standard is handled specially,
    --  being constructed internally (by package Stand). Target dependent
-   --  values needed in Stand are obtained by direct reference to Ttypes
-   --  and Ttypef.
+   --  values needed in Stand are obtained by direct reference to Ttypes.
 
    --  For package System, there is a separate version for each target, with
-   --  explicit declarations of the required, constants.
+   --  explicit declarations of the required constants.
 
    --  Historical note: Originally we had in mind dealing with target dependent
    --  differences by referencing appropriate attributes. Ada 95 already
