@@ -2667,7 +2667,8 @@ private:
   void pre_vsetvl (void);
 
   /* Phase 5.  */
-  void local_eliminate_vsetvl_insn (const vector_insn_info &) const;
+  rtx_insn *get_vsetvl_at_end (const bb_info *, vector_insn_info *) const;
+  void local_eliminate_vsetvl_insn (const bb_info *) const;
   void cleanup_insns (void) const;
 
   /* Phase 6.  */
@@ -4029,6 +4030,60 @@ pass_vsetvl::pre_vsetvl (void)
     commit_edge_insertions ();
 }
 
+/* Some instruction can not be accessed in RTL_SSA when we don't re-init
+   the new RTL_SSA framework but it is definetely at the END of the block.
+
+  Here we optimize the VSETVL is hoisted by LCM:
+
+   Before LCM:
+     bb 1:
+       vsetvli a5,a2,e32,m1,ta,mu
+     bb 2:
+       vsetvli zero,a5,e32,m1,ta,mu
+       ...
+
+   After LCM:
+     bb 1:
+       vsetvli a5,a2,e32,m1,ta,mu
+       LCM INSERTED: vsetvli zero,a5,e32,m1,ta,mu --> eliminate
+     bb 2:
+       ...
+   */
+rtx_insn *
+pass_vsetvl::get_vsetvl_at_end (const bb_info *bb, vector_insn_info *dem) const
+{
+  rtx_insn *end_vsetvl = BB_END (bb->cfg_bb ());
+  if (end_vsetvl && NONDEBUG_INSN_P (end_vsetvl))
+    {
+      if (JUMP_P (end_vsetvl))
+	end_vsetvl = PREV_INSN (end_vsetvl);
+
+      if (NONDEBUG_INSN_P (end_vsetvl)
+	  && vsetvl_discard_result_insn_p (end_vsetvl))
+	{
+	  /* Only handle single succ. here, multiple succ. is much
+	     more complicated.  */
+	  if (single_succ_p (bb->cfg_bb ()))
+	    {
+	      edge e = single_succ_edge (bb->cfg_bb ());
+	      *dem = get_block_info (e->dest).local_dem;
+	      return end_vsetvl;
+	    }
+	}
+    }
+  return nullptr;
+}
+
+/* This predicator should only used within same basic block.  */
+static bool
+local_avl_compatible_p (rtx avl1, rtx avl2)
+{
+  if (!REG_P (avl1) || !REG_P (avl2))
+    return false;
+
+  return REGNO (avl1) == REGNO (avl2);
+}
+
 /* Local user vsetvl optimizaiton:
 
      Case 1:
@@ -4041,45 +4096,122 @@ pass_vsetvl::pre_vsetvl (void)
        ...
        vsetvl zero,a5,e32,mf2 --> Eliminate directly.  */
 void
-pass_vsetvl::local_eliminate_vsetvl_insn (const vector_insn_info &dem) const
+pass_vsetvl::local_eliminate_vsetvl_insn (const bb_info *bb) const
 {
-  const insn_info *insn = dem.get_insn ();
-  if (!insn || insn->is_artificial ())
-    return;
-  rtx_insn *rinsn = insn->rtl ();
-  const bb_info *bb = insn->bb ();
-  if (vsetvl_insn_p (rinsn))
+  rtx_insn *prev_vsetvl = nullptr;
+  rtx_insn *curr_vsetvl = nullptr;
+  rtx vl_placeholder = RVV_VLMAX;
+  rtx prev_avl = vl_placeholder;
+  rtx curr_avl = vl_placeholder;
+  vector_insn_info prev_dem;
+
+  /* Instruction inserted by LCM is not appeared in RTL-SSA yet, try to
+     found those instruciton.   */
+  if (rtx_insn *end_vsetvl = get_vsetvl_at_end (bb, &prev_dem))
     {
-      rtx vl = get_vl (rinsn);
-      for (insn_info *i = insn->next_nondebug_insn ();
-	   real_insn_and_same_bb_p (i, bb); i = i->next_nondebug_insn ())
+      prev_avl = get_avl (end_vsetvl);
+      prev_vsetvl = end_vsetvl;
+    }
+
+  bool skip_one = false;
+  /* Backward propgate vsetvl info, drop the later one (prev_vsetvl) if it's
+     compatible with current vsetvl (curr_avl), and merge the vtype and avl
+     info. into current vsetvl.  */
+  for (insn_info *insn : bb->reverse_real_nondebug_insns ())
+    {
+      rtx_insn *rinsn = insn->rtl ();
+      const auto &curr_dem = get_vector_info (insn);
+      bool need_invalidate = false;
+
+      /* Skip if this insn already handled in last iteration.  */
+      if (skip_one)
 	{
-	  if (i->is_call () || i->is_asm ()
-	      || find_access (i->defs (), VL_REGNUM)
-	      || find_access (i->defs (), VTYPE_REGNUM))
-	    return;
+	  skip_one = false;
+	  continue;
+	}
 
-	  if (has_vtype_op (i->rtl ()))
+      if (vsetvl_insn_p (rinsn))
+	{
+	  curr_vsetvl = rinsn;
+	  /* vsetvl are using vl rather than avl since it will try to merge
+	     with other vsetvl_discard_result.
+
+			v--- avl
+	     vsetvl a5,a4,e8,mf8   # vsetvl
+	     ...    ^--- vl
+	     vsetvl zero,a5,e8,mf8 # vsetvl_discard_result
+			 ^--- avl
+	     */
+	  curr_avl = get_vl (rinsn);
+	  /* vsetvl is a cut point of local backward vsetvl elimination.  */
+	  need_invalidate = true;
+	}
+      else if (has_vtype_op (rinsn) && NONDEBUG_INSN_P (PREV_INSN (rinsn))
+	       && (vsetvl_discard_result_insn_p (PREV_INSN (rinsn))
+		   || vsetvl_insn_p (PREV_INSN (rinsn))))
+	{
+	  curr_vsetvl = PREV_INSN (rinsn);
+
+	  if (vsetvl_insn_p (PREV_INSN (rinsn)))
 	    {
-	      if (!vsetvl_discard_result_insn_p (PREV_INSN (i->rtl ())))
-		return;
-	      rtx avl = get_avl (i->rtl ());
-	      if (avl != vl)
-		return;
-	      set_info *def = find_access (i->uses (), REGNO (avl))->def ();
-	      if (def->insn () != insn)
-		return;
-
-	      vector_insn_info new_info = get_vector_info (i);
-	      if (!new_info.skip_avl_compatible_p (dem))
-		return;
-
-	      new_info.set_avl_info (dem.get_avl_info ());
-	      new_info = dem.merge (new_info, LOCAL_MERGE);
-	      change_vsetvl_insn (insn, new_info);
-	      eliminate_insn (PREV_INSN (i->rtl ()));
-	      return;
+	      /* Need invalidate and skip if it's vsetvl.  */
+	      need_invalidate = true;
+	      /* vsetvl_discard_result_insn_p won't appeared in RTL-SSA,
+	       * so only need to skip for vsetvl.  */
+	      skip_one = true;
 	    }
+
+	  curr_avl = get_avl (rinsn);
+
+	  /* Some instrucion like pred_extract_first<mode> don't reqruie avl, so
+	     the avl is null, use vl_placeholder for unify the handling
+	     logic. */
+	  if (!curr_avl)
+	    curr_avl = vl_placeholder;
+	}
+      else if (insn->is_call () || insn->is_asm ()
+	       || find_access (insn->defs (), VL_REGNUM)
+	       || find_access (insn->defs (), VTYPE_REGNUM)
+	       || (REG_P (prev_avl)
+		   && find_access (insn->defs (), REGNO (prev_avl))))
+	{
+	  /* Invalidate if this insn can't propagate vl, vtype or avl.  */
+	  need_invalidate = true;
+	  prev_dem = vector_insn_info ();
+	}
+      else
+	/* Not interested instruction.  */
+	continue;
+
+      /* Local AVL compatibility checking is simpler than global, we only
+	 need to check the REGNO is same.  */
+      if (prev_dem.valid_p () && prev_dem.skip_avl_compatible_p (curr_dem)
+	  && local_avl_compatible_p (prev_avl, curr_avl))
+	{
+	  /* curr_dem and prev_dem is compatible!  */
+	  /* Update avl info since we need to make sure they are fully
+	     compatible before merge.  */
+	  prev_dem.set_avl_info (curr_dem.get_avl_info ());
+	  /* Merge both and update into curr_vsetvl.  */
+	  prev_dem = curr_dem.merge (prev_dem, LOCAL_MERGE);
+	  change_vsetvl_insn (curr_dem.get_insn (), prev_dem);
+	  /* Then we can drop prev_vsetvl.  */
+	  eliminate_insn (prev_vsetvl);
+	}
+
+      if (need_invalidate)
+	{
+	  prev_vsetvl = nullptr;
+	  curr_vsetvl = nullptr;
+	  prev_avl = vl_placeholder;
+	  curr_avl = vl_placeholder;
+	  prev_dem = vector_insn_info ();
+	}
+      else
+	{
+	  prev_vsetvl = curr_vsetvl;
+	  prev_avl = curr_avl;
+	  prev_dem = curr_dem;
 	}
     }
 }
@@ -4104,19 +4236,10 @@ pass_vsetvl::cleanup_insns (void) const
 {
   for (const bb_info *bb : crtl->ssa->bbs ())
     {
+      local_eliminate_vsetvl_insn (bb);
       for (insn_info *insn : bb->real_nondebug_insns ())
 	{
 	  rtx_insn *rinsn = insn->rtl ();
-	  const auto &dem = get_vector_info (insn);
-	  /* Eliminate local vsetvl:
-	       bb 0:
-	       vsetvl a5,a6,...
-	       vsetvl zero,a5.
-
-	     Eliminate vsetvl in bb2 when a5 is only coming from
-	     bb 0.  */
-	  local_eliminate_vsetvl_insn (dem);
-
 	  if (vlmax_avl_insn_p (rinsn))
 	    {
 	      eliminate_insn (rinsn);
