@@ -3692,7 +3692,6 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 #endif // C++17
 #endif // C++14
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   /**
    *  @brief Generate two uniformly distributed integers using a
    *         single distribution invocation.
@@ -3803,8 +3802,6 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
       for (_RandomAccessIterator __i = __first + 1; __i != __last; ++__i)
 	std::iter_swap(__i, __first + __d(__g, __p_type(0, __i - __first)));
     }
-#endif // USE C99_STDINT
-
 #endif // C++11
 
 _GLIBCXX_BEGIN_NAMESPACE_ALGO

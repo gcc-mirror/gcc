@@ -28,8 +28,6 @@
 #include <random>
 #include <system_error>
 
-#ifdef  _GLIBCXX_USE_C99_STDINT_TR1
-
 #if defined __i386__ || defined __x86_64__
 # include <cpuid.h>
 # ifdef _GLIBCXX_X86_RDRAND
@@ -674,4 +672,3 @@ namespace std _GLIBCXX_VISIBILITY(default)
   template struct __detail::_Mod<unsigned, 2147483647UL, 16807UL, 0UL>;
 #endif
 }
-#endif // _GLIBCXX_USE_C99_STDINT_TR1

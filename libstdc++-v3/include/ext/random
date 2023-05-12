@@ -45,7 +45,7 @@
 # include <emmintrin.h>
 #endif
 
-#if defined(_GLIBCXX_USE_C99_STDINT_TR1) && defined(UINT32_C)
+#ifdef UINT32_C
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
@@ -3923,7 +3923,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #include <ext/opt_random.h>
 #include <ext/random.tcc>
 
-#endif // _GLIBCXX_USE_C99_STDINT_TR1 && UINT32_C
+#endif // UINT32_C
 
 #endif // C++11
 
