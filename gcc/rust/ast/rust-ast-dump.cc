@@ -782,8 +782,11 @@ Dump::visit (TupleExpr &)
 {}
 
 void
-Dump::visit (TupleIndexExpr &)
-{}
+Dump::visit (TupleIndexExpr &expr)
+{
+  visit (expr.get_tuple_expr ());
+  stream << '.' << expr.get_tuple_index ();
+}
 
 void
 Dump::visit (StructExprStruct &)
