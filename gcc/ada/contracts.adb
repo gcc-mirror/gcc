@@ -296,6 +296,9 @@ package body Contracts is
          elsif Prag_Nam = Name_Part_Of and then Is_Generic_Instance (Id) then
             Add_Classification;
 
+         elsif Prag_Nam = Name_Always_Terminates then
+            Add_Contract_Test_Case;
+
          --  The pragma is not a proper contract item
 
          else
