@@ -477,3 +477,44 @@
   riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, ops);
   DONE;
 })
+
+;; =========================================================================
+;; == Unary arithmetic
+;; =========================================================================
+
+;; -------------------------------------------------------------------------------
+;; ---- [INT] Unary operations
+;; -------------------------------------------------------------------------------
+;; Includes:
+;; - vneg.v/vnot.v
+;; -------------------------------------------------------------------------------
+(define_expand "<optab><mode>2"
+  [(set (match_operand:VI 0 "register_operand")
+    (any_int_unop:VI
+     (match_operand:VI 1 "register_operand")))]
+  "TARGET_VECTOR"
+{
+  insn_code icode = code_for_pred (<CODE>, <MODE>mode);
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::RVV_UNOP, operands);
+  DONE;
+})
+
+;; -------------------------------------------------------------------------------
+;; - ABS expansion to vmslt and vneg
+;; -------------------------------------------------------------------------------
+
+(define_expand "abs<mode>2"
+  [(set (match_operand:VI 0 "register_operand")
+    (match_operand:VI 1 "register_operand"))]
+  "TARGET_VECTOR"
+{
+  rtx zero = gen_const_vec_duplicate (<MODE>mode, GEN_INT (0));
+  machine_mode mask_mode = riscv_vector::get_mask_mode (<MODE>mode).require ();
+  rtx mask = gen_reg_rtx (mask_mode);
+  riscv_vector::expand_vec_cmp (mask, LT, operands[1], zero);
+
+  rtx ops[] = {operands[0], mask, operands[1], operands[1]};
+  riscv_vector::emit_vlmax_masked_mu_insn (code_for_pred (NEG, <MODE>mode),
+					   riscv_vector::RVV_UNOP_MU, ops);
+  DONE;
+})

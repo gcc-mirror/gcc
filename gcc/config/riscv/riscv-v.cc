@@ -426,6 +426,22 @@ emit_vlmax_cmp_mu_insn (unsigned icode, rtx *ops)
   e.emit_insn ((enum insn_code) icode, ops);
 }
 
+/* This function emits a masked instruction.  */
+void
+emit_vlmax_masked_mu_insn (unsigned icode, int op_num, rtx *ops)
+{
+  machine_mode dest_mode = GET_MODE (ops[0]);
+  machine_mode mask_mode = get_mask_mode (dest_mode).require ();
+  insn_expander<11> e (/*OP_NUM*/ op_num, /*HAS_DEST_P*/ true,
+		       /*FULLY_UNMASKED_P*/ false,
+		       /*USE_REAL_MERGE_P*/ true,
+		       /*HAS_AVL_P*/ true,
+		       /*VLMAX_P*/ true, dest_mode, mask_mode);
+  e.set_policy (TAIL_ANY);
+  e.set_policy (MASK_UNDISTURBED);
+  e.emit_insn ((enum insn_code) icode, ops);
+}
+
 /* Expand series const vector.  */
 
 void
