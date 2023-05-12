@@ -23122,12 +23122,11 @@ ix86_expand_vecop_qihi2 (enum rtx_code code, rtx dest, rtx op1, rtx op2)
 {
   machine_mode himode, qimode = GET_MODE (dest);
   rtx hop1, hop2, hdest;
-  rtx (*gen_extend)(rtx, rtx);
   rtx (*gen_truncate)(rtx, rtx);
   bool uns_p = (code == ASHIFTRT) ? false : true;
 
-  /* There's no V64HImode multiplication instruction.  */
-  if (qimode == E_V64QImode)
+  /* There are no V64HImode instructions.  */
+  if (qimode == V64QImode)
     return false;
 
   /* vpmovwb only available under AVX512BW.  */
@@ -23136,26 +23135,24 @@ ix86_expand_vecop_qihi2 (enum rtx_code code, rtx dest, rtx op1, rtx op2)
   if ((qimode == V8QImode || qimode == V16QImode)
       && !TARGET_AVX512VL)
     return false;
-  /* Not generate zmm instruction when prefer 128/256 bit vector width.  */
-  if (qimode == V32QImode
-      && (TARGET_PREFER_AVX128 || TARGET_PREFER_AVX256))
+  /* Do not generate ymm/zmm instructions when
+     target prefers 128/256 bit vector width.  */
+  if ((qimode == V16QImode && TARGET_PREFER_AVX128)
+      || (qimode == V32QImode && TARGET_PREFER_AVX256))
     return false;
 
   switch (qimode)
     {
     case E_V8QImode:
       himode = V8HImode;
-      gen_extend = uns_p ? gen_zero_extendv8qiv8hi2 : gen_extendv8qiv8hi2;
       gen_truncate = gen_truncv8hiv8qi2;
       break;
     case E_V16QImode:
       himode = V16HImode;
-      gen_extend = uns_p ? gen_zero_extendv16qiv16hi2 : gen_extendv16qiv16hi2;
       gen_truncate = gen_truncv16hiv16qi2;
       break;
     case E_V32QImode:
       himode = V32HImode;
-      gen_extend = uns_p ? gen_zero_extendv32qiv32hi2 : gen_extendv32qiv32hi2;
       gen_truncate = gen_truncv32hiv32qi2;
       break;
     default:
@@ -23165,8 +23162,8 @@ ix86_expand_vecop_qihi2 (enum rtx_code code, rtx dest, rtx op1, rtx op2)
   hop1 = gen_reg_rtx (himode);
   hop2 = gen_reg_rtx (himode);
   hdest = gen_reg_rtx (himode);
-  emit_insn (gen_extend (hop1, op1));
-  emit_insn (gen_extend (hop2, op2));
+  emit_insn (gen_extend_insn (hop1, op1, himode, qimode, uns_p));
+  emit_insn (gen_extend_insn (hop2, op2, himode, qimode, uns_p));
   emit_insn (gen_rtx_SET (hdest, simplify_gen_binary (code, himode,
 						      hop1, hop2)));
   emit_insn (gen_truncate (dest, hdest));
@@ -23285,8 +23282,9 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
   rtx (*gen_ih) (rtx, rtx, rtx);
   rtx op1_l, op1_h, op2_l, op2_h, res_l, res_h;
   struct expand_vec_perm_d d;
-  bool ok, full_interleave;
-  bool uns_p = false;
+  bool full_interleave = true;
+  bool uns_p = true;
+  bool ok;
   int i;
 
   if (CONST_INT_P (op2)
@@ -23303,18 +23301,12 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
     {
     case E_V16QImode:
       himode = V8HImode;
-      gen_il = gen_vec_interleave_lowv16qi;
-      gen_ih = gen_vec_interleave_highv16qi;
       break;
     case E_V32QImode:
       himode = V16HImode;
-      gen_il = gen_avx2_interleave_lowv32qi;
-      gen_ih = gen_avx2_interleave_highv32qi;
       break;
     case E_V64QImode:
       himode = V32HImode;
-      gen_il = gen_avx512bw_interleave_lowv64qi;
-      gen_ih = gen_avx512bw_interleave_highv64qi;
       break;
     default:
       gcc_unreachable ();
@@ -23327,6 +23319,26 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
 	 each word.  We don't care what goes into the high byte of each word.
 	 Rather than trying to get zero in there, most convenient is to let
 	 it be a copy of the low byte.  */
+      switch (qimode)
+	{
+	case E_V16QImode:
+	  gen_il = gen_vec_interleave_lowv16qi;
+	  gen_ih = gen_vec_interleave_highv16qi;
+	  break;
+	case E_V32QImode:
+	  gen_il = gen_avx2_interleave_lowv32qi;
+	  gen_ih = gen_avx2_interleave_highv32qi;
+	  full_interleave = false;
+	  break;
+	case E_V64QImode:
+	  gen_il = gen_avx512bw_interleave_lowv64qi;
+	  gen_ih = gen_avx512bw_interleave_highv64qi;
+	  full_interleave = false;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
       op2_l = gen_reg_rtx (qimode);
       op2_h = gen_reg_rtx (qimode);
       emit_insn (gen_il (op2_l, op2, op2));
@@ -23336,14 +23348,13 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
       op1_h = gen_reg_rtx (qimode);
       emit_insn (gen_il (op1_l, op1, op1));
       emit_insn (gen_ih (op1_h, op1, op1));
-      full_interleave = qimode == V16QImode;
       break;
 
+    case ASHIFTRT:
+      uns_p = false;
+      /* FALLTHRU */
     case ASHIFT:
     case LSHIFTRT:
-      uns_p = true;
-      /* FALLTHRU */
-    case ASHIFTRT:
       op1_l = gen_reg_rtx (himode);
       op1_h = gen_reg_rtx (himode);
       ix86_expand_sse_unpack (op1_l, op1, uns_p, false);
@@ -23360,16 +23371,15 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
       else
 	op2_l = op2_h = op2;
 
-      full_interleave = true;
       break;
     default:
       gcc_unreachable ();
     }
 
-  /* Perform vashr/vlshr/vashl.  */
   if (code != MULT
       && GET_MODE_CLASS (GET_MODE (op2)) == MODE_VECTOR_INT)
     {
+      /* Expand vashr/vlshr/vashl.  */
       res_l = gen_reg_rtx (himode);
       res_h = gen_reg_rtx (himode);
       emit_insn (gen_rtx_SET (res_l,
@@ -23379,9 +23389,9 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
 			      simplify_gen_binary (code, himode,
 						   op1_h, op2_h)));
     }
-  /* Performance mult/ashr/lshr/ashl.  */
   else
     {
+      /* Expand mult/ashr/lshr/ashl.  */
       res_l = expand_simple_binop (himode, code, op1_l, op2_l, NULL_RTX,
 				   1, OPTAB_DIRECT);
       res_h = expand_simple_binop (himode, code, op1_h, op2_h, NULL_RTX,
@@ -23401,7 +23411,7 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
 
   if (full_interleave)
     {
-      /* For SSE2, we used an full interleave, so the desired
+      /* We used the full interleave, the desired
 	 results are in the even elements.  */
       for (i = 0; i < d.nelt; ++i)
 	d.perm[i] = i * 2;
