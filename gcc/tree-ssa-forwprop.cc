@@ -3236,6 +3236,26 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   return true;
 }
 
+/* Prepare a TARGET_MEM_REF ref so that it can be subsetted as
+   lvalue.  This splits out an address computation stmt before *GSI
+   and returns a MEM_REF wrapping the address.  */
+
+static tree
+prepare_target_mem_ref_lvalue (tree ref, gimple_stmt_iterator *gsi)
+{
+  if (TREE_CODE (TREE_OPERAND (ref, 0)) == ADDR_EXPR)
+    mark_addressable (TREE_OPERAND (TREE_OPERAND (ref, 0), 0));
+  tree ptrtype = build_pointer_type (TREE_TYPE (ref));
+  tree tem = make_ssa_name (ptrtype);
+  gimple *new_stmt
+    = gimple_build_assign (tem, build1 (ADDR_EXPR, TREE_TYPE (tem),
+					unshare_expr (ref)));
+  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
+  ref = build2_loc (EXPR_LOCATION (ref),
+		    MEM_REF, TREE_TYPE (ref), tem,
+		    build_int_cst (TREE_TYPE (TREE_OPERAND (ref, 1)), 0));
+  return ref;
+}
 
 /* Rewrite the vector load at *GSI to component-wise loads if the load
    is only used in BIT_FIELD_REF extractions with eventual intermediate
@@ -3317,20 +3337,7 @@ optimize_vector_load (gimple_stmt_iterator *gsi)
      For TARGET_MEM_REFs we have to separate the LEA from the reference.  */
   tree load_rhs = rhs;
   if (TREE_CODE (load_rhs) == TARGET_MEM_REF)
-    {
-      if (TREE_CODE (TREE_OPERAND (load_rhs, 0)) == ADDR_EXPR)
-	mark_addressable (TREE_OPERAND (TREE_OPERAND (load_rhs, 0), 0));
-      tree ptrtype = build_pointer_type (TREE_TYPE (load_rhs));
-      tree tem = make_ssa_name (ptrtype);
-      gimple *new_stmt
-	= gimple_build_assign (tem, build1 (ADDR_EXPR, TREE_TYPE (tem),
-					    unshare_expr (load_rhs)));
-      gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
-      load_rhs = build2_loc (EXPR_LOCATION (load_rhs),
-			     MEM_REF, TREE_TYPE (load_rhs), tem,
-			     build_int_cst
-			       (TREE_TYPE (TREE_OPERAND (load_rhs, 1)), 0));
-    }
+    load_rhs = prepare_target_mem_ref_lvalue (load_rhs, gsi);
 
   /* Rewrite the BIT_FIELD_REFs to be actual loads, re-emitting them at
      the place of the original load.  */
@@ -3823,9 +3830,7 @@ pass_forwprop::execute (function *fun)
 		  && gimple_store_p (use_stmt)
 		  && !gimple_has_volatile_ops (use_stmt)
 		  && !stmt_can_throw_internal (fun, use_stmt)
-		  && is_gimple_assign (use_stmt)
-		  && (TREE_CODE (gimple_assign_lhs (use_stmt))
-		      != TARGET_MEM_REF))
+		  && is_gimple_assign (use_stmt))
 		{
 		  tree elt_t = TREE_TYPE (CONSTRUCTOR_ELT (rhs, 0)->value);
 		  unsigned HOST_WIDE_INT elt_w
@@ -3835,6 +3840,8 @@ pass_forwprop::execute (function *fun)
 		  tree use_lhs = gimple_assign_lhs (use_stmt);
 		  if (auto_var_p (use_lhs))
 		    DECL_NOT_GIMPLE_REG_P (use_lhs) = 1;
+		  else if (TREE_CODE (use_lhs) == TARGET_MEM_REF)
+		    use_lhs = prepare_target_mem_ref_lvalue (use_lhs, &gsi);
 		  for (unsigned HOST_WIDE_INT bi = 0; bi < n; bi += elt_w)
 		    {
 		      unsigned HOST_WIDE_INT ci = bi / elt_w;
