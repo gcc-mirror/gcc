@@ -100,6 +100,9 @@ public:
   std::unique_ptr<Expr> field_access (std::unique_ptr<Expr> &&instance,
 				      std::string field);
 
+  /* Create a wildcard pattern (`_`) */
+  std::unique_ptr<Pattern> wildcard ();
+
 private:
   /**
    * Location of the generated AST nodes

@@ -155,8 +155,29 @@ DeriveClone::visit_enum (Enum &item)
 void
 DeriveClone::visit_union (Union &item)
 {
-  rust_sorry_at (item.get_locus (), "cannot derive %qs for these items yet",
-		 "Clone");
+  // FIXME: Should be $crate::core::clone::AssertParamIsCopy (or similar)
+
+  // <Self>
+  auto arg = GenericArg::create_type (builder.single_type_path ("Self"));
+
+  // AssertParamIsCopy::<Self>
+  auto type = std::unique_ptr<TypePathSegment> (
+    new TypePathSegmentGeneric (PathIdentSegment ("AssertParamIsCopy", loc),
+				false, GenericArgs ({}, {arg}, {}, loc), loc));
+  auto type_paths = std::vector<std::unique_ptr<TypePathSegment>> ();
+  type_paths.emplace_back (std::move (type));
+
+  auto full_path
+    = std::unique_ptr<Type> (new TypePath ({std::move (type_paths)}, loc));
+
+  auto stmts = std::vector<std::unique_ptr<Stmt>> ();
+  stmts.emplace_back (
+    builder.let (builder.wildcard (), std::move (full_path), nullptr));
+  auto tail_expr = builder.deref (builder.identifier ("self"));
+
+  auto block = builder.block (std::move (stmts), std::move (tail_expr));
+
+  expanded = clone_impl (clone_fn (std::move (block)), item.get_identifier ());
 }
 
 } // namespace AST

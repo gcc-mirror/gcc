@@ -82,13 +82,6 @@ AstBuilder::path_in_expression (std::vector<std::string> &&segments)
 }
 
 std::unique_ptr<Expr>
-AstBuilder::struct_expr_struct (std::string struct_name)
-{
-  return std::unique_ptr<Expr> (
-    new StructExprStruct (path_in_expression ({struct_name}), {}, {}, loc));
-}
-
-std::unique_ptr<Expr>
 AstBuilder::block (std::vector<std::unique_ptr<Stmt>> &&stmts,
 		   std::unique_ptr<Expr> &&tail_expr)
 {
@@ -100,9 +93,9 @@ std::unique_ptr<Stmt>
 AstBuilder::let (std::unique_ptr<Pattern> pattern, std::unique_ptr<Type> type,
 		 std::unique_ptr<Expr> init)
 {
-  return std::unique_ptr<Stmt> (
-    new LetStmt (/* needs a pattern here, not just a name */ nullptr,
-		 std::move (init), std::move (type), {}, loc));
+  return std::unique_ptr<Stmt> (new LetStmt (std::move (pattern),
+					     std::move (init), std::move (type),
+					     {}, loc));
 }
 
 std::unique_ptr<Expr>
@@ -116,6 +109,13 @@ std::unique_ptr<Expr>
 AstBuilder::deref (std::unique_ptr<Expr> &&of)
 {
   return std::unique_ptr<Expr> (new DereferenceExpr (std::move (of), {}, loc));
+}
+
+std::unique_ptr<Expr>
+AstBuilder::struct_expr_struct (std::string struct_name)
+{
+  return std::unique_ptr<Expr> (
+    new StructExprStruct (path_in_expression ({struct_name}), {}, {}, loc));
 }
 
 std::unique_ptr<Expr>
@@ -140,6 +140,12 @@ AstBuilder::field_access (std::unique_ptr<Expr> &&instance, std::string field)
 {
   return std::unique_ptr<Expr> (
     new FieldAccessExpr (std::move (instance), field, {}, loc));
+}
+
+std::unique_ptr<Pattern>
+AstBuilder::wildcard ()
+{
+  return std::unique_ptr<Pattern> (new WildcardPattern (loc));
 }
 
 } // namespace AST
