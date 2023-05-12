@@ -171,48 +171,16 @@ public:
 template <typename T> class Optional<T &>
 {
 private:
-  struct Empty
-  {
-  };
+  T *inner;
 
-  enum Kind
-  {
-    Some,
-    None
-  } kind;
-
-  union Content
-  {
-    Empty empty;
-    T *value;
-
-    Content () = default;
-  } content;
-
-  Optional<T &> (Kind kind, Content content) : kind (kind), content (content) {}
+  Optional (T *inner) : inner (inner) {}
 
 public:
-  Optional (const Optional &other) = default;
-  Optional (Optional &&other) = default;
-  Optional &operator= (Optional &&other) = default;
+  static Optional<T &> some (T &value) { return Optional (&value); }
 
-  static Optional<T &> some (T &value)
-  {
-    Content content;
-    content.value = &value;
+  static Optional<T &> none () { return Optional (nullptr); }
 
-    return Optional (Kind::Some, content);
-  }
-
-  static Optional<T &> none ()
-  {
-    Content content;
-    content.empty = Empty ();
-
-    return Optional (Kind::None, content);
-  }
-
-  bool is_some () const { return kind == Kind::Some; }
+  bool is_some () const { return inner; }
   bool is_none () const { return !is_some (); }
 
   // FIXME: Can we factor this in a single class?
@@ -230,28 +198,19 @@ public:
   T *operator-> () { return &get (); }
   const T *operator-> () const { return &get (); }
 
-  const T &get () const
+  T &get () const
   {
     rust_assert (is_some ());
 
-    return *content.value;
-  }
-
-  T &get ()
-  {
-    rust_assert (is_some ());
-
-    return *content.value;
+    return *inner;
   }
 
   T &take ()
   {
     rust_assert (is_some ());
 
-    auto to_return = std::move (content.value);
-
-    content.empty = Empty ();
-    kind = Kind::None;
+    T *to_return = inner;
+    inner = nullptr;
 
     return *to_return;
   }
