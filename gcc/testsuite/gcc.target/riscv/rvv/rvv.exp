@@ -61,6 +61,8 @@ set AUTOVEC_TEST_OPTS [list \
 foreach op $AUTOVEC_TEST_OPTS {
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/partial/*.\[cS\]]] \
     "" "$op"
+  dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/binop/*.\[cS\]]] \
+    "" "$op"
 }
 
 # All done.
