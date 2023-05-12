@@ -13370,6 +13370,11 @@ package body Sem_Prag is
                   return;
                end if;
 
+            --  Entry
+
+            elsif Nkind (Subp_Decl) = N_Entry_Declaration then
+               null;
+
             else
                Pragma_Misplaced;
             end if;
