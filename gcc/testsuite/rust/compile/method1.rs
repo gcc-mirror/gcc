@@ -9,5 +9,4 @@ pub fn main() {
 
     a.test();
     // { dg-error "failed to resolve method for .test." "" { target *-*-* } .-1 }
-    // { dg-error {failed to type resolve expression} "" { target *-*-* } .-2 }
 }

@@ -6,7 +6,6 @@ fn main() {
     while b > 10 {
         if (b == 2) {
             break b;  // { dg-error "can only break with a value inside 'loop'" }
-            // { dg-error "failed to type resolve expression" "" { target *-*-* } .-1 }
         }
         c = a + b;
         a = b;

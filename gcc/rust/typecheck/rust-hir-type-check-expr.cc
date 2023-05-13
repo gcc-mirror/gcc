@@ -41,13 +41,7 @@ TypeCheckExpr::Resolve (HIR::Expr *expr)
   expr->accept_vis (resolver);
 
   if (resolver.infered == nullptr)
-    {
-      // FIXME
-      // this is an internal error message for debugging and should be removed
-      // at some point
-      rust_error_at (expr->get_locus (), "failed to type resolve expression");
-      return new TyTy::ErrorType (expr->get_mappings ().get_hirid ());
-    }
+    return new TyTy::ErrorType (expr->get_mappings ().get_hirid ());
 
   auto ref = expr->get_mappings ().get_hirid ();
   resolver.infered->set_ref (ref);

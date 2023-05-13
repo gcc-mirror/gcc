@@ -19,5 +19,4 @@ fn test() {
     let a = S;
     a.foo();
     // { dg-error "multiple candidates found for method .foo." "" { target *-*-* } .-1 }
-    // { dg-error "failed to type resolve expression" "" { target *-*-* } .-2 }
 }
