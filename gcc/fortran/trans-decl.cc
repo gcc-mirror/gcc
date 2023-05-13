@@ -558,7 +558,7 @@ gfc_finish_decl (tree decl)
     return;
 
   if (DECL_SIZE (decl) == NULL_TREE
-      && TYPE_SIZE (TREE_TYPE (decl)) != NULL_TREE)
+      && COMPLETE_TYPE_P (TREE_TYPE (decl)))
     layout_decl (decl, 0);
 
   /* A few consistency checks.  */
@@ -1891,7 +1891,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       length = fold_convert (gfc_charlen_type_node, length);
       gfc_finish_var_decl (length, sym);
       if (!sym->attr.associate_var
-	  && TREE_CODE (length) == VAR_DECL
+	  && VAR_P (length)
 	  && sym->value && sym->value->expr_type != EXPR_NULL
 	  && sym->value->ts.u.cl->length)
 	{

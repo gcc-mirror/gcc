@@ -82,7 +82,7 @@ gfc_conv_label_variable (gfc_se * se, gfc_expr * expr)
   if (TREE_CODE (se->expr) == COMPONENT_REF)
     se->expr = TREE_OPERAND (se->expr, 1);
   /* Deals with dummy argument. Get the parameter declaration.  */
-  else if (TREE_CODE (se->expr) == INDIRECT_REF)
+  else if (INDIRECT_REF_P (se->expr))
     se->expr = TREE_OPERAND (se->expr, 0);
 }
 

@@ -880,7 +880,7 @@ is_pointer_array (tree expr)
       || GFC_CLASS_TYPE_P (TREE_TYPE (expr)))
     return false;
 
-  if (TREE_CODE (expr) == VAR_DECL
+  if (VAR_P (expr)
       && GFC_DECL_PTR_ARRAY_P (expr))
     return true;
 
@@ -888,7 +888,7 @@ is_pointer_array (tree expr)
       && GFC_DECL_PTR_ARRAY_P (expr))
     return true;
 
-  if (TREE_CODE (expr) == INDIRECT_REF
+  if (INDIRECT_REF_P (expr)
       && GFC_DECL_PTR_ARRAY_P (TREE_OPERAND (expr, 0)))
     return true;
 
@@ -3803,7 +3803,7 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar,
     {
       if (TREE_CODE (info->descriptor) == COMPONENT_REF)
 	decl = info->descriptor;
-      else if (TREE_CODE (info->descriptor) == INDIRECT_REF)
+      else if (INDIRECT_REF_P (info->descriptor))
 	decl = TREE_OPERAND (info->descriptor, 0);
 
       if (decl == NULL_TREE)
@@ -4057,7 +4057,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
     {
       if (TREE_CODE (se->expr) == COMPONENT_REF)
 	decl = se->expr;
-      else if (TREE_CODE (se->expr) == INDIRECT_REF)
+      else if (INDIRECT_REF_P (se->expr))
 	decl = TREE_OPERAND (se->expr, 0);
       else
 	decl = se->expr;
@@ -4069,7 +4069,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
       if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se->expr)))
 	{
 	  decl = se->expr;
-	  if (TREE_CODE (decl) == INDIRECT_REF)
+	  if (INDIRECT_REF_P (decl))
 	    decl = TREE_OPERAND (decl, 0);
 	}
       else

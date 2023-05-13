@@ -73,7 +73,7 @@ static bool
 gfc_omp_is_optional_argument (const_tree decl)
 {
   /* Note: VAR_DECL can occur with BIND(C) and array descriptors.  */
-  return ((TREE_CODE (decl) == PARM_DECL || TREE_CODE (decl) == VAR_DECL)
+  return ((TREE_CODE (decl) == PARM_DECL || VAR_P (decl))
 	  && DECL_LANG_SPECIFIC (decl)
 	  && TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
 	  && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE (decl)))
@@ -3441,9 +3441,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			}
 		    }
 		  else if (present
-			   && TREE_CODE (decl) == INDIRECT_REF
-			   && (TREE_CODE (TREE_OPERAND (decl, 0))
-			       == INDIRECT_REF))
+			   && INDIRECT_REF_P (decl)
+			   && INDIRECT_REF_P (TREE_OPERAND (decl, 0)))
 		    {
 		      /* A single indirectref is handled by the middle end.  */
 		      gcc_assert (!POINTER_TYPE_P (TREE_TYPE (decl)));

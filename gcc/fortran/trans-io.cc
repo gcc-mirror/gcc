@@ -791,7 +791,7 @@ gfc_convert_array_to_string (gfc_se * se, gfc_expr * e)
 	}
       else
 	{
-	  gcc_assert (TREE_CODE (se->expr) == INDIRECT_REF);
+	  gcc_assert (INDIRECT_REF_P (se->expr));
 	  tree ptr = TREE_OPERAND (se->expr, 0);
 
 	  gcc_assert (TREE_CODE (ptr) == POINTER_PLUS_EXPR);

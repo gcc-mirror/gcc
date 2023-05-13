@@ -4112,7 +4112,7 @@ gfc_conv_intrinsic_minmax (gfc_se * se, gfc_expr * expr, enum tree_code op)
       /* Handle absent optional arguments by ignoring the comparison.  */
       if (argexpr->expr->expr_type == EXPR_VARIABLE
 	  && argexpr->expr->symtree->n.sym->attr.optional
-	  && TREE_CODE (val) == INDIRECT_REF)
+	  && INDIRECT_REF_P (val))
 	{
 	  cond = fold_build2_loc (input_location,
 				NE_EXPR, logical_type_node,
@@ -10155,7 +10155,7 @@ conv_intrinsic_ieee_value (gfc_se *se, gfc_expr *expr)
   arg = gfc_evaluate_now (arg, &se->pre);
 
   type = gfc_typenode_for_spec (&expr->ts);
-  gcc_assert (TREE_CODE (type) == REAL_TYPE);
+  gcc_assert (SCALAR_FLOAT_TYPE_P (type));
   ret = gfc_create_var (type, NULL);
 
   gfc_init_block (&body);
