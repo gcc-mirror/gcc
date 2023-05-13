@@ -24,5 +24,4 @@ fn main() {
     let a = Foo { a: 123 };
     a.bar();
     // { dg-error "multiple candidates found for method .bar." "" { target *-*-* } .-1 }
-    // { dg-error "failed to type resolve expression" "" { target *-*-* } .-2 }
 }
