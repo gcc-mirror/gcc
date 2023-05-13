@@ -7167,9 +7167,20 @@ package body Exp_Ch3 is
                     Expression   => Alloc_Expr));
 
          else
-            Alloc :=
-              Make_Allocator (Loc,
-                Expression => New_Occurrence_Of (Typ, Loc));
+            --  If the return object is of a class-wide type, we cannot use
+            --  its type for the allocator. Instead we use the type of the
+            --  expression, which must be an aggregate of a definite type.
+
+            if Is_Class_Wide_Type (Typ) then
+               Alloc :=
+                 Make_Allocator (Loc,
+                   Expression => New_Occurrence_Of (Etype (Expr), Loc));
+
+            else
+               Alloc :=
+                 Make_Allocator (Loc,
+                   Expression => New_Occurrence_Of (Typ, Loc));
+            end if;
 
             --  If the return object requires default initialization, then it
             --  will happen later following the elaboration of the renaming.
