@@ -68,7 +68,7 @@ get_base_type (tree type)
 
   while (TREE_TYPE (type)
 	 && (TREE_CODE (type) == INTEGER_TYPE
-	     || TREE_CODE (type) == REAL_TYPE))
+	     || SCALAR_FLOAT_TYPE_P (type)))
     type = TREE_TYPE (type);
 
   return type;
@@ -986,7 +986,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	    break;
 	}
 
-      gcc_assert (TREE_CODE (result) == INDIRECT_REF
+      gcc_assert (INDIRECT_REF_P (result)
 		  || TREE_CODE (result) == NULL_EXPR
 		  || TREE_CODE (result) == SAVE_EXPR
 		  || DECL_P (result));
@@ -1423,7 +1423,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	     the corresponding address, e.g. for an allocator.  However do
 	     it for a return value to expose it for later recognition.  */
 	  if (TREE_CODE (type) == UNCONSTRAINED_ARRAY_TYPE
-	      || (TREE_CODE (TREE_OPERAND (operand, 1)) == VAR_DECL
+	      || (VAR_P (TREE_OPERAND (operand, 1))
 		  && DECL_RETURN_VALUE_P (TREE_OPERAND (operand, 1))))
 	    {
 	      result = build_unary_op (ADDR_EXPR, result_type,
@@ -1597,11 +1597,11 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	if (!TYPE_IS_FAT_POINTER_P (type) && TYPE_VOLATILE (TREE_TYPE (type)))
 	  {
 	    TREE_SIDE_EFFECTS (result) = 1;
-	    if (TREE_CODE (result) == INDIRECT_REF)
+	    if (INDIRECT_REF_P (result))
 	      TREE_THIS_VOLATILE (result) = TYPE_VOLATILE (TREE_TYPE (result));
 	  }
 
-	if ((TREE_CODE (result) == INDIRECT_REF
+	if ((INDIRECT_REF_P (result)
 	     || TREE_CODE (result) == UNCONSTRAINED_ARRAY_REF)
 	    && can_never_be_null)
 	  TREE_THIS_NOTRAP (result) = 1;
@@ -2926,7 +2926,7 @@ gnat_protect_expr (tree exp)
 
   /* Likewise if we're indirectly referencing part of something.  */
   if (code == COMPONENT_REF
-      && TREE_CODE (TREE_OPERAND (exp, 0)) == INDIRECT_REF)
+      && INDIRECT_REF_P (TREE_OPERAND (exp, 0)))
     return build3 (code, type, gnat_protect_expr (TREE_OPERAND (exp, 0)),
 		   TREE_OPERAND (exp, 1), NULL_TREE);
 
@@ -3263,7 +3263,7 @@ gnat_invariant_expr (tree expr)
 
   /* Look through temporaries created to capture values.  */
   while ((TREE_CODE (expr) == CONST_DECL
-	  || (TREE_CODE (expr) == VAR_DECL && TREE_READONLY (expr)))
+	  || (VAR_P (expr) && TREE_READONLY (expr)))
 	 && decl_function_context (expr) == current_function_decl
 	 && DECL_INITIAL (expr))
     {
@@ -3362,7 +3362,7 @@ object:
   if (TREE_CODE (t) == PARM_DECL)
     return fold_convert (type, expr);
 
-  if (TREE_CODE (t) == VAR_DECL
+  if (VAR_P (t)
       && (DECL_EXTERNAL (t)
 	  || decl_function_context (t) != current_function_decl))
     return fold_convert (type, expr);

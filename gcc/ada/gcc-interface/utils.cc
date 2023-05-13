@@ -2802,7 +2802,7 @@ create_var_decl (tree name, tree asm_name, tree type, tree init,
       if (TREE_CODE (inner) == ADDR_EXPR
 	  && ((TREE_CODE (TREE_OPERAND (inner, 0)) == CALL_EXPR
 	       && !call_is_atomic_load (TREE_OPERAND (inner, 0)))
-	      || (TREE_CODE (TREE_OPERAND (inner, 0)) == VAR_DECL
+	      || (VAR_P (TREE_OPERAND (inner, 0))
 		  && DECL_RETURN_VALUE_P (TREE_OPERAND (inner, 0)))))
 	DECL_RETURN_VALUE_P (var_decl) = 1;
     }
@@ -2853,7 +2853,7 @@ create_var_decl (tree name, tree asm_name, tree type, tree init,
      support global BSS sections, uninitialized global variables would
      go in DATA instead, thus increasing the size of the executable.  */
   if (!flag_no_common
-      && TREE_CODE (var_decl) == VAR_DECL
+      && VAR_P (var_decl)
       && TREE_PUBLIC (var_decl)
       && !have_global_bss_p ())
     DECL_COMMON (var_decl) = 1;
@@ -2871,13 +2871,13 @@ create_var_decl (tree name, tree asm_name, tree type, tree init,
     DECL_IGNORED_P (var_decl) = 1;
 
   /* ??? Some attributes cannot be applied to CONST_DECLs.  */
-  if (TREE_CODE (var_decl) == VAR_DECL)
+  if (VAR_P (var_decl))
     process_attributes (&var_decl, &attr_list, true, gnat_node);
 
   /* Add this decl to the current binding level.  */
   gnat_pushdecl (var_decl, gnat_node);
 
-  if (TREE_CODE (var_decl) == VAR_DECL && asm_name)
+  if (VAR_P (var_decl) && asm_name)
     {
       /* Let the target mangle the name if this isn't a verbatim asm.  */
       if (*IDENTIFIER_POINTER (asm_name) != '*')
