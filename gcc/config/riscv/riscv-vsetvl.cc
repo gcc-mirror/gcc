@@ -4307,7 +4307,8 @@ pass_vsetvl::cleanup_insns (void) const
 		    = simplify_replace_rtx (SET_SRC (set), avl, const0_rtx);
 		  pat = gen_rtx_SET (SET_DEST (set), src);
 		}
-	      gcc_assert (change_insn (crtl->ssa, change, insn, pat));
+	      bool ok = change_insn (crtl->ssa, change, insn, pat);
+	      gcc_assert (ok);
 	    }
 	}
     }
