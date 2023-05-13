@@ -1,3 +1,62 @@
+2023-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/83258
+	* g++.dg/ext/visibility/anon8.C: Mention PR83258.
+	* g++.dg/template/function2.C: Removed.
+
+2023-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-05-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109745
+	* g++.dg/cpp0x/constexpr-mutable4.C: New test.
+	* g++.dg/cpp0x/constexpr-mutable5.C: New test.
+	* g++.dg/cpp1y/constexpr-mutable2.C: New test.
+
+2023-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-05-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/103807
+	* g++.dg/cpp2a/lambda-targ1.C: New test.
+
+2023-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-05-11  Patrick Palka  <ppalka@redhat.com>
+		    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/83258
+	PR c++/80488
+	PR c++/97700
+	* g++.dg/ext/visibility/anon8.C: Don't expect a "no linkage"
+	error for the template argument &B2:fn in C++17 mode.
+	* g++.dg/cpp0x/lambda/lambda-conv15.C: New test.
+	* g++.dg/cpp2a/nontype-class56.C: New test.
+	* g++.dg/template/function2.C: New test.
+
+2023-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-05-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109761
+	* g++.dg/cpp0x/noexcept78.C: New test.
+
+2023-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-05-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109651
+	* g++.dg/cpp2a/lambda-generic-ttp1.C: New test.
+	* g++.dg/cpp2a/lambda-generic-ttp2.C: New test.
+
 2023-05-11  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/109661

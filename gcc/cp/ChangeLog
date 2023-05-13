@@ -1,3 +1,55 @@
+2023-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-05-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109745
+	* typeck2.cc (poison_mutable_constructors): Define.
+	(store_init_value): Use it instead of setting
+	CONSTRUCTOR_MUTABLE_POISON directly.
+
+2023-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-05-11  Patrick Palka  <ppalka@redhat.com>
+		    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/83258
+	PR c++/80488
+	PR c++/97700
+	* pt.cc (convert_nontype_argument_function): Remove linkage
+	requirement for C++17 and later.
+	(invalid_tparm_referent_p) <case ADDR_EXPR>: Restrict
+	DECL_ARTIFICIAL rejection test to VAR_DECL.
+
+2023-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-05-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109761
+	* parser.cc (cp_parser_class_specifier): Don't pass a class
+	context to noexcept_override_late_checks.
+	(noexcept_override_late_checks): Remove 'type' parameter
+	and use DECL_CONTEXT of 'fndecl' instead.
+
+2023-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2023-05-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109651
+	* pt.cc (coerce_template_args_for_ttp): Mention we can hit the
+	current_template_parms fallback when level-lowering a bound ttp.
+	(tsubst_template_decl): Add lambda_tparms parameter.  Prefer to
+	use lambda_tparms instead of substituting DECL_TEMPLATE_PARMS.
+	(tsubst_decl) <case TEMPLATE_DECL>: Pass NULL_TREE as lambda_tparms
+	to tsubst_template_decl.
+	(tsubst_lambda_expr): For a generic lambda, substitute
+	DECL_TEMPLATE_PARMS and set current_template_parms to it
+	before substituting the function type.  Pass the substituted
+	DECL_TEMPLATE_PARMS as lambda_tparms to tsubst_template_decl.
+
 2023-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
