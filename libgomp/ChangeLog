@@ -1,3 +1,47 @@
+2023-05-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libstdc++/109816
+	* testsuite/libgomp.c++/target-map-class-1.C: New test.
+	* testsuite/libgomp.c++/target-map-class-2.C: New test.
+
+2023-05-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp (libgomp_target_compile): Generalize
+	'lang_library_path' into a list of 'lang_library_paths'.
+	* testsuite/libgomp.c++/c++.exp: Adjust.
+	* testsuite/libgomp.oacc-c++/c++.exp: Likewise.
+	* testsuite/libgomp.fortran/fortran.exp: Adjust.  Use that for
+	libquadmath, too.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+
+2023-05-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp (libgomp_target_compile): Don't look
+	at 'lang_test_file_found'.
+	* testsuite/libgomp.c++/c++.exp: Don't set and use it, and instead
+	'return' early if not able to test.  Simplify 'ld_library_path' setup.
+	* testsuite/libgomp.fortran/fortran.exp: Likewise.
+	* testsuite/libgomp.oacc-c++/c++.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+
+2023-05-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c++/c++.exp: Resolve 'lang_test_file_found'
+	first.
+	* testsuite/libgomp.fortran/fortran.exp: Likewise.
+	* testsuite/libgomp.oacc-c++/c++.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+
+2023-05-12  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c++/c++.exp: Localize 'lang_[...]' etc.
+	* testsuite/libgomp.c/c.exp: Likewise.
+	* testsuite/libgomp.fortran/fortran.exp: Likewise.
+	* testsuite/libgomp.graphite/graphite.exp: Likewise.
+	* testsuite/libgomp.oacc-c++/c++.exp: Likewise.
+	* testsuite/libgomp.oacc-c/c.exp: Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+
 2023-05-09  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.c++/c++.exp: Don't set 'lang_test_file'.

@@ -1,3 +1,244 @@
+2023-05-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/109662
+	* gfortran.dg/pr109662-a.f90: Add a section to verify that
+	a short namelist read does not modify the variable.
+
+2023-05-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109830
+	* gm2/isolib/run/pass/seqappend.mod: New test.
+
+2023-05-12  Kito Cheng  <kito.cheng@sifive.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	PR target/109743
+	* gcc.target/riscv/rvv/vsetvl/pr109743-1.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/pr109743-2.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/pr109743-3.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/pr109743-4.c: New test.
+
+2023-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/64731
+	* gcc.target/i386/pr64731.c: New testcase.
+
+2023-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/83258
+	* g++.dg/ext/visibility/anon8.C: Mention PR83258.
+	* g++.dg/template/function2.C: Removed.
+
+2023-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109752
+	* g++.dg/cpp2a/concepts-pr109752.C: Rename to ...
+	* g++.dg/cpp2a/concepts-complete4.C: ... this.  Rewrite.
+
+2023-05-12  Juzhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/vmv-imm-rv64.c: Add ABI
+
+2023-05-12  Juzhe Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/rvv.exp:
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/insert-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/insert-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/insert-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/insert_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/insert_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/repeat-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/repeat-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/repeat-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/repeat-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/repeat-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/repeat-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/repeat_run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/repeat_run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/repeat_run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/repeat_run-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/repeat_run-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/repeat_run-6.c: New test.
+
+2023-05-12  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/shift-run-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/shift-run-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/shift-run.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/shift-run.c: ...here.
+	* gcc.target/riscv/rvv/autovec/shift-rv32gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/shift-rv32gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/shift-rv64gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/shift-rv64gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/shift-scalar-run.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/shift-scalar-run.c: ...here.
+	* gcc.target/riscv/rvv/autovec/shift-scalar-rv32gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/shift-scalar-rv32gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/shift-scalar-rv64gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/shift-scalar-rv64gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/shift-scalar-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/shift-scalar-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/shift-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/shift-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/vadd-run-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vadd-run-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/vadd-run.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vadd-run.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vadd-rv32gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vadd-rv32gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vadd-rv64gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vadd-rv64gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vadd-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vadd-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/vand-run-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vand-run-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/vand-run.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vand-run.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vand-rv32gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vand-rv32gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vand-rv64gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vand-rv64gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vand-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vand-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/vdiv-run-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-run-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/vdiv-run.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-run.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vdiv-rv32gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv32gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vdiv-rv64gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-rv64gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vdiv-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/vmax-run-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vmax-run-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/vmax-run.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vmax-run.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vmax-rv32gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vmax-rv32gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vmax-rv64gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vmax-rv64gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vmax-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vmax-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/vmin-run-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vmin-run-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/vmin-run.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vmin-run.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vmin-rv32gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vmin-rv32gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vmin-rv64gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vmin-rv64gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vmin-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vmin-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/vmul-run-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vmul-run-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/vmul-run.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vmul-run.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vmul-rv32gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vmul-rv32gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vmul-rv64gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vmul-rv64gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vmul-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vmul-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/vor-run-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vor-run-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/vor-run.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vor-run.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vor-rv32gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vor-rv32gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vor-rv64gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vor-rv64gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vor-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vor-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/vrem-run-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vrem-run-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/vrem-run.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vrem-run.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vrem-rv32gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vrem-rv32gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vrem-rv64gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vrem-rv64gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vrem-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vrem-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/vsub-run-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vsub-run-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/vsub-run.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vsub-run.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vsub-rv32gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vsub-rv32gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vsub-rv64gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vsub-rv64gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vsub-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vsub-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/vxor-run-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vxor-run-template.h: ...here.
+	* gcc.target/riscv/rvv/autovec/vxor-run.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vxor-run.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vxor-rv32gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vxor-rv32gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vxor-rv64gcv.c: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vxor-rv64gcv.c: ...here.
+	* gcc.target/riscv/rvv/autovec/vxor-template.h: Moved to...
+	* gcc.target/riscv/rvv/autovec/binop/vxor-template.h: ...here.
+	* gcc.target/riscv/rvv/rvv.exp: Add autovec LMUL = 2/4/8 for binary.
+
+2023-05-12  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/shift-run.c: Fix fail.
+	* gcc.target/riscv/rvv/autovec/shift-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/shift-scalar-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/shift-scalar-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vadd-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vand-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vand-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vdiv-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vdiv-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vmax-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vmax-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vmin-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vmin-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vmul-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vmul-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vor-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vor-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vrem-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vrem-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vsub-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vxor-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vxor-rv64gcv.c: Ditto.
+
+2023-05-12  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* gcc.target/powerpc/bfp/scalar-extract-sig-2.c: Replace ilp32 check
+	with dg-skip-if has_arch_ppc64.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-2.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-5.c: Likewise.
+
+2023-05-12  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* gcc.target/powerpc/bfp/scalar-insert-exp-0.c: Replace lp64 check
+	with has_arch_ppc64.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-1.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-12.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-13.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-3.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-4.c: Likewise.
+
+2023-05-12  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* gcc.target/powerpc/bfp/scalar-extract-sig-0.c: Replace lp64 check
+	with has_arch_ppc64.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-1.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-6.c: Likewise.
+
+2023-05-12  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* gcc.target/powerpc/bfp/scalar-extract-exp-0.c: Remove lp64 check.
+	* gcc.target/powerpc/bfp/scalar-extract-exp-1.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-extract-exp-2.c: Delete as the case
+	is invalid now.
+	* gcc.target/powerpc/bfp/scalar-extract-exp-6.c: Remove lp64 check.
+
 2023-05-11  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109810

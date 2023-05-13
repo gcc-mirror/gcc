@@ -1,3 +1,12 @@
+2023-05-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109830
+	* gm2-libs-iso/SeqFile.mod (newCid): New parameter toAppend
+	used to select FIO.OpenForRandom.
+	(OpenRead): Pass extra parameter to newCid.
+	(OpenWrite): Pass extra parameter to newCid.
+	(OpenAppend): Pass extra parameter to newCid.
+
 2023-05-11  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109810

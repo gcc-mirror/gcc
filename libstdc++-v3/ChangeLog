@@ -1,3 +1,56 @@
+2023-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_C99_TR1): Use a non-null pointer
+	to check for nan, nanf, and nanl.
+	* configure: Regenerate.
+
+2023-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/char_traits.h (char_traits<char16_t>): Do not
+	depend on _GLIBCXX_USE_C99_STDINT_TR1.
+	(char_traits<char32_t>): Likewise.
+	* include/experimental/source_location: Likewise.
+
+2023-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/atomic (atomic_int_least8_t, atomic_uint_least8_t)
+	(atomic_int_least16_t, atomic_uint_least16_t)
+	(atomic_int_least32_t, atomic_uint_least32_t)
+	(atomic_int_least64_t, atomic_uint_least64_t)
+	(atomic_int_fast16_t, atomic_uint_fast16_t)
+	(atomic_int_fast32_t, atomic_uint_fast32_t)
+	(atomic_int_fast64_t, atomic_uint_fast64_t)
+	(atomic_intmax_t, atomic_uintmax_t): Define unconditionally.
+	* testsuite/29_atomics/headers/stdatomic.h/c_compat.cc: Adjust.
+
+2023-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/algorithmfwd.h (shuffle): Do not depend on
+	_GLIBCXX_USE_C99_STDINT_TR1.
+	* include/bits/ranges_algo.h (shuffle): Likewise.
+	* include/bits/stl_algo.h (shuffle): Likewise.
+	* include/ext/random: Likewise.
+	* include/ext/throw_allocator.h (random_condition): Likewise.
+	* include/std/random: Likewise.
+	* src/c++11/cow-string-inst.cc: Likewise.
+	* src/c++11/random.cc: Likewise.
+
+2023-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/feat-cxx14.cc: Remove dependency on
+	_GLIBCXX_USE_C99_STDINT_TR1.
+
+2023-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/22_locale/locale/cons/unicode.cc: Remove dependency
+	on _GLIBCXX_USE_C99_STDINT_TR1.
+
+2023-05-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string_view/typedefs.cc: Remove
+	dependency on _GLIBCXX_USE_C99_STDINT_TR1.
+	* testsuite/experimental/string_view/typedefs.cc: Likewise.
+
 2023-05-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++17/floating_from_chars.cc [USE_STRTOD_FOR_FROM_CHARS]
