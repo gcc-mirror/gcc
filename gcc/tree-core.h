@@ -1680,8 +1680,9 @@ struct GTY(()) tree_type_common {
   tree attributes;
   unsigned int uid;
 
+  ENUM_BITFIELD(machine_mode) mode : MACHINE_MODE_BITSIZE;
+
   unsigned int precision : 16;
-  ENUM_BITFIELD(machine_mode) mode : 8;
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
   unsigned lang_flag_2 : 1;
@@ -1712,7 +1713,7 @@ struct GTY(()) tree_type_common {
   unsigned empty_flag : 1;
   unsigned indivisible_p : 1;
   unsigned no_named_args_stdarg_p : 1;
-  unsigned spare : 9;
+  unsigned spare : 1;
 
   alias_set_type alias_set;
   tree pointer_to;
@@ -1770,7 +1771,7 @@ struct GTY(()) tree_decl_common {
   struct tree_decl_minimal common;
   tree size;
 
-  ENUM_BITFIELD(machine_mode) mode : 8;
+  ENUM_BITFIELD(machine_mode) mode : MACHINE_MODE_BITSIZE;
 
   unsigned nonlocal_flag : 1;
   unsigned virtual_flag : 1;
@@ -1828,7 +1829,7 @@ struct GTY(()) tree_decl_common {
   /* In FIELD_DECL, this is DECL_NOT_FLEXARRAY.  */
   unsigned int decl_not_flexarray : 1;
 
-  /* 13 bits unused.  */
+  /* 5 bits unused.  */
 
   /* UID for points-to sets, stable over copying from inlining.  */
   unsigned int pt_uid;

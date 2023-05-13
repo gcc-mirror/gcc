@@ -248,10 +248,8 @@ struct qty_table_elem
   rtx comparison_const;
   int comparison_qty;
   unsigned int first_reg, last_reg;
-  /* The sizes of these fields should match the sizes of the
-     code and mode fields of struct rtx_def (see rtl.h).  */
-  ENUM_BITFIELD(rtx_code) comparison_code : 16;
-  ENUM_BITFIELD(machine_mode) mode : 8;
+  ENUM_BITFIELD(machine_mode) mode : MACHINE_MODE_BITSIZE;
+  ENUM_BITFIELD(rtx_code) comparison_code : RTX_CODE_BITSIZE;
 };
 
 /* The table of all qtys, indexed by qty number.  */
@@ -404,9 +402,7 @@ struct table_elt
   struct table_elt *related_value;
   int cost;
   int regcost;
-  /* The size of this field should match the size
-     of the mode field of struct rtx_def (see rtl.h).  */
-  ENUM_BITFIELD(machine_mode) mode : 8;
+  ENUM_BITFIELD(machine_mode) mode : MACHINE_MODE_BITSIZE;
   char in_memory;
   char is_const;
   char flag;
@@ -4152,10 +4148,8 @@ struct set
   /* Nonzero if the SET_SRC contains something
      whose value cannot be predicted and understood.  */
   char src_volatile;
-  /* Original machine mode, in case it becomes a CONST_INT.
-     The size of this field should match the size of the mode
-     field of struct rtx_def (see rtl.h).  */
-  ENUM_BITFIELD(machine_mode) mode : 8;
+  /* Original machine mode, in case it becomes a CONST_INT.  */
+  ENUM_BITFIELD(machine_mode) mode : MACHINE_MODE_BITSIZE;
   /* Hash value of constant equivalent for SET_SRC.  */
   unsigned src_const_hash;
   /* A constant equivalent for SET_SRC, if any.  */
