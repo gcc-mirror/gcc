@@ -2092,7 +2092,7 @@ region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt) const
       {
 	gcc_assert (TREE_CODE (expr) == SSA_NAME
 		    || TREE_CODE (expr) == PARM_DECL
-		    || TREE_CODE (expr) == VAR_DECL
+		    || VAR_P (expr)
 		    || TREE_CODE (expr) == RESULT_DECL);
 
 	int stack_index = pv.m_stack_depth;

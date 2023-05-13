@@ -1162,7 +1162,7 @@ decl_region::get_stack_depth () const
 const svalue *
 decl_region::maybe_get_constant_value (region_model_manager *mgr) const
 {
-  if (TREE_CODE (m_decl) == VAR_DECL
+  if (VAR_P (m_decl)
       && DECL_IN_CONSTANT_POOL (m_decl)
       && DECL_INITIAL (m_decl)
       && TREE_CODE (DECL_INITIAL (m_decl)) == CONSTRUCTOR)
