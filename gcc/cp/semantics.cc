@@ -5169,7 +5169,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	  && TREE_CODE (TREE_OPERAND (t, 0)) == COMPONENT_REF)
 	t = TREE_OPERAND (t, 0);
       ret = t;
-      while (TREE_CODE (t) == INDIRECT_REF)
+      while (INDIRECT_REF_P (t))
 	{
 	  t = TREE_OPERAND (t, 0);
 	  STRIP_NOPS (t);
@@ -5206,7 +5206,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		}
 	      t = TREE_OPERAND (t, 0);
 	      while (TREE_CODE (t) == MEM_REF
-		     || TREE_CODE (t) == INDIRECT_REF
+		     || INDIRECT_REF_P (t)
 		     || TREE_CODE (t) == ARRAY_REF)
 		{
 		  t = TREE_OPERAND (t, 0);
@@ -8097,7 +8097,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  if (REFERENCE_REF_P (t))
 			    t = TREE_OPERAND (t, 0);
 			  if (TREE_CODE (t) == MEM_REF
-			      || TREE_CODE (t) == INDIRECT_REF)
+			      || INDIRECT_REF_P (t))
 			    {
 			      t = TREE_OPERAND (t, 0);
 			      STRIP_NOPS (t);
@@ -8182,7 +8182,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH_DETACH)
 		OMP_CLAUSE_DECL (c) = t;
 	    }
-	  while (TREE_CODE (t) == INDIRECT_REF
+	  while (INDIRECT_REF_P (t)
 		 || TREE_CODE (t) == ARRAY_REF)
 	    {
 	      t = TREE_OPERAND (t, 0);
@@ -8201,7 +8201,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    remove = true;
 	  indir_component_ref_p = false;
 	  if (TREE_CODE (t) == COMPONENT_REF
-	      && (TREE_CODE (TREE_OPERAND (t, 0)) == INDIRECT_REF
+	      && (INDIRECT_REF_P (TREE_OPERAND (t, 0))
 		  || TREE_CODE (TREE_OPERAND (t, 0)) == ARRAY_REF))
 	    {
 	      t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
@@ -8255,7 +8255,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			t = TREE_OPERAND (t, 0);
 		    }
 		  while (TREE_CODE (t) == MEM_REF
-			 || TREE_CODE (t) == INDIRECT_REF
+			 || INDIRECT_REF_P (t)
 			 || TREE_CODE (t) == ARRAY_REF)
 		    {
 		      t = TREE_OPERAND (t, 0);
@@ -8706,7 +8706,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  t = OMP_CLAUSE_DECL (c);
 		  while (TREE_CODE (t) == TREE_LIST)
 		    t = TREE_CHAIN (t);
-		  while (TREE_CODE (t) == INDIRECT_REF
+		  while (INDIRECT_REF_P (t)
 			 || TREE_CODE (t) == ARRAY_REF)
 		    t = TREE_OPERAND (t, 0);
 		}
@@ -9021,7 +9021,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    {
 	      t = OMP_CLAUSE_DECL (c);
 	      while (handled_component_p (t)
-		     || TREE_CODE (t) == INDIRECT_REF
+		     || INDIRECT_REF_P (t)
 		     || TREE_CODE (t) == ADDR_EXPR
 		     || TREE_CODE (t) == MEM_REF
 		     || TREE_CODE (t) == NON_LVALUE_EXPR)
@@ -9070,7 +9070,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  if (TREE_CODE (t) == POINTER_PLUS_EXPR)
 		    t = TREE_OPERAND (t, 0);
 		  if (TREE_CODE (t) == ADDR_EXPR
-		      || TREE_CODE (t) == INDIRECT_REF)
+		      || INDIRECT_REF_P (t))
 		    t = TREE_OPERAND (t, 0);
 		  if (DECL_P (t))
 		    bitmap_clear_bit (&aligned_head, DECL_UID (t));
@@ -9609,7 +9609,7 @@ finish_omp_target_clauses_r (tree *tp, int *walk_subtrees, void *ptr)
      of DECL_VALUE_EXPRs during the target body walk seems the only way to
      find them.  */
   if (current_closure
-      && (TREE_CODE (t) == VAR_DECL
+      && (VAR_P (t)
 	  || TREE_CODE (t) == PARM_DECL
 	  || TREE_CODE (t) == RESULT_DECL)
       && DECL_HAS_VALUE_EXPR_P (t)
@@ -12362,8 +12362,8 @@ is_this_parameter (tree t)
   if (!DECL_P (t) || DECL_NAME (t) != this_identifier)
     return false;
   gcc_assert (TREE_CODE (t) == PARM_DECL
-	      || (TREE_CODE (t) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (t))
-	      || (cp_binding_oracle && TREE_CODE (t) == VAR_DECL));
+	      || (VAR_P (t) && DECL_HAS_VALUE_EXPR_P (t))
+	      || (cp_binding_oracle && VAR_P (t)));
   return true;
 }
 

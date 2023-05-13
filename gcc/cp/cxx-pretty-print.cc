@@ -1966,7 +1966,7 @@ pp_cxx_template_argument_list (cxx_pretty_printer *pp, tree t)
 	  if (TYPE_P (arg) || (TREE_CODE (arg) == TEMPLATE_DECL
 			       && TYPE_P (DECL_TEMPLATE_RESULT (arg))))
 	    pp->type_id (arg);
-	  else if (TREE_CODE (arg) == VAR_DECL && DECL_NTTP_OBJECT_P (arg))
+	  else if (VAR_P (arg) && DECL_NTTP_OBJECT_P (arg))
 	    pp->expression (DECL_INITIAL (arg));
 	  else
 	    pp->expression (arg);

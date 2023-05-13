@@ -3780,7 +3780,7 @@ rewrite_param_uses (tree *stmt, int *do_subtree ATTRIBUTE_UNUSED, void *d)
   param_frame_data *data = (param_frame_data *) d;
 
   /* For lambda closure content, we have to look specifically.  */
-  if (TREE_CODE (*stmt) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (*stmt))
+  if (VAR_P (*stmt) && DECL_HAS_VALUE_EXPR_P (*stmt))
     {
       tree t = DECL_VALUE_EXPR (*stmt);
       return cp_walk_tree (&t, rewrite_param_uses, d, NULL);

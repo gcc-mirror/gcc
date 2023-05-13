@@ -2746,7 +2746,7 @@ promoted_arithmetic_type_p (tree type)
      integral types plus floating types.  */
   return ((CP_INTEGRAL_TYPE_P (type)
 	   && same_type_p (type_promotes_to (type), type))
-	  || TREE_CODE (type) == REAL_TYPE);
+	  || SCALAR_FLOAT_TYPE_P (type));
 }
 
 /* Create any builtin operator overload candidates for the operator in
@@ -5759,10 +5759,10 @@ build_conditional_expr (const op_location_t &loc,
   if ((TREE_CODE (arg2) == EXCESS_PRECISION_EXPR
        || TREE_CODE (arg3) == EXCESS_PRECISION_EXPR)
       && (TREE_CODE (arg2_type) == INTEGER_TYPE
-	  || TREE_CODE (arg2_type) == REAL_TYPE
+	  || SCALAR_FLOAT_TYPE_P (arg2_type)
 	  || TREE_CODE (arg2_type) == COMPLEX_TYPE)
       && (TREE_CODE (arg3_type) == INTEGER_TYPE
-	  || TREE_CODE (arg3_type) == REAL_TYPE
+	  || SCALAR_FLOAT_TYPE_P (arg3_type)
 	  || TREE_CODE (arg3_type) == COMPLEX_TYPE))
     {
       semantic_result_type
@@ -5775,8 +5775,8 @@ build_conditional_expr (const op_location_t &loc,
 	    t1 = TREE_TYPE (t1);
 	  if (TREE_CODE (t2) == COMPLEX_TYPE)
 	    t2 = TREE_TYPE (t2);
-	  gcc_checking_assert (TREE_CODE (t1) == REAL_TYPE
-			       && TREE_CODE (t2) == REAL_TYPE
+	  gcc_checking_assert (SCALAR_FLOAT_TYPE_P (t1)
+			       && SCALAR_FLOAT_TYPE_P (t2)
 			       && (extended_float_type_p (t1)
 				   || extended_float_type_p (t2))
 			       && cp_compare_floating_point_conversion_ranks
@@ -6127,8 +6127,8 @@ build_conditional_expr (const op_location_t &loc,
 	    t1 = TREE_TYPE (t1);
 	  if (TREE_CODE (t2) == COMPLEX_TYPE)
 	    t2 = TREE_TYPE (t2);
-	  gcc_checking_assert (TREE_CODE (t1) == REAL_TYPE
-			       && TREE_CODE (t2) == REAL_TYPE
+	  gcc_checking_assert (SCALAR_FLOAT_TYPE_P (t1)
+			       && SCALAR_FLOAT_TYPE_P (t2)
 			       && (extended_float_type_p (t1)
 				   || extended_float_type_p (t2))
 			       && cp_compare_floating_point_conversion_ranks
@@ -6147,8 +6147,8 @@ build_conditional_expr (const op_location_t &loc,
 	    t1 = TREE_TYPE (t1);
 	  if (TREE_CODE (t2) == COMPLEX_TYPE)
 	    t2 = TREE_TYPE (t2);
-	  gcc_checking_assert (TREE_CODE (t1) == REAL_TYPE
-			       && TREE_CODE (t2) == REAL_TYPE
+	  gcc_checking_assert (SCALAR_FLOAT_TYPE_P (t1)
+			       && SCALAR_FLOAT_TYPE_P (t2)
 			       && (extended_float_type_p (t1)
 				   || extended_float_type_p (t2))
 			       && cp_compare_floating_point_conversion_ranks
@@ -6185,8 +6185,8 @@ build_conditional_expr (const op_location_t &loc,
       else if ((complain & tf_warning)
 	       && warn_deprecated_enum_float_conv
 	       && ((TREE_CODE (arg2_type) == ENUMERAL_TYPE
-		    && TREE_CODE (arg3_type) == REAL_TYPE)
-		   || (TREE_CODE (arg2_type) == REAL_TYPE
+		    && SCALAR_FLOAT_TYPE_P (arg3_type))
+		   || (SCALAR_FLOAT_TYPE_P (arg2_type)
 		       && TREE_CODE (arg3_type) == ENUMERAL_TYPE)))
 	{
 	  if (TREE_CODE (arg2_type) == ENUMERAL_TYPE)
@@ -8321,8 +8321,8 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 				"direct-initialization",
 				totype, TREE_TYPE (expr));
 
-      if (TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
-	  && TREE_CODE (totype) == REAL_TYPE
+      if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (expr))
+	  && SCALAR_FLOAT_TYPE_P (totype)
 	  && (extended_float_type_p (TREE_TYPE (expr))
 	      || extended_float_type_p (totype)))
 	switch (cp_compare_floating_point_conversion_ranks (TREE_TYPE (expr),
@@ -8974,7 +8974,7 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
      type that is subject to the floating-point promotion
      (_conv.fpprom_), the value of the argument is converted to the
      promoted type before the call.  */
-  if (TREE_CODE (arg_type) == REAL_TYPE
+  if (SCALAR_FLOAT_TYPE_P (arg_type)
       && (TYPE_PRECISION (arg_type)
 	  < TYPE_PRECISION (double_type_node))
       && !DECIMAL_FLOAT_MODE_P (TYPE_MODE (arg_type))
@@ -9796,7 +9796,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	      obj_arg = NULL_TREE;
 	    }
 	  /* Look through *(const T *)&obj.  */
-	  else if (obj_arg && TREE_CODE (obj_arg) == INDIRECT_REF)
+	  else if (obj_arg && INDIRECT_REF_P (obj_arg))
 	    {
 	      tree addr = TREE_OPERAND (obj_arg, 0);
 	      STRIP_NOPS (addr);
@@ -10460,7 +10460,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	      obj_arg = NULL_TREE;
 	    }
 	  /* Look through *(const T *)&obj.  */
-	  else if (obj_arg && TREE_CODE (obj_arg) == INDIRECT_REF)
+	  else if (obj_arg && INDIRECT_REF_P (obj_arg))
 	    {
 	      tree addr = TREE_OPERAND (obj_arg, 0);
 	      STRIP_NOPS (addr);
@@ -12197,7 +12197,7 @@ compare_ics (conversion *ics1, conversion *ics2)
 	std::swap (fp3, t3);
       }
     if (TYPE_MAIN_VARIANT (fp1) == TYPE_MAIN_VARIANT (fp3)
-	&& TREE_CODE (fp1) == REAL_TYPE
+	&& SCALAR_FLOAT_TYPE_P (fp1)
 	/* Only apply this rule if at least one of the 3 types is
 	   extended floating-point type, otherwise keep them as
 	   before for compatibility reasons with types like __float128.
@@ -12205,15 +12205,15 @@ compare_ics (conversion *ics1, conversion *ics2)
 	   ranks and so when just those 3 types are involved, this
 	   rule doesn't trigger.  */
 	&& (extended_float_type_p (fp1)
-	    || (TREE_CODE (fp2) == REAL_TYPE && extended_float_type_p (fp2))
-	    || (TREE_CODE (t3) == REAL_TYPE && extended_float_type_p (t3))))
+	    || (SCALAR_FLOAT_TYPE_P (fp2) && extended_float_type_p (fp2))
+	    || (SCALAR_FLOAT_TYPE_P (t3) && extended_float_type_p (t3))))
       {
 	if (TREE_CODE (fp2) != REAL_TYPE)
 	  {
 	    ret = -ret;
 	    std::swap (fp2, t3);
 	  }
-	if (TREE_CODE (fp2) == REAL_TYPE)
+	if (SCALAR_FLOAT_TYPE_P (fp2))
 	  {
 	    /* cp_compare_floating_point_conversion_ranks returns -1, 0 or 1
 	       if the conversion rank is equal (-1 or 1 if the subrank is
@@ -12240,7 +12240,7 @@ compare_ics (conversion *ics1, conversion *ics2)
 		     FP1 <-> T3 conversion is better.  */
 		  return -ret;
 	      }
-	    else if (TREE_CODE (t3) == REAL_TYPE
+	    else if (SCALAR_FLOAT_TYPE_P (t3)
 		     && IN_RANGE (cp_compare_floating_point_conversion_ranks
 								(fp1, t3),
 				  -1, 1))

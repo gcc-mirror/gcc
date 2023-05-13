@@ -3793,7 +3793,7 @@ write_template_arg (tree node)
 	}
     }
 
-  if (TREE_CODE (node) == VAR_DECL && DECL_NTTP_OBJECT_P (node))
+  if (VAR_P (node) && DECL_NTTP_OBJECT_P (node))
     /* We want to mangle the argument, not the var we stored it in.  */
     node = tparm_object_argument (node);
 

@@ -1048,7 +1048,7 @@ spaceship_comp_cat (tree optype)
 {
   if (INTEGRAL_OR_ENUMERATION_TYPE_P (optype) || TYPE_PTROBV_P (optype))
     return cc_strong_ordering;
-  else if (TREE_CODE (optype) == REAL_TYPE)
+  else if (SCALAR_FLOAT_TYPE_P (optype))
     return cc_partial_ordering;
 
   /* ??? should vector <=> produce a vector of one of the above?  */

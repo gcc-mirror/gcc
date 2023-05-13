@@ -932,7 +932,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
      here it should have been digested into an actual value for the type.  */
   gcc_checking_assert (TREE_CODE (value) != CONSTRUCTOR
 		       || processing_template_decl
-		       || TREE_CODE (type) == VECTOR_TYPE
+		       || VECTOR_TYPE_P (type)
 		       || !TREE_HAS_CONSTRUCTOR (value));
 
   /* If the initializer is not a constant, fill in DECL_INITIAL with
@@ -999,7 +999,7 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain,
     return ok;
 
   if (CP_INTEGRAL_TYPE_P (type)
-      && TREE_CODE (ftype) == REAL_TYPE)
+      && SCALAR_FLOAT_TYPE_P (ftype))
     ok = false;
   else if (INTEGRAL_OR_ENUMERATION_TYPE_P (ftype)
 	   && CP_INTEGRAL_TYPE_P (type))
@@ -1017,8 +1017,8 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain,
     }
   /* [dcl.init.list]#7.2: "from long double to double or float, or from
       double to float".  */
-  else if (TREE_CODE (ftype) == REAL_TYPE
-	   && TREE_CODE (type) == REAL_TYPE)
+  else if (SCALAR_FLOAT_TYPE_P (ftype)
+	   && SCALAR_FLOAT_TYPE_P (type))
     {
       if ((extended_float_type_p (ftype) || extended_float_type_p (type))
 	  ? /* "from a floating-point type T to another floating-point type
@@ -1055,7 +1055,7 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain,
 	}
     }
   else if (INTEGRAL_OR_ENUMERATION_TYPE_P (ftype)
-	   && TREE_CODE (type) == REAL_TYPE)
+	   && SCALAR_FLOAT_TYPE_P (type))
     {
       ok = false;
       if (TREE_CODE (init) == INTEGER_CST)

@@ -673,7 +673,7 @@ convert_to_base_statically (tree expr, tree base)
 bool
 is_empty_base_ref (tree expr)
 {
-  if (TREE_CODE (expr) == INDIRECT_REF)
+  if (INDIRECT_REF_P (expr))
     expr = TREE_OPERAND (expr, 0);
   if (TREE_CODE (expr) != NOP_EXPR)
     return false;

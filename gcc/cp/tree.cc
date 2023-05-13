@@ -1173,7 +1173,7 @@ build_cplus_array_type (tree elt_type, tree index_type, int dependent)
     }
 
   /* Avoid spurious warnings with VLAs (c++/54583).  */
-  if (TYPE_SIZE (t) && EXPR_P (TYPE_SIZE (t)))
+  if (CAN_HAVE_LOCATION_P (TYPE_SIZE (t)))
     suppress_warning (TYPE_SIZE (t), OPT_Wunused);
 
   /* Push these needs up to the ARRAY_TYPE so that initialization takes
@@ -3911,7 +3911,7 @@ is_this_expression (tree t)
 {
   t = get_innermost_component (t);
   /* See through deferences and no-op conversions.  */
-  if (TREE_CODE (t) == INDIRECT_REF)
+  if (INDIRECT_REF_P (t))
     t = TREE_OPERAND (t, 0);
   if (TREE_CODE (t) == NOP_EXPR)
     t = TREE_OPERAND (t, 0);
