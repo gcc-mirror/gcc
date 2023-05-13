@@ -4061,7 +4061,7 @@ frv_emit_movsi (rtx dest, rtx src)
 			   || !DECL_COMMON (SYMBOL_REF_DECL (sym))))
 		{
 		  tree decl = SYMBOL_REF_DECL (sym);
-		  tree init = TREE_CODE (decl) == VAR_DECL
+		  tree init = VAR_P (decl)
 		    ? DECL_INITIAL (decl)
 		    : TREE_CODE (decl) == CONSTRUCTOR
 		    ? decl : 0;
@@ -4071,7 +4071,7 @@ frv_emit_movsi (rtx dest, rtx src)
 		  if (init && init != error_mark_node)
 		    reloc = compute_reloc_for_constant (init);
 
-		  named_section = TREE_CODE (decl) == VAR_DECL
+		  named_section = VAR_P (decl)
 		    && lookup_attribute ("section", DECL_ATTRIBUTES (decl));
 		  readonly = decl_readonly_section (decl, reloc);
 

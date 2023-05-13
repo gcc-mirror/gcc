@@ -14571,7 +14571,7 @@ rdseed_step:
 		op0 = pc_rtx;
 	    }
 	  else if (TREE_CODE (arg3) == SSA_NAME
-		   && TREE_CODE (TREE_TYPE (arg3)) == VECTOR_TYPE)
+		   && VECTOR_TYPE_P (TREE_TYPE (arg3)))
 	    {
 	      /* Recognize also when mask is like:
 		 __v2df src = _mm_setzero_pd ();

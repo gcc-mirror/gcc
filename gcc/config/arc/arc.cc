@@ -5784,7 +5784,7 @@ arc_encode_section_info (tree decl, rtx rtl, int first)
 
       SYMBOL_REF_FLAGS (symbol) = flags;
     }
-  else if (TREE_CODE (decl) == VAR_DECL)
+  else if (VAR_P (decl))
     {
       rtx symbol = XEXP (rtl, 0);
 
@@ -8935,7 +8935,7 @@ arc_is_aux_reg_p (rtx pat)
     return false;
 
   /* Get the attributes.  */
-  if (TREE_CODE (addr) == VAR_DECL)
+  if (VAR_P (addr))
     attrs = DECL_ATTRIBUTES (addr);
   else if (TREE_CODE (addr) == MEM_REF)
     attrs = TYPE_ATTRIBUTES (TREE_TYPE (TREE_OPERAND (addr, 0)));
@@ -11247,7 +11247,7 @@ arc_is_uncached_mem_p (rtx pat)
 
   /* Get the attributes.  */
   if (TREE_CODE (addr) == MEM_REF
-      || TREE_CODE (addr) == VAR_DECL)
+      || VAR_P (addr))
     {
       attrs = TYPE_ATTRIBUTES (TREE_TYPE (addr));
       if (lookup_attribute ("uncached", attrs))
@@ -11315,7 +11315,7 @@ arc_handle_aux_attribute (tree *node,
 	  /* FIXME! add range check.  TREE_INT_CST_LOW (arg) */
 	}
 
-      if (TREE_CODE (*node) == VAR_DECL)
+      if (VAR_P (*node))
 	{
 	  tree fntype = TREE_TYPE (*node);
 	  if (fntype && TREE_CODE (fntype) == POINTER_TYPE)

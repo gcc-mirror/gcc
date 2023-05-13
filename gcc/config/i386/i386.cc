@@ -1887,7 +1887,7 @@ type_natural_mode (const_tree type, const CUMULATIVE_ARGS *cum,
 {
   machine_mode mode = TYPE_MODE (type);
 
-  if (TREE_CODE (type) == VECTOR_TYPE && !VECTOR_MODE_P (mode))
+  if (VECTOR_TYPE_P (type) && !VECTOR_MODE_P (mode))
     {
       HOST_WIDE_INT size = int_size_in_bytes (type);
       if ((size == 8 || size == 16 || size == 32 || size == 64)
@@ -1904,7 +1904,7 @@ type_natural_mode (const_tree type, const CUMULATIVE_ARGS *cum,
 	  if (DECIMAL_FLOAT_MODE_P (innermode))
 	    return mode;
 
-	  if (TREE_CODE (TREE_TYPE (type)) == REAL_TYPE)
+	  if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (type)))
 	    mode = MIN_MODE_VECTOR_FLOAT;
 	  else
 	    mode = MIN_MODE_VECTOR_INT;
@@ -3412,7 +3412,7 @@ ix86_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 
   /* To simplify the code below, represent vector types with a vector mode
      even if MMX/SSE are not active.  */
-  if (arg.type && TREE_CODE (arg.type) == VECTOR_TYPE)
+  if (arg.type && VECTOR_TYPE_P (arg.type))
     mode = type_natural_mode (arg.type, cum, false);
 
   if (TARGET_64BIT)
@@ -17470,9 +17470,7 @@ ix86_data_alignment (tree type, unsigned int align, bool opt)
 	   || TYPE_MODE (type) == TCmode) && align < 128)
 	return 128;
     }
-  else if ((TREE_CODE (type) == RECORD_TYPE
-	    || TREE_CODE (type) == UNION_TYPE
-	    || TREE_CODE (type) == QUAL_UNION_TYPE)
+  else if (RECORD_OR_UNION_TYPE_P (type)
 	   && TYPE_FIELDS (type))
     {
       if (DECL_MODE (TYPE_FIELDS (type)) == DFmode && align < 64)
@@ -17480,7 +17478,7 @@ ix86_data_alignment (tree type, unsigned int align, bool opt)
       if (ALIGN_MODE_128 (DECL_MODE (TYPE_FIELDS (type))) && align < 128)
 	return 128;
     }
-  else if (TREE_CODE (type) == REAL_TYPE || TREE_CODE (type) == VECTOR_TYPE
+  else if (SCALAR_FLOAT_TYPE_P (type) || VECTOR_TYPE_P (type)
 	   || TREE_CODE (type) == INTEGER_TYPE)
     {
       if (TYPE_MODE (type) == DFmode && align < 64)
@@ -17596,9 +17594,7 @@ ix86_local_alignment (tree exp, machine_mode mode,
 	   || TYPE_MODE (type) == TCmode) && align < 128)
 	return 128;
     }
-  else if ((TREE_CODE (type) == RECORD_TYPE
-	    || TREE_CODE (type) == UNION_TYPE
-	    || TREE_CODE (type) == QUAL_UNION_TYPE)
+  else if (RECORD_OR_UNION_TYPE_P (type)
 	   && TYPE_FIELDS (type))
     {
       if (DECL_MODE (TYPE_FIELDS (type)) == DFmode && align < 64)
@@ -17606,7 +17602,7 @@ ix86_local_alignment (tree exp, machine_mode mode,
       if (ALIGN_MODE_128 (DECL_MODE (TYPE_FIELDS (type))) && align < 128)
 	return 128;
     }
-  else if (TREE_CODE (type) == REAL_TYPE || TREE_CODE (type) == VECTOR_TYPE
+  else if (SCALAR_FLOAT_TYPE_P (type) || VECTOR_TYPE_P (type)
 	   || TREE_CODE (type) == INTEGER_TYPE)
     {
 
@@ -23860,7 +23856,7 @@ ix86_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 	 for 64-bit code), accept that SIMDLEN, otherwise warn and don't
 	 emit corresponding clone.  */
       tree ctype = ret_type;
-      if (TREE_CODE (ret_type) == VOID_TYPE)
+      if (VOID_TYPE_P (ret_type))
 	ctype = base_type;
       int cnt = GET_MODE_BITSIZE (TYPE_MODE (ctype)) * clonei->simdlen;
       if (SCALAR_INT_MODE_P (TYPE_MODE (ctype)))

@@ -1881,7 +1881,7 @@ pdp11_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
      in registers.  The rest go into memory.  */
   return (TYPE_MODE (type) == DImode
 	  || (FLOAT_MODE_P (TYPE_MODE (type)) && ! TARGET_AC0)
-	  || TREE_CODE (type) == VECTOR_TYPE
+	  || VECTOR_TYPE_P (type)
 	  || COMPLEX_MODE_P (TYPE_MODE (type)));
 }
 

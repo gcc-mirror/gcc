@@ -9838,7 +9838,7 @@ mips_output_aligned_decl_common (FILE *stream, tree decl, const char *name,
      .rdata then don't put them in .comm.  */
   if (TARGET_EMBEDDED_DATA
       && TARGET_UNINIT_CONST_IN_RODATA
-      && TREE_CODE (decl) == VAR_DECL
+      && VAR_P (decl)
       && TREE_READONLY (decl)
       && (DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node))
     {

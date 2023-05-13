@@ -551,9 +551,7 @@ along with GCC; see the file COPYING3.  If not see
    the smaller of COMPUTED and `BIGGEST_ALIGNMENT' */
 #define ROUND_TYPE_ALIGN(STRUCT, COMPUTED, SPECIFIED)	\
  (TARGET_FASTER_STRUCTS ?				\
-  ((TREE_CODE (STRUCT) == RECORD_TYPE			\
-    || TREE_CODE (STRUCT) == UNION_TYPE                 \
-    || TREE_CODE (STRUCT) == QUAL_UNION_TYPE)           \
+  (RECORD_OR_UNION_TYPE_P (STRUCT)	   \
    && TYPE_FIELDS (STRUCT) != 0                         \
      ? MAX (MAX ((COMPUTED), (SPECIFIED)), BIGGEST_ALIGNMENT) \
      : MAX ((COMPUTED), (SPECIFIED)))			\

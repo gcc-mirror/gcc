@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 bool
 i386_pe_type_dllimport_p (tree decl)
 {
-  gcc_assert (TREE_CODE (decl) == VAR_DECL 
+  gcc_assert (VAR_P (decl)
 	      || TREE_CODE (decl) == FUNCTION_DECL);
 
   if (TARGET_NOP_FUN_DLLIMPORT && TREE_CODE (decl) == FUNCTION_DECL)
@@ -54,7 +54,7 @@ i386_pe_type_dllimport_p (tree decl)
 bool
 i386_pe_type_dllexport_p (tree decl)
 {
-  gcc_assert (TREE_CODE (decl) == VAR_DECL 
+  gcc_assert (VAR_P (decl)
               || TREE_CODE (decl) == FUNCTION_DECL);
 
   /* Avoid exporting compiler-generated default dtors and copy ctors.
@@ -118,7 +118,7 @@ i386_pe_adjust_class_at_definition (tree t)
 
       /* Check FUNCTION_DECL's and static VAR_DECL's.  */
       for (member = TYPE_FIELDS (t); member; member = DECL_CHAIN (member))
-	if (TREE_CODE (member) == VAR_DECL)     
+	if (VAR_P (member))
 	  maybe_add_dllexport (member);
 	else if (TREE_CODE (member) == FUNCTION_DECL)
 	  {
@@ -134,7 +134,7 @@ i386_pe_adjust_class_at_definition (tree t)
       /* Check vtables  */
       for (member = CLASSTYPE_VTABLES (t);
 	   member; member = DECL_CHAIN (member))
-	if (TREE_CODE (member) == VAR_DECL) 
+	if (VAR_P (member))
 	  maybe_add_dllexport (member);
     }
 
@@ -150,7 +150,7 @@ i386_pe_adjust_class_at_definition (tree t)
 
       /* Check FUNCTION_DECL's and static VAR_DECL's.  */
       for (member = TYPE_FIELDS (t); member; member = DECL_CHAIN (member))
-	if (TREE_CODE (member) == VAR_DECL)     
+	if (VAR_P (member))
 	  maybe_add_dllimport (member);
 	else if (TREE_CODE (member) == FUNCTION_DECL)
 	  {
@@ -166,7 +166,7 @@ i386_pe_adjust_class_at_definition (tree t)
       /* Check vtables  */
       for (member = CLASSTYPE_VTABLES (t);
 	   member;  member = DECL_CHAIN (member))
-	if (TREE_CODE (member) == VAR_DECL) 
+	if (VAR_P (member))
 	  maybe_add_dllimport (member);
 
       /* We leave typeinfo tables alone.  We can't mark TI objects as

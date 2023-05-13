@@ -826,12 +826,12 @@ rs6000_function_arg_boundary (machine_mode mode, const_tree type)
     return 64;
   else if (FLOAT128_VECTOR_P (mode))
     return 128;
-  else if (type && TREE_CODE (type) == VECTOR_TYPE
+  else if (type && VECTOR_TYPE_P (type)
 	   && int_size_in_bytes (type) >= 8
 	   && int_size_in_bytes (type) < 16)
     return 64;
   else if (ALTIVEC_OR_VSX_VECTOR_MODE (elt_mode)
-	   || (type && TREE_CODE (type) == VECTOR_TYPE
+	   || (type && VECTOR_TYPE_P (type)
 	       && int_size_in_bytes (type) >= 16))
     return 128;
 
@@ -1094,7 +1094,7 @@ rs6000_function_arg_advance_1 (CUMULATIVE_ARGS *cum, machine_mode mode,
 
   if (TARGET_ALTIVEC_ABI
       && (ALTIVEC_OR_VSX_VECTOR_MODE (elt_mode)
-	  || (type && TREE_CODE (type) == VECTOR_TYPE
+	  || (type && VECTOR_TYPE_P (type)
 	      && int_size_in_bytes (type) == 16)))
     {
       bool stack = false;
@@ -1699,7 +1699,7 @@ rs6000_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
     }
   else if (TARGET_ALTIVEC_ABI
 	   && (ALTIVEC_OR_VSX_VECTOR_MODE (mode)
-	       || (type && TREE_CODE (type) == VECTOR_TYPE
+	       || (type && VECTOR_TYPE_P (type)
 		   && int_size_in_bytes (type) == 16)))
     {
       if (named || abi == ABI_V4)
@@ -2017,7 +2017,7 @@ rs6000_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
     }
 
   /* Pass synthetic vectors in memory.  */
-  if (TREE_CODE (arg.type) == VECTOR_TYPE
+  if (VECTOR_TYPE_P (arg.type)
       && int_size_in_bytes (arg.type) > (TARGET_ALTIVEC_ABI ? 16 : 8))
     {
       static bool warned_for_pass_big_vectors = false;

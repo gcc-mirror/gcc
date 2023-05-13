@@ -6535,7 +6535,7 @@ loongarch_handle_model_attribute (tree *node, tree name, tree arg, int,
 				  bool *no_add_attrs)
 {
   tree decl = *node;
-  if (TREE_CODE (decl) == VAR_DECL)
+  if (VAR_P (decl))
     {
       if (DECL_THREAD_LOCAL_P (decl))
 	{

@@ -4287,7 +4287,7 @@ xtensa_multibss_section_type_flags (tree decl, const char *name, int reloc)
   suffix = strrchr (name, '.');
   if (suffix && strcmp (suffix, ".bss") == 0)
     {
-      if (!decl || (TREE_CODE (decl) == VAR_DECL
+      if (!decl || (VAR_P (decl)
 		    && DECL_INITIAL (decl) == NULL_TREE))
 	flags |= SECTION_BSS;  /* @nobits */
       else

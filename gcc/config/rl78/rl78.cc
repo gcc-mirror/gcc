@@ -4724,7 +4724,7 @@ static void
 rl78_insert_attributes (tree decl, tree *attributes ATTRIBUTE_UNUSED)
 {
   if (TARGET_ES0
-      && TREE_CODE (decl) == VAR_DECL
+      && VAR_P (decl)
       && TREE_READONLY (decl)
       && TREE_ADDRESSABLE (decl)
       && TYPE_ADDR_SPACE (TREE_TYPE (decl)) == ADDR_SPACE_GENERIC)
@@ -4880,7 +4880,7 @@ rl78_addsi3_internal (rtx * operands, unsigned int alternative)
      this address.  So we can skip adding in the high bytes.  */
   if (TARGET_ES0
       && GET_CODE (operands[2]) == SYMBOL_REF
-      && TREE_CODE (SYMBOL_REF_DECL (operands[2])) == VAR_DECL
+      && VAR_P (SYMBOL_REF_DECL (operands[2]))
       && TREE_READONLY (SYMBOL_REF_DECL (operands[2]))
       && ! TREE_SIDE_EFFECTS (SYMBOL_REF_DECL (operands[2])))
     return "movw ax, %h1\n\taddw ax, %h2\n\tmovw %h0, ax";

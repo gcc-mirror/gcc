@@ -8059,7 +8059,7 @@ rs6000_data_alignment (tree type, unsigned int align, enum data_align how)
 {
   if (how != align_opt)
     {
-      if (TREE_CODE (type) == VECTOR_TYPE && align < 128)
+      if (VECTOR_TYPE_P (type) && align < 128)
 	align = 128;
     }
 
@@ -20404,8 +20404,7 @@ static void
 rs6000_set_default_type_attributes (tree type)
 {
   if (rs6000_default_long_calls
-      && (TREE_CODE (type) == FUNCTION_TYPE
-	  || TREE_CODE (type) == METHOD_TYPE))
+      && FUNC_OR_METHOD_TYPE_P (type))
     TYPE_ATTRIBUTES (type) = tree_cons (get_identifier ("longcall"),
 					NULL_TREE,
 					TYPE_ATTRIBUTES (type));
@@ -20647,7 +20646,7 @@ rs6000_elf_in_small_data_p (const_tree decl)
   if (TREE_CODE (decl) == FUNCTION_DECL)
     return false;
 
-  if (TREE_CODE (decl) == VAR_DECL && DECL_SECTION_NAME (decl))
+  if (VAR_P (decl) && DECL_SECTION_NAME (decl))
     {
       const char *section = DECL_SECTION_NAME (decl);
       if (compare_section_name (section, ".sdata")
@@ -21371,7 +21370,7 @@ rs6000_xcoff_asm_named_section (const char *name, unsigned int flags,
 }
 
 #define IN_NAMED_SECTION(DECL) \
-  ((TREE_CODE (DECL) == FUNCTION_DECL || TREE_CODE (DECL) == VAR_DECL) \
+  ((TREE_CODE (DECL) == FUNCTION_DECL || VAR_P (DECL)) \
    && DECL_SECTION_NAME (DECL) != NULL)
 
 static section *
@@ -21862,7 +21861,7 @@ rs6000_xcoff_encode_section_info (tree decl, rtx rtl, int first)
 
   flags = SYMBOL_REF_FLAGS (symbol);
 
-  if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL_P (decl))
+  if (VAR_P (decl) && DECL_THREAD_LOCAL_P (decl))
     flags &= ~SYMBOL_FLAG_HAS_BLOCK_INFO;
 
   SYMBOL_REF_FLAGS (symbol) = flags;
@@ -23743,7 +23742,7 @@ rs6000_function_value (const_tree valtype,
   /* VSX is a superset of Altivec and adds V2DImode/V2DFmode.  Since the same
      return register is used in both cases, and we won't see V2DImode/V2DFmode
      for pure altivec, combine the two cases.  */
-  else if ((TREE_CODE (valtype) == VECTOR_TYPE || VECTOR_ALIGNMENT_P (mode))
+  else if ((VECTOR_TYPE_P (valtype) || VECTOR_ALIGNMENT_P (mode))
 	   && TARGET_ALTIVEC && TARGET_ALTIVEC_ABI
 	   && ALTIVEC_OR_VSX_VECTOR_MODE (mode))
     regno = ALTIVEC_ARG_RETURN;
@@ -24123,7 +24122,7 @@ invalid_arg_for_unprototyped_fn (const_tree typelist, const_tree funcdecl, const
 {
   return (!rs6000_darwin64_abi
 	  && typelist == 0
-          && TREE_CODE (TREE_TYPE (val)) == VECTOR_TYPE
+	  && VECTOR_TYPE_P (TREE_TYPE (val))
           && (funcdecl == NULL_TREE
               || (TREE_CODE (funcdecl) == FUNCTION_DECL
                   && DECL_BUILT_IN_CLASS (funcdecl) != BUILT_IN_MD)))

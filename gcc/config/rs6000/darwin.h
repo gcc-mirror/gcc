@@ -427,12 +427,10 @@
 /* Darwin increases natural record alignment to doubleword if the first
    field is an FP double while the FP fields remain word aligned.  */
 #define ROUND_TYPE_ALIGN(STRUCT, COMPUTED, SPECIFIED)			  \
-  ((TREE_CODE (STRUCT) == RECORD_TYPE					  \
-    || TREE_CODE (STRUCT) == UNION_TYPE					  \
-    || TREE_CODE (STRUCT) == QUAL_UNION_TYPE)				  \
+  (RECORD_OR_UNION_TYPE_P (STRUCT)				  \
    && TARGET_ALIGN_NATURAL == 0						  \
    ? darwin_rs6000_special_round_type_align (STRUCT, COMPUTED, SPECIFIED) \
-   : (TREE_CODE (STRUCT) == VECTOR_TYPE					  \
+   : (VECTOR_TYPE_P (STRUCT)					  \
       && ALTIVEC_VECTOR_MODE (TYPE_MODE (STRUCT)))			  \
    ? MAX (MAX ((COMPUTED), (SPECIFIED)), 128)				  \
    : MAX ((COMPUTED), (SPECIFIED)))

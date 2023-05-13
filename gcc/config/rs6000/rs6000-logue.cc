@@ -1171,12 +1171,12 @@ rs6000_function_ok_for_sibcall (tree decl, tree exp)
 	 prototype, so the argument type info must be available
 	 here.  */
       FOREACH_FUNCTION_ARGS(fntype, type, args_iter)
-	if (TREE_CODE (type) == VECTOR_TYPE
+	if (VECTOR_TYPE_P (type)
 	    && ALTIVEC_OR_VSX_VECTOR_MODE (TYPE_MODE (type)))
 	  nvreg++;
 
       FOREACH_FUNCTION_ARGS(TREE_TYPE (current_function_decl), type, args_iter)
-	if (TREE_CODE (type) == VECTOR_TYPE
+	if (VECTOR_TYPE_P (type)
 	    && ALTIVEC_OR_VSX_VECTOR_MODE (TYPE_MODE (type)))
 	  nvreg--;
 

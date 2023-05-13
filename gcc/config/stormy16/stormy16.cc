@@ -1756,7 +1756,7 @@ xstormy16_encode_section_info (tree decl, rtx r, int first)
 {
   default_encode_section_info (decl, r, first);
 
-   if (TREE_CODE (decl) == VAR_DECL
+   if (VAR_P (decl)
       && (lookup_attribute ("below100", DECL_ATTRIBUTES (decl))
 	  || lookup_attribute ("BELOW100", DECL_ATTRIBUTES (decl))))
     {
@@ -2427,7 +2427,7 @@ xstormy16_handle_below100_attribute (tree *node,
 	       "%<__BELOW100__%> attribute only applies to variables");
       *no_add_attrs = true;
     }
-  else if (args == NULL_TREE && TREE_CODE (*node) == VAR_DECL)
+  else if (args == NULL_TREE && VAR_P (*node))
     {
       if (! (TREE_PUBLIC (*node) || TREE_STATIC (*node)))
 	{

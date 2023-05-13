@@ -452,7 +452,7 @@ nvptx_encode_section_info (tree decl, rtx rtl, int first)
 
       if (TREE_CONSTANT (decl))
 	area = DATA_AREA_CONST;
-      else if (TREE_CODE (decl) == VAR_DECL)
+      else if (VAR_P (decl))
 	{
 	  if (lookup_attribute ("shared", DECL_ATTRIBUTES (decl)))
 	    {
@@ -635,7 +635,7 @@ pass_in_memory (machine_mode mode, const_tree type, bool for_return)
     {
       if (AGGREGATE_TYPE_P (type))
 	return true;
-      if (TREE_CODE (type) == VECTOR_TYPE)
+      if (VECTOR_TYPE_P (type))
 	return true;
     }
 
@@ -6699,7 +6699,7 @@ nvptx_generate_vector_shuffle (location_t loc,
   if (TREE_CODE (var_type) == COMPLEX_TYPE)
     var_type = TREE_TYPE (var_type);
 
-  if (TREE_CODE (var_type) == REAL_TYPE)
+  if (SCALAR_FLOAT_TYPE_P (var_type))
     code = VIEW_CONVERT_EXPR;
 
   if (TYPE_SIZE (var_type)
@@ -6789,7 +6789,7 @@ nvptx_lockless_update (location_t loc, gimple_stmt_iterator *gsi,
   tree var_type = TREE_TYPE (var);
 
   if (TREE_CODE (var_type) == COMPLEX_TYPE
-      || TREE_CODE (var_type) == REAL_TYPE)
+      || SCALAR_FLOAT_TYPE_P (var_type))
     code = VIEW_CONVERT_EXPR;
 
   if (TYPE_SIZE (var_type) == TYPE_SIZE (long_long_unsigned_type_node))
