@@ -22095,11 +22095,12 @@ aarch64_simd_make_constant (rtx vals)
     return NULL_RTX;
 }
 
-/* Expand a vector initialisation sequence, such that TARGET is
-   initialised to contain VALS.  */
+/* A subroutine of aarch64_expand_vector_init, with the same interface.
+   The caller has already tried a divide-and-conquer approach, so do
+   not consider that case here.  */
 
 void
-aarch64_expand_vector_init (rtx target, rtx vals)
+aarch64_expand_vector_init_fallback (rtx target, rtx vals)
 {
   machine_mode mode = GET_MODE (target);
   scalar_mode inner_mode = GET_MODE_INNER (mode);
@@ -22157,38 +22158,6 @@ aarch64_expand_vector_init (rtx target, rtx vals)
       rtx x = force_reg (inner_mode, v0);
       aarch64_emit_move (target, gen_vec_duplicate (mode, x));
       return;
-    }
-
-  /* Check for interleaving case.
-     For eg if initializer is (int16x8_t) {x, y, x, y, x, y, x, y}.
-     Generate following code:
-     dup v0.h, x
-     dup v1.h, y
-     zip1 v0.h, v0.h, v1.h
-     for "large enough" initializer.  */
-
-  if (n_elts >= 8)
-    {
-      int i;
-      for (i = 2; i < n_elts; i++)
-	if (!rtx_equal_p (XVECEXP (vals, 0, i), XVECEXP (vals, 0, i % 2)))
-	  break;
-
-      if (i == n_elts)
-	{
-	  machine_mode mode = GET_MODE (target);
-	  rtx dest[2];
-
-	  for (int i = 0; i < 2; i++)
-	    {
-	      rtx x = expand_vector_broadcast (mode, XVECEXP (vals, 0, i));
-	      dest[i] = force_reg (mode, x);
-	    }
-
-	  rtvec v = gen_rtvec (2, dest[0], dest[1]);
-	  emit_set_insn (target, gen_rtx_UNSPEC (mode, v, UNSPEC_ZIP1));
-	  return;
-	}
     }
 
   enum insn_code icode = optab_handler (vec_set_optab, mode);
@@ -22312,7 +22281,7 @@ aarch64_expand_vector_init (rtx target, rtx vals)
 	    }
 	  XVECEXP (copy, 0, i) = subst;
 	}
-      aarch64_expand_vector_init (target, copy);
+      aarch64_expand_vector_init_fallback (target, copy);
     }
 
   /* Insert the variable lanes directly.  */
@@ -22324,6 +22293,80 @@ aarch64_expand_vector_init (rtx target, rtx vals)
       x = force_reg (inner_mode, x);
       emit_insn (GEN_FCN (icode) (target, x, GEN_INT (i)));
     }
+}
+
+/* Return even or odd half of VALS depending on EVEN_P.  */
+
+static rtx
+aarch64_unzip_vector_init (machine_mode mode, rtx vals, bool even_p)
+{
+  int n = XVECLEN (vals, 0);
+  machine_mode new_mode
+    = aarch64_simd_container_mode (GET_MODE_INNER (mode),
+				   GET_MODE_BITSIZE (mode).to_constant () / 2);
+  rtvec vec = rtvec_alloc (n / 2);
+  for (int i = 0; i < n / 2; i++)
+    RTVEC_ELT (vec, i) = (even_p) ? XVECEXP (vals, 0, 2 * i)
+				  : XVECEXP (vals, 0, 2 * i + 1);
+  return gen_rtx_PARALLEL (new_mode, vec);
+}
+
+/* Expand a vector initialization sequence, such that TARGET is
+   initialized to contain VALS.  */
+
+void
+aarch64_expand_vector_init (rtx target, rtx vals)
+{
+  /* Try decomposing the initializer into even and odd halves and
+     then ZIP them together.  Use the resulting sequence if it is
+     strictly cheaper than loading VALS directly.
+
+     Prefer the fallback sequence in the event of a tie, since it
+     will tend to use fewer registers.  */
+
+  machine_mode mode = GET_MODE (target);
+  int n_elts = XVECLEN (vals, 0);
+
+  if (n_elts < 4
+      || maybe_ne (GET_MODE_BITSIZE (mode), 128))
+    {
+      aarch64_expand_vector_init_fallback (target, vals);
+      return;
+    }
+
+  start_sequence ();
+  rtx halves[2];
+  unsigned costs[2];
+  for (int i = 0; i < 2; i++)
+    {
+      start_sequence ();
+      rtx new_vals = aarch64_unzip_vector_init (mode, vals, i == 0);
+      rtx tmp_reg = gen_reg_rtx (GET_MODE (new_vals));
+      aarch64_expand_vector_init (tmp_reg, new_vals);
+      halves[i] = gen_rtx_SUBREG (mode, tmp_reg, 0);
+      rtx_insn *rec_seq = get_insns ();
+      end_sequence ();
+      costs[i] = seq_cost (rec_seq, !optimize_size);
+      emit_insn (rec_seq);
+    }
+
+  rtvec v = gen_rtvec (2, halves[0], halves[1]);
+  rtx_insn *zip1_insn
+    = emit_set_insn (target, gen_rtx_UNSPEC (mode, v, UNSPEC_ZIP1));
+  unsigned seq_total_cost
+    = (!optimize_size) ? std::max (costs[0], costs[1]) : costs[0] + costs[1];
+  seq_total_cost += insn_cost (zip1_insn, !optimize_size);
+
+  rtx_insn *seq = get_insns ();
+  end_sequence ();
+
+  start_sequence ();
+  aarch64_expand_vector_init_fallback (target, vals);
+  rtx_insn *fallback_seq = get_insns ();
+  unsigned fallback_seq_cost = seq_cost (fallback_seq, !optimize_size);
+  end_sequence ();
+
+  emit_insn (seq_total_cost < fallback_seq_cost ? seq : fallback_seq);
 }
 
 /* Emit RTL corresponding to:
