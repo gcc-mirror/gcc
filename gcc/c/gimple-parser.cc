@@ -2472,7 +2472,7 @@ c_finish_gimple_return (location_t loc, tree retval)
 
   if (! retval)
     current_function_returns_null = 1;
-  else if (valtype == 0 || TREE_CODE (valtype) == VOID_TYPE)
+  else if (valtype == 0 || VOID_TYPE_P (valtype))
     {
       current_function_returns_null = 1;
       if (TREE_CODE (TREE_TYPE (retval)) != VOID_TYPE)

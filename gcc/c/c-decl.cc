@@ -2746,11 +2746,11 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
      system header. Otherwise, keep source location of definition rather than
      declaration and of prototype rather than non-prototype unless that
      prototype is built-in.  */
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (olddecl), TS_DECL_WITH_VIS)
+  if (HAS_DECL_ASSEMBLER_NAME_P (olddecl)
       && DECL_IN_SYSTEM_HEADER (olddecl)
       && !DECL_IN_SYSTEM_HEADER (newdecl) )
     DECL_SOURCE_LOCATION (newdecl) = DECL_SOURCE_LOCATION (olddecl);
-  else if (CODE_CONTAINS_STRUCT (TREE_CODE (olddecl), TS_DECL_WITH_VIS)
+  else if (HAS_DECL_ASSEMBLER_NAME_P (olddecl)
 	   && DECL_IN_SYSTEM_HEADER (newdecl)
 	   && !DECL_IN_SYSTEM_HEADER (olddecl))
     DECL_SOURCE_LOCATION (olddecl) = DECL_SOURCE_LOCATION (newdecl);
@@ -2777,7 +2777,7 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
   if (VAR_P (olddecl) && C_DECL_THREADPRIVATE_P (olddecl))
     C_DECL_THREADPRIVATE_P (newdecl) = 1;
 
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (olddecl), TS_DECL_WITH_VIS))
+  if (HAS_DECL_ASSEMBLER_NAME_P (olddecl))
     {
       /* Copy the assembler name.
 	 Currently, it can only be defined in the prototype.  */

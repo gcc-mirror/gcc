@@ -632,7 +632,7 @@ plugin_float_type (cc1_plugin::connection *self,
   if (!result)
     return convert_out (error_mark_node);
 
-  gcc_assert (TREE_CODE (result) == REAL_TYPE);
+  gcc_assert (SCALAR_FLOAT_TYPE_P (result));
   gcc_assert (BITS_PER_UNIT * size_in_bytes == TYPE_PRECISION (result));
 
   return convert_out (result);
