@@ -671,7 +671,7 @@ lto_input_var_decl_ref (lto_input_block *ib, lto_file_decl_data *file_data)
   unsigned int ix_u = streamer_read_uhwi (ib);
   tree result = (*file_data->current_decl_state
 		 ->streams[LTO_DECL_STREAM])[ix_u];
-  gcc_assert (TREE_CODE (result) == VAR_DECL);
+  gcc_assert (VAR_P (result));
   return result;
 }
 
@@ -1653,7 +1653,7 @@ lto_read_body_or_constructor (struct lto_file_decl_data *file_data, struct symta
 
 	      if (TYPE_P (t))
 		{
-		  gcc_assert (TYPE_CANONICAL (t) == NULL_TREE);
+		  gcc_assert (TYPE_STRUCTURAL_EQUALITY_P (t));
 		  if (type_with_alias_set_p (t)
 		      && canonical_type_used_p (t))
 		    TYPE_CANONICAL (t) = TYPE_MAIN_VARIANT (t);
