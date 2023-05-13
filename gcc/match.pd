@@ -7439,6 +7439,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && TREE_CODE (@0) != INTEGER_CST)
    (op @0 (ext @1 @2)))))
 
+/* signbit(x) != 0 ? -x : x -> abs(x)
+   signbit(x) == 0 ? -x : x -> -abs(x) */
+(for sign (SIGNBIT)
+ (for neeq (ne eq)
+  (simplify
+   (cond (neeq (sign @0) integer_zerop) (negate @0) @0)
+    (if (neeq == NE_EXPR)
+     (abs @0)
+     (negate (abs @0))))))
+
 (simplify
  /* signbit(x) -> 0 if x is nonnegative.  */
  (SIGNBIT tree_expr_nonnegative_p@0)
