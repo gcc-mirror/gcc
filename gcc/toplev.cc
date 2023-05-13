@@ -323,7 +323,7 @@ wrapup_global_declaration_1 (tree decl)
 {
   /* We're not deferring this any longer.  Assignment is conditional to
      avoid needlessly dirtying PCH pages.  */
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (decl), TS_DECL_WITH_VIS)
+  if (HAS_DECL_ASSEMBLER_NAME_P (decl)
       && DECL_DEFER_OUTPUT (decl) != 0)
     DECL_DEFER_OUTPUT (decl) = 0;
 

@@ -980,8 +980,8 @@ scop_detection::graphite_can_represent_scev (sese_l scop, tree scev)
 	&& graphite_can_represent_scev (scop, TREE_OPERAND (scev, 1));
 
     case MULT_EXPR:
-      return !CONVERT_EXPR_CODE_P (TREE_CODE (TREE_OPERAND (scev, 0)))
-	&& !CONVERT_EXPR_CODE_P (TREE_CODE (TREE_OPERAND (scev, 1)))
+      return !CONVERT_EXPR_P (TREE_OPERAND (scev, 0))
+	&& !CONVERT_EXPR_P (TREE_OPERAND (scev, 1))
 	&& !(chrec_contains_symbols (TREE_OPERAND (scev, 0))
 	     && chrec_contains_symbols (TREE_OPERAND (scev, 1)))
 	&& graphite_can_represent_init (scev)

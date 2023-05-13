@@ -63,7 +63,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
 	 expansion has code to adjust TRUNC_MOD_EXPR into the desired other
 	 modes, but for vector modes it does not.  The adjustment code
 	 should be instead emitted in tree-vect-patterns.cc.  */
-      if (TREE_CODE (type) == VECTOR_TYPE)
+      if (VECTOR_TYPE_P (type))
 	return unknown_optab;
       /* FALLTHRU */
     case TRUNC_MOD_EXPR:
@@ -77,7 +77,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
 	 into the desired other modes, but for vector modes it does not.
 	 The adjustment code should be instead emitted in
 	 tree-vect-patterns.cc.  */
-      if (TREE_CODE (type) == VECTOR_TYPE)
+      if (VECTOR_TYPE_P (type))
 	return unknown_optab;
       /* FALLTHRU */
     case RDIV_EXPR:
@@ -88,7 +88,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return TYPE_UNSIGNED (type) ? udiv_optab : sdiv_optab;
 
     case LSHIFT_EXPR:
-      if (TREE_CODE (type) == VECTOR_TYPE)
+      if (VECTOR_TYPE_P (type))
 	{
 	  if (subtype == optab_vector)
 	    return TYPE_SATURATING (type) ? unknown_optab : vashl_optab;
@@ -100,7 +100,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return ashl_optab;
 
     case RSHIFT_EXPR:
-      if (TREE_CODE (type) == VECTOR_TYPE)
+      if (VECTOR_TYPE_P (type))
 	{
 	  if (subtype == optab_vector)
 	    return TYPE_UNSIGNED (type) ? vlshr_optab : vashr_optab;
@@ -110,7 +110,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return TYPE_UNSIGNED (type) ? lshr_optab : ashr_optab;
 
     case LROTATE_EXPR:
-      if (TREE_CODE (type) == VECTOR_TYPE)
+      if (VECTOR_TYPE_P (type))
 	{
 	  if (subtype == optab_vector)
 	    return vrotl_optab;
@@ -120,7 +120,7 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return rotl_optab;
 
     case RROTATE_EXPR:
-      if (TREE_CODE (type) == VECTOR_TYPE)
+      if (VECTOR_TYPE_P (type))
 	{
 	  if (subtype == optab_vector)
 	    return vrotr_optab;

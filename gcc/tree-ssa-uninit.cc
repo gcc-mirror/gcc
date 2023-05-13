@@ -232,7 +232,7 @@ warn_uninit (opt_code opt, tree t, tree var, gimple *context,
 
 	  if (is_gimple_assign (context))
 	    {
-	      if (TREE_CODE (gimple_assign_lhs (context)) == VAR_DECL)
+	      if (VAR_P (gimple_assign_lhs (context)))
 		lhs_var = gimple_assign_lhs (context);
 	      else if (TREE_CODE (gimple_assign_lhs (context)) == SSA_NAME)
 		lhs_var = SSA_NAME_VAR (gimple_assign_lhs (context));

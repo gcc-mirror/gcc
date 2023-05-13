@@ -3014,7 +3014,7 @@ decode_addr_const (tree exp, class addr_const *value)
 	  offset += mem_ref_offset (target).force_shwi ();
 	  target = TREE_OPERAND (TREE_OPERAND (target, 0), 0);
 	}
-      else if (TREE_CODE (target) == INDIRECT_REF
+      else if (INDIRECT_REF_P (target)
 	       && TREE_CODE (TREE_OPERAND (target, 0)) == NOP_EXPR
 	       && TREE_CODE (TREE_OPERAND (TREE_OPERAND (target, 0), 0))
 		  == ADDR_EXPR)

@@ -81,7 +81,7 @@ is_gimple_reg_type (tree type)
 inline bool
 is_gimple_variable (tree t)
 {
-  return (TREE_CODE (t) == VAR_DECL
+  return (VAR_P (t)
 	  || TREE_CODE (t) == PARM_DECL
 	  || TREE_CODE (t) == RESULT_DECL
 	  || TREE_CODE (t) == SSA_NAME);
@@ -108,7 +108,7 @@ virtual_operand_p (tree op)
   if (TREE_CODE (op) == SSA_NAME)
     return SSA_NAME_IS_VIRTUAL_OPERAND (op);
 
-  if (TREE_CODE (op) == VAR_DECL)
+  if (VAR_P (op))
     return VAR_DECL_IS_VIRTUAL_OPERAND (op);
 
   return false;

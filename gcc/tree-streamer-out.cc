@@ -739,8 +739,7 @@ write_ts_type_non_common_tree_pointers (struct output_block *ob, tree expr)
     stream_write_tree_ref (ob, TYPE_DOMAIN (expr));
   else if (RECORD_OR_UNION_TYPE_P (expr))
     streamer_write_chain (ob, TYPE_FIELDS (expr));
-  else if (TREE_CODE (expr) == FUNCTION_TYPE
-	   || TREE_CODE (expr) == METHOD_TYPE)
+  else if (FUNC_OR_METHOD_TYPE_P (expr))
     stream_write_tree_ref (ob, TYPE_ARG_TYPES (expr));
 
   if (!POINTER_TYPE_P (expr))

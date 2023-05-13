@@ -5831,8 +5831,7 @@ type_must_have_pointers (tree type)
 
   /* A function or method can have pointers as arguments, so track
      those separately.  */
-  if (TREE_CODE (type) == FUNCTION_TYPE
-      || TREE_CODE (type) == METHOD_TYPE)
+  if (FUNC_OR_METHOD_TYPE_P (type))
     return true;
 
   return false;

@@ -439,7 +439,7 @@ static tree
 lower_emutls_2 (tree *ptr, int *walk_subtrees, void *)
 {
   tree t = *ptr;
-  if (TREE_CODE (t) == VAR_DECL)
+  if (VAR_P (t))
     return DECL_THREAD_LOCAL_P (t) ? t : NULL_TREE;
   else if (!EXPR_P (t))
     *walk_subtrees = 0;

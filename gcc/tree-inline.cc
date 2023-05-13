@@ -1307,7 +1307,7 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 		}
 	    }
 	}
-      else if (TREE_CODE (*tp) == INDIRECT_REF)
+      else if (INDIRECT_REF_P (*tp))
 	{
 	  /* Get rid of *& from inline substitutions that can happen when a
 	     pointer argument is an ADDR_EXPR.  */
@@ -1429,7 +1429,7 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 
 	  /* Handle the case where we substituted an INDIRECT_REF
 	     into the operand of the ADDR_EXPR.  */
-	  if (TREE_CODE (TREE_OPERAND (*tp, 0)) == INDIRECT_REF
+	  if (INDIRECT_REF_P (TREE_OPERAND (*tp, 0))
 	      && !id->do_not_fold)
 	    {
 	      tree t = TREE_OPERAND (TREE_OPERAND (*tp, 0), 0);
@@ -4170,7 +4170,7 @@ estimate_move_cost (tree type, bool ARG_UNUSED (speed_p))
 
   gcc_assert (!VOID_TYPE_P (type));
 
-  if (TREE_CODE (type) == VECTOR_TYPE)
+  if (VECTOR_TYPE_P (type))
     {
       scalar_mode inner = SCALAR_TYPE_MODE (TREE_TYPE (type));
       machine_mode simd = targetm.vectorize.preferred_simd_mode (inner);
@@ -5918,7 +5918,7 @@ copy_decl_for_dup_finish (copy_body_data *id, tree decl, tree copy)
   DECL_ABSTRACT_ORIGIN (copy) = DECL_ORIGIN (decl);
 
   /* The new variable/label has no RTL, yet.  */
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (copy), TS_DECL_WRTL)
+  if (HAS_RTL_P (copy)
       && !TREE_STATIC (copy) && !DECL_EXTERNAL (copy))
     SET_DECL_RTL (copy, 0);
   /* For vector typed decls make sure to update DECL_MODE according

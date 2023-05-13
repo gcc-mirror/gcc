@@ -1507,7 +1507,7 @@ maybe_rewrite_mem_ref_base (tree *tp, bitmap suitable_for_renaming)
       && is_gimple_reg_type (TREE_TYPE (*tp))
       && ! VOID_TYPE_P (TREE_TYPE (*tp)))
     {
-      if (TREE_CODE (TREE_TYPE (sym)) == VECTOR_TYPE
+      if (VECTOR_TYPE_P (TREE_TYPE (sym))
 	  && useless_type_conversion_p (TREE_TYPE (*tp),
 					TREE_TYPE (TREE_TYPE (sym)))
 	  && multiple_p (mem_ref_offset (*tp),
@@ -1608,7 +1608,7 @@ non_rewritable_mem_ref_base (tree ref)
 	  || VOID_TYPE_P (TREE_TYPE (base))
 	  || TREE_THIS_VOLATILE (decl) != TREE_THIS_VOLATILE (base))
 	return decl;
-      if ((TREE_CODE (TREE_TYPE (decl)) == VECTOR_TYPE
+      if ((VECTOR_TYPE_P (TREE_TYPE (decl))
 	   || TREE_CODE (TREE_TYPE (decl)) == COMPLEX_TYPE)
 	  && useless_type_conversion_p (TREE_TYPE (base),
 					TREE_TYPE (TREE_TYPE (decl)))

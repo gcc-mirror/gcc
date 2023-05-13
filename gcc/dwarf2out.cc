@@ -13287,7 +13287,7 @@ base_type_die (tree type, bool reverse)
       /* Dwarf2 doesn't know anything about complex ints, so use
 	 a user defined type for it.  */
     case COMPLEX_TYPE:
-      if (TREE_CODE (TREE_TYPE (type)) == REAL_TYPE)
+      if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (type)))
 	encoding = DW_ATE_complex_float;
       else
 	encoding = DW_ATE_lo_user;
@@ -17079,7 +17079,7 @@ implicit_ptr_descriptor (rtx rtl, HOST_WIDE_INT offset)
 
   if (dwarf_strict && dwarf_version < 5)
     return NULL;
-  gcc_assert (TREE_CODE (DEBUG_IMPLICIT_PTR_DECL (rtl)) == VAR_DECL
+  gcc_assert (VAR_P (DEBUG_IMPLICIT_PTR_DECL (rtl))
 	      || TREE_CODE (DEBUG_IMPLICIT_PTR_DECL (rtl)) == PARM_DECL
 	      || TREE_CODE (DEBUG_IMPLICIT_PTR_DECL (rtl)) == RESULT_DECL);
   ref = lookup_decl_die (DEBUG_IMPLICIT_PTR_DECL (rtl));
@@ -22499,7 +22499,7 @@ gen_array_type_die (tree type, dw_die_ref context_die)
 	  size = int_size_in_bytes (TREE_TYPE (szdecl));
 	  if (!DECL_P (szdecl))
 	    {
-	      if (TREE_CODE (szdecl) == INDIRECT_REF
+	      if (INDIRECT_REF_P (szdecl)
 		  && DECL_P (TREE_OPERAND (szdecl, 0)))
 		{
 		  rszdecl = TREE_OPERAND (szdecl, 0);
@@ -22533,7 +22533,7 @@ gen_array_type_die (tree type, dw_die_ref context_die)
   add_name_attribute (array_die, type_tag (type));
   equate_type_number_to_die (type, array_die);
 
-  if (TREE_CODE (type) == VECTOR_TYPE)
+  if (VECTOR_TYPE_P (type))
     add_AT_flag (array_die, DW_AT_GNU_vector, 1);
 
   /* For Fortran multidimensional arrays use DW_ORD_col_major ordering.  */
@@ -22554,7 +22554,7 @@ gen_array_type_die (tree type, dw_die_ref context_die)
   add_AT_unsigned (array_die, DW_AT_ordering, DW_ORD_row_major);
 #endif
 
-  if (TREE_CODE (type) == VECTOR_TYPE)
+  if (VECTOR_TYPE_P (type))
     {
       /* For VECTOR_TYPEs we use an array DIE with appropriate bounds.  */
       dw_die_ref subrange_die = new_die (DW_TAG_subrange_type, array_die, NULL);
@@ -26238,8 +26238,7 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
      now.  (Vectors and arrays are special because the debugging info is in the
      cloned type itself.  Similarly function/method types can contain extra
      ref-qualification).  */
-  if (TREE_CODE (type) == FUNCTION_TYPE
-      || TREE_CODE (type) == METHOD_TYPE)
+  if (FUNC_OR_METHOD_TYPE_P (type))
     {
       /* For function/method types, can't use type_main_variant here,
 	 because that can have different ref-qualifiers for C++,
@@ -30976,7 +30975,7 @@ optimize_location_into_implicit_ptr (dw_die_ref die, tree decl)
     return;
   if ((TREE_CODE (TREE_OPERAND (init, 0)) == STRING_CST
        && !TREE_ASM_WRITTEN (TREE_OPERAND (init, 0)))
-      || (TREE_CODE (TREE_OPERAND (init, 0)) == VAR_DECL
+      || (VAR_P (TREE_OPERAND (init, 0))
 	  && !DECL_EXTERNAL (TREE_OPERAND (init, 0))
 	  && TREE_OPERAND (init, 0) != decl))
     {

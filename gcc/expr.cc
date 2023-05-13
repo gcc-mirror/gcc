@@ -12956,7 +12956,7 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
 
   /* For vector typed comparisons emit code to generate the desired
      all-ones or all-zeros mask.  */
-  if (TREE_CODE (ops->type) == VECTOR_TYPE)
+  if (VECTOR_TYPE_P (ops->type))
     {
       tree ifexp = build2 (ops->code, ops->type, arg0, arg1);
       if (VECTOR_BOOLEAN_TYPE_P (ops->type)

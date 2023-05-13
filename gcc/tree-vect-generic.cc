@@ -173,9 +173,9 @@ do_binop (gimple_stmt_iterator *gsi, tree inner_type, tree a, tree b,
 	  tree bitpos, tree bitsize, enum tree_code code,
 	  tree type ATTRIBUTE_UNUSED)
 {
-  if (TREE_CODE (TREE_TYPE (a)) == VECTOR_TYPE)
+  if (VECTOR_TYPE_P (TREE_TYPE (a)))
     a = tree_vec_extract (gsi, inner_type, a, bitsize, bitpos);
-  if (TREE_CODE (TREE_TYPE (b)) == VECTOR_TYPE)
+  if (VECTOR_TYPE_P (TREE_TYPE (b)))
     b = tree_vec_extract (gsi, inner_type, b, bitsize, bitpos);
   return gimplify_build2 (gsi, code, inner_type, a, b);
 }
@@ -1733,9 +1733,9 @@ do_cond (gimple_stmt_iterator *gsi, tree inner_type, tree a, tree b,
 	 tree bitpos, tree bitsize, enum tree_code code,
 	 tree type ATTRIBUTE_UNUSED)
 {
-  if (TREE_CODE (TREE_TYPE (a)) == VECTOR_TYPE)
+  if (VECTOR_TYPE_P (TREE_TYPE (a)))
     a = tree_vec_extract (gsi, inner_type, a, bitsize, bitpos);
-  if (TREE_CODE (TREE_TYPE (b)) == VECTOR_TYPE)
+  if (VECTOR_TYPE_P (TREE_TYPE (b)))
     b = tree_vec_extract (gsi, inner_type, b, bitsize, bitpos);
   tree cond = gimple_assign_rhs1 (gsi_stmt (*gsi));
   return gimplify_build3 (gsi, code, inner_type, unshare_expr (cond), a, b);

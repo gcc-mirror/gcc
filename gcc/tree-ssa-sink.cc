@@ -382,7 +382,7 @@ statement_sink_location (gimple *stmt, basic_block frombb,
 	{
 	  /* Do not sink loads from hard registers.  */
 	  if (gimple_assign_single_p (stmt)
-	      && TREE_CODE (gimple_assign_rhs1 (stmt)) == VAR_DECL
+	      && VAR_P (gimple_assign_rhs1 (stmt))
 	      && DECL_HARD_REGISTER (gimple_assign_rhs1 (stmt)))
 	    return false;
 

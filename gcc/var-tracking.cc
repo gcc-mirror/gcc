@@ -6273,7 +6273,7 @@ prepare_call_arguments (basic_block bb, rtx_insn *insn)
 	type = TREE_TYPE (fndecl);
       if (fndecl && TREE_CODE (fndecl) != FUNCTION_DECL)
 	{
-	  if (TREE_CODE (fndecl) == INDIRECT_REF
+	  if (INDIRECT_REF_P (fndecl)
 	      && TREE_CODE (TREE_OPERAND (fndecl, 0)) == OBJ_TYPE_REF)
 	    obj_type_ref = TREE_OPERAND (fndecl, 0);
 	  fndecl = NULL_TREE;
@@ -9949,7 +9949,7 @@ vt_add_function_parameters (void)
     {
       tree vexpr = DECL_VALUE_EXPR (DECL_RESULT (current_function_decl));
 
-      if (TREE_CODE (vexpr) == INDIRECT_REF)
+      if (INDIRECT_REF_P (vexpr))
 	vexpr = TREE_OPERAND (vexpr, 0);
 
       if (TREE_CODE (vexpr) == PARM_DECL

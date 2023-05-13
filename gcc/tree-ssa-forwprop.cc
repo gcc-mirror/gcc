@@ -291,8 +291,7 @@ can_propagate_from (gimple *def_stmt)
   if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_stmt)))
     {
       tree rhs = gimple_assign_rhs1 (def_stmt);
-      if (POINTER_TYPE_P (TREE_TYPE (rhs))
-          && TREE_CODE (TREE_TYPE (TREE_TYPE (rhs))) == FUNCTION_TYPE)
+      if (FUNCTION_POINTER_TYPE_P (TREE_TYPE (rhs)))
         return false;
     }
 

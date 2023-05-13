@@ -3962,7 +3962,7 @@ print_declaration (pretty_printer *pp, tree t, int spc, dump_flags_t flags)
   if (TREE_CODE (t) == TYPE_DECL)
     pp_string (pp, "typedef ");
 
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_DECL_WRTL) && DECL_REGISTER (t))
+  if (HAS_RTL_P (t) && DECL_REGISTER (t))
     pp_string (pp, "register ");
 
   if (TREE_PUBLIC (t) && DECL_EXTERNAL (t))
@@ -4484,7 +4484,7 @@ print_call_name (pretty_printer *pp, tree node, dump_flags_t flags)
       break;
 
     case ARRAY_REF:
-      if (TREE_CODE (TREE_OPERAND (op0, 0)) == VAR_DECL)
+      if (VAR_P (TREE_OPERAND (op0, 0)))
 	dump_function_name (pp, TREE_OPERAND (op0, 0), flags);
       else
 	dump_generic_node (pp, op0, 0, flags, false);

@@ -3328,7 +3328,7 @@ verify_types_in_gimple_reference (tree expr, bool require_lvalue)
 	  return true;
 	}
     }
-  else if (TREE_CODE (expr) == INDIRECT_REF)
+  else if (INDIRECT_REF_P (expr))
     {
       error ("%qs in gimple IL", code_name);
       debug_generic_stmt (expr);
@@ -3615,8 +3615,8 @@ verify_gimple_comparison (tree type, tree op0, tree op1, enum tree_code code)
       && (TREE_CODE (type) == BOOLEAN_TYPE
 	  || TYPE_PRECISION (type) == 1))
     {
-      if ((TREE_CODE (op0_type) == VECTOR_TYPE
-	   || TREE_CODE (op1_type) == VECTOR_TYPE)
+      if ((VECTOR_TYPE_P (op0_type)
+	   || VECTOR_TYPE_P (op1_type))
 	  && code != EQ_EXPR && code != NE_EXPR
 	  && !VECTOR_BOOLEAN_TYPE_P (op0_type)
 	  && !VECTOR_INTEGER_TYPE_P (op0_type))
@@ -3630,7 +3630,7 @@ verify_gimple_comparison (tree type, tree op0, tree op1, enum tree_code code)
     }
   /* Or a boolean vector type with the same element count
      as the comparison operand types.  */
-  else if (TREE_CODE (type) == VECTOR_TYPE
+  else if (VECTOR_TYPE_P (type)
 	   && TREE_CODE (TREE_TYPE (type)) == BOOLEAN_TYPE)
     {
       if (TREE_CODE (op0_type) != VECTOR_TYPE
@@ -3963,13 +3963,13 @@ verify_gimple_assign_binary (gassign *stmt)
 	   types and integer vector types.  */
 	if ((!INTEGRAL_TYPE_P (rhs1_type)
 	     && !FIXED_POINT_TYPE_P (rhs1_type)
-	     && !(TREE_CODE (rhs1_type) == VECTOR_TYPE
+	     && ! (VECTOR_TYPE_P (rhs1_type)
 		  && INTEGRAL_TYPE_P (TREE_TYPE (rhs1_type))))
 	    || (!INTEGRAL_TYPE_P (rhs2_type)
 		/* Vector shifts of vectors are also ok.  */
-		&& !(TREE_CODE (rhs1_type) == VECTOR_TYPE
+		&& ! (VECTOR_TYPE_P (rhs1_type)
 		     && INTEGRAL_TYPE_P (TREE_TYPE (rhs1_type))
-		     && TREE_CODE (rhs2_type) == VECTOR_TYPE
+		     && VECTOR_TYPE_P (rhs2_type)
 		     && INTEGRAL_TYPE_P (TREE_TYPE (rhs2_type))))
 	    || !useless_type_conversion_p (lhs_type, rhs1_type))
 	  {
@@ -4029,7 +4029,7 @@ verify_gimple_assign_binary (gassign *stmt)
 	tree lhs_etype = lhs_type;
 	tree rhs1_etype = rhs1_type;
 	tree rhs2_etype = rhs2_type;
-	if (TREE_CODE (lhs_type) == VECTOR_TYPE)
+	if (VECTOR_TYPE_P (lhs_type))
 	  {
 	    if (TREE_CODE (rhs1_type) != VECTOR_TYPE
 		|| TREE_CODE (rhs2_type) != VECTOR_TYPE)
@@ -4709,7 +4709,7 @@ verify_gimple_assign_single (gassign *stmt)
       return res;
 
     case CONSTRUCTOR:
-      if (TREE_CODE (rhs1_type) == VECTOR_TYPE)
+      if (VECTOR_TYPE_P (rhs1_type))
 	{
 	  unsigned int i;
 	  tree elt_i, elt_v, elt_t = NULL_TREE;
@@ -4729,7 +4729,7 @@ verify_gimple_assign_single (gassign *stmt)
 	      if (elt_t == NULL_TREE)
 		{
 		  elt_t = TREE_TYPE (elt_v);
-		  if (TREE_CODE (elt_t) == VECTOR_TYPE)
+		  if (VECTOR_TYPE_P (elt_t))
 		    {
 		      tree elt_t = TREE_TYPE (elt_v);
 		      if (!useless_type_conversion_p (TREE_TYPE (rhs1_type),
@@ -4774,7 +4774,7 @@ verify_gimple_assign_single (gassign *stmt)
 		  return true;
 		}
 	      if (elt_i != NULL_TREE
-		  && (TREE_CODE (elt_t) == VECTOR_TYPE
+		  && (VECTOR_TYPE_P (elt_t)
 		      || TREE_CODE (elt_i) != INTEGER_CST
 		      || compare_tree_int (elt_i, i) != 0))
 		{

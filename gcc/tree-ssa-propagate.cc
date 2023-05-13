@@ -1020,7 +1020,7 @@ may_propagate_copy (tree dest, tree orig, bool dest_not_phi_arg_p)
       && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (orig)
       && SSA_NAME_IS_DEFAULT_DEF (orig)
       && (SSA_NAME_VAR (orig) == NULL_TREE
-	  || TREE_CODE (SSA_NAME_VAR (orig)) == VAR_DECL))
+	  || VAR_P (SSA_NAME_VAR (orig))))
     ;
   /* Otherwise if ORIG just flows in from an abnormal edge then the copy cannot
      be propagated.  */

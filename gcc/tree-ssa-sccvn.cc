@@ -1575,7 +1575,7 @@ fully_constant_vn_reference_p (vn_reference_t ref)
 	ctor = base->op0;
       else if (base->opcode == MEM_REF
 	       && base[1].opcode == ADDR_EXPR
-	       && (TREE_CODE (TREE_OPERAND (base[1].op0, 0)) == VAR_DECL
+	       && (VAR_P (TREE_OPERAND (base[1].op0, 0))
 		   || TREE_CODE (TREE_OPERAND (base[1].op0, 0)) == CONST_DECL
 		   || TREE_CODE (TREE_OPERAND (base[1].op0, 0)) == STRING_CST))
 	{

@@ -2162,8 +2162,8 @@ reduce_vector_comparison_to_scalar_comparison (gimple *stmt)
       /* We may have a vector comparison where both arms are uniform
 	 vectors.  If so, we can simplify the vector comparison down
 	 to a scalar comparison.  */
-      if (TREE_CODE (TREE_TYPE (lhs)) == VECTOR_TYPE
-	  && TREE_CODE (TREE_TYPE (rhs)) == VECTOR_TYPE)
+      if (VECTOR_TYPE_P (TREE_TYPE (lhs))
+	  && VECTOR_TYPE_P (TREE_TYPE (rhs)))
 	{
 	  /* If either operand is an SSA_NAME, then look back to its
 	     defining statement to try and get at a suitable source.  */

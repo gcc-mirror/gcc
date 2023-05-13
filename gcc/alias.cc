@@ -699,7 +699,7 @@ component_uses_parent_alias_set_from (const_tree t)
 static bool
 ref_all_alias_ptr_type_p (const_tree t)
 {
-  return (TREE_CODE (TREE_TYPE (t)) == VOID_TYPE
+  return (VOID_TYPE_P (TREE_TYPE (t))
 	  || TYPE_REF_CAN_ALIAS_ALL (t));
 }
 

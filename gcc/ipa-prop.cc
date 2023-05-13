@@ -546,7 +546,7 @@ ipa_set_jf_constant (struct ipa_jump_func *jfunc, tree constant,
 
   if (TREE_CODE (constant) == ADDR_EXPR
       && (TREE_CODE (TREE_OPERAND (constant, 0)) == FUNCTION_DECL
-	  || (TREE_CODE (TREE_OPERAND (constant, 0)) == VAR_DECL
+	  || (VAR_P (TREE_OPERAND (constant, 0))
 	      && TREE_STATIC (TREE_OPERAND (constant, 0)))))
     {
       struct ipa_cst_ref_desc *rdesc;
@@ -4188,7 +4188,7 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 	  if (rdesc->refcount != IPA_UNDESCRIBED_USE
 	      && ipa_get_param_load_dereferenced (old_root_info, i)
 	      && TREE_CODE (cst) == ADDR_EXPR
-	      && TREE_CODE (TREE_OPERAND (cst, 0)) == VAR_DECL)
+	      && VAR_P (TREE_OPERAND (cst, 0)))
 	    {
 	      symtab_node *n = symtab_node::get (TREE_OPERAND (cst, 0));
 	      new_root->create_reference (n, IPA_REF_LOAD, NULL);
@@ -4202,8 +4202,7 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 	      gcc_checking_assert (TREE_CODE (cst) == ADDR_EXPR
 				   && ((TREE_CODE (TREE_OPERAND (cst, 0))
 					== FUNCTION_DECL)
-				       || (TREE_CODE (TREE_OPERAND (cst, 0))
-					   == VAR_DECL)));
+				       || VAR_P (TREE_OPERAND (cst, 0))));
 
 	      symtab_node *n = symtab_node::get (TREE_OPERAND (cst, 0));
 	      if (n)

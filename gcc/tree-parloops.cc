@@ -3195,7 +3195,7 @@ loop_has_vector_phi_nodes (class loop *loop ATTRIBUTE_UNUSED)
 
   for (i = 0; i < loop->num_nodes; i++)
     for (gsi = gsi_start_phis (bbs[i]); !gsi_end_p (gsi); gsi_next (&gsi))
-      if (TREE_CODE (TREE_TYPE (PHI_RESULT (gsi.phi ()))) == VECTOR_TYPE)
+      if (VECTOR_TYPE_P (TREE_TYPE (PHI_RESULT (gsi.phi ()))))
 	goto end;
 
   res = false;

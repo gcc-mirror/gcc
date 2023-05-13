@@ -1491,7 +1491,7 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 	      if (DECL_HAS_VALUE_EXPR_P (key))
 		{
 		  key = DECL_VALUE_EXPR (key);
-		  if (TREE_CODE (key) == INDIRECT_REF)
+		  if (INDIRECT_REF_P (key))
 		    key = TREE_OPERAND (key, 0);
 		}
 	      tree *c = oacc_declare_returns->get (key);
@@ -1625,7 +1625,7 @@ gimplify_return_expr (tree stmt, gimple_seq *pre_p)
       result_decl = TREE_OPERAND (ret_expr, 0);
 
       /* See through a return by reference.  */
-      if (TREE_CODE (result_decl) == INDIRECT_REF)
+      if (INDIRECT_REF_P (result_decl))
 	result_decl = TREE_OPERAND (result_decl, 0);
 
       gcc_assert ((TREE_CODE (ret_expr) == MODIFY_EXPR
@@ -1812,7 +1812,7 @@ gimple_add_padding_init_for_auto_var (tree decl, bool is_vla,
       /* The temporary address variable for this vla should be
 	 created in gimplify_vla_decl.  */
       gcc_assert (DECL_HAS_VALUE_EXPR_P (decl));
-      gcc_assert (TREE_CODE (DECL_VALUE_EXPR (decl)) == INDIRECT_REF);
+      gcc_assert (INDIRECT_REF_P (DECL_VALUE_EXPR (decl)));
       addr_of_decl = TREE_OPERAND (DECL_VALUE_EXPR (decl), 0);
     }
   else
@@ -6590,7 +6590,7 @@ gimplify_addr_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
       /* For various reasons, the gimplification of the expression
 	 may have made a new INDIRECT_REF.  */
-      if (TREE_CODE (op0) == INDIRECT_REF
+      if (INDIRECT_REF_P (op0)
 	  || (TREE_CODE (op0) == MEM_REF
 	      && integer_zerop (TREE_OPERAND (op0, 1))))
 	goto do_indirect_ref;
@@ -7400,7 +7400,7 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
 	    nflags = GOVD_FIRSTPRIVATE;
 	  nflags |= flags & GOVD_SEEN;
 	  t = DECL_VALUE_EXPR (decl);
-	  gcc_assert (TREE_CODE (t) == INDIRECT_REF);
+	  gcc_assert (INDIRECT_REF_P (t));
 	  t = TREE_OPERAND (t, 0);
 	  gcc_assert (DECL_P (t));
 	  omp_add_variable (ctx, t, nflags);
@@ -8033,7 +8033,7 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 	{
 	  splay_tree_node n2;
 	  tree t = DECL_VALUE_EXPR (decl);
-	  gcc_assert (TREE_CODE (t) == INDIRECT_REF);
+	  gcc_assert (INDIRECT_REF_P (t));
 	  t = TREE_OPERAND (t, 0);
 	  gcc_assert (DECL_P (t));
 	  n2 = splay_tree_lookup (ctx->variables, (splay_tree_key) t);
@@ -9026,7 +9026,7 @@ omp_get_base_pointer (tree expr)
 	 || TREE_CODE (expr) == COMPONENT_REF)
     expr = TREE_OPERAND (expr, 0);
 
-  if (TREE_CODE (expr) == INDIRECT_REF
+  if (INDIRECT_REF_P (expr)
       || (TREE_CODE (expr) == MEM_REF
 	  && integer_zerop (TREE_OPERAND (expr, 1))))
     {
@@ -9050,7 +9050,7 @@ static tree
 omp_strip_components_and_deref (tree expr)
 {
   while (TREE_CODE (expr) == COMPONENT_REF
-	 || TREE_CODE (expr) == INDIRECT_REF
+	 || INDIRECT_REF_P (expr)
 	 || (TREE_CODE (expr) == MEM_REF
 	     && integer_zerop (TREE_OPERAND (expr, 1)))
 	 || TREE_CODE (expr) == POINTER_PLUS_EXPR
@@ -9068,7 +9068,7 @@ omp_strip_components_and_deref (tree expr)
 static tree
 omp_strip_indirections (tree expr)
 {
-  while (TREE_CODE (expr) == INDIRECT_REF
+  while (INDIRECT_REF_P (expr)
 	 || (TREE_CODE (expr) == MEM_REF
 	     && integer_zerop (TREE_OPERAND (expr, 1))))
     expr = TREE_OPERAND (expr, 0);
@@ -10283,7 +10283,7 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
   while (TREE_CODE (ocd) == ARRAY_REF)
     ocd = TREE_OPERAND (ocd, 0);
 
-  if (TREE_CODE (ocd) == INDIRECT_REF)
+  if (INDIRECT_REF_P (ocd))
     ocd = TREE_OPERAND (ocd, 0);
 
   tree base = extract_base_bit_offset (ocd, &cbitpos, &coffset);
@@ -10375,11 +10375,10 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
 	  tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (grp_end),
 				      OMP_CLAUSE_MAP);
 	  bool base_ref
-	    = (TREE_CODE (base) == INDIRECT_REF
+	    = (INDIRECT_REF_P (base)
 	       && ((TREE_CODE (TREE_TYPE (TREE_OPERAND (base, 0)))
 		    == REFERENCE_TYPE)
-		   || ((TREE_CODE (TREE_OPERAND (base, 0))
-			== INDIRECT_REF)
+		   || (INDIRECT_REF_P (TREE_OPERAND (base, 0))
 		       && (TREE_CODE (TREE_TYPE (TREE_OPERAND
 						  (TREE_OPERAND (base, 0), 0)))
 			   == REFERENCE_TYPE))));
@@ -10441,7 +10440,7 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
 		    || TREE_CODE (TREE_TYPE (sc_decl)) != ARRAY_TYPE)
 		  break;
 	      }
-	    else if (TREE_CODE (sc_decl) == INDIRECT_REF
+	    else if (INDIRECT_REF_P (sc_decl)
 		     && TREE_CODE (TREE_OPERAND (sc_decl, 0)) == COMPONENT_REF
 		     && (TREE_CODE (TREE_TYPE (TREE_OPERAND (sc_decl, 0)))
 			 == REFERENCE_TYPE))
@@ -10611,7 +10610,7 @@ omp_build_struct_sibling_lists (enum tree_code code,
 	    decl = d;
 	}
       if (d == decl
-	  && TREE_CODE (decl) == INDIRECT_REF
+	  && INDIRECT_REF_P (decl)
 	  && TREE_CODE (TREE_OPERAND (decl, 0)) == COMPONENT_REF
 	  && (TREE_CODE (TREE_TYPE (TREE_OPERAND (decl, 0)))
 	      == REFERENCE_TYPE)
@@ -12422,7 +12421,7 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 	  && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
 	{
 	  tree decl2 = DECL_VALUE_EXPR (decl);
-	  gcc_assert (TREE_CODE (decl2) == INDIRECT_REF);
+	  gcc_assert (INDIRECT_REF_P (decl2));
 	  decl2 = TREE_OPERAND (decl2, 0);
 	  gcc_assert (DECL_P (decl2));
 	  tree mem = build_simple_mem_ref (decl2);
@@ -12711,7 +12710,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 
 	case OMP_CLAUSE_HAS_DEVICE_ADDR:
 	  decl = OMP_CLAUSE_DECL (c);
-	  while (TREE_CODE (decl) == INDIRECT_REF
+	  while (INDIRECT_REF_P (decl)
 		 || TREE_CODE (decl) == ARRAY_REF)
 	    decl = TREE_OPERAND (decl, 0);
 	  n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
@@ -12786,7 +12785,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	      if ((ctx->region_type & ORT_TARGET) != 0
 		  && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER)
 		{
-		  if (TREE_CODE (decl) == INDIRECT_REF
+		  if (INDIRECT_REF_P (decl)
 		      && TREE_CODE (TREE_OPERAND (decl, 0)) == COMPONENT_REF
 		      && (TREE_CODE (TREE_TYPE (TREE_OPERAND (decl, 0)))
 			  == REFERENCE_TYPE))
@@ -12840,7 +12839,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	      gcc_assert (OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_FORCE_DEVICEPTR);
 
 	      tree decl2 = DECL_VALUE_EXPR (decl);
-	      gcc_assert (TREE_CODE (decl2) == INDIRECT_REF);
+	      gcc_assert (INDIRECT_REF_P (decl2));
 	      decl2 = TREE_OPERAND (decl2, 0);
 	      gcc_assert (DECL_P (decl2));
 	      tree mem = build_simple_mem_ref (decl2);
@@ -12891,7 +12890,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	      && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
 	    {
 	      tree decl2 = DECL_VALUE_EXPR (decl);
-	      gcc_assert (TREE_CODE (decl2) == INDIRECT_REF);
+	      gcc_assert (INDIRECT_REF_P (decl2));
 	      decl2 = TREE_OPERAND (decl2, 0);
 	      gcc_assert (DECL_P (decl2));
 	      tree mem = build_simple_mem_ref (decl2);
@@ -13812,8 +13811,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
     {
       has_decl_expr = BITMAP_ALLOC (NULL);
       if (TREE_CODE (OMP_FOR_PRE_BODY (for_stmt)) == DECL_EXPR
-	  && TREE_CODE (DECL_EXPR_DECL (OMP_FOR_PRE_BODY (for_stmt)))
-	     == VAR_DECL)
+	  && VAR_P (DECL_EXPR_DECL (OMP_FOR_PRE_BODY (for_stmt))))
 	{
 	  t = OMP_FOR_PRE_BODY (for_stmt);
 	  bitmap_set_bit (has_decl_expr, DECL_UID (DECL_EXPR_DECL (t)));
@@ -13826,7 +13824,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	    {
 	      t = tsi_stmt (si);
 	      if (TREE_CODE (t) == DECL_EXPR
-		  && TREE_CODE (DECL_EXPR_DECL (t)) == VAR_DECL)
+		  && VAR_P (DECL_EXPR_DECL (t)))
 		bitmap_set_bit (has_decl_expr, DECL_UID (DECL_EXPR_DECL (t)));
 	    }
 	}
@@ -15623,7 +15621,7 @@ goa_lhs_expr_p (tree expr, tree addr)
      STRIP_TYPE_NOPS but includes the main variant lookup.  */
   STRIP_USELESS_TYPE_CONVERSION (expr);
 
-  if (TREE_CODE (expr) == INDIRECT_REF)
+  if (INDIRECT_REF_P (expr))
     {
       expr = TREE_OPERAND (expr, 0);
       while (expr != addr
@@ -17551,7 +17549,7 @@ gimplify_one_sizepos (tree *expr_p, gimple_seq *stmt_p)
      if this type is from outside the function.  It's OK to have that here.  */
   if (expr == NULL_TREE
       || is_gimple_constant (expr)
-      || TREE_CODE (expr) == VAR_DECL
+      || VAR_P (expr)
       || CONTAINS_PLACEHOLDER_P (expr))
     return;
 
