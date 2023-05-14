@@ -21838,8 +21838,12 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 	      break;
 	    case CM_SMALL_PIC:
 	    case CM_MEDIUM_PIC:
-	      fprintf (file, "1:\tcall\t*%s@GOTPCREL(%%rip)\n", mcount_name);
-	      break;
+	      if (!ix86_direct_extern_access)
+		{
+		  fprintf (file, "1:\tcall\t*%s@GOTPCREL(%%rip)\n", mcount_name);
+		  break;
+		}
+	      /* fall through */
 	    default:
 	      x86_print_call_or_nop (file, mcount_name);
 	      break;
