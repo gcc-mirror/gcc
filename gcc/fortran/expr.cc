@@ -6256,7 +6256,7 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
       && !(sym->attr.flavor == FL_PROCEDURE && sym == sym->result)
       && !(sym->attr.flavor == FL_PROCEDURE && sym->attr.proc_pointer)
       && !(sym->attr.flavor == FL_PROCEDURE
-	   && sym->attr.function && sym->attr.pointer))
+	   && sym->attr.function && attr.pointer))
     {
       if (context)
 	gfc_error ("%qs in variable definition context (%s) at %L is not"
