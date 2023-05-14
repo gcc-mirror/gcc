@@ -278,7 +278,9 @@ __deregister_frame_info_bases (const void *begin)
   __gthread_mutex_unlock (&object_mutex);
 #endif
 
-  gcc_assert (in_shutdown || ob);
+  // If we didn't find anything in the lookup data structures then they
+  // were either already destroyed or we tried to remove an empty range.
+  gcc_assert (in_shutdown || ((range[1] - range[0]) == 0 || ob));
   return (void *) ob;
 }
 
