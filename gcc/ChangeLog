@@ -1,3 +1,29 @@
+2023-05-13  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* config/aarch64/aarch64.cc (aarch64_expand_vector_init_fallback): Rename
+	aarch64_expand_vector_init to this, and remove 	interleaving case.
+	Recursively call aarch64_expand_vector_init_fallback, instead of
+	aarch64_expand_vector_init.
+	(aarch64_unzip_vector_init): New function.
+	(aarch64_expand_vector_init): Likewise.
+
+2023-05-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-vsetvl.cc (pass_vsetvl::cleanup_insns):
+	Pull out function call from the gcc_assert.
+
+2023-05-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-vsetvl.cc (vlmul_to_str): New.
+	(policy_to_str): New.
+	(vector_insn_info::dump): Use vlmul_to_str and policy_to_str.
+
+2023-05-13  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/109834
+	* match.pd (popcount(bswap(x))->popcount(x)): Fix up unsigned type checking.
+	(popcount(rotate(x,y))->popcount(x)): Likewise.
+
 2023-05-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386-expand.cc (ix86_expand_vecop_qihi2): Also

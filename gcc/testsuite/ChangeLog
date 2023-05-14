@@ -1,3 +1,24 @@
+2023-05-13  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.target/aarch64/ldp_stp_16.c (cons2_8_float): Adjust for new
+	code-gen.
+	* gcc.target/aarch64/sve/acle/general/dupq_5.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general/dupq_6.c: Likewise.
+	* gcc.target/aarch64/interleave-init-1.c: Rename to ...
+	* gcc.target/aarch64/vec-init-18.c: ... this.
+	* gcc.target/aarch64/vec-init-19.c: New test.
+	* gcc.target/aarch64/vec-init-20.c: Likewise.
+	* gcc.target/aarch64/vec-init-21.c: Likewise.
+	* gcc.target/aarch64/vec-init-22-size.c: Likewise.
+	* gcc.target/aarch64/vec-init-22-speed.c: Likewise.
+	* gcc.target/aarch64/vec-init-22.h: New header.
+
+2023-05-13  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/109834
+	* gcc.c-torture/compile/pr109834-1.c: New test.
+	* gcc.dg/tree-ssa/pr109834-1.c: New test.
+
 2023-05-12  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/109662

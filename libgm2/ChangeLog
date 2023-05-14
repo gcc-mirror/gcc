@@ -1,3 +1,19 @@
+2023-05-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* libm2cor/KeyBoardLEDs.cc (TRUE): Remove.
+	(FALSE): Remove.
+	(init): Replace TRUE with true.
+	* libm2iso/RTco.cc (TRUE): Remove.
+	(FALSE): Remove.
+	(initSem): Replace int with bool.
+	(init): Replace FALSE with false.
+	* libm2pim/sckt.cc (TRUE): Remove.
+	(FALSE): Remove.
+	* libm2pim/wrapc.cc: Replace TRUE with true
+	and FALSE with false.
+	(FALSE): Remove.
+	(TRUE): Remove.
+
 2023-05-08  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* autogen.sh: Remove.
