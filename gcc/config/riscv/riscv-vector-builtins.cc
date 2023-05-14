@@ -2606,17 +2606,32 @@ register_vector_type (vector_type_index type)
 static bool
 required_extensions_p (enum rvv_base_type type)
 {
-  return type == RVV_BASE_eew8_index || type == RVV_BASE_eew16_index
-	 || type == RVV_BASE_eew32_index || type == RVV_BASE_eew64_index
-	 || type == RVV_BASE_float_vector
-	 || type == RVV_BASE_double_trunc_float_vector
-	 || type == RVV_BASE_double_trunc_vector
-	 || type == RVV_BASE_widen_lmul1_vector
-	 || type == RVV_BASE_eew8_interpret || type == RVV_BASE_eew16_interpret
-	 || type == RVV_BASE_eew32_interpret || type == RVV_BASE_eew64_interpret
-	 || type == RVV_BASE_vlmul_ext_x2 || type == RVV_BASE_vlmul_ext_x4
-	 || type == RVV_BASE_vlmul_ext_x8 || type == RVV_BASE_vlmul_ext_x16
-	 || type == RVV_BASE_vlmul_ext_x32 || type == RVV_BASE_vlmul_ext_x64;
+  switch (type)
+    {
+      case RVV_BASE_eew8_index:
+      case RVV_BASE_eew16_index:
+      case RVV_BASE_eew32_index:
+      case RVV_BASE_eew64_index:
+      case RVV_BASE_float_vector:
+      case RVV_BASE_double_trunc_float_vector:
+      case RVV_BASE_double_trunc_vector:
+      case RVV_BASE_widen_lmul1_vector:
+      case RVV_BASE_eew8_interpret:
+      case RVV_BASE_eew16_interpret:
+      case RVV_BASE_eew32_interpret:
+      case RVV_BASE_eew64_interpret:
+      case RVV_BASE_vlmul_ext_x2:
+      case RVV_BASE_vlmul_ext_x4:
+      case RVV_BASE_vlmul_ext_x8:
+      case RVV_BASE_vlmul_ext_x16:
+      case RVV_BASE_vlmul_ext_x32:
+      case RVV_BASE_vlmul_ext_x64:
+	return true;
+      default:
+	return false;
+    }
+
+  gcc_unreachable ();
 }
 
 static uint64_t
