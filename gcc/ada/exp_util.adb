@@ -6500,6 +6500,16 @@ package body Exp_Util is
             then
                Top := Par;
 
+            --  Stop at contexts where temporaries may be contained
+
+            elsif Nkind (Par) in N_Aggregate
+                               | N_Delta_Aggregate
+                               | N_Extension_Aggregate
+                               | N_Block_Statement
+                               | N_Loop_Statement
+            then
+               exit;
+
             --  Prevent the search from going too far
 
             elsif Is_Body_Or_Package_Declaration (Par) then
@@ -14221,6 +14231,16 @@ package body Exp_Util is
          if Nkind (Original_Node (Par)) in N_Case_Expression | N_If_Expression
          then
             return True;
+
+         --  Stop at contexts where temporaries may be contained
+
+         elsif Nkind (Par) in N_Aggregate
+                            | N_Delta_Aggregate
+                            | N_Extension_Aggregate
+                            | N_Block_Statement
+                            | N_Loop_Statement
+         then
+            return False;
 
          --  Prevent the search from going too far
 
