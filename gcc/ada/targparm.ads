@@ -213,22 +213,7 @@ package Targparm is
    -- Control of Exception Handling --
    -----------------------------------
 
-   --  GNAT implements three methods of implementing exceptions:
-
-   --    Front-End Longjmp/Setjmp Exceptions
-
-   --      This approach uses longjmp/setjmp to handle exceptions. It
-   --      uses less storage, and can often propagate exceptions faster,
-   --      at the expense of (sometimes considerable) overhead in setting
-   --      up an exception handler.
-
-   --      The generation of the setjmp and longjmp calls is handled by
-   --      the front end of the compiler (this includes gigi in the case
-   --      of the standard GCC back end). It does not use any back end
-   --      support (such as the GCC3 exception handling mechanism). When
-   --      this approach is used, the compiler generates special exception
-   --      handlers for handling cleanups (AT-END actions) when an exception
-   --      is raised.
+   --  GNAT provides two methods of implementing exceptions:
 
    --    Back-End Zero Cost Exceptions
 
@@ -254,10 +239,10 @@ package Targparm is
 
    --    Control of Available Methods and Defaults
 
-   --      The following switches specify whether we're using a front-end or a
-   --      back-end mechanism and whether this is a zero-cost or a sjlj scheme.
+   --      The following switch specifies whether this is a zero-cost or a sjlj
+   --      scheme.
 
-   --      The per-switch default values correspond to the default value of
+   --      The default value corresponds to the default value of
    --      Opt.Exception_Mechanism.
 
    ZCX_By_Default_On_Target : Boolean := False;
@@ -408,7 +393,7 @@ package Targparm is
    -- Control of Stack Checking --
    -------------------------------
 
-   --  GNAT provides three methods of implementing exceptions:
+   --  GNAT provides three methods of implementing stack checking:
 
    --    GCC Probing Mechanism
 
