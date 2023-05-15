@@ -6615,7 +6615,7 @@
 ;; Note, we have constraints for Dz and Z as different expanders
 ;; have different ideas of what should be passed to this pattern.
 
-(define_insn "aarch64_cm<optab><mode>"
+(define_insn "aarch64_cm<optab><mode><vczle><vczbe>"
   [(set (match_operand:<V_INT_EQUIV> 0 "register_operand" "=w,w")
 	(neg:<V_INT_EQUIV>
 	  (COMPARISONS:<V_INT_EQUIV>
@@ -6680,7 +6680,7 @@
 
 ;; cm(hs|hi)
 
-(define_insn "aarch64_cm<optab><mode>"
+(define_insn "aarch64_cm<optab><mode><vczle><vczbe>"
   [(set (match_operand:<V_INT_EQUIV> 0 "register_operand" "=w")
 	(neg:<V_INT_EQUIV>
 	  (UCOMPARISONS:<V_INT_EQUIV>
@@ -6747,7 +6747,7 @@
 ;; which is rewritten by simplify_rtx as
 ;; plus (eq (and x y) 0) -1.
 
-(define_insn "aarch64_cmtst<mode>"
+(define_insn "aarch64_cmtst<mode><vczle><vczbe>"
   [(set (match_operand:<V_INT_EQUIV> 0 "register_operand" "=w")
 	(plus:<V_INT_EQUIV>
 	  (eq:<V_INT_EQUIV>
@@ -6766,7 +6766,7 @@
 ;; not (neq (eq x 0)) in which case you rewrite it to
 ;; a comparison against itself
 
-(define_insn "*aarch64_cmtst_same_<mode>"
+(define_insn "*aarch64_cmtst_same_<mode><vczle><vczbe>"
   [(set (match_operand:<V_INT_EQUIV> 0 "register_operand" "=w")
 	(plus:<V_INT_EQUIV>
 	  (eq:<V_INT_EQUIV>
@@ -6817,7 +6817,7 @@
   [(set_attr "type" "neon_tst,multiple")]
 )
 
-(define_insn "*aarch64_cmtstdi"
+(define_insn "*aarch64_cmtstdi<vczle><vczbe>"
   [(set (match_operand:DI 0 "register_operand" "=w")
 	(neg:DI
 	  (ne:DI
@@ -6832,7 +6832,7 @@
 
 ;; fcm(eq|ge|gt|le|lt)
 
-(define_insn "aarch64_cm<optab><mode>"
+(define_insn "aarch64_cm<optab><mode><vczle><vczbe>"
   [(set (match_operand:<V_INT_EQUIV> 0 "register_operand" "=w,w")
 	(neg:<V_INT_EQUIV>
 	  (COMPARISONS:<V_INT_EQUIV>
@@ -6850,7 +6850,7 @@
 ;; Note we can also handle what would be fac(le|lt) by
 ;; generating fac(ge|gt).
 
-(define_insn "aarch64_fac<optab><mode>"
+(define_insn "aarch64_fac<optab><mode><vczle><vczbe>"
   [(set (match_operand:<V_INT_EQUIV> 0 "register_operand" "=w")
 	(neg:<V_INT_EQUIV>
 	  (FAC_COMPARISONS:<V_INT_EQUIV>
