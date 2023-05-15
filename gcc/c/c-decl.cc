@@ -7412,9 +7412,12 @@ grokdeclarator (const struct c_declarator *declarator,
 		   them for noreturn functions.  The resolution of C11
 		   DR#423 means qualifiers (other than _Atomic) are
 		   actually removed from the return type when
-		   determining the function type.  */
+		   determining the function type.  For C2X, _Atomic is
+		   removed as well.  */
 		int quals_used = type_quals;
-		if (flag_isoc11)
+		if (flag_isoc2x)
+		  quals_used = 0;
+		else if (flag_isoc11)
 		  quals_used &= TYPE_QUAL_ATOMIC;
 		if (quals_used && VOID_TYPE_P (type) && really_funcdef)
 		  pedwarn (specs_loc, 0,
