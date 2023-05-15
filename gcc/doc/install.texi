@@ -375,6 +375,9 @@ tables.
 
 Used by @command{automake}.
 
+If available, enables parallel testing of @samp{libgomp} in case that
+@command{flock} is not available.
+
 @end table
 
 Several support libraries are necessary to build GCC, some are required,
