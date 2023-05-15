@@ -135,6 +135,7 @@
    (EXCEPTION_RETURN		2)
    (VL_REGNUM			66)
    (VTYPE_REGNUM		67)
+   (VXRM_REGNUM			68)
 ])
 
 (include "predicates.md")

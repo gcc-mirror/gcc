@@ -3288,6 +3288,13 @@ function_expander::use_exact_insn (insn_code icode)
 
   if (base->apply_vl_p ())
     add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
+
+  /* TODO: Currently, we don't support intrinsic that is modeling rounding mode.
+     We add default rounding mode for the intrinsics that didn't model rounding
+     mode yet.  */
+  if (opno != insn_data[icode].n_generator_args)
+    add_input_operand (Pmode, const0_rtx);
+
   return generate_insn (icode);
 }
 

@@ -223,6 +223,14 @@ machine_mode preferred_simd_mode (scalar_mode);
 opt_machine_mode get_mask_mode (machine_mode);
 void expand_vec_series (rtx, rtx, rtx);
 void expand_vec_init (rtx, rtx);
+/* Rounding mode bitfield for fixed point VXRM.  */
+enum vxrm_field_enum
+{
+  VXRM_RNU,
+  VXRM_RNE,
+  VXRM_RDN,
+  VXRM_ROD
+};
 }
 
 /* We classify builtin types into two classes:

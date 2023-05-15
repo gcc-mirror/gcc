@@ -121,7 +121,8 @@ ASM_MISA_SPEC
 
 /* The mapping from gcc register number to DWARF 2 CFA column number.  */
 #define DWARF_FRAME_REGNUM(REGNO)                                              \
-  (VL_REG_P (REGNO) ? RISCV_DWARF_VL                                           \
+  (VXRM_REG_P (REGNO) ? RISCV_DWARF_VXRM                                       \
+   : VL_REG_P (REGNO) ? RISCV_DWARF_VL                                         \
    : VTYPE_REG_P (REGNO)                                                       \
      ? RISCV_DWARF_VTYPE                                                       \
      : (GP_REG_P (REGNO) || FP_REG_P (REGNO) || V_REG_P (REGNO)                \
@@ -372,6 +373,7 @@ ASM_MISA_SPEC
   ((unsigned int) ((int) (REGNO) - V_REG_FIRST) < V_REG_NUM)
 #define VL_REG_P(REGNO) ((REGNO) == VL_REGNUM)
 #define VTYPE_REG_P(REGNO) ((REGNO) == VTYPE_REGNUM)
+#define VXRM_REG_P(REGNO) ((REGNO) == VXRM_REGNUM)
 
 /* True when REGNO is in SIBCALL_REGS set.  */
 #define SIBCALL_REG_P(REGNO)	\
@@ -390,6 +392,7 @@ ASM_MISA_SPEC
 #define FRAME_POINTER_REGNUM 65
 
 /* Define Dwarf for RVV.  */
+#define RISCV_DWARF_VXRM (4096 + 0x00a)
 #define RISCV_DWARF_VL (4096 + 0xc20)
 #define RISCV_DWARF_VTYPE (4096 + 0xc21)
 #define RISCV_DWARF_VLENB (4096 + 0xc22)
