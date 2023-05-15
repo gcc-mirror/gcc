@@ -1040,9 +1040,16 @@ ipcp_vr_lattice::meet_with_1 (const value_range *other_vr)
   if (other_vr->varying_p ())
     return set_to_bottom ();
 
-  value_range save (m_vr);
-  m_vr.union_ (*other_vr);
-  return m_vr != save;
+  bool res;
+  if (flag_checking)
+    {
+      value_range save (m_vr);
+      res = m_vr.union_ (*other_vr);
+      gcc_assert (res == (m_vr != save));
+    }
+  else
+    res = m_vr.union_ (*other_vr);
+  return res;
 }
 
 /* Return true if value range information in the lattice is yet unknown.  */

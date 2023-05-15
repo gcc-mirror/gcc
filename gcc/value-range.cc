@@ -1859,12 +1859,13 @@ irange::union_nonzero_bits (const irange &r)
   bool changed = false;
   if (m_nonzero_mask != r.m_nonzero_mask)
     {
-      m_nonzero_mask = get_nonzero_bits () | r.get_nonzero_bits ();
+      wide_int save = get_nonzero_bits ();
+      m_nonzero_mask = save | r.get_nonzero_bits ();
       // No need to call set_range_from_nonzero_bits, because we'll
       // never narrow the range.  Besides, it would cause endless
       // recursion because of the union_ in
       // set_range_from_nonzero_bits.
-      changed = true;
+      changed = m_nonzero_mask != save;
     }
   normalize_kind ();
   if (flag_checking)
