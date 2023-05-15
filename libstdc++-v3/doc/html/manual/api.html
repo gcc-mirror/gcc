@@ -368,6 +368,11 @@ now defaults to zero.
   For the non-default <code class="option">--enable-symvers=gnu-versioned-namespace</code>
   configuration, the shared library SONAME has been changed to
   <code class="filename">libstdc++.so.8</code>.
+</p><p>
+  The extension allowing containers to be instantiated with an allocator
+  that doesn't match the container's value type is no longer allowed in
+  strict (<code class="option">-std=c++NN</code>) modes, only in
+  <code class="option">-std=gnu++NN</code> modes.
 </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_91"></a><code class="constant">9</code></h3></div></div></div><p>
   C++17 header
   <code class="filename">&lt;memory_resource&gt;</code>
@@ -423,4 +428,8 @@ now defaults to zero.
   and
   <code class="filename">&lt;stop_token&gt;</code>
   added.
+</p><p>
+  The extension allowing containers to be instantiated with an allocator
+  that doesn't match the container's value type is no longer allowed in
+  C++20 mode, even in non-strict <code class="option">-std=gnu++20</code> mode.
 </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="abi.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="appendix_porting.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="backwards.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">ABI Policy and Guidelines </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Backwards Compatibility</td></tr></table></div></body></html>

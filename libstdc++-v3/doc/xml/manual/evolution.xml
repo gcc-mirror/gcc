@@ -911,6 +911,13 @@ now defaults to zero.
   <filename>libstdc++.so.8</filename>.
 </para>
 
+<para>
+  The extension allowing containers to be instantiated with an allocator
+  that doesn't match the container's value type is no longer allowed in
+  strict (<option>-std=c++NN</option>) modes, only in
+  <option>-std=gnu++NN</option> modes.
+</para>
+
 </section>
 
 <section xml:id="api.rel_91"><info><title><constant>9</constant></title></info>
@@ -992,6 +999,12 @@ now defaults to zero.
   and
   <filename class="headerfile">&lt;stop_token&gt;</filename>
   added.
+</para>
+
+<para>
+  The extension allowing containers to be instantiated with an allocator
+  that doesn't match the container's value type is no longer allowed in
+  C++20 mode, even in non-strict <option>-std=gnu++20</option> mode.
 </para>
 
 </section>
