@@ -52,6 +52,16 @@ FUNC (qmovn)
 
 #undef FUNC
 #define FUNC(OP)					\
+MYOP (int8x16_t, int8x8_t, int8x8_t, OP, s8, s8)	\
+MYOP (int16x8_t, int16x4_t, int16x4_t, OP, s16, s16)	\
+MYOP (int32x4_t, int32x2_t, int32x2_t, OP, s32, s32)	\
+MYOP (int64x2_t, int64x1_t, int64x1_t, OP, s64, s64)	\
+
+FUNC (qabs)
+FUNC (qneg)
+
+#undef FUNC
+#define FUNC(OP)					\
 MYOP (uint8x16_t, int16x8_t, uint8x8_t, OP, s16, u8)	\
 MYOP (uint16x8_t, int32x4_t, uint16x4_t, OP, s32, u16)	\
 MYOP (uint32x4_t, int64x2_t, uint32x2_t, OP, s64, u32)	\

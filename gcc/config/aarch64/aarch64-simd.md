@@ -5377,7 +5377,7 @@
 
 ;; <su>q<absneg>
 
-(define_insn "aarch64_s<optab><mode>"
+(define_insn "aarch64_s<optab><mode><vczle><vczbe>"
   [(set (match_operand:VSDQ_I 0 "register_operand" "=w")
 	(UNQOPS:VSDQ_I
 	  (match_operand:VSDQ_I 1 "register_operand" "w")))]
