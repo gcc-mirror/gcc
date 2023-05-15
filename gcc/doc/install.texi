@@ -366,7 +366,7 @@ Necessary (only on some platforms) to untar the source code.  Many
 systems' @command{tar} programs will also work, only try GNU
 @command{tar} if you have problems.
 
-@item Perl version between 5.6.1 and 5.6.24
+@item Perl version 5.6.1 (or later)
 
 Necessary when targeting Darwin, building @samp{libstdc++},
 and not using @option{--disable-symvers}.
