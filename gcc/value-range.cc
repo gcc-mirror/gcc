@@ -901,6 +901,9 @@ frange::set_nonnegative (tree type)
 irange &
 irange::operator= (const irange &src)
 {
+  int needed = src.num_pairs ();
+  maybe_resize (needed);
+
   unsigned x;
   unsigned lim = src.m_num_ranges;
   if (lim > m_max_ranges)
@@ -1340,6 +1343,7 @@ irange::union_ (const vrange &v)
   // Now it simply needs to be copied, and if there are too many
   // ranges, merge some.  We wont do any analysis as to what the
   // "best" merges are, simply combine the final ranges into one.
+  maybe_resize (i / 2);
   if (i > m_max_ranges * 2)
     {
       res[m_max_ranges * 2 - 1] = res[i - 1];
@@ -1438,6 +1442,11 @@ irange::intersect (const vrange &v)
   // If R fully contains this, then intersection will change nothing.
   if (r.irange_contains_p (*this))
     return intersect_nonzero_bits (r);
+
+  // ?? We could probably come up with something smarter than the
+  // worst case scenario here.
+  int needed = num_pairs () + r.num_pairs ();
+  maybe_resize (needed);
 
   signop sign = TYPE_SIGN (m_type);
   unsigned bld_pair = 0;
@@ -1646,6 +1655,11 @@ irange::invert ()
       m_num_ranges = 1;
       return;
     }
+
+  // At this point, we need one extra sub-range to represent the
+  // inverse.
+  maybe_resize (m_num_ranges + 1);
+
   // The algorithm is as follows.  To calculate INVERT ([a,b][c,d]), we
   // generate [-MIN, a-1][b+1, c-1][d+1, MAX].
   //
