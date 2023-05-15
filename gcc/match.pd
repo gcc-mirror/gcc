@@ -7439,6 +7439,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && TREE_CODE (@0) != INTEGER_CST)
    (op @0 (ext @1 @2)))))
 
+/* Max<bool0, bool1> -> bool0 | bool1
+   Min<bool0, bool1> -> bool0 & bool1 */
+(for op    (max     min)
+     logic (bit_ior bit_and)
+ (simplify
+  (op zero_one_valued_p@0 zero_one_valued_p@1)
+  (logic @0 @1)))
+
 /* signbit(x) != 0 ? -x : x -> abs(x)
    signbit(x) == 0 ? -x : x -> -abs(x) */
 (for sign (SIGNBIT)
