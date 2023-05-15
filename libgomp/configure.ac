@@ -349,7 +349,12 @@ fi
 AX_COUNT_CPUS
 AC_SUBST(CPU_COUNT)
 
+AC_MSG_NOTICE([checking for flock implementation])
 AC_CHECK_PROGS(FLOCK, flock)
+# Fallback if 'perl' is available.
+if test -z "$FLOCK"; then
+  AC_CHECK_PROG(FLOCK, perl, $srcdir/testsuite/flock)
+fi
 
 # Get target configury.
 . ${srcdir}/configure.tgt

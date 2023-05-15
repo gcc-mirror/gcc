@@ -338,12 +338,14 @@ if ![info exists ::env(GCC_RUNTEST_PARALLELIZE_DIR)] {
     rename libgomp_load standard_libgomp_load
     proc libgomp_load { program args } {
 	# ... in order to serialize execution testing via an exclusive lock.
+	# We use stdout, as per <https://perldoc.perl.org/functions/flock>
+	# "[...] FILEHANDLE [...] be open with write intent to use LOCK_EX".
 	set lock_file ../lock
 	set lock_kind --exclusive
 	set lock_fd [open $lock_file a+]
 	set lock_clock_begin [clock seconds]
 	global FLOCK
-	exec $FLOCK $lock_kind 0 <@ $lock_fd
+	exec $FLOCK $lock_kind 1 >@ $lock_fd
 	set lock_clock_end [clock seconds]
 	verbose -log "Got ${FLOCK}('$lock_file', '$lock_kind') at [clock format $lock_clock_end] after [expr $lock_clock_end - $lock_clock_begin] s" 2
 
