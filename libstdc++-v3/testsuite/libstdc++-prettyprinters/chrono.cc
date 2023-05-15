@@ -1,5 +1,6 @@
 // { dg-options "-g -O0 -std=gnu++2a" }
 // { dg-do run { target c++2a } }
+// { dg-additional-options "-DTEST_ZONED_TIME" { target tzdb } }
 
 // Copyright The GNU Toolchain Authors.
 //
@@ -38,7 +39,7 @@ main()
   utc_time utc(467664h);
   // { dg-final { note-test utc {std::chrono::utc_time = { 467664h }} } }
 
-#if _GLIBCXX_USE_CXX11_ABI
+#if _GLIBCXX_USE_CXX11_ABI && defined TEST_ZONED_TIME
   zoned_time<milliseconds> zt("Europe/London", half_past_epoch);
   // { dg-final { note-test zt {std::chrono::zoned_time = { "Europe/London" 1800000ms [1970-01-01 00:30:00] }} { target cxx11_abi } } }
 #endif
