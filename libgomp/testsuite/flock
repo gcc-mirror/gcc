@@ -1,0 +1,17 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+# Only arguments '--exclusive 1' exactly are supported.
+(@ARGV == 2) or die;
+my $mode = shift;
+($mode eq "--exclusive") or die;
+my $fd = shift;
+($fd eq "1") or die;
+
+use Fcntl ':flock';
+
+open(my $fh, '>&=', 1) or die "open: $!";
+
+flock($fh, LOCK_EX) or die "flock: $!";
