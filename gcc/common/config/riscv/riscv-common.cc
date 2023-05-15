@@ -1777,11 +1777,11 @@ riscv_compute_multilib (
   switch (select_kind)
     {
     case select_by_abi:
-      return riscv_select_multilib (riscv_current_abi_str, subset_list,
-				    switches, n_switches, multilib_infos);
-    case select_by_abi_arch_cmodel:
       return riscv_select_multilib_by_abi (riscv_current_abi_str,
 					   multilib_infos);
+    case select_by_abi_arch_cmodel:
+      return riscv_select_multilib (riscv_current_abi_str, subset_list,
+				    switches, n_switches, multilib_infos);
     case select_by_builtin:
       gcc_unreachable ();
     default:
