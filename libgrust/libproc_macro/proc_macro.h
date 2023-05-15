@@ -89,6 +89,12 @@ public:
   Procmacro make_bang (const char *name, BangMacro macro);
 };
 
+struct ProcmacroArray
+{
+  std::uint64_t length;
+  Procmacro *macros;
+};
+
 } // namespace ProcMacro
 
 #endif /* ! PROC_MACRO_H */
