@@ -50,6 +50,19 @@ using namespace riscv_vector;
 
 namespace riscv_vector {
 
+/* Return true if vlmax is constant value and can be used in vsetivl.  */
+static bool
+const_vlmax_p (machine_mode mode)
+{
+  poly_uint64 nuints = GET_MODE_NUNITS (mode);
+
+  return nuints.is_constant ()
+    /* The vsetivli can only hold register 0~31.  */
+    ? (IN_RANGE (nuints.to_constant (), 0, 31))
+    /* Only allowed in VLS-VLMAX mode.  */
+    : false;
+}
+
 template <int MAX_OPERANDS> class insn_expander
 {
 public:
@@ -101,12 +114,19 @@ public:
 
   void set_len_and_policy (rtx len, bool force_vlmax = false)
     {
-      bool vlmax_p = force_vlmax;
+      bool vlmax_p = force_vlmax || !len;
       gcc_assert (has_dest);
 
-      if (!len)
+      if (vlmax_p && const_vlmax_p (dest_mode))
 	{
-	  vlmax_p = true;
+	  /* Optimize VLS-VLMAX code gen, we can use vsetivli instead of the
+	     vsetvli to obtain the value of vlmax.  */
+	  poly_uint64 nunits = GET_MODE_NUNITS (dest_mode);
+	  len = gen_int_mode (nunits, Pmode);
+	  vlmax_p = false; /* It has became NONVLMAX now.  */
+	}
+      else if (!len)
+	{
 	  len = gen_reg_rtx (Pmode);
 	  emit_vlmax_vsetvl (dest_mode, len);
 	}
