@@ -368,6 +368,11 @@ now defaults to zero.
   For the non-default <code class="option">--enable-symvers=gnu-versioned-namespace</code>
   configuration, the shared library SONAME has been changed to
   <code class="filename">libstdc++.so.8</code>.
+</p><p>
+  The extension allowing containers to be instantiated with an allocator
+  that doesn't match the container's value type is no longer allowed in
+  strict (<code class="option">-std=c++NN</code>) modes, only in
+  <code class="option">-std=gnu++NN</code> modes.
 </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_91"></a><code class="constant">9</code></h3></div></div></div><p>
   C++17 header
   <code class="filename">&lt;memory_resource&gt;</code>
@@ -423,6 +428,10 @@ now defaults to zero.
   and
   <code class="filename">&lt;stop_token&gt;</code>
   added.
+</p><p>
+  The extension allowing containers to be instantiated with an allocator
+  that doesn't match the container's value type is no longer allowed in
+  C++20 mode, even in non-strict <code class="option">-std=gnu++20</code> mode.
 </p></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="api.rel_111"></a><code class="constant">11</code></h3></div></div></div><p>
   The <code class="option">--enable-cheaders=c_std</code> configuration
   was deprecated.
