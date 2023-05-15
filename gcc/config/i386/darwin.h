@@ -122,8 +122,8 @@ along with GCC; see the file COPYING3.  If not see
 "%{!force_cpusubtype_ALL:-force_cpusubtype_ALL} "
 
 #undef ENDFILE_SPEC
-#define ENDFILE_SPEC
-\  "%{mdaz-ftz:crtfastmath.o%s;Ofast|ffast-math|funsafe-math-optimizations:%{!mno-daz-ftz:crtfastmath.o%s}} \
+#define ENDFILE_SPEC \
+  "%{mdaz-ftz:crtfastmath.o%s;Ofast|ffast-math|funsafe-math-optimizations:%{!mno-daz-ftz:crtfastmath.o%s}} \
    %{mpc32:crtprec32.o%s} \
    %{mpc64:crtprec64.o%s} \
    %{mpc80:crtprec80.o%s}" TM_DESTRUCTOR
