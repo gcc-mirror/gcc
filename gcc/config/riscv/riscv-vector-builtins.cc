@@ -324,6 +324,13 @@ static const rvv_type_info eew64_interpret_ops[] = {
 #include "riscv-vector-builtins-types.def"
   {NUM_VECTOR_TYPES, 0}};
 
+/* A list of bool1 interpret will be registered for intrinsic functions.  */
+static const rvv_type_info bool1_interpret_ops[] = {
+#define DEF_RVV_BOOL1_INTERPRET_OPS(TYPE, REQUIRE)                             \
+  {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
 /* A list of x2 vlmul ext will be registered for intrinsic functions.  */
 static const rvv_type_info vlmul_ext_x2_ops[] = {
 #define DEF_RVV_X2_VLMUL_EXT_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
@@ -1596,6 +1603,14 @@ static CONSTEXPR const rvv_op_info iu_v_eew64_interpret_ops
      rvv_arg_type_info (RVV_BASE_eew64_interpret), /* Return type */
      v_args /* Args */};
 
+/* A static operand information for vbool1_t func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info iu_v_bool1_interpret_ops
+  = {bool1_interpret_ops,			   /* Types */
+     OP_TYPE_v,					   /* Suffix */
+     rvv_arg_type_info (RVV_BASE_bool1_interpret), /* Return type */
+     v_args					   /* Args */};
+
 /* A static operand information for vector_type func (vector_type)
  * function registration. */
 static CONSTEXPR const rvv_op_info all_v_vlmul_ext_x2_ops
@@ -2282,6 +2297,7 @@ static CONSTEXPR const function_type_info function_types[] = {
   DOUBLE_TRUNC_SCALAR, DOUBLE_TRUNC_SIGNED, DOUBLE_TRUNC_UNSIGNED,             \
   DOUBLE_TRUNC_UNSIGNED_SCALAR, DOUBLE_TRUNC_FLOAT, FLOAT, LMUL1, WLMUL1,      \
   EEW8_INTERPRET, EEW16_INTERPRET, EEW32_INTERPRET, EEW64_INTERPRET,           \
+  BOOL1_INTERPRET,                                                             \
   X2_VLMUL_EXT, X4_VLMUL_EXT, X8_VLMUL_EXT, X16_VLMUL_EXT, X32_VLMUL_EXT,      \
   X64_VLMUL_EXT, TUPLE_SUBPART)                                                \
   {                                                                            \
@@ -2319,6 +2335,7 @@ static CONSTEXPR const function_type_info function_types[] = {
     VECTOR_TYPE_##EEW16_INTERPRET,                                             \
     VECTOR_TYPE_##EEW32_INTERPRET,                                             \
     VECTOR_TYPE_##EEW64_INTERPRET,                                             \
+    VECTOR_TYPE_##BOOL1_INTERPRET,                                             \
     VECTOR_TYPE_##X2_VLMUL_EXT,                                                \
     VECTOR_TYPE_##X4_VLMUL_EXT,                                                \
     VECTOR_TYPE_##X8_VLMUL_EXT,                                                \
@@ -2620,6 +2637,7 @@ required_extensions_p (enum rvv_base_type type)
       case RVV_BASE_eew16_interpret:
       case RVV_BASE_eew32_interpret:
       case RVV_BASE_eew64_interpret:
+      case RVV_BASE_bool1_interpret:
       case RVV_BASE_vlmul_ext_x2:
       case RVV_BASE_vlmul_ext_x4:
       case RVV_BASE_vlmul_ext_x8:

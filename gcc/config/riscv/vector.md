@@ -433,6 +433,16 @@
   }
 )
 
+(define_expand "@vreinterpret<mode>"
+  [(set (match_operand:VB 0 "register_operand")
+	(match_operand    1 "vector_any_register_operand"))]
+  "TARGET_VECTOR"
+  {
+    emit_move_insn (operands[0], gen_lowpart (<MODE>mode, operands[1]));
+    DONE;
+  }
+)
+
 (define_expand "@vlmul_extx2<mode>"
   [(set (match_operand:<VLMULX2> 0 "register_operand")
   	(subreg:<VLMULX2>

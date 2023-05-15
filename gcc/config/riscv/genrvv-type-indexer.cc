@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include <assert.h>
 #include <math.h>
 
+#define BOOL_SIZE_LIST {1}
+
 std::string
 to_lmul (int lmul_log2)
 {
@@ -218,6 +220,9 @@ main (int argc, const char **argv)
       for (unsigned eew : {8, 16, 32, 64})
 	fprintf (fp, "  /*EEW%d_INTERPRET*/ INVALID,\n", eew);
 
+      for (unsigned boolsize : BOOL_SIZE_LIST)
+	fprintf (fp, "  /*BOOL%d_INTERPRET*/ INVALID,\n", boolsize);
+
       for (unsigned lmul_log2_offset : {1, 2, 3, 4, 5, 6})
 	{
 	  unsigned multiple_of_lmul = 1 << lmul_log2_offset;
@@ -297,6 +302,16 @@ main (int argc, const char **argv)
 			   inttype (eew, lmul_log2, unsigned_p).c_str ());
 	      }
 
+	    for (unsigned boolsize : BOOL_SIZE_LIST)
+	      {
+		std::stringstream mode;
+		mode << "vbool" << boolsize << "_t";
+
+		fprintf (fp, "  /*BOOL%d_INTERPRET*/ %s,\n", boolsize,
+			 nf == 1 && lmul_log2 == 0 ? mode.str ().c_str ()
+						   : "INVALID");
+	      }
+
 	    for (unsigned lmul_log2_offset : {1, 2, 3, 4, 5, 6})
 	      {
 		unsigned multiple_of_lmul = 1 << lmul_log2_offset;
@@ -355,6 +370,10 @@ main (int argc, const char **argv)
 		   floattype (sew * 2, /*lmul_log2*/ 0).c_str ());
 	  for (unsigned eew : {8, 16, 32, 64})
 	    fprintf (fp, "  /*EEW%d_INTERPRET*/ INVALID,\n", eew);
+
+	  for (unsigned boolsize : BOOL_SIZE_LIST)
+	    fprintf (fp, "  /*BOOL%d_INTERPRET*/ INVALID,\n", boolsize);
+
 	  for (unsigned lmul_log2_offset : {1, 2, 3, 4, 5, 6})
 	    {
 	      unsigned multiple_of_lmul = 1 << lmul_log2_offset;
