@@ -3841,7 +3841,10 @@ pass_forwprop::execute (function *fun)
 		  if (auto_var_p (use_lhs))
 		    DECL_NOT_GIMPLE_REG_P (use_lhs) = 1;
 		  else if (TREE_CODE (use_lhs) == TARGET_MEM_REF)
-		    use_lhs = prepare_target_mem_ref_lvalue (use_lhs, &gsi);
+		    {
+		      gimple_stmt_iterator gsi2 = gsi_for_stmt (use_stmt);
+		      use_lhs = prepare_target_mem_ref_lvalue (use_lhs, &gsi2);
+		    }
 		  for (unsigned HOST_WIDE_INT bi = 0; bi < n; bi += elt_w)
 		    {
 		      unsigned HOST_WIDE_INT ci = bi / elt_w;
