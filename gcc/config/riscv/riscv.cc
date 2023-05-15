@@ -7499,6 +7499,16 @@ riscv_preferred_simd_mode (scalar_mode mode)
   return word_mode;
 }
 
+/* Implement target hook TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT.  */
+
+static poly_uint64
+riscv_vectorize_preferred_vector_alignment (const_tree type)
+{
+  if (riscv_v_ext_vector_mode_p (TYPE_MODE (type)))
+    return TYPE_ALIGN (TREE_TYPE (type));
+  return TYPE_ALIGN (type);
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -7770,6 +7780,10 @@ riscv_preferred_simd_mode (scalar_mode mode)
 
 #undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
 #define TARGET_VECTORIZE_PREFERRED_SIMD_MODE riscv_preferred_simd_mode
+
+#undef TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT
+#define TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT \
+  riscv_vectorize_preferred_vector_alignment
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
