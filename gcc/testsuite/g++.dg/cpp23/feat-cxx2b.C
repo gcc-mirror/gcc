@@ -557,3 +557,9 @@
 #elif __cpp_multidimensional_subscript != 202110
 #  error "__cpp_multidimensional_subscript != 202110"
 #endif
+
+#ifndef __cpp_auto_cast
+#  error "__cpp_auto_cast"
+#elif __cpp_auto_cast != 202110
+#  error "__cpp_auto_cast != 202110"
+#endif
