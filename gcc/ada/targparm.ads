@@ -110,6 +110,10 @@ package Targparm is
    --  If a pragma Profile with a valid profile argument appears, then
    --  the appropriate restrictions and policy flags are set.
 
+   --  pragma Style_Checks is allowed with "On" or "Off" as an argument, in
+   --  order to make the conditions on pragma Restrictions documented in the
+   --  next paragraph easier to manage.
+
    --  The only other pragma allowed is a pragma Restrictions that specifies
    --  a restriction that will be imposed on all units in the partition. Note
    --  that in this context, only one restriction can be specified in a single
