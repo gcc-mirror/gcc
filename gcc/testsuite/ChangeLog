@@ -1,3 +1,14 @@
+2023-05-14  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/109829
+	* gcc.dg/tree-ssa/abs-3.c: New test.
+	* gcc.dg/tree-ssa/abs-4.c: New test.
+
+2023-05-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/109807
+	* gcc.target/i386/pr109825.c: New test.
+
 2023-05-13  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* gcc.target/aarch64/ldp_stp_16.c (cons2_8_float): Adjust for new

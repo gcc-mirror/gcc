@@ -1,3 +1,26 @@
+2023-05-14  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/109829
+	* match.pd: Add pattern for `signbit(x) !=/== 0 ? x : -x`.
+
+2023-05-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/109807
+	* config/i386/i386.cc: Revert the 2023-05-11 change.
+	(ix86_widen_mult_cost): Return high value instead of
+	ICEing for unsupported modes.
+
+2023-05-14  Ard Biesheuvel  <ardb@kernel.org>
+
+	* config/i386/i386.cc (x86_function_profiler): Take
+	ix86_direct_extern_access into account when generating calls
+	to __fentry__()
+
+2023-05-14  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-vector-builtins.cc (required_extensions_p):
+	Refactor the or pattern to switch cases.
+
 2023-05-13  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* config/aarch64/aarch64.cc (aarch64_expand_vector_init_fallback): Rename
