@@ -523,6 +523,7 @@ public:
   Value_Range (const Value_Range &);
   void set_type (tree type);
   vrange& operator= (const vrange &);
+  Value_Range& operator= (const Value_Range &);
   bool operator== (const Value_Range &r) const;
   bool operator!= (const Value_Range &r) const;
   operator vrange &();
@@ -640,6 +641,30 @@ Value_Range::operator= (const vrange &r)
     gcc_unreachable ();
 
   return *m_vrange;
+}
+
+inline Value_Range &
+Value_Range::operator= (const Value_Range &r)
+{
+  if (r.m_vrange == &r.m_irange)
+    {
+      m_irange = r.m_irange;
+      m_vrange = &m_irange;
+    }
+  else if (r.m_vrange == &r.m_frange)
+    {
+      m_frange = r.m_frange;
+      m_vrange = &m_frange;
+    }
+  else if (r.m_vrange == &r.m_unsupported)
+    {
+      m_unsupported = r.m_unsupported;
+      m_vrange = &m_unsupported;
+    }
+  else
+    gcc_unreachable ();
+
+  return *this;
 }
 
 inline bool
