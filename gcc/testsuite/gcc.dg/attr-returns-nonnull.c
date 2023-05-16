@@ -1,7 +1,8 @@
 /* Verify that attribute returns_nonnull on global and local function
    declarations is merged.
    { dg-do compile }
-   { dg-options "-Wall -fdump-tree-optimized -fdelete-null-pointer-checks" } */
+   { dg-options "-Wall -fdump-tree-optimized -fdelete-null-pointer-checks" }
+   { dg-skip-if "" keeps_null_pointer_checks } */
 
 void foo (void);
 
