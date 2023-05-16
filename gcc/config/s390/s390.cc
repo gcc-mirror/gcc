@@ -5818,6 +5818,94 @@ s390_expand_cpymem (rtx dst, rtx src, rtx len, rtx min_len_rtx, rtx max_len_rtx)
   return false;
 }
 
+bool
+s390_expand_movmem (rtx dst, rtx src, rtx len, rtx min_len_rtx, rtx max_len_rtx)
+{
+  /* Exit early in case nothing has to be done.  */
+  if (CONST_INT_P (len) && UINTVAL (len) == 0)
+    return true;
+  /* Exit early in case length is not upper bounded.  */
+  else if (max_len_rtx == NULL)
+    return false;
+
+  unsigned HOST_WIDE_INT min_len = UINTVAL (min_len_rtx);
+  unsigned HOST_WIDE_INT max_len = UINTVAL (max_len_rtx);
+
+  /* At most 16 bytes.  */
+  if (max_len <= 16 && TARGET_VX)
+    {
+      rtx_code_label *end_label;
+
+      if (min_len == 0)
+	{
+	  end_label = gen_label_rtx ();
+	  emit_cmp_and_jump_insns (len, const0_rtx, EQ, NULL_RTX,
+				   GET_MODE (len), 1, end_label,
+				   profile_probability::very_unlikely ());
+	}
+
+      rtx lenm1;
+      if (CONST_INT_P (len))
+	{
+	  lenm1 = gen_reg_rtx (SImode);
+	  emit_move_insn (lenm1, GEN_INT (UINTVAL (len) - 1));
+	}
+      else
+	lenm1
+	  = expand_binop (SImode, add_optab, convert_to_mode (SImode, len, 1),
+			  constm1_rtx, NULL_RTX, 1, OPTAB_DIRECT);
+
+      rtx tmp = gen_reg_rtx (V16QImode);
+      emit_insn (gen_vllv16qi (tmp, lenm1, src));
+      emit_insn (gen_vstlv16qi (tmp, lenm1, dst));
+
+      if (min_len == 0)
+	emit_label (end_label);
+
+      return true;
+    }
+
+  /* At most 256 bytes.  */
+  else if (max_len <= 256 && TARGET_Z15)
+    {
+      rtx_code_label *end_label = gen_label_rtx ();
+
+      if (min_len == 0)
+	emit_cmp_and_jump_insns (len, const0_rtx, EQ, NULL_RTX, GET_MODE (len),
+				 1, end_label,
+				 profile_probability::very_unlikely ());
+
+      rtx dst_addr = gen_reg_rtx (Pmode);
+      rtx src_addr = gen_reg_rtx (Pmode);
+      emit_move_insn (dst_addr, force_operand (XEXP (dst, 0), NULL_RTX));
+      emit_move_insn (src_addr, force_operand (XEXP (src, 0), NULL_RTX));
+
+      rtx lenm1 = CONST_INT_P (len)
+		    ? GEN_INT (UINTVAL (len) - 1)
+		    : expand_binop (GET_MODE (len), add_optab, len, constm1_rtx,
+				    NULL_RTX, 1, OPTAB_DIRECT);
+
+      rtx_code_label *right_to_left_label = gen_label_rtx ();
+      emit_cmp_and_jump_insns (src_addr, dst_addr, LT, NULL_RTX, GET_MODE (len),
+			       1, right_to_left_label);
+
+      // MVC
+      emit_insn (
+	gen_cpymem_short (dst, src, convert_to_mode (Pmode, lenm1, 1)));
+      emit_jump (end_label);
+
+      // MVCRL
+      emit_label (right_to_left_label);
+      emit_insn (gen_mvcrl (dst, src, convert_to_mode (SImode, lenm1, 1)));
+
+      emit_label (end_label);
+
+      return true;
+    }
+
+  return false;
+}
+
 /* Emit code to set LEN bytes at DST to VAL.
    Make use of clrmem if VAL is zero.  */
 
