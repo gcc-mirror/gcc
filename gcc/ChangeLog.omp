@@ -1,3 +1,9 @@
+2023-05-12  Julian Brown  <julian@codesourcery.com>
+
+	* omp-builtins.def (BUILT_IN_OMP_IS_INITIAL_DEVICE): New builtin.
+	* tree.cc (get_file_function_name): Support names for on-target
+	constructor/destructor functions.
+
 2024-06-05  Jakub Jelinek  <jakub@redhat.com>
 	    Frederik Harwath  <frederik@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
