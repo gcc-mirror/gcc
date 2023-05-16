@@ -1,3 +1,8 @@
+2023-05-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/109241
+	* pt.cc (find_parameter_packs_r): Handle null TREE_BINFO.
+
 2023-05-09  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
