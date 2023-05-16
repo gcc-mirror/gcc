@@ -3701,6 +3701,9 @@ in C++20 with a pedantic warning that can be disabled with
 Enabled by default with @option{-std=c++20} unless @option{-Wno-deprecated},
 and with @option{-std=c++23} regardless of @option{-Wno-deprecated}.
 
+This warning is upgraded to an error by @option{-pedantic-errors} in
+C++23 mode or later.
+
 @opindex Wctad-maybe-unsupported
 @opindex Wno-ctad-maybe-unsupported
 @item -Wctad-maybe-unsupported @r{(C++ and Objective-C++ only)}
@@ -5987,15 +5990,16 @@ warnings, in some cases it may also cause false positives.
 @item -Wpedantic
 @itemx -pedantic
 Issue all the warnings demanded by strict ISO C and ISO C++;
-reject all programs that use forbidden extensions, and some other
-programs that do not follow ISO C and ISO C++.  For ISO C, follows the
-version of the ISO C standard specified by any @option{-std} option used.
+diagnose all programs that use forbidden extensions, and some other
+programs that do not follow ISO C and ISO C++.  This follows the version
+of the ISO C or C++ standard specified by any @option{-std} option used.
 
 Valid ISO C and ISO C++ programs should compile properly with or without
 this option (though a rare few require @option{-ansi} or a
-@option{-std} option specifying the required version of ISO C)@.  However,
+@option{-std} option specifying the version of the standard)@.  However,
 without this option, certain GNU extensions and traditional C and C++
-features are supported as well.  With this option, they are rejected.
+features are supported as well.  With this option, they are diagnosed
+(or rejected with @option{-pedantic-errors}).
 
 @option{-Wpedantic} does not cause warning messages for use of the
 alternate keywords whose names begin and end with @samp{__}.  This alternate
@@ -6006,16 +6010,10 @@ Pedantic warnings are also disabled in the expression that follows
 these escape routes; application programs should avoid them.
 @xref{Alternate Keywords}.
 
-Some users try to use @option{-Wpedantic} to check programs for strict ISO
-C conformance.  They soon find that it does not do quite what they want:
-it finds some non-ISO practices, but not all---only those for which
-ISO C @emph{requires} a diagnostic, and some others for which
-diagnostics have been added.
-
-A feature to report any failure to conform to ISO C might be useful in
-some instances, but would require considerable additional work and would
-be quite different from @option{-Wpedantic}.  We don't have plans to
-support such a feature in the near future.
+Some warnings about non-conforming programs are controlled by options
+other than @option{-Wpedantic}; in many cases they are implied by
+@option{-Wpedantic} but can be disabled separately by their specific
+option, e.g. @option{-Wpedantic -Wno-pointer-sign}.
 
 Where the standard specified with @option{-std} represents a GNU
 extended dialect of C, such as @samp{gnu90} or @samp{gnu99}, there is a
@@ -6033,8 +6031,44 @@ Give an error whenever the @dfn{base standard} (see @option{-Wpedantic})
 requires a diagnostic, in some cases where there is undefined behavior
 at compile-time and in some other cases that do not prevent compilation
 of programs that are valid according to the standard. This is not
-equivalent to @option{-Werror=pedantic}, since there are errors enabled
-by this option and not enabled by the latter and vice versa.
+equivalent to @option{-Werror=pedantic}: the latter option is unlikely to be
+useful, as it only makes errors of the diagnostics that are controlled by
+@option{-Wpedantic}, whereas this option also affects required diagnostics that
+are always enabled or controlled by options other than @option{-Wpedantic}.
+
+If you want the required diagnostics that are warnings by default to
+be errors instead, but don't also want to enable the @option{-Wpedantic}
+diagnostics, you can specify @option{-pedantic-errors -Wno-pedantic}
+(or @option{-pedantic-errors -Wno-error=pedantic} to enable them but
+only as warnings).
+
+Some required diagnostics are errors by default, but can be reduced to
+warnings using @option{-fpermissive} or their specific warning option,
+e.g. @option{-Wno-error=narrowing}.
+
+Some diagnostics for non-ISO practices are controlled by specific
+warning options other than @option{-Wpedantic}, but are also made
+errors by @option{-pedantic-errors}.  For instance:
+
+@gccoptlist{
+-Wattributes @r{(for standard attributes)}
+-Wchanges-meaning @r{(C++)}
+-Wcomma-subscript @r{(C++23 or later)}
+-Wdeclaration-after-statement @r{(C90 or earlier)}
+-Wimplicit-int @r{(C99 or later)}
+-Wimplicit-function-declaration @r{(C99 or later)}
+-Wincompatible-pointer-types
+-Wint-conversion
+-Wlong-long @r{(C90 or earlier)}
+-Wmain
+-Wnarrowing @r{(C++11 or later)}
+-Wpointer-arith
+-Wpointer-sign
+-Wincompatible-pointer-types
+-Wregister @r{(C++17 or later)}
+-Wvla @r{(C90 or earlier)}
+-Wwrite-strings @r{(C++11 or later)}
+}
 
 @opindex Wall
 @opindex Wno-all
@@ -6683,13 +6717,16 @@ This option controls warnings when a declaration does not specify a type.
 This warning is enabled by default in C99 and later dialects of C,
 and also by @option{-Wall}.
 
+This warning is upgraded to an error by @option{-pedantic-errors}.
+
 @opindex Wimplicit-function-declaration
 @opindex Wno-implicit-function-declaration
 @item -Wno-implicit-function-declaration @r{(C and Objective-C only)}
 This option controls warnings when a function is used before being declared.
 This warning is enabled by default in C99 and later dialects of C,
 and also by @option{-Wall}.
-The warning is made into an error by @option{-pedantic-errors}.
+
+This warning is upgraded to an error by @option{-pedantic-errors}.
 
 @opindex Wimplicit
 @opindex Wno-implicit
@@ -6878,6 +6915,8 @@ a function with external linkage, returning int, taking either zero
 arguments, two, or three arguments of appropriate types.  This warning
 is enabled by default in C++ and is enabled by either @option{-Wall}
 or @option{-Wpedantic}.
+
+This warning is upgraded to an error by @option{-pedantic-errors}.
 
 @opindex Wmisleading-indentation
 @opindex Wno-misleading-indentation
@@ -8340,6 +8379,8 @@ types.  This warning is for cases not covered by @option{-Wno-pointer-sign},
 which warns for pointer argument passing or assignment with different
 signedness.
 
+This warning is upgraded to an error by @option{-pedantic-errors}.
+
 @opindex Wno-int-conversion
 @opindex Wint-conversion
 @item -Wno-int-conversion @r{(C and Objective-C only)}
@@ -8347,6 +8388,8 @@ Do not warn about incompatible integer to pointer and pointer to integer
 conversions.  This warning is about implicit conversions; for explicit
 conversions the warnings @option{-Wno-int-to-pointer-cast} and
 @option{-Wno-pointer-to-int-cast} may be used.
+
+This warning is upgraded to an error by @option{-pedantic-errors}.
 
 @opindex Wzero-length-bounds
 @opindex Wzero-length-bounds
@@ -8548,6 +8591,8 @@ Warn when a declaration is found after a statement in a block.  This
 construct, known from C++, was introduced with ISO C99 and is by default
 allowed in GCC@.  It is not supported by ISO C90.  @xref{Mixed Labels and Declarations}.
 
+This warning is upgraded to an error by @option{-pedantic-errors}.
+
 @opindex Wshadow
 @opindex Wno-shadow
 @item -Wshadow
@@ -8739,6 +8784,8 @@ convenience in calculations with @code{void *} pointers and pointers
 to functions.  In C++, warn also when an arithmetic operation involves
 @code{NULL}.  This warning is also enabled by @option{-Wpedantic}.
 
+This warning is upgraded to an error by @option{-pedantic-errors}.
+
 @opindex Wpointer-compare
 @opindex Wno-pointer-compare
 @item -Wno-pointer-compare
@@ -8824,6 +8871,9 @@ use of @samp{[[]]} syntax for attributes, use of decimal
 floating-point types, and so on.  This option is independent of the
 standards mode.  Warnings are disabled in the expression that follows
 @code{__extension__}.
+
+When not compiling in C2X mode, these warnings are upgraded to errors
+by @option{-pedantic-errors}.
 
 @opindex Wc++-compat
 @opindex Wno-c++-compat
@@ -8957,6 +9007,9 @@ these warnings.
 When compiling C++, warn about the deprecated conversion from string
 literals to @code{char *}.  This warning is enabled by default for C++
 programs.
+
+This warning is upgraded to an error by @option{-pedantic-errors} in
+C++11 mode or later.
 
 @opindex Wclobbered
 @opindex Wno-clobbered
@@ -9389,6 +9442,9 @@ Do not warn if an unexpected @code{__attribute__} is used, such as
 unrecognized attributes, function attributes applied to variables,
 etc.  This does not stop errors for incorrect use of supported
 attributes.
+
+Warnings about ill-formed uses of standard attributes are upgraded to
+errors by @option{-pedantic-errors}.
 
 Additionally, using @option{-Wno-attributes=}, it is possible to suppress
 warnings about unknown scoped attributes (in C++11 and C2X).  For example,
@@ -9929,6 +9985,8 @@ Warn if @code{long long} type is used.  This is enabled by either
 @option{-Wpedantic} or @option{-Wtraditional} in ISO C90 and C++98
 modes.  To inhibit the warning messages, use @option{-Wno-long-long}.
 
+This warning is upgraded to an error by @option{-pedantic-errors}.
+
 @opindex Wvariadic-macros
 @opindex Wno-variadic-macros
 @item -Wvariadic-macros
@@ -9961,6 +10019,8 @@ scalar type.
 Warn if a variable-length array is used in the code.
 @option{-Wno-vla} prevents the @option{-Wpedantic} warning of
 the variable-length array.
+
+This warning is upgraded to an error by @option{-pedantic-errors}.
 
 @opindex Wvla-larger-than=
 @opindex Wno-vla-larger-than
@@ -10065,6 +10125,8 @@ Warn for pointer argument passing or assignment with different signedness.
 This option is only supported for C and Objective-C@.  It is implied by
 @option{-Wall} and by @option{-Wpedantic}, which can be disabled with
 @option{-Wno-pointer-sign}.
+
+This warning is upgraded to an error by @option{-pedantic-errors}.
 
 @opindex Wstack-protector
 @opindex Wno-stack-protector
