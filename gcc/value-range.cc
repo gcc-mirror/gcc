@@ -203,7 +203,10 @@ vrange::operator= (const vrange &src)
   else if (is_a <frange> (src))
     as_a <frange> (*this) = as_a <frange> (src);
   else
-    gcc_unreachable ();
+    {
+      gcc_checking_assert (is_a <unsupported_range> (src));
+      m_kind = src.m_kind;
+    }
   return *this;
 }
 

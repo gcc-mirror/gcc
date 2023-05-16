@@ -460,6 +460,13 @@ is_a <frange> (vrange &v)
   return v.m_discriminator == VR_FRANGE;
 }
 
+template <>
+inline bool
+is_a <unsupported_range> (vrange &v)
+{
+  return v.m_discriminator == VR_UNKNOWN;
+}
+
 // For resizable ranges, resize the range up to HARD_MAX_RANGES if the
 // NEEDED pairs is greater than the current capacity of the range.
 
@@ -623,6 +630,11 @@ Value_Range::operator= (const vrange &r)
     {
       m_frange = as_a <frange> (r);
       m_vrange = &m_frange;
+    }
+  else if (is_a <unsupported_range> (r))
+    {
+      m_unsupported = as_a <unsupported_range> (r);
+      m_vrange = &m_unsupported;
     }
   else
     gcc_unreachable ();
