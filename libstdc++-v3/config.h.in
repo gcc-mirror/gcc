@@ -819,6 +819,10 @@
 /* Define if the compiler supports C++11 atomics. */
 #undef _GLIBCXX_ATOMIC_BUILTINS
 
+/* Define if global objects can be aligned to
+   std::hardware_destructive_interference_size. */
+#undef _GLIBCXX_CAN_ALIGNAS_DESTRUCTIVE_SIZE
+
 /* Define to use concept checking code from the boost libraries. */
 #undef _GLIBCXX_CONCEPT_CHECKS
 

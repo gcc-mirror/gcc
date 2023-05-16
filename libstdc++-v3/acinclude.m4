@@ -5246,6 +5246,31 @@ AC_DEFUN([GLIBCXX_ZONEINFO_DIR], [
   fi
 ])
 
+dnl
+dnl Check whether lock tables can be aligned to avoid false sharing.
+dnl
+dnl Defines:
+dnl  _GLIBCXX_CAN_ALIGNAS_DESTRUCTIVE_SIZE if objects with static storage
+dnl    duration can be aligned to std::hardware_destructive_interference_size.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_ALIGNAS_CACHELINE], [
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+
+  AC_MSG_CHECKING([whether static objects can be aligned to the cacheline size])
+  AC_TRY_COMPILE(, [struct alignas(__GCC_DESTRUCTIVE_SIZE) Aligned { };
+		    alignas(Aligned) static char buf[sizeof(Aligned) * 16];
+		 ], [ac_alignas_cacheline=yes], [ac_alignas_cacheline=no])
+  if test "$ac_alignas_cacheline" = yes; then
+    AC_DEFINE_UNQUOTED(_GLIBCXX_CAN_ALIGNAS_DESTRUCTIVE_SIZE, 1,
+      [Define if global objects can be aligned to
+       std::hardware_destructive_interference_size.])
+  fi
+  AC_MSG_RESULT($ac_alignas_cacheline)
+
+  AC_LANG_RESTORE
+])
+
 # Macros from the top-level gcc directory.
 m4_include([../config/gc++filt.m4])
 m4_include([../config/tls.m4])
