@@ -3,7 +3,6 @@
 
 #include "shift-template.h"
 
-#include <stdio.h>
 #include <assert.h>
 
 #define SZ 512
