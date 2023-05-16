@@ -33,6 +33,7 @@ FROM StringConvert IMPORT LongIntegerToString, LongCardinalToString ;
 FROM WholeConv IMPORT ScanInt, ScanCard ;
 FROM StringChan IMPORT writeString ;
 FROM IOConsts IMPORT ReadResults ;
+FROM TextUtil IMPORT SkipSpaces ;
 
 
 (* Input and output of whole numbers in decimal text form
@@ -63,6 +64,7 @@ VAR
    ch       : CHAR ;
    negative : BOOLEAN ;
 BEGIN
+   SkipSpaces (cid) ;
    ReadChar(cid, ch) ;
    negative := FALSE ;
    c := 0 ;
@@ -133,6 +135,7 @@ VAR
    ch       : CHAR ;
    c        : LONGCARD ;
 BEGIN
+   SkipSpaces (cid) ;
    ReadChar(cid, ch) ;
    c := 0 ;
    nextState := ScanCard ;
