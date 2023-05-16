@@ -230,7 +230,7 @@ token_id_to_str (TokenId id);
 bool
 token_id_is_keyword (TokenId id);
 /* gets the string associated with a keyword */
-const char *
+const std::string &
 token_id_keyword_string (TokenId id);
 // Get type hint description as a string.
 const char *

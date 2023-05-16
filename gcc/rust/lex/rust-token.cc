@@ -74,20 +74,23 @@ token_id_is_keyword (TokenId id)
 }
 
 /* gets the string associated with a keyword */
-const char *
+const std::string &
 token_id_keyword_string (TokenId id)
 {
   switch (id)
     {
-#define RS_TOKEN_KEYWORD(id, str)                                              \
-  case id:                                                                     \
-    return str;
+#define RS_TOKEN_KEYWORD(id, str_ptr)                                          \
+    case id: {                                                                 \
+      static const std::string str (str_ptr);                                  \
+      return str;                                                              \
+    }                                                                          \
+    gcc_unreachable ();
 #define RS_TOKEN(a, b)
       RS_TOKEN_LIST
 #undef RS_TOKEN_KEYWORD
 #undef RS_TOKEN
     default:
-      return nullptr;
+      gcc_unreachable ();
     }
 }
 
