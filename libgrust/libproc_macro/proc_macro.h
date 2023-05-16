@@ -39,7 +39,7 @@ using CustomDeriveMacro = TokenStream (*) (TokenStream);
 using AttributeMacro = TokenStream (*) (TokenStream, TokenStream);
 using BangMacro = TokenStream (*) (TokenStream);
 
-struct CustomDerivePayload
+struct CustomDerive
 {
   // TODO: UTF-8 function name
   const char *trait_name;
@@ -49,14 +49,14 @@ struct CustomDerivePayload
   CustomDeriveMacro macro;
 };
 
-struct AttrPayload
+struct Attribute
 {
   // TODO: UTF-8 function name
   const char *name;
   AttributeMacro macro;
 };
 
-struct BangPayload
+struct Bang
 {
   const char *name;
   BangMacro macro;
@@ -72,9 +72,9 @@ enum ProcmacroTag
 
 union ProcmacroPayload
 {
-  CustomDerivePayload custom_derive;
-  AttrPayload attribute;
-  BangPayload bang;
+  CustomDerive custom_derive;
+  Attribute attribute;
+  Bang bang;
 };
 
 struct Procmacro
