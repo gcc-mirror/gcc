@@ -2063,57 +2063,6 @@ Parser<ManagedTokenSource>::parse_macro_match ()
 	const_TokenPtr t2 = lexer.peek_token (1);
 	switch (t2->get_id ())
 	  {
-	  case ABSTRACT:
-	  case AS:
-	  case ASYNC:
-	  case BECOME:
-	  case BOX:
-	  case BREAK:
-	  case CONST:
-	  case CONTINUE:
-	  case CRATE:
-	  case DO:
-	  case DYN:
-	  case ELSE:
-	  case ENUM_TOK:
-	  case EXTERN_TOK:
-	  case FALSE_LITERAL:
-	  case FINAL_TOK:
-	  case FN_TOK:
-	  case FOR:
-	  case IF:
-	  case IMPL:
-	  case IN:
-	  case LET:
-	  case LOOP:
-	  case MACRO:
-	  case MATCH_TOK:
-	  case MOD:
-	  case MOVE:
-	  case MUT:
-	  case OVERRIDE_TOK:
-	  case PRIV:
-	  case PUB:
-	  case REF:
-	  case RETURN_TOK:
-	  case SELF_ALIAS:
-	  case SELF:
-	  case STATIC_TOK:
-	  case STRUCT_TOK:
-	  case SUPER:
-	  case AUTO:
-	  case TRAIT:
-	  case TRUE_LITERAL:
-	  case TRY:
-	  case TYPE:
-	  case TYPEOF:
-	  case UNSAFE:
-	  case UNSIZED:
-	  case USE:
-	  case VIRTUAL:
-	  case WHERE:
-	  case WHILE:
-	  case YIELD:
 	  case IDENTIFIER:
 	  case UNDERSCORE:
 	    // macro fragment
@@ -2122,15 +2071,23 @@ Parser<ManagedTokenSource>::parse_macro_match ()
 	    // macro repetition
 	    return parse_macro_match_repetition ();
 	  default:
-	    // error: unrecognised
-	    add_error (
-	      Error (t2->get_locus (),
-		     "unrecognised token combination %<$%s%> at start of "
-		     "macro match - did you mean %<$identifier%> or %<$(%>?",
-		     t2->get_token_description ()));
+	    if (token_id_is_keyword (t2->get_id ()) && t2->get_id () != CRATE)
+	      {
+		// keyword as macro fragment
+		return parse_macro_match_fragment ();
+	      }
+	    else
+	      {
+		// error: unrecognised
+		add_error (Error (
+		  t2->get_locus (),
+		  "unrecognised token combination %<$%s%> at start of "
+		  "macro match - did you mean %<$identifier%> or %<$(%>?",
+		  t2->get_token_description ()));
 
-	    // skip somewhere?
-	    return nullptr;
+		// skip somewhere?
+		return nullptr;
+	      }
 	  }
       }
     case RIGHT_PAREN:
