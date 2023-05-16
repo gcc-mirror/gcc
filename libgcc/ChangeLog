@@ -1,3 +1,11 @@
+2023-05-15  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	* unwind-dw2-fde.c: Fix assert in non-atomic path.
+
+2023-05-15  Sören Tempel  <soeren+git@soeren-tempel.net>
+
+	* unwind-dw2-fde.c: Accept empty ranges when deregistering frames.
+
 2023-05-02  Patrick O'Neill  <patrick@rivosinc.com>
 
 	* config/riscv/atomic.c: Change LR.aq/SC.rl pairs into

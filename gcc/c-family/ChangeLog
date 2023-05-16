@@ -1,3 +1,13 @@
+2023-05-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-lex.cc (c_common_has_attribute): Use 202311 as
+	__has_c_attribute return for all C2x attributes.
+
+2023-05-15  Patrick Palka  <ppalka@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Predefine __cpp_auto_cast
+	for C++23.
+
 2023-05-01  Marek Polacek  <polacek@redhat.com>
 
 	* c-ubsan.cc (ubsan_maybe_instrument_array_ref): Don't copy_node.

@@ -1,3 +1,88 @@
+2023-05-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/109695
+	* value-range.cc (irange::operator=): Resize range.
+	(irange::union_): Same.
+	(irange::intersect): Same.
+	(irange::invert): Same.
+	(int_range_max): Default to 3 sub-ranges and resize as needed.
+	* value-range.h (irange::maybe_resize): New.
+	(~int_range): New.
+	(int_range::int_range): Adjust for resizing.
+	(int_range::operator=): Same.
+
+2023-05-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* ipa-cp.cc (ipcp_vr_lattice::meet_with_1): Avoid unnecessary
+	range copying
+	* value-range.cc (irange::union_nonzero_bits): Return TRUE only
+	when range changed.
+
+2023-05-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-protos.h (enum vxrm_field_enum): New enum.
+	* config/riscv/riscv-vector-builtins.cc
+	(function_expander::use_exact_insn): Add default rounding mode operand.
+	* config/riscv/riscv.cc (riscv_hard_regno_nregs): Add VXRM_REGNUM.
+	(riscv_hard_regno_mode_ok): Ditto.
+	(riscv_conditional_register_usage): Ditto.
+	* config/riscv/riscv.h (DWARF_FRAME_REGNUM): Ditto.
+	(VXRM_REG_P): Ditto.
+	(RISCV_DWARF_VXRM): Ditto.
+	* config/riscv/riscv.md: Ditto.
+	* config/riscv/vector.md: Ditto
+
+2023-05-15  Pan Li  <pan2.li@intel.com>
+
+	* optabs.cc (maybe_gen_insn): Add case to generate instruction
+	that has 11 operands.
+
+2023-05-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_rtx_costs, NEG case): Add costing
+	logic for vector modes.
+
+2023-05-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* config/aarch64/aarch64-simd.md (aarch64_cm<optab><mode>): Rename to...
+	(aarch64_cm<optab><mode><vczle><vczbe>): ... This.
+	(aarch64_cmtst<mode>): Rename to...
+	(aarch64_cmtst<mode><vczle><vczbe>): ... This.
+	(*aarch64_cmtst_same_<mode>): Rename to...
+	(*aarch64_cmtst_same_<mode><vczle><vczbe>): ... This.
+	(*aarch64_cmtstdi): Rename to...
+	(*aarch64_cmtstdi<vczle><vczbe>): ... This.
+	(aarch64_fac<optab><mode>): Rename to...
+	(aarch64_fac<optab><mode><vczle><vczbe>): ... This.
+
+2023-05-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* config/aarch64/aarch64-simd.md (aarch64_s<optab><mode>): Rename to...
+	(aarch64_s<optab><mode><vczle><vczbe>): ... This.
+
+2023-05-15  Pan Li  <pan2.li@intel.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+	    kito-cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-v.cc (const_vlmax_p): New function for
+	deciding the mode is constant or not.
+	(set_len_and_policy): Optimize VLS-VLMAX code gen to vsetivli.
+
+2023-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109848
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Put the
+	TARGET_MEM_REF address preparation before the store, not
+	before the CTOR.
+
+2023-05-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv.cc
+	(riscv_vectorize_preferred_vector_alignment): New function.
+	(TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT): New target hook.
+
 2023-05-14  Andrew Pinski  <apinski@marvell.com>
 
 	PR tree-optimization/109829

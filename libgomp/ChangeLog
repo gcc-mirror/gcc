@@ -1,3 +1,65 @@
+2023-05-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/66005
+	* configure.ac: Look for 'flock'.
+	* testsuite/Makefile.am (gcc_test_parallel_slots): Enable parallel testing.
+	* testsuite/config/default.exp: Don't 'load_lib "standard.exp"' here...
+	* testsuite/lib/libgomp.exp: ... but here, instead.
+	(libgomp_load): Override for parallel testing.
+	* testsuite/libgomp-site-extra.exp.in (FLOCK): Set.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2023-05-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/66005
+	* testsuite/Makefile.am (PWD_COMMAND): New variable.
+	(%/site.exp): New target.
+	(check_p_numbers0, check_p_numbers1, check_p_numbers2)
+	(check_p_numbers3, check_p_numbers4, check_p_numbers5)
+	(check_p_numbers6, check_p_numbers, gcc_test_parallel_slots)
+	(check_p_subdirs)
+	(check_DEJAGNU_libgomp_targets): New variables.
+	($(check_DEJAGNU_libgomp_targets)): New target.
+	($(check_DEJAGNU_libgomp_targets)): New dependency.
+	(check-DEJAGNU $(check_DEJAGNU_libgomp_targets)): New targets.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/lib/libgomp.exp: For parallel testing,
+	'load_file ../libgomp-test-support.exp'.
+
+2023-05-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/91884
+	* configure.ac: 'AC_SUBST(CXX)'.
+	* configure: Regenerate.
+	* Makefile.in: Likewise.
+	* testsuite/Makefile.in: Likewise.
+	* testsuite/libgomp-site-extra.exp.in (GXX_UNDER_TEST)
+	(GFORTRAN_UNDER_TEST): Set.
+	* testsuite/lib/libgomp.exp (libgomp_init): Adjust.
+	* testsuite/libgomp.c++/c++.exp: Use 'GXX_UNDER_TEST'.
+	* testsuite/libgomp.oacc-c++/c++.exp: Likewise.
+	* testsuite/libgomp.fortran/fortran.exp: Use
+	'GFORTRAN_UNDER_TEST'.
+	* testsuite/libgomp.oacc-fortran/fortran.exp: Likewise.
+
+2023-05-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/91884
+	* testsuite/lib/libgomp.exp (libgomp_target_compile): Don't
+	specify compiler.
+	* testsuite/libgomp.c++/c++.exp (ALWAYS_CFLAGS): Specify compiler.
+	* testsuite/libgomp.c/c.exp (ALWAYS_CFLAGS): Likewise.
+	* testsuite/libgomp.fortran/fortran.exp (ALWAYS_CFLAGS): Likewise.
+	* testsuite/libgomp.graphite/graphite.exp (ALWAYS_CFLAGS):
+	Likewise.
+	* testsuite/libgomp.oacc-c++/c++.exp (ALWAYS_CFLAGS): Likewise.
+	* testsuite/libgomp.oacc-c/c.exp (ALWAYS_CFLAGS): Likewise.
+	* testsuite/libgomp.oacc-fortran/fortran.exp (ALWAYS_CFLAGS):
+	Likewise.
+
 2023-05-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR libstdc++/109816

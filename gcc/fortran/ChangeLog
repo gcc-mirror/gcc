@@ -1,3 +1,10 @@
+2023-05-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/109846
+	* expr.cc (gfc_check_vardef_context): Check appropriate pointer
+	attribute for CLASS vs. non-CLASS function result in variable
+	definition context.
+
 2023-05-11  Xi Ruoyao  <xry111@xry111.site>
 
 	* Make-lang.in: Use grep instead of fgrep.

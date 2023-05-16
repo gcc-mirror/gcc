@@ -1,3 +1,52 @@
+2023-05-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/qual-return-9.c, gcc.dg/qual-return-10.c: New tests.
+
+2023-05-15  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c2x-has-c-attribute-2.c: Expect 202311L return value from
+	__has_c_attribute for all C2x attributes.
+
+2023-05-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/109846
+	* gfortran.dg/ptr-func-5.f90: New test.
+
+2023-05-15  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp23/feat-cxx2b.C: Test __cpp_auto_cast.
+
+2023-05-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/facg_1.c: New test.
+
+2023-05-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* gcc.target/aarch64/simd/pr99195_7.c: New test.
+
+2023-05-15  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99195
+	* gcc.target/aarch64/simd/pr99195_4.c: Add testing for qabs, qneg.
+
+2023-05-15  Pan Li  <pan2.li@intel.com>
+	    Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+	    kito-cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/base/vf_avl-1.c: New test.
+
+2023-05-15  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/pr108950.c: Re-order dg-require-effective-target
+	and dg-do.
+
+2023-05-15  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/autovec/binop/shift-rv32gcv.c: Adapt testcase.
+	* gcc.target/riscv/rvv/autovec/align-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/align-2.c: New test.
+
 2023-05-14  Andrew Pinski  <apinski@marvell.com>
 
 	PR tree-optimization/109829

@@ -1,3 +1,223 @@
+2023-05-15  Marc Poulhiès  <poulhies@adacore.com>
+
+	* exp_ch3.adb (Make_Allocator_For_Return): Fix typo in comment.
+
+2023-05-15  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-strbou.ads: Add justifications for Mapping.
+	* libgnat/a-strfix.adb: Same.
+	* libgnat/a-strfix.ads: Same.
+	* libgnat/a-strsea.adb: Same.
+	* libgnat/a-strsea.ads: Same.
+	* libgnat/a-strsup.adb: Same and add loop variants.
+	* libgnat/a-strsup.ads: Same and add specification of termination.
+
+2023-05-15  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-strsup.adb (Super_Slice): Reorder component assignment
+	to avoid failing predicate check related to initialization.
+	* libgnat/s-expmod.adb (Exp_Modular): Add intermediate assertion.
+
+2023-05-15  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/i-c.adb: Add loop variants. Remove useless
+	initialization.
+
+2023-05-15  Bob Duff  <duff@adacore.com>
+
+	* einfo-utils.ads: Remove comment.
+
+2023-05-15  Bob Duff  <duff@adacore.com>
+
+	* einfo-utils.ads, einfo-utils.adb: Get rid of the Proc_Next_...
+	procedures. Use Inline aspect instead of pragma Inline.
+	Is_Discrete_Or_Fixed_Point_Type did not have pragma Inline, but
+	now has the aspect; this was probably an oversight
+	(which illustrates why aspects are better).
+
+2023-05-15  Ronan Desplanques  <desplanques@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Fix formatting
+	inconsistency.
+
+2023-05-15  Bob Duff  <duff@adacore.com>
+
+	* einfo-utils.adb:
+	(Proc_Next_Component_Or_Discriminant): Call
+	Next_Component_Or_Discriminant.
+
+2023-05-15  Bob Duff  <duff@adacore.com>
+
+	* einfo.ads:
+	(First_Entity): Update comment explaining why this exists on all
+	[sub]types, as opposed to just the ones with associated entities.
+
+2023-05-15  Bob Duff  <duff@adacore.com>
+
+	* atree.adb
+	(Check_Vanishing_Fields): Disable the check for "root/base type
+	only" fields. This is a bug fix -- if we're checking some subtype
+	S, we don't want to reach over to the root or base type and
+	Reinit_Field_To_Zero of that, thus modifying the field for lots of
+	subtypes other than S. Disable in the to/from E_Void cases. Misc
+	cleanup.
+	* gen_il-gen-gen_entities.adb: Define First_Entity, Last_Entity,
+	and Stored_Constraint for all type entities, because there are too
+	many cases where Reinit_Field_To_Zero would otherwise be needed.
+	In any case, it seems cleaner to have First_Entity and Last_Entity
+	defined in the same entity kinds.
+	* einfo.ads:
+	(First_Entity, Last_Entity, Stored_Constraint): Update comments to
+	reflect gen_il-gen-gen_entities.adb changes.
+	(Lit_Hash): Add missing "[root type only]" comment.
+	* exp_ch5.adb: Add Reinit_Field_To_Zero calls for vanishing
+	fields.
+	* sem_ch10.adb: Likewise.
+	* sem_ch6.adb: Likewise.
+	* sem_ch7.adb: Likewise.
+	* sem_ch8.adb: Likewise.
+	* sem_ch3.adb: Likewise. Also remove now-unnecessary
+	Reinit_Field_To_Zero calls.
+
+2023-05-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch7.adb (Hide_Public_Entities): Use the same condition for
+	subprogram bodies without specification as for those with one.
+
+2023-05-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (New_Copy_Tree): Remove redundant calls to Present.
+
+2023-05-15  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch8.adb (End_Scope): Simplify lookup of predecessor in
+	homonym chain.
+
+2023-05-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_aggr.adb (Resolve_Aggregate): Accept aggregates with OTHERS
+	appearing inside unchecked conversions.
+
+2023-05-15  Steve Baird  <baird@adacore.com>
+
+	* warnsw.ads: Add a new element,
+	Warn_On_Ineffective_Predicate_Test, to the Opt_Warnings_Enum
+	enumeration type.
+	* warnsw.adb: Bind "-gnatw_s" to the new
+	Warn_On_Ineffective_Predicate_Test switch. Add the new switch to
+	the set of switches enabled by -gnata .
+	* sem_ch13.adb
+	(Build_Discrete_Static_Predicate): Declare new local procedure,
+	Warn_If_Test_Ineffective, which conditionally generates new
+	warning. Call this new procedure when building a new element of an
+	RList.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Document the -gnatw_s switch (and the corresponding -gnatw_S
+	switch).
+	* gnat_ugn.texi: Regenerate.
+
+2023-05-15  Yannick Moy  <moy@adacore.com>
+
+	* sem_attr.adb: Update comment referring to rule number.
+
+2023-05-15  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_attr.adb: sem_attr.adb (Analyze_Access_Attribute): Tighten
+	validity check for task types.
+
+2023-05-15  Ronan Desplanques  <desplanques@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_characteristics.rst: Fix
+	minor documentation formatting issue.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2023-05-15  Bob Duff  <duff@adacore.com>
+
+	* exp_ch4.adb
+	(Expand_N_Op_Expon): Remove the too-big check. Simplify. Signed
+	and modular cases are combined, etc. Remove code with comment "We
+	only handle cases where the right type is a[sic] integer", because
+	the right operand must always be an integer at this point.
+
+2023-05-15  Bob Duff  <duff@adacore.com>
+
+	* sem_attr.adb
+	(Analyze_Attribute): Add a call to Check_Error_Detected.
+
+2023-05-15  Yannick Moy  <moy@adacore.com>
+
+	* par-prag.adb (First_Arg_Is_Matching_Tool_Name): Fix access to
+	expression in pragma association.
+
+2023-05-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.ads (JSON output format): Document special case of
+	Present member of a Variant object.
+	* repinfo.adb (List_Structural_Record_Layout): Change the type of
+	Ext_Level parameter to Integer. Restrict the first recursion with
+	increasing levels to the fixed part and implement a second
+	recursion with decreasing levels for the variant part. Deal with
+	an extension of a type with unknown discriminants.
+
+2023-05-15  Claire Dross  <dross@adacore.com>
+
+	* libgnat/s-valueu.adb: Use cut operations inside assertion to
+	restore proofs
+	* gcc-interface/Make-lang.in (GNAT_ADA_OBJS): Add s-spark and
+	s-spcuop dependencies.
+
+2023-05-15  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Check_Grouping): Allow Annotate pragmas between
+	loop pragmas.
+
+2023-05-15  Javier Miranda  <miranda@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst
+	(Extensions_Allowed): Document string interpolation.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2023-05-15  Joel Brobecker  <brobecker@adacore.com>
+
+	* doc/gnat_ugn/platform_specific_information.rst
+	(_PIE_Enabled_By_Default_On_Linux): New section.
+	* gnat-style.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2023-05-15  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb
+	(Has_Dispatching_Constructor_Call): New subprogram.
+	(Expand_Interface_Conversion): No need to perform dynamic
+	interface conversion when the operand and the target type are
+	interface types and the target interface type is an ancestor of
+	the operand type. The unique exception to this rule is when the
+	operand has a dispatching constructor call (as documented in the
+	sources).
+
+2023-05-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute): Reject attribute Initialized
+	on unchecked unions; fix grammar in comment.
+
+2023-05-15  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch13.adb (Validate_Unchecked_Conversion): Fix behavior on
+	System.Address to access to subprogram subtype conversion.
+
+2023-05-15  Piotr Trojanek  <trojanek@adacore.com>
+
+	* atree.ads
+	(Is_Syntactic_Node): Refactored from New_Copy_Tree.
+	* atree.adb
+	(Is_Syntactic_Node): Likewise.
+	(Copy_Separate_Tree): Use Is_Syntactic_Node.
+	* sem_util.adb
+	(Has_More_Ids): Move to Atree.
+	(Is_Syntactic_Node): Likewise.
+
 2023-04-18  Jin Ma  <jinma@linux.alibaba.com>
 
 	* gcc-interface/utils.cc (unchecked_convert): Fixed typo.
