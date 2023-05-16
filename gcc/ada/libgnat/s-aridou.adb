@@ -2580,8 +2580,19 @@ is
             pragma Assert
               (Big (Double_Uns (Hi (T2))) + Big (Double_Uns (Hi (T1))) =
                    Big (Double_Uns (D (1))));
+            pragma Assert
+              (Is_Mult_Decomposition (D1 => Big (Double_Uns (D (1))),
+                                      D2 => Big (Double_Uns (D (2))),
+                                      D3 => Big (Double_Uns (D (3))),
+                                      D4 => Big (Double_Uns (D (4)))));
          else
             D (1) := 0;
+
+            pragma Assert
+              (Is_Mult_Decomposition (D1 => Big (Double_Uns (D (1))),
+                                      D2 => Big (Double_Uns (D (2))),
+                                      D3 => Big (Double_Uns (D (3))),
+                                      D4 => Big (Double_Uns (D (4)))));
          end if;
 
       else

@@ -51,7 +51,8 @@ is
 
    procedure Bad_Value (S : String)
    with
-     Depends => (null => S);
+     Depends => (null => S),
+     Exceptional_Cases => (others => Standard.False);
    pragma No_Return (Bad_Value);
    --  Raises constraint error with message: bad input for 'Value: "xxx"
 
