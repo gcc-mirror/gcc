@@ -231,6 +231,16 @@ enum vxrm_field_enum
   VXRM_RDN,
   VXRM_ROD
 };
+/* Rounding mode bitfield for floating point FRM.  */
+enum frm_field_enum
+{
+  FRM_RNE = 0b000,
+  FRM_RTZ = 0b001,
+  FRM_RDN = 0b010,
+  FRM_RUP = 0b011,
+  FRM_RMM = 0b100,
+  DYN = 0b111
+};
 }
 
 /* We classify builtin types into two classes:

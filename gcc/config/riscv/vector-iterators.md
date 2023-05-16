@@ -1436,10 +1436,13 @@
 
 (define_code_iterator and_ior [and ior])
 
-(define_code_iterator any_float_binop [plus mult smax smin minus div])
-(define_code_iterator commutative_float_binop [plus mult smax smin])
+(define_code_iterator any_float_binop [plus mult minus div])
+(define_code_iterator any_float_binop_nofrm [smax smin])
+(define_code_iterator commutative_float_binop [plus mult])
+(define_code_iterator commutative_float_binop_nofrm [smax smin])
 (define_code_iterator non_commutative_float_binop [minus div])
-(define_code_iterator any_float_unop [neg abs sqrt])
+(define_code_iterator any_float_unop [sqrt])
+(define_code_iterator any_float_unop_nofrm [neg abs])
 
 (define_code_iterator any_fix [fix unsigned_fix])
 (define_code_iterator any_float [float unsigned_float])

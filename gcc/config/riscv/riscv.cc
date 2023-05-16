@@ -6082,7 +6082,8 @@ riscv_hard_regno_nregs (unsigned int regno, machine_mode mode)
 
   /* mode for VL or VTYPE are just a marker, not holding value,
      so it always consume one register.  */
-  if (VTYPE_REG_P (regno) || VL_REG_P (regno) || VXRM_REG_P (regno))
+  if (VTYPE_REG_P (regno) || VL_REG_P (regno) || VXRM_REG_P (regno)
+      || FRM_REG_P (regno))
     return 1;
 
   /* Assume every valid non-vector mode fits in one vector register.  */
@@ -6150,7 +6151,8 @@ riscv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
       if (lmul != 1)
 	return ((regno % lmul) == 0);
     }
-  else if (VTYPE_REG_P (regno) || VL_REG_P (regno) || VXRM_REG_P (regno))
+  else if (VTYPE_REG_P (regno) || VL_REG_P (regno) || VXRM_REG_P (regno)
+	   || FRM_REG_P (regno))
     return true;
   else
     return false;
@@ -6587,6 +6589,7 @@ riscv_conditional_register_usage (void)
       fixed_regs[VTYPE_REGNUM] = call_used_regs[VTYPE_REGNUM] = 1;
       fixed_regs[VL_REGNUM] = call_used_regs[VL_REGNUM] = 1;
       fixed_regs[VXRM_REGNUM] = call_used_regs[VXRM_REGNUM] = 1;
+      fixed_regs[FRM_REGNUM] = call_used_regs[FRM_REGNUM] = 1;
     }
 }
 
