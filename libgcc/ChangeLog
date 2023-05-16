@@ -1,3 +1,11 @@
+2023-05-15  Thomas Neumann  <tneumann@users.sourceforge.net>
+
+	* unwind-dw2-fde.c: Fix assert in non-atomic path.
+
+2023-05-15  Sören Tempel  <soeren+git@soeren-tempel.net>
+
+	* unwind-dw2-fde.c: Accept empty ranges when deregistering frames.
+
 2023-04-26  Release Manager
 
 	* GCC 13.1.0 released.
