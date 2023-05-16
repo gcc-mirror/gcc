@@ -11032,7 +11032,9 @@ check_for_loop_decls (location_t loc, bool turn_off_iso_c99_error)
      only applies to those that are.  (A question on this in comp.std.c
      in November 2000 received no answer.)  We implement the strictest
      interpretation, to avoid creating an extension which later causes
-     problems.  */
+     problems.
+
+     This constraint was removed in C2X.  */
 
   for (b = current_scope->bindings; b; b = b->prev)
     {
@@ -11048,33 +11050,35 @@ check_for_loop_decls (location_t loc, bool turn_off_iso_c99_error)
 	  {
 	    location_t decl_loc = DECL_SOURCE_LOCATION (decl);
 	    if (TREE_STATIC (decl))
-	      error_at (decl_loc,
-			"declaration of static variable %qD in %<for%> loop "
-			"initial declaration", decl);
+	      pedwarn_c11 (decl_loc, OPT_Wpedantic,
+			   "declaration of static variable %qD in %<for%> "
+			   "loop initial declaration", decl);
 	    else if (DECL_EXTERNAL (decl))
-	      error_at (decl_loc,
-			"declaration of %<extern%> variable %qD in %<for%> loop "
-			"initial declaration", decl);
+	      pedwarn_c11 (decl_loc, OPT_Wpedantic,
+			   "declaration of %<extern%> variable %qD in %<for%> "
+			   "loop initial declaration", decl);
 	  }
 	  break;
 
 	case RECORD_TYPE:
-	  error_at (loc,
-		    "%<struct %E%> declared in %<for%> loop initial "
-		    "declaration", id);
+	  pedwarn_c11 (loc, OPT_Wpedantic,
+		       "%<struct %E%> declared in %<for%> loop initial "
+		       "declaration", id);
 	  break;
 	case UNION_TYPE:
-	  error_at (loc,
-		    "%<union %E%> declared in %<for%> loop initial declaration",
-		    id);
+	  pedwarn_c11 (loc, OPT_Wpedantic,
+		       "%<union %E%> declared in %<for%> loop initial "
+		       "declaration",
+		       id);
 	  break;
 	case ENUMERAL_TYPE:
-	  error_at (loc, "%<enum %E%> declared in %<for%> loop "
-		    "initial declaration", id);
+	  pedwarn_c11 (loc, OPT_Wpedantic,
+		       "%<enum %E%> declared in %<for%> loop "
+		       "initial declaration", id);
 	  break;
 	default:
-	  error_at (loc, "declaration of non-variable "
-		    "%qD in %<for%> loop initial declaration", decl);
+	  pedwarn_c11 (loc, OPT_Wpedantic, "declaration of non-variable "
+		       "%qD in %<for%> loop initial declaration", decl);
 	}
 
       n_decls++;
