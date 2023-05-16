@@ -5201,12 +5201,15 @@ AC_DEFUN([GLIBCXX_ZONEINFO_DIR], [
 	zoneinfo_dir=none
 	;;
     esac
-    case "$host" in
-      avr-*-* | msp430-*-* ) embed_zoneinfo=no ;;
-      *)
-	# Also embed a copy of the tzdata.zi file as a static string.
-	embed_zoneinfo=yes ;;
-    esac
+
+    AC_COMPUTE_INT(glibcxx_cv_at_least_32bit, [sizeof(void*) >= 4])
+    if test "$glibcxx_cv_at_least_32bit" -ne 0; then
+      # Also embed a copy of the tzdata.zi file as a static string.
+      embed_zoneinfo=yes
+    else
+      # The embedded data is too large for 16-bit targets.
+      embed_zoneinfo=no
+    fi
   elif test "x${with_libstdcxx_zoneinfo}" = xno; then
     # Disable tzdb support completely.
     zoneinfo_dir=none
