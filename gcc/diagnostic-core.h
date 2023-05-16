@@ -105,6 +105,9 @@ extern bool pedwarn (rich_location *, int, const char *, ...)
 extern bool permerror (location_t, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern bool permerror (rich_location *, const char *,
 				   ...) ATTRIBUTE_GCC_DIAG(2,3);
+extern bool permerror (location_t, int, const char *, ...) ATTRIBUTE_GCC_DIAG(3,4);
+extern bool permerror (rich_location *, int, const char *,
+		       ...) ATTRIBUTE_GCC_DIAG(3,4);
 extern void sorry (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern void sorry_at (location_t, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern void inform (location_t, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);

@@ -231,7 +231,7 @@ in the following sections.
 -fnew-inheriting-ctors
 -fnew-ttp-matching
 -fno-nonansi-builtins  -fnothrow-opt  -fno-operator-names
--fno-optional-diags  -fpermissive
+-fno-optional-diags
 -fno-pretty-templates
 -fno-rtti  -fsized-deallocation
 -ftemplate-backtrace-limit=@var{n}
@@ -323,7 +323,7 @@ Objective-C and Objective-C++ Dialects}.
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @gccoptlist{-fsyntax-only  -fmax-errors=@var{n}  -Wpedantic
--pedantic-errors
+-pedantic-errors -fpermissive
 -w  -Wextra  -Wall  -Wabi=@var{n}
 -Waddress  -Wno-address-of-packed-member  -Waggregate-return
 -Walloc-size-larger-than=@var{byte-size}  -Walloc-zero
@@ -3501,12 +3501,6 @@ Disable diagnostics that the standard says a compiler does not need to
 issue.  Currently, the only such diagnostic issued by G++ is the one for
 a name having multiple meanings within a class.
 
-@opindex fpermissive
-@item -fpermissive
-Downgrade some diagnostics about nonconformant code from errors to
-warnings.  Thus, using @option{-fpermissive} allows some
-nonconforming code to compile.
-
 @opindex fno-pretty-templates
 @opindex fpretty-templates
 @item -fno-pretty-templates
@@ -6165,6 +6159,18 @@ errors by @option{-pedantic-errors}.  For instance:
 -Wregister @r{(C++17 or later)}
 -Wvla @r{(C90 or earlier)}
 -Wwrite-strings @r{(C++11 or later)}
+}
+
+@opindex fpermissive
+@item -fpermissive
+Downgrade some required diagnostics about nonconformant code from
+errors to warnings.  Thus, using @option{-fpermissive} allows some
+nonconforming code to compile.  Some C++ diagnostics are controlled
+only by this flag, but it also downgrades some diagnostics that have
+their own flag:
+
+@gccoptlist{
+-Wnarrowing @r{(C++)}
 }
 
 @opindex Wall
