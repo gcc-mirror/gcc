@@ -4129,6 +4129,14 @@ add_list_candidates (tree fns, tree first_arg,
   if (CONSTRUCTOR_NELTS (init_list) == 0
       && TYPE_HAS_DEFAULT_CONSTRUCTOR (totype))
     ;
+  else if (CONSTRUCTOR_IS_DESIGNATED_INIT (init_list)
+	   && !CP_AGGREGATE_TYPE_P (totype))
+    {
+      if (complain & tf_error)
+	error ("designated initializers cannot be used with a "
+	       "non-aggregate type %qT", totype);
+      return;
+    }
   /* If the class has a list ctor, try passing the list as a single
      argument first, but only consider list ctors.  */
   else if (TYPE_HAS_LIST_CTOR (totype))
@@ -4139,14 +4147,6 @@ add_list_candidates (tree fns, tree first_arg,
 		      access_path, flags, candidates, complain);
       if (any_strictly_viable (*candidates))
 	return;
-    }
-  else if (CONSTRUCTOR_IS_DESIGNATED_INIT (init_list)
-	   && !CP_AGGREGATE_TYPE_P (totype))
-    {
-      if (complain & tf_error)
-	error ("designated initializers cannot be used with a "
-	       "non-aggregate type %qT", totype);
-      return;
     }
 
   /* Expand the CONSTRUCTOR into a new argument vec.  */
