@@ -109,7 +109,7 @@ extern void emit_symbolic_move (rtx *);
 extern void s390_load_address (rtx, rtx);
 extern bool s390_expand_cpymem (rtx, rtx, rtx, rtx, rtx);
 extern bool s390_expand_movmem (rtx, rtx, rtx, rtx, rtx);
-extern void s390_expand_setmem (rtx, rtx, rtx);
+extern void s390_expand_setmem (rtx, rtx, rtx, rtx, rtx);
 extern bool s390_expand_cmpmem (rtx, rtx, rtx, rtx);
 extern void s390_expand_vec_strlen (rtx, rtx, rtx);
 extern void s390_expand_vec_movstr (rtx, rtx, rtx);
