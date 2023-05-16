@@ -6500,16 +6500,6 @@ package body Exp_Util is
             then
                Top := Par;
 
-            --  Stop at contexts where temporaries may be contained
-
-            elsif Nkind (Par) in N_Aggregate
-                               | N_Delta_Aggregate
-                               | N_Extension_Aggregate
-                               | N_Block_Statement
-                               | N_Loop_Statement
-            then
-               exit;
-
             --  Prevent the search from going too far
 
             elsif Is_Body_Or_Package_Declaration (Par) then
