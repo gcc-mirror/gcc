@@ -1,3 +1,12 @@
+2023-05-12  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.c++/static-aggr-constructor-destructor-1.C: New
+	test.
+	* testsuite/libgomp.c++/static-aggr-constructor-destructor-2.C: New
+	test.
+	* testsuite/libgomp.c++/static-aggr-constructor-destructor-3.C: New
+	test.
+
 2023-05-04  Frederik Harwath  <frederik@codesourcery.com>
 
 	* testsuite/libgomp.c-c++-common/loop-transforms/matrix-no-directive-unroll-full-1.c:

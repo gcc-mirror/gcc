@@ -1,3 +1,9 @@
+2023-05-12  Julian Brown  <julian@codesourcery.com>
+
+	* omp-builtins.def (BUILT_IN_OMP_IS_INITIAL_DEVICE): New builtin.
+	* tree.cc (get_file_function_name): Support names for on-target
+	constructor/destructor functions.
+
 2023-05-04  Frederik Harwath  <frederik@codesourcery.com>
 
 	* omp-transform-loops.cc (full_unroll): Add initialization of index variable.

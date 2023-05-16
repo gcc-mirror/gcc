@@ -1,3 +1,19 @@
+2023-05-12  Julian Brown  <julian@codesourcery.com>
+
+	* decl2.cc (tree-inline.h): Include.
+	(static_init_fini_fns): Bump to four entries. Update comment.
+	(start_objects, start_partial_init_fini_fn): Add 'omp_target'
+	parameter. Support "declare target" decls. Update forward declaration.
+	(emit_partial_init_fini_fn): Add 'host_fn' parameter. Return tree for
+	the created function. Support "declare target".
+	(OMP_SSDF_IDENTIFIER): New macro.
+	(partition_vars_for_init_fini): Support partitioning "declare target"
+	variables also.
+	(generate_ctor_or_dtor_function): Add 'omp_target' parameter. Support
+	"declare target" decls.
+	(c_parse_final_cleanups): Support constructors/destructors on OpenMP
+	offload targets.
+
 2023-03-24  Frederik Harwath  <frederik@codesourcery.com>
 
 	* parser.cc (cp_parser_is_pragma): New function.
