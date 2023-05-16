@@ -996,6 +996,12 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
   tree var;
   tree tmp;
   int dim;
+  bool unlimited_poly;
+
+  unlimited_poly = class_ts.type == BT_CLASS
+		   && class_ts.u.derived->components->ts.type == BT_DERIVED
+		   && class_ts.u.derived->components->ts.u.derived
+						->attr.unlimited_polymorphic;
 
   /* The intrinsic type needs to be converted to a temporary
      CLASS object.  */
@@ -1067,9 +1073,7 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
     }
 
   gcc_assert (class_ts.type == BT_CLASS);
-  if (class_ts.u.derived->components->ts.type == BT_DERIVED
-      && class_ts.u.derived->components->ts.u.derived
-		 ->attr.unlimited_polymorphic)
+  if (unlimited_poly)
     {
       ctree = gfc_class_len_get (var);
       /* When the actual arg is a char array, then set the _len component of the
@@ -1116,10 +1120,7 @@ gfc_conv_intrinsic_to_class (gfc_se *parmse, gfc_expr *e,
 
       gfc_add_modify (&parmse->pre, ctree, fold_convert (TREE_TYPE (ctree), tmp));
     }
-  else if (class_ts.type == BT_CLASS
-	   && class_ts.u.derived->components
-	   && class_ts.u.derived->components->ts.u
-		.derived->attr.unlimited_polymorphic)
+  else if (unlimited_poly)
     {
       ctree = gfc_class_len_get (var);
       gfc_add_modify (&parmse->pre, ctree,
@@ -5650,7 +5651,7 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 	  itype = CFI_type_other;  // FIXME: Or CFI_type_cptr ?
 	  break;
 	case BT_CLASS:
-	  if (UNLIMITED_POLY (e) && fsym->ts.type == BT_ASSUMED)
+	  if (fsym->ts.type == BT_ASSUMED)
 	    {
 	      // F2017: 7.3.2.2: "An entity that is declared using the TYPE(*)
 	      // type specifier is assumed-type and is an unlimited polymorphic
@@ -6682,20 +6683,11 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			{
 			  tree zero;
 
-			  gfc_expr *var;
-
-			  /* Borrow the function symbol to make a call to
-			     gfc_add_finalizer_call and then restore it.  */
-			  tmp = e->symtree->n.sym->backend_decl;
-			  e->symtree->n.sym->backend_decl
-					= TREE_OPERAND (parmse.expr, 0);
-			  e->symtree->n.sym->attr.flavor = FL_VARIABLE;
-			  var = gfc_lval_expr_from_sym (e->symtree->n.sym);
-			  finalized = gfc_add_finalizer_call (&parmse.post,
-							      var);
-			  gfc_free_expr (var);
-			  e->symtree->n.sym->backend_decl = tmp;
-			  e->symtree->n.sym->attr.flavor = FL_PROCEDURE;
+			  /* Finalize the expression.  */
+			  gfc_finalize_tree_expr (&parmse, NULL,
+						  gfc_expr_attr (e), e->rank);
+			  gfc_add_block_to_block (&parmse.post,
+						  &parmse.finalblock);
 
 			  /* Then free the class _data.  */
 			  zero = build_int_cst (TREE_TYPE (parmse.expr), 0);
@@ -7131,7 +7123,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		 types passed to class formals need the _data component.  */
 	      tmp = gfc_class_data_get (tmp);
 	      if (!CLASS_DATA (fsym)->attr.dimension)
-		tmp = build_fold_indirect_ref_loc (input_location, tmp);
+		{
+		  if (UNLIMITED_POLY (fsym))
+		    {
+		      tree type = gfc_typenode_for_spec (&e->ts);
+		      type = build_pointer_type (type);
+		      tmp = fold_convert (type, tmp);
+		    }
+		  tmp = build_fold_indirect_ref_loc (input_location, tmp);
+		}
 	    }
 
 	  if (e->expr_type == EXPR_OP
@@ -8767,11 +8767,9 @@ gfc_trans_alloc_subarray_assign (tree dest, gfc_component * cm,
 /* Allocate or reallocate scalar component, as necessary.  */
 
 static void
-alloc_scalar_allocatable_for_subcomponent_assignment (stmtblock_t *block,
-						      tree comp,
-						      gfc_component *cm,
-						      gfc_expr *expr2,
-						      gfc_symbol *sym)
+alloc_scalar_allocatable_subcomponent (stmtblock_t *block, tree comp,
+				       gfc_component *cm, gfc_expr *expr2,
+				       tree slen)
 {
   tree tmp;
   tree ptr;
@@ -8789,26 +8787,20 @@ alloc_scalar_allocatable_for_subcomponent_assignment (stmtblock_t *block,
 
   if (cm->ts.type == BT_CHARACTER && cm->ts.deferred)
     {
-      char name[GFC_MAX_SYMBOL_LEN+9];
-      gfc_component *strlen;
-      /* Use the rhs string length and the lhs element size.  */
       gcc_assert (expr2->ts.type == BT_CHARACTER);
-      if (!expr2->ts.u.cl->backend_decl)
-	{
-	  gfc_conv_string_length (expr2->ts.u.cl, expr2, block);
-	  gcc_assert (expr2->ts.u.cl->backend_decl);
-	}
+      if (!expr2->ts.u.cl->backend_decl
+	  || !VAR_P (expr2->ts.u.cl->backend_decl))
+	expr2->ts.u.cl->backend_decl = gfc_create_var (TREE_TYPE (slen),
+						       "slen");
+      gfc_add_modify (block, expr2->ts.u.cl->backend_decl, slen);
 
       size = expr2->ts.u.cl->backend_decl;
 
-      /* Ensure that cm->ts.u.cl->backend_decl is a componentref to _%s_length
-	 component.  */
-      sprintf (name, "_%s_length", cm->name);
-      strlen = gfc_find_component (sym, name, true, true, NULL);
+      gfc_deferred_strlen (cm, &tmp);
       lhs_cl_size = fold_build3_loc (input_location, COMPONENT_REF,
 				     gfc_charlen_type_node,
 				     TREE_OPERAND (comp, 0),
-				     strlen->backend_decl, NULL_TREE);
+				     tmp, NULL_TREE);
 
       tmp = TREE_TYPE (gfc_typenode_for_spec (&cm->ts));
       tmp = TYPE_SIZE_UNIT (tmp);
@@ -8881,8 +8873,8 @@ alloc_scalar_allocatable_for_subcomponent_assignment (stmtblock_t *block,
 /* Assign a single component of a derived type constructor.  */
 
 static tree
-gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr,
-			       gfc_symbol *sym, bool init)
+gfc_trans_subcomponent_assign (tree dest, gfc_component * cm,
+			       gfc_expr * expr, bool init)
 {
   gfc_se se;
   gfc_se lse;
@@ -8976,19 +8968,17 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr,
 	   || (cm->ts.type == BT_CLASS && CLASS_DATA (cm)->attr.allocatable
 	       && expr->ts.type != BT_CLASS)))
     {
+      gfc_init_se (&se, NULL);
+      gfc_conv_expr (&se, expr);
+
       /* Take care about non-array allocatable components here.  The alloc_*
 	 routine below is motivated by the alloc_scalar_allocatable_for_
 	 assignment() routine, but with the realloc portions removed and
 	 different input.  */
-      alloc_scalar_allocatable_for_subcomponent_assignment (&block,
-							    dest,
-							    cm,
-							    expr,
-							    sym);
+      alloc_scalar_allocatable_subcomponent (&block, dest, cm, expr,
+					     se.string_length);
       /* The remainder of these instructions follow the if (cm->attr.pointer)
 	 if (!cm->attr.dimension) part above.  */
-      gfc_init_se (&se, NULL);
-      gfc_conv_expr (&se, expr);
       gfc_add_block_to_block (&block, &se.pre);
 
       if (expr->symtree && expr->symtree->n.sym->attr.proc_pointer
@@ -9252,13 +9242,11 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr, bool init, bool coarray)
       if (!c->expr)
 	{
 	  gfc_expr *e = gfc_get_null_expr (NULL);
-	  tmp = gfc_trans_subcomponent_assign (tmp, cm, e, expr->ts.u.derived,
-					       init);
+	  tmp = gfc_trans_subcomponent_assign (tmp, cm, e, init);
 	  gfc_free_expr (e);
 	}
       else
-        tmp = gfc_trans_subcomponent_assign (tmp, cm, c->expr,
-                                             expr->ts.u.derived, init);
+	tmp = gfc_trans_subcomponent_assign (tmp, cm, c->expr, init);
       gfc_add_expr_to_block (&block, tmp);
     }
   return gfc_finish_block (&block);

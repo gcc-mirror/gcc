@@ -11471,6 +11471,12 @@ gfc_walk_array_ref (gfc_ss * ss, gfc_expr * expr, gfc_ref * ref)
 	  break;
 
 	case AR_FULL:
+	  /* Assumed shape arrays from interface mapping need this fix.  */
+	  if (!ar->as && expr->symtree->n.sym->as)
+	    {
+	      ar->as = gfc_get_array_spec();
+	      *ar->as = *expr->symtree->n.sym->as;
+	    }
 	  newss = gfc_get_array_ss (ss, expr, ar->as->rank, GFC_SS_SECTION);
 	  newss->info->data.array.ref = ref;
 

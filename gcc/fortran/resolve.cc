@@ -11165,6 +11165,17 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
   lhs = code->expr1;
   rhs = code->expr2;
 
+  if ((lhs->symtree->n.sym->ts.type == BT_DERIVED
+       || lhs->symtree->n.sym->ts.type == BT_CLASS)
+      && !lhs->symtree->n.sym->attr.proc_pointer
+      && gfc_expr_attr (lhs).proc_pointer)
+    {
+      gfc_error ("Variable in the ordinary assignment at %L is a procedure "
+		 "pointer component",
+		 &lhs->where);
+      return false;
+    }
+
   if ((gfc_numeric_ts (&lhs->ts) || lhs->ts.type == BT_LOGICAL)
       && rhs->ts.type == BT_CHARACTER
       && (rhs->expr_type != EXPR_CONSTANT || !flag_dec_char_conversions))
