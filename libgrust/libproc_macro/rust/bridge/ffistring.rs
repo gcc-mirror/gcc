@@ -16,15 +16,18 @@ pub struct FFIString {
     len: u64,
 }
 
-impl FFIString {
-    pub fn new(string: &str) -> FFIString {
-        unsafe { FFIString__new(string.as_ptr(), string.len() as u64) }
+impl<S> From<S> for FFIString
+where
+    S: AsRef<str>,
+{
+    fn from(s: S) -> Self {
+        unsafe { FFIString__new(s.as_ref().as_ptr(), s.as_ref().len() as u64) }
     }
 }
 
 impl Clone for FFIString {
     fn clone(&self) -> Self {
-        FFIString::new(&self.to_string())
+        FFIString::from(&self.to_string())
     }
 }
 

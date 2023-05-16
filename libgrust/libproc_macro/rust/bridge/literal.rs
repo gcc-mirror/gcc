@@ -37,8 +37,8 @@ macro_rules! suffixed_int_literals {
         pub fn $name(n : $kind) -> Literal {
             Literal {
                 kind : LitKind::Integer,
-                text: FFIString::new(&n.to_string()),
-                suffix: FFIString::new(stringify!($kind))
+                text: FFIString::from(&n.to_string()),
+                suffix: FFIString::from(stringify!($kind))
             }
         }
     )*)
@@ -49,8 +49,8 @@ macro_rules! unsuffixed_int_literals {
         pub fn $name(n : $kind) -> Literal {
             Literal {
                 kind : LitKind::Integer,
-                text: FFIString::new(&n.to_string()),
-                suffix: FFIString::new("")
+                text: FFIString::from(&n.to_string()),
+                suffix: FFIString::from("")
             }
         }
     )*)
@@ -95,16 +95,16 @@ impl Literal {
 
         Literal {
             kind: LitKind::Float,
-            text: FFIString::new(&repr),
-            suffix: FFIString::new(""),
+            text: FFIString::from(&repr),
+            suffix: FFIString::from(""),
         }
     }
 
     pub fn f32_suffixed(n: f32) -> Self {
         Literal {
             kind: LitKind::Float,
-            text: FFIString::new(&n.to_string()),
-            suffix: FFIString::new("f32"),
+            text: FFIString::from(&n.to_string()),
+            suffix: FFIString::from("f32"),
         }
     }
 
@@ -116,40 +116,40 @@ impl Literal {
 
         Literal {
             kind: LitKind::Float,
-            text: FFIString::new(&repr),
-            suffix: FFIString::new(""),
+            text: FFIString::from(&repr),
+            suffix: FFIString::from(""),
         }
     }
 
     pub fn f64_suffixed(n: f64) -> Self {
         Literal {
             kind: LitKind::Float,
-            text: FFIString::new(&n.to_string()),
-            suffix: FFIString::new("f64"),
+            text: FFIString::from(&n.to_string()),
+            suffix: FFIString::from("f64"),
         }
     }
 
     pub fn string(string: &str) -> Self {
         Literal {
             kind: LitKind::Str,
-            text: FFIString::new(string),
-            suffix: FFIString::new(""),
+            text: FFIString::from(string),
+            suffix: FFIString::from(""),
         }
     }
 
     pub fn character(c: char) -> Self {
         Literal {
             kind: LitKind::Char,
-            text: FFIString::new(&c.to_string()),
-            suffix: FFIString::new(""),
+            text: FFIString::from(&c.to_string()),
+            suffix: FFIString::from(""),
         }
     }
 
     pub fn byte_string(bytes: &[u8]) -> Self {
         Literal {
             kind: LitKind::ByteStr,
-            text: FFIString::new(&bytes.escape_ascii().to_string()),
-            suffix: FFIString::new(""),
+            text: FFIString::from(&bytes.escape_ascii().to_string()),
+            suffix: FFIString::from(""),
         }
     }
 
@@ -219,8 +219,8 @@ impl FromStr for Literal {
         // Structure that will be filled in by the cpp
         let mut lit = Literal {
             kind: LitKind::Err,
-            text: FFIString::new(""),
-            suffix: FFIString::new(""),
+            text: FFIString::from(""),
+            suffix: FFIString::from(""),
         };
         // TODO: We might want to pass a LexError by reference to retrieve
         // error information
