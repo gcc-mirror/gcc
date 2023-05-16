@@ -173,6 +173,19 @@ minmax_from_comparison (tree_code cmp, tree exp0, tree exp1, tree exp2, tree exp
 	  /* X > Y - 1 equals to X >= Y.  */
 	  if (cmp == GT_EXPR)
 	    code = GE_EXPR;
+	  /* a != MIN_RANGE<a> ? a : MIN_RANGE<a>+1 -> MAX_EXPR<MIN_RANGE<a>+1, a> */
+	  if (cmp == NE_EXPR && TREE_CODE (exp0) == SSA_NAME)
+	    {
+	      value_range r;
+	      get_range_query (cfun)->range_of_expr (r, exp0);
+	      if (r.undefined_p ())
+		r.set_varying (TREE_TYPE (exp0));
+
+	      widest_int min = widest_int::from (r.lower_bound (),
+						 TYPE_SIGN (TREE_TYPE (exp0)));
+	      if (min == wi::to_widest (exp1))
+		code = MAX_EXPR;
+	    }
 	}
       if (wi::to_widest (exp1) == (wi::to_widest (exp3) + 1))
 	{
@@ -182,6 +195,19 @@ minmax_from_comparison (tree_code cmp, tree exp0, tree exp1, tree exp2, tree exp
 	  /* X >= Y + 1 equals to X > Y.  */
 	  if (cmp == GE_EXPR)
 	  code = GT_EXPR;
+	  /* a != MAX_RANGE<a> ? a : MAX_RANGE<a>-1 -> MIN_EXPR<MIN_RANGE<a>-1, a> */
+	  if (cmp == NE_EXPR && TREE_CODE (exp0) == SSA_NAME)
+	    {
+	      value_range r;
+	      get_range_query (cfun)->range_of_expr (r, exp0);
+	      if (r.undefined_p ())
+		r.set_varying (TREE_TYPE (exp0));
+
+	      widest_int max = widest_int::from (r.upper_bound (),
+						 TYPE_SIGN (TREE_TYPE (exp0)));
+	      if (max == wi::to_widest (exp1))
+		code = MIN_EXPR;
+	    }
 	}
     }
   if (code != ERROR_MARK

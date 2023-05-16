@@ -4833,7 +4833,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
    Case 2)
    (cond (eq (convert1? x) c1) (convert2? x) c2) -> (cond (eq x c1) c1 c2).  */
-(for cmp (lt le gt ge eq)
+(for cmp (lt le gt ge eq ne)
  (simplify
   (cond (cmp (convert1? @1) INTEGER_CST@3) (convert2? @1) INTEGER_CST@2)
   (with
@@ -5024,7 +5024,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Optimize (a CMP b) ? minmax<a, c> : minmax<b, c>
    to minmax<min/max<a, b>, c> */
 (for minmax (min max)
- (for cmp (lt le gt ge)
+ (for cmp (lt le gt ge ne)
   (simplify
    (cond (cmp @1 @3) (minmax:c @1 @4) (minmax:c @2 @4))
    (with
