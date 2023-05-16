@@ -1572,12 +1572,16 @@ scan_one_insn (rtx_insn *insn)
       && (! ira_use_lra_p || ! pic_offset_table_rtx
 	  || ! contains_symbol_ref_p (XEXP (note, 0))))
     {
-      /* Costs for NO_REGS are used in cost calculation on the
-	 1st pass when the preferred register classes are not
-	 known yet.  In this case we take the best scenario.  */
-      enum reg_class cl = NO_REGS;
+      enum reg_class cl = GENERAL_REGS;
       rtx reg = SET_DEST (set);
       int num = COST_INDEX (REGNO (reg));
+      /* Costs for NO_REGS are used in cost calculation on the
+	 1st pass when the preferred register classes are not
+	 known yet.  In this case we take the best scenario when
+	 mode can't be put into GENERAL_REGS.  */
+      if (!targetm.hard_regno_mode_ok (ira_class_hard_regs[cl][0],
+				       GET_MODE (reg)))
+	cl = NO_REGS;
 
       COSTS (costs, num)->mem_cost
 	-= ira_memory_move_cost[GET_MODE (reg)][cl][1] * frequency;
