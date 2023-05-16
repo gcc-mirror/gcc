@@ -41,7 +41,8 @@ FFIString::make_ffistring (const std::string &str)
 FFIString
 FFIString::make_ffistring (const unsigned char *data, std::uint64_t len)
 {
-  const unsigned char *inner = new unsigned char[len];
+  unsigned char *inner = new unsigned char[len];
+  std::memcpy (inner, data, len);
   return {inner, len};
 }
 
