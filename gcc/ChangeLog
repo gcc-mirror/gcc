@@ -1,3 +1,19 @@
+2023-05-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/darwin.h (ENDFILE_SPEC): Fix trailing '\'.
+
+2023-05-15  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/cygwin.h (ENDFILE_SPEC): Link crtfastmath.o
+	whenever -mdaz-ftz is specified. Don't link crtfastmath.o
+	when -mno-daz-ftz is specified.
+	* config/i386/darwin.h (ENDFILE_SPEC): Ditto.
+	* config/i386/gnu-user-common.h
+	(GNU_USER_TARGET_MATHFILE_SPEC): Ditto.
+	* config/i386/mingw32.h (ENDFILE_SPEC): Ditto.
+	* config/i386/i386.opt (mdaz-ftz): New option.
+	* doc/invoke.texi (x86 options): Document mftz-daz.
+
 2023-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
