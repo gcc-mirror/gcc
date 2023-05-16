@@ -840,7 +840,7 @@ namespace __expected
 
       // monadic operations
 
-      template<typename _Fn> requires is_copy_constructible_v<_Er>
+      template<typename _Fn> requires is_constructible_v<_Er, _Er&>
 	constexpr auto
 	and_then(_Fn&& __f) &
 	{
@@ -854,7 +854,7 @@ namespace __expected
 	    return _Up(unexpect, error());
 	}
 
-      template<typename _Fn> requires is_copy_constructible_v<_Er>
+      template<typename _Fn> requires is_constructible_v<_Er, const _Er&>
 	constexpr auto
 	and_then(_Fn&& __f) const &
 	{
@@ -868,7 +868,7 @@ namespace __expected
 	    return _Up(unexpect, error());
 	}
 
-      template<typename _Fn> requires is_move_constructible_v<_Er>
+      template<typename _Fn> requires is_constructible_v<_Er, _Er>
 	constexpr auto
 	and_then(_Fn&& __f) &&
 	{
@@ -883,7 +883,7 @@ namespace __expected
 	}
 
 
-      template<typename _Fn> requires is_move_constructible_v<_Er>
+      template<typename _Fn> requires is_constructible_v<_Er, const _Er>
 	constexpr auto
 	and_then(_Fn&& __f) const &&
 	{
@@ -897,7 +897,7 @@ namespace __expected
 	    return _Up(unexpect, std::move(error()));
 	}
 
-      template<typename _Fn> requires is_copy_constructible_v<_Er>
+      template<typename _Fn> requires is_constructible_v<_Tp, _Tp&>
 	constexpr auto
 	or_else(_Fn&& __f) &
 	{
@@ -911,7 +911,7 @@ namespace __expected
 	    return std::__invoke(std::forward<_Fn>(__f), error());
 	}
 
-      template<typename _Fn> requires is_copy_constructible_v<_Er>
+      template<typename _Fn> requires is_constructible_v<_Tp, const _Tp&>
 	constexpr auto
 	or_else(_Fn&& __f) const &
 	{
@@ -926,7 +926,7 @@ namespace __expected
 	}
 
 
-      template<typename _Fn> requires is_move_constructible_v<_Er>
+      template<typename _Fn> requires is_constructible_v<_Tp, _Tp>
 	constexpr auto
 	or_else(_Fn&& __f) &&
 	{
@@ -940,7 +940,7 @@ namespace __expected
 	    return std::__invoke(std::forward<_Fn>(__f), std::move(error()));
 	}
 
-      template<typename _Fn> requires is_move_constructible_v<_Er>
+      template<typename _Fn> requires is_constructible_v<_Tp, const _Tp>
 	constexpr auto
 	or_else(_Fn&& __f) const &&
 	{
@@ -954,7 +954,7 @@ namespace __expected
 	    return std::__invoke(std::forward<_Fn>(__f), std::move(error()));
 	}
 
-      template<typename _Fn> requires is_copy_constructible_v<_Er>
+      template<typename _Fn> requires is_constructible_v<_Er, _Er&>
 	constexpr auto
 	transform(_Fn&& __f) &
 	{
@@ -970,7 +970,7 @@ namespace __expected
 	    return _Res(unexpect, std::move(error()));
 	}
 
-      template<typename _Fn> requires is_copy_constructible_v<_Er>
+      template<typename _Fn> requires is_constructible_v<_Er, const _Er&>
 	constexpr auto
 	transform(_Fn&& __f) const &
 	{
@@ -986,7 +986,7 @@ namespace __expected
 	    return _Res(unexpect, std::move(error()));
 	}
 
-      template<typename _Fn> requires is_move_constructible_v<_Er>
+      template<typename _Fn> requires is_constructible_v<_Er, _Er>
 	constexpr auto
 	transform(_Fn&& __f) &&
 	{
@@ -1002,7 +1002,7 @@ namespace __expected
 	    return _Res(unexpect, std::move(error()));
 	}
 
-      template<typename _Fn> requires is_move_constructible_v<_Er>
+      template<typename _Fn> requires is_constructible_v<_Er, const _Er>
 	constexpr auto
 	transform(_Fn&& __f) const &&
 	{
@@ -1018,7 +1018,7 @@ namespace __expected
 	    return _Res(unexpect, std::move(error()));
 	}
 
-      template<typename _Fn> requires is_copy_constructible_v<_Tp>
+      template<typename _Fn> requires is_constructible_v<_Tp, _Tp&>
 	constexpr auto
 	transform_error(_Fn&& __f) &
 	{
@@ -1034,7 +1034,7 @@ namespace __expected
 			});
 	}
 
-      template<typename _Fn> requires is_copy_constructible_v<_Tp>
+      template<typename _Fn> requires is_constructible_v<_Tp, const _Tp&>
 	constexpr auto
 	transform_error(_Fn&& __f) const &
 	{
@@ -1050,7 +1050,7 @@ namespace __expected
 			});
 	}
 
-      template<typename _Fn> requires is_move_constructible_v<_Tp>
+      template<typename _Fn> requires is_constructible_v<_Tp, _Tp>
 	constexpr auto
 	transform_error(_Fn&& __f) &&
 	{
@@ -1066,7 +1066,7 @@ namespace __expected
 			});
 	}
 
-      template<typename _Fn> requires is_move_constructible_v<_Tp>
+      template<typename _Fn> requires is_constructible_v<_Tp, const _Tp>
 	constexpr auto
 	transform_error(_Fn&& __f) const &&
 	{
@@ -1519,7 +1519,7 @@ namespace __expected
 
       // monadic operations
 
-      template<typename _Fn> requires is_copy_constructible_v<_Er>
+      template<typename _Fn> requires is_constructible_v<_Er, _Er&>
 	constexpr auto
 	and_then(_Fn&& __f) &
 	{
@@ -1533,7 +1533,7 @@ namespace __expected
 	    return _Up(unexpect, error());
 	}
 
-     template<typename _Fn> requires is_copy_constructible_v<_Er>
+     template<typename _Fn> requires is_constructible_v<_Er, const _Er&>
 	constexpr auto
 	and_then(_Fn&& __f) const &
 	{
@@ -1547,7 +1547,7 @@ namespace __expected
 	    return _Up(unexpect, error());
 	}
 
-      template<typename _Fn> requires is_move_constructible_v<_Er>
+      template<typename _Fn> requires is_constructible_v<_Er, _Er>
 	constexpr auto
 	and_then(_Fn&& __f) &&
 	{
@@ -1561,7 +1561,7 @@ namespace __expected
 	    return _Up(unexpect, std::move(error()));
 	}
 
-       template<typename _Fn> requires is_move_constructible_v<_Er>
+       template<typename _Fn> requires is_constructible_v<_Er, const _Er>
 	constexpr auto
 	and_then(_Fn&& __f) const &&
 	{
@@ -1631,7 +1631,7 @@ namespace __expected
 	    return std::__invoke(std::forward<_Fn>(__f), std::move(error()));
 	}
 
-      template<typename _Fn> requires is_copy_constructible_v<_Er>
+      template<typename _Fn> requires is_constructible_v<_Er, _Er&>
 	constexpr auto
 	transform(_Fn&& __f) &
 	{
@@ -1644,7 +1644,7 @@ namespace __expected
 	    return _Res(unexpect, error());
 	}
 
-      template<typename _Fn> requires is_copy_constructible_v<_Er>
+      template<typename _Fn> requires is_constructible_v<_Er, const _Er&>
 	constexpr auto
 	transform(_Fn&& __f) const &
 	{
@@ -1657,7 +1657,7 @@ namespace __expected
 	    return _Res(unexpect, error());
 	}
 
-      template<typename _Fn> requires is_move_constructible_v<_Er>
+      template<typename _Fn> requires is_constructible_v<_Er, _Er>
 	constexpr auto
 	transform(_Fn&& __f) &&
 	{
@@ -1670,7 +1670,7 @@ namespace __expected
 	    return _Res(unexpect, std::move(error()));
 	}
 
-      template<typename _Fn> requires is_move_constructible_v<_Er>
+      template<typename _Fn> requires is_constructible_v<_Er, const _Er>
 	constexpr auto
 	transform(_Fn&& __f) const &&
 	{
