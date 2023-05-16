@@ -5650,27 +5650,27 @@ legitimize_reload_address (rtx ad, machine_mode mode ATTRIBUTE_UNUSED,
   return NULL_RTX;
 }
 
-/* Emit code to move LEN bytes from DST to SRC.  */
+/* Emit code to move LEN bytes from SRC to DST.  */
 
 bool
-s390_expand_cpymem (rtx dst, rtx src, rtx len)
+s390_expand_cpymem (rtx dst, rtx src, rtx len, rtx min_len_rtx, rtx max_len_rtx)
 {
-  /* When tuning for z10 or higher we rely on the Glibc functions to
-     do the right thing. Only for constant lengths below 64k we will
-     generate inline code.  */
-  if (s390_tune >= PROCESSOR_2097_Z10
-      && (GET_CODE (len) != CONST_INT || INTVAL (len) > (1<<16)))
-    return false;
+  /* Exit early in case nothing has to be done.  */
+  if (CONST_INT_P (len) && UINTVAL (len) == 0)
+    return true;
+
+  unsigned HOST_WIDE_INT min_len = UINTVAL (min_len_rtx);
+  unsigned HOST_WIDE_INT max_len
+    = max_len_rtx ? UINTVAL (max_len_rtx) : HOST_WIDE_INT_M1U;
 
   /* Expand memcpy for constant length operands without a loop if it
      is shorter that way.
 
      With a constant length argument a
      memcpy loop (without pfd) is 36 bytes -> 6 * mvc  */
-  if (GET_CODE (len) == CONST_INT
-      && INTVAL (len) >= 0
-      && INTVAL (len) <= 256 * 6
-      && (!TARGET_MVCLE || INTVAL (len) <= 256))
+  if (CONST_INT_P (len)
+      && UINTVAL (len) <= 6 * 256
+      && (!TARGET_MVCLE || UINTVAL (len) <= 256))
     {
       HOST_WIDE_INT o, l;
 
@@ -5681,14 +5681,57 @@ s390_expand_cpymem (rtx dst, rtx src, rtx len)
 	  emit_insn (gen_cpymem_short (newdst, newsrc,
 				       GEN_INT (l > 256 ? 255 : l - 1)));
 	}
+
+      return true;
     }
 
-  else if (TARGET_MVCLE)
+  else if (TARGET_MVCLE
+	   && (s390_tune < PROCESSOR_2097_Z10
+	       || (CONST_INT_P (len) && UINTVAL (len) <= (1 << 16))))
     {
       emit_insn (gen_cpymem_long (dst, src, convert_to_mode (Pmode, len, 1)));
+      return true;
     }
 
-  else
+  /* Non-constant length and no loop required.  */
+  else if (!CONST_INT_P (len) && max_len <= 256)
+    {
+      rtx_code_label *end_label;
+
+      if (min_len == 0)
+	{
+	  end_label = gen_label_rtx ();
+	  emit_cmp_and_jump_insns (len, const0_rtx, EQ, NULL_RTX,
+				   GET_MODE (len), 1, end_label,
+				   profile_probability::very_unlikely ());
+	}
+
+      rtx lenm1 = expand_binop (GET_MODE (len), add_optab, len, constm1_rtx,
+				NULL_RTX, 1, OPTAB_DIRECT);
+
+      /* Prefer a vectorized implementation over one which makes use of an
+	 execute instruction since it is faster (although it increases register
+	 pressure).  */
+      if (max_len <= 16 && TARGET_VX)
+	{
+	  rtx tmp = gen_reg_rtx (V16QImode);
+	  lenm1 = convert_to_mode (SImode, lenm1, 1);
+	  emit_insn (gen_vllv16qi (tmp, lenm1, src));
+	  emit_insn (gen_vstlv16qi (tmp, lenm1, dst));
+	}
+      else if (TARGET_Z15)
+	emit_insn (gen_mvcrl (dst, src, convert_to_mode (SImode, lenm1, 1)));
+      else
+	emit_insn (
+	  gen_cpymem_short (dst, src, convert_to_mode (Pmode, lenm1, 1)));
+
+      if (min_len == 0)
+	emit_label (end_label);
+
+      return true;
+    }
+
+  else if (s390_tune < PROCESSOR_2097_Z10 || (CONST_INT_P (len) && UINTVAL (len) <= (1 << 16)))
     {
       rtx dst_addr, src_addr, count, blocks, temp;
       rtx_code_label *loop_start_label = gen_label_rtx ();
@@ -5706,8 +5749,9 @@ s390_expand_cpymem (rtx dst, rtx src, rtx len)
       blocks = gen_reg_rtx (mode);
 
       convert_move (count, len, 1);
-      emit_cmp_and_jump_insns (count, const0_rtx,
-			       EQ, NULL_RTX, mode, 1, end_label);
+      if (min_len == 0)
+	emit_cmp_and_jump_insns (count, const0_rtx, EQ, NULL_RTX, mode, 1,
+				 end_label);
 
       emit_move_insn (dst_addr, force_operand (XEXP (dst, 0), NULL_RTX));
       emit_move_insn (src_addr, force_operand (XEXP (src, 0), NULL_RTX));
@@ -5767,8 +5811,11 @@ s390_expand_cpymem (rtx dst, rtx src, rtx len)
       emit_insn (gen_cpymem_short (dst, src,
 				   convert_to_mode (Pmode, count, 1)));
       emit_label (end_label);
+
+      return true;
     }
-  return true;
+
+  return false;
 }
 
 /* Emit code to set LEN bytes at DST to VAL.
@@ -6599,7 +6646,8 @@ s390_expand_insv (rtx dest, rtx op1, rtx op2, rtx src)
 
 	  dest = adjust_address (dest, BLKmode, 0);
 	  set_mem_size (dest, size);
-	  s390_expand_cpymem (dest, src_mem, GEN_INT (size));
+	  rtx size_rtx = GEN_INT (size);
+	  s390_expand_cpymem (dest, src_mem, size_rtx, size_rtx, size_rtx);
 	  return true;
 	}
 
