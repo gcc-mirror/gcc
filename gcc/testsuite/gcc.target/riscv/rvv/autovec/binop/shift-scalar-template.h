@@ -2,7 +2,7 @@
 /* { dg-do run } */
 /* { dg-additional-options "-std=c99 --param=riscv-autovec-preference=scalable -fno-vect-cost-model --save-temps" } */
 
-#include <stdint.h>
+#include <stdint-gcc.h>
 #include <assert.h>
 
 #define SHIFTL(TYPE,VAL)				\

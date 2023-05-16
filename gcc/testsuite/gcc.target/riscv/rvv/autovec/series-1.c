@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv32gcv -mabi=ilp32d --param riscv-autovec-preference=fixed-vlmax --param riscv-autovec-lmul=m4" } */
 
-#include <stdint.h>
+#include <stdint-gcc.h>
 
 #define NUM_ELEMS(TYPE) (64 / sizeof (TYPE))
 

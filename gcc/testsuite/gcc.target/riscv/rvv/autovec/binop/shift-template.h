@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include <stdint-gcc.h>
 
 #define TEST1_TYPE(TYPE)					\
   __attribute__((noipa))					\

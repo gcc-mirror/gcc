@@ -3,7 +3,7 @@
 
 #include "vmv-imm-template.h"
 
-#include <stdint.h>
+#include <stdint-gcc.h>
 #include <assert.h>
 
 #define SZ 512
