@@ -115,8 +115,13 @@ int32x4_t sfooq_laneq (int32x4_t r, int8x16_t x, uint8x16_t y)
 
 /*
 **ufoo_untied:
+** (
 **	mov	v0\.8b, v1\.8b
 **	usdot	v0\.2s, v2\.8b, v3\.8b
+** |
+**	usdot	v1\.2s, v2\.8b, v3\.8b
+**	mov	v0\.8b, v1\.8b
+** )
 **	ret
 */
 int32x2_t ufoo_untied (int32x2_t unused, int32x2_t r, uint8x8_t x, int8x8_t y)
@@ -126,8 +131,13 @@ int32x2_t ufoo_untied (int32x2_t unused, int32x2_t r, uint8x8_t x, int8x8_t y)
 
 /*
 **ufooq_laneq_untied:
+** (
 **	mov	v0\.16b, v1\.16b
 **	usdot	v0\.4s, v2\.16b, v3\.4b\[3\]
+** |
+**	usdot	v1\.4s, v2\.16b, v3\.4b\[3\]
+**	mov	v0\.16b, v1\.16b
+** )
 **	ret
 */
 int32x4_t ufooq_laneq_untied (int32x2_t unused, int32x4_t r, uint8x16_t x, int8x16_t y)
