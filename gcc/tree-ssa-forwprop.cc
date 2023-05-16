@@ -1231,14 +1231,14 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 	  tree size = gimple_call_arg (stmt2, 2);
 	  /* Size must be a constant which is <= UNITS_PER_WORD and
 	     <= the string length.  */
-	  if (TREE_CODE (size) != INTEGER_CST || integer_zerop (size))
+	  if (TREE_CODE (size) != INTEGER_CST)
 	    break;
 
 	  if (!tree_fits_uhwi_p (size))
 	    break;
 
 	  unsigned HOST_WIDE_INT sz = tree_to_uhwi (size);
-	  if (sz > UNITS_PER_WORD || sz >= slen)
+	  if (sz == 0 || sz > UNITS_PER_WORD || sz >= slen)
 	    break;
 
 	  tree ch = gimple_call_arg (stmt2, 1);
