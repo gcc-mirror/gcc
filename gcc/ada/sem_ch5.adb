@@ -2853,10 +2853,10 @@ package body Sem_Ch5 is
          end if;
       end if;
 
-      if Present (Iterator_Filter (N)) then
-         --  Preanalyze the filter. Expansion will take place when enclosing
-         --  loop is expanded.
+      --  Preanalyze the filter. Expansion will take place when enclosing
+      --  loop is expanded.
 
+      if Present (Iterator_Filter (N)) then
          Preanalyze_And_Resolve (Iterator_Filter (N), Standard_Boolean);
       end if;
    end Analyze_Iterator_Specification;
@@ -3570,8 +3570,11 @@ package body Sem_Ch5 is
          end;
       end if;
 
+      --  Preanalyze the filter. Expansion will take place when enclosing
+      --  loop is expanded.
+
       if Present (Iterator_Filter (N)) then
-         Analyze_And_Resolve (Iterator_Filter (N), Standard_Boolean);
+         Preanalyze_And_Resolve (Iterator_Filter (N), Standard_Boolean);
       end if;
 
       --  A loop parameter cannot be effectively volatile (SPARK RM 7.1.3(4)).

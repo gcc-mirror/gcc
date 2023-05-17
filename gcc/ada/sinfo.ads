@@ -1899,6 +1899,11 @@ package Sinfo is
    --    Present in variable reference markers. Set when the original variable
    --    reference constitutes a write of the variable.
 
+   --  Iterator_Filter
+   --    Present in N_Loop_Parameter_Specification and N_Iterator_Specification
+   --    nodes for Ada 2022. It is used to store the condition present in the
+   --    eponymous Ada 2022 construct.
+
    --  Itype
    --    Used in N_Itype_Reference node to reference an itype for which it is
    --    important to ensure that it is defined. See description of this node
