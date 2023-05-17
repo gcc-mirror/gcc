@@ -260,6 +260,12 @@ template<rtx_code CODE>
 class binop : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override
+  {
+    return CODE == SS_PLUS || CODE == SS_MINUS || CODE == US_PLUS
+	   || CODE == US_MINUS;
+  }
+
   rtx expand (function_expander &e) const override
   {
     switch (e.op_info->op)
@@ -596,6 +602,8 @@ template<int UNSPEC>
 class sat_op : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override { return true; }
+
   rtx expand (function_expander &e) const override
   {
     switch (e.op_info->op)
@@ -616,6 +624,8 @@ template<int UNSPEC>
 class vnclip : public function_base
 {
 public:
+  bool has_rounding_mode_operand_p () const override { return true; }
+
   rtx expand (function_expander &e) const override
   {
     switch (e.op_info->op)

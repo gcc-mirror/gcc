@@ -413,6 +413,9 @@ public:
   /* Return true if intrinsics has merge operand.  */
   virtual bool has_merge_operand_p () const;
 
+  /* Return true if intrinsics has rounding mode operand.  */
+  virtual bool has_rounding_mode_operand_p () const;
+
   /* Try to fold the given gimple call.  Return the new gimple statement
      on success, otherwise return null.  */
   virtual gimple *fold (gimple_folder &) const { return NULL; }
@@ -434,6 +437,7 @@ public:
 
   machine_mode arg_mode (unsigned int) const;
   machine_mode ret_mode (void) const;
+  unsigned int arg_num (void) const;
   bool check (void);
 
   bool require_immediate (unsigned int, HOST_WIDE_INT, HOST_WIDE_INT) const;
@@ -600,6 +604,12 @@ function_checker::ret_mode () const
   return TYPE_MODE (TREE_TYPE (TREE_TYPE (fndecl)));
 }
 
+inline unsigned int
+function_checker::arg_num () const
+{
+  return m_nargs;
+}
+
 /* Default implementation of function_base::call_properties, with conservatively
    correct behavior for floating-point instructions.  */
 inline unsigned int
@@ -649,6 +659,14 @@ inline bool
 function_base::has_merge_operand_p () const
 {
   return true;
+}
+
+/* We choose to return false by default since most of the intrinsics does
+   not have rounding mode operand.  */
+inline bool
+function_base::has_rounding_mode_operand_p () const
+{
+  return false;
 }
 
 /* Since most of intrinsics can be overloaded, we set it true by default.  */

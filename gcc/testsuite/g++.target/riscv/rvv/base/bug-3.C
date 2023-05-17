@@ -309,7 +309,7 @@ __riscv_vsetvl_e32m2(8);
 vbool16_t var_49 = __riscv_vmseq_vv_i32m2_b16(var_50, var_51, 8);
 // 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
-vint16m1_t var_13 = __riscv_vsadd_vx_i16m1(var_0, var_60, 8);
+vint16m1_t var_13 = __riscv_vsadd_vx_i16m1(var_0, var_60, 0, 8);
 // -9364, 32767, 11538, -10536, 32767, 30906, 30906, 4977
 
 __riscv_vsetvl_e16m8(7);
@@ -328,7 +328,7 @@ vuint32m2_t var_12 = __riscv_vfcvt_rtz_xu_f_v_u32m2_mu(var_35, var_36, var_37, 8
 
 __riscv_vse16_v_i16m1(var_79, var_13, 8);
 __riscv_vsetvl_e16m8(7);
-vint16m8_t var_9 = __riscv_vaadd_vx_i16m8_mu(var_15, var_43, var_44, var_63, 7);
+vint16m8_t var_9 = __riscv_vaadd_vx_i16m8_mu(var_15, var_43, var_44, var_63, 0, 7);
 // -6442, 2757, 1437, -18340, -12668, -27551, 29648
 
 __riscv_vsetvl_e32m2(8);
@@ -347,7 +347,7 @@ vint16m8_t var_4 = __riscv_vmerge_vxm_i16m8(var_48, var_8, var_11, 7);
 // -6442, -6442, -6442, -6442, -6442, -6442, -6442
 
 __riscv_vsetvl_e16m1(1);
-vint16m1_t var_6 = __riscv_vaadd_vx_i16m1(var_14, var_8, 1);
+vint16m1_t var_6 = __riscv_vaadd_vx_i16m1(var_14, var_8, 0, 1);
 // -6554
 
 if(!check(var_96, var_107, var_108)) {cerr << "check 106 fails" << endl; return_value = 1;}

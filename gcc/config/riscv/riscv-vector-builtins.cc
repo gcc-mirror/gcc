@@ -2998,6 +2998,10 @@ function_builder::apply_predication (const function_instance &instance,
       || instance.pred == PRED_TYPE_tumu || instance.pred == PRED_TYPE_mu)
     argument_types.quick_insert (0, mask_type);
 
+  /* check if rounding mode parameter need  */
+  if (instance.base->has_rounding_mode_operand_p ())
+    argument_types.quick_push (unsigned_type_node);
+
   /* check if vl parameter need  */
   if (instance.base->apply_vl_p ())
     argument_types.quick_push (size_type_node);
@@ -3297,7 +3301,17 @@ function_expander::use_exact_insn (insn_code icode)
     }
 
   for (int argno = arg_offset; argno < call_expr_nargs (exp); argno++)
-    add_input_operand (argno);
+    {
+      if (base->has_rounding_mode_operand_p ()
+	  && argno == call_expr_nargs (exp) - 2)
+	{
+	  /* Since the rounding mode argument position is not consistent with
+	     the instruction pattern, we need to skip rounding mode argument
+	     here.  */
+	  continue;
+	}
+      add_input_operand (argno);
+    }
 
   if (base->apply_tail_policy_p ())
     add_input_operand (Pmode, get_tail_policy_for_pred (pred));
@@ -3306,6 +3320,9 @@ function_expander::use_exact_insn (insn_code icode)
 
   if (base->apply_vl_p ())
     add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
+
+  if (base->has_rounding_mode_operand_p ())
+    add_input_operand (call_expr_nargs (exp) - 2);
 
   /* TODO: Currently, we don't support intrinsic that is modeling rounding mode.
      We add default rounding mode for the intrinsics that didn't model rounding

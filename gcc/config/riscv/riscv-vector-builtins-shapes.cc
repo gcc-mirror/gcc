@@ -211,6 +211,19 @@ struct alu_def : public build_base
     b.append_name (predication_suffixes[instance.pred]);
     return b.finish_name ();
   }
+
+  bool check (function_checker &c) const override
+  {
+    /* Check whether rounding mode argument is a valid immediate.  */
+    if (c.base->has_rounding_mode_operand_p ())
+      {
+	if (!c.any_type_float_p ())
+	  return c.require_immediate (c.arg_num () - 2, VXRM_RNU, VXRM_ROD);
+	/* TODO: We will support floating-point intrinsic modeling
+	   rounding mode in the future.  */
+      }
+    return true;
+  }
 };
 
 /* widen_alu_def class. Handle vwadd/vwsub. Unlike
@@ -312,6 +325,19 @@ struct narrow_alu_def : public build_base
       return b.finish_name ();
     b.append_name (predication_suffixes[instance.pred]);
     return b.finish_name ();
+  }
+
+  bool check (function_checker &c) const override
+  {
+    /* Check whether rounding mode argument is a valid immediate.  */
+    if (c.base->has_rounding_mode_operand_p ())
+      {
+	if (!c.any_type_float_p ())
+	  return c.require_immediate (c.arg_num () - 2, VXRM_RNU, VXRM_ROD);
+	/* TODO: We will support floating-point intrinsic modeling
+	   rounding mode in the future.  */
+      }
+    return true;
   }
 };
 
