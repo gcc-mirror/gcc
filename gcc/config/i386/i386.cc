@@ -20463,36 +20463,52 @@ ix86_multiplication_cost (const struct processor_costs *cost,
     return  ix86_vec_cost (mode,
 			   inner_mode == DFmode ? cost->mulsd : cost->mulss);
   else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
-    {
-      /* vpmullq is used in this case. No emulation is needed.  */
-      if (TARGET_AVX512DQ)
-	return ix86_vec_cost (mode, cost->mulss);
+    switch (mode)
+      {
+      case V16QImode:
+	/* V*QImode is emulated with 4-11 insns.  */
+	if (TARGET_AVX512BW && TARGET_AVX512VL)
+	  return ix86_vec_cost (mode, cost->mulss + cost->sse_op * 3);
+	else if (TARGET_XOP)
+	  return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 5);
+	/* FALLTHRU */
+      case V32QImode:
+	if (TARGET_AVX512BW && mode == V32QImode)
+	  return ix86_vec_cost (mode, cost->mulss + cost->sse_op * 3);
+	else
+	  return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 7);
 
-      /* V*QImode is emulated with 7-13 insns.  */
-      if (mode == V16QImode || mode == V32QImode)
-	{
-	  int extra = 11;
-	  if (TARGET_XOP && mode == V16QImode)
-	    extra = 5;
-	  else if (TARGET_SSSE3)
-	    extra = 6;
-	  return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * extra);
-	}
-      /* V*DImode is emulated with 5-8 insns.  */
-      else if (mode == V2DImode || mode == V4DImode)
-	{
-	  if (TARGET_XOP && mode == V2DImode)
-	    return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 3);
-	  else
-	    return ix86_vec_cost (mode, cost->mulss * 3 + cost->sse_op * 5);
-	}
-      /* Without sse4.1, we don't have PMULLD; it's emulated with 7
-	 insns, including two PMULUDQ.  */
-      else if (mode == V4SImode && !(TARGET_SSE4_1 || TARGET_AVX))
-	return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 5);
-      else
+      case V64QImode:
+	return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 9);
+
+      case V4SImode:
+	/* pmulld is used in this case. No emulation is needed.  */
+	if (TARGET_SSE4_1)
+	  goto do_native;
+	/* V4SImode is emulated with 7 insns.  */
+	else
+	  return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 5);
+
+      case V2DImode:
+      case V4DImode:
+	/* vpmullq is used in this case. No emulation is needed.  */
+	if (TARGET_AVX512DQ && TARGET_AVX512VL)
+	  goto do_native;
+	/* V*DImode is emulated with 6-8 insns.  */
+	else if (TARGET_XOP && mode == V2DImode)
+	  return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 4);
+	/* FALLTHRU */
+      case V8DImode:
+	/* vpmullq is used in this case. No emulation is needed.  */
+	if (TARGET_AVX512DQ && mode == V8DImode)
+	  goto do_native;
+	else
+	  return ix86_vec_cost (mode, cost->mulss * 3 + cost->sse_op * 5);
+
+      default:
+      do_native:
 	return ix86_vec_cost (mode, cost->mulss);
-    }
+      }
   else
     return (cost->mult_init[MODE_INDEX (mode)] + cost->mult_bit * 7);
 }
