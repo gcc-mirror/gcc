@@ -116,9 +116,9 @@ PROCEDURE WriteInt (cid: IOChan.ChanId; int: SHORTINT;
 VAR
    s: String ;
 BEGIN
-   s := IntegerToString(int, width, ' ', TRUE, 10, FALSE) ;
-   writeString(cid, s) ;
-   s := KillString(s)
+   s := IntegerToString (int, width, ' ', int < 0, 10, FALSE) ;
+   writeString (cid, s) ;
+   s := KillString (s)
 END WriteInt ;
 
 

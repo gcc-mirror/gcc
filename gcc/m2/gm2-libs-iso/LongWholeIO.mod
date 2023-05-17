@@ -116,9 +116,9 @@ PROCEDURE WriteInt (cid: IOChan.ChanId; int: LONGINT;
 VAR
    s: String ;
 BEGIN
-   s := LongIntegerToString(int, width, ' ', TRUE, 10, FALSE) ;
-   writeString(cid, s) ;
-   s := KillString(s)
+   s := LongIntegerToString (int, width, ' ', int < 0, 10, FALSE) ;
+   writeString (cid, s) ;
+   s := KillString (s)
 END WriteInt ;
 
 
