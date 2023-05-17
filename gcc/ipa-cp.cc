@@ -1919,7 +1919,7 @@ ipa_vr_operation_and_type_effects (value_range *dst_vr,
 	  && !dst_vr->undefined_p ());
 }
 
-/* Determine value_range of JFUNC given that INFO describes the caller node or
+/* Determine range of JFUNC given that INFO describes the caller node or
    the one it is inlined to, CS is the call graph edge corresponding to JFUNC
    and PARM_TYPE of the parameter.  */
 
@@ -1947,13 +1947,11 @@ ipa_value_range_from_jfunc (ipa_node_params *info, cgraph_edge *cs,
 
       idx = ipa_get_jf_pass_through_formal_id (jfunc);
 
-      if (!(*sum->m_vr)[idx].known)
+      if (!(*sum->m_vr)[idx].known_p ())
 	return vr;
       tree vr_type = ipa_get_type (info, idx);
-      value_range srcvr (vr_type,
-			 (*sum->m_vr)[idx].min,
-			 (*sum->m_vr)[idx].max,
-			 (*sum->m_vr)[idx].type);
+      value_range srcvr;
+      (*sum->m_vr)[idx].get_vrange (srcvr);
 
       enum tree_code operation = ipa_get_jf_pass_through_operation (jfunc);
 
@@ -6621,25 +6619,19 @@ ipcp_store_vr_results (void)
       for (unsigned i = 0; i < count; i++)
 	{
 	  ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
-	  ipa_vr vr;
 
 	  if (!plats->m_value_range.bottom_p ()
 	      && !plats->m_value_range.top_p ()
 	      && dbg_cnt (ipa_cp_vr))
 	    {
-	      tree min, max;
-	      vr.known = true;
-	      vr.type = get_legacy_range (plats->m_value_range.m_vr, min, max);
-	      vr.min = wi::to_wide (min);
-	      vr.max = wi::to_wide (max);
+	      ipa_vr vr (plats->m_value_range.m_vr);
+	      ts->m_vr->quick_push (vr);
 	    }
 	  else
 	    {
-	      vr.known = false;
-	      vr.type = VR_VARYING;
-	      vr.min = vr.max = wi::zero (INT_TYPE_SIZE);
+	      ipa_vr vr;
+	      ts->m_vr->quick_push (vr);
 	    }
-	  ts->m_vr->quick_push (vr);
 	}
     }
 }

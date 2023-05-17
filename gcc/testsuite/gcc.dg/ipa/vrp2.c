@@ -31,5 +31,5 @@ int main ()
   return 0;
 }
 
-/* { dg-final { scan-ipa-dump "Setting value range of param 0 \\(now 0\\) \\\[4," "cp" } } */
-/* { dg-final { scan-ipa-dump "Setting value range of param 0 \\(now 0\\) \\\[0, 11\\\]" "cp" } } */
+/* { dg-final { scan-ipa-dump "Setting value range of param 0 \\(now 0\\).* \\\[4," "cp" } } */
+/* { dg-final { scan-ipa-dump "Setting value range of param 0 \\(now 0\\).* \\\[0, 11\\\]" "cp" } } */

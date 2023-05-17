@@ -4081,11 +4081,11 @@ zap_useless_ipcp_results (const isra_func_summary *ifs, ipcp_transformation *ts)
   bool useful_vr = false;
   count = vec_safe_length (ts->m_vr);
   for (unsigned i = 0; i < count; i++)
-    if ((*ts->m_vr)[i].known)
+    if ((*ts->m_vr)[i].known_p ())
       {
 	const isra_param_desc *desc = &(*ifs->m_parameters)[i];
 	if (desc->locally_unused)
-	  (*ts->m_vr)[i].known = false;
+	  (*ts->m_vr)[i].set_unknown ();
 	else
 	  useful_vr = true;
       }

@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symtab-clones.h"
 #include "attr-fnspec.h"
 #include "gimple-range.h"
+#include "value-range-storage.h"
 
 /* Function summary where the parameter infos are actually stored. */
 ipa_node_params_t *ipa_node_params_sum = NULL;
@@ -176,6 +177,92 @@ struct ipa_cst_ref_desc
 
 static object_allocator<ipa_cst_ref_desc> ipa_refdesc_pool
   ("IPA-PROP ref descriptions");
+
+ipa_vr::ipa_vr ()
+  : m_storage (NULL),
+    m_type (NULL)
+{
+}
+
+ipa_vr::ipa_vr (const vrange &r)
+  : m_storage (ggc_alloc_vrange_storage (r)),
+    m_type (r.type ())
+{
+}
+
+bool
+ipa_vr::equal_p (const vrange &r) const
+{
+  gcc_checking_assert (!r.undefined_p ());
+  return (types_compatible_p (m_type, r.type ()) && m_storage->equal_p (r));
+}
+
+void
+ipa_vr::get_vrange (vrange &r) const
+{
+  m_storage->get_vrange (r, m_type);
+}
+
+void
+ipa_vr::set_unknown ()
+{
+  if (m_storage)
+    ggc_free (m_storage);
+
+  m_storage = NULL;
+}
+
+void
+ipa_vr::streamer_read (lto_input_block *ib, data_in *data_in)
+{
+  struct bitpack_d bp = streamer_read_bitpack (ib);
+  bool known = bp_unpack_value (&bp, 1);
+  if (known)
+    {
+      Value_Range vr;
+      streamer_read_value_range (ib, data_in, vr);
+      if (!m_storage || !m_storage->fits_p (vr))
+	{
+	  if (m_storage)
+	    ggc_free (m_storage);
+	  m_storage = ggc_alloc_vrange_storage (vr);
+	}
+      m_storage->set_vrange (vr);
+      m_type = vr.type ();
+    }
+  else
+    {
+      m_storage = NULL;
+      m_type = NULL;
+    }
+}
+
+void
+ipa_vr::streamer_write (output_block *ob) const
+{
+  struct bitpack_d bp = bitpack_create (ob->main_stream);
+  bp_pack_value (&bp, !!m_storage, 1);
+  streamer_write_bitpack (&bp);
+  if (m_storage)
+    {
+      Value_Range vr (m_type);
+      m_storage->get_vrange (vr, m_type);
+      streamer_write_vrange (ob, vr);
+    }
+}
+
+void
+ipa_vr::dump (FILE *out) const
+{
+  if (known_p ())
+    {
+      Value_Range vr (m_type);
+      m_storage->get_vrange (vr, m_type);
+      vr.dump (out);
+    }
+  else
+    fprintf (out, "NO RANGE");
+}
 
 /* Return true if DECL_FUNCTION_SPECIFIC_OPTIMIZATION of the decl associated
    with NODE should prevent us from analyzing it for the purposes of IPA-CP.  */
@@ -5337,19 +5424,7 @@ write_ipcp_transformation_info (output_block *ob, cgraph_node *node,
 
   streamer_write_uhwi (ob, vec_safe_length (ts->m_vr));
   for (const ipa_vr &parm_vr : ts->m_vr)
-    {
-      struct bitpack_d bp;
-      bp = bitpack_create (ob->main_stream);
-      bp_pack_value (&bp, parm_vr.known, 1);
-      streamer_write_bitpack (&bp);
-      if (parm_vr.known)
-	{
-	  streamer_write_enum (ob->main_stream, value_rang_type,
-			       VR_LAST, parm_vr.type);
-	  streamer_write_wide_int (ob, parm_vr.min);
-	  streamer_write_wide_int (ob, parm_vr.max);
-	}
-    }
+    parm_vr.streamer_write (ob);
 
   streamer_write_uhwi (ob, vec_safe_length (ts->bits));
   for (const ipa_bits *bits_jfunc : ts->bits)
@@ -5400,16 +5475,7 @@ read_ipcp_transformation_info (lto_input_block *ib, cgraph_node *node,
 	{
 	  ipa_vr *parm_vr;
 	  parm_vr = &(*ts->m_vr)[i];
-	  struct bitpack_d bp;
-	  bp = streamer_read_bitpack (ib);
-	  parm_vr->known = bp_unpack_value (&bp, 1);
-	  if (parm_vr->known)
-	    {
-	      parm_vr->type = streamer_read_enum (ib, value_range_kind,
-						  VR_LAST);
-	      parm_vr->min = streamer_read_wide_int (ib);
-	      parm_vr->max = streamer_read_wide_int (ib);
-	    }
+	  parm_vr->streamer_read (ib, data_in);
 	}
     }
   count = streamer_read_uhwi (ib);
@@ -5847,19 +5913,6 @@ ipcp_update_bits (struct cgraph_node *node)
     }
 }
 
-bool
-ipa_vr::nonzero_p (tree expr_type) const
-{
-  if (type == VR_ANTI_RANGE && wi::eq_p (min, 0) && wi::eq_p (max, 0))
-    return true;
-
-  unsigned prec = TYPE_PRECISION (expr_type);
-  return (type == VR_RANGE
-	  && TYPE_UNSIGNED (expr_type)
-	  && wi::eq_p (min, wi::one (prec))
-	  && wi::eq_p (max, wi::max_value (prec, TYPE_SIGN (expr_type))));
-}
-
 /* Update value range of formal parameters as described in
    ipcp_transformation.  */
 
@@ -5908,38 +5961,21 @@ ipcp_update_vr (struct cgraph_node *node)
       if (!ddef || !is_gimple_reg (parm))
 	continue;
 
-      if (vr[i].known
-	  && (vr[i].type == VR_RANGE || vr[i].type == VR_ANTI_RANGE))
+      if (vr[i].known_p ())
 	{
-	  tree type = TREE_TYPE (ddef);
-	  unsigned prec = TYPE_PRECISION (type);
-	  if (INTEGRAL_TYPE_P (TREE_TYPE (ddef)))
+	  value_range tmp;
+	  vr[i].get_vrange (tmp);
+
+	  if (!tmp.undefined_p () && !tmp.varying_p ())
 	    {
 	      if (dump_file)
 		{
 		  fprintf (dump_file, "Setting value range of param %u "
 			   "(now %i) ", i, remapped_idx);
-		  fprintf (dump_file, "%s[",
-			   (vr[i].type == VR_ANTI_RANGE) ? "~" : "");
-		  print_decs (vr[i].min, dump_file);
-		  fprintf (dump_file, ", ");
-		  print_decs (vr[i].max, dump_file);
+		  tmp.dump (dump_file);
 		  fprintf (dump_file, "]\n");
 		}
-	      value_range v (type,
-			     wide_int_storage::from (vr[i].min, prec,
-						     TYPE_SIGN (type)),
-			     wide_int_storage::from (vr[i].max, prec,
-						     TYPE_SIGN (type)),
-			     vr[i].type);
-	      set_range_info (ddef, v);
-	    }
-	  else if (POINTER_TYPE_P (TREE_TYPE (ddef))
-		   && vr[i].nonzero_p (TREE_TYPE (ddef)))
-	    {
-	      if (dump_file)
-		fprintf (dump_file, "Setting nonnull for %u\n", i);
-	      set_ptr_nonnull (ddef);
+	      set_range_info (ddef, tmp);
 	    }
 	}
     }
