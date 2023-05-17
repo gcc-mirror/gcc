@@ -1,3 +1,23 @@
+2023-05-16  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2023-05-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109774
+	* g++.dg/warn/Wdangling-reference13.C: New test.
+
+2023-05-16  Patrick O'Neill  <patrick@rivosinc.com>
+
+	PR target/104338
+	* gcc.target/riscv/inline-atomics-1.c: New test.
+	* gcc.target/riscv/inline-atomics-2.c: New test.
+	* gcc.target/riscv/inline-atomics-3.c: New test.
+	* gcc.target/riscv/inline-atomics-4.c: New test.
+	* gcc.target/riscv/inline-atomics-5.c: New test.
+	* gcc.target/riscv/inline-atomics-6.c: New test.
+	* gcc.target/riscv/inline-atomics-7.c: New test.
+	* gcc.target/riscv/inline-atomics-8.c: New test.
+
 2023-05-15  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

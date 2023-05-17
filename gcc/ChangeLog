@@ -1,3 +1,24 @@
+2023-05-16  Patrick O'Neill  <patrick@rivosinc.com>
+
+	PR target/104338
+	* config/riscv/riscv-protos.h: Add helper function stubs.
+	* config/riscv/riscv.cc: Add helper functions for subword masking.
+	* config/riscv/riscv.opt: Add command-line flags
+	-minline-atomics and -mno-inline-atomics.
+	* config/riscv/sync.md: Add masking logic and inline asm for
+	fetch_and_op, fetch_and_nand, CAS, and exchange ops.
+	* doc/invoke.texi: Add blurb regarding new command-line flags
+	-minline-atomics and -mno-inline-atomics.
+
+2023-05-16  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2023-05-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR libstdc++/109816
+	* lto-cgraph.cc (output_symtab): Guard lto_output_toplevel_asms by
+	'!lto_stream_offload_p'.
+
 2023-05-11  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR target/109661
