@@ -407,6 +407,26 @@
 	   (symbol_ref "INTVAL (operands[4])")]
 	(const_int INVALID_ATTRIBUTE)))
 
+;; Defines rounding mode of an fixed-point operation.
+
+(define_attr "vxrm_mode" "rnu,rne,rdn,rod,none"
+  (cond [(and (eq_attr "type" "vsalu,vaalu,vsmul,vsshift,vnclip")
+	      (match_test "INTVAL(operands[9]) == riscv_vector::VXRM_RNU"))
+	 (const_string "rnu")
+
+	 (and (eq_attr "type" "vsalu,vaalu,vsmul,vsshift,vnclip")
+	      (match_test "INTVAL(operands[9]) == riscv_vector::VXRM_RNE"))
+	 (const_string "rne")
+
+	 (and (eq_attr "type" "vsalu,vaalu,vsmul,vsshift,vnclip")
+	      (match_test "INTVAL(operands[9]) == riscv_vector::VXRM_RDN"))
+	 (const_string "rdn")
+
+	 (and (eq_attr "type" "vsalu,vaalu,vsmul,vsshift,vnclip")
+	      (match_test "INTVAL(operands[9]) == riscv_vector::VXRM_ROD"))
+	 (const_string "rod")]
+	 (const_string "none")))
+
 ;; -----------------------------------------------------------------
 ;; ---- Miscellaneous Operations
 ;; -----------------------------------------------------------------
@@ -593,6 +613,15 @@
 	(unspec:P [(match_operand:P 1 "const_int_operand" "i")] UNSPEC_VLMAX))]
   "TARGET_VECTOR"
   "")
+
+;; Set VXRM
+(define_insn "vxrmsi"
+  [(set (reg:SI VXRM_REGNUM)
+	(match_operand 0 "const_int_operand" "i"))]
+  "TARGET_VECTOR"
+  "csrwi\tvxrm,%0"
+  [(set_attr "type" "wrvxrm")
+   (set_attr "mode" "SI")])
 
 ;; -----------------------------------------------------------------
 ;; ---- Moves Operations

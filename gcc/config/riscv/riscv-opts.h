@@ -91,6 +91,14 @@ enum riscv_multilib_select_kind {
   select_by_abi,
 };
 
+/* ENTITIES in mode switching.  */
+enum riscv_entity
+{
+  RISCV_VXRM = 0,
+  RISCV_FRM,
+  MAX_RISCV_ENTITIES
+};
+
 #define MASK_ZICSR    (1 << 0)
 #define MASK_ZIFENCEI (1 << 1)
 
