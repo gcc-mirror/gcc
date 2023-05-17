@@ -84,6 +84,11 @@ along with GCC; see the file COPYING3.  If not see
   X64_VLMUL_EXT, TUPLE_SUBPART)
 #endif
 
+/* Define RVV_VXRM rounding mode enum for fixed-point intrinsics.  */
+#ifndef DEF_RVV_VXRM_ENUM
+#define DEF_RVV_VXRM_ENUM(NAME, VALUE)
+#endif
+
 /* SEW/LMUL = 64:
    Only enable when TARGET_MIN_VLEN > 32.
    Machine mode = VNx1BImode when TARGET_MIN_VLEN < 128.
@@ -645,6 +650,11 @@ DEF_RVV_BASE_TYPE (vlmul_ext_x64, get_vector_type (type_idx))
 DEF_RVV_BASE_TYPE (size_ptr, build_pointer_type (size_type_node))
 DEF_RVV_BASE_TYPE (tuple_subpart, get_tuple_subpart_type (type_idx))
 
+DEF_RVV_VXRM_ENUM (RNU, VXRM_RNU)
+DEF_RVV_VXRM_ENUM (RNE, VXRM_RNE)
+DEF_RVV_VXRM_ENUM (RDN, VXRM_RDN)
+DEF_RVV_VXRM_ENUM (ROD, VXRM_ROD)
+
 #include "riscv-vector-type-indexer.gen.def"
 
 #undef DEF_RVV_PRED_TYPE
@@ -653,3 +663,4 @@ DEF_RVV_BASE_TYPE (tuple_subpart, get_tuple_subpart_type (type_idx))
 #undef DEF_RVV_TUPLE_TYPE
 #undef DEF_RVV_BASE_TYPE
 #undef DEF_RVV_TYPE_INDEX
+#undef DEF_RVV_VXRM_ENUM

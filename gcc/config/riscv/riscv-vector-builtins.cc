@@ -3758,6 +3758,19 @@ verify_type_context (location_t loc, type_context_kind context, const_tree type,
   gcc_unreachable ();
 }
 
+/* Register the vxrm enum.  */
+static void
+register_vxrm ()
+{
+  auto_vec<string_int_pair, 4> values;
+#define DEF_RVV_VXRM_ENUM(NAME, VALUE)                                          \
+  values.quick_push (string_int_pair ("VXRM_" #NAME, VALUE));
+#include "riscv-vector-builtins.def"
+#undef DEF_RVV_VXRM_ENUM
+
+  lang_hooks.types.simulate_enum_decl (input_location, "RVV_VXRM", &values);
+}
+
 /* Implement #pragma riscv intrinsic vector.  */
 void
 handle_pragma_vector ()
@@ -3772,6 +3785,9 @@ handle_pragma_vector ()
   /* Define the vector and tuple types.  */
   for (unsigned int type_i = 0; type_i < NUM_VECTOR_TYPES; ++type_i)
     register_vector_type ((enum vector_type_index) type_i);
+
+  /* Define the enums.  */
+  register_vxrm ();
 
   /* Define the functions.  */
   function_table = new hash_table<registered_function_hasher> (1023);
