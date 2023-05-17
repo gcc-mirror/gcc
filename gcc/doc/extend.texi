@@ -25460,12 +25460,12 @@ assumption is valid. For example, @code{assume(n > 0)}.
 @item axiom
 Introduces an axiom definition. Axioms introduce requirements on values.
 
-@kindex axiom
+@kindex forall
 @item forall
 Introduces a universally quantified object in an axiom. For example,
-@code{forall (int n) n + 0 == n}).
+@code{forall (int n) n + 0 == n}.
 
-@kindex axiom
+@kindex concept
 @item concept
 Introduces a concept definition. Concepts are sets of syntactic and semantic
 requirements on types and their values.
