@@ -85,6 +85,15 @@ F (int, not, ~)
 F1 (int, not, ~)
 F (long, not, ~)
 F1 (long, not, ~)
+
+FOO (char, and, &)
+FOO1 (char, and, &)
+FOO (short, and, &)
+FOO1 (short, and, &)
+FOO (int, and, &)
+FOO1 (int, and, &)
+FOO (long, and, &)
+FOO1 (long, and, &)
 /* { dg-final { scan-assembler-times "add(?:b|l|w|q)\[^\n\r]*1, \\(%rdi\\), %(?:|r|e)a(?:x|l)" 4 } } */
 /* { dg-final { scan-assembler-times "lea(?:l|q)\[^\n\r]\\(%r(?:d|s)i,%r(?:d|s)i\\), %(?:|r|e)ax" 4 } } */
 /* { dg-final { scan-assembler-times "add(?:b|l|w|q)\[^\n\r]%(?:|r|e)si(?:|l), \\(%rdi\\), %(?:|r|e)a(?:x|l)" 4 } } */
@@ -95,3 +104,7 @@ F1 (long, not, ~)
 /* { dg-final { scan-assembler-times "neg(?:l|w|q)\[^\n\r]%(?:|r|e)di, %(?:|r|e)ax" 4 } } */
 /* { dg-final { scan-assembler-times "not(?:b|l|w|q)\[^\n\r]\\(%rdi\\), %(?:|r|e)a(?:x|l)" 4 } } */
 /* { dg-final { scan-assembler-times "not(?:l|w|q)\[^\n\r]%(?:|r|e)di, %(?:|r|e)ax" 4 } } */
+/* { dg-final { scan-assembler-times "andb\[^\n\r]*1, \\(%rdi\\), %al" 1 } } */
+/* { dg-final { scan-assembler-times "and(?:l|w|q)\[^\n\r]*1, \\(%rdi\\), %(?:|r|e)ax" 3 } } */
+/* { dg-final { scan-assembler-times "and(?:l|w|q)\[^\n\r]%(?:|r|e)di, %(?:|r|e)si, %(?:|r|e)ax" 2 } } */
+/* { dg-final { scan-assembler-times "and(?:l|w|q)\[^\n\r]%(?:|r|e)si, %(?:|r|e)di, %(?:|r|e)ax" 2 } } */
