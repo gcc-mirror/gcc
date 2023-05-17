@@ -2253,6 +2253,10 @@ toplev::main (int argc, char **argv)
 
   initialize_plugins ();
 
+  /* Handle the dump options now that plugins have had a chance to install new
+     passes.  */
+  handle_deferred_dump_options ();
+
   if (version_flag)
     print_version (stderr, "", true);
 
