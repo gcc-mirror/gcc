@@ -1,3 +1,216 @@
+2023-05-16  Steve Baird  <baird@adacore.com>
+
+	* usage.adb: Generate output text describing the -gnatw_s switch
+	(and the corresponding -gnatw_S switch).
+
+2023-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference) <Attribute_Reduce>:
+	Use the canonical accumulator type as the type of the accumulator
+	in the prefixed case.
+
+2023-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Expand_Array_Aggregate): Do not set Warnings_Off on
+	the temporary created when in-place expansion is not possible.
+
+2023-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Expression): When the freezing is to be done
+	outside the current scope, skip any scope that is an internal loop.
+
+2023-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_imgv.adb (Rewrite_Object_Image): If the prefix is a component
+	that depends on a discriminant, create an actual subtype for it.
+
+2023-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb: Add with and use clauses for Expander.
+	(Resolve_Aspect_Expressions) <Aspect_Predicate>: Emulate a
+	bona-fide preanalysis setup before calling
+	Resolve_Aspect_Expression.
+
+2023-05-16  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-aridou.adb (Lemma_Div_Pow2): Add assertion.
+	* libgnat/s-arit32.adb (Lemma_Abs_Div_Commutation): Simplify.
+	* libgnat/s-expmod.adb (Lemma_Exp_Mod): Add assertions.
+	(Lemma_Euclidean_Mod): Add body to lemma.
+	(Lemma_Mult_Mod): Add assertion.
+	* libgnat/s-valueu.adb (Scan_Raw_Unsigned): Modify assertion.
+	* libgnat/s-vauspe.ads (Raw_Unsigned_Last_Ghost): Add
+	postcondition.
+	* libgnat/s-widthi.adb: Use more precise types.
+
+2023-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Has_Applicable_User_Defined_Literal): Apply the
+	same processing for derived untagged types as for tagged types.
+	* sem_util.ads (Corresponding_Primitive_Op): Adjust description.
+	* sem_util.adb (Corresponding_Primitive_Op): Handle untagged
+	types.
+
+2023-05-16  Javier Miranda  <miranda@adacore.com>
+
+	* sem_attr.adb
+	(Analyze_Attribute_Old_Result): When preanalyzing a class-wide
+	condition, search in the scopes stack for the subprogram that has
+	the condition. This is required because returning the current
+	scope causes reporting spurious errors when the occurrence of the
+	attribute is found, for example, in a quantified expression.
+
+2023-05-16  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb
+	(Needs_BIP_Alloc_Form): Return False for functions with foreign
+	convention since we never use build-in-place for such functions.
+
+2023-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Aggregate_Constraint_Checks): Don't exit early
+	when preanalysing in GNATprove mode. Now the condition is
+	consistent with other similar conditions in other code.
+
+2023-05-16  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* usage.adb (Usage): Document -gnatyD.
+
+2023-05-16  Marc Poulhiès  <poulhies@adacore.com>
+
+	* libgnat/s-tsmona__linux.adb (link_map, r_debug_type): Add
+	'aliased' on all components.
+
+2023-05-16  Johannes Kliemann  <kliemann@adacore.com>
+
+	* libgnat/system-linux-ppc.ads: Add Support_Atomic_Primitives.
+	* libgnat/s-atopri__32.ads: Add 32 bit version of s-atopri.ads.
+	* Makefile.rtl: Use s-atopro__32.ads for ppc-linux.
+
+2023-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.adb (Get_Actual_Subtype): For an explicit dereference,
+	return the Actual_Designated_Subtype if it is present.
+	(Get_Actual_Subtype_If_Available): Likewise.
+
+2023-05-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* errout.ads: Update comment.
+	* errout.adb (Skip_Msg_Insertion_Warning): Update to take e.g.
+	-gnatyM into account.
+	* erroutc.adb (Get_Warning_Option, Get_Warning_Tag)
+	(Prescan_Message): Add support for Style tags.
+	* par-ch5.adb, par-ch6.adb, par-ch7.adb, par-endh.adb,
+	par-util.adb, style.adb, styleg.adb: Set tag on all style
+	messages.
+
+2023-05-16  Tom Tromey  <tromey@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst
+	(Switches_for_gnatbind): Fix typo.
+	* libgnat/g-spipat.ads: Fix typo.
+	* gnat_ugn.texi: Regenerate.
+
+2023-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Build_Assignment_With_Temporary): Adjust comment
+	and fix type of second parameter. Create the temporary on the
+	secondary stack by calling Build_Temporary_On_Secondary_Stack.
+	(Convert_Array_Aggr_In_Allocator): Adjust formatting.
+	(Expand_Array_Aggregate): Likewise.
+	* exp_ch4.adb (Expand_N_Allocator): Set Actual_Designated_Subtype
+	on the dereference in the initialization for all composite types.
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Create a temporary
+	on the host for an assignment between nonnative storage models.
+	Suppress more checks when Suppress_Assignment_Checks is set.
+	* exp_ch6.adb (Add_Simple_Call_By_Copy_Code): Deal with actuals
+	that are dereferences with an Actual_Designated_Subtype. Add
+	support for nonnative storage models.
+	(Expand_Actuals): Create a copy if the actual is a dereference
+	with a nonnative storage model.
+	* exp_util.ads (Build_Temporary_On_Secondary_Stack): Declare.
+	* exp_util.adb (Build_Temporary_On_Secondary_Stack): New function.
+	* sem_ch5.adb (Analyze_Assignment.Set_Assignment_Type): Do not
+	build an actual subtype for dereferences with an
+	Actual_Designated_Subtype
+	* sinfo.ads (Actual_Designated_Subtype): Adjust documentation.
+	(Suppress_Assignment_Checks): Likewise.
+
+2023-05-16  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_spark.adb (SPARK_Freeze_Type): Copy whole handling of DIC
+	and Type_Invariant from Freeze_Type.
+
+2023-05-16  Richard Kenner  <kenner@adacore.com>
+
+	* sem_util.adb (Subprogram_Name): If what's passed is already an
+	entity, use that for the name.
+
+2023-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/standard_and_implementation_defined_restrictions.rst
+	(No_Dependence): Give examples of new No_Dependence restrictions.
+	* gnat_rm.texi: Regenerate.
+
+2023-05-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* snames.ads-tmpl (Name_ASCII): New.
+	* style.adb (Check_Identifier): Fix handling of ASCII.
+
+2023-05-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gen_il-fields.ads (Opt_Field_Enum): Add Cannot_Be_Superflat.
+	* gen_il-gen-gen_nodes.adb (N_Range): Add Cannot_Be_Superflat as
+	semantical flag and change Includes_Infinities to semantical.
+	* sinfo.ads (Cannot_Be_Superflat): Document it for N_Range.
+	* exp_ch4.adb (Expand_Concatenate): Set Cannot_Be_Superflat on the
+	range of the result if the result cannot be null.
+
+2023-05-16  Richard Kenner  <kenner@adacore.com>
+
+	* gen_il-gen-gen_nodes.adb (Present_Expr): Type is now Uint.
+
+2023-05-16  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-aridou.adb (Big3, Is_Mult_Decomposition)
+	(Is_Scaled_Mult_Decomposition): Add annotation for inlining.
+	(Double_Divide, Scaled_Divide): Simplify and remove ghost code.
+	(Prove_Multiplication): Add calls to lemmas to make proof go
+	through.
+	* libgnat/s-aridou.ads (Big, In_Double_Int_Range): Add annotation
+	for inlining.
+
+2023-05-16  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-strsup.adb: Add intermediate assertions.
+
+2023-05-16  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb: Ensure all dependencies are recorded even when not
+	generating code.
+
+2023-05-16  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/a-strsup.adb: Set assertion policy for Loop_Variant.
+
+2023-05-16  Marc Poulhiès  <poulhies@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Package_Body): Simplify if/then/else.
+	(Instantiate_Subprogram_Body): Likewise.
+
+2023-05-16  Yannick Moy  <moy@adacore.com>
+
+	* libgnat/s-aridou.adb:
+	(Big3): Remove override made useless.
+	(Lemma_Quot_Rem): Add new lemma and justify it, as no prover
+	manages to prove it.
+	(Lemma_Div_Pow2): Use new lemma Lemma_Quot_Rem.
+	(Prove_Scaled_Mult_Decomposition_Regroup3): Retype for
+	simplification.
+	(Scaled_Divide): Remove useless assertions.Decompose some
+	assertions with cut operations. Use Assert_And_Cut for second
+	half. Add assertions.
+
 2023-05-15  Marc Poulhiès  <poulhies@adacore.com>
 
 	* exp_ch3.adb (Make_Allocator_For_Return): Fix typo in comment.

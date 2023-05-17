@@ -1,3 +1,38 @@
+2023-05-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/105152
+	PR fortran/100193
+	PR fortran/87496
+	PR fortran/103389
+	PR fortran/104429
+	PR fortran/82774
+	* interface.cc (gfc_compare_actual_formal): Emit an error if an
+	unlimited polymorphic actual is not matched either to an
+	unlimited or assumed type formal argument.
+	* resolve.cc (resolve_ordinary_assign): Emit an error if the
+	var expression of an ordinary assignment is a proc pointer
+	component.
+	* trans-array.cc (gfc_walk_array_ref): Provide assumed shape
+	arrays coming from interface mapping with a viable arrayspec.
+	* trans-expr.cc (gfc_conv_intrinsic_to_class): Tidy up flagging
+	of unlimited polymorphic 'class_ts'.
+	(gfc_conv_gfc_desc_to_cfi_desc): Assumed type is unlimited
+	polymorphic and should accept any actual type.
+	(gfc_conv_procedure_call): Replace dreadful kludge with a call
+	to gfc_finalize_tree_expr. Avoid dereferencing a void pointer
+	by giving it the pointer type of the actual argument.
+	(alloc_scalar_allocatable_subcomponent): Shorten the function
+	name and replace the symbol argument with the se string length.
+	If a deferred length character length is either not present or
+	is not a variable, give the typespec a variable and assign the
+	string length to that. Use gfc_deferred_strlen to find the
+	hidden string length component.
+	(gfc_trans_subcomponent_assign): Convert the expression before
+	the call to alloc_scalar_allocatable_subcomponent so that a
+	good string length is provided.
+	(gfc_trans_structure_assign): Remove the unneeded derived type
+	symbol from calls to gfc_trans_subcomponent_assign.
+
 2023-05-15  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/109846

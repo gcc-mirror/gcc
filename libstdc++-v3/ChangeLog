@@ -1,3 +1,85 @@
+2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109741
+	* acinclude.m4 (GLIBCXX_CHECK_ALIGNAS_CACHELINE): Define.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Use GLIBCXX_CHECK_ALIGNAS_CACHELINE.
+	* src/c++11/shared_ptr.cc (__gnu_internal::get_mutex): Do not
+	align lock table if not supported. use __GCC_DESTRUCTIVE_SIZE
+	instead of hardcoded 64.
+
+2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_USE_C99): Check for isblank in C++11
+	mode and define _GLIBCXX_USE_C99_CTYPE. Check for <fenv.h>
+	functions in C++11 mode and define _GLIBCXX_USE_C99_FENV.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/c_compatibility/fenv.h: Check _GLIBCXX_USE_C99_FENV
+	instead of _GLIBCXX_USE_C99_FENV_TR1.
+	* include/c_global/cfenv: Likewise.
+	* include/c_global/cctype: Check _GLIBCXX_USE_C99_CTYPE instead
+	of _GLIBCXX_USE_C99_CTYPE_TR1.
+
+2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_USE_C99): Check for <stdint.h> types in
+	C++11 mode and define _GLIBCXX_USE_C99_STDINT. Check for
+	<inttypes.h> features in C++11 mode and define
+	_GLIBCXX_USE_C99_INTTYPES and _GLIBCXX_USE_C99_INTTYPES_WCHAR_T.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* doc/doxygen/user.cfg.in (PREDEFINED): Add new macros.
+	* include/bits/chrono.h: Check _GLIBCXX_USE_C99_STDINT instead
+	of _GLIBCXX_USE_C99_STDINT_TR1.
+	* include/c_compatibility/inttypes.h: Check
+	_GLIBCXX_USE_C99_INTTYPES and _GLIBCXX_USE_C99_INTTYPES_WCHAR_T
+	instead of _GLIBCXX_USE_C99_INTTYPES_TR1 and
+	_GLIBCXX_USE_C99_INTTYPES_WCHAR_T_TR1.
+	* include/c_compatibility/stdatomic.h: Check
+	_GLIBCXX_USE_C99_STDINT instead of _GLIBCXX_USE_C99_STDINT_TR1.
+	* include/c_compatibility/stdint.h: Likewise.
+	* include/c_global/cinttypes: Check _GLIBCXX_USE_C99_INTTYPES
+	and _GLIBCXX_USE_C99_INTTYPES_WCHAR_T instead of
+	_GLIBCXX_USE_C99_INTTYPES_TR1 and
+	_GLIBCXX_USE_C99_INTTYPES_WCHAR_T_TR1.
+	* include/c_global/cstdint: Check _GLIBCXX_USE_C99_STDINT
+	instead of _GLIBCXX_USE_C99_STDINT_TR1.
+	* include/std/atomic: Likewise.
+	* src/c++11/cow-stdexcept.cc: Likewise.
+	* testsuite/29_atomics/headers/stdatomic.h/c_compat.cc:
+	Likewise.
+	* testsuite/lib/libstdc++.exp (check_v3_target_cstdint):
+	Likewise.
+
+2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_USE_C99): Check for complex inverse trig
+	functions in C++11 mode and define _GLIBCXX_USE_C99_COMPLEX_ARC.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* doc/doxygen/user.cfg.in (PREDEFINED): Add new macro.
+	* include/std/complex: Check _GLIBCXX_USE_C99_COMPLEX_ARC
+	instead of _GLIBCXX_USE_C99_COMPLEX_TR1.
+
+2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/ext/debug_allocator/check_deallocate_null.cc: Add
+	assertion to ensure expected exception is throw.
+
+2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/chrono.cc: Only test
+	printer for chrono::zoned_time for cx11 ABI and tzdb effective
+	target.
+
+2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_PTHREAD_MUTEX_CLOCKLOCK): Define
+	_GLIBCXX_USE_PTHREAD_MUTEX_CLOCKLOCK in terms of _GLIBCXX_TSAN.
+	* configure: Regenerate.
+
 2023-05-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_CHECK_C99_TR1): Use a non-null pointer

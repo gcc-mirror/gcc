@@ -1,3 +1,8 @@
+2023-05-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-decl.cc (check_for_loop_decls): Use pedwarn_c11 for
+	diagnostics.
+
 2023-05-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.cc (grokdeclarator): Ignore _Atomic on function return

@@ -1,3 +1,24 @@
+2023-05-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109879
+	* gm2-libs-iso/LongIO.mod (ReadReal): Call SkipSpaces.
+	* gm2-libs-iso/LongWholeIO.mod (ReadInt): Call SkipSpaces.
+	(ReadCard): Call SkipSpaces.
+	* gm2-libs-iso/RealIO.mod (ReadReal): Call SkipSpaces.
+	* gm2-libs-iso/ShortWholeIO.mod: (ReadInt): Call SkipSpaces.
+	(ReadCard): Call SkipSpaces.
+	* gm2-libs-iso/TextIO.mod: Import SkipSpaces.
+	* gm2-libs-iso/WholeIO.mod (ReadInt): Call SkipSpaces.
+	(ReadCard): Call SkipSpaces.
+	* gm2-libs-iso/TextUtil.def: New file.
+	* gm2-libs-iso/TextUtil.mod: New file.
+
+2023-05-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/108344
+	* gm2-libs-coroutines/TimerHandler.mod (EnableLED): New constant.
+	(Timer): Test EnableLED before switching on the scroll LED.
+
 2023-05-12  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/109830

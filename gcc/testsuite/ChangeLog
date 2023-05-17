@@ -1,3 +1,106 @@
+2023-05-16  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-fordecl-1.c, gcc.dg/c11-fordecl-2.c,
+	gcc.dg/c11-fordecl-3.c, gcc.dg/c11-fordecl-4.c,
+	gcc.dg/c2x-fordecl-1.c, gcc.dg/c2x-fordecl-2.c,
+	gcc.dg/c2x-fordecl-3.c, gcc.dg/c2x-fordecl-4.c: New tests.
+	* gcc.dg/c99-fordecl-2.c: Test diagnostic for typedef declaration
+	in for loop here.
+	* gcc.dg/pr67784-2.c, gcc.dg/pr68320.c, objc.dg/foreach-7.m: Do
+	not expect errors for typedef declaration in for loop.
+
+2023-05-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/109879
+	* gm2/isolib/run/pass/testreadint.mod: New test.
+
+2023-05-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109774
+	* g++.dg/warn/Wdangling-reference13.C: New test.
+
+2023-05-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/109871
+	* g++.dg/cpp2a/desig27.C: New test.
+
+2023-05-16  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/int_128bit-runnable.c: Update expected
+	instruction counts.
+
+2023-05-16  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/rs6000-fpint.c: Update dg-options, drop dg-do
+	compile specifier.
+
+2023-05-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/bfdot-2.c: Allow mves
+	to occur after the intrinsic instruction, rather than requiring
+	them to happen before.
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-3-2.c: Likewise.
+
+2023-05-16  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/shift-scalar-template.h:
+	Replace stdint.h with stdint-gcc.h.
+	* gcc.target/riscv/rvv/autovec/binop/shift-template.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vadd-template.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vand-template.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vdiv-template.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vmax-template.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vmin-template.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vmul-template.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vor-template.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vrem-template.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-template.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/binop/vxor-template.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/series-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vmv-imm-run.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vmv-imm-template.h: Ditto.
+
+2023-05-16  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/memset-1.c: Test case memset1 makes use of
+	vst, now.
+
+2023-05-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/105152
+	PR fortran/100193
+	PR fortran/87946
+	PR fortran/103389
+	PR fortran/104429
+	PR fortran/82774
+	* gfortran.dg/pr105152.f90 : New test
+	* gfortran.dg/pr100193.f90 : New test
+	* gfortran.dg/pr87946.f90 : New test
+	* gfortran.dg/pr103389.f90 : New test
+	* gfortran.dg/pr104429.f90 : New test
+	* gfortran.dg/pr82774.f90 : New test
+
+2023-05-16  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
+
+	* gcc.dg/attr-returns-nonnull.c: Skip if
+	keeps_null_pointer_checks.
+	* gcc.dg/init-compare-1.c: Likewise.
+	* gcc.dg/ipa/pr85734.c: Likewise.
+	* gcc.dg/ipa/propmalloc-1.c: Likewise.
+	* gcc.dg/ipa/propmalloc-2.c: Likewise.
+	* gcc.dg/ipa/propmalloc-3.c: Likewise.
+	* gcc.dg/ipa/propmalloc-4.c: Likewise.
+	* gcc.dg/tree-ssa/evrp11.c: Likewise.
+	* gcc.dg/tree-ssa/pr83648.c: Likewise.
+
+2023-05-16  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/109424
+	* gcc.dg/tree-ssa/bool-12.c: New test.
+	* gcc.dg/tree-ssa/bool-13.c: New test.
+	* gcc.dg/tree-ssa/minmax-20.c: New test.
+	* gcc.dg/tree-ssa/minmax-21.c: New test.
+
 2023-05-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/qual-return-9.c, gcc.dg/qual-return-10.c: New tests.
