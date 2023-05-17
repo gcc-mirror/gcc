@@ -10,4 +10,3 @@
 /* { dg-final { scan-assembler {\tvsll\.vv} } } */
 /* { dg-final { scan-assembler {\tvsrl\.vv} } } */
 /* { dg-final { scan-assembler {\tvsra\.vv} } } */
-

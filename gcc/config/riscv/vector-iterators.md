@@ -1118,8 +1118,10 @@
   (VNx16HI "VNx16QI") (VNx32HI "VNx32QI") (VNx64HI "VNx64QI")
   (VNx1SI "VNx1HI") (VNx2SI "VNx2HI") (VNx4SI "VNx4HI") (VNx8SI "VNx8HI")
   (VNx16SI "VNx16HI") (VNx32SI "VNx32HI")
-  (VNx1DI "VNx1SI") (VNx2DI "VNx2SI") (VNx4DI "VNx4SI") (VNx8DI "VNx8SI") (VNx16DI "VNx16SI")
-  (VNx1DF "VNx1SF") (VNx2DF "VNx2SF") (VNx4DF "VNx4SF") (VNx8DF "VNx8SF") (VNx16DF "VNx16SF")
+  (VNx1DI "VNx1SI") (VNx2DI "VNx2SI") (VNx4DI "VNx4SI") (VNx8DI "VNx8SI")
+  (VNx16DI "VNx16SI")
+  (VNx1DF "VNx1SF") (VNx2DF "VNx2SF") (VNx4DF "VNx4SF") (VNx8DF "VNx8SF")
+  (VNx16DF "VNx16SF")
 ])
 
 (define_mode_attr V_QUAD_TRUNC [
@@ -1130,7 +1132,32 @@
 ])
 
 (define_mode_attr V_OCT_TRUNC [
-  (VNx1DI "VNx1QI") (VNx2DI "VNx2QI") (VNx4DI "VNx4QI") (VNx8DI "VNx8QI") (VNx16DI "VNx16QI")
+  (VNx1DI "VNx1QI") (VNx2DI "VNx2QI") (VNx4DI "VNx4QI") (VNx8DI "VNx8QI")
+  (VNx16DI "VNx16QI")
+])
+
+; Again in lower case.
+(define_mode_attr v_double_trunc [
+  (VNx1HI "vnx1qi") (VNx2HI "vnx2qi")  (VNx4HI "vnx4qi")  (VNx8HI "vnx8qi")
+  (VNx16HI "vnx16qi") (VNx32HI "vnx32qi") (VNx64HI "vnx64qi")
+  (VNx1SI "vnx1hi") (VNx2SI "vnx2hi") (VNx4SI "vnx4hi") (VNx8SI "vnx8hi")
+  (VNx16SI "vnx16hi") (VNx32SI "vnx32hi")
+  (VNx1DI "vnx1si") (VNx2DI "vnx2si") (VNx4DI "vnx4si") (VNx8DI "vnx8si")
+  (VNx16DI "vnx16si")
+  (VNx1DF "vnx1sf") (VNx2DF "vnx2sf") (VNx4DF "vnx4sf") (VNx8DF "vnx8sf")
+  (VNx16DF "vnx16sf")
+])
+
+(define_mode_attr v_quad_trunc [
+  (VNx1SI "vnx1qi") (VNx2SI "vnx2qi") (VNx4SI "vnx4qi") (VNx8SI "vnx8qi")
+  (VNx16SI "vnx16qi") (VNx32SI "vnx32qi")
+  (VNx1DI "vnx1hi") (VNx2DI "vnx2hi") (VNx4DI "vnx4hi") (VNx8DI "vnx8hi")
+  (VNx16DI "vnx16hi")
+])
+
+(define_mode_attr v_oct_trunc [
+  (VNx1DI "vnx1qi") (VNx2DI "vnx2qi") (VNx4DI "vnx4qi") (VNx8DI "vnx8qi")
+  (VNx16DI "vnx16qi")
 ])
 
 (define_mode_attr VINDEX_DOUBLE_TRUNC [

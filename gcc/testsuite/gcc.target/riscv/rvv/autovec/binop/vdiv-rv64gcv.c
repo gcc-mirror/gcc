@@ -3,7 +3,8 @@
 
 #include "vdiv-template.h"
 
-/* TODO: Implement vector type promotion.  We should have 6 vdiv.vv here.  */
+/* Currently we use an epilogue loop which also contains vdivs.  Therefore we
+   expect 10 vdiv[u]s instead of 6.  */
 
-/* { dg-final { scan-assembler-times {\tvdiv\.vv} 4 } } */
-/* { dg-final { scan-assembler-times {\tvdivu\.vv} 6 } } */
+/* { dg-final { scan-assembler-times {\tvdiv\.vv} 10 } } */
+/* { dg-final { scan-assembler-times {\tvdivu\.vv} 10 } } */

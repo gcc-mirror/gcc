@@ -3,7 +3,8 @@
 
 #include "vrem-template.h"
 
-/* TODO: Implement vector type promotion.  We should have 6 vrem.vv here.  */
+/* Currently we use an epilogue loop which also contains vrems.  Therefore we
+   expect 10 vrem[u]s instead of 6.  */
 
-/* { dg-final { scan-assembler-times {\tvrem\.vv} 5 } } */
-/* { dg-final { scan-assembler-times {\tvremu\.vv} 6 } } */
+/* { dg-final { scan-assembler-times {\tvrem\.vv} 10 } } */
+/* { dg-final { scan-assembler-times {\tvremu\.vv} 10 } } */

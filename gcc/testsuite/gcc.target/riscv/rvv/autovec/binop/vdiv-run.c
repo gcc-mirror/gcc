@@ -15,7 +15,7 @@
     a##TYPE[i] = VAL * 3;       		\
     b##TYPE[i] = VAL;           		\
   }                             		\
-  vadd_##TYPE (a##TYPE, a##TYPE, b##TYPE, SZ);	\
+  vdiv_##TYPE (a##TYPE, a##TYPE, b##TYPE, SZ);	\
   for (int i = 0; i < SZ; i++)			\
     assert (a##TYPE[i] == 3);
 
@@ -23,7 +23,7 @@
   TYPE as##TYPE[SZ];				\
   for (int i = 0; i < SZ; i++)			\
     as##TYPE[i] = VAL * 5;			\
-  vadds_##TYPE (as##TYPE, as##TYPE, VAL, SZ);	\
+  vdivs_##TYPE (as##TYPE, as##TYPE, VAL, SZ);	\
   for (int i = 0; i < SZ; i++)			\
     assert (as##TYPE[i] == 5);
 

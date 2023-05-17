@@ -1399,6 +1399,88 @@ get_cmp_insn_code (rtx_code code, machine_mode mode)
   return icode;
 }
 
+/* This hook gives the vectorizer more vector mode options.  We want it to not
+   only try modes with the maximum number of units a full vector can hold but
+   for example also half the number of units for a smaller elements size.
+   Such vectors can be promoted to a full vector of widened elements
+   (still with the same number of elements, essentially vectorizing at a
+   fixed number of units rather than a fixed number of bytes).  */
+unsigned int
+autovectorize_vector_modes (vector_modes *modes, bool)
+{
+  if (autovec_use_vlmax_p ())
+    {
+      /* TODO: We will support RVV VLS auto-vectorization mode in the future. */
+      poly_uint64 full_size
+	= BYTES_PER_RISCV_VECTOR * ((int) riscv_autovec_lmul);
+
+      /* Start with a VNxYYQImode where YY is the number of units that
+	 fit a whole vector.
+	 Then try YY = nunits / 2, nunits / 4 and nunits / 8 which
+	 is guided by the extensions we have available (vf2, vf4 and vf8).
+
+	 - full_size: Try using full vectors for all element types.
+	 - full_size / 2:
+	   Try using 16-bit containers for 8-bit elements and full vectors
+	   for wider elements.
+	 - full_size / 4:
+	   Try using 32-bit containers for 8-bit and 16-bit elements and
+	   full vectors for wider elements.
+	 - full_size / 8:
+	   Try using 64-bit containers for all element types.  */
+      static const int rvv_factors[] = {1, 2, 4, 8};
+      for (unsigned int i = 0; i < sizeof (rvv_factors) / sizeof (int); i++)
+	{
+	  poly_uint64 units;
+	  machine_mode mode;
+	  if (can_div_trunc_p (full_size, rvv_factors[i], &units)
+	      && get_vector_mode (QImode, units).exists (&mode))
+	    modes->safe_push (mode);
+	}
+    }
+  return 0;
+}
+
+/* If the given VECTOR_MODE is an RVV mode,  first get the largest number
+   of units that fit into a full vector at the given ELEMENT_MODE.
+   We will have the vectorizer call us with a successively decreasing
+   number of units (as specified in autovectorize_vector_modes).
+   The starting mode is always the one specified by preferred_simd_mode. */
+opt_machine_mode
+vectorize_related_mode (machine_mode vector_mode, scalar_mode element_mode,
+			poly_uint64 nunits)
+{
+  /* TODO: We will support RVV VLS auto-vectorization mode in the future. */
+  poly_uint64 min_units;
+  if (autovec_use_vlmax_p () && riscv_v_ext_vector_mode_p (vector_mode)
+      && multiple_p (BYTES_PER_RISCV_VECTOR * ((int) riscv_autovec_lmul),
+		     GET_MODE_SIZE (element_mode), &min_units))
+    {
+      machine_mode rvv_mode;
+      if (maybe_ne (nunits, 0U))
+	{
+	  /* If we were given a number of units NUNITS, try to find an
+	     RVV vector mode of inner mode ELEMENT_MODE with the same
+	     number of units.  */
+	  if (multiple_p (min_units, nunits)
+	      && get_vector_mode (element_mode, nunits).exists (&rvv_mode))
+	    return rvv_mode;
+	}
+      else
+	{
+	  /* Look for a vector mode with the same number of units as the
+	     VECTOR_MODE we were given.  We keep track of the minimum
+	     number of units so far which determines the smallest necessary
+	     but largest possible, suitable mode for vectorization.  */
+	  min_units = ordered_min (min_units, GET_MODE_SIZE (vector_mode));
+	  if (get_vector_mode (element_mode, min_units).exists (&rvv_mode))
+	    return rvv_mode;
+	}
+    }
+
+  return default_vectorize_related_mode (vector_mode, element_mode, nunits);
+}
+
 /* Expand an RVV comparison.  */
 
 void

@@ -2,7 +2,7 @@
 
 #define TEST_TYPE(TYPE) 				\
   __attribute__((noipa))				\
-  void vadd_##TYPE (TYPE *dst, TYPE *a, TYPE *b, int n)	\
+  void vdiv_##TYPE (TYPE *dst, TYPE *a, TYPE *b, int n)	\
   {							\
     for (int i = 0; i < n; i++)				\
       dst[i] = a[i] / b[i];				\
@@ -10,13 +10,12 @@
 
 #define TEST2_TYPE(TYPE) 				\
   __attribute__((noipa))				\
-  void vadds_##TYPE (TYPE *dst, TYPE *a, TYPE b, int n)	\
+  void vdivs_##TYPE (TYPE *dst, TYPE *a, TYPE b, int n)	\
   {							\
     for (int i = 0; i < n; i++)				\
       dst[i] = a[i] / b;				\
   }
 
-/* *int8_t not autovec currently. */
 #define TEST_ALL()	\
  TEST_TYPE(int16_t)	\
  TEST_TYPE(uint16_t)	\
