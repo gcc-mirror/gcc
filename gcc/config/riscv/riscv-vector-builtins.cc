@@ -331,6 +331,48 @@ static const rvv_type_info bool1_interpret_ops[] = {
 #include "riscv-vector-builtins-types.def"
   {NUM_VECTOR_TYPES, 0}};
 
+/* A list of bool2 interpret will be registered for intrinsic functions.  */
+static const rvv_type_info bool2_interpret_ops[] = {
+#define DEF_RVV_BOOL2_INTERPRET_OPS(TYPE, REQUIRE)                             \
+  {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of bool4 interpret will be registered for intrinsic functions.  */
+static const rvv_type_info bool4_interpret_ops[] = {
+#define DEF_RVV_BOOL4_INTERPRET_OPS(TYPE, REQUIRE)                             \
+  {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of bool8 interpret will be registered for intrinsic functions.  */
+static const rvv_type_info bool8_interpret_ops[] = {
+#define DEF_RVV_BOOL8_INTERPRET_OPS(TYPE, REQUIRE)                             \
+  {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of bool16 interpret will be registered for intrinsic functions.  */
+static const rvv_type_info bool16_interpret_ops[] = {
+#define DEF_RVV_BOOL16_INTERPRET_OPS(TYPE, REQUIRE)                            \
+  {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of bool32 interpret will be registered for intrinsic functions.  */
+static const rvv_type_info bool32_interpret_ops[] = {
+#define DEF_RVV_BOOL32_INTERPRET_OPS(TYPE, REQUIRE)                            \
+  {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of bool64 interpret will be registered for intrinsic functions.  */
+static const rvv_type_info bool64_interpret_ops[] = {
+#define DEF_RVV_BOOL64_INTERPRET_OPS(TYPE, REQUIRE)                            \
+  {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
 /* A list of x2 vlmul ext will be registered for intrinsic functions.  */
 static const rvv_type_info vlmul_ext_x2_ops[] = {
 #define DEF_RVV_X2_VLMUL_EXT_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
@@ -1611,6 +1653,54 @@ static CONSTEXPR const rvv_op_info iu_v_bool1_interpret_ops
      rvv_arg_type_info (RVV_BASE_bool1_interpret), /* Return type */
      v_args					   /* Args */};
 
+/* A static operand information for vbool2_t func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info iu_v_bool2_interpret_ops
+  = {bool2_interpret_ops,			   /* Types */
+     OP_TYPE_v,					   /* Suffix */
+     rvv_arg_type_info (RVV_BASE_bool2_interpret), /* Return type */
+     v_args					   /* Args */};
+
+/* A static operand information for vbool4_t func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info iu_v_bool4_interpret_ops
+  = {bool4_interpret_ops,			   /* Types */
+     OP_TYPE_v,					   /* Suffix */
+     rvv_arg_type_info (RVV_BASE_bool4_interpret), /* Return type */
+     v_args					   /* Args */};
+
+/* A static operand information for vbool8_t func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info iu_v_bool8_interpret_ops
+  = {bool8_interpret_ops,			   /* Types */
+     OP_TYPE_v,					   /* Suffix */
+     rvv_arg_type_info (RVV_BASE_bool8_interpret), /* Return type */
+     v_args					   /* Args */};
+
+/* A static operand information for vbool16_t func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info iu_v_bool16_interpret_ops
+  = {bool16_interpret_ops,			    /* Types */
+     OP_TYPE_v,					    /* Suffix */
+     rvv_arg_type_info (RVV_BASE_bool16_interpret), /* Return type */
+     v_args					    /* Args */};
+
+/* A static operand information for vbool32_t func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info iu_v_bool32_interpret_ops
+  = {bool32_interpret_ops,			    /* Types */
+     OP_TYPE_v,					    /* Suffix */
+     rvv_arg_type_info (RVV_BASE_bool32_interpret), /* Return type */
+     v_args					    /* Args */};
+
+/* A static operand information for vbool64_t func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info iu_v_bool64_interpret_ops
+  = {bool64_interpret_ops,			    /* Types */
+     OP_TYPE_v,					    /* Suffix */
+     rvv_arg_type_info (RVV_BASE_bool64_interpret), /* Return type */
+     v_args					    /* Args */};
+
 /* A static operand information for vector_type func (vector_type)
  * function registration. */
 static CONSTEXPR const rvv_op_info all_v_vlmul_ext_x2_ops
@@ -2297,7 +2387,8 @@ static CONSTEXPR const function_type_info function_types[] = {
   DOUBLE_TRUNC_SCALAR, DOUBLE_TRUNC_SIGNED, DOUBLE_TRUNC_UNSIGNED,             \
   DOUBLE_TRUNC_UNSIGNED_SCALAR, DOUBLE_TRUNC_FLOAT, FLOAT, LMUL1, WLMUL1,      \
   EEW8_INTERPRET, EEW16_INTERPRET, EEW32_INTERPRET, EEW64_INTERPRET,           \
-  BOOL1_INTERPRET,                                                             \
+  BOOL1_INTERPRET, BOOL2_INTERPRET, BOOL4_INTERPRET, BOOL8_INTERPRET,          \
+  BOOL16_INTERPRET, BOOL32_INTERPRET, BOOL64_INTERPRET,                        \
   X2_VLMUL_EXT, X4_VLMUL_EXT, X8_VLMUL_EXT, X16_VLMUL_EXT, X32_VLMUL_EXT,      \
   X64_VLMUL_EXT, TUPLE_SUBPART)                                                \
   {                                                                            \
@@ -2336,6 +2427,12 @@ static CONSTEXPR const function_type_info function_types[] = {
     VECTOR_TYPE_##EEW32_INTERPRET,                                             \
     VECTOR_TYPE_##EEW64_INTERPRET,                                             \
     VECTOR_TYPE_##BOOL1_INTERPRET,                                             \
+    VECTOR_TYPE_##BOOL2_INTERPRET,                                             \
+    VECTOR_TYPE_##BOOL4_INTERPRET,                                             \
+    VECTOR_TYPE_##BOOL8_INTERPRET,                                             \
+    VECTOR_TYPE_##BOOL16_INTERPRET,                                            \
+    VECTOR_TYPE_##BOOL32_INTERPRET,                                            \
+    VECTOR_TYPE_##BOOL64_INTERPRET,                                            \
     VECTOR_TYPE_##X2_VLMUL_EXT,                                                \
     VECTOR_TYPE_##X4_VLMUL_EXT,                                                \
     VECTOR_TYPE_##X8_VLMUL_EXT,                                                \
@@ -2638,6 +2735,12 @@ required_extensions_p (enum rvv_base_type type)
       case RVV_BASE_eew32_interpret:
       case RVV_BASE_eew64_interpret:
       case RVV_BASE_bool1_interpret:
+      case RVV_BASE_bool2_interpret:
+      case RVV_BASE_bool4_interpret:
+      case RVV_BASE_bool8_interpret:
+      case RVV_BASE_bool16_interpret:
+      case RVV_BASE_bool32_interpret:
+      case RVV_BASE_bool64_interpret:
       case RVV_BASE_vlmul_ext_x2:
       case RVV_BASE_vlmul_ext_x4:
       case RVV_BASE_vlmul_ext_x8:

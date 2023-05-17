@@ -79,7 +79,8 @@ along with GCC; see the file COPYING3.  If not see
   DOUBLE_TRUNC_SCALAR, DOUBLE_TRUNC_SIGNED, DOUBLE_TRUNC_UNSIGNED,             \
   DOUBLE_TRUNC_UNSIGNED_SCALAR, DOUBLE_TRUNC_FLOAT, FLOAT, LMUL1, WLMUL1,      \
   EEW8_INTERPRET, EEW16_INTERPRET, EEW32_INTERPRET, EEW64_INTERPRET,           \
-  BOOL1_INTERPRET,                                                             \
+  BOOL1_INTERPRET, BOOL2_INTERPRET, BOOL4_INTERPRET, BOOL8_INTERPRET,          \
+  BOOL16_INTERPRET, BOOL32_INTERPRET, BOOL64_INTERPRET,                        \
   X2_VLMUL_EXT, X4_VLMUL_EXT, X8_VLMUL_EXT, X16_VLMUL_EXT, X32_VLMUL_EXT,      \
   X64_VLMUL_EXT, TUPLE_SUBPART)
 #endif
@@ -641,6 +642,12 @@ DEF_RVV_BASE_TYPE (eew16_interpret, get_vector_type (type_idx))
 DEF_RVV_BASE_TYPE (eew32_interpret, get_vector_type (type_idx))
 DEF_RVV_BASE_TYPE (eew64_interpret, get_vector_type (type_idx))
 DEF_RVV_BASE_TYPE (bool1_interpret, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (bool2_interpret, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (bool4_interpret, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (bool8_interpret, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (bool16_interpret, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (bool32_interpret, get_vector_type (type_idx))
+DEF_RVV_BASE_TYPE (bool64_interpret, get_vector_type (type_idx))
 DEF_RVV_BASE_TYPE (vlmul_ext_x2, get_vector_type (type_idx))
 DEF_RVV_BASE_TYPE (vlmul_ext_x4, get_vector_type (type_idx))
 DEF_RVV_BASE_TYPE (vlmul_ext_x8, get_vector_type (type_idx))

@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <assert.h>
 #include <math.h>
 
-#define BOOL_SIZE_LIST {1}
+#define BOOL_SIZE_LIST {1, 2, 4, 8, 16, 32, 64}
 
 std::string
 to_lmul (int lmul_log2)

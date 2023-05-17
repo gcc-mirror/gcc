@@ -34,5 +34,53 @@ vbool1_t test_vreinterpret_v_u64m1_b1 (vuint64m1_t src) {
   return __riscv_vreinterpret_v_u64m1_b1 (src);
 }
 
-/* { dg-final { scan-assembler-times {vlm\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 8 } } */
-/* { dg-final { scan-assembler-times {vsm\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 8 } } */
+vbool2_t test_vreinterpret_v_i8m1_b2 (vint8m1_t src) {
+  return __riscv_vreinterpret_v_i8m1_b2 (src);
+}
+
+vbool4_t test_vreinterpret_v_i8m1_b4 (vint8m1_t src) {
+  return __riscv_vreinterpret_v_i8m1_b4 (src);
+}
+
+vbool8_t test_vreinterpret_v_i8m1_b8 (vint8m1_t src) {
+  return __riscv_vreinterpret_v_i8m1_b8 (src);
+}
+
+vbool16_t test_vreinterpret_v_i8m1_b16 (vint8m1_t src) {
+  return __riscv_vreinterpret_v_i8m1_b16 (src);
+}
+
+vbool32_t test_vreinterpret_v_i8m1_b32 (vint8m1_t src) {
+  return __riscv_vreinterpret_v_i8m1_b32 (src);
+}
+
+vbool64_t test_vreinterpret_v_i8m1_b64 (vint8m1_t src) {
+  return __riscv_vreinterpret_v_i8m1_b64 (src);
+}
+
+vbool2_t test_vreinterpret_v_u8m1_b2 (vuint8m1_t src) {
+  return __riscv_vreinterpret_v_u8m1_b2 (src);
+}
+
+vbool4_t test_vreinterpret_v_u8m1_b4 (vuint8m1_t src) {
+  return __riscv_vreinterpret_v_u8m1_b4 (src);
+}
+
+vbool8_t test_vreinterpret_v_u8m1_b8 (vuint8m1_t src) {
+  return __riscv_vreinterpret_v_u8m1_b8 (src);
+}
+
+vbool16_t test_vreinterpret_v_u8m1_b16 (vuint8m1_t src) {
+  return __riscv_vreinterpret_v_u8m1_b16 (src);
+}
+
+vbool32_t test_vreinterpret_v_u8m1_b32 (vuint8m1_t src) {
+  return __riscv_vreinterpret_v_u8m1_b32 (src);
+}
+
+vbool64_t test_vreinterpret_v_u8m1_b64 (vuint8m1_t src) {
+  return __riscv_vreinterpret_v_u8m1_b64 (src);
+}
+
+/* { dg-final { scan-assembler-times {vlm\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 20 } } */
+/* { dg-final { scan-assembler-times {vsm\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 20 } } */
