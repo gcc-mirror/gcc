@@ -450,6 +450,14 @@ s390_preserve_fpr_arg_p (int regno)
 	  && regno >= FPR0_REGNUM);
 }
 
+#undef TARGET_ATOMIC_ALIGN_FOR_MODE
+#define TARGET_ATOMIC_ALIGN_FOR_MODE s390_atomic_align_for_mode
+static unsigned int
+s390_atomic_align_for_mode (machine_mode mode)
+{
+  return GET_MODE_BITSIZE (mode);
+}
+
 /* A couple of shortcuts.  */
 #define CONST_OK_FOR_J(x) \
 	CONST_OK_FOR_CONSTRAINT_P((x), 'J', "J")
