@@ -5678,6 +5678,7 @@ package body Exp_Ch5 is
                   New_List (Make_If_Statement (Loc,
                     Condition => Iterator_Filter (LPS),
                     Then_Statements => Stats)));
+               Analyze_List (Statements (N));
             end if;
 
             --  Deal with loop over predicates
