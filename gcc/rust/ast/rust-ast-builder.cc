@@ -118,5 +118,29 @@ AstBuilder::deref (std::unique_ptr<Expr> &&of)
   return std::unique_ptr<Expr> (new DereferenceExpr (std::move (of), {}, loc));
 }
 
+std::unique_ptr<Expr>
+AstBuilder::struct_expr (std::string struct_name,
+			 std::vector<std::unique_ptr<StructExprField>> &&fields)
+{
+  return std::unique_ptr<Expr> (
+    new StructExprStructFields (path_in_expression ({struct_name}),
+				std::move (fields), loc));
+}
+
+std::unique_ptr<StructExprField>
+AstBuilder::struct_expr_field (std::string field_name,
+			       std::unique_ptr<Expr> &&value)
+{
+  return std::unique_ptr<StructExprField> (
+    new StructExprFieldIdentifierValue (field_name, std::move (value), loc));
+}
+
+std::unique_ptr<Expr>
+AstBuilder::field_access (std::unique_ptr<Expr> &&instance, std::string field)
+{
+  return std::unique_ptr<Expr> (
+    new FieldAccessExpr (std::move (instance), field, {}, loc));
+}
+
 } // namespace AST
 } // namespace Rust
