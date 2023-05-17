@@ -343,19 +343,28 @@ private:
 class ipcp_vr_lattice
 {
 public:
-  value_range m_vr;
+  Value_Range m_vr;
 
   inline bool bottom_p () const;
   inline bool top_p () const;
   inline bool set_to_bottom ();
-  bool meet_with (const value_range *p_vr);
+  bool meet_with (const vrange &p_vr);
   bool meet_with (const ipcp_vr_lattice &other);
-  void init () { gcc_assert (m_vr.undefined_p ()); }
+  void init (tree type);
   void print (FILE * f);
 
 private:
-  bool meet_with_1 (const value_range *other_vr);
+  bool meet_with_1 (const vrange &other_vr);
 };
+
+inline void
+ipcp_vr_lattice::init (tree type)
+{
+  if (type)
+    m_vr.set_type (type);
+
+  // Otherwise m_vr will default to unsupported_range.
+}
 
 /* Structure containing lattices for a parameter itself and for pieces of
    aggregates that are passed in the parameter or by a reference in a parameter
@@ -585,7 +594,7 @@ ipcp_bits_lattice::print (FILE *f)
 void
 ipcp_vr_lattice::print (FILE * f)
 {
-  dump_value_range (f, &m_vr);
+  m_vr.dump (f);
 }
 
 /* Print all ipcp_lattices of all functions to F.  */
@@ -1016,39 +1025,39 @@ set_agg_lats_contain_variable (class ipcp_param_lattices *plats)
 bool
 ipcp_vr_lattice::meet_with (const ipcp_vr_lattice &other)
 {
-  return meet_with_1 (&other.m_vr);
+  return meet_with_1 (other.m_vr);
 }
 
-/* Meet the current value of the lattice with value range described by VR
-   lattice.  */
+/* Meet the current value of the lattice with the range described by
+   P_VR.  */
 
 bool
-ipcp_vr_lattice::meet_with (const value_range *p_vr)
+ipcp_vr_lattice::meet_with (const vrange &p_vr)
 {
   return meet_with_1 (p_vr);
 }
 
-/* Meet the current value of the lattice with value range described by
-   OTHER_VR lattice.  Return TRUE if anything changed.  */
+/* Meet the current value of the lattice with the range described by
+   OTHER_VR.  Return TRUE if anything changed.  */
 
 bool
-ipcp_vr_lattice::meet_with_1 (const value_range *other_vr)
+ipcp_vr_lattice::meet_with_1 (const vrange &other_vr)
 {
   if (bottom_p ())
     return false;
 
-  if (other_vr->varying_p ())
+  if (other_vr.varying_p ())
     return set_to_bottom ();
 
   bool res;
   if (flag_checking)
     {
-      value_range save (m_vr);
-      res = m_vr.union_ (*other_vr);
+      Value_Range save (m_vr);
+      res = m_vr.union_ (other_vr);
       gcc_assert (res == (m_vr != save));
     }
   else
-    res = m_vr.union_ (*other_vr);
+    res = m_vr.union_ (other_vr);
   return res;
 }
 
@@ -1077,12 +1086,15 @@ ipcp_vr_lattice::set_to_bottom ()
 {
   if (m_vr.varying_p ())
     return false;
-  /* ?? We create all sorts of VARYING ranges for floats, structures,
-     and other types which we cannot handle as ranges.  We should
-     probably avoid handling them throughout the pass, but it's easier
-     to create a sensible VARYING here and let the lattice
-     propagate.  */
-  m_vr.set_varying (integer_type_node);
+
+  /* Setting an unsupported type here forces the temporary to default
+     to unsupported_range, which can handle VARYING/DEFINED ranges,
+     but nothing else (union, intersect, etc).  This allows us to set
+     bottoms on any ranges, and is safe as all users of the lattice
+     check for bottom first.  */
+  m_vr.set_type (void_type_node);
+  m_vr.set_varying (void_type_node);
+
   return true;
 }
 
@@ -1653,6 +1665,7 @@ initialize_node_lattices (struct cgraph_node *node)
   for (i = 0; i < ipa_get_param_count (info); i++)
     {
       ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
+      tree type = ipa_get_type (info, i);
       if (disable
 	  || !ipa_get_type (info, i)
 	  || (pre_modified && (surviving_params.length () <= (unsigned) i
@@ -1662,12 +1675,12 @@ initialize_node_lattices (struct cgraph_node *node)
 	  plats->ctxlat.set_to_bottom ();
 	  set_agg_lats_to_bottom (plats);
 	  plats->bits_lattice.set_to_bottom ();
-	  plats->m_value_range.m_vr = value_range ();
+	  plats->m_value_range.init (type);
 	  plats->m_value_range.set_to_bottom ();
 	}
       else
 	{
-	  plats->m_value_range.init ();
+	  plats->m_value_range.init (type);
 	  if (variable)
 	    set_all_contains_variable (plats);
 	}
@@ -1900,11 +1913,11 @@ ipa_context_from_jfunc (ipa_node_params *info, cgraph_edge *cs, int csidx,
 
 /* Emulate effects of unary OPERATION and/or conversion from SRC_TYPE to
    DST_TYPE on value range in SRC_VR and store it to DST_VR.  Return true if
-   the result is a range or an anti-range.  */
+   the result is a range that is not VARYING nor UNDEFINED.  */
 
 static bool
-ipa_vr_operation_and_type_effects (value_range *dst_vr,
-				   value_range *src_vr,
+ipa_vr_operation_and_type_effects (vrange &dst_vr,
+				   const vrange &src_vr,
 				   enum tree_code operation,
 				   tree dst_type, tree src_type)
 {
@@ -1912,29 +1925,35 @@ ipa_vr_operation_and_type_effects (value_range *dst_vr,
     return false;
 
   range_op_handler handler (operation, dst_type);
-  return (handler
-	  && handler.fold_range (*dst_vr, dst_type,
-				 *src_vr, value_range (dst_type))
-	  && !dst_vr->varying_p ()
-	  && !dst_vr->undefined_p ());
+  if (!handler)
+    return false;
+
+  Value_Range varying (dst_type);
+  varying.set_varying (dst_type);
+
+  return (handler.fold_range (dst_vr, dst_type, src_vr, varying)
+	  && !dst_vr.varying_p ()
+	  && !dst_vr.undefined_p ());
 }
 
 /* Determine range of JFUNC given that INFO describes the caller node or
    the one it is inlined to, CS is the call graph edge corresponding to JFUNC
    and PARM_TYPE of the parameter.  */
 
-value_range
-ipa_value_range_from_jfunc (ipa_node_params *info, cgraph_edge *cs,
+void
+ipa_value_range_from_jfunc (vrange &vr,
+			    ipa_node_params *info, cgraph_edge *cs,
 			    ipa_jump_func *jfunc, tree parm_type)
 {
-  value_range vr;
+  vr.set_undefined ();
+
   if (jfunc->m_vr)
-    ipa_vr_operation_and_type_effects (&vr,
-				       jfunc->m_vr,
+    ipa_vr_operation_and_type_effects (vr,
+				       *jfunc->m_vr,
 				       NOP_EXPR, parm_type,
 				       jfunc->m_vr->type ());
   if (vr.singleton_p ())
-    return vr;
+    return;
   if (jfunc->type == IPA_JF_PASS_THROUGH)
     {
       int idx;
@@ -1943,33 +1962,34 @@ ipa_value_range_from_jfunc (ipa_node_params *info, cgraph_edge *cs,
 					   ? cs->caller->inlined_to
 					   : cs->caller);
       if (!sum || !sum->m_vr)
-	return vr;
+	return;
 
       idx = ipa_get_jf_pass_through_formal_id (jfunc);
 
       if (!(*sum->m_vr)[idx].known_p ())
-	return vr;
+	return;
       tree vr_type = ipa_get_type (info, idx);
-      value_range srcvr;
+      Value_Range srcvr;
       (*sum->m_vr)[idx].get_vrange (srcvr);
 
       enum tree_code operation = ipa_get_jf_pass_through_operation (jfunc);
 
       if (TREE_CODE_CLASS (operation) == tcc_unary)
 	{
-	  value_range res;
+	  Value_Range res (vr_type);
 
-	  if (ipa_vr_operation_and_type_effects (&res,
-						 &srcvr,
+	  if (ipa_vr_operation_and_type_effects (res,
+						 srcvr,
 						 operation, parm_type,
 						 vr_type))
 	    vr.intersect (res);
 	}
       else
 	{
-	  value_range op_res, res;
+	  Value_Range op_res (vr_type);
+	  Value_Range res (vr_type);
 	  tree op = ipa_get_jf_pass_through_operand (jfunc);
-	  value_range op_vr;
+	  Value_Range op_vr (vr_type);
 	  range_op_handler handler (operation, vr_type);
 
 	  ipa_range_set_and_normalize (op_vr, op);
@@ -1979,14 +1999,13 @@ ipa_value_range_from_jfunc (ipa_node_params *info, cgraph_edge *cs,
 	      || !handler.fold_range (op_res, vr_type, srcvr, op_vr))
 	    op_res.set_varying (vr_type);
 
-	  if (ipa_vr_operation_and_type_effects (&res,
-						 &op_res,
+	  if (ipa_vr_operation_and_type_effects (res,
+						 op_res,
 						 NOP_EXPR, parm_type,
 						 vr_type))
 	    vr.intersect (res);
 	}
     }
-  return vr;
 }
 
 /* Determine whether ITEM, jump function for an aggregate part, evaluates to a
@@ -2753,10 +2772,10 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
       if (src_lats->m_value_range.bottom_p ())
 	return dest_lat->set_to_bottom ();
 
-      value_range vr;
+      Value_Range vr (operand_type);
       if (TREE_CODE_CLASS (operation) == tcc_unary)
-	ipa_vr_operation_and_type_effects (&vr,
-					   &src_lats->m_value_range.m_vr,
+	ipa_vr_operation_and_type_effects (vr,
+					   src_lats->m_value_range.m_vr,
 					   operation, param_type,
 					   operand_type);
       /* A crude way to prevent unbounded number of value range updates
@@ -2765,8 +2784,8 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
       else if (!ipa_edge_within_scc (cs))
 	{
 	  tree op = ipa_get_jf_pass_through_operand (jfunc);
-	  value_range op_vr;
-	  value_range op_res,res;
+	  Value_Range op_vr (TREE_TYPE (op));
+	  Value_Range op_res (operand_type);
 	  range_op_handler handler (operation, operand_type);
 
 	  ipa_range_set_and_normalize (op_vr, op);
@@ -2777,8 +2796,8 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 				      src_lats->m_value_range.m_vr, op_vr))
 	    op_res.set_varying (operand_type);
 
-	  ipa_vr_operation_and_type_effects (&vr,
-					     &op_res,
+	  ipa_vr_operation_and_type_effects (vr,
+					     op_res,
 					     NOP_EXPR, param_type,
 					     operand_type);
 	}
@@ -2786,14 +2805,14 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 	{
 	  if (jfunc->m_vr)
 	    {
-	      value_range jvr;
-	      if (ipa_vr_operation_and_type_effects (&jvr, jfunc->m_vr,
+	      Value_Range jvr (param_type);
+	      if (ipa_vr_operation_and_type_effects (jvr, *jfunc->m_vr,
 						     NOP_EXPR,
 						     param_type,
 						     jfunc->m_vr->type ()))
 		vr.intersect (jvr);
 	    }
-	  return dest_lat->meet_with (&vr);
+	  return dest_lat->meet_with (vr);
 	}
     }
   else if (jfunc->type == IPA_JF_CONST)
@@ -2805,18 +2824,17 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 	  if (TREE_OVERFLOW_P (val))
 	    val = drop_tree_overflow (val);
 
-	  value_range tmpvr (TREE_TYPE (val),
-			     wi::to_wide (val), wi::to_wide (val));
-	  return dest_lat->meet_with (&tmpvr);
+	  Value_Range tmpvr (val, val);
+	  return dest_lat->meet_with (tmpvr);
 	}
     }
 
-  value_range vr;
+  Value_Range vr (param_type);
   if (jfunc->m_vr
-      && ipa_vr_operation_and_type_effects (&vr, jfunc->m_vr, NOP_EXPR,
+      && ipa_vr_operation_and_type_effects (vr, *jfunc->m_vr, NOP_EXPR,
 					    param_type,
 					    jfunc->m_vr->type ()))
-    return dest_lat->meet_with (&vr);
+    return dest_lat->meet_with (vr);
   else
     return dest_lat->set_to_bottom ();
 }

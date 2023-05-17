@@ -198,8 +198,9 @@ ipa_vr::equal_p (const vrange &r) const
 }
 
 void
-ipa_vr::get_vrange (vrange &r) const
+ipa_vr::get_vrange (Value_Range &r) const
 {
+  r.set_type (m_type);
   m_storage->get_vrange (r, m_type);
 }
 
@@ -5964,7 +5965,7 @@ ipcp_update_vr (struct cgraph_node *node)
 
       if (vr[i].known_p ())
 	{
-	  value_range tmp;
+	  Value_Range tmp;
 	  vr[i].get_vrange (tmp);
 
 	  if (!tmp.undefined_p () && !tmp.varying_p ())
