@@ -1,3 +1,11 @@
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
+	Revert:
+	2019-07-10  Julian Brown  <julian@codesourcery.com>
+
+	* trans-openmp.cc (gfc_omp_finish_clause): Change clauses mapping
+	assumed-size arrays to use the GOMP_MAP_FORCE_PRESENT map type.
+
 2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* openmp.cc: Include omp-api.h.

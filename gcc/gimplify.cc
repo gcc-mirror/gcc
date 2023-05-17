@@ -12828,26 +12828,12 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
   *list_p = clause;
   struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
   gimplify_omp_ctxp = ctx->outer_context;
-  gomp_map_kind kind = (code == OMP_CLAUSE_MAP) ? OMP_CLAUSE_MAP_KIND (clause)
-						: (gomp_map_kind) GOMP_MAP_LAST;
   /* Don't call omp_finish_clause on implicitly added OMP_CLAUSE_PRIVATE
      in simd.  Those are only added for the local vars inside of simd body
      and they don't need to be e.g. default constructible.  */
   if (code != OMP_CLAUSE_PRIVATE || ctx->region_type != ORT_SIMD) 
     lang_hooks.decls.omp_finish_clause (clause, pre_p,
 					(ctx->region_type & ORT_ACC) != 0);
-  /* Allow OpenACC to have implicit assumed-size arrays via FORCE_PRESENT,
-     which should work as long as the array has previously been mapped
-     explicitly on the target (e.g. by "enter data").  Raise an error for
-     OpenMP.  */
-  if (lang_GNU_Fortran ()
-      && code == OMP_CLAUSE_MAP
-      && (ctx->region_type & ORT_ACC) == 0
-      && kind == GOMP_MAP_TOFROM
-      && OMP_CLAUSE_MAP_KIND (clause) == GOMP_MAP_FORCE_PRESENT)
-    error_at (OMP_CLAUSE_LOCATION (clause),
-	      "implicit mapping of assumed size array %qD",
-	      OMP_CLAUSE_DECL (clause));
   if (gimplify_omp_ctxp)
     for (; clause != chain; clause = OMP_CLAUSE_CHAIN (clause))
       if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_MAP
