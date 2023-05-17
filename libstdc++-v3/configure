@@ -71957,6 +71957,7 @@ _ACEOF
   fi
 
 
+# For src/c++11/shared_ptr.cc alignment.
 
 
   ac_ext=cpp
