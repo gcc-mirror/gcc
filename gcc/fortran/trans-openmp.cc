@@ -1611,7 +1611,7 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
   tree c2 = NULL_TREE, c3 = NULL_TREE, c4 = NULL_TREE;
   tree present = gfc_omp_check_optional_argument (decl, true);
   tree orig_decl = NULL_TREE;
-  if (DECL_P (decl) && POINTER_TYPE_P (TREE_TYPE (decl)))
+  if (POINTER_TYPE_P (TREE_TYPE (decl)))
     {
       if (!gfc_omp_privatize_by_reference (decl)
 	  && !GFC_DECL_GET_SCALAR_POINTER (decl)

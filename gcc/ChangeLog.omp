@@ -1,6 +1,19 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
 	Revert:
+	2019-05-19  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (oacc_array_mapping_info): Add REF field.
+	(gimplify_scan_omp_clauses): Initialise above field for data blocks
+	passed by reference.
+	(gomp_oacc_needs_data_present): Handle references.
+	(gimplify_adjust_omp_clauses_1): Handle references and optional
+	arguments for variables declared in lexically-enclosing OpenACC data
+	region.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
+	Revert:
 	2019-07-10  Cesar Philippidis  <cesar@codesourcery.com>
 		    Julian Brown  <julian@codesourcery.com>
 
