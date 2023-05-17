@@ -3320,7 +3320,7 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
   imm_use_iterator imm_iter;
 
   if (FLOAT_TYPE_P (type)
-      && flag_fp_contract_mode == FP_CONTRACT_OFF)
+      && flag_fp_contract_mode != FP_CONTRACT_FAST)
     return false;
 
   /* We don't want to do bitfield reduction ops.  */
