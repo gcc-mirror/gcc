@@ -1,3 +1,16 @@
+2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107801
+	* src/c++17/memory_resource.cc (chunk::_M_bytes): Change type
+	from uint32_t to bitset::size_type. Adjust static assertion.
+	(__pool_resource::_Pool::replenish): Cast to size_t after
+	multiplication instead of before.
+	(__pool_resource::_M_alloc_pools): Ensure both arguments to
+	std::max have type size_t.
+
 2023-05-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
