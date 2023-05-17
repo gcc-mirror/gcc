@@ -2146,10 +2146,10 @@ Parser<ManagedTokenSource>::parse_macro_match_fragment ()
 
   Identifier ident = "";
   auto identifier = lexer.peek_token ();
-  if (identifier->has_str ())
-    ident = identifier->get_str ();
+  if (identifier->get_id () == UNDERSCORE)
+    ident = "_";
   else
-    ident = std::string (token_id_to_str (identifier->get_id ()));
+    ident = identifier->get_str ();
 
   if (ident.empty ())
     {
