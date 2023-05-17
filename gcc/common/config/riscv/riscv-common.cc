@@ -104,7 +104,7 @@ static const riscv_implied_info_t riscv_implied_info[] =
 
   {"zfh", "zfhmin"},
   {"zfhmin", "f"},
-  
+
   {"zhinx", "zhinxmin"},
   {"zhinxmin", "zfinx"},
 

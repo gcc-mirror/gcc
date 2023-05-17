@@ -578,7 +578,7 @@ enum reg_class
 #define POLY_SMALL_OPERAND_P(POLY_VALUE)		\
   (POLY_VALUE.is_constant () ?				\
      SMALL_OPERAND (POLY_VALUE.to_constant ()) : false)
-     
+
 /* True if VALUE can be loaded into a register using LUI.  */
 
 #define LUI_OPERAND(VALUE)						\
