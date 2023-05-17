@@ -4784,8 +4784,9 @@ package body Sem_Attr is
             Loop_Decl : constant Node_Id := Label_Construct (Parent (Loop_Id));
 
             function Check_Reference (Nod : Node_Id) return Traverse_Result;
-            --  Determine whether a reference mentions an entity declared
-            --  within the related loop.
+            --  Detect attribute 'Loop_Entry in prefix P and determine whether
+            --  a reference mentions an entity declared within the related
+            --  loop.
 
             function Declared_Within (Nod : Node_Id) return Boolean;
             --  Determine whether Nod appears in the subtree of Loop_Decl but
@@ -4796,8 +4797,22 @@ package body Sem_Attr is
             ---------------------
 
             function Check_Reference (Nod : Node_Id) return Traverse_Result is
+               Orig_Nod : constant Node_Id := Original_Node (Nod);
+               --  Check presence of Loop_Entry in the prefix P by looking at
+               --  the original node for Nod, as it will have been rewritten
+               --  into its own prefix if the assertion is ignored (see code
+               --  below).
+
             begin
-               if Nkind (Nod) = N_Identifier
+               if Is_Attribute_Loop_Entry (Orig_Nod) then
+                  Error_Msg_Name_1 := Name_Loop_Entry;
+                  Error_Msg_Name_2 := Name_Loop_Entry;
+                  Error_Msg_N
+                    ("attribute % cannot appear in the prefix of attribute %",
+                     Nod);
+                  return Abandon;
+
+               elsif Nkind (Nod) = N_Identifier
                  and then Present (Entity (Nod))
                  and then Declared_Within (Declaration_Node (Entity (Nod)))
                then
