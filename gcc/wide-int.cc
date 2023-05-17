@@ -139,7 +139,7 @@ canonize_uhwi (HOST_WIDE_INT *val, unsigned int precision)
 
 /* Copy XLEN elements from XVAL to VAL.  If NEED_CANON, canonize the
    result for an integer with precision PRECISION.  Return the length
-   of VAL (after any canonization.  */
+   of VAL (after any canonization).  */
 unsigned int
 wi::from_array (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
 		unsigned int xlen, unsigned int precision, bool need_canon)
