@@ -1,3 +1,51 @@
+2023-05-16  Simon Wright  <simon@pushface.org>
+
+	Backported from master:
+	2022-06-12  Simon Wright  <simon@pushface.org>
+
+	PR target/104871
+	* config/darwin-driver.c (darwin_find_version_from_kernel): If the OS
+	version is darwin20 (macOS 11) or greater, truncate the version to the
+	major number.
+
+2023-05-16  Mark Mentovai  <mark@mentovai.com>
+
+	Backported from master:
+	2022-06-12  Mark Mentovai  <mark@mentovai.com>
+
+	* config/darwin-c.c: Make -mmacosx-version-min more future-proof.
+
+2023-05-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2022-05-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/105599
+	* config/darwin.h: Move versions-specific handling of multiply_defined
+	from SUBTARGET_DRIVER_SELF_SPECS to LINK_SPEC.
+
+2023-05-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.gcc: Emit L2_MAX_OFILE_ALIGNMENT with suitable
+	values for the host.
+	* config/darwin.c (darwin_emit_common): Error for alignment
+	values > 32768.
+	* config/darwin.h (MAX_OFILE_ALIGNMENT): Rework to use the
+	configured L2_MAX_OFILE_ALIGNMENT.
+
+2023-05-16  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2021-12-18  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* config/darwin-driver.c: Make version code more future-proof.
+	* config.gcc: Homogeneize darwin versions.
+	* configure.ac: Homogeneize darwin versions.
+	* configure: Regenerate.
+
 2023-05-15  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/i386/darwin.h (ENDFILE_SPEC): Fix trailing '\'.

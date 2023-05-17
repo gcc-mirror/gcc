@@ -1,3 +1,24 @@
+2023-05-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-aligned-globals.c: New test.
+	* gcc.dg/darwin-comm-1.c: New test.
+	* gcc.dg/attr-aligned.c: Amend for new alignment values on
+	Darwin.
+	* gcc.target/i386/pr89261.c: Likewise.
+
+2023-05-16  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2021-12-18  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/darwin-minversion-link.c: Test darwin21.
+	* obj-c++.dg/cxx-ivars-3.mm: Homogeneize darwin versions.
+	* obj-c++.dg/objc-gc-3.mm: Homogeneize darwin versions.
+	* objc.dg/objc-gc-4.m: Homogeneize darwin versions.
+
 2023-05-10  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

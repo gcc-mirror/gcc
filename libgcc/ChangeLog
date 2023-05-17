@@ -1,3 +1,12 @@
+2023-05-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2022-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/t-slibgcc-darwin (install-darwin-libgcc-stubs): Skip the
+	install of libgcc_s.1.dylib when the installation is into the build
+	gcc directory.
+
 2022-05-16  Sebastian Pop  <spop@amazon.com>
 
 	PR target/105162

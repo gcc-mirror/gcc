@@ -1,3 +1,11 @@
+2023-05-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2022-06-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Correct use of $host.
+
 2022-04-21  Release Manager
 
 	* GCC 11.3.0 released.

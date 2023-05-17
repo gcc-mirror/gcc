@@ -1,3 +1,142 @@
+2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107801
+	* src/c++17/memory_resource.cc (chunk::_M_bytes): Change type
+	from uint32_t to bitset::size_type. Adjust static assertion.
+	(__pool_resource::_Pool::replenish): Cast to size_t after
+	multiplication instead of before.
+	(__pool_resource::_M_alloc_pools): Ensure both arguments to
+	std::max have type size_t.
+
+2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/107801
+	* src/c++17/memory_resource.cc (pool_sizes): Disable large pools
+	for targets with 16-bit int.
+
+2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-09-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/91456
+	* include/std/type_traits (__is_nothrow_invocable): Remove.
+	(__is_invocable_impl::__nothrow_type): New member type which
+	checks if the conversion can throw.
+	(__is_nt_invocable_impl): Replace class template with alias
+	template to __is_nt_invocable_impl::__nothrow_type.
+	* testsuite/20_util/is_nothrow_invocable/91456.cc: New test.
+	* testsuite/20_util/is_nothrow_convertible/value.cc: Remove
+	macro used by value_ext.cc test.
+	* testsuite/20_util/is_nothrow_convertible/value_ext.cc: Remove
+	test for non-standard __is_nothrow_invocable trait.
+
+2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-09-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/c_global/cstddef (byte): Add always_inline attribute
+	to all operator overloads.
+	(to_integer): Add always_inline attribute.
+
+2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-07-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_ops.h: Add nodiscard to all pure functions.
+	* include/experimental/bits/fs_ops.h: Likewise.
+	* testsuite/27_io/filesystem/operations/all.cc: Do not discard
+	results of absolute and canonical.
+	* testsuite/27_io/filesystem/operations/absolute.cc: Cast
+	discarded result to void.
+	* testsuite/27_io/filesystem/operations/canonical.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/exists.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/is_empty.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/read_symlink.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/operations/status.cc: Likewise.
+	* testsuite/27_io/filesystem/operations/symlink_status.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/operations/temp_directory_path.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/canonical.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/exists.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/is_empty.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/read_symlink.cc:
+	Likewise.
+	* testsuite/experimental/filesystem/operations/temp_directory_path.cc:
+	Likewise.
+
+2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-02-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (variant::operator=): Implement resolution
+	of LWG 3585.
+	* testsuite/20_util/variant/lwg3585.cc: New test.
+
+2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/tuple/swap.cc (MoveOnly::operator==): Add
+	const qualifier.
+	* testsuite/26_numerics/valarray/87641.cc (X::operator==):
+	Likewise.
+
+2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-03-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104875
+	* src/c++11/codecvt.cc (read_utf8_code_point): Use char32_t to
+	hold octets that will be left-shifted.
+
+2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-11-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algobase.h (__detail::__copy_or_move):
+	Move output iterator.
+	* testsuite/25_algorithms/copy/constrained.cc: Check copying to
+	move-only output iterator.
+
+2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2022-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108118
+	* include/bits/shared_ptr_base.h (weak_ptr::operator=):
+	Implement as move-and-swap exactly as specified in the standard.
+	* testsuite/20_util/weak_ptr/cons/self_move.cc: New test.
+
+2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-01-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108265
+	* include/std/chrono (hh_mm_ss): Do not use chrono::abs if
+	duration rep is unsigned. Remove incorrect noexcept-specifier.
+	* testsuite/std/time/hh_mm_ss/1.cc: Check unsigned rep. Check
+	floating-point representations. Check default construction.
+
 2023-05-12  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
