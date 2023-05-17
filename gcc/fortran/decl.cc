@@ -2248,8 +2248,7 @@ add_init_expr_to_sym (const char *name, gfc_expr **initp, locus *var_locus)
 	      && gfc_is_constant_expr (init)
 	      && (init->expr_type == EXPR_CONSTANT
 		  || init->expr_type == EXPR_STRUCTURE)
-	      && spec_size (sym->as, &size)
-	      && mpz_cmp_si (size, 0) > 0)
+	      && spec_size (sym->as, &size))
 	    {
 	      array = gfc_get_array_expr (init->ts.type, init->ts.kind,
 					  &init->where);
