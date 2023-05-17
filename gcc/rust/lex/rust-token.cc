@@ -152,6 +152,9 @@ Token::get_type_hint_str () const
 const std::string &
 Token::get_str () const
 {
+  if (token_id_is_keyword (token_id))
+    return token_id_keyword_string (token_id);
+
   // FIXME: attempt to return null again
   // gcc_assert(str != NULL);
 

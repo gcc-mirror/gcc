@@ -58,7 +58,8 @@ SubstituteCtx::check_repetition_amount (size_t pattern_start,
       if (macro.at (i)->get_id () == DOLLAR_SIGN)
 	{
 	  auto &frag_token = macro.at (i + 1);
-	  if (frag_token->get_id () == IDENTIFIER)
+	  if (token_id_is_keyword (frag_token->get_id ())
+	      || frag_token->get_id () == IDENTIFIER)
 	    {
 	      auto it = fragments.find (frag_token->get_str ());
 	      if (it == fragments.end ())
@@ -199,11 +200,21 @@ std::pair<std::vector<std::unique_ptr<AST::Token>>, size_t>
 SubstituteCtx::substitute_token (size_t token_idx)
 {
   auto &token = macro.at (token_idx);
+
   switch (token->get_id ())
     {
-    case IDENTIFIER:
-      rust_debug ("expanding metavar: %s", token->get_str ().c_str ());
-      return {substitute_metavar (token), 1};
+    default:
+      if (token_id_is_keyword (token->get_id ()))
+	{
+	case IDENTIFIER:
+	  rust_debug ("expanding metavar: %s", token->get_str ().c_str ());
+	  return {substitute_metavar (token), 1};
+	}
+      rust_error_at (token->get_locus (),
+		     "unexpected token in macro transcribe: expected "
+		     "%<(%> or identifier after %<$%>, got %<%s%>",
+		     get_token_description (token->get_id ()));
+      break;
       case LEFT_PAREN: {
 	// We need to parse up until the closing delimiter and expand this
 	// fragment->n times.
@@ -279,11 +290,6 @@ SubstituteCtx::substitute_token (size_t token_idx)
       // with no associated fragment and paste the dollar sign in the
       // transcription. Unsure how to do that since we always have at
       // least the closing curly brace after an empty $...
-    default:
-      rust_error_at (token->get_locus (),
-		     "unexpected token in macro transcribe: expected "
-		     "%<(%> or identifier after %<$%>, got %<%s%>",
-		     get_token_description (token->get_id ()));
     }
 
   // FIXME: gcc_unreachable() error case?
