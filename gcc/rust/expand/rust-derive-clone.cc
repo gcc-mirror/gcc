@@ -126,12 +126,23 @@ DeriveClone::visit_struct (StructStruct &item)
       auto unit_ctor = builder.struct_expr_struct (item.get_struct_name ());
       expanded = clone_impl (clone_fn (std::move (unit_ctor)),
 			     item.get_struct_name ());
+      return;
     }
-  else
+
+  auto cloned_fields = std::vector<std::unique_ptr<StructExprField>> ();
+  for (auto &field : item.get_fields ())
     {
-      rust_sorry_at (item.get_locus (), "cannot derive %qs for these items yet",
-		     "Clone");
+      auto name = field.get_field_name ();
+      auto expr = clone_call (
+	builder.ref (builder.field_access (builder.identifier ("self"), name)));
+
+      cloned_fields.emplace_back (
+	builder.struct_expr_field (std::move (name), std::move (expr)));
     }
+
+  auto ctor
+    = builder.struct_expr (item.get_struct_name (), std::move (cloned_fields));
+  expanded = clone_impl (clone_fn (std::move (ctor)), item.get_struct_name ());
 }
 
 void

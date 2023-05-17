@@ -85,6 +85,21 @@ public:
   /* Create a struct expression for unit structs (`S`) */
   std::unique_ptr<Expr> struct_expr_struct (std::string struct_name);
 
+  /**
+   * Create an expression for struct instantiation with fields (`S { a, b: c }`)
+   */
+  std::unique_ptr<Expr>
+  struct_expr (std::string struct_name,
+	       std::vector<std::unique_ptr<StructExprField>> &&fields);
+
+  /* Create a field expression for struct instantiation (`field_name: value`) */
+  std::unique_ptr<StructExprField>
+  struct_expr_field (std::string field_name, std::unique_ptr<Expr> &&value);
+
+  /* Create a field access expression (`instance.field`) */
+  std::unique_ptr<Expr> field_access (std::unique_ptr<Expr> &&instance,
+				      std::string field);
+
 private:
   /**
    * Location of the generated AST nodes
