@@ -16,3 +16,4 @@ unsigned int ror(unsigned int rs1, unsigned int rs2)
 
 /* { dg-final { scan-assembler-times "rolw" 1 } } */
 /* { dg-final { scan-assembler-times "rorw" 1 } } */
+/* { dg-final { scan-assembler-not "and" } } */

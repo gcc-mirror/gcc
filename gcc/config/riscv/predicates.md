@@ -235,13 +235,15 @@
   (and (match_code "const_int")
        (match_test "SINGLE_BIT_MASK_OPERAND (~UINTVAL (op))")))
 
-(define_predicate "const31_operand"
+(define_predicate "const_si_mask_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) == 31")))
+       (match_test "(INTVAL (op) & (GET_MODE_BITSIZE (SImode) - 1))
+                    == GET_MODE_BITSIZE (SImode) - 1")))
 
-(define_predicate "const63_operand"
+(define_predicate "const_di_mask_operand"
   (and (match_code "const_int")
-       (match_test "INTVAL (op) == 63")))
+       (match_test "(INTVAL (op) & (GET_MODE_BITSIZE (DImode) - 1))
+                    == GET_MODE_BITSIZE (DImode) - 1")))
 
 (define_predicate "imm5_operand"
   (and (match_code "const_int")

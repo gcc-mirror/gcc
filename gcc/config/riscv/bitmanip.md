@@ -351,6 +351,42 @@
   "rolw\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
+(define_insn_and_split "*<bitmanip_optab><GPR:mode>3_mask"
+  [(set (match_operand:GPR     0 "register_operand" "= r")
+        (bitmanip_rotate:GPR
+            (match_operand:GPR 1 "register_operand" "  r")
+            (match_operator 4 "subreg_lowpart_operator"
+             [(and:GPR2
+               (match_operand:GPR2 2 "register_operand"  "r")
+               (match_operand 3 "<GPR:shiftm1>" "<GPR:shiftm1p>"))])))]
+  "TARGET_ZBB || TARGET_ZBKB"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+        (bitmanip_rotate:GPR (match_dup 1)
+                             (match_dup 2)))]
+  "operands[2] = gen_lowpart (QImode, operands[2]);"
+  [(set_attr "type" "bitmanip")
+   (set_attr "mode" "<GPR:MODE>")])
+
+(define_insn_and_split "*<bitmanip_optab>si3_sext_mask"
+  [(set (match_operand:DI     0 "register_operand" "= r")
+  (sign_extend:DI (bitmanip_rotate:SI
+            (match_operand:SI 1 "register_operand" "  r")
+            (match_operator 4 "subreg_lowpart_operator"
+             [(and:GPR
+               (match_operand:GPR 2 "register_operand"  "r")
+               (match_operand 3 "const_si_mask_operand"))]))))]
+  "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+  (sign_extend:DI (bitmanip_rotate:SI (match_dup 1)
+                           (match_dup 2))))]
+  "operands[2] = gen_lowpart (QImode, operands[2]);"
+  [(set_attr "type" "bitmanip")
+   (set_attr "mode" "DI")])
+
 ;; orc.b (or-combine) is added as an unspec for the benefit of the support
 ;; for optimized string functions (such as strcmp).
 (define_insn "orcb<mode>2"

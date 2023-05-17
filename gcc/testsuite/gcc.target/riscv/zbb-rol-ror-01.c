@@ -15,3 +15,4 @@ unsigned long foo2(unsigned long rs1, unsigned long rs2)
 
 /* { dg-final { scan-assembler-times "rol" 2 } } */
 /* { dg-final { scan-assembler-times "ror" 2 } } */
+/* { dg-final { scan-assembler-not "and" } } */
