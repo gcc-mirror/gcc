@@ -13162,16 +13162,31 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
       && integer_zerop (arg1)
       && (TYPE_PRECISION (ops->type) != 1 || TYPE_UNSIGNED (ops->type)))
     {
-      gimple *srcstmt = get_def_for_expr (arg0, BIT_AND_EXPR);
-      if (srcstmt
-	  && integer_pow2p (gimple_assign_rhs2 (srcstmt)))
+      wide_int nz = tree_nonzero_bits (arg0);
+
+      if (wi::popcount (nz) == 1)
 	{
+	  tree op0;
+	  int bitnum;
+	  gimple *srcstmt = get_def_for_expr (arg0, BIT_AND_EXPR);
+	  /* If the defining statement was (x & POW2), then remove the and
+	     as we are going to add it back. */
+	  if (srcstmt
+	      && integer_pow2p (gimple_assign_rhs2 (srcstmt)))
+	    {
+	      op0 = gimple_assign_rhs1 (srcstmt);
+	      bitnum = tree_log2 (gimple_assign_rhs2 (srcstmt));
+	    }
+	  else
+	    {
+	      op0 = arg0;
+	      bitnum = wi::exact_log2 (nz);
+	    }
 	  enum tree_code tcode = code == NE ? NE_EXPR : EQ_EXPR;
-	  int bitnum = tree_log2 (gimple_assign_rhs2 (srcstmt));
 
 	  type = lang_hooks.types.type_for_mode (mode, unsignedp);
 	  return expand_single_bit_test (loc, tcode,
-					 gimple_assign_rhs1 (srcstmt),
+					 op0,
 					 bitnum, type, target, mode);
 	}
     }
