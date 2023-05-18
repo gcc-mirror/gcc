@@ -942,6 +942,72 @@ Mappings::get_exported_macros ()
 }
 
 void
+Mappings::insert_derive_proc_macro (
+  std::pair<std::string, std::string> hierarchy, ProcMacro::CustomDerive macro)
+{
+  auto it = procmacroDeriveMappings.find (hierarchy);
+  rust_assert (it == procmacroDeriveMappings.end ());
+
+  procmacroDeriveMappings[hierarchy] = macro;
+}
+
+void
+Mappings::insert_bang_proc_macro (std::pair<std::string, std::string> hierarchy,
+				  ProcMacro::Bang macro)
+{
+  auto it = procmacroBangMappings.find (hierarchy);
+  rust_assert (it == procmacroBangMappings.end ());
+
+  procmacroBangMappings[hierarchy] = macro;
+}
+
+void
+Mappings::insert_attribute_proc_macro (
+  std::pair<std::string, std::string> hierarchy, ProcMacro::Attribute macro)
+{
+  auto it = procmacroAttributeMappings.find (hierarchy);
+  rust_assert (it == procmacroAttributeMappings.end ());
+
+  procmacroAttributeMappings[hierarchy] = macro;
+}
+
+bool
+Mappings::lookup_derive_proc_macro (
+  std::pair<std::string, std::string> hierarchy, ProcMacro::CustomDerive &macro)
+{
+  auto it = procmacroDeriveMappings.find (hierarchy);
+  if (it == procmacroDeriveMappings.end ())
+    return false;
+
+  macro = it->second;
+  return true;
+}
+
+bool
+Mappings::lookup_bang_proc_macro (std::pair<std::string, std::string> hierarchy,
+				  ProcMacro::Bang &macro)
+{
+  auto it = procmacroBangMappings.find (hierarchy);
+  if (it == procmacroBangMappings.end ())
+    return false;
+
+  macro = it->second;
+  return true;
+}
+
+bool
+Mappings::lookup_attribute_proc_macro (
+  std::pair<std::string, std::string> hierarchy, ProcMacro::Attribute &macro)
+{
+  auto it = procmacroAttributeMappings.find (hierarchy);
+  if (it == procmacroAttributeMappings.end ())
+    return false;
+
+  macro = it->second;
+  return true;
+}
+
+void
 Mappings::insert_visibility (NodeId id, Privacy::ModuleVisibility visibility)
 {
   visibility_map.insert ({id, visibility});
