@@ -2287,9 +2287,10 @@ ipa_set_jfunc_bits (ipa_jump_func *jf, const widest_int &value,
 /* Return a pointer to a value_range just like *TMP, but either find it in
    ipa_vr_hash_table or allocate it in GC memory.  TMP->equiv must be NULL.  */
 
-static value_range *
-ipa_get_value_range (value_range *tmp)
+static ipa_vr *
+ipa_get_value_range (const vrange &tmp)
 {
+  /* FIXME: Add hashing support.
   value_range **slot = ipa_vr_hash_table->find_slot (tmp, INSERT);
   if (*slot)
     return *slot;
@@ -2297,40 +2298,27 @@ ipa_get_value_range (value_range *tmp)
   value_range *vr = new (ggc_alloc<value_range> ()) value_range;
   *vr = *tmp;
   *slot = vr;
+  */
+  ipa_vr *vr = new (ggc_alloc<ipa_vr> ()) ipa_vr (tmp);
 
   return vr;
-}
-
-/* Return a pointer to a value range consisting of TYPE, MIN, MAX and an empty
-   equiv set. Use hash table in order to avoid creating multiple same copies of
-   value_ranges.  */
-
-static value_range *
-ipa_get_value_range (enum value_range_kind kind, tree min, tree max)
-{
-  value_range tmp (TREE_TYPE (min),
-		   wi::to_wide (min), wi::to_wide (max), kind);
-  return ipa_get_value_range (&tmp);
-}
-
-/* Assign to JF a pointer to a value_range structure with TYPE, MIN and MAX and
-   a NULL equiv bitmap.  Use hash table in order to avoid creating multiple
-   same value_range structures.  */
-
-static void
-ipa_set_jfunc_vr (ipa_jump_func *jf, enum value_range_kind type,
-		  tree min, tree max)
-{
-  jf->m_vr = ipa_get_value_range (type, min, max);
 }
 
 /* Assign to JF a pointer to a value_range just like TMP but either fetch a
    copy from ipa_vr_hash_table or allocate a new on in GC memory.  */
 
 static void
-ipa_set_jfunc_vr (ipa_jump_func *jf, value_range *tmp)
+ipa_set_jfunc_vr (ipa_jump_func *jf, const vrange &tmp)
 {
   jf->m_vr = ipa_get_value_range (tmp);
+}
+
+static void
+ipa_set_jfunc_vr (ipa_jump_func *jf, const ipa_vr &vr)
+{
+  Value_Range tmp;
+  vr.get_vrange (tmp);
+  ipa_set_jfunc_vr (jf, tmp);
 }
 
 /* Compute jump function for all arguments of callsite CS and insert the
@@ -2392,8 +2380,8 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 
 	  if (addr_nonzero)
 	    {
-	      tree z = build_int_cst (TREE_TYPE (arg), 0);
-	      ipa_set_jfunc_vr (jfunc, VR_ANTI_RANGE, z, z);
+	      vr.set_nonzero (TREE_TYPE (arg));
+	      ipa_set_jfunc_vr (jfunc, vr);
 	    }
 	  else
 	    gcc_assert (!jfunc->m_vr);
@@ -2413,7 +2401,7 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	      value_range resvr = vr;
 	      range_cast (resvr, param_type);
 	      if (!resvr.undefined_p () && !resvr.varying_p ())
-		ipa_set_jfunc_vr (jfunc, &resvr);
+		ipa_set_jfunc_vr (jfunc, resvr);
 	      else
 		gcc_assert (!jfunc->m_vr);
 	    }
@@ -4865,16 +4853,12 @@ ipa_write_jump_function (struct output_block *ob,
       streamer_write_widest_int (ob, jump_func->bits->value);
       streamer_write_widest_int (ob, jump_func->bits->mask);
     }
-  bp_pack_value (&bp, !!jump_func->m_vr, 1);
-  streamer_write_bitpack (&bp);
   if (jump_func->m_vr)
+    jump_func->m_vr->streamer_write (ob);
+  else
     {
-      tree min, max;
-      value_range_kind kind = get_legacy_range (*jump_func->m_vr, min, max);
-      streamer_write_enum (ob->main_stream, value_rang_type,
-			   VR_LAST, kind);
-      stream_write_tree (ob, min, true);
-      stream_write_tree (ob, max, true);
+      bp_pack_value (&bp, false, 1);
+      streamer_write_bitpack (&bp);
     }
 }
 
@@ -5002,21 +4986,17 @@ ipa_read_jump_function (class lto_input_block *ib,
       widest_int value = streamer_read_widest_int (ib);
       widest_int mask = streamer_read_widest_int (ib);
       if (prevails)
-        ipa_set_jfunc_bits (jump_func, value, mask);
+	ipa_set_jfunc_bits (jump_func, value, mask);
     }
   else
     jump_func->bits = NULL;
 
-  struct bitpack_d vr_bp = streamer_read_bitpack (ib);
-  bool vr_known = bp_unpack_value (&vr_bp, 1);
-  if (vr_known)
+  ipa_vr vr;
+  vr.streamer_read (ib, data_in);
+  if (vr.known_p ())
     {
-      enum value_range_kind type = streamer_read_enum (ib, value_range_kind,
-						       VR_LAST);
-      tree min = stream_read_tree (ib, data_in);
-      tree max = stream_read_tree (ib, data_in);
       if (prevails)
-        ipa_set_jfunc_vr (jump_func, type, min, max);
+	ipa_set_jfunc_vr (jump_func, vr);
     }
   else
     jump_func->m_vr = NULL;

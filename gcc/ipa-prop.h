@@ -325,6 +325,9 @@ private:
   friend void gt_pch_nx (struct ipa_vr &);
   friend void gt_ggc_mx (struct ipa_vr &);
   friend void gt_pch_nx (struct ipa_vr *, gt_pointer_operator, void *);
+  friend void gt_ggc_mx_ipa_vr (void *);
+  friend void gt_pch_nx_ipa_vr (void*);
+  friend void gt_pch_p_6ipa_vr(void*, void*, gt_pointer_operator, void*);
 
   vrange_storage *m_storage;
   tree m_type;
@@ -347,7 +350,7 @@ struct GTY (()) ipa_jump_func
   /* Information about value range, containing valid data only when vr_known is
      true.  The pointed to structure is shared betweed different jump
      functions.  Use ipa_set_jfunc_vr to set this field.  */
-  value_range *m_vr;
+  ipa_vr *m_vr;
 
   enum jump_func_type type;
   /* Represents a value of a jump function.  pass_through is used only in jump
