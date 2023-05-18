@@ -42,22 +42,6 @@ private:
   std::vector<TokenPtr> &tokens;
 
   /**
-   * Compatibility layer for using the visitor pattern on polymorphic classes
-   * with a unified overload syntax. This allows us to call `visit` both on
-   * types implementing `accept_vis` method and for classes for which the
-   * `visit` method is directly implemented.
-   */
-  template <typename T> void visit (std::unique_ptr<T> &node)
-  {
-    node->accept_vis (*this);
-  }
-
-  /**
-   * @see visit<std::unique_ptr<T>>
-   */
-  template <typename T> void visit (T &node);
-
-  /**
    * Visit all items in given @collection, placing the separator in between but
    * not at the end.
    */
@@ -106,6 +90,24 @@ private:
   void visit_closure_common (ClosureExpr &expr);
 
   void visit_loop_common (BaseLoopExpr &expr);
+
+public:
+  /**
+   * Compatibility layer for using the visitor pattern on polymorphic classes
+   * with a unified overload syntax. This allows us to call `visit` both on
+   * types implementing `accept_vis` method and for classes for which the
+   * `visit` method is directly implemented.
+   */
+  template <typename T> void visit (std::unique_ptr<T> &node)
+  {
+    node->accept_vis (*this);
+  }
+
+  /**
+   * @see visit<std::unique_ptr<T>>
+   */
+  template <typename T> void visit (T &node);
+
   void visit (LoopLabel &label);
 
   void visit (Literal &lit, Location locus = {});
