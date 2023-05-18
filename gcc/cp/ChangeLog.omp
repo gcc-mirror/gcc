@@ -1,3 +1,11 @@
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
+	Revert:
+	2022-02-24  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* semantics.cc (handle_omp_array_sections): Add handling for
+	creating array-reference base-pointer attachment clause.
+
 2023-06-13  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* cp-tree.h (cp_convert_omp_range_for): Adjust declaration.

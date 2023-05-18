@@ -1,5 +1,12 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	Revert:
+	2022-02-24  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-c++-common/gomp/target-enter-data-1.c: Adjust testcase.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* c-c++-common/goacc/acc-data-chain.c: Partly disable test.
 	* gfortran.dg/goacc/pr70828.f90: Likewise.
 

@@ -1,5 +1,12 @@
 2023-06-19  Julian Brown  <julian@codesourcery.com>
 
+	Revert:
+	2022-02-24  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/ptr-attach-2.c: New test.
+
+2023-06-19  Julian Brown  <julian@codesourcery.com>
+
 	* testsuite/libgomp.oacc-c-c++-common/pr70828.c: XFAIL test.
 	* testsuite/libgomp.oacc-c-c++-common/pr70828-2.c: XFAIL test.
 	* testsuite/libgomp.oacc-fortran/pr70828.f90: XFAIL test.
