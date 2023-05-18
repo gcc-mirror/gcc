@@ -401,6 +401,34 @@ static const rvv_type_info signed_eew64_lmul1_interpret_ops[] = {
 #include "riscv-vector-builtins-types.def"
   {NUM_VECTOR_TYPES, 0}};
 
+/* A list of vuint8m1 interpret will be registered for intrinsic functions.  */
+static const rvv_type_info unsigned_eew8_lmul1_interpret_ops[] = {
+#define DEF_RVV_UNSIGNED_EEW8_LMUL1_INTERPRET_OPS(TYPE, REQUIRE)               \
+  {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of vuint16m1 interpret will be registered for intrinsic functions.  */
+static const rvv_type_info unsigned_eew16_lmul1_interpret_ops[] = {
+#define DEF_RVV_UNSIGNED_EEW16_LMUL1_INTERPRET_OPS(TYPE, REQUIRE)              \
+  {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of vuint32m1 interpret will be registered for intrinsic functions.  */
+static const rvv_type_info unsigned_eew32_lmul1_interpret_ops[] = {
+#define DEF_RVV_UNSIGNED_EEW32_LMUL1_INTERPRET_OPS(TYPE, REQUIRE)              \
+  {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of vuint64m1 interpret will be registered for intrinsic functions.  */
+static const rvv_type_info unsigned_eew64_lmul1_interpret_ops[] = {
+#define DEF_RVV_UNSIGNED_EEW64_LMUL1_INTERPRET_OPS(TYPE, REQUIRE)              \
+  {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
 /* A list of x2 vlmul ext will be registered for intrinsic functions.  */
 static const rvv_type_info vlmul_ext_x2_ops[] = {
 #define DEF_RVV_X2_VLMUL_EXT_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
@@ -1761,6 +1789,38 @@ static CONSTEXPR const rvv_op_info b_v_signed_eew64_lmul1_interpret_ops
      rvv_arg_type_info (RVV_BASE_signed_eew64_lmul1_interpret),/* Return type */
      v_args						       /* Args */};
 
+/* A static operand information for vuint8_t func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info b_v_unsigned_eew8_lmul1_interpret_ops
+  = {unsigned_eew8_lmul1_interpret_ops,				/* Types */
+     OP_TYPE_v,							/* Suffix */
+     rvv_arg_type_info (RVV_BASE_unsigned_eew8_lmul1_interpret),/* Return type */
+     v_args							/* Args */};
+
+/* A static operand information for vuint16_t func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info b_v_unsigned_eew16_lmul1_interpret_ops
+  = {unsigned_eew16_lmul1_interpret_ops,			 /* Types */
+     OP_TYPE_v,							 /* Suffix */
+     rvv_arg_type_info (RVV_BASE_unsigned_eew16_lmul1_interpret),/* Return type */
+     v_args							 /* Args */};
+
+/* A static operand information for vuint32_t func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info b_v_unsigned_eew32_lmul1_interpret_ops
+  = {unsigned_eew32_lmul1_interpret_ops,			 /* Types */
+     OP_TYPE_v,							 /* Suffix */
+     rvv_arg_type_info (RVV_BASE_unsigned_eew32_lmul1_interpret),/* Return type */
+     v_args							 /* Args */};
+
+/* A static operand information for vuint64_t func (vector_type)
+ * function registration. */
+static CONSTEXPR const rvv_op_info b_v_unsigned_eew64_lmul1_interpret_ops
+  = {unsigned_eew64_lmul1_interpret_ops,			 /* Types */
+     OP_TYPE_v,							 /* Suffix */
+     rvv_arg_type_info (RVV_BASE_unsigned_eew64_lmul1_interpret),/* Return type */
+     v_args							 /* Args */};
+
 /* A static operand information for vector_type func (vector_type)
  * function registration. */
 static CONSTEXPR const rvv_op_info all_v_vlmul_ext_x2_ops
@@ -2451,6 +2511,8 @@ static CONSTEXPR const function_type_info function_types[] = {
   BOOL16_INTERPRET, BOOL32_INTERPRET, BOOL64_INTERPRET,                        \
   SIGNED_EEW8_LMUL1_INTERPRET, SIGNED_EEW16_LMUL1_INTERPRET,                   \
   SIGNED_EEW32_LMUL1_INTERPRET, SIGNED_EEW64_LMUL1_INTERPRET,                  \
+  UNSIGNED_EEW8_LMUL1_INTERPRET, UNSIGNED_EEW16_LMUL1_INTERPRET,               \
+  UNSIGNED_EEW32_LMUL1_INTERPRET, UNSIGNED_EEW64_LMUL1_INTERPRET,              \
   X2_VLMUL_EXT, X4_VLMUL_EXT, X8_VLMUL_EXT, X16_VLMUL_EXT, X32_VLMUL_EXT,      \
   X64_VLMUL_EXT, TUPLE_SUBPART)                                                \
   {                                                                            \
@@ -2499,6 +2561,10 @@ static CONSTEXPR const function_type_info function_types[] = {
     VECTOR_TYPE_##SIGNED_EEW16_LMUL1_INTERPRET,                                \
     VECTOR_TYPE_##SIGNED_EEW32_LMUL1_INTERPRET,                                \
     VECTOR_TYPE_##SIGNED_EEW64_LMUL1_INTERPRET,                                \
+    VECTOR_TYPE_##UNSIGNED_EEW8_LMUL1_INTERPRET,                               \
+    VECTOR_TYPE_##UNSIGNED_EEW16_LMUL1_INTERPRET,                              \
+    VECTOR_TYPE_##UNSIGNED_EEW32_LMUL1_INTERPRET,                              \
+    VECTOR_TYPE_##UNSIGNED_EEW64_LMUL1_INTERPRET,                              \
     VECTOR_TYPE_##X2_VLMUL_EXT,                                                \
     VECTOR_TYPE_##X4_VLMUL_EXT,                                                \
     VECTOR_TYPE_##X8_VLMUL_EXT,                                                \
@@ -2811,6 +2877,10 @@ required_extensions_p (enum rvv_base_type type)
       case RVV_BASE_signed_eew16_lmul1_interpret:
       case RVV_BASE_signed_eew32_lmul1_interpret:
       case RVV_BASE_signed_eew64_lmul1_interpret:
+      case RVV_BASE_unsigned_eew8_lmul1_interpret:
+      case RVV_BASE_unsigned_eew16_lmul1_interpret:
+      case RVV_BASE_unsigned_eew32_lmul1_interpret:
+      case RVV_BASE_unsigned_eew64_lmul1_interpret:
       case RVV_BASE_vlmul_ext_x2:
       case RVV_BASE_vlmul_ext_x4:
       case RVV_BASE_vlmul_ext_x8:
