@@ -82,5 +82,22 @@ vbool64_t test_vreinterpret_v_u8m1_b64 (vuint8m1_t src) {
   return __riscv_vreinterpret_v_u8m1_b64 (src);
 }
 
-/* { dg-final { scan-assembler-times {vlm\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 20 } } */
+vint8m1_t test_vreinterpret_v_b1_vint8m1 (vbool1_t src) {
+  return __riscv_vreinterpret_v_b1_i8m1 (src);
+}
+
+vint16m1_t test_vreinterpret_v_b1_vint16m1 (vbool1_t src) {
+  return __riscv_vreinterpret_v_b1_i16m1 (src);
+}
+
+vint32m1_t test_vreinterpret_v_b1_vint32m1 (vbool1_t src) {
+  return __riscv_vreinterpret_v_b1_i32m1 (src);
+}
+
+vint64m1_t test_vreinterpret_v_b1_vint64m1 (vbool1_t src) {
+  return __riscv_vreinterpret_v_b1_i64m1 (src);
+}
+
+/* { dg-final { scan-assembler-times {vlm\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 24 } } */
 /* { dg-final { scan-assembler-times {vsm\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 20 } } */
+/* { dg-final { scan-assembler-times {vs1r\.v\s+v[0-9]+,\s*0\([a-x][0-9]+\)} 4 } } */
