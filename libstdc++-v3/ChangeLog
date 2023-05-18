@@ -1,3 +1,46 @@
+2023-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/109883
+	* testsuite/26_numerics/headers/cmath/constexpr_std_c++23.cc: New test.
+
+2023-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/109883
+	* include/c_global/cmath (atan2, fmod, pow): Move
+	__gnu_cxx::__promote_2 using templates after _Float{16,32,64,128} and
+	__gnu_cxx::__bfloat16_t overloads.
+	(copysign, fdim, fmax, fmin, hypot, nextafter, remainder, remquo):
+	Likewise.
+	(fma): Move __gnu_cxx::__promote_3 using template after
+	_Float{16,32,64,128} and __gnu_cxx::__bfloat16_t overloads.
+
+2023-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/headers/limits/synopsis.cc: Uncomment
+	checks for float_round_style and float_denorm_style.
+
+2023-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config: Add system_header pragma.
+
+2023-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (expected::and_then, expected::or_else)
+	(expected::transform, expected::transform_error): Fix exception
+	specifications as per LWG 3877.
+	(expected<void, E>::and_then, expected<void, E>::transform):
+	Likewise.
+	* testsuite/20_util/expected/lwg3877.cc: New test.
+
+2023-05-17  Ken Matsui  <kmatsui@cs.washington.edu>
+
+	* include/std/type_traits: Use __bool_constant instead of
+	integral_constant.
+
+2023-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure: Regenerate.
+
 2023-05-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/109741

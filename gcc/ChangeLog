@@ -1,3 +1,187 @@
+2023-05-17  Jin Ma  <jinma@linux.alibaba.com>
+
+	* genrecog.cc (print_nonbool_test): Fix type error of
+	switch (SUBREG_BYTE (op))'.
+
+2023-05-17  Jin Ma  <jinma@linux.alibaba.com>
+
+	* common/config/riscv/riscv-common.cc: Remove
+	trailing spaces on lines.
+	* config/riscv/riscv.cc (riscv_legitimize_move): Likewise.
+	* config/riscv/riscv.h (enum reg_class): Likewise.
+	* config/riscv/riscv.md: Likewise.
+
+2023-05-17  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (clear_cache): New.
+
+2023-05-17  Arsen Arsenović  <arsen@aarsen.me>
+
+	* doc/extend.texi (C++ Concepts) <forall>: Remove extraneous
+	parenthesis.  Fix misnamed index entry.
+	<concept>: Fix misnamed index entry.
+
+2023-05-17  Jivan Hakobyan  <jivanhakobyan9@gmail.com>
+
+	* config/riscv/riscv.md (*<optab><GPR:mode>3_mask): New pattern,
+	combined from ...
+	(*<optab>si3_mask, *<optab>di3_mask): Here.
+	(*<optab>si3_mask_1, *<optab>di3_mask_1): And here.
+	* config/riscv/bitmanip.md (*<bitmanip_optab><GPR:mode>3_mask): New
+	pattern.
+	(*<bitmanip_optab>si3_sext_mask): Likewise.
+	* config/riscv/iterators.md (shiftm1): Use const_si_mask_operand
+	and const_di_mask_operand.
+	(bitmanip_rotate): New iterator.
+	(bitmanip_optab): Add rotates.
+	* config/riscv/predicates.md (const_si_mask_operand): Renamed
+	from const31_operand.  Generalize to handle more mask constants.
+	(const_di_mask_operand): Similarly.
+
+2023-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109884
+	* config/i386/i386-builtin-types.def (FLOAT128): Use
+	float128t_type_node rather than float128_type_node.
+
+2023-05-17  Alexander Monakov  <amonakov@ispras.ru>
+
+	* tree-ssa-math-opts.cc (convert_mult_to_fma): Enable only for
+	FP_CONTRACT_FAST (no functional change).
+
+2023-05-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.cc (ix86_multiplication_cost): Correct
+	calcuation of integer vector mode costs to reflect generated
+	instruction sequences of different integer vector modes and
+	different target ABIs.
+
+2023-05-17  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-opts.h (enum riscv_entity): New enum.
+	* config/riscv/riscv.cc (riscv_emit_mode_set): New function.
+	(riscv_mode_needed): Ditto.
+	(riscv_mode_after): Ditto.
+	(riscv_mode_entry): Ditto.
+	(riscv_mode_exit): Ditto.
+	(riscv_mode_priority): Ditto.
+	(TARGET_MODE_EMIT): New target hook.
+	(TARGET_MODE_NEEDED): Ditto.
+	(TARGET_MODE_AFTER): Ditto.
+	(TARGET_MODE_ENTRY): Ditto.
+	(TARGET_MODE_EXIT): Ditto.
+	(TARGET_MODE_PRIORITY): Ditto.
+	* config/riscv/riscv.h (OPTIMIZE_MODE_SWITCHING): Ditto.
+	(NUM_MODES_FOR_MODE_SWITCHING): Ditto.
+	* config/riscv/riscv.md: Add csrwvxrm.
+	* config/riscv/vector.md (rnu,rne,rdn,rod,none): New attribute.
+	(vxrmsi): New pattern.
+
+2023-05-17  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins-bases.cc: Introduce rounding mode.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct alu_def): Ditto.
+	(struct narrow_alu_def): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (function_builder::apply_predication): Ditto.
+	(function_expander::use_exact_insn): Ditto.
+	* config/riscv/riscv-vector-builtins.h (function_checker::arg_num): New function.
+	(function_base::has_rounding_mode_operand_p): New function.
+
+2023-05-17  Andrew Pinski  <apinski@marvell.com>
+
+	* tree-ssa-forwprop.cc (simplify_builtin_call): Check
+	against 0 instead of calling integer_zerop.
+
+2023-05-17  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* config/riscv/riscv-vector-builtins.cc (register_vxrm): New function.
+	(DEF_RVV_VXRM_ENUM): New macro.
+	(handle_pragma_vector): Add vxrm enum register.
+	* config/riscv/riscv-vector-builtins.def (DEF_RVV_VXRM_ENUM): New macro.
+	(RNU): Ditto.
+	(RNE): Ditto.
+	(RDN): Ditto.
+	(ROD): Ditto.
+
+2023-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.h (Value_Range::operator=): New.
+
+2023-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (vrange::operator=): Add a stub to copy
+	unsupported ranges.
+	* value-range.h (is_a <unsupported_range>): New.
+	(Value_Range::operator=): Support copying unsupported ranges.
+
+2023-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* data-streamer-in.cc (streamer_read_real_value): New.
+	(streamer_read_value_range): New.
+	* data-streamer-out.cc (streamer_write_real_value): New.
+	(streamer_write_vrange): New.
+	* data-streamer.h (streamer_write_vrange): New.
+	(streamer_read_value_range): New.
+
+2023-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/109532
+	* doc/invoke.texi (Code Gen Options): Note that -fshort-enums
+	is ignored for a fixed underlying type.
+	(C++ Dialect Options): Likewise for -fstrict-enums.
+
+2023-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.cc (gimplify_scan_omp_clauses): Remove Fortran
+	special case.
+
+2023-05-17  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390.cc (TARGET_ATOMIC_ALIGN_FOR_MODE):
+	New.
+	(s390_atomic_align_for_mode): New.
+
+2023-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* wide-int.cc (wi::from_array): Add missing closing paren in function
+	comment.
+
+2023-05-17  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-loop.cc (vect_analyze_loop_1): Don't retry analysis with
+	suggested unroll factor once the previous analysis fails.
+
+2023-05-17  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/genrvv-type-indexer.cc (BOOL_SIZE_LIST): New
+	macro.
+	(main): Add bool1 to the type indexer.
+	* config/riscv/riscv-vector-builtins-functions.def
+	(vreinterpret): Register vbool1 interpret function.
+	* config/riscv/riscv-vector-builtins-types.def
+	(DEF_RVV_BOOL1_INTERPRET_OPS): New macro.
+	(vint8m1_t): Add the type to bool1_interpret_ops.
+	(vint16m1_t): Ditto.
+	(vint32m1_t): Ditto.
+	(vint64m1_t): Ditto.
+	(vuint8m1_t): Ditto.
+	(vuint16m1_t): Ditto.
+	(vuint32m1_t): Ditto.
+	(vuint64m1_t): Ditto.
+	* config/riscv/riscv-vector-builtins.cc
+	(DEF_RVV_BOOL1_INTERPRET_OPS): New macro.
+	(required_extensions_p): Add bool1 interpret case.
+	* config/riscv/riscv-vector-builtins.def
+	(bool1_interpret): Add bool1 interpret to base type.
+	* config/riscv/vector.md (@vreinterpret<mode>): Add new expand
+	with VB dest for vreinterpret.
+
+2023-05-17  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/106708
+	* config/rs6000/rs6000.cc (rs6000_emit_set_long_const): Support building
+	constants through "lis; xoris".
+
 2023-05-16  Ajit Kumar Agarwal  <aagarwa1@linux.ibm.com>
 
 	* common/config/rs6000/rs6000-common.cc: Add REE pass as a

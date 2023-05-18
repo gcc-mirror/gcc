@@ -1,3 +1,20 @@
+2023-05-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95374
+	PR fortran/104352
+	* decl.cc (add_init_expr_to_sym): Set shape of initializer also for
+	zero-sized arrays, so that bounds violations can be detected later.
+
+2023-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* trans-decl.cc (gfc_get_symbol_decl): Add attributes
+	such as 'declare target' also to hidden artificial
+	variable for deferred-length character variables.
+	* trans-openmp.cc (gfc_trans_omp_array_section,
+	gfc_trans_omp_clauses, gfc_trans_omp_target_exit_data):
+	Improve mapping of array descriptors and deferred-length
+	string variables.
+
 2023-05-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/105152

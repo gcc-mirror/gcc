@@ -1,3 +1,9 @@
+2023-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109868
+	* init.cc (build_zero_init_1): Don't initialize zero-width bitfields.
+	For unions only initialize the first FIELD_DECL.
+
 2023-05-16  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/109774

@@ -1,3 +1,124 @@
+2023-05-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/format/c2x-printf-1.c: Test %B here.
+	* gcc.dg/format/ext-9.c: Do not test %B here.
+
+2023-05-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/95374
+	PR fortran/104352
+	* gfortran.dg/zero_sized_13.f90: New test.
+
+2023-05-17  Jivan Hakobyan  <jivanhakobyan9@gmail.com>
+
+	* gcc.target/riscv/shift-and-2.c: Fixed test
+	* gcc.target/riscv/zbb-rol-ror-01.c: New test
+	* gcc.target/riscv/zbb-rol-ror-02.c: New test
+	* gcc.target/riscv/zbb-rol-ror-03.c: New test
+	* gcc.target/riscv/zbb-rol-ror-04.c: New test
+	* gcc.target/riscv/zbb-rol-ror-05.c: New test
+	* gcc.target/riscv/zbb-rol-ror-06.c: New test
+	* gcc.target/riscv/zbb-rol-ror-07.c: New test
+
+2023-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109884
+	* c-c++-common/pr109884.c: New test.
+
+2023-05-17  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/vxrm-10.c: New test.
+	* gcc.target/riscv/rvv/base/vxrm-6.c: New test.
+	* gcc.target/riscv/rvv/base/vxrm-7.c: New test.
+	* gcc.target/riscv/rvv/base/vxrm-8.c: New test.
+	* gcc.target/riscv/rvv/base/vxrm-9.c: New test.
+
+2023-05-17  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* g++.target/riscv/rvv/base/bug-11.C: Adapt testcase.
+	* g++.target/riscv/rvv/base/bug-12.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-14.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-15.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-16.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-17.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-18.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-19.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-20.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-21.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-22.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-23.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-3.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-5.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-6.C: Ditto.
+	* g++.target/riscv/rvv/base/bug-8.C: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-100.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-101.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-102.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-103.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-104.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-105.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-106.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-107.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-108.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-109.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-110.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-111.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-112.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-113.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-114.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-115.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-116.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-117.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-118.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-119.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-122.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-97.c: Ditto.
+	* gcc.target/riscv/rvv/base/binop_vx_constraint-98.c: Ditto.
+	* gcc.target/riscv/rvv/base/merge_constraint-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/narrow_constraint-6.c: Ditto.
+	* gcc.target/riscv/rvv/base/narrow_constraint-7.c: Ditto.
+	* gcc.target/riscv/rvv/base/narrow_constraint-8.c: Ditto.
+	* gcc.target/riscv/rvv/base/narrow_constraint-9.c: Ditto.
+	* gcc.target/riscv/rvv/base/vxrm-2.c: New test.
+	* gcc.target/riscv/rvv/base/vxrm-3.c: New test.
+	* gcc.target/riscv/rvv/base/vxrm-4.c: New test.
+	* gcc.target/riscv/rvv/base/vxrm-5.c: New test.
+
+2023-05-17  Juzhe-Zhong  <juzhe.zhong@rivai.ai>
+
+	* gcc.target/riscv/rvv/base/vxrm-1.c: New test.
+
+2023-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/finalize-1.f: Update dg-tree; shows a fix
+	for 'finalize' as a ptr is now 'delete' instead of 'release'.
+	* gfortran.dg/gomp/pr78260-2.f90: Likewise as elem-size calc moved
+	to if (allocated) block
+	* gfortran.dg/gomp/target-exit-data.f90: Likewise as a var is now a
+	replaced by a MEM< _25 > expression.
+	* gfortran.dg/gomp/map-9.f90: Update dg-scan-tree-dump.
+	* gfortran.dg/gomp/map-10.f90: New test.
+
+2023-05-17  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* g++.target/s390/atomic-align-1.C: New test.
+	* gcc.target/s390/atomic-align-1.c: New test.
+	* gcc.target/s390/atomic-align-2.c: New test.
+
+2023-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109868
+	* g++.dg/init/pr109868.C: New test.
+
+2023-05-17  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/misc_vreinterpret_vbool_vint.c: New test.
+
+2023-05-17  Jiufu Guo  <guojiufu@linux.ibm.com>
+
+	PR target/106708
+	* gcc.target/powerpc/pr106708.c: Add test function.
+
 2023-05-16  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c11-fordecl-1.c, gcc.dg/c11-fordecl-2.c,

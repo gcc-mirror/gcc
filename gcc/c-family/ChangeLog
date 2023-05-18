@@ -1,3 +1,7 @@
+2023-05-18  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-format.cc (print_char_table): Handle %B like %b.
+
 2023-05-15  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-lex.cc (c_common_has_attribute): Use 202311 as
