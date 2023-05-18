@@ -867,12 +867,13 @@ Session::expansion (AST::Crate &crate)
   /* expand by calling cxtctxt object's monotonic_expander's expand_crate
    * method. */
   MacroExpander expander (crate, cfg, *this);
+  ProcMacroExpander proc_expander (*this);
 
   while (!fixed_point_reached && iterations < cfg.recursion_limit)
     {
       CfgStrip ().go (crate);
       Resolver::EarlyNameResolver ().go (crate);
-      ExpandVisitor (expander).go (crate);
+      ExpandVisitor (expander, proc_expander).go (crate);
 
       fixed_point_reached = !expander.has_changed ();
       expander.reset_changed_state ();

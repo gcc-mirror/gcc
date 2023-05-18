@@ -28,6 +28,7 @@
 #include "rust-hir-full-decls.h"
 #include "rust-lang-item.h"
 #include "rust-privacy-common.h"
+#include "libproc_macro/proc_macro.h"
 
 namespace Rust {
 namespace Analysis {
@@ -282,6 +283,22 @@ public:
   void insert_exported_macro (AST::MacroRulesDefinition &def);
   std::vector<NodeId> &get_exported_macros ();
 
+  void insert_derive_proc_macro (std::pair<std::string, std::string> hierachy,
+				 ProcMacro::CustomDerive macro);
+  void insert_bang_proc_macro (std::pair<std::string, std::string> hierachy,
+			       ProcMacro::Bang macro);
+  void
+  insert_attribute_proc_macro (std::pair<std::string, std::string> hierachy,
+			       ProcMacro::Attribute macro);
+
+  bool lookup_derive_proc_macro (std::pair<std::string, std::string> hierachy,
+				 ProcMacro::CustomDerive &macro);
+  bool lookup_bang_proc_macro (std::pair<std::string, std::string> hierachy,
+			       ProcMacro::Bang &macro);
+  bool
+  lookup_attribute_proc_macro (std::pair<std::string, std::string> hierachy,
+			       ProcMacro::Attribute &macro);
+
   void insert_visibility (NodeId id, Privacy::ModuleVisibility visibility);
   bool lookup_visibility (NodeId id, Privacy::ModuleVisibility &def);
 
@@ -350,10 +367,20 @@ private:
   // all hirid nodes
   std::map<CrateNum, std::set<HirId>> hirNodesWithinCrate;
 
-  // macros
+  // MBE macros
   std::map<NodeId, AST::MacroRulesDefinition *> macroMappings;
   std::map<NodeId, AST::MacroRulesDefinition *> macroInvocations;
   std::vector<NodeId> exportedMacros;
+
+  // Procedural macros
+  std::map<std::pair<std::string, std::string>, ProcMacro::CustomDerive>
+    procmacroDeriveMappings;
+
+  std::map<std::pair<std::string, std::string>, ProcMacro::Bang>
+    procmacroBangMappings;
+
+  std::map<std::pair<std::string, std::string>, ProcMacro::Attribute>
+    procmacroAttributeMappings;
 
   // crate names
   std::map<CrateNum, std::string> crate_names;

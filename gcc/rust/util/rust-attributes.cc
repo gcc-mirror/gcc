@@ -43,6 +43,7 @@ static const BuiltinAttrDefinition __definitions[]
      {"rustc_builtin_macro", EXPANSION},
      {"path", EXPANSION},
      {"macro_use", NAME_RESOLUTION},
+     {"macro_export", NAME_RESOLUTION},
      // FIXME: This is not implemented yet, see
      // https://github.com/Rust-GCC/gccrs/issues/1475
      {"target_feature", CODE_GENERATION},

@@ -21,6 +21,7 @@
 
 #include "rust-ast-visitor.h"
 #include "rust-macro-expand.h"
+#include "rust-proc-macro.h"
 
 namespace Rust {
 
@@ -39,7 +40,9 @@ is_builtin (AST::Attribute &attr);
 class ExpandVisitor : public AST::ASTVisitor
 {
 public:
-  ExpandVisitor (MacroExpander &expander) : expander (expander) {}
+  ExpandVisitor (MacroExpander &expander, ProcMacroExpander &proc_expander)
+    : expander (expander), proc_expander (proc_expander)
+  {}
 
   /* Expand all of the macro invocations currently contained in a crate */
   void go (AST::Crate &crate);
@@ -374,6 +377,7 @@ public:
 
 private:
   MacroExpander &expander;
+  ProcMacroExpander &proc_expander;
 };
 
 } // namespace Rust

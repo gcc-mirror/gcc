@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-expand-visitor.h"
+#include "rust-proc-macro.h"
 #include "rust-attributes.h"
 #include "rust-ast.h"
 #include "rust-type.h"
@@ -1551,7 +1552,8 @@ template <typename T>
 void
 ExpandVisitor::expand_outer_attribute (T &item, AST::SimplePath &path)
 {
-  // FIXME: Implement outer attribute expansion
+  // FIXME: Retrieve path from segments + local use statements instead of string
+  proc_expander.expand_attribute_proc_macro (item, path);
 }
 
 template <typename T>
@@ -1585,8 +1587,8 @@ template <typename T>
 void
 ExpandVisitor::expand_inner_attribute (T &item, AST::SimplePath &path)
 {
-  // TODO: Warn about instability ?
-  // FIXME: Implement expansion for that particular path
+  // FIXME: Retrieve path from segments + local use statements instead of string
+  proc_expander.expand_attribute_proc_macro (item, path);
 }
 
 template <typename T>
