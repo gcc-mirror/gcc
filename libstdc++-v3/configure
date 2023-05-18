@@ -29422,6 +29422,8 @@ else
 
     $as_echo "#define HAVE_MEMALIGN 1" >>confdefs.h
 
+    $as_echo "#define HAVE_ALIGNED_ALLOC 1" >>confdefs.h
+
   elif test "x$with_headers" != "xno"; then
 
 # Base decisions on target environment.

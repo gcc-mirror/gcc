@@ -357,6 +357,7 @@ else
 
     AC_DEFINE(HAVE_ICONV)
     AC_DEFINE(HAVE_MEMALIGN)
+    AC_DEFINE(HAVE_ALIGNED_ALLOC)
   elif test "x$with_headers" != "xno"; then
     GLIBCXX_CROSSCONFIG
   fi
