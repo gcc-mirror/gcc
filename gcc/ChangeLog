@@ -1,3 +1,12 @@
+2023-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/109884
+	* config/i386/i386-builtin-types.def (FLOAT128): Use
+	float128t_type_node rather than float128_type_node.
+
 2023-05-16  Patrick O'Neill  <patrick@rivosinc.com>
 
 	PR target/104338

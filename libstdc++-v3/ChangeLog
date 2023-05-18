@@ -1,3 +1,25 @@
+2023-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/109883
+	* testsuite/26_numerics/headers/cmath/constexpr_std_c++23.cc: New test.
+
+2023-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2023-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/109883
+	* include/c_global/cmath (atan2, fmod, pow): Move
+	__gnu_cxx::__promote_2 using templates after _Float{16,32,64,128} and
+	__gnu_cxx::__bfloat16_t overloads.
+	(copysign, fdim, fmax, fmin, hypot, nextafter, remainder, remquo):
+	Likewise.
+	(fma): Move __gnu_cxx::__promote_3 using template after
+	_Float{16,32,64,128} and __gnu_cxx::__bfloat16_t overloads.
+
 2023-05-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
