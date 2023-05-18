@@ -563,6 +563,9 @@ STAGEautoprofile_TFLAGS = $(STAGE2_TFLAGS)
 
 STAGEautofeedback_CFLAGS = $(STAGE3_CFLAGS)
 STAGEautofeedback_TFLAGS = $(STAGE3_TFLAGS)
+# Disable warnings as errors since inlining decisions with -fauto-profile
+# may result in additional warnings.
+STAGEautofeedback_CONFIGURE_FLAGS = $(filter-out --enable-werror-always,$(STAGE_CONFIGURE_FLAGS))
 
 do-compare = @do_compare@
 do-compare3 = $(do-compare)
