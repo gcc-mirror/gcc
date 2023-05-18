@@ -3116,28 +3116,28 @@ gfc_simplify_extends_type_of (gfc_expr *a, gfc_expr *mold)
   /* Return .false. if the dynamic type can never be an extension.  */
   if ((a->ts.type == BT_CLASS && mold->ts.type == BT_CLASS
        && !gfc_type_is_extension_of
-			(mold->ts.u.derived->components->ts.u.derived,
-			 a->ts.u.derived->components->ts.u.derived)
+			(CLASS_DATA (mold)->ts.u.derived,
+			 CLASS_DATA (a)->ts.u.derived)
        && !gfc_type_is_extension_of
-			(a->ts.u.derived->components->ts.u.derived,
-			 mold->ts.u.derived->components->ts.u.derived))
+			(CLASS_DATA (a)->ts.u.derived,
+			 CLASS_DATA (mold)->ts.u.derived))
       || (a->ts.type == BT_DERIVED && mold->ts.type == BT_CLASS
 	  && !gfc_type_is_extension_of
-			(mold->ts.u.derived->components->ts.u.derived,
+			(CLASS_DATA (mold)->ts.u.derived,
 			 a->ts.u.derived))
       || (a->ts.type == BT_CLASS && mold->ts.type == BT_DERIVED
 	  && !gfc_type_is_extension_of
 			(mold->ts.u.derived,
-			 a->ts.u.derived->components->ts.u.derived)
+			 CLASS_DATA (a)->ts.u.derived)
 	  && !gfc_type_is_extension_of
-			(a->ts.u.derived->components->ts.u.derived,
+			(CLASS_DATA (a)->ts.u.derived,
 			 mold->ts.u.derived)))
     return gfc_get_logical_expr (gfc_default_logical_kind, &a->where, false);
 
   /* Return .true. if the dynamic type is guaranteed to be an extension.  */
   if (a->ts.type == BT_CLASS && mold->ts.type == BT_DERIVED
       && gfc_type_is_extension_of (mold->ts.u.derived,
-				   a->ts.u.derived->components->ts.u.derived))
+				   CLASS_DATA (a)->ts.u.derived))
     return gfc_get_logical_expr (gfc_default_logical_kind, &a->where, true);
 
   return NULL;
@@ -4344,8 +4344,8 @@ simplify_cobound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
     return NULL;
 
   /* Follow any component references.  */
-  as = (array->ts.type == BT_CLASS && array->ts.u.derived->components)
-       ? array->ts.u.derived->components->as
+  as = (array->ts.type == BT_CLASS && CLASS_DATA (array))
+       ? CLASS_DATA (array)->as
        : array->symtree->n.sym->as;
   for (ref = array->ref; ref; ref = ref->next)
     {

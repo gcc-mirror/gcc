@@ -15187,7 +15187,7 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
   /* Check type-spec if this is not the parent-type component.  */
   if (((sym->attr.is_class
         && (!sym->components->ts.u.derived->attr.extension
-            || c != sym->components->ts.u.derived->components))
+	    || c != CLASS_DATA (sym->components)))
        || (!sym->attr.is_class
            && (!sym->attr.extension || c != sym->components)))
       && !sym->attr.vtype
@@ -15200,7 +15200,7 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
      component.  */
   if (super_type
       && ((sym->attr.is_class
-           && c == sym->components->ts.u.derived->components)
+	   && c == CLASS_DATA (sym->components))
           || (!sym->attr.is_class && c == sym->components))
       && strcmp (super_type->name, c->name) == 0)
     c->attr.access = super_type->attr.access;
@@ -15446,7 +15446,7 @@ resolve_fl_derived0 (gfc_symbol *sym)
       return false;
     }
 
-  c = (sym->attr.is_class) ? sym->components->ts.u.derived->components
+  c = (sym->attr.is_class) ? CLASS_DATA (sym->components)
 			   : sym->components;
 
   success = true;

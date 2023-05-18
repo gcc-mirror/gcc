@@ -5847,9 +5847,9 @@ gfc_get_corank (gfc_expr *e)
   if (!gfc_is_coarray (e))
     return 0;
 
-  if (e->ts.type == BT_CLASS && e->ts.u.derived->components)
-    corank = e->ts.u.derived->components->as
-	     ? e->ts.u.derived->components->as->corank : 0;
+  if (e->ts.type == BT_CLASS && CLASS_DATA (e))
+    corank = CLASS_DATA (e)->as
+	     ? CLASS_DATA (e)->as->corank : 0;
   else
     corank = e->symtree->n.sym->as ? e->symtree->n.sym->as->corank : 0;
 
