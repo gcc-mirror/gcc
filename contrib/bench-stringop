@@ -87,7 +87,7 @@ test "$2" "$3" "-mstringop-strategy=rep_byte -malign-stringops" rep1
 test "$2" "$3" "-mstringop-strategy=rep_byte -mno-align-stringops" rep1noalign
 test "$2" "$3" "-mstringop-strategy=rep_4byte -malign-stringops" rep4
 test "$2" "$3" "-mstringop-strategy=rep_4byte -mno-align-stringops" rep4noalign
-if [ "$mode" == 64 ]
+if [ "$mode" = 64 ]
 then
 test "$2" "$3" "-mstringop-strategy=rep_8byte -malign-stringops" rep8
 test "$2" "$3" "-mstringop-strategy=rep_8byte -mno-align-stringops" rep8noalign
@@ -109,7 +109,7 @@ echo "    $best"
 
 test_all_sizes()
 {
-if [ "$mode" == 64 ]
+if [ "$mode" = 64 ]
 then
 echo "  block size  libcall rep1    noalg   rep4    noalg   rep8    noalg   loop    noalg   unrl    noalg   sse     noalg   byte    PGO     dynamic    BEST"
 else
