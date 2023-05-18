@@ -48,8 +48,9 @@ TokenStream::make_tokenstream (std::uint64_t capacity)
 void
 TokenStream::grow (std::uint64_t delta)
 {
-  auto new_capacity = capacity + delta;
+  auto new_capacity = capacity + (delta != 0 ? delta : 1);
   auto *new_data = new TokenTree[new_capacity];
+  capacity = new_capacity;
   std::memcpy (new_data, data, size);
   delete[] data;
   data = new_data;
@@ -58,7 +59,7 @@ TokenStream::grow (std::uint64_t delta)
 void
 TokenStream::push (TokenTree tree)
 {
-  if (size == capacity)
+  if (size >= capacity)
     grow (capacity);
   data[size] = tree;
   size++;
