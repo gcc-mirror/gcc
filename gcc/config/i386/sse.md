@@ -14987,16 +14987,6 @@
 	(eq:VI12_AVX2 (match_dup 4) (match_dup 1)))]
   "operands[4] = gen_reg_rtx (<MODE>mode);")
 
-(define_expand "mulv8qi3"
-  [(set (match_operand:V8QI 0 "register_operand")
-	(mult:V8QI (match_operand:V8QI 1 "register_operand")
-		   (match_operand:V8QI 2 "register_operand")))]
-  "TARGET_AVX512VL && TARGET_AVX512BW && TARGET_64BIT"
-{
-  ix86_expand_vecop_qihi (MULT, operands[0], operands[1], operands[2]);
-  DONE;
-})
-
 (define_expand "mul<mode>3"
   [(set (match_operand:VI1_AVX512 0 "register_operand")
 	(mult:VI1_AVX512 (match_operand:VI1_AVX512 1 "register_operand")

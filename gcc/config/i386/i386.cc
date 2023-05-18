@@ -20465,6 +20465,14 @@ ix86_multiplication_cost (const struct processor_costs *cost,
   else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
     switch (mode)
       {
+      case V4QImode:
+      case V8QImode:
+	/* Partial V*QImode is emulated with 4-5 insns.  */
+	if ((TARGET_AVX512BW && TARGET_AVX512VL) || TARGET_XOP)
+	  return ix86_vec_cost (mode, cost->mulss + cost->sse_op * 3);
+	else
+	  return ix86_vec_cost (mode, cost->mulss + cost->sse_op * 4);
+
       case V16QImode:
 	/* V*QImode is emulated with 4-11 insns.  */
 	if (TARGET_AVX512BW && TARGET_AVX512VL)

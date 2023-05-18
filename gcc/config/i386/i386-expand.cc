@@ -23270,6 +23270,116 @@ ix86_expand_vec_shift_qihi_constant (enum rtx_code code,
   return true;
 }
 
+void
+ix86_expand_vecop_qihi_partial (enum rtx_code code, rtx dest, rtx op1, rtx op2)
+{
+  machine_mode qimode = GET_MODE (dest);
+  rtx qop1, qop2, hop1, hop2, qdest, hres;
+  bool op2vec = GET_MODE_CLASS (GET_MODE (op2)) == MODE_VECTOR_INT;
+  bool uns_p = true;
+
+  switch (qimode)
+    {
+    case E_V4QImode:
+    case E_V8QImode:
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  qop1 = lowpart_subreg (V16QImode, force_reg (qimode, op1), qimode);
+
+  if (op2vec)
+    qop2 = lowpart_subreg (V16QImode, force_reg (qimode, op2), qimode);
+  else
+    qop2 = op2;
+
+  switch (code)
+    {
+    case MULT:
+      gcc_assert (op2vec);
+      /* Unpack data such that we've got a source byte in each low byte of
+	 each word.  We don't care what goes into the high byte of each word.
+	 Rather than trying to get zero in there, most convenient is to let
+	 it be a copy of the low byte.  */
+      hop1 = copy_to_reg (qop1);
+      hop2 = copy_to_reg (qop2);
+      emit_insn (gen_vec_interleave_lowv16qi (hop1, hop1, hop1));
+      emit_insn (gen_vec_interleave_lowv16qi (hop2, hop2, hop2));
+      break;
+
+    case ASHIFTRT:
+      uns_p = false;
+      /* FALLTHRU */
+    case ASHIFT:
+    case LSHIFTRT:
+      hop1 = gen_reg_rtx (V8HImode);
+      ix86_expand_sse_unpack (hop1, qop1, uns_p, false);
+      /* vashr/vlshr/vashl  */
+      if (op2vec)
+	{
+	  hop2 = gen_reg_rtx (V8HImode);
+	  ix86_expand_sse_unpack (hop2, qop2, uns_p, false);
+	}
+      else
+	hop2 = qop2;
+
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (code != MULT && op2vec)
+    {
+      /* Expand vashr/vlshr/vashl.  */
+      hres = gen_reg_rtx (V8HImode);
+      emit_insn (gen_rtx_SET (hres,
+			      simplify_gen_binary (code, V8HImode,
+						   hop1, hop2)));
+    }
+  else
+    /* Expand mult/ashr/lshr/ashl.  */
+    hres = expand_simple_binop (V8HImode, code, hop1, hop2,
+				NULL_RTX, 1, OPTAB_DIRECT);
+
+  if (TARGET_AVX512BW && TARGET_AVX512VL)
+    {
+      if (qimode == V8QImode)
+	qdest = dest;
+      else
+	qdest = gen_reg_rtx (V8QImode);
+
+      emit_insn (gen_truncv8hiv8qi2 (qdest, hres));
+    }
+  else
+    {
+      struct expand_vec_perm_d d;
+      rtx qres = gen_lowpart (V16QImode, hres);
+      bool ok;
+      int i;
+
+      qdest = gen_reg_rtx (V16QImode);
+
+      /* Merge the data back into the right place.  */
+      d.target = qdest;
+      d.op0 = qres;
+      d.op1 = qres;
+      d.vmode = V16QImode;
+      d.nelt = 16;
+      d.one_operand_p = false;
+      d.testing_p = false;
+
+      for (i = 0; i < d.nelt; ++i)
+	d.perm[i] = i * 2;
+
+      ok = ix86_expand_vec_perm_const_1 (&d);
+      gcc_assert (ok);
+    }
+
+  if (qdest != dest)
+    emit_move_insn (dest, gen_lowpart (qimode, qdest));
+}
+
 /* Expand a vector operation CODE for a V*QImode in terms of the
    same operation on V*HImode.  */
 
@@ -23281,6 +23391,7 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
   rtx (*gen_il) (rtx, rtx, rtx);
   rtx (*gen_ih) (rtx, rtx, rtx);
   rtx op1_l, op1_h, op2_l, op2_h, res_l, res_h;
+  bool op2vec = GET_MODE_CLASS (GET_MODE (op2)) == MODE_VECTOR_INT;
   struct expand_vec_perm_d d;
   bool full_interleave = true;
   bool uns_p = true;
@@ -23315,6 +23426,7 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
   switch (code)
     {
     case MULT:
+      gcc_assert (op2vec);
       /* Unpack data such that we've got a source byte in each low byte of
 	 each word.  We don't care what goes into the high byte of each word.
 	 Rather than trying to get zero in there, most convenient is to let
@@ -23360,7 +23472,7 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
       ix86_expand_sse_unpack (op1_l, op1, uns_p, false);
       ix86_expand_sse_unpack (op1_h, op1, uns_p, true);
       /* vashr/vlshr/vashl  */
-      if (GET_MODE_CLASS (GET_MODE (op2)) == MODE_VECTOR_INT)
+      if (op2vec)
 	{
 	  rtx tmp = force_reg (qimode, op2);
 	  op2_l = gen_reg_rtx (himode);
@@ -23376,8 +23488,7 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
       gcc_unreachable ();
     }
 
-  if (code != MULT
-      && GET_MODE_CLASS (GET_MODE (op2)) == MODE_VECTOR_INT)
+  if (code != MULT && op2vec)
     {
       /* Expand vashr/vlshr/vashl.  */
       res_l = gen_reg_rtx (himode);
@@ -23435,9 +23546,6 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
 
   ok = ix86_expand_vec_perm_const_1 (&d);
   gcc_assert (ok);
-
-  set_unique_reg_note (get_last_insn (), REG_EQUAL,
-		       gen_rtx_fmt_ee (code, qimode, op1, op2));
 }
 
 /* Helper function of ix86_expand_mul_widen_evenodd.  Return true
