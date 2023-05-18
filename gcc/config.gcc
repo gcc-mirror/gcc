@@ -2441,7 +2441,7 @@ riscv*-*-elf* | riscv*-*-rtems*)
 	  tmake_file="${tmake_file} riscv/t-rtems"
 	  ;;
 	*)
-	  if test "x${with_multilib_generator}" == xdefault; then
+	  if test "x${with_multilib_generator}" = xdefault; then
 		  case "x${enable_multilib}" in
 		  xno) ;;
 		  xyes) tmake_file="${tmake_file} riscv/t-elf-multilib" ;;
