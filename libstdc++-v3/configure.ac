@@ -45,7 +45,7 @@ if test "$build" != "$host"; then
       *-*-darwin*,*-*-darwin*)
 	hostos=`echo $host | sed 's/.*-darwin/darwin/'`
 	targetos=`echo $target | sed 's/.*-darwin/darwin/'`
-	if test $hostos = $targetos -o $targetos = darwin ; then
+	if test $hostos = $targetos || test $targetos = darwin ; then
 	  GLIBCXX_IS_NATIVE=true
 	fi
 	;;
