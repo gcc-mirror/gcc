@@ -12077,10 +12077,12 @@ This option is enabled by default at optimization levels @option{-O1},
 such as forming of fused multiply-add operations if the target has
 native support for them.
 @option{-ffp-contract=on} enables floating-point expression contraction
-if allowed by the language standard.  This is currently not implemented
-and treated equal to @option{-ffp-contract=off}.
+if allowed by the language standard.  This is implemented for C and C++,
+where it enables contraction within one expression, but not across
+different statements.
 
-The default is @option{-ffp-contract=fast}.
+The default is @option{-ffp-contract=off} for C in a standards compliant mode
+(@option{-std=c11} or similar), @option{-ffp-contract=fast} otherwise.
 
 @opindex fomit-frame-pointer
 @item -fomit-frame-pointer
