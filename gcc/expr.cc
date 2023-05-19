@@ -12909,72 +12909,70 @@ fold_single_bit_test (location_t loc, enum tree_code code,
 		      tree inner, int bitnum,
 		      tree result_type)
 {
-  if ((code == NE_EXPR || code == EQ_EXPR))
+  gcc_assert (code == NE_EXPR || code == EQ_EXPR);
+
+  tree type = TREE_TYPE (inner);
+  scalar_int_mode operand_mode = SCALAR_INT_TYPE_MODE (type);
+  int ops_unsigned;
+  tree signed_type, unsigned_type, intermediate_type;
+  tree one;
+  gimple *inner_def;
+
+  /* First, see if we can fold the single bit test into a sign-bit
+     test.  */
+  if (bitnum == TYPE_PRECISION (type) - 1
+      && type_has_mode_precision_p (type))
     {
-      tree type = TREE_TYPE (inner);
-      scalar_int_mode operand_mode = SCALAR_INT_TYPE_MODE (type);
-      int ops_unsigned;
-      tree signed_type, unsigned_type, intermediate_type;
-      tree one;
-      gimple *inner_def;
-
-      /* First, see if we can fold the single bit test into a sign-bit
-	 test.  */
-      if (bitnum == TYPE_PRECISION (type) - 1
-	  && type_has_mode_precision_p (type))
-	{
-	  tree stype = signed_type_for (type);
-	  return fold_build2_loc (loc, code == EQ_EXPR ? GE_EXPR : LT_EXPR,
-				  result_type,
-				  fold_convert_loc (loc, stype, inner),
-				  build_int_cst (stype, 0));
-	}
-
-      /* Otherwise we have (A & C) != 0 where C is a single bit,
-	 convert that into ((A >> C2) & 1).  Where C2 = log2(C).
-	 Similarly for (A & C) == 0.  */
-
-      /* If INNER is a right shift of a constant and it plus BITNUM does
-	 not overflow, adjust BITNUM and INNER.  */
-      if ((inner_def = get_def_for_expr (inner, RSHIFT_EXPR))
-	  && TREE_CODE (gimple_assign_rhs2 (inner_def)) == INTEGER_CST
-	  && bitnum < TYPE_PRECISION (type)
-	  && wi::ltu_p (wi::to_wide (gimple_assign_rhs2 (inner_def)),
-			TYPE_PRECISION (type) - bitnum))
-	{
-	  bitnum += tree_to_uhwi (gimple_assign_rhs2 (inner_def));
-	  inner = gimple_assign_rhs1 (inner_def);
-	}
-
-      /* If we are going to be able to omit the AND below, we must do our
-	 operations as unsigned.  If we must use the AND, we have a choice.
-	 Normally unsigned is faster, but for some machines signed is.  */
-      ops_unsigned = (load_extend_op (operand_mode) == SIGN_EXTEND
-		      && !flag_syntax_only) ? 0 : 1;
-
-      signed_type = lang_hooks.types.type_for_mode (operand_mode, 0);
-      unsigned_type = lang_hooks.types.type_for_mode (operand_mode, 1);
-      intermediate_type = ops_unsigned ? unsigned_type : signed_type;
-      inner = fold_convert_loc (loc, intermediate_type, inner);
-
-      if (bitnum != 0)
-	inner = build2 (RSHIFT_EXPR, intermediate_type,
-			inner, size_int (bitnum));
-
-      one = build_int_cst (intermediate_type, 1);
-
-      if (code == EQ_EXPR)
-	inner = fold_build2_loc (loc, BIT_XOR_EXPR, intermediate_type, inner, one);
-
-      /* Put the AND last so it can combine with more things.  */
-      inner = build2 (BIT_AND_EXPR, intermediate_type, inner, one);
-
-      /* Make sure to return the proper type.  */
-      inner = fold_convert_loc (loc, result_type, inner);
-
-      return inner;
+      tree stype = signed_type_for (type);
+      return fold_build2_loc (loc, code == EQ_EXPR ? GE_EXPR : LT_EXPR,
+			      result_type,
+			      fold_convert_loc (loc, stype, inner),
+			      build_int_cst (stype, 0));
     }
-  return NULL_TREE;
+
+  /* Otherwise we have (A & C) != 0 where C is a single bit,
+     convert that into ((A >> C2) & 1).  Where C2 = log2(C).
+     Similarly for (A & C) == 0.  */
+
+  /* If INNER is a right shift of a constant and it plus BITNUM does
+     not overflow, adjust BITNUM and INNER.  */
+  if ((inner_def = get_def_for_expr (inner, RSHIFT_EXPR))
+       && TREE_CODE (gimple_assign_rhs2 (inner_def)) == INTEGER_CST
+       && bitnum < TYPE_PRECISION (type)
+       && wi::ltu_p (wi::to_wide (gimple_assign_rhs2 (inner_def)),
+		     TYPE_PRECISION (type) - bitnum))
+    {
+      bitnum += tree_to_uhwi (gimple_assign_rhs2 (inner_def));
+      inner = gimple_assign_rhs1 (inner_def);
+    }
+
+  /* If we are going to be able to omit the AND below, we must do our
+     operations as unsigned.  If we must use the AND, we have a choice.
+     Normally unsigned is faster, but for some machines signed is.  */
+  ops_unsigned = (load_extend_op (operand_mode) == SIGN_EXTEND
+		  && !flag_syntax_only) ? 0 : 1;
+
+  signed_type = lang_hooks.types.type_for_mode (operand_mode, 0);
+  unsigned_type = lang_hooks.types.type_for_mode (operand_mode, 1);
+  intermediate_type = ops_unsigned ? unsigned_type : signed_type;
+  inner = fold_convert_loc (loc, intermediate_type, inner);
+
+  if (bitnum != 0)
+    inner = build2 (RSHIFT_EXPR, intermediate_type,
+		    inner, size_int (bitnum));
+
+  one = build_int_cst (intermediate_type, 1);
+
+  if (code == EQ_EXPR)
+    inner = fold_build2_loc (loc, BIT_XOR_EXPR, intermediate_type, inner, one);
+
+  /* Put the AND last so it can combine with more things.  */
+  inner = build2 (BIT_AND_EXPR, intermediate_type, inner, one);
+
+  /* Make sure to return the proper type.  */
+  inner = fold_convert_loc (loc, result_type, inner);
+
+  return inner;
 }
 
 /* Generate code to calculate OPS, and exploded expression
