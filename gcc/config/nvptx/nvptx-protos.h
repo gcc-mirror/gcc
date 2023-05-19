@@ -50,6 +50,7 @@ extern unsigned int ptx_version_to_number (enum ptx_version, bool);
 extern void nvptx_expand_oacc_fork (unsigned);
 extern void nvptx_expand_oacc_join (unsigned);
 extern void nvptx_expand_call (rtx, rtx);
+extern void nvptx_expand_omp_get_num_threads (rtx);
 extern rtx nvptx_gen_shuffle (rtx, rtx, rtx, nvptx_shuffle_kind);
 extern rtx nvptx_expand_compare (rtx);
 extern const char *nvptx_ptx_type_from_mode (machine_mode, bool);
@@ -63,5 +64,6 @@ extern const char *nvptx_output_red_partition (rtx, rtx);
 extern const char *nvptx_output_atomic_insn (const char *, rtx *, int, int);
 extern bool nvptx_mem_local_p (rtx);
 extern bool nvptx_mem_maybe_shared_p (const_rtx);
+extern bool nvptx_mem_shared_p (const_rtx);
 #endif
 #endif

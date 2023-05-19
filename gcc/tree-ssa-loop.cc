@@ -282,6 +282,11 @@ public:
 
   /* opt_pass methods: */
   virtual bool gate (function *fn) {
+    if (flag_openmp
+	&& flag_openmp_target == OMP_TARGET_MODE_OMPACC
+	&& lookup_attribute ("ompacc", DECL_ATTRIBUTES (fn->decl)))
+      return true;
+
     if (!flag_openacc)
       return false;
 

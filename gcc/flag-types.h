@@ -519,6 +519,12 @@ enum omp_target_simd_clone_device_kind
   OMP_TARGET_SIMD_CLONE_ANY = 3
 };
 
+enum omp_target_mode_kind
+{
+  OMP_TARGET_MODE_DEFAULT = 0,
+  OMP_TARGET_MODE_OMPACC = 1
+};
+
 #endif
 
 #endif /* ! GCC_FLAG_TYPES_H */

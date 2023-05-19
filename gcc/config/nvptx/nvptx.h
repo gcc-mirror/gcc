@@ -267,6 +267,9 @@ struct GTY(()) machine_function
      for per-lane storage in OpenMP SIMD regions.  */
   unsigned HOST_WIDE_INT simt_stack_size;
   unsigned HOST_WIDE_INT simt_stack_align;
+
+  rtx omp_parallel_predicate;
+  rtx omp_fn_entry_num_threads_reg;
 };
 #endif
 

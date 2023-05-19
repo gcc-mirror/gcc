@@ -388,6 +388,269 @@ omp_discover_implicit_declare_target (void)
   lang_hooks.decls.omp_finish_decl_inits ();
 }
 
+static bool ompacc_supported_clauses_p (tree clauses)
+{
+  for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+    switch (OMP_CLAUSE_CODE (c))
+      {
+      case OMP_CLAUSE_COLLAPSE:
+      case OMP_CLAUSE_NOWAIT:
+	continue;
+      default:
+	return false;
+      }
+  return true;
+}
+
+struct target_region_data
+{
+  tree func_decl;
+  bool has_omp_for;
+  bool has_omp_parallel;
+  bool ompacc_invalid;
+  auto_vec<const char *> warning_msgs;
+  auto_vec<location_t> warning_locs;
+  target_region_data (void)
+    : func_decl (NULL_TREE),
+      has_omp_for (false), has_omp_parallel (false), ompacc_invalid (false),
+      warning_msgs (), warning_locs () {}
+};
+
+static tree scan_omp_target_region_r (tree *, int *, void *);
+
+static void
+scan_fndecl_for_ompacc (tree decl, target_region_data *tgtdata)
+{
+  target_region_data td;
+  td.func_decl = decl;
+  walk_tree_without_duplicates (&DECL_SAVED_TREE (decl),
+				scan_omp_target_region_r, &td);
+  tree v;
+  if ((v = lookup_attribute ("omp declare variant base",
+			     DECL_ATTRIBUTES (decl)))
+      || (v = lookup_attribute ("omp declare variant variant",
+				DECL_ATTRIBUTES (decl))))
+    {
+      td.ompacc_invalid = true;
+      td.warning_msgs.safe_push ("declare variant not supported for OMPACC");
+      td.warning_locs.safe_push (EXPR_LOCATION (v));
+    }
+  if (tgtdata)
+    {
+      tgtdata->has_omp_for |= td.has_omp_for;
+      tgtdata->has_omp_parallel |= td.has_omp_parallel;
+      tgtdata->ompacc_invalid |= td.ompacc_invalid;
+      for (unsigned i = 0; i < td.warning_msgs.length (); i++)
+	tgtdata->warning_msgs.safe_push (td.warning_msgs[i]);
+      for (unsigned i = 0; i < td.warning_locs.length (); i++)
+	tgtdata->warning_locs.safe_push (td.warning_locs[i]);
+    }
+
+  if (!td.ompacc_invalid
+      && !lookup_attribute ("ompacc", DECL_ATTRIBUTES (decl)))
+    {
+      DECL_ATTRIBUTES (decl)
+	= tree_cons (get_identifier ("ompacc"), NULL_TREE,
+		     DECL_ATTRIBUTES (decl));
+      if (!td.has_omp_parallel)
+	DECL_ATTRIBUTES (decl)
+	  = tree_cons (get_identifier ("ompacc seq"), NULL_TREE,
+		       DECL_ATTRIBUTES (decl));
+    }
+}
+
+static tree
+scan_omp_target_region_r (tree *tp, int *walk_subtrees, void *data)
+{
+  target_region_data *tgtdata = (target_region_data *) data;
+
+  if (TREE_CODE (*tp) == FUNCTION_DECL
+      && !(fndecl_built_in_p (*tp, BUILT_IN_OMP_GET_THREAD_NUM)
+	   || fndecl_built_in_p (*tp, BUILT_IN_OMP_GET_NUM_THREADS)
+	   || fndecl_built_in_p (*tp, BUILT_IN_OMP_GET_TEAM_NUM)
+	   || fndecl_built_in_p (*tp, BUILT_IN_OMP_GET_NUM_TEAMS)
+	   || id_equal (DECL_NAME (*tp), "omp_get_thread_num")
+	   || id_equal (DECL_NAME (*tp), "omp_get_num_threads")
+	   || id_equal (DECL_NAME (*tp), "omp_get_team_num")
+	   || id_equal (DECL_NAME (*tp), "omp_get_num_teams"))
+      && *tp != tgtdata->func_decl)
+    {
+      tree decl = *tp;
+      symtab_node *node = symtab_node::get (*tp);
+      if (node)
+	{
+	  node = node->ultimate_alias_target ();
+	  decl = node->decl;
+	}
+
+      if (!DECL_EXTERNAL (decl) && DECL_SAVED_TREE (decl))
+	{
+	  scan_fndecl_for_ompacc (decl, tgtdata);
+	}
+      else
+	{
+	  tgtdata->warning_msgs.safe_push ("referencing external function");
+	  tgtdata->warning_locs.safe_push (EXPR_LOCATION (*tp));
+	  tgtdata->ompacc_invalid = true;
+	}
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+
+  switch (TREE_CODE (*tp))
+    {
+    case OMP_FOR:
+      if (!ompacc_supported_clauses_p (OMP_CLAUSES (*tp)))
+	{
+	  tgtdata->ompacc_invalid = true;
+	  tgtdata->warning_msgs.safe_push ("clauses not supported");
+	  tgtdata->warning_locs.safe_push (EXPR_LOCATION (*tp));
+	}
+      else if (OMP_FOR_NON_RECTANGULAR (*tp))
+	{
+	  tgtdata->ompacc_invalid = true;
+	  tgtdata->warning_msgs.safe_push ("non-rectangular loops not supported");
+	  tgtdata->warning_locs.safe_push (EXPR_LOCATION (*tp));
+	}
+      else
+	tgtdata->has_omp_for = true;
+      break;
+
+    case OMP_PARALLEL:
+      if (!ompacc_supported_clauses_p (OMP_CLAUSES (*tp)))
+	{
+	  tgtdata->ompacc_invalid = true;
+	  tgtdata->warning_msgs.safe_push ("clauses not supported");
+	  tgtdata->warning_locs.safe_push (EXPR_LOCATION (*tp));
+	}
+      else
+	tgtdata->has_omp_parallel = true;
+      break;
+
+    case OMP_DISTRIBUTE:
+    case OMP_TEAMS:
+      if (!ompacc_supported_clauses_p (OMP_CLAUSES (*tp)))
+	{
+	  tgtdata->ompacc_invalid = true;
+	  tgtdata->warning_msgs.safe_push ("clauses not supported");
+	  tgtdata->warning_locs.safe_push (EXPR_LOCATION (*tp));
+	}
+      /* Fallthru.  */
+
+    case OMP_ATOMIC:
+    case OMP_ATOMIC_READ:
+    case OMP_ATOMIC_CAPTURE_OLD:
+    case OMP_ATOMIC_CAPTURE_NEW:
+      break;
+
+    case OMP_SIMD:
+    case OMP_TASK:
+    case OMP_LOOP:
+    case OMP_TASKLOOP:
+    case OMP_TASKGROUP:
+    case OMP_SECTION:
+    case OMP_MASTER:
+    case OMP_MASKED:
+    case OMP_ORDERED:
+    case OMP_CRITICAL:
+    case OMP_SCAN:
+    case OMP_METADIRECTIVE:
+      tgtdata->ompacc_invalid = true;
+      tgtdata->warning_msgs.safe_push ("construct not supported");
+      tgtdata->warning_locs.safe_push (EXPR_LOCATION (*tp));
+      *walk_subtrees = 0;
+      break;
+
+    case OMP_TARGET:
+      tgtdata->ompacc_invalid = true;
+      tgtdata->warning_msgs.safe_push ("nested target/reverse offload "
+				       "not supported");
+      tgtdata->warning_locs.safe_push (EXPR_LOCATION (*tp));
+      *walk_subtrees = 0;
+      break;
+
+    default:
+      break;
+    }
+  return NULL_TREE;
+}
+
+static tree
+scan_omp_target_construct_r (tree *tp, int *walk_subtrees,
+			     void *data)
+{
+  if (TREE_CODE (*tp) == OMP_TARGET)
+    {
+      target_region_data td;
+      td.func_decl = (tree) data;
+      walk_tree_without_duplicates (&OMP_TARGET_BODY (*tp),
+				    scan_omp_target_region_r, &td);
+      for (tree c = OMP_TARGET_CLAUSES (*tp); c; c = OMP_CLAUSE_CHAIN (c))
+	{
+	  switch (OMP_CLAUSE_CODE (c))
+	    {
+	    case OMP_CLAUSE_MAP:
+	      continue;
+	    default:
+	      td.ompacc_invalid = true;
+	      td.warning_msgs.safe_push ("clause not supported");
+	      td.warning_locs.safe_push (EXPR_LOCATION (c));
+	      break;
+	    }
+	  break;
+	}
+      if (!td.ompacc_invalid)
+	{
+	  tree c = build_omp_clause (EXPR_LOCATION (*tp), OMP_CLAUSE__OMPACC_);
+	  if (!td.has_omp_parallel)
+	    OMP_CLAUSE__OMPACC__SEQ (c) = 1;
+	  OMP_CLAUSE_CHAIN (c) = OMP_TARGET_CLAUSES (*tp);
+	  OMP_TARGET_CLAUSES (*tp) = c;
+	}
+      else
+	{
+	  warning_at (EXPR_LOCATION (*tp), 0, "Target region not suitable for "
+		      "OMPACC mode");
+	  for (unsigned i = 0; i < td.warning_locs.length (); i++)
+	    warning_at (td.warning_locs[i], 0, td.warning_msgs[i]);
+	}
+      *walk_subtrees = 0;
+    }
+  return NULL_TREE;
+}
+
+void
+omp_ompacc_attribute_tagging (void)
+{
+  cgraph_node *node;
+  FOR_EACH_DEFINED_FUNCTION (node)
+    if (DECL_SAVED_TREE (node->decl))
+      {
+	if (DECL_STRUCT_FUNCTION (node->decl)
+	    && DECL_STRUCT_FUNCTION (node->decl)->has_omp_target)
+	  walk_tree_without_duplicates (&DECL_SAVED_TREE (node->decl),
+					scan_omp_target_construct_r,
+					node->decl);
+
+	for (cgraph_node *cgn = first_nested_function (node);
+	     cgn; cgn = next_nested_function (cgn))
+	  if (omp_declare_target_fn_p (cgn->decl))
+	    {
+	      scan_fndecl_for_ompacc (cgn->decl, NULL);
+
+	      if (lookup_attribute ("ompacc", DECL_ATTRIBUTES (cgn->decl))
+		  && !lookup_attribute ("noinline", DECL_ATTRIBUTES (cgn->decl)))
+		{
+		  DECL_ATTRIBUTES (cgn->decl)
+		    = tree_cons (get_identifier ("noinline"),
+				 NULL, DECL_ATTRIBUTES (cgn->decl));
+		  DECL_ATTRIBUTES (cgn->decl)
+		    = tree_cons (get_identifier ("noipa"),
+				 NULL, DECL_ATTRIBUTES (cgn->decl));
+		}
+	    }
+      }
+}
 
 /* Create new symbols containing (address, size) pairs for global variables,
    marked with "omp declare target" attribute, as well as addresses for the
@@ -480,6 +743,22 @@ omp_finish_file (void)
 static tree
 oacc_dim_call (bool pos, int dim, gimple_seq *seq)
 {
+  if (flag_openmp && flag_openmp_target == OMP_TARGET_MODE_OMPACC)
+    {
+      enum built_in_function fn;
+      if (dim == GOMP_DIM_VECTOR)
+	fn = pos ? BUILT_IN_OMP_GET_THREAD_NUM : BUILT_IN_OMP_GET_NUM_THREADS;
+      else if (dim == GOMP_DIM_GANG)
+	fn = pos ? BUILT_IN_OMP_GET_TEAM_NUM : BUILT_IN_OMP_GET_NUM_TEAMS;
+      else
+	gcc_unreachable ();
+      tree size = create_tmp_var (integer_type_node);
+      gimple *call = gimple_build_call (builtin_decl_explicit (fn), 0);
+      gimple_call_set_lhs (call, size);
+      gimple_seq_add_stmt (seq, call);
+      return size;
+    }
+
   tree arg = build_int_cst (unsigned_type_node, dim);
   tree size = create_tmp_var (integer_type_node);
   enum internal_fn fn = pos ? IFN_GOACC_DIM_POS : IFN_GOACC_DIM_SIZE;
@@ -2776,15 +3055,19 @@ execute_oacc_loop_designation ()
 static unsigned int
 execute_oacc_device_lower ()
 {
-  tree attrs = oacc_get_fn_attrib (current_function_decl);
-
-  if (!attrs)
-    /* Not an offloaded function.  */
-    return 0;
-
+  tree attrs;
   int dims[GOMP_DIM_MAX];
-  for (unsigned i = 0; i < GOMP_DIM_MAX; i++)
-    dims[i] = oacc_get_fn_dim_size (current_function_decl, i);
+
+  if (flag_openacc)
+    {
+      attrs = oacc_get_fn_attrib (current_function_decl);
+      if (!attrs)
+	/* Not an offloaded function.  */
+	return 0;
+
+      for (unsigned i = 0; i < GOMP_DIM_MAX; i++)
+	dims[i] = oacc_get_fn_dim_size (current_function_decl, i);
+    }
 
   hash_map<tree, tree> adjusted_vars;
 
@@ -2853,7 +3136,8 @@ execute_oacc_device_lower ()
 
 		case IFN_UNIQUE_OACC_FORK:
 		case IFN_UNIQUE_OACC_JOIN:
-		  if (integer_minus_onep (gimple_call_arg (call, 2)))
+		  if (flag_openacc
+		      && integer_minus_onep (gimple_call_arg (call, 2)))
 		    remove = true;
 		  else if (!targetm.goacc.fork_join
 			   (call, dims, kind == IFN_UNIQUE_OACC_FORK))
@@ -3150,7 +3434,8 @@ public:
   /* TODO If this were gated on something like '!(fun->curr_properties &
      PROP_gimple_oaccdevlow)', then we could easily have several instances
      in the pass pipeline? */
-  virtual bool gate (function *) { return flag_openacc; };
+  virtual bool gate (function *)
+  { return flag_openacc || (flag_openmp && flag_openmp_target == OMP_TARGET_MODE_OMPACC); };
 
   virtual unsigned int execute (function *)
     {

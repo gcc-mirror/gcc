@@ -2233,6 +2233,19 @@ Enum(target_simd_clone_device) String(nohost) Value(OMP_TARGET_SIMD_CLONE_NOHOST
 EnumValue
 Enum(target_simd_clone_device) String(any) Value(OMP_TARGET_SIMD_CLONE_ANY)
 
+fopenmp-target=
+Common Joined RejectNegative Enum(openmp_target) Var(flag_openmp_target) Init(OMP_TARGET_MODE_DEFAULT)
+Execution model used for OpenMP target regions.
+
+Enum
+Name(openmp_target) Type(int)
+
+EnumValue
+Enum(openmp_target) String(default) Value(OMP_TARGET_MODE_DEFAULT)
+
+EnumValue
+Enum(openmp_target) String(acc) Value(OMP_TARGET_MODE_OMPACC)
+
 fopt-info
 Common Var(flag_opt_info) Optimization
 Enable all optimization info dumps on stderr.

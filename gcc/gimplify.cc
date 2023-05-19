@@ -253,6 +253,7 @@ struct gimplify_omp_ctx
   bool order_concurrent;
   bool has_depend;
   bool in_for_exprs;
+  bool ompacc;
   int defaultmap[5];
   hash_map<tree, oacc_array_mapping_info> *decl_data_clause;
 };
@@ -11345,6 +11346,10 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_USES_ALLOCATORS:
 	  break;
 
+	case OMP_CLAUSE__OMPACC_:
+	  ctx->ompacc = true;
+	  break;
+
 	case OMP_CLAUSE_ORDER:
 	  ctx->order_concurrent = true;
 	  break;
@@ -12657,6 +12662,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_INCLUSIVE:
 	case OMP_CLAUSE_EXCLUSIVE:
+	case OMP_CLAUSE__OMPACC_:
 	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE_UNROLL_FULL:
 	case OMP_CLAUSE_UNROLL_NONE:
@@ -13250,6 +13256,21 @@ static void omp_for_drop_tile_clauses (tree for_stmt)
     }
 }
 
+/* Return true if in an omp_context in OMPACC mode.  */
+static bool
+gimplify_omp_ctx_ompacc_p (void)
+{
+  if (cgraph_node::get (current_function_decl)->offloadable
+      && lookup_attribute ("ompacc",
+			   DECL_ATTRIBUTES (current_function_decl)))
+    return true;
+  struct gimplify_omp_ctx *ctx;
+  for (ctx = gimplify_omp_ctxp; ctx; ctx = ctx->outer_context)
+    if (ctx->ompacc)
+      return true;
+  return false;
+}
+
 /* Gimplify the gross structure of an OMP_FOR statement.  */
 
 static enum gimplify_status
@@ -13281,6 +13302,18 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	  *expr_p = NULL_TREE;
 	  return GS_ERROR;
 	}
+
+      if (flag_openmp_target == OMP_TARGET_MODE_OMPACC
+	  && gimplify_omp_ctx_ompacc_p ())
+	{
+	  gcc_assert (inner_for_stmt && TREE_CODE (for_stmt) == OMP_DISTRIBUTE);
+	  *expr_p = OMP_FOR_BODY (for_stmt);
+	  tree c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE_GANG);
+	  OMP_CLAUSE_CHAIN (c) = OMP_FOR_CLAUSES (inner_for_stmt);
+	  OMP_FOR_CLAUSES (inner_for_stmt) = c;
+	  return GS_OK;
+	}
+
       if (data[2] && OMP_FOR_PRE_BODY (*data[2]))
 	{
 	  append_to_statement_list_force (OMP_FOR_PRE_BODY (*data[2]),

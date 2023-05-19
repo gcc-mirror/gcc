@@ -498,6 +498,10 @@ enum omp_clause_code {
      loop or not.  */
   OMP_CLAUSE__SIMT_,
 
+  /* Internally used only clause, flag whether this is an "ompacc"
+     target region or not.  */
+  OMP_CLAUSE__OMPACC_,
+
   /* OpenACC clause: independent.  */
   OMP_CLAUSE_INDEPENDENT,
 

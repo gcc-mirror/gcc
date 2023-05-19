@@ -31,6 +31,7 @@ extern GTY(()) vec<tree, va_gc> *offload_vars;
 
 extern void omp_finish_file (void);
 extern void omp_discover_implicit_declare_target (void);
+extern void omp_ompacc_attribute_tagging (void);
 extern tree oacc_extract_loop_call (gcall *call);
 
 
