@@ -2442,8 +2442,20 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	  return false;
 	}
 
-      /* Multiple initialized definitions are not allowed (6.9p3,5).  */
-      if (DECL_INITIAL (newdecl) && DECL_INITIAL (olddecl))
+      /* Multiple initialized definitions are not allowed (6.9p3,5).
+	 For this purpose, C2x makes it clear that thread-local
+	 declarations without extern are definitions, not tentative
+	 definitions, whether or not they have initializers.  The
+	 wording before C2x was unclear; literally it would have made
+	 uninitialized thread-local declarations into tentative
+	 definitions only if they also used static, but without saying
+	 explicitly whether or not other cases count as
+	 definitions at all.  */
+      if ((DECL_INITIAL (newdecl) && DECL_INITIAL (olddecl))
+	  || (flag_isoc2x
+	      && DECL_THREAD_LOCAL_P (newdecl)
+	      && !DECL_EXTERNAL (newdecl)
+	      && !DECL_EXTERNAL (olddecl)))
 	{
 	  auto_diagnostic_group d;
 	  error ("redefinition of %q+D", newdecl);
@@ -5714,10 +5726,12 @@ finish_decl (tree decl, location_t init_loc, tree init,
 	      /* A static variable with an incomplete type
 		 is an error if it is initialized.
 		 Also if it is not file scope.
+		 Also if it is thread-local (in C2x).
 		 Otherwise, let it through, but if it is not `extern'
 		 then it may cause an error message later.  */
 	      ? (DECL_INITIAL (decl) != NULL_TREE
-		 || !DECL_FILE_SCOPE_P (decl))
+		 || !DECL_FILE_SCOPE_P (decl)
+		 || (flag_isoc2x && DECL_THREAD_LOCAL_P (decl)))
 	      /* An automatic variable with an incomplete type
 		 is an error.  */
 	      : !DECL_EXTERNAL (decl)))
