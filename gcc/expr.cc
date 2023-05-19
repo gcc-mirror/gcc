@@ -12899,15 +12899,14 @@ maybe_optimize_sub_cmp_0 (enum tree_code code, tree *arg0, tree *arg1)
 }
 
 
-/* If CODE with arguments INNER & (1<<BITNUM) and 0 represents a single bit
-   equality/inequality test, then return a simplified form of
-   the test using shifts and logical operations.  Otherwise return
-   NULL.  TYPE is the desired result type.  */
+/* Expand CODE with arguments INNER & (1<<BITNUM) and 0 that represents
+   a single bit equality/inequality test, returns where the result is located.  */
 
-static tree
-fold_single_bit_test (location_t loc, enum tree_code code,
-		      tree inner, int bitnum,
-		      tree result_type)
+static rtx
+expand_single_bit_test (location_t loc, enum tree_code code,
+			tree inner, int bitnum,
+			tree result_type, rtx target,
+			machine_mode mode)
 {
   gcc_assert (code == NE_EXPR || code == EQ_EXPR);
 
@@ -12915,7 +12914,6 @@ fold_single_bit_test (location_t loc, enum tree_code code,
   scalar_int_mode operand_mode = SCALAR_INT_TYPE_MODE (type);
   int ops_unsigned;
   tree signed_type, unsigned_type, intermediate_type;
-  tree one;
   gimple *inner_def;
 
   /* First, see if we can fold the single bit test into a sign-bit
@@ -12924,10 +12922,11 @@ fold_single_bit_test (location_t loc, enum tree_code code,
       && type_has_mode_precision_p (type))
     {
       tree stype = signed_type_for (type);
-      return fold_build2_loc (loc, code == EQ_EXPR ? GE_EXPR : LT_EXPR,
-			      result_type,
-			      fold_convert_loc (loc, stype, inner),
-			      build_int_cst (stype, 0));
+      tree tmp = fold_build2_loc (loc, code == EQ_EXPR ? GE_EXPR : LT_EXPR,
+				  result_type,
+				  fold_convert_loc (loc, stype, inner),
+				  build_int_cst (stype, 0));
+      return expand_expr (tmp, target, VOIDmode, EXPAND_NORMAL);
     }
 
   /* Otherwise we have (A & C) != 0 where C is a single bit,
@@ -12957,21 +12956,21 @@ fold_single_bit_test (location_t loc, enum tree_code code,
   intermediate_type = ops_unsigned ? unsigned_type : signed_type;
   inner = fold_convert_loc (loc, intermediate_type, inner);
 
-  tree bftype = build_nonstandard_integer_type (1, 1);
-  int bitpos = bitnum;
+  rtx inner0 = expand_expr (inner, target, VOIDmode, EXPAND_NORMAL);
 
-  if (BYTES_BIG_ENDIAN)
-    bitpos = GET_MODE_BITSIZE (operand_mode) - 1 - bitpos;
-
-  inner = build3_loc (loc, BIT_FIELD_REF, bftype, inner,
-		      bitsize_int (1), bitsize_int (bitpos));
-
-  one = build_int_cst (bftype, 1);
+  inner0 = extract_bit_field (inner0, 1, bitnum, 1, target,
+			      operand_mode, mode, 0, NULL);
 
   if (code == EQ_EXPR)
-    inner = fold_build2_loc (loc, BIT_XOR_EXPR, bftype, inner, one);
-
-  return fold_convert_loc (loc, result_type, inner);
+    inner0 = expand_binop (GET_MODE (inner0), xor_optab, inner0, const1_rtx,
+			   NULL_RTX, 1, OPTAB_LIB_WIDEN);
+  if (GET_MODE (inner0) != mode)
+    {
+      rtx t = gen_reg_rtx (mode);
+      convert_move (t, inner0, 0);
+      return t;
+    }
+  return inner0;
 }
 
 /* Generate code to calculate OPS, and exploded expression
@@ -13150,10 +13149,7 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
      do this by shifting the bit being tested to the low-order bit and
      masking the result with the constant 1.  If the condition was EQ,
      we xor it with 1.  This does not require an scc insn and is faster
-     than an scc insn even if we have it.
-
-     The code to make this transformation was moved into fold_single_bit_test,
-     so we just call into the folder and expand its result.  */
+     than an scc insn even if we have it.  */
 
   if ((code == NE || code == EQ)
       && integer_zerop (arg1)
@@ -13163,16 +13159,13 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
       if (srcstmt
 	  && integer_pow2p (gimple_assign_rhs2 (srcstmt)))
 	{
-	  tree temp;
 	  enum tree_code tcode = code == NE ? NE_EXPR : EQ_EXPR;
 	  int bitnum = tree_log2 (gimple_assign_rhs2 (srcstmt));
 
 	  type = lang_hooks.types.type_for_mode (mode, unsignedp);
-	  temp = fold_single_bit_test (loc, tcode,
-				       gimple_assign_rhs1 (srcstmt),
-				       bitnum, type);
-	  if (temp)
-	    return expand_expr (temp, target, VOIDmode, EXPAND_NORMAL);
+	  return expand_single_bit_test (loc, tcode,
+					 gimple_assign_rhs1 (srcstmt),
+					 bitnum, type, target, mode);
 	}
     }
 
