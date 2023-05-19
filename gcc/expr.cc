@@ -12957,22 +12957,21 @@ fold_single_bit_test (location_t loc, enum tree_code code,
   intermediate_type = ops_unsigned ? unsigned_type : signed_type;
   inner = fold_convert_loc (loc, intermediate_type, inner);
 
-  if (bitnum != 0)
-    inner = build2 (RSHIFT_EXPR, intermediate_type,
-		    inner, size_int (bitnum));
+  tree bftype = build_nonstandard_integer_type (1, 1);
+  int bitpos = bitnum;
 
-  one = build_int_cst (intermediate_type, 1);
+  if (BYTES_BIG_ENDIAN)
+    bitpos = GET_MODE_BITSIZE (operand_mode) - 1 - bitpos;
+
+  inner = build3_loc (loc, BIT_FIELD_REF, bftype, inner,
+		      bitsize_int (1), bitsize_int (bitpos));
+
+  one = build_int_cst (bftype, 1);
 
   if (code == EQ_EXPR)
-    inner = fold_build2_loc (loc, BIT_XOR_EXPR, intermediate_type, inner, one);
+    inner = fold_build2_loc (loc, BIT_XOR_EXPR, bftype, inner, one);
 
-  /* Put the AND last so it can combine with more things.  */
-  inner = build2 (BIT_AND_EXPR, intermediate_type, inner, one);
-
-  /* Make sure to return the proper type.  */
-  inner = fold_convert_loc (loc, result_type, inner);
-
-  return inner;
+  return fold_convert_loc (loc, result_type, inner);
 }
 
 /* Generate code to calculate OPS, and exploded expression
