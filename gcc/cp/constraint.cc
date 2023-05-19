@@ -774,38 +774,25 @@ normalize_concept_check (tree check, tree args, norm_info info)
 
   if (!norm_cache)
     norm_cache = hash_table<norm_hasher>::create_ggc (31);
-  norm_entry entry = {tmpl, targs, NULL_TREE};
-  norm_entry **slot = nullptr;
-  hashval_t hash = 0;
-  bool insert = false;
+  norm_entry *entry = nullptr;
   if (!info.generate_diagnostics ())
     {
       /* Cache the normal form of the substituted concept-id (when not
 	 diagnosing).  */
-      hash = norm_hasher::hash (&entry);
-      slot = norm_cache->find_slot_with_hash (&entry, hash, NO_INSERT);
-      if (slot)
+      norm_entry elt = {tmpl, targs, NULL_TREE};
+      norm_entry **slot = norm_cache->find_slot (&elt, INSERT);
+      if (*slot)
 	return (*slot)->norm;
-      insert = true;
+      entry = ggc_alloc<norm_entry> ();
+      *entry = elt;
+      *slot = entry;
     }
 
-  /* The concept may have been ill-formed.  */
   tree def = get_concept_definition (DECL_TEMPLATE_RESULT (tmpl));
-  if (def == error_mark_node)
-    return error_mark_node;
-
   info.update_context (check, args);
   tree norm = normalize_expression (def, targs, info);
-  if (insert)
-    {
-      /* Recompute SLOT since norm_cache may have been expanded during
-	 the recursive call.  */
-      slot = norm_cache->find_slot_with_hash (&entry, hash, INSERT);
-      gcc_checking_assert (!*slot);
-      entry.norm = norm;
-      *slot = ggc_alloc<norm_entry> ();
-      **slot = entry;
-    }
+  if (entry)
+    entry->norm = norm;
   return norm;
 }
 
