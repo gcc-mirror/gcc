@@ -30,6 +30,8 @@
 #include "coretypes.h"
 #include "options.h"
 
+#include "rust-optional.h"
+
 namespace Rust {
 // parser forward decl
 template <typename ManagedTokenSource> class Parser;
@@ -49,13 +51,17 @@ struct TargetOptions
 {
   /* TODO: maybe make private and access through helpers to allow changes to
    * impl */
-  std::unordered_map<std::string, std::unordered_set<std::string> > features;
+  std::unordered_map<std::string, std::unordered_set<Optional<std::string>>>
+    features;
 
 public:
   // Returns whether a key is defined in the feature set.
   bool has_key (std::string key) const
   {
-    return features.find (key) != features.end ();
+    auto it = features.find (key);
+    return it != features.end ()
+	   && it->second.find (Optional<std::string>::none ())
+		!= it->second.end ();
   }
 
   // Returns whether a key exists with the given value in the feature set.
@@ -65,7 +71,7 @@ public:
     if (it != features.end ())
       {
 	auto set = it->second;
-	auto it2 = set.find (value);
+	auto it2 = set.find (Optional<std::string>::some (value));
 	if (it2 != set.end ())
 	  return true;
       }
@@ -80,8 +86,8 @@ public:
     if (it != features.end ())
       {
 	auto set = it->second;
-	if (set.size () == 1)
-	  return *set.begin ();
+	if (set.size () == 1 && set.begin ()->is_some ())
+	  return set.begin ()->get ();
       }
     return "";
   }
@@ -90,10 +96,17 @@ public:
    * set if no key is found. */
   std::unordered_set<std::string> get_values_for_key (std::string key) const
   {
+    std::unordered_set<std::string> ret;
+
     auto it = features.find (key);
-    if (it != features.end ())
-      return it->second;
-    return {};
+    if (it == features.end ())
+      return {};
+
+    for (auto &val : it->second)
+      if (val.is_some ())
+	ret.insert (val.get ());
+
+    return ret;
   }
 
   /* Inserts a key (no value) into the feature set. This will do nothing if
@@ -101,17 +114,31 @@ public:
    * (i.e. whether key already existed). */
   bool insert_key (std::string key)
   {
-    return features
-      .insert (std::make_pair (key, std::unordered_set<std::string> ()))
-      .second;
+    auto it = features.find (key);
+
+    if (it == features.end ())
+      it = features
+	     .insert (
+	       std::make_pair (std::move (key),
+			       std::unordered_set<Optional<std::string>> ()))
+	     .first;
+
+    return it->second.insert (Optional<std::string>::none ()).second;
   }
 
   // Inserts a key-value pair into the feature set.
   void insert_key_value_pair (std::string key, std::string value)
   {
-    auto existing_set = get_values_for_key (key);
-    existing_set.insert (std::move (value));
-    features[std::move (key)] = std::move (existing_set);
+    auto it = features.find (key);
+
+    if (it == features.end ())
+      it = features
+	     .insert (
+	       std::make_pair (std::move (key),
+			       std::unordered_set<Optional<std::string>> ()))
+	     .first;
+
+    it->second.insert (Optional<std::string>::some (std::move (value)));
   }
 
   // Dump all target options to stderr.
