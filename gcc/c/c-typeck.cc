@@ -1259,7 +1259,7 @@ comptypes_internal (const_tree type1, const_tree type2, bool *enum_and_int_p,
     case ENUMERAL_TYPE:
     case RECORD_TYPE:
     case UNION_TYPE:
-      if (val != 1 && !same_translation_unit_p (t1, t2))
+      if (val != 1 && false)
 	{
 	  tree a1 = TYPE_ATTRIBUTES (t1);
 	  tree a2 = TYPE_ATTRIBUTES (t2);
@@ -1268,11 +1268,11 @@ comptypes_internal (const_tree type1, const_tree type2, bool *enum_and_int_p,
 	      && ! attribute_list_contained (a2, a1))
 	    break;
 
-	  if (attrval != 2)
-	    return tagged_types_tu_compatible_p (t1, t2, enum_and_int_p,
-						 different_types_p);
 	  val = tagged_types_tu_compatible_p (t1, t2, enum_and_int_p,
 					      different_types_p);
+
+	  if (attrval != 2)
+	    return val;
 	}
       break;
 
@@ -1347,40 +1347,7 @@ comp_target_types (location_t location, tree ttl, tree ttr)
 
 /* Subroutines of `comptypes'.  */
 
-/* Determine whether two trees derive from the same translation unit.
-   If the CONTEXT chain ends in a null, that tree's context is still
-   being parsed, so if two trees have context chains ending in null,
-   they're in the same translation unit.  */
 
-bool
-same_translation_unit_p (const_tree t1, const_tree t2)
-{
-  while (t1 && TREE_CODE (t1) != TRANSLATION_UNIT_DECL)
-    switch (TREE_CODE_CLASS (TREE_CODE (t1)))
-      {
-      case tcc_declaration:
-	t1 = DECL_CONTEXT (t1); break;
-      case tcc_type:
-	t1 = TYPE_CONTEXT (t1); break;
-      case tcc_exceptional:
-	t1 = BLOCK_SUPERCONTEXT (t1); break;  /* assume block */
-      default: gcc_unreachable ();
-      }
-
-  while (t2 && TREE_CODE (t2) != TRANSLATION_UNIT_DECL)
-    switch (TREE_CODE_CLASS (TREE_CODE (t2)))
-      {
-      case tcc_declaration:
-	t2 = DECL_CONTEXT (t2); break;
-      case tcc_type:
-	t2 = TYPE_CONTEXT (t2); break;
-      case tcc_exceptional:
-	t2 = BLOCK_SUPERCONTEXT (t2); break;  /* assume block */
-      default: gcc_unreachable ();
-      }
-
-  return t1 == t2;
-}
 
 /* Allocate the seen two types, assuming that they are compatible. */
 
@@ -1531,6 +1498,7 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
     case UNION_TYPE:
       {
 	struct tagged_tu_seen_cache *tu = alloc_tagged_tu_seen_cache (t1, t2);
+
 	if (list_length (TYPE_FIELDS (t1)) != list_length (TYPE_FIELDS (t2)))
 	  {
 	    tu->val = 0;
@@ -1609,13 +1577,19 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
 		return 0;
 	      }
 	  }
-	tu->val = needs_warning ? 2 : 10;
+	tu->val = needs_warning ? 2 : 1;
 	return tu->val;
       }
 
     case RECORD_TYPE:
       {
 	struct tagged_tu_seen_cache *tu = alloc_tagged_tu_seen_cache (t1, t2);
+
+	if (list_length (TYPE_FIELDS (t1)) != list_length (TYPE_FIELDS (t2)))
+	  {
+	    tu->val = 0;
+	    return 0;
+	  }
 
 	for (s1 = TYPE_FIELDS (t1), s2 = TYPE_FIELDS (t2);
 	     s1 && s2;
