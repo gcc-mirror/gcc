@@ -12898,6 +12898,119 @@ maybe_optimize_sub_cmp_0 (enum tree_code code, tree *arg0, tree *arg1)
   *arg1 = treeop1;
 }
 
+
+
+/* If CODE with arguments ARG0 and ARG1 represents a single bit
+   equality/inequality test, then return a simplified form of the test
+   using a sign testing.  Otherwise return NULL.  TYPE is the desired
+   result type.  */
+
+static tree
+fold_single_bit_test_into_sign_test (location_t loc,
+				     enum tree_code code, tree arg0, tree arg1,
+				     tree result_type)
+{
+  /* If this is testing a single bit, we can optimize the test.  */
+  if ((code == NE_EXPR || code == EQ_EXPR)
+      && TREE_CODE (arg0) == BIT_AND_EXPR && integer_zerop (arg1)
+      && integer_pow2p (TREE_OPERAND (arg0, 1)))
+    {
+      /* If we have (A & C) != 0 where C is the sign bit of A, convert
+	 this into A < 0.  Similarly for (A & C) == 0 into A >= 0.  */
+      tree arg00 = sign_bit_p (TREE_OPERAND (arg0, 0), TREE_OPERAND (arg0, 1));
+
+      if (arg00 != NULL_TREE
+	  /* This is only a win if casting to a signed type is cheap,
+	     i.e. when arg00's type is not a partial mode.  */
+	  && type_has_mode_precision_p (TREE_TYPE (arg00)))
+	{
+	  tree stype = signed_type_for (TREE_TYPE (arg00));
+	  return fold_build2_loc (loc, code == EQ_EXPR ? GE_EXPR : LT_EXPR,
+			      result_type,
+			      fold_convert_loc (loc, stype, arg00),
+			      build_int_cst (stype, 0));
+	}
+    }
+
+  return NULL_TREE;
+}
+
+/* If CODE with arguments ARG0 and ARG1 represents a single bit
+   equality/inequality test, then return a simplified form of
+   the test using shifts and logical operations.  Otherwise return
+   NULL.  TYPE is the desired result type.  */
+
+static tree
+fold_single_bit_test (location_t loc, enum tree_code code,
+		      tree arg0, tree arg1, tree result_type)
+{
+  /* If this is testing a single bit, we can optimize the test.  */
+  if ((code == NE_EXPR || code == EQ_EXPR)
+      && TREE_CODE (arg0) == BIT_AND_EXPR && integer_zerop (arg1)
+      && integer_pow2p (TREE_OPERAND (arg0, 1)))
+    {
+      tree inner = TREE_OPERAND (arg0, 0);
+      tree type = TREE_TYPE (arg0);
+      int bitnum = tree_log2 (TREE_OPERAND (arg0, 1));
+      scalar_int_mode operand_mode = SCALAR_INT_TYPE_MODE (type);
+      int ops_unsigned;
+      tree signed_type, unsigned_type, intermediate_type;
+      tree tem, one;
+
+      /* First, see if we can fold the single bit test into a sign-bit
+	 test.  */
+      tem = fold_single_bit_test_into_sign_test (loc, code, arg0, arg1,
+						 result_type);
+      if (tem)
+	return tem;
+
+      /* Otherwise we have (A & C) != 0 where C is a single bit,
+	 convert that into ((A >> C2) & 1).  Where C2 = log2(C).
+	 Similarly for (A & C) == 0.  */
+
+      /* If INNER is a right shift of a constant and it plus BITNUM does
+	 not overflow, adjust BITNUM and INNER.  */
+      if (TREE_CODE (inner) == RSHIFT_EXPR
+	  && TREE_CODE (TREE_OPERAND (inner, 1)) == INTEGER_CST
+	  && bitnum < TYPE_PRECISION (type)
+	  && wi::ltu_p (wi::to_wide (TREE_OPERAND (inner, 1)),
+			TYPE_PRECISION (type) - bitnum))
+	{
+	  bitnum += tree_to_uhwi (TREE_OPERAND (inner, 1));
+	  inner = TREE_OPERAND (inner, 0);
+	}
+
+      /* If we are going to be able to omit the AND below, we must do our
+	 operations as unsigned.  If we must use the AND, we have a choice.
+	 Normally unsigned is faster, but for some machines signed is.  */
+      ops_unsigned = (load_extend_op (operand_mode) == SIGN_EXTEND
+		      && !flag_syntax_only) ? 0 : 1;
+
+      signed_type = lang_hooks.types.type_for_mode (operand_mode, 0);
+      unsigned_type = lang_hooks.types.type_for_mode (operand_mode, 1);
+      intermediate_type = ops_unsigned ? unsigned_type : signed_type;
+      inner = fold_convert_loc (loc, intermediate_type, inner);
+
+      if (bitnum != 0)
+	inner = build2 (RSHIFT_EXPR, intermediate_type,
+			inner, size_int (bitnum));
+
+      one = build_int_cst (intermediate_type, 1);
+
+      if (code == EQ_EXPR)
+	inner = fold_build2_loc (loc, BIT_XOR_EXPR, intermediate_type, inner, one);
+
+      /* Put the AND last so it can combine with more things.  */
+      inner = build2 (BIT_AND_EXPR, intermediate_type, inner, one);
+
+      /* Make sure to return the proper type.  */
+      inner = fold_convert_loc (loc, result_type, inner);
+
+      return inner;
+    }
+  return NULL_TREE;
+}
+
 /* Generate code to calculate OPS, and exploded expression
    using a store-flag instruction and return an rtx for the result.
    OPS reflects a comparison.
