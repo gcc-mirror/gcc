@@ -10,19 +10,30 @@
 # the necessary substitutions and definitions for this directory.
 
 AC_DEFUN([ZW_GNU_GETTEXT_SISTER_DIR],
-[# If we haven't got the data from the intl directory,
-# assume NLS is disabled.
-USE_NLS=no	AC_SUBST(USE_NLS)
-LIBINTL=	AC_SUBST(LIBINTL)
-LIBINTL_DEP=	AC_SUBST(LIBINTL_DEP)
-INCINTL=	AC_SUBST(INCINTL)
-XGETTEXT=	AC_SUBST(XGETTEXT)
-GMSGFMT=	AC_SUBST(GMSGFMT)
-POSUB=		AC_SUBST(POSUB)
-
-if test -f  ifelse([$1],,[../intl],[$1])/config.intl; then
-  .  ifelse([$1],,[../intl],[$1])/config.intl
+[
+m4_pushdef([gettext_builddir],
+           m4_default([$1], [../gettext]))
+m4_pushdef([gettext_cfg],
+           gettext_builddir[/uninstalled-config.sh])
+if test -f gettext_cfg; then
+  relative_builddir='[$(top_builddir)/]gettext_builddir'
+  .  gettext_cfg
+else
+  # The sister gettext directory doesn't exist and won't collect information on
+  # using gettext for us.  Call a bundled AM_GNU_GETTEXT.
+  AM_GNU_GETTEXT([external])
 fi
+m4_popdef([gettext_cfg])
+m4_popdef([gettext_builddir])
+
+AC_SUBST([USE_NLS])
+AC_SUBST([LIBINTL])
+AC_SUBST([LIBINTL_DEP])
+AC_SUBST([INCINTL])
+AC_SUBST([XGETTEXT])
+AC_SUBST([GMSGFMT])
+AC_SUBST([POSUB])
+
 AC_MSG_CHECKING([whether NLS is requested])
 if test x"$USE_NLS" != xyes; then
   AC_MSG_RESULT(no)

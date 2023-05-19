@@ -768,7 +768,7 @@ TARGET_LIB_PATH_libatomic = $$r/$(TARGET_SUBDIR)/libatomic/.libs:
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
 # so that programs built for the host machine work.
-HOST_LIB_PATH = $(HOST_LIB_PATH_gmp)$(HOST_LIB_PATH_mpfr)$(HOST_LIB_PATH_mpc)$(HOST_LIB_PATH_isl)
+HOST_LIB_PATH = $(HOST_LIB_PATH_gmp)$(HOST_LIB_PATH_mpfr)$(HOST_LIB_PATH_mpc)$(HOST_LIB_PATH_isl)$(HOST_LIB_PATH_gettext)
 
 # Define HOST_LIB_PATH_gcc here, for the sake of TARGET_LIB_PATH, ouch
 @if gcc
@@ -795,6 +795,11 @@ HOST_LIB_PATH_mpc = \
 HOST_LIB_PATH_isl = \
   $$r/$(HOST_SUBDIR)/isl/.libs:$$r/$(HOST_SUBDIR)/prev-isl/.libs:
 @endif isl
+
+@if gettext
+HOST_LIB_PATH_gettext = \
+  $$r/$(HOST_SUBDIR)/gettext/intl/.libs:$$r/$(HOST_SUBDIR)/prev-gettext/intl/.libs:
+@endif gettext
 
 
 CXX_FOR_TARGET_FLAG_TO_PASS = \
@@ -1098,7 +1103,7 @@ configure-host:  \
     maybe-configure-gold \
     maybe-configure-gprof \
     maybe-configure-gprofng \
-    maybe-configure-intl \
+    maybe-configure-gettext \
     maybe-configure-tcl \
     maybe-configure-itcl \
     maybe-configure-ld \
@@ -1252,9 +1257,9 @@ all-host: maybe-all-gold
 @endif gold-no-bootstrap
 all-host: maybe-all-gprof
 all-host: maybe-all-gprofng
-@if intl-no-bootstrap
-all-host: maybe-all-intl
-@endif intl-no-bootstrap
+@if gettext-no-bootstrap
+all-host: maybe-all-gettext
+@endif gettext-no-bootstrap
 all-host: maybe-all-tcl
 all-host: maybe-all-itcl
 @if ld-no-bootstrap
@@ -1392,7 +1397,7 @@ info-host: maybe-info-isl
 info-host: maybe-info-gold
 info-host: maybe-info-gprof
 info-host: maybe-info-gprofng
-info-host: maybe-info-intl
+info-host: maybe-info-gettext
 info-host: maybe-info-tcl
 info-host: maybe-info-itcl
 info-host: maybe-info-ld
@@ -1483,7 +1488,7 @@ dvi-host: maybe-dvi-isl
 dvi-host: maybe-dvi-gold
 dvi-host: maybe-dvi-gprof
 dvi-host: maybe-dvi-gprofng
-dvi-host: maybe-dvi-intl
+dvi-host: maybe-dvi-gettext
 dvi-host: maybe-dvi-tcl
 dvi-host: maybe-dvi-itcl
 dvi-host: maybe-dvi-ld
@@ -1574,7 +1579,7 @@ pdf-host: maybe-pdf-isl
 pdf-host: maybe-pdf-gold
 pdf-host: maybe-pdf-gprof
 pdf-host: maybe-pdf-gprofng
-pdf-host: maybe-pdf-intl
+pdf-host: maybe-pdf-gettext
 pdf-host: maybe-pdf-tcl
 pdf-host: maybe-pdf-itcl
 pdf-host: maybe-pdf-ld
@@ -1665,7 +1670,7 @@ html-host: maybe-html-isl
 html-host: maybe-html-gold
 html-host: maybe-html-gprof
 html-host: maybe-html-gprofng
-html-host: maybe-html-intl
+html-host: maybe-html-gettext
 html-host: maybe-html-tcl
 html-host: maybe-html-itcl
 html-host: maybe-html-ld
@@ -1756,7 +1761,7 @@ TAGS-host: maybe-TAGS-isl
 TAGS-host: maybe-TAGS-gold
 TAGS-host: maybe-TAGS-gprof
 TAGS-host: maybe-TAGS-gprofng
-TAGS-host: maybe-TAGS-intl
+TAGS-host: maybe-TAGS-gettext
 TAGS-host: maybe-TAGS-tcl
 TAGS-host: maybe-TAGS-itcl
 TAGS-host: maybe-TAGS-ld
@@ -1847,7 +1852,7 @@ install-info-host: maybe-install-info-isl
 install-info-host: maybe-install-info-gold
 install-info-host: maybe-install-info-gprof
 install-info-host: maybe-install-info-gprofng
-install-info-host: maybe-install-info-intl
+install-info-host: maybe-install-info-gettext
 install-info-host: maybe-install-info-tcl
 install-info-host: maybe-install-info-itcl
 install-info-host: maybe-install-info-ld
@@ -1938,7 +1943,7 @@ install-dvi-host: maybe-install-dvi-isl
 install-dvi-host: maybe-install-dvi-gold
 install-dvi-host: maybe-install-dvi-gprof
 install-dvi-host: maybe-install-dvi-gprofng
-install-dvi-host: maybe-install-dvi-intl
+install-dvi-host: maybe-install-dvi-gettext
 install-dvi-host: maybe-install-dvi-tcl
 install-dvi-host: maybe-install-dvi-itcl
 install-dvi-host: maybe-install-dvi-ld
@@ -2029,7 +2034,7 @@ install-pdf-host: maybe-install-pdf-isl
 install-pdf-host: maybe-install-pdf-gold
 install-pdf-host: maybe-install-pdf-gprof
 install-pdf-host: maybe-install-pdf-gprofng
-install-pdf-host: maybe-install-pdf-intl
+install-pdf-host: maybe-install-pdf-gettext
 install-pdf-host: maybe-install-pdf-tcl
 install-pdf-host: maybe-install-pdf-itcl
 install-pdf-host: maybe-install-pdf-ld
@@ -2120,7 +2125,7 @@ install-html-host: maybe-install-html-isl
 install-html-host: maybe-install-html-gold
 install-html-host: maybe-install-html-gprof
 install-html-host: maybe-install-html-gprofng
-install-html-host: maybe-install-html-intl
+install-html-host: maybe-install-html-gettext
 install-html-host: maybe-install-html-tcl
 install-html-host: maybe-install-html-itcl
 install-html-host: maybe-install-html-ld
@@ -2211,7 +2216,7 @@ installcheck-host: maybe-installcheck-isl
 installcheck-host: maybe-installcheck-gold
 installcheck-host: maybe-installcheck-gprof
 installcheck-host: maybe-installcheck-gprofng
-installcheck-host: maybe-installcheck-intl
+installcheck-host: maybe-installcheck-gettext
 installcheck-host: maybe-installcheck-tcl
 installcheck-host: maybe-installcheck-itcl
 installcheck-host: maybe-installcheck-ld
@@ -2302,7 +2307,7 @@ mostlyclean-host: maybe-mostlyclean-isl
 mostlyclean-host: maybe-mostlyclean-gold
 mostlyclean-host: maybe-mostlyclean-gprof
 mostlyclean-host: maybe-mostlyclean-gprofng
-mostlyclean-host: maybe-mostlyclean-intl
+mostlyclean-host: maybe-mostlyclean-gettext
 mostlyclean-host: maybe-mostlyclean-tcl
 mostlyclean-host: maybe-mostlyclean-itcl
 mostlyclean-host: maybe-mostlyclean-ld
@@ -2393,7 +2398,7 @@ clean-host: maybe-clean-isl
 clean-host: maybe-clean-gold
 clean-host: maybe-clean-gprof
 clean-host: maybe-clean-gprofng
-clean-host: maybe-clean-intl
+clean-host: maybe-clean-gettext
 clean-host: maybe-clean-tcl
 clean-host: maybe-clean-itcl
 clean-host: maybe-clean-ld
@@ -2484,7 +2489,7 @@ distclean-host: maybe-distclean-isl
 distclean-host: maybe-distclean-gold
 distclean-host: maybe-distclean-gprof
 distclean-host: maybe-distclean-gprofng
-distclean-host: maybe-distclean-intl
+distclean-host: maybe-distclean-gettext
 distclean-host: maybe-distclean-tcl
 distclean-host: maybe-distclean-itcl
 distclean-host: maybe-distclean-ld
@@ -2575,7 +2580,7 @@ maintainer-clean-host: maybe-maintainer-clean-isl
 maintainer-clean-host: maybe-maintainer-clean-gold
 maintainer-clean-host: maybe-maintainer-clean-gprof
 maintainer-clean-host: maybe-maintainer-clean-gprofng
-maintainer-clean-host: maybe-maintainer-clean-intl
+maintainer-clean-host: maybe-maintainer-clean-gettext
 maintainer-clean-host: maybe-maintainer-clean-tcl
 maintainer-clean-host: maybe-maintainer-clean-itcl
 maintainer-clean-host: maybe-maintainer-clean-ld
@@ -2724,7 +2729,7 @@ check-host:  \
     maybe-check-gold \
     maybe-check-gprof \
     maybe-check-gprofng \
-    maybe-check-intl \
+    maybe-check-gettext \
     maybe-check-tcl \
     maybe-check-itcl \
     maybe-check-ld \
@@ -2862,7 +2867,7 @@ install-host-nogcc:  \
     maybe-install-gold \
     maybe-install-gprof \
     maybe-install-gprofng \
-    maybe-install-intl \
+    maybe-install-gettext \
     maybe-install-tcl \
     maybe-install-itcl \
     maybe-install-ld \
@@ -2918,7 +2923,7 @@ install-host:  \
     maybe-install-gold \
     maybe-install-gprof \
     maybe-install-gprofng \
-    maybe-install-intl \
+    maybe-install-gettext \
     maybe-install-tcl \
     maybe-install-itcl \
     maybe-install-ld \
@@ -3029,7 +3034,7 @@ install-strip-host:  \
     maybe-install-strip-gold \
     maybe-install-strip-gprof \
     maybe-install-strip-gprofng \
-    maybe-install-strip-intl \
+    maybe-install-strip-gettext \
     maybe-install-strip-tcl \
     maybe-install-strip-itcl \
     maybe-install-strip-ld \
@@ -19797,371 +19802,380 @@ maintainer-clean-gprofng:
 
 
 
-.PHONY: configure-intl maybe-configure-intl
-maybe-configure-intl:
+.PHONY: configure-gettext maybe-configure-gettext
+maybe-configure-gettext:
 @if gcc-bootstrap
-configure-intl: stage_current
+configure-gettext: stage_current
 @endif gcc-bootstrap
-@if intl
-maybe-configure-intl: configure-intl
-configure-intl: 
+@if gettext
+maybe-configure-gettext: configure-gettext
+configure-gettext: 
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	test ! -f $(HOST_SUBDIR)/intl/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl; \
+	test ! -f $(HOST_SUBDIR)/gettext/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gettext; \
 	$(HOST_EXPORTS)  \
-	echo Configuring in $(HOST_SUBDIR)/intl; \
-	cd "$(HOST_SUBDIR)/intl" || exit 1; \
+	echo Configuring in $(HOST_SUBDIR)/gettext; \
+	cd "$(HOST_SUBDIR)/gettext" || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/intl/ | \
+	  *) topdir=`echo $(HOST_SUBDIR)/gettext/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	module_srcdir=intl; \
+	module_srcdir=gettext/gettext-runtime; \
 	$(SHELL) \
 	  $$s/$$module_srcdir/configure \
 	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
-	  --target=${target_alias}  \
+	  --target=${target_alias} --disable-shared --disable-java --disable-csharp --with-pic \
 	  || exit 1
-@endif intl
+@endif gettext
 
 
 
-.PHONY: configure-stage1-intl maybe-configure-stage1-intl
-maybe-configure-stage1-intl:
-@if intl-bootstrap
-maybe-configure-stage1-intl: configure-stage1-intl
-configure-stage1-intl:
+.PHONY: configure-stage1-gettext maybe-configure-stage1-gettext
+maybe-configure-stage1-gettext:
+@if gettext-bootstrap
+maybe-configure-stage1-gettext: configure-stage1-gettext
+configure-stage1-gettext:
 	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gettext
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE1_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/intl/Makefile || exit 0; \
+	test ! -f $(HOST_SUBDIR)/gettext/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	CFLAGS="$(STAGE1_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE1_CXXFLAGS)"; export CXXFLAGS; \
 	LIBCFLAGS="$(LIBCFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage 1 in $(HOST_SUBDIR)/intl; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl; \
-	cd $(HOST_SUBDIR)/intl || exit 1; \
+	echo Configuring stage 1 in $(HOST_SUBDIR)/gettext; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gettext; \
+	cd $(HOST_SUBDIR)/gettext || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/intl/ | \
+	  *) topdir=`echo $(HOST_SUBDIR)/gettext/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	module_srcdir=intl; \
+	module_srcdir=gettext/gettext-runtime; \
 	$(SHELL) $$s/$$module_srcdir/configure \
 	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} \
 	   \
-	  $(STAGE1_CONFIGURE_FLAGS)
-@endif intl-bootstrap
+	  $(STAGE1_CONFIGURE_FLAGS) \
+	  --disable-shared --disable-java --disable-csharp --with-pic
+@endif gettext-bootstrap
 
-.PHONY: configure-stage2-intl maybe-configure-stage2-intl
-maybe-configure-stage2-intl:
-@if intl-bootstrap
-maybe-configure-stage2-intl: configure-stage2-intl
-configure-stage2-intl:
+.PHONY: configure-stage2-gettext maybe-configure-stage2-gettext
+maybe-configure-stage2-gettext:
+@if gettext-bootstrap
+maybe-configure-stage2-gettext: configure-stage2-gettext
+configure-stage2-gettext:
 	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gettext
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE2_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/intl/Makefile || exit 0; \
+	test ! -f $(HOST_SUBDIR)/gettext/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE2_CXXFLAGS)"; export CXXFLAGS; \
 	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage 2 in $(HOST_SUBDIR)/intl; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl; \
-	cd $(HOST_SUBDIR)/intl || exit 1; \
+	echo Configuring stage 2 in $(HOST_SUBDIR)/gettext; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gettext; \
+	cd $(HOST_SUBDIR)/gettext || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/intl/ | \
+	  *) topdir=`echo $(HOST_SUBDIR)/gettext/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	module_srcdir=intl; \
+	module_srcdir=gettext/gettext-runtime; \
 	$(SHELL) $$s/$$module_srcdir/configure \
 	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGE2_CONFIGURE_FLAGS)
-@endif intl-bootstrap
+	  $(STAGE2_CONFIGURE_FLAGS) \
+	  --disable-shared --disable-java --disable-csharp --with-pic
+@endif gettext-bootstrap
 
-.PHONY: configure-stage3-intl maybe-configure-stage3-intl
-maybe-configure-stage3-intl:
-@if intl-bootstrap
-maybe-configure-stage3-intl: configure-stage3-intl
-configure-stage3-intl:
+.PHONY: configure-stage3-gettext maybe-configure-stage3-gettext
+maybe-configure-stage3-gettext:
+@if gettext-bootstrap
+maybe-configure-stage3-gettext: configure-stage3-gettext
+configure-stage3-gettext:
 	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gettext
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE3_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/intl/Makefile || exit 0; \
+	test ! -f $(HOST_SUBDIR)/gettext/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE3_CXXFLAGS)"; export CXXFLAGS; \
 	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage 3 in $(HOST_SUBDIR)/intl; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl; \
-	cd $(HOST_SUBDIR)/intl || exit 1; \
+	echo Configuring stage 3 in $(HOST_SUBDIR)/gettext; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gettext; \
+	cd $(HOST_SUBDIR)/gettext || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/intl/ | \
+	  *) topdir=`echo $(HOST_SUBDIR)/gettext/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	module_srcdir=intl; \
+	module_srcdir=gettext/gettext-runtime; \
 	$(SHELL) $$s/$$module_srcdir/configure \
 	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGE3_CONFIGURE_FLAGS)
-@endif intl-bootstrap
+	  $(STAGE3_CONFIGURE_FLAGS) \
+	  --disable-shared --disable-java --disable-csharp --with-pic
+@endif gettext-bootstrap
 
-.PHONY: configure-stage4-intl maybe-configure-stage4-intl
-maybe-configure-stage4-intl:
-@if intl-bootstrap
-maybe-configure-stage4-intl: configure-stage4-intl
-configure-stage4-intl:
+.PHONY: configure-stage4-gettext maybe-configure-stage4-gettext
+maybe-configure-stage4-gettext:
+@if gettext-bootstrap
+maybe-configure-stage4-gettext: configure-stage4-gettext
+configure-stage4-gettext:
 	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gettext
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE4_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/intl/Makefile || exit 0; \
+	test ! -f $(HOST_SUBDIR)/gettext/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE4_CXXFLAGS)"; export CXXFLAGS; \
 	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage 4 in $(HOST_SUBDIR)/intl; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl; \
-	cd $(HOST_SUBDIR)/intl || exit 1; \
+	echo Configuring stage 4 in $(HOST_SUBDIR)/gettext; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gettext; \
+	cd $(HOST_SUBDIR)/gettext || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/intl/ | \
+	  *) topdir=`echo $(HOST_SUBDIR)/gettext/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	module_srcdir=intl; \
+	module_srcdir=gettext/gettext-runtime; \
 	$(SHELL) $$s/$$module_srcdir/configure \
 	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGE4_CONFIGURE_FLAGS)
-@endif intl-bootstrap
+	  $(STAGE4_CONFIGURE_FLAGS) \
+	  --disable-shared --disable-java --disable-csharp --with-pic
+@endif gettext-bootstrap
 
-.PHONY: configure-stageprofile-intl maybe-configure-stageprofile-intl
-maybe-configure-stageprofile-intl:
-@if intl-bootstrap
-maybe-configure-stageprofile-intl: configure-stageprofile-intl
-configure-stageprofile-intl:
+.PHONY: configure-stageprofile-gettext maybe-configure-stageprofile-gettext
+maybe-configure-stageprofile-gettext:
+@if gettext-bootstrap
+maybe-configure-stageprofile-gettext: configure-stageprofile-gettext
+configure-stageprofile-gettext:
 	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gettext
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEprofile_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/intl/Makefile || exit 0; \
+	test ! -f $(HOST_SUBDIR)/gettext/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGEprofile_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGEprofile_CXXFLAGS)"; export CXXFLAGS; \
 	LIBCFLAGS="$(STAGEprofile_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage profile in $(HOST_SUBDIR)/intl; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl; \
-	cd $(HOST_SUBDIR)/intl || exit 1; \
+	echo Configuring stage profile in $(HOST_SUBDIR)/gettext; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gettext; \
+	cd $(HOST_SUBDIR)/gettext || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/intl/ | \
+	  *) topdir=`echo $(HOST_SUBDIR)/gettext/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	module_srcdir=intl; \
+	module_srcdir=gettext/gettext-runtime; \
 	$(SHELL) $$s/$$module_srcdir/configure \
 	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEprofile_CONFIGURE_FLAGS)
-@endif intl-bootstrap
+	  $(STAGEprofile_CONFIGURE_FLAGS) \
+	  --disable-shared --disable-java --disable-csharp --with-pic
+@endif gettext-bootstrap
 
-.PHONY: configure-stagetrain-intl maybe-configure-stagetrain-intl
-maybe-configure-stagetrain-intl:
-@if intl-bootstrap
-maybe-configure-stagetrain-intl: configure-stagetrain-intl
-configure-stagetrain-intl:
+.PHONY: configure-stagetrain-gettext maybe-configure-stagetrain-gettext
+maybe-configure-stagetrain-gettext:
+@if gettext-bootstrap
+maybe-configure-stagetrain-gettext: configure-stagetrain-gettext
+configure-stagetrain-gettext:
 	@[ $(current_stage) = stagetrain ] || $(MAKE) stagetrain-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gettext
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEtrain_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/intl/Makefile || exit 0; \
+	test ! -f $(HOST_SUBDIR)/gettext/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGEtrain_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGEtrain_CXXFLAGS)"; export CXXFLAGS; \
 	LIBCFLAGS="$(STAGEtrain_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage train in $(HOST_SUBDIR)/intl; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl; \
-	cd $(HOST_SUBDIR)/intl || exit 1; \
+	echo Configuring stage train in $(HOST_SUBDIR)/gettext; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gettext; \
+	cd $(HOST_SUBDIR)/gettext || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/intl/ | \
+	  *) topdir=`echo $(HOST_SUBDIR)/gettext/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	module_srcdir=intl; \
+	module_srcdir=gettext/gettext-runtime; \
 	$(SHELL) $$s/$$module_srcdir/configure \
 	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEtrain_CONFIGURE_FLAGS)
-@endif intl-bootstrap
+	  $(STAGEtrain_CONFIGURE_FLAGS) \
+	  --disable-shared --disable-java --disable-csharp --with-pic
+@endif gettext-bootstrap
 
-.PHONY: configure-stagefeedback-intl maybe-configure-stagefeedback-intl
-maybe-configure-stagefeedback-intl:
-@if intl-bootstrap
-maybe-configure-stagefeedback-intl: configure-stagefeedback-intl
-configure-stagefeedback-intl:
+.PHONY: configure-stagefeedback-gettext maybe-configure-stagefeedback-gettext
+maybe-configure-stagefeedback-gettext:
+@if gettext-bootstrap
+maybe-configure-stagefeedback-gettext: configure-stagefeedback-gettext
+configure-stagefeedback-gettext:
 	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gettext
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/intl/Makefile || exit 0; \
+	test ! -f $(HOST_SUBDIR)/gettext/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGEfeedback_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGEfeedback_CXXFLAGS)"; export CXXFLAGS; \
 	LIBCFLAGS="$(STAGEfeedback_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage feedback in $(HOST_SUBDIR)/intl; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl; \
-	cd $(HOST_SUBDIR)/intl || exit 1; \
+	echo Configuring stage feedback in $(HOST_SUBDIR)/gettext; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gettext; \
+	cd $(HOST_SUBDIR)/gettext || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/intl/ | \
+	  *) topdir=`echo $(HOST_SUBDIR)/gettext/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	module_srcdir=intl; \
+	module_srcdir=gettext/gettext-runtime; \
 	$(SHELL) $$s/$$module_srcdir/configure \
 	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEfeedback_CONFIGURE_FLAGS)
-@endif intl-bootstrap
+	  $(STAGEfeedback_CONFIGURE_FLAGS) \
+	  --disable-shared --disable-java --disable-csharp --with-pic
+@endif gettext-bootstrap
 
-.PHONY: configure-stageautoprofile-intl maybe-configure-stageautoprofile-intl
-maybe-configure-stageautoprofile-intl:
-@if intl-bootstrap
-maybe-configure-stageautoprofile-intl: configure-stageautoprofile-intl
-configure-stageautoprofile-intl:
+.PHONY: configure-stageautoprofile-gettext maybe-configure-stageautoprofile-gettext
+maybe-configure-stageautoprofile-gettext:
+@if gettext-bootstrap
+maybe-configure-stageautoprofile-gettext: configure-stageautoprofile-gettext
+configure-stageautoprofile-gettext:
 	@[ $(current_stage) = stageautoprofile ] || $(MAKE) stageautoprofile-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gettext
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEautoprofile_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/intl/Makefile || exit 0; \
+	test ! -f $(HOST_SUBDIR)/gettext/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGEautoprofile_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)"; export CXXFLAGS; \
 	LIBCFLAGS="$(STAGEautoprofile_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage autoprofile in $(HOST_SUBDIR)/intl; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl; \
-	cd $(HOST_SUBDIR)/intl || exit 1; \
+	echo Configuring stage autoprofile in $(HOST_SUBDIR)/gettext; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gettext; \
+	cd $(HOST_SUBDIR)/gettext || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/intl/ | \
+	  *) topdir=`echo $(HOST_SUBDIR)/gettext/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	module_srcdir=intl; \
+	module_srcdir=gettext/gettext-runtime; \
 	$(SHELL) $$s/$$module_srcdir/configure \
 	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEautoprofile_CONFIGURE_FLAGS)
-@endif intl-bootstrap
+	  $(STAGEautoprofile_CONFIGURE_FLAGS) \
+	  --disable-shared --disable-java --disable-csharp --with-pic
+@endif gettext-bootstrap
 
-.PHONY: configure-stageautofeedback-intl maybe-configure-stageautofeedback-intl
-maybe-configure-stageautofeedback-intl:
-@if intl-bootstrap
-maybe-configure-stageautofeedback-intl: configure-stageautofeedback-intl
-configure-stageautofeedback-intl:
+.PHONY: configure-stageautofeedback-gettext maybe-configure-stageautofeedback-gettext
+maybe-configure-stageautofeedback-gettext:
+@if gettext-bootstrap
+maybe-configure-stageautofeedback-gettext: configure-stageautofeedback-gettext
+configure-stageautofeedback-gettext:
 	@[ $(current_stage) = stageautofeedback ] || $(MAKE) stageautofeedback-start
-	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl
+	@$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gettext
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEautofeedback_TFLAGS)"; \
-	test ! -f $(HOST_SUBDIR)/intl/Makefile || exit 0; \
+	test ! -f $(HOST_SUBDIR)/gettext/Makefile || exit 0; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGEautofeedback_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)"; export CXXFLAGS; \
 	LIBCFLAGS="$(STAGEautofeedback_CFLAGS)"; export LIBCFLAGS;  \
-	echo Configuring stage autofeedback in $(HOST_SUBDIR)/intl; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/intl; \
-	cd $(HOST_SUBDIR)/intl || exit 1; \
+	echo Configuring stage autofeedback in $(HOST_SUBDIR)/gettext; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gettext; \
+	cd $(HOST_SUBDIR)/gettext || exit 1; \
 	case $(srcdir) in \
 	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(HOST_SUBDIR)/intl/ | \
+	  *) topdir=`echo $(HOST_SUBDIR)/gettext/ | \
 		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
 	esac; \
-	module_srcdir=intl; \
+	module_srcdir=gettext/gettext-runtime; \
 	$(SHELL) $$s/$$module_srcdir/configure \
 	  --srcdir=$${topdir}/$$module_srcdir \
 	  $(HOST_CONFIGARGS) --build=${build_alias} --host=${host_alias} \
 	  --target=${target_alias} \
 	  --with-build-libsubdir=$(HOST_SUBDIR) \
-	  $(STAGEautofeedback_CONFIGURE_FLAGS)
-@endif intl-bootstrap
+	  $(STAGEautofeedback_CONFIGURE_FLAGS) \
+	  --disable-shared --disable-java --disable-csharp --with-pic
+@endif gettext-bootstrap
 
 
 
 
 
-.PHONY: all-intl maybe-all-intl
-maybe-all-intl:
+.PHONY: all-gettext maybe-all-gettext
+maybe-all-gettext:
 @if gcc-bootstrap
-all-intl: stage_current
+all-gettext: stage_current
 @endif gcc-bootstrap
-@if intl
-TARGET-intl=all
-maybe-all-intl: all-intl
-all-intl: configure-intl
+@if gettext
+TARGET-gettext=all
+maybe-all-gettext: all-gettext
+all-gettext: configure-gettext
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS)  \
-	(cd $(HOST_SUBDIR)/intl && \
+	(cd $(HOST_SUBDIR)/gettext && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS) $(STAGE1_FLAGS_TO_PASS)  \
-		$(TARGET-intl))
-@endif intl
+		$(TARGET-gettext))
+@endif gettext
 
 
 
-.PHONY: all-stage1-intl maybe-all-stage1-intl
-.PHONY: clean-stage1-intl maybe-clean-stage1-intl
-maybe-all-stage1-intl:
-maybe-clean-stage1-intl:
-@if intl-bootstrap
-maybe-all-stage1-intl: all-stage1-intl
-all-stage1: all-stage1-intl
-TARGET-stage1-intl = $(TARGET-intl)
-all-stage1-intl: configure-stage1-intl
+.PHONY: all-stage1-gettext maybe-all-stage1-gettext
+.PHONY: clean-stage1-gettext maybe-clean-stage1-gettext
+maybe-all-stage1-gettext:
+maybe-clean-stage1-gettext:
+@if gettext-bootstrap
+maybe-all-stage1-gettext: all-stage1-gettext
+all-stage1: all-stage1-gettext
+TARGET-stage1-gettext = $(TARGET-gettext)
+all-stage1-gettext: configure-stage1-gettext
 	@[ $(current_stage) = stage1 ] || $(MAKE) stage1-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE1_TFLAGS)"; \
 	$(HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/intl && \
+	cd $(HOST_SUBDIR)/gettext && \
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE1_CFLAGS)" \
@@ -20174,39 +20188,39 @@ all-stage1-intl: configure-stage1-intl
 		$(EXTRA_HOST_FLAGS)  \
 		$(STAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE1_TFLAGS)"  \
-		$(TARGET-stage1-intl)
+		$(TARGET-stage1-gettext)
 
-maybe-clean-stage1-intl: clean-stage1-intl
-clean-stage1: clean-stage1-intl
-clean-stage1-intl:
+maybe-clean-stage1-gettext: clean-stage1-gettext
+clean-stage1: clean-stage1-gettext
+clean-stage1-gettext:
 	@if [ $(current_stage) = stage1 ]; then \
-	  [ -f $(HOST_SUBDIR)/intl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/gettext/Makefile ] || exit 0; \
 	else \
-	  [ -f $(HOST_SUBDIR)/stage1-intl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/stage1-gettext/Makefile ] || exit 0; \
 	  $(MAKE) stage1-start; \
 	fi; \
-	cd $(HOST_SUBDIR)/intl && \
+	cd $(HOST_SUBDIR)/gettext && \
 	$(MAKE) $(EXTRA_HOST_FLAGS)  \
 	$(STAGE1_FLAGS_TO_PASS)  clean
-@endif intl-bootstrap
+@endif gettext-bootstrap
 
 
-.PHONY: all-stage2-intl maybe-all-stage2-intl
-.PHONY: clean-stage2-intl maybe-clean-stage2-intl
-maybe-all-stage2-intl:
-maybe-clean-stage2-intl:
-@if intl-bootstrap
-maybe-all-stage2-intl: all-stage2-intl
-all-stage2: all-stage2-intl
-TARGET-stage2-intl = $(TARGET-intl)
-all-stage2-intl: configure-stage2-intl
+.PHONY: all-stage2-gettext maybe-all-stage2-gettext
+.PHONY: clean-stage2-gettext maybe-clean-stage2-gettext
+maybe-all-stage2-gettext:
+maybe-clean-stage2-gettext:
+@if gettext-bootstrap
+maybe-all-stage2-gettext: all-stage2-gettext
+all-stage2: all-stage2-gettext
+TARGET-stage2-gettext = $(TARGET-gettext)
+all-stage2-gettext: configure-stage2-gettext
 	@[ $(current_stage) = stage2 ] || $(MAKE) stage2-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE2_TFLAGS)"; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/intl && \
+	cd $(HOST_SUBDIR)/gettext && \
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE2_CFLAGS)" \
@@ -20218,38 +20232,38 @@ all-stage2-intl: configure-stage2-intl
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
 		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE2_TFLAGS)"  \
-		$(TARGET-stage2-intl)
+		$(TARGET-stage2-gettext)
 
-maybe-clean-stage2-intl: clean-stage2-intl
-clean-stage2: clean-stage2-intl
-clean-stage2-intl:
+maybe-clean-stage2-gettext: clean-stage2-gettext
+clean-stage2: clean-stage2-gettext
+clean-stage2-gettext:
 	@if [ $(current_stage) = stage2 ]; then \
-	  [ -f $(HOST_SUBDIR)/intl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/gettext/Makefile ] || exit 0; \
 	else \
-	  [ -f $(HOST_SUBDIR)/stage2-intl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/stage2-gettext/Makefile ] || exit 0; \
 	  $(MAKE) stage2-start; \
 	fi; \
-	cd $(HOST_SUBDIR)/intl && \
+	cd $(HOST_SUBDIR)/gettext && \
 	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
-@endif intl-bootstrap
+@endif gettext-bootstrap
 
 
-.PHONY: all-stage3-intl maybe-all-stage3-intl
-.PHONY: clean-stage3-intl maybe-clean-stage3-intl
-maybe-all-stage3-intl:
-maybe-clean-stage3-intl:
-@if intl-bootstrap
-maybe-all-stage3-intl: all-stage3-intl
-all-stage3: all-stage3-intl
-TARGET-stage3-intl = $(TARGET-intl)
-all-stage3-intl: configure-stage3-intl
+.PHONY: all-stage3-gettext maybe-all-stage3-gettext
+.PHONY: clean-stage3-gettext maybe-clean-stage3-gettext
+maybe-all-stage3-gettext:
+maybe-clean-stage3-gettext:
+@if gettext-bootstrap
+maybe-all-stage3-gettext: all-stage3-gettext
+all-stage3: all-stage3-gettext
+TARGET-stage3-gettext = $(TARGET-gettext)
+all-stage3-gettext: configure-stage3-gettext
 	@[ $(current_stage) = stage3 ] || $(MAKE) stage3-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE3_TFLAGS)"; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/intl && \
+	cd $(HOST_SUBDIR)/gettext && \
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE3_CFLAGS)" \
@@ -20261,38 +20275,38 @@ all-stage3-intl: configure-stage3-intl
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
 		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE3_TFLAGS)"  \
-		$(TARGET-stage3-intl)
+		$(TARGET-stage3-gettext)
 
-maybe-clean-stage3-intl: clean-stage3-intl
-clean-stage3: clean-stage3-intl
-clean-stage3-intl:
+maybe-clean-stage3-gettext: clean-stage3-gettext
+clean-stage3: clean-stage3-gettext
+clean-stage3-gettext:
 	@if [ $(current_stage) = stage3 ]; then \
-	  [ -f $(HOST_SUBDIR)/intl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/gettext/Makefile ] || exit 0; \
 	else \
-	  [ -f $(HOST_SUBDIR)/stage3-intl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/stage3-gettext/Makefile ] || exit 0; \
 	  $(MAKE) stage3-start; \
 	fi; \
-	cd $(HOST_SUBDIR)/intl && \
+	cd $(HOST_SUBDIR)/gettext && \
 	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
-@endif intl-bootstrap
+@endif gettext-bootstrap
 
 
-.PHONY: all-stage4-intl maybe-all-stage4-intl
-.PHONY: clean-stage4-intl maybe-clean-stage4-intl
-maybe-all-stage4-intl:
-maybe-clean-stage4-intl:
-@if intl-bootstrap
-maybe-all-stage4-intl: all-stage4-intl
-all-stage4: all-stage4-intl
-TARGET-stage4-intl = $(TARGET-intl)
-all-stage4-intl: configure-stage4-intl
+.PHONY: all-stage4-gettext maybe-all-stage4-gettext
+.PHONY: clean-stage4-gettext maybe-clean-stage4-gettext
+maybe-all-stage4-gettext:
+maybe-clean-stage4-gettext:
+@if gettext-bootstrap
+maybe-all-stage4-gettext: all-stage4-gettext
+all-stage4: all-stage4-gettext
+TARGET-stage4-gettext = $(TARGET-gettext)
+all-stage4-gettext: configure-stage4-gettext
 	@[ $(current_stage) = stage4 ] || $(MAKE) stage4-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGE4_TFLAGS)"; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/intl && \
+	cd $(HOST_SUBDIR)/gettext && \
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGE4_CFLAGS)" \
@@ -20304,38 +20318,38 @@ all-stage4-intl: configure-stage4-intl
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
 		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGE4_TFLAGS)"  \
-		$(TARGET-stage4-intl)
+		$(TARGET-stage4-gettext)
 
-maybe-clean-stage4-intl: clean-stage4-intl
-clean-stage4: clean-stage4-intl
-clean-stage4-intl:
+maybe-clean-stage4-gettext: clean-stage4-gettext
+clean-stage4: clean-stage4-gettext
+clean-stage4-gettext:
 	@if [ $(current_stage) = stage4 ]; then \
-	  [ -f $(HOST_SUBDIR)/intl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/gettext/Makefile ] || exit 0; \
 	else \
-	  [ -f $(HOST_SUBDIR)/stage4-intl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/stage4-gettext/Makefile ] || exit 0; \
 	  $(MAKE) stage4-start; \
 	fi; \
-	cd $(HOST_SUBDIR)/intl && \
+	cd $(HOST_SUBDIR)/gettext && \
 	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
-@endif intl-bootstrap
+@endif gettext-bootstrap
 
 
-.PHONY: all-stageprofile-intl maybe-all-stageprofile-intl
-.PHONY: clean-stageprofile-intl maybe-clean-stageprofile-intl
-maybe-all-stageprofile-intl:
-maybe-clean-stageprofile-intl:
-@if intl-bootstrap
-maybe-all-stageprofile-intl: all-stageprofile-intl
-all-stageprofile: all-stageprofile-intl
-TARGET-stageprofile-intl = $(TARGET-intl)
-all-stageprofile-intl: configure-stageprofile-intl
+.PHONY: all-stageprofile-gettext maybe-all-stageprofile-gettext
+.PHONY: clean-stageprofile-gettext maybe-clean-stageprofile-gettext
+maybe-all-stageprofile-gettext:
+maybe-clean-stageprofile-gettext:
+@if gettext-bootstrap
+maybe-all-stageprofile-gettext: all-stageprofile-gettext
+all-stageprofile: all-stageprofile-gettext
+TARGET-stageprofile-gettext = $(TARGET-gettext)
+all-stageprofile-gettext: configure-stageprofile-gettext
 	@[ $(current_stage) = stageprofile ] || $(MAKE) stageprofile-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEprofile_TFLAGS)"; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/intl && \
+	cd $(HOST_SUBDIR)/gettext && \
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
@@ -20347,38 +20361,38 @@ all-stageprofile-intl: configure-stageprofile-intl
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
 		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGEprofile_TFLAGS)"  \
-		$(TARGET-stageprofile-intl)
+		$(TARGET-stageprofile-gettext)
 
-maybe-clean-stageprofile-intl: clean-stageprofile-intl
-clean-stageprofile: clean-stageprofile-intl
-clean-stageprofile-intl:
+maybe-clean-stageprofile-gettext: clean-stageprofile-gettext
+clean-stageprofile: clean-stageprofile-gettext
+clean-stageprofile-gettext:
 	@if [ $(current_stage) = stageprofile ]; then \
-	  [ -f $(HOST_SUBDIR)/intl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/gettext/Makefile ] || exit 0; \
 	else \
-	  [ -f $(HOST_SUBDIR)/stageprofile-intl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/stageprofile-gettext/Makefile ] || exit 0; \
 	  $(MAKE) stageprofile-start; \
 	fi; \
-	cd $(HOST_SUBDIR)/intl && \
+	cd $(HOST_SUBDIR)/gettext && \
 	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
-@endif intl-bootstrap
+@endif gettext-bootstrap
 
 
-.PHONY: all-stagetrain-intl maybe-all-stagetrain-intl
-.PHONY: clean-stagetrain-intl maybe-clean-stagetrain-intl
-maybe-all-stagetrain-intl:
-maybe-clean-stagetrain-intl:
-@if intl-bootstrap
-maybe-all-stagetrain-intl: all-stagetrain-intl
-all-stagetrain: all-stagetrain-intl
-TARGET-stagetrain-intl = $(TARGET-intl)
-all-stagetrain-intl: configure-stagetrain-intl
+.PHONY: all-stagetrain-gettext maybe-all-stagetrain-gettext
+.PHONY: clean-stagetrain-gettext maybe-clean-stagetrain-gettext
+maybe-all-stagetrain-gettext:
+maybe-clean-stagetrain-gettext:
+@if gettext-bootstrap
+maybe-all-stagetrain-gettext: all-stagetrain-gettext
+all-stagetrain: all-stagetrain-gettext
+TARGET-stagetrain-gettext = $(TARGET-gettext)
+all-stagetrain-gettext: configure-stagetrain-gettext
 	@[ $(current_stage) = stagetrain ] || $(MAKE) stagetrain-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEtrain_TFLAGS)"; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/intl && \
+	cd $(HOST_SUBDIR)/gettext && \
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
@@ -20390,38 +20404,38 @@ all-stagetrain-intl: configure-stagetrain-intl
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
 		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGEtrain_TFLAGS)"  \
-		$(TARGET-stagetrain-intl)
+		$(TARGET-stagetrain-gettext)
 
-maybe-clean-stagetrain-intl: clean-stagetrain-intl
-clean-stagetrain: clean-stagetrain-intl
-clean-stagetrain-intl:
+maybe-clean-stagetrain-gettext: clean-stagetrain-gettext
+clean-stagetrain: clean-stagetrain-gettext
+clean-stagetrain-gettext:
 	@if [ $(current_stage) = stagetrain ]; then \
-	  [ -f $(HOST_SUBDIR)/intl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/gettext/Makefile ] || exit 0; \
 	else \
-	  [ -f $(HOST_SUBDIR)/stagetrain-intl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/stagetrain-gettext/Makefile ] || exit 0; \
 	  $(MAKE) stagetrain-start; \
 	fi; \
-	cd $(HOST_SUBDIR)/intl && \
+	cd $(HOST_SUBDIR)/gettext && \
 	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
-@endif intl-bootstrap
+@endif gettext-bootstrap
 
 
-.PHONY: all-stagefeedback-intl maybe-all-stagefeedback-intl
-.PHONY: clean-stagefeedback-intl maybe-clean-stagefeedback-intl
-maybe-all-stagefeedback-intl:
-maybe-clean-stagefeedback-intl:
-@if intl-bootstrap
-maybe-all-stagefeedback-intl: all-stagefeedback-intl
-all-stagefeedback: all-stagefeedback-intl
-TARGET-stagefeedback-intl = $(TARGET-intl)
-all-stagefeedback-intl: configure-stagefeedback-intl
+.PHONY: all-stagefeedback-gettext maybe-all-stagefeedback-gettext
+.PHONY: clean-stagefeedback-gettext maybe-clean-stagefeedback-gettext
+maybe-all-stagefeedback-gettext:
+maybe-clean-stagefeedback-gettext:
+@if gettext-bootstrap
+maybe-all-stagefeedback-gettext: all-stagefeedback-gettext
+all-stagefeedback: all-stagefeedback-gettext
+TARGET-stagefeedback-gettext = $(TARGET-gettext)
+all-stagefeedback-gettext: configure-stagefeedback-gettext
 	@[ $(current_stage) = stagefeedback ] || $(MAKE) stagefeedback-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEfeedback_TFLAGS)"; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/intl && \
+	cd $(HOST_SUBDIR)/gettext && \
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
@@ -20433,38 +20447,38 @@ all-stagefeedback-intl: configure-stagefeedback-intl
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
 		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGEfeedback_TFLAGS)"  \
-		$(TARGET-stagefeedback-intl)
+		$(TARGET-stagefeedback-gettext)
 
-maybe-clean-stagefeedback-intl: clean-stagefeedback-intl
-clean-stagefeedback: clean-stagefeedback-intl
-clean-stagefeedback-intl:
+maybe-clean-stagefeedback-gettext: clean-stagefeedback-gettext
+clean-stagefeedback: clean-stagefeedback-gettext
+clean-stagefeedback-gettext:
 	@if [ $(current_stage) = stagefeedback ]; then \
-	  [ -f $(HOST_SUBDIR)/intl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/gettext/Makefile ] || exit 0; \
 	else \
-	  [ -f $(HOST_SUBDIR)/stagefeedback-intl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/stagefeedback-gettext/Makefile ] || exit 0; \
 	  $(MAKE) stagefeedback-start; \
 	fi; \
-	cd $(HOST_SUBDIR)/intl && \
+	cd $(HOST_SUBDIR)/gettext && \
 	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
-@endif intl-bootstrap
+@endif gettext-bootstrap
 
 
-.PHONY: all-stageautoprofile-intl maybe-all-stageautoprofile-intl
-.PHONY: clean-stageautoprofile-intl maybe-clean-stageautoprofile-intl
-maybe-all-stageautoprofile-intl:
-maybe-clean-stageautoprofile-intl:
-@if intl-bootstrap
-maybe-all-stageautoprofile-intl: all-stageautoprofile-intl
-all-stageautoprofile: all-stageautoprofile-intl
-TARGET-stageautoprofile-intl = $(TARGET-intl)
-all-stageautoprofile-intl: configure-stageautoprofile-intl
+.PHONY: all-stageautoprofile-gettext maybe-all-stageautoprofile-gettext
+.PHONY: clean-stageautoprofile-gettext maybe-clean-stageautoprofile-gettext
+maybe-all-stageautoprofile-gettext:
+maybe-clean-stageautoprofile-gettext:
+@if gettext-bootstrap
+maybe-all-stageautoprofile-gettext: all-stageautoprofile-gettext
+all-stageautoprofile: all-stageautoprofile-gettext
+TARGET-stageautoprofile-gettext = $(TARGET-gettext)
+all-stageautoprofile-gettext: configure-stageautoprofile-gettext
 	@[ $(current_stage) = stageautoprofile ] || $(MAKE) stageautoprofile-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEautoprofile_TFLAGS)"; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/intl && \
+	cd $(HOST_SUBDIR)/gettext && \
 	$$s/gcc/config/i386/$(AUTO_PROFILE) \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
@@ -20476,38 +20490,38 @@ all-stageautoprofile-intl: configure-stageautoprofile-intl
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
 		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGEautoprofile_TFLAGS)"  \
-		$(TARGET-stageautoprofile-intl)
+		$(TARGET-stageautoprofile-gettext)
 
-maybe-clean-stageautoprofile-intl: clean-stageautoprofile-intl
-clean-stageautoprofile: clean-stageautoprofile-intl
-clean-stageautoprofile-intl:
+maybe-clean-stageautoprofile-gettext: clean-stageautoprofile-gettext
+clean-stageautoprofile: clean-stageautoprofile-gettext
+clean-stageautoprofile-gettext:
 	@if [ $(current_stage) = stageautoprofile ]; then \
-	  [ -f $(HOST_SUBDIR)/intl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/gettext/Makefile ] || exit 0; \
 	else \
-	  [ -f $(HOST_SUBDIR)/stageautoprofile-intl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/stageautoprofile-gettext/Makefile ] || exit 0; \
 	  $(MAKE) stageautoprofile-start; \
 	fi; \
-	cd $(HOST_SUBDIR)/intl && \
+	cd $(HOST_SUBDIR)/gettext && \
 	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
-@endif intl-bootstrap
+@endif gettext-bootstrap
 
 
-.PHONY: all-stageautofeedback-intl maybe-all-stageautofeedback-intl
-.PHONY: clean-stageautofeedback-intl maybe-clean-stageautofeedback-intl
-maybe-all-stageautofeedback-intl:
-maybe-clean-stageautofeedback-intl:
-@if intl-bootstrap
-maybe-all-stageautofeedback-intl: all-stageautofeedback-intl
-all-stageautofeedback: all-stageautofeedback-intl
-TARGET-stageautofeedback-intl = $(TARGET-intl)
-all-stageautofeedback-intl: configure-stageautofeedback-intl
+.PHONY: all-stageautofeedback-gettext maybe-all-stageautofeedback-gettext
+.PHONY: clean-stageautofeedback-gettext maybe-clean-stageautofeedback-gettext
+maybe-all-stageautofeedback-gettext:
+maybe-clean-stageautofeedback-gettext:
+@if gettext-bootstrap
+maybe-all-stageautofeedback-gettext: all-stageautofeedback-gettext
+all-stageautofeedback: all-stageautofeedback-gettext
+TARGET-stageautofeedback-gettext = $(TARGET-gettext)
+all-stageautofeedback-gettext: configure-stageautofeedback-gettext
 	@[ $(current_stage) = stageautofeedback ] || $(MAKE) stageautofeedback-start
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	TFLAGS="$(STAGEautofeedback_TFLAGS)"; \
 	$(HOST_EXPORTS) \
 	$(POSTSTAGE1_HOST_EXPORTS)  \
-	cd $(HOST_SUBDIR)/intl && \
+	cd $(HOST_SUBDIR)/gettext && \
 	 \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) \
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
@@ -20519,88 +20533,76 @@ all-stageautofeedback-intl: configure-stageautofeedback-intl
 		LIBCFLAGS_FOR_TARGET="$(LIBCFLAGS_FOR_TARGET)" \
 		$(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  \
 		TFLAGS="$(STAGEautofeedback_TFLAGS)" PERF_DATA=perf.data \
-		$(TARGET-stageautofeedback-intl)
+		$(TARGET-stageautofeedback-gettext)
 
-maybe-clean-stageautofeedback-intl: clean-stageautofeedback-intl
-clean-stageautofeedback: clean-stageautofeedback-intl
-clean-stageautofeedback-intl:
+maybe-clean-stageautofeedback-gettext: clean-stageautofeedback-gettext
+clean-stageautofeedback: clean-stageautofeedback-gettext
+clean-stageautofeedback-gettext:
 	@if [ $(current_stage) = stageautofeedback ]; then \
-	  [ -f $(HOST_SUBDIR)/intl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/gettext/Makefile ] || exit 0; \
 	else \
-	  [ -f $(HOST_SUBDIR)/stageautofeedback-intl/Makefile ] || exit 0; \
+	  [ -f $(HOST_SUBDIR)/stageautofeedback-gettext/Makefile ] || exit 0; \
 	  $(MAKE) stageautofeedback-start; \
 	fi; \
-	cd $(HOST_SUBDIR)/intl && \
+	cd $(HOST_SUBDIR)/gettext && \
 	$(MAKE) $(EXTRA_HOST_FLAGS) $(POSTSTAGE1_FLAGS_TO_PASS)  clean
-@endif intl-bootstrap
+@endif gettext-bootstrap
 
 
 
 
 
-.PHONY: check-intl maybe-check-intl
-maybe-check-intl:
-@if intl
-maybe-check-intl: check-intl
+.PHONY: check-gettext maybe-check-gettext
+maybe-check-gettext:
+@if gettext
+maybe-check-gettext: check-gettext
 
-check-intl:
+check-gettext:
 	@: $(MAKE); $(unstage)
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) $(EXTRA_HOST_EXPORTS) \
-	(cd $(HOST_SUBDIR)/intl && \
+	(cd $(HOST_SUBDIR)/gettext && \
 	  $(MAKE) $(FLAGS_TO_PASS)  $(EXTRA_BOOTSTRAP_FLAGS) check)
 
-@endif intl
+@endif gettext
 
-.PHONY: install-intl maybe-install-intl
-maybe-install-intl:
-@if intl
-maybe-install-intl: install-intl
+.PHONY: install-gettext maybe-install-gettext
+maybe-install-gettext:
+@if gettext
+maybe-install-gettext: install-gettext
 
-install-intl: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	(cd $(HOST_SUBDIR)/intl && \
-	  $(MAKE) $(FLAGS_TO_PASS)  install)
+install-gettext:
 
-@endif intl
+@endif gettext
 
-.PHONY: install-strip-intl maybe-install-strip-intl
-maybe-install-strip-intl:
-@if intl
-maybe-install-strip-intl: install-strip-intl
+.PHONY: install-strip-gettext maybe-install-strip-gettext
+maybe-install-strip-gettext:
+@if gettext
+maybe-install-strip-gettext: install-strip-gettext
 
-install-strip-intl: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	(cd $(HOST_SUBDIR)/intl && \
-	  $(MAKE) $(FLAGS_TO_PASS)  install-strip)
+install-strip-gettext:
 
-@endif intl
+@endif gettext
 
 # Other targets (info, dvi, pdf, etc.)
 
-.PHONY: maybe-info-intl info-intl
-maybe-info-intl:
-@if intl
-maybe-info-intl: info-intl
+.PHONY: maybe-info-gettext info-gettext
+maybe-info-gettext:
+@if gettext
+maybe-info-gettext: info-gettext
 
-info-intl: \
-    configure-intl 
-	@[ -f ./intl/Makefile ] || exit 0; \
+info-gettext: \
+    configure-gettext 
+	@[ -f ./gettext/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing info in intl"; \
-	(cd $(HOST_SUBDIR)/intl && \
+	echo "Doing info in gettext"; \
+	(cd $(HOST_SUBDIR)/gettext && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -20608,24 +20610,24 @@ info-intl: \
 	          info) \
 	  || exit 1
 
-@endif intl
+@endif gettext
 
-.PHONY: maybe-dvi-intl dvi-intl
-maybe-dvi-intl:
-@if intl
-maybe-dvi-intl: dvi-intl
+.PHONY: maybe-dvi-gettext dvi-gettext
+maybe-dvi-gettext:
+@if gettext
+maybe-dvi-gettext: dvi-gettext
 
-dvi-intl: \
-    configure-intl 
-	@[ -f ./intl/Makefile ] || exit 0; \
+dvi-gettext: \
+    configure-gettext 
+	@[ -f ./gettext/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing dvi in intl"; \
-	(cd $(HOST_SUBDIR)/intl && \
+	echo "Doing dvi in gettext"; \
+	(cd $(HOST_SUBDIR)/gettext && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -20633,24 +20635,24 @@ dvi-intl: \
 	          dvi) \
 	  || exit 1
 
-@endif intl
+@endif gettext
 
-.PHONY: maybe-pdf-intl pdf-intl
-maybe-pdf-intl:
-@if intl
-maybe-pdf-intl: pdf-intl
+.PHONY: maybe-pdf-gettext pdf-gettext
+maybe-pdf-gettext:
+@if gettext
+maybe-pdf-gettext: pdf-gettext
 
-pdf-intl: \
-    configure-intl 
-	@[ -f ./intl/Makefile ] || exit 0; \
+pdf-gettext: \
+    configure-gettext 
+	@[ -f ./gettext/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing pdf in intl"; \
-	(cd $(HOST_SUBDIR)/intl && \
+	echo "Doing pdf in gettext"; \
+	(cd $(HOST_SUBDIR)/gettext && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -20658,24 +20660,24 @@ pdf-intl: \
 	          pdf) \
 	  || exit 1
 
-@endif intl
+@endif gettext
 
-.PHONY: maybe-html-intl html-intl
-maybe-html-intl:
-@if intl
-maybe-html-intl: html-intl
+.PHONY: maybe-html-gettext html-gettext
+maybe-html-gettext:
+@if gettext
+maybe-html-gettext: html-gettext
 
-html-intl: \
-    configure-intl 
-	@[ -f ./intl/Makefile ] || exit 0; \
+html-gettext: \
+    configure-gettext 
+	@[ -f ./gettext/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing html in intl"; \
-	(cd $(HOST_SUBDIR)/intl && \
+	echo "Doing html in gettext"; \
+	(cd $(HOST_SUBDIR)/gettext && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -20683,24 +20685,24 @@ html-intl: \
 	          html) \
 	  || exit 1
 
-@endif intl
+@endif gettext
 
-.PHONY: maybe-TAGS-intl TAGS-intl
-maybe-TAGS-intl:
-@if intl
-maybe-TAGS-intl: TAGS-intl
+.PHONY: maybe-TAGS-gettext TAGS-gettext
+maybe-TAGS-gettext:
+@if gettext
+maybe-TAGS-gettext: TAGS-gettext
 
-TAGS-intl: \
-    configure-intl 
-	@[ -f ./intl/Makefile ] || exit 0; \
+TAGS-gettext: \
+    configure-gettext 
+	@[ -f ./gettext/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing TAGS in intl"; \
-	(cd $(HOST_SUBDIR)/intl && \
+	echo "Doing TAGS in gettext"; \
+	(cd $(HOST_SUBDIR)/gettext && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -20708,25 +20710,25 @@ TAGS-intl: \
 	          TAGS) \
 	  || exit 1
 
-@endif intl
+@endif gettext
 
-.PHONY: maybe-install-info-intl install-info-intl
-maybe-install-info-intl:
-@if intl
-maybe-install-info-intl: install-info-intl
+.PHONY: maybe-install-info-gettext install-info-gettext
+maybe-install-info-gettext:
+@if gettext
+maybe-install-info-gettext: install-info-gettext
 
-install-info-intl: \
-    configure-intl \
-    info-intl 
-	@[ -f ./intl/Makefile ] || exit 0; \
+install-info-gettext: \
+    configure-gettext \
+    info-gettext 
+	@[ -f ./gettext/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing install-info in intl"; \
-	(cd $(HOST_SUBDIR)/intl && \
+	echo "Doing install-info in gettext"; \
+	(cd $(HOST_SUBDIR)/gettext && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -20734,25 +20736,25 @@ install-info-intl: \
 	          install-info) \
 	  || exit 1
 
-@endif intl
+@endif gettext
 
-.PHONY: maybe-install-dvi-intl install-dvi-intl
-maybe-install-dvi-intl:
-@if intl
-maybe-install-dvi-intl: install-dvi-intl
+.PHONY: maybe-install-dvi-gettext install-dvi-gettext
+maybe-install-dvi-gettext:
+@if gettext
+maybe-install-dvi-gettext: install-dvi-gettext
 
-install-dvi-intl: \
-    configure-intl \
-    dvi-intl 
-	@[ -f ./intl/Makefile ] || exit 0; \
+install-dvi-gettext: \
+    configure-gettext \
+    dvi-gettext 
+	@[ -f ./gettext/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing install-dvi in intl"; \
-	(cd $(HOST_SUBDIR)/intl && \
+	echo "Doing install-dvi in gettext"; \
+	(cd $(HOST_SUBDIR)/gettext && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -20760,25 +20762,25 @@ install-dvi-intl: \
 	          install-dvi) \
 	  || exit 1
 
-@endif intl
+@endif gettext
 
-.PHONY: maybe-install-pdf-intl install-pdf-intl
-maybe-install-pdf-intl:
-@if intl
-maybe-install-pdf-intl: install-pdf-intl
+.PHONY: maybe-install-pdf-gettext install-pdf-gettext
+maybe-install-pdf-gettext:
+@if gettext
+maybe-install-pdf-gettext: install-pdf-gettext
 
-install-pdf-intl: \
-    configure-intl \
-    pdf-intl 
-	@[ -f ./intl/Makefile ] || exit 0; \
+install-pdf-gettext: \
+    configure-gettext \
+    pdf-gettext 
+	@[ -f ./gettext/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing install-pdf in intl"; \
-	(cd $(HOST_SUBDIR)/intl && \
+	echo "Doing install-pdf in gettext"; \
+	(cd $(HOST_SUBDIR)/gettext && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -20786,25 +20788,25 @@ install-pdf-intl: \
 	          install-pdf) \
 	  || exit 1
 
-@endif intl
+@endif gettext
 
-.PHONY: maybe-install-html-intl install-html-intl
-maybe-install-html-intl:
-@if intl
-maybe-install-html-intl: install-html-intl
+.PHONY: maybe-install-html-gettext install-html-gettext
+maybe-install-html-gettext:
+@if gettext
+maybe-install-html-gettext: install-html-gettext
 
-install-html-intl: \
-    configure-intl \
-    html-intl 
-	@[ -f ./intl/Makefile ] || exit 0; \
+install-html-gettext: \
+    configure-gettext \
+    html-gettext 
+	@[ -f ./gettext/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing install-html in intl"; \
-	(cd $(HOST_SUBDIR)/intl && \
+	echo "Doing install-html in gettext"; \
+	(cd $(HOST_SUBDIR)/gettext && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -20812,24 +20814,24 @@ install-html-intl: \
 	          install-html) \
 	  || exit 1
 
-@endif intl
+@endif gettext
 
-.PHONY: maybe-installcheck-intl installcheck-intl
-maybe-installcheck-intl:
-@if intl
-maybe-installcheck-intl: installcheck-intl
+.PHONY: maybe-installcheck-gettext installcheck-gettext
+maybe-installcheck-gettext:
+@if gettext
+maybe-installcheck-gettext: installcheck-gettext
 
-installcheck-intl: \
-    configure-intl 
-	@[ -f ./intl/Makefile ] || exit 0; \
+installcheck-gettext: \
+    configure-gettext 
+	@[ -f ./gettext/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing installcheck in intl"; \
-	(cd $(HOST_SUBDIR)/intl && \
+	echo "Doing installcheck in gettext"; \
+	(cd $(HOST_SUBDIR)/gettext && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -20837,23 +20839,23 @@ installcheck-intl: \
 	          installcheck) \
 	  || exit 1
 
-@endif intl
+@endif gettext
 
-.PHONY: maybe-mostlyclean-intl mostlyclean-intl
-maybe-mostlyclean-intl:
-@if intl
-maybe-mostlyclean-intl: mostlyclean-intl
+.PHONY: maybe-mostlyclean-gettext mostlyclean-gettext
+maybe-mostlyclean-gettext:
+@if gettext
+maybe-mostlyclean-gettext: mostlyclean-gettext
 
-mostlyclean-intl: 
-	@[ -f ./intl/Makefile ] || exit 0; \
+mostlyclean-gettext: 
+	@[ -f ./gettext/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing mostlyclean in intl"; \
-	(cd $(HOST_SUBDIR)/intl && \
+	echo "Doing mostlyclean in gettext"; \
+	(cd $(HOST_SUBDIR)/gettext && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -20861,23 +20863,23 @@ mostlyclean-intl:
 	          mostlyclean) \
 	  || exit 1
 
-@endif intl
+@endif gettext
 
-.PHONY: maybe-clean-intl clean-intl
-maybe-clean-intl:
-@if intl
-maybe-clean-intl: clean-intl
+.PHONY: maybe-clean-gettext clean-gettext
+maybe-clean-gettext:
+@if gettext
+maybe-clean-gettext: clean-gettext
 
-clean-intl: 
-	@[ -f ./intl/Makefile ] || exit 0; \
+clean-gettext: 
+	@[ -f ./gettext/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing clean in intl"; \
-	(cd $(HOST_SUBDIR)/intl && \
+	echo "Doing clean in gettext"; \
+	(cd $(HOST_SUBDIR)/gettext && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -20885,23 +20887,23 @@ clean-intl:
 	          clean) \
 	  || exit 1
 
-@endif intl
+@endif gettext
 
-.PHONY: maybe-distclean-intl distclean-intl
-maybe-distclean-intl:
-@if intl
-maybe-distclean-intl: distclean-intl
+.PHONY: maybe-distclean-gettext distclean-gettext
+maybe-distclean-gettext:
+@if gettext
+maybe-distclean-gettext: distclean-gettext
 
-distclean-intl: 
-	@[ -f ./intl/Makefile ] || exit 0; \
+distclean-gettext: 
+	@[ -f ./gettext/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing distclean in intl"; \
-	(cd $(HOST_SUBDIR)/intl && \
+	echo "Doing distclean in gettext"; \
+	(cd $(HOST_SUBDIR)/gettext && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -20909,23 +20911,23 @@ distclean-intl:
 	          distclean) \
 	  || exit 1
 
-@endif intl
+@endif gettext
 
-.PHONY: maybe-maintainer-clean-intl maintainer-clean-intl
-maybe-maintainer-clean-intl:
-@if intl
-maybe-maintainer-clean-intl: maintainer-clean-intl
+.PHONY: maybe-maintainer-clean-gettext maintainer-clean-gettext
+maybe-maintainer-clean-gettext:
+@if gettext
+maybe-maintainer-clean-gettext: maintainer-clean-gettext
 
-maintainer-clean-intl: 
-	@[ -f ./intl/Makefile ] || exit 0; \
+maintainer-clean-gettext: 
+	@[ -f ./gettext/Makefile ] || exit 0; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(HOST_EXPORTS) \
 	for flag in $(EXTRA_HOST_FLAGS) ; do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	echo "Doing maintainer-clean in intl"; \
-	(cd $(HOST_SUBDIR)/intl && \
+	echo "Doing maintainer-clean in gettext"; \
+	(cd $(HOST_SUBDIR)/gettext && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
@@ -20933,7 +20935,7 @@ maintainer-clean-intl:
 	          maintainer-clean) \
 	  || exit 1
 
-@endif intl
+@endif gettext
 
 
 
@@ -62413,11 +62415,11 @@ stage1-start::
 	  mkdir stage1-gold; \
 	mv stage1-gold gold
 @endif gold
-@if intl
-	@cd $(HOST_SUBDIR); [ -d stage1-intl ] || \
-	  mkdir stage1-intl; \
-	mv stage1-intl intl
-@endif intl
+@if gettext
+	@cd $(HOST_SUBDIR); [ -d stage1-gettext ] || \
+	  mkdir stage1-gettext; \
+	mv stage1-gettext gettext
+@endif gettext
 @if ld
 	@cd $(HOST_SUBDIR); [ -d stage1-ld ] || \
 	  mkdir stage1-ld; \
@@ -62538,11 +62540,11 @@ stage1-end::
 	  cd $(HOST_SUBDIR); mv gold stage1-gold; \
 	fi
 @endif gold
-@if intl
-	@if test -d $(HOST_SUBDIR)/intl; then \
-	  cd $(HOST_SUBDIR); mv intl stage1-intl; \
+@if gettext
+	@if test -d $(HOST_SUBDIR)/gettext; then \
+	  cd $(HOST_SUBDIR); mv gettext stage1-gettext; \
 	fi
-@endif intl
+@endif gettext
 @if ld
 	@if test -d $(HOST_SUBDIR)/ld; then \
 	  cd $(HOST_SUBDIR); mv ld stage1-ld; \
@@ -62717,12 +62719,12 @@ stage2-start::
 	mv stage2-gold gold; \
 	mv stage1-gold prev-gold || test -f stage1-lean 
 @endif gold
-@if intl
-	@cd $(HOST_SUBDIR); [ -d stage2-intl ] || \
-	  mkdir stage2-intl; \
-	mv stage2-intl intl; \
-	mv stage1-intl prev-intl || test -f stage1-lean 
-@endif intl
+@if gettext
+	@cd $(HOST_SUBDIR); [ -d stage2-gettext ] || \
+	  mkdir stage2-gettext; \
+	mv stage2-gettext gettext; \
+	mv stage1-gettext prev-gettext || test -f stage1-lean 
+@endif gettext
 @if ld
 	@cd $(HOST_SUBDIR); [ -d stage2-ld ] || \
 	  mkdir stage2-ld; \
@@ -62867,12 +62869,12 @@ stage2-end::
 	  mv prev-gold stage1-gold; : ; \
 	fi
 @endif gold
-@if intl
-	@if test -d $(HOST_SUBDIR)/intl; then \
-	  cd $(HOST_SUBDIR); mv intl stage2-intl; \
-	  mv prev-intl stage1-intl; : ; \
+@if gettext
+	@if test -d $(HOST_SUBDIR)/gettext; then \
+	  cd $(HOST_SUBDIR); mv gettext stage2-gettext; \
+	  mv prev-gettext stage1-gettext; : ; \
 	fi
-@endif intl
+@endif gettext
 @if ld
 	@if test -d $(HOST_SUBDIR)/ld; then \
 	  cd $(HOST_SUBDIR); mv ld stage2-ld; \
@@ -63083,12 +63085,12 @@ stage3-start::
 	mv stage3-gold gold; \
 	mv stage2-gold prev-gold || test -f stage2-lean 
 @endif gold
-@if intl
-	@cd $(HOST_SUBDIR); [ -d stage3-intl ] || \
-	  mkdir stage3-intl; \
-	mv stage3-intl intl; \
-	mv stage2-intl prev-intl || test -f stage2-lean 
-@endif intl
+@if gettext
+	@cd $(HOST_SUBDIR); [ -d stage3-gettext ] || \
+	  mkdir stage3-gettext; \
+	mv stage3-gettext gettext; \
+	mv stage2-gettext prev-gettext || test -f stage2-lean 
+@endif gettext
 @if ld
 	@cd $(HOST_SUBDIR); [ -d stage3-ld ] || \
 	  mkdir stage3-ld; \
@@ -63233,12 +63235,12 @@ stage3-end::
 	  mv prev-gold stage2-gold; : ; \
 	fi
 @endif gold
-@if intl
-	@if test -d $(HOST_SUBDIR)/intl; then \
-	  cd $(HOST_SUBDIR); mv intl stage3-intl; \
-	  mv prev-intl stage2-intl; : ; \
+@if gettext
+	@if test -d $(HOST_SUBDIR)/gettext; then \
+	  cd $(HOST_SUBDIR); mv gettext stage3-gettext; \
+	  mv prev-gettext stage2-gettext; : ; \
 	fi
-@endif intl
+@endif gettext
 @if ld
 	@if test -d $(HOST_SUBDIR)/ld; then \
 	  cd $(HOST_SUBDIR); mv ld stage3-ld; \
@@ -63505,12 +63507,12 @@ stage4-start::
 	mv stage4-gold gold; \
 	mv stage3-gold prev-gold || test -f stage3-lean 
 @endif gold
-@if intl
-	@cd $(HOST_SUBDIR); [ -d stage4-intl ] || \
-	  mkdir stage4-intl; \
-	mv stage4-intl intl; \
-	mv stage3-intl prev-intl || test -f stage3-lean 
-@endif intl
+@if gettext
+	@cd $(HOST_SUBDIR); [ -d stage4-gettext ] || \
+	  mkdir stage4-gettext; \
+	mv stage4-gettext gettext; \
+	mv stage3-gettext prev-gettext || test -f stage3-lean 
+@endif gettext
 @if ld
 	@cd $(HOST_SUBDIR); [ -d stage4-ld ] || \
 	  mkdir stage4-ld; \
@@ -63655,12 +63657,12 @@ stage4-end::
 	  mv prev-gold stage3-gold; : ; \
 	fi
 @endif gold
-@if intl
-	@if test -d $(HOST_SUBDIR)/intl; then \
-	  cd $(HOST_SUBDIR); mv intl stage4-intl; \
-	  mv prev-intl stage3-intl; : ; \
+@if gettext
+	@if test -d $(HOST_SUBDIR)/gettext; then \
+	  cd $(HOST_SUBDIR); mv gettext stage4-gettext; \
+	  mv prev-gettext stage3-gettext; : ; \
 	fi
-@endif intl
+@endif gettext
 @if ld
 	@if test -d $(HOST_SUBDIR)/ld; then \
 	  cd $(HOST_SUBDIR); mv ld stage4-ld; \
@@ -63915,12 +63917,12 @@ stageprofile-start::
 	mv stageprofile-gold gold; \
 	mv stage1-gold prev-gold || test -f stage1-lean 
 @endif gold
-@if intl
-	@cd $(HOST_SUBDIR); [ -d stageprofile-intl ] || \
-	  mkdir stageprofile-intl; \
-	mv stageprofile-intl intl; \
-	mv stage1-intl prev-intl || test -f stage1-lean 
-@endif intl
+@if gettext
+	@cd $(HOST_SUBDIR); [ -d stageprofile-gettext ] || \
+	  mkdir stageprofile-gettext; \
+	mv stageprofile-gettext gettext; \
+	mv stage1-gettext prev-gettext || test -f stage1-lean 
+@endif gettext
 @if ld
 	@cd $(HOST_SUBDIR); [ -d stageprofile-ld ] || \
 	  mkdir stageprofile-ld; \
@@ -64065,12 +64067,12 @@ stageprofile-end::
 	  mv prev-gold stage1-gold; : ; \
 	fi
 @endif gold
-@if intl
-	@if test -d $(HOST_SUBDIR)/intl; then \
-	  cd $(HOST_SUBDIR); mv intl stageprofile-intl; \
-	  mv prev-intl stage1-intl; : ; \
+@if gettext
+	@if test -d $(HOST_SUBDIR)/gettext; then \
+	  cd $(HOST_SUBDIR); mv gettext stageprofile-gettext; \
+	  mv prev-gettext stage1-gettext; : ; \
 	fi
-@endif intl
+@endif gettext
 @if ld
 	@if test -d $(HOST_SUBDIR)/ld; then \
 	  cd $(HOST_SUBDIR); mv ld stageprofile-ld; \
@@ -64258,12 +64260,12 @@ stagetrain-start::
 	mv stagetrain-gold gold; \
 	mv stageprofile-gold prev-gold || test -f stageprofile-lean 
 @endif gold
-@if intl
-	@cd $(HOST_SUBDIR); [ -d stagetrain-intl ] || \
-	  mkdir stagetrain-intl; \
-	mv stagetrain-intl intl; \
-	mv stageprofile-intl prev-intl || test -f stageprofile-lean 
-@endif intl
+@if gettext
+	@cd $(HOST_SUBDIR); [ -d stagetrain-gettext ] || \
+	  mkdir stagetrain-gettext; \
+	mv stagetrain-gettext gettext; \
+	mv stageprofile-gettext prev-gettext || test -f stageprofile-lean 
+@endif gettext
 @if ld
 	@cd $(HOST_SUBDIR); [ -d stagetrain-ld ] || \
 	  mkdir stagetrain-ld; \
@@ -64408,12 +64410,12 @@ stagetrain-end::
 	  mv prev-gold stageprofile-gold; : ; \
 	fi
 @endif gold
-@if intl
-	@if test -d $(HOST_SUBDIR)/intl; then \
-	  cd $(HOST_SUBDIR); mv intl stagetrain-intl; \
-	  mv prev-intl stageprofile-intl; : ; \
+@if gettext
+	@if test -d $(HOST_SUBDIR)/gettext; then \
+	  cd $(HOST_SUBDIR); mv gettext stagetrain-gettext; \
+	  mv prev-gettext stageprofile-gettext; : ; \
 	fi
-@endif intl
+@endif gettext
 @if ld
 	@if test -d $(HOST_SUBDIR)/ld; then \
 	  cd $(HOST_SUBDIR); mv ld stagetrain-ld; \
@@ -64601,12 +64603,12 @@ stagefeedback-start::
 	mv stagefeedback-gold gold; \
 	mv stagetrain-gold prev-gold || test -f stagetrain-lean 
 @endif gold
-@if intl
-	@cd $(HOST_SUBDIR); [ -d stagefeedback-intl ] || \
-	  mkdir stagefeedback-intl; \
-	mv stagefeedback-intl intl; \
-	mv stagetrain-intl prev-intl || test -f stagetrain-lean 
-@endif intl
+@if gettext
+	@cd $(HOST_SUBDIR); [ -d stagefeedback-gettext ] || \
+	  mkdir stagefeedback-gettext; \
+	mv stagefeedback-gettext gettext; \
+	mv stagetrain-gettext prev-gettext || test -f stagetrain-lean 
+@endif gettext
 @if ld
 	@cd $(HOST_SUBDIR); [ -d stagefeedback-ld ] || \
 	  mkdir stagefeedback-ld; \
@@ -64751,12 +64753,12 @@ stagefeedback-end::
 	  mv prev-gold stagetrain-gold; : ; \
 	fi
 @endif gold
-@if intl
-	@if test -d $(HOST_SUBDIR)/intl; then \
-	  cd $(HOST_SUBDIR); mv intl stagefeedback-intl; \
-	  mv prev-intl stagetrain-intl; : ; \
+@if gettext
+	@if test -d $(HOST_SUBDIR)/gettext; then \
+	  cd $(HOST_SUBDIR); mv gettext stagefeedback-gettext; \
+	  mv prev-gettext stagetrain-gettext; : ; \
 	fi
-@endif intl
+@endif gettext
 @if ld
 	@if test -d $(HOST_SUBDIR)/ld; then \
 	  cd $(HOST_SUBDIR); mv ld stagefeedback-ld; \
@@ -64967,12 +64969,12 @@ stageautoprofile-start::
 	mv stageautoprofile-gold gold; \
 	mv stage1-gold prev-gold || test -f stage1-lean 
 @endif gold
-@if intl
-	@cd $(HOST_SUBDIR); [ -d stageautoprofile-intl ] || \
-	  mkdir stageautoprofile-intl; \
-	mv stageautoprofile-intl intl; \
-	mv stage1-intl prev-intl || test -f stage1-lean 
-@endif intl
+@if gettext
+	@cd $(HOST_SUBDIR); [ -d stageautoprofile-gettext ] || \
+	  mkdir stageautoprofile-gettext; \
+	mv stageautoprofile-gettext gettext; \
+	mv stage1-gettext prev-gettext || test -f stage1-lean 
+@endif gettext
 @if ld
 	@cd $(HOST_SUBDIR); [ -d stageautoprofile-ld ] || \
 	  mkdir stageautoprofile-ld; \
@@ -65117,12 +65119,12 @@ stageautoprofile-end::
 	  mv prev-gold stage1-gold; : ; \
 	fi
 @endif gold
-@if intl
-	@if test -d $(HOST_SUBDIR)/intl; then \
-	  cd $(HOST_SUBDIR); mv intl stageautoprofile-intl; \
-	  mv prev-intl stage1-intl; : ; \
+@if gettext
+	@if test -d $(HOST_SUBDIR)/gettext; then \
+	  cd $(HOST_SUBDIR); mv gettext stageautoprofile-gettext; \
+	  mv prev-gettext stage1-gettext; : ; \
 	fi
-@endif intl
+@endif gettext
 @if ld
 	@if test -d $(HOST_SUBDIR)/ld; then \
 	  cd $(HOST_SUBDIR); mv ld stageautoprofile-ld; \
@@ -65310,12 +65312,12 @@ stageautofeedback-start::
 	mv stageautofeedback-gold gold; \
 	mv stageautoprofile-gold prev-gold || test -f stageautoprofile-lean 
 @endif gold
-@if intl
-	@cd $(HOST_SUBDIR); [ -d stageautofeedback-intl ] || \
-	  mkdir stageautofeedback-intl; \
-	mv stageautofeedback-intl intl; \
-	mv stageautoprofile-intl prev-intl || test -f stageautoprofile-lean 
-@endif intl
+@if gettext
+	@cd $(HOST_SUBDIR); [ -d stageautofeedback-gettext ] || \
+	  mkdir stageautofeedback-gettext; \
+	mv stageautofeedback-gettext gettext; \
+	mv stageautoprofile-gettext prev-gettext || test -f stageautoprofile-lean 
+@endif gettext
 @if ld
 	@cd $(HOST_SUBDIR); [ -d stageautofeedback-ld ] || \
 	  mkdir stageautofeedback-ld; \
@@ -65460,12 +65462,12 @@ stageautofeedback-end::
 	  mv prev-gold stageautoprofile-gold; : ; \
 	fi
 @endif gold
-@if intl
-	@if test -d $(HOST_SUBDIR)/intl; then \
-	  cd $(HOST_SUBDIR); mv intl stageautofeedback-intl; \
-	  mv prev-intl stageautoprofile-intl; : ; \
+@if gettext
+	@if test -d $(HOST_SUBDIR)/gettext; then \
+	  cd $(HOST_SUBDIR); mv gettext stageautofeedback-gettext; \
+	  mv prev-gettext stageautoprofile-gettext; : ; \
 	fi
-@endif intl
+@endif gettext
 @if ld
 	@if test -d $(HOST_SUBDIR)/ld; then \
 	  cd $(HOST_SUBDIR); mv ld stageautofeedback-ld; \
@@ -65794,16 +65796,16 @@ all-build-libiberty: maybe-all-build-texinfo
 all-build-m4: maybe-all-build-texinfo
 all-build-fixincludes: maybe-all-build-libiberty
 all-build-libcpp: maybe-all-build-libiberty
-configure-gcc: maybe-configure-intl
-configure-stage1-gcc: maybe-configure-stage1-intl
-configure-stage2-gcc: maybe-configure-stage2-intl
-configure-stage3-gcc: maybe-configure-stage3-intl
-configure-stage4-gcc: maybe-configure-stage4-intl
-configure-stageprofile-gcc: maybe-configure-stageprofile-intl
-configure-stagetrain-gcc: maybe-configure-stagetrain-intl
-configure-stagefeedback-gcc: maybe-configure-stagefeedback-intl
-configure-stageautoprofile-gcc: maybe-configure-stageautoprofile-intl
-configure-stageautofeedback-gcc: maybe-configure-stageautofeedback-intl
+configure-gcc: maybe-configure-gettext
+configure-stage1-gcc: maybe-configure-stage1-gettext
+configure-stage2-gcc: maybe-configure-stage2-gettext
+configure-stage3-gcc: maybe-configure-stage3-gettext
+configure-stage4-gcc: maybe-configure-stage4-gettext
+configure-stageprofile-gcc: maybe-configure-stageprofile-gettext
+configure-stagetrain-gcc: maybe-configure-stagetrain-gettext
+configure-stagefeedback-gcc: maybe-configure-stagefeedback-gettext
+configure-stageautoprofile-gcc: maybe-configure-stageautoprofile-gettext
+configure-stageautofeedback-gcc: maybe-configure-stageautofeedback-gettext
 configure-gcc: maybe-all-gmp
 configure-stage1-gcc: maybe-all-stage1-gmp
 configure-stage2-gcc: maybe-all-stage2-gmp
@@ -65914,16 +65916,16 @@ all-stagetrain-gcc: all-stagetrain-libiberty
 all-stagefeedback-gcc: all-stagefeedback-libiberty
 all-stageautoprofile-gcc: all-stageautoprofile-libiberty
 all-stageautofeedback-gcc: all-stageautofeedback-libiberty
-all-gcc: maybe-all-intl
-all-stage1-gcc: maybe-all-stage1-intl
-all-stage2-gcc: maybe-all-stage2-intl
-all-stage3-gcc: maybe-all-stage3-intl
-all-stage4-gcc: maybe-all-stage4-intl
-all-stageprofile-gcc: maybe-all-stageprofile-intl
-all-stagetrain-gcc: maybe-all-stagetrain-intl
-all-stagefeedback-gcc: maybe-all-stagefeedback-intl
-all-stageautoprofile-gcc: maybe-all-stageautoprofile-intl
-all-stageautofeedback-gcc: maybe-all-stageautofeedback-intl
+all-gcc: maybe-all-gettext
+all-stage1-gcc: maybe-all-stage1-gettext
+all-stage2-gcc: maybe-all-stage2-gettext
+all-stage3-gcc: maybe-all-stage3-gettext
+all-stage4-gcc: maybe-all-stage4-gettext
+all-stageprofile-gcc: maybe-all-stageprofile-gettext
+all-stagetrain-gcc: maybe-all-stagetrain-gettext
+all-stagefeedback-gcc: maybe-all-stagefeedback-gettext
+all-stageautoprofile-gcc: maybe-all-stageautoprofile-gettext
+all-stageautofeedback-gcc: maybe-all-stageautofeedback-gettext
 all-gcc: maybe-all-mpfr
 all-stage1-gcc: maybe-all-stage1-mpfr
 all-stage2-gcc: maybe-all-stage2-mpfr
@@ -66158,16 +66160,16 @@ configure-stagetrain-libcpp: configure-stagetrain-libiberty
 configure-stagefeedback-libcpp: configure-stagefeedback-libiberty
 configure-stageautoprofile-libcpp: configure-stageautoprofile-libiberty
 configure-stageautofeedback-libcpp: configure-stageautofeedback-libiberty
-configure-libcpp: maybe-configure-intl
-configure-stage1-libcpp: maybe-configure-stage1-intl
-configure-stage2-libcpp: maybe-configure-stage2-intl
-configure-stage3-libcpp: maybe-configure-stage3-intl
-configure-stage4-libcpp: maybe-configure-stage4-intl
-configure-stageprofile-libcpp: maybe-configure-stageprofile-intl
-configure-stagetrain-libcpp: maybe-configure-stagetrain-intl
-configure-stagefeedback-libcpp: maybe-configure-stagefeedback-intl
-configure-stageautoprofile-libcpp: maybe-configure-stageautoprofile-intl
-configure-stageautofeedback-libcpp: maybe-configure-stageautofeedback-intl
+configure-libcpp: maybe-configure-gettext
+configure-stage1-libcpp: maybe-configure-stage1-gettext
+configure-stage2-libcpp: maybe-configure-stage2-gettext
+configure-stage3-libcpp: maybe-configure-stage3-gettext
+configure-stage4-libcpp: maybe-configure-stage4-gettext
+configure-stageprofile-libcpp: maybe-configure-stageprofile-gettext
+configure-stagetrain-libcpp: maybe-configure-stagetrain-gettext
+configure-stagefeedback-libcpp: maybe-configure-stagefeedback-gettext
+configure-stageautoprofile-libcpp: maybe-configure-stageautoprofile-gettext
+configure-stageautofeedback-libcpp: maybe-configure-stageautofeedback-gettext
 configure-libcpp: maybe-all-libiconv
 configure-stage1-libcpp: maybe-all-stage1-libiconv
 configure-stage2-libcpp: maybe-all-stage2-libiconv
@@ -66188,16 +66190,16 @@ all-stagetrain-libcpp: all-stagetrain-libiberty
 all-stagefeedback-libcpp: all-stagefeedback-libiberty
 all-stageautoprofile-libcpp: all-stageautoprofile-libiberty
 all-stageautofeedback-libcpp: all-stageautofeedback-libiberty
-all-libcpp: maybe-all-intl
-all-stage1-libcpp: maybe-all-stage1-intl
-all-stage2-libcpp: maybe-all-stage2-intl
-all-stage3-libcpp: maybe-all-stage3-intl
-all-stage4-libcpp: maybe-all-stage4-intl
-all-stageprofile-libcpp: maybe-all-stageprofile-intl
-all-stagetrain-libcpp: maybe-all-stagetrain-intl
-all-stagefeedback-libcpp: maybe-all-stagefeedback-intl
-all-stageautoprofile-libcpp: maybe-all-stageautoprofile-intl
-all-stageautofeedback-libcpp: maybe-all-stageautofeedback-intl
+all-libcpp: maybe-all-gettext
+all-stage1-libcpp: maybe-all-stage1-gettext
+all-stage2-libcpp: maybe-all-stage2-gettext
+all-stage3-libcpp: maybe-all-stage3-gettext
+all-stage4-libcpp: maybe-all-stage4-gettext
+all-stageprofile-libcpp: maybe-all-stageprofile-gettext
+all-stagetrain-libcpp: maybe-all-stagetrain-gettext
+all-stagefeedback-libcpp: maybe-all-stagefeedback-gettext
+all-stageautoprofile-libcpp: maybe-all-stageautoprofile-gettext
+all-stageautofeedback-libcpp: maybe-all-stageautofeedback-gettext
 all-libcpp: maybe-all-libiconv
 all-stage1-libcpp: maybe-all-stage1-libiconv
 all-stage2-libcpp: maybe-all-stage2-libiconv
@@ -66240,16 +66242,16 @@ all-stagefeedback-lto-plugin: maybe-all-stagefeedback-libiberty-linker-plugin
 all-stageautoprofile-lto-plugin: maybe-all-stageautoprofile-libiberty-linker-plugin
 all-stageautofeedback-lto-plugin: maybe-all-stageautofeedback-libiberty-linker-plugin
 all-gotools: maybe-all-target-libgo
-configure-intl: maybe-all-libiconv
-configure-stage1-intl: maybe-all-stage1-libiconv
-configure-stage2-intl: maybe-all-stage2-libiconv
-configure-stage3-intl: maybe-all-stage3-libiconv
-configure-stage4-intl: maybe-all-stage4-libiconv
-configure-stageprofile-intl: maybe-all-stageprofile-libiconv
-configure-stagetrain-intl: maybe-all-stagetrain-libiconv
-configure-stagefeedback-intl: maybe-all-stagefeedback-libiconv
-configure-stageautoprofile-intl: maybe-all-stageautoprofile-libiconv
-configure-stageautofeedback-intl: maybe-all-stageautofeedback-libiconv
+configure-gettext: maybe-all-libiconv
+configure-stage1-gettext: maybe-all-stage1-libiconv
+configure-stage2-gettext: maybe-all-stage2-libiconv
+configure-stage3-gettext: maybe-all-stage3-libiconv
+configure-stage4-gettext: maybe-all-stage4-libiconv
+configure-stageprofile-gettext: maybe-all-stageprofile-libiconv
+configure-stagetrain-gettext: maybe-all-stagetrain-libiconv
+configure-stagefeedback-gettext: maybe-all-stagefeedback-libiconv
+configure-stageautoprofile-gettext: maybe-all-stageautoprofile-libiconv
+configure-stageautofeedback-gettext: maybe-all-stageautofeedback-libiconv
 configure-mpfr: maybe-all-gmp
 configure-stage1-mpfr: maybe-all-stage1-gmp
 configure-stage2-mpfr: maybe-all-stage2-gmp
@@ -66280,16 +66282,16 @@ configure-stagetrain-isl: maybe-all-stagetrain-gmp
 configure-stagefeedback-isl: maybe-all-stagefeedback-gmp
 configure-stageautoprofile-isl: maybe-all-stageautoprofile-gmp
 configure-stageautofeedback-isl: maybe-all-stageautofeedback-gmp
-all-intl: maybe-all-libiconv
-all-stage1-intl: maybe-all-stage1-libiconv
-all-stage2-intl: maybe-all-stage2-libiconv
-all-stage3-intl: maybe-all-stage3-libiconv
-all-stage4-intl: maybe-all-stage4-libiconv
-all-stageprofile-intl: maybe-all-stageprofile-libiconv
-all-stagetrain-intl: maybe-all-stagetrain-libiconv
-all-stagefeedback-intl: maybe-all-stagefeedback-libiconv
-all-stageautoprofile-intl: maybe-all-stageautoprofile-libiconv
-all-stageautofeedback-intl: maybe-all-stageautofeedback-libiconv
+all-gettext: maybe-all-libiconv
+all-stage1-gettext: maybe-all-stage1-libiconv
+all-stage2-gettext: maybe-all-stage2-libiconv
+all-stage3-gettext: maybe-all-stage3-libiconv
+all-stage4-gettext: maybe-all-stage4-libiconv
+all-stageprofile-gettext: maybe-all-stageprofile-libiconv
+all-stagetrain-gettext: maybe-all-stagetrain-libiconv
+all-stagefeedback-gettext: maybe-all-stagefeedback-libiconv
+all-stageautoprofile-gettext: maybe-all-stageautoprofile-libiconv
+all-stageautofeedback-gettext: maybe-all-stageautofeedback-libiconv
 configure-gdb: maybe-configure-sim
 configure-gdb: maybe-all-gnulib
 configure-gdb: maybe-all-gdbsupport
@@ -66319,16 +66321,16 @@ configure-stagetrain-bfd: configure-stagetrain-libiberty
 configure-stagefeedback-bfd: configure-stagefeedback-libiberty
 configure-stageautoprofile-bfd: configure-stageautoprofile-libiberty
 configure-stageautofeedback-bfd: configure-stageautofeedback-libiberty
-configure-bfd: maybe-configure-intl
-configure-stage1-bfd: maybe-configure-stage1-intl
-configure-stage2-bfd: maybe-configure-stage2-intl
-configure-stage3-bfd: maybe-configure-stage3-intl
-configure-stage4-bfd: maybe-configure-stage4-intl
-configure-stageprofile-bfd: maybe-configure-stageprofile-intl
-configure-stagetrain-bfd: maybe-configure-stagetrain-intl
-configure-stagefeedback-bfd: maybe-configure-stagefeedback-intl
-configure-stageautoprofile-bfd: maybe-configure-stageautoprofile-intl
-configure-stageautofeedback-bfd: maybe-configure-stageautofeedback-intl
+configure-bfd: maybe-configure-gettext
+configure-stage1-bfd: maybe-configure-stage1-gettext
+configure-stage2-bfd: maybe-configure-stage2-gettext
+configure-stage3-bfd: maybe-configure-stage3-gettext
+configure-stage4-bfd: maybe-configure-stage4-gettext
+configure-stageprofile-bfd: maybe-configure-stageprofile-gettext
+configure-stagetrain-bfd: maybe-configure-stagetrain-gettext
+configure-stagefeedback-bfd: maybe-configure-stagefeedback-gettext
+configure-stageautoprofile-bfd: maybe-configure-stageautoprofile-gettext
+configure-stageautofeedback-bfd: maybe-configure-stageautofeedback-gettext
 all-bfd: maybe-all-libiberty
 all-stage1-bfd: maybe-all-stage1-libiberty
 all-stage2-bfd: maybe-all-stage2-libiberty
@@ -66339,16 +66341,16 @@ all-stagetrain-bfd: maybe-all-stagetrain-libiberty
 all-stagefeedback-bfd: maybe-all-stagefeedback-libiberty
 all-stageautoprofile-bfd: maybe-all-stageautoprofile-libiberty
 all-stageautofeedback-bfd: maybe-all-stageautofeedback-libiberty
-all-bfd: maybe-all-intl
-all-stage1-bfd: maybe-all-stage1-intl
-all-stage2-bfd: maybe-all-stage2-intl
-all-stage3-bfd: maybe-all-stage3-intl
-all-stage4-bfd: maybe-all-stage4-intl
-all-stageprofile-bfd: maybe-all-stageprofile-intl
-all-stagetrain-bfd: maybe-all-stagetrain-intl
-all-stagefeedback-bfd: maybe-all-stagefeedback-intl
-all-stageautoprofile-bfd: maybe-all-stageautoprofile-intl
-all-stageautofeedback-bfd: maybe-all-stageautofeedback-intl
+all-bfd: maybe-all-gettext
+all-stage1-bfd: maybe-all-stage1-gettext
+all-stage2-bfd: maybe-all-stage2-gettext
+all-stage3-bfd: maybe-all-stage3-gettext
+all-stage4-bfd: maybe-all-stage4-gettext
+all-stageprofile-bfd: maybe-all-stageprofile-gettext
+all-stagetrain-bfd: maybe-all-stagetrain-gettext
+all-stagefeedback-bfd: maybe-all-stagefeedback-gettext
+all-stageautoprofile-bfd: maybe-all-stageautoprofile-gettext
+all-stageautofeedback-bfd: maybe-all-stageautofeedback-gettext
 all-bfd: maybe-all-zlib
 all-stage1-bfd: maybe-all-stage1-zlib
 all-stage2-bfd: maybe-all-stage2-zlib
@@ -66389,16 +66391,16 @@ all-stagetrain-opcodes: maybe-all-stagetrain-libiberty
 all-stagefeedback-opcodes: maybe-all-stagefeedback-libiberty
 all-stageautoprofile-opcodes: maybe-all-stageautoprofile-libiberty
 all-stageautofeedback-opcodes: maybe-all-stageautofeedback-libiberty
-configure-binutils: maybe-configure-intl
-configure-stage1-binutils: maybe-configure-stage1-intl
-configure-stage2-binutils: maybe-configure-stage2-intl
-configure-stage3-binutils: maybe-configure-stage3-intl
-configure-stage4-binutils: maybe-configure-stage4-intl
-configure-stageprofile-binutils: maybe-configure-stageprofile-intl
-configure-stagetrain-binutils: maybe-configure-stagetrain-intl
-configure-stagefeedback-binutils: maybe-configure-stagefeedback-intl
-configure-stageautoprofile-binutils: maybe-configure-stageautoprofile-intl
-configure-stageautofeedback-binutils: maybe-configure-stageautofeedback-intl
+configure-binutils: maybe-configure-gettext
+configure-stage1-binutils: maybe-configure-stage1-gettext
+configure-stage2-binutils: maybe-configure-stage2-gettext
+configure-stage3-binutils: maybe-configure-stage3-gettext
+configure-stage4-binutils: maybe-configure-stage4-gettext
+configure-stageprofile-binutils: maybe-configure-stageprofile-gettext
+configure-stagetrain-binutils: maybe-configure-stagetrain-gettext
+configure-stagefeedback-binutils: maybe-configure-stagefeedback-gettext
+configure-stageautoprofile-binutils: maybe-configure-stageautoprofile-gettext
+configure-stageautofeedback-binutils: maybe-configure-stageautofeedback-gettext
 all-binutils: maybe-all-libiberty
 all-stage1-binutils: maybe-all-stage1-libiberty
 all-stage2-binutils: maybe-all-stage2-libiberty
@@ -66449,16 +66451,16 @@ all-stagetrain-binutils: maybe-all-build-bison
 all-stagefeedback-binutils: maybe-all-build-bison
 all-stageautoprofile-binutils: maybe-all-build-bison
 all-stageautofeedback-binutils: maybe-all-build-bison
-all-binutils: maybe-all-intl
-all-stage1-binutils: maybe-all-stage1-intl
-all-stage2-binutils: maybe-all-stage2-intl
-all-stage3-binutils: maybe-all-stage3-intl
-all-stage4-binutils: maybe-all-stage4-intl
-all-stageprofile-binutils: maybe-all-stageprofile-intl
-all-stagetrain-binutils: maybe-all-stagetrain-intl
-all-stagefeedback-binutils: maybe-all-stagefeedback-intl
-all-stageautoprofile-binutils: maybe-all-stageautoprofile-intl
-all-stageautofeedback-binutils: maybe-all-stageautofeedback-intl
+all-binutils: maybe-all-gettext
+all-stage1-binutils: maybe-all-stage1-gettext
+all-stage2-binutils: maybe-all-stage2-gettext
+all-stage3-binutils: maybe-all-stage3-gettext
+all-stage4-binutils: maybe-all-stage4-gettext
+all-stageprofile-binutils: maybe-all-stageprofile-gettext
+all-stagetrain-binutils: maybe-all-stagetrain-gettext
+all-stagefeedback-binutils: maybe-all-stagefeedback-gettext
+all-stageautoprofile-binutils: maybe-all-stageautoprofile-gettext
+all-stageautofeedback-binutils: maybe-all-stageautofeedback-gettext
 all-binutils: maybe-all-gas
 all-stage1-binutils: maybe-all-stage1-gas
 all-stage2-binutils: maybe-all-stage2-gas
@@ -66521,16 +66523,16 @@ configure-stageautoprofile-opcodes: configure-stageautoprofile-bfd
 configure-stageautofeedback-opcodes: configure-stageautofeedback-bfd
 install-opcodes: maybe-install-bfd
 install-strip-opcodes: maybe-install-strip-bfd
-configure-gas: maybe-configure-intl
-configure-stage1-gas: maybe-configure-stage1-intl
-configure-stage2-gas: maybe-configure-stage2-intl
-configure-stage3-gas: maybe-configure-stage3-intl
-configure-stage4-gas: maybe-configure-stage4-intl
-configure-stageprofile-gas: maybe-configure-stageprofile-intl
-configure-stagetrain-gas: maybe-configure-stagetrain-intl
-configure-stagefeedback-gas: maybe-configure-stagefeedback-intl
-configure-stageautoprofile-gas: maybe-configure-stageautoprofile-intl
-configure-stageautofeedback-gas: maybe-configure-stageautofeedback-intl
+configure-gas: maybe-configure-gettext
+configure-stage1-gas: maybe-configure-stage1-gettext
+configure-stage2-gas: maybe-configure-stage2-gettext
+configure-stage3-gas: maybe-configure-stage3-gettext
+configure-stage4-gas: maybe-configure-stage4-gettext
+configure-stageprofile-gas: maybe-configure-stageprofile-gettext
+configure-stagetrain-gas: maybe-configure-stagetrain-gettext
+configure-stagefeedback-gas: maybe-configure-stagefeedback-gettext
+configure-stageautoprofile-gas: maybe-configure-stageautoprofile-gettext
+configure-stageautofeedback-gas: maybe-configure-stageautofeedback-gettext
 all-gas: maybe-all-libiberty
 all-stage1-gas: maybe-all-stage1-libiberty
 all-stage2-gas: maybe-all-stage2-libiberty
@@ -66561,28 +66563,28 @@ all-stagetrain-gas: maybe-all-stagetrain-bfd
 all-stagefeedback-gas: maybe-all-stagefeedback-bfd
 all-stageautoprofile-gas: maybe-all-stageautoprofile-bfd
 all-stageautofeedback-gas: maybe-all-stageautofeedback-bfd
-all-gas: maybe-all-intl
-all-stage1-gas: maybe-all-stage1-intl
-all-stage2-gas: maybe-all-stage2-intl
-all-stage3-gas: maybe-all-stage3-intl
-all-stage4-gas: maybe-all-stage4-intl
-all-stageprofile-gas: maybe-all-stageprofile-intl
-all-stagetrain-gas: maybe-all-stagetrain-intl
-all-stagefeedback-gas: maybe-all-stagefeedback-intl
-all-stageautoprofile-gas: maybe-all-stageautoprofile-intl
-all-stageautofeedback-gas: maybe-all-stageautofeedback-intl
+all-gas: maybe-all-gettext
+all-stage1-gas: maybe-all-stage1-gettext
+all-stage2-gas: maybe-all-stage2-gettext
+all-stage3-gas: maybe-all-stage3-gettext
+all-stage4-gas: maybe-all-stage4-gettext
+all-stageprofile-gas: maybe-all-stageprofile-gettext
+all-stagetrain-gas: maybe-all-stagetrain-gettext
+all-stagefeedback-gas: maybe-all-stagefeedback-gettext
+all-stageautoprofile-gas: maybe-all-stageautoprofile-gettext
+all-stageautofeedback-gas: maybe-all-stageautofeedback-gettext
 install-gprofng: maybe-install-opcodes
 install-gprofng: maybe-install-bfd
-configure-ld: maybe-configure-intl
-configure-stage1-ld: maybe-configure-stage1-intl
-configure-stage2-ld: maybe-configure-stage2-intl
-configure-stage3-ld: maybe-configure-stage3-intl
-configure-stage4-ld: maybe-configure-stage4-intl
-configure-stageprofile-ld: maybe-configure-stageprofile-intl
-configure-stagetrain-ld: maybe-configure-stagetrain-intl
-configure-stagefeedback-ld: maybe-configure-stagefeedback-intl
-configure-stageautoprofile-ld: maybe-configure-stageautoprofile-intl
-configure-stageautofeedback-ld: maybe-configure-stageautofeedback-intl
+configure-ld: maybe-configure-gettext
+configure-stage1-ld: maybe-configure-stage1-gettext
+configure-stage2-ld: maybe-configure-stage2-gettext
+configure-stage3-ld: maybe-configure-stage3-gettext
+configure-stage4-ld: maybe-configure-stage4-gettext
+configure-stageprofile-ld: maybe-configure-stageprofile-gettext
+configure-stagetrain-ld: maybe-configure-stagetrain-gettext
+configure-stagefeedback-ld: maybe-configure-stagefeedback-gettext
+configure-stageautoprofile-ld: maybe-configure-stageautoprofile-gettext
+configure-stageautofeedback-ld: maybe-configure-stageautofeedback-gettext
 all-ld: maybe-all-libiberty
 all-stage1-ld: maybe-all-stage1-libiberty
 all-stage2-ld: maybe-all-stage2-libiberty
@@ -66633,16 +66635,16 @@ all-stagetrain-ld: maybe-all-build-flex
 all-stagefeedback-ld: maybe-all-build-flex
 all-stageautoprofile-ld: maybe-all-build-flex
 all-stageautofeedback-ld: maybe-all-build-flex
-all-ld: maybe-all-intl
-all-stage1-ld: maybe-all-stage1-intl
-all-stage2-ld: maybe-all-stage2-intl
-all-stage3-ld: maybe-all-stage3-intl
-all-stage4-ld: maybe-all-stage4-intl
-all-stageprofile-ld: maybe-all-stageprofile-intl
-all-stagetrain-ld: maybe-all-stagetrain-intl
-all-stagefeedback-ld: maybe-all-stagefeedback-intl
-all-stageautoprofile-ld: maybe-all-stageautoprofile-intl
-all-stageautofeedback-ld: maybe-all-stageautofeedback-intl
+all-ld: maybe-all-gettext
+all-stage1-ld: maybe-all-stage1-gettext
+all-stage2-ld: maybe-all-stage2-gettext
+all-stage3-ld: maybe-all-stage3-gettext
+all-stage4-ld: maybe-all-stage4-gettext
+all-stageprofile-ld: maybe-all-stageprofile-gettext
+all-stagetrain-ld: maybe-all-stagetrain-gettext
+all-stagefeedback-ld: maybe-all-stagefeedback-gettext
+all-stageautoprofile-ld: maybe-all-stageautoprofile-gettext
+all-stageautofeedback-ld: maybe-all-stageautofeedback-gettext
 all-ld: maybe-all-gas
 all-stage1-ld: maybe-all-stage1-gas
 all-stage2-ld: maybe-all-stage2-gas
@@ -66665,16 +66667,16 @@ all-stageautoprofile-ld: maybe-all-stageautoprofile-binutils
 all-stageautofeedback-ld: maybe-all-stageautofeedback-binutils
 install-ld: maybe-install-gold
 install-strip-ld: maybe-install-strip-gold
-configure-gold: maybe-configure-intl
-configure-stage1-gold: maybe-configure-stage1-intl
-configure-stage2-gold: maybe-configure-stage2-intl
-configure-stage3-gold: maybe-configure-stage3-intl
-configure-stage4-gold: maybe-configure-stage4-intl
-configure-stageprofile-gold: maybe-configure-stageprofile-intl
-configure-stagetrain-gold: maybe-configure-stagetrain-intl
-configure-stagefeedback-gold: maybe-configure-stagefeedback-intl
-configure-stageautoprofile-gold: maybe-configure-stageautoprofile-intl
-configure-stageautofeedback-gold: maybe-configure-stageautofeedback-intl
+configure-gold: maybe-configure-gettext
+configure-stage1-gold: maybe-configure-stage1-gettext
+configure-stage2-gold: maybe-configure-stage2-gettext
+configure-stage3-gold: maybe-configure-stage3-gettext
+configure-stage4-gold: maybe-configure-stage4-gettext
+configure-stageprofile-gold: maybe-configure-stageprofile-gettext
+configure-stagetrain-gold: maybe-configure-stagetrain-gettext
+configure-stagefeedback-gold: maybe-configure-stagefeedback-gettext
+configure-stageautoprofile-gold: maybe-configure-stageautoprofile-gettext
+configure-stageautofeedback-gold: maybe-configure-stageautofeedback-gettext
 all-gold: maybe-all-libiberty
 all-stage1-gold: maybe-all-stage1-libiberty
 all-stage2-gold: maybe-all-stage2-libiberty
@@ -66685,16 +66687,16 @@ all-stagetrain-gold: maybe-all-stagetrain-libiberty
 all-stagefeedback-gold: maybe-all-stagefeedback-libiberty
 all-stageautoprofile-gold: maybe-all-stageautoprofile-libiberty
 all-stageautofeedback-gold: maybe-all-stageautofeedback-libiberty
-all-gold: maybe-all-intl
-all-stage1-gold: maybe-all-stage1-intl
-all-stage2-gold: maybe-all-stage2-intl
-all-stage3-gold: maybe-all-stage3-intl
-all-stage4-gold: maybe-all-stage4-intl
-all-stageprofile-gold: maybe-all-stageprofile-intl
-all-stagetrain-gold: maybe-all-stagetrain-intl
-all-stagefeedback-gold: maybe-all-stagefeedback-intl
-all-stageautoprofile-gold: maybe-all-stageautoprofile-intl
-all-stageautofeedback-gold: maybe-all-stageautofeedback-intl
+all-gold: maybe-all-gettext
+all-stage1-gold: maybe-all-stage1-gettext
+all-stage2-gold: maybe-all-stage2-gettext
+all-stage3-gold: maybe-all-stage3-gettext
+all-stage4-gold: maybe-all-stage4-gettext
+all-stageprofile-gold: maybe-all-stageprofile-gettext
+all-stagetrain-gold: maybe-all-stagetrain-gettext
+all-stagefeedback-gold: maybe-all-stagefeedback-gettext
+all-stageautoprofile-gold: maybe-all-stageautoprofile-gettext
+all-stageautofeedback-gold: maybe-all-stageautofeedback-gettext
 all-gold: maybe-all-bfd
 all-stage1-gold: maybe-all-stage1-bfd
 all-stage2-gold: maybe-all-stage2-bfd
@@ -66745,16 +66747,16 @@ check-stagetrain-gold: maybe-all-stagetrain-gas
 check-stagefeedback-gold: maybe-all-stagefeedback-gas
 check-stageautoprofile-gold: maybe-all-stageautoprofile-gas
 check-stageautofeedback-gold: maybe-all-stageautofeedback-gas
-configure-opcodes: maybe-configure-intl
-configure-stage1-opcodes: maybe-configure-stage1-intl
-configure-stage2-opcodes: maybe-configure-stage2-intl
-configure-stage3-opcodes: maybe-configure-stage3-intl
-configure-stage4-opcodes: maybe-configure-stage4-intl
-configure-stageprofile-opcodes: maybe-configure-stageprofile-intl
-configure-stagetrain-opcodes: maybe-configure-stagetrain-intl
-configure-stagefeedback-opcodes: maybe-configure-stagefeedback-intl
-configure-stageautoprofile-opcodes: maybe-configure-stageautoprofile-intl
-configure-stageautofeedback-opcodes: maybe-configure-stageautofeedback-intl
+configure-opcodes: maybe-configure-gettext
+configure-stage1-opcodes: maybe-configure-stage1-gettext
+configure-stage2-opcodes: maybe-configure-stage2-gettext
+configure-stage3-opcodes: maybe-configure-stage3-gettext
+configure-stage4-opcodes: maybe-configure-stage4-gettext
+configure-stageprofile-opcodes: maybe-configure-stageprofile-gettext
+configure-stagetrain-opcodes: maybe-configure-stagetrain-gettext
+configure-stagefeedback-opcodes: maybe-configure-stagefeedback-gettext
+configure-stageautoprofile-opcodes: maybe-configure-stageautoprofile-gettext
+configure-stageautofeedback-opcodes: maybe-configure-stageautofeedback-gettext
 all-opcodes: maybe-all-bfd
 all-stage1-opcodes: maybe-all-stage1-bfd
 all-stage2-opcodes: maybe-all-stage2-bfd
@@ -66775,16 +66777,16 @@ all-stagetrain-opcodes: maybe-all-stagetrain-libiberty
 all-stagefeedback-opcodes: maybe-all-stagefeedback-libiberty
 all-stageautoprofile-opcodes: maybe-all-stageautoprofile-libiberty
 all-stageautofeedback-opcodes: maybe-all-stageautofeedback-libiberty
-all-opcodes: maybe-all-intl
-all-stage1-opcodes: maybe-all-stage1-intl
-all-stage2-opcodes: maybe-all-stage2-intl
-all-stage3-opcodes: maybe-all-stage3-intl
-all-stage4-opcodes: maybe-all-stage4-intl
-all-stageprofile-opcodes: maybe-all-stageprofile-intl
-all-stagetrain-opcodes: maybe-all-stagetrain-intl
-all-stagefeedback-opcodes: maybe-all-stagefeedback-intl
-all-stageautoprofile-opcodes: maybe-all-stageautoprofile-intl
-all-stageautofeedback-opcodes: maybe-all-stageautofeedback-intl
+all-opcodes: maybe-all-gettext
+all-stage1-opcodes: maybe-all-stage1-gettext
+all-stage2-opcodes: maybe-all-stage2-gettext
+all-stage3-opcodes: maybe-all-stage3-gettext
+all-stage4-opcodes: maybe-all-stage4-gettext
+all-stageprofile-opcodes: maybe-all-stageprofile-gettext
+all-stagetrain-opcodes: maybe-all-stagetrain-gettext
+all-stagefeedback-opcodes: maybe-all-stagefeedback-gettext
+all-stageautoprofile-opcodes: maybe-all-stageautoprofile-gettext
+all-stageautofeedback-opcodes: maybe-all-stageautofeedback-gettext
 all-dejagnu: maybe-all-tcl
 all-dejagnu: maybe-all-expect
 all-dejagnu: maybe-all-tk
@@ -66849,16 +66851,16 @@ configure-stagetrain-libctf: maybe-all-stagetrain-bfd
 configure-stagefeedback-libctf: maybe-all-stagefeedback-bfd
 configure-stageautoprofile-libctf: maybe-all-stageautoprofile-bfd
 configure-stageautofeedback-libctf: maybe-all-stageautofeedback-bfd
-configure-libctf: maybe-all-intl
-configure-stage1-libctf: maybe-all-stage1-intl
-configure-stage2-libctf: maybe-all-stage2-intl
-configure-stage3-libctf: maybe-all-stage3-intl
-configure-stage4-libctf: maybe-all-stage4-intl
-configure-stageprofile-libctf: maybe-all-stageprofile-intl
-configure-stagetrain-libctf: maybe-all-stagetrain-intl
-configure-stagefeedback-libctf: maybe-all-stagefeedback-intl
-configure-stageautoprofile-libctf: maybe-all-stageautoprofile-intl
-configure-stageautofeedback-libctf: maybe-all-stageautofeedback-intl
+configure-libctf: maybe-all-gettext
+configure-stage1-libctf: maybe-all-stage1-gettext
+configure-stage2-libctf: maybe-all-stage2-gettext
+configure-stage3-libctf: maybe-all-stage3-gettext
+configure-stage4-libctf: maybe-all-stage4-gettext
+configure-stageprofile-libctf: maybe-all-stageprofile-gettext
+configure-stagetrain-libctf: maybe-all-stagetrain-gettext
+configure-stagefeedback-libctf: maybe-all-stagefeedback-gettext
+configure-stageautoprofile-libctf: maybe-all-stageautoprofile-gettext
+configure-stageautofeedback-libctf: maybe-all-stageautofeedback-gettext
 configure-libctf: maybe-all-zlib
 configure-stage1-libctf: maybe-all-stage1-zlib
 configure-stage2-libctf: maybe-all-stage2-zlib
@@ -67031,7 +67033,7 @@ all-c++tools: maybe-all-gcc
 all-utils: maybe-all-libiberty
 configure-gdb: maybe-all-gmp
 configure-gdb: maybe-all-mpfr
-configure-gdb: maybe-all-intl
+configure-gdb: maybe-all-gettext
 configure-gdb: maybe-all-bfd
 configure-gdb: maybe-all-libiconv
 all-gdb: maybe-all-libiberty
@@ -67041,33 +67043,33 @@ all-gdb: maybe-all-libdecnumber
 all-gdb: maybe-all-libctf
 all-gdb: maybe-all-libbacktrace
 all-gdbserver: maybe-all-libiberty
-configure-gdbsupport: maybe-configure-intl
-all-gdbsupport: maybe-all-intl
-configure-gprof: maybe-configure-intl
+configure-gdbsupport: maybe-configure-gettext
+all-gdbsupport: maybe-all-gettext
+configure-gprof: maybe-configure-gettext
 all-gprof: maybe-all-libiberty
 all-gprof: maybe-all-bfd
 all-gprof: maybe-all-opcodes
-all-gprof: maybe-all-intl
+all-gprof: maybe-all-gettext
 all-gprof: maybe-all-gas
-configure-gprofng: maybe-configure-intl
+configure-gprofng: maybe-configure-gettext
 all-gprofng: maybe-all-libiberty
 all-gprofng: maybe-all-bfd
 all-gprofng: maybe-all-opcodes
-all-gprofng: maybe-all-intl
+all-gprofng: maybe-all-gettext
 all-gprofng: maybe-all-gas
 all-sid: maybe-all-libiberty
 all-sid: maybe-all-bfd
 all-sid: maybe-all-opcodes
-configure-sim: maybe-configure-intl
-all-sim: maybe-all-intl
+configure-sim: maybe-configure-gettext
+all-sim: maybe-all-gettext
 all-sim: maybe-all-libiberty
 all-sim: maybe-all-bfd
 all-sim: maybe-all-opcodes
 all-fastjar: maybe-all-zlib
 all-fastjar: maybe-all-libiberty
-all-bison: maybe-all-intl
-all-flex: maybe-all-intl
-all-m4: maybe-all-intl
+all-bison: maybe-all-gettext
+all-flex: maybe-all-gettext
+all-m4: maybe-all-gettext
 configure-target-fastjar: maybe-configure-target-zlib
 all-target-fastjar: maybe-all-target-zlib
 configure-target-libgo: maybe-all-target-libstdc++-v3

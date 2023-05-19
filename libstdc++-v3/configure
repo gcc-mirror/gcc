@@ -26953,121 +26953,7 @@ fi
 
 
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for iconv" >&5
-$as_echo_n "checking for iconv... " >&6; }
-if ${am_cv_func_iconv+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-    am_cv_func_iconv="no, consider installing GNU libiconv"
-    am_cv_lib_iconv=no
-                    am_save_CPPFLAGS="$CPPFLAGS"
-    CPPFLAGS="$CPPFLAGS $INCICONV"
-    if test x$gcc_no_link = xyes; then
-  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdlib.h>
-#include <iconv.h>
-int
-main ()
-{
-iconv_t cd = iconv_open("","");
-       iconv(cd,NULL,NULL,NULL,NULL);
-       iconv_close(cd);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  am_cv_func_iconv=yes
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-    CPPFLAGS="$am_save_CPPFLAGS"
-
-    if test "$am_cv_func_iconv" != yes && test -d ../libiconv; then
-      for _libs in .libs _libs; do
-        am_save_CPPFLAGS="$CPPFLAGS"
-        am_save_LIBS="$LIBS"
-        CPPFLAGS="$CPPFLAGS -I../libiconv/include"
-        LIBS="$LIBS ../libiconv/lib/$_libs/libiconv.a"
-        if test x$gcc_no_link = xyes; then
-  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdlib.h>
-#include <iconv.h>
-int
-main ()
-{
-iconv_t cd = iconv_open("","");
-           iconv(cd,NULL,NULL,NULL,NULL);
-           iconv_close(cd);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  INCICONV="-I../libiconv/include"
-          LIBICONV='${top_builddir}'/../libiconv/lib/$_libs/libiconv.a
-          LTLIBICONV='${top_builddir}'/../libiconv/lib/libiconv.la
-          am_cv_lib_iconv=yes
-          am_cv_func_iconv=yes
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-        CPPFLAGS="$am_save_CPPFLAGS"
-        LIBS="$am_save_LIBS"
-        if test "$am_cv_func_iconv" = "yes"; then
-          break
-        fi
-      done
-    fi
-
-    if test "$am_cv_func_iconv" != yes; then
-      am_save_CPPFLAGS="$CPPFLAGS"
-      am_save_LIBS="$LIBS"
-      CPPFLAGS="$CPPFLAGS $INCICONV"
-      LIBS="$LIBS $LIBICONV"
-      if test x$gcc_no_link = xyes; then
-  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdlib.h>
-#include <iconv.h>
-int
-main ()
-{
-iconv_t cd = iconv_open("","");
-         iconv(cd,NULL,NULL,NULL,NULL);
-         iconv_close(cd);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  am_cv_lib_iconv=yes
-        am_cv_func_iconv=yes
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-      CPPFLAGS="$am_save_CPPFLAGS"
-      LIBS="$am_save_LIBS"
-    fi
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $am_cv_func_iconv" >&5
-$as_echo "$am_cv_func_iconv" >&6; }
-  if test "$am_cv_func_iconv" = yes; then
-
-$as_echo "#define HAVE_ICONV 1" >>confdefs.h
-
-  fi
-  if test "$am_cv_lib_iconv" = yes; then
+          am_save_CPPFLAGS="$CPPFLAGS"
 
   for element in $INCICONV; do
     haveit=
@@ -27091,11 +26977,249 @@ $as_echo "#define HAVE_ICONV 1" >>confdefs.h
     fi
   done
 
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for iconv" >&5
+$as_echo_n "checking for iconv... " >&6; }
+if ${am_cv_func_iconv+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    am_cv_func_iconv="no, consider installing GNU libiconv"
+    am_cv_lib_iconv=no
+    if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdlib.h>
+#include <iconv.h>
+
+int
+main ()
+{
+iconv_t cd = iconv_open("","");
+           iconv(cd,NULL,NULL,NULL,NULL);
+           iconv_close(cd);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  am_cv_func_iconv=yes
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+    if test "$am_cv_func_iconv" != yes; then
+      am_save_LIBS="$LIBS"
+      LIBS="$LIBS $LIBICONV"
+      if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdlib.h>
+#include <iconv.h>
+
+int
+main ()
+{
+iconv_t cd = iconv_open("","");
+             iconv(cd,NULL,NULL,NULL,NULL);
+             iconv_close(cd);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  am_cv_lib_iconv=yes
+        am_cv_func_iconv=yes
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+      LIBS="$am_save_LIBS"
+    fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $am_cv_func_iconv" >&5
+$as_echo "$am_cv_func_iconv" >&6; }
+  if test "$am_cv_func_iconv" = yes; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for working iconv" >&5
+$as_echo_n "checking for working iconv... " >&6; }
+if ${am_cv_func_iconv_works+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+                  am_save_LIBS="$LIBS"
+      if test $am_cv_lib_iconv = yes; then
+        LIBS="$LIBS $LIBICONV"
+      fi
+      am_cv_func_iconv_works=no
+      for ac_iconv_const in '' 'const'; do
+        if test "$cross_compiling" = yes; then :
+  case "$host_os" in
+             aix* | hpux*) am_cv_func_iconv_works="guessing no" ;;
+             *)            am_cv_func_iconv_works="guessing yes" ;;
+           esac
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <iconv.h>
+#include <string.h>
+
+#ifndef ICONV_CONST
+# define ICONV_CONST $ac_iconv_const
+#endif
+
+int
+main ()
+{
+int result = 0;
+  /* Test against AIX 5.1...7.2 bug: Failures are not distinguishable from
+     successful returns.  This is even documented in
+     <https://www.ibm.com/support/knowledgecenter/ssw_aix_72/i_bostechref/iconv.html> */
+  {
+    iconv_t cd_utf8_to_88591 = iconv_open ("ISO8859-1", "UTF-8");
+    if (cd_utf8_to_88591 != (iconv_t)(-1))
+      {
+        static ICONV_CONST char input[] = "\342\202\254"; /* EURO SIGN */
+        char buf[10];
+        ICONV_CONST char *inptr = input;
+        size_t inbytesleft = strlen (input);
+        char *outptr = buf;
+        size_t outbytesleft = sizeof (buf);
+        size_t res = iconv (cd_utf8_to_88591,
+                            &inptr, &inbytesleft,
+                            &outptr, &outbytesleft);
+        if (res == 0)
+          result |= 1;
+        iconv_close (cd_utf8_to_88591);
+      }
+  }
+  /* Test against Solaris 10 bug: Failures are not distinguishable from
+     successful returns.  */
+  {
+    iconv_t cd_ascii_to_88591 = iconv_open ("ISO8859-1", "646");
+    if (cd_ascii_to_88591 != (iconv_t)(-1))
+      {
+        static ICONV_CONST char input[] = "\263";
+        char buf[10];
+        ICONV_CONST char *inptr = input;
+        size_t inbytesleft = strlen (input);
+        char *outptr = buf;
+        size_t outbytesleft = sizeof (buf);
+        size_t res = iconv (cd_ascii_to_88591,
+                            &inptr, &inbytesleft,
+                            &outptr, &outbytesleft);
+        if (res == 0)
+          result |= 2;
+        iconv_close (cd_ascii_to_88591);
+      }
+  }
+  /* Test against AIX 6.1..7.1 bug: Buffer overrun.  */
+  {
+    iconv_t cd_88591_to_utf8 = iconv_open ("UTF-8", "ISO-8859-1");
+    if (cd_88591_to_utf8 != (iconv_t)(-1))
+      {
+        static ICONV_CONST char input[] = "\304";
+        static char buf[2] = { (char)0xDE, (char)0xAD };
+        ICONV_CONST char *inptr = input;
+        size_t inbytesleft = 1;
+        char *outptr = buf;
+        size_t outbytesleft = 1;
+        size_t res = iconv (cd_88591_to_utf8,
+                            &inptr, &inbytesleft,
+                            &outptr, &outbytesleft);
+        if (res != (size_t)(-1) || outptr - buf > 1 || buf[1] != (char)0xAD)
+          result |= 4;
+        iconv_close (cd_88591_to_utf8);
+      }
+  }
+#if 0 /* This bug could be worked around by the caller.  */
+  /* Test against HP-UX 11.11 bug: Positive return value instead of 0.  */
+  {
+    iconv_t cd_88591_to_utf8 = iconv_open ("utf8", "iso88591");
+    if (cd_88591_to_utf8 != (iconv_t)(-1))
+      {
+        static ICONV_CONST char input[] = "\304rger mit b\366sen B\374bchen ohne Augenma\337";
+        char buf[50];
+        ICONV_CONST char *inptr = input;
+        size_t inbytesleft = strlen (input);
+        char *outptr = buf;
+        size_t outbytesleft = sizeof (buf);
+        size_t res = iconv (cd_88591_to_utf8,
+                            &inptr, &inbytesleft,
+                            &outptr, &outbytesleft);
+        if ((int)res > 0)
+          result |= 8;
+        iconv_close (cd_88591_to_utf8);
+      }
+  }
+#endif
+  /* Test against HP-UX 11.11 bug: No converter from EUC-JP to UTF-8 is
+     provided.  */
+  {
+    /* Try standardized names.  */
+    iconv_t cd1 = iconv_open ("UTF-8", "EUC-JP");
+    /* Try IRIX, OSF/1 names.  */
+    iconv_t cd2 = iconv_open ("UTF-8", "eucJP");
+    /* Try AIX names.  */
+    iconv_t cd3 = iconv_open ("UTF-8", "IBM-eucJP");
+    /* Try HP-UX names.  */
+    iconv_t cd4 = iconv_open ("utf8", "eucJP");
+    if (cd1 == (iconv_t)(-1) && cd2 == (iconv_t)(-1)
+        && cd3 == (iconv_t)(-1) && cd4 == (iconv_t)(-1))
+      result |= 16;
+    if (cd1 != (iconv_t)(-1))
+      iconv_close (cd1);
+    if (cd2 != (iconv_t)(-1))
+      iconv_close (cd2);
+    if (cd3 != (iconv_t)(-1))
+      iconv_close (cd3);
+    if (cd4 != (iconv_t)(-1))
+      iconv_close (cd4);
+  }
+  return result;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+  am_cv_func_iconv_works=yes
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+        test "$am_cv_func_iconv_works" = no || break
+      done
+      LIBS="$am_save_LIBS"
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $am_cv_func_iconv_works" >&5
+$as_echo "$am_cv_func_iconv_works" >&6; }
+    case "$am_cv_func_iconv_works" in
+      *no) am_func_iconv=no am_cv_lib_iconv=no ;;
+      *)   am_func_iconv=yes ;;
+    esac
+  else
+    am_func_iconv=no am_cv_lib_iconv=no
+  fi
+  if test "$am_func_iconv" = yes; then
+
+$as_echo "#define HAVE_ICONV 1" >>confdefs.h
+
+  fi
+  if test "$am_cv_lib_iconv" = yes; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking how to link with libiconv" >&5
 $as_echo_n "checking how to link with libiconv... " >&6; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $LIBICONV" >&5
 $as_echo "$LIBICONV" >&6; }
   else
+            CPPFLAGS="$am_save_CPPFLAGS"
     LIBICONV=
     LTLIBICONV=
   fi
@@ -27103,13 +27227,12 @@ $as_echo "$LIBICONV" >&6; }
 
 
   if test "$am_cv_func_iconv" = yes; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for iconv declaration" >&5
-$as_echo_n "checking for iconv declaration... " >&6; }
-    if ${am_cv_proto_iconv+:} false; then :
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether iconv is compatible with its POSIX signature" >&5
+$as_echo_n "checking whether iconv is compatible with its POSIX signature... " >&6; }
+if ${gl_cv_iconv_nonconst+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-
-      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 #include <stdlib.h>
@@ -27118,11 +27241,7 @@ extern
 #ifdef __cplusplus
 "C"
 #endif
-#if defined(__STDC__) || defined(__cplusplus)
 size_t iconv (iconv_t cd, char * *inbuf, size_t *inbytesleft, char * *outbuf, size_t *outbytesleft);
-#else
-size_t iconv();
-#endif
 
 int
 main ()
@@ -27133,24 +27252,42 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
-  am_cv_proto_iconv_arg1=""
+  gl_cv_iconv_nonconst=yes
 else
-  am_cv_proto_iconv_arg1="const"
+  gl_cv_iconv_nonconst=no
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-      am_cv_proto_iconv="extern size_t iconv (iconv_t cd, $am_cv_proto_iconv_arg1 char * *inbuf, size_t *inbytesleft, char * *outbuf, size_t *outbytesleft);"
-fi
 
-    am_cv_proto_iconv=`echo "$am_cv_proto_iconv" | tr -s ' ' | sed -e 's/( /(/'`
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${ac_t:-
-         }$am_cv_proto_iconv" >&5
-$as_echo "${ac_t:-
-         }$am_cv_proto_iconv" >&6; }
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gl_cv_iconv_nonconst" >&5
+$as_echo "$gl_cv_iconv_nonconst" >&6; }
+  else
+            gl_cv_iconv_nonconst=yes
+  fi
+  if test $gl_cv_iconv_nonconst = yes; then
+    iconv_arg1=""
+  else
+    iconv_arg1="const"
+  fi
 
 cat >>confdefs.h <<_ACEOF
-#define ICONV_CONST $am_cv_proto_iconv_arg1
+#define ICONV_CONST $iconv_arg1
 _ACEOF
 
+
+
+      if test "$am_func_iconv" = yes; then
+    if test -n "$LIBICONV"; then
+      am_cv_func_iconv_summary='yes, in libiconv'
+    else
+      am_cv_func_iconv_summary='yes, in libc'
+    fi
+  else
+    if test "$am_cv_func_iconv" = yes; then
+      am_cv_func_iconv_summary='not working, consider installing GNU libiconv'
+    else
+      am_cv_func_iconv_summary='no, consider installing GNU libiconv'
+    fi
   fi
 
 
@@ -34923,210 +35060,6 @@ done
     #GCC_CHECK_TLS
 
 
-
-
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for iconv" >&5
-$as_echo_n "checking for iconv... " >&6; }
-if ${am_cv_func_iconv+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-    am_cv_func_iconv="no, consider installing GNU libiconv"
-    am_cv_lib_iconv=no
-                    am_save_CPPFLAGS="$CPPFLAGS"
-    CPPFLAGS="$CPPFLAGS $INCICONV"
-    if test x$gcc_no_link = xyes; then
-  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdlib.h>
-#include <iconv.h>
-int
-main ()
-{
-iconv_t cd = iconv_open("","");
-       iconv(cd,NULL,NULL,NULL,NULL);
-       iconv_close(cd);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  am_cv_func_iconv=yes
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-    CPPFLAGS="$am_save_CPPFLAGS"
-
-    if test "$am_cv_func_iconv" != yes && test -d ../libiconv; then
-      for _libs in .libs _libs; do
-        am_save_CPPFLAGS="$CPPFLAGS"
-        am_save_LIBS="$LIBS"
-        CPPFLAGS="$CPPFLAGS -I../libiconv/include"
-        LIBS="$LIBS ../libiconv/lib/$_libs/libiconv.a"
-        if test x$gcc_no_link = xyes; then
-  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdlib.h>
-#include <iconv.h>
-int
-main ()
-{
-iconv_t cd = iconv_open("","");
-           iconv(cd,NULL,NULL,NULL,NULL);
-           iconv_close(cd);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  INCICONV="-I../libiconv/include"
-          LIBICONV='${top_builddir}'/../libiconv/lib/$_libs/libiconv.a
-          LTLIBICONV='${top_builddir}'/../libiconv/lib/libiconv.la
-          am_cv_lib_iconv=yes
-          am_cv_func_iconv=yes
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-        CPPFLAGS="$am_save_CPPFLAGS"
-        LIBS="$am_save_LIBS"
-        if test "$am_cv_func_iconv" = "yes"; then
-          break
-        fi
-      done
-    fi
-
-    if test "$am_cv_func_iconv" != yes; then
-      am_save_CPPFLAGS="$CPPFLAGS"
-      am_save_LIBS="$LIBS"
-      CPPFLAGS="$CPPFLAGS $INCICONV"
-      LIBS="$LIBS $LIBICONV"
-      if test x$gcc_no_link = xyes; then
-  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdlib.h>
-#include <iconv.h>
-int
-main ()
-{
-iconv_t cd = iconv_open("","");
-         iconv(cd,NULL,NULL,NULL,NULL);
-         iconv_close(cd);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  am_cv_lib_iconv=yes
-        am_cv_func_iconv=yes
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-      CPPFLAGS="$am_save_CPPFLAGS"
-      LIBS="$am_save_LIBS"
-    fi
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $am_cv_func_iconv" >&5
-$as_echo "$am_cv_func_iconv" >&6; }
-  if test "$am_cv_func_iconv" = yes; then
-
-$as_echo "#define HAVE_ICONV 1" >>confdefs.h
-
-  fi
-  if test "$am_cv_lib_iconv" = yes; then
-
-  for element in $INCICONV; do
-    haveit=
-    for x in $CPPFLAGS; do
-
-  acl_save_prefix="$prefix"
-  prefix="$acl_final_prefix"
-  acl_save_exec_prefix="$exec_prefix"
-  exec_prefix="$acl_final_exec_prefix"
-  eval x=\"$x\"
-  exec_prefix="$acl_save_exec_prefix"
-  prefix="$acl_save_prefix"
-
-      if test "X$x" = "X$element"; then
-        haveit=yes
-        break
-      fi
-    done
-    if test -z "$haveit"; then
-      CPPFLAGS="${CPPFLAGS}${CPPFLAGS:+ }$element"
-    fi
-  done
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking how to link with libiconv" >&5
-$as_echo_n "checking how to link with libiconv... " >&6; }
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $LIBICONV" >&5
-$as_echo "$LIBICONV" >&6; }
-  else
-    LIBICONV=
-    LTLIBICONV=
-  fi
-
-
-
-  if test "$am_cv_func_iconv" = yes; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for iconv declaration" >&5
-$as_echo_n "checking for iconv declaration... " >&6; }
-    if ${am_cv_proto_iconv+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <stdlib.h>
-#include <iconv.h>
-extern
-#ifdef __cplusplus
-"C"
-#endif
-#if defined(__STDC__) || defined(__cplusplus)
-size_t iconv (iconv_t cd, char * *inbuf, size_t *inbytesleft, char * *outbuf, size_t *outbytesleft);
-#else
-size_t iconv();
-#endif
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  am_cv_proto_iconv_arg1=""
-else
-  am_cv_proto_iconv_arg1="const"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-      am_cv_proto_iconv="extern size_t iconv (iconv_t cd, $am_cv_proto_iconv_arg1 char * *inbuf, size_t *inbytesleft, char * *outbuf, size_t *outbytesleft);"
-fi
-
-    am_cv_proto_iconv=`echo "$am_cv_proto_iconv" | tr -s ' ' | sed -e 's/( /(/'`
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${ac_t:-
-         }$am_cv_proto_iconv" >&5
-$as_echo "${ac_t:-
-         }$am_cv_proto_iconv" >&6; }
-
-cat >>confdefs.h <<_ACEOF
-#define ICONV_CONST $am_cv_proto_iconv_arg1
-_ACEOF
-
-  fi
-
-
     $as_echo "#define HAVE_USELOCALE 1" >>confdefs.h
 
     ;;
@@ -42369,210 +42302,6 @@ _ACEOF
 fi
 done
 
-
-
-
-
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for iconv" >&5
-$as_echo_n "checking for iconv... " >&6; }
-if ${am_cv_func_iconv+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-    am_cv_func_iconv="no, consider installing GNU libiconv"
-    am_cv_lib_iconv=no
-                    am_save_CPPFLAGS="$CPPFLAGS"
-    CPPFLAGS="$CPPFLAGS $INCICONV"
-    if test x$gcc_no_link = xyes; then
-  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdlib.h>
-#include <iconv.h>
-int
-main ()
-{
-iconv_t cd = iconv_open("","");
-       iconv(cd,NULL,NULL,NULL,NULL);
-       iconv_close(cd);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  am_cv_func_iconv=yes
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-    CPPFLAGS="$am_save_CPPFLAGS"
-
-    if test "$am_cv_func_iconv" != yes && test -d ../libiconv; then
-      for _libs in .libs _libs; do
-        am_save_CPPFLAGS="$CPPFLAGS"
-        am_save_LIBS="$LIBS"
-        CPPFLAGS="$CPPFLAGS -I../libiconv/include"
-        LIBS="$LIBS ../libiconv/lib/$_libs/libiconv.a"
-        if test x$gcc_no_link = xyes; then
-  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdlib.h>
-#include <iconv.h>
-int
-main ()
-{
-iconv_t cd = iconv_open("","");
-           iconv(cd,NULL,NULL,NULL,NULL);
-           iconv_close(cd);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  INCICONV="-I../libiconv/include"
-          LIBICONV='${top_builddir}'/../libiconv/lib/$_libs/libiconv.a
-          LTLIBICONV='${top_builddir}'/../libiconv/lib/libiconv.la
-          am_cv_lib_iconv=yes
-          am_cv_func_iconv=yes
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-        CPPFLAGS="$am_save_CPPFLAGS"
-        LIBS="$am_save_LIBS"
-        if test "$am_cv_func_iconv" = "yes"; then
-          break
-        fi
-      done
-    fi
-
-    if test "$am_cv_func_iconv" != yes; then
-      am_save_CPPFLAGS="$CPPFLAGS"
-      am_save_LIBS="$LIBS"
-      CPPFLAGS="$CPPFLAGS $INCICONV"
-      LIBS="$LIBS $LIBICONV"
-      if test x$gcc_no_link = xyes; then
-  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdlib.h>
-#include <iconv.h>
-int
-main ()
-{
-iconv_t cd = iconv_open("","");
-         iconv(cd,NULL,NULL,NULL,NULL);
-         iconv_close(cd);
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  am_cv_lib_iconv=yes
-        am_cv_func_iconv=yes
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-      CPPFLAGS="$am_save_CPPFLAGS"
-      LIBS="$am_save_LIBS"
-    fi
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $am_cv_func_iconv" >&5
-$as_echo "$am_cv_func_iconv" >&6; }
-  if test "$am_cv_func_iconv" = yes; then
-
-$as_echo "#define HAVE_ICONV 1" >>confdefs.h
-
-  fi
-  if test "$am_cv_lib_iconv" = yes; then
-
-  for element in $INCICONV; do
-    haveit=
-    for x in $CPPFLAGS; do
-
-  acl_save_prefix="$prefix"
-  prefix="$acl_final_prefix"
-  acl_save_exec_prefix="$exec_prefix"
-  exec_prefix="$acl_final_exec_prefix"
-  eval x=\"$x\"
-  exec_prefix="$acl_save_exec_prefix"
-  prefix="$acl_save_prefix"
-
-      if test "X$x" = "X$element"; then
-        haveit=yes
-        break
-      fi
-    done
-    if test -z "$haveit"; then
-      CPPFLAGS="${CPPFLAGS}${CPPFLAGS:+ }$element"
-    fi
-  done
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking how to link with libiconv" >&5
-$as_echo_n "checking how to link with libiconv... " >&6; }
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $LIBICONV" >&5
-$as_echo "$LIBICONV" >&6; }
-  else
-    LIBICONV=
-    LTLIBICONV=
-  fi
-
-
-
-  if test "$am_cv_func_iconv" = yes; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for iconv declaration" >&5
-$as_echo_n "checking for iconv declaration... " >&6; }
-    if ${am_cv_proto_iconv+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include <stdlib.h>
-#include <iconv.h>
-extern
-#ifdef __cplusplus
-"C"
-#endif
-#if defined(__STDC__) || defined(__cplusplus)
-size_t iconv (iconv_t cd, char * *inbuf, size_t *inbytesleft, char * *outbuf, size_t *outbytesleft);
-#else
-size_t iconv();
-#endif
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  am_cv_proto_iconv_arg1=""
-else
-  am_cv_proto_iconv_arg1="const"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-      am_cv_proto_iconv="extern size_t iconv (iconv_t cd, $am_cv_proto_iconv_arg1 char * *inbuf, size_t *inbytesleft, char * *outbuf, size_t *outbytesleft);"
-fi
-
-    am_cv_proto_iconv=`echo "$am_cv_proto_iconv" | tr -s ' ' | sed -e 's/( /(/'`
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: ${ac_t:-
-         }$am_cv_proto_iconv" >&5
-$as_echo "${ac_t:-
-         }$am_cv_proto_iconv" >&6; }
-
-cat >>confdefs.h <<_ACEOF
-#define ICONV_CONST $am_cv_proto_iconv_arg1
-_ACEOF
-
-  fi
 
     ;;
   *-mingw32*)

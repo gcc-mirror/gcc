@@ -31,6 +31,7 @@ gmp='gmp-6.2.1.tar.bz2'
 mpfr='mpfr-4.1.0.tar.bz2'
 mpc='mpc-1.2.1.tar.gz'
 isl='isl-0.24.tar.bz2'
+gettext='gettext-0.22.tar.gz'
 
 base_url='http://gcc.gnu.org/pub/gcc/infrastructure/'
 
@@ -38,6 +39,7 @@ echo_archives() {
     echo "${gmp}"
     echo "${mpfr}"
     echo "${mpc}"
+    echo "${gettext}"
     if [ ${graphite} -gt 0 ]; then echo "${isl}"; fi
 }
 

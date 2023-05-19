@@ -477,6 +477,17 @@ is shown below:
 @code{sys} and @code{time}.
 @end table
 
+@item GNU gettext
+
+Necessary to build GCC with internationalization support via
+@option{--enable-nls}.  It can be downloaded from
+@uref{https://gnu.org/s/gettext/}.  If a GNU gettext distribution is
+found in a subdirectory of your GCC sources named @file{gettext}, it
+will be built together with GCC, unless present in the system (either in
+libc or as a stand-alone library).
+
+The in-tree configuration requires GNU gettext version 0.22 or later.
+
 @end table
 
 @heading Tools/packages necessary for modifying GCC
@@ -633,14 +644,14 @@ components of the binutils you intend to build alongside the compiler
 (@file{bfd}, @file{binutils}, @file{gas}, @file{gprof}, @file{ld},
 @file{opcodes}, @dots{}) to the directory containing the GCC sources.
 
-Likewise the GMP, MPFR and MPC libraries can be automatically built
-together with GCC.  You may simply run the
+Likewise the GMP, MPFR, MPC and Gettext libraries can be automatically
+built together with GCC.  You may simply run the
 @command{contrib/download_prerequisites} script in the GCC source directory
 to set up everything.
-Otherwise unpack the GMP, MPFR and/or MPC source
+Otherwise unpack the GMP, MPFR, MPC and/or Gettext source
 distributions in the directory containing the GCC sources and rename
-their directories to @file{gmp}, @file{mpfr} and @file{mpc},
-respectively (or use symbolic links with the same name).
+their directories to @file{gmp}, @file{mpfr}, @file{mpc} and
+@file{gettext}, respectively (or use symbolic links with the same name).
 
 @html
 <hr />
@@ -2219,9 +2230,56 @@ which lets GCC output diagnostics in languages other than American
 English.  Native Language Support is enabled by default if not doing a
 canadian cross build.  The @option{--disable-nls} option disables NLS@.
 
+Note that this functionality requires either libintl (provided by GNU
+gettext) or C standard library that contains support for gettext (such
+as the GNU C Library).
+@xref{with-included-gettext,,--with-included-gettext} for more
+information on the conditions required to get gettext support.
+
+@item --with-libintl-prefix=@var{dir}
+@itemx --without-libintl-prefix
+Searches for libintl in @file{@var{dir}/include} and
+@file{@var{dir}/lib}, or disables manual searching for it, letting the
+linker handle it.
+
+@item --with-libintl-type=@var{type}
+Specifies the type of library to search for when looking for libintl.
+@var{type} can be one of @code{auto}, @code{static} or @code{shared}.
+
+@anchor{with-included-gettext}
 @item --with-included-gettext
-If NLS is enabled, the @option{--with-included-gettext} option causes the build
-procedure to prefer its copy of GNU @command{gettext}.
+Only available if @file{gettext} is present in the source tree.
+
+Forces the gettext tree to be configured to build and use a new static
+libintl, overriding the system libintl.  Results in GCC being built
+against the newly built libintl rather than the system libintl.
+
+The build system makes a somewhat complicated choice when picking where
+to get gettext routines from.  The following table is a summary of the
+possible options:
+
+@c Thanks for summary, Bruno!
+@multitable @columnfractions .12 .12 .12 .2 .44
+@headitem GNU gettext present in sources
+@tab libintl installed on the system
+@tab @code{gettext} present in libc
+@tab @code{--with-included-gettext}
+@tab Effects on localization
+
+@item No @tab No  @tab No  @tab (ignored) @tab No localization
+@item No @tab No  @tab Yes @tab (ignored) @tab Localized, libc gettext
+@item No @tab Yes @tab No  @tab (ignored) @tab Localized, libintl
+@item No @tab Yes @tab Yes @tab (ignored) @tab Localized, libintl
+
+@item Yes @tab No  @tab No  @tab No  @tab Localized, new, static libintl
+@item Yes @tab No  @tab No  @tab Yes @tab Localized, new, static libintl
+@item Yes @tab No  @tab Yes @tab No  @tab Localized, libc gettext
+@item Yes @tab No  @tab Yes @tab Yes @tab Localized, new, static libintl
+@item Yes @tab Yes @tab No  @tab No  @tab Localized, libintl
+@item Yes @tab Yes @tab No  @tab Yes @tab Localized, new, static libintl
+@item Yes @tab Yes @tab Yes @tab No  @tab Localized, libintl
+@item Yes @tab Yes @tab Yes @tab Yes @tab Localized, new, static libintl
+@end multitable
 
 @item --with-catgets
 If NLS is enabled, and if the host lacks @code{gettext} but has the
