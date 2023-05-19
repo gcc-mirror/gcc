@@ -12920,6 +12920,7 @@ fold_single_bit_test (location_t loc, enum tree_code code,
       int ops_unsigned;
       tree signed_type, unsigned_type, intermediate_type;
       tree one;
+      gimple *inner_def;
 
       /* First, see if we can fold the single bit test into a sign-bit
 	 test.  */
@@ -12939,14 +12940,14 @@ fold_single_bit_test (location_t loc, enum tree_code code,
 
       /* If INNER is a right shift of a constant and it plus BITNUM does
 	 not overflow, adjust BITNUM and INNER.  */
-      if (TREE_CODE (inner) == RSHIFT_EXPR
-	  && TREE_CODE (TREE_OPERAND (inner, 1)) == INTEGER_CST
+      if ((inner_def = get_def_for_expr (inner, RSHIFT_EXPR))
+	  && TREE_CODE (gimple_assign_rhs2 (inner_def)) == INTEGER_CST
 	  && bitnum < TYPE_PRECISION (type)
-	  && wi::ltu_p (wi::to_wide (TREE_OPERAND (inner, 1)),
+	  && wi::ltu_p (wi::to_wide (gimple_assign_rhs2 (inner_def)),
 			TYPE_PRECISION (type) - bitnum))
 	{
-	  bitnum += tree_to_uhwi (TREE_OPERAND (inner, 1));
-	  inner = TREE_OPERAND (inner, 0);
+	  bitnum += tree_to_uhwi (gimple_assign_rhs2 (inner_def));
+	  inner = gimple_assign_rhs1 (inner_def);
 	}
 
       /* If we are going to be able to omit the AND below, we must do our
