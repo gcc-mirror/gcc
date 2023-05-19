@@ -5564,19 +5564,18 @@ output_constructor_bitfield (oc_local_state *local, unsigned int bit_offset)
 
   /* Relative index of this element if this is an array component.  */
   HOST_WIDE_INT relative_index
-    = (!local->field
-       ? (local->index
-	  ? (tree_to_shwi (local->index)
-	     - tree_to_shwi (local->min_index))
-	  : local->last_relative_index + 1)
-       : 0);
+    = (local->field
+       ? 0
+       : (local->index
+	  ? tree_to_uhwi (local->index) - tree_to_uhwi (local->min_index)
+	  : local->last_relative_index + 1));
 
   /* Bit position of this element from the start of the containing
      constructor.  */
   HOST_WIDE_INT constructor_relative_ebitpos
-      = (local->field
-	 ? int_bit_position (local->field)
-	 : ebitsize * relative_index);
+    = (local->field
+       ? int_bit_position (local->field)
+       : ebitsize * relative_index);
 
   /* Bit position of this element from the start of a possibly ongoing
      outer byte buffer.  */
