@@ -17928,6 +17928,8 @@ ix86_masked_all_ones (unsigned HOST_WIDE_INT elems, tree arg_mask)
     return false;
 
   unsigned HOST_WIDE_INT mask = TREE_INT_CST_LOW (arg_mask);
+  if (elems == HOST_BITS_PER_WIDE_INT)
+    return  mask == HOST_WIDE_INT_M1U;
   if ((mask | (HOST_WIDE_INT_M1U << elems)) != HOST_WIDE_INT_M1U)
     return false;
 
@@ -18407,7 +18409,7 @@ ix86_fold_builtin (tree fndecl, int n_args,
 bool
 ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 {
-  gimple *stmt = gsi_stmt (*gsi);
+  gimple *stmt = gsi_stmt (*gsi), *g;
   tree fndecl = gimple_call_fndecl (stmt);
   gcc_checking_assert (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_MD));
   int n_args = gimple_call_num_args (stmt);
@@ -18420,6 +18422,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   unsigned HOST_WIDE_INT count;
   bool is_vshift;
   unsigned HOST_WIDE_INT elems;
+  location_t loc;
 
   /* Don't fold when there's isa mismatch.  */
   if (!ix86_check_builtin_isa_match (fn_code, NULL, NULL))
@@ -18455,8 +18458,8 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	  if (!expr_not_equal_to (arg0, wi::zero (prec)))
 	    return false;
 
-	  location_t loc = gimple_location (stmt);
-	  gimple *g = gimple_build_call (decl, 1, arg0);
+	  loc = gimple_location (stmt);
+	  g = gimple_build_call (decl, 1, arg0);
 	  gimple_set_location (g, loc);
 	  tree lhs = make_ssa_name (integer_type_node);
 	  gimple_call_set_lhs (g, lhs);
@@ -18478,8 +18481,8 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	  arg0 = gimple_call_arg (stmt, 0);
 	  if (idx < TYPE_PRECISION (TREE_TYPE (arg0)))
 	    break;
-	  location_t loc = gimple_location (stmt);
-	  gimple *g = gimple_build_assign (gimple_call_lhs (stmt), arg0);
+	  loc = gimple_location (stmt);
+	  g = gimple_build_assign (gimple_call_lhs (stmt), arg0);
 	  gimple_set_location (g, loc);
 	  gsi_replace (gsi, g, false);
 	  return true;
@@ -18494,9 +18497,9 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       arg1 = gimple_call_arg (stmt, 1);
       if (integer_all_onesp (arg1) && gimple_call_lhs (stmt))
 	{
-	  location_t loc = gimple_location (stmt);
+	  loc = gimple_location (stmt);
 	  arg0 = gimple_call_arg (stmt, 0);
-	  gimple *g = gimple_build_assign (gimple_call_lhs (stmt), arg0);
+	  g = gimple_build_assign (gimple_call_lhs (stmt), arg0);
 	  gimple_set_location (g, loc);
 	  gsi_replace (gsi, g, false);
 	  return true;
@@ -18527,7 +18530,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       arg2 = gimple_call_arg (stmt, 2);
       if (gimple_call_lhs (stmt))
 	{
-	  location_t loc = gimple_location (stmt);
+	  loc = gimple_location (stmt);
 	  tree type = TREE_TYPE (arg2);
 	  gimple_seq stmts = NULL;
 	  if (VECTOR_FLOAT_TYPE_P (type))
@@ -18541,9 +18544,9 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	  tree cmp_type = truth_type_for (type);
 	  tree cmp = gimple_build (&stmts, LT_EXPR, cmp_type, arg2, zero_vec);
 	  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-	  gimple *g = gimple_build_assign (gimple_call_lhs (stmt),
-					   VEC_COND_EXPR, cmp,
-					   arg1, arg0);
+	  g = gimple_build_assign (gimple_call_lhs (stmt),
+				   VEC_COND_EXPR, cmp,
+				   arg1, arg0);
 	  gimple_set_location (g, loc);
 	  gsi_replace (gsi, g, false);
 	}
@@ -18579,7 +18582,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       arg1 = gimple_call_arg (stmt, 1);
       if (gimple_call_lhs (stmt))
 	{
-	  location_t loc = gimple_location (stmt);
+	  loc = gimple_location (stmt);
 	  tree type = TREE_TYPE (arg0);
 	  tree zero_vec = build_zero_cst (type);
 	  tree minus_one_vec = build_minus_one_cst (type);
@@ -18587,9 +18590,9 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	  gimple_seq stmts = NULL;
 	  tree cmp = gimple_build (&stmts, tcode, cmp_type, arg0, arg1);
 	  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-	  gimple* g = gimple_build_assign (gimple_call_lhs (stmt),
-					   VEC_COND_EXPR, cmp,
-					   minus_one_vec, zero_vec);
+	  g = gimple_build_assign (gimple_call_lhs (stmt),
+				   VEC_COND_EXPR, cmp,
+				   minus_one_vec, zero_vec);
 	  gimple_set_location (g, loc);
 	  gsi_replace (gsi, g, false);
 	}
@@ -18794,8 +18797,8 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       if (count == 0)
 	{
 	  /* Just return the first argument for shift by 0.  */
-	  location_t loc = gimple_location (stmt);
-	  gimple *g = gimple_build_assign (gimple_call_lhs (stmt), arg0);
+	  loc = gimple_location (stmt);
+	  g = gimple_build_assign (gimple_call_lhs (stmt), arg0);
 	  gimple_set_location (g, loc);
 	  gsi_replace (gsi, g, false);
 	  return true;
@@ -18805,9 +18808,9 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	{
 	  /* For shift counts equal or greater than precision, except for
 	     arithmetic right shift the result is zero.  */
-	  location_t loc = gimple_location (stmt);
-	  gimple *g = gimple_build_assign (gimple_call_lhs (stmt),
-					   build_zero_cst (TREE_TYPE (arg0)));
+	  loc = gimple_location (stmt);
+	  g = gimple_build_assign (gimple_call_lhs (stmt),
+				   build_zero_cst (TREE_TYPE (arg0)));
 	  gimple_set_location (g, loc);
 	  gsi_replace (gsi, g, false);
 	  return true;
@@ -18836,7 +18839,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	    return false;
 
 	  machine_mode imode = GET_MODE_INNER (TYPE_MODE (TREE_TYPE (arg0)));
-	  location_t loc = gimple_location (stmt);
+	  loc = gimple_location (stmt);
 	  tree itype = (imode == E_DFmode
 			? long_long_integer_type_node : integer_type_node);
 	  tree vtype = build_vector_type (itype, elems);
@@ -18867,15 +18870,50 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 
 	  tree perm_mask = elts.build ();
 	  arg1 = gimple_call_arg (stmt, 1);
-	  gimple *g = gimple_build_assign (gimple_call_lhs (stmt),
-					   VEC_PERM_EXPR,
-					   arg0, arg1, perm_mask);
+	  g = gimple_build_assign (gimple_call_lhs (stmt),
+				   VEC_PERM_EXPR,
+				   arg0, arg1, perm_mask);
 	  gimple_set_location (g, loc);
 	  gsi_replace (gsi, g, false);
 	  return true;
 	}
       // Do not error yet, the constant could be propagated later?
       break;
+
+    case IX86_BUILTIN_PABSB:
+    case IX86_BUILTIN_PABSB128:
+    case IX86_BUILTIN_PABSB256:
+    case IX86_BUILTIN_PABSB512:
+    case IX86_BUILTIN_PABSW:
+    case IX86_BUILTIN_PABSW128:
+    case IX86_BUILTIN_PABSW256:
+    case IX86_BUILTIN_PABSW512:
+    case IX86_BUILTIN_PABSD:
+    case IX86_BUILTIN_PABSD128:
+    case IX86_BUILTIN_PABSD256:
+    case IX86_BUILTIN_PABSD512:
+    case IX86_BUILTIN_PABSQ128:
+    case IX86_BUILTIN_PABSQ256:
+    case IX86_BUILTIN_PABSQ512:
+    case IX86_BUILTIN_PABSB128_MASK:
+    case IX86_BUILTIN_PABSB256_MASK:
+    case IX86_BUILTIN_PABSW128_MASK:
+    case IX86_BUILTIN_PABSW256_MASK:
+    case IX86_BUILTIN_PABSD128_MASK:
+    case IX86_BUILTIN_PABSD256_MASK:
+      gcc_assert (n_args >= 1);
+      if (!gimple_call_lhs (stmt))
+	break;
+      arg0 = gimple_call_arg (stmt, 0);
+      elems = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+      /* For masked ABS, only optimize if the mask is all ones.  */
+      if (n_args > 1
+	  && !ix86_masked_all_ones (elems, gimple_call_arg (stmt, n_args - 1)))
+	break;
+      loc = gimple_location (stmt);
+      g = gimple_build_assign (gimple_call_lhs (stmt), ABS_EXPR, arg0);
+      gsi_replace (gsi, g, false);
+      return true;
 
     default:
       break;
