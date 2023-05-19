@@ -4074,7 +4074,10 @@ match_arith_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
 			    TYPE_MODE (type)) == CODE_FOR_nothing)
       || (code == MULT_EXPR
 	  && optab_handler (cast_stmt ? mulv4_optab : umulv4_optab,
-			    TYPE_MODE (type)) == CODE_FOR_nothing))
+			    TYPE_MODE (type)) == CODE_FOR_nothing
+	  && (use_seen
+	      || cast_stmt
+	      || !can_mult_highpart_p (TYPE_MODE (type), true))))
     {
       if (code != PLUS_EXPR)
 	return false;
