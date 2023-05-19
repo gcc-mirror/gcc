@@ -34,6 +34,9 @@
 struct gomp_thread *nvptx_thrs __attribute__((shared,nocommon));
 int __gomp_team_num __attribute__((shared,nocommon));
 
+/* Number of active target threads in team, used in ACC mode.  */
+unsigned int __nvptx_omp_num_threads __attribute__((shared,nocommon));
+
 static void gomp_thread_start (struct gomp_thread_pool *);
 
 /* There should be some .shared space reserved for us.  There's no way to

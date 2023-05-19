@@ -175,6 +175,9 @@ static unsigned gang_private_shared_align;
 static GTY(()) rtx gang_private_shared_sym;
 static hash_map<tree_decl_hash, unsigned int> gang_private_shared_hmap;
 
+static GTY(()) rtx omp_num_threads_sym;
+static unsigned omp_num_threads_align;
+
 /* Global lock variable, needed for 128bit worker & gang reductions.  */
 static GTY(()) tree global_lock_var;
 
@@ -185,6 +188,9 @@ static bool have_softstack_decl;
 /* True if any function references __nvptx_uni.  */
 static bool need_unisimt_decl;
 static bool have_unisimt_decl;
+
+/* True if any function references __nvptx_omp_num_threads.  */
+static bool need_omp_num_threads;
 
 static int nvptx_mach_max_workers ();
 
@@ -391,6 +397,10 @@ nvptx_option_override (void)
   gang_private_shared_sym = gen_rtx_SYMBOL_REF (Pmode, "__gang_private_shared");
   SET_SYMBOL_DATA_AREA (gang_private_shared_sym, DATA_AREA_SHARED);
   gang_private_shared_align = GET_MODE_ALIGNMENT (SImode) / BITS_PER_UNIT;
+
+  omp_num_threads_sym = gen_rtx_SYMBOL_REF (Pmode, "__nvptx_omp_num_threads");
+  SET_SYMBOL_DATA_AREA (omp_num_threads_sym, DATA_AREA_SHARED);
+  omp_num_threads_align = GET_MODE_ALIGNMENT (SImode) / BITS_PER_UNIT;
 
   diagnose_openacc_conflict (TARGET_GOMP, "-mgomp");
   diagnose_openacc_conflict (TARGET_SOFT_STACK, "-msoft-stack");
@@ -960,7 +970,8 @@ write_as_kernel (tree attrs)
 {
   return (lookup_attribute ("kernel", attrs) != NULL_TREE
 	  || (lookup_attribute ("omp target entrypoint", attrs) != NULL_TREE
-	      && lookup_attribute ("oacc function", attrs) != NULL_TREE));
+	      && (lookup_attribute ("oacc function", attrs) != NULL_TREE
+		  || lookup_attribute ("ompacc", attrs) != NULL_TREE)));
   /* For OpenMP target regions, the corresponding kernel entry is emitted from
      write_omp_entry as a separate function.  */
 }
@@ -1494,6 +1505,7 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
 			DECL_ATTRIBUTES (decl)))
     force_public = true;
   if (lookup_attribute ("omp target entrypoint", DECL_ATTRIBUTES (decl))
+      && !lookup_attribute ("ompacc", DECL_ATTRIBUTES (decl))
       && !lookup_attribute ("oacc function", DECL_ATTRIBUTES (decl)))
     {
       char *buf = (char *) alloca (strlen (name) + sizeof ("$impl"));
@@ -1547,7 +1559,7 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
   HOST_WIDE_INT sz = get_frame_size ();
   bool need_frameptr = sz || cfun->machine->has_chain;
   int alignment = crtl->stack_alignment_needed / BITS_PER_UNIT;
-  if (!TARGET_SOFT_STACK)
+  if (!TARGET_SOFT_STACK || lookup_attribute ("ompacc", DECL_ATTRIBUTES (decl)))
     {
       /* Declare a local var for outgoing varargs.  */
       if (cfun->machine->has_varadic)
@@ -1618,6 +1630,45 @@ nvptx_declare_function_name (FILE *file, const char *name, const_tree decl)
     nvptx_init_unisimt_predicate (file);
   if (cfun->machine->bcast_partition || cfun->machine->sync_bar)
     nvptx_init_oacc_workers (file);
+
+  if (offloading_function_p ((tree) decl)
+      && lookup_attribute ("ompacc", DECL_ATTRIBUTES (decl))
+      && !lookup_attribute ("ompacc seq", DECL_ATTRIBUTES (decl)))
+    {
+      int nthr_regno = REGNO (cfun->machine->omp_fn_entry_num_threads_reg);
+      if (lookup_attribute ("omp target entrypoint", DECL_ATTRIBUTES (decl)))
+	{
+	  fprintf (file, "\t{\n");
+	  if (cfun->machine->omp_parallel_predicate)
+	    {
+	      /* Borrow num-threads regno as temp register.  */
+	      fprintf (file, "\t\tmov.u32 %%r%d, %%tid.x;\n", nthr_regno);
+	      fprintf (file, "\t\tsetp.ne.u32 %%r%d, %%r%d, 0;\n",
+		       REGNO (cfun->machine->omp_parallel_predicate), nthr_regno);
+	    }
+	  fprintf (file, "\t\tmov.u32 %%r%d, 1;\n", nthr_regno);
+	  fprintf (file, "\t\tst.shared.u32 [__nvptx_omp_num_threads], %%r%d;\n", nthr_regno);
+	  fprintf (file, "\t}\n");
+	  need_omp_num_threads = true;
+	}
+      else
+	{
+	  fprintf (file, "\t\tld.shared.u32 %%r%d, [__nvptx_omp_num_threads];\n", nthr_regno);
+	  if (cfun->machine->omp_parallel_predicate)
+	    {
+	      fprintf (file, "\t{\n");
+	      fprintf (file, "\t\t.reg.u32 %%tmp1;\n");
+	      fprintf (file, "\t\t.reg.pred %%not_parallel_mode, %%v1_lane;\n");
+	      fprintf (file, "\t\tsetp.eq.u32 %%not_parallel_mode, %%r%d, 1;\n", nthr_regno);
+	      fprintf (file, "\t\tmov.u32 %%tmp1, %%tid.x;\n");
+	      fprintf (file, "\t\tsetp.ne.u32 %%v1_lane, %%tmp1, 0;\n");
+	      fprintf (file, "\t\tand.pred %%r%d, %%not_parallel_mode, %%v1_lane;\n",
+		       REGNO (cfun->machine->omp_parallel_predicate));
+	      fprintf (file, "\t}\n");
+	      need_omp_num_threads = true;
+	    }
+	}
+    }
 }
 
 /* Output code for switching uniform-simt state.  ENTERING indicates whether
@@ -1735,6 +1786,10 @@ nvptx_output_simt_exit (rtx src)
 const char *
 nvptx_output_set_softstack (unsigned src_regno)
 {
+  if (flag_openmp_target == OMP_TARGET_MODE_OMPACC
+      && lookup_attribute ("ompacc",
+			   DECL_ATTRIBUTES (current_function_decl)))
+    return "";
   if (cfun->machine->has_softstack && !crtl->is_leaf)
     {
       fprintf (asm_out_file, "\tst.shared.u%d\t[%s], ",
@@ -1853,20 +1908,29 @@ nvptx_expand_call (rtx retval, rtx address)
 	  if (DECL_STATIC_CHAIN (decl))
 	    cfun->machine->has_chain = true;
 
-	  tree attr = oacc_get_fn_attrib (decl);
-	  if (attr)
+	  if (flag_openmp_target == OMP_TARGET_MODE_OMPACC)
 	    {
-	      tree dims = TREE_VALUE (attr);
-
-	      parallel = GOMP_DIM_MASK (GOMP_DIM_MAX) - 1;
-	      for (int ix = 0; ix != GOMP_DIM_MAX; ix++)
+	      if (lookup_attribute ("ompacc", DECL_ATTRIBUTES (decl))
+		  && !lookup_attribute ("ompacc seq", DECL_ATTRIBUTES (decl)))
+		parallel = GOMP_DIM_MASK (GOMP_DIM_VECTOR);
+	    }
+	  else
+	    {
+	      tree attr = oacc_get_fn_attrib (decl);
+	      if (attr)
 		{
-		  if (TREE_PURPOSE (dims)
-		      && !integer_zerop (TREE_PURPOSE (dims)))
-		    break;
-		  /* Not on this axis.  */
-		  parallel ^= GOMP_DIM_MASK (ix);
-		  dims = TREE_CHAIN (dims);
+		  tree dims = TREE_VALUE (attr);
+
+		  parallel = GOMP_DIM_MASK (GOMP_DIM_MAX) - 1;
+		  for (int ix = 0; ix != GOMP_DIM_MAX; ix++)
+		    {
+		      if (TREE_PURPOSE (dims)
+			  && !integer_zerop (TREE_PURPOSE (dims)))
+			break;
+		      /* Not on this axis.  */
+		      parallel ^= GOMP_DIM_MASK (ix);
+		      dims = TREE_CHAIN (dims);
+		    }
 		}
 	    }
 	}
@@ -1929,13 +1993,25 @@ nvptx_expand_compare (rtx compare)
 void
 nvptx_expand_oacc_fork (unsigned mode)
 {
+  if (flag_openmp_target == OMP_TARGET_MODE_OMPACC)
+    mode = GOMP_DIM_VECTOR;
   nvptx_emit_forking (GOMP_DIM_MASK (mode), false);
 }
 
 void
 nvptx_expand_oacc_join (unsigned mode)
 {
+  if (flag_openmp_target == OMP_TARGET_MODE_OMPACC)
+    mode = GOMP_DIM_VECTOR;
   nvptx_emit_joining (GOMP_DIM_MASK (mode), false);
+}
+
+void
+nvptx_expand_omp_get_num_threads (rtx target)
+{
+  rtx mem = gen_rtx_MEM (SImode, omp_num_threads_sym);
+  emit_insn (gen_rtx_SET (target, mem));
+  need_omp_num_threads = true;
 }
 
 /* Generate instruction(s) to unpack a 64 bit object into 2 32 bit
@@ -2878,6 +2954,13 @@ nvptx_mem_maybe_shared_p (const_rtx x)
   return area == DATA_AREA_SHARED || area == DATA_AREA_GENERIC;
 }
 
+bool
+nvptx_mem_shared_p (const_rtx x)
+{
+  nvptx_data_area area = nvptx_mem_data_area (x);
+  return area == DATA_AREA_SHARED;
+}
+
 /* Print an operand, X, to FILE, with an optional modifier in CODE.
 
    Meaning of CODE:
@@ -3482,6 +3565,11 @@ init_axis_dim (void)
 static int ATTRIBUTE_UNUSED
 nvptx_mach_max_workers ()
 {
+  if (flag_openmp_target == OMP_TARGET_MODE_OMPACC
+      && lookup_attribute ("ompacc",
+			   DECL_ATTRIBUTES (current_function_decl)))
+    return 1;
+
   if (!cfun->machine->axis_dim_init_p)
     init_axis_dim ();
   return cfun->machine->axis_dim[MACH_MAX_WORKERS];
@@ -3490,6 +3578,11 @@ nvptx_mach_max_workers ()
 static int ATTRIBUTE_UNUSED
 nvptx_mach_vector_length ()
 {
+  if (flag_openmp_target == OMP_TARGET_MODE_OMPACC
+      && lookup_attribute ("ompacc",
+			   DECL_ATTRIBUTES (current_function_decl)))
+    return 32;
+
   if (!cfun->machine->axis_dim_init_p)
     init_axis_dim ();
   return cfun->machine->axis_dim[MACH_VECTOR_LENGTH];
@@ -4872,11 +4965,27 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
   rtx_insn *tail = BB_END (to);
   unsigned skip_mask = mask;
 
+  rtx_insn *join = NULL;
+  rtx_insn *fork = NULL;
+
   while (true)
     {
       /* Find first insn of from block.  */
-      while (head != BB_END (from) && !needs_neutering_p (head))
-	head = NEXT_INSN (head);
+      while (true)
+	{
+	  if (INSN_P (head)
+	      && recog_memoized (head) == CODE_FOR_nvptx_join)
+	    {
+	      /* Record join if we see it.  */
+	      gcc_assert (!join);
+	      join = head;
+	    }
+
+	  if (head != BB_END (from) && !needs_neutering_p (head))
+	    head = NEXT_INSN (head);
+	  else
+	    break;
+	}
 
       if (from == to)
 	break;
@@ -4894,8 +5003,46 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
 
   /* Find last insn of to block */
   rtx_insn *limit = from == to ? head : BB_HEAD (to);
-  while (tail != limit && !INSN_P (tail) && !LABEL_P (tail))
-    tail = PREV_INSN (tail);
+  while (true)
+    {
+      if (INSN_P (tail)
+	  && recog_memoized (tail) == CODE_FOR_nvptx_fork)
+	{
+	  /* Record join if we see it.  */
+	  gcc_assert (!fork);
+	  fork = tail;
+	}
+
+      if (tail != limit && !INSN_P (tail) && !LABEL_P (tail))
+	tail = PREV_INSN (tail);
+      else
+	break;
+    }
+
+  if (flag_openmp_target == OMP_TARGET_MODE_OMPACC)
+    {
+      if (join
+	  /* We do not set/restore parallel state across function calls.  */
+	  && !(INTVAL (XVECEXP (PATTERN (join), 0, 0)) & (1 << GOMP_DIM_MAX)))
+	{
+	  rtx reg = cfun->machine->omp_fn_entry_num_threads_reg;
+	  rtx mem = gen_rtx_MEM (SImode, omp_num_threads_sym);
+	  emit_insn_before (gen_nvptx_omp_parallel_join (mem, reg), head);
+	  need_omp_num_threads = true;
+	  head = PREV_INSN (head);
+	}
+
+      if (fork
+	  /* We do not set/restore parallel state across function calls.  */
+	  && !(INTVAL (XVECEXP (PATTERN (fork), 0, 0)) & (1 << GOMP_DIM_MAX)))
+	{
+	  rtx reg = gen_reg_rtx (SImode);
+	  rtx mem = gen_rtx_MEM (SImode, omp_num_threads_sym);
+	  emit_insn_before (gen_get_ntid (reg), tail);
+	  emit_insn_before (gen_nvptx_omp_parallel_fork (mem, reg), tail);
+	  need_omp_num_threads = true;
+	}
+    }
 
   /* Detect if tail is a branch.  */
   rtx tail_branch = NULL_RTX;
@@ -4942,16 +5089,31 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
     if (GOMP_DIM_MASK (mode) & skip_mask)
       {
 	rtx_code_label *label = gen_label_rtx ();
-	rtx pred = cfun->machine->axis_predicate[mode - GOMP_DIM_WORKER];
 	rtx_insn **mode_jump
 	  = mode == GOMP_DIM_VECTOR ? &vector_jump : &worker_jump;
 	rtx_insn **mode_label
 	  = mode == GOMP_DIM_VECTOR ? &vector_label : &worker_label;
 
-	if (!pred)
+	rtx pred;
+
+	if (flag_openmp_target == OMP_TARGET_MODE_OMPACC
+	    && mode == GOMP_DIM_VECTOR)
 	  {
-	    pred = gen_reg_rtx (BImode);
-	    cfun->machine->axis_predicate[mode - GOMP_DIM_WORKER] = pred;
+	    pred = cfun->machine->omp_parallel_predicate;
+	    if (!pred)
+	      {
+		pred = gen_reg_rtx (BImode);
+		cfun->machine->omp_parallel_predicate = pred;
+	      }
+	  }
+	else
+	  {
+	    pred = cfun->machine->axis_predicate[mode - GOMP_DIM_WORKER];
+	    if (!pred)
+	      {
+		pred = gen_reg_rtx (BImode);
+		cfun->machine->axis_predicate[mode - GOMP_DIM_WORKER] = pred;
+	      }
 	  }
 
 	rtx br;
@@ -5066,7 +5228,38 @@ nvptx_single (unsigned mask, basic_block from, basic_block to)
 	  rtx tmp = gen_reg_rtx (BImode);
 	  emit_insn_before (gen_movbi (tmp, const0_rtx),
 			    bb_first_real_insn (from));
-	  emit_insn_before (gen_rtx_SET (tmp, pvar), label);
+
+	  if(flag_openmp_target == OMP_TARGET_MODE_OMPACC)
+	    {
+	      rtx nthr = cfun->machine->omp_fn_entry_num_threads_reg;
+	      rtx single_p = gen_reg_rtx (BImode);
+
+	      rtx_code_label *lbl_copy_tmp_pvar = gen_label_rtx ();
+	      LABEL_NUSES (lbl_copy_tmp_pvar) = 1;
+
+	      rtx_insn *lbl_fallthru = NEXT_INSN (tail);
+	      gcc_assert (lbl_fallthru);
+	      if (!LABEL_P (lbl_fallthru))
+		{
+		  rtx_code_label *nlbl = gen_label_rtx ();
+		  LABEL_NUSES (nlbl) = 1;
+		  emit_label_before (nlbl, lbl_fallthru);
+		  lbl_fallthru = nlbl;
+		}
+	      emit_insn_before
+		(gen_rtx_SET (single_p,
+			      gen_rtx_EQ (BImode, nthr, GEN_INT (1))),
+		 label);
+	      emit_insn_before
+		(gen_br_true (single_p, lbl_copy_tmp_pvar), label);
+	      emit_jump_insn_before (copy_rtx (tail_branch), label);
+	      emit_insn_before (gen_jump (lbl_fallthru), label);
+	      emit_label_before (lbl_copy_tmp_pvar, label);
+	      emit_insn_before (gen_rtx_SET (tmp, pvar), label);
+	    }
+	  else
+	    emit_insn_before (gen_rtx_SET (tmp, pvar), label);
+
 	  emit_insn_before (gen_rtx_SET (pvar, tmp), tail);
 #endif
 	  emit_insn_before (nvptx_gen_warp_bcast (pvar), tail);
@@ -5825,10 +6018,29 @@ nvptx_reorg (void)
       delete pars;
     }
 
+  if (flag_openmp_target == OMP_TARGET_MODE_OMPACC
+      && offloading_function_p (current_function_decl)
+      && lookup_attribute ("ompacc",
+			   DECL_ATTRIBUTES (current_function_decl))
+      && !lookup_attribute ("ompacc seq",
+			    DECL_ATTRIBUTES (current_function_decl)))
+    {
+      cfun->machine->omp_fn_entry_num_threads_reg = gen_reg_rtx (SImode);
+
+      /* Discover & process partitioned regions.  */
+      parallel *pars = nvptx_discover_pars (&bb_insn_map);
+      nvptx_process_pars (pars);
+      nvptx_neuter_pars (pars, GOMP_DIM_MASK (GOMP_DIM_VECTOR), 0);
+      delete pars;
+    }
+
   /* Replace subregs.  */
   nvptx_reorg_subreg ();
 
-  if (TARGET_UNIFORM_SIMT)
+  if (TARGET_UNIFORM_SIMT
+      && (flag_openmp_target != OMP_TARGET_MODE_OMPACC
+	  || !lookup_attribute ("ompacc",
+				DECL_ATTRIBUTES (current_function_decl))))
     nvptx_reorg_uniform_simt ();
 
 #if WORKAROUND_PTXJIT_BUG_2
@@ -6074,6 +6286,12 @@ nvptx_file_end (void)
     {
       write_var_marker (asm_out_file, false, true, "__nvptx_uni");
       fprintf (asm_out_file, ".extern .shared .u32 __nvptx_uni[32];\n");
+    }
+  if (need_omp_num_threads)
+    {
+      write_var_marker (asm_out_file, false, true, "__nvptx_omp_num_threads");
+      fprintf (asm_out_file,
+	       ".extern .shared .u32 __nvptx_omp_num_threads;\n");
     }
 }
 
@@ -6729,6 +6947,9 @@ nvptx_goacc_fork_join (gcall *call, const int dims[],
 {
   tree arg = gimple_call_arg (call, 2);
   unsigned axis = TREE_INT_CST_LOW (arg);
+
+  if (flag_openmp_target == OMP_TARGET_MODE_OMPACC)
+    return true;
 
   /* We only care about worker and vector partitioning.  */
   if (axis < GOMP_DIM_WORKER)

@@ -617,6 +617,7 @@ main (int argc, char **argv)
 
   /* Scan the argument vector.  */
   bool fopenmp = false;
+  bool fopenmp_target = false;
   bool fopenacc = false;
   bool fPIC = false;
   bool fpic = false;
@@ -636,6 +637,9 @@ main (int argc, char **argv)
 #undef STR
       else if (strcmp (argv[i], "-fopenmp") == 0)
 	fopenmp = true;
+      else if (strncmp (argv[i], "-fopenmp-target=",
+			strlen ("-fopenmp-target=")) == 0)
+	fopenmp_target = true;
       else if (strcmp (argv[i], "-fopenacc") == 0)
 	fopenacc = true;
       else if (strcmp (argv[i], "-fPIC") == 0)
@@ -653,6 +657,15 @@ main (int argc, char **argv)
   if (!(fopenacc ^ fopenmp))
     fatal_error (input_location, "either %<-fopenacc%> or %<-fopenmp%> "
 		 "must be set");
+  if (fopenmp_target)
+    {
+      if (fopenacc)
+	fatal_error (input_location, "%<-fopenacc%> not compatible with "
+		     "%<-fopenmp-target=%>");
+      if (!fopenmp)
+	fatal_error (input_location, "%<-fopenmp-target=%> requires "
+		     "%<-fopenmp%>");
+    }
 
   struct obstack argv_obstack;
   obstack_init (&argv_obstack);

@@ -80,6 +80,14 @@
    UNSPECV_SIMT_EXIT
 
    UNSPECV_RED_PART
+
+   UNSPECV_GET_TID
+   UNSPECV_GET_NTID
+   UNSPECV_GET_CTAID
+   UNSPECV_GET_NCTAID
+
+   UNSPECV_OMP_PARALLEL_FORK
+   UNSPECV_OMP_PARALLEL_JOIN
 ])
 
 (define_attr "subregs_ok" "false,true"
@@ -121,6 +129,12 @@
 {
   return (REG_P (op) ? register_operand (op, mode)
           : immediate_operand (op, mode));
+})
+
+(define_predicate "nvptx_shared_mem_operand"
+  (match_code "mem")
+{
+  return nvptx_mem_shared_p (op);
 })
 
 (define_predicate "const0_operand"
@@ -1773,6 +1787,60 @@
 };
   return asms[INTVAL (operands[1])];
 })
+
+(define_expand "gomp_barrier"
+  [(const_int 1)]
+  "flag_openmp_target == OMP_TARGET_MODE_OMPACC"
+{
+  emit_insn (gen_nvptx_barsync (GEN_INT (0), GEN_INT (0)));
+  DONE;
+})
+
+(define_expand "omp_get_num_threads"
+  [(match_operand 0 "nvptx_register_operand" "=R")]
+  "flag_openmp_target == OMP_TARGET_MODE_OMPACC"
+{
+  nvptx_expand_omp_get_num_threads (operands[0]);
+  DONE;
+})
+
+(define_insn "omp_get_num_teams"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+        (unspec_volatile:SI [(const_int 0)] UNSPECV_GET_NCTAID))]
+  "flag_openmp_target == OMP_TARGET_MODE_OMPACC"
+  "%.\\tmov.u32\\t%0, %%nctaid.x;")
+
+(define_insn "omp_get_thread_num"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+        (unspec_volatile:SI [(const_int 0)] UNSPECV_GET_TID))]
+  "flag_openmp_target == OMP_TARGET_MODE_OMPACC"
+  "%.\\tmov.u32\\t%0, %%tid.x;")
+
+(define_insn "omp_get_team_num"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_GET_CTAID))]
+  "flag_openmp_target == OMP_TARGET_MODE_OMPACC"
+  "%.\\tmov.u32\\t%0, %%ctaid.x;")
+
+(define_insn "get_ntid"
+  [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_GET_NTID))]
+  "flag_openmp_target == OMP_TARGET_MODE_OMPACC"
+  "%.\\tmov.u32\\t%0, %%ntid.x;")
+
+(define_insn "nvptx_omp_parallel_fork"
+  [(set (match_operand:SI 0 "nvptx_shared_mem_operand" "=m")
+	(unspec_volatile:SI [(match_operand:SI 1 "nvptx_register_operand" "R")]
+			    UNSPECV_OMP_PARALLEL_FORK))]
+  "flag_openmp_target == OMP_TARGET_MODE_OMPACC"
+  "%.\\tst.shared.u32\\t%0, %1; //omp parallel fork")
+
+(define_insn "nvptx_omp_parallel_join"
+  [(set (match_operand:SI 0 "nvptx_shared_mem_operand" "=m")
+	(unspec_volatile:SI [(match_operand:SI 1 "nvptx_register_operand" "R")]
+			    UNSPECV_OMP_PARALLEL_JOIN))]
+  "flag_openmp_target == OMP_TARGET_MODE_OMPACC"
+  "%.\\tst.shared.u32\\t%0, %1; //omp parallel join")
 
 (define_insn "nvptx_fork"
   [(unspec_volatile:SI [(match_operand:SI 0 "const_int_operand" "")]

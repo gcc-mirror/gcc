@@ -1050,11 +1050,16 @@ remove_exit_barrier (struct omp_region *region)
 	     from within current function (this would be easy to check)
 	     or from some function it calls and gets passed an address
 	     of such a variable.  */
+	  gomp_parallel *parallel_stmt
+	    = as_a <gomp_parallel *> (last_stmt (region->entry));
+	  tree child_fun = gimple_omp_parallel_child_fn (parallel_stmt);
+
+	  if (flag_openmp_target == OMP_TARGET_MODE_OMPACC
+	      && child_fun == NULL_TREE)
+	    any_addressable_vars = 0;
+
 	  if (any_addressable_vars < 0)
 	    {
-	      gomp_parallel *parallel_stmt
-		= as_a <gomp_parallel *> (last_stmt (region->entry));
-	      tree child_fun = gimple_omp_parallel_child_fn (parallel_stmt);
 	      tree local_decls, block, decl;
 	      unsigned ix;
 
@@ -7771,6 +7776,17 @@ expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
       /* The SSA parallelizer does gang parallelism.  */
       gwv = build_int_cst (integer_type_node, GOMP_DIM_MASK (GOMP_DIM_GANG));
     }
+  else if (flag_openmp_target == OMP_TARGET_MODE_OMPACC)
+    {
+      tree clauses = gimple_omp_for_clauses (for_stmt);
+      int omp_mask = 0;
+      if (omp_find_clause (clauses, OMP_CLAUSE_GANG))
+	omp_mask |= GOMP_DIM_MASK (GOMP_DIM_GANG);
+      if (omp_find_clause (clauses, OMP_CLAUSE_VECTOR))
+	omp_mask |= GOMP_DIM_MASK (GOMP_DIM_VECTOR);
+      gcc_assert (omp_mask);
+      gwv = build_int_cst (integer_type_node, omp_mask);
+    }
 
   if (fd->collapse > 1 || fd->tiling)
     {
@@ -9829,6 +9845,13 @@ get_target_arguments (gimple_stmt_iterator *gsi, gomp_target *tgt_stmt)
     t = OMP_CLAUSE_THREAD_LIMIT_EXPR (c);
   else
     t = integer_minus_one_node;
+
+  /* Currently, OMPACC mode has a limitation of only one warp thread.  */
+  if (flag_openmp_target == OMP_TARGET_MODE_OMPACC
+      && lookup_attribute
+           ("ompacc", DECL_ATTRIBUTES (gimple_omp_target_child_fn (tgt_stmt))))
+    t = integer_one_node;
+
   push_target_argument_according_to_value (gsi, GOMP_TARGET_ARG_DEVICE_ALL,
 					   GOMP_TARGET_ARG_THREAD_LIMIT, t,
 					   &args);
@@ -10712,6 +10735,44 @@ expand_omp (struct omp_region *region)
       switch (region->type)
 	{
 	case GIMPLE_OMP_PARALLEL:
+	  if (flag_openmp_target == OMP_TARGET_MODE_OMPACC)
+	    {
+	      struct omp_region *r;
+	      for (r = region->outer; r; r = r->outer)
+		if (r->type == GIMPLE_OMP_TARGET)
+		  {
+		    gomp_target *tgt
+		      = as_a <gomp_target *> (last_stmt (r->entry));
+		    tree tgtfn_attrs
+		      = DECL_ATTRIBUTES (gimple_omp_target_child_fn (tgt));
+		    if (!lookup_attribute ("ompacc", tgtfn_attrs))
+		      r = NULL;
+		    break;
+		  }
+	      if (r != NULL
+		  || (lookup_attribute
+		      ("ompacc", DECL_ATTRIBUTES (current_function_decl))))
+		{
+		  gimple_stmt_iterator gsi;
+		  gsi = gsi_last_nondebug_bb (region->entry);
+		  gcc_assert (!gsi_end_p (gsi)
+			      && gimple_code
+			      (gsi_stmt (gsi)) == GIMPLE_OMP_PARALLEL);
+		  gsi_remove (&gsi, true);
+
+		  if (region->exit)
+		    {
+		      gsi = gsi_last_nondebug_bb (region->exit);
+		      gcc_assert (!gsi_end_p (gsi)
+				  && gimple_code
+				  (gsi_stmt (gsi)) == GIMPLE_OMP_RETURN);
+		      gsi_remove (&gsi, true);
+		    }
+		  break;
+		}
+	    }
+	  /* Fallthrough.  */
+
 	case GIMPLE_OMP_TASK:
 	  expand_omp_taskreg (region);
 	  break;

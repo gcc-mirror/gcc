@@ -202,8 +202,12 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
   struct omp_for_data_loop dummy_loop;
   location_t loc = gimple_location (for_stmt);
   bool simd = gimple_omp_for_kind (for_stmt) == GF_OMP_FOR_KIND_SIMD;
-  bool distribute = gimple_omp_for_kind (for_stmt)
-		    == GF_OMP_FOR_KIND_DISTRIBUTE;
+  bool distribute =
+    (gimple_omp_for_kind (for_stmt) == GF_OMP_FOR_KIND_DISTRIBUTE
+     || (flag_openmp_target == OMP_TARGET_MODE_OMPACC
+	 && gimple_omp_for_kind (for_stmt) == GF_OMP_FOR_KIND_OACC_LOOP
+	 && omp_find_clause (gimple_omp_for_clauses (for_stmt),
+			     OMP_CLAUSE_GANG)));
   bool taskloop = gimple_omp_for_kind (for_stmt)
 		  == GF_OMP_FOR_KIND_TASKLOOP;
   bool order_reproducible = false;
@@ -441,7 +445,8 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
       loop->n2 = gimple_omp_for_final (for_stmt, i);
       gcc_assert (loop->cond_code != NE_EXPR
 		  || (gimple_omp_for_kind (for_stmt)
-		      != GF_OMP_FOR_KIND_OACC_LOOP));
+		      != GF_OMP_FOR_KIND_OACC_LOOP)
+		  || flag_openmp_target == OMP_TARGET_MODE_OMPACC);
       if (TREE_CODE (loop->n2) == TREE_VEC)
 	{
 	  if (loop->outer)

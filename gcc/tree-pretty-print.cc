@@ -1421,6 +1421,12 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       pp_string (pp, "_simt_");
       break;
 
+    case OMP_CLAUSE__OMPACC_:
+      pp_string (pp, "_ompacc_");
+      if (OMP_CLAUSE__OMPACC__SEQ (clause))
+	pp_string (pp, "(seq)");
+      break;
+
     case OMP_CLAUSE_GANG:
       pp_string (pp, "gang");
       if (OMP_CLAUSE_GANG_EXPR (clause) != NULL_TREE)

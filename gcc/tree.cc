@@ -316,6 +316,7 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE_FILTER  */
   1, /* OMP_CLAUSE__SIMDUID_  */
   0, /* OMP_CLAUSE__SIMT_  */
+  0, /* OMP_CLAUSE__OMPACC_  */
   0, /* OMP_CLAUSE_INDEPENDENT  */
   1, /* OMP_CLAUSE_WORKER  */
   1, /* OMP_CLAUSE_VECTOR  */
@@ -413,6 +414,7 @@ const char * const omp_clause_code_name[] =
   "filter",
   "_simduid_",
   "_simt_",
+  "_ompacc_",
   "independent",
   "worker",
   "vector",

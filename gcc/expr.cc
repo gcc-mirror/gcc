@@ -10826,7 +10826,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
       /* Allow accel compiler to handle variables that require special
 	 treatment, e.g. if they have been modified in some way earlier in
 	 compilation by the adjust_private_decl OpenACC hook.  */
-      if (flag_openacc && targetm.goacc.expand_var_decl)
+      if ((flag_openacc || flag_openmp_target == OMP_TARGET_MODE_OMPACC)
+	  && targetm.goacc.expand_var_decl)
 	{
 	  temp = targetm.goacc.expand_var_decl (exp);
 	  if (temp)

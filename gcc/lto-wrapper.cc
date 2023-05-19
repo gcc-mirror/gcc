@@ -735,6 +735,7 @@ append_compiler_options (obstack *argv_obstack, vec<cl_decoded_option> opts)
 	case OPT_fcommon:
 	case OPT_fgnu_tm:
 	case OPT_fopenmp:
+	case OPT_fopenmp_target_:
 	case OPT_fopenacc:
 	case OPT_fopenacc_dim_:
 	case OPT_foffload_abi_:

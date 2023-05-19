@@ -1180,7 +1180,12 @@ analyze_functions (bool first_time)
   build_type_inheritance_graph ();
 
   if (flag_openmp && first_time)
-    omp_discover_implicit_declare_target ();
+    {
+      omp_discover_implicit_declare_target ();
+
+      if(flag_openmp_target == OMP_TARGET_MODE_OMPACC)
+	omp_ompacc_attribute_tagging ();
+    }
 
   /* Analysis adds static variables that in turn adds references to new functions.
      So we need to iterate the process until it stabilize.  */

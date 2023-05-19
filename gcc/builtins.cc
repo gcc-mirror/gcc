@@ -7092,6 +7092,62 @@ expand_builtin_goacc_parlevel_id_size (tree exp, rtx target, int ignore)
   return target;
 }
 
+static rtx
+expand_builtin_omp_builtins (tree exp, rtx target, int ignore)
+{
+  rtx ret = NULL;
+  rtx_insn *(*gen_fn) (rtx) = NULL;
+
+  switch (DECL_FUNCTION_CODE (get_callee_fndecl (exp)))
+    {
+    case BUILT_IN_GOMP_BARRIER:
+      if (targetm.have_gomp_barrier ())
+	{
+	  emit_insn (targetm.gen_gomp_barrier ());
+	  return target;
+	}
+      break;
+
+    case BUILT_IN_OMP_GET_THREAD_NUM:
+      if (targetm.have_omp_get_thread_num ())
+	gen_fn = targetm.gen_omp_get_thread_num;
+      break;
+
+    case BUILT_IN_OMP_GET_NUM_THREADS:
+      if (targetm.have_omp_get_num_threads ())
+	gen_fn = targetm.gen_omp_get_num_threads;
+      break;
+
+    case BUILT_IN_OMP_GET_TEAM_NUM:
+      if (targetm.have_omp_get_team_num ())
+	gen_fn = targetm.gen_omp_get_team_num;
+      break;
+
+    case BUILT_IN_OMP_GET_NUM_TEAMS:
+      if (targetm.have_omp_get_num_teams ())
+	gen_fn = targetm.gen_omp_get_num_teams;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  if (ignore)
+    return const0_rtx;
+
+  if (gen_fn)
+    {
+      rtx reg = (MEM_P (target)
+		 ? gen_reg_rtx (GET_MODE (target))
+		 : target);
+      emit_insn (gen_fn (reg));
+      if (reg != target)
+	emit_move_insn (target, reg);
+      ret = target;
+    }
+  return ret;
+}
+
 /* Expand a string compare operation using a sequence of char comparison
    to get rid of the calling overhead, with result going to TARGET if
    that's convenient.
@@ -8451,6 +8507,21 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
     case BUILT_IN_GOACC_PARLEVEL_ID:
     case BUILT_IN_GOACC_PARLEVEL_SIZE:
       return expand_builtin_goacc_parlevel_id_size (exp, target, ignore);
+
+    case BUILT_IN_GOMP_BARRIER:
+    case BUILT_IN_OMP_GET_THREAD_NUM:
+    case BUILT_IN_OMP_GET_NUM_THREADS:
+    case BUILT_IN_OMP_GET_TEAM_NUM:
+    case BUILT_IN_OMP_GET_NUM_TEAMS:
+      if (flag_openmp_target == OMP_TARGET_MODE_OMPACC
+	  && lookup_attribute ("ompacc",
+			       DECL_ATTRIBUTES (current_function_decl)))
+	{
+	  target = expand_builtin_omp_builtins (exp, target, ignore);
+	  if (target)
+	    return target;
+	}
+      break;
 
     case BUILT_IN_SPECULATION_SAFE_VALUE_PTR:
       return expand_speculation_safe_value (VOIDmode, exp, target, ignore);
