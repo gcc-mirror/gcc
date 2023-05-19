@@ -1,3 +1,20 @@
+2023-05-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-07-21  Iain Sandoe  <iain@sandoe.co.uk>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98821
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Configure using C++.  Pull logic to
+	detect enabled checking modes; default to release
+	checking.
+	* server.cc (AI_NUMERICSERV): Define a fallback value.
+	(gcc_assert): New.
+	(gcc_unreachable): New.
+	(fancy_abort): Only build when checking is enabled.
+
 2022-04-21  Release Manager
 
 	* GCC 11.3.0 released.
