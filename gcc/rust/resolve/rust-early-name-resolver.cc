@@ -63,8 +63,6 @@ EarlyNameResolver::accumulate_escaped_macros (AST::Module &module)
 	    continue;
 	  }
 
-	item->accept_vis (*this);
-
 	if (item->get_ast_kind () == AST::Kind::MACRO_RULES_DEFINITION)
 	  escaped_macros.emplace_back (item->clone_item ());
       }
