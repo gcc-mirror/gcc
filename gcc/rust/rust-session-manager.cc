@@ -1090,10 +1090,12 @@ TargetOptions::dump_target_options () const
   for (const auto &pairs : features)
     {
       for (const auto &value : pairs.second)
-	out << pairs.first + ": \"" + value + "\"\n";
-
-      if (pairs.second.empty ())
-	out << pairs.first + "\n";
+	{
+	  if (value.is_some ())
+	    out << pairs.first + ": \"" + value.get () + "\"\n";
+	  else
+	    out << pairs.first + "\n";
+	}
     }
 
   out.close ();
