@@ -250,6 +250,16 @@ public:
   }
 };
 
+template <typename T, typename U>
+bool
+operator== (const Optional<T> &t, const Optional<U> &u)
+{
+  if (t.is_some ())
+    return u.is_some () && t.get () == u.get ();
+  else
+    return u.is_none ();
+}
+
 } // namespace Rust
 
 namespace std {
