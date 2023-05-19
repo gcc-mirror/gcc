@@ -3802,6 +3802,21 @@ arith_overflow_check_p (gimple *stmt, gimple *cast_stmt, gimple *&use_stmt,
       use_operand_p use;
       if (!single_imm_use (divlhs, &use, &cur_use_stmt))
 	return 0;
+      if (cast_stmt && gimple_assign_cast_p (cur_use_stmt))
+	{
+	  tree cast_lhs = gimple_assign_lhs (cur_use_stmt);
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (cast_lhs))
+	      && TYPE_UNSIGNED (TREE_TYPE (cast_lhs))
+	      && (TYPE_PRECISION (TREE_TYPE (cast_lhs))
+		  == TYPE_PRECISION (TREE_TYPE (divlhs)))
+	      && single_imm_use (cast_lhs, &use, &cur_use_stmt))
+	    {
+	      cast_stmt = NULL;
+	      divlhs = cast_lhs;
+	    }
+	  else
+	    return 0;
+	}
     }
   if (gimple_code (cur_use_stmt) == GIMPLE_COND)
     {
@@ -4390,6 +4405,16 @@ match_arith_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
 	  gimple_stmt_iterator gsi2 = gsi_for_stmt (orig_use_stmt);
 	  maybe_optimize_guarding_check (mul_stmts, use_stmt, orig_use_stmt,
 					 cfg_changed);
+	  use_operand_p use;
+	  gimple *cast_stmt;
+	  if (single_imm_use (gimple_assign_lhs (orig_use_stmt), &use,
+			      &cast_stmt)
+	      && gimple_assign_cast_p (cast_stmt))
+	    {
+	      gimple_stmt_iterator gsi3 = gsi_for_stmt (cast_stmt);
+	      gsi_remove (&gsi3, true);
+	      release_ssa_name (gimple_assign_lhs (cast_stmt));
+	    }
 	  gsi_remove (&gsi2, true);
 	  release_ssa_name (gimple_assign_lhs (orig_use_stmt));
 	}
