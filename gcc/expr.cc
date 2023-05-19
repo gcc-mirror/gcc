@@ -12899,23 +12899,19 @@ maybe_optimize_sub_cmp_0 (enum tree_code code, tree *arg0, tree *arg1)
 }
 
 
-/* If CODE with arguments ARG0 and ARG1 represents a single bit
+/* If CODE with arguments INNER & (1<<BITNUM) and 0 represents a single bit
    equality/inequality test, then return a simplified form of
    the test using shifts and logical operations.  Otherwise return
    NULL.  TYPE is the desired result type.  */
 
 static tree
 fold_single_bit_test (location_t loc, enum tree_code code,
-		      tree arg0, tree arg1, tree result_type)
+		      tree inner, int bitnum,
+		      tree result_type)
 {
-  /* If this is testing a single bit, we can optimize the test.  */
-  if ((code == NE_EXPR || code == EQ_EXPR)
-      && TREE_CODE (arg0) == BIT_AND_EXPR && integer_zerop (arg1)
-      && integer_pow2p (TREE_OPERAND (arg0, 1)))
+  if ((code == NE_EXPR || code == EQ_EXPR))
     {
-      tree inner = TREE_OPERAND (arg0, 0);
-      tree type = TREE_TYPE (arg0);
-      int bitnum = tree_log2 (TREE_OPERAND (arg0, 1));
+      tree type = TREE_TYPE (inner);
       scalar_int_mode operand_mode = SCALAR_INT_TYPE_MODE (type);
       int ops_unsigned;
       tree signed_type, unsigned_type, intermediate_type;
@@ -13170,12 +13166,14 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
       if (srcstmt
 	  && integer_pow2p (gimple_assign_rhs2 (srcstmt)))
 	{
+	  tree temp;
 	  enum tree_code tcode = code == NE ? NE_EXPR : EQ_EXPR;
+	  int bitnum = tree_log2 (gimple_assign_rhs2 (srcstmt));
+
 	  type = lang_hooks.types.type_for_mode (mode, unsignedp);
-	  tree temp = fold_build2_loc (loc, BIT_AND_EXPR, TREE_TYPE (arg1),
+	  temp = fold_single_bit_test (loc, tcode,
 				       gimple_assign_rhs1 (srcstmt),
-				       gimple_assign_rhs2 (srcstmt));
-	  temp = fold_single_bit_test (loc, tcode, temp, arg1, type);
+				       bitnum, type);
 	  if (temp)
 	    return expand_expr (temp, target, VOIDmode, EXPAND_NORMAL);
 	}
