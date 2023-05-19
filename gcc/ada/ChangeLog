@@ -1,3 +1,23 @@
+2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity): Use _P defines
+	from tree.h.
+	(constructor_address_p): Ditto.
+	(elaborate_expression_1): Ditto.
+	* gcc-interface/trans.cc (Identifier_to_gnu): Ditto.
+	(is_nrv_p): Ditto.
+	(Subprogram_Body_to_gnu): Ditto.
+	(gnat_to_gnu): Ditto.
+	(gnat_to_gnu_external): Ditto.
+	(add_decl_expr): Ditto.
+	(gnat_gimplify_expr): Ditto.
+	* gcc-interface/utils.cc (create_var_decl): Ditto.
+	* gcc-interface/utils2.cc (get_base_type): Ditto.
+	(build_binary_op): Ditto.
+	(build_unary_op): Ditto.
+	(gnat_protect_expr): Ditto.
+	(gnat_invariant_expr): Ditto.
+
 2023-05-16  Steve Baird  <baird@adacore.com>
 
 	* usage.adb: Generate output text describing the -gnatw_s switch

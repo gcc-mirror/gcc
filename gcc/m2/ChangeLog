@@ -1,3 +1,21 @@
+2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* gm2-gcc/m2builtins.cc (doradix): Use _P defines from tree.h.
+	(doplaces): Ditto.
+	(doexponentmin): Ditto.
+	(doexponentmax): Ditto.
+	(dolarge): Ditto.
+	(dosmall): Ditto.
+	(dogUnderflow): Ditto.
+	* gm2-gcc/m2convert.cc (unsafe_conversion_p): Ditto.
+	* gm2-gcc/m2expr.cc (m2expr_build_unary_op_check): Ditto.
+	(m2expr_build_binary_op_check): Ditto.
+	* gm2-gcc/m2tree.cc (m2tree_is_var): Ditto.
+	* gm2-gcc/m2treelib.cc (build_modify_expr): Ditto.
+	* gm2-gcc/m2type.cc (gm2_finish_decl): Ditto.
+	* m2pp.cc (hextree): Ditto.
+	(m2pp_call_expr): Ditto.
+
 2023-05-17  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-libs-iso/LongWholeIO.mod (WriteInt): Only request a

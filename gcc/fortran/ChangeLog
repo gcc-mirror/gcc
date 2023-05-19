@@ -1,3 +1,102 @@
+2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* trans-array.cc (is_pointer_array): Use _P() defines from tree.h.
+	(gfc_conv_scalarized_array_ref): Ditto.
+	(gfc_conv_array_ref): Ditto.
+	* trans-decl.cc (gfc_finish_decl): Ditto.
+	(gfc_get_symbol_decl): Ditto.
+	* trans-expr.cc (gfc_trans_pointer_assignment): Ditto.
+	(gfc_trans_arrayfunc_assign): Ditto.
+	(gfc_trans_assignment_1): Ditto.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_minmax): Ditto.
+	(conv_intrinsic_ieee_value): Ditto.
+	* trans-io.cc (gfc_convert_array_to_string): Ditto.
+	* trans-openmp.cc (gfc_omp_is_optional_argument): Ditto.
+	(gfc_trans_omp_clauses): Ditto.
+	* trans-stmt.cc (gfc_conv_label_variable): Ditto.
+	* trans.cc (gfc_build_addr_expr): Ditto.
+	(get_array_span): Ditto.
+
+2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR fortran/78798
+	* array.cc (compare_bounds): Use narrower return type.
+	(gfc_compare_array_spec): Likewise.
+	(is_constant_element): Likewise.
+	(gfc_constant_ac): Likewise.
+	* check.cc (dim_rank_check): Likewise.
+	* cpp.cc (gfc_cpp_init_options): Likewise.
+	(dump_macro): Likewise.
+	* cpp.h (gfc_cpp_handle_option): Likewise.
+	* dependency.cc (gfc_ref_needs_temporary_p): Likewise.
+	(gfc_check_argument_dependency): Likewise.
+	(gfc_check_fncall_dependency): Likewise.
+	(ref_same_as_full_array): Likewise.
+	* dependency.h (gfc_check_fncall_dependency): Likewise.
+	(gfc_dep_resolver): Likewise.
+	(gfc_are_equivalenced_arrays): Likewise.
+	* expr.cc (gfc_copy_ref): Likewise.
+	(gfc_kind_max): Likewise.
+	(numeric_type): Likewise.
+	* gfortran.h (gfc_at_end): Likewise.
+	(gfc_at_eof): Likewise.
+	(gfc_at_bol): Likewise.
+	(gfc_at_eol): Likewise.
+	(gfc_define_undef_line): Likewise.
+	(gfc_wide_is_printable): Likewise.
+	(gfc_wide_is_digit): Likewise.
+	(gfc_wide_fits_in_byte): Likewise.
+	(gfc_find_sym_tree): Likewise.
+	(gfc_generic_intrinsic): Likewise.
+	(gfc_specific_intrinsic): Likewise.
+	(gfc_intrinsic_actual_ok): Likewise.
+	(gfc_has_vector_index): Likewise.
+	(gfc_numeric_ts): Likewise.
+	(gfc_impure_variable): Likewise.
+	(gfc_pure): Likewise.
+	(gfc_implicit_pure): Likewise.
+	(gfc_elemental): Likewise.
+	(gfc_pure_function): Likewise.
+	(gfc_implicit_pure_function): Likewise.
+	(gfc_compare_array_spec): Likewise.
+	(gfc_constant_ac): Likewise.
+	(gfc_expanded_ac): Likewise.
+	(gfc_check_digit): Likewise.
+	* intrinsic.cc (gfc_find_subroutine): Likewise.
+	(gfc_generic_intrinsic): Likewise.
+	(gfc_specific_intrinsic): Likewise.
+	* io.cc (compare_to_allowed_values): Likewise. And remove
+	unneeded forward declaration.
+	* parse.cc: Likewise.
+	* parse.h (gfc_check_do_variable): Likewise.
+	* primary.cc (gfc_check_digit): Likewise.
+	* resolve.cc (resolve_structure_cons): Likewise.
+	(pure_stmt_function): Likewise.
+	(gfc_pure_function): Likewise.
+	(impure_stmt_fcn): Likewise.
+	(resolve_forall_iterators): Likewise.
+	(resolve_data): Likewise.
+	(gfc_impure_variable): Likewise.
+	(gfc_pure): Likewise.
+	(gfc_unset_implicit_pure): Likewise.
+	* scanner.cc (wide_is_ascii): Likewise.
+	(gfc_wide_toupper): Likewise.
+	(gfc_open_included_file): Likewise.
+	(gfc_at_end): Likewise.
+	(gfc_at_eof): Likewise.
+	(gfc_at_bol): Likewise.
+	(skip_comment_line): Likewise.
+	(gfc_gobble_whitespace): Likewise.
+	* symbol.cc (gfc_find_symtree_in_proc): Likewise.
+	* trans-array.cc: Likewise.
+	* trans-decl.cc (gfc_set_decl_assembler_name): Likewise.
+	* trans-types.cc (gfc_get_element_type): Likewise.
+	(gfc_add_field_to_struct): Likewise.
+	* trans-types.h (gfc_copy_dt_decls_ifequal): Likewise.
+	(gfc_return_by_reference): Likewise.
+	(gfc_is_nodesc_array): Likewise.
+	* trans.h (gfc_can_put_var_on_stack): Likewise.
+
 2023-05-17  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/95374

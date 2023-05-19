@@ -1,3 +1,42 @@
+2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* call.cc (promoted_arithmetic_type_p): Use _P defines from tree.h.
+	(build_conditional_expr): Ditto.
+	(convert_like_internal): Ditto.
+	(convert_arg_to_ellipsis): Ditto.
+	(build_over_call): Ditto.
+	(compare_ics): Ditto.
+	* class.cc (is_empty_base_ref): Ditto.
+	* coroutines.cc (rewrite_param_uses): Ditto.
+	* cp-tree.h (DECL_DISCRIMINATOR_P): Ditto.
+	(ARITHMETIC_TYPE_P): Ditto.
+	* cvt.cc (ocp_convert): Ditto.
+	* cxx-pretty-print.cc (pp_cxx_template_argument_list): Ditto.
+	* decl.cc (layout_var_decl): Ditto.
+	(get_tuple_size): Ditto.
+	* error.cc (dump_simple_decl): Ditto.
+	* lambda.cc (start_lambda_scope): Ditto.
+	* mangle.cc (write_template_arg): Ditto.
+	* method.cc (spaceship_comp_cat): Ditto.
+	* module.cc (node_template_info): Ditto.
+	(trees_out::start): Ditto.
+	(trees_out::decl_node): Ditto.
+	(trees_in::read_var_def): Ditto.
+	(set_instantiating_module): Ditto.
+	* name-lookup.cc (maybe_record_mergeable_decl): Ditto.
+	(consider_decl): Ditto.
+	(maybe_add_fuzzy_decl): Ditto.
+	* pt.cc (convert_nontype_argument): Ditto.
+	* semantics.cc (handle_omp_array_sections_1): Ditto.
+	(finish_omp_clauses): Ditto.
+	(finish_omp_target_clauses_r): Ditto.
+	(is_this_parameter): Ditto.
+	* tree.cc (build_cplus_array_type): Ditto.
+	(is_this_expression): Ditto.
+	* typeck.cc (do_warn_enum_conversions): Ditto.
+	* typeck2.cc (store_init_value): Ditto.
+	(check_narrowing): Ditto.
+
 2023-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/109868

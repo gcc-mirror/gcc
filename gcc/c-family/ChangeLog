@@ -1,3 +1,20 @@
+2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* c-ada-spec.cc (has_static_fields): Use _P() defines from tree.h.
+	(dump_ada_declaration): Ditto.
+	(dump_ada_structure): Ditto.
+	* c-common.cc (unsafe_conversion_p): Ditto.
+	(shorten_compare): Ditto.
+	(pointer_int_sum): Ditto.
+	(c_common_truthvalue_conversion): Ditto.
+	(scalar_to_vector): Ditto.
+	* c-common.h (gnu_vector_type_p): Ditto.
+	* c-omp.cc (c_omp_depend_t_p): Ditto.
+	(c_omp_split_clauses): Ditto.
+	* c-ubsan.cc (ubsan_instrument_division): Ditto.
+	* c-warn.cc (conversion_warning): Ditto.
+	(warnings_for_convert_and_check): Ditto.
+
 2023-05-18  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-format.cc (print_char_table): Handle %B like %b.

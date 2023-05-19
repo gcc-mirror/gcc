@@ -1,3 +1,23 @@
+2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* c-convert.cc (c_convert): Ditto.
+	* c-decl.cc (merge_decls): Ditto.
+	* c-parser.cc (c_parser_omp_clause_reduction): Ditto.
+	(c_parser_omp_declare_reduction): Ditto.
+	* c-typeck.cc (build_component_ref): Ditto.
+	(convert_argument): Ditto.
+	(pointer_diff): Ditto.
+	(build_unary_op): Ditto.
+	(build_c_cast): Ditto.
+	(build_modify_expr): Ditto.
+	(store_init_value): Ditto.
+	(constexpr_init_fits_real_type): Ditto.
+	(check_constexpr_init): Ditto.
+	(c_finish_return): Ditto.
+	(handle_omp_array_sections_1): Ditto.
+	(c_finish_omp_clauses): Ditto.
+	* gimple-parser.cc (c_finish_gimple_return): Ditto.
+
 2023-05-16  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-decl.cc (check_for_loop_decls): Use pedwarn_c11 for

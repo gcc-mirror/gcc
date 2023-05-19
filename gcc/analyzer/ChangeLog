@@ -1,3 +1,12 @@
+2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* region-model-manager.cc (get_code_for_cast): Use _P defines from
+	tree.h.
+	(region_model_manager::get_or_create_cast): Ditto.
+	(region_model_manager::get_region_for_global): Ditto.
+	* region-model.cc (region_model::get_lvalue_1): Ditto.
+	* region.cc (decl_region::maybe_get_constant_value): Ditto.
+
 2023-03-22  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/109239

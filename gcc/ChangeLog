@@ -1,3 +1,468 @@
+2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* alias.cc (ref_all_alias_ptr_type_p): Use _P() defines from tree.h.
+	* attribs.cc (diag_attr_exclusions): Ditto.
+	(decl_attributes): Ditto.
+	(build_type_attribute_qual_variant): Ditto.
+	* builtins.cc (fold_builtin_carg): Ditto.
+	(fold_builtin_next_arg): Ditto.
+	(do_mpc_arg2): Ditto.
+	* cfgexpand.cc (expand_return): Ditto.
+	* cgraph.h (decl_in_symtab_p): Ditto.
+	(symtab_node::get_create): Ditto.
+	* dwarf2out.cc (base_type_die): Ditto.
+	(implicit_ptr_descriptor): Ditto.
+	(gen_array_type_die): Ditto.
+	(gen_type_die_with_usage): Ditto.
+	(optimize_location_into_implicit_ptr): Ditto.
+	* expr.cc (do_store_flag): Ditto.
+	* fold-const.cc (negate_expr_p): Ditto.
+	(fold_negate_expr_1): Ditto.
+	(fold_convert_const): Ditto.
+	(fold_convert_loc): Ditto.
+	(constant_boolean_node): Ditto.
+	(fold_binary_op_with_conditional_arg): Ditto.
+	(build_fold_addr_expr_with_type_loc): Ditto.
+	(fold_comparison): Ditto.
+	(fold_checksum_tree): Ditto.
+	(tree_unary_nonnegative_warnv_p): Ditto.
+	(integer_valued_real_unary_p): Ditto.
+	(fold_read_from_constant_string): Ditto.
+	* gcc-rich-location.cc (maybe_range_label_for_tree_type_mismatch::get_text): Ditto.
+	* gimple-expr.cc (useless_type_conversion_p): Ditto.
+	(is_gimple_reg): Ditto.
+	(is_gimple_asm_val): Ditto.
+	(mark_addressable): Ditto.
+	* gimple-expr.h (is_gimple_variable): Ditto.
+	(virtual_operand_p): Ditto.
+	* gimple-ssa-warn-access.cc (pass_waccess::check_dangling_stores): Ditto.
+	* gimplify.cc (gimplify_bind_expr): Ditto.
+	(gimplify_return_expr): Ditto.
+	(gimple_add_padding_init_for_auto_var): Ditto.
+	(gimplify_addr_expr): Ditto.
+	(omp_add_variable): Ditto.
+	(omp_notice_variable): Ditto.
+	(omp_get_base_pointer): Ditto.
+	(omp_strip_components_and_deref): Ditto.
+	(omp_strip_indirections): Ditto.
+	(omp_accumulate_sibling_list): Ditto.
+	(omp_build_struct_sibling_lists): Ditto.
+	(gimplify_adjust_omp_clauses_1): Ditto.
+	(gimplify_adjust_omp_clauses): Ditto.
+	(gimplify_omp_for): Ditto.
+	(goa_lhs_expr_p): Ditto.
+	(gimplify_one_sizepos): Ditto.
+	* graphite-scop-detection.cc (scop_detection::graphite_can_represent_scev): Ditto.
+	* ipa-devirt.cc (odr_types_equivalent_p): Ditto.
+	* ipa-prop.cc (ipa_set_jf_constant): Ditto.
+	(propagate_controlled_uses): Ditto.
+	* ipa-sra.cc (type_prevails_p): Ditto.
+	(scan_expr_access): Ditto.
+	* optabs-tree.cc (optab_for_tree_code): Ditto.
+	* toplev.cc (wrapup_global_declaration_1): Ditto.
+	* trans-mem.cc (transaction_invariant_address_p): Ditto.
+	* tree-cfg.cc (verify_types_in_gimple_reference): Ditto.
+	(verify_gimple_comparison): Ditto.
+	(verify_gimple_assign_binary): Ditto.
+	(verify_gimple_assign_single): Ditto.
+	* tree-complex.cc (get_component_ssa_name): Ditto.
+	* tree-emutls.cc (lower_emutls_2): Ditto.
+	* tree-inline.cc (copy_tree_body_r): Ditto.
+	(estimate_move_cost): Ditto.
+	(copy_decl_for_dup_finish): Ditto.
+	* tree-nested.cc (convert_nonlocal_omp_clauses): Ditto.
+	(note_nonlocal_vla_type): Ditto.
+	(convert_local_omp_clauses): Ditto.
+	(remap_vla_decls): Ditto.
+	(fixup_vla_decls): Ditto.
+	* tree-parloops.cc (loop_has_vector_phi_nodes): Ditto.
+	* tree-pretty-print.cc (print_declaration): Ditto.
+	(print_call_name): Ditto.
+	* tree-sra.cc (compare_access_positions): Ditto.
+	* tree-ssa-alias.cc (compare_type_sizes): Ditto.
+	* tree-ssa-ccp.cc (get_default_value): Ditto.
+	* tree-ssa-coalesce.cc (populate_coalesce_list_for_outofssa): Ditto.
+	* tree-ssa-dom.cc (reduce_vector_comparison_to_scalar_comparison): Ditto.
+	* tree-ssa-forwprop.cc (can_propagate_from): Ditto.
+	* tree-ssa-propagate.cc (may_propagate_copy): Ditto.
+	* tree-ssa-sccvn.cc (fully_constant_vn_reference_p): Ditto.
+	* tree-ssa-sink.cc (statement_sink_location): Ditto.
+	* tree-ssa-structalias.cc (type_must_have_pointers): Ditto.
+	* tree-ssa-ter.cc (find_replaceable_in_bb): Ditto.
+	* tree-ssa-uninit.cc (warn_uninit): Ditto.
+	* tree-ssa.cc (maybe_rewrite_mem_ref_base): Ditto.
+	(non_rewritable_mem_ref_base): Ditto.
+	* tree-streamer-in.cc (lto_input_ts_type_non_common_tree_pointers): Ditto.
+	* tree-streamer-out.cc (write_ts_type_non_common_tree_pointers): Ditto.
+	* tree-vect-generic.cc (do_binop): Ditto.
+	(do_cond): Ditto.
+	* tree-vect-stmts.cc (vect_init_vector): Ditto.
+	* tree-vector-builder.h (tree_vector_builder::note_representative): Ditto.
+	* tree.cc (sign_mask_for): Ditto.
+	(verify_type_variant): Ditto.
+	(gimple_canonical_types_compatible_p): Ditto.
+	(verify_type): Ditto.
+	* ubsan.cc (get_ubsan_type_info_for_type): Ditto.
+	* var-tracking.cc (prepare_call_arguments): Ditto.
+	(vt_add_function_parameters): Ditto.
+	* varasm.cc (decode_addr_const): Ditto.
+
+2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* omp-low.cc (scan_sharing_clauses): Use _P() defines from tree.h.
+	(lower_reduction_clauses): Ditto.
+	(lower_send_clauses): Ditto.
+	(lower_omp_task_reductions): Ditto.
+	* omp-oacc-neuter-broadcast.cc (install_var_field): Ditto.
+	(worker_single_copy): Ditto.
+	* omp-offload.cc (oacc_rewrite_var_decl): Ditto.
+	* omp-simd-clone.cc (plausible_type_for_simd_clone): Ditto.
+
+2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* lto-streamer-in.cc (lto_input_var_decl_ref): Use _P defines from
+	tree.h.
+	(lto_read_body_or_constructor): Ditto.
+	* lto-streamer-out.cc (tree_is_indexable): Ditto.
+	(lto_output_var_decl_ref): Ditto.
+	(DFS::DFS_write_tree_body): Ditto.
+	(wrap_refs): Ditto.
+	(write_symbol_extension_info): Ditto.
+
+2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* config/aarch64/aarch64.cc (aarch64_short_vector_p): Use _P
+	defines from tree.h.
+	(aarch64_mangle_type): Ditto.
+	* config/alpha/alpha.cc (alpha_in_small_data_p): Ditto.
+	(alpha_gimplify_va_arg_1): Ditto.
+	* config/arc/arc.cc (arc_encode_section_info): Ditto.
+	(arc_is_aux_reg_p): Ditto.
+	(arc_is_uncached_mem_p): Ditto.
+	(arc_handle_aux_attribute): Ditto.
+	* config/arm/arm.cc (arm_handle_isr_attribute): Ditto.
+	(arm_handle_cmse_nonsecure_call): Ditto.
+	(arm_set_default_type_attributes): Ditto.
+	(arm_is_segment_info_known): Ditto.
+	(arm_mangle_type): Ditto.
+	* config/arm/unknown-elf.h (IN_NAMED_SECTION_P): Ditto.
+	* config/avr/avr.cc (avr_lookup_function_attribute1): Ditto.
+	(avr_decl_absdata_p): Ditto.
+	(avr_insert_attributes): Ditto.
+	(avr_section_type_flags): Ditto.
+	(avr_encode_section_info): Ditto.
+	* config/bfin/bfin.cc (bfin_handle_l2_attribute): Ditto.
+	* config/bpf/bpf.cc (bpf_core_compute): Ditto.
+	* config/c6x/c6x.cc (c6x_in_small_data_p): Ditto.
+	* config/csky/csky.cc (csky_handle_isr_attribute): Ditto.
+	(csky_mangle_type): Ditto.
+	* config/darwin-c.cc (darwin_pragma_unused): Ditto.
+	* config/darwin.cc (is_objc_metadata): Ditto.
+	* config/epiphany/epiphany.cc (epiphany_function_ok_for_sibcall): Ditto.
+	* config/epiphany/epiphany.h (ROUND_TYPE_ALIGN): Ditto.
+	* config/frv/frv.cc (frv_emit_movsi): Ditto.
+	* config/gcn/gcn-tree.cc (gcn_lockless_update): Ditto.
+	* config/gcn/gcn.cc (gcn_asm_output_symbol_ref): Ditto.
+	* config/h8300/h8300.cc (h8300_encode_section_info): Ditto.
+	* config/i386/i386-expand.cc: Ditto.
+	* config/i386/i386.cc (type_natural_mode): Ditto.
+	(ix86_function_arg): Ditto.
+	(ix86_data_alignment): Ditto.
+	(ix86_local_alignment): Ditto.
+	(ix86_simd_clone_compute_vecsize_and_simdlen): Ditto.
+	* config/i386/winnt-cxx.cc (i386_pe_type_dllimport_p): Ditto.
+	(i386_pe_type_dllexport_p): Ditto.
+	(i386_pe_adjust_class_at_definition): Ditto.
+	* config/i386/winnt.cc (i386_pe_determine_dllimport_p): Ditto.
+	(i386_pe_binds_local_p): Ditto.
+	(i386_pe_section_type_flags): Ditto.
+	* config/ia64/ia64.cc (ia64_encode_section_info): Ditto.
+	(ia64_gimplify_va_arg): Ditto.
+	(ia64_in_small_data_p): Ditto.
+	* config/iq2000/iq2000.cc (iq2000_function_arg): Ditto.
+	* config/lm32/lm32.cc (lm32_in_small_data_p): Ditto.
+	* config/loongarch/loongarch.cc (loongarch_handle_model_attribute): Ditto.
+	* config/m32c/m32c.cc (m32c_insert_attributes): Ditto.
+	* config/mcore/mcore.cc (mcore_mark_dllimport): Ditto.
+	(mcore_encode_section_info): Ditto.
+	* config/microblaze/microblaze.cc (microblaze_elf_in_small_data_p): Ditto.
+	* config/mips/mips.cc (mips_output_aligned_decl_common): Ditto.
+	* config/mmix/mmix.cc (mmix_encode_section_info): Ditto.
+	* config/nvptx/nvptx.cc (nvptx_encode_section_info): Ditto.
+	(pass_in_memory): Ditto.
+	(nvptx_generate_vector_shuffle): Ditto.
+	(nvptx_lockless_update): Ditto.
+	* config/pa/pa.cc (pa_function_arg_padding): Ditto.
+	(pa_function_value): Ditto.
+	(pa_function_arg): Ditto.
+	* config/pa/pa.h (IN_NAMED_SECTION_P): Ditto.
+	(TEXT_SPACE_P): Ditto.
+	* config/pa/som.h (MAKE_DECL_ONE_ONLY): Ditto.
+	* config/pdp11/pdp11.cc (pdp11_return_in_memory): Ditto.
+	* config/riscv/riscv.cc (riscv_in_small_data_p): Ditto.
+	(riscv_mangle_type): Ditto.
+	* config/rl78/rl78.cc (rl78_insert_attributes): Ditto.
+	(rl78_addsi3_internal): Ditto.
+	* config/rs6000/aix.h (ROUND_TYPE_ALIGN): Ditto.
+	* config/rs6000/darwin.h (ROUND_TYPE_ALIGN): Ditto.
+	* config/rs6000/freebsd64.h (ROUND_TYPE_ALIGN): Ditto.
+	* config/rs6000/linux64.h (ROUND_TYPE_ALIGN): Ditto.
+	* config/rs6000/rs6000-call.cc (rs6000_function_arg_boundary): Ditto.
+	(rs6000_function_arg_advance_1): Ditto.
+	(rs6000_function_arg): Ditto.
+	(rs6000_pass_by_reference): Ditto.
+	* config/rs6000/rs6000-logue.cc (rs6000_function_ok_for_sibcall): Ditto.
+	* config/rs6000/rs6000.cc (rs6000_data_alignment): Ditto.
+	(rs6000_set_default_type_attributes): Ditto.
+	(rs6000_elf_in_small_data_p): Ditto.
+	(IN_NAMED_SECTION): Ditto.
+	(rs6000_xcoff_encode_section_info): Ditto.
+	(rs6000_function_value): Ditto.
+	(invalid_arg_for_unprototyped_fn): Ditto.
+	* config/s390/s390-c.cc (s390_fn_types_compatible): Ditto.
+	(s390_vec_n_elem): Ditto.
+	* config/s390/s390.cc (s390_check_type_for_vector_abi): Ditto.
+	(s390_function_arg_integer): Ditto.
+	(s390_return_in_memory): Ditto.
+	(s390_encode_section_info): Ditto.
+	* config/sh/sh.cc (sh_gimplify_va_arg_expr): Ditto.
+	(sh_function_value): Ditto.
+	* config/sol2.cc (solaris_insert_attributes): Ditto.
+	* config/sparc/sparc.cc (function_arg_slotno): Ditto.
+	* config/sparc/sparc.h (ROUND_TYPE_ALIGN): Ditto.
+	* config/stormy16/stormy16.cc (xstormy16_encode_section_info): Ditto.
+	(xstormy16_handle_below100_attribute): Ditto.
+	* config/v850/v850.cc (v850_encode_section_info): Ditto.
+	(v850_insert_attributes): Ditto.
+	* config/visium/visium.cc (visium_pass_by_reference): Ditto.
+	(visium_return_in_memory): Ditto.
+	* config/xtensa/xtensa.cc (xtensa_multibss_section_type_flags): Ditto.
+
+2023-05-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_vecop_qihi_partial): New.
+	(ix86_expand_vecop_qihi): Add op2vec bool variable.
+	Do not set REG_EQUAL note.
+	* config/i386/i386-protos.h (ix86_expand_vecop_qihi_partial):
+	Add prototype.
+	* config/i386/i386.cc (ix86_multiplication_cost): Handle
+	V4QImode and V8QImode.
+	* config/i386/mmx.md (mulv8qi3): New expander.
+	(mulv4qi3): Ditto.
+	* config/i386/sse.md (mulv8qi3): Remove.
+
+2023-05-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/gen-avr-mmcu-specs.cc: Remove stale */ after // comment.
+
+2023-05-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR bootstrap/105831
+	* config.gcc: Use = operator instead of ==.
+
+2023-05-18  Michael Bäuerle  <micha@NetBSD.org>
+
+	PR bootstrap/105831
+	* config/nvptx/gen-opt.sh: Use = operator instead of ==.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+
+2023-05-18  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/arm/arm_mve.h: (__ARM_mve_typeid): Add more pointer types.
+	(__ARM_mve_coerce1): Remove.
+	(__ARM_mve_coerce2): Remove.
+	(__ARM_mve_coerce3): Remove.
+	(__ARM_mve_coerce_i_scalar): New.
+	(__ARM_mve_coerce_s8_ptr): New.
+	(__ARM_mve_coerce_u8_ptr): New.
+	(__ARM_mve_coerce_s16_ptr): New.
+	(__ARM_mve_coerce_u16_ptr): New.
+	(__ARM_mve_coerce_s32_ptr): New.
+	(__ARM_mve_coerce_u32_ptr): New.
+	(__ARM_mve_coerce_s64_ptr): New.
+	(__ARM_mve_coerce_u64_ptr): New.
+	(__ARM_mve_coerce_f_scalar): New.
+	(__ARM_mve_coerce_f16_ptr): New.
+	(__ARM_mve_coerce_f32_ptr): New.
+	(__arm_vst4q): Change _coerce_ overloads.
+	(__arm_vbicq): Change _coerce_ overloads.
+	(__arm_vld1q): Change _coerce_ overloads.
+	(__arm_vld1q_z): Change _coerce_ overloads.
+	(__arm_vld2q): Change _coerce_ overloads.
+	(__arm_vld4q): Change _coerce_ overloads.
+	(__arm_vldrhq_gather_offset): Change _coerce_ overloads.
+	(__arm_vldrhq_gather_offset_z): Change _coerce_ overloads.
+	(__arm_vldrhq_gather_shifted_offset): Change _coerce_ overloads.
+	(__arm_vldrhq_gather_shifted_offset_z): Change _coerce_ overloads.
+	(__arm_vldrwq_gather_offset): Change _coerce_ overloads.
+	(__arm_vldrwq_gather_offset_z): Change _coerce_ overloads.
+	(__arm_vldrwq_gather_shifted_offset): Change _coerce_ overloads.
+	(__arm_vldrwq_gather_shifted_offset_z): Change _coerce_ overloads.
+	(__arm_vst1q_p): Change _coerce_ overloads.
+	(__arm_vst2q): Change _coerce_ overloads.
+	(__arm_vst1q): Change _coerce_ overloads.
+	(__arm_vstrhq): Change _coerce_ overloads.
+	(__arm_vstrhq_p): Change _coerce_ overloads.
+	(__arm_vstrhq_scatter_offset_p): Change _coerce_ overloads.
+	(__arm_vstrhq_scatter_offset): Change _coerce_ overloads.
+	(__arm_vstrhq_scatter_shifted_offset_p): Change _coerce_ overloads.
+	(__arm_vstrhq_scatter_shifted_offset): Change _coerce_ overloads.
+	(__arm_vstrwq_p): Change _coerce_ overloads.
+	(__arm_vstrwq): Change _coerce_ overloads.
+	(__arm_vstrwq_scatter_offset): Change _coerce_ overloads.
+	(__arm_vstrwq_scatter_offset_p): Change _coerce_ overloads.
+	(__arm_vstrwq_scatter_shifted_offset): Change _coerce_ overloads.
+	(__arm_vstrwq_scatter_shifted_offset_p): Change _coerce_ overloads.
+	(__arm_vsetq_lane): Change _coerce_ overloads.
+	(__arm_vldrbq_gather_offset): Change _coerce_ overloads.
+	(__arm_vdwdupq_x_u8): Change _coerce_ overloads.
+	(__arm_vdwdupq_x_u16): Change _coerce_ overloads.
+	(__arm_vdwdupq_x_u32): Change _coerce_ overloads.
+	(__arm_viwdupq_x_u8): Change _coerce_ overloads.
+	(__arm_viwdupq_x_u16): Change _coerce_ overloads.
+	(__arm_viwdupq_x_u32): Change _coerce_ overloads.
+	(__arm_vidupq_x_u8): Change _coerce_ overloads.
+	(__arm_vddupq_x_u8): Change _coerce_ overloads.
+	(__arm_vidupq_x_u16): Change _coerce_ overloads.
+	(__arm_vddupq_x_u16): Change _coerce_ overloads.
+	(__arm_vidupq_x_u32): Change _coerce_ overloads.
+	(__arm_vddupq_x_u32): Change _coerce_ overloads.
+	(__arm_vldrdq_gather_offset): Change _coerce_ overloads.
+	(__arm_vldrdq_gather_offset_z): Change _coerce_ overloads.
+	(__arm_vldrdq_gather_shifted_offset): Change _coerce_ overloads.
+	(__arm_vldrdq_gather_shifted_offset_z): Change _coerce_ overloads.
+	(__arm_vldrbq_gather_offset_z): Change _coerce_ overloads.
+	(__arm_vidupq_u16): Change _coerce_ overloads.
+	(__arm_vidupq_u32): Change _coerce_ overloads.
+	(__arm_vidupq_u8): Change _coerce_ overloads.
+	(__arm_vddupq_u16): Change _coerce_ overloads.
+	(__arm_vddupq_u32): Change _coerce_ overloads.
+	(__arm_vddupq_u8): Change _coerce_ overloads.
+	(__arm_viwdupq_m): Change _coerce_ overloads.
+	(__arm_viwdupq_u16): Change _coerce_ overloads.
+	(__arm_viwdupq_u32): Change _coerce_ overloads.
+	(__arm_viwdupq_u8): Change _coerce_ overloads.
+	(__arm_vdwdupq_m): Change _coerce_ overloads.
+	(__arm_vdwdupq_u16): Change _coerce_ overloads.
+	(__arm_vdwdupq_u32): Change _coerce_ overloads.
+	(__arm_vdwdupq_u8): Change _coerce_ overloads.
+	(__arm_vstrbq): Change _coerce_ overloads.
+	(__arm_vstrbq_p): Change _coerce_ overloads.
+	(__arm_vstrbq_scatter_offset_p): Change _coerce_ overloads.
+	(__arm_vstrdq_scatter_offset_p): Change _coerce_ overloads.
+	(__arm_vstrdq_scatter_offset): Change _coerce_ overloads.
+	(__arm_vstrdq_scatter_shifted_offset_p): Change _coerce_ overloads.
+	(__arm_vstrdq_scatter_shifted_offset): Change _coerce_ overloads.
+
+2023-05-18  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/arm/arm_mve.h (__arm_vbicq): Change coerce on
+	scalar constant.
+
+2023-05-18  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	* config/arm/arm_mve.h (__arm_vadcq_s32): Fix arithmetic.
+	(__arm_vadcq_u32): Likewise.
+	(__arm_vadcq_m_s32): Likewise.
+	(__arm_vadcq_m_u32): Likewise.
+	(__arm_vsbcq_s32): Likewise.
+	(__arm_vsbcq_u32): Likewise.
+	(__arm_vsbcq_m_s32): Likewise.
+	(__arm_vsbcq_m_u32): Likewise.
+	* config/arm/mve.md (get_fpscr_nzcvqc): Make unspec_volatile.
+
+2023-05-18  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/mve.md (mve_vrndq_m_f<mode>, mve_vrev64q_f<mode>)
+	(mve_vrev32q_fv8hf, mve_vcvttq_f32_f16v4sf)
+	(mve_vcvtbq_f32_f16v4sf, mve_vcvtq_to_f_<supf><mode>)
+	(mve_vrev64q_<supf><mode>, mve_vcvtq_from_f_<supf><mode>)
+	(mve_vmovltq_<supf><mode>, mve_vmovlbq_<supf><mode>)
+	(mve_vcvtpq_<supf><mode>, mve_vcvtnq_<supf><mode>)
+	(mve_vcvtmq_<supf><mode>, mve_vcvtaq_<supf><mode>)
+	(mve_vmvnq_n_<supf><mode>, mve_vrev16q_<supf>v16qi)
+	(mve_vctp<MVE_vctp>q<MVE_vpred>, mve_vbrsrq_n_f<mode>)
+	(mve_vbrsrq_n_<supf><mode>, mve_vandq_f<mode>, mve_vbicq_f<mode>)
+	(mve_vctp<MVE_vctp>q_m<MVE_vpred>, mve_vcvtbq_f16_f32v8hf)
+	(mve_vcvttq_f16_f32v8hf, mve_veorq_f<mode>)
+	(mve_vmlaldavxq_s<mode>, mve_vmlsldavq_s<mode>)
+	(mve_vmlsldavxq_s<mode>, mve_vornq_f<mode>, mve_vorrq_f<mode>)
+	(mve_vrmlaldavhxq_sv4si, mve_vcvtq_m_to_f_<supf><mode>)
+	(mve_vshlcq_<supf><mode>, mve_vmvnq_m_<supf><mode>)
+	(mve_vpselq_<supf><mode>, mve_vcvtbq_m_f16_f32v8hf)
+	(mve_vcvtbq_m_f32_f16v4sf, mve_vcvttq_m_f16_f32v8hf)
+	(mve_vcvttq_m_f32_f16v4sf, mve_vmlaldavq_p_<supf><mode>)
+	(mve_vmlsldavaq_s<mode>, mve_vmlsldavaxq_s<mode>)
+	(mve_vmlsldavq_p_s<mode>, mve_vmlsldavxq_p_s<mode>)
+	(mve_vmvnq_m_n_<supf><mode>, mve_vorrq_m_n_<supf><mode>)
+	(mve_vpselq_f<mode>, mve_vrev32q_m_fv8hf)
+	(mve_vrev32q_m_<supf><mode>, mve_vrev64q_m_f<mode>)
+	(mve_vrmlaldavhaxq_sv4si, mve_vrmlaldavhxq_p_sv4si)
+	(mve_vrmlsldavhaxq_sv4si, mve_vrmlsldavhq_p_sv4si)
+	(mve_vrmlsldavhxq_p_sv4si, mve_vrev16q_m_<supf>v16qi)
+	(mve_vrmlaldavhq_p_<supf>v4si, mve_vrmlsldavhaq_sv4si)
+	(mve_vandq_m_<supf><mode>, mve_vbicq_m_<supf><mode>)
+	(mve_veorq_m_<supf><mode>, mve_vornq_m_<supf><mode>)
+	(mve_vorrq_m_<supf><mode>, mve_vandq_m_f<mode>)
+	(mve_vbicq_m_f<mode>, mve_veorq_m_f<mode>, mve_vornq_m_f<mode>)
+	(mve_vorrq_m_f<mode>)
+	(mve_vstrdq_scatter_shifted_offset_p_<supf>v2di_insn)
+	(mve_vstrdq_scatter_shifted_offset_<supf>v2di_insn)
+	(mve_vstrdq_scatter_base_wb_p_<supf>v2di) : Fix spacing and
+	capitalization in the emitted asm.
+
+2023-05-18  Andrea Corallo  <andrea.corallo@arm.com>
+
+	* config/arm/constraints.md (mve_vldrd_immediate): Move it to
+	predicates.md.
+	(Ri): Move constraint definition from predicates.md.
+	(Rl): Define new constraint.
+	* config/arm/mve.md (mve_vstrwq_scatter_base_wb_p_<supf>v4si): Add
+	missing constraint.
+	(mve_vstrwq_scatter_base_wb_p_fv4sf): Add missing Up constraint
+	for op 1, use mve_vstrw_immediate predicate and Rl constraint for
+	op 2. Fix asm output spacing.
+	(mve_vstrdq_scatter_base_wb_p_<supf>v2di): Add missing constraint.
+	* config/arm/predicates.md (Ri) Move constraint to constraints.md
+	(mve_vldrd_immediate): Move it from
+	constraints.md.
+	(mve_vstrw_immediate): New predicate.
+
+2023-05-18  Pan Li  <pan2.li@intel.com>
+	    Ju-Zhe Zhong  <juzhe.zhong@rivai.ai>
+	    Kito Cheng  <kito.cheng@sifive.com>
+	    Richard Biener  <rguenther@suse.de>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	* combine.cc (struct reg_stat_type): Extend machine_mode to 16 bits.
+	* cse.cc (struct qty_table_elem): Extend machine_mode to 16 bits
+	(struct table_elt): Extend machine_mode to 16 bits.
+	(struct set): Ditto.
+	* genmodes.cc (emit_mode_wider): Extend type from char to short.
+	(emit_mode_complex): Ditto.
+	(emit_mode_inner): Ditto.
+	(emit_class_narrowest_mode): Ditto.
+	* genopinit.cc (main): Extend the machine_mode limit.
+	* ira-int.h (struct ira_allocno): Extend machine_mode to 16 bits and
+	re-ordered the struct fields for padding.
+	* machmode.h (MACHINE_MODE_BITSIZE): New macro.
+	(GET_MODE_2XWIDER_MODE): Extend type from char to short.
+	(get_mode_alignment): Extend type from char to short.
+	* ree.cc (struct ext_modified): Extend machine_mode to 16 bits and
+	removed the ATTRIBUTE_PACKED.
+	* rtl-ssa/accesses.h: Extend machine_mode to 16 bits, narrow
+	* rtl-ssa/internals.inl (rtl_ssa::access_info): Adjust the assignment.
+	m_kind to 2 bits and remove m_spare.
+	* rtl.h (RTX_CODE_BITSIZE): New macro.
+	(struct rtx_def): Swap both the bit size and location between the
+	rtx_code and the machine_mode.
+	(subreg_shape::unique_id): Extend the machine_mode limit.
+	* rtlanal.h: Extend machine_mode to 16 bits.
+	* tree-core.h (struct tree_type_common): Extend machine_mode to 16
+	bits and re-ordered the struct fields for padding.
+	(struct tree_decl_common): Extend machine_mode to 16 bits.
+
 2023-05-17  Jin Ma  <jinma@linux.alibaba.com>
 
 	* genrecog.cc (print_nonbool_test): Fix type error of

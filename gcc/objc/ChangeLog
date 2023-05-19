@@ -1,3 +1,13 @@
+2023-05-18  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* objc-act.cc (objc_volatilize_decl): Use _P() defines from tree.h.
+	(objc_is_global_reference_p): Ditto.
+	(objc_generate_write_barrier): Ditto.
+	(objc_gimplify_property_ref): Ditto.
+	* objc-next-runtime-abi-01.cc (next_runtime_abi_01_receiver_is_class_object): Ditto.
+	* objc-next-runtime-abi-02.cc (next_runtime_abi_02_receiver_is_class_object): Ditto.
+	(next_runtime_abi_02_build_objc_method_call): Ditto.
+
 2023-02-16  Patrick Palka  <ppalka@redhat.com>
 
 	* objc-act.h: Mechanically drop static from static inline

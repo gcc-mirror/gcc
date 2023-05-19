@@ -1,3 +1,9 @@
+2023-05-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR bootstrap/105831
+	* bench-stringop: Use = operator instead of ==.
+	* repro_fail: Likewise.
+
 2023-04-28  Martin Liska  <mliska@suse.cz>
 
 	* filter_gcc_for_doxygen: Use python3 and not python2.
