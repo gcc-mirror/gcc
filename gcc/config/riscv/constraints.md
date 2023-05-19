@@ -65,13 +65,13 @@
   "@internal
    31 immediate"
   (and (match_code "const_int")
-       (match_test "ival == 31")))
+       (match_test "(ival & 31) == 31")))
 
 (define_constraint "DsD"
   "@internal
    63 immediate"
   (and (match_code "const_int")
-       (match_test "ival == 63")))
+       (match_test "(ival & 63) == 63")))
 
 (define_constraint "DbS"
   "@internal"
